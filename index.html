@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+    <html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>靜月之光完整命理系統 v3.0</title>
+        
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/tarot.css">
+        <link rel="stylesheet" href="css/bazi-display.css"> <link rel="stylesheet" href="css/responsive.css">
+        <link rel="stylesheet" href="css/ios-fixes.css">
+        
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="https://sites.google.com/view/jingyue-light/" target="_blank" class="logo" rel="noopener noreferrer">
+                    <img src="images/logo.jpg" alt="靜月之光" class="logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                    <i class="fas fa-moon" style="display:none;"></i>
+                    <span>靜月之光水晶能量館</span>
+                </a>
+                <div class="nav-menu">
+                    <a href="#input-section" class="nav-link active"><i class="fas fa-user"></i> 個人資料</a>
+                    <a href="#bazi-section" class="nav-link"><i class="fas fa-calendar-alt"></i> 八字</a>
+                    <a href="#meihua-section" class="nav-link"><i class="fas fa-yin-yang"></i> 梅花易數</a>
+                    <a href="#tarot-section" class="nav-link"><i class="fas fa-cards"></i> 塔羅牌</a>
+                    <a href="#result-section" class="nav-link"><i class="fas fa-chart-bar"></i> 分析結果</a>
+                </div>
+                <div class="nav-shop-buttons">
+                    <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" class="shop-btn shop-btn-shopee" rel="noopener noreferrer" title="🛒 蝦皮逛逛（免運＋關注9折）">
+                        <i class="fas fa-shopping-cart"></i> 蝦皮逛逛
+                    </a>
+                    <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" class="shop-btn shop-btn-711" rel="noopener noreferrer" title="📦 賣貨便（滿千免運）">
+                        <i class="fas fa-box"></i> 賣貨便
+                    </a>
+                </div>
+            </div>
+        </nav>
+    
+        <div class="main-container">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-step active" data-step="1">1. 資料輸入</div>
+                    <div class="progress-step" data-step="2">2. 八字計算</div>
+                    <div class="progress-step" data-step="3">3. 梅花易數</div>
+                    <div class="progress-step" data-step="4">4. 塔羅牌</div>
+                    <div class="progress-step" data-step="5">5. 分析結果</div>
+                </div>
+            </div>
+    
+            <section id="input-section" class="section active">
+                <h2><i class="fas fa-user-edit"></i> 個人資料輸入</h2>
+                <div class="form-container">
+                    <form id="personal-form">
+                        <div class="form-group">
+                            <label for="name"><i class="fas fa-signature"></i> 姓名</label>
+                            <input type="text" id="name" placeholder="請輸入中文姓名" required>
+                        </div>
+    
+                        <div class="form-group">
+                            <label><i class="fas fa-venus-mars"></i> 性別</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="gender" value="male">
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">男性</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="gender" value="female">
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">女性</span>
+                                </label>
+                            </div>
+                        </div>
+    
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="birth-date"><i class="fas fa-calendar"></i> 出生日期</label>
+                                <input type="date" id="birth-date" required placeholder="請選擇出生年月日">
+                                <small class="input-hint">例如：1983年8月25日</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="birth-time"><i class="fas fa-clock"></i> 出生時間</label>
+                                <input type="time" id="birth-time" required placeholder="請選擇出生時間">
+                                <small class="input-hint">請盡量精確，用於時柱計算（例如：14:55）</small>
+                            </div>
+                        </div>
+    
+                        <div class="form-group">
+                            <label for="birth-country"><i class="fas fa-globe-asia"></i> 出生地區</label>
+                            <select id="birth-country" required>
+                                <option value="">選擇國家/地區</option>
+                                <option value="TW">台灣</option>
+                                <option value="CN">中國大陸</option>
+                                <option value="HK">香港</option>
+                                <option value="MO">澳門</option>
+                                <option value="other">其他地區</option>
+                            </select>
+                        </div>
+    
+                        <div class="form-group" id="city-container">
+                            <label for="birth-city"><i class="fas fa-city"></i> 出生城市</label>
+                            <select id="birth-city" required>
+                                <option value="">請先選擇地區</option>
+                            </select>
+                            <div id="city-coordinates" class="coordinate-info" style="display:none;">
+                                <small>經度: <span id="longitude">-</span>°E | 緯度: <span id="latitude">-</span>°N</small>
+                            </div>
+                        </div>
+    
+                        <div class="form-group">
+                            <label for="question"><i class="fas fa-question-circle"></i> 諮詢問題</label>
+                            <textarea id="question" rows="3" placeholder="請輸入您想詢問的問題..." required></textarea>
+                            <div class="hint-note" id="question-probability-note"><i class="fas fa-info-circle"></i> 本系統輸出為「多維度機率評估」，將以八字 / 姓名學 / 梅花易數 / 塔羅牌各自的機率分數進行交叉彙總；不提供單一確定答案。</div>
+
+                        </div>
+    
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="true-solar-time">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-text">啟用真太陽時校正</span>
+                                </label>
+                                <small class="help-text">根據出生地點經度校正出生時間，提高八字計算準確度</small>
+                            </div>
+                        </div>
+    
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary btn-next" data-next="bazi-section">
+                                <i class="fas fa-arrow-right"></i> 下一步：八字計算
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+    
+            <section id="bazi-section" class="section">
+                <h2><i class="fas fa-calendar-alt"></i> 八字命盤計算</h2>
+                
+                <div class="time-correction-info" id="time-correction-info">
+                    <div class="info-card">
+                        <h3><i class="fas fa-sun"></i> 時間校正結果</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">輸入時間</span>
+                                <span class="info-value" id="input-time">待輸入</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">真太陽時</span>
+                                <span class="info-value" id="true-solar-time-display">計算中...</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">校正差值</span>
+                                <span class="info-value" id="time-diff">計算中...</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">使用時間</span>
+                                <span class="info-value" id="final-time">計算中...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="bazi-container">
+                    <div class="bazi-header">
+                        <h3>四柱八字命盤</h3>
+                        <button class="btn btn-outline" id="calculate-bazi">
+                            <i class="fas fa-calculator"></i> 計算八字
+                        </button>
+                    </div>
+                    
+                    <div class="bazi-grid" id="bazi-grid">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> 計算中...
+                        </div>
+                    </div>
+    
+                    <div class="bazi-details" id="bazi-details" style="display: none;">
+                        <!-- 詳細信息已整合到 bazi-grid 中，此處保留以兼容舊代碼 -->
+                        <div class="details-row">
+                            <div class="detail-item">
+                                <span class="detail-label">日主</span>
+                                <span class="detail-value" id="day-master">待計算</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">五行</span>
+                                <span class="detail-value" id="wuxing-balance">待計算</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">身強身弱</span>
+                                <span class="detail-value" id="strength">待計算</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">喜用神</span>
+                                <span class="detail-value" id="favorable-elements">待計算</span>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="dayun-container" id="dayun-container">
+                        <h4><i class="fas fa-hourglass-half"></i> 大運流年</h4>
+                        <div class="dayun-timeline" id="dayun-timeline">
+                            </div>
+                    </div>
+                </div>
+    
+                <div class="section-actions">
+                    <button type="button" class="btn btn-outline btn-prev" data-prev="input-section">
+                        <i class="fas fa-arrow-left"></i> 上一步
+                    </button>
+                    <button type="button" class="btn btn-primary btn-next" data-next="meihua-section">
+                        <i class="fas fa-arrow-right"></i> 下一步：梅花易數
+                    </button>
+                </div>
+            </section>
+    
+            <section id="meihua-section" class="section">
+                <h2><i class="fas fa-yin-yang"></i> 梅花易數起卦</h2>
+                
+                <div class="meihua-container">
+                    <div class="method-selection">
+                        <h3>選擇起卦方法</h3>
+                        <div class="method-tabs">
+                            <button class="method-tab active" data-method="time">
+                                <i class="fas fa-clock"></i> 時間起卦
+                            </button>
+                            <button class="method-tab" data-method="number">
+                                <i class="fas fa-sort-numeric-up"></i> 數字起卦
+                            </button>
+                            <button class="method-tab" data-method="character">
+                                <i class="fas fa-font"></i> 漢字起卦
+                            </button>
+                            <button class="method-tab" data-method="random">
+                                <i class="fas fa-random"></i> 隨機起卦
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="method-content active" id="time-method">
+                        <div class="method-form">
+                            <div class="form-group">
+                                <label for="meihua-date"><i class="fas fa-calendar"></i> 起卦日期</label>
+                                <input type="date" id="meihua-date" readonly class="readonly-input">
+                                <small style="color: var(--text-muted); display: block; margin-top: 5px;">將自動使用按下按鈕時的當前時間</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="meihua-time"><i class="fas fa-clock"></i> 起卦時間</label>
+                                <input type="time" id="meihua-time" readonly class="readonly-input">
+                            </div>
+                            <button class="btn btn-primary" id="calculate-time-hexagram">
+                                <i class="fas fa-calculator"></i> 時間起卦
+                            </button>
+                            <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.9em;">
+                                <i class="fas fa-info-circle"></i> 點擊按鈕時將自動使用當前時間進行起卦
+                            </p>
+                        </div>
+                    </div>
+    
+                    <div class="method-content" id="number-method">
+                        <div class="method-form">
+                            <div class="form-group">
+                                <label for="number1">第一組數字（上卦）</label>
+                                <input type="number" id="number1" min="1" max="999" placeholder="1-999">
+                            </div>
+                            <div class="form-group">
+                                <label for="number2">第二組數字（下卦）</label>
+                                <input type="number" id="number2" min="1" max="999" placeholder="1-999">
+                            </div>
+                            <div class="form-group">
+                                <label for="number3">第三組數字（動爻）</label>
+                                <input type="number" id="number3" min="1" max="6" placeholder="1-6">
+                            </div>
+                            <button class="btn btn-primary" id="calculate-number-hexagram">
+                                <i class="fas fa-calculator"></i> 數字起卦
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="method-content" id="character-method">
+                        <div class="method-form">
+                            <div class="form-group">
+                                <label for="meihua-character">輸入漢字（1-3個）</label>
+                                <input type="text" id="meihua-character" placeholder="如：感情">
+                                <small>系統將根據筆畫數計算卦象</small>
+                            </div>
+                            <button class="btn btn-primary" id="calculate-character-hexagram">
+                                <i class="fas fa-calculator"></i> 漢字起卦
+                            </button>
+                        </div>
+                    </div>
+    
+                    
+                <!-- 隨機起卦 -->
+                <div class="method-content" id="random-method">
+                    <div class="method-form">
+                        <div class="form-group">
+                            <label><i class="fas fa-random"></i> 隨機起卦</label>
+                            <small style="color: var(--text-muted); display: block; margin-top: 5px;">按一次就會產生一次新的卦象（本卦 / 互卦 / 變卦會同步更新）</small>
+                        </div>
+                        <button class="btn btn-primary" id="calculate-random-hexagram">
+                            <i class="fas fa-dice"></i> 隨機起卦
+                        </button>
+                    </div>
+                </div>
+
+<div class="hexagram-display" id="hexagram-display">
+                        <div class="hexagram-container">
+                            <div class="hexagram-info">
+                                <h3>本卦</h3>
+                                <div class="hexagram-symbol" id="ben-hexagram">䷁</div>
+                                <div class="hexagram-name" id="ben-name">坤為地</div>
+                            </div>
+                            <div class="hexagram-info">
+                                <h3>互卦</h3>
+                                <div class="hexagram-symbol" id="hu-hexagram">䷖</div>
+                                <div class="hexagram-name" id="hu-name">山地剝</div>
+                            </div>
+                            <div class="hexagram-info">
+                                <h3>變卦</h3>
+                                <div class="hexagram-symbol" id="bian-hexagram">䷇</div>
+                                <div class="hexagram-name" id="bian-name">水地比</div>
+                            </div>
+                        </div>
+    
+                        <div class="hexagram-details">
+                            <div class="detail-item">
+                                <span class="detail-label">體用關係</span>
+                                <span class="detail-value" id="tiyong-relation">體用比和</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">吉凶判斷</span>
+                                <span class="detail-value" id="fortune-judgment">小吉</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">動爻</span>
+                                <span class="detail-value" id="dongyao">初六</span>
+                            </div>
+                        </div>
+    
+                        <div class="hexagram-interpretation">
+                            <h4><i class="fas fa-comment-alt"></i> 卦象解讀</h4>
+                            <div class="interpretation-text" id="hexagram-interpretation">
+                                卦象顯示：坤為地，地勢坤，君子以厚德載物。體用比和，吉。表示當前情況較為穩定，但進展緩慢。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="section-actions">
+                    <button type="button" class="btn btn-outline btn-prev" data-prev="bazi-section">
+                        <i class="fas fa-arrow-left"></i> 上一步
+                    </button>
+                    <button type="button" class="btn btn-primary btn-next" data-next="tarot-section">
+                        <i class="fas fa-arrow-right"></i> 下一步：塔羅牌
+                    </button>
+                </div>
+            </section>
+    
+            <section id="tarot-section" class="section">
+                <h2><i class="fas fa-cards"></i> 金色黎明塔羅牌</h2>
+                
+                <div class="tarot-container">
+                    <div class="draw-area" id="draw-area">
+                        <div class="draw-instruction">
+                            <h3><i class="fas fa-hand-pointer"></i> 抽選牌卡</h3>
+                            <p>請點擊圓圈中的牌堆抽取10張牌。剩餘: <span id="cards-left">10</span> 張</p>
+                        </div>
+                        
+                        <div class="draw-circle" id="draw-circle">
+                            </div>
+                        
+                        <div class="draw-controls">
+                            <button class="btn btn-outline" id="auto-draw">
+                                <i class="fas fa-bolt"></i> 快速抽牌
+                            </button>
+                            <button class="btn btn-primary" id="finish-draw" disabled>
+                                <i class="fas fa-check"></i> 完成抽牌
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="spread-area" id="spread-area" style="display: none;">
+                        <div class="spread-instruction">
+                            <h3><i class="fas fa-cross"></i> 凱爾特十字牌陣</h3>
+                            <p>請按照牌陣位置點擊牌卡翻面，了解每張牌的意義。</p>
+                        </div>
+                        
+                        <div class="celtic-cross-layout" id="celtic-cross-layout">
+                            <div class="spread-position pos-1" data-position="1">
+                                <div class="position-label">1. 核心現況</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="0">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front">
+                                                </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-2" data-position="2">
+                                <div class="position-label">2. 阻礙因素</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="1">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-3" data-position="3">
+                                <div class="position-label">3. 過去基礎</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="2">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-4" data-position="4">
+                                <div class="position-label">4. 未來發展</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="3">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-5" data-position="5">
+                                <div class="position-label">5. 可能結果</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="4">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-6" data-position="6">
+                                <div class="position-label">6. 近期未來</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="5">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-7" data-position="7">
+                                <div class="position-label">7. 自我態度</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="6">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-8" data-position="8">
+                                <div class="position-label">8. 環境影響</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="7">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-9" data-position="9">
+                                <div class="position-label">9. 希望恐懼</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="8">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="spread-position pos-10" data-position="10">
+                                <div class="position-label">10. 最終結果</div>
+                                <div class="card-slot">
+                                    <div class="tarot-card" data-card-id="9">
+                                        <div class="card-flip">
+                                            <div class="card-face back">
+                                                <img src="images/back.jpg" alt="牌背面" class="card-back-image">
+                                            </div>
+                                            <div class="card-face front"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="spread-controls">
+                            <button class="btn btn-outline" id="flip-all">
+                                <i class="fas fa-sync-alt"></i> 全部翻牌
+                            </button>
+                            <button class="btn btn-primary" id="proceed-to-result">
+                                <i class="fas fa-chart-bar"></i> 進行分析
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="card-interpretation-modal" id="card-interpretation-modal">
+                        <div class="modal-content">
+                            <button class="modal-close">&times;</button>
+                            <div class="modal-body">
+                                <div class="card-display">
+                                    <div class="card-image">
+                                        <img id="modal-card-image" src="images/back.jpg" alt="塔羅牌">
+                                    </div>
+                                    <div class="card-info">
+                                        <h3 id="modal-card-name">牌名</h3>
+                                        <div class="card-orientation" id="modal-card-orientation">正位</div>
+                                        <div class="card-details">
+                                            <div class="detail"><span>位置:</span> <span id="modal-position">核心現況</span></div>
+                                            <div class="detail"><span>元素:</span> <span id="modal-element">土</span></div>
+                                            <div class="detail"><span>金色黎明:</span> <span id="modal-golden-dawn">意義</span></div>
+                                        </div>
+                                        <div class="card-meaning">
+                                            <h4>牌義</h4>
+                                            <p id="modal-meaning">牌義解釋...</p>
+                                        </div>
+                                        <div class="card-advice">
+                                            <h4>建議</h4>
+                                            <p id="modal-advice">行動建議...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="section-actions">
+                    <button type="button" class="btn btn-outline btn-prev" data-prev="meihua-section">
+                        <i class="fas fa-arrow-left"></i> 上一步
+                    </button>
+                    <button type="button" class="btn btn-primary" id="skip-tarot">
+                        <i class="fas fa-forward"></i> 跳過塔羅牌
+                    </button>
+                </div>
+            </section>
+    
+            <section id="result-section" class="section">
+                <h2><i class="fas fa-chart-bar"></i> 綜合分析結果</h2>
+                
+                <div class="result-container">
+                    <div class="result-overview" id="result-overview">
+                        <div class="overview-card">
+                            <h3><i class="fas fa-question-circle"></i> 問題分析</h3>
+                            <div class="question-display" id="question-display">
+                                </div>
+                            <div class="direct-answer">
+                                <h4>直接回答</h4>
+                                <p class="answer-text" id="direct-answer">分析中...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="probability-meter">
+                            <div class="meter-header">
+                                <h4>可能性評估</h4>
+                                <span class="probability-value" id="overall-probability">0%</span>
+                            </div>
+                            <div class="meter-bar">
+                                <div class="meter-fill" id="meter-fill" style="width: 0%"></div>
+                            </div>
+                            <div class="meter-labels">
+                                <span>0%</span>
+                                <span>25%</span>
+                                <span>50%</span>
+                                <span>75%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="dimension-analysis">
+                        <h3><i class="fas fa-layer-group"></i> 四維度分析</h3>
+                        
+                        <div class="dimension-tabs">
+                            <button class="dimension-tab active" data-dimension="bazi">八字命理</button>
+                            <button class="dimension-tab" data-dimension="meihua">梅花易數</button>
+                            <button class="dimension-tab" data-dimension="tarot">塔羅牌陣</button>
+                            <button class="dimension-tab" data-dimension="name">姓名學</button>
+                            <button class="dimension-tab" data-dimension="cross">交叉驗證</button>
+                        </div>
+                        
+                        <div class="dimension-content">
+                            <div class="dimension-pane active" id="bazi-pane">
+                                <div class="bazi-result" id="bazi-result">
+                                    <div class="analysis-grid-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div class="analysis-card" style="grid-column: 1;">
+                                            <div class="analysis-header">
+                                                <i class="fas fa-sitemap"></i> 十神與藏干詳解
+                                            </div>
+                                            <div class="gods-detail-grid" id="ui-gods-grid">
+                                                <div class="gods-column">
+                                                    <span class="gods-col-title">年柱</span>
+                                                    <span class="gods-item">-</span>
+                                                    <span class="gods-item">-</span>
+                                                </div>
+                                                <div class="gods-column">
+                                                    <span class="gods-col-title">月柱</span>
+                                                    <span class="gods-item">-</span>
+                                                    <span class="gods-item">-</span>
+                                                </div>
+                                                <div class="gods-column">
+                                                    <span class="gods-col-title">日柱</span>
+                                                    <span class="gods-item">日主</span>
+                                                    <span class="gods-item">-</span>
+                                                </div>
+                                                <div class="gods-column">
+                                                    <span class="gods-col-title">時柱</span>
+                                                    <span class="gods-item">-</span>
+                                                    <span class="gods-item">-</span>
+                                                </div>
+                                            </div>
+                                        </div>
+    
+                                        <div style="grid-column: 2; display: flex; flex-direction: column; gap: 1rem;">
+                                            <div class="analysis-card">
+                                                <div class="analysis-header">
+                                                    <i class="fas fa-chart-pie"></i> 五行強弱分佈
+                                                </div>
+                                                <div class="element-bar-group" id="ui-elements-bar">
+                                                    <div class="element-row">
+                                                        <span class="element-label el-gold">金</span>
+                                                        <div class="progress-track">
+                                                            <div class="progress-fill bg-gold" style="width: 20%;"></div>
+                                                        </div>
+                                                        <span class="element-value">20%</span>
+                                                    </div>
+                                                    <div class="element-row">
+                                                        <span class="element-label el-wood">木</span>
+                                                        <div class="progress-track">
+                                                            <div class="progress-fill bg-wood" style="width: 20%;"></div>
+                                                        </div>
+                                                        <span class="element-value">20%</span>
+                                                    </div>
+                                                    <div class="element-row">
+                                                        <span class="element-label el-water">水</span>
+                                                        <div class="progress-track">
+                                                            <div class="progress-fill bg-water" style="width: 20%;"></div>
+                                                        </div>
+                                                        <span class="element-value">20%</span>
+                                                    </div>
+                                                    <div class="element-row">
+                                                        <span class="element-label el-fire">火</span>
+                                                        <div class="progress-track">
+                                                            <div class="progress-fill bg-fire" style="width: 20%;"></div>
+                                                        </div>
+                                                        <span class="element-value">20%</span>
+                                                    </div>
+                                                     <div class="element-row">
+                                                        <span class="element-label el-earth">土</span>
+                                                        <div class="progress-track">
+                                                            <div class="progress-fill bg-earth" style="width: 20%;"></div>
+                                                        </div>
+                                                        <span class="element-value">20%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+    
+                                            <div class="analysis-card">
+                                                <div class="analysis-header">
+                                                    <i class="fas fa-star"></i> 喜用與神煞
+                                                </div>
+                                                <div id="ui-shensha-content">
+                                                    <div style="margin-bottom: 1rem;">
+                                                        <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">喜用神：</p>
+                                                        <div class="tag-container">
+                                                            <span class="bazi-tag tag-favorable">計算中</span>
+                                                        </div>
+                                                    </div>
+                                                    <div style="margin-bottom: 1rem;">
+                                                        <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">忌神：</p>
+                                                        <div class="tag-container">
+                                                            <span class="bazi-tag tag-unfavorable">計算中</span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">命宮神煞：</p>
+                                                        <div class="tag-container">
+                                                            <span class="bazi-tag tag-star">計算中</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+    
+                                        <div class="analysis-card">
+                                            <div class="analysis-header">
+                                                <i class="fas fa-user-circle"></i> 個性特質
+                                            </div>
+                                            <div class="text-content" id="ui-personality">
+                                                <p>等待八字計算結果...</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="analysis-card">
+                                            <div class="analysis-header">
+                                                <i class="fas fa-briefcase"></i> 事業財運
+                                            </div>
+                                            <div class="text-content" id="ui-career">
+                                                <p>等待八字計算結果...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="dimension-pane" id="meihua-pane">
+                                
+                    <div class="method-content" id="random-method">
+                        <div class="method-form">
+                            <div class="form-group">
+                                <label><i class="fas fa-random"></i> 隨機起卦</label>
+                                <small style="color: var(--text-muted); display:block; margin-top:5px;">每次按下都會重新隨機產生上卦 / 下卦 / 動爻。</small>
+                            </div>
+                            <button class="btn btn-primary" id="calculate-random-hexagram">
+                                <i class="fas fa-dice"></i> 隨機起卦
+                            </button>
+                        </div>
+                    </div>
+<div class="meihua-result" id="meihua-result">
+                                    </div>
+                            </div>
+                            
+                            <div class="dimension-pane" id="tarot-pane">
+                                <div class="tarot-result" id="tarot-result">
+                                    </div>
+                            </div>
+                            
+                            <div class="dimension-pane" id="name-pane">
+                                <div class="name-result" id="name-result">
+                                    </div>
+                            </div>
+                            
+                            <div class="dimension-pane" id="cross-pane">
+                                <div class="cross-result" id="cross-result">
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="final-conclusion">
+                        <h3><i class="fas fa-star"></i> 綜合結論</h3>
+                        <div class="conclusion-content" id="conclusion-content">
+                            </div>
+<!-- 行動計劃 / 時機建議：已移除（若未使用，避免結果頁空白與手機版擁擠） -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+<!-- padding to preserve line count -->
+
+</div>
+                    </div>
+                    
+                    <!-- 能量手鍊推薦卡片 -->
+                    <div class="product-recommendation-card">
+                        <div class="recommendation-header">
+                            <i class="fas fa-gem"></i>
+                            <h3>想把這份結果做成「專屬五行手鍊」？我幫你配到位</h3>
+                        </div>
+                        <div class="recommendation-content">
+                            <p class="recommendation-desc">依你結果的喜用神，給你 3 個實用搭配（可直接下單）</p>
+                            <div class="recommendation-buttons">
+                                <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" class="rec-btn rec-btn-shopee" rel="noopener noreferrer">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <div class="btn-text">
+                                        <span class="btn-title">🛒 蝦皮逛逛</span>
+                                        <span class="btn-subtitle">全館免運 + 關注9折</span>
+                                    </div>
+                                </a>
+                                <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" class="rec-btn rec-btn-711" rel="noopener noreferrer">
+                                    <i class="fas fa-box"></i>
+                                    <div class="btn-text">
+                                        <span class="btn-title">📦 賣貨便</span>
+                                        <span class="btn-subtitle">滿千免運 / 多件合併</span>
+                                    </div>
+                                </a>
+                                <button class="rec-btn rec-btn-custom" id="btn-custom-order">
+                                    <i class="fas fa-magic"></i>
+                                    <div class="btn-text">
+                                        <span class="btn-title">✨ 我要客製</span>
+                                        <span class="btn-subtitle">填資料 / 預算版</span>
+                                    </div>
+                                </button>
+                            </div>
+                            <div class="recommendation-note">
+                                <i class="fas fa-info-circle"></i>
+                                <span>預算版 / 加強版 / 收藏版：選一個就好</span>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="master-summary">
+                        <div class="summary-content">
+                            <h4><i class="fas fa-moon"></i> 靜月分析師總結</h4>
+                            <div class="poetic-summary" id="poetic-summary">
+                                </div>
+                            <div class="final-advice" id="final-advice">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="section-actions" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-outline btn-prev" data-prev="tarot-section" id="btn-prev-result">
+                        <i class="fas fa-arrow-left"></i> 上一步
+                    </button>
+                    <button type="button" class="btn btn-primary" id="generate-report">
+                        <i class="fas fa-file-download"></i> 生成完整報告
+                    </button>
+                    <button type="button" class="btn btn-success" id="start-over">
+                        <i class="fas fa-redo"></i> 重新開始
+                    </button>
+                </div>
+            </section>
+        </div>
+    
+        <!-- 浮動小鈕 -->
+        <div class="floating-buttons">
+            <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" class="floating-btn floating-btn-shopee" rel="noopener noreferrer" title="🛒 蝦皮賣場">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="floating-label">蝦皮</span>
+            </a>
+            <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" class="floating-btn floating-btn-711" rel="noopener noreferrer" title="📦 賣貨便賣場">
+                <i class="fas fa-box"></i>
+                <span class="floating-label">賣貨便</span>
+            </a>
+            <button class="floating-btn floating-btn-custom" id="floating-btn-custom" title="💬 客製聊聊">
+                <i class="fas fa-comment-dots"></i>
+                <span class="floating-label">客製</span>
+            </button>
+        </div>
+        
+        <!-- 客製表單模態框 -->
+        <div class="custom-order-modal" id="custom-order-modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content-custom">
+                <button class="modal-close-btn" id="close-custom-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-header-custom">
+                    <i class="fas fa-magic"></i>
+                    <h2>能量手鍊客製服務</h2>
+                </div>
+                <form class="custom-order-form" id="custom-order-form">
+                    <div class="form-group-custom">
+                        <label for="custom-name"><i class="fas fa-user"></i> 姓名</label>
+                        <input type="text" id="custom-name" name="name" placeholder="請輸入您的姓名" required>
+                    </div>
+                    <div class="form-group-custom">
+                        <label for="custom-birthday"><i class="fas fa-calendar"></i> 出生日期</label>
+                        <input type="date" id="custom-birthday" name="birthday" required>
+                    </div>
+                    <div class="form-group-custom">
+                        <label for="custom-question"><i class="fas fa-question-circle"></i> 想解決的問題</label>
+                        <textarea id="custom-question" name="question" rows="3" placeholder="例如：想提升事業運、改善感情、招財等..." required></textarea>
+                    </div>
+                    <div class="form-group-custom">
+                        <label for="custom-budget"><i class="fas fa-dollar-sign"></i> 預算範圍</label>
+                        <select id="custom-budget" name="budget" required>
+                            <option value="">請選擇預算範圍</option>
+                            <option value="預算版（$1,000 - $3,000）">預算版（$1,000 - $3,000）</option>
+                            <option value="加強版（$3,000 - $6,000）">加強版（$3,000 - $6,000）</option>
+                            <option value="收藏版（$6,000 以上）">收藏版（$6,000 以上）</option>
+                        </select>
+                    </div>
+                    <div class="form-group-custom">
+                        <label for="custom-email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="custom-email" name="email" placeholder="onerkk@gmail.com" value="onerkk@gmail.com" readonly>
+                        <small>我們會透過 Email 與您聯繫</small>
+                    </div>
+                    <div class="form-actions-custom">
+                        <button type="button" class="btn-cancel" id="cancel-custom-form">取消</button>
+                        <button type="submit" class="btn-submit-custom" id="submit-custom-form">
+                            <i class="fas fa-paper-plane"></i> 送出詢問
+                        </button>
+                    </div>
+                    <div id="form-status" class="form-status-message" style="display: none; margin-top: 1rem; padding: 1rem; border-radius: var(--border-radius-sm); text-align: center;"></div>
+                </form>
+                
+                <!-- 郵件內容顯示區（提交後顯示，在表單外） -->
+                <div class="email-content-display" id="email-content-display" style="display: none;">
+                    <div class="email-content-header">
+                        <i class="fas fa-envelope-open"></i>
+                        <h4>郵件內容已準備好</h4>
+                    </div>
+                    <div class="email-info-box">
+                        <div class="email-info-item">
+                            <label>收件人：</label>
+                            <div class="email-value-copy">
+                                <span id="email-to-display">onerkk@gmail.com</span>
+                                <button class="btn-copy" data-copy="onerkk@gmail.com" title="複製">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="email-info-item">
+                            <label>主旨：</label>
+                            <div class="email-value-copy">
+                                <span id="email-subject-display"></span>
+                                <button class="btn-copy" id="copy-subject-btn" title="複製">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="email-info-item full-width">
+                            <label>內容：</label>
+                            <div class="email-content-box">
+                                <textarea id="email-body-display" readonly></textarea>
+                                <button class="btn-copy-full" id="copy-body-btn" title="複製全部內容">
+                                    <i class="fas fa-copy"></i> 複製全部內容
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="email-instructions">
+                        <i class="fas fa-info-circle"></i>
+                        <p><strong>郵件內容已自動複製到剪貼板！</strong></p>
+                        <p>請按照以下步驟發送郵件：</p>
+                        <ol style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                            <li>開啟您的郵件應用程式（Gmail、Outlook、Apple Mail 等）</li>
+                            <li>建立新郵件，收件人填寫：<strong>onerkk@gmail.com</strong></li>
+                            <li>貼上已複製的內容（Ctrl+V 或 Cmd+V）</li>
+                            <li>點擊發送</li>
+                        </ol>
+                        <p class="email-alt-link" style="margin-top: 1rem;">或直接點擊：<a href="#" id="open-email-link" target="_blank">開啟郵件客戶端</a>（如果您的設備支援）</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <div class="footer-content">
+                <p>靜月之光命理系統 v3.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
+                <p class="disclaimer">免責聲明：命理分析僅供娛樂參考，請勿過度依賴。實際生活請以理性判斷為主。</p>
+            </div>
+        </footer>
+    
+        <script src="js/bazi-system.js"></script>
+        <script src="js/meihua-system.js"></script>
+        <script src="js/nameology-system.js"></script>
+        <script src="js/tarot-system.js"></script>
+    <script src="js/tarot-golden-dawn-system.js"></script>
+        <script src="js/main.js"></script>
+    </body>
+    </html>

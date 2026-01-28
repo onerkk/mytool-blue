@@ -1,0 +1,1440 @@
+/**
+ * responsive.css - 響應式設計（手機版優化）完整修正版（包含抽牌功能修復）
+ */
+
+/* 手機版通用優化 */
+@media (max-width: 768px) {
+    /* 基礎排版 */
+    body {
+        font-size: 16px; /* 確保手機版字體清晰 */
+        -webkit-text-size-adjust: 100%; /* 防止iOS自動縮放 */
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .main-container {
+        padding: 10px;
+    }
+    
+    .app-container {
+        border-radius: 0;
+    }
+    
+    .app-header {
+        padding: 15px 10px;
+    }
+    
+    .app-header h1 {
+        font-size: 1.5rem;
+        line-height: 1.3;
+    }
+    
+    .logo-image {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .app-main {
+        padding: 10px;
+    }
+    
+    /* 區塊樣式 */
+    .section {
+        padding: 1.5rem 1rem;
+        margin-bottom: 1rem;
+        border-radius: 12px;
+    }
+    
+    .input-section,
+    .result-section {
+        padding: 1rem;
+    }
+    
+    /* 標題優化 */
+    h2 {
+        font-size: 1.5rem !important;
+        line-height: 1.4;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+    
+    /* 表單容器 */
+    .form-container {
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    /* 表單行 - 手機版改為單列 */
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    
+    /* 表單組 */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    /* 標籤優化 */
+    label {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+        color: var(--text-primary);
+    }
+    
+    label i {
+        font-size: 1rem;
+    }
+    
+    /* 輸入框優化 */
+    input, select, textarea {
+        font-size: 16px !important; /* 防止iOS自動縮放 */
+        padding: 0.875rem 1rem;
+        line-height: 1.5;
+        font-weight: 500;
+        min-height: 48px; /* 觸控友好 */
+    }
+    
+    /* 日期時間輸入框特殊處理 */
+    input[type="date"],
+    input[type="time"] {
+        font-size: 16px !important;
+        color: var(--text-primary);
+        background: var(--glass-bg);
+        padding: 0.875rem 1rem;
+        min-height: 48px;
+    }
+    
+    /* 輸入提示文字 */
+    .input-hint,
+    small {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-top: 0.375rem;
+        line-height: 1.4;
+    }
+    
+    /* 按鈕優化 */
+    .btn {
+        font-size: 1rem;
+        padding: 0.875rem 1.5rem;
+        min-height: 48px;
+        font-weight: 600;
+    }
+    
+    /* 進度條優化 */
+    .progress-bar {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .progress-step {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        min-width: auto;
+        flex: 1 1 auto;
+    }
+    
+    /* 導航欄優化 */
+    .navbar {
+        padding: 10px;
+    }
+    
+    .nav-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .nav-menu {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .nav-link {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* 塔羅牌佈局 - 手機版改為單列垂直佈局 */
+    .tarot-spread-container {
+        width: 100%;
+        min-height: auto;
+        padding: 10px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .celtic-cross-layout {
+        display: grid !important;
+        grid-template-columns: 1fr !important; /* 手機版改為單列 */
+        grid-template-rows: auto !important;
+        gap: 15px;
+        width: 100%;
+        max-width: 100%;
+        min-height: auto;
+        padding: 10px;
+        margin: 0;
+    }
+    
+    .spread-position {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .card-slot {
+        min-height: 120px;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .tarot-card {
+        width: 80px;
+        height: 120px;
+        max-width: 100%;
+    }
+    
+    .position-label {
+        font-size: 0.875rem;
+        margin-bottom: 8px;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    
+    .slot-label {
+        font-size: 0.75rem;
+        bottom: -20px;
+    }
+    
+    /* 抽牌區域優化 - 確保不超出屏幕 */
+    .draw-instruction {
+        margin-bottom: 0.5rem !important;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .draw-instruction h3 {
+        font-size: 0.95rem !important;
+        margin-bottom: 0.25rem;
+        line-height: 1.3;
+    }
+    
+    .draw-instruction p {
+        font-size: 0.75rem;
+        line-height: 1.4;
+        margin: 0.25rem 0;
+    }
+    
+    .draw-circle {
+        width: 100% !important;
+        max-width: 100vw !important; /* 使用視口寬度確保不超出 */
+        height: auto !important;
+        min-height: 200px;
+        max-height: 50vh !important; /* 限制最大高度為視口高度的50% */
+        margin: 8px auto 0.5rem auto !important; /* 大幅減少邊距 */
+        padding: 8px !important; /* 減少內邊距 */
+        box-sizing: border-box;
+        overflow: visible; /* 允許卡片顯示 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .tarot-card-draw {
+        width: 45px !important; /* 縮小卡片以適應手機 */
+        height: 68px !important;
+        margin-left: -22.5px !important;
+        margin-top: -34px !important;
+    }
+    
+    /* 確保抽牌區域的父容器也不超出 */
+    .tarot-container,
+    .draw-area {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+        overflow-y: auto;
+        box-sizing: border-box;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .draw-area {
+        padding: 0.75rem 0.5rem !important;
+        margin: 0 !important;
+    }
+    
+    /* 洗牌區域 - 新增響應式修正 */
+    .shuffle-area {
+        width: 100%;
+        max-width: 100vw;
+        padding: 0.75rem 0.5rem !important;
+        margin-bottom: 0.75rem;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+    
+    .shuffle-instruction {
+        padding: 0 0.5rem;
+        margin-bottom: 1rem !important;
+    }
+    
+    .shuffle-instruction h3 {
+        font-size: 1.2rem !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    .shuffle-instruction p {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    /* 洗牌動畫區域 - 修正遮擋問題 */
+    .shuffle-animation {
+        height: 180px !important;
+        margin: 1rem auto !important;
+        padding: 0 0.5rem;
+    }
+    
+    .animation-container {
+        height: 100px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .card-floating {
+        width: 50px !important;
+        height: 75px !important;
+    }
+    
+    .shuffle-text {
+        font-size: 1em !important;
+        padding: 10px 15px !important;
+        width: 95% !important;
+        max-width: 350px !important;
+        margin-top: 5px !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        border-color: rgba(212, 175, 55, 0.4) !important;
+    }
+    
+    .deck-container {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* 牌陣區域 */
+    .spread-area {
+        width: 100%;
+        max-width: 100vw;
+        padding: 0.75rem 0.5rem !important;
+        margin-bottom: 0.75rem;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+    
+    /* 塔羅牌分析結果 */
+    .tarot-analysis-result {
+        width: 100%;
+        padding: 1rem;
+        overflow-x: hidden;
+    }
+    
+    .card-interpretation {
+        width: 100%;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* 按鈕組 - 抽牌功能修正 */
+    .action-buttons,
+    .draw-controls,
+    .spread-controls,
+    .shuffle-controls {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+        max-width: 100%;
+        padding: 0.75rem;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1000; /* 確保按鈕在最上層 */
+    }
+    
+    .action-buttons button,
+    .draw-controls button,
+    .spread-controls button,
+    .shuffle-controls button {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        box-sizing: border-box;
+        min-height: 50px;
+        font-weight: 600;
+        position: relative;
+        z-index: 1001;
+    }
+    
+    /* 特別修正抽牌按鈕 */
+    #auto-draw,
+    #finish-draw {
+        background: var(--gradient-gold) !important;
+        color: var(--dark-bg) !important;
+        border: 2px solid var(--gold-primary) !important;
+        box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4) !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    #auto-draw:hover,
+    #finish-draw:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6) !important;
+    }
+    
+    #auto-draw:active,
+    #finish-draw:active {
+        transform: translateY(-1px) !important;
+    }
+    
+    #finish-draw:disabled {
+        background: rgba(128, 128, 128, 0.5) !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+        border-color: rgba(128, 128, 128, 0.3) !important;
+        cursor: not-allowed !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* 抽牌區域點擊優化 */
+    .draw-circle {
+        touch-action: manipulation; /* 改善觸控體驗 */
+        -webkit-tap-highlight-color: transparent; /* 移除點擊高亮 */
+    }
+    
+    /* 確保所有內容可見且不超出 */
+    .main-container,
+    .app-container,
+    .app-main,
+    .section,
+    .tarot-container {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* 結果區域優化 */
+    .result-section,
+    .bazi-result,
+    .meihua-result,
+    .tarot-result,
+    .name-analysis-result {
+        width: 100%;
+        padding: 1rem;
+        overflow-x: hidden;
+        word-wrap: break-word;
+    }
+    
+    /* 八字結果優化 */
+    .bazi-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    
+    .pillar-card {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* 梅花易數結果 */
+    .hexagram-container {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    
+    /* 姓名學結果 */
+    .five-patterns-grid,
+    .three-talents-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+    }
+    
+    /* 導航欄確保可見 */
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        width: 100%;
+    }
+    
+    /* Logo 和標題優化 */
+    .logo {
+        font-size: 1rem;
+    }
+    
+    .logo span {
+        font-size: 0.875rem;
+    }
+    
+    /* 表單區域確保可見 */
+    .form-group {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* 確保所有文字不會溢出 */
+    p, span, div, h1, h2, h3, h4, h5, h6 {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+    
+    /* 模態框優化 */
+    .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: 10px;
+        padding: 1rem;
+    }
+    
+    /* 進度條優化 */
+    .progress-bar {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* 小屏幕手機優化 */
+@media (max-width: 480px) {
+    body {
+        font-size: 15px;
+    }
+    
+    .main-container {
+        padding: 5px;
+    }
+    
+    .section {
+        padding: 1rem 0.75rem;
+    }
+    
+    .app-header h1 {
+        font-size: 1.25rem;
+    }
+    
+    h2 {
+        font-size: 1.25rem !important;
+        margin-bottom: 1rem;
+    }
+    
+    .subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .form-container h2,
+    .result-section h2 {
+        font-size: 1.25rem !important;
+    }
+    
+    label {
+        font-size: 0.9375rem;
+    }
+    
+    input, select, textarea {
+        font-size: 15px !important;
+        padding: 0.75rem;
+    }
+    
+    input[type="date"],
+    input[type="time"] {
+        font-size: 15px !important;
+    }
+    
+    .btn {
+        font-size: 0.9375rem;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .progress-step {
+        font-size: 0.6875rem;
+        padding: 0.5rem;
+    }
+    
+    .nav-link {
+        font-size: 0.8125rem;
+        padding: 0.5rem;
+    }
+    
+    .tarot-card {
+        width: 65px;
+        height: 95px;
+    }
+    
+    .position-label {
+        font-size: 0.75rem;
+    }
+    
+    .slot-label {
+        font-size: 0.6875rem;
+    }
+    
+    .card-slot {
+        min-height: 100px;
+    }
+    
+    .draw-circle {
+        width: 100% !important;
+        max-width: 100vw !important;
+        height: auto !important;
+        min-height: 180px;
+        max-height: 45vh !important; /* 小屏幕進一步限制 */
+        margin: 5px auto 0.5rem auto !important;
+        padding: 5px !important; /* 最小內邊距 */
+        box-sizing: border-box;
+        overflow: visible;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .tarot-card-draw {
+        width: 40px !important; /* 小屏幕卡片更小 */
+        height: 60px !important;
+        margin-left: -20px !important;
+        margin-top: -30px !important;
+    }
+    
+    .draw-area {
+        padding: 0.5rem 0.25rem !important;
+    }
+    
+    /* 洗牌動畫區域 - 小屏幕進一步優化 */
+    .shuffle-animation {
+        height: 150px !important;
+        margin: 0.75rem auto !important;
+    }
+    
+    .animation-container {
+        height: 80px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .card-floating {
+        width: 40px !important;
+        height: 60px !important;
+    }
+    
+    .shuffle-text {
+        font-size: 0.9em !important;
+        padding: 8px 12px !important;
+        width: 100% !important;
+        max-width: 320px !important;
+    }
+    
+    .shuffle-instruction h3 {
+        font-size: 1.1rem !important;
+    }
+    
+    .shuffle-instruction p {
+        font-size: 0.85rem;
+    }
+    
+    /* 抽牌按鈕小屏幕優化 */
+    #auto-draw,
+    #finish-draw {
+        font-size: 0.9rem !important;
+        padding: 0.75rem !important;
+        min-height: 45px !important;
+    }
+    
+    .report-content {
+        font-size: 14px;
+        padding: 1rem;
+        line-height: 1.6;
+    }
+    
+    /* 小屏幕額外優化 */
+    .section {
+        margin-bottom: 0.75rem;
+    }
+    
+    .navbar {
+        padding: 8px 5px;
+    }
+    
+    .nav-link {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.5rem;
+    }
+    
+    /* 確保所有容器不溢出 */
+    * {
+        box-sizing: border-box;
+    }
+    
+    .main-container,
+    .app-container,
+    .app-main,
+    .section {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* 橫屏優化 */
+@media (max-width: 768px) and (orientation: landscape) {
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .celtic-cross-layout {
+        grid-template-columns: repeat(2, 1fr) !important;
+        max-width: 100%;
+    }
+    
+    .tarot-card {
+        width: 70px;
+        height: 105px;
+    }
+    
+    .draw-circle {
+        height: 300px;
+    }
+    
+    /* 洗牌動畫橫屏優化 */
+    .shuffle-animation {
+        height: 160px !important;
+        flex-direction: row;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .animation-container {
+        width: 60% !important;
+        height: 120px !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .shuffle-text {
+        width: 40% !important;
+        margin-top: 0 !important;
+        padding: 10px !important;
+        font-size: 0.9em !important;
+    }
+    
+    /* 抽牌按鈕橫屏優化 */
+    .draw-controls {
+        flex-direction: row !important;
+        gap: 1rem !important;
+    }
+    
+    .draw-controls button {
+        width: 50% !important;
+        max-width: 50% !important;
+    }
+}
+
+/* iOS 特定優化 */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari 滾動優化 */
+    .main-container,
+    .app-container,
+    .app-main {
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
+    }
+    
+    /* iOS 輸入框修復 */
+    input[type="date"],
+    input[type="time"],
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        font-size: 16px !important; /* 防止 iOS 自動縮放 */
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    
+    /* iOS 按鈕修復 - 特別修復抽牌按鈕 */
+    button,
+    .btn,
+    #auto-draw,
+    #finish-draw {
+        -webkit-tap-highlight-color: rgba(212, 175, 55, 0.3);
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    
+    /* iOS 安全區域適配 */
+    .navbar {
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+    
+    .main-container {
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+    }
+    
+    /* iOS 洗牌動畫優化 */
+    .shuffle-animation {
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+    }
+    
+    .card-floating {
+        -webkit-transform-style: preserve-3d;
+        transform-style: preserve-3d;
+    }
+    
+    /* iOS 抽牌按鈕點擊優化 */
+    .draw-circle {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    #auto-draw,
+    #finish-draw {
+        -webkit-touch-callout: none;
+    }
+}
+
+/* 平板設備優化 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* 洗牌動畫平板優化 */
+    .shuffle-animation {
+        height: 220px;
+        margin: 1.5rem auto;
+    }
+    
+    .animation-container {
+        height: 120px;
+        margin-bottom: 25px;
+    }
+    
+    .card-floating {
+        width: 60px;
+        height: 90px;
+    }
+    
+    .shuffle-text {
+        font-size: 1.1em;
+        padding: 12px 20px;
+        width: 90%;
+        max-width: 400px;
+    }
+    
+    /* 塔羅牌佈局平板優化 */
+    .celtic-cross-layout {
+        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(5, 160px) !important;
+        gap: 15px;
+        max-width: 700px;
+    }
+    
+    .pos-1 { grid-area: 2 / 2 / 3 / 3; }
+    .pos-2 { grid-area: 2 / 2 / 3 / 3; }
+    .pos-3 { grid-area: 1 / 2 / 2 / 3; }
+    .pos-4 { grid-area: 3 / 2 / 4 / 3; }
+    .pos-5 { grid-area: 2 / 1 / 3 / 2; }
+    .pos-6 { grid-area: 2 / 3 / 3 / 4; }
+    .pos-7 { grid-area: 5 / 2 / 6 / 3; }
+    .pos-8 { grid-area: 4 / 2 / 5 / 3; }
+    .pos-9 { grid-area: 3 / 3 / 4 / 4; }
+    .pos-10 { grid-area: 3 / 1 / 4 / 2; }
+    
+    /* 抽牌按鈕平板優化 */
+    .draw-controls {
+        max-width: 600px;
+        margin: 2rem auto 0;
+    }
+}
+
+/* 大屏幕優化 */
+@media (min-width: 1201px) {
+    .main-container {
+        max-width: 1400px;
+        margin: 3rem auto;
+    }
+    
+    /* 洗牌動畫大屏幕優化 */
+    .shuffle-animation {
+        max-width: 900px;
+        height: 280px;
+    }
+    
+    .animation-container {
+        height: 160px;
+    }
+    
+    .card-floating {
+        width: 80px;
+        height: 120px;
+    }
+    
+    .shuffle-text {
+        font-size: 1.3em;
+        padding: 18px 30px;
+        max-width: 500px;
+    }
+    
+    /* 塔羅牌佈局大屏幕優化 */
+    .celtic-cross-layout {
+        max-width: 1000px;
+        grid-template-rows: repeat(4, 200px);
+        gap: 15px;
+    }
+    
+    .card-slot {
+        width: 90px;
+        height: 150px;
+    }
+    
+    /* 抽牌按鈕大屏幕優化 */
+    .draw-controls {
+        max-width: 800px;
+        margin: 3rem auto 0;
+    }
+}
+
+/* 打印優化 */
+@media print {
+    /* 隱藏動畫和交互元素 */
+    .shuffle-animation,
+    .animation-container,
+    .card-floating,
+    .shuffle-controls,
+    .draw-controls,
+    .spread-controls {
+        display: none !important;
+    }
+    
+    /* 確保打印時文字清晰 */
+    .shuffle-text {
+        display: block !important;
+        color: #000 !important;
+        background: #fff !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        font-size: 12pt !important;
+    }
+    
+    /* 調整打印頁面 */
+    .tarot-container {
+        min-height: auto;
+        padding-bottom: 0;
+        break-inside: avoid;
+    }
+    
+    .section {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
+
+/* 高DPI屏幕優化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* 提高洗牌動畫的清晰度 */
+    .card-floating {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+    
+    .shuffle-text {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* 提高塔羅牌圖像質量 */
+    .card-face img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* 減少動畫用戶的媒體查詢 */
+@media (prefers-reduced-motion: reduce) {
+    .card-floating,
+    .tarot-card,
+    .btn,
+    .pillar-card {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .shuffle-animation .card-floating {
+        animation: none !important;
+        transform: translate(-50%, -50%) !important;
+    }
+    
+    /* 確保洗牌文字仍然可見 */
+    .shuffle-text {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+}
+
+/* 深色模式額外優化 */
+@media (prefers-color-scheme: dark) {
+    .shuffle-text {
+        background: rgba(0, 0, 0, 0.85) !important;
+        color: var(--gold-bright) !important;
+        border-color: rgba(212, 175, 55, 0.5) !important;
+    }
+    
+    .position-label {
+        background: rgba(0, 0, 0, 0.7) !important;
+        color: var(--gold-primary) !important;
+    }
+    
+    .card-label {
+        background: rgba(0, 0, 0, 0.9) !important;
+        color: var(--gold-bright) !important;
+    }
+}
+
+/* 觸控設備優化 */
+@media (hover: none) and (pointer: coarse) {
+    /* 增大觸控目標 */
+    .tarot-card,
+    .fan-card,
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* 減少懸停效果 */
+    .tarot-card:hover,
+    .fan-card:hover,
+    .pillar-card:hover {
+        transform: none !important;
+    }
+    
+    /* 增加洗牌動文的觸控區域 */
+    .shuffle-text {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* 調整動畫以適應觸控設備 */
+    .card-floating {
+        animation-duration: 3s;
+    }
+    
+    /* 抽牌按鈕觸控優化 */
+    #auto-draw,
+    #finish-draw {
+        min-height: 55px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* 抽牌區域觸控優化 */
+    .draw-circle {
+        touch-action: pan-y pinch-zoom;
+    }
+}
+
+/* 抽牌功能特別修正 */
+.draw-controls {
+    position: relative;
+    z-index: 1000;
+    pointer-events: auto !important;
+}
+
+#auto-draw,
+#finish-draw {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1001;
+}
+
+/* 防止點擊事件被攔截 */
+.tarot-container * {
+    pointer-events: auto;
+}
+
+/* 確保按鈕狀態可見 */
+#finish-draw:disabled {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}
+
+#finish-draw:not(:disabled) {
+    cursor: pointer !important;
+    opacity: 1;
+}
+
+/* 抽牌區域交互優化 */
+.draw-circle,
+.tarot-card-draw {
+    pointer-events: auto;
+}
+
+/* 確保按鈕不會被其他元素遮蓋 */
+.draw-area {
+    position: relative;
+}
+
+.draw-controls {
+    position: relative;
+}
+
+/* 修復按鈕點擊區域 */
+.btn {
+    position: relative;
+    overflow: visible;
+}
+
+/* 確保按鈕在點擊時有反饋 */
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* 修復快速抽牌按鈕樣式 */
+#auto-draw {
+    background: var(--gradient-gold) !important;
+    background-image: var(--gradient-gold) !important;
+    color: var(--dark-bg) !important;
+    border: 2px solid var(--gold-primary) !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+#auto-draw i {
+    color: var(--dark-bg) !important;
+}
+
+/* 修復完成抽牌按鈕樣式 */
+#finish-draw {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border: 2px solid #667eea !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+#finish-draw i {
+    color: white !important;
+}
+
+#finish-draw:disabled {
+    background: rgba(102, 126, 234, 0.5) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    border-color: rgba(102, 126, 234, 0.3) !important;
+    cursor: not-allowed !important;
+}
+
+/* 抽牌按鈕懸停效果 */
+#auto-draw:hover:not(:disabled),
+#finish-draw:hover:not(:disabled) {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 抽牌按鈕點擊效果 */
+#auto-draw:active:not(:disabled),
+#finish-draw:active:not(:disabled) {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ==========================================
+   [FIX] 結果頁：交叉驗證 / 姓名學 / 塔羅逐張解讀 UI
+   目標：避免大量文字堆疊，手機可操作，Android/iOS 兼容
+   ========================================== */
+
+.cross-analysis-result .cross-score-row{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin:12px 0;
+}
+.cross-overall{
+  min-width:140px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,215,0,.18);
+  border-radius:12px;
+  padding:12px;
+}
+.cross-overall-num{ font-size:28px; font-weight:700; }
+.cross-overall-label{ opacity:.85; font-size:12px; }
+.cross-consistency{
+  flex:1;
+  min-width:160px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,215,0,.12);
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.cross-dim-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:10px;
+}
+.cross-dim-card{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,215,0,.10);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.cross-dim-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.cross-dim-name{ font-weight:700; }
+.cross-dim-bar{ height:8px; background:rgba(255,255,255,.06); border-radius:999px; overflow:hidden; }
+.cross-dim-bar span{ display:block; height:100%; background:rgba(255,215,0,.65); border-radius:999px; }
+.cross-dim-evidence{ margin-top:8px; font-size:12px; opacity:.9; line-height:1.5; }
+
+.name-summary-cards{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:10px 0 12px;
+}
+.name-card{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,215,0,.10);
+  border-radius:14px;
+  padding:12px;
+}
+.name-card-title{ font-size:12px; opacity:.85; margin-bottom:6px; }
+.name-card-value{ font-size:18px; font-weight:700; }
+.name-card-value .unit{ font-size:12px; opacity:.8; margin-left:4px; }
+.name-card-sub{ margin-top:6px; font-size:12px; opacity:.9; }
+.name-five-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+}
+.name-five-item{
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,215,0,.08);
+  border-radius:12px;
+  padding:10px 8px;
+  text-align:center;
+}
+.name-five-label{ font-size:12px; opacity:.85; }
+.name-five-num{ font-size:18px; font-weight:700; margin:6px 0; }
+.name-five-meaning{ font-size:11px; opacity:.9; line-height:1.3; }
+.name-tags{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+.name-tags .tag{
+  padding:4px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,215,0,.18);
+  background:rgba(255,215,0,.08);
+  font-size:12px;
+}
+.name-tags .tag.strong{ background:rgba(76,175,80,.12); border-color:rgba(76,175,80,.25); }
+.name-details{
+  margin-top:10px;
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,215,0,.08);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.name-details summary{ cursor:pointer; user-select:none; }
+.name-detail-block{ margin-top:10px; }
+.name-detail-block h6{ margin:0 0 6px; font-size:13px; }
+.name-detail-block ul{ margin:0; padding-left:18px; }
+
+.tarot-pos-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:10px 0;
+}
+.tarot-pos-btn{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  border:1px solid rgba(255,215,0,.18);
+  background:rgba(255,255,255,.02);
+  color:#f3d36b;
+  font-weight:700;
+}
+.tarot-pos-btn.active{
+  background:rgba(255,215,0,.14);
+  border-color:rgba(255,215,0,.35);
+}
+.tarot-pos-detail{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,215,0,.10);
+  border-radius:14px;
+  padding:12px;
+}
+.tarot-detail-header{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.tarot-detail-num{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  border:1px solid rgba(255,215,0,.22);
+  margin-right:8px;
+}
+.tarot-detail-card{ font-weight:700; }
+.tarot-detail-answer{ font-size:13px; line-height:1.6; opacity:.95; }
+.tarot-overall-details,
+.tarot-gd-details{
+  margin-top:12px;
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,215,0,.08);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.tarot-overall-details summary,
+.tarot-gd-details summary{
+  cursor:pointer;
+  user-select:none;
+}
+
+@media (max-width: 768px){
+  .cross-dim-grid{ grid-template-columns:1fr; }
+  .name-summary-cards{ grid-template-columns:1fr; }
+  .name-five-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+/* [FIX] 八字結果：修正排列直向問題（為 .bazi-grid-result 補齊 Grid 風格，貼合深色主題） */
+.bazi-grid-result{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin:12px 0;
+}
+.pillar-result{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,215,0,.10);
+  border-radius:14px;
+  padding:12px 10px;
+  text-align:center;
+}
+.pillar-title{ font-size:12px; opacity:.85; margin-bottom:8px; }
+.pillar-value{ font-size:22px; font-weight:800; letter-spacing:2px; }
+.pillar-element{
+  margin-top:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,215,0,.18);
+  background:rgba(255,215,0,.08);
+  font-size:12px;
+  opacity:.95;
+}
+.bazi-analysis-section{
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,215,0,.08);
+  border-radius:14px;
+  padding:12px 14px;
+  margin-top:12px;
+}
+.bazi-analysis-section h5{ margin:0 0 10px; font-size:14px; }
+.bazi-analysis-content{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.bazi-analysis-item{
+  background:rgba(0,0,0,.15);
+  border:1px solid rgba(255,215,0,.06);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.bazi-analysis-item h6{ margin:0 0 6px; font-size:13px; }
+.bazi-analysis-item p{ margin:0; font-size:12px; line-height:1.6; opacity:.92; }
+
+@media (max-width: 768px){
+  .bazi-grid-result{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .bazi-analysis-content{ grid-template-columns:1fr; }
+}
+
+
+/* === Added: Cross & Integrated UI === */
+.cross-analysis-result { padding: 8px; }
+.cross-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px 0; }
+.chip { padding: 4px 10px; border-radius: 999px; font-size: 12px; border: 1px solid rgba(255,255,255,0.15); }
+.chip-ok { background: rgba(0, 200, 120, 0.12); }
+.chip-miss { background: rgba(255, 80, 80, 0.10); }
+.cross-main-card { display: grid; grid-template-columns: 1fr 120px; gap: 10px; margin-bottom: 10px; }
+.cross-main-card .label { opacity: 0.75; font-size: 12px; display: block; }
+.cross-main-card .value { font-weight: 700; font-size: 14px; }
+.cross-dimension { border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; margin: 8px 0; overflow: hidden; }
+.cross-dimension summary { list-style: none; padding: 10px 12px; display: flex; justify-content: space-between; gap: 10px; cursor: pointer; }
+.cross-dimension summary::-webkit-details-marker { display: none; }
+.cross-dimension .dim-body { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.10); }
+.dim-item { font-size: 13px; line-height: 1.5; padding: 4px 0; }
+.dim-verdict { font-weight: 700; }
+
+.integrated-card { border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 12px; }
+.integrated-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.integrated-title { font-weight: 800; }
+.integrated-tag { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15); }
+.integrated-signals { display: grid; gap: 6px; }
+.sig-row { display: grid; grid-template-columns: 60px 1fr; gap: 10px; font-size: 13px; }
+.sig-k { opacity: 0.75; }
+.sig-v { word-break: break-word; }
+
+.card-row { border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; padding: 10px; margin: 8px 0; display: grid; grid-template-columns: 36px 1fr; gap: 10px; }
+.plan-icon { display: flex; align-items: center; justify-content: center; opacity: 0.85; }
+.plan-title, .timing-title { font-weight: 800; margin-bottom: 4px; }
+.plan-desc, .timing-desc { font-size: 13px; opacity: 0.9; line-height: 1.6; }
+
+.final-advice-list { margin: 8px 0 0 0; padding-left: 18px; }
+.final-advice-list li { margin: 6px 0; line-height: 1.6; }
+
+/* Bazi grid: keep 4 pillars horizontal on desktop */
+@media (min-width: 900px) {
+  .bazi-grid-result { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 12px !important; }
+}
+@media (max-width: 899px) {
+  .bazi-grid-result { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+}
+
+
+/* v11: keep tabs and controls usable on mobile */
+@media (max-width: 520px){
+  .tabs, .analysis-tabs, .method-tabs{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .method-tab, .tab-btn{
+    white-space: nowrap;
+  }
+}
+
+
+
+
+/* v11 Store Promotion + Result UI Enhancements (Mobile) */
+@media (max-width: 768px){
+  .cross-validation-grid{ grid-template-columns:1fr; }
+  .tarot-cards-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  .store-cards-grid{ grid-template-columns:1fr; }
+  .card-mini-img img{ height:110px; }
+  .floating-store-btn{ right:12px; bottom:14px; }
+}

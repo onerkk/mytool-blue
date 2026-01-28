@@ -1,0 +1,370 @@
+/* Bazi Result Display Styles - 完整優化版 */
+
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #d4af37;
+    --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    --light-bg: #f8f9fa;
+    --info-bg: #e8f4f8;
+    --info-border: #5a9fd4;
+    --shadow-light: 0 2px 8px rgba(0,0,0,0.1);
+    --shadow-medium: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-heavy: 0 6px 12px rgba(0,0,0,0.15);
+    --border-radius: 8px;
+    --transition-speed: 0.2s;
+}
+
+.bazi-result-display {
+    margin-top: 1.5rem;
+    padding: 2rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    border: 1px solid rgba(0,0,0,0.05);
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.four-pillars,
+.day-master-info,
+.ten-gods-info,
+.luck-cycle-info {
+    margin-bottom: 2rem;
+}
+
+.four-pillars h4,
+.day-master-info h4,
+.ten-gods-info h4,
+.luck-cycle-info h4 {
+    color: var(--primary-color);
+    margin-bottom: 1.2rem;
+    font-size: 1.3em;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.four-pillars h4::before,
+.day-master-info h4::before,
+.ten-gods-info h4::before,
+.luck-cycle-info h4::before {
+    content: "✦";
+    color: var(--accent-color);
+    font-size: 1.2em;
+}
+
+.pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.pillar {
+    background: var(--gradient-1);
+    padding: 1.8rem 1.5rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    color: white;
+    box-shadow: var(--shadow-medium);
+    transition: all var(--transition-speed) ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.pillar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.1);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity var(--transition-speed);
+}
+
+.pillar:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-heavy);
+}
+
+.pillar:hover::before {
+    opacity: 1;
+}
+
+/* 為每個柱子設置不同的漸變色 */
+.pillar:nth-child(1) { background: var(--gradient-1); } /* 年柱 */
+.pillar:nth-child(2) { background: var(--gradient-2); } /* 月柱 */
+.pillar:nth-child(3) { 
+    background: var(--gradient-3);
+    transform: scale(1.05);
+    z-index: 2;
+} /* 日柱 - 強調 */
+.pillar:nth-child(4) { background: var(--gradient-4); } /* 時柱 */
+
+.pillar-label {
+    font-size: 0.95em;
+    opacity: 0.95;
+    margin-bottom: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.pillar-stem {
+    font-size: 2.2em;
+    font-weight: bold;
+    margin: 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-family: 'SimSun', 'STKaiti', serif;
+}
+
+.pillar-branch {
+    font-size: 1.6em;
+    margin-top: 0.5rem;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    font-family: 'SimSun', 'STKaiti', serif;
+}
+
+.day-master-info {
+    background: var(--light-bg);
+    padding: 1.8rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1.8rem;
+    border-left: 4px solid var(--accent-color);
+}
+
+.day-master-info p {
+    margin: 0.8rem 0;
+    font-size: 1.15em;
+    color: var(--primary-color);
+    line-height: 1.6;
+}
+
+.day-master-info strong {
+    color: var(--accent-color);
+    font-size: 1.4em;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 4px;
+}
+
+.calculation-info {
+    background: var(--info-bg);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--info-border);
+    margin-top: 1.5rem;
+    font-size: 0.95em;
+}
+
+.calculation-info p {
+    margin: 0.6rem 0;
+    color: var(--primary-color);
+    display: flex;
+    align-items: flex-start;
+    line-height: 1.5;
+}
+
+.calculation-info i {
+    color: var(--info-border);
+    margin-right: 0.6rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+/* 額外資訊區塊樣式 */
+.ten-gods-info,
+.luck-cycle-info {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid #eaeaea;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.ten-gods-grid,
+.luck-cycle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.ten-god-item,
+.luck-cycle-item {
+    padding: 0.8rem;
+    background: #f5f7fa;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+    color: var(--primary-color);
+    border-left: 3px solid #a5d6a7;
+}
+
+/* 打印樣式優化 */
+@media print {
+    .bazi-result-display {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        margin-top: 0;
+        padding: 1rem;
+    }
+    
+    .pillar {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+    }
+    
+    .calculation-info {
+        border: 1px solid #ccc;
+        background: #f9f9f9;
+    }
+}
+
+/* 平板設備響應式 */
+@media (max-width: 992px) {
+    .pillars-grid {
+        gap: 1rem;
+    }
+    
+    .pillar {
+        padding: 1.5rem 1.2rem;
+    }
+    
+    .pillar-stem {
+        font-size: 1.8em;
+    }
+    
+    .pillar-branch {
+        font-size: 1.4em;
+    }
+}
+
+/* 手機設備響應式 */
+@media (max-width: 768px) {
+    .bazi-result-display {
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .pillars-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
+    .pillar {
+        padding: 1.2rem 1rem;
+    }
+    
+    .pillar:nth-child(3) {
+        transform: none; /* 移除手機上的放大效果 */
+    }
+    
+    .pillar-stem {
+        font-size: 1.6em;
+    }
+    
+    .pillar-branch {
+        font-size: 1.3em;
+    }
+    
+    .day-master-info,
+    .calculation-info {
+        padding: 1.2rem;
+    }
+    
+    .ten-gods-grid,
+    .luck-cycle-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* 小手機設備響應式 */
+@media (max-width: 480px) {
+    .pillars-grid {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+    
+    .pillar {
+        padding: 1rem;
+    }
+    
+    .ten-gods-grid,
+    .luck-cycle-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .bazi-result-display {
+        padding: 1rem;
+    }
+    
+    .four-pillars h4,
+    .day-master-info h4,
+    .ten-gods-info h4,
+    .luck-cycle-info h4 {
+        font-size: 1.1em;
+    }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+    .bazi-result-display {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .day-master-info {
+        background: #4a5568;
+    }
+    
+    .calculation-info {
+        background: #4a5568;
+        border-left-color: #63b3ed;
+    }
+    
+    .four-pillars h4,
+    .day-master-info h4,
+    .ten-gods-info h4,
+    .luck-cycle-info h4 {
+        color: #e2e8f0;
+    }
+    
+    .day-master-info p,
+    .calculation-info p {
+        color: #e2e8f0;
+    }
+    
+    .ten-gods-info,
+    .luck-cycle-info {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
+    
+    .ten-god-item,
+    .luck-cycle-item {
+        background: #4a5568;
+        color: #e2e8f0;
+    }
+}

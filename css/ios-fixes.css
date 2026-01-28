@@ -1,0 +1,148 @@
+/* iOS兼容性修復和優化 */
+
+/* 防止iOS Safari的橡皮筋效果 - 修復：移除 position: fixed 以允許滾動 */
+html {
+    height: 100%;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+body {
+    min-height: 100%;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    position: relative; /* 改為 relative 以允許滾動 */
+    width: 100%;
+}
+
+/* iOS Safari的視口修復 */
+@supports (-webkit-touch-callout: none) {
+    html {
+        position: relative;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    body {
+        position: relative;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        height: auto; /* 改為 auto 以允許內容擴展 */
+        min-height: 100vh; /* 確保至少填滿視口 */
+    }
+}
+
+/* 修復iOS輸入框樣式 */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+input[type="tel"],
+select,
+textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+    font-size: 16px; /* 防止iOS自動縮放 */
+}
+
+/* iOS按鈕點擊高亮移除 */
+button,
+.btn,
+a {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 修復iOS滾動性能 */
+.scrollable {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+}
+
+/* iOS安全區域適配 */
+@supports (padding: max(0px)) {
+    .navbar,
+    .main-container {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+    
+    .navbar {
+        padding-top: max(1rem, env(safe-area-inset-top));
+    }
+}
+
+/* 修復iOS上的fixed定位問題 */
+.navbar {
+    position: -webkit-sticky;
+    position: sticky;
+}
+
+/* iOS動畫優化 - 僅應用於需要動畫的元素，避免影響滾動 */
+.animated,
+.tarot-card,
+.btn,
+.nav-link {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+/* 修復iOS上的flex布局 */
+.flex-container {
+    display: -webkit-flex;
+    display: flex;
+}
+
+/* iOS字體渲染優化 */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* 修復iOS上的陰影效果 */
+.card,
+.btn,
+.section {
+    -webkit-box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+/* iOS觸摸反饋 */
+button:active,
+.btn:active {
+    opacity: 0.8;
+    -webkit-transform: scale(0.98);
+    transform: scale(0.98);
+    transition: all 0.1s ease;
+}
+
+/* 修復iOS上的transition - 僅應用於需要過渡的元素 */
+.btn,
+.nav-link,
+.tarot-card,
+.card-flip,
+input,
+select,
+textarea {
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+/* iOS選擇文本顏色 */
+::selection {
+    background-color: rgba(74, 44, 109, 0.3);
+    color: inherit;
+}
+
+::-moz-selection {
+    background-color: rgba(74, 44, 109, 0.3);
+    color: inherit;
+}
