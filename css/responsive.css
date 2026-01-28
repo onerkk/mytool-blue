@@ -11,16 +11,24 @@
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        overflow-x: hidden !important;
+        overflow-x: auto !important; /* 允許橫向滾動 */
         width: 100%;
-        max-width: 100vw;
+        min-width: 0;
     }
     
-    /* 全局防止內容溢出 */
+    /* 全局允許橫向滾動（僅在結果頁面） */
     html {
-        overflow-x: hidden !important;
+        overflow-x: auto !important; /* 允許橫向滾動 */
         width: 100%;
-        max-width: 100vw;
+        min-width: 0;
+    }
+    
+    /* 結果分析頁面允許橫向滾動 */
+    #result-section,
+    #result-section .result-container,
+    #result-section .result-overview {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
     }
     
     .main-container {
@@ -749,11 +757,22 @@
     
     .main-container,
     .app-container,
-    .app-main,
-    .section {
+    .app-main {
         box-sizing: border-box;
         width: 100%;
-        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto !important; /* 允許橫向滾動 */
+    }
+    
+    /* 結果分析頁面允許橫向滾動 */
+    .section#result-section,
+    #result-section.section {
+        overflow-x: auto !important; /* 允許橫向滾動 */
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* 其他 section 保持隱藏橫向滾動 */
+    .section:not(#result-section) {
         overflow-x: hidden !important;
     }
     
@@ -769,16 +788,17 @@
   /* 結果頁面全局優化 */
   #result-section {
     width: 100% !important;
-    max-width: 100% !important;
+    min-width: 0 !important;
     padding: 1rem 0.75rem !important;
     padding-right: 75px !important; /* 為浮動按鈕留出空間 */
     box-sizing: border-box !important;
-    overflow-x: hidden !important;
+    overflow-x: auto !important; /* 允許橫向滾動 */
+    -webkit-overflow-scrolling: touch !important;
   }
   
   #result-section * {
-    max-width: 100% !important;
     box-sizing: border-box;
+    /* 移除 max-width 限制，允許內容自然擴展 */
   }
   
   /* 確保所有標題和文字完整顯示 */
@@ -790,7 +810,7 @@
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
-    max-width: 100% !important;
+    /* 移除 max-width 限制，允許內容自然擴展 */
   }
   
   /* 方法標籤區域優化 */
@@ -1891,19 +1911,50 @@
     flex-shrink: 0;
   }
   
-  /* 確保結果區域不溢出，增加右側 padding 避免被浮動按鈕遮擋 */
+  /* 確保結果區域允許橫向滾動，增加右側 padding 避免被浮動按鈕遮擋 */
   .bazi-result {
     width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
+    min-width: 0 !important;
+    overflow-x: auto !important; /* 允許橫向滾動 */
     overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
     padding: 0.75rem 0.75rem 0.75rem 0.75rem !important;
     padding-right: 85px !important; /* 為浮動按鈕留出空間 */
     box-sizing: border-box !important;
     margin: 0 !important;
   }
   
-  /* 確保 dimension-pane 也有足夠的 padding */
+  /* 結果概覽區域允許橫向滾動 */
+  .result-overview {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* 可能性評估區域允許橫向滾動 */
+  .probability-meter {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    min-width: 0 !important;
+  }
+  
+  .meter-bar {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  
+  .meter-labels {
+    overflow-x: visible !important;
+    min-width: 0 !important;
+  }
+  
+  /* 概覽卡片允許橫向滾動 */
+  .overview-card {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    min-width: 0 !important;
+  }
+  
+  /* 確保 dimension-pane 允許橫向滾動 */
   .dimension-pane {
     padding-right: 85px !important;
     padding-left: 0.75rem !important;
@@ -1911,34 +1962,38 @@
     padding-bottom: 0.75rem !important;
     box-sizing: border-box !important;
     width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
+    min-width: 0 !important;
+    overflow-x: auto !important; /* 允許橫向滾動 */
+    -webkit-overflow-scrolling: touch !important;
   }
   
-  /* 結果頁面容器優化 */
+  /* 結果頁面容器優化 - 允許橫向滾動 */
   .result-section {
     width: 100% !important;
-    max-width: 100% !important;
+    min-width: 0 !important;
     padding: 1rem 0.75rem !important;
     padding-right: 85px !important; /* 為浮動按鈕留出空間 */
     box-sizing: border-box !important;
-    overflow-x: hidden !important;
+    overflow-x: auto !important; /* 允許橫向滾動 */
+    -webkit-overflow-scrolling: touch !important;
   }
   
   .result-container {
     width: 100% !important;
-    max-width: 100% !important;
+    min-width: 0 !important;
     padding-right: 85px !important;
     box-sizing: border-box !important;
-    overflow-x: hidden !important;
+    overflow-x: auto !important; /* 允許橫向滾動 */
+    -webkit-overflow-scrolling: touch !important;
   }
   
   .result-overview {
     width: 100% !important;
-    max-width: 100% !important;
+    min-width: 0 !important;
     padding-right: 85px !important;
     box-sizing: border-box !important;
-    overflow-x: hidden !important;
+    overflow-x: auto !important; /* 允許橫向滾動 */
+    -webkit-overflow-scrolling: touch !important;
   }
   
   /* 維度標籤區域優化 */
@@ -1961,11 +2016,12 @@
     padding: 0.5rem 0.75rem !important;
   }
   
-  /* 維度內容區域優化 */
+  /* 維度內容區域優化 - 允許橫向滾動 */
   .dimension-content {
     width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
+    min-width: 0 !important;
+    overflow-x: auto !important; /* 允許橫向滾動 */
+    -webkit-overflow-scrolling: touch !important;
     box-sizing: border-box !important;
   }
   
@@ -1979,12 +2035,14 @@
     padding-right: 0 !important;
   }
   
-  /* 標籤容器優化 */
+  /* 標籤容器優化 - 允許橫向滾動（如果標籤太多） */
   .tag-container {
     width: 100% !important;
-    max-width: 100% !important;
+    min-width: 0 !important;
     flex-wrap: wrap !important;
     gap: 0.5rem !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
   .bazi-tag {
@@ -1996,13 +2054,14 @@
     max-width: 100% !important;
   }
   
-  /* 文字內容區域優化 */
+  /* 文字內容區域優化 - 允許橫向滾動（如果內容超出） */
   .text-content {
     width: 100% !important;
-    max-width: 100% !important;
+    min-width: 0 !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
-    overflow-x: hidden !important;
+    overflow-x: auto !important; /* 允許橫向滾動 */
+    -webkit-overflow-scrolling: touch !important;
   }
   
   #ui-shensha-content {
@@ -2042,10 +2101,16 @@
     white-space: nowrap;
   }
   
-  /* 確保所有文字不溢出 */
+  /* 確保所有文字正確換行，但允許容器橫向滾動 */
   .bazi-result * {
     word-wrap: break-word;
     overflow-wrap: break-word;
-    max-width: 100%;
+    /* 移除 max-width 限制，允許內容自然擴展 */
+  }
+  
+  /* 確保分析卡片可以橫向滾動（如果內容超出） */
+  .analysis-card {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 }
