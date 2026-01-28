@@ -621,8 +621,8 @@
                         <div class="dimension-content">
                             <div class="dimension-pane active" id="bazi-pane">
                                 <div class="bazi-result" id="bazi-result">
-                                    <div class="analysis-grid-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; max-width: 100%; box-sizing: border-box;">
-                                        <div class="analysis-card" style="grid-column: 1;">
+                                    <div class="analysis-grid-container">
+                                        <div class="analysis-card">
                                             <div class="analysis-header">
                                                 <i class="fas fa-sitemap"></i> 十神與藏干詳解
                                             </div>
@@ -650,72 +650,70 @@
                                             </div>
                                         </div>
     
-                                        <div style="grid-column: 2; display: flex; flex-direction: column; gap: 1rem;">
-                                            <div class="analysis-card">
-                                                <div class="analysis-header">
-                                                    <i class="fas fa-chart-pie"></i> 五行強弱分佈
+                                        <div class="analysis-card">
+                                            <div class="analysis-header">
+                                                <i class="fas fa-chart-pie"></i> 五行強弱分佈
+                                            </div>
+                                            <div class="element-bar-group" id="ui-elements-bar">
+                                                <div class="element-row">
+                                                    <span class="element-label el-gold">金</span>
+                                                    <div class="progress-track">
+                                                        <div class="progress-fill bg-gold" style="width: 20%;"></div>
+                                                    </div>
+                                                    <span class="element-value">20%</span>
                                                 </div>
-                                                <div class="element-bar-group" id="ui-elements-bar">
-                                                    <div class="element-row">
-                                                        <span class="element-label el-gold">金</span>
-                                                        <div class="progress-track">
-                                                            <div class="progress-fill bg-gold" style="width: 20%;"></div>
-                                                        </div>
-                                                        <span class="element-value">20%</span>
+                                                <div class="element-row">
+                                                    <span class="element-label el-wood">木</span>
+                                                    <div class="progress-track">
+                                                        <div class="progress-fill bg-wood" style="width: 20%;"></div>
                                                     </div>
-                                                    <div class="element-row">
-                                                        <span class="element-label el-wood">木</span>
-                                                        <div class="progress-track">
-                                                            <div class="progress-fill bg-wood" style="width: 20%;"></div>
-                                                        </div>
-                                                        <span class="element-value">20%</span>
+                                                    <span class="element-value">20%</span>
+                                                </div>
+                                                <div class="element-row">
+                                                    <span class="element-label el-water">水</span>
+                                                    <div class="progress-track">
+                                                        <div class="progress-fill bg-water" style="width: 20%;"></div>
                                                     </div>
-                                                    <div class="element-row">
-                                                        <span class="element-label el-water">水</span>
-                                                        <div class="progress-track">
-                                                            <div class="progress-fill bg-water" style="width: 20%;"></div>
-                                                        </div>
-                                                        <span class="element-value">20%</span>
+                                                    <span class="element-value">20%</span>
+                                                </div>
+                                                <div class="element-row">
+                                                    <span class="element-label el-fire">火</span>
+                                                    <div class="progress-track">
+                                                        <div class="progress-fill bg-fire" style="width: 20%;"></div>
                                                     </div>
-                                                    <div class="element-row">
-                                                        <span class="element-label el-fire">火</span>
-                                                        <div class="progress-track">
-                                                            <div class="progress-fill bg-fire" style="width: 20%;"></div>
-                                                        </div>
-                                                        <span class="element-value">20%</span>
+                                                    <span class="element-value">20%</span>
+                                                </div>
+                                                <div class="element-row">
+                                                    <span class="element-label el-earth">土</span>
+                                                    <div class="progress-track">
+                                                        <div class="progress-fill bg-earth" style="width: 20%;"></div>
                                                     </div>
-                                                     <div class="element-row">
-                                                        <span class="element-label el-earth">土</span>
-                                                        <div class="progress-track">
-                                                            <div class="progress-fill bg-earth" style="width: 20%;"></div>
-                                                        </div>
-                                                        <span class="element-value">20%</span>
-                                                    </div>
+                                                    <span class="element-value">20%</span>
                                                 </div>
                                             </div>
+                                        </div>
     
-                                            <div class="analysis-card">
-                                                <div class="analysis-header">
-                                                    <i class="fas fa-star"></i> 喜用與神煞
+                                        <div class="analysis-card">
+                                            <div class="analysis-header">
+                                                <i class="fas fa-star"></i> 喜用與神煞
+                                            </div>
+                                            <div id="ui-shensha-content">
+                                                <div style="margin-bottom: 1rem;">
+                                                    <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">喜用神：</p>
+                                                    <div class="tag-container">
+                                                        <span class="bazi-tag tag-favorable">計算中</span>
+                                                    </div>
                                                 </div>
-                                                <div id="ui-shensha-content">
-                                                    <div style="margin-bottom: 1rem;">
-                                                        <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">喜用神：</p>
-                                                        <div class="tag-container">
-                                                            <span class="bazi-tag tag-favorable">計算中</span>
-                                                        </div>
+                                                <div style="margin-bottom: 1rem;">
+                                                    <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">忌神：</p>
+                                                    <div class="tag-container">
+                                                        <span class="bazi-tag tag-unfavorable">計算中</span>
                                                     </div>
-                                                    <div style="margin-bottom: 1rem;">
-                                                        <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">忌神：</p>
-                                                        <div class="tag-container">
-                                                            <span class="bazi-tag tag-unfavorable">計算中</span>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">命宮神煞：</p>
-                                                        <div class="tag-container">
-                                                            <span class="bazi-tag tag-star">計算中</span>
-                                                        </div>
+                                                </div>
+                                                <div>
+                                                    <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">命宮神煞：</p>
+                                                    <div class="tag-container">
+                                                        <span class="bazi-tag tag-star">計算中</span>
                                                     </div>
                                                 </div>
                                             </div>

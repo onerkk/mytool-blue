@@ -1697,11 +1697,24 @@
   
   /* 修正八字結果版面 - 手機版改為單列 */
   .analysis-grid-container {
+    display: grid !important;
     grid-template-columns: 1fr !important;
     gap: 1rem !important;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding: 0 !important;
+    margin: 1rem 0 !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* 手機版：確保所有卡片都是單列顯示 */
+  .analysis-grid-container > .analysis-card {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
   }
   
   /* 十神與藏干詳解 - 手機版改為可橫向滾動，避免重疊 */
@@ -1809,7 +1822,15 @@
     overflow-y: visible !important;
     box-sizing: border-box !important;
     padding: 1rem 0.75rem !important;
-    margin: 0 !important;
+    margin: 0 0 1rem 0 !important;
+    display: block !important;
+  }
+  
+  /* 確保卡片內容不溢出 */
+  .analysis-card > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   
   .analysis-header {
@@ -1918,6 +1939,34 @@
     padding-right: 85px !important;
     box-sizing: border-box !important;
     overflow-x: hidden !important;
+  }
+  
+  /* 維度標籤區域優化 */
+  .dimension-tabs {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-right: 85px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.5rem !important;
+  }
+  
+  .dimension-tab {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.85rem !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  /* 維度內容區域優化 */
+  .dimension-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
   }
   
   /* 確保標題完整顯示 */

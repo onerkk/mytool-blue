@@ -590,10 +590,16 @@ class FortuneSystem {
         const hasUiPlaceholders = !!baziPane.querySelector('#ui-gods-grid');
         if (hasUiPlaceholders) {
             try {
+                // 調試：輸出原始數據結構
+                if (window.DEBUG_BAZI) {
+                    console.log('[displayBaziResult] 原始 baziResult:', baziResult);
+                    console.log('[displayBaziResult] favorableElements:', baziResult.favorableElements);
+                }
                 this.fillBaziResultUI(baziPane, baziResult);
                 return;
             } catch (err) {
                 console.error('[BaziUI] fill failed, fallback to legacy render', err);
+                console.error('[BaziUI] Error details:', err.stack);
             }
         }
 
@@ -808,10 +814,29 @@ class FortuneSystem {
         const strengths = elementStrength.strengths || elementStrength.scores || {};
         const counts = elementStrength.counts || elementStrength.count || {};
 
-        // 喜忌
+        // 喜忌 - 確保正確提取數據
         const favObj = src.favorableElements || {};
-        const favorable = favObj.favorable || favObj.good || src.favorableElements || [];
-        const unfavorable = favObj.unfavorable || favObj.bad || src.unfavorableElements || [];
+        let favorable = [];
+        let unfavorable = [];
+        
+        // 優先從 favorableElements.favorable 和 favorableElements.unfavorable 讀取
+        if (favObj.favorable) {
+            favorable = Array.isArray(favObj.favorable) ? favObj.favorable : [favObj.favorable];
+        } else if (favObj.good) {
+            favorable = Array.isArray(favObj.good) ? favObj.good : [favObj.good];
+        } else if (src.favorable) {
+            favorable = Array.isArray(src.favorable) ? src.favorable : [src.favorable];
+        }
+        
+        if (favObj.unfavorable) {
+            unfavorable = Array.isArray(favObj.unfavorable) ? favObj.unfavorable : [favObj.unfavorable];
+        } else if (favObj.bad) {
+            unfavorable = Array.isArray(favObj.bad) ? favObj.bad : [favObj.bad];
+        } else if (src.unfavorable) {
+            unfavorable = Array.isArray(src.unfavorable) ? src.unfavorable : [src.unfavorable];
+        } else if (src.unfavorableElements) {
+            unfavorable = Array.isArray(src.unfavorableElements) ? src.unfavorableElements : [src.unfavorableElements];
+        }
 
         // 神煞/格局
         const specialStars = src.specialStars || src.shensha || src.shenSha || [];
@@ -979,26 +1004,140 @@ class FortuneSystem {
         // ✅ 喜用神與神煞
         const shenshaBox = baziPane.querySelector('#ui-shensha-content');
         if (shenshaBox) {
-            const fav = Array.isArray(n.favorable) ? n.favorable : [];
-            const bad = Array.isArray(n.unfavorable) ? n.unfavorable : [];
-            const stars = Array.isArray(n.specialStars) ? n.specialStars : [];
+            // 從多個可能的數據源讀取喜用神和忌神
+            let fav = Array.isArray(n.favorable) ? n.favorable : [];
+            let bad = Array.isArray(n.unfavorable) ? n.unfavorable : [];
+            
+            // 如果沒有數據，嘗試從原始結果中讀取
+            if (fav.length === 0 && baziResult.favorableElements) {
+                if (Array.isArray(baziResult.favorableElements.favorable)) {
+                    fav = baziResult.favorableElements.favorable;
+                } else if (baziResult.favorableElements.favorable) {
+                    fav = [baziResult.favorableElements.favorable];
+                } else if (Array.isArray(baziResult.favorableElements)) {
+                    fav = baziResult.favorableElements;
+                }
+            }
+            if (bad.length === 0 && baziResult.favorableElements) {
+                if (Array.isArray(baziResult.favorableElements.unfavorable)) {
+                    bad = baziResult.favorableElements.unfavorable;
+                } else if (baziResult.favorableElements.unfavorable) {
+                    bad = [baziResult.favorableElements.unfavorable];
+                }
+            }
+            
+            // 最後嘗試：從 normalized 數據的 raw 屬性讀取
+            if (fav.length === 0 && n.raw && n.raw.favorableElements) {
+                if (Array.isArray(n.raw.favorableElements.favorable)) {
+                    fav = n.raw.favorableElements.favorable;
+                } else if (n.raw.favorableElements.favorable) {
+                    fav = [n.raw.favorableElements.favorable];
+                }
+            }
+            if (bad.length === 0 && n.raw && n.raw.favorableElements) {
+                if (Array.isArray(n.raw.favorableElements.unfavorable)) {
+                    bad = n.raw.favorableElements.unfavorable;
+                } else if (n.raw.favorableElements.unfavorable) {
+                    bad = [n.raw.favorableElements.unfavorable];
+                }
+            }
+            
+            // 過濾空值
+            fav = fav.filter(x => x && String(x).trim() !== '');
+            bad = bad.filter(x => x && String(x).trim() !== '');
+            
+            // 處理神煞數據
+            let stars = [];
+            if (Array.isArray(n.specialStars) && n.specialStars.length > 0) {
+                stars = n.specialStars;
+            } else if (baziResult.specialStars) {
+                if (Array.isArray(baziResult.specialStars.specialNotes)) {
+                    stars = baziResult.specialStars.specialNotes;
+                } else if (baziResult.specialStars.specialNotes) {
+                    stars = [baziResult.specialStars.specialNotes];
+                }
+            }
 
-            const mkTags = (arr, cls) => (arr || []).map(t => `<span class="tag ${cls}">${t}</span>`).join('') || `<span class="tag neutral">無</span>`;
+            // 生成標籤 HTML，使用與 HTML 匹配的結構
+            // 檢查是否已經嘗試過讀取數據（通過檢查 normalized 數據）
+            const hasTriedReading = n.favorable !== undefined || n.unfavorable !== undefined || baziResult.favorableElements;
+            
+            const mkFavTags = (arr, hasData) => {
+                if (!hasData) {
+                    // 如果還沒有嘗試讀取數據，顯示「計算中」
+                    return '<span class="bazi-tag tag-favorable">計算中</span>';
+                }
+                if (!arr || arr.length === 0) {
+                    // 如果已經讀取但為空，顯示「無」
+                    return '<span class="bazi-tag" style="opacity:0.5">無</span>';
+                }
+                return arr.map(t => `<span class="bazi-tag tag-favorable">${t}</span>`).join('');
+            };
+            
+            const mkBadTags = (arr, hasData) => {
+                if (!hasData) {
+                    // 如果還沒有嘗試讀取數據，顯示「計算中」
+                    return '<span class="bazi-tag tag-unfavorable">計算中</span>';
+                }
+                if (!arr || arr.length === 0) {
+                    // 如果已經讀取但為空，顯示「無」
+                    return '<span class="bazi-tag" style="opacity:0.5">無</span>';
+                }
+                return arr.map(t => `<span class="bazi-tag tag-unfavorable">${t}</span>`).join('');
+            };
+            
+            const mkStarTags = (arr) => {
+                if (!arr || arr.length === 0) return '<span class="bazi-tag tag-star">無明顯神煞</span>';
+                // 從神煞文字中提取關鍵詞
+                const starKeywords = [];
+                arr.forEach(note => {
+                    if (typeof note === 'string') {
+                        if (note.includes('貴人')) starKeywords.push('貴人');
+                        if (note.includes('文昌')) starKeywords.push('文昌');
+                        if (note.includes('驛馬')) starKeywords.push('驛馬');
+                        if (note.includes('桃花')) starKeywords.push('桃花');
+                        if (note.includes('天乙')) starKeywords.push('天乙貴人');
+                        if (note.includes('天德')) starKeywords.push('天德');
+                        if (note.includes('月德')) starKeywords.push('月德');
+                    }
+                });
+                if (starKeywords.length === 0) return '<span class="bazi-tag tag-star">無明顯神煞</span>';
+                return [...new Set(starKeywords)].map(s => `<span class="bazi-tag tag-star">${s}</span>`).join('');
+            };
 
+            // 檢查是否已經有數據（用於判斷顯示「計算中」還是「無」）
+            const hasFavData = fav.length > 0 || baziResult.favorableElements !== undefined;
+            const hasBadData = bad.length > 0 || baziResult.favorableElements !== undefined;
+            
+            // 使用與 HTML 完全匹配的結構
             shenshaBox.innerHTML = `
-                <div class="tag-section">
-                    <div class="tag-title">喜用</div>
-                    <div class="tag-container">${mkTags(fav, 'positive')}</div>
+                <div style="margin-bottom: 1rem;">
+                    <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">喜用神：</p>
+                    <div class="tag-container">
+                        ${mkFavTags(fav, hasFavData)}
+                    </div>
                 </div>
-                <div class="tag-section">
-                    <div class="tag-title">忌神</div>
-                    <div class="tag-container">${mkTags(bad, 'negative')}</div>
+                <div style="margin-bottom: 1rem;">
+                    <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">忌神：</p>
+                    <div class="tag-container">
+                        ${mkBadTags(bad, hasBadData)}
+                    </div>
                 </div>
-                <div class="tag-section">
-                    <div class="tag-title">神煞</div>
-                    <div class="tag-container">${mkTags(stars, 'neutral')}</div>
+                <div>
+                    <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">命宮神煞：</p>
+                    <div class="tag-container">
+                        ${mkStarTags(stars)}
+                    </div>
                 </div>
             `;
+            
+            // 調試輸出
+            console.log('[fillBaziResultUI] 喜用神數據:', fav, 'hasData:', hasFavData);
+            console.log('[fillBaziResultUI] 忌神數據:', bad, 'hasData:', hasBadData);
+            console.log('[fillBaziResultUI] 神煞數據:', stars);
+            console.log('[fillBaziResultUI] baziResult.favorableElements:', baziResult.favorableElements);
+            console.log('[fillBaziResultUI] normalized favorable:', n.favorable);
+            console.log('[fillBaziResultUI] normalized unfavorable:', n.unfavorable);
         }
 
         // ✅ 個性特質 - 顯示完整分析
