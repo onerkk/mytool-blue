@@ -2018,18 +2018,19 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     }
     
     .result-overview {
-        display: block !important; /* 手機版改為 block 以允許橫向滾動 */
+        display: block !important; /* 手機版垂直堆疊、全寬顯示 */
         grid-template-columns: none !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: visible !important;
     }
     
     .result-overview > * {
-        display: inline-block !important;
-        vertical-align: top !important;
-        width: calc(100vw - 100px) !important;
-        min-width: calc(100vw - 100px) !important;
-        margin-right: 1rem !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-right: 0 !important;
+        margin-bottom: 1rem !important;
     }
     
     .celtic-cross-layout {

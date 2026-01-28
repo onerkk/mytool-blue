@@ -1,78 +1,76 @@
 /**
- * 手機版結果分析頁面強制性修復
- * 確保可以橫向滾動查看完整內容
+ * 手機版結果分析頁面修復
+ * 原則：內容先正常填滿全螢幕寬度，只有真正超出的部分才需要左右滾動
  */
 
 @media (max-width: 768px) {
-    /* 強制允許結果分析頁面橫向滾動 */
+    /* 結果分析頁面：使用全螢幕寬度，內容不超出 */
     #result-section {
-        overflow-x: scroll !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: auto !important; /* 只有內容超出時才出現橫向滾動 */
         overflow-y: visible !important;
         -webkit-overflow-scrolling: touch !important;
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: none !important;
+        padding-left: 0.75rem !important;
+        padding-right: 85px !important; /* 僅為浮動按鈕留空間 */
         position: relative !important;
     }
     
-    /* 結果容器允許橫向滾動 */
+    /* 結果容器：填滿父層寬度 */
     #result-section .result-container {
-        overflow-x: scroll !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: visible !important;
         overflow-y: visible !important;
-        -webkit-overflow-scrolling: touch !important;
-        width: auto !important;
-        min-width: 100% !important;
-        max-width: none !important;
+        padding-right: 0 !important;
     }
     
-    /* 結果概覽區域 - 改為橫向滾動布局 */
+    /* 結果概覽：改為垂直堆疊，每個區塊佔滿寬度 */
     #result-section .result-overview {
         display: block !important;
-        overflow-x: scroll !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: visible !important;
         overflow-y: visible !important;
-        -webkit-overflow-scrolling: touch !important;
-        width: auto !important;
-        min-width: 100% !important;
-        max-width: none !important;
-        white-space: nowrap !important;
+        white-space: normal !important; /* 取消強制不換行 */
     }
     
-    /* 概覽卡片和可能性評估橫向排列 */
+    /* 概覽卡片、可能性評估：區塊顯示，各佔 100% 寬度 */
     #result-section .result-overview > .overview-card,
     #result-section .result-overview > .probability-meter {
-        display: inline-block !important;
-        vertical-align: top !important;
-        white-space: normal !important;
-        width: calc(100vw - 100px) !important;
-        min-width: calc(100vw - 100px) !important;
-        max-width: none !important;
-        margin-right: 1rem !important;
-        margin-bottom: 0 !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        margin-right: 0 !important;
+        margin-bottom: 1rem !important;
     }
     
-    /* 確保卡片內容可以完整顯示 */
+    /* 概覽卡片與可能性評估內部也限制在 100% */
     #result-section .overview-card,
     #result-section .probability-meter {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
         overflow-x: visible !important;
         overflow-y: visible !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: none !important;
     }
     
-    /* 問題顯示和直接回答區域 */
+    /* 問題顯示、直接回答：全寬、文字正常換行 */
     #result-section .question-display,
     #result-section .direct-answer {
-        overflow-x: visible !important;
-        overflow-y: visible !important;
         width: 100% !important;
-        max-width: none !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         white-space: normal !important;
     }
     
-    /* 文字內容確保完整顯示 */
+    /* 文字與標題：全寬、可換行 */
     #result-section .answer-text,
     #result-section p,
     #result-section span,
@@ -81,28 +79,36 @@
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         white-space: normal !important;
-        max-width: none !important;
-        overflow-x: visible !important;
+        max-width: 100% !important;
     }
     
-    /* 進度條和標籤 */
-    #result-section .meter-bar,
-    #result-section .meter-labels {
-        overflow-x: visible !important;
+    /* 維度分析、八字結果區：全寬 */
+    #result-section .dimension-analysis,
+    #result-section .dimension-content,
+    #result-section .dimension-pane,
+    #result-section .bazi-result {
         width: 100% !important;
-        max-width: none !important;
-    }
-    
-    /* 移除所有 max-width 限制 */
-    #result-section * {
-        max-width: none !important;
-    }
-    
-    /* 但保持容器可以滾動 */
-    #result-section,
-    #result-section .result-container,
-    #result-section .result-overview {
-        overflow-x: scroll !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: auto !important; /* 僅內部超寬時才橫向滾動 */
         -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* 分析網格與卡片：單欄、全寬 */
+    #result-section .analysis-grid-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    #result-section .analysis-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* 移除會強制撐開寬度的規則，改為限制在 100% */
+    #result-section * {
+        box-sizing: border-box !important;
     }
 }
