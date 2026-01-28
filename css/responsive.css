@@ -801,16 +801,31 @@
     /* 移除 max-width 限制，允許內容自然擴展 */
   }
   
-  /* 確保所有標題和文字完整顯示 */
+  /* 確保所有標題和文字完整顯示 - 允許橫向滾動 */
   #result-section h2,
   #result-section h3,
   #result-section h4,
   #result-section p,
-  #result-section span {
+  #result-section span,
+  #result-section div {
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
-    /* 移除 max-width 限制，允許內容自然擴展 */
+    max-width: none !important; /* 移除寬度限制 */
+    overflow-x: visible !important;
+  }
+  
+  /* 確保文字內容可以完整顯示 */
+  #result-section * {
+    max-width: none !important; /* 移除所有寬度限制 */
+  }
+  
+  /* 但保持容器可以滾動 */
+  #result-section,
+  #result-section .result-container,
+  #result-section .result-overview {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
   /* 方法標籤區域優化 */
@@ -1924,34 +1939,81 @@
     margin: 0 !important;
   }
   
-  /* 結果概覽區域允許橫向滾動 */
+  /* 結果概覽區域允許橫向滾動 - 強制性修復 */
   .result-overview {
+    display: block !important; /* 改為 block 以允許橫向滾動 */
     overflow-x: auto !important;
+    overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
+    width: auto !important;
+    min-width: 100% !important;
+    max-width: none !important;
+    white-space: nowrap !important; /* 防止內容換行 */
+  }
+  
+  /* 結果概覽內的卡片改為橫向排列 */
+  .result-overview > * {
+    display: inline-block !important;
+    vertical-align: top !important;
+    white-space: normal !important;
+    width: calc(100vw - 100px) !important; /* 每個卡片佔滿螢幕寬度減去按鈕空間 */
+    min-width: calc(100vw - 100px) !important;
+    max-width: none !important;
+    margin-right: 1rem !important;
   }
   
   /* 可能性評估區域允許橫向滾動 */
   .probability-meter {
     overflow-x: auto !important;
+    overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
-    min-width: 0 !important;
+    width: auto !important;
+    min-width: 100% !important;
+    max-width: none !important;
   }
   
   .meter-bar {
     overflow-x: visible !important;
+    width: 100% !important;
     min-width: 0 !important;
   }
   
   .meter-labels {
     overflow-x: visible !important;
+    width: 100% !important;
     min-width: 0 !important;
+    white-space: nowrap !important; /* 標籤不換行 */
   }
   
   /* 概覽卡片允許橫向滾動 */
   .overview-card {
     overflow-x: auto !important;
+    overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
+    width: auto !important;
+    min-width: 100% !important;
+    max-width: none !important;
+  }
+  
+  /* 問題顯示和直接回答區域 */
+  .question-display,
+  .direct-answer {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
     min-width: 0 !important;
+    max-width: none !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  
+  .answer-text {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
   }
   
   /* 確保 dimension-pane 允許橫向滾動 */
@@ -1967,34 +2029,32 @@
     -webkit-overflow-scrolling: touch !important;
   }
   
-  /* 結果頁面容器優化 - 允許橫向滾動 */
+  /* 結果頁面容器優化 - 允許橫向滾動（強制性修復） */
   .result-section {
-    width: 100% !important;
-    min-width: 0 !important;
+    width: auto !important;
+    min-width: 100% !important;
+    max-width: none !important;
     padding: 1rem 0.75rem !important;
     padding-right: 85px !important; /* 為浮動按鈕留出空間 */
     box-sizing: border-box !important;
     overflow-x: auto !important; /* 允許橫向滾動 */
+    overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
+    position: relative !important;
   }
   
   .result-container {
-    width: 100% !important;
-    min-width: 0 !important;
+    width: auto !important;
+    min-width: 100% !important;
+    max-width: none !important;
     padding-right: 85px !important;
     box-sizing: border-box !important;
     overflow-x: auto !important; /* 允許橫向滾動 */
+    overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
   }
   
-  .result-overview {
-    width: 100% !important;
-    min-width: 0 !important;
-    padding-right: 85px !important;
-    box-sizing: border-box !important;
-    overflow-x: auto !important; /* 允許橫向滾動 */
-    -webkit-overflow-scrolling: touch !important;
-  }
+  /* 移除重複的 .result-overview 規則，使用上面的強制性規則 */
   
   /* 維度標籤區域優化 */
   .dimension-tabs {

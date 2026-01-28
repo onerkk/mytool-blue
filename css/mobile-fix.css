@@ -1,0 +1,108 @@
+/**
+ * 手機版結果分析頁面強制性修復
+ * 確保可以橫向滾動查看完整內容
+ */
+
+@media (max-width: 768px) {
+    /* 強制允許結果分析頁面橫向滾動 */
+    #result-section {
+        overflow-x: scroll !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: none !important;
+        position: relative !important;
+    }
+    
+    /* 結果容器允許橫向滾動 */
+    #result-section .result-container {
+        overflow-x: scroll !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: auto !important;
+        min-width: 100% !important;
+        max-width: none !important;
+    }
+    
+    /* 結果概覽區域 - 改為橫向滾動布局 */
+    #result-section .result-overview {
+        display: block !important;
+        overflow-x: scroll !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: auto !important;
+        min-width: 100% !important;
+        max-width: none !important;
+        white-space: nowrap !important;
+    }
+    
+    /* 概覽卡片和可能性評估橫向排列 */
+    #result-section .result-overview > .overview-card,
+    #result-section .result-overview > .probability-meter {
+        display: inline-block !important;
+        vertical-align: top !important;
+        white-space: normal !important;
+        width: calc(100vw - 100px) !important;
+        min-width: calc(100vw - 100px) !important;
+        max-width: none !important;
+        margin-right: 1rem !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* 確保卡片內容可以完整顯示 */
+    #result-section .overview-card,
+    #result-section .probability-meter {
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+    
+    /* 問題顯示和直接回答區域 */
+    #result-section .question-display,
+    #result-section .direct-answer {
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        width: 100% !important;
+        max-width: none !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+    }
+    
+    /* 文字內容確保完整顯示 */
+    #result-section .answer-text,
+    #result-section p,
+    #result-section span,
+    #result-section h3,
+    #result-section h4 {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+        max-width: none !important;
+        overflow-x: visible !important;
+    }
+    
+    /* 進度條和標籤 */
+    #result-section .meter-bar,
+    #result-section .meter-labels {
+        overflow-x: visible !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+    
+    /* 移除所有 max-width 限制 */
+    #result-section * {
+        max-width: none !important;
+    }
+    
+    /* 但保持容器可以滾動 */
+    #result-section,
+    #result-section .result-container,
+    #result-section .result-overview {
+        overflow-x: scroll !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
