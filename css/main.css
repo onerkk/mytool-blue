@@ -2033,6 +2033,32 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
         margin-bottom: 1rem !important;
     }
     
+    /* 手機版縮小結果區 padding，文字容器接近滿版 */
+    .overview-card,
+    .probability-meter {
+        padding: 0.75rem 0.5rem !important;
+    }
+    
+    .dimension-analysis {
+        padding: 0.75rem 0.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .question-display,
+    .direct-answer {
+        padding: 0.5rem !important;
+    }
+    
+    .meter-header {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    .meter-labels {
+        flex-wrap: wrap !important;
+        gap: 0.25rem !important;
+    }
+    
     .celtic-cross-layout {
         grid-template-columns: repeat(2, 1fr) !important;
         grid-template-rows: auto !important;

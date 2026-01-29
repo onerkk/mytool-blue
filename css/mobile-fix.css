@@ -1,113 +1,162 @@
 /**
- * 手機版結果分析頁面修復
- * 原則：內容先正常填滿全螢幕寬度，只有真正超出的部分才需要左右滾動
+ * 手機版結果分析頁面 UI 修正
+ * - 文字容器接近滿版，減少右側留白
+ * - 統一與「資料輸入」區塊的版面寬度
+ * - 縮小 padding，使用 % / rem 響應式
+ * - Flex 文字區塊填滿父層寬度
  */
 
 @media (max-width: 768px) {
-    /* 結果分析頁面：使用全螢幕寬度，內容不超出 */
+    /* ===== 統一主要容器寬度（與資料輸入區一致） ===== */
+    .main-container {
+        padding: 0.5rem !important; /* 10px 等級，左右一致 */
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .section {
+        padding: 0.75rem 0.5rem !important; /* 上下一點空間，左右 0.5rem */
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* ===== 分析結果區：滿版寬度，僅右側留浮動按鈕空間 ===== */
     #result-section {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        overflow-x: auto !important; /* 只有內容超出時才出現橫向滾動 */
+        padding: 0.75rem 0.5rem !important; /* 與 .section 一致 */
+        padding-right: 58px !important; /* 浮動按鈕約 52px，略多一點即可 */
+        overflow-x: auto !important;
         overflow-y: visible !important;
         -webkit-overflow-scrolling: touch !important;
-        padding-left: 0.75rem !important;
-        padding-right: 85px !important; /* 僅為浮動按鈕留空間 */
-        position: relative !important;
     }
     
-    /* 結果容器：填滿父層寬度 */
     #result-section .result-container {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        padding: 0 !important;
         overflow-x: visible !important;
         overflow-y: visible !important;
-        padding-right: 0 !important;
     }
     
-    /* 結果概覽：改為垂直堆疊，每個區塊佔滿寬度 */
+    /* ===== 結果概覽：區塊全寬，文字容器填滿 ===== */
     #result-section .result-overview {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        overflow-x: visible !important;
-        overflow-y: visible !important;
-        white-space: normal !important; /* 取消強制不換行 */
+        margin-bottom: 1rem !important;
+        gap: 0 !important;
     }
     
-    /* 概覽卡片、可能性評估：區塊顯示，各佔 100% 寬度 */
     #result-section .result-overview > .overview-card,
     #result-section .result-overview > .probability-meter {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
+        flex: 1 1 100% !important; /* Flex 子項時填滿 */
         box-sizing: border-box !important;
         margin-right: 0 !important;
-        margin-bottom: 1rem !important;
+        margin-bottom: 0.75rem !important;
+        padding: 0.75rem 0.5rem !important; /* 手機版縮小：約 12px 8px */
     }
     
-    /* 概覽卡片與可能性評估內部也限制在 100% */
+    /* 概覽卡片、可能性評估內部也滿版 */
     #result-section .overview-card,
     #result-section .probability-meter {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        overflow-x: visible !important;
-        overflow-y: visible !important;
     }
     
-    /* 問題顯示、直接回答：全寬、文字正常換行 */
+    /* ===== 文字區塊：寬度 100%，可換行，不限制 max-width ===== */
     #result-section .question-display,
     #result-section .direct-answer {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        padding: 0.5rem !important; /* 約 8px */
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         white-space: normal !important;
+        flex: 1 1 100% !important;
     }
     
-    /* 文字與標題：全寬、可換行 */
     #result-section .answer-text,
-    #result-section p,
-    #result-section span,
-    #result-section h3,
-    #result-section h4 {
+    #result-section .meter-header,
+    #result-section .meter-labels {
+        width: 100% !important;
+        max-width: 100% !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         white-space: normal !important;
-        max-width: 100% !important;
     }
     
-    /* 維度分析、八字結果區：全寬 */
-    #result-section .dimension-analysis,
+    /* ===== 四維度分析區：縮小 padding，寬度滿版 ===== */
+    #result-section .dimension-analysis {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0.75rem 0.5rem !important; /* 手機版縮小 */
+        padding-right: 0.5rem !important; /* 右側由 #result-section 統一留按鈕空間 */
+        margin-bottom: 1rem !important;
+    }
+    
+    #result-section .dimension-tabs {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-right: 0 !important;
+        padding-bottom: 0.5rem !important;
+        margin-bottom: 0.75rem !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        gap: 0.35rem !important;
+    }
+    
+    #result-section .dimension-tab {
+        flex-shrink: 0 !important;
+        padding: 0.4rem 0.6rem !important; /* 略小 */
+        font-size: 0.8rem !important;
+    }
+    
     #result-section .dimension-content,
     #result-section .dimension-pane,
     #result-section .bazi-result {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        overflow-x: auto !important; /* 僅內部超寬時才橫向滾動 */
+        padding: 0.5rem 0 !important;
+        padding-right: 0 !important;
+        overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
     }
     
-    /* 分析網格與卡片：單欄、全寬 */
-    #result-section .analysis-grid-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-    }
-    
+    /* ===== 分析卡片與文字內容：滿版、flex 填滿 ===== */
+    #result-section .analysis-grid-container,
     #result-section .analysis-card {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
     }
     
-    /* 移除會強制撐開寬度的規則，改為限制在 100% */
+    #result-section .analysis-card {
+        padding: 0.75rem 0.5rem !important;
+    }
+    
+    #result-section .text-content,
+    #result-section .tag-container,
+    #result-section #ui-shensha-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 1 1 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* 避免任何子元素固定 px 寬度限制 */
     #result-section * {
         box-sizing: border-box !important;
     }

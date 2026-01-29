@@ -32,7 +32,7 @@
     }
     
     .main-container {
-        padding: 10px;
+        padding: 0.5rem !important; /* 約 8px，與 section 一致 */
     }
     
     .app-container {
@@ -57,16 +57,23 @@
         padding: 10px;
     }
     
-    /* 區塊樣式 */
+    /* 區塊樣式：統一寬度與較小 padding */
     .section {
-        padding: 1.5rem 1rem;
+        padding: 0.75rem 0.5rem !important;
         margin-bottom: 1rem;
         border-radius: 12px;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     
-    .input-section,
+    .input-section {
+        padding: 0.75rem 0.5rem !important;
+    }
+    
     .result-section {
-        padding: 1rem;
+        padding: 0.75rem 0.5rem !important;
+        padding-right: 58px !important; /* 僅為浮動按鈕留空間 */
     }
     
     /* 標題優化 */
@@ -785,15 +792,15 @@
     text-overflow: unset !important;
   }
   
-  /* 結果頁面全局優化：全螢幕寬度，內容不超出 */
+  /* 結果頁面全局優化：滿版寬度，縮小右側留白 */
   #result-section {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    padding: 1rem 0.75rem !important;
-    padding-right: 75px !important; /* 為浮動按鈕留出空間 */
+    padding: 0.75rem 0.5rem !important;
+    padding-right: 58px !important; /* 浮動按鈕約 52px */
     box-sizing: border-box !important;
-    overflow-x: auto !important; /* 僅內容超出時才橫向滾動 */
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
   }
   
@@ -821,14 +828,14 @@
     -webkit-overflow-scrolling: touch !important;
   }
   
-  /* 方法標籤區域優化 */
+  /* 方法標籤區域優化：滿版寬度，不額外佔右側 */
   .method-tabs,
   .analysis-tabs {
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
-    padding-right: 75px !important;
+    padding-right: 0 !important;
     box-sizing: border-box !important;
   }
   
@@ -937,28 +944,25 @@
         line-height: 1 !important;
     }
     
-    /* 小屏幕結果區域 padding */
+    /* 小屏幕結果區域：與 768px 一致，右側僅留浮動按鈕空間 */
     .bazi-result {
-        padding-right: 70px !important;
-        padding-left: 0.5rem !important;
+        padding-right: 0 !important;
+        padding-left: 0 !important;
     }
     
     .dimension-pane {
-        padding-right: 70px !important;
-        padding-left: 0.5rem !important;
+        padding-right: 0 !important;
+        padding-left: 0 !important;
     }
     
     .result-section {
-        padding-right: 70px !important;
+        padding-right: 58px !important;
         padding-left: 0.5rem !important;
     }
     
-    .result-container {
-        padding-right: 70px !important;
-    }
-    
+    .result-container,
     .result-overview {
-        padding-right: 70px !important;
+        padding-right: 0 !important;
     }
     
     /* 小屏幕標題優化 */
@@ -1919,7 +1923,7 @@
     flex-shrink: 0;
   }
   
-  /* 八字結果區：全寬顯示，僅內部超寬時才橫向滾動 */
+  /* 八字結果區：滿版寬度，不重複右側 padding */
   .bazi-result {
     width: 100% !important;
     max-width: 100% !important;
@@ -1927,8 +1931,7 @@
     overflow-x: auto !important;
     overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
-    padding: 0.75rem 0.75rem 0.75rem 0.75rem !important;
-    padding-right: 85px !important; /* 為浮動按鈕留出空間 */
+    padding: 0.5rem 0 !important;
     box-sizing: border-box !important;
     margin: 0 !important;
   }
@@ -2001,12 +2004,9 @@
     max-width: 100% !important;
   }
   
-  /* dimension-pane：全寬，僅內部超寬時才橫向滾動 */
+  /* dimension-pane：全寬，不重複右側 padding（由 #result-section 統一留空間） */
   .dimension-pane {
-    padding-right: 85px !important;
-    padding-left: 0.75rem !important;
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
+    padding: 0.5rem 0 !important;
     box-sizing: border-box !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -2014,13 +2014,13 @@
     -webkit-overflow-scrolling: touch !important;
   }
   
-  /* 結果頁面容器：全螢幕寬度，只有內容超出時才橫向滾動 */
+  /* 結果頁面容器：滿版寬度、縮小 padding */
   .result-section {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    padding: 1rem 0.75rem !important;
-    padding-right: 85px !important;
+    padding: 0.75rem 0.5rem !important;
+    padding-right: 58px !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
@@ -2031,22 +2031,38 @@
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    padding-right: 0 !important;
+    padding: 0 !important;
     overflow-x: visible !important;
     overflow-y: visible !important;
   }
   
-  /* 維度標籤區域優化 */
+  /* 概覽卡片與可能性評估：手機版縮小 padding */
+  .result-overview > .overview-card,
+  .result-overview > .probability-meter {
+    padding: 0.75rem 0.5rem !important;
+  }
+  
+  .dimension-analysis {
+    padding: 0.75rem 0.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .dimension-pane {
+    padding: 0.5rem 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  /* 維度標籤區域：滿版寬度，可橫向滾動 */
   .dimension-tabs {
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    padding-right: 85px !important;
+    padding-right: 0 !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-wrap: nowrap !important;
-    gap: 0.5rem !important;
+    gap: 0.35rem !important;
   }
   
   .dimension-tab {
