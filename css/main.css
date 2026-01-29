@@ -2323,24 +2323,15 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     font-weight: 600;
 }
 
-/* 響應式調整 */
+/* 響應式調整：手機版由 responsive.css 強制重構，此處僅保留最小覆寫 */
 @media (max-width: 768px) {
     .analysis-grid-container {
-        grid-template-columns: 1fr !important; /* 手機上單欄 */
+        grid-template-columns: 1fr !important;
         gap: 1rem !important;
-        margin-top: 1rem !important;
     }
-    
-    /* 手機版：移除所有 grid-column 和 grid-row 設置 */
     .analysis-grid-container > .analysis-card {
         grid-column: 1 !important;
         grid-row: auto !important;
-    }
-    .gods-detail-grid {
-        gap: 5px;
-    }
-    .gods-item {
-        font-size: 0.75rem;
     }
 }
 /* ... 保留您原本 main.css 的所有內容，並在最下方加入以下樣式 ... */
