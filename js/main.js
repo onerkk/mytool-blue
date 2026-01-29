@@ -1918,7 +1918,7 @@ class FortuneSystem {
                     
                     this.renderBaziGrid(baziData);
                     this.renderBaziDetails(baziData);
-                    this.renderDayun(this.userData.gender, baziData.year.gan, baziData.month, baziData.day?.gan);
+                    this.renderDayun(this.userData.gender, baziData.year.gan, baziData.month, baziData.day?.gan, fullBaziData.greatFortune);
                     this.renderAdvancedAnalysis(fullBaziData);
                     
                     document.getElementById('time-correction-info').style.display = 'block';
@@ -1958,7 +1958,15 @@ class FortuneSystem {
                     const baziData = this.internalCalculateBazi(this.userData.birthDate, useTime);
                     this.renderBaziGrid(baziData);
                     this.renderBaziDetails(baziData);
-                    this.renderDayun(this.userData.gender, baziData.year.gan, baziData.month, baziData.day?.gan);
+                    let fallbackGreatFortune = null;
+                    if (typeof BaziCalculator !== 'undefined') {
+                        const calc = new BaziCalculator();
+                        const fourPillars = { year: baziData.year, month: baziData.month, day: baziData.day, hour: baziData.hour };
+                        const t = useTime || this.userData.birthTime || '12:00';
+                        const fullBirth = `${this.userData.birthDate}T${t.length === 5 ? t + ':00' : t}`;
+                        fallbackGreatFortune = calc.calculateGreatFortune(fullBirth, this.userData.gender, fourPillars);
+                    }
+                    this.renderDayun(this.userData.gender, baziData.year.gan, baziData.month, baziData.day?.gan, fallbackGreatFortune);
                     
                     document.getElementById('time-correction-info').style.display = 'block';
                     
@@ -2626,50 +2634,76 @@ class FortuneSystem {
         return fb;
     }
 
-    renderDayun(gender, yearGan, monthPillar, dayMaster) {
+    renderDayun(gender, yearGan, monthPillar, dayMaster, greatFortune) {
         const timeline = document.getElementById('dayun-timeline');
         if (!timeline) return;
-        const yangStems = ['甲', '丙', '戊', '庚', '壬'];
-        const isYearGanYang = yangStems.includes(yearGan);
-        const forward = (gender === 'male') ? isYearGanYang : !isYearGanYang;
-        let sGan = HEAVENLY_STEMS.indexOf(monthPillar.gan);
-        let sZhi = EARTHLY_BRANCHES.indexOf(monthPillar.zhi);
-        if (sGan < 0 || sZhi < 0) return;
 
-        let currentAge = null;
-        if (this.userData && this.userData.birthDate) {
-            const birthYear = new Date(this.userData.birthDate + 'T12:00:00').getFullYear();
-            currentAge = new Date().getFullYear() - birthYear;
-        }
-
+        const getColor = (c) => { const map = { '木':'#4CAF50', '火':'#F44336', '土':'#795548', '金':'#FF9800', '水':'#2196F3' }; return map[WUXING_MAP[c]] || '#333'; };
         const hasDayMaster = typeof dayMaster === 'string' && dayMaster.length > 0;
         const computeScore = typeof QualityMapper !== 'undefined' && QualityMapper.computeDayunScore;
 
         let html = '';
-        const getColor = (c) => { const map = { '木':'#4CAF50', '火':'#F44336', '土':'#795548', '金':'#FF9800', '水':'#2196F3' }; return map[WUXING_MAP[c]] || '#333'; };
 
-        for (let i = 1; i <= 8; i++) {
-            const idxG = forward ? (sGan + i) % 10 : (sGan - i + 10) % 10;
-            const idxZ = forward ? (sZhi + i) % 12 : (sZhi - i + 12) % 12;
-            const gan = HEAVENLY_STEMS[idxG];
-            const zhi = EARTHLY_BRANCHES[idxZ];
-            const ageStart = 3 + (i - 1) * 10;
-            const ageEnd = ageStart + 9;
-            let level = null;
-            let score = undefined;
-            if (hasDayMaster && computeScore) {
-                score = QualityMapper.computeDayunScore(gan, zhi, dayMaster);
-            } else if (typeof QualityMapper !== 'undefined' && QualityMapper.levelFromGanzhi) {
-                level = QualityMapper.levelFromGanzhi(gan, zhi);
+        if (greatFortune && Array.isArray(greatFortune.fortunes) && greatFortune.fortunes.length > 0) {
+            for (let i = 0; i < greatFortune.fortunes.length; i++) {
+                const f = greatFortune.fortunes[i];
+                const gan = f.gan;
+                const zhi = f.zhi;
+                const ageStart = f.ageStart;
+                const ageEnd = f.ageEnd;
+                const isCurrent = !!f.isCurrent;
+                let level = null;
+                let score = undefined;
+                if (hasDayMaster && computeScore) {
+                    score = QualityMapper.computeDayunScore(gan, zhi, dayMaster);
+                } else if (typeof QualityMapper !== 'undefined' && QualityMapper.levelFromGanzhi) {
+                    level = QualityMapper.levelFromGanzhi(gan, zhi);
+                }
+                const cycle = { gan, zhi, ageStart, ageEnd, index: i, level, score };
+                const q = this.getCycleQuality(cycle);
+                const ageStr = `${ageStart}–${ageEnd}歲`;
+                const currentClass = isCurrent ? ' dayun-item--current' : '';
+                const currentBadge = isCurrent ? '<span class="dayun-current-badge">當下大運</span>' : '';
+                html += `<div class="dayun-item${currentClass}">${currentBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${q.label}</span></div>`;
             }
-            const cycle = { gan, zhi, ageStart, ageEnd, index: i - 1, level, score };
-            const isCurrent = currentAge != null && currentAge >= ageStart && currentAge <= ageEnd;
-            const q = this.getCycleQuality(cycle);
-            const ageStr = `${ageStart}–${ageEnd}歲`;
-            const currentClass = isCurrent ? ' dayun-item--current' : '';
-            const currentBadge = isCurrent ? '<span class="dayun-current-badge">當下大運</span>' : '';
-            html += `<div class="dayun-item${currentClass}">${currentBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${q.label}</span></div>`;
+        } else {
+            const yangStems = ['甲', '丙', '戊', '庚', '壬'];
+            const isYearGanYang = yangStems.includes(yearGan);
+            const forward = (gender === 'male') ? isYearGanYang : !isYearGanYang;
+            let sGan = HEAVENLY_STEMS.indexOf(monthPillar?.gan);
+            let sZhi = EARTHLY_BRANCHES.indexOf(monthPillar?.zhi);
+            if (sGan < 0 || sZhi < 0) return;
+
+            let currentAge = null;
+            if (this.userData && this.userData.birthDate) {
+                const birthYear = new Date(this.userData.birthDate + 'T12:00:00').getFullYear();
+                currentAge = new Date().getFullYear() - birthYear;
+            }
+
+            for (let i = 1; i <= 8; i++) {
+                const idxG = forward ? (sGan + i) % 10 : (sGan - i + 10) % 10;
+                const idxZ = forward ? (sZhi + i) % 12 : (sZhi - i + 12) % 12;
+                const gan = HEAVENLY_STEMS[idxG];
+                const zhi = EARTHLY_BRANCHES[idxZ];
+                const ageStart = 3 + (i - 1) * 10;
+                const ageEnd = ageStart + 9;
+                let level = null;
+                let score = undefined;
+                if (hasDayMaster && computeScore) {
+                    score = QualityMapper.computeDayunScore(gan, zhi, dayMaster);
+                } else if (typeof QualityMapper !== 'undefined' && QualityMapper.levelFromGanzhi) {
+                    level = QualityMapper.levelFromGanzhi(gan, zhi);
+                }
+                const cycle = { gan, zhi, ageStart, ageEnd, index: i - 1, level, score };
+                const isCurrent = currentAge != null && currentAge >= ageStart && currentAge <= ageEnd;
+                const q = this.getCycleQuality(cycle);
+                const ageStr = `${ageStart}–${ageEnd}歲`;
+                const currentClass = isCurrent ? ' dayun-item--current' : '';
+                const currentBadge = isCurrent ? '<span class="dayun-current-badge">當下大運</span>' : '';
+                html += `<div class="dayun-item${currentClass}">${currentBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${q.label}</span></div>`;
+            }
         }
+
         timeline.innerHTML = html;
     }
 }

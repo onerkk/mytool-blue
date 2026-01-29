@@ -257,7 +257,8 @@ class BaziCalculator {
         const longevity = this.calculateLongevity(fourPillars, dayMaster);
         const pattern = this.analyzePattern(fourPillars, dayMaster, elementStrength);
         const favorableElements = this.calculateFavorableElements(fourPillars, dayMaster, elementStrength);
-        const greatFortune = this.calculateGreatFortune(fullBirthDate, gender, fourPillars);
+        const dayunOpts = useSolarTime ? { longitude, zoneOffsetHours: 8 } : undefined;
+        const greatFortune = this.calculateGreatFortune(fullBirthDate, gender, fourPillars, dayunOpts);
         const lifePalace = this.calculateLifePalace(fourPillars, adjustedDate);
         const fetalOrigin = this.calculateFetalOrigin(fourPillars);
         const fetalBreath = this.calculateFetalBreath(fourPillars);
@@ -560,38 +561,132 @@ class BaziCalculator {
         return hasFood && hasWealth;
     }
     
-    // 大運計算（通用版）
-    calculateGreatFortune(birthDate, gender, fourPillars) {
+    /**
+     * 依節氣計算起運歲數（命理標準）
+     * 順行：從出生順數到下一個「節」；逆行：逆數到上一個「節」。
+     * 換算：3 日 = 1 歲，1 日 = 4 月，1 時 = 10 日。
+     * @param {Date|string} birthDate 出生日期時間
+     * @param {string} gender 'male'|'female'
+     * @param {{ year: { gan }, month: { gan, zhi } }} fourPillars 年柱、月柱
+     * @returns {{ startYears: number, startMonths: number, startAgeInYears: number } | null}
+     */
+    computeStartAgeFromSolarTerms(birthDate, gender, fourPillars) {
+        const date = new Date(birthDate);
+        if (isNaN(date.getTime())) return null;
+        const birthYear = date.getFullYear();
+        const yearStem = fourPillars.year?.gan;
+        if (!yearStem || !HEAVENLY_STEMS_DETAIL[yearStem]) return null;
+        const isYangYear = HEAVENLY_STEMS_DETAIL[yearStem].yinYang === '陽';
+        const isMale = gender === 'male';
+        const forward = (isYangYear && isMale) || (!isYangYear && !isMale);
+
+        const termsByYear = this._getSolarTermsJieForYear(birthYear);
+        if (!termsByYear || termsByYear.length === 0) return null;
+
+        let targetTerm = null;
+        if (forward) {
+            for (let i = 0; i < termsByYear.length; i++) {
+                if (termsByYear[i].date > date) {
+                    targetTerm = termsByYear[i];
+                    break;
+                }
+            }
+        } else {
+            for (let i = termsByYear.length - 1; i >= 0; i--) {
+                if (termsByYear[i].date < date) {
+                    targetTerm = termsByYear[i];
+                    break;
+                }
+            }
+        }
+        if (!targetTerm) return null;
+
+        const diffMs = forward
+            ? targetTerm.date.getTime() - date.getTime()
+            : date.getTime() - targetTerm.date.getTime();
+        if (diffMs <= 0) return null;
+
+        const diffDays = diffMs / (24 * 60 * 60 * 1000);
+        const startAgeInYears = diffDays / 3;
+        const startYears = Math.floor(diffDays / 3);
+        const remainderDays = diffDays - startYears * 3;
+        const startMonths = Math.min(11, Math.floor(remainderDays * 4));
+
+        return { startYears, startMonths, startAgeInYears };
+    }
+
+    /**
+     * 取得指定年份的 12 節（節氣之「節」）依時間排序。
+     * solarTerms 格式：{ 月: { '節名': [月,日,時,分] } }。目前支援 1983。
+     */
+    _getSolarTermsJieForYear(year) {
+        const map = year === 1983 ? this.solarTerms1983 : null;
+        if (!map) return [];
+        const out = [];
+        for (const obj of Object.values(map)) {
+            for (const name of Object.keys(obj)) {
+                const arr = obj[name];
+                if (!arr || !Array.isArray(arr)) continue;
+                const [m, d, h, min] = arr;
+                const dDate = new Date(year, m - 1, d, h || 0, min || 0, 0, 0);
+                if (!isNaN(dDate.getTime())) out.push({ name, date: dDate });
+            }
+        }
+        out.sort((a, b) => a.date.getTime() - b.date.getTime());
+        return out;
+    }
+
+    // 大運計算（通用版）— 優先使用 DaYunCalculator + SolarTermCalculator 架構
+    calculateGreatFortune(birthDate, gender, fourPillars, opts) {
+        if (typeof DaYunCalculator !== 'undefined' && typeof SolarTermCalculator !== 'undefined') {
+            const solar = new SolarTermCalculator();
+            const dayun = new DaYunCalculator({ solarCalculator: solar });
+            const result = dayun.calculate(birthDate, gender, fourPillars, opts);
+            const list = result.dayunList;
+            if (list && list.cycles && list.cycles.length > 0) {
+                result.fortunes = list.cycles.map(c => ({
+                    gan: c.gan,
+                    zhi: c.zhi,
+                    ageStart: c.age_start,
+                    ageEnd: c.age_end,
+                    year_start: c.year_start,
+                    year_end: c.year_end,
+                    solar_term: c.solar_term,
+                    nayin: this.getNayin(c.gan, c.zhi),
+                    isCurrent: !!c.is_current,
+                    remark: c.is_current ? '★ 當前大運 ★' : '',
+                    description: this.getDayunDescription(c.gan, c.zhi, fourPillars.day.gan)
+                }));
+                result.currentFortune = result.fortunes.find(f => f.isCurrent) || null;
+            }
+            return result;
+        }
+        return this._calculateGreatFortuneLegacy(birthDate, gender, fourPillars);
+    }
+
+    _calculateGreatFortuneLegacy(birthDate, gender, fourPillars) {
         const date = new Date(birthDate);
         const birthYear = date.getFullYear();
-        const birthMonth = date.getMonth() + 1;
-        const birthDay = date.getDate();
-        
-        // 計算起運歲數（簡化版）
-        // 陽年男命、陰年女命順行；陰年男命、陽年女命逆行
         const yearStem = fourPillars.year.gan;
         const isYangYear = HEAVENLY_STEMS_DETAIL[yearStem].yinYang === '陽';
         const isMale = gender === 'male';
-        
-        // 順行或逆行
         const direction = (isYangYear && isMale) || (!isYangYear && !isMale) ? '順行' : '逆行';
-        
-        // 簡化起運計算：每10年一大運
-        const startAge = 5; // 簡化為5歲起運
-        const startYears = startAge;
-        const startMonths = 0;
-        
-        // 生成大運列表
+
+        let startYears = 5, startMonths = 0, startAge = 5;
+        const computed = this.computeStartAgeFromSolarTerms(birthDate, gender, fourPillars);
+        if (computed) {
+            startYears = computed.startYears;
+            startMonths = computed.startMonths;
+            startAge = computed.startAgeInYears < 3 / 365 ? 0 : Math.floor(computed.startAgeInYears);
+        }
+
         const fortunesData = [];
         const currentYear = new Date().getFullYear();
         const currentAge = currentYear - birthYear;
-        
-        // 根據順逆排大運
         let currentStemIndex = this.stems.indexOf(fourPillars.month.gan);
         let currentBranchIndex = this.branches.indexOf(fourPillars.month.zhi);
-        
-        for (let i = 0; i < 8; i++) { // 生成8步大運
-            // 計算干支
+
+        for (let i = 0; i < 8; i++) {
             if (direction === '順行') {
                 currentStemIndex = (currentStemIndex + 1) % 10;
                 currentBranchIndex = (currentBranchIndex + 1) % 12;
@@ -599,24 +694,19 @@ class BaziCalculator {
                 currentStemIndex = (currentStemIndex - 1 + 10) % 10;
                 currentBranchIndex = (currentBranchIndex - 1 + 12) % 12;
             }
-            
             const gan = this.stems[currentStemIndex];
             const zhi = this.branches[currentBranchIndex];
             const ageStart = startAge + i * 10;
             const ageEnd = ageStart + 9;
-            
             fortunesData.push({
-                gan,
-                zhi,
-                ageStart,
-                ageEnd,
+                gan, zhi, ageStart, ageEnd,
                 nayin: this.getNayin(gan, zhi),
                 isCurrent: currentAge >= ageStart && currentAge <= ageEnd,
                 remark: (currentAge >= ageStart && currentAge <= ageEnd) ? '★ 當前大運 ★' : '',
                 description: this.getDayunDescription(gan, zhi, fourPillars.day.gan)
             });
         }
-        
+
         return {
             direction,
             startAge: `${startYears}歲${startMonths}個月`,
