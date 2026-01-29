@@ -1778,6 +1778,74 @@
   /* ========== CRITICAL: Mobile 八字分析區強制版面 (max-width: 768px) ========== */
   /* 十神全寬獨立區塊；五行|喜用 50/50 並排；無 grid 並排、無 min-width 限制 */
 
+  /* 八字輸入頁：父層全寬，避免左欄約束 */
+  #bazi-section,
+  #bazi-section .bazi-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* bazi-grid：移除 grid 限制，改 flex 直排全寬，避免內容卡左欄 */
+  #bazi-section .bazi-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    grid-template-columns: unset !important;
+    gap: 1rem !important;
+    margin-bottom: 1rem !important;
+    box-sizing: border-box !important;
+  }
+
+  #bazi-section .bazi-grid .analysis-grid-container {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 1rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #bazi-section .bazi-grid .analysis-card-tengods {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0.75rem 0.5rem !important;
+    margin: 0 !important;
+  }
+
+  #bazi-section .bazi-grid .analysis-card-tengods .gods-detail-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #bazi-section .bazi-grid .analysis-row-wuxing-shensha {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+  }
+
+  #bazi-section .bazi-grid .analysis-card-wuxing,
+  #bazi-section .bazi-grid .analysis-card-shensha {
+    flex: 1 !important;
+    width: 50% !important;
+    min-width: 0 !important;
+    padding: 0.5rem !important;
+    margin: 0 !important;
+  }
+
   #result-section .bazi-result,
   #result-section .analysis-grid-container {
     width: 100% !important;

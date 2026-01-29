@@ -2421,8 +2421,8 @@ class FortuneSystem {
         };
         
         grid.innerHTML = `
-            <div class="analysis-grid-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="analysis-card" style="grid-column: 1;">
+            <div class="analysis-grid-container bazi-grid-analysis">
+                <div class="analysis-card analysis-card-tengods">
                     <div class="analysis-header">
                         <i class="fas fa-sitemap"></i> 十神與藏干詳解
                     </div>
@@ -2439,9 +2439,8 @@ class FortuneSystem {
                         }).join('')}
                     </div>
                 </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="analysis-card">
+                <div class="analysis-row-wuxing-shensha">
+                    <div class="analysis-card analysis-card-wuxing">
                         <div class="analysis-header">
                             <i class="fas fa-chart-pie"></i> 五行強弱分佈
                         </div>
@@ -2449,8 +2448,7 @@ class FortuneSystem {
                             ${this.renderElementBars(data)}
                         </div>
                     </div>
-                    
-                    <div class="analysis-card">
+                    <div class="analysis-card analysis-card-shensha">
                         <div class="analysis-header">
                             <i class="fas fa-star"></i> 喜用與神煞
                         </div>

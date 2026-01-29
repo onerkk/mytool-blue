@@ -2427,15 +2427,14 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     font-weight: 600;
 }
 
-/* 響應式調整：手機版由 responsive.css 強制重構，此處僅保留最小覆寫 */
+/* 手機版 analysis-grid 由 responsive.css 強制 flex 直排；此處不再用 grid */
 @media (max-width: 768px) {
     .analysis-grid-container {
-        grid-template-columns: 1fr !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 100% !important;
         gap: 1rem !important;
-    }
-    .analysis-grid-container > .analysis-card {
-        grid-column: 1 !important;
-        grid-row: auto !important;
     }
 }
 /* ... 保留您原本 main.css 的所有內容，並在最下方加入以下樣式 ... */
