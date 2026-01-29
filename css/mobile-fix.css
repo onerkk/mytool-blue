@@ -160,4 +160,28 @@
     #result-section * {
         box-sizing: border-box !important;
     }
+    
+    /* 十神與藏干 / 四柱表格：外層可橫向滑動，表格 min-width 不擠壓 */
+    #result-section .analysis-grid-container > .analysis-card:first-child {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    #result-section .gods-detail-grid {
+        min-width: 500px !important;
+        width: max-content !important;
+        max-width: none !important;
+    }
+    
+    /* 結果區底部留白，避免被懸浮按鈕遮擋 */
+    #result-section {
+        padding-bottom: 100px !important;
+    }
+    
+    /* 綜合結論、推薦區等底部區塊也留白 */
+    #result-section .final-conclusion,
+    #result-section .master-summary,
+    #result-section .product-recommendation-card {
+        margin-bottom: 0.5rem !important;
+    }
 }

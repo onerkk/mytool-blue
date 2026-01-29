@@ -575,18 +575,60 @@
     }
 }
 
-/* 小屏幕手機優化 */
+/* 小屏幕手機優化 (480px) */
 @media (max-width: 480px) {
     body {
         font-size: 15px;
+        line-height: 1.6;
     }
     
     .main-container {
-        padding: 5px;
+        padding: 0.5rem !important; /* 約 8px，與 10px 接近 */
     }
     
     .section {
-        padding: 1rem 0.75rem;
+        padding: 0.75rem 0.625rem !important; /* 約 12px 左右 */
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* 分析結果區：詳細命理 / 個性分析卡片 - 縮小左右 padding */
+    #result-section .analysis-card,
+    #result-section .overview-card,
+    #result-section .probability-meter,
+    #result-section .dimension-analysis {
+        padding-left: 0.625rem !important;   /* 10px */
+        padding-right: 0.625rem !important;  /* 10px */
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* 文字區域：字體與行高易讀 */
+    #result-section .text-content,
+    #result-section .text-content p,
+    #result-section .question-display,
+    #result-section .direct-answer,
+    #result-section .answer-text {
+        font-size: 0.9375rem !important; /* 約 15px */
+        line-height: 1.6 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    #result-section h3,
+    #result-section h4 {
+        font-size: 1rem !important;
+        line-height: 1.6 !important;
+    }
+    
+    /* 結果區底部留白，避免被懸浮按鈕蓋住 */
+    #result-section {
+        padding-bottom: 100px !important;
     }
     
     .app-header h1 {
@@ -923,24 +965,30 @@
     }
     
     .floating-btn {
-        width: 48px !important;
-        height: 48px !important;
-        min-width: 48px !important;
-        min-height: 48px !important;
-        max-width: 48px !important;
-        max-height: 48px !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        max-width: 44px !important;
+        max-height: 44px !important;
         font-size: 0.65rem !important;
         margin: 0 !important;
         padding: 0.2rem !important;
+        opacity: 0.88 !important; /* 小螢幕略降透明度，減少干擾 */
+    }
+    
+    .floating-btn:active,
+    .floating-btn:hover {
+        opacity: 1 !important;
     }
     
     .floating-btn i {
-        font-size: 0.9rem !important;
+        font-size: 0.85rem !important;
         margin-bottom: 0.1rem !important;
     }
     
     .floating-label {
-        font-size: 0.55rem !important;
+        font-size: 0.5rem !important;
         line-height: 1 !important;
     }
     
@@ -1749,23 +1797,30 @@
     margin: 0 !important;
   }
   
-  /* 十神與藏干詳解 - 手機版改為可橫向滾動，避免重疊 */
+  /* 十神與藏干詳解 / 四柱表格：外層可橫向滑動，表格保持寬度不擠壓 */
+  .analysis-grid-container > .analysis-card:first-child {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
   .gods-detail-grid {
     display: grid !important;
-    grid-template-columns: repeat(4, minmax(90px, 1fr)) !important;
+    grid-template-columns: repeat(4, 1fr) !important;
     gap: 0.75rem !important;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    min-width: 500px !important; /* 保持表格寬度，可左右滑動查看 */
+    width: max-content !important;
     padding: 0.75rem 0.5rem !important;
-    width: 100%;
-    max-width: 100%;
     margin: 0;
     box-sizing: border-box;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
   }
   
   .gods-column {
-    min-width: 90px !important;
-    width: 100%;
+    min-width: 110px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 0.5rem !important;
@@ -1773,7 +1828,7 @@
   }
   
   .gods-col-title {
-    font-size: 0.8rem !important;
+    font-size: 0.85rem !important;
     white-space: nowrap;
     font-weight: 600;
     padding: 0.25rem 0;
@@ -1782,15 +1837,14 @@
   }
   
   .gods-item {
-    font-size: 0.8rem !important;
-    padding: 0.5rem 0.75rem !important;
-    white-space: normal !important;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    font-size: 0.85rem !important;
+    padding: 0.5rem 0.5rem !important;
+    white-space: nowrap !important;
     line-height: 1.4 !important;
     min-height: 2rem;
     display: flex;
     align-items: center;
+    justify-content: center;
     text-overflow: unset;
     overflow: visible;
   }
@@ -1846,16 +1900,19 @@
     font-weight: 600;
   }
   
-  /* 確保分析卡片不溢出 */
+  /* 確保分析卡片不溢出；第一張（十神表格）可橫向滾動 */
   .analysis-card {
     width: 100% !important;
     max-width: 100% !important;
-    overflow-x: hidden !important;
     overflow-y: visible !important;
     box-sizing: border-box !important;
-    padding: 1rem 0.75rem !important;
+    padding: 0.75rem 0.5rem !important;
     margin: 0 0 1rem 0 !important;
     display: block !important;
+  }
+  
+  .analysis-grid-container > .analysis-card:not(:first-child) {
+    overflow-x: visible !important;
   }
   
   /* 確保卡片內容不溢出 */
@@ -1865,10 +1922,20 @@
     box-sizing: border-box !important;
   }
   
+  .analysis-grid-container > .analysis-card:first-child > .gods-detail-grid {
+    width: max-content !important;
+    max-width: none !important;
+  }
+  
   .analysis-header {
     font-size: 0.95rem !important;
     padding: 0.75rem 0 !important;
     margin-bottom: 0.75rem !important;
+  }
+  
+  /* 結果區底部留白，避免被懸浮按鈕遮擋 */
+  #result-section {
+    padding-bottom: 100px !important;
   }
   
   /* 浮動按鈕調整 - 避免遮擋內容，確保完整顯示 */
@@ -1888,12 +1955,12 @@
   }
   
   .floating-btn {
-    width: 52px !important;
-    height: 52px !important;
-    min-width: 52px !important;
-    min-height: 52px !important;
-    max-width: 52px !important;
-    max-height: 52px !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    max-width: 48px !important;
+    max-height: 48px !important;
     font-size: 0.7rem !important;
     margin: 0 !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
@@ -1905,6 +1972,12 @@
     box-sizing: border-box !important;
     overflow: visible !important;
     position: relative !important;
+    opacity: 0.92 !important; /* 略降透明度，減少干擾閱讀 */
+  }
+  
+  .floating-btn:active,
+  .floating-btn:hover {
+    opacity: 1 !important;
   }
   
   .floating-btn i {
