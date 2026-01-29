@@ -1918,7 +1918,7 @@ class FortuneSystem {
                     
                     this.renderBaziGrid(baziData);
                     this.renderBaziDetails(baziData);
-                    this.renderDayun(this.userData.gender, baziData.year.gan, baziData.month);
+                    this.renderDayun(this.userData.gender, baziData.year.gan, baziData.month, baziData.day?.gan);
                     this.renderAdvancedAnalysis(fullBaziData);
                     
                     document.getElementById('time-correction-info').style.display = 'block';
@@ -1958,7 +1958,7 @@ class FortuneSystem {
                     const baziData = this.internalCalculateBazi(this.userData.birthDate, useTime);
                     this.renderBaziGrid(baziData);
                     this.renderBaziDetails(baziData);
-                    this.renderDayun(this.userData.gender, baziData.year.gan, baziData.month);
+                    this.renderDayun(this.userData.gender, baziData.year.gan, baziData.month, baziData.day?.gan);
                     
                     document.getElementById('time-correction-info').style.display = 'block';
                     
@@ -2615,22 +2615,20 @@ class FortuneSystem {
     }
 
     /**
-     * 運勢品質 placeholder。可後續接入 yunshi_analyzer / 五行生克 / 十神 等邏輯。
-     * 對應 YunShiAnalysis.level 時建議：大吉・中吉・小吉 → 優；平 → 平；小凶・中凶・大凶 → 劣。
-     * @param {Object} cycle - { gan, zhi, ageStart, ageEnd, index }
-     * @returns {{ label: '優'|'平'|'劣', class: 'excellent'|'average'|'poor' }}
+     * 運勢品質：使用 QualityMapper（與 utils/quality_mapper.py 對齊）。
+     * cycle 可有 level（大吉/中吉/…）或 score；若無則以 levelFromGanzhi 推估，再無則 fallback。
+     * @param {Object} cycle - { gan, zhi, ageStart, ageEnd, index, level?, score? }
+     * @returns {{ label: string, class: string }}
      */
     getCycleQuality(cycle) {
-        // Placeholder: 依 index 輪替。日後可改為基於日主、喜用神、五行生克的實質推算。
-        const choices = [
-            { label: '優', class: 'excellent' },
-            { label: '平', class: 'average' },
-            { label: '劣', class: 'poor' }
-        ];
-        return choices[cycle.index % 3];
+        if (typeof QualityMapper !== 'undefined' && QualityMapper.getCycleQuality) {
+            return QualityMapper.getCycleQuality(cycle, QualityMapper.DEFAULT_QUALITY);
+        }
+        const fb = { label: '平', class: 'neutral' };
+        return fb;
     }
 
-    renderDayun(gender, yearGan, monthPillar) {
+    renderDayun(gender, yearGan, monthPillar, dayMaster) {
         const timeline = document.getElementById('dayun-timeline');
         if (!timeline) return;
         const yangStems = ['甲', '丙', '戊', '庚', '壬'];
@@ -2646,6 +2644,9 @@ class FortuneSystem {
             currentAge = new Date().getFullYear() - birthYear;
         }
 
+        const hasDayMaster = typeof dayMaster === 'string' && dayMaster.length > 0;
+        const computeScore = typeof QualityMapper !== 'undefined' && QualityMapper.computeDayunScore;
+
         let html = '';
         const getColor = (c) => { const map = { '木':'#4CAF50', '火':'#F44336', '土':'#795548', '金':'#FF9800', '水':'#2196F3' }; return map[WUXING_MAP[c]] || '#333'; };
 
@@ -2656,7 +2657,14 @@ class FortuneSystem {
             const zhi = EARTHLY_BRANCHES[idxZ];
             const ageStart = 3 + (i - 1) * 10;
             const ageEnd = ageStart + 9;
-            const cycle = { gan, zhi, ageStart, ageEnd, index: i - 1 };
+            let level = null;
+            let score = undefined;
+            if (hasDayMaster && computeScore) {
+                score = QualityMapper.computeDayunScore(gan, zhi, dayMaster);
+            } else if (typeof QualityMapper !== 'undefined' && QualityMapper.levelFromGanzhi) {
+                level = QualityMapper.levelFromGanzhi(gan, zhi);
+            }
+            const cycle = { gan, zhi, ageStart, ageEnd, index: i - 1, level, score };
             const isCurrent = currentAge != null && currentAge >= ageStart && currentAge <= ageEnd;
             const q = this.getCycleQuality(cycle);
             const ageStr = `${ageStart}–${ageEnd}歲`;

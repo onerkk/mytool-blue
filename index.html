@@ -623,7 +623,8 @@
                             <div class="dimension-pane active" id="bazi-pane">
                                 <div class="bazi-result" id="bazi-result">
                                     <div class="analysis-grid-container">
-                                        <div class="analysis-card">
+                                        <!-- SECTION 1: 十神與藏干 — 獨立全寬區塊，不與其他並排 -->
+                                        <div class="analysis-card analysis-card-tengods">
                                             <div class="analysis-header">
                                                 <i class="fas fa-sitemap"></i> 十神與藏干詳解
                                             </div>
@@ -651,7 +652,9 @@
                                             </div>
                                         </div>
     
-                                        <div class="analysis-card">
+                                        <!-- SECTION 2: 五行強弱 | 喜用與神煞 — 單行 50/50 並排 -->
+                                        <div class="analysis-row-wuxing-shensha">
+                                        <div class="analysis-card analysis-card-wuxing">
                                             <div class="analysis-header">
                                                 <i class="fas fa-chart-pie"></i> 五行強弱分佈
                                             </div>
@@ -694,7 +697,7 @@
                                             </div>
                                         </div>
     
-                                        <div class="analysis-card">
+                                        <div class="analysis-card analysis-card-shensha">
                                             <div class="analysis-header">
                                                 <i class="fas fa-star"></i> 喜用與神煞
                                             </div>
@@ -718,6 +721,7 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
                                         </div>
     
                                         <div class="analysis-card">
@@ -979,6 +983,7 @@
         </footer>
     
         <script src="js/bazi-system.js"></script>
+        <script src="js/quality-mapper.js"></script>
         <script src="js/meihua-system.js"></script>
         <script src="js/nameology-system.js"></script>
         <script src="js/tarot-system.js"></script>

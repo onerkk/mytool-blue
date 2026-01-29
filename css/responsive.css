@@ -1775,151 +1775,183 @@
   .card-mini-img img{ height:110px; }
   .floating-store-btn{ right:12px; bottom:14px; }
   
-  /* ========== Mobile 強制樣式重構 (max-width: 768px) ========== */
-  /* 嚴禁雙欄：所有主要容器單欄滿版 */
-  
-  .analysis-grid-container {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    grid-template-rows: none !important;
+  /* ========== CRITICAL: Mobile 八字分析區強制版面 (max-width: 768px) ========== */
+  /* 十神全寬獨立區塊；五行|喜用 50/50 並排；無 grid 並排、無 min-width 限制 */
+
+  #result-section .bazi-result,
+  #result-section .analysis-grid-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #result-section .analysis-grid-container {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
     gap: 1rem !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 0 !important;
+    padding: 0.5rem 0 !important;
     margin: 1rem 0 !important;
     box-sizing: border-box !important;
   }
-  
-  .analysis-grid-container > .analysis-card {
-    grid-column: 1 !important;
-    grid-row: auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
+
+  /* --- SECTION 1: 十神與藏干 — 獨立全寬，不與任何元素並排 --- */
+  #result-section .analysis-card-tengods {
     display: block !important;
-  }
-  
-  /* --- 1. 十神與藏干詳解：全寬 100%，表格不折行，外層可左右滑動 --- */
-  .analysis-grid-container > .analysis-card:first-child {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
+    flex: 0 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    padding: 0.75rem 0.5rem !important;
+    margin: 0 !important;
     box-sizing: border-box !important;
-    grid-column: 1 !important;
   }
-  
-  .gods-detail-grid {
+
+  #result-section .analysis-card-tengods .gods-detail-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 0.75rem !important;
-    min-width: 480px !important;
-    width: max-content !important;
-    padding: 0.75rem 0.5rem !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0.5rem !important;
     margin: 0 !important;
     box-sizing: border-box !important;
     background: rgba(0,0,0,0.2) !important;
     border-radius: 8px !important;
-    white-space: nowrap !important;
   }
-  
-  .gods-detail-grid .gods-column,
-  .gods-detail-grid .gods-col-title,
-  .gods-detail-grid .gods-item {
-    white-space: nowrap !important;
-  }
-  
-  .gods-column {
-    min-width: 100px !important;
+
+  #result-section .analysis-card-tengods .gods-column {
+    min-width: 0 !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 0.5rem !important;
+    gap: 0.25rem !important;
   }
-  
-  .gods-col-title {
-    font-size: 0.9rem !important;
+
+  #result-section .analysis-card-tengods .gods-col-title,
+  #result-section .analysis-card-tengods .gods-item {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    font-size: 0.85rem !important;
+  }
+
+  .analysis-card-tengods .gods-col-title {
     font-weight: 600 !important;
     color: var(--gold-primary) !important;
   }
-  
-  .gods-item {
-    font-size: 0.9rem !important;
-    padding: 0.5rem !important;
-    line-height: 1.4 !important;
-  }
-  
-  /* --- 2. 五行強弱分佈：單欄滿版，進度條延伸到最右邊 --- */
-  .element-bar-group {
-    display: block !important;
+
+  /* --- SECTION 2: 五行 | 喜用 — flex row 50/50，整行全寬 --- */
+  #result-section .analysis-row-wuxing-shensha {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 0.75rem 0 !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+    padding: 0 !important;
     margin: 0 !important;
     box-sizing: border-box !important;
   }
-  
-  .element-row {
+
+  #result-section .analysis-card-wuxing,
+  #result-section .analysis-card-shensha {
+    flex: 1 !important;
+    width: 50% !important;
+    min-width: 0 !important;
+    max-width: 50% !important;
+    display: block !important;
+    padding: 0.5rem !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+
+  #result-section .analysis-card-wuxing .analysis-header,
+  #result-section .analysis-card-shensha .analysis-header {
+    font-size: 0.9rem !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  #result-section .analysis-card-wuxing .element-bar-group,
+  #result-section .analysis-card-shensha #ui-shensha-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #result-section .analysis-card-wuxing .element-row {
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
     width: 100% !important;
-    max-width: 100% !important;
-    gap: 0.5rem !important;
-    min-height: 36px !important;
-    padding: 0.25rem 0 !important;
-    box-sizing: border-box !important;
+    gap: 0.35rem !important;
+    min-height: 32px !important;
+    padding: 0.15rem 0 !important;
     flex-wrap: nowrap !important;
   }
-  
-  .element-label {
+
+  #result-section .analysis-card-wuxing .element-label {
+    width: 1.5rem !important;
+    min-width: 1.5rem !important;
+    flex-shrink: 0 !important;
+    font-size: 0.85rem !important;
+  }
+
+  #result-section .analysis-card-wuxing .progress-track {
+    flex: 1 !important;
+    min-width: 0 !important;
+    height: 8px !important;
+  }
+
+  #result-section .analysis-card-wuxing .element-value {
     width: 2rem !important;
     min-width: 2rem !important;
     flex-shrink: 0 !important;
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    text-align: center !important;
+    font-size: 0.8rem !important;
   }
-  
-  .progress-track {
-    flex-grow: 1 !important;
-    flex-shrink: 1 !important;
-    min-width: 0 !important;
-    width: 100% !important;
-    max-width: none !important;
-    height: 10px !important;
+
+  #result-section .analysis-card-shensha .tag-container {
+    flex-wrap: wrap !important;
+    gap: 0.35rem !important;
   }
-  
-  .element-value {
-    width: 2.5rem !important;
-    min-width: 2.5rem !important;
-    flex-shrink: 0 !important;
-    font-size: 0.85rem !important;
-    text-align: right !important;
+
+  #result-section .analysis-card-shensha .bazi-tag {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.5rem !important;
   }
-  
-  /* --- 3. 分析卡片（個性特質、事業財運等）：垂直堆疊，各佔 100% 寬 --- */
-  .analysis-card {
+
+  #result-section .analysis-card-shensha #ui-shensha-content p {
+    font-size: 0.8rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  /* --- 個性、事業等其餘卡片：全寬 --- */
+  #result-section .analysis-grid-container > .analysis-card {
+    flex: 0 0 auto !important;
     width: 100% !important;
     max-width: 100% !important;
     display: block !important;
-    box-sizing: border-box !important;
     padding: 0.75rem 0.5rem !important;
-    margin: 0 0 1rem 0 !important;
-    overflow-x: visible !important;
-    overflow-y: visible !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
   }
-  
-  .analysis-grid-container > .analysis-card:not(:first-child) {
-    overflow-x: visible !important;
-  }
-  
-  .analysis-card > * {
+
+  #result-section .analysis-grid-container .analysis-card > * {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
-  
-  .analysis-header {
+
+  #result-section .analysis-grid-container .analysis-header {
     font-size: 0.95rem !important;
     padding: 0.75rem 0 !important;
     margin-bottom: 0.75rem !important;
