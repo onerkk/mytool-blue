@@ -2614,22 +2614,57 @@ class FortuneSystem {
         }
     }
 
+    /**
+     * 運勢品質 placeholder。可後續接入 yunshi_analyzer / 五行生克 / 十神 等邏輯。
+     * 對應 YunShiAnalysis.level 時建議：大吉・中吉・小吉 → 優；平 → 平；小凶・中凶・大凶 → 劣。
+     * @param {Object} cycle - { gan, zhi, ageStart, ageEnd, index }
+     * @returns {{ label: '優'|'平'|'劣', class: 'excellent'|'average'|'poor' }}
+     */
+    getCycleQuality(cycle) {
+        // Placeholder: 依 index 輪替。日後可改為基於日主、喜用神、五行生克的實質推算。
+        const choices = [
+            { label: '優', class: 'excellent' },
+            { label: '平', class: 'average' },
+            { label: '劣', class: 'poor' }
+        ];
+        return choices[cycle.index % 3];
+    }
+
     renderDayun(gender, yearGan, monthPillar) {
         const timeline = document.getElementById('dayun-timeline');
+        if (!timeline) return;
         const yangStems = ['甲', '丙', '戊', '庚', '壬'];
         const isYearGanYang = yangStems.includes(yearGan);
         const forward = (gender === 'male') ? isYearGanYang : !isYearGanYang;
         let sGan = HEAVENLY_STEMS.indexOf(monthPillar.gan);
         let sZhi = EARTHLY_BRANCHES.indexOf(monthPillar.zhi);
+        if (sGan < 0 || sZhi < 0) return;
+
+        let currentAge = null;
+        if (this.userData && this.userData.birthDate) {
+            const birthYear = new Date(this.userData.birthDate + 'T12:00:00').getFullYear();
+            currentAge = new Date().getFullYear() - birthYear;
+        }
+
         let html = '';
         const getColor = (c) => { const map = { '木':'#4CAF50', '火':'#F44336', '土':'#795548', '金':'#FF9800', '水':'#2196F3' }; return map[WUXING_MAP[c]] || '#333'; };
-        for(let i=1; i<=8; i++) {
-            let idxG = forward ? (sGan+i)%10 : (sGan-i+10)%10;
-            let idxZ = forward ? (sZhi+i)%12 : (sZhi-i+12)%12;
-            let gan = HEAVENLY_STEMS[idxG]; let zhi = EARTHLY_BRANCHES[idxZ];
-            html += `<div class="dayun-item"><div class="age">${3+(i-1)*10}歲</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div></div>`;
+
+        for (let i = 1; i <= 8; i++) {
+            const idxG = forward ? (sGan + i) % 10 : (sGan - i + 10) % 10;
+            const idxZ = forward ? (sZhi + i) % 12 : (sZhi - i + 12) % 12;
+            const gan = HEAVENLY_STEMS[idxG];
+            const zhi = EARTHLY_BRANCHES[idxZ];
+            const ageStart = 3 + (i - 1) * 10;
+            const ageEnd = ageStart + 9;
+            const cycle = { gan, zhi, ageStart, ageEnd, index: i - 1 };
+            const isCurrent = currentAge != null && currentAge >= ageStart && currentAge <= ageEnd;
+            const q = this.getCycleQuality(cycle);
+            const ageStr = `${ageStart}–${ageEnd}歲`;
+            const currentClass = isCurrent ? ' dayun-item--current' : '';
+            const currentBadge = isCurrent ? '<span class="dayun-current-badge">當下大運</span>' : '';
+            html += `<div class="dayun-item${currentClass}">${currentBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${q.label}</span></div>`;
         }
-        if(timeline) timeline.innerHTML = html;
+        timeline.innerHTML = html;
     }
 }
 

@@ -1799,12 +1799,14 @@
     display: block !important;
   }
   
-  /* --- 1. 十神與藏干詳解：表格不折行，外層可左右滑動 --- */
+  /* --- 1. 十神與藏干詳解：全寬 100%，表格不折行，外層可左右滑動 --- */
   .analysis-grid-container > .analysis-card:first-child {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
+    grid-column: 1 !important;
   }
   
   .gods-detail-grid {
