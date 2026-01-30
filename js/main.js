@@ -1598,6 +1598,8 @@ class FortuneSystem {
             const sancaiTrait = talents.sancaiTrait || '';
             const dim = talents.dimensionScores || null;
             const dimHtml = dim && typeof dim.穩定性 === 'number' ? `<div style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem;"><span class="bazi-tag" style="padding: 0.35rem 0.75rem;">穩定性 ${dim.穩定性}</span><span class="bazi-tag" style="padding: 0.35rem 0.75rem;">發展性 ${dim.發展性}</span><span class="bazi-tag" style="padding: 0.35rem 0.75rem;">協調性 ${dim.協調性}</span></div>` : '';
+            // 只顯示一則解讀：優先 sancaiTrait（生克類型），無則用 config 的 description，避免重複
+            const singleDesc = sancaiTrait ? sancaiTrait : desc;
             
             talentsHtml = `
                 <div class="analysis-card">
@@ -1613,8 +1615,7 @@ class FortuneSystem {
                             ${sancaiLuck ? `<span class="bazi-tag ${sancaiLuck === '吉' || sancaiLuck === '中吉' ? 'tag-favorable' : sancaiLuck === '凶' ? 'tag-unfavorable' : ''}" style="padding: 0.5rem 1rem;">${sancaiLuck}</span>` : ''}
                             ${energyFlow ? `<span class="bazi-tag" style="padding: 0.5rem 1rem;">${energyFlow}</span>` : ''}
                         </div>
-                        ${desc ? `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(212, 175, 55, 0.05); border-radius: 4px; line-height: 1.6;">${desc}</div>` : ''}
-                        ${sancaiTrait ? `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(212, 175, 55, 0.05); border-radius: 4px; line-height: 1.6; font-size: 0.9rem;">${sancaiTrait}</div>` : ''}
+                        ${singleDesc ? `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(212, 175, 55, 0.05); border-radius: 4px; line-height: 1.6; font-size: 0.9rem;">${singleDesc}</div>` : ''}
                         ${relations ? `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(212, 175, 55, 0.05); border-radius: 4px; line-height: 1.6; font-size: 0.9rem; color: rgba(255,255,255,0.7);">五行關係：${relations}</div>` : ''}
                         ${dimHtml}
                     </div>

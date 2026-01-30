@@ -29,7 +29,7 @@
 
 - **現行作法**：各維度取上述 `fortuneScore`／`overallScore`／`strength`（或 50），**只對「有數值」的維度做簡單算術平均**，得到「整體機率」。
 - **沒有**：維度權重、貝葉斯、各派權重、因果模型等**聯合機率模型**。
-- **result-generator** 另有一套 `calculateOverallLuck`：八字簡化為身強 75 / 否則 50、梅花吉 80 / 否則 60、塔羅**固定 70**、姓名 `overallScore` 或 75，再四者平均；且洞察／結論等有 **`Math.random()` 隨機挑句**，非由命理規則唯一決定。
+- **已移除**：舊版 result-generator 的 `calculateOverallLuck`（八字簡化 75/50、梅花 80/60、塔羅固定 70、姓名 75 再平均，及隨機挑句）已廢棄；現行機率與結論由 `main.js` 與 `probability-pipeline.js` 等模組負責。
 
 ---
 

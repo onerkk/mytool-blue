@@ -1,7 +1,8 @@
-# 桌面與手機樣式同步說明
+# 桌面與手機同步說明（網頁與手機同步更新）
 
 ## 原則
-**網頁有變、手機也要變。** 修改樣式時，若會影響手機版，請同步更新手機用 CSS。
+- **網頁有變、手機也要變。** 修改樣式時，若會影響手機版，請同步更新手機用 CSS。
+- **邏輯單一來源**：結果區內容（八字、梅花、塔羅、姓名學、交叉驗證）均由 `main.js` 等共用模組渲染，**同一份程式碼同時服務網頁與手機**，改一處即同步，無需分開維護。
 
 ## 大運流年（dayun）
 - **桌面：** `css/main.css` — `.dayun-quality`、`.dayun-fortune-type` 系列
@@ -16,5 +17,5 @@
 - `css/responsive.css`（768px / 480px 區塊）
 
 ## 姓名學內容同步（網頁版／手機版）
-- **單一來源**：姓名學結果由 `main.js` 的 `displayNameResult()` 渲染（五格、三才、八字聯動、建議、重要說明）。
-- **result-generator.js**：點擊「姓名學」分頁或生成報告時，若 `window.fortuneSystem.analysisResults.nameology` 存在，改為呼叫 `fortuneSystem.displayNameResult()`，不再使用舊版簡化模板，確保網頁版與手機版顯示一致。
+- **單一來源**：姓名學結果由 `main.js` 的 `displayNameResult()` 渲染（五格、三才配置、八字聯動、建議、重要說明）。三才配置解讀僅顯示一則（優先 `sancaiTrait`，避免與 config 的 description 重複）。
+- **四維度分頁與報告**：分頁切換與報告生成均在 `main.js` 中處理；點擊「姓名學」分頁時直接顯示 `displayNameResult()` 的內容，**網頁與手機同步更新**，無需另做手機版邏輯。
