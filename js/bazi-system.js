@@ -257,7 +257,7 @@ class BaziCalculator {
         const longevity = this.calculateLongevity(fourPillars, dayMaster);
         const pattern = this.analyzePattern(fourPillars, dayMaster, elementStrength);
         const favorableElements = this.calculateFavorableElements(fourPillars, dayMaster, elementStrength);
-        const dayunOpts = useSolarTime ? { longitude, zoneOffsetHours: 8 } : undefined;
+        const dayunOpts = (typeof longitude === 'number' && !isNaN(longitude)) ? { longitude, zoneOffsetHours: 8 } : undefined;
         const greatFortune = this.calculateGreatFortune(fullBirthDate, gender, fourPillars, dayunOpts);
         const lifePalace = this.calculateLifePalace(fourPillars, adjustedDate);
         const fetalOrigin = this.calculateFetalOrigin(fourPillars);
@@ -1027,36 +1027,150 @@ class BaziCalculator {
 class BaziAnalyzer {
     constructor(baziData) { this.baziData = baziData; }
 
+    /** 收集四柱十神名稱（stem + branch 藏干對應十神） */
+    _collectTenGodsNames() {
+        const d = this.baziData || {};
+        const tg = d.tenGods || {};
+        const fp = d.fourPillars || {};
+        const list = [];
+        const push = (name) => { if (name && name !== '日主' && name !== '未知') list.push(name); };
+        push(tg.yearStem);
+        push(tg.monthStem);
+        push(tg.dayStem);
+        push(tg.hourStem);
+        (tg.yearBranch && (Array.isArray(tg.yearBranch) ? tg.yearBranch : [tg.yearBranch])).forEach(push);
+        (tg.monthBranch && (Array.isArray(tg.monthBranch) ? tg.monthBranch : [tg.monthBranch])).forEach(push);
+        (tg.dayBranch && (Array.isArray(tg.dayBranch) ? tg.dayBranch : [tg.dayBranch])).forEach(push);
+        (tg.hourBranch && (Array.isArray(tg.hourBranch) ? tg.hourBranch : [tg.hourBranch])).forEach(push);
+        return list;
+    }
+
+    /** 依日主五行＋身強弱＋十神分佈，產出個性描述與優缺點 */
     analyzePersonality() {
-        // ✅ 回傳結構需兼容 UI（renderAdvancedAnalysis 會讀 dayMaster/element/yinYang）
-        const dayGan = this.baziData?.fourPillars?.day?.gan || this.baziData?.day?.gan || '';
-        const map = {
-            '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水',
-            '子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'
-        };
-        const yinYangMap = {
-            '甲':'陽','乙':'陰','丙':'陽','丁':'陰','戊':'陽','己':'陰','庚':'陽','辛':'陰','壬':'陽','癸':'陰'
-        };
+        const d = this.baziData || {};
+        const dayGan = d.fourPillars?.day?.gan || d.dayMaster || (d.day && (d.day.gan || d.day.stem)) || '';
+        const map = { '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水' };
+        const yinYangMap = { '甲':'陽','乙':'陰','丙':'陽','丁':'陰','戊':'陽','己':'陰','庚':'陽','辛':'陰','壬':'陽','癸':'陰' };
         const element = dayGan ? (map[dayGan] || '') : '';
         const yinYang = dayGan ? (yinYangMap[dayGan] || '') : '';
 
-        // 仍保留原本的摘要（避免破壞既有輸出）
+        const bodyStrength = (d.elementStrength && d.elementStrength.bodyStrength) || '';
+        const isStrong = /強|中和/.test(bodyStrength);
+        const fav = (d.favorableElements && d.favorableElements.favorable) || [];
+        const unfav = (d.favorableElements && d.favorableElements.unfavorable) || [];
+
+        const tenGodsList = this._collectTenGodsNames();
+        const count = (name) => tenGodsList.filter(x => x === name).length;
+        const biJie = count('比肩') + count('劫財');
+        const yinXing = count('正印') + count('偏印');
+        const shiShang = count('食神') + count('傷官');
+        const caiXing = count('正財') + count('偏財');
+        const guanSha = count('正官') + count('七殺');
+
+        const parts = [];
+        parts.push(`${dayGan || '—'}${element || '—'}日主`);
+        if (bodyStrength) parts.push(bodyStrength);
+        if (fav.length) parts.push(`喜用${fav.join('、')}`);
+        if (unfav.length) parts.push(`忌${unfav.join('、')}`);
+        const personality = `以日主五行與月令為核心，配合十神結構：${parts.join('，')}。以下優缺點依命盤十神分佈推導。`;
+
+        let strengths = [];
+        let weaknesses = [];
+        if (yinXing >= 2) {
+            strengths.push('學習力強', '有貴人緣', '穩重');
+            weaknesses.push('易依賴', '較被動');
+        }
+        if (biJie >= 2) {
+            strengths.push('主見強', '獨立', '重義氣');
+            weaknesses.push('較固執', '不善妥協');
+        }
+        if (shiShang >= 2) {
+            strengths.push('創意佳', '表達力好', '有才藝');
+            weaknesses.push('易任性', '耐性不足');
+        }
+        if (caiXing >= 2) {
+            strengths.push('務實', '理財意識', '執行力');
+            weaknesses.push('重利', '易緊張得失');
+        }
+        if (guanSha >= 2) {
+            strengths.push('責任感重', '自律', '有領導潛力');
+            weaknesses.push('壓力大', '易自我要求高');
+        }
+        if (!isStrong && (caiXing >= 2 || guanSha >= 2)) {
+            weaknesses.push('身弱任財官較累，宜量力而為');
+        }
+        if (isStrong && (yinXing >= 2 || biJie >= 2)) {
+            weaknesses.push('身強印比多時宜多輸出（食傷、財），避免懶散');
+        }
+
+        const defaultStrengths = ['適應力', '韌性', '責任感'];
+        const defaultWeaknesses = ['壓力累積', '過度謹慎'];
+        strengths = strengths.length ? strengths.slice(0, 6) : defaultStrengths;
+        weaknesses = weaknesses.length ? weaknesses.slice(0, 5) : defaultWeaknesses;
+
         return {
             dayMaster: dayGan || '—',
             element: element || '—',
             yinYang: yinYang || '—',
-            personality: '以日主五行為核心，配合月令與十神結構，判讀個性傾向與壓力來源。',
-            strengths: ['適應力', '韌性', '細心', '責任感', '學習能力'],
-            weaknesses: ['猶豫', '壓力累積', '過度謹慎', '不善拒絕']
+            personality,
+            strengths,
+            weaknesses
         };
     }
 
-    
+    /** 依喜用神五行、十神、身強弱推導適合行業與事業建議 */
     analyzeCareer() {
+        const d = this.baziData || {};
+        const dayGan = d.fourPillars?.day?.gan || d.dayMaster || (d.day && (d.day.gan || d.day.stem)) || '';
+        const map = { '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水' };
+        const dayEl = dayGan ? (map[dayGan] || '') : '';
+        const bodyStrength = (d.elementStrength && d.elementStrength.bodyStrength) || '';
+        const isStrong = /強|中和/.test(bodyStrength);
+        const fav = (d.favorableElements && d.favorableElements.favorable) || [];
+        const tenGodsList = this._collectTenGodsNames();
+        const count = (name) => tenGodsList.filter(x => x === name).length;
+        const caiXing = count('正財') + count('偏財');
+        const guanSha = count('正官') + count('七殺');
+        const shiShang = count('食神') + count('傷官');
+
+        const careerByElement = {
+            '木': ['教育', '文化', '出版', '設計', '園藝', '醫療', '環保', '服飾'],
+            '火': ['傳媒', '能源', '電子', '餐飲', '演藝', '行銷', '公關', '照明'],
+            '土': ['地產', '建築', '農業', '食品', '倉儲', '行政', '顧問', '仲介'],
+            '金': ['金融', '法律', '管理', '軍警', '機械', '珠寶', '會計', '審計'],
+            '水': ['貿易', '物流', '傳播', '旅遊', '諮詢', '保險', '網路', '冷飲']
+        };
+
+        let suitableCareers = [];
+        const primaryFav = fav[0] || dayEl;
+        suitableCareers = careerByElement[primaryFav] || careerByElement['土'];
+        if (fav[1]) {
+            const second = careerByElement[fav[1]] || [];
+            suitableCareers = [...new Set([...suitableCareers, ...second])].slice(0, 10);
+        }
+
+        let careerAdvice = '';
+        if (dayEl) {
+            if (!isStrong) {
+                careerAdvice = `${dayGan}${dayEl}日主身弱，不適合高壓、高度競爭的工作。宜從事需要專業與耐心、能發揮${dayEl}行特質的行業，或與喜用神「${(fav.join('、') || '—')}」相關的領域。`;
+            } else {
+                careerAdvice = `${dayGan}${dayEl}日主身強，可任財官。適合主動開創、管理或需決策的職務。可多發揮喜用神「${(fav.join('、') || '—')}」所對應的領域。`;
+            }
+            if (guanSha >= 2) careerAdvice += ' 命盤官殺星明顯，利管理、公職或紀律性工作。';
+            if (caiXing >= 2) careerAdvice += ' 財星多，具經商、理財潛力，宜注意風險控管。';
+            if (shiShang >= 2) careerAdvice += ' 食傷旺，利創意、技術、表達類工作。';
+        } else {
+            careerAdvice = '請先完成八字計算，再依喜用神與十神分佈檢視適合行業。';
+        }
+
+        const wealth = this.analyzeWealth();
+        const wealthStrength = (wealth && typeof wealth.wealthStrength === 'number') ? wealth.wealthStrength : 3;
+
         return {
-            suitableCareers: ['教育', '文化', '出版', '諮詢', '心理學', '園藝', '設計'],
-            careerAdvice: '乙木身弱，不適合競爭激烈的工作。宜從事需要細心和耐心的工作，發揮乙木柔韌的特性。適合與水、木相關的行業。',
-            wealthStrength: 3
+            suitableCareers: suitableCareers.length ? suitableCareers : ['教育', '文化', '諮詢', '設計', '行政'],
+            developmentDirection: careerAdvice,
+            careerAdvice,
+            wealthStrength
         };
     }
 

@@ -151,11 +151,15 @@
     return JIAZI[mod60(y - 4)];
   }
 
-  /** 從八字取日柱天干、年支/日支（用於桃花、貴人） */
+  /** 從八字取日柱天干、年支/日支（用於桃花、貴人）。支援 fullData / data 格式。 */
   function getDayMasterAndBranches(bazi) {
-    var raw = bazi && (bazi.raw || bazi);
+    if (!bazi) return { dayStem: '', yearBranch: '', dayBranch: '' };
+    var raw = bazi.raw || bazi.fullData || bazi;
     var fp = raw && (raw.fourPillars || raw.pillars || raw);
-    var dayStem = (fp && (fp.day && (fp.day.stem || fp.day.gan))) || (raw && raw.dayMaster) || '';
+    if (!fp && raw && raw.day && (raw.day.gan || raw.day.stem)) {
+      fp = { year: raw.year, month: raw.month, day: raw.day, hour: raw.hour };
+    }
+    var dayStem = (fp && fp.day && (fp.day.stem || fp.day.gan)) || (raw && raw.dayMaster) || '';
     var yearBranch = (fp && fp.year && (fp.year.branch || fp.year.zhi)) || '';
     var dayBranch = (fp && fp.day && (fp.day.branch || fp.day.zhi)) || '';
     return { dayStem: dayStem, yearBranch: yearBranch, dayBranch: dayBranch };
@@ -226,7 +230,7 @@
     var yearElement = STEM_ELEMENT[lnStem] || BRANCH_ELEMENT[lnBranch] || '';
     var yearLabel = (currentYear === 2026) ? '2026年丙午火年' : (lnGz + (BRANCH_ELEMENT[lnBranch] ? '/' + BRANCH_ELEMENT[lnBranch] + '年' : '年'));
 
-    var raw = baziData.raw || baziData;
+    var raw = baziData.raw || baziData.fullData || baziData;
     var bodyStrength = ((raw.elementStrength && raw.elementStrength.bodyStrength) || raw.strength || '').toString();
     var pillars = getDayMasterAndBranches(baziData);
     var dayStem = pillars.dayStem;

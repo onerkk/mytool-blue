@@ -106,7 +106,44 @@
         }
     };
 
-    /** 取得某年 12 節，依時間排序。回傳 { name, date, utc? }[]。同年若有 TERM_DB 優先用它（本地）；否則用 JSON（UTC）。 */
+    /**
+     * 無精確資料時：依年份用近似公式產出 12 節（大運起運用），使不同八字得到不同起運。
+     * 基準日參考常見曆書；日差依 (year-2000)*0.2422 取整後微調，使每年節氣日有 0～1 日變化。
+     */
+    function getApproximateJieForYear(year) {
+        var y = parseInt(year, 10);
+        if (isNaN(y) || y < 1900 || y > 2100) return [];
+        var base = [
+            { name: '小寒', month: 1, day: 5 },
+            { name: '立春', month: 2, day: 4 },
+            { name: '驚蟄', month: 3, day: 5 },
+            { name: '清明', month: 4, day: 4 },
+            { name: '立夏', month: 5, day: 5 },
+            { name: '芒種', month: 6, day: 5 },
+            { name: '小暑', month: 7, day: 7 },
+            { name: '立秋', month: 8, day: 7 },
+            { name: '白露', month: 9, day: 7 },
+            { name: '寒露', month: 10, day: 8 },
+            { name: '立冬', month: 11, day: 7 },
+            { name: '大雪', month: 12, day: 7 }
+        ];
+        var offset = Math.floor((y - 2000) * 0.2422) % 2;
+        if (offset < 0) offset += 2;
+        var febMax = (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 29 : 28;
+        var out = [];
+        for (var i = 0; i < base.length; i++) {
+            var d = base[i].day + (offset + i) % 2;
+            if (base[i].month === 2 && d > febMax) d = febMax;
+            if ((base[i].month === 4 || base[i].month === 6 || base[i].month === 9 || base[i].month === 11) && d > 30) d = 30;
+            if (d > 31) d = 31;
+            if (d < 1) d = 1;
+            var dt = new Date(y, base[i].month - 1, d, 0, 0, 0, 0);
+            out.push({ name: base[i].name, date: dt });
+        }
+        return out;
+    }
+
+    /** 取得某年 12 節，依時間排序。回傳 { name, date, utc? }[]。同年若有 TERM_DB 優先用它（本地）；否則用 JSON（UTC）；再無則用近似公式，使起運每人不同。 */
     SolarTermCalculator.prototype.getTermsForYear = function (year) {
         var y = parseInt(year, 10);
         var out = [];
@@ -131,6 +168,9 @@
                     if (dt2) out.push({ name: n2, date: dt2, utc: true });
                 }
             }
+        }
+        if (out.length === 0) {
+            out = getApproximateJieForYear(y);
         }
         out.sort(function (a, b) { return a.date.getTime() - b.date.getTime(); });
         return out;

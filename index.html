@@ -133,6 +133,7 @@
                             <label for="question"><i class="fas fa-question-circle"></i> 諮詢問題</label>
                             <textarea id="question" rows="3" placeholder="請輸入您想詢問的問題..." required></textarea>
                             <div class="hint-note" id="question-probability-note"><i class="fas fa-info-circle"></i> 本系統輸出為「多維度機率評估」，將以八字 / 姓名學 / 梅花易數 / 塔羅牌各自的機率分數進行交叉彙總；不提供單一確定答案。</div>
+                            <div class="hint-note hint-disclaimer" style="margin-top: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> 本工具將針對您的問題提供「機率預測」並透過八字運算提供「專屬五行改運配戴建議」。</div>
 
                         </div>
     
@@ -626,6 +627,22 @@
                         </div>
                     </div>
     
+                    <!-- 開運配戴建議：依喜用神／問題推薦五行水晶（全寬，在機率下方、浮動鈕上方） -->
+                    <div class="lucky-item-recommendation-card" id="crystal-recommendation-card">
+                        <div class="recommendation-header">
+                            <i class="fas fa-gem"></i>
+                            <h3>💎 您的專屬開運處方</h3>
+                        </div>
+                        <div class="recommendation-content crystal-recommendation-content">
+                            <p class="crystal-recommendation-intro" id="crystal-recommendation-intro">根據您的八字格局與提問，建議補強 <strong id="crystal-target-element">—</strong> 行能量。</p>
+                            <p class="crystal-recommendation-stones" id="crystal-recommendation-stones">推薦配戴：<span id="crystal-stones-list">—</span></p>
+                            <p class="crystal-recommendation-desc" id="crystal-recommendation-desc">功效：<span id="crystal-reason-text">—</span></p>
+                            <p class="crystal-recommendation-cta">
+                                <i class="fas fa-arrow-down"></i> 點擊右下角按鈕，前往賣場搜尋上述水晶，或點擊「我要客製」為您打造專屬手鍊。
+                            </p>
+                        </div>
+                    </div>
+    
                     <div class="dimension-analysis">
                         <h3><i class="fas fa-layer-group"></i> 四維度分析</h3>
                         
@@ -1002,6 +1019,7 @@
         <script src="js/probability-integration.js"></script>
         <script src="js/scoring-engine.js"></script>
         <script src="js/probability-pipeline.js"></script>
+        <script src="js/crystal-recommendation.js"></script>
         <script src="js/main.js"></script>
     </body>
     </html>

@@ -194,7 +194,8 @@
     /* 綜合結論、推薦區等底部區塊也留白 */
     #result-section .final-conclusion,
     #result-section .master-summary,
-    #result-section .product-recommendation-card {
+    #result-section .product-recommendation-card,
+    #result-section .lucky-item-recommendation-card {
         margin-bottom: 0.5rem !important;
     }
 }

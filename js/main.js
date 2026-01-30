@@ -1157,11 +1157,10 @@ class FortuneSystem {
             console.log('[fillBaziResultUI] normalized unfavorable:', n.unfavorable);
         }
 
-        // ✅ 個性特質 - 顯示完整分析
+        // ✅ 個性特質 - 顯示完整分析（優先使用 fullData.analysis，確保為八字推算結果）
         const personalityEl = baziPane.querySelector('#ui-personality');
         if (personalityEl) {
-            // 嘗試從分析結果中獲取詳細的個性分析
-            const analysis = baziResult.analysis || {};
+            const analysis = baziResult.analysis || (baziResult.fullData && baziResult.fullData.analysis) || {};
             const personality = analysis.personality || {};
             
             if (personality.personality || personality.strengths || personality.weaknesses) {
@@ -1225,11 +1224,10 @@ class FortuneSystem {
             }
         }
 
-        // ✅ 事業財運 - 顯示完整分析
+        // ✅ 事業財運 - 顯示完整分析（優先使用 fullData.analysis，確保為八字推算結果）
         const careerEl = baziPane.querySelector('#ui-career');
         if (careerEl) {
-            // 嘗試從分析結果中獲取詳細的事業財運分析
-            const analysis = baziResult.analysis || {};
+            const analysis = baziResult.analysis || (baziResult.fullData && baziResult.fullData.analysis) || {};
             const career = analysis.career || {};
             const wealth = analysis.wealth || {};
             
@@ -4518,6 +4516,22 @@ function setupMeihuaRandomDomGuard(){
               reasonsEl.innerHTML = '';
             }
           }
+
+          // 開運配戴建議：依喜用神／問題類別填入水晶推薦
+          try {
+            var qText = ($('question') && $('question').value) ? String($('question').value).trim() : '';
+            var baziForCrystal = dataForScoring.bazi;
+            var rec = (typeof getCrystalRecommendation === 'function') ? getCrystalRecommendation(baziForCrystal, qText) : null;
+            if (rec && (rec.targetElement || rec.suggestedStones)) {
+              if ($('crystal-target-element')) $('crystal-target-element').textContent = rec.targetElement || '—';
+              if ($('crystal-stones-list')) $('crystal-stones-list').textContent = (rec.suggestedStones && rec.suggestedStones.length) ? rec.suggestedStones.join('、') : '—';
+              if ($('crystal-reason-text')) $('crystal-reason-text').textContent = rec.reasonText || '—';
+            } else {
+              if ($('crystal-target-element')) $('crystal-target-element').textContent = '—';
+              if ($('crystal-stones-list')) $('crystal-stones-list').textContent = '—';
+              if ($('crystal-reason-text')) $('crystal-reason-text').textContent = '—';
+            }
+          } catch (e) { if (window.console) console.warn('Crystal recommendation fill failed:', e); }
 
           // 綜合結果 - 使用卡片式UI美化
           if($('conclusion-content')){
