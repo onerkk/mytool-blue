@@ -1253,19 +1253,10 @@ class FortuneSystem {
                     html += `</div>`;
                 }
                 
-                // 財運分析
-                if (wealth.wealthTrend || wealth.wealthStrength || wealth.investmentAdvice) {
+                // 財運（重點一句）
+                if (wealth.summary && wealth.summary.trim() !== '') {
                     html += `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(212, 175, 55, 0.3);">`;
-                    html += `<div style="margin-bottom: 0.5rem;"><strong>財運分析：</strong></div>`;
-                    if (wealth.wealthTrend) {
-                        html += `<div style="margin-bottom: 0.5rem;">財運趨勢：<span style="color: var(--gold-bright);">${wealth.wealthTrend}</span></div>`;
-                    }
-                    if (wealth.wealthStrength !== undefined && wealth.wealthStrength !== null) {
-                        html += `<div style="margin-bottom: 0.5rem;">財星強度：${wealth.wealthStrength}</div>`;
-                    }
-                    if (wealth.investmentAdvice) {
-                        html += `<p style="line-height: 1.6;">建議：${wealth.investmentAdvice}</p>`;
-                    }
+                    html += `<p style="line-height: 1.6;"><strong>財運建議：</strong>${wealth.summary}</p>`;
                     html += `</div>`;
                 }
                 
@@ -2196,35 +2187,34 @@ class FortuneSystem {
                 html += '</div>';
                 html += '</div>';
                 
-                // 財運分析 - 使用卡片式 UI，只顯示有數據的項目
-                const hasWealthTrend = wealth.wealthTrend && wealth.wealthTrend !== 'undefined' && wealth.wealthTrend.trim() !== '';
-                const hasWealthStrength = wealth.wealthStrength !== undefined && wealth.wealthStrength !== null && wealth.wealthStrength !== 'undefined';
-                const hasInvestmentAdvice = wealth.investmentAdvice && wealth.investmentAdvice !== 'undefined' && wealth.investmentAdvice.trim() !== '';
-                
-                if (hasWealthTrend || hasWealthStrength || hasInvestmentAdvice) {
-                    html += '<div class="analysis-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem;">';
+                // 財運分析（重點式，與感情婚姻同風格）
+                const hasWealthSource = wealth.wealthSource && wealth.wealthSource.trim() !== '';
+                const hasWealthMethod = wealth.wealthMethod && wealth.wealthMethod.trim() !== '' && wealth.wealthMethod !== '—';
+                const hasWealthSummary = wealth.summary && wealth.summary.trim() !== '';
+
+                if (hasWealthSource || hasWealthMethod || hasWealthSummary) {
                     html += '<div class="analysis-card" style="padding: 1.5rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">';
                     html += '<h4 style="margin-bottom: 1rem; color: var(--gold-primary);"><i class="fas fa-coins"></i> 財運分析</h4>';
-                    html += `<div class="wealth-analysis">`;
-                    if (hasWealthTrend) {
-                        html += `<div style="margin-bottom: 0.5rem;"><strong>財運趨勢：</strong><span style="color: var(--gold-bright);">${wealth.wealthTrend}</span></div>`;
+                    html += '<div class="wealth-analysis">';
+                    if (hasWealthSource) {
+                        html += `<div style="margin-bottom: 0.5rem;"><strong>財星：</strong><span style="color: rgba(255,255,255,0.9);">${wealth.wealthSource}</span></div>`;
                     }
-                    if (hasWealthStrength) {
-                        html += `<div style="margin-bottom: 0.5rem;"><strong>財星強度：</strong>${wealth.wealthStrength}</div>`;
+                    if (hasWealthMethod) {
+                        html += `<div style="margin-bottom: 0.5rem;"><strong>得財方式：</strong>${wealth.wealthMethod}</div>`;
                     }
-                    if (hasInvestmentAdvice) {
-                        html += `<p style="line-height: 1.6;"><strong>建議：</strong>${wealth.investmentAdvice}</p>`;
+                    if (hasWealthSummary) {
+                        html += `<p style="line-height: 1.6; margin-top: 0.5rem;"><strong>建議：</strong>${wealth.summary}</p>`;
                     }
                     html += '</div>';
                     html += '</div>';
                 }
                 
-                // 感情婚姻 - 使用卡片式 UI，只顯示有數據的項目
+                // 感情婚姻（桃花婚姻分析：夫妻宮、配偶星、桃花星、婚姻穩定性）
                 const hasSpouseStar = relationship?.spouseAnalysis?.presence && relationship.spouseAnalysis.presence !== '未顯示' && relationship.spouseAnalysis.presence !== 'undefined';
                 const hasMarriageStability = relationship?.marriageStability?.stability && relationship.marriageStability.stability !== '未顯示' && relationship.marriageStability.stability !== 'undefined';
-                const hasPeachBlossom = relationship?.peachBlossom?.hasPeachBlossom;
+                const hasPeachBlossom = relationship?.peachBlossom?.hasPeachBlossom || (relationship?.peachBlossom?.impact && relationship.peachBlossom.impact !== '');
                 
-                if (hasSpouseStar || hasMarriageStability || hasPeachBlossom) {
+                if (hasSpouseStar || hasMarriageStability || hasPeachBlossom || (relationship?.summary && relationship.summary.trim() !== '')) {
                     html += '<div class="analysis-card" style="padding: 1.5rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">';
                     html += '<h4 style="margin-bottom: 1rem; color: var(--gold-primary);"><i class="fas fa-heart"></i> 感情婚姻</h4>';
                     html += `<div class="relationship-analysis">`;
@@ -2232,10 +2222,15 @@ class FortuneSystem {
                         html += `<div style="margin-bottom: 0.5rem;"><strong>配偶星：</strong>${relationship.spouseAnalysis.presence}</div>`;
                     }
                     if (hasPeachBlossom) {
-                        html += `<div style="margin-bottom: 0.5rem;"><strong>桃花：</strong><span style="color: #f44336;">有</span> <span style="color: rgba(255,255,255,0.6);">(${relationship.peachBlossom.impact || ''})</span></div>`;
+                        html += `<div style="margin-bottom: 0.5rem;"><strong>桃花：</strong>${relationship.peachBlossom?.hasPeachBlossom ? '<span style="color: #f44336;">有</span> ' : ''}<span style="color: rgba(255,255,255,0.6);">${relationship.peachBlossom?.impact || ''}</span></div>`;
                     }
                     if (hasMarriageStability) {
                         html += `<p style="line-height: 1.6;"><strong>婚姻穩定性：</strong>${relationship.marriageStability.stability}</p>`;
+                    }
+                    if (relationship?.summary && relationship.summary.trim() !== '' && (!hasSpouseStar && !hasMarriageStability && !hasPeachBlossom)) {
+                        html += `<p style="line-height: 1.6;">${relationship.summary}</p>`;
+                    } else if (relationship?.summary && relationship.summary.trim() !== '') {
+                        html += `<p style="line-height: 1.6; margin-top: 0.5rem;"><strong>建議：</strong>${relationship.summary}</p>`;
                     }
                     html += '</div>';
                     html += '</div>';
@@ -2679,7 +2674,9 @@ class FortuneSystem {
                 const ageStr = `${ageStart}–${ageEnd}歲`;
                 const currentClass = isCurrent ? ' dayun-item--current' : '';
                 const currentBadge = isCurrent ? '<span class="dayun-current-badge">當下大運</span>' : '';
-                html += `<div class="dayun-item${currentClass}">${currentBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${q.label}</span></div>`;
+                const fortuneTypeBadge = (f.fortuneType && f.fortuneType !== '中性') ? `<span class="dayun-fortune-type dayun-fortune-type--${f.fortuneType === '喜用神大運' ? 'fav' : f.fortuneType === '忌神大運' ? 'unfav' : 'mixed'}">${f.fortuneType}</span>` : '';
+                const tenGodsLabel = (f.tenGodsLabel && f.tenGodsLabel.trim() !== '') ? `<span class="dayun-ten-gods" style="font-size:0.75rem;color:rgba(255,255,255,0.7);">${f.tenGodsLabel}</span>` : '';
+                html += `<div class="dayun-item${currentClass}">${currentBadge}${fortuneTypeBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div>${tenGodsLabel}<span class="dayun-quality dayun-quality--${q.class}">${q.label}</span></div>`;
             }
         } else {
             const yangStems = ['甲', '丙', '戊', '庚', '壬'];

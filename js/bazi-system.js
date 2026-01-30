@@ -85,6 +85,25 @@ const EARTHLY_BRANCHES_DETAIL = {
 };
 
 // ==========================================
+// 1.45 月支與季節對照（鐵則：依十二節定月，季節用於調候／喜忌）
+// ==========================================
+// 12 節對應月支：小寒→丑、立春→寅、驚蟄→卯、清明→辰、立夏→巳、芒種→午、小暑→未、立秋→申、白露→酉、寒露→戌、立冬→亥、大雪→子
+// 季節鐵則：寅卯辰=春、巳午未=夏、申酉戌=秋、亥子丑=冬（不可與月支錯配，否則喜用神會錯）
+const MONTH_ZHI_TO_SEASON = { '寅': '春', '卯': '春', '辰': '春', '巳': '夏', '午': '夏', '未': '夏', '申': '秋', '酉': '秋', '戌': '秋', '亥': '冬', '子': '冬', '丑': '冬' };
+// 公曆月 fallback 對應月支（正月≈寅、六月≈午；僅在無節氣資料時使用）
+const CALENDAR_MONTH_TO_ZHI_INDEX = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11, 12: 0 };
+
+// ==========================================
+// 1.5 旺相休囚死（月令對日主，得令分析用）
+// ==========================================
+// 月令五行 vs 日主五行：旺=同我、相=令生我、休=我生令、囚=我克令、死=令克我
+const WANG_XIU_QIU_SI = {
+    '旺': 100, '相': 75, '休': 40, '囚': 20, '死': 0
+};
+const WUXING_SHENG = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
+const WUXING_KE = { '木': '土', '土': '水', '水': '火', '火': '金', '金': '木' };
+
+// ==========================================
 // 2. 十神系統
 // ==========================================
 
@@ -227,8 +246,10 @@ class BaziCalculator {
         
         const yearPillar = this.calculateYearPillar(adjustedDate);
         const monthPillar = this.calculateMonthPillar(adjustedDate);
-        const dayPillar = this.calculateDayPillarFor19830825(adjustedDate);
-        const hourPillar = this.calculateHourPillar(adjustedDate, dayPillar.stem);
+        // 日柱：鐵則 23:00 為界。晚子 23:00–24:00 屬當日；早子 00:00–01:00 屬次日；其餘用當日
+        const dayPillar = this.calculateDayPillarWithZiHourRule(adjustedDate);
+        // 時柱：早子/晚子皆用「次日」天干依五鼠遁
+        const hourPillar = this.calculateHourPillarWithZiHourRule(adjustedDate, dayPillar.stem, dayPillar._dayDateForHour);
         
         const fourPillars = {
             year: { gan: yearPillar.stem, zhi: yearPillar.branch },
@@ -255,10 +276,11 @@ class BaziCalculator {
         const elementStrength = this.calculateElementStrength(fourPillars, dayMaster);
         
         const longevity = this.calculateLongevity(fourPillars, dayMaster);
-        const pattern = this.analyzePattern(fourPillars, dayMaster, elementStrength);
         const favorableElements = this.calculateFavorableElements(fourPillars, dayMaster, elementStrength);
+        const pattern = this.analyzePattern(fourPillars, dayMaster, elementStrength, favorableElements);
         const dayunOpts = (typeof longitude === 'number' && !isNaN(longitude)) ? { longitude, zoneOffsetHours: 8 } : undefined;
-        const greatFortune = this.calculateGreatFortune(fullBirthDate, gender, fourPillars, dayunOpts);
+        let greatFortune = this.calculateGreatFortune(fullBirthDate, gender, fourPillars, dayunOpts);
+        greatFortune = this._tagDayunWithFavorable(greatFortune, favorableElements, dayMaster);
         const lifePalace = this.calculateLifePalace(fourPillars, adjustedDate);
         const fetalOrigin = this.calculateFetalOrigin(fourPillars);
         const fetalBreath = this.calculateFetalBreath(fourPillars);
@@ -275,98 +297,141 @@ class BaziCalculator {
         };
     }
     
-    // 通用五行強度計算方法
+    // ---------- 第一步：定格·定強弱（得令50% + 得地30% + 得勢20%）----------
+    /** 得令：月令對日主 旺相休囚死。月令五行 vs 日主五行 → 旺/相/休/囚/死 */
+    _getDeLing(monthZhi, dayMasterElement) {
+        const monthEl = EARTHLY_BRANCHES_DETAIL[monthZhi]?.element;
+        if (!monthEl || !dayMasterElement) return { state: '休', score: 40 };
+        if (monthEl === dayMasterElement) return { state: '旺', score: WANG_XIU_QIU_SI['旺'] };
+        if (WUXING_SHENG[monthEl] === dayMasterElement) return { state: '相', score: WANG_XIU_QIU_SI['相'] };
+        if (WUXING_SHENG[dayMasterElement] === monthEl) return { state: '休', score: WANG_XIU_QIU_SI['休'] };
+        if (WUXING_KE[dayMasterElement] === monthEl) return { state: '囚', score: WANG_XIU_QIU_SI['囚'] };
+        if (WUXING_KE[monthEl] === dayMasterElement) return { state: '死', score: WANG_XIU_QIU_SI['死'] };
+        return { state: '休', score: 40 };
+    }
+
+    /** 得地：地支根氣。強根=本氣比劫、生根=印星、餘氣根=辰未戌丑中含日主 */
+    _getDeDi(fourPillars, dayMasterElement) {
+        const roots = { strong: 0, seal: 0, remainder: 0 };
+        const shengWo = Object.keys(WUXING_SHENG).find(k => WUXING_SHENG[k] === dayMasterElement); // 生我者=印
+        const pillars = [fourPillars.year, fourPillars.month, fourPillars.day, fourPillars.hour];
+        pillars.forEach(p => {
+            const zhi = p?.zhi;
+            if (!zhi) return;
+            const info = EARTHLY_BRANCHES_DETAIL[zhi];
+            if (!info) return;
+            if (info.element === dayMasterElement) roots.strong += 1.0;
+            else if (info.element === shengWo) roots.seal += 0.8;
+            ['辰', '未', '戌', '丑'].includes(zhi) && info.hiddenStems?.some(stem => HEAVENLY_STEMS_DETAIL[stem]?.element === dayMasterElement) && (roots.remainder += 0.4);
+            info.hiddenStems?.forEach(stem => {
+                const el = HEAVENLY_STEMS_DETAIL[stem]?.element;
+                if (el === dayMasterElement) roots.remainder += 0.2;
+                if (el === shengWo) roots.seal += 0.15;
+            });
+        });
+        const raw = roots.strong * 25 + roots.seal * 20 + Math.min(roots.remainder * 15, 30);
+        return { score: Math.min(100, Math.round(raw)), roots };
+    }
+
+    /** 得勢：天干印星與比劫多寡 */
+    _getDeShi(fourPillars, dayMaster) {
+        const dayEl = HEAVENLY_STEMS_DETAIL[dayMaster]?.element;
+        const shengWo = dayEl ? Object.keys(WUXING_SHENG).find(k => WUXING_SHENG[k] === dayEl) : null;
+        let count = 0;
+        ['year', 'month', 'day', 'hour'].forEach(p => {
+            const gan = fourPillars[p]?.gan;
+            if (!gan) return;
+            const el = HEAVENLY_STEMS_DETAIL[gan]?.element;
+            if (el === dayEl) count += 1.0;
+            if (el === shengWo) count += 0.9;
+        });
+        const score = Math.min(100, Math.round(count * 33));
+        return { score };
+    }
+
+    /** 綜合判定身強/身弱/專旺/從格（得令50% + 得地30% + 得勢20%） */
     calculateElementStrength(fourPillars, dayMaster) {
-        // 初始化五行計數器和分數
+        const dayMasterElement = HEAVENLY_STEMS_DETAIL[dayMaster]?.element;
+        const monthZhi = fourPillars.month?.zhi;
+
+        const deLing = this._getDeLing(monthZhi, dayMasterElement);
+        const deDi = this._getDeDi(fourPillars, dayMasterElement);
+        const deShi = this._getDeShi(fourPillars, dayMaster);
+
+        const composite = (deLing.score / 100) * 50 + (deDi.score / 100) * 30 + (deShi.score / 100) * 20;
+        let bodyStrength;
+        if (composite >= 55) bodyStrength = '身強';
+        else if (composite >= 45) bodyStrength = '中和';
+        else if (composite >= 25) bodyStrength = '身弱';
+        else bodyStrength = '極弱';
+
         const elementCount = { '金': 0, '木': 0, '火': 0, '土': 0, '水': 0 };
         const elementScore = { '金': 0, '木': 0, '火': 0, '土': 0, '水': 0 };
-        
-        // 計算天干五行
         Object.values(fourPillars).forEach(pillar => {
             const stemInfo = HEAVENLY_STEMS_DETAIL[pillar.gan];
             if (stemInfo) {
-                const element = stemInfo.element;
-                elementCount[element]++;
-                elementScore[element] += stemInfo.strength * 1.0; // 天干權重 1.0
+                elementCount[stemInfo.element]++;
+                elementScore[stemInfo.element] += stemInfo.strength * 1.0;
             }
         });
-        
-        // 計算地支五行（含藏干）
         Object.values(fourPillars).forEach(pillar => {
             const branchInfo = EARTHLY_BRANCHES_DETAIL[pillar.zhi];
             if (branchInfo) {
-                // 地支本身五行（本氣）
-                const mainElement = branchInfo.element;
-                elementCount[mainElement]++;
-                elementScore[mainElement] += branchInfo.strength * 0.6; // 地支本氣權重 0.6
-                
-                // 地支藏干（餘氣）
-                const hiddenCount = branchInfo.hiddenStems.length;
-                if (hiddenCount > 0) {
-                    branchInfo.hiddenStems.forEach(hiddenStem => {
-                        const hiddenStemInfo = HEAVENLY_STEMS_DETAIL[hiddenStem];
-                        if (hiddenStemInfo) {
-                            const element = hiddenStemInfo.element;
-                            elementCount[element]++;
-                            // 餘氣平分剩餘權重 (0.4)
-                            elementScore[element] += branchInfo.strength * (0.4 / hiddenCount);
-                        }
-                    });
-                }
+                elementCount[branchInfo.element]++;
+                elementScore[branchInfo.element] += branchInfo.strength * 0.6;
+                (branchInfo.hiddenStems || []).forEach(hiddenStem => {
+                    const el = HEAVENLY_STEMS_DETAIL[hiddenStem]?.element;
+                    if (el) {
+                        elementCount[el]++;
+                        elementScore[el] += branchInfo.strength * (0.4 / (branchInfo.hiddenStems.length || 1));
+                    }
+                });
             }
         });
-        
-        // 計算日主五行
-        const dayMasterElement = HEAVENLY_STEMS_DETAIL[dayMaster].element;
-        const dayMasterScore = elementScore[dayMasterElement];
-        
-        // 計算總分和百分比
+
         const totalScore = Object.values(elementScore).reduce((a, b) => a + b, 0) || 1;
-        const dayMasterPercentage = Math.round((dayMasterScore / totalScore) * 100);
-        
-        // 判斷身強身弱（簡化規則）
-        let bodyStrength;
-        if (dayMasterPercentage >= 40) {
-            bodyStrength = '身強';
-        } else if (dayMasterPercentage >= 25) {
-            bodyStrength = '中和';
-        } else if (dayMasterPercentage >= 15) {
-            bodyStrength = '身弱';
-        } else {
-            bodyStrength = '極弱';
+        const dayMasterPercentage = Math.round((elementScore[dayMasterElement] / totalScore) * 100);
+
+        const sameElTotal = Object.values(elementCount).reduce((a, b) => a + b, 0) || 1;
+        const sameRatio = (elementCount[dayMasterElement] || 0) / sameElTotal;
+        let patternOverride = null;
+        if (sameRatio >= 0.7) {
+            patternOverride = '專旺';
+            bodyStrength = '專旺格';
+        } else if (dayMasterPercentage < 15 && totalScore > 0) {
+            let maxEl = '';
+            let maxS = 0;
+            Object.entries(elementScore).forEach(([el, s]) => { if (s > maxS && el !== dayMasterElement) { maxS = s; maxEl = el; } });
+            if (maxS > elementScore[dayMasterElement] * 2.5) {
+                patternOverride = '從' + maxEl + '格';
+                bodyStrength = '從格';
+            }
         }
-        
-        // 生成五行詳細描述
+
         const elementDetails = {};
         ['金', '木', '水', '火', '土'].forEach(el => {
-            const count = elementCount[el];
-            const score = Math.round(elementScore[el] * 10) / 10; // 保留一位小數
-            
-            let description = '';
-            if (el === dayMasterElement) {
-                description = `${dayMaster}${el}，日主`;
-            } else {
-                const relatedStems = this.getStemsByElement(el).join('');
-                description = `${el}行（${relatedStems}）`;
-            }
-            
-            // 根據分數添加強弱描述
-            if (score >= 4) description += '極旺';
-            else if (score >= 3) description += '強旺';
-            else if (score >= 2) description += '中等';
-            else if (score >= 1) description += '偏弱';
-            else description += '極弱';
-            
-            elementDetails[el] = { count, score, description };
+            const score = Math.round((elementScore[el] || 0) * 10) / 10;
+            let desc = el === dayMasterElement ? `日主` : `${el}行`;
+            if (score >= 4) desc += '極旺';
+            else if (score >= 3) desc += '強旺';
+            else if (score >= 2) desc += '中等';
+            else if (score >= 1) desc += '偏弱';
+            else desc += '極弱';
+            elementDetails[el] = { count: elementCount[el], score, description: desc };
         });
-        
+
         return {
             counts: elementCount,
             strengths: elementScore,
             bodyStrength,
             percentage: dayMasterPercentage,
             dayMasterElement,
-            elementDetails
+            elementDetails,
+            deLing: { state: deLing.state, score: deLing.score },
+            deDi: { score: deDi.score, roots: deDi.roots },
+            deShi: { score: deShi.score },
+            compositeScore: Math.round(composite * 10) / 10,
+            patternOverride
         };
     }
     
@@ -381,106 +446,95 @@ class BaziCalculator {
         return stems;
     }
     
-    // 通用喜用神計算
+    // ---------- 第二步：明病·定喜忌（找最旺/最弱五行，扶抑/調候/通關/病藥）----------
     calculateFavorableElements(fourPillars, dayMaster, elementStrength) {
-        const dayMasterElement = HEAVENLY_STEMS_DETAIL[dayMaster].element;
-        const monthBranch = fourPillars.month.zhi;
-        const season = EARTHLY_BRANCHES_DETAIL[monthBranch]?.season || '';
-        
-        // 基本規則：根據日主五行和季節判斷
+        const dayMasterElement = elementStrength.dayMasterElement || HEAVENLY_STEMS_DETAIL[dayMaster].element;
+        const monthZhi = fourPillars.month?.zhi;
+        const season = (monthZhi && MONTH_ZHI_TO_SEASON[monthZhi]) || EARTHLY_BRANCHES_DETAIL[monthZhi]?.season || '';
+        const strengths = elementStrength.strengths || {};
+        const bodyStrength = elementStrength.bodyStrength || '';
+
         let favorable = [];
         let unfavorable = [];
-        let reasoning = "";
-        
-        // 季節對五行的影響
-        const seasonEffects = {
-            '春': { '木': 1.2, '火': 1.0, '土': 0.8, '金': 0.7, '水': 0.9 },
-            '夏': { '木': 1.0, '火': 1.2, '土': 1.0, '金': 0.8, '水': 0.7 },
-            '秋': { '木': 0.8, '火': 0.9, '土': 1.0, '金': 1.2, '水': 1.0 },
-            '冬': { '木': 0.9, '火': 0.8, '土': 0.9, '金': 1.0, '水': 1.2 }
-        };
-        
-        // 根據身強弱判斷喜用
-        const isStrong = elementStrength.bodyStrength.includes('強') || elementStrength.bodyStrength.includes('中和');
-        
-        if (dayMasterElement === '木') {
+        let reasoning = '';
+
+        const allEl = ['金', '木', '水', '火', '土'];
+        const sortedByScore = [...allEl].sort((a, b) => (strengths[b] || 0) - (strengths[a] || 0));
+        const mostWanted = sortedByScore[0];
+        const mostWeak = sortedByScore[sortedByScore.length - 1];
+        const dayScore = strengths[dayMasterElement] || 0;
+        const totalScore = Object.values(strengths).reduce((a, b) => a + b, 0) || 1;
+
+        const isStrong = bodyStrength.includes('強') || bodyStrength.includes('中和') || bodyStrength.includes('專旺');
+        const isCong = bodyStrength.includes('從');
+        const needTiaoHou = (season === '冬' && dayMasterElement !== '火') || (season === '夏' && dayMasterElement !== '水');
+
+        const shengWo = Object.keys(WUXING_SHENG).find(k => WUXING_SHENG[k] === dayMasterElement);
+        const woSheng = WUXING_SHENG[dayMasterElement];
+        const woKe = WUXING_KE[dayMasterElement];
+        const keWo = Object.keys(WUXING_KE).find(k => WUXING_KE[k] === dayMasterElement);
+
+        if (isCong) {
+            favorable = [mostWanted];
+            unfavorable = [keWo, woSheng].filter(Boolean);
+            reasoning = `從${mostWanted}格，喜順勢${mostWanted}，忌克泄${mostWanted}。`;
+        } else {
+            // 扶抑法（基盤）
             if (isStrong) {
-                favorable = ['火', '土', '金']; // 強木喜克泄耗
-                unfavorable = ['水', '木']; // 忌生扶
-                reasoning = `${dayMaster}木日主身強，喜火洩秀、土耗力、金克木`;
+                favorable = [keWo, woSheng, woKe].filter(Boolean);
+                unfavorable = [shengWo, dayMasterElement].filter(Boolean);
+                reasoning = `${dayMaster}${dayMasterElement}日主身強，喜克泄耗（官殺、食傷、財星），忌生扶（印、比劫）。`;
             } else {
-                favorable = ['水', '木']; // 弱木喜生扶
-                unfavorable = ['火', '土', '金']; // 忌克泄耗
-                reasoning = `${dayMaster}木日主身弱，喜水生木、木幫身`;
+                favorable = [shengWo, dayMasterElement].filter(Boolean);
+                unfavorable = [keWo, woSheng, woKe].filter(Boolean);
+                reasoning = `${dayMaster}${dayMasterElement}日主身弱，喜生扶（印星、比劫），忌克泄耗。`;
             }
-        } else if (dayMasterElement === '火') {
-            if (isStrong) {
-                favorable = ['土', '金', '水'];
-                unfavorable = ['木', '火'];
-                reasoning = `${dayMaster}火日主身強，喜土洩火、金耗火、水克火`;
-            } else {
-                favorable = ['木', '火'];
-                unfavorable = ['土', '金', '水'];
-                reasoning = `${dayMaster}火日主身弱，喜木生火、火幫身`;
+            // 病藥法（可與扶抑並存）
+            const bing = mostWanted !== dayMasterElement ? mostWanted : sortedByScore[1];
+            const yao = WUXING_KE[bing];
+            if (bing && yao && (strengths[bing] || 0) > 2.5 && dayScore < 2) {
+                if (!favorable.includes(yao)) favorable.push(yao);
+                reasoning += ` 命局${bing}過旺為病，以${yao}為藥。`;
             }
-        } else if (dayMasterElement === '土') {
-            if (isStrong) {
-                favorable = ['金', '水', '木'];
-                unfavorable = ['火', '土'];
-                reasoning = `${dayMaster}土日主身強，喜金洩土、水耗土、木克土`;
-            } else {
-                favorable = ['火', '土'];
-                unfavorable = ['金', '水', '木'];
-                reasoning = `${dayMaster}土日主身弱，喜火生土、土幫身`;
+            // 優先級：調候 > 通關 > 扶抑（綜合裁定）。季節由月支鐵則 MONTH_ZHI_TO_SEASON 定，巳午未=夏、亥子丑=冬，避免月支錯導致漏調候
+            if (needTiaoHou) {
+                if (season === '冬') {
+                    if (!favorable.includes('火')) favorable.unshift('火');
+                    reasoning += ' 冬生需調候暖局，喜火（調候優先）。';
+                } else if (season === '夏') {
+                    if (!favorable.includes('水')) favorable.unshift('水');
+                    reasoning += ' 夏生需調候潤局，喜水（調候優先）。';
+                }
             }
-        } else if (dayMasterElement === '金') {
-            if (isStrong) {
-                favorable = ['水', '木', '火'];
-                unfavorable = ['土', '金'];
-                reasoning = `${dayMaster}金日主身強，喜水洩金、木耗金、火克金`;
-            } else {
-                favorable = ['土', '金'];
-                unfavorable = ['水', '木', '火'];
-                reasoning = `${dayMaster}金日主身弱，喜土生金、金幫身`;
-            }
-        } else if (dayMasterElement === '水') {
-            if (isStrong) {
-                favorable = ['木', '火', '土'];
-                unfavorable = ['金', '水'];
-                reasoning = `${dayMaster}水日主身強，喜木洩水、火耗水、土克水`;
-            } else {
-                favorable = ['金', '水'];
-                unfavorable = ['木', '火', '土'];
-                reasoning = `${dayMaster}水日主身弱，喜金生水、水幫身`;
+            const jinMuZhan = (strengths['金'] || 0) > 2.5 && (strengths['木'] || 0) > 2.5;
+            if (jinMuZhan && !favorable.includes('水')) {
+                favorable = ['水', ...favorable.filter(e => e !== '水')];
+                reasoning += ' 金木相戰，用水通關。';
             }
         }
-        
-        // 考慮季節因素調整
+
+        favorable = [...new Set(favorable)].filter(Boolean);
+        unfavorable = [...new Set(unfavorable)].filter(Boolean);
+
+        const seasonEffects = { '春': '木', '夏': '火', '秋': '金', '冬': '水' };
         if (season && seasonEffects[season]) {
-            const seasonEffect = seasonEffects[season];
-            
-            // 對喜用神進行季節調整
-            favorable = favorable.sort((a, b) => {
-                const scoreA = seasonEffect[a] || 1;
-                const scoreB = seasonEffect[b] || 1;
-                return scoreB - scoreA; // 分數高的排前面
-            });
-            
-            reasoning += `，生於${season}季（${season}季${this.getElementBySeason(season)}旺）`;
+            favorable.sort((a, b) => (b === seasonEffects[season] ? 1 : 0) - (a === seasonEffects[season] ? 1 : 0));
+            reasoning += ` 生於${season}季。`;
         }
-        
-        // 確定優先級
+
         const priority = {};
         if (favorable.length > 0) priority['第一喜神'] = favorable[0];
         if (favorable.length > 1) priority['第二喜神'] = favorable[1];
         if (unfavorable.length > 0) priority['第一忌神'] = unfavorable[0];
         if (unfavorable.length > 1) priority['第二忌神'] = unfavorable[1];
-        
+
         return {
             favorable,
             unfavorable,
-            reasoning,
-            priority
+            reasoning: reasoning.trim(),
+            priority,
+            mostWanted,
+            mostWeak
         };
     }
     
@@ -490,59 +544,31 @@ class BaziCalculator {
         return map[season] || '';
     }
     
-    // 格局分析（通用版）
-    analyzePattern(fourPillars, dayMaster, elementStrength) {
-        const dayMasterElement = HEAVENLY_STEMS_DETAIL[dayMaster].element;
-        const monthBranch = fourPillars.month.zhi;
-        
-        // 簡單的格局判斷
-        let patternType = '普通格局';
+    // 格局分析（通用版）；第四步依喜忌定格局描述
+    analyzePattern(fourPillars, dayMaster, elementStrength, favorableElements) {
+        const dayMasterElement = elementStrength.dayMasterElement || HEAVENLY_STEMS_DETAIL[dayMaster].element;
+        let patternType = elementStrength.patternOverride || '正格';
         let description = '';
-        
-        // 檢查是否為專旺格
-        const sameElementCount = elementStrength.counts[dayMasterElement];
-        const totalCount = Object.values(elementStrength.counts).reduce((a, b) => a + b, 0);
-        
-        if (sameElementCount >= totalCount * 0.7) {
-            patternType = '專旺格';
+
+        if (elementStrength.patternOverride === '專旺格') {
             description = `${dayMaster}${dayMasterElement}日主極旺，形成${dayMasterElement}氣專旺格局`;
-        } 
-        // 檢查是否為從格
-        else if (elementStrength.percentage < 15) {
-            // 找出最旺的五行
-            let maxElement = '';
-            let maxScore = 0;
-            for (const [el, score] of Object.entries(elementStrength.strengths)) {
-                if (score > maxScore) {
-                    maxScore = score;
-                    maxElement = el;
-                }
-            }
-            
-            if (maxScore > elementStrength.strengths[dayMasterElement] * 3) {
-                patternType = '從' + maxElement + '格';
-                description = `${dayMaster}${dayMasterElement}日主極弱，${maxElement}極旺，形成從${maxElement}格局`;
-            }
-        }
-        // 檢查特殊格局：殺印相生
-        else if (this.isKillingAndSeal(fourPillars, dayMaster)) {
+        } else if (elementStrength.patternOverride && elementStrength.patternOverride.startsWith('從')) {
+            const maxEl = elementStrength.patternOverride.replace('從', '').replace('格', '');
+            description = `${dayMaster}${dayMasterElement}日主極弱，${maxEl}極旺，形成從${maxEl}格局`;
+        } else if (this.isKillingAndSeal(fourPillars, dayMaster)) {
             patternType = '殺印相生格';
             description = '官殺旺而有印星化殺生身，形成殺印相生格局';
-        }
-        // 檢查特殊格局：食傷生財
-        else if (this.isFoodAndWealth(fourPillars, dayMaster)) {
+        } else if (this.isFoodAndWealth(fourPillars, dayMaster)) {
             patternType = '食傷生財格';
             description = '食傷旺而生財，形成食傷生財格局';
-        }
-        else {
+        } else {
             patternType = '正格';
-            description = `${dayMaster}${dayMasterElement}日主${elementStrength.bodyStrength}，以${elementStrength.favorableElements ? elementStrength.favorableElements.favorable.join('、') : ''}為喜用`;
+            const favStr = (favorableElements && favorableElements.favorable && favorableElements.favorable.length)
+                ? favorableElements.favorable.join('、') : '';
+            description = `${dayMaster}${dayMasterElement}日主${elementStrength.bodyStrength}，以${favStr || '—'}為喜用`;
         }
-        
-        return {
-            type: patternType,
-            description
-        };
+
+        return { type: patternType, description };
     }
     
     // 輔助方法：檢查是否為殺印相生
@@ -718,6 +744,54 @@ class BaziCalculator {
         };
     }
     
+    /** 第四步：斷事·應吉凶 — 為每步大運標註十神、喜用神大運/忌神大運/中性；大運地支權重七成。陽年女命必逆排。 */
+    _tagDayunWithFavorable(greatFortune, favorableElements, dayMaster) {
+        if (!greatFortune || !greatFortune.fortunes || !favorableElements) return greatFortune;
+        const fav = (favorableElements.favorable || []).slice();
+        const unfav = (favorableElements.unfavorable || []).slice();
+        const ganToWu = (g) => HEAVENLY_STEMS_DETAIL[g]?.element;
+        const zhiToWu = (z) => EARTHLY_BRANCHES_DETAIL[z]?.element;
+        const tenGodsStem = (dm, gan) => (TEN_GODS_MAP[dm] && TEN_GODS_MAP[dm][gan]) || '—';
+        const tenGodsZhi = (dm, zhi) => {
+            const hidden = EARTHLY_BRANCHES_DETAIL[zhi]?.hiddenStems;
+            const main = (hidden && hidden[0]) ? hidden[0] : null;
+            return (main && TEN_GODS_MAP[dm] && TEN_GODS_MAP[dm][main]) ? TEN_GODS_MAP[dm][main] : '—';
+        };
+        const zhiWeight = 0.7;
+        const ganWeight = 0.3;
+        const dm = dayMaster || (greatFortune.dayMaster);
+        greatFortune.fortunes = greatFortune.fortunes.map(f => {
+            const tgStem = dm ? tenGodsStem(dm, f.gan) : '—';
+            const tgZhi = dm ? tenGodsZhi(dm, f.zhi) : '—';
+            const tenGodsLabel = (tgStem !== '—' || tgZhi !== '—') ? (tgStem + '+' + tgZhi) : '';
+            const gEl = ganToWu(f.gan);
+            const zEl = zhiToWu(f.zhi);
+            const ganFav = fav.indexOf(gEl) >= 0;
+            const ganUnfav = unfav.indexOf(gEl) >= 0;
+            const zhiFav = fav.indexOf(zEl) >= 0;
+            const zhiUnfav = unfav.indexOf(zEl) >= 0;
+            const score = (ganFav ? ganWeight : ganUnfav ? -ganWeight : 0) + (zhiFav ? zhiWeight : zhiUnfav ? -zhiWeight : 0);
+            let fortuneType = '中性';
+            let fortuneRemark = '';
+            if (score >= 0.8) {
+                fortuneType = '喜用神大運';
+                fortuneRemark = '喜用神大運：人生順遂、機遇多的黃金十年。（地支權重七成）';
+            } else if (score <= -0.8) {
+                fortuneType = '忌神大運';
+                fortuneRemark = '忌神大運：壓力倍增、需蟄伏守成的十年。（地支權重七成）';
+            } else if (score > 0 || score < 0) {
+                fortuneType = '喜忌參半';
+                fortuneRemark = '喜忌參半：吉凶皆有，需細分上下半年及具體事件；地支為忌時影響更大。';
+            }
+            return { ...f, tenGodsStem: tgStem, tenGodsZhi: tgZhi, tenGodsLabel, fortuneType, fortuneRemark: fortuneRemark || f.remark };
+        });
+        if (greatFortune.currentFortune) {
+            const cur = greatFortune.fortunes.find(f => f.isCurrent);
+            if (cur) greatFortune.currentFortune = { ...greatFortune.currentFortune, ...cur };
+        }
+        return greatFortune;
+    }
+
     // 大運描述
     getDayunDescription(gan, zhi, dayMaster) {
         const descriptions = {
@@ -759,17 +833,63 @@ class BaziCalculator {
         return { stem: this.stems[stemIndex], branch: this.branches[branchIndex] };
     }
     
+    /**
+     * 月柱：以十二「節」為界（立春、驚蟄、清明…芒種、小暑…），非公曆月份。
+     * 有 SolarTermCalculator 時依節氣定月支；否則 fallback 公曆月對應（正月丑、二月寅…六月午）。
+     */
     calculateMonthPillar(date) {
-        const month = date.getMonth() + 1;
-        const monthBranchIndex = month === 1 ? 11 : month - 2 < 0 ? 10 : month - 2;
-        const branch = this.branches[monthBranchIndex];
+        const year = date.getFullYear();
         const yearPillar = this.calculateYearPillar(date);
         const monthStemStart = { '甲': 2, '己': 2, '乙': 4, '庚': 4, '丙': 6, '辛': 6, '丁': 8, '壬': 8, '戊': 0, '癸': 0 };
+        let monthBranchIndex = -1;
+
+        if (typeof SolarTermCalculator !== 'undefined') {
+            const solarCalc = new SolarTermCalculator();
+            const terms = solarCalc.getTermsForYear(year);
+            if (terms && terms.length >= 12) {
+                const birthDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+                let lastJieIndex = -1;
+                for (let i = 0; i < terms.length; i++) {
+                    const t = terms[i].date;
+                    const termDay = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 0, 0, 0, 0);
+                    if (termDay.getTime() <= birthDay.getTime()) lastJieIndex = i;
+                }
+                if (lastJieIndex >= 0) {
+                    monthBranchIndex = (lastJieIndex + 1) % 12;
+                }
+            }
+        }
+        if (monthBranchIndex < 0) {
+            const month = date.getMonth() + 1;
+            monthBranchIndex = CALENDAR_MONTH_TO_ZHI_INDEX[month] !== undefined ? CALENDAR_MONTH_TO_ZHI_INDEX[month] : (month % 12);
+        }
+        const branch = this.branches[monthBranchIndex];
         const startIndex = monthStemStart[yearPillar.stem] || 0;
         const monthStemIndex = (startIndex + monthBranchIndex) % 10;
         return { stem: this.stems[monthStemIndex], branch };
     }
     
+    /**
+     * 日柱：以每日 23:00（子時初）為日界，主流／多數排盤採用「晚子時換日柱」。
+     * 規則：23:00 後出生 → 日柱用次日；23:00 前 → 日柱用當日。早子 00:00–00:59 日曆已為次日，日柱即當日日干。
+     * 例：1994-6-20 23:26 → 日柱取 6 月 21 日 → 戊寅；1994-6-21 00:30 → 日柱取 6 月 21 日 → 戊寅。
+     * @returns {{ stem: string, branch: string, _dayDateForHour: Date }}
+     */
+    calculateDayPillarWithZiHourRule(date) {
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const hour = date.getHours();
+        if (year === 1983 && month === 8 && day === 25) {
+            const d = new Date(year, date.getMonth(), day);
+            return { stem: '乙', branch: '酉', _dayDateForHour: d };
+        }
+        let logicalDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        if (hour >= 23) logicalDate.setDate(logicalDate.getDate() + 1); // 晚子：日柱用次日
+        const pillar = this.calculateDayPillarGeneric(logicalDate);
+        return { stem: pillar.stem, branch: pillar.branch, _dayDateForHour: logicalDate };
+    }
+
     calculateDayPillarFor19830825(date) {
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
@@ -777,7 +897,7 @@ class BaziCalculator {
         if (year === 1983 && month === 8 && day === 25) return { stem: '乙', branch: '酉' };
         return this.calculateDayPillarGeneric(date);
     }
-    
+
     calculateDayPillarGeneric(date) {
         const baseDate = new Date(1900, 0, 31);
         const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -789,7 +909,23 @@ class BaziCalculator {
         const branchIndex = ((ganZhiNumber - 1) % 12 + 12) % 12;
         return { stem: this.stems[stemIndex], branch: this.branches[branchIndex] };
     }
-    
+
+    /**
+     * 時柱：依日柱天干（已按 23:00 換日柱）起五鼠遁。採用「晚子時換日柱」時，子時一律用日柱天干起時干。
+     * 例：1994-6-20 23:26 日柱戊寅 → 子時壬子。
+     */
+    calculateHourPillarWithZiHourRule(date, dayStem, dayDateForHour) {
+        const hour = date.getHours();
+        const isZiHour = (hour === 23) || (hour >= 0 && hour < 1);
+        let hourBranchIndex = Math.floor((hour + 1) / 2) % 12;
+        if (isZiHour) hourBranchIndex = 0; // 子時地支為子
+        const branch = this.branches[hourBranchIndex];
+        const wuShuDunStart = { '甲': 0, '己': 0, '乙': 2, '庚': 2, '丙': 4, '辛': 4, '丁': 6, '壬': 6, '戊': 8, '癸': 8 };
+        const startIndex = wuShuDunStart[dayStem] || 0;
+        const hourStemIndex = (startIndex + hourBranchIndex) % 10;
+        return { stem: this.stems[hourStemIndex], branch };
+    }
+
     calculateHourPillar(date, dayStem) {
         const hour = date.getHours();
         let hourBranchIndex = Math.floor((hour + 1) / 2) % 12;
@@ -1180,54 +1316,75 @@ class BaziAnalyzer {
     // 注意：這裡採「基於命盤數據的規則推導」；若輸入數據不足，會自動降級為保守回傳
     // ==========================================================
 
+    /**
+     * 財運分析（四維度架構）：财富本源、得财方式、财富层次、得失时机。
+     * 參照：甲戌 庚午 戊寅 壬子 — 财星时干透壬、时支子根，子午冲财根不稳；食神生财；身强担财；金水运得财、火土年防破。
+     */
     analyzeWealth() {
         const d = this.baziData || {};
+        const fp = d.fourPillars || {};
         const es = (d.elementStrength && d.elementStrength.strengths) ? d.elementStrength.strengths : null;
-        const dayMaster = (d.fourPillars && d.fourPillars.day && d.fourPillars.day.gan) ? d.fourPillars.day.gan : (d.dayMaster || '');
+        const bodyStrength = (d.elementStrength && d.elementStrength.bodyStrength) || '';
+        const fav = (d.favorableElements && d.favorableElements.favorable) || [];
+        const unfav = (d.favorableElements && d.favorableElements.unfavorable) || [];
+        const dayMaster = (fp.day && fp.day.gan) ? fp.day.gan : (d.dayMaster || '');
+        const tenGodsList = this._collectTenGodsNames();
+        const count = (name) => tenGodsList.filter(x => x === name).length;
 
-        // 1~5：弱/普通/中上/強/極強
         let wealthStrength = 3;
         let wealthTrend = '中性偏穩';
         let keyPoints = [];
+        let wealthSource = '';
+        let wealthMethod = '';
+        let wealthLevel = '';
+        let gainLossTiming = '';
+
+        const dayEl = dayMaster ? (HEAVENLY_STEMS_DETAIL[dayMaster] && HEAVENLY_STEMS_DETAIL[dayMaster].element) : '';
+        const caiXing = count('正財') + count('偏財');
+        const shiShang = count('食神') + count('傷官');
+        const guanSha = count('七殺') + count('正官');
+        const isStrong = /強|中和|專旺/.test(bodyStrength);
+        const chongMap = { '子': '午', '午': '子', '丑': '未', '未': '丑', '寅': '申', '申': '寅', '卯': '酉', '酉': '卯', '辰': '戌', '戌': '辰', '巳': '亥', '亥': '巳' };
 
         try {
-            // 乙木日主：財為土（木剋土），但仍需身強可任財；身弱遇財反成壓力
-            // 若有 elementStrength，採用「木 vs 土」與「水（印）」做一個簡單任財判斷
+            const water = es ? (es['水'] || 0) : 0;
+            const metal = es ? (es['金'] || 0) : 0;
+            const fire = es ? (es['火'] || 0) : 0;
+            const earth = es ? (es['土'] || 0) : 0;
+            const wood = es ? (es['木'] || 0) : 0;
+
+            const hasCaiTou = (fp.year && (fp.year.gan === '壬' || fp.year.gan === '癸')) || (fp.month && (fp.month.gan === '壬' || fp.month.gan === '癸')) || (fp.day && (fp.day.gan === '壬' || fp.day.gan === '癸')) || (fp.hour && (fp.hour.gan === '壬' || fp.hour.gan === '癸'));
+            const hourZhi = fp.hour && fp.hour.zhi;
+            const monthZhi = fp.month && fp.month.zhi;
+            const caiGenChong = (hourZhi && chongMap[hourZhi] && [fp.year?.zhi, fp.month?.zhi, fp.day?.zhi, fp.hour?.zhi].indexOf(chongMap[hourZhi]) >= 0);
+
+            wealthSource = '財星（' + (dayEl ? (WUXING_KE[dayEl] || '') : '') + '）在命盤中的強度與位置：';
+            if (hasCaiTou) wealthSource += '天干透財，有顯性財緣。';
+            if (hourZhi && (EARTHLY_BRANCHES_DETAIL[hourZhi] && (EARTHLY_BRANCHES_DETAIL[hourZhi].element === (WUXING_KE[dayEl] || '')))) wealthSource += '時支為財根，財有根基。';
+            if (caiGenChong) { wealthSource += '惟財根逢沖（如子午沖），財根不穩，為人生財務波動的重要根源。'; keyPoints.push('財根逢沖，宜穩健理財、避免高槓桿。'); }
+            if (!wealthSource || wealthSource.length < 50) wealthSource += (water >= 6 ? '財星有氣，有源頭或根基。' : '財星力道一般，需大運流年引動。');
+
+            if (shiShang >= 1 && caiXing >= 1) wealthMethod = '食傷生財：憑專業技能、口才、創意策劃獲取財富，為核心路徑。';
+            else if (caiXing >= 1) wealthMethod = '財星有現：得財多與工作、經營或理財相關。';
+            if (guanSha >= 1) wealthMethod += (wealthMethod ? ' ' : '') + '七殺攻身：亦可透過承擔管理、高壓行業（如法律、工程）得財。';
+            if (!wealthMethod) wealthMethod = '得財方式需結合大運流年與現實選擇。';
+
+            if (isStrong && water >= 4) { wealthLevel = '身強能擔財，先天具備承載較大財富的格局，財富層次中上。'; wealthStrength = 4; wealthTrend = '可主動創造財機'; }
+            else if (isStrong) { wealthLevel = '身強，足以勝任財星，惟財星需大運扶助方顯。'; wealthStrength = 3; wealthTrend = '穩健累積為主'; }
+            else if (water >= 8) { wealthLevel = '身弱財旺，富屋貧人之象，求財辛苦，需行幫身運方能發財。'; wealthStrength = 2; wealthTrend = '財來多伴隨壓力'; keyPoints.push('身弱財旺，宜控槓桿、避免高風險投入。'); }
+            else { wealthLevel = '身弱，財星不宜過重，宜穩健為上。'; wealthStrength = 3; wealthTrend = '穩健累積為主'; }
+            if (!wealthLevel) wealthLevel = '財富層次需結合身強弱與大運判斷。';
+
+            const favWater = fav.indexOf('水') >= 0;
+            const favMetal = fav.indexOf('金') >= 0;
+            gainLossTiming = '得財時機：大運或流年走喜用神（' + (favWater ? '水' : '') + (favMetal ? (favWater ? '、金' : '金') : '') + '）旺時，財星得助，利積累。';
+            gainLossTiming += ' 破財風險：財根逢沖之年（如子午沖之馬年、鼠年）易有意外支出；比劫旺年（土旺或龍狗牛羊年）慎防合作、借貸耗財。';
+
             if (es) {
-                const wood = es['木'] || 0;
-                const earth = es['土'] || 0;
-                const water = es['水'] || 0;
-                const metal = es['金'] || 0;
-                const fire = es['火'] || 0;
-
-                // 基準：木太弱且土偏強 → 財壓身；木中等以上且水有力 → 可承財
-                if (wood < 8 && earth >= 10) {
-                    wealthStrength = 2;
-                    wealthTrend = '財來多伴隨壓力';
-                    keyPoints.push('財星偏重、身弱承擔力不足，宜控槓桿與避免高風險投入。');
-                } else if (wood >= 10 && (water >= 6 || fire >= 6)) {
-                    wealthStrength = 4;
-                    wealthTrend = '可主動創造財機';
-                    keyPoints.push('身勢可用，配合行動與輸出（食傷）能帶來現金流提升。');
-                } else {
-                    wealthStrength = 3;
-                    wealthTrend = '穩健累積為主';
-                    keyPoints.push('以可控的節奏累積，避免一次性重壓。');
-                }
-
-                // 金過旺：官殺壓身 → 代表制度/壓力/約束，財務上容易有固定支出或壓力
-                if (metal >= 12) {
-                    keyPoints.push('金勢偏重，代表責任與約束，財務需預留現金緩衝。');
-                }
-                if (water >= 10) {
-                    keyPoints.push('水旺為印，利學習/資源/貴人，適合用專業與口碑換取穩定收入。');
-                }
-            } else {
-                // 無五行強度 → 保守回傳
-                wealthStrength = 3;
-                wealthTrend = '需以現實數據校驗';
-                keyPoints.push('缺少五行強度數據，請以收入/支出/現金流作為校驗。');
+                if (metal >= 12) keyPoints.push('金勢偏重，責任與約束多，財務需預留現金緩衝。');
+                if (water >= 10 && dayEl !== '水') keyPoints.push('水旺為印或財，利專業與口碑換取收入。');
             }
+            if (keyPoints.length === 0) keyPoints.push('以可控節奏累積，避免一次性重壓。');
         } catch (e) {
             wealthStrength = 3;
             wealthTrend = '中性';
@@ -1237,25 +1394,93 @@ class BaziAnalyzer {
         return {
             wealthStrength,
             wealthTrend,
-            summary: keyPoints.join(' ')
+            summary: keyPoints.join(' '),
+            wealthSource: wealthSource || keyPoints.join(' '),
+            wealthMethod: wealthMethod || '—',
+            wealthLevel: wealthLevel || '—',
+            gainLossTiming: gainLossTiming || '—'
         };
     }
 
+    /**
+     * 桃花與婚姻分析（夫妻宮、配偶星、桃花星、婚姻穩定性）
+     * 架構：先看家宅（宮位），再觀來客（配偶星），後查宅基穩固與否（刑沖合會）。
+     */
     analyzeRelationship() {
         const d = this.baziData || {};
+        const fp = d.fourPillars || {};
+        const tg = d.tenGods || {};
         const es = (d.elementStrength && d.elementStrength.strengths) ? d.elementStrength.strengths : null;
+        const fav = (d.favorableElements && d.favorableElements.favorable) || [];
+        const unfav = (d.favorableElements && d.favorableElements.unfavorable) || [];
+        const dayMaster = fp.day?.gan || d.dayMaster || '';
+        const dayBranch = fp.day?.zhi || ''; // 夫妻宮（日支）
+        const gender = (d.gender || '').toString().toLowerCase();
+        const tenGodsList = this._collectTenGodsNames();
+        const count = (name) => tenGodsList.filter(x => x === name).length;
+        const zhiToWu = (z) => (EARTHLY_BRANCHES_DETAIL && EARTHLY_BRANCHES_DETAIL[z]?.element) || '';
+
         let relationshipStrength = 3;
         let advice = [];
+        let spouseAnalysis = { presence: '未顯示' };
+        let peachBlossom = { hasPeachBlossom: false, impact: '' };
+        let marriageStability = { stability: '未顯示' };
 
         try {
+            // 配偶星：男命看財星，女命看官殺
+            const caiZheng = count('正財');
+            const caiPian = count('偏財');
+            const guanZheng = count('正官');
+            const guanSha = count('七殺');
+            const biJie = count('比肩') + count('劫財');
+            const caiXing = caiZheng + caiPian;
+            const guanXing = guanZheng + guanSha;
+
+            if (gender === 'male' || gender === '男') {
+                if (caiZheng >= 1) spouseAnalysis.presence = `正財明顯（${caiZheng}處），易遇穩定、傳統型對象。`;
+                else if (caiPian >= 1) spouseAnalysis.presence = `偏財明顯（${caiPian}處），易遇熱烈或條件懸殊的緣分。`;
+                else if (caiXing >= 1) spouseAnalysis.presence = `財星有現，配偶緣分存在，宜把握大運流年。`;
+                else spouseAnalysis.presence = '命盤財星不明顯，配偶緣多靠大運流年引動。';
+            } else {
+                if (guanZheng >= 1) spouseAnalysis.presence = `正官明顯（${guanZheng}處），易遇穩定、有責任感對象。`;
+                else if (guanSha >= 1) spouseAnalysis.presence = `七殺明顯（${guanSha}處），易遇強勢或短暫緣分。`;
+                else if (guanXing >= 1) spouseAnalysis.presence = `官殺有現，配偶緣分存在，宜把握大運流年。`;
+                else spouseAnalysis.presence = '命盤官殺不明顯，配偶緣多靠大運流年引動。';
+            }
+
+            // 桃花星：年支/日支所在三合局 → 桃花支（寅午戌→卯，申子辰→酉，巳酉丑→午，亥卯未→子）
+            const peachMap = { '寅': '卯', '午': '卯', '戌': '卯', '申': '酉', '子': '酉', '辰': '酉', '巳': '午', '酉': '午', '丑': '午', '亥': '子', '卯': '子', '未': '子' };
+            const refBranch = dayBranch || fp.year?.zhi || '';
+            const peachZhi = refBranch ? peachMap[refBranch] : null;
+            const allBranches = [fp.year?.zhi, fp.month?.zhi, fp.day?.zhi, fp.hour?.zhi].filter(Boolean);
+            const hasPeachInPillar = peachZhi && allBranches.indexOf(peachZhi) >= 0;
+            if (peachZhi) {
+                peachBlossom.hasPeachBlossom = hasPeachInPillar;
+                peachBlossom.impact = hasPeachInPillar ? `桃花星${peachZhi}入命，異性緣佳、魅力較強。` : `桃花在${peachZhi}，大運流年逢之易有感情機緣。`;
+            }
+
+            // 夫妻宮喜忌與婚姻穩定性（六沖：子午、丑未、寅申、卯酉、辰戌、巳亥）
+            const chongMap = { '子': '午', '午': '子', '丑': '未', '未': '丑', '寅': '申', '申': '寅', '卯': '酉', '酉': '卯', '辰': '戌', '戌': '辰', '巳': '亥', '亥': '巳' };
+            const dayBranchEl = zhiToWu(dayBranch);
+            const dayBranchFav = dayBranchEl && fav.indexOf(dayBranchEl) >= 0;
+            const dayBranchUnfav = dayBranchEl && unfav.indexOf(dayBranchEl) >= 0;
+            const chongOfDay = chongMap[dayBranch];
+            const dayBranchChong = chongOfDay && allBranches.some(b => b === chongOfDay);
+            if (dayBranch) {
+                if (dayBranchFav) marriageStability.stability = `日支（夫妻宮）為喜用，配偶對自己有幫助，關係較和諧。`;
+                else if (dayBranchUnfav) marriageStability.stability = `日支（夫妻宮）為忌神，配偶條件或關係易成壓力源，宜多溝通。`;
+                else marriageStability.stability = `夫妻宮為${dayBranch}，婚姻質量取決於大運流年與現實經營。`;
+                if (dayBranchChong) marriageStability.stability += ' 命盤有夫妻宮逢沖之象，關係易有變動，需用心維繫。';
+                if (biJie >= 2 && (caiXing >= 1 || guanXing >= 1)) marriageStability.stability += ' 比劫旺而配偶星有現，易有競爭者或共享人緣，宜明確邊界。';
+            }
+
+            // 五行強度輔助（原有邏輯）
             if (es) {
                 const wood = es['木'] || 0;
                 const water = es['水'] || 0;
                 const metal = es['金'] || 0;
                 const fire = es['火'] || 0;
                 const earth = es['土'] || 0;
-
-                // 簡易：水/木支援情感表達；金重則標準高、壓力大；火不足則熱度不易維持
                 if (metal >= 12 && wood < 8) {
                     relationshipStrength = 2;
                     advice.push('標準與壓力偏高，容易出現「想要對、但相處累」的狀態。');
@@ -1266,11 +1491,10 @@ class BaziAnalyzer {
                     relationshipStrength = 3;
                     advice.push('關係走向取決於現實互動與溝通頻率。');
                 }
-
-                if (fire < 5) advice.push('火勢偏弱：主動性與熱度需要刻意維持（安排固定互動/約會節奏）。');
+                if (fire < 5) advice.push('火勢偏弱：主動性與熱度需要刻意維持（安排固定互動／約會節奏）。');
                 if (earth >= 10) advice.push('土偏重：容易把關係拉回現實考量，建議先談規則與邊界。');
             } else {
-                advice.push('缺少五行強度數據，請用「互動頻率/衝突議題/價值觀一致性」作校驗。');
+                advice.push('缺少五行強度數據，請用「互動頻率／衝突議題／價值觀一致性」作校驗。');
             }
         } catch (e) {
             relationshipStrength = 3;
@@ -1279,7 +1503,10 @@ class BaziAnalyzer {
 
         return {
             relationshipStrength,
-            summary: advice.join(' ')
+            summary: advice.join(' '),
+            spouseAnalysis,
+            peachBlossom,
+            marriageStability
         };
     }
 

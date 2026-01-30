@@ -1959,6 +1959,31 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     letter-spacing: 0.05em;
 }
 
+.dayun-fortune-type {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+}
+.dayun-fortune-type--fav {
+    color: #1b5e20;
+    background: rgba(76, 175, 80, 0.3);
+    border: 1px solid rgba(76, 175, 80, 0.5);
+}
+.dayun-fortune-type--unfav {
+    color: #b71c1c;
+    background: rgba(244, 67, 54, 0.25);
+    border: 1px solid rgba(244, 67, 54, 0.5);
+}
+.dayun-fortune-type--mixed {
+    color: #e65100;
+    background: rgba(255, 152, 0, 0.25);
+    border: 1px solid rgba(255, 152, 0, 0.5);
+}
+
 .dayun-year, .age {
     display: block;
     font-weight: 600;
