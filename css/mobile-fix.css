@@ -22,7 +22,7 @@
         box-sizing: border-box !important;
     }
     
-    /* ===== 分析結果區：與 Bazi 同寬（僅 section 留 0.5rem，內層無額外左右留白） ===== */
+    /* ===== 分析結果區：與 Bazi 同寬同 padding（滿版，不預留按鈕寬度） ===== */
     #result-section {
         width: 100% !important;
         max-width: none !important;
@@ -30,9 +30,7 @@
         box-sizing: border-box !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        padding-left: 0.5rem !important;   /* 與 Bazi section 一致 */
-        padding-right: 72px !important;   /* 懸浮按鈕列 */
-        padding-top: 0.75rem !important;
+        padding: 0.75rem !important;
         padding-bottom: 150px !important;
         overflow-x: auto !important;
         overflow-y: visible !important;
@@ -40,7 +38,7 @@
     }
     
     /* 內層與 Bazi 的 bazi-container 一致：無左右 padding，不限制寬度 */
-    #result-section .result-container,
+    #result-section .bazi-container,
     #result-section .result-overview,
     #result-section .dimension-analysis,
     #result-section .dimension-content,
@@ -55,7 +53,7 @@
         padding-right: 0 !important;
     }
     
-    #result-section .result-container {
+    #result-section .bazi-container {
         overflow-x: visible !important;
         overflow-y: visible !important;
     }

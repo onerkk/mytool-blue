@@ -71,10 +71,10 @@
         padding: 0.75rem 0.5rem !important;
     }
     
+    /* 結果頁與 Bazi 同：不為按鈕預留寬度，padding 與其他 section 一致 */
     .result-section,
     #result-section {
-        padding: 0.75rem 0.5rem !important;
-        padding-right: 72px !important; /* 三顆懸浮按鈕列寬度，避免內容被遮擋 */
+        padding: 0.75rem !important;
     }
     
     /* 標題優化 */
@@ -835,21 +835,19 @@
     text-overflow: unset !important;
   }
   
-  /* 結果頁面：與 Bazi 同寬（max-width: none），僅 section 留 0.5rem 左、72px 右 */
+  /* 結果頁面：與 Bazi 同寬同 padding（滿版，不預留按鈕寬度） */
   #result-section {
     width: 100% !important;
     max-width: none !important;
     min-width: 0 !important;
-    padding-left: 0.5rem !important;
-    padding-right: 72px !important;
-    padding-top: 0.75rem !important;
+    padding: 0.75rem !important;
     padding-bottom: 150px !important;
     box-sizing: border-box !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
   }
   
-  #result-section .result-container,
+  #result-section .bazi-container,
   #result-section .result-overview,
   #result-section .dimension-analysis,
   #result-section .dimension-content,
@@ -1027,15 +1025,15 @@
         padding-left: 0 !important;
     }
     
+    /* 結果頁與 Bazi 同：無 72px 右留白 */
     .result-section,
     #result-section {
-        padding-right: 72px !important;
-        padding-left: 0.5rem !important;
+        padding: 0.75rem !important;
     }
     
-    .result-container,
+    .bazi-container,
     .result-overview {
-        padding-right: 0 !important;
+        padding: 0 !important;
     }
     
     /* 小屏幕標題優化 */
@@ -2207,7 +2205,7 @@
     -webkit-overflow-scrolling: touch !important;
   }
   
-  /* 結果頁面容器：與其他 section 同寬同 padding（滿版），僅右側留懸浮按鈕空間 */
+  /* 結果頁面容器：與 Bazi section 同寬同 padding（滿版） */
   .result-section,
   #result-section.section {
     width: 100% !important;
@@ -2216,15 +2214,14 @@
     box-sizing: border-box !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
-    padding: 0.75rem 0.5rem !important; /* 與 .section 一致 */
-    padding-right: 72px !important; /* 懸浮按鈕列 */
+    padding: 0.75rem !important;
     overflow-x: auto !important;
     overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;
     position: relative !important;
   }
   
-  .result-container {
+  .bazi-container {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
