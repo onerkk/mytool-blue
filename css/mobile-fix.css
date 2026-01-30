@@ -174,6 +174,67 @@
     #result-section * {
         box-sizing: border-box !important;
     }
+
+    /* ===== 詳細命理分析（含桃花婚姻）手機版易讀 ===== */
+    #result-section .bazi-advanced-analysis,
+    #result-section .advanced-analysis-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0.75rem 0 !important;
+        margin-top: 1rem !important;
+    }
+    #result-section .advanced-analysis-section h3 {
+        font-size: 1.1rem !important;
+        margin-bottom: 1rem !important;
+        line-height: 1.4 !important;
+    }
+    #result-section .advanced-analysis-section .analysis-group {
+        display: block !important;
+        width: 100% !important;
+        margin-bottom: 1.25rem !important;
+    }
+    #result-section .advanced-analysis-section .analysis-group[style*="grid-template-columns: repeat(2, 1fr)"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    #result-section .advanced-analysis-section .ten-gods-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+    #result-section .advanced-analysis-section .analysis-card,
+    #result-section .advanced-analysis-section .wealth-analysis,
+    #result-section .advanced-analysis-section .relationship-analysis,
+    #result-section .advanced-analysis-section .personality-analysis,
+    #result-section .advanced-analysis-section .career-analysis {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    #result-section .advanced-analysis-section .analysis-card {
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    #result-section .advanced-analysis-section .analysis-card h4 {
+        font-size: 1rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    #result-section .advanced-analysis-section p,
+    #result-section .advanced-analysis-section .personality-analysis p,
+    #result-section .advanced-analysis-section .career-analysis p,
+    #result-section .advanced-analysis-section .wealth-analysis div,
+    #result-section .advanced-analysis-section .relationship-analysis div,
+    #result-section .advanced-analysis-section .relationship-analysis p {
+        line-height: 1.65 !important;
+        margin-bottom: 0.5rem !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    #result-section .advanced-analysis-section .traits .strengths,
+    #result-section .advanced-analysis-section .traits .weaknesses {
+        padding: 0.6rem !important;
+        margin-bottom: 0.5rem !important;
+        line-height: 1.5 !important;
+    }
     
     /* 十神與藏干：全寬區塊，四柱均分，不橫向滑動、不 min-width 限制 */
     #result-section .analysis-card-tengods {

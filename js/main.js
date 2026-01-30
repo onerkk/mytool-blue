@@ -2009,14 +2009,21 @@ class FortuneSystem {
         }
         fullBaziData.analysis = fullBaziData.analysis || {};
 
-        // 創建或更新詳細分析區域
+        // 創建或更新詳細分析區域（插入結果區 bazi-result，手機／桌面皆可見，含桃花婚姻分析）
         let analysisContainer = document.getElementById('bazi-advanced-analysis');
         if (!analysisContainer) {
             analysisContainer = document.createElement('div');
             analysisContainer.id = 'bazi-advanced-analysis';
             analysisContainer.className = 'bazi-advanced-analysis';
+        }
+        const baziResult = document.getElementById('bazi-result');
+        if (baziResult) {
+            if (!baziResult.contains(analysisContainer)) {
+                baziResult.appendChild(analysisContainer);
+            }
+        } else {
             const baziDetails = document.getElementById('bazi-details');
-            if (baziDetails && baziDetails.parentNode) {
+            if (baziDetails && baziDetails.parentNode && !analysisContainer.parentNode) {
                 baziDetails.parentNode.insertBefore(analysisContainer, baziDetails.nextSibling);
             }
         }
