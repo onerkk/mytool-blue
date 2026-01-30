@@ -25,10 +25,14 @@ section#result-section {
   box-sizing: border-box !important;
 }
 
-/* 懸浮鈕：每個頁面都顯示（蝦皮 / 賣貨便 / 客製） */
-.floating-buttons {
+/* 懸浮鈕：每個頁面都顯示（蝦皮 / 賣貨便 / 客製），最高優先級覆蓋任何隱藏規則 */
+body .floating-buttons,
+body > .floating-buttons,
+#floating-buttons.floating-buttons {
   display: flex !important;
+  visibility: visible !important;
   pointer-events: auto !important;
+  opacity: 1 !important;
 }
 
 @media (max-width: 768px) {

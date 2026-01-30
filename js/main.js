@@ -233,8 +233,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     bindEvents();
     
+    // 懸浮鈕：每個頁面都顯示（強制顯示）
+    ensureFloatingButtonsVisible();
+    
     console.log('靜月之光命理系統 v3.0 (最終融合版) 已就緒');
 });
+
+/** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示，覆蓋任何隱藏用的 CSS */
+function ensureFloatingButtonsVisible() {
+    const el = document.getElementById('floating-buttons') || document.querySelector('.floating-buttons');
+    if (el) {
+        el.style.setProperty('display', 'flex', 'important');
+        el.style.setProperty('visibility', 'visible', 'important');
+        el.style.setProperty('pointer-events', 'auto', 'important');
+        el.style.setProperty('opacity', '1', 'important');
+    }
+}
 
 // ==========================================
 // 3. 城市與真太陽時連動 (完整資料庫)
@@ -383,6 +397,9 @@ class FortuneSystem {
             this.currentStep = stepMap[sectionId];
             this.updateProgress();
         }
+        
+        // 懸浮鈕：每個頁面都顯示（強制顯示，不受 CSS 影響）
+        ensureFloatingButtonsVisible();
         
         // 當切換到結果頁面時，載入已保存的分析結果
         if(sectionId === 'result-section') {
