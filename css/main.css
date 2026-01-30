@@ -1390,6 +1390,19 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 }
 
 /* --- 結果頁面樣式 --- */
+/* 結果分析區：全螢幕滿版，右側留懸浮按鈕空間（與塔羅牌頁一致，內容不被遮擋） */
+#result-section.result-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-right: 72px; /* 懸浮按鈕列寬度 + 間距，避免內容被遮擋 */
+}
+#result-section .result-container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
 .result-overview {
     display: grid;
     grid-template-columns: 2fr 1fr;

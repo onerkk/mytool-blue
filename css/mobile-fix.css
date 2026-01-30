@@ -22,13 +22,13 @@
         box-sizing: border-box !important;
     }
     
-    /* ===== 分析結果區：滿版寬度，僅右側留浮動按鈕空間 ===== */
+    /* ===== 分析結果區：滿版寬度，僅右側留浮動按鈕空間（與塔羅牌頁一致） ===== */
     #result-section {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
         padding: 0.75rem 0.5rem !important; /* 與 .section 一致 */
-        padding-right: 58px !important; /* 浮動按鈕約 52px，略多一點即可 */
+        padding-right: 72px !important; /* 三顆懸浮按鈕列寬度 + 間距，避免內容被遮擋 */
         overflow-x: auto !important;
         overflow-y: visible !important;
         -webkit-overflow-scrolling: touch !important;

@@ -71,9 +71,10 @@
         padding: 0.75rem 0.5rem !important;
     }
     
-    .result-section {
+    .result-section,
+    #result-section {
         padding: 0.75rem 0.5rem !important;
-        padding-right: 58px !important; /* 僅為浮動按鈕留空間 */
+        padding-right: 72px !important; /* 三顆懸浮按鈕列寬度，避免內容被遮擋 */
     }
     
     /* 標題優化 */
@@ -834,13 +835,13 @@
     text-overflow: unset !important;
   }
   
-  /* 結果頁面全局優化：滿版寬度，縮小右側留白 */
+  /* 結果頁面全局優化：滿版寬度，右側留懸浮按鈕空間（與塔羅牌頁一致） */
   #result-section {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
     padding: 0.75rem 0.5rem !important;
-    padding-right: 58px !important; /* 浮動按鈕約 52px */
+    padding-right: 72px !important; /* 三顆懸浮按鈕列寬度，避免內容被遮擋 */
     box-sizing: border-box !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
@@ -1003,8 +1004,9 @@
         padding-left: 0 !important;
     }
     
-    .result-section {
-        padding-right: 58px !important;
+    .result-section,
+    #result-section {
+        padding-right: 72px !important;
         padding-left: 0.5rem !important;
     }
     
