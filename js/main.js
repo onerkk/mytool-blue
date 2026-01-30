@@ -3118,17 +3118,27 @@ const TarotModule = {
                 frontDiv.appendChild(img);
             }
             
-            // 綁定點擊事件翻牌
+            // 綁定點擊事件翻牌（翻完後更新「進行分析」按鈕狀態）
             cardEl.addEventListener('click', function() {
                 const flip = this.querySelector('.card-flip');
-                if(flip) flip.classList.toggle('flipped');
+                if(flip) {
+                    flip.classList.toggle('flipped');
+                    if(TarotModule && TarotModule.updateAnalyzeButtonState) TarotModule.updateAnalyzeButtonState();
+                }
             });
         });
-        
-        // 全部翻牌按鈕
+
+        // 進行分析按鈕：初始為禁用，須全部翻牌後才可點
+        const analyzeBtn = document.getElementById('proceed-to-result');
+        if(analyzeBtn) {
+            analyzeBtn.disabled = true;
+            analyzeBtn.setAttribute('title', '請先翻完所有牌才能進行分析');
+        }
+        if(TarotModule && TarotModule.updateAnalyzeButtonState) TarotModule.updateAnalyzeButtonState();
+
+        // 全部翻牌按鈕（翻完後會啟用「進行分析」）
         const flipAllBtn = document.getElementById('flip-all');
         if(flipAllBtn) {
-            // 移除舊的事件監聽器，避免重複綁定
             const newFlipBtn = flipAllBtn.cloneNode(true);
             flipAllBtn.parentNode.replaceChild(newFlipBtn, flipAllBtn);
             newFlipBtn.addEventListener('click', function(e) {
@@ -3136,37 +3146,51 @@ const TarotModule = {
                 document.querySelectorAll('.spread-area .card-flip').forEach(flip => {
                     flip.classList.add('flipped');
                 });
+                if(TarotModule && TarotModule.updateAnalyzeButtonState) TarotModule.updateAnalyzeButtonState();
             });
         }
-        
-        // 進行分析按鈕
-        const analyzeBtn = document.getElementById('proceed-to-result');
-        if(analyzeBtn) {
-            // 移除舊的事件監聽器，避免重複綁定
-            const newAnalyzeBtn = analyzeBtn.cloneNode(true);
-            analyzeBtn.parentNode.replaceChild(newAnalyzeBtn, analyzeBtn);
+
+        // 進行分析按鈕點擊（僅在全部翻牌後可執行）
+        const analyzeBtnForClick = document.getElementById('proceed-to-result');
+        if(analyzeBtnForClick) {
+            const newAnalyzeBtn = analyzeBtnForClick.cloneNode(true);
+            analyzeBtnForClick.parentNode.replaceChild(newAnalyzeBtn, analyzeBtnForClick);
             newAnalyzeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('進行分析按鈕被點擊');
-                if(TarotModule && TarotModule.performAnalysis) {
-                    TarotModule.performAnalysis();
-                } else {
-                    console.error('TarotModule.performAnalysis 不存在');
-                }
+                if(TarotModule && TarotModule.performAnalysis) TarotModule.performAnalysis();
             });
         }
     },
+    /** 是否已全部翻牌（10 張皆有 .flipped） */
+    areAllCardsFlipped: function() {
+        var flips = document.querySelectorAll('.spread-area .card-flip');
+        if(flips.length !== 10) return false;
+        for(var i = 0; i < flips.length; i++) {
+            if(!flips[i].classList.contains('flipped')) return false;
+        }
+        return true;
+    },
+    /** 依翻牌狀態更新「進行分析」按鈕：全部翻完才啟用 */
+    updateAnalyzeButtonState: function() {
+        var btn = document.getElementById('proceed-to-result');
+        if(!btn) return;
+        var allFlipped = this.areAllCardsFlipped && this.areAllCardsFlipped();
+        btn.disabled = !allFlipped;
+        btn.setAttribute('title', allFlipped ? '可進行分析' : '請先翻完所有牌才能進行分析');
+    },
     performAnalysis: function() {
-        console.log('開始進行塔羅牌分析...');
-        console.log('已抽取的牌:', this.drawnCards);
-        
-        // 檢查是否有抽取的牌
+        // 須先完成抽牌
         if(!this.drawnCards || this.drawnCards.length === 0) {
             alert('請先完成抽牌！');
             return;
         }
-        
+        // 須全部翻完牌才能分析（沒翻完不知道是什麼牌）
+        if(!this.areAllCardsFlipped || !this.areAllCardsFlipped()) {
+            alert('請先翻完所有牌，才能進行分析。');
+            return;
+        }
+
         const questionEl = document.getElementById('question');
         const question = questionEl ? questionEl.value : '未提供問題';
         console.log('問題:', question);
