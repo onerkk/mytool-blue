@@ -1878,6 +1878,7 @@ class FortuneSystem {
                 this.userData.birthDate = document.getElementById('birth-date')?.value || '';
                 this.userData.birthTime = document.getElementById('birth-time')?.value || '';
                 this.userData.gender = document.querySelector('input[name="gender"]:checked')?.value || 'male';
+                this.userData.useSolarTime = document.getElementById('true-solar-time') ? document.getElementById('true-solar-time').checked : false;
 
                 // 驗證輸入
                 if (!this.userData.birthDate || !this.userData.birthTime) {
@@ -1894,7 +1895,7 @@ class FortuneSystem {
                     if (timeStr.length === 4) {
                         timeStr = `${timeStr.substring(0, 2)}:${timeStr.substring(2)}`;
                     } else {
-                        throw new Error('時間格式錯誤，請使用 HH:MM 格式（例如：14:55）');
+                        throw new Error('時間格式錯誤，請使用 HH:MM 格式（例如：10:30）');
                     }
                 }
                 
@@ -2721,6 +2722,11 @@ class FortuneSystem {
         const computeScore = typeof QualityMapper !== 'undefined' && QualityMapper.computeDayunScore;
 
         let html = '';
+        if (greatFortune && (greatFortune.start_age_detail != null || greatFortune.startAge != null || greatFortune.direction)) {
+            const startDetail = greatFortune.start_age_detail || (greatFortune.startAge != null ? greatFortune.startAge + '歲' : '');
+            const dir = greatFortune.direction || '';
+            html += '<div class="dayun-meta" style="margin-bottom: 0.75rem; padding: 0.5rem; background: rgba(212,175,55,0.1); border-radius: 4px; font-size: 0.9rem; color: rgba(255,255,255,0.85);">起運：' + startDetail + (dir ? '；大運' + dir : '') + '</div>';
+        }
 
         if (greatFortune && Array.isArray(greatFortune.fortunes) && greatFortune.fortunes.length > 0) {
             for (let i = 0; i < greatFortune.fortunes.length; i++) {
@@ -4520,6 +4526,27 @@ function setupMeihuaRandomDomGuard(){
       FortuneSystem.prototype.renderProbabilityDashboard = function(){
         try{
           const question = ($('question') && $('question').value) ? $('question').value.trim() : '';
+          // 本次分析使用（輸入標準化顯性顯示，網頁與手機同步）
+          var inputCard = $('input-summary-card');
+          var inputContent = $('input-summary-content');
+          if (inputCard && inputContent) {
+            var u = this.userData || {};
+            var inputParts = [];
+            if (u.gender) inputParts.push('性別：' + (u.gender === 'male' ? '男' : '女'));
+            if (u.birthDate) inputParts.push('出生日期：' + u.birthDate);
+            if (u.birthTime) inputParts.push('出生時間：' + u.birthTime);
+            var solarNote = ($('true-solar-time') && $('true-solar-time').checked) ? '是' : (u.useSolarTime ? '是' : '否');
+            inputParts.push('真太陽時：' + solarNote);
+            var lat = $('latitude') ? ($('latitude').innerText || '').trim() : '';
+            var lng = $('longitude') ? ($('longitude').innerText || '').trim() : '';
+            if (lat && lng) inputParts.push('經緯度：' + lat + '°N, ' + lng + '°E');
+            if (inputParts.length) {
+              inputContent.innerHTML = inputParts.join(' &nbsp;|&nbsp; ');
+              inputCard.style.display = 'block';
+            } else {
+              inputCard.style.display = 'none';
+            }
+          }
           // 顯示問題（避免空白）
           if($('question-display')){
             setHTML('question-display', `<p class="question-text">${question || '未提供問題（機率評估仍可計算）'}</p>`);
@@ -4538,7 +4565,7 @@ function setupMeihuaRandomDomGuard(){
 
           if (typeof buildSummaryReport === 'function') {
             try {
-              var report = buildSummaryReport(dataForScoring, question);
+              var report = buildSummaryReport(dataForScoring, question, { referenceDate: new Date() });
               if (report.breakdown && report.breakdown.length > 0) {
                 overall = report.overallPercent || 0;
                 breakdownWithReasons = report.breakdown;
@@ -4565,19 +4592,21 @@ function setupMeihuaRandomDomGuard(){
           if (breakdownWithReasons.length === 0 && parts.length > 0 && typeof calculateCategoryScore === 'function' && typeof getCategory === 'function') {
             try {
               var cat = getCategory(question);
+              var scoreOpts = { referenceDate: new Date() };
               breakdownWithReasons = [];
               parts.forEach(function(p){
                 var sys = (p.key === '八字') ? 'bazi' : (p.key === '姓名學') ? 'name' : (p.key === '梅花易數') ? 'meihua' : (p.key === '塔羅') ? 'tarot' : null;
                 var data = (sys === 'bazi') ? dataForScoring.bazi : (sys === 'name') ? dataForScoring.nameology : (sys === 'meihua') ? dataForScoring.meihua : (sys === 'tarot') ? dataForScoring.tarot : null;
-                var res = sys && data ? calculateCategoryScore(sys, data, cat) : { score: p.prob, reason: '' };
+                var res = sys && data ? calculateCategoryScore(sys, data, cat, scoreOpts) : { score: p.prob, reason: '' };
                 breakdownWithReasons.push({ method: p.key, score: res.score != null ? res.score : p.prob, reason: res.reason || '' });
               });
               parts = breakdownWithReasons.map(function(b){ return { key: b.method, prob: b.score, reason: b.reason || '' }; });
             } catch (e) { if (window.console) console.warn('ScoringEngine fallback reason failed:', e); }
           }
 
-          // 直接回答：改成總體機率
-          setText('direct-answer', parts.length ? `多維度機率彙總：整體成功率約 ${overall}%（以可用維度加權）` : '尚未完成任何命理計算，無法生成機率彙總。');
+          // 直接回答：改成總體機率，並顯性標示整合方式（網頁與手機同步）
+          var weightNote = parts.length ? ' 整合方式：加權平均（權重=置信度×方法可靠性；八字 0.85、姓名學 0.7、梅花易數 0.75、塔羅 0.75）。' : '';
+          setText('direct-answer', parts.length ? `多維度機率彙總：整體成功率約 ${overall}%（以可用維度加權）。${weightNote}` : '尚未完成任何命理計算，無法生成機率彙總。');
 
           // 儀表
           const probEl = $('overall-probability');

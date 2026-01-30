@@ -27,10 +27,10 @@
 
 ```js
 {
-  birth_datetime: '1983-08-25T14:55:00',  // 或 birthDate
+  birth_datetime: '1990-06-15T10:00:00',  // 或 birthDate（範例，不涉及個資）
   gender: 'male' | 'female',
-  name: '中文姓名',
-  birthYear: 1983,           // 選填，姓名學生肖用
+  name: '範例姓名',
+  birthYear: 1990,           // 選填，姓名學生肖用
   cards: [                   // 選填，塔羅凱爾特十字 10 張
     { id: 'major_1', name: '魔術師', isReversed: false }
   ],
@@ -45,10 +45,10 @@
 
 ```js
 var result = runProbabilityPipeline('這月收入會比上月高嗎？', {
-  birth_datetime: '1983-08-25T14:55:00',
+  birth_datetime: '1990-06-15T10:00:00',
   gender: 'male',
   name: '王小明',
-  birthYear: 1983,
+  birthYear: 1990,
   cards: []  // 無塔羅則跳過塔羅
 });
 

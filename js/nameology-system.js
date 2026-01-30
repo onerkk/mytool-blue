@@ -945,7 +945,14 @@ class NameAnalysisSystem {
         const totalNum = fivePatterns.total?.number || fivePatterns.total || null;
         suggestions.luckyNumbers = [personNum, totalNum].filter(n => n !== null);
         suggestions.favorableElements = (fiveElements && fiveElements.missingElements) ? fiveElements.missingElements : [];
-        
+
+        // 性別與數理宜忌：總格 29 等陽剛之數，女性使用宜謹慎
+        const isFemale = (gender === 'female' || gender === '女');
+        const yangNumbers = [29, 21, 23, 39, 41, 45, 47]; // 常見陽剛／領導數
+        if (isFemale && totalNum != null && yangNumbers.indexOf(Number(totalNum)) >= 0) {
+            suggestions.weaknesses.push('總格' + totalNum + '為陽剛之數，女性使用宜留意個性平衡，可搭配三才與人格綜合判斷。');
+        }
+
         suggestions.longTermAdvice.push('姓名吉凶的最終判斷必須與使用者的八字喜用神結合，請綜合判斷。');
         return suggestions;
     }

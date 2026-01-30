@@ -147,7 +147,7 @@
 
 | 架構步驟         | 主要檔案／方法 |
 |------------------|----------------|
-| 第零步 輸入校準   | `bazi-system.js`: 年/月柱依節氣；`calculateDayPillarFor19830825`、`calculateDayPillarGeneric`（日柱 23:00 與早子／晚子）；`calculateHourPillar`（五鼠遁、夜子時用次日天干）；`solar-term-calculator.js`: 節氣 |
+| 第零步 輸入校準   | `bazi-system.js`: 年/月柱依節氣；`calculateDayPillarGeneric`、日柱 23:00 與早子／晚子；`calculateHourPillar`（五鼠遁、夜子時用次日天干）；`solar-term-calculator.js`: 節氣 |
 | 第一步 定格定強弱 | `bazi-system.js`: `_getDeLing`, `_getDeDi`, `_getDeShi`, `calculateElementStrength` |
 | 第二步 明病定喜忌 | `bazi-system.js`: `calculateFavorableElements`（優先級：調候 > 通關 > 扶抑 > 病藥） |
 | 第三步 察運觀流通 | `dayun-calculator.js`: `computeStartAge`, `calculate`；`solar-term-calculator.js`: `getTermsForYear`, `getNearestSolarTerms` |

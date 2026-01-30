@@ -138,9 +138,10 @@
 
   function mod60(n) { return ((n % 60) + 60) % 60; }
 
-  /** 取得流年干支（當前年）。優先 LiuNianCalculator，否則 (year-4)%60 對應 JIAZI */
-  function getCurrentYearGanZhi() {
-    var y = new Date().getFullYear();
+  /** 取得流年干支。優先 LiuNianCalculator，否則 (year-4)%60 對應 JIAZI。可傳入 referenceDate 以提問時間為準。 */
+  function getYearGanZhiForDate(date) {
+    var d = date && date instanceof Date ? date : new Date();
+    var y = d.getFullYear();
     if (typeof LiuNianCalculator !== 'undefined') {
       try {
         var calc = new LiuNianCalculator();
@@ -149,6 +150,22 @@
     }
     if (typeof LIUNIAN_DATA !== 'undefined' && LIUNIAN_DATA.years && LIUNIAN_DATA.years[y]) return LIUNIAN_DATA.years[y];
     return JIAZI[mod60(y - 4)];
+  }
+
+  /** 取得流月干支（節氣月，寅月起）。用於針對提問當月分析。 */
+  function getMonthGanZhiForDate(date) {
+    var d = date && date instanceof Date ? date : new Date();
+    if (typeof LiuNianCalculator !== 'undefined') {
+      try {
+        var ln = new LiuNianCalculator();
+        return ln.getMonthGanZhi(d.getFullYear(), d.getMonth() + 1);
+      } catch (e) {}
+    }
+    return '';
+  }
+
+  function getCurrentYearGanZhi() {
+    return getYearGanZhiForDate(new Date());
   }
 
   /** 從八字取日柱天干、年支/日支（用於桃花、貴人）。支援 fullData / data 格式。 */
@@ -214,21 +231,22 @@
   }
 
   /**
-   * 八字：依流年（2026 丙午火年）與喜用神／忌神比對，依問題類別產出真實邏輯評分
-   * 1. 喜用神：命盤已有則用；否則依身強弱推導（身弱=同我/生我，身強=我生/財/官）
-   * 2. 財運/事業：喜用含火或土 → 80–95%；忌神為火 → 30–45%
-   * 3. 感情：流年火為配偶星或桃花 → +15%
+   * 八字：依提問時之流年、流月與喜用神／忌神比對，依問題類別產出真實邏輯評分
+   * opts.referenceDate：提問或分析基準時間（預設為當前時間），用於流年流月針對性分析
    */
-  function calculateBaziScore(baziData, category) {
+  function calculateBaziScore(baziData, category, opts) {
     var out = { score: 50, reason: '八字資料不足，以中性分數呈現。' };
     if (!baziData) return out;
 
-    var currentYear = new Date().getFullYear();
-    var lnGz = getCurrentYearGanZhi();
+    var refDate = (opts && opts.referenceDate) ? opts.referenceDate : new Date();
+    var currentYear = refDate.getFullYear();
+    var lnGz = getYearGanZhiForDate(refDate);
+    var lmGz = getMonthGanZhiForDate(refDate);
     var lnStem = lnGz.charAt(0);
     var lnBranch = lnGz.charAt(1);
     var yearElement = STEM_ELEMENT[lnStem] || BRANCH_ELEMENT[lnBranch] || '';
-    var yearLabel = (currentYear === 2026) ? '2026年丙午火年' : (lnGz + (BRANCH_ELEMENT[lnBranch] ? '/' + BRANCH_ELEMENT[lnBranch] + '年' : '年'));
+    var yearLabel = lnGz + (BRANCH_ELEMENT[lnBranch] ? '/' + BRANCH_ELEMENT[lnBranch] + '年' : '年');
+    if (lmGz) yearLabel += '，流月' + lmGz;
 
     var raw = baziData.raw || baziData.fullData || baziData;
     var bodyStrength = ((raw.elementStrength && raw.elementStrength.bodyStrength) || raw.strength || '').toString();
@@ -500,11 +518,12 @@
    * @param {string} category
    * @returns { { score: number, reason: string } }
    */
-  function calculateCategoryScore(system, data, category) {
+  function calculateCategoryScore(system, data, category, opts) {
     var cat = category || CATEGORY_GENERAL;
+    var options = opts || {};
     switch (system) {
       case 'bazi':
-        return calculateBaziScore(data, cat);
+        return calculateBaziScore(data, cat, options);
       case 'meihua':
         return calculateMeihuaScore(data, cat);
       case 'tarot':
@@ -571,25 +590,27 @@
    * @param {string} questionText
    * @returns { { category: string, overallPercent: number, breakdown: Array<{ method, score, reason }>, summary: string } }
    */
-  function buildSummaryReport(analysisResults, questionText) {
+  function buildSummaryReport(analysisResults, questionText, opts) {
     var category = getCategory(questionText);
     var breakdown = [];
     var r = analysisResults || {};
+    var options = opts || {};
+    options.referenceDate = options.referenceDate || new Date();
 
     if (r.bazi) {
-      var b = calculateCategoryScore('bazi', r.bazi, category);
+      var b = calculateCategoryScore('bazi', r.bazi, category, options);
       breakdown.push({ method: '八字', score: b.score, reason: b.reason });
     }
     if (r.nameology) {
-      var n = calculateCategoryScore('name', r.nameology, category);
+      var n = calculateCategoryScore('name', r.nameology, category, options);
       breakdown.push({ method: '姓名學', score: n.score, reason: n.reason });
     }
     if (r.meihua) {
-      var m = calculateCategoryScore('meihua', r.meihua, category);
+      var m = calculateCategoryScore('meihua', r.meihua, category, options);
       breakdown.push({ method: '梅花易數', score: m.score, reason: m.reason });
     }
     if (r.tarot && (r.tarot.cards || (r.tarot.analysis && r.tarot.analysis.positions))) {
-      var t = calculateCategoryScore('tarot', r.tarot, category);
+      var t = calculateCategoryScore('tarot', r.tarot, category, options);
       breakdown.push({ method: '塔羅', score: t.score, reason: t.reason });
     }
 

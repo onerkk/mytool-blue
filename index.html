@@ -98,12 +98,12 @@
                             <div class="form-group">
                                 <label for="birth-date"><i class="fas fa-calendar"></i> 出生日期</label>
                                 <input type="date" id="birth-date" required placeholder="請選擇出生年月日">
-                                <small class="input-hint">例如：1983年8月25日</small>
+                                <small class="input-hint">例如：1990年6月15日</small>
                             </div>
                             <div class="form-group">
                                 <label for="birth-time"><i class="fas fa-clock"></i> 出生時間</label>
                                 <input type="time" id="birth-time" required placeholder="請選擇出生時間">
-                                <small class="input-hint">請盡量精確，用於時柱計算（例如：14:55）</small>
+                                <small class="input-hint">請盡量精確，用於時柱計算（例如：10:30）</small>
                             </div>
                         </div>
     
@@ -257,6 +257,9 @@
                                 <i class="fas fa-random"></i> 隨機起卦
                             </button>
                         </div>
+                        <p class="method-hint" style="margin-top: 0.75rem; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> 與問題相關的起卦方式（時間／數字／漢字）更利解讀，建議依問題選擇對應方法。
+                        </p>
                     </div>
     
                     <div class="method-content active" id="time-method">
@@ -598,6 +601,10 @@
                 
                 <div class="bazi-container">
                     <div class="result-overview" id="result-overview">
+                        <div class="overview-card" id="input-summary-card" style="display: none;">
+                            <h3><i class="fas fa-info-circle"></i> 本次分析使用</h3>
+                            <div id="input-summary-content" style="padding: 0.5rem 0; font-size: 0.9rem; line-height: 1.6; color: rgba(255,255,255,0.85);"></div>
+                        </div>
                         <div class="overview-card">
                             <h3><i class="fas fa-question-circle"></i> 問題分析</h3>
                             <div class="question-display" id="question-display">

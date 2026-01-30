@@ -30,7 +30,7 @@
 
     /**
      * 將「公曆當地鐘錶時間」視為某時區的平太陽時，換算為 UTC 再算真太陽時。
-     * @param {Date|string} localDate - 當地鐘錶時間（如 1983-08-25T14:55）
+     * @param {Date|string} localDate - 當地鐘錶時間（如 1990-06-15T10:00）
      * @param {number} longitude - 出生地經度（十進制，東正西負），如台南 120.2
      * @param {number} zoneOffsetHours - 當地時區偏移（小時），如台灣 +8
      * @returns {Date} 真太陽時對應的 Date（仍用本地時區表示，僅時刻已修正）

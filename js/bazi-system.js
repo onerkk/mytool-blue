@@ -257,16 +257,7 @@ class BaziCalculator {
             day: { gan: dayPillar.stem, zhi: dayPillar.branch },
             hour: { gan: hourPillar.stem, zhi: hourPillar.branch }
         };
-        
-        // 特殊日期：1983年8月25日14:55
-        const expectedDate = new Date('1983-08-25T14:55:00');
-        if (date.getTime() === expectedDate.getTime()) {
-            fourPillars.year = { gan: '癸', zhi: '亥' };
-            fourPillars.month = { gan: '庚', zhi: '申' };
-            fourPillars.day = { gan: '乙', zhi: '酉' };
-            fourPillars.hour = { gan: '癸', zhi: '未' };
-        }
-        
+
         const dayMaster = fourPillars.day.gan;
         const tenGods = this.calculateTenGods(fourPillars, dayMaster);
         const hiddenStems = this.calculateHiddenStems(fourPillars);
@@ -530,6 +521,8 @@ class BaziCalculator {
 
         favorable = [...new Set(favorable)].filter(Boolean);
         unfavorable = [...new Set(unfavorable)].filter(Boolean);
+        // 同一五行不得同時出現在喜用與忌神：若已為喜用（含調候/通關/病藥），則從忌神中移除
+        unfavorable = unfavorable.filter(el => !favorable.includes(el));
         const coreSet = [...new Set(coreGods)];
         const secondarySet = secondaryGods.filter(e => !coreSet.includes(e));
         coreGods.length = 0;
@@ -930,21 +923,14 @@ class BaziCalculator {
         const month = date.getMonth() + 1;
         const day = date.getDate();
         const hour = date.getHours();
-        if (year === 1983 && month === 8 && day === 25) {
-            const d = new Date(year, date.getMonth(), day);
-            return { stem: '乙', branch: '酉', _dayDateForHour: d };
-        }
         let logicalDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         if (hour >= 23) logicalDate.setDate(logicalDate.getDate() + 1); // 晚子：日柱用次日
         const pillar = this.calculateDayPillarGeneric(logicalDate);
         return { stem: pillar.stem, branch: pillar.branch, _dayDateForHour: logicalDate };
     }
 
+    /** 日柱計算（與 calculateDayPillarGeneric 一致，保留名稱以相容舊引用） */
     calculateDayPillarFor19830825(date) {
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        if (year === 1983 && month === 8 && day === 25) return { stem: '乙', branch: '酉' };
         return this.calculateDayPillarGeneric(date);
     }
 
@@ -1909,6 +1895,12 @@ class BaziUI {
 
         const favorables = result.favorableElements.favorable.map(el => `<span class="bazi-tag tag-favorable">${el}</span>`).join(' ');
         const unfavorables = result.favorableElements.unfavorable.map(el => `<span class="bazi-tag tag-unfavorable">${el}</span>`).join(' ');
+        const priority = result.favorableElements.priority || {};
+        const hierarchy = result.favorableElements.hierarchy || {};
+        const primaryFav = priority['第一喜神'] || result.favorableElements.favorable[0];
+        const secondaryFav = priority['第二喜神'] || result.favorableElements.favorable[1];
+        const primaryUnfav = priority['第一忌神'] || result.favorableElements.unfavorable[0];
+        const dynamicNote = (hierarchy.godTier && hierarchy.godTier.dynamicNote) || hierarchy.dynamicApplication || '';
 
         let starsHtml = '';
         if (result.specialStars.specialNotes) {
@@ -1921,7 +1913,18 @@ class BaziUI {
         }
         if (starsHtml === '') starsHtml = '<span class="bazi-tag" style="opacity:0.5">無明顯神煞</span>';
 
+        let priorityHtml = '';
+        if (primaryFav || secondaryFav || primaryUnfav) {
+            priorityHtml = '<div style="margin-bottom: 1rem;"><p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">喜用神優先級：</p>';
+            if (primaryFav) priorityHtml += '<p style="font-size:0.85rem; margin-bottom:4px;"><span style="color:var(--gold-primary);">首要（Primary）</span>：' + primaryFav + '</p>';
+            if (secondaryFav) priorityHtml += '<p style="font-size:0.85rem; margin-bottom:4px;"><span style="color:rgba(212,175,55,0.9);">次要（Secondary）</span>：' + secondaryFav + '</p>';
+            if (primaryUnfav) priorityHtml += '<p style="font-size:0.85rem;"><span style="color:rgba(255,152,0,0.9);">首要忌神</span>：' + primaryUnfav + '</p>';
+            priorityHtml += '</div>';
+        }
+        if (dynamicNote) priorityHtml += '<div style="margin-bottom: 1rem; padding: 0.5rem; background: rgba(212,175,55,0.08); border-radius: 4px; font-size: 0.85rem; line-height: 1.5; color: rgba(255,255,255,0.8);"><strong>條件性用神／歲運注意：</strong> ' + dynamicNote + '</div>';
+
         container.innerHTML = `
+            ${priorityHtml}
             <div style="margin-bottom: 1rem;">
                 <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">喜用神 (運氣來源)：</p>
                 <div class="tag-container">${favorables}</div>
@@ -1943,19 +1946,18 @@ class BaziUI {
 // 8. 測試與導出
 // ==========================================
 
-function testBazi19830825Full() {
-    console.log('執行八字計算測試...');
+function testBaziExample() {
+    console.log('執行八字計算測試（範例日期，不涉及個資）...');
     const calculator = new BaziCalculator();
     try {
-        const result = calculator.calculateBazi('1983-08-25T14:55:00', 'male', true, 120.2);
+        const result = calculator.calculateBazi('1990-06-15T10:00:00', 'male', true, 120.2);
         const analyzer = new BaziAnalyzer(result);
         result.analyzer = analyzer;
-        
+
         if (typeof window !== 'undefined' && window.BaziUI) {
-            console.log('嘗試更新 BaziUI...');
             window.BaziUI.updateDisplay(result);
         }
-        
+
         return result;
     } catch (e) {
         console.error(e);
@@ -1967,5 +1969,5 @@ if (typeof window !== 'undefined') {
     window.BaziCalculator = BaziCalculator;
     window.BaziAnalyzer = BaziAnalyzer;
     window.BaziUI = BaziUI;
-    window.testBazi19830825Full = testBazi19830825Full;
+    window.testBaziExample = testBaziExample;
 }
