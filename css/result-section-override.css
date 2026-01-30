@@ -1,24 +1,20 @@
 /**
- * Section 5: 與 Section 2 (Bazi) 相同版面策略
- * 使用與 .section 相同的 padding（3rem），不為懸浮按鈕預留寬度，按鈕疊在內容上。
+ * Section 5: 結構與 Section 2 (Bazi) 一致
+ * - 外層: section.section（與 Bazi 相同）
+ * - 內層: 單一 div.bazi-container（與 Bazi 相同，無 .result-container）
+ * - 懸浮按鈕在 .main-container 外，僅 Step 5 顯示
+ * 強制與 .section 相同 padding，覆寫 responsive/mobile 的 72px。
  */
-#result-section {
+#result-section.section {
   padding: 3rem !important;
   padding-right: 3rem !important;
   padding-bottom: 120px !important;
   width: 100% !important;
   max-width: none !important;
+  min-width: 0 !important;
   box-sizing: border-box !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
-}
-
-#result-section .result-container {
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-sizing: border-box !important;
 }
 
 /* 懸浮按鈕：僅在「分析結果」步驟顯示，Steps 1–4 完全隱藏 */
@@ -38,7 +34,7 @@
 }
 
 @media (max-width: 768px) {
-  #result-section {
+  #result-section.section {
     padding: 0.75rem !important;
     padding-right: 0.75rem !important;
     padding-bottom: 120px !important;
