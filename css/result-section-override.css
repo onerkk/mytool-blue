@@ -1,8 +1,9 @@
 /**
  * Section 5 (Analysis Result): Overlay Buttons 策略
- * 內容滿版（與八字/塔羅一致），懸浮按鈕疊在內容上，不壓縮寬度。
+ * 內容滿版（與八字/塔羅一致），懸浮按鈕為獨立 fixed overlay，不參與版面流。
  */
 #result-section.section.result-section,
+#result-section.result-section,
 section#result-section {
   width: 100vw !important;
   max-width: 100vw !important;
@@ -11,27 +12,45 @@ section#result-section {
   right: 50% !important;
   margin-left: -50vw !important;
   margin-right: -50vw !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  padding-bottom: 120px !important;
-  padding-top: 0 !important;
+  padding: 1rem 0 120px 0 !important;
   box-sizing: border-box !important;
   overflow-x: hidden !important;
+  display: block !important;
 }
 
-/* 內文容器：左右對稱 16px，滿寬，底部留白避免被按鈕擋住 */
+/* 內文容器：滿寬，左右對稱 16px，無 max-width 限制 */
 #result-section .result-container {
   width: 100% !important;
-  max-width: 100% !important;
+  max-width: none !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
   padding-left: 16px !important;
   padding-right: 16px !important;
   padding-bottom: 0 !important;
   box-sizing: border-box !important;
+  display: block !important;
 }
 
-/* 覆寫 main/responsive/mobile 中為懸浮按鈕預留的 72px，改為 Overlay 策略 */
+/* 結果區內所有內容區塊滿寬，不限制 max-width */
+#result-section .result-overview,
+#result-section .dimension-analysis,
+#result-section .dimension-content,
+#result-section .dimension-pane,
+#result-section .bazi-result,
+#result-section .analysis-grid-container,
+#result-section .overview-card,
+#result-section .probability-meter,
+#result-section .question-display,
+#result-section .direct-answer,
+#result-section .probability-breakdown-reasons,
+#result-section .text-content {
+  width: 100% !important;
+  max-width: none !important;
+  margin-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 覆寫 main/responsive/mobile 中為懸浮按鈕預留的 72px */
 #result-section.result-section,
 #result-section.section,
 section#result-section {
@@ -44,6 +63,18 @@ section#result-section {
   max-width: 100vw !important;
   width: 100% !important;
   box-sizing: border-box !important;
+}
+
+/* 懸浮按鈕：完全獨立於文字容器，固定疊在畫面上方 */
+.floating-buttons {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 10px !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  pointer-events: auto !important;
 }
 
 @media (max-width: 768px) {
@@ -69,23 +100,23 @@ section#result-section {
   }
 }
 
-/* ===== Five Elements: percentage text must not wrap (higher specificity for result section) ===== */
+/* ===== Five Elements: percentage text must never wrap ===== */
 .element-value,
-.element-percentage-text {
-  min-width: 80px !important;
+.element-percentage-text,
+.element-value-text {
+  white-space: nowrap !important;
+  min-width: fit-content !important;
   width: auto !important;
   max-width: none !important;
-  white-space: nowrap !important;
   text-align: right !important;
   font-size: 0.85rem !important;
   flex-shrink: 0 !important;
 }
 #result-section .analysis-card-wuxing .element-value,
-#result-section .analysis-card-wuxing .element-percentage-text {
-  min-width: 80px !important;
+#result-section .analysis-card-wuxing .element-percentage-text,
+#result-section .analysis-card-wuxing .element-value-text {
   white-space: nowrap !important;
-  text-align: right !important;
-  font-size: 0.85rem !important;
+  min-width: fit-content !important;
   flex-shrink: 0 !important;
 }
 #result-section .analysis-card-wuxing .element-row .progress-track,
