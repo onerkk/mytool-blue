@@ -678,6 +678,16 @@ class FortuneSystem {
                     console.log('[displayBaziResult] favorableElements:', baziResult.favorableElements);
                 }
                 this.fillBaziResultUI(baziPane, baziResult);
+                // 一併更新大運流年（確保載入結果或重新顯示時大運正確）
+                const fp = baziResult.fourPillars || baziResult.pillars || {};
+                const yearGan = fp.year?.gan || fp.year?.stem;
+                const monthZhi = fp.month?.zhi || fp.month?.branch;
+                const dayGan = baziResult.dayMaster || fp.day?.gan || fp.day?.stem;
+                const greatFortune = baziResult.greatFortune;
+                const gender = (baziResult.gender || baziData.gender || '').toString().toLowerCase();
+                if (yearGan && dayGan && greatFortune && typeof this.renderDayun === 'function') {
+                    this.renderDayun(gender, yearGan, monthZhi, dayGan, greatFortune);
+                }
                 return;
             } catch (err) {
                 console.error('[BaziUI] fill failed, fallback to legacy render', err);
@@ -803,6 +813,7 @@ class FortuneSystem {
     normalizeBaziResult(baziResult) {
         // 兼容不同版本 BaziCalculator 的輸出（fourPillars/tenGods/elementStrength/favorableElements）
         const src = baziResult || {};
+        const rawSrc = src.raw || src;
 
         // 四柱 - 兼容多種數據格式
         const fp = src.fourPillars || src.pillars || {};
@@ -891,13 +902,14 @@ class FortuneSystem {
         if (!Array.isArray(hiddenStems.day)) hiddenStems.day = hiddenStems.day || [];
         if (!Array.isArray(hiddenStems.hour)) hiddenStems.hour = hiddenStems.hour || [];
 
-        // 五行強弱（新版：elementStrength.strengths / counts）
-        const elementStrength = src.elementStrength || {};
+        // 五行強弱（新版：elementStrength.strengths / counts；若在 fullData 內則一併讀取）
+        const rawSrc = src.raw || src;
+        const elementStrength = src.elementStrength || rawSrc.fullData?.elementStrength || {};
         const strengths = elementStrength.strengths || elementStrength.scores || {};
         const counts = elementStrength.counts || elementStrength.count || {};
 
-        // 喜忌 - 確保正確提取數據
-        const favObj = src.favorableElements || {};
+        // 喜忌 - 確保正確提取數據（若在 fullData 內則一併讀取）
+        const favObj = src.favorableElements || rawSrc.fullData?.favorableElements || {};
         let favorable = [];
         let unfavorable = [];
         
@@ -2141,11 +2153,14 @@ class FortuneSystem {
                     this.analysisResults.bazi.fullData.analysis.health = health;
                 }
                 
-                // 個性分析 - 使用卡片式 UI
+                // 個性分析 - 使用卡片式 UI（每段開頭顯示八字依據）
                 html += '<div class="analysis-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">';
                 html += '<div class="analysis-card" style="padding: 1.5rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">';
                 html += '<h4 style="margin-bottom: 1rem; color: var(--gold-primary);"><i class="fas fa-user-circle"></i> 個性分析</h4>';
                 html += `<div class="personality-analysis">`;
+                if (personality.chartBasis && personality.chartBasis.trim() !== '') {
+                    html += `<p style="margin-bottom: 0.75rem; font-size: 0.9rem; color: rgba(255,255,255,0.7); border-left: 3px solid rgba(212, 175, 55, 0.5); padding-left: 0.5rem;">${personality.chartBasis}</p>`;
+                }
                 html += `<div style="margin-bottom: 0.5rem;"><strong style="color: var(--gold-bright);">${personality.dayMaster}${personality.element}</strong> <span style="color: rgba(255,255,255,0.6);">(${personality.yinYang})</span></div>`;
                 html += `<p style="margin-bottom: 1rem; line-height: 1.6;">${personality.personality}</p>`;
                 html += `<div class="traits" style="display: flex; flex-direction: column; gap: 0.5rem;">`;
@@ -2155,10 +2170,13 @@ class FortuneSystem {
                 html += '</div>';
                 html += '</div>';
                 
-                // 事業分析 - 使用卡片式 UI
+                // 事業分析 - 使用卡片式 UI（每段開頭顯示八字依據）
                 html += '<div class="analysis-card" style="padding: 1.5rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">';
                 html += '<h4 style="margin-bottom: 1rem; color: var(--gold-primary);"><i class="fas fa-briefcase"></i> 事業分析</h4>';
                 html += `<div class="career-analysis">`;
+                if (career.chartBasis && career.chartBasis.trim() !== '') {
+                    html += `<p style="margin-bottom: 0.75rem; font-size: 0.9rem; color: rgba(255,255,255,0.7); border-left: 3px solid rgba(212, 175, 55, 0.5); padding-left: 0.5rem;">${career.chartBasis}</p>`;
+                }
                 html += `<div style="margin-bottom: 0.5rem;"><strong>適合行業：</strong><span style="display: inline-flex; flex-wrap: wrap; gap: 0.25rem;">${career.suitableCareers.slice(0, 8).map(c => `<span style="padding: 0.25rem 0.5rem; background: rgba(212, 175, 55, 0.2); border-radius: 4px;">${c}</span>`).join('')}</span></div>`;
                 html += `<p style="margin-top: 0.5rem; line-height: 1.6;"><strong>發展方向：</strong>${safeText(career.developmentDirection || career.careerAdvice)}</p>`;
                 html += '</div>';
@@ -2174,6 +2192,9 @@ class FortuneSystem {
                     html += '<div class="analysis-card" style="padding: 1.5rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">';
                     html += '<h4 style="margin-bottom: 1rem; color: var(--gold-primary);"><i class="fas fa-coins"></i> 財運分析</h4>';
                     html += '<div class="wealth-analysis">';
+                    if (wealth.chartBasis && wealth.chartBasis.trim() !== '') {
+                        html += `<p style="margin-bottom: 0.75rem; font-size: 0.9rem; color: rgba(255,255,255,0.7); border-left: 3px solid rgba(212, 175, 55, 0.5); padding-left: 0.5rem;">${wealth.chartBasis}</p>`;
+                    }
                     if (hasWealthSource) {
                         html += `<div style="margin-bottom: 0.5rem;"><strong>財星：</strong><span style="color: rgba(255,255,255,0.9);">${wealth.wealthSource}</span></div>`;
                     }
@@ -2196,6 +2217,9 @@ class FortuneSystem {
                     html += '<div class="analysis-card" style="padding: 1.5rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">';
                     html += '<h4 style="margin-bottom: 1rem; color: var(--gold-primary);"><i class="fas fa-heart"></i> 感情婚姻</h4>';
                     html += `<div class="relationship-analysis">`;
+                    if (relationship.chartBasis && relationship.chartBasis.trim() !== '') {
+                        html += `<p style="margin-bottom: 0.75rem; font-size: 0.9rem; color: rgba(255,255,255,0.7); border-left: 3px solid rgba(212, 175, 55, 0.5); padding-left: 0.5rem;">${relationship.chartBasis}</p>`;
+                    }
                     if (hasSpouseStar) {
                         html += `<div style="margin-bottom: 0.5rem;"><strong>配偶星：</strong>${relationship.spouseAnalysis.presence}</div>`;
                     }
@@ -2587,16 +2611,37 @@ class FortuneSystem {
     }
 
     renderBaziDetails(data) {
-        // 更新五行強弱分佈的進度條
-        const elementsBar = document.getElementById('bazi-elements-bar');
+        const elementsHtml = this.renderElementBars(data);
+        const shenshaHtml = this.renderShenshaContent(data);
+        // 更新五行強弱分佈：同時支援 index 的 #ui-elements-bar 與動態產生的 #bazi-elements-bar
+        const elementsBar = document.getElementById('ui-elements-bar') || document.getElementById('bazi-elements-bar');
         if (elementsBar) {
-            elementsBar.innerHTML = this.renderElementBars(data);
+            if (elementsBar.id === 'ui-elements-bar') {
+                const rows = elementsBar.querySelectorAll('.element-row');
+                const map = { '金': '金', '木': '木', '水': '水', '火': '火', '土': '土' };
+                if (data.elementStrength && data.elementStrength.strengths && rows.length) {
+                    const vals = data.elementStrength.strengths;
+                    const total = Object.values(vals).reduce((a, b) => a + (Number(b) || 0), 0) || 1;
+                    rows.forEach(row => {
+                        const labelEl = row.querySelector('.element-label');
+                        const fillEl = row.querySelector('.progress-fill') || row.querySelector('.bar-fill');
+                        const valueEl = row.querySelector('.element-value');
+                        const key = (labelEl && labelEl.textContent || '').trim();
+                        const k = map[key] || key;
+                        const v = Number(vals[k]) || 0;
+                        const pct = Math.max(0, Math.min(100, (v / total) * 100));
+                        if (fillEl) fillEl.style.width = pct.toFixed(0) + '%';
+                        if (valueEl) valueEl.textContent = pct.toFixed(0) + '%';
+                    });
+                }
+            } else {
+                elementsBar.innerHTML = elementsHtml;
+            }
         }
-        
-        // 更新喜用與神煞
-        const shenshaContent = document.getElementById('bazi-shensha-content');
+        // 更新喜用與神煞：同時支援 #ui-shensha-content 與 #bazi-shensha-content
+        const shenshaContent = document.getElementById('ui-shensha-content') || document.getElementById('bazi-shensha-content');
         if (shenshaContent) {
-            shenshaContent.innerHTML = this.renderShenshaContent(data);
+            shenshaContent.innerHTML = shenshaHtml;
         }
         
         // 保留舊的詳細信息顯示（如果元素存在）

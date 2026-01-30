@@ -1373,6 +1373,8 @@ class BaziAnalyzer {
         weaknesses = weaknesses.length ? weaknesses.slice(0, 5) : defaultSet.weaknesses;
 
         const personality = `【心性本源】${heartNature} 【思維】${thinkingMode} 【行為驅力】${behaviorDrive} 【情感價值觀】${emotionValues} 【表裡】${hiddenMask}`;
+        const monthName = monthZhi ? (monthZhi + '月') : '';
+        const chartBasis = `本段依您輸入之八字推算：${dayGan || '—'}${element || '—'}日主、${monthName}${season ? season + '季' : ''}生、${bodyStrength || '—'}，喜用${fav.length ? fav.join('、') : '—'}；十神分佈印${yinXing}、食傷${shiShang}、官殺${guanSha}、財${caiXing}、比劫${biJie}。`;
 
         return {
             dayMaster: dayGan || '—',
@@ -1385,7 +1387,8 @@ class BaziAnalyzer {
             thinkingMode,
             behaviorDrive,
             emotionValues,
-            hiddenMask
+            hiddenMask,
+            chartBasis
         };
     }
 
@@ -1459,6 +1462,8 @@ class BaziAnalyzer {
         }
         const wealth = this.analyzeWealth();
         const wealthStrength = (wealth && typeof wealth.wealthStrength === 'number') ? wealth.wealthStrength : 3;
+        const monthZhi = fp.month?.zhi || '';
+        const chartBasis = `本段依您輸入之八字推算：${dayGan || '—'}${dayEl || '—'}日主、${monthZhi}月生、${bodyStrength || '—'}，喜用${fav.length ? fav.join('、') : '—'}；適合行業由喜用神五行與十神（食傷${shiShang}、官殺${guanZheng + guanSha}、財${caiXing}）對應。`;
 
         return {
             suitableCareers: suitableCareers.length ? suitableCareers : ['教育', '文化', '諮詢', '設計', '行政'],
@@ -1468,7 +1473,8 @@ class BaziAnalyzer {
             talentField,
             achievementStage,
             industryTrajectory,
-            careerRhythm
+            careerRhythm,
+            chartBasis
         };
     }
 
@@ -1573,6 +1579,9 @@ class BaziAnalyzer {
             keyPoints = ['解析時發生例外，已回退保守判斷。'];
         }
 
+        const caiElement = dayEl ? (WUXING_KE[dayEl] || '') : '';
+        const chartBasis = `本段依您輸入之八字推算：${dayMaster || '—'}日主（財星為${caiElement || '—'}），${bodyStrength || '—'}；喜用${fav.length ? fav.join('、') : '—'}。財星位置與得財方式由四柱天干地支、十神（財${caiXing}、食傷${shiShang}、官殺${guanSha}）及財根沖合推得。`;
+
         return {
             wealthStrength,
             wealthTrend,
@@ -1583,7 +1592,8 @@ class BaziAnalyzer {
             gainLossTiming: gainLossTiming || '—',
             wealthQuality: wealthQuality || '',
             wealthCycle: wealthCycle || '',
-            consumptionTendency: consumptionTendency || ''
+            consumptionTendency: consumptionTendency || '',
+            chartBasis
         };
     }
 
@@ -1708,6 +1718,9 @@ class BaziAnalyzer {
             advice = ['解析時發生例外，已回退保守判斷。'];
         }
 
+        const dayBranch = fp.day?.zhi || '';
+        const chartBasis = `本段依您輸入之八字推算：${dayMaster || '—'}日主、夫妻宮（日支）為${dayBranch || '—'}，喜用${fav.length ? fav.join('、') : '—'}。配偶星依性別看財星／官殺；桃花與穩定性由日支、沖合及比劫與配偶星數量推得。`;
+
         return {
             relationshipStrength,
             summary: advice.join(' '),
@@ -1716,7 +1729,8 @@ class BaziAnalyzer {
             marriageStability,
             attractionPrototype: attractionPrototype || '',
             relationshipMode: relationshipMode || '',
-            marriageTiming: marriageTiming || ''
+            marriageTiming: marriageTiming || '',
+            chartBasis
         };
     }
 
