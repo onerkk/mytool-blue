@@ -340,21 +340,29 @@ class BaziCalculator {
         return { score };
     }
 
-    /** 綜合判定身強/身弱/專旺/從格（得令50% + 得地30% + 得勢20%） */
+    /** 綜合判定身強/身弱/專旺/從格（得令 40–50%、得地 25–35%、得助 15–25%，剋耗反向扣分） */
     calculateElementStrength(fourPillars, dayMaster) {
         const dayMasterElement = HEAVENLY_STEMS_DETAIL[dayMaster]?.element;
         const monthZhi = fourPillars.month?.zhi;
+        const monthEl = EARTHLY_BRANCHES_DETAIL[monthZhi]?.element || '';
 
         const deLing = this._getDeLing(monthZhi, dayMasterElement);
         const deDi = this._getDeDi(fourPillars, dayMasterElement);
         const deShi = this._getDeShi(fourPillars, dayMaster);
 
-        const composite = (deLing.score / 100) * 50 + (deDi.score / 100) * 30 + (deShi.score / 100) * 20;
+        const wLing = 0.5, wDi = 0.3, wShi = 0.2;
+        const composite = (deLing.score / 100) * (wLing * 100) + (deDi.score / 100) * (wDi * 100) + (deShi.score / 100) * (wShi * 100);
         let bodyStrength;
         if (composite >= 55) bodyStrength = '身強';
         else if (composite >= 45) bodyStrength = '中和';
         else if (composite >= 25) bodyStrength = '身弱';
         else bodyStrength = '極弱';
+
+        const dmReasons = [
+            `得令(${Math.round(wLing * 100)}%)：月令${monthZhi}${monthEl}，日主${dayMasterElement} → ${deLing.state}${['旺','相'].includes(deLing.state) ? '，得令' : '，失令'}`,
+            `得地(${Math.round(wDi * 100)}%)：根氣得分${deDi.score}（強根/印根/餘氣）`,
+            `得助(${Math.round(wShi * 100)}%)：比劫印星透干得分${deShi.score}`
+        ];
 
         const elementCount = { '金': 0, '木': 0, '火': 0, '土': 0, '水': 0 };
         const elementScore = { '金': 0, '木': 0, '火': 0, '土': 0, '水': 0 };
@@ -365,16 +373,18 @@ class BaziCalculator {
                 elementScore[stemInfo.element] += stemInfo.strength * 1.0;
             }
         });
+        // 地支藏干權重：本氣 0.6、中氣 0.3、餘氣 0.1（僅以藏干計分，避免本氣重複；未中丁火等才能正確體現）
+        const hiddenWeights = [0.6, 0.3, 0.1];
         Object.values(fourPillars).forEach(pillar => {
             const branchInfo = EARTHLY_BRANCHES_DETAIL[pillar.zhi];
             if (branchInfo) {
-                elementCount[branchInfo.element]++;
-                elementScore[branchInfo.element] += branchInfo.strength * 0.6;
-                (branchInfo.hiddenStems || []).forEach(hiddenStem => {
+                const stems = branchInfo.hiddenStems || [];
+                stems.forEach((hiddenStem, idx) => {
                     const el = HEAVENLY_STEMS_DETAIL[hiddenStem]?.element;
                     if (el) {
                         elementCount[el]++;
-                        elementScore[el] += branchInfo.strength * (0.4 / (branchInfo.hiddenStems.length || 1));
+                        const w = hiddenWeights[idx] != null ? hiddenWeights[idx] : (stems.length === 1 ? 0.6 : (1 / Math.max(stems.length, 1)));
+                        elementScore[el] += branchInfo.strength * w;
                     }
                 });
             }
@@ -411,17 +421,24 @@ class BaziCalculator {
             elementDetails[el] = { count: elementCount[el], score, description: desc };
         });
 
+        const dm_strength = {
+            score: Math.round(composite * 10) / 10,
+            level: bodyStrength,
+            reasons: dmReasons
+        };
+
         return {
             counts: elementCount,
             strengths: elementScore,
             bodyStrength,
+            dm_strength,
             percentage: dayMasterPercentage,
             dayMasterElement,
             elementDetails,
             deLing: { state: deLing.state, score: deLing.score },
             deDi: { score: deDi.score, roots: deDi.roots },
             deShi: { score: deShi.score },
-            compositeScore: Math.round(composite * 10) / 10,
+            compositeScore: dm_strength.score,
             patternOverride
         };
     }
@@ -454,6 +471,7 @@ class BaziCalculator {
         const xianShen = [];
         const xiaoXi = [];
         const xiaoJi = [];
+        const rules_trace = [];
 
         const allEl = ['金', '木', '水', '火', '土'];
         const sortedByScore = [...allEl].sort((a, b) => (strengths[b] || 0) - (strengths[a] || 0));
@@ -464,7 +482,11 @@ class BaziCalculator {
 
         const isStrong = bodyStrength.includes('強') || bodyStrength.includes('中和') || bodyStrength.includes('專旺');
         const isCong = bodyStrength.includes('從');
-        const needTiaoHou = (season === '冬' && dayMasterElement !== '火') || (season === '夏' && dayMasterElement !== '水');
+        const fireScore = strengths['火'] || 0;
+        const waterScore = strengths['水'] || 0;
+        const waterRatio = totalScore > 0 ? waterScore / totalScore : 0;
+        const needTiaoHou = (season === '冬' && dayMasterElement !== '火') || (season === '夏' && dayMasterElement !== '水')
+            || (season === '秋' && dayMasterElement !== '火' && fireScore < totalScore * 0.15);
 
         const shengWo = Object.keys(WUXING_SHENG).find(k => WUXING_SHENG[k] === dayMasterElement);
         const woSheng = WUXING_SHENG[dayMasterElement];
@@ -477,6 +499,7 @@ class BaziCalculator {
             unfavorable = [keWo, woSheng].filter(Boolean);
             coreGods.push(mostWanted);
             reasoning = `從${mostWanted}格，喜順勢${mostWanted}，忌克泄${mostWanted}。`;
+            rules_trace.push(`dm_strength.level=從格 => 喜順勢${mostWanted}，忌克泄${mostWanted}`);
         } else {
             if (needTiaoHou) {
                 strategyOrder.push('調候');
@@ -484,17 +507,35 @@ class BaziCalculator {
                     if (!favorable.includes('火')) favorable.unshift('火');
                     coreGods.push('火');
                     reasoning += ' 冬生需調候暖局，喜火（調候為急）。';
+                    rules_trace.push(`month=${monthZhi}, 冬生 => 調候喜火(rule: 冬寒需暖局)`);
+                } else if (season === '秋') {
+                    if (!favorable.includes('火')) favorable.unshift('火');
+                    if (!favorable.includes('土')) favorable.push('土');
+                    coreGods.push('火');
+                    reasoning += ' 秋生金寒水冷，需火暖局（調候為急），喜火、燥土。';
+                    rules_trace.push(`month=${monthZhi}, 秋金寒、fire<15% => 調候喜火、燥土(rule: 秋金寒水冷需暖)`);
                 } else if (season === '夏') {
                     if (!favorable.includes('水')) favorable.unshift('水');
                     coreGods.push('水');
                     reasoning += ' 夏生需調候潤局，喜水（調候為急）。';
+                    rules_trace.push(`month=${monthZhi}, 夏生 => 調候喜水(rule: 夏燥需潤)`);
                 }
+            }
+            const yinXingGuoWang = !isStrong && waterRatio > 0.4;
+            if (yinXingGuoWang) {
+                if (!strategyOrder.includes('印星過旺')) strategyOrder.push('印星過旺');
+                favorable = favorable.filter(el => el !== '水');
+                if (!favorable.includes('火')) favorable.unshift('火');
+                if (!favorable.includes('土')) favorable.push('土');
+                reasoning += ' 印星（水）過旺，水多木漂，不宜再補水，喜火暖局、土止水。';
+                rules_trace.push(`印星過旺(水>40%)、身弱 => 忌再補水，喜火、土止水(rule: 母慈滅子)`);
             }
             const jinMuZhan = (strengths['金'] || 0) > 2.5 && (strengths['木'] || 0) > 2.5;
             if (jinMuZhan) {
                 if (!strategyOrder.includes('通關')) strategyOrder.push('通關');
                 if (!favorable.includes('水')) { favorable = ['水', ...favorable.filter(e => e !== '水')]; coreGods.push('水'); }
                 reasoning += ' 金木相戰，用水通關。';
+                rules_trace.push(`金木相戰 => 喜水通關(rule: 通關)`);
             }
             strategyOrder.push('扶抑');
             if (isStrong) {
@@ -503,12 +544,16 @@ class BaziCalculator {
                 secondaryGods.push(...fuYi.filter(e => !coreGods.includes(e)));
                 unfavorable = [shengWo, dayMasterElement].filter(Boolean);
                 reasoning += (reasoning ? ' ' : '') + `${dayMaster}${dayMasterElement}日主身強，喜克泄耗（官殺、食傷、財星），忌生扶（印、比劫）。`;
+                rules_trace.push(`dm_strength.level=身強 => 喜克泄耗(財官食傷)，忌印/比劫`);
             } else {
                 const fuYi = [shengWo, dayMasterElement].filter(Boolean);
-                favorable = [...new Set([...favorable, ...fuYi])];
-                secondaryGods.push(...fuYi.filter(e => !coreGods.includes(e)));
+                if (!yinXingGuoWang) {
+                    favorable = [...new Set([...favorable, ...fuYi])];
+                    secondaryGods.push(...fuYi.filter(e => !coreGods.includes(e)));
+                }
                 unfavorable = [keWo, woSheng, woKe].filter(Boolean);
-                reasoning += (reasoning ? ' ' : '') + `${dayMaster}${dayMasterElement}日主身弱，喜生扶（印星、比劫），忌克泄耗。`;
+                reasoning += (reasoning ? ' ' : '') + (yinXingGuoWang ? '' : `${dayMaster}${dayMasterElement}日主身弱，喜生扶（印星、比劫），忌克泄耗。`);
+                rules_trace.push(`dm_strength.level=身弱 => 喜印/比劫，忌官殺/食傷/財`);
             }
             const bing = mostWanted !== dayMasterElement ? mostWanted : sortedByScore[1];
             const yao = WUXING_KE[bing];
@@ -523,6 +568,12 @@ class BaziCalculator {
         unfavorable = [...new Set(unfavorable)].filter(Boolean);
         // 同一五行不得同時出現在喜用與忌神：若已為喜用（含調候/通關/病藥），則從忌神中移除
         unfavorable = unfavorable.filter(el => !favorable.includes(el));
+        unfavorable.forEach(el => {
+            if (el === '火' && (fireScore || 0) < totalScore * 0.1) rules_trace.push(`火為忌：身弱忌食傷(火)；fire極低仍列忌因扶抑規則(rule: 身弱忌泄)`);
+            else if (el === woSheng) rules_trace.push(`${el}為忌：身弱忌食傷(rule: 扶抑)`);
+            else if (el === keWo) rules_trace.push(`${el}為忌：官殺克身(rule: 扶抑)`);
+            else if (el === woKe) rules_trace.push(`${el}為忌：身弱忌財星耗身(rule: 扶抑)`);
+        });
         const coreSet = [...new Set(coreGods)];
         const secondarySet = secondaryGods.filter(e => !coreSet.includes(e));
         coreGods.length = 0;
@@ -577,7 +628,8 @@ class BaziCalculator {
             priority,
             mostWanted,
             mostWeak,
-            hierarchy
+            hierarchy,
+            rules_trace
         };
     }
     
@@ -1004,13 +1056,33 @@ class BaziCalculator {
         return stars;
     }
     
+    /**
+     * 十二長生：唯一正確用法 — 以「日主天干」對應表查「每柱地支」。
+     * 不可用 pillar.stem（天干）、不可用年干當日主、不可把藏干當地支。
+     * @returns { by_pillar: { year, month, day, hour }, ...longevity } 供 UI 使用
+     */
     calculateLongevity(fourPillars, dayMaster) {
+        const dayGan = fourPillars.day?.gan || dayMaster;
+        const table = TWELVE_LONGEVITY[dayGan];
+        const by_pillar = { year: null, month: null, day: null, hour: null };
         const longevity = {};
         ['year', 'month', 'day', 'hour'].forEach(p => {
-            const idx = TWELVE_LONGEVITY[dayMaster]?.indexOf(fourPillars[p].zhi);
-            if (idx >= 0) longevity[p] = LONGEVITY_NAMES[idx];
+            const zhi = fourPillars[p]?.zhi;
+            if (!zhi || !table) {
+                longevity[p] = null;
+                by_pillar[p] = null;
+                return;
+            }
+            const idx = table.indexOf(zhi);
+            if (idx >= 0) {
+                longevity[p] = LONGEVITY_NAMES[idx];
+                by_pillar[p] = LONGEVITY_NAMES[idx];
+            } else {
+                longevity[p] = null;
+                by_pillar[p] = null;
+            }
         });
-        return longevity;
+        return { ...longevity, by_pillar };
     }
     
     getNayin(stem, branch) { 

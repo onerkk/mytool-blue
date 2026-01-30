@@ -2130,16 +2130,39 @@ class FortuneSystem {
         
         // 移除五行強弱和喜用神的文字顯示（因為UI已經顯示了）
         
-        // 十二長生
-        if (fullBaziData.longevity && Object.keys(fullBaziData.longevity).length > 0) {
+        // 十二長生（以日主天干查每柱地支，僅列 year/month/day/hour，不列 by_pillar）
+        if (fullBaziData.longevity && typeof fullBaziData.longevity === 'object') {
+            const hasAny = ['year','month','day','hour'].some(p => fullBaziData.longevity[p] != null);
+            if (hasAny) {
+                html += '<div class="analysis-group">';
+                html += '<h4>十二長生</h4>';
+                html += '<div class="longevity-info">';
+                ['year','month','day','hour'].forEach(pillar => {
+                    const pillarName = { year: '年', month: '月', day: '日', hour: '時' }[pillar];
+                    const val = fullBaziData.longevity[pillar];
+                    if (val != null) html += `<span>${pillarName}柱：${val}</span>`;
+                });
+                html += '</div>';
+                html += '</div>';
+            }
+        }
+        
+        // 身強身弱依據（dm_strength.reasons）與規則追溯（rules_trace）
+        const dm = fullBaziData.elementStrength && fullBaziData.elementStrength.dm_strength;
+        const trace = fullBaziData.favorableElements && fullBaziData.favorableElements.rules_trace;
+        if ((dm && dm.reasons && dm.reasons.length) || (trace && trace.length)) {
             html += '<div class="analysis-group">';
-            html += '<h4>十二長生</h4>';
-            html += '<div class="longevity-info">';
-            Object.entries(fullBaziData.longevity).forEach(([pillar, longevity]) => {
-                const pillarName = { year: '年', month: '月', day: '日', hour: '時' }[pillar];
-                html += `<span>${pillarName}柱：${longevity}</span>`;
-            });
-            html += '</div>';
+            html += '<h4>推論依據</h4>';
+            if (dm && dm.reasons && dm.reasons.length) {
+                html += '<p style="font-size:0.9rem; color:rgba(255,255,255,0.7); margin-bottom:6px;">身強/身弱：</p><ul style="margin:0 0 8px 1.2em; font-size:0.85rem;">';
+                dm.reasons.forEach(r => { html += `<li>${r}</li>`; });
+                html += '</ul>';
+            }
+            if (trace && trace.length) {
+                html += '<p style="font-size:0.9rem; color:rgba(255,255,255,0.7); margin-bottom:6px;">喜忌規則追溯：</p><ul style="margin:0; font-size:0.85rem;">';
+                trace.forEach(t => { html += `<li>${t}</li>`; });
+                html += '</ul>';
+            }
             html += '</div>';
         }
         

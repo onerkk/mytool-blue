@@ -874,7 +874,7 @@ class NameAnalysisSystem {
         };
     }
     
-    // 綜合評分計算
+    // 綜合評分計算（含三才相剋扣分：天剋人扣 15 分，使分數回歸客觀）
     calculateOverallScore(numerology, threeTalents, fiveElements, zodiacAnalysis) {
         let score = 0;
         let totalWeight = 0;
@@ -895,7 +895,13 @@ class NameAnalysisSystem {
             totalWeight += 0.1;
         }
         
-        return Math.round((score / totalWeight) * 100);
+        let rawScore = Math.round((score / totalWeight) * 100);
+        const heavenEl = threeTalents?.heavenElement || '';
+        const personEl = threeTalents?.personalityElement || '';
+        if (heavenEl && personEl && this.isElementOvercoming(heavenEl, personEl)) {
+            rawScore -= 15; // 天格剋人格（天剋人）大忌，扣分使結果約 70–75 分
+        }
+        return Math.max(0, Math.min(100, rawScore));
     }
     
     // 生成建議
@@ -930,6 +936,12 @@ class NameAnalysisSystem {
             const combination = threeTalents.combination || threeTalents.configuration || '';
             const meaning = threeTalents.meaning || threeTalents.description || '';
             suggestions.weaknesses.push(`三才配置 ${combination} (${threeTalents.luck}): ${meaning}`);
+        }
+        // 天剋人：天格剋人格，長輩壓力或頭部／精神易受影響，文案標註
+        const heavenEl = threeTalents?.heavenElement || '';
+        const personEl = threeTalents?.personalityElement || '';
+        if (heavenEl && personEl && this.isElementOvercoming(heavenEl, personEl)) {
+            suggestions.weaknesses.push('三才中天格剋人格（天剋人），宜注意長輩關係或頭部保養。');
         }
         
         if (fiveElements && fiveElements.missingElements && fiveElements.missingElements.length > 0) {
