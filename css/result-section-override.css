@@ -25,24 +25,6 @@ section#result-section {
   box-sizing: border-box !important;
 }
 
-/* 懸浮按鈕：僅在 Step 5（分析結果）顯示，其餘步驟完全隱藏 */
-.floating-buttons:not(.visible-on-result) {
-  display: none !important;
-  pointer-events: none !important;
-}
-.floating-buttons {
-  position: fixed !important;
-  bottom: 20px !important;
-  right: 10px !important;
-  z-index: 9999 !important;
-  flex-direction: column !important;
-  gap: 1rem !important;
-}
-body .floating-buttons.visible-on-result {
-  display: flex !important;
-  pointer-events: auto !important;
-}
-
 @media (max-width: 768px) {
   #result-section.section,
   section#result-section {

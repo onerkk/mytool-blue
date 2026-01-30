@@ -233,13 +233,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     bindEvents();
     
-    // 同步懸浮鈕顯示狀態（僅在 Step 5 顯示）
-    const floatingEl = document.querySelector('.floating-buttons');
-    const activeSection = document.querySelector('.section.active');
-    if (floatingEl && activeSection) {
-        floatingEl.classList.toggle('visible-on-result', activeSection.id === 'result-section');
-    }
-    
     console.log('靜月之光命理系統 v3.0 (最終融合版) 已就緒');
 });
 
@@ -389,12 +382,6 @@ class FortuneSystem {
         if (stepMap[sectionId]) {
             this.currentStep = stepMap[sectionId];
             this.updateProgress();
-        }
-        
-        // 懸浮按鈕（蝦皮/賣貨便/客製）僅在「分析結果」步驟顯示，其餘步驟完全隱藏
-        const floatingEl = document.querySelector('.floating-buttons');
-        if (floatingEl) {
-            floatingEl.classList.toggle('visible-on-result', sectionId === 'result-section');
         }
         
         // 當切換到結果頁面時，載入已保存的分析結果
