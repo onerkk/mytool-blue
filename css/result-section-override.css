@@ -25,6 +25,12 @@ section#result-section {
   box-sizing: border-box !important;
 }
 
+/* 懸浮鈕：每個頁面都顯示（蝦皮 / 賣貨便 / 客製） */
+.floating-buttons {
+  display: flex !important;
+  pointer-events: auto !important;
+}
+
 @media (max-width: 768px) {
   #result-section.section,
   section#result-section {
