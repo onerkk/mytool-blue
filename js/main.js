@@ -4411,28 +4411,75 @@ function setupMeihuaRandomDomGuard(){
           }
 
           const r = (this.analysisResults || {});
-          const tarotProb = calcTarotProb(r.tarot);
-          const meihuaProb = calcMeihuaProb(r.meihua);
-          const nameProb = calcNameProb(r.nameology);
-          const baziProb = calcBaziProb(r.bazi, question);
+          let parts = [];
+          let overall = 0;
+          let breakdownWithReasons = [];
 
-          const parts = [
-            { key:'八字', prob:baziProb },
-            { key:'姓名學', prob:nameProb },
-            { key:'梅花易數', prob:meihuaProb },
-            { key:'塔羅', prob:tarotProb }
-          ].filter(x => Number.isFinite(Number(x.prob)));
+          if (typeof buildSummaryReport === 'function') {
+            try {
+              const report = buildSummaryReport(r, question);
+              if (report.breakdown && report.breakdown.length > 0) {
+                overall = report.overallPercent || 0;
+                breakdownWithReasons = report.breakdown;
+                parts = report.breakdown.map(function(b){ return { key: b.method, prob: b.score, reason: b.reason }; });
+              }
+            } catch (e) { if (window.console) console.warn('ScoringEngine buildSummaryReport failed, using fallback:', e); }
+          }
 
-          const overall = parts.length ? clamp(Math.round(avg(parts.map(p=>p.prob))),0,100) : 0;
+          if (parts.length === 0) {
+            const tarotProb = calcTarotProb(r.tarot);
+            const meihuaProb = calcMeihuaProb(r.meihua);
+            const nameProb = calcNameProb(r.nameology);
+            const baziProb = calcBaziProb(r.bazi, question);
+            parts = [
+              { key:'八字', prob:baziProb },
+              { key:'姓名學', prob:nameProb },
+              { key:'梅花易數', prob:meihuaProb },
+              { key:'塔羅', prob:tarotProb }
+            ].filter(x => Number.isFinite(Number(x.prob)));
+            overall = parts.length ? clamp(Math.round(avg(parts.map(p=>p.prob))),0,100) : 0;
+          }
 
           // 直接回答：改成總體機率
-          setText('direct-answer', parts.length ? `多維度機率彙總：整體成功率約 ${overall}%（以可用維度平均）` : '尚未完成任何命理計算，無法生成機率彙總。');
+          setText('direct-answer', parts.length ? `多維度機率彙總：整體成功率約 ${overall}%（以可用維度加權）` : '尚未完成任何命理計算，無法生成機率彙總。');
 
           // 儀表
           const probEl = $('overall-probability');
           const fillEl = $('meter-fill');
           if(probEl) probEl.textContent = parts.length ? (overall + '%') : '—';
           if(fillEl) fillEl.style.width = parts.length ? (overall + '%') : '0%';
+
+          // 各維度評分與理由（顯示在可能性評估下方）
+          const reasonsEl = $('probability-breakdown-reasons');
+          if (reasonsEl) {
+            if (breakdownWithReasons.length > 0) {
+              let html = '';
+              breakdownWithReasons.forEach(function(b){
+                const score = b.score != null ? b.score : 50;
+                const color = score >= 60 ? '#4CAF50' : score >= 40 ? '#FF9800' : '#F44336';
+                html += '<div class="score-reason-block">';
+                html += '<div class="score-reason-header"><span>' + (b.method || '') + '</span><span>' + score + '%</span></div>';
+                html += '<div class="score-reason-bar"><div class="score-reason-fill" style="width:' + score + '%;background:' + color + ';"></div></div>';
+                html += '<div class="score-reason-text">' + (b.reason ? String(b.reason).replace(/</g,'&lt;').replace(/>/g,'&gt;') : '') + '</div>';
+                html += '</div>';
+              });
+              reasonsEl.innerHTML = html;
+            } else if (parts.length > 0) {
+              let html = '';
+              parts.forEach(function(p){
+                const score = p.prob != null ? p.prob : 50;
+                const color = score >= 60 ? '#4CAF50' : score >= 40 ? '#FF9800' : '#F44336';
+                html += '<div class="score-reason-block">';
+                html += '<div class="score-reason-header"><span>' + (p.key || '') + '</span><span>' + score + '%</span></div>';
+                html += '<div class="score-reason-bar"><div class="score-reason-fill" style="width:' + score + '%;background:' + color + ';"></div></div>';
+                if (p.reason) html += '<div class="score-reason-text">' + String(p.reason).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+                html += '</div>';
+              });
+              reasonsEl.innerHTML = html;
+            } else {
+              reasonsEl.innerHTML = '';
+            }
+          }
 
           // 綜合結果 - 使用卡片式UI美化
           if($('conclusion-content')){

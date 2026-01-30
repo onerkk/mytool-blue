@@ -2027,9 +2027,9 @@
     margin-bottom: 0.75rem !important;
   }
   
-  /* 結果區底部留白，避免被懸浮按鈕遮擋 */
+  /* 結果區底部留白，可捲動至最後內容在懸浮按鈕上方 */
   #result-section {
-    padding-bottom: 100px !important;
+    padding-bottom: 150px !important;
   }
   
   /* 浮動按鈕調整 - 避免遮擋內容，確保完整顯示 */

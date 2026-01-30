@@ -1390,12 +1390,13 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 }
 
 /* --- 結果頁面樣式 --- */
-/* 結果分析區：全螢幕滿版，右側留懸浮按鈕空間（與塔羅牌頁一致，內容不被遮擋） */
+/* 結果分析區：全螢幕滿版，右側留懸浮按鈕空間，底部留白可捲動至內容在按鈕上方 */
 #result-section.result-section {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
     padding-right: 72px; /* 懸浮按鈕列寬度 + 間距，避免內容被遮擋 */
+    padding-bottom: 150px; /* 底部留白，最後一段內容可捲動到懸浮按鈕上方 */
 }
 #result-section .result-container {
     width: 100%;
@@ -1486,6 +1487,46 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     justify-content: space-between;
     color: var(--text-muted);
     font-size: 0.875rem;
+}
+
+/* 各維度評分與理由（結果分析頁） */
+.probability-breakdown-reasons {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.score-reason-block {
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border-left: 4px solid var(--gold-primary);
+}
+.score-reason-block .score-reason-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+    color: var(--gold-primary);
+}
+.score-reason-block .score-reason-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+.score-reason-block .score-reason-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+.score-reason-block .score-reason-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    word-wrap: break-word;
 }
 
 .dimension-analysis {

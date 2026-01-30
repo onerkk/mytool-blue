@@ -172,9 +172,9 @@
         max-width: 100% !important;
     }
     
-    /* 結果區底部留白，避免被懸浮按鈕遮擋 */
+    /* 結果區底部留白，可捲動至最後內容在懸浮按鈕上方 */
     #result-section {
-        padding-bottom: 100px !important;
+        padding-bottom: 150px !important;
     }
     
     /* 綜合結論、推薦區等底部區塊也留白 */
