@@ -1718,7 +1718,6 @@ class BaziAnalyzer {
             advice = ['解析時發生例外，已回退保守判斷。'];
         }
 
-        const dayBranch = fp.day?.zhi || '';
         const chartBasis = `本段依您輸入之八字推算：${dayMaster || '—'}日主、夫妻宮（日支）為${dayBranch || '—'}，喜用${fav.length ? fav.join('、') : '—'}。配偶星依性別看財星／官殺；桃花與穩定性由日支、沖合及比劫與配偶星數量推得。`;
 
         return {

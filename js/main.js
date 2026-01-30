@@ -903,7 +903,6 @@ class FortuneSystem {
         if (!Array.isArray(hiddenStems.hour)) hiddenStems.hour = hiddenStems.hour || [];
 
         // 五行強弱（新版：elementStrength.strengths / counts；若在 fullData 內則一併讀取）
-        const rawSrc = src.raw || src;
         const elementStrength = src.elementStrength || rawSrc.fullData?.elementStrength || {};
         const strengths = elementStrength.strengths || elementStrength.scores || {};
         const counts = elementStrength.counts || elementStrength.count || {};
