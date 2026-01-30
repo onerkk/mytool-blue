@@ -371,7 +371,7 @@
     if (catMap.unfavorable.length && guaName && catMap.unfavorable.some(function (g) { return guaName.indexOf(g) >= 0; })) score -= 5;
 
     out.score = clamp0_100(score);
-    out.reason = '梅花易數評分 ' + out.score + '：本卦「' + (guaName || '—') + '」' + luck + '，體用「' + (bodyUse || '—') + '」，對應此問題類別得出上述機率。';
+    out.reason = '本卦「' + (guaName || '—') + '」' + luck + '，體用「' + (bodyUse || '—') + '」，對應此問題類別得出上述機率。';
     return out;
   }
 
@@ -390,7 +390,7 @@
     if (analysis.fortuneScore != null && Number.isFinite(Number(analysis.fortuneScore))) {
       var fs = clamp0_100(Number(analysis.fortuneScore));
       out.score = fs;
-      out.reason = '塔羅評分 ' + out.score + '：依凱爾特十字十張牌解讀量化，對應此問題得出上述機率。';
+      out.reason = '依凱爾特十字十張牌解讀量化，對應此問題得出上述機率。';
       return out;
     }
 
@@ -409,7 +409,7 @@
     }
     var base = wSum > 0 ? sum / wSum : 50;
     out.score = clamp0_100(base);
-    out.reason = '塔羅評分 ' + out.score + '：依牌陣加權與牌義解讀，對應此問題類別得出上述機率。';
+    out.reason = '依牌陣加權與牌義解讀，對應此問題類別得出上述機率。';
     return out;
   }
 
