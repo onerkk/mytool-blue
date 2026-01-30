@@ -233,6 +233,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     bindEvents();
     
+    // 同步懸浮鈕顯示狀態（僅在 Step 5 顯示）
+    const floatingEl = document.querySelector('.floating-buttons');
+    const activeSection = document.querySelector('.section.active');
+    if (floatingEl && activeSection) {
+        floatingEl.classList.toggle('visible-on-result', activeSection.id === 'result-section');
+    }
+    
     console.log('靜月之光命理系統 v3.0 (最終融合版) 已就緒');
 });
 
