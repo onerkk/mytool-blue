@@ -384,6 +384,12 @@ class FortuneSystem {
             this.updateProgress();
         }
         
+        // 懸浮按鈕（蝦皮/賣貨便/客製）僅在「分析結果」步驟顯示，其餘步驟完全隱藏
+        const floatingEl = document.querySelector('.floating-buttons');
+        if (floatingEl) {
+            floatingEl.classList.toggle('visible-on-result', sectionId === 'result-section');
+        }
+        
         // 當切換到結果頁面時，載入已保存的分析結果
         if(sectionId === 'result-section') {
             this.loadResults();

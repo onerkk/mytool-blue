@@ -21,15 +21,19 @@
   box-sizing: border-box !important;
 }
 
-/* 懸浮按鈕：獨立 fixed overlay，不參與版面流（與 Bazi/Tarot 頁一致） */
+/* 懸浮按鈕：僅在「分析結果」步驟顯示，Steps 1–4 完全隱藏 */
 .floating-buttons {
+  display: none !important;
   position: fixed !important;
   bottom: 20px !important;
   right: 10px !important;
   z-index: 9999 !important;
-  display: flex !important;
   flex-direction: column !important;
   gap: 1rem !important;
+  pointer-events: none !important;
+}
+.floating-buttons.visible-on-result {
+  display: flex !important;
   pointer-events: auto !important;
 }
 
