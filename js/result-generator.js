@@ -120,6 +120,11 @@ class ResultGenerator {
                 e.currentTarget.classList.add('active');
                 document.getElementById(`${dimension}-pane`).classList.add('active');
                 
+                // 姓名學：若有 main 流程的 nameology，一律由 main 重新渲染，確保網頁/手機版同步
+                if (dimension === 'name' && window.fortuneSystem && window.fortuneSystem.analysisResults && window.fortuneSystem.analysisResults.nameology) {
+                    window.fortuneSystem.displayNameResult();
+                    return;
+                }
                 // 如果是第一次點擊，生成該維度的結果
                 if (!this.results[dimension]) {
                     this.generateDimensionResult(dimension);
