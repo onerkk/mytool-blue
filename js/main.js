@@ -2130,17 +2130,19 @@ class FortuneSystem {
         
         // 移除五行強弱和喜用神的文字顯示（因為UI已經顯示了）
         
-        // 十二長生（以日主天干查每柱地支，僅列 year/month/day/hour，不列 by_pillar）
+        // 十二長生（以日主天干查每柱地支；UI 與十神分析一致：四柱網格卡片）
         if (fullBaziData.longevity && typeof fullBaziData.longevity === 'object') {
             const hasAny = ['year','month','day','hour'].some(p => fullBaziData.longevity[p] != null);
             if (hasAny) {
-                html += '<div class="analysis-group">';
-                html += '<h4>十二長生</h4>';
-                html += '<div class="longevity-info">';
+                html += '<div class="analysis-group longevity-group">';
+                html += '<h4><i class="fas fa-leaf"></i> 十二長生</h4>';
+                html += '<div class="longevity-grid">';
                 ['year','month','day','hour'].forEach(pillar => {
                     const pillarName = { year: '年', month: '月', day: '日', hour: '時' }[pillar];
                     const val = fullBaziData.longevity[pillar];
-                    if (val != null) html += `<span>${pillarName}柱：${val}</span>`;
+                    if (val != null) {
+                        html += `<div class="longevity-item"><span class="longevity-pillar-name">${pillarName}柱</span><span class="longevity-value">${val}</span></div>`;
+                    }
                 });
                 html += '</div>';
                 html += '</div>';

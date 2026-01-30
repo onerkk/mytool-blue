@@ -210,6 +210,21 @@
         grid-template-columns: repeat(4, 1fr) !important;
         gap: 0.5rem !important;
     }
+    /* 十二長生手機同步（與十神分析四柱網格一致） */
+    #result-section .advanced-analysis-section .longevity-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 0.5rem !important;
+    }
+    #result-section .advanced-analysis-section .longevity-item {
+        padding: 0.75rem 0.5rem !important;
+        min-height: 3.5rem !important;
+    }
+    #result-section .advanced-analysis-section .longevity-pillar-name {
+        font-size: 0.85rem !important;
+    }
+    #result-section .advanced-analysis-section .longevity-value {
+        font-size: 0.95rem !important;
+    }
     #result-section .advanced-analysis-section .analysis-card,
     #result-section .advanced-analysis-section .wealth-analysis,
     #result-section .advanced-analysis-section .relationship-analysis,

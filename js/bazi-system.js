@@ -324,17 +324,15 @@ class BaziCalculator {
         return { score: Math.min(100, Math.round(raw)), roots };
     }
 
-    /** 得勢：天干印星與比劫多寡 */
+    /** 得助：僅計「比劫透干」多寡（年月時天干，不含日干）；印星不計入得助，避免身弱卻得助滿分 */
     _getDeShi(fourPillars, dayMaster) {
         const dayEl = HEAVENLY_STEMS_DETAIL[dayMaster]?.element;
-        const shengWo = dayEl ? Object.keys(WUXING_SHENG).find(k => WUXING_SHENG[k] === dayEl) : null;
         let count = 0;
-        ['year', 'month', 'day', 'hour'].forEach(p => {
+        ['year', 'month', 'hour'].forEach(p => {
             const gan = fourPillars[p]?.gan;
             if (!gan) return;
             const el = HEAVENLY_STEMS_DETAIL[gan]?.element;
             if (el === dayEl) count += 1.0;
-            if (el === shengWo) count += 0.9;
         });
         const score = Math.min(100, Math.round(count * 33));
         return { score };
@@ -361,7 +359,7 @@ class BaziCalculator {
         const dmReasons = [
             `得令(${Math.round(wLing * 100)}%)：月令${monthZhi}${monthEl}，日主${dayMasterElement} → ${deLing.state}${['旺','相'].includes(deLing.state) ? '，得令' : '，失令'}`,
             `得地(${Math.round(wDi * 100)}%)：根氣得分${deDi.score}（強根/印根/餘氣）`,
-            `得助(${Math.round(wShi * 100)}%)：比劫印星透干得分${deShi.score}`
+            `得助(${Math.round(wShi * 100)}%)：比劫透干（年月時天干）得分${deShi.score}`
         ];
 
         const elementCount = { '金': 0, '木': 0, '火': 0, '土': 0, '水': 0 };
@@ -493,6 +491,10 @@ class BaziCalculator {
         const woKe = WUXING_KE[dayMasterElement];
         const keWo = Object.keys(WUXING_KE).find(k => WUXING_KE[k] === dayMasterElement);
 
+        const metalScore = strengths['金'] || 0;
+        const metalRatio = totalScore > 0 ? metalScore / totalScore : 0;
+        const shaZhongShenQing = !isStrong && !isCong && metalRatio > 0.28 && dayScore < totalScore * 0.25;
+
         if (isCong) {
             strategyOrder.push('格局');
             favorable = [mostWanted];
@@ -500,6 +502,18 @@ class BaziCalculator {
             coreGods.push(mostWanted);
             reasoning = `從${mostWanted}格，喜順勢${mostWanted}，忌克泄${mostWanted}。`;
             rules_trace.push(`dm_strength.level=從格 => 喜順勢${mostWanted}，忌克泄${mostWanted}`);
+        } else if (shaZhongShenQing) {
+            strategyOrder.push('格局(杀重身轻)');
+            favorable = [shengWo, dayMasterElement].filter(Boolean);
+            coreGods.push(shengWo);
+            secondaryGods.push(dayMasterElement);
+            unfavorable = [keWo, woKe].filter(Boolean);
+            reasoning = `官殺（金）極旺攻身，杀重身轻。首取印星（${shengWo || '水'}）化殺生身、次取比劫（${dayMasterElement || '木'}）助身；忌金、土；火為閑神慎用，待水木運時方可小用。`;
+            rules_trace.push(`格局=杀重身轻(金旺身弱) => 用神印(化杀)、喜神比劫，忌官殺/財，火慎用(rule: 格局優先)`);
+            if (needTiaoHou && season === '秋' && !favorable.includes('火')) {
+                secondaryGods.push('火');
+                reasoning += ' 申月漸入秋可借少許火暖局，惟非主要矛盾。';
+            }
         } else {
             if (needTiaoHou) {
                 strategyOrder.push('調候');
@@ -615,7 +629,7 @@ class BaziCalculator {
         }
 
         const hierarchy = {
-            strategyLayer: { order: strategyOrder, motto: '調候為急，格局為體，扶抑為用，通關為妙。' },
+            strategyLayer: { order: strategyOrder, motto: '格局優先，扶抑為本，調候為輔；矛盾時以根本格局為準。' },
             godTier: { core: coreGods, secondary: secondaryGods, dynamicNote: '原局閑神或小忌，若歲運能克忌神或生用神，則為動態喜神（奇兵）。' },
             xianJi: { xianShen, xiaoXi, xiaoJi, shuangMianRen: ['七殺、財星等因位置與組合可為喜亦可為忌，需分干支與歲運。'] },
             dynamicApplication: dynamicNote

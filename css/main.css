@@ -1442,6 +1442,46 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     line-height: 1.6;
 }
 
+/* --- 十二長生 UI（與十神分析四柱網格一致） --- */
+.longevity-group.analysis-group h4 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.longevity-group.analysis-group h4 i {
+    color: var(--gold-primary);
+}
+.longevity-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+.longevity-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.75rem;
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    min-height: 4rem;
+}
+.longevity-pillar-name {
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    color: var(--gold-primary);
+}
+.longevity-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+}
+
 .probability-meter {
     background: var(--dark-glass-light);
     backdrop-filter: blur(20px);
@@ -2183,6 +2223,21 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
         gap: 1rem;
     }
     
+    .longevity-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+    }
+    .longevity-item {
+        padding: 0.75rem 0.5rem;
+        min-height: 3.5rem;
+    }
+    .longevity-pillar-name {
+        font-size: 0.85rem;
+    }
+    .longevity-value {
+        font-size: 0.95rem;
+    }
+
     .result-overview {
         display: block !important; /* 手機版垂直堆疊、全寬顯示 */
         grid-template-columns: none !important;
