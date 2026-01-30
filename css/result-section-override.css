@@ -1,71 +1,27 @@
 /**
- * Section 5 (Analysis Result): Overlay Buttons 策略
- * 內容滿版（與八字/塔羅一致），懸浮按鈕為獨立 fixed overlay，不參與版面流。
+ * Section 5: 與 Section 2 (Bazi) 相同版面策略
+ * 使用與 .section 相同的 padding（3rem），不為懸浮按鈕預留寬度，按鈕疊在內容上。
  */
-#result-section.section.result-section,
-#result-section.result-section,
-section#result-section {
-  width: 100vw !important;
-  max-width: 100vw !important;
-  position: relative !important;
-  left: 50% !important;
-  right: 50% !important;
-  margin-left: -50vw !important;
-  margin-right: -50vw !important;
-  padding: 1rem 0 120px 0 !important;
+#result-section {
+  padding: 3rem !important;
+  padding-right: 3rem !important;
+  padding-bottom: 120px !important;
+  width: 100% !important;
+  max-width: none !important;
   box-sizing: border-box !important;
-  overflow-x: hidden !important;
-  display: block !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
-/* 內文容器：滿寬，左右對稱 16px，無 max-width 限制 */
 #result-section .result-container {
   width: 100% !important;
   max-width: none !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-  padding-bottom: 0 !important;
-  box-sizing: border-box !important;
-  display: block !important;
-}
-
-/* 結果區內所有內容區塊滿寬，不限制 max-width */
-#result-section .result-overview,
-#result-section .dimension-analysis,
-#result-section .dimension-content,
-#result-section .dimension-pane,
-#result-section .bazi-result,
-#result-section .analysis-grid-container,
-#result-section .overview-card,
-#result-section .probability-meter,
-#result-section .question-display,
-#result-section .direct-answer,
-#result-section .probability-breakdown-reasons,
-#result-section .text-content {
-  width: 100% !important;
-  max-width: none !important;
-  margin-right: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
   box-sizing: border-box !important;
 }
 
-/* 覆寫 main/responsive/mobile 中為懸浮按鈕預留的 72px */
-#result-section.result-section,
-#result-section.section,
-section#result-section {
-  padding-right: 0 !important;
-  margin-right: 0 !important;
-}
-
-/* Parent must not restrict Section 5 */
-.main-container {
-  max-width: 100vw !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* 懸浮按鈕：完全獨立於文字容器，固定疊在畫面上方 */
+/* 懸浮按鈕：獨立 fixed overlay，不參與版面流（與 Bazi/Tarot 頁一致） */
 .floating-buttons {
   position: fixed !important;
   bottom: 20px !important;
@@ -78,39 +34,22 @@ section#result-section {
 }
 
 @media (max-width: 768px) {
-  .main-container {
-    padding-left: 0.5rem !important;
-    padding-right: 0.5rem !important;
-  }
-  #result-section.section.result-section,
-  section#result-section {
-    left: 50% !important;
-    right: 50% !important;
-    margin-left: -50vw !important;
-    margin-right: -50vw !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+  #result-section {
+    padding: 0.75rem !important;
+    padding-right: 0.75rem !important;
     padding-bottom: 120px !important;
-  }
-  #result-section .result-container {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
   }
 }
 
-/* ===== Five Elements: percentage text must never wrap ===== */
+/* ===== Five Elements: 百分比不換行（與 Bazi 區塊內一致） ===== */
 .element-value,
 .element-percentage-text,
 .element-value-text {
   white-space: nowrap !important;
   min-width: fit-content !important;
-  width: auto !important;
-  max-width: none !important;
+  flex-shrink: 0 !important;
   text-align: right !important;
   font-size: 0.85rem !important;
-  flex-shrink: 0 !important;
 }
 #result-section .analysis-card-wuxing .element-value,
 #result-section .analysis-card-wuxing .element-percentage-text,
@@ -124,7 +63,7 @@ section#result-section {
 .element-progress-bar {
   flex: 1 1 auto !important;
   min-width: 0 !important;
-  max-width: calc(100% - 120px) !important;
+  max-width: calc(100% - 100px) !important;
 }
 .element-row {
   align-items: center !important;
