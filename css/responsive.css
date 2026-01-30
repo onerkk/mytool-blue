@@ -594,17 +594,17 @@
         box-sizing: border-box !important;
     }
     
-    /* 分析結果區：詳細命理 / 個性分析卡片 - 縮小左右 padding */
+    /* 分析結果區：與 Bazi 同寬，左右無額外留白 */
     #result-section .analysis-card,
     #result-section .overview-card,
     #result-section .probability-meter,
     #result-section .dimension-analysis {
-        padding-left: 0.625rem !important;   /* 10px */
-        padding-right: 0.625rem !important;  /* 10px */
+        padding-left: 0 !important;
+        padding-right: 0 !important;
         padding-top: 0.75rem !important;
         padding-bottom: 0.75rem !important;
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: none !important;
         box-sizing: border-box !important;
     }
     
@@ -835,29 +835,44 @@
     text-overflow: unset !important;
   }
   
-  /* 結果頁面全局優化：滿版寬度，右側留懸浮按鈕空間（與塔羅牌頁一致） */
+  /* 結果頁面：與 Bazi 同寬（max-width: none），僅 section 留 0.5rem 左、72px 右 */
   #result-section {
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: none !important;
     min-width: 0 !important;
-    padding: 0.75rem 0.5rem !important;
-    padding-right: 72px !important; /* 三顆懸浮按鈕列寬度，避免內容被遮擋 */
+    padding-left: 0.5rem !important;
+    padding-right: 72px !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 150px !important;
     box-sizing: border-box !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
+  }
+  
+  #result-section .result-container,
+  #result-section .result-overview,
+  #result-section .dimension-analysis,
+  #result-section .dimension-content,
+  #result-section .dimension-pane,
+  #result-section .bazi-result,
+  #result-section .analysis-grid-container {
+    width: 100% !important;
+    max-width: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
   }
   
   #result-section * {
     box-sizing: border-box !important;
   }
   
-  /* 確保所有標題和文字完整顯示、不超出螢幕 */
+  /* 確保所有標題和文字完整顯示、不超出螢幕（不限制容器寬度） */
   #result-section h2,
   #result-section h3,
   #result-section h4,
   #result-section p,
-  #result-section span,
-  #result-section div {
+  #result-section span {
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
@@ -928,25 +943,33 @@
     .element-row {
         gap: 8px !important;
         min-height: 32px !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
     }
     
     .element-label {
         width: 32px !important;
         min-width: 32px !important;
         max-width: 32px !important;
+        flex-shrink: 0 !important;
         font-size: 0.95rem !important;
     }
     
     .progress-track {
-        max-width: calc(100% - 80px) !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: calc(100% - 100px) !important; /* label + value 空間 */
         height: 9px !important;
     }
     
     .element-value {
-        width: 40px !important;
-        min-width: 40px !important;
-        max-width: 40px !important;
-        font-size: 0.8rem !important;
+        min-width: 52px !important;
+        width: 52px !important;
+        max-width: none !important;
+        flex-shrink: 0 !important;
+        font-size: 0.85rem !important;
+        white-space: nowrap !important;
+        text-align: right !important;
     }
     
     .bazi-grid {
@@ -1977,16 +2000,19 @@
   }
 
   #result-section .analysis-card-wuxing .progress-track {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     min-width: 0 !important;
+    max-width: calc(100% - 90px) !important;
     height: 8px !important;
   }
 
   #result-section .analysis-card-wuxing .element-value {
-    width: 2rem !important;
-    min-width: 2rem !important;
+    min-width: 3.25rem !important; /* 52px，容納 "38.5%" 不換行 */
+    width: 3.25rem !important;
     flex-shrink: 0 !important;
-    font-size: 0.8rem !important;
+    font-size: 0.85rem !important;
+    white-space: nowrap !important;
+    text-align: right !important;
   }
 
   #result-section .analysis-card-shensha .tag-container {
@@ -2207,14 +2233,14 @@
     overflow-y: visible !important;
   }
   
-  /* 概覽卡片與可能性評估：手機版縮小 padding */
-  .result-overview > .overview-card,
-  .result-overview > .probability-meter {
-    padding: 0.75rem 0.5rem !important;
+  /* 概覽卡片與可能性評估：左右無留白，與 Bazi 同寬 */
+  #result-section .result-overview > .overview-card,
+  #result-section .result-overview > .probability-meter {
+    padding: 0.75rem 0 !important;
   }
   
-  .dimension-analysis {
-    padding: 0.75rem 0.5rem !important;
+  #result-section .dimension-analysis {
+    padding: 0.75rem 0 !important;
     margin-bottom: 1rem !important;
   }
   

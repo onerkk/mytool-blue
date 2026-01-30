@@ -55,6 +55,56 @@
     general: []
   };
 
+  /** 天干→五行（流年/十神用） */
+  var STEM_ELEMENT = { '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土', '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水' };
+  /** 地支→五行 */
+  var BRANCH_ELEMENT = { '子': '水', '丑': '土', '寅': '木', '卯': '木', '辰': '土', '巳': '火', '午': '火', '未': '土', '申': '金', '酉': '金', '戌': '土', '亥': '水' };
+  /** 六十甲子（流年用） */
+  var JIAZI = [
+    '甲子', '乙丑', '丙寅', '丁卯', '戊辰', '己巳', '庚午', '辛未', '壬申', '癸酉',
+    '甲戌', '乙亥', '丙子', '丁丑', '戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未',
+    '甲申', '乙酉', '丙戌', '丁亥', '戊子', '己丑', '庚寅', '辛卯', '壬辰', '癸巳',
+    '甲午', '乙未', '丙申', '丁酉', '戊戌', '己亥', '庚子', '辛丑', '壬寅', '癸卯',
+    '甲辰', '乙巳', '丙午', '丁未', '戊申', '己酉', '庚戌', '辛亥', '壬子', '癸丑',
+    '甲寅', '乙卯', '丙辰', '丁巳', '戊午', '己未', '庚申', '辛酉', '壬戌', '癸亥'
+  ];
+  /** 日主→流年天干 十神（與 data.js tenGodsTable 一致） */
+  var TEN_GODS_STEM = {
+    '甲': { '甲': '比肩', '乙': '劫財', '丙': '食神', '丁': '傷官', '戊': '偏財', '己': '正財', '庚': '七殺', '辛': '正官', '壬': '偏印', '癸': '正印' },
+    '乙': { '甲': '劫財', '乙': '比肩', '丙': '傷官', '丁': '食神', '戊': '正財', '己': '偏財', '庚': '正官', '辛': '七殺', '壬': '正印', '癸': '偏印' },
+    '丙': { '甲': '偏印', '乙': '正印', '丙': '比肩', '丁': '劫財', '戊': '食神', '己': '傷官', '庚': '偏財', '辛': '正財', '壬': '七殺', '癸': '正官' },
+    '丁': { '甲': '正印', '乙': '偏印', '丙': '劫財', '丁': '比肩', '戊': '傷官', '己': '食神', '庚': '正財', '辛': '偏財', '壬': '正官', '癸': '七殺' },
+    '戊': { '甲': '七殺', '乙': '正官', '丙': '偏印', '丁': '正印', '戊': '比肩', '己': '劫財', '庚': '食神', '辛': '傷官', '壬': '偏財', '癸': '正財' },
+    '己': { '甲': '正官', '乙': '七殺', '丙': '正印', '丁': '偏印', '戊': '劫財', '己': '比肩', '庚': '傷官', '辛': '食神', '壬': '正財', '癸': '偏財' },
+    '庚': { '甲': '偏財', '乙': '正財', '丙': '七殺', '丁': '正官', '戊': '偏印', '己': '正印', '庚': '比肩', '辛': '劫財', '壬': '食神', '癸': '傷官' },
+    '辛': { '甲': '正財', '乙': '偏財', '丙': '正官', '丁': '七殺', '戊': '正印', '己': '偏印', '庚': '劫財', '辛': '比肩', '壬': '傷官', '癸': '食神' },
+    '壬': { '甲': '食神', '乙': '傷官', '丙': '偏財', '丁': '正財', '戊': '七殺', '己': '正官', '庚': '偏印', '辛': '正印', '壬': '比肩', '癸': '劫財' },
+    '癸': { '甲': '傷官', '乙': '食神', '丙': '正財', '丁': '偏財', '戊': '正官', '己': '七殺', '庚': '正印', '辛': '偏印', '壬': '劫財', '癸': '比肩' }
+  };
+  /** 桃花：年/日支所在三合局 → 桃花支。寅午戌→卯，申子辰→酉，巳酉丑→午，亥卯未→子 */
+  var PEACH_BLOSSOM_MAP = { '寅': '卯', '午': '卯', '戌': '卯', '申': '酉', '子': '酉', '辰': '酉', '巳': '午', '酉': '午', '丑': '午', '亥': '子', '卯': '子', '未': '子' };
+  /** 天乙貴人：日干→貴人地支 */
+  var NOBLEMAN_MAP = { '甲': '丑未', '戊': '丑未', '庚': '丑未', '乙': '子申', '己': '子申', '丙': '亥酉', '丁': '亥酉', '壬': '卯巳', '癸': '卯巳', '辛': '寅午' };
+  /** 81 數理依問題類別加分（與 nameology EIGHTY_ONE_NUMEROLOGY 對齊） */
+  var NAME_NUMBER_BY_CATEGORY = {
+    finance: { bonus: [15, 16, 24, 29, 32, 33, 41, 52], label: '財運吉數' },
+    career: { bonus: [21, 23, 29, 33, 39, 41, 45, 47, 48], label: '領導/事業吉數' },
+    relationship: { bonus: [6, 15, 16, 24, 32, 35], label: '人緣/感情吉數' },
+    health: { bonus: [5, 6, 11, 15, 16, 24], label: '健康吉數' },
+    general: { bonus: [], label: '' }
+  };
+  /** 五行相生：生→被生 */
+  var WUXING_SHENG = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
+  /** 數字個位→五行（1,2木 3,4火 5,6土 7,8金 9,0水） */
+  function numberToElement(n) {
+    var x = n % 10;
+    if (x <= 2) return '木';
+    if (x <= 4) return '火';
+    if (x <= 6) return '土';
+    if (x <= 8) return '金';
+    return '水';
+  }
+
   function clamp(x, lo, hi) {
     var n = Number(x);
     if (n !== n) return lo;
@@ -62,6 +112,31 @@
   }
 
   function clamp0_100(x) { return Math.round(clamp(x, 0, 100)); }
+
+  function mod60(n) { return ((n % 60) + 60) % 60; }
+
+  /** 取得流年干支（當前年）。優先 LiuNianCalculator，否則 (year-4)%60 對應 JIAZI */
+  function getCurrentYearGanZhi() {
+    var y = new Date().getFullYear();
+    if (typeof LiuNianCalculator !== 'undefined') {
+      try {
+        var calc = new LiuNianCalculator();
+        return calc.getYearGanZhi(y) || JIAZI[mod60(y - 4)];
+      } catch (e) {}
+    }
+    if (typeof LIUNIAN_DATA !== 'undefined' && LIUNIAN_DATA.years && LIUNIAN_DATA.years[y]) return LIUNIAN_DATA.years[y];
+    return JIAZI[mod60(y - 4)];
+  }
+
+  /** 從八字取日柱天干、年支/日支（用於桃花、貴人） */
+  function getDayMasterAndBranches(bazi) {
+    var raw = bazi && (bazi.raw || bazi);
+    var fp = raw && (raw.fourPillars || raw.pillars || raw);
+    var dayStem = (fp && (fp.day && (fp.day.stem || fp.day.gan))) || (raw && raw.dayMaster) || '';
+    var yearBranch = (fp && fp.year && (fp.year.branch || fp.year.zhi)) || '';
+    var dayBranch = (fp && fp.day && (fp.day.branch || fp.day.zhi)) || '';
+    return { dayStem: dayStem, yearBranch: yearBranch, dayBranch: dayBranch };
+  }
 
   /**
    * 從問題文字或 category 取得類別
@@ -95,8 +170,9 @@
   }
 
   /**
-   * 八字：依問題類別以十神強弱評分
-   * @param {Object} baziData - 八字結果（含 tenGods, elementStrength, favorableElements）
+   * 八字：依「流年」(Liu Nian) 與問題類別脈絡評分
+   * 流年干支與命盤互動：桃花/配偶星/喜用神/官星/貴人，依類別加減分並產出動態說明
+   * @param {Object} baziData - 八字結果（含 fourPillars, tenGods, favorableElements）
    * @param {string} category
    * @returns { { score: number, reason: string } }
    */
@@ -104,44 +180,112 @@
     var out = { score: 50, reason: '八字資料不足，以中性分數呈現。' };
     if (!baziData) return out;
 
-    var cat = BAZI_CATEGORY_TEN_GODS[category] || BAZI_CATEGORY_TEN_GODS.general;
-    var allGods = collectTenGodsFromBazi(baziData);
+    var lnGz = getCurrentYearGanZhi();
+    var lnStem = lnGz.charAt(0);
+    var lnBranch = lnGz.charAt(1);
+    var yearElement = STEM_ELEMENT[lnStem] || BRANCH_ELEMENT[lnBranch] || '';
     var raw = baziData.raw || baziData;
-    var elementStrength = raw.elementStrength || baziData.elementStrength || {};
-    var bodyStrength = (elementStrength.bodyStrength || raw.strength || '').toString();
     var favorable = (raw.favorableElements && raw.favorableElements.favorable) || baziData.favorable || [];
     var unfavorable = (raw.favorableElements && raw.favorableElements.unfavorable) || baziData.unfavorable || [];
+    var bodyStrength = ((raw.elementStrength && raw.elementStrength.bodyStrength) || raw.strength || '').toString();
+    var pillars = getDayMasterAndBranches(baziData);
+    var dayStem = pillars.dayStem;
+    var dayBranch = pillars.dayBranch;
+    var yearBranchChart = pillars.yearBranch;
 
     var score = 50;
     var reasonParts = [];
+    var yearName = lnGz + (BRANCH_ELEMENT[lnBranch] ? '/' + BRANCH_ELEMENT[lnBranch] + '年' : '');
+    var currentYear = new Date().getFullYear();
 
-    if (cat.primary && cat.primary.length > 0) {
-      var count = 0;
-      cat.primary.forEach(function (god) {
-        allGods.forEach(function (g) { if (g === god) count++; });
-      });
-      if (count > 0) {
-        score += Math.min(count * 8, 25);
-        reasonParts.push('命盤中與' + cat.label + '相關的十神（' + cat.primary.join('、') + '）出現，有利該類問題。');
-      } else {
-        score -= 5;
-        reasonParts.push('命盤中與' + cat.label + '相關的十神較少，該類機率偏中性。');
+    if (category === CATEGORY_LOVE) {
+      var peachForDay = PEACH_BLOSSOM_MAP[dayBranch] || PEACH_BLOSSOM_MAP[yearBranchChart];
+      if (lnBranch === peachForDay) {
+        score += 30;
+        reasonParts.push('流年' + currentYear + '年（' + yearName + '）桃花星入命，感情機緣顯著提升。');
+      } else if (peachForDay) {
+        reasonParts.push('流年未逢桃花星，感情機率以命盤十神與身強弱為主。');
       }
+      var yearTenGod = dayStem && TEN_GODS_STEM[dayStem] && TEN_GODS_STEM[dayStem][lnStem];
+      if (yearTenGod === '正財' || yearTenGod === '偏財' || yearTenGod === '正官' || yearTenGod === '七殺') {
+        score += 25;
+        reasonParts.push('流年天干為配偶星（' + yearTenGod + '），利感情與人緣。');
+      }
+      if (favorable.length && favorable.indexOf(yearElement) >= 0) {
+        score += 10;
+        reasonParts.push('流年五行' + yearElement + '為喜用神，整體利感情發展。');
+      }
+      if (unfavorable.length && unfavorable.indexOf(yearElement) >= 0) {
+        score -= 20;
+        reasonParts.push('流年五行' + yearElement + '為忌神，感情易有波折。');
+      }
+    } else if (category === CATEGORY_WEALTH || category === 'finance') {
+      var yearTenGodW = dayStem && TEN_GODS_STEM[dayStem] && TEN_GODS_STEM[dayStem][lnStem];
+      if (yearTenGodW === '正財' || yearTenGodW === '偏財' || yearTenGodW === '食神') {
+        score += 28;
+        reasonParts.push('流年' + currentYear + '年（' + yearName + '）帶財星或食神，利財運與機會。');
+      }
+      if (favorable.length && favorable.indexOf(yearElement) >= 0) {
+        score += 30;
+        reasonParts.push('流年為喜用神年（' + yearElement + '），整體利求財與事業。');
+      }
+      if (unfavorable.length && unfavorable.indexOf(yearElement) >= 0) {
+        score -= 20;
+        reasonParts.push('流年五行' + yearElement + '為忌神，財運需保守。');
+      }
+      if (reasonParts.length === 0) reasonParts.push('流年與命盤財星、喜用互動中性，以身強弱與大運為輔。');
+    } else if (category === CATEGORY_CAREER) {
+      var yearTenGodC = dayStem && TEN_GODS_STEM[dayStem] && TEN_GODS_STEM[dayStem][lnStem];
+      if (yearTenGodC === '正官' || yearTenGodC === '七殺') {
+        score += 25;
+        reasonParts.push('流年' + currentYear + '年（' + yearName + '）帶官殺星，利事業與權責。');
+      }
+      var noblemanBranches = dayStem && NOBLEMAN_MAP[dayStem];
+      if (noblemanBranches && noblemanBranches.indexOf(lnBranch) >= 0) {
+        score += 20;
+        reasonParts.push('流年逢天乙貴人，貴人運佳，利職場與合作。');
+      }
+      if (favorable.length && favorable.indexOf(yearElement) >= 0) {
+        score += 15;
+        reasonParts.push('流年為喜用神年，事業發展環境有利。');
+      }
+      if (unfavorable.length && unfavorable.indexOf(yearElement) >= 0) {
+        score -= 15;
+        reasonParts.push('流年五行為忌，事業宜穩守。');
+      }
+      if (reasonParts.length === 0) reasonParts.push('流年與事業星、貴人互動中性，以命盤官星與喜用為輔。');
+    } else if (category === CATEGORY_HEALTH) {
+      if (favorable.length && favorable.indexOf(yearElement) >= 0) {
+        score += 15;
+        reasonParts.push('流年五行' + yearElement + '為喜用，整體利身心平衡。');
+      }
+      if (unfavorable.length && unfavorable.indexOf(yearElement) >= 0) {
+        score -= 15;
+        reasonParts.push('流年忌神年，宜注意作息與壓力。');
+      }
+      reasonParts.push('健康機率以五行平衡與身強弱為參考。');
     } else {
-      reasonParts.push('以整體五行與身強弱評估。');
+      if (favorable.length && favorable.indexOf(yearElement) >= 0) {
+        score += 20;
+        reasonParts.push('流年' + currentYear + '年（' + yearName + '）為喜用神年，整體機率偏好。');
+      }
+      if (unfavorable.length && unfavorable.indexOf(yearElement) >= 0) {
+        score -= 15;
+        reasonParts.push('流年為忌神年，宜保守。');
+      }
+      if (reasonParts.length === 0) reasonParts.push('流年與命盤互動中性。');
     }
 
     if (/強|中和/.test(bodyStrength)) {
       score += 5;
-      reasonParts.push('日主身強或中和，利於承擔壓力與把握機會。');
+      if (reasonParts.indexOf('日主身強') < 0) reasonParts.push('日主身強或中和，利把握流年機會。');
     } else if (/弱|極弱/.test(bodyStrength)) {
       score -= 5;
-      reasonParts.push('日主偏弱，該類事務需多借助大運流年。');
+      reasonParts.push('日主偏弱，宜借大運流年補益。');
     }
 
-    if (favorable.length) reasonParts.push('喜用神：' + favorable.join('、') + '。');
     out.score = clamp0_100(score);
-    out.reason = '八字評分 ' + out.score + '：' + reasonParts.join(' ');
+    out.reason = 'Bazi Probability ' + out.score + '%: ' + (reasonParts.length ? reasonParts.join(' ') : '流年與命盤綜合評估。');
     return out;
   }
 
@@ -216,8 +360,9 @@
   }
 
   /**
-   * 姓名學：五格/三才與問題類別的五行對應
-   * @param {Object} nameData - 姓名學結果（fivePatterns, overallScore）
+   * 姓名學：依問題類別之「81 數理」與「三才五行」脈絡評分
+   * 人格/總格吉數對應類別加分；三才五行是否生助該類所需五行加分
+   * @param {Object} nameData - 姓名學結果（fivePatterns, overallScore, threeTalents）
    * @param {string} category
    * @returns { { score: number, reason: string } }
    */
@@ -225,20 +370,54 @@
     var out = { score: 50, reason: '姓名學資料不足。' };
     if (!nameData) return out;
 
-    var fp = nameData.fivePatterns || nameData.fivePattern || {};
+    var fp = nameData.fivePatterns || nameData.fivePattern || nameData.analysis || {};
+    var personNum = fp.person != null && fp.person.number != null ? Number(fp.person.number) : (fp.person && fp.person);
+    var totalNum = fp.total != null && fp.total.number != null ? Number(fp.total.number) : (fp.total && fp.total);
+    if (typeof personNum !== 'number') personNum = null;
+    if (typeof totalNum !== 'number') totalNum = null;
     var totalScore = nameData.overallScore != null ? Number(nameData.overallScore) : (fp.total && fp.total.score);
-    if (Number.isFinite(totalScore)) {
-      var s = clamp0_100(totalScore);
-      out.score = s;
+    if (!Number.isFinite(totalScore) && totalNum != null) totalScore = Math.min(81, Math.max(1, totalNum)) * 0.8;
+    var score = Number.isFinite(totalScore) ? clamp(totalScore, 0, 100) : 50;
+    var reasonParts = [];
+
+    var catNum = NAME_NUMBER_BY_CATEGORY[category] || NAME_NUMBER_BY_CATEGORY.general;
+    if (catNum.bonus && catNum.bonus.length > 0) {
+      var bonusCount = 0;
+      if (personNum != null && catNum.bonus.indexOf(personNum) >= 0) { score += 15; bonusCount++; }
+      if (totalNum != null && catNum.bonus.indexOf(totalNum) >= 0) { score += 15; bonusCount++; }
+      if (bonusCount > 0) {
+        reasonParts.push('人格/總格中「' + catNum.label + '」吉數出現，對本類問題有加分。');
+      } else if (personNum != null || totalNum != null) {
+        reasonParts.push('人格' + (personNum != null ? personNum : '—') + '、總格' + (totalNum != null ? totalNum : '—') + '；本類吉數未明顯對應，以整體數理為準。');
+      }
     }
 
     var catElements = NAME_ELEMENT_BY_CATEGORY[category] || NAME_ELEMENT_BY_CATEGORY.general;
-    var reasonParts = ['姓名學評分 ' + out.score + '：'];
-    if (fp.person != null || fp.total != null) {
-      reasonParts.push('人格' + (fp.person != null ? fp.person.number : '—') + '、總格' + (fp.total != null ? fp.total.number : '—'));
+    if (catElements.length > 0) {
+      var personEl = personNum != null ? numberToElement(personNum) : '';
+      var totalEl = totalNum != null ? numberToElement(totalNum) : '';
+      var dominantEl = totalEl || personEl;
+      var supports = false;
+      for (var i = 0; i < catElements.length; i++) {
+        var need = catElements[i];
+        if (WUXING_SHENG[dominantEl] === need) {
+          score += 12;
+          supports = true;
+          reasonParts.push('姓名五行（' + (dominantEl || '—') + '）生助本類所需五行（' + need + '），利該類發展。');
+          break;
+        }
+      }
+      if (!supports && dominantEl) {
+        reasonParts.push('姓名五行與本類（' + catElements.join('、') + '）之對應需結合八字喜用綜合看。');
+      }
     }
-    if (catElements.length) reasonParts.push('；此問題類別與五行' + catElements.join('、') + '相關，姓名若補益該類則有利。');
-    out.reason = reasonParts.join('') + '。';
+
+    out.score = clamp0_100(score);
+    out.reason = 'Name Probability ' + out.score + '%: ' + (reasonParts.length ? reasonParts.join(' ') : '人格/總格數理與三才五行對本類問題的綜合評估。');
+    if (personNum != null || totalNum != null) {
+      out.reason += ' （人格' + (personNum != null ? personNum : '—') + '、總格' + (totalNum != null ? totalNum : '—') + '）';
+    }
+    out.reason += '.';
     return out;
   }
 

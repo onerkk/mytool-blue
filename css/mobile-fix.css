@@ -22,35 +22,49 @@
         box-sizing: border-box !important;
     }
     
-    /* ===== 分析結果區：與 Bazi/塔羅同寬同 padding（邊到邊），僅右側留浮動按鈕 ===== */
+    /* ===== 分析結果區：與 Bazi 同寬（僅 section 留 0.5rem，內層無額外左右留白） ===== */
     #result-section {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: none !important;
         min-width: 0 !important;
         box-sizing: border-box !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        padding: 0.75rem 0.5rem !important; /* 與 .section 完全一致 */
-        padding-right: 72px !important; /* 懸浮按鈕列 */
+        padding-left: 0.5rem !important;   /* 與 Bazi section 一致 */
+        padding-right: 72px !important;   /* 懸浮按鈕列 */
+        padding-top: 0.75rem !important;
+        padding-bottom: 150px !important;
         overflow-x: auto !important;
         overflow-y: visible !important;
         -webkit-overflow-scrolling: touch !important;
     }
     
-    #result-section .result-container {
+    /* 內層與 Bazi 的 bazi-container 一致：無左右 padding，不限制寬度 */
+    #result-section .result-container,
+    #result-section .result-overview,
+    #result-section .dimension-analysis,
+    #result-section .dimension-content,
+    #result-section .dimension-pane,
+    #result-section .bazi-result,
+    #result-section .analysis-grid-container {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
         box-sizing: border-box !important;
-        padding: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    #result-section .result-container {
         overflow-x: visible !important;
         overflow-y: visible !important;
     }
     
-    /* ===== 結果概覽：區塊全寬，文字容器填滿 ===== */
+    /* ===== 結果概覽：區塊全寬，左右無額外留白（與 Bazi 內容對齊） ===== */
     #result-section .result-overview {
         display: block !important;
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: none !important;
         box-sizing: border-box !important;
         margin-bottom: 1rem !important;
         gap: 0 !important;
@@ -60,19 +74,18 @@
     #result-section .result-overview > .probability-meter {
         display: block !important;
         width: 100% !important;
-        max-width: 100% !important;
-        flex: 1 1 100% !important; /* Flex 子項時填滿 */
+        max-width: none !important;
+        flex: 1 1 100% !important;
         box-sizing: border-box !important;
         margin-right: 0 !important;
         margin-bottom: 0.75rem !important;
-        padding: 0.75rem 0.5rem !important; /* 手機版縮小：約 12px 8px */
+        padding: 0.75rem 0 !important; /* 左右 0，與 Bazi 內容同寬 */
     }
     
-    /* 概覽卡片、可能性評估內部也滿版 */
     #result-section .overview-card,
     #result-section .probability-meter {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: none !important;
         box-sizing: border-box !important;
     }
     
@@ -99,19 +112,19 @@
         white-space: normal !important;
     }
     
-    /* ===== 四維度分析區：縮小 padding，寬度滿版 ===== */
+    /* ===== 四維度分析區：左右無留白，與 Bazi 同寬 ===== */
     #result-section .dimension-analysis {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: none !important;
         box-sizing: border-box !important;
-        padding: 0.75rem 0.5rem !important; /* 手機版縮小 */
-        padding-right: 0.5rem !important; /* 右側由 #result-section 統一留按鈕空間 */
+        padding: 0.75rem 0 !important; /* 左右 0 */
         margin-bottom: 1rem !important;
     }
     
     #result-section .dimension-tabs {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: none !important;
+        padding-left: 0 !important;
         padding-right: 0 !important;
         padding-bottom: 0.5rem !important;
         margin-bottom: 0.75rem !important;
@@ -147,7 +160,7 @@
     }
     
     #result-section .analysis-card {
-        padding: 0.75rem 0.5rem !important;
+        padding: 0.75rem 0 !important; /* 左右 0，與 Bazi 同寬 */
     }
     
     #result-section .text-content,

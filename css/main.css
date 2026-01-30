@@ -1390,24 +1390,33 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 }
 
 /* --- 結果頁面樣式 --- */
-/* 結果分析區：與 Bazi/塔羅同寬、同 padding，僅右側留懸浮按鈕與底部留白 */
+/* 結果分析區：與 Bazi 同寬（無額外 max-width），僅右側留懸浮按鈕與底部留白 */
 #result-section.result-section {
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: none !important;
     min-width: 0;
     box-sizing: border-box;
     margin-left: 0;
     margin-right: 0;
-    padding: 3rem; /* 與 .section 一致 */
-    padding-right: 72px; /* 懸浮按鈕列寬度 + 間距 */
-    padding-bottom: 150px; /* 底部留白，可捲動至內容在按鈕上方 */
+    padding: 3rem;
+    padding-right: 72px;
+    padding-bottom: 150px;
 }
 #result-section .result-container,
-#result-section .dimension-analysis {
+#result-section .dimension-analysis,
+#result-section .result-overview,
+#result-section .dimension-content,
+#result-section .dimension-pane,
+#result-section .bazi-result,
+#result-section .analysis-grid-container {
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: none !important;
     min-width: 0;
     box-sizing: border-box;
+}
+#result-section .result-container {
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .result-overview {
@@ -2399,10 +2408,13 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     align-items: center;
     gap: 10px;
     font-size: 0.9rem;
+    flex-wrap: nowrap;
 }
 
 .element-label {
     width: 40px;
+    min-width: 40px;
+    flex-shrink: 0;
     font-weight: 600;
 }
 
@@ -2414,7 +2426,9 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 .el-earth { color: #A1887F; } /* 土 */
 
 .progress-track {
-    flex-grow: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 120px); /* 留足 label + value 空間 */
     height: 8px;
     background: rgba(255,255,255,0.1);
     border-radius: 4px;
@@ -2435,10 +2449,14 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 .bg-earth { background: #A1887F; box-shadow: 0 0 8px rgba(161, 136, 127, 0.4); }
 
 .element-value {
-    width: 45px;
+    min-width: 52px;
+    width: 52px;
+    flex-shrink: 0;
     text-align: right;
     font-family: monospace;
+    font-size: 0.9rem;
     opacity: 0.8;
+    white-space: nowrap;
 }
 
 /* 6. 標籤樣式 (用於喜用神、神煞) */
