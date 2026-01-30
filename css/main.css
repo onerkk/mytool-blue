@@ -1896,13 +1896,14 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     padding: 2px 6px;
     border-radius: 6px;
     line-height: 1.3;
+    /* 一律用高對比：白字／深字 on 有色底，避免同色字與底看不清 */
 }
 
 .dayun-quality--excellent,
 .dayun-quality--excellent-bright {
-    color: #4CAF50;
-    background: rgba(76, 175, 80, 0.2);
-    border: 1px solid rgba(76, 175, 80, 0.5);
+    color: #fff;
+    background: rgba(56, 142, 60, 0.85);
+    border: 1px solid rgba(76, 175, 80, 0.6);
 }
 
 .dayun-quality--excellent-bright {
@@ -1910,40 +1911,40 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 }
 
 .dayun-quality--good {
-    color: #8BC34A;
-    background: rgba(139, 195, 74, 0.2);
-    border: 1px solid rgba(139, 195, 74, 0.5);
+    color: #fff;
+    background: rgba(67, 160, 71, 0.8);
+    border: 1px solid rgba(139, 195, 74, 0.6);
 }
 
 .dayun-quality--neutral-good {
-    color: #9CCC65;
-    background: rgba(156, 204, 101, 0.2);
-    border: 1px solid rgba(156, 204, 101, 0.5);
+    color: #1a1a1a;
+    background: rgba(205, 220, 57, 0.9);
+    border: 1px solid rgba(156, 204, 101, 0.6);
 }
 
 .dayun-quality--neutral,
 .dayun-quality--average {
-    color: #FF9800;
-    background: rgba(255, 152, 0, 0.2);
-    border: 1px solid rgba(255, 152, 0, 0.5);
+    color: #1a1a1a;
+    background: rgba(255, 193, 7, 0.85);
+    border: 1px solid rgba(255, 152, 0, 0.6);
 }
 
 .dayun-quality--warning {
-    color: #FFC107;
-    background: rgba(255, 193, 7, 0.2);
-    border: 1px solid rgba(255, 193, 7, 0.5);
+    color: #1a1a1a;
+    background: rgba(255, 235, 59, 0.9);
+    border: 1px solid rgba(255, 193, 7, 0.6);
 }
 
 .dayun-quality--bad,
 .dayun-quality--poor {
-    color: #F44336;
-    background: rgba(244, 67, 54, 0.2);
-    border: 1px solid rgba(244, 67, 54, 0.5);
+    color: #fff;
+    background: rgba(198, 40, 40, 0.85);
+    border: 1px solid rgba(244, 67, 54, 0.6);
 }
 
 .dayun-quality--danger {
-    color: #D32F2F;
-    background: rgba(211, 47, 47, 0.25);
+    color: #fff;
+    background: rgba(183, 28, 28, 0.9);
     border: 1px solid rgba(211, 47, 47, 0.6);
 }
 
@@ -1967,20 +1968,21 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     border-radius: 4px;
     margin-bottom: 4px;
     letter-spacing: 0.02em;
+    /* 高對比：白字／深字 on 有色底 */
 }
 .dayun-fortune-type--fav {
-    color: #1b5e20;
-    background: rgba(76, 175, 80, 0.3);
+    color: #fff;
+    background: rgba(56, 142, 60, 0.85);
     border: 1px solid rgba(76, 175, 80, 0.5);
 }
 .dayun-fortune-type--unfav {
-    color: #b71c1c;
-    background: rgba(244, 67, 54, 0.25);
+    color: #fff;
+    background: rgba(198, 40, 40, 0.85);
     border: 1px solid rgba(244, 67, 54, 0.5);
 }
 .dayun-fortune-type--mixed {
-    color: #e65100;
-    background: rgba(255, 152, 0, 0.25);
+    color: #1a1a1a;
+    background: rgba(255, 193, 7, 0.9);
     border: 1px solid rgba(255, 152, 0, 0.5);
 }
 

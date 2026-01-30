@@ -40,6 +40,10 @@
   };
 
   var ELEMENT_TO_KEY = { '火': 'FIRE', '木': 'WOOD', '水': 'WATER', '金': 'METAL', '土': 'EARTH' };
+  var KEY_TO_ELEMENT = { FIRE: '火', WOOD: '木', WATER: '水', METAL: '金', EARTH: '土' };
+
+  /** 五行相生（互補）：生者 → 被生者 */
+  var ELEMENT_GENERATES = { WATER: 'WOOD', WOOD: 'FIRE', FIRE: 'EARTH', EARTH: 'METAL', METAL: 'WATER' };
 
   /** 問題類別 → 備用五行（無八字時） */
   var CATEGORY_FALLBACK = {
@@ -51,13 +55,12 @@
   };
 
   /**
-   * 取得開運水晶推薦
+   * 取得開運水晶推薦（支援多屬性：喜水木可推薦水+木，並附互補說明）
    * @param {Object} baziResult - 八字結果（含 favorableElements.favorable）
    * @param {string} question - 用戶問題文字
    * @returns {{ targetElement: string, suggestedStones: string[], reasonText: string, keywords: string }}
    */
   function getCrystalRecommendation(baziResult, question) {
-    var key = null;
     var fav = [];
 
     if (baziResult && baziResult.favorableElements && baziResult.favorableElements.favorable) {
@@ -72,11 +75,14 @@
       }
     }
 
-    if (fav.length > 0 && ELEMENT_TO_KEY[fav[0]]) {
-      key = ELEMENT_TO_KEY[fav[0]];
+    var keys = [];
+    for (var i = 0; i < fav.length && i < 3; i++) {
+      if (fav[i] && ELEMENT_TO_KEY[fav[i]]) {
+        keys.push(ELEMENT_TO_KEY[fav[i]]);
+      }
     }
 
-    if (!key) {
+    if (keys.length === 0) {
       var cat = 'general';
       if (typeof getCategory === 'function') {
         cat = getCategory(question || '') || cat;
@@ -84,15 +90,46 @@
         var parsed = parseQuestion(question || '');
         cat = (parsed && parsed.category) ? parsed.category : cat;
       }
-      key = CATEGORY_FALLBACK[cat] || 'EARTH';
+      keys = [CATEGORY_FALLBACK[cat] || 'EARTH'];
     }
 
-    var config = CRYSTAL_MAPPING[key] || CRYSTAL_MAPPING.EARTH;
+    var elements = [];
+    var allStones = [];
+    var descs = [];
+    var keywordsSet = [];
+
+    for (var j = 0; j < keys.length; j++) {
+      var config = CRYSTAL_MAPPING[keys[j]] || CRYSTAL_MAPPING.EARTH;
+      elements.push(config.element);
+      if (config.stones && config.stones.length) {
+        allStones = allStones.concat(config.stones);
+      }
+      if (config.desc) descs.push(config.desc);
+      if (config.keywords) keywordsSet.push(config.keywords);
+    }
+
+    var targetElement = elements.join('、');
+    var reasonText = descs[0] || '';
+
+    if (keys.length >= 2) {
+      var complement = [];
+      for (var k = 0; k < keys.length - 1; k++) {
+        if (ELEMENT_GENERATES[keys[k]] === keys[k + 1]) {
+          complement.push(KEY_TO_ELEMENT[keys[k]] + '生' + KEY_TO_ELEMENT[keys[k + 1]]);
+        }
+      }
+      if (complement.length > 0) {
+        reasonText = (reasonText ? reasonText + ' ' : '') + '五行互補：' + complement.join('、') + '，兩種屬性搭配配戴更利氣場。';
+      } else if (descs.length > 1) {
+        reasonText = (reasonText ? reasonText + ' ' : '') + '多屬性搭配可兼顧不同面向的補強。';
+      }
+    }
+
     return {
-      targetElement: config.element,
-      suggestedStones: config.stones || [],
-      reasonText: config.desc || '',
-      keywords: config.keywords || ''
+      targetElement: targetElement,
+      suggestedStones: allStones,
+      reasonText: reasonText,
+      keywords: keywordsSet.join('、')
     };
   }
 
