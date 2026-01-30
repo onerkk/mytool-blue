@@ -140,11 +140,15 @@ class ResultGenerator {
         // 顯示問題
         this.displayQuestion();
         
-        // 生成各維度結果
+        // 生成各維度結果（姓名學：若有 main 流程的 nameology 則由 main 渲染，保持網頁/手機版一致）
         this.generateDimensionResult('bazi');
         this.generateDimensionResult('meihua');
         this.generateDimensionResult('tarot');
-        this.generateDimensionResult('name');
+        if (window.fortuneSystem && window.fortuneSystem.analysisResults && window.fortuneSystem.analysisResults.nameology) {
+            window.fortuneSystem.displayNameResult();
+        } else {
+            this.generateDimensionResult('name');
+        }
         this.generateDimensionResult('cross');
         
         // 生成綜合結論
@@ -211,7 +215,11 @@ class ResultGenerator {
                 this.generateTarotResult();
                 break;
             case 'name':
-                this.generateNameologyResult();
+                if (window.fortuneSystem && window.fortuneSystem.analysisResults && window.fortuneSystem.analysisResults.nameology) {
+                    window.fortuneSystem.displayNameResult();
+                } else {
+                    this.generateNameologyResult();
+                }
                 break;
             case 'cross':
                 this.generateCrossValidation();
