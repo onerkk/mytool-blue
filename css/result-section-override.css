@@ -1,23 +1,31 @@
 /**
- * Section 5: 結構與 Section 2 (Bazi) 一致
- * - 外層: section.section（與 Bazi 相同）
- * - 內層: 單一 div.bazi-container（與 Bazi 相同，無 .result-container）
- * - 懸浮按鈕在 .main-container 外，僅 Step 5 顯示
- * 強制與 .section 相同 padding，覆寫 responsive/mobile 的 72px。
+ * Section 5 滿版：突破 .main-container 的 max-width / padding，與 Bazi 視覺一致
+ * 使用 viewport breakout 讓 #result-section 佔滿 100vw，內文用 2rem 與 main-container 對齊
  */
-#result-section.section {
-  padding: 3rem !important;
-  padding-right: 3rem !important;
+#result-section.section,
+section#result-section {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  position: relative !important;
+  left: 50% !important;
+  right: 50% !important;
+  margin-left: -50vw !important;
+  margin-right: -50vw !important;
+  padding: 3rem 2rem !important;
   padding-bottom: 120px !important;
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0 !important;
   box-sizing: border-box !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  overflow-x: hidden !important;
 }
 
-/* 懸浮按鈕：僅在「分析結果」步驟顯示，Steps 1–4 完全隱藏 */
+#result-section .bazi-container {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 懸浮按鈕：僅在 Step 5 顯示 */
 .floating-buttons {
   display: none !important;
   position: fixed !important;
@@ -34,14 +42,14 @@
 }
 
 @media (max-width: 768px) {
-  #result-section.section {
-    padding: 0.75rem !important;
-    padding-right: 0.75rem !important;
+  #result-section.section,
+  section#result-section {
+    padding: 0.75rem 1rem !important;
     padding-bottom: 120px !important;
   }
 }
 
-/* ===== Five Elements: 百分比不換行（與 Bazi 區塊內一致） ===== */
+/* 五行百分比不換行 */
 .element-value,
 .element-percentage-text,
 .element-value-text {

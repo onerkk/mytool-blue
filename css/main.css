@@ -1389,20 +1389,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     color: var(--text-secondary);
 }
 
-/* --- 結果頁面樣式 --- */
-/* 結果分析區：與 Bazi 同寬（無額外 max-width），僅右側留懸浮按鈕與底部留白 */
-#result-section.result-section {
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0;
-    box-sizing: border-box;
-    margin-left: 0;
-    margin-right: 0;
-    padding: 3rem;
-    padding-right: 72px;
-    padding-bottom: 150px;
-}
-#result-section .result-container,
+/* --- 結果頁面樣式：與 Bazi 同寬，由 result-section-override.css 做滿版 breakout --- */
 #result-section .dimension-analysis,
 #result-section .result-overview,
 #result-section .dimension-content,
@@ -1413,10 +1400,6 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     max-width: none !important;
     min-width: 0;
     box-sizing: border-box;
-}
-#result-section .result-container {
-    padding-left: 0;
-    padding-right: 0;
 }
 
 .result-overview {
