@@ -1046,6 +1046,61 @@
         font-size: 0.75rem !important;
         padding: 0.35rem 0.6rem !important;
     }
+
+    /* 大運流年手機同步（與 main.css / mobile-fix.css 一致，未來更新請同步） */
+    .dayun-quality--excellent,
+    .dayun-quality--excellent-bright {
+        color: #fff !important;
+        background: rgba(56, 142, 60, 0.85) !important;
+        border: 1px solid rgba(76, 175, 80, 0.6) !important;
+    }
+    .dayun-quality--good {
+        color: #fff !important;
+        background: rgba(67, 160, 71, 0.8) !important;
+        border: 1px solid rgba(139, 195, 74, 0.6) !important;
+    }
+    .dayun-quality--neutral-good {
+        color: #1a1a1a !important;
+        background: rgba(205, 220, 57, 0.9) !important;
+        border: 1px solid rgba(156, 204, 101, 0.6) !important;
+    }
+    .dayun-quality--neutral,
+    .dayun-quality--average {
+        color: #1a1a1a !important;
+        background: rgba(255, 193, 7, 0.85) !important;
+        border: 1px solid rgba(255, 152, 0, 0.6) !important;
+    }
+    .dayun-quality--warning {
+        color: #1a1a1a !important;
+        background: rgba(255, 235, 59, 0.9) !important;
+        border: 1px solid rgba(255, 193, 7, 0.6) !important;
+    }
+    .dayun-quality--bad,
+    .dayun-quality--poor {
+        color: #fff !important;
+        background: rgba(198, 40, 40, 0.85) !important;
+        border: 1px solid rgba(244, 67, 54, 0.6) !important;
+    }
+    .dayun-quality--danger {
+        color: #fff !important;
+        background: rgba(183, 28, 28, 0.9) !important;
+        border: 1px solid rgba(211, 47, 47, 0.6) !important;
+    }
+    .dayun-fortune-type--fav {
+        color: #0d3d0d !important;
+        background: #c8e6c9 !important;
+        border: 1px solid #81c784 !important;
+    }
+    .dayun-fortune-type--unfav {
+        color: #fff !important;
+        background: #b71c1c !important;
+        border: 1px solid #c62828 !important;
+    }
+    .dayun-fortune-type--mixed {
+        color: #1a1a1a !important;
+        background: #fff9c4 !important;
+        border: 1px solid #ffca28 !important;
+    }
 }
 
 /* 橫屏優化 */

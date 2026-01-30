@@ -1888,6 +1888,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     background: rgba(212, 175, 55, 0.15);
 }
 
+/* 大運流年：桌面與手機共用。若修改 .dayun-quality / .dayun-fortune-type，請同步在 mobile-fix.css「大運流年手機同步」區塊更新。 */
 .dayun-quality {
     display: block;
     font-size: 0.75rem;
@@ -1896,7 +1897,6 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     padding: 2px 6px;
     border-radius: 6px;
     line-height: 1.3;
-    /* 一律用高對比：白字／深字 on 有色底，避免同色字與底看不清 */
 }
 
 .dayun-quality--excellent,

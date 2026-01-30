@@ -413,22 +413,71 @@ class FortuneSystem {
         this.calculatedSolarTime = null;
         this.analysisResults = {};
         this.currentStep = 1;
-        
-        // 清除所有輸入欄位
-        const birthDateInput = document.getElementById('birth-date');
-        const birthTimeInput = document.getElementById('birth-time');
-        const nameInput = document.getElementById('user-name');
-        if(birthDateInput) birthDateInput.value = '';
-        if(birthTimeInput) birthTimeInput.value = '';
-        if(nameInput) nameInput.value = '';
-        
-        // 清除所有結果顯示
-        document.querySelectorAll('.bazi-result, .meihua-result, .tarot-result, .name-result, .cross-result').forEach(el => {
-            if(el) el.innerHTML = '';
+
+        // 表單：主表單 reset（姓名 id=name、生日、時間、性別、問題、國家／城市、真太陽時）
+        var personalForm = document.getElementById('personal-form');
+        if (personalForm) personalForm.reset();
+
+        // 個別欄位補齊（id=name 非 user-name；問題、經緯度）
+        var nameEl = document.getElementById('name');
+        if (nameEl) nameEl.value = '';
+        var questionEl = document.getElementById('question');
+        if (questionEl) questionEl.value = '';
+        var lonEl = document.getElementById('longitude');
+        if (lonEl) lonEl.textContent = '-';
+        var latEl = document.getElementById('latitude');
+        if (latEl) latEl.textContent = '-';
+
+        // 性別 radio 取消選取
+        document.querySelectorAll('input[name="gender"]').forEach(function (r) { r.checked = false; });
+
+        // 結果區：問題與直接回答、機率
+        var qDisplay = document.getElementById('question-display');
+        if (qDisplay) qDisplay.innerHTML = '';
+        var directAnswer = document.getElementById('direct-answer');
+        if (directAnswer) directAnswer.textContent = '分析中...';
+        var overallProb = document.getElementById('overall-probability');
+        if (overallProb) overallProb.textContent = '0%';
+        var meterFill = document.getElementById('meter-fill');
+        if (meterFill) meterFill.style.width = '0%';
+        var breakdownReasons = document.getElementById('probability-breakdown-reasons');
+        if (breakdownReasons) breakdownReasons.innerHTML = '';
+
+        // 水晶推薦
+        var crystalTarget = document.getElementById('crystal-target-element');
+        if (crystalTarget) crystalTarget.textContent = '—';
+        var crystalStones = document.getElementById('crystal-stones-list');
+        if (crystalStones) crystalStones.textContent = '—';
+        var crystalReason = document.getElementById('crystal-reason-text');
+        if (crystalReason) crystalReason.textContent = '—';
+
+        // 綜合結論
+        var conclusionContent = document.getElementById('conclusion-content');
+        if (conclusionContent) conclusionContent.innerHTML = '';
+
+        // 八字：詳細分析區移除；大運時間軸清空
+        var baziAdvanced = document.getElementById('bazi-advanced-analysis');
+        if (baziAdvanced && baziAdvanced.parentNode) baziAdvanced.parentNode.removeChild(baziAdvanced);
+        var dayunTimeline = document.getElementById('dayun-timeline');
+        if (dayunTimeline) dayunTimeline.innerHTML = '';
+
+        // 各維度結果區清空
+        document.querySelectorAll('.bazi-result, .meihua-result, .tarot-result, .name-result, .cross-result').forEach(function (el) {
+            if (el) el.innerHTML = '';
         });
-        
-        // 返回第一步
-        this.showSection('input-section');
+
+        // 八字區塊內顯示還原
+        var dayMaster = document.getElementById('day-master');
+        if (dayMaster) dayMaster.textContent = '待計算';
+        var wuxingBalance = document.getElementById('wuxing-balance');
+        if (wuxingBalance) wuxingBalance.textContent = '待計算';
+        var strength = document.getElementById('strength');
+        if (strength) strength.textContent = '待計算';
+        var favorableEl = document.getElementById('favorable-elements');
+        if (favorableEl) favorableEl.textContent = '待計算';
+
+        // 重新載入頁面，還原結果區 HTML 結構（十神／五行等），確保「全部資料清除」
+        window.location.reload();
     }
     
     generateReport() {
