@@ -575,14 +575,6 @@ class FortuneSystem {
                 const baziPane = document.getElementById('bazi-result');
                 if (baziPane && baziPane.querySelector('#ui-gods-grid')) {
                     // UI 已經存在，保持等待狀態
-                    const personalityEl = baziPane.querySelector('#ui-personality');
-                    const careerEl = baziPane.querySelector('#ui-career');
-                    if (personalityEl && !personalityEl.textContent.trim()) {
-                        personalityEl.textContent = '等待八字計算結果...';
-                    }
-                    if (careerEl && !careerEl.textContent.trim()) {
-                        careerEl.textContent = '等待八字計算結果...';
-                    }
                 }
             }, 100);
         }
@@ -636,10 +628,34 @@ class FortuneSystem {
 
         const baziResult = (baziData.fullData || baziData.data || baziData);
         
-        // 確保分析數據存在 - 如果沒有，嘗試從 advancedAnalysis 獲取
-        if (!baziResult.analysis && typeof BaziAnalyzer !== 'undefined') {
+        // 確保分析數據存在，且一律依「當前八字」重新推算（不用單一結論）
+        if (typeof BaziAnalyzer !== 'undefined') {
             try {
-                const analyzer = new BaziAnalyzer(baziResult);
+                const n = this.normalizeBaziResult(baziResult);
+                const fp = n.pillars || {};
+                const tg = n.tenGods || {};
+                const analyzerInput = {
+                    fourPillars: {
+                        year:  { gan: fp.year?.stem || fp.year?.gan, zhi: fp.year?.branch || fp.year?.zhi },
+                        month: { gan: fp.month?.stem || fp.month?.gan, zhi: fp.month?.branch || fp.month?.zhi },
+                        day:   { gan: fp.day?.stem || fp.day?.gan, zhi: fp.day?.branch || fp.day?.zhi },
+                        hour:  { gan: fp.hour?.stem || fp.hour?.gan, zhi: fp.hour?.branch || fp.hour?.zhi }
+                    },
+                    dayMaster: n.dayMaster || (fp.day && (fp.day.stem || fp.day.gan)),
+                    elementStrength: baziResult.elementStrength || { bodyStrength: n.strengthText },
+                    favorableElements: baziResult.favorableElements || { favorable: n.favorable || [], unfavorable: n.unfavorable || [] },
+                    tenGods: {
+                        yearStem:  (tg.year && (tg.year.stem || tg.year.gan)) || tg.yearStem,
+                        monthStem: (tg.month && (tg.month.stem || tg.month.gan)) || tg.monthStem,
+                        dayStem:   (tg.day && (tg.day.stem || tg.day.gan)) || tg.dayStem,
+                        hourStem:  (tg.hour && (tg.hour.stem || tg.hour.gan)) || tg.hourStem,
+                        yearBranch:  Array.isArray(tg.year?.branch) ? tg.year.branch : (tg.yearBranch || []),
+                        monthBranch: Array.isArray(tg.month?.branch) ? tg.month.branch : (tg.monthBranch || []),
+                        dayBranch:   Array.isArray(tg.day?.branch) ? tg.day.branch : (tg.dayBranch || []),
+                        hourBranch:  Array.isArray(tg.hour?.branch) ? tg.hour.branch : (tg.hourBranch || [])
+                    }
+                };
+                const analyzer = new BaziAnalyzer(analyzerInput);
                 baziResult.analysis = {
                     personality: analyzer.analyzePersonality(),
                     career: analyzer.analyzeCareer(),
@@ -1206,124 +1222,6 @@ class FortuneSystem {
             console.log('[fillBaziResultUI] normalized unfavorable:', n.unfavorable);
         }
 
-        // ✅ 個性特質 - 顯示完整分析（優先使用 fullData.analysis，確保為八字推算結果）
-        const personalityEl = baziPane.querySelector('#ui-personality');
-        if (personalityEl) {
-            const analysis = baziResult.analysis || (baziResult.fullData && baziResult.fullData.analysis) || {};
-            const personality = analysis.personality || {};
-            
-            if (personality.personality || personality.strengths || personality.weaknesses) {
-                // 有詳細分析，顯示完整內容
-                const safeArr = (v) => Array.isArray(v) ? v : (v == null ? [] : [v]);
-                const safeJoin = (v, sep = '、') => safeArr(v).filter(x => x !== undefined && x !== null && String(x).trim() !== '').map(x => String(x)).join(sep);
-                
-                let html = '';
-                const dm = n.dayMaster ? `${n.dayMaster}` : '';
-                const element = personality.element || '';
-                const yinYang = personality.yinYang || '';
-                
-                if (dm && element) {
-                    html += `<div style="margin-bottom: 0.5rem;"><strong style="color: var(--gold-bright);">${dm}${element}</strong> <span style="color: rgba(255,255,255,0.6);">(${yinYang})</span></div>`;
-                }
-                
-                if (personality.personality) {
-                    html += `<p style="margin-bottom: 1rem; line-height: 1.6;">${personality.personality}</p>`;
-                }
-                
-                if (personality.strengths || personality.weaknesses) {
-                    html += `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
-                    if (personality.strengths) {
-                        html += `<div style="padding: 0.5rem; background: rgba(76, 175, 80, 0.2); border-radius: 4px;"><strong>優點：</strong>${safeJoin(personality.strengths, '、')}</div>`;
-                    }
-                    if (personality.weaknesses) {
-                        html += `<div style="padding: 0.5rem; background: rgba(244, 67, 54, 0.2); border-radius: 4px;"><strong>缺點：</strong>${safeJoin(personality.weaknesses, '、')}</div>`;
-                    }
-                    html += `</div>`;
-                }
-                
-                if (!html) {
-                    // 降級到簡要信息
-                    const dm = n.dayMaster ? `日主：${n.dayMaster}` : '';
-                    const st = n.strengthText ? `｜身強弱：${n.strengthText}` : '';
-                    let pat = '';
-                    if (n.pattern) {
-                        if (typeof n.pattern === 'object') {
-                            pat = `｜格局：${n.pattern.name || n.pattern.type || JSON.stringify(n.pattern)}`;
-                        } else {
-                            pat = `｜格局：${n.pattern}`;
-                        }
-                    }
-                    personalityEl.textContent = (dm + st + pat).trim() || '（等待八字計算結果...）';
-                } else {
-                    personalityEl.innerHTML = html;
-                }
-            } else {
-                // 沒有詳細分析，顯示基本信息
-                const dm = n.dayMaster ? `日主：${n.dayMaster}` : '';
-                const st = n.strengthText ? `｜身強弱：${n.strengthText}` : '';
-                let pat = '';
-                if (n.pattern) {
-                    if (typeof n.pattern === 'object') {
-                        pat = `｜格局：${n.pattern.name || n.pattern.type || JSON.stringify(n.pattern)}`;
-                    } else {
-                        pat = `｜格局：${n.pattern}`;
-                    }
-                }
-                personalityEl.textContent = (dm + st + pat).trim() || '（等待八字計算結果...）';
-            }
-        }
-
-        // ✅ 事業財運 - 顯示完整分析（優先使用 fullData.analysis，確保為八字推算結果）
-        const careerEl = baziPane.querySelector('#ui-career');
-        if (careerEl) {
-            const analysis = baziResult.analysis || (baziResult.fullData && baziResult.fullData.analysis) || {};
-            const career = analysis.career || {};
-            const wealth = analysis.wealth || {};
-            
-            if (career.suitableCareers || career.developmentDirection || career.careerAdvice || wealth.wealthTrend || wealth.investmentAdvice) {
-                // 有詳細分析，顯示完整內容
-                const safeArr = (v) => Array.isArray(v) ? v : (v == null ? [] : [v]);
-                const safeJoin = (v, sep = '、') => safeArr(v).filter(x => x !== undefined && x !== null && String(x).trim() !== '').map(x => String(x)).join(sep);
-                const safeText = (v, fallback = '—') => (v === undefined || v === null || String(v).trim() === '') ? fallback : String(v);
-                
-                let html = '';
-                
-                // 事業分析
-                if (career.suitableCareers && Array.isArray(career.suitableCareers) && career.suitableCareers.length > 0) {
-                    html += `<div style="margin-bottom: 1rem;">`;
-                    html += `<div style="margin-bottom: 0.5rem;"><strong>適合行業：</strong></div>`;
-                    html += `<div style="display: inline-flex; flex-wrap: wrap; gap: 0.25rem;">${career.suitableCareers.slice(0, 8).map(c => `<span style="padding: 0.25rem 0.5rem; background: rgba(212, 175, 55, 0.2); border-radius: 4px;">${c}</span>`).join('')}</div>`;
-                    html += `</div>`;
-                }
-                
-                if (career.developmentDirection || career.careerAdvice) {
-                    html += `<div style="margin-bottom: 1rem;">`;
-                    html += `<p style="line-height: 1.6;"><strong>發展方向：</strong>${safeText(career.developmentDirection || career.careerAdvice)}</p>`;
-                    html += `</div>`;
-                }
-                
-                // 財運（重點一句）
-                if (wealth.summary && wealth.summary.trim() !== '') {
-                    html += `<div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(212, 175, 55, 0.3);">`;
-                    html += `<p style="line-height: 1.6;"><strong>財運建議：</strong>${wealth.summary}</p>`;
-                    html += `</div>`;
-                }
-                
-                if (!html) {
-                    // 降級到簡要信息
-                    const fav = Array.isArray(n.favorable) && n.favorable.length ? `喜用：${n.favorable.join('、')}` : '';
-                    const bad = Array.isArray(n.unfavorable) && n.unfavorable.length ? `｜忌神：${n.unfavorable.join('、')}` : '';
-                    careerEl.textContent = (fav + bad).trim() || '（等待八字計算結果...）';
-                } else {
-                    careerEl.innerHTML = html;
-                }
-            } else {
-                // 沒有詳細分析，顯示基本信息
-                const fav = Array.isArray(n.favorable) && n.favorable.length ? `喜用：${n.favorable.join('、')}` : '';
-                const bad = Array.isArray(n.unfavorable) && n.unfavorable.length ? `｜忌神：${n.unfavorable.join('、')}` : '';
-                careerEl.textContent = (fav + bad).trim() || '（等待八字計算結果...）';
-            }
-        }
     }
 
     
@@ -2187,10 +2085,34 @@ class FortuneSystem {
             html += '</div>';
         }
         
-        // 命理分析
+        // 命理分析（依八字推算，不用單一結論；傳入與 displayBaziResult 一致的 analyzerInput 格式）
         if (typeof BaziAnalyzer !== 'undefined') {
             try {
-                const analyzer = new BaziAnalyzer(fullBaziData);
+                const n = this.normalizeBaziResult(fullBaziData);
+                const fp = n.pillars || {};
+                const tg = n.tenGods || {};
+                const analyzerInput = {
+                    fourPillars: {
+                        year:  { gan: fp.year?.stem || fp.year?.gan, zhi: fp.year?.branch || fp.year?.zhi },
+                        month: { gan: fp.month?.stem || fp.month?.gan, zhi: fp.month?.branch || fp.month?.zhi },
+                        day:   { gan: fp.day?.stem || fp.day?.gan, zhi: fp.day?.branch || fp.day?.zhi },
+                        hour:  { gan: fp.hour?.stem || fp.hour?.gan, zhi: fp.hour?.branch || fp.hour?.zhi }
+                    },
+                    dayMaster: n.dayMaster || (fp.day && (fp.day.stem || fp.day.gan)),
+                    elementStrength: fullBaziData.elementStrength || { bodyStrength: n.strengthText },
+                    favorableElements: fullBaziData.favorableElements || { favorable: n.favorable || [], unfavorable: n.unfavorable || [] },
+                    tenGods: {
+                        yearStem:  (tg.year && (tg.year.stem || tg.year.gan)) || tg.yearStem,
+                        monthStem: (tg.month && (tg.month.stem || tg.month.gan)) || tg.monthStem,
+                        dayStem:   (tg.day && (tg.day.stem || tg.day.gan)) || tg.dayStem,
+                        hourStem:  (tg.hour && (tg.hour.stem || tg.hour.gan)) || tg.hourStem,
+                        yearBranch:  Array.isArray(tg.year?.branch) ? tg.year.branch : (tg.yearBranch || []),
+                        monthBranch: Array.isArray(tg.month?.branch) ? tg.month.branch : (tg.monthBranch || []),
+                        dayBranch:   Array.isArray(tg.day?.branch) ? tg.day.branch : (tg.dayBranch || []),
+                        hourBranch:  Array.isArray(tg.hour?.branch) ? tg.hour.branch : (tg.hourBranch || [])
+                    }
+                };
+                const analyzer = new BaziAnalyzer(analyzerInput);
                 const personality = analyzer.analyzePersonality();
                 const career = analyzer.analyzeCareer();
                 const wealth = analyzer.analyzeWealth();

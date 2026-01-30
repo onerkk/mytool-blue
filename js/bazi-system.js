@@ -1181,14 +1181,107 @@ class BaziAnalyzer {
         return list;
     }
 
-    /** 依日主五行＋身強弱＋十神分佈，產出個性描述與優缺點 */
+    /** 僅天干透出之十神（年月時柱天干，不含日主）— 用於「隱藏面具」分析 */
+    _getStemTenGodsOnly() {
+        const d = this.baziData || {};
+        const tg = d.tenGods || {};
+        const list = [];
+        const push = (name) => { if (name && name !== '日主' && name !== '未知') list.push(name); };
+        push(tg.yearStem);
+        push(tg.monthStem);
+        push(tg.hourStem);
+        return list;
+    }
+
+    /** 僅地支藏干對應之十神 — 用於「隱藏面具」分析 */
+    _getBranchTenGodsOnly() {
+        const d = this.baziData || {};
+        const tg = d.tenGods || {};
+        const list = [];
+        const push = (name) => { if (name && name !== '日主' && name !== '未知') list.push(name); };
+        (tg.yearBranch && (Array.isArray(tg.yearBranch) ? tg.yearBranch : [tg.yearBranch])).forEach(push);
+        (tg.monthBranch && (Array.isArray(tg.monthBranch) ? tg.monthBranch : [tg.monthBranch])).forEach(push);
+        (tg.dayBranch && (Array.isArray(tg.dayBranch) ? tg.dayBranch : [tg.dayBranch])).forEach(push);
+        (tg.hourBranch && (Array.isArray(tg.hourBranch) ? tg.hourBranch : [tg.hourBranch])).forEach(push);
+        return list;
+    }
+
+    /**
+     * 第一步：全局解碼——定盤與生態分析（精微版）
+     * 能量氣象：寒暖燥濕、清濁成敗；五行勢力圖：最旺/最弱、順用/逆用。
+     */
+    decodeGlobalEcology() {
+        const d = this.baziData || {};
+        const fp = d.fourPillars || {};
+        const es = (d.elementStrength && d.elementStrength.strengths) ? d.elementStrength.strengths : {};
+        const bodyStrength = (d.elementStrength && d.elementStrength.bodyStrength) || '';
+        const dayGan = fp.day?.gan || d.dayMaster || '';
+        const monthZhi = fp.month?.zhi || '';
+        const map = { '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水' };
+        const dayEl = dayGan ? (map[dayGan] || '') : '';
+        const season = monthZhi ? (MONTH_ZHI_TO_SEASON[monthZhi] || '') : '';
+
+        const allEl = ['金', '木', '水', '火', '土'];
+        const sorted = [...allEl].sort((a, b) => (es[b] || 0) - (es[a] || 0));
+        const strongest = sorted[0] || '';
+        const weakest = sorted[sorted.length - 1] || '';
+        const total = allEl.reduce((sum, el) => sum + (es[el] || 0), 0) || 1;
+
+        let energyClimate = { type: '中和', description: '命局寒暖燥濕較為均衡。' };
+        if (season === '冬' && dayEl !== '火') {
+            const waterScore = es['水'] || 0;
+            energyClimate = waterScore >= 4 ? { type: '寒', description: '全局水寒，心性底色偏靜、多思，喜靜不喜動。' } : { type: '偏寒', description: '冬生調候為先，心性較內斂。' };
+        } else if (season === '夏' && dayEl !== '水') {
+            const fireScore = es['火'] || 0;
+            energyClimate = fireScore >= 4 ? { type: '燥', description: '木火炎燥，性急智敏，行動力強。' } : { type: '偏燥', description: '夏生需潤，心性較外顯。' };
+        }
+
+        const chongMap = { '子':'午','午':'子','丑':'未','未':'丑','寅':'申','申':'寅','卯':'酉','酉':'卯','辰':'戌','戌':'辰','巳':'亥','亥':'巳' };
+        const zhiList = [fp.year?.zhi, fp.month?.zhi, fp.day?.zhi, fp.hour?.zhi].filter(Boolean);
+        let hasChong = false;
+        for (let i = 0; i < zhiList.length; i++) {
+            const other = chongMap[zhiList[i]];
+            if (other && zhiList.some(z => z === other)) { hasChong = true; break; }
+        }
+        const clarity = hasChong ? { type: '濁', description: '命局有沖戰，心雜事繁，需在矛盾中找平衡。' } : { type: '清', description: '干支組合純而不雜，性專一、易成事。' };
+
+        const tenGodsList = this._collectTenGodsNames();
+        const count = (name) => tenGodsList.filter(x => x === name).length;
+        const shiShang = count('食神') + count('傷官');
+        const caiXing = count('正財') + count('偏財');
+        const guanSha = count('正官') + count('七殺');
+        const biJie = count('比肩') + count('劫財');
+        const yinXing = count('正印') + count('偏印');
+        const shunYong = (shiShang >= 2 || caiXing >= 2 || guanSha >= 2) && (biJie + yinXing <= 2);
+        const niYong = (biJie >= 2 || yinXing >= 2) && (shiShang + caiXing + guanSha <= 2);
+        let patternNote = '旺神順用（食傷、財、官）利名利的發揮；逆用（比劫、梟印）則需制化得宜。';
+        if (shunYong) patternNote = '命局旺神偏順用（食傷、財、官），格局易發揮。';
+        if (niYong) patternNote = '命局旺神偏逆用（比劫、梟印），需制化得宜方成格。';
+
+        return {
+            energyClimate,
+            clarity,
+            fiveElementsMap: {
+                strongest,
+                weakest,
+                distribution: es,
+                shunYongNiYong: shunYong ? '順用' : (niYong ? '逆用' : '混合'),
+                description: `五行最旺為${strongest}，最弱／缺失為${weakest}。${patternNote}`
+            }
+        };
+    }
+
+    /** 依日主五行＋月令氣象＋十神制化（精微版五維度）產出個性描述與優缺點 */
     analyzePersonality() {
         const d = this.baziData || {};
-        const dayGan = d.fourPillars?.day?.gan || d.dayMaster || (d.day && (d.day.gan || d.day.stem)) || '';
+        const fp = d.fourPillars || {};
+        const dayGan = fp.day?.gan || d.dayMaster || (d.day && (d.day.gan || d.day.stem)) || '';
+        const monthZhi = fp.month?.zhi || '';
         const map = { '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水' };
         const yinYangMap = { '甲':'陽','乙':'陰','丙':'陽','丁':'陰','戊':'陽','己':'陰','庚':'陽','辛':'陰','壬':'陽','癸':'陰' };
         const element = dayGan ? (map[dayGan] || '') : '';
         const yinYang = dayGan ? (yinYangMap[dayGan] || '') : '';
+        const season = monthZhi ? (MONTH_ZHI_TO_SEASON[monthZhi] || '') : '';
 
         const bodyStrength = (d.elementStrength && d.elementStrength.bodyStrength) || '';
         const isStrong = /強|中和/.test(bodyStrength);
@@ -1203,46 +1296,83 @@ class BaziAnalyzer {
         const caiXing = count('正財') + count('偏財');
         const guanSha = count('正官') + count('七殺');
 
-        const parts = [];
-        parts.push(`${dayGan || '—'}${element || '—'}日主`);
-        if (bodyStrength) parts.push(bodyStrength);
-        if (fav.length) parts.push(`喜用${fav.join('、')}`);
-        if (unfav.length) parts.push(`忌${unfav.join('、')}`);
-        const personality = `以日主五行與月令為核心，配合十神結構：${parts.join('，')}。以下優缺點依命盤十神分佈推導。`;
+        // 1. 心性本源：日主五行 + 月令氣象（秋月庚金 vs 春木等）
+        const heartNatureTable = {
+            '木': { '春': '寅卯辰木旺得令，正直仁德、上進有主見；若在秋金克則帶煞氣。', '夏': '木生火泄，熱情外顯、行動力強。', '秋': '金克木，韌性與壓力並存。', '冬': '水寒生木，內斂而智。' },
+            '火': { '春': '木生火，明朗有感染力。', '夏': '火炎得令，性急智敏、行動力強。', '秋': '金旺火囚，收斂而仍具光芒。', '冬': '調候為貴，心性需暖。' },
+            '土': { '春': '木克土，穩重而需突破。', '夏': '火生土，包容守信、務實。', '秋': '金泄土，條理分明。', '冬': '水寒土凍，需火調候。' },
+            '金': { '春': '金囚，較收斂。', '夏': '金死，壓力大需印化。', '秋': '庚辛金得令，帶煞的刀劍—剛毅果決、原則強。', '冬': '金生水，智慧而冷靜。' },
+            '水': { '春': '水休，靈動善變。', '夏': '癸水如及時雨—靈動機敏、善應變。', '秋': '金生水，智慧條理。', '冬': '水寒得令，喜靜多思、內斂。' }
+        };
+        const heartNature = (heartNatureTable[element] && heartNatureTable[element][season]) ? heartNatureTable[element][season] : `${dayGan}${element}日主，心性以${element}行特質為本，月令${season}季影響氣象。`;
+
+        // 2. 思維模式：印星與食傷的制化關係
+        let thinkingMode = '';
+        if (yinXing >= 2 && shiShang >= 1) thinkingMode = '食傷配印：才華有學識支撐，能系統表達，易成專家。';
+        else if (yinXing >= 2 && shiShang < 1) thinkingMode = '印旺食傷弱：思想受傳統或長輩影響較深，穩重但創意易被壓抑。';
+        else if (yinXing < 1 && shiShang >= 2) thinkingMode = '無印食傷旺：思維天馬行空、表達力強，但缺乏沉澱易流於浮誇，宜多讀書沉潛。';
+        else if (yinXing >= 1 && shiShang >= 1) thinkingMode = '印與食傷並存：學習與創意可並進，需平衡規矩與自由。';
+        else thinkingMode = '印食傷配置均衡，思維依大運流年與環境而定。';
+
+        // 3. 行為驅力：官殺與日主的親和度
+        let behaviorDrive = '';
+        if (guanSha >= 2 && yinXing >= 1) behaviorDrive = '官印相生：壓力轉化為責任與地位，行事有章法、自律。';
+        else if (guanSha >= 2 && biJie >= 1) behaviorDrive = '殺刃兩停：以魄力與勇氣對抗挑戰，常在危機中崛起。';
+        else if (guanSha >= 2 && yinXing < 1 && biJie < 1) behaviorDrive = '官殺旺而無化：內心規則與叛逆並存，行為易進退失據，宜借印或食傷化泄。';
+        else if (guanSha >= 1) behaviorDrive = '官殺有現：責任感重，宜將壓力化為目標。';
+        else behaviorDrive = '官殺不顯：較不受制於外在規矩，自由度高，宜自訂節奏。';
+
+        // 4. 情感與價值觀：財星與比劫的配置
+        let emotionValues = '';
+        if (caiXing >= 1 && biJie >= 2) emotionValues = '比劫旺而財有現：重情義輕財物，易為朋友所累，宜設邊界。';
+        else if (caiXing >= 2 && biJie <= 1) emotionValues = '財透比劫藏或弱：外表大方、理財有意識，內心會計較得失。';
+        else if (caiXing >= 1 && yinXing >= 2) emotionValues = '財星與印星並存：易將金錢投入學習、精神追求或房產。';
+        else if (biJie >= 2 && caiXing < 1) emotionValues = '比劫旺無財：重義氣、輕物質，合伙或借貸須謹慎。';
+        else emotionValues = '財與比劫配置均衡，價值觀依情境而顯。';
+
+        // 5. 隱藏面具：天干透出 vs 地支藏干（外在 vs 內在）
+        const stemGods = this._getStemTenGodsOnly();
+        const branchGods = this._getBranchTenGodsOnly();
+        const stemCount = (name) => stemGods.filter(x => x === name).length;
+        const branchCount = (name) => branchGods.filter(x => x === name).length;
+        const hasGuanStem = stemCount('正官') >= 1;
+        const hasShaBranch = branchCount('七殺') >= 1 || branchCount('傷官') >= 1;
+        let hiddenMask = '';
+        if (hasGuanStem && hasShaBranch) hiddenMask = '天干透正官（外在循規蹈矩），地支藏七殺或傷官（內心叛逆不羈），是典型的「雙重人格」配置—表面守規、內在敢衝。';
+        else if (stemGods.length && branchGods.length) hiddenMask = '天干為外在表現，地支藏干為內在真實；可對照十神差異以理解表裡張力。';
+        else hiddenMask = '天干地支十神配置均衡，表裡較一致。';
 
         let strengths = [];
         let weaknesses = [];
-        if (yinXing >= 2) {
-            strengths.push('學習力強', '有貴人緣', '穩重');
-            weaknesses.push('易依賴', '較被動');
-        }
-        if (biJie >= 2) {
-            strengths.push('主見強', '獨立', '重義氣');
-            weaknesses.push('較固執', '不善妥協');
-        }
-        if (shiShang >= 2) {
-            strengths.push('創意佳', '表達力好', '有才藝');
-            weaknesses.push('易任性', '耐性不足');
-        }
-        if (caiXing >= 2) {
-            strengths.push('務實', '理財意識', '執行力');
-            weaknesses.push('重利', '易緊張得失');
-        }
-        if (guanSha >= 2) {
-            strengths.push('責任感重', '自律', '有領導潛力');
-            weaknesses.push('壓力大', '易自我要求高');
-        }
-        if (!isStrong && (caiXing >= 2 || guanSha >= 2)) {
-            weaknesses.push('身弱任財官較累，宜量力而為');
-        }
-        if (isStrong && (yinXing >= 2 || biJie >= 2)) {
-            weaknesses.push('身強印比多時宜多輸出（食傷、財），避免懶散');
-        }
+        if (yinXing >= 2) { strengths.push('學習力強', '有貴人緣', '穩重'); weaknesses.push('易依賴', '較被動'); }
+        if (yinXing >= 1 && yinXing < 2) { strengths.push('有貴人緣'); if (!weaknesses.includes('較被動')) weaknesses.push('較被動'); }
+        if (biJie >= 2) { strengths.push('主見強', '獨立', '重義氣'); weaknesses.push('較固執', '不善妥協'); }
+        if (biJie >= 1 && biJie < 2) { strengths.push('獨立'); if (!weaknesses.includes('較固執')) weaknesses.push('較固執'); }
+        if (shiShang >= 2) { strengths.push('創意佳', '表達力好', '有才藝'); weaknesses.push('易任性', '耐性不足'); }
+        if (shiShang >= 1 && shiShang < 2) { strengths.push('表達力好'); if (!weaknesses.includes('耐性不足')) weaknesses.push('耐性不足'); }
+        if (caiXing >= 2) { strengths.push('務實', '理財意識', '執行力'); weaknesses.push('重利', '易緊張得失'); }
+        if (caiXing >= 1 && caiXing < 2) { strengths.push('務實'); if (!weaknesses.includes('易緊張得失')) weaknesses.push('易緊張得失'); }
+        if (guanSha >= 2) { strengths.push('責任感重', '自律', '有領導潛力'); weaknesses.push('壓力大', '易自我要求高'); }
+        if (guanSha >= 1 && guanSha < 2) { strengths.push('責任感重'); if (!weaknesses.includes('壓力大')) weaknesses.push('壓力大'); }
+        if (!isStrong && (caiXing >= 2 || guanSha >= 2)) weaknesses.push('身弱任財官較累，宜量力而為');
+        if (isStrong && (yinXing >= 2 || biJie >= 2)) weaknesses.push('身強印比多時宜多輸出（食傷、財），避免懶散');
 
-        const defaultStrengths = ['適應力', '韌性', '責任感'];
-        const defaultWeaknesses = ['壓力累積', '過度謹慎'];
-        strengths = strengths.length ? strengths.slice(0, 6) : defaultStrengths;
-        weaknesses = weaknesses.length ? weaknesses.slice(0, 5) : defaultWeaknesses;
+        const elementTraits = {
+            '木': { strengths: ['上進', '正直', '仁德', '有主見'], weaknesses: ['固執', '易衝動'] },
+            '火': { strengths: ['熱情', '行動力強', '明朗', '感染力'], weaknesses: ['急躁', '耐性不足'] },
+            '土': { strengths: ['穩重', '包容', '守信', '務實'], weaknesses: ['較被動', '易猶豫'] },
+            '金': { strengths: ['果斷', '原則強', '條理分明', '重義'], weaknesses: ['較剛硬', '易挑剔'] },
+            '水': { strengths: ['智慧', '靈活', '善溝通', '適應力強'], weaknesses: ['易變動', '依賴心'] }
+        };
+        const dayTraits = elementTraits[element] || { strengths: ['適應力', '韌性'], weaknesses: ['壓力累積'] };
+        if (strengths.length < 3) { (dayTraits.strengths || []).slice(0, 4 - strengths.length).forEach(s => { if (s && !strengths.includes(s)) strengths.push(s); }); }
+        if (weaknesses.length < 2) { (dayTraits.weaknesses || []).slice(0, 3 - weaknesses.length).forEach(w => { if (w && !weaknesses.includes(w)) weaknesses.push(w); }); }
+        const defaultByElement = { '木': { strengths: ['上進', '正直', '韌性', '責任感'], weaknesses: ['固執', '壓力累積'] }, '火': { strengths: ['熱情', '行動力', '明朗', '責任感'], weaknesses: ['急躁', '過度謹慎'] }, '土': { strengths: ['穩重', '包容', '守信', '責任感'], weaknesses: ['較被動', '過度謹慎'] }, '金': { strengths: ['果斷', '原則強', '韌性', '責任感'], weaknesses: ['較剛硬', '壓力累積'] }, '水': { strengths: ['智慧', '靈活', '適應力', '責任感'], weaknesses: ['易變動', '過度謹慎'] } };
+        const defaultSet = defaultByElement[element] || { strengths: ['適應力', '韌性', '責任感'], weaknesses: ['壓力累積', '過度謹慎'] };
+        strengths = strengths.length ? strengths.slice(0, 6) : defaultSet.strengths;
+        weaknesses = weaknesses.length ? weaknesses.slice(0, 5) : defaultSet.weaknesses;
+
+        const personality = `【心性本源】${heartNature} 【思維】${thinkingMode} 【行為驅力】${behaviorDrive} 【情感價值觀】${emotionValues} 【表裡】${hiddenMask}`;
 
         return {
             dayMaster: dayGan || '—',
@@ -1250,14 +1380,21 @@ class BaziAnalyzer {
             yinYang: yinYang || '—',
             personality,
             strengths,
-            weaknesses
+            weaknesses,
+            heartNature,
+            thinkingMode,
+            behaviorDrive,
+            emotionValues,
+            hiddenMask
         };
     }
 
-    /** 依喜用神五行、十神、身強弱推導適合行業與事業建議 */
+    /** 事業分析（精微版四維度）：天賦領域、成就舞台、行業軌跡、事業節奏 */
     analyzeCareer() {
         const d = this.baziData || {};
-        const dayGan = d.fourPillars?.day?.gan || d.dayMaster || (d.day && (d.day.gan || d.day.stem)) || '';
+        const fp = d.fourPillars || {};
+        const tg = d.tenGods || {};
+        const dayGan = fp.day?.gan || d.dayMaster || (d.day && (d.day.gan || d.day.stem)) || '';
         const map = { '甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水' };
         const dayEl = dayGan ? (map[dayGan] || '') : '';
         const bodyStrength = (d.elementStrength && d.elementStrength.bodyStrength) || '';
@@ -1266,9 +1403,30 @@ class BaziAnalyzer {
         const tenGodsList = this._collectTenGodsNames();
         const count = (name) => tenGodsList.filter(x => x === name).length;
         const caiXing = count('正財') + count('偏財');
-        const guanSha = count('正官') + count('七殺');
+        const guanZheng = count('正官');
+        const guanSha = count('七殺');
+        const yinXing = count('正印') + count('偏印');
         const shiShang = count('食神') + count('傷官');
 
+        // 1. 天賦領域：食傷與祿神的方位（月柱=家族傳承，時柱=晚年/學生/作品）
+        let talentField = '';
+        const monthHasShiShang = (tg.monthStem && (tg.monthStem === '食神' || tg.monthStem === '傷官')) || (Array.isArray(tg.monthBranch) && tg.monthBranch.some(x => x === '食神' || x === '傷官'));
+        const hourHasShiShang = (tg.hourStem && (tg.hourStem === '食神' || tg.hourStem === '傷官')) || (Array.isArray(tg.hourBranch) && tg.hourBranch.some(x => x === '食神' || x === '傷官'));
+        if (monthHasShiShang && shiShang >= 1) talentField = '食傷在月柱，家族常有技藝或專業傳承，自我認知與事業結合。';
+        else if (hourHasShiShang && shiShang >= 1) talentField = '食傷在時柱，晚年技藝精湛、或靠學生、作品、口碑成名。';
+        else if (shiShang >= 2) talentField = '食傷旺，天賦在創意、技術、表達與身體力行（祿神），宜選能發揮才華的領域。';
+        else talentField = '天賦領域需結合大運流年與現實選擇，可從喜用神五行對應行業著手。';
+
+        // 2. 成就舞台：官殺與印星的虛實（虛官=名聲虛職，實殺=實權壓力；印為喜=大型平台）
+        let achievementStage = '';
+        const guanTotal = guanZheng + guanSha;
+        if (guanTotal >= 2 && yinXing >= 1) achievementStage = '官殺有印化：壓力可轉為責任與地位，最佳舞台為大型平台、機構、國企，能借力。';
+        else if (guanZheng >= 1 && guanSha < 1) achievementStage = '正官透干：有好名聲、正職、社會評價；宜穩健晉升。';
+        else if (guanSha >= 1) achievementStage = '七殺有現：易有實權或硬性指標壓力，適合需魄力的舞台。';
+        else if (yinXing >= 2 && fav.indexOf('火') >= 0) achievementStage = '印星為喜貼身：最佳舞台為教育、文化、公部門或大型企業，能借平台發揮。';
+        else achievementStage = '成就舞台依身強弱與大運而定：身強可主動開創，身弱宜借力與專業。';
+
+        // 3. 行業軌跡：十神組合的象法拓展（庚金七殺→軍警/外科/風控等）
         const careerByElement = {
             '木': ['教育', '文化', '出版', '設計', '園藝', '醫療', '環保', '服飾'],
             '火': ['傳媒', '能源', '電子', '餐飲', '演藝', '行銷', '公關', '照明'],
@@ -1276,29 +1434,29 @@ class BaziAnalyzer {
             '金': ['金融', '法律', '管理', '軍警', '機械', '珠寶', '會計', '審計'],
             '水': ['貿易', '物流', '傳播', '旅遊', '諮詢', '保險', '網路', '冷飲']
         };
-
+        let industryTrajectory = '';
+        if (dayGan === '庚' && guanSha >= 1) industryTrajectory = '庚金七殺：象法可指軍警、外科醫生、金融風控、精密技術—克制的藝術。';
+        else if (dayGan === '壬' && yinXing >= 1) industryTrajectory = '壬水偏印：象法可指玄學、心理諮詢、跨境貿易、流動性資訊產業。';
+        else if (shiShang >= 2) industryTrajectory = '食傷旺：創意、技術、演藝、教育、顧問、設計類。';
+        else if (caiXing >= 2) industryTrajectory = '財星旺：經商、金融、銷售、資源整合。';
+        else industryTrajectory = '行業軌跡可依喜用神五行對應：' + (fav[0] ? careerByElement[fav[0]]?.slice(0, 4).join('、') : '木火土金水各類') + '。';
         let suitableCareers = [];
         const primaryFav = fav[0] || dayEl;
         suitableCareers = careerByElement[primaryFav] || careerByElement['土'];
-        if (fav[1]) {
-            const second = careerByElement[fav[1]] || [];
-            suitableCareers = [...new Set([...suitableCareers, ...second])].slice(0, 10);
-        }
+        if (fav[1]) { const second = careerByElement[fav[1]] || []; suitableCareers = [...new Set([...suitableCareers, ...second])].slice(0, 10); }
 
-        let careerAdvice = '';
+        // 4. 事業節奏：大運對原局的關鍵解鎖（原局身弱/食傷被印→大運助身或財破印為「解凍」）
+        let careerRhythm = '';
+        if (!isStrong && (caiXing >= 2 || guanTotal >= 2)) careerRhythm = '原局財官旺身弱：早年大運助身則少年得志，中年才助身則大器晚成；宜把握幫身大運衝刺。';
+        else if (yinXing >= 2 && shiShang >= 1) careerRhythm = '原局食傷被印星：大運逢財星破印時，才華得施展，是為「解凍」之運。';
+        else if (isStrong) careerRhythm = '身強可任財官：事業節奏宜主動開創，大運走喜用（克泄耗）時更上一層。';
+        else careerRhythm = '事業節奏須結合大運流年，原局為劇本、大運為章節、流年為場景。';
+
+        let careerAdvice = `${talentField} ${achievementStage} ${industryTrajectory} ${careerRhythm}`;
         if (dayEl) {
-            if (!isStrong) {
-                careerAdvice = `${dayGan}${dayEl}日主身弱，不適合高壓、高度競爭的工作。宜從事需要專業與耐心、能發揮${dayEl}行特質的行業，或與喜用神「${(fav.join('、') || '—')}」相關的領域。`;
-            } else {
-                careerAdvice = `${dayGan}${dayEl}日主身強，可任財官。適合主動開創、管理或需決策的職務。可多發揮喜用神「${(fav.join('、') || '—')}」所對應的領域。`;
-            }
-            if (guanSha >= 2) careerAdvice += ' 命盤官殺星明顯，利管理、公職或紀律性工作。';
-            if (caiXing >= 2) careerAdvice += ' 財星多，具經商、理財潛力，宜注意風險控管。';
-            if (shiShang >= 2) careerAdvice += ' 食傷旺，利創意、技術、表達類工作。';
-        } else {
-            careerAdvice = '請先完成八字計算，再依喜用神與十神分佈檢視適合行業。';
+            if (!isStrong) careerAdvice = `${dayGan}${dayEl}日主身弱，不宜高壓競爭。宜專業與耐心、喜用「${(fav.join('、') || '—')}」。` + careerAdvice;
+            else careerAdvice = `${dayGan}${dayEl}日主身強，可任財官。喜用「${(fav.join('、') || '—')}」。` + careerAdvice;
         }
-
         const wealth = this.analyzeWealth();
         const wealthStrength = (wealth && typeof wealth.wealthStrength === 'number') ? wealth.wealthStrength : 3;
 
@@ -1306,7 +1464,11 @@ class BaziAnalyzer {
             suitableCareers: suitableCareers.length ? suitableCareers : ['教育', '文化', '諮詢', '設計', '行政'],
             developmentDirection: careerAdvice,
             careerAdvice,
-            wealthStrength
+            wealthStrength,
+            talentField,
+            achievementStage,
+            industryTrajectory,
+            careerRhythm
         };
     }
 
@@ -1317,16 +1479,15 @@ class BaziAnalyzer {
     // ==========================================================
 
     /**
-     * 財運分析（四維度架構）：财富本源、得财方式、财富层次、得失时机。
-     * 參照：甲戌 庚午 戊寅 壬子 — 财星时干透壬、时支子根，子午冲财根不稳；食神生财；身强担财；金水运得财、火土年防破。
+     * 財運分析（精微版四維度）：財星質量、得財手段、財富周期、消費傾向。
      */
     analyzeWealth() {
         const d = this.baziData || {};
         const fp = d.fourPillars || {};
+        const tg = d.tenGods || {};
         const es = (d.elementStrength && d.elementStrength.strengths) ? d.elementStrength.strengths : null;
         const bodyStrength = (d.elementStrength && d.elementStrength.bodyStrength) || '';
         const fav = (d.favorableElements && d.favorableElements.favorable) || [];
-        const unfav = (d.favorableElements && d.favorableElements.unfavorable) || [];
         const dayMaster = (fp.day && fp.day.gan) ? fp.day.gan : (d.dayMaster || '');
         const tenGodsList = this._collectTenGodsNames();
         const count = (name) => tenGodsList.filter(x => x === name).length;
@@ -1338,48 +1499,69 @@ class BaziAnalyzer {
         let wealthMethod = '';
         let wealthLevel = '';
         let gainLossTiming = '';
+        let wealthQuality = '';
+        let wealthCycle = '';
+        let consumptionTendency = '';
 
         const dayEl = dayMaster ? (HEAVENLY_STEMS_DETAIL[dayMaster] && HEAVENLY_STEMS_DETAIL[dayMaster].element) : '';
         const caiXing = count('正財') + count('偏財');
         const shiShang = count('食神') + count('傷官');
         const guanSha = count('七殺') + count('正官');
+        const biJie = count('比肩') + count('劫財');
+        const yinXing = count('正印') + count('偏印');
         const isStrong = /強|中和|專旺/.test(bodyStrength);
         const chongMap = { '子': '午', '午': '子', '丑': '未', '未': '丑', '寅': '申', '申': '寅', '卯': '酉', '酉': '卯', '辰': '戌', '戌': '辰', '巳': '亥', '亥': '巳' };
+        const caiKu = ['辰', '戌', '丑', '未'];
+        const allZhi = [fp.year?.zhi, fp.month?.zhi, fp.day?.zhi, fp.hour?.zhi].filter(Boolean);
 
         try {
             const water = es ? (es['水'] || 0) : 0;
             const metal = es ? (es['金'] || 0) : 0;
-            const fire = es ? (es['火'] || 0) : 0;
-            const earth = es ? (es['土'] || 0) : 0;
-            const wood = es ? (es['木'] || 0) : 0;
 
+            // 1. 財星質量：財星的坐基與護衛（財坐比劫/官殺/被合）
+            let wealthQuality = '財星（' + (dayEl ? (WUXING_KE[dayEl] || '') : '') + '）在命盤中的強度與位置：';
             const hasCaiTou = (fp.year && (fp.year.gan === '壬' || fp.year.gan === '癸')) || (fp.month && (fp.month.gan === '壬' || fp.month.gan === '癸')) || (fp.day && (fp.day.gan === '壬' || fp.day.gan === '癸')) || (fp.hour && (fp.hour.gan === '壬' || fp.hour.gan === '癸'));
             const hourZhi = fp.hour && fp.hour.zhi;
-            const monthZhi = fp.month && fp.month.zhi;
-            const caiGenChong = (hourZhi && chongMap[hourZhi] && [fp.year?.zhi, fp.month?.zhi, fp.day?.zhi, fp.hour?.zhi].indexOf(chongMap[hourZhi]) >= 0);
+            const caiGenChong = (hourZhi && chongMap[hourZhi] && allZhi.indexOf(chongMap[hourZhi]) >= 0);
+            if (hasCaiTou) wealthQuality += '天干透財，有顯性財緣。';
+            if (hourZhi && (EARTHLY_BRANCHES_DETAIL[hourZhi] && (EARTHLY_BRANCHES_DETAIL[hourZhi].element === (WUXING_KE[dayEl] || '')))) wealthQuality += '時支為財根，財有根基。';
+            if (caiGenChong) { wealthQuality += '惟財根逢沖，財根不穩；錢財左手進右手出或合伙易破。'; keyPoints.push('財根逢沖，宜穩健理財、避免高槓桿。'); }
+            if (biJie >= 2 && caiXing >= 1) wealthQuality += '財坐比劫或比劫旺：錢財易左手進右手出，合伙須防破。';
+            if (guanSha >= 1 && caiXing >= 1) wealthQuality += '財坐官殺或官殺護財：錢財來自官方項目或壓力性行業，能存但賺得辛苦。';
+            if (!wealthQuality || wealthQuality.length < 60) wealthQuality += (water >= 6 ? '財星有氣，有源頭或根基。' : '財星力道一般，需大運流年引動。');
+            wealthSource = wealthQuality;
 
-            wealthSource = '財星（' + (dayEl ? (WUXING_KE[dayEl] || '') : '') + '）在命盤中的強度與位置：';
-            if (hasCaiTou) wealthSource += '天干透財，有顯性財緣。';
-            if (hourZhi && (EARTHLY_BRANCHES_DETAIL[hourZhi] && (EARTHLY_BRANCHES_DETAIL[hourZhi].element === (WUXING_KE[dayEl] || '')))) wealthSource += '時支為財根，財有根基。';
-            if (caiGenChong) { wealthSource += '惟財根逢沖（如子午沖），財根不穩，為人生財務波動的重要根源。'; keyPoints.push('財根逢沖，宜穩健理財、避免高槓桿。'); }
-            if (!wealthSource || wealthSource.length < 50) wealthSource += (water >= 6 ? '財星有氣，有源頭或根基。' : '財星力道一般，需大運流年引動。');
-
-            if (shiShang >= 1 && caiXing >= 1) wealthMethod = '食傷生財：憑專業技能、口才、創意策劃獲取財富，為核心路徑。';
+            // 2. 得財手段：生財路徑的十神組合
+            if (shiShang >= 1 && caiXing >= 1) wealthMethod = '傷官／食神生財：靠創新、專業、口才或創意策劃獲利；食神制殺生財可指頂尖工程、法律等解難獲利。';
+            else if (biJie >= 2 && caiXing >= 1) wealthMethod = '比劫奪財：體力勞動、團隊業績分紅或競爭性極強的銷售。';
             else if (caiXing >= 1) wealthMethod = '財星有現：得財多與工作、經營或理財相關。';
-            if (guanSha >= 1) wealthMethod += (wealthMethod ? ' ' : '') + '七殺攻身：亦可透過承擔管理、高壓行業（如法律、工程）得財。';
+            if (guanSha >= 1) {
+                if (isStrong) wealthMethod += (wealthMethod ? ' ' : '') + '七殺攻身：可透過管理、高壓行業（法律、工程）得財。';
+                else wealthMethod += (wealthMethod ? ' ' : '') + '七殺有現但身弱不宜強求高壓行業；大運助身時可適度考慮管理或專業型工作。';
+            }
             if (!wealthMethod) wealthMethod = '得財方式需結合大運流年與現實選擇。';
+
+            // 3. 財富周期：財庫（辰戌丑未）的開合
+            let wealthCycle = '';
+            const hasCaiKu = allZhi.some(z => caiKu.indexOf(z) >= 0);
+            if (hasCaiKu) wealthCycle = '原局有財庫（辰戌丑未）：善守財、理財觀念強；大運流年沖開財庫往往有爆發性收入，但也可能因沖導致破財；財庫逢合則財富被鎖住或轉為固定資產。';
+            else wealthCycle = '原局無明顯財庫，財富周期依大運流年與理財習慣而定。';
+            if (caiGenChong) wealthCycle += ' 命盤財根逢沖，流年再沖時須防大起大落。';
+
+            // 4. 消費傾向：財星所生所克的對象
+            let consumptionTendency = '';
+            if (guanSha >= 1 && caiXing >= 1) consumptionTendency = '財生官殺：易花錢買地位、名聲，或為配偶／子女花費。';
+            if (yinXing >= 1 && caiXing >= 1) consumptionTendency += (consumptionTendency ? ' ' : '') + '財破印星：易花錢學習、買房，或因物質損害名譽。';
+            if (!consumptionTendency) consumptionTendency = '消費傾向依十神配置，宜量入為出、預留喜用神五行開支。';
 
             if (isStrong && water >= 4) { wealthLevel = '身強能擔財，先天具備承載較大財富的格局，財富層次中上。'; wealthStrength = 4; wealthTrend = '可主動創造財機'; }
             else if (isStrong) { wealthLevel = '身強，足以勝任財星，惟財星需大運扶助方顯。'; wealthStrength = 3; wealthTrend = '穩健累積為主'; }
             else if (water >= 8) { wealthLevel = '身弱財旺，富屋貧人之象，求財辛苦，需行幫身運方能發財。'; wealthStrength = 2; wealthTrend = '財來多伴隨壓力'; keyPoints.push('身弱財旺，宜控槓桿、避免高風險投入。'); }
             else { wealthLevel = '身弱，財星不宜過重，宜穩健為上。'; wealthStrength = 3; wealthTrend = '穩健累積為主'; }
-            if (!wealthLevel) wealthLevel = '財富層次需結合身強弱與大運判斷。';
-
             const favWater = fav.indexOf('水') >= 0;
             const favMetal = fav.indexOf('金') >= 0;
             gainLossTiming = '得財時機：大運或流年走喜用神（' + (favWater ? '水' : '') + (favMetal ? (favWater ? '、金' : '金') : '') + '）旺時，財星得助，利積累。';
-            gainLossTiming += ' 破財風險：財根逢沖之年（如子午沖之馬年、鼠年）易有意外支出；比劫旺年（土旺或龍狗牛羊年）慎防合作、借貸耗財。';
-
+            gainLossTiming += ' 破財風險：財根逢沖之年易有意外支出；比劫旺年慎防合作、借貸耗財。';
             if (es) {
                 if (metal >= 12) keyPoints.push('金勢偏重，責任與約束多，財務需預留現金緩衝。');
                 if (water >= 10 && dayEl !== '水') keyPoints.push('水旺為印或財，利專業與口碑換取收入。');
@@ -1398,13 +1580,15 @@ class BaziAnalyzer {
             wealthSource: wealthSource || keyPoints.join(' '),
             wealthMethod: wealthMethod || '—',
             wealthLevel: wealthLevel || '—',
-            gainLossTiming: gainLossTiming || '—'
+            gainLossTiming: gainLossTiming || '—',
+            wealthQuality: wealthQuality || '',
+            wealthCycle: wealthCycle || '',
+            consumptionTendency: consumptionTendency || ''
         };
     }
 
     /**
-     * 桃花與婚姻分析（夫妻宮、配偶星、桃花星、婚姻穩定性）
-     * 架構：先看家宅（宮位），再觀來客（配偶星），後查宅基穩固與否（刑沖合會）。
+     * 感情婚姻分析（精微版四維度）：吸引力原型、關係模式、婚姻穩定性、婚緣時機。
      */
     analyzeRelationship() {
         const d = this.baziData || {};
@@ -1419,15 +1603,18 @@ class BaziAnalyzer {
         const tenGodsList = this._collectTenGodsNames();
         const count = (name) => tenGodsList.filter(x => x === name).length;
         const zhiToWu = (z) => (EARTHLY_BRANCHES_DETAIL && EARTHLY_BRANCHES_DETAIL[z]?.element) || '';
+        const dayBranchGods = Array.isArray(tg.dayBranch) ? tg.dayBranch : (tg.dayBranch ? [tg.dayBranch] : []);
 
         let relationshipStrength = 3;
         let advice = [];
         let spouseAnalysis = { presence: '未顯示' };
         let peachBlossom = { hasPeachBlossom: false, impact: '' };
         let marriageStability = { stability: '未顯示' };
+        let attractionPrototype = '';
+        let relationshipMode = '';
+        let marriageTiming = '';
 
         try {
-            // 配偶星：男命看財星，女命看官殺
             const caiZheng = count('正財');
             const caiPian = count('偏財');
             const guanZheng = count('正官');
@@ -1435,6 +1622,20 @@ class BaziAnalyzer {
             const biJie = count('比肩') + count('劫財');
             const caiXing = caiZheng + caiPian;
             const guanXing = guanZheng + guanSha;
+
+            // 1. 吸引力原型：配偶星與桃花星的特質（偏財/七殺 vs 正官/正財；桃花在劫財）
+            if (gender === 'male' || gender === '男') {
+                if (caiPian >= 1 && caiZheng < 1) attractionPrototype = '配偶星為偏財：易被特立獨行、有侵略性或神秘感的對象吸引。';
+                else if (caiZheng >= 1) attractionPrototype = '配偶星為正財：易被端莊、穩定、社會評價高的對象吸引。';
+                else if (caiXing >= 1) attractionPrototype = '財星有現，配偶緣分存在，吸引力依正偏財比例而偏穩定或多元。';
+                else attractionPrototype = '命盤財星不明顯，配偶緣多靠大運流年引動。';
+            } else {
+                if (guanSha >= 1 && guanZheng < 1) attractionPrototype = '配偶星為七殺：易被特立獨行、強勢或神秘感的對象吸引。';
+                else if (guanZheng >= 1) attractionPrototype = '配偶星為正官：易被端莊、穩定、有責任感、社會評價高的對象吸引。';
+                else if (guanXing >= 1) attractionPrototype = '官殺有現，配偶緣分存在，吸引力依正官/七殺比例而偏穩定或強勢。';
+                else attractionPrototype = '命盤官殺不明顯，配偶緣多靠大運流年引動。';
+            }
+            if (biJie >= 2) attractionPrototype += ' 桃花在劫財：魅力體現在豪爽、義氣上，易吸引哥們／閨蜜型伴侶。';
 
             if (gender === 'male' || gender === '男') {
                 if (caiZheng >= 1) spouseAnalysis.presence = `正財明顯（${caiZheng}處），易遇穩定、傳統型對象。`;
@@ -1448,7 +1649,14 @@ class BaziAnalyzer {
                 else spouseAnalysis.presence = '命盤官殺不明顯，配偶緣多靠大運流年引動。';
             }
 
-            // 桃花星：年支/日支所在三合局 → 桃花支（寅午戌→卯，申子辰→酉，巳酉丑→午，亥卯未→子）
+            // 2. 關係模式：夫妻宮與配偶星的互動（宮星同位／相克／配偶星入墓）
+            const dayBranchHasCai = dayBranchGods.some(x => x === '正財' || x === '偏財');
+            const dayBranchHasGuan = dayBranchGods.some(x => x === '正官' || x === '七殺');
+            if ((gender === 'male' || gender === '男') && dayBranchHasCai) relationshipMode = '宮星同位（妻星為財，日支亦見財星）：夫妻一體、觀念相近。';
+            else if ((gender !== 'male' && gender !== '男') && dayBranchHasGuan) relationshipMode = '宮星同位（夫星為官殺，日支亦見官殺）：夫妻一體、觀念相近。';
+            else if (dayBranch) relationshipMode = `夫妻宮為${dayBranch}，與配偶星之五行生克決定互動：宮星相克則常有觀點衝突、互相制約；宮星相生則較和諧。`;
+            marriageTiming = '婚緣時機：流年配偶星出現且合入夫妻宮或日主時為強烈結婚信號；流年沖動夫妻宮且解除原局不利組合時，易在變動中成婚；大運引動時柱（子女宮）時常奉子成婚。須結合大運流年具體排盤。';
+
             const peachMap = { '寅': '卯', '午': '卯', '戌': '卯', '申': '酉', '子': '酉', '辰': '酉', '巳': '午', '酉': '午', '丑': '午', '亥': '子', '卯': '子', '未': '子' };
             const refBranch = dayBranch || fp.year?.zhi || '';
             const peachZhi = refBranch ? peachMap[refBranch] : null;
@@ -1459,7 +1667,6 @@ class BaziAnalyzer {
                 peachBlossom.impact = hasPeachInPillar ? `桃花星${peachZhi}入命，異性緣佳、魅力較強。` : `桃花在${peachZhi}，大運流年逢之易有感情機緣。`;
             }
 
-            // 夫妻宮喜忌與婚姻穩定性（六沖：子午、丑未、寅申、卯酉、辰戌、巳亥）
             const chongMap = { '子': '午', '午': '子', '丑': '未', '未': '丑', '寅': '申', '申': '寅', '卯': '酉', '酉': '卯', '辰': '戌', '戌': '辰', '巳': '亥', '亥': '巳' };
             const dayBranchEl = zhiToWu(dayBranch);
             const dayBranchFav = dayBranchEl && fav.indexOf(dayBranchEl) >= 0;
@@ -1471,7 +1678,7 @@ class BaziAnalyzer {
                 else if (dayBranchUnfav) marriageStability.stability = `日支（夫妻宮）為忌神，配偶條件或關係易成壓力源，宜多溝通。`;
                 else marriageStability.stability = `夫妻宮為${dayBranch}，婚姻質量取決於大運流年與現實經營。`;
                 if (dayBranchChong) marriageStability.stability += ' 命盤有夫妻宮逢沖之象，關係易有變動，需用心維繫。';
-                if (biJie >= 2 && (caiXing >= 1 || guanXing >= 1)) marriageStability.stability += ' 比劫旺而配偶星有現，易有競爭者或共享人緣，宜明確邊界。';
+                if (biJie >= 2 && (caiXing >= 1 || guanXing >= 1)) marriageStability.stability += ' 比劫旺而配偶星有現，易有競爭者或配偶星被比劫合走之象，宜明確邊界。';
             }
 
             // 五行強度輔助（原有邏輯）
@@ -1506,7 +1713,10 @@ class BaziAnalyzer {
             summary: advice.join(' '),
             spouseAnalysis,
             peachBlossom,
-            marriageStability
+            marriageStability,
+            attractionPrototype: attractionPrototype || '',
+            relationshipMode: relationshipMode || '',
+            marriageTiming: marriageTiming || ''
         };
     }
 
@@ -1568,8 +1778,6 @@ class BaziUI {
         this.renderGodsGrid(result);
         this.renderFiveElements(result);
         this.renderShensha(result);
-        this.renderPersonality(result);
-        this.renderCareer(result);
         
         const pane = document.getElementById('bazi-pane');
         if(pane) pane.style.display = 'block';
@@ -1666,35 +1874,6 @@ class BaziUI {
         `;
     }
 
-    static renderPersonality(result) {
-        const container = document.getElementById('ui-personality');
-        if (!container) return;
-
-        const p = result.analyzer.analyzePersonality();
-        const strengths = p.strengths.join('、');
-        const weaknesses = p.weaknesses.join('、');
-
-        container.innerHTML = `
-            <p style="margin-bottom:8px;"><strong>優點：</strong> ${strengths}</p>
-            <p style="margin-bottom:8px;"><strong>缺點：</strong> ${weaknesses}</p>
-            <p style="color:#ccc; font-size:0.95rem;">${p.personality}</p>
-        `;
-    }
-
-    static renderCareer(result) {
-        const container = document.getElementById('ui-career');
-        if (!container) return;
-
-        const c = result.analyzer.analyzeCareer();
-        const jobs = c.suitableCareers.join('、');
-        const stars = '⭐'.repeat(c.wealthStrength || 3);
-
-        container.innerHTML = `
-            <p style="margin-bottom:8px;"><strong>適合行業：</strong> ${jobs}</p>
-            <p style="margin-bottom:8px;"><strong>財運強度：</strong> <span style="color:#FFD700">${stars}</span> (${c.wealthStrength}/5)</p>
-            <p style="color:#ccc; font-size:0.95rem;">${c.careerAdvice}</p>
-        `;
-    }
 }
 
 // ==========================================
