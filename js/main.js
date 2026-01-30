@@ -4411,33 +4411,54 @@ function setupMeihuaRandomDomGuard(){
           }
 
           const r = (this.analysisResults || {});
+          var dataForScoring = {
+            bazi: r.bazi || r.fullBaziData,
+            nameology: r.nameology,
+            meihua: r.meihua,
+            tarot: r.tarot
+          };
           let parts = [];
           let overall = 0;
           let breakdownWithReasons = [];
 
           if (typeof buildSummaryReport === 'function') {
             try {
-              const report = buildSummaryReport(r, question);
+              var report = buildSummaryReport(dataForScoring, question);
               if (report.breakdown && report.breakdown.length > 0) {
                 overall = report.overallPercent || 0;
                 breakdownWithReasons = report.breakdown;
-                parts = report.breakdown.map(function(b){ return { key: b.method, prob: b.score, reason: b.reason }; });
+                parts = report.breakdown.map(function(b){ return { key: b.method, prob: b.score, reason: b.reason || '' }; });
               }
             } catch (e) { if (window.console) console.warn('ScoringEngine buildSummaryReport failed, using fallback:', e); }
           }
 
           if (parts.length === 0) {
-            const tarotProb = calcTarotProb(r.tarot);
-            const meihuaProb = calcMeihuaProb(r.meihua);
-            const nameProb = calcNameProb(r.nameology);
-            const baziProb = calcBaziProb(r.bazi, question);
+            var tarotProb = calcTarotProb(r.tarot);
+            var meihuaProb = calcMeihuaProb(r.meihua);
+            var nameProb = calcNameProb(r.nameology);
+            var baziProb = calcBaziProb(r.bazi || r.fullBaziData, question);
             parts = [
               { key:'八字', prob:baziProb },
               { key:'姓名學', prob:nameProb },
               { key:'梅花易數', prob:meihuaProb },
               { key:'塔羅', prob:tarotProb }
-            ].filter(x => Number.isFinite(Number(x.prob)));
-            overall = parts.length ? clamp(Math.round(avg(parts.map(p=>p.prob))),0,100) : 0;
+            ].filter(function(x){ return Number.isFinite(Number(x.prob)); });
+            overall = parts.length ? clamp(Math.round(avg(parts.map(function(p){ return p.prob; }))),0,100) : 0;
+          }
+
+          /* Always populate breakdownWithReasons with dynamic reason from ScoringEngine when missing */
+          if (breakdownWithReasons.length === 0 && parts.length > 0 && typeof calculateCategoryScore === 'function' && typeof getCategory === 'function') {
+            try {
+              var cat = getCategory(question);
+              breakdownWithReasons = [];
+              parts.forEach(function(p){
+                var sys = (p.key === '八字') ? 'bazi' : (p.key === '姓名學') ? 'name' : (p.key === '梅花易數') ? 'meihua' : (p.key === '塔羅') ? 'tarot' : null;
+                var data = (sys === 'bazi') ? dataForScoring.bazi : (sys === 'name') ? dataForScoring.nameology : (sys === 'meihua') ? dataForScoring.meihua : (sys === 'tarot') ? dataForScoring.tarot : null;
+                var res = sys && data ? calculateCategoryScore(sys, data, cat) : { score: p.prob, reason: '' };
+                breakdownWithReasons.push({ method: p.key, score: res.score != null ? res.score : p.prob, reason: res.reason || '' });
+              });
+              parts = breakdownWithReasons.map(function(b){ return { key: b.method, prob: b.score, reason: b.reason || '' }; });
+            } catch (e) { if (window.console) console.warn('ScoringEngine fallback reason failed:', e); }
           }
 
           // 直接回答：改成總體機率

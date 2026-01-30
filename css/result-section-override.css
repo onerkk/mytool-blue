@@ -1,0 +1,79 @@
+/**
+ * NUCLEAR OVERRIDE: Section 5 (Analysis Results) full-width + no parent restriction
+ * Force Section 5 to match Bazi/Tarot edge-to-edge layout.
+ */
+#result-section.section.result-section,
+section#result-section {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  margin-left: calc(-50vw + 50%) !important;
+  margin-right: calc(-50vw + 50%) !important;
+  padding: 0 72px 150px 0 !important; /* left 0, right 72px FAB, bottom scroll */
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+#result-section .result-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Parent must not restrict Section 5 */
+.main-container {
+  max-width: 100vw !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+  .main-container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  #result-section.section.result-section,
+  section#result-section {
+    margin-left: -0.5rem !important;
+    margin-right: -0.5rem !important;
+    width: calc(100vw) !important;
+    max-width: 100vw !important;
+    padding-left: 0.5rem !important;
+    padding-right: 72px !important;
+    padding-bottom: 150px !important;
+  }
+}
+
+/* ===== Five Elements: percentage text must not wrap (higher specificity for result section) ===== */
+.element-value,
+.element-percentage-text {
+  min-width: 80px !important;
+  width: auto !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  text-align: right !important;
+  font-size: 0.85rem !important;
+  flex-shrink: 0 !important;
+}
+#result-section .analysis-card-wuxing .element-value,
+#result-section .analysis-card-wuxing .element-percentage-text {
+  min-width: 80px !important;
+  white-space: nowrap !important;
+  text-align: right !important;
+  font-size: 0.85rem !important;
+  flex-shrink: 0 !important;
+}
+#result-section .analysis-card-wuxing .element-row .progress-track,
+.element-row .progress-track,
+.element-progress-bar {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: calc(100% - 120px) !important;
+}
+.element-row {
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+}
