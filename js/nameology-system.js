@@ -21,10 +21,12 @@ const KANGXI_STROKE_COUNT = {
     // 五畫
     '弘': 5, '玉': 5, '石': 5, '田': 5, '立': 5, '正': 5, '世': 5, '民': 5, '永': 5, '可': 5,
     // 六畫
-    '林': 8, '安': 6, '宇': 6, '光': 6, '成': 7,
+    '安': 6, '宇': 6, '光': 6,
     // 七畫
+    '成': 7,
+    // 八畫（林：8画）
+    '林': 8,
     '志': 7, '孝': 7, '君': 7, '秀': 7, '利': 7,
-    // 八畫
     '明': 8, '承': 8, '孟': 8, '宗': 8, '東': 8,
     // 九畫
     '美': 9, '英': 9, '俊': 9, '冠': 9, '思': 9,
@@ -52,8 +54,8 @@ const KANGXI_STROKE_COUNT = {
     '寶': 20, '耀': 20, '馨': 20, '瀚': 20,
     // 二十一畫以上
     '權': 22, '驤': 27, '艷': 28,
-    // 常用姓氏
-    '陳': 11, '李': 7, '王': 4, '張': 11, '劉': 15, '黃': 12, '吳': 7, '周': 8,
+    // 常用姓氏（康熙字典繁體：陳 16 畫，部首「阝」以 7 畫計）
+    '陳': 16, '陈': 16, '李': 7, '王': 4, '張': 11, '劉': 15, '黃': 12, '吳': 7, '周': 8,
     '林': 8, '徐': 10, '朱': 6, '馬': 10, '胡': 9, '郭': 15, '何': 7, '高': 10,
     '羅': 19, '鄭': 14, '梁': 11, '謝': 17, '宋': 7, '唐': 10, '許': 11, '韓': 17,
     '馮': 12, '鄧': 19, '曹': 11, '彭': 12, '曾': 12, '蕭': 18, '田': 5, '董': 15,
@@ -137,16 +139,19 @@ const THREE_TALENTS_CONFIGURATION = {
     '火木火': { luck: '大吉', meaning: '成功運佳，向上發展容易達到目的。' },
     '火木土': { luck: '大吉', meaning: '基礎堅固，境遇安然，勤智交輝而能博得財利。' },
     '金金金': { luck: '大凶', meaning: '性情剛硬，易生衝突，孤獨無助，易遭失敗。' },
-    '金金木': { luck: '大凶', meaning: '雙金克木，易生災禍，家庭不和，事業挫折。' }
+    '金金木': { luck: '大凶', meaning: '雙金克木，易生災禍，家庭不和，事業挫折。' },
+    // 金火金：人格火克天格金、人格火克地格金，天格與地格比和，火煉雙金之局（戰克）
+    '金火金': { luck: '凶', meaning: '人格火克天、地雙金，主主動爭取、不畏壓力，但核心自我處於持續對抗與消耗中，壓力與潛力並存。' },
+    '金火火': { luck: '中吉', meaning: '天格金生水、人格火得地格火助，基礎與自我一致，唯天格金被火克，外緣略耗。' }
 };
 
-// 1.4 五行與數字對應
+// 1.4 五行與數字對應（三才架構純淨版：尾數 1,2→木 3,4→火 5,6,0→土 7,8→金 9→水）
 const FIVE_ELEMENTS_NUMBERS = {
     '木': [1, 2],
     '火': [3, 4],
-    '土': [5, 6],
+    '土': [5, 6, 0],
     '金': [7, 8],
-    '水': [9, 0]
+    '水': [9]
 };
 
 const NUMBERS_TO_ELEMENT = {
@@ -154,7 +159,7 @@ const NUMBERS_TO_ELEMENT = {
     3: '火', 4: '火',
     5: '土', 6: '土',
     7: '金', 8: '金',
-    9: '水', 0: '水'
+    9: '水', 0: '土'
 };
 
 // 1.5 生肖姓名學（部分示例）
@@ -220,8 +225,8 @@ class NameAnalysisSystem {
         this.zodiacData = ZODIAC_NAME_ANALYSIS;
     }
     
-    // 主分析函數
-    analyzeFullName(fullName, birthYear = null, gender = 'male') {
+    // 主分析函數（可選傳入 baziFavorable 以進行八字聯動驗證）
+    analyzeFullName(fullName, birthYear = null, gender = 'male', baziFavorable = null) {
         const nameParts = this.splitChineseName(fullName);
         if (!nameParts) {
             return { error: '姓名格式錯誤' };
@@ -243,7 +248,7 @@ class NameAnalysisSystem {
         const overallScore = this.calculateOverallScore(numerologyAnalysis, threeTalents, fiveElementsAnalysis, zodiacAnalysis);
         const suggestions = this.generateSuggestions(nameParts, fivePatterns, numerologyAnalysis, threeTalents, fiveElementsAnalysis, zodiacAnalysis, gender);
         
-        return {
+        const result = {
             basicInfo: {
                 fullName,
                 surname: nameParts.surname,
@@ -263,6 +268,17 @@ class NameAnalysisSystem {
             suggestions,
             timestamp: new Date().toISOString()
         };
+        
+        if (baziFavorable && (baziFavorable.favorable?.length || baziFavorable.unfavorable?.length)) {
+            result.baziLink = this.evaluateWithBazi(result, baziFavorable);
+            result.step4Completed = true;
+            result.analysisScope = '已完成第四步八字聯動，可裁定吉名／凶名／平名。';
+        } else {
+            result.step4Completed = false;
+            result.analysisScope = '僅完成第一至第三步（輸入校準、計算轉換、格局分析）。第四步（與八字聯動）為決定性步驟，請先輸入精準生辰並完成八字喜用神分析，方可裁定吉名／凶名／平名。';
+        }
+        result.disclaimer = '姓名吉凶的最終判斷必須與使用者的八字喜用神結合，請綜合判斷。本分析僅供參考，不取代專業命理建議。';
+        return result;
     }
     
     // 分割中文姓名
@@ -355,12 +371,12 @@ class NameAnalysisSystem {
             personalityNum = surnameStrokes[0] + (givenNameStrokes[0] || 0);
         }
         
-        // 地格
+        // 地格（標準五格：地格 = 名字全部筆畫和；單名 名字+1，雙名 兩字和，與主流姓名學理論一致）
         let earthNum;
         if (givenNameStrokes.length === 1) {
             earthNum = givenNameStrokes[0] + 1;
         } else if (givenNameStrokes.length >= 2) {
-            earthNum = givenNameStrokes[0] + givenNameStrokes[1];
+            earthNum = givenNameStrokes.reduce((a, b) => a + b, 0);
         } else {
             earthNum = 1;
         }
@@ -368,21 +384,21 @@ class NameAnalysisSystem {
         // 總格
         const totalNum = strokes.total;
         
-        // 外格
+        // 外格（基礎計算鐵律）：單姓單名 2；單姓雙名 名字末字+1；複姓單名 姓氏首字+1；複姓雙名 姓氏首字+名字末字
         let externalNum;
-        if (nameParts.isCompoundSurname && givenNameStrokes.length >= 2) {
-            externalNum = (surnameStrokes[1] + givenNameStrokes[1]) - (surnameStrokes[0] + givenNameStrokes[0]) + 1;
-        } else if (nameParts.isCompoundSurname && givenNameStrokes.length === 1) {
-            externalNum = (surnameStrokes[1] + 1) - (surnameStrokes[0] + givenNameStrokes[0]) + 1;
-        } else if (!nameParts.isCompoundSurname && givenNameStrokes.length >= 2) {
-            externalNum = (surnameStrokes[0] + givenNameStrokes[1]) - (surnameStrokes[0] + givenNameStrokes[0]) + 1;
-        } else {
+        const singleSurname = !nameParts.isCompoundSurname;
+        const singleGiven = givenNameStrokes.length <= 1;
+        if (singleSurname && singleGiven) {
             externalNum = 2;
+        } else if (singleSurname && !singleGiven) {
+            externalNum = (givenNameStrokes[givenNameStrokes.length - 1] || 0) + 1;
+        } else if (!singleSurname && singleGiven) {
+            externalNum = (surnameStrokes[0] || 0) + 1;
+        } else {
+            externalNum = (surnameStrokes[0] || 0) + (givenNameStrokes[givenNameStrokes.length - 1] || 0);
         }
-        
-        if (externalNum < 0) {
-            externalNum = Math.abs(externalNum) + 1;
-        }
+        if (externalNum < 1) externalNum = 1;
+        if (externalNum > 81) externalNum = (externalNum % 80) || 80;
         
         // 計算五行
         const heavenElement = this.numberToElement(heavenNum);
@@ -438,13 +454,114 @@ class NameAnalysisSystem {
         };
     }
     
-    // 數字轉五行
+    // 數字轉五行（尾數 0 歸土，符合三才架構純淨版）
     numberToElement(number) {
         const lastDigit = number % 10;
-        return NUMBERS_TO_ELEMENT[lastDigit] || '土';
+        return NUMBERS_TO_ELEMENT[lastDigit] !== undefined ? NUMBERS_TO_ELEMENT[lastDigit] : '土';
     }
     
-    // 計算三才配置
+    /**
+     * 三才生克關係類型（基礎計算鐵律／三才生克核心矩陣）
+     * 回傳類型：順生 | 逆生 | 比和 | 人格受生 | 人格克出 | 人格受克 | 戰克；並帶 sancaiLuck：吉 | 中吉 | 中平 | 凶
+     */
+    getSancaiRelationType(heaven, person, earth) {
+        const H = heaven, P = person, E = earth;
+        const heavenToPerson = this.isElementGenerating(H, P);
+        const personToEarth = this.isElementGenerating(P, E);
+        const earthToPerson = this.isElementGenerating(E, P);
+        const personToHeaven = this.isElementGenerating(P, H);
+        const heavenCkPerson = this.isElementOvercoming(H, P);
+        const personCkEarth = this.isElementOvercoming(P, E);
+        const earthCkPerson = this.isElementOvercoming(E, P);
+        const personCkHeaven = this.isElementOvercoming(P, H);
+        
+        if (H === P && P === E) {
+            return { type: '比和', sancaiLuck: '中吉', energyMode: '能量聚焦', trait: '能量聚焦，專一性強，易在特定領域深耕，但失之變通。' };
+        }
+        if (heavenToPerson && personToEarth) {
+            return { type: '順生', sancaiLuck: '吉', energyMode: '順生流通', trait: '氣運流通，內外和諧，順勢而成，多得助力。' };
+        }
+        if (earthToPerson && personToHeaven) {
+            return { type: '逆生', sancaiLuck: '中吉', energyMode: '反哺滋養', trait: '根基滋養，厚積薄發，內在能量反哺外在成就。' };
+        }
+        if ((heavenToPerson || earthToPerson) && !heavenCkPerson && !earthCkPerson && !personCkEarth && !personCkHeaven) {
+            return { type: '人格受生', sancaiLuck: '吉', energyMode: '得助', trait: '得助：外界（天）或基礎（地）生扶自身，易得機遇或內心安定。' };
+        }
+        if (heavenCkPerson || earthCkPerson) {
+            if (personCkEarth || personCkHeaven || heavenToPerson || personToEarth || earthToPerson || personToHeaven) {
+                return { type: '戰克', sancaiLuck: '凶', energyMode: '內在衝突', trait: '內在衝突：多線程應對矛盾，人生挑戰多，潛力與壓力並存。' };
+            }
+            return { type: '人格受克', sancaiLuck: '凶', energyMode: '受壓', trait: '受壓：外界壓力大或內心壓抑，需在克制中成長，事倍功半。' };
+        }
+        if (personCkEarth || personCkHeaven) {
+            if (heavenCkPerson || earthCkPerson) {
+                return { type: '戰克', sancaiLuck: '凶', energyMode: '內在衝突', trait: '內在衝突：多線程應對矛盾，人生挑戰多，潛力與壓力並存。' };
+            }
+            // 人克天且人克地（如金火金：火煉雙金）→ 戰克局，核心自我處於持續對抗與消耗中
+            if (personCkHeaven && personCkEarth && H === E) {
+                return { type: '戰克', sancaiLuck: '凶', energyMode: '內在衝突', trait: '人格克天、克地，天與地比和；火煉雙金之局，核心自我處於持續對抗與消耗中，壓力與潛力並存。' };
+            }
+            return { type: '人格克出', sancaiLuck: '中平', energyMode: '主導消耗', trait: '主導：主動克服環境壓力，具開拓性，但也意味著付出與消耗。' };
+        }
+        if (heavenToPerson || personToEarth || earthToPerson || personToHeaven) {
+            return { type: '人格受生', sancaiLuck: '吉', energyMode: '得助', trait: '得助：外界或基礎生扶自身，易得機遇或內心安定。' };
+        }
+        return { type: '戰克', sancaiLuck: '凶', energyMode: '內在衝突', trait: '內在衝突：多行相戰，潛力與壓力並存。' };
+    }
+    
+    /**
+     * 人格狀態：是否得生、得助、受壓（分析決策樹）
+     */
+    getPersonalityState(heaven, person, earth) {
+        const 得生 = this.isElementGenerating(heaven, person);
+        const 得助 = (earth === person);
+        const 受天克 = this.isElementOvercoming(heaven, person);
+        const 受地克 = this.isElementOvercoming(earth, person);
+        const 受壓 = 受天克 || 受地克;
+        return { 得生, 得助, 受壓, 受天克, 受地克 };
+    }
+    
+    /**
+     * 能量流通性：氣暢 / 氣聚 / 氣雜 / 氣滯（對應三才類型）
+     */
+    getEnergyFlow(sancaiType) {
+        const map = {
+            '順生': '氣暢',
+            '逆生': '氣聚',
+            '比和': '氣聚',
+            '人格受生': '氣暢',
+            '人格克出': '氣暢',
+            '人格受克': '氣滯',
+            '戰克': '氣雜'
+        };
+        return map[sancaiType] || '氣雜';
+    }
+    
+    /**
+     * 三維度評價：穩定性（地格支持度）、發展性（天格助力度）、協調性（三才流通度）
+     * 各維度 0–100，越高越好
+     */
+    getDimensionScores(heaven, person, earth, sancaiType, personalityState) {
+        let stability = 50;
+        let development = 50;
+        let coordination = 50;
+        if (personalityState.得助) stability += 25;
+        if (this.isElementGenerating(earth, person)) stability += 15;
+        if (this.isElementOvercoming(earth, person)) stability -= 20;
+        if (earth === person) stability += 10;
+        if (personalityState.得生) development += 25;
+        if (this.isElementGenerating(heaven, person)) development += 15;
+        if (this.isElementOvercoming(heaven, person)) development -= 20;
+        const flowScore = { '順生': 90, '逆生': 75, '比和': 70, '人格受生': 85, '人格克出': 55, '人格受克': 40, '戰克': 35 };
+        coordination = flowScore[sancaiType] !== undefined ? flowScore[sancaiType] : 50;
+        return {
+            穩定性: Math.max(0, Math.min(100, Math.round(stability))),
+            發展性: Math.max(0, Math.min(100, Math.round(development))),
+            協調性: Math.max(0, Math.min(100, Math.round(coordination)))
+        };
+    }
+    
+    // 計算三才配置（含三才架構純淨版：生克類型、人格狀態、能量流通、三維度評價、格位象徵）
     calculateThreeTalents(fivePatterns) {
         // 兼容新舊格式
         const heavenNum = fivePatterns.heaven?.number || fivePatterns.heaven;
@@ -456,11 +573,25 @@ class NameAnalysisSystem {
         const earthElement = fivePatterns.earth?.element || this.numberToElement(earthNum);
         
         const combination = heavenElement + personalityElement + earthElement;
-        const configuration = THREE_TALENTS_CONFIGURATION[combination] || 
-                            { luck: '中', meaning: '此三才配置較為特殊，需詳細分析' };
+        const configuration = THREE_TALENTS_CONFIGURATION[combination] || { luck: '中', meaning: '' };
         
         // 分析五行關係
         const elementRelations = this.analyzeElementRelations(heavenElement, personalityElement, earthElement);
+        
+        // 三才架構純淨版：生克類型、人格狀態、能量流通、三維度評價
+        const sancaiRelation = this.getSancaiRelationType(heavenElement, personalityElement, earthElement);
+        const personalityState = this.getPersonalityState(heavenElement, personalityElement, earthElement);
+        const energyFlow = this.getEnergyFlow(sancaiRelation.type);
+        const dimensionScores = this.getDimensionScores(heavenElement, personalityElement, earthElement, sancaiRelation.type, personalityState);
+        
+        // 格位功能與聯動分析（人格=我/主運，地格=基/前半生，天格=境/先天，總格=果/終局，外格=輔/社交）
+        const gridSymbolism = {
+            person: '人格（我）：一生主運、核心性格、中年運勢。具體作用：決策模式、自我認同、事業主導力。',
+            earth: '地格（基）：前半生基礎、家庭關係、內在安全感。具體作用：成長環境、與父母伴侶關係、內心穩定性。',
+            heaven: '天格（境）：先天條件、祖輩影響、外部大環境。具體作用：家族傳承、時代機遇、不可抗力。',
+            total: '總格（果）：終身總成、晚年境遇、最終導向。具體作用：人生整體高度、晚運吉凶、事業終極形態。',
+            outer: '外格（輔）：社交表現、副業機遇、突發變動。具體作用：人際關係處理、意外機緣、對外形象。'
+        };
         
         return {
             configuration: combination,
@@ -470,7 +601,16 @@ class NameAnalysisSystem {
             earthElement,
             luck: configuration.luck,
             description: configuration.meaning,
-            elementRelations
+            elementRelations,
+            // 三才生克核心矩陣擴展（向後相容）
+            sancaiType: sancaiRelation.type,
+            sancaiLuck: sancaiRelation.sancaiLuck,
+            energyMode: sancaiRelation.energyMode,
+            sancaiTrait: sancaiRelation.trait,
+            personalityState: { 得生: personalityState.得生, 得助: personalityState.得助, 受壓: personalityState.受壓 },
+            energyFlow,
+            dimensionScores,
+            gridSymbolism
         };
     }
     
@@ -521,6 +661,104 @@ class NameAnalysisSystem {
             '金': '木'
         };
         return overcomingMap[overcomer] === overcome;
+    }
+    
+    /**
+     * 與八字聯動法則（終極驗證）：戰略比對 + 綜合裁定
+     * @param {Object} nameologyResult - 姓名學分析結果（含 fivePatterns, threeTalents）
+     * @param {Object} baziFavorable - 八字喜忌 { favorable: ['木','水'], unfavorable: ['火','土'] }
+     * @returns {Object} { verdict: '上佳'|'可用'|'慎用'|'禁用', strategyNotes: string[], checks: Object }
+     */
+    evaluateWithBazi(nameologyResult, baziFavorable) {
+        const notes = [];
+        const checks = { personAsFav: false, totalAsFav: false, personAsUnfav: false, totalAsUnfav: false, sancaiSmooth: false, noStrongUnfav: false };
+        if (!nameologyResult || !baziFavorable) {
+            return { verdict: null, strategyNotes: ['未提供八字喜忌，無法進行姓名與八字聯動驗證。'], checks, baziLink: null };
+        }
+        const fav = Array.isArray(baziFavorable.favorable) ? baziFavorable.favorable : (baziFavorable.favorable ? [baziFavorable.favorable] : []);
+        const unfav = Array.isArray(baziFavorable.unfavorable) ? baziFavorable.unfavorable : (baziFavorable.unfavorable ? [baziFavorable.unfavorable] : []);
+        const fp = nameologyResult.fivePatterns || {};
+        const tt = nameologyResult.threeTalents || {};
+        const personEl = fp.person?.element || fp.personalityElement || '';
+        const totalEl = fp.total?.element || fp.totalElement || '';
+        const heavenEl = fp.heaven?.element || fp.heavenElement || '';
+        const earthEl = fp.earth?.element || fp.earthElement || '';
+        const sancaiType = tt.sancaiType || tt.sancaiLuck || '';
+        const sancaiLuck = tt.sancaiLuck || (tt.sancaiType ? (['順生','人格受生','逆生','比和'].includes(tt.sancaiType) ? '吉' : '凶') : '');
+        const heavenCkPerson = heavenEl && personEl && this.isElementOvercoming(heavenEl, personEl);
+        const personToEarth = personEl && earthEl && this.isElementGenerating(personEl, earthEl);
+        const earthIsUnfav = earthEl && unfav.includes(earthEl);
+        
+        if (fav.length && personEl) {
+            checks.personAsFav = fav.includes(personEl);
+            if (checks.personAsFav) notes.push('人格五行為八字喜用神，能直接助身、增強命主能量，核心格位得助，大吉。');
+            else notes.push('人格五行非喜用；若八字喜' + personEl + '，則此名人格' + personEl + '可為用，但需付出更大努力。');
+        }
+        if (fav.length && totalEl) {
+            checks.totalAsFav = fav.includes(totalEl);
+            if (checks.totalAsFav) notes.push('總格五行為八字喜用神，代表晚年運勢與總體成就將得滋養與保護，吉。');
+            else notes.push('總格五行非喜用，可考慮與喜用呼應更佳。');
+        }
+        if (unfav.length && personEl) {
+            checks.personAsUnfav = unfav.includes(personEl);
+            if (checks.personAsUnfav) notes.push('人格五行為八字忌神，三才克戰會加劇人生矛盾，凶象顯著，宜慎。');
+        }
+        if (unfav.length && totalEl) {
+            checks.totalAsUnfav = unfav.includes(totalEl);
+            if (checks.totalAsUnfav) notes.push('總格五行為忌神，晚年與終局易受忌神牽制。');
+        }
+        if (checks.personAsFav && checks.totalAsFav) {
+            notes.push('姓名核心（人格、總格）精準補益八字喜用，關鍵性補益。');
+        }
+        if (checks.personAsFav && heavenCkPerson) {
+            notes.push('三才中天格克人格，外界環境帶來壓力與挑戰，喜神受克，屬先難後成。');
+        }
+        if (checks.personAsFav && personToEarth && earthIsUnfav) {
+            notes.push('人格生地格，能量消耗於基礎或家庭事務，地格為忌神則消耗加劇。');
+        }
+        const sancaiSmooth = ['順生','逆生','比和','人格受生'].includes(sancaiType) || ['吉','中吉'].includes(sancaiLuck);
+        checks.sancaiSmooth = sancaiSmooth;
+        if (sancaiSmooth) notes.push('三才配置平和或順生，氣韻流通。');
+        else notes.push('三才戰克或人格受克，內在壓力較大，過程較為辛苦；若人格為忌神，凶象更顯。');
+        const coreUnfav = checks.personAsUnfav || checks.totalAsUnfav;
+        checks.noStrongUnfav = !coreUnfav;
+        
+        let verdict = null;
+        let verdictLabel = null;
+        if (fav.length || unfav.length) {
+            if (sancaiSmooth && checks.personAsFav && checks.totalAsFav && !coreUnfav) {
+                verdict = '上佳';
+                verdictLabel = '吉名';
+            } else if (checks.personAsFav && checks.totalAsFav && !coreUnfav) {
+                verdict = '可用';
+                verdictLabel = '吉名';
+            } else if (sancaiSmooth && (checks.personAsFav || checks.totalAsFav) && !coreUnfav) {
+                verdict = '可用';
+                verdictLabel = '吉名';
+            } else if (sancaiSmooth && coreUnfav) {
+                verdict = '慎用';
+                verdictLabel = '平名';
+            } else if (!sancaiSmooth && coreUnfav) {
+                verdict = '禁用';
+                verdictLabel = '凶名';
+            } else if (checks.personAsFav || checks.totalAsFav) {
+                verdict = '慎用';
+                verdictLabel = '平名';
+            } else {
+                verdict = '慎用';
+                verdictLabel = '平名';
+            }
+        }
+        
+        notes.push('姓名吉凶的最終判斷必須與八字喜用神結合，請綜合判斷。');
+        return {
+            verdict,
+            verdictLabel,
+            strategyNotes: notes,
+            checks,
+            disclaimer: '姓名吉凶的最終判斷必須與使用者的八字喜用神結合，請綜合判斷。',
+            baziLink: verdict !== null ? { verdict, verdictLabel, personElement: personEl, totalElement: totalEl, favorable: fav, unfavorable: unfav } : null
+        };
     }
     
     // 分析81數理
@@ -706,6 +944,7 @@ class NameAnalysisSystem {
         suggestions.luckyNumbers = [personNum, totalNum].filter(n => n !== null);
         suggestions.favorableElements = (fiveElements && fiveElements.missingElements) ? fiveElements.missingElements : [];
         
+        suggestions.longTermAdvice.push('姓名吉凶的最終判斷必須與使用者的八字喜用神結合，請綜合判斷。');
         return suggestions;
     }
     

@@ -1473,11 +1473,12 @@ class FortuneSystem {
 
         let analysis = null;
 
-        // 使用完整的姓名學系統
+        // 使用完整的姓名學系統（若有八字喜忌則一併做聯動驗證）
+        const baziFav = this.analysisResults?.bazi?.favorableElements || null;
         if (typeof NameAnalysisSystem !== 'undefined') {
             try {
                 const nameAnalyzer = new NameAnalysisSystem();
-                analysis = nameAnalyzer.analyzeFullName(name, birthYear, gender);
+                analysis = nameAnalyzer.analyzeFullName(name, birthYear, gender, baziFav);
             } catch (e) {
                 console.error('姓名學分析錯誤:', e);
                 analysis = { error: '姓名學分析發生錯誤，請確認資料與系統載入。' };
@@ -1501,6 +1502,14 @@ class FortuneSystem {
         // 保存分析結果
         if(!this.analysisResults) this.analysisResults = {};
         this.analysisResults.nameology = analysis;
+
+        // 若先前已有八字結果而姓名學未帶 baziLink，則當場做聯動驗證並附上
+        if (!analysis.baziLink && this.analysisResults.bazi?.favorableElements && typeof NameAnalysisSystem !== 'undefined') {
+            try {
+                const nameAnalyzer = new NameAnalysisSystem();
+                analysis.baziLink = nameAnalyzer.evaluateWithBazi(analysis, this.analysisResults.bazi.favorableElements);
+            } catch (e) { /* 忽略 */ }
+        }
 
         const safe = (v, fallback='') => (v === undefined || v === null) ? fallback : v;
         const fmtLuck = (luck) => {
@@ -1583,6 +1592,12 @@ class FortuneSystem {
             const luck = safe(talents.luck, '');
             const desc = safe(talents.description || talents.meaning, '');
             const relations = safe(talents.elementRelations, '');
+            const sancaiType = talents.sancaiType || '';
+            const sancaiLuck = talents.sancaiLuck || '';
+            const energyFlow = talents.energyFlow || '';
+            const sancaiTrait = talents.sancaiTrait || '';
+            const dim = talents.dimensionScores || null;
+            const dimHtml = dim && typeof dim.穩定性 === 'number' ? `<div style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem;"><span class="bazi-tag" style="padding: 0.35rem 0.75rem;">穩定性 ${dim.穩定性}</span><span class="bazi-tag" style="padding: 0.35rem 0.75rem;">發展性 ${dim.發展性}</span><span class="bazi-tag" style="padding: 0.35rem 0.75rem;">協調性 ${dim.協調性}</span></div>` : '';
             
             talentsHtml = `
                 <div class="analysis-card">
@@ -1594,14 +1609,20 @@ class FortuneSystem {
                             ${config ? `<span class="bazi-tag tag-favorable" style="padding: 0.5rem 1rem;"><i class="fas fa-layer-group"></i> ${config}</span>` : ''}
                             ${elements ? `<span class="bazi-tag tag-favorable" style="padding: 0.5rem 1rem;"><i class="fas fa-leaf"></i> ${elements}</span>` : ''}
                             ${luck ? `<span class="bazi-tag ${String(luck).includes('吉') ? 'tag-favorable' : String(luck).includes('凶') ? 'tag-unfavorable' : ''}" style="padding: 0.5rem 1rem;"><i class="fas fa-star"></i> ${luck}</span>` : ''}
+                            ${sancaiType ? `<span class="bazi-tag" style="padding: 0.5rem 1rem;"><i class="fas fa-link"></i> ${sancaiType}</span>` : ''}
+                            ${sancaiLuck ? `<span class="bazi-tag ${sancaiLuck === '吉' || sancaiLuck === '中吉' ? 'tag-favorable' : sancaiLuck === '凶' ? 'tag-unfavorable' : ''}" style="padding: 0.5rem 1rem;">${sancaiLuck}</span>` : ''}
+                            ${energyFlow ? `<span class="bazi-tag" style="padding: 0.5rem 1rem;">${energyFlow}</span>` : ''}
                         </div>
                         ${desc ? `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(212, 175, 55, 0.05); border-radius: 4px; line-height: 1.6;">${desc}</div>` : ''}
+                        ${sancaiTrait ? `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(212, 175, 55, 0.05); border-radius: 4px; line-height: 1.6; font-size: 0.9rem;">${sancaiTrait}</div>` : ''}
                         ${relations ? `<div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(212, 175, 55, 0.05); border-radius: 4px; line-height: 1.6; font-size: 0.9rem; color: rgba(255,255,255,0.7);">五行關係：${relations}</div>` : ''}
+                        ${dimHtml}
                     </div>
                 </div>
             `;
         }
 
+        const step4Done = analysis.step4Completed === true;
         namePane.innerHTML = `
             <div class="analysis-grid-container">
                 <div class="analysis-card">
@@ -1613,6 +1634,7 @@ class FortuneSystem {
                             <span class="bazi-tag tag-favorable" style="padding: 0.5rem 1rem;"><i class="fas fa-user"></i> 姓名：<strong>${safe(analysis.basicInfo && analysis.basicInfo.fullName, name)}</strong></span>
                             ${zodiac ? `<span class="bazi-tag tag-favorable" style="padding: 0.5rem 1rem;"><i class="fas fa-paw"></i> 生肖：${zodiac}</span>` : ''}
                             <span class="bazi-tag tag-favorable" style="padding: 0.5rem 1rem;"><i class="fas fa-chart-line"></i> 綜合評分：<strong>${overallScore}/100</strong></span>
+                            ${step4Done && analysis.baziLink && analysis.baziLink.verdictLabel ? `<span class="bazi-tag ${analysis.baziLink.verdictLabel === '吉名' ? 'tag-favorable' : analysis.baziLink.verdictLabel === '凶名' ? 'tag-unfavorable' : ''}" style="padding: 0.5rem 1rem;"><i class="fas fa-gavel"></i> 最終裁定：<strong>${analysis.baziLink.verdictLabel}</strong></span>` : ''}
                         </div>
                     </div>
                 </div>
@@ -1629,6 +1651,21 @@ class FortuneSystem {
                 </div>
 
                 ${talentsHtml}
+                ${(analysis.baziLink && analysis.baziLink.verdict) ? `
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <i class="fas fa-link"></i> 與八字聯動（第四步裁定）
+                    </div>
+                    <div style="padding: 1rem;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span class="bazi-tag ${analysis.baziLink.verdictLabel === '吉名' ? 'tag-favorable' : analysis.baziLink.verdictLabel === '凶名' ? 'tag-unfavorable' : ''}" style="padding: 0.5rem 1rem;">最終裁定：<strong>${analysis.baziLink.verdictLabel || analysis.baziLink.verdict}</strong></span>
+                        </div>
+                        <ul style="margin: 0; padding-left: 1.2rem; line-height: 1.6; font-size: 0.9rem; color: rgba(255,255,255,0.85);">
+                            ${(analysis.baziLink.strategyNotes || []).map(n => `<li>${n}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ` : ''}
 
                 <div class="analysis-card">
                     <div class="analysis-header">
@@ -1636,6 +1673,14 @@ class FortuneSystem {
                     </div>
                     <div class="text-content" style="padding: 1rem; line-height: 1.6;">
                         ${safe(analysis.recommendation, '建議以「人格」與「總格」作為主軸，並結合八字五行喜用神，避免單一維度過度解讀。')}
+                    </div>
+                </div>
+                <div class="analysis-card" style="border-left: 4px solid var(--gold-primary, #d4af37); background: rgba(212, 175, 55, 0.08);">
+                    <div class="analysis-header" style="font-size: 0.95rem;">
+                        <i class="fas fa-exclamation-circle"></i> 重要說明
+                    </div>
+                    <div class="text-content" style="padding: 1rem; line-height: 1.6; color: rgba(255,255,255,0.9);">
+                        ${safe(analysis.disclaimer, '姓名吉凶的最終判斷必須與使用者的八字喜用神結合，請綜合判斷。本分析僅供參考，不取代專業命理建議。')}
                     </div>
                 </div>
             </div>

@@ -446,7 +446,7 @@ class BaziCalculator {
         return stems;
     }
     
-    // ---------- 第二步：明病·定喜忌（找最旺/最弱五行，扶抑/調候/通關/病藥）----------
+    // ---------- 第二步：明病·定喜忌（四層架構：戰略總則→用神分級→閑忌辨析→動態應用）----------
     calculateFavorableElements(fourPillars, dayMaster, elementStrength) {
         const dayMasterElement = elementStrength.dayMasterElement || HEAVENLY_STEMS_DETAIL[dayMaster].element;
         const monthZhi = fourPillars.month?.zhi;
@@ -457,6 +457,12 @@ class BaziCalculator {
         let favorable = [];
         let unfavorable = [];
         let reasoning = '';
+        const strategyOrder = [];
+        const coreGods = [];
+        const secondaryGods = [];
+        const xianShen = [];
+        const xiaoXi = [];
+        const xiaoJi = [];
 
         const allEl = ['金', '木', '水', '火', '土'];
         const sortedByScore = [...allEl].sort((a, b) => (strengths[b] || 0) - (strengths[a] || 0));
@@ -475,46 +481,76 @@ class BaziCalculator {
         const keWo = Object.keys(WUXING_KE).find(k => WUXING_KE[k] === dayMasterElement);
 
         if (isCong) {
+            strategyOrder.push('格局');
             favorable = [mostWanted];
             unfavorable = [keWo, woSheng].filter(Boolean);
+            coreGods.push(mostWanted);
             reasoning = `從${mostWanted}格，喜順勢${mostWanted}，忌克泄${mostWanted}。`;
         } else {
-            // 扶抑法（基盤）
-            if (isStrong) {
-                favorable = [keWo, woSheng, woKe].filter(Boolean);
-                unfavorable = [shengWo, dayMasterElement].filter(Boolean);
-                reasoning = `${dayMaster}${dayMasterElement}日主身強，喜克泄耗（官殺、食傷、財星），忌生扶（印、比劫）。`;
-            } else {
-                favorable = [shengWo, dayMasterElement].filter(Boolean);
-                unfavorable = [keWo, woSheng, woKe].filter(Boolean);
-                reasoning = `${dayMaster}${dayMasterElement}日主身弱，喜生扶（印星、比劫），忌克泄耗。`;
-            }
-            // 病藥法（可與扶抑並存）
-            const bing = mostWanted !== dayMasterElement ? mostWanted : sortedByScore[1];
-            const yao = WUXING_KE[bing];
-            if (bing && yao && (strengths[bing] || 0) > 2.5 && dayScore < 2) {
-                if (!favorable.includes(yao)) favorable.push(yao);
-                reasoning += ` 命局${bing}過旺為病，以${yao}為藥。`;
-            }
-            // 優先級：調候 > 通關 > 扶抑（綜合裁定）。季節由月支鐵則 MONTH_ZHI_TO_SEASON 定，巳午未=夏、亥子丑=冬，避免月支錯導致漏調候
             if (needTiaoHou) {
+                strategyOrder.push('調候');
                 if (season === '冬') {
                     if (!favorable.includes('火')) favorable.unshift('火');
-                    reasoning += ' 冬生需調候暖局，喜火（調候優先）。';
+                    coreGods.push('火');
+                    reasoning += ' 冬生需調候暖局，喜火（調候為急）。';
                 } else if (season === '夏') {
                     if (!favorable.includes('水')) favorable.unshift('水');
-                    reasoning += ' 夏生需調候潤局，喜水（調候優先）。';
+                    coreGods.push('水');
+                    reasoning += ' 夏生需調候潤局，喜水（調候為急）。';
                 }
             }
             const jinMuZhan = (strengths['金'] || 0) > 2.5 && (strengths['木'] || 0) > 2.5;
-            if (jinMuZhan && !favorable.includes('水')) {
-                favorable = ['水', ...favorable.filter(e => e !== '水')];
+            if (jinMuZhan) {
+                if (!strategyOrder.includes('通關')) strategyOrder.push('通關');
+                if (!favorable.includes('水')) { favorable = ['水', ...favorable.filter(e => e !== '水')]; coreGods.push('水'); }
                 reasoning += ' 金木相戰，用水通關。';
+            }
+            strategyOrder.push('扶抑');
+            if (isStrong) {
+                const fuYi = [keWo, woSheng, woKe].filter(Boolean);
+                favorable = [...new Set([...favorable, ...fuYi])];
+                secondaryGods.push(...fuYi.filter(e => !coreGods.includes(e)));
+                unfavorable = [shengWo, dayMasterElement].filter(Boolean);
+                reasoning += (reasoning ? ' ' : '') + `${dayMaster}${dayMasterElement}日主身強，喜克泄耗（官殺、食傷、財星），忌生扶（印、比劫）。`;
+            } else {
+                const fuYi = [shengWo, dayMasterElement].filter(Boolean);
+                favorable = [...new Set([...favorable, ...fuYi])];
+                secondaryGods.push(...fuYi.filter(e => !coreGods.includes(e)));
+                unfavorable = [keWo, woSheng, woKe].filter(Boolean);
+                reasoning += (reasoning ? ' ' : '') + `${dayMaster}${dayMasterElement}日主身弱，喜生扶（印星、比劫），忌克泄耗。`;
+            }
+            const bing = mostWanted !== dayMasterElement ? mostWanted : sortedByScore[1];
+            const yao = WUXING_KE[bing];
+            if (bing && yao && (strengths[bing] || 0) > 2.5 && dayScore < 2) {
+                if (!favorable.includes(yao)) { favorable.push(yao); coreGods.push(yao); }
+                if (!strategyOrder.includes('病藥')) strategyOrder.push('病藥');
+                reasoning += ` 命局${bing}過旺為病，以${yao}為藥。`;
             }
         }
 
         favorable = [...new Set(favorable)].filter(Boolean);
         unfavorable = [...new Set(unfavorable)].filter(Boolean);
+        const coreSet = [...new Set(coreGods)];
+        const secondarySet = secondaryGods.filter(e => !coreSet.includes(e));
+        coreGods.length = 0;
+        coreGods.push(...coreSet);
+        secondaryGods.length = 0;
+        secondaryGods.push(...[...new Set(secondarySet)]);
+
+        allEl.forEach(el => {
+            const s = strengths[el] || 0;
+            if (s < 0.8 && totalScore > 0) xianShen.push(el);
+        });
+        const mainJi = unfavorable[0];
+        if (mainJi) {
+            const keJi = WUXING_KE[mainJi];
+            if (keJi && !favorable.includes(keJi) && !unfavorable.includes(keJi) && (strengths[keJi] || 0) > 0) xiaoXi.push(keJi);
+        }
+        const mainYong = favorable[0];
+        if (mainYong) {
+            const shengJi = unfavorable.find(u => WUXING_SHENG[u] === mainYong || u === mainYong);
+            if (shengJi && (strengths[mainYong] || 0) > 3) xiaoJi.push(mainYong);
+        }
 
         const seasonEffects = { '春': '木', '夏': '火', '秋': '金', '冬': '水' };
         if (season && seasonEffects[season]) {
@@ -528,13 +564,27 @@ class BaziCalculator {
         if (unfavorable.length > 0) priority['第一忌神'] = unfavorable[0];
         if (unfavorable.length > 1) priority['第二忌神'] = unfavorable[1];
 
+        let dynamicNote = '歲運中：用神得助則順；忌神得制則化壓力為權力；喜神過旺（如喜水行北方水運過重）須防過猶不及；忌神若貪生忘克、反哺用神，該運中可為助力。';
+        if (favorable.length >= 2) {
+            const [a, b] = favorable;
+            if (WUXING_KE[a] === b || WUXING_KE[b] === a) dynamicNote = '歲運中若水火／金木等用神交戰並見，主該年事多矛盾、吉凶參半；宜把握單一用神旺的流年。' + dynamicNote;
+        }
+
+        const hierarchy = {
+            strategyLayer: { order: strategyOrder, motto: '調候為急，格局為體，扶抑為用，通關為妙。' },
+            godTier: { core: coreGods, secondary: secondaryGods, dynamicNote: '原局閑神或小忌，若歲運能克忌神或生用神，則為動態喜神（奇兵）。' },
+            xianJi: { xianShen, xiaoXi, xiaoJi, shuangMianRen: ['七殺、財星等因位置與組合可為喜亦可為忌，需分干支與歲運。'] },
+            dynamicApplication: dynamicNote
+        };
+
         return {
             favorable,
             unfavorable,
             reasoning: reasoning.trim(),
             priority,
             mostWanted,
-            mostWeak
+            mostWeak,
+            hierarchy
         };
     }
     
