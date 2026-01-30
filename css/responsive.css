@@ -2181,13 +2181,17 @@
     -webkit-overflow-scrolling: touch !important;
   }
   
-  /* 結果頁面容器：滿版寬度、縮小 padding */
-  .result-section {
+  /* 結果頁面容器：與其他 section 同寬同 padding（滿版），僅右側留懸浮按鈕空間 */
+  .result-section,
+  #result-section.section {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     box-sizing: border-box !important;
-    padding: 0.75rem 0.5rem !important;
-    padding-right: 58px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0.75rem 0.5rem !important; /* 與 .section 一致 */
+    padding-right: 72px !important; /* 懸浮按鈕列 */
     overflow-x: auto !important;
     overflow-y: visible !important;
     -webkit-overflow-scrolling: touch !important;

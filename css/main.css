@@ -1390,17 +1390,23 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 }
 
 /* --- 結果頁面樣式 --- */
-/* 結果分析區：全螢幕滿版，右側留懸浮按鈕空間，底部留白可捲動至內容在按鈕上方 */
+/* 結果分析區：與 Bazi/塔羅同寬、同 padding，僅右側留懸浮按鈕與底部留白 */
 #result-section.result-section {
-    width: 100%;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0;
     box-sizing: border-box;
-    padding-right: 72px; /* 懸浮按鈕列寬度 + 間距，避免內容被遮擋 */
-    padding-bottom: 150px; /* 底部留白，最後一段內容可捲動到懸浮按鈕上方 */
+    margin-left: 0;
+    margin-right: 0;
+    padding: 3rem; /* 與 .section 一致 */
+    padding-right: 72px; /* 懸浮按鈕列寬度 + 間距 */
+    padding-bottom: 150px; /* 底部留白，可捲動至內容在按鈕上方 */
 }
-#result-section .result-container {
-    width: 100%;
-    max-width: 100%;
+#result-section .result-container,
+#result-section .dimension-analysis {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0;
     box-sizing: border-box;
 }
 
@@ -2121,7 +2127,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
         max-width: 100%;
         box-sizing: border-box;
         overflow-x: hidden;
-        padding: 1.5rem !important;
+        padding: 0.75rem 0.5rem !important; /* 與 responsive/mobile-fix 一致，滿版感 */
     }
     
     .nav-menu {
