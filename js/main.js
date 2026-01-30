@@ -3117,16 +3117,27 @@ const TarotModule = {
                 frontDiv.innerHTML = '';
                 frontDiv.appendChild(img);
             }
-            
-            // 綁定點擊事件翻牌（翻完後更新「進行分析」按鈕狀態）
-            cardEl.addEventListener('click', function() {
-                const flip = this.querySelector('.card-flip');
-                if(flip) {
-                    flip.classList.toggle('flipped');
-                    if(TarotModule && TarotModule.updateAnalyzeButtonState) TarotModule.updateAnalyzeButtonState();
-                }
-            });
         });
+
+        // 手動翻牌：在牌陣容器上使用事件委派，點擊任一張牌（或牌內 img/div）皆可翻牌
+        var spreadArea = document.getElementById('spread-area');
+        if (spreadArea) {
+            var oldSpread = spreadArea.getAttribute('data-flip-bound');
+            if (oldSpread) spreadArea.removeEventListener('click', TarotModule._flipCardDelegate);
+            var delegate = function(e) {
+                if (e.target.closest('button')) return;
+                var card = e.target.closest('.tarot-card');
+                if (!card) return;
+                var flip = card.querySelector('.card-flip');
+                if (flip) {
+                    flip.classList.toggle('flipped');
+                    if (TarotModule && TarotModule.updateAnalyzeButtonState) TarotModule.updateAnalyzeButtonState();
+                }
+            };
+            TarotModule._flipCardDelegate = delegate;
+            spreadArea.addEventListener('click', delegate);
+            spreadArea.setAttribute('data-flip-bound', '1');
+        }
 
         // 進行分析按鈕：初始為禁用，須全部翻牌後才可點
         const analyzeBtn = document.getElementById('proceed-to-result');
