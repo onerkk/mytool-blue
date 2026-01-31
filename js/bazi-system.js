@@ -350,14 +350,21 @@ class BaziCalculator {
         const fetalBreath = this.calculateFetalBreath(fourPillars);
         const bodyPalace = this.calculateBodyPalace(fourPillars, adjustedDate);
         const voidEmptiness = this.calculateVoidEmptiness(fourPillars);
-        const weighingBone = this.calculateWeighingBone(fourPillars, gender);
+        const weighingBone = this.calculateWeighingBone(fourPillars, gender, adjustedDate);
         const starMansion = this.calculateStarMansion(adjustedDate);
+        var ziweiRef = {};
+        if (typeof ZIWEI_MINGZHU !== 'undefined' && ZIWEI_MINGZHU && lifePalace && lifePalace.zhi) {
+            ziweiRef.mingZhu = ZIWEI_MINGZHU[lifePalace.zhi];
+        }
+        if (typeof ZIWEI_SHENZHU !== 'undefined' && ZIWEI_SHENZHU && fourPillars.year && fourPillars.year.zhi) {
+            ziweiRef.shenZhu = ZIWEI_SHENZHU[fourPillars.year.zhi];
+        }
         
         return {
             fourPillars, dayMaster, tenGods, hiddenStems, specialStars, elementStrength,
             longevity, pattern, favorableElements, greatFortune, lifePalace, fetalOrigin,
-            fetalBreath, bodyPalace, voidEmptiness, weighingBone, starMansion, trueSolarInfo,
-            adjustedTime: adjustedDate.toISOString(), gender, baziCalibrated: !!baziCalibrated
+            fetalBreath, bodyPalace, voidEmptiness, weighingBone, starMansion, ziweiRef,
+            trueSolarInfo, adjustedTime: adjustedDate.toISOString(), gender, baziCalibrated: !!baziCalibrated
         };
     }
     
@@ -1331,17 +1338,20 @@ class BaziCalculator {
         return nayinMap[`${stem}${branch}`] || '未知';
     }
     
+    /** 命宮：子起正月逆查行，生月支上起生時順查至卯。天干依定寅首（乙庚戊寅等） */
     calculateLifePalace(f, d) { 
-        // 簡化計算：根據月柱和時柱推算
-        const monthBranchIndex = this.branches.indexOf(f.month.zhi);
-        const hourBranchIndex = this.branches.indexOf(f.hour.zhi);
-        const lifePalaceIndex = (monthBranchIndex + hourBranchIndex) % 12;
-        const lifePalaceBranch = this.branches[lifePalaceIndex];
-        
-        // 簡化天干計算
-        const lifePalaceStemIndex = (this.stems.indexOf(f.year.gan) + lifePalaceIndex) % 10;
-        const lifePalaceStem = this.stems[lifePalaceStemIndex];
-        
+        // 月支→起點：正月寅→子(0)、二月卯→亥(11)...十二月丑→丑(1)
+        var monthStart = { '寅':0,'卯':11,'辰':10,'巳':9,'午':8,'未':7,'申':6,'酉':5,'戌':4,'亥':3,'子':2,'丑':1 };
+        var hourIdx = this.branches.indexOf(f.hour.zhi);
+        if (hourIdx < 0) hourIdx = 0;
+        var startIdx = monthStart[f.month.zhi] != null ? monthStart[f.month.zhi] : 0;
+        var lifePalaceIndex = (startIdx + (3 - hourIdx + 12) % 12) % 12;
+        var lifePalaceBranch = this.branches[lifePalaceIndex];
+        // 定寅首：甲己丙寅、乙庚戊寅、丙辛庚寅、丁壬壬寅、戊癸甲寅
+        var dingYinShou = { '甲':'丙','乙':'戊','丙':'庚','丁':'壬','戊':'甲','己':'丙','庚':'戊','辛':'庚','壬':'壬','癸':'甲' };
+        var baseGan = dingYinShou[f.year.gan] || '戊';
+        var baseIdx = this.stems.indexOf(baseGan);
+        var lifePalaceStem = this.stems[(baseIdx + lifePalaceIndex) % 10];
         return { 
             gan: lifePalaceStem, 
             zhi: lifePalaceBranch, 
@@ -1369,17 +1379,12 @@ class BaziCalculator {
         }; 
     }
     
+    /** 胎息：日柱干支五合六合。甲己、乙庚、丙辛、丁壬、戊癸；子丑、寅亥、卯戌、辰酉、巳申、午未 */
     calculateFetalBreath(f) { 
-        // 胎息：日柱天干順推一位，地支順推一位
-        const dayStemIndex = this.stems.indexOf(f.day.gan);
-        const dayBranchIndex = this.branches.indexOf(f.day.zhi);
-        
-        const breathStemIndex = (dayStemIndex + 1) % 10;
-        const breathBranchIndex = (dayBranchIndex + 1) % 12;
-        
-        const breathStem = this.stems[breathStemIndex];
-        const breathBranch = this.branches[breathBranchIndex];
-        
+        var wuHe = { '甲':'己','乙':'庚','丙':'辛','丁':'壬','戊':'癸','己':'甲','庚':'乙','辛':'丙','壬':'丁','癸':'戊' };
+        var liuHe = { '子':'丑','丑':'子','寅':'亥','亥':'寅','卯':'戌','戌':'卯','辰':'酉','酉':'辰','巳':'申','申':'巳','午':'未','未':'午' };
+        var breathStem = wuHe[f.day.gan] || this.stems[(this.stems.indexOf(f.day.gan) + 1) % 10];
+        var breathBranch = liuHe[f.day.zhi] || this.branches[(this.branches.indexOf(f.day.zhi) + 1) % 12];
         return { 
             gan: breathStem, 
             zhi: breathBranch, 
@@ -1388,17 +1393,17 @@ class BaziCalculator {
         }; 
     }
     
+    /** 身宮：子起正月順查至生月，生月支上起生時逆推至酉。天干同命宮定寅首 */
     calculateBodyPalace(f, d) { 
-        // 身宮：類似命宮但計算方式不同
-        const monthBranchIndex = this.branches.indexOf(f.month.zhi);
-        const hourBranchIndex = this.branches.indexOf(f.hour.zhi);
-        const bodyPalaceIndex = (monthBranchIndex + 12 - hourBranchIndex) % 12;
-        const bodyPalaceBranch = this.branches[bodyPalaceIndex];
-        
-        // 簡化天干計算
-        const bodyPalaceStemIndex = (this.stems.indexOf(f.year.gan) + bodyPalaceIndex) % 10;
-        const bodyPalaceStem = this.stems[bodyPalaceStemIndex];
-        
+        var monthStartShun = { '寅':0,'卯':1,'辰':2,'巳':3,'午':4,'未':5,'申':6,'酉':7,'戌':8,'亥':9,'子':10,'丑':11 };
+        var hourIdx = this.branches.indexOf(f.hour.zhi);
+        if (hourIdx < 0) hourIdx = 0;
+        var startIdx = monthStartShun[f.month.zhi] != null ? monthStartShun[f.month.zhi] : 0;
+        var bodyPalaceIndex = (startIdx - (hourIdx - 9 + 12) % 12 + 12) % 12;
+        var bodyPalaceBranch = this.branches[bodyPalaceIndex];
+        var dingYinShou = { '甲':'丙','乙':'戊','丙':'庚','丁':'壬','戊':'甲','己':'丙','庚':'戊','辛':'庚','壬':'壬','癸':'甲' };
+        var baseGan = dingYinShou[f.year.gan] || '戊';
+        var bodyPalaceStem = this.stems[(this.stems.indexOf(baseGan) + bodyPalaceIndex) % 10];
         return { 
             gan: bodyPalaceStem, 
             zhi: bodyPalaceBranch, 
@@ -1435,28 +1440,20 @@ class BaziCalculator {
         };
     }
     
-    calculateWeighingBone(f, g) { 
-        // 稱骨算命簡化版
-        const boneWeights = {
-            '甲': { '子': 1.2, '丑': 0.6, '寅': 0.7, '卯': 1.0, '辰': 0.9, '巳': 0.5, '午': 1.0, '未': 0.8, '申': 0.8, '酉': 0.9, '戌': 0.6, '亥': 1.8 },
-            '乙': { '子': 0.9, '丑': 0.5, '寅': 0.6, '卯': 0.8, '辰': 0.7, '巳': 0.7, '午': 0.9, '未': 0.6, '申': 0.8, '酉': 0.7, '戌': 0.5, '亥': 1.5 },
-            // ... 其他天干的重量表（簡化）
-        };
-        
-        // 簡化計算
-        let totalWeight = 4.8;
-        
-        let comment = '';
-        if (totalWeight < 3) comment = '早年運蹇事難謀，漸有財源如水流';
-        else if (totalWeight < 4) comment = '平生衣祿是綿長，件件心中自主張';
-        else if (totalWeight < 5) comment = '初年運蹇事難謀，漸有財源如水流';
-        else if (totalWeight < 6) comment = '不須勞碌過平生，獨自成家福不輕';
-        else comment = '此命推來福不輕，自成自立顯門庭';
-        
-        return { 
-            display: `${totalWeight.toFixed(1)}兩`, 
-            comment 
-        }; 
+    /** 袁天罡稱骨：年干支+月支+日+時辰，套用標準對照表。日以公曆日近似農曆日 */
+    calculateWeighingBone(f, g, birthDate) { 
+        var d = birthDate instanceof Date ? birthDate : (birthDate ? new Date(birthDate) : null);
+        var dayOfMonth = d && !isNaN(d.getTime()) ? d.getDate() : 15;
+        if (dayOfMonth < 1 || dayOfMonth > 30) dayOfMonth = 15;
+        var yw = (typeof CHENGGU_YEAR !== 'undefined' && CHENGGU_YEAR) ? (CHENGGU_YEAR[f.year.gan + f.year.zhi] || 0.8) : 0.8;
+        var mw = (typeof CHENGGU_MONTH !== 'undefined' && CHENGGU_MONTH) ? (CHENGGU_MONTH[f.month.zhi] || 0.6) : 0.6;
+        var dw = (typeof CHENGGU_DAY !== 'undefined' && CHENGGU_DAY) ? (CHENGGU_DAY[dayOfMonth - 1] || 0.8) : 0.8;
+        var hw = (typeof CHENGGU_HOUR !== 'undefined' && CHENGGU_HOUR) ? (CHENGGU_HOUR[f.hour.zhi] || 0.8) : 0.8;
+        var totalWeight = Math.round((yw + mw + dw + hw) * 10) / 10;
+        if (totalWeight < 2.1) totalWeight = 2.1;
+        if (totalWeight > 7.2) totalWeight = 7.2;
+        var poem = (typeof getChengguPoem === 'function') ? getChengguPoem(totalWeight) : '此命推來福祿宏，興家發達在其中。';
+        return { display: totalWeight.toFixed(1) + '兩', comment: poem, total: totalWeight };
     }
     
     calculateStarMansion(d) { 

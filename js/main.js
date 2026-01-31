@@ -1233,6 +1233,34 @@ class FortuneSystem {
             const hasFavData = fav.length > 0 || baziResult.favorableElements !== undefined;
             const hasBadData = bad.length > 0 || baziResult.favorableElements !== undefined;
             
+            const mkAuxiliarySection = (r) => {
+                const data = r.fullData || r;
+                const lp = data.lifePalace; const fo = data.fetalOrigin; const fb = data.fetalBreath; const bp = data.bodyPalace;
+                const wb = data.weighingBone; const zw = data.ziweiRef;
+                if (!lp && !fo && !fb && !bp && !wb && !zw) return '';
+                let html = '<div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid rgba(212,175,55,0.2);">';
+                html += '<p style="font-size:0.9rem; margin-bottom:8px; color:rgba(255,255,255,0.6);"><i class="fas fa-compass"></i> 命宮／胎元／胎息／身宮</p>';
+                html += '<div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.8rem;">';
+                if (lp) html += `<span class="bazi-tag tag-star">命宮${lp.gan}${lp.zhi}${lp.nayin ? '('+lp.nayin+')' : ''}</span>`;
+                if (fo) html += `<span class="bazi-tag tag-star">胎元${fo.gan}${fo.zhi}${fo.nayin ? '('+fo.nayin+')' : ''}</span>`;
+                if (fb) html += `<span class="bazi-tag tag-star">胎息${fb.gan}${fb.zhi}${fb.nayin ? '('+fb.nayin+')' : ''}</span>`;
+                if (bp) html += `<span class="bazi-tag tag-star">身宮${bp.gan}${bp.zhi}${bp.nayin ? '('+bp.nayin+')' : ''}</span>`;
+                html += '</div>';
+                if (zw && (zw.mingZhu || zw.shenZhu)) {
+                    html += '<p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);"><i class="fas fa-star"></i> 紫微對照</p>';
+                    html += '<div style="margin-bottom:0.8rem;">';
+                    if (zw.mingZhu) html += `<span class="bazi-tag tag-star">命主：${zw.mingZhu}</span>`;
+                    if (zw.shenZhu) html += `<span class="bazi-tag tag-star">身主：${zw.shenZhu}</span>`;
+                    html += '</div>';
+                }
+                if (wb && wb.display) {
+                    html += '<p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);"><i class="fas fa-balance-scale"></i> 袁天罡稱骨</p>';
+                    html += `<div style="font-size:0.95rem;">${wb.display} — ${wb.comment || ''}</div>`;
+                }
+                html += '</div>';
+                return html;
+            };
+            
             // 使用與 HTML 完全匹配的結構
             shenshaBox.innerHTML = `
                 <div style="margin-bottom: 1rem;">
@@ -1254,6 +1282,7 @@ class FortuneSystem {
                     </div>
                     ${mkShenShaDetail(shenShaByPillar)}
                 </div>
+                ${mkAuxiliarySection(baziResult)}
             `;
             
             // 調試輸出
