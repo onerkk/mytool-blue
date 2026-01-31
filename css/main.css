@@ -1,4 +1,4 @@
-/* main.css - 靜月之光命理系統 v3.0 完整樣式表 (修復版) */
+/* main.css - 靜月之前能量占卜儀 v1.0 完整樣式表 */
 :root {
     /* 靜月之光 - 神秘水晶風格配色 */
     --gold-primary: #D4AF37;
@@ -1482,6 +1482,92 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     letter-spacing: 0.02em;
 }
 
+/* --- 推論依據 UI 美化 --- */
+.reasoning-basis-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    backdrop-filter: blur(10px);
+}
+.reasoning-basis-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed rgba(212, 175, 55, 0.35);
+}
+.reasoning-basis-header i {
+    color: var(--gold-primary);
+    font-size: 1.15rem;
+}
+.reasoning-basis-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.reasoning-subsection {
+    margin-bottom: 1rem;
+}
+.reasoning-subsection:last-child {
+    margin-bottom: 0;
+}
+.reasoning-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gold-primary);
+    margin-bottom: 0.5rem;
+}
+.reasoning-subtitle i {
+    opacity: 0.9;
+}
+.reasoning-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.reasoning-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.88);
+    padding: 0.4rem 0.6rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    border-left: 3px solid rgba(212, 175, 55, 0.5);
+}
+.reasoning-item i.fa-circle {
+    font-size: 0.35rem;
+    margin-top: 0.5rem;
+    color: var(--gold-primary);
+    flex-shrink: 0;
+}
+.reasoning-item i.fa-chevron-right {
+    font-size: 0.6rem;
+    margin-top: 0.35rem;
+    color: rgba(212, 175, 55, 0.8);
+    flex-shrink: 0;
+}
+.reasoning-item span:first-of-type {
+    flex: 1;
+}
+.reasoning-rule-tag {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--gold-primary);
+    border-radius: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
 .probability-meter {
     background: var(--dark-glass-light);
     backdrop-filter: blur(20px);
@@ -1904,13 +1990,20 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 .dayun-item {
     position: relative;
     text-align: center;
-    min-width: 78px;
+    min-width: 92px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 4px;
+    padding: 8px 6px;
     color: var(--text-primary) !important;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.dayun-item .dayun-ten-gods {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.2;
 }
 
 /* 當下大運：顯著強化樣式 */

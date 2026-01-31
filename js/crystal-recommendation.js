@@ -125,6 +125,8 @@
       }
     }
 
+    reasonText = (reasonText ? reasonText + ' ' : '') + '【紫微思考】財帛宮、官祿宮對應事業財富；命宮、福德宮對應心性能量。八字喜用神水晶可與紫微宮位互參，雙重補強氣場。';
+
     return {
       targetElement: targetElement,
       suggestedStones: allStones,

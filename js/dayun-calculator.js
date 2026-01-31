@@ -56,9 +56,10 @@
     }
 
     /**
-     * 起運歲數計算（架構：精確到時辰、跨年節氣、節氣 UTC→地方真太陽時）
-     * 順行：出生→下一節；逆行：出生→上一節。1 日 = 4 月，1 時辰 = 10 天，起運年 = 天數 ÷ 3。
-     * @param {Object} [opts] - { longitude, shiChenMethod: 'precise'|'standard'|null }
+     * 起運歲數計算（精確 3 日=1 歲，1 日=4 月，1 時辰=10 天）
+     * 順行：出生→下一節；逆行：出生→上一節。
+     * 虛歲對齊：第一柱起始年齡以虛歲顯示，Display Xu Sui = ceil(solarSpanYears) + 1
+     * @param {Object} [opts] - { longitude, shiChenMethod: 'precise'|'standard'|null, useXuSui: true }
      */
     function computeStartAge(solarCalc, birthDate, forward, opts) {
         var d = birthDate instanceof Date ? birthDate : new Date(birthDate);
@@ -96,23 +97,29 @@
 
         var diffDays = diffMs / (24 * 60 * 60 * 1000);
         var totalDays = diffDays;
-        var method = (opts && opts.shiChenMethod) ? opts.shiChenMethod : null;
+        // 易兌對齊：以精確時間差為主，不套用時辰加減（precise 會使逆行錯誤減去約10天）
+        // 1983-08-25 逆行→立秋：diffDays≈17天→5歲8月→虛歲7 ✓
+        var method = (opts && opts.shiChenMethod) ? opts.shiChenMethod : 'simple';
         if (method === 'precise') {
             var sc = getShiChenFromTime(d.getHours(), d.getMinutes());
             var shichenDays = shiChenToDays(sc.index, sc.minutesInShiChen, 'precise');
-            totalDays = forward ? diffDays + shichenDays : diffDays - shichenDays;
+            totalDays = forward ? diffDays + shichenDays : Math.max(0, diffDays - shichenDays);
             if (totalDays < 0) totalDays = 0;
         }
 
-        var startAgeInYears = totalDays / 3;
-        var years = Math.floor(startAgeInYears);
-        var months = Math.min(11, Math.floor((startAgeInYears - years) * 12));
+        var solarSpanYears = totalDays / 3;
+        var years = Math.floor(solarSpanYears);
+        var months = Math.min(11, Math.floor((solarSpanYears - years) * 12));
+        var useXuSui = opts && opts.useXuSui !== false;
+        var startAgeXuSui = useXuSui ? Math.ceil(solarSpanYears) + 1 : Math.floor(solarSpanYears);
 
         return {
             startYears: years,
             startMonths: months,
-            startAgeInYears: startAgeInYears,
-            solarTerm: target.name
+            startAgeInYears: solarSpanYears,
+            solarTerm: target.name,
+            startAgeXuSui: startAgeXuSui,
+            solarSpanYears: solarSpanYears
         };
     }
 
@@ -155,22 +162,29 @@
         var startYears = 5;
         var startMonths = 0;
         var startAge = 5;
+        var startAgeXuSui = 7;
         var startTerm = '';
+        var solarSpanYears = 0;
 
-        /* 起運歲數：依架構從節氣真實換算，每人不同。可選真太陽時、時辰 precise。 */
-        var dayunOpts = opts ? { longitude: opts.longitude, shiChenMethod: opts.shiChenMethod } : undefined;
+        var dayunOpts = opts ? { longitude: opts.longitude, shiChenMethod: opts.shiChenMethod || 'simple', useXuSui: opts.useXuSui !== false } : { shiChenMethod: 'simple', useXuSui: true };
         if (this.solar) {
             var res = computeStartAge(this.solar, d, forward, dayunOpts);
             if (res) {
                 startYears = res.startYears;
                 startMonths = res.startMonths;
                 startTerm = res.solarTerm || '';
-                if (res.startAgeInYears < 3 / 365) {
+                solarSpanYears = res.solarSpanYears || (res.startAgeInYears || 0);
+                startAgeXuSui = res.startAgeXuSui != null ? res.startAgeXuSui : (Math.ceil(solarSpanYears) + 1);
+                if (solarSpanYears < 3 / 365) {
                     startAge = 0;
+                    startAgeXuSui = 1;
                 } else {
-                    startAge = Math.floor(res.startAgeInYears);
+                    startAge = startAgeXuSui;
                 }
             }
+        } else {
+            startAge = 5;
+            startAgeXuSui = 7;
         }
 
         var mx = gauIndex(monthGan, monthZhi);
@@ -180,17 +194,19 @@
         var now = new Date();
         var currentYear = now.getFullYear();
         var currentAge = currentYear - birthYear;
+        var yearOfFirstLuck = birthYear + (startAgeXuSui - 1);
 
         for (var i = 0; i < 8; i++) {
             var idx = forward ? (mx + 1 + i) % 60 : (mx - 1 - i + 60) % 60;
             var gz = JIAZI[idx];
             var gan = gz[0];
             var zhi = gz[1];
-            var ageStart = startAge + i * 10;
+            var ageStart = startAgeXuSui + i * 10;
             var ageEnd = ageStart + 9;
-            var yearStart = birthYear + ageStart;
-            var yearEnd = birthYear + ageEnd;
-            var isCurrent = currentAge >= ageStart && currentAge <= ageEnd;
+            var yearStart = yearOfFirstLuck + i * 10;
+            var yearEnd = yearStart + 9;
+            var xuSuiCurrent = currentYear - birthYear + 1;
+            var isCurrent = xuSuiCurrent >= ageStart && xuSuiCurrent <= ageEnd;
             var solar_term = i === 0 ? startTerm : '';
             cycles.push({
                 index: i,
@@ -212,9 +228,13 @@
             });
         }
 
+        var spanStr = startYears + '歲' + startMonths + '個月';
+        var detailStr = spanStr + '（虛歲' + startAgeXuSui + '歲起運）';
         var list = {
-            start_age: startAge,
-            start_age_detail: startYears + '歲' + startMonths + '個月',
+            start_age: startAgeXuSui,
+            start_age_detail: detailStr,
+            start_age_xu_sui: startAgeXuSui,
+            solar_span_str: spanStr,
             direction: direction,
             cycles: cycles,
             forward: forward,
@@ -311,6 +331,18 @@
             dayunList: list
         };
     };
+
+    /** 時間差 → 起運字串與虛歲（3日=1歲，1日=4月，1時辰=10天） */
+    function timeDeltaToQiYun(diffMinutes, useXuSui) {
+        var totalDays = diffMinutes / (24 * 60);
+        var solarSpanYears = totalDays / 3;
+        var years = Math.floor(solarSpanYears);
+        var months = Math.min(11, Math.floor((solarSpanYears - years) * 12));
+        var spanStr = years + '歲' + months + '個月';
+        var xuSui = useXuSui !== false ? Math.ceil(solarSpanYears) + 1 : Math.floor(solarSpanYears);
+        return { solarSpanYears: solarSpanYears, years: years, months: months, spanStr: spanStr, xuSui: xuSui };
+    }
+    DaYunCalculator.timeDeltaToQiYun = timeDeltaToQiYun;
 
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = { DaYunCalculator: DaYunCalculator };

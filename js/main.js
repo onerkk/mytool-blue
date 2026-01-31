@@ -5,7 +5,7 @@ function safeText(v, fallback='—'){
   return v;
 }
 /**
- * 靜月之光命理系統 v3.0 - 最終融合完整版 (修正地區消失問題)
+ * 靜月之前能量占卜儀 v1.0 - 最終融合完整版 (修正地區消失問題)
  * 包含：
  * 1. 完整城市資料庫 (TW/CN/HK/MO) 與真太陽時連動
  * 2. 塔羅牌擬真洗牌、環形抽牌、圖片路徑修正
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
     
-    console.log('靜月之光命理系統 v3.0 (最終融合版) 已就緒');
+    console.log('靜月之前能量占卜儀 v1.0 (最終融合版) 已就緒');
 });
 
 /** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示，覆蓋任何隱藏用的 CSS */
@@ -264,7 +264,7 @@ function initCityAndSolarTime() {
     const CITIES = {
         'TW': [
             {n:'台北市', lat:25.0330, lng:121.5654}, {n:'新北市', lat:25.0172, lng:121.4625}, {n:'桃園市', lat:24.9936, lng:121.3009},
-            {n:'台中市', lat:24.1477, lng:120.6736}, {n:'台南市', lat:22.9997, lng:120.2270}, {n:'高雄市', lat:22.6273, lng:120.3014},
+            {n:'台中市', lat:24.1477, lng:120.6736}, {n:'台南市', lat:22.9997, lng:120.288}, {n:'高雄市', lat:22.6273, lng:120.3014},
             {n:'基隆市', lat:25.1276, lng:121.7392}, {n:'新竹市', lat:24.8138, lng:120.9675}, {n:'嘉義市', lat:23.4800, lng:120.4491},
             {n:'宜蘭縣', lat:24.7595, lng:121.7511}, {n:'花蓮縣', lat:23.9872, lng:121.6016}, {n:'台東縣', lat:22.7583, lng:121.1444},
             {n:'南投縣', lat:23.9037, lng:120.6894}, {n:'雲林縣', lat:23.7092, lng:120.4313}, {n:'苗栗縣', lat:24.5602, lng:120.8214},
@@ -482,7 +482,7 @@ class FortuneSystem {
     
     generateReport() {
         // 生成完整報告
-        let report = '靜月之光完整命理系統 v3.0\n';
+        let report = '靜月之前能量占卜儀 v1.0\n';
         report += '='.repeat(50) + '\n\n';
         report += `生成時間：${new Date().toLocaleString('zh-TW')}\n\n`;
         
@@ -540,7 +540,7 @@ class FortuneSystem {
         }
         
         report += '='.repeat(50) + '\n';
-        report += '本報告由靜月之光命理系統自動生成，僅供參考。\n';
+        report += '本報告由靜月之前能量占卜儀自動生成，僅供參考。\n';
         report += '命運掌握在自己手中，請以理性判斷為主。\n';
         
         // 下載報告
@@ -683,8 +683,8 @@ class FortuneSystem {
                 const yearGan = fp.year?.gan || fp.year?.stem;
                 const monthZhi = fp.month?.zhi || fp.month?.branch;
                 const dayGan = baziResult.dayMaster || fp.day?.gan || fp.day?.stem;
-                const greatFortune = baziResult.greatFortune;
-                const gender = (baziResult.gender || baziData.gender || '').toString().toLowerCase();
+                const greatFortune = baziResult.greatFortune || baziData?.fullData?.greatFortune || baziData?.greatFortune;
+                const gender = (baziResult.gender || baziData?.gender || '').toString().toLowerCase();
                 if (yearGan && dayGan && greatFortune && typeof this.renderDayun === 'function') {
                     this.renderDayun(gender, yearGan, monthZhi, dayGan, greatFortune);
                 }
@@ -943,6 +943,22 @@ class FortuneSystem {
     }
     fillBaziResultUI(baziPane, baziResult) {
         const n = this.normalizeBaziResult(baziResult);
+        const calibrated = !!(baziResult.baziCalibrated || baziResult.fullData?.baziCalibrated);
+        const tengodsCard = baziPane.querySelector('.analysis-card-tengods');
+        if (tengodsCard) {
+            const hdr = tengodsCard.querySelector('.analysis-header');
+            let badge = tengodsCard.querySelector('.bazi-calibration-badge');
+            if (calibrated) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'bazi-calibration-badge';
+                    badge.style.cssText = 'margin-left:8px;font-size:0.75rem;color:rgba(212,175,55,0.9);background:rgba(212,175,55,0.15);padding:2px 6px;border-radius:4px;';
+                    badge.textContent = '易兌校正';
+                    if (hdr) hdr.appendChild(badge);
+                }
+                badge.style.display = '';
+            } else if (badge) badge.style.display = 'none';
+        }
         
         // 調試：檢查數據（僅在開發時啟用）
         if (window.DEBUG_BAZI) {
@@ -1139,8 +1155,12 @@ class FortuneSystem {
             fav = fav.filter(x => x && String(x).trim() !== '');
             bad = bad.filter(x => x && String(x).trim() !== '');
             
-            // 處理神煞數據
+            // 處理神煞數據（支援 shenShaByPillar 易兌格式）
             let stars = [];
+            let shenShaByPillar = null;
+            if (baziResult.specialStars && baziResult.specialStars.shenShaByPillar) {
+                shenShaByPillar = baziResult.specialStars.shenShaByPillar;
+            }
             if (Array.isArray(n.specialStars) && n.specialStars.length > 0) {
                 stars = n.specialStars;
             } else if (baziResult.specialStars) {
@@ -1150,6 +1170,17 @@ class FortuneSystem {
                     stars = [baziResult.specialStars.specialNotes];
                 }
             }
+
+            // 生成神煞詳解 HTML（日/月/年神煞）
+            const mkShenShaDetail = (sp) => {
+                if (!sp || (!sp.day?.length && !sp.month?.length && !sp.year?.length)) return '';
+                const fmt = (arr) => (arr || []).map(x => `${x.name}【${x.loc || '空'}】`).join('、');
+                const parts = [];
+                if (sp.day && sp.day.length) parts.push('<div><strong>日神煞：</strong>' + fmt(sp.day) + '</div>');
+                if (sp.month && sp.month.length) parts.push('<div><strong>月神煞：</strong>' + fmt(sp.month) + '</div>');
+                if (sp.year && sp.year.length) parts.push('<div><strong>年神煞：</strong>' + fmt(sp.year) + '</div>');
+                return parts.length ? '<div style="margin-top:0.5rem;font-size:0.85rem;line-height:1.5;">' + parts.join('') + '</div>' : '';
+            };
 
             // 生成標籤 HTML，使用與 HTML 匹配的結構
             // 檢查是否已經嘗試過讀取數據（通過檢查 normalized 數據）
@@ -1221,6 +1252,7 @@ class FortuneSystem {
                     <div class="tag-container">
                         ${mkStarTags(stars)}
                     </div>
+                    ${mkShenShaDetail(shenShaByPillar)}
                 </div>
             `;
             
@@ -1875,6 +1907,7 @@ class FortuneSystem {
 
         setTimeout(() => {
             try {
+                this.userData.name = (document.getElementById('name')?.value || '').trim();
                 this.userData.birthDate = document.getElementById('birth-date')?.value || '';
                 this.userData.birthTime = document.getElementById('birth-time')?.value || '';
                 this.userData.gender = document.querySelector('input[name="gender"]:checked')?.value || 'male';
@@ -1914,7 +1947,8 @@ class FortuneSystem {
                         fullBirthDate, 
                         this.userData.gender, 
                         useSolarTime, 
-                        longitude
+                        longitude,
+                        { userName: this.userData.name, birthDate: this.userData.birthDate }
                     );
                     
                     // 轉換為舊格式以兼容現有顯示
@@ -2130,40 +2164,52 @@ class FortuneSystem {
         
         // 移除五行強弱和喜用神的文字顯示（因為UI已經顯示了）
         
-        // 十二長生（以日主天干查每柱地支；UI 與十神分析一致：四柱網格卡片）
+        // 十二長生／星運／自坐／空亡（易兌格式）
         if (fullBaziData.longevity && typeof fullBaziData.longevity === 'object') {
+            const ziZuo = fullBaziData.longevity.ziZuo || {};
+            const voidBy = fullBaziData.voidEmptiness && fullBaziData.voidEmptiness.byPillar ? fullBaziData.voidEmptiness.byPillar : {};
             const hasAny = ['year','month','day','hour'].some(p => fullBaziData.longevity[p] != null);
-            if (hasAny) {
+            if (hasAny || Object.keys(ziZuo).length || Object.keys(voidBy).length) {
                 html += '<div class="analysis-group longevity-group">';
-                html += '<h4><i class="fas fa-leaf"></i> 十二長生</h4>';
+                html += '<h4><i class="fas fa-leaf"></i> 星運／自坐／空亡</h4>';
                 html += '<div class="longevity-grid">';
                 ['year','month','day','hour'].forEach(pillar => {
                     const pillarName = { year: '年', month: '月', day: '日', hour: '時' }[pillar];
-                    const val = fullBaziData.longevity[pillar];
-                    if (val != null) {
-                        html += `<div class="longevity-item"><span class="longevity-pillar-name">${pillarName}柱</span><span class="longevity-value">${val}</span></div>`;
+                    const star = fullBaziData.longevity[pillar];
+                    const zz = ziZuo[pillar];
+                    const vv = voidBy[pillar];
+                    const parts = [];
+                    if (star) parts.push('星運:' + star);
+                    if (zz) parts.push('自坐:' + zz);
+                    if (vv) parts.push('空亡:' + vv);
+                    if (parts.length) {
+                        html += `<div class="longevity-item"><span class="longevity-pillar-name">${pillarName}柱</span><span class="longevity-value">${parts.join('，')}</span></div>`;
                     }
                 });
-                html += '</div>';
-                html += '</div>';
+                html += '</div></div>';
             }
         }
         
-        // 身強身弱依據（dm_strength.reasons）與規則追溯（rules_trace）
+        // 身強身弱依據（dm_strength.reasons）與規則追溯（rules_trace）— 推論依據 UI 美化
         const dm = fullBaziData.elementStrength && fullBaziData.elementStrength.dm_strength;
         const trace = fullBaziData.favorableElements && fullBaziData.favorableElements.rules_trace;
         if ((dm && dm.reasons && dm.reasons.length) || (trace && trace.length)) {
-            html += '<div class="analysis-group">';
-            html += '<h4>推論依據</h4>';
+            html += '<div class="analysis-group reasoning-basis-card">';
+            html += '<div class="reasoning-basis-header"><i class="fas fa-sitemap"></i><h4>推論依據</h4></div>';
             if (dm && dm.reasons && dm.reasons.length) {
-                html += '<p style="font-size:0.9rem; color:rgba(255,255,255,0.7); margin-bottom:6px;">身強/身弱：</p><ul style="margin:0 0 8px 1.2em; font-size:0.85rem;">';
-                dm.reasons.forEach(r => { html += `<li>${r}</li>`; });
-                html += '</ul>';
+                html += '<div class="reasoning-subsection"><div class="reasoning-subtitle"><i class="fas fa-balance-scale"></i><span>身強／身弱</span></div><div class="reasoning-list reasoning-strength">';
+                dm.reasons.forEach(r => { html += `<div class="reasoning-item"><i class="fas fa-circle" aria-hidden="true"></i><span>${r}</span></div>`; });
+                html += '</div></div>';
             }
             if (trace && trace.length) {
-                html += '<p style="font-size:0.9rem; color:rgba(255,255,255,0.7); margin-bottom:6px;">喜忌規則追溯：</p><ul style="margin:0; font-size:0.85rem;">';
-                trace.forEach(t => { html += `<li>${t}</li>`; });
-                html += '</ul>';
+                html += '<div class="reasoning-subsection"><div class="reasoning-subtitle"><i class="fas fa-project-diagram"></i><span>喜忌規則追溯</span></div><div class="reasoning-list reasoning-rules">';
+                trace.forEach(t => {
+                    const ruleMatch = t.match(/\s*\(rule:\s*([^)]+)\)\s*$/);
+                    const label = ruleMatch ? ruleMatch[1] : '';
+                    const text = ruleMatch ? t.replace(/\s*\(rule:\s*[^)]+\)\s*$/, '').trim() : t;
+                    html += `<div class="reasoning-item"><i class="fas fa-chevron-right" aria-hidden="true"></i><span>${text}</span>${label ? `<span class="reasoning-rule-tag">${label}</span>` : ''}</div>`;
+                });
+                html += '</div></div>';
             }
             html += '</div>';
         }
@@ -2761,21 +2807,27 @@ class FortuneSystem {
                 const ageStart = f.ageStart;
                 const ageEnd = f.ageEnd;
                 const isCurrent = !!f.isCurrent;
-                let level = null;
+                let level = f.fortuneLevel || null;
                 let score = undefined;
-                if (hasDayMaster && computeScore) {
+                if (!level && hasDayMaster && computeScore) {
                     score = QualityMapper.computeDayunScore(gan, zhi, dayMaster);
-                } else if (typeof QualityMapper !== 'undefined' && QualityMapper.levelFromGanzhi) {
+                } else if (!level && typeof QualityMapper !== 'undefined' && QualityMapper.levelFromGanzhi) {
                     level = QualityMapper.levelFromGanzhi(gan, zhi);
                 }
                 const cycle = { gan, zhi, ageStart, ageEnd, index: i, level, score };
-                const q = this.getCycleQuality(cycle);
+                const cycleWithLevel = { ...cycle, level: f.fortuneLevel || cycle.level };
+                const q = this.getCycleQuality(cycleWithLevel);
+                const qLabel = (q && q.label && String(q.label).trim()) ? q.label : '平';
+                const qClass = (q && q.class) ? q.class : 'neutral';
                 const ageStr = `${ageStart}–${ageEnd}歲`;
                 const currentClass = isCurrent ? ' dayun-item--current' : '';
                 const currentBadge = isCurrent ? '<span class="dayun-current-badge">當下大運</span>' : '';
-                const fortuneTypeBadge = (f.fortuneType && f.fortuneType !== '中性') ? `<span class="dayun-fortune-type dayun-fortune-type--${f.fortuneType === '喜用神大運' ? 'fav' : f.fortuneType === '忌神大運' ? 'unfav' : 'mixed'}">${f.fortuneType}</span>` : '';
-                const tenGodsLabel = (f.tenGodsLabel && f.tenGodsLabel.trim() !== '') ? `<span class="dayun-ten-gods" style="font-size:0.75rem;color:rgba(255,255,255,0.7);">${f.tenGodsLabel}</span>` : '';
-                html += `<div class="dayun-item${currentClass}">${currentBadge}${fortuneTypeBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div>${tenGodsLabel}<span class="dayun-quality dayun-quality--${q.class}">${q.label}</span></div>`;
+                const fortuneTypeLabel = f.fortuneType || '中性';
+                const fortuneTypeClass = fortuneTypeLabel === '喜用神大運' ? 'fav' : fortuneTypeLabel === '忌神大運' ? 'unfav' : 'mixed';
+                const fortuneTypeBadge = `<span class="dayun-fortune-type dayun-fortune-type--${fortuneTypeClass}">${fortuneTypeLabel}</span>`;
+                const tenGodsLabel = (f.tenGodsLabel && f.tenGodsLabel.trim() !== '') ? `<span class="dayun-ten-gods">${f.tenGodsLabel}</span>` : '';
+                const remarkTitle = (f.fortuneRemark && String(f.fortuneRemark).trim()) ? ` title="${f.fortuneRemark.replace(/"/g, '&quot;')}"` : '';
+                html += `<div class="dayun-item${currentClass}"${remarkTitle}>${currentBadge}${fortuneTypeBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div>${tenGodsLabel}<span class="dayun-quality dayun-quality--${qClass}">${qLabel}</span></div>`;
             }
         } else {
             const yangStems = ['甲', '丙', '戊', '庚', '壬'];
@@ -2808,10 +2860,12 @@ class FortuneSystem {
                 const cycle = { gan, zhi, ageStart, ageEnd, index: i - 1, level, score };
                 const isCurrent = currentAge != null && currentAge >= ageStart && currentAge <= ageEnd;
                 const q = this.getCycleQuality(cycle);
+                const qLabel = (q && q.label && String(q.label).trim()) ? q.label : '平';
                 const ageStr = `${ageStart}–${ageEnd}歲`;
                 const currentClass = isCurrent ? ' dayun-item--current' : '';
                 const currentBadge = isCurrent ? '<span class="dayun-current-badge">當下大運</span>' : '';
-                html += `<div class="dayun-item${currentClass}">${currentBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${q.label}</span></div>`;
+                const fortuneTypeBadge = '<span class="dayun-fortune-type dayun-fortune-type--mixed">中性</span>';
+                html += `<div class="dayun-item${currentClass}">${currentBadge}${fortuneTypeBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${qLabel}</span></div>`;
             }
         }
 

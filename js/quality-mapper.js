@@ -8,13 +8,13 @@
 
     var DEFAULT_MAPPING = {
         level_mapping: {
-            '大吉': { label: '優', class: 'excellent', score_threshold: 3.0 },
+            '大吉': { label: '大優', class: 'excellent', score_threshold: 3.0 },
             '中吉': { label: '優', class: 'good', score_threshold: 1.5 },
-            '小吉': { label: '平', class: 'neutral-good', score_threshold: 0.5 },
+            '小吉': { label: '小優', class: 'neutral-good', score_threshold: 0.5 },
             '平':   { label: '平', class: 'neutral', score_threshold: 0.0 },
-            '小凶': { label: '劣', class: 'warning', score_threshold: -0.5 },
+            '小凶': { label: '小劣', class: 'warning', score_threshold: -0.5 },
             '中凶': { label: '劣', class: 'bad', score_threshold: -1.5 },
-            '大凶': { label: '劣', class: 'danger', score_threshold: -3.0 }
+            '大凶': { label: '大劣', class: 'danger', score_threshold: -3.0 }
         },
         score_mapping: [
             { min: 3.0, max: 5.0, label: '大優', class: 'excellent-bright' },

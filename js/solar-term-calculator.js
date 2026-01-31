@@ -1,11 +1,10 @@
 /**
  * 節氣計算系統 SolarTermCalculator
- * 架構：大運流年正確計算架構指南 — 節氣計算系統
+ * 架構：節氣依天文公式計算，適用 1900–2100，無須逐年手動建檔。
  *
- * - 二十四節氣時間（精確到分鐘；資料庫不足時以日為單位）
- * - 節氣查詢接口：getTermDateTime(year, termName)、getTermsForYear(year)
- * - 12 節（用於大運起運）：小寒、立春、驚蟄、清明、立夏、芒種、小暑、立秋、白露、寒露、立冬、大雪
- * - 節氣數據庫：可擴充 1900–2100；目前內建 1983（精確時分）、2024–2026（日級）
+ * - 優先使用 lunar-javascript 公式計算（精確到分）
+ * - fallback：getApproximateJieForYear（近似日，0時0分）
+ * - 12 節（大運起運）：小寒、立春、驚蟄、清明、立夏、芒種、小暑、立秋、白露、寒露、立冬、大雪
  */
 (function (global) {
     'use strict';
@@ -15,31 +14,33 @@
         '小暑', '立秋', '白露', '寒露', '立冬', '大雪'
     ];
 
-    /** 節氣資料庫 [年][節名] = [月, 日, 時, 分]。可擴充 1900–2100。 */
-    var TERM_DB = {
-        1982: { '大雪': [12, 8, 1, 30] },
-        1983: {
-            '小寒': [1, 6, 5, 59], '立春': [2, 4, 17, 36], '驚蟄': [3, 6, 11, 47],
-            '清明': [4, 5, 16, 44], '立夏': [5, 6, 10, 11], '芒種': [6, 6, 14, 26],
-            '小暑': [7, 7, 20, 36], '立秋': [8, 8, 9, 30], '白露': [9, 8, 12, 42],
-            '寒露': [10, 9, 6, 4], '立冬': [11, 8, 8, 53], '大雪': [12, 8, 1, 50]
-        },
-        2024: {
-            '小寒': [1, 6, 0, 0], '立春': [2, 4, 0, 0], '驚蟄': [3, 5, 0, 0], '清明': [4, 4, 0, 0],
-            '立夏': [5, 5, 0, 0], '芒種': [6, 5, 0, 0], '小暑': [7, 6, 0, 0], '立秋': [8, 7, 0, 0],
-            '白露': [9, 7, 0, 0], '寒露': [10, 8, 0, 0], '立冬': [11, 7, 0, 0], '大雪': [12, 7, 0, 0]
-        },
-        2025: {
-            '小寒': [1, 5, 0, 0], '立春': [2, 3, 0, 0], '驚蟄': [3, 5, 0, 0], '清明': [4, 4, 0, 0],
-            '立夏': [5, 5, 0, 0], '芒種': [6, 5, 0, 0], '小暑': [7, 7, 0, 0], '立秋': [8, 7, 0, 0],
-            '白露': [9, 7, 0, 0], '寒露': [10, 8, 0, 0], '立冬': [11, 7, 0, 0], '大雪': [12, 7, 0, 0]
-        },
-        2026: {
-            '小寒': [1, 5, 0, 0], '立春': [2, 4, 0, 0], '驚蟄': [3, 5, 0, 0], '清明': [4, 4, 0, 0],
-            '立夏': [5, 5, 0, 0], '芒種': [6, 5, 0, 0], '小暑': [7, 7, 0, 0], '立秋': [8, 7, 0, 0],
-            '白露': [9, 7, 0, 0], '寒露': [10, 8, 0, 0], '立冬': [11, 7, 0, 0], '大雪': [12, 7, 0, 0]
-        }
-    };
+    /** lunar-javascript 節氣名對照（繁簡體） */
+    var JIE_TO_LUNAR = { '小寒':'小寒','立春':'立春','驚蟄':'惊蛰','清明':'清明','立夏':'立夏','芒種':'芒种','小暑':'小暑','立秋':'立秋','白露':'白露','寒露':'寒露','立冬':'立冬','大雪':'大雪' };
+
+    /** 備用：手動覆寫（僅在 lunar 失敗且需校正時使用） */
+    var TERM_DB = {};
+
+    /** 使用 lunar-javascript 取得某年 12 節精確時刻（北京時間）。若失敗回傳 []。 */
+    function getTermsFromLunar(year) {
+        var LunarObj = (typeof Lunar !== 'undefined' && Lunar) ? Lunar : (typeof window !== 'undefined' && window.Lunar) ? window.Lunar : null;
+        if (!LunarObj || typeof LunarObj.fromYmd !== 'function') return [];
+        try {
+            var lunar = LunarObj.fromYmd(year, 1, 1);
+            var table = lunar.getJieQiTable ? lunar.getJieQiTable() : (lunar.getJieQi && lunar.getJieQi());
+            if (!table || typeof table !== 'object') return [];
+            var out = [];
+            for (var i = 0; i < JIE_NAMES.length; i++) {
+                var name = JIE_NAMES[i];
+                var key = JIE_TO_LUNAR[name] || name;
+                var solar = table[key] || table[name];
+                if (solar && solar.getYear && solar.getMonth) {
+                    var dt = new Date(solar.getYear(), solar.getMonth() - 1, solar.getDay(), solar.getHour() || 0, solar.getMinute() || 0, solar.getSecond() || 0, 0);
+                    if (!isNaN(dt.getTime())) out.push({ name: name, date: dt });
+                }
+            }
+            return out;
+        } catch (e) { return []; }
+    }
 
     function mergeDataJsTerms() {
         if (typeof BAZI_DATA === 'undefined' || !BAZI_DATA.solarTerms) return;
@@ -143,21 +144,23 @@
         return out;
     }
 
-    /** 取得某年 12 節，依時間排序。回傳 { name, date, utc? }[]。同年若有 TERM_DB 優先用它（本地）；否則用 JSON（UTC）；再無則用近似公式，使起運每人不同。 */
+    /** 取得某年 12 節（大運起運只用「節」）。優先：lunar 公式 → TERM_DB → TERM_JSON → 近似公式。 */
     SolarTermCalculator.prototype.getTermsForYear = function (year) {
         var y = parseInt(year, 10);
-        var out = [];
-        var rowDb = TERM_DB[y];
-        if (rowDb && typeof rowDb === 'object') {
-            for (var i = 0; i < JIE_NAMES.length; i++) {
-                var n = JIE_NAMES[i];
-                var v = rowDb[n];
-                if (v == null) continue;
-                var dt = parseToDate(y, v);
-                if (dt && !isNaN(dt.getTime())) out.push({ name: n, date: dt });
+        var out = getTermsFromLunar(y);
+        if (out.length < 12) {
+            var rowDb = TERM_DB && TERM_DB[y];
+            if (rowDb && typeof rowDb === 'object') {
+                for (var i = 0; i < JIE_NAMES.length; i++) {
+                    var n = JIE_NAMES[i];
+                    var v = rowDb[n];
+                    if (v == null) continue;
+                    var dt = parseToDate(y, v);
+                    if (dt && !isNaN(dt.getTime())) out.push({ name: n, date: dt });
+                }
             }
         }
-        if (out.length === 0) {
+        if (out.length < 12) {
             var row = TERM_JSON[String(y)];
             if (row && typeof row === 'object') {
                 for (var j = 0; j < JIE_NAMES.length; j++) {
@@ -169,7 +172,7 @@
                 }
             }
         }
-        if (out.length === 0) {
+        if (out.length < 12) {
             out = getApproximateJieForYear(y);
         }
         out.sort(function (a, b) { return a.date.getTime() - b.date.getTime(); });

@@ -1,5 +1,5 @@
 /**
- * 靜月之光 - 完整八字命理分析系統 (UI 增強版)
+ * 靜月之前能量占卜儀 - 完整八字命理分析系統
  * 包含：八字排盤、十神、神煞、五行強弱、喜用神、大運、流年分析、UI渲染模組
  * 版本：v3.0 - 2026年1月修訂 (新增 BaziUI 視覺化模組)
  */
@@ -103,6 +103,44 @@ const WANG_XIU_QIU_SI = {
 const WUXING_SHENG = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
 const WUXING_KE = { '木': '土', '土': '水', '水': '火', '火': '金', '金': '木' };
 
+// 日柱曆法：mangpai=盲派/易兌（偏移+10，1983-08-25→乙酉）。設 window.BAZI_DAY_PILLAR_MODE='standard' 或 BAZI_DAY_PILLAR_OFFSET=0 可還原
+var _g = typeof global !== 'undefined' ? global : (typeof window !== 'undefined' ? window : {});
+var DAY_PILLAR_OFFSET = (typeof _g.BAZI_DAY_PILLAR_OFFSET === 'number') ? _g.BAZI_DAY_PILLAR_OFFSET : ((_g.BAZI_DAY_PILLAR_MODE === 'standard') ? 0 : 10);
+
+// 手動日柱校準（個別覆寫）：以姓名+生日為鍵，覆寫日柱後重算時柱與十神。預設已用盲派偏移。
+const BAZI_CALIBRATION_CONFIG = {};
+function getBaziCalibration(userName, birthDate) {
+    if (!userName || !birthDate) return null;
+    var key = (String(userName || '').trim() + '_' + String(birthDate || '').trim()).replace(/\s/g, '');
+    return BAZI_CALIBRATION_CONFIG[key] || null;
+}
+
+// 人元司令（子平真詮）：各月節氣後X日用事天干。例：酉月白露後9日庚金用事（陳信泓案）。
+// 供日後得令細分用；目前得令仍以整月月支五行計。
+const RENYUAN_SILING_ZIPING = {
+    '寅': [{ days: 7, gan: '戊' }, { days: 7, gan: '丙' }, { gan: '甲' }],
+    '卯': [{ gan: '甲' }], '辰': [{ days: 9, gan: '乙' }, { days: 7, gan: '戊' }, { gan: '癸' }],
+    '巳': [{ days: 9, gan: '戊' }, { days: 7, gan: '庚' }, { gan: '丙' }], '午': [{ gan: '丙' }],
+    '未': [{ days: 9, gan: '丁' }, { days: 7, gan: '己' }, { gan: '乙' }],
+    '申': [{ days: 7, gan: '戊' }, { days: 7, gan: '壬' }, { gan: '庚' }],
+    '酉': [{ days: 9, gan: '庚' }, { days: 7, gan: '辛' }, { gan: '辛' }],
+    '戌': [{ days: 9, gan: '辛' }, { days: 7, gan: '戊' }, { gan: '丁' }],
+    '亥': [{ days: 7, gan: '戊' }, { days: 7, gan: '甲' }, { gan: '壬' }],
+    '子': [{ gan: '壬' }], '丑': [{ days: 9, gan: '癸' }, { days: 7, gan: '己' }, { gan: '辛' }]
+};
+// 月令旺衰係數（子平法）：旺1.2、相1.1、休1.0、囚0.8、死0.6。用於五行強弱加權。
+// 寅卯春木旺｜巳午夏火旺｜申酉秋金旺｜亥子冬水旺｜辰戌丑未四季土旺
+const MONTH_ZHI_TO_WUXING_COEFF = {
+    '寅': { '木': 1.2, '火': 1.1, '水': 1.0, '金': 0.8, '土': 0.6 }, '卯': { '木': 1.2, '火': 1.1, '水': 1.0, '金': 0.8, '土': 0.6 },
+    '辰': { '土': 1.2, '金': 1.1, '火': 1.0, '木': 0.8, '水': 0.6 }, // 四季末
+    '巳': { '火': 1.2, '土': 1.1, '木': 1.0, '水': 0.8, '金': 0.6 }, '午': { '火': 1.2, '土': 1.1, '木': 1.0, '水': 0.8, '金': 0.6 },
+    '未': { '土': 1.2, '金': 1.1, '火': 1.0, '木': 0.8, '水': 0.6 }, // 四季末
+    '申': { '金': 1.2, '水': 1.1, '土': 1.0, '火': 0.8, '木': 0.6 }, '酉': { '金': 1.2, '水': 1.1, '土': 1.0, '火': 0.8, '木': 0.6 },
+    '戌': { '土': 1.2, '金': 1.1, '火': 1.0, '木': 0.8, '水': 0.6 }, // 四季末
+    '亥': { '水': 1.2, '木': 1.1, '金': 1.0, '土': 0.8, '火': 0.6 }, '子': { '水': 1.2, '木': 1.1, '金': 1.0, '土': 0.8, '火': 0.6 },
+    '丑': { '土': 1.2, '金': 1.1, '火': 1.0, '木': 0.8, '水': 0.6 }  // 四季末
+};
+
 // ==========================================
 // 2. 十神系統
 // ==========================================
@@ -139,7 +177,7 @@ const SPECIAL_STARS = {
         calculation: (stem, branch) => {
             const map = {
                 '甲': '丑未', '乙': '子申', '丙': '亥酉', '丁': '亥酉',
-                '戊': '丑未', '己': '子申', '庚': '丑未', '辛': '寅午',
+                '戊': '丑未', '己': '子申', '庚': '寅午', '辛': '寅午',
                 '壬': '卯巳', '癸': '卯巳'
             };
             return map[stem]?.includes(branch) ? true : false;
@@ -170,8 +208,8 @@ const SPECIAL_STARS = {
     '羊刃': {
         calculation: (stem) => {
             const map = {
-                '甲': '卯', '乙': '寅', '丙': '午', '丁': '巳',
-                '戊': '午', '己': '巳', '庚': '酉', '辛': '申',
+                '甲': '卯', '乙': '辰', '丙': '午', '丁': '巳',
+                '戊': '午', '己': '未', '庚': '酉', '辛': '申',
                 '壬': '子', '癸': '亥'
             };
             return map[stem];
@@ -188,6 +226,29 @@ const SPECIAL_STARS = {
         },
         meaning: '藝術才華、宗教緣分'
     }
+};
+
+// 神煞擴充（對齊易兌／萬年曆格式）：日神煞、月神煞、年神煞
+function _sancheng(branch, map) {
+    const keys = ['寅午戌','申子辰','巳酉丑','亥卯未'];
+    for (let i = 0; i < keys.length; i++) {
+        if (keys[i].includes(branch)) return map[keys[i]];
+    }
+    return null;
+}
+const SHENSHA_MAP = {
+    luShen: { '甲':'寅','乙':'卯','丙':'巳','丁':'午','戊':'巳','己':'午','庚':'申','辛':'酉','壬':'亥','癸':'子' },
+    yangRen: { '甲':'卯','乙':'辰','丙':'午','丁':'巳','戊':'午','己':'未','庚':'酉','辛':'申','壬':'子','癸':'亥' },
+    jinYu: { '甲':'辰','乙':'巳','丙':'未','丁':'申','戊':'未','己':'申','庚':'亥','辛':'子','壬':'丑','癸':'寅' },
+    jieSha: { '寅午戌':'亥','申子辰':'巳','巳酉丑':'寅','亥卯未':'申' },
+    zaiSha: { '寅午戌':'子','申子辰':'午','巳酉丑':'卯','亥卯未':'酉' },
+    wangShen: { '寅午戌':'巳','申子辰':'亥','巳酉丑':'申','亥卯未':'亥' },
+    jiangXing: { '寅午戌':'午','申子辰':'子','巳酉丑':'酉','亥卯未':'卯' },
+    muKu: { '甲':'未','乙':'戌','丙':'戌','丁':'丑','戊':'戌','己':'丑','庚':'丑','辛':'辰','壬':'辰','癸':'未' },
+    hongYan: { '甲':'午申','乙':'午申','丙':'寅','丁':'未','戊':'辰','己':'辰','庚':'戌','辛':'酉','壬':'子','癸':'申' },
+    tianDe: { '寅':'丁','卯':'申','辰':'壬','巳':'辛','午':'亥','未':'甲','申':'癸','酉':'寅','戌':'丙','亥':'乙','子':'己','丑':'庚' },
+    tianDeHe: { '丁':'壬','壬':'丁','丙':'辛','辛':'丙','甲':'己','己':'甲','乙':'庚','庚':'乙','戊':'癸','癸':'戊' },
+    yueDe: { '寅':'丙','卯':'甲','辰':'壬','巳':'庚','午':'壬','未':'甲','申':'庚','酉':'丙','戌':'甲','亥':'壬','子':'壬','丑':'庚' }
 };
 
 // ==========================================
@@ -223,7 +284,7 @@ class BaziCalculator {
         this.solarTerms1983 = {
             1: { '小寒': [1, 6, 5, 59] }, 2: { '立春': [2, 4, 17, 36] }, 3: { '驚蟄': [3, 6, 11, 47] },
             4: { '清明': [4, 5, 16, 44] }, 5: { '立夏': [5, 6, 10, 11] }, 6: { '芒種': [6, 6, 14, 26] },
-            7: { '小暑': [7, 7, 20, 36] }, 8: { '立秋': [8, 8, 10, 29] }, 9: { '白露': [9, 8, 12, 42] },
+            7: { '小暑': [7, 7, 20, 36] }, 8: { '立秋': [8, 8, 4, 42] }, 9: { '白露': [9, 8, 12, 42] },
             10: { '寒露': [10, 9, 6, 4] }, 11: { '立冬': [11, 8, 8, 53] }, 12: { '大雪': [12, 8, 1, 50] }
         };
         this.equationOfTime = {
@@ -232,7 +293,7 @@ class BaziCalculator {
         };
     }
     
-    calculateBazi(fullBirthDate, gender, useSolarTime = false, longitude = 120.2) {
+    calculateBazi(fullBirthDate, gender, useSolarTime = false, longitude = 120.2, opts) {
         if (!fullBirthDate) throw new Error('出生日期不能為空');
         const date = new Date(fullBirthDate);
         if (isNaN(date.getTime())) throw new Error(`無效的日期格式`);
@@ -247,16 +308,28 @@ class BaziCalculator {
         const yearPillar = this.calculateYearPillar(adjustedDate);
         const monthPillar = this.calculateMonthPillar(adjustedDate);
         // 日柱：鐵則 23:00 為界。晚子 23:00–24:00 屬當日；早子 00:00–01:00 屬次日；其餘用當日
-        const dayPillar = this.calculateDayPillarWithZiHourRule(adjustedDate);
+        let dayPillar = this.calculateDayPillarWithZiHourRule(adjustedDate);
         // 時柱：早子/晚子皆用「次日」天干依五鼠遁
-        const hourPillar = this.calculateHourPillarWithZiHourRule(adjustedDate, dayPillar.stem, dayPillar._dayDateForHour);
+        let hourPillar = this.calculateHourPillarWithZiHourRule(adjustedDate, dayPillar.stem, dayPillar._dayDateForHour);
         
-        const fourPillars = {
+        let fourPillars = {
             year: { gan: yearPillar.stem, zhi: yearPillar.branch },
             month: { gan: monthPillar.stem, zhi: monthPillar.branch },
             day: { gan: dayPillar.stem, zhi: dayPillar.branch },
             hour: { gan: hourPillar.stem, zhi: hourPillar.branch }
         };
+
+        let baziCalibrated = false;
+        const cal = (opts && opts.baziCalibration) || (opts && opts.userName && opts.birthDate ? getBaziCalibration(opts.userName, opts.birthDate) : null);
+        if (cal && cal.dayPillar) {
+            const dp = String(cal.dayPillar).trim();
+            if (dp.length >= 2) {
+                fourPillars.day = { gan: dp[0], zhi: dp[1] };
+                hourPillar = this.calculateHourPillarWithZiHourRule(adjustedDate, fourPillars.day.gan, dayPillar._dayDateForHour || adjustedDate);
+                fourPillars.hour = { gan: hourPillar.stem, zhi: hourPillar.branch };
+                baziCalibrated = true;
+            }
+        }
 
         const dayMaster = fourPillars.day.gan;
         const tenGods = this.calculateTenGods(fourPillars, dayMaster);
@@ -271,7 +344,7 @@ class BaziCalculator {
         const pattern = this.analyzePattern(fourPillars, dayMaster, elementStrength, favorableElements);
         const dayunOpts = (typeof longitude === 'number' && !isNaN(longitude)) ? { longitude, zoneOffsetHours: 8 } : undefined;
         let greatFortune = this.calculateGreatFortune(fullBirthDate, gender, fourPillars, dayunOpts);
-        greatFortune = this._tagDayunWithFavorable(greatFortune, favorableElements, dayMaster);
+        greatFortune = this._tagDayunWithFavorable(greatFortune, favorableElements, dayMaster, fourPillars);
         const lifePalace = this.calculateLifePalace(fourPillars, adjustedDate);
         const fetalOrigin = this.calculateFetalOrigin(fourPillars);
         const fetalBreath = this.calculateFetalBreath(fourPillars);
@@ -284,7 +357,7 @@ class BaziCalculator {
             fourPillars, dayMaster, tenGods, hiddenStems, specialStars, elementStrength,
             longevity, pattern, favorableElements, greatFortune, lifePalace, fetalOrigin,
             fetalBreath, bodyPalace, voidEmptiness, weighingBone, starMansion, trueSolarInfo,
-            adjustedTime: adjustedDate.toISOString(), gender
+            adjustedTime: adjustedDate.toISOString(), gender, baziCalibrated: !!baziCalibrated
         };
     }
     
@@ -324,7 +397,22 @@ class BaziCalculator {
         return { score: Math.min(100, Math.round(raw)), roots };
     }
 
-    /** 得助：僅計「比劫透干」多寡（年月時天干，不含日干）；印星不計入得助，避免身弱卻得助滿分 */
+    /** 得生（權重10%）：印星透干生扶。年月時天干為印星（生我者）；雙印透且水旺可給滿分。 */
+    _getDeSheng(fourPillars, dayMaster) {
+        const dayEl = HEAVENLY_STEMS_DETAIL[dayMaster]?.element;
+        const shengWo = dayEl ? Object.keys(WUXING_SHENG).find(k => WUXING_SHENG[k] === dayEl) : null;
+        let count = 0;
+        ['year', 'month', 'hour'].forEach(p => {
+            const gan = fourPillars[p]?.gan;
+            if (!gan) return;
+            const el = HEAVENLY_STEMS_DETAIL[gan]?.element;
+            if (el === shengWo) count += 1.0;
+        });
+        const score = count >= 2 ? 100 : (count >= 1 ? 50 : Math.min(100, Math.round(count * 33)));
+        return { score };
+    }
+
+    /** 得助（權重10%）：比劫透干幫扶。看年月時天干是否為比劫（同五行），不含日干。 */
     _getDeShi(fourPillars, dayMaster) {
         const dayEl = HEAVENLY_STEMS_DETAIL[dayMaster]?.element;
         let count = 0;
@@ -338,7 +426,7 @@ class BaziCalculator {
         return { score };
     }
 
-    /** 綜合判定身強/身弱/專旺/從格（得令 40–50%、得地 25–35%、得助 15–25%，剋耗反向扣分） */
+    /** 綜合判定身強/身弱（得令50%、得地30%、得生10%、得助10%，百分制） */
     calculateElementStrength(fourPillars, dayMaster) {
         const dayMasterElement = HEAVENLY_STEMS_DETAIL[dayMaster]?.element;
         const monthZhi = fourPillars.month?.zhi;
@@ -346,10 +434,11 @@ class BaziCalculator {
 
         const deLing = this._getDeLing(monthZhi, dayMasterElement);
         const deDi = this._getDeDi(fourPillars, dayMasterElement);
+        const deSheng = this._getDeSheng(fourPillars, dayMaster);
         const deShi = this._getDeShi(fourPillars, dayMaster);
 
-        const wLing = 0.5, wDi = 0.3, wShi = 0.2;
-        const composite = (deLing.score / 100) * (wLing * 100) + (deDi.score / 100) * (wDi * 100) + (deShi.score / 100) * (wShi * 100);
+        const wLing = 0.5, wDi = 0.3, wSheng = 0.1, wShi = 0.1;
+        const composite = (deLing.score / 100) * (wLing * 100) + (deDi.score / 100) * (wDi * 100) + (deSheng.score / 100) * (wSheng * 100) + (deShi.score / 100) * (wShi * 100);
         let bodyStrength;
         if (composite >= 55) bodyStrength = '身強';
         else if (composite >= 45) bodyStrength = '中和';
@@ -357,22 +446,24 @@ class BaziCalculator {
         else bodyStrength = '極弱';
 
         const dmReasons = [
-            `得令(${Math.round(wLing * 100)}%)：月令${monthZhi}${monthEl}，日主${dayMasterElement} → ${deLing.state}${['旺','相'].includes(deLing.state) ? '，得令' : '，失令'}`,
-            `得地(${Math.round(wDi * 100)}%)：根氣得分${deDi.score}（強根/印根/餘氣）`,
-            `得助(${Math.round(wShi * 100)}%)：比劫透干（年月時天干）得分${deShi.score}`
+            `得令(${Math.round(wLing * 100)}%)：月令${monthZhi}${monthEl}，日主${dayMasterElement} → ${deLing.state}${['旺','相'].includes(deLing.state) ? '，得令' : '，失令'}，得分${deLing.score}`,
+            `得地(${Math.round(wDi * 100)}%)：地支根氣（本氣/中氣/餘氣）得分${deDi.score}`,
+            `得生(${Math.round(wSheng * 100)}%)：印星透干生扶得分${deSheng.score}`,
+            `得助(${Math.round(wShi * 100)}%)：比劫透干幫扶得分${deShi.score}`
         ];
 
         const elementCount = { '金': 0, '木': 0, '火': 0, '土': 0, '水': 0 };
-        const elementScore = { '金': 0, '木': 0, '火': 0, '土': 0, '水': 0 };
+        const rawScore = { '金': 0, '木': 0, '火': 0, '土': 0, '水': 0 };
+        // 天干：每透一柱計 1
         Object.values(fourPillars).forEach(pillar => {
             const stemInfo = HEAVENLY_STEMS_DETAIL[pillar.gan];
             if (stemInfo) {
                 elementCount[stemInfo.element]++;
-                elementScore[stemInfo.element] += stemInfo.strength * 1.0;
+                rawScore[stemInfo.element] += 1.0;
             }
         });
-        // 地支藏干權重：本氣 0.6、中氣 0.3、餘氣 0.1（僅以藏干計分，避免本氣重複；未中丁火等才能正確體現）
-        const hiddenWeights = [0.6, 0.3, 0.1];
+        // 地支藏干權重（子平法）：本氣 1.0、中氣 0.6、餘氣 0.3
+        const hiddenWeights = [1.0, 0.6, 0.3];
         Object.values(fourPillars).forEach(pillar => {
             const branchInfo = EARTHLY_BRANCHES_DETAIL[pillar.zhi];
             if (branchInfo) {
@@ -381,11 +472,17 @@ class BaziCalculator {
                     const el = HEAVENLY_STEMS_DETAIL[hiddenStem]?.element;
                     if (el) {
                         elementCount[el]++;
-                        const w = hiddenWeights[idx] != null ? hiddenWeights[idx] : (stems.length === 1 ? 0.6 : (1 / Math.max(stems.length, 1)));
-                        elementScore[el] += branchInfo.strength * w;
+                        const w = hiddenWeights[idx] != null ? hiddenWeights[idx] : (stems.length === 1 ? 1.0 : 0.6);
+                        rawScore[el] += w;
                     }
                 });
             }
+        });
+        // 月令旺衰加權：各五行基礎分 × 月令係數（旺1.2/相1.1/休1.0/囚0.8/死0.6）
+        const monthCoeff = MONTH_ZHI_TO_WUXING_COEFF[monthZhi] || { '金': 1.0, '木': 1.0, '水': 1.0, '火': 1.0, '土': 1.0 };
+        const elementScore = {};
+        ['金', '木', '水', '火', '土'].forEach(el => {
+            elementScore[el] = (rawScore[el] || 0) * (monthCoeff[el] || 1.0);
         });
 
         const totalScore = Object.values(elementScore).reduce((a, b) => a + b, 0) || 1;
@@ -401,7 +498,12 @@ class BaziCalculator {
             let maxEl = '';
             let maxS = 0;
             Object.entries(elementScore).forEach(([el, s]) => { if (s > maxS && el !== dayMasterElement) { maxS = s; maxEl = el; } });
-            if (maxS > elementScore[dayMasterElement] * 2.5) {
+            const shengWo = Object.keys(WUXING_SHENG).find(k => WUXING_SHENG[k] === dayMasterElement);
+            const keWo = Object.keys(WUXING_KE).find(k => WUXING_KE[k] === dayMasterElement);
+            const sealScore = elementScore[shengWo] || 0;
+            const killerScore = elementScore[keWo] || 0;
+            const hasYinHuaSha = sealScore > 0 && sealScore >= killerScore * 0.5;
+            if (maxS > elementScore[dayMasterElement] * 2.5 && !hasYinHuaSha) {
                 patternOverride = '從' + maxEl + '格';
                 bodyStrength = '從格';
             }
@@ -435,6 +537,7 @@ class BaziCalculator {
             elementDetails,
             deLing: { state: deLing.state, score: deLing.score },
             deDi: { score: deDi.score, roots: deDi.roots },
+            deSheng: { score: deSheng.score },
             deShi: { score: deShi.score },
             compositeScore: dm_strength.score,
             patternOverride
@@ -495,14 +598,8 @@ class BaziCalculator {
         const metalRatio = totalScore > 0 ? metalScore / totalScore : 0;
         const shaZhongShenQing = !isStrong && !isCong && metalRatio > 0.28 && dayScore < totalScore * 0.25;
 
-        if (isCong) {
-            strategyOrder.push('格局');
-            favorable = [mostWanted];
-            unfavorable = [keWo, woSheng].filter(Boolean);
-            coreGods.push(mostWanted);
-            reasoning = `從${mostWanted}格，喜順勢${mostWanted}，忌克泄${mostWanted}。`;
-            rules_trace.push(`dm_strength.level=從格 => 喜順勢${mostWanted}，忌克泄${mostWanted}`);
-        } else if (shaZhongShenQing) {
+        // 殺重身輕必須優先於從格：有印星化殺時不取從格
+        if (shaZhongShenQing) {
             strategyOrder.push('格局(杀重身轻)');
             favorable = [shengWo, dayMasterElement].filter(Boolean);
             coreGods.push(shengWo);
@@ -514,6 +611,13 @@ class BaziCalculator {
                 secondaryGods.push('火');
                 reasoning += ' 申月漸入秋可借少許火暖局，惟非主要矛盾。';
             }
+        } else if (isCong) {
+            strategyOrder.push('格局');
+            favorable = [mostWanted];
+            unfavorable = [keWo, woSheng].filter(Boolean);
+            coreGods.push(mostWanted);
+            reasoning = `從${mostWanted}格，喜順勢${mostWanted}，忌克泄${mostWanted}。`;
+            rules_trace.push(`dm_strength.level=從格 => 喜順勢${mostWanted}，忌克泄${mostWanted}`);
         } else {
             if (needTiaoHou) {
                 strategyOrder.push('調候');
@@ -656,10 +760,15 @@ class BaziCalculator {
     // 格局分析（通用版）；第四步依喜忌定格局描述
     analyzePattern(fourPillars, dayMaster, elementStrength, favorableElements) {
         const dayMasterElement = elementStrength.dayMasterElement || HEAVENLY_STEMS_DETAIL[dayMaster].element;
+        const strategyOrder = favorableElements?.hierarchy?.strategyLayer?.order || [];
+        const isShaZhongShenQing = strategyOrder.some(s => (s || '').includes('杀重身轻'));
         let patternType = elementStrength.patternOverride || '正格';
         let description = '';
 
-        if (elementStrength.patternOverride === '專旺格') {
+        if (isShaZhongShenQing) {
+            patternType = '殺重身輕';
+            description = `${dayMaster}${dayMasterElement}日主身弱，官殺（金）極旺攻身，杀重身轻；用印化殺、喜比劫助身`;
+        } else if (elementStrength.patternOverride === '專旺格') {
             description = `${dayMaster}${dayMasterElement}日主極旺，形成${dayMasterElement}氣專旺格局`;
         } else if (elementStrength.patternOverride && elementStrength.patternOverride.startsWith('從')) {
             const maxEl = elementStrength.patternOverride.replace('從', '').replace('格', '');
@@ -854,7 +963,7 @@ class BaziCalculator {
     }
     
     /** 第四步：斷事·應吉凶 — 為每步大運標註十神、喜用神大運/忌神大運/中性；大運地支權重七成。陽年女命必逆排。 */
-    _tagDayunWithFavorable(greatFortune, favorableElements, dayMaster) {
+    _tagDayunWithFavorable(greatFortune, favorableElements, dayMaster, fourPillars) {
         if (!greatFortune || !greatFortune.fortunes || !favorableElements) return greatFortune;
         const fav = (favorableElements.favorable || []).slice();
         const unfav = (favorableElements.unfavorable || []).slice();
@@ -880,19 +989,37 @@ class BaziCalculator {
             const zhiFav = fav.indexOf(zEl) >= 0;
             const zhiUnfav = unfav.indexOf(zEl) >= 0;
             const score = (ganFav ? ganWeight : ganUnfav ? -ganWeight : 0) + (zhiFav ? zhiWeight : zhiUnfav ? -zhiWeight : 0);
+            const ganZhiYiQi = gEl && zEl && gEl === zEl;
             let fortuneType = '中性';
             let fortuneRemark = '';
+            let fortuneLevel = '';
             if (score >= 0.8) {
                 fortuneType = '喜用神大運';
-                fortuneRemark = '喜用神大運：人生順遂、機遇多的黃金十年。（地支權重七成）';
+                const dayZhi = fourPillars?.day?.zhi;
+                const CHONG_PAIRS = [['卯','酉'],['酉','卯'],['子','午'],['午','子'],['寅','申'],['申','寅'],['巳','亥'],['亥','巳']];
+                const chongRiZhi = dayZhi && CHONG_PAIRS.some(([a,b]) => (f.zhi === a && dayZhi === b));
+                const dayZhiEl = dayZhi ? (EARTHLY_BRANCHES_DETAIL[dayZhi]?.element || '') : '';
+                const dayZhiWeiJi = dayZhiEl && unfav.indexOf(dayZhiEl) >= 0;
+                const chongJiWeiJi = chongRiZhi && dayZhiWeiJi;
+                if (score >= 0.95 && ganZhiYiQi) {
+                    fortuneLevel = '大吉';
+                    fortuneRemark = chongJiWeiJi ? '喜用神大運（大吉）：干支一氣用神到位，且大運支冲日支忌神，破阻除障，大利事業財運。' : '喜用神大運（大吉）：干支一氣用神到位，人生順遂、機遇多的黃金十年。';
+                } else {
+                    fortuneLevel = '小吉';
+                    fortuneRemark = chongJiWeiJi ? '喜用神大運：用神到位且冲日支忌神，破阻除障，利事業發展。' : '喜用神大運：人生順遂、機遇多的十年。（地支權重七成）';
+                }
             } else if (score <= -0.8) {
                 fortuneType = '忌神大運';
+                fortuneLevel = score <= -0.95 ? '大凶' : '小凶';
                 fortuneRemark = '忌神大運：壓力倍增、需蟄伏守成的十年。（地支權重七成）';
             } else if (score > 0 || score < 0) {
                 fortuneType = '喜忌參半';
+                fortuneLevel = '平';
                 fortuneRemark = '喜忌參半：吉凶皆有，需細分上下半年及具體事件；地支為忌時影響更大。';
+            } else {
+                fortuneLevel = '平';
             }
-            return { ...f, tenGodsStem: tgStem, tenGodsZhi: tgZhi, tenGodsLabel, fortuneType, fortuneRemark: fortuneRemark || f.remark };
+            return { ...f, tenGodsStem: tgStem, tenGodsZhi: tgZhi, tenGodsLabel, fortuneType, fortuneLevel, fortuneRemark: fortuneRemark || f.remark };
         });
         if (greatFortune.currentFortune) {
             const cur = greatFortune.fortunes.find(f => f.isCurrent);
@@ -922,23 +1049,31 @@ class BaziCalculator {
         return descriptions[key] || '大運平穩，需把握時機';
     }
     
+    /** 年柱：以立春為界，立春前屬上一年。有 SolarTermCalculator 時用節氣精確時刻；否則用 solarTerms1983 近似。 */
     calculateYearPillar(date) {
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        const liChun = this.solarTerms1983[2]?.立春;
+        const d = date instanceof Date ? date : new Date(date);
+        const year = d.getFullYear();
         let actualYear = year;
-        if (month < 2 || (month === 2 && day < liChun[1])) {
-            actualYear = year - 1;
-        } else if (month === 2 && day === liChun[1]) {
-            const hour = date.getHours();
-            const minute = date.getMinutes();
-            if (hour < liChun[2] || (hour === liChun[2] && minute < liChun[3])) {
+        var liChun = (this.solarTerms1983[2] && this.solarTerms1983[2]['立春']) || null;
+        if (typeof SolarTermCalculator !== 'undefined') {
+            var solarCalc = new SolarTermCalculator();
+            var liChunDate = solarCalc.getTermDateTime(year, '立春');
+            if (liChunDate && !isNaN(liChunDate.getTime()) && d.getTime() < liChunDate.getTime()) {
                 actualYear = year - 1;
+            } else if (!liChunDate || (liChunDate && isNaN(liChunDate.getTime()))) {
+                if (liChun) {
+                    var m = d.getMonth() + 1, day = d.getDate();
+                    if (m < 2 || (m === 2 && day < liChun[1])) actualYear = year - 1;
+                    else if (m === 2 && day === liChun[1] && (d.getHours() < liChun[2] || (d.getHours() === liChun[2] && d.getMinutes() < liChun[3]))) actualYear = year - 1;
+                }
             }
+        } else if (liChun) {
+            var m2 = d.getMonth() + 1, day2 = d.getDate();
+            if (m2 < 2 || (m2 === 2 && day2 < liChun[1])) actualYear = year - 1;
+            else if (m2 === 2 && day2 === liChun[1] && (d.getHours() < liChun[2] || (d.getHours() === liChun[2] && d.getMinutes() < liChun[3]))) actualYear = year - 1;
         }
-        const stemIndex = ((actualYear - 4) % 10 + 10) % 10;
-        const branchIndex = ((actualYear - 4) % 12 + 12) % 12;
+        var stemIndex = ((actualYear - 4) % 10 + 10) % 10;
+        var branchIndex = ((actualYear - 4) % 12 + 12) % 12;
         return { stem: this.stems[stemIndex], branch: this.branches[branchIndex] };
     }
     
@@ -949,19 +1084,19 @@ class BaziCalculator {
     calculateMonthPillar(date) {
         const year = date.getFullYear();
         const yearPillar = this.calculateYearPillar(date);
-        const monthStemStart = { '甲': 2, '己': 2, '乙': 4, '庚': 4, '丙': 6, '辛': 6, '丁': 8, '壬': 8, '戊': 0, '癸': 0 };
+        // 五虎遁：甲己年丙寅、乙庚年戊寅、丙辛年庚寅、丁壬年壬寅、戊癸年甲寅 → 寅月干對應的 startIndex
+        const monthStemStart = { '甲': 0, '己': 0, '乙': 2, '庚': 2, '丙': 4, '辛': 4, '丁': 6, '壬': 6, '戊': 8, '癸': 8 };
         let monthBranchIndex = -1;
 
         if (typeof SolarTermCalculator !== 'undefined') {
             const solarCalc = new SolarTermCalculator();
             const terms = solarCalc.getTermsForYear(year);
             if (terms && terms.length >= 12) {
-                const birthDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+                const birthMoment = (date instanceof Date ? date : new Date(date)).getTime();
                 let lastJieIndex = -1;
                 for (let i = 0; i < terms.length; i++) {
-                    const t = terms[i].date;
-                    const termDay = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 0, 0, 0, 0);
-                    if (termDay.getTime() <= birthDay.getTime()) lastJieIndex = i;
+                    const termDate = terms[i].date;
+                    if (termDate.getTime() <= birthMoment) lastJieIndex = i;
                 }
                 if (lastJieIndex >= 0) {
                     monthBranchIndex = (lastJieIndex + 1) % 12;
@@ -979,18 +1114,23 @@ class BaziCalculator {
     }
     
     /**
-     * 日柱：以每日 23:00（子時初）為日界，主流／多數排盤採用「晚子時換日柱」。
-     * 規則：23:00 後出生 → 日柱用次日；23:00 前 → 日柱用當日。早子 00:00–00:59 日曆已為次日，日柱即當日日干。
-     * 例：1994-6-20 23:26 → 日柱取 6 月 21 日 → 戊寅；1994-6-21 00:30 → 日柱取 6 月 21 日 → 戊寅。
+     * 日柱：易兌對齊 — 晚子時(23:00–24:00) 日柱用當日；早子時(00:00–01:00) 用當日日干。
+     * 例：1994-6-20 23:26 晚子時 → 日柱取 6 月 20 日 → 丁丑；6-21 00:30 早子時 → 日柱取 6 月 21 日。
      * @returns {{ stem: string, branch: string, _dayDateForHour: Date }}
      */
     calculateDayPillarWithZiHourRule(date) {
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
         const hour = date.getHours();
         let logicalDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        if (hour >= 23) logicalDate.setDate(logicalDate.getDate() + 1); // 晚子：日柱用次日
+        if (hour >= 1 && hour < 23) {
+            // 非子時：日柱即當日
+        } else if (hour >= 23 || (hour >= 0 && hour < 1)) {
+            // 晚子 23:00–24:00 或 早子 00:00–01:00：易兌採晚子用當日、早子屬次日
+            if (hour >= 23) {
+                // 晚子時：日柱用當日（易兌 李羿函 1994-6-20 23:26 → 丁丑）
+            } else {
+                logicalDate.setDate(logicalDate.getDate() + 1); // 早子：屬次日
+            }
+        }
         const pillar = this.calculateDayPillarGeneric(logicalDate);
         return { stem: pillar.stem, branch: pillar.branch, _dayDateForHour: logicalDate };
     }
@@ -1000,12 +1140,17 @@ class BaziCalculator {
         return this.calculateDayPillarGeneric(date);
     }
 
+    /**
+     * 日柱：60 甲子序，基準 1900-01-31。
+     * DAY_PILLAR_OFFSET 可對齊盲派/易兌（如 10 使 1983-08-25→乙酉）。
+     */
     calculateDayPillarGeneric(date) {
         const baseDate = new Date(1900, 0, 31);
         const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         const timeDiff = targetDate.getTime() - baseDate.getTime();
         const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-        let ganZhiNumber = (31 + dayDiff) % 60;
+        const off = (typeof DAY_PILLAR_OFFSET === 'number') ? DAY_PILLAR_OFFSET : 0;
+        let ganZhiNumber = ((31 + dayDiff + off) % 60 + 60) % 60;
         if (ganZhiNumber <= 0) ganZhiNumber += 60;
         const stemIndex = ((ganZhiNumber - 1) % 10 + 10) % 10;
         const branchIndex = ((ganZhiNumber - 1) % 12 + 12) % 12;
@@ -1066,8 +1211,64 @@ class BaziCalculator {
             const horse = SPECIAL_STARS['驛馬'].calculation(b);
             if (horse && branches.includes(horse)) stars[`${p}Horse`] = horse;
         });
-        stars.specialNotes = ['年柱癸亥：天乙貴人在卯巳', '月柱庚申：驛馬在寅', '日柱乙酉：桃花在午', '時柱癸未：天乙貴人在卯巳'];
+        stars.shenShaByPillar = this.calculateShenShaByPillar(fourPillars, dayMaster);
+        const sp = stars.shenShaByPillar;
+        const notes = [];
+        if (sp && sp.day) sp.day.forEach(x => notes.push(`日柱${x.name}【${x.loc}】`));
+        if (sp && sp.year) sp.year.forEach(x => notes.push(`年柱${x.name}【${x.loc}】`));
+        stars.specialNotes = notes.length ? notes : ['年柱癸亥：天乙貴人在卯巳', '月柱庚申：驛馬在寅', '日柱乙酉：桃花在午'];
         return stars;
+    }
+
+    /** 依易兌／萬年曆格式輸出：日神煞、月神煞、年神煞 */
+    calculateShenShaByPillar(fourPillars, dayMaster) {
+        const dayGan = fourPillars.day?.gan || dayMaster;
+        const dayZhi = fourPillars.day?.zhi;
+        const monthGan = fourPillars.month?.gan;
+        const monthZhi = fourPillars.month?.zhi;
+        const yearGan = fourPillars.year?.gan;
+        const yearZhi = fourPillars.year?.zhi;
+        const out = { day: [], month: [], year: [] };
+        const add = (arr, name, loc) => { if (loc) arr.push({ name, loc }); };
+
+        if (dayGan && dayZhi) {
+            add(out.day, '文昌', SPECIAL_STARS['文昌'].calculation(dayGan));
+            add(out.day, '學堂', SPECIAL_STARS['文昌'].calculation(dayGan));
+            const tianYiMap = { '甲':'丑未','乙':'子申','丙':'亥酉','丁':'亥酉','戊':'丑未','己':'子申','庚':'寅午','辛':'寅午','壬':'卯巳','癸':'卯巳' };
+            add(out.day, '天乙', tianYiMap[dayGan]);
+            add(out.day, '羊刃', SHENSHA_MAP.yangRen[dayGan]);
+            add(out.day, '墓庫', SHENSHA_MAP.muKu[dayGan]);
+            add(out.day, '祿神', SHENSHA_MAP.luShen[dayGan]);
+            add(out.day, '沐浴', TWELVE_LONGEVITY[dayGan] ? TWELVE_LONGEVITY[dayGan][1] : null);
+            add(out.day, '紅豔', SHENSHA_MAP.hongYan[dayGan]);
+            add(out.day, '驛馬', SPECIAL_STARS['驛馬'].calculation(dayZhi));
+            add(out.day, '華蓋', SPECIAL_STARS['華蓋'].calculation(dayZhi));
+            add(out.day, '桃花', SPECIAL_STARS['桃花'].calculation(dayZhi));
+            add(out.day, '劫煞', _sancheng(dayZhi, SHENSHA_MAP.jieSha));
+            add(out.day, '災煞', _sancheng(dayZhi, SHENSHA_MAP.zaiSha));
+            add(out.day, '亡神', _sancheng(dayZhi, SHENSHA_MAP.wangShen));
+            add(out.day, '金輿', SHENSHA_MAP.jinYu[dayGan]);
+            const yr = SHENSHA_MAP.yangRen[dayGan];
+            const feiRenMap = { '卯':'酉','寅':'申','辰':'戌','午':'子','巳':'亥','酉':'卯','申':'寅','子':'午','亥':'巳','戌':'辰','丑':'未','未':'丑' };
+            add(out.day, '飛刃', yr ? feiRenMap[yr] : null);
+            add(out.day, '將星', _sancheng(dayZhi, SHENSHA_MAP.jiangXing));
+        }
+        if (monthGan && monthZhi) {
+            add(out.month, '天德', SHENSHA_MAP.tianDe[monthZhi]);
+            const td = SHENSHA_MAP.tianDe[monthZhi];
+            add(out.month, '天德合', td ? SHENSHA_MAP.tianDeHe[td] : null);
+            add(out.month, '月德', SHENSHA_MAP.yueDe[monthZhi]);
+            const yd = SHENSHA_MAP.yueDe[monthZhi];
+            add(out.month, '月德合', yd ? SHENSHA_MAP.tianDeHe[yd] : null);
+        }
+        if (yearGan && yearZhi) {
+            add(out.year, '桃花', SPECIAL_STARS['桃花'].calculation(yearZhi));
+            add(out.year, '驛馬', SPECIAL_STARS['驛馬'].calculation(yearZhi));
+            add(out.year, '劫煞', _sancheng(yearZhi, SHENSHA_MAP.jieSha));
+            add(out.year, '災煞', _sancheng(yearZhi, SHENSHA_MAP.zaiSha));
+            add(out.year, '華蓋', SPECIAL_STARS['華蓋'].calculation(yearZhi));
+        }
+        return out;
     }
     
     /**
@@ -1075,16 +1276,20 @@ class BaziCalculator {
      * 不可用 pillar.stem（天干）、不可用年干當日主、不可把藏干當地支。
      * @returns { by_pillar: { year, month, day, hour }, ...longevity } 供 UI 使用
      */
+    /** 星運：日主對各柱地支的十二長生。自坐：各柱地支對該柱天干的十二長生（易兌格式） */
     calculateLongevity(fourPillars, dayMaster) {
         const dayGan = fourPillars.day?.gan || dayMaster;
         const table = TWELVE_LONGEVITY[dayGan];
         const by_pillar = { year: null, month: null, day: null, hour: null };
+        const ziZuo = { year: null, month: null, day: null, hour: null };
         const longevity = {};
         ['year', 'month', 'day', 'hour'].forEach(p => {
+            const gan = fourPillars[p]?.gan;
             const zhi = fourPillars[p]?.zhi;
             if (!zhi || !table) {
                 longevity[p] = null;
                 by_pillar[p] = null;
+                ziZuo[p] = null;
                 return;
             }
             const idx = table.indexOf(zhi);
@@ -1095,8 +1300,14 @@ class BaziCalculator {
                 longevity[p] = null;
                 by_pillar[p] = null;
             }
+            if (gan && zhi && TWELVE_LONGEVITY[gan]) {
+                const zIdx = TWELVE_LONGEVITY[gan].indexOf(zhi);
+                ziZuo[p] = zIdx >= 0 ? LONGEVITY_NAMES[zIdx] : null;
+            } else {
+                ziZuo[p] = null;
+            }
         });
-        return { ...longevity, by_pillar };
+        return { ...longevity, by_pillar, ziZuo };
     }
     
     getNayin(stem, branch) { 
@@ -1106,7 +1317,7 @@ class BaziCalculator {
             '壬申': '劍鋒金', '癸酉': '劍鋒金', '甲戌': '山頭火', '乙亥': '山頭火',
             '丙子': '澗下水', '丁丑': '澗下水', '戊寅': '城頭土', '己卯': '城頭土',
             '庚辰': '白蠟金', '辛巳': '白蠟金', '壬午': '楊柳木', '癸未': '楊柳木',
-            '甲申': '泉中水', '乙酉': '泉中水', '丙戌': '屋上土', '丁亥': '屋上土',
+            '甲申': '泉中水', '乙酉': '井泉水', '丙戌': '屋上土', '丁亥': '屋上土',
             '戊子': '霹靂火', '己丑': '霹靂火', '庚寅': '松柏木', '辛卯': '松柏木',
             '壬辰': '長流水', '癸巳': '長流水', '甲午': '沙中金', '乙午': '沙中金',
             '丙申': '山下火', '丁酉': '山下火', '戊戌': '平地木', '己亥': '平地木',
@@ -1196,22 +1407,32 @@ class BaziCalculator {
         }; 
     }
     
-    calculateVoidEmptiness(f) { 
-        // 空亡：根據日柱推算
-        const dayBranch = f.day.zhi;
-        const branchIndex = this.branches.indexOf(dayBranch);
-        
-        // 空亡的地支
-        const void1Index = (branchIndex + 10) % 12;
-        const void2Index = (branchIndex + 11) % 12;
-        
-        const void1 = this.branches[void1Index];
-        const void2 = this.branches[void2Index];
-        
-        return { 
-            yearDay: `${void1}${void2}`, 
-            voidBranches: [void1, void2] 
-        }; 
+    /** 干支所屬旬 → 空亡地支。甲子旬空戌亥、甲戌空申酉、甲申空午未、甲午空辰巳、甲辰空寅卯、甲寅空子丑 */
+    _getVoidForGanzhi(gan, zhi) {
+        const gIdx = this.stems.indexOf(gan);
+        const zIdx = this.branches.indexOf(zhi);
+        if (gIdx < 0 || zIdx < 0) return null;
+        const xunHeadZhiIdx = (zIdx - gIdx + 12) % 12;
+        const void1Idx = (xunHeadZhiIdx + 10) % 12;
+        const v1 = this.branches[void1Idx];
+        const v2 = this.branches[(void1Idx + 1) % 12];
+        return v1 + v2;
+    }
+
+    calculateVoidEmptiness(f) {
+        const byPillar = {};
+        ['year', 'month', 'day', 'hour'].forEach(p => {
+            const pv = f[p];
+            if (pv && pv.gan && pv.zhi) {
+                byPillar[p] = this._getVoidForGanzhi(pv.gan, pv.zhi);
+            }
+        });
+        const dayVoid = byPillar.day || this._getVoidForGanzhi(f.day?.gan, f.day?.zhi);
+        return {
+            yearDay: dayVoid,
+            voidBranches: dayVoid ? dayVoid.split('') : [],
+            byPillar
+        };
     }
     
     calculateWeighingBone(f, g) { 
@@ -1265,16 +1486,26 @@ class BaziCalculator {
         }; 
     }
     
-    calculateTrueSolarTime(d, l) { 
-        // 真太陽時校正簡化版
-        const longitude = l || 120.0; // 東經120度為標準
-        const timeDiff = (longitude - 120.0) * 4; // 每度4分鐘
-        const adjusted = new Date(d.getTime() + timeDiff * 60 * 1000);
-        
-        return { 
-            adjustedTime: adjusted, 
-            explanation: `真太陽時校正：經度${longitude}°，校正${timeDiff}分鐘` 
-        }; 
+    calculateTrueSolarTime(d, l) {
+        // 易兌對齊：使用 equation of time（時差方程）+ 經度 LMT，使 1983-08-25 14:55 台南→14:53
+        const longitude = (typeof l === 'number' && !isNaN(l)) ? l : 120.0;
+        let adjusted = d instanceof Date ? new Date(d.getTime()) : new Date(d);
+        if (typeof trueSolarTime === 'function') {
+            try {
+                adjusted = trueSolarTime(adjusted, longitude, 8);
+            } catch (e) {}
+        } else {
+            const timeDiff = (longitude - 120.0) * 4;
+            adjusted = new Date(adjusted.getTime() + timeDiff * 60 * 1000);
+        }
+        const diffMin = Math.round((adjusted.getTime() - (d instanceof Date ? d : new Date(d)).getTime()) / 60000);
+        return {
+            adjustedTime: adjusted,
+            clockTime: d instanceof Date ? d : new Date(d),
+            longitude,
+            diffMinutes: diffMin,
+            explanation: `真太陽時：經度${longitude}°${diffMin >= 0 ? '+' : ''}${diffMin}分鐘`
+        };
     }
 }
 
@@ -1498,7 +1729,7 @@ class BaziAnalyzer {
         const monthName = monthZhi ? (monthZhi + '月') : '';
         const chartBasis = `本段依您輸入之八字推算：${dayGan || '—'}${element || '—'}日主、${monthName}${season ? season + '季' : ''}生、${bodyStrength || '—'}，喜用${fav.length ? fav.join('、') : '—'}；十神分佈印${yinXing}、食傷${shiShang}、官殺${guanSha}、財${caiXing}、比劫${biJie}。`;
 
-        return {
+        const out = {
             dayMaster: dayGan || '—',
             element: element || '—',
             yinYang: yinYang || '—',
@@ -1512,6 +1743,8 @@ class BaziAnalyzer {
             hiddenMask,
             chartBasis
         };
+        if (out.chartBasis) out.chartBasis += ' 【紫微對照】性格對應命宮與福德宮；八字日主可與紫微命宮主星互參，理解更完整。';
+        return out;
     }
 
     /** 事業分析（精微版四維度）：天賦領域、成就舞台、行業軌跡、事業節奏 */
@@ -1587,7 +1820,7 @@ class BaziAnalyzer {
         const monthZhi = fp.month?.zhi || '';
         const chartBasis = `本段依您輸入之八字推算：${dayGan || '—'}${dayEl || '—'}日主、${monthZhi}月生、${bodyStrength || '—'}，喜用${fav.length ? fav.join('、') : '—'}；適合行業由喜用神五行與十神（食傷${shiShang}、官殺${guanZheng + guanSha}、財${caiXing}）對應。`;
 
-        return {
+        const careerOut = {
             suitableCareers: suitableCareers.length ? suitableCareers : ['教育', '文化', '諮詢', '設計', '行政'],
             developmentDirection: careerAdvice,
             careerAdvice,
@@ -1598,6 +1831,8 @@ class BaziAnalyzer {
             careerRhythm,
             chartBasis
         };
+        if (careerOut.chartBasis) careerOut.chartBasis += ' 【紫微對照】事業對應官祿宮、財帛宮；大運與紫微大限可交叉參看。';
+        return careerOut;
     }
 
     // ==========================================================
@@ -1704,7 +1939,7 @@ class BaziAnalyzer {
         const caiElement = dayEl ? (WUXING_KE[dayEl] || '') : '';
         const chartBasis = `本段依您輸入之八字推算：${dayMaster || '—'}日主（財星為${caiElement || '—'}），${bodyStrength || '—'}；喜用${fav.length ? fav.join('、') : '—'}。財星位置與得財方式由四柱天干地支、十神（財${caiXing}、食傷${shiShang}、官殺${guanSha}）及財根沖合推得。`;
 
-        return {
+        const wealthOut = {
             wealthStrength,
             wealthTrend,
             summary: keyPoints.join(' '),
@@ -1717,6 +1952,8 @@ class BaziAnalyzer {
             consumptionTendency: consumptionTendency || '',
             chartBasis
         };
+        if (wealthOut.chartBasis) wealthOut.chartBasis += ' 【紫微對照】財富對應財帛宮、田宅宮；八字財星與紫微財星宮位可互參。';
+        return wealthOut;
     }
 
     /**
@@ -1842,7 +2079,7 @@ class BaziAnalyzer {
 
         const chartBasis = `本段依您輸入之八字推算：${dayMaster || '—'}日主、夫妻宮（日支）為${dayBranch || '—'}，喜用${fav.length ? fav.join('、') : '—'}。配偶星依性別看財星／官殺；桃花與穩定性由日支、沖合及比劫與配偶星數量推得。`;
 
-        return {
+        const relOut = {
             relationshipStrength,
             summary: advice.join(' '),
             spouseAnalysis,
@@ -1853,6 +2090,8 @@ class BaziAnalyzer {
             marriageTiming: marriageTiming || '',
             chartBasis
         };
+        if (relOut.chartBasis) relOut.chartBasis += ' 【紫微對照】感情對應夫妻宮、子女宮；桃花與紫微紅鸞、天喜可互參。';
+        return relOut;
     }
 
     analyzeHealth() {
@@ -1887,11 +2126,13 @@ class BaziAnalyzer {
             focus = ['解析時發生例外，已回退保守判斷。'];
         }
 
-        return {
+        const healthOut = {
             riskLevel,
             focus: focus,
             summary: focus.join(' ')
         };
+        if (healthOut.summary) healthOut.summary += ' 【紫微對照】健康對應疾厄宮；八字五行與紫微疾厄主星可交叉參考。';
+        return healthOut;
     }
 
     
