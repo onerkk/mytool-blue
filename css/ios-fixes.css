@@ -1,7 +1,6 @@
 /* iOS兼容性修復和優化 - 與手機同步、修正 iOS 排版 */
 
-/* 還原：html/body 皆可捲動，確保單指／雙指都能滑動畫面 */
-/* Chrome Android（含三星）：z-index + translateZ(0) 啟用硬體加速捲動 */
+/* html/body 可捲動，不加重壓／慢滑門檻（已移除 touch-action / transform / z-index） */
 html {
     height: 100%;
     overflow-x: hidden;
@@ -9,10 +8,6 @@ html {
     -webkit-overflow-scrolling: touch;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    position: relative;
-    z-index: 0;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 * {
@@ -28,14 +23,9 @@ body {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     position: relative;
-    z-index: 0;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
     width: 100%;
     max-width: 100%;
     overscroll-behavior-y: none;
-    /* Chrome Android 觸控捲動 */
-    touch-action: manipulation;
 }
 
 /* 文字不截斷／提早換行 */
