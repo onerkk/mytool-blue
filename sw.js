@@ -1,5 +1,5 @@
-/* 靜月之光能量占卜儀 v2.0 - 基礎 Service Worker */
-const CACHE_NAME = 'jingyue-v2.0';
+/* 靜月之光能量占卜儀 v2.0 - 基礎 Service Worker（快取版本 v2.8 強制手機同步） */
+const CACHE_NAME = 'jingyue-v2.8';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -22,6 +22,15 @@ self.addEventListener('activate', function(event) {
 
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
+  /* 頁面導航：先網路後快取，讓手機能拿到最新 HTML/CSS/JS */
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request).catch(function() {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then(function(cached) {
       return cached || fetch(event.request);
