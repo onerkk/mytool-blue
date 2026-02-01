@@ -79,13 +79,11 @@
         margin-bottom: 0.75rem !important;
         padding: 0.75rem 0 !important; /* 左右 0，與 Bazi 內容同寬 */
     }
-    /* 本次分析使用卡片：與網頁同步，由 JS 控制顯示；手機版同寬同距 */
-    #result-section .result-overview > #input-summary-card.overview-card {
+    /* 本次輸入：緊湊單行，手機版同寬 */
+    #result-section .input-summary-compact {
         width: 100% !important;
-        max-width: none !important;
-        box-sizing: border-box !important;
-        margin-bottom: 0.75rem !important;
-        padding: 0.75rem 0 !important;
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.75rem !important;
     }
     
     #result-section .overview-card,
@@ -270,9 +268,9 @@
         max-width: 100% !important;
     }
     
-    /* 結果區底部留白，可捲動至最後內容在懸浮按鈕上方 */
+    /* 結果區底部留白（含 iOS 安全區），可捲動至最後內容在懸浮按鈕上方 */
     #result-section {
-        padding-bottom: 150px !important;
+        padding-bottom: max(150px, calc(150px + env(safe-area-inset-bottom, 0))) !important;
     }
     
     /* 綜合結論、推薦區等底部區塊也留白 */

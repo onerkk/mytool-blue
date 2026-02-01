@@ -2226,17 +2226,6 @@ class BaziUI {
         const primaryUnfav = priority['第一忌神'] || result.favorableElements.unfavorable[0];
         const dynamicNote = (hierarchy.godTier && hierarchy.godTier.dynamicNote) || hierarchy.dynamicApplication || '';
 
-        let starsHtml = '';
-        if (result.specialStars.specialNotes) {
-             result.specialStars.specialNotes.forEach(note => {
-                 if(note.includes('貴人')) starsHtml += '<span class="bazi-tag tag-star">貴人</span> ';
-                 if(note.includes('文昌')) starsHtml += '<span class="bazi-tag tag-star">文昌</span> ';
-                 if(note.includes('驛馬')) starsHtml += '<span class="bazi-tag tag-star">驛馬</span> ';
-                 if(note.includes('桃花')) starsHtml += '<span class="bazi-tag tag-star">桃花</span> ';
-             });
-        }
-        if (starsHtml === '') starsHtml = '<span class="bazi-tag" style="opacity:0.5">無明顯神煞</span>';
-
         let priorityHtml = '';
         if (primaryFav || secondaryFav || primaryUnfav) {
             priorityHtml = '<div style="margin-bottom: 1rem;"><p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">喜用神優先級：</p>';
@@ -2256,10 +2245,6 @@ class BaziUI {
             <div style="margin-bottom: 1rem;">
                 <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">忌神 (壓力來源)：</p>
                 <div class="tag-container">${unfavorables}</div>
-            </div>
-            <div>
-                <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">命宮神煞：</p>
-                <div class="tag-container">${starsHtml}</div>
             </div>
         `;
     }

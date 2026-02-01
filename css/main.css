@@ -1,4 +1,4 @@
-/* main.css - 靜月之前能量占卜儀 v1.0 完整樣式表 */
+/* main.css - 靜月之前能量占卜儀 v2.0 完整樣式表 */
 :root {
     /* 靜月之光 - 神秘水晶風格配色 */
     --gold-primary: #D4AF37;
@@ -380,6 +380,11 @@ body::after {
     background: rgba(212, 175, 55, 0.1);
 }
 
+/* PHASE 2: 僅隱藏八字頁（流程：資料輸入→梅花易數→塔羅→結果） */
+#bazi-section {
+    display: none !important;
+}
+
 /* --- 主容器與進度條 --- */
 .main-container {
     max-width: 1200px;
@@ -427,6 +432,8 @@ body::after {
     }
 }
 
+.required { color: #f44336; margin-left: 2px; }
+.progress-bar-v2 .progress-step { min-width: 100px; }
 .progress-step {
     background: rgba(37, 38, 64, 0.6);
     backdrop-filter: blur(10px);
@@ -672,6 +679,23 @@ input[type="time"]::-webkit-datetime-edit-minute-field {
     font-weight: 500;
 }
 
+/* 跳至主要內容（無障礙） */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    z-index: 9999;
+    padding: 0.75rem 1.5rem;
+    background: var(--gold-primary);
+    color: var(--dark-bg);
+    font-weight: 600;
+    border-radius: 0 0 8px 0;
+}
+.skip-link:focus {
+    left: 0;
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
 input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--gold-primary);
@@ -702,24 +726,142 @@ input.readonly-input[readonly]:focus {
         0 0 20px rgba(212, 175, 55, 0.1);
 }
 
-.radio-group, .checkbox-group {
+/* --- 性別選項美化：卡片式設計 --- */
+.radio-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.radio-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.25rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(212, 175, 55, 0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.radio-label::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.radio-label:hover {
+    border-color: var(--gold-primary);
+    background: rgba(212, 175, 55, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
+}
+
+.radio-label:hover::before {
+    opacity: 1;
+}
+
+.radio-custom {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(212, 175, 55, 0.4);
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    transition: all 0.3s ease;
+    background: rgba(37, 38, 64, 0.6);
+    box-shadow: inset 0 0 10px rgba(232, 234, 246, 0.1);
+}
+
+.radio-icon {
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.radio-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    transition: color 0.3s ease;
+}
+
+.radio-label:has(input[type="radio"]:checked) .radio-icon {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px currentColor);
+}
+
+input[type="radio"]:checked + .radio-custom {
+    border-color: var(--gold-primary);
+    background: var(--gradient-gold);
+    box-shadow: 
+        0 0 20px rgba(212, 175, 55, 0.6),
+        inset 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+input[type="radio"]:checked + .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--dark-night);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+}
+
+input[type="radio"]:checked ~ .radio-text {
+    color: var(--gold-primary);
+    font-weight: 600;
+}
+
+.radio-label:has(input[type="radio"]:checked) {
+    border-color: var(--gold-primary);
+    background: rgba(212, 175, 55, 0.12);
+    box-shadow: 
+        0 4px 16px rgba(212, 175, 55, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.radio-label:has(input[type="radio"]:checked)::before {
+    opacity: 1;
+}
+
+/* Checkbox 樣式保留原設計 */
+.checkbox-group {
     display: flex;
     gap: 1.5rem;
     margin-top: 0.5rem;
 }
 
-.radio-label, .checkbox-label {
+.checkbox-label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
 }
 
-.radio-custom, .checkbox-custom {
+.checkbox-custom {
     width: 20px;
     height: 20px;
     border: 2px solid rgba(197, 202, 233, 0.4);
-    border-radius: 50%;
+    border-radius: 4px;
     display: inline-block;
     position: relative;
     transition: var(--transition);
@@ -727,11 +869,6 @@ input.readonly-input[readonly]:focus {
     box-shadow: inset 0 0 10px rgba(232, 234, 246, 0.1);
 }
 
-.checkbox-custom {
-    border-radius: 4px;
-}
-
-.radio-label:hover .radio-custom,
 .checkbox-label:hover .checkbox-custom {
     border-color: var(--moonlight-blue);
     box-shadow: 
@@ -739,7 +876,6 @@ input.readonly-input[readonly]:focus {
         0 0 15px rgba(197, 202, 233, 0.3);
 }
 
-input[type="radio"]:checked + .radio-custom,
 input[type="checkbox"]:checked + .checkbox-custom {
     border-color: var(--moonlight-blue);
     background: var(--gradient-moonlight);
@@ -748,24 +884,17 @@ input[type="checkbox"]:checked + .checkbox-custom {
         inset 0 0 10px rgba(232, 234, 246, 0.3);
 }
 
-input[type="radio"]:checked + .radio-custom::after,
 input[type="checkbox"]:checked + .checkbox-custom::after {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 8px;
-    height: 8px;
-    background: var(--dark-night);
-    border-radius: 50%;
-    box-shadow: 0 0 10px rgba(232, 234, 246, 0.8);
-}
-
-input[type="checkbox"]:checked + .checkbox-custom::after {
     border-radius: 2px;
     width: 10px;
     height: 10px;
+    background: var(--dark-night);
+    box-shadow: 0 0 10px rgba(232, 234, 246, 0.8);
 }
 
 .coordinate-info {
@@ -801,6 +930,97 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     color: var(--text-muted);
     font-size: 0.875rem;
     font-style: italic;
+}
+
+/* 真太陽時校正卡片 */
+.solar-time-card {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(107, 70, 193, 0.06) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: var(--border-radius);
+    padding: 1.25rem 1.5rem;
+    margin-top: 0.5rem;
+}
+.solar-time-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.solar-time-header i {
+    color: var(--gold-primary);
+    font-size: 1.25rem;
+}
+.solar-time-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.solar-time-desc {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+.solar-time-location {
+    font-size: 0.85rem;
+    color: var(--gold-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.solar-time-location i {
+    opacity: 0.9;
+}
+.solar-time-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+}
+.solar-time-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.solar-toggle-slider {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 26px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    transition: 0.3s;
+}
+.solar-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 2px;
+    top: 2px;
+    background: var(--gold-primary);
+    border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.solar-time-toggle input:checked + .solar-toggle-slider {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: var(--gold-primary);
+}
+.solar-time-toggle input:checked + .solar-toggle-slider::before {
+    transform: translateX(22px);
+}
+.solar-time-toggle input:focus-visible + .solar-toggle-slider {
+    box-shadow: 0 0 0 2px var(--gold-primary);
+}
+.solar-toggle-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
 }
 
 /* --- 按鈕樣式 --- */
@@ -888,6 +1108,12 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
+.btn:focus-visible,
+.btn-outline:focus-visible,
+.btn-primary:focus-visible {
+    outline: 2px solid var(--gold-primary);
+    outline-offset: 2px;
+}
 .btn-outline:active {
     transform: translateY(0);
 }
@@ -904,6 +1130,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 .form-actions, .section-actions {
     margin-top: 2rem;
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     justify-content: flex-end;
 }
@@ -1120,7 +1347,8 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     transform: translateY(0);
 }
 
-/* 跳過塔羅牌按鈕 */
+/* 跳過按鈕（梅花、塔羅） */
+#skip-meihua,
 #skip-tarot {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
@@ -1137,6 +1365,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     gap: 0.625rem;
 }
 
+#skip-meihua:hover,
 #skip-tarot:hover {
     background: var(--gradient-gold);
     color: var(--dark-bg);
@@ -1405,15 +1634,42 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 .result-overview {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-    margin-bottom: 2rem;
+    grid-template-rows: auto auto auto;
+    gap: 1rem 2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* 本次輸入：緊湊單行，佔用最小空間 */
+.input-summary-compact {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(212, 175, 55, 0.08);
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.85);
+    flex-wrap: wrap;
+    box-sizing: border-box;
+}
+.input-summary-compact .input-summary-label {
+    flex-shrink: 0;
+    color: var(--gold-primary);
+}
+.input-summary-compact .input-summary-text {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .overview-card {
     background: var(--dark-glass-light);
     backdrop-filter: blur(20px);
     border-radius: var(--border-radius);
-    padding: 2rem;
+    padding: 1.25rem 1.5rem;
     border: 2px solid var(--glass-border);
     color: var(--text-primary) !important;
 }
@@ -1690,6 +1946,10 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 .dimension-tab:hover {
     color: var(--text-primary);
     border-color: var(--gold-primary);
+}
+.dimension-tab:focus-visible {
+    outline: 2px solid var(--gold-primary);
+    outline-offset: 2px;
 }
 
 .dimension-tab.active {
@@ -2263,6 +2523,27 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* 全頁載入遮罩 */
+.global-loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(26, 21, 32, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.global-loading-overlay[hidden] { display: none !important; }
+.global-loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--gold-bright);
+    font-size: 1.1rem;
+}
+.global-loading-content .fa-spinner { font-size: 2rem; }
 
 /* --- 簡易響應式設計 --- */
 @media (max-width: 768px) {
@@ -3074,12 +3355,20 @@ select, input, button, textarea{
    電商導流樣式 - 黑金能量館風格
    ============================================ */
 
-/* 頂部導覽列商店按鈕 */
+/* 頂部導覽列商店按鈕 - 同列左右並排 (PHASE 1-2) */
 .nav-shop-buttons {
     display: flex;
-    gap: 0.75rem;
+    flex-direction: row;
+    gap: 10px;
     align-items: center;
     margin-left: 1rem;
+}
+.nav-shop-buttons .shop-btn {
+    min-height: 40px;
+    flex: 0 1 auto;
+}
+@media (max-width: 359px) {
+    .nav-shop-buttons { flex-wrap: wrap; }
 }
 
 .shop-btn {
@@ -3183,7 +3472,10 @@ select, input, button, textarea{
 
 #result-section .lucky-item-recommendation-card .crystal-recommendation-intro,
 #result-section .lucky-item-recommendation-card .crystal-recommendation-stones,
-#result-section .lucky-item-recommendation-card .crystal-recommendation-desc {
+#result-section .lucky-item-recommendation-card .crystal-recommendation-desc,
+#result-section .lucky-item-recommendation-card .crystal-recommendation-wearing,
+#result-section .lucky-item-recommendation-card .crystal-recommendation-taboos,
+#result-section .lucky-item-recommendation-card .crystal-recommendation-disclaimer {
     margin: 0;
     color: var(--text-secondary);
     font-size: 1rem;
@@ -3983,7 +4275,22 @@ select, input, button, textarea{
     }
 }
 
+/* --- 紫微斗數星盤樣式 --- */
+.ziwei-result .ziwei-palaces {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+.ziwei-result .ziwei-palace-item {
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
 @media (max-width: 480px) {
+    .ziwei-result .ziwei-palaces {
+        grid-template-columns: 1fr;
+    }
     .nav-shop-buttons {
         flex-direction: column;
         gap: 0.25rem;
@@ -4001,4 +4308,19 @@ select, input, button, textarea{
     .rec-btn {
         padding: 1rem 1.25rem;
     }
+}
+
+/* 列印樣式：隱藏導航、浮動鈕，凸顯結果內容 */
+@media print {
+    .navbar .nav-shop-buttons,
+    .floating-buttons,
+    #global-loading-overlay,
+    .progress-container,
+    .section-actions,
+    .btn,
+    .skip-link { display: none !important; }
+    body { background: #fff; color: #333; }
+    .main-container { max-width: 100%; }
+    .section { break-inside: avoid; }
+    a { color: #333; }
 }

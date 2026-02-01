@@ -2,39 +2,49 @@
     <html lang="zh-TW">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+        <meta name="description" content="靜月之前能量占卜儀：整合八字、梅花易數、塔羅牌的多維度機率評估，提供專屬五行水晶開運建議。">
+        <meta name="keywords" content="八字,梅花易數,塔羅牌,命理,占卜,五行,水晶,開運">
+        <meta name="theme-color" content="#1a1520">
+        <meta property="og:title" content="靜月之前能量占卜儀 v2.0">
+        <meta property="og:description" content="整合八字、梅花易數、塔羅牌的多維度機率評估，提供專屬五行水晶開運建議。">
+        <meta property="og:type" content="website">
+        <meta property="og:locale" content="zh_TW">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
         <meta http-equiv="Pragma" content="no-cache">
         <meta http-equiv="Expires" content="0">
-        <title>靜月之前能量占卜儀 v1.0</title>
+        <title>靜月之前能量占卜儀 v2.0</title>
         
-        <link rel="stylesheet" href="css/main.css?v=1.3">
-        <link rel="stylesheet" href="css/tarot.css?v=1.3">
-        <link rel="stylesheet" href="css/bazi-display.css?v=1.3">
-        <link rel="stylesheet" href="css/responsive.css?v=1.3">
-        <link rel="stylesheet" href="css/ios-fixes.css?v=1.3">
-        <link rel="stylesheet" href="css/mobile-fix.css?v=1.3">
-        <link rel="stylesheet" href="css/result-section-override.css?v=1.3">
+        <link rel="stylesheet" href="css/main.css?v=2.1">
+        <link rel="stylesheet" href="css/tarot.css?v=2.1">
+        <link rel="stylesheet" href="css/bazi-display.css?v=2.1">
+        <link rel="stylesheet" href="css/responsive.css?v=2.1">
+        <link rel="stylesheet" href="css/ios-fixes.css?v=2.1">
+        <link rel="stylesheet" href="css/mobile-fix.css?v=2.1">
+        <link rel="stylesheet" href="css/result-section-override.css?v=2.1">
         
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-        
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="icon" href="images/logo.jpg" type="image/jpeg">
+        <script>if(document.location.protocol.match(/^https?:$/)){var l=document.createElement('link');l.rel='manifest';l.href='manifest.json?v=2.1';document.head.appendChild(l);}</script>
+        <link rel="apple-touch-icon" href="images/logo.jpg">
+        <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"WebApplication","name":"靜月之前能量占卜儀","description":"整合八字、梅花易數、塔羅牌的多維度機率評估，提供專屬五行水晶開運建議","applicationCategory":"LifestyleApplication","inLanguage":"zh-TW"}
+        </script>
     </head>
     <body>
+        <noscript><p style="padding:2rem;text-align:center;background:#1a1520;color:#D4AF37;">本系統需啟用 JavaScript 才能運作，請在瀏覽器設定中開啟後重新整理頁面。</p></noscript>
+        <a href="#main-content" class="skip-link">跳至主要內容</a>
         <nav class="navbar">
             <div class="nav-container">
                 <a href="https://sites.google.com/view/jingyue-light/" target="_blank" class="logo" rel="noopener noreferrer">
-                    <img src="images/logo.jpg" alt="靜月之光" class="logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                    <img src="images/logo.jpg" alt="靜月之前能量占卜儀" class="logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
                     <i class="fas fa-moon" style="display:none;"></i>
-                    <span>靜月之光水晶能量館</span>
+                    <span>靜月之前能量占卜儀 v2.0</span>
                 </a>
-                <div class="nav-menu">
-                    <a href="#input-section" class="nav-link active"><i class="fas fa-user"></i> 個人資料</a>
-                    <a href="#bazi-section" class="nav-link"><i class="fas fa-calendar-alt"></i> 八字</a>
-                    <a href="#meihua-section" class="nav-link"><i class="fas fa-yin-yang"></i> 梅花易數</a>
-                    <a href="#tarot-section" class="nav-link"><i class="fas fa-cards"></i> 塔羅牌</a>
-                    <a href="#result-section" class="nav-link"><i class="fas fa-chart-bar"></i> 分析結果</a>
-                </div>
                 <div class="nav-shop-buttons">
                     <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" class="shop-btn shop-btn-shopee" rel="noopener noreferrer" title="🛒 蝦皮逛逛（免運＋關注9折）">
                         <i class="fas fa-shopping-cart"></i> 蝦皮逛逛
@@ -62,14 +72,21 @@
             </button>
         </div>
     
-        <div class="main-container">
+        <!-- 全頁載入遮罩（計算八字時顯示） -->
+        <div id="global-loading-overlay" class="global-loading-overlay" aria-live="polite" aria-busy="false" hidden>
+            <div class="global-loading-content">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>正在計算八字命盤...</span>
+            </div>
+        </div>
+
+        <main id="main-content" class="main-container" tabindex="-1">
             <div class="progress-container">
-                <div class="progress-bar">
+                <div class="progress-bar progress-bar-v2">
                     <div class="progress-step active" data-step="1">1. 資料輸入</div>
-                    <div class="progress-step" data-step="2">2. 八字計算</div>
-                    <div class="progress-step" data-step="3">3. 梅花易數</div>
-                    <div class="progress-step" data-step="4">4. 塔羅牌</div>
-                    <div class="progress-step" data-step="5">5. 分析結果</div>
+                    <div class="progress-step" data-step="2">2. 梅花易數</div>
+                    <div class="progress-step" data-step="3">3. 塔羅牌</div>
+                    <div class="progress-step" data-step="4">4. 分析結果</div>
                 </div>
             </div>
     
@@ -79,7 +96,7 @@
                     <form id="personal-form">
                         <div class="form-group">
                             <label for="name"><i class="fas fa-signature"></i> 姓名</label>
-                            <input type="text" id="name" placeholder="請輸入中文姓名" required>
+                            <input type="text" id="name" placeholder="請輸入中文姓名" required autocomplete="name">
                         </div>
     
                         <div class="form-group">
@@ -87,11 +104,13 @@
                             <div class="radio-group">
                                 <label class="radio-label">
                                     <input type="radio" name="gender" value="male">
+                                    <i class="fas fa-mars radio-icon" style="font-size: 1.5rem; color: rgba(33, 150, 243, 0.8);"></i>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">男性</span>
                                 </label>
                                 <label class="radio-label">
                                     <input type="radio" name="gender" value="female">
+                                    <i class="fas fa-venus radio-icon" style="font-size: 1.5rem; color: rgba(233, 30, 99, 0.8);"></i>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">女性</span>
                                 </label>
@@ -106,7 +125,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="birth-time"><i class="fas fa-clock"></i> 出生時間</label>
-                                <input type="time" id="birth-time" required placeholder="請選擇出生時間">
+                                <input type="time" id="birth-time" placeholder="請選擇出生時間（不確定可留空，將以12:00計算）">
                                 <small class="input-hint">請盡量精確，用於時柱計算（例如：10:30）</small>
                             </div>
                         </div>
@@ -134,27 +153,50 @@
                         </div>
     
                         <div class="form-group">
-                            <label for="question"><i class="fas fa-question-circle"></i> 諮詢問題</label>
-                            <textarea id="question" rows="3" placeholder="請輸入您想詢問的問題..." required></textarea>
-                            <div class="hint-note" id="question-probability-note"><i class="fas fa-info-circle"></i> 本系統輸出為「多維度機率評估」，將以八字 / 姓名學 / 梅花易數 / 塔羅牌各自的機率分數進行交叉彙總；不提供單一確定答案。</div>
-                            <div class="hint-note hint-disclaimer" style="margin-top: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> 本工具將針對您的問題提供「機率預測」並透過八字運算提供「專屬五行改運配戴建議」。</div>
+                            <label for="question-type"><i class="fas fa-tag"></i> 問題類型 <span class="required">*</span></label>
+                            <select id="question-type" required>
+                                <option value="">請選擇問題類型</option>
+                                <option value="love">愛情</option>
+                                <option value="career">事業</option>
+                                <option value="wealth">財運</option>
+                                <option value="health">健康</option>
+                                <option value="general">運勢（綜合）</option>
+                                <option value="relationship">人際</option>
+                                <option value="family">家庭</option>
+                                <option value="other">其他</option>
+                            </select>
+                            <small class="input-hint" id="question-type-hint">依類型選擇後，下方會有問題方向提示</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="question"><i class="fas fa-question-circle"></i> 諮詢問題 <span class="required">*</span></label>
+                            <textarea id="question" rows="3" placeholder="請輸入您想詢問的問題..." required maxlength="500" aria-describedby="question-char-hint"></textarea>
+                            <small class="input-hint" id="question-char-hint">0/500 字</small>
+                            <div class="hint-note" id="question-probability-note"><i class="fas fa-info-circle"></i> 本系統以「問題導向」整合八字、梅花易數、塔羅牌、紫微斗數，輸出多維度機率評估與直接答案，不提供單一確定結論。</div>
+                            <div class="hint-note hint-disclaimer" style="margin-top: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> 依八字喜用神與卦象象徵，提供專屬五行水晶配戴建議，供能量校準參考（非醫療或命運保證）。</div>
 
                         </div>
     
-                        <div class="form-group">
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="true-solar-time">
-                                    <span class="checkbox-custom"></span>
-                                    <span class="checkbox-text">啟用真太陽時校正</span>
-                                </label>
-                                <small class="help-text">根據出生地點經度校正出生時間，提高八字計算準確度</small>
+                        <div class="form-group" id="solar-time-section">
+                            <div class="solar-time-card" role="group" aria-labelledby="solar-time-heading">
+                                <div class="solar-time-header">
+                                    <i class="fas fa-sun" aria-hidden="true"></i>
+                                    <h3 id="solar-time-heading">真太陽時校正</h3>
+                                </div>
+                                <div class="solar-time-body">
+                                    <p class="solar-time-desc" id="solar-time-desc">依出生地經度校正鐘錶時間為「真太陽時」，可提高八字時柱與大運起算的準確度。</p>
+                                    <div class="solar-time-location" id="solar-time-location-hint"><i class="fas fa-map-marker-alt"></i> <span id="solar-location-text">請先選擇出生地區與城市</span></div>
+                                    <label class="solar-time-toggle">
+                                        <input type="checkbox" id="true-solar-time" aria-describedby="solar-time-desc">
+                                        <span class="solar-toggle-slider"></span>
+                                        <span class="solar-toggle-label">啟用校正</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
     
                         <div class="form-actions">
-                            <button type="button" class="btn btn-primary btn-next" data-next="bazi-section">
-                                <i class="fas fa-arrow-right"></i> 下一步：八字計算
+                            <button type="button" class="btn btn-primary btn-next" id="step1-submit" data-next="meihua-section">
+                                <i class="fas fa-arrow-right"></i> 下一步：梅花易數
                             </button>
                         </div>
                     </form>
@@ -222,12 +264,6 @@
                                 <span class="detail-value" id="favorable-elements">待計算</span>
                             </div>
                         </div>
-                    </div>
-    
-                    <div class="dayun-container" id="dayun-container">
-                        <h4><i class="fas fa-hourglass-half"></i> 大運流年</h4>
-                        <div class="dayun-timeline" id="dayun-timeline">
-                            </div>
                     </div>
                 </div>
     
@@ -377,11 +413,14 @@
                 </div>
     
                 <div class="section-actions">
-                    <button type="button" class="btn btn-outline btn-prev" data-prev="bazi-section">
+                    <button type="button" class="btn btn-outline btn-prev" data-prev="input-section">
                         <i class="fas fa-arrow-left"></i> 上一步
                     </button>
                     <button type="button" class="btn btn-primary btn-next" data-next="tarot-section">
                         <i class="fas fa-arrow-right"></i> 下一步：塔羅牌
+                    </button>
+                    <button type="button" class="btn btn-outline" id="skip-meihua" title="略過起卦，直接進入塔羅">
+                        <i class="fas fa-forward"></i> 跳過梅花
                     </button>
                 </div>
             </section>
@@ -605,17 +644,24 @@
                 
                 <div class="bazi-container">
                     <div class="result-overview" id="result-overview">
-                        <div class="overview-card" id="input-summary-card" style="display: none;">
-                            <h3><i class="fas fa-info-circle"></i> 本次分析使用</h3>
-                            <div id="input-summary-content" style="padding: 0.5rem 0; font-size: 0.9rem; line-height: 1.6; color: rgba(255,255,255,0.85);"></div>
+                        <div class="input-summary-compact" id="input-summary-card" style="display: none;" aria-label="本次分析輸入摘要">
+                            <span class="input-summary-label"><i class="fas fa-info-circle"></i> 本次輸入</span>
+                            <span id="input-summary-content" class="input-summary-text"></span>
                         </div>
-                        <div class="overview-card">
-                            <h3><i class="fas fa-question-circle"></i> 問題分析</h3>
-                            <div class="question-display" id="question-display">
-                                </div>
+                        <div class="overview-card" id="section-answer">
+                            <h3><i class="fas fa-bullseye"></i> 【答案】</h3>
+                            <div class="question-display" id="question-display"></div>
                             <div class="direct-answer">
                                 <h4>直接回答</h4>
                                 <p class="answer-text" id="direct-answer">分析中...</p>
+                            </div>
+                            <div class="answer-factors" id="answer-factors" style="display:none;">
+                                <h4>Top 3 影響因子</h4>
+                                <ul id="answer-factors-list"></ul>
+                            </div>
+                            <div class="answer-suggestions" id="answer-suggestions" style="display:none;">
+                                <h4>3 條關鍵建議</h4>
+                                <ol id="answer-suggestions-list"></ol>
                             </div>
                         </div>
                         
@@ -638,39 +684,43 @@
                         </div>
                     </div>
     
-                    <!-- 開運配戴建議：依喜用神／問題推薦五行水晶（全寬，在機率下方、浮動鈕上方） -->
+                    <!-- 【處方】專屬校準處方：象徵→行為→喜忌→物件 -->
                     <div class="lucky-item-recommendation-card" id="crystal-recommendation-card">
                         <div class="recommendation-header">
                             <i class="fas fa-gem"></i>
-                            <h3>💎 您的專屬開運處方</h3>
+                            <h3>【處方】💎 您的專屬校準處方</h3>
                         </div>
                         <div class="recommendation-content crystal-recommendation-content">
-                            <p class="crystal-recommendation-intro" id="crystal-recommendation-intro">根據您的八字格局與提問，建議補強 <strong id="crystal-target-element">—</strong> 行能量。</p>
+                            <p class="crystal-recommendation-intro" id="crystal-recommendation-intro">建議補強 <strong id="crystal-target-element">—</strong> 行能量。</p>
                             <p class="crystal-recommendation-stones" id="crystal-recommendation-stones">推薦配戴：<span id="crystal-stones-list">—</span></p>
                             <p class="crystal-recommendation-desc" id="crystal-recommendation-desc">功效：<span id="crystal-reason-text">—</span></p>
+                            <p class="crystal-recommendation-wearing" id="crystal-wearing-text" style="display:none;"><i class="fas fa-hand-holding-heart"></i> 佩戴方式：<span id="crystal-wearing-span">—</span></p>
+                            <p class="crystal-recommendation-taboos" id="crystal-taboos-text" style="display:none;"><i class="fas fa-exclamation-triangle"></i> 注意事項：<span id="crystal-taboos-span">—</span></p>
+                            <p class="crystal-recommendation-disclaimer" id="crystal-disclaimer-text"><i class="fas fa-info-circle"></i> <span id="crystal-disclaimer-span">本建議僅供能量校準參考，不具醫療或命運保證效力。</span></p>
                             <p class="crystal-recommendation-cta">
                                 <i class="fas fa-arrow-down"></i> 點擊右下角按鈕，前往賣場搜尋上述水晶，或點擊「我要客製」為您打造專屬手鍊。
                             </p>
                         </div>
                     </div>
     
-                    <div class="dimension-analysis">
-                        <h3><i class="fas fa-layer-group"></i> 四維度分析</h3>
+                    <div class="dimension-analysis" id="section-breakdown">
+                        <h3><i class="fas fa-layer-group"></i> 【拆解】八字／梅花／塔羅</h3>
                         
-                        <div class="dimension-tabs">
-                            <button class="dimension-tab active" data-dimension="bazi">八字命理</button>
-                            <button class="dimension-tab" data-dimension="meihua">梅花易數</button>
-                            <button class="dimension-tab" data-dimension="tarot">塔羅牌陣</button>
-                            <button class="dimension-tab" data-dimension="name">姓名學</button>
-                            <button class="dimension-tab" data-dimension="cross">交叉驗證</button>
+                        <div class="dimension-tabs" role="tablist" aria-label="分析維度切換">
+                            <button class="dimension-tab active" id="tab-bazi" role="tab" aria-selected="true" aria-controls="bazi-pane" data-dimension="bazi">八字命理</button>
+                            <button class="dimension-tab" id="tab-meihua" role="tab" aria-selected="false" aria-controls="meihua-pane" data-dimension="meihua">梅花易數</button>
+                            <button class="dimension-tab" id="tab-tarot" role="tab" aria-selected="false" aria-controls="tarot-pane" data-dimension="tarot">塔羅牌陣</button>
+                            <button class="dimension-tab" id="tab-ziwei" role="tab" aria-selected="false" aria-controls="ziwei-pane" data-dimension="ziwei">紫微斗數</button>
+                            <button class="dimension-tab" id="tab-name" role="tab" aria-selected="false" aria-controls="name-pane" data-dimension="name">姓名學</button>
+                            <button class="dimension-tab" id="tab-cross" role="tab" aria-selected="false" aria-controls="cross-pane" data-dimension="cross">交叉驗證</button>
                         </div>
                         
                         <div class="dimension-content">
-                            <div class="dimension-pane active" id="bazi-pane">
+                            <div class="dimension-pane active" id="bazi-pane" role="tabpanel" aria-labelledby="tab-bazi" tabindex="0">
                                 <div class="bazi-result" id="bazi-result">
                                     <div class="analysis-grid-container">
-                                        <!-- SECTION 1: 十神與藏干 — 獨立全寬區塊，不與其他並排 -->
-                                        <div class="analysis-card analysis-card-tengods">
+                                        <!-- 十神與藏干：一般使用者不易理解，已隱藏 -->
+                                        <div class="analysis-card analysis-card-tengods" id="tengods-card" style="display:none !important;">
                                             <div class="analysis-header">
                                                 <i class="fas fa-sitemap"></i> 十神與藏干詳解
                                             </div>
@@ -760,20 +810,18 @@
                                                         <span class="bazi-tag tag-unfavorable">計算中</span>
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">命宮神煞：</p>
-                                                    <div class="tag-container">
-                                                        <span class="bazi-tag tag-star">計算中</span>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
+                                        </div>
+                                        <div class="dayun-container" id="dayun-container">
+                                            <h4><i class="fas fa-hourglass-half"></i> 大運流年</h4>
+                                            <div class="dayun-timeline" id="dayun-timeline"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="dimension-pane" id="meihua-pane">
+                            <div class="dimension-pane" id="meihua-pane" role="tabpanel" aria-labelledby="tab-meihua" tabindex="0">
                                 
                     <div class="method-content" id="random-method">
                         <div class="method-form">
@@ -790,17 +838,23 @@
                                     </div>
                             </div>
                             
-                            <div class="dimension-pane" id="tarot-pane">
+                            <div class="dimension-pane" id="tarot-pane" role="tabpanel" aria-labelledby="tab-tarot" tabindex="0">
                                 <div class="tarot-result" id="tarot-result">
                                     </div>
                             </div>
                             
-                            <div class="dimension-pane" id="name-pane">
+                            <div class="dimension-pane" id="ziwei-pane" role="tabpanel" aria-labelledby="tab-ziwei" tabindex="0">
+                                <div class="ziwei-result" id="ziwei-result">
+                                    <p class="no-data-note"><i class="fas fa-info-circle"></i> 請先填寫出生日期、時間與性別，完成分析後顯示紫微星盤。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="dimension-pane" id="name-pane" role="tabpanel" aria-labelledby="tab-name" tabindex="0">
                                 <div class="name-result" id="name-result">
                                     </div>
                             </div>
                             
-                            <div class="dimension-pane" id="cross-pane">
+                            <div class="dimension-pane" id="cross-pane" role="tabpanel" aria-labelledby="tab-cross" tabindex="0">
                                 <div class="cross-result" id="cross-result">
                                     </div>
                             </div>
@@ -876,18 +930,21 @@
                 </div>
     
                 <div class="section-actions" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem;">
-                    <button type="button" class="btn btn-outline btn-prev" data-prev="tarot-section" id="btn-prev-result">
+                    <button type="button" class="btn btn-outline btn-prev" data-prev="tarot-section" id="btn-prev-result" aria-label="返回塔羅牌步驟">
                         <i class="fas fa-arrow-left"></i> 上一步
                     </button>
-                    <button type="button" class="btn btn-primary" id="generate-report">
+                    <button type="button" class="btn btn-outline" id="copy-result-summary" title="複製答案摘要到剪貼板" aria-label="複製分析結果摘要">
+                        <i class="fas fa-copy"></i> 複製摘要
+                    </button>
+                    <button type="button" class="btn btn-primary" id="generate-report" aria-label="下載完整報告文字檔">
                         <i class="fas fa-file-download"></i> 生成完整報告
                     </button>
-                    <button type="button" class="btn btn-success" id="start-over">
+                    <button type="button" class="btn btn-success" id="start-over" aria-label="重新開始新一輪諮詢">
                         <i class="fas fa-redo"></i> 重新開始
                     </button>
                 </div>
             </section>
-        </div>
+        </main>
         
         <!-- 客製表單模態框 -->
         <div class="custom-order-modal" id="custom-order-modal">
@@ -922,11 +979,6 @@
                             <option value="收藏版（$6,000 以上）">收藏版（$6,000 以上）</option>
                         </select>
                     </div>
-                    <div class="form-group-custom">
-                        <label for="custom-email"><i class="fas fa-envelope"></i> Email</label>
-                        <input type="email" id="custom-email" name="email" placeholder="onerkk@gmail.com" value="onerkk@gmail.com" readonly>
-                        <small>我們會透過 Email 與您聯繫</small>
-                    </div>
                     <div class="form-actions-custom">
                         <button type="button" class="btn-cancel" id="cancel-custom-form">取消</button>
                         <button type="submit" class="btn-submit-custom" id="submit-custom-form">
@@ -943,15 +995,6 @@
                         <h4>郵件內容已準備好</h4>
                     </div>
                     <div class="email-info-box">
-                        <div class="email-info-item">
-                            <label>收件人：</label>
-                            <div class="email-value-copy">
-                                <span id="email-to-display">onerkk@gmail.com</span>
-                                <button class="btn-copy" data-copy="onerkk@gmail.com" title="複製">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                            </div>
-                        </div>
                         <div class="email-info-item">
                             <label>主旨：</label>
                             <div class="email-value-copy">
@@ -977,11 +1020,10 @@
                         <p>請按照以下步驟發送郵件：</p>
                         <ol style="margin: 0.5rem 0; padding-left: 1.5rem;">
                             <li>開啟您的郵件應用程式（Gmail、Outlook、Apple Mail 等）</li>
-                            <li>建立新郵件，收件人填寫：<strong>onerkk@gmail.com</strong></li>
-                            <li>貼上已複製的內容（Ctrl+V 或 Cmd+V）</li>
-                            <li>點擊發送</li>
+                            <li>點擊下方連結，郵件客戶端會自動填入收件人與內容</li>
+                            <li>確認後點擊發送</li>
                         </ol>
-                        <p class="email-alt-link" style="margin-top: 1rem;">或直接點擊：<a href="#" id="open-email-link" target="_blank">開啟郵件客戶端</a>（如果您的設備支援）</p>
+                        <p class="email-alt-link" style="margin-top: 1rem;">請點擊：<a href="#" id="open-email-link" target="_blank" rel="noopener">開啟郵件客戶端</a>（設備支援時會自動填入）</p>
                     </div>
                 </div>
             </div>
@@ -989,32 +1031,47 @@
         
         <footer class="footer">
             <div class="footer-content">
-                <p>靜月之前能量占卜儀 v1.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
+                <p>靜月之前能量占卜儀 v2.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
                 <p class="disclaimer">免責聲明：命理分析僅供娛樂參考，請勿過度依賴。實際生活請以理性判斷為主。</p>
             </div>
         </footer>
     
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
-        <script src="js/true-solar-time.js?v=1.3"></script>
-        <script src="js/solar-term-calculator.js?v=1.3"></script>
-        <script src="js/shichen-system.js?v=1.3"></script>
-        <script src="js/dayun-calculator.js?v=1.3"></script>
-        <script src="js/liunian-calculator.js?v=1.3"></script>
-        <script src="js/auxiliary-data.js?v=1.3"></script>
-        <script src="js/bazi-system.js?v=1.3"></script>
-        <script src="js/fortune-judgment-engine.js?v=1.3"></script>
-        <script src="js/quality-mapper.js?v=1.3"></script>
-        <script src="js/meihua-system.js?v=1.3"></script>
-        <script src="js/nameology-system.js?v=1.3"></script>
-        <script src="js/tarot-system.js?v=1.3"></script>
-        <script src="js/tarot-golden-dawn-system.js?v=1.3"></script>
-        <script src="js/question-parser.js?v=1.3"></script>
-        <script src="js/method-selector.js?v=1.3"></script>
-        <script src="js/probability-calculators.js?v=1.3"></script>
-        <script src="js/probability-integration.js?v=1.3"></script>
-        <script src="js/scoring-engine.js?v=1.3"></script>
-        <script src="js/probability-pipeline.js?v=1.3"></script>
-        <script src="js/crystal-recommendation.js?v=1.3"></script>
-        <script src="js/main.js?v=1.3"></script>
+        <script src="https://cdn.jsdelivr.net/npm/iztro@2/dist/iztro.min.js"></script>
+        <script src="js/ziwei-system.js?v=2.1"></script>
+        <script src="js/true-solar-time.js?v=2.1"></script>
+        <script src="js/solar-term-calculator.js?v=2.1"></script>
+        <script src="js/shichen-system.js?v=2.1"></script>
+        <script src="js/dayun-calculator.js?v=2.1"></script>
+        <script src="js/liunian-calculator.js?v=2.1"></script>
+        <script src="js/auxiliary-data.js?v=2.1"></script>
+        <script src="js/bazi-system.js?v=2.1"></script>
+        <script src="js/fortune-judgment-engine.js?v=2.1"></script>
+        <script src="js/quality-mapper.js?v=2.1"></script>
+        <script src="js/meihua-system.js?v=2.1"></script>
+        <script src="js/nameology-system.js?v=2.1"></script>
+        <script src="js/tarot-system.js?v=2.1"></script>
+        <script src="logic/tarot_meanings_by_type.js?v=2.1"></script>
+        <script src="js/tarot-golden-dawn-system.js?v=2.1"></script>
+        <script src="logic/celtic_positions.js?v=2.1"></script>
+        <script src="logic/bazi_interpreter.js?v=2.1"></script>
+        <script src="logic/meihua_rules.js?v=2.1"></script>
+        <script src="logic/crystal_behavior_map.js?v=2.1"></script>
+        <script src="logic/fusion_crystal_engine.js?v=2.1"></script>
+        <script src="logic/vocabulary_db.js?v=2.1"></script>
+        <script src="engine/fusionEngine.js?v=2.1"></script>
+        <script src="js/question-parser.js?v=2.1"></script>
+        <script src="js/method-selector.js?v=2.1"></script>
+        <script src="js/probability-calculators.js?v=2.1"></script>
+        <script src="js/probability-integration.js?v=2.1"></script>
+        <script src="js/scoring-engine.js?v=2.1"></script>
+        <script src="js/probability-pipeline.js?v=2.1"></script>
+        <script src="js/crystal-recommendation.js?v=2.1"></script>
+        <script src="js/main.js?v=2.1"></script>
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js?v=2.1').catch(function(){}); });
+            }
+        </script>
     </body>
     </html>

@@ -5,7 +5,7 @@ function safeText(v, fallback='—'){
   return v;
 }
 /**
- * 靜月之前能量占卜儀 v1.0 - 最終融合完整版 (修正地區消失問題)
+ * 靜月之前能量占卜儀 v2.0 - 最終融合完整版
  * 包含：
  * 1. 完整城市資料庫 (TW/CN/HK/MO) 與真太陽時連動
  * 2. 塔羅牌擬真洗牌、環形抽牌、圖片路徑修正
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
     
-    console.log('靜月之前能量占卜儀 v1.0 (最終融合版) 已就緒');
+    console.log('靜月之前能量占卜儀 v2.0 已就緒');
 });
 
 /** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示，覆蓋任何隱藏用的 CSS */
@@ -279,7 +279,8 @@ function initCityAndSolarTime() {
             {n:'香港 (通用)', lat:22.3193, lng:114.1694}, {n:'香港島', lat:22.2783, lng:114.1747},
             {n:'九龍', lat:22.3155, lng:114.1755}, {n:'新界', lat:22.3780, lng:114.1196}
         ],
-        'MO': [{n:'澳門', lat:22.1987, lng:113.5439}]
+        'MO': [{n:'澳門', lat:22.1987, lng:113.5439}],
+        'other': [{n:'其他地區（預設東經120°）', lat:25.0, lng:120.0}]
     };
 
     function calculateSolarTime() {
@@ -343,16 +344,24 @@ function initCityAndSolarTime() {
         const latSpan = document.getElementById('latitude');
         const lngSpan = document.getElementById('longitude');
         const coordDiv = document.getElementById('city-coordinates');
-        
+        const solarLocationText = document.getElementById('solar-location-text');
+
         if(selected && selected.dataset.lat) {
             latSpan.innerText = selected.dataset.lat;
             lngSpan.innerText = selected.dataset.lng;
             coordDiv.style.display = 'block';
+            if (solarLocationText) solarLocationText.textContent = '已選 ' + selected.text + '（東經 ' + selected.dataset.lng + '°E）';
             calculateSolarTime();
+        } else {
+            if (solarLocationText) solarLocationText.textContent = '請先選擇出生地區與城市';
         }
     }
 
-    countrySelect.addEventListener('change', updateCities);
+    countrySelect.addEventListener('change', function() {
+        updateCities();
+        var solarLocationText = document.getElementById('solar-location-text');
+        if (solarLocationText) solarLocationText.textContent = countrySelect.value ? '請選擇城市' : '請先選擇出生地區與城市';
+    });
     citySelect.addEventListener('change', updateCoords);
     timeInput.addEventListener('change', calculateSolarTime);
     timeInput.addEventListener('input', calculateSolarTime);
@@ -392,7 +401,7 @@ class FortuneSystem {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
-        const stepMap = { 'input-section':1, 'bazi-section':2, 'meihua-section':3, 'tarot-section':4, 'result-section':5 };
+        const stepMap = { 'input-section':1, 'meihua-section':2, 'tarot-section':3, 'result-section':4 };
         if (stepMap[sectionId]) {
             this.currentStep = stepMap[sectionId];
             this.updateProgress();
@@ -421,6 +430,8 @@ class FortuneSystem {
         // 個別欄位補齊（id=name 非 user-name；問題、經緯度）
         var nameEl = document.getElementById('name');
         if (nameEl) nameEl.value = '';
+        var qType = document.getElementById('question-type');
+        if (qType) qType.value = '';
         var questionEl = document.getElementById('question');
         if (questionEl) questionEl.value = '';
         var lonEl = document.getElementById('longitude');
@@ -450,6 +461,12 @@ class FortuneSystem {
         if (crystalStones) crystalStones.textContent = '—';
         var crystalReason = document.getElementById('crystal-reason-text');
         if (crystalReason) crystalReason.textContent = '—';
+        var crystalWearing = document.getElementById('crystal-wearing-span');
+        if (crystalWearing) crystalWearing.textContent = '—';
+        var crystalTaboos = document.getElementById('crystal-taboos-span');
+        if (crystalTaboos) crystalTaboos.textContent = '—';
+        var crystalDisclaimer = document.getElementById('crystal-disclaimer-span');
+        if (crystalDisclaimer) crystalDisclaimer.textContent = '本建議僅供能量校準參考，不具醫療或命運保證效力。';
 
         // 綜合結論
         var conclusionContent = document.getElementById('conclusion-content');
@@ -481,12 +498,17 @@ class FortuneSystem {
     }
     
     generateReport() {
-        // 生成完整報告
-        let report = '靜月之前能量占卜儀 v1.0\n';
+        let report = '靜月之前能量占卜儀 v2.0\n';
         report += '='.repeat(50) + '\n\n';
         report += `生成時間：${new Date().toLocaleString('zh-TW')}\n\n`;
-        
-        // 用戶資料
+
+        if(this.userData.question) {
+            report += '【諮詢問題】\n';
+            report += `${this.userData.question}\n`;
+            if(this.userData.questionType) report += `問題類型：${this.userData.questionType}\n`;
+            report += '\n';
+        }
+
         if(this.userData.birthDate || this.userData.birthTime || this.userData.name) {
             report += '【用戶資料】\n';
             if(this.userData.name) report += `姓名：${this.userData.name}\n`;
@@ -532,10 +554,40 @@ class FortuneSystem {
         }
         
         // 姓名學
-        if(this.analysisResults.name) {
+        const nameData = this.analysisResults.nameology || this.analysisResults.name;
+        if(nameData) {
             report += '【姓名學分析】\n';
-            const n = this.analysisResults.name;
-            if(n.overallScore !== undefined) report += `總體評分：${n.overallScore}\n`;
+            if(nameData.overallScore !== undefined) report += `總體評分：${nameData.overallScore}\n`;
+            report += '\n';
+        }
+
+        // 綜合答案（若畫面已有）
+        const directAnswer = document.getElementById('direct-answer');
+        const probEl = document.getElementById('overall-probability');
+        if(directAnswer && directAnswer.textContent) {
+            report += '【直接回答】\n';
+            report += `${directAnswer.textContent.trim()}\n`;
+            if(probEl && probEl.textContent) report += `可能性評估：${probEl.textContent}\n`;
+            const factorsList = document.getElementById('answer-factors-list');
+            if(factorsList && factorsList.children.length) {
+                report += '影響因子：\n';
+                for(let i = 0; i < factorsList.children.length; i++) report += `  ${i+1}. ${factorsList.children[i].textContent}\n`;
+            }
+            const suggList = document.getElementById('answer-suggestions-list');
+            if(suggList && suggList.children.length) {
+                report += '關鍵建議：\n';
+                for(let j = 0; j < suggList.children.length; j++) report += `  ${j+1}. ${suggList.children[j].textContent}\n`;
+            }
+            report += '\n';
+        }
+
+        // 水晶推薦
+        const crystalEl = document.getElementById('crystal-stones-list');
+        const crystalReason = document.getElementById('crystal-reason-text');
+        if(crystalEl && crystalEl.textContent && crystalEl.textContent !== '—') {
+            report += '【專屬校準處方】\n';
+            report += `推薦配戴：${crystalEl.textContent}\n`;
+            if(crystalReason && crystalReason.textContent && crystalReason.textContent !== '—') report += `功效：${crystalReason.textContent}\n`;
             report += '\n';
         }
         
@@ -601,6 +653,15 @@ class FortuneSystem {
                 TarotModule.displayTarotResult(this.analysisResults.tarot.analysis);
             }, 200);
         }
+        
+        // 載入紫微斗數星盤（依出生日期、時間、性別）
+        setTimeout(() => {
+            try {
+                this.displayZiweiResult();
+            } catch (e) {
+                console.warn('[loadResults] 紫微斗數顯示失敗:', e);
+            }
+        }, 180);
         
         // 生成姓名學和交叉驗證結果
         setTimeout(() => {
@@ -1275,13 +1336,6 @@ class FortuneSystem {
                         ${mkBadTags(bad, hasBadData)}
                     </div>
                 </div>
-                <div>
-                    <p style="font-size:0.9rem; margin-bottom:5px; color:rgba(255,255,255,0.6);">命宮神煞：</p>
-                    <div class="tag-container">
-                        ${mkStarTags(stars)}
-                    </div>
-                    ${mkShenShaDetail(shenShaByPillar)}
-                </div>
                 ${mkAuxiliarySection(baziResult)}
             `;
             
@@ -1294,6 +1348,26 @@ class FortuneSystem {
             console.log('[fillBaziResultUI] normalized unfavorable:', n.unfavorable);
         }
 
+    }
+
+    displayZiweiResult() {
+        const ziweiPane = document.getElementById('ziwei-result');
+        if (!ziweiPane) return;
+        if (typeof ZiweiSystem === 'undefined' || !ZiweiSystem.calculate || !ZiweiSystem.renderHTML) {
+            ziweiPane.innerHTML = '<p class="no-data-note"><i class="fas fa-info-circle"></i> 紫微斗數模組未載入（iztro 庫）。</p>';
+            return;
+        }
+        const u = this.userData || {};
+        const birthDate = u.birthDate || (this.analysisResults.bazi && (this.analysisResults.bazi.birthDate || (this.analysisResults.bazi.fullData && this.analysisResults.bazi.fullData.birthDate)));
+        const birthTime = u.birthTime || (this.analysisResults.bazi && this.analysisResults.bazi.birthTime) || '12:00';
+        const gender = u.gender || (this.analysisResults.bazi && this.analysisResults.bazi.gender) || 'male';
+        if (!birthDate) {
+            ziweiPane.innerHTML = '<p class="no-data-note"><i class="fas fa-info-circle"></i> 請先填寫出生日期、時間與性別，完成分析後顯示紫微星盤。</p>';
+            return;
+        }
+        const astrolabe = ZiweiSystem.calculate(birthDate, birthTime, gender);
+        if (astrolabe) this.analysisResults.ziwei = astrolabe;
+        ziweiPane.innerHTML = ZiweiSystem.renderHTML(astrolabe);
     }
 
     
@@ -1452,6 +1526,20 @@ class FortuneSystem {
                         ${fortune ? `<span class="chip ${fortune.includes('大吉') || fortune.includes('吉') ? 'good' : fortune.includes('凶') ? 'bad' : ''}"><i class="fas fa-star"></i> 吉凶：${fortune}</span>` : ''}
                         ${moving ? `<span class="chip"><i class="fas fa-bolt"></i> ${moving}</span>` : ''}
                     </div>
+                    ${(typeof MeihuaRules !== 'undefined') ? (() => {
+                        let extra = '';
+                        if (MeihuaRules.getTiYongHint && meihuaData.tiYong) {
+                            const hint = MeihuaRules.getTiYongHint(meihuaData.tiYong);
+                            if (hint) extra += `<p><i class="fas fa-balance-scale"></i> ${hint}</p>`;
+                        }
+                        if (MeihuaRules.getTypeAdvice) {
+                            const qType = (window.fortuneSystem && window.fortuneSystem.userData && window.fortuneSystem.userData.questionType) || '';
+                            const mhAdvice = MeihuaRules.getTypeAdvice(meihuaData, qType || 'general');
+                            if (mhAdvice.advice) extra += `<p><i class="fas fa-compass"></i> ${mhAdvice.advice}</p>`;
+                            if (mhAdvice.timing) extra += `<p><i class="fas fa-clock"></i> ${mhAdvice.timing}</p>`;
+                        }
+                        return extra ? `<div class="meihua-type-advice" style="margin-top: 1rem; padding: 0.75rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px;">${extra}</div>` : '';
+                    })() : ''}
 
                     <div class="analysis-card" style="margin-top: 1rem;">
                         <div class="analysis-header">
@@ -1928,6 +2016,45 @@ class FortuneSystem {
                 </div>
             </div>
         `;
+    }
+    
+    validateAndRunStep1() {
+        const qType = document.getElementById('question-type');
+        const question = document.getElementById('question');
+        const birthDate = document.getElementById('birth-date');
+        if (!qType || !qType.value) { alert('請選擇問題類型'); return false; }
+        if (!question || !String(question.value || '').trim()) { alert('請輸入諮詢問題'); return false; }
+        if (!birthDate || !birthDate.value) { alert('請填寫出生日期'); return false; }
+        this.userData.questionType = qType.value;
+        this.userData.question = String(question.value || '').trim();
+        this.userData.name = (document.getElementById('name')?.value || '').trim();
+        this.userData.birthDate = birthDate.value;
+        this.userData.birthTime = document.getElementById('birth-time')?.value || '12:00';
+        this.userData.gender = document.querySelector('input[name="gender"]:checked')?.value || 'male';
+        this.userData.useSolarTime = document.getElementById('true-solar-time')?.checked || false;
+        if (!this.userData.gender) { alert('請選擇性別'); return false; }
+        const country = document.getElementById('birth-country')?.value;
+        const city = document.getElementById('birth-city')?.value;
+        if (!country || !city) { alert('請選擇出生地區與城市'); return false; }
+        return true;
+    }
+    
+    runBackgroundCalculations() {
+        try {
+            const useSolarTime = this.userData.useSolarTime || false;
+            const longitude = parseFloat(document.getElementById('longitude')?.textContent) || 121.5654;
+            let timeStr = this.userData.birthTime || '12:00';
+            if (!timeStr.includes(':')) timeStr = timeStr.length >= 4 ? timeStr.substring(0,2)+':'+timeStr.substring(2) : '12:00';
+            const fullBirthDate = `${this.userData.birthDate}T${(timeStr.length===5 ? timeStr+':00' : timeStr)}`;
+            if (typeof BaziCalculator !== 'undefined') {
+                const calculator = new BaziCalculator();
+                const fullBaziData = calculator.calculateBazi(fullBirthDate, this.userData.gender, useSolarTime, longitude, { userName: this.userData.name, birthDate: this.userData.birthDate });
+                const baziData = { year: { gan: fullBaziData.fourPillars.year.gan, zhi: fullBaziData.fourPillars.year.zhi }, month: { gan: fullBaziData.fourPillars.month.gan, zhi: fullBaziData.fourPillars.month.zhi }, day: { gan: fullBaziData.fourPillars.day.gan, zhi: fullBaziData.fourPillars.day.zhi }, hour: { gan: fullBaziData.fourPillars.hour.gan, zhi: fullBaziData.fourPillars.hour.zhi }, elementStrength: fullBaziData.elementStrength, favorableElements: fullBaziData.favorableElements };
+                this.analysisResults = this.analysisResults || {};
+                this.analysisResults.bazi = { data: baziData, fullData: fullBaziData, birthDate: this.userData.birthDate, birthTime: this.userData.birthTime, gender: this.userData.gender };
+            }
+            /* 梅花易數由使用者在梅花易數頁自行起卦，不在此預先執行 */
+        } catch (e) { console.error('背景計算錯誤:', e); }
     }
     
     calculateBazi() {
@@ -3213,35 +3340,26 @@ const TarotModule = {
             // 確保卡片初始狀態是背面朝上
             if(flipEl) flipEl.classList.remove('flipped');
             
-            // 設置正面圖片，並添加錯誤處理
+            // 設置正面圖片與牌義資訊（牌名、正逆位、大意、此位置意義）
             if(frontDiv && cardData) {
-                const img = document.createElement('img');
+                frontDiv.innerHTML = '';
+                var imgWrap = document.createElement('div');
+                imgWrap.className = 'card-front-img-wrap' + (cardData.isReversed ? ' reversed' : '');
+                var img = document.createElement('img');
                 img.src = cardData.image || 'images/back.jpg';
                 img.alt = cardData.name || '塔羅牌';
                 img.style.width = '100%';
                 img.style.height = '100%';
                 img.style.objectFit = 'cover';
-                
-                // 圖片載入錯誤處理
                 img.onerror = function() {
-                    console.warn(`塔羅牌圖片載入失敗: ${cardData.image}，使用備用圖片`);
-                    // 嘗試使用備用路徑
-                    if (cardData.image.includes('wands_11')) {
-                        this.src = 'images/wands11.jpg';
-                    } else {
-                        // 如果還是失敗，顯示背面圖片
-                        this.src = 'images/back.jpg';
-                        this.style.opacity = '0.5';
-                    }
+                    if (cardData.image && cardData.image.indexOf('wands_11') >= 0) this.src = 'images/wands11.jpg';
+                    else { this.src = 'images/back.jpg'; this.style.opacity = '0.5'; }
                 };
-                
-                // 圖片載入成功處理
-                img.onload = function() {
-                    this.style.opacity = '1';
-                };
-                
-                frontDiv.innerHTML = '';
-                frontDiv.appendChild(img);
+                img.onload = function() { this.style.opacity = '1'; };
+                imgWrap.appendChild(img);
+                frontDiv.appendChild(imgWrap);
+
+                cardEl.setAttribute('data-card-index', String(index));
             }
         });
 
@@ -3372,9 +3490,11 @@ const TarotModule = {
         if (typeof GoldenDawnCelticCross !== 'undefined') {
             try {
                 const reader = new GoldenDawnCelticCross();
+                const ud = window.fortuneSystem?.userData;
                 const querentInfo = {
-                    name: window.fortuneSystem?.userData?.name || '詢問者',
-                    gender: window.fortuneSystem?.userData?.gender || 'unknown'
+                    name: ud?.name || '詢問者',
+                    gender: ud?.gender || 'unknown',
+                    questionType: ud?.questionType || ''
                 };
                 
                 // 為每張牌添加正逆位信息（簡化：隨機決定）
@@ -3622,11 +3742,16 @@ const TarotModule = {
         // 位置分析 - 使用卡片式UI
         html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">';
         analysis.positions.forEach(pos => {
+            var posName = pos.positionName || pos.position || ('位置' + (pos.index || 0));
+            var posIdx = pos.index != null ? pos.index : (pos.position && typeof pos.position === 'number' ? pos.position : '');
             html += '<div style="padding: 1rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">';
             html += `<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">`;
-            html += `<span style="padding: 0.25rem 0.5rem; background: rgba(212, 175, 55, 0.3); border-radius: 4px; font-weight: bold;">${pos.position}</span>`;
-            html += `<span style="font-weight: bold; color: var(--gold-primary);">${pos.positionName}</span>`;
+            html += `<span style="padding: 0.25rem 0.5rem; background: rgba(212, 175, 55, 0.3); border-radius: 4px; font-weight: bold;">${posIdx}</span>`;
+            html += `<span style="font-weight: bold; color: var(--gold-primary);">${posName}</span>`;
             html += `</div>`;
+            if (pos.positionMeaning) {
+                html += `<div style="font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-bottom: 0.5rem;">${pos.positionMeaning}</div>`;
+            }
             html += `<div style="margin-bottom: 0.5rem;">`;
             html += `<span style="font-weight: 600;">${pos.card || '-'}</span>`;
             if (pos.orientation) {
@@ -3911,10 +4036,25 @@ const TarotModule = {
 // ==========================================
 function bindEvents() {
     document.querySelectorAll('.btn-next').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const next = btn.dataset.next;
-            if(window.fortuneSystem) window.fortuneSystem.showSection(next);
-            if(next === 'bazi-section') window.fortuneSystem.calculateBazi();
+        btn.addEventListener('click', function() {
+            const next = this.dataset.next;
+            if (!window.fortuneSystem) return;
+            if (next === 'meihua-section') {
+                if (!window.fortuneSystem.validateAndRunStep1()) return;
+                var overlay = document.getElementById('global-loading-overlay');
+                if (overlay) { overlay.removeAttribute('hidden'); overlay.setAttribute('aria-busy', 'true'); }
+                setTimeout(function() {
+                    try {
+                        window.fortuneSystem.runBackgroundCalculations();
+                    } finally {
+                        if (overlay) { overlay.setAttribute('hidden', ''); overlay.setAttribute('aria-busy', 'false'); }
+                        window.fortuneSystem.showSection('meihua-section');
+                    }
+                }, 50);
+            } else {
+                window.fortuneSystem.showSection(next);
+                if (next === 'bazi-section') window.fortuneSystem.calculateBazi();
+            }
         });
     });
     
@@ -3925,14 +4065,13 @@ function bindEvents() {
                 if(prevSection) {
                     window.fortuneSystem.showSection(prevSection);
                 } else {
-                    // 如果沒有 data-prev，嘗試返回上一步
                     const currentSection = document.querySelector('.section.active')?.id;
                     if(currentSection === 'result-section') {
                         window.fortuneSystem.showSection('tarot-section');
                     } else if(currentSection === 'tarot-section') {
                         window.fortuneSystem.showSection('meihua-section');
                     } else if(currentSection === 'meihua-section') {
-                        window.fortuneSystem.showSection('bazi-section');
+                        window.fortuneSystem.showSection('input-section');
                     } else if(currentSection === 'bazi-section') {
                         window.fortuneSystem.showSection('input-section');
                     }
@@ -3941,6 +4080,40 @@ function bindEvents() {
         });
     });
     
+    // 複製結果摘要按鈕
+    const copySummaryBtn = document.getElementById('copy-result-summary');
+    if(copySummaryBtn) {
+        copySummaryBtn.addEventListener('click', function() {
+            var parts = [];
+            var q = document.getElementById('question-display');
+            if(q && q.innerText) parts.push('【問題】' + q.innerText.trim());
+            var ans = document.getElementById('direct-answer');
+            if(ans && ans.innerText) parts.push('【直接回答】' + ans.innerText.trim());
+            var prob = document.getElementById('overall-probability');
+            if(prob && prob.innerText) parts.push('【可能性評估】' + prob.innerText.trim());
+            var factors = document.getElementById('answer-factors-list');
+            if(factors && factors.children.length) {
+                var list = [];
+                for(var i = 0; i < factors.children.length; i++) list.push((i+1) + '. ' + factors.children[i].innerText);
+                parts.push('【影響因子】\n' + list.join('\n'));
+            }
+            var sugg = document.getElementById('answer-suggestions-list');
+            if(sugg && sugg.children.length) {
+                var list = [];
+                for(var j = 0; j < sugg.children.length; j++) list.push((j+1) + '. ' + sugg.children[j].innerText);
+                parts.push('【關鍵建議】\n' + list.join('\n'));
+            }
+            var text = parts.length ? parts.join('\n\n') : '尚無分析結果可複製';
+            var done = function(){ copySummaryBtn.innerHTML = '<i class="fas fa-check"></i> 已複製'; setTimeout(function(){ copySummaryBtn.innerHTML = '<i class="fas fa-copy"></i> 複製摘要'; }, 1500); };
+            var copyFn = window.copyToClipboard;
+            if(copyFn && typeof copyFn === 'function') {
+                copyFn(text).then(done).catch(function(){ alert('複製失敗，請手動選擇文字複製'); });
+            } else if(navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done).catch(function(){ alert('複製失敗'); });
+            } else { alert('此瀏覽器不支援一鍵複製，請使用「生成完整報告」下載後複製'); }
+        });
+    }
+
     // 生成完整報告按鈕
     const generateReportBtn = document.getElementById('generate-report');
     if(generateReportBtn) {
@@ -3987,6 +4160,33 @@ function bindEvents() {
 
     const baziBtn = document.getElementById('calculate-bazi');
     if(baziBtn) baziBtn.addEventListener('click', () => window.fortuneSystem.calculateBazi());
+    
+    var qTypePlaceholders = { love:'例如：這段感情能否開花結果？現任是正緣嗎？', career:'例如：今年有機會升遷嗎？轉職時機適合嗎？', wealth:'例如：投資運勢如何？正財偏財哪方面較旺？', health:'例如：近期健康需注意什麼？哪些部位需保養？', general:'例如：今年整體運勢如何？有哪些機會與挑戰？', relationship:'例如：與某人的關係如何改善？貴人在何方？', family:'例如：家庭關係能否和睦？購屋時機適合嗎？', other:'請具體描述您的問題...' };
+    var qTypeEl = document.getElementById('question-type');
+    var qEl = document.getElementById('question');
+    var hintEl = document.getElementById('question-type-hint');
+    if(qTypeEl && qEl) {
+        var syncPlaceholder = function() {
+            var ph = qTypePlaceholders[qTypeEl.value] || '請輸入您想詢問的問題...';
+            qEl.placeholder = ph;
+            if(hintEl) hintEl.textContent = ph ? '問題方向提示：' + ph : '依類型選擇後，下方會有問題方向提示';
+        };
+        qTypeEl.addEventListener('change', function() {
+            syncPlaceholder();
+        });
+        if(qTypeEl.value) syncPlaceholder();
+        var charHint = document.getElementById('question-char-hint');
+        if(charHint) {
+            var updateCharCount = function() {
+                var len = (qEl.value || '').length;
+                var max = qEl.getAttribute('maxlength') || 500;
+                charHint.textContent = len + '/' + max + ' 字';
+            };
+            qEl.addEventListener('input', updateCharCount);
+            qEl.addEventListener('change', updateCharCount);
+            updateCharCount();
+        }
+    }
 
 
     // [PATCH v9] 保證「隨機起卦」UI 永遠存在（避免 index.html 被舊版覆蓋導致缺元件）
@@ -4119,6 +4319,13 @@ function bindEvents() {
     const finishDrawBtn = document.getElementById('finish-draw');
     if(finishDrawBtn) finishDrawBtn.addEventListener('click', () => TarotModule.finishDraw());
     
+    // 跳過梅花易數按鈕
+    const skipMeihuaBtn = document.getElementById('skip-meihua');
+    if(skipMeihuaBtn) {
+        skipMeihuaBtn.addEventListener('click', () => {
+            if(window.fortuneSystem) window.fortuneSystem.showSection('tarot-section');
+        });
+    }
     // 跳過塔羅牌按鈕
     const skipTarotBtn = document.getElementById('skip-tarot');
     if(skipTarotBtn) {
@@ -4130,18 +4337,27 @@ function bindEvents() {
     // 進行分析按鈕（在 renderSpread 中會重新綁定，這裡不需要）
     // 注意：此按鈕在牌陣顯示時才會出現，所以主要在 renderSpread 中綁定
     
-    // 四維度分析標籤頁切換
-    document.querySelectorAll('.dimension-tab').forEach(tab => {
+    // 四維度分析標籤頁切換（含鍵盤導覽）
+    var dimensionTabs = document.querySelectorAll('.dimension-tab');
+    dimensionTabs.forEach((tab, idx) => {
+        tab.addEventListener('keydown', function(e) {
+            if(e.key === 'ArrowLeft' && idx > 0) { dimensionTabs[idx-1].click(); dimensionTabs[idx-1].focus(); e.preventDefault(); }
+            if(e.key === 'ArrowRight' && idx < dimensionTabs.length - 1) { dimensionTabs[idx+1].click(); dimensionTabs[idx+1].focus(); e.preventDefault(); }
+        });
         tab.addEventListener('click', function(e) {
             e.preventDefault();
             const dimension = this.dataset.dimension;
             
             // 移除所有活動狀態
-            document.querySelectorAll('.dimension-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.dimension-tab').forEach(t => {
+                t.classList.remove('active');
+                t.setAttribute('aria-selected', 'false');
+            });
             document.querySelectorAll('.dimension-pane').forEach(p => p.classList.remove('active'));
             
             // 添加當前活動狀態
             this.classList.add('active');
+            this.setAttribute('aria-selected', 'true');
             const pane = document.getElementById(`${dimension}-pane`);
             if(pane) {
                 pane.classList.add('active');
@@ -4151,11 +4367,23 @@ function bindEvents() {
                     const meihuaPane = document.getElementById('meihua-result');
                     if(meihuaPane && (!meihuaPane.innerHTML || meihuaPane.innerHTML.trim() === '' || meihuaPane.innerHTML.includes('<!--'))) {
                         if(window.fortuneSystem && window.fortuneSystem.analysisResults && window.fortuneSystem.analysisResults.meihua) {
-                            // 有數據，顯示結果
                             window.fortuneSystem.displayMeihuaResult(window.fortuneSystem.analysisResults.meihua);
                         } else {
-                            // 沒有數據，顯示提示
-                            meihuaPane.innerHTML = '<div class="no-data-note"><i class="fas fa-info-circle"></i> 尚未完成梅花易數起卦，請先完成起卦計算。</div>';
+                            meihuaPane.innerHTML = '<div class="no-data-note"><i class="fas fa-info-circle"></i> 尚未完成梅花易數起卦，或已跳過此步驟。</div>';
+                        }
+                    }
+                }
+                // 如果切換到紫微斗數標籤，檢查是否需要顯示數據
+                if(dimension === 'ziwei' && window.fortuneSystem && typeof window.fortuneSystem.displayZiweiResult === 'function') {
+                    window.fortuneSystem.displayZiweiResult();
+                }
+                // 如果切換到塔羅牌標籤，檢查是否需要顯示數據
+                if(dimension === 'tarot') {
+                    const tarotPane = document.getElementById('tarot-result');
+                    if(tarotPane && (!tarotPane.innerHTML || tarotPane.innerHTML.trim() === '')) {
+                        var hasTarot = window.fortuneSystem && window.fortuneSystem.analysisResults && window.fortuneSystem.analysisResults.tarot && window.fortuneSystem.analysisResults.tarot.analysis;
+                        if(!hasTarot) {
+                            tarotPane.innerHTML = '<div class="no-data-note"><i class="fas fa-info-circle"></i> 尚未完成塔羅抽牌，或已跳過此步驟。機率評估將依八字與梅花易數計算。</div>';
                         }
                     }
                 }
@@ -4425,9 +4653,11 @@ function setupMeihuaRandomDomGuard(){
         try{
           if(typeof GoldenDawnCelticCross !== 'undefined'){
             const reader = new GoldenDawnCelticCross();
+            const ud = window.fortuneSystem && window.fortuneSystem.userData;
             const querentInfo = {
-              name: (window.fortuneSystem && window.fortuneSystem.userData && window.fortuneSystem.userData.name) ? window.fortuneSystem.userData.name : '詢問者',
-              gender: (window.fortuneSystem && window.fortuneSystem.userData && window.fortuneSystem.userData.gender) ? window.fortuneSystem.userData.gender : 'unknown'
+              name: (ud && ud.name) ? ud.name : '詢問者',
+              gender: (ud && ud.gender) ? ud.gender : 'unknown',
+              questionType: (ud && ud.questionType) ? ud.questionType : ''
             };
             const gd = reader.analyze(cards, q, querentInfo);
             return {
@@ -4634,23 +4864,24 @@ function setupMeihuaRandomDomGuard(){
       FortuneSystem.prototype.renderProbabilityDashboard = function(){
         try{
           const question = ($('question') && $('question').value) ? $('question').value.trim() : '';
-          // 本次分析使用（輸入標準化顯性顯示，網頁與手機同步）
+          // 本次分析使用（緊湊單行，網頁與手機同步）
           var inputCard = $('input-summary-card');
           var inputContent = $('input-summary-content');
           if (inputCard && inputContent) {
             var u = this.userData || {};
             var inputParts = [];
-            if (u.gender) inputParts.push('性別：' + (u.gender === 'male' ? '男' : '女'));
-            if (u.birthDate) inputParts.push('出生日期：' + u.birthDate);
-            if (u.birthTime) inputParts.push('出生時間：' + u.birthTime);
-            var solarNote = ($('true-solar-time') && $('true-solar-time').checked) ? '是' : (u.useSolarTime ? '是' : '否');
-            inputParts.push('真太陽時：' + solarNote);
-            var lat = $('latitude') ? ($('latitude').innerText || '').trim() : '';
-            var lng = $('longitude') ? ($('longitude').innerText || '').trim() : '';
-            if (lat && lng) inputParts.push('經緯度：' + lat + '°N, ' + lng + '°E');
+            if (u.gender) inputParts.push(u.gender === 'male' ? '男' : '女');
+            if (u.birthDate) inputParts.push(u.birthDate);
+            if (u.birthTime) inputParts.push(u.birthTime);
             if (inputParts.length) {
-              inputContent.innerHTML = inputParts.join(' &nbsp;|&nbsp; ');
-              inputCard.style.display = 'block';
+              var solarNote = ($('true-solar-time') && $('true-solar-time').checked) ? '是' : (u.useSolarTime ? '是' : '否');
+              inputParts.push('真太陽時' + solarNote);
+              var lat = $('latitude') ? ($('latitude').innerText || '').trim() : '';
+              var lng = $('longitude') ? ($('longitude').innerText || '').trim() : '';
+              if (lat && lng) inputParts.push(lat + '°N,' + lng + '°E');
+              inputContent.textContent = inputParts.join(' · ');
+              inputCard.style.display = 'flex';
+              inputCard.classList.remove('input-summary-expanded');
             } else {
               inputCard.style.display = 'none';
             }
@@ -4661,11 +4892,19 @@ function setupMeihuaRandomDomGuard(){
           }
 
           const r = (this.analysisResults || {});
+          if (!r.ziwei && typeof ZiweiSystem !== 'undefined' && ZiweiSystem.calculate) {
+            var u = this.userData || {};
+            var bd = u.birthDate || (r.bazi && (r.bazi.birthDate || (r.bazi.fullData && r.bazi.fullData.birthDate)));
+            var bt = u.birthTime || (r.bazi && r.bazi.birthTime) || '12:00';
+            var g = u.gender || (r.bazi && r.bazi.gender) || 'male';
+            if (bd) try { this.analysisResults.ziwei = ZiweiSystem.calculate(bd, bt, g); } catch (e) {}
+          }
           var dataForScoring = {
             bazi: r.bazi || r.fullBaziData,
             nameology: r.nameology,
             meihua: r.meihua,
-            tarot: r.tarot
+            tarot: r.tarot,
+            ziwei: this.analysisResults.ziwei || r.ziwei
           };
           let parts = [];
           let overall = 0;
@@ -4673,7 +4912,7 @@ function setupMeihuaRandomDomGuard(){
 
           if (typeof buildSummaryReport === 'function') {
             try {
-              var report = buildSummaryReport(dataForScoring, question, { referenceDate: new Date() });
+              var report = buildSummaryReport(dataForScoring, question, { referenceDate: new Date(), questionType: (this.userData && this.userData.questionType) ? this.userData.questionType : '' });
               if (report.breakdown && report.breakdown.length > 0) {
                 overall = report.overallPercent || 0;
                 breakdownWithReasons = report.breakdown;
@@ -4692,19 +4931,27 @@ function setupMeihuaRandomDomGuard(){
               { key:'姓名學', prob:nameProb },
               { key:'梅花易數', prob:meihuaProb },
               { key:'塔羅', prob:tarotProb }
-            ].filter(function(x){ return Number.isFinite(Number(x.prob)); });
+            ];
+            if (dataForScoring.ziwei && dataForScoring.ziwei.palaces && typeof calculateCategoryScore === 'function' && typeof getCategory === 'function') {
+              try {
+                var catZ = getCategory(question, (this.userData && this.userData.questionType) ? this.userData.questionType : '');
+                var zRes = calculateCategoryScore('ziwei', dataForScoring.ziwei, catZ, {});
+                parts.push({ key: '紫微斗數', prob: zRes.score, reason: zRes.reason || '' });
+              } catch (e) {}
+            }
+            parts = parts.filter(function(x){ return Number.isFinite(Number(x.prob)); });
             overall = parts.length ? clamp(Math.round(avg(parts.map(function(p){ return p.prob; }))),0,100) : 0;
           }
 
           /* Always populate breakdownWithReasons with dynamic reason from ScoringEngine when missing */
           if (breakdownWithReasons.length === 0 && parts.length > 0 && typeof calculateCategoryScore === 'function' && typeof getCategory === 'function') {
             try {
-              var cat = getCategory(question);
+              var cat = getCategory(question, (this.userData && this.userData.questionType) ? this.userData.questionType : '');
               var scoreOpts = { referenceDate: new Date() };
               breakdownWithReasons = [];
               parts.forEach(function(p){
-                var sys = (p.key === '八字') ? 'bazi' : (p.key === '姓名學') ? 'name' : (p.key === '梅花易數') ? 'meihua' : (p.key === '塔羅') ? 'tarot' : null;
-                var data = (sys === 'bazi') ? dataForScoring.bazi : (sys === 'name') ? dataForScoring.nameology : (sys === 'meihua') ? dataForScoring.meihua : (sys === 'tarot') ? dataForScoring.tarot : null;
+                var sys = (p.key === '八字') ? 'bazi' : (p.key === '姓名學') ? 'name' : (p.key === '梅花易數') ? 'meihua' : (p.key === '塔羅') ? 'tarot' : (p.key === '紫微斗數') ? 'ziwei' : null;
+                var data = (sys === 'bazi') ? dataForScoring.bazi : (sys === 'name') ? dataForScoring.nameology : (sys === 'meihua') ? dataForScoring.meihua : (sys === 'tarot') ? dataForScoring.tarot : (sys === 'ziwei') ? dataForScoring.ziwei : null;
                 var res = sys && data ? calculateCategoryScore(sys, data, cat, scoreOpts) : { score: p.prob, reason: '' };
                 breakdownWithReasons.push({ method: p.key, score: res.score != null ? res.score : p.prob, reason: res.reason || '' });
               });
@@ -4712,15 +4959,60 @@ function setupMeihuaRandomDomGuard(){
             } catch (e) { if (window.console) console.warn('ScoringEngine fallback reason failed:', e); }
           }
 
-          // 直接回答：改成總體機率，並顯性標示整合方式（網頁與手機同步）
-          var weightNote = parts.length ? ' 整合方式：加權平均（權重=置信度×方法可靠性；八字 0.85、姓名學 0.7、梅花易數 0.75、塔羅 0.75）。' : '';
-          setText('direct-answer', parts.length ? `多維度機率彙總：整體成功率約 ${overall}%（以可用維度加權）。${weightNote}` : '尚未完成任何命理計算，無法生成機率彙總。');
+          // 融合引擎：若可用則使用 generateDirectAnswer（結論同時供直接回答與綜合結論使用）
+          var useFusion = (typeof FusionEngine !== 'undefined' && FusionEngine && FusionEngine.generateDirectAnswer);
+          var displayConclusion = '';
+          if (useFusion && parts.length > 0) {
+            try {
+              var fusionData = {
+                bazi: dataForScoring.bazi,
+                meihua: dataForScoring.meihua,
+                tarot: dataForScoring.tarot,
+                ziwei: dataForScoring.ziwei,
+                question: question,
+                questionType: (this.userData && this.userData.questionType) || ''
+              };
+              var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
+              displayConclusion = fusionOut.conclusion || '';
+              setText('direct-answer', displayConclusion);
+              if (fusionOut.probabilityValue != null && Number.isFinite(fusionOut.probabilityValue)) {
+                overall = Math.round(fusionOut.probabilityValue);
+              }
+              var factorsEl = $('answer-factors');
+              var factorsList = $('answer-factors-list');
+              if (factorsEl && factorsList && fusionOut.factors && fusionOut.factors.length) {
+                factorsList.innerHTML = fusionOut.factors.map(function(f){ return '<li>' + (f || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</li>'; }).join('');
+                factorsEl.style.display = 'block';
+              }
+              var suggEl = $('answer-suggestions');
+              var suggList = $('answer-suggestions-list');
+              if (suggEl && suggList && fusionOut.suggestions && fusionOut.suggestions.length) {
+                suggList.innerHTML = fusionOut.suggestions.map(function(s){ return '<li>' + (s || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</li>'; }).join('');
+                suggEl.style.display = 'block';
+              }
+              if (fusionOut.conflictSource) {
+                var cfNote = '（系統間有差異：' + fusionOut.conflictSource + '，故以區間呈現）';
+                if (breakdownWithReasons.length === 0) breakdownWithReasons = [{ method: '提示', score: overall, reason: cfNote }];
+                else breakdownWithReasons.push({ method: '說明', score: null, reason: cfNote });
+              }
+            } catch (e) { if (window.console) console.warn('FusionEngine generateDirectAnswer failed:', e); }
+          }
+          if (!useFusion || parts.length === 0) {
+            var weightNote = parts.length ? ' 整合方式：加權平均（八字、姓名學、梅花、塔羅、紫微等）。' : '';
+            displayConclusion = parts.length ? `多維度機率彙總：整體成功率約 ${overall}%（以可用維度加權）。${weightNote}` : '尚未完成任何命理計算，無法生成機率彙總。';
+            setText('direct-answer', displayConclusion);
+            var hideFactors = $('answer-factors');
+            var hideSugg = $('answer-suggestions');
+            if (hideFactors) hideFactors.style.display = 'none';
+            if (hideSugg) hideSugg.style.display = 'none';
+          }
 
-          // 儀表
+          // 儀表（避免 NaN/undefined）
           const probEl = $('overall-probability');
           const fillEl = $('meter-fill');
-          if(probEl) probEl.textContent = parts.length ? (overall + '%') : '—';
-          if(fillEl) fillEl.style.width = parts.length ? (overall + '%') : '0%';
+          const safeOverall = Number.isFinite(Number(overall)) ? Math.round(Number(overall)) : 0;
+          if(probEl) probEl.textContent = parts.length ? (safeOverall + '%') : '—';
+          if(fillEl) fillEl.style.width = parts.length ? (safeOverall + '%') : '0%';
 
           // 各維度評分與理由（顯示在可能性評估下方）
           const reasonsEl = $('probability-breakdown-reasons');
@@ -4728,11 +5020,12 @@ function setupMeihuaRandomDomGuard(){
             if (breakdownWithReasons.length > 0) {
               let html = '';
               breakdownWithReasons.forEach(function(b){
-                const score = b.score != null ? b.score : 50;
-                const color = score >= 60 ? '#4CAF50' : score >= 40 ? '#FF9800' : '#F44336';
+                const score = Number.isFinite(Number(b.score)) ? Math.round(Number(b.score)) : (b.score != null ? b.score : 50);
+                const safeScore = (score >= 0 && score <= 100) ? score : 50;
+                const color = safeScore >= 60 ? '#4CAF50' : safeScore >= 40 ? '#FF9800' : '#F44336';
                 html += '<div class="score-reason-block">';
-                html += '<div class="score-reason-header"><span>' + (b.method || '') + '</span><span>' + score + '%</span></div>';
-                html += '<div class="score-reason-bar"><div class="score-reason-fill" style="width:' + score + '%;background:' + color + ';"></div></div>';
+                html += '<div class="score-reason-header"><span>' + (b.method || '') + '</span><span>' + safeScore + '%</span></div>';
+                html += '<div class="score-reason-bar"><div class="score-reason-fill" style="width:' + safeScore + '%;background:' + color + ';"></div></div>';
                 html += '<div class="score-reason-text">' + (b.reason ? String(b.reason).replace(/</g,'&lt;').replace(/>/g,'&gt;') : '') + '</div>';
                 html += '</div>';
               });
@@ -4740,11 +5033,13 @@ function setupMeihuaRandomDomGuard(){
             } else if (parts.length > 0) {
               let html = '';
               parts.forEach(function(p){
-                const score = p.prob != null ? p.prob : 50;
-                const color = score >= 60 ? '#4CAF50' : score >= 40 ? '#FF9800' : '#F44336';
+                const rawScore = p.prob != null ? p.prob : 50;
+                const score = Number.isFinite(Number(rawScore)) ? Math.round(Number(rawScore)) : 50;
+                const safeScore = (score >= 0 && score <= 100) ? score : 50;
+                const color = safeScore >= 60 ? '#4CAF50' : safeScore >= 40 ? '#FF9800' : '#F44336';
                 html += '<div class="score-reason-block">';
-                html += '<div class="score-reason-header"><span>' + (p.key || '') + '</span><span>' + score + '%</span></div>';
-                html += '<div class="score-reason-bar"><div class="score-reason-fill" style="width:' + score + '%;background:' + color + ';"></div></div>';
+                html += '<div class="score-reason-header"><span>' + (p.key || '') + '</span><span>' + safeScore + '%</span></div>';
+                html += '<div class="score-reason-bar"><div class="score-reason-fill" style="width:' + safeScore + '%;background:' + color + ';"></div></div>';
                 if (p.reason) html += '<div class="score-reason-text">' + String(p.reason).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
                 html += '</div>';
               });
@@ -4758,64 +5053,42 @@ function setupMeihuaRandomDomGuard(){
           try {
             var qText = ($('question') && $('question').value) ? String($('question').value).trim() : '';
             var baziForCrystal = dataForScoring.bazi;
-            var rec = (typeof getCrystalRecommendation === 'function') ? getCrystalRecommendation(baziForCrystal, qText) : null;
+            var qType = (this.userData && this.userData.questionType) ? this.userData.questionType : '';
+            var rec = (typeof getCrystalRecommendation === 'function') ? getCrystalRecommendation(baziForCrystal, qText, { tarot: dataForScoring.tarot, meihua: dataForScoring.meihua, ziwei: dataForScoring.ziwei, questionType: qType }) : null;
             if (rec && (rec.targetElement || rec.suggestedStones)) {
               if ($('crystal-target-element')) $('crystal-target-element').textContent = rec.targetElement || '—';
               if ($('crystal-stones-list')) $('crystal-stones-list').textContent = (rec.suggestedStones && rec.suggestedStones.length) ? rec.suggestedStones.join('、') : '—';
               if ($('crystal-reason-text')) $('crystal-reason-text').textContent = rec.reasonText || '—';
+              if ($('crystal-wearing-span')) $('crystal-wearing-span').textContent = rec.wearingMethod || '—';
+              if ($('crystal-taboos-span')) $('crystal-taboos-span').textContent = rec.taboos || '—';
+              if ($('crystal-disclaimer-span')) $('crystal-disclaimer-span').textContent = rec.disclaimer || '本建議僅供能量校準參考，不具醫療或命運保證效力。';
+              var wearEl = $('crystal-wearing-text'), taboosEl = $('crystal-taboos-text');
+              if (wearEl) wearEl.style.display = (rec.wearingMethod ? 'block' : 'none');
+              if (taboosEl) taboosEl.style.display = (rec.taboos ? 'block' : 'none');
             } else {
               if ($('crystal-target-element')) $('crystal-target-element').textContent = '—';
               if ($('crystal-stones-list')) $('crystal-stones-list').textContent = '—';
               if ($('crystal-reason-text')) $('crystal-reason-text').textContent = '—';
+              if ($('crystal-wearing-span')) $('crystal-wearing-span').textContent = '—';
+              if ($('crystal-taboos-span')) $('crystal-taboos-span').textContent = '—';
+              if ($('crystal-disclaimer-span')) $('crystal-disclaimer-span').textContent = '本建議僅供能量校準參考，不具醫療或命運保證效力。';
+              if ($('crystal-wearing-text')) $('crystal-wearing-text').style.display = 'none';
+              if ($('crystal-taboos-text')) $('crystal-taboos-text').style.display = 'none';
             }
           } catch (e) { if (window.console) console.warn('Crystal recommendation fill failed:', e); }
 
-          // 綜合結果 - 使用卡片式UI美化
+          // 綜合結果 - 僅保留整體機率與直接答案（各模組機率已於多維度交叉彙總顯示，不再重複）
           if($('conclusion-content')){
             let html = '<div class="analysis-grid-container">';
-            
-            // 整體機率卡片
             html += '<div class="analysis-card">';
-            html += '<div class="analysis-header">';
-            html += '<i class="fas fa-chart-pie"></i> 整體機率';
-            html += '</div>';
+            html += '<div class="analysis-header"><i class="fas fa-chart-pie"></i> 整體機率</div>';
             html += '<div style="padding: 1rem; text-align: center;">';
             html += `<div style="font-size: 3rem; font-weight: bold; color: var(--gold-primary); margin-bottom: 0.5rem;">${parts.length ? (overall + '%') : '—'}</div>`;
             html += `<div style="width: 100%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; margin-bottom: 1rem;">`;
             html += `<div style="width: ${parts.length ? overall : 0}%; height: 100%; background: linear-gradient(90deg, ${parts.length && overall >= 60 ? '#4CAF50' : parts.length && overall >= 40 ? '#FF9800' : '#F44336'}, var(--gold-bright)); transition: width 0.3s;"></div>`;
             html += `</div>`;
-            html += `<div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; line-height: 1.6;">輸出為機率評估，不提供單一確定建議。</div>`;
-            html += '</div>';
-            html += '</div>';
-            
-            // 各模組機率卡片
-            if (parts.length > 0) {
-              html += '<div class="analysis-card">';
-              html += '<div class="analysis-header">';
-              html += '<i class="fas fa-layer-group"></i> 各模組機率';
-              html += '</div>';
-              html += '<div style="padding: 1rem;">';
-              html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">';
-              parts.forEach(function(p){
-                const prob = p.prob || 0;
-                html += `
-                  <div style="padding: 1rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                      <span style="font-weight: bold; color: var(--gold-primary);">${p.key}</span>
-                      <span style="font-size: 1.5rem; font-weight: bold; color: var(--gold-bright);">${prob}%</span>
-                    </div>
-                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
-                      <div style="width: ${prob}%; height: 100%; background: linear-gradient(90deg, var(--gold-primary), var(--gold-bright)); transition: width 0.3s;"></div>
-                    </div>
-                  </div>
-                `;
-              });
-              html += '</div>';
-              html += '</div>';
-              html += '</div>';
-            }
-            
-            html += '</div>';
+            html += `<div style="color: rgba(255,255,255,0.9); font-size: 0.95rem; line-height: 1.7;">${displayConclusion ? displayConclusion.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '以上機率由多維度交叉驗證得出，供您綜合判斷。'}</div>`;
+            html += '</div></div></div>';
             $('conclusion-content').innerHTML = html;
           }
 
@@ -4850,7 +5123,7 @@ function setupMeihuaRandomDomGuard(){
               // 標題卡片
               html += '<div class="analysis-card">';
               html += '<div class="analysis-header">';
-              html += '<i class="fas fa-project-diagram"></i> 四維度交叉彙總（機率）';
+              html += '<i class="fas fa-project-diagram"></i> 多維度交叉彙總（含八字／梅花／塔羅／紫微／姓名學）';
               html += '</div>';
               html += '<div style="padding: 1rem;">';
               html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">';
@@ -4922,7 +5195,7 @@ function setupMeihuaRandomDomGuard(){
 (function() {
   'use strict';
   
-  // 複製到剪貼板的跨平台兼容函數
+  // 複製到剪貼板的跨平台兼容函數（供全域使用）
   function copyToClipboard(text) {
     return new Promise((resolve, reject) => {
       // 方法1: 使用現代 Clipboard API
@@ -4960,7 +5233,8 @@ function setupMeihuaRandomDomGuard(){
       return false;
     }
   }
-  
+  window.copyToClipboard = function(t) { return copyToClipboard(t); };
+
   // 開啟郵件客戶端的跨平台兼容函數
   function openEmailClient(email, subject, body) {
     // 構建 mailto 連結
@@ -5112,7 +5386,7 @@ function setupMeihuaRandomDomGuard(){
           statusEl.style.background = 'rgba(212, 175, 55, 0.2)';
           statusEl.style.borderColor = 'var(--gold-primary)';
           statusEl.style.color = 'var(--gold-primary)';
-          statusEl.textContent = '📧 正在發送郵件到 onerkk@gmail.com...';
+          statusEl.textContent = '📧 正在發送...';
         }
         
         console.log('📧 正在通過 Google Apps Script 發送郵件...');
@@ -5129,7 +5403,7 @@ function setupMeihuaRandomDomGuard(){
               statusEl.textContent = '✅ 已送出！我會盡快回覆您';
             }
             
-            console.log('✅ 郵件已成功發送到 onerkk@gmail.com');
+            console.log('✅ 郵件已成功發送');
             
             // 顯示成功提示
             showEmailSentSuccess();
@@ -5303,7 +5577,7 @@ function setupMeihuaRandomDomGuard(){
           return false;
         }
         
-        console.log('📧 正在通過 FormSubmit 發送郵件到 onerkk@gmail.com...');
+        console.log('📧 正在通過 FormSubmit 發送郵件...');
         
         // 表單會自動提交到 FormSubmit，不需要阻止預設行為
         // 顯示成功提示
@@ -5331,9 +5605,8 @@ function setupMeihuaRandomDomGuard(){
       successMsg.innerHTML = `
         <div class="success-message-content">
           <i class="fas fa-check-circle" style="color: #10b981; font-size: 4rem;"></i>
-          <h3 style="margin-top: 1rem;">郵件已成功發送！</h3>
-          <p style="font-size: 1.1rem; margin: 0.5rem 0;">您的詢問已自動發送到</p>
-          <p style="font-size: 1.2rem; font-weight: bold; color: var(--gold-primary);">onerkk@gmail.com</p>
+          <h3 style="margin-top: 1rem;">已成功送出！</h3>
+          <p style="font-size: 1.1rem; margin: 0.5rem 0;">您的詢問已送出</p>
           <p style="font-size: 0.95rem; margin-top: 1rem; color: var(--text-muted);">
             我們會盡快回覆您
           </p>
@@ -5398,27 +5671,23 @@ function setupMeihuaRandomDomGuard(){
         emailSubjectDisplay.textContent = emailSubject;
         emailBodyDisplay.value = emailBody;
         
-        // 設置 mailto 連結
-        if (openEmailLink) {
-          const mailtoLink = `mailto:onerkk@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-          openEmailLink.href = mailtoLink;
-        }
-        
-        // 更新顯示區域的提示文字
+        const mailtoLink = `mailto:onerkk@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+        if (openEmailLink) openEmailLink.href = mailtoLink;
+
         const emailInstructions = emailDisplay.querySelector('.email-instructions');
         if (emailInstructions) {
           emailInstructions.innerHTML = `
             <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
             <p><strong>⚠️ 自動發送失敗</strong></p>
-            <p>郵件內容已自動複製到剪貼板，請手動發送：</p>
+            <p>郵件內容已自動複製到剪貼板，請點擊下方連結開啟郵件客戶端：</p>
             <ol style="margin: 0.5rem 0; padding-left: 1.5rem;">
-              <li>開啟您的郵件應用程式（Gmail、Outlook、Apple Mail 等）</li>
-              <li>建立新郵件，收件人填寫：<strong>onerkk@gmail.com</strong></li>
-              <li>貼上已複製的內容（Ctrl+V 或 Cmd+V）</li>
-              <li>點擊發送</li>
+              <li>點擊下方連結，郵件客戶端會自動填入收件人與內容</li>
+              <li>確認後點擊發送</li>
             </ol>
-            <p class="email-alt-link" style="margin-top: 1rem;">或直接點擊：<a href="#" id="open-email-link" target="_blank">開啟郵件客戶端</a>（如果您的設備支援）</p>
+            <p class="email-alt-link" style="margin-top: 1rem;">請點擊：<a href="#" id="open-email-link" target="_blank" rel="noopener">開啟郵件客戶端</a>（設備支援時會自動填入）</p>
           `;
+          var newLink = document.getElementById('open-email-link');
+          if (newLink) newLink.href = mailtoLink;
         }
         
         // 顯示郵件內容區域，隱藏表單
@@ -5435,8 +5704,8 @@ function setupMeihuaRandomDomGuard(){
           emailDisplay.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
         
-        // 自動複製完整郵件內容到剪貼板
-        const fullEmailContent = `收件人：onerkk@gmail.com\n主旨：${emailSubject}\n\n${emailBody}`;
+        // 自動複製主旨與內容到剪貼板（收件人由 mailto 連結提供）
+        const fullEmailContent = `主旨：${emailSubject}\n\n${emailBody}`;
         copyToClipboard(fullEmailContent).then(() => {
           showCopySuccess();
           console.log('✅ 郵件內容已複製到剪貼板');

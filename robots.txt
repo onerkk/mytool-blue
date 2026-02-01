@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /utils/
+Disallow: /__pycache__/

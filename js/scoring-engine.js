@@ -20,6 +20,7 @@
     finance: { primary: ['正財', '偏財'], label: '財運' },
     career: { primary: ['正官', '七殺'], label: '事業' },
     relationship: { primary: ['正官', '七殺', '正財', '偏財'], label: '感情' },
+    family: { primary: ['正印', '偏印', '正官', '七殺'], label: '家庭' },
     health: { primary: [], label: '健康' },
     general: { primary: [], label: '綜合' }
   };
@@ -36,6 +37,7 @@
     finance: { favorable: ['乾', '坤', '大有', '泰'], unfavorable: ['否', '剝'] },
     career: { favorable: ['乾', '晉', '升', '大有'], unfavorable: ['困', '坎'] },
     relationship: { favorable: ['咸', '恆', '家人', '泰'], unfavorable: ['睽', '革'] },
+    family: { favorable: ['家人', '泰', '大有', '同人'], unfavorable: ['訟', '睽', '否'] },
     health: { favorable: ['復', '頤', '無妄'], unfavorable: ['剝', '姤'] },
     general: { favorable: [], unfavorable: [] }
   };
@@ -45,6 +47,7 @@
     finance: { positive: ['pentacles', 'wheel', 'sun', 'star'], negative: ['tower', 'devil', 'five'] },
     career: { positive: ['chariot', 'emperor', 'sun', 'world'], negative: ['tower', 'hanged', 'five'] },
     relationship: { positive: ['lovers', 'two', 'ten', 'star', 'sun'], negative: ['tower', 'three', 'five', 'swords'] },
+    family: { positive: ['lovers', 'star', 'sun', 'world', 'empress'], negative: ['tower', 'devil', 'five'] },
     health: { positive: ['strength', 'sun', 'star', 'world'], negative: ['tower', 'death', 'devil'] },
     general: { positive: [], negative: [] }
   };
@@ -54,6 +57,7 @@
     finance: ['土', '金'],
     career: ['火', '土'],
     relationship: ['水', '金'],
+    family: ['土', '火'],
     health: ['木', '水'],
     general: []
   };
@@ -512,8 +516,45 @@
   }
 
   /**
+   * 紫微斗數：依問題類別對應宮位（財帛/官祿/夫妻/疾厄/命宮）有無星曜給出評分與白話理由
+   * @param {Object} data - iztro 星盤 astrolabe（palaces 陣列，每宮 name, majorStars, minorStars）
+   * @param {string} category
+   * @returns { { score: number, reason: string } }
+   */
+  function calculateZiweiScore(data, category) {
+    var cat = category || CATEGORY_GENERAL;
+    var astrolabe = data;
+    if (!astrolabe || !astrolabe.palaces || !astrolabe.palaces.length) {
+      return { score: 50, reason: '紫微斗數：尚無星盤資料，以中性評估。' };
+    }
+    var catToPalace = {
+      finance: '財帛',
+      career: '官祿',
+      relationship: '夫妻',
+      health: '疾厄',
+      family: '田宅',
+      general: '命宮'
+    };
+    var palaceName = catToPalace[cat] || '命宮';
+    var palace = astrolabe.palaces.filter(function (p) { return p && p.name === palaceName; })[0];
+    if (!palace) {
+      return { score: 50, reason: '紫微斗數：' + palaceName + '宮與本類問題相關，供綜合參考。' };
+    }
+    var majors = palace.majorStars || [];
+    var minors = palace.minorStars || [];
+    var starCount = majors.length + minors.length;
+    var score = 50;
+    if (starCount >= 2) score = 62;
+    else if (starCount === 1) score = 56;
+    else score = 48;
+    var starDesc = starCount > 0 ? '有' + starCount + '顆星曜' : '無主星';
+    var reason = '紫微斗數：' + palaceName + '宮' + starDesc + '，與您問的類別相關，供多維度交叉參考。';
+    return { score: clamp0_100(score), reason: reason };
+  }
+
+  /**
    * 依系統與類別計算單一系統分數
-   * @param {string} system - 'bazi' | 'meihua' | 'tarot' | 'name'
+   * @param {string} system - 'bazi' | 'meihua' | 'tarot' | 'name' | 'ziwei'
    * @param {Object} data - 該系統的原始結果
    * @param {string} category
    * @returns { { score: number, reason: string } }
@@ -530,13 +571,15 @@
         return calculateTarotScore(data, cat);
       case 'name':
         return calculateNameScore(data, cat);
+      case 'ziwei':
+        return calculateZiweiScore(data, cat);
       default:
         return { score: 50, reason: '未支援的系統。' };
     }
   }
 
-  /** 各系統權重（與 probability-integration 一致） */
-  var DEFAULT_WEIGHTS = { '八字': 0.85, '姓名學': 0.7, '梅花易數': 0.75, '塔羅': 0.75 };
+  /** 各系統權重（與 probability-integration 一致，含紫微斗數） */
+  var DEFAULT_WEIGHTS = { '八字': 0.85, '姓名學': 0.7, '梅花易數': 0.75, '塔羅': 0.75, '紫微斗數': 0.75 };
 
   /**
    * 彙總各系統分數為加權平均與摘要
@@ -591,7 +634,8 @@
    * @returns { { category: string, overallPercent: number, breakdown: Array<{ method, score, reason }>, summary: string } }
    */
   function buildSummaryReport(analysisResults, questionText, opts) {
-    var category = getCategory(questionText);
+    opts = opts || {};
+    var category = getCategory(questionText, opts.questionType);
     var breakdown = [];
     var r = analysisResults || {};
     var options = opts || {};
@@ -613,6 +657,10 @@
       var t = calculateCategoryScore('tarot', r.tarot, category, options);
       breakdown.push({ method: '塔羅', score: t.score, reason: t.reason });
     }
+    if (r.ziwei && r.ziwei.palaces && r.ziwei.palaces.length) {
+      var z = calculateCategoryScore('ziwei', r.ziwei, category, options);
+      breakdown.push({ method: '紫微斗數', score: z.score, reason: z.reason });
+    }
 
     var agg = aggregateScores(breakdown);
     return {
@@ -626,6 +674,7 @@
   var api = {
     getCategory: getCategory,
     calculateCategoryScore: calculateCategoryScore,
+    calculateZiweiScore: calculateZiweiScore,
     calculateBaziScore: calculateBaziScore,
     calculateMeihuaScore: calculateMeihuaScore,
     calculateTarotScore: calculateTarotScore,

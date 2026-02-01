@@ -61,10 +61,12 @@
   function domainHint(question) {
     var q = safeStr(question,'');
     if (!q) return 'general';
-    if (/桃花|感情|戀|告白|結婚|復合|伴侶/.test(q)) return 'love';
+    if (/桃花|感情|戀|告白|結婚|復合|伴侶|正緣|緣份|姻緣/.test(q)) return 'love';
     if (/工作|事業|升遷|轉職|面試|業績/.test(q)) return 'career';
-    if (/錢|財|投資|收入|負債|買賣/.test(q)) return 'money';
+    if (/錢|財|投資|收入|負債|買賣/.test(q)) return 'wealth';
     if (/健康|病|疼|手術|恢復/.test(q)) return 'health';
+    if (/人際|朋友|同事|貴人/.test(q)) return 'relationship';
+    if (/家庭|家人|購屋/.test(q)) return 'family';
     return 'general';
   }
 
@@ -74,7 +76,8 @@
   GoldenDawnCelticCross.prototype.analyze = function (cards, question, querentInfo) {
     var q = safeStr(question, '未提供問題');
     var positions = getPositions();
-    var d = domainHint(q);
+    var qType = (querentInfo && querentInfo.questionType) ? String(querentInfo.questionType).toLowerCase() : null;
+    var d = qType || domainHint(q);
 
     var out = {
       question: q,
@@ -132,20 +135,21 @@
       var isReversed = !!c.isReversed;
 
       var meaningObj = getCardMeaningById(cardId);
+      var typeMeaning = (typeof getTarotMeaningByType === 'function') ? getTarotMeaningByType(cardId, d, isReversed) : null;
       var upright = meaningObj ? safeStr(meaningObj.upright, safeStr(meaningObj.meaning,'')) : '';
       var reversed = meaningObj ? safeStr(meaningObj.reversed, '') : '';
 
       // 若沒有 reversed，就用 upright 做弱化版（避免空白）
       if (!reversed) reversed = upright ? ('（逆位偏向）' + upright) : '逆位意義資料不足';
 
-      var chosenMeaning = isReversed ? reversed : upright;
+      var chosenMeaning = typeMeaning || (isReversed ? reversed : upright);
       var baseDelta = keywordScore(chosenMeaning);
 
       // domain 微調（僅加權，不產生模板句）
       var domDelta = 0;
       if (d === 'love' && /戀|愛|關係|伴侶|心/.test(chosenMeaning)) domDelta += 2;
       if (d === 'career' && /工作|事業|目標|權力|計畫/.test(chosenMeaning)) domDelta += 2;
-      if (d === 'money' && /金|錢|資源|收穫|物質/.test(chosenMeaning)) domDelta += 2;
+      if ((d === 'wealth' || d === 'money') && /金|錢|資源|收穫|物質/.test(chosenMeaning)) domDelta += 2;
       if (d === 'health' && /恢復|失衡|壓力|精神|身體/.test(chosenMeaning)) domDelta += 2;
 
       var delta = clamp(baseDelta + domDelta, -8, 8);
@@ -155,10 +159,11 @@
       if (delta <= -2) out.signals.negative++;
 
       var posDef = positions[i+1] || FALLBACK_POSITIONS[i+1];
+      var posMeaning = (posDef.focusByType && posDef.focusByType[d]) ? posDef.focusByType[d] : (posDef.meaning || '');
       out.positions.push({
         index: i+1,
         position: safeStr(posDef.name, '位置' + (i+1)),
-        positionMeaning: safeStr(posDef.meaning, ''),
+        positionMeaning: safeStr(posMeaning, safeStr(posDef.meaning, '')),
         cardId: cardId,
         card: cardName,
         orientation: isReversed ? '逆位' : '正位',

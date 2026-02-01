@@ -1,34 +1,92 @@
-/* iOS兼容性修復和優化 */
+/* iOS兼容性修復和優化 - 與手機同步、修正 iOS 排版 */
 
-/* 防止iOS Safari的橡皮筋效果 - 修復：移除 position: fixed 以允許滾動 */
+/* viewport-fit=cover 支援（index.html 已設 meta viewport-fit=cover） */
 html {
     height: 100%;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* iOS 橫向滾動條修復 */
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
 }
 
+* {
+    box-sizing: border-box;
+}
+
+/* 視口高度：100dvh > 100vh > -webkit-fill-available（舊 iOS 相容） */
 body {
     min-height: 100%;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-height: 100dvh;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    position: relative; /* 改為 relative 以允許滾動 */
+    position: relative;
     width: 100%;
+    max-width: 100%;
+    /* iOS 防止 overscroll 造成版面跳動 */
+    overscroll-behavior-y: none;
 }
 
-/* iOS Safari的視口修復 */
+/* 文字不截斷／提早換行 */
+input, select, textarea, .section, .progress-step, .btn, .hint-note {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/* 底部安全區（iPhone 劉海／Home Indicator） */
+.main-container, .section-actions, .progress-container {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* 浮動按鈕：安全區 + 固定於視窗底部 */
+.floating-buttons {
+    bottom: max(15px, env(safe-area-inset-bottom, 15px)) !important;
+    right: max(8px, env(safe-area-inset-right, 8px)) !important;
+    left: auto !important;
+    z-index: 999;
+    /* iOS fixed 定位修復 */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+@media (max-width: 359px) {
+    .floating-buttons { flex-wrap: wrap; max-width: 100px; }
+}
+
+/* iOS Safari 專用修復 */
 @supports (-webkit-touch-callout: none) {
     html {
         position: relative;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        height: -webkit-fill-available;
     }
     
     body {
         position: relative;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        height: auto; /* 改為 auto 以允許內容擴展 */
-        min-height: 100vh; /* 確保至少填滿視口 */
+        height: auto;
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+        min-height: 100dvh;
+    }
+    
+    /* iOS 結果區底部留白（含 Home Indicator） */
+    #result-section {
+        padding-bottom: max(150px, calc(150px + env(safe-area-inset-bottom, 0))) !important;
+    }
+    
+    /* iOS 模態框安全區 */
+    .modal-content,
+    .modal-content-custom,
+    .card-interpretation-modal .modal-content {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem)) !important;
+        padding-left: max(1rem, env(safe-area-inset-left, 1rem)) !important;
+        padding-right: max(1rem, env(safe-area-inset-right, 1rem)) !important;
     }
 }
 
@@ -64,7 +122,7 @@ a {
     overflow-y: auto;
 }
 
-/* iOS安全區域適配 */
+/* iOS 安全區域適配（劉海／圓角） */
 @supports (padding: max(0px)) {
     .navbar,
     .main-container {
@@ -74,6 +132,13 @@ a {
     
     .navbar {
         padding-top: max(1rem, env(safe-area-inset-top));
+    }
+    
+    /* 進度條、結果區左右安全區 */
+    .progress-container,
+    #result-section {
+        padding-left: max(0.75rem, env(safe-area-inset-left));
+        padding-right: max(0.75rem, env(safe-area-inset-right));
     }
 }
 

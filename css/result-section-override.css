@@ -38,9 +38,29 @@ body > .floating-buttons,
 @media (max-width: 768px) {
   #result-section.section,
   section#result-section {
-    padding: 0.75rem 1rem !important;
-    padding-bottom: 120px !important;
+    padding: 0.75rem max(1rem, env(safe-area-inset-right, 1rem)) max(150px, calc(150px + env(safe-area-inset-bottom, 0))) max(1rem, env(safe-area-inset-left, 1rem)) !important;
   }
+}
+
+/* 【答案】區塊：影響因子與建議列表 */
+#section-answer .answer-factors,
+#section-answer .answer-suggestions {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+#section-answer .answer-factors h4,
+#section-answer .answer-suggestions h4 {
+  font-size: 0.95rem;
+  color: var(--gold-primary, #D4AF37);
+  margin-bottom: 0.5rem;
+}
+#answer-factors-list,
+#answer-suggestions-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.9);
 }
 
 /* 五行百分比不換行 */

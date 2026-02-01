@@ -1,4 +1,4 @@
-/* css/tarot.css - 靜月之前能量占卜儀 塔羅牌系統 v1.0 */
+/* css/tarot.css - 靜月之前能量占卜儀 塔羅牌系統 v2.0 */
 
 /* 容器設定 */
 .tarot-container {
@@ -593,6 +593,8 @@
 .card-face.front {
     transform: rotateY(180deg);
     z-index: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 /* 強制翻牌後正面在上 */
@@ -603,12 +605,54 @@
 .card-flip.flipped .card-face.back { 
     z-index: 0 !important; 
 }
-
+.card-front-img-wrap {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+}
+.card-front-img-wrap.reversed img {
+    transform: rotate(180deg);
+}
 .card-face img { 
     width: 100%; 
     height: 100%; 
     object-fit: cover; 
     display: block; 
+}
+.card-flip-info {
+    flex-shrink: 0;
+    padding: 0.4rem 0.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.42), rgba(0,0,0,0.28));
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: 0.7rem;
+    line-height: 1.35;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.card-flip-name {
+    font-weight: 700;
+    color: var(--gold-bright, #FFD700);
+    margin-bottom: 0.15rem;
+}
+.card-flip-orient {
+    font-size: 0.65rem;
+    opacity: 0.9;
+    margin-bottom: 0.2rem;
+}
+.card-flip-meaning {
+    font-size: 0.65rem;
+    opacity: 0.95;
+    margin-bottom: 0.15rem;
+}
+.card-flip-position {
+    font-size: 0.6rem;
+    opacity: 0.85;
+}
+.card-flip-position i {
+    margin-right: 0.2rem;
+    font-size: 0.55rem;
 }
 
 .spread-controls { 
@@ -933,6 +977,11 @@
 }
 
 @media (max-width: 480px) {
+    .card-flip-info { padding: 0.3rem 0.4rem; font-size: 0.6rem; }
+    .card-flip-name { font-size: 0.65rem; }
+    .card-flip-orient, .card-flip-meaning, .card-flip-position { font-size: 0.55rem; }
+    .card-flip-position i { font-size: 0.5rem; }
+
     .tarot-container {
         min-height: 650px;
         padding-bottom: 40px;

@@ -9,6 +9,7 @@
   var CATEGORY_CAREER = 'career';
   var CATEGORY_HEALTH = 'health';
   var CATEGORY_RELATIONSHIP = 'relationship';
+  var CATEGORY_FAMILY = 'family';
   var CATEGORY_GENERAL = 'general';
 
   var TYPE_PROBABILITY = 'probability';
@@ -16,7 +17,7 @@
 
   var KEYWORDS = {
     finance: [
-      '收入', '支出', '財', '錢', '投資', '理財', '加薪', '業績', '賺', '賠',
+      '收入', '支出', '財', '財運', '錢', '投資', '理財', '加薪', '業績', '賺', '賠',
       '貸款', '負債', '利潤', '報酬', '財務', '經濟', '本月', '上月', '今年', '明年'
     ],
     career: [
@@ -30,6 +31,10 @@
     relationship: [
       '感情', '桃花', '戀愛', '結婚', '離婚', '復合', '伴侶', '婚姻', '約會',
       '告白', '曖昧', '交往', '分手', '相親', '姻緣', '人際', '貴人', '口角'
+    ],
+    family: [
+      '家庭', '家人', '父母', '子女', '兄弟', '姊妹', '親子', '購屋', '買房',
+      '裝潢', '搬家', '遺產', '婆媳', '手足'
     ]
   };
 
@@ -50,6 +55,11 @@
     }
 
     var t = raw;
+
+    // 運勢綜合型：含「運勢」「整體」「今年運」等且無特定類別關鍵字時偏向 general
+    if (/運勢|整體運|今年運|流年|大運|命盤/.test(t) && category === CATEGORY_GENERAL) {
+      type = TYPE_PROBABILITY;
+    }
 
     // 概率型：含「會…嗎」「能…嗎」「是否」「會不會」「能不能」等
     if (/會.*嗎|能.*嗎|是否|會不會|能不能|有沒有|可不可以|可否|機率|可能嗎|有望嗎/.test(t)) {
@@ -91,6 +101,7 @@
       career: '事業',
       health: '健康',
       relationship: '感情',
+      family: '家庭',
       general: '綜合'
     };
     return m[cat] || cat;
