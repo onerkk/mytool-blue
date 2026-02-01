@@ -15,14 +15,22 @@
         <meta http-equiv="Expires" content="0">
         <title>靜月之前能量占卜儀 v2.0</title>
         
-        <link rel="stylesheet" href="css/main.css?v=2.3">
-        <link rel="stylesheet" href="css/tarot.css?v=2.3">
-        <link rel="stylesheet" href="css/bazi-display.css?v=2.3">
-        <link rel="stylesheet" href="css/responsive.css?v=2.3">
-        <link rel="stylesheet" href="css/ios-fixes.css?v=2.3">
-        <link rel="stylesheet" href="css/mobile-fix.css?v=2.3">
-        <link rel="stylesheet" href="css/result-section-override.css?v=2.3">
-        
+        <link rel="stylesheet" href="css/main.css?v=2.4">
+        <link rel="stylesheet" href="css/tarot.css?v=2.4">
+        <link rel="stylesheet" href="css/bazi-display.css?v=2.4">
+        <link rel="stylesheet" href="css/responsive.css?v=2.4">
+        <link rel="stylesheet" href="css/ios-fixes.css?v=2.4">
+        <link rel="stylesheet" href="css/mobile-fix.css?v=2.4">
+        <link rel="stylesheet" href="css/result-section-override.css?v=2.4">
+        <!-- 三星單指捲動：盡早加上 class，讓 CSS 在首繪前生效 -->
+        <script>
+        (function(){
+          var ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+          if (/SamsungBrowser/i.test(ua) || /SM-/i.test(ua) || /SEC\//i.test(ua) || (/Android/i.test(ua) && /Chrome/i.test(ua) && /Samsung/i.test(ua))) {
+            document.documentElement.classList.add('samsung-scroll-fix');
+          }
+        })();
+        </script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">

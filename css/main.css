@@ -106,7 +106,7 @@ body {
     position: relative;
 }
 
-/* 水晶背景效果 */
+/* 水晶背景效果（pointer-events: none 讓觸控穿透，避免三星等裝置鎖在背景層無法捲動） */
 body::before {
     content: '';
     position: fixed;
@@ -129,7 +129,7 @@ body::before {
     50% { opacity: 0.8; }
 }
 
-/* 煙霧效果 */
+/* 煙霧效果（pointer-events: none 觸控穿透，利於三星單指捲動） */
 body::after {
     content: '';
     position: fixed;
@@ -2546,7 +2546,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     align-items: center;
     justify-content: center;
 }
-.global-loading-overlay[hidden] { display: none !important; }
+.global-loading-overlay[hidden] { display: none !important; pointer-events: none !important; }
 .global-loading-content {
     display: flex;
     flex-direction: column;

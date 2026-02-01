@@ -238,12 +238,17 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.style.removeProperty('position');
     document.body.style.removeProperty('width');
     
-    // Samsung 專用：加 class 並強制解鎖捲動（僅 Samsung 生效）
+    // Samsung 專用：加 class、全層 touch-action: pan-y、#page-scroll 強制可捲動（僅 Samsung 生效）
     if (window.__IS_SAMSUNG__) {
       document.documentElement.classList.add('samsung-scroll-fix');
-      document.documentElement.style.overflow = 'auto';
-      document.body.style.overflow = 'auto';
+      document.documentElement.style.touchAction = 'pan-y';
       document.body.style.touchAction = 'pan-y';
+      var ps = document.getElementById('page-scroll');
+      if (ps) {
+        ps.style.touchAction = 'pan-y';
+        ps.style.webkitOverflowScrolling = 'touch';
+        ps.style.overflowY = 'auto';
+      }
     }
     
     const system = new FortuneSystem();
@@ -5316,8 +5321,9 @@ function setupMeihuaRandomDomGuard(){
       modal.classList.remove('active');
       document.body.classList.remove('custom-modal-open');
       if (window.__IS_SAMSUNG__) {
-        document.body.style.overflow = '';
-        document.body.style.touchAction = '';
+        document.body.style.touchAction = 'pan-y';
+        var ps = document.getElementById('page-scroll');
+        if (ps) { ps.style.touchAction = 'pan-y'; ps.style.webkitOverflowScrolling = 'touch'; ps.style.overflowY = 'auto'; }
       }
       // 重置表單和顯示區域
       if (form) {
