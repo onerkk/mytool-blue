@@ -239,8 +239,33 @@
     var fusionData = { bazi: options.bazi || baziResult, meihua: options.meihua, tarot: options.tarot, ziwei: options.ziwei, nameology: options.nameology };
     var norm = CrystalEvidenceNormalizer.normalizeCrystalEvidence(fusionData, parsed);
     var crystals = CrystalsKB.getAllCrystals();
-    var sel = CrystalRecommender.selectCrystals(crystals, norm.items, parsed);
-    var cards = CrystalAdviceSynthesizer.synthesizeCrystalCards(sel.top, sel.alternatives, norm.items, norm.missing, parsed);
+    var baziExplain = null;
+    if (typeof ExplainabilityLayer !== 'undefined' && ExplainabilityLayer.buildAll) {
+      var explainResult = ExplainabilityLayer.buildAll(fusionData, parsed);
+      if (explainResult && explainResult.texts && explainResult.texts.bazi) baziExplain = explainResult.texts.bazi;
+    }
+    var sel = CrystalRecommender.selectCrystals(crystals, norm.items, parsed, baziExplain);
+    var excluded = (sel.excluded || []).slice();
+    var debug = typeof window !== 'undefined' && window.location && window.location.search && window.location.search.indexOf('debug=1') >= 0;
+    if (debug && typeof console !== 'undefined') {
+      console.group('[水晶推薦]');
+      if (baziExplain) {
+        console.log('日主／身強弱／喜神／忌神', baziExplain.dayMaster, baziExplain.bodyStrength, baziExplain.favorable, baziExplain.unfavorable);
+      }
+      console.log('本次被排除的水晶（原因）', excluded.map(function (e) { return (e.crystal && e.crystal.name) + ': ' + (e.reason || ''); }));
+      console.log('最終推薦水晶（對應喜忌）', (sel.top || []).map(function (t) {
+        var c = t.crystal;
+        var primary = (typeof CrystalRecommender !== 'undefined' && CrystalRecommender.getPrimaryElement) ? CrystalRecommender.getPrimaryElement(c) : null;
+        return (c && c.name) + (primary ? '（主' + primary + '）' : '');
+      }));
+      console.groupEnd();
+    }
+    var cards = CrystalAdviceSynthesizer.synthesizeCrystalCards(sel.top, sel.alternatives, norm.items, norm.missing, parsed, baziExplain);
+    if (baziExplain && typeof ExplainabilityGuard !== 'undefined' && ExplainabilityGuard.crystalHasMingliReason) {
+      cards = (cards || []).filter(function (c) {
+        return ExplainabilityGuard.crystalHasMingliReason((c.whyThisCrystal || '') + (c.mingliBackground || ''));
+      });
+    }
     if (typeof CrystalOutputGuard !== 'undefined' && CrystalOutputGuard.guardOffTopic) {
       var guard = CrystalOutputGuard.guardOffTopic(parsed, cards);
       if (!guard.passed && guard.offendingCards.length) {

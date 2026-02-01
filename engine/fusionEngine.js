@@ -282,11 +282,49 @@
       var probResult = computeProbability(data);
       var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
       var syn = AnswerSynthesizer.synthesize(parsed, selectionResult, { probabilityValue: probVal, probability: probResult.probability }, {});
-      var guard = AlignmentGuard.alignmentCheck(parsed, syn.fullText);
-      var conclusion = guard.passed ? syn.fullText : (guard.rewritten || syn.fullText);
+      var problemRestatement = syn.problemRestatement || '';
+      var directAnswer = syn.directAnswer || '';
+      var suggestions = syn.suggestions || [];
+      var evidenceListForDisplay = syn.evidenceList || [];
+      var factorTexts = [];
+      var baziExplainText = null;
+      var explainResult = null;
+      if (typeof ExplainabilityLayer !== 'undefined' && ExplainabilityLayer.buildAll) {
+        var fusionData = { bazi: data.bazi, meihua: data.meihua, tarot: data.tarot, ziwei: data.ziwei, nameology: data.nameology };
+        parsed.referenceDate = parsed.referenceDate || new Date();
+        explainResult = ExplainabilityLayer.buildAll(fusionData, parsed);
+        if (explainResult && explainResult.evidenceListForDisplay && explainResult.evidenceListForDisplay.length) {
+          evidenceListForDisplay = explainResult.evidenceListForDisplay;
+          if (explainResult.texts && explainResult.texts.bazi) {
+            baziExplainText = explainResult.texts.bazi.text;
+            if (ExplainabilityLayer.buildDirectAnswerPlain) {
+              directAnswer = ExplainabilityLayer.buildDirectAnswerPlain(explainResult.texts.bazi, probVal, parsed.intent, data.question);
+            }
+          }
+          if (explainResult.factorSentences && explainResult.factorSentences.length) {
+            factorTexts = explainResult.factorSentences;
+          }
+        }
+      }
+      if (factorTexts.length === 0) factorTexts = evidenceListForDisplay.map(function (e) { return e; });
+      var fullText = problemRestatement + '\n\n' + directAnswer + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
+      if (typeof ExplainabilityGuard !== 'undefined' && ExplainabilityGuard.checkEvidenceText) {
+        var exGuard = ExplainabilityGuard.checkEvidenceText(evidenceListForDisplay, baziExplainText);
+        if (!exGuard.passed) {
+          if (typeof console !== 'undefined') console.warn('[ExplainabilityGuard]', exGuard.reason);
+          fullText = problemRestatement + '\n\n' + directAnswer + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
+        }
+      }
+      var guard = AlignmentGuard.alignmentCheck(parsed, fullText);
+      var conclusion = guard.passed ? fullText : (guard.rewritten || fullText);
 
       if (debug && typeof console !== 'undefined') {
         console.group('[對齊管線]');
+        console.log('直接回答（白話因果）', directAnswer);
+        if (explainResult && explainResult.texts && explainResult.texts.bazi) {
+          var b = explainResult.texts.bazi;
+          console.log('日主／身強弱／喜神／忌神', b.dayMaster, b.bodyStrength, b.favorable, b.unfavorable);
+        }
         console.log('parsedQuestion', JSON.stringify({ intent: parsed.intent, askType: parsed.askType, mustAnswer: parsed.mustAnswer, timeHorizon: parsed.timeHorizon }));
         console.log('evidenceItems.length', evidenceItems.length);
         console.log('selectedEvidence.length', (selectionResult.selected && selectionResult.selected.length) || 0);
@@ -296,7 +334,6 @@
         console.groupEnd();
       }
 
-      var factorTexts = (syn.evidenceList || []).map(function (e) { return e; });
       if (factorTexts.length === 0 && probResult.factors && probResult.factors.length) {
         var methodMap = { '八字運勢': 'bazi', '卦象吉凶': 'meihua', '塔羅牌陣': 'tarot', '紫微斗數': 'ziwei', '姓名學': 'nameology' };
         factorTexts = probResult.factors.slice(0, 4).map(function (f) {

@@ -5112,6 +5112,8 @@ function setupMeihuaRandomDomGuard(){
                   if (card.riskFlags && card.riskFlags.indexOf('sleep_sensitive') >= 0) html += '<span class="crystal-badge">睡前取下</span>';
                   html += '</span></div>';
                   html += '<div class="crystal-card-section"><strong>推薦結論：</strong>' + (card.conclusion || '').replace(/</g,'&lt;') + '</div>';
+                  if (card.mingliBackground) html += '<div class="crystal-card-section"><strong>命理背景：</strong>' + (card.mingliBackground || '').replace(/</g,'&lt;') + '</div>';
+                  if (card.whyThisCrystal) html += '<div class="crystal-card-section"><strong>為什麼選這顆：</strong>' + (card.whyThisCrystal || '').replace(/</g,'&lt;') + '</div>';
                   html += '<div class="crystal-card-section"><strong>跨系統證據：</strong>' + (card.evidenceText || '').replace(/</g,'&lt;') + '</div>';
                   html += '<div class="crystal-card-section"><strong>配戴方式：</strong>' + (card.wearText || '').replace(/</g,'&lt;') + '</div>';
                   html += '<div class="crystal-card-section"><strong>注意事項：</strong>' + (card.cautionsText || '').replace(/</g,'&lt;') + '</div>';
