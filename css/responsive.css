@@ -2437,3 +2437,26 @@
     -webkit-overflow-scrolling: touch !important;
   }
 }
+
+/* ==========================================
+   Samsung S25 / Samsung Browser 單指滑動修正（僅 .samsung-scroll-fix 時生效，其他手機不影響）
+   ========================================== */
+html.samsung-scroll-fix {
+  overflow: auto !important;
+  height: auto !important;
+}
+html.samsung-scroll-fix body {
+  overflow: auto !important;
+  height: auto !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: auto;
+}
+html.samsung-scroll-fix #page-scroll.page-scroll,
+html.samsung-scroll-fix #page-scroll {
+  position: relative !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: auto;
+}

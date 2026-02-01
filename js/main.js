@@ -1,4 +1,13 @@
 
+// ==========================================
+// Samsung S25 / Samsung Browser 單指滑動修正（僅 Samsung 生效）
+// ==========================================
+function isSamsungLike() {
+  var ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  return /SamsungBrowser/i.test(ua) || /SM-/i.test(ua) || /SEC\//i.test(ua) || (/Android/i.test(ua) && /Chrome/i.test(ua) && /Samsung/i.test(ua));
+}
+window.__IS_SAMSUNG__ = isSamsungLike();
+
 // === PATCH v4: safe text helper to avoid undefined ===
 function safeText(v, fallback='—'){
   if(v===undefined || v===null || v==='undefined') return fallback;
@@ -229,6 +238,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.style.removeProperty('position');
     document.body.style.removeProperty('width');
     
+    // Samsung 專用：加 class 並強制解鎖捲動（僅 Samsung 生效）
+    if (window.__IS_SAMSUNG__) {
+      document.documentElement.classList.add('samsung-scroll-fix');
+      document.documentElement.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
+      document.body.style.touchAction = 'pan-y';
+    }
+    
     const system = new FortuneSystem();
     system.init();
     window.fortuneSystem = system;
@@ -241,8 +258,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
     
-    console.log('靜月之前能量占卜儀 v2.0 已就緒');
+    if (window.__IS_SAMSUNG__) console.log('靜月之前能量占卜儀 v2.0 已就緒 [Samsung 單指滑動修正已套用]');
+    else console.log('靜月之前能量占卜儀 v2.0 已就緒');
 });
+
+/** Samsung 專用：在 console 印出 overflow/touch-action/鎖定來源，供 S25U 驗證 */
+function debugScroll() {
+  if (!window.__IS_SAMSUNG__) {
+    console.log('[debugScroll] 非 Samsung 裝置，未套用 Samsung 修正');
+    return;
+  }
+  var html = document.documentElement;
+  var body = document.body;
+  var ps = document.getElementById('page-scroll');
+  var htmlStyle = html && window.getComputedStyle ? getComputedStyle(html) : null;
+  var bodyStyle = body && window.getComputedStyle ? getComputedStyle(body) : null;
+  console.log('[debugScroll] __IS_SAMSUNG__:', window.__IS_SAMSUNG__);
+  console.log('[debugScroll] html.samsung-scroll-fix:', html && html.classList.contains('samsung-scroll-fix'));
+  console.log('[debugScroll] html overflow:', htmlStyle ? htmlStyle.overflowY : html.style.overflow);
+  console.log('[debugScroll] body overflow:', bodyStyle ? bodyStyle.overflowY : body.style.overflow);
+  console.log('[debugScroll] body touch-action:', bodyStyle ? bodyStyle.touchAction : body.style.touchAction);
+  console.log('[debugScroll] #page-scroll:', ps ? '存在' : '不存在', ps ? 'overflowY=' + getComputedStyle(ps).overflowY : '');
+  console.log('[debugScroll] 本專案無 document/window/body 的 touchmove preventDefault 全域監聽');
+}
+
+if (typeof window !== 'undefined') window.debugScroll = debugScroll;
 
 /** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示，覆蓋任何隱藏用的 CSS */
 function ensureFloatingButtonsVisible() {
@@ -5275,7 +5315,10 @@ function setupMeihuaRandomDomGuard(){
     function closeModal() {
       modal.classList.remove('active');
       document.body.classList.remove('custom-modal-open');
-      
+      if (window.__IS_SAMSUNG__) {
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+      }
       // 重置表單和顯示區域
       if (form) {
         form.reset();
