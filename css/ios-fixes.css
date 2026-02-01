@@ -1,9 +1,11 @@
 /* iOS兼容性修復和優化 - 與手機同步、修正 iOS 排版 */
 
-/* 單一捲動容器：僅 body 捲動，避免 html+body 雙重捲動導致 iOS 單指滑動失效 */
+/* 還原：html/body 皆可捲動，確保單指／雙指都能滑動畫面 */
 html {
     height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
@@ -12,7 +14,6 @@ html {
     box-sizing: border-box;
 }
 
-/* 僅 body 可垂直捲動，單指滑動由 body 處理 */
 body {
     min-height: 100%;
     min-height: 100vh;
@@ -52,11 +53,13 @@ input, select, textarea, .section, .progress-step, .btn, .hint-note {
     .floating-buttons { flex-wrap: wrap; max-width: 100px; }
 }
 
-/* iOS Safari 專用修復：維持單一捲動容器 */
+/* iOS Safari 專用修復 */
 @supports (-webkit-touch-callout: none) {
     html {
         position: relative;
-        overflow: hidden;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
         height: -webkit-fill-available;
     }
     
