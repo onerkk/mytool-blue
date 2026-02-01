@@ -241,39 +241,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
     
-    // 觸控裝置單指捲動備援（LINE／Chrome／Google 等）
-    initSingleFingerScrollPolyfill();
-    
     console.log('靜月之前能量占卜儀 v2.0 已就緒');
 });
-
-/** 觸控裝置單指捲動備援：LINE／Chrome／Google 等以 touch 手動捲動 #page-scroll */
-function initSingleFingerScrollPolyfill() {
-    var el = document.getElementById('page-scroll');
-    if (!el || !('ontouchstart' in window)) return;
-    if (el._scrollPolyfill) return;
-    el._scrollPolyfill = true;
-    var lastY = 0;
-    function onTouchStart(e) {
-        if (e.touches.length === 1) lastY = e.touches[0].clientY;
-    }
-    function onTouchMove(e) {
-        if (e.touches.length !== 1) return;
-        var y = e.touches[0].clientY;
-        var dy = lastY - y;
-        lastY = y;
-        var maxScroll = el.scrollHeight - el.clientHeight;
-        if (maxScroll <= 0) return;
-        var st = el.scrollTop;
-        el.scrollTop = Math.max(0, Math.min(maxScroll, st + dy));
-        if (dy !== 0) e.preventDefault();
-    }
-    function onTouchEnd() { lastY = 0; }
-    el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchmove', onTouchMove, { passive: false });
-    el.addEventListener('touchend', onTouchEnd, { passive: true });
-    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
-}
 
 /** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示，覆蓋任何隱藏用的 CSS */
 function ensureFloatingButtonsVisible() {
