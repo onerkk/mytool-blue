@@ -125,10 +125,9 @@ a {
     }
 }
 
-/* 修復iOS上的fixed定位問題 */
+/* 導航列隨整頁捲動，不固定 */
 .navbar {
-    position: -webkit-sticky;
-    position: sticky;
+    position: relative;
 }
 
 /* iOS動畫優化 - 僅應用於需要動畫的元素，避免影響滾動 */

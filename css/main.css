@@ -158,21 +158,20 @@ body::after {
 }
 
 /* --- 導航欄 - 神秘水晶風格 --- */
+/* 導航列隨整頁捲動（蝦皮/賣貨便與下方內容一起滑） */
 .navbar {
     background: var(--dark-glass);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
     color: var(--text-primary);
     padding: 1.5rem 0;
-    position: sticky;
-    top: 0;
+    position: relative;
     z-index: 1000;
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.7),
         0 0 60px rgba(212, 175, 55, 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     border-bottom: 2px solid var(--glass-border);
-    position: relative;
 }
 
 .navbar::before {

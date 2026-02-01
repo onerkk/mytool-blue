@@ -4,6 +4,12 @@
 
 /* 手機版通用優化 */
 @media (max-width: 768px) {
+    /* 捲動容器：三星等 Chrome Android 單指滑動 */
+    #page-scroll.page-scroll {
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+    }
+    
     /* 基礎排版 */
     body {
         font-size: 16px; /* 確保手機版字體清晰 */
