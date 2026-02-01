@@ -1296,10 +1296,10 @@
     transform: scale(1.2);
 }
 
-/* 抽牌區域交互修復 */
+/* 抽牌區域交互修復（單指滑動，不縮放） */
 .draw-circle {
     pointer-events: auto;
-    touch-action: manipulation;
+    touch-action: pan-y;
 }
 
 .tarot-card-draw {

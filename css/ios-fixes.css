@@ -1,7 +1,7 @@
 /* iOS兼容性修復和優化 - 與手機同步、修正 iOS 排版 */
 
 /* viewport-fit=cover 支援（index.html 已設 meta viewport-fit=cover） */
-/* touch-action: pan-y pinch-zoom 確保單指可滑動頁面，修正雙指才能滑動問題 */
+/* touch-action: pan-y 僅允許單指垂直滑動，關閉縮放，恢復單指滑頁 */
 html {
     height: 100%;
     overflow-x: hidden;
@@ -11,7 +11,7 @@ html {
     /* iOS 橫向滾動條修復 */
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y pinch-zoom;
+    touch-action: pan-y;
 }
 
 * {
@@ -31,8 +31,8 @@ body {
     max-width: 100%;
     /* iOS 防止 overscroll 造成版面跳動 */
     overscroll-behavior-y: none;
-    /* 單指可滑動頁面，修正手機版需雙指才能滑動問題 */
-    touch-action: pan-y pinch-zoom;
+    /* 單指可滑動頁面，關閉縮放 */
+    touch-action: pan-y;
 }
 
 /* 文字不截斷／提早換行 */

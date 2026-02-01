@@ -4252,7 +4252,7 @@ function bindEvents() {
         });
     });
 
-    // 梅花易數按鈕事件綁定（支持iOS touch事件）
+    // 梅花易數按鈕事件綁定（僅用 click，避免 touchstart preventDefault 阻擋單指滑動）
     const numBtn = document.getElementById('calculate-number-hexagram');
     if(numBtn) {
         numBtn.addEventListener('click', function(e) {
@@ -4261,12 +4261,6 @@ function bindEvents() {
             console.log('數字起卦按鈕被點擊');
             MeihuaModule.calculateNumber();
         });
-        // iOS兼容：添加touchstart事件
-        numBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            console.log('數字起卦按鈕被觸摸');
-            MeihuaModule.calculateNumber();
-        }, { passive: false });
     } else {
         console.error('找不到 calculate-number-hexagram 按鈕');
     }
@@ -4279,12 +4273,6 @@ function bindEvents() {
             console.log('時間起卦按鈕被點擊');
             MeihuaModule.calculateTime();
         });
-        // iOS兼容：添加touchstart事件
-        timeBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            console.log('時間起卦按鈕被觸摸');
-            MeihuaModule.calculateTime();
-        }, { passive: false });
     } else {
         console.error('找不到 calculate-time-hexagram 按鈕');
     }
@@ -4297,12 +4285,6 @@ function bindEvents() {
             console.log('漢字起卦按鈕被點擊');
             MeihuaModule.calculateCharacter();
         });
-        // iOS兼容：添加touchstart事件
-        charBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            console.log('漢字起卦按鈕被觸摸');
-            MeihuaModule.calculateCharacter();
-        }, { passive: false });
     } else {
         console.error('找不到 calculate-character-hexagram 按鈕');
     }
@@ -4498,7 +4480,7 @@ function bindEvents() {
     console.error('[PATCH] Meihua override failed:', e);
   }
 
-  // 事件綁定：隨機起卦按鈕
+  // 事件綁定：隨機起卦按鈕（僅用 click，避免阻擋單指滑動）
   function bindMeihuaRandomButton(){
     const btn = $('calculate-random-hexagram');
     if(!btn) return;
@@ -4514,7 +4496,6 @@ function bindEvents() {
       }
     };
     btn.addEventListener('click', handler);
-    btn.addEventListener('touchstart', handler, { passive:false });
   }
 
 function setupMeihuaRandomDomGuard(){
@@ -4788,7 +4769,7 @@ function setupMeihuaRandomDomGuard(){
         }
       };
 
-      // 綁定快速抽牌 touch/click（避免 iOS 點了無反應）
+      // 綁定快速抽牌（僅用 click，避免 touchstart 阻擋單指滑動）
       const autoDrawBtn = $('auto-draw');
       if(autoDrawBtn){
         const handler = function(e){
@@ -4796,7 +4777,6 @@ function setupMeihuaRandomDomGuard(){
           if(TarotModule && TarotModule.autoDraw) TarotModule.autoDraw();
         };
         autoDrawBtn.addEventListener('click', handler);
-        autoDrawBtn.addEventListener('touchstart', handler, { passive:false });
       }
     }
   }catch(e){
