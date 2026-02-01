@@ -4,10 +4,10 @@
 
 /* 手機版通用優化 */
 @media (max-width: 768px) {
-    /* 捲動容器：單指滑動（含三星 Chrome Android） */
+    /* 捲動容器：強制 pan-y 單指垂直滑動（三星 Chrome 用 manipulation 易鎖住） */
     #page-scroll.page-scroll {
-        touch-action: manipulation;
-        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y !important;
+        -webkit-overflow-scrolling: touch !important;
     }
     
     /* 基礎排版 */
@@ -2440,12 +2440,13 @@
 
 /* ==========================================
    Samsung S25 / Samsung Browser 單指滑動修正（僅 .samsung-scroll-fix 時生效）
-   策略：維持 #page-scroll 為捲動容器，全層強制 touch-action: pan-y 讓瀏覽器允許垂直滑動
+   策略：維持 #page-scroll 為捲動容器，全層強制 touch-action: pan-y，避免被其他規則蓋掉
    ========================================== */
 html.samsung-scroll-fix {
   overflow: hidden !important;
   height: 100% !important;
   touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch;
 }
 html.samsung-scroll-fix body {
   overflow: hidden !important;
@@ -2462,4 +2463,5 @@ html.samsung-scroll-fix #page-scroll {
   touch-action: pan-y !important;
   -webkit-overflow-scrolling: touch !important;
   overscroll-behavior-y: auto;
+  position: relative !important;
 }
