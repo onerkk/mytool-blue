@@ -3335,10 +3335,10 @@ const TarotModule = {
         fan.className = 'fan-container';
         circle.appendChild(fan);
 
-        /* 扇形加大：牌數略減、角度拉大，選牌更容易 */
-        const total = (screenWidth <= 480) ? 32 : ((screenWidth <= 768) ? 38 : 60);
-        const startAngle = (screenWidth <= 480) ? -72 : ((screenWidth <= 768) ? -68 : -60);
-        const endAngle = (screenWidth <= 480) ? 72 : ((screenWidth <= 768) ? 68 : 60);
+        /* 扇形再大一點：牌數略減、角度拉大，選牌更好點 */
+        const total = (screenWidth <= 480) ? 30 : ((screenWidth <= 768) ? 36 : 60);
+        const startAngle = (screenWidth <= 480) ? -76 : ((screenWidth <= 768) ? -72 : -60);
+        const endAngle = (screenWidth <= 480) ? 76 : ((screenWidth <= 768) ? 72 : 60);
         const span = (endAngle - startAngle);
         for (let i = 0; i < total; i++) {
             const card = document.createElement('div');
@@ -5085,7 +5085,7 @@ function setupMeihuaRandomDomGuard(){
             var qText = ($('question') && $('question').value) ? String($('question').value).trim() : '';
             var baziForCrystal = dataForScoring.bazi;
             var qType = (this.userData && this.userData.questionType) ? this.userData.questionType : '';
-            var rec = (typeof getCrystalRecommendation === 'function') ? getCrystalRecommendation(baziForCrystal, qText, { tarot: dataForScoring.tarot, meihua: dataForScoring.meihua, ziwei: dataForScoring.ziwei, questionType: qType }) : null;
+            var rec = (typeof getCrystalRecommendation === 'function') ? getCrystalRecommendation(baziForCrystal, qText, { tarot: dataForScoring.tarot, meihua: dataForScoring.meihua, ziwei: dataForScoring.ziwei, nameology: dataForScoring.nameology, questionType: qType }) : null;
             if (rec && (rec.targetElement || rec.suggestedStones)) {
               if ($('crystal-target-element')) $('crystal-target-element').textContent = rec.targetElement || '—';
               if ($('crystal-stones-list')) $('crystal-stones-list').textContent = (rec.suggestedStones && rec.suggestedStones.length) ? rec.suggestedStones.join('、') : '—';

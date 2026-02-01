@@ -66,23 +66,28 @@
   };
 
   /**
-   * 取得開運水晶推薦（多維度象徵綜合推薦，非單純五行缺補）
-   * @param {Object} baziResult - 八字結果（含 favorableElements.favorable）
+   * 取得開運水晶推薦（多維度：八字流年喜忌、姓名當年加成、紫微整體能量、梅花塔羅當下象徵，結合喜忌神分析）
+   * @param {Object} baziResult - 八字結果（含 favorableElements）
    * @param {string} question - 用戶問題文字
-   * @param {Object} options - { tarot, meihua, ziwei, questionType } 多維度命理資料
+   * @param {Object} options - { tarot, meihua, ziwei, nameology, questionType } 多維度命理資料
    * @returns {{ targetElement: string, suggestedStones: string[], reasonText: string, keywords: string }}
    */
   function getCrystalRecommendation(baziResult, question, options) {
     options = options || {};
     var fav = [];
+    var risk = [];
     var baziForFav = baziResult && (baziResult.fullData || baziResult);
     if (baziForFav && baziForFav.favorableElements) {
       var fe = baziForFav.favorableElements;
       fav = Array.isArray(fe.favorable) ? fe.favorable : (fe.favorable ? [fe.favorable] : []);
+      risk = Array.isArray(fe.unfavorable) ? fe.unfavorable : (fe.unfavorable ? [fe.unfavorable] : []);
     }
 
     var keys = [];
     var fusionReasonText = '';
+    var problemLabel = '';
+    var safeElements = [];
+    var riskElements = [];
 
     if (typeof FusionCrystalEngine !== 'undefined' && FusionCrystalEngine.calculateFusionCrystal) {
       try {
@@ -92,6 +97,9 @@
         if (fusion.recommendedKeys && fusion.recommendedKeys.length > 0) {
           keys = fusion.recommendedKeys.slice(0, 2);
           fusionReasonText = fusion.reasonText || '';
+          problemLabel = fusion.problemLabel || '';
+          safeElements = fusion.safeElements || fav;
+          riskElements = fusion.riskElements || risk;
         }
       } catch (e) {}
     }
@@ -167,7 +175,35 @@
     });
 
     var targetElement = elements.join('、');
-    var reasonText = fusionReasonText || (behaviorNote ? behaviorNote + ' ' : '') + (descs[0] || '');
+
+    /* 多維度摘要：八字流年喜忌、姓名當年針對問題加成、紫微整體能量整補、梅花與塔羅當下象徵，再結合喜忌神分析 */
+    var safeForSummary = safeElements.length ? safeElements : fav;
+    var riskForSummary = riskElements.length ? riskElements : risk;
+    var parts = [];
+    if (safeForSummary.length || riskForSummary.length) {
+      var baziLine = '八字流年喜忌：喜' + (safeForSummary.length ? safeForSummary.join('、') : '—');
+      if (riskForSummary.length) baziLine += '，忌' + riskForSummary.join('、');
+      parts.push(baziLine + '。');
+    }
+    if (options.nameology) {
+      var nm = options.nameology.analysis || options.nameology;
+      var nameScore = (nm && typeof nm.score === 'number') ? nm.score : 0;
+      parts.push('姓名學：當年針對本類問題' + (nameScore >= 60 ? '有加成。' : '無特別加成。'));
+    }
+    var ziweiEl = [];
+    if (typeof CrystalBehaviorMap !== 'undefined' && CrystalBehaviorMap.getMultiDimensionElements && options.ziwei) {
+      try {
+        var md = CrystalBehaviorMap.getMultiDimensionElements(
+          options.tarot, options.meihua, options.ziwei, fav, options.questionType || 'general'
+        );
+        if (md.ziwei && md.ziwei.length) ziweiEl = md.ziwei.slice(0, 2);
+      } catch (e) {}
+    }
+    if (ziweiEl.length) parts.push('紫微：整體能量偏' + ziweiEl.join('、') + '，可整補對應五行。');
+    if (problemLabel) parts.push('梅花與塔羅：當下象徵需【' + problemLabel + '】。');
+    var multiSummary = parts.length ? parts.join(' ') : '';
+
+    var reasonText = multiSummary + (multiSummary ? '綜合喜忌神分析，' : '') + (fusionReasonText || (behaviorNote ? behaviorNote + ' ' : '') + (descs[0] || ''));
     if (!fusionReasonText && keys.length >= 2 && ELEMENT_GENERATES[keys[0]] === keys[1]) {
       reasonText = (reasonText ? reasonText + ' ' : '') + '五行互補：' + KEY_TO_ELEMENT[keys[0]] + '生' + KEY_TO_ELEMENT[keys[1]] + '。';
     }
@@ -175,7 +211,7 @@
 
     var wearingMethod = '建議配戴於左手（接收能量）或隨身攜帶，睡前可取下置於枕邊或水晶盒淨化。首次配戴前建議以流水或月光淨化。';
     var taboos = '避免佩戴入睡（部分礦石如黑曜石、鈦晶能量較強）；忌與化學品、汗水長時間接觸；運動、沐浴時建議取下；孕婦、術後請依個人體質斟酌。';
-    var disclaimer = '本建議依據八字、梅花、塔羅、紫微多維度命理象徵綜合推斷，非單純五行缺補，僅供能量校準參考，不具醫療或命運保證效力。';
+    var disclaimer = '本建議依八字流年喜忌、姓名學當年針對問題之加成、紫微整體能量整補、梅花與塔羅當下象徵，結合喜忌神分析綜合推斷，非單純五行缺補，僅供能量校準參考，不具醫療或命運保證效力。';
 
     return {
       targetElement: targetElement,

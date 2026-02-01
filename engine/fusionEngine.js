@@ -27,7 +27,7 @@
     var q = String(question || '');
     if (/桃花|感情|戀|告白|結婚|復合|伴侶|正緣|緣份|姻緣/.test(q)) return 'love';
     if (/工作|事業|升遷|轉職|面試|業績/.test(q)) return 'career';
-    if (/錢|財|投資|收入|負債|買賣|副業|銷售|破萬|賺錢|業績/.test(q)) return 'wealth';
+    if (/錢|財|投資|收入|負債|買賣|副業|銷售|破萬|賺錢|業績|賣出|售出|賣掉|手鍊|手練|飾品|自製|作品/.test(q)) return 'wealth';
     if (/健康|病|疼|手術|恢復/.test(q)) return 'health';
     if (/人際|朋友|同事|貴人/.test(q)) return 'relationship';
     if (/家庭|家人|購屋/.test(q)) return 'family';
@@ -149,9 +149,13 @@
     } catch (e) { return null; }
   }
 
-  /** 從問題擷取可回扣的關鍵詞，讓答案直接呼應提問（副業／銷售／破萬優先於泛用「本月」） */
+  /** 從問題擷取可回扣的關鍵詞，讓答案直接呼應提問（手鍊／賣出／副業／破萬優先於泛用「本月」） */
   function extractEchoPhrase(question) {
     var q = String(question || '');
+    if (/賣出|售出|賣掉|賣得掉|能賣|正常賣/.test(q)) {
+      if (/手鍊|手練|項鍊|手作|自製|作品|商品|飾品|手環/.test(q)) return '手鍊／自製作品本月能否賣出';
+      return '本月能否賣出';
+    }
     if (/副業|銷售|業績|破萬|賺錢|收入/.test(q)) {
       if (/破十萬|破百萬/.test(q)) return (/破百萬/.test(q) ? '副業／銷售能否破百萬' : '副業／銷售能否破十萬');
       if (/破萬/.test(q)) return '副業／本月銷售能否破萬';
@@ -159,8 +163,8 @@
     }
     if (/年終|年底/.test(q) && /破萬|破十萬|破百萬/.test(q)) return (/破十萬/.test(q) ? '今年年終收入破十萬' : /破百萬/.test(q) ? '今年年終收入破百萬' : '今年年終收入破萬');
     if (/破萬|破十萬|破百萬/.test(q)) return (/破萬/.test(q) ? '收入破萬' : /破十萬/.test(q) ? '收入破十萬' : '收入破百萬');
-    if (/整體運勢|運勢/.test(q) && !/副業|銷售|破萬|業績|收入|財/.test(q)) return '本月整體運勢';
-    if (/這月|這個月|本月/.test(q) && !/副業|銷售|破萬|業績/.test(q)) return '本月整體運勢';
+    if (/整體運勢|運勢/.test(q) && !/副業|銷售|破萬|業績|收入|財|賣出|手鍊|手練/.test(q)) return '本月整體運勢';
+    if (/這月|這個月|本月/.test(q) && !/副業|銷售|破萬|業績|賣出|手鍊|手練/.test(q)) return '本月整體運勢';
     if (/達標|達標嗎|會達標/.test(q)) return '目標達標';
     if (/會成|成功嗎|能成/.test(q)) return '事情成功';
     if (/加薪|加薪嗎|會加薪/.test(q)) return '加薪';
@@ -203,6 +207,8 @@
     if (!opener) opener = tendency === 'favorable' ? '以八字、梅花、塔羅、紫微等多維象徵交叉來看' : '從各維度象徵綜合看';
     if (!phrase) phrase = tendency === 'favorable' ? '整體偏有利，有機會達標' : (tendency === 'neutral' ? '屬中性' : (tendency === 'unfavorable' ? '偏有阻力' : '阻力較大'));
     if (!tail) tail = tendency === 'favorable' ? '建議把握時機、積極行動。' : (tendency === 'neutral' ? '可先準備、留意時機再行動。' : '建議保守評估、多做準備再決策。');
+    if (subject && /手鍊|手練|賣出|自製|作品/.test(subject) && tendency === 'neutral') tail = '可先穩健曝光、留意買氣與上架時機再促單。';
+    if (subject && /手鍊|手練|賣出|自製|作品/.test(subject) && tendency === 'favorable') tail = '建議把握曝光與上架時機、積極促單。';
     if (subject && /副業|銷售|破萬|業績/.test(subject) && tendency === 'neutral') tail = '副業／銷售可先穩健鋪陳、留意促銷或旺季時機再衝量。';
     if (subject && /副業|銷售|破萬|業績/.test(subject) && tendency === 'favorable') tail = '建議把握促銷或旺季時機、積極衝量。';
     if (probVal >= 55 && unfavorableCount >= 2) {
