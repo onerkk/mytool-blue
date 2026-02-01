@@ -1,14 +1,5 @@
 /* iOS兼容性修復和優化 - 與手機同步、修正 iOS 排版 */
-
-/* 標準捲動：html/body 皆可捲，桌面滾輪與觸控都正常 */
-html {
-    height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
+/* 捲動由 main.css 控制（html/body overflow），此處不覆寫 */
 
 * {
     box-sizing: border-box;
@@ -19,9 +10,6 @@ body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
     min-height: 100dvh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
     position: relative;
     width: 100%;
     max-width: 100%;
@@ -53,25 +41,21 @@ input, select, textarea, .section, .progress-step, .btn, .hint-note {
     .floating-buttons { flex-wrap: wrap; max-width: 100px; }
 }
 
-/* iOS Safari 專用 */
+/* iOS Safari 專用（捲動仍由 main.css 控制） */
 @supports (-webkit-touch-callout: none) {
     html {
         position: relative;
-        overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
         height: -webkit-fill-available;
+        -webkit-overflow-scrolling: touch;
     }
     
     body {
         position: relative;
-        overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
         height: auto;
         min-height: 100vh;
         min-height: -webkit-fill-available;
         min-height: 100dvh;
+        -webkit-overflow-scrolling: touch;
     }
     
     /* iOS 結果區底部留白（含 Home Indicator） */

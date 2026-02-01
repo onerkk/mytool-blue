@@ -224,6 +224,11 @@ SUITS_INFO.forEach(suit => {
 // 2. 系統初始化
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
+    // 確保頁面可捲動：清除 body 上可能殘留的 inline style（例如模態未正確關閉）
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('position');
+    document.body.style.removeProperty('width');
+    
     const system = new FortuneSystem();
     system.init();
     window.fortuneSystem = system;
@@ -5260,21 +5265,16 @@ function setupMeihuaRandomDomGuard(){
     
     if (!modal) return;
     
-    // 開啟模態框的函數
+    // 開啟模態框的函數（用 class 鎖 body，避免 inline 蓋掉頁面捲動）
     function openModal() {
       modal.classList.add('active');
-      document.body.style.overflow = 'hidden';
-      // 防止背景滾動（移動端）
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
+      document.body.classList.add('custom-modal-open');
     }
     
     // 關閉模態框的函數
     function closeModal() {
       modal.classList.remove('active');
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.classList.remove('custom-modal-open');
       
       // 重置表單和顯示區域
       if (form) {

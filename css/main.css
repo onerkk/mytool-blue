@@ -80,6 +80,19 @@
     box-sizing: border-box;
 }
 
+/* 捲動由 #page-scroll 負責，不受其他樣式干擾 */
+html, body {
+    overflow: hidden !important;
+    height: 100%;
+    margin: 0;
+}
+#page-scroll.page-scroll {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: 100vh !important;
+    min-height: 100%;
+    -webkit-overflow-scrolling: touch;
+}
 body {
     font-family: var(--font-family);
     background: var(--dark-bg);
@@ -91,7 +104,6 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     position: relative;
-    overflow-x: hidden;
 }
 
 /* 水晶背景效果 */
@@ -3772,6 +3784,11 @@ select, input, button, textarea{
 
 .custom-order-modal.active {
     display: flex;
+}
+
+/* 模態開啟時鎖住 #page-scroll 捲動 */
+body.custom-modal-open #page-scroll.page-scroll {
+    overflow: hidden !important;
 }
 
 .modal-overlay {
