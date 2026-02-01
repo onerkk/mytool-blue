@@ -318,12 +318,12 @@
         overflow-y: visible !important;
     }
     
-    /* 扇形牌堆容器 - 手機版優化 */
+    /* 扇形牌堆容器 - 手機版加大扇形、利於選牌 */
     .fan-container {
         width: 100% !important;
         max-width: 100vw !important;
-        height: 300px !important;
-        margin-top: 10px !important;
+        height: 340px !important;
+        margin-top: 12px !important;
         padding: 0 0.5rem !important;
         box-sizing: border-box !important;
         overflow: visible !important;
@@ -333,18 +333,18 @@
         align-items: flex-start !important;
     }
     
-    /* 扇形卡片 - 手機版縮小尺寸 */
+    /* 扇形卡片 - 手機版略放大、間距拉開，好點選 */
     .fan-card {
-        width: 50px !important;
-        height: 90px !important;
-        transform-origin: center 200% !important; /* 調整旋轉中心點，避免超出 */
-        top: 30px !important;
+        width: 58px !important;
+        height: 100px !important;
+        transform-origin: center 220% !important;
+        top: 35px !important;
         box-shadow: -1px 0 3px rgba(0,0,0,0.4) !important;
     }
     
     .fan-card:hover {
-        margin-top: -20px !important;
-        transform: scale(1.1) !important;
+        margin-top: -22px !important;
+        transform: scale(1.12) !important;
     }
     
     /* 洗牌區域 - 新增響應式修正 */
@@ -737,22 +737,22 @@
         overflow-x: hidden !important;
     }
     
-    /* 小屏幕扇形牌堆進一步優化 */
+    /* 小屏幕扇形牌堆：維持較大扇形與可點選尺寸 */
     .fan-container {
-        height: 250px !important;
-        padding: 0 0.25rem !important;
+        height: 300px !important;
+        padding: 0 0.35rem !important;
     }
     
     .fan-card {
-        width: 45px !important;
-        height: 80px !important;
-        transform-origin: center 180% !important;
-        top: 25px !important;
+        width: 52px !important;
+        height: 92px !important;
+        transform-origin: center 200% !important;
+        top: 28px !important;
     }
     
     .fan-card:hover {
-        margin-top: -15px !important;
-        transform: scale(1.08) !important;
+        margin-top: -18px !important;
+        transform: scale(1.1) !important;
     }
     
     /* 洗牌動畫區域 - 小屏幕進一步優化 */
