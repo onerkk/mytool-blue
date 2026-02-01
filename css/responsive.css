@@ -20,24 +20,12 @@
         min-width: 0;
     }
     
-    /* 結果區橫向可捲，且單指垂直滑動仍可捲動頁面 */
+    /* 結果區橫向可捲；不設 touch-action，讓單指滑動由 document (html) 處理 */
     #result-section,
     #result-section .result-container,
     #result-section .result-overview {
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        touch-action: pan-x pan-y; /* 單指可上下滑頁、左右滑區塊 */
-    }
-    
-    /* 橫向可捲區塊仍允許單指垂直滑動頁面（避免 iOS 強制雙指） */
-    .dimension-tabs,
-    .dimension-content,
-    .dimension-pane,
-    .progress-bar,
-    .dayun-timeline,
-    .analysis-card,
-    #result-section .bazi-container {
-        touch-action: pan-x pan-y;
     }
     
     .main-container {

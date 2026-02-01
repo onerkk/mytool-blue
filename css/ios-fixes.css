@@ -1,11 +1,10 @@
 /* iOS兼容性修復和優化 - 與手機同步、修正 iOS 排版 */
 
-/* html/body 可捲動，不加重壓／慢滑門檻（已移除 touch-action / transform / z-index） */
+/* 單一捲動根：僅 html 捲動，body 不捲動，Chrome Android 單指才穩定 */
 html {
     height: 100%;
     overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 }
@@ -20,8 +19,7 @@ body {
     min-height: -webkit-fill-available;
     min-height: 100dvh;
     overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: visible;
     position: relative;
     width: 100%;
     max-width: 100%;
@@ -53,7 +51,7 @@ input, select, textarea, .section, .progress-step, .btn, .hint-note {
     .floating-buttons { flex-wrap: wrap; max-width: 100px; }
 }
 
-/* iOS Safari 專用修復 */
+/* iOS Safari 專用：加上 -webkit-overflow-scrolling（僅 iOS 需要） */
 @supports (-webkit-touch-callout: none) {
     html {
         position: relative;
@@ -65,9 +63,8 @@ input, select, textarea, .section, .progress-step, .btn, .hint-note {
     
     body {
         position: relative;
-        overflow-y: auto;
+        overflow-y: visible;
         overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
         height: auto;
         min-height: 100vh;
         min-height: -webkit-fill-available;
