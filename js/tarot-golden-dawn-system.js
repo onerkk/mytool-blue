@@ -17,18 +17,18 @@
     return Math.max(min, Math.min(max, n));
   }
 
-  // ---- 位置定義（若 tarot-system.js 未載入則使用 fallback） ----
+  // ---- 位置定義（若 tarot-system.js 未載入則使用 fallback；權重與 celtic_positions.js 一致） ----
   var FALLBACK_POSITIONS = {
-    1: { name: '核心現況', meaning: '當前問題的核心與現狀' },
-    2: { name: '橫跨的挑戰', meaning: '阻礙或助力（主要影響）' },
-    3: { name: '潛意識根源', meaning: '深層動機、潛藏因素' },
-    4: { name: '過去', meaning: '近期過去的關鍵影響' },
-    5: { name: '顯意識目標', meaning: '理想、期待、目標' },
-    6: { name: '未來', meaning: '短期趨勢與走向' },
-    7: { name: '自我', meaning: '你目前的態度與策略' },
-    8: { name: '環境/他人', meaning: '外在環境與他人因素' },
-    9: { name: '希望/恐懼', meaning: '內在期待與擔憂' },
-    10:{ name: '最終結果', meaning: '整體落點與結果傾向' }
+    1: { name: '核心現況', meaning: '當前問題的核心與現狀', weight: 0.15 },
+    2: { name: '橫跨的挑戰', meaning: '阻礙或助力（主要影響）', weight: 0.12 },
+    3: { name: '潛意識根源', meaning: '深層動機、潛藏因素', weight: 0.08 },
+    4: { name: '過去', meaning: '近期過去的關鍵影響', weight: 0.06 },
+    5: { name: '顯意識目標', meaning: '理想、期待、目標', weight: 0.08 },
+    6: { name: '未來', meaning: '短期趨勢與走向', weight: 0.12 },
+    7: { name: '自我', meaning: '你目前的態度與策略', weight: 0.10 },
+    8: { name: '環境/他人', meaning: '外在環境與他人因素', weight: 0.08 },
+    9: { name: '希望/恐懼', meaning: '內在期待與擔憂', weight: 0.06 },
+    10:{ name: '最終結果', meaning: '整體落點與結果傾向', weight: 0.25 }
   };
 
   function getPositions() {
@@ -86,7 +86,9 @@
       fortuneScore: 50,
       positions: [],
       summary: '',
-      signals: { positive: 0, negative: 0 }
+      signals: { positive: 0, negative: 0 },
+      uprightCount: 0,
+      reversedCount: 0
     };
 
     if (!cards || !cards.length) {
@@ -153,12 +155,15 @@
       if (d === 'health' && /恢復|失衡|壓力|精神|身體/.test(chosenMeaning)) domDelta += 2;
 
       var delta = clamp(baseDelta + domDelta, -8, 8);
-      score += delta;
+
+      var posDef = positions[i+1] || FALLBACK_POSITIONS[i+1];
+      var posWeight = (posDef && typeof posDef.weight === 'number') ? posDef.weight : 0.1;
+      score += delta * posWeight * 10;
 
       if (delta >= 2) out.signals.positive++;
       if (delta <= -2) out.signals.negative++;
+      if (isReversed) out.reversedCount++; else out.uprightCount++;
 
-      var posDef = positions[i+1] || FALLBACK_POSITIONS[i+1];
       var posMeaning = (posDef.focusByType && posDef.focusByType[d]) ? posDef.focusByType[d] : (posDef.meaning || '');
       out.positions.push({
         index: i+1,
@@ -168,16 +173,17 @@
         card: cardName,
         orientation: isReversed ? '逆位' : '正位',
         meaning: chosenMeaning,
-        delta: delta
+        delta: delta,
+        weight: posWeight
       });
     }
 
     out.fortuneScore = clamp(score, 0, 100);
 
-    // summary 只給機率判讀，不給行動建議（A4）
+    // summary：依凱爾特十字牌陣位置權重＋牌義關鍵詞推算；正位/逆位張數與位置解讀一致
     out.summary =
-      '塔羅機率評估：' + out.fortuneScore + '%（正向訊號 ' + out.signals.positive +
-      ' / 負向訊號 ' + out.signals.negative + '）。';
+      '塔羅機率評估：' + out.fortuneScore + '%（依牌陣位置權重＋牌義推算；正位 ' + out.uprightCount + ' 張 / 逆位 ' + out.reversedCount +
+      ' 張；牌義偏吉 ' + out.signals.positive + ' / 偏凶 ' + out.signals.negative + '）。';
 
     return out;
   };
