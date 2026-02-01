@@ -2,7 +2,7 @@
  * responsive.css - 響應式設計（手機版優化）完整修正版（包含抽牌功能修復）
  */
 
-/* 手機版通用優化 */
+/* 手機版通用優化：不改 html/body 捲動，維持單一捲動容器 (body) */
 @media (max-width: 768px) {
     /* 基礎排版 */
     body {
@@ -11,28 +11,33 @@
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        overflow-x: auto !important; /* 允許橫向滾動 */
         width: 100%;
         min-width: 0;
-        /* 單指可滑動頁面，關閉縮放 */
-        touch-action: pan-y !important;
     }
     
-    /* 全局允許橫向滾動（僅在結果頁面） */
     html {
-        overflow-x: auto !important; /* 允許橫向滾動 */
         width: 100%;
         min-width: 0;
-        /* 單指可滑動頁面 */
-        touch-action: pan-y !important;
     }
     
-    /* 結果分析頁面允許橫向滾動 */
+    /* 結果區橫向可捲，且單指垂直滑動仍可捲動頁面 */
     #result-section,
     #result-section .result-container,
     #result-section .result-overview {
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-x pan-y; /* 單指可上下滑頁、左右滑區塊 */
+    }
+    
+    /* 橫向可捲區塊仍允許單指垂直滑動頁面（避免 iOS 強制雙指） */
+    .dimension-tabs,
+    .dimension-content,
+    .dimension-pane,
+    .progress-bar,
+    .dayun-timeline,
+    .analysis-card,
+    #result-section .bazi-container {
+        touch-action: pan-x pan-y;
     }
     
     .main-container {

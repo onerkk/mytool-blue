@@ -1,38 +1,30 @@
 /* iOS兼容性修復和優化 - 與手機同步、修正 iOS 排版 */
 
-/* viewport-fit=cover 支援（index.html 已設 meta viewport-fit=cover） */
-/* touch-action: pan-y 僅允許單指垂直滑動，關閉縮放，恢復單指滑頁 */
+/* 單一捲動容器：僅 body 捲動，避免 html+body 雙重捲動導致 iOS 單指滑動失效 */
 html {
     height: 100%;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    /* iOS 橫向滾動條修復 */
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
 }
 
 * {
     box-sizing: border-box;
 }
 
-/* 視口高度：100dvh > 100vh > -webkit-fill-available（舊 iOS 相容） */
+/* 僅 body 可垂直捲動，單指滑動由 body 處理 */
 body {
     min-height: 100%;
     min-height: 100vh;
     min-height: -webkit-fill-available;
     min-height: 100dvh;
     overflow-x: hidden;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     position: relative;
     width: 100%;
     max-width: 100%;
-    /* iOS 防止 overscroll 造成版面跳動 */
     overscroll-behavior-y: none;
-    /* 單指可滑動頁面，關閉縮放 */
-    touch-action: pan-y;
 }
 
 /* 文字不截斷／提早換行 */
@@ -60,18 +52,18 @@ input, select, textarea, .section, .progress-step, .btn, .hint-note {
     .floating-buttons { flex-wrap: wrap; max-width: 100px; }
 }
 
-/* iOS Safari 專用修復 */
+/* iOS Safari 專用修復：維持單一捲動容器 */
 @supports (-webkit-touch-callout: none) {
     html {
         position: relative;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow: hidden;
         height: -webkit-fill-available;
     }
     
     body {
         position: relative;
         overflow-y: auto;
+        overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         height: auto;
         min-height: 100vh;
