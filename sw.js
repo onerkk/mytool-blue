@@ -1,4 +1,4 @@
-/* 靜月之前能量占卜儀 v2.0 - 基礎 Service Worker */
+/* 靜月之光能量占卜儀 v2.0 - 基礎 Service Worker */
 const CACHE_NAME = 'jingyue-v2.0';
 
 self.addEventListener('install', function(event) {

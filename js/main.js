@@ -14,7 +14,7 @@ function safeText(v, fallback='—'){
   return v;
 }
 /**
- * 靜月之前能量占卜儀 v2.0 - 最終融合完整版
+ * 靜月之光能量占卜儀 v2.0 - 最終融合完整版
  * 包含：
  * 1. 完整城市資料庫 (TW/CN/HK/MO) 與真太陽時連動
  * 2. 塔羅牌擬真洗牌、環形抽牌、圖片路徑修正
@@ -263,8 +263,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
     
-    if (window.__IS_SAMSUNG__) console.log('靜月之前能量占卜儀 v2.0 已就緒 [Samsung 單指滑動修正已套用]');
-    else console.log('靜月之前能量占卜儀 v2.0 已就緒');
+    if (window.__IS_SAMSUNG__) console.log('靜月之光能量占卜儀 v2.0 已就緒 [Samsung 單指滑動修正已套用]');
+    else console.log('靜月之光能量占卜儀 v2.0 已就緒');
 });
 
 /** Samsung 專用：在 console 印出 overflow/touch-action/鎖定來源，供 S25U 驗證 */
@@ -548,7 +548,7 @@ class FortuneSystem {
     }
     
     generateReport() {
-        let report = '靜月之前能量占卜儀 v2.0\n';
+        let report = '靜月之光能量占卜儀 v2.0\n';
         report += '='.repeat(50) + '\n\n';
         report += `生成時間：${new Date().toLocaleString('zh-TW')}\n\n`;
 
@@ -642,7 +642,7 @@ class FortuneSystem {
         }
         
         report += '='.repeat(50) + '\n';
-        report += '本報告由靜月之前能量占卜儀自動生成，僅供參考。\n';
+        report += '本報告由靜月之光能量占卜儀自動生成，僅供參考。\n';
         report += '命運掌握在自己手中，請以理性判斷為主。\n';
         
         // 下載報告
@@ -3335,9 +3335,10 @@ const TarotModule = {
         fan.className = 'fan-container';
         circle.appendChild(fan);
 
-        const total = (screenWidth <= 480) ? 40 : ((screenWidth <= 768) ? 48 : 60);
-        const startAngle = (screenWidth <= 480) ? -50 : -60;
-        const endAngle = (screenWidth <= 480) ? 50 : 60;
+        /* 扇形加大：牌數略減、角度拉大，選牌更容易 */
+        const total = (screenWidth <= 480) ? 32 : ((screenWidth <= 768) ? 38 : 60);
+        const startAngle = (screenWidth <= 480) ? -72 : ((screenWidth <= 768) ? -68 : -60);
+        const endAngle = (screenWidth <= 480) ? 72 : ((screenWidth <= 768) ? 68 : 60);
         const span = (endAngle - startAngle);
         for (let i = 0; i < total; i++) {
             const card = document.createElement('div');
