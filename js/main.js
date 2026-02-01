@@ -241,23 +241,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
     
-    // 三星等 Android Chrome 單指捲動備援（僅在觸控裝置且捲動容器存在時啟用）
+    // 觸控裝置單指捲動備援（LINE／Chrome／Google 等）
     initSingleFingerScrollPolyfill();
     
     console.log('靜月之前能量占卜儀 v2.0 已就緒');
 });
 
-/** Android 單指捲動備援：三星／Google 等以 touch 手動捲動 #page-scroll（不限 Chrome） */
+/** 觸控裝置單指捲動備援：LINE／Chrome／Google 等以 touch 手動捲動 #page-scroll */
 function initSingleFingerScrollPolyfill() {
     var el = document.getElementById('page-scroll');
     if (!el || !('ontouchstart' in window)) return;
-    var isAndroid = /Android/i.test(navigator.userAgent);
-    if (!isAndroid) return;
+    if (el._scrollPolyfill) return;
+    el._scrollPolyfill = true;
     var lastY = 0;
-    el.addEventListener('touchstart', function(e) {
+    function onTouchStart(e) {
         if (e.touches.length === 1) lastY = e.touches[0].clientY;
-    }, { passive: true });
-    el.addEventListener('touchmove', function(e) {
+    }
+    function onTouchMove(e) {
         if (e.touches.length !== 1) return;
         var y = e.touches[0].clientY;
         var dy = lastY - y;
@@ -267,8 +267,12 @@ function initSingleFingerScrollPolyfill() {
         var st = el.scrollTop;
         el.scrollTop = Math.max(0, Math.min(maxScroll, st + dy));
         if (dy !== 0) e.preventDefault();
-    }, { passive: false });
-    el.addEventListener('touchend', function() { lastY = 0; }, { passive: true });
+    }
+    function onTouchEnd() { lastY = 0; }
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
 }
 
 /** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示，覆蓋任何隱藏用的 CSS */
