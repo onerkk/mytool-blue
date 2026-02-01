@@ -14,6 +14,8 @@
         overflow-x: auto !important; /* 允許橫向滾動 */
         width: 100%;
         min-width: 0;
+        /* 單指可滑動頁面，修正手機版只能雙指滑動問題 */
+        touch-action: pan-y pinch-zoom !important;
     }
     
     /* 全局允許橫向滾動（僅在結果頁面） */
@@ -21,6 +23,8 @@
         overflow-x: auto !important; /* 允許橫向滾動 */
         width: 100%;
         min-width: 0;
+        /* 單指可滑動頁面 */
+        touch-action: pan-y pinch-zoom !important;
     }
     
     /* 結果分析頁面允許橫向滾動 */
