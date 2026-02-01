@@ -8,6 +8,9 @@
 (function (global) {
   'use strict';
 
+  /** 系統英文 key → 中文顯示名稱（直接回答／影響因子一律用中文） */
+  var SYSTEM_LABEL = { bazi: '八字', meihua: '梅花易數', tarot: '塔羅', nameology: '姓名學', ziwei: '紫微斗數' };
+
   /** 依 intent 的建議詞彙（嚴禁跨域） */
   var INTENT_SUGGESTIONS = {
     love: ['主動表達心意', '創造共同話題', '釐清真實需求', '給彼此空間', '觀察互動', '順勢發展', '勿情緒化決策'],
@@ -53,7 +56,8 @@
     var problemRestatement = buildProblemRestatement(raw, mustAnswer);
     var directAnswer = buildDirectAnswer(askType, probVal, parsedQuestion);
     var evidenceList = selected.map(function (e) {
-      return (e.system || '') + '：' + (e.claim || '').trim();
+      var sysLabel = SYSTEM_LABEL[e.system] || e.system;
+      return sysLabel + '：' + (e.claim || '').trim();
     });
     var suggestions = buildSuggestions(intent, probVal, 2, 4);
 
