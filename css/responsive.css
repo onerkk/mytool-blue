@@ -4,9 +4,9 @@
 
 /* 手機版通用優化 */
 @media (max-width: 768px) {
-    /* 捲動容器：三星等 Chrome Android 單指滑動 */
+    /* 捲動容器：單指滑動（含三星 Chrome Android） */
     #page-scroll.page-scroll {
-        touch-action: pan-y;
+        touch-action: manipulation;
         -webkit-overflow-scrolling: touch;
     }
     
@@ -545,10 +545,9 @@
         gap: 1rem;
     }
     
-    /* 導航欄確保可見 */
+    /* 導航欄隨整頁捲動（不固定） */
     .navbar {
-        position: sticky;
-        top: 0;
+        position: relative;
         z-index: 1000;
         width: 100%;
     }
