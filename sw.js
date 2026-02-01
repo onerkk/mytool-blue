@@ -1,5 +1,5 @@
-/* 靜月之光能量占卜儀 v2.0 - 基礎 Service Worker（快取版本 v2.11 手機同步更新） */
-const CACHE_NAME = 'jingyue-v2.11';
+/* 靜月之光能量占卜儀 v2.0 - 基礎 Service Worker（快取版本 v2.12 手機同步更新） */
+const CACHE_NAME = 'jingyue-v2.12';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(

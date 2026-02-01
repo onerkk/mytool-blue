@@ -97,7 +97,7 @@
       var maxS = Math.max.apply(null, scores.map(function (s) { return s.score; }));
       if (maxS - minS > 25) {
         isRange = true;
-        conflictSource = scores.map(function (s) { return s.sys + '(' + s.score + '%)'; }).join(' vs ');
+        conflictSource = scores.map(function (s) { return s.sys + '（' + s.score + '%）'; }).join(' 與 ');
       }
     }
 
@@ -225,10 +225,107 @@
     return opener + '，「' + subject + '」' + phrase + '，' + tail;
   }
 
+  function isDebug() {
+    try {
+      var g = (typeof window !== 'undefined' ? window : null);
+      return g && g.location && g.location.search && g.location.search.indexOf('debug=1') >= 0;
+    } catch (e) {}
+    return false;
+  }
+
   /**
-   * 產生直接答案：一句話結論（呼應問題＋多維象徵） + Top3 影響因子 + 3 條可執行建議
+   * 產生直接答案：優先走 parseQuestion → EvidenceNormalizer → EvidenceSelector → AnswerSynthesizer → AlignmentGuard
+   * UI 答案區塊一律使用本函式回傳的 conclusion（即 finalText）。?debug=1 時印出對齊管線 trace，任一模組未載入或拋錯時印出錯誤與 fallback 原因。
    */
   function generateDirectAnswer(data) {
+    var debug = isDebug();
+    try {
+      if (typeof parseQuestion !== 'function') {
+        if (debug) console.group('[對齊管線]'), console.warn('回退原因：parseQuestion 未載入'), console.groupEnd();
+        throw new Error('parseQuestion 未載入');
+      }
+      if (typeof EvidenceNormalizer === 'undefined' || !EvidenceNormalizer.normalizeEvidence) {
+        if (debug) console.group('[對齊管線]'), console.warn('回退原因：EvidenceNormalizer 未載入'), console.groupEnd();
+        throw new Error('EvidenceNormalizer 未載入');
+      }
+      if (typeof EvidenceSelector === 'undefined' || !EvidenceSelector.selectEvidence) {
+        if (debug) console.group('[對齊管線]'), console.warn('回退原因：EvidenceSelector 未載入'), console.groupEnd();
+        throw new Error('EvidenceSelector 未載入');
+      }
+      if (typeof AnswerSynthesizer === 'undefined' || !AnswerSynthesizer.synthesize) {
+        if (debug) console.group('[對齊管線]'), console.warn('回退原因：AnswerSynthesizer 未載入'), console.groupEnd();
+        throw new Error('AnswerSynthesizer 未載入');
+      }
+      if (typeof AlignmentGuard === 'undefined' || !AlignmentGuard.alignmentCheck) {
+        if (debug) console.group('[對齊管線]'), console.warn('回退原因：AlignmentGuard 未載入'), console.groupEnd();
+        throw new Error('AlignmentGuard 未載入');
+      }
+
+      var parsed = parseQuestion(data.question || '');
+      var evidenceItems = [];
+      var sysList = [
+        { key: 'bazi', data: data.bazi },
+        { key: 'meihua', data: data.meihua },
+        { key: 'tarot', data: data.tarot && data.tarot.analysis ? { analysis: data.tarot.analysis } : null },
+        { key: 'nameology', data: data.nameology }
+      ];
+      sysList.forEach(function (s) {
+        if (!s.data) return;
+        var payload = s.key === 'bazi' ? { system: s.key, fullData: s.data.fullData || s.data, reason: (s.data.reason || ''), score: s.data.fortuneScore, fortuneScore: s.data.fortuneScore }
+          : s.key === 'meihua' ? { system: s.key, benGua: s.data.benGua, luck: s.data.luck, tiYong: (s.data.tiYong && s.data.tiYong.relation) }
+          : s.key === 'tarot' ? { system: s.key, analysis: s.data }
+          : { system: s.key, analysis: s.data.analysis || s.data };
+        var items = EvidenceNormalizer.normalizeEvidence(payload, parsed);
+        if (items && items.length) evidenceItems = evidenceItems.concat(items);
+      });
+      var selectionResult = EvidenceSelector.selectEvidence(parsed, evidenceItems);
+      var probResult = computeProbability(data);
+      var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
+      var syn = AnswerSynthesizer.synthesize(parsed, selectionResult, { probabilityValue: probVal, probability: probResult.probability }, {});
+      var guard = AlignmentGuard.alignmentCheck(parsed, syn.fullText);
+      var conclusion = guard.passed ? syn.fullText : (guard.rewritten || syn.fullText);
+
+      if (debug && typeof console !== 'undefined') {
+        console.group('[對齊管線]');
+        console.log('parsedQuestion', JSON.stringify({ intent: parsed.intent, askType: parsed.askType, mustAnswer: parsed.mustAnswer, timeHorizon: parsed.timeHorizon }));
+        console.log('evidenceItems.length', evidenceItems.length);
+        console.log('selectedEvidence.length', (selectionResult.selected && selectionResult.selected.length) || 0);
+        console.log('證據充足 / 分數', selectionResult.sufficient, selectionResult.score);
+        console.log('finalText mustAnswer 覆蓋率', guard.coverage, 'askType 檢查', guard.missingAskType || '通過', '命中禁止詞', guard.forbiddenHit || false);
+        console.log('finalText (前 300 字)', (conclusion || '').substring(0, 300));
+        console.groupEnd();
+      }
+
+      var factorTexts = (syn.evidenceList || []).map(function (e) { return e; });
+      if (factorTexts.length === 0 && probResult.factors && probResult.factors.length) {
+        var methodMap = { '八字運勢': 'bazi', '卦象吉凶': 'meihua', '塔羅牌陣': 'tarot', '紫微斗數': 'ziwei', '姓名學': 'nameology' };
+        factorTexts = probResult.factors.slice(0, 4).map(function (f) {
+          var label = f.impact > 0 ? '有利' : (f.impact < 0 ? '不利' : '中性');
+          return f.name + '：' + label + '（' + (f.detail || '') + '）';
+        });
+      }
+      return {
+        conclusion: conclusion,
+        factors: factorTexts,
+        suggestions: syn.suggestions || [],
+        probability: probResult.probability,
+        probabilityValue: probResult.probabilityValue,
+        isRange: probResult.isRange,
+        conflictSource: probResult.conflictSource
+      };
+    } catch (e) {
+      if (typeof console !== 'undefined') {
+        if (debug) {
+          console.group('[對齊管線]');
+          console.error('回退原因：', e && e.message);
+          if (e && e.stack) console.error(e.stack);
+          console.groupEnd();
+        } else {
+          console.warn('融合引擎對齊管線失敗，已回退：', e && e.message);
+        }
+      }
+    }
+
     var probResult = computeProbability(data);
     var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
     var type = getQuestionType(data.question, data.questionType);
@@ -255,6 +352,7 @@
       factors: factorTexts,
       suggestions: suggestions,
       probability: probResult.probability,
+      probabilityValue: probResult.probabilityValue,
       isRange: probResult.isRange,
       conflictSource: probResult.conflictSource
     };

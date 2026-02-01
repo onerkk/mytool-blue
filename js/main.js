@@ -4504,15 +4504,22 @@ function bindEvents() {
       };
 
       MeihuaModule.calculateCharacter = function(){
-        try{
-          const text = (($('characters')||{}).value || '').trim();
-          if(!text){ alert('請輸入漢字內容！'); return; }
-          const result = this.calculator.divine('', 'character', { text: text });
-          this.displayResults(result);
-        }catch(e){
-          console.error('Meihua.calculateCharacter error:', e);
-          alert('漢字起卦錯誤：' + (e && e.message ? e.message : e));
-        }
+        var self = this;
+        var charEl = $('meihua-character');
+        if (charEl) charEl.blur();
+        // IME 未提交時 value 可能仍空：延遲一 tick 再讀，讓 compositionend 有機會寫入
+        setTimeout(function(){
+          try{
+            var raw = (charEl ? (charEl.value || '') : (($('characters')||{}).value || ''));
+            var text = String(raw).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '').trim();
+            if(!text){ alert('請輸入漢字內容！（1～3 個字）'); return; }
+            var result = self.calculator.divine('', 'character', { text: text });
+            self.displayResults(result);
+          }catch(e){
+            console.error('Meihua.calculateCharacter error:', e);
+            alert('漢字起卦錯誤：' + (e && e.message ? e.message : e));
+          }
+        }, 0);
       };
 
       if(!MeihuaModule.calculateRandom){
@@ -5000,12 +5007,15 @@ function setupMeihuaRandomDomGuard(){
                 meihua: dataForScoring.meihua,
                 tarot: dataForScoring.tarot,
                 ziwei: dataForScoring.ziwei,
+                nameology: dataForScoring.nameology,
                 question: question,
                 questionType: (this.userData && this.userData.questionType) || ''
               };
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
               displayConclusion = fusionOut.conclusion || '';
-              setText('direct-answer', displayConclusion);
+              // 直接回答區塊不重複顯示問題（問題已在【問題】區塊列出）
+              var forDirectAnswer = displayConclusion.replace(/^您問的是[：:][「"]([^」"]*)[」"]。?\s*/g, '');
+              setText('direct-answer', forDirectAnswer);
               if (fusionOut.probabilityValue != null && Number.isFinite(fusionOut.probabilityValue)) {
                 overall = Math.round(fusionOut.probabilityValue);
               }
@@ -5080,31 +5090,62 @@ function setupMeihuaRandomDomGuard(){
             }
           }
 
-          // 開運配戴建議：依喜用神／問題類別填入水晶推薦
+          // 開運配戴建議：優先走每顆水晶一張卡片（CrystalsKB + 證據正規化 + 選品 + 專屬文案）
           try {
             var qText = ($('question') && $('question').value) ? String($('question').value).trim() : '';
             var baziForCrystal = dataForScoring.bazi;
             var qType = (this.userData && this.userData.questionType) ? this.userData.questionType : '';
-            var rec = (typeof getCrystalRecommendation === 'function') ? getCrystalRecommendation(baziForCrystal, qText, { tarot: dataForScoring.tarot, meihua: dataForScoring.meihua, ziwei: dataForScoring.ziwei, nameology: dataForScoring.nameology, questionType: qType }) : null;
-            if (rec && (rec.targetElement || rec.suggestedStones)) {
-              if ($('crystal-target-element')) $('crystal-target-element').textContent = rec.targetElement || '—';
-              if ($('crystal-stones-list')) $('crystal-stones-list').textContent = (rec.suggestedStones && rec.suggestedStones.length) ? rec.suggestedStones.join('、') : '—';
-              if ($('crystal-reason-text')) $('crystal-reason-text').textContent = rec.reasonText || '—';
-              if ($('crystal-wearing-span')) $('crystal-wearing-span').textContent = rec.wearingMethod || '—';
-              if ($('crystal-taboos-span')) $('crystal-taboos-span').textContent = rec.taboos || '—';
-              if ($('crystal-disclaimer-span')) $('crystal-disclaimer-span').textContent = rec.disclaimer || '本建議僅供能量校準參考，不具醫療或命運保證效力。';
-              var wearEl = $('crystal-wearing-text'), taboosEl = $('crystal-taboos-text');
-              if (wearEl) wearEl.style.display = (rec.wearingMethod ? 'block' : 'none');
-              if (taboosEl) taboosEl.style.display = (rec.taboos ? 'block' : 'none');
+            var crystalOpts = { bazi: dataForScoring.bazi, tarot: dataForScoring.tarot, meihua: dataForScoring.meihua, ziwei: dataForScoring.ziwei, nameology: dataForScoring.nameology, questionType: qType };
+            var cardResult = (typeof getCrystalRecommendationCards === 'function') ? getCrystalRecommendationCards(baziForCrystal, qText, crystalOpts) : null;
+            var cardsContainer = $('crystal-cards-container');
+            var legacyBlock = $('crystal-legacy-block');
+            if (cardResult && cardResult.cards && cardResult.cards.length > 0) {
+              if (cardsContainer) {
+                cardsContainer.style.display = 'block';
+                var html = '';
+                cardResult.cards.forEach(function (card) {
+                  var badgeClass = card.conclusionLevel === '強推' ? 'strong' : (card.conclusionLevel === '可選' ? 'optional' : 'avoid');
+                  html += '<div class="crystal-card">';
+                  html += '<div class="crystal-card-header"><span class="crystal-card-name">' + (card.crystal && card.crystal.name ? String(card.crystal.name).replace(/</g,'&lt;') : '') + '</span>';
+                  html += '<span class="crystal-card-badges"><span class="crystal-badge ' + badgeClass + '">' + (card.conclusionLevel || '') + '</span>';
+                  if (card.crystal && card.crystal.intensity >= 4) html += '<span class="crystal-badge">高強度</span>';
+                  if (card.riskFlags && card.riskFlags.indexOf('sleep_sensitive') >= 0) html += '<span class="crystal-badge">睡前取下</span>';
+                  html += '</span></div>';
+                  html += '<div class="crystal-card-section"><strong>推薦結論：</strong>' + (card.conclusion || '').replace(/</g,'&lt;') + '</div>';
+                  html += '<div class="crystal-card-section"><strong>跨系統證據：</strong>' + (card.evidenceText || '').replace(/</g,'&lt;') + '</div>';
+                  html += '<div class="crystal-card-section"><strong>配戴方式：</strong>' + (card.wearText || '').replace(/</g,'&lt;') + '</div>';
+                  html += '<div class="crystal-card-section"><strong>注意事項：</strong>' + (card.cautionsText || '').replace(/</g,'&lt;') + '</div>';
+                  if (card.alternatives && card.alternatives.length) html += '<div class="crystal-card-section"><strong>替代方案：</strong>' + card.alternatives.join('、').replace(/</g,'&lt;') + '</div>';
+                  html += '</div>';
+                });
+                cardsContainer.innerHTML = html;
+              }
+              if (legacyBlock) legacyBlock.style.display = 'none';
+              if ($('crystal-disclaimer-span')) $('crystal-disclaimer-span').textContent = cardResult.disclaimer || '本建議僅供能量校準參考，不具醫療或命運保證效力。';
             } else {
-              if ($('crystal-target-element')) $('crystal-target-element').textContent = '—';
-              if ($('crystal-stones-list')) $('crystal-stones-list').textContent = '—';
-              if ($('crystal-reason-text')) $('crystal-reason-text').textContent = '—';
-              if ($('crystal-wearing-span')) $('crystal-wearing-span').textContent = '—';
-              if ($('crystal-taboos-span')) $('crystal-taboos-span').textContent = '—';
-              if ($('crystal-disclaimer-span')) $('crystal-disclaimer-span').textContent = '本建議僅供能量校準參考，不具醫療或命運保證效力。';
-              if ($('crystal-wearing-text')) $('crystal-wearing-text').style.display = 'none';
-              if ($('crystal-taboos-text')) $('crystal-taboos-text').style.display = 'none';
+              if (cardsContainer) { cardsContainer.style.display = 'none'; cardsContainer.innerHTML = ''; }
+              if (legacyBlock) legacyBlock.style.display = 'block';
+              var rec = (typeof getCrystalRecommendation === 'function') ? getCrystalRecommendation(baziForCrystal, qText, { tarot: dataForScoring.tarot, meihua: dataForScoring.meihua, ziwei: dataForScoring.ziwei, nameology: dataForScoring.nameology, questionType: qType }) : null;
+              if (rec && (rec.targetElement || rec.suggestedStones)) {
+                if ($('crystal-target-element')) $('crystal-target-element').textContent = rec.targetElement || '—';
+                if ($('crystal-stones-list')) $('crystal-stones-list').textContent = (rec.suggestedStones && rec.suggestedStones.length) ? rec.suggestedStones.join('、') : '—';
+                if ($('crystal-reason-text')) $('crystal-reason-text').textContent = rec.reasonText || '—';
+                if ($('crystal-wearing-span')) $('crystal-wearing-span').textContent = rec.wearingMethod || '—';
+                if ($('crystal-taboos-span')) $('crystal-taboos-span').textContent = rec.taboos || '—';
+                if ($('crystal-disclaimer-span')) $('crystal-disclaimer-span').textContent = rec.disclaimer || '本建議僅供能量校準參考，不具醫療或命運保證效力。';
+                var wearEl = $('crystal-wearing-text'), taboosEl = $('crystal-taboos-text');
+                if (wearEl) wearEl.style.display = (rec.wearingMethod ? 'block' : 'none');
+                if (taboosEl) taboosEl.style.display = (rec.taboos ? 'block' : 'none');
+              } else {
+                if ($('crystal-target-element')) $('crystal-target-element').textContent = '—';
+                if ($('crystal-stones-list')) $('crystal-stones-list').textContent = '—';
+                if ($('crystal-reason-text')) $('crystal-reason-text').textContent = '—';
+                if ($('crystal-wearing-span')) $('crystal-wearing-span').textContent = '—';
+                if ($('crystal-taboos-span')) $('crystal-taboos-span').textContent = '—';
+                if ($('crystal-disclaimer-span')) $('crystal-disclaimer-span').textContent = '本建議僅供能量校準參考，不具醫療或命運保證效力。';
+                if ($('crystal-wearing-text')) $('crystal-wearing-text').style.display = 'none';
+                if ($('crystal-taboos-text')) $('crystal-taboos-text').style.display = 'none';
+              }
             }
           } catch (e) { if (window.console) console.warn('Crystal recommendation fill failed:', e); }
 

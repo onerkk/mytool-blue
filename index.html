@@ -15,13 +15,13 @@
         <meta http-equiv="Expires" content="0">
         <title>靜月之光能量占卜儀 v2.0</title>
         
-        <link rel="stylesheet" href="css/main.css?v=2.11">
-        <link rel="stylesheet" href="css/tarot.css?v=2.11">
-        <link rel="stylesheet" href="css/bazi-display.css?v=2.11">
-        <link rel="stylesheet" href="css/responsive.css?v=2.11">
-        <link rel="stylesheet" href="css/ios-fixes.css?v=2.11">
-        <link rel="stylesheet" href="css/mobile-fix.css?v=2.11">
-        <link rel="stylesheet" href="css/result-section-override.css?v=2.11">
+        <link rel="stylesheet" href="css/main.css?v=2.12">
+        <link rel="stylesheet" href="css/tarot.css?v=2.12">
+        <link rel="stylesheet" href="css/bazi-display.css?v=2.12">
+        <link rel="stylesheet" href="css/responsive.css?v=2.12">
+        <link rel="stylesheet" href="css/ios-fixes.css?v=2.12">
+        <link rel="stylesheet" href="css/mobile-fix.css?v=2.12">
+        <link rel="stylesheet" href="css/result-section-override.css?v=2.12">
         <!-- 三星單指捲動：盡早加上 class，讓 CSS 在首繪前生效 -->
         <script>
         (function(){
@@ -37,7 +37,7 @@
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link rel="icon" href="images/logo.jpg" type="image/jpeg">
-        <script>if(document.location.protocol.match(/^https?:$/)){var l=document.createElement('link');l.rel='manifest';l.href='manifest.json?v=2.2';document.head.appendChild(l);}</script>
+        <script>if(document.location.protocol.match(/^https?:$/)){var l=document.createElement('link');l.rel='manifest';l.href='manifest.json?v=2.12';document.head.appendChild(l);}</script>
         <link rel="apple-touch-icon" href="images/logo.jpg">
         <script type="application/ld+json">
         {"@context":"https://schema.org","@type":"WebApplication","name":"靜月之光能量占卜儀","description":"整合八字、梅花易數、塔羅牌的多維度機率評估，提供專屬五行水晶開運建議","applicationCategory":"LifestyleApplication","inLanguage":"zh-TW"}
@@ -658,7 +658,7 @@
                             <span id="input-summary-content" class="input-summary-text"></span>
                         </div>
                         <div class="overview-card" id="section-answer">
-                            <h3><i class="fas fa-bullseye"></i> 【答案】</h3>
+                            <h3><i class="fas fa-bullseye"></i> 【問題】</h3>
                             <div class="question-display" id="question-display"></div>
                             <div class="direct-answer">
                                 <h4>直接回答</h4>
@@ -689,22 +689,26 @@
                                 <span>75%</span>
                                 <span>100%</span>
                             </div>
+                            <p class="probability-note" aria-hidden="true">八字、紫微斗數、姓名學、梅花易數、塔羅均針對您輸入的問題與當下象徵分別評分後加權彙總。</p>
                             <div class="probability-breakdown-reasons" id="probability-breakdown-reasons" aria-label="各維度評分與理由"></div>
                         </div>
                     </div>
     
-                    <!-- 【處方】專屬校準處方：象徵→行為→喜忌→物件 -->
+                    <!-- 【處方】專屬校準處方：每顆水晶一張卡片 -->
                     <div class="lucky-item-recommendation-card" id="crystal-recommendation-card">
                         <div class="recommendation-header">
                             <i class="fas fa-gem"></i>
                             <h3>【處方】💎 您的專屬校準處方</h3>
                         </div>
                         <div class="recommendation-content crystal-recommendation-content">
-                            <p class="crystal-recommendation-intro" id="crystal-recommendation-intro">建議補強 <strong id="crystal-target-element">—</strong> 行能量。</p>
-                            <p class="crystal-recommendation-stones" id="crystal-recommendation-stones">推薦配戴：<span id="crystal-stones-list">—</span></p>
-                            <p class="crystal-recommendation-desc" id="crystal-recommendation-desc">功效：<span id="crystal-reason-text">—</span></p>
-                            <p class="crystal-recommendation-wearing" id="crystal-wearing-text" style="display:none;"><i class="fas fa-hand-holding-heart"></i> 佩戴方式：<span id="crystal-wearing-span">—</span></p>
-                            <p class="crystal-recommendation-taboos" id="crystal-taboos-text" style="display:none;"><i class="fas fa-exclamation-triangle"></i> 注意事項：<span id="crystal-taboos-span">—</span></p>
+                            <div id="crystal-cards-container" class="crystal-cards-container" style="display:none;"></div>
+                            <div id="crystal-legacy-block">
+                                <p class="crystal-recommendation-intro" id="crystal-recommendation-intro">建議補強 <strong id="crystal-target-element">—</strong> 行能量。</p>
+                                <p class="crystal-recommendation-stones" id="crystal-recommendation-stones">推薦配戴：<span id="crystal-stones-list">—</span></p>
+                                <p class="crystal-recommendation-desc" id="crystal-recommendation-desc">功效：<span id="crystal-reason-text">—</span></p>
+                                <p class="crystal-recommendation-wearing" id="crystal-wearing-text" style="display:none;"><i class="fas fa-hand-holding-heart"></i> 佩戴方式：<span id="crystal-wearing-span">—</span></p>
+                                <p class="crystal-recommendation-taboos" id="crystal-taboos-text" style="display:none;"><i class="fas fa-exclamation-triangle"></i> 注意事項：<span id="crystal-taboos-span">—</span></p>
+                            </div>
                             <p class="crystal-recommendation-disclaimer" id="crystal-disclaimer-text"><i class="fas fa-info-circle"></i> <span id="crystal-disclaimer-span">本建議僅供能量校準參考，不具醫療或命運保證效力。</span></p>
                             <p class="crystal-recommendation-cta">
                                 <i class="fas fa-arrow-down"></i> 點擊右下角按鈕，前往賣場搜尋上述水晶，或點擊「我要客製」為您打造專屬手鍊。
@@ -1049,39 +1053,89 @@
     
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/iztro@2/dist/iztro.min.js"></script>
-        <script src="js/ziwei-system.js?v=2.2"></script>
-        <script src="js/true-solar-time.js?v=2.2"></script>
-        <script src="js/solar-term-calculator.js?v=2.2"></script>
-        <script src="js/shichen-system.js?v=2.2"></script>
-        <script src="js/dayun-calculator.js?v=2.2"></script>
-        <script src="js/liunian-calculator.js?v=2.2"></script>
-        <script src="js/auxiliary-data.js?v=2.2"></script>
-        <script src="js/bazi-system.js?v=2.2"></script>
-        <script src="js/fortune-judgment-engine.js?v=2.2"></script>
-        <script src="js/quality-mapper.js?v=2.2"></script>
-        <script src="js/meihua-system.js?v=2.2"></script>
-        <script src="js/nameology-system.js?v=2.2"></script>
-        <script src="js/tarot-system.js?v=2.2"></script>
-        <script src="logic/tarot_meanings_by_type.js?v=2.2"></script>
-        <script src="js/tarot-golden-dawn-system.js?v=2.2"></script>
-        <script src="logic/celtic_positions.js?v=2.2"></script>
-        <script src="logic/bazi_interpreter.js?v=2.2"></script>
-        <script src="logic/meihua_rules.js?v=2.2"></script>
-        <script src="logic/crystal_behavior_map.js?v=2.2"></script>
-        <script src="logic/fusion_crystal_engine.js?v=2.2"></script>
-        <script src="logic/vocabulary_db.js?v=2.2"></script>
-        <script src="engine/fusionEngine.js?v=2.2"></script>
-        <script src="js/question-parser.js?v=2.2"></script>
-        <script src="js/method-selector.js?v=2.2"></script>
-        <script src="js/probability-calculators.js?v=2.2"></script>
-        <script src="js/probability-integration.js?v=2.2"></script>
-        <script src="js/scoring-engine.js?v=2.2"></script>
-        <script src="js/probability-pipeline.js?v=2.2"></script>
-        <script src="js/crystal-recommendation.js?v=2.2"></script>
-        <script src="js/main.js?v=2.2"></script>
+        <script src="js/ziwei-system.js?v=2.12"></script>
+        <script src="js/true-solar-time.js?v=2.12"></script>
+        <script src="js/solar-term-calculator.js?v=2.12"></script>
+        <script src="js/shichen-system.js?v=2.12"></script>
+        <script src="js/dayun-calculator.js?v=2.12"></script>
+        <script src="js/liunian-calculator.js?v=2.12"></script>
+        <script src="js/auxiliary-data.js?v=2.12"></script>
+        <script src="js/bazi-system.js?v=2.12"></script>
+        <script src="js/fortune-judgment-engine.js?v=2.12"></script>
+        <script src="js/quality-mapper.js?v=2.12"></script>
+        <script src="js/meihua-system.js?v=2.12"></script>
+        <script src="js/nameology-system.js?v=2.12"></script>
+        <script src="js/tarot-system.js?v=2.12"></script>
+        <script src="logic/tarot_meanings_by_type.js?v=2.12"></script>
+        <script src="js/tarot-golden-dawn-system.js?v=2.12"></script>
+        <script src="logic/celtic_positions.js?v=2.12"></script>
+        <script src="logic/bazi_interpreter.js?v=2.12"></script>
+        <script src="logic/meihua_rules.js?v=2.12"></script>
+        <script src="logic/crystal_behavior_map.js?v=2.12"></script>
+        <script src="logic/fusion_crystal_engine.js?v=2.12"></script>
+        <script src="data/crystals_kb.js?v=2.12"></script>
+        <script src="js/crystal-evidence-normalizer.js?v=2.12"></script>
+        <script src="js/crystal-recommender.js?v=2.12"></script>
+        <script src="js/crystal-advice-synthesizer.js?v=2.12"></script>
+        <script src="js/crystal-output-guard.js?v=2.12"></script>
+        <script src="logic/vocabulary_db.js?v=2.12"></script>
+        <script src="js/question-parser.js?v=2.12"></script>
+        <script src="logic/meihua_evidence_data.js?v=2.12"></script>
+        <script src="js/evidence-normalizer.js?v=2.12"></script>
+        <script src="js/evidence-selector.js?v=2.12"></script>
+        <script src="js/answer-synthesizer.js?v=2.12"></script>
+        <script src="js/alignment-guard.js?v=2.12"></script>
+        <script src="engine/fusionEngine.js?v=2.12"></script>
+        <script src="js/method-selector.js?v=2.12"></script>
+        <script src="js/probability-calculators.js?v=2.12"></script>
+        <script src="js/probability-integration.js?v=2.12"></script>
+        <script src="js/scoring-engine.js?v=2.12"></script>
+        <script src="js/probability-pipeline.js?v=2.12"></script>
+        <script src="js/crystal-recommendation.js?v=2.12"></script>
+        <script src="js/main.js?v=2.12"></script>
         <script>
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js?v=2.2').catch(function(){}); });
+                window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js?v=2.12').catch(function(){}); });
+            }
+            if (typeof window !== 'undefined' && window.location && window.location.search.indexOf('test=1') >= 0) {
+                (function(){
+                    var s = document.createElement('script');
+                    s.src = 'tests/qa_alignment_tests.js?v=2.12';
+                    s.onload = function(){
+                        if (typeof runQAAlignmentTests === 'function') {
+                            var res = runQAAlignmentTests();
+                            window.qaAlignmentTestResult = res;
+                            var block = document.createElement('div');
+                            block.id = 'qa-alignment-test-block';
+                            block.setAttribute('aria-live', 'polite');
+                            block.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1a1520;color:#D4AF37;border-top:2px solid #D4AF37;padding:10px 16px;font-size:14px;max-height:180px;overflow:auto;z-index:9999;';
+                            block.innerHTML = '<strong>QA 對齊測試</strong> 通過 ' + (res.passed || 0) + ' / ' + (res.total || 0) + (res.failed ? '　失敗 ' + res.failed + ' 題' : '') +
+                                (res.failures && res.failures.length ? '<br>失敗（前5）: ' + res.failures.slice(0, 5).map(function(f){ return f.q + ' → ' + f.reason; }).join(' | ') : '');
+                            document.body.appendChild(block);
+                        }
+                    };
+                    document.body.appendChild(s);
+                })();
+            }
+            if (typeof window !== 'undefined' && window.location && window.location.search.indexOf('test=crystal') >= 0) {
+                (function(){
+                    var s = document.createElement('script');
+                    s.src = 'tests/crystal_recommendation_tests.js?v=2.12';
+                    s.onload = function(){
+                        if (typeof runCrystalRecommendationTests === 'function') {
+                            var res = runCrystalRecommendationTests();
+                            window.crystalRecommendationTestResult = res;
+                            var block = document.createElement('div');
+                            block.id = 'crystal-recommendation-test-block';
+                            block.setAttribute('aria-live', 'polite');
+                            block.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1a1520;color:#D4AF37;border-top:2px solid #D4AF37;padding:10px 16px;font-size:14px;max-height:180px;overflow:auto;z-index:9999;';
+                            block.innerHTML = '<strong>水晶建議測試</strong> 通過 ' + (res.passed || 0) + ' / ' + (res.total || 0) + (res.failed ? '　失敗 ' + res.failed + ' 題' : '') +
+                                (res.failures && res.failures.length ? '<br>失敗（前5）: ' + res.failures.slice(0, 5).map(function(f){ return f.q + ' → ' + f.reason; }).join(' | ') : '');
+                            document.body.appendChild(block);
+                        }
+                    };
+                    document.body.appendChild(s);
+                })();
             }
         </script>
     </body>

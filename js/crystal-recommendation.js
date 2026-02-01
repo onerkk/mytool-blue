@@ -224,10 +224,43 @@
     };
   }
 
+  /**
+   * 新管線：每顆水晶一張卡片（推薦結論、跨系統證據、配戴方式、注意事項、替代方案）
+   * 依 CrystalsKB + CrystalEvidenceNormalizer + CrystalRecommender + CrystalAdviceSynthesizer + CrystalOutputGuard
+   * @returns {{ cards: Array, missing: string[], disclaimer: string } | null } 若模組未載入則回傳 null，呼叫方改走 getCrystalRecommendation
+   */
+  function getCrystalRecommendationCards(baziResult, question, options) {
+    options = options || {};
+    if (typeof CrystalsKB === 'undefined' || !CrystalsKB.getAllCrystals) return null;
+    if (typeof CrystalEvidenceNormalizer === 'undefined' || !CrystalEvidenceNormalizer.normalizeCrystalEvidence) return null;
+    if (typeof CrystalRecommender === 'undefined' || !CrystalRecommender.selectCrystals) return null;
+    if (typeof CrystalAdviceSynthesizer === 'undefined' || !CrystalAdviceSynthesizer.synthesizeCrystalCards) return null;
+    var parsed = (typeof parseQuestion === 'function') ? parseQuestion(question || '') : { intent: 'other', timeHorizon: 'unknown' };
+    var fusionData = { bazi: options.bazi || baziResult, meihua: options.meihua, tarot: options.tarot, ziwei: options.ziwei, nameology: options.nameology };
+    var norm = CrystalEvidenceNormalizer.normalizeCrystalEvidence(fusionData, parsed);
+    var crystals = CrystalsKB.getAllCrystals();
+    var sel = CrystalRecommender.selectCrystals(crystals, norm.items, parsed);
+    var cards = CrystalAdviceSynthesizer.synthesizeCrystalCards(sel.top, sel.alternatives, norm.items, norm.missing, parsed);
+    if (typeof CrystalOutputGuard !== 'undefined' && CrystalOutputGuard.guardOffTopic) {
+      var guard = CrystalOutputGuard.guardOffTopic(parsed, cards);
+      if (!guard.passed && guard.offendingCards.length) {
+        guard.offendingCards.forEach(function (o) {
+          if (cards[o.idx]) {
+            cards[o.idx].conclusion = CrystalOutputGuard.stripOffTopicText(parsed, cards[o.idx].conclusion);
+            cards[o.idx].cautionsText = CrystalOutputGuard.stripOffTopicText(parsed, cards[o.idx].cautionsText);
+          }
+        });
+      }
+    }
+    var disclaimer = '本建議依八字／紫微／梅花／塔羅／姓名學綜合推斷，每顆配戴方式與注意事項皆依該水晶特性撰寫，僅供能量校準參考，不具醫療或命運保證效力。';
+    return { cards: cards, missing: norm.missing, disclaimer: disclaimer };
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { CRYSTAL_MAPPING: CRYSTAL_MAPPING, getCrystalRecommendation: getCrystalRecommendation };
+    module.exports = { CRYSTAL_MAPPING: CRYSTAL_MAPPING, getCrystalRecommendation: getCrystalRecommendation, getCrystalRecommendationCards: getCrystalRecommendationCards };
   } else {
     global.CRYSTAL_MAPPING = CRYSTAL_MAPPING;
     global.getCrystalRecommendation = getCrystalRecommendation;
+    global.getCrystalRecommendationCards = getCrystalRecommendationCards;
   }
 })(typeof window !== 'undefined' ? window : this);
