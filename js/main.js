@@ -3335,10 +3335,10 @@ const TarotModule = {
         fan.className = 'fan-container';
         circle.appendChild(fan);
 
-        /* 扇形再大一點：牌數略減、角度拉大，選牌更好點 */
-        const total = (screenWidth <= 480) ? 30 : ((screenWidth <= 768) ? 36 : 60);
-        const startAngle = (screenWidth <= 480) ? -76 : ((screenWidth <= 768) ? -72 : -60);
-        const endAngle = (screenWidth <= 480) ? 76 : ((screenWidth <= 768) ? 72 : 60);
+        /* 扇形空間：上一版（32/38 張、±72/±68°） */
+        const total = (screenWidth <= 480) ? 32 : ((screenWidth <= 768) ? 38 : 60);
+        const startAngle = (screenWidth <= 480) ? -72 : ((screenWidth <= 768) ? -68 : -60);
+        const endAngle = (screenWidth <= 480) ? 72 : ((screenWidth <= 768) ? 68 : 60);
         const span = (endAngle - startAngle);
         for (let i = 0; i < total; i++) {
             const card = document.createElement('div');

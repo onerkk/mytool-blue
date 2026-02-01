@@ -48,6 +48,11 @@
 | 姓名學 | `js/nameology-system.js`      |
 | 水晶   | `js/crystal-recommendation.js`、`logic/crystal_behavior_map.js` |
 
+## 問題與答案對應／詞彙庫擴充（改善「問題與答案對不上」）
+
+- **回扣句（extractEchoPhrase）**：`engine/fusionEngine.js` 內依問題關鍵字決定答案主語（如「今年健康狀況」「副業／本月銷售能否破萬」）。可從網路或書籍整理「問句類型 → 回扣用語」對照表，手動補入 `extractEchoPhrase` 的 if 條件與回傳值。
+- **詞彙庫**：`logic/vocabulary_db.js` 的 `SUBJECT_BY_TYPE`、`CONCLUSION_PHRASES`、`CONCLUSION_TAILS`、`SUGGESTION_PHRASES` 可依題型擴充。若後端或建置腳本能抓取授權來源（命理文章、問答範例），可產出 JSON 再手動或腳本合併進上述結構，以改善答案與問題的對應感。
+
 ## 未來：後端資料擴充
 
 若架設後端伺服器，可實作：

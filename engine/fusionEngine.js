@@ -102,13 +102,14 @@
     }
 
     factors.sort(function (a, b) { return Math.abs(b.impact) - Math.abs(a.impact); });
-    var top3 = factors.slice(0, 3);
+    /* 最多顯示 4 項影響因子，確保八字、梅花、塔羅、紫微有機會都列出 */
+    var topFactors = factors.slice(0, 4);
 
     return {
       probability: isRange ? (Math.min(prob, 85) + '%~' + Math.min(prob + 15, 100) + '%') : prob + '%',
       probabilityValue: prob,
       isRange: isRange,
-      factors: top3,
+      factors: topFactors,
       conflictSource: conflictSource,
       baseRate: base
     };
@@ -170,11 +171,13 @@
     if (/加薪|加薪嗎|會加薪/.test(q)) return '加薪';
     if (/錄取|錄取嗎|會錄取/.test(q)) return '錄取';
     if (/復合|復合嗎|會復合/.test(q)) return '復合';
+    if (/健康|身體|注意|需要注意/.test(q)) return (/今年|這年/.test(q) ? '今年健康狀況' : '健康狀況');
     if (/為何|如何|怎樣|怎麼樣/.test(q)) {
       if (/運勢|運勢如何/.test(q)) return '本月運勢';
       if (/收入|財運/.test(q)) return '本月收入與財運';
       if (/工作|事業|職涯/.test(q)) return '事業與工作發展';
       if (/感情|姻緣|桃花/.test(q)) return '感情與姻緣';
+      if (/健康|身體/.test(q)) return '健康狀況';
     }
     return null;
   }
@@ -229,11 +232,11 @@
     var probResult = computeProbability(data);
     var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
     var type = getQuestionType(data.question, data.questionType);
-    var top3 = probResult.factors.slice(0, 3);
-    var conclusion = buildConclusionByType(probVal, type, data.question, top3);
+    var topFactors = probResult.factors.slice(0, 4);
+    var conclusion = buildConclusionByType(probVal, type, data.question, topFactors);
 
     var methodMap = { '八字運勢': 'bazi', '卦象吉凶': 'meihua', '塔羅牌陣': 'tarot', '紫微斗數': 'ziwei', '姓名學': 'nameology' };
-    var factorTexts = top3.map(function (f, i) {
+    var factorTexts = topFactors.map(function (f, i) {
       var tendency = f.impact > 0 ? 'favorable' : (f.impact < 0 ? 'unfavorable' : 'neutral');
       var label = f.impact > 0 ? '有利' : (f.impact < 0 ? '不利' : '中性');
       var methodKey = methodMap[f.name] || '';
