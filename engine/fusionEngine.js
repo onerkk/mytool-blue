@@ -16,6 +16,17 @@
     other: 50
   };
 
+  function getStrategy(category) {
+    if (typeof getCategoryStrategy === 'function') return getCategoryStrategy(category);
+    return { baseRate: 0.5, weights: { bazi: 0.4, meihua: 0.3, tarot: 0.3 }, topFactorKeys: ['八字運勢', '卦象吉凶', '塔羅牌陣'], mandatoryPhrases: [], conclusionOpeners: ['從各維度象徵綜合看'] };
+  }
+
+  function normalizeCategory(type) {
+    if (typeof normalizeCategoryForStrategy === 'function') return normalizeCategoryForStrategy(type);
+    var t = (type || '').toString().toLowerCase();
+    return (t === 'finance' || t === 'other') ? (t === 'finance' ? 'wealth' : 'general') : t || 'general';
+  }
+
   function clamp(n, min, max) {
     n = Number(n);
     if (!Number.isFinite(n)) return min;
@@ -64,69 +75,77 @@
   }
 
   /**
-   * 從各系統彙總機率
+   * 從各系統彙總機率（題型驅動：權重與 baseRate 來自 CATEGORY_STRATEGY；缺證據時輸出區間與不確定性來源）
    * @param {Object} data - { bazi, meihua, tarot, questionType, question }
-   * @returns {{ probability: number|string, isRange: boolean, factors: Array, conflictSource: string|null }}
+   * @returns {{ probability, probabilityValue, isRange, factors, conflictSource, baseRate, difficultyLevel, appliedWeights, missingEvidence, category }}
    */
   function computeProbability(data) {
     var type = getQuestionType(data.question, data.questionType);
-    var base = BASE_RATE_BY_TYPE[type] || 50;
+    var category = normalizeCategory(type);
+    var strategy = getStrategy(category);
+    var base = Math.round((strategy.baseRate != null ? strategy.baseRate : BASE_RATE_BY_TYPE[type] / 100) * 100) || 50;
+    if (base > 100 || base < 0) base = 50;
+
     var scores = [];
     var factors = [];
-    var reasons = [];
+    var missingEvidence = [];
+    var w = strategy.weights || { bazi: 0.4, meihua: 0.3, tarot: 0.3 };
 
     if (data.bazi && data.bazi.fullData) {
       var baziProb = estimateBaziScore(data.bazi, type);
       if (baziProb !== null) {
-        scores.push({ sys: '八字', score: baziProb.score, weight: 0.35, reason: baziProb.reason });
+        scores.push({ sys: '八字', score: baziProb.score, weight: w.bazi != null ? w.bazi : 0.4, reason: baziProb.reason });
         factors.push({ name: '八字運勢', impact: baziProb.score - 50, detail: baziProb.reason });
       }
-    }
+    } else missingEvidence.push('八字');
 
-    if (data.meihua) {
+    if (data.meihua && (data.meihua.benGua || data.meihua.originalHexagram)) {
       var meihuaProb = estimateMeihuaScore(data.meihua, type);
       if (meihuaProb !== null) {
-        scores.push({ sys: '梅花易數', score: meihuaProb.score, weight: 0.25, reason: meihuaProb.reason });
+        scores.push({ sys: '梅花易數', score: meihuaProb.score, weight: w.meihua != null ? w.meihua : 0.25, reason: meihuaProb.reason });
         factors.push({ name: '卦象吉凶', impact: meihuaProb.score - 50, detail: meihuaProb.reason });
       }
-    }
+    } else missingEvidence.push('梅花易數');
 
-    if (data.tarot && data.tarot.analysis) {
+    var hasTarot = data.tarot && data.tarot.analysis && (Array.isArray(data.tarot.cards || data.tarot.drawnCards) && (data.tarot.cards || data.tarot.drawnCards).length > 0 || Number.isFinite(data.tarot.analysis.fortuneScore));
+    if (hasTarot) {
       var tarotProb = data.tarot.analysis.fortuneScore;
       if (Number.isFinite(tarotProb)) {
-        scores.push({ sys: '塔羅', score: clamp(tarotProb, 0, 100), weight: 0.35, reason: '凱爾特十字解讀' });
+        scores.push({ sys: '塔羅', score: clamp(tarotProb, 0, 100), weight: w.tarot != null ? w.tarot : 0.35, reason: '凱爾特十字解讀' });
         factors.push({ name: '塔羅牌陣', impact: clamp(tarotProb, 0, 100) - 50, detail: '凱爾特十字 10 張牌綜合' });
       }
-    }
+    } else missingEvidence.push('塔羅');
 
     if (data.ziwei && data.ziwei.palaces && data.ziwei.palaces.length && typeof calculateCategoryScore === 'function' && typeof getCategory === 'function') {
       var ziweiCat = getQuestionType(data.question, data.questionType);
       var catMap = { love: 'relationship', wealth: 'finance', career: 'career', health: 'health', relationship: 'relationship', family: 'family', other: 'general' };
       var ziweiRes = calculateCategoryScore('ziwei', data.ziwei, catMap[ziweiCat] || 'general', {});
       if (ziweiRes && Number.isFinite(ziweiRes.score)) {
-        scores.push({ sys: '紫微斗數', score: clamp(ziweiRes.score, 0, 100), weight: 0.30, reason: ziweiRes.reason || '星盤宮位與問題類別對應' });
+        var ziweiW = 0.2;
+        scores.push({ sys: '紫微斗數', score: clamp(ziweiRes.score, 0, 100), weight: ziweiW, reason: ziweiRes.reason || '星盤宮位與問題類別對應' });
         factors.push({ name: '紫微斗數', impact: ziweiRes.score - 50, detail: ziweiRes.reason || '星盤與本類問題交叉參考' });
       }
     }
 
-    var weightedSum = 0;
     var totalWeight = 0;
-    scores.forEach(function (s) {
-      weightedSum += s.score * s.weight;
-      totalWeight += s.weight;
-    });
-
+    scores.forEach(function (s) { totalWeight += s.weight; });
+    var weightedSum = 0;
+    scores.forEach(function (s) { weightedSum += s.score * s.weight; });
     var prob = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : base;
     prob = clamp(prob, 0, 100);
 
     var difficultyLevel = getDifficultyLevel(data.question);
-    if (difficultyLevel === 'high') {
-      prob = clamp(prob - 15, 0, 100);
-    }
+    if (difficultyLevel === 'high') prob = clamp(prob - 15, 0, 100);
 
     var isRange = false;
     var conflictSource = null;
-    if (scores.length >= 2) {
+    if (missingEvidence.length > 0) {
+      isRange = true;
+      var widen = missingEvidence.length * 8;
+      prob = clamp(prob, 0, 100);
+      conflictSource = '缺少證據：' + missingEvidence.join('、') + '，機率為區間估計。';
+    }
+    if (scores.length >= 2 && !isRange) {
       var minS = Math.min.apply(null, scores.map(function (s) { return s.score; }));
       var maxS = Math.max.apply(null, scores.map(function (s) { return s.score; }));
       if (maxS - minS > 25) {
@@ -135,18 +154,34 @@
       }
     }
 
-    factors.sort(function (a, b) { return Math.abs(b.impact) - Math.abs(a.impact); });
-    /* 最多顯示 4 項影響因子，確保八字、梅花、塔羅、紫微有機會都列出 */
+    var topFactorKeys = strategy.topFactorKeys;
+    if (topFactorKeys && topFactorKeys.length) {
+      var ordered = [];
+      topFactorKeys.forEach(function (key) {
+        var f = factors.filter(function (x) { return x.name === key; })[0];
+        if (f) ordered.push(f);
+      });
+      factors.forEach(function (f) { if (ordered.indexOf(f) < 0) ordered.push(f); });
+      factors = ordered;
+    } else {
+      factors.sort(function (a, b) { return Math.abs(b.impact) - Math.abs(a.impact); });
+    }
     var topFactors = factors.slice(0, 4);
 
+    var appliedWeights = {};
+    scores.forEach(function (s) { appliedWeights[s.sys] = s.weight; });
+
     return {
-      probability: isRange ? (Math.min(prob, 85) + '%~' + Math.min(prob + 15, 100) + '%') : prob + '%',
+      probability: isRange ? (Math.min(prob, 85) + '%~' + Math.min(prob + (missingEvidence.length > 0 ? 15 : 15), 100) + '%') : prob + '%',
       probabilityValue: prob,
       isRange: isRange,
       factors: topFactors,
       conflictSource: conflictSource,
       baseRate: base,
-      difficultyLevel: difficultyLevel
+      difficultyLevel: difficultyLevel,
+      appliedWeights: appliedWeights,
+      missingEvidence: missingEvidence,
+      category: category
     };
   }
 
@@ -232,19 +267,22 @@
     return '您問的這件事';
   }
 
-  /** 依問題類型、機率、難度與影響因子產生結論（數字敏感：高難度扣分並差異化用語） */
+  /** 依題型策略、機率、難度與影響因子產生結論（題型專屬 opener 與 mandatory 段落，避免通用話術） */
   function buildConclusionByType(probVal, type, question, topFactors, difficultyLevel) {
     var q = String(question || '');
+    var category = normalizeCategory(type);
+    var strategy = getStrategy(category);
     var seed = (probVal || 0) + (q.length || 0);
     var subject = getVocabSubject(type, q, seed);
     var unfavorableCount = (topFactors || []).filter(function (f) { return f && f.impact < 0; }).length;
     var tendency = probVal >= 60 ? 'favorable' : (probVal >= 48 && unfavorableCount < 2 ? 'neutral' : (probVal >= 35 ? 'unfavorable' : 'strongUnfavorable'));
     var difficulty = difficultyLevel === 'high' ? 'high' : 'low';
-    var opener = (typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionOpener) ? VocabularyDB.getConclusionOpener(tendency, seed) : '';
-    var phrase = (typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionPhrase) ? VocabularyDB.getConclusionPhrase(tendency, seed) : '';
-    var tail = (typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionTail) ? VocabularyDB.getConclusionTail(tendency, seed) : '';
+    var opener = (strategy.conclusionOpeners && strategy.conclusionOpeners[0]) ? strategy.conclusionOpeners[0] : '';
+    if (!opener && typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionOpener) opener = VocabularyDB.getConclusionOpener(tendency, seed);
     if (!opener) opener = tendency === 'favorable' ? '以八字、梅花、塔羅、紫微等多維象徵交叉來看' : '從各維度象徵綜合看';
+    var phrase = (typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionPhrase) ? VocabularyDB.getConclusionPhrase(tendency, seed) : '';
     if (!phrase) phrase = tendency === 'favorable' ? '整體偏有利，有機會達標' : (tendency === 'neutral' ? '屬中性' : (tendency === 'unfavorable' ? '偏有阻力' : '阻力較大'));
+    var tail = (typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionTail) ? VocabularyDB.getConclusionTail(tendency, seed) : '';
     if (!tail) tail = tendency === 'favorable' ? '建議把握時機、積極行動。' : (tendency === 'neutral' ? '可先準備、留意時機再行動。' : '建議保守評估、多做準備再決策。');
     if (tendency === 'neutral' && difficulty === 'high') {
       phrase = '目標較高，難度較大';
@@ -266,7 +304,19 @@
       phrase = '偏有阻力';
       tail = difficulty === 'high' ? '目標較高，多數維度評估較弱，建議保守準備、留意時機再行動。' : '多數維度評估較弱，建議保守準備、留意時機再行動。';
     }
-    return opener + '，「' + subject + '」' + phrase + '，' + tail;
+    var main = opener + '，「' + subject + '」' + phrase + '，' + tail;
+    if (strategy.mandatoryPhrases && strategy.mandatoryPhrases.length) {
+      var hasMandatory = strategy.mandatoryPhrases.some(function (p) { return main.indexOf(p) >= 0; });
+      if (!hasMandatory) {
+        var seg = strategy.mandatoryPhrases[0];
+        if (category === 'wealth') main += ' 財運方面請留意現金流與風險控管。';
+        else if (category === 'career') main += ' 事業方面可留意資源配置與合作定位。';
+        else if (category === 'love') main += ' 感情方面可留意互動界線與主動性。';
+        else if (category === 'health') main += ' 健康方面請留意作息與身心平衡。';
+        else main += ' 本題型請依自身狀況調整步調。';
+      }
+    }
+    return main;
   }
 
   function isDebug() {
@@ -385,6 +435,10 @@
           return f.name + '：' + label + '（' + (f.detail || '') + '）';
         });
       }
+      var category = probResult.category || normalizeCategory(getQuestionType(data.question, data.questionType));
+      if (typeof console !== 'undefined') {
+        console.log('[FusionEngine] category=', category, 'appliedWeights=', probResult.appliedWeights || {}, 'topFactors=', (probResult.factors || []).map(function (f) { return f.name; }), 'missingEvidence=', probResult.missingEvidence || []);
+      }
       return {
         conclusion: conclusion,
         factors: factorTexts,
@@ -393,7 +447,11 @@
         probabilityValue: probResult.probabilityValue,
         isRange: probResult.isRange,
         conflictSource: probResult.conflictSource,
-        principleRef: baziExplainText || null
+        principleRef: baziExplainText || null,
+        category: category,
+        appliedWeights: probResult.appliedWeights || {},
+        selectedTemplateId: category,
+        missingEvidence: probResult.missingEvidence || []
       };
     } catch (e) {
       if (typeof console !== 'undefined') {
@@ -411,6 +469,7 @@
     var probResult = computeProbability(data);
     var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
     var type = getQuestionType(data.question, data.questionType);
+    var category = probResult.category || normalizeCategory(type);
     var topFactors = probResult.factors.slice(0, 4);
     var conclusion = buildConclusionByType(probVal, type, data.question, topFactors, probResult.difficultyLevel);
 
@@ -428,7 +487,9 @@
     });
 
     var suggestions = getSuggestionsByType(type, probVal, data);
-
+    if (typeof console !== 'undefined') {
+      console.log('[FusionEngine fallback] category=', category, 'appliedWeights=', probResult.appliedWeights || {}, 'topFactors=', topFactors.map(function (f) { return f.name; }), 'missingEvidence=', probResult.missingEvidence || []);
+    }
     return {
       conclusion: conclusion,
       factors: factorTexts,
@@ -437,23 +498,34 @@
       probabilityValue: probResult.probabilityValue,
       isRange: probResult.isRange,
       conflictSource: probResult.conflictSource,
-      principleRef: null
+      principleRef: null,
+      category: category,
+      appliedWeights: probResult.appliedWeights || {},
+      selectedTemplateId: category,
+      missingEvidence: probResult.missingEvidence || []
     };
   }
 
   function getSuggestionsByType(type, probVal, data) {
+    var category = normalizeCategory(type);
+    var strategy = getStrategy(category);
     var list = [];
-    if (typeof BaziInterpreter !== 'undefined' && BaziInterpreter.getTypeSuggestions && data.bazi) {
+    if (strategy.suggestionPool && strategy.suggestionPool.length) {
+      var pool = strategy.suggestionPool.slice();
+      var tendency = probVal >= 60 ? 'favorable' : (probVal >= 40 ? 'neutral' : 'unfavorable');
+      while (list.length < 3 && pool.length) list.push(pool.shift());
+    }
+    if (typeof BaziInterpreter !== 'undefined' && BaziInterpreter.getTypeSuggestions && data.bazi && list.length < 3) {
       try {
         var baziList = BaziInterpreter.getTypeSuggestions(data.bazi, type);
-        if (baziList && baziList.length) list = list.concat(baziList.slice(0, 2));
+        if (baziList && baziList.length) list = list.concat(baziList.slice(0, 3 - list.length));
       } catch (e) {}
     }
-    if (typeof MeihuaRules !== 'undefined' && MeihuaRules.getTypeAdvice && data.meihua) {
+    if (typeof MeihuaRules !== 'undefined' && MeihuaRules.getTypeAdvice && data.meihua && list.length < 3) {
       try {
         var mh = MeihuaRules.getTypeAdvice(data.meihua, type);
-        if (mh.advice) list.push(mh.advice);
-        if (mh.timing && list.length < 3) list.push(mh.timing);
+        if (mh.advice && list.indexOf(mh.advice) < 0) list.push(mh.advice);
+        if (mh.timing && list.length < 3 && list.indexOf(mh.timing) < 0) list.push(mh.timing);
       } catch (e) {}
     }
     if (list.length >= 3) return list.slice(0, 3);

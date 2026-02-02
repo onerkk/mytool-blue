@@ -5020,6 +5020,7 @@ function setupMeihuaRandomDomGuard(){
               if (typeof window !== 'undefined' && window.currentTarotDeck && Array.isArray(window.currentTarotDeck) && window.currentTarotDeck.length > 0 && !(tarotForFusion.cards && tarotForFusion.cards.length)) {
                 tarotForFusion = Object.assign({}, tarotForFusion, { cards: window.currentTarotDeck, drawnCards: window.currentTarotDeck });
               }
+              var userCategory = (this.userData && this.userData.questionType) ? String(this.userData.questionType).toLowerCase() : '';
               var fusionData = {
                 bazi: dataForScoring.bazi,
                 meihua: dataForScoring.meihua,
@@ -5027,10 +5028,17 @@ function setupMeihuaRandomDomGuard(){
                 ziwei: dataForScoring.ziwei,
                 nameology: dataForScoring.nameology,
                 question: question,
-                questionType: (this.userData && this.userData.questionType) || ''
+                questionType: userCategory || ''
               };
-              if (typeof console !== 'undefined') console.log('[綜合分析] tarot.cards', fusionData.tarot && (fusionData.tarot.cards || fusionData.tarot.drawnCards), 'tarotHasCards', Array.isArray(fusionData.tarot && (fusionData.tarot.cards || fusionData.tarot.drawnCards)) && (fusionData.tarot.cards || fusionData.tarot.drawnCards).length > 0);
+              if (typeof console !== 'undefined') {
+                console.log('[Category Debug] user.category / questionType=', userCategory, 'questionText=', (question || '').slice(0, 60));
+                if (!userCategory && (question || '').length > 0) console.warn('[Category Debug] category 缺失，將由 getQuestionType(question) 推斷，可能 fallback 到 general');
+              }
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
+              if (typeof console !== 'undefined' && fusionOut) {
+                console.log('[結果頁渲染前] selectedTemplateId/category=', fusionOut.selectedTemplateId || fusionOut.category, 'appliedWeights=', fusionOut.appliedWeights || {}, 'topFactors=', (fusionOut.factors || []).slice(0, 3).map(function (f) { return typeof f === 'string' ? f.slice(0, 30) : (f && f.name); }), 'missingEvidence=', fusionOut.missingEvidence || []);
+                if ((fusionOut.category === 'general' || !fusionOut.category) && userCategory && userCategory !== 'general' && userCategory !== 'other') console.warn('[Category Debug] 題型應為 ' + userCategory + ' 但 resultGenerator 回傳 category=' + (fusionOut.category || 'general') + '，請檢查傳參');
+              }
               displayConclusion = fusionOut.conclusion || '';
               // 直接回答區塊不重複顯示問題；結論優先，原理參考縮小顯示於後
               var forDirectAnswer = displayConclusion.replace(/^您問的是[：:][「"]([^」"]*)[」"]。?\s*/g, '');
@@ -5080,10 +5088,15 @@ function setupMeihuaRandomDomGuard(){
                 window._resultDetailsResizeBound = true;
                 window.addEventListener('resize', syncDetailsOpen);
               }
+              if (fusionOut.missingEvidence && fusionOut.missingEvidence.length > 0) {
+                var missingNote = '缺少證據：' + fusionOut.missingEvidence.join('、') + '，機率為區間估計，僅供參考。';
+                if (breakdownWithReasons.length === 0) breakdownWithReasons = [{ method: '說明', score: null, reason: missingNote }];
+                else breakdownWithReasons.push({ method: '說明', score: null, reason: missingNote });
+              }
               if (fusionOut.conflictSource) {
-                var cfNote = '（系統間有差異：' + fusionOut.conflictSource + '，故以區間呈現）';
+                var cfNote = fusionOut.conflictSource.indexOf('缺少證據') >= 0 ? fusionOut.conflictSource : '（系統間有差異：' + fusionOut.conflictSource + '，故以區間呈現）';
                 if (breakdownWithReasons.length === 0) breakdownWithReasons = [{ method: '提示', score: overall, reason: cfNote }];
-                else breakdownWithReasons.push({ method: '說明', score: null, reason: cfNote });
+                else if (!fusionOut.missingEvidence || fusionOut.missingEvidence.length === 0) breakdownWithReasons.push({ method: '說明', score: null, reason: cfNote });
               }
             } catch (e) { if (window.console) console.warn('FusionEngine generateDirectAnswer failed:', e); }
           }
@@ -5165,7 +5178,6 @@ function setupMeihuaRandomDomGuard(){
                   html += '<div class="crystal-card-section"><strong>推薦結論：</strong>' + (card.conclusion || '').replace(/</g,'&lt;') + '</div>';
                   if (card.mingliBackground) html += '<div class="crystal-card-section"><strong>命理背景：</strong>' + (card.mingliBackground || '').replace(/</g,'&lt;') + '</div>';
                   if (card.whyThisCrystal) html += '<div class="crystal-card-section"><strong>為什麼選這顆：</strong>' + (card.whyThisCrystal || '').replace(/</g,'&lt;') + '</div>';
-                  html += '<div class="crystal-card-section"><strong>跨系統證據：</strong>' + (card.evidenceText || '').replace(/</g,'&lt;') + '</div>';
                   html += '<div class="crystal-card-section"><strong>配戴方式：</strong>' + (card.wearText || '').replace(/</g,'&lt;') + '</div>';
                   html += '<div class="crystal-card-section"><strong>注意事項：</strong>' + (card.cautionsText || '').replace(/</g,'&lt;') + '</div>';
                   if (card.alternatives && card.alternatives.length) html += '<div class="crystal-card-section"><strong>替代方案：</strong>' + card.alternatives.join('、').replace(/</g,'&lt;') + '</div>';

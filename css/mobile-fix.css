@@ -1,8 +1,8 @@
 /**
- * 手機版結果分析頁面 UI 修正（與 responsive.css / main.css 同步更新 v2.18）
- * - 跨系統證據區塊已移除；頂部按鈕不爆版、性別膠囊 48% gold border-radius 8px
- * - 大運流年 fortune-timeline-container 橫向捲動、touch-action: pan-x
- * - 綜合結論預設只顯示大% + 🔽 點擊展開完整分析；步驟切換 setTimeout 置頂
+ * 手機版結果分析頁面 UI 修正（與 responsive.css / main.css 同步更新 v2.19）
+ * - 跨系統證據區塊已完全移除（不生成 HTML）；水晶卡片不再顯示「跨系統證據」
+ * - 大運流年 touch-action: pan-x pan-y、max-width: 100vw、cursor: grab，不鎖死垂直捲動
+ * - 頂部按鈕、性別膠囊、綜合結論摺疊、步驟置頂
  * - 更新時請同步檢查 responsive.css @media (max-width: 768px)/(480px) 與本檔
  */
 
@@ -341,15 +341,18 @@
     .dayun-timeline,
     .fortune-timeline-container {
         display: flex !important;
+        flex-direction: row !important;
         flex-wrap: nowrap !important;
-        overflow-x: scroll !important;
+        overflow-x: auto !important;
         overflow-y: hidden !important;
         width: 100% !important;
+        max-width: 100vw !important;
         height: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        touch-action: pan-x !important;
+        touch-action: pan-x pan-y !important;
         padding-bottom: 10px !important;
         gap: 10px !important;
+        cursor: grab;
     }
     .dayun-item,
     .fortune-item {
