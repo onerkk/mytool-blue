@@ -3,7 +3,7 @@
 ## 原則
 - **網頁有變、手機也要變。** 修改樣式時，若會影響手機版，請同步更新手機用 CSS。
 - **邏輯單一來源**：結果區內容（八字、梅花、塔羅、姓名學、交叉驗證）均由 `main.js` 等共用模組渲染，**同一份程式碼同時服務網頁與手機**，改一處即同步，無需分開維護。
-- **手機版沒更新時**：多為瀏覽器快取。請 (1) 重新整理頁面（必要時「強制重新載入」／清除快取），或 (2) 部署後使用 `index.html` 內建的 `?v=x.x` 快取破壞參數（發版時改版號，例如目前為 `?v=2.27`，下次可改為 `?v=2.28`）讓手機載入最新 JS/CSS。
+- **手機版沒更新時**：多為瀏覽器快取。請 (1) 重新整理頁面（必要時「強制重新載入」／清除快取），或 (2) 部署後使用 `index.html` 內建的 `?v=x.x` 快取破壞參數（發版時改版號，例如目前為 `?v=2.28`，下次可改為 `?v=2.29`）讓手機載入最新 JS/CSS。
 
 ## 大運流年（dayun）
 - **桌面：** `css/main.css` — `.dayun-quality`、`.dayun-fortune-type` 系列
@@ -34,4 +34,4 @@
 ## 手機滑動（iOS／Android 無法滑動修正 v2.27）
 - **策略**：捲動由 `body` 負責；`#page-scroll` 僅設 `overflow-y: visible`、`touch-action: pan-y`，不作為捲動容器，避免雙層捲動或滑動被鎖死。
 - **同步檔案**：`css/main.css`（body touch-action、#page-scroll overflow-y）、`css/ios-fixes.css`（iOS body overflow-y/touch-action）、`css/responsive.css` 與 `css/mobile-fix.css`（768px 以下 body/#page-scroll 統一規則）。
-- **Samsung 專用**：`html.samsung-scroll-fix` 時由 `#page-scroll` 擔任捲動容器（overflow-y: auto），其餘裝置維持 body 捲動。
+- **捲動鎖定**：全站改為「單一滾動容器（body）+ 集中式 scrollLockManager」，不再針對 Samsung/OPPO/iOS 各自 hack。詳見 `docs/SCROLL_LOCK_UNIFIED_DELIVERY.md`。

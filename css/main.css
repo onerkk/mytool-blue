@@ -80,15 +80,17 @@
     box-sizing: border-box;
 }
 
-/* 全站：避免橫向溢出；5) 解除滾動鎖死（body 可上下捲動、背景不擋觸控） */
+/* 全站：單一滾動容器（body），避免橫向溢出 */
 html {
     overflow-x: hidden !important;
     min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
     margin: 0;
 }
 body {
     margin: 0;
     min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
     min-height: 100dvh;
     overflow-x: hidden !important;
     overflow-y: auto !important;
@@ -2667,7 +2669,23 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     align-items: center;
     justify-content: center;
 }
-.global-loading-overlay[hidden] { display: none !important; pointer-events: none !important; }
+.global-loading-overlay[hidden] {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden;
+    opacity: 0;
+}
+/* 未開啟的模態不攔截觸控 */
+.custom-order-modal:not(.active),
+.card-interpretation-modal:not(.active) {
+    pointer-events: none !important;
+    visibility: hidden;
+}
+.custom-order-modal.active,
+.card-interpretation-modal.active {
+    pointer-events: auto;
+    visibility: visible;
+}
 .global-loading-content {
     display: flex;
     flex-direction: column;
@@ -3955,10 +3973,7 @@ select, input, button, textarea{
     display: flex;
 }
 
-/* 模態開啟時鎖住 #page-scroll 捲動 */
-body.custom-modal-open #page-scroll.page-scroll {
-    overflow: hidden !important;
-}
+/* 模態開啟時背景鎖定由 scrollLockManager 控制 body，此處僅保留 class 供樣式 */
 
 .modal-overlay {
     position: absolute;

@@ -233,23 +233,14 @@ SUITS_INFO.forEach(suit => {
 // 2. 系統初始化
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
-    // 確保頁面可捲動：清除 body 上可能殘留的 inline style（例如模態未正確關閉）
+    // 單一滾動容器：強制恢復可捲動（清除殘留 lock／忘了解除的 modal）
+    if (window.scrollLockManager) {
+      window.scrollLockManager.forceUnlock();
+    }
     document.body.style.removeProperty('overflow');
     document.body.style.removeProperty('position');
+    document.body.style.removeProperty('top');
     document.body.style.removeProperty('width');
-    
-    // Samsung 專用：加 class、全層 touch-action: pan-y、#page-scroll 強制可捲動（僅 Samsung 生效）
-    if (window.__IS_SAMSUNG__) {
-      document.documentElement.classList.add('samsung-scroll-fix');
-      document.documentElement.style.touchAction = 'pan-y';
-      document.body.style.touchAction = 'pan-y';
-      var ps = document.getElementById('page-scroll');
-      if (ps) {
-        ps.style.touchAction = 'pan-y';
-        ps.style.webkitOverflowScrolling = 'touch';
-        ps.style.overflowY = 'auto';
-      }
-    }
     
     const system = new FortuneSystem();
     system.init();
@@ -263,28 +254,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
     
-    if (window.__IS_SAMSUNG__) console.log('靜月之光能量占卜儀 v2.0 已就緒 [Samsung 單指滑動修正已套用]');
-    else console.log('靜月之光能量占卜儀 v2.0 已就緒');
+    console.log('靜月之光能量占卜儀 v2.0 已就緒（捲動由 scrollLockManager 集中管理）');
 });
 
-/** Samsung 專用：在 console 印出 overflow/touch-action/鎖定來源，供 S25U 驗證 */
+/** 捲動診斷：?debug=1 時可用 SCROLL_DEBUG()；否則轉呼叫 SCROLL_DEBUG（若已載入） */
 function debugScroll() {
-  if (!window.__IS_SAMSUNG__) {
-    console.log('[debugScroll] 非 Samsung 裝置，未套用 Samsung 修正');
-    return;
+  if (typeof window.SCROLL_DEBUG === 'function') {
+    window.SCROLL_DEBUG({ trigger: 'debugScroll' });
+  } else if (window.scrollLockManager && window.scrollLockManager.getState) {
+    console.log('[SCROLL_DEBUG]', window.scrollLockManager.getState());
+  } else {
+    console.log('[SCROLL_DEBUG] 請加上 ?debug=1 載入完整診斷');
   }
-  var html = document.documentElement;
-  var body = document.body;
-  var ps = document.getElementById('page-scroll');
-  var htmlStyle = html && window.getComputedStyle ? getComputedStyle(html) : null;
-  var bodyStyle = body && window.getComputedStyle ? getComputedStyle(body) : null;
-  console.log('[debugScroll] __IS_SAMSUNG__:', window.__IS_SAMSUNG__);
-  console.log('[debugScroll] html.samsung-scroll-fix:', html && html.classList.contains('samsung-scroll-fix'));
-  console.log('[debugScroll] html overflow:', htmlStyle ? htmlStyle.overflowY : html.style.overflow);
-  console.log('[debugScroll] body overflow:', bodyStyle ? bodyStyle.overflowY : body.style.overflow);
-  console.log('[debugScroll] body touch-action:', bodyStyle ? bodyStyle.touchAction : body.style.touchAction);
-  console.log('[debugScroll] #page-scroll:', ps ? '存在' : '不存在', ps ? 'overflowY=' + getComputedStyle(ps).overflowY : '');
-  console.log('[debugScroll] 本專案無 document/window/body 的 touchmove preventDefault 全域監聽');
 }
 
 if (typeof window !== 'undefined') window.debugScroll = debugScroll;
@@ -4103,12 +4084,20 @@ function bindEvents() {
             if (next === 'meihua-section') {
                 if (!window.fortuneSystem.validateAndRunStep1()) return;
                 var overlay = document.getElementById('global-loading-overlay');
-                if (overlay) { overlay.removeAttribute('hidden'); overlay.setAttribute('aria-busy', 'true'); }
+                if (overlay) {
+                  overlay.removeAttribute('hidden');
+                  overlay.setAttribute('aria-busy', 'true');
+                  if (window.scrollLockManager) window.scrollLockManager.lockScroll();
+                }
                 setTimeout(function() {
                     try {
                         window.fortuneSystem.runBackgroundCalculations();
                     } finally {
-                        if (overlay) { overlay.setAttribute('hidden', ''); overlay.setAttribute('aria-busy', 'false'); }
+                        if (overlay) {
+                          overlay.setAttribute('hidden', '');
+                          overlay.setAttribute('aria-busy', 'false');
+                          if (window.scrollLockManager) window.scrollLockManager.unlockScroll();
+                        }
                         window.fortuneSystem.showSection('meihua-section');
                     }
                 }, 50);
@@ -5402,21 +5391,18 @@ function setupMeihuaRandomDomGuard(){
     
     if (!modal) return;
     
-    // 開啟模態框的函數（用 class 鎖 body，避免 inline 蓋掉頁面捲動）
+    // 開啟模態框：集中式 scrollLockManager 鎖定背景捲動
     function openModal() {
+      if (window.scrollLockManager) window.scrollLockManager.lockScroll();
       modal.classList.add('active');
       document.body.classList.add('custom-modal-open');
     }
     
-    // 關閉模態框的函數
+    // 關閉模態框：必呼叫 unlockScroll 恢復捲動
     function closeModal() {
       modal.classList.remove('active');
       document.body.classList.remove('custom-modal-open');
-      if (window.__IS_SAMSUNG__) {
-        document.body.style.touchAction = 'pan-y';
-        var ps = document.getElementById('page-scroll');
-        if (ps) { ps.style.touchAction = 'pan-y'; ps.style.webkitOverflowScrolling = 'touch'; ps.style.overflowY = 'auto'; }
-      }
+      if (window.scrollLockManager) window.scrollLockManager.unlockScroll();
       // 重置表單和顯示區域
       if (form) {
         form.reset();

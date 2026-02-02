@@ -2599,30 +2599,4 @@
   }
 }
 
-/* ==========================================
-   Samsung S25 / Samsung Browser 單指滑動修正（僅 .samsung-scroll-fix 時生效）
-   策略：維持 #page-scroll 為捲動容器，全層強制 touch-action: pan-y，避免被其他規則蓋掉
-   ========================================== */
-html.samsung-scroll-fix {
-  overflow: hidden !important;
-  height: 100% !important;
-  touch-action: pan-y !important;
-  -webkit-overflow-scrolling: touch;
-}
-html.samsung-scroll-fix body {
-  overflow: hidden !important;
-  height: 100% !important;
-  touch-action: pan-y !important;
-  -webkit-overflow-scrolling: touch;
-}
-html.samsung-scroll-fix #page-scroll.page-scroll,
-html.samsung-scroll-fix #page-scroll {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  height: 100vh !important;
-  min-height: 100% !important;
-  touch-action: pan-y !important;
-  -webkit-overflow-scrolling: touch !important;
-  overscroll-behavior-y: auto;
-  position: relative !important;
-}
+/* 捲動由 body 統一負責，不針對單一品牌 hack（見 scrollLockManager） */
