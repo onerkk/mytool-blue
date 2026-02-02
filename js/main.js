@@ -2995,19 +2995,26 @@ class FortuneSystem {
 
     renderDayun(gender, yearGan, monthPillar, dayMaster, greatFortune) {
         const timeline = document.getElementById('dayun-timeline');
+        const startLuckTop = document.getElementById('dayun-start-luck-top');
         if (!timeline) return;
 
         const getColor = (c) => { const map = { '木':'#4CAF50', '火':'#F44336', '土':'#795548', '金':'#FF9800', '水':'#2196F3' }; return map[WUXING_MAP[c]] || '#333'; };
         const hasDayMaster = typeof dayMaster === 'string' && dayMaster.length > 0;
         const computeScore = typeof QualityMapper !== 'undefined' && QualityMapper.computeDayunScore;
 
-        let html = '';
-        if (greatFortune && (greatFortune.start_age_detail != null || greatFortune.startAge != null || greatFortune.direction)) {
-            const startDetail = greatFortune.start_age_detail || (greatFortune.startAge != null ? greatFortune.startAge + '歲' : '');
-            const dir = greatFortune.direction || '';
-            html += '<div class="dayun-meta startLuckInfo" style="margin-bottom: 0.75rem; padding: 0.5rem; background: rgba(212,175,55,0.1); border-radius: 4px; font-size: 0.9rem; color: rgba(255,255,255,0.85);">起運：' + startDetail + (dir ? '；大運' + dir : '') + '</div>';
+        if (startLuckTop) {
+            if (greatFortune && (greatFortune.start_age_detail != null || greatFortune.startAge != null || greatFortune.direction)) {
+                const startDetail = greatFortune.start_age_detail || (greatFortune.startAge != null ? greatFortune.startAge + '歲' : '');
+                const dir = greatFortune.direction || '';
+                startLuckTop.textContent = '起運：' + startDetail + (dir ? '；大運' + dir : '');
+                startLuckTop.style.display = '';
+            } else {
+                startLuckTop.textContent = '';
+                startLuckTop.style.display = 'none';
+            }
         }
 
+        let html = '';
         if (greatFortune && Array.isArray(greatFortune.fortunes) && greatFortune.fortunes.length > 0) {
             for (let i = 0; i < greatFortune.fortunes.length; i++) {
                 const f = greatFortune.fortunes[i];
@@ -5020,7 +5027,22 @@ function setupMeihuaRandomDomGuard(){
               if (typeof window !== 'undefined' && window.currentTarotDeck && Array.isArray(window.currentTarotDeck) && window.currentTarotDeck.length > 0 && !(tarotForFusion.cards && tarotForFusion.cards.length)) {
                 tarotForFusion = Object.assign({}, tarotForFusion, { cards: window.currentTarotDeck, drawnCards: window.currentTarotDeck });
               }
-              var userCategory = (this.userData && this.userData.questionType) ? String(this.userData.questionType).toLowerCase() : '';
+              var userCategory = (this.userData && this.userData.questionType) ? String(this.userData.questionType).toLowerCase().trim() : '';
+              if (!userCategory) {
+                displayConclusion = '請選擇問題類型後再取得分析結果。';
+                setText('direct-answer', displayConclusion);
+                var categoryBannerEmpty = document.getElementById('category-warning-banner');
+                if (categoryBannerEmpty) {
+                  categoryBannerEmpty.textContent = '請選擇問題類型';
+                  categoryBannerEmpty.style.display = 'block';
+                }
+                var hidePrincipleEmpty = document.getElementById('direct-answer-principle');
+                if (hidePrincipleEmpty) { hidePrincipleEmpty.textContent = ''; hidePrincipleEmpty.style.display = 'none'; }
+                var hideFactorsEmpty = $('answer-factors');
+                var hideSuggEmpty = $('answer-suggestions');
+                if (hideFactorsEmpty) hideFactorsEmpty.style.display = 'none';
+                if (hideSuggEmpty) hideSuggEmpty.style.display = 'none';
+              } else {
               var fusionData = {
                 bazi: dataForScoring.bazi,
                 meihua: dataForScoring.meihua,
@@ -5032,7 +5054,6 @@ function setupMeihuaRandomDomGuard(){
               };
               if (typeof console !== 'undefined') {
                 console.log('[Category Debug] user.category / questionType=', userCategory, 'questionText=', (question || '').slice(0, 60));
-                if (!userCategory && (question || '').length > 0) console.warn('[Category Debug] category 缺失，將由 getQuestionType(question) 推斷，可能 fallback 到 general');
               }
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
               if (typeof console !== 'undefined' && fusionOut) {
@@ -5111,6 +5132,7 @@ function setupMeihuaRandomDomGuard(){
                 var cfNote = fusionOut.conflictSource.indexOf('缺少證據') >= 0 ? fusionOut.conflictSource : '（系統間有差異：' + fusionOut.conflictSource + '，故以區間呈現）';
                 if (breakdownWithReasons.length === 0) breakdownWithReasons = [{ method: '提示', score: overall, reason: cfNote }];
                 else if (!fusionOut.missingEvidence || fusionOut.missingEvidence.length === 0) breakdownWithReasons.push({ method: '說明', score: null, reason: cfNote });
+              }
               }
             } catch (e) { if (window.console) console.warn('FusionEngine generateDirectAnswer failed:', e); }
           }

@@ -443,8 +443,15 @@
       var categoryForLog = probResult.category || normalizeCategory(getQuestionType(data.question, data.questionType));
       var questionText = String(data.question || '').trim();
       var questionTokens = (typeof extractQuestionTokens === 'function') ? extractQuestionTokens(questionText, categoryForLog) : [];
+      var evidenceUsedSystems = probResult.evidenceUsed || [];
+      var selectedTemplateId = categoryForLog;
+      var breakdown = probResult.probabilityBreakdown || { base: probResult.baseRate, contributions: [] };
       if (typeof console !== 'undefined') {
-        console.log('[FusionEngine 生成結果前] category=', categoryForLog, 'questionText=', questionText.slice(0, 80), 'questionTokens=', questionTokens, 'evidenceUsed=', probResult.evidenceUsed || [], 'selectedTemplateId=', categoryForLog, 'probabilityBreakdown=', probResult.probabilityBreakdown || { base: probResult.baseRate, contributions: [] });
+        console.log('[QA]', { category: categoryForLog, questionText: questionText.slice(0, 120) });
+        console.log('[TOKENS]', questionTokens);
+        console.log('[EVIDENCE_USED]', evidenceUsedSystems);
+        console.log('[TEMPLATE]', selectedTemplateId);
+        console.log('[PROB_BREAKDOWN]', breakdown);
       }
       var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
       var syn = AnswerSynthesizer.synthesize(parsed, selectionResult, { probabilityValue: probVal, probability: probResult.probability }, {});
@@ -473,12 +480,15 @@
         }
       }
       if (factorTexts.length === 0) factorTexts = evidenceListForDisplay.map(function (e) { return e; });
-      var fullText = problemRestatement + '\n\n' + directAnswer + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
+      var typeForConclusion = getQuestionType(data.question, data.questionType);
+      var categoryConclusion = buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel);
+      var directAnswerForDisplay = categoryConclusion;
+      var fullText = problemRestatement + '\n\n' + directAnswerForDisplay + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
       if (typeof ExplainabilityGuard !== 'undefined' && ExplainabilityGuard.checkEvidenceText) {
         var exGuard = ExplainabilityGuard.checkEvidenceText(evidenceListForDisplay, baziExplainText);
         if (!exGuard.passed) {
           if (typeof console !== 'undefined') console.warn('[ExplainabilityGuard]', exGuard.reason);
-          fullText = problemRestatement + '\n\n' + directAnswer + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
+          fullText = problemRestatement + '\n\n' + directAnswerForDisplay + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
         }
       }
       var guard = AlignmentGuard.alignmentCheck(parsed, fullText);
@@ -566,8 +576,14 @@
     var category = probResult.category || normalizeCategory(type);
     var questionText = String(data.question || '').trim();
     var questionTokens = (typeof extractQuestionTokens === 'function') ? extractQuestionTokens(questionText, category) : [];
+    var evidenceUsedSystems = probResult.evidenceUsed || [];
+    var breakdown = probResult.probabilityBreakdown || { base: probResult.baseRate, contributions: [] };
     if (typeof console !== 'undefined') {
-      console.log('[FusionEngine 生成結果前 fallback] category=', category, 'questionText=', questionText.slice(0, 80), 'questionTokens=', questionTokens, 'evidenceUsed=', probResult.evidenceUsed || [], 'selectedTemplateId=', category, 'probabilityBreakdown=', probResult.probabilityBreakdown || { base: probResult.baseRate, contributions: [] });
+      console.log('[QA]', { category: category, questionText: questionText.slice(0, 120) });
+      console.log('[TOKENS]', questionTokens);
+      console.log('[EVIDENCE_USED]', evidenceUsedSystems);
+      console.log('[TEMPLATE]', category);
+      console.log('[PROB_BREAKDOWN]', breakdown);
     }
     var topFactors = probResult.factors.slice(0, 4);
     var conclusion = buildConclusionByType(probVal, type, data.question, topFactors, probResult.difficultyLevel);

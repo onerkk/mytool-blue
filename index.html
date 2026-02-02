@@ -15,13 +15,13 @@
         <meta http-equiv="Expires" content="0">
         <title>靜月之光能量占卜儀 v2.0</title>
         
-        <link rel="stylesheet" href="css/main.css?v=2.22">
-        <link rel="stylesheet" href="css/tarot.css?v=2.22">
-        <link rel="stylesheet" href="css/bazi-display.css?v=2.22">
-        <link rel="stylesheet" href="css/responsive.css?v=2.22">
-        <link rel="stylesheet" href="css/ios-fixes.css?v=2.22">
-        <link rel="stylesheet" href="css/mobile-fix.css?v=2.22">
-        <link rel="stylesheet" href="css/result-section-override.css?v=2.22">
+        <link rel="stylesheet" href="css/main.css?v=2.24">
+        <link rel="stylesheet" href="css/tarot.css?v=2.24">
+        <link rel="stylesheet" href="css/bazi-display.css?v=2.24">
+        <link rel="stylesheet" href="css/responsive.css?v=2.24">
+        <link rel="stylesheet" href="css/ios-fixes.css?v=2.24">
+        <link rel="stylesheet" href="css/mobile-fix.css?v=2.24">
+        <link rel="stylesheet" href="css/result-section-override.css?v=2.24">
         <!-- 三星單指捲動：盡早加上 class，讓 CSS 在首繪前生效 -->
         <script>
         (function(){
@@ -37,7 +37,7 @@
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link rel="icon" href="images/logo.jpg" type="image/jpeg">
-        <script>if(document.location.protocol.match(/^https?:$/)){var l=document.createElement('link');l.rel='manifest';l.href='manifest.json?v=2.22';document.head.appendChild(l);}</script>
+        <script>if(document.location.protocol.match(/^https?:$/)){var l=document.createElement('link');l.rel='manifest';l.href='manifest.json?v=2.24';document.head.appendChild(l);}</script>
         <link rel="apple-touch-icon" href="images/logo.jpg">
         <script type="application/ld+json">
         {"@context":"https://schema.org","@type":"WebApplication","name":"靜月之光能量占卜儀","description":"整合八字、梅花易數、塔羅牌的多維度機率評估，提供專屬五行水晶開運建議","applicationCategory":"LifestyleApplication","inLanguage":"zh-TW"}
@@ -838,6 +838,7 @@
                                         </div>
                                         <div class="dayun-container" id="dayun-container">
                                             <h4><i class="fas fa-hourglass-half"></i> 大運流年</h4>
+                                            <div class="startLuckTop" id="dayun-start-luck-top" style="display:none;" aria-live="polite"></div>
                                             <div class="dayun-timeline fortune-timeline-container" id="dayun-timeline"></div>
                                         </div>
                                     </div>
@@ -1058,57 +1059,57 @@
     
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/iztro@2/dist/iztro.min.js"></script>
-        <script src="js/ziwei-system.js?v=2.22"></script>
-        <script src="js/true-solar-time.js?v=2.22"></script>
-        <script src="js/solar-term-calculator.js?v=2.22"></script>
-        <script src="js/shichen-system.js?v=2.22"></script>
-        <script src="js/dayun-calculator.js?v=2.22"></script>
-        <script src="js/liunian-calculator.js?v=2.22"></script>
-        <script src="js/auxiliary-data.js?v=2.22"></script>
-        <script src="js/bazi-system.js?v=2.22"></script>
-        <script src="js/fortune-judgment-engine.js?v=2.22"></script>
-        <script src="js/quality-mapper.js?v=2.22"></script>
-        <script src="js/meihua-system.js?v=2.22"></script>
-        <script src="js/nameology-system.js?v=2.22"></script>
-        <script src="js/tarot-system.js?v=2.22"></script>
-        <script src="logic/tarot_meanings_by_type.js?v=2.22"></script>
-        <script src="js/tarot-golden-dawn-system.js?v=2.22"></script>
-        <script src="logic/celtic_positions.js?v=2.22"></script>
-        <script src="logic/bazi_interpreter.js?v=2.22"></script>
-        <script src="logic/meihua_rules.js?v=2.22"></script>
-        <script src="logic/crystal_behavior_map.js?v=2.22"></script>
-        <script src="logic/fusion_crystal_engine.js?v=2.22"></script>
-        <script src="data/crystals_kb.js?v=2.22"></script>
-        <script src="js/crystal-evidence-normalizer.js?v=2.22"></script>
-        <script src="js/crystal-recommender.js?v=2.22"></script>
-        <script src="js/crystal-advice-synthesizer.js?v=2.22"></script>
-        <script src="js/crystal-output-guard.js?v=2.22"></script>
-        <script src="logic/vocabulary_db.js?v=2.22"></script>
-        <script src="js/question-parser.js?v=2.22"></script>
-        <script src="logic/meihua_evidence_data.js?v=2.22"></script>
-        <script src="js/evidence-normalizer.js?v=2.22"></script>
-        <script src="js/evidence-selector.js?v=2.22"></script>
-        <script src="js/answer-synthesizer.js?v=2.22"></script>
-        <script src="js/alignment-guard.js?v=2.22"></script>
-        <script src="js/explainability-layer.js?v=2.22"></script>
-        <script src="js/explainability-guard.js?v=2.22"></script>
-        <script src="logic/category_strategy.js?v=2.22"></script>
-        <script src="engine/fusionEngine.js?v=2.22"></script>
-        <script src="js/method-selector.js?v=2.22"></script>
-        <script src="js/probability-calculators.js?v=2.22"></script>
-        <script src="js/probability-integration.js?v=2.22"></script>
-        <script src="js/scoring-engine.js?v=2.22"></script>
-        <script src="js/probability-pipeline.js?v=2.22"></script>
-        <script src="js/crystal-recommendation.js?v=2.22"></script>
-        <script src="js/main.js?v=2.22"></script>
+        <script src="js/ziwei-system.js?v=2.24"></script>
+        <script src="js/true-solar-time.js?v=2.24"></script>
+        <script src="js/solar-term-calculator.js?v=2.24"></script>
+        <script src="js/shichen-system.js?v=2.24"></script>
+        <script src="js/dayun-calculator.js?v=2.24"></script>
+        <script src="js/liunian-calculator.js?v=2.24"></script>
+        <script src="js/auxiliary-data.js?v=2.24"></script>
+        <script src="js/bazi-system.js?v=2.24"></script>
+        <script src="js/fortune-judgment-engine.js?v=2.24"></script>
+        <script src="js/quality-mapper.js?v=2.24"></script>
+        <script src="js/meihua-system.js?v=2.24"></script>
+        <script src="js/nameology-system.js?v=2.24"></script>
+        <script src="js/tarot-system.js?v=2.24"></script>
+        <script src="logic/tarot_meanings_by_type.js?v=2.24"></script>
+        <script src="js/tarot-golden-dawn-system.js?v=2.24"></script>
+        <script src="logic/celtic_positions.js?v=2.24"></script>
+        <script src="logic/bazi_interpreter.js?v=2.24"></script>
+        <script src="logic/meihua_rules.js?v=2.24"></script>
+        <script src="logic/crystal_behavior_map.js?v=2.24"></script>
+        <script src="logic/fusion_crystal_engine.js?v=2.24"></script>
+        <script src="data/crystals_kb.js?v=2.24"></script>
+        <script src="js/crystal-evidence-normalizer.js?v=2.24"></script>
+        <script src="js/crystal-recommender.js?v=2.24"></script>
+        <script src="js/crystal-advice-synthesizer.js?v=2.24"></script>
+        <script src="js/crystal-output-guard.js?v=2.24"></script>
+        <script src="logic/vocabulary_db.js?v=2.24"></script>
+        <script src="js/question-parser.js?v=2.24"></script>
+        <script src="logic/meihua_evidence_data.js?v=2.24"></script>
+        <script src="js/evidence-normalizer.js?v=2.24"></script>
+        <script src="js/evidence-selector.js?v=2.24"></script>
+        <script src="js/answer-synthesizer.js?v=2.24"></script>
+        <script src="js/alignment-guard.js?v=2.24"></script>
+        <script src="js/explainability-layer.js?v=2.24"></script>
+        <script src="js/explainability-guard.js?v=2.24"></script>
+        <script src="logic/category_strategy.js?v=2.24"></script>
+        <script src="engine/fusionEngine.js?v=2.24"></script>
+        <script src="js/method-selector.js?v=2.24"></script>
+        <script src="js/probability-calculators.js?v=2.24"></script>
+        <script src="js/probability-integration.js?v=2.24"></script>
+        <script src="js/scoring-engine.js?v=2.24"></script>
+        <script src="js/probability-pipeline.js?v=2.24"></script>
+        <script src="js/crystal-recommendation.js?v=2.24"></script>
+        <script src="js/main.js?v=2.24"></script>
         <script>
             if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js?v=2.22').catch(function(){}); });
+                window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js?v=2.24').catch(function(){}); });
             }
             if (typeof window !== 'undefined' && window.location && window.location.search.indexOf('test=1') >= 0) {
                 (function(){
                     var s = document.createElement('script');
-                    s.src = 'tests/qa_alignment_tests.js?v=2.22';
+                    s.src = 'tests/qa_alignment_tests.js?v=2.24';
                     s.onload = function(){
                         if (typeof runQAAlignmentTests === 'function') {
                             var res = runQAAlignmentTests();
@@ -1128,7 +1129,7 @@
             if (typeof window !== 'undefined' && window.location && window.location.search.indexOf('test=category') >= 0) {
                 (function(){
                     var s = document.createElement('script');
-                    s.src = 'tests/category_difference_test.js?v=2.22';
+                    s.src = 'tests/category_difference_test.js?v=2.24';
                     s.onload = function(){
                         if (typeof runCategoryDifferenceTest === 'function') {
                             var res = runCategoryDifferenceTest();
@@ -1142,7 +1143,7 @@
             if (typeof window !== 'undefined' && window.location && window.location.search.indexOf('test=crystal') >= 0) {
                 (function(){
                     var s = document.createElement('script');
-                    s.src = 'tests/crystal_recommendation_tests.js?v=2.22';
+                    s.src = 'tests/crystal_recommendation_tests.js?v=2.24';
                     s.onload = function(){
                         if (typeof runCrystalRecommendationTests === 'function') {
                             var res = runCrystalRecommendationTests();
