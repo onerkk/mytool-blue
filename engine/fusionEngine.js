@@ -348,7 +348,8 @@
         probability: probResult.probability,
         probabilityValue: probResult.probabilityValue,
         isRange: probResult.isRange,
-        conflictSource: probResult.conflictSource
+        conflictSource: probResult.conflictSource,
+        principleRef: baziExplainText || null
       };
     } catch (e) {
       if (typeof console !== 'undefined') {
@@ -391,7 +392,8 @@
       probability: probResult.probability,
       probabilityValue: probResult.probabilityValue,
       isRange: probResult.isRange,
-      conflictSource: probResult.conflictSource
+      conflictSource: probResult.conflictSource,
+      principleRef: null
     };
   }
 

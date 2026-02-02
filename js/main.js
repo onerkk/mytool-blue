@@ -5013,9 +5013,21 @@ function setupMeihuaRandomDomGuard(){
               };
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
               displayConclusion = fusionOut.conclusion || '';
-              // 直接回答區塊不重複顯示問題（問題已在【問題】區塊列出）
+              // 直接回答區塊不重複顯示問題；結論優先，原理參考縮小顯示於後
               var forDirectAnswer = displayConclusion.replace(/^您問的是[：:][「"]([^」"]*)[」"]。?\s*/g, '');
               setText('direct-answer', forDirectAnswer);
+              var principleEl = document.getElementById('direct-answer-principle');
+              if (principleEl) {
+                if (fusionOut.principleRef && fusionOut.principleRef.length) {
+                  principleEl.textContent = '(原理參考) ' + fusionOut.principleRef;
+                  principleEl.style.display = 'block';
+                  principleEl.setAttribute('aria-hidden', 'false');
+                } else {
+                  principleEl.textContent = '';
+                  principleEl.style.display = 'none';
+                  principleEl.setAttribute('aria-hidden', 'true');
+                }
+              }
               if (fusionOut.probabilityValue != null && Number.isFinite(fusionOut.probabilityValue)) {
                 overall = Math.round(fusionOut.probabilityValue);
               }
@@ -5060,6 +5072,8 @@ function setupMeihuaRandomDomGuard(){
             var weightNote = parts.length ? ' 整合方式：加權平均（八字、姓名學、梅花、塔羅、紫微等）。' : '';
             displayConclusion = parts.length ? `多維度機率彙總：整體成功率約 ${overall}%（以可用維度加權）。${weightNote}` : '尚未完成任何命理計算，無法生成機率彙總。';
             setText('direct-answer', displayConclusion);
+            var hidePrinciple = document.getElementById('direct-answer-principle');
+            if (hidePrinciple) { hidePrinciple.textContent = ''; hidePrinciple.style.display = 'none'; hidePrinciple.setAttribute('aria-hidden', 'true'); }
             var hideFactors = $('answer-factors');
             var hideSugg = $('answer-suggestions');
             if (hideFactors) hideFactors.style.display = 'none';

@@ -7,6 +7,22 @@
  */
 
 @media (max-width: 768px) {
+    /* ===== 頂部蝦皮/賣貨便：左右並排、各佔 50%（與 main.css / responsive 同步） ===== */
+    .nav-shop-buttons {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 10px;
+    }
+    .nav-shop-buttons .shop-btn {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* ===== 步驟條與個人資料輸入之間：縮減間距（與 main.css / responsive 同步） ===== */
+    .progress-container {
+        margin-bottom: 1rem !important;
+    }
+    
     /* ===== 統一主要容器寬度（與資料輸入區一致） ===== */
     .main-container {
         padding: 0.5rem !important; /* 10px 等級，左右一致 */
@@ -280,10 +296,41 @@
         margin-bottom: 0.5rem !important;
     }
 
-    /* 大運流年橫向滑動：pan-x 與 responsive 同步，垂直滑動留給頁面 */
+    /* 大運流年：手機寬度不足時可橫向滑動、避免破版（與 responsive 同步） */
+    .dayun-container {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
     .dayun-timeline {
+        overflow-x: auto !important;
+        min-width: 0;
         touch-action: pan-x !important;
         -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* 本系統說明：預設一行、詳細展開收合（與 responsive 同步） */
+    .hint-system-note {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    .hint-system-short {
+        display: block;
+    }
+    .hint-system-details {
+        margin-top: 0.35rem;
+    }
+    .hint-system-toggle {
+        cursor: pointer;
+        color: var(--gold-primary, #D4AF37);
+        font-size: 0.85rem;
+        list-style: none;
+    }
+    .hint-system-toggle::-webkit-details-marker { display: none; }
+    .hint-system-details p {
+        margin: 0.35rem 0 0;
+        font-size: 0.85rem;
+        opacity: 0.9;
     }
 
     /* ===== 大運流年手機同步（與 main.css .dayun-quality / .dayun-fortune-type 一致，未來更新請同步） ===== */

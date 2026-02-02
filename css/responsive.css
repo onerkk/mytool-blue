@@ -70,6 +70,47 @@
         box-sizing: border-box !important;
     }
     
+    /* 步驟條與個人資料輸入之間：縮減間距（與 main.css 同步） */
+    .progress-container {
+        margin-bottom: 1rem !important;
+    }
+    
+    /* 大運流年：手機寬度不足時可橫向滑動，避免破版 */
+    .dayun-container {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .dayun-timeline {
+        overflow-x: auto !important;
+        min-width: 0;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 本系統說明：預設一行，詳細放入展開收合（手機預設收合） */
+    .hint-system-note {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    .hint-system-short {
+        display: block;
+    }
+    .hint-system-details {
+        margin-top: 0.35rem;
+    }
+    .hint-system-toggle {
+        cursor: pointer;
+        color: var(--gold-primary, #D4AF37);
+        font-size: 0.85rem;
+        list-style: none;
+    }
+    .hint-system-toggle::-webkit-details-marker { display: none; }
+    .hint-system-details p {
+        margin: 0.35rem 0 0;
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+    
     .input-section {
         padding: 0.75rem 0.5rem !important;
     }

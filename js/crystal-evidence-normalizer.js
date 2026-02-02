@@ -36,10 +36,21 @@
       if (meihuaItem) items.push(meihuaItem);
     } else missing.push('meihua');
 
-    if (fusionData.tarot) {
+    /* 塔羅：只要有抽牌且結果物件存在即視為已參與，不標為缺失（與 explainability-layer 一致） */
+    var tarotParticipated = false;
+    if (fusionData.tarot && typeof fusionData.tarot === 'object') {
+      var cards = fusionData.tarot.cards;
+      var analysis = fusionData.tarot.analysis || fusionData.tarot;
+      var hasCards = Array.isArray(cards) && cards.length > 0;
+      var hasAnalysis = analysis && (Array.isArray(analysis.positions) && analysis.positions.length > 0 || analysis.overall != null || analysis.overallProbability != null || analysis.fortuneScore != null);
+      tarotParticipated = hasCards || hasAnalysis;
+    }
+    if (tarotParticipated) {
       var tarotItem = normalizeTarot(fusionData.tarot);
       if (tarotItem) items.push(tarotItem);
-    } else missing.push('tarot');
+    } else {
+      missing.push('tarot');
+    }
 
     if (fusionData.nameology) {
       var nameItem = normalizeNameology(fusionData.nameology);

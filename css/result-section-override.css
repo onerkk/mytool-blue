@@ -63,6 +63,18 @@ body > .floating-buttons,
   color: rgba(255,255,255,0.9);
 }
 
+/* 直接回答：原理參考（八字身強身弱、喜用神等）縮小字體、次要顯示 */
+.principle-ref {
+  display: none;
+  font-size: 0.85rem !important;
+  color: rgba(255,255,255,0.65) !important;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+.principle-ref:not(:empty) {
+  display: block;
+}
+
 /* 結果頁：影響因子／建議 展開收合，手機預設收合、桌機預設展開 */
 .details-expand {
   margin-top: 0.5rem;

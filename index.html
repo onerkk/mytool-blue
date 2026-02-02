@@ -180,8 +180,15 @@
                             <label for="question"><i class="fas fa-question-circle"></i> 諮詢問題 <span class="required">*</span></label>
                             <textarea id="question" rows="3" placeholder="請輸入您想詢問的問題..." required maxlength="500" aria-describedby="question-char-hint"></textarea>
                             <small class="input-hint" id="question-char-hint">0/500 字</small>
-                            <div class="hint-note" id="question-probability-note"><i class="fas fa-info-circle"></i> 本系統以「問題導向」整合八字、梅花易數、塔羅牌、紫微斗數，輸出多維度機率評估與直接答案，不提供單一確定結論。</div>
-                            <div class="hint-note hint-disclaimer" style="margin-top: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> 依八字喜用神與卦象象徵，提供專屬五行水晶配戴建議，供能量校準參考（非醫療或命運保證）。</div>
+                            <div class="hint-note hint-system-note" id="question-probability-note">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="hint-system-short">⚠️ 本系統結合多維度數據提供能量校準建議，非宿命論，僅供參考。</span>
+                                <details class="hint-system-details">
+                                    <summary class="hint-system-toggle">展開說明</summary>
+                                    <p>本系統以「問題導向」整合八字、梅花易數、塔羅牌、紫微斗數，輸出多維度機率評估與直接答案，不提供單一確定結論。</p>
+                                    <p>依八字喜用神與卦象象徵，提供專屬五行水晶配戴建議，供能量校準參考（非醫療或命運保證）。</p>
+                                </details>
+                            </div>
 
                         </div>
     
@@ -663,6 +670,7 @@
                             <div class="direct-answer">
                                 <h4>直接回答</h4>
                                 <p class="answer-text answer-text-summary" id="direct-answer">分析中...</p>
+                                <p class="principle-ref" id="direct-answer-principle" aria-hidden="true"></p>
                             </div>
                             <div class="answer-factors" id="answer-factors" style="display:none;">
                                 <h4>影響因子</h4>

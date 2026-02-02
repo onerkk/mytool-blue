@@ -4304,9 +4304,16 @@ body.custom-modal-open #page-scroll.page-scroll {
 
 /* 響應式設計 */
 @media (max-width: 768px) {
+    /* 頂部蝦皮/賣貨便：手機版左右並排、各佔 50% */
     .nav-shop-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
         margin-left: 0.5rem;
-        gap: 0.5rem;
+    }
+    .nav-shop-buttons .shop-btn {
+        flex: 1;
+        min-width: 0;
     }
     
     .shop-btn {
@@ -4320,6 +4327,14 @@ body.custom-modal-open #page-scroll.page-scroll {
     
     .shop-btn span {
         display: none;
+    }
+    
+    /* 步驟條與個人資料輸入之間：縮減間距至 1rem～1.5rem */
+    .progress-container {
+        margin-bottom: 1rem !important;
+    }
+    #input-section.section.active {
+        margin-top: 0;
     }
     
     .recommendation-buttons {
