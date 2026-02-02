@@ -121,11 +121,19 @@
       var catMap = { love: 'relationship', wealth: 'finance', career: 'career', health: 'health', relationship: 'relationship', family: 'family', other: 'general' };
       var ziweiRes = calculateCategoryScore('ziwei', data.ziwei, catMap[ziweiCat] || 'general', {});
       if (ziweiRes && Number.isFinite(ziweiRes.score)) {
-        var ziweiW = 0.2;
+        var ziweiW = (w.ziwei != null ? w.ziwei : 0.2);
         scores.push({ sys: '紫微斗數', score: clamp(ziweiRes.score, 0, 100), weight: ziweiW, reason: ziweiRes.reason || '星盤宮位與問題類別對應' });
         factors.push({ name: '紫微斗數', impact: ziweiRes.score - 50, detail: ziweiRes.reason || '星盤與本類問題交叉參考' });
       }
     }
+
+    if (data.nameology && (data.nameology.scores || (data.nameology.analysis && data.nameology.analysis.scores))) {
+      var nameScores = data.nameology.scores || (data.nameology.analysis && data.nameology.analysis.scores) || {};
+      var nameScore = (nameScores[category] != null && Number.isFinite(nameScores[category])) ? nameScores[category] : (nameScores.general != null && Number.isFinite(nameScores.general) ? nameScores.general : 50);
+      var nameW = (w.nameology != null ? w.nameology : 0.05);
+      scores.push({ sys: '姓名學', score: clamp(nameScore, 0, 100), weight: nameW, reason: '人格地格總格與題型對應' });
+      factors.push({ name: '姓名學', impact: clamp(nameScore, 0, 100) - 50, detail: '姓名學與本類問題交叉參考' });
+    } else if (w.nameology && w.nameology > 0) { missingEvidence.push('姓名學'); }
 
     var totalWeight = 0;
     scores.forEach(function (s) { totalWeight += s.weight; });
@@ -139,11 +147,17 @@
 
     var isRange = false;
     var conflictSource = null;
-    if (missingEvidence.length > 0) {
+    if (missingEvidence.length >= 2) {
       isRange = true;
-      var widen = missingEvidence.length * 8;
       prob = clamp(prob, 0, 100);
       conflictSource = '缺少證據：' + missingEvidence.join('、') + '，機率為區間估計。';
+    } else if (missingEvidence.length > 0) {
+      isRange = true;
+      conflictSource = '缺少證據：' + missingEvidence.join('、') + '，機率為區間估計。';
+    }
+    if (scores.length === 1) {
+      isRange = true;
+      conflictSource = (conflictSource ? conflictSource + ' ' : '') + '僅引用單一系統（' + scores[0].sys + '），建議補抽塔羅或起梅花卦以完成多維交叉。';
     }
     if (scores.length >= 2 && !isRange) {
       var minS = Math.min.apply(null, scores.map(function (s) { return s.score; }));
@@ -171,6 +185,28 @@
     var appliedWeights = {};
     scores.forEach(function (s) { appliedWeights[s.sys] = s.weight; });
 
+    var probabilityBreakdown = { base: base, contributions: [] };
+    if (totalWeight > 0) {
+      scores.forEach(function (s) {
+        probabilityBreakdown.contributions.push({
+          system: s.sys,
+          score: s.score,
+          weight: s.weight,
+          contribution: Math.round((s.score * s.weight / totalWeight) * 10) / 10
+        });
+      });
+    }
+
+    var evidenceUsed = scores.map(function (s) {
+      var key = s.sys;
+      if (key === '八字') return 'bazi';
+      if (key === '梅花易數') return 'meihua';
+      if (key === '塔羅') return 'tarot';
+      if (key === '紫微斗數') return 'ziwei';
+      if (key === '姓名學') return 'nameology';
+      return key;
+    });
+
     return {
       probability: isRange ? (Math.min(prob, 85) + '%~' + Math.min(prob + (missingEvidence.length > 0 ? 15 : 15), 100) + '%') : prob + '%',
       probabilityValue: prob,
@@ -181,7 +217,10 @@
       difficultyLevel: difficultyLevel,
       appliedWeights: appliedWeights,
       missingEvidence: missingEvidence,
-      category: category
+      category: category,
+      probabilityBreakdown: probabilityBreakdown,
+      evidenceUsed: evidenceUsed,
+      scores: scores
     };
   }
 
@@ -327,6 +366,33 @@
     return false;
   }
 
+  /** 反單調：上次結論與 category/question，用於相似度比對 */
+  var lastSummary = '';
+  var lastCategory = '';
+  var lastQuestion = '';
+  var SIMILARITY_THRESHOLD = 0.75;
+
+  function tokenizeForSimilarity(text) {
+    var t = String(text || '').replace(/\s+/g, ' ');
+    var out = [];
+    for (var i = 0; i < t.length; i++) {
+      var c = t[i];
+      if (/[\u4e00-\u9fff]/.test(c)) out.push(c);
+      else if (/[a-zA-Z0-9]/.test(c)) out.push(c.toLowerCase());
+    }
+    return out;
+  }
+
+  function jaccardSimilarity(a, b) {
+    if (!a.length && !b.length) return 0;
+    var setA = {}; a.forEach(function (x) { setA[x] = true; });
+    var setB = {}; b.forEach(function (x) { setB[x] = true; });
+    var inter = 0;
+    Object.keys(setA).forEach(function (x) { if (setB[x]) inter++; });
+    var union = Object.keys(setA).length + Object.keys(setB).length - inter;
+    return union > 0 ? inter / union : 0;
+  }
+
   /**
    * 產生直接答案：優先走 parseQuestion → EvidenceNormalizer → EvidenceSelector → AnswerSynthesizer → AlignmentGuard
    * UI 答案區塊一律使用本函式回傳的 conclusion（即 finalText）。?debug=1 時印出對齊管線 trace，任一模組未載入或拋錯時印出錯誤與 fallback 原因。
@@ -374,6 +440,12 @@
       });
       var selectionResult = EvidenceSelector.selectEvidence(parsed, evidenceItems);
       var probResult = computeProbability(data);
+      var categoryForLog = probResult.category || normalizeCategory(getQuestionType(data.question, data.questionType));
+      var questionText = String(data.question || '').trim();
+      var questionTokens = (typeof extractQuestionTokens === 'function') ? extractQuestionTokens(questionText, categoryForLog) : [];
+      if (typeof console !== 'undefined') {
+        console.log('[FusionEngine 生成結果前] category=', categoryForLog, 'questionText=', questionText.slice(0, 80), 'questionTokens=', questionTokens, 'evidenceUsed=', probResult.evidenceUsed || [], 'selectedTemplateId=', categoryForLog, 'probabilityBreakdown=', probResult.probabilityBreakdown || { base: probResult.baseRate, contributions: [] });
+      }
       var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
       var syn = AnswerSynthesizer.synthesize(parsed, selectionResult, { probabilityValue: probVal, probability: probResult.probability }, {});
       var problemRestatement = syn.problemRestatement || '';
@@ -411,6 +483,26 @@
       }
       var guard = AlignmentGuard.alignmentCheck(parsed, fullText);
       var conclusion = guard.passed ? fullText : (guard.rewritten || fullText);
+
+      var forceDifferentTemplate = false;
+      if (lastSummary && (lastCategory !== categoryForLog || lastQuestion !== questionText)) {
+        var tokNew = tokenizeForSimilarity(conclusion);
+        var tokOld = tokenizeForSimilarity(lastSummary);
+        if (jaccardSimilarity(tokNew, tokOld) > SIMILARITY_THRESHOLD) forceDifferentTemplate = true;
+      }
+      if (forceDifferentTemplate && typeof getCategoryStrategy === 'function') {
+        var strat = getCategoryStrategy(categoryForLog);
+        if (strat && strat.templatePool && strat.templatePool.length > 1) {
+          var altOpener = strat.templatePool[1] || strat.conclusionOpeners[1];
+          if (altOpener && conclusion.indexOf(altOpener) < 0) {
+            var oldOpener = (strat.conclusionOpeners && strat.conclusionOpeners[0]) ? strat.conclusionOpeners[0] : '';
+            if (oldOpener && conclusion.indexOf(oldOpener) >= 0) conclusion = conclusion.replace(oldOpener, altOpener);
+          }
+        }
+      }
+      lastSummary = conclusion;
+      lastCategory = categoryForLog;
+      lastQuestion = questionText;
 
       if (debug && typeof console !== 'undefined') {
         console.group('[對齊管線]');
@@ -451,7 +543,9 @@
         category: category,
         appliedWeights: probResult.appliedWeights || {},
         selectedTemplateId: category,
-        missingEvidence: probResult.missingEvidence || []
+        missingEvidence: probResult.missingEvidence || [],
+        evidenceUsed: probResult.evidenceUsed || [],
+        probabilityBreakdown: probResult.probabilityBreakdown || null
       };
     } catch (e) {
       if (typeof console !== 'undefined') {
@@ -470,6 +564,11 @@
     var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
     var type = getQuestionType(data.question, data.questionType);
     var category = probResult.category || normalizeCategory(type);
+    var questionText = String(data.question || '').trim();
+    var questionTokens = (typeof extractQuestionTokens === 'function') ? extractQuestionTokens(questionText, category) : [];
+    if (typeof console !== 'undefined') {
+      console.log('[FusionEngine 生成結果前 fallback] category=', category, 'questionText=', questionText.slice(0, 80), 'questionTokens=', questionTokens, 'evidenceUsed=', probResult.evidenceUsed || [], 'selectedTemplateId=', category, 'probabilityBreakdown=', probResult.probabilityBreakdown || { base: probResult.baseRate, contributions: [] });
+    }
     var topFactors = probResult.factors.slice(0, 4);
     var conclusion = buildConclusionByType(probVal, type, data.question, topFactors, probResult.difficultyLevel);
 
@@ -502,7 +601,9 @@
       category: category,
       appliedWeights: probResult.appliedWeights || {},
       selectedTemplateId: category,
-      missingEvidence: probResult.missingEvidence || []
+      missingEvidence: probResult.missingEvidence || [],
+      evidenceUsed: probResult.evidenceUsed || [],
+      probabilityBreakdown: probResult.probabilityBreakdown || null
     };
   }
 

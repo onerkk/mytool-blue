@@ -3005,7 +3005,7 @@ class FortuneSystem {
         if (greatFortune && (greatFortune.start_age_detail != null || greatFortune.startAge != null || greatFortune.direction)) {
             const startDetail = greatFortune.start_age_detail || (greatFortune.startAge != null ? greatFortune.startAge + '歲' : '');
             const dir = greatFortune.direction || '';
-            html += '<div class="dayun-meta" style="margin-bottom: 0.75rem; padding: 0.5rem; background: rgba(212,175,55,0.1); border-radius: 4px; font-size: 0.9rem; color: rgba(255,255,255,0.85);">起運：' + startDetail + (dir ? '；大運' + dir : '') + '</div>';
+            html += '<div class="dayun-meta startLuckInfo" style="margin-bottom: 0.75rem; padding: 0.5rem; background: rgba(212,175,55,0.1); border-radius: 4px; font-size: 0.9rem; color: rgba(255,255,255,0.85);">起運：' + startDetail + (dir ? '；大運' + dir : '') + '</div>';
         }
 
         if (greatFortune && Array.isArray(greatFortune.fortunes) && greatFortune.fortunes.length > 0) {
@@ -5036,8 +5036,22 @@ function setupMeihuaRandomDomGuard(){
               }
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
               if (typeof console !== 'undefined' && fusionOut) {
-                console.log('[結果頁渲染前] selectedTemplateId/category=', fusionOut.selectedTemplateId || fusionOut.category, 'appliedWeights=', fusionOut.appliedWeights || {}, 'topFactors=', (fusionOut.factors || []).slice(0, 3).map(function (f) { return typeof f === 'string' ? f.slice(0, 30) : (f && f.name); }), 'missingEvidence=', fusionOut.missingEvidence || []);
+                console.log('[結果頁渲染前] selectedTemplateId/category=', fusionOut.selectedTemplateId || fusionOut.category, 'appliedWeights=', fusionOut.appliedWeights || {}, 'topFactors=', (fusionOut.factors || []).slice(0, 3).map(function (f) { return typeof f === 'string' ? f.slice(0, 30) : (f && f.name); }), 'missingEvidence=', fusionOut.missingEvidence || [], 'evidenceUsed=', fusionOut.evidenceUsed || []);
                 if ((fusionOut.category === 'general' || !fusionOut.category) && userCategory && userCategory !== 'general' && userCategory !== 'other') console.warn('[Category Debug] 題型應為 ' + userCategory + ' 但 resultGenerator 回傳 category=' + (fusionOut.category || 'general') + '，請檢查傳參');
+              }
+              var categoryBanner = document.getElementById('category-warning-banner');
+              if (categoryBanner) {
+                if (!userCategory && (question || '').trim().length > 0) {
+                  categoryBanner.textContent = '請選擇問題類型（目前依問題文字推斷）';
+                  categoryBanner.style.display = 'block';
+                } else {
+                  categoryBanner.textContent = '';
+                  categoryBanner.style.display = 'none';
+                }
+              }
+              if (fusionOut && fusionOut.evidenceUsed && fusionOut.evidenceUsed.length === 1 && categoryBanner) {
+                categoryBanner.textContent = (categoryBanner.textContent ? categoryBanner.textContent + ' ' : '') + '證據不足：目前僅引用單一系統，建議補抽塔羅或起梅花卦以完成多維交叉。';
+                categoryBanner.style.display = 'block';
               }
               displayConclusion = fusionOut.conclusion || '';
               // 直接回答區塊不重複顯示問題；結論優先，原理參考縮小顯示於後

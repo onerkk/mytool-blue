@@ -1737,6 +1737,16 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     color: var(--text-primary) !important;
 }
 
+.category-warning-banner {
+    padding: 0.6rem 1rem;
+    margin-bottom: 0.75rem;
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
 .direct-answer {
     padding: 1.5rem;
     background: rgba(16, 185, 129, 0.1);
@@ -2486,6 +2496,21 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     font-size: 1.2rem;
     line-height: 1.4;
     color: var(--text-primary) !important;
+}
+
+/* 起運：強制橫式單行顯示，避免直式/逐字換行 */
+.dayun-meta,
+.dayun-meta.startLuckInfo,
+.startLuckInfo {
+    writing-mode: horizontal-tb !important;
+    text-orientation: mixed !important;
+    white-space: normal;
+    word-break: break-word;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
 }
 
 /* --- 梅花易數樣式 --- */

@@ -439,6 +439,20 @@
         background: #fff9c4 !important;
         border: 1px solid #ffca28 !important;
     }
+    /* 起運：橫式單行顯示（與 main.css 同步） */
+    .dayun-meta,
+    .dayun-meta.startLuckInfo,
+    .startLuckInfo {
+        writing-mode: horizontal-tb !important;
+        text-orientation: mixed !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        gap: 8px !important;
+        max-width: 100% !important;
+    }
 }
 
 /* 小螢幕 480px：與 main.css / responsive.css 同步（蝦皮/賣貨便左右排、區塊間距） */
