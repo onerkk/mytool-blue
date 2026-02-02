@@ -121,19 +121,22 @@
         height: auto !important;
         touch-action: pan-y !important;
     }
-    .dayun-timeline {
+    .dayun-timeline,
+    .fortune-timeline-container {
         display: flex !important;
         flex-wrap: nowrap !important;
-        overflow-x: auto !important;
+        overflow-x: scroll !important;
         overflow-y: hidden !important;
         -webkit-overflow-scrolling: touch !important;
         width: 100% !important;
         min-width: 0;
         height: auto !important;
         padding-bottom: 10px !important;
-        touch-action: pan-y !important;
+        touch-action: pan-x !important;
+        gap: 10px !important;
     }
-    .dayun-item {
+    .dayun-item,
+    .fortune-item {
         flex: 0 0 auto !important;
         min-width: 80px !important;
         width: 80px !important;
@@ -758,9 +761,10 @@
     #result-section {
         padding-bottom: max(100px, env(safe-area-inset-bottom, 0) + 80px) !important;
     }
-    /* 大運流年：與 768px / mobile-fix 同步，pan-y 讓垂直滑動交給頁面，不鎖死 */
-    .dayun-timeline {
-        touch-action: pan-y !important;
+    /* 大運流年：pan-x 允許手指左右滑動時間軸，橫向捲動 */
+    .dayun-timeline,
+    .fortune-timeline-container {
+        touch-action: pan-x !important;
         -webkit-overflow-scrolling: touch;
     }
     

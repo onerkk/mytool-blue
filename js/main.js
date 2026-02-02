@@ -463,16 +463,9 @@ class FortuneSystem {
         if(sectionId === 'result-section') {
             this.loadResults();
         }
-        // 下一步／切換步驟後強制置頂，避免手機停留在底部
-        requestAnimationFrame(function () {
-            try {
-                var app = document.getElementById('app-container');
-                if (app) app.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                else window.scrollTo({ top: 0, behavior: 'smooth' });
-            } catch (e) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        });
+        setTimeout(function () {
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        }, 100);
     }
     
     reset() {
@@ -538,7 +531,7 @@ class FortuneSystem {
         if (dayunTimeline) dayunTimeline.innerHTML = '';
 
         // 各維度結果區清空
-        document.querySelectorAll('.bazi-result, .meihua-result, .tarot-result, .name-result, .cross-result').forEach(function (el) {
+        document.querySelectorAll('.bazi-result, .meihua-result, .tarot-result, .name-result').forEach(function (el) {
             if (el) el.innerHTML = '';
         });
 
@@ -1897,6 +1890,7 @@ class FortuneSystem {
     }
     
     displayCrossResult() {
+        return; /* 跨系統證據區塊已移除，不再輸出 DOM */
         const crossPane = document.getElementById('cross-result');
         if(!crossPane) return;
 
@@ -3042,7 +3036,7 @@ class FortuneSystem {
                 const fortuneTypeBadge = `<span class="dayun-fortune-type dayun-fortune-type--${fortuneTypeClass}">${fortuneTypeLabel}</span>`;
                 const tenGodsLabel = (f.tenGodsLabel && f.tenGodsLabel.trim() !== '') ? `<span class="dayun-ten-gods">${f.tenGodsLabel}</span>` : '';
                 const remarkTitle = (f.fortuneRemark && String(f.fortuneRemark).trim()) ? ` title="${f.fortuneRemark.replace(/"/g, '&quot;')}"` : '';
-                html += `<div class="dayun-item${currentClass}"${remarkTitle}>${currentBadge}${fortuneTypeBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div>${tenGodsLabel}<span class="dayun-quality dayun-quality--${qClass}">${qLabel}</span></div>`;
+                html += `<div class="dayun-item fortune-item${currentClass}"${remarkTitle}>${currentBadge}${fortuneTypeBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div>${tenGodsLabel}<span class="dayun-quality dayun-quality--${qClass}">${qLabel}</span></div>`;
             }
         } else {
             const yangStems = ['甲', '丙', '戊', '庚', '壬'];
@@ -3080,7 +3074,7 @@ class FortuneSystem {
                 const currentClass = isCurrent ? ' dayun-item--current' : '';
                 const currentBadge = isCurrent ? '<span class="dayun-current-badge">當下大運</span>' : '';
                 const fortuneTypeBadge = '<span class="dayun-fortune-type dayun-fortune-type--mixed">中性</span>';
-                html += `<div class="dayun-item${currentClass}">${currentBadge}${fortuneTypeBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${qLabel}</span></div>`;
+                html += `<div class="dayun-item fortune-item${currentClass}">${currentBadge}${fortuneTypeBadge}<div class="age">${ageStr}</div><div class="pillar"><div style="color:${getColor(gan)}">${gan}</div><div style="color:${getColor(zhi)}">${zhi}</div></div><span class="dayun-quality dayun-quality--${q.class}">${qLabel}</span></div>`;
             }
         }
 
@@ -5208,21 +5202,16 @@ function setupMeihuaRandomDomGuard(){
             }
           } catch (e) { if (window.console) console.warn('Crystal recommendation fill failed:', e); }
 
-          // 綜合結果：預設摺疊詳情，只顯示重點摘要 + 點擊展開（手機版面清爽）
+          // 綜合結論：預設只顯示標題與大機率%，點擊「🔽 點擊展開完整分析」才顯示詳情
           if($('conclusion-content')){
-            var plainConclusion = displayConclusion ? displayConclusion.replace(/<[^>]+>/g, '') : '';
-            var shortSummary = plainConclusion ? (plainConclusion.slice(0, 80) + (plainConclusion.length > 80 ? '…' : '')) : '以上機率由多維度交叉驗證得出，供您綜合判斷。';
-            shortSummary = shortSummary.replace(/</g,'&lt;').replace(/>/g,'&gt;');
             var fullConclusion = displayConclusion ? displayConclusion.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '以上機率由多維度交叉驗證得出，供您綜合判斷。';
             let html = '<div class="analysis-grid-container conclusion-grid">';
             html += '<div class="analysis-card conclusion-card">';
             html += '<div class="analysis-header"><i class="fas fa-chart-pie"></i> 整體機率</div>';
             html += '<div class="conclusion-body">';
-            html += '<div class="conclusion-meter-wrap"><span class="conclusion-meter-value">' + (parts.length ? (overall + '%') : '—') + '</span>';
-            html += '<div class="conclusion-meter-bar"><div class="conclusion-meter-fill" style="width:' + (parts.length ? overall : 0) + '%;background:linear-gradient(90deg,' + (parts.length && overall >= 60 ? '#4CAF50' : parts.length && overall >= 40 ? '#FF9800' : '#F44336') + ',var(--gold-bright));"></div></div></div>';
-            html += '<p class="conclusion-summary">💡 重點摘要：您的成功率約 ' + (parts.length ? overall + '%' : '—') + '，' + shortSummary + ' <span class="conclusion-toggle-hint">（點擊下方查看詳情）</span></p>';
+            html += '<div class="conclusion-meter-only"><span class="conclusion-meter-value conclusion-meter-big">' + (parts.length ? (overall + '%') : '—') + '</span></div>';
             html += '<details class="conclusion-details" id="conclusion-details">';
-            html += '<summary class="conclusion-details-summary">點擊展開完整論述</summary>';
+            html += '<summary class="conclusion-details-summary">🔽 點擊展開完整分析</summary>';
             html += '<div class="conclusion-details-content">' + fullConclusion + '</div>';
             html += '</details>';
             html += '</div></div></div>';
@@ -5238,53 +5227,6 @@ function setupMeihuaRandomDomGuard(){
             ? '提示：此頁僅提供多維度機率高低與各系統量化來源。若要提升準確度，請確保四個維度都完成計算。'
             : '請先完成至少一個維度計算（八字 / 姓名學 / 梅花易數 / 塔羅）。';
 
-          // 交叉驗證 tab - 使用卡片式UI美化
-          const crossPane = $('cross-result');
-          if(crossPane){
-            if(!parts.length){
-              crossPane.innerHTML = `
-                <div class="analysis-grid-container">
-                  <div class="analysis-card">
-                    <div class="analysis-header">
-                      <i class="fas fa-info-circle"></i> 交叉驗證
-                    </div>
-                    <div style="padding: 1rem; text-align: center; color: rgba(255,255,255,0.6);">
-                      尚未取得可用維度，交叉彙總暫不可用。
-                    </div>
-                  </div>
-                </div>
-              `;
-            }else{
-              let html = '<div class="analysis-grid-container">';
-              
-              // 標題卡片
-              html += '<div class="analysis-card">';
-              html += '<div class="analysis-header">';
-              html += '<i class="fas fa-project-diagram"></i> 多維度交叉彙總（含八字／梅花／塔羅／紫微／姓名學）';
-              html += '</div>';
-              html += '<div style="padding: 1rem;">';
-              html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">';
-              parts.forEach(function(p){
-                const prob = p.prob || 0;
-                html += `
-                  <div style="padding: 1rem; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                      <span style="font-weight: bold; color: var(--gold-primary);">${p.key}</span>
-                      <span style="font-size: 1.5rem; font-weight: bold; color: var(--gold-bright);">${prob}%</span>
-                    </div>
-                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
-                      <div style="width: ${prob}%; height: 100%; background: linear-gradient(90deg, var(--gold-primary), var(--gold-bright)); transition: width 0.3s;"></div>
-                    </div>
-                  </div>
-                `;
-              });
-              html += '</div>';
-              html += '</div>';
-              html += '</div>';
-              html += '</div>';
-              crossPane.innerHTML = html;
-            }
-          }
         }catch(e){
           console.error('renderProbabilityDashboard error:', e);
           // 最小 fallback，避免卡住

@@ -763,8 +763,10 @@ input.readonly-input[readonly]:focus {
 
 .radio-group-pill {
     display: flex !important;
+    flex-direction: row !important;
     width: 100% !important;
-    gap: 10px !important;
+    gap: 4% !important;
+    box-sizing: border-box !important;
 }
 
 .radio-label {
@@ -791,8 +793,12 @@ input.readonly-input[readonly]:focus {
 }
 
 .radio-label-pill {
-    padding: 10px 0.75rem !important;
-    border-radius: 50px !important;
+    padding: 10px 0 !important;
+    width: 48% !important;
+    text-align: center !important;
+    border: 1px solid var(--gold-primary) !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
 }
 
 .radio-label::before {
@@ -842,7 +848,7 @@ input.readonly-input[readonly]:focus {
     font-weight: 500;
     color: rgba(255, 255, 255, 0.85);
     transition: color 0.3s ease;
-    white-space: nowrap;
+    white-space: nowrap !important;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -2047,17 +2053,16 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 
 /* 綜合結論摺疊：預設只顯示摘要，點擊展開完整論述（手機版面清爽） */
 .conclusion-body { padding: 1rem; }
+.conclusion-meter-only { margin-bottom: 1rem; text-align: center; }
+.conclusion-meter-big { font-size: 3rem !important; font-weight: bold; color: var(--gold-primary); display: block; }
 .conclusion-meter-wrap { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
 .conclusion-meter-value { font-size: 2rem; font-weight: bold; color: var(--gold-primary); min-width: 3.5rem; }
 .conclusion-meter-bar { flex: 1; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
 .conclusion-meter-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
-.conclusion-summary { color: rgba(255,255,255,0.95); font-size: 0.95rem; line-height: 1.7; margin-bottom: 0.75rem; }
-.conclusion-toggle-hint { color: rgba(255,255,255,0.6); font-size: 0.85rem; }
 .conclusion-details { margin-top: 0.75rem; border: 1px solid rgba(212,175,55,0.25); border-radius: 8px; overflow: hidden; }
-.conclusion-details-summary { cursor: pointer; padding: 0.6rem 0.75rem; background: rgba(212,175,55,0.1); color: var(--gold-primary); font-weight: 600; font-size: 0.9rem; list-style: none; user-select: none; }
+.conclusion-details-summary { cursor: pointer; padding: 0.75rem 1rem; background: rgba(212,175,55,0.15); color: var(--gold-primary); font-weight: 600; font-size: 1rem; list-style: none; user-select: none; display: block; text-align: center; }
 .conclusion-details-summary::-webkit-details-marker { display: none; }
-.conclusion-details-summary::before { content: '▶ '; font-size: 0.75rem; }
-.conclusion-details[open] .conclusion-details-summary::before { content: '▼ '; }
+.conclusion-details[open] .conclusion-details-summary { background: rgba(212,175,55,0.2); }
 .conclusion-details-content { padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.7; color: rgba(255,255,255,0.9); }
 
 .action-plan, .timing-suggestions {
@@ -2290,24 +2295,26 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     overflow: visible;
 }
 
-.dayun-timeline {
+.dayun-timeline,
+.fortune-timeline-container {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     justify-content: flex-start;
     align-items: center;
-    gap: 15px;
-    overflow-x: auto !important;
+    gap: 10px;
+    overflow-x: scroll !important;
     overflow-y: hidden;
     width: 100%;
     padding: 20px 10px;
+    padding-bottom: 10px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     border-top: 3px solid var(--gold-primary);
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: var(--gold-primary) rgba(255, 255, 255, 0.1);
-    touch-action: pan-y;
+    touch-action: pan-x !important;
 }
 
 .dayun-timeline::-webkit-scrollbar {
@@ -2322,13 +2329,13 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     border-radius: 4px;
 }
 
-.dayun-item {
+.dayun-item,
+.fortune-item {
     position: relative;
     text-align: center;
-    min-width: 80px;
-    width: 80px;
-    flex: 0 0 auto;
-    flex-shrink: 0;
+    flex: 0 0 auto !important;
+    width: 80px !important;
+    min-width: 80px !important;
     display: flex;
     flex-direction: column;
     align-items: center;

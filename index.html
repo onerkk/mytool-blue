@@ -15,13 +15,13 @@
         <meta http-equiv="Expires" content="0">
         <title>靜月之光能量占卜儀 v2.0</title>
         
-        <link rel="stylesheet" href="css/main.css?v=2.17">
-        <link rel="stylesheet" href="css/tarot.css?v=2.17">
-        <link rel="stylesheet" href="css/bazi-display.css?v=2.17">
-        <link rel="stylesheet" href="css/responsive.css?v=2.17">
-        <link rel="stylesheet" href="css/ios-fixes.css?v=2.17">
-        <link rel="stylesheet" href="css/mobile-fix.css?v=2.17">
-        <link rel="stylesheet" href="css/result-section-override.css?v=2.17">
+        <link rel="stylesheet" href="css/main.css?v=2.18">
+        <link rel="stylesheet" href="css/tarot.css?v=2.18">
+        <link rel="stylesheet" href="css/bazi-display.css?v=2.18">
+        <link rel="stylesheet" href="css/responsive.css?v=2.18">
+        <link rel="stylesheet" href="css/ios-fixes.css?v=2.18">
+        <link rel="stylesheet" href="css/mobile-fix.css?v=2.18">
+        <link rel="stylesheet" href="css/result-section-override.css?v=2.18">
         <!-- 三星單指捲動：盡早加上 class，讓 CSS 在首繪前生效 -->
         <script>
         (function(){
@@ -735,7 +735,6 @@
                             <button class="dimension-tab" id="tab-tarot" role="tab" aria-selected="false" aria-controls="tarot-pane" data-dimension="tarot">塔羅牌陣</button>
                             <button class="dimension-tab" id="tab-ziwei" role="tab" aria-selected="false" aria-controls="ziwei-pane" data-dimension="ziwei">紫微斗數</button>
                             <button class="dimension-tab" id="tab-name" role="tab" aria-selected="false" aria-controls="name-pane" data-dimension="name">姓名學</button>
-                            <button class="dimension-tab" id="tab-cross" role="tab" aria-selected="false" aria-controls="cross-pane" data-dimension="cross">交叉驗證</button>
                         </div>
                         
                         <div class="dimension-content">
@@ -838,7 +837,7 @@
                                         </div>
                                         <div class="dayun-container" id="dayun-container">
                                             <h4><i class="fas fa-hourglass-half"></i> 大運流年</h4>
-                                            <div class="dayun-timeline" id="dayun-timeline"></div>
+                                            <div class="dayun-timeline fortune-timeline-container" id="dayun-timeline"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -874,11 +873,6 @@
                             
                             <div class="dimension-pane" id="name-pane" role="tabpanel" aria-labelledby="tab-name" tabindex="0">
                                 <div class="name-result" id="name-result">
-                                    </div>
-                            </div>
-                            
-                            <div class="dimension-pane" id="cross-pane" role="tabpanel" aria-labelledby="tab-cross" tabindex="0">
-                                <div class="cross-result" id="cross-result">
                                     </div>
                             </div>
                         </div>
