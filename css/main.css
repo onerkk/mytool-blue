@@ -749,14 +749,22 @@ input.readonly-input[readonly]:focus {
         0 0 20px rgba(212, 175, 55, 0.1);
 }
 
-/* --- 性別選項：膠囊切換器 (Segmented Control) 風格 --- */
+/* --- 性別選項：膠囊切換器 (Segmented Control) 風格，僅文字男/女、高度≤50px --- */
 .radio-group {
     display: flex;
     flex-direction: row;
-    gap: 0.5rem;
+    gap: 10px;
     margin-top: 0.5rem;
+    width: 100%;
     min-height: 44px;
     max-height: 50px;
+    box-sizing: border-box;
+}
+
+.radio-group-pill {
+    display: flex !important;
+    width: 100% !important;
+    gap: 10px !important;
 }
 
 .radio-label {
@@ -765,20 +773,26 @@ input.readonly-input[readonly]:focus {
     align-items: center;
     justify-content: center;
     gap: 0.35rem;
-    padding: 0 1rem;
+    padding: 10px 1rem;
     height: 44px;
     min-height: 44px;
     max-height: 50px;
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
-    border: 2px solid rgba(212, 175, 55, 0.2);
-    border-radius: 999px;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 50px;
     cursor: pointer;
     transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
     flex: 1 1 0%;
     min-width: 0;
+    box-sizing: border-box;
+}
+
+.radio-label-pill {
+    padding: 10px 0.75rem !important;
+    border-radius: 50px !important;
 }
 
 .radio-label::before {
@@ -828,6 +842,9 @@ input.readonly-input[readonly]:focus {
     font-weight: 500;
     color: rgba(255, 255, 255, 0.85);
     transition: color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .radio-label:has(input[type="radio"]:checked) .radio-icon {
@@ -2028,6 +2045,21 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     color: var(--text-primary) !important;
 }
 
+/* 綜合結論摺疊：預設只顯示摘要，點擊展開完整論述（手機版面清爽） */
+.conclusion-body { padding: 1rem; }
+.conclusion-meter-wrap { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+.conclusion-meter-value { font-size: 2rem; font-weight: bold; color: var(--gold-primary); min-width: 3.5rem; }
+.conclusion-meter-bar { flex: 1; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+.conclusion-meter-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+.conclusion-summary { color: rgba(255,255,255,0.95); font-size: 0.95rem; line-height: 1.7; margin-bottom: 0.75rem; }
+.conclusion-toggle-hint { color: rgba(255,255,255,0.6); font-size: 0.85rem; }
+.conclusion-details { margin-top: 0.75rem; border: 1px solid rgba(212,175,55,0.25); border-radius: 8px; overflow: hidden; }
+.conclusion-details-summary { cursor: pointer; padding: 0.6rem 0.75rem; background: rgba(212,175,55,0.1); color: var(--gold-primary); font-weight: 600; font-size: 0.9rem; list-style: none; user-select: none; }
+.conclusion-details-summary::-webkit-details-marker { display: none; }
+.conclusion-details-summary::before { content: '▶ '; font-size: 0.75rem; }
+.conclusion-details[open] .conclusion-details-summary::before { content: '▼ '; }
+.conclusion-details-content { padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.7; color: rgba(255,255,255,0.9); }
+
 .action-plan, .timing-suggestions {
     background: rgba(255, 255, 255, 0.05);
     border-radius: var(--border-radius);
@@ -2251,26 +2283,31 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     font-size: 1.125rem;
 }
 
-/* --- 大運流年樣式 --- */
+/* --- 大運流年樣式：強制橫向捲動、不換行、不鎖死垂直滑動 --- */
 .dayun-container {
     margin-top: 2rem;
+    width: 100%;
+    overflow: visible;
 }
 
 .dayun-timeline {
-    display: flex;
-    flex-direction: row;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     justify-content: flex-start;
     align-items: center;
     gap: 15px;
-    overflow-x: auto;
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    width: 100%;
     padding: 20px 10px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     border-top: 3px solid var(--gold-primary);
-    
-    /* 捲軸美化 */
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: var(--gold-primary) rgba(255, 255, 255, 0.1);
+    touch-action: pan-y;
 }
 
 .dayun-timeline::-webkit-scrollbar {
@@ -2288,7 +2325,9 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 .dayun-item {
     position: relative;
     text-align: center;
-    min-width: 92px;
+    min-width: 80px;
+    width: 80px;
+    flex: 0 0 auto;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;

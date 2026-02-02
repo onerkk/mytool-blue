@@ -34,6 +34,35 @@
     return 'general';
   }
 
+  /** 從問題字串提取數字（破2萬、10萬、業績5等）用於難度權重 */
+  function extractQuestionNumbers(question) {
+    var q = String(question || '');
+    var numbers = [];
+    var match;
+    var re = /(\d+)\s*[萬千百]?|破\s*(\d+)\s*[萬千百]?|業績\s*(\d+)|(\d+)\s*%?/g;
+    while ((match = re.exec(q)) !== null) {
+      for (var i = 1; i <= 4; i++) {
+        if (match[i] != null && match[i] !== '') {
+          var n = parseInt(match[i], 10);
+          if (!isNaN(n)) numbers.push(n);
+          break;
+        }
+      }
+    }
+    if (numbers.length === 0 && /\d+/.test(q)) {
+      q.replace(/\d+/g, function (s) { numbers.push(parseInt(s, 10)); });
+    }
+    return numbers;
+  }
+
+  /** 難度權重：數字較大（例如 > 5）視為高難度，用於扣分與回答差異化 */
+  function getDifficultyLevel(question) {
+    var nums = extractQuestionNumbers(question);
+    if (nums.length === 0) return 'low';
+    var maxNum = Math.max.apply(null, nums);
+    return maxNum > 5 ? 'high' : 'low';
+  }
+
   /**
    * 從各系統彙總機率
    * @param {Object} data - { bazi, meihua, tarot, questionType, question }
@@ -90,6 +119,11 @@
     var prob = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : base;
     prob = clamp(prob, 0, 100);
 
+    var difficultyLevel = getDifficultyLevel(data.question);
+    if (difficultyLevel === 'high') {
+      prob = clamp(prob - 15, 0, 100);
+    }
+
     var isRange = false;
     var conflictSource = null;
     if (scores.length >= 2) {
@@ -111,7 +145,8 @@
       isRange: isRange,
       factors: topFactors,
       conflictSource: conflictSource,
-      baseRate: base
+      baseRate: base,
+      difficultyLevel: difficultyLevel
     };
   }
 
@@ -197,30 +232,39 @@
     return '您問的這件事';
   }
 
-  /** 依問題類型、機率與影響因子產生一致的結論（使用詞彙庫豐富用語） */
-  function buildConclusionByType(probVal, type, question, topFactors) {
+  /** 依問題類型、機率、難度與影響因子產生結論（數字敏感：高難度扣分並差異化用語） */
+  function buildConclusionByType(probVal, type, question, topFactors, difficultyLevel) {
     var q = String(question || '');
     var seed = (probVal || 0) + (q.length || 0);
     var subject = getVocabSubject(type, q, seed);
     var unfavorableCount = (topFactors || []).filter(function (f) { return f && f.impact < 0; }).length;
     var tendency = probVal >= 60 ? 'favorable' : (probVal >= 48 && unfavorableCount < 2 ? 'neutral' : (probVal >= 35 ? 'unfavorable' : 'strongUnfavorable'));
+    var difficulty = difficultyLevel === 'high' ? 'high' : 'low';
     var opener = (typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionOpener) ? VocabularyDB.getConclusionOpener(tendency, seed) : '';
     var phrase = (typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionPhrase) ? VocabularyDB.getConclusionPhrase(tendency, seed) : '';
     var tail = (typeof VocabularyDB !== 'undefined' && VocabularyDB.getConclusionTail) ? VocabularyDB.getConclusionTail(tendency, seed) : '';
     if (!opener) opener = tendency === 'favorable' ? '以八字、梅花、塔羅、紫微等多維象徵交叉來看' : '從各維度象徵綜合看';
     if (!phrase) phrase = tendency === 'favorable' ? '整體偏有利，有機會達標' : (tendency === 'neutral' ? '屬中性' : (tendency === 'unfavorable' ? '偏有阻力' : '阻力較大'));
     if (!tail) tail = tendency === 'favorable' ? '建議把握時機、積極行動。' : (tendency === 'neutral' ? '可先準備、留意時機再行動。' : '建議保守評估、多做準備再決策。');
-    if (subject && /手鍊|手練|賣出|自製|作品/.test(subject) && tendency === 'neutral') tail = '可先穩健曝光、留意買氣與上架時機再促單。';
+    if (tendency === 'neutral' && difficulty === 'high') {
+      phrase = '目標較高，難度較大';
+      tail = '需額外努力或貴人相助，建議分階段設定、穩健推進。';
+    }
+    if (tendency === 'neutral' && difficulty === 'low') {
+      phrase = '目標不高，順勢可成';
+      tail = '可先準備、留意時機再行動。';
+    }
+    if (subject && /手鍊|手練|賣出|自製|作品/.test(subject) && tendency === 'neutral') tail = difficulty === 'high' ? '目標較高，可先穩健曝光、再衝量。' : '可先穩健曝光、留意買氣與上架時機再促單。';
     if (subject && /手鍊|手練|賣出|自製|作品/.test(subject) && tendency === 'favorable') tail = '建議把握曝光與上架時機、積極促單。';
-    if (subject && /副業|銷售|破萬|業績/.test(subject) && tendency === 'neutral') tail = '副業／銷售可先穩健鋪陳、留意促銷或旺季時機再衝量。';
+    if (subject && /副業|銷售|破萬|業績/.test(subject) && tendency === 'neutral') tail = difficulty === 'high' ? '目標較高，可先穩健鋪陳、再衝量。' : '副業／銷售可先穩健鋪陳、留意促銷或旺季時機再衝量。';
     if (subject && /副業|銷售|破萬|業績/.test(subject) && tendency === 'favorable') tail = '建議把握促銷或旺季時機、積極衝量。';
     if (probVal >= 55 && unfavorableCount >= 2) {
       phrase = '中性偏保守';
-      tail = '有達標空間但需留意多數維度偏弱，建議穩健準備、把握有利時機。';
+      tail = difficulty === 'high' ? '目標較高，有達標空間但需留意多數維度偏弱，建議穩健準備、把握有利時機。' : '有達標空間但需留意多數維度偏弱，建議穩健準備、把握有利時機。';
     }
     if (probVal >= 48 && probVal < 55 && unfavorableCount >= 2) {
       phrase = '偏有阻力';
-      tail = '多數維度評估較弱，建議保守準備、留意時機再行動。';
+      tail = difficulty === 'high' ? '目標較高，多數維度評估較弱，建議保守準備、留意時機再行動。' : '多數維度評估較弱，建議保守準備、留意時機再行動。';
     }
     return opener + '，「' + subject + '」' + phrase + '，' + tail;
   }
@@ -368,7 +412,7 @@
     var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
     var type = getQuestionType(data.question, data.questionType);
     var topFactors = probResult.factors.slice(0, 4);
-    var conclusion = buildConclusionByType(probVal, type, data.question, topFactors);
+    var conclusion = buildConclusionByType(probVal, type, data.question, topFactors, probResult.difficultyLevel);
 
     var methodMap = { '八字運勢': 'bazi', '卦象吉凶': 'meihua', '塔羅牌陣': 'tarot', '紫微斗數': 'ziwei', '姓名學': 'nameology' };
     var factorTexts = topFactors.map(function (f, i) {

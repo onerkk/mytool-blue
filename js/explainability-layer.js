@@ -250,17 +250,25 @@
       var meihuaEx = buildMeihuaExplainability(fusionData.meihua);
       if (meihuaEx && meihuaEx.text) { texts.meihua = meihuaEx; evidenceListForDisplay.push('梅花易數：' + meihuaEx.text); }
     } else missing.push('梅花易數');
-    /* 塔羅：唯一標準 Array.isArray(tarotCards) && tarotCards.length > 0 或 analysis 存在；避免 scope/async 讀到舊的空的 userInputs */
+    /* 塔羅：唯一標準 Array.isArray(cards) && cards.length > 0 或 analysis 存在；兜底讀取 window.currentTarotDeck / fortuneSystem.analysisResults.tarot 避免 scope/async 誤判未參與 */
     var tarotParticipated = false;
-    if (fusionData.tarot && typeof fusionData.tarot === 'object') {
-      var cards = fusionData.tarot.cards || fusionData.tarot.tarotCards || fusionData.tarot.drawnCards;
-      var analysis = fusionData.tarot.analysis || fusionData.tarot;
+    var tarotSource = fusionData.tarot && typeof fusionData.tarot === 'object' ? fusionData.tarot : null;
+    if (!tarotSource && typeof window !== 'undefined') {
+      if (window.currentTarotDeck && Array.isArray(window.currentTarotDeck) && window.currentTarotDeck.length > 0) {
+        tarotSource = { cards: window.currentTarotDeck, drawnCards: window.currentTarotDeck };
+      } else if (window.fortuneSystem && window.fortuneSystem.analysisResults && window.fortuneSystem.analysisResults.tarot) {
+        tarotSource = window.fortuneSystem.analysisResults.tarot;
+      }
+    }
+    if (tarotSource) {
+      var cards = tarotSource.cards || tarotSource.tarotCards || tarotSource.drawnCards;
+      var analysis = tarotSource.analysis || tarotSource;
       var hasCards = Array.isArray(cards) && cards.length > 0;
       var hasAnalysis = analysis && (Array.isArray(analysis.positions) && analysis.positions.length > 0 || analysis.overall != null || analysis.overallProbability != null || analysis.fortuneScore != null);
       tarotParticipated = hasCards || hasAnalysis;
     }
     if (tarotParticipated) {
-      var tarotEx = buildTarotExplainability(fusionData.tarot);
+      var tarotEx = buildTarotExplainability(tarotSource);
       if (tarotEx && tarotEx.text) {
         texts.tarot = tarotEx;
         evidenceListForDisplay.push('塔羅：' + tarotEx.text);

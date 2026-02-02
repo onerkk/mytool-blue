@@ -113,33 +113,30 @@
         margin: 1rem 0 !important;
     }
     
-    /* 5) 大運流年：解除捲動鎖死—內容 height: auto、touch-action: pan-y 讓垂直滑動交給頁面，橫向仍可捲圖表 */
+    /* 5) 大運流年：強制橫向捲動、不換行、垂直滑動交給頁面 */
     .dayun-container,
     .fortune-cycles-container {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        overflow-y: visible !important;
-        -webkit-overflow-scrolling: touch !important;
         width: 100% !important;
-        max-width: 100% !important;
+        overflow: visible !important;
         height: auto !important;
-        min-height: 0 !important;
-        padding-bottom: 10px !important;
-        box-sizing: border-box !important;
         touch-action: pan-y !important;
     }
     .dayun-timeline {
         display: flex !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
-        overflow-y: visible !important;
+        overflow-y: hidden !important;
         -webkit-overflow-scrolling: touch !important;
         width: 100% !important;
         min-width: 0;
         height: auto !important;
         padding-bottom: 10px !important;
         touch-action: pan-y !important;
+    }
+    .dayun-item {
+        flex: 0 0 auto !important;
+        min-width: 80px !important;
+        width: 80px !important;
     }
     
     /* 本系統說明：預設一行，詳細放入展開收合（手機預設收合） */
@@ -233,31 +230,34 @@
         min-height: 48px;
     }
     
-    /* 2) 性別選項手機版：膠囊並排、高度 40–50px、小圖示 */
-    .radio-group {
+    /* 2) 性別選項手機版：膠囊並排、僅文字男/女、高度 40–50px、不溢出 */
+    .radio-group,
+    .radio-group-pill {
         display: flex !important;
         flex-direction: row !important;
-        gap: 0.5rem !important;
+        gap: 10px !important;
+        width: 100% !important;
         min-height: 40px !important;
         max-height: 50px !important;
+        box-sizing: border-box !important;
     }
-    .radio-label {
+    .radio-label,
+    .radio-label-pill {
         flex: 1 1 0% !important;
-        flex-direction: row !important;
-        padding: 0 0.75rem !important;
+        min-width: 0 !important;
+        padding: 10px 0.75rem !important;
         height: 44px !important;
         min-height: 40px !important;
         max-height: 50px !important;
-        border-radius: 999px !important;
+        border-radius: 50px !important;
+        font-size: 0.95rem !important;
     }
-    .radio-icon {
-        font-size: 0.9rem !important;
-    }
-    .radio-text {
-        font-size: 0.9rem !important;
-    }
-    .radio-icon {
-        font-size: 1.25rem !important;
+    .radio-label .radio-text,
+    .radio-label-pill .radio-text {
+        font-size: 0.95rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
     
     /* 輸入提示文字 */

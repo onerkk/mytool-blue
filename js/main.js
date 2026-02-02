@@ -448,29 +448,31 @@ class FortuneSystem {
         const target = document.getElementById(sectionId);
         if (target) {
             target.classList.add('active');
-            // 3) 下一步／切換 Tab 後：視圖定位到目標區塊頂部，避免使用者停留在底部迷失
             try {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } catch (e) {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
-        } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        
         const stepMap = { 'input-section':1, 'meihua-section':2, 'tarot-section':3, 'result-section':4 };
         if (stepMap[sectionId]) {
             this.currentStep = stepMap[sectionId];
             this.updateProgress();
         }
-        
-        // 懸浮鈕：每個頁面都顯示（強制顯示，不受 CSS 影響）
         ensureFloatingButtonsVisible();
-        
-        // 當切換到結果頁面時，載入已保存的分析結果
         if(sectionId === 'result-section') {
             this.loadResults();
         }
+        // 下一步／切換步驟後強制置頂，避免手機停留在底部
+        requestAnimationFrame(function () {
+            try {
+                var app = document.getElementById('app-container');
+                if (app) app.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (e) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
     }
     
     reset() {
@@ -5009,19 +5011,31 @@ function setupMeihuaRandomDomGuard(){
           var displayConclusion = '';
           if (useFusion && parts.length > 0) {
             try {
+              var tarotForFusion = dataForScoring.tarot || {};
+              if (this.analysisResults && this.analysisResults.tarot) {
+                var t = this.analysisResults.tarot;
+                if (!tarotForFusion.cards && !tarotForFusion.tarotCards && !tarotForFusion.drawnCards) {
+                  tarotForFusion = Object.assign({}, tarotForFusion, {
+                    cards: t.cards || t.tarotCards || t.drawnCards,
+                    tarotCards: t.tarotCards || t.cards || t.drawnCards,
+                    drawnCards: t.drawnCards || t.cards || t.tarotCards,
+                    analysis: t.analysis || t
+                  });
+                }
+              }
+              if (typeof window !== 'undefined' && window.currentTarotDeck && Array.isArray(window.currentTarotDeck) && window.currentTarotDeck.length > 0 && !(tarotForFusion.cards && tarotForFusion.cards.length)) {
+                tarotForFusion = Object.assign({}, tarotForFusion, { cards: window.currentTarotDeck, drawnCards: window.currentTarotDeck });
+              }
               var fusionData = {
                 bazi: dataForScoring.bazi,
                 meihua: dataForScoring.meihua,
-                tarot: dataForScoring.tarot,
+                tarot: tarotForFusion,
                 ziwei: dataForScoring.ziwei,
                 nameology: dataForScoring.nameology,
                 question: question,
                 questionType: (this.userData && this.userData.questionType) || ''
               };
-              // 4) 跨系統證據除錯：執行綜合分析前確認塔羅資料（避免 scope/async 導致誤判未參與）
-              var currentTarotCards = (this.analysisResults && this.analysisResults.tarot) ? (this.analysisResults.tarot.cards || this.analysisResults.tarot.tarotCards || this.analysisResults.tarot.drawnCards) : null;
-              var tarotHasCards = Array.isArray(currentTarotCards) && currentTarotCards.length > 0;
-              if (typeof console !== 'undefined') console.log('[綜合分析] currentTarotCards', currentTarotCards, 'tarotHasCards', tarotHasCards, 'dataForScoring.tarot', dataForScoring.tarot);
+              if (typeof console !== 'undefined') console.log('[綜合分析] tarot.cards', fusionData.tarot && (fusionData.tarot.cards || fusionData.tarot.drawnCards), 'tarotHasCards', Array.isArray(fusionData.tarot && (fusionData.tarot.cards || fusionData.tarot.drawnCards)) && (fusionData.tarot.cards || fusionData.tarot.drawnCards).length > 0);
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
               displayConclusion = fusionOut.conclusion || '';
               // 直接回答區塊不重複顯示問題；結論優先，原理參考縮小顯示於後
@@ -5194,17 +5208,23 @@ function setupMeihuaRandomDomGuard(){
             }
           } catch (e) { if (window.console) console.warn('Crystal recommendation fill failed:', e); }
 
-          // 綜合結果 - 僅保留整體機率與直接答案（各模組機率已於多維度交叉彙總顯示，不再重複）
+          // 綜合結果：預設摺疊詳情，只顯示重點摘要 + 點擊展開（手機版面清爽）
           if($('conclusion-content')){
-            let html = '<div class="analysis-grid-container">';
-            html += '<div class="analysis-card">';
+            var plainConclusion = displayConclusion ? displayConclusion.replace(/<[^>]+>/g, '') : '';
+            var shortSummary = plainConclusion ? (plainConclusion.slice(0, 80) + (plainConclusion.length > 80 ? '…' : '')) : '以上機率由多維度交叉驗證得出，供您綜合判斷。';
+            shortSummary = shortSummary.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            var fullConclusion = displayConclusion ? displayConclusion.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '以上機率由多維度交叉驗證得出，供您綜合判斷。';
+            let html = '<div class="analysis-grid-container conclusion-grid">';
+            html += '<div class="analysis-card conclusion-card">';
             html += '<div class="analysis-header"><i class="fas fa-chart-pie"></i> 整體機率</div>';
-            html += '<div style="padding: 1rem; text-align: center;">';
-            html += `<div style="font-size: 3rem; font-weight: bold; color: var(--gold-primary); margin-bottom: 0.5rem;">${parts.length ? (overall + '%') : '—'}</div>`;
-            html += `<div style="width: 100%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; margin-bottom: 1rem;">`;
-            html += `<div style="width: ${parts.length ? overall : 0}%; height: 100%; background: linear-gradient(90deg, ${parts.length && overall >= 60 ? '#4CAF50' : parts.length && overall >= 40 ? '#FF9800' : '#F44336'}, var(--gold-bright)); transition: width 0.3s;"></div>`;
-            html += `</div>`;
-            html += `<div style="color: rgba(255,255,255,0.9); font-size: 0.95rem; line-height: 1.7;">${displayConclusion ? displayConclusion.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '以上機率由多維度交叉驗證得出，供您綜合判斷。'}</div>`;
+            html += '<div class="conclusion-body">';
+            html += '<div class="conclusion-meter-wrap"><span class="conclusion-meter-value">' + (parts.length ? (overall + '%') : '—') + '</span>';
+            html += '<div class="conclusion-meter-bar"><div class="conclusion-meter-fill" style="width:' + (parts.length ? overall : 0) + '%;background:linear-gradient(90deg,' + (parts.length && overall >= 60 ? '#4CAF50' : parts.length && overall >= 40 ? '#FF9800' : '#F44336') + ',var(--gold-bright));"></div></div></div>';
+            html += '<p class="conclusion-summary">💡 重點摘要：您的成功率約 ' + (parts.length ? overall + '%' : '—') + '，' + shortSummary + ' <span class="conclusion-toggle-hint">（點擊下方查看詳情）</span></p>';
+            html += '<details class="conclusion-details" id="conclusion-details">';
+            html += '<summary class="conclusion-details-summary">點擊展開完整論述</summary>';
+            html += '<div class="conclusion-details-content">' + fullConclusion + '</div>';
+            html += '</details>';
             html += '</div></div></div>';
             $('conclusion-content').innerHTML = html;
           }
