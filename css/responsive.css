@@ -4,6 +4,36 @@
 
 /* 手機版通用優化 */
 @media (max-width: 768px) {
+    /* 1) 頂部按鈕不爆版：容器與按鈕寬度限制、min-width: 0 防止 flex 撐開 */
+    .nav-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0 1rem !important;
+    }
+    .nav-shop-buttons {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0;
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 10px;
+        min-width: 0;
+    }
+    .nav-shop-buttons .shop-btn {
+        flex: 1 !important;
+        width: auto !important;
+        min-width: 0 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.75rem !important;
+    }
+    .nav-shop-buttons .shop-btn i {
+        flex-shrink: 0;
+    }
+    
     /* 捲動容器：強制 pan-y 單指垂直滑動（三星 Chrome 用 manipulation 易鎖住） */
     #page-scroll.page-scroll {
         touch-action: pan-y !important;
@@ -70,21 +100,37 @@
         box-sizing: border-box !important;
     }
     
-    /* 步驟條與個人資料輸入之間：縮減間距（與 main.css 同步） */
+    /* 2) 步驟條與個人資料輸入之間：強制縮減間距，消除巨大空白 */
     .progress-container {
+        margin: 1rem 0 !important;
         margin-bottom: 1rem !important;
     }
+    #input-section.section.active,
+    #input-section {
+        margin-top: 0 !important;
+        margin: 1rem 0 !important;
+    }
     
-    /* 大運流年：手機寬度不足時可橫向滑動，避免破版 */
-    .dayun-container {
-        max-width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+    /* 4) 大運流年／流年方塊圖：強制水平捲動、不溢出、可查看右側內容 */
+    .dayun-container,
+    .fortune-cycles-container {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-bottom: 10px !important;
+        box-sizing: border-box !important;
     }
     .dayun-timeline {
+        display: flex !important;
+        flex-wrap: nowrap !important;
         overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
         min-width: 0;
-        -webkit-overflow-scrolling: touch;
+        padding-bottom: 10px !important;
     }
     
     /* 本系統說明：預設一行，詳細放入展開收合（手機預設收合） */

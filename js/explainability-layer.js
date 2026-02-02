@@ -250,10 +250,10 @@
       var meihuaEx = buildMeihuaExplainability(fusionData.meihua);
       if (meihuaEx && meihuaEx.text) { texts.meihua = meihuaEx; evidenceListForDisplay.push('梅花易數：' + meihuaEx.text); }
     } else missing.push('梅花易數');
-    /* 塔羅：只要抽牌已完成且結果物件存在即視為已參與；缺資料時才顯示缺哪一段 */
+    /* 塔羅：只要抽牌已完成（tarotCards/cards/drawnCards.length > 0）或結果存在即視為已參與，嚴禁誤顯示未參與 */
     var tarotParticipated = false;
     if (fusionData.tarot && typeof fusionData.tarot === 'object') {
-      var cards = fusionData.tarot.cards;
+      var cards = fusionData.tarot.cards || fusionData.tarot.tarotCards || fusionData.tarot.drawnCards;
       var analysis = fusionData.tarot.analysis || fusionData.tarot;
       var hasCards = Array.isArray(cards) && cards.length > 0;
       var hasAnalysis = analysis && (Array.isArray(analysis.positions) && analysis.positions.length > 0 || analysis.overall != null || analysis.overallProbability != null || analysis.fortuneScore != null);
