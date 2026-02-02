@@ -93,6 +93,7 @@ body {
     overflow-x: hidden !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y; /* iOS/Android 不鎖垂直滑動 */
     font-family: var(--font-family);
     background: var(--dark-bg);
     background-image: var(--gradient-bg);
@@ -106,7 +107,9 @@ body {
 #page-scroll.page-scroll {
     min-height: 100vh;
     overflow-x: hidden;
+    overflow-y: visible; /* 捲動由 body 負責，避免雙層捲動／無法滑動 */
     touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* 水晶背景效果（pointer-events: none + z-index: -1 觸控穿透，避免三星鎖住捲動） */

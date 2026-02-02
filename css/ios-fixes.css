@@ -55,7 +55,9 @@ input, select, textarea, .section, .progress-step, .btn, .hint-note {
         min-height: 100vh;
         min-height: -webkit-fill-available;
         min-height: 100dvh;
+        overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
     }
     
     /* iOS 結果區底部留白（含 Home Indicator） */

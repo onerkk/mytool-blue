@@ -34,8 +34,14 @@
         flex-shrink: 0;
     }
     
-    /* 捲動：與 responsive 一致，垂直滑動不鎖死 */
+    /* 捲動：與 responsive 一致，iOS/Android 垂直滑動不鎖死 */
+    body {
+        overflow-y: auto !important;
+        touch-action: pan-y !important;
+        -webkit-overflow-scrolling: touch;
+    }
     #page-scroll.page-scroll {
+        overflow-y: visible !important;
         touch-action: pan-y !important;
         -webkit-overflow-scrolling: touch !important;
     }
