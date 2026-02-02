@@ -21,10 +21,15 @@
     return { baseRate: 0.5, weights: { bazi: 0.4, meihua: 0.3, tarot: 0.3 }, topFactorKeys: ['八字運勢', '卦象吉凶', '塔羅牌陣'], mandatoryPhrases: [], conclusionOpeners: ['從各維度象徵綜合看'] };
   }
 
+  var ALLOWED_CATEGORIES = ['love', 'career', 'wealth', 'health', 'relationship', 'family', 'general'];
+
   function normalizeCategory(type) {
     if (typeof normalizeCategoryForStrategy === 'function') return normalizeCategoryForStrategy(type);
-    var t = (type || '').toString().toLowerCase();
-    return (t === 'finance' || t === 'other') ? (t === 'finance' ? 'wealth' : 'general') : t || 'general';
+    var t = (type || '').toString().toLowerCase().trim();
+    if (t === 'finance') return 'wealth';
+    if (t === 'other') return 'general';
+    if (ALLOWED_CATEGORIES.indexOf(t) >= 0) return t;
+    return t || 'general';
   }
 
   function clamp(n, min, max) {
@@ -300,10 +305,41 @@
     var wealth = /收入|破萬|賺錢|財運|薪水|加薪|投資|理財/.test(question || '');
     var career = /工作|事業|升遷|轉職|面試|業績|職涯/.test(question || '');
     var love = /感情|姻緣|結婚|復合|對象|桃花/.test(question || '');
+    var health = /健康|病|身體|作息|飲食|身心|手術|恢復|運動|體檢/.test(question || '');
     if (wealth) return '本月收入與財運';
     if (career) return '事業與工作發展';
     if (love) return '感情與姻緣';
+    if (health) return '今年健康狀況';
     return '您問的這件事';
+  }
+
+  /** 健康專用模板池（禁止使用通用八字段落）；至少 10 組：結論短句 + 風險面向 + 3 條建議 */
+  var HEALTH_TEMPLATE_POOL = [
+    { conclusion: '今年健康偏穩，留意季節轉換與作息即可。', risks: ['作息', '季節轉換'], suggestions: ['規律作息與飲食', '依醫囑追蹤治療', '適度運動與放鬆'] },
+    { conclusion: '今年健康有壓力，需留意身心負荷與睡眠。', risks: ['睡眠', '身心壓力'], suggestions: ['固定就寢時間、避免睡前滑手機', '適度運動與放鬆', '必要時尋求專業諮詢'] },
+    { conclusion: '今年健康需保守，注意腸胃與發炎傾向。', risks: ['腸胃', '發炎'], suggestions: ['飲食清淡、定時定量', '避免過度辛辣與生冷', '規律作息與飲食'] },
+    { conclusion: '今年健康尚可，留意筋骨與久坐姿勢。', risks: ['筋骨', '姿勢'], suggestions: ['適度伸展與運動', '避免久坐、定時起身', '規律作息與飲食'] },
+    { conclusion: '今年健康偏穩，注意心血管與血壓。', risks: ['心血管', '血壓'], suggestions: ['規律作息與飲食', '依醫囑追蹤治療', '適度運動與放鬆'] },
+    { conclusion: '今年健康有波動，留意免疫力與過敏。', risks: ['免疫力', '過敏'], suggestions: ['規律作息與飲食', '避開過敏原、留意環境', '適度運動與放鬆'] },
+    { conclusion: '今年健康需留意，身心與作息是關鍵。', risks: ['身心', '作息'], suggestions: ['規律作息與飲食', '適度運動與放鬆', '壓力管理與休息'] },
+    { conclusion: '今年健康偏穩，注意飲食與腸道。', risks: ['飲食', '腸道'], suggestions: ['飲食清淡、定時定量', '規律作息與飲食', '適度運動與放鬆'] },
+    { conclusion: '今年健康有壓力，留意睡眠與情緒。', risks: ['睡眠', '情緒'], suggestions: ['固定就寢時間', '適度運動與放鬆', '必要時尋求專業諮詢'] },
+    { conclusion: '今年健康尚可，留意健檢與預防。', risks: ['健檢', '預防'], suggestions: ['規律作息與飲食', '依醫囑追蹤治療', '適度運動與放鬆'] }
+  ];
+
+  /** 健康專屬結論：結論句 + Top2~3 風險面向 + 3 條可執行建議；禁止日主/喜忌通用段落 */
+  function buildHealthConclusion(probVal, question, topFactors, difficultyLevel, evidenceCount, synSuggestions) {
+    var seed = (probVal || 0) + (String(question || '').length || 0);
+    var idx = seed % HEALTH_TEMPLATE_POOL.length;
+    var t = HEALTH_TEMPLATE_POOL[idx] || HEALTH_TEMPLATE_POOL[0];
+    var conclusion = t.conclusion;
+    var riskLine = (t.risks && t.risks.length) ? '可留意面向：' + t.risks.join('、') + '。' : '可留意作息、飲食、身心與睡眠。';
+    var sugg = (synSuggestions && synSuggestions.length >= 3) ? synSuggestions.slice(0, 3) : (t.suggestions || ['規律作息與飲食', '依醫囑追蹤治療', '適度運動與放鬆']);
+    var suggLine = '建議：（1）' + (sugg[0] || '規律作息與飲食') + '；（2）' + (sugg[1] || '依醫囑追蹤治療') + '；（3）' + (sugg[2] || '適度運動與放鬆') + '。';
+    if (evidenceCount < 2) {
+      conclusion = '以健康狀況來看，多維證據不足（未抽塔羅或未起卦），以下為先天結構推估。' + conclusion;
+    }
+    return conclusion + ' ' + riskLine + ' ' + suggLine;
   }
 
   /** 依題型策略、機率、難度與影響因子產生結論（題型專屬 opener 與 mandatory 段落，避免通用話術） */
@@ -399,6 +435,11 @@
    */
   function generateDirectAnswer(data) {
     var debug = isDebug();
+    var categoryAtEnter = (data.questionType && String(data.questionType).trim()) ? String(data.questionType).toLowerCase().trim() : (getQuestionType(data.question, data.questionType));
+    var categoryAtEnterNorm = normalizeCategory(categoryAtEnter);
+    if (typeof console !== 'undefined') {
+      console.log('[GEN_ENTER]', { category: categoryAtEnterNorm, questionText: String(data.question || '').trim().slice(0, 120) });
+    }
     try {
       if (typeof parseQuestion !== 'function') {
         if (debug) console.group('[對齊管線]'), console.warn('回退原因：parseQuestion 未載入'), console.groupEnd();
@@ -453,6 +494,9 @@
         console.log('[TEMPLATE]', selectedTemplateId);
         console.log('[PROB_BREAKDOWN]', breakdown);
       }
+      if (typeof console !== 'undefined') {
+        console.log('[TEMPLATE_PICK]', { category: categoryForLog, templateId: selectedTemplateId });
+      }
       var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
       var syn = AnswerSynthesizer.synthesize(parsed, selectionResult, { probabilityValue: probVal, probability: probResult.probability }, {});
       var problemRestatement = syn.problemRestatement || '';
@@ -470,19 +514,19 @@
           evidenceListForDisplay = explainResult.evidenceListForDisplay;
           if (explainResult.texts && explainResult.texts.bazi) {
             baziExplainText = explainResult.texts.bazi.text;
-            if (ExplainabilityLayer.buildDirectAnswerPlain) {
-              directAnswer = ExplainabilityLayer.buildDirectAnswerPlain(explainResult.texts.bazi, probVal, parsed.intent, data.question);
-            }
           }
-          if (explainResult.factorSentences && explainResult.factorSentences.length) {
-            factorTexts = explainResult.factorSentences;
-          }
+        }
+        if (explainResult && explainResult.factorSentences && explainResult.factorSentences.length) {
+          factorTexts = explainResult.factorSentences;
         }
       }
       if (factorTexts.length === 0) factorTexts = evidenceListForDisplay.map(function (e) { return e; });
       var typeForConclusion = getQuestionType(data.question, data.questionType);
-      var categoryConclusion = buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel);
+      var categoryConclusion = categoryForLog === 'health' ? buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions) : buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel);
       var directAnswerForDisplay = categoryConclusion;
+      if (categoryForLog === 'health' && /請見下方依據|依據：|日主|喜神|忌神/.test(directAnswerForDisplay)) {
+        directAnswerForDisplay = buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions);
+      }
       var fullText = problemRestatement + '\n\n' + directAnswerForDisplay + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
       if (typeof ExplainabilityGuard !== 'undefined' && ExplainabilityGuard.checkEvidenceText) {
         var exGuard = ExplainabilityGuard.checkEvidenceText(evidenceListForDisplay, baziExplainText);
@@ -538,11 +582,13 @@
         });
       }
       var category = probResult.category || normalizeCategory(getQuestionType(data.question, data.questionType));
+      var directAnswerParagraph = problemRestatement + (problemRestatement ? '\n\n' : '') + directAnswerForDisplay;
       if (typeof console !== 'undefined') {
         console.log('[FusionEngine] category=', category, 'appliedWeights=', probResult.appliedWeights || {}, 'topFactors=', (probResult.factors || []).map(function (f) { return f.name; }), 'missingEvidence=', probResult.missingEvidence || []);
       }
       return {
         conclusion: conclusion,
+        directAnswerParagraph: directAnswerParagraph,
         factors: factorTexts,
         suggestions: syn.suggestions || [],
         probability: probResult.probability,
@@ -584,9 +630,15 @@
       console.log('[EVIDENCE_USED]', evidenceUsedSystems);
       console.log('[TEMPLATE]', category);
       console.log('[PROB_BREAKDOWN]', breakdown);
+      console.log('[TEMPLATE_PICK]', { category: category, templateId: category });
     }
     var topFactors = probResult.factors.slice(0, 4);
-    var conclusion = buildConclusionByType(probVal, type, data.question, topFactors, probResult.difficultyLevel);
+    var categoryConclusionFallback = category === 'health' ? buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions) : buildConclusionByType(probVal, type, data.question, topFactors, probResult.difficultyLevel);
+    if (category === 'health' && /請見下方依據|依據：|日主|喜神|忌神/.test(categoryConclusionFallback)) {
+      categoryConclusionFallback = buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions);
+    }
+    var conclusion = categoryConclusionFallback + '\n\n依據：\n（見下方影響因子）\n\n建議：\n' + (suggestions.join('\n') || '');
+    var directAnswerParagraphFallback = categoryConclusionFallback;
 
     var methodMap = { '八字運勢': 'bazi', '卦象吉凶': 'meihua', '塔羅牌陣': 'tarot', '紫微斗數': 'ziwei', '姓名學': 'nameology' };
     var factorTexts = topFactors.map(function (f, i) {
@@ -607,6 +659,7 @@
     }
     return {
       conclusion: conclusion,
+      directAnswerParagraph: directAnswerParagraphFallback,
       factors: factorTexts,
       suggestions: suggestions,
       probability: probResult.probability,

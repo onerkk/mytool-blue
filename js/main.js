@@ -5053,7 +5053,7 @@ function setupMeihuaRandomDomGuard(){
                 questionType: userCategory || ''
               };
               if (typeof console !== 'undefined') {
-                console.log('[Category Debug] user.category / questionType=', userCategory, 'questionText=', (question || '').slice(0, 60));
+                console.log('[INPUT]', { category: userCategory, questionText: (question || '').slice(0, 120) });
               }
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
               if (typeof console !== 'undefined' && fusionOut) {
@@ -5075,8 +5075,8 @@ function setupMeihuaRandomDomGuard(){
                 categoryBanner.style.display = 'block';
               }
               displayConclusion = fusionOut.conclusion || '';
-              // 直接回答區塊不重複顯示問題；結論優先，原理參考縮小顯示於後
-              var forDirectAnswer = displayConclusion.replace(/^您問的是[：:][「"]([^」"]*)[」"]。?\s*/g, '');
+              // 直接回答區塊：優先使用 directAnswerParagraph（僅結論段，不含依據/日主/喜忌），避免通用八字段落污染
+              var forDirectAnswer = (fusionOut.directAnswerParagraph != null && String(fusionOut.directAnswerParagraph).trim() !== '') ? String(fusionOut.directAnswerParagraph).replace(/^您問的是[：:][「"]([^」"]*)[」"]。?\s*/g, '') : displayConclusion.split(/\n\n依據：/)[0].replace(/^您問的是[：:][「"]([^」"]*)[」"]。?\s*/g, '');
               setText('direct-answer', forDirectAnswer);
               var principleEl = document.getElementById('direct-answer-principle');
               if (principleEl) {
