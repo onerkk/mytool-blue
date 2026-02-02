@@ -662,15 +662,21 @@
                             <div class="question-display" id="question-display"></div>
                             <div class="direct-answer">
                                 <h4>直接回答</h4>
-                                <p class="answer-text" id="direct-answer">分析中...</p>
+                                <p class="answer-text answer-text-summary" id="direct-answer">分析中...</p>
                             </div>
                             <div class="answer-factors" id="answer-factors" style="display:none;">
                                 <h4>影響因子</h4>
-                                <ul id="answer-factors-list"></ul>
+                                <details class="details-expand details-factors" id="details-factors">
+                                    <summary class="details-summary" id="factors-summary">點擊展開完整影響因子</summary>
+                                    <ul id="answer-factors-list"></ul>
+                                </details>
                             </div>
                             <div class="answer-suggestions" id="answer-suggestions" style="display:none;">
                                 <h4>3 條關鍵建議</h4>
-                                <ol id="answer-suggestions-list"></ol>
+                                <details class="details-expand details-suggestions" id="details-suggestions">
+                                    <summary class="details-summary" id="suggestions-summary">點擊展開 3 條建議</summary>
+                                    <ol id="answer-suggestions-list"></ol>
+                                </details>
                             </div>
                         </div>
                         

@@ -5024,12 +5024,30 @@ function setupMeihuaRandomDomGuard(){
               if (factorsEl && factorsList && fusionOut.factors && fusionOut.factors.length) {
                 factorsList.innerHTML = fusionOut.factors.map(function(f){ return '<li>' + (f || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</li>'; }).join('');
                 factorsEl.style.display = 'block';
+                var factorsSummaryEl = document.getElementById('factors-summary');
+                if (factorsSummaryEl) {
+                  var firstTwo = fusionOut.factors.slice(0, 2).map(function(f){ return (f || '').replace(/<[^>]+>/g,'').slice(0, 40); }).join('；');
+                  factorsSummaryEl.textContent = firstTwo ? (firstTwo + '…（點擊展開完整）') : '點擊展開完整影響因子';
+                }
               }
               var suggEl = $('answer-suggestions');
               var suggList = $('answer-suggestions-list');
               if (suggEl && suggList && fusionOut.suggestions && fusionOut.suggestions.length) {
                 suggList.innerHTML = fusionOut.suggestions.map(function(s){ return '<li>' + (s || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</li>'; }).join('');
                 suggEl.style.display = 'block';
+              }
+              /* 手機預設收合、桌機預設展開；橫豎切換時更新（resize 只綁一次） */
+              function syncDetailsOpen() {
+                var isWide = typeof window !== 'undefined' && window.innerWidth > 768;
+                var df = document.getElementById('details-factors');
+                var ds = document.getElementById('details-suggestions');
+                if (df) { if (isWide) df.setAttribute('open', ''); else df.removeAttribute('open'); }
+                if (ds) { if (isWide) ds.setAttribute('open', ''); else ds.removeAttribute('open'); }
+              }
+              syncDetailsOpen();
+              if (typeof window !== 'undefined' && !window._resultDetailsResizeBound) {
+                window._resultDetailsResizeBound = true;
+                window.addEventListener('resize', syncDetailsOpen);
               }
               if (fusionOut.conflictSource) {
                 var cfNote = '（系統間有差異：' + fusionOut.conflictSource + '，故以區間呈現）';

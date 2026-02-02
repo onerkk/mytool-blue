@@ -165,8 +165,8 @@
   }
 
   /**
-   * 直接回答白話化：八字因為【關鍵原因】，所以【結論】。最多 1～2 句。
-   * 禁止：流年與命盤互動、整體偏吉/偏凶（沒說原因）、術語堆疊。
+   * 直接回答：結論一句（能/不能、偏高/偏低、有機會但條件）+ 原因一句（白話，不堆術語）。
+   * 命理術語（身強身弱、喜忌神、體用、四化）僅放「展開詳解」，不得塞進直接回答。
    */
   function buildDirectAnswerPlain(baziExplain, probVal, intent, questionSummary) {
     if (!baziExplain || !baziExplain.bodyStrength) {
@@ -174,31 +174,28 @@
     }
     var probPct = Math.round(Number(probVal) || 50);
     var bodyStrength = (baziExplain.bodyStrength || '').toString();
-    var fav = (baziExplain.favorable || '').toString().replace(/[（未取）\s]/g, '');
-    var unfav = (baziExplain.unfavorable || '').toString().replace(/[（未取）\s]/g, '');
-    var yearEl = (baziExplain.yearElement || '').toString();
     var relationText = (baziExplain.relationText || '').toString();
     var reason = '';
     var conclusion = '';
     if (bodyStrength === '身弱' || bodyStrength === '極弱') {
       if (relationText.indexOf('剋') >= 0 || relationText.indexOf('壓力') >= 0) {
-        reason = '日主偏弱，流年又剋日主、生扶不足';
-        conclusion = probPct >= 50 ? '今年有機會但不穩定，宜小步試水、勿大舉投入。' : '今年不適合用高強度方式衝事業，宜保守。';
+        reason = '今年運勢對你壓力較大、助力有限';
+        conclusion = probPct >= 50 ? '有機會但不穩定，宜小步試、勿大舉投入。' : '不適合高強度衝刺，宜保守。';
       } else if (relationText.indexOf('生') >= 0) {
-        reason = '日主偏弱，流年生扶日主';
-        conclusion = '今年有機會，可把握時機、穩健進行。';
+        reason = '今年運勢對你有助益';
+        conclusion = '有機會，可把握時機、穩健進行。';
       } else {
-        reason = '日主偏弱，喜' + (fav || '—') + '、忌' + (unfav || '—') + '，今年流年' + yearEl;
+        reason = '今年運勢對你尚可，但有利條件不算多';
         conclusion = probPct >= 50 ? '有機會但需條件配合。' : '宜穩守、勿過度擴張。';
       }
     } else if (bodyStrength === '身強') {
-      reason = '身強可任財官，流年' + yearEl + '，' + (relationText || '');
-      conclusion = probPct >= 50 ? '今年有機會達標，可積極布局。' : '宜評估風險再行動。';
+      reason = '今年運勢可承擔較多、有發揮空間';
+      conclusion = probPct >= 50 ? '有機會達標，可積極布局。' : '宜評估風險再行動。';
     } else {
-      reason = '流年' + yearEl + '，' + (relationText || '') + '，喜' + (fav || '—') + '、忌' + (unfav || '—');
+      reason = '今年運勢整體' + (relationText.indexOf('生') >= 0 ? '對你有助益' : relationText.indexOf('剋') >= 0 ? '壓力較大' : '尚可');
       conclusion = probPct >= 55 ? '有機會，宜把握。' : (probPct >= 45 ? '中性偏可行，需條件配合。' : '偏有阻力，宜保守。');
     }
-    return '直接回答：八字因為' + reason + '，所以' + conclusion + '（整體機率約 ' + probPct + '%）';
+    return '直接回答：' + conclusion + ' 原因：' + reason + '。（整體機率約 ' + probPct + '%）';
   }
 
   /**
@@ -253,10 +250,26 @@
       var meihuaEx = buildMeihuaExplainability(fusionData.meihua);
       if (meihuaEx && meihuaEx.text) { texts.meihua = meihuaEx; evidenceListForDisplay.push('梅花易數：' + meihuaEx.text); }
     } else missing.push('梅花易數');
-    if (fusionData.tarot && (fusionData.tarot.analysis || fusionData.tarot.cards)) {
+    /* 塔羅：只要抽牌已完成且結果物件存在即視為已參與；缺資料時才顯示缺哪一段 */
+    var tarotParticipated = false;
+    if (fusionData.tarot && typeof fusionData.tarot === 'object') {
+      var cards = fusionData.tarot.cards;
+      var analysis = fusionData.tarot.analysis || fusionData.tarot;
+      var hasCards = Array.isArray(cards) && cards.length > 0;
+      var hasAnalysis = analysis && (Array.isArray(analysis.positions) && analysis.positions.length > 0 || analysis.overall != null || analysis.overallProbability != null || analysis.fortuneScore != null);
+      tarotParticipated = hasCards || hasAnalysis;
+    }
+    if (tarotParticipated) {
       var tarotEx = buildTarotExplainability(fusionData.tarot);
-      if (tarotEx && tarotEx.text) { texts.tarot = tarotEx; evidenceListForDisplay.push('塔羅：' + tarotEx.text); }
-    } else missing.push('塔羅');
+      if (tarotEx && tarotEx.text) {
+        texts.tarot = tarotEx;
+        evidenceListForDisplay.push('塔羅：' + tarotEx.text);
+      } else {
+        evidenceListForDisplay.push('塔羅：抽牌已完成，詳解載入中。');
+      }
+    } else {
+      missing.push('塔羅');
+    }
     if (fusionData.nameology != null && fusionData.nameology !== undefined) {
       var nameEx = buildNameologyExplainability(fusionData.nameology);
       var nameText = (nameEx && nameEx.text) ? nameEx.text : '姓名學影響較輕，作為輔助參考。';

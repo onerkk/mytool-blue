@@ -2,7 +2,7 @@
  * 手機版結果分析頁面 UI 修正
  * - 文字容器接近滿版，減少右側留白
  * - 統一與「資料輸入」區塊的版面寬度
- * - 縮小 padding，使用 % / rem 響應式
+ * - 縮小 padding，使用 clamp 與 safe-area（與 responsive.css / result-section-override.css 同步）
  * - Flex 文字區塊填滿父層寬度
  */
 
@@ -15,14 +15,16 @@
         box-sizing: border-box !important;
     }
     
+    /* 區塊間距：clamp 與 responsive 同步，避免大空白 */
     .section {
-        padding: 0.75rem 0.5rem !important; /* 上下一點空間，左右 0.5rem */
+        padding: clamp(12px, 2.5vw, 18px) !important;
+        margin-bottom: clamp(12px, 2.5vw, 18px) !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
     }
     
-    /* ===== 分析結果區：與 Bazi 同寬同 padding（滿版，不預留按鈕寬度） ===== */
+    /* ===== 分析結果區：與 Bazi 同寬同 padding（滿版，safe-area 與 responsive 同步） ===== */
     #result-section {
         width: 100% !important;
         max-width: none !important;
@@ -30,8 +32,8 @@
         box-sizing: border-box !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        padding: 0.75rem !important;
-        padding-bottom: 150px !important;
+        padding: clamp(12px, 2.5vw, 18px) !important;
+        padding-bottom: max(150px, calc(150px + env(safe-area-inset-bottom, 0))) !important;
         overflow-x: auto !important;
         overflow-y: visible !important;
         -webkit-overflow-scrolling: touch !important;
@@ -268,10 +270,7 @@
         max-width: 100% !important;
     }
     
-    /* 結果區底部留白（含 iOS 安全區），可捲動至最後內容在懸浮按鈕上方 */
-    #result-section {
-        padding-bottom: max(150px, calc(150px + env(safe-area-inset-bottom, 0))) !important;
-    }
+    /* 結果區底部留白（含 iOS 安全區）：與 responsive 一致，已在上方 #result-section 統一設定 */
     
     /* 綜合結論、推薦區等底部區塊也留白 */
     #result-section .final-conclusion,
@@ -279,6 +278,12 @@
     #result-section .product-recommendation-card,
     #result-section .lucky-item-recommendation-card {
         margin-bottom: 0.5rem !important;
+    }
+
+    /* 大運流年橫向滑動：pan-x 與 responsive 同步，垂直滑動留給頁面 */
+    .dayun-timeline {
+        touch-action: pan-x !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 
     /* ===== 大運流年手機同步（與 main.css .dayun-quality / .dayun-fortune-type 一致，未來更新請同步） ===== */
@@ -334,5 +339,30 @@
         color: #1a1a1a !important;
         background: #fff9c4 !important;
         border: 1px solid #ffca28 !important;
+    }
+}
+
+/* 小螢幕 480px：與 main.css / responsive.css 同步（蝦皮/賣貨便左右排、區塊間距） */
+@media (max-width: 480px) {
+    .section {
+        padding: clamp(12px, 2.5vw, 18px) !important;
+        margin-bottom: clamp(12px, 2.5vw, 18px) !important;
+    }
+    #result-section {
+        padding: clamp(12px, 2.5vw, 18px) !important;
+        padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom, 0))) !important;
+    }
+    .nav-shop-buttons {
+        flex-direction: row !important;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+    .nav-shop-buttons .shop-btn {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+    .recommendation-buttons {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem;
     }
 }

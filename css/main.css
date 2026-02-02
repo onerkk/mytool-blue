@@ -80,8 +80,13 @@
     box-sizing: border-box;
 }
 
+/* 全站：避免橫向溢出（* box-sizing 已在上方） */
+html {
+    overflow-x: hidden;
+}
 /* 捲動由 #page-scroll 負責，不受其他樣式干擾 */
 html, body {
+    overflow-x: hidden !important;
     overflow: hidden !important;
     height: 100%;
     margin: 0;
@@ -89,7 +94,8 @@ html, body {
 #page-scroll.page-scroll {
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    height: 100vh !important;
+    height: 100dvh;
+    height: 100vh; /* fallback for older browsers */
     min-height: 100%;
     -webkit-overflow-scrolling: touch;
 }
@@ -101,6 +107,7 @@ body {
     color: var(--text-primary);
     line-height: 1.7;
     min-height: 100vh;
+    min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     position: relative;
@@ -4363,13 +4370,27 @@ body.custom-modal-open #page-scroll.page-scroll {
     .ziwei-result .ziwei-palaces {
         grid-template-columns: 1fr;
     }
+    /* 手機版蝦皮/賣貨便：左右並排、等寬、不換行（與浮動 FAB 共存） */
     .nav-shop-buttons {
-        flex-direction: column;
-        gap: 0.25rem;
+        flex-direction: row !important;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+    .nav-shop-buttons .shop-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 0.35rem 0.5rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .nav-shop-buttons .shop-btn i {
+        flex-shrink: 0;
     }
     
     .shop-btn {
-        padding: 0.35rem 0.6rem;
+        padding: 0.35rem 0.5rem;
         font-size: 0.75rem;
     }
     
@@ -4377,8 +4398,19 @@ body.custom-modal-open #page-scroll.page-scroll {
         padding: 1.5rem;
     }
     
+    /* 結果頁推薦區：蝦皮/賣貨便左右並排（各約 50% - gap），客製第二行 */
+    .recommendation-buttons {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem;
+    }
     .rec-btn {
-        padding: 1rem 1.25rem;
+        padding: 0.75rem 0.5rem;
+        min-width: 0;
+    }
+    .rec-btn .btn-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 

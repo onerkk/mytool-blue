@@ -601,8 +601,10 @@
         padding: 0.5rem !important; /* 約 8px，與 10px 接近 */
     }
     
+    /* 區塊間距：clamp 避免大空白，禁止 48/64px 固定 */
     .section {
-        padding: 0.75rem 0.625rem !important; /* 約 12px 左右 */
+        padding: clamp(12px, 2.5vw, 18px) clamp(12px, 2.5vw, 18px) !important;
+        margin-bottom: clamp(12px, 2.5vw, 18px) !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -641,9 +643,14 @@
         line-height: 1.6 !important;
     }
     
-    /* 結果區底部留白，避免被懸浮按鈕蓋住 */
+    /* 結果區底部留白，避免被懸浮按鈕蓋住；safe-area 避免 FAB 被遮 */
     #result-section {
-        padding-bottom: 100px !important;
+        padding-bottom: max(100px, env(safe-area-inset-bottom, 0) + 80px) !important;
+    }
+    /* 大運流年橫向滑動：pan-x 讓垂直滑動留給頁面，不吃掉 */
+    .dayun-timeline {
+        touch-action: pan-x;
+        -webkit-overflow-scrolling: touch;
     }
     
     .app-header h1 {
@@ -995,8 +1002,8 @@
     
     /* 浮動按鈕小屏幕優化 - 與 iOS 安全區同步 */
     .floating-buttons {
-        bottom: max(15px, env(safe-area-inset-bottom, 15px)) !important;
-        right: max(8px, env(safe-area-inset-right, 8px)) !important;
+        bottom: max(15px, calc(15px + env(safe-area-inset-bottom, 0))) !important;
+        right: max(8px, calc(8px + env(safe-area-inset-right, 0))) !important;
         gap: 8px !important;
     }
     

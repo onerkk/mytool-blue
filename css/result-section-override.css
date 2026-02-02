@@ -11,7 +11,7 @@ section#result-section {
   right: 50% !important;
   margin-left: -50vw !important;
   margin-right: -50vw !important;
-  padding: 3rem 2rem !important;
+  padding: clamp(12px, 2.5vw, 18px) clamp(12px, 2.5vw, 18px) !important;
   padding-bottom: 120px !important;
   box-sizing: border-box !important;
   overflow-x: hidden !important;
@@ -38,7 +38,7 @@ body > .floating-buttons,
 @media (max-width: 768px) {
   #result-section.section,
   section#result-section {
-    padding: 0.75rem max(1rem, env(safe-area-inset-right, 1rem)) max(150px, calc(150px + env(safe-area-inset-bottom, 0))) max(1rem, env(safe-area-inset-left, 1rem)) !important;
+    padding: clamp(12px, 2.5vw, 18px) max(1rem, env(safe-area-inset-right, 1rem)) max(150px, calc(150px + env(safe-area-inset-bottom, 0))) max(1rem, env(safe-area-inset-left, 1rem)) !important;
   }
 }
 
@@ -61,6 +61,35 @@ body > .floating-buttons,
   padding-left: 1.25rem;
   line-height: 1.7;
   color: rgba(255,255,255,0.9);
+}
+
+/* 結果頁：影響因子／建議 展開收合，手機預設收合、桌機預設展開 */
+.details-expand {
+  margin-top: 0.5rem;
+}
+.details-summary {
+  cursor: pointer;
+  color: var(--gold-primary, #D4AF37);
+  font-size: 0.9rem;
+  list-style: none;
+  padding: 0.35rem 0;
+}
+.details-summary::-webkit-details-marker { display: none; }
+.details-summary::before { content: '▶ '; font-size: 0.7rem; }
+details[open] .details-summary::before { content: '▼ '; }
+@media (min-width: 769px) {
+  #section-answer .details-factors[data-desktop-open],
+  #section-answer .details-suggestions[data-desktop-open] {
+    /* 桌機由 JS 設 open 屬性 */
+  }
+}
+@media (max-width: 768px) {
+  .answer-text-summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 /* 五行百分比不換行 */
