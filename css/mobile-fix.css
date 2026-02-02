@@ -1,35 +1,33 @@
 /**
- * 手機版結果分析頁面 UI 修正
- * - 與 responsive.css / main.css 同步：頂部按鈕不爆版、步驟間距、大運流年水平捲動
+ * 手機版結果分析頁面 UI 修正（與 responsive.css / main.css 同步更新）
+ * - 頂部按鈕不爆版、步驟間距、大運流年水平捲動、touch-action: pan-y 不鎖死垂直捲動
  * - 文字容器接近滿版，clamp 與 safe-area、Flex 填滿父層寬度
+ * - 更新時請同步檢查 responsive.css @media (max-width: 768px)/(480px) 與本檔
  */
 
 @media (max-width: 768px) {
-    /* 1) 頂部按鈕不爆版：容器寬度與 padding、按鈕 min-width: 0（與 responsive 同步） */
+    /* 1) 頂部按鈕不溢出：max-width: 100vw、box-sizing、flex 1 1 0%（與 responsive 同步） */
     .nav-container {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: 100vw !important;
+        padding: 10px !important;
         box-sizing: border-box !important;
-        padding: 0 1rem !important;
     }
     .nav-shop-buttons {
         width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        padding: 0;
+        max-width: 100vw !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
         display: flex !important;
-        flex-direction: row !important;
-        gap: 10px;
+        gap: 8px !important;
         min-width: 0;
     }
     .nav-shop-buttons .shop-btn {
-        flex: 1 !important;
-        width: auto !important;
+        flex: 1 1 0% !important;
         min-width: 0 !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 0.75rem !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        font-size: clamp(12px, 3vw, 16px) !important;
     }
     .nav-shop-buttons .shop-btn i {
         flex-shrink: 0;
@@ -324,24 +322,19 @@
         margin-bottom: 0.5rem !important;
     }
 
-    /* 4) 大運流年：強制水平捲動、不溢出、可查看右側內容 */
+    /* 5) 大運流年：解除捲動鎖死—height: auto、touch-action: pan-y 讓垂直滑動交給頁面 */
     .dayun-container,
     .fortune-cycles-container {
-        display: flex !important;
-        flex-wrap: nowrap !important;
         overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        width: 100% !important;
-        padding-bottom: 10px !important;
+        overflow-y: visible !important;
+        height: auto !important;
+        touch-action: pan-y !important;
     }
     .dayun-timeline {
-        display: flex !important;
-        flex-wrap: nowrap !important;
         overflow-x: auto !important;
-        min-width: 0;
-        padding-bottom: 10px !important;
-        touch-action: pan-x !important;
-        -webkit-overflow-scrolling: touch !important;
+        overflow-y: visible !important;
+        height: auto !important;
+        touch-action: pan-y !important;
     }
 
     /* 本系統說明：預設一行、詳細展開收合（與 responsive 同步） */

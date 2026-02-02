@@ -749,29 +749,36 @@ input.readonly-input[readonly]:focus {
         0 0 20px rgba(212, 175, 55, 0.1);
 }
 
-/* --- 性別選項美化：卡片式設計 --- */
+/* --- 性別選項：膠囊切換器 (Segmented Control) 風格 --- */
 .radio-group {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    min-height: 44px;
+    max-height: 50px;
 }
 
 .radio-label {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 1.25rem 1rem;
+    gap: 0.35rem;
+    padding: 0 1rem;
+    height: 44px;
+    min-height: 44px;
+    max-height: 50px;
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
     border: 2px solid rgba(212, 175, 55, 0.2);
-    border-radius: 12px;
+    border-radius: 999px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
+    flex: 1 1 0%;
+    min-width: 0;
 }
 
 .radio-label::before {
@@ -810,9 +817,10 @@ input.readonly-input[readonly]:focus {
 }
 
 .radio-icon {
-    font-size: 1.5rem;
-    transition: all 0.3s ease;
-    opacity: 0.6;
+    font-size: 1rem;
+    transition: all 0.25s ease;
+    opacity: 0.7;
+    flex-shrink: 0;
 }
 
 .radio-text {
@@ -824,8 +832,7 @@ input.readonly-input[readonly]:focus {
 
 .radio-label:has(input[type="radio"]:checked) .radio-icon {
     opacity: 1;
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 8px currentColor);
+    filter: drop-shadow(0 0 6px currentColor);
 }
 
 input[type="radio"]:checked + .radio-custom {
@@ -856,10 +863,11 @@ input[type="radio"]:checked ~ .radio-text {
 
 .radio-label:has(input[type="radio"]:checked) {
     border-color: var(--gold-primary);
-    background: rgba(212, 175, 55, 0.12);
+    background: rgba(212, 175, 55, 0.18);
     box-shadow: 
-        0 4px 16px rgba(212, 175, 55, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        0 2px 12px rgba(212, 175, 55, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    color: var(--gold-primary);
 }
 
 .radio-label:has(input[type="radio"]:checked)::before {
@@ -4308,30 +4316,31 @@ body.custom-modal-open #page-scroll.page-scroll {
 
 /* 響應式設計 */
 @media (max-width: 768px) {
-    /* 1) 頂部按鈕不爆版：容器寬度與 padding、按鈕 min-width: 0 防止撐開 */
+    /* 1) 頂部按鈕不溢出：max-width: 100vw + box-sizing，按鈕 flex 1 1 0% 均分 */
     .nav-container {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: 100vw !important;
+        padding: 10px !important;
         box-sizing: border-box !important;
-        padding: 0 1rem !important;
     }
     .nav-shop-buttons {
         width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        padding: 0;
+        max-width: 100vw !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
         display: flex;
         flex-direction: row;
-        gap: 10px;
+        gap: 8px;
         min-width: 0;
     }
     .nav-shop-buttons .shop-btn {
-        flex: 1;
-        width: auto;
-        min-width: 0;
+        flex: 1 1 0% !important;
+        width: auto !important;
+        min-width: 0 !important;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        font-size: clamp(12px, 3vw, 16px) !important;
     }
     
     .shop-btn {

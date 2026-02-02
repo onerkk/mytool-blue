@@ -448,6 +448,13 @@ class FortuneSystem {
         const target = document.getElementById(sectionId);
         if (target) {
             target.classList.add('active');
+            // 3) 下一步／切換 Tab 後：視圖定位到目標區塊頂部，避免使用者停留在底部迷失
+            try {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (e) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        } else {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
@@ -5011,6 +5018,10 @@ function setupMeihuaRandomDomGuard(){
                 question: question,
                 questionType: (this.userData && this.userData.questionType) || ''
               };
+              // 4) 跨系統證據除錯：執行綜合分析前確認塔羅資料（避免 scope/async 導致誤判未參與）
+              var currentTarotCards = (this.analysisResults && this.analysisResults.tarot) ? (this.analysisResults.tarot.cards || this.analysisResults.tarot.tarotCards || this.analysisResults.tarot.drawnCards) : null;
+              var tarotHasCards = Array.isArray(currentTarotCards) && currentTarotCards.length > 0;
+              if (typeof console !== 'undefined') console.log('[綜合分析] currentTarotCards', currentTarotCards, 'tarotHasCards', tarotHasCards, 'dataForScoring.tarot', dataForScoring.tarot);
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
               displayConclusion = fusionOut.conclusion || '';
               // 直接回答區塊不重複顯示問題；結論優先，原理參考縮小顯示於後

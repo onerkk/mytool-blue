@@ -4,31 +4,33 @@
 
 /* 手機版通用優化 */
 @media (max-width: 768px) {
-    /* 1) 頂部按鈕不爆版：容器與按鈕寬度限制、min-width: 0 防止 flex 撐開 */
+    /* 1) 頂部按鈕不溢出：容器 100vw + box-sizing，按鈕 flex 1 1 0% 均分，防止文字撐開 */
     .nav-container {
         width: 100% !important;
-        max-width: 100% !important;
+        max-width: 100vw !important;
+        padding: 10px !important;
         box-sizing: border-box !important;
-        padding: 0 1rem !important;
+        display: flex !important;
+        gap: 8px !important;
     }
     .nav-shop-buttons {
         width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        padding: 0;
+        max-width: 100vw !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
         display: flex !important;
         flex-direction: row !important;
-        gap: 10px;
+        gap: 8px !important;
         min-width: 0;
     }
     .nav-shop-buttons .shop-btn {
-        flex: 1 !important;
+        flex: 1 1 0% !important;
         width: auto !important;
         min-width: 0 !important;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 0.75rem !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        font-size: clamp(12px, 3vw, 16px) !important;
     }
     .nav-shop-buttons .shop-btn i {
         flex-shrink: 0;
@@ -111,26 +113,33 @@
         margin: 1rem 0 !important;
     }
     
-    /* 4) 大運流年／流年方塊圖：強制水平捲動、不溢出、可查看右側內容 */
+    /* 5) 大運流年：解除捲動鎖死—內容 height: auto、touch-action: pan-y 讓垂直滑動交給頁面，橫向仍可捲圖表 */
     .dayun-container,
     .fortune-cycles-container {
         display: flex !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
+        overflow-y: visible !important;
         -webkit-overflow-scrolling: touch !important;
         width: 100% !important;
         max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
         padding-bottom: 10px !important;
         box-sizing: border-box !important;
+        touch-action: pan-y !important;
     }
     .dayun-timeline {
         display: flex !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
+        overflow-y: visible !important;
         -webkit-overflow-scrolling: touch !important;
         width: 100% !important;
         min-width: 0;
+        height: auto !important;
         padding-bottom: 10px !important;
+        touch-action: pan-y !important;
     }
     
     /* 本系統說明：預設一行，詳細放入展開收合（手機預設收合） */
@@ -224,13 +233,28 @@
         min-height: 48px;
     }
     
-    /* 性別選項手機版 */
+    /* 2) 性別選項手機版：膠囊並排、高度 40–50px、小圖示 */
     .radio-group {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 0.5rem !important;
+        min-height: 40px !important;
+        max-height: 50px !important;
     }
     .radio-label {
-        padding: 1rem 0.75rem;
+        flex: 1 1 0% !important;
+        flex-direction: row !important;
+        padding: 0 0.75rem !important;
+        height: 44px !important;
+        min-height: 40px !important;
+        max-height: 50px !important;
+        border-radius: 999px !important;
+    }
+    .radio-icon {
+        font-size: 0.9rem !important;
+    }
+    .radio-text {
+        font-size: 0.9rem !important;
     }
     .radio-icon {
         font-size: 1.25rem !important;
@@ -734,9 +758,9 @@
     #result-section {
         padding-bottom: max(100px, env(safe-area-inset-bottom, 0) + 80px) !important;
     }
-    /* 大運流年橫向滑動：pan-x 讓垂直滑動留給頁面，不吃掉 */
+    /* 大運流年：與 768px / mobile-fix 同步，pan-y 讓垂直滑動交給頁面，不鎖死 */
     .dayun-timeline {
-        touch-action: pan-x;
+        touch-action: pan-y !important;
         -webkit-overflow-scrolling: touch;
     }
     
