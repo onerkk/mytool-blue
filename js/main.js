@@ -5062,17 +5062,12 @@ function setupMeihuaRandomDomGuard(){
               }
               var categoryBanner = document.getElementById('category-warning-banner');
               if (categoryBanner) {
-                if (!userCategory && (question || '').trim().length > 0) {
-                  categoryBanner.textContent = '請選擇問題類型（目前依問題文字推斷）';
-                  categoryBanner.style.display = 'block';
-                } else {
-                  categoryBanner.textContent = '';
-                  categoryBanner.style.display = 'none';
-                }
-              }
-              if (fusionOut && fusionOut.evidenceUsed && fusionOut.evidenceUsed.length === 1 && categoryBanner) {
-                categoryBanner.textContent = (categoryBanner.textContent ? categoryBanner.textContent + ' ' : '') + '證據不足：目前僅引用單一系統，建議補抽塔羅或起梅花卦以完成多維交叉。';
-                categoryBanner.style.display = 'block';
+                var bannerText = '';
+                if (fusionOut && fusionOut.autoCorrectNotice) bannerText = fusionOut.autoCorrectNotice;
+                else if (!userCategory && (question || '').trim().length > 0) bannerText = '請選擇問題類型（目前依問題文字推斷）';
+                else if (fusionOut && fusionOut.evidenceUsed && fusionOut.evidenceUsed.length === 1) bannerText = '證據不足：目前僅引用單一系統，建議補抽塔羅或起梅花卦以完成多維交叉。';
+                categoryBanner.textContent = bannerText;
+                categoryBanner.style.display = bannerText ? 'block' : 'none';
               }
               displayConclusion = fusionOut.conclusion || '';
               // 直接回答區塊：優先使用 directAnswerParagraph（僅結論段，不含依據/日主/喜忌），避免通用八字段落污染

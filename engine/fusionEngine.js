@@ -39,15 +39,62 @@
   }
 
   function getQuestionType(question, questionType) {
-    if (questionType) return String(questionType).toLowerCase();
+    if (questionType) return String(questionType).toLowerCase().trim();
     var q = String(question || '');
-    if (/桃花|感情|戀|告白|結婚|復合|伴侶|正緣|緣份|姻緣/.test(q)) return 'love';
-    if (/工作|事業|升遷|轉職|面試|業績/.test(q)) return 'career';
-    if (/錢|財|投資|收入|負債|買賣|副業|銷售|破萬|賺錢|業績|賣出|售出|賣掉|手鍊|手練|飾品|自製|作品/.test(q)) return 'wealth';
-    if (/健康|病|疼|手術|恢復/.test(q)) return 'health';
-    if (/人際|朋友|同事|貴人/.test(q)) return 'relationship';
-    if (/家庭|家人|購屋/.test(q)) return 'family';
+    if (/人際|貴人|客戶|交際|溝通|互動|客訴|關係維護|朋友|同事/.test(q)) return 'relationship';
+    if (/桃花|感情|戀|告白|結婚|復合|伴侶|正緣|緣份|姻緣|曖昧|對象|約會|相親/.test(q)) return 'love';
+    if (/工作|事業|升遷|轉職|面試|業績|老闆|專案|合作|開發/.test(q)) return 'career';
+    if (/錢|財|投資|收入|負債|買賣|副業|銷售|破萬|賺錢|業績|賣出|售出|賣掉|手鍊|手練|飾品|自製|作品|資金|現金流|偏財|正財|風險/.test(q)) return 'wealth';
+    if (/健康|病|疼|手術|恢復|睡眠|腸胃|壓力|發炎|頭痛|心血管|運動/.test(q)) return 'health';
+    if (/家庭|家人|購屋|親子|父母|婚姻相處/.test(q)) return 'family';
     return 'general';
+  }
+
+  /** 意圖辨識：關鍵詞字典 + 權重計分，輸出 inferredCategory / matchedKeywords / scores（防止人際被誤判成桃花） */
+  var LOVE_KEYWORDS = ['桃花', '感情', '曖昧', '交往', '復合', '婚姻', '對象', '告白', '戀愛', '伴侶', '正緣', '緣份', '姻緣', '約會', '相親', '分手'];
+  var CAREER_KEYWORDS = ['工作', '轉職', '升遷', '老闆', '同事', '專案', '業績', '客戶', '合作', '開發', '面試', '離職', '考績', '調動'];
+  var WEALTH_KEYWORDS = ['收入', '投資', '資金', '現金流', '負債', '偏財', '正財', '風險', '破萬', '財運', '銷售', '賣出'];
+  var HEALTH_KEYWORDS = ['健康', '睡眠', '腸胃', '壓力', '發炎', '頭痛', '心血管', '運動', '病', '手術', '恢復'];
+  var SOCIAL_KEYWORDS = ['人際', '貴人', '客戶', '交際', '溝通', '互動', '客訴', '關係維護', '朋友', '同事'];
+  var FAMILY_KEYWORDS = ['家庭', '家人', '親子', '父母', '婚姻相處', '購屋', '買房'];
+  var GENERAL_KEYWORDS = ['運勢', '整體', '今年', '最近'];
+
+  function inferCategoryFromQuestion(questionText) {
+    var q = String(questionText || '');
+    var scores = { love: 0, career: 0, wealth: 0, health: 0, relationship: 0, family: 0, general: 0 };
+    function count(keywords) { var n = 0; for (var i = 0; i < keywords.length; i++) if (q.indexOf(keywords[i]) >= 0) n++; return n; }
+    scores.love = count(LOVE_KEYWORDS);
+    scores.career = count(CAREER_KEYWORDS);
+    scores.wealth = count(WEALTH_KEYWORDS);
+    scores.health = count(HEALTH_KEYWORDS);
+    scores.relationship = count(SOCIAL_KEYWORDS);
+    scores.family = count(FAMILY_KEYWORDS);
+    scores.general = count(GENERAL_KEYWORDS);
+    var matched = [];
+    LOVE_KEYWORDS.forEach(function (w) { if (q.indexOf(w) >= 0) matched.push(w); });
+    SOCIAL_KEYWORDS.forEach(function (w) { if (q.indexOf(w) >= 0) matched.push(w); });
+    CAREER_KEYWORDS.forEach(function (w) { if (q.indexOf(w) >= 0) matched.push(w); });
+    WEALTH_KEYWORDS.forEach(function (w) { if (q.indexOf(w) >= 0) matched.push(w); });
+    HEALTH_KEYWORDS.forEach(function (w) { if (q.indexOf(w) >= 0) matched.push(w); });
+    FAMILY_KEYWORDS.forEach(function (w) { if (q.indexOf(w) >= 0) matched.push(w); });
+    var best = 'general';
+    var bestScore = 0;
+    Object.keys(scores).forEach(function (k) {
+      if (scores[k] > bestScore) { bestScore = scores[k]; best = k; }
+    });
+    return { inferredCategory: best, matchedKeywords: matched, scores: scores };
+  }
+
+  /** 非愛情類別時 Direct Answer 禁止出現的詞（避免桃花污染人際/事業） */
+  var FORBIDDEN_WHEN_NOT_LOVE = ['桃花', '曖昧', '感情運', '對象', '復合', '告白', '戀愛', '桃花運勢', '姻緣', '正緣'];
+
+  function checkForbiddenTerms(text, finalCategoryUsed) {
+    if (finalCategoryUsed === 'love') return { hit: [], passed: true };
+    var hit = [];
+    FORBIDDEN_WHEN_NOT_LOVE.forEach(function (term) {
+      if (text.indexOf(term) >= 0) hit.push(term);
+    });
+    return { hit: hit, passed: hit.length === 0 };
   }
 
   /** 從問題字串提取數字（破2萬、10萬、業績5等）用於難度權重 */
@@ -303,14 +350,42 @@
     var typeKey = type === 'wealth' ? 'finance' : (type === 'love' ? 'love' : type);
     if (typeof VocabularyDB !== 'undefined' && VocabularyDB.getSubject) return VocabularyDB.getSubject(typeKey, seed);
     var wealth = /收入|破萬|賺錢|財運|薪水|加薪|投資|理財/.test(question || '');
-    var career = /工作|事業|升遷|轉職|面試|業績|職涯/.test(question || '');
-    var love = /感情|姻緣|結婚|復合|對象|桃花/.test(question || '');
+    var career = /工作|事業|升遷|轉職|面試|業績|職涯|客戶|合作|專案/.test(question || '');
+    var relationship = /人際|貴人|客戶|交際|溝通|互動|客訴|關係維護|朋友|同事/.test(question || '');
+    var love = /感情|姻緣|結婚|復合|對象|桃花|曖昧|告白|戀愛|約會|相親/.test(question || '');
     var health = /健康|病|身體|作息|飲食|身心|手術|恢復|運動|體檢/.test(question || '');
+    if (relationship && !/桃花|感情|曖昧|姻緣|告白|戀愛|約會|相親/.test(question || '')) return '客戶互動與人際';
     if (wealth) return '本月收入與財運';
     if (career) return '事業與工作發展';
     if (love) return '感情與姻緣';
     if (health) return '今年健康狀況';
+    if (relationship) return '人際與合作關係';
     return '您問的這件事';
+  }
+
+  /** 人際/客戶互動專用模板池（禁止桃花/感情用語）；結論 + 客戶互動/合作/溝通語意 + 3 條建議 */
+  var RELATIONSHIP_TEMPLATE_POOL = [
+    { conclusion: '今年客戶互動與人際尚可，留意溝通與合作節奏即可。', risks: ['溝通', '合作'], suggestions: ['主動維繫客戶關係、定期關心需求', '開會前先釐清目標與分工', '遇爭議先傾聽再回應'] },
+    { conclusion: '今年人際與客戶互動有空間，可把握合作與貴人。', risks: ['節奏', '期待'], suggestions: ['真誠溝通、避免猜測', '尊重界限、不強求', '選擇合適時機表達'] },
+    { conclusion: '今年客戶之間互動偏穩，關係維護是重點。', risks: ['關係維護', '信任'], suggestions: ['主動維繫客戶關係', '開會前先釐清目標', '遇爭議先傾聽再回應'] },
+    { conclusion: '今年人際與合作關係尚可，留意溝通與客訴處理。', risks: ['溝通', '客訴'], suggestions: ['真誠溝通避免猜測', '尊重界限不強求', '選擇合適時機表達'] },
+    { conclusion: '今年客戶互動與合作有機會，可留意貴人與交際。', risks: ['貴人', '交際'], suggestions: ['主動維繫客戶關係', '真誠溝通、避免猜測', '選擇合適時機表達'] },
+    { conclusion: '今年人際與客戶互動需留意，溝通與期待管理是關鍵。', risks: ['溝通', '期待'], suggestions: ['開會前先釐清目標與分工', '遇爭議先傾聽再回應', '尊重界限、不強求'] },
+    { conclusion: '今年客戶之間互動偏穩，可把握合作與關係維護。', risks: ['合作', '關係維護'], suggestions: ['主動維繫客戶關係、定期關心需求', '真誠溝通避免猜測', '選擇合適時機表達'] },
+    { conclusion: '今年人際與貴人尚可，留意交際與溝通節奏。', risks: ['交際', '溝通'], suggestions: ['主動維繫客戶關係', '尊重界限不強求', '遇爭議先傾聽再回應'] },
+    { conclusion: '今年客戶互動有空間，關係維護與合作是重點。', risks: ['關係維護', '合作'], suggestions: ['定期關心客戶需求', '開會前先釐清目標', '真誠溝通避免猜測'] },
+    { conclusion: '今年人際與客戶互動尚可，留意溝通與分工。', risks: ['溝通', '分工'], suggestions: ['開會前先釐清目標與分工', '主動維繫客戶關係', '選擇合適時機表達'] }
+  ];
+
+  function buildRelationshipConclusion(probVal, question, topFactors, synSuggestions) {
+    var seed = (probVal || 0) + (String(question || '').length || 0);
+    var idx = seed % RELATIONSHIP_TEMPLATE_POOL.length;
+    var t = RELATIONSHIP_TEMPLATE_POOL[idx] || RELATIONSHIP_TEMPLATE_POOL[0];
+    var conclusion = t.conclusion;
+    var riskLine = (t.risks && t.risks.length) ? '可留意：' + t.risks.join('、') + '。' : '可留意溝通、合作與關係維護。';
+    var sugg = (synSuggestions && synSuggestions.length >= 3) ? synSuggestions.slice(0, 3) : (t.suggestions || ['真誠溝通避免猜測', '尊重界限不強求', '選擇合適時機表達']);
+    var suggLine = '建議：（1）' + (sugg[0] || '真誠溝通避免猜測') + '；（2）' + (sugg[1] || '尊重界限不強求') + '；（3）' + (sugg[2] || '選擇合適時機表達') + '。';
+    return conclusion + ' ' + riskLine + ' ' + suggLine;
   }
 
   /** 健康專用模板池（禁止使用通用八字段落）；至少 10 組：結論短句 + 風險面向 + 3 條建議 */
@@ -481,12 +556,29 @@
       });
       var selectionResult = EvidenceSelector.selectEvidence(parsed, evidenceItems);
       var probResult = computeProbability(data);
-      var categoryForLog = probResult.category || normalizeCategory(getQuestionType(data.question, data.questionType));
+      var uiCategory = (data.questionType && String(data.questionType).trim()) ? normalizeCategory(String(data.questionType).toLowerCase().trim()) : normalizeCategory(getQuestionType(data.question, data.questionType));
       var questionText = String(data.question || '').trim();
+      var intentResult = inferCategoryFromQuestion(questionText);
+      var inferredCategory = intentResult.inferredCategory;
+      var matchedKeywords = intentResult.matchedKeywords;
+      var scores = intentResult.scores || {};
+      var finalCategoryUsed = uiCategory;
+      var autoCorrectNotice = null;
+      if (inferredCategory !== uiCategory && (scores[inferredCategory] || 0) >= (scores[uiCategory] || 0) + 2) {
+        finalCategoryUsed = inferredCategory;
+        var labelMap = { love: '愛情', career: '事業', wealth: '財運', health: '健康', relationship: '人際', family: '家庭', general: '綜合' };
+        autoCorrectNotice = '偵測到問題更符合【' + (labelMap[inferredCategory] || inferredCategory) + '】方向，已自動以該類型解讀。';
+      }
+      var categoryForLog = finalCategoryUsed;
       var questionTokens = (typeof extractQuestionTokens === 'function') ? extractQuestionTokens(questionText, categoryForLog) : [];
       var evidenceUsedSystems = probResult.evidenceUsed || [];
       var selectedTemplateId = categoryForLog;
       var breakdown = probResult.probabilityBreakdown || { base: probResult.baseRate, contributions: [] };
+      if (typeof console !== 'undefined') {
+        console.log('[INPUT]', { uiCategory: uiCategory, questionText: questionText.slice(0, 120) });
+        console.log('[INTENT]', { inferredCategory: inferredCategory, matchedKeywords: matchedKeywords });
+        console.log('[ROUTE]', { finalCategoryUsed: finalCategoryUsed, templateId: selectedTemplateId });
+      }
       if (typeof console !== 'undefined') {
         console.log('[QA]', { category: categoryForLog, questionText: questionText.slice(0, 120) });
         console.log('[TOKENS]', questionTokens);
@@ -521,11 +613,28 @@
         }
       }
       if (factorTexts.length === 0) factorTexts = evidenceListForDisplay.map(function (e) { return e; });
-      var typeForConclusion = getQuestionType(data.question, data.questionType);
-      var categoryConclusion = categoryForLog === 'health' ? buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions) : buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel);
+      var typeForConclusion = finalCategoryUsed;
+      var categoryConclusion = categoryForLog === 'health' ? buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions) : (categoryForLog === 'relationship' ? buildRelationshipConclusion(probVal, data.question, probResult.factors || [], syn.suggestions) : buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel));
       var directAnswerForDisplay = categoryConclusion;
       if (categoryForLog === 'health' && /請見下方依據|依據：|日主|喜神|忌神/.test(directAnswerForDisplay)) {
         directAnswerForDisplay = buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions);
+      }
+      var forbiddenCheck = checkForbiddenTerms(directAnswerForDisplay, finalCategoryUsed);
+      if (!forbiddenCheck.passed) {
+        if (typeof console !== 'undefined') {
+          console.log('[GUARD]', { forbiddenTermsHit: forbiddenCheck.hit, templateId: selectedTemplateId, finalCategoryUsed: finalCategoryUsed });
+        }
+        if (finalCategoryUsed === 'relationship') {
+          directAnswerForDisplay = buildRelationshipConclusion(probVal, data.question, probResult.factors || [], syn.suggestions);
+        } else {
+          directAnswerForDisplay = buildConclusionByType(probVal, finalCategoryUsed, data.question, probResult.factors || [], probResult.difficultyLevel);
+        }
+        if (typeof console !== 'undefined') {
+          console.log('[GUARD] 修正後 templateId=', finalCategoryUsed);
+        }
+      }
+      if (typeof console !== 'undefined') {
+        console.log('[GUARD]', { forbiddenTermsHit: forbiddenCheck.hit, passed: forbiddenCheck.passed });
       }
       var fullText = problemRestatement + '\n\n' + directAnswerForDisplay + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
       if (typeof ExplainabilityGuard !== 'undefined' && ExplainabilityGuard.checkEvidenceText) {
@@ -581,7 +690,7 @@
           return f.name + '：' + label + '（' + (f.detail || '') + '）';
         });
       }
-      var category = probResult.category || normalizeCategory(getQuestionType(data.question, data.questionType));
+      var category = categoryForLog;
       var directAnswerParagraph = problemRestatement + (problemRestatement ? '\n\n' : '') + directAnswerForDisplay;
       if (typeof console !== 'undefined') {
         console.log('[FusionEngine] category=', category, 'appliedWeights=', probResult.appliedWeights || {}, 'topFactors=', (probResult.factors || []).map(function (f) { return f.name; }), 'missingEvidence=', probResult.missingEvidence || []);
@@ -601,7 +710,8 @@
         selectedTemplateId: category,
         missingEvidence: probResult.missingEvidence || [],
         evidenceUsed: probResult.evidenceUsed || [],
-        probabilityBreakdown: probResult.probabilityBreakdown || null
+        probabilityBreakdown: probResult.probabilityBreakdown || null,
+        autoCorrectNotice: autoCorrectNotice || null
       };
     } catch (e) {
       if (typeof console !== 'undefined') {
@@ -619,12 +729,24 @@
     var probResult = computeProbability(data);
     var probVal = typeof probResult.probabilityValue === 'number' ? probResult.probabilityValue : 55;
     var type = getQuestionType(data.question, data.questionType);
-    var category = probResult.category || normalizeCategory(type);
+    var uiCategoryFallback = (data.questionType && String(data.questionType).trim()) ? normalizeCategory(String(data.questionType).toLowerCase().trim()) : normalizeCategory(type);
     var questionText = String(data.question || '').trim();
+    var intentFallback = inferCategoryFromQuestion(questionText);
+    var finalCategoryFallback = uiCategoryFallback;
+    var autoCorrectNoticeFallback = null;
+    if (intentFallback.inferredCategory !== uiCategoryFallback && (intentFallback.scores[intentFallback.inferredCategory] || 0) >= (intentFallback.scores[uiCategoryFallback] || 0) + 2) {
+      finalCategoryFallback = intentFallback.inferredCategory;
+      var labelMapFb = { love: '愛情', career: '事業', wealth: '財運', health: '健康', relationship: '人際', family: '家庭', general: '綜合' };
+      autoCorrectNoticeFallback = '偵測到問題更符合【' + (labelMapFb[intentFallback.inferredCategory] || intentFallback.inferredCategory) + '】方向，已自動以該類型解讀。';
+    }
+    var category = finalCategoryFallback;
     var questionTokens = (typeof extractQuestionTokens === 'function') ? extractQuestionTokens(questionText, category) : [];
     var evidenceUsedSystems = probResult.evidenceUsed || [];
     var breakdown = probResult.probabilityBreakdown || { base: probResult.baseRate, contributions: [] };
     if (typeof console !== 'undefined') {
+      console.log('[INPUT]', { uiCategory: uiCategoryFallback, questionText: questionText.slice(0, 120) });
+      console.log('[INTENT]', { inferredCategory: intentFallback.inferredCategory, matchedKeywords: intentFallback.matchedKeywords });
+      console.log('[ROUTE]', { finalCategoryUsed: category, templateId: category });
       console.log('[QA]', { category: category, questionText: questionText.slice(0, 120) });
       console.log('[TOKENS]', questionTokens);
       console.log('[EVIDENCE_USED]', evidenceUsedSystems);
@@ -632,11 +754,20 @@
       console.log('[PROB_BREAKDOWN]', breakdown);
       console.log('[TEMPLATE_PICK]', { category: category, templateId: category });
     }
+    var suggestions = getSuggestionsByType(category, probVal, data);
     var topFactors = probResult.factors.slice(0, 4);
-    var categoryConclusionFallback = category === 'health' ? buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions) : buildConclusionByType(probVal, type, data.question, topFactors, probResult.difficultyLevel);
+    var categoryConclusionFallback = category === 'health' ? buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions) : (category === 'relationship' ? buildRelationshipConclusion(probVal, data.question, topFactors, suggestions) : buildConclusionByType(probVal, category, data.question, topFactors, probResult.difficultyLevel));
     if (category === 'health' && /請見下方依據|依據：|日主|喜神|忌神/.test(categoryConclusionFallback)) {
       categoryConclusionFallback = buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions);
     }
+    var forbiddenFallback = checkForbiddenTerms(categoryConclusionFallback, category);
+    if (!forbiddenFallback.passed) {
+      if (typeof console !== 'undefined') console.log('[GUARD]', { forbiddenTermsHit: forbiddenFallback.hit, templateId: category, finalCategoryUsed: category });
+      if (category === 'relationship') categoryConclusionFallback = buildRelationshipConclusion(probVal, data.question, topFactors, suggestions);
+      else categoryConclusionFallback = buildConclusionByType(probVal, category, data.question, topFactors, probResult.difficultyLevel);
+      if (typeof console !== 'undefined') console.log('[GUARD] 修正後 templateId=', category);
+    }
+    if (typeof console !== 'undefined') console.log('[GUARD]', { forbiddenTermsHit: forbiddenFallback.hit, passed: forbiddenFallback.passed });
     var conclusion = categoryConclusionFallback + '\n\n依據：\n（見下方影響因子）\n\n建議：\n' + (suggestions.join('\n') || '');
     var directAnswerParagraphFallback = categoryConclusionFallback;
 
@@ -652,8 +783,6 @@
       }
       return f.name + '：' + label + '（' + desc + '）';
     });
-
-    var suggestions = getSuggestionsByType(type, probVal, data);
     if (typeof console !== 'undefined') {
       console.log('[FusionEngine fallback] category=', category, 'appliedWeights=', probResult.appliedWeights || {}, 'topFactors=', topFactors.map(function (f) { return f.name; }), 'missingEvidence=', probResult.missingEvidence || []);
     }
@@ -672,7 +801,8 @@
       selectedTemplateId: category,
       missingEvidence: probResult.missingEvidence || [],
       evidenceUsed: probResult.evidenceUsed || [],
-      probabilityBreakdown: probResult.probabilityBreakdown || null
+      probabilityBreakdown: probResult.probabilityBreakdown || null,
+      autoCorrectNotice: autoCorrectNoticeFallback || null
     };
   }
 
