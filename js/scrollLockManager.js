@@ -20,7 +20,7 @@
     savedBodyStyles.width = body.style.width;
     body.style.overflow = 'hidden';
     body.style.width = '100%';
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
       body.style.position = 'fixed';
       body.style.top = savedScrollY ? '-' + savedScrollY + 'px' : '0';
     }
