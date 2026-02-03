@@ -439,9 +439,14 @@ class FortuneSystem {
     }
     
     showSection(sectionId) {
-        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-        const target = document.getElementById(sectionId);
+        var sections = document.querySelectorAll('.section');
+        sections.forEach(function(sec) {
+            sec.classList.remove('active');
+            sec.style.display = 'none';
+        });
+        var target = document.getElementById(sectionId);
         if (target) {
+            target.style.display = 'block';
             target.classList.add('active');
             try {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -449,7 +454,7 @@ class FortuneSystem {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
-        const stepMap = { 'input-section':1, 'meihua-section':2, 'tarot-section':3, 'result-section':4 };
+        var stepMap = { 'input-section':1, 'meihua-section':2, 'tarot-section':3, 'result-section':4 };
         if (stepMap[sectionId]) {
             this.currentStep = stepMap[sectionId];
             this.updateProgress();
@@ -459,7 +464,9 @@ class FortuneSystem {
             this.loadResults();
         }
         setTimeout(function () {
-            window.scrollTo({ top: 0, behavior: 'auto' });
+            window.scrollTo(0, 0);
+            var pageScroll = document.getElementById('page-scroll');
+            if (pageScroll) pageScroll.scrollTop = 0;
         }, 100);
     }
     
@@ -540,8 +547,10 @@ class FortuneSystem {
         var favorableEl = document.getElementById('favorable-elements');
         if (favorableEl) favorableEl.textContent = '待計算';
 
-        // 重新載入頁面，還原結果區 HTML 結構（十神／五行等），確保「全部資料清除」
-        window.location.reload();
+        this.showSection('input-section');
+        window.scrollTo(0, 0);
+        var pageScroll = document.getElementById('page-scroll');
+        if (pageScroll) pageScroll.scrollTop = 0;
     }
     
     generateReport() {
