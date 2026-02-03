@@ -232,15 +232,22 @@ SUITS_INFO.forEach(suit => {
 // ==========================================
 // 2. 系統初始化
 // ==========================================
+function ensureBodyScrollable() {
+  if (!document.body) return;
+  var modalOpen = document.querySelector('.custom-order-modal.active') || document.querySelector('.card-interpretation-modal.active');
+  if (modalOpen) return;
+  if (window.scrollLockManager) window.scrollLockManager.forceUnlock();
+  document.body.style.removeProperty('overflow');
+  document.body.style.removeProperty('position');
+  document.body.style.removeProperty('top');
+  document.body.style.removeProperty('width');
+  document.documentElement.style.removeProperty('overflow');
+  document.documentElement.classList.remove('scroll-lock-active');
+  document.body.classList.remove('scroll-lock-active', 'custom-modal-open');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 單一滾動容器：強制恢復可捲動（清除殘留 lock／忘了解除的 modal）
-    if (window.scrollLockManager) {
-      window.scrollLockManager.forceUnlock();
-    }
-    document.body.style.removeProperty('overflow');
-    document.body.style.removeProperty('position');
-    document.body.style.removeProperty('top');
-    document.body.style.removeProperty('width');
+    ensureBodyScrollable();
     
     const system = new FortuneSystem();
     system.init();
@@ -255,6 +262,10 @@ document.addEventListener('DOMContentLoaded', function() {
     ensureFloatingButtonsVisible();
     
     console.log('靜月之光能量占卜儀 v2.0 已就緒（捲動由 scrollLockManager 集中管理）');
+});
+
+window.addEventListener('load', function() {
+  ensureBodyScrollable();
 });
 
 /** 捲動診斷：?debug=1 時可用 SCROLL_DEBUG()；否則轉呼叫 SCROLL_DEBUG（若已載入） */

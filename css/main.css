@@ -81,12 +81,15 @@
 }
 
 /* 全站：唯一 scroll container 策略 = 方案 A（body 滾），全站一致；不常駐 body position:fixed/overflow:hidden */
-/* 全站：單一滾動容器（body），避免橫向溢出 */
+/* 全站：單一滾動容器（body），避免橫向溢出；html/body 明確可捲動以修復手機無法滑 */
 html {
     overflow-x: hidden !important;
+    overflow-y: auto !important;
     min-height: 100vh;
     min-height: calc(var(--vh, 1vh) * 100);
     margin: 0;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 body {
     margin: 0;

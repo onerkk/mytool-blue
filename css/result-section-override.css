@@ -25,14 +25,22 @@ section#result-section {
   box-sizing: border-box !important;
 }
 
-/* 懸浮鈕：每個頁面都顯示（蝦皮 / 賣貨便 / 客製），最高優先級覆蓋任何隱藏規則 */
+/* 懸浮鈕：每個頁面都顯示；容器 pointer-events:none 不擋滑動，僅按鈕可點 */
 body .floating-buttons,
 body > .floating-buttons,
 #floating-buttons.floating-buttons {
   display: flex !important;
   visibility: visible !important;
-  pointer-events: auto !important;
+  pointer-events: none !important;
   opacity: 1 !important;
+}
+body .floating-buttons .floating-btn,
+body .floating-buttons a,
+body .floating-buttons button,
+#floating-buttons.floating-buttons .floating-btn,
+#floating-buttons.floating-buttons a,
+#floating-buttons.floating-buttons button {
+  pointer-events: auto !important;
 }
 
 @media (max-width: 768px) {
