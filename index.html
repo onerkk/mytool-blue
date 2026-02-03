@@ -15,7 +15,7 @@
         <meta http-equiv="Expires" content="0">
         <title>靜月之光能量占卜儀 v2.0</title>
         
-        <link rel="stylesheet" href="css/main.css?v=HOTFIX-20260203-A">
+        <link rel="stylesheet" href="css/main.css?v=HOTFIX-20260203-B">
         <link rel="stylesheet" href="css/tarot.css?v=HOTFIX-20260203-A">
         <link rel="stylesheet" href="css/bazi-display.css?v=HOTFIX-20260203-A">
         <link rel="stylesheet" href="css/responsive.css?v=HOTFIX-20260203-A">
@@ -47,6 +47,13 @@
         </script>
     </head>
     <body>
+        <!-- 頁尾：body 第一子元素，固定於視窗底部，避免被捲動容器包住 -->
+        <footer class="footer" id="page-footer">
+            <div class="footer-content">
+                <p>靜月之光能量占卜儀 v2.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
+                <p class="disclaimer">免責聲明：命理分析僅供娛樂參考，請勿過度依賴。實際生活請以理性判斷為主。</p>
+            </div>
+        </footer>
         <div id="page-scroll" class="page-scroll">
         <noscript><p style="padding:2rem;text-align:center;background:#1a1520;color:#D4AF37;">本系統需啟用 JavaScript 才能運作，請在瀏覽器設定中開啟後重新整理頁面。</p></noscript>
         <a href="#main-content" class="skip-link">跳至主要內容</a>
@@ -1024,14 +1031,6 @@
         </div>
         </div>
         <!-- #page-scroll 結束 -->
-
-        <!-- 頁尾：body 直屬，固定於視窗底部（非懸浮），z-index 僅高於內容、低於浮動按鈕 -->
-        <footer class="footer" id="page-footer">
-            <div class="footer-content">
-                <p>靜月之光能量占卜儀 v2.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
-                <p class="disclaimer">免責聲明：命理分析僅供娛樂參考，請勿過度依賴。實際生活請以理性判斷為主。</p>
-            </div>
-        </footer>
 
         <!-- 右側浮動按鈕：body 直屬全域層，由 JS 渲染到 #global-floating-root，避免 stacking context 被內容蓋住 -->
         <div id="global-floating-root" aria-label="全站浮動操作"></div>
