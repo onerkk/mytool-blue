@@ -419,19 +419,12 @@ class FortuneSystem {
     }
     
     showSection(sectionId) {
+        /* 僅清除舊 id quick-action-bar 的殘留（若有）；不碰 #result-action-bar（結果頁固定操作列） */
         var resultSection = document.getElementById('result-section');
-        var allQab = document.querySelectorAll('#quick-action-bar');
-        var inside = [], outside = [];
-        allQab.forEach(function(el) {
-            if (resultSection && resultSection.contains(el)) inside.push(el);
-            else outside.push(el);
+        var legacyQab = document.querySelectorAll('#quick-action-bar');
+        legacyQab.forEach(function(el) {
+            if (el.parentNode && (!resultSection || !resultSection.contains(el))) el.parentNode.removeChild(el);
         });
-        outside.forEach(function(el) { if (el.parentNode) el.parentNode.removeChild(el); });
-        if (inside.length > 1) {
-            for (var i = 1; i < inside.length; i++) {
-                if (inside[i].parentNode) inside[i].parentNode.removeChild(inside[i]);
-            }
-        }
         var sections = document.querySelectorAll('.section');
         sections.forEach(function(sec) {
             sec.classList.remove('active');
@@ -721,6 +714,9 @@ class FortuneSystem {
             this.displayNameResult();
             this.displayCrossResult();
         }, 250);
+
+        // 結果頁固定操作列：強制存在並綁定事件（僅在 RESULT step，非 overlay）
+        setTimeout(() => { ensureResultActionBar(this); }, 100);
     }
     
         displayBaziResult(baziData) {
@@ -4094,6 +4090,70 @@ const TarotModule = {
 };
 
 // ==========================================
+// 結果頁固定操作列：強制存在並綁定（僅在 loadResults 後呼叫，避免 overlay/clear 誤刪後失效）
+function ensureResultActionBar(scope) {
+    var resultSection = document.getElementById('result-section');
+    if (!resultSection) return;
+    var bar = document.getElementById('result-action-bar');
+    if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'result-action-bar';
+        bar.className = 'result-action-bar';
+        bar.setAttribute('role', 'toolbar');
+        bar.setAttribute('aria-label', '結果頁操作');
+        bar.innerHTML = [
+            '<button type="button" class="btn btn-outline btn-prev" data-prev="tarot-section" id="btn-prev-result" aria-label="返回塔羅牌步驟"><i class="fas fa-arrow-left"></i> 上一步</button>',
+            '<button type="button" class="btn btn-outline" id="btn-copy-summary" title="複製答案摘要" aria-label="複製分析結果摘要"><i class="fas fa-copy"></i> 複製摘要</button>',
+            '<button type="button" class="btn btn-primary" id="btn-generate-report" aria-label="下載完整報告"><i class="fas fa-file-download"></i> 生成完整報告</button>',
+            '<button type="button" class="btn btn-success" id="btn-restart" aria-label="重新開始"><i class="fas fa-redo"></i> 重新開始</button>'
+        ].join('');
+        resultSection.appendChild(bar);
+    }
+    var sys = scope || window.fortuneSystem;
+    var prevBtn = document.getElementById('btn-prev-result');
+    if (prevBtn) prevBtn.onclick = function() { if (sys) sys.showSection('tarot-section'); };
+    var copyBtn = document.getElementById('btn-copy-summary');
+    if (copyBtn) {
+        copyBtn.onclick = function() {
+            var parts = [];
+            var q = document.getElementById('question-display');
+            if (q && q.innerText) parts.push('【問題】' + q.innerText.trim());
+            var ans = document.getElementById('direct-answer');
+            if (ans && ans.innerText) parts.push('【直接回答】' + ans.innerText.trim());
+            var prob = document.getElementById('overall-probability');
+            if (prob && prob.innerText) parts.push('【可能性評估】' + prob.innerText.trim());
+            var factors = document.getElementById('answer-factors-list');
+            if (factors && factors.children.length) { var list = []; for (var i = 0; i < factors.children.length; i++) list.push((i+1) + '. ' + factors.children[i].innerText); parts.push('【影響因子】\n' + list.join('\n')); }
+            var sugg = document.getElementById('answer-suggestions-list');
+            if (sugg && sugg.children.length) { var list = []; for (var j = 0; j < sugg.children.length; j++) list.push((j+1) + '. ' + sugg.children[j].innerText); parts.push('【關鍵建議】\n' + list.join('\n')); }
+            var textToCopy = parts.length ? parts.join('\n\n') : '尚無分析結果可複製';
+            var done = function(){ copyBtn.innerHTML = '<i class="fas fa-check"></i> 已複製'; setTimeout(function(){ copyBtn.innerHTML = '<i class="fas fa-copy"></i> 複製摘要'; }, 1500); };
+            var copyFn = window.copyToClipboard;
+            if (copyFn && typeof copyFn === 'function') copyFn(textToCopy).then(done).catch(function(){ alert('複製失敗，請手動選擇文字複製'); });
+            else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(textToCopy).then(done).catch(function(){ alert('複製失敗'); });
+            else alert('此瀏覽器不支援一鍵複製，請使用「生成完整報告」下載後複製');
+        };
+    }
+    var reportBtn = document.getElementById('btn-generate-report');
+    if (reportBtn) reportBtn.onclick = function() {
+        if (sys && sys.generateReport) sys.generateReport();
+        else {
+            var content = sys && sys.generateSimpleReport ? sys.generateSimpleReport() : '報告生成功能尚未實現';
+            var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a'); a.href = url; a.download = '命理分析報告_' + new Date().toISOString().split('T')[0] + '.txt';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        }
+    };
+    var restartBtn = document.getElementById('btn-restart');
+    if (restartBtn) restartBtn.onclick = function() {
+        if (confirm('確定要重新開始嗎？這將清除所有已輸入的資料和分析結果。')) {
+            if (sys && sys.reset) sys.reset();
+            else window.location.reload();
+        }
+    };
+}
+
 // 7. 事件綁定
 // ==========================================
 function bindEvents() {
@@ -4150,76 +4210,7 @@ function bindEvents() {
         });
     });
     
-    // 複製結果摘要按鈕
-    const copySummaryBtn = document.getElementById('copy-result-summary');
-    if(copySummaryBtn) {
-        copySummaryBtn.addEventListener('click', function() {
-            var parts = [];
-            var q = document.getElementById('question-display');
-            if(q && q.innerText) parts.push('【問題】' + q.innerText.trim());
-            var ans = document.getElementById('direct-answer');
-            if(ans && ans.innerText) parts.push('【直接回答】' + ans.innerText.trim());
-            var prob = document.getElementById('overall-probability');
-            if(prob && prob.innerText) parts.push('【可能性評估】' + prob.innerText.trim());
-            var factors = document.getElementById('answer-factors-list');
-            if(factors && factors.children.length) {
-                var list = [];
-                for(var i = 0; i < factors.children.length; i++) list.push((i+1) + '. ' + factors.children[i].innerText);
-                parts.push('【影響因子】\n' + list.join('\n'));
-            }
-            var sugg = document.getElementById('answer-suggestions-list');
-            if(sugg && sugg.children.length) {
-                var list = [];
-                for(var j = 0; j < sugg.children.length; j++) list.push((j+1) + '. ' + sugg.children[j].innerText);
-                parts.push('【關鍵建議】\n' + list.join('\n'));
-            }
-            var text = parts.length ? parts.join('\n\n') : '尚無分析結果可複製';
-            var done = function(){ copySummaryBtn.innerHTML = '<i class="fas fa-check"></i> 已複製'; setTimeout(function(){ copySummaryBtn.innerHTML = '<i class="fas fa-copy"></i> 複製摘要'; }, 1500); };
-            var copyFn = window.copyToClipboard;
-            if(copyFn && typeof copyFn === 'function') {
-                copyFn(text).then(done).catch(function(){ alert('複製失敗，請手動選擇文字複製'); });
-            } else if(navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(done).catch(function(){ alert('複製失敗'); });
-            } else { alert('此瀏覽器不支援一鍵複製，請使用「生成完整報告」下載後複製'); }
-        });
-    }
-
-    // 生成完整報告按鈕
-    const generateReportBtn = document.getElementById('generate-report');
-    if(generateReportBtn) {
-        generateReportBtn.addEventListener('click', function() {
-            if(window.fortuneSystem && window.fortuneSystem.generateReport) {
-                window.fortuneSystem.generateReport();
-            } else {
-                // 簡單的報告生成功能
-                const reportContent = window.fortuneSystem ? window.fortuneSystem.generateSimpleReport() : '報告生成功能尚未實現';
-                const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `命理分析報告_${new Date().toISOString().split('T')[0]}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-        });
-    }
-    
-    // 重新開始按鈕
-    const startOverBtn = document.getElementById('start-over');
-    if(startOverBtn) {
-        startOverBtn.addEventListener('click', function() {
-            if(confirm('確定要重新開始嗎？這將清除所有已輸入的資料和分析結果。')) {
-                if(window.fortuneSystem && window.fortuneSystem.reset) {
-                    window.fortuneSystem.reset();
-                } else {
-                    // 簡單的重置功能
-                    window.location.reload();
-                }
-            }
-        });
-    }
+    /* 結果頁操作列（複製摘要/生成報告/重新開始）改由 ensureResultActionBar() 在 loadResults() 內綁定，使用 id btn-copy-summary / btn-generate-report / btn-restart */
 
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', function(e) {

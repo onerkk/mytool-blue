@@ -951,17 +951,18 @@
                     </div>
                 </div>
     
-                <div id="quick-action-bar" class="section-actions result-step-toolbar" role="toolbar" aria-label="結果頁操作">
+                <!-- 結果頁固定操作列：非 overlay，僅在 RESULT step 存在，由 loadResults() 強制渲染與綁定 -->
+                <div id="result-action-bar" class="result-action-bar" role="toolbar" aria-label="結果頁操作">
                     <button type="button" class="btn btn-outline btn-prev" data-prev="tarot-section" id="btn-prev-result" aria-label="返回塔羅牌步驟">
                         <i class="fas fa-arrow-left"></i> 上一步
                     </button>
-                    <button type="button" class="btn btn-outline" id="copy-result-summary" title="複製答案摘要到剪貼板" aria-label="複製分析結果摘要">
+                    <button type="button" class="btn btn-outline" id="btn-copy-summary" title="複製答案摘要到剪貼板" aria-label="複製分析結果摘要">
                         <i class="fas fa-copy"></i> 複製摘要
                     </button>
-                    <button type="button" class="btn btn-primary" id="generate-report" aria-label="下載完整報告文字檔">
+                    <button type="button" class="btn btn-primary" id="btn-generate-report" aria-label="下載完整報告文字檔">
                         <i class="fas fa-file-download"></i> 生成完整報告
                     </button>
-                    <button type="button" class="btn btn-success" id="start-over" aria-label="重新開始新一輪諮詢">
+                    <button type="button" class="btn btn-success" id="btn-restart" aria-label="重新開始新一輪諮詢">
                         <i class="fas fa-redo"></i> 重新開始
                     </button>
                 </div>
