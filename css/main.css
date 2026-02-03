@@ -2190,27 +2190,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     border-left: 6px solid var(--gold-primary);
 }
 
-/* 頁尾：在 #page-scroll 內最後，隨頁面一起捲動，不固定、不佔版面 */
-.page-footer-inline,
-#page-footer {
-    margin-top: 2rem;
-    padding: 1rem 1.5rem 2rem;
-    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0));
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    border-top: 1px solid var(--glass-border);
-    background: rgba(0, 0, 0, 0.2);
-}
-.page-footer-inline p,
-#page-footer p {
-    margin: 0.5rem 0;
-}
-.page-disclaimer-inline {
-    font-style: italic;
-    color: var(--text-muted);
-    opacity: 0.95;
-}
+/* 頁尾已移除 */
 
 /* --- 八字計算樣式 --- */
 .time-correction-info {
