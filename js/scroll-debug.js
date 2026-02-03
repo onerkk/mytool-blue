@@ -9,6 +9,22 @@
       return;
     }
     var state = global.scrollLockManager.getState();
+    var scrollState = {
+      body: {
+        overflow: state.bodyOverflow,
+        position: state.bodyPosition,
+        h: state.bodyClientHeight,
+        sh: state.bodyScrollHeight,
+        canScroll: state.bodyScrollHeight > state.bodyClientHeight && (state.bodyOverflow === 'auto' || state.bodyOverflow === 'scroll')
+      },
+      main: {
+        overflow: state.mainOverflowY,
+        h: state.mainClientHeight,
+        sh: state.mainScrollHeight,
+        canScroll: state.mainScrollHeight > state.mainClientHeight && (state.mainOverflowY === 'auto' || state.mainOverflowY === 'scroll')
+      }
+    };
+    console.log('[SCROLL_STATE]', scrollState);
     var payload = {
       htmlOverflow: state.htmlOverflow,
       bodyOverflow: state.bodyOverflow,
@@ -17,6 +33,7 @@
       scrollY: state.scrollY,
       innerHeight: state.innerHeight,
       clientHeight: state.clientHeight,
+      SCROLL_STATE: scrollState,
       overlays: state.overlays,
       activeModalCount: state.activeModalCount,
       isTouchBlocked: state.lockCount > 0 || state.hasScrollLockClass || (state.overlays && state.overlays.some(function(o) { return o.cover && o.visible && o.pointerEvents !== 'none'; })),
@@ -32,6 +49,31 @@
       global.__SCROLL_DEBUG_OVERLAY__.update(payload);
     }
     return payload;
+  }
+
+  function runElementFromPointProbe() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var probes = [
+      { name: 'center', x: w * 0.5, y: h * 0.5 },
+      { name: 'left', x: w * 0.02, y: h * 0.5 },
+      { name: 'right', x: w * 0.98, y: h * 0.5 }
+    ];
+    var results = [];
+    probes.forEach(function(p) {
+      var el = document.elementFromPoint(p.x, p.y);
+      var tag = el ? el.tagName : null;
+      var id = el ? (el.id || '') : '';
+      var cls = el ? (el.className && typeof el.className === 'string' ? el.className.substring(0, 80) : '') : '';
+      var fixed = el ? (getComputedStyle(el).position === 'fixed') : false;
+      var overlayLike = cls && /overlay|modal|fixed|floating|fab/i.test(cls + id);
+      results.push({ position: p.name, x: p.x, y: p.y, tag: tag, id: id, class: cls, positionFixed: fixed, overlayLike: overlayLike });
+    });
+    console.log('[ELEMENT_FROM_POINT]', results);
+    if (global.__SCROLL_DEBUG_OVERLAY__) {
+      global.__SCROLL_DEBUG_OVERLAY__.update({ elementFromPoint: results });
+    }
+    return results;
   }
 
   function createOverlay() {
@@ -62,6 +104,14 @@
     runTestsBtn.style.cssText = 'margin-left:8px;padding:4px 8px;cursor:pointer;';
     runTestsBtn.addEventListener('click', runScrollAcceptanceTests);
     el.appendChild(runTestsBtn);
+    var probeBtn = document.createElement('button');
+    probeBtn.textContent = 'elementFromPoint 掃描';
+    probeBtn.style.cssText = 'margin-left:8px;padding:4px 8px;cursor:pointer;';
+    probeBtn.addEventListener('click', function() {
+      runElementFromPointProbe();
+      SCROLL_DEBUG({ trigger: 'elementFromPoint' });
+    });
+    el.appendChild(probeBtn);
     document.body.appendChild(el);
     global.__SCROLL_DEBUG_OVERLAY__ = {
       el: el,
@@ -107,13 +157,37 @@
     global.SCROLL_DEBUG({ scrollAcceptance: results });
   }
 
+  function installScrollBlockAudit() {
+    if (global.__SCROLL_BLOCK_AUDIT_INSTALLED__) return;
+    global.__SCROLL_BLOCK_AUDIT_INSTALLED__ = true;
+    var lockCount = function() { return global.scrollLockManager ? global.scrollLockManager.getLockCount() : 0; };
+    var logOnce = { touch: false, pointer: false };
+    function onTouchMove(e) {
+      if (!logOnce.touch) {
+        logOnce.touch = true;
+        console.log('[BLOCK_SCROLL]', { reason: 'audit', event: 'touchmove', target: (e.target && e.target.tagName) || null, id: (e.target && e.target.id) || '', isDragging: false, isModalOpen: lockCount() > 0, preventDefaultCalled: false });
+      }
+    }
+    function onPointerMove(e) {
+      if (!logOnce.pointer) {
+        logOnce.pointer = true;
+        console.log('[BLOCK_SCROLL]', { reason: 'audit', event: 'pointermove', target: (e.target && e.target.tagName) || null, id: (e.target && e.target.id) || '', isDragging: false, isModalOpen: lockCount() > 0, preventDefaultCalled: false });
+      }
+    }
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('pointermove', onPointerMove, { passive: true });
+  }
+
   function init() {
     var params = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
     if (params.get('debug') === '1' || params.get('debug') === 'scroll') {
       global.SCROLL_DEBUG = SCROLL_DEBUG;
       global.runScrollAcceptanceTests = runScrollAcceptanceTests;
+      global.runElementFromPointProbe = runElementFromPointProbe;
       createOverlay();
+      installScrollBlockAudit();
       SCROLL_DEBUG({ init: true });
+      runElementFromPointProbe();
       document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') SCROLL_DEBUG({ trigger: 'visibilitychange' });
       });

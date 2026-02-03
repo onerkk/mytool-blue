@@ -66,6 +66,8 @@
       overlays.push({ id: el.id || el.className, fixed: fixed, cover: cover, hidden: hidden, visible: visible, pointerEvents: s.pointerEvents });
     });
     var activeModals = document.querySelectorAll('.custom-order-modal.active, .card-interpretation-modal.active').length;
+    var mainEl = document.getElementById('page-scroll') || document.querySelector('.main-container') || document.querySelector('main');
+    var mainStyle = mainEl ? getComputedStyle(mainEl) : null;
     return {
       lockCount: lockCount,
       htmlOverflow: html && getComputedStyle(html).overflowY,
@@ -75,6 +77,11 @@
       scrollY: window.scrollY,
       innerHeight: window.innerHeight,
       clientHeight: document.documentElement.clientHeight,
+      bodyScrollHeight: body ? body.scrollHeight : 0,
+      bodyClientHeight: body ? body.clientHeight : 0,
+      mainScrollHeight: mainEl ? mainEl.scrollHeight : 0,
+      mainClientHeight: mainEl ? mainEl.clientHeight : 0,
+      mainOverflowY: mainStyle ? mainStyle.overflowY : '',
       overlays: overlays,
       activeModalCount: activeModals,
       hasScrollLockClass: body && body.classList.contains('scroll-lock-active'),

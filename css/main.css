@@ -80,6 +80,7 @@
     box-sizing: border-box;
 }
 
+/* 全站：唯一 scroll container 策略 = 方案 A（body 滾），全站一致；不常駐 body position:fixed/overflow:hidden */
 /* 全站：單一滾動容器（body），避免橫向溢出 */
 html {
     overflow-x: hidden !important;
@@ -3843,7 +3844,7 @@ select, input, button, textarea{
     color: var(--gold-primary);
 }
 
-/* 浮動小鈕 */
+/* 浮動小鈕：外層 pointer-events:none，僅按鈕 pointer-events:auto，縮小 hitbox 避免擋住中央滑動 */
 .floating-buttons {
     position: fixed;
     right: 1.5rem;
@@ -3852,6 +3853,13 @@ select, input, button, textarea{
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    pointer-events: none;
+}
+
+.floating-buttons .floating-btn,
+.floating-buttons a,
+.floating-buttons button {
+    pointer-events: auto;
 }
 
 .floating-btn {

@@ -270,14 +270,17 @@ function debugScroll() {
 
 if (typeof window !== 'undefined') window.debugScroll = debugScroll;
 
-/** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示，覆蓋任何隱藏用的 CSS */
+/** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示；容器 pointer-events:none、按鈕 pointer-events:auto 縮小 hitbox 不擋中央滑動 */
 function ensureFloatingButtonsVisible() {
     const el = document.getElementById('floating-buttons') || document.querySelector('.floating-buttons');
     if (el) {
         el.style.setProperty('display', 'flex', 'important');
         el.style.setProperty('visibility', 'visible', 'important');
-        el.style.setProperty('pointer-events', 'auto', 'important');
+        el.style.setProperty('pointer-events', 'none', 'important');
         el.style.setProperty('opacity', '1', 'important');
+        el.querySelectorAll('.floating-btn, a, button').forEach(function(btn) {
+            btn.style.setProperty('pointer-events', 'auto', 'important');
+        });
     }
 }
 
@@ -5931,9 +5934,24 @@ function setupMeihuaRandomDomGuard(){
   }
   
   // 初始化
+  /** 牌義解讀 modal 關閉時必呼叫 unlockScroll（開啟邏輯若日後加入需配對 lockScroll） */
+  function initCardInterpretationModalClose() {
+    var modal = document.getElementById('card-interpretation-modal');
+    var closeBtn = modal && modal.querySelector('.modal-close');
+    if (!closeBtn) return;
+    closeBtn.addEventListener('click', function() {
+      modal.classList.remove('active');
+      if (window.scrollLockManager) window.scrollLockManager.unlockScroll();
+    });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCustomOrderModal);
+    document.addEventListener('DOMContentLoaded', function() {
+      initCustomOrderModal();
+      initCardInterpretationModalClose();
+    });
   } else {
     initCustomOrderModal();
+    initCardInterpretationModalClose();
   }
 })();
