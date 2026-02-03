@@ -2064,6 +2064,14 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     line-height: 1.5;
     word-wrap: break-word;
 }
+/* 缺少的維度說明列：不顯示百分比長條，左側為提示色 */
+.score-reason-block-missing .score-reason-header span:last-child {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.score-reason-block-missing {
+    border-left-color: rgba(255, 152, 0, 0.8);
+}
 
 .dimension-analysis {
     background: var(--dark-glass-light);

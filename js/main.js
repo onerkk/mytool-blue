@@ -5151,8 +5151,9 @@ function setupMeihuaRandomDomGuard(){
                 window._resultDetailsResizeBound = true;
                 window.addEventListener('resize', syncDetailsOpen);
               }
+              /* 缺少證據：策略有納入該維度權重但本次沒有該維度資料，故列為「缺少的維度」並說明機率為區間估計 */
               if (fusionOut.missingEvidence && fusionOut.missingEvidence.length > 0) {
-                var missingNote = '缺少證據：' + fusionOut.missingEvidence.join('、') + '，機率為區間估計，僅供參考。';
+                var missingNote = '本次未參與計算的維度：' + fusionOut.missingEvidence.join('、') + '。機率為區間估計，僅供參考。';
                 if (breakdownWithReasons.length === 0) breakdownWithReasons = [{ method: '說明', score: null, reason: missingNote }];
                 else breakdownWithReasons.push({ method: '說明', score: null, reason: missingNote });
               }
@@ -5189,12 +5190,15 @@ function setupMeihuaRandomDomGuard(){
             if (breakdownWithReasons.length > 0) {
               let html = '';
               breakdownWithReasons.forEach(function(b){
-                const score = Number.isFinite(Number(b.score)) ? Math.round(Number(b.score)) : (b.score != null ? b.score : 50);
-                const safeScore = (score >= 0 && score <= 100) ? score : 50;
-                const color = safeScore >= 60 ? '#4CAF50' : safeScore >= 40 ? '#FF9800' : '#F44336';
-                html += '<div class="score-reason-block">';
-                html += '<div class="score-reason-header"><span>' + (b.method || '') + '</span><span>' + safeScore + '%</span></div>';
-                html += '<div class="score-reason-bar"><div class="score-reason-fill" style="width:' + safeScore + '%;background:' + color + ';"></div></div>';
+                var isMissingNote = (b.method === '說明' || b.method === '提示') && b.reason && String(b.reason).indexOf('缺少證據') >= 0;
+                var label = isMissingNote ? '缺少的維度' : (b.method || '');
+                var score = Number.isFinite(Number(b.score)) ? Math.round(Number(b.score)) : (b.score != null ? b.score : 50);
+                var safeScore = (score >= 0 && score <= 100) ? score : 50;
+                var scoreText = isMissingNote ? '—' : (safeScore + '%');
+                var color = safeScore >= 60 ? '#4CAF50' : safeScore >= 40 ? '#FF9800' : '#F44336';
+                html += '<div class="score-reason-block' + (isMissingNote ? ' score-reason-block-missing' : '') + '">';
+                html += '<div class="score-reason-header"><span>' + label + '</span><span>' + scoreText + '</span></div>';
+                if (!isMissingNote) html += '<div class="score-reason-bar"><div class="score-reason-fill" style="width:' + safeScore + '%;background:' + color + ';"></div></div>';
                 html += '<div class="score-reason-text">' + (b.reason ? String(b.reason).replace(/</g,'&lt;').replace(/>/g,'&gt;') : '') + '</div>';
                 html += '</div>';
               });
