@@ -47,13 +47,6 @@
         </script>
     </head>
     <body>
-        <!-- 頁尾：body 直屬、固定視窗底部，z-index 高於主內容 -->
-        <footer class="page-footer-fixed" id="page-footer" role="contentinfo">
-            <div class="page-footer-inner">
-                <p>靜月之光能量占卜儀 v2.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
-                <p class="page-disclaimer-inline">免責聲明：命理分析僅供娛樂參考，請勿過度依賴。實際生活請以理性判斷為主。</p>
-            </div>
-        </footer>
         <div id="page-scroll" class="page-scroll">
         <noscript><p style="padding:2rem;text-align:center;background:#1a1520;color:#D4AF37;">本系統需啟用 JavaScript 才能運作，請在瀏覽器設定中開啟後重新整理頁面。</p></noscript>
         <a href="#main-content" class="skip-link">跳至主要內容</a>
@@ -1032,6 +1025,14 @@
         </div>
         </div>
         <!-- #page-scroll 結束 -->
+
+        <!-- 頁尾：body 直屬、固定視窗最下方（非懸浮），在 #page-scroll 之後以確保疊在上層 -->
+        <footer class="page-footer-fixed" id="page-footer" role="contentinfo">
+            <div class="page-footer-inner">
+                <p>靜月之光能量占卜儀 v2.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
+                <p class="page-disclaimer-inline">免責聲明：命理分析僅供娛樂參考，請勿過度依賴。實際生活請以理性判斷為主。</p>
+            </div>
+        </footer>
 
         <!-- 右側浮動按鈕：body 直屬全域層，由 JS 渲染到 #global-floating-root，避免 stacking context 被內容蓋住 -->
         <div id="global-floating-root" aria-label="全站浮動操作"></div>

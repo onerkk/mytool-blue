@@ -1,7 +1,8 @@
 /* main.css - 靜月之光 v2.0 完整樣式表 */
 :root {
-    /* 全站 z-index 量表：內容 < navbar < 全站底部列 < 結果頁操作列 < modal（底列須高於 9999 才不會被蓋住） */
+    /* 全站 z-index：內容 < 頁尾 < 浮動按鈕 < 結果列 < modal */
     --z-content: 1;
+    --z-footer: 9997;
     --z-globalbar: 9998;
     --z-resultbar: 9999;
     --z-modal: 10000;
@@ -2189,7 +2190,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     border-left: 6px solid var(--gold-primary);
 }
 
-/* 頁尾：body 直屬、固定視窗底部，z-index 高於 #page-scroll、低於浮動按鈕 */
+/* 頁尾：固定視窗最下方（非懸浮），z-index 高於主內容、低於浮動按鈕，確保疊在上層 */
 .page-footer-fixed,
 #page-footer {
     position: fixed !important;
@@ -2197,7 +2198,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    z-index: 1100 !important;
+    z-index: var(--z-footer) !important;
     background: var(--dark-glass) !important;
     color: var(--text-muted);
     font-size: 0.875rem;
