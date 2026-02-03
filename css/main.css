@@ -137,7 +137,7 @@ body {
     -webkit-overflow-scrolling: touch;
     position: relative;
     z-index: var(--z-content);
-    padding-bottom: 140px; /* 留空間給固定頁尾，避免最後內容被 footer 遮住 */
+    padding-bottom: 1rem; /* 頁尾已在 #page-scroll 內，僅留少許間距 */
 }
 
 /* 水晶背景效果（pointer-events: none + z-index: -1 觸控穿透，避免三星鎖住捲動） */
@@ -2189,10 +2189,10 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     border-left: 6px solid var(--gold-primary);
 }
 
-/* 頁尾：body 直屬，固定於視窗底部；z-index 高於內容、低於浮動按鈕與模態，確保不被蓋住 */
+/* 頁尾：在 #page-scroll 內最後，sticky 固定於視窗底部，每頁都顯示在頁尾；z-index 高於內容、不被蓋住 */
 .footer,
 #page-footer {
-    position: fixed !important;
+    position: sticky !important;
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
@@ -2203,7 +2203,9 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0));
     text-align: center;
     margin: 0 !important;
+    margin-top: auto !important; /* 推到底部 */
     border-top: 2px solid var(--glass-border);
+    flex-shrink: 0;
 }
 
 .disclaimer {
