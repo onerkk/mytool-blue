@@ -1198,12 +1198,14 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     justify-content: flex-end;
 }
 
-/* 結果頁工具列 #topActionBar：標準流 / sticky，禁止 fixed 漂浮，避免被父層 transform 影響 */
+/* 結果頁工具列 #quick-action-bar：sticky 貼底，禁止置中/漂浮，單例僅在 result step 顯示 */
+#quick-action-bar,
 #topActionBar,
 #result-section .section-actions,
 #result-section .result-step-toolbar,
 .result-section .section-actions {
-    position: relative !important;
+    position: sticky !important;
+    bottom: 12px !important;
     display: flex !important;
     flex-direction: row;
     flex-wrap: wrap;
@@ -1215,10 +1217,14 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     padding: 1rem;
     background: var(--dark-bg);
     background: rgba(26, 21, 32, 0.98);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 50;
     width: 100%;
     box-sizing: border-box;
 }
+/* 禁止工具列出現在畫面中央 */
+#quick-action-bar { top: auto !important; left: auto !important; right: auto !important; }
 
 /* 非當前步驟：強制隱藏與不接事件，避免工具列殘留覆蓋首頁 */
 .section[data-active="false"],

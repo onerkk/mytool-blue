@@ -179,7 +179,7 @@
   }
 
   function logTopActionBar() {
-    var el = document.getElementById('topActionBar');
+    var el = document.getElementById('quick-action-bar') || document.getElementById('topActionBar');
     if (!el) {
       console.log('[TOP_ACTION_BAR] 元素不存在（可能尚未進入結果頁）');
       return;

@@ -8,6 +8,95 @@ function isSamsungLike() {
 }
 window.__IS_SAMSUNG__ = isSamsungLike();
 
+// === PHASE A: Debug 探針（debug=1 才啟用）：掃描「複製摘要/生成完整報告/重新開始」DOM 證據 ===
+function scanQuickActionBar(trigger) {
+  var params = typeof location !== 'undefined' && location.search ? new URLSearchParams(location.search) : null;
+  if (!params || params.get('debug') !== '1') return;
+  if (!document.body) return;
+  var TEXTS = ['複製摘要', '生成完整報告', '重新開始'];
+  var roots = new Set();
+  function findElementsContaining(text) {
+    var out = [];
+    try {
+      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT, null, false);
+      var node;
+      while ((node = walker.nextNode())) {
+        if (node.textContent && node.textContent.indexOf(text) >= 0) out.push(node);
+      }
+    } catch (e) {}
+    return out;
+  }
+  TEXTS.forEach(function(t) {
+    findElementsContaining(t).forEach(function(el) {
+      var root = el.closest && (el.closest('#quick-action-bar') || el.closest('#topActionBar') || el.closest('.section-actions'));
+      if (root) roots.add(root); else roots.add(el);
+    });
+  });
+  var list = Array.from(roots);
+  list.forEach(function(root, idx) {
+    var s = root && getComputedStyle(root);
+    var rect = root && root.getBoundingClientRect();
+    var parents = [];
+    var p = root && root.parentElement;
+    for (var i = 0; i < 6 && p; i++) {
+      var ps = getComputedStyle(p);
+      parents.push({
+        tag: p.tagName + (p.id ? '#' + p.id : '') + (p.className && typeof p.className === 'string' ? '.' + p.className.trim().split(/\s+/).slice(0, 2).join('.') : ''),
+        transform: ps.transform !== 'none' ? ps.transform : null,
+        filter: ps.filter !== 'none' ? ps.filter : null,
+        backdropFilter: ps.backdropFilter !== 'none' ? ps.backdropFilter : null
+      });
+      p = p.parentElement;
+    }
+    console.log('[QUICK_ACTION_BAR_SCAN]', {
+      trigger: trigger,
+      domIndex: idx + 1,
+      totalCount: list.length,
+      id: root.id || '',
+      className: (root.className && typeof root.className === 'string' ? root.className : ''),
+      outerHTML: (root.outerHTML || '').substring(0, 300),
+      position: s ? s.position : '',
+      top: s ? s.top : '',
+      left: s ? s.left : '',
+      transform: s && s.transform !== 'none' ? s.transform : null,
+      zIndex: s ? s.zIndex : '',
+      parents: parents
+    });
+    if (root && root.style) {
+      root.style.setProperty('outline', '2px solid red', 'important');
+      var badge = document.createElement('span');
+      badge.setAttribute('aria-hidden', 'true');
+      badge.style.cssText = 'position:absolute;top:0;left:0;background:red;color:white;font-size:10px;padding:2px 4px;z-index:99999;pointer-events:none;';
+      badge.textContent = (idx + 1) + ' / ' + (s ? s.position : '') + ' / z:' + (s ? s.zIndex : '');
+      if (root.style.position === 'static' || !root.style.position) root.style.setProperty('position', 'relative', 'important');
+      var old = root.querySelector && root.querySelector('[data-scan-badge]');
+      if (old) old.remove();
+      badge.setAttribute('data-scan-badge', '1');
+      root.appendChild(badge);
+    }
+  });
+  var copyCount = findElementsContaining('複製摘要').length;
+  var visibleRoots = list.filter(function(r) {
+    var section = r.closest && r.closest('.section');
+    if (!section) return true;
+    var s = getComputedStyle(section);
+    return s.display !== 'none' && s.visibility !== 'hidden';
+  }).length;
+  console.log('[QUICK_ACTION_BAR_SCAN] trigger=' + trigger + ' | 含「複製摘要」的節點數=' + copyCount + ' | toolbar 根數=' + list.length + ' | 可見 toolbar 數=' + visibleRoots);
+  return { trigger: trigger, toolbarRootCount: list.length, copyTextNodeCount: copyCount, visibleToolbarCount: visibleRoots };
+}
+
+function verifyQuickActionBarCount() {
+  var res = scanQuickActionBar('verify');
+  var resultSection = document.getElementById('result-section');
+  var resultActive = resultSection && resultSection.classList && resultSection.classList.contains('active');
+  var expected = resultActive ? 1 : 0;
+  var ok = (resultActive && res.visibleToolbarCount === 1) || (!resultActive && res.visibleToolbarCount === 0);
+  console.log('[QUICK_ACTION_BAR_VERIFY] result-section.active=' + resultActive + ' | 可見 toolbar 應=' + expected + ' | 實際=' + (res ? res.visibleToolbarCount : 'N/A') + ' | ' + (ok ? 'PASS' : 'FAIL'));
+  return ok;
+}
+if (typeof window !== 'undefined') { window.scanQuickActionBar = scanQuickActionBar; window.verifyQuickActionBarCount = verifyQuickActionBarCount; }
+
 // === PATCH v4: safe text helper to avoid undefined ===
 function safeText(v, fallback='—'){
   if(v===undefined || v===null || v==='undefined') return fallback;
@@ -265,12 +354,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
-    
+    scanQuickActionBar('DOMContentLoaded');
     console.log('靜月之光能量占卜儀 v2.0 已就緒（捲動由 scrollLockManager 集中管理）');
 });
 
 window.addEventListener('load', function() {
   ensureBodyScrollable();
+  scanQuickActionBar('load');
 });
 
 /** 捲動診斷：?debug=1 時可用 SCROLL_DEBUG()；否則轉呼叫 SCROLL_DEBUG（若已載入） */
@@ -444,6 +534,10 @@ class FortuneSystem {
     }
     
     showSection(sectionId) {
+        var qab = document.querySelectorAll('[id="quick-action-bar"]');
+        if (qab.length > 1) {
+            for (var i = 1; i < qab.length; i++) if (qab[i].parentNode) qab[i].parentNode.removeChild(qab[i]);
+        }
         var sections = document.querySelectorAll('.section');
         sections.forEach(function(sec) {
             sec.classList.remove('active');
@@ -478,6 +572,7 @@ class FortuneSystem {
             if (pageScroll) pageScroll.scrollTop = 0;
         }, 100);
         if (typeof window.__logTopActionBar === 'function') window.__logTopActionBar();
+        scanQuickActionBar('showSection:' + (sectionId || ''));
     }
     
     reset() {
@@ -561,6 +656,7 @@ class FortuneSystem {
         window.scrollTo(0, 0);
         var pageScroll = document.getElementById('page-scroll');
         if (pageScroll) pageScroll.scrollTop = 0;
+        scanQuickActionBar('reset');
     }
     
     generateReport() {
@@ -4201,6 +4297,7 @@ function bindEvents() {
     const generateReportBtn = document.getElementById('generate-report');
     if(generateReportBtn) {
         generateReportBtn.addEventListener('click', function() {
+            scanQuickActionBar('generate-report');
             if(window.fortuneSystem && window.fortuneSystem.generateReport) {
                 window.fortuneSystem.generateReport();
             } else {
@@ -4223,6 +4320,7 @@ function bindEvents() {
     const startOverBtn = document.getElementById('start-over');
     if(startOverBtn) {
         startOverBtn.addEventListener('click', function() {
+            scanQuickActionBar('start-over:before');
             if(confirm('確定要重新開始嗎？這將清除所有已輸入的資料和分析結果。')) {
                 if(window.fortuneSystem && window.fortuneSystem.reset) {
                     window.fortuneSystem.reset();
