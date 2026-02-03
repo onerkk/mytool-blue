@@ -419,11 +419,14 @@ class FortuneSystem {
     }
     
     showSection(sectionId) {
-        /* 僅清除舊 id quick-action-bar 的殘留（若有）；不碰 #result-action-bar（結果頁固定操作列） */
-        var resultSection = document.getElementById('result-section');
+        /* 離開結果頁時移除 #result-action-bar，非結果頁時不得存在 */
+        if (sectionId !== 'result-section') {
+            var bar = document.getElementById('result-action-bar');
+            if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
+        }
         var legacyQab = document.querySelectorAll('#quick-action-bar');
         legacyQab.forEach(function(el) {
-            if (el.parentNode && (!resultSection || !resultSection.contains(el))) el.parentNode.removeChild(el);
+            if (el.parentNode) el.parentNode.removeChild(el);
         });
         var sections = document.querySelectorAll('.section');
         sections.forEach(function(sec) {
@@ -4090,25 +4093,33 @@ const TarotModule = {
 };
 
 // ==========================================
-// 結果頁固定操作列：強制存在並綁定（僅在 loadResults 後呼叫，避免 overlay/clear 誤刪後失效）
+// 結果頁固定操作列：強制存在、永遠插在 resultRoot 最後、僅在 loadResults 後呼叫
 function ensureResultActionBar(scope) {
     var resultSection = document.getElementById('result-section');
     if (!resultSection) return;
-    var bar = document.getElementById('result-action-bar');
-    if (!bar) {
-        bar = document.createElement('div');
-        bar.id = 'result-action-bar';
-        bar.className = 'result-action-bar';
-        bar.setAttribute('role', 'toolbar');
-        bar.setAttribute('aria-label', '結果頁操作');
-        bar.innerHTML = [
-            '<button type="button" class="btn btn-outline btn-prev" data-prev="tarot-section" id="btn-prev-result" aria-label="返回塔羅牌步驟"><i class="fas fa-arrow-left"></i> 上一步</button>',
-            '<button type="button" class="btn btn-outline" id="btn-copy-summary" title="複製答案摘要" aria-label="複製分析結果摘要"><i class="fas fa-copy"></i> 複製摘要</button>',
-            '<button type="button" class="btn btn-primary" id="btn-generate-report" aria-label="下載完整報告"><i class="fas fa-file-download"></i> 生成完整報告</button>',
-            '<button type="button" class="btn btn-success" id="btn-restart" aria-label="重新開始"><i class="fas fa-redo"></i> 重新開始</button>'
-        ].join('');
-        resultSection.appendChild(bar);
+
+    // PHASE 2：診斷「誰在捲動」供 sticky 參考（本專案手機為 #page-scroll 捲動）
+    if (typeof window.__logScrollOnce === 'undefined') {
+        window.__logScrollOnce = true;
+        var de = document.documentElement, b = document.body, ps = document.getElementById('page-scroll');
+        console.log('scrollTop body=', de.scrollTop, b.scrollTop, 'scrollTop page-scroll=', ps ? ps.scrollTop : 'N/A');
     }
+
+    var old = resultSection.querySelector('#result-action-bar');
+    if (old) old.remove();
+    var bar = document.createElement('div');
+    bar.id = 'result-action-bar';
+    bar.className = 'result-action-bar';
+    bar.setAttribute('role', 'toolbar');
+    bar.setAttribute('aria-label', '結果頁操作');
+    bar.innerHTML = [
+        '<button type="button" class="btn btn-outline btn-prev" data-prev="tarot-section" id="btn-prev-result" aria-label="返回塔羅牌步驟"><i class="fas fa-arrow-left"></i> 上一步</button>',
+        '<button type="button" class="btn btn-outline" id="btn-copy-summary" title="複製答案摘要" aria-label="複製分析結果摘要"><i class="fas fa-copy"></i> 複製摘要</button>',
+        '<button type="button" class="btn btn-primary" id="btn-generate-report" aria-label="下載完整報告"><i class="fas fa-file-download"></i> 生成完整報告</button>',
+        '<button type="button" class="btn btn-success" id="btn-restart" aria-label="重新開始"><i class="fas fa-redo"></i> 重新開始</button>'
+    ].join('');
+    resultSection.appendChild(bar);
+
     var sys = scope || window.fortuneSystem;
     var prevBtn = document.getElementById('btn-prev-result');
     if (prevBtn) prevBtn.onclick = function() { if (sys) sys.showSection('tarot-section'); };

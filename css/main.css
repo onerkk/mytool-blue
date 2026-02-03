@@ -1198,7 +1198,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     justify-content: flex-end;
 }
 
-/* 結果頁固定操作列：非 overlay，sticky 貼底不飄，僅在 RESULT step 存在 */
+/* 結果頁固定操作列：sticky 依附捲動容器（#page-scroll），父層不可 overflow:hidden/transform */
 #result-action-bar,
 .result-action-bar {
     position: sticky !important;
@@ -1206,6 +1206,8 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     top: auto !important;
     left: auto !important;
     right: auto !important;
+    transform: none !important;
+    z-index: 50;
     margin-top: 16px !important;
     margin-bottom: 1rem !important;
     display: flex !important;
@@ -1214,7 +1216,6 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     gap: 12px !important;
     justify-content: center !important;
     align-items: center !important;
-    z-index: 50;
     padding: 10px 12px !important;
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
     border-radius: 14px;
@@ -1224,7 +1225,6 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     -webkit-backdrop-filter: blur(6px);
     width: 100%;
     box-sizing: border-box;
-    transform: none !important;
 }
 
 /* 非當前步驟：強制隱藏與不接事件，避免工具列殘留覆蓋首頁 */

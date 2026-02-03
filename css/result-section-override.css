@@ -2,6 +2,7 @@
  * Section 5 滿版：突破 .main-container 的 max-width / padding，與 Bazi 視覺一致
  * 使用 viewport breakout 讓 #result-section 佔滿 100vw，內文用 2rem 與 main-container 對齊
  */
+/* sticky 父層不可 overflow: hidden（會剪裁/異常）；僅 overflow-x 隱藏橫向溢出 */
 #result-section.section,
 section#result-section {
   width: 100vw !important;
@@ -15,6 +16,7 @@ section#result-section {
   padding-bottom: 120px !important;
   box-sizing: border-box !important;
   overflow-x: hidden !important;
+  overflow-y: visible !important;
 }
 
 #result-section .bazi-container {
