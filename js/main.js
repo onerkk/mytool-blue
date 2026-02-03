@@ -1,3 +1,21 @@
+window.__BUILD_FINGERPRINT__ = "FIX-20260203-001";
+
+(function showFingerprint() {
+  if (typeof document === 'undefined' || !document.body) {
+    if (typeof document !== 'undefined' && document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', showFingerprint);
+    }
+    return;
+  }
+  var id = 'build-fingerprint';
+  if (document.getElementById(id)) return;
+  var el = document.createElement('div');
+  el.id = id;
+  el.setAttribute('aria-hidden', 'true');
+  el.style.cssText = 'position:fixed;top:8px;right:8px;font-size:11px;font-family:monospace;color:#0f0;background:rgba(0,0,0,0.85);padding:4px 8px;border:1px solid #0f0;z-index:99998;pointer-events:none;';
+  el.textContent = window.__BUILD_FINGERPRINT__ || 'no-fingerprint';
+  document.body.appendChild(el);
+})();
 
 // ==========================================
 // Samsung S25 / Samsung Browser 單指滑動修正（僅 Samsung 生效）
@@ -96,6 +114,124 @@ function verifyQuickActionBarCount() {
   return ok;
 }
 if (typeof window !== 'undefined') { window.scanQuickActionBar = scanQuickActionBar; window.verifyQuickActionBarCount = verifyQuickActionBarCount; }
+
+// === PHASE 2/3: DOM 真相探針 + Runtime 強制修復（debug=1 時每 500ms 跑，結果顯示在畫面） ===
+var __scanActionsInterval = null;
+function scanActions() {
+  var params = typeof location !== 'undefined' && location.search ? new URLSearchParams(location.search) : null;
+  var debugOn = params && params.get('debug') === '1';
+  if (!document.body) return;
+  var TEXTS = ['複製摘要', '生成完整報告', '重新開始'];
+  var roots = [];
+  function findElementsContaining(text) {
+    var out = [];
+    try {
+      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT, null, false);
+      var node;
+      while ((node = walker.nextNode())) {
+        if (node.textContent && node.textContent.indexOf(text) >= 0) out.push(node);
+      }
+    } catch (e) {}
+    return out;
+  }
+  TEXTS.forEach(function(t) {
+    findElementsContaining(t).forEach(function(el) {
+      var root = el.closest && (el.closest('#quick-action-bar') || el.closest('#topActionBar') || el.closest('.section-actions'));
+      var r = root || el;
+      if (roots.indexOf(r) < 0) roots.push(r);
+    });
+  });
+
+  var currentStep = (window.fortuneSystem && window.fortuneSystem.currentStep) || 0;
+  var resultSection = document.getElementById('result-section');
+  var isResultStep = (resultSection && resultSection.classList && resultSection.classList.contains('active')) || currentStep === 4;
+
+  if (debugOn) {
+    var panelId = 'dom-truth-panel';
+    var panel = document.getElementById(panelId);
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = panelId;
+      panel.setAttribute('aria-hidden', 'true');
+      panel.style.cssText = 'position:fixed;top:36px;right:8px;max-width:320px;max-height:70vh;overflow:auto;font-size:10px;font-family:monospace;color:#0f0;background:rgba(0,0,0,0.92);padding:8px;border:1px solid #0f0;z-index:99997;pointer-events:auto;white-space:pre-wrap;';
+      document.body.appendChild(panel);
+    }
+    var lines = [];
+    lines.push('count: ' + roots.length);
+    if (roots.length > 1) lines.push('\nDUPLICATE_RENDER');
+    roots.forEach(function(root, idx) {
+      var s = root && getComputedStyle(root);
+      var rect = root && root.getBoundingClientRect();
+      var tagId = (root.tagName || '').toLowerCase() + (root.id ? '#' + root.id : '') + (root.className && typeof root.className === 'string' ? '.' + root.className.trim().split(/\s+/).slice(0, 2).join('.') : '');
+      lines.push('\n--- ' + (idx + 1) + ' ---');
+      lines.push('tag#id.class: ' + tagId);
+      lines.push('position: ' + (s ? s.position : '') + ' top: ' + (s ? s.top : '') + ' left: ' + (s ? s.left : '') + ' bottom: ' + (s ? s.bottom : ''));
+      lines.push('zIndex: ' + (s ? s.zIndex : ''));
+      lines.push('rect: x=' + (rect ? Math.round(rect.x) : '') + ' y=' + (rect ? Math.round(rect.y) : '') + ' w=' + (rect ? Math.round(rect.width) : '') + ' h=' + (rect ? Math.round(rect.height) : ''));
+      var p = root && root.parentElement;
+      for (var i = 0; i < 8 && p; i++) {
+        var ps = getComputedStyle(p);
+        var hasT = ps.transform !== 'none' || ps.filter !== 'none' || ps.backdropFilter !== 'none';
+        if (hasT) lines.push('parent' + i + ': ' + (p.tagName || '') + (p.id ? '#' + p.id : '') + ' transform=' + (ps.transform !== 'none' ? 'Y' : '') + ' filter=' + (ps.filter !== 'none' ? 'Y' : '') + ' backdrop=' + (ps.backdropFilter !== 'none' ? 'Y' : ''));
+        p = p.parentElement;
+      }
+      if (root.style) {
+        root.style.setProperty('outline', '3px solid red', 'important');
+        root.style.setProperty('background', 'rgba(255,0,0,0.06)', 'important');
+        var badge = root.querySelector && root.querySelector('[data-action-badge]');
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.setAttribute('data-action-badge', '1');
+          badge.setAttribute('aria-hidden', 'true');
+          badge.style.cssText = 'position:absolute;top:0;left:0;background:red;color:white;font-size:10px;padding:2px 4px;z-index:99999;pointer-events:none;';
+          if (getComputedStyle(root).position === 'static') root.style.setProperty('position', 'relative', 'important');
+          root.appendChild(badge);
+        }
+        badge.textContent = 'IDX:' + (idx + 1) + ' POS:' + (s ? s.position : '') + ' Z:' + (s ? s.zIndex : '');
+      }
+    });
+    panel.innerHTML = lines.join('\n').replace(/DUPLICATE_RENDER/g, '<span style="color:red;font-weight:bold;">DUPLICATE_RENDER</span>');
+  }
+
+  if (roots.length >= 1) {
+    var keep = roots[0];
+    for (var i = 1; i < roots.length; i++) {
+      if (roots[i].parentNode) roots[i].parentNode.removeChild(roots[i]);
+    }
+    if (!isResultStep) {
+      if (keep.parentNode) keep.parentNode.removeChild(keep);
+      return;
+    }
+    var resultRoot = document.getElementById('result-section');
+    if (resultRoot && keep.parentNode !== resultRoot) {
+      resultRoot.appendChild(keep);
+    }
+    if (keep && keep.style) {
+      keep.style.setProperty('position', 'sticky', 'important');
+      keep.style.setProperty('bottom', '12px', 'important');
+      keep.style.setProperty('top', 'auto', 'important');
+      keep.style.setProperty('left', 'auto', 'important');
+      keep.style.setProperty('right', 'auto', 'important');
+      keep.style.setProperty('transform', 'none', 'important');
+      keep.style.setProperty('margin', '0 auto', 'important');
+    }
+  }
+}
+
+function startScanActionsInterval() {
+  var params = typeof location !== 'undefined' && location.search ? new URLSearchParams(location.search) : null;
+  if (!params || params.get('debug') !== '1') return;
+  if (__scanActionsInterval) return;
+  scanActions();
+  __scanActionsInterval = setInterval(scanActions, 500);
+}
+if (typeof window !== 'undefined') {
+  window.scanActions = scanActions;
+  window.startScanActionsInterval = startScanActionsInterval;
+}
+document.addEventListener('DOMContentLoaded', function() {
+  startScanActionsInterval();
+});
 
 // === PATCH v4: safe text helper to avoid undefined ===
 function safeText(v, fallback='—'){
