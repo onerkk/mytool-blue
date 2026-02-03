@@ -27,18 +27,19 @@ section#result-section {
   box-sizing: border-box !important;
 }
 
-/* 懸浮鈕：每個頁面都顯示；容器 pointer-events:none 不擋滑動，僅按鈕可點 */
+/* GlobalBottomBar 內懸浮鈕：每個頁面都顯示；容器 pointer-events:none 不擋滑動，僅按鈕可點 */
+#global-bottom-bar .floating-buttons,
 body .floating-buttons,
-body > .floating-buttons,
 #floating-buttons.floating-buttons {
   display: flex !important;
   visibility: visible !important;
   pointer-events: none !important;
   opacity: 1 !important;
 }
+#global-bottom-bar .floating-btn,
+#global-bottom-bar a,
+#global-bottom-bar button,
 body .floating-buttons .floating-btn,
-body .floating-buttons a,
-body .floating-buttons button,
 #floating-buttons.floating-buttons .floating-btn,
 #floating-buttons.floating-buttons a,
 #floating-buttons.floating-buttons button {

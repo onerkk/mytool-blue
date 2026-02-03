@@ -263,13 +263,29 @@ if (typeof window !== 'undefined') window.debugScroll = debugScroll;
 
 /** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示；容器 pointer-events:none、按鈕 pointer-events:auto 縮小 hitbox 不擋中央滑動 */
 function ensureFloatingButtonsVisible() {
-    const el = document.getElementById('floating-buttons') || document.querySelector('.floating-buttons');
+    var globalBar = document.getElementById('global-bottom-bar');
+    var el = document.getElementById('floating-buttons') || document.querySelector('.floating-buttons');
+    if (typeof window.__logGlobalBarOnce === 'undefined') {
+        window.__logGlobalBarOnce = true;
+        console.log('globalBar', !!globalBar, 'floating-buttons', !!el);
+        if (globalBar) {
+            var s = getComputedStyle(globalBar);
+            var r = globalBar.getBoundingClientRect();
+            console.log('GlobalBottomBar position=', s.position, 'zIndex=', s.zIndex, 'pointerEvents=', s.pointerEvents, 'rect.bottom=', r.bottom, 'innerHeight=', window.innerHeight);
+        }
+    }
     if (el) {
         el.style.setProperty('display', 'flex', 'important');
         el.style.setProperty('visibility', 'visible', 'important');
         el.style.setProperty('pointer-events', 'none', 'important');
         el.style.setProperty('opacity', '1', 'important');
         el.querySelectorAll('.floating-btn, a, button').forEach(function(btn) {
+            btn.style.setProperty('pointer-events', 'auto', 'important');
+        });
+    }
+    if (globalBar) {
+        globalBar.style.setProperty('pointer-events', 'none', 'important');
+        globalBar.querySelectorAll('a, button').forEach(function(btn) {
             btn.style.setProperty('pointer-events', 'auto', 'important');
         });
     }

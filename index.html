@@ -68,22 +68,6 @@
             </div>
         </nav>
     
-        <!-- 浮動小鈕：每個頁面都顯示（蝦皮 / 賣貨便 / 客製） -->
-        <div class="floating-buttons" id="floating-buttons">
-            <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" class="floating-btn floating-btn-shopee" rel="noopener noreferrer" title="🛒 蝦皮賣場">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="floating-label">蝦皮</span>
-            </a>
-            <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" class="floating-btn floating-btn-711" rel="noopener noreferrer" title="📦 賣貨便賣場">
-                <i class="fas fa-box"></i>
-                <span class="floating-label">賣貨便</span>
-            </a>
-            <button class="floating-btn floating-btn-custom" id="floating-btn-custom" title="💬 客製聊聊">
-                <i class="fas fa-comment-dots"></i>
-                <span class="floating-label">客製</span>
-            </button>
-        </div>
-    
         <!-- 全頁載入遮罩（計算八字時顯示） -->
         <div id="global-loading-overlay" class="global-loading-overlay" aria-live="polite" aria-busy="false" hidden>
             <div class="global-loading-content">
@@ -1046,6 +1030,24 @@
         </footer>
         </div>
         <!-- #page-scroll 結束 -->
+
+        <!-- GlobalBottomBar：全站底部列，在 #page-scroll 外、body 下，不被 step replace 清掉 -->
+        <div id="global-bottom-bar" class="global-bottom-bar" aria-label="全站底部操作">
+            <div class="floating-buttons" id="floating-buttons">
+                <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" class="floating-btn floating-btn-shopee" rel="noopener noreferrer" title="🛒 蝦皮賣場">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="floating-label">蝦皮</span>
+                </a>
+                <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" class="floating-btn floating-btn-711" rel="noopener noreferrer" title="📦 賣貨便賣場">
+                    <i class="fas fa-box"></i>
+                    <span class="floating-label">賣貨便</span>
+                </a>
+                <button class="floating-btn floating-btn-custom" id="floating-btn-custom" title="💬 客製聊聊">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="floating-label">客製</span>
+                </button>
+            </div>
+        </div>
     
         <!-- scroll-rescue.js 已移除：止血，避免 monkey patch 與全域 overflow 覆蓋 -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.min.js"></script>
