@@ -2190,24 +2190,31 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     border-left: 6px solid var(--gold-primary);
 }
 
-/* 頁尾：固定視窗最下方（非懸浮），z-index 高於主內容、低於浮動按鈕，確保疊在上層 */
+/* 頁尾：桌面用 fixed 貼視窗底；手機用 flex 貼底，避免 fixed 錯位重疊在內容上 */
 .page-footer-fixed,
 #page-footer {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    z-index: var(--z-footer) !important;
-    background: var(--dark-glass) !important;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: var(--z-footer);
+    background: var(--dark-glass);
     color: var(--text-muted);
     font-size: 0.875rem;
     text-align: center;
-    margin: 0 !important;
-    padding: 1rem 1.5rem !important;
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0)) !important;
+    margin: 0;
+    padding: 1rem 1.5rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0));
     border-top: 1px solid var(--glass-border);
-    box-sizing: border-box !important;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+/* 桌面：固定貼在視窗最下方 */
+@media (min-width: 769px) {
+    .page-footer-fixed,
+    #page-footer {
+        position: fixed !important;
+        bottom: 0 !important;
+    }
 }
 .page-footer-fixed .page-footer-inner,
 #page-footer .page-footer-inner {
