@@ -2189,8 +2189,10 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     border-left: 6px solid var(--gold-primary);
 }
 
-/* 頁尾：捲動內容最下方，版本與免責（inline，不固定） */
+/* 頁尾：捲動內容最下方，版本與免責；position + z-index 避免被主內容蓋到背景 */
 .page-footer-inline {
+    position: relative;
+    z-index: 10;
     margin-top: 2rem;
     padding: 1rem 1.5rem 2rem;
     padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0));
@@ -2198,7 +2200,8 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     color: var(--text-muted);
     font-size: 0.875rem;
     border-top: 1px solid var(--glass-border);
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.4);
+    isolation: isolate;
 }
 .page-footer-inline p {
     margin: 0.5rem 0;
