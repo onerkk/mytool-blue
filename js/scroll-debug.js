@@ -178,16 +178,54 @@
     document.addEventListener('pointermove', onPointerMove, { passive: true });
   }
 
+  function logTopActionBar() {
+    var el = document.getElementById('topActionBar');
+    if (!el) {
+      console.log('[TOP_ACTION_BAR] 元素不存在（可能尚未進入結果頁）');
+      return;
+    }
+    var s = getComputedStyle(el);
+    var rect = el.getBoundingClientRect();
+    var offsetParent = el.offsetParent;
+    var transformedParent = null;
+    try {
+      var p = el.parentElement;
+      while (p && p !== document.body) {
+        var ps = getComputedStyle(p);
+        if (ps.transform !== 'none' || ps.filter !== 'none' || ps.perspective !== 'none') {
+          transformedParent = { tag: p.tagName, id: p.id, className: p.className, transform: ps.transform, filter: ps.filter };
+          break;
+        }
+        p = p.parentElement;
+      }
+    } catch (e) {}
+    console.log('[TOP_ACTION_BAR]', {
+      position: s.position,
+      top: s.top,
+      left: s.left,
+      transform: s.transform,
+      zIndex: s.zIndex,
+      width: s.width,
+      height: s.height,
+      display: s.display,
+      getBoundingClientRect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
+      offsetParentId: offsetParent ? (offsetParent.id || offsetParent.className) : null,
+      transformedParent: transformedParent
+    });
+  }
+
   function init() {
     var params = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
     if (params.get('debug') === '1' || params.get('debug') === 'scroll') {
       global.SCROLL_DEBUG = SCROLL_DEBUG;
       global.runScrollAcceptanceTests = runScrollAcceptanceTests;
       global.runElementFromPointProbe = runElementFromPointProbe;
+      global.__logTopActionBar = logTopActionBar;
       createOverlay();
       installScrollBlockAudit();
       SCROLL_DEBUG({ init: true });
       runElementFromPointProbe();
+      logTopActionBar();
       document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') SCROLL_DEBUG({ trigger: 'visibilitychange' });
       });

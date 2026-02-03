@@ -80,7 +80,7 @@
     box-sizing: border-box;
 }
 
-/* 全站：唯一 scroll container 策略 = 方案 A（body 滾），全站一致；不常駐 body position:fixed/overflow:hidden */
+/* 全站：唯一 scroll container 策略 = 方案 A（body 滾）；body/#page-scroll 禁止 transform 以免 fixed 參考系漂移 */
 /* 全站：單一滾動容器（body），避免橫向溢出；html/body 明確可捲動以修復手機無法滑 */
 html {
     overflow-x: hidden !important;
@@ -1198,8 +1198,10 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     justify-content: flex-end;
 }
 
-/* 結果頁按鈕群：標準流、不浮動，避免 Mobile 重疊擋住 Step 1 */
+/* 結果頁工具列 #topActionBar：標準流 / sticky，禁止 fixed 漂浮，避免被父層 transform 影響 */
+#topActionBar,
 #result-section .section-actions,
+#result-section .result-step-toolbar,
 .result-section .section-actions {
     position: relative !important;
     display: flex !important;
@@ -1213,9 +1215,16 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     padding: 1rem;
     background: var(--dark-bg);
     background: rgba(26, 21, 32, 0.98);
-    z-index: 10;
+    z-index: 50;
     width: 100%;
     box-sizing: border-box;
+}
+
+/* 非當前步驟：強制隱藏與不接事件，避免工具列殘留覆蓋首頁 */
+.section[data-active="false"],
+.section:not(.active) {
+    display: none !important;
+    pointer-events: none !important;
 }
 
 /* --- 塔羅牌樣式 - 完整顯示所有按鈕 --- */

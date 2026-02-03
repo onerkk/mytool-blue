@@ -248,7 +248,12 @@ function ensureBodyScrollable() {
 
 document.addEventListener('DOMContentLoaded', function() {
     ensureBodyScrollable();
-    
+    document.querySelectorAll('.section').forEach(function(sec) {
+      var isActive = sec.classList.contains('active');
+      sec.setAttribute('data-active', isActive ? 'true' : 'false');
+      sec.style.setProperty('display', isActive ? 'block' : 'none', 'important');
+      if (!isActive) sec.style.setProperty('pointer-events', 'none', 'important');
+    });
     const system = new FortuneSystem();
     system.init();
     window.fortuneSystem = system;
@@ -442,11 +447,15 @@ class FortuneSystem {
         var sections = document.querySelectorAll('.section');
         sections.forEach(function(sec) {
             sec.classList.remove('active');
-            sec.style.display = 'none';
+            sec.setAttribute('data-active', 'false');
+            sec.style.setProperty('display', 'none', 'important');
+            sec.style.setProperty('pointer-events', 'none', 'important');
         });
         var target = document.getElementById(sectionId);
         if (target) {
-            target.style.display = 'block';
+            target.setAttribute('data-active', 'true');
+            target.style.setProperty('display', 'block', 'important');
+            target.style.removeProperty('pointer-events');
             target.classList.add('active');
             try {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -468,6 +477,7 @@ class FortuneSystem {
             var pageScroll = document.getElementById('page-scroll');
             if (pageScroll) pageScroll.scrollTop = 0;
         }, 100);
+        if (typeof window.__logTopActionBar === 'function') window.__logTopActionBar();
     }
     
     reset() {
