@@ -86,6 +86,11 @@
 
   function buildDirectAnswer(askType, probVal, parsedQuestion) {
     var probPct = Math.round(Number(probVal) || 50);
+    var timeScopeText = (parsedQuestion && parsedQuestion.timeScopeText) ? parsedQuestion.timeScopeText : '近期';
+    if (typeof guardTimeScopeMismatch === 'function' && parsedQuestion && parsedQuestion.raw) {
+      var guard = guardTimeScopeMismatch(parsedQuestion.raw, timeScopeText);
+      if (guard) timeScopeText = guard.timeScopeText;
+    }
     if (askType === 'yesno') {
       var tendency = probPct >= 60 ? '偏向能' : (probPct >= 45 ? '有機會，但需條件配合' : '偏向不能或阻力較大');
       return '直接回答：' + tendency + '。（整體機率約 ' + probPct + '%）';
@@ -94,9 +99,7 @@
       return '直接回答：整體機率約 ' + probPct + '%。' + (probPct >= 60 ? '偏有利。' : probPct >= 40 ? '中性偏可行。' : '偏有阻力。');
     }
     if (askType === 'timing') {
-      var horizon = parsedQuestion.timeHorizon || 'unknown';
-      var timeLabel = { today: '今日', this_week: '本週', this_month: '本月', '3_months': '三個月內', '6_months': '半年內', '1_year': '今年內', unknown: '近期' }[horizon] || '近期';
-      return '直接回答：時機約在「' + timeLabel + '」較值得留意；整體機率約 ' + probPct + '%。';
+      return '直接回答：時機約在「' + timeScopeText + '」較值得留意；整體機率約 ' + probPct + '%。';
     }
     return '直接回答：整體機率約 ' + probPct + '%。' + (probPct >= 60 ? '偏有利。' : probPct >= 40 ? '中性。' : '偏有阻力。');
   }

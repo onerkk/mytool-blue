@@ -146,7 +146,7 @@
     var keywords = [];
 
     if (!raw) {
-      return buildOutput(raw, clean, 'other', 'yesno', 'unknown', ['me'], { target: '', metric: '', threshold: '', constraints: [] }, [], [], type, category, timeframe);
+      return buildOutput(raw, clean, 'other', 'yesno', 'unknown', ['me'], { target: '', metric: '', threshold: '', constraints: [] }, [], [], type, category, timeframe, { timeScope: 'UNKNOWN', timeScopeText: '近期' });
     }
 
     var t = raw;
@@ -189,10 +189,19 @@
     var keySlots = extractKeySlots(t);
     var mustAnswer = extractMustAnswer(t);
 
-    return buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe);
+    var timeScopeResult = { timeScope: 'UNKNOWN', timeScopeText: '近期' };
+    if (typeof parseTimeScope === 'function') {
+      timeScopeResult = parseTimeScope(raw);
+      if (typeof TimeScopeParser !== 'undefined' && TimeScopeParser.resolveTimeScopeWithDefault) {
+        timeScopeResult = TimeScopeParser.resolveTimeScopeWithDefault(timeScopeResult, category);
+      }
+    }
+
+    return buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult);
   }
 
-  function buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe) {
+  function buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult) {
+    timeScopeResult = timeScopeResult || { timeScope: 'UNKNOWN', timeScopeText: '近期' };
     return {
       raw: raw,
       clean: clean,
@@ -205,7 +214,9 @@
       mustAnswer: mustAnswer,
       type: type,
       category: category,
-      timeframe: timeframe
+      timeframe: timeframe,
+      timeScope: timeScopeResult.timeScope,
+      timeScopeText: timeScopeResult.timeScopeText
     };
   }
 

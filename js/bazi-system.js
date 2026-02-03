@@ -1440,11 +1440,21 @@ class BaziCalculator {
         };
     }
     
-    /** 袁天罡稱骨：年干支+月支+日+時辰，套用標準對照表。日以公曆日近似農曆日 */
-    calculateWeighingBone(f, g, birthDate) { 
+    /** 袁天罡稱骨：一律使用農曆年月日+時辰；委託 logic/chenggu.js，缺表則明確提示不亂算 */
+    calculateWeighingBone(f, g, birthDate) {
+        if (typeof calculateChengguFromSolar === 'function') {
+            var result = calculateChengguFromSolar(birthDate, f);
+            if (result.error) return { display: '—', comment: result.error, total: 0 };
+            return { display: result.display, comment: result.comment, total: result.total };
+        }
         var d = birthDate instanceof Date ? birthDate : (birthDate ? new Date(birthDate) : null);
-        var dayOfMonth = d && !isNaN(d.getTime()) ? d.getDate() : 15;
+        var lunarDay = (typeof getLunarDayFromDate === 'function') ? getLunarDayFromDate(d) : null;
+        var dayOfMonth = (lunarDay >= 1 && lunarDay <= 30) ? lunarDay : (d && !isNaN(d.getTime()) ? d.getDate() : 15);
         if (dayOfMonth < 1 || dayOfMonth > 30) dayOfMonth = 15;
+        var val = (typeof validateChengguTables === 'function') ? validateChengguTables() : { valid: true };
+        if (!val.valid && val.missing && val.missing.length) {
+            return { display: '—', comment: '稱骨資料表缺失：' + val.missing.join('、') + '，無法計算。', total: 0 };
+        }
         var yw = (typeof CHENGGU_YEAR !== 'undefined' && CHENGGU_YEAR) ? (CHENGGU_YEAR[f.year.gan + f.year.zhi] || 0.8) : 0.8;
         var mw = (typeof CHENGGU_MONTH !== 'undefined' && CHENGGU_MONTH) ? (CHENGGU_MONTH[f.month.zhi] || 0.6) : 0.6;
         var dw = (typeof CHENGGU_DAY !== 'undefined' && CHENGGU_DAY) ? (CHENGGU_DAY[dayOfMonth - 1] || 0.8) : 0.8;

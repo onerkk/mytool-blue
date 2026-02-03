@@ -311,31 +311,32 @@
     } catch (e) { return null; }
   }
 
-  /** 從問題擷取可回扣的關鍵詞，讓答案直接呼應提問（手鍊／賣出／副業／破萬優先於泛用「本月」） */
-  function extractEchoPhrase(question) {
+  /** 從問題擷取可回扣的關鍵詞；時間詞一律用 timeScopeText，禁止寫死本月/今年 */
+  function extractEchoPhrase(question, timeScopeText) {
+    var ts = String(timeScopeText || '近期').trim();
     var q = String(question || '');
     if (/賣出|售出|賣掉|賣得掉|能賣|正常賣/.test(q)) {
-      if (/手鍊|手練|項鍊|手作|自製|作品|商品|飾品|手環/.test(q)) return '手鍊／自製作品本月能否賣出';
-      return '本月能否賣出';
+      if (/手鍊|手練|項鍊|手作|自製|作品|商品|飾品|手環/.test(q)) return '手鍊／自製作品' + ts + '能否賣出';
+      return ts + '能否賣出';
     }
     if (/副業|銷售|業績|破萬|賺錢|收入/.test(q)) {
       if (/破十萬|破百萬/.test(q)) return (/破百萬/.test(q) ? '副業／銷售能否破百萬' : '副業／銷售能否破十萬');
-      if (/破萬/.test(q)) return '副業／本月銷售能否破萬';
-      if (/副業|銷售|業績/.test(q)) return (/業績/.test(q) ? '本月業績達標' : '副業／本月銷售');
+      if (/破萬/.test(q)) return '副業／' + ts + '銷售能否破萬';
+      if (/副業|銷售|業績/.test(q)) return (/業績/.test(q) ? ts + '業績達標' : '副業／' + ts + '銷售');
     }
     if (/年終|年底/.test(q) && /破萬|破十萬|破百萬/.test(q)) return (/破十萬/.test(q) ? '今年年終收入破十萬' : /破百萬/.test(q) ? '今年年終收入破百萬' : '今年年終收入破萬');
     if (/破萬|破十萬|破百萬/.test(q)) return (/破萬/.test(q) ? '收入破萬' : /破十萬/.test(q) ? '收入破十萬' : '收入破百萬');
-    if (/整體運勢|運勢/.test(q) && !/副業|銷售|破萬|業績|收入|財|賣出|手鍊|手練/.test(q)) return '本月整體運勢';
-    if (/這月|這個月|本月/.test(q) && !/副業|銷售|破萬|業績|賣出|手鍊|手練/.test(q)) return '本月整體運勢';
+    if (/整體運勢|運勢/.test(q) && !/副業|銷售|破萬|業績|收入|財|賣出|手鍊|手練/.test(q)) return ts + '整體運勢';
+    if (/這月|這個月|本月/.test(q) && !/副業|銷售|破萬|業績|賣出|手鍊|手練/.test(q)) return ts + '整體運勢';
     if (/達標|達標嗎|會達標/.test(q)) return '目標達標';
     if (/會成|成功嗎|能成/.test(q)) return '事情成功';
     if (/加薪|加薪嗎|會加薪/.test(q)) return '加薪';
     if (/錄取|錄取嗎|會錄取/.test(q)) return '錄取';
     if (/復合|復合嗎|會復合/.test(q)) return '復合';
-    if (/健康|身體|注意|需要注意/.test(q)) return (/今年|這年/.test(q) ? '今年健康狀況' : '健康狀況');
+    if (/健康|身體|注意|需要注意/.test(q)) return ts + '健康狀況';
     if (/為何|如何|怎樣|怎麼樣/.test(q)) {
-      if (/運勢|運勢如何/.test(q)) return '本月運勢';
-      if (/收入|財運/.test(q)) return '本月收入與財運';
+      if (/運勢|運勢如何/.test(q)) return ts + '運勢';
+      if (/收入|財運/.test(q)) return ts + '收入與財運';
       if (/工作|事業|職涯/.test(q)) return '事業與工作發展';
       if (/感情|姻緣|桃花/.test(q)) return '感情與姻緣';
       if (/健康|身體/.test(q)) return '健康狀況';
@@ -343,9 +344,10 @@
     return null;
   }
 
-  /** 依傾向取得詞彙（優先使用 VocabularyDB） */
-  function getVocabSubject(type, question, seed) {
-    var echo = extractEchoPhrase(question);
+  /** 依傾向取得詞彙；時間詞用 timeScopeText，禁止寫死本月/今年 */
+  function getVocabSubject(type, question, seed, timeScopeText) {
+    var ts = String(timeScopeText || '近期').trim();
+    var echo = extractEchoPhrase(question, ts);
     if (echo) return echo;
     var typeKey = type === 'wealth' ? 'finance' : (type === 'love' ? 'love' : type);
     if (typeof VocabularyDB !== 'undefined' && VocabularyDB.getSubject) return VocabularyDB.getSubject(typeKey, seed);
@@ -355,10 +357,10 @@
     var love = /感情|姻緣|結婚|復合|對象|桃花|曖昧|告白|戀愛|約會|相親/.test(question || '');
     var health = /健康|病|身體|作息|飲食|身心|手術|恢復|運動|體檢/.test(question || '');
     if (relationship && !/桃花|感情|曖昧|姻緣|告白|戀愛|約會|相親/.test(question || '')) return '客戶互動與人際';
-    if (wealth) return '本月收入與財運';
+    if (wealth) return ts + '收入與財運';
     if (career) return '事業與工作發展';
     if (love) return '感情與姻緣';
-    if (health) return '今年健康狀況';
+    if (health) return ts + '健康狀況';
     if (relationship) return '人際與合作關係';
     return '您問的這件事';
   }
@@ -377,11 +379,12 @@
     { conclusion: '今年人際與客戶互動尚可，留意溝通與分工。', risks: ['溝通', '分工'], suggestions: ['開會前先釐清目標與分工', '主動維繫客戶關係', '選擇合適時機表達'] }
   ];
 
-  function buildRelationshipConclusion(probVal, question, topFactors, synSuggestions) {
+  function buildRelationshipConclusion(probVal, question, topFactors, synSuggestions, timeScopeText) {
+    var ts = String(timeScopeText || '今年').trim();
     var seed = (probVal || 0) + (String(question || '').length || 0);
     var idx = seed % RELATIONSHIP_TEMPLATE_POOL.length;
     var t = RELATIONSHIP_TEMPLATE_POOL[idx] || RELATIONSHIP_TEMPLATE_POOL[0];
-    var conclusion = t.conclusion;
+    var conclusion = (t.conclusion || '').replace(/^今年/, ts);
     var riskLine = (t.risks && t.risks.length) ? '可留意：' + t.risks.join('、') + '。' : '可留意溝通、合作與關係維護。';
     var sugg = (synSuggestions && synSuggestions.length >= 3) ? synSuggestions.slice(0, 3) : (t.suggestions || ['真誠溝通避免猜測', '尊重界限不強求', '選擇合適時機表達']);
     var suggLine = '建議：（1）' + (sugg[0] || '真誠溝通避免猜測') + '；（2）' + (sugg[1] || '尊重界限不強求') + '；（3）' + (sugg[2] || '選擇合適時機表達') + '。';
@@ -402,12 +405,13 @@
     { conclusion: '今年健康尚可，留意健檢與預防。', risks: ['健檢', '預防'], suggestions: ['規律作息與飲食', '依醫囑追蹤治療', '適度運動與放鬆'] }
   ];
 
-  /** 健康專屬結論：結論句 + Top2~3 風險面向 + 3 條可執行建議；禁止日主/喜忌通用段落 */
-  function buildHealthConclusion(probVal, question, topFactors, difficultyLevel, evidenceCount, synSuggestions) {
+  /** 健康專屬結論：結論句用 timeScopeText，禁止寫死今年 */
+  function buildHealthConclusion(probVal, question, topFactors, difficultyLevel, evidenceCount, synSuggestions, timeScopeText) {
+    var ts = String(timeScopeText || '今年').trim();
     var seed = (probVal || 0) + (String(question || '').length || 0);
     var idx = seed % HEALTH_TEMPLATE_POOL.length;
     var t = HEALTH_TEMPLATE_POOL[idx] || HEALTH_TEMPLATE_POOL[0];
-    var conclusion = t.conclusion;
+    var conclusion = (t.conclusion || '').replace(/^今年/, ts);
     var riskLine = (t.risks && t.risks.length) ? '可留意面向：' + t.risks.join('、') + '。' : '可留意作息、飲食、身心與睡眠。';
     var sugg = (synSuggestions && synSuggestions.length >= 3) ? synSuggestions.slice(0, 3) : (t.suggestions || ['規律作息與飲食', '依醫囑追蹤治療', '適度運動與放鬆']);
     var suggLine = '建議：（1）' + (sugg[0] || '規律作息與飲食') + '；（2）' + (sugg[1] || '依醫囑追蹤治療') + '；（3）' + (sugg[2] || '適度運動與放鬆') + '。';
@@ -417,13 +421,13 @@
     return conclusion + ' ' + riskLine + ' ' + suggLine;
   }
 
-  /** 依題型策略、機率、難度與影響因子產生結論（題型專屬 opener 與 mandatory 段落，避免通用話術） */
-  function buildConclusionByType(probVal, type, question, topFactors, difficultyLevel) {
+  /** 依題型策略、機率、難度與影響因子產生結論；時間詞用 timeScopeText，禁止寫死本月/今年 */
+  function buildConclusionByType(probVal, type, question, topFactors, difficultyLevel, timeScopeText) {
     var q = String(question || '');
     var category = normalizeCategory(type);
     var strategy = getStrategy(category);
     var seed = (probVal || 0) + (q.length || 0);
-    var subject = getVocabSubject(type, q, seed);
+    var subject = getVocabSubject(type, q, seed, timeScopeText);
     var unfavorableCount = (topFactors || []).filter(function (f) { return f && f.impact < 0; }).length;
     var tendency = probVal >= 60 ? 'favorable' : (probVal >= 48 && unfavorableCount < 2 ? 'neutral' : (probVal >= 35 ? 'unfavorable' : 'strongUnfavorable'));
     var difficulty = difficultyLevel === 'high' ? 'high' : 'low';
@@ -538,6 +542,11 @@
       }
 
       var parsed = parseQuestion(data.question || '');
+      var timeScopeText = (parsed.timeScopeText != null && String(parsed.timeScopeText).trim()) ? String(parsed.timeScopeText).trim() : '近期';
+      if (typeof TimeScopeParser !== 'undefined' && TimeScopeParser.resolveTimeScopeWithDefault) {
+        var resolved = TimeScopeParser.resolveTimeScopeWithDefault({ timeScope: parsed.timeScope, timeScopeText: timeScopeText }, categoryAtEnterNorm);
+        timeScopeText = resolved.timeScopeText || timeScopeText;
+      }
       var evidenceItems = [];
       var sysList = [
         { key: 'bazi', data: data.bazi },
@@ -614,10 +623,17 @@
       }
       if (factorTexts.length === 0) factorTexts = evidenceListForDisplay.map(function (e) { return e; });
       var typeForConclusion = finalCategoryUsed;
-      var categoryConclusion = categoryForLog === 'health' ? buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions) : (categoryForLog === 'relationship' ? buildRelationshipConclusion(probVal, data.question, probResult.factors || [], syn.suggestions) : buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel));
+      var categoryConclusion = categoryForLog === 'health' ? buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions, timeScopeText) : (categoryForLog === 'relationship' ? buildRelationshipConclusion(probVal, data.question, probResult.factors || [], syn.suggestions, timeScopeText) : buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel, timeScopeText));
       var directAnswerForDisplay = categoryConclusion;
       if (categoryForLog === 'health' && /請見下方依據|依據：|日主|喜神|忌神/.test(directAnswerForDisplay)) {
-        directAnswerForDisplay = buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions);
+        directAnswerForDisplay = buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions, timeScopeText);
+      }
+      if (typeof guardTimeScopeMismatch === 'function') {
+        var guard = guardTimeScopeMismatch(questionText, directAnswerForDisplay);
+        if (guard) {
+          directAnswerForDisplay = directAnswerForDisplay.replace(/本月/g, guard.timeScopeText);
+          if (typeof console !== 'undefined') console.warn('[TimeScope] 直接回答已依問題時間詞修正為「' + guard.timeScopeText + '」');
+        }
       }
       var forbiddenCheck = checkForbiddenTerms(directAnswerForDisplay, finalCategoryUsed);
       if (!forbiddenCheck.passed) {
@@ -625,9 +641,9 @@
           console.log('[GUARD]', { forbiddenTermsHit: forbiddenCheck.hit, templateId: selectedTemplateId, finalCategoryUsed: finalCategoryUsed });
         }
         if (finalCategoryUsed === 'relationship') {
-          directAnswerForDisplay = buildRelationshipConclusion(probVal, data.question, probResult.factors || [], syn.suggestions);
+          directAnswerForDisplay = buildRelationshipConclusion(probVal, data.question, probResult.factors || [], syn.suggestions, timeScopeText);
         } else {
-          directAnswerForDisplay = buildConclusionByType(probVal, finalCategoryUsed, data.question, probResult.factors || [], probResult.difficultyLevel);
+          directAnswerForDisplay = buildConclusionByType(probVal, finalCategoryUsed, data.question, probResult.factors || [], probResult.difficultyLevel, timeScopeText);
         }
         if (typeof console !== 'undefined') {
           console.log('[GUARD] 修正後 templateId=', finalCategoryUsed);
@@ -754,17 +770,19 @@
       console.log('[PROB_BREAKDOWN]', breakdown);
       console.log('[TEMPLATE_PICK]', { category: category, templateId: category });
     }
+    var parsedFb = typeof parseQuestion === 'function' ? parseQuestion(data.question || '') : {};
+    var timeScopeTextFb = (parsedFb.timeScopeText != null && String(parsedFb.timeScopeText).trim()) ? String(parsedFb.timeScopeText).trim() : '近期';
     var suggestions = getSuggestionsByType(category, probVal, data);
     var topFactors = probResult.factors.slice(0, 4);
-    var categoryConclusionFallback = category === 'health' ? buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions) : (category === 'relationship' ? buildRelationshipConclusion(probVal, data.question, topFactors, suggestions) : buildConclusionByType(probVal, category, data.question, topFactors, probResult.difficultyLevel));
+    var categoryConclusionFallback = category === 'health' ? buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions, timeScopeTextFb) : (category === 'relationship' ? buildRelationshipConclusion(probVal, data.question, topFactors, suggestions, timeScopeTextFb) : buildConclusionByType(probVal, category, data.question, topFactors, probResult.difficultyLevel, timeScopeTextFb));
     if (category === 'health' && /請見下方依據|依據：|日主|喜神|忌神/.test(categoryConclusionFallback)) {
-      categoryConclusionFallback = buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions);
+      categoryConclusionFallback = buildHealthConclusion(probVal, data.question, topFactors, probResult.difficultyLevel, (probResult.evidenceUsed || []).length, suggestions, timeScopeTextFb);
     }
     var forbiddenFallback = checkForbiddenTerms(categoryConclusionFallback, category);
     if (!forbiddenFallback.passed) {
       if (typeof console !== 'undefined') console.log('[GUARD]', { forbiddenTermsHit: forbiddenFallback.hit, templateId: category, finalCategoryUsed: category });
-      if (category === 'relationship') categoryConclusionFallback = buildRelationshipConclusion(probVal, data.question, topFactors, suggestions);
-      else categoryConclusionFallback = buildConclusionByType(probVal, category, data.question, topFactors, probResult.difficultyLevel);
+      if (category === 'relationship') categoryConclusionFallback = buildRelationshipConclusion(probVal, data.question, topFactors, suggestions, timeScopeTextFb);
+      else categoryConclusionFallback = buildConclusionByType(probVal, category, data.question, topFactors, probResult.difficultyLevel, timeScopeTextFb);
       if (typeof console !== 'undefined') console.log('[GUARD] 修正後 templateId=', category);
     }
     if (typeof console !== 'undefined') console.log('[GUARD]', { forbiddenTermsHit: forbiddenFallback.hit, passed: forbiddenFallback.passed });
