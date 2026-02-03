@@ -1023,16 +1023,13 @@
         </div>
         </div>
         </div>
+        <!-- 頁尾：在 #page-scroll 內最後，隨頁面一起捲動，不佔固定版面 -->
+        <footer class="page-footer-inline" id="page-footer" role="contentinfo">
+            <p>靜月之光能量占卜儀 v2.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
+            <p class="page-disclaimer-inline">免責聲明：命理分析僅供娛樂參考，請勿過度依賴。實際生活請以理性判斷為主。</p>
+        </footer>
         </div>
         <!-- #page-scroll 結束 -->
-
-        <!-- 頁尾：body 直屬、固定視窗最下方（非懸浮），在 #page-scroll 之後以確保疊在上層 -->
-        <footer class="page-footer-fixed" id="page-footer" role="contentinfo">
-            <div class="page-footer-inner">
-                <p>靜月之光能量占卜儀 v2.0 © 2026 | 本系統僅供參考，命運掌握在自己手中</p>
-                <p class="page-disclaimer-inline">免責聲明：命理分析僅供娛樂參考，請勿過度依賴。實際生活請以理性判斷為主。</p>
-            </div>
-        </footer>
 
         <!-- 右側浮動按鈕：body 直屬全域層，由 JS 渲染到 #global-floating-root，避免 stacking context 被內容蓋住 -->
         <div id="global-floating-root" aria-label="全站浮動操作"></div>

@@ -1,6 +1,6 @@
 /**
- * 手機捲動修復：body 用 flex，頁尾貼視窗最下方，#page-scroll 捲動
- * - 頁尾不再用 position:fixed，避免錯位重疊在內容上
+ * 手機捲動修復：改為「主容器捲動」策略
+ * - html/body 不捲動，僅 #page-scroll 捲動
  */
 @media (max-width: 768px), (hover: none) and (pointer: coarse) {
   html {
@@ -9,22 +9,17 @@
     position: relative !important;
   }
   body {
-    display: flex !important;
-    flex-direction: column !important;
     height: 100% !important;
-    min-height: 100% !important;
     overflow: hidden !important;
     position: relative !important;
     margin: 0 !important;
   }
   #page-scroll.page-scroll {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
@@ -33,11 +28,5 @@
   }
   body.scroll-lock-active #page-scroll.page-scroll {
     overflow-y: hidden !important;
-  }
-  /* 頁尾：flex 佈局中貼在視窗最下方，不覆蓋內容 */
-  .page-footer-fixed,
-  #page-footer {
-    position: relative !important;
-    bottom: auto !important;
   }
 }
