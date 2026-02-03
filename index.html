@@ -22,8 +22,8 @@
         <link rel="stylesheet" href="css/ios-fixes.css?v=HOTFIX-20260203-A">
         <link rel="stylesheet" href="css/mobile-fix.css?v=HOTFIX-20260203-A">
         <link rel="stylesheet" href="css/result-section-override.css?v=HOTFIX-20260203-A">
-        <!-- mobile-scroll.css 暫時不載入：改採 body 捲動，避免常駐 overflow:hidden -->
-        <!-- <link rel="stylesheet" href="css/mobile-scroll.css?v=HOTFIX-20260203-A"> -->
+        <link rel="stylesheet" href="css/mobile-scroll.css?v=HOTFIX-20260203-A">
+        <!-- 手機：單一捲動容器 #page-scroll，避免 body 捲動在部分機型失效 -->
         <script>
         (function(){
           function setVh(){ try { document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); } catch(e){} }

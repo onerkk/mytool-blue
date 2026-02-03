@@ -6,21 +6,37 @@
 (function(global) {
   var lockCount = 0;
   var savedScrollY = 0;
+  var savedPageScrollTop = 0;
+
+  function isMobileScroll() {
+    var w = global.innerWidth;
+    var ua = global.navigator && global.navigator.userAgent ? global.navigator.userAgent : '';
+    return w <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+  }
 
   function lockScroll() {
     lockCount++;
     if (lockCount > 1) return;
     var body = document.body;
     var html = document.documentElement;
-    savedScrollY = window.scrollY || window.pageYOffset;
-    html.classList.add('scroll-lock-active');
-    body.classList.add('scroll-lock-active');
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      body.style.position = 'fixed';
-      body.style.top = savedScrollY ? '-' + savedScrollY + 'px' : '0';
-      body.style.left = '0';
-      body.style.right = '0';
-      body.style.width = '100%';
+    var pageScroll = document.getElementById('page-scroll');
+    var usePageScroll = isMobileScroll() && pageScroll;
+
+    if (usePageScroll) {
+      savedPageScrollTop = pageScroll.scrollTop;
+      html.classList.add('scroll-lock-active');
+      body.classList.add('scroll-lock-active');
+    } else {
+      savedScrollY = window.scrollY || window.pageYOffset;
+      html.classList.add('scroll-lock-active');
+      body.classList.add('scroll-lock-active');
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        body.style.position = 'fixed';
+        body.style.top = savedScrollY ? '-' + savedScrollY + 'px' : '0';
+        body.style.left = '0';
+        body.style.right = '0';
+        body.style.width = '100%';
+      }
     }
     if (typeof global.SCROLL_DEBUG === 'function') {
       global.SCROLL_DEBUG({ reason: 'lockScroll', lockCount: lockCount });
@@ -33,15 +49,24 @@
     if (lockCount > 0) return;
     var body = document.body;
     var html = document.documentElement;
-    body.style.removeProperty('position');
-    body.style.removeProperty('top');
-    body.style.removeProperty('left');
-    body.style.removeProperty('right');
-    body.style.removeProperty('width');
-    html.classList.remove('scroll-lock-active');
-    body.classList.remove('scroll-lock-active');
-    if (savedScrollY != null && savedScrollY !== 0) {
-      window.scrollTo(0, savedScrollY);
+    var pageScroll = document.getElementById('page-scroll');
+    var usePageScroll = isMobileScroll() && pageScroll;
+
+    if (usePageScroll) {
+      html.classList.remove('scroll-lock-active');
+      body.classList.remove('scroll-lock-active');
+      if (pageScroll) pageScroll.scrollTop = savedPageScrollTop;
+    } else {
+      body.style.removeProperty('position');
+      body.style.removeProperty('top');
+      body.style.removeProperty('left');
+      body.style.removeProperty('right');
+      body.style.removeProperty('width');
+      html.classList.remove('scroll-lock-active');
+      body.classList.remove('scroll-lock-active');
+      if (savedScrollY != null && savedScrollY !== 0) {
+        window.scrollTo(0, savedScrollY);
+      }
     }
     if (typeof global.SCROLL_DEBUG === 'function') {
       global.SCROLL_DEBUG({ reason: 'unlockScroll', lockCount: lockCount });
