@@ -1,0 +1,33 @@
+/**
+ * 手機捲動修復：改為「主容器捲動」策略
+ * - html/body 不捲動，僅 #page-scroll 捲動
+ * - 避免 body overflow/position 在手機上導致整頁無法滑
+ */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  html {
+    height: 100% !important;
+    overflow: hidden !important;
+    position: relative !important;
+  }
+  body {
+    height: 100% !important;
+    overflow: hidden !important;
+    position: relative !important;
+    margin: 0 !important;
+  }
+  #page-scroll.page-scroll {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    overscroll-behavior-y: auto !important;
+  }
+  body.scroll-lock-active #page-scroll.page-scroll {
+    overflow-y: hidden !important;
+  }
+}
