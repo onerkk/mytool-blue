@@ -2411,22 +2411,31 @@
     overflow-x: visible !important;
   }
   
-  /* 問題顯示和直接回答區域：全寬、文字換行 */
+  /* 問題顯示和直接回答區域：全寬、文字換行；直接回答禁止截斷 */
   .question-display,
   .direct-answer {
     width: 100% !important;
     max-width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
     box-sizing: border-box !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
   }
   
-  .answer-text {
+  #direct-answer,
+  .answer-text,
+  .answer-text-summary {
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     white-space: normal !important;
     max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    -webkit-line-clamp: unset !important;
+    display: block !important;
   }
   
   /* dimension-pane：全寬，不重複右側 padding（由 #result-section 統一留空間） */

@@ -144,11 +144,14 @@
         box-sizing: border-box !important;
     }
     
-    /* ===== 文字區塊：寬度 100%，可換行，不限制 max-width ===== */
+    /* ===== 文字區塊：寬度 100%，可換行；直接回答禁止截斷，完整顯示 (1)(2)(3) ===== */
     #result-section .question-display,
     #result-section .direct-answer {
         width: 100% !important;
         max-width: 100% !important;
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
         box-sizing: border-box !important;
         padding: 0.5rem !important; /* 約 8px */
         word-wrap: break-word !important;
@@ -157,11 +160,21 @@
         flex: 1 1 100% !important;
     }
     
+    #result-section #direct-answer,
+    #result-section .answer-text-summary {
+        max-height: none !important;
+        overflow: visible !important;
+        -webkit-line-clamp: unset !important;
+        display: block !important;
+    }
+    
     #result-section .answer-text,
     #result-section .meter-header,
     #result-section .meter-labels {
         width: 100% !important;
         max-width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
         white-space: normal !important;

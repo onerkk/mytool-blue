@@ -3712,13 +3712,11 @@ const TarotModule = {
             questionDisplay.innerHTML = `<p class="question-text">${analysis.question}</p>`;
         }
         
-        // 2. 更新直接回答（使用整體分析的摘要）
+        // 2. 更新直接回答（禁止截斷，完整顯示）
         const directAnswer = document.getElementById('direct-answer');
         if(directAnswer) {
-            // 從整體分析中提取簡短回答
             const overall = analysis.overall || '';
-            const shortAnswer = overall ? (overall.split('\n')[0] || overall.substring(0, 200)) : '請完成塔羅牌分析';
-            directAnswer.textContent = shortAnswer;
+            directAnswer.textContent = overall ? overall : '請完成塔羅牌分析';
             directAnswer.style.color = '#4CAF50';
         }
         
@@ -5104,6 +5102,10 @@ function setupMeihuaRandomDomGuard(){
               // 直接回答區塊：優先使用 directAnswerParagraph（僅結論段，不含依據/日主/喜忌），避免通用八字段落污染
               var forDirectAnswer = (fusionOut.directAnswerParagraph != null && String(fusionOut.directAnswerParagraph).trim() !== '') ? String(fusionOut.directAnswerParagraph).replace(/^您問的是[：:][「"]([^」"]*)[」"]。?\s*/g, '') : displayConclusion.split(/\n\n依據：/)[0].replace(/^您問的是[：:][「"]([^」"]*)[」"]。?\s*/g, '');
               setText('direct-answer', forDirectAnswer);
+              if (typeof console !== 'undefined') {
+                console.log('[直接回答 顯示層 完整]', forDirectAnswer);
+                console.log('[直接回答 含(3)規律作息]', /（3）規律作息|\(3\)規律作息/.test(forDirectAnswer));
+              }
               var principleEl = document.getElementById('direct-answer-principle');
               if (principleEl) {
                 if (fusionOut.principleRef && fusionOut.principleRef.length) {

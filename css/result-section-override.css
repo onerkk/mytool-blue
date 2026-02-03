@@ -100,12 +100,16 @@ details[open] .details-summary::before { content: '▼ '; }
     /* 桌機由 JS 設 open 屬性 */
   }
 }
+/* 直接回答禁止截斷：完整顯示 (1)(2)(3) 條列，手機也不可 line-clamp 或 overflow:hidden */
 @media (max-width: 768px) {
   .answer-text-summary {
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    white-space: normal !important;
   }
 }
 

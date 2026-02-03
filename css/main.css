@@ -1817,12 +1817,27 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
     font-size: 0.95rem;
 }
 
+/* 直接回答：禁止高度/行數截斷，完整顯示 (1)(2)(3) 條列 */
 .direct-answer {
     padding: 1.5rem;
     background: rgba(16, 185, 129, 0.1);
     border-radius: var(--border-radius);
     border-left: 6px solid var(--labradorite-green);
     color: var(--text-primary) !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+#direct-answer,
+.direct-answer .answer-text {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    display: block !important;
 }
 
 .answer-text {

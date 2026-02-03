@@ -710,6 +710,8 @@
       var directAnswerParagraph = problemRestatement + (problemRestatement ? '\n\n' : '') + directAnswerForDisplay;
       if (typeof console !== 'undefined') {
         console.log('[FusionEngine] category=', category, 'appliedWeights=', probResult.appliedWeights || {}, 'topFactors=', (probResult.factors || []).map(function (f) { return f.name; }), 'missingEvidence=', probResult.missingEvidence || []);
+        console.log('[直接回答 完整]', directAnswerForDisplay);
+        console.log('[直接回答 含(3)規律作息]', /（3）規律作息|\(3\)規律作息/.test(directAnswerForDisplay));
       }
       return {
         conclusion: conclusion,
