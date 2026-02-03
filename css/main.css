@@ -86,8 +86,21 @@
     box-sizing: border-box;
 }
 
-/* 全站：唯一 scroll container 策略 = 方案 A（body 滾）；body/#page-scroll 禁止 transform 以免 fixed 參考系漂移 */
-/* 全站：單一滾動容器（body），避免橫向溢出；html/body 明確可捲動以修復手機無法滑 */
+/* 全站：唯一 scroll container；整頁容器禁止 transform/filter/backdrop-filter 以免 stacking context 讓浮動按鈕被蓋住 */
+/* PHASE 4：根治 stacking context - 以下容器僅當內容容器，不得設 transform/filter/backdrop-filter/opacity<1 */
+html, body {
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+}
+#page-scroll.page-scroll,
+.main-container,
+#main-content {
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+}
+
 html {
     overflow-x: hidden !important;
     overflow-y: auto !important;
@@ -3893,38 +3906,41 @@ select, input, button, textarea{
     color: var(--gold-primary);
 }
 
-/* GlobalBottomBar：全站底部列，固定於視窗底部、高於內容、低於 modal，可點不擋滑動 */
-#global-bottom-bar {
+/* 右側浮動按鈕：body 直屬全域層，固定定位 + 明確 z-index，不依賴整頁容器 */
+#global-floating-root {
     position: fixed !important;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: var(--z-globalbar) !important;
+    inset: 0 !important;
     pointer-events: none !important;
-    /* 不要 height:100vh/inset:0，僅由內容撐開 */
+    z-index: 1200 !important;
+    overflow: visible !important;
 }
-#global-bottom-bar .floating-btn,
-#global-bottom-bar a,
-#global-bottom-bar button {
+#global-floating-root #floating-buttons {
+    position: absolute !important;
+    right: 12px !important;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    pointer-events: auto !important;
+    width: auto !important;
+    height: auto !important;
+}
+#global-floating-root #floating-buttons button,
+#global-floating-root #floating-buttons a {
     pointer-events: auto !important;
 }
 
-/* 浮動小鈕：外層 pointer-events:none，僅按鈕 pointer-events:auto，縮小 hitbox 避免擋住中央滑動 */
+/* 浮動小鈕：樣式保留（圖示、圓形、hover） */
 .floating-buttons {
     position: relative;
-    right: auto;
-    bottom: auto;
-    margin: 1rem 1.5rem;
-    margin-bottom: calc(1rem + env(safe-area-inset-bottom, 0));
     display: flex;
     flex-direction: column;
     gap: 1rem;
     align-items: flex-end;
     pointer-events: none;
-    z-index: 0;
 }
-#global-bottom-bar .floating-buttons {
-    z-index: 0;
+#global-floating-root .floating-buttons {
+    pointer-events: auto;
 }
 
 .floating-buttons .floating-btn,

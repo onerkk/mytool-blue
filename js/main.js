@@ -226,6 +226,7 @@ SUITS_INFO.forEach(suit => {
 // 2. 系統初始化
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
+    renderFloatingButtonsToGlobalRoot();
     document.querySelectorAll('.section').forEach(function(sec) {
       var isActive = sec.classList.contains('active');
       sec.setAttribute('data-active', isActive ? 'true' : 'false');
@@ -261,31 +262,34 @@ function debugScroll() {
 
 if (typeof window !== 'undefined') window.debugScroll = debugScroll;
 
-/** 強制懸浮鈕（蝦皮/賣貨便/客製）在每個頁面都顯示；容器 pointer-events:none、按鈕 pointer-events:auto 縮小 hitbox 不擋中央滑動 */
+/** 右側浮動按鈕：永遠渲染到 body 直屬 #global-floating-root，避免 stacking context 被內容蓋住 */
+function renderFloatingButtonsToGlobalRoot() {
+    var root = document.getElementById('global-floating-root');
+    if (!root) return;
+    root.innerHTML = '';
+    root.innerHTML = [
+        '<div id="floating-buttons" class="floating-buttons">',
+        '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" class="floating-btn floating-btn-shopee" rel="noopener noreferrer" title="🛒 蝦皮賣場"><i class="fas fa-shopping-cart"></i><span class="floating-label">蝦皮</span></a>',
+        '<a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" class="floating-btn floating-btn-711" rel="noopener noreferrer" title="📦 賣貨便賣場"><i class="fas fa-box"></i><span class="floating-label">賣貨便</span></a>',
+        '<button type="button" class="floating-btn floating-btn-custom" id="floating-btn-custom" title="💬 客製聊聊"><i class="fas fa-comment-dots"></i><span class="floating-label">客製</span></button>',
+        '</div>'
+    ].join('');
+}
+
+/** 確保浮動鈕顯示（#global-floating-root 內）；僅設 visibility/pointer-events */
 function ensureFloatingButtonsVisible() {
-    var globalBar = document.getElementById('global-bottom-bar');
-    var el = document.getElementById('floating-buttons') || document.querySelector('.floating-buttons');
-    if (typeof window.__logGlobalBarOnce === 'undefined') {
-        window.__logGlobalBarOnce = true;
-        console.log('globalBar', !!globalBar, 'floating-buttons', !!el);
-        if (globalBar) {
-            var s = getComputedStyle(globalBar);
-            var r = globalBar.getBoundingClientRect();
-            console.log('GlobalBottomBar position=', s.position, 'zIndex=', s.zIndex, 'pointerEvents=', s.pointerEvents, 'rect.bottom=', r.bottom, 'innerHeight=', window.innerHeight);
-        }
+    var root = document.getElementById('global-floating-root');
+    var el = document.getElementById('floating-buttons');
+    if (root) {
+        root.style.setProperty('pointer-events', 'none', 'important');
+        root.style.setProperty('visibility', 'visible', 'important');
+        root.style.setProperty('opacity', '1', 'important');
     }
     if (el) {
         el.style.setProperty('display', 'flex', 'important');
         el.style.setProperty('visibility', 'visible', 'important');
-        el.style.setProperty('pointer-events', 'none', 'important');
-        el.style.setProperty('opacity', '1', 'important');
+        el.style.setProperty('pointer-events', 'auto', 'important');
         el.querySelectorAll('.floating-btn, a, button').forEach(function(btn) {
-            btn.style.setProperty('pointer-events', 'auto', 'important');
-        });
-    }
-    if (globalBar) {
-        globalBar.style.setProperty('pointer-events', 'none', 'important');
-        globalBar.querySelectorAll('a, button').forEach(function(btn) {
             btn.style.setProperty('pointer-events', 'auto', 'important');
         });
     }
