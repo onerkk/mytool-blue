@@ -1,10 +1,10 @@
 /* main.css - 靜月之光 v2.0 完整樣式表 */
 :root {
-    /* 全站 z-index 量表：內容 < 全站底部列 < 結果頁操作列 < modal */
+    /* 全站 z-index 量表：內容 < navbar < 全站底部列 < 結果頁操作列 < modal（底列須高於 9999 才不會被蓋住） */
     --z-content: 1;
-    --z-globalbar: 900;
-    --z-resultbar: 950;
-    --z-modal: 2000;
+    --z-globalbar: 9998;
+    --z-resultbar: 9999;
+    --z-modal: 10000;
 
     /* 靜月之光能量占卜儀 - 神秘水晶風格配色 */
     --gold-primary: #D4AF37;
@@ -195,7 +195,7 @@ body::after {
     padding: 1.5rem 0;
     position: relative !important;
     top: auto !important;
-    z-index: 1000;
+    z-index: 100;
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.7),
         0 0 60px rgba(212, 175, 55, 0.15),
@@ -725,7 +725,7 @@ input[type="time"]::-webkit-datetime-edit-minute-field {
 .skip-link {
     position: absolute;
     left: -9999px;
-    z-index: 9999;
+    z-index: 9997;
     padding: 0.75rem 1.5rem;
     background: var(--gold-primary);
     color: var(--dark-bg);
@@ -2713,7 +2713,7 @@ input[type="checkbox"]:checked + .checkbox-custom::after {
 .global-loading-overlay {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: var(--z-modal);
     background: rgba(26, 21, 32, 0.9);
     display: flex;
     align-items: center;
@@ -3536,12 +3536,12 @@ select, input, button, textarea{
   line-height:1.5;
 }
 
-/* Floating store button (Shopee) */
+/* Floating store button (Shopee) - 低於 GlobalBottomBar 以免重複蓋住 */
 .floating-store-btn{
   position:fixed;
   right:16px;
   bottom:18px;
-  z-index:9999;
+  z-index: 9990;
   padding:10px 12px;
   border-radius:999px;
   background:rgba(255,120,120,0.15);
