@@ -4019,7 +4019,14 @@ select, input, button, textarea{
     display: flex;
 }
 
-/* 模態開啟時背景鎖定由 scrollLockManager 控制 body，此處僅保留 class 供樣式 */
+/* 模態開啟時背景鎖定：僅由 scrollLockManager 加 class，禁止常駐 overflow:hidden */
+html.scroll-lock-active,
+body.scroll-lock-active {
+  overflow: hidden !important;
+}
+body.scroll-lock-active {
+  width: 100% !important;
+}
 
 .modal-overlay {
     position: absolute;
