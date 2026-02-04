@@ -62,6 +62,18 @@
     var suggestions = buildSuggestions(intent, probVal, 2, 4);
 
     var fullText = problemRestatement + '\n\n' + directAnswer + '\n\n依據：\n' + evidenceList.join('\n') + '\n\n建議：\n' + suggestions.join('\n');
+    var domain = (parsedQuestion.domain != null) ? parsedQuestion.domain : (parsedQuestion.intent === 'money' ? 'wealth' : parsedQuestion.intent);
+    var minChars = (domain && domain !== 'other') ? 220 : 0;
+    if (minChars > 0 && fullText.length < minChars && evidenceList.length > 0) {
+      var extra = '可依各系統證據交叉驗證，並留意' + (parsedQuestion.time_scope_text || '近期') + '的實際變化作為觀測指標。';
+      fullText = fullText + '\n\n' + extra;
+    }
+    if (typeof validateResponse === 'function' && domain) {
+      var valid = validateResponse(domain, fullText);
+      if (!valid.passed && valid.hit && valid.hit.length > 0 && typeof console !== 'undefined') {
+        console.warn('[ResponseValidator] 輸出含禁用詞，domain=' + domain + ' hit=' + valid.hit.join(','));
+      }
+    }
 
     return {
       problemRestatement: problemRestatement,
@@ -69,7 +81,8 @@
       evidenceList: evidenceList,
       suggestions: suggestions,
       fullText: fullText,
-      insufficient: false
+      insufficient: false,
+      domain: domain
     };
   }
 

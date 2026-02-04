@@ -3,6 +3,7 @@
  * 流程：問題輸入 → 問題解析（類型、關鍵資訊、分類）
  * 輸出結構化 schema：raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer
  * 並保留 type, category, timeframe 以相容下游（getCategory / fusionEngine）。
+ * A1) QuestionIntent schema：domain（與 UI 選單一致）、time_scope、time_anchor、focus、question_type、keywords。
  */
 (function (global) {
   'use strict';
@@ -13,6 +14,29 @@
   var CATEGORY_RELATIONSHIP = 'relationship';
   var CATEGORY_FAMILY = 'family';
   var CATEGORY_GENERAL = 'general';
+
+  /** 與 UI 選單一致的 domain 枚舉（愛情/事業/財運/健康/人際/家庭/運勢(綜合)/其他） */
+  var DOMAIN_UI = ['love', 'career', 'wealth', 'health', 'relationship', 'family', 'general', 'other'];
+  /** 各 domain 的 focus 子類關鍵詞（用於抽取 focus） */
+  var FOCUS_KEYWORDS = {
+    love: ['桃花', '曖昧', '復合', '婚姻', '相處', '告白', '交往', '分手', '正緣', '姻緣', '約會', '相親'],
+    career: ['升遷', '轉職', '合作', '客戶', '創業', '面試', '考績', '調動', '離職', '專案', '業績'],
+    wealth: ['正財', '偏財', '投資', '回款', '支出', '收入', '破萬', '銷售', '理財', '負債'],
+    health: ['睡眠', '腸胃', '筋骨', '壓力', '慢性', '體檢', '手術', '恢復', '飲食', '運動'],
+    relationship: ['人際', '貴人', '客戶', '溝通', '同事', '朋友', '互動', '客訴'],
+    family: ['家庭', '家人', '父母', '子女', '購屋', '買房', '婆媳', '手足'],
+    general: ['運勢', '整體', '流年', '大運'],
+    other: []
+  };
+  /** askType → question_type（prediction | advice | risk | explanation） */
+  var ASK_TYPE_TO_QUESTION_TYPE = {
+    yesno: 'prediction',
+    probability: 'prediction',
+    timing: 'prediction',
+    choice: 'advice',
+    howto: 'advice',
+    diagnosis: 'explanation'
+  };
 
   var TYPE_PROBABILITY = 'probability';
   var TYPE_GENERAL = 'general';
@@ -220,6 +244,86 @@
     };
   }
 
+  /**
+   * 推論 domain（與 UI 選單一致）：category/intent → love|career|wealth|health|relationship|family|general|other
+   */
+  function inferDomainFromCategoryAndIntent(category, intent) {
+    if (intent === 'love') return 'love';
+    if (category === CATEGORY_FINANCE || intent === 'money') return 'wealth';
+    if (category === CATEGORY_CAREER || intent === 'career') return 'career';
+    if (category === CATEGORY_HEALTH || intent === 'health') return 'health';
+    if (category === CATEGORY_FAMILY) return 'family';
+    if (category === CATEGORY_RELATIONSHIP) return intent === 'love' ? 'love' : 'relationship';
+    if (category === CATEGORY_GENERAL) return intent === 'other' ? 'other' : 'general';
+    return 'general';
+  }
+
+  /**
+   * A1) 解析並輸出 QuestionIntent schema（必存）
+   * @param {string} text - 原始問題
+   * @param {string} [selectedDomain] - UI 已選的 domain（權重最高，與 #question-type 的 value 一致）
+   * @returns {Object} QuestionIntent { domain, time_scope, time_anchor, focus, question_type, keywords, time_scope_unspecified?, ... }
+   */
+  function parseQuestionIntent(text, selectedDomain) {
+    var raw = (typeof text === 'string' ? text : '').trim();
+    var base = parseQuestion(raw);
+    var timeScopeResult = { timeScope: base.timeScope, timeScopeText: base.timeScopeText };
+
+    if (typeof TimeScopeParser !== 'undefined' && TimeScopeParser.resolveTimeScopeWithDefault) {
+      timeScopeResult = TimeScopeParser.resolveTimeScopeWithDefault(timeScopeResult, base.category);
+    }
+    if (typeof guardTimeScopeMismatch === 'function' && raw) {
+      var guard = guardTimeScopeMismatch(raw, timeScopeResult.timeScopeText);
+      if (guard) timeScopeResult = guard;
+    }
+    var canonicalScope = 'unspecified';
+    if (typeof TimeScopeParser !== 'undefined' && TimeScopeParser.toCanonicalTimeScope) {
+      canonicalScope = TimeScopeParser.toCanonicalTimeScope(timeScopeResult.timeScope);
+    }
+    var timeAnchor = (typeof TimeScopeParser !== 'undefined' && TimeScopeParser.parseTimeAnchor) ? TimeScopeParser.parseTimeAnchor(raw) : { year: null, month: null };
+
+    var domain = (selectedDomain && DOMAIN_UI.indexOf(selectedDomain) >= 0) ? selectedDomain : inferDomainFromCategoryAndIntent(base.category, base.intent);
+    var focusList = [];
+    var fk = FOCUS_KEYWORDS[domain] || [];
+    for (var i = 0; i < fk.length; i++) {
+      if (raw.indexOf(fk[i]) >= 0 && focusList.indexOf(fk[i]) < 0) focusList.push(fk[i]);
+    }
+    var focus = focusList.length ? focusList.slice(0, 5) : [domain];
+
+    var questionType = ASK_TYPE_TO_QUESTION_TYPE[base.askType] || 'prediction';
+    var keywords = (base.keywords || []).slice(0, 15);
+    while (keywords.length < 5 && (base.raw || '').length > 0) {
+      var tokens = base.raw.replace(/[？?。，、\s]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+      for (var j = 0; j < tokens.length && keywords.length < 15; j++) {
+        if (tokens[j].length >= 2 && keywords.indexOf(tokens[j]) < 0) keywords.push(tokens[j]);
+      }
+      break;
+    }
+    if (keywords.length > 15) keywords = keywords.slice(0, 15);
+
+    var timeScopeUnspecified = (timeScopeResult.timeScope === 'UNKNOWN' || canonicalScope === 'unspecified');
+
+    return {
+      domain: domain,
+      time_scope: canonicalScope,
+      time_scope_raw: timeScopeResult.timeScope,
+      time_scope_text: timeScopeResult.timeScopeText,
+      time_anchor: timeAnchor,
+      focus: focus,
+      question_type: questionType,
+      keywords: keywords,
+      time_scope_unspecified: timeScopeUnspecified,
+      raw: base.raw,
+      clean: base.clean,
+      intent: base.intent,
+      askType: base.askType,
+      category: base.category,
+      timeHorizon: base.timeHorizon,
+      mustAnswer: base.mustAnswer,
+      keySlots: base.keySlots
+    };
+  }
+
   function getCategoryLabel(cat) {
     var m = {
       finance: '財務',
@@ -239,7 +343,11 @@
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       parseQuestion: parseQuestion,
+      parseQuestionIntent: parseQuestionIntent,
       getCategoryLabel: getCategoryLabel,
+      inferDomainFromCategoryAndIntent: inferDomainFromCategoryAndIntent,
+      DOMAIN_UI: DOMAIN_UI,
+      FOCUS_KEYWORDS: FOCUS_KEYWORDS,
       CATEGORY_FINANCE: CATEGORY_FINANCE,
       CATEGORY_CAREER: CATEGORY_CAREER,
       CATEGORY_HEALTH: CATEGORY_HEALTH,
@@ -253,7 +361,10 @@
     };
   } else {
     global.parseQuestion = parseQuestion;
+    global.parseQuestionIntent = parseQuestionIntent;
     global.getCategoryLabel = getCategoryLabel;
+    global.inferDomainFromCategoryAndIntent = inferDomainFromCategoryAndIntent;
+    global.DOMAIN_UI = DOMAIN_UI;
     global.QUESTION_CATEGORY = {
       FINANCE: CATEGORY_FINANCE,
       CAREER: CATEGORY_CAREER,

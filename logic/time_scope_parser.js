@@ -32,7 +32,7 @@
   function parseTimeScope(questionText) {
     var q = String(questionText || '').trim();
     var scope = TIME_SCOPE.UNKNOWN;
-    var hasYear = /今年度|本年度|今年/.test(q);
+    var hasYear = /今年度|本年度|整年度|今年/.test(q);
     var hasMonth = /本月|這個月|當月|本月份/.test(q);
     var hasQuarter = /本季|這一季|最近三個月|三個月/.test(q);
     var hasHalfYear = /半年|六個月|上半年|下半年/.test(q);
@@ -72,7 +72,7 @@
    */
   function guardTimeScopeMismatch(questionText, timeScopeText) {
     var q = String(questionText || '');
-    var hasAnnual = /今年|今年度|本年度/.test(q);
+    var hasAnnual = /今年|今年度|本年度|整年度/.test(q);
     var usedMonth = /本月/.test(String(timeScopeText || ''));
     if (hasAnnual && usedMonth && typeof console !== 'undefined') {
       console.warn('[TimeScope] 問題含今年/今年度/本年度，但結果用了「本月」，已 fallback 為今年');
@@ -81,13 +81,56 @@
     return null;
   }
 
+  /** 標準枚舉：day | week | month | year | lifetime | unspecified（供 QuestionIntent 與 NLG） */
+  var CANONICAL_SCOPE = {
+    day: 'day',
+    week: 'week',
+    month: 'month',
+    year: 'year',
+    lifetime: 'lifetime',
+    unspecified: 'unspecified'
+  };
+  function toCanonicalTimeScope(scopeEnum) {
+    if (scopeEnum === TIME_SCOPE.YEAR || scopeEnum === TIME_SCOPE.NEXT_YEAR) return CANONICAL_SCOPE.year;
+    if (scopeEnum === TIME_SCOPE.MONTH) return CANONICAL_SCOPE.month;
+    if (scopeEnum === TIME_SCOPE.QUARTER) return CANONICAL_SCOPE.month;
+    if (scopeEnum === TIME_SCOPE.HALF_YEAR) return CANONICAL_SCOPE.year;
+    if (scopeEnum === TIME_SCOPE.UNKNOWN) return CANONICAL_SCOPE.unspecified;
+    return CANONICAL_SCOPE.unspecified;
+  }
+
+  /**
+   * 解析 time_anchor：若有「今年/本月/明年/2026」→ { year?, month? }
+   */
+  function parseTimeAnchor(questionText) {
+    var q = String(questionText || '').trim();
+    var out = { year: null, month: null };
+    var currentYear = (typeof Date !== 'undefined') ? new Date().getFullYear() : 2026;
+    if (/今年|這年|本年度|今年度|整年度/.test(q)) {
+      out.year = currentYear;
+    }
+    if (/明年|來年|明年度/.test(q)) {
+      out.year = currentYear + 1;
+    }
+    var yearMatch = q.match(/20\d{2}|19\d{2}/);
+    if (yearMatch) out.year = parseInt(yearMatch[0], 10);
+    if (/本月|這個月|當月|本月份/.test(q)) {
+      var m = new Date();
+      out.month = m.getMonth() + 1;
+    }
+    return out;
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
       TIME_SCOPE: TIME_SCOPE,
       TIME_SCOPE_TEXT: TIME_SCOPE_TEXT,
       parseTimeScope: parseTimeScope,
       resolveTimeScopeWithDefault: resolveTimeScopeWithDefault,
-      guardTimeScopeMismatch: guardTimeScopeMismatch
+      guardTimeScopeMismatch: guardTimeScopeMismatch,
+      CANONICAL_SCOPE: CANONICAL_SCOPE,
+      toCanonicalTimeScope: toCanonicalTimeScope,
+      parseTimeAnchor: parseTimeAnchor
     };
   } else {
     global.parseTimeScope = parseTimeScope;
@@ -97,7 +140,10 @@
       TIME_SCOPE_TEXT: TIME_SCOPE_TEXT,
       parseTimeScope: parseTimeScope,
       resolveTimeScopeWithDefault: resolveTimeScopeWithDefault,
-      guardTimeScopeMismatch: guardTimeScopeMismatch
+      guardTimeScopeMismatch: guardTimeScopeMismatch,
+      CANONICAL_SCOPE: CANONICAL_SCOPE,
+      toCanonicalTimeScope: toCanonicalTimeScope,
+      parseTimeAnchor: parseTimeAnchor
     };
   }
 })(typeof window !== 'undefined' ? window : this);

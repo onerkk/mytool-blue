@@ -96,7 +96,8 @@
     var poemText = (typeof getChengguPoem === 'function') ? getChengguPoem(total) : (POEMS[poemKey] || '');
     var liang = Math.floor(total);
     var qian = Math.round((total - liang) * 10);
-    return { totalQian: total, liang: liang, qian: qian, poemKey: poemKey, poemText: poemText };
+    var debug = { yearGanZhi: yearGanZhi, yearWeight: yw, monthZhi: monthZhi, monthWeight: mw, lunarDay: lunarDay, dayWeight: dw, hourZhi: hourZhi, hourWeight: hw, totalLiang: total };
+    return { totalQian: total, liang: liang, qian: qian, poemKey: poemKey, poemText: poemText, debug: debug };
   }
 
   /**
@@ -117,7 +118,8 @@
     return {
       display: out.totalQian.toFixed(1) + '兩',
       comment: out.poemText,
-      total: out.totalQian
+      total: out.totalQian,
+      debug: out.debug
     };
   }
 

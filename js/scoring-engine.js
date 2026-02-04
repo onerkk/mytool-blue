@@ -203,13 +203,34 @@
     return { favorable: outputWealthOfficial, unfavorable: sameOrResource };
   }
 
+  /** UI 選單 domain → 引擎內部 category（E1：selectedDomain 必須進入運算） */
+  var UI_DOMAIN_TO_CATEGORY = {
+    love: CATEGORY_LOVE,
+    wealth: CATEGORY_WEALTH,
+    finance: CATEGORY_WEALTH,
+    career: CATEGORY_CAREER,
+    health: CATEGORY_HEALTH,
+    relationship: CATEGORY_LOVE,
+    family: 'family',
+    general: CATEGORY_GENERAL,
+    other: CATEGORY_GENERAL
+  };
+  function normalizeCategoryFromUI(uiDomain) {
+    var k = (uiDomain || '').toString().toLowerCase().trim();
+    return UI_DOMAIN_TO_CATEGORY[k] || (BAZI_CATEGORY_TEN_GODS[k] ? k : CATEGORY_GENERAL);
+  }
+
   /**
-   * 從問題文字或 category 取得類別
+   * 從問題文字或 UI 已選 category（questionType）取得類別。UI 已選權重最高。
    * @param {string} questionText
-   * @param {string} [category]
+   * @param {string} [category] - 來自 #question-type 的 value（love/career/wealth/health/relationship/family/general/other）
    */
   function getCategory(questionText, category) {
-    if (category && BAZI_CATEGORY_TEN_GODS[category]) return category;
+    if (category) {
+      var normalized = normalizeCategoryFromUI(category);
+      if (normalized && BAZI_CATEGORY_TEN_GODS[normalized]) return normalized;
+      if (BAZI_CATEGORY_TEN_GODS[category]) return category;
+    }
     if (typeof parseQuestion !== 'undefined') {
       var parsed = parseQuestion(questionText || '');
       return parsed.category || CATEGORY_GENERAL;

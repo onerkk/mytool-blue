@@ -5072,6 +5072,14 @@ function setupMeihuaRandomDomGuard(){
                 if (hideFactorsEmpty) hideFactorsEmpty.style.display = 'none';
                 if (hideSuggEmpty) hideSuggEmpty.style.display = 'none';
               } else {
+              var selectedDomain = userCategory;
+              var questionIntent = (typeof parseQuestionIntent === 'function') ? parseQuestionIntent(question || '', selectedDomain) : null;
+              if (questionIntent && selectedDomain && questionIntent.domain !== selectedDomain) {
+                var debugId = 'E1-' + Date.now();
+                if (typeof console !== 'undefined') console.error('[E1] 類別不同步：QuestionIntent.domain !== selectedDomain', { selectedDomain: selectedDomain, intentDomain: questionIntent.domain, debugId: debugId });
+                var bannerE1 = document.getElementById('category-warning-banner');
+                if (bannerE1) { bannerE1.textContent = '類別不同步，請回報（' + debugId + '）'; bannerE1.style.display = 'block'; }
+              }
               var fusionData = {
                 bazi: dataForScoring.bazi,
                 meihua: dataForScoring.meihua,
@@ -5081,10 +5089,20 @@ function setupMeihuaRandomDomGuard(){
                 question: question,
                 questionType: userCategory || ''
               };
+              if (questionIntent) {
+                fusionData.questionIntent = questionIntent;
+              }
               if (typeof console !== 'undefined') {
                 console.log('[INPUT]', { category: userCategory, questionText: (question || '').slice(0, 120) });
               }
               var fusionOut = FusionEngine.generateDirectAnswer(fusionData);
+              if (fusionOut) fusionOut.domain = selectedDomain;
+              if (fusionOut && fusionOut.domain !== selectedDomain) {
+                var debugId3 = 'E1-resp-' + Date.now();
+                if (typeof console !== 'undefined') console.error('[E1] 最終輸出 response.domain 與 selectedDomain 不同步', { selectedDomain: selectedDomain, responseDomain: fusionOut.domain, debugId: debugId3 });
+                var bannerE1r = document.getElementById('category-warning-banner');
+                if (bannerE1r) { bannerE1r.textContent = '類別不同步，請回報（' + debugId3 + '）'; bannerE1r.style.display = 'block'; }
+              }
               if (typeof console !== 'undefined' && fusionOut) {
                 console.log('[結果頁渲染前] selectedTemplateId/category=', fusionOut.selectedTemplateId || fusionOut.category, 'appliedWeights=', fusionOut.appliedWeights || {}, 'topFactors=', (fusionOut.factors || []).slice(0, 3).map(function (f) { return typeof f === 'string' ? f.slice(0, 30) : (f && f.name); }), 'missingEvidence=', fusionOut.missingEvidence || [], 'evidenceUsed=', fusionOut.evidenceUsed || []);
                 if ((fusionOut.category === 'general' || !fusionOut.category) && userCategory && userCategory !== 'general' && userCategory !== 'other') console.warn('[Category Debug] 題型應為 ' + userCategory + ' 但 resultGenerator 回傳 category=' + (fusionOut.category || 'general') + '，請檢查傳參');

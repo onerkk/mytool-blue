@@ -22,6 +22,9 @@
     var system = systemResult.system || 'unknown';
     var items = [];
 
+    var domain = (parsedQuestion.domain != null) ? parsedQuestion.domain : (intent === 'money' ? 'wealth' : intent);
+    var timeScope = (parsedQuestion.time_scope != null) ? parsedQuestion.time_scope : (timeHorizon === '1_year' ? 'year' : timeHorizon === 'this_month' ? 'month' : 'unspecified');
+
     if (system === 'bazi') {
       items = normalizeBazi(systemResult, intent, timeHorizon, mustAnswer, keywords, keySlots);
     } else if (system === 'meihua') {
@@ -32,6 +35,13 @@
       items = normalizeNameology(systemResult, intent, timeHorizon, mustAnswer, keywords, keySlots);
     }
 
+    items.forEach(function (it) {
+      it.domain = it.domain || domain;
+      it.time_scope = it.time_scope || timeScope;
+      it.signal = it.signal || (it.direction === 'favorable' ? 'positive' : (it.direction === 'unfavorable' ? 'negative' : 'neutral'));
+      if (!it.tags && (it.slotTags || []).length) it.tags = it.slotTags.slice(0, 10);
+      if (!it.tags) it.tags = [domain].concat((keywords || []).slice(0, 5));
+    });
     return items;
   }
 
