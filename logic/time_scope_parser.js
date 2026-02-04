@@ -33,7 +33,7 @@
     var q = String(questionText || '').trim();
     var scope = TIME_SCOPE.UNKNOWN;
     var hasYear = /今年度|本年度|整年度|今年/.test(q);
-    var hasMonth = /本月|這個月|當月|本月份/.test(q);
+    var hasMonth = /這月|本月|這個月|當月|本月份/.test(q);
     var hasQuarter = /本季|這一季|最近三個月|三個月/.test(q);
     var hasHalfYear = /半年|六個月|上半年|下半年/.test(q);
     var hasNextYear = /明年|明年度|明年整體/.test(q);

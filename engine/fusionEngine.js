@@ -44,6 +44,7 @@
     if (/人際|貴人|客戶|交際|溝通|互動|客訴|關係維護|朋友|同事/.test(q)) return 'relationship';
     if (/桃花|感情|戀|告白|結婚|復合|伴侶|正緣|緣份|姻緣|曖昧|對象|約會|相親/.test(q)) return 'love';
     if (/工作|事業|升遷|轉職|面試|業績|老闆|專案|合作|開發/.test(q)) return 'career';
+    if (/樂透|彩票|威力彩|大樂透|今彩|539|刮刮樂|彩券|中獎|投注|買票|開獎/.test(q)) return 'wealth';
     if (/錢|財|投資|收入|負債|買賣|副業|銷售|破萬|賺錢|業績|賣出|售出|賣掉|手鍊|手練|飾品|自製|作品|資金|現金流|偏財|正財|風險/.test(q)) return 'wealth';
     if (/健康|病|疼|手術|恢復|睡眠|腸胃|壓力|發炎|頭痛|心血管|運動/.test(q)) return 'health';
     if (/家庭|家人|購屋|親子|父母|婚姻相處/.test(q)) return 'family';
@@ -326,8 +327,9 @@
     }
     if (/年終|年底/.test(q) && /破萬|破十萬|破百萬/.test(q)) return (/破十萬/.test(q) ? '今年年終收入破十萬' : /破百萬/.test(q) ? '今年年終收入破百萬' : '今年年終收入破萬');
     if (/破萬|破十萬|破百萬/.test(q)) return (/破萬/.test(q) ? '收入破萬' : /破十萬/.test(q) ? '收入破十萬' : '收入破百萬');
-    if (/整體運勢|運勢/.test(q) && !/副業|銷售|破萬|業績|收入|財|賣出|手鍊|手練/.test(q)) return ts + '整體運勢';
-    if (/這月|這個月|本月/.test(q) && !/副業|銷售|破萬|業績|賣出|手鍊|手練/.test(q)) return ts + '整體運勢';
+    if (/樂透|彩票|彩券|威力彩|大樂透|今彩|539|刮刮樂|投注|開獎/.test(q)) return ts + '樂透／偏財';
+    if (/整體運勢|運勢/.test(q) && !/副業|銷售|破萬|業績|收入|財|賣出|手鍊|手練|樂透|彩票|彩券/.test(q)) return ts + '整體運勢';
+    if (/這月|這個月|本月/.test(q) && !/副業|銷售|破萬|業績|賣出|手鍊|手練|樂透|彩票|彩券/.test(q)) return ts + '整體運勢';
     if (/達標|達標嗎|會達標/.test(q)) return '目標達標';
     if (/會成|成功嗎|能成/.test(q)) return '事情成功';
     if (/加薪|加薪嗎|會加薪/.test(q)) return '加薪';
@@ -473,6 +475,34 @@
     return main;
   }
 
+  /** 2) 財運投機/樂透專用模板：本月／今年，結論+理由+行動策略（含資金上限/頻率/止損） */
+  var TEMPLATE_FINANCE_LOTTERY_MONTH = {
+    favorable: { conclusion: '【結論】本月偏財／樂透方面「適合」小額試手氣，可當娛樂、不宜重押。', reasons: ['八字偏財星與流月有合', '塔羅金錢宮位偏正向', '梅花求財卦象有生扶'], strategies: ['設定資金上限，不影響生活開銷', '控制購買頻率，例如每月固定一次', '設止損點，未中即停、不追單'] },
+    neutral: { conclusion: '【結論】本月偏財／樂透「有條件」適合：可小試，但需嚴守紀律。', reasons: ['多維度象徵中性偏穩', '偏財機會與風險並存', '流月財星尚可'], strategies: ['資金上限：僅用閒錢、不借貸', '頻率：勿天天投注', '止損：未中即停、不追加'] },
+    unfavorable: { conclusion: '【結論】本月偏財／樂透「不適合」重押，若當娛樂則小額即可。', reasons: ['八字偏財或流月有壓', '多維度象徵偏保守', '投機風險較高'], strategies: ['資金上限：僅象徵性小額', '頻率：降低或暫不買', '止損：絕不追單'] }
+  };
+  var TEMPLATE_FINANCE_LOTTERY_YEAR = {
+    favorable: { conclusion: '【結論】今年偏財／樂透方面「適合」偶爾小額試手氣，勿當主收入。', reasons: ['流年偏財星有氣', '多維度象徵偏有利', '機會與風險可控'], strategies: ['設定年度娛樂預算上限', '控制購買頻率', '設止損、不追單'] },
+    neutral: { conclusion: '【結論】今年偏財／樂透「有條件」適合：可小試，嚴守紀律。', reasons: ['今年偏財象徵中性', '機會與風險並存', '流年財星尚可'], strategies: ['年度資金上限、不借貸', '頻率勿過高', '止損：未中即停'] },
+    unfavorable: { conclusion: '【結論】今年偏財／樂透「不適合」重押，若當娛樂則小額即可。', reasons: ['今年偏財或流年有壓', '多維象徵偏保守', '投機風險較高'], strategies: ['資金上限：僅閒錢', '頻率：降低', '止損：絕不追單'] }
+  };
+
+  function buildLotteryConclusion(probVal, timeScopeText, timeScopeCanonical, topFactors, synSuggestions) {
+    var ts = String(timeScopeText || '本月').trim();
+    var isYear = (timeScopeCanonical === 'year');
+    var pool = isYear ? TEMPLATE_FINANCE_LOTTERY_YEAR : TEMPLATE_FINANCE_LOTTERY_MONTH;
+    var tendency = probVal >= 60 ? 'favorable' : (probVal >= 45 ? 'neutral' : 'unfavorable');
+    var t = pool[tendency] || pool.neutral;
+    var conclusion = (t.conclusion || '').replace(/本月/g, ts).replace(/今年/g, ts);
+    if (isYear && conclusion.indexOf('今年') < 0) conclusion = conclusion.replace(ts, '今年');
+    if (!isYear && conclusion.indexOf('本月') < 0) conclusion = conclusion.replace(ts, '本月');
+    var reasonList = (topFactors && topFactors.length >= 3) ? topFactors.slice(0, 3).map(function (f) { return (f.name || '') + (f.detail ? '：' + String(f.detail).slice(0, 30) : ''); }) : (t.reasons || []);
+    var reasonLine = '理由：（1）' + (reasonList[0] || t.reasons[0]) + '；（2）' + (reasonList[1] || t.reasons[1]) + '；（3）' + (reasonList[2] || t.reasons[2]) + '。';
+    var sugg = (synSuggestions && synSuggestions.length >= 3) ? synSuggestions.slice(0, 3) : (t.strategies || []);
+    var suggLine = '行動策略：（1）' + (sugg[0] || t.strategies[0]) + '；（2）' + (sugg[1] || t.strategies[1]) + '；（3）' + (sugg[2] || t.strategies[2]) + '。';
+    return conclusion + ' ' + reasonLine + ' ' + suggLine;
+  }
+
   function isDebug() {
     try {
       var g = (typeof window !== 'undefined' ? window : null);
@@ -542,11 +572,16 @@
       }
 
       var parsed = parseQuestion(data.question || '');
+      var questionIntent = data.questionIntent || null;
+      if (!questionIntent && typeof parseQuestionIntent === 'function') {
+        questionIntent = parseQuestionIntent(data.question || '', data.questionType || '');
+      }
       var timeScopeText = (parsed.timeScopeText != null && String(parsed.timeScopeText).trim()) ? String(parsed.timeScopeText).trim() : '近期';
       if (typeof TimeScopeParser !== 'undefined' && TimeScopeParser.resolveTimeScopeWithDefault) {
         var resolved = TimeScopeParser.resolveTimeScopeWithDefault({ timeScope: parsed.timeScope, timeScopeText: timeScopeText }, categoryAtEnterNorm);
         timeScopeText = resolved.timeScopeText || timeScopeText;
       }
+      var timeScopeCanonical = (questionIntent && questionIntent.time_scope) ? questionIntent.time_scope : (parsed.timeScope === 'MONTH' || parsed.timeScope === 'YEAR') ? (parsed.timeScope === 'YEAR' ? 'year' : 'month') : 'unspecified';
       var evidenceItems = [];
       var sysList = [
         { key: 'bazi', data: data.bazi },
@@ -573,7 +608,10 @@
       var scores = intentResult.scores || {};
       var finalCategoryUsed = uiCategory;
       var autoCorrectNotice = null;
-      if (inferredCategory !== uiCategory && (scores[inferredCategory] || 0) >= (scores[uiCategory] || 0) + 2) {
+      if (questionIntent && questionIntent.lottery && uiCategory !== 'wealth') {
+        finalCategoryUsed = 'wealth';
+        autoCorrectNotice = '偵測到問題與樂透／彩券相關，已改以【財運】類型解讀；若您想問健康請改選健康並重新輸入問題。';
+      } else if (inferredCategory !== uiCategory && (scores[inferredCategory] || 0) >= (scores[uiCategory] || 0) + 2) {
         finalCategoryUsed = inferredCategory;
         var labelMap = { love: '愛情', career: '事業', wealth: '財運', health: '健康', relationship: '人際', family: '家庭', general: '綜合' };
         autoCorrectNotice = '偵測到問題更符合【' + (labelMap[inferredCategory] || inferredCategory) + '】方向，已自動以該類型解讀。';
@@ -623,7 +661,16 @@
       }
       if (factorTexts.length === 0) factorTexts = evidenceListForDisplay.map(function (e) { return e; });
       var typeForConclusion = finalCategoryUsed;
-      var categoryConclusion = categoryForLog === 'health' ? buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions, timeScopeText) : (categoryForLog === 'relationship' ? buildRelationshipConclusion(probVal, data.question, probResult.factors || [], syn.suggestions, timeScopeText) : buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel, timeScopeText));
+      var useLotteryRoute = questionIntent && finalCategoryUsed === 'wealth' && (questionIntent.focus_subtype === '投機' || questionIntent.lottery === true);
+      var categoryConclusion;
+      if (useLotteryRoute) {
+        if (typeof console !== 'undefined') console.log('[ROUTE] 財運投機/樂透專用模板', { time_scope: timeScopeCanonical, timeScopeText: timeScopeText });
+        if (questionIntent.time_scope !== timeScopeCanonical && typeof console !== 'undefined') console.warn('[LOTTERY] assert time_scope 一致', { parsed: questionIntent.time_scope, used: timeScopeCanonical });
+        if (timeScopeCanonical === 'month' && /今年整體運勢/.test(timeScopeText)) timeScopeText = '本月';
+        categoryConclusion = buildLotteryConclusion(probVal, timeScopeText, timeScopeCanonical, probResult.factors || [], syn.suggestions);
+      } else {
+        categoryConclusion = categoryForLog === 'health' ? buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions, timeScopeText) : (categoryForLog === 'relationship' ? buildRelationshipConclusion(probVal, data.question, probResult.factors || [], syn.suggestions, timeScopeText) : buildConclusionByType(probVal, typeForConclusion, data.question, probResult.factors || [], probResult.difficultyLevel, timeScopeText));
+      }
       var directAnswerForDisplay = categoryConclusion;
       if (categoryForLog === 'health' && /請見下方依據|依據：|日主|喜神|忌神/.test(directAnswerForDisplay)) {
         directAnswerForDisplay = buildHealthConclusion(probVal, data.question, probResult.factors || [], probResult.difficultyLevel, evidenceUsedSystems.length, syn.suggestions, timeScopeText);
@@ -633,6 +680,13 @@
         if (guard) {
           directAnswerForDisplay = directAnswerForDisplay.replace(/本月/g, guard.timeScopeText);
           if (typeof console !== 'undefined') console.warn('[TimeScope] 直接回答已依問題時間詞修正為「' + guard.timeScopeText + '」');
+        }
+      }
+      if (useLotteryRoute && questionIntent && typeof validateAnswer === 'function') {
+        var answerCheck = validateAnswer(questionIntent, directAnswerForDisplay);
+        if (!answerCheck.passed) {
+          if (typeof console !== 'undefined') console.warn('[validateAnswer] lottery 回答未通過，fallback 重生成', answerCheck.reason, answerCheck.debugId);
+          directAnswerForDisplay = buildLotteryConclusion(probVal, timeScopeText, timeScopeCanonical, probResult.factors || [], syn.suggestions);
         }
       }
       var forbiddenCheck = checkForbiddenTerms(directAnswerForDisplay, finalCategoryUsed);

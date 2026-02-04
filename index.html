@@ -1072,6 +1072,7 @@
         <script src="js/explainability-guard.js?v=HOTFIX-20260203-E"></script>
         <script src="logic/category_strategy.js?v=HOTFIX-20260203-E"></script>
         <script src="logic/domain_symbol_mapping.js?v=HOTFIX-20260203-E"></script>
+        <script src="logic/finance_lottery_mapping.js?v=HOTFIX-20260203-E"></script>
         <script src="js/response-validator.js?v=HOTFIX-20260203-E"></script>
         <script src="engine/fusionEngine.js?v=HOTFIX-20260203-E"></script>
         <script src="js/method-selector.js?v=HOTFIX-20260203-E"></script>
@@ -1115,6 +1116,20 @@
                             var res = runCategoryDifferenceTest();
                             window.categoryDifferenceTestResult = res;
                             console.log('[Category Test] 執行完畢，結果見 categoryDifferenceTestResult');
+                        }
+                    };
+                    document.body.appendChild(s);
+                })();
+            }
+            if (typeof window !== 'undefined' && window.location && window.location.search.indexOf('test=lottery') >= 0) {
+                (function(){
+                    var s = document.createElement('script');
+                    s.src = 'tests/lottery_intent_tests.js?v=HOTFIX-20260203-E';
+                    s.onload = function(){
+                        if (typeof runLotteryIntentTests === 'function') {
+                            var res = runLotteryIntentTests();
+                            window.lotteryIntentTestResult = res;
+                            console.log('[Lottery Test] 通過 ' + (res.passed || 0) + ' / ' + (res.total || 0), res.failures && res.failures.length ? res.failures : '');
                         }
                     };
                     document.body.appendChild(s);

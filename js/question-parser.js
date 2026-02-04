@@ -17,11 +17,15 @@
 
   /** 與 UI 選單一致的 domain 枚舉（愛情/事業/財運/健康/人際/家庭/運勢(綜合)/其他） */
   var DOMAIN_UI = ['love', 'career', 'wealth', 'health', 'relationship', 'family', 'general', 'other'];
+  /** 財運 focus_subtype 枚舉：正財|偏財|投資|回款|支出|投機|彩票/樂透 */
+  var FOCUS_SUBTYPE_WEALTH = ['正財', '偏財', '投資', '回款', '支出', '投機', '彩票', '樂透'];
+  /** 任一命中即 focus_subtype=投機、lottery=true */
+  var LOTTERY_KEYWORDS = ['樂透', '彩票', '威力彩', '大樂透', '今彩', '539', '刮刮樂', '彩券', '中獎', '號碼', '投注', '買票', '開獎'];
   /** 各 domain 的 focus 子類關鍵詞（用於抽取 focus） */
   var FOCUS_KEYWORDS = {
     love: ['桃花', '曖昧', '復合', '婚姻', '相處', '告白', '交往', '分手', '正緣', '姻緣', '約會', '相親'],
     career: ['升遷', '轉職', '合作', '客戶', '創業', '面試', '考績', '調動', '離職', '專案', '業績'],
-    wealth: ['正財', '偏財', '投資', '回款', '支出', '收入', '破萬', '銷售', '理財', '負債'],
+    wealth: ['正財', '偏財', '投資', '回款', '支出', '收入', '破萬', '銷售', '理財', '負債', '樂透', '彩票', '彩券', '中獎', '投機'],
     health: ['睡眠', '腸胃', '筋骨', '壓力', '慢性', '體檢', '手術', '恢復', '飲食', '運動'],
     relationship: ['人際', '貴人', '客戶', '溝通', '同事', '朋友', '互動', '客訴'],
     family: ['家庭', '家人', '父母', '子女', '購屋', '買房', '婆媳', '手足'],
@@ -57,7 +61,8 @@
     finance: [
       '收入', '支出', '財', '財運', '錢', '投資', '理財', '加薪', '業績', '賺', '賠',
       '貸款', '負債', '利潤', '報酬', '財務', '經濟', '本月', '上月', '今年', '明年',
-      '副業', '銷售', '破萬', '賣出', '售出', '手鍊', '手練', '飾品', '自製', '作品'
+      '副業', '銷售', '破萬', '賣出', '售出', '手鍊', '手練', '飾品', '自製', '作品',
+      '樂透', '彩票', '威力彩', '大樂透', '今彩', '539', '刮刮樂', '彩券', '中獎', '號碼', '投注', '買票', '開獎'
     ],
     career: [
       '工作', '事業', '職', '升遷', '轉職', '面試', '業績', '合作', '創業',
@@ -84,6 +89,7 @@
 
   function detectIntent(t) {
     if (/桃花|感情|戀|告白|結婚|復合|伴侶|正緣|緣份|姻緣|曖昧|交往|分手/.test(t)) return 'love';
+    if (/樂透|彩票|威力彩|大樂透|今彩|539|刮刮樂|彩券|中獎|投注|買票|開獎/.test(t)) return 'money';
     if (/錢|財|投資|收入|負債|買賣|副業|銷售|破萬|賺錢|業績|賣出|售出|手鍊|手練|飾品|自製|作品/.test(t)) return 'money';
     if (/工作|事業|升遷|轉職|面試|業績|客戶|專案|創業|考績|調動|離職|錄取/.test(t)) return 'career';
     if (/健康|病|疼|手術|恢復|體檢|症狀|治療|身心|睡眠|飲食|運動|懷孕/.test(t)) return 'health';
@@ -156,6 +162,26 @@
     return list.filter(Boolean);
   }
 
+  function detectLottery(t) {
+    for (var i = 0; i < LOTTERY_KEYWORDS.length; i++) {
+      if (t.indexOf(LOTTERY_KEYWORDS[i]) >= 0) return true;
+    }
+    return false;
+  }
+
+  function detectWealthSubtype(t, isLottery) {
+    if (isLottery) return '投機';
+    for (var i = 0; i < FOCUS_SUBTYPE_WEALTH.length; i++) {
+      var w = FOCUS_SUBTYPE_WEALTH[i];
+      if (t.indexOf(w) >= 0) return w;
+    }
+    if (/收入|薪水|加薪|正職/.test(t)) return '正財';
+    if (/投資|理財|股票|基金/.test(t)) return '投資';
+    if (/回款|收款|應收/.test(t)) return '回款';
+    if (/支出|開銷|花費/.test(t)) return '支出';
+    return null;
+  }
+
   /**
    * 解析用戶問題，輸出結構化 schema
    * @param {string} text - 原始問題 (e.g. "這月收入會比上月高嗎？")
@@ -170,7 +196,7 @@
     var keywords = [];
 
     if (!raw) {
-      return buildOutput(raw, clean, 'other', 'yesno', 'unknown', ['me'], { target: '', metric: '', threshold: '', constraints: [] }, [], [], type, category, timeframe, { timeScope: 'UNKNOWN', timeScopeText: '近期' });
+      return buildOutput(raw, clean, 'other', 'yesno', 'unknown', ['me'], { target: '', metric: '', threshold: '', constraints: [] }, [], [], type, category, timeframe, { timeScope: 'UNKNOWN', timeScopeText: '近期' }, false, null);
     }
 
     var t = raw;
@@ -220,13 +246,15 @@
         timeScopeResult = TimeScopeParser.resolveTimeScopeWithDefault(timeScopeResult, category);
       }
     }
+    var lottery = detectLottery(raw);
+    var focusSubtypeWealth = (category === CATEGORY_FINANCE || intent === 'money') ? detectWealthSubtype(raw, lottery) : null;
 
-    return buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult);
+    return buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult, lottery, focusSubtypeWealth);
   }
 
-  function buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult) {
+  function buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult, lottery, focusSubtypeWealth) {
     timeScopeResult = timeScopeResult || { timeScope: 'UNKNOWN', timeScopeText: '近期' };
-    return {
+    var out = {
       raw: raw,
       clean: clean,
       intent: intent,
@@ -242,6 +270,9 @@
       timeScope: timeScopeResult.timeScope,
       timeScopeText: timeScopeResult.timeScopeText
     };
+    if (lottery != null) out.lottery = !!lottery;
+    if (focusSubtypeWealth != null) out.focus_subtype = focusSubtypeWealth;
+    return out;
   }
 
   /**
@@ -302,6 +333,9 @@
     if (keywords.length > 15) keywords = keywords.slice(0, 15);
 
     var timeScopeUnspecified = (timeScopeResult.timeScope === 'UNKNOWN' || canonicalScope === 'unspecified');
+    var lottery = base.lottery === true || detectLottery(raw);
+    var focusSubtype = base.focus_subtype || (domain === 'wealth' ? detectWealthSubtype(raw, lottery) : null);
+    if (lottery && domain === 'wealth') focusSubtype = '投機';
 
     return {
       domain: domain,
@@ -310,6 +344,8 @@
       time_scope_text: timeScopeResult.timeScopeText,
       time_anchor: timeAnchor,
       focus: focus,
+      focus_subtype: focusSubtype,
+      lottery: lottery,
       question_type: questionType,
       keywords: keywords,
       time_scope_unspecified: timeScopeUnspecified,
@@ -348,6 +384,8 @@
       inferDomainFromCategoryAndIntent: inferDomainFromCategoryAndIntent,
       DOMAIN_UI: DOMAIN_UI,
       FOCUS_KEYWORDS: FOCUS_KEYWORDS,
+      FOCUS_SUBTYPE_WEALTH: FOCUS_SUBTYPE_WEALTH,
+      LOTTERY_KEYWORDS: LOTTERY_KEYWORDS,
       CATEGORY_FINANCE: CATEGORY_FINANCE,
       CATEGORY_CAREER: CATEGORY_CAREER,
       CATEGORY_HEALTH: CATEGORY_HEALTH,
