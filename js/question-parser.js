@@ -17,10 +17,12 @@
 
   /** 與 UI 選單一致的 domain 枚舉（愛情/事業/財運/健康/人際/家庭/運勢(綜合)/其他） */
   var DOMAIN_UI = ['love', 'career', 'wealth', 'health', 'relationship', 'family', 'general', 'other'];
-  /** 財運 focus_subtype 枚舉：正財|偏財|投資|回款|支出|投機|彩票/樂透 */
-  var FOCUS_SUBTYPE_WEALTH = ['正財', '偏財', '投資', '回款', '支出', '投機', '彩票', '樂透'];
-  /** 任一命中即 focus_subtype=投機、lottery=true */
-  var LOTTERY_KEYWORDS = ['樂透', '彩票', '威力彩', '大樂透', '今彩', '539', '刮刮樂', '彩券', '中獎', '號碼', '投注', '買票', '開獎'];
+  /** 財運 focus_subtype 枚舉：正財|偏財|投資|回款|支出|投機|彩票/樂透|偏財_事件型_發票 */
+  var FOCUS_SUBTYPE_WEALTH = ['正財', '偏財', '投資', '回款', '支出', '投機', '彩票', '樂透', '偏財_事件型_發票'];
+  /** 發票意圖關鍵詞（任一命中 → domain=財運、focus_subtype=偏財_事件型_發票、event_type=invoice；優先於 lottery） */
+  var INVOICE_KEYWORDS = ['發票', '統一發票', '對獎', '雲端發票', '載具', '發票獎', '下一期發票'];
+  /** 任一命中即 focus_subtype=投機、lottery=true（發票由 detectInvoice 優先，故不在此列中獎/開獎以免「樂透中獎」被誤判為發票） */
+  var LOTTERY_KEYWORDS = ['樂透', '彩票', '威力彩', '大樂透', '今彩', '539', '刮刮樂', '彩券', '中獎', '開獎', '號碼', '投注', '買票'];
   /** 各 domain 的 focus 子類關鍵詞（用於抽取 focus） */
   var FOCUS_KEYWORDS = {
     love: ['桃花', '曖昧', '復合', '婚姻', '相處', '告白', '交往', '分手', '正緣', '姻緣', '約會', '相親'],
@@ -162,14 +164,25 @@
     return list.filter(Boolean);
   }
 
+  /** 發票意圖：優先於 lottery，語境為對獎/載具/發票中獎 */
+  function detectInvoice(t) {
+    var s = String(t || '');
+    for (var i = 0; i < INVOICE_KEYWORDS.length; i++) {
+      if (s.indexOf(INVOICE_KEYWORDS[i]) >= 0) return true;
+    }
+    return false;
+  }
+
   function detectLottery(t) {
+    if (detectInvoice(t)) return false;
     for (var i = 0; i < LOTTERY_KEYWORDS.length; i++) {
       if (t.indexOf(LOTTERY_KEYWORDS[i]) >= 0) return true;
     }
     return false;
   }
 
-  function detectWealthSubtype(t, isLottery) {
+  function detectWealthSubtype(t, isLottery, isInvoice) {
+    if (isInvoice) return '偏財_事件型_發票';
     if (isLottery) return '投機';
     for (var i = 0; i < FOCUS_SUBTYPE_WEALTH.length; i++) {
       var w = FOCUS_SUBTYPE_WEALTH[i];
@@ -196,7 +209,7 @@
     var keywords = [];
 
     if (!raw) {
-      return buildOutput(raw, clean, 'other', 'yesno', 'unknown', ['me'], { target: '', metric: '', threshold: '', constraints: [] }, [], [], type, category, timeframe, { timeScope: 'UNKNOWN', timeScopeText: '近期' }, false, null);
+      return buildOutput(raw, clean, 'other', 'yesno', 'unknown', ['me'], { target: '', metric: '', threshold: '', constraints: [] }, [], [], type, category, timeframe, { timeScope: 'UNKNOWN', timeScopeText: '近期' }, false, null, false);
     }
 
     var t = raw;
@@ -246,13 +259,17 @@
         timeScopeResult = TimeScopeParser.resolveTimeScopeWithDefault(timeScopeResult, category);
       }
     }
+    var invoice = detectInvoice(raw);
     var lottery = detectLottery(raw);
-    var focusSubtypeWealth = (category === CATEGORY_FINANCE || intent === 'money') ? detectWealthSubtype(raw, lottery) : null;
-
-    return buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult, lottery, focusSubtypeWealth);
+    var focusSubtypeWealth = (category === CATEGORY_FINANCE || intent === 'money') ? detectWealthSubtype(raw, lottery, invoice) : (invoice ? '偏財_事件型_發票' : null);
+    if (invoice) {
+      category = CATEGORY_FINANCE;
+      intent = intent || 'money';
+    }
+    return buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult, lottery, focusSubtypeWealth, invoice);
   }
 
-  function buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult, lottery, focusSubtypeWealth) {
+  function buildOutput(raw, clean, intent, askType, timeHorizon, subject, keySlots, keywords, mustAnswer, type, category, timeframe, timeScopeResult, lottery, focusSubtypeWealth, invoice) {
     timeScopeResult = timeScopeResult || { timeScope: 'UNKNOWN', timeScopeText: '近期' };
     var out = {
       raw: raw,
@@ -270,8 +287,14 @@
       timeScope: timeScopeResult.timeScope,
       timeScopeText: timeScopeResult.timeScopeText
     };
-    if (lottery != null) out.lottery = !!lottery;
-    if (focusSubtypeWealth != null) out.focus_subtype = focusSubtypeWealth;
+    if (invoice === true) {
+      out.event_type = 'invoice';
+      out.focus_subtype = '偏財_事件型_發票';
+      out.lottery = false;
+    } else {
+      if (lottery != null) out.lottery = !!lottery;
+      if (focusSubtypeWealth != null) out.focus_subtype = focusSubtypeWealth;
+    }
     return out;
   }
 
@@ -333,9 +356,13 @@
     if (keywords.length > 15) keywords = keywords.slice(0, 15);
 
     var timeScopeUnspecified = (timeScopeResult.timeScope === 'UNKNOWN' || canonicalScope === 'unspecified');
-    var lottery = base.lottery === true || detectLottery(raw);
-    var focusSubtype = base.focus_subtype || (domain === 'wealth' ? detectWealthSubtype(raw, lottery) : null);
-    if (lottery && domain === 'wealth') focusSubtype = '投機';
+    var invoice = base.event_type === 'invoice' || detectInvoice(raw);
+    var lottery = invoice ? false : (base.lottery === true || detectLottery(raw));
+    var focusSubtype = base.focus_subtype || (domain === 'wealth' ? detectWealthSubtype(raw, lottery, invoice) : null);
+    if (invoice) {
+      domain = 'wealth';
+      focusSubtype = '偏財_事件型_發票';
+    } else if (lottery && domain === 'wealth') focusSubtype = '投機';
 
     return {
       domain: domain,
@@ -345,6 +372,7 @@
       time_anchor: timeAnchor,
       focus: focus,
       focus_subtype: focusSubtype,
+      event_type: invoice ? 'invoice' : undefined,
       lottery: lottery,
       question_type: questionType,
       keywords: keywords,
@@ -385,6 +413,8 @@
       DOMAIN_UI: DOMAIN_UI,
       FOCUS_KEYWORDS: FOCUS_KEYWORDS,
       FOCUS_SUBTYPE_WEALTH: FOCUS_SUBTYPE_WEALTH,
+      INVOICE_KEYWORDS: INVOICE_KEYWORDS,
+      detectInvoice: detectInvoice,
       LOTTERY_KEYWORDS: LOTTERY_KEYWORDS,
       CATEGORY_FINANCE: CATEGORY_FINANCE,
       CATEGORY_CAREER: CATEGORY_CAREER,

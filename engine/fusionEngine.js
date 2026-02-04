@@ -487,6 +487,24 @@
     unfavorable: { conclusion: '【結論】今年偏財／樂透「不適合」重押，若當娛樂則小額即可。', reasons: ['今年偏財或流年有壓', '多維象徵偏保守', '投機風險較高'], strategies: ['資金上限：僅閒錢', '頻率：降低', '止損：絕不追單'] }
   };
 
+  /** 3) 發票專用模板：四段白話、無命理術語；僅允許發票相關建議（載具、對獎習慣、消費紀律） */
+  var TEMPLATE_FINANCE_INVOICE = {
+    low: { conclusion: '下期發票：機率偏低，有小獎機會但不要期待大獎。', advice: '用載具集中、固定每期對獎；消費以必要為主，不為了中獎刻意多花。', reminder: '發票屬「小概率事件」，最穩的財運仍在「守住支出＋固定存下來」。', closing: '把它當驚喜，不當計畫。' },
+    mid: { conclusion: '下期發票：機率普通，可固定對獎、不必特別期待。', advice: '用載具集中、固定每期對獎；消費以必要為主，不為了中獎刻意多花。', reminder: '發票屬「小概率事件」，最穩的財運仍在「守住支出＋固定存下來」。', closing: '把它當驚喜，不當計畫。' },
+    high: { conclusion: '下期發票：略有機會，有小獎空間，但大獎仍屬小概率。', advice: '用載具集中、固定每期對獎；消費以必要為主，不為了中獎刻意多花。', reminder: '發票屬「小概率事件」，最穩的財運仍在「守住支出＋固定存下來」。', closing: '把它當驚喜，不當計畫。' }
+  };
+
+  function buildInvoiceConclusion(probVal, timeScopeText) {
+    var ts = String(timeScopeText || '下期').trim();
+    var tendency = probVal >= 55 ? 'high' : (probVal >= 40 ? 'mid' : 'low');
+    var t = TEMPLATE_FINANCE_INVOICE[tendency] || TEMPLATE_FINANCE_INVOICE.mid;
+    var conclusion = '【結論】' + (t.conclusion || '').replace(/下期/g, ts);
+    var advice = '【財運建議】' + (t.advice || '');
+    var reminder = '【提醒】' + (t.reminder || '');
+    var closing = '【收尾】' + (t.closing || '');
+    return conclusion + '\n\n' + advice + '\n\n' + reminder + '\n\n' + closing;
+  }
+
   function buildLotteryConclusion(probVal, timeScopeText, timeScopeCanonical, topFactors, synSuggestions) {
     var ts = String(timeScopeText || '本月').trim();
     var isYear = (timeScopeCanonical === 'year');
@@ -608,7 +626,10 @@
       var scores = intentResult.scores || {};
       var finalCategoryUsed = uiCategory;
       var autoCorrectNotice = null;
-      if (questionIntent && questionIntent.lottery && uiCategory !== 'wealth') {
+      if (questionIntent && questionIntent.event_type === 'invoice') {
+        finalCategoryUsed = 'wealth';
+        if (uiCategory !== 'wealth') autoCorrectNotice = '偵測到問題與發票對獎相關，已改以【財運】類型解讀。';
+      } else if (questionIntent && questionIntent.lottery && uiCategory !== 'wealth') {
         finalCategoryUsed = 'wealth';
         autoCorrectNotice = '偵測到問題與樂透／彩券相關，已改以【財運】類型解讀；若您想問健康請改選健康並重新輸入問題。';
       } else if (inferredCategory !== uiCategory && (scores[inferredCategory] || 0) >= (scores[uiCategory] || 0) + 2) {
@@ -661,9 +682,16 @@
       }
       if (factorTexts.length === 0) factorTexts = evidenceListForDisplay.map(function (e) { return e; });
       var typeForConclusion = finalCategoryUsed;
-      var useLotteryRoute = questionIntent && finalCategoryUsed === 'wealth' && (questionIntent.focus_subtype === '投機' || questionIntent.lottery === true);
+      var explainLevel = (data.explain_level && String(data.explain_level).trim()) ? String(data.explain_level).toLowerCase() : 'simple';
+      if (/詳細|命理依據|依據分析|想看.*依據/.test(questionText || '')) explainLevel = 'detailed';
+      var useInvoiceRoute = questionIntent && questionIntent.event_type === 'invoice';
+      var useLotteryRoute = !useInvoiceRoute && questionIntent && finalCategoryUsed === 'wealth' && (questionIntent.focus_subtype === '投機' || questionIntent.lottery === true);
       var categoryConclusion;
-      if (useLotteryRoute) {
+      if (useInvoiceRoute) {
+        var invoiceTimeText = /下一期|下期/.test(questionText || '') ? '下期' : (/本期|這期/.test(questionText || '') ? '本期' : '下期');
+        if (typeof console !== 'undefined') console.log('[ROUTE] 財運發票專用模板 TEMPLATE_FINANCE_INVOICE', { timeScopeText: invoiceTimeText });
+        categoryConclusion = buildInvoiceConclusion(probVal, invoiceTimeText);
+      } else if (useLotteryRoute) {
         if (typeof console !== 'undefined') console.log('[ROUTE] 財運投機/樂透專用模板', { time_scope: timeScopeCanonical, timeScopeText: timeScopeText });
         if (questionIntent.time_scope !== timeScopeCanonical && typeof console !== 'undefined') console.warn('[LOTTERY] assert time_scope 一致', { parsed: questionIntent.time_scope, used: timeScopeCanonical });
         if (timeScopeCanonical === 'month' && /今年整體運勢/.test(timeScopeText)) timeScopeText = '本月';
@@ -680,6 +708,13 @@
         if (guard) {
           directAnswerForDisplay = directAnswerForDisplay.replace(/本月/g, guard.timeScopeText);
           if (typeof console !== 'undefined') console.warn('[TimeScope] 直接回答已依問題時間詞修正為「' + guard.timeScopeText + '」');
+        }
+      }
+      if (useInvoiceRoute && questionIntent && typeof validateAnswerForInvoice === 'function') {
+        var invoiceCheck = validateAnswerForInvoice(questionIntent, directAnswerForDisplay, explainLevel);
+        if (!invoiceCheck.passed) {
+          if (typeof console !== 'undefined') console.warn('[validateAnswerForInvoice] 發票回答未通過，fallback 重生成', invoiceCheck.reason, invoiceCheck.debugId);
+          directAnswerForDisplay = buildInvoiceConclusion(probVal, timeScopeText);
         }
       }
       if (useLotteryRoute && questionIntent && typeof validateAnswer === 'function') {
@@ -706,12 +741,28 @@
       if (typeof console !== 'undefined') {
         console.log('[GUARD]', { forbiddenTermsHit: forbiddenCheck.hit, passed: forbiddenCheck.passed });
       }
-      var fullText = problemRestatement + '\n\n' + directAnswerForDisplay + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
-      if (typeof ExplainabilityGuard !== 'undefined' && ExplainabilityGuard.checkEvidenceText) {
+      var evidenceForDisplay = evidenceListForDisplay;
+      if (explainLevel === 'simple') {
+        var simpleForbidden = /八字|十神|卦象|吉凶|凱爾特十字|塔羅牌陣|化祿|化忌|身強身弱|喜用神/;
+        evidenceForDisplay = evidenceListForDisplay.filter(function (line) {
+          return !simpleForbidden.test(String(line || ''));
+        });
+        if (evidenceForDisplay.length === 0 && evidenceListForDisplay.length > 0) {
+          var signalLabel = probVal >= 55 ? '中' : (probVal >= 40 ? '中' : '弱');
+          evidenceForDisplay = ['整體偏財訊號：' + signalLabel];
+        }
+      }
+      var fullText;
+      if (useInvoiceRoute) {
+        fullText = problemRestatement + '\n\n' + directAnswerForDisplay;
+      } else {
+        fullText = problemRestatement + '\n\n' + directAnswerForDisplay + '\n\n依據：\n' + evidenceForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
+      }
+      if (!useInvoiceRoute && typeof ExplainabilityGuard !== 'undefined' && ExplainabilityGuard.checkEvidenceText) {
         var exGuard = ExplainabilityGuard.checkEvidenceText(evidenceListForDisplay, baziExplainText);
         if (!exGuard.passed) {
           if (typeof console !== 'undefined') console.warn('[ExplainabilityGuard]', exGuard.reason);
-          fullText = problemRestatement + '\n\n' + directAnswerForDisplay + '\n\n依據：\n' + evidenceListForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
+          fullText = problemRestatement + '\n\n' + directAnswerForDisplay + '\n\n依據：\n' + evidenceForDisplay.join('\n') + '\n\n建議：\n' + (suggestions.join('\n') || '');
         }
       }
       var guard = AlignmentGuard.alignmentCheck(parsed, fullText);

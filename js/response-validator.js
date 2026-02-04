@@ -60,11 +60,43 @@
     return { passed: true, debugId: debugId };
   }
 
+  /** 發票專用校驗：event_type===invoice 時必須通過，否則重生成並記 log */
+  var INVOICE_REQUIRED_TERMS = ['發票', '對獎', '載具'];
+  var INVOICE_FORBIDDEN_TERMS = ['副業', '衝銷售', '鋪陣', '桃花', '健康'];
+  var SIMPLE_MODE_FORBIDDEN_TERMS = ['八字', '十神', '卦象', '吉凶', '凱爾特十字', '塔羅牌陣', '化祿', '化忌', '身強身弱', '喜用神'];
+
+  function validateAnswerForInvoice(intent, answerText, explainLevel) {
+    var debugId = 'INV-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    var t = String(answerText || '').trim();
+    if (!intent || intent.event_type !== 'invoice') {
+      return { passed: true, debugId: debugId };
+    }
+    var hasRequired = INVOICE_REQUIRED_TERMS.some(function (w) { return t.indexOf(w) >= 0; });
+    if (!hasRequired) {
+      return { passed: false, reason: '發票回答必須包含：發票、對獎 或 載具', debugId: debugId };
+    }
+    for (var i = 0; i < INVOICE_FORBIDDEN_TERMS.length; i++) {
+      if (t.indexOf(INVOICE_FORBIDDEN_TERMS[i]) >= 0) {
+        return { passed: false, reason: '發票回答不得包含：' + INVOICE_FORBIDDEN_TERMS[i], debugId: debugId };
+      }
+    }
+    var level = (explainLevel || 'simple').toString().toLowerCase();
+    if (level === 'simple') {
+      for (var j = 0; j < SIMPLE_MODE_FORBIDDEN_TERMS.length; j++) {
+        if (t.indexOf(SIMPLE_MODE_FORBIDDEN_TERMS[j]) >= 0) {
+          return { passed: false, reason: 'simple 模式不得含專業術語：' + SIMPLE_MODE_FORBIDDEN_TERMS[j], debugId: debugId };
+        }
+      }
+    }
+    return { passed: true, debugId: debugId };
+  }
+
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { validateResponse: validateResponse, validateAnswer: validateAnswer, AVOID_BY_DOMAIN: AVOID_BY_DOMAIN };
+    module.exports = { validateResponse: validateResponse, validateAnswer: validateAnswer, validateAnswerForInvoice: validateAnswerForInvoice, AVOID_BY_DOMAIN: AVOID_BY_DOMAIN };
   } else {
     global.validateResponse = validateResponse;
     global.validateAnswer = validateAnswer;
+    global.validateAnswerForInvoice = validateAnswerForInvoice;
     global.AVOID_BY_DOMAIN = AVOID_BY_DOMAIN;
   }
 })(typeof window !== 'undefined' ? window : this);

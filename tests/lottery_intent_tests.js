@@ -12,7 +12,9 @@
     { name: '財運+這月正財收入如何 → month + 正財（非 lottery）', question: '這月正財收入如何？', selectedDomain: 'wealth', expect: { domain: 'wealth', time_scope: 'month', lottery: false, focus_subtype: '正財' } },
     { name: '健康+這月適合買樂透嗎但UI選健康 → 解析器保留 health，lottery=true（引擎會轉財運）', question: '這月適合買樂透嗎？', selectedDomain: 'health', expect: { domain: 'health', lottery: true } },
     { name: '財運+本月彩券運氣 → month + lottery', question: '本月彩券運氣好嗎？', selectedDomain: 'wealth', expect: { domain: 'wealth', time_scope: 'month', lottery: true } },
-    { name: '財運+這月投資運勢（非樂透）→ 投資子類', question: '這月投資運勢如何？', selectedDomain: 'wealth', expect: { domain: 'wealth', time_scope: 'month', lottery: false, focus_subtype: '投資' } }
+    { name: '財運+這月投資運勢（非樂透）→ 投資子類', question: '這月投資運勢如何？', selectedDomain: 'wealth', expect: { domain: 'wealth', time_scope: 'month', lottery: false, focus_subtype: '投資' } },
+    { name: '發票+下一期我會中獎嗎 → 財運+invoice，非 lottery', question: '下一期發票我會中獎嗎？', selectedDomain: 'wealth', expect: { domain: 'wealth', lottery: false, focus_subtype: '偏財_事件型_發票', event_type: 'invoice' } },
+    { name: '發票+對獎關鍵詞 → 財運+invoice', question: '這期統一發票對獎會中嗎？', selectedDomain: 'general', expect: { domain: 'wealth', lottery: false, focus_subtype: '偏財_事件型_發票', event_type: 'invoice' } }
   ];
 
   function runLotteryIntentTests() {
@@ -48,6 +50,10 @@
       if (tc.expect.focus_subtype !== undefined && intent.focus_subtype !== tc.expect.focus_subtype) {
         ok = false;
         failures.push({ name: tc.name, reason: 'focus_subtype 應為 ' + tc.expect.focus_subtype + '，得到 ' + (intent.focus_subtype || 'null') });
+      }
+      if (tc.expect.event_type !== undefined && intent.event_type !== tc.expect.event_type) {
+        ok = false;
+        failures.push({ name: tc.name, reason: 'event_type 應為 ' + tc.expect.event_type + '，得到 ' + (intent.event_type || 'null') });
       }
       if (ok) passed++; else if (failures[failures.length - 1].name !== tc.name) failures.push({ name: tc.name, reason: '未通過' });
     });

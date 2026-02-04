@@ -225,7 +225,34 @@
   }
 
   /**
+   * 從販售清單建出可評分的「水晶」池：每筆為 CrystalsKB 相容格式（name, elements, intents, evidenceMap, intensity, wear, cautions）
+   * 顯示名一律用 vendor 品項名稱，五行／功效以 vendor 為準；evidenceMap／強度／配戴從 CrystalsKB 補齊（無對應則用通用預設）
+   * @returns {Array<Object>} 供 selectCrystals 使用的 crystal 陣列，若無 VendorInventory 則回傳 null
+   */
+  function getVendorCrystalPool() {
+    if (typeof VendorInventory === 'undefined' || !VendorInventory.getAll || typeof CrystalsKB === 'undefined' || !CrystalsKB.getCrystalById) return null;
+    var list = VendorInventory.getAll();
+    if (!list || list.length === 0) return null;
+    var DEFAULT_EVIDENCE = { bazi: { boost: ['通用'], avoid: [] }, ziwei: { boost: [], avoid: [] }, meihua: { boost: [], avoid: [] }, tarot: { boost: [], avoid: [] }, nameology: { boost: [], avoid: [] } };
+    var pool = [];
+    for (var i = 0; i < list.length; i++) {
+      var v = list[i];
+      var kb = v.crystalId ? CrystalsKB.getCrystalById(v.crystalId) : null;
+      var name = (v.name != null && v.name !== '') ? v.name : (kb ? kb.name : '品項');
+      var elements = (v.elements && typeof v.elements === 'object') ? v.elements : (kb ? kb.elements : { 土: 0.5 });
+      var intents = (v.intents && Array.isArray(v.intents)) ? v.intents : (kb ? kb.intents : ['decision']);
+      var evidenceMap = (kb && kb.evidenceMap) ? kb.evidenceMap : DEFAULT_EVIDENCE;
+      var intensity = (kb && typeof kb.intensity === 'number') ? kb.intensity : 2;
+      var wear = (kb && kb.wear) ? kb.wear : { defaultHand: 'both', bestForms: ['bracelet', 'pendant'], dayNight: { day: true, night: true }, scenarios: [] };
+      var cautions = (kb && kb.cautions) ? kb.cautions : [];
+      pool.push({ id: v.id, name: name, elements: elements, intents: intents, evidenceMap: evidenceMap, intensity: intensity, wear: wear, cautions: cautions });
+    }
+    return pool;
+  }
+
+  /**
    * 新管線：每顆水晶一張卡片（推薦結論、跨系統證據、配戴方式、注意事項、替代方案）
+   * 優先從販售清單（VendorInventory）篩選，無則改為 CrystalsKB 全表
    * 依 CrystalsKB + CrystalEvidenceNormalizer + CrystalRecommender + CrystalAdviceSynthesizer + CrystalOutputGuard
    * @returns {{ cards: Array, missing: string[], disclaimer: string } | null } 若模組未載入則回傳 null，呼叫方改走 getCrystalRecommendation
    */
@@ -238,7 +265,8 @@
     var parsed = (typeof parseQuestion === 'function') ? parseQuestion(question || '') : { intent: 'other', timeHorizon: 'unknown' };
     var fusionData = { bazi: options.bazi || baziResult, meihua: options.meihua, tarot: options.tarot, ziwei: options.ziwei, nameology: options.nameology };
     var norm = CrystalEvidenceNormalizer.normalizeCrystalEvidence(fusionData, parsed);
-    var crystals = CrystalsKB.getAllCrystals();
+    var crystals = getVendorCrystalPool();
+    if (!crystals || crystals.length === 0) crystals = CrystalsKB.getAllCrystals();
     var baziExplain = null;
     if (typeof ExplainabilityLayer !== 'undefined' && ExplainabilityLayer.buildAll) {
       var explainResult = ExplainabilityLayer.buildAll(fusionData, parsed);
@@ -282,10 +310,11 @@
   }
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { CRYSTAL_MAPPING: CRYSTAL_MAPPING, getCrystalRecommendation: getCrystalRecommendation, getCrystalRecommendationCards: getCrystalRecommendationCards };
+    module.exports = { CRYSTAL_MAPPING: CRYSTAL_MAPPING, getCrystalRecommendation: getCrystalRecommendation, getCrystalRecommendationCards: getCrystalRecommendationCards, getVendorCrystalPool: getVendorCrystalPool };
   } else {
     global.CRYSTAL_MAPPING = CRYSTAL_MAPPING;
     global.getCrystalRecommendation = getCrystalRecommendation;
     global.getCrystalRecommendationCards = getCrystalRecommendationCards;
+    global.getVendorCrystalPool = getVendorCrystalPool;
   }
 })(typeof window !== 'undefined' ? window : this);
