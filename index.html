@@ -2267,7 +2267,79 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
 
   // ── 針對「如何/怎麼」方法題 ──
   if(intent.isHow) {
-    return null; // 使用預設的建議系統
+    const howAdvice = [];
+    // 八字五行補強
+    if(fav.length) howAdvice.push(`八字建議補強 ${fav.join('、')} 行能量（飲食、顏色、方位）`);
+    if(strong) howAdvice.push('身強：多輸出（教學、創作、投資），引導過剩能量');
+    else howAdvice.push('身弱：找靠山（大平台、好主管、穩定環境），避免單打獨鬥');
+
+    // 塔羅建議
+    if(tarot.drawn.length >= 10) {
+      const obst = tarot.drawn[1]; // 阻礙
+      howAdvice.push(`塔羅提示：先克服「${obst.n}」帶來的障礙（${obst.isUp ? obst.up : obst.rv}）`);
+      const self = tarot.drawn[6]; // 自我態度
+      howAdvice.push(`調整心態：「${self.n}」${self.isUp?'正位':'逆位'} — ${self.isUp ? self.up : self.rv}`);
+    }
+
+    return `<p><strong>關於「如何改善」的建議：</strong></p>
+      <ol style="padding-left:1.2rem;line-height:1.8">${howAdvice.map(a => '<li>' + a + '</li>').join('')}</ol>`;
+  }
+
+  // ── 針對「多少錢/能賺多少」金額類問題 ──
+  if((intent.isAmount || /賺|收入|薪|錢|進帳|報酬|獲利/.test(intent.rawQuestion)) && (type === 'wealth' || type === 'career')) {
+    let wealthAnalysis = '';
+
+    // 八字財星強度
+    const caiEl = typeof KE !== 'undefined' ? KE[el] : '';
+    const caiStrength = caiEl && bazi.ep ? bazi.ep[caiEl] : 0;
+    if(caiStrength > 25) wealthAnalysis += '<p>命盤財星旺（' + caiEl + '行 ' + caiStrength + '%），天生有正財格局，收入潛力高。</p>';
+    else if(caiStrength > 15) wealthAnalysis += '<p>命盤財星中等（' + caiEl + '行 ' + caiStrength + '%），財運普通但穩定。</p>';
+    else wealthAnalysis += '<p>命盤財星偏弱（' + caiEl + '行 ' + caiStrength + '%），需主動努力開源。</p>';
+
+    if(strong) wealthAnalysis += '<p>身強扛財，你有能力承接更多收入，但需留意過度擴張。</p>';
+    else wealthAnalysis += '<p>身弱，大財來了也不一定守得住，建議穩健經營而非冒險。</p>';
+
+    // 大運對財運影響
+    if(curDy) {
+      if(curDy.level.includes('吉')) wealthAnalysis += '<p>大運（' + curDy.gz + '）偏吉，整體收入環境有利。</p>';
+      else if(curDy.level.includes('凶')) wealthAnalysis += '<p>大運（' + curDy.gz + '）偏弱，財運受壓，不宜大幅投入。</p>';
+    }
+
+    // 紫微財帛宮
+    if(S.ziwei && S.ziwei.palaces[4]) {
+      const caiPalace = S.ziwei.palaces[4];
+      const caiStars = caiPalace.stars.filter(s => s.type === 'major');
+      if(caiStars.length) {
+        const hasLu = caiPalace.stars.some(s => s.hua === '化祿');
+        wealthAnalysis += '<p>紫微財帛宮主星：' + caiStars.map(s => s.name).join('、');
+        if(hasLu) wealthAnalysis += '，且有化祿加持 — 財運格局佳。';
+        else wealthAnalysis += '。';
+        wealthAnalysis += '</p>';
+      }
+    }
+
+    // 梅花卦象
+    if(mh) {
+      wealthAnalysis += '<p>梅花體用 ' + mh.ty.r + '（' + mh.ty.f + '）';
+      if(mh.ty.f === '大吉' || mh.ty.f === '吉') wealthAnalysis += '，卦象支持財務進帳。';
+      else if(mh.ty.f.includes('凶')) wealthAnalysis += '，卦象暗示此期間花費可能大於進帳。';
+      else wealthAnalysis += '，財務平穩。';
+      wealthAnalysis += '</p>';
+    }
+
+    // 塔羅金幣牌分析
+    if(tarot.drawn.length >= 10) {
+      const pentacles = tarot.drawn.filter(c => c.id >= 64 && c.id <= 77); // 金幣牌
+      const upPent = pentacles.filter(c => c.isUp).length;
+      if(pentacles.length) wealthAnalysis += '<p>塔羅中出現 ' + pentacles.length + ' 張金幣（Pentacles）牌，' + upPent + ' 張正位 — ' + (upPent >= pentacles.length * 0.6 ? '財務訊號偏正面' : '財務面有壓力') + '。</p>';
+
+      const finalCard = tarot.drawn[9];
+      wealthAnalysis += '<p>最終結果牌「' + finalCard.n + '」' + (finalCard.isUp ? '正位' : '逆位') + '：' + (finalCard.isUp ? finalCard.up : finalCard.rv) + '</p>';
+    }
+
+    wealthAnalysis += '<p class="mt-sm text-dim">💡 命理無法給出精確金額。上述分析綜合了八字財星、紫微財帛宮、梅花卦象與塔羅牌面，判斷的是「這段時期的財運方向與強度」。</p>';
+
+    return '<p><strong>關於「' + (intent.subject || '收入') + '」的財運分析：</strong></p>' + wealthAnalysis;
   }
 
   // ── 針對「會不會/能不能」是非題 ──
@@ -3102,16 +3174,20 @@ function analyzeName(fullName){
     return'水';
   }
 
-  // 吉凶（簡化81數理）
+  // 吉凶（依正統81數理靈動數）
   function geFortune(ge){
     const n=((ge-1)%80)+1;
-    const ji=[1,3,5,6,7,8,11,13,15,16,17,18,21,23,24,25,29,31,32,33,35,37,39,41,45,47,48,52,57,61,63,65,67,68];
-    const dj=[1,3,5,8,11,13,15,16,21,23,24,25,31,32,33,35,37,41,45,47,48,52,57,61,63,67,68];
+    // 大吉（僅最吉利的數）
+    const dj=[1,3,5,8,11,13,15,16,21,24,25,31,32,35,37,41,45,48,63,67,68];
+    // 吉（次吉）
+    const ji=[6,7,17,18,23,29,33,39,47,52,57,61,65];
+    // 半吉半凶
+    const ban=[27,38,51,55,58,71,73,75];
+    // 凶
     if(dj.includes(n))return{level:'大吉',cls:'text-success'};
     if(ji.includes(n))return{level:'吉',cls:'text-success'};
-    const xiong=[2,4,9,10,12,14,19,20,22,26,27,28,30,34,36,38,40,42,43,44,46,49,50,51,53,54,55,56,58,59,60,62,64,66,69,70,71,72,73,74,75,76,77,78,79,80];
-    if(xiong.includes(n))return{level:'凶',cls:'text-danger'};
-    return{level:'平',cls:'text-dim'};
+    if(ban.includes(n))return{level:'平',cls:'text-dim'};
+    return{level:'凶',cls:'text-danger'};
   }
 
   // 三才配置
@@ -3388,37 +3464,104 @@ function runAnalysisV2(){
     }
   }
 
-  // ── 加權綜合（含偏差修正） ──
-  const w={bazi:0.30, meihua:S.meihua?0.20:0, tarot:S.tarot.drawn.length>=10?0.20:0, ziwei:S.ziwei?0.20:0, name:nameResult?0.10:0};
-  const totalW=Object.values(w).reduce((a,b)=>a+b,0);
-  const scores={bazi:baziScore,meihua:mhScore,tarot:tarotScore,ziwei:ziweiScore,name:nameScore};
-  let finalProb=0;
-  for(const k of Object.keys(w))finalProb+=scores[k]*(w[k]/totalW);
+  /* ══════════════════════════════════════════════════
+     動態權重系統：依問題性質分配各維度影響力
+     ──────────────────────────────────────────────────
+     🧭 長期人生方向 → 八字 / 紫微（權重高）
+     ⚡ 眼前抉擇     → 梅花 / 塔羅（權重高）
+     🧠 狀態 / 混合  → 均衡，融合判斷
+     姓名學永遠只做輔助（≤8%），因分數不隨問題變動
+     ══════════════════════════════════════════════════ */
 
-  // 偏差修正：如果各維度「一致偏高/偏低」，加大偏離
-  const activeScores = Object.keys(w).filter(k=>w[k]>0).map(k=>scores[k]);
-  const avgScore = activeScores.reduce((a,b)=>a+b,0)/activeScores.length;
-  const allHigh = activeScores.every(s=>s>=55);
-  const allLow = activeScores.every(s=>s<=45);
-  const mostHigh = activeScores.filter(s=>s>=60).length >= activeScores.length*0.7;
-  const mostLow = activeScores.filter(s=>s<=40).length >= activeScores.length*0.7;
-  if(allHigh) finalProb = finalProb * 1.15; // 一致偏好 → 推高
-  else if(allLow) finalProb = finalProb * 0.85; // 一致偏差 → 壓低
-  else if(mostHigh) finalProb = finalProb * 1.08;
-  else if(mostLow) finalProb = finalProb * 0.92;
+  // 問題時間維度判定
+  const qText = S.form ? (S.form.question||'') : '';
+  const isShortTerm = /這[個月週周]|今天|明天|最近|馬上|眼前|立刻|短期|現在/.test(qText);
+  const isLongTerm = /一輩子|未來|長期|十年|人生|命運|天生|適合|方向/.test(qText);
+  const isDecision = /該不該|要不要|還是|選擇|決定|A或B|轉職|離職|分手/.test(qText);
+  const isStatus = /為什麼|怎麼了|卡住|困境|狀況|原因|瓶頸/.test(qText);
 
-  // 極端值放大：離50越遠，越加倍
+  let w;
+  const hasMh = S.meihua ? 1 : 0;
+  const hasTr = S.tarot.drawn.length >= 10 ? 1 : 0;
+  const hasZw = S.ziwei ? 1 : 0;
+  const hasNm = nameResult ? 1 : 0;
+
+  if(isShortTerm || isDecision) {
+    // ⚡ 短期 / 抉擇：梅花塔羅為主，八字紫微為輔
+    w = {
+      bazi:   0.15,
+      meihua: hasMh ? 0.30 : 0,
+      tarot:  hasTr ? 0.30 : 0,
+      ziwei:  hasZw ? 0.12 : 0,
+      name:   hasNm ? 0.05 : 0
+    };
+  } else if(isLongTerm) {
+    // 🧭 長期人生方向：八字紫微為主
+    w = {
+      bazi:   0.35,
+      meihua: hasMh ? 0.10 : 0,
+      tarot:  hasTr ? 0.10 : 0,
+      ziwei:  hasZw ? 0.30 : 0,
+      name:   hasNm ? 0.08 : 0
+    };
+  } else if(isStatus) {
+    // 🧠 狀態卡關：均衡但梅花塔羅略高（反映當下）
+    w = {
+      bazi:   0.22,
+      meihua: hasMh ? 0.22 : 0,
+      tarot:  hasTr ? 0.22 : 0,
+      ziwei:  hasZw ? 0.18 : 0,
+      name:   hasNm ? 0.06 : 0
+    };
+  } else {
+    // 預設：均衡偏八字
+    w = {
+      bazi:   0.28,
+      meihua: hasMh ? 0.20 : 0,
+      tarot:  hasTr ? 0.20 : 0,
+      ziwei:  hasZw ? 0.18 : 0,
+      name:   hasNm ? 0.06 : 0
+    };
+  }
+
+  // 類型微調
+  if(type === 'love' && hasZw) w.ziwei += 0.05; // 愛情：紫微夫妻宮重要
+  if(type === 'career' && hasZw) w.ziwei += 0.05;
+  if(type === 'wealth') { w.meihua += hasMh ? 0.03 : 0; w.tarot += hasTr ? 0.03 : 0; }
+
+  // 姓名學上限：不管怎樣不超過 8%
+  if(w.name > 0.08) w.name = 0.08;
+
+  const totalW = Object.values(w).reduce((a,b) => a+b, 0);
+  const scores = {bazi:baziScore, meihua:mhScore, tarot:tarotScore, ziwei:ziweiScore, name:nameScore};
+  let finalProb = 0;
+  for(const k of Object.keys(w)) finalProb += scores[k] * (w[k] / totalW);
+
+  // 一致性放大
+  const activeScores = Object.keys(w).filter(k => w[k] > 0).map(k => scores[k]);
+  const allAgreeHigh = activeScores.filter(s => s >= 60).length >= Math.ceil(activeScores.length * 0.75);
+  const allAgreeLow = activeScores.filter(s => s <= 40).length >= Math.ceil(activeScores.length * 0.75);
+  if(allAgreeHigh) finalProb = finalProb * 1.12;
+  else if(allAgreeLow) finalProb = finalProb * 0.88;
+
+  // 離心力放大
   const distFrom50 = finalProb - 50;
-  finalProb = 50 + distFrom50 * 1.3;
+  finalProb = 50 + distFrom50 * 1.25;
 
-  finalProb=Math.round(Math.max(8,Math.min(95,finalProb)));
+  finalProb = Math.round(Math.max(8, Math.min(95, finalProb)));
 
-  // ── Verdict ──
+  // 記錄權重供UI顯示
+  const _wNorm = {};
+  for(const k of Object.keys(w)) _wNorm[k] = w[k] > 0 ? Math.round(w[k] / totalW * 100) : 0;
+
+  // ── Verdict（6級判定） ──
   let vlabel,vnote;
-  if(finalProb>=70){vlabel='偏向可行 ✅';vnote='多維度指標偏一致，適合推進，仍需按建議控風險。'}
-  else if(finalProb>=45){vlabel='中性偏可行 ⚖️';vnote='有利與阻力並存；照建議調整做法，勝率會上升。'}
-  else if(finalProb>=25){vlabel='偏保守 ⚠️';vnote='阻力訊號較多，建議先降低成本/試水溫。'}
-  else{vlabel='不建議硬推 ⛔';vnote='目前象徵偏逆風；若要做，務必設停損。'}
+  if(finalProb>=78){vlabel='大吉・強烈推薦 ✅';vnote='五維度高度一致看好，是難得的好時機，積極行動！'}
+  else if(finalProb>=65){vlabel='偏吉・可積極推進 👍';vnote='多數指標偏正面，建議把握機會但注意風控。'}
+  else if(finalProb>=52){vlabel='中性偏可行 ⚖️';vnote='有利與阻力並存；照建議調整做法，勝率會上升。'}
+  else if(finalProb>=40){vlabel='中性偏保守 🤔';vnote='指標偏中性偏弱，建議先觀察、做小範圍測試。'}
+  else if(finalProb>=25){vlabel='偏凶・建議暫緩 ⚠️';vnote='阻力訊號較多，目前不是好時機，先做準備。'}
+  else{vlabel='大凶・強烈建議暫停 ⛔';vnote='幾乎所有指標都亮紅燈，硬推風險極高。'}
 
   document.getElementById('r-vlabel').textContent=vlabel;
   document.getElementById('r-vprob').textContent=finalProb+'%';
@@ -3434,8 +3577,11 @@ function runAnalysisV2(){
 
   // ── Breakdown ──
   const dimLabels={bazi:'八字命理',meihua:'梅花易數',tarot:'塔羅牌陣',ziwei:'紫微斗數',name:'姓名學'};
-  document.getElementById('r-pbreak').innerHTML=Object.keys(w).filter(k=>w[k]>0).map(k=>
-    `<div class="el-row"><span class="el-lbl text-sm">${dimLabels[k]}</span><div class="el-track"><div class="el-fill" style="width:${scores[k]}%;background:var(--c-gold)"></div></div><span class="el-val">${scores[k]}%<span class="text-xs text-muted"> (${Math.round(w[k]/totalW*100)}%)</span></span></div>`
+  const weightHint = isShortTerm?'⚡ 短期問題：梅花/塔羅為主' : isLongTerm?'🧭 長期方向：八字/紫微為主' : isDecision?'⚡ 抉擇問題：梅花/塔羅為主' : isStatus?'🧠 狀態分析：均衡判斷' : '均衡模式';
+  document.getElementById('r-pbreak').innerHTML=
+    `<p class="text-xs text-dim mb-sm">${weightHint}</p>`+
+    Object.keys(w).filter(k=>w[k]>0).map(k=>
+    `<div class="el-row"><span class="el-lbl text-sm">${dimLabels[k]}</span><div class="el-track"><div class="el-fill" style="width:${scores[k]}%;background:var(--c-gold)"></div></div><span class="el-val">${scores[k]}%<span class="text-xs text-muted"> (${_wNorm[k]}%)</span></span></div>`
   ).join('');
 
   // ── Crystal ──
