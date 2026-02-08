@@ -880,6 +880,12 @@ html{scroll-behavior:smooth}
 .lucky-sub{font-size:0.7rem;color:var(--c-text-dim);margin-top:2px}
 .lucky-color-dot{width:16px;height:16px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,0.2)}
 @media(max-width:640px){.zodiac-grid{grid-template-columns:repeat(4,1fr)}}
+
+/* Tarot card generated images */
+.tc-img{width:100%;height:auto;border-radius:4px;display:block;margin-bottom:4px}
+.t-card-face.t-front{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px}
+.t-card-face.t-front .tc-name{font-size:0.7rem;margin-top:2px}
+.tc-spread-img{box-shadow:0 2px 8px rgba(0,0,0,0.3);border:1px solid rgba(212,175,55,0.3)}
 </style>
 </head>
 <body>
@@ -1115,7 +1121,7 @@ html{scroll-behavior:smooth}
   <!-- 折扣碼（分享後顯示） -->
   <div class="discount-reveal hidden mt-lg" id="discount-reveal">
     <h4 style="color:var(--c-gold);margin-bottom:var(--sp-sm)">🎁 感謝分享！你的專屬折扣碼：</h4>
-    <div class="discount-code" id="discount-code">JY0209XXX</div>
+    <div class="discount-code" id="discount-code">A50HDDG44</div>
     <p class="text-sm text-dim mt-sm">蝦皮下單時輸入此碼享 <strong style="color:var(--c-gold)">9折優惠</strong></p>
     <button class="btn btn-outline btn-sm mt-sm" onclick="copyDiscountCode()"><i class="fas fa-copy"></i> 複製折扣碼</button>
     <div class="mt-md">
@@ -1826,16 +1832,20 @@ function autoDraw(){while(drawnCards.length<10)drawCard()}
 function renderDrawn(){
   const el=document.getElementById('t-hand');
   document.getElementById('t-remain').textContent=10-drawnCards.length;
-  el.innerHTML=drawnCards.map((c,i)=>`
+  el.innerHTML=drawnCards.map((c,i)=>{
+    const imgSrc=typeof getTarotCardImage==='function'?getTarotCardImage(c):'';
+    return `
     <div class="t-card flipped" title="${c.n}">
       <div class="t-card-inner">
         <div class="t-card-face t-back"></div>
         <div class="t-card-face t-front ${c.isUp?'':''}">
+          ${imgSrc?`<img src="${imgSrc}" alt="${c.n}" class="tc-img" style="${c.isUp?'':'transform:rotate(180deg)'}">`:``}
           <span class="tc-name" style="${c.isUp?'':'transform:rotate(180deg)'}">${c.n}</span>
           <span class="tc-dir">${c.isUp?'正位':'逆位'}</span>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function showSpread(){
@@ -1843,15 +1853,23 @@ function showSpread(){
   S.tarot.spread=drawnCards;
   document.getElementById('t-spread-sec').classList.remove('hidden');
   const el=document.getElementById('t-spread');
-  el.innerHTML=drawnCards.map((c,i)=>`
+  el.innerHTML=drawnCards.map((c,i)=>{
+    const imgSrc=typeof getTarotCardImage==='function'?getTarotCardImage(c):'';
+    return `
     <div class="card" style="padding:var(--sp-md);margin-bottom:var(--sp-sm)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-xs)">
         <span class="tag tag-gold">${i+1}. ${c.pos}</span>
         <span class="tag ${c.isUp?'tag-blue':'tag-red'}">${c.isUp?'正位':'逆位'}</span>
       </div>
-      <strong class="text-gold serif">${c.n}</strong>
-      <p class="text-sm text-dim mt-sm">${c.isUp?c.up:c.rv}</p>
-    </div>`).join('');
+      <div style="display:flex;gap:var(--sp-md);align-items:flex-start">
+        ${imgSrc?`<img src="${imgSrc}" alt="${c.n}" class="tc-spread-img" style="width:72px;height:112px;border-radius:6px;flex-shrink:0;${c.isUp?'':'transform:rotate(180deg)'}">`:``}
+        <div>
+          <strong class="text-gold serif">${c.n}</strong>
+          <p class="text-sm text-dim mt-sm">${c.isUp?c.up:c.rv}</p>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 /* =============================================================
    RENDER FUNCTIONS — 結果頁渲染
@@ -1949,12 +1967,16 @@ function renderMeihua(){
 
 function renderTarot(){
   if(!S.tarot.drawn.length){document.getElementById('r-tarot').innerHTML='<p class="text-dim">未進行塔羅抽牌</p>';return}
-  document.getElementById('r-tarot').innerHTML=S.tarot.drawn.map((c,i)=>`
-    <div style="display:flex;gap:var(--sp-sm);align-items:flex-start;padding:var(--sp-sm) 0;border-bottom:1px solid var(--c-border)">
+  document.getElementById('r-tarot').innerHTML=S.tarot.drawn.map((c,i)=>{
+    const imgSrc=typeof getTarotCardImage==='function'?getTarotCardImage(c):'';
+    return `
+    <div style="display:flex;gap:var(--sp-md);align-items:flex-start;padding:var(--sp-sm) 0;border-bottom:1px solid var(--c-border)">
       <span class="tag tag-gold" style="flex:0 0 auto">${i+1}</span>
+      ${imgSrc?`<img src="${imgSrc}" alt="${c.n}" style="width:56px;height:88px;border-radius:4px;flex-shrink:0;border:1px solid rgba(212,175,55,0.3);${c.isUp?'':'transform:rotate(180deg)'}">`:``}
       <div><strong class="text-gold">${c.pos}</strong>：${c.n} <span class="tag ${c.isUp?'tag-blue':'tag-red'}">${c.isUp?'正':'逆'}</span>
       <p class="text-sm text-dim">${c.isUp?c.up:c.rv}</p></div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 /* =============================================================
@@ -2994,6 +3016,8 @@ function shareResult(){
   }else{
     navigator.clipboard.writeText(text).then(()=>alert('結果已複製到剪貼簿！')).catch(()=>{});
   }
+  // Track share achievement
+  if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
 }
 /* =============================================================
    CUSTOM ORDER MODAL + FLOATING BUTTONS
@@ -3387,28 +3411,59 @@ function shareToUnlock(){
 
   if(navigator.share){
     navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
+      // User actually shared (confirmed by OS share sheet)
       hasShared=true;
       updateShareGate();
     }).catch(()=>{
-      // User cancelled — copy instead
-      fallbackCopyShare(text+url);
+      // User cancelled share — do NOT unlock
+      // Show a gentle message
+      showShareHint('分享取消了，要解鎖「再測一次」請完成分享哦 😊');
     });
   }else{
-    fallbackCopyShare(text+url);
+    // No native share — show copy dialog with confirmation
+    showCopyShareDialog(text+url);
   }
 }
 
-function fallbackCopyShare(text){
+function showShareHint(msg){
+  const gate = document.getElementById('share-gate');
+  if(!gate) return;
+  let hint = gate.querySelector('.share-hint-msg');
+  if(!hint){
+    hint = document.createElement('p');
+    hint.className = 'share-hint-msg';
+    hint.style.cssText = 'color:rgba(232,201,104,0.8);font-size:0.85rem;margin-top:0.5rem;';
+    gate.appendChild(hint);
+  }
+  hint.textContent = msg;
+  setTimeout(()=>{ if(hint) hint.textContent=''; }, 4000);
+}
+
+function showCopyShareDialog(text){
+  // Step 1: Copy to clipboard
   navigator.clipboard.writeText(text).then(()=>{
-    alert('分享連結已複製！\n貼到 LINE / IG / FB 就能分享給朋友 ✨');
-    hasShared=true;
-    updateShareGate();
+    // Step 2: Ask user to confirm they've pasted & shared
+    const confirmed = confirm(
+      '分享連結已複製到剪貼簿！✨\n\n' +
+      '請貼到 LINE / IG / FB 分享給朋友。\n\n' +
+      '已經分享了嗎？按「確定」解鎖再測一次。'
+    );
+    if(confirmed){
+      hasShared=true;
+      updateShareGate();
+    } else {
+      showShareHint('把連結貼給朋友後，再按一次分享按鈕即可解鎖 ✨');
+    }
   }).catch(()=>{
-    // Final fallback
-    prompt('複製以下連結分享給朋友：',text);
-    hasShared=true;
-    updateShareGate();
+    prompt('複製以下連結分享給朋友：', text);
+    // Don't auto-unlock on prompt fallback either
+    showShareHint('分享給朋友後，再按一次即可解鎖 ✨');
   });
+}
+
+function fallbackCopyShare(text){
+  // Keep for backward compat but don't auto-unlock
+  navigator.clipboard.writeText(text).catch(()=>{});
 }
 
 function updateShareGate(){
@@ -3789,14 +3844,24 @@ function initLiveCounter(){
 }
 
 /* =============================================================
-   4) 分享後顯示專屬折扣碼
+   4) 分享後顯示專屬折扣碼（真實蝦皮折扣碼）
    ============================================================= */
+const REAL_DISCOUNT_CODES = [
+  'A50HDDG44','A50HGJY55','A50HOK471','A50HWWF45','A50HSF782',
+  'A50HYHF78','A50HSF878','A50HUJ574','A50HE333','A50HE552'
+];
+
 function generateDiscountCode(){
-  // Generate a unique-looking code per user per day
-  const d = new Date();
-  const base = 'JY' + (d.getMonth()+1).toString().padStart(2,'0') + d.getDate().toString().padStart(2,'0');
-  const rand = Math.random().toString(36).substring(2,5).toUpperCase();
-  return base + rand;
+  // Each user gets a consistent code based on date + random seed stored in localStorage
+  let seed = localStorage.getItem('jy_discount_seed');
+  if(!seed){
+    seed = Math.floor(Math.random() * REAL_DISCOUNT_CODES.length);
+    localStorage.setItem('jy_discount_seed', seed);
+  }
+  // Rotate by day so repeat visitors might see different codes
+  const dayOffset = new Date().getDate() % REAL_DISCOUNT_CODES.length;
+  const idx = (parseInt(seed) + dayOffset) % REAL_DISCOUNT_CODES.length;
+  return REAL_DISCOUNT_CODES[idx];
 }
 
 function showDiscountAfterShare(){
@@ -3810,7 +3875,7 @@ function showDiscountAfterShare(){
 function copyDiscountCode(){
   const code = document.getElementById('discount-code').textContent;
   navigator.clipboard.writeText(code).then(()=>{
-    alert('折扣碼已複製！蝦皮下單時貼上即可享9折 ✨');
+    alert('折扣碼已複製！去蝦皮下單時貼上即可使用 ✨');
   }).catch(()=>{
     prompt('複製此折扣碼：', code);
   });
@@ -3824,10 +3889,13 @@ shareToUnlock = function(){
   if(navigator.share){
     navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
       hasShared=true; updateShareGate(); showDiscountAfterShare();
-    }).catch(()=>{ fallbackCopyShare(text+url); showDiscountAfterShare(); });
+      if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
+    }).catch(()=>{
+      // User cancelled — don't unlock
+      showShareHint('分享取消了，完成分享才能解鎖哦 😊');
+    });
   }else{
-    fallbackCopyShare(text+url);
-    showDiscountAfterShare();
+    showCopyShareDialog(text+url);
   }
 };
 
@@ -4116,6 +4184,9 @@ function renderDailyFortune(){
 function drawDailyFortune(){
   const btn = document.getElementById('btn-draw-fortune');
   if(btn){ btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 抽籤中...'; }
+  
+  // Track daily streak achievement
+  incrementAchievement('daily_streak');
   
   // Dramatic pause
   setTimeout(()=>{
@@ -4646,13 +4717,18 @@ function initPhotoCarousel(cardEl, productName){
 /* =============================================================
    Track divination for achievements
    ============================================================= */
-const _origLoadResults = typeof loadResults === 'function' ? loadResults : null;
-if(_origLoadResults){
-  const __origLR = loadResults;
-  loadResults = function(){
-    __origLR.apply(this, arguments);
+const _origRunAnalysis = typeof runAnalysis === 'function' ? runAnalysis : null;
+if(_origRunAnalysis){
+  const __origRA = runAnalysis;
+  runAnalysis = function(){
+    __origRA.apply(this, arguments);
     incrementAchievement('divination');
-    if(S.form && S.form.type) incrementAchievement('types_asked', S.form.type);
+    try{
+      const typeEl = document.getElementById('question-type');
+      if(typeEl && typeEl.value) incrementAchievement('types_asked', typeEl.value);
+    }catch(e){}
+    // Refresh badge display
+    setTimeout(renderAchievements, 500);
   };
 }
 
@@ -4678,6 +4754,276 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   });
 });
+/* =============================================================
+   塔羅牌面生成器 — Canvas 繪製 78 張牌面
+   ============================================================= */
+const TAROT_CARD_SYMBOLS = {
+  // 大阿爾卡納 0-21
+  0:  {sym:'🃏', color:'#FFD700', bg:'#1a0a30', sub:'0'},
+  1:  {sym:'∞',  color:'#FFD700', bg:'#2D0A0A', sub:'I'},
+  2:  {sym:'☽',  color:'#C0C0FF', bg:'#0a0a2d', sub:'II'},
+  3:  {sym:'♀',  color:'#FFB6C1', bg:'#2D0A1A', sub:'III'},
+  4:  {sym:'♂',  color:'#DC143C', bg:'#2D0A0A', sub:'IV'},
+  5:  {sym:'✝',  color:'#FFD700', bg:'#1a1a0a', sub:'V'},
+  6:  {sym:'♡',  color:'#FF69B4', bg:'#2D0A1A', sub:'VI'},
+  7:  {sym:'⚔',  color:'#C0C0C0', bg:'#0a1a2d', sub:'VII'},
+  8:  {sym:'∞',  color:'#FFD700', bg:'#2D1A0A', sub:'VIII'},
+  9:  {sym:'☆',  color:'#C0C0FF', bg:'#0a0a2d', sub:'IX'},
+  10: {sym:'☸',  color:'#FFD700', bg:'#1a0a2d', sub:'X'},
+  11: {sym:'⚖',  color:'#FFD700', bg:'#2D0A0A', sub:'XI'},
+  12: {sym:'⚓',  color:'#4169E1', bg:'#0a1a2d', sub:'XII'},
+  13: {sym:'☠',  color:'#F5F5F5', bg:'#0a0a0a', sub:'XIII'},
+  14: {sym:'⚗',  color:'#87CEEB', bg:'#0a2d2d', sub:'XIV'},
+  15: {sym:'⛧',  color:'#8B0000', bg:'#0a0a0a', sub:'XV'},
+  16: {sym:'⚡',  color:'#FF4500', bg:'#1a0a0a', sub:'XVI'},
+  17: {sym:'★',  color:'#FFD700', bg:'#0a0a2d', sub:'XVII'},
+  18: {sym:'☾',  color:'#C0C0FF', bg:'#0a0a2d', sub:'XVIII'},
+  19: {sym:'☀',  color:'#FFD700', bg:'#2D1A0A', sub:'XIX'},
+  20: {sym:'♱',  color:'#FFD700', bg:'#1a0a2d', sub:'XX'},
+  21: {sym:'⊕',  color:'#FFD700', bg:'#0a2d0a', sub:'XXI'}
+};
+
+// 小阿爾卡納花色
+const SUIT_STYLES = {
+  '權杖': {sym:'🔥', color:'#FF6347', bg:'#2D0A0A', accent:'#FF4500'},
+  '聖杯': {sym:'💧', color:'#4169E1', bg:'#0a0a2d', accent:'#1E90FF'},
+  '寶劍': {sym:'⚔',  color:'#C0C0C0', bg:'#1a1a1a', accent:'#A9A9A9'},
+  '金幣': {sym:'⬟',  color:'#FFD700', bg:'#1a1a0a', accent:'#DAA520'}
+};
+
+const COURT_SYMBOLS = {
+  '王牌':'✦','二':'II','三':'III','四':'IV','五':'V',
+  '六':'VI','七':'VII','八':'VIII','九':'IX','十':'X',
+  '侍者':'👤','騎士':'🐎','皇后':'♛','國王':'♚'
+};
+
+function generateTarotCardImage(card){
+  const canvas = document.createElement('canvas');
+  canvas.width = 180;
+  canvas.height = 280;
+  const ctx = canvas.getContext('2d');
+  
+  let style;
+  if(card.id <= 21){
+    // Major Arcana
+    style = TAROT_CARD_SYMBOLS[card.id];
+    drawMajorCard(ctx, card, style);
+  } else {
+    // Minor Arcana
+    let suit='', rank='';
+    for(const s of ['權杖','聖杯','寶劍','金幣']){
+      if(card.n.includes(s)){ suit=s; rank=card.n.replace(s,''); break; }
+    }
+    style = SUIT_STYLES[suit] || SUIT_STYLES['金幣'];
+    drawMinorCard(ctx, card, style, suit, rank);
+  }
+  
+  return canvas.toDataURL('image/png');
+}
+
+function drawMajorCard(ctx, card, s){
+  const W=180, H=280;
+  
+  // Background gradient
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, s.bg);
+  grad.addColorStop(0.5, lighten(s.bg, 15));
+  grad.addColorStop(1, s.bg);
+  ctx.fillStyle = grad;
+  roundRect(ctx, 0, 0, W, H, 12);
+  ctx.fill();
+  
+  // Border
+  ctx.strokeStyle = s.color;
+  ctx.lineWidth = 2;
+  roundRect(ctx, 3, 3, W-6, H-6, 10);
+  ctx.stroke();
+  
+  // Inner border
+  ctx.strokeStyle = 'rgba('+hexToRgb(s.color)+',0.3)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, 8, 8, W-16, H-16, 8);
+  ctx.stroke();
+  
+  // Decorative corners
+  drawCornerDeco(ctx, s.color, W, H);
+  
+  // Number at top
+  ctx.fillStyle = s.color;
+  ctx.font = 'bold 16px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(s.sub, W/2, 30);
+  
+  // Main symbol (large)
+  ctx.font = '60px serif';
+  ctx.fillStyle = s.color;
+  ctx.fillText(s.sym, W/2, H/2 - 10);
+  
+  // Glow effect behind symbol
+  ctx.shadowColor = s.color;
+  ctx.shadowBlur = 20;
+  ctx.fillText(s.sym, W/2, H/2 - 10);
+  ctx.shadowBlur = 0;
+  
+  // Card name at bottom
+  ctx.fillStyle = s.color;
+  ctx.font = 'bold 18px "Noto Sans TC", sans-serif';
+  ctx.fillText(card.n, W/2, H - 40);
+  
+  // Element
+  ctx.font = '12px sans-serif';
+  ctx.fillStyle = 'rgba('+hexToRgb(s.color)+',0.6)';
+  ctx.fillText(card.el, W/2, H - 20);
+}
+
+function drawMinorCard(ctx, card, s, suit, rank){
+  const W=180, H=280;
+  
+  // Background
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, s.bg);
+  grad.addColorStop(0.5, lighten(s.bg, 10));
+  grad.addColorStop(1, s.bg);
+  ctx.fillStyle = grad;
+  roundRect(ctx, 0, 0, W, H, 12);
+  ctx.fill();
+  
+  // Border
+  ctx.strokeStyle = s.accent;
+  ctx.lineWidth = 2;
+  roundRect(ctx, 3, 3, W-6, H-6, 10);
+  ctx.stroke();
+  
+  // Inner frame
+  ctx.strokeStyle = 'rgba('+hexToRgb(s.accent)+',0.2)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, 10, 10, W-20, H-20, 6);
+  ctx.stroke();
+  
+  // Corners
+  drawCornerDeco(ctx, s.accent, W, H);
+  
+  // Suit symbol at top
+  ctx.font = '24px serif';
+  ctx.fillStyle = s.color;
+  ctx.textAlign = 'center';
+  ctx.fillText(s.sym, W/2, 35);
+  
+  // Rank in center
+  const courtSym = COURT_SYMBOLS[rank] || rank;
+  if(['侍者','騎士','皇后','國王'].includes(rank)){
+    // Court card: larger symbol
+    ctx.font = '48px serif';
+    ctx.fillStyle = s.color;
+    ctx.fillText(courtSym, W/2, H/2);
+    ctx.font = '14px sans-serif';
+    ctx.fillStyle = 'rgba('+hexToRgb(s.color)+',0.7)';
+    ctx.fillText(rank, W/2, H/2 + 25);
+  } else if(rank === '王牌'){
+    // Ace: big symbol
+    ctx.font = '64px serif';
+    ctx.shadowColor = s.color;
+    ctx.shadowBlur = 15;
+    ctx.fillStyle = s.color;
+    ctx.fillText(s.sym, W/2, H/2 + 5);
+    ctx.shadowBlur = 0;
+  } else {
+    // Number cards: draw pip pattern
+    const num = ['二','三','四','五','六','七','八','九','十'].indexOf(rank) + 2;
+    drawPips(ctx, s.sym, s.color, W, H, num || 1);
+  }
+  
+  // Card name at bottom
+  ctx.fillStyle = s.color;
+  ctx.font = 'bold 16px "Noto Sans TC", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(card.n, W/2, H - 38);
+  
+  // Suit name
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = 'rgba('+hexToRgb(s.color)+',0.5)';
+  ctx.fillText(suit+'牌組', W/2, H - 20);
+}
+
+function drawPips(ctx, sym, color, W, H, count){
+  ctx.font = '22px serif';
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  
+  // Pip positions for 2-10
+  const cx = W/2, cy = H/2;
+  const positions = {
+    2: [[cx,cy-30],[cx,cy+30]],
+    3: [[cx,cy-35],[cx,cy],[cx,cy+35]],
+    4: [[cx-25,cy-25],[cx+25,cy-25],[cx-25,cy+25],[cx+25,cy+25]],
+    5: [[cx-25,cy-25],[cx+25,cy-25],[cx,cy],[cx-25,cy+25],[cx+25,cy+25]],
+    6: [[cx-25,cy-30],[cx+25,cy-30],[cx-25,cy],[cx+25,cy],[cx-25,cy+30],[cx+25,cy+30]],
+    7: [[cx-25,cy-35],[cx+25,cy-35],[cx-25,cy],[cx,cy],[cx+25,cy],[cx-25,cy+35],[cx+25,cy+35]],
+    8: [[cx-25,cy-40],[cx+25,cy-40],[cx-25,cy-13],[cx+25,cy-13],[cx-25,cy+13],[cx+25,cy+13],[cx-25,cy+40],[cx+25,cy+40]],
+    9: [[cx-25,cy-40],[cx+25,cy-40],[cx-25,cy-13],[cx+25,cy-13],[cx,cy],[cx-25,cy+13],[cx+25,cy+13],[cx-25,cy+40],[cx+25,cy+40]],
+    10:[[cx-25,cy-45],[cx+25,cy-45],[cx-25,cy-18],[cx+25,cy-18],[cx,cy-8],[cx,cy+12],[cx-25,cy+22],[cx+25,cy+22],[cx-25,cy+48],[cx+25,cy+48]]
+  };
+  
+  const pts = positions[count] || positions[2];
+  pts.forEach(([x,y]) => ctx.fillText(sym, x, y+6));
+}
+
+function drawCornerDeco(ctx, color, W, H){
+  ctx.strokeStyle = 'rgba('+hexToRgb(color)+',0.4)';
+  ctx.lineWidth = 1;
+  const d = 18;
+  // Top-left
+  ctx.beginPath(); ctx.moveTo(14,14+d); ctx.lineTo(14,14); ctx.lineTo(14+d,14); ctx.stroke();
+  // Top-right
+  ctx.beginPath(); ctx.moveTo(W-14-d,14); ctx.lineTo(W-14,14); ctx.lineTo(W-14,14+d); ctx.stroke();
+  // Bottom-left
+  ctx.beginPath(); ctx.moveTo(14,H-14-d); ctx.lineTo(14,H-14); ctx.lineTo(14+d,H-14); ctx.stroke();
+  // Bottom-right
+  ctx.beginPath(); ctx.moveTo(W-14-d,H-14); ctx.lineTo(W-14,H-14); ctx.lineTo(W-14,H-14-d); ctx.stroke();
+}
+
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function hexToRgb(hex){
+  hex = hex.replace('#','');
+  if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  const r=parseInt(hex.substring(0,2),16);
+  const g=parseInt(hex.substring(2,4),16);
+  const b=parseInt(hex.substring(4,6),16);
+  return r+','+g+','+b;
+}
+
+function lighten(hex, amt){
+  hex = hex.replace('#','');
+  if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  let r=parseInt(hex.substring(0,2),16);
+  let g=parseInt(hex.substring(2,4),16);
+  let b=parseInt(hex.substring(4,6),16);
+  r=Math.min(255,r+amt); g=Math.min(255,g+amt); b=Math.min(255,b+amt);
+  return '#'+r.toString(16).padStart(2,'0')+g.toString(16).padStart(2,'0')+b.toString(16).padStart(2,'0');
+}
+
+// Cache generated card images
+const _tarotImageCache = {};
+function getTarotCardImage(card){
+  if(!_tarotImageCache[card.id]){
+    _tarotImageCache[card.id] = generateTarotCardImage(card);
+  }
+  return _tarotImageCache[card.id];
+}
+
 /* =============================================================
    命理小遊戲 1: 五行猜猜看
    ============================================================= */
