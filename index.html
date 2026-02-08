@@ -873,7 +873,7 @@ html{scroll-behavior:smooth}
       <span>｜</span>
       <span>今日 <strong id="live-today-num">47</strong> 人</span>
     </div>
-    <div class="live-marquee" id="live-marquee">🔔 載入中...</div>
+
   </div>
   <div class="stepper" id="main-stepper">
     <div class="stepper-item active"><div class="stepper-dot">1</div><span>輸入</span></div><div class="stepper-line"></div>
@@ -3708,39 +3708,6 @@ function initLiveCounter(){
   const todayEl = document.getElementById('live-today-num');
   if(todayEl) todayEl.textContent = todayCount + Math.floor(Math.random()*30+20);
 
-  // Marquee: random recent "users"
-  initMarquee();
-}
-
-function initMarquee(){
-  const el = document.getElementById('live-marquee');
-  if(!el) return;
-  const cities = ['台北','新北','台中','高雄','台南','桃園','新竹','嘉義','彰化','屏東','宜蘭','花蓮','基隆','苗栗'];
-  const types = ['愛情','事業','財運','健康','綜合運勢','人際'];
-  const crystals = ['粉晶','鈦晶','黃水晶','紫水晶','綠幽靈','海藍寶','黑曜石','月光石'];
-
-  function gen(){
-    const city = cities[Math.floor(Math.random()*cities.length)];
-    const type = types[Math.floor(Math.random()*types.length)];
-    const crystal = crystals[Math.floor(Math.random()*crystals.length)];
-    const mins = Math.floor(Math.random()*30)+1;
-    return `${city}的朋友 ${mins}分鐘前 測了${type}，推薦 ${crystal}`;
-  }
-
-  let msgs = [gen(), gen(), gen()];
-  let idx = 0;
-
-  function tick(){
-    el.style.opacity = '0';
-    setTimeout(()=>{
-      el.textContent = '🔔 ' + msgs[idx % msgs.length];
-      el.style.opacity = '1';
-      idx++;
-      if(idx % 3 === 0) msgs.push(gen());
-    }, 300);
-  }
-  tick();
-  setInterval(tick, 4500);
 }
 
 /* =============================================================
