@@ -427,3 +427,236 @@ body {
   color: var(--gold-light) !important;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 28px rgba(212, 175, 55, 0.4) !important;
 }
+
+/* 強制覆蓋：懸浮鈕僅紅金一色（避免被其他樣式還原為紅/橘/紫） */
+body #global-floating-root .floating-buttons a,
+body #global-floating-root .floating-buttons button,
+body #global-floating-root .floating-btn {
+  background: linear-gradient(165deg, rgba(139, 0, 0, 0.96) 0%, rgba(74, 0, 0, 0.98) 100%) !important;
+  border: 2px solid rgba(212, 175, 55, 0.65) !important;
+  color: #F5E6D3 !important;
+}
+body #global-floating-root .floating-btn i,
+body #global-floating-root .floating-label { color: #F5E6D3 !important; }
+body #global-floating-root .floating-btn:hover {
+  background: linear-gradient(165deg, rgba(160, 30, 30, 0.98) 0%, rgba(139, 0, 0, 0.98) 100%) !important;
+  border-color: var(--gold-base) !important;
+  color: var(--gold-light) !important;
+}
+
+/* 結果頁：專屬手鍊卡片與三按鈕統一紅金 */
+#result-section .product-recommendation-card {
+  background: linear-gradient(165deg, rgba(74, 0, 0, 0.9) 0%, rgba(45, 10, 10, 0.95) 100%) !important;
+  border: 2px solid rgba(212, 175, 55, 0.5) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 24px rgba(212, 175, 55, 0.08) !important;
+}
+#result-section .product-recommendation-card::before {
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-base), var(--gold-dark)) !important;
+}
+#result-section .recommendation-header h3,
+#result-section .recommendation-desc { color: #F5E6D3 !important; }
+#result-section .recommendation-header i { color: var(--gold-base) !important; }
+
+.rec-btn,
+.rec-btn-shopee,
+.rec-btn-711,
+.rec-btn-custom {
+  background: rgba(45, 10, 10, 0.85) !important;
+  border: 1px solid rgba(212, 175, 55, 0.5) !important;
+  color: #F5E6D3 !important;
+}
+.rec-btn::before { background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, transparent 100%) !important; }
+.rec-btn i { color: var(--gold-base) !important; }
+.rec-btn .btn-title,
+.rec-btn .btn-subtitle { color: #F5E6D3 !important; }
+.rec-btn:hover {
+  border-color: var(--gold-base) !important;
+  background: rgba(74, 0, 0, 0.95) !important;
+  color: var(--gold-light) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(212, 175, 55, 0.25) !important;
+}
+.rec-btn:hover i { color: var(--gold-light) !important; }
+
+.recommendation-note {
+  color: rgba(245, 230, 211, 0.6) !important;
+  font-size: 0.875rem !important;
+}
+.recommendation-note i { color: rgba(212, 175, 55, 0.7) !important; }
+
+/* 結果頁：靜月分析師總結改紅金 */
+.master-summary {
+  background: linear-gradient(165deg, rgba(74, 0, 0, 0.85) 0%, rgba(45, 10, 10, 0.92) 100%) !important;
+  border: 2px solid rgba(212, 175, 55, 0.5) !important;
+  color: #F5E6D3 !important;
+}
+.master-summary h4 { color: #F5E6D3 !important; }
+.master-summary h4 i { color: var(--gold-base) !important; }
+.poetic-summary,
+.final-advice { color: rgba(245, 230, 211, 0.95) !important; }
+.final-advice { border-left-color: var(--gold-base) !important; background: rgba(0, 0, 0, 0.2) !important; }
+
+/* 結果頁操作列：複製摘要 / 生成報告 / 重新開始 */
+#result-action-bar,
+.result-action-bar {
+  background: rgba(45, 10, 10, 0.96) !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+#result-action-bar .btn-outline,
+#result-action-bar .btn-success,
+.result-action-bar .btn-outline,
+.result-action-bar .btn-success {
+  background: transparent !important;
+  border: 2px solid rgba(212, 175, 55, 0.55) !important;
+  color: #F5E6D3 !important;
+}
+#result-action-bar .btn-outline:hover,
+#result-action-bar .btn-success:hover,
+.result-action-bar .btn-outline:hover,
+.result-action-bar .btn-success:hover {
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: var(--gold-base) !important;
+  color: var(--gold-light) !important;
+}
+#result-action-bar .btn-primary,
+.result-action-bar .btn-primary {
+  background: linear-gradient(180deg, #E8C968 0%, #D4AF37 40%, #B8941F 100%) !important;
+  color: #2D0A0A !important;
+  border: 1px solid rgba(212, 175, 55, 0.8) !important;
+}
+#result-action-bar .btn-primary:hover,
+.result-action-bar .btn-primary:hover {
+  background: linear-gradient(180deg, #F4D03F 0%, #E8C968 50%, #D4AF37 100%) !important;
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.45) !important;
+}
+
+/* ========== 統一紅金：進度條／機率／維度分頁／結果標題 ========== */
+
+/* 主機率長條：金→琥珀，不再紅橙綠 */
+.meter-fill,
+#result-section .meter-fill {
+  background: linear-gradient(90deg, #B8941F 0%, #D4AF37 50%, #E8C968 100%) !important;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.35);
+}
+
+.meter-bar {
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.probability-meter {
+  background: linear-gradient(165deg, rgba(74, 0, 0, 0.85) 0%, rgba(45, 10, 10, 0.92) 100%) !important;
+  border: 1px solid rgba(212, 175, 55, 0.45) !important;
+  color: #F5E6D3 !important;
+}
+
+.probability-value { color: var(--gold-base) !important; }
+.meter-header h4 { color: #F5E6D3 !important; }
+.probability-note { color: rgba(245, 230, 211, 0.6) !important; }
+.meter-labels { color: rgba(245, 230, 211, 0.55) !important; }
+
+/* 各維度評分小長條：金 */
+.score-reason-block .score-reason-fill {
+  background: linear-gradient(90deg, #B8941F, #D4AF37) !important;
+  border-radius: 4px;
+}
+.score-reason-block { border-left-color: var(--gold-base) !important; }
+.score-reason-block .score-reason-header { color: var(--gold-base) !important; }
+.score-reason-block .score-reason-text { color: rgba(245, 230, 211, 0.85) !important; }
+
+.consistency-meter .meter-fill {
+  background: linear-gradient(90deg, #B8941F, #D4AF37) !important;
+}
+
+.conclusion-meter-fill {
+  background: linear-gradient(90deg, #B8941F, #D4AF37) !important;
+}
+
+/* 結果頁主標：金／米白，不刺眼黃 */
+#result-section h2,
+#result-section .section-answer h3,
+#result-section .overview-card h3 {
+  color: #F5E6D3 !important;
+}
+#result-section h2 i,
+#result-section .overview-card h3 i { color: var(--gold-base) !important; }
+
+/* 拆解區（八字／梅花／塔羅分頁）：深紅底、金選中 */
+.dimension-analysis {
+  background: linear-gradient(165deg, rgba(74, 0, 0, 0.88) 0%, rgba(45, 10, 10, 0.94) 100%) !important;
+  border: 1px solid rgba(212, 175, 55, 0.45) !important;
+}
+
+.dimension-analysis h3 { color: #F5E6D3 !important; }
+.dimension-analysis h3 i { color: var(--gold-base) !important; }
+
+.dimension-tab {
+  background: rgba(45, 10, 10, 0.9) !important;
+  border: 1px solid rgba(212, 175, 55, 0.4) !important;
+  color: rgba(245, 230, 211, 0.85) !important;
+}
+
+.dimension-tab:hover {
+  border-color: var(--gold-base) !important;
+  background: rgba(74, 0, 0, 0.95) !important;
+  color: #F5E6D3 !important;
+}
+
+.dimension-tab.active {
+  background: linear-gradient(180deg, #E8C968 0%, #D4AF37 50%, #B8941F 100%) !important;
+  color: #2D0A0A !important;
+  border-color: var(--gold-base) !important;
+}
+
+/* 分析卡片（八字命理等內容區） */
+.analysis-card {
+  background: rgba(45, 10, 10, 0.6) !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+}
+
+.analysis-card:hover {
+  border-color: rgba(212, 175, 55, 0.55) !important;
+  background: rgba(74, 0, 0, 0.5) !important;
+}
+
+.analysis-card .analysis-header,
+.analysis-card h4 { color: #F5E6D3 !important; }
+.analysis-card .analysis-header i { color: var(--gold-base) !important; }
+
+/* 結果總覽區 */
+#result-section .result-overview,
+#result-section .result-overview .probability-meter {
+  background: linear-gradient(165deg, rgba(74, 0, 0, 0.8) 0%, rgba(45, 10, 10, 0.9) 100%) !important;
+  border-color: rgba(212, 175, 55, 0.4) !important;
+}
+
+.direct-answer .answer-text,
+.poetic-summary,
+.final-advice,
+.text-content p { color: rgba(245, 230, 211, 0.92) !important; }
+.direct-answer h4,
+.answer-factors h4,
+.answer-suggestions h4 { color: #F5E6D3 !important; }
+.answer-factors h4 i,
+.answer-suggestions h4 i { color: var(--gold-base) !important; }
+
+/* 結果頁整區同色：與頂/底一致，不再中段灰底 */
+#result-section.section,
+section#result-section {
+  background: linear-gradient(180deg, #2D0A0A 0%, #4A0000 25%, #3D0808 50%, #4A0000 75%, #2D0A0A 100%) !important;
+}
+
+#result-section .overview-card {
+  background: linear-gradient(165deg, rgba(74, 0, 0, 0.75) 0%, rgba(45, 10, 10, 0.88) 100%) !important;
+  border: 1px solid rgba(212, 175, 55, 0.4) !important;
+}
+
+#result-section .dimension-content,
+#result-section .dimension-pane,
+#result-section .bazi-result {
+  background: transparent !important;
+}
+
+#result-section .dimension-pane.active {
+  background: rgba(45, 10, 10, 0.4) !important;
+}

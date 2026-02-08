@@ -238,8 +238,11 @@
     var texts = {};
     var evidenceListForDisplay = [];
 
-    if (fusionData.bazi && (fusionData.bazi.fullData || fusionData.bazi.raw || fusionData.bazi.fourPillars)) {
-      var baziEx = buildBaziExplainability(fusionData.bazi, refDate);
+    var baziInput = fusionData.bazi && (fusionData.bazi.fullData || fusionData.bazi.raw || fusionData.bazi.data || fusionData.bazi.fourPillars)
+      ? (fusionData.bazi.fullData || fusionData.bazi.raw || fusionData.bazi.data || fusionData.bazi)
+      : null;
+    if (baziInput) {
+      var baziEx = buildBaziExplainability(baziInput, refDate);
       if (baziEx && baziEx.text) { texts.bazi = baziEx; evidenceListForDisplay.push('八字：' + baziEx.text); }
     } else missing.push('八字');
     if (fusionData.ziwei && fusionData.ziwei.palaces && fusionData.ziwei.palaces.length) {

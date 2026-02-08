@@ -27,7 +27,7 @@
         <!-- 視覺優化層（精準覆蓋，保留原有結構） -->
         <link rel="stylesheet" href="css/polish-theme.css?v=2.1.0">
         <!-- 紅金傳統中式風格（全站套用） -->
-        <link rel="stylesheet" href="css/theme-red-gold.css?v=2.2.0">
+        <link rel="stylesheet" href="css/theme-red-gold.css?v=2.3.0">
         <!-- UI/UX Hotfix Layer (Landing + Form Split + Result Summary) | HOTFIX-20260208-UIFLOW -->
         <style>
             /* === HOTFIX-20260208-UIFLOW (non-destructive additions) === */
@@ -162,6 +162,92 @@
             #input-section .form-group .error-msg[style*="display: block"]{ display: block !important; }
             .form-advanced-solar .advanced-inner{ margin-top: 0.5rem; }
             .form-advanced-solar .solar-time-desc{ margin: 0 0 0.5rem; font-size: 0.9rem; }
+
+            /* === 問前頁 input-section 視覺層級 (mobile-first) === */
+            #input-section .input-hero-card{
+                margin: 0 0 1rem;
+                padding: 1.25rem 1rem;
+                border-radius: 1rem;
+                background: rgba(255,255,255,0.04);
+                border: 1px solid rgba(212,175,55,0.25);
+            }
+            #input-section .input-hero-title{
+                font-size: 1.35rem;
+                font-weight: 700;
+                line-height: 1.35;
+                margin: 0 0 0.35rem;
+                color: #fff;
+            }
+            #input-section .input-hero-sub{
+                font-size: 0.8125rem;
+                color: rgba(255,255,255,0.55);
+                margin: 0;
+                line-height: 1.4;
+            }
+            #input-section .input-steps-hint{
+                font-size: 0.875rem;
+                color: rgba(255,255,255,0.6);
+                margin: 0 0 1.25rem;
+                letter-spacing: 0.02em;
+            }
+            #input-section .form-group[data-field="question-type"] label,
+            #input-section .form-group[data-field="question"] label{ font-weight: 600; }
+            #input-section .input-char-hint{
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                font-size: 0.75rem;
+                color: rgba(255,255,255,0.5);
+            }
+            #input-section .form-group[data-field="question"] #question:focus ~ .input-char-hint{ opacity: 0.7; }
+            #input-section .input-secondary-card{
+                margin: 1.5rem 0;
+                padding: 1.25rem 1rem;
+                border-radius: 0.75rem;
+                background: rgba(0,0,0,0.2);
+                border: 1px solid rgba(255,255,255,0.08);
+            }
+            #input-section .input-secondary-title{
+                font-size: 0.9375rem;
+                font-weight: 600;
+                color: rgba(255,255,255,0.7);
+                margin: 0 0 1rem;
+            }
+            #input-section .input-secondary-card .form-group{ margin-bottom: 1rem; }
+            #input-section .input-secondary-card .form-group:last-of-type{ margin-bottom: 0; }
+            #input-section .input-secondary-card label{ font-size: 0.875rem; color: rgba(255,255,255,0.8); }
+            #input-section .form-advanced{ margin-top: 1rem; }
+            #input-section .form-advanced > summary{ font-size: 0.875rem; color: rgba(255,255,255,0.6); }
+            #input-section .form-advanced .solar-time-desc,
+            #input-section .form-advanced .advanced-inner{ color: rgba(255,255,255,0.65); opacity: 0.95; }
+            #input-section .form-actions-single{
+                margin-top: 1.75rem;
+                padding-top: 1.25rem;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                display: flex;
+                justify-content: center;
+            }
+            #input-section .form-actions-single .btn{ width: 100%; max-width: 280px; padding: 1rem 1.5rem; font-size: 1.0625rem; }
+            @media (min-width: 480px){
+                #input-section .input-hero-title{ font-size: 1.5rem; }
+            }
+
+            /* 強制紅金主題（內聯優先，避免快取未更新） */
+            body { background: linear-gradient(180deg, #2D0A0A 0%, #4A0000 50%, #2D0A0A 100%) !important; background-attachment: fixed !important; }
+            #result-section.section,
+            section#result-section { background: linear-gradient(180deg, #2D0A0A 0%, #4A0000 30%, #3D0808 60%, #4A0000 100%) !important; }
+            #result-action-bar,
+            .result-action-bar { background: rgba(45, 10, 10, 0.98) !important; border-top: 1px solid rgba(212, 175, 55, 0.4) !important; }
+            #global-floating-root .floating-buttons a,
+            #global-floating-root .floating-buttons button,
+            #global-floating-root .floating-btn { background: linear-gradient(165deg, rgba(139, 0, 0, 0.96), rgba(74, 0, 0, 0.98)) !important; border: 2px solid rgba(212, 175, 55, 0.65) !important; color: #F5E6D3 !important; }
+            #global-floating-root .floating-btn i,
+            #global-floating-root .floating-label { color: #F5E6D3 !important; }
+            #global-floating-root .floating-btn:hover { background: linear-gradient(165deg, rgba(160, 30, 30, 0.98), rgba(139, 0, 0, 0.98)) !important; border-color: #D4AF37 !important; color: #E8C968 !important; }
+            .meter-fill { background: linear-gradient(90deg, #B8941F, #D4AF37, #E8C968) !important; }
+            .dimension-analysis { background: linear-gradient(165deg, rgba(74, 0, 0, 0.9), rgba(45, 10, 10, 0.95)) !important; border: 1px solid rgba(212, 175, 55, 0.45) !important; }
+            .dimension-tab { background: rgba(45, 10, 10, 0.9) !important; color: rgba(245, 230, 211, 0.9) !important; border: 1px solid rgba(212, 175, 55, 0.4) !important; }
+            .dimension-tab.active { background: linear-gradient(180deg, #E8C968, #D4AF37, #B8941F) !important; color: #2D0A0A !important; border-color: #D4AF37 !important; }
+
             /* === end HOTFIX === */
         </style>
 
@@ -221,13 +307,17 @@
         <main id="main-content" class="main-container" tabindex="-1">
 
             <section id="input-section" class="section active">
-                <h2><i class="fas fa-user-edit"></i> 個人資料輸入</h2>
+                <div class="input-hero-card">
+                    <h1 class="input-hero-title">請輸入你的問題，系統會給你一個明確方向</h1>
+                    <p class="input-hero-sub">整合八字・梅花易數・塔羅的交叉分析</p>
+                </div>
+                <p class="input-steps-hint" aria-hidden="true">選類型 → 寫問題 → 下一步</p>
+
                 <div class="form-container">
                     <form id="personal-form">
-                        <!-- 1. 問題類型（必填） -->
                         <div class="form-group" data-field="question-type">
-                            <label for="question-type"><i class="fas fa-tag"></i> 問題類型 <span class="required">*</span></label>
-                            <select id="question-type" required aria-describedby="question-type-hint">
+                            <label for="question-type">問題類型 <span class="required">*</span></label>
+                            <select id="question-type" required>
                                 <option value="">請選擇問題類型</option>
                                 <option value="love">愛情</option>
                                 <option value="career">事業</option>
@@ -238,89 +328,80 @@
                                 <option value="family">家庭</option>
                                 <option value="other">其他</option>
                             </select>
-                            <small class="input-hint" id="question-type-hint">依類型選擇後，下方會有問題方向提示</small>
                             <small class="error-msg" id="err-question-type" role="alert" aria-live="polite"></small>
                         </div>
-                        <!-- 2. 諮詢問題（必填） -->
+
                         <div class="form-group" data-field="question">
-                            <label for="question"><i class="fas fa-question-circle"></i> 諮詢問題 <span class="required">*</span></label>
+                            <label for="question">你現在最想問的一件事 <span class="required">*</span></label>
                             <textarea id="question" rows="3" placeholder="請輸入您想詢問的問題..." maxlength="500" aria-describedby="question-char-hint"></textarea>
-                            <small class="input-hint" id="question-char-hint">0/500 字</small>
-                            <small class="hint-note hint-system-note" id="question-probability-note">結果為參考用，不具命運或醫療保證。</small>
+                            <small class="input-hint input-char-hint" id="question-char-hint">0/500 字</small>
                             <small class="error-msg" id="err-question" role="alert" aria-live="polite"></small>
                         </div>
-                        <!-- 3. 性別（必填） -->
-                        <div class="form-group" data-field="gender">
-                            <label><i class="fas fa-venus-mars"></i> 性別 <span class="required">*</span></label>
-                            <div class="radio-group radio-group-pill" role="group" aria-label="性別選擇">
-                                <label class="radio-label radio-label-pill">
-                                    <input type="radio" name="gender" value="male">
-                                    <span class="radio-text">男</span>
-                                </label>
-                                <label class="radio-label radio-label-pill">
-                                    <input type="radio" name="gender" value="female">
-                                    <span class="radio-text">女</span>
-                                </label>
+
+                        <div class="input-secondary-card">
+                            <h3 class="input-secondary-title">必要資料（用於計算命盤）</h3>
+                            <div class="form-group" data-field="gender">
+                                <label>性別 <span class="required">*</span></label>
+                                <div class="radio-group radio-group-pill" role="group" aria-label="性別選擇">
+                                    <label class="radio-label radio-label-pill">
+                                        <input type="radio" name="gender" value="male">
+                                        <span class="radio-text">男</span>
+                                    </label>
+                                    <label class="radio-label radio-label-pill">
+                                        <input type="radio" name="gender" value="female">
+                                        <span class="radio-text">女</span>
+                                    </label>
+                                </div>
+                                <small class="error-msg" id="err-gender" role="alert" aria-live="polite"></small>
                             </div>
-                            <small class="error-msg" id="err-gender" role="alert" aria-live="polite"></small>
-                        </div>
-                        <!-- 4. 出生日期（必填） -->
-                        <div class="form-group" data-field="birth-date">
-                            <label for="birth-date"><i class="fas fa-calendar"></i> 出生日期 <span class="required">*</span></label>
-                            <input type="date" id="birth-date" required placeholder="請選擇出生年月日" aria-describedby="err-birth-date">
-                            <small class="input-hint">例如：1990年6月15日</small>
-                            <small class="error-msg" id="err-birth-date" role="alert" aria-live="polite"></small>
-                        </div>
-                        <!-- 5. 出生時間（選填，預設 12:00） -->
-                        <div class="form-group" data-field="birth-time">
-                            <label for="birth-time"><i class="fas fa-clock"></i> 出生時間</label>
-                            <input type="time" id="birth-time" placeholder="不確定可留空，將以12:00計算">
-                            <small class="input-hint">選填，不確定可留空</small>
-                        </div>
-                        <!-- 6. 出生地區（必填） -->
-                        <div class="form-group" data-field="birth-country">
-                            <label for="birth-country"><i class="fas fa-globe-asia"></i> 出生地區 <span class="required">*</span></label>
-                            <select id="birth-country">
-                                <option value="">選擇國家/地區</option>
-                                <option value="TW">台灣</option>
-                                <option value="CN">中國大陸</option>
-                                <option value="HK">香港</option>
-                                <option value="MO">澳門</option>
-                                <option value="other">其他地區</option>
-                            </select>
-                            <small class="error-msg" id="err-birth-country" role="alert" aria-live="polite"></small>
-                        </div>
-                        <!-- 7. 出生城市（必填） -->
-                        <div class="form-group" id="city-container" data-field="birth-city">
-                            <label for="birth-city"><i class="fas fa-city"></i> 出生城市 <span class="required">*</span></label>
-                            <select id="birth-city">
-                                <option value="">請先選擇地區</option>
-                            </select>
-                            <small class="error-msg" id="err-birth-city" role="alert" aria-live="polite"></small>
-                        </div>
-                        <!-- 8. 姓名（選填） -->
-                        <div class="form-group" data-field="name">
-                            <label for="name"><i class="fas fa-signature"></i> 姓名</label>
-                            <input type="text" id="name" placeholder="可留空（用於稱呼）" autocomplete="name">
-                            <small class="input-hint">選填，不影響分析</small>
+                            <div class="form-group" data-field="birth-date">
+                                <label for="birth-date">出生日期 <span class="required">*</span></label>
+                                <input type="date" id="birth-date" required placeholder="請選擇出生年月日">
+                                <small class="error-msg" id="err-birth-date" role="alert" aria-live="polite"></small>
+                            </div>
+                            <div class="form-group" data-field="birth-time">
+                                <label for="birth-time">出生時間</label>
+                                <input type="time" id="birth-time" placeholder="選填">
+                            </div>
+                            <div class="form-group" data-field="birth-country">
+                                <label for="birth-country">出生地區 <span class="required">*</span></label>
+                                <select id="birth-country">
+                                    <option value="">選擇國家/地區</option>
+                                    <option value="TW">台灣</option>
+                                    <option value="CN">中國大陸</option>
+                                    <option value="HK">香港</option>
+                                    <option value="MO">澳門</option>
+                                    <option value="other">其他地區</option>
+                                </select>
+                                <small class="error-msg" id="err-birth-country" role="alert" aria-live="polite"></small>
+                            </div>
+                            <div class="form-group" id="city-container" data-field="birth-city">
+                                <label for="birth-city">出生城市 <span class="required">*</span></label>
+                                <select id="birth-city">
+                                    <option value="">請先選擇地區</option>
+                                </select>
+                                <small class="error-msg" id="err-birth-city" role="alert" aria-live="polite"></small>
+                            </div>
+                            <div class="form-group" data-field="name">
+                                <label for="name">姓名</label>
+                                <input type="text" id="name" placeholder="選填" autocomplete="name">
+                            </div>
                         </div>
 
-                        <!-- 進階（可選）：真太陽時，預設收合 -->
                         <details class="form-advanced form-advanced-solar" id="solar-time-section">
-                            <summary><i class="fas fa-sliders-h"></i> 進階（可選）</summary>
+                            <summary>進階選項</summary>
                             <div class="advanced-inner">
                                 <div class="solar-time-card" role="group" aria-labelledby="solar-time-heading">
                                     <div class="solar-time-header">
-                                        <i class="fas fa-sun" aria-hidden="true"></i>
                                         <h3 id="solar-time-heading">真太陽時校正</h3>
                                     </div>
                                     <div class="solar-time-body">
-                                        <p class="solar-time-desc" id="solar-time-desc">依出生地經度校正時間，可提高時柱準確度。</p>
-                                        <div class="solar-time-location" id="solar-time-location-hint" style="display:none;"><i class="fas fa-map-marker-alt"></i> <span id="solar-location-text">請先選擇出生地區與城市</span></div>
+                                        <p class="solar-time-desc" id="solar-time-desc">依出生地經度校正時間。</p>
+                                        <div class="solar-time-location" id="solar-time-location-hint" style="display:none;"><span id="solar-location-text">請先選擇出生地區與城市</span></div>
                                         <label class="solar-time-toggle">
                                             <input type="checkbox" id="true-solar-time" aria-describedby="solar-time-desc">
                                             <span class="solar-toggle-slider"></span>
-                                            <span class="solar-toggle-label">啟用校正</span>
+                                            <span class="solar-toggle-label">啟用</span>
                                         </label>
                                     </div>
                                 </div>
@@ -329,10 +410,10 @@
                                 </div>
                             </div>
                         </details>
-    
-                        <div class="form-actions">
+
+                        <div class="form-actions form-actions-single">
                             <button type="button" class="btn btn-primary btn-next" id="step1-submit" data-next="meihua-section" disabled>
-                                <i class="fas fa-arrow-right"></i> 下一步：梅花易數
+                                <i class="fas fa-arrow-right"></i> 下一步
                             </button>
                         </div>
                     </form>
