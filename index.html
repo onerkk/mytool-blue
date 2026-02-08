@@ -354,7 +354,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .discount-code{font-size:1.8rem;font-weight:900;color:var(--c-gold);letter-spacing:4px;font-family:monospace;padding:var(--sp-md);background:rgba(0,0,0,.3);border-radius:var(--r-md);display:inline-block;margin:var(--sp-sm) 0}
 
 /* — PWA Banner — */
-.pwa-banner{position:fixed;bottom:0;left:0;right:0;z-index:800;background:linear-gradient(135deg,#1a0505,#2D0A0A);border-top:2px solid var(--c-gold);padding:var(--sp-md);display:flex;align-items:center;gap:var(--sp-md);box-shadow:0 -4px 20px rgba(0,0,0,.5)}
+.pwa-banner{position:fixed;top:0;left:0;right:0;z-index:800;background:linear-gradient(135deg,#1a0505,#2D0A0A);border-bottom:2px solid var(--c-gold);padding:var(--sp-sm) var(--sp-md);display:flex;align-items:center;gap:var(--sp-md);box-shadow:0 4px 20px rgba(0,0,0,.5);animation:slideDown .4s ease}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 .pwa-banner.hidden{display:none}
 .pwa-banner-text{flex:1;font-size:.85rem;color:var(--c-text)}
 .pwa-banner-text strong{color:var(--c-gold)}
@@ -773,6 +774,75 @@ html{scroll-behavior:smooth}
   .live-counter-bar{flex-direction:column!important;gap:var(--sp-xs)!important;padding:var(--sp-sm)!important;border-radius:var(--r-md)!important}
   .live-counter-bar span:nth-child(2){display:none}
 }
+
+/* ── Daily Fortune ── */
+.fortune-draw-area{text-align:center;padding:var(--sp-xl) 0}
+.fortune-urn{font-size:4rem;animation:pulse 2s infinite;margin-bottom:var(--sp-md)}
+.fortune-result{text-align:center}
+.fortune-sign-icon{font-size:3rem;margin-bottom:var(--sp-sm)}
+.fortune-sign-text{font-size:1.8rem;font-weight:900;color:var(--c-gold);letter-spacing:0.1em;margin-bottom:var(--sp-sm);font-family:var(--f-display)}
+.fortune-msg{color:var(--c-text);font-size:1.05rem;line-height:1.6;margin-bottom:var(--sp-md)}
+.fortune-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent);margin:var(--sp-md) 0}
+.fortune-crystal-rec{background:rgba(212,175,55,0.04);border:1px solid rgba(212,175,55,0.12);border-radius:var(--r-md);padding:var(--sp-md)}
+.fortune-crystal-card{display:flex;align-items:center;gap:var(--sp-sm);justify-content:center;margin:var(--sp-sm) 0}
+.fortune-crystal-name{font-weight:700;font-size:1.1rem;color:var(--c-gold)}
+.fortune-buy-btns{display:flex;gap:var(--sp-sm);justify-content:center}
+.achievements-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--sp-sm)}
+.achievement-badge{text-align:center;padding:var(--sp-md);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-md);transition:all 0.3s}
+.achievement-badge.unlocked{border-color:rgba(212,175,55,0.3);background:rgba(212,175,55,0.04)}
+.achievement-badge.locked{opacity:0.4;filter:grayscale(0.8)}
+.badge-icon{font-size:2rem;margin-bottom:var(--sp-xs)}
+.badge-name{font-size:0.85rem;font-weight:700;color:var(--c-text);margin-bottom:2px}
+.achievement-toast{position:fixed;top:20px;right:20px;z-index:999;background:linear-gradient(135deg,rgba(30,12,12,0.95),rgba(45,10,10,0.98));border:2px solid var(--c-gold);border-radius:var(--r-lg);padding:var(--sp-md) var(--sp-lg);display:flex;align-items:center;gap:var(--sp-md);box-shadow:0 8px 32px rgba(0,0,0,0.5);transform:translateX(120%);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);max-width:320px}
+.achievement-toast.show{transform:translateX(0)}
+.at-icon{font-size:2rem}
+.ency-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--sp-sm)}
+.ency-card{padding:var(--sp-md);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-md);cursor:pointer;transition:all 0.3s;background:rgba(0,0,0,0.15)}
+.ency-card:hover{border-color:rgba(212,175,55,0.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.ency-icon{font-size:2rem;margin-bottom:var(--sp-xs)}
+.ency-name{font-weight:700;color:var(--c-text);font-size:0.95rem}
+.ency-meta{display:flex;gap:var(--sp-xs);margin:var(--sp-xs) 0}
+.ency-desc{font-size:0.78rem;color:var(--c-text-dim);line-height:1.4;margin:var(--sp-xs) 0}
+.ency-price{font-weight:700;color:var(--c-gold);font-size:0.9rem}
+.crystal-detail-modal{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;padding:var(--sp-md)}
+.crystal-detail-modal.hidden{display:none}
+.cdm-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)}
+.cdm-content{position:relative;background:linear-gradient(135deg,rgba(30,12,12,0.98),rgba(20,8,8,0.99));border:1px solid rgba(212,175,55,0.25);border-radius:var(--r-lg);padding:var(--sp-xl);max-width:420px;width:100%;max-height:90vh;overflow-y:auto;text-align:center}
+.cdm-close{position:absolute;top:var(--sp-sm);right:var(--sp-sm);background:none;border:none;color:var(--c-text-dim);font-size:1.2rem;cursor:pointer}
+.cdm-icon{font-size:3.5rem;margin-bottom:var(--sp-sm)}
+.cdm-name{font-size:1.5rem;font-weight:700;color:var(--c-gold);font-family:var(--f-display);margin-bottom:var(--sp-sm)}
+.cdm-tags{display:flex;gap:var(--sp-sm);justify-content:center;margin-bottom:var(--sp-md)}
+.cdm-desc{color:var(--c-text);line-height:1.6;margin-bottom:var(--sp-md)}
+.cdm-info{text-align:left;background:rgba(0,0,0,0.2);border-radius:var(--r-md);padding:var(--sp-md);margin-bottom:var(--sp-lg)}
+.cdm-row{padding:var(--sp-xs) 0;color:var(--c-text-dim);font-size:0.9rem}
+.cdm-row strong{color:var(--c-gold)}
+.cdm-actions{display:flex;gap:var(--sp-sm);justify-content:center;flex-wrap:wrap}
+.quiz-progress{text-align:center;color:var(--c-text-dim);font-size:0.85rem;margin-bottom:var(--sp-xs)}
+.quiz-progress-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:var(--r-pill);overflow:hidden;margin-bottom:var(--sp-lg)}
+.quiz-fill{height:100%;background:linear-gradient(90deg,var(--c-crimson),var(--c-gold));border-radius:var(--r-pill);transition:width 0.4s}
+.quiz-question{text-align:center;font-size:1.15rem;color:var(--c-text);margin-bottom:var(--sp-lg);line-height:1.5}
+.quiz-options{display:flex;flex-direction:column;gap:var(--sp-sm)}
+.quiz-option{padding:1rem var(--sp-lg);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r-md);background:rgba(0,0,0,0.15);color:var(--c-text);cursor:pointer;text-align:left;transition:all 0.3s;font-size:0.95rem}
+.quiz-option:hover{border-color:rgba(212,175,55,0.4);background:rgba(212,175,55,0.06);transform:translateX(4px)}
+.quiz-result{text-align:center}
+.quiz-result-icon{font-size:3.5rem;margin-bottom:var(--sp-sm)}
+.quiz-result-title{color:var(--c-text-dim);font-size:0.95rem;margin-bottom:var(--sp-xs)}
+.quiz-result-crystal{font-size:2rem;font-weight:900;color:var(--c-gold);font-family:var(--f-display);margin-bottom:var(--sp-sm)}
+.quiz-result-el{display:flex;gap:var(--sp-sm);justify-content:center;margin-bottom:var(--sp-md)}
+.quiz-result-desc{color:var(--c-text);line-height:1.6;margin-bottom:var(--sp-sm)}
+.quiz-result-actions{display:flex;gap:var(--sp-sm);justify-content:center;flex-wrap:wrap}
+.review-carousel{min-height:120px;transition:opacity 0.3s}
+.review-card{border:1px solid rgba(212,175,55,0.12);border-radius:var(--r-md);padding:var(--sp-md);background:rgba(0,0,0,0.15)}
+.review-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-sm);flex-wrap:wrap;gap:var(--sp-xs)}
+.review-stars{font-size:0.85rem}
+.review-meta{font-size:0.75rem;color:var(--c-text-muted)}
+.review-text{color:var(--c-text);line-height:1.6;font-size:0.9rem;margin-bottom:var(--sp-sm)}
+.review-product{display:flex;justify-content:flex-end}
+.extra-nav{display:flex;gap:var(--sp-xs);overflow-x:auto;padding:var(--sp-sm) 0;margin:var(--sp-lg) 0 var(--sp-sm);border-bottom:1px solid rgba(255,255,255,0.06);-webkit-overflow-scrolling:touch}
+.nav-extra-tab{padding:0.5rem 1rem;border-radius:var(--r-pill);font-size:0.82rem;white-space:nowrap;border:1px solid rgba(255,255,255,0.06);background:none;color:var(--c-text-dim);cursor:pointer;transition:all 0.3s}
+.nav-extra-tab.active{background:rgba(212,175,55,0.1);color:var(--c-gold);border-color:rgba(212,175,55,0.3)}
+.extra-section{padding:var(--sp-md) 0}
+.extra-section.hidden{display:none}
 </style>
 </head>
 <body>
@@ -1075,6 +1145,69 @@ html{scroll-behavior:smooth}
     </div>
   </div>
 </div>
+
+<!-- ========== 互動功能區 ========== -->
+<div class="app" style="padding-top:0">
+  <div class="extra-nav">
+    <button class="nav-extra-tab active" data-target="sec-daily-fortune">🎰 每日運勢</button>
+    <button class="nav-extra-tab" data-target="sec-crystal-quiz">🧪 水晶配對</button>
+    <button class="nav-extra-tab" data-target="sec-encyclopedia">📖 水晶百科</button>
+    <button class="nav-extra-tab" data-target="sec-achievements">🏆 成就徽章</button>
+    <button class="nav-extra-tab" data-target="sec-reviews">💬 使用者好評</button>
+  </div>
+
+  <!-- 每日運勢籤 -->
+  <div class="extra-section" id="sec-daily-fortune">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-sun"></i> 每日運勢籤 — 免費抽一次</div>
+      <div id="daily-fortune-content"></div>
+    </div>
+  </div>
+
+  <!-- 水晶配對測驗 -->
+  <div class="extra-section hidden" id="sec-crystal-quiz">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-flask"></i> 找出你的命定水晶</div>
+      <p class="text-sm text-dim mb-md">3 道直覺題，30 秒找到最適合你的水晶</p>
+      <div id="crystal-quiz-content">
+        <div class="text-center">
+          <button class="btn btn-gold" onclick="startCrystalQuiz()"><i class="fas fa-play"></i> 開始測驗</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 水晶百科 -->
+  <div class="extra-section hidden" id="sec-encyclopedia">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-book"></i> 水晶百科圖鑑</div>
+      <p class="text-sm text-dim mb-md">點擊任一水晶查看詳細功效與購買連結</p>
+      <div class="ency-grid" id="crystal-encyclopedia-grid"></div>
+    </div>
+  </div>
+
+  <!-- 成就徽章 -->
+  <div class="extra-section hidden" id="sec-achievements">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-trophy"></i> 我的成就 <span class="text-sm text-muted" id="achievement-progress">0/9 已解鎖</span></div>
+      <div class="achievements-grid" id="achievements-grid"></div>
+    </div>
+  </div>
+
+  <!-- 好評輪播 -->
+  <div class="extra-section hidden" id="sec-reviews">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-comments"></i> 買家真實回饋</div>
+      <div id="review-carousel"></div>
+      <div class="text-center mt-md">
+        <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="btn btn-outline btn-sm"><i class="fas fa-shopping-cart"></i> 去賣場看更多評價</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 水晶詳情 Modal -->
+<div class="crystal-detail-modal hidden" id="crystal-detail-modal"></div>
 
 <!-- PWA 安裝提示 -->
 <div class="pwa-banner hidden" id="pwa-banner">
@@ -3667,9 +3800,10 @@ window.addEventListener('beforeinstallprompt', function(e){
 function showPWABanner(){
   const banner = document.getElementById('pwa-banner');
   if(!banner) return;
-  // Don't show if already dismissed this session
   if(sessionStorage.getItem('pwa_dismissed')) return;
   banner.classList.remove('hidden');
+  // Auto dismiss after 8 seconds
+  setTimeout(()=>hidePWABanner(), 8000);
 }
 
 function installPWA(){
@@ -3862,5 +3996,526 @@ document.addEventListener('DOMContentLoaded', function(){
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     if(!isStandalone) showPWABanner();
   }, 5000);
+});
+/* =============================================================
+   FEATURE 1: 每日運勢籤
+   ============================================================= */
+const FORTUNE_SIGNS = [
+  {sign:'上上籤',icon:'🌟',msg:'諸事皆宜，把握今日好運氣！',crystal:'鈦晶',el:'金',reason:'強化今日的正財磁場'},
+  {sign:'上吉籤',icon:'✨',msg:'貴人相助，積極行動必有收穫。',crystal:'綠幽靈',el:'木',reason:'招引貴人與正財能量'},
+  {sign:'中吉籤',icon:'🌙',msg:'穩中求進，適合規劃與學習。',crystal:'紫水晶',el:'火',reason:'提升思緒清晰度與直覺'},
+  {sign:'中平籤',icon:'☁️',msg:'順其自然，不宜急躁冒進。',crystal:'茶晶',el:'土',reason:'穩定心性，排除浮躁能量'},
+  {sign:'小吉籤',icon:'🌤️',msg:'小有進展，耐心等待時機成熟。',crystal:'黃水晶',el:'土',reason:'招偏財，提升耐心與自信'},
+  {sign:'吉籤',icon:'💫',msg:'心想事成的機率正在上升中。',crystal:'海藍寶',el:'水',reason:'增強溝通力，助願望達成'},
+  {sign:'上吉籤',icon:'🔥',msg:'行動力滿點，今天適合做重要決定！',crystal:'紅瑪瑙',el:'火',reason:'激發勇氣與行動力'},
+  {sign:'中吉籤',icon:'💎',msg:'內在能量充沛，適合靜心思考方向。',crystal:'月光石',el:'水',reason:'增強直覺，照亮內心方向'},
+  {sign:'大吉籤',icon:'🎊',msg:'天時地利人和，難得的好日子！',crystal:'粉晶',el:'土',reason:'人緣桃花全開，把握社交機會'},
+  {sign:'中平籤',icon:'🌊',msg:'如水般柔軟應對，剛則易折。',crystal:'藍玉髓',el:'水',reason:'柔化個性，增強適應力'},
+  {sign:'小吉籤',icon:'🌱',msg:'播種期，現在的努力未來會開花。',crystal:'東陵玉',el:'木',reason:'帶來生長與希望的能量'},
+  {sign:'上吉籤',icon:'⚡',msg:'靈感爆發日，創意與機會同步到來！',crystal:'金太陽',el:'火',reason:'激發創造力與領導魅力'}
+];
+
+function getDailyFortune(){
+  const today = new Date().toISOString().slice(0,10);
+  const key = 'jy_daily_' + today;
+  let cached = null;
+  try{ cached = JSON.parse(localStorage.getItem(key)); }catch(e){}
+  
+  if(cached) return cached;
+  
+  // Seed by date
+  const seed = today.split('-').reduce((a,b)=>a+parseInt(b),0);
+  const fortune = FORTUNE_SIGNS[seed % FORTUNE_SIGNS.length];
+  const result = {...fortune, date: today, drawn: true};
+  try{ localStorage.setItem(key, JSON.stringify(result)); }catch(e){}
+  return result;
+}
+
+function canDrawToday(){
+  const today = new Date().toISOString().slice(0,10);
+  try{ return !localStorage.getItem('jy_daily_' + today); }catch(e){ return true; }
+}
+
+function renderDailyFortune(){
+  const container = document.getElementById('daily-fortune-content');
+  if(!container) return;
+  
+  if(canDrawToday()){
+    container.innerHTML = `
+      <div class="fortune-draw-area">
+        <div class="fortune-urn">🏮</div>
+        <p class="text-dim">心中默念你的問題，然後抽籤</p>
+        <button class="btn btn-gold" onclick="drawDailyFortune()" id="btn-draw-fortune">
+          <i class="fas fa-hand-sparkles"></i> 抽今日運勢籤
+        </button>
+      </div>`;
+  } else {
+    showFortuneResult(getDailyFortune());
+  }
+}
+
+function drawDailyFortune(){
+  const btn = document.getElementById('btn-draw-fortune');
+  if(btn){ btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 抽籤中...'; }
+  
+  // Dramatic pause
+  setTimeout(()=>{
+    const fortune = getDailyFortune();
+    showFortuneResult(fortune);
+  }, 1500);
+}
+
+function showFortuneResult(f){
+  const container = document.getElementById('daily-fortune-content');
+  if(!container) return;
+  
+  const prod = findProductByName(f.crystal);
+  container.innerHTML = `
+    <div class="fortune-result" style="animation:scaleIn 0.5s ease">
+      <div class="fortune-sign-icon">${f.icon}</div>
+      <div class="fortune-sign-text">${f.sign}</div>
+      <p class="fortune-msg">${f.msg}</p>
+      <div class="fortune-divider"></div>
+      <div class="fortune-crystal-rec">
+        <p class="text-sm"><strong>今日幸運水晶：</strong></p>
+        <div class="fortune-crystal-card">
+          <span class="fortune-crystal-name">${f.crystal}</span>
+          <span class="el-tag el-${f.el} text-xs">${f.el}行</span>
+        </div>
+        <p class="text-xs text-dim">${f.reason}</p>
+        <div class="fortune-buy-btns mt-sm">
+          <a href="${prod?prod.shopee:'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮入手</a>
+          <a href="${prod?prod.seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}" target="_blank" rel="noopener" class="product-btn seven"><i class="fas fa-box"></i> 7-11</a>
+        </div>
+      </div>
+      <p class="text-xs text-muted mt-md">明天可以再抽一次 ✨ 每日 00:00 重置</p>
+    </div>`;
+}
+
+function findProductByName(name){
+  for(const el of Object.values(REAL_PRODUCTS)){
+    if(!Array.isArray(el)) continue;
+    const found = el.find(p=>p.n.includes(name));
+    if(found) return found;
+  }
+  return null;
+}
+
+/* =============================================================
+   FEATURE 2: 成就徽章系統
+   ============================================================= */
+const ACHIEVEMENTS = [
+  {id:'first',name:'初次問卦',icon:'🌱',desc:'完成第一次占卜',need:1},
+  {id:'curious',name:'好奇寶寶',icon:'🔍',desc:'累計占卜 3 次',need:3},
+  {id:'seeker',name:'命理探索者',icon:'🧭',desc:'累計占卜 5 次',need:5},
+  {id:'devoted',name:'虔誠信徒',icon:'🙏',desc:'累計占卜 10 次',need:10},
+  {id:'master',name:'占卜大師',icon:'🧙',desc:'累計占卜 20 次',need:20},
+  {id:'crystal',name:'水晶達人',icon:'💎',desc:'查看水晶百科 5 種以上',need:5,type:'crystal_views'},
+  {id:'sharer',name:'分享控',icon:'📣',desc:'分享結果給朋友',need:1,type:'shares'},
+  {id:'daily',name:'每日報到',icon:'📅',desc:'連續 3 天抽運勢籤',need:3,type:'daily_streak'},
+  {id:'alltype',name:'全能問卦師',icon:'🎭',desc:'問過 5 種不同類型的問題',need:5,type:'types_asked'}
+];
+
+function getAchievementData(){
+  try{
+    return JSON.parse(localStorage.getItem('jy_achievements')||'{}');
+  }catch(e){ return {}; }
+}
+
+function saveAchievementData(data){
+  try{ localStorage.setItem('jy_achievements', JSON.stringify(data)); }catch(e){}
+}
+
+function incrementAchievement(type, value){
+  const data = getAchievementData();
+  if(!data.counts) data.counts={};
+  if(type === 'divination'){
+    data.counts.divination = (data.counts.divination||0) + 1;
+  } else if(type === 'crystal_views'){
+    if(!data.counts.crystal_views) data.counts.crystal_views = new Set();
+    // Sets don't serialize well, use array
+    if(!Array.isArray(data.counts.crystal_views)) data.counts.crystal_views = [];
+    if(!data.counts.crystal_views.includes(value)){
+      data.counts.crystal_views.push(value);
+    }
+  } else if(type === 'shares'){
+    data.counts.shares = (data.counts.shares||0) + 1;
+  } else if(type === 'types_asked'){
+    if(!Array.isArray(data.counts.types_asked)) data.counts.types_asked = [];
+    if(value && !data.counts.types_asked.includes(value)){
+      data.counts.types_asked.push(value);
+    }
+  } else if(type === 'daily_streak'){
+    const today = new Date().toISOString().slice(0,10);
+    if(!data.counts.daily_dates) data.counts.daily_dates = [];
+    if(!data.counts.daily_dates.includes(today)){
+      data.counts.daily_dates.push(today);
+    }
+    // Calculate streak
+    data.counts.daily_streak = calcStreak(data.counts.daily_dates);
+  }
+  saveAchievementData(data);
+  checkNewAchievements(data);
+}
+
+function calcStreak(dates){
+  if(!dates||!dates.length) return 0;
+  const sorted = [...dates].sort().reverse();
+  let streak = 1;
+  for(let i=1;i<sorted.length;i++){
+    const prev = new Date(sorted[i-1]);
+    const curr = new Date(sorted[i]);
+    const diff = (prev - curr) / (1000*60*60*24);
+    if(diff === 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function checkNewAchievements(data){
+  if(!data.counts) return;
+  if(!data.unlocked) data.unlocked = [];
+  
+  ACHIEVEMENTS.forEach(a=>{
+    if(data.unlocked.includes(a.id)) return;
+    let count = 0;
+    if(!a.type || a.type === 'divination') count = data.counts.divination || 0;
+    else if(a.type === 'crystal_views') count = (data.counts.crystal_views||[]).length;
+    else if(a.type === 'shares') count = data.counts.shares || 0;
+    else if(a.type === 'daily_streak') count = data.counts.daily_streak || 0;
+    else if(a.type === 'types_asked') count = (data.counts.types_asked||[]).length;
+    
+    if(count >= a.need){
+      data.unlocked.push(a.id);
+      showAchievementToast(a);
+    }
+  });
+  saveAchievementData(data);
+}
+
+function showAchievementToast(a){
+  const toast = document.createElement('div');
+  toast.className = 'achievement-toast';
+  toast.innerHTML = `<span class="at-icon">${a.icon}</span><div><strong>成就解鎖！</strong><br>${a.name}</div>`;
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.classList.add('show'), 50);
+  setTimeout(()=>{toast.classList.remove('show');setTimeout(()=>toast.remove(),500)}, 3500);
+}
+
+function renderAchievements(){
+  const container = document.getElementById('achievements-grid');
+  if(!container) return;
+  const data = getAchievementData();
+  const unlocked = data.unlocked || [];
+  
+  container.innerHTML = ACHIEVEMENTS.map(a=>{
+    const isUnlocked = unlocked.includes(a.id);
+    return `<div class="achievement-badge ${isUnlocked?'unlocked':'locked'}">
+      <div class="badge-icon">${isUnlocked?a.icon:'🔒'}</div>
+      <div class="badge-name">${a.name}</div>
+      <div class="badge-desc text-xs text-muted">${a.desc}</div>
+    </div>`;
+  }).join('');
+  
+  const total = ACHIEVEMENTS.length;
+  const done = unlocked.length;
+  document.getElementById('achievement-progress').textContent = `${done}/${total} 已解鎖`;
+}
+
+/* =============================================================
+   FEATURE 3: 水晶百科圖鑑
+   ============================================================= */
+function renderCrystalEncyclopedia(){
+  const container = document.getElementById('crystal-encyclopedia-grid');
+  if(!container) return;
+  
+  const allCrystals = [];
+  const seen = new Set();
+  for(const [category, items] of Object.entries(REAL_PRODUCTS)){
+    if(!Array.isArray(items)) continue;
+    items.forEach(p=>{
+      if(seen.has(p.n)) return;
+      seen.add(p.n);
+      allCrystals.push({...p, _cat: category});
+    });
+  }
+  
+  container.innerHTML = allCrystals.map(c=>`
+    <div class="ency-card" onclick="showCrystalDetail('${c.n.replace(/'/g,"\\'")}')">
+      <div class="ency-icon">${c.icon}</div>
+      <div class="ency-name">${c.n}</div>
+      <div class="ency-meta">
+        ${c.el!=='全'?`<span class="el-tag el-${c.el} text-xs">${c.el}行</span>`:'<span class="tag text-xs" style="color:var(--c-gold)">五行全</span>'}
+        <span class="text-xs text-muted">${c.cat}</span>
+      </div>
+      <p class="ency-desc">${c.d}</p>
+      <p class="ency-price">${c.price}</p>
+    </div>`).join('');
+}
+
+function showCrystalDetail(name){
+  incrementAchievement('crystal_views', name);
+  
+  let crystal = null;
+  for(const items of Object.values(REAL_PRODUCTS)){
+    if(!Array.isArray(items)) continue;
+    crystal = items.find(p=>p.n === name);
+    if(crystal) break;
+  }
+  if(!crystal) return;
+  
+  const modal = document.getElementById('crystal-detail-modal');
+  if(!modal) return;
+  
+  modal.innerHTML = `
+    <div class="cdm-overlay" onclick="closeCrystalDetail()"></div>
+    <div class="cdm-content">
+      <button class="cdm-close" onclick="closeCrystalDetail()"><i class="fas fa-times"></i></button>
+      <div class="cdm-icon">${crystal.icon}</div>
+      <h3 class="cdm-name">${crystal.n}</h3>
+      <div class="cdm-tags">
+        ${crystal.el!=='全'?`<span class="el-tag el-${crystal.el}">${crystal.el}行</span>`:'<span class="tag" style="color:var(--c-gold)">五行全</span>'}
+        <span class="tag tag-gold">${crystal.cat}</span>
+      </div>
+      <p class="cdm-desc">${crystal.d}</p>
+      <div class="cdm-info">
+        <div class="cdm-row"><i class="fas fa-tag"></i> 價格：<strong>${crystal.price}</strong></div>
+        <div class="cdm-row"><i class="fas fa-hand-holding-heart"></i> 佩戴方式：${crystal.wear}</div>
+      </div>
+      <div class="cdm-actions">
+        <a href="${crystal.shopee}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 蝦皮購買</a>
+        <a href="${crystal.seven}" target="_blank" rel="noopener" class="btn btn-outline"><i class="fas fa-box"></i> 7-11</a>
+      </div>
+    </div>`;
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCrystalDetail(){
+  const modal = document.getElementById('crystal-detail-modal');
+  if(modal) modal.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+/* =============================================================
+   FEATURE 4: 水晶配對測驗
+   ============================================================= */
+const QUIZ_QUESTIONS = [
+  {q:'面對壓力時，你通常會？',opts:[
+    {t:'深呼吸，冷靜分析',el:'水',trait:'理性'},
+    {t:'找朋友聊聊傾訴',el:'木',trait:'社交'},
+    {t:'立刻行動解決問題',el:'火',trait:'行動'},
+    {t:'獨處靜心等靈感',el:'金',trait:'直覺'}
+  ]},
+  {q:'你最嚮往的生活方式？',opts:[
+    {t:'穩定有規律的日常',el:'土',trait:'穩定'},
+    {t:'充滿冒險與新鮮感',el:'火',trait:'冒險'},
+    {t:'自由自在不受拘束',el:'水',trait:'自由'},
+    {t:'和諧溫馨的家庭',el:'木',trait:'溫暖'}
+  ]},
+  {q:'如果水晶有顏色，最吸引你的是？',opts:[
+    {t:'透明 / 白色 — 純淨',el:'金',trait:'純淨'},
+    {t:'粉紅 / 紫色 — 浪漫',el:'火',trait:'浪漫'},
+    {t:'綠色 / 藍色 — 寧靜',el:'木',trait:'寧靜'},
+    {t:'金色 / 棕色 — 大地',el:'土',trait:'踏實'}
+  ]}
+];
+
+let quizState = {step:0, answers:[]};
+
+function startCrystalQuiz(){
+  quizState = {step:0, answers:[]};
+  renderQuizStep();
+}
+
+function renderQuizStep(){
+  const container = document.getElementById('crystal-quiz-content');
+  if(!container) return;
+  
+  if(quizState.step >= QUIZ_QUESTIONS.length){
+    showQuizResult();
+    return;
+  }
+  
+  const q = QUIZ_QUESTIONS[quizState.step];
+  container.innerHTML = `
+    <div class="quiz-progress">第 ${quizState.step+1}/${QUIZ_QUESTIONS.length} 題</div>
+    <div class="quiz-progress-bar"><div class="quiz-fill" style="width:${(quizState.step/QUIZ_QUESTIONS.length)*100}%"></div></div>
+    <h4 class="quiz-question">${q.q}</h4>
+    <div class="quiz-options">${q.opts.map((o,i)=>`
+      <button class="quiz-option" onclick="answerQuiz(${i})">
+        <span>${o.t}</span>
+      </button>`).join('')}
+    </div>`;
+}
+
+function answerQuiz(idx){
+  const q = QUIZ_QUESTIONS[quizState.step];
+  quizState.answers.push(q.opts[idx]);
+  quizState.step++;
+  renderQuizStep();
+}
+
+function showQuizResult(){
+  const container = document.getElementById('crystal-quiz-content');
+  if(!container) return;
+  
+  // Count elements
+  const elCount = {};
+  quizState.answers.forEach(a=>{
+    elCount[a.el] = (elCount[a.el]||0) + 1;
+  });
+  const topEl = Object.entries(elCount).sort((a,b)=>b[1]-a[1])[0][0];
+  const traits = quizState.answers.map(a=>a.trait);
+  
+  // Find best matching crystal
+  const candidates = REAL_PRODUCTS[topEl] || REAL_PRODUCTS['土'];
+  const pick = candidates[Math.floor(Math.random()*Math.min(3,candidates.length))];
+  
+  container.innerHTML = `
+    <div class="quiz-result" style="animation:scaleIn 0.5s">
+      <div class="quiz-result-icon">${pick.icon}</div>
+      <h3 class="quiz-result-title">你的命定水晶是</h3>
+      <div class="quiz-result-crystal">${pick.n}</div>
+      <div class="quiz-result-el">
+        <span class="el-tag el-${pick.el}">${pick.el}行</span>
+        <span class="tag tag-gold">${pick.cat}</span>
+      </div>
+      <p class="quiz-result-desc">${pick.d}</p>
+      <p class="quiz-result-traits text-sm text-dim">你的特質：${traits.join(' · ')}</p>
+      <div class="quiz-result-actions mt-md">
+        <a href="${pick.shopee}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 去蝦皮擁有它</a>
+        <button class="btn btn-outline" onclick="startCrystalQuiz()"><i class="fas fa-redo"></i> 再測一次</button>
+      </div>
+      <button class="btn btn-outline btn-sm mt-md" onclick="shareQuizResult('${pick.n}','${traits.join('·')}')">
+        <i class="fas fa-share-alt"></i> 分享我的命定水晶
+      </button>
+    </div>`;
+}
+
+function shareQuizResult(crystal, traits){
+  const text = `我的命定水晶是「${crystal}」！特質：${traits}。你的呢？快來測 👉 `;
+  const url = window.location.href.split('?')[0];
+  if(navigator.share){
+    navigator.share({title:'我的命定水晶',text:text,url:url}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text+url).then(()=>alert('已複製！貼到 LINE/IG 分享給朋友'));
+  }
+  incrementAchievement('shares',1);
+}
+
+/* =============================================================
+   FEATURE 5: 好評輪播
+   ============================================================= */
+const REVIEWS = [
+  {name:'小雨',city:'台北',crystal:'粉晶手鏈',stars:5,text:'戴了粉晶之後真的有人跟我搭話！雖然不確定是不是水晶的功勞，但心情變好是真的 💕',time:'2週前'},
+  {name:'阿凱',city:'高雄',crystal:'鈦晶手排',stars:5,text:'面試前特地戴上，結果那天超有自信，順利拿到 offer！已經回購第二條送老爸。',time:'1個月前'},
+  {name:'Mei',city:'台中',crystal:'黃水晶',stars:5,text:'朋友推薦的招財水晶，戴了一個月後中了發票 200 元哈哈，小確幸！',time:'3週前'},
+  {name:'曉曉',city:'新竹',crystal:'紫水晶',stars:5,text:'睡眠真的有改善！以前翻來覆去，現在放枕頭旁很快就入睡了。',time:'5天前'},
+  {name:'大維',city:'桃園',crystal:'綠幽靈',stars:5,text:'老闆突然給加薪，雖然可能跟水晶沒有直接關係，但感覺運氣變好了。',time:'2週前'},
+  {name:'小羽',city:'台南',crystal:'海藍寶',stars:5,text:'報告簡報那天戴著，講得比平時流利很多，同事都問我吃了什麼。',time:'1週前'},
+  {name:'Vivian',city:'嘉義',crystal:'彩超七',stars:5,text:'送自己的生日禮物，超美的！而且最近好像什麼事都比較順。',time:'4天前'},
+  {name:'阿翔',city:'屏東',crystal:'黑曜石心經',stars:5,text:'去廟裡拜拜特地戴，安心感很夠。磨砂質感摸起來也很舒服。',time:'10天前'}
+];
+
+let reviewIdx = 0;
+function initReviewCarousel(){
+  const el = document.getElementById('review-carousel');
+  if(!el) return;
+  function show(){
+    const r = REVIEWS[reviewIdx % REVIEWS.length];
+    el.style.opacity = '0';
+    setTimeout(()=>{
+      el.innerHTML = `
+        <div class="review-card">
+          <div class="review-header">
+            <span class="review-stars">${'⭐'.repeat(r.stars)}</span>
+            <span class="review-meta">${r.name} · ${r.city} · ${r.time}</span>
+          </div>
+          <p class="review-text">「${r.text}」</p>
+          <div class="review-product">
+            <span class="tag tag-gold text-xs">購買：${r.crystal}</span>
+          </div>
+        </div>`;
+      el.style.opacity = '1';
+      reviewIdx++;
+    }, 300);
+  }
+  show();
+  setInterval(show, 6000);
+}
+
+/* =============================================================
+   FEATURE 6: 商品實拍輪播（框架，等替換照片）
+   ============================================================= */
+const PRODUCT_PHOTOS = {
+  // 格式: '商品名': ['photo1_url', 'photo2_url', ...]
+  // 目前用 placeholder，店家提供照片後替換 URL
+  '鈦晶手排': [],
+  '粉晶': [],
+  '綠幽靈': [],
+  '海藍寶': [],
+  '紫水晶': [],
+  '黃水晶': []
+};
+
+function initPhotoCarousel(cardEl, productName){
+  const photos = PRODUCT_PHOTOS[productName];
+  if(!photos || !photos.length) return; // No photos yet, skip
+  
+  const wrapper = document.createElement('div');
+  wrapper.className = 'photo-carousel';
+  let pIdx = 0;
+  
+  function render(){
+    wrapper.innerHTML = `
+      <img src="${photos[pIdx]}" alt="${productName}" class="photo-slide">
+      <div class="photo-dots">${photos.map((_,i)=>`<span class="photo-dot ${i===pIdx?'active':''}"></span>`).join('')}</div>`;
+  }
+  
+  wrapper.addEventListener('click', ()=>{
+    pIdx = (pIdx + 1) % photos.length;
+    render();
+  });
+  
+  render();
+  const iconEl = cardEl.querySelector('.product-icon');
+  if(iconEl) iconEl.replaceWith(wrapper);
+}
+
+/* =============================================================
+   Track divination for achievements
+   ============================================================= */
+const _origLoadResults = typeof loadResults === 'function' ? loadResults : null;
+if(_origLoadResults){
+  const __origLR = loadResults;
+  loadResults = function(){
+    __origLR.apply(this, arguments);
+    incrementAchievement('divination');
+    if(S.form && S.form.type) incrementAchievement('types_asked', S.form.type);
+  };
+}
+
+/* =============================================================
+   Init all engagement features
+   ============================================================= */
+document.addEventListener('DOMContentLoaded', function(){
+  renderDailyFortune();
+  renderAchievements();
+  renderCrystalEncyclopedia();
+  initReviewCarousel();
+  
+  // Nav tab switching for new sections
+  document.querySelectorAll('.nav-extra-tab').forEach(tab=>{
+    tab.addEventListener('click', function(){
+      const target = this.dataset.target;
+      document.querySelectorAll('.extra-section').forEach(s=>s.classList.add('hidden'));
+      const section = document.getElementById(target);
+      if(section) section.classList.remove('hidden');
+      document.querySelectorAll('.nav-extra-tab').forEach(t=>t.classList.remove('active'));
+      this.classList.add('active');
+      section.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  });
 });
 </script></body></html>
