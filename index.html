@@ -378,6 +378,401 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
   .dim-pane{display:block!important;margin-bottom:1rem}
   .dim-tabs{display:none!important}
 }
+/* =============================================================
+   UI POLISH v2 — 全站視覺升級
+   ============================================================= */
+
+/* ── 背景：深色漸層 + 微光粒子感 ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 10%, rgba(139,0,0,0.15), transparent),
+    radial-gradient(ellipse 500px 350px at 80% 85%, rgba(212,175,55,0.06), transparent),
+    radial-gradient(ellipse 300px 300px at 50% 50%, rgba(139,0,0,0.05), transparent);
+  pointer-events:none;
+}
+
+/* ── 導航列升級 ── */
+.nav{
+  background:rgba(13,4,4,0.88)!important;
+  backdrop-filter:blur(16px) saturate(1.4)!important;
+  border-bottom:1px solid rgba(212,175,55,0.12)!important;
+  box-shadow:0 2px 20px rgba(0,0,0,0.3);
+}
+.nav-brand i{
+  text-shadow:0 0 16px rgba(212,175,55,0.5);
+}
+
+/* ── Hero 重設計 ── */
+.hero{
+  padding:var(--sp-xl) var(--sp-md) var(--sp-lg)!important;
+  text-align:center;
+  position:relative;
+}
+.hero::before{
+  content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(212,175,55,0.12) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+.hero-icon{
+  font-size:3rem!important;
+  text-shadow:0 0 40px rgba(212,175,55,0.5),0 0 80px rgba(212,175,55,0.2)!important;
+  position:relative;z-index:1;
+}
+.hero h1{
+  font-size:clamp(1.5rem,5vw,2.2rem)!important;
+  background:linear-gradient(135deg,#d4af37 0%,#f5e6b8 40%,#d4af37 60%,#b8941f 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1.4!important;
+  letter-spacing:0.05em;
+}
+.hero p{
+  color:var(--c-text-dim)!important;font-size:0.95rem!important;
+  letter-spacing:0.08em;
+}
+
+/* ── 卡片玻璃態 ── */
+.card{
+  background:rgba(30,12,12,0.75)!important;
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(212,175,55,0.12)!important;
+  box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.03)!important;
+}
+.card:hover{
+  border-color:rgba(212,175,55,0.25)!important;
+  box-shadow:0 12px 40px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)!important;
+}
+
+/* ── 卡片標題裝飾線 ── */
+.card-title{
+  padding-bottom:var(--sp-sm);
+  border-bottom:1px solid rgba(212,175,55,0.1);
+  margin-bottom:var(--sp-md)!important;
+}
+.card-title i{
+  color:var(--c-gold);text-shadow:0 0 8px rgba(212,175,55,0.3);
+}
+
+/* ── 表單升級 ── */
+.form-input,.form-select,.form-textarea{
+  background:rgba(0,0,0,0.3)!important;
+  border:1px solid rgba(255,255,255,0.08)!important;
+  border-radius:var(--r-md)!important;
+  color:var(--c-text)!important;
+  padding:0.85rem 1rem!important;
+  transition:all 0.3s ease!important;
+  font-size:16px!important; /* prevent iOS zoom */
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:rgba(212,175,55,0.5)!important;
+  box-shadow:0 0 0 3px rgba(212,175,55,0.1),0 0 20px rgba(212,175,55,0.05)!important;
+  outline:none!important;
+}
+.form-label{
+  font-weight:600!important;
+  color:var(--c-text)!important;
+  margin-bottom:var(--sp-sm)!important;
+  display:block!important;
+}
+
+/* ── 性別 Radio Pills ── */
+.radio-pills{display:flex;gap:var(--sp-sm)}
+.radio-pill{flex:1}
+.radio-pill input{display:none}
+.radio-pill span{
+  display:block;text-align:center;padding:0.75rem;
+  border:1px solid rgba(255,255,255,0.08);border-radius:var(--r-md);
+  cursor:pointer;transition:all 0.3s;color:var(--c-text-dim);font-weight:600;
+}
+.radio-pill input:checked+span{
+  border-color:var(--c-gold);color:var(--c-gold);
+  background:rgba(212,175,55,0.1);
+  box-shadow:0 0 12px rgba(212,175,55,0.15);
+}
+
+/* ── Stepper 精緻化 ── */
+.stepper{
+  display:flex;align-items:center;justify-content:center;
+  gap:0;margin:var(--sp-md) 0 var(--sp-lg);padding:0 var(--sp-md);
+}
+.stepper-dot{
+  width:36px!important;height:36px!important;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:0.85rem;
+  border:2px solid rgba(255,255,255,0.12);
+  color:var(--c-text-dim);background:rgba(0,0,0,0.3);
+  transition:all 0.4s ease;
+}
+.stepper-item.active .stepper-dot{
+  border-color:var(--c-gold);color:var(--c-gold);
+  background:rgba(212,175,55,0.12);
+  box-shadow:0 0 16px rgba(212,175,55,0.25);
+}
+.stepper-item.done .stepper-dot{
+  border-color:rgba(212,175,55,0.4);color:var(--c-gold-light);
+  background:rgba(212,175,55,0.08);
+}
+.stepper-line{
+  flex:1;height:2px;
+  background:linear-gradient(90deg,rgba(255,255,255,0.06),rgba(212,175,55,0.15),rgba(255,255,255,0.06));
+  margin:0 var(--sp-xs);
+}
+.stepper-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.stepper-item span{font-size:0.7rem;color:var(--c-text-muted)}
+.stepper-item.active span{color:var(--c-gold)}
+
+/* ── 按鈕升級 ── */
+.btn-primary,.btn-gold{
+  position:relative;overflow:hidden;
+}
+.btn-primary::before,.btn-gold::before{
+  content:'';position:absolute;top:0;left:-100%;
+  width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);
+  transition:left 0.5s;
+}
+.btn-primary:hover::before,.btn-gold:hover::before{
+  left:100%;
+}
+
+/* ── 結果頁 Verdict 升級 ── */
+.result-verdict{
+  text-align:center;
+  padding:var(--sp-xl) var(--sp-lg)!important;
+  border:1px solid rgba(212,175,55,0.2)!important;
+  background:linear-gradient(180deg,rgba(30,12,12,0.9) 0%,rgba(45,10,10,0.95) 100%)!important;
+  position:relative;
+}
+.result-verdict::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:60%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--c-gold),transparent);
+}
+.verdict-prob{
+  font-size:clamp(2.5rem,8vw,4rem)!important;
+  font-weight:900!important;
+  letter-spacing:2px;
+}
+.verdict-label{
+  font-size:1.2rem!important;
+  letter-spacing:0.1em;
+}
+
+/* ── 機率條升級 ── */
+.prob-bar{
+  height:10px!important;border-radius:var(--r-pill)!important;
+  background:rgba(255,255,255,0.05)!important;
+  overflow:hidden;position:relative;
+}
+.prob-fill{
+  height:100%;border-radius:var(--r-pill);
+  background:linear-gradient(90deg,#8b0000,#d4af37,#e8c968)!important;
+  position:relative;
+  transition:width 1.5s cubic-bezier(0.4,0,0.2,1)!important;
+}
+.prob-fill::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:20px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3));
+  border-radius:0 var(--r-pill) var(--r-pill) 0;
+  animation:pulse 2s infinite;
+}
+
+/* ── Dimension Tabs 升級 ── */
+.dim-tabs{
+  display:flex;gap:var(--sp-xs);padding:var(--sp-sm);
+  background:rgba(0,0,0,0.2);border-radius:var(--r-md);
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.dim-tab{
+  padding:0.6rem 1rem!important;border-radius:var(--r-sm)!important;
+  font-size:0.82rem!important;white-space:nowrap;
+  border:1px solid rgba(255,255,255,0.06)!important;
+  background:transparent!important;color:var(--c-text-dim)!important;
+  transition:all 0.3s!important;cursor:pointer;
+}
+.dim-tab.active{
+  background:linear-gradient(135deg,var(--c-crimson),#6b0000)!important;
+  color:var(--c-gold-pale)!important;
+  border-color:rgba(212,175,55,0.4)!important;
+  box-shadow:0 2px 12px rgba(139,0,0,0.3);
+}
+
+/* ── 商品卡片升級 ── */
+.product-grid{
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr))!important;
+}
+.product-card{
+  border-radius:var(--r-lg)!important;
+  background:linear-gradient(135deg,rgba(30,12,12,0.8),rgba(20,8,8,0.9))!important;
+  border:1px solid rgba(212,175,55,0.08)!important;
+  transition:all 0.3s ease!important;
+  position:relative;overflow:hidden;
+}
+.product-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,0.4),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.product-card:hover::before{opacity:1}
+.product-card:hover{
+  transform:translateY(-3px)!important;
+  box-shadow:0 12px 36px rgba(0,0,0,0.4)!important;
+  border-color:rgba(212,175,55,0.2)!important;
+}
+.product-icon{font-size:2.5rem!important}
+.product-price{
+  font-size:1.15rem!important;
+  background:linear-gradient(135deg,var(--c-gold),var(--c-gold-light));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.product-btn{
+  border-radius:var(--r-pill)!important;
+  padding:0.45rem 0.85rem!important;
+  font-weight:600!important;
+}
+
+/* ── 塔羅牌動畫 ── */
+.tarot-card-draw{
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s;
+}
+.tarot-card-draw:hover{
+  transform:translateY(-8px) scale(1.05);
+}
+
+/* ── 結論區升級 ── */
+.conclusion{
+  position:relative;
+  border:1px solid rgba(212,175,55,0.15)!important;
+  background:linear-gradient(135deg,rgba(30,12,12,0.85),rgba(20,8,8,0.95))!important;
+  border-radius:var(--r-lg)!important;
+  padding:var(--sp-xl) var(--sp-lg)!important;
+}
+.conclusion::before{
+  content:'';position:absolute;top:-1px;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,0.5),transparent);
+}
+.conclusion h3{
+  text-align:center!important;
+  font-size:1.3rem!important;
+  margin-bottom:var(--sp-lg)!important;
+}
+.conclusion p{
+  line-height:2!important;
+  margin-bottom:var(--sp-md)!important;
+  color:rgba(245,230,211,0.85)!important;
+}
+
+/* ── 社會認同 + 計數器升級 ── */
+.live-counter-bar{
+  background:rgba(0,0,0,0.2)!important;
+  border:1px solid rgba(212,175,55,0.1)!important;
+  border-radius:var(--r-pill)!important;
+  padding:var(--sp-xs) var(--sp-lg)!important;
+  display:inline-flex!important;
+}
+.live-marquee{
+  animation:fadeIn 0.3s;
+}
+
+/* ── 分享/折扣區升級 ── */
+.share-gate-card{
+  background:linear-gradient(135deg,rgba(212,175,55,0.05),rgba(139,0,0,0.05))!important;
+  border:2px dashed rgba(212,175,55,0.25)!important;
+}
+.discount-reveal{
+  animation:scaleIn 0.5s ease;
+}
+.discount-code{
+  animation:shimmer 3s ease-in-out infinite;
+  background-size:200% 100%;
+  background-image:linear-gradient(90deg,var(--c-gold),#fff,var(--c-gold-light),var(--c-gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+/* ── 商城推薦卡片升級 ── */
+.shop-card{
+  background:linear-gradient(135deg,rgba(139,0,0,0.12),rgba(212,175,55,0.06))!important;
+  border:1px solid rgba(212,175,55,0.2)!important;
+}
+.shop-btn-card{
+  border-radius:var(--r-lg)!important;
+  padding:1rem 1.15rem!important;
+}
+
+/* ── 浮動按鈕升級 ── */
+.fab{
+  box-shadow:0 4px 16px rgba(0,0,0,0.3)!important;
+}
+.fab-toggle{
+  width:52px!important;height:52px!important;
+  box-shadow:0 4px 24px rgba(139,0,0,0.5),0 0 12px rgba(212,175,55,0.15)!important;
+}
+
+/* ── 滾動條 ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:rgba(0,0,0,0.1)}
+::-webkit-scrollbar-thumb{background:rgba(212,175,55,0.2);border-radius:var(--r-pill)}
+::-webkit-scrollbar-thumb:hover{background:rgba(212,175,55,0.4)}
+
+/* ── 選取文字顏色 ── */
+::selection{background:rgba(212,175,55,0.3);color:var(--c-text)}
+
+/* ── 平滑滾動 ── */
+html{scroll-behavior:smooth}
+
+/* ── Loading Skeleton ── */
+@keyframes skeleton{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.skeleton{
+  background:linear-gradient(90deg,rgba(255,255,255,0.03) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.03) 75%);
+  background-size:200% 100%;animation:skeleton 1.5s infinite;
+  border-radius:var(--r-sm);
+}
+
+/* ── 分隔線 ── */
+.divider-gold{
+  height:1px;margin:var(--sp-lg) 0;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,0.3),transparent);
+}
+
+/* ── 紫微命盤格子升級 ── */
+.zw-grid{gap:3px!important}
+.zw-cell{
+  background:rgba(0,0,0,0.2)!important;
+  border:1px solid rgba(212,175,55,0.1)!important;
+  border-radius:var(--r-sm)!important;
+  transition:border-color 0.3s;
+}
+.zw-cell:hover{border-color:rgba(212,175,55,0.3)}
+.zw-cell.active-palace{
+  border-color:rgba(212,175,55,0.5)!important;
+  background:rgba(212,175,55,0.06)!important;
+  box-shadow:inset 0 0 20px rgba(212,175,55,0.05);
+}
+
+/* ── Tag 升級 ── */
+.tag{border-radius:var(--r-pill)!important}
+
+/* ── 五行 Tag 彩色 ── */
+.el-tag.el-金{background:rgba(192,192,192,0.15);color:#e0e0e0;border-color:rgba(192,192,192,0.3)}
+.el-tag.el-木{background:rgba(34,197,94,0.15);color:#4ade80;border-color:rgba(34,197,94,0.3)}
+.el-tag.el-水{background:rgba(59,130,246,0.15);color:#60a5fa;border-color:rgba(59,130,246,0.3)}
+.el-tag.el-火{background:rgba(239,68,68,0.15);color:#f87171;border-color:rgba(239,68,68,0.3)}
+.el-tag.el-土{background:rgba(167,139,90,0.15);color:#d4a857;border-color:rgba(167,139,90,0.3)}
+
+/* ── Mobile 優化 ── */
+@media(max-width:640px){
+  .hero h1{letter-spacing:0.02em}
+  .product-grid{grid-template-columns:1fr!important}
+  .product-card{flex-direction:column!important;text-align:center}
+  .product-card .product-actions{justify-content:center}
+  .conclusion{padding:var(--sp-lg) var(--sp-md)!important}
+  .live-counter-bar{flex-direction:column!important;gap:var(--sp-xs)!important;padding:var(--sp-sm)!important;border-radius:var(--r-md)!important}
+  .live-counter-bar span:nth-child(2){display:none}
+}
 </style>
 </head>
 <body>
