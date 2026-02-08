@@ -141,3 +141,30 @@ details[open] .details-summary::before { content: '▼ '; }
   align-items: center !important;
   flex-wrap: nowrap !important;
 }
+
+/* 結果頁專用視覺優化（漸進式方案 B，可選） */
+#result-section {
+  background: linear-gradient(180deg, #1a1520 0%, #24202a 100%);
+}
+#result-section .overview-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+}
+#result-section h3 {
+  color: #D4AF37;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+#result-section .probability-meter {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+#result-section .meter-fill {
+  background: linear-gradient(90deg, #D4AF37, #E8C968);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}

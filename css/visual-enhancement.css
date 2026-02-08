@@ -1,0 +1,737 @@
+/**
+ * 靜月之光能量占卜儀 v2.0 - 視覺質感增強
+ * 用途：在不改變 HTML/JS 的前提下，提升介面現代感
+ * 原則：僅覆蓋樣式，不破壞功能
+ */
+
+/* ============================================
+   設計變數定義
+   ============================================ */
+:root {
+  /* 金色系主色 */
+  --ve-primary: #D4AF37;
+  --ve-primary-light: #E8C968;
+  --ve-primary-dark: #B8941F;
+
+  /* 背景層次 */
+  --ve-bg-base: #1a1520;
+  --ve-bg-elevated: #24202a;
+  --ve-bg-card: rgba(255, 255, 255, 0.03);
+  --ve-bg-input: rgba(255, 255, 255, 0.05);
+
+  /* 文字顏色 */
+  --ve-text-primary: #FFFFFF;
+  --ve-text-secondary: rgba(255, 255, 255, 0.7);
+  --ve-text-muted: rgba(255, 255, 255, 0.5);
+
+  /* 邊框 */
+  --ve-border: rgba(212, 175, 55, 0.2);
+  --ve-border-focus: rgba(212, 175, 55, 0.6);
+
+  /* 陰影 */
+  --ve-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --ve-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --ve-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --ve-shadow-glow: 0 0 20px rgba(212, 175, 55, 0.3);
+
+  /* 圓角 */
+  --ve-radius-sm: 0.5rem;
+  --ve-radius-md: 0.75rem;
+  --ve-radius-lg: 1rem;
+  --ve-radius-xl: 1.5rem;
+
+  /* 動畫速度 */
+  --ve-transition: 0.2s ease;
+}
+
+/* ============================================
+   全域背景優化
+   ============================================ */
+body {
+  background: linear-gradient(180deg, #1a1520 0%, #0f0b14 100%);
+  background-attachment: fixed;
+}
+
+/* 主容器增加模糊背景 */
+.main-container {
+  position: relative;
+}
+
+.main-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================
+   導航列增強
+   ============================================ */
+.navbar {
+  background: rgba(26, 21, 32, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid var(--ve-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.logo {
+  transition: transform var(--ve-transition) !important;
+}
+
+.logo:hover {
+  transform: scale(1.05) !important;
+}
+
+.shop-btn {
+  border-radius: var(--ve-radius-md) !important;
+  transition: all var(--ve-transition) !important;
+  font-weight: 500 !important;
+}
+
+.shop-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--ve-shadow-md) !important;
+}
+
+/* ============================================
+   進度條增強
+   ============================================ */
+.progress-container {
+  position: sticky;
+  top: 70px;
+  z-index: 100;
+  background: rgba(26, 21, 32, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--ve-border);
+}
+
+.progress-bar-v2 {
+  display: flex;
+  justify-content: space-between;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  position: relative;
+}
+
+.progress-step {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ve-text-muted);
+  position: relative;
+  transition: all var(--ve-transition);
+  border-radius: var(--ve-radius-md);
+}
+
+.progress-step::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -50%;
+  right: 50%;
+  height: 2px;
+  background: var(--ve-border);
+  transform: translateY(-50%);
+  z-index: -1;
+}
+
+.progress-step:first-child::before {
+  display: none;
+}
+
+.progress-step.active {
+  color: var(--ve-primary);
+  background: rgba(212, 175, 55, 0.1);
+  font-weight: 600;
+}
+
+.progress-step.active::before {
+  background: var(--ve-primary);
+}
+
+@media (max-width: 768px) {
+  .progress-step {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.5rem;
+  }
+}
+
+/* ============================================
+   Section 容器增強
+   ============================================ */
+.section {
+  background: var(--ve-bg-card);
+  border: 1px solid var(--ve-border);
+  border-radius: var(--ve-radius-xl);
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--ve-shadow-md);
+  animation: sectionFadeIn 0.4s ease-out;
+}
+
+@keyframes sectionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section h2 {
+  color: var(--ve-primary);
+  font-size: 1.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section h2 i {
+  font-size: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 1.5rem 1rem;
+  }
+
+  .section h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* ============================================
+   表單元件增強
+   ============================================ */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ve-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.form-group label i {
+  color: var(--ve-primary);
+}
+
+/* 輸入框增強 */
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 16px !important; /* 防止 iOS 縮放 */
+  font-family: inherit;
+  background: var(--ve-bg-input) !important;
+  border: 1px solid var(--ve-border) !important;
+  border-radius: var(--ve-radius-md) !important;
+  color: var(--ve-text-primary) !important;
+  transition: all var(--ve-transition) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--ve-border-focus) !important;
+  background: rgba(212, 175, 55, 0.05) !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--ve-text-muted);
+}
+
+/* Select 下拉箭頭美化 */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23D4AF37' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+/* Textarea 增強 */
+textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* 提示文字 */
+.input-hint,
+small {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--ve-text-muted);
+  line-height: 1.4;
+}
+
+/* ============================================
+   單選按鈕組增強（性別選擇等）
+   ============================================ */
+.radio-group-pill {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.radio-label-pill {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+}
+
+.radio-label-pill input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.radio-label-pill .radio-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ve-text-secondary);
+  background: var(--ve-bg-input);
+  border: 2px solid var(--ve-border);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all var(--ve-transition);
+  user-select: none;
+}
+
+.radio-label-pill input[type="radio"]:checked + .radio-text {
+  color: #1a1520;
+  background: linear-gradient(135deg, var(--ve-primary), var(--ve-primary-dark));
+  border-color: var(--ve-primary);
+  font-weight: 600;
+  box-shadow: var(--ve-shadow-glow);
+}
+
+.radio-label-pill:hover .radio-text {
+  border-color: var(--ve-primary);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+/* ============================================
+   按鈕增強
+   ============================================ */
+.btn,
+button[type="button"],
+button[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  border-radius: var(--ve-radius-md);
+  cursor: pointer;
+  transition: all var(--ve-transition);
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* 主要按鈕 */
+.btn-primary,
+.btn.btn-primary {
+  background: linear-gradient(135deg, var(--ve-primary), var(--ve-primary-dark)) !important;
+  color: #1a1520 !important;
+  font-weight: 600 !important;
+  box-shadow: var(--ve-shadow-glow) !important;
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.5) !important;
+}
+
+.btn-primary:active,
+.btn.btn-primary:active {
+  transform: translateY(0) !important;
+}
+
+/* 次要按鈕 */
+.btn-outline,
+.btn.btn-outline,
+.btn-secondary {
+  background: var(--ve-bg-elevated) !important;
+  color: var(--ve-text-primary) !important;
+  border: 1px solid var(--ve-border) !important;
+}
+
+.btn-outline:hover,
+.btn-secondary:hover {
+  border-color: var(--ve-primary) !important;
+  background: rgba(212, 175, 55, 0.1) !important;
+}
+
+/* 按鈕尺寸變體 */
+.btn-next,
+.btn-prev {
+  min-width: 140px;
+  padding: 0.875rem 1.75rem;
+}
+
+@media (max-width: 640px) {
+  .btn-next,
+  .btn-prev {
+    width: 100%;
+  }
+}
+
+/* 按鈕禁用狀態 */
+.btn:disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ============================================
+   卡片元件增強
+   ============================================ */
+.card,
+.overview-card,
+.analysis-card,
+.bazi-container,
+.meihua-container,
+.tarot-container {
+  background: var(--ve-bg-card) !important;
+  border: 1px solid var(--ve-border) !important;
+  border-radius: var(--ve-radius-lg) !important;
+  padding: 1.5rem !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: var(--ve-shadow-md) !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.card h3,
+.overview-card h3,
+.analysis-card h3 {
+  color: var(--ve-primary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ============================================
+   真太陽時卡片增強
+   ============================================ */
+.solar-time-card {
+  background: var(--ve-bg-card);
+  border: 1px solid var(--ve-border);
+  border-radius: var(--ve-radius-lg);
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.solar-time-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.solar-time-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ve-primary);
+  margin: 0;
+}
+
+.solar-time-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.solar-time-toggle input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* ============================================
+   問題類型選擇器增強（如果使用下拉選單）
+   ============================================ */
+#question-type {
+  font-weight: 500;
+}
+
+/* ============================================
+   提示訊息增強
+   ============================================ */
+.hint-note,
+.hint-system-note {
+  background: rgba(33, 150, 243, 0.1);
+  border-left: 4px solid #2196F3;
+  border-radius: var(--ve-radius-md);
+  padding: 1rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.hint-note i,
+.hint-system-note i {
+  color: #2196F3;
+  margin-right: 0.5rem;
+}
+
+/* ============================================
+   機率評估儀表增強
+   ============================================ */
+.probability-meter {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--ve-radius-lg);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.meter-bar {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ve-primary), var(--ve-primary-light)) !important;
+  border-radius: 9999px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.6) !important;
+}
+
+.probability-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ve-primary);
+}
+
+/* ============================================
+   八字命盤網格增強
+   ============================================ */
+.bazi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.bazi-pillar {
+  background: var(--ve-bg-input);
+  border: 1px solid var(--ve-border);
+  border-radius: var(--ve-radius-md);
+  padding: 1rem;
+  text-align: center;
+  transition: all var(--ve-transition);
+}
+
+.bazi-pillar:hover {
+  border-color: var(--ve-primary);
+  background: rgba(212, 175, 55, 0.05);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 640px) {
+  .bazi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+/* ============================================
+   塔羅牌增強
+   ============================================ */
+.tarot-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.tarot-card:hover {
+  transform: translateY(-8px);
+  filter: drop-shadow(0 10px 20px rgba(212, 175, 55, 0.3));
+}
+
+/* ============================================
+   水晶建議卡片增強
+   ============================================ */
+.lucky-item-recommendation-card,
+.crystal-recommendation-card {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0.02) 100%);
+  border: 2px solid var(--ve-border);
+  border-radius: var(--ve-radius-xl);
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.recommendation-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--ve-border);
+}
+
+.recommendation-header h3 {
+  color: var(--ve-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ============================================
+   商品推薦按鈕增強
+   ============================================ */
+.rec-btn,
+.shop-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--ve-radius-lg);
+  font-weight: 500;
+  transition: all var(--ve-transition);
+  text-decoration: none;
+}
+
+.rec-btn-shopee {
+  background: linear-gradient(135deg, #ee4d2d, #d73211);
+  color: white;
+}
+
+.rec-btn-711 {
+  background: linear-gradient(135deg, #008c3a, #006d2e);
+  color: white;
+}
+
+.rec-btn-custom {
+  background: linear-gradient(135deg, var(--ve-primary), var(--ve-primary-dark));
+  color: #1a1520;
+}
+
+.rec-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ve-shadow-lg);
+}
+
+/* ============================================
+   載入動畫優化
+   ============================================ */
+.spinner,
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   響應式優化
+   ============================================ */
+@media (max-width: 768px) {
+  .section {
+    border-radius: var(--ve-radius-lg);
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   列印樣式優化
+   ============================================ */
+@media print {
+  .navbar,
+  .progress-container,
+  .btn,
+  .shop-btn,
+  .rec-btn {
+    display: none !important;
+  }
+
+  .section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}
+
+/* ============================================
+   無障礙優化
+   ============================================ */
+*:focus-visible {
+  outline: 3px solid rgba(212, 175, 55, 0.6);
+  outline-offset: 2px;
+}
+
+/* 減少動畫（尊重使用者偏好）*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

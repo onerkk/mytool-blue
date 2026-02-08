@@ -1,0 +1,187 @@
+/**
+ * 靜月之光能量占卜儀 v3.0 - 紅金主題系統
+ * 配色：深紅底 + 金色裝飾
+ * 風格：傳統中國風
+ */
+
+:root {
+  /* ========== 紅色系 ========== */
+  --red-darkest: #2D0A0A;
+  --red-dark: #4A0000;
+  --red-base: #8B0000;
+  --red-light: #A02020;
+  --red-lighter: #B03030;
+
+  /* ========== 金色系 ========== */
+  --gold-base: #D4AF37;
+  --gold-light: #F4D03F;
+  --gold-dark: #B8941F;
+  --gold-darker: #9A7B19;
+
+  /* ========== 背景漸層 ========== */
+  --bg-gradient-base: linear-gradient(180deg, #2D0A0A 0%, #4A0000 50%, #2D0A0A 100%);
+  --bg-gradient-card: linear-gradient(135deg, rgba(139, 0, 0, 0.4) 0%, rgba(74, 0, 0, 0.6) 100%);
+  --bg-glass: rgba(139, 0, 0, 0.2);
+
+  /* ========== 邊框 ========== */
+  --border-gold: 1px solid rgba(212, 175, 55, 0.3);
+  --border-gold-bright: 2px solid rgba(212, 175, 55, 0.7);
+
+  /* ========== 陰影與光暈 ========== */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.8);
+  --glow-gold: 0 0 20px rgba(212, 175, 55, 0.5);
+  --glow-gold-strong: 0 0 40px rgba(212, 175, 55, 0.8);
+
+  /* ========== 裝飾圖案 ========== */
+  --pattern-cloud: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 50 Q 30 30, 50 40 T 80 50' fill='none' stroke='rgba(212,175,55,0.1)' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+/* ========== 全域樣式 ========== */
+body {
+  background: var(--bg-gradient-base);
+  background-attachment: fixed;
+  color: #F5E6D3;
+  font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+}
+
+/* ========== 按鈕元件 ========== */
+.btn-gold-primary {
+  background: linear-gradient(135deg, var(--gold-base), var(--gold-dark));
+  color: var(--red-darkest);
+  font-weight: 600;
+  border: none;
+  border-radius: 50px;
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  box-shadow: var(--glow-gold);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-gold-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glow-gold-strong);
+}
+
+.btn-gold-outline {
+  background: transparent;
+  color: var(--gold-base);
+  border: var(--border-gold-bright);
+  border-radius: 50px;
+  padding: 0.875rem 2rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-gold-outline:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--gold-light);
+}
+
+/* ========== 卡片元件 ========== */
+.card-red-gold {
+  background: var(--bg-gradient-card);
+  border: var(--border-gold);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-red-gold::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: var(--pattern-cloud);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ========== 輸入框元件 ========== */
+.input-gold {
+  background: var(--bg-glass);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  color: #F5E6D3;
+  font-size: 16px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.input-gold:focus {
+  outline: none;
+  border-color: var(--gold-base);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+  background: rgba(139, 0, 0, 0.3);
+}
+
+.input-gold::placeholder {
+  color: rgba(245, 230, 211, 0.5);
+}
+
+/* ========== 圓形選擇器（性別等） ========== */
+.pill-selector {
+  display: flex;
+  gap: 1rem;
+}
+
+.pill-option {
+  flex: 1;
+  position: relative;
+}
+
+.pill-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.pill-option label {
+  display: block;
+  padding: 1rem;
+  text-align: center;
+  background: var(--bg-glass);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 50px;
+  color: var(--gold-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pill-option input[type="radio"]:checked + label {
+  background: linear-gradient(135deg, var(--gold-base), var(--gold-dark));
+  color: var(--red-darkest);
+  border-color: var(--gold-base);
+  box-shadow: var(--glow-gold);
+}
+
+/* ========== 圓形圖標框 ========== */
+.icon-circle-gold {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--bg-gradient-card);
+  border: 3px solid var(--gold-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: var(--glow-gold);
+  position: relative;
+}
+
+.icon-circle-gold::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}

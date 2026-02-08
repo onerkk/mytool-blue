@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizard 測試</title>
+    <link rel="stylesheet" href="css/design-system.css?v=2.0.0">
+    <link rel="stylesheet" href="css/wizard.css?v=2.0.0">
+</head>
+<body style="background: #1a1520; color: white; padding: 2rem;">
+    <h1>測試頁面</h1>
+
+    <div class="wizard">
+        <div class="wizard__header">
+            <button class="wizard__back">←</button>
+            <div class="wizard__progress">
+                <span class="wizard__step-number">步驟 1 / 5</span>
+                <div class="wizard__progress-bar">
+                    <div class="wizard__progress-fill" style="width: 20%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard__content">
+            <h2 class="wizard__title">測試標題</h2>
+            <p class="wizard__description">如果您能看到這段文字，且樣式正常，代表 CSS 載入成功。</p>
+
+            <div class="form-field">
+                <label class="form-field__label">測試輸入框</label>
+                <input type="text" class="form-field__input" placeholder="請輸入文字">
+            </div>
+
+            <button class="btn btn--primary btn--lg">測試按鈕</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('測試頁面載入成功');
+        console.log('CSS 變數測試:', getComputedStyle(document.documentElement).getPropertyValue('--color-primary'));
+    </script>
+</body>
+</html>
