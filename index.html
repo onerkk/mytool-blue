@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
         <meta name="description" content="靜月之光能量占卜儀：整合八字、梅花易數、塔羅牌的多維度機率評估，提供專屬五行水晶開運建議。">
         <meta name="keywords" content="八字,梅花易數,塔羅牌,命理,占卜,五行,水晶,開運">
-        <meta name="theme-color" content="#1a1520">
+        <meta name="theme-color" content="#2D0A0A">
         <meta property="og:title" content="靜月之光能量占卜儀 v2.0">
         <meta property="og:description" content="整合八字、梅花易數、塔羅牌的多維度機率評估，提供專屬五行水晶開運建議。">
         <meta property="og:type" content="website">
@@ -26,6 +26,8 @@
 
         <!-- 視覺優化層（精準覆蓋，保留原有結構） -->
         <link rel="stylesheet" href="css/polish-theme.css?v=2.1.0">
+        <!-- 紅金傳統中式風格（全站套用） -->
+        <link rel="stylesheet" href="css/theme-red-gold.css?v=2.2.0">
         <!-- UI/UX Hotfix Layer (Landing + Form Split + Result Summary) | HOTFIX-20260208-UIFLOW -->
         <style>
             /* === HOTFIX-20260208-UIFLOW (non-destructive additions) === */
@@ -148,6 +150,18 @@
             }
             /* Keep nav shop buttons from stealing attention on first screen (soften only) */
             .nav-shop-buttons{ opacity: 0.88; }
+            /* Step1 表單：間距統一、錯誤狀態、進階收合 */
+            #input-section .form-group{ margin-bottom: 1.25rem; }
+            #input-section .form-group label{ font-size: 0.9375rem; }
+            #input-section .form-group .input-hint,
+            #input-section .form-group .hint-note{ font-size: 0.8125rem; color: rgba(255,255,255,0.55); margin-top: 0.25rem; line-height: 1.4; }
+            #input-section .form-group.error input,
+            #input-section .form-group.error select,
+            #input-section .form-group.error textarea{ border-color: #c33; box-shadow: 0 0 0 1px #c33; }
+            #input-section .form-group .error-msg{ display: none; color: #e88; font-size: 0.8125rem; margin-top: 0.25rem; line-height: 1.3; }
+            #input-section .form-group .error-msg[style*="display: block"]{ display: block !important; }
+            .form-advanced-solar .advanced-inner{ margin-top: 0.5rem; }
+            .form-advanced-solar .solar-time-desc{ margin: 0 0 0.5rem; font-size: 0.9rem; }
             /* === end HOTFIX === */
         </style>
 
@@ -178,7 +192,6 @@
     <body>
         <div id="page-scroll" class="page-scroll">
         <noscript><p style="padding:2rem;text-align:center;background:#1a1520;color:#D4AF37;">本系統需啟用 JavaScript 才能運作，請在瀏覽器設定中開啟後重新整理頁面。</p></noscript>
-        <a href="#main-content" class="skip-link">跳至主要內容</a>
         <nav class="navbar">
             <div class="nav-container">
                 <a href="https://sites.google.com/view/jingyue-light/" target="_blank" class="logo" rel="noopener noreferrer">
@@ -206,101 +219,15 @@
         </div>
 
         <main id="main-content" class="main-container" tabindex="-1">
-            <div class="progress-container">
-                <div class="progress-bar progress-bar-v2">
-                    <div class="progress-step active" data-step="1">1. 資料輸入</div>
-                    <div class="progress-step" data-step="2">2. 梅花易數</div>
-                    <div class="progress-step" data-step="3">3. 塔羅牌</div>
-                    <div class="progress-step" data-step="4">4. 分析結果</div>
-                </div>
-            </div>
-    
-
-            <!-- Landing Section (First Screen) | HOTFIX-20260208-UIFLOW -->
-            <section id="landing-section" class="landing-section" aria-label="快速開始">
-                <div class="landing-hero">
-                    <h1><i class="fas fa-moon"></i> 靜月之光能量占卜儀：用「交叉比對」給你更穩的方向</h1>
-                    <p>這不是單一占卜結論，而是把【八字／梅花易數／塔羅】一起對照，輸出「可能性＋行動建議」。</p>
-                    <ul class="landing-bullets">
-                        <li>⏱ 約 2–3 分鐘完成（可跳過梅花／塔羅）</li>
-                        <li>📌 先給你「一句話結論」再提供完整拆解</li>
-                        <li>🧭 進階欄位可不填（時間／出生地／真太陽時校正）</li>
-                    </ul>
-                    <div class="landing-cta-row">
-                        <button type="button" class="btn-hero" id="btn-quick-start">
-                            <i class="fas fa-play"></i> 開始分析
-                        </button>
-                        <span class="landing-trust"><i class="fas fa-lock"></i> 本頁面為前端本地計算，不上傳個資（若你自行填寫客製表單除外）</span>
-                    </div>
-                </div>
-            </section>
 
             <section id="input-section" class="section active">
                 <h2><i class="fas fa-user-edit"></i> 個人資料輸入</h2>
                 <div class="form-container">
                     <form id="personal-form">
-                        <div class="form-group">
-                            <label for="name"><i class="fas fa-signature"></i> 姓名</label>
-                            <input type="text" id="name" placeholder="可留空（用於稱呼）" autocomplete="name">
-                            <small class="input-hint">不影響分析結果；想客製手鍊再填也可以</small>
-                        </div>
-    
-                        <div class="form-group">
-                            <label><i class="fas fa-venus-mars"></i> 性別</label>
-                            <div class="radio-group radio-group-pill" role="group" aria-label="性別選擇">
-                                <label class="radio-label radio-label-pill">
-                                    <input type="radio" name="gender" value="male">
-                                    <span class="radio-text">男</span>
-                                </label>
-                                <label class="radio-label radio-label-pill">
-                                    <input type="radio" name="gender" value="female">
-                                    <span class="radio-text">女</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="birth-date"><i class="fas fa-calendar"></i> 出生日期</label>
-                                <input type="date" id="birth-date" required placeholder="請選擇出生年月日">
-                                <small class="input-hint">例如：1990年6月15日</small>
-                            </div>
-                        </div>
-
-                        <!-- Advanced Options (Optional) | HOTFIX-20260208-UIFLOW -->
-                        <details class="form-advanced" id="advanced-options">
-                            <summary><i class="fas fa-sliders-h"></i> 進階選項（可不填，想更準再開）</summary>
-                            <p class="advanced-hint">不確定就先不填：系統仍可分析；填越完整，時柱／起運與校正越精準。</p>
-
-                            <div class="form-group">
-                                <label for="birth-time"><i class="fas fa-clock"></i> 出生時間</label>
-                                <input type="time" id="birth-time" placeholder="不確定可留空，將以12:00計算">
-                                <small class="input-hint">請盡量精確，用於時柱計算（例如：10:30）</small>
-                            </div>
-<div class="form-group">
-                            <label for="birth-country"><i class="fas fa-globe-asia"></i> 出生地區</label>
-                            <select id="birth-country">
-                                <option value="">選擇國家/地區</option>
-                                <option value="TW">台灣</option>
-                                <option value="CN">中國大陸</option>
-                                <option value="HK">香港</option>
-                                <option value="MO">澳門</option>
-                                <option value="other">其他地區</option>
-                            </select>
-                        </div>
-    
-                        <div class="form-group" id="city-container">
-                            <label for="birth-city"><i class="fas fa-city"></i> 出生城市</label>
-                            <select id="birth-city">
-                                <option value="">請先選擇地區</option>
-                            </select>
-                            <div id="city-coordinates" class="coordinate-info" style="display:none;">
-                                <small>經度: <span id="longitude">-</span>°E | 緯度: <span id="latitude">-</span>°N</small>
-                            </div>
-                        </div>
-    
-                        <div class="form-group">
+                        <!-- 1. 問題類型（必填） -->
+                        <div class="form-group" data-field="question-type">
                             <label for="question-type"><i class="fas fa-tag"></i> 問題類型 <span class="required">*</span></label>
-                            <select id="question-type" required>
+                            <select id="question-type" required aria-describedby="question-type-hint">
                                 <option value="">請選擇問題類型</option>
                                 <option value="love">愛情</option>
                                 <option value="career">事業</option>
@@ -312,43 +239,99 @@
                                 <option value="other">其他</option>
                             </select>
                             <small class="input-hint" id="question-type-hint">依類型選擇後，下方會有問題方向提示</small>
+                            <small class="error-msg" id="err-question-type" role="alert" aria-live="polite"></small>
                         </div>
-                        <div class="form-group">
+                        <!-- 2. 諮詢問題（必填） -->
+                        <div class="form-group" data-field="question">
                             <label for="question"><i class="fas fa-question-circle"></i> 諮詢問題 <span class="required">*</span></label>
-                            <textarea id="question" rows="3" placeholder="請輸入您想詢問的問題..." required maxlength="500" aria-describedby="question-char-hint"></textarea>
+                            <textarea id="question" rows="3" placeholder="請輸入您想詢問的問題..." maxlength="500" aria-describedby="question-char-hint"></textarea>
                             <small class="input-hint" id="question-char-hint">0/500 字</small>
-                            <div class="hint-note hint-system-note" id="question-probability-note">
-                                <i class="fas fa-info-circle"></i>
-                                <span class="hint-system-short">⚠️ 本系統結合多維度數據提供能量校準建議，非宿命論，僅供參考。</span>
-                                <details class="hint-system-details">
-                                    <summary class="hint-system-toggle">展開說明</summary>
-                                    <p>本系統以「問題導向」整合八字、梅花易數、塔羅牌、紫微斗數，輸出多維度機率評估與直接答案，不提供單一確定結論。</p>
-                                    <p>依八字喜用神與卦象象徵，提供專屬五行水晶配戴建議，供能量校準參考（非醫療或命運保證）。</p>
-                                </details>
+                            <small class="hint-note hint-system-note" id="question-probability-note">結果為參考用，不具命運或醫療保證。</small>
+                            <small class="error-msg" id="err-question" role="alert" aria-live="polite"></small>
+                        </div>
+                        <!-- 3. 性別（必填） -->
+                        <div class="form-group" data-field="gender">
+                            <label><i class="fas fa-venus-mars"></i> 性別 <span class="required">*</span></label>
+                            <div class="radio-group radio-group-pill" role="group" aria-label="性別選擇">
+                                <label class="radio-label radio-label-pill">
+                                    <input type="radio" name="gender" value="male">
+                                    <span class="radio-text">男</span>
+                                </label>
+                                <label class="radio-label radio-label-pill">
+                                    <input type="radio" name="gender" value="female">
+                                    <span class="radio-text">女</span>
+                                </label>
                             </div>
+                            <small class="error-msg" id="err-gender" role="alert" aria-live="polite"></small>
+                        </div>
+                        <!-- 4. 出生日期（必填） -->
+                        <div class="form-group" data-field="birth-date">
+                            <label for="birth-date"><i class="fas fa-calendar"></i> 出生日期 <span class="required">*</span></label>
+                            <input type="date" id="birth-date" required placeholder="請選擇出生年月日" aria-describedby="err-birth-date">
+                            <small class="input-hint">例如：1990年6月15日</small>
+                            <small class="error-msg" id="err-birth-date" role="alert" aria-live="polite"></small>
+                        </div>
+                        <!-- 5. 出生時間（選填，預設 12:00） -->
+                        <div class="form-group" data-field="birth-time">
+                            <label for="birth-time"><i class="fas fa-clock"></i> 出生時間</label>
+                            <input type="time" id="birth-time" placeholder="不確定可留空，將以12:00計算">
+                            <small class="input-hint">選填，不確定可留空</small>
+                        </div>
+                        <!-- 6. 出生地區（必填） -->
+                        <div class="form-group" data-field="birth-country">
+                            <label for="birth-country"><i class="fas fa-globe-asia"></i> 出生地區 <span class="required">*</span></label>
+                            <select id="birth-country">
+                                <option value="">選擇國家/地區</option>
+                                <option value="TW">台灣</option>
+                                <option value="CN">中國大陸</option>
+                                <option value="HK">香港</option>
+                                <option value="MO">澳門</option>
+                                <option value="other">其他地區</option>
+                            </select>
+                            <small class="error-msg" id="err-birth-country" role="alert" aria-live="polite"></small>
+                        </div>
+                        <!-- 7. 出生城市（必填） -->
+                        <div class="form-group" id="city-container" data-field="birth-city">
+                            <label for="birth-city"><i class="fas fa-city"></i> 出生城市 <span class="required">*</span></label>
+                            <select id="birth-city">
+                                <option value="">請先選擇地區</option>
+                            </select>
+                            <small class="error-msg" id="err-birth-city" role="alert" aria-live="polite"></small>
+                        </div>
+                        <!-- 8. 姓名（選填） -->
+                        <div class="form-group" data-field="name">
+                            <label for="name"><i class="fas fa-signature"></i> 姓名</label>
+                            <input type="text" id="name" placeholder="可留空（用於稱呼）" autocomplete="name">
+                            <small class="input-hint">選填，不影響分析</small>
+                        </div>
 
-                        </div>
-    
-                        <div class="form-group" id="solar-time-section">
-                            <div class="solar-time-card" role="group" aria-labelledby="solar-time-heading">
-                                <div class="solar-time-header">
-                                    <i class="fas fa-sun" aria-hidden="true"></i>
-                                    <h3 id="solar-time-heading">真太陽時校正</h3>
+                        <!-- 進階（可選）：真太陽時，預設收合 -->
+                        <details class="form-advanced form-advanced-solar" id="solar-time-section">
+                            <summary><i class="fas fa-sliders-h"></i> 進階（可選）</summary>
+                            <div class="advanced-inner">
+                                <div class="solar-time-card" role="group" aria-labelledby="solar-time-heading">
+                                    <div class="solar-time-header">
+                                        <i class="fas fa-sun" aria-hidden="true"></i>
+                                        <h3 id="solar-time-heading">真太陽時校正</h3>
+                                    </div>
+                                    <div class="solar-time-body">
+                                        <p class="solar-time-desc" id="solar-time-desc">依出生地經度校正時間，可提高時柱準確度。</p>
+                                        <div class="solar-time-location" id="solar-time-location-hint" style="display:none;"><i class="fas fa-map-marker-alt"></i> <span id="solar-location-text">請先選擇出生地區與城市</span></div>
+                                        <label class="solar-time-toggle">
+                                            <input type="checkbox" id="true-solar-time" aria-describedby="solar-time-desc">
+                                            <span class="solar-toggle-slider"></span>
+                                            <span class="solar-toggle-label">啟用校正</span>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="solar-time-body">
-                                    <p class="solar-time-desc" id="solar-time-desc">依出生地經度校正鐘錶時間為「真太陽時」，可提高八字時柱與大運起算的準確度。</p>
-                                    <div class="solar-time-location" id="solar-time-location-hint"><i class="fas fa-map-marker-alt"></i> <span id="solar-location-text">請先選擇出生地區與城市</span></div>
-                                    <label class="solar-time-toggle">
-                                        <input type="checkbox" id="true-solar-time" aria-describedby="solar-time-desc">
-                                        <span class="solar-toggle-slider"></span>
-                                        <span class="solar-toggle-label">啟用校正</span>
-                                    </label>
+                                <div id="city-coordinates" class="coordinate-info" style="display:none;">
+                                    <small>經度: <span id="longitude">-</span>°E | 緯度: <span id="latitude">-</span>°N</small>
                                 </div>
                             </div>
-                        </div>
+                        </details>
     
                         <div class="form-actions">
-                            <button type="button" class="btn btn-primary btn-next" id="step1-submit" data-next="meihua-section">
+                            <button type="button" class="btn btn-primary btn-next" id="step1-submit" data-next="meihua-section" disabled>
                                 <i class="fas fa-arrow-right"></i> 下一步：梅花易數
                             </button>
                         </div>
@@ -1351,9 +1334,7 @@
                 })();
             }
         </script>
-        <!-- 在所有現有 script 標籤之後 -->
-        
-        <script src="js/force-modern-ui.js?v=2.1.0"></script>
+        <!-- 紅金主題由 theme-red-gold.css 套用；不載入 force-modern-ui.js 以免內聯樣式覆蓋主題 -->
 
         <!-- UI Flow Hotfix Script | HOTFIX-20260208-UIFLOW -->
         <script>
@@ -1363,19 +1344,6 @@
 
             function safeText(el){ return (el && (el.textContent || el.innerText || '') || '').trim(); }
 
-            function updateProgressLabels(){
-                var steps = qsa('.progress-step');
-                if (!steps || !steps.length) return;
-                // Non-destructive: only change display text, keep data-step for logic
-                steps.forEach(function(s){
-                    var step = s.getAttribute('data-step');
-                    if (step === '1') s.textContent = '1️⃣ 基本資料（約30秒）';
-                    if (step === '2') s.textContent = '2️⃣ 卦象（可跳過）';
-                    if (step === '3') s.textContent = '3️⃣ 塔羅（可跳過）';
-                    if (step === '4') s.textContent = '4️⃣ 綜合結果';
-                });
-            }
-
             function bindQuickStart(){
                 var btn = qs('#btn-quick-start');
                 var target = qs('#input-section');
@@ -1383,9 +1351,8 @@
                 btn.addEventListener('click', function(){
                     try{
                         target.scrollIntoView({behavior:'smooth', block:'start'});
-                        // focus first required field for keyboard users
-                        var bd = qs('#birth-date');
-                        if (bd) setTimeout(function(){ bd.focus(); }, 400);
+                        var firstField = qs('#question-type');
+                        if (firstField) setTimeout(function(){ firstField.focus(); }, 400);
                     }catch(e){}
                 });
             }
@@ -1459,7 +1426,6 @@
             }
 
             document.addEventListener('DOMContentLoaded', function(){
-                updateProgressLabels();
                 bindQuickStart();
                 addTermChips();
                 bindFirstLookObserver();

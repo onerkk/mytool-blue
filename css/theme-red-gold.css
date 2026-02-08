@@ -185,3 +185,245 @@ body {
   border-radius: 50%;
   border: 1px solid rgba(212, 175, 55, 0.2);
 }
+
+/* ========== 全站覆蓋：既有元件套用紅金傳統中式風格 ========== */
+body {
+  background: linear-gradient(180deg, #2D0A0A 0%, #4A0000 35%, #2D0A0A 100%);
+  background-attachment: fixed;
+  color: #F5E6D3;
+}
+
+.navbar {
+  background: linear-gradient(180deg, rgba(139, 0, 0, 0.98) 0%, rgba(74, 0, 0, 0.98) 100%);
+  backdrop-filter: blur(12px);
+  border-bottom: 2px solid rgba(212, 175, 55, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15);
+}
+
+.logo {
+  color: var(--gold-base);
+}
+
+.logo:hover {
+  color: var(--gold-light);
+}
+
+.logo-image {
+  border: 2px solid rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+}
+
+/* 區塊：深紅底 + 金框（傳統匾額感） */
+.section {
+  background: linear-gradient(165deg, rgba(74, 0, 0, 0.85) 0%, rgba(45, 10, 10, 0.95) 100%);
+  border: 2px solid rgba(212, 175, 55, 0.5);
+  border-radius: 1rem;
+  padding: 2rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(212, 175, 55, 0.1), 0 0 40px rgba(212, 175, 55, 0.08);
+}
+
+.section h2 {
+  color: #F5E6D3;
+  font-weight: 700;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+.section h2 i {
+  color: var(--gold-base);
+}
+
+/* 表單標籤與提示 */
+.form-group label,
+.form-group .input-hint,
+.form-group small {
+  color: rgba(245, 230, 211, 0.9);
+}
+
+.form-group label i {
+  color: var(--gold-base);
+}
+
+/* 輸入框：淺褐底 + 金框 */
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="time"],
+.form-group input[type="email"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+  background: rgba(94, 50, 30, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  color: #F5E6D3;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--gold-base);
+  background: rgba(94, 50, 30, 0.7);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: rgba(245, 230, 211, 0.5);
+}
+
+/* 單選：選中為紅底金邊 */
+.radio-label .radio-text {
+  background: rgba(94, 50, 30, 0.4);
+  border: 2px solid rgba(212, 175, 55, 0.4);
+  color: rgba(245, 230, 211, 0.9);
+}
+
+.radio-label input[type="radio"]:checked + .radio-text {
+  background: linear-gradient(135deg, #8B0000, #6B0000);
+  color: #F5E6D3;
+  border-color: var(--gold-base);
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+}
+
+.radio-label:hover .radio-text {
+  border-color: rgba(212, 175, 55, 0.6);
+  background: rgba(139, 0, 0, 0.25);
+}
+
+/* 主按鈕：金屬金 + 紅暈 */
+.btn-primary,
+.btn.btn-primary {
+  background: linear-gradient(180deg, #E8C968 0%, #D4AF37 30%, #B8941F 70%, #9A7B19 100%);
+  color: #2D0A0A;
+  font-weight: 700;
+  border: 1px solid rgba(212, 175, 55, 0.8);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 24px rgba(212, 175, 55, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  background: linear-gradient(180deg, #F4D03F 0%, #E8C968 40%, #D4AF37 80%, #B8941F 100%);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 36px rgba(212, 175, 55, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-outline,
+.btn.btn-outline {
+  background: transparent;
+  color: var(--gold-base);
+  border: 2px solid rgba(212, 175, 55, 0.6);
+}
+
+.btn-outline:hover,
+.btn.btn-outline:hover {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: var(--gold-base);
+  color: #F5E6D3;
+}
+
+.form-actions,
+.section-actions {
+  border-top-color: rgba(212, 175, 55, 0.3);
+}
+
+/* 進階區塊收合 */
+.form-advanced,
+.form-advanced-solar {
+  background: rgba(74, 0, 0, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 0.75rem;
+}
+
+.form-advanced > summary,
+.form-advanced-solar > summary {
+  color: #F5E6D3;
+}
+
+/* 錯誤狀態（紅金主題下保持可辨識） */
+#input-section .form-group.error input,
+#input-section .form-group.error select,
+#input-section .form-group.error textarea {
+  border-color: #c33;
+  box-shadow: 0 0 0 2px rgba(204, 51, 51, 0.3);
+}
+
+#input-section .form-group .error-msg {
+  color: #e88;
+}
+
+/* 結果頁、塔羅、梅花等區塊一併套用 */
+.result-first-look,
+.overview-card,
+.lucky-item-recommendation-card,
+.dimension-analysis {
+  background: linear-gradient(165deg, rgba(74, 0, 0, 0.75) 0%, rgba(45, 10, 10, 0.9) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.06);
+}
+
+/* 導航／賣場按鈕不搶主視覺 */
+.shop-btn,
+.nav-shop-buttons .shop-btn {
+  background: rgba(74, 0, 0, 0.8);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: #F5E6D3;
+}
+
+.shop-btn:hover {
+  background: rgba(139, 0, 0, 0.9);
+  border-color: var(--gold-base);
+  color: var(--gold-base);
+}
+
+/* 右下角三個懸浮鈕：統一紅金配色，不再一紅兩黑 */
+#global-floating-root .floating-btn,
+#global-floating-root .floating-buttons .floating-btn,
+#global-floating-root .floating-buttons a,
+#global-floating-root .floating-buttons button {
+  background: linear-gradient(165deg, rgba(139, 0, 0, 0.95) 0%, rgba(74, 0, 0, 0.98) 100%) !important;
+  border: 2px solid rgba(212, 175, 55, 0.6) !important;
+  color: #F5E6D3 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.2) !important;
+}
+
+#global-floating-root .floating-btn::before {
+  background: transparent !important;
+}
+
+#global-floating-root .floating-btn i,
+#global-floating-root .floating-label {
+  color: #F5E6D3 !important;
+}
+
+#global-floating-root .floating-btn:hover,
+#global-floating-root .floating-buttons a:hover,
+#global-floating-root .floating-buttons button:hover {
+  background: linear-gradient(165deg, rgba(160, 30, 30, 0.98) 0%, rgba(139, 0, 0, 0.98) 100%) !important;
+  border-color: var(--gold-base) !important;
+  color: var(--gold-light) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 28px rgba(212, 175, 55, 0.4) !important;
+  transform: scale(1.08);
+}
+
+#global-floating-root .floating-btn-shopee,
+#global-floating-root .floating-btn-711,
+#global-floating-root .floating-btn-custom {
+  background: linear-gradient(165deg, rgba(139, 0, 0, 0.95) 0%, rgba(74, 0, 0, 0.98) 100%) !important;
+  border: 2px solid rgba(212, 175, 55, 0.6) !important;
+  color: #F5E6D3 !important;
+}
+
+#global-floating-root .floating-btn-shopee:hover,
+#global-floating-root .floating-btn-711:hover,
+#global-floating-root .floating-btn-custom:hover {
+  background: linear-gradient(165deg, rgba(160, 30, 30, 0.98) 0%, rgba(139, 0, 0, 0.98) 100%) !important;
+  border-color: var(--gold-base) !important;
+  color: var(--gold-light) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 28px rgba(212, 175, 55, 0.4) !important;
+}

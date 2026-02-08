@@ -243,6 +243,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     bindEvents();
     
+    if (window.fortuneSystem) window.fortuneSystem.updateStep1SubmitState();
+    
     // 懸浮鈕：每個頁面都顯示（強制顯示）
     ensureFloatingButtonsVisible();
     console.log('靜月之光能量占卜儀 v2.0 已就緒（捲動由 scrollLockManager 集中管理）');
@@ -565,6 +567,12 @@ class FortuneSystem {
         window.scrollTo(0, 0);
         var pageScroll = document.getElementById('page-scroll');
         if (pageScroll) pageScroll.scrollTop = 0;
+        document.querySelectorAll('#input-section .form-group[data-field]').forEach(function(grp) { grp.classList.remove('error'); });
+        ['err-question-type', 'err-question', 'err-gender', 'err-birth-date', 'err-birth-country', 'err-birth-city'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) { el.textContent = ''; el.style.display = 'none'; }
+        });
+        this.updateStep1SubmitState();
     }
     
     generateReport() {
@@ -2092,13 +2100,38 @@ class FortuneSystem {
         `;
     }
     
-    validateAndRunStep1() {
+    /** 驗證第一步必填，回傳 { ok, firstInvalid, messages }，不彈窗 */
+    validateStep1() {
         const qType = document.getElementById('question-type');
         const question = document.getElementById('question');
         const birthDate = document.getElementById('birth-date');
-        if (!qType || !qType.value) { alert('請選擇問題類型'); return false; }
-        if (!question || !String(question.value || '').trim()) { alert('請輸入諮詢問題'); return false; }
-        if (!birthDate || !birthDate.value) { alert('請填寫出生日期'); return false; }
+        const country = document.getElementById('birth-country')?.value;
+        const city = document.getElementById('birth-city')?.value;
+        const genderChecked = document.querySelector('input[name="gender"]:checked');
+        const messages = {};
+        if (!qType || !qType.value) messages.questionType = '請選擇問題類型';
+        if (!question || String(question?.value || '').trim().length < 2) messages.question = '請輸入至少 2 字諮詢問題';
+        if (!genderChecked) messages.gender = '請選擇性別';
+        if (!birthDate || !birthDate.value) messages.birthDate = '請選擇出生日期';
+        if (!country) messages.birthCountry = '請選擇出生地區';
+        if (!city) messages.birthCity = '請選擇出生城市';
+        const order = ['questionType', 'question', 'gender', 'birthDate', 'birthCountry', 'birthCity'];
+        let firstInvalid = null;
+        for (let i = 0; i < order.length; i++) {
+            if (messages[order[i]]) { firstInvalid = order[i]; break; }
+        }
+        return { ok: firstInvalid === null, firstInvalid, messages };
+    }
+
+    validateAndRunStep1() {
+        const result = this.validateStep1();
+        if (!result.ok) {
+            this._showStep1Errors(result);
+            return false;
+        }
+        const qType = document.getElementById('question-type');
+        const question = document.getElementById('question');
+        const birthDate = document.getElementById('birth-date');
         this.userData.questionType = qType.value;
         this.userData.question = String(question.value || '').trim();
         this.userData.name = (document.getElementById('name')?.value || '').trim();
@@ -2106,11 +2139,43 @@ class FortuneSystem {
         this.userData.birthTime = document.getElementById('birth-time')?.value || '12:00';
         this.userData.gender = document.querySelector('input[name="gender"]:checked')?.value || 'male';
         this.userData.useSolarTime = document.getElementById('true-solar-time')?.checked || false;
-        if (!this.userData.gender) { alert('請選擇性別'); return false; }
-        const country = document.getElementById('birth-country')?.value;
-        const city = document.getElementById('birth-city')?.value;
-        if (!country || !city) { alert('請選擇出生地區與城市'); return false; }
         return true;
+    }
+
+    _showStep1Errors(result) {
+        document.querySelectorAll('#input-section .form-group[data-field]').forEach(function(grp) {
+            grp.classList.remove('error');
+            var id = grp.getAttribute('data-field');
+            var errId = 'err-' + id.replace(/-([a-z])/g, function(_, c) { return c.toUpperCase(); }).replace(/-/g, '-');
+            if (id === 'birth-country') errId = 'err-birth-country';
+            if (id === 'birth-city') errId = 'err-birth-city';
+            var errEl = document.getElementById(errId);
+            if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+        });
+        var fieldToData = { questionType: 'question-type', question: 'question', gender: 'gender', birthDate: 'birth-date', birthCountry: 'birth-country', birthCity: 'birth-city' };
+        var firstKey = result.firstInvalid;
+        if (!firstKey) return;
+        var dataField = fieldToData[firstKey];
+        var grp = document.querySelector('#input-section .form-group[data-field="' + dataField + '"]');
+        if (grp) {
+            grp.classList.add('error');
+            grp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        var errId = 'err-' + firstKey.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
+        if (firstKey === 'birthCountry') errId = 'err-birth-country';
+        if (firstKey === 'birthCity') errId = 'err-birth-city';
+        var errEl = document.getElementById(errId);
+        if (errEl && result.messages[firstKey]) {
+            errEl.textContent = result.messages[firstKey];
+            errEl.style.display = 'block';
+        }
+    }
+
+    updateStep1SubmitState() {
+        var btn = document.getElementById('step1-submit');
+        if (!btn) return;
+        var result = window.fortuneSystem ? window.fortuneSystem.validateStep1() : { ok: false };
+        btn.disabled = !result.ok;
     }
     
     runBackgroundCalculations() {
@@ -4217,6 +4282,32 @@ function bindEvents() {
             }
         });
     });
+
+    (function bindStep1Validation() {
+        var fields = [
+            { id: 'question-type', errId: 'err-question-type', dataField: 'question-type' },
+            { id: 'question', errId: 'err-question', dataField: 'question' },
+            { id: 'birth-date', errId: 'err-birth-date', dataField: 'birth-date' },
+            { id: 'birth-country', errId: 'err-birth-country', dataField: 'birth-country' },
+            { id: 'birth-city', errId: 'err-birth-city', dataField: 'birth-city' }
+        ];
+        function clearFieldError(dataField, errId) {
+            var grp = document.querySelector('#input-section .form-group[data-field="' + dataField + '"]');
+            if (grp) grp.classList.remove('error');
+            var errEl = document.getElementById(errId);
+            if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+            if (window.fortuneSystem) window.fortuneSystem.updateStep1SubmitState();
+        }
+        fields.forEach(function(f) {
+            var el = document.getElementById(f.id);
+            if (!el) return;
+            el.addEventListener('input', function() { clearFieldError(f.dataField, f.errId); });
+            el.addEventListener('change', function() { clearFieldError(f.dataField, f.errId); });
+        });
+        document.querySelectorAll('input[name="gender"]').forEach(function(radio) {
+            radio.addEventListener('change', function() { clearFieldError('gender', 'err-gender'); });
+        });
+    })();
     
     document.querySelectorAll('.btn-prev').forEach(btn => {
         btn.addEventListener('click', function() { 
