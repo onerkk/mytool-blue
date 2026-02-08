@@ -886,6 +886,10 @@ html{scroll-behavior:smooth}
 .t-card-face.t-front{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px}
 .t-card-face.t-front .tc-name{font-size:0.7rem;margin-top:2px}
 .tc-spread-img{box-shadow:0 2px 8px rgba(0,0,0,0.3);border:1px solid rgba(212,175,55,0.3)}
+
+.yao-visual{display:flex;flex-direction:column;gap:5px;padding:8px 0;width:70px;margin:0 auto}
+.yao-row{display:flex;align-items:center;justify-content:center;height:8px;gap:0}
+.yao-dong{filter:drop-shadow(0 0 3px rgba(232,201,104,0.5))}
 </style>
 </head>
 <body>
@@ -1429,13 +1433,13 @@ function computeBazi(year,month,day,hour,minute,gender){
   const mGi=(mGBase+(mi-1))%10;
   const mG=TG[(mGi+10)%10], mZ=DZ[mZi];
 
-  // ── 日柱 ──
+  // ── 日柱（以1984-12-22甲子日為基準校正） ──
   const base=new Date(1900,0,1);
   const tgt=new Date(year,month-1,day);
   const diff=Math.floor((tgt-base)/864e5);
-  const adj=diff+10;
-  const dGi=((adj%10)+10)%10;
-  const dZi=((adj%12)+12)%12;
+  const dayCycle=((diff+44)%60+60)%60;
+  const dGi=dayCycle%10;
+  const dZi=dayCycle%12;
   const dG=TG[dGi], dZ=DZ[dZi];
 
   // ── 時柱 ──
@@ -1636,7 +1640,7 @@ const G64={
 
 function gByN(n){return BG[((n-1)%8+8)%8]}
 function g64(un,ln){return G64[''+un+ln]||{n:'未知',u:'?',j:'',m:''}}
-function gByL(l1,l2,l3){return BG.find(g=>g.li[0]===l3&&g.li[1]===l2&&g.li[2]===l1)||BG[7]}
+function gByL(l1,l2,l3){return BG.find(g=>g.li[0]===l1&&g.li[1]===l2&&g.li[2]===l3)||BG[7]}
 
 function tiYong(ti,yo){
   if(ti===yo)return{r:'比和',f:'吉',d:'體用相同，事情順利。'};
@@ -1649,18 +1653,16 @@ function tiYong(ti,yo){
 
 function calcMH(un,ln,dy){
   const up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
-  const ben=g64(up.n==='乾'?1:up.n==='兌'?2:up.n==='離'?3:up.n==='震'?4:up.n==='巽'?5:up.n==='坎'?6:up.n==='艮'?7:8,
-               lo.n==='乾'?1:lo.n==='兌'?2:lo.n==='離'?3:lo.n==='震'?4:lo.n==='巽'?5:lo.n==='坎'?6:lo.n==='艮'?7:8);
+  // up.n 就是數字(1-8)，直接用於 g64 查表
+  const ben=g64(up.n, lo.n);
   const benL=[...lo.li,...up.li];
   const huLo=gByL(benL[1],benL[2],benL[3]);
   const huUp=gByL(benL[2],benL[3],benL[4]);
-  const hu=g64(huUp.n==='乾'?1:huUp.n==='兌'?2:huUp.n==='離'?3:huUp.n==='震'?4:huUp.n==='巽'?5:huUp.n==='坎'?6:huUp.n==='艮'?7:8,
-               huLo.n==='乾'?1:huLo.n==='兌'?2:huLo.n==='離'?3:huLo.n==='震'?4:huLo.n==='巽'?5:huLo.n==='坎'?6:huLo.n==='艮'?7:8);
+  const hu=g64(huUp.n, huLo.n);
   const biL=[...benL]; biL[dong-1]=biL[dong-1]?0:1;
   const biLo=gByL(biL[0],biL[1],biL[2]);
   const biUp=gByL(biL[3],biL[4],biL[5]);
-  const bian=g64(biUp.n==='乾'?1:biUp.n==='兌'?2:biUp.n==='離'?3:biUp.n==='震'?4:biUp.n==='巽'?5:biUp.n==='坎'?6:biUp.n==='艮'?7:8,
-                 biLo.n==='乾'?1:biLo.n==='兌'?2:biLo.n==='離'?3:biLo.n==='震'?4:biLo.n==='巽'?5:biLo.n==='坎'?6:biLo.n==='艮'?7:8);
+  const bian=g64(biUp.n, biLo.n);
   const tiG=dong<=3?up:lo, yoG=dong<=3?lo:up;
   const ty=tiYong(tiG.el,yoG.el);
   return{up,lo,dong,ben,hu,bian,tiG,yoG,ty};
@@ -1668,13 +1670,32 @@ function calcMH(un,ln,dy){
 
 function guaNum(g){return g.n==='乾'?1:g.n==='兌'?2:g.n==='離'?3:g.n==='震'?4:g.n==='巽'?5:g.n==='坎'?6:g.n==='艮'?7:8}
 
+function renderYaoLines(lines, dong){
+  let html='<div class="yao-visual">';
+  for(let i=5;i>=0;i--){
+    const isYang=lines[i]===1;
+    const isDong=dong&&(i+1)===dong;
+    html+=`<div class="yao-row${isDong?' yao-dong':''}" title="${isDong?'◀ 動爻':'第'+(i+1)+'爻'}">`;
+    if(isYang) html+=`<div style="width:100%;height:4px;background:${isDong?'#e8c968':'rgba(255,255,255,0.7)'}"></div>`;
+    else html+=`<div style="width:42%;height:4px;background:${isDong?'#e8c968':'rgba(255,255,255,0.7)'}"></div><div style="width:12%"></div><div style="width:42%;height:4px;background:${isDong?'#e8c968':'rgba(255,255,255,0.7)'}"></div>`;
+    if(isDong) html+=`<span style="color:#e8c968;font-size:0.6rem;margin-left:4px">◀</span>`;
+    html+=`</div>`;
+  }
+  html+='</div>';
+  return html;
+}
+
 function showMH(r){
   S.meihua=r;
-  document.getElementById('mh-ben-s').textContent=r.ben.u;
+  // 六爻圖 + 卦名
+  const benL2=[...r.lo.li,...r.up.li];
+  const bianL2=[...benL2]; bianL2[r.dong-1]=bianL2[r.dong-1]?0:1;
+  const huL2=[benL2[1],benL2[2],benL2[3],benL2[2],benL2[3],benL2[4]];
+  document.getElementById('mh-ben-s').innerHTML=typeof renderYaoLines==='function'?renderYaoLines(benL2,r.dong):r.ben.u;
   document.getElementById('mh-ben-n').textContent=r.ben.n;
-  document.getElementById('mh-hu-s').textContent=r.hu.u;
+  document.getElementById('mh-hu-s').innerHTML=typeof renderYaoLines==='function'?renderYaoLines(huL2):r.hu.u;
   document.getElementById('mh-hu-n').textContent=r.hu.n;
-  document.getElementById('mh-bian-s').textContent=r.bian.u;
+  document.getElementById('mh-bian-s').innerHTML=typeof renderYaoLines==='function'?renderYaoLines(bianL2):r.bian.u;
   document.getElementById('mh-bian-n').textContent=r.bian.n;
   document.getElementById('mh-detail').innerHTML=`
     <p><strong>體卦：</strong>${r.tiG.name}（${r.tiG.el}）｜<strong>用卦：</strong>${r.yoG.name}（${r.yoG.el}）</p>
@@ -1699,10 +1720,45 @@ function setMhMethod(m){
 }
 function calcMhTime(){
   const now=new Date();
-  const y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate(),h=now.getHours();
-  // 農曆近似
-  const un=(y+m+d)%8||8, ln=(y+m+d+h)%8||8, dy=(y+m+d+h)%6||6;
-  showMH(calcMH(un,ln,dy));
+  const y=now.getFullYear(),mo=now.getMonth()+1,d=now.getDate();
+  const h=now.getHours(),mi=now.getMinutes(),sec=now.getSeconds();
+
+  // 正統梅花時間起卦（簡化版）
+  // 先轉農曆（使用lunar-javascript庫）
+  let lunarY=y, lunarM=mo, lunarD=d;
+  try {
+    if(typeof Lunar!=='undefined'&&Lunar.Solar){
+      const solar=Lunar.Solar.fromYmd(y,mo,d);
+      const lunar=solar.getLunar();
+      lunarY=lunar.getYear(); lunarM=lunar.getMonth(); lunarD=lunar.getDay();
+    }
+  } catch(e){}
+
+  // 年地支數（子1丑2...亥12）
+  const yzhi=((lunarY-4)%12+12)%12+1;
+  // 時辰（子1丑2...亥12）
+  const shichen=Math.floor(((h+1)%24)/2)+1;
+
+  // 上卦 = (年支+農曆月+農曆日) % 8
+  const upNum=(yzhi+lunarM+lunarD)%8||8;
+  // 下卦 = (年支+農曆月+農曆日+時辰) % 8
+  const loNum=(yzhi+lunarM+lunarD+shichen)%8||8;
+  // 動爻 = (年支+農曆月+農曆日+時辰) % 6
+  const dongNum=(yzhi+lunarM+lunarD+shichen)%6||6;
+
+  // 顯示起卦時間資訊
+  const info=document.getElementById('mh-detail');
+
+  showMH(calcMH(upNum,loNum,dongNum));
+
+  // 在結果下追加起卦資訊
+  if(info){
+    const extra=document.createElement('div');
+    extra.className='mt-sm text-xs text-dim';
+    extra.innerHTML=`<p>起卦時間：${y}/${mo}/${d} ${h}:${String(mi).padStart(2,'0')} ｜ 農曆：${lunarM}月${lunarD}日 ｜ 時辰：第${shichen}辰</p>
+      <p>上卦數：${upNum}(${['坤','乾','兌','離','震','巽','坎','艮'][upNum-1]||'?'}) ｜ 下卦數：${loNum}(${['坤','乾','兌','離','震','巽','坎','艮'][loNum-1]||'?'}) ｜ 動爻：${dongNum}</p>`;
+    info.appendChild(extra);
+  }
 }
 function calcMhNumber(){
   const n1=parseInt(document.getElementById('mh-n1').value)||1;
@@ -1950,18 +2006,27 @@ function renderBazi(){
   }).join('')+'</div>';
 }
 
+
+
 function renderMeihua(){
   if(!S.meihua){document.getElementById('r-meihua').innerHTML='<p class="text-dim">未進行梅花易數起卦</p>';return}
   const r=S.meihua;
+  
+  // 構建六爻
+  const benLines=[...r.lo.li,...r.up.li];
+  const bianLines=[...benLines]; bianLines[r.dong-1]=bianLines[r.dong-1]?0:1;
+  const huLines=[benLines[1],benLines[2],benLines[3],benLines[2],benLines[3],benLines[4]];
+
   document.getElementById('r-meihua').innerHTML=`
     <div class="hex-grid">
-      <div class="hex-card"><h4>本卦</h4><div class="hex-sym">${r.ben.u}</div><div class="hex-name">${r.ben.n}</div></div>
-      <div class="hex-card"><h4>互卦</h4><div class="hex-sym">${r.hu.u}</div><div class="hex-name">${r.hu.n}</div></div>
-      <div class="hex-card"><h4>變卦</h4><div class="hex-sym">${r.bian.u}</div><div class="hex-name">${r.bian.n}</div></div>
+      <div class="hex-card"><h4>本卦</h4>${renderYaoLines(benLines,r.dong)}<div class="hex-name" style="margin-top:0.5rem;font-size:1.1rem">${r.ben.n}</div><div class="hex-sym" style="font-size:1.5rem;opacity:0.5">${r.ben.u}</div></div>
+      <div class="hex-card"><h4>互卦</h4>${renderYaoLines(huLines)}<div class="hex-name" style="margin-top:0.5rem;font-size:1.1rem">${r.hu.n}</div><div class="hex-sym" style="font-size:1.5rem;opacity:0.5">${r.hu.u}</div></div>
+      <div class="hex-card"><h4>變卦</h4>${renderYaoLines(bianLines)}<div class="hex-name" style="margin-top:0.5rem;font-size:1.1rem">${r.bian.n}</div><div class="hex-sym" style="font-size:1.5rem;opacity:0.5">${r.bian.u}</div></div>
     </div>
     <p class="mt-md"><strong>體用：</strong><span class="tag tag-gold">${r.ty.r}</span> <span class="tag ${r.ty.f.includes('吉')?'tag-green':'tag-red'}">${r.ty.f}</span> — ${r.ty.d}</p>
     <p class="mt-sm"><strong>卦辭：</strong>${r.ben.j}</p>
     <p><strong>解讀：</strong>${r.ben.m}</p>
+    <p><strong>動爻：</strong>第 ${r.dong} 爻（${benLines[r.dong-1]?'陽→陰':'陰→陽'}）</p>
     <p><strong>變卦：</strong>${r.bian.m}</p>`;
 }
 
@@ -3310,9 +3375,14 @@ function runAnalysisV2(){
     else if(b.strong)baziScore+=5;
     else baziScore-=5;
   } else if(type==='career'){
-    if(b.strong)baziScore+=8; // 身強利事業
+    if(b.strong)baziScore+=12;
+    else baziScore-=6;
     const guanEl=typeof KE!=='undefined'?KE[b.dmEl]:'';
-    if(guanEl&&b.ep[guanEl]>20)baziScore-=8; // 官殺太重壓力大
+    if(guanEl&&b.ep[guanEl]>20)baziScore-=10;
+    const shiEl=typeof SHENG!=='undefined'?SHENG[b.dmEl]:'';
+    if(b.strong&&shiEl&&b.ep[shiEl]>15)baziScore+=8;
+    const yinEl=typeof BE_SHENG!=='undefined'?BE_SHENG[b.dmEl]:'';
+    if(!b.strong&&yinEl&&b.ep[yinEl]>15)baziScore+=10;
   } else if(type==='love'){
     if(!b.strong)baziScore+=3; // 身弱桃花多
     if(b.shensha&&b.shensha.includes('桃花'))baziScore+=15;
@@ -3352,7 +3422,7 @@ function runAnalysisV2(){
   // ── 2. 梅花評分（體用生剋 + 卦象 + 動爻） ──
   let mhScore=50;
   if(S.meihua){
-    const fMap={'大吉':82,'吉':70,'小吉':60,'平':50,'小凶':35,'凶':20};
+    const fMap={'大吉':88,'吉':72,'小吉':58,'平':48,'小凶':38,'凶':22};
     mhScore=fMap[S.meihua.ty.f]||50;
     // 體用關係微調
     const tyR=S.meihua.ty.r||'';
@@ -3402,12 +3472,12 @@ function runAnalysisV2(){
     });
     // Normalize: weightedSum / totalAbs → [-1,1] → map to [15,85]
     const normalized = weightedSum / (totalAbs||1);
-    tarotScore=Math.round(50+normalized*35);
+    tarotScore=Math.round(50+normalized*50);
     tarotScore=Math.max(10,Math.min(90,tarotScore));
   }
 
   // ── 4. 紫微評分（命宮 + 類型宮位 加大幅度） ──
-  let ziweiScore=45;
+  let ziweiScore=40;
   if(S.ziwei){
     const mingStars=S.ziwei.palaces[0].stars;
     const goodStars=['紫微','天府','天同','天梁','天相','太陽','太陰','文昌','文曲','左輔','右弼'];
@@ -3475,9 +3545,9 @@ function runAnalysisV2(){
 
   // 問題時間維度判定
   const qText = S.form ? (S.form.question||'') : '';
-  const isShortTerm = /這[個月週周]|今天|明天|最近|馬上|眼前|立刻|短期|現在/.test(qText);
-  const isLongTerm = /一輩子|未來|長期|十年|人生|命運|天生|適合|方向/.test(qText);
-  const isDecision = /該不該|要不要|還是|選擇|決定|A或B|轉職|離職|分手/.test(qText);
+  const isShortTerm = /這[個月週周]|今[天年月]|明[天年]|最近|馬上|眼前|立刻|短期|現在|下[個半]|近期/.test(qText);
+  const isLongTerm = /一輩子|未來[35十]|長期|十年|人生|命運|天生|適合|方向|老了|退休|終身/.test(qText);
+  const isDecision = /該不該|要不要|還是|選擇|決定|A或B|轉職|離職|分手|換工作|跳槽|去.*還是|買.*還是/.test(qText);
   const isStatus = /為什麼|怎麼了|卡住|困境|狀況|原因|瓶頸/.test(qText);
 
   let w;
@@ -3534,19 +3604,39 @@ function runAnalysisV2(){
 
   const totalW = Object.values(w).reduce((a,b) => a+b, 0);
   const scores = {bazi:baziScore, meihua:mhScore, tarot:tarotScore, ziwei:ziweiScore, name:nameScore};
+  // 異常值壓縮：若某維度與其他差距過大，壓縮其影響
+  const activeKeys = Object.keys(w).filter(k => w[k] > 0);
+  const sortedScores = activeKeys.map(k => scores[k]).sort((a,b) => a-b);
+  const median = sortedScores[Math.floor(sortedScores.length/2)];
+  const adjustedScores = {};
+  activeKeys.forEach(k => {
+    const diff = scores[k] - median;
+    if(Math.abs(diff) > 30) {
+      // 差距超過30分，壓縮1/3
+      adjustedScores[k] = median + diff * 0.67;
+    } else {
+      adjustedScores[k] = scores[k];
+    }
+  });
+
   let finalProb = 0;
-  for(const k of Object.keys(w)) finalProb += scores[k] * (w[k] / totalW);
+  for(const k of Object.keys(w)) finalProb += (adjustedScores[k] || scores[k]) * (w[k] / totalW);
+
+
 
   // 一致性放大
   const activeScores = Object.keys(w).filter(k => w[k] > 0).map(k => scores[k]);
-  const allAgreeHigh = activeScores.filter(s => s >= 60).length >= Math.ceil(activeScores.length * 0.75);
-  const allAgreeLow = activeScores.filter(s => s <= 40).length >= Math.ceil(activeScores.length * 0.75);
-  if(allAgreeHigh) finalProb = finalProb * 1.12;
-  else if(allAgreeLow) finalProb = finalProb * 0.88;
+  const highCount = activeScores.filter(s => s >= 58).length;
+  const lowCount = activeScores.filter(s => s <= 42).length;
+  const dimN = activeScores.length;
+  if(highCount >= dimN) finalProb *= 1.20;
+  else if(highCount >= dimN*0.75) finalProb *= 1.12;
+  else if(lowCount >= dimN) finalProb *= 0.80;
+  else if(lowCount >= dimN*0.75) finalProb *= 0.88;
 
   // 離心力放大
   const distFrom50 = finalProb - 50;
-  finalProb = 50 + distFrom50 * 1.25;
+  finalProb = 50 + distFrom50 * 1.5;
 
   finalProb = Math.round(Math.max(8, Math.min(95, finalProb)));
 
