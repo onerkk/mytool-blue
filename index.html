@@ -26,6 +26,131 @@
 
         <!-- 視覺優化層（精準覆蓋，保留原有結構） -->
         <link rel="stylesheet" href="css/polish-theme.css?v=2.1.0">
+        <!-- UI/UX Hotfix Layer (Landing + Form Split + Result Summary) | HOTFIX-20260208-UIFLOW -->
+        <style>
+            /* === HOTFIX-20260208-UIFLOW (non-destructive additions) === */
+            .landing-section{
+                padding: 1.25rem 1rem 0.25rem;
+                max-width: 980px;
+                margin: 0 auto;
+            }
+            .landing-hero{
+                border: 1px solid rgba(212,175,55,0.22);
+                background: rgba(255,255,255,0.04);
+                border-radius: 16px;
+                padding: 1.25rem 1rem;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            }
+            .landing-hero h1{
+                font-size: 1.35rem;
+                margin: 0 0 0.5rem;
+                line-height: 1.35;
+            }
+            .landing-hero p{
+                margin: 0.35rem 0;
+                color: rgba(255,255,255,0.78);
+                line-height: 1.55;
+            }
+            .landing-bullets{
+                margin: 0.75rem 0 0.9rem;
+                padding-left: 1.15rem;
+                color: rgba(255,255,255,0.82);
+            }
+            .landing-bullets li{ margin: 0.25rem 0; }
+            .landing-cta-row{
+                display: flex;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+                align-items: center;
+                margin-top: 0.9rem;
+            }
+            .btn-hero{
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.85rem 1.05rem;
+                border-radius: 14px;
+                border: 1px solid rgba(212,175,55,0.45);
+                background: rgba(212,175,55,0.15);
+                color: #fff;
+                font-weight: 700;
+                cursor: pointer;
+                text-decoration: none;
+            }
+            .btn-hero:focus-visible{ outline: 2px solid rgba(212,175,55,0.85); outline-offset: 3px; }
+            .landing-trust{
+                font-size: 0.9rem;
+                color: rgba(255,255,255,0.68);
+            }
+            .form-advanced{
+                margin-top: 0.9rem;
+                border: 1px solid rgba(255,255,255,0.10);
+                border-radius: 14px;
+                background: rgba(255,255,255,0.03);
+                padding: 0.75rem 0.85rem;
+            }
+            .form-advanced > summary{
+                cursor: pointer;
+                font-weight: 700;
+                color: rgba(255,255,255,0.92);
+                list-style: none;
+            }
+            .form-advanced > summary::-webkit-details-marker{ display:none; }
+            .form-advanced .advanced-hint{
+                margin: 0.4rem 0 0.75rem;
+                color: rgba(255,255,255,0.65);
+                font-size: 0.9rem;
+            }
+            .term-chip{
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                width: 18px;
+                height: 18px;
+                border-radius: 999px;
+                border: 1px solid rgba(212,175,55,0.35);
+                color: rgba(212,175,55,0.95);
+                margin-left: 0.35rem;
+                font-size: 12px;
+                line-height: 1;
+                user-select: none;
+            }
+            .result-first-look{
+                border: 1px solid rgba(212,175,55,0.22);
+                background: rgba(255,255,255,0.04);
+                border-radius: 16px;
+                padding: 1rem 1rem;
+                margin-bottom: 0.85rem;
+            }
+            .result-first-look h3{
+                margin: 0 0 0.6rem;
+                font-size: 1.05rem;
+            }
+            .result-first-look .firstlook-row{
+                display:flex;
+                gap: 0.8rem;
+                flex-wrap: wrap;
+                align-items: center;
+            }
+            .firstlook-pill{
+                border: 1px solid rgba(255,255,255,0.12);
+                background: rgba(0,0,0,0.18);
+                border-radius: 999px;
+                padding: 0.45rem 0.75rem;
+                font-weight: 700;
+                color: rgba(255,255,255,0.92);
+            }
+            .firstlook-note{
+                margin-top: 0.55rem;
+                color: rgba(255,255,255,0.72);
+                line-height: 1.5;
+                font-size: 0.95rem;
+            }
+            /* Keep nav shop buttons from stealing attention on first screen (soften only) */
+            .nav-shop-buttons{ opacity: 0.88; }
+            /* === end HOTFIX === */
+        </style>
+
 
         <!-- 手機：單一捲動容器 #page-scroll，避免 body 捲動在部分機型失效 -->
         <script>
@@ -90,13 +215,34 @@
                 </div>
             </div>
     
+
+            <!-- Landing Section (First Screen) | HOTFIX-20260208-UIFLOW -->
+            <section id="landing-section" class="landing-section" aria-label="快速開始">
+                <div class="landing-hero">
+                    <h1><i class="fas fa-moon"></i> 靜月之光能量占卜儀：用「交叉比對」給你更穩的方向</h1>
+                    <p>這不是單一占卜結論，而是把【八字／梅花易數／塔羅】一起對照，輸出「可能性＋行動建議」。</p>
+                    <ul class="landing-bullets">
+                        <li>⏱ 約 2–3 分鐘完成（可跳過梅花／塔羅）</li>
+                        <li>📌 先給你「一句話結論」再提供完整拆解</li>
+                        <li>🧭 進階欄位可不填（時間／出生地／真太陽時校正）</li>
+                    </ul>
+                    <div class="landing-cta-row">
+                        <button type="button" class="btn-hero" id="btn-quick-start">
+                            <i class="fas fa-play"></i> 開始分析
+                        </button>
+                        <span class="landing-trust"><i class="fas fa-lock"></i> 本頁面為前端本地計算，不上傳個資（若你自行填寫客製表單除外）</span>
+                    </div>
+                </div>
+            </section>
+
             <section id="input-section" class="section active">
                 <h2><i class="fas fa-user-edit"></i> 個人資料輸入</h2>
                 <div class="form-container">
                     <form id="personal-form">
                         <div class="form-group">
                             <label for="name"><i class="fas fa-signature"></i> 姓名</label>
-                            <input type="text" id="name" placeholder="請輸入中文姓名" required autocomplete="name">
+                            <input type="text" id="name" placeholder="可留空（用於稱呼）" autocomplete="name">
+                            <small class="input-hint">不影響分析結果；想客製手鍊再填也可以</small>
                         </div>
     
                         <div class="form-group">
@@ -112,23 +258,27 @@
                                 </label>
                             </div>
                         </div>
-    
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="birth-date"><i class="fas fa-calendar"></i> 出生日期</label>
                                 <input type="date" id="birth-date" required placeholder="請選擇出生年月日">
                                 <small class="input-hint">例如：1990年6月15日</small>
                             </div>
+                        </div>
+
+                        <!-- Advanced Options (Optional) | HOTFIX-20260208-UIFLOW -->
+                        <details class="form-advanced" id="advanced-options">
+                            <summary><i class="fas fa-sliders-h"></i> 進階選項（可不填，想更準再開）</summary>
+                            <p class="advanced-hint">不確定就先不填：系統仍可分析；填越完整，時柱／起運與校正越精準。</p>
+
                             <div class="form-group">
                                 <label for="birth-time"><i class="fas fa-clock"></i> 出生時間</label>
-                                <input type="time" id="birth-time" placeholder="請選擇出生時間（不確定可留空，將以12:00計算）">
+                                <input type="time" id="birth-time" placeholder="不確定可留空，將以12:00計算">
                                 <small class="input-hint">請盡量精確，用於時柱計算（例如：10:30）</small>
                             </div>
-                        </div>
-    
-                        <div class="form-group">
+<div class="form-group">
                             <label for="birth-country"><i class="fas fa-globe-asia"></i> 出生地區</label>
-                            <select id="birth-country" required>
+                            <select id="birth-country">
                                 <option value="">選擇國家/地區</option>
                                 <option value="TW">台灣</option>
                                 <option value="CN">中國大陸</option>
@@ -140,7 +290,7 @@
     
                         <div class="form-group" id="city-container">
                             <label for="birth-city"><i class="fas fa-city"></i> 出生城市</label>
-                            <select id="birth-city" required>
+                            <select id="birth-city">
                                 <option value="">請先選擇地區</option>
                             </select>
                             <div id="city-coordinates" class="coordinate-info" style="display:none;">
@@ -651,6 +801,17 @@
                             <span class="input-summary-label"><i class="fas fa-info-circle"></i> 本次輸入</span>
                             <span id="input-summary-content" class="input-summary-text"></span>
                         </div>
+                        
+                        <!-- First Look Summary | HOTFIX-20260208-UIFLOW -->
+                        <div class="result-first-look" id="result-first-look" aria-label="一句話結論">
+                            <h3><i class="fas fa-bolt"></i> 一句話結論</h3>
+                            <div class="firstlook-row">
+                                <span class="firstlook-pill" id="firstlook-verdict">等待分析…</span>
+                                <span class="firstlook-pill" id="firstlook-prob">可能性：0%</span>
+                            </div>
+                            <div class="firstlook-note" id="firstlook-reason">完成分析後，這裡會先給你「方向＋一句理由」，下面再看完整拆解。</div>
+                        </div>
+
                         <div class="overview-card" id="section-answer">
                             <h3><i class="fas fa-bullseye"></i> 【問題】</h3>
                             <div class="question-display" id="question-display"></div>
@@ -1191,6 +1352,121 @@
             }
         </script>
         <!-- 在所有現有 script 標籤之後 -->
+        
         <script src="js/force-modern-ui.js?v=2.1.0"></script>
+
+        <!-- UI Flow Hotfix Script | HOTFIX-20260208-UIFLOW -->
+        <script>
+        (function(){
+            function qs(sel, root){ return (root || document).querySelector(sel); }
+            function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+            function safeText(el){ return (el && (el.textContent || el.innerText || '') || '').trim(); }
+
+            function updateProgressLabels(){
+                var steps = qsa('.progress-step');
+                if (!steps || !steps.length) return;
+                // Non-destructive: only change display text, keep data-step for logic
+                steps.forEach(function(s){
+                    var step = s.getAttribute('data-step');
+                    if (step === '1') s.textContent = '1️⃣ 基本資料（約30秒）';
+                    if (step === '2') s.textContent = '2️⃣ 卦象（可跳過）';
+                    if (step === '3') s.textContent = '3️⃣ 塔羅（可跳過）';
+                    if (step === '4') s.textContent = '4️⃣ 綜合結果';
+                });
+            }
+
+            function bindQuickStart(){
+                var btn = qs('#btn-quick-start');
+                var target = qs('#input-section');
+                if (!btn || !target) return;
+                btn.addEventListener('click', function(){
+                    try{
+                        target.scrollIntoView({behavior:'smooth', block:'start'});
+                        // focus first required field for keyboard users
+                        var bd = qs('#birth-date');
+                        if (bd) setTimeout(function(){ bd.focus(); }, 400);
+                    }catch(e){}
+                });
+            }
+
+            function addTermChips(){
+                // 3) Jargon softening: add small info chips with title text
+                var mapping = [
+                    { sel: '#solar-time-heading', title: '用出生地經度把鐘錶時間微調成「更接近太陽位置」的時間，用來提高時柱與起運計算精準度（不啟用也可分析）。' },
+                    { sel: 'label[for="birth-time"]', title: '不確定就留空：系統會用 12:00 估算；若你很在意時柱準度再補填。' },
+                    { sel: '.hexagram-details .detail-label', title: '這些是易經內部判讀欄位；你只要看「解讀」與「建議」即可。' }
+                ];
+                mapping.forEach(function(m){
+                    var el = qs(m.sel);
+                    if (!el) return;
+                    if (el.querySelector && el.querySelector('.term-chip')) return;
+                    var chip = document.createElement('span');
+                    chip.className = 'term-chip';
+                    chip.setAttribute('title', m.title);
+                    chip.setAttribute('aria-label', m.title);
+                    chip.textContent = 'ℹ︎';
+                    el.appendChild(chip);
+                });
+            }
+
+            function softenShopCtaEarly(){
+                // 6) Not part of 1-5, but keep non-invasive: do nothing here (reserved)
+            }
+
+            function verdictFromProbability(pct){
+                if (pct >= 70) return { label: '偏向可行 ✅', reason: '多維度指標偏一致，適合推進，但仍需按建議控風險。' };
+                if (pct >= 45) return { label: '中性偏可行 ⚖️', reason: '有利與阻力並存；照建議調整做法，勝率會上升。' };
+                if (pct >= 25) return { label: '偏保守 ⚠️', reason: '阻力訊號較多，建議先降低成本/試水溫，再談放大。' };
+                return { label: '不建議硬推 ⛔', reason: '目前象徵偏逆風；若要做，務必設停損與替代方案。' };
+            }
+
+            function bindFirstLookObserver(){
+                var probEl = qs('#overall-probability');
+                var ansEl = qs('#direct-answer');
+                var outVerdict = qs('#firstlook-verdict');
+                var outProb = qs('#firstlook-prob');
+                var outReason = qs('#firstlook-reason');
+                if (!probEl || !ansEl || !outVerdict || !outProb || !outReason) return;
+
+                function refresh(){
+                    var pctText = safeText(probEl).replace('%','');
+                    var pct = parseFloat(pctText);
+                    if (isNaN(pct)) pct = 0;
+                    var v = verdictFromProbability(pct);
+                    outVerdict.textContent = v.label;
+                    outProb.textContent = '可能性：' + Math.round(pct) + '%';
+
+                    // Use a short reason + (optional) first line from direct answer
+                    var direct = safeText(ansEl);
+                    var directOneLine = direct ? direct.split('\n')[0].slice(0, 60) : '';
+                    outReason.textContent = (directOneLine ? ('原因：' + directOneLine + ' / ') : '原因：') + v.reason;
+                }
+
+                // Mutation observer for dynamic update
+                var mo = new MutationObserver(function(){ refresh(); });
+                mo.observe(probEl, { childList:true, subtree:true, characterData:true });
+                mo.observe(ansEl, { childList:true, subtree:true, characterData:true });
+                refresh();
+            }
+
+            function relaxAdvancedRequiredSafety(){
+                // Ensure advanced fields are not blocking Step1
+                var country = qs('#birth-country');
+                var city = qs('#birth-city');
+                if (country) country.removeAttribute('required');
+                if (city) city.removeAttribute('required');
+            }
+
+            document.addEventListener('DOMContentLoaded', function(){
+                updateProgressLabels();
+                bindQuickStart();
+                addTermChips();
+                bindFirstLookObserver();
+                relaxAdvancedRequiredSafety();
+            });
+        })();
+        </script>
+
     </body>
     </html>
