@@ -2077,6 +2077,212 @@ function _runAnalysisV1_unused(){
 
 function getTypeLabel(t){return{love:'愛情',career:'事業',wealth:'財運',health:'健康',general:'綜合運勢',relationship:'人際',family:'家庭',other:'其他'}[t]||t}
 
+/* ═══════════════════════════════════════════════════════════
+   問答對齊引擎 — 解析使用者問句，產出針對性回答
+   ═══════════════════════════════════════════════════════════ */
+function parseQuestionIntent(question, type) {
+  const q = question || '';
+  const result = {
+    isYesNo: false,       // 是否是「會不會/能不能/好不好」
+    isWhen: false,        // 何時
+    isWho: false,         // 誰/什麼人
+    isAge: false,         // 幾歲/年齡
+    isHow: false,         // 如何/怎麼
+    isCompare: false,     // A還是B
+    isAmount: false,      // 多少/幾個
+    isDirection: false,   // 方向/去向/哪裡
+    isShould: false,      // 該不該/要不要
+    subject: '',          // 問題主題
+    optionA: '',          // 選項A
+    optionB: '',          // 選項B
+    keywords: [],         // 關鍵詞
+    rawQuestion: q
+  };
+
+  // 是非題
+  if(/[會能可有]不[會能可有]|是否|是不是|好不好|適合嗎|行嗎|可以嗎|嗎[？?]?$/.test(q)) result.isYesNo = true;
+  if(/該不該|要不要|應不應該|值不值/.test(q)) { result.isShould = true; result.isYesNo = true; }
+
+  // 時間題
+  if(/何時|什麼時候|幾時|多久|幾月|哪一年|今年|明年|幾年/.test(q)) result.isWhen = true;
+
+  // 年齡題
+  if(/幾歲|多大|年齡|多老|年紀/.test(q)) result.isAge = true;
+
+  // 誰/什麼人
+  if(/是誰|什麼人|什麼樣的人|哪[個位種]人|什麼類型|什麼個性/.test(q)) result.isWho = true;
+
+  // 如何題
+  if(/如何|怎麼|怎樣|方法|辦法|做法|策略/.test(q)) result.isHow = true;
+
+  // 選擇題
+  const compareMatch = q.match(/(.{1,15})[還是或](.{1,15})/);
+  if(compareMatch) {
+    result.isCompare = true;
+    result.optionA = compareMatch[1].trim();
+    result.optionB = compareMatch[2].trim();
+  }
+
+  // 數量題
+  if(/多少|幾[個位張條隻]/.test(q)) result.isAmount = true;
+
+  // 方向題
+  if(/哪裡|何處|去哪|方向|地點|城市|國家/.test(q)) result.isDirection = true;
+
+  // 提取關鍵詞
+  const kw = q.replace(/[？?！!，,。.、的了嗎呢吧啊喔哦]/g, '').trim();
+  result.keywords = kw.split(/\s+/).filter(w => w.length >= 2);
+
+  // 提取主題
+  if(type === 'love') result.subject = q.match(/另一半|對象|他|她|伴侶|男友|女友|老公|老婆|愛人|戀人|曖昧|前任/)?.[0] || '感情對象';
+  else if(type === 'career') result.subject = q.match(/工作|事業|公司|職業|升遷|轉職|創業|面試|老闆|同事/)?.[0] || '事業';
+  else if(type === 'wealth') result.subject = q.match(/錢|財|投資|股票|基金|房|薪水|收入|存款/)?.[0] || '財運';
+  else result.subject = kw.slice(0, 10);
+
+  return result;
+}
+
+function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
+  const dm = bazi.dm, el = bazi.dmEl, strong = bazi.strong;
+  const fav = bazi.fav || [];
+  const curDy = bazi.dayun ? bazi.dayun.find(d => d.isCurrent) : null;
+
+  // ── 針對「幾歲」類問題 ──
+  if(intent.isAge && type === 'love') {
+    const dmEl = bazi.dmEl;
+    // 根據五行推算對象年齡範圍
+    const ageHints = [];
+    if(bazi.shensha && bazi.shensha.includes('桃花')) ageHints.push('桃花星動，緣分來得自然');
+
+    // 從夫妻宮(紫微)推算
+    let partnerAge = '';
+    if(S.ziwei) {
+      const spouse = S.ziwei.palaces[2]; // 夫妻宮
+      const spStars = spouse ? spouse.stars.filter(s => s.type === 'major') : [];
+      if(spStars.some(s => s.name === '天梁')) partnerAge = '對方可能年齡較大（差距3-8歲以上），天梁入夫妻宮暗示對象年長穩重';
+      else if(spStars.some(s => s.name === '太陽' || s.name === '太陰')) partnerAge = '年齡差距不大（±3歲內），太陽/太陰暗示對象年齡相近';
+      else if(spStars.some(s => s.name === '貪狼')) partnerAge = '對方可能略大或略小（差距1-5歲），貪狼入夫妻宮異性緣多元';
+      else if(spStars.some(s => s.name === '天同')) partnerAge = '對方可能較年輕或心態年輕，天同帶童心';
+      else if(spStars.some(s => s.name === '武曲')) partnerAge = '對方年齡可能偏大或較成熟穩重，武曲帶剛毅之氣';
+      else if(spStars.some(s => s.name === '七殺' || s.name === '破軍')) partnerAge = '年齡差距可能較大，七殺/破軍暗示感情帶衝擊性';
+      else partnerAge = '年齡差距不明顯，以自然相處的緣分為主';
+    }
+
+    // 從塔羅推算
+    let tarotHint = '';
+    if(tarot.drawn.length >= 10) {
+      const core = tarot.drawn[0]; // 核心
+      const future = tarot.drawn[3]; // 未來
+      if(core.id === 4 || future.id === 4) tarotHint = '皇帝牌暗示對象可能年長、有主見';
+      else if(core.id === 3 || future.id === 3) tarotHint = '皇后牌暗示對象溫柔成熟，年齡相近或略長';
+      else if(core.id === 0 || future.id === 0) tarotHint = '愚者牌暗示對象心態年輕或年紀較輕';
+      else if(core.id === 9 || future.id === 9) tarotHint = '隱者牌暗示對象可能年長或閱歷豐富';
+    }
+
+    return `<p><strong>關於「另一半的年齡」：</strong></p>
+      <p>${partnerAge || '命盤顯示緣分自然，年齡不是決定因素。'}</p>
+      ${tarotHint ? `<p class="mt-sm">${tarotHint}</p>` : ''}
+      <p class="mt-sm text-dim">💡 命理能看出對象的特質傾向，但具體年齡難以精確到數字。上述分析來自紫微夫妻宮的主星特質，可作為參考方向。</p>`;
+  }
+
+  // ── 針對「何時」類問題 ──
+  if(intent.isWhen) {
+    let timing = '';
+    if(curDy) {
+      if(curDy.level.includes('大吉') || curDy.level.includes('中吉'))
+        timing += `目前大運 ${curDy.gz}（${curDy.level}），正處於有利時期，`;
+      else if(curDy.level.includes('凶'))
+        timing += `目前大運偏弱（${curDy.level}），時機尚需等待，`;
+    }
+
+    // 從流年推算
+    const lnList = bazi.liunian || [];
+    const goodYears = lnList.filter(ln => ln.level && (ln.level.includes('大吉') || ln.level.includes('中吉')));
+    if(goodYears.length) {
+      timing += `未來較好的年份：${goodYears.slice(0, 3).map(y => y.year + '年(' + y.level + ')').join('、')}`;
+    }
+
+    // 塔羅時間暗示
+    let tarotTime = '';
+    if(tarot.drawn.length >= 10) {
+      const nearFuture = tarot.drawn[5]; // 近期未來
+      if(nearFuture.isUp) tarotTime = `近期未來牌「${nearFuture.n}」正位，暗示事情在${type==='love'?'1-6個月內':'近期'}有進展的可能`;
+      else tarotTime = `近期未來牌「${nearFuture.n}」逆位，暗示可能需要更長時間醞釀`;
+    }
+
+    return `<p><strong>關於「何時」的判斷：</strong></p>
+      <p>${timing || '需結合大運流年判斷。'}</p>
+      ${tarotTime ? `<p class="mt-sm">${tarotTime}</p>` : ''}
+      <p class="mt-sm text-dim">💡 命理的時間指向是概率性的，不是精確到某天某月。上述是根據大運流年+塔羅近期牌的綜合判斷。</p>`;
+  }
+
+  // ── 針對「是誰/什麼樣的人」 ──
+  if(intent.isWho && type === 'love') {
+    let personDesc = '';
+    if(S.ziwei) {
+      const spouse = S.ziwei.palaces[2];
+      const spStars = spouse ? spouse.stars.filter(s => s.type === 'major') : [];
+      const descs = {
+        '紫微': '有領導力、氣場強、可能從事管理職',
+        '天府': '穩重大方、經濟基礎好、重面子',
+        '天機': '聰明靈活、善變、可能從事企劃或科技業',
+        '太陽': '開朗大方、正直、可能從事公職或教育',
+        '太陰': '溫柔細膩、內斂、有藝術氣質',
+        '武曲': '果斷務實、重財務、可能從事金融或軍警',
+        '天同': '溫和隨和、較安逸、心態年輕',
+        '天梁': '穩重正派、年長感、可能從事法律或醫療',
+        '貪狼': '多才多藝、桃花旺、社交能力強',
+        '巨門': '口才好、善分析、但可能話多或挑剔',
+        '天相': '溫和有禮、重外表、擅長協調',
+        '七殺': '果敢剛毅、獨立性強、感情來得快烈',
+        '破軍': '不按牌理出牌、開創型、感情變化大',
+        '廉貞': '外冷內熱、有野心、感情態度認真'
+      };
+      spStars.forEach(s => {
+        if(descs[s.name]) personDesc += `<p>• ${s.name}星在夫妻宮：${descs[s.name]}</p>`;
+      });
+      if(!spStars.length) personDesc = '<p>夫妻宮無主星，另一半性格較不突出或需借對宮判斷。</p>';
+    }
+
+    return `<p><strong>關於「另一半是什麼樣的人」：</strong></p>
+      <div style="margin:.5rem 0">${personDesc || '<p>需有完整出生時間才能精確判斷夫妻宮。</p>'}</div>
+      <p class="mt-sm text-dim">💡 以上根據紫微斗數夫妻宮主星推算，描述的是對象的核心特質傾向。</p>`;
+  }
+
+  // ── 針對「該不該/要不要」選擇題 ──
+  if(intent.isShould || intent.isCompare) {
+    let verdict = '';
+    if(prob >= 65) verdict = '各維度指標偏正面，從命理角度看<strong class="text-success">建議去做</strong>';
+    else if(prob >= 45) verdict = '指標好壞參半，建議<strong class="text-warn">謹慎評估後再決定</strong>';
+    else verdict = '指標偏不利，建議<strong class="text-danger">暫緩或選擇替代方案</strong>';
+
+    if(intent.isCompare && intent.optionA && intent.optionB) {
+      verdict += `<br>在「${intent.optionA}」vs「${intent.optionB}」之間，`;
+      if(prob >= 55) verdict += `目前氣場偏向前者（「${intent.optionA}」），但需結合實際情況。`;
+      else verdict += `兩者都有挑戰，建議以風險較低的選項優先。`;
+    }
+
+    return `<p><strong>關於你的決策：</strong></p><p>${verdict}</p>`;
+  }
+
+  // ── 針對「如何/怎麼」方法題 ──
+  if(intent.isHow) {
+    return null; // 使用預設的建議系統
+  }
+
+  // ── 針對「會不會/能不能」是非題 ──
+  if(intent.isYesNo) {
+    let answer = '';
+    if(prob >= 70) answer = `綜合五維度分析，<strong class="text-success">可能性偏高（${prob}%）</strong>，多數指標支持正面結果。`;
+    else if(prob >= 55) answer = `分析顯示<strong class="text-warn">有一定可能（${prob}%）</strong>，但需要努力配合。`;
+    else if(prob >= 40) answer = `分析顯示<strong class="text-warn">可能性偏低（${prob}%）</strong>，阻力不少，需加倍努力。`;
+    else answer = `目前各指標顯示<strong class="text-danger">可能性較低（${prob}%）</strong>，建議調整期望或策略。`;
+    return `<p>${answer}</p>`;
+  }
+
+  return null; // 無特殊問型，使用預設
+}
+
 function generateAnswer(type,prob,bazi,mh,tarot){
   const dm=bazi.dm,el=bazi.dmEl,strong=bazi.strong;
   const curDy=bazi.dayun.find(d=>d.isCurrent);
@@ -2223,6 +2429,15 @@ function generateAnswer(type,prob,bazi,mh,tarot){
 
   /* ═══ TEXT: 主要回答段落 ═══ */
   let text='';
+
+  // ── 問答對齊：先針對問句類型給出直接回應 ──
+  const intent = parseQuestionIntent(S.form ? S.form.question : '', type);
+  const qaResponse = generateQAResponse(intent, type, prob, bazi, mh, tarot);
+  if(qaResponse) {
+    text += `<div style="border-left:3px solid var(--c-gold,#d4af37);padding-left:1rem;margin-bottom:1rem">${qaResponse}</div>`;
+    text += `<div class="divider"></div>`;
+    text += `<p class="text-sm text-dim" style="margin-bottom:0.5rem">以下為完整的五維度命理依據：</p>`;
+  }
 
   // 開頭：八字定調
   text+=`<p>`;
@@ -2483,10 +2698,19 @@ function getTianfuIdx(ziweiIdx){
 
 // 農曆轉換（簡化：用地支推算近似農曆月日）
 function approxLunar(y,m,d){
-  // 簡化：取 solar 日減去近似值
-  const lunarMonth = ((m + 10) % 12) + 1; // 粗略
-  const lunarDay = ((d + 28) % 30) + 1;
-  return {month: lunarMonth, day: lunarDay};
+  // 使用 lunar-javascript 庫計算真實農曆
+  try {
+    if(typeof Lunar !== 'undefined' && Lunar.Solar) {
+      const solar = Lunar.Solar.fromYmd(y, m, d);
+      const lunar = solar.getLunar();
+      return { month: lunar.getMonth(), day: lunar.getDay() };
+    }
+  } catch(e) { console.warn('Lunar conversion failed:', e); }
+  // 降級方案：查表近似（比原方法更準確）
+  // 農曆月大約落後陽曆 1-2 個月
+  const approxMonth = m <= 2 ? (m + 10) : (m - 1);
+  const lm = ((approxMonth - 1) % 12) + 1;
+  return { month: lm, day: d <= 30 ? d : 29 };
 }
 
 function computeZiwei(year,month,day,hour,gender){
@@ -2698,6 +2922,113 @@ function renderZiwei(){
   zw.palaces.forEach(p=>p.stars.filter(s=>s.type==='sha').forEach(s=>shaStars.push(s.name+'('+p.name+')')));
   if(shaStars.length)reading+=`<p class="mt-sm text-warn"><strong>煞星：</strong>${shaStars.join('、')} — 注意相關宮位的挑戰</p>`;
 
+  // ── 問題類型對應宮位深度解讀 ──
+  const typeLabel2 = S.form ? ({'love':'愛情','career':'事業','wealth':'財運','health':'健康','general':'綜合','relationship':'人際','family':'家庭'}[S.form.type]||'綜合') : '綜合';
+  const typeToGong2 = {love:2,career:8,wealth:4,health:5,family:9,relationship:7,general:0};
+  const tgIdx = typeToGong2[S.form?S.form.type:'general'];
+  if(tgIdx !== undefined && tgIdx !== 0) {
+    const tgPalace = zw.palaces[tgIdx];
+    if(tgPalace) {
+      const tgMajors = tgPalace.stars.filter(s=>s.type==='major');
+      const tgMinors = tgPalace.stars.filter(s=>s.type==='minor');
+      const tgSha = tgPalace.stars.filter(s=>s.type==='sha');
+      reading += `<div class="divider"></div>`;
+      reading += `<p class="mt-sm"><strong>📌 針對「${typeLabel2}」— ${tgPalace.name}分析：</strong></p>`;
+      if(tgMajors.length) {
+        reading += `<p>主星：${tgMajors.map(s=>{
+          const info=ZW_MAJOR.find(m=>m.name===s.name);
+          const bright=s.brightness?' ('+s.brightness+')':'';
+          const hua=s.hua?' '+s.hua:'';
+          return s.name+bright+hua+(info?' — '+info.nature:'');
+        }).join('；')}</p>`;
+
+        // Type-specific star interpretation
+        const tgTypeAdvice = {
+          love: function(stars) {
+            const msgs = [];
+            if(stars.some(s=>s.name==='太陰')) msgs.push('太陰入夫妻宮，感情細膩溫柔，異性緣佳。');
+            if(stars.some(s=>s.name==='貪狼')) msgs.push('貪狼入夫妻宮，桃花旺盛，但感情容易波折。');
+            if(stars.some(s=>s.name==='天同')) msgs.push('天同入夫妻宮，感情和睦，相處舒適。');
+            if(stars.some(s=>s.name==='天機')) msgs.push('天機入夫妻宮，感情中多變，需要用心經營。');
+            if(stars.some(s=>s.name==='武曲')) msgs.push('武曲入夫妻宮，另一半務實能幹，但可能缺乏浪漫。');
+            if(stars.some(s=>s.name==='紫微')) msgs.push('紫微入夫妻宮，另一半有主見有能力，但可能較強勢。');
+            if(stars.some(s=>s.name==='七殺')) msgs.push('七殺入夫妻宮，感情來得快烈但有波動。');
+            if(stars.some(s=>s.name==='破軍')) msgs.push('破軍入夫妻宮，感情多變化，婚前可能經歷多段戀情。');
+            if(stars.some(s=>s.name==='太陽')) msgs.push('太陽入夫妻宮，另一半為人光明正大，社交活躍。');
+            if(stars.some(s=>s.name==='巨門')) msgs.push('巨門入夫妻宮，感情中需注意口舌爭執，溝通是關鍵。');
+            if(stars.some(s=>s.name==='天梁')) msgs.push('天梁入夫妻宮，另一半穩重可靠，年齡差距可能較大。');
+            if(stars.some(s=>s.name==='天相')) msgs.push('天相入夫妻宮，另一半溫和有禮，適合共同經營家庭。');
+            if(stars.some(s=>s.name==='天府')) msgs.push('天府入夫妻宮，另一半穩健有財，感情穩定。');
+            if(stars.some(s=>s.name==='廉貞')) msgs.push('廉貞入夫妻宮，感情熱烈但需防第三者。');
+            return msgs.length ? msgs.join('') : '';
+          },
+          career: function(stars) {
+            const msgs = [];
+            if(stars.some(s=>s.name==='紫微')) msgs.push('紫微入官祿宮，事業格局大，適合管理或獨立經營。');
+            if(stars.some(s=>s.name==='天府')) msgs.push('天府入官祿宮，事業穩定有發展，適合大機構。');
+            if(stars.some(s=>s.name==='太陽')) msgs.push('太陽入官祿宮，事業有公眾曝光度，適合公職或傳播業。');
+            if(stars.some(s=>s.name==='武曲')) msgs.push('武曲入官祿宮，適合金融、軍警或需要果斷的職業。');
+            if(stars.some(s=>s.name==='天機')) msgs.push('天機入官祿宮，適合策劃、企劃或變動性高的職業。');
+            if(stars.some(s=>s.name==='天同')) msgs.push('天同入官祿宮，工作偏安穩，適合服務業或教育。');
+            if(stars.some(s=>s.name==='七殺')) msgs.push('七殺入官祿宮，事業心強，適合獨當一面的角色。');
+            if(stars.some(s=>s.name==='破軍')) msgs.push('破軍入官祿宮，適合開創性工作，職業易有大變動。');
+            if(stars.some(s=>s.name==='貪狼')) msgs.push('貪狼入官祿宮，適合業務、公關或需要交際的工作。');
+            if(stars.some(s=>s.name==='巨門')) msgs.push('巨門入官祿宮，適合律師、教師或需要口才的工作。');
+            if(stars.some(s=>s.name==='天梁')) msgs.push('天梁入官祿宮，適合醫療、法律或公益事業。');
+            if(stars.some(s=>s.name==='廉貞')) msgs.push('廉貞入官祿宮，事業有野心，適合公務或管理。');
+            return msgs.length ? msgs.join('') : '';
+          },
+          wealth: function(stars) {
+            const msgs = [];
+            if(stars.some(s=>s.name==='武曲')) msgs.push('武曲入財帛宮，天生財星，正財運極佳，適合金融投資。');
+            if(stars.some(s=>s.name==='天府')) msgs.push('天府入財帛宮，財庫穩固，適合穩健理財。');
+            if(stars.some(s=>s.name==='太陰')) msgs.push('太陰入財帛宮，適合不動產投資，財富慢慢累積。');
+            if(stars.some(s=>s.name==='貪狼')) msgs.push('貪狼入財帛宮，偏財運佳但花費也大，需控制開支。');
+            if(stars.some(s=>s.name==='紫微')) msgs.push('紫微入財帛宮，大器晚成型，財富會隨地位提升。');
+            if(stars.some(s=>s.name==='天機')) msgs.push('天機入財帛宮，財來財去，需靈活理財。');
+            if(stars.some(s=>s.name==='太陽')) msgs.push('太陽入財帛宮，大方慷慨，正財運佳但不宜太慷慨。');
+            if(stars.some(s=>s.name==='巨門')) msgs.push('巨門入財帛宮，靠口才賺錢，但理財需更謹慎。');
+            if(stars.some(s=>s.name==='七殺')) msgs.push('七殺入財帛宮，財運起伏大，適合冒險型投資。');
+            if(stars.some(s=>s.name==='破軍')) msgs.push('破軍入財帛宮，財運大起大落，需建立儲蓄習慣。');
+            return msgs.length ? msgs.join('') : '';
+          },
+          health: function(stars) {
+            const msgs = [];
+            if(stars.some(s=>s.name==='天同')) msgs.push('天同入疾厄宮，先天體質不差，注意肥胖與腎臟。');
+            if(stars.some(s=>s.name==='天機')) msgs.push('天機入疾厄宮，注意肝膽、神經系統。');
+            if(stars.some(s=>s.name==='太陽')) msgs.push('太陽入疾厄宮，注意眼睛、血壓、心臟。');
+            if(stars.some(s=>s.name==='太陰')) msgs.push('太陰入疾厄宮，注意腎臟、婦科或泌尿系統。');
+            if(stars.some(s=>s.name==='武曲')) msgs.push('武曲入疾厄宮，注意呼吸系統、筋骨。');
+            if(stars.some(s=>s.name==='廉貞')) msgs.push('廉貞入疾厄宮，注意心臟、血液循環。');
+            if(stars.some(s=>s.name==='貪狼')) msgs.push('貪狼入疾厄宮，注意肝膽、過度消耗。');
+            return msgs.length ? msgs.join('') : '';
+          }
+        };
+        const typeAdviceFn = tgTypeAdvice[S.form?S.form.type:'general'];
+        if(typeAdviceFn) {
+          const advice = typeAdviceFn(tgMajors);
+          if(advice) reading += `<p class="mt-sm">${advice}</p>`;
+        }
+      } else {
+        reading += `<p>${tgPalace.name}無主星，需借對宮星曜判斷，此方面較不穩定，需主動經營。</p>`;
+      }
+      if(tgMinors.length) reading += `<p class="text-dim text-sm mt-sm">輔星：${tgMinors.map(s=>s.name).join('、')}${tgMinors.some(s=>['文昌','文曲','左輔','右弼'].includes(s.name))?' — 有輔星助力':''}</p>`;
+      if(tgSha.length) reading += `<p class="text-warn text-sm mt-sm">⚠ 煞星：${tgSha.map(s=>s.name).join('、')} — 此方面有挑戰需克服</p>`;
+
+      // 四化在此宮的影響
+      const huaInGong = zw.sihua.filter(h=>h.palace===tgPalace.name);
+      if(huaInGong.length) {
+        reading += `<p class="mt-sm">四化影響：${huaInGong.map(h=>`${h.star} ${h.hua}`).join('、')}</p>`;
+        huaInGong.forEach(h=>{
+          if(h.hua==='化祿') reading+=`<p class="text-sm" style="color:#4ade80">🟢 ${h.star}化祿入${tgPalace.name}，${typeLabel2}方面有先天福氣，容易有好的結果。</p>`;
+          if(h.hua==='化權') reading+=`<p class="text-sm text-gold">🟡 ${h.star}化權入${tgPalace.name}，${typeLabel2}方面有掌控力，但不宜太強勢。</p>`;
+          if(h.hua==='化科') reading+=`<p class="text-sm" style="color:#60a5fa">🔵 ${h.star}化科入${tgPalace.name}，${typeLabel2}方面有貴人助力，名聲好。</p>`;
+          if(h.hua==='化忌') reading+=`<p class="text-sm text-danger">🔴 ${h.star}化忌入${tgPalace.name}，${typeLabel2}方面需格外注意，容易有波折。</p>`;
+        });
+      }
+    }
+  }
+
   document.getElementById('d-ziwei-reading').innerHTML=reading||'<p class="text-dim">解讀生成中…</p>';
 }
 /* =============================================================
@@ -2886,25 +3217,61 @@ function runAnalysisV2(){
   const question=S.form.question;
 
   // ── 1. 八字評分 (0-100) ──
-  let baziScore=50;
-  if(b.strong){
-    if(b.ep[KE[b.dmEl]]>15)baziScore+=12;
-    if(b.ep[BE_KE[b.dmEl]]>10)baziScore+=8;
-  }else{
-    if(b.ep[BE_SHENG[b.dmEl]]>15)baziScore+=12;
-    if(b.ep[b.dmEl]>15)baziScore+=8;
+  let baziScore=45;
+  // 喜用神在命盤中的強度
+  const favEl=b.fav&&b.fav[0]?b.fav[0]:'';
+  const unfavEl=b.unfav&&b.unfav[0]?b.unfav[0]:'';
+  if(favEl&&b.ep[favEl]>20)baziScore+=18;
+  else if(favEl&&b.ep[favEl]>10)baziScore+=10;
+  else if(favEl)baziScore-=5;
+  if(unfavEl&&b.ep[unfavEl]>25)baziScore-=15;
+
+  // 身強弱 × 類型交叉
+  if(type==='wealth'){
+    const caiEl=typeof KE!=='undefined'?KE[b.dmEl]:'';
+    if(b.strong&&caiEl&&b.ep[caiEl]>15)baziScore+=15; // 身強扛財
+    else if(!b.strong&&caiEl&&b.ep[caiEl]>20)baziScore-=10; // 身弱財多壓身
+    else if(b.strong)baziScore+=5;
+    else baziScore-=5;
+  } else if(type==='career'){
+    if(b.strong)baziScore+=8; // 身強利事業
+    const guanEl=typeof KE!=='undefined'?KE[b.dmEl]:'';
+    if(guanEl&&b.ep[guanEl]>20)baziScore-=8; // 官殺太重壓力大
+  } else if(type==='love'){
+    if(!b.strong)baziScore+=3; // 身弱桃花多
+    if(b.shensha&&b.shensha.includes('桃花'))baziScore+=15;
+    if(b.shensha&&b.shensha.includes('紅鸞'))baziScore+=12;
+    if(b.shensha&&b.shensha.includes('孤辰'))baziScore-=10;
+    if(b.shensha&&b.shensha.includes('寡宿'))baziScore-=10;
+  } else if(type==='health'){
+    if(b.strong)baziScore+=10; // 身強體質好
+    else baziScore-=8;
   }
+
+  // 大運影響（加大幅度）
   const curDy=b.dayun.find(d=>d.isCurrent);
   if(curDy){
-    if(curDy.level==='大吉')baziScore+=15;
-    else if(curDy.level==='中吉')baziScore+=10;
-    else if(curDy.level.includes('凶'))baziScore-=10;
+    if(curDy.level==='大吉')baziScore+=22;
+    else if(curDy.level==='中吉')baziScore+=14;
+    else if(curDy.level==='小吉')baziScore+=6;
+    else if(curDy.level==='小凶')baziScore-=8;
+    else if(curDy.level==='中凶')baziScore-=16;
+    else if(curDy.level==='大凶')baziScore-=24;
   }
-  if(b.shensha.includes('天乙貴人'))baziScore+=5;
-  if(b.shensha.includes('文昌')&&(type==='career'))baziScore+=5;
-  if(b.shensha.includes('桃花')&&(type==='love'))baziScore+=8;
-  if(b.shensha.includes('驛馬')&&(type==='career'))baziScore+=3;
-  baziScore=Math.max(10,Math.min(95,baziScore));
+
+  // 神煞（更多項目）
+  if(b.shensha){
+    if(b.shensha.includes('天乙貴人'))baziScore+=8;
+    if(b.shensha.includes('天德'))baziScore+=5;
+    if(b.shensha.includes('月德'))baziScore+=5;
+    if(b.shensha.includes('文昌')&&type==='career')baziScore+=10;
+    if(b.shensha.includes('驛馬')&&type==='career')baziScore+=6;
+    if(b.shensha.includes('將星'))baziScore+=5;
+    if(b.shensha.includes('羊刃'))baziScore-=8;
+    if(b.shensha.includes('劫煞'))baziScore-=6;
+    if(b.shensha.includes('亡神'))baziScore-=5;
+  }
+  baziScore=Math.max(8,Math.min(95,baziScore));
 
   // ── 2. 梅花評分（體用生剋 + 卦象 + 動爻） ──
   let mhScore=50;
@@ -2963,32 +3330,44 @@ function runAnalysisV2(){
     tarotScore=Math.max(10,Math.min(90,tarotScore));
   }
 
-  // ── 4. 紫微評分 ──
-  let ziweiScore=50;
+  // ── 4. 紫微評分（命宮 + 類型宮位 加大幅度） ──
+  let ziweiScore=45;
   if(S.ziwei){
     const mingStars=S.ziwei.palaces[0].stars;
-    // 命宮有吉星加分
     const goodStars=['紫微','天府','天同','天梁','天相','太陽','太陰','文昌','文曲','左輔','右弼'];
-    const badStars=['擎羊','陀羅','火星','鈴星','七殺','破軍'];
+    const badStars=['擎羊','陀羅','火星','鈴星'];
+    const neutralStars=['七殺','破軍','貪狼']; // 中性星看組合
     mingStars.forEach(s=>{
-      if(goodStars.includes(s.name))ziweiScore+=5;
-      if(badStars.includes(s.name))ziweiScore-=3;
-      if(s.hua==='化祿')ziweiScore+=8;
-      if(s.hua==='化權')ziweiScore+=5;
-      if(s.hua==='化忌')ziweiScore-=8;
+      if(goodStars.includes(s.name))ziweiScore+=7;
+      if(badStars.includes(s.name))ziweiScore-=6;
+      if(s.hua==='化祿')ziweiScore+=12;
+      if(s.hua==='化權')ziweiScore+=8;
+      if(s.hua==='化科')ziweiScore+=6;
+      if(s.hua==='化忌')ziweiScore-=12;
+      // 亮度加成
+      if(s.brightness==='廟')ziweiScore+=4;
+      else if(s.brightness==='旺')ziweiScore+=2;
+      else if(s.brightness==='陷')ziweiScore-=5;
     });
-    // 問題對應宮位
+    // 問題對應宮位（權重更高）
     const typeToGong={love:2,career:8,wealth:4,health:5,family:9,relationship:7};
     const gongIdx=typeToGong[type];
-    if(gongIdx!==undefined){
+    if(gongIdx!==undefined&&S.ziwei.palaces[gongIdx]){
       const gongStars=S.ziwei.palaces[gongIdx].stars;
       gongStars.forEach(s=>{
-        if(goodStars.includes(s.name))ziweiScore+=4;
-        if(s.hua==='化祿')ziweiScore+=6;
-        if(s.hua==='化忌')ziweiScore-=6;
+        if(goodStars.includes(s.name))ziweiScore+=8;
+        if(badStars.includes(s.name))ziweiScore-=7;
+        if(s.hua==='化祿')ziweiScore+=15;
+        if(s.hua==='化權')ziweiScore+=10;
+        if(s.hua==='化科')ziweiScore+=8;
+        if(s.hua==='化忌')ziweiScore-=15;
+        if(s.brightness==='廟'||s.brightness==='旺')ziweiScore+=5;
+        else if(s.brightness==='陷')ziweiScore-=6;
       });
+      // 宮位無主星 = 偏弱
+      if(!gongStars.some(s=>s.type==='major'))ziweiScore-=10;
     }
-    ziweiScore=Math.max(10,Math.min(90,ziweiScore));
+    ziweiScore=Math.max(8,Math.min(95,ziweiScore));
   }
 
   // ── 5. 姓名學評分 ──
@@ -3009,13 +3388,30 @@ function runAnalysisV2(){
     }
   }
 
-  // ── 加權綜合 ──
+  // ── 加權綜合（含偏差修正） ──
   const w={bazi:0.30, meihua:S.meihua?0.20:0, tarot:S.tarot.drawn.length>=10?0.20:0, ziwei:S.ziwei?0.20:0, name:nameResult?0.10:0};
   const totalW=Object.values(w).reduce((a,b)=>a+b,0);
   const scores={bazi:baziScore,meihua:mhScore,tarot:tarotScore,ziwei:ziweiScore,name:nameScore};
   let finalProb=0;
   for(const k of Object.keys(w))finalProb+=scores[k]*(w[k]/totalW);
-  finalProb=Math.round(finalProb);
+
+  // 偏差修正：如果各維度「一致偏高/偏低」，加大偏離
+  const activeScores = Object.keys(w).filter(k=>w[k]>0).map(k=>scores[k]);
+  const avgScore = activeScores.reduce((a,b)=>a+b,0)/activeScores.length;
+  const allHigh = activeScores.every(s=>s>=55);
+  const allLow = activeScores.every(s=>s<=45);
+  const mostHigh = activeScores.filter(s=>s>=60).length >= activeScores.length*0.7;
+  const mostLow = activeScores.filter(s=>s<=40).length >= activeScores.length*0.7;
+  if(allHigh) finalProb = finalProb * 1.15; // 一致偏好 → 推高
+  else if(allLow) finalProb = finalProb * 0.85; // 一致偏差 → 壓低
+  else if(mostHigh) finalProb = finalProb * 1.08;
+  else if(mostLow) finalProb = finalProb * 0.92;
+
+  // 極端值放大：離50越遠，越加倍
+  const distFrom50 = finalProb - 50;
+  finalProb = 50 + distFrom50 * 1.3;
+
+  finalProb=Math.round(Math.max(8,Math.min(95,finalProb)));
 
   // ── Verdict ──
   let vlabel,vnote;
