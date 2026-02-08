@@ -831,6 +831,10 @@ html{scroll-behavior:smooth}
 .quiz-result-el{display:flex;gap:var(--sp-sm);justify-content:center;margin-bottom:var(--sp-md)}
 .quiz-result-desc{color:var(--c-text);line-height:1.6;margin-bottom:var(--sp-sm)}
 .quiz-result-actions{display:flex;gap:var(--sp-sm);justify-content:center;flex-wrap:wrap}
+.quiz-bazi-note{background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);margin:var(--sp-md) 0;font-size:0.85rem;color:var(--c-text-dim);line-height:1.5}
+.quiz-bazi-note strong{color:var(--c-gold)}
+.quiz-bazi-match{background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);margin:var(--sp-md) 0;font-size:0.85rem;color:rgba(74,222,128,0.9);line-height:1.5}
+.quiz-bazi-match strong{color:#4ade80}
 .review-carousel{min-height:120px;transition:opacity 0.3s}
 .review-card{border:1px solid rgba(212,175,55,0.12);border-radius:var(--r-md);padding:var(--sp-md);background:rgba(0,0,0,0.15)}
 .review-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-sm);flex-wrap:wrap;gap:var(--sp-xs)}
@@ -843,6 +847,39 @@ html{scroll-behavior:smooth}
 .nav-extra-tab.active{background:rgba(212,175,55,0.1);color:var(--c-gold);border-color:rgba(212,175,55,0.3)}
 .extra-section{padding:var(--sp-md) 0}
 .extra-section.hidden{display:none}
+
+/* ── Games ── */
+.game-progress{text-align:center;font-size:0.85rem;color:var(--c-gold);margin-bottom:var(--sp-md)}
+.game-question{text-align:center;font-size:1.15rem;margin-bottom:var(--sp-lg);line-height:1.5}
+.game-options{display:flex;flex-wrap:wrap;gap:var(--sp-sm);justify-content:center}
+.game-opt{padding:0.7rem 1.2rem;border:1px solid rgba(255,255,255,0.1);border-radius:var(--r-md);background:rgba(0,0,0,0.2);color:var(--c-text);cursor:pointer;font-size:0.95rem;transition:all 0.3s;min-width:60px}
+.game-opt:hover{border-color:rgba(212,175,55,0.4);background:rgba(212,175,55,0.06)}
+.game-opt.correct{border-color:#4ade80!important;background:rgba(34,197,94,0.15)!important;color:#4ade80!important}
+.game-opt.wrong{border-color:#f87171!important;background:rgba(239,68,68,0.15)!important;color:#f87171!important}
+.game-feedback{text-align:center;margin-top:var(--sp-md);font-size:1rem;min-height:1.5em}
+.fb-correct{color:#4ade80}.fb-wrong{color:#f87171}
+.game-result{text-align:center;padding:var(--sp-lg)}
+.game-result-icon{font-size:3rem;margin-bottom:var(--sp-sm)}
+.game-score-big{font-size:2.5rem;font-weight:900;color:var(--c-gold);margin:var(--sp-sm) 0}
+.game-actions{display:flex;gap:var(--sp-sm);justify-content:center}
+.zodiac-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:var(--sp-xs)}
+.zodiac-btn{display:flex;flex-direction:column;align-items:center;padding:var(--sp-sm);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-md);background:none;color:var(--c-text);cursor:pointer;transition:all 0.3s}
+.zodiac-btn:hover,.zodiac-btn.selected{border-color:var(--c-gold);background:rgba(212,175,55,0.08)}
+.zodiac-icon{font-size:1.5rem}.zodiac-name{font-size:0.7rem;margin-top:2px}
+.zodiac-selected{text-align:center;font-size:1.2rem;min-height:1.5em}
+.zodiac-result{text-align:center;padding:var(--sp-lg)}
+.zodiac-pair-icons{font-size:2.5rem;margin-bottom:var(--sp-sm)}
+.zodiac-match-score{font-size:2rem;font-weight:900;color:var(--c-gold)}
+.zodiac-match-level{font-size:1.1rem;color:var(--c-text);margin-bottom:var(--sp-sm)}
+.lucky-card{padding:var(--sp-lg)}
+.lucky-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-md)}
+.lucky-item{text-align:center;padding:var(--sp-md);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-md);background:rgba(0,0,0,0.1)}
+.lucky-label{font-size:0.75rem;color:var(--c-text-muted);margin-bottom:var(--sp-xs)}
+.lucky-value{font-size:1.1rem;font-weight:700;color:var(--c-text);display:flex;align-items:center;justify-content:center;gap:var(--sp-xs)}
+.lucky-num{font-size:2rem;color:var(--c-gold)}
+.lucky-sub{font-size:0.7rem;color:var(--c-text-dim);margin-top:2px}
+.lucky-color-dot{width:16px;height:16px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,0.2)}
+@media(max-width:640px){.zodiac-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
@@ -1151,6 +1188,9 @@ html{scroll-behavior:smooth}
   <div class="extra-nav">
     <button class="nav-extra-tab active" data-target="sec-daily-fortune">🎰 每日運勢</button>
     <button class="nav-extra-tab" data-target="sec-crystal-quiz">🧪 水晶配對</button>
+    <button class="nav-extra-tab" data-target="sec-wuxing-game">🎯 五行問答</button>
+    <button class="nav-extra-tab" data-target="sec-zodiac">💑 生肖配對</button>
+    <button class="nav-extra-tab" data-target="sec-lucky">🍀 今日幸運</button>
     <button class="nav-extra-tab" data-target="sec-encyclopedia">📖 水晶百科</button>
     <button class="nav-extra-tab" data-target="sec-achievements">🏆 成就徽章</button>
     <button class="nav-extra-tab" data-target="sec-reviews">💬 使用者好評</button>
@@ -1168,12 +1208,41 @@ html{scroll-behavior:smooth}
   <div class="extra-section hidden" id="sec-crystal-quiz">
     <div class="card">
       <div class="card-title"><i class="fas fa-flask"></i> 找出你的命定水晶</div>
-      <p class="text-sm text-dim mb-md">3 道直覺題，30 秒找到最適合你的水晶</p>
+      <p class="text-sm text-dim mb-md">3 道直覺題，30 秒找到最適合你的水晶（每次題目不同！）</p>
       <div id="crystal-quiz-content">
         <div class="text-center">
           <button class="btn btn-gold" onclick="startCrystalQuiz()"><i class="fas fa-play"></i> 開始測驗</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- 五行問答遊戲 -->
+  <div class="extra-section hidden" id="sec-wuxing-game">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-gamepad"></i> 五行命理問答挑戰</div>
+      <p class="text-sm text-dim mb-md">5 題隨機出題，測試你的命理知識！</p>
+      <div id="wuxing-game-content">
+        <div class="text-center">
+          <button class="btn btn-gold" onclick="startWuxingGame()"><i class="fas fa-play"></i> 開始挑戰</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 生肖配對 -->
+  <div class="extra-section hidden" id="sec-zodiac">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-heart"></i> 生肖配對測試</div>
+      <div id="zodiac-match-content"></div>
+    </div>
+  </div>
+
+  <!-- 今日幸運 -->
+  <div class="extra-section hidden" id="sec-lucky">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-clover"></i> 今日幸運指南</div>
+      <div id="lucky-gen-content"></div>
     </div>
   </div>
 
@@ -2447,7 +2516,7 @@ const CRYSTAL_DB={
   金:[
     {n:'白水晶',icon:'💎',el:'金',d:'淨化能量場，增強思維清晰度，萬能調和石。',wear:'左手佩戴，或放書桌/辦公桌。',taboo:'避免碰撞，定期淨化。'},
     {n:'黃鐵礦',icon:'✨',el:'金',d:'增強財運，提升自信與行動力。',wear:'放在錢包或辦公桌左上角。',taboo:'怕水，避免接觸液體。'},
-    {n:'白幽靈',icon:'🤍',el:'金',d:'淨化磁場，提升靈性直覺。',wear:'冥想時手持或佩戴。',taboo:'避免陽光直射。'},
+    {n:'白幽靈',icon:'💠',el:'金',d:'淨化磁場，提升靈性直覺。',wear:'冥想時手持或佩戴。',taboo:'避免陽光直射。'},
     {n:'鈦晶',icon:'⚡',el:'金',d:'招正財偏財，增強領導力與氣魄。',wear:'左手佩戴，面試/簽約時特別有效。',taboo:'磁場強，睡眠時建議取下。'}
   ],
   木:[
@@ -2471,7 +2540,7 @@ const CRYSTAL_DB={
   土:[
     {n:'黃水晶',icon:'💛',el:'土',d:'招偏財，提升自信與個人魅力。',wear:'左手佩戴，放錢包也可。',taboo:'避免陽光長時間直射，會褪色。'},
     {n:'虎眼石',icon:'🟤',el:'土',d:'增強決斷力，招財辟邪，穩定心性。',wear:'右手佩戴增強氣場。',taboo:'定期日光浴淨化（短時間）。'},
-    {n:'茶晶',icon:'🫖',el:'土',d:'排除負能量，增強穩定感。',wear:'佩戴或放在家中客廳。',taboo:'避免化學品。'},
+    {n:'茶晶',icon:'🍵',el:'土',d:'排除負能量，增強穩定感。',wear:'佩戴或放在家中客廳。',taboo:'避免化學品。'},
     {n:'瑪瑙',icon:'🟠',el:'土',d:'保護、穩定、增強耐力。',wear:'可隨身佩戴，適合各場合。',taboo:'質地堅硬但仍需小心碰撞。'}
   ]
 };
@@ -3079,7 +3148,7 @@ const PRODUCT_DB={
     {n:'虎眼石吊墜',cat:'吊墜',icon:'🟤',el:'土',d:'增強決斷力，招財辟邪',price:'$480-$1,500',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
      wear:'出門佩戴',img:''},
-    {n:'茶晶原石擺件',cat:'原石',icon:'🫖',el:'土',d:'排除負能量，穩定心性',price:'$680-$2,800',
+    {n:'茶晶原石擺件',cat:'原石',icon:'🍵',el:'土',d:'排除負能量，穩定心性',price:'$680-$2,800',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
      wear:'放客廳',img:''}
   ]
@@ -3374,11 +3443,11 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'金髮晶',cat:'手鏈',icon:'🌟',el:'金',d:'招財旺事業，金色髮絲象徵財富能量',price:'$761',wear:'左手佩戴招財',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'白幽靈',cat:'手鏈',icon:'🤍',el:'金',d:'淨化磁場，提升靈性直覺力',price:'$396',wear:'冥想時佩戴',
+    {n:'白幽靈',cat:'手鏈',icon:'💠',el:'金',d:'淨化磁場，提升靈性直覺力',price:'$396',wear:'冥想時佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'白阿賽設計款',cat:'手鏈',icon:'💫',el:'金',d:'高頻能量石，提升靈性連結與直覺',price:'$420',wear:'冥想/靜心時佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'透石膏',cat:'手鏈',icon:'🪨',el:'金',d:'淨化空間能量，帶來心靈平靜',price:'$358',wear:'放臥室或隨身',
+    {n:'透石膏',cat:'手鏈',icon:'🗿',el:'金',d:'淨化空間能量，帶來心靈平靜',price:'$358',wear:'放臥室或隨身',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   木: [
@@ -3398,7 +3467,7 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'綠龍晶',cat:'手鏈',icon:'🐉',el:'木',d:'天然龍紋，旺事業+護身辟邪',price:'$1,068-$2,028',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠檀木手鍊',cat:'手鏈',icon:'🪵',el:'木',d:'天然檀木清香，安神定氣，適合修行佩戴',price:'$224-$492',wear:'隨身佩戴',
+    {n:'綠檀木手鍊',cat:'手鏈',icon:'🌳',el:'木',d:'天然檀木清香，安神定氣，適合修行佩戴',price:'$224-$492',wear:'隨身佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'綠月光',cat:'手鏈',icon:'🌕',el:'木',d:'稀有綠色月光石，增強直覺+招好運',price:'$108',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
@@ -3454,11 +3523,11 @@ const REAL_PRODUCTS = {
   土: [
     {n:'黃水晶',cat:'手鏈',icon:'💛',el:'土',d:'招偏財首選！提升自信與個人魅力',price:'$233-$492',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'茶晶',cat:'手鏈',icon:'🫖',el:'土',d:'排除負能量，穩定心性，接地氣',price:'$684-$742',wear:'佩戴或放客廳',
+    {n:'茶晶',cat:'手鏈',icon:'🍵',el:'土',d:'排除負能量，穩定心性，接地氣',price:'$684-$742',wear:'佩戴或放客廳',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'虎眼石（藍）',cat:'手鏈',icon:'🐯',el:'土',d:'增強決斷力，招財辟邪，穩定心性',price:'$7,600',wear:'右手佩戴增氣場',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'阿拉善',cat:'手鏈',icon:'🪨',el:'土',d:'戈壁能量石，穩定+接地+增強耐力',price:'$281-$454',wear:'隨身佩戴',
+    {n:'阿拉善',cat:'手鏈',icon:'🗿',el:'土',d:'戈壁能量石，穩定+接地+增強耐力',price:'$281-$454',wear:'隨身佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'太極石設計款',cat:'手鏈',icon:'☯️',el:'土',d:'陰陽平衡之石，調和身心能量場',price:'$1,836',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
@@ -3466,9 +3535,9 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'大地瑪瑙手排',cat:'手鏈',icon:'🟤',el:'土',d:'大地能量，穩定踏實，增強耐力',price:'$300',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'鐵膽石手排',cat:'手鏈',icon:'🪨',el:'土',d:'極強接地能量，排負+穩定心性',price:'$185',wear:'右手佩戴',
+    {n:'鐵膽石手排',cat:'手鏈',icon:'🗿',el:'土',d:'極強接地能量，排負+穩定心性',price:'$185',wear:'右手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'白水茶晶設計款',cat:'手鏈',icon:'🤎',el:'土',d:'白水晶+茶晶組合，淨化+穩定雙效',price:'$506',wear:'左手佩戴',
+    {n:'白水茶晶設計款',cat:'手鏈',icon:'☕',el:'土',d:'白水晶+茶晶組合，淨化+穩定雙效',price:'$506',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   // 跨五行特殊商品
@@ -3526,9 +3595,9 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'星光草莓晶',cat:'手鏈',icon:'🍓',el:'火',d:'增強異性緣，帶來甜蜜戀愛機會',price:'$300-$454',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩色草莓晶',cat:'手鏈',icon:'🫐',el:'火',d:'多色草莓晶，全面提升人際與桃花運',price:'$608',wear:'左手佩戴',
+    {n:'彩色草莓晶',cat:'手鏈',icon:'🍇',el:'火',d:'多色草莓晶，全面提升人際與桃花運',price:'$608',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'摩根石',cat:'手鏈',icon:'🩷',el:'水',d:'高頻愛情石，溫柔療癒，吸引真愛',price:'$300',wear:'左手佩戴',
+    {n:'摩根石',cat:'手鏈',icon:'💗',el:'水',d:'高頻愛情石，溫柔療癒，吸引真愛',price:'$300',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ]
 };
@@ -3540,33 +3609,43 @@ function smartRecommend(bazi, type, maxItems){
   maxItems = maxItems || 6;
   const need = bazi.fav[0]; // 喜用神第一位
   const need2 = bazi.fav[1]; // 喜用神第二位
+  
+  // ** 關鍵修正：取得忌神列表，排除忌神五行的商品 **
+  const avoidEls = new Set();
+  if(bazi.unfav){
+    bazi.unfav.forEach(u => avoidEls.add(u));
+  }
+  
   const results = [];
   const seen = new Set();
 
+  function isAllowed(item){
+    // 五行「全」的商品永遠允許
+    if(item.el === '全') return true;
+    // 忌神五行的商品排除
+    if(avoidEls.has(item.el)) return false;
+    return true;
+  }
+
   function add(item, priority){
     if(seen.has(item.n)) return;
+    if(!isAllowed(item)) return; // 忌神排除
     seen.add(item.n);
     results.push({...item, _priority: priority||0});
   }
 
-  // 1) 問題類型特殊推薦（最高優先）
+  // 1) 問題類型特殊推薦（最高優先，但仍受忌神過濾）
   if(type==='love'){
     (REAL_PRODUCTS.love_special||[]).forEach(p=>add(p,100));
-    // 九尾狐項鍊
     (REAL_PRODUCTS.necklace||[]).filter(p=>(p.tags||[]).includes('愛情')).forEach(p=>add(p,90));
-    // 情侶對鍊
     (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('愛情')).forEach(p=>add(p,85));
   }
   if(type==='career'){
-    // 鈦晶 + 金太陽 + 太陽石
     (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('事業')).forEach(p=>add(p,100));
-    // 鈦晶手排
     (REAL_PRODUCTS.金||[]).filter(p=>p.n.includes('鈦晶')).forEach(p=>add(p,95));
-    // 龍牌
     (REAL_PRODUCTS.necklace||[]).filter(p=>(p.tags||[]).includes('事業')).forEach(p=>add(p,85));
   }
   if(type==='wealth'){
-    // 黃水晶 + 綠幽靈 + 金太陽 + 鈦晶
     (REAL_PRODUCTS.土||[]).filter(p=>p.n.includes('黃水晶')).forEach(p=>add(p,100));
     (REAL_PRODUCTS.木||[]).filter(p=>p.n.includes('綠幽靈')||p.n.includes('抹茶')).forEach(p=>add(p,95));
     (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('財運')).forEach(p=>add(p,90));
@@ -3575,27 +3654,26 @@ function smartRecommend(bazi, type, maxItems){
   if(type==='health'){
     (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('健康')).forEach(p=>add(p,100));
     (REAL_PRODUCTS.火||[]).filter(p=>p.n.includes('紫水晶')).forEach(p=>add(p,95));
-    // 茶晶穩定
     (REAL_PRODUCTS.土||[]).filter(p=>p.n.includes('茶晶')).forEach(p=>add(p,85));
   }
 
-  // 2) 喜用神五行商品
+  // 2) 喜用神五行商品（一定是安全的，因為喜用神不會是忌神）
   const elProducts = REAL_PRODUCTS[need] || [];
   elProducts.forEach(p => add(p, 70));
   if(need2 && REAL_PRODUCTS[need2]){
     REAL_PRODUCTS[need2].slice(0,3).forEach(p => add(p, 50));
   }
 
-  // 3) 五行設計款 / 超七（全方位）
+  // 3) 五行設計款 / 超七（全方位，el='全' 永遠允許）
   (REAL_PRODUCTS.special||[]).filter(p=>p.el==='全').forEach(p=>add(p,40));
 
-  // 4) 辟邪類（凶的時候優先）
+  // 4) 辟邪類（凶的時候優先，也要過濾忌神）
   const prob = parseFloat((document.getElementById('r-vprob')||{}).textContent)||50;
   if(prob < 40){
     (REAL_PRODUCTS.protection||[]).forEach(p=>add(p,80));
   }
 
-  // 5) 項鍊類補充
+  // 5) 項鍊類補充（過濾忌神）
   (REAL_PRODUCTS.necklace||[]).forEach(p=>add(p,20));
 
   // Sort by priority desc, then pick top N
@@ -4281,7 +4359,8 @@ function closeCrystalDetail(){
 /* =============================================================
    FEATURE 4: 水晶配對測驗
    ============================================================= */
-const QUIZ_QUESTIONS = [
+/* === 題庫：15題隨機抽3題，每次不同組合 === */
+const QUIZ_BANK = [
   {q:'面對壓力時，你通常會？',opts:[
     {t:'深呼吸，冷靜分析',el:'水',trait:'理性'},
     {t:'找朋友聊聊傾訴',el:'木',trait:'社交'},
@@ -4299,13 +4378,87 @@ const QUIZ_QUESTIONS = [
     {t:'粉紅 / 紫色 — 浪漫',el:'火',trait:'浪漫'},
     {t:'綠色 / 藍色 — 寧靜',el:'木',trait:'寧靜'},
     {t:'金色 / 棕色 — 大地',el:'土',trait:'踏實'}
+  ]},
+  {q:'朋友眼中的你是？',opts:[
+    {t:'值得信賴的靠山',el:'土',trait:'可靠'},
+    {t:'點子王、創意多',el:'火',trait:'創意'},
+    {t:'溫柔體貼的傾聽者',el:'水',trait:'溫柔'},
+    {t:'行動派的領袖',el:'金',trait:'果斷'}
+  ]},
+  {q:'週末最想做的事？',opts:[
+    {t:'宅在家追劇充電',el:'水',trait:'內斂'},
+    {t:'出門走走接觸大自然',el:'木',trait:'自然'},
+    {t:'約朋友聚餐聊天',el:'火',trait:'熱情'},
+    {t:'整理房間或做計畫',el:'金',trait:'條理'}
+  ]},
+  {q:'你覺得自己最需要補足的是？',opts:[
+    {t:'自信心和行動力',el:'火',trait:'勇氣'},
+    {t:'耐心和穩定感',el:'土',trait:'沉穩'},
+    {t:'人際關係和桃花',el:'木',trait:'人緣'},
+    {t:'財運和事業動力',el:'金',trait:'進取'}
+  ]},
+  {q:'選一個最能代表你心情的天氣？',opts:[
+    {t:'晴空萬里',el:'火',trait:'開朗'},
+    {t:'微風徐徐的陰天',el:'金',trait:'沉靜'},
+    {t:'綿綿細雨',el:'水',trait:'敏感'},
+    {t:'雨後彩虹',el:'木',trait:'希望'}
+  ]},
+  {q:'挑一個數字？',opts:[
+    {t:'1 — 開始',el:'木',trait:'起點'},
+    {t:'3 — 變化',el:'火',trait:'變化'},
+    {t:'6 — 順利',el:'金',trait:'圓滿'},
+    {t:'8 — 豐收',el:'土',trait:'豐盛'}
+  ]},
+  {q:'你最害怕失去的是？',opts:[
+    {t:'健康',el:'土',trait:'務實'},
+    {t:'自由',el:'水',trait:'獨立'},
+    {t:'愛情 / 家人',el:'木',trait:'重情'},
+    {t:'事業成就',el:'金',trait:'野心'}
+  ]},
+  {q:'買東西時你最看重？',opts:[
+    {t:'CP值高不高',el:'金',trait:'精明'},
+    {t:'外型好不好看',el:'火',trait:'美感'},
+    {t:'品質耐不耐用',el:'土',trait:'品質'},
+    {t:'有沒有特殊意義',el:'水',trait:'寓意'}
+  ]},
+  {q:'如果有一種超能力，你選？',opts:[
+    {t:'讀心術',el:'水',trait:'洞察'},
+    {t:'時間暫停',el:'金',trait:'掌控'},
+    {t:'瞬間移動',el:'火',trait:'自由'},
+    {t:'治癒能力',el:'木',trait:'慈悲'}
+  ]},
+  {q:'你的睡眠品質如何？',opts:[
+    {t:'秒睡到天亮',el:'土',trait:'安穩'},
+    {t:'偶爾失眠想太多',el:'水',trait:'多慮'},
+    {t:'容易被吵醒',el:'金',trait:'敏銳'},
+    {t:'夢很多很精彩',el:'火',trait:'想像力'}
+  ]},
+  {q:'選一種你喜歡的味道？',opts:[
+    {t:'檀香 / 木質',el:'木',trait:'沉穩'},
+    {t:'花香 / 玫瑰',el:'火',trait:'浪漫'},
+    {t:'海洋 / 清新',el:'水',trait:'清爽'},
+    {t:'茶香 / 大地',el:'土',trait:'內斂'}
+  ]},
+  {q:'你對「命運」的看法？',opts:[
+    {t:'三分天注定，七分靠努力',el:'火',trait:'積極'},
+    {t:'順其自然就好',el:'水',trait:'隨和'},
+    {t:'做好準備，等待時機',el:'金',trait:'謀略'},
+    {t:'相信因果，種善因得善果',el:'木',trait:'善良'}
+  ]},
+  {q:'工作中最讓你有成就感的事？',opts:[
+    {t:'完成挑戰性的專案',el:'火',trait:'挑戰'},
+    {t:'得到主管或客戶認可',el:'金',trait:'榮譽'},
+    {t:'幫助同事解決問題',el:'木',trait:'助人'},
+    {t:'存到目標數字的錢',el:'土',trait:'累積'}
   ]}
 ];
 
-let quizState = {step:0, answers:[]};
+let quizState = {step:0, answers:[], questions:[]};
 
 function startCrystalQuiz(){
-  quizState = {step:0, answers:[]};
+  // Shuffle and pick 3 random questions
+  const shuffled = [...QUIZ_BANK].sort(()=>Math.random()-0.5);
+  quizState = {step:0, answers:[], questions: shuffled.slice(0,3)};
   renderQuizStep();
 }
 
@@ -4313,15 +4466,16 @@ function renderQuizStep(){
   const container = document.getElementById('crystal-quiz-content');
   if(!container) return;
   
-  if(quizState.step >= QUIZ_QUESTIONS.length){
+  if(quizState.step >= quizState.questions.length){
     showQuizResult();
     return;
   }
   
-  const q = QUIZ_QUESTIONS[quizState.step];
+  const q = quizState.questions[quizState.step];
+  const total = quizState.questions.length;
   container.innerHTML = `
-    <div class="quiz-progress">第 ${quizState.step+1}/${QUIZ_QUESTIONS.length} 題</div>
-    <div class="quiz-progress-bar"><div class="quiz-fill" style="width:${(quizState.step/QUIZ_QUESTIONS.length)*100}%"></div></div>
+    <div class="quiz-progress">第 ${quizState.step+1}/${total} 題</div>
+    <div class="quiz-progress-bar"><div class="quiz-fill" style="width:${(quizState.step/total)*100}%"></div></div>
     <h4 class="quiz-question">${q.q}</h4>
     <div class="quiz-options">${q.opts.map((o,i)=>`
       <button class="quiz-option" onclick="answerQuiz(${i})">
@@ -4331,7 +4485,7 @@ function renderQuizStep(){
 }
 
 function answerQuiz(idx){
-  const q = QUIZ_QUESTIONS[quizState.step];
+  const q = quizState.questions[quizState.step];
   quizState.answers.push(q.opts[idx]);
   quizState.step++;
   renderQuizStep();
@@ -4341,16 +4495,32 @@ function showQuizResult(){
   const container = document.getElementById('crystal-quiz-content');
   if(!container) return;
   
-  // Count elements
+  // Count quiz elements
   const elCount = {};
   quizState.answers.forEach(a=>{
     elCount[a.el] = (elCount[a.el]||0) + 1;
   });
-  const topEl = Object.entries(elCount).sort((a,b)=>b[1]-a[1])[0][0];
+  const quizTopEl = Object.entries(elCount).sort((a,b)=>b[1]-a[1])[0][0];
   const traits = quizState.answers.map(a=>a.trait);
   
-  // Find best matching crystal
-  const candidates = REAL_PRODUCTS[topEl] || REAL_PRODUCTS['土'];
+  // ** 核心修改：以八字喜用神為主，測驗結果為輔 **
+  let targetEl = quizTopEl;
+  let hasBazi = false;
+  let baziNote = '';
+  
+  if(typeof S !== 'undefined' && S.bazi && S.bazi.fav && S.bazi.fav.length){
+    hasBazi = true;
+    const favEl = S.bazi.fav[0]; // 第一喜用神
+    targetEl = favEl; // 以八字為準
+    if(favEl !== quizTopEl){
+      baziNote = `<div class="quiz-bazi-note"><i class="fas fa-info-circle"></i> 測驗顯示你偏好「${quizTopEl}行」，但你的八字喜用神是「<strong>${favEl}行</strong>」。依命理原則，我們以喜用神為你推薦最適合的水晶。</div>`;
+    } else {
+      baziNote = `<div class="quiz-bazi-match"><i class="fas fa-check-circle"></i> 你的直覺與八字完全吻合！喜用神「<strong>${favEl}行</strong>」正是你最需要的能量。</div>`;
+    }
+  }
+  
+  // Find crystal from target element
+  const candidates = REAL_PRODUCTS[targetEl] || REAL_PRODUCTS['土'];
   const pick = candidates[Math.floor(Math.random()*Math.min(3,candidates.length))];
   
   container.innerHTML = `
@@ -4362,8 +4532,10 @@ function showQuizResult(){
         <span class="el-tag el-${pick.el}">${pick.el}行</span>
         <span class="tag tag-gold">${pick.cat}</span>
       </div>
+      ${baziNote}
       <p class="quiz-result-desc">${pick.d}</p>
       <p class="quiz-result-traits text-sm text-dim">你的特質：${traits.join(' · ')}</p>
+      ${!hasBazi ? '<p class="text-xs text-muted mt-sm"><i class="fas fa-lightbulb"></i> 提示：先完成「八字占卜」再做測驗，結果會更精準！</p>' : ''}
       <div class="quiz-result-actions mt-md">
         <a href="${pick.shopee}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 去蝦皮擁有它</a>
         <button class="btn btn-outline" onclick="startCrystalQuiz()"><i class="fas fa-redo"></i> 再測一次</button>
@@ -4389,14 +4561,21 @@ function shareQuizResult(crystal, traits){
    FEATURE 5: 好評輪播
    ============================================================= */
 const REVIEWS = [
-  {name:'小雨',city:'台北',crystal:'粉晶手鏈',stars:5,text:'戴了粉晶之後真的有人跟我搭話！雖然不確定是不是水晶的功勞，但心情變好是真的 💕',time:'2週前'},
-  {name:'阿凱',city:'高雄',crystal:'鈦晶手排',stars:5,text:'面試前特地戴上，結果那天超有自信，順利拿到 offer！已經回購第二條送老爸。',time:'1個月前'},
-  {name:'Mei',city:'台中',crystal:'黃水晶',stars:5,text:'朋友推薦的招財水晶，戴了一個月後中了發票 200 元哈哈，小確幸！',time:'3週前'},
-  {name:'曉曉',city:'新竹',crystal:'紫水晶',stars:5,text:'睡眠真的有改善！以前翻來覆去，現在放枕頭旁很快就入睡了。',time:'5天前'},
-  {name:'大維',city:'桃園',crystal:'綠幽靈',stars:5,text:'老闆突然給加薪，雖然可能跟水晶沒有直接關係，但感覺運氣變好了。',time:'2週前'},
-  {name:'小羽',city:'台南',crystal:'海藍寶',stars:5,text:'報告簡報那天戴著，講得比平時流利很多，同事都問我吃了什麼。',time:'1週前'},
-  {name:'Vivian',city:'嘉義',crystal:'彩超七',stars:5,text:'送自己的生日禮物，超美的！而且最近好像什麼事都比較順。',time:'4天前'},
-  {name:'阿翔',city:'屏東',crystal:'黑曜石心經',stars:5,text:'去廟裡拜拜特地戴，安心感很夠。磨砂質感摸起來也很舒服。',time:'10天前'}
+  {name:'eicheuq8h7',city:'',crystal:'客製款 頂級銀曜石 銀鱗手鍊',stars:5,text:'會配合你的五行及預算去給你全方位建議，配好的手鍊也非常好看，推薦各位',time:'2025/12/29'},
+  {name:'l5v3e74kf8',city:'',crystal:'鋼鐵防禦 頂級天然鐵膽石',stars:5,text:'CP值：讚',time:'2025/12/17'},
+  {name:'yeh552798',city:'',crystal:'天然 華青石 手鍊 10mm',stars:5,text:'二色性 維京人的羅盤 指引方向',time:'2025/12/11'},
+  {name:'jfc16888',city:'',crystal:'天然龍宮舍利桶珠手鍊',stars:5,text:'收到商品包裝良好，送貨快速，這款桶珠手鍊還蠻喜歡的，有需要會再回購看看其他商品……',time:'2025/12/07'},
+  {name:'tasiong109',city:'',crystal:'天然龍宮舍利桶珠手鍊',stars:5,text:'完美品項 如商品照片 實物更加美 閃閃 更是服務超好 回應超快 寄件也快速 很完美的一次購物體驗 大推呀！',time:'2025/12/01'},
+  {name:'mandytseng0511',city:'',crystal:'天鐵設計款 五行手鍊 藍虎眼 海藍寶',stars:5,text:'感謝賣家，針對個人的五行缺乏的部分做設計款補足，溝通也很順暢，推薦給大家！',time:'2025/11/28'},
+  {name:'fayefang20',city:'',crystal:'頂級 黑碧璽三圈 6mm+',stars:5,text:'Black 電氣石 擋煞 辟邪 防小人 能量手鍊 穩定情緒 接地',time:'2025/11/20'},
+  {name:'c9301115',city:'',crystal:'頂級 佛眼 龍宮舍利 10mm+',stars:5,text:'很好看起來很好很有品質我很喜歡，下次有機會會再回購',time:'2025/11/20'},
+  {name:'yct585',city:'',crystal:'巨無霸 大地瑪瑙手排 22mm',stars:5,text:'本來不想寫評價，看到老闆貼心的問候，給予肯定，雙11活動所有東西都可以免運，就瘋狂地買，沒想到這大地瑪瑙這麼這麼的美，美到覺得自己好幸運可以買到，感恩所有美好的事物和人都能得到祝福！值得推薦的好賣家！',time:'2025/11/16'},
+  {name:'lovebl927',city:'',crystal:'天然 薔薇輝石 手鍊 12mm',stars:5,text:'出貨超快，很美的薔薇🌹 開箱比想像中更滿意！實體很讚，賣家經營用心~會推薦朋友購買！',time:'2025/11/13'},
+  {name:'jesscia985',city:'',crystal:'天然 頂級 白水晶 鑽切手排 14mm',stars:5,text:'白水晶之王',time:'2026/01/29'},
+  {name:'jesscia985',city:'',crystal:'頂級咖啡鈦晶 太陽花手排 14mm',stars:5,text:'賣家很 nice，鈦晶手排與白水晶手排都超美的，包裝超特別，防護力超強，物流也超神速，總之，一整個就是 "超 讚"',time:'2026/01/29'},
+  {name:'yenrensu',city:'',crystal:'天然 咖啡鈦晶 手排 13mm',stars:5,text:'貓眼 鋼鈦晶 招財 旺事業 避邪 擋煞 低調奢華 復古金氣質',time:'2026/01/19'},
+  {name:'liudfu',city:'',crystal:'泰國 黃龍宮舍利手鍊 11mm',stars:5,text:'用心包裝溝通良好的賣家😍快速出貨高cp 值的好賣家值得推薦大家一起來賣家逛逛購買，給5星好評喔',time:'2025/10/21'},
+  {name:'liudfu',city:'',crystal:'泰國 黃龍宮舍利手鍊 13mm',stars:5,text:'好用心的包裝超愛的😍快速出貨高cp 值的好賣家值得推薦大家一起來賣家逛逛購買，給5星好評喔',time:'2025/10/21'}
 ];
 
 let reviewIdx = 0;
@@ -4411,7 +4590,7 @@ function initReviewCarousel(){
         <div class="review-card">
           <div class="review-header">
             <span class="review-stars">${'⭐'.repeat(r.stars)}</span>
-            <span class="review-meta">${r.name} · ${r.city} · ${r.time}</span>
+            <span class="review-meta">${r.name}${r.city?' · '+r.city:''} · ${r.time}</span>
           </div>
           <p class="review-text">「${r.text}」</p>
           <div class="review-product">
@@ -4498,5 +4677,276 @@ document.addEventListener('DOMContentLoaded', function(){
       section.scrollIntoView({behavior:'smooth',block:'start'});
     });
   });
+});
+/* =============================================================
+   命理小遊戲 1: 五行猜猜看
+   ============================================================= */
+const WUXING_QUIZ_BANK = [
+  {q:'「甲」屬於哪個五行？',a:'木',opts:['金','木','水','火','土']},
+  {q:'「丙」屬於哪個五行？',a:'火',opts:['金','木','水','火','土']},
+  {q:'「庚」屬於哪個五行？',a:'金',opts:['金','木','水','火','土']},
+  {q:'「壬」屬於哪個五行？',a:'水',opts:['金','木','水','火','土']},
+  {q:'「己」屬於哪個五行？',a:'土',opts:['金','木','水','火','土']},
+  {q:'木生什麼？',a:'火',opts:['金','木','水','火','土']},
+  {q:'火生什麼？',a:'土',opts:['金','木','水','火','土']},
+  {q:'金生什麼？',a:'水',opts:['金','木','水','火','土']},
+  {q:'水生什麼？',a:'木',opts:['金','木','水','火','土']},
+  {q:'土生什麼？',a:'金',opts:['金','木','水','火','土']},
+  {q:'水克什麼？',a:'火',opts:['金','木','水','火','土']},
+  {q:'木克什麼？',a:'土',opts:['金','木','水','火','土']},
+  {q:'火克什麼？',a:'金',opts:['金','木','水','火','土']},
+  {q:'金克什麼？',a:'木',opts:['金','木','水','火','土']},
+  {q:'土克什麼？',a:'水',opts:['金','木','水','火','土']},
+  {q:'子時是幾點到幾點？',a:'23-01',opts:['23-01','01-03','05-07','11-13']},
+  {q:'午時是幾點到幾點？',a:'11-13',opts:['09-11','11-13','13-15','07-09']},
+  {q:'寅時是幾點到幾點？',a:'03-05',opts:['01-03','03-05','05-07','07-09']},
+  {q:'紫水晶屬於哪個五行？',a:'火',opts:['金','木','水','火','土']},
+  {q:'黃水晶屬於哪個五行？',a:'土',opts:['金','木','水','火','土']},
+  {q:'綠幽靈屬於哪個五行？',a:'木',opts:['金','木','水','火','土']},
+  {q:'海藍寶屬於哪個五行？',a:'水',opts:['金','木','水','火','土']},
+  {q:'鈦晶屬於哪個五行？',a:'金',opts:['金','木','水','火','土']},
+  {q:'「比肩」的十神關係是？',a:'同我',opts:['生我','同我','我生','我克','克我']},
+  {q:'「正財」的十神關係是？',a:'我克',opts:['生我','同我','我生','我克','克我']},
+  {q:'塔羅牌「愚者」的編號是？',a:'0',opts:['0','1','21','22']},
+  {q:'塔羅大牌共有幾張？',a:'22',opts:['20','21','22','78']},
+  {q:'八字的「日主」指的是？',a:'日柱天干',opts:['年柱天干','月柱天干','日柱天干','時柱天干']},
+  {q:'「坤」卦代表什麼？',a:'地',opts:['天','地','水','火']},
+  {q:'「乾」卦代表什麼？',a:'天',opts:['天','地','山','澤']}
+];
+
+let wxGame = {score:0, total:0, current:null, answered:false};
+
+function startWuxingGame(){
+  wxGame = {score:0, total:0, current:null, answered:false, questions:[]};
+  // Pick 5 random questions
+  const shuffled = [...WUXING_QUIZ_BANK].sort(()=>Math.random()-0.5);
+  wxGame.questions = shuffled.slice(0, 5);
+  nextWuxingQ();
+}
+
+function nextWuxingQ(){
+  const container = document.getElementById('wuxing-game-content');
+  if(!container) return;
+  
+  if(wxGame.total >= wxGame.questions.length){
+    showWuxingResult();
+    return;
+  }
+  
+  wxGame.answered = false;
+  wxGame.current = wxGame.questions[wxGame.total];
+  const q = wxGame.current;
+  
+  container.innerHTML = `
+    <div class="game-progress">第 ${wxGame.total+1}/${wxGame.questions.length} 題　得分：${wxGame.score}</div>
+    <h4 class="game-question">${q.q}</h4>
+    <div class="game-options">${q.opts.map(o=>`
+      <button class="game-opt" onclick="answerWuxing('${o}',this)">${o}</button>`).join('')}
+    </div>
+    <div id="game-feedback" class="game-feedback"></div>`;
+}
+
+function answerWuxing(ans, btn){
+  if(wxGame.answered) return;
+  wxGame.answered = true;
+  
+  const correct = ans === wxGame.current.a;
+  if(correct) wxGame.score++;
+  wxGame.total++;
+  
+  // Highlight
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  document.querySelectorAll('.game-opt').forEach(b=>{
+    b.disabled = true;
+    if(b.textContent === wxGame.current.a) b.classList.add('correct');
+  });
+  
+  const fb = document.getElementById('game-feedback');
+  fb.innerHTML = correct 
+    ? '<span class="fb-correct">✅ 正確！</span>'
+    : `<span class="fb-wrong">❌ 答案是「${wxGame.current.a}」</span>`;
+  
+  setTimeout(nextWuxingQ, 1200);
+}
+
+function showWuxingResult(){
+  const container = document.getElementById('wuxing-game-content');
+  if(!container) return;
+  const pct = Math.round(wxGame.score / wxGame.questions.length * 100);
+  let title, msg;
+  if(pct >= 80){ title='🏆 命理達人'; msg='你對五行的掌握非常厲害！'; }
+  else if(pct >= 60){ title='📚 用功學生'; msg='基礎不錯，再練練就更強了！'; }
+  else if(pct >= 40){ title='🌱 命理新手'; msg='繼續學習，五行世界很有趣！'; }
+  else{ title='🔰 初來乍到'; msg='多玩幾次就會進步啦！'; }
+  
+  container.innerHTML = `
+    <div class="game-result">
+      <div class="game-result-icon">${pct>=60?'🎉':'💪'}</div>
+      <h3>${title}</h3>
+      <div class="game-score-big">${wxGame.score} / ${wxGame.questions.length}</div>
+      <p class="text-dim">${msg}</p>
+      <div class="game-actions mt-md">
+        <button class="btn btn-gold" onclick="startWuxingGame()"><i class="fas fa-redo"></i> 再玩一次</button>
+      </div>
+    </div>`;
+}
+
+/* =============================================================
+   命理小遊戲 2: 每日生肖配對
+   ============================================================= */
+const ZODIAC_DATA = [
+  {name:'鼠',icon:'🐭',el:'水',best:['龍','猴','牛'],avoid:['馬','羊','兔']},
+  {name:'牛',icon:'🐂',el:'土',best:['鼠','蛇','雞'],avoid:['馬','羊','狗']},
+  {name:'虎',icon:'🐯',el:'木',best:['馬','狗','豬'],avoid:['蛇','猴']},
+  {name:'兔',icon:'🐰',el:'木',best:['羊','狗','豬'],avoid:['鼠','龍','雞']},
+  {name:'龍',icon:'🐲',el:'土',best:['鼠','猴','雞'],avoid:['狗','兔']},
+  {name:'蛇',icon:'🐍',el:'火',best:['牛','雞'],avoid:['虎','豬']},
+  {name:'馬',icon:'🐴',el:'火',best:['虎','羊','狗'],avoid:['鼠','牛']},
+  {name:'羊',icon:'🐑',el:'土',best:['兔','馬','豬'],avoid:['鼠','牛','狗']},
+  {name:'猴',icon:'🐵',el:'金',best:['鼠','龍'],avoid:['虎','豬']},
+  {name:'雞',icon:'🐔',el:'金',best:['牛','龍','蛇'],avoid:['兔','狗']},
+  {name:'狗',icon:'🐶',el:'土',best:['虎','兔','馬'],avoid:['龍','牛','羊','雞']},
+  {name:'豬',icon:'🐷',el:'水',best:['虎','兔','羊'],avoid:['蛇','猴']}
+];
+
+function renderZodiacMatch(){
+  const container = document.getElementById('zodiac-match-content');
+  if(!container) return;
+  container.innerHTML = `
+    <p class="text-sm text-dim mb-md">選擇兩個生肖，看看配對結果！</p>
+    <div class="zodiac-grid">${ZODIAC_DATA.map(z=>`
+      <button class="zodiac-btn" onclick="selectZodiac('${z.name}')" data-zodiac="${z.name}">
+        <span class="zodiac-icon">${z.icon}</span>
+        <span class="zodiac-name">${z.name}</span>
+      </button>`).join('')}
+    </div>
+    <div id="zodiac-selected" class="zodiac-selected mt-md"></div>
+    <div id="zodiac-result-area" class="mt-md"></div>`;
+}
+
+let zodiacPair = [];
+function selectZodiac(name){
+  if(zodiacPair.length >= 2) zodiacPair = [];
+  zodiacPair.push(name);
+  
+  // Highlight
+  document.querySelectorAll('.zodiac-btn').forEach(b=>{
+    b.classList.toggle('selected', zodiacPair.includes(b.dataset.zodiac));
+  });
+  
+  const selEl = document.getElementById('zodiac-selected');
+  selEl.textContent = zodiacPair.join(' ❤️ ');
+  
+  if(zodiacPair.length === 2){
+    showZodiacResult(zodiacPair[0], zodiacPair[1]);
+  }
+}
+
+function showZodiacResult(a, b){
+  const zA = ZODIAC_DATA.find(z=>z.name===a);
+  const zB = ZODIAC_DATA.find(z=>z.name===b);
+  if(!zA || !zB) return;
+  
+  let score, level, desc;
+  if(zA.best.includes(b) && zB.best.includes(a)){
+    score = 95; level = '天生一對 💕'; desc = `${a}與${b}是命理上的絕佳配對！彼此互補，感情和諧。`;
+  } else if(zA.best.includes(b) || zB.best.includes(a)){
+    score = 80; level = '相合有緣 ✨'; desc = `${a}與${b}有不錯的緣分，相處愉快，值得珍惜。`;
+  } else if(zA.avoid.includes(b) || zB.avoid.includes(a)){
+    score = 35; level = '需要磨合 ⚡'; desc = `${a}與${b}在傳統命理上有些沖突，但真愛可以跨越一切，多包容多理解就好。`;
+  } else {
+    score = 65; level = '平穩中性 ☁️'; desc = `${a}與${b}不特別沖也不特別合，關鍵看兩人的經營。`;
+  }
+  
+  const resultEl = document.getElementById('zodiac-result-area');
+  resultEl.innerHTML = `
+    <div class="zodiac-result card" style="animation:scaleIn 0.4s">
+      <div class="zodiac-pair-icons">${zA.icon} ❤️ ${zB.icon}</div>
+      <div class="zodiac-match-score">${score}%</div>
+      <div class="zodiac-match-level">${level}</div>
+      <p class="text-sm">${desc}</p>
+      <p class="text-xs text-muted mt-sm">五行：${a}(${zA.el}) × ${b}(${zB.el})</p>
+      <button class="btn btn-outline btn-sm mt-md" onclick="shareZodiacMatch('${a}','${b}','${score}')">
+        <i class="fas fa-share-alt"></i> 分享配對結果
+      </button>
+    </div>`;
+}
+
+function shareZodiacMatch(a, b, score){
+  const text = `${a} ❤️ ${b} 配對指數 ${score}%！你跟誰配？快來測 👉 `;
+  const url = window.location.href.split('?')[0];
+  if(navigator.share) navigator.share({title:'生肖配對',text,url}).catch(()=>{});
+  else { navigator.clipboard.writeText(text+url).then(()=>alert('已複製！')); }
+}
+
+/* =============================================================
+   命理小遊戲 3: 幸運色 / 幸運數字產生器
+   ============================================================= */
+function generateLuckyInfo(){
+  const container = document.getElementById('lucky-gen-content');
+  if(!container) return;
+  
+  const today = new Date();
+  const dayOfWeek = ['日','一','二','三','四','五','六'][today.getDay()];
+  
+  // Seed by date
+  let seed = 0;
+  const ds = today.toISOString().slice(0,10);
+  for(let i=0;i<ds.length;i++) seed = ((seed<<5)-seed+ds.charCodeAt(i))|0;
+  seed = Math.abs(seed);
+  
+  const colors = [
+    {name:'紅色',hex:'#dc2626',el:'火',meaning:'熱情、行動力'},
+    {name:'粉紅',hex:'#ec4899',el:'火',meaning:'愛情、人際'},
+    {name:'橙色',hex:'#ea580c',el:'火',meaning:'活力、創造'},
+    {name:'黃色',hex:'#eab308',el:'土',meaning:'財運、自信'},
+    {name:'金色',hex:'#d4af37',el:'金',meaning:'權威、成就'},
+    {name:'綠色',hex:'#16a34a',el:'木',meaning:'健康、成長'},
+    {name:'藍色',hex:'#2563eb',el:'水',meaning:'智慧、溝通'},
+    {name:'紫色',hex:'#9333ea',el:'火',meaning:'靈性、直覺'},
+    {name:'白色',hex:'#f5f5f5',el:'金',meaning:'純淨、清晰'},
+    {name:'黑色',hex:'#1a1a1a',el:'水',meaning:'保護、穩重'},
+    {name:'棕色',hex:'#92400e',el:'土',meaning:'踏實、安定'},
+    {name:'銀色',hex:'#94a3b8',el:'金',meaning:'冷靜、理性'}
+  ];
+  
+  const luckyColor = colors[seed % colors.length];
+  const luckyNum = (seed % 9) + 1;
+  const luckyDir = ['東','南','西','北','東南','東北','西南','西北'][seed % 8];
+  const luckyTime = ['子時(23-01)','丑時(01-03)','寅時(03-05)','卯時(05-07)','辰時(07-09)','巳時(09-11)','午時(11-13)','未時(13-15)','申時(15-17)','酉時(17-19)','戌時(19-21)','亥時(21-23)'][(seed*3) % 12];
+  
+  container.innerHTML = `
+    <div class="lucky-card" style="animation:scaleIn 0.4s">
+      <h4 class="text-gold mb-sm">📅 星期${dayOfWeek}的幸運指南</h4>
+      <div class="lucky-grid">
+        <div class="lucky-item">
+          <div class="lucky-label">幸運色</div>
+          <div class="lucky-value">
+            <span class="lucky-color-dot" style="background:${luckyColor.hex}"></span>
+            ${luckyColor.name}
+          </div>
+          <div class="lucky-sub">${luckyColor.el}行 · ${luckyColor.meaning}</div>
+        </div>
+        <div class="lucky-item">
+          <div class="lucky-label">幸運數字</div>
+          <div class="lucky-value lucky-num">${luckyNum}</div>
+        </div>
+        <div class="lucky-item">
+          <div class="lucky-label">幸運方位</div>
+          <div class="lucky-value">🧭 ${luckyDir}</div>
+        </div>
+        <div class="lucky-item">
+          <div class="lucky-label">最佳時辰</div>
+          <div class="lucky-value">⏰ ${luckyTime}</div>
+        </div>
+      </div>
+      <p class="text-xs text-muted mt-md">每日 00:00 更新 · 僅供參考娛樂</p>
+    </div>`;
+}
+
+/* Init games */
+document.addEventListener('DOMContentLoaded', function(){
+  renderZodiacMatch();
+  generateLuckyInfo();
 });
 </script></body></html>
