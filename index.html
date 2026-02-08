@@ -3990,9 +3990,13 @@ function getDailyFortune(){
   
   if(cached) return cached;
   
-  // Seed by date
-  const seed = today.split('-').reduce((a,b)=>a+parseInt(b),0);
-  const fortune = FORTUNE_SIGNS[seed % FORTUNE_SIGNS.length];
+  // Better hash: each character contributes uniquely
+  let hash = 0;
+  for(let i=0;i<today.length;i++){
+    hash = ((hash << 5) - hash + today.charCodeAt(i)) | 0;
+  }
+  const idx = Math.abs(hash) % FORTUNE_SIGNS.length;
+  const fortune = FORTUNE_SIGNS[idx];
   const result = {...fortune, date: today, drawn: true};
   try{ localStorage.setItem(key, JSON.stringify(result)); }catch(e){}
   return result;
@@ -4000,7 +4004,17 @@ function getDailyFortune(){
 
 function canDrawToday(){
   const today = new Date().toISOString().slice(0,10);
-  try{ return !localStorage.getItem('jy_daily_' + today); }catch(e){ return true; }
+  const key = 'jy_daily_' + today;
+  try{
+    // Clean up old dates
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith('jy_daily_') && k !== key){
+        localStorage.removeItem(k);
+      }
+    }
+    return !localStorage.getItem(key);
+  }catch(e){ return true; }
 }
 
 function renderDailyFortune(){
