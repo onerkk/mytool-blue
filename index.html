@@ -305,6 +305,34 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
   .fab span{display:none}
 }
 
+/* — Product Grid — */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--sp-md);margin:var(--sp-md) 0}
+.product-card{display:flex;gap:var(--sp-md);padding:var(--sp-md);border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-bg-card-alt);transition:border-color var(--t-fast)}
+.product-card:hover{border-color:var(--c-gold)}
+.product-icon{font-size:2rem;flex:0 0 auto;padding-top:2px}
+.product-body{flex:1;min-width:0}
+.product-name{font-weight:700;color:var(--c-text);font-size:1rem;margin-bottom:4px}
+.product-meta{display:flex;gap:var(--sp-xs);margin-bottom:var(--sp-xs)}
+.product-desc{font-size:.85rem;color:var(--c-text-dim);margin-bottom:var(--sp-xs);line-height:1.5}
+.product-price{font-size:1.1rem;font-weight:700;color:var(--c-gold);margin-bottom:var(--sp-xs)}
+.product-wear{font-size:.78rem;color:var(--c-text-muted);margin-bottom:var(--sp-sm)}
+.product-actions{display:flex;gap:var(--sp-xs)}
+.product-btn{display:inline-flex;align-items:center;gap:4px;padding:.4rem .7rem;border-radius:var(--r-sm);border:1px solid var(--c-border);font-size:.78rem;text-decoration:none;color:var(--c-text);transition:all var(--t-fast)}
+.product-btn:hover{border-color:var(--c-gold);color:var(--c-gold)}
+.product-btn.shopee:hover{border-color:#ee4d2d;color:#ee4d2d}
+.product-btn.seven:hover{border-color:#00a040;color:#00a040}
+.btn-full{width:100%;justify-content:center;padding:.9rem}
+.custom-cta{text-align:center}
+
+/* — Share Gate — */
+.share-gate-card{border:2px dashed rgba(212,175,55,.4);border-radius:var(--r-lg);padding:var(--sp-lg);text-align:center;background:linear-gradient(135deg,rgba(212,175,55,.04),rgba(139,0,0,.04))}
+.share-gate-card h4{color:var(--c-gold);margin-bottom:var(--sp-sm)}
+.share-gate-card p{color:var(--c-text-dim);font-size:.9rem;margin-bottom:var(--sp-md)}
+.btn-share-big{padding:.85rem 2rem;font-size:1rem;border-radius:var(--r-pill);background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;cursor:pointer;transition:all var(--t-fast);font-weight:700}
+.btn-share-big:hover{transform:scale(1.03);box-shadow:0 4px 20px rgba(37,211,102,.3)}
+.btn-save-card{padding:.7rem 1.5rem;font-size:.9rem;border-radius:var(--r-pill);background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;cursor:pointer;transition:all var(--t-fast);font-weight:600}
+.btn-save-card:hover{transform:scale(1.03);box-shadow:0 4px 20px rgba(118,75,162,.3)}
+
 /* — Print (after all shop/fab styles) — */
 @media print{
   .nav,.stepper,.actions,.btn,.floating-root,.shop-card,.modal-overlay{display:none!important}
@@ -528,10 +556,24 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
   </div>
 
   <div class="conclusion"><h3><i class="fas fa-moon"></i> 靜月分析師總結</h3><div id="r-conclusion" class="text-sm" style="line-height:1.8"></div></div>
-  <div class="actions actions-center mt-lg">
-    <button class="btn btn-outline" onclick="printResult()"><i class="fas fa-print"></i> 列印</button>
-    <button class="btn btn-outline" onclick="shareResult()"><i class="fas fa-share-alt"></i> 分享</button>
-    <button class="btn btn-outline" onclick="resetAll()"><i class="fas fa-redo"></i> 重新開始</button>
+  <!-- 存圖分享區 -->
+  <div class="card" style="text-align:center">
+    <div class="card-title"><i class="fas fa-share-alt"></i> 分享你的占卜結果</div>
+    <p class="text-sm text-dim mb-md">存成圖片分享到 IG / LINE，朋友也能免費測！</p>
+    <div class="actions actions-center" style="gap:var(--sp-md);flex-wrap:wrap">
+      <button class="btn-save-card" onclick="saveResultCard()"><i class="fas fa-download"></i> 存圖分享</button>
+      <button class="btn btn-outline" onclick="printResult()"><i class="fas fa-print"></i> 列印</button>
+    </div>
+  </div>
+
+  <!-- 再測一次（分享解鎖） -->
+  <div class="share-gate-card mt-lg" id="share-gate">
+    <h4>🔄 想再測一次？</h4>
+    <p>分享給朋友後即可重新開始 — 讓更多人也能免費測！</p>
+    <button class="btn-share-big" onclick="shareToUnlock()"><i class="fas fa-paper-plane"></i> 分享給朋友，解鎖再測</button>
+  </div>
+  <div class="actions actions-center mt-lg hidden" id="btn-retest">
+    <button class="btn btn-gold btn-full" onclick="retestAfterShare()" style="max-width:320px"><i class="fas fa-redo"></i> 重新開始新的占卜</button>
   </div>
 </section>
 
@@ -2014,7 +2056,8 @@ function runAnalysisV2(){
   ).join('');
 
   // ── Crystal ──
-  renderCrystalExpanded(b, type);
+  if(typeof renderProductCrystal==='function')renderProductCrystal(b,type);
+  else renderCrystalExpanded(b,type);
 
   // ── Conclusion ──
   let concl=generateConclusion(type,finalProb,b,S.meihua,S.tarot);
@@ -2391,4 +2434,338 @@ document.addEventListener('keydown',function(e){
     if(fabMenu&&!fabMenu.classList.contains('hidden'))fabMenu.classList.add('hidden');
   }
 });
+/* =============================================================
+   FEATURE 1: 商品化水晶推薦（含賣場連結 + 商品類別）
+   ============================================================= */
+const PRODUCT_DB={
+  金:[
+    {n:'白水晶手鏈',cat:'手鏈',icon:'💎',el:'金',d:'淨化能量場，增強思維清晰度',price:'$580-$1,280',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'左手佩戴',img:''},
+    {n:'鈦晶吊墜',cat:'吊墜',icon:'⚡',el:'金',d:'招正財偏財，增強領導氣魄',price:'$1,580-$3,800',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'貼近心輪佩戴',img:''},
+    {n:'白水晶原石',cat:'原石',icon:'🔮',el:'金',d:'淨化空間磁場，鎮宅開運',price:'$380-$1,200',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'放客廳或書桌',img:''}
+  ],
+  木:[
+    {n:'綠幽靈手鏈',cat:'手鏈',icon:'💚',el:'木',d:'招正財，事業穩步上升',price:'$680-$2,200',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'左手佩戴',img:''},
+    {n:'東陵玉吊墜',cat:'吊墜',icon:'🌿',el:'木',d:'舒緩壓力，帶來好運',price:'$480-$1,500',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'項鍊佩戴',img:''},
+    {n:'翡翠原石擺件',cat:'原石',icon:'🟢',el:'木',d:'護身辟邪，增強健康運',price:'$1,200-$5,000',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'放書桌或財位',img:''}
+  ],
+  水:[
+    {n:'海藍寶手鏈',cat:'手鏈',icon:'💙',el:'水',d:'增強溝通力，平靜情緒',price:'$780-$2,500',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'左手佩戴',img:''},
+    {n:'月光石吊墜',cat:'吊墜',icon:'🌙',el:'水',d:'增強直覺，助感情運',price:'$580-$1,800',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'滿月佩戴更佳',img:''},
+    {n:'藍紋瑪瑙原石',cat:'原石',icon:'🔵',el:'水',d:'穩定情緒，增強表達力',price:'$350-$980',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'放臥室床頭',img:''}
+  ],
+  火:[
+    {n:'紅瑪瑙手鏈',cat:'手鏈',icon:'❤️',el:'火',d:'激發熱情，增強行動力與勇氣',price:'$480-$1,500',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'右手佩戴增行動力',img:''},
+    {n:'石榴石吊墜',cat:'吊墜',icon:'🔴',el:'火',d:'提升活力，增強桃花運',price:'$680-$2,200',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'貼身佩戴',img:''},
+    {n:'紅碧璽原石',cat:'原石',icon:'💗',el:'火',d:'強力招桃花，增強人際魅力',price:'$1,500-$4,500',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'放桃花位',img:''}
+  ],
+  土:[
+    {n:'黃水晶手鏈',cat:'手鏈',icon:'💛',el:'土',d:'招偏財，提升自信與魅力',price:'$580-$1,800',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'左手佩戴',img:''},
+    {n:'虎眼石吊墜',cat:'吊墜',icon:'🟤',el:'土',d:'增強決斷力，招財辟邪',price:'$480-$1,500',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'出門佩戴',img:''},
+    {n:'茶晶原石擺件',cat:'原石',icon:'🫖',el:'土',d:'排除負能量，穩定心性',price:'$680-$2,800',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
+     wear:'放客廳',img:''}
+  ]
+};
+
+// 問題類型特殊商品
+const TYPE_PRODUCTS={
+  love:[{n:'粉晶手鏈',cat:'手鏈',icon:'💕',el:'土',d:'招桃花首選！增強異性緣',price:'$480-$1,500',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'左手佩戴，約會必備'}],
+  career:[{n:'鈦晶手鏈',cat:'手鏈',icon:'⚡',el:'金',d:'事業晉升首選！領導力UP',price:'$1,800-$5,000',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'面試/開會佩戴'}],
+  wealth:[{n:'綠幽靈聚寶盆',cat:'原石',icon:'💰',el:'木',d:'招正財偏財！放辦公桌超旺',price:'$1,200-$3,800',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'放財位或收銀台'}],
+  health:[{n:'紫水晶手鏈',cat:'手鏈',icon:'💜',el:'火',d:'安神助眠，促進身心平衡',price:'$580-$1,800',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'睡前佩戴或放枕下'}]
+};
+
+function renderProductCrystal(bazi,type){
+  const need=bazi.fav[0];
+  const base=PRODUCT_DB[need]||PRODUCT_DB['土'];
+  const special=TYPE_PRODUCTS[type]||[];
+  const all=[...special,...base];
+  const display=all.slice(0,4);
+
+  const catIcon={手鏈:'⌚',吊墜:'📿',原石:'💎',客製:'✨'};
+
+  document.getElementById('r-crystal').innerHTML=`
+    <div class="crystal-rec-header">
+      <p>根據你的命盤（喜 <span class="tag tag-gold">${need}行</span>）和問題（<span class="tag tag-blue">${getTypeLabel(type)}</span>），為你配對：</p>
+    </div>
+    <div class="product-grid">${display.map(p=>`
+      <div class="product-card">
+        <div class="product-icon">${p.icon}</div>
+        <div class="product-body">
+          <div class="product-name">${p.n}</div>
+          <div class="product-meta">
+            <span class="tag tag-gold text-xs">${catIcon[p.cat]||''} ${p.cat}</span>
+            <span class="el-tag el-${p.el} text-xs">${p.el}行</span>
+          </div>
+          <p class="product-desc">${p.d}</p>
+          <p class="product-price">${p.price}</p>
+          <p class="product-wear"><i class="fas fa-hand-holding-heart"></i> ${p.wear}</p>
+          <div class="product-actions">
+            <a href="${p.shopee}" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮</a>
+            <a href="${p.seven}" target="_blank" rel="noopener" class="product-btn seven"><i class="fas fa-box"></i> 7-11</a>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="custom-cta mt-lg">
+      <button class="btn btn-gold btn-full" onclick="openCustomModal()">
+        <i class="fas fa-magic"></i> 想要「依你五行專屬搭配」？點我客製手鏈
+      </button>
+      <p class="text-xs text-muted mt-sm text-center">預算版 $1,000 起 ｜ 48hr 內回覆</p>
+    </div>
+    <p class="text-xs text-muted mt-md text-center"><i class="fas fa-info-circle"></i> 本建議僅供能量校準參考，不具醫療或命運保證效力。</p>`;
+}
+
+/* =============================================================
+   FEATURE 2: 結果圖卡 Canvas → 存圖（含 QR 導流）
+   ============================================================= */
+function generateResultCard(){
+  const canvas=document.createElement('canvas');
+  const W=750,H=1334; // IG story size
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+
+  // Background gradient
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'#2D0A0A');grad.addColorStop(0.5,'#4A0000');grad.addColorStop(1,'#0d0404');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+
+  // Decorative border
+  ctx.strokeStyle='rgba(212,175,55,0.4)';ctx.lineWidth=3;
+  ctx.strokeRect(24,24,W-48,H-48);
+  ctx.strokeStyle='rgba(212,175,55,0.15)';ctx.lineWidth=1;
+  ctx.strokeRect(36,36,W-72,H-72);
+
+  // Header
+  ctx.fillStyle='#D4AF37';ctx.font='bold 32px "Noto Serif TC",serif';ctx.textAlign='center';
+  ctx.fillText('☽ 靜月之光能量占卜儀',W/2,80);
+  ctx.font='16px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.6)';
+  ctx.fillText('你的專屬命理分析結果',W/2,115);
+
+  // Divider
+  drawGoldLine(ctx,60,140,W-60);
+
+  // Question
+  ctx.textAlign='left';ctx.font='bold 22px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';
+  ctx.fillText('📋 問題',60,180);
+  ctx.font='18px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.9)';
+  wrapText(ctx,S.form.question||'綜合運勢',60,210,W-120,26);
+
+  // Verdict
+  const prob=document.getElementById('r-vprob')?document.getElementById('r-vprob').textContent:'50%';
+  const label=document.getElementById('r-vlabel')?document.getElementById('r-vlabel').textContent:'分析中';
+  const y1=290;
+  ctx.fillStyle='rgba(212,175,55,0.1)';roundRect(ctx,48,y1-10,W-96,100,12);ctx.fill();
+  ctx.strokeStyle='rgba(212,175,55,0.3)';ctx.stroke();
+  ctx.font='bold 40px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';ctx.textAlign='center';
+  ctx.fillText(prob,W/2,y1+35);
+  ctx.font='20px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.85)';
+  ctx.fillText(label,W/2,y1+70);
+
+  // BaZi summary
+  const y2=420;
+  ctx.textAlign='left';ctx.font='bold 20px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';
+  ctx.fillText('🏮 八字命理',60,y2);
+  if(S.bazi){
+    ctx.font='16px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.8)';
+    const p=S.bazi.pillars;
+    ctx.fillText(`四柱：${p.year.gan}${p.year.zhi} ${p.month.gan}${p.month.zhi} ${p.day.gan}${p.day.zhi} ${p.hour.gan}${p.hour.zhi}`,60,y2+30);
+    ctx.fillText(`日主：${S.bazi.dm}（${S.bazi.dmEl}）｜ 身${S.bazi.strong?'強':'弱'} ｜ 喜用：${S.bazi.fav.join('、')}`,60,y2+58);
+    const curDy=S.bazi.dayun.find(d=>d.isCurrent);
+    if(curDy)ctx.fillText(`當前大運：${curDy.gz}（${curDy.level}）`,60,y2+86);
+  }
+
+  // Five elements bar
+  const y3=560;
+  ctx.font='bold 20px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';
+  ctx.fillText('🔮 五行能量',60,y3);
+  if(S.bazi){
+    const els=['金','木','水','火','土'];
+    const colors={金:'#c0c0c0',木:'#22c55e',水:'#3b82f6',火:'#ef4444',土:'#a78b5a'};
+    els.forEach((e,i)=>{
+      const bx=60,by=y3+25+i*32,bw=W-200,pct=S.bazi.ep[e]||0;
+      ctx.font='16px "Noto Sans TC",sans-serif';ctx.fillStyle=colors[e];
+      ctx.fillText(e,bx,by+14);
+      ctx.fillStyle='rgba(255,255,255,0.1)';roundRect(ctx,bx+30,by,bw,18,4);ctx.fill();
+      ctx.fillStyle=colors[e];roundRect(ctx,bx+30,by,bw*pct/100,18,4);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.7)';ctx.fillText(pct+'%',bx+bw+40,by+14);
+    });
+  }
+
+  // Crystal recommendation
+  const y4=760;
+  ctx.font='bold 20px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';
+  ctx.fillText('💎 專屬水晶處方',60,y4);
+  if(S.bazi){
+    const need=S.bazi.fav[0];
+    const prods=PRODUCT_DB[need]||PRODUCT_DB['土'];
+    ctx.font='16px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.85)';
+    prods.slice(0,3).forEach((p,i)=>{
+      ctx.fillText(`${p.icon} ${p.n}（${p.cat}）— ${p.d}`,60,y4+30+i*28);
+    });
+  }
+
+  // Meihua + Tarot summary
+  const y5=880;
+  if(S.meihua){
+    ctx.font='bold 20px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';
+    ctx.fillText('☯ 梅花易數',60,y5);
+    ctx.font='16px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.8)';
+    ctx.fillText(`${S.meihua.ben.n} → ${S.meihua.bian.n}｜體用${S.meihua.ty.r}（${S.meihua.ty.f}）`,60,y5+28);
+  }
+  if(S.tarot.drawn.length){
+    const yt=y5+70;
+    ctx.font='bold 20px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';
+    ctx.fillText('🃏 塔羅牌',60,yt);
+    ctx.font='16px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.8)';
+    const core=S.tarot.drawn[0],fin=S.tarot.drawn[9];
+    ctx.fillText(`核心：${core.n}（${core.isUp?'正':'逆'}）｜ 結果：${fin?fin.n:''}（${fin?(fin.isUp?'正':'逆'):''}）`,60,yt+28);
+  }
+
+  // Divider
+  drawGoldLine(ctx,60,1060,W-60);
+
+  // QR Code area (text-based since we can't load QR library)
+  const yq=1090;
+  ctx.fillStyle='rgba(255,255,255,0.05)';roundRect(ctx,W/2-160,yq,320,100,12);ctx.fill();
+  ctx.strokeStyle='rgba(212,175,55,0.3)';ctx.stroke();
+  ctx.font='bold 16px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';ctx.textAlign='center';
+  ctx.fillText('🔍 免費測你的命理結果',W/2,yq+30);
+  ctx.font='14px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.7)';
+  ctx.fillText('靜月之光能量占卜儀',W/2,yq+55);
+  ctx.font='12px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.fillText(window.location.href.split('?')[0],W/2,yq+78);
+
+  // Footer
+  ctx.font='12px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.35)';
+  ctx.fillText('🛒 蝦皮: tw.shp.ee/2n5Mo2w ｜ 📦 7-11賣貨便: 搜尋「靜月之光」',W/2,H-50);
+  ctx.fillText(`生成時間：${new Date().toLocaleDateString('zh-TW')}`,W/2,H-30);
+
+  return canvas;
+}
+
+function drawGoldLine(ctx,x1,y,x2){
+  const g=ctx.createLinearGradient(x1,y,x2,y);
+  g.addColorStop(0,'transparent');g.addColorStop(0.5,'rgba(212,175,55,0.6)');g.addColorStop(1,'transparent');
+  ctx.strokeStyle=g;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+
+function wrapText(ctx,text,x,y,maxW,lineH){
+  const chars=[...text];let line='';
+  for(let i=0;i<chars.length;i++){
+    const test=line+chars[i];
+    if(ctx.measureText(test).width>maxW&&line){ctx.fillText(line,x,y);y+=lineH;line=chars[i]}
+    else line=test;
+  }
+  if(line)ctx.fillText(line,x,y);
+}
+
+function saveResultCard(){
+  const canvas=generateResultCard();
+  canvas.toBlob(function(blob){
+    if(!blob)return;
+    // Try native share first (mobile)
+    if(navigator.share&&navigator.canShare){
+      const file=new File([blob],'靜月占卜結果.png',{type:'image/png'});
+      if(navigator.canShare({files:[file]})){
+        navigator.share({title:'我的靜月占卜結果',text:'免費測你的命理結果！',files:[file]}).catch(()=>downloadBlob(blob));
+        return;
+      }
+    }
+    downloadBlob(blob);
+  },'image/png');
+}
+
+function downloadBlob(blob){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='靜月占卜結果_'+Date.now()+'.png';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+
+/* =============================================================
+   FEATURE 3: 分享解鎖「再測一次」
+   ============================================================= */
+let hasShared=false;
+
+function shareToUnlock(){
+  const url=window.location.href.split('?')[0];
+  const text='我剛用「靜月之光」測了命理結果，超準！免費測你的 👉 ';
+
+  if(navigator.share){
+    navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
+      hasShared=true;
+      updateShareGate();
+    }).catch(()=>{
+      // User cancelled — copy instead
+      fallbackCopyShare(text+url);
+    });
+  }else{
+    fallbackCopyShare(text+url);
+  }
+}
+
+function fallbackCopyShare(text){
+  navigator.clipboard.writeText(text).then(()=>{
+    alert('分享連結已複製！\n貼到 LINE / IG / FB 就能分享給朋友 ✨');
+    hasShared=true;
+    updateShareGate();
+  }).catch(()=>{
+    // Final fallback
+    prompt('複製以下連結分享給朋友：',text);
+    hasShared=true;
+    updateShareGate();
+  });
+}
+
+function updateShareGate(){
+  const gate=document.getElementById('share-gate');
+  const retestBtn=document.getElementById('btn-retest');
+  if(gate&&retestBtn){
+    if(hasShared){
+      gate.classList.add('hidden');
+      retestBtn.classList.remove('hidden');
+    }
+  }
+}
+
+function retestAfterShare(){
+  hasShared=false;
+  drawnCards=[];
+  resetAll();
+}
 </script></body></html>
