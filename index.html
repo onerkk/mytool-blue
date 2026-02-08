@@ -333,6 +333,38 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .btn-save-card{padding:.7rem 1.5rem;font-size:.9rem;border-radius:var(--r-pill);background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;cursor:pointer;transition:all var(--t-fast);font-weight:600}
 .btn-save-card:hover{transform:scale(1.03);box-shadow:0 4px 20px rgba(118,75,162,.3)}
 
+/* — Urgency Strip — */
+.urgency-strip{display:flex;gap:var(--sp-sm);flex-wrap:wrap;margin-top:var(--sp-xs);font-size:.72rem}
+.urgency-critical{color:#ff4444;font-weight:700;animation:pulse 2s infinite}
+.urgency-normal{color:rgba(255,255,255,.6)}
+.urgency-views{color:rgba(255,255,255,.45)}
+
+/* — Social Proof — */
+.social-proof{border:1px solid rgba(212,175,55,.2);border-radius:var(--r-md);padding:var(--sp-md);margin:var(--sp-md) 0;background:rgba(212,175,55,.04)}
+.sp-item{font-size:.85rem;color:var(--c-text-dim);margin:var(--sp-xs) 0}
+.sp-item strong{color:var(--c-gold)}
+
+/* — Live Counter + Marquee — */
+.live-counter-bar{display:flex;align-items:center;justify-content:center;gap:var(--sp-md);padding:var(--sp-sm) var(--sp-md);background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:var(--r-md);margin-bottom:var(--sp-lg);font-size:.85rem;color:var(--c-text-dim);flex-wrap:wrap}
+.live-counter-bar strong{color:var(--c-gold);font-size:1.1rem}
+.live-marquee{text-align:center;font-size:.78rem;color:rgba(255,255,255,.55);padding:var(--sp-xs);transition:opacity .3s;min-height:1.4em;margin-bottom:var(--sp-md)}
+
+/* — Discount Reveal — */
+.discount-reveal{border:2px solid var(--c-gold);border-radius:var(--r-lg);padding:var(--sp-lg);text-align:center;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,0,0,.06));margin-top:var(--sp-md)}
+.discount-code{font-size:1.8rem;font-weight:900;color:var(--c-gold);letter-spacing:4px;font-family:monospace;padding:var(--sp-md);background:rgba(0,0,0,.3);border-radius:var(--r-md);display:inline-block;margin:var(--sp-sm) 0}
+
+/* — PWA Banner — */
+.pwa-banner{position:fixed;bottom:0;left:0;right:0;z-index:800;background:linear-gradient(135deg,#1a0505,#2D0A0A);border-top:2px solid var(--c-gold);padding:var(--sp-md);display:flex;align-items:center;gap:var(--sp-md);box-shadow:0 -4px 20px rgba(0,0,0,.5)}
+.pwa-banner.hidden{display:none}
+.pwa-banner-text{flex:1;font-size:.85rem;color:var(--c-text)}
+.pwa-banner-text strong{color:var(--c-gold)}
+.pwa-install-btn{padding:.5rem 1rem;border-radius:var(--r-pill);background:var(--c-gold);color:#2D0A0A;border:none;font-weight:700;cursor:pointer;white-space:nowrap;font-size:.85rem}
+.pwa-close-btn{background:none;border:none;color:var(--c-text-dim);font-size:1.2rem;cursor:pointer;padding:4px}
+
+/* — Remind Button — */
+.btn-remind{padding:.6rem 1.2rem;border-radius:var(--r-pill);border:1px solid rgba(212,175,55,.4);background:rgba(212,175,55,.08);color:var(--c-gold);cursor:pointer;font-size:.85rem;transition:all var(--t-fast)}
+.btn-remind:hover{background:rgba(212,175,55,.15);border-color:var(--c-gold)}
+
 /* — Print (after all shop/fab styles) — */
 @media print{
   .nav,.stepper,.actions,.btn,.floating-root,.shop-card,.modal-overlay{display:none!important}
@@ -371,6 +403,12 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
     <div class="hero-icon">☽</div>
     <h1>靜月之光能量占卜儀</h1>
     <p>整合八字 · 紫微斗數 · 梅花易數 · 塔羅牌的多維度命理分析</p>
+    <div class="live-counter-bar">
+      <span>🔥 累計 <strong id="live-counter-num">184,729</strong> 人已測</span>
+      <span>｜</span>
+      <span>今日 <strong id="live-today-num">47</strong> 人</span>
+    </div>
+    <div class="live-marquee" id="live-marquee">🔔 載入中...</div>
   </div>
   <div class="stepper" id="main-stepper">
     <div class="stepper-item active"><div class="stepper-dot">1</div><span>輸入</span></div><div class="stepper-line"></div>
@@ -572,8 +610,23 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
     <p>分享給朋友後即可重新開始 — 讓更多人也能免費測！</p>
     <button class="btn-share-big" onclick="shareToUnlock()"><i class="fas fa-paper-plane"></i> 分享給朋友，解鎖再測</button>
   </div>
+  <!-- 折扣碼（分享後顯示） -->
+  <div class="discount-reveal hidden mt-lg" id="discount-reveal">
+    <h4 style="color:var(--c-gold);margin-bottom:var(--sp-sm)">🎁 感謝分享！你的專屬折扣碼：</h4>
+    <div class="discount-code" id="discount-code">JY0209XXX</div>
+    <p class="text-sm text-dim mt-sm">蝦皮下單時輸入此碼享 <strong style="color:var(--c-gold)">9折優惠</strong></p>
+    <button class="btn btn-outline btn-sm mt-sm" onclick="copyDiscountCode()"><i class="fas fa-copy"></i> 複製折扣碼</button>
+    <div class="mt-md">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 立即前往蝦皮選購</a>
+    </div>
+  </div>
   <div class="actions actions-center mt-lg hidden" id="btn-retest">
     <button class="btn btn-gold btn-full" onclick="retestAfterShare()" style="max-width:320px"><i class="fas fa-redo"></i> 重新開始新的占卜</button>
+  </div>
+  <!-- 7天提醒 -->
+  <div class="text-center mt-lg">
+    <button class="btn-remind" id="btn-remind" onclick="addReminder7Days()"><i class="fas fa-bell"></i> 7天後提醒我再測一次</button>
+    <p class="text-xs text-muted mt-xs">會下載 .ics 日曆檔，自動加入手機行事曆</p>
   </div>
 </section>
 
@@ -626,6 +679,15 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
       <button class="btn btn-outline" onclick="closeCustomModal()"><i class="fas fa-check"></i> 關閉</button>
     </div>
   </div>
+</div>
+
+<!-- PWA 安裝提示 -->
+<div class="pwa-banner hidden" id="pwa-banner">
+  <div class="pwa-banner-text">
+    <strong>☽ 加到主畫面</strong>，隨時測運勢更方便！
+  </div>
+  <button class="pwa-install-btn" onclick="installPWA()">安裝</button>
+  <button class="pwa-close-btn" onclick="hidePWABanner()">&times;</button>
 </div>
 
 <!-- 浮動按鈕 -->
@@ -3068,4 +3130,342 @@ renderProductCrystal = function(bazi, type){
     </div>
     <p class="text-xs text-muted mt-md text-center"><i class="fas fa-info-circle"></i> 以上商品皆為賣場現貨。點擊蝦皮或7-11直接選購，水晶效果因人而異。</p>`;
 };
+/* =============================================================
+   1) 商品卡「限時提醒」— 庫存數 + 今日N人看過
+   ============================================================= */
+function getUrgencyHTML(productName){
+  // Seeded random based on product name + today's date (consistent per day)
+  const seed = productName.split('').reduce((a,c)=>a+c.charCodeAt(0),0) + new Date().getDate();
+  const stock = (seed % 7) + 1; // 1-7
+  const views = (seed * 7 + 13) % 40 + 15; // 15-54
+  const stockClass = stock <= 3 ? 'urgency-critical' : 'urgency-normal';
+  return `<div class="urgency-strip">
+    <span class="${stockClass}"><i class="fas fa-fire"></i> 僅剩 ${stock} 件</span>
+    <span class="urgency-views"><i class="fas fa-eye"></i> 今日 ${views} 人看過</span>
+  </div>`;
+}
+
+/* =============================================================
+   2) 社會認同數據
+   ============================================================= */
+function getSocialProofHTML(element, type){
+  const elMap = {金:68, 木:72, 水:58, 火:63, 土:71};
+  const typeMap = {love:74, career:69, wealth:76, health:62, general:65, relationship:70, family:67, other:60};
+  const elPct = elMap[element] || 65;
+  const typePct = typeMap[type] || 65;
+  // Randomize slightly per session
+  const r1 = elPct + (Math.floor(Math.random()*5)-2);
+  const r2 = typePct + (Math.floor(Math.random()*5)-2);
+  return `<div class="social-proof">
+    <div class="sp-item"><i class="fas fa-users"></i> <strong>${r1}%</strong> 的使用者也需要補 <span class="tag tag-gold">${element}行</span> 能量</div>
+    <div class="sp-item"><i class="fas fa-chart-line"></i> 問<span class="tag tag-blue">${getTypeLabel(type)}</span>的人中，<strong>${r2}%</strong> 選擇佩戴對應水晶後回饋正面</div>
+  </div>`;
+}
+
+/* =============================================================
+   3) 首頁計數器 + 跑馬燈
+   ============================================================= */
+function initLiveCounter(){
+  // Base count: accumulated + today's count from localStorage
+  let base = 184729; // base number
+  const dayKey = 'jy_count_' + new Date().toISOString().slice(0,10);
+  let todayCount = parseInt(localStorage.getItem(dayKey)||'0');
+  todayCount++;
+  try{localStorage.setItem(dayKey, todayCount)}catch(e){}
+
+  // Display
+  const total = base + todayCount + Math.floor(Math.random()*20);
+  const counterEl = document.getElementById('live-counter-num');
+  if(counterEl) counterEl.textContent = total.toLocaleString();
+  const todayEl = document.getElementById('live-today-num');
+  if(todayEl) todayEl.textContent = todayCount + Math.floor(Math.random()*30+20);
+
+  // Marquee: random recent "users"
+  initMarquee();
+}
+
+function initMarquee(){
+  const el = document.getElementById('live-marquee');
+  if(!el) return;
+  const cities = ['台北','新北','台中','高雄','台南','桃園','新竹','嘉義','彰化','屏東','宜蘭','花蓮','基隆','苗栗'];
+  const types = ['愛情','事業','財運','健康','綜合運勢','人際'];
+  const crystals = ['粉晶','鈦晶','黃水晶','紫水晶','綠幽靈','海藍寶','黑曜石','月光石'];
+
+  function gen(){
+    const city = cities[Math.floor(Math.random()*cities.length)];
+    const type = types[Math.floor(Math.random()*types.length)];
+    const crystal = crystals[Math.floor(Math.random()*crystals.length)];
+    const mins = Math.floor(Math.random()*30)+1;
+    return `${city}的朋友 ${mins}分鐘前 測了${type}，推薦 ${crystal}`;
+  }
+
+  let msgs = [gen(), gen(), gen()];
+  let idx = 0;
+
+  function tick(){
+    el.style.opacity = '0';
+    setTimeout(()=>{
+      el.textContent = '🔔 ' + msgs[idx % msgs.length];
+      el.style.opacity = '1';
+      idx++;
+      if(idx % 3 === 0) msgs.push(gen());
+    }, 300);
+  }
+  tick();
+  setInterval(tick, 4500);
+}
+
+/* =============================================================
+   4) 分享後顯示專屬折扣碼
+   ============================================================= */
+function generateDiscountCode(){
+  // Generate a unique-looking code per user per day
+  const d = new Date();
+  const base = 'JY' + (d.getMonth()+1).toString().padStart(2,'0') + d.getDate().toString().padStart(2,'0');
+  const rand = Math.random().toString(36).substring(2,5).toUpperCase();
+  return base + rand;
+}
+
+function showDiscountAfterShare(){
+  const code = generateDiscountCode();
+  const el = document.getElementById('discount-reveal');
+  if(!el) return;
+  el.classList.remove('hidden');
+  document.getElementById('discount-code').textContent = code;
+}
+
+function copyDiscountCode(){
+  const code = document.getElementById('discount-code').textContent;
+  navigator.clipboard.writeText(code).then(()=>{
+    alert('折扣碼已複製！蝦皮下單時貼上即可享9折 ✨');
+  }).catch(()=>{
+    prompt('複製此折扣碼：', code);
+  });
+}
+
+// Patch shareToUnlock to also show discount
+const _origShareToUnlock = shareToUnlock;
+shareToUnlock = function(){
+  const url = window.location.href.split('?')[0];
+  const text = '我剛用「靜月之光」測了命理結果，超準！免費測你的 👉 ';
+  if(navigator.share){
+    navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
+      hasShared=true; updateShareGate(); showDiscountAfterShare();
+    }).catch(()=>{ fallbackCopyShare(text+url); showDiscountAfterShare(); });
+  }else{
+    fallbackCopyShare(text+url);
+    showDiscountAfterShare();
+  }
+};
+
+/* =============================================================
+   5) PWA 安裝提示橫幅
+   ============================================================= */
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showPWABanner();
+});
+
+function showPWABanner(){
+  const banner = document.getElementById('pwa-banner');
+  if(!banner) return;
+  // Don't show if already dismissed this session
+  if(sessionStorage.getItem('pwa_dismissed')) return;
+  banner.classList.remove('hidden');
+}
+
+function installPWA(){
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(function(choice){
+      if(choice.outcome==='accepted') console.log('PWA installed');
+      deferredInstallPrompt = null;
+      hidePWABanner();
+    });
+  }else{
+    // iOS fallback
+    alert('請點擊瀏覽器的「分享」按鈕 → 選擇「加入主畫面」即可安裝！');
+    hidePWABanner();
+  }
+}
+
+function hidePWABanner(){
+  const banner = document.getElementById('pwa-banner');
+  if(banner) banner.classList.add('hidden');
+  sessionStorage.setItem('pwa_dismissed','1');
+}
+
+/* =============================================================
+   6) AI 風格個人化總結
+   ============================================================= */
+function generateAIConclusion(type, prob, bazi, mh, tarot){
+  const name = S.form.name || '你';
+  const dm = bazi ? bazi.dm : '';
+  const dmEl = bazi ? bazi.dmEl : '';
+  const strong = bazi ? bazi.strong : true;
+  const fav = bazi ? bazi.fav[0] : '';
+  const curDy = bazi ? (bazi.dayun.find(d=>d.isCurrent)||{}) : {};
+  const tl = getTypeLabel(type);
+
+  // Opening — personal touch
+  let lines = [];
+  if(name!=='你') lines.push(`${name}，看完你的命盤，我想跟你說幾句真心話。`);
+  else lines.push(`看完你的命盤，我想跟你說幾句真心話。`);
+
+  // BaZi personality insight
+  if(bazi){
+    const personality = {
+      甲:'你像一棵大樹，外表堅定但內心渴望陽光。',
+      乙:'你像柔軟的藤蔓，看似溫柔實則韌性十足。',
+      丙:'你像太陽一樣溫暖，天生就有感染力。',
+      丁:'你像燭光般細膩，善於觀察與照顧他人。',
+      戊:'你像大山一樣穩重，值得信賴但有時太固執。',
+      己:'你像田園沃土，包容性強但容易委屈自己。',
+      庚:'你像寶劍般果斷，做事乾脆但有時太急。',
+      辛:'你像珠寶般精緻，追求完美但容易想太多。',
+      壬:'你像大海般寬廣，想法多但容易分散精力。',
+      癸:'你像細雨般溫潤，直覺強但容易猶豫不決。'
+    };
+    lines.push(personality[dm]||'');
+    lines.push(`身${strong?'強':'弱'}的你，${strong?'能量充沛，但要注意別太衝動':'需要更多支持，適合借力使力'}。`);
+  }
+
+  // Current situation reading
+  if(prob >= 70){
+    lines.push(`從你的命盤來看，現在的你確實站在一個好位置上。${curDy.gz?'「'+curDy.gz+'」大運':'當前運勢'}給了你助力，問${tl}的結果是偏向樂觀的。`);
+    lines.push('但好運不是等來的 — 是你準備好了，機會才看得見你。');
+  }else if(prob >= 45){
+    lines.push(`說實話，你現在的狀況是「有機會但有阻力」。${tl}這件事不是不行，而是需要更聰明的做法。`);
+    lines.push('我的建議是：不要全押，先小範圍試水溫，有正向回饋再放大。');
+  }else{
+    lines.push(`我必須坦白說，目前的象徵不太支持你在${tl}上大動作。`);
+    lines.push(`這不代表你不好 — 是時機還沒到。與其硬推，不如先${fav?'補'+fav+'行能量，':''}調整狀態，等更好的時機再出手。`);
+  }
+
+  // Meihua
+  if(mh){
+    lines.push(`梅花易數給了你一個有趣的信號：「${mh.ben.n}」→「${mh.bian.n}」，${mh.ty.r==='生'?'體用相生，事情的發展方向是有利的':mh.ty.r==='同'?'體用比和，維持現狀不會出大問題':mh.ty.r==='剋'?'體用相剋，要特別注意細節和時機':'需要更多耐心去等待'}。`);
+  }
+
+  // Tarot
+  if(tarot && tarot.drawn && tarot.drawn.length){
+    const core = tarot.drawn[0];
+    const fin = tarot.drawn[9];
+    lines.push(`塔羅的核心牌是「${core.n}」${core.isUp?'正位':'逆位'} — ${core.isUp?'這張牌告訴你，你問的方向是對的':'這張牌提醒你，可能需要換個角度思考'}。`);
+    if(fin) lines.push(`最終結果牌「${fin.n}」${fin.isUp?'正位，整體走向是正面的':'逆位，結果可能跟預期不同，但不一定是壞事'}。`);
+  }
+
+  // Crystal advice as personal recommendation
+  if(fav){
+    lines.push(`最後，如果你想從能量層面幫自己一把，我建議你佩戴${fav}行的水晶。不是迷信，是給自己一個「提醒物」— 每次看到手上的水晶，就想起今天的決定和方向。`);
+  }
+
+  // Closing
+  const closings = [
+    '記住，命理是方向盤，不是定速巡航。方向對了，速度由你決定。',
+    '最後送你一句：盡人事，聽天命。你已經在「盡人事」了，這很好。',
+    '命盤是地圖，路還是你自己走的。加油。',
+    '做好準備，然後相信自己的判斷。祝一切順利 ✨'
+  ];
+  lines.push(closings[Math.floor(Math.random()*closings.length)]);
+
+  return lines.filter(l=>l).map(l=>`<p>${l}</p>`).join('');
+}
+
+/* =============================================================
+   7) 7天後提醒再測（日曆事件）
+   ============================================================= */
+function addReminder7Days(){
+  const now = new Date();
+  const remind = new Date(now.getTime() + 7*24*60*60*1000);
+  const fmt = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//靜月之光//占卜提醒//ZH',
+    'BEGIN:VEVENT',
+    'DTSTART:' + fmt(remind),
+    'DTEND:' + fmt(new Date(remind.getTime()+30*60*1000)),
+    'SUMMARY:⏰ 靜月之光：該回來測一下運勢了！',
+    'DESCRIPTION:上次測的結果已經過了7天，運勢可能有變化。\\n免費再測一次：' + window.location.href.split('?')[0],
+    'URL:' + window.location.href.split('?')[0],
+    'TRANSP:TRANSPARENT',
+    'BEGIN:VALARM',
+    'TRIGGER:-PT10M',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:靜月之光占卜提醒',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob = new Blob([icsContent], {type:'text/calendar;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '靜月占卜提醒.ics';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+
+  // Visual feedback
+  const btn = document.getElementById('btn-remind');
+  if(btn){
+    btn.innerHTML = '<i class="fas fa-check"></i> 已加入日曆！';
+    btn.disabled = true;
+  }
+}
+
+/* =============================================================
+   Patch renderProductCrystal to include urgency + social proof
+   ============================================================= */
+const _origRPC2 = renderProductCrystal;
+renderProductCrystal = function(bazi, type){
+  _origRPC2(bazi, type);
+  // Inject urgency into each product card
+  document.querySelectorAll('.product-card').forEach(card => {
+    const name = card.querySelector('.product-name');
+    if(name && !card.querySelector('.urgency-strip')){
+      const u = document.createElement('div');
+      u.innerHTML = getUrgencyHTML(name.textContent);
+      card.querySelector('.product-body').appendChild(u.firstElementChild);
+    }
+  });
+  // Inject social proof before product grid
+  const crystalEl = document.getElementById('r-crystal');
+  if(crystalEl && !crystalEl.querySelector('.social-proof')){
+    const header = crystalEl.querySelector('.crystal-rec-header');
+    if(header){
+      const sp = document.createElement('div');
+      sp.innerHTML = getSocialProofHTML(bazi.fav[0], type);
+      header.after(sp.firstElementChild);
+    }
+  }
+};
+
+/* =============================================================
+   Patch conclusion to use AI style
+   ============================================================= */
+const _origGenConclusion = generateConclusion;
+generateConclusion = function(type, prob, bazi, mh, tarot){
+  return generateAIConclusion(type, prob, bazi, mh, tarot);
+};
+
+/* =============================================================
+   Init on DOMContentLoaded
+   ============================================================= */
+document.addEventListener('DOMContentLoaded', function(){
+  initLiveCounter();
+  // Show PWA banner after 5 seconds for iOS
+  setTimeout(function(){
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if(!isStandalone) showPWABanner();
+  }, 5000);
+});
 </script></body></html>
