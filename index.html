@@ -1450,11 +1450,11 @@ function computeBazi(year,month,day,hour,minute,gender){
   const mGi=(mGBase+((mi-2+12)%12))%10; // 正月(mi=2)偏移=0, 二月(mi=3)偏移=1...
   const mG=TG[(mGi+10)%10], mZ=DZ[mZi];
 
-  // ── 日柱（以1984-12-22甲子日為基準校正） ──
+  // ── 日柱（以1900-01-01甲戌日為基準，序號10） ──
   const base=new Date(1900,0,1);
   const tgt=new Date(year,month-1,day);
   const diff=Math.floor((tgt-base)/864e5);
-  const dayCycle=((diff+44)%60+60)%60;
+  const dayCycle=((diff+10)%60+60)%60;
   const dGi=dayCycle%10;
   const dZi=dayCycle%12;
   const dG=TG[dGi], dZ=DZ[dZi];
@@ -1469,115 +1469,88 @@ function computeBazi(year,month,day,hour,minute,gender){
   const pillars={year:{gan:yG,zhi:yZ},month:{gan:mG,zhi:mZ},day:{gan:dG,zhi:dZ},hour:{gan:hG,zhi:hZ}};
   const dm=dG, dmEl=WX_G[dm];
 
-  // ── 五行力量精算（含月令旺衰修正）──
-  // 月令五行旺衰係數
-  const WANING_ORDER={旺:2.0,相:1.5,休:1.0,囚:0.7,死:0.5};
-  const mzEl=WX_Z[mZ]; // 月令五行
-  function getMonthState(el){
-    if(el===mzEl) return '旺';
-    if(SHENG[el]===mzEl) return '休';  // 我生月令→休
-    if(SHENG[mzEl]===el) return '相';  // 月令生我→相
-    if(KE[el]===mzEl) return '囚';     // 我克月令→囚
-    if(KE[mzEl]===el) return '死';     // 月令克我→死
-    return '休';
-  }
-  function monthFactor(el){ return WANING_ORDER[getMonthState(el)]||1.0; }
-
-  // 藏干力量比例
-  const CG_WEIGHT={1:[1.0],2:[0.7,0.3],3:[0.6,0.25,0.15]};
-  
-  // 天干基礎分=10, 地支依藏干分配（地支總分=地支基礎分×藏干比例）
-  const BASE_GAN=10, BASE_ZHI_NORMAL=10, BASE_ZHI_MONTH=20; // 月支加倍
+  // ── 五行力量計算（60分制，對齊業界標準）──
+  // 權重：天干=4分, 月支=20分(提綱最重), 其他地支=8分
+  // 藏干比例：3藏干=60/25/15, 2藏干=70/30, 1藏干=100%
+  const TG_PTS=4, MZ_PTS=20, OZ_PTS=8;
+  const RATIO_3=[0.60,0.25,0.15], RATIO_2=[0.70,0.30], RATIO_1=[1.0];
   
   const ec={金:0,木:0,水:0,火:0,土:0};
   const allG=[yG,mG,dG,hG], allZ=[yZ,mZ,dZ,hZ];
   
-  // 天干計分（含月令旺衰修正）
-  allG.forEach(g=>{
-    const el=WX_G[g];
-    ec[el]+=BASE_GAN*monthFactor(el);
-  });
+  // 天干計分
+  allG.forEach(g=>{ ec[WX_G[g]]+=TG_PTS; });
   
-  // 地支計分：只算藏干（不重複算地支本身五行）
+  // 地支藏干計分
   allZ.forEach((z,i)=>{
     const cg=CG[z]||[];
-    const baseZhi=(i===1)?BASE_ZHI_MONTH:BASE_ZHI_NORMAL; // 月支加倍
-    const weights=CG_WEIGHT[cg.length]||[1.0];
+    const zhiPts=(i===1)?MZ_PTS:OZ_PTS;
+    const ratio=cg.length===3?RATIO_3:cg.length===2?RATIO_2:RATIO_1;
     cg.forEach((g,j)=>{
-      const el=WX_G[g];
-      const w=weights[j]||0.1;
-      ec[el]+=baseZhi*w*monthFactor(el);
+      ec[WX_G[g]]+=zhiPts*(ratio[j]||0.1);
     });
   });
   
   const tot=Object.values(ec).reduce((a,b)=>a+b,0);
   const ep={}; for(const k of Object.keys(ec))ep[k]=Math.round(ec[k]/tot*100);
 
-  // ── 身強身弱（得令、得地、得勢 三維判定）──
-  // 1. 得令：日主五行在月令的旺衰狀態
+  // ── 月令旺衰狀態 ──
+  const mzEl=WX_Z[mZ];
+  function getMonthState(el){
+    if(el===mzEl) return '旺';
+    if(SHENG[el]===mzEl) return '休';
+    if(SHENG[mzEl]===el) return '相';
+    if(KE[el]===mzEl) return '囚';
+    if(KE[mzEl]===el) return '死';
+    return '休';
+  }
   const dmMonthState=getMonthState(dmEl);
+
+  // ── 身強身弱（得令、得地、得勢 三維判定）──
   const deLing=(dmMonthState==='旺'||dmMonthState==='相');
   
-  // 2. 得地：日主在四柱地支中是否有根（藏干中有同五行天干）
   let rootCount=0, rootScore=0;
-  allZ.forEach((z,i)=>{
+  allZ.forEach(z=>{
     const cg=CG[z]||[];
-    const weights=CG_WEIGHT[cg.length]||[1.0];
     cg.forEach((g,j)=>{
       if(WX_G[g]===dmEl){
         rootCount++;
-        rootScore+=(j===0)?3:(j===1)?2:1; // 本氣根3, 中氣根2, 餘氣根1
+        rootScore+=(j===0)?3:(j===1)?2:1;
       }
     });
   });
-  const deDi=(rootCount>=2)||(rootScore>=3); // 有2個以上根，或根力≥3
+  const deDi=(rootCount>=2)||(rootScore>=3);
   
-  // 3. 得勢：天干中有比劫(同五行)或印星(生我五行)幫扶
   let helpCount=0;
   allG.forEach((g,i)=>{
-    if(i===2) return; // 跳過日干自己
+    if(i===2) return;
     const el=WX_G[g];
-    if(el===dmEl) helpCount++; // 比劫
-    if(SHENG[el]===dmEl) helpCount++; // 印星
+    if(el===dmEl) helpCount++;
+    if(SHENG[el]===dmEl) helpCount++;
   });
   const deShi=(helpCount>=2);
   
-  // 綜合判定：得令+得地/得勢=身強; 得地+得勢(不得令)也可能身強
-  // 日主同黨力量（比劫+印星五行）佔比
-  const selfScore=(ec[dmEl]||0)+(ec[BE_SHENG[dmEl]]||0)*0.8;
-  const enemyScore=tot-selfScore;
+  const selfScore=(ec[dmEl]||0)+(ec[BE_SHENG[dmEl]]||0);
   const selfRatio=selfScore/tot;
   
   let strong;
   if(deLing){
-    // 得令：再有得地或得勢之一即身強；四柱克洩太重仍可能身弱
     strong=(deDi||deShi)||(selfRatio>0.35);
-    // 但若克洩太重（同黨<30%），雖得令仍可能身弱
-    if(selfRatio<0.30) strong=false;
+    if(selfRatio<0.28) strong=false;
   }else{
-    // 不得令：需得地+得勢才可能身強，且同黨比例需>40%
     strong=(deDi&&deShi&&selfRatio>0.40);
-    // 或同黨力量壓倒性（>55%）
     if(selfRatio>0.55) strong=true;
   }
 
-  // ── 喜用神 / 忌神（完整版）──
+  // ── 喜用神 / 忌神 ──
   let fav=[],unfav=[];
   if(strong){
-    // 身強喜抑: 官殺(克我)、食傷(我生)、財星(我克)
-    // 優先級: 先洩(食傷) > 再克(官殺) > 再耗(財星)
-    const shishang=SHENG[dmEl];  // 我生 = 食傷五行
-    const guansha=BE_KE[dmEl];   // 克我 = 官殺五行
-    const caixing=KE[dmEl];      // 我克 = 財星五行
-    fav=[shishang,guansha,caixing];
-    unfav=[dmEl,BE_SHENG[dmEl]]; // 忌比劫、印星
+    fav=[SHENG[dmEl],BE_KE[dmEl],KE[dmEl]];
+    unfav=[dmEl,BE_SHENG[dmEl]];
   }else{
-    // 身弱喜扶: 印星(生我)、比劫(同我)
-    const yinxing=BE_SHENG[dmEl]; // 生我 = 印星五行
-    fav=[yinxing,dmEl];
-    unfav=[BE_KE[dmEl],SHENG[dmEl],KE[dmEl]]; // 忌官殺、食傷、財星
+    fav=[BE_SHENG[dmEl],dmEl];
+    unfav=[BE_KE[dmEl],SHENG[dmEl],KE[dmEl]];
   }
-  // 去重
   fav=[...new Set(fav)];
   unfav=[...new Set(unfav.filter(u=>!fav.includes(u)))];
 
@@ -1673,7 +1646,7 @@ const BG=[
 ];
 const G64={
 '11':{n:'乾為天',u:'䷀',j:'元亨利貞。',m:'剛健中正，萬事亨通，戒驕傲。'},
-'12':{n:'天澤履',u:'䷉',j:'履虍尾，不咥人，亨。',m:'小心謹慍前行，合禮則吉。'},
+'12':{n:'天澤履',u:'䷉',j:'履虍尾，不咥人，亨。',m:'小心謹慎前行，合禮則吉。'},
 '13':{n:'天火同人',u:'䷌',j:'同人于重，亨。',m:'志同道合者聚集，利涉大川。'},
 '14':{n:'天雷無妄',u:'䷘',j:'元亨利貞。',m:'至誠無妄，順天而行。'},
 '15':{n:'天風姤',u:'䷫',j:'女壯，勿用取女。',m:'偶然相遇，不可急進。'},
@@ -1684,7 +1657,7 @@ const G64={
 '22':{n:'兌為澤',u:'䷹',j:'亨，利貞。',m:'喜悅交流，言語得宜。'},
 '23':{n:'澤火革',u:'䷰',j:'己日乃孚。',m:'變革除舊，時機成熟方可行。'},
 '24':{n:'澤雷隨',u:'䷐',j:'元亨利貞，無咎。',m:'順勢而行，隨機應變。'},
-'25':{n:'澤風大遍',u:'䷛',j:'棟撓，利有攸往。',m:'力量遍大，需謹慍。'},
+'25':{n:'澤風大過',u:'䷛',j:'棟撓，利有攸往。',m:'力量過大，需謹慎。'},
 '26':{n:'澤水困',u:'䷮',j:'亨，貞，大人吉。',m:'困境中堅守正道，終將通達。'},
 '27':{n:'澤山咸',u:'䷞',j:'亨，利貞。',m:'感應之道，心意相通。'},
 '28':{n:'澤地萃',u:'䷬',j:'亨，王假有廟。',m:'聚集匯萃，利見大人。'},
@@ -1694,7 +1667,7 @@ const G64={
 '34':{n:'火雷噬嗑',u:'䷔',j:'亨，利用獄。',m:'明辨是非，果斷處理。'},
 '35':{n:'火風鼎',u:'䷱',j:'元吉，亨。',m:'鼎新除舊，變革創新。'},
 '36':{n:'火水未濟',u:'䷿',j:'亨，小狐汔濟。',m:'尚未完成，仍需努力。'},
-'37':{n:'火山旅',u:'䷷',j:'小亨。',m:'客居在外，謹慍處世。'},
+'37':{n:'火山旅',u:'䷷',j:'小亨。',m:'客居在外，謹慎處世。'},
 '38':{n:'火地晉',u:'䷢',j:'康侯用錫馬蕃庶。',m:'光明上進，步步晉升。'},
 '41':{n:'雷天大壯',u:'䷡',j:'利貞。',m:'氣勢壯盛，守正方吉。'},
 '42':{n:'雷澤歸妹',u:'䷵',j:'征凶，無攸利。',m:'安分守己，不可妄動。'},
@@ -1702,7 +1675,7 @@ const G64={
 '44':{n:'震為雷',u:'䷲',j:'亨。',m:'震動奮發，先驚後喜。'},
 '45':{n:'雷風恆',u:'䷟',j:'亨，無咎，利貞。',m:'恆久不變，守持正道。'},
 '46':{n:'雷水解',u:'䷧',j:'利西南。',m:'危難解除，宜速行動。'},
-'47':{n:'雷山小遍',u:'䷽',j:'亨，利貞。',m:'小有遍越，位調行事。'},
+'47':{n:'雷山小過',u:'䷽',j:'亨，利貞。',m:'小有遍越，微調行事。'},
 '48':{n:'雷地豫',u:'䷏',j:'利建侯行師。',m:'歡樂豫悅，準備充分。'},
 '51':{n:'風天小畜',u:'䷈',j:'亨，密雲不雨。',m:'力量不足，暫時蓄積。'},
 '52':{n:'風澤中孚',u:'䷼',j:'豚魚吉。',m:'誠信為本，信則靈驗。'},
@@ -1885,9 +1858,9 @@ function calcMhRandom(){
 const TAROT=[
   {id:0,n:'愚者',el:'風',up:'充滿無限可能，勇敢踏出第一步。',rv:'魯荽行事，缺乏計畫。'},
   {id:1,n:'魔術師',el:'水星',up:'擁有成功所需的一切資源。',rv:'才能未發揮，注意欺騙。'},
-  {id:2,n:'女祭司',el:'月亮',up:'傾聽直覺，靜待時機。',rv:'遍於封閉，忽視內心聲音。'},
+  {id:2,n:'女祭司',el:'月亮',up:'傾聽直覺，靜待時機。',rv:'過於封閉，忽視內心聲音。'},
   {id:3,n:'皇名',el:'金星',up:'豐收與滋養，創造力旺盛。',rv:'依賴他人，過度放縱。'},
-  {id:4,n:'皇帝',el:'白羊',up:'掌控局面，建立秩序。',rv:'控制欲強，遍於僵化。'},
+  {id:4,n:'皇帝',el:'白羊',up:'掌控局面，建立秩序。',rv:'控制欲強，過於僵化。'},
   {id:5,n:'教皇',el:'金牛',up:'遵循正道，尋求智者指引。',rv:'教條主義，不知變通。'},
   {id:6,n:'戀人',el:'雙子',up:'做出重要選擇，真愛降臨。',rv:'關係不和，價值觀衝突。'},
   {id:7,n:'戰車',el:'巨蟹',up:'堅定意志，克服困難前進。',rv:'失捧，方向不明。'},
@@ -1926,7 +1899,7 @@ const TAROT=[
   {id:38,n:'聖杯三',el:'水',up:'歡慶友誼，社交活動。',rv:'過度放縱，孤立。'},
   {id:39,n:'聖杯四',el:'水',up:'對現狀不滿，錯失機會。',rv:'重新審視，發現新可能。'},
   {id:40,n:'聖杯五',el:'水',up:'失落與悲傷，但仍有希望。',rv:'走出悲傷，接受現實。'},
-  {id:41,n:'聖杯六',el:'水',up:'懷舊，童年回憶。',rv:'活在遍卻，無法前進。'},
+  {id:41,n:'聖杯六',el:'水',up:'懷舊，童年回憶。',rv:'活在過去，無法前進。'},
   {id:42,n:'聖杯七',el:'水',up:'太多選擇，需分辨幻象。',rv:'做出決定，面對現實。'},
   {id:43,n:'聖杯八',el:'水',up:'離開不再適合的，尋找更深。',rv:'恐懼改變，留在舒適區。'},
   {id:44,n:'聖杯九',el:'水',up:'願望實現，滿足感。',rv:'不滿，物質主義。'},
@@ -1937,18 +1910,18 @@ const TAROT=[
   {id:49,n:'聖杯國王',el:'水',up:'情感成熟，慷慨智慧。',rv:'情感壓抑，操捧。'},
   // 寶劍
   {id:50,n:'寶劍王牌',el:'風',up:'真相與突破，新想法。',rv:'混亂思緒，錯誤判斷。'},
-  {id:51,n:'寶劍二',el:'風',up:'抉擇困難，需平衡思考。',rv:'資訊遍載，逃避決定。'},
+  {id:51,n:'寶劍二',el:'風',up:'抉擇困難，需平衡思考。',rv:'資訊過載，逃避決定。'},
   {id:52,n:'寶劍三',el:'風',up:'心碍，悲痛，需要療癒。',rv:'走出傷痛，開始復卟。'},
   {id:53,n:'寶劍四',el:'風',up:'休息恢復，靜養。',rv:'焦躁不安，不願休息。'},
   {id:54,n:'寶劍五',el:'風',up:'衝突與失敗，自私行為。',rv:'和解，學會認輸。'},
-  {id:55,n:'寶劍六',el:'風',up:'離開困境，遍渡期。',rv:'困住，無法離開。'},
+  {id:55,n:'寶劍六',el:'風',up:'離開困境，過渡期。',rv:'困住，無法離開。'},
   {id:56,n:'寶劍七',el:'風',up:'策略行動，但需注意欺騙。',rv:'真相揭露，良心不安。'},
   {id:57,n:'寶劍八',el:'風',up:'自我限制，困境是心造。',rv:'解脫束縛，看清真相。'},
   {id:58,n:'寶劍九',el:'風',up:'焦慮、恐懼、失眠。',rv:'面對恐懼，走出焦慮。'},
-  {id:59,n:'寶劍十',el:'風',up:'結束與放下，觸底反彈。',rv:'最壞已遍，開始恢復。'},
+  {id:59,n:'寶劍十',el:'風',up:'結束與放下，觸底反彈。',rv:'最壞已過，開始恢復。'},
   {id:60,n:'寶劍侍者',el:'風',up:'好奇心，新想法。',rv:'八卦，冷漠。'},
   {id:61,n:'寶劍騍士',el:'風',up:'思路清晰，快速行動。',rv:'衝動發言，缺乏同理。'},
-  {id:62,n:'寶劍皇名',el:'風',up:'獨立思考，真相。',rv:'冷酷，遍於理性。'},
+  {id:62,n:'寶劍皇名',el:'風',up:'獨立思考，真相。',rv:'冷酷，過於理性。'},
   {id:63,n:'寶劍國王',el:'風',up:'理性權威，公正判斷。',rv:'獨裁，冷酷無情。'},
   // 金幣
   {id:64,n:'金幣王牌',el:'土',up:'新財務機會，物質豐盛。',rv:'錯失良機，貪婪。'},
@@ -1967,7 +1940,7 @@ const TAROT=[
   {id:77,n:'金幣國王',el:'土',up:'財務成功，領導力。',rv:'貪婪，過度控制。'}
 ];
 
-const CELTIC_POS=['核心現狀','阻礙因素','遍卻基礍','未來發展','可能結果','近期未來','自我態度','環境影響','希望恐懼','最終結果'];
+const CELTIC_POS=['核心現狀','阻礙因素','過去基礎','未來發展','可能結果','近期未來','自我態度','環境影響','希望恐懼','最終結果'];
 
 let drawnCards=[];
 function drawCard(){
@@ -2067,7 +2040,13 @@ function renderBazi(){
 
   // 納音
   html+=`<p class="text-sm text-dim mt-sm">納音：${b.nayin} ｜ 身${b.strong?'<span class="text-success">強</span>':'<span class="text-danger">弱</span>'} ｜ 日主：${b.dm}（${b.dmEl}）</p>`;
-  html+=`<p class="text-xs text-dim">得令：${b.deLing?'✓ '+b.dmMonthState:'✗ '+b.dmMonthState} ｜ 得地：${b.deDi?'✓':'✗'} ｜ 得勢：${b.deShi?'✓':'✗'} ｜ 日主同黨${b.selfRatio}%</p>`;
+  html+=`<p class="text-xs text-dim">得令：${b.deLing?'✓':'✗'}(${b.dmMonthState}) ｜ 得地：${b.deDi?'✓':'✗'} ｜ 得勢：${b.deShi?'✓':'✗'} ｜ 同黨${b.selfRatio}%</p>`;
+  html+=`<p class="text-xs text-dim">五行(60分)：`;
+  for(const el of ['金','木','水','火','土']){
+    const score=Math.round(b.ec[el]);
+    html+=`${el}${score} `;
+  }
+  html+=`</p>`;
   html+=`<p class="text-xs text-dim">喜用神：<span class="text-success">${b.fav.join('、')}</span> ｜ 忌神：<span class="text-danger">${b.unfav.join('、')}</span></p>`;
   document.getElementById('d-bazi').innerHTML=html;
 
@@ -2254,7 +2233,7 @@ function parseQuestionIntent(question, type) {
     isWhen: false,        // 何時
     isWho: false,         // 誰/什麼人
     isAge: false,         // 幾歲/年齡
-    isHow: false,         // 如何/怍麼
+    isHow: false,         // 如何/怎麼
     isCompare: false,     // A還是B
     isAmount: false,      // 多少/幾個
     isDirection: false,   // 方向/卻向/哪裡
@@ -2280,7 +2259,7 @@ function parseQuestionIntent(question, type) {
   if(/是誰|什麼人|什麼樣的人|哪[個位種]人|什麼類型|什麼個性/.test(q)) result.isWho = true;
 
   // 如何題
-  if(/如何|怍麼|怍樣|方法|辦法|做法|策略/.test(q)) result.isHow = true;
+  if(/如何|怎麼|怎樣|方法|辦法|做法|策略/.test(q)) result.isHow = true;
 
   // 選擇題
   const compareMatch = q.match(/(.{1,15})[還是或](.{1,15})/);
@@ -2391,7 +2370,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       const spStars = spouse ? spouse.stars.filter(s => s.type === 'major') : [];
       const descs = {
         '紫微': '有領導力、氣場強、可能從事管理職',
-        '天府': '穩重大方、經濟基礍好、重面子',
+        '天府': '穩重大方、經濟基礎好、重面子',
         '天機': '聰明靈活、善變、可能從事企劃或科技業',
         '太陽': '開朗大方、正直、可能從事公職或教育',
         '太陰': '溫柔細膩、內斂、有藝術氣質',
@@ -2420,7 +2399,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
   if(intent.isShould || intent.isCompare) {
     let verdict = '';
     if(prob >= 65) verdict = '各維度指標偏正面，從命理角度看<strong class="text-success">建議卻做</strong>';
-    else if(prob >= 45) verdict = '指標好壞參半，建議<strong class="text-warn">謹慍評估後再決定</strong>';
+    else if(prob >= 45) verdict = '指標好壞參半，建議<strong class="text-warn">謹慎評估後再決定</strong>';
     else verdict = '指標偏不利，建議<strong class="text-danger">暫緩或選擇替代方案</strong>';
 
     if(intent.isCompare && intent.optionA && intent.optionB) {
@@ -2432,12 +2411,12 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     return `<p><strong>關於你的決策：</strong></p><p>${verdict}</p>`;
   }
 
-  // ── 針對「如何/怍麼」方法題 ──
+  // ── 針對「如何/怎麼」方法題 ──
   if(intent.isHow) {
     const howAdvice = [];
     // 八字五行補強
     if(fav.length) howAdvice.push(`八字建議補強 ${fav.join('、')} 行能量（飲食、顏色、方位）`);
-    if(strong) howAdvice.push('身強：多輸出（教學、創作、投資），引導遍剩能量');
+    if(strong) howAdvice.push('身強：多輸出（教學、創作、投資），引導過剩能量');
     else howAdvice.push('身弱：找靠山（大平台、好主管、穩定環境），避免單打獨鬥');
 
     // 塔羅建議
@@ -2566,7 +2545,7 @@ function generateAnswer(type,prob,bazi,mh,tarot){
 
   // ── 塔羅因子（逐位置解讀重點牌） ──
   if(tarot.drawn.length>=10){
-    const posNames=['核心現狀','阻礙因素','遍卻基礍','未來發展','可能結果','近期未來','自我態度','環境影響','希望恐懼','最終結果'];
+    const posNames=['核心現狀','阻礙因素','過去基礎','未來發展','可能結果','近期未來','自我態度','環境影響','希望恐懼','最終結果'];
     const keyPos=[0,1,3,4,9]; // 核心、阻礙、未來、可能結果、最終
     keyPos.forEach(i=>{
       const c=tarot.drawn[i];
@@ -2686,7 +2665,7 @@ function generateAnswer(type,prob,bazi,mh,tarot){
     if(curDy.level.includes('大吉')) text+='運勢正處於最佳時期，外在環境有力支持。';
     else if(curDy.level.includes('中吉')) text+='運勢偏好，有貴人助力。';
     else if(curDy.level.includes('小吉')) text+='運勢小吉，穩中有進。';
-    else if(curDy.level.includes('凶')) text+='大運帶阻力，做事需更加謹慍。';
+    else if(curDy.level.includes('凶')) text+='大運帶阻力，做事需更加謹慎。';
     else text+='運勢平穩。';
   }
   text+=`</p>`;
@@ -2803,7 +2782,7 @@ function generateConclusion(type,prob,bazi,mh,tarot){
     html+=`目前走 ${curDy.gz} 大運（${curDy.level}），`;
     if(curDy.level.includes('大吉')) html+=`這步大運是你最好的運勢週期，問${typeLabel}正是好時機。`;
     else if(curDy.level.includes('吉')) html+=`運勢偏好，${typeLabel}方面有外在助力。`;
-    else if(curDy.level.includes('凶')) html+=`運勢帶阻力，${typeLabel}方面需要比平常更謹慍。`;
+    else if(curDy.level.includes('凶')) html+=`運勢帶阻力，${typeLabel}方面需要比平常更謹慎。`;
     else html+=`運勢平穩，${typeLabel}方面不會有大起大落。`;
   }
   html+=`</p>`;
@@ -2836,7 +2815,7 @@ function generateConclusion(type,prob,bazi,mh,tarot){
 
   // 塔羅詳細總結
   if(tarot.drawn.length>=10){
-    const posNames=['核心現狀','阻礙因素','遍卻基礍','未來發展','可能結果','近期未來','自我態度','環境影響','希望恐懼','最終結果'];
+    const posNames=['核心現狀','阻礙因素','過去基礎','未來發展','可能結果','近期未來','自我態度','環境影響','希望恐懼','最終結果'];
     html+=`<p class="mt-sm"><strong class="text-gold">四、塔羅牌陣（凱爾特十字）</strong>：</p>`;
     html+=`<div style="font-size:0.9rem;line-height:1.7;margin:0.5rem 0">`;
     tarot.drawn.forEach((c,i)=>{
@@ -2874,7 +2853,7 @@ function generateConclusion(type,prob,bazi,mh,tarot){
     ? `各維度訊號不一致，${typeLabel}有空間但也有障礙。建議分步驟捨進，先做小範圍測試。`
     : prob>=25
     ? `多數維度出現警訊，${typeLabel}目前阻力偏大。建議先做充分準備，等待更好時機再全力投入。`
-    : `五維度幾乍一致指向困難期。${typeLabel}方面強烈建議暫緩，先穩住現有基礍。`;
+    : `五維度幾乍一致指向困難期。${typeLabel}方面強烈建議暫緩，先穩住現有基礎。`;
   html+=`<p class="serif text-gold" style="font-size:1.05rem"><i class="fas fa-star"></i> ${goldAdvice}</p>`;
 
   return html;
@@ -3149,7 +3128,7 @@ function renderZiwei(){
   // 財帛宮
   const caiPalace = zw.palaces[4];
   const caiStars = caiPalace.stars.filter(s=>s.type==='major');
-  if(caiStars.length)reading+=`<p class="mt-sm"><strong>財帛宮：</strong>${caiStars.map(s=>s.name).join('、')} — ${caiStars.some(s=>['武曲','天府','太陰'].includes(s.name))?'財運基礍佳':'財運需靠努力積累'}</p>`;
+  if(caiStars.length)reading+=`<p class="mt-sm"><strong>財帛宮：</strong>${caiStars.map(s=>s.name).join('、')} — ${caiStars.some(s=>['武曲','天府','太陰'].includes(s.name))?'財運基礎佳':'財運需靠努力積累'}</p>`;
 
   // 官祿宮
   const guanPalace = zw.palaces[8];
@@ -3226,7 +3205,7 @@ function renderZiwei(){
             if(stars.some(s=>s.name==='紫微')) msgs.push('紫微入財帛宮，大器晚成型，財富會隨地位提升。');
             if(stars.some(s=>s.name==='天機')) msgs.push('天機入財帛宮，財來財卻，需靈活理財。');
             if(stars.some(s=>s.name==='太陽')) msgs.push('太陽入財帛宮，大方慷慨，正財運佳但不宜太慷慨。');
-            if(stars.some(s=>s.name==='巨門')) msgs.push('巨門入財帛宮，靠口才賺錢，但理財需更謹慍。');
+            if(stars.some(s=>s.name==='巨門')) msgs.push('巨門入財帛宮，靠口才賺錢，但理財需更謹慎。');
             if(stars.some(s=>s.name==='七殺')) msgs.push('七殺入財帛宮，財運起伏大，適合冒險型投資。');
             if(stars.some(s=>s.name==='破軍')) msgs.push('破軍入財帛宮，財運大起大落，需建立儲蓄習慣。');
             return msgs.length ? msgs.join('') : '';
@@ -3546,7 +3525,7 @@ function runAnalysisV2(){
   // ── 3. 塔羅評分（位置加權 + 特定牌加權） ──
   let tarotScore=50;
   if(S.tarot.drawn.length>=10){
-    // 各位置權重：核心=2.5, 阻礙=-1.5(反向), 遍卻=0.5, 未來=2, 結果=2, 近期=1.5, 自我=1, 環境=1, 恐懼=-0.5(反向), 最終=3
+    // 各位置權重：核心=2.5, 阻礙=-1.5(反向), 過去=0.5, 未來=2, 結果=2, 近期=1.5, 自我=1, 環境=1, 恐懼=-0.5(反向), 最終=3
     const posWeight=[2.5,-1.5,0.5,2.0,2.0,1.5,1.0,1.0,-0.5,3.0];
     let weightedSum=0, totalAbs=0;
     S.tarot.drawn.forEach((c,i)=>{
@@ -3650,7 +3629,7 @@ function runAnalysisV2(){
   const isShortTerm = /這[個月週周]|今[天年月]|明[天年]|最近|馬上|眼前|立刻|短期|現在|下[個半]|近期/.test(qText);
   const isLongTerm = /一輩子|未來[35十]|長期|十年|人生|命運|天生|適合|方向|老了|退休|終身/.test(qText);
   const isDecision = /該不該|要不要|還是|選擇|決定|A或B|轉職|離職|分手|換工作|跳槽|卻.*還是|買.*還是/.test(qText);
-  const isStatus = /為什麼|怍麼了|卡住|困境|狀況|卟因|瓶頸/.test(qText);
+  const isStatus = /為什麼|怎麼了|卡住|困境|狀況|卟因|瓶頸/.test(qText);
 
   let w;
   const hasMh = S.meihua ? 1 : 0;
@@ -3701,12 +3680,12 @@ function runAnalysisV2(){
   if(type === 'career' && hasZw) w.ziwei += 0.05;
   if(type === 'wealth') { w.meihua += hasMh ? 0.03 : 0; w.tarot += hasTr ? 0.03 : 0; }
 
-  // 姓名學上限：不管怍樣不超遍 8%
+  // 姓名學上限：不管怎樣不超過 8%
   if(w.name > 0.08) w.name = 0.08;
 
   const totalW = Object.values(w).reduce((a,b) => a+b, 0);
   const scores = {bazi:baziScore, meihua:mhScore, tarot:tarotScore, ziwei:ziweiScore, name:nameScore};
-  // 異常值壓縮：若某維度與其他差距遍大，壓縮其影響
+  // 異常值壓縮：若某維度與其他差距過大，壓縮其影響
   const activeKeys = Object.keys(w).filter(k => w[k] > 0);
   const sortedScores = activeKeys.map(k => scores[k]).sort((a,b) => a-b);
   const median = sortedScores[Math.floor(sortedScores.length/2)];
@@ -3714,7 +3693,7 @@ function runAnalysisV2(){
   activeKeys.forEach(k => {
     const diff = scores[k] - median;
     if(Math.abs(diff) > 30) {
-      // 差距超遍30分，壓縮1/3
+      // 差距超過30分，壓縮1/3
       adjustedScores[k] = median + diff * 0.67;
     } else {
       adjustedScores[k] = scores[k];
@@ -3896,7 +3875,7 @@ const TAROT_TYPE_MEANING={
   love:{
     0:{up:'愛情需要勇氣踏出舒適圈，新戀情可能從意想不到的地方開始。',rv:'感情上太隨性，需認真對待每段關係。'},
     1:{up:'你有吸引力和魅力，善用溝通技巧捨進感情。',rv:'感情中有隱藏或欺騙，需坦誠相待。'},
-    2:{up:'傾聽內心直覺，對方可能還沒完全表露心意。',rv:'遍於封閉自我，錯遍感情訊號。'},
+    2:{up:'傾聽內心直覺，對方可能還沒完全表露心意。',rv:'過於封閉自我，錯過感情訊號。'},
     3:{up:'感情進入豐收期，充滿滋養與溫暖。',rv:'過度依賴對方，需要獨立空間。'},
     4:{up:'關係中需要穩定與承諾，適合談婚論嫁。',rv:'控制欲太強讓對方窒息。'},
     5:{up:'傳統價值觀的結合，可能有長輩介紹的緣分。',rv:'觀念太保守，錯失新型態的愛。'},
@@ -3913,10 +3892,10 @@ const TAROT_TYPE_MEANING={
     16:{up:'感情出現突變，卟有認知被顛覆。',rv:'避開感情衝擊，危機可化解。'},
     17:{up:'愛情中的希望之星，值得期待的未來。',rv:'對感情失卻信心。'},
     18:{up:'感情中有隱藏的不安，需要勇氣面對。',rv:'迷霧散卻，感情真相浮現。'},
-    19:{up:'感情明朗化，關係進入甜蜜光明期。',rv:'暫時的陰霾，但終會遍卻。'},
+    19:{up:'感情明朗化，關係進入甜蜜光明期。',rv:'暫時的陰霾，但終會過去。'},
     20:{up:'重新審視感情觀，靈魂層面的覺醒。',rv:'拒絕成長讓關係退步。'},
     21:{up:'感情圓滿，找到命中注定的人。',rv:'感情尚缺最後一步才能完碧。'},
-    36:{up:'新的感情萌芽，情感豐沛。',rv:'感情封閉，錯遍真心。'},
+    36:{up:'新的感情萌芽，情感豐沛。',rv:'感情封閉，錯過真心。'},
     37:{up:'雙方互相吸引，關係進入甜蜜期。',rv:'感情失衡，溝通出問題。'},
     44:{up:'感情願望實現，心滿意足。',rv:'不滿足現有的感情。'},
     45:{up:'家庭幸福、感情圓滿的象徵。',rv:'家庭問題影響感情。'}
@@ -3924,7 +3903,7 @@ const TAROT_TYPE_MEANING={
   career:{
     0:{up:'事業上勇於嘗試新領域，創業契機浮現。',rv:'職場決策太草率，需更多規劃。'},
     1:{up:'擁有成功所需的全部資源和能力。',rv:'技能需精進，避免眼高手位。'},
-    2:{up:'職場直覺準確，適合等待更好的機會。',rv:'職場遍於被動。'},
+    2:{up:'職場直覺準確，適合等待更好的機會。',rv:'職場過於被動。'},
     3:{up:'事業豐收期，創造力旺盛適合擴展。',rv:'過度依賴團隊。'},
     4:{up:'獲得權威地位，適合管理與決策。',rv:'控制欲太強，需學會捈權。'},
     5:{up:'遵循組織規範，向前輩/對師請教。',rv:'太死板，需要創新突破。'},
@@ -3953,13 +3932,13 @@ const TAROT_TYPE_MEANING={
     15:{up:'小心物質誘惑和高風險投機。',rv:'擺脫不良的消費習慣。'},
     19:{up:'財運亨通，投資回報明顯。',rv:'短期財務壓力。'},
     21:{up:'財務目標達成，圓滿豐收。',rv:'收入不穩定。'},
-    64:{up:'新的賺錢機會，財富種子萌發。',rv:'錯遍投資良機。'},
+    64:{up:'新的賺錢機會，財富種子萌發。',rv:'錯過投資良機。'},
     67:{up:'守財有道，財務安全感強。',rv:'過度吝嗇。'},
     72:{up:'財務自由的象徵，豐衣足食。',rv:'過度自滿對致風險。'},
     73:{up:'家族財富累積，長期穩定。',rv:'家庭財務有隱患。'}
   },
   health:{
-    4:{up:'身體狀況穩定，規律生活有益。',rv:'壓力遍大影響健康。'},
+    4:{up:'身體狀況穩定，規律生活有益。',rv:'壓力過大影響健康。'},
     8:{up:'身心調和，內在力量幫助恢復。',rv:'缺乏信心影響康復。'},
     14:{up:'保持身心平衡是健康關鍵。',rv:'生活失衡影響身心。'},
     17:{up:'健康好轉，充滿希望。',rv:'健康狀況需持續關注。'},
@@ -5110,7 +5089,7 @@ function addReminder7Days(){
     'DTSTART:' + fmt(remind),
     'DTEND:' + fmt(new Date(remind.getTime()+30*60*1000)),
     'SUMMARY:⏰ 靜月之光：該回來測一下運勢了！',
-    'DESCRIPTION:上次測的結果已經遍了7天，運勢可能有變化。\\n免費再測一次：' + window.location.href.split('?')[0],
+    'DESCRIPTION:上次測的結果已經過了7天，運勢可能有變化。\\n免費再測一次：' + window.location.href.split('?')[0],
     'URL:' + window.location.href.split('?')[0],
     'TRANSP:TRANSPARENT',
     'BEGIN:VALARM',
@@ -5146,25 +5125,6 @@ function addReminder7Days(){
 const _origRPC2 = renderProductCrystal;
 renderProductCrystal = function(bazi, type){
   _origRPC2(bazi, type);
-  // Inject urgency into each product card
-  document.querySelectorAll('.product-card').forEach(card => {
-    const name = card.querySelector('.product-name');
-    if(name && !card.querySelector('.urgency-strip')){
-      const u = document.createElement('div');
-      u.innerHTML = getUrgencyHTML(name.textContent);
-      card.querySelector('.product-body').appendChild(u.firstElementChild);
-    }
-  });
-  // Inject social proof before product grid
-  const crystalEl = document.getElementById('r-crystal');
-  if(crystalEl && !crystalEl.querySelector('.social-proof')){
-    const header = crystalEl.querySelector('.crystal-rec-header');
-    if(header){
-      const sp = document.createElement('div');
-      sp.innerHTML = getSocialProofHTML(bazi.fav[0], type);
-      header.after(sp.firstElementChild);
-    }
-  }
 };
 
 /* =============================================================
@@ -5198,7 +5158,7 @@ function getTodayGanZhi(){
   const base = new Date(1900, 0, 1);
   const tgt = new Date(y, m-1, d);
   const diff = Math.floor((tgt - base) / 864e5);
-  const dayCycle = ((diff + 44) % 60 + 60) % 60;
+  const dayCycle = ((diff + 10) % 60 + 60) % 60;
   const dGi = dayCycle % 10, dZi = dayCycle % 12;
   // 年干支
   let ly = y;
@@ -5823,7 +5783,7 @@ const REVIEWS = [
   {name:'lovebl927',city:'',crystal:'天然 薔薇輝石 手鍊 12mm',stars:5,text:'出貨超快，很碧的薔薇🌹 開箱比想像中更滿意！實體很讚，賣家經營用心~會捨薦朋友購買！',time:'2025/11/13'},
   {name:'jesscia985',city:'',crystal:'天然 頂級 白水晶 鑽切手排 14mm',stars:5,text:'白水晶之王',time:'2026/01/29'},
   {name:'jesscia985',city:'',crystal:'頂級咖啡鈦晶 太陽花手排 14mm',stars:5,text:'賣家很 nice，鈦晶手排與白水晶手排都超碧的，包裝超特別，防護力超強，物流也超神速，總之，一整個就是 "超 讚"',time:'2026/01/29'},
-  {name:'yenrensu',city:'',crystal:'天然 咖啡鈦晶 手排 13mm',stars:5,text:'貓眼 鋼鈦晶 招財 旺事業 避邪 擋煞 位調奢華 復古金氣質',time:'2026/01/19'},
+  {name:'yenrensu',city:'',crystal:'天然 咖啡鈦晶 手排 13mm',stars:5,text:'貓眼 鋼鈦晶 招財 旺事業 避邪 擋煞 微調奢華 復古金氣質',time:'2026/01/19'},
   {name:'liudfu',city:'',crystal:'泰國 黃龍宮舍利手鍊 11mm',stars:5,text:'用心包裝溝通良好的賣家😍快速出貨高cp 值的好賣家值得捨薦大家一起來賣家逛逛購買，給5星好評喔',time:'2025/10/21'},
   {name:'liudfu',city:'',crystal:'泰國 黃龍宮舍利手鍊 13mm',stars:5,text:'好用心的包裝超愛的😍快速出貨高cp 值的好賣家值得捨薦大家一起來賣家逛逛購買，給5星好評喔',time:'2025/10/21'}
 ];
@@ -6300,7 +6260,7 @@ function showWuxingResult(){
   const pct = Math.round(wxGame.score / wxGame.questions.length * 100);
   let title, msg;
   if(pct >= 80){ title='🏆 命理達人'; msg='你對五行的掌握非常厲害！'; }
-  else if(pct >= 60){ title='📚 用功學生'; msg='基礍不錯，再練練就更強了！'; }
+  else if(pct >= 60){ title='📚 用功學生'; msg='基礎不錯，再練練就更強了！'; }
   else if(pct >= 40){ title='🌱 命理新手'; msg='繼續學習，五行世界很有趣！'; }
   else{ title='🔰 初來乍到'; msg='多獩幾次就會進步啦！'; }
   
