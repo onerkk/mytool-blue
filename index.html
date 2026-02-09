@@ -2783,50 +2783,231 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
   // ── 針對「會不會/能不能」是非題 ──
   if(intent.isYesNo) {
     const curDy=bazi.dayun?bazi.dayun.find(d=>d.isCurrent):null;
-    const fav=bazi.fav||[], favEl=fav[0]||'';
+    const fav=bazi.fav||[], unfav=bazi.unfav||[], favEl=fav[0]||'';
     const mhGood=mh&&(mh.ty.f.includes('吉')||mh.ty.r.includes('生'));
-    const tarotGood=tarot.drawn.length>=10&&tarot.drawn.filter(c=>c.isUp).length>=6;
     const finalCard=tarot.drawn.length>=10?tarot.drawn[9]:null;
+    const coreCard=tarot.drawn.length>=10?tarot.drawn[0]:null;
+    const obstCard=tarot.drawn.length>=10?tarot.drawn[1]:null;
+    const futureCard=tarot.drawn.length>=10?tarot.drawn[3]:null;
+    const selfCard=tarot.drawn.length>=10?tarot.drawn[6]:null;
+    const envCard=tarot.drawn.length>=10?tarot.drawn[7]:null;
     const dyGood=curDy&&curDy.level.includes('吉');
 
-    let h='',detail='';
-    if(prob>=70){
-      h=`<p style="font-size:1.1rem"><strong class="text-success">結論：很有機會實現，整體運勢站在你這邊。</strong></p>`;
-      detail+=`<p>五套系統中，多數給出正面訊號。`;
-      detail+=`你的八字身${strong?'強，有足夠的能量去推動這件事':'弱，但目前有印星或比劫在暗中幫你'}，`;
-      if(dyGood) detail+=`加上大運「${curDy.gz}」屬${curDy.level}，外在環境是配合你的。`;
-      else if(curDy) detail+=`不過大運「${curDy.gz}」（${curDy.level}）稍有壓力，行動上要多幾分謹慎。`;
-      detail+=`</p>`;
-      if(mh){detail+=`<p>梅花易數得「${mh.ben.n}→${mh.bian.n}」，體用${mh.ty.r}（${mh.ty.f}），${mhGood?'卦象偏吉，事情有外力支持':'卦象中性，需靠自身努力'}。</p>`;}
-      if(finalCard){detail+=`<p>塔羅最終牌「${finalCard.n}」${finalCard.isUp?'正位':'逆位'}，${finalCard.isUp?'是一張好的結局牌：'+finalCard.up:'提醒你注意：'+finalCard.rv}。</p>`;}
-      detail+=`<p><strong>建議：把握時機，積極行動。</strong>配合喜用神「${favEl}行」能量，成功率會更高。</p>`;
-    }else if(prob>=55){
-      h=`<p style="font-size:1.1rem"><strong class="text-warn">結論：有機會，但不是躺著就能成的。需要你主動去推。</strong></p>`;
-      detail+=`<p>命盤中有支持的力量，但也有明顯的阻力。`;
-      detail+=`你身${strong?'強':'弱'}，`;
-      if(!strong) detail+=`自身能量不算充足，需要借助外力（貴人、環境、能量補強）。`;
-      else detail+=`雖有實力但容易衝過頭，反而錯失機會。`;
-      if(curDy) detail+=`當前大運「${curDy.gz}」（${curDy.level}），${dyGood?'運勢有加持但不是保證':'運勢壓力不小，做決定前三思'}。`;
-      detail+=`</p>`;
-      if(mh){detail+=`<p>梅花取卦「${mh.ben.n}→${mh.bian.n}」，${mh.ty.r}（${mh.ty.f}），${mhGood?'方向是對的，堅持會有收穫':'過程會有波折，做好心理準備'}。</p>`;}
-      if(finalCard){detail+=`<p>塔羅結局牌「${finalCard.n}」${finalCard.isUp?'正位 — '+finalCard.up:'逆位 — '+finalCard.rv}。</p>`;}
-      detail+=`<p><strong>建議：可以嘗試，但要設停損點。</strong>同時建議補強「${favEl}行」能量，增加成功籌碼。</p>`;
-    }else if(prob>=40){
-      h=`<p style="font-size:1.1rem"><strong class="text-warn">結論：目前困難不少，硬推的話風險偏高。</strong></p>`;
-      detail+=`<p>命盤中阻力大於助力。`;
-      detail+=`身${strong?'強但殺重':'弱且無援'}，`;
-      if(curDy) detail+=`大運「${curDy.gz}」（${curDy.level}）${dyGood?'雖有小助':'加上運勢低迷，雪上加霜'}。`;
-      detail+=`</p>`;
-      if(mh){detail+=`<p>梅花卦象「${mh.ben.n}→${mh.bian.n}」，${mh.ty.r}（${mh.ty.f}），${mhGood?'雖卦象不差但配合其他不利因素來看':'卦象本身也偏不利'}，整體需要更多準備。</p>`;}
-      detail+=`<p><strong>建議：不是不行，但時機未到。</strong>先做好準備、補強能量、等待更好的時機點再出手。</p>`;
-    }else{
-      h=`<p style="font-size:1.1rem"><strong class="text-danger">結論：目前時機不利，建議暫緩或換個方向。</strong></p>`;
-      detail+=`<p>五個維度中大多給出警告訊號。`;
-      detail+=`命盤中${strong?'力量雖強但方向不對':'根基不穩'}，`;
-      if(curDy) detail+=`大運「${curDy.gz}」（${curDy.level}）也不幫忙。`;
-      detail+=`</p>`;
-      detail+=`<p><strong>建議：保守為上，把精力放在穩固基礎。</strong>先調整自身能量場，等到運勢轉好再行動。</p>`;
+    // 找今年流年
+    const thisYear=new Date().getFullYear();
+    let liuNian=null;
+    if(curDy&&curDy.liuNian) liuNian=curDy.liuNian.find(l=>l.year===thisYear);
+
+    // 紫微相關宮位
+    const typeToGong={love:2,career:8,wealth:4,health:5,family:9,relationship:7,general:0};
+    const gongIdx=typeToGong[type]!==undefined?typeToGong[type]:0;
+    const ZW_P=typeof ZW_PALACES!=='undefined'?ZW_PALACES:['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'];
+    const gongName=ZW_P[gongIdx]||'命宮';
+    let zwStars=[],zwHasLu=false,zwHasJi=false;
+    if(S.ziwei&&S.ziwei.palaces[gongIdx]){
+      zwStars=S.ziwei.palaces[gongIdx].stars||[];
+      zwHasLu=zwStars.some(s=>s.hua==='化祿');
+      zwHasJi=zwStars.some(s=>s.hua==='化忌');
     }
+
+    // 卦辭
+    let guaCi='',guaM='',bianCi='';
+    if(mh){
+      const HEX=typeof HEXAGRAMS!=='undefined'?HEXAGRAMS:{};
+      const benKey=mh.ben.upper+mh.ben.lower;
+      const bianKey=mh.bian.upper+mh.bian.lower;
+      if(HEX[benKey]){guaCi=HEX[benKey].j||'';guaM=HEX[benKey].m||'';}
+      if(HEX[bianKey])bianCi=HEX[bianKey].m||'';
+    }
+
+    // 神煞分好壞
+    const goodSha=['天乙貴人','文昌','桃花','天德','月德','驛馬','將星'];
+    const badSha=['羊刃','亡神','劫煞','華蓋'];
+    const gSha=(bazi.shensha||[]).filter(s=>goodSha.includes(s));
+    const bSha=(bazi.shensha||[]).filter(s=>badSha.includes(s));
+
+    // 十神中與問題相關的
+    const gods=bazi.gods||{};
+    let relatedGod='';
+    if(type==='love'){
+      const sp=bazi.dmEl==='木'||bazi.dmEl==='火';
+      relatedGod=['正財','偏財','正官','七殺'].find(g=>
+        Object.values(gods).some(p=>p.gan===g||p.zhi.includes(g))
+      )||'';
+    }else if(type==='career'){
+      relatedGod=['正官','七殺','正印','偏印'].find(g=>
+        Object.values(gods).some(p=>p.gan===g||p.zhi.includes(g))
+      )||'';
+    }else if(type==='wealth'){
+      relatedGod=['正財','偏財','食神','傷官'].find(g=>
+        Object.values(gods).some(p=>p.gan===g||p.zhi.includes(g))
+      )||'';
+    }
+
+    let h='',detail='';
+
+    // ═══ 總結論 ═══
+    if(prob>=70){
+      h=`<p style="font-size:1.1rem;margin-bottom:.8rem"><strong class="text-success">🟢 結論：很有機會，整體運勢站在你這邊。</strong></p>`;
+    }else if(prob>=55){
+      h=`<p style="font-size:1.1rem;margin-bottom:.8rem"><strong class="text-warn">🟡 結論：有機會但需要努力推動，不會自動降臨。</strong></p>`;
+    }else if(prob>=40){
+      h=`<p style="font-size:1.1rem;margin-bottom:.8rem"><strong class="text-warn">🟠 結論：阻力不小，硬推風險偏高。</strong></p>`;
+    }else{
+      h=`<p style="font-size:1.1rem;margin-bottom:.8rem"><strong class="text-danger">🔴 結論：目前時機不利，建議暫緩。</strong></p>`;
+    }
+
+    // ═══ 八字分析段 ═══
+    detail+=`<div style="margin-bottom:1rem">`;
+    detail+=`<p><strong style="color:var(--c-gold)">📜 八字命盤</strong></p>`;
+    detail+=`<p>你的日主「${bazi.dm}」屬${bazi.dmEl}，身${strong?'強':'弱'}（自身力量佔${bazi.selfRatio}%）。`;
+    if(!strong){
+      detail+=`身弱代表你在推動事情時，自身能量不太夠，容易力不從心，需要外力幫助。`;
+    }else{
+      detail+=`身強代表你有足夠的行動力和主導權，但要注意不要衝太快、太霸道。`;
+    }
+    detail+=`喜用神是「${fav.join('、')}」，忌神是「${unfav.join('、')}」。</p>`;
+
+    // 十神與問題的關聯
+    if(relatedGod){
+      detail+=`<p>在你的八字四柱中，有「${relatedGod}」透出，`;
+      if(type==='love') detail+=`這與感情運直接相關`;
+      else if(type==='career') detail+=`這與事業官運相關`;
+      else if(type==='wealth') detail+=`這與財運相關`;
+      detail+=`。</p>`;
+    }
+
+    // 神煞
+    if(gSha.length||bSha.length){
+      detail+=`<p>神煞方面，`;
+      if(gSha.length) detail+=`你命帶「${gSha.join('、')}」，${gSha.includes('天乙貴人')?'有貴人暗助':''}${gSha.includes('桃花')?'桃花運旺':''}${gSha.includes('文昌')?'利文書考試':''}${gSha.includes('驛馬')?'適合外出發展':''}。`;
+      if(bSha.length) detail+=`但也帶「${bSha.join('、')}」，${bSha.includes('羊刃')?'性格容易衝動':''}${bSha.includes('華蓋')?'偏孤獨、適合專精研究':''}，需留意。`;
+      detail+=`</p>`;
+    }
+
+    // 大運+流年
+    if(curDy){
+      detail+=`<p>目前走「${curDy.gz}」大運（${curDy.level}），${dyGood?'外在環境有助力，是做事的好時期':'運勢壓力較大，做重大決定前建議多考慮'}。`;
+      if(liuNian){
+        detail+=`今年流年「${liuNian.gz}」屬${liuNian.el}行（${liuNian.level}），`;
+        if(liuNian.level==='吉') detail+=`流年能量與你相合，今年整體是有利的。`;
+        else if(liuNian.level==='凶') detail+=`流年與你的命盤有衝突，今年做事要更加小心。`;
+        else detail+=`流年能量中性，不特別助力也不阻礙。`;
+      }
+      detail+=`</p>`;
+    }
+    detail+=`</div>`;
+
+    // ═══ 梅花易數段 ═══
+    if(mh){
+      detail+=`<div style="margin-bottom:1rem">`;
+      detail+=`<p><strong style="color:var(--c-gold)">☯ 梅花易數</strong></p>`;
+      detail+=`<p>起卦得本卦「${mh.ben.n}」，`;
+      if(guaM) detail+=`此卦象徵：${guaM}。`;
+      if(guaCi) detail+=`<span class="text-dim">（卦辭：${guaCi}）</span>`;
+      detail+=`</p>`;
+      detail+=`<p>變卦「${mh.bian.n}」，`;
+      if(bianCi) detail+=`代表事情的最終走向：${bianCi}。`;
+      detail+=`體用關係為「${mh.ty.r}」（${mh.ty.f}），`;
+      if(mh.ty.d) detail+=mh.ty.d;
+      else if(mhGood) detail+=`卦象偏吉，外在力量會支持你。`;
+      else detail+=`卦象帶有挑戰，過程需要耐心。`;
+      detail+=`</p>`;
+      if(mh.hu) detail+=`<p>互卦「${mh.hu.n}」代表事情的過程：中間會經歷波折${mhGood?'但整體方向是好的':'需有心理準備'}。</p>`;
+      detail+=`</div>`;
+    }
+
+    // ═══ 塔羅段 ═══
+    if(tarot.drawn.length>=10){
+      detail+=`<div style="margin-bottom:1rem">`;
+      detail+=`<p><strong style="color:var(--c-gold)">🃏 塔羅牌陣</strong></p>`;
+      if(coreCard){
+        detail+=`<p>核心現狀牌「${coreCard.n}」${coreCard.isUp?'正位':'逆位'}：`;
+        detail+=`${coreCard.isUp?coreCard.up:coreCard.rv}。這張牌反映你目前面對這件事的真實狀態。</p>`;
+      }
+      if(obstCard){
+        detail+=`<p>阻礙牌「${obstCard.n}」${obstCard.isUp?'正位':'逆位'}：`;
+        detail+=`${obstCard.isUp?obstCard.up:obstCard.rv}。這是你目前最大的障礙。</p>`;
+      }
+      if(futureCard){
+        detail+=`<p>近期走向「${futureCard.n}」${futureCard.isUp?'正位':'逆位'}：`;
+        detail+=`${futureCard.isUp?futureCard.up:futureCard.rv}。</p>`;
+      }
+      if(selfCard){
+        detail+=`<p>你的心態「${selfCard.n}」${selfCard.isUp?'正位':'逆位'}：`;
+        detail+=`${selfCard.isUp?selfCard.up:selfCard.rv}。`;
+        if(!selfCard.isUp) detail+=`<strong>提醒你調整自己的心態。</strong>`;
+        detail+=`</p>`;
+      }
+      if(envCard){
+        detail+=`<p>環境影響「${envCard.n}」${envCard.isUp?'正位':'逆位'}：`;
+        detail+=`${envCard.isUp?envCard.up:envCard.rv}。</p>`;
+      }
+      if(finalCard){
+        detail+=`<p>最終結局牌「${finalCard.n}」${finalCard.isUp?'正位':'逆位'}：`;
+        detail+=`<strong>${finalCard.isUp?finalCard.up:finalCard.rv}</strong>。`;
+        detail+=finalCard.isUp?'這是正面的結局訊號。':'結局帶有警示，要注意這張牌的提醒。';
+        detail+=`</p>`;
+      }
+      const upCount=tarot.drawn.filter(c=>c.isUp).length;
+      detail+=`<p class="text-dim text-sm">十張牌中 ${upCount} 正位、${10-upCount} 逆位 — ${upCount>=7?'整體訊號偏正面':upCount>=5?'正逆參半，事在人為':'阻力訊號偏多'}。</p>`;
+      detail+=`</div>`;
+    }
+
+    // ═══ 紫微斗數段 ═══
+    if(S.ziwei&&zwStars.length){
+      detail+=`<div style="margin-bottom:1rem">`;
+      detail+=`<p><strong style="color:var(--c-gold)">⭐ 紫微斗數</strong></p>`;
+      const majorStars=zwStars.filter(s=>s.type==='major');
+      const minorStars=zwStars.filter(s=>s.type!=='major');
+      detail+=`<p>你的「${gongName}」中有`;
+      if(majorStars.length){
+        detail+=`主星：${majorStars.map(s=>{let t=s.name;if(s.bright)t+=`（${s.bright}）`;return t;}).join('、')}。`;
+        // 主星性格特質
+        const starTraits={
+          '紫微':'紫微星為帝王星，代表尊貴、主導力強',
+          '天機':'天機星主智慧謀略，善分析但猶豫',
+          '太陽':'太陽星主光明博愛，適合公開場合發展',
+          '武曲':'武曲星主財帛，利財運但性格剛硬',
+          '天同':'天同星主福德，性格溫和但容易安逸',
+          '廉貞':'廉貞星主政務，能力強但感情複雜',
+          '天府':'天府星如金庫，主穩定保守、財運厚',
+          '太陰':'太陰星主柔美，利陰性事業、感情細膩',
+          '貪狼':'貪狼星主慾望桃花，多才多藝但易貪心',
+          '巨門':'巨門星主口才是非，善辯但易招口舌',
+          '天相':'天相星主輔佐，善協調但依賴性強',
+          '天梁':'天梁星主庇蔭，有長輩緣但偏清高',
+          '七殺':'七殺星主衝勁威權，魄力強但波折多',
+          '破軍':'破軍星主變動開創，敢拼但不穩定'
+        };
+        majorStars.forEach(s=>{
+          if(starTraits[s.name]) detail+=` ${starTraits[s.name]}。`;
+        });
+      }
+      if(zwHasLu) detail+=` 此宮有<strong>化祿</strong>飛入，代表這方面有福氣、有進帳的機會。`;
+      if(zwHasJi) detail+=` 此宮有<strong>化忌</strong>飛入，代表這方面容易卡關、需格外注意。`;
+      detail+=`</p>`;
+      detail+=`</div>`;
+    }
+
+    // ═══ 綜合建議 ═══
+    detail+=`<div style="border-top:2px solid rgba(212,175,55,.2);padding-top:1rem;margin-top:.5rem">`;
+    detail+=`<p><strong style="color:var(--c-gold)">💡 綜合建議</strong></p>`;
+    if(prob>=55){
+      detail+=`<p>整體看來，你的問題是可以往好的方向發展的。`;
+      detail+=`關鍵在於補強「${favEl}行」能量，`;
+      if(type==='love') detail+=`增加桃花與人際磁場。`;
+      else if(type==='career') detail+=`提升事業貴人與官印能量。`;
+      else if(type==='wealth') detail+=`強化財星與食傷生財的力量。`;
+      else detail+=`讓五行趨向平衡。`;
+    }else{
+      detail+=`<p>目前時機和條件還不夠成熟，建議先做好準備。`;
+      detail+=`補強「${favEl}行」能量是第一步，`;
+      detail+=`同時避開忌神「${unfav.join('、')}」的影響。`;
+    }
+    detail+=` <strong>佩戴對應五行的水晶手鏈，是最方便的能量補強方式。</strong></p>`;
+    detail+=`</div>`;
+
     return h+detail;
   }
 
