@@ -695,7 +695,7 @@ body::before{
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 
-/* ── 商埍捨薦卡片升級 ── */
+/* ── 商城捨薦卡片升級 ── */
 .shop-card{
   background:linear-gradient(135deg,rgba(139,0,0,0.12),rgba(212,175,55,0.06))!important;
   border:1px solid rgba(212,175,55,0.2)!important;
@@ -1085,7 +1085,7 @@ html{scroll-behavior:smooth}
   </div>
   <div class="card"><div class="card-title"><i class="fas fa-gem"></i> 【處方】水晶校準建議</div><div id="r-crystal"></div></div>
 
-  <!-- 商埍捨薦卡 -->
+  <!-- 商城捨薦卡 -->
   <div class="card shop-card">
     <div class="card-title"><i class="fas fa-shopping-bag"></i> 想把結果做成「專屬五行手鏈」？我幫你配到位</div>
     <p class="text-sm text-dim mb-md">依你結果的喜用神，給你 3 個實用搭配（可直接下單）</p>
@@ -1376,7 +1376,7 @@ function tenGod(dm,tgt){
 }
 
 /* 十二長生 */
-const CHANG_SHENG_ORDER=['長生','沐浴','冠帶','臨官','帝旺','衰','病','死','墓','絕','胍','養'];
+const CHANG_SHENG_ORDER=['長生','沐浴','冠帶','臨官','帝旺','衰','病','死','墓','絕','胎','養'];
 const CS_START={甲:DZ.indexOf('亥'),丙:DZ.indexOf('寅'),戊:DZ.indexOf('寅'),庚:DZ.indexOf('巳'),壬:DZ.indexOf('申'),
                 乙:DZ.indexOf('午'),丁:DZ.indexOf('酉'),己:DZ.indexOf('酉'),辛:DZ.indexOf('子'),癸:DZ.indexOf('卯')};
 function changSheng(dm,zhi){
@@ -1469,40 +1469,117 @@ function computeBazi(year,month,day,hour,minute,gender){
   const pillars={year:{gan:yG,zhi:yZ},month:{gan:mG,zhi:mZ},day:{gan:dG,zhi:dZ},hour:{gan:hG,zhi:hZ}};
   const dm=dG, dmEl=WX_G[dm];
 
-  // ── 五行統計（含藏干權重）──
+  // ── 五行力量精算（含月令旺衰修正）──
+  // 月令五行旺衰係數
+  const WANING_ORDER={旺:2.0,相:1.5,休:1.0,囚:0.7,死:0.5};
+  const mzEl=WX_Z[mZ]; // 月令五行
+  function getMonthState(el){
+    if(el===mzEl) return '旺';
+    if(SHENG[el]===mzEl) return '休';  // 我生月令→休
+    if(SHENG[mzEl]===el) return '相';  // 月令生我→相
+    if(KE[el]===mzEl) return '囚';     // 我克月令→囚
+    if(KE[mzEl]===el) return '死';     // 月令克我→死
+    return '休';
+  }
+  function monthFactor(el){ return WANING_ORDER[getMonthState(el)]||1.0; }
+
+  // 藏干力量比例
+  const CG_WEIGHT={1:[1.0],2:[0.7,0.3],3:[0.6,0.25,0.15]};
+  
+  // 天干基礎分=10, 地支依藏干分配（地支總分=地支基礎分×藏干比例）
+  const BASE_GAN=10, BASE_ZHI_NORMAL=10, BASE_ZHI_MONTH=20; // 月支加倍
+  
   const ec={金:0,木:0,水:0,火:0,土:0};
   const allG=[yG,mG,dG,hG], allZ=[yZ,mZ,dZ,hZ];
-  allG.forEach(g=>ec[WX_G[g]]+=1.0);
-  allZ.forEach(z=>{
-    ec[WX_Z[z]]+=1.0;
-    const cg=CG[z]||[];
-    if(cg[0])ec[WX_G[cg[0]]]+=0.6; // 本氣
-    if(cg[1])ec[WX_G[cg[1]]]+=0.3; // 中氣
-    if(cg[2])ec[WX_G[cg[2]]]+=0.1; // 餘氣
+  
+  // 天干計分（含月令旺衰修正）
+  allG.forEach(g=>{
+    const el=WX_G[g];
+    ec[el]+=BASE_GAN*monthFactor(el);
   });
+  
+  // 地支計分：只算藏干（不重複算地支本身五行）
+  allZ.forEach((z,i)=>{
+    const cg=CG[z]||[];
+    const baseZhi=(i===1)?BASE_ZHI_MONTH:BASE_ZHI_NORMAL; // 月支加倍
+    const weights=CG_WEIGHT[cg.length]||[1.0];
+    cg.forEach((g,j)=>{
+      const el=WX_G[g];
+      const w=weights[j]||0.1;
+      ec[el]+=baseZhi*w*monthFactor(el);
+    });
+  });
+  
   const tot=Object.values(ec).reduce((a,b)=>a+b,0);
   const ep={}; for(const k of Object.keys(ec))ep[k]=Math.round(ec[k]/tot*100);
 
-  // ── 身強身弱（含月令得令判定）──
-  const mZEl=WX_Z[mZ]; // 月支五行
-  const mZCG=CG[mZ]||[]; // 月支藏干
-  // 得令判定：月支五行＝日主或生日主，或藏干中有同五行/生日主五行
-  const deLing=(mZEl===dmEl)||(SHENG[mZEl]===dmEl)||(BE_SHENG[dmEl]===mZEl)||(mZCG.some(g=>WX_G[g]===dmEl));
-  const selfScore=(ec[dmEl]||0)+(ec[BE_SHENG[dmEl]]||0)*0.6;
-  // 得令者閾值降低（更易身強），不得令者閾值提高（更易身弱）
-  const threshold=deLing?tot*0.35:tot*0.50;
-  const strong=selfScore>threshold;
-
-  // ── 喜用神 / 忌神 ──
-  let fav,unfav;
-  if(strong){
-    fav=[BE_KE[dmEl],SHENG[dmEl]]; // 克我(官殺)、我生(食傷)
-    if(ec[KE[dmEl]]<1.5)fav.push(KE[dmEl]); // 我克(財)也可用
-    unfav=[dmEl,BE_SHENG[dmEl]];
+  // ── 身強身弱（得令、得地、得勢 三維判定）──
+  // 1. 得令：日主五行在月令的旺衰狀態
+  const dmMonthState=getMonthState(dmEl);
+  const deLing=(dmMonthState==='旺'||dmMonthState==='相');
+  
+  // 2. 得地：日主在四柱地支中是否有根（藏干中有同五行天干）
+  let rootCount=0, rootScore=0;
+  allZ.forEach((z,i)=>{
+    const cg=CG[z]||[];
+    const weights=CG_WEIGHT[cg.length]||[1.0];
+    cg.forEach((g,j)=>{
+      if(WX_G[g]===dmEl){
+        rootCount++;
+        rootScore+=(j===0)?3:(j===1)?2:1; // 本氣根3, 中氣根2, 餘氣根1
+      }
+    });
+  });
+  const deDi=(rootCount>=2)||(rootScore>=3); // 有2個以上根，或根力≥3
+  
+  // 3. 得勢：天干中有比劫(同五行)或印星(生我五行)幫扶
+  let helpCount=0;
+  allG.forEach((g,i)=>{
+    if(i===2) return; // 跳過日干自己
+    const el=WX_G[g];
+    if(el===dmEl) helpCount++; // 比劫
+    if(SHENG[el]===dmEl) helpCount++; // 印星
+  });
+  const deShi=(helpCount>=2);
+  
+  // 綜合判定：得令+得地/得勢=身強; 得地+得勢(不得令)也可能身強
+  // 日主同黨力量（比劫+印星五行）佔比
+  const selfScore=(ec[dmEl]||0)+(ec[BE_SHENG[dmEl]]||0)*0.8;
+  const enemyScore=tot-selfScore;
+  const selfRatio=selfScore/tot;
+  
+  let strong;
+  if(deLing){
+    // 得令：再有得地或得勢之一即身強；四柱克洩太重仍可能身弱
+    strong=(deDi||deShi)||(selfRatio>0.35);
+    // 但若克洩太重（同黨<30%），雖得令仍可能身弱
+    if(selfRatio<0.30) strong=false;
   }else{
-    fav=[dmEl,BE_SHENG[dmEl]]; // 同我(比劫)、生我(印)
-    unfav=[BE_KE[dmEl],SHENG[dmEl]];
+    // 不得令：需得地+得勢才可能身強，且同黨比例需>40%
+    strong=(deDi&&deShi&&selfRatio>0.40);
+    // 或同黨力量壓倒性（>55%）
+    if(selfRatio>0.55) strong=true;
   }
+
+  // ── 喜用神 / 忌神（完整版）──
+  let fav=[],unfav=[];
+  if(strong){
+    // 身強喜抑: 官殺(克我)、食傷(我生)、財星(我克)
+    // 優先級: 先洩(食傷) > 再克(官殺) > 再耗(財星)
+    const shishang=SHENG[dmEl];  // 我生 = 食傷五行
+    const guansha=BE_KE[dmEl];   // 克我 = 官殺五行
+    const caixing=KE[dmEl];      // 我克 = 財星五行
+    fav=[shishang,guansha,caixing];
+    unfav=[dmEl,BE_SHENG[dmEl]]; // 忌比劫、印星
+  }else{
+    // 身弱喜扶: 印星(生我)、比劫(同我)
+    const yinxing=BE_SHENG[dmEl]; // 生我 = 印星五行
+    fav=[yinxing,dmEl];
+    unfav=[BE_KE[dmEl],SHENG[dmEl],KE[dmEl]]; // 忌官殺、食傷、財星
+  }
+  // 去重
+  fav=[...new Set(fav)];
+  unfav=[...new Set(unfav.filter(u=>!fav.includes(u)))];
 
   // ── 十神 ──
   const gods={};
@@ -1561,7 +1638,7 @@ function computeBazi(year,month,day,hour,minute,gender){
     dayun.push({gz:dyG+dyZ,el:dyEl,ageStart:as,ageEnd:ae,isCurrent:isCur,level:lv,god:tenGod(dm,dyG),liuNian});
   }
 
-  return{pillars,dm,dmEl,strong,deLing,ec,ep,fav,unfav,gods,cs,shensha,nayin,dayun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]}};
+  return{pillars,dm,dmEl,strong,deLing,deDi,deShi,dmMonthState,selfRatio:Math.round(selfRatio*100),ec,ep,fav,unfav,gods,cs,shensha,nayin,dayun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]}};
 }
 
 function computeStartAge(y,m,d,dir){
@@ -1575,7 +1652,7 @@ function computeStartAge(y,m,d,dir){
 
 /* 納音 */
 function getNaYin(gi,zi){
-  const NY=['海中金','爐中火','大林木','路旁土','劍鋒金','山頭火','澗下水','埍頭土','白蠟金','楊柳木',
+  const NY=['海中金','爐中火','大林木','路旁土','劍鋒金','山頭火','澗下水','城頭土','白蠟金','楊柳木',
             '泉中水','屋上土','霹靂火','松柏木','長流水','砂中金','山下火','平地木','壁上土','金箔金',
             '覆燈火','天河水','大驛土','釵釧金','桑柘木','大溪水','砂中土','天上火','石榴木','大海水'];
   const idx=Math.floor(((gi*12+zi)/2)%30);
@@ -1590,20 +1667,20 @@ const BG=[
   {name:'離',sym:'☲',nat:'火',el:'火',n:3,li:[1,0,1]},
   {name:'震',sym:'☳',nat:'雷',el:'木',n:4,li:[1,0,0]},
   {name:'巽',sym:'☴',nat:'風',el:'木',n:5,li:[0,1,1]},
-  {name:'坍',sym:'☵',nat:'水',el:'水',n:6,li:[0,1,0]},
+  {name:'坎',sym:'☵',nat:'水',el:'水',n:6,li:[0,1,0]},
   {name:'艮',sym:'☶',nat:'山',el:'土',n:7,li:[0,0,1]},
   {name:'坤',sym:'☷',nat:'地',el:'土',n:8,li:[0,0,0]}
 ];
 const G64={
 '11':{n:'乾為天',u:'䷀',j:'元亨利貞。',m:'剛健中正，萬事亨通，戒驕傲。'},
 '12':{n:'天澤履',u:'䷉',j:'履虍尾，不咥人，亨。',m:'小心謹慍前行，合禮則吉。'},
-'13':{n:'天火同人',u:'䷌',j:'同人亍重，亨。',m:'志同道合者聚集，利涉大川。'},
+'13':{n:'天火同人',u:'䷌',j:'同人于重，亨。',m:'志同道合者聚集，利涉大川。'},
 '14':{n:'天雷無妄',u:'䷘',j:'元亨利貞。',m:'至誠無妄，順天而行。'},
 '15':{n:'天風姤',u:'䷫',j:'女壯，勿用取女。',m:'偶然相遇，不可急進。'},
 '16':{n:'天水訟',u:'䷅',j:'有孚，窒。',m:'爭訟之象，宜和解退讓。'},
 '17':{n:'天山遁',u:'䷠',j:'亨，小利貞。',m:'退避保身，以退為進。'},
 '18':{n:'天地否',u:'䷋',j:'否之匪人。',m:'閉塞不通，守靜待時。'},
-'21':{n:'澤天夬',u:'䷪',j:'揚亍王庭。',m:'決斷果敢，以剛決柔。'},
+'21':{n:'澤天夬',u:'䷪',j:'揚于王庭。',m:'決斷果敢，以剛決柔。'},
 '22':{n:'兌為澤',u:'䷹',j:'亨，利貞。',m:'喜悅交流，言語得宜。'},
 '23':{n:'澤火革',u:'䷰',j:'己日乃孚。',m:'變革除舊，時機成熟方可行。'},
 '24':{n:'澤雷隨',u:'䷐',j:'元亨利貞，無咎。',m:'順勢而行，隨機應變。'},
@@ -1615,7 +1692,7 @@ const G64={
 '32':{n:'火澤睽',u:'䷥',j:'小事吉。',m:'乖離背反，求同存異。'},
 '33':{n:'離為火',u:'䷝',j:'利貞，亨。',m:'光明附麗，依附正道。'},
 '34':{n:'火雷噬嗑',u:'䷔',j:'亨，利用獄。',m:'明辨是非，果斷處理。'},
-'35':{n:'火風鼍',u:'䷱',j:'元吉，亨。',m:'鼍新除舊，變革創新。'},
+'35':{n:'火風鼎',u:'䷱',j:'元吉，亨。',m:'鼎新除舊，變革創新。'},
 '36':{n:'火水未濟',u:'䷿',j:'亨，小狐汔濟。',m:'尚未完成，仍需努力。'},
 '37':{n:'火山旅',u:'䷷',j:'小亨。',m:'客居在外，謹慍處世。'},
 '38':{n:'火地晉',u:'䷢',j:'康侯用錫馬蕃庶。',m:'光明上進，步步晉升。'},
@@ -1640,7 +1717,7 @@ const G64={
 '63':{n:'水火既濟',u:'䷾',j:'亨小，利貞。',m:'事已成，居安思危。'},
 '64':{n:'水雷屯',u:'䷂',j:'元亨利貞。',m:'創始之難，堅持終有成。'},
 '65':{n:'水風井',u:'䷯',j:'改邑不改井。',m:'養民之源，不可荒廢。'},
-'66':{n:'坍為水',u:'䷜',j:'有孚，維心亨。',m:'重重險難，以信心行險。'},
+'66':{n:'坎為水',u:'䷜',j:'有孚，維心亨。',m:'重重險難，以信心行險。'},
 '67':{n:'水山蹇',u:'䷦',j:'利西南。',m:'前路艱險，退守反省。'},
 '68':{n:'水地比',u:'䷇',j:'吉，卟筮元永貞。',m:'親附比和，團結互助。'},
 '71':{n:'山天大畜',u:'䷙',j:'利貞，不家食吉。',m:'蓄積力量，博積薄發。'},
@@ -1691,7 +1768,7 @@ function calcMH(un,ln,dy){
   return{up,lo,dong,ben,hu,bian,tiG,yoG,ty};
 }
 
-function guaNum(g){return g.n==='乾'?1:g.n==='兌'?2:g.n==='離'?3:g.n==='震'?4:g.n==='巽'?5:g.n==='坍'?6:g.n==='艮'?7:8}
+function guaNum(g){return g.n==='乾'?1:g.n==='兌'?2:g.n==='離'?3:g.n==='震'?4:g.n==='巽'?5:g.n==='坎'?6:g.n==='艮'?7:8}
 
 function renderYaoLines(lines, dong){
   let html='<div class="yao-visual">';
@@ -1779,7 +1856,7 @@ function calcMhTime(){
     const extra=document.createElement('div');
     extra.className='mt-sm text-xs text-dim';
     extra.innerHTML=`<p>起卦時間：${y}/${mo}/${d} ${h}:${String(mi).padStart(2,'0')} ｜ 農曆：${lunarM}月${lunarD}日 ｜ 時辰：第${shichen}辰</p>
-      <p>上卦數：${upNum}(${['坤','乾','兌','離','震','巽','坍','艮'][upNum-1]||'?'}) ｜ 下卦數：${loNum}(${['坤','乾','兌','離','震','巽','坍','艮'][loNum-1]||'?'}) ｜ 動爻：${dongNum}</p>`;
+      <p>上卦數：${upNum}(${['坤','乾','兌','離','震','巽','坎','艮'][upNum-1]||'?'}) ｜ 下卦數：${loNum}(${['坤','乾','兌','離','震','巽','坎','艮'][loNum-1]||'?'}) ｜ 動爻：${dongNum}</p>`;
     info.appendChild(extra);
   }
 }
@@ -1989,7 +2066,9 @@ function renderBazi(){
   html+='</div>';
 
   // 納音
-  html+=`<p class="text-sm text-dim mt-sm">納音：${b.nayin} ｜ 身${b.strong?'<span class="text-success">強</span>':'<span class="text-danger">弱</span>'}${b.deLing?' (得令)':' (不得令)'} ｜ 日主：${b.dm}（${b.dmEl}）</p>`;
+  html+=`<p class="text-sm text-dim mt-sm">納音：${b.nayin} ｜ 身${b.strong?'<span class="text-success">強</span>':'<span class="text-danger">弱</span>'} ｜ 日主：${b.dm}（${b.dmEl}）</p>`;
+  html+=`<p class="text-xs text-dim">得令：${b.deLing?'✓ '+b.dmMonthState:'✗ '+b.dmMonthState} ｜ 得地：${b.deDi?'✓':'✗'} ｜ 得勢：${b.deShi?'✓':'✗'} ｜ 日主同黨${b.selfRatio}%</p>`;
+  html+=`<p class="text-xs text-dim">喜用神：<span class="text-success">${b.fav.join('、')}</span> ｜ 忌神：<span class="text-danger">${b.unfav.join('、')}</span></p>`;
   document.getElementById('d-bazi').innerHTML=html;
 
   // 五行柱狀圖
@@ -2215,7 +2294,7 @@ function parseQuestionIntent(question, type) {
   if(/多少|幾[個位張條隻]/.test(q)) result.isAmount = true;
 
   // 方向題
-  if(/哪裡|何處|卻哪|方向|地點|埍市|國家/.test(q)) result.isDirection = true;
+  if(/哪裡|何處|卻哪|方向|地點|城市|國家/.test(q)) result.isDirection = true;
 
   // 提取關鍵詞
   const kw = q.replace(/[？?！!，,。.、的了嗎呢吧啊喔哦]/g, '').trim();
@@ -3456,7 +3535,7 @@ function runAnalysisV2(){
     // 變卦走勢
     if(S.meihua.bian&&S.meihua.bian.n){
       const bianGood=['乾','離','兌','巽'];
-      const bianBad=['坍','艮'];
+      const bianBad=['坎','艮'];
       const bn=S.meihua.bian.n||'';
       if(bianGood.some(g=>bn.includes(g)))mhScore+=4;
       if(bianBad.some(b=>bn.includes(b)))mhScore-=3;
@@ -3799,8 +3878,8 @@ function toggleLiuNian(dyIdx){
    ============================================================= */
 const YAO_CI={
   '乾為天':['潛龍勿用','見龍在田，利見大人','君子終日乾乾，夕惕若厲，無咎','或躍在淵，無咎','飛龍在天，利見大人','亢龍有悔'],
-  '坤為地':['履霜，堅冰至','直方大，不習無不利','含章可貞，或從王事，無成有終','括囊，無咎無譽','黃裳，元吉','龍戰亍重，其血玄黃'],
-  '地天泰':['拔茅茹，以其彙，征吉','包荒，用馮河，不遐遺','無平不陂，無往不復，艱貞無咎','翩翩不富，以其鄰，不戒以孚','帝乙歸妹，以祉元吉','埍復亍隍，勿用師，自邑告命'],
+  '坤為地':['履霜，堅冰至','直方大，不習無不利','含章可貞，或從王事，無成有終','括囊，無咎無譽','黃裳，元吉','龍戰于重，其血玄黃'],
+  '地天泰':['拔茅茹，以其彙，征吉','包荒，用馮河，不遐遺','無平不陂，無往不復，艱貞無咎','翩翩不富，以其鄰，不戒以孚','帝乙歸妹，以祉元吉','城復于隍，勿用師，自邑告命'],
   '天地否':['拔茅茹，以其彙，貞吉亨','包承，小人吉，大人否亨','包羞','有命無咎，疇離祉','休否，大人吉','傾否，先否後喜'],
 };
 
