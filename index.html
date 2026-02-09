@@ -229,6 +229,38 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .daily-mini.open .daily-mini-body{max-height:2000px}
 .daily-mini.open .daily-mini-arrow{transform:rotate(180deg)}
 .daily-mini-arrow{transition:transform .3s ease}
+/* Remedy Alert - emotional trigger */
+.remedy-alert{border:2px solid rgba(255,160,0,.4);background:linear-gradient(135deg,rgba(255,160,0,.08),rgba(139,0,0,.06));position:relative;overflow:visible}
+.remedy-alert-header{display:flex;align-items:flex-start;gap:var(--sp-md);margin-bottom:var(--sp-md)}
+.remedy-icon{font-size:2.2rem;flex-shrink:0;line-height:1}
+.remedy-title{color:var(--c-gold);font-size:1.15rem;margin:0 0 .3rem 0;font-weight:700}
+.remedy-subtitle{color:var(--c-text-dim);font-size:.9rem;margin:0}
+.remedy-diagnosis{background:rgba(0,0,0,.2);border-radius:var(--r-md);padding:var(--sp-md);margin-bottom:var(--sp-md)}
+.remedy-diagnosis .diag-row{display:flex;align-items:center;gap:var(--sp-sm);padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.remedy-diagnosis .diag-row:last-child{border-bottom:none}
+.diag-label{font-size:.85rem;color:var(--c-text-dim);min-width:4.5rem}
+.diag-value{font-size:.95rem;font-weight:600}
+.diag-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.diag-bar{height:100%;border-radius:4px;transition:width .6s ease}
+.diag-tag{font-size:.75rem;padding:2px 6px;border-radius:3px;font-weight:600}
+.diag-tag-lack{background:rgba(255,60,60,.2);color:#ff6b6b}
+.diag-tag-excess{background:rgba(100,200,255,.2);color:#64c8ff}
+.diag-tag-ok{background:rgba(100,255,100,.15);color:#7ddf7d}
+.remedy-arrow{display:flex;align-items:center;justify-content:center;gap:var(--sp-sm);padding:var(--sp-sm) 0}
+.text-gold{color:var(--c-gold)}
+/* Remedy Plan */
+.remedy-plan{border:2px solid rgba(212,175,55,.3);background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(139,0,0,.04))}
+.remedy-actions .action-item{display:flex;gap:var(--sp-md);padding:var(--sp-md);border-bottom:1px solid var(--c-border);align-items:flex-start}
+.remedy-actions .action-item:last-child{border-bottom:none}
+.action-num{width:2rem;height:2rem;background:var(--c-gold);color:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
+.action-content{flex:1}
+.action-title{font-weight:700;color:var(--c-gold);margin-bottom:.3rem}
+.action-desc{font-size:.9rem;color:var(--c-text-dim);line-height:1.6}
+.action-crystal{display:inline-flex;align-items:center;gap:.3rem;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);border-radius:var(--r-sm);padding:.2rem .6rem;margin-top:.5rem;font-size:.85rem;color:var(--c-gold);cursor:pointer}
+.action-crystal:hover{background:rgba(212,175,55,.2)}
+/* Detail toggle in answer section */
+.detail-toggle-wrap.open .detail-toggle-body{max-height:3000px}
+.detail-toggle-wrap.open .fa-chevron-right{transform:rotate(90deg)}
 .conclusion h3{font-family:var(--f-display);color:var(--c-gold);margin-bottom:var(--sp-md)}
 
 /* — Actions — */
@@ -932,18 +964,24 @@ html{scroll-behavior:smooth}
 <section class="step active" id="step-0">
   <div class="hero">
     <div class="hero-icon">☽</div>
-    <h1>靜月之光能量占卜儀</h1>
-    <p>整合八字 · 紫微斗數 · 梅花易數 · 塔羅牌的多維度命理分析</p>
-    <div class="live-counter-bar">
-      <span>✨ 免費使用 · 結果僅供參考</span>
+    <h1>你的命盤，藏著答案</h1>
+    <p style="font-size:1rem;line-height:1.7;max-width:480px;margin:0 auto var(--sp-md)">感情卡關？事業迷茫？不確定下一步該怎麼走？<br>輸入出生資料，<strong style="color:var(--c-gold)">90 秒內</strong>告訴你答案。</p>
+    <div style="display:flex;justify-content:center;gap:var(--sp-lg);flex-wrap:wrap;margin-bottom:var(--sp-md)">
+      <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">5 套系統</div><div class="text-xs text-dim">八字+紫微+梅花+塔羅+姓名</div></div>
+      <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">免費</div><div class="text-xs text-dim">完整分析不收費</div></div>
+      <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">90 秒</div><div class="text-xs text-dim">馬上看到結果</div></div>
     </div>
-
+    <div style="background:rgba(0,0,0,.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);display:inline-flex;gap:var(--sp-md);flex-wrap:wrap;justify-content:center;font-size:.82rem;color:var(--c-text-dim)">
+      <span>❝ 超準，點出我的盲點 ❞</span>
+      <span>❝ 分析比算命師還細 ❞</span>
+      <span>❝ 分享給全辦公室了 ❞</span>
+    </div>
   </div>
   <div class="stepper" id="main-stepper">
-    <div class="stepper-item active"><div class="stepper-dot">1</div><span>輸入</span></div><div class="stepper-line"></div>
-    <div class="stepper-item"><div class="stepper-dot">2</div><span>梅花</span></div><div class="stepper-line"></div>
-    <div class="stepper-item"><div class="stepper-dot">3</div><span>塔羅</span></div><div class="stepper-line"></div>
-    <div class="stepper-item"><div class="stepper-dot">4</div><span>結果</span></div>
+    <div class="stepper-item active"><div class="stepper-dot">1</div><span>填資料</span></div><div class="stepper-line"></div>
+    <div class="stepper-item"><div class="stepper-dot">2</div><span>起卦</span></div><div class="stepper-line"></div>
+    <div class="stepper-item"><div class="stepper-dot">3</div><span>抽牌</span></div><div class="stepper-line"></div>
+    <div class="stepper-item"><div class="stepper-dot">4</div><span>看結果</span></div>
   </div>
   <div class="card">
     <div class="card-title"><i class="fas fa-question-circle"></i> 你的問題</div>
@@ -1052,23 +1090,45 @@ html{scroll-behavior:smooth}
 
 <!-- ========== STEP 3: RESULT ========== -->
 <section class="step" id="step-3">
-  <!-- 🎯 核心答案區 (使用者最想看的) -->
+  <!-- 🎯 大判定 -->
   <div class="result-verdict" id="r-verdict">
     <div class="verdict-label" id="r-vlabel">分析中…</div>
     <div class="verdict-prob" id="r-vprob">0%</div>
     <div class="verdict-note" id="r-vnote"></div>
   </div>
 
+  <!-- 🎯 直接回答你的問題 -->
   <div class="card"><div class="card-title"><i class="fas fa-bullseye"></i> 直接回答</div>
     <div id="r-question" class="text-dim mb-md"></div>
     <div id="r-answer" class="serif" style="font-size:1.05rem;line-height:1.8"></div>
     <div class="divider"></div><div id="r-factors"></div><div id="r-suggest" class="mt-md"></div>
   </div>
 
-  <!-- 🛒 產品推薦 (第二重要) -->
-  <div class="card"><div class="card-title"><i class="fas fa-gem"></i> 【處方】水晶校準建議</div><div id="r-crystal"></div></div>
+  <!-- ⚠️ 五行失衡警示（情緒觸發點）-->
+  <div class="card remedy-alert" id="remedy-alert">
+    <div class="remedy-alert-header">
+      <div class="remedy-icon" id="remedy-icon">⚠️</div>
+      <div>
+        <h3 class="remedy-title" id="remedy-title">你的五行有明顯缺口</h3>
+        <p class="remedy-subtitle" id="remedy-subtitle">這可能是你目前困擾的根源</p>
+      </div>
+    </div>
+    <div id="remedy-diagnosis" class="remedy-diagnosis"></div>
+    <div class="remedy-arrow">
+      <i class="fas fa-arrow-down" style="color:var(--c-gold);font-size:1.2rem"></i>
+      <span class="text-sm text-gold">以下是你的專屬調整方案</span>
+      <i class="fas fa-arrow-down" style="color:var(--c-gold);font-size:1.2rem"></i>
+    </div>
+  </div>
 
-  <!-- 商城導購卡 -->
+  <!-- 💎 改運處方（具體行動）-->
+  <div class="card remedy-plan" id="remedy-plan">
+    <div class="card-title"><i class="fas fa-wand-magic-sparkles"></i> 你的專屬改運處方</div>
+    <div id="remedy-actions" class="remedy-actions"></div>
+  </div>
+
+  <!-- 🛒 水晶推薦 + 賣場 -->
+  <div class="card"><div class="card-title"><i class="fas fa-gem"></i> 處方水晶 — 依你命盤精選</div><div id="r-crystal"></div></div>
   <div class="card shop-card">
     <div class="card-title"><i class="fas fa-shopping-bag"></i> 想把結果做成「專屬五行手鏈」？我幫你配到位</div>
     <p class="text-sm text-dim mb-md">依你結果的喜用神，給你 3 個實用搭配（可直接下單）</p>
@@ -1397,6 +1457,126 @@ function toggleCollapse(el){
   const card=el.closest('.collapsible-card');
   if(card) card.classList.toggle('open');
 }
+
+/* ═══ REMEDY: 五行失衡警示 + 改運處方 ═══ */
+function renderRemedy(bazi,type){
+  const ep=bazi.ep||{}, dm=bazi.dm, el=bazi.dmEl, strong=bazi.strong;
+  const fav=bazi.fav||[], unfav=bazi.unfav||[];
+  const tot=Object.values(ep).reduce((a,b)=>a+b,0)||60;
+
+  // ── 五行狀態診斷 ──
+  const EL_NAMES={金:'金',木:'木',水:'水',火:'火',土:'土'};
+  const EL_COLORS={金:'#c0c0c0',木:'#4caf50',水:'#42a5f5',火:'#ff5722',土:'#ff9800'};
+  const states=bazi.wxStates||{};
+
+  let diagHTML='';
+  ['木','火','土','金','水'].forEach(e=>{
+    const v=ep[e]||0;
+    const pct=Math.round(v/tot*100);
+    const ideal=20; // 平衡=20%
+    const diff=pct-ideal;
+    let tag,tagClass;
+    if(pct<=8){tag='嚴重不足';tagClass='diag-tag-lack';}
+    else if(pct<=14){tag='偏弱';tagClass='diag-tag-lack';}
+    else if(pct<=26){tag='正常';tagClass='diag-tag-ok';}
+    else if(pct<=35){tag='偏旺';tagClass='diag-tag-excess';}
+    else{tag='過旺';tagClass='diag-tag-excess';}
+
+    const state=states[e]||'';
+    diagHTML+=`<div class="diag-row">
+      <span class="diag-label" style="color:${EL_COLORS[e]}">${e} ${state}</span>
+      <div class="diag-bar-wrap"><div class="diag-bar" style="width:${Math.min(pct*2,100)}%;background:${EL_COLORS[e]}"></div></div>
+      <span class="diag-value" style="color:${EL_COLORS[e]}">${Math.round(v)}分</span>
+      <span class="diag-tag ${tagClass}">${tag}</span>
+    </div>`;
+  });
+
+  // ── 警示標題（依嚴重度）──
+  const weakEls=Object.entries(ep).filter(([e,v])=>(v/tot)<0.12).map(([e])=>e);
+  const strongEls=Object.entries(ep).filter(([e,v])=>(v/tot)>0.33).map(([e])=>e);
+  const alertEl=document.getElementById('remedy-alert');
+
+  let icon='⚠️', title='', subtitle='';
+  if(weakEls.length>=2){
+    icon='🚨';title=`你的${weakEls.join('、')}行嚴重不足`;
+    subtitle='多項五行失衡，建議盡快調整能量場';
+  }else if(weakEls.length===1){
+    icon='⚠️';title=`你的「${weakEls[0]}行」明顯不足`;
+    subtitle='這可能是目前運勢不順的關鍵原因';
+  }else if(strongEls.length){
+    icon='💡';title=`你的${strongEls.join('、')}行過旺`;
+    subtitle='能量過度集中，需要洩導平衡';
+  }else{
+    icon='✨';title='你的五行相對均衡';
+    subtitle='微調即可讓運勢更上層樓';
+  }
+
+  document.getElementById('remedy-icon').textContent=icon;
+  document.getElementById('remedy-title').textContent=title;
+  document.getElementById('remedy-subtitle').textContent=subtitle;
+  document.getElementById('remedy-diagnosis').innerHTML=diagHTML;
+
+  // ── 改運處方 ──
+  const actions=[];
+  const TYPE_LABELS={love:'感情',career:'事業',wealth:'財運',health:'健康',general:'整體運勢',relationship:'人際',family:'家庭'};
+  const typeLabel=TYPE_LABELS[type]||'運勢';
+
+  // 處方1: 五行補強
+  const mainFav=fav[0]||'土';
+  const favCrystals={
+    金:{stone:'白水晶 / 鈦晶',color:'白色、金色、銀色',dir:'正西方',food:'白色食物（白蘿蔔、豆腐、百合）'},
+    木:{stone:'綠幽靈 / 東陵玉',color:'綠色、青色',dir:'正東方',food:'綠色蔬果（花椰菜、奇異果、菠菜）'},
+    水:{stone:'海藍寶 / 月光石',color:'藍色、黑色',dir:'正北方',food:'黑色食物（黑芝麻、海帶、藍莓）'},
+    火:{stone:'紅瑪瑙 / 石榴石',color:'紅色、紫色',dir:'正南方',food:'紅色食物（紅棗、枸杞、番茄）'},
+    土:{stone:'黃水晶 / 虎眼石',color:'黃色、棕色',dir:'中央/東北',food:'黃色食物（南瓜、玉米、薑黃）'}
+  };
+  const fc=favCrystals[mainFav]||favCrystals['土'];
+  actions.push({
+    title:`補強「${mainFav}行」能量`,
+    desc:`你最需要的是${mainFav}行能量。日常多穿 <strong>${fc.color}</strong> 系服飾，居家或辦公 <strong>${fc.dir}</strong> 方位擺放水晶，飲食多攝取${fc.food}。`,
+    crystal:`💎 推薦：${fc.stone}`
+  });
+
+  // 處方2: 針對問題類型
+  const typeRemedy={
+    love:{title:'增強桃花 / 感情磁場',desc:'建議佩戴<strong>粉晶</strong>於左手增強異性緣，臥室西南方（坤位）放一對粉晶球，週五（金星日）是約會好日子。'},
+    career:{title:'提升事業貴人運',desc:'辦公桌左上角放<strong>綠幽靈</strong>或<strong>鈦晶</strong>招貴人，重要會議佩戴金色系飾品增強氣場，每月初一向正東方祈願。'},
+    wealth:{title:'開啟正偏財運通道',desc:'錢包內放小片<strong>黃水晶</strong>碎石招偏財，每月農曆初二、十六「做牙」，家中財位（大門斜對角）保持明亮。'},
+    health:{title:'五行養生調理方案',desc:`根據你的命盤，${mainFav}行不足可能影響相關臟腑。建議從飲食（${fc.food}）、作息（${mainFav==='水'?'早睡養腎':mainFav==='木'?'舒肝勿怒':mainFav==='火'?'午休養心':mainFav==='金'?'深呼吸養肺':'飲食規律養脾'}）著手。`},
+    general:{title:'全方位運勢提升',desc:`今年最重要的是穩住${mainFav}行能量。選一條符合喜用神的水晶手鏈隨身佩戴，等於時刻在補運。`},
+    relationship:{title:'改善人際磁場',desc:'佩戴<strong>粉晶</strong>增加親和力，<strong>海藍寶</strong>幫助溝通表達，與人交流時嘗試在手腕佩戴暖色系水晶。'},
+    family:{title:'穩固家庭和諧能量',desc:'家中客廳放<strong>紫水晶洞</strong>或<strong>白水晶球</strong>淨化磁場，臥室避免放太多電子產品，餐桌擺黃色系水晶招和氣。'}
+  };
+  const tr=typeRemedy[type]||typeRemedy.general;
+  actions.push({title:tr.title,desc:tr.desc,crystal:null});
+
+  // 處方3: 大運建議
+  const curDy=bazi.dayun?bazi.dayun.find(d=>d.isCurrent):null;
+  if(curDy){
+    const dyFav=curDy.level.includes('吉');
+    actions.push({
+      title:dyFav?'把握當前大運助力':'度過大運低谷期',
+      desc:dyFav
+        ?`你目前走「${curDy.gz}」大運（${curDy.level}），這段時期是${typeLabel}的好時機。<strong>配合水晶能量，效果加乘</strong>。`
+        :`當前大運「${curDy.gz}」（${curDy.level}），運勢壓力較大。<strong>更需要水晶能量護身</strong>，幫你穩住磁場、化解阻力。`
+    });
+  }
+
+  // 渲染
+  let actHTML='';
+  actions.forEach((a,i)=>{
+    actHTML+=`<div class="action-item">
+      <div class="action-num">${i+1}</div>
+      <div class="action-content">
+        <div class="action-title">${a.title}</div>
+        <div class="action-desc">${a.desc}</div>
+        ${a.crystal?`<div class="action-crystal" onclick="document.getElementById('r-crystal').scrollIntoView({behavior:'smooth'})">${a.crystal} <i class="fas fa-arrow-right" style="font-size:.7rem"></i></div>`:''}
+      </div>
+    </div>`;
+  });
+  document.getElementById('remedy-actions').innerHTML=actHTML;
+}
+
 /* Lazy init for extra features (only when user opens the panel) */
 function initExtraFeatures(){
   if(typeof renderDailyFortune==='function') try{renderDailyFortune()}catch(e){}
@@ -2317,7 +2497,7 @@ function _runAnalysisV1_unused(){
   // Direct answer
   const answer=generateAnswer(type,finalProb,b,S.meihua,S.tarot);
   document.getElementById('r-answer').innerHTML=answer.text;
-  document.getElementById('r-factors').innerHTML=answer.factors?`<h4 class="text-gold serif mt-md mb-sm">影響因子</h4><ul class="text-sm" style="padding-left:1.2rem;color:var(--c-text-dim)">${answer.factors.map(f=>'<li style="margin:.3rem 0">'+f+'</li>').join('')}</ul>`:'';
+  document.getElementById('r-factors').innerHTML=answer.factors?`<div class="detail-toggle-wrap" style="margin-top:.5rem"><div class="detail-toggle-btn" onclick="this.parentElement.classList.toggle('open')" style="cursor:pointer;display:flex;align-items:center;gap:.5rem;color:var(--c-text-dim);font-size:.85rem;padding:.3rem 0"><i class="fas fa-chevron-right" style="font-size:.7rem;transition:transform .3s"></i><span>影響因子（${answer.factors.length}項）</span></div><div class="detail-toggle-body" style="max-height:0;overflow:hidden;transition:max-height .4s ease"><ul class="text-sm" style="padding:.5rem 1.2rem;color:var(--c-text-dim)">${answer.factors.map(f=>'<li style="margin:.3rem 0">'+f+'</li>').join('')}</ul></div></div>`:'';
   document.getElementById('r-suggest').innerHTML=answer.suggestions?`<h4 class="text-gold serif mt-md mb-sm">行動建議</h4><ol class="text-sm" style="padding-left:1.2rem;color:var(--c-text-dim)">${answer.suggestions.map(s=>'<li style="margin:.3rem 0">'+s+'</li>').join('')}</ol>`:'';
 
   // Probability breakdown
@@ -2602,12 +2782,52 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
 
   // ── 針對「會不會/能不能」是非題 ──
   if(intent.isYesNo) {
-    let answer = '';
-    if(prob >= 70) answer = `綜合五維度分析，<strong class="text-success">可能性偏高（${prob}%）</strong>，多數指標支持正面結果。`;
-    else if(prob >= 55) answer = `分析顯示<strong class="text-warn">有一定可能（${prob}%）</strong>，但需要努力配合。`;
-    else if(prob >= 40) answer = `分析顯示<strong class="text-warn">可能性偏位（${prob}%）</strong>，阻力不少，需加倍努力。`;
-    else answer = `目前各指標顯示<strong class="text-danger">可能性較位（${prob}%）</strong>，建議調整期望或策略。`;
-    return `<p>${answer}</p>`;
+    const curDy=bazi.dayun?bazi.dayun.find(d=>d.isCurrent):null;
+    const fav=bazi.fav||[], favEl=fav[0]||'';
+    const mhGood=mh&&(mh.ty.f.includes('吉')||mh.ty.r.includes('生'));
+    const tarotGood=tarot.drawn.length>=10&&tarot.drawn.filter(c=>c.isUp).length>=6;
+    const finalCard=tarot.drawn.length>=10?tarot.drawn[9]:null;
+    const dyGood=curDy&&curDy.level.includes('吉');
+
+    let h='',detail='';
+    if(prob>=70){
+      h=`<p style="font-size:1.1rem"><strong class="text-success">結論：很有機會實現，整體運勢站在你這邊。</strong></p>`;
+      detail+=`<p>五套系統中，多數給出正面訊號。`;
+      detail+=`你的八字身${strong?'強，有足夠的能量去推動這件事':'弱，但目前有印星或比劫在暗中幫你'}，`;
+      if(dyGood) detail+=`加上大運「${curDy.gz}」屬${curDy.level}，外在環境是配合你的。`;
+      else if(curDy) detail+=`不過大運「${curDy.gz}」（${curDy.level}）稍有壓力，行動上要多幾分謹慎。`;
+      detail+=`</p>`;
+      if(mh){detail+=`<p>梅花易數得「${mh.ben.n}→${mh.bian.n}」，體用${mh.ty.r}（${mh.ty.f}），${mhGood?'卦象偏吉，事情有外力支持':'卦象中性，需靠自身努力'}。</p>`;}
+      if(finalCard){detail+=`<p>塔羅最終牌「${finalCard.n}」${finalCard.isUp?'正位':'逆位'}，${finalCard.isUp?'是一張好的結局牌：'+finalCard.up:'提醒你注意：'+finalCard.rv}。</p>`;}
+      detail+=`<p><strong>建議：把握時機，積極行動。</strong>配合喜用神「${favEl}行」能量，成功率會更高。</p>`;
+    }else if(prob>=55){
+      h=`<p style="font-size:1.1rem"><strong class="text-warn">結論：有機會，但不是躺著就能成的。需要你主動去推。</strong></p>`;
+      detail+=`<p>命盤中有支持的力量，但也有明顯的阻力。`;
+      detail+=`你身${strong?'強':'弱'}，`;
+      if(!strong) detail+=`自身能量不算充足，需要借助外力（貴人、環境、能量補強）。`;
+      else detail+=`雖有實力但容易衝過頭，反而錯失機會。`;
+      if(curDy) detail+=`當前大運「${curDy.gz}」（${curDy.level}），${dyGood?'運勢有加持但不是保證':'運勢壓力不小，做決定前三思'}。`;
+      detail+=`</p>`;
+      if(mh){detail+=`<p>梅花取卦「${mh.ben.n}→${mh.bian.n}」，${mh.ty.r}（${mh.ty.f}），${mhGood?'方向是對的，堅持會有收穫':'過程會有波折，做好心理準備'}。</p>`;}
+      if(finalCard){detail+=`<p>塔羅結局牌「${finalCard.n}」${finalCard.isUp?'正位 — '+finalCard.up:'逆位 — '+finalCard.rv}。</p>`;}
+      detail+=`<p><strong>建議：可以嘗試，但要設停損點。</strong>同時建議補強「${favEl}行」能量，增加成功籌碼。</p>`;
+    }else if(prob>=40){
+      h=`<p style="font-size:1.1rem"><strong class="text-warn">結論：目前困難不少，硬推的話風險偏高。</strong></p>`;
+      detail+=`<p>命盤中阻力大於助力。`;
+      detail+=`身${strong?'強但殺重':'弱且無援'}，`;
+      if(curDy) detail+=`大運「${curDy.gz}」（${curDy.level}）${dyGood?'雖有小助':'加上運勢低迷，雪上加霜'}。`;
+      detail+=`</p>`;
+      if(mh){detail+=`<p>梅花卦象「${mh.ben.n}→${mh.bian.n}」，${mh.ty.r}（${mh.ty.f}），${mhGood?'雖卦象不差但配合其他不利因素來看':'卦象本身也偏不利'}，整體需要更多準備。</p>`;}
+      detail+=`<p><strong>建議：不是不行，但時機未到。</strong>先做好準備、補強能量、等待更好的時機點再出手。</p>`;
+    }else{
+      h=`<p style="font-size:1.1rem"><strong class="text-danger">結論：目前時機不利，建議暫緩或換個方向。</strong></p>`;
+      detail+=`<p>五個維度中大多給出警告訊號。`;
+      detail+=`命盤中${strong?'力量雖強但方向不對':'根基不穩'}，`;
+      if(curDy) detail+=`大運「${curDy.gz}」（${curDy.level}）也不幫忙。`;
+      detail+=`</p>`;
+      detail+=`<p><strong>建議：保守為上，把精力放在穩固基礎。</strong>先調整自身能量場，等到運勢轉好再行動。</p>`;
+    }
+    return h+detail;
   }
 
   return null; // 無特殊問型，使用預設
@@ -2765,73 +2985,65 @@ function generateAnswer(type,prob,bazi,mh,tarot){
   const qaResponse = generateQAResponse(intent, type, prob, bazi, mh, tarot);
   if(qaResponse) {
     text += `<div style="border-left:3px solid var(--c-gold,#d4af37);padding-left:1rem;margin-bottom:1rem">${qaResponse}</div>`;
-    text += `<div class="divider"></div>`;
-    text += `<p class="text-sm text-dim" style="margin-bottom:0.5rem">以下為完整的五維度命理依據：</p>`;
   }
 
-  // 開頭：八字定調
-  text+=`<p>`;
-  text+=`<strong>日主「${dm}」五行屬${el}，身${strong?'強':'弱'}</strong>，`;
+  // ── 命理依據（收合式，不干擾閱讀）──
+  let techText='';
+  techText+=`<p><strong>日主「${dm}」五行屬${el}，身${strong?'強':'弱'}</strong>，`;
   if(curDy){
-    text+=`目前走 ${curDy.gz} 大運（${curDy.level}），`;
-    if(curDy.level.includes('大吉')) text+='運勢正處於最佳時期，外在環境有力支持。';
-    else if(curDy.level.includes('中吉')) text+='運勢偏好，有貴人助力。';
-    else if(curDy.level.includes('小吉')) text+='運勢小吉，穩中有進。';
-    else if(curDy.level.includes('凶')) text+='大運帶阻力，做事需更加謹慎。';
-    else text+='運勢平穩。';
+    techText+=`目前走 ${curDy.gz} 大運（${curDy.level}），`;
+    if(curDy.level.includes('大吉')) techText+='運勢正處於最佳時期。';
+    else if(curDy.level.includes('中吉')) techText+='運勢偏好，有貴人助力。';
+    else if(curDy.level.includes('小吉')) techText+='穩中有進。';
+    else if(curDy.level.includes('凶')) techText+='大運帶阻力，需加謹慎。';
+    else techText+='運勢平穩。';
   }
-  text+=`</p>`;
+  techText+=`</p>`;
 
-  // 中段：梅花判斷
   if(mh){
-    text+=`<p class="mt-sm"><strong>梅花易數</strong>得本卦「${mh.ben.n}」，變卦「${mh.bian.n}」，`;
-    text+=`體用關係為 <span class="tag tag-gold">${mh.ty.r}</span>（${mh.ty.f}）。`;
-    if(mh.ty.d) text+=mh.ty.d;
-    text+=`</p>`;
+    techText+=`<p class="mt-sm"><strong>梅花易數</strong>得本卦「${mh.ben.n}」，變卦「${mh.bian.n}」，`;
+    techText+=`體用關係為 <span class="tag tag-gold">${mh.ty.r}</span>（${mh.ty.f}）。`;
+    if(mh.ty.d) techText+=mh.ty.d;
+    techText+=`</p>`;
   }
 
-  // 塔羅詳細敘述
   if(tarot.drawn.length>=10){
     const core=tarot.drawn[0],obst=tarot.drawn[1],future=tarot.drawn[3],outcome=tarot.drawn[4],final=tarot.drawn[9];
-    text+=`<p class="mt-sm"><strong>塔羅十張牌解讀：</strong>`;
-    text+=`核心牌「${core.n}」${core.isUp?'正位':'逆位'}，表示${core.isUp?core.up:core.rv}`;
-    text+=`；阻礙位「${obst.n}」${obst.isUp?'正位':'逆位'}，暗示${obst.isUp?obst.up:obst.rv}`;
-    text+=`。未來走向看「${future.n}」${future.isUp?'正位':'逆位'}（${future.isUp?future.up:future.rv}）`;
-    text+=`，最終結果牌「${final.n}」${final.isUp?'正位':'逆位'}，`;
-    text+=final.isUp?`這是一張正面的結局牌：${final.up}`:`結局牌為逆位，提醒：${final.rv}`;
-    text+=`</p>`;
-
-    // 正逆位統計
+    techText+=`<p class="mt-sm"><strong>塔羅十張牌：</strong>`;
+    techText+=`核心「${core.n}」${core.isUp?'正位':'逆位'}（${core.isUp?core.up:core.rv}）`;
+    techText+=`；阻礙「${obst.n}」${obst.isUp?'正位':'逆位'}（${obst.isUp?obst.up:obst.rv}）`;
+    techText+=`；結局「${final.n}」${final.isUp?'正位':'逆位'}（${final.isUp?final.up:final.rv}）`;
+    techText+=`</p>`;
     const upCount=tarot.drawn.filter(c=>c.isUp).length;
-    text+=`<p class="mt-sm text-sm text-dim">十張牌中 ${upCount} 張正位、${10-upCount} 張逆位，`;
-    if(upCount>=7) text+='牌面整體偏正面積極。';
-    else if(upCount>=5) text+='正逆參半，事情有發展空間但需留意障礙。';
-    else text+='逆位偏多，目前阻力較大，建議調整策略。';
-    text+=`</p>`;
+    techText+=`<p class="mt-sm text-sm text-dim">${upCount}張正位/${10-upCount}張逆位，${upCount>=7?'牌面偏正面':upCount>=5?'正逆參半':'阻力較大'}。</p>`;
   }
 
-  // 紫微斗數
   if(S.ziwei){
     const typeToGong={love:2,career:8,wealth:4,health:5,family:9,relationship:7,general:0};
     const gongIdx=typeToGong[type]!==undefined?typeToGong[type]:0;
     const gongName=typeof ZW_PALACES!=='undefined'?ZW_PALACES[gongIdx]:'命宮';
     const gongStars=S.ziwei.palaces[gongIdx]?S.ziwei.palaces[gongIdx].stars:[];
     if(gongStars.length){
-      text+=`<p class="mt-sm"><strong>紫微斗數·${gongName}</strong>中有：`;
-      text+=gongStars.map(s=>{
-        let t=s.name;
-        if(s.bright) t+=`（${s.bright}）`;
-        if(s.hua) t+=` ${s.hua}`;
-        return t;
-      }).join('、');
-      const hasLu=gongStars.some(s=>s.hua==='化祿');
-      const hasJi=gongStars.some(s=>s.hua==='化忌');
-      if(hasLu) text+='。化祿入此宮，此方面有福氣加持。';
-      else if(hasJi) text+='。化忌入此宮，此方面需格外留心。';
-      else text+='。';
-      text+=`</p>`;
+      techText+=`<p class="mt-sm"><strong>紫微斗數·${gongName}</strong>：`;
+      techText+=gongStars.map(s=>{let t=s.name;if(s.bright)t+=`（${s.bright}）`;if(s.hua)t+=` ${s.hua}`;return t;}).join('、');
+      const hasLu=gongStars.some(s=>s.hua==='化祿'),hasJi=gongStars.some(s=>s.hua==='化忌');
+      if(hasLu) techText+='。化祿入此宮，此方面有福氣。';
+      else if(hasJi) techText+='。化忌入此宮，需格外留心。';
+      else techText+='。';
+      techText+=`</p>`;
     }
   }
+
+  // 把命理依據包在可收合區塊
+  text+=`<div class="detail-toggle-wrap" style="margin-top:1rem">
+    <div class="detail-toggle-btn" onclick="this.parentElement.classList.toggle('open')" style="cursor:pointer;display:flex;align-items:center;gap:.5rem;color:var(--c-text-dim);font-size:.85rem;padding:.5rem 0">
+      <i class="fas fa-chevron-right" style="font-size:.7rem;transition:transform .3s"></i>
+      <span>查看完整命理依據（五維度分析）</span>
+    </div>
+    <div class="detail-toggle-body" style="max-height:0;overflow:hidden;transition:max-height .4s ease">
+      <div style="padding:.5rem 0">${techText}</div>
+    </div>
+  </div>`;
 
   // 綜合結論
   text+=`<div class="divider"></div>`;
@@ -3889,7 +4101,7 @@ function runAnalysisV2(){
   // ── Answer ──
   const answer=generateAnswer(type,finalProb,b,S.meihua,S.tarot);
   document.getElementById('r-answer').innerHTML=answer.text;
-  document.getElementById('r-factors').innerHTML=answer.factors?`<h4 class="text-gold serif mt-md mb-sm">影響因子</h4><ul class="text-sm" style="padding-left:1.2rem;color:var(--c-text-dim)">${answer.factors.map(f=>'<li style="margin:.3rem 0">'+f+'</li>').join('')}</ul>`:'';
+  document.getElementById('r-factors').innerHTML=answer.factors?`<div class="detail-toggle-wrap" style="margin-top:.5rem"><div class="detail-toggle-btn" onclick="this.parentElement.classList.toggle('open')" style="cursor:pointer;display:flex;align-items:center;gap:.5rem;color:var(--c-text-dim);font-size:.85rem;padding:.3rem 0"><i class="fas fa-chevron-right" style="font-size:.7rem;transition:transform .3s"></i><span>影響因子（${answer.factors.length}項）</span></div><div class="detail-toggle-body" style="max-height:0;overflow:hidden;transition:max-height .4s ease"><ul class="text-sm" style="padding:.5rem 1.2rem;color:var(--c-text-dim)">${answer.factors.map(f=>'<li style="margin:.3rem 0">'+f+'</li>').join('')}</ul></div></div>`:'';
   document.getElementById('r-suggest').innerHTML=answer.suggestions?`<h4 class="text-gold serif mt-md mb-sm">行動建議</h4><ol class="text-sm" style="padding-left:1.2rem;color:var(--c-text-dim)">${answer.suggestions.map(s=>'<li style="margin:.3rem 0">'+s+'</li>').join('')}</ol>`:'';
 
   // ── Breakdown ──
@@ -3904,6 +4116,9 @@ function runAnalysisV2(){
   // ── Crystal ──
   if(typeof renderProductCrystal==='function')renderProductCrystal(b,type);
   else renderCrystalExpanded(b,type);
+
+  // ── Remedy Alert + Plan ──
+  try{renderRemedy(b,type);}catch(e){console.error('renderRemedy:',e);}
 
   // ── Conclusion ──
   let concl=generateConclusion(type,finalProb,b,S.meihua,S.tarot);
