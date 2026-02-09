@@ -1548,7 +1548,13 @@ function computeBazi(year,month,day,hour,minute,gender){
     fav=[SHENG[dmEl],BE_KE[dmEl],KE[dmEl]];
     unfav=[dmEl,BE_SHENG[dmEl]];
   }else{
-    fav=[BE_SHENG[dmEl],dmEl];
+    // 身弱: 若印星五行已偏旺(佔比>25%)，優先取比劫
+    const yinEl=BE_SHENG[dmEl];
+    if(ec[yinEl]&&(ec[yinEl]/tot>0.25)){
+      fav=[dmEl,yinEl]; // 比劫優先
+    }else{
+      fav=[yinEl,dmEl]; // 印星優先
+    }
     unfav=[BE_KE[dmEl],SHENG[dmEl],KE[dmEl]];
   }
   fav=[...new Set(fav)];
@@ -2026,10 +2032,12 @@ function renderBazi(){
     const g=p[c].gan;
     return`<div class="bazi-cell"><span class="gz">${g}</span><span class="el-tag el-${WX_G[g]}">${WX_G[g]}</span><div class="gz-sub">${c==='day'?'日主':b.gods[c].gan}</div></div>`;
   }).join('');
-  // 地支行
+  // 地支行 (十二長生)
   html+=cols.map(c=>{
     const z=p[c].zhi;
-    return`<div class="bazi-cell"><span class="gz">${z}</span><span class="el-tag el-${WX_Z[z]}">${WX_Z[z]}</span><div class="gz-sub">${b.cs[c]}</div></div>`;
+    // 自坐：各柱天干對照自己的地支
+    const selfSit=changSheng(p[c].gan,z);
+    return`<div class="bazi-cell"><span class="gz">${z}</span><span class="el-tag el-${WX_Z[z]}">${WX_Z[z]}</span><div class="gz-sub">${b.cs[c]}</div><div class="gz-sub" style="font-size:0.6rem;opacity:0.5">坐${selfSit}</div></div>`;
   }).join('');
   // 藏干行
   html+=cols.map(c=>{
@@ -2050,13 +2058,23 @@ function renderBazi(){
   html+=`<p class="text-xs text-dim">喜用神：<span class="text-success">${b.fav.join('、')}</span> ｜ 忌神：<span class="text-danger">${b.unfav.join('、')}</span></p>`;
   document.getElementById('d-bazi').innerHTML=html;
 
-  // 五行柱狀圖
-  const els=['金','木','水','火','土'];
-  const colors={金:'var(--el-metal)',木:'var(--el-wood)',水:'var(--el-water)',火:'var(--el-fire)',土:'var(--el-earth)'};
-  document.getElementById('d-elbar').innerHTML='<div class="el-bar">'+els.map(e=>`
-    <div class="el-row"><span class="el-lbl" style="color:${colors[e]}">${e}</span>
-    <div class="el-track"><div class="el-fill" style="width:${b.ep[e]}%;background:${colors[e]}"></div></div>
-    <span class="el-val">${b.ep[e]}%</span></div>`).join('')+'</div>';
+  // 五行柱狀圖 (60分制，含月令旺衰)
+  const WX_STATE={};
+  for(const e of els){
+    const mzEl=WX_Z[p.month.zhi];
+    if(e===mzEl) WX_STATE[e]='旺';
+    else if(SHENG[e]===mzEl) WX_STATE[e]='休';
+    else if(SHENG[mzEl]===e) WX_STATE[e]='相';
+    else if(KE[e]===mzEl) WX_STATE[e]='囚';
+    else if(KE[mzEl]===e) WX_STATE[e]='死';
+    else WX_STATE[e]='休';
+  }
+  document.getElementById('d-elbar').innerHTML='<div class="el-bar">'+els.map(e=>{
+    const score=Math.round(b.ec[e]);
+    return`<div class="el-row"><span class="el-lbl" style="color:${colors[e]}">${e}<span style="font-size:0.7rem;opacity:0.7"> ${WX_STATE[e]}</span></span>
+    <div class="el-track"><div class="el-fill" style="width:${Math.round(score/60*100)}%;background:${colors[e]}"></div></div>
+    <span class="el-val">${score}</span></div>`;
+  }).join('')+'</div>';
 
   // 十神
   document.getElementById('d-gods').innerHTML=`
@@ -2861,7 +2879,7 @@ function generateConclusion(type,prob,bazi,mh,tarot){
 /* =============================================================
    紫微斗數 ZIWEI DOUSHU — 核心邏輯（自寫，不依賴 iztro）
    ============================================================= */
-const ZW_PALACES=['命宮','兄弟','夫妻','子女','財帛','疾卄','遷移','交友','官祿','田宅','福德','父母'];
+const ZW_PALACES=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'];
 
 // 14 主星
 const ZW_MAJOR=[
@@ -2936,25 +2954,30 @@ function computeZiwei(year,month,day,hour,gender){
   const yGan = TG[((year-4)%10+10)%10];
   const yZhi = DZ[((year-4)%12+12)%12];
 
-  // 命宮地支：以月、時捨算
-  // 命宮 = (寅 + 月數 - 1 - 時辰) mod 12
+  // 命宮地支：月支-時支
   const shi = Math.floor(((hour+1)%24)/2);
-  const mingIdx = ((2 + lunar.month - 1 - shi) % 12 + 12) % 12;
-  const shenIdx = (mingIdx + 6) % 12; // 身宮
+  const mingIdx = ((lunar.month - shi + 13) % 12 + 12) % 12; // 修正: +13 (正月子時=寅)
+  // 身宮：月+時+寅基
+  const shenIdx = ((lunar.month + shi + 2) % 12 + 12) % 12;
 
   // 五行局 (簡化：依命宮天干地支組合)
-  const mingGanIdx = ((((year-4)%10+10)%10 % 5) * 2 + mingIdx) % 10;
+  // 宮干：年干起月法 (甲己→丙寅=2, 乙庚→戊寅=4, 丙辛→庚寅=6, 丁壬→壬寅=8, 戊癸→甲寅=0)
+  const ganBase={'甲':2,'己':2,'乙':4,'庚':4,'丙':6,'辛':6,'丁':8,'壬':8,'戊':0,'癸':0};
+  const gBase=ganBase[yGan]||0;
+  const mingGanIdx=(gBase+((mingIdx-2+12)%12))%10;
   const mingGan = TG[mingGanIdx];
   const wuxingJu = getWuxingJu(mingGan, DZ[mingIdx]);
 
   // 安紫微星
   const ziweiIdx = getZiweiPalaceByJu(wuxingJu, lunar.day);
-  const tianfuIdx = (12 - ziweiIdx + 4) % 12;
+  // 天府位置: 與紫微以寅-申軸對稱
+  // 紫微寅(2)→天府寅(2), 紫微卯(3)→天府丑(1), 紫微辰(4)→天府子(0)...
+  const tianfuIdx = ((4 - ziweiIdx + 12) % 12 + 12) % 12;
 
-  // 建立12宮
+  // 建立12宮 (逆時針排列: 命→兄弟→夫妻→子女→...)
   const palaces = [];
   for(let i=0;i<12;i++){
-    const pIdx = (mingIdx + i) % 12;
+    const pIdx = ((mingIdx - i) % 12 + 12) % 12;
     palaces.push({
       name: ZW_PALACES[i],
       branch: DZ[pIdx],
@@ -3028,7 +3051,15 @@ function computeZiwei(year,month,day,hour,gender){
     });
   });
 
-  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, lunar};
+  // 命主星 (以年支決定)
+  const MING_ZHU={0:'貪狼',1:'巨門',2:'祿存',3:'文曲',4:'廉貞',5:'武曲',6:'破軍',7:'武曲',8:'廉貞',9:'文曲',10:'祿存',11:'巨門'};
+  // 身主星 (以年支決定)
+  const SHEN_ZHU={0:'火星',1:'天相',2:'天梁',3:'天同',4:'文昌',5:'天機',6:'火星',7:'天相',8:'天梁',9:'天同',10:'文昌',11:'天機'};
+  const yZhiIdx2=DZ.indexOf(yZhi);
+  const mingZhu=MING_ZHU[yZhiIdx2]||'貪狼';
+  const shenZhu=SHEN_ZHU[yZhiIdx2]||'火星';
+
+  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx};
 }
 
 function addStarToPalace(palaces, name, type, zhiIdx){
@@ -3037,23 +3068,39 @@ function addStarToPalace(palaces, name, type, zhiIdx){
 }
 
 function getWuxingJu(gan, zhi){
-  // 納音五行局（簡化）
-  const juMap = {
-    '甲子':2,'甲丑':2,'乙丑':2,'乙子':2,'丙寅':3,'丙卯':3,'丁卯':3,'丁寅':3,
-    '戊辰':5,'戊巳':5,'己巳':5,'己辰':5,'庚午':4,'庚未':4,'辛未':4,'辛午':4,
-    '壬申':6,'壬酉':6,'癸酉':6,'癸申':6
-  };
-  return juMap[gan+zhi] || (((gan.charCodeAt(0)+zhi.charCodeAt(0))%5)+2);
+  // 納音五行局：命宮干支→納音→五行→局數
+  // 納音五行: 金=4, 木=3, 水=2, 火=6, 土=5
+  const NY_EL=['金','火','木','土','金','火','水','土','金','木','水','土','火','木','水','金','火','木','土','金','火','水','土','金','木','水','土','火','木','水'];
+  const JU={'金':4,'木':3,'水':2,'火':6,'土':5};
+  const gi=TG.indexOf(gan), zi=DZ.indexOf(zhi);
+  if(gi<0||zi<0)return 4;
+  let idx=-1;
+  for(let n=0;n<60;n++)if(n%10===gi&&n%12===zi){idx=n;break;}
+  if(idx<0)return 4;
+  const nyEl=NY_EL[Math.floor(idx/2)];
+  return JU[nyEl]||4;
 }
 
 function getZiweiPalaceByJu(ju, lunarDay){
-  // 紫微安星：局數除日數的餘數決定位置
-  const base = Math.ceil(lunarDay / ju);
-  const remainder = lunarDay % ju;
-  let idx;
-  if(remainder === 0) idx = base - 1;
-  else idx = base + (ju - remainder > remainder ? 0 : 1);
-  return ((idx + 1) % 12 + 12) % 12;
+  // 紫微安星表（業界標準查表法）
+  // 表格: ZIWEI_LUT[局-2][日-1] = offset from 寅 (0=寅,1=卯,...,11=丑)
+  const ZIWEI_LUT=[
+    // 水二局
+    [1,0,2,1,3,2,4,3,5,4,6,5,7,6,8,7,9,8,10,9,11,10,0,11,1,0,2,1,3,2],
+    // 木三局
+    [1,2,0,2,3,1,3,4,2,4,5,3,5,6,4,6,7,5,7,8,6,8,9,7,9,10,8,10,11,9],
+    // 金四局
+    [1,2,2,0,2,3,3,1,3,4,4,2,4,5,5,3,5,6,6,4,6,7,7,5,7,8,8,6,8,9],
+    // 土五局
+    [1,2,2,2,0,2,3,3,3,1,3,4,4,4,2,4,5,5,5,3,5,6,6,6,4,6,7,7,7,5],
+    // 火六局
+    [1,2,2,2,2,0,2,3,3,3,3,1,3,4,4,4,4,2,4,5,5,5,5,3,5,6,6,6,6,4]
+  ];
+  const juIdx=ju-2;
+  if(juIdx<0||juIdx>4)return 2;
+  const dayIdx=Math.max(0,Math.min(29,lunarDay-1));
+  const offset=ZIWEI_LUT[juIdx][dayIdx];
+  return (offset+2)%12; // 轉換為地支index (寅=2)
 }
 
 function renderZiwei(){
@@ -3062,7 +3109,8 @@ function renderZiwei(){
 
   // Info
   document.getElementById('d-ziwei-info').innerHTML=`
-    <p>命宮：${DZ[zw.mingIdx]}宮 ｜ 身宮：${DZ[zw.shenIdx]}宮 ｜ 年干：${zw.yGan} ｜ 五行局：${zw.wuxingJu}局</p>`;
+    <p>命宮：${zw.mingGan}${DZ[zw.mingIdx]}（${DZ[zw.mingIdx]}宮）｜ 身宮：${DZ[zw.shenIdx]}宮 ｜ ${['水二','木三','金四','土五','火六'][[2,3,4,5,6].indexOf(zw.wuxingJu)]}局</p>
+    <p class="text-xs text-dim mt-xs">命主：${zw.mingZhu} ｜ 身主：${zw.shenZhu} ｜ 紫微：${DZ[zw.ziweiIdx]}宮 ｜ 天府：${DZ[zw.tianfuIdx]}宮</p>`;
 
   // 12宮格（4x4, 中間2x2空）
   // 排列順序: 辰巳午未 / 卯[空][空]申 / 寅[空][空]酉 / 丑子亥戌
@@ -3212,13 +3260,13 @@ function renderZiwei(){
           },
           health: function(stars) {
             const msgs = [];
-            if(stars.some(s=>s.name==='天同')) msgs.push('天同入疾卄宮，先天體質不差，注意肥胖與腍臟。');
-            if(stars.some(s=>s.name==='天機')) msgs.push('天機入疾卄宮，注意肝膽、神經系統。');
-            if(stars.some(s=>s.name==='太陽')) msgs.push('太陽入疾卄宮，注意眼睛、血壓、心臟。');
-            if(stars.some(s=>s.name==='太陰')) msgs.push('太陰入疾卄宮，注意腍臟、婦科或泌尿系統。');
-            if(stars.some(s=>s.name==='武曲')) msgs.push('武曲入疾卄宮，注意呼吸系統、筋骨。');
-            if(stars.some(s=>s.name==='廉貞')) msgs.push('廉貞入疾卄宮，注意心臟、血液循環。');
-            if(stars.some(s=>s.name==='貪狼')) msgs.push('貪狼入疾卄宮，注意肝膽、過度消耗。');
+            if(stars.some(s=>s.name==='天同')) msgs.push('天同入疾厄宮，先天體質不差，注意肥胖與脾臟。');
+            if(stars.some(s=>s.name==='天機')) msgs.push('天機入疾厄宮，注意肝膽、神經系統。');
+            if(stars.some(s=>s.name==='太陽')) msgs.push('太陽入疾厄宮，注意眼睛、血壓、心臟。');
+            if(stars.some(s=>s.name==='太陰')) msgs.push('太陰入疾厄宮，注意脾臟、婦科或泌尿系統。');
+            if(stars.some(s=>s.name==='武曲')) msgs.push('武曲入疾厄宮，注意呼吸系統、筋骨。');
+            if(stars.some(s=>s.name==='廉貞')) msgs.push('廉貞入疾厄宮，注意心臟、血液循環。');
+            if(stars.some(s=>s.name==='貪狼')) msgs.push('貪狼入疾厄宮，注意肝膽、過度消耗。');
             return msgs.length ? msgs.join('') : '';
           }
         };
