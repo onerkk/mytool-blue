@@ -1413,6 +1413,9 @@ function submitStep0(){
   const[hh,mm]=btime.split(':').map(Number);
   S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
   S.ziwei=computeZiwei(y,m,d,hh,gender.value);
+  // 基本資料就緒，刷新需要八字的功能區
+  renderDailyFortune();
+  generateLuckyInfo();
   goStep(1);
 }
 
@@ -5122,86 +5125,175 @@ document.addEventListener('DOMContentLoaded', function(){
   }, 5000);
 });
 /* =============================================================
-   FEATURE 1: 每日運勢籤
+   FEATURE 1: 每日運勢籤（依命主八字 × 當日天干地支）
    ============================================================= */
-const FORTUNE_SIGNS = [
-  {sign:'上上籤',icon:'🌟',msg:'諸事皆宜，把握今日好運氣！',crystal:'鈦晶',el:'金',reason:'強化今日的正財磁場'},
-  {sign:'上吉籤',icon:'✨',msg:'貴人相助，積極行動必有收穫。',crystal:'綠幽靈',el:'木',reason:'招引貴人與正財能量'},
-  {sign:'中吉籤',icon:'🌙',msg:'穩中求進，適合規劃與學習。',crystal:'紫水晶',el:'火',reason:'提升思緒清晰度與直覺'},
-  {sign:'中平籤',icon:'☁️',msg:'順其自然，不宜急躁冒進。',crystal:'茶晶',el:'土',reason:'穩定心性，捒除浮躁能量'},
-  {sign:'小吉籤',icon:'🌤️',msg:'小有進展，耐心等待時機成熟。',crystal:'黃水晶',el:'土',reason:'招偏財，提升耐心與自信'},
-  {sign:'吉籤',icon:'💫',msg:'心想事成的機獇正在上升中。',crystal:'海藍寶',el:'水',reason:'增強溝通力，助願望達成'},
-  {sign:'上吉籤',icon:'🔥',msg:'行動力滿點，今天適合做重要決定！',crystal:'紅瑪瑙',el:'火',reason:'激發勇氣與行動力'},
-  {sign:'中吉籤',icon:'💍',msg:'內在能量充沛，適合靜心思考方向。',crystal:'月光石',el:'水',reason:'增強直覺，照亮內心方向'},
-  {sign:'大吉籤',icon:'🍊',msg:'天時地利人和，難得的好日子！',crystal:'粉晶',el:'土',reason:'人緣桃花全開，把握社交機會'},
-  {sign:'中平籤',icon:'🌊',msg:'如水般柔軟應對，剛則易折。',crystal:'藍獉髓',el:'水',reason:'柔化個性，增強適應力'},
-  {sign:'小吉籤',icon:'🌱',msg:'播種期，現在的努力未來會開花。',crystal:'東陵獉',el:'木',reason:'帶來生長與希望的能量'},
-  {sign:'上吉籤',icon:'⚡',msg:'靈感爆發日，創意與機會同步到來！',crystal:'金太陽',el:'火',reason:'激發創造力與領對魅力'}
-];
 
-function getDailyFortune(){
-  const today = new Date().toISOString().slice(0,10);
-  const key = 'jy_daily_' + today;
-  let cached = null;
-  try{ cached = JSON.parse(localStorage.getItem(key)); }catch(e){}
-  
-  if(cached) return cached;
-  
-  // Better hash: each character contributes uniquely
-  let hash = 0;
-  for(let i=0;i<today.length;i++){
-    hash = ((hash << 5) - hash + today.charCodeAt(i)) | 0;
-  }
-  const idx = Math.abs(hash) % FORTUNE_SIGNS.length;
-  const fortune = FORTUNE_SIGNS[idx];
-  const result = {...fortune, date: today, drawn: true};
-  try{ localStorage.setItem(key, JSON.stringify(result)); }catch(e){}
-  return result;
+/* 計算當日天干地支 */
+function getTodayGanZhi(){
+  const today = new Date();
+  const y = today.getFullYear(), m = today.getMonth()+1, d = today.getDate();
+  const base = new Date(1900, 0, 1);
+  const tgt = new Date(y, m-1, d);
+  const diff = Math.floor((tgt - base) / 864e5);
+  const dayCycle = ((diff + 44) % 60 + 60) % 60;
+  const dGi = dayCycle % 10, dZi = dayCycle % 12;
+  // 年干支
+  let ly = y;
+  if(m < 2 || (m === 2 && d < 4)) ly--;
+  const yGi = ((ly-4)%10+10)%10, yZi = ((ly-4)%12+12)%12;
+  return {
+    dayGan: TG[dGi], dayZhi: DZ[dZi], dayEl: WX_G[TG[dGi]],
+    yearGan: TG[yGi], yearZhi: DZ[yZi],
+    dGi, dZi, yGi, yZi
+  };
 }
 
-function canDrawToday(){
-  const today = new Date().toISOString().slice(0,10);
-  const key = 'jy_daily_' + today;
-  try{
-    // Clean up old dates
-    for(let i=0;i<localStorage.length;i++){
-      const k = localStorage.key(i);
-      if(k && k.startsWith('jy_daily_') && k !== key){
-        localStorage.removeItem(k);
-      }
+/* 依命主八字×當日干支計算真實運勢 */
+function computeRealFortune(bazi){
+  const today = getTodayGanZhi();
+  const dm = bazi.dm, dmEl = bazi.dmEl;
+  const todayEl = today.dayEl;
+  const todayGan = today.dayGan;
+  const todayZhi = today.dayZhi;
+
+  let score = 50; // 基礎分
+
+  // 1. 當日天干與日主的十神關係
+  const god = tenGod(dm, todayGan);
+  const godScores = {
+    '比肩': 8, '劫財': 3,
+    '食神': 10, '傷官': 2,
+    '偏財': 7, '正財': 12,
+    '七殺': -8, '正官': 5,
+    '偏印': 6, '正印': 10
+  };
+  score += (godScores[god] || 0);
+
+  // 2. 當日五行是否為喜用神
+  if(bazi.fav.includes(todayEl)) score += 15;
+  if(bazi.unfav.includes(todayEl)) score -= 15;
+
+  // 3. 當日地支藏干是否有喜用神
+  const todayCG = CG[todayZhi] || [];
+  todayCG.forEach(g => {
+    if(bazi.fav.includes(WX_G[g])) score += 4;
+    if(bazi.unfav.includes(WX_G[g])) score -= 4;
+  });
+
+  // 4. 當日地支與命盤地支的沖合（簡化）
+  const CHONG = {子:'午',丑:'未',寅:'申',卯:'酉',辰:'戌',巳:'亥',午:'子',未:'丑',申:'寅',酉:'卯',戌:'辰',亥:'巳'};
+  const HE = {子:'丑',丑:'子',寅:'亥',卯:'戌',辰:'酉',巳:'申',午:'未',未:'午',申:'巳',酉:'辰',戌:'卯',亥:'寅'};
+  const dayZhi = bazi.pillars.day.zhi;
+  if(CHONG[todayZhi] === dayZhi) score -= 12; // 沖日支
+  if(HE[todayZhi] === dayZhi) score += 10;    // 合日支
+
+  // 5. 十二長生狀態
+  const csState = changSheng(dm, todayZhi);
+  const csScores = {'長生':10,'沐浴':2,'冠帶':6,'臨官':8,'帝旺':12,'衰':-2,'病':-5,'死':-8,'墓':-6,'絕':-10,'胎':1,'養':3};
+  score += (csScores[csState] || 0);
+
+  // 6. 大運流年加成
+  const curDayun = bazi.dayun.find(d => d.isCurrent);
+  if(curDayun){
+    if(bazi.fav.includes(curDayun.el)) score += 5;
+    if(bazi.unfav.includes(curDayun.el)) score -= 5;
+  }
+
+  // 限制範圍 10-95
+  score = Math.max(10, Math.min(95, score));
+
+  // 對應籤等
+  let sign, icon, msg;
+  if(score >= 85)      { sign='上上籤'; icon='🌟'; msg='諸事皆宜，今日天時與命盤高度契合，把握機會！'; }
+  else if(score >= 75) { sign='大吉籤'; icon='🍊'; msg='天時地利人和，今日運勢旺盛，適合重要決定。'; }
+  else if(score >= 65) { sign='上吉籤'; icon='✨'; msg='貴人星動，行動力強，積極推進事務有佳績。'; }
+  else if(score >= 55) { sign='中吉籤'; icon='🌙'; msg='穩中求進，內在能量充沛，適合規劃與學習。'; }
+  else if(score >= 45) { sign='小吉籤'; icon='🌤️'; msg='小有進展，耐心等待時機，勿急躁冒進。'; }
+  else if(score >= 35) { sign='中平籤'; icon='☁️'; msg='順其自然，今日宜守不宜攻，韜光養晦。'; }
+  else if(score >= 25) { sign='小凶籤'; icon='🌊'; msg='運勢低迷，注意人際摩擦，凡事多留退路。'; }
+  else                 { sign='凶籤';   icon='⚡'; msg='沖煞之日，宜靜不宜動，避免重大決策與衝突。'; }
+
+  // 推薦水晶：依喜用神五行推薦
+  const favEl = bazi.fav[0] || dmEl;
+  const crystalMap = {
+    '金': [{n:'鈦晶',reason:'強化正財磁場，補金行能量'},{n:'白水晶',reason:'淨化氣場，金行守護石'}],
+    '木': [{n:'綠幽靈',reason:'招引貴人與正財，木行生發力'},{n:'東陵玉',reason:'帶來生長與希望能量'}],
+    '水': [{n:'海藍寶',reason:'增強溝通力，水行流通能量'},{n:'月光石',reason:'增強直覺，照亮內心方向'}],
+    '火': [{n:'紅瑪瑙',reason:'激發勇氣與行動力，火行旺盛'},{n:'紫水晶',reason:'提升思緒清晰度與直覺'}],
+    '土': [{n:'黃水晶',reason:'招偏財，提升耐心與自信'},{n:'茶晶',reason:'穩定心性，排除浮躁能量'}]
+  };
+  const crystalList = crystalMap[favEl] || crystalMap['土'];
+  const crystal = crystalList[Math.abs(score) % crystalList.length];
+
+  return {
+    sign, icon, msg, score, crystal: crystal.n, crystalReason: crystal.reason,
+    el: favEl, god, csState, todayGZ: todayGan + todayZhi, todayEl,
+    detail: {
+      godDesc: `今日天干${todayGan}(${todayEl})對你為【${god}】`,
+      favHit: bazi.fav.includes(todayEl) ? '✓ 當日五行為你的喜用神' : (bazi.unfav.includes(todayEl) ? '✗ 當日五行為你的忌神' : '— 當日五行中性'),
+      csDesc: `日主在今日地支${todayZhi}處【${csState}】位`,
+      chong: CHONG[todayZhi] === dayZhi ? `⚠ 今日地支${todayZhi}沖你日支${dayZhi}` : null,
+      he: HE[todayZhi] === dayZhi ? `✓ 今日地支${todayZhi}合你日支${dayZhi}` : null
     }
-    return !localStorage.getItem(key);
-  }catch(e){ return true; }
+  };
 }
 
 function renderDailyFortune(){
   const container = document.getElementById('daily-fortune-content');
   if(!container) return;
-  
-  if(canDrawToday()){
+
+  // 必須先填寫基本資料
+  if(!S.bazi){
+    container.innerHTML = `
+      <div class="fortune-draw-area">
+        <div class="fortune-urn" style="opacity:0.5">🔒</div>
+        <p class="text-dim" style="margin-bottom:var(--sp-md)">需要先完成基本資料（生日時辰），才能依你的八字計算今日運勢</p>
+        <button class="btn btn-primary" onclick="goStep(0);window.scrollTo({top:0,behavior:'smooth'})">
+          <i class="fas fa-pen"></i> 前往填寫資料
+        </button>
+      </div>`;
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0,10);
+  const key = 'jy_real_fortune_' + today;
+  let cached = null;
+  try{ cached = JSON.parse(localStorage.getItem(key)); }catch(e){}
+
+  if(cached && cached.drawn){
+    showFortuneResult(cached);
+  } else {
     container.innerHTML = `
       <div class="fortune-draw-area">
         <div class="fortune-urn">🏮</div>
-        <p class="text-dim">心中默念你的問題，然後抽籤</p>
+        <p class="text-dim">依你的八字命盤 × 今日干支，算出專屬運勢</p>
+        <p class="text-xs text-muted mb-sm">日主：${S.bazi.dm}（${S.bazi.dmEl}）｜ 喜用：${S.bazi.fav.join('、')}</p>
         <button class="btn btn-gold" onclick="drawDailyFortune()" id="btn-draw-fortune">
           <i class="fas fa-hand-sparkles"></i> 抽今日運勢籤
         </button>
       </div>`;
-  } else {
-    showFortuneResult(getDailyFortune());
   }
 }
 
 function drawDailyFortune(){
+  if(!S.bazi){ alert('請先填寫基本資料（生日時辰）'); return; }
   const btn = document.getElementById('btn-draw-fortune');
-  if(btn){ btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 抽籤中...'; }
-  
-  // Track daily streak achievement
+  if(btn){ btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 推算中...'; }
+
   incrementAchievement('daily_streak');
-  
-  // Dramatic pause
+
   setTimeout(()=>{
-    const fortune = getDailyFortune();
+    const fortune = computeRealFortune(S.bazi);
+    fortune.drawn = true;
+    const today = new Date().toISOString().slice(0,10);
+    try{
+      // 清理舊資料
+      for(let i=localStorage.length-1;i>=0;i--){
+        const k=localStorage.key(i);
+        if(k&&k.startsWith('jy_real_fortune_')&&!k.endsWith(today)) localStorage.removeItem(k);
+      }
+      localStorage.setItem('jy_real_fortune_'+today, JSON.stringify(fortune));
+    }catch(e){}
     showFortuneResult(fortune);
   }, 1500);
 }
@@ -5209,27 +5301,40 @@ function drawDailyFortune(){
 function showFortuneResult(f){
   const container = document.getElementById('daily-fortune-content');
   if(!container) return;
-  
+
   const prod = findProductByName(f.crystal);
+  const scoreColor = f.score>=60?'var(--c-success)':f.score>=40?'var(--c-warn)':'var(--c-danger)';
+
   container.innerHTML = `
     <div class="fortune-result" style="animation:scaleIn 0.5s ease">
       <div class="fortune-sign-icon">${f.icon}</div>
       <div class="fortune-sign-text">${f.sign}</div>
       <p class="fortune-msg">${f.msg}</p>
+      <div style="margin:var(--sp-sm) 0;font-size:0.85rem;color:var(--c-text-dim)">
+        今日干支：<span class="tag tag-gold">${f.todayGZ}</span>
+        <span style="color:${scoreColor};font-weight:700;margin-left:var(--sp-sm)">運勢分數 ${f.score}</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);margin:var(--sp-sm) 0;font-size:0.8rem;color:var(--c-text-dim);line-height:1.8">
+        <p>${f.detail.godDesc}</p>
+        <p>${f.detail.favHit}</p>
+        <p>${f.detail.csDesc}</p>
+        ${f.detail.chong?'<p style="color:var(--c-danger)">'+f.detail.chong+'</p>':''}
+        ${f.detail.he?'<p style="color:var(--c-success)">'+f.detail.he+'</p>':''}
+      </div>
       <div class="fortune-divider"></div>
       <div class="fortune-crystal-rec">
-        <p class="text-sm"><strong>今日幸運水晶：</strong></p>
+        <p class="text-sm"><strong>今日推薦水晶（依喜用神${f.el}行）：</strong></p>
         <div class="fortune-crystal-card">
           <span class="fortune-crystal-name">${f.crystal}</span>
           <span class="el-tag el-${f.el} text-xs">${f.el}行</span>
         </div>
-        <p class="text-xs text-dim">${f.reason}</p>
+        <p class="text-xs text-dim">${f.crystalReason}</p>
         <div class="fortune-buy-btns mt-sm">
           <a href="${prod?prod.shopee:'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮入手</a>
           <a href="${prod?prod.seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}" target="_blank" rel="noopener" class="product-btn seven"><i class="fas fa-box"></i> 7-11</a>
         </div>
       </div>
-      <p class="text-xs text-muted mt-md">昍天可以再抽一次 ✨ 每日 00:00 重置</p>
+      <p class="text-xs text-muted mt-md">明天可以再抽一次 ✨ 每日 00:00 重置</p>
     </div>`;
 }
 
@@ -6237,44 +6342,82 @@ function shareZodiacMatch(a, b, score){
 }
 
 /* =============================================================
-   命理小遊戲 3: 幸運色 / 幸運數字產生器
+   命理小遊戲 3: 今日幸運指南（依命主五行喜用神）
    ============================================================= */
 function generateLuckyInfo(){
   const container = document.getElementById('lucky-gen-content');
   if(!container) return;
-  
+
+  // 必須先填寫基本資料
+  if(!S.bazi){
+    container.innerHTML = `
+      <div class="fortune-draw-area">
+        <div style="font-size:2.5rem;margin-bottom:var(--sp-sm);opacity:0.5">🔒</div>
+        <p class="text-dim" style="margin-bottom:var(--sp-md)">需要先完成基本資料（生日時辰），才能依你的五行喜用神算出今日幸運指南</p>
+        <button class="btn btn-primary" onclick="goStep(0);window.scrollTo({top:0,behavior:'smooth'})">
+          <i class="fas fa-pen"></i> 前往填寫資料
+        </button>
+      </div>`;
+    return;
+  }
+
+  const b = S.bazi;
   const today = new Date();
   const dayOfWeek = ['日','一','二','三','四','五','六'][today.getDay()];
-  
-  // Seed by date
-  let seed = 0;
-  const ds = today.toISOString().slice(0,10);
-  for(let i=0;i<ds.length;i++) seed = ((seed<<5)-seed+ds.charCodeAt(i))|0;
-  seed = Math.abs(seed);
-  
-  const colors = [
-    {name:'紅色',hex:'#dc2626',el:'火',meaning:'熱情、行動力'},
-    {name:'粉紅',hex:'#ec4899',el:'火',meaning:'愛情、人際'},
-    {name:'橙色',hex:'#ea580c',el:'火',meaning:'活力、創造'},
-    {name:'黃色',hex:'#eab308',el:'土',meaning:'財運、自信'},
-    {name:'金色',hex:'#d4af37',el:'金',meaning:'權威、成就'},
-    {name:'綠色',hex:'#16a34a',el:'木',meaning:'健康、成長'},
-    {name:'藍色',hex:'#2563eb',el:'水',meaning:'智慧、溝通'},
-    {name:'紫色',hex:'#9333ea',el:'火',meaning:'靈性、直覺'},
-    {name:'白色',hex:'#f5f5f5',el:'金',meaning:'純淨、清晰'},
-    {name:'黑色',hex:'#1a1a1a',el:'水',meaning:'保護、穩重'},
-    {name:'棕色',hex:'#92400e',el:'土',meaning:'踏實、安定'},
-    {name:'銀色',hex:'#94a3b8',el:'金',meaning:'冷靜、理性'}
-  ];
-  
-  const luckyColor = colors[seed % colors.length];
-  const luckyNum = (seed % 9) + 1;
-  const luckyDir = ['東','南','西','北','東南','東北','西南','西北'][seed % 8];
-  const luckyTime = ['子時(23-01)','丑時(01-03)','寅時(03-05)','卯時(05-07)','辰時(07-09)','巳時(09-11)','午時(11-13)','未時(13-15)','申時(15-17)','酉時(17-19)','戌時(19-21)','亥時(21-23)'][(seed*3) % 12];
-  
+  const todayGZ = getTodayGanZhi();
+
+  // 依喜用神五行推薦顏色
+  const favEl = b.fav[0] || b.dmEl;
+  const favEl2 = b.fav[1] || b.dmEl;
+
+  const colorsByEl = {
+    '金': [{name:'白色',hex:'#f5f5f5',meaning:'金行正色，淨化氣場'},{name:'金色',hex:'#d4af37',meaning:'強化權威與成就'},{name:'銀色',hex:'#94a3b8',meaning:'冷靜理性，金行守護'}],
+    '木': [{name:'綠色',hex:'#16a34a',meaning:'木行正色，健康成長'},{name:'青色',hex:'#06b6d4',meaning:'生發之力，貴人能量'},{name:'翠綠',hex:'#059669',meaning:'木行生機盎然'}],
+    '水': [{name:'黑色',hex:'#1a1a1a',meaning:'水行正色，保護穩重'},{name:'藍色',hex:'#2563eb',meaning:'智慧溝通，水行流通'},{name:'深藍',hex:'#1e3a5f',meaning:'深沉內斂，水行蓄能'}],
+    '火': [{name:'紅色',hex:'#dc2626',meaning:'火行正色，熱情行動力'},{name:'紫色',hex:'#9333ea',meaning:'靈性直覺，火行昇華'},{name:'橙色',hex:'#ea580c',meaning:'活力創造，火行擴展'}],
+    '土': [{name:'黃色',hex:'#eab308',meaning:'土行正色，財運自信'},{name:'棕色',hex:'#92400e',meaning:'踏實安定，土行厚德'},{name:'米色',hex:'#d2b48c',meaning:'溫和穩重，土行包容'}]
+  };
+
+  const dayHash = today.getDate() + today.getMonth()*31;
+  const favColors = colorsByEl[favEl] || colorsByEl['土'];
+  const luckyColor = favColors[dayHash % favColors.length];
+
+  // 幸運數字：依五行生數
+  const elNums = {'木':[3,8],'火':[2,7],'土':[5,10],'金':[4,9],'水':[1,6]};
+  const nums = elNums[favEl] || [5,10];
+  const luckyNum = nums[dayHash % nums.length];
+
+  // 幸運方位：依喜用神五行
+  const elDirs = {'木':'東方','火':'南方','土':'中宮','金':'西方','水':'北方'};
+  const elDirs2 = {'木':'東南','火':'西南','土':'東北','金':'西北','水':'正北'};
+  const luckyDir = dayHash % 2 === 0 ? elDirs[favEl] : (elDirs2[favEl] || elDirs[favEl]);
+
+  // 最佳時辰：依喜用神五行旺的時辰
+  const elTimes = {
+    '木': ['寅時(03-05)','卯時(05-07)'],
+    '火': ['巳時(09-11)','午時(11-13)'],
+    '土': ['辰時(07-09)','未時(13-15)','戌時(19-21)','丑時(01-03)'],
+    '金': ['申時(15-17)','酉時(17-19)'],
+    '水': ['亥時(21-23)','子時(23-01)']
+  };
+  const times = elTimes[favEl] || ['辰時(07-09)'];
+  const luckyTime = times[dayHash % times.length];
+
+  // 幸運水晶（依喜用神五行）
+  const elCrystals = {
+    '金': ['白水晶','鈦晶','銀髮晶'],
+    '木': ['綠幽靈','東陵玉','橄欖石'],
+    '水': ['海藍寶','月光石','藍玉髓'],
+    '火': ['紅瑪瑙','紫水晶','石榴石'],
+    '土': ['黃水晶','茶晶','虎眼石']
+  };
+  const crystals = elCrystals[favEl] || ['黃水晶'];
+  const luckyCrystal = crystals[dayHash % crystals.length];
+
   container.innerHTML = `
     <div class="lucky-card" style="animation:scaleIn 0.4s">
-      <h4 class="text-gold mb-sm">📅 星期${dayOfWeek}的幸運指南</h4>
+      <h4 class="text-gold mb-sm">📅 星期${dayOfWeek}的專屬幸運指南</h4>
+      <p class="text-xs text-dim mb-md">依據你的八字喜用神【${b.fav.join('、')}行】計算</p>
       <div class="lucky-grid">
         <div class="lucky-item">
           <div class="lucky-label">幸運色</div>
@@ -6282,22 +6425,35 @@ function generateLuckyInfo(){
             <span class="lucky-color-dot" style="background:${luckyColor.hex}"></span>
             ${luckyColor.name}
           </div>
-          <div class="lucky-sub">${luckyColor.el}行 · ${luckyColor.meaning}</div>
+          <div class="lucky-sub">${favEl}行 · ${luckyColor.meaning}</div>
         </div>
         <div class="lucky-item">
           <div class="lucky-label">幸運數字</div>
           <div class="lucky-value lucky-num">${luckyNum}</div>
+          <div class="lucky-sub">${favEl}行生數</div>
         </div>
         <div class="lucky-item">
           <div class="lucky-label">幸運方位</div>
           <div class="lucky-value">🧭 ${luckyDir}</div>
+          <div class="lucky-sub">${favEl}行方位</div>
         </div>
         <div class="lucky-item">
           <div class="lucky-label">最佳時辰</div>
           <div class="lucky-value">⏰ ${luckyTime}</div>
+          <div class="lucky-sub">${favEl}行旺時</div>
+        </div>
+        <div class="lucky-item">
+          <div class="lucky-label">幸運水晶</div>
+          <div class="lucky-value">💎 ${luckyCrystal}</div>
+          <div class="lucky-sub">${favEl}行水晶</div>
+        </div>
+        <div class="lucky-item">
+          <div class="lucky-label">今日干支</div>
+          <div class="lucky-value">${todayGZ.dayGan}${todayGZ.dayZhi}</div>
+          <div class="lucky-sub">${todayGZ.dayEl}行日</div>
         </div>
       </div>
-      <p class="text-xs text-muted mt-md">每日 00:00 更新 · 僅供參考娛樂</p>
+      <p class="text-xs text-muted mt-md">每日 00:00 更新 · 依你命盤喜用神推算</p>
     </div>`;
 }
 
