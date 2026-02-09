@@ -2791,7 +2791,7 @@ function renderCrystal(b){
     木:[{n:'綠幽靈',icon:'💚',d:'招正財，事業穩步上升'},{n:'東陵玉',icon:'🌿',d:'舒緩壓力，帶來好運'}],
     水:[{n:'海藍寶',icon:'💙',d:'增強溝通力，平靜情緒'},{n:'藍紋瑪瑙',icon:'🔵',d:'穩定情緒，增強表達'}],
     火:[{n:'紅瑪瑙',icon:'❤️',d:'激發熱情，增強行動力'},{n:'石榴石',icon:'🔴',d:'提升活力，增強意志'}],
-    土:[{n:'黃水晶',icon:'💛',d:'招偏財，提升自信'},{n:'虍眼石',icon:'🟤',d:'增強決斷力，招財辟邪'}]
+    土:[{n:'黃水晶',icon:'💛',d:'招偏財，提升自信'},{n:'虍眼石',icon:'🐅',d:'增強決斷力，招財辟邪'}]
   };
   const need=b.fav[0];
   const recs=CRYSTALS[need]||CRYSTALS['土'];
@@ -3307,7 +3307,7 @@ function renderZiwei(){
       if(huaInGong.length) {
         reading += `<p class="mt-sm">四化影響：${huaInGong.map(h=>`${h.star} ${h.hua}`).join('、')}</p>`;
         huaInGong.forEach(h=>{
-          if(h.hua==='化祿') reading+=`<p class="text-sm" style="color:#4ade80">🟢 ${h.star}化祿入${tgPalace.name}，${typeLabel2}方面有先天福氣，容易有好的結果。</p>`;
+          if(h.hua==='化祿') reading+=`<p class="text-sm" style="color:#4ade80">💎 ${h.star}化祿入${tgPalace.name}，${typeLabel2}方面有先天福氣，容易有好的結果。</p>`;
           if(h.hua==='化權') reading+=`<p class="text-sm text-gold">🟡 ${h.star}化權入${tgPalace.name}，${typeLabel2}方面有掌控力，但不宜太強勢。</p>`;
           if(h.hua==='化科') reading+=`<p class="text-sm" style="color:#60a5fa">🔵 ${h.star}化科入${tgPalace.name}，${typeLabel2}方面有貴人助力，名聲好。</p>`;
           if(h.hua==='化忌') reading+=`<p class="text-sm text-danger">🔴 ${h.star}化忌入${tgPalace.name}，${typeLabel2}方面需格外注意，容易有波折。</p>`;
@@ -3440,7 +3440,7 @@ const CRYSTAL_DB={
   木:[
     {n:'綠幽靈',icon:'💚',el:'木',d:'招正財，事業穩步上升，適合上班族。',wear:'左手佩戴，放辦公桌增事業運。',taboo:'避免高溫與化學品。'},
     {n:'東陵玉',icon:'🌿',el:'木',d:'舒緩壓力，帶來好運與樂觀心態。',wear:'隨身佩戴或放枕頭下助眠。',taboo:'定期用月光淨化。'},
-    {n:'翡翠',icon:'🟢',el:'木',d:'護身辟邪，增強健康與人緣。',wear:'佩戴在靠近心臟處。',taboo:'避免碰撞與高溫。'},
+    {n:'翡翠',icon:'💎',el:'木',d:'護身辟邪，增強健康與人緣。',wear:'佩戴在靠近心臟處。',taboo:'避免碰撞與高溫。'},
     {n:'橄欖石',icon:'🌱',el:'木',d:'療癒心輪，帶來正能量與好運。',wear:'左手佩戴，可配合冥想。',taboo:'質地較軟，注意保護。'}
   ],
   水:[
@@ -3457,9 +3457,9 @@ const CRYSTAL_DB={
   ],
   土:[
     {n:'黃水晶',icon:'💛',el:'土',d:'招偏財，提升自信與個人魅力。',wear:'左手佩戴，放錢包也可。',taboo:'避免陽光長時間直射，會褪色。'},
-    {n:'虍眼石',icon:'🟤',el:'土',d:'增強決斷力，招財辟邪，穩定心性。',wear:'右手佩戴增強氣場。',taboo:'定期日光浴淨化（短時間）。'},
+    {n:'虍眼石',icon:'🐅',el:'土',d:'增強決斷力，招財辟邪，穩定心性。',wear:'右手佩戴增強氣場。',taboo:'定期日光浴淨化（短時間）。'},
     {n:'茶晶',icon:'🍵',el:'土',d:'排除負能量，增強穩定感。',wear:'佩戴或放在家中客廳。',taboo:'避免化學品。'},
-    {n:'瑪瑙',icon:'🟠',el:'土',d:'保護、穩定、增強耐力。',wear:'可隨身佩戴，適合各場合。',taboo:'質地堅硬但仍需小心碰撞。'}
+    {n:'瑪瑙',icon:'🔶',el:'土',d:'保護、穩定、增強耐力。',wear:'可隨身佩戴，適合各場合。',taboo:'質地堅硬但仍需小心碰撞。'}
   ]
 };
 
@@ -4306,7 +4306,7 @@ const PRODUCT_DB={
     {n:'東陵玉吊墜',cat:'吊墜',icon:'🌿',el:'木',d:'舒緩壓力，帶來好運',price:'$480-$1,500',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
      wear:'項鍊佩戴',img:''},
-    {n:'翡翠卟石擺件',cat:'卟石',icon:'🟢',el:'木',d:'護身辟邪，增強健康運',price:'$1,200-$5,000',
+    {n:'翡翠卟石擺件',cat:'卟石',icon:'💎',el:'木',d:'護身辟邪，增強健康運',price:'$1,200-$5,000',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
      wear:'放書桌或財位',img:''}
   ],
@@ -4336,7 +4336,7 @@ const PRODUCT_DB={
     {n:'黃水晶手鏈',cat:'手鏈',icon:'💛',el:'土',d:'招偏財，提升自信與魅力',price:'$580-$1,800',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
      wear:'左手佩戴',img:''},
-    {n:'虍眼石吊墜',cat:'吊墜',icon:'🟤',el:'土',d:'增強決斷力，招財辟邪',price:'$480-$1,500',
+    {n:'虍眼石吊墜',cat:'吊墜',icon:'🐅',el:'土',d:'增強決斷力，招財辟邪',price:'$480-$1,500',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
      wear:'出門佩戴',img:''},
     {n:'茶晶卟石擺件',cat:'卟石',icon:'🍵',el:'土',d:'排除負能量，穩定心性',price:'$680-$2,800',
@@ -4677,7 +4677,7 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'抹茶幽靈',cat:'手鏈',icon:'🍵',el:'木',d:'稀有抹茶色幽靈，招正財+安定心性',price:'$8,748',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠碧璽',cat:'手鏈',icon:'🟢',el:'木',d:'旺事業財運，激發創造力',price:'$1,644',wear:'左手佩戴',
+    {n:'綠碧璽',cat:'手鏈',icon:'💎',el:'木',d:'旺事業財運，激發創造力',price:'$1,644',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'東陵玉',cat:'手鏈',icon:'🌿',el:'木',d:'舒緩壓力，帶來好運與正能量',price:'$176',wear:'隨身佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
@@ -4755,7 +4755,7 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'金曜石',cat:'手鏈',icon:'🌑',el:'土',d:'辟邪擋煞首選！金色閃光護身符',price:'$416',wear:'右手佩戴辟邪',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'大地瑪瑙手排',cat:'手鏈',icon:'🟤',el:'土',d:'大地能量，穩定踏實，增強耐力',price:'$300',wear:'左手佩戴',
+    {n:'大地瑪瑙手排',cat:'手鏈',icon:'🐅',el:'土',d:'大地能量，穩定踏實，增強耐力',price:'$300',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'鐵膽石手排',cat:'手鏈',icon:'🗿',el:'土',d:'極強接地能量，排負+穩定心性',price:'$185',wear:'右手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
