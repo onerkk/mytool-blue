@@ -1462,7 +1462,15 @@ function computeBazi(year,month,day,hour,minute,gender){
   // ── 時柱 ──
   const shi=Math.floor(((hour+1)%24)/2);
   const hZi=shi%12;
-  const hGBase=(dGi%5)*2;
+  // 夜子時修正: 23:00-23:59 屬子時, 但時柱天干按"下一天"日干起算
+  const isNightZi=(hour>=23);
+  let hGBase;
+  if(isNightZi){
+    const nextDayCycle=((diff+1+10)%60+60)%60;
+    hGBase=(nextDayCycle%10%5)*2;
+  }else{
+    hGBase=(dGi%5)*2;
+  }
   const hGi=(hGBase+hZi)%10;
   const hG=TG[hGi], hZ=DZ[hZi];
 
