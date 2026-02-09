@@ -96,6 +96,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 /* — Buttons — */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-sm);padding:.75rem 1.25rem;border-radius:var(--r-md);font-weight:600;font-size:.95rem;cursor:pointer;border:1px solid var(--c-border-hi);transition:all var(--t-fast);white-space:nowrap}
 .btn-primary{background:linear-gradient(135deg,var(--c-crimson),#6b0000);color:var(--c-gold-pale);border-color:var(--c-gold);box-shadow:0 2px 12px rgba(139,0,0,.4)}
+.btn-lg{font-size:1.1rem;padding:.9rem 2rem;animation:ctaPulse 2.5s ease-in-out infinite}
+@keyframes ctaPulse{0%,100%{box-shadow:0 2px 12px rgba(139,0,0,.4)}50%{box-shadow:0 4px 24px rgba(212,175,55,.5)}}
 .btn-primary:hover{background:linear-gradient(135deg,var(--c-crimson-hi),var(--c-crimson));box-shadow:0 4px 20px rgba(139,0,0,.6);transform:translateY(-1px)}
 .btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .btn-outline{background:transparent;color:var(--c-text-dim);border-color:rgba(255,255,255,.15)}
@@ -211,6 +213,22 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 
 /* — Conclusion — */
 .conclusion{background:linear-gradient(135deg,rgba(139,0,0,.15),rgba(212,175,55,.08));border:1px solid var(--c-border-hi);border-radius:var(--r-lg);padding:var(--sp-lg);margin-top:var(--sp-lg)}
+/* Collapsible cards */
+.collapsible-card{overflow:hidden}
+.collapsible-toggle{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;margin:0}
+.collapsible-toggle:hover{opacity:.85}
+.collapse-arrow{transition:transform .3s ease;font-size:.8rem;opacity:.6}
+.collapsible-card.open .collapse-arrow{transform:rotate(180deg)}
+.collapsible-body{max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s ease;padding:0 var(--sp-md)}
+.collapsible-card.open .collapsible-body{max-height:5000px;padding:var(--sp-md)}
+/* Daily fortune collapse on step-0 */
+.daily-mini{border:1px solid var(--c-border);border-radius:var(--r-md);margin-bottom:var(--sp-md);overflow:hidden}
+.daily-mini-toggle{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-sm) var(--sp-md);cursor:pointer;background:rgba(212,175,55,.06);font-size:.9rem;color:var(--c-gold)}
+.daily-mini-toggle:hover{background:rgba(212,175,55,.12)}
+.daily-mini-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.daily-mini.open .daily-mini-body{max-height:2000px}
+.daily-mini.open .daily-mini-arrow{transform:rotate(180deg)}
+.daily-mini-arrow{transition:transform .3s ease}
 .conclusion h3{font-family:var(--f-display);color:var(--c-gold);margin-bottom:var(--sp-md)}
 
 /* — Actions — */
@@ -1034,58 +1052,23 @@ html{scroll-behavior:smooth}
 
 <!-- ========== STEP 3: RESULT ========== -->
 <section class="step" id="step-3">
+  <!-- 🎯 核心答案區 (使用者最想看的) -->
   <div class="result-verdict" id="r-verdict">
     <div class="verdict-label" id="r-vlabel">分析中…</div>
     <div class="verdict-prob" id="r-vprob">0%</div>
     <div class="verdict-note" id="r-vnote"></div>
   </div>
+
   <div class="card"><div class="card-title"><i class="fas fa-bullseye"></i> 直接回答</div>
     <div id="r-question" class="text-dim mb-md"></div>
     <div id="r-answer" class="serif" style="font-size:1.05rem;line-height:1.8"></div>
     <div class="divider"></div><div id="r-factors"></div><div id="r-suggest" class="mt-md"></div>
   </div>
-  <div class="card"><div class="card-title"><i class="fas fa-chart-line"></i> 可能性評估</div>
-    <div class="prob-meter"><div class="prob-bar"><div class="prob-fill" id="r-pfill" style="width:0%"></div></div>
-    <div class="prob-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
-    <div id="r-pbreak" class="mt-md text-sm"></div>
-  </div>
-  <div class="card" style="padding:0;overflow:visible">
-    <div class="dim-tabs">
-      <button class="dim-tab active" onclick="showDim('bazi')">八字命理</button>
-      <button class="dim-tab" onclick="showDim('ziwei')">紫微斗數</button>
-      <button class="dim-tab" onclick="showDim('meihua')">梅花易數</button>
-      <button class="dim-tab" onclick="showDim('tarot')">塔羅牌陣</button>
-      <button class="dim-tab" onclick="showDim('name')">姓名學</button>
-    </div>
-    <div class="dim-pane active" id="pane-bazi">
-      <h4 class="text-gold mb-md serif">四柱八字命盤</h4><div id="d-bazi"></div>
-      <div class="divider"></div><h4 class="text-gold mb-md serif">五行分佈</h4><div id="d-elbar"></div>
-      <div class="divider"></div><h4 class="text-gold mb-md serif">十神分析</h4><div id="d-gods" class="text-sm"></div>
-      <div class="divider"></div><h4 class="text-gold mb-md serif">藏干詳解</h4><div id="d-canggan" class="text-sm"></div>
-      <div class="divider"></div><h4 class="text-gold mb-md serif">喜用神與忌神</h4><div id="d-xiyong" class="text-sm"></div>
-      <div class="divider"></div><h4 class="text-gold mb-md serif">大運流年</h4><div id="d-dayun"></div>
-    </div>
-    <div class="dim-pane" id="pane-ziwei">
-      <h4 class="text-gold mb-md serif">紫微斗數命盤</h4>
-      <div id="d-ziwei-info" class="text-sm mb-md"></div>
-      <div id="d-ziwei-grid"></div>
-      <div class="divider"></div>
-      <h4 class="text-gold mb-md serif">四化飛星</h4>
-      <div id="d-ziwei-sihua" class="text-sm"></div>
-      <div class="divider"></div>
-      <h4 class="text-gold mb-md serif">命盤解讀</h4>
-      <div id="d-ziwei-reading" class="text-sm"></div>
-    </div>
-    <div class="dim-pane" id="pane-meihua"><div id="r-meihua"></div></div>
-    <div class="dim-pane" id="pane-tarot"><div id="r-tarot"></div></div>
-    <div class="dim-pane" id="pane-name">
-      <h4 class="text-gold mb-md serif">姓名學分析（三才五格）</h4>
-      <div id="d-name"></div>
-    </div>
-  </div>
+
+  <!-- 🛒 產品推薦 (第二重要) -->
   <div class="card"><div class="card-title"><i class="fas fa-gem"></i> 【處方】水晶校準建議</div><div id="r-crystal"></div></div>
 
-  <!-- 商城捨薦卡 -->
+  <!-- 商城導購卡 -->
   <div class="card shop-card">
     <div class="card-title"><i class="fas fa-shopping-bag"></i> 想把結果做成「專屬五行手鏈」？我幫你配到位</div>
     <p class="text-sm text-dim mb-md">依你結果的喜用神，給你 3 個實用搭配（可直接下單）</p>
@@ -1106,8 +1089,73 @@ html{scroll-behavior:smooth}
     <p class="text-xs text-muted mt-md"><i class="fas fa-info-circle"></i> 預算版 / 加強版 / 收藏版：選一個就好</p>
   </div>
 
-  <div class="conclusion"><h3><i class="fas fa-moon"></i> 靜月分析師總結</h3><div id="r-conclusion" class="text-sm" style="line-height:1.8"></div></div>
-  <!-- 存圖分享區 -->
+  <!-- 📊 可能性評估 (可收合) -->
+  <div class="card collapsible-card">
+    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
+      <span><i class="fas fa-chart-line"></i> 可能性評估</span>
+      <i class="fas fa-chevron-down collapse-arrow"></i>
+    </div>
+    <div class="collapsible-body">
+      <div class="prob-meter"><div class="prob-bar"><div class="prob-fill" id="r-pfill" style="width:0%"></div></div>
+      <div class="prob-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+      <div id="r-pbreak" class="mt-md text-sm"></div>
+    </div>
+  </div>
+
+  <!-- 📋 命理詳解 (可收合) -->
+  <div class="card collapsible-card">
+    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
+      <span><i class="fas fa-scroll"></i> 命理詳細分析</span>
+      <i class="fas fa-chevron-down collapse-arrow"></i>
+    </div>
+    <div class="collapsible-body" style="padding:0;overflow:visible">
+      <div class="dim-tabs">
+        <button class="dim-tab active" onclick="showDim('bazi')">八字命理</button>
+        <button class="dim-tab" onclick="showDim('ziwei')">紫微斗數</button>
+        <button class="dim-tab" onclick="showDim('meihua')">梅花易數</button>
+        <button class="dim-tab" onclick="showDim('tarot')">塔羅牌陣</button>
+        <button class="dim-tab" onclick="showDim('name')">姓名學</button>
+      </div>
+      <div class="dim-pane active" id="pane-bazi">
+        <h4 class="text-gold mb-md serif">四柱八字命盤</h4><div id="d-bazi"></div>
+        <div class="divider"></div><h4 class="text-gold mb-md serif">五行分佈</h4><div id="d-elbar"></div>
+        <div class="divider"></div><h4 class="text-gold mb-md serif">十神分析</h4><div id="d-gods" class="text-sm"></div>
+        <div class="divider"></div><h4 class="text-gold mb-md serif">藏干詳解</h4><div id="d-canggan" class="text-sm"></div>
+        <div class="divider"></div><h4 class="text-gold mb-md serif">喜用神與忌神</h4><div id="d-xiyong" class="text-sm"></div>
+        <div class="divider"></div><h4 class="text-gold mb-md serif">大運流年</h4><div id="d-dayun"></div>
+      </div>
+      <div class="dim-pane" id="pane-ziwei">
+        <h4 class="text-gold mb-md serif">紫微斗數命盤</h4>
+        <div id="d-ziwei-info" class="text-sm mb-md"></div>
+        <div id="d-ziwei-grid"></div>
+        <div class="divider"></div>
+        <h4 class="text-gold mb-md serif">四化飛星</h4>
+        <div id="d-ziwei-sihua" class="text-sm"></div>
+        <div class="divider"></div>
+        <h4 class="text-gold mb-md serif">命盤解讀</h4>
+        <div id="d-ziwei-reading" class="text-sm"></div>
+      </div>
+      <div class="dim-pane" id="pane-meihua"><div id="r-meihua"></div></div>
+      <div class="dim-pane" id="pane-tarot"><div id="r-tarot"></div></div>
+      <div class="dim-pane" id="pane-name">
+        <h4 class="text-gold mb-md serif">姓名學分析（三才五格）</h4>
+        <div id="d-name"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📝 總結 (可收合) -->
+  <div class="card collapsible-card">
+    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
+      <span><i class="fas fa-moon"></i> 靜月分析師總結</span>
+      <i class="fas fa-chevron-down collapse-arrow"></i>
+    </div>
+    <div class="collapsible-body">
+      <div id="r-conclusion" class="text-sm" style="line-height:1.8"></div>
+    </div>
+  </div>
+
+  <!-- 存圖分享 -->
   <div class="card" style="text-align:center">
     <div class="card-title"><i class="fas fa-share-alt"></i> 分享你的占卜結果</div>
     <p class="text-sm text-dim mb-md">存成圖片分享到 IG / LINE，朋友也能免費測！</p>
@@ -1207,9 +1255,16 @@ html{scroll-behavior:smooth}
   </div>
 </div>
 
-<!-- ========== 互動功能區 ========== -->
+<!-- ========== 互動功能區 (收合式，不擋主流程) ========== -->
 <div class="app" style="padding-top:0">
-  <div class="extra-nav">
+  <div class="daily-mini" style="margin:0 0 var(--sp-sm) 0">
+    <div class="daily-mini-toggle" onclick="this.parentElement.classList.toggle('open');if(!this._init){initExtraFeatures();this._init=true}">
+      <span><i class="fas fa-magic"></i> 趣味功能：運勢籤 · 水晶配對 · 五行問答...</span>
+      <i class="fas fa-chevron-down daily-mini-arrow"></i>
+    </div>
+    <div class="daily-mini-body">
+      <div style="padding:var(--sp-sm) var(--sp-md)">
+        <div class="extra-nav">
     <button class="nav-extra-tab active" data-target="sec-daily-fortune">🍰 每日運勢</button>
     <button class="nav-extra-tab" data-target="sec-crystal-quiz">🧪 水晶配對</button>
     <button class="nav-extra-tab" data-target="sec-wuxing-game">🍯 五行問答</button>
@@ -1220,11 +1275,18 @@ html{scroll-behavior:smooth}
     <button class="nav-extra-tab" data-target="sec-reviews">💬 使用者好評</button>
   </div>
 
-  <!-- 每日運勢籤 -->
+  <!-- 每日運勢籤 (收合式) -->
   <div class="extra-section" id="sec-daily-fortune">
-    <div class="card">
-      <div class="card-title"><i class="fas fa-sun"></i> 每日運勢籤 — 免費抽一次</div>
-      <div id="daily-fortune-content"></div>
+    <div class="daily-mini" id="daily-mini-wrap">
+      <div class="daily-mini-toggle" onclick="this.parentElement.classList.toggle('open')">
+        <span><i class="fas fa-sun"></i> 每日運勢籤 — 免費抽一次</span>
+        <i class="fas fa-chevron-down daily-mini-arrow"></i>
+      </div>
+      <div class="daily-mini-body">
+        <div style="padding:var(--sp-md)">
+          <div id="daily-fortune-content"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1298,6 +1360,7 @@ html{scroll-behavior:smooth}
     </div>
   </div>
 </div>
+</div></div></div>
 
 <!-- 水晶詳情 Modal -->
 <div class="crystal-detail-modal hidden" id="crystal-detail-modal"></div>
@@ -1329,6 +1392,16 @@ const S = { step:0, form:{}, bazi:null, meihua:null, tarot:{drawn:[],spread:[]},
 /* =============================================================
    NAVIGATION
    ============================================================= */
+/* Collapsible toggle */
+function toggleCollapse(el){
+  const card=el.closest('.collapsible-card');
+  if(card) card.classList.toggle('open');
+}
+/* Lazy init for extra features (only when user opens the panel) */
+function initExtraFeatures(){
+  if(typeof renderDailyFortune==='function') try{renderDailyFortune()}catch(e){}
+  if(typeof renderReviewCarousel==='function') try{renderReviewCarousel()}catch(e){}
+}
 function goStep(n){
   if(n===3 && !S.bazi){alert('請先填寫基本資料');return}
   document.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('active',i===n));
