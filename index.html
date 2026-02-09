@@ -2059,6 +2059,8 @@ function renderBazi(){
   document.getElementById('d-bazi').innerHTML=html;
 
   // 五行柱狀圖 (60分制，含月令旺衰)
+  const els=['金','木','水','火','土'];
+  const colors={金:'var(--el-metal)',木:'var(--el-wood)',水:'var(--el-water)',火:'var(--el-fire)',土:'var(--el-earth)'};
   const WX_STATE={};
   for(const e of els){
     const mzEl=WX_Z[p.month.zhi];
@@ -3113,12 +3115,12 @@ function renderZiwei(){
     <p class="text-xs text-dim mt-xs">命主：${zw.mingZhu} ｜ 身主：${zw.shenZhu} ｜ 紫微：${DZ[zw.ziweiIdx]}宮 ｜ 天府：${DZ[zw.tianfuIdx]}宮</p>`;
 
   // 12宮格（4x4, 中間2x2空）
-  // 排列順序: 辰巳午未 / 卯[空][空]申 / 寅[空][空]酉 / 丑子亥戌
+  // 排列順序 DZ idx: 辰(4)巳(5)午(6)未(7) / 卯(3)[空][空]申(8) / 寅(2)[空][空]酉(9) / 丑(1)子(0)亥(11)戌(10)
   const order = [
-    [3,4,5,6],   // 辰巳午未
-    [2,-1,-1,7],  // 卯 center center 申
-    [1,-1,-1,8],  // 寅 center center 酉
-    [0,11,10,9]   // 丑子亥戌
+    [4,5,6,7],    // 辰巳午未
+    [3,-1,-1,8],  // 卯 center center 申
+    [2,-1,-1,9],  // 寅 center center 酉
+    [1,0,11,10]   // 丑子亥戌
   ];
 
   let html = '<div class="zw-grid">';
@@ -3480,7 +3482,11 @@ function renderCrystalExpanded(bazi, type){
    FUSION ENGINE v2 — 五維度加權融合
    ============================================================= */
 function runAnalysisV2(){
-  renderBazi(); renderMeihua(); renderTarot(); renderZiwei(); renderName();
+  try{ renderBazi(); }catch(e){ console.error('renderBazi error:', e); alert('renderBazi error: '+e.message); return; }
+  try{ renderMeihua(); }catch(e){ console.error('renderMeihua error:', e); }
+  try{ renderTarot(); }catch(e){ console.error('renderTarot error:', e); }
+  try{ renderZiwei(); }catch(e){ console.error('renderZiwei error:', e); }
+  try{ renderName(); }catch(e){ console.error('renderName error:', e); }
 
   const b=S.bazi; if(!b)return;
   const type=S.form.type;
@@ -3823,7 +3829,16 @@ function runAnalysisV2(){
 }
 
 // Override runAnalysis to use V2
-function runAnalysis(){ runAnalysisV2(); }
+function runAnalysis(){
+  try{
+    runAnalysisV2();
+  }catch(e){
+    console.error('runAnalysis error:', e);
+    document.getElementById('r-vlabel').textContent='分析出錯: '+e.message;
+    document.getElementById('r-vprob').textContent='—';
+    alert('分析出錯：' + e.message + '\n' + e.stack);
+  }
+}
 
 function renderName(){
   const el=document.getElementById('d-name');
