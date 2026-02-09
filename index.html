@@ -1543,11 +1543,22 @@ function computeBazi(year,month,day,hour,minute,gender){
   
   let strong;
   if(deLing){
-    strong=(deDi||deShi)||(selfRatio>0.35);
-    if(selfRatio<0.28) strong=false;
+    // 得令: 需配合比例門檻, 避免得令但力量不足仍判強
+    const conditions=(deDi?1:0)+(deShi?1:0);
+    if(conditions>=2){
+      strong=selfRatio>=0.28; // 三全(令+地+勢): 除非極低比例
+    }else if(conditions===1){
+      strong=selfRatio>=0.38; // 得令+一項: 需較高比例
+    }else{
+      strong=selfRatio>=0.45; // 僅得令: 需高比例
+    }
   }else{
-    strong=(deDi&&deShi&&selfRatio>0.40);
-    if(selfRatio>0.55) strong=true;
+    if(dmMonthState==='死'||dmMonthState==='囚'){
+      strong=(deDi&&deShi&&selfRatio>0.55); // 被月令剋/洩: 極嚴格
+    }else{
+      strong=(deDi&&deShi&&selfRatio>0.45); // 休: 中等
+    }
+    if(selfRatio>0.60) strong=true; // 絕對高比例: 無條件身強
   }
 
   // ── 喜用神 / 忌神 ──
