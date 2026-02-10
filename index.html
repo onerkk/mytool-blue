@@ -1252,8 +1252,9 @@ html{scroll-behavior:smooth}
   <!-- 折扣碼（分享後顯示） -->
   <div class="discount-reveal hidden mt-lg" id="discount-reveal">
     <h4 style="color:var(--c-gold);margin-bottom:var(--sp-sm)">🍁 感謝分享！你的專屬折扣碼：</h4>
-    <div class="discount-code" id="discount-code">A50HDDG44</div>
-    <p class="text-sm text-dim mt-sm">蝦皮下單時輸入此碼享 <strong style="color:var(--c-gold)">9折優惠</strong></p>
+    <div class="discount-code" id="discount-code">•••••••••</div>
+    <p class="text-sm mt-sm" id="discount-timer" style="color:var(--c-gold)"></p>
+    <p class="text-sm text-dim mt-xs">蝦皮下單時輸入此碼享 <strong style="color:var(--c-gold)">9折優惠</strong></p>
     <button class="btn btn-outline btn-sm mt-sm" onclick="copyDiscountCode()"><i class="fas fa-copy"></i> 複製折扣碼</button>
     <div class="mt-md">
       <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 立即前往蝦皮選購</a>
@@ -5101,21 +5102,17 @@ function downloadBlob(blob){
 let hasShared=false;
 
 function shareToUnlock(){
+  /* 這個函數會被下方的 patch 覆蓋，保留作 fallback */
   const url=window.location.href.split('?')[0];
   const text='我剛用「靜月之光」測了命理結果，超準！免費測你的 👉 ';
-
+  if(!S.bazi){alert('請先完成占卜分析再分享哦！');return}
   if(navigator.share){
     navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
-      // User actually shared (confirmed by OS share sheet)
-      hasShared=true;
-      updateShareGate();
+      hasShared=true; updateShareGate();
     }).catch(()=>{
-      // User cancelled share — do NOT unlock
-      // Show a gentle message
-      showShareHint('分享取消了，要解鎖「再測一次」請完成分享哦 😊');
+      showShareHint('分享取消了，完成分享才能取得折扣碼哦 😊');
     });
   }else{
-    // No native share — show copy dialog with confirmation
     showCopyShareDialog(text+url);
   }
 }
@@ -5512,30 +5509,66 @@ function initLiveCounter(){
 /* =============================================================
    4) 分享後顯示專屬折扣碼（真實蝦皮折扣碼）
    ============================================================= */
-const REAL_DISCOUNT_CODES = [
-  'A50HDDG44','A50HGJY55','A50HOK471','A50HWWF45','A50HSF782',
-  'A50HYHF78','A50HSF878','A50HUJ574','A50HE333','A50HE552'
+/* 折扣碼以混淆形式存放，防止直接從原始碼複製 */
+/* 折扣碼以數值混淆形式存放 */
+const _dc=[
+  [68,56,51,75,71,71,74,55,55],
+  [68,56,51,75,74,77,92,56,56],
+  [68,56,51,75,82,78,55,58,52],
+  [68,56,51,75,90,90,73,55,56],
+  [68,56,51,75,86,73,58,59,53],
+  [68,56,51,75,92,75,73,58,59],
+  [68,56,51,75,86,73,59,58,59],
+  [68,56,51,75,88,77,56,58,55],
+  [68,56,51,75,72,54,54,54],
+  [68,56,51,75,72,56,56,53]
 ];
+function _dd(a){return a.map(c=>String.fromCharCode(c-3)).join('')}
 
 function generateDiscountCode(){
-  // Each user gets a consistent code based on date + random seed stored in localStorage
-  let seed = localStorage.getItem('jy_discount_seed');
-  if(!seed){
-    seed = Math.floor(Math.random() * REAL_DISCOUNT_CODES.length);
-    localStorage.setItem('jy_discount_seed', seed);
-  }
-  // Rotate by day so repeat visitors might see different codes
-  const dayOffset = new Date().getDate() % REAL_DISCOUNT_CODES.length;
-  const idx = (parseInt(seed) + dayOffset) % REAL_DISCOUNT_CODES.length;
-  return REAL_DISCOUNT_CODES[idx];
+  /* 每位用戶只能拿到一個碼，綁定瀏覽器指紋 */
+  const fp = navigator.userAgent.length + screen.width + screen.height;
+  const idx = fp % _dc.length;
+  return _dd(_dc[idx]);
 }
 
 function showDiscountAfterShare(){
-  const code = generateDiscountCode();
   const el = document.getElementById('discount-reveal');
   if(!el) return;
+  
+  /* 防護：同一裝置 24 小時內只能領一次 */
+  const lastClaim = localStorage.getItem('jy_last_claim');
+  const now = Date.now();
+  if(lastClaim && (now - parseInt(lastClaim)) < 86400000){
+    const hrs = Math.ceil((86400000 - (now - parseInt(lastClaim))) / 3600000);
+    alert('你已經領過折扣碼了！\n\n' + hrs + ' 小時後可再次領取。');
+    return;
+  }
+  
   el.classList.remove('hidden');
-  document.getElementById('discount-code').textContent = code;
+  
+  /* 延遲顯示：先遮罩，倒數 5 秒後才揭示完整碼 */
+  const code = generateDiscountCode();
+  const codeEl = document.getElementById('discount-code');
+  const masked = code.slice(0,4) + '•••••';
+  codeEl.textContent = masked;
+  codeEl.style.opacity = '0.5';
+  
+  let countdown = 5;
+  const timer = document.getElementById('discount-timer');
+  if(timer) timer.textContent = countdown + ' 秒後顯示完整折扣碼';
+  
+  const iv = setInterval(()=>{
+    countdown--;
+    if(timer) timer.textContent = countdown + ' 秒後顯示完整折扣碼';
+    if(countdown <= 0){
+      clearInterval(iv);
+      codeEl.textContent = code;
+      codeEl.style.opacity = '1';
+      if(timer) timer.textContent = '折扣碼已解鎖！請在蝦皮結帳時輸入';
+      localStorage.setItem('jy_last_claim', String(Date.now()));
+    }
+  }, 1000);
 }
 
 function copyDiscountCode(){
@@ -5547,21 +5580,46 @@ function copyDiscountCode(){
   });
 }
 
-// Patch shareToUnlock to also show discount
+// Patch shareToUnlock — 強化分享驗證
 const _origShareToUnlock = shareToUnlock;
+let _shareAttempts = 0;
 shareToUnlock = function(){
   const url = window.location.href.split('?')[0];
   const text = '我剛用「靜月之光」測了命理結果，超準！免費測你的 👉 ';
+  
+  /* 防護：必須完成占卜才能分享（防機器人直接觸發） */
+  if(!S.bazi){
+    alert('請先完成占卜分析再分享哦！');
+    return;
+  }
+  
   if(navigator.share){
     navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
       hasShared=true; updateShareGate(); showDiscountAfterShare();
       if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
     }).catch(()=>{
-      // User cancelled — don't unlock
-      showShareHint('分享取消了，完成分享才能解鎖哦 😊');
+      showShareHint('分享取消了，完成分享才能取得折扣碼哦 😊');
     });
   }else{
-    showCopyShareDialog(text+url);
+    /* 桌面版：複製連結後要求二次確認 + 延遲 */
+    _shareAttempts++;
+    navigator.clipboard.writeText(text+url).then(()=>{
+      /* 第一次按：只複製，提示去分享 */
+      if(_shareAttempts <= 1){
+        alert('分享連結已複製到剪貼簿！✨\n\n請貼到 LINE / IG / FB 分享給朋友。\n分享完成後，回來再按一次「分享」按鈕領取折扣碼。');
+        return;
+      }
+      /* 第二次按：才給碼（至少經過一次複製動作） */
+      const confirmed = confirm(
+        '確認你已經把連結分享給朋友了嗎？\n\n按「確定」領取 9 折折扣碼。'
+      );
+      if(confirmed){
+        hasShared=true; updateShareGate(); showDiscountAfterShare();
+        if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
+      }
+    }).catch(()=>{
+      prompt('複製以下連結分享給朋友：', text+url);
+    });
   }
 };
 
