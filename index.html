@@ -984,10 +984,13 @@ html{scroll-behavior:smooth}
     <div class="card-title"><i class="fas fa-question-circle"></i> 你的問題</div>
     <div class="form-group">
       <label class="form-label">問題類型 <span class="req">*</span></label>
-      <select class="form-select" id="f-type"><option value="">請選擇</option>
-        <option value="love">愛情</option><option value="career">事業</option><option value="wealth">財運</option>
-        <option value="health">健康</option><option value="general">綜合運勢</option><option value="relationship">人際</option>
-        <option value="family">家庭</option><option value="other">其他</option></select>
+      <select class="form-select" id="f-type"><option value="">請選擇方向</option>
+        <option value="love">💕 感情 / 桃花 / 婚姻</option>
+        <option value="career">💼 事業 / 工作 / 學業</option>
+        <option value="wealth">💰 財運 / 投資 / 收入</option>
+        <option value="health">🏥 健康 / 身體 / 心理</option>
+        <option value="relationship">🤝 人際 / 社交 / 合作</option>
+        <option value="family">🏠 家庭 / 親子 / 長輩</option></select>
     </div>
     <div class="form-group">
       <label class="form-label">你現在最想問的一件事 <span class="req">*</span></label>
@@ -2774,7 +2777,7 @@ function _runAnalysisV1_unused(){
   document.getElementById('r-conclusion').innerHTML=generateConclusion(type,finalProb,b,S.meihua,S.tarot);
 }
 
-function getTypeLabel(t){return{love:'愛情',career:'事業',wealth:'財運',health:'健康',general:'綜合運勢',relationship:'人際',family:'家庭',other:'其他'}[t]||t}
+function getTypeLabel(t){return{love:'感情',career:'事業',wealth:'財運',health:'健康',relationship:'人際',family:'家庭',general:'事業',other:'事業'}[t]||'事業'}
 
 /* ═══════════════════════════════════════════════════════════
    問答對齊引擎 — 解析使用者問句，產出針對性回答
@@ -2832,11 +2835,27 @@ function parseQuestionIntent(question, type) {
   const kw = q.replace(/[？?！!，,。.、的了嗎呢吧啊喔哦]/g, '').trim();
   result.keywords = kw.split(/\s+/).filter(w => w.length >= 2);
 
-  // 提取主題
-  if(type === 'love') result.subject = q.match(/另一半|對象|他|她|伴侶|男友|女友|老公|老婆|愛人|戀人|曖昧|前任/)?.[0] || '感情對象';
-  else if(type === 'career') result.subject = q.match(/工作|事業|公司|職業|升遷|轉職|創業|面試|老闆|同事/)?.[0] || '事業';
-  else if(type === 'wealth') result.subject = q.match(/錢|財|投資|股票|基金|房|薪水|收入|存款/)?.[0] || '財運';
-  else result.subject = kw.slice(0, 10);
+  // 提取主題（六大方向都要有對應詞彙）
+  const TOPIC_DICT = {
+    love: /另一半|對象|他|她|伴侶|男友|女友|老公|老婆|愛人|戀人|曖昧|前任|桃花|結婚|離婚|復合|分手|告白|追|喜歡|暗戀|正緣|偏緣|緣分|姻緣|感情|戀愛|愛情|婚姻/,
+    career: /工作|事業|公司|職業|升遷|轉職|創業|面試|老闆|同事|考試|學業|讀書|進修|加薪|離職|跳槽|副業|主管|職場|就業|換工作/,
+    wealth: /錢|財|投資|股票|基金|房|薪水|收入|存款|理財|借貸|債|買|賣|賺|虧|開源|節流|中獎|偏財|正財/,
+    health: /身體|健康|病|痛|不舒服|過敏|失眠|睡眠|疲勞|累|精神|情緒|壓力|焦慮|憂鬱|手術|開刀|懷孕|生育|視力|腸胃|心臟|肝|腎|肺|脾|頭|腰|背|皮膚|過勞|養生|中醫|西醫|減肥|運動|飲食|注意|調理|體質|免疫|血壓|血糖|濕氣/,
+    relationship: /朋友|人際|社交|合作|貴人|小人|同學|鄰居|合夥|團隊|溝通|衝突|吵架|誤會|信任|被騙|背叛|口舌|是非/,
+    family: /家人|父母|爸|媽|兒子|女兒|小孩|孩子|親子|長輩|公婆|婆媳|手足|兄弟|姊妹|家庭|搬家|房子|裝潢|遺產/
+  };
+  
+  if(TOPIC_DICT[type]) {
+    result.subject = q.match(TOPIC_DICT[type])?.[0] || {love:'感情',career:'事業',wealth:'財運',health:'身體狀況',relationship:'人際關係',family:'家庭'}[type];
+  } else {
+    result.subject = kw.slice(0, 10) || '所問之事';
+  }
+  
+  // 健康專屬：辨識問的是哪個部位/症狀
+  if(type === 'health') {
+    result.healthOrgan = q.match(/肝|心|脾|胃|肺|腎|腸|膽|膀胱|頭|眼|耳|口|鼻|喉|腰|背|骨|關節|皮膚|血|神經/)?.[0] || null;
+    result.healthSymptom = q.match(/痛|累|失眠|焦慮|憂鬱|過敏|發炎|腫|麻|暈|噁心|咳|喘|便秘|腹瀉|濕疹|掉髮/)?.[0] || null;
+  }
 
   return result;
 }
@@ -3039,6 +3058,345 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     wealthAnalysis += '<p class="mt-sm text-dim">💡 命理無法給出精確金額。上述分析綜合了八字財星、紫微財帛宮、梅花卦象與塔羅牌面，判斷的是「這段時期的財運方向與強度」。</p>';
 
     return '<p><strong>關於「' + (intent.subject || '收入') + '」的財運分析：</strong></p>' + wealthAnalysis;
+  }
+
+  // ── 健康類問題專屬回答 ──
+  if(type === 'health') {
+    const favEl = fav[0] || '土';
+    const WX_ORGAN = {金:'肺、大腸、鼻、皮膚、呼吸系統',木:'肝、膽、眼、筋絡、神經系統',水:'腎、膀胱、耳、骨髓、泌尿系統',火:'心、小腸、舌、血液循環',土:'脾、胃、口、肌肉、消化系統'};
+    const WX_SYMPTOM = {金:'呼吸問題、皮膚過敏、免疫力下降、容易感冒',木:'肝火旺、眼乾、頭痛、情緒煩躁、筋骨痠痛',水:'腎虛、腰痠、失眠、水腫、泌尿問題、疲勞',火:'心悸、血壓問題、口腔潰瘍、失眠焦慮',土:'腸胃不適、消化不良、濕氣重、四肢無力'};
+    const WX_FOOD = {金:'白色食物（百合、山藥、白蘿蔔）、辛味適量',木:'綠色蔬菜（菠菜、花椰菜）、酸味食物',水:'黑色食物（黑芝麻、海帶、黑豆）、充足飲水',火:'紅色食物（紅棗、枸杞、番茄）、苦味清心',土:'黃色食物（南瓜、玉米、薑）、甘味養脾'};
+    const WX_HABIT = {金:'練習深呼吸、戶外有氧運動、保養呼吸道',木:'舒緩肝氣（伸展運動、少生氣）、護眼作息',水:'早睡養腎（11點前入睡）、泡腳暖身、適當補水',火:'午休養心（11-13點小憩）、減少熬夜、控制情緒',土:'飲食規律定時、少冰少油膩、健脾去濕'};
+    
+    // 找出命盤最弱的五行→對應最容易出問題的臟腑
+    const epArr = Object.entries(bazi.ep || {}).sort((a,b) => a[1] - b[1]);
+    const weakestEl = epArr[0] ? epArr[0][0] : '土';
+    const strongestEl = epArr[epArr.length-1] ? epArr[epArr.length-1][0] : '土';
+    
+    let html = '<p><strong>關於你的健康狀況分析：</strong></p>';
+    
+    // 1. 體質判斷
+    html += `<p>你是「${dm}」日主，五行屬 <strong>${el}</strong>，身${strong?'強':'弱'}。`;
+    if(strong) html += '體質底子不差，但要注意「過旺則病」。';
+    else html += '先天體質偏弱，需要特別注意養生保健。';
+    html += '</p>';
+    
+    // 2. 最容易出問題的臟腑（最弱五行）
+    html += `<p>命盤中 <strong>${weakestEl}行最弱</strong>（${bazi.ep[weakestEl]}%），對應 <strong>${WX_ORGAN[weakestEl]}</strong>，`;
+    html += `容易出現：${WX_SYMPTOM[weakestEl]}。</p>`;
+    
+    // 3. 過旺的五行也要提醒
+    if(bazi.ep[strongestEl] > 30) {
+      html += `<p><strong>${strongestEl}行偏旺</strong>（${bazi.ep[strongestEl]}%），也可能引起 ${WX_SYMPTOM[strongestEl]}。</p>`;
+    }
+    
+    // 4. 調候與健康的關聯
+    if(bazi.tiaohou) {
+      const th = bazi.tiaohou;
+      html += `<p>⚠ 調候提示（${th.reason}）：${th.detail.replace(/<[^>]+>/g,'')} 反映在身體上，可能表現為：`;
+      if(th.reason.includes('水多')) html += '濕氣重、嗜睡、四肢沉重、消化差。';
+      else if(th.reason.includes('火旺')) html += '口乾舌燥、失眠、心煩、皮膚問題。';
+      else if(th.reason.includes('金重')) html += '壓力大、呼吸系統敏感、肩頸僵硬。';
+      else if(th.reason.includes('寒')) html += '手腳冰冷、免疫力低、容易感冒。';
+      else html += '需特別留意相關臟腑保健。';
+      html += '</p>';
+    }
+
+    // 5. 如果用戶提到特定部位/症狀
+    if(intent.healthOrgan) {
+      html += `<p>你提到的「${intent.healthOrgan}」`;
+      const organToEl = {'肝':'木','膽':'木','眼':'木','心':'火','舌':'火','脾':'土','胃':'土','口':'土','肺':'金','鼻':'金','皮膚':'金','腎':'水','耳':'水','腰':'水','骨':'水','腸':'土','膀胱':'水','頭':'火','背':'水','關節':'木','血':'火','神經':'木','喉':'金'};
+      const relEl = organToEl[intent.healthOrgan] || '';
+      if(relEl) {
+        html += `屬 ${relEl}行（${bazi.ep[relEl]}%）`;
+        if(bazi.ep[relEl] < 15) html += '，在你的命盤中偏弱，確實需要特別注意。';
+        else if(bazi.ep[relEl] > 30) html += '，能量偏旺，要防「過旺則病」。';
+        else html += '，能量中等，日常保養即可。';
+      }
+      html += '</p>';
+    }
+    
+    // 6. 大運對健康的影響
+    if(curDy) {
+      const dyEl = curDy.el || '';
+      html += '<p>目前大運';
+      if(curDy.level.includes('吉')) html += `（${curDy.gz}，${curDy.level}）整體有利健康，但仍需注意 ${WX_ORGAN[weakestEl]} 的保養。`;
+      else if(curDy.level.includes('凶')) html += `（${curDy.gz}，${curDy.level}）對健康不利，尤其要留意 ${WX_ORGAN[weakestEl]}，建議定期健檢。`;
+      else html += `（${curDy.gz}）對健康影響中性，維持良好作息即可。`;
+      html += '</p>';
+    }
+    
+    // 7. 具體養生建議
+    html += '<p><strong>養生建議：</strong></p>';
+    html += `<p>• 飲食：多攝取 ${WX_FOOD[favEl]}</p>`;
+    html += `<p>• 作息：${WX_HABIT[favEl]}</p>`;
+    html += `<p>• 運動：${el==='木'||el==='火'?'適合動態運動（跑步、球類）':'適合靜態運動（瑜珈、太極、游泳）'}</p>`;
+    
+    html += '<p class="mt-sm text-dim">⚠ 命理健康分析僅供參考，不能替代專業醫療診斷。如有不適請就醫。</p>';
+    
+    return html;
+  }
+
+  // ── 人際類問題專屬回答 ──
+  if(type === 'relationship') {
+    const favEl = fav[0] || '土';
+    let html = '<p><strong>關於你的人際/社交分析：</strong></p>';
+    
+    // 1. 命格社交特質
+    html += `<p>你是「${dm}」日主，五行屬${el}，身${strong?'強':'弱'}。`;
+    if(strong) html += '身強者個性較強勢，人際上容易主導但也易與人產生摩擦，適合當領導但要注意傾聽。';
+    else html += '身弱者個性較柔和，人際上容易配合他人但也易被壓制，需要找到可信賴的貴人。';
+    html += '</p>';
+
+    // 2. 十神看人際
+    const gods = bazi.gods || {};
+    const dayGods = gods.day ? gods.day.zhi : [];
+    html += '<p>';
+    if(bazi.shensha && bazi.shensha.includes('天乙貴人')) html += '命帶<strong>天乙貴人</strong>，天生人緣好，遇困難容易有人相助。';
+    if(bazi.shensha && bazi.shensha.includes('劫煞')) html += '命帶<strong>劫煞</strong>，小心被朋友拖累或借錢不還，交友需謹慎。';
+    if(bazi.shensha && bazi.shensha.includes('華蓋')) html += '命帶<strong>華蓋</strong>，個性偏獨立，享受獨處，社交圈偏小但精。';
+    if(bazi.shensha && bazi.shensha.includes('驛馬')) html += '命帶<strong>驛馬</strong>，社交圈廣泛，適合跨區域/跨國人脈經營。';
+    if(bazi.shensha && bazi.shensha.includes('桃花')) html += '命帶<strong>桃花</strong>，人際魅力強，異性緣佳但也要注意界線。';
+    html += '</p>';
+
+    // 3. 紫微交友宮
+    if(S.ziwei && S.ziwei.palaces[7]) {
+      const jiaoYou = S.ziwei.palaces[7]; // 交友宮(僕役宮)
+      const jyStars = jiaoYou.stars.filter(s => s.type === 'major');
+      if(jyStars.length) {
+        html += '<p>紫微交友宮主星：<strong>' + jyStars.map(s => s.name).join('、') + '</strong>。';
+        if(jyStars.some(s => s.name === '天同' || s.name === '天府')) html += '身邊朋友多數溫和穩重，社交關係和諧。';
+        else if(jyStars.some(s => s.name === '七殺' || s.name === '破軍')) html += '朋友類型較個性強烈，容易有衝突但也有力的盟友。';
+        else if(jyStars.some(s => s.name === '貪狼')) html += '社交圈熱鬧多元，但要慎防酒肉朋友。';
+        else if(jyStars.some(s => s.name === '巨門')) html += '容易遇到口舌是非，人際溝通需多留心。';
+        else html += '人際關係平穩，維持真誠互動即可。';
+        html += '</p>';
+      }
+    }
+
+    // 4. 大運對人際的影響
+    if(curDy) {
+      html += '<p>目前大運';
+      if(curDy.level.includes('吉')) html += `（${curDy.gz}，${curDy.level}）有利人際拓展，適合主動社交、參加活動。`;
+      else if(curDy.level.includes('凶')) html += `（${curDy.gz}，${curDy.level}）人際面有壓力，注意小人是非，保持低調。`;
+      else html += `（${curDy.gz}）人際平穩，維持現有關係即可。`;
+      html += '</p>';
+    }
+
+    // 5. 梅花卦象
+    if(mh) {
+      html += `<p>梅花體用 ${mh.ty.r}（${mh.ty.f}）`;
+      if(mh.ty.f.includes('吉')) html += '，卦象支持人際互動順利。';
+      else if(mh.ty.f.includes('凶')) html += '，卦象提示近期人際有阻力，少管閒事為宜。';
+      else html += '，人際關係平穩。';
+      html += '</p>';
+    }
+
+    // 6. 具體建議
+    html += '<p><strong>人際改善建議：</strong></p>';
+    html += `<p>• 喜用五行方位（${favEl}行）→ ${({金:'正西方',木:'正東方',水:'正北方',火:'正南方',土:'中央/東北'})[favEl]}方向的人是你的貴人方位</p>`;
+    html += `<p>• ${strong?'身強者要練習「傾聽」，少爭辯，多認同':'身弱者要練習「表達」，勇敢說出想法，不過度退讓'}</p>`;
+    html += `<p>• ${bazi.shensha&&bazi.shensha.includes('天乙貴人')?'善用貴人運，主動維繫重要人脈':'多參加正向社交場合，累積人脈能量'}</p>`;
+    
+    return html;
+  }
+
+  // ── 家庭類問題專屬回答 ──
+  if(type === 'family') {
+    let html = '<p><strong>關於你的家庭/親子分析：</strong></p>';
+    
+    // 1. 日主看家庭角色
+    html += `<p>你是「${dm}」日主，五行屬${el}，身${strong?'強':'弱'}。`;
+    if(strong) html += '在家庭中你傾向主導，決策力強但要避免過於專斷，給家人空間。';
+    else html += '在家庭中你傾向配合，情感細膩但容易操心過多，學習適度放手。';
+    html += '</p>';
+
+    // 2. 紫微田宅宮（家庭宮）
+    if(S.ziwei && S.ziwei.palaces[9]) {
+      const tianZhai = S.ziwei.palaces[9];
+      const tzStars = tianZhai.stars.filter(s => s.type === 'major');
+      if(tzStars.length) {
+        html += '<p>紫微田宅宮主星：<strong>' + tzStars.map(s => s.name).join('、') + '</strong>。';
+        if(tzStars.some(s => s.name === '天府' || s.name === '天同')) html += '家庭運勢穩定和諧，居家環境舒適。';
+        else if(tzStars.some(s => s.name === '七殺' || s.name === '破軍')) html += '家庭生活變動較多，可能有搬家或裝修，家人關係需多溝通。';
+        else if(tzStars.some(s => s.name === '武曲')) html += '與家庭的連結偏實際面（經濟、房產），感性交流可再加強。';
+        else if(tzStars.some(s => s.name === '太陽')) html += '你在家庭中像太陽，需要照顧大家，但也要注意自己的需求。';
+        else if(tzStars.some(s => s.name === '太陰')) html += '家庭氛圍偏溫馨安靜，適合營造舒適的居家空間。';
+        else html += '家庭格局平穩。';
+        html += '</p>';
+      }
+    }
+
+    // 3. 紫微父母宮
+    if(S.ziwei && S.ziwei.palaces[6]) {
+      const fuMu = S.ziwei.palaces[6];
+      const fmStars = fuMu.stars.filter(s => s.type === 'major');
+      if(fmStars.length) {
+        html += '<p>紫微父母宮：<strong>' + fmStars.map(s => s.name).join('、') + '</strong>。';
+        if(fmStars.some(s => s.name === '天梁' || s.name === '天同')) html += '與長輩關係良好，能獲得家族支持。';
+        else if(fmStars.some(s => s.name === '巨門')) html += '與長輩之間容易有觀念衝突或溝通誤解，需要耐心。';
+        else if(fmStars.some(s => s.name === '七殺' || s.name === '破軍')) html += '與長輩關係較疏遠或有代溝，獨立性強。';
+        else html += '與長輩關係中等，保持尊重即可。';
+        html += '</p>';
+      }
+    }
+
+    // 4. 子女宮
+    if(S.ziwei && S.ziwei.palaces[3]) {
+      const ziNv = S.ziwei.palaces[3];
+      const znStars = ziNv.stars.filter(s => s.type === 'major');
+      if(znStars.length && /孩|子|女|兒|小孩|親子|懷孕|生育/.test(intent.rawQuestion || '')) {
+        html += '<p>紫微子女宮：<strong>' + znStars.map(s => s.name).join('、') + '</strong>。';
+        if(znStars.some(s => s.name === '天同' || s.name === '太陰')) html += '子女緣佳，親子關係溫馨。';
+        else if(znStars.some(s => s.name === '七殺' || s.name === '破軍')) html += '子女個性較獨立叛逆，需用引導而非強壓。';
+        else html += '子女運平穩。';
+        html += '</p>';
+      }
+    }
+
+    // 5. 大運對家庭的影響
+    if(curDy) {
+      html += '<p>目前大運';
+      if(curDy.level.includes('吉')) html += `（${curDy.gz}，${curDy.level}）家庭運勢平順，適合規劃家庭大事（搬家、裝修、重要決定）。`;
+      else if(curDy.level.includes('凶')) html += `（${curDy.gz}，${curDy.level}）家庭面有壓力，避免在此期間做重大家庭決策，多溝通少爭執。`;
+      else html += `（${curDy.gz}）家庭運勢平穩。`;
+      html += '</p>';
+    }
+
+    // 6. 梅花卦象
+    if(mh) {
+      html += `<p>梅花體用 ${mh.ty.r}（${mh.ty.f}）`;
+      if(mh.ty.f.includes('吉')) html += '，卦象支持家庭事務順利推進。';
+      else if(mh.ty.f.includes('凶')) html += '，卦象提示家庭事務需耐心處理，不宜急躁。';
+      else html += '，家庭狀態平穩。';
+      html += '</p>';
+    }
+
+    html += `<p><strong>家庭和諧建議：</strong></p>`;
+    html += `<p>• ${strong?'你的主導性強，家庭中要記得「退一步」給家人發言權':'你容易委屈自己，家庭中要記得「表達需求」，別總是默默承受'}</p>`;
+    html += `<p>• 居家環境可在${({金:'正西方',木:'正東方',水:'正北方',火:'正南方',土:'中央'})[fav[0]||'土']}擺放綠植或水晶，增強家庭和諧磁場</p>`;
+
+    return html;
+  }
+
+  // ── 感情類通用回答（非特定意圖時）──
+  if(type === 'love' && !intent.isAge && !intent.isWhen && !intent.isWho && !intent.isYesNo && !intent.isHow) {
+    let html = '<p><strong>關於你的感情運勢分析：</strong></p>';
+    html += `<p>你是「${dm}」日主，五行屬${el}，身${strong?'強':'弱'}。`;
+    if(strong) html += '感情上你傾向主動，有魅力但容易太強勢讓對方有壓力。';
+    else html += '感情上你較被動溫和，容易吸引保護型對象，但要注意別總是委曲求全。';
+    html += '</p>';
+
+    if(bazi.shensha) {
+      if(bazi.shensha.includes('桃花')) html += '<p>命帶<strong>桃花星</strong>，異性緣旺，不愁沒有機會，但要慎選。</p>';
+      if(bazi.shensha.includes('紅鸞')) html += '<p>命帶<strong>紅鸞</strong>，近期有結婚或穩定感情的機會。</p>';
+      if(bazi.shensha.includes('孤辰') || bazi.shensha.includes('寡宿')) html += '<p>命帶孤辰/寡宿，感情上比較晚熟或享受獨處，晚婚反而更幸福。</p>';
+    }
+
+    // 紫微夫妻宮
+    if(S.ziwei && S.ziwei.palaces[2]) {
+      const spouse = S.ziwei.palaces[2];
+      const spStars = spouse.stars.filter(s => s.type === 'major');
+      if(spStars.length) {
+        html += '<p>紫微夫妻宮主星：<strong>' + spStars.map(s=>s.name).join('、') + '</strong>，';
+        if(spStars.some(s=>s.name==='天同'||s.name==='太陰')) html += '感情傾向溫馨平穩，適合細水長流。';
+        else if(spStars.some(s=>s.name==='貪狼')) html += '感情生活多采多姿，桃花機會多但也要慎選。';
+        else if(spStars.some(s=>s.name==='七殺'||s.name==='破軍')) html += '感情帶有衝擊性，來得快去得也快，需要磨合。';
+        else html += '感情運勢中等。';
+        html += '</p>';
+      }
+    }
+
+    if(curDy) {
+      html += '<p>目前大運';
+      if(curDy.level.includes('吉')) html += `（${curDy.gz}，${curDy.level}）有利感情發展，${bazi.shensha&&bazi.shensha.includes('桃花')?'桃花星+大運吉，感情機會很多！':'可以主動出擊。'}`;
+      else if(curDy.level.includes('凶')) html += `（${curDy.gz}，${curDy.level}）感情面有阻力，不急著做重大決定（結婚/分手），等運勢轉好再說。`;
+      else html += `（${curDy.gz}）感情平穩期，維繫現有關係即可。`;
+      html += '</p>';
+    }
+    
+    return html;
+  }
+
+  // ── 事業類通用回答 ──
+  if(type === 'career' && !intent.isWhen && !intent.isYesNo && !intent.isHow && !intent.isAmount) {
+    let html = '<p><strong>關於你的事業/工作分析：</strong></p>';
+    html += `<p>你是「${dm}」日主，五行屬${el}，身${strong?'強':'弱'}。`;
+    if(strong) html += '事業上你有領導力和衝勁，適合獨當一面或創業，但要注意與同事/上司的相處。';
+    else html += '事業上宜依附大平台或跟隨有能力的主管，穩紮穩打比冒險更適合你。';
+    html += '</p>';
+
+    if(bazi.shensha) {
+      if(bazi.shensha.includes('文昌')) html += '<p>命帶<strong>文昌星</strong>，利考試、進修、文書工作、學術研究。</p>';
+      if(bazi.shensha.includes('驛馬')) html += '<p>命帶<strong>驛馬星</strong>，適合跨區域發展、出差型工作、外派。</p>';
+      if(bazi.shensha.includes('將星')) html += '<p>命帶<strong>將星</strong>，有管理才能，適合帶團隊。</p>';
+    }
+
+    // 紫微官祿宮
+    if(S.ziwei && S.ziwei.palaces[8]) {
+      const guanLu = S.ziwei.palaces[8];
+      const glStars = guanLu.stars.filter(s => s.type === 'major');
+      if(glStars.length) {
+        html += '<p>紫微官祿宮主星：<strong>' + glStars.map(s=>s.name).join('、') + '</strong>。';
+        if(glStars.some(s=>s.name==='紫微'||s.name==='天府')) html += '格局大，適合管理層或大企業發展。';
+        else if(glStars.some(s=>s.name==='武曲')) html += '適合金融、業務、技術型工作，實戰派。';
+        else if(glStars.some(s=>s.name==='天機')) html += '適合企劃、科技、策略型工作，腦力派。';
+        else if(glStars.some(s=>s.name==='貪狼')) html += '適合業務、公關、娛樂、創意產業。';
+        else html += '事業發展穩健。';
+        html += '</p>';
+      }
+    }
+
+    if(curDy) {
+      html += '<p>目前大運';
+      if(curDy.level.includes('吉')) html += `（${curDy.gz}，${curDy.level}）事業順遂，適合爭取升遷/轉職/拓展新方向。`;
+      else if(curDy.level.includes('凶')) html += `（${curDy.gz}，${curDy.level}）事業面有壓力，宜守不宜攻，先穩住現有位置。`;
+      else html += `（${curDy.gz}）事業平穩期，厚積薄發。`;
+      html += '</p>';
+    }
+    
+    return html;
+  }
+
+  // ── 財運類通用回答 ──
+  if(type === 'wealth' && !intent.isWhen && !intent.isYesNo && !intent.isHow && !intent.isAmount) {
+    const caiEl = typeof KE !== 'undefined' ? KE[el] : '';
+    const caiStrength = caiEl && bazi.ep ? bazi.ep[caiEl] : 0;
+    
+    let html = '<p><strong>關於你的財運分析：</strong></p>';
+    html += `<p>你是「${dm}」日主，五行屬${el}，身${strong?'強':'弱'}。`;
+    if(strong) html += '身強能扛財，有承接大財富的格局，但要注意控制慾望和風險。';
+    else html += '身弱扛不住大財，穩健理財、定期儲蓄比高風險投資更適合你。';
+    html += '</p>';
+
+    html += `<p>命盤財星（${caiEl}行）佔 ${caiStrength}%，`;
+    if(caiStrength > 25) html += '財星旺，天生有財運格局，偏財運佳。';
+    else if(caiStrength > 15) html += '財星中等，收入穩定但大財需靠努力。';
+    else html += '財星偏弱，需主動開源，不宜守株待兔。';
+    html += '</p>';
+
+    // 紫微財帛宮
+    if(S.ziwei && S.ziwei.palaces[4]) {
+      const caiPalace = S.ziwei.palaces[4];
+      const caiStars = caiPalace.stars.filter(s => s.type === 'major');
+      if(caiStars.length) {
+        const hasLu = caiPalace.stars.some(s => s.hua === '化祿');
+        html += '<p>紫微財帛宮主星：<strong>' + caiStars.map(s=>s.name).join('、') + '</strong>';
+        if(hasLu) html += '，且有<strong>化祿</strong>加持，財運格局很好！';
+        else html += '。';
+        html += '</p>';
+      }
+    }
+
+    if(curDy) {
+      html += '<p>目前大運';
+      if(curDy.level.includes('吉')) html += `（${curDy.gz}，${curDy.level}）財運有利，可適度加碼投資或拓展收入管道。`;
+      else if(curDy.level.includes('凶')) html += `（${curDy.gz}，${curDy.level}）財運受壓，不宜大額投入，守財為上。`;
+      else html += `（${curDy.gz}）財運平穩。`;
+      html += '</p>';
+    }
+    
+    return html;
   }
 
   // ── 針對「會不會/能不能」是非題 ──
@@ -3400,7 +3758,9 @@ function generateAnswer(type,prob,bazi,mh,tarot){
       weak:'身弱難扛財，財來財卻，宜保守理財、量力而為'
     },
     health:{
-      advice:'五行缺'+fav[0]+'，可從飲食（'+{金:'白色食物/辛味',木:'綠色蔬菜/酸味',水:'黑色食物/鹹味',火:'紅色食物/苦味',土:'黃色食物/甘味'}[fav[0]||'土']+'）補充'
+      strong:'身強體質底子好，但要防「過旺」引起的發炎、上火、血壓問題',
+      weak:'身弱體質偏虛，需注意免疫力、腸胃功能、睡眠品質',
+      advice:'喜用神為'+fav[0]+'行，養生重點：'+{金:'養肺護膚（深呼吸、保濕）',木:'疏肝解鬱（伸展、少熬夜）',水:'養腎補水（早睡、黑色食物）',火:'養心安神（午休、紅色食物）',土:'健脾去濕（飲食規律、黃色食物）'}[fav[0]||'土']
     }
   };
 
@@ -3416,6 +3776,7 @@ function generateAnswer(type,prob,bazi,mh,tarot){
     suggestions.push(typeAdvice.wealth[strong?'strong':'weak']);
     suggestions.push(bazi.ep&&caiEl&&bazi.ep[caiEl]>15?typeAdvice.wealth.caiWang:typeAdvice.wealth.caiRuo);
   } else if(type==='health'){
+    suggestions.push(typeAdvice.health[strong?'strong':'weak']);
     suggestions.push(typeAdvice.health.advice);
   }
 
@@ -4683,9 +5044,69 @@ function toggleLiuNian(dyIdx){
    ============================================================= */
 const YAO_CI={
   '乾為天':['潛龍勿用','見龍在田，利見大人','君子終日乾乾，夕惕若厲，無咎','或躍在淵，無咎','飛龍在天，利見大人','亢龍有悔'],
-  '坤為地':['履霜，堅冰至','直方大，不習無不利','含章可貞，或從王事，無成有終','括囊，無咎無譽','黃裳，元吉','龍戰于重，其血玄黃'],
+  '坤為地':['履霜，堅冰至','直方大，不習無不利','含章可貞，或從王事，無成有終','括囊，無咎無譽','黃裳，元吉','龍戰于野，其血玄黃'],
+  '水雷屯':['磐桓，利居貞，利建侯','屯如邅如，乘馬班如，匪寇婚媾','即鹿無虞，惟入于林中，君子幾不如舍','乘馬班如，求婚媾，往吉無不利','屯其膏，小貞吉，大貞凶','乘馬班如，泣血漣如'],
+  '山水蒙':['發蒙，利用刑人，用說桎梏，以往吝','包蒙吉，納婦吉，子克家','勿用取女，見金夫，不有躬，無攸利','困蒙，吝','童蒙，吉','擊蒙，不利為寇，利禦寇'],
+  '水天需':['需于郊，利用恆，無咎','需于沙，小有言，終吉','需于泥，致寇至','需于血，出自穴','需于酒食，貞吉','入于穴，有不速之客三人來，敬之終吉'],
+  '天水訟':['不永所事，小有言，終吉','不克訟，歸而逋，其邑人三百戶無眚','食舊德，貞厲，終吉；或從王事，無成','不克訟，復即命渝，安貞吉','訟，元吉','或錫之鞶帶，終朝三褫之'],
+  '地水師':['師出以律，否臧凶','在師中吉，無咎，王三錫命','師或輿尸，凶','師左次，無咎','田有禽，利執言，無咎；長子帥師，弟子輿尸，貞凶','大君有命，開國承家，小人勿用'],
+  '水地比':['有孚比之，無咎；有孚盈缶，終來有它吉','比之自內，貞吉','比之匪人','外比之，貞吉','顯比，王用三驅，失前禽，邑人不誡，吉','比之無首，凶'],
+  '風天小畜':['復自道，何其咎，吉','牽復，吉','輿說輻，夫妻反目','有孚，血去惕出，無咎','有孚攣如，富以其鄰','既雨既處，尚德載，婦貞厲，月幾望，君子征凶'],
+  '天澤履':['素履，往無咎','履道坦坦，幽人貞吉','眇能視，跛能履，履虎尾，咥人凶，武人為于大君','履虎尾，愬愬，終吉','夬履，貞厲','視履考祥，其旋元吉'],
   '地天泰':['拔茅茹，以其彙，征吉','包荒，用馮河，不遐遺','無平不陂，無往不復，艱貞無咎','翩翩不富，以其鄰，不戒以孚','帝乙歸妹，以祉元吉','城復于隍，勿用師，自邑告命'],
   '天地否':['拔茅茹，以其彙，貞吉亨','包承，小人吉，大人否亨','包羞','有命無咎，疇離祉','休否，大人吉','傾否，先否後喜'],
+  '天火同人':['同人于門，無咎','同人于宗，吝','伏戎于莽，升其高陵，三歲不興','乘其墉，弗克攻，吉','同人先號咷而後笑，大師克相遇','同人于郊，無悔'],
+  '火天大有':['無交害，匪咎，艱則無咎','大車以載，有攸往，無咎','公用亨于天子，小人弗克','匪其彭，無咎','厥孚交如，威如，吉','自天祐之，吉無不利'],
+  '地山謙':['謙謙君子，用涉大川，吉','鳴謙，貞吉','勞謙，君子有終，吉','無不利，撝謙','不富以其鄰，利用侵伐，無不利','鳴謙，利用行師，征邑國'],
+  '雷地豫':['鳴豫，凶','介于石，不終日，貞吉','盱豫，悔，遲有悔','由豫，大有得，勿疑朋盍簪','貞疾，恆不死','冥豫，成有渝，無咎'],
+  '澤雷隨':['官有渝，貞吉，出門交有功','係小子，失丈夫','係丈夫，失小子，隨有求得，利居貞','隨有獲，貞凶，有孚在道，以明，何咎','孚于嘉，吉','拘係之，乃從維之，王用亨于西山'],
+  '山風蠱':['幹父之蠱，有子，考無咎，厲終吉','幹母之蠱，不可貞','幹父之蠱，小有悔，無大咎','裕父之蠱，往見吝','幹父之蠱，用譽','不事王侯，高尚其事'],
+  '地澤臨':['咸臨，貞吉','咸臨，吉無不利','甘臨，無攸利，既憂之，無咎','至臨，無咎','知臨，大君之宜，吉','敦臨，吉，無咎'],
+  '風地觀':['童觀，小人無咎，君子吝','闚觀，利女貞','觀我生，進退','觀國之光，利用賓于王','觀我生，君子無咎','觀其生，君子無咎'],
+  '火雷噬嗑':['屨校滅趾，無咎','噬膚滅鼻，無咎','噬臘肉，遇毒，小吝無咎','噬乾胏，得金矢，利艱貞，吉','噬乾肉，得黃金，貞厲，無咎','何校滅耳，凶'],
+  '山火賁':['賁其趾，舍車而徒','賁其須','賁如濡如，永貞吉','賁如皤如，白馬翰如，匪寇婚媾','賁于丘園，束帛戔戔，吝，終吉','白賁，無咎'],
+  '山地剝':['剝床以足，蔑貞凶','剝床以辨，蔑貞凶','剝之，無咎','剝床以膚，凶','貫魚，以宮人寵，無不利','碩果不食，君子得輿，小人剝廬'],
+  '地雷復':['不遠復，無祗悔，元吉','休復，吉','頻復，厲，無咎','中行獨復','敦復，無悔','迷復，凶，有災眚，用行師終有大敗'],
+  '天雷無妄':['無妄，往吉','不耕獲，不菑畬，則利有攸往','無妄之災，或繫之牛，行人之得，邑人之災','可貞，無咎','無妄之疾，勿藥有喜','無妄行，有眚，無攸利'],
+  '山天大畜':['有厲，利已','輿說輹','良馬逐，利艱貞，曰閑輿衛，利有攸往','童牛之牿，元吉','豶豕之牙，吉','何天之衢，亨'],
+  '山雷頤':['舍爾靈龜，觀我朵頤，凶','顛頤，拂經，于丘頤，征凶','拂頤，貞凶，十年勿用，無攸利','顛頤，吉，虎視眈眈，其欲逐逐，無咎','拂經，居貞吉，不可涉大川','由頤，厲吉，利涉大川'],
+  '澤風大過':['藉用白茅，無咎','枯楊生稊，老夫得其女妻，無不利','棟橈，凶','棟隆，吉，有它吝','枯楊生華，老婦得其士夫，無咎無譽','過涉滅頂，凶，無咎'],
+  '坎為水':['習坎，入于坎窞，凶','坎有險，求小得','來之坎坎，險且枕，入于坎窞，勿用','樽酒簋貳，用缶，納約自牖，終無咎','坎不盈，祗既平，無咎','係用徽纆，寘于叢棘，三歲不得，凶'],
+  '離為火':['履錯然，敬之無咎','黃離，元吉','日昃之離，不鼓缶而歌，則大耋之嗟，凶','突如其來如，焚如，死如，棄如','出涕沱若，戚嗟若，吉','王用出征，有嘉折首，獲匪其醜，無咎'],
+  '澤山咸':['咸其拇','咸其腓，凶，居吉','咸其股，執其隨，往吝','貞吉悔亡，憧憧往來，朋從爾思','咸其脢，無悔','咸其輔頰舌'],
+  '雷風恆':['浚恆，貞凶，無攸利','悔亡','不恆其德，或承之羞，貞吝','田無禽','恆其德，貞，婦人吉，夫子凶','振恆，凶'],
+  '天山遁':['遁尾，厲，勿用有攸往','執之用黃牛之革，莫之勝說','係遁，有疾厲，畜臣妾吉','好遁，君子吉，小人否','嘉遁，貞吉','肥遁，無不利'],
+  '雷天大壯':['壯于趾，征凶，有孚','貞吉','小人用壯，君子用罔，貞厲，羝羊觸藩，羸其角','貞吉悔亡，藩決不羸，壯于大輿之輹','喪羊于易，無悔','羝羊觸藩，不能退，不能遂，無攸利，艱則吉'],
+  '火地晉':['晉如摧如，貞吉，罔孚裕，無咎','晉如愁如，貞吉，受茲介福于其王母','眾允，悔亡','晉如鼫鼠，貞厲','悔亡，失得勿恤，往吉，無不利','晉其角，維用伐邑，厲吉無咎，貞吝'],
+  '地火明夷':['明夷于飛，垂其翼，君子于行，三日不食','明夷，夷于左股，用拯馬壯，吉','明夷于南狩，得其大首，不可疾貞','入于左腹，獲明夷之心，于出門庭','箕子之明夷，利貞','不明晦，初登于天，後入于地'],
+  '風火家人':['閑有家，悔亡','無攸遂，在中饋，貞吉','家人嗃嗃，悔厲吉，婦子嘻嘻，終吝','富家，大吉','王假有家，勿恤吉','有孚威如，終吉'],
+  '火澤睽':['悔亡，喪馬勿逐自復，見惡人無咎','遇主于巷，無咎','見輿曳，其牛掣，其人天且劓，無初有終','睽孤，遇元夫，交孚，厲無咎','悔亡，厥宗噬膚，往何咎','睽孤，見豕負塗，載鬼一車，先張之弧後說之弧，匪寇婚媾'],
+  '水山蹇':['往蹇，來譽','王臣蹇蹇，匪躬之故','往蹇來反','往蹇來連','大蹇，朋來','往蹇來碩，吉，利見大人'],
+  '雷水解':['無咎','田獲三狐，得黃矢，貞吉','負且乘，致寇至，貞吝','解而拇，朋至斯孚','君子維有解，吉，有孚于小人','公用射隼于高墉之上，獲之，無不利'],
+  '山澤損':['已事遄往，無咎，酌損之','利貞，征凶，弗損益之','三人行則損一人，一人行則得其友','損其疾，使遄有喜，無咎','或益之十朋之龜弗克違，元吉','弗損益之，無咎，貞吉，利有攸往'],
+  '風雷益':['利用為大作，元吉，無咎','或益之十朋之龜弗克違，永貞吉','益之用凶事，無咎，有孚中行，告公用圭','中行告公從，利用為依遷國','有孚惠心，勿問元吉，有孚惠我德','莫益之，或擊之，立心勿恆，凶'],
+  '澤天夬':['壯于前趾，往不勝為咎','惕號，莫夜有戎，勿恤','壯于頄，有凶，君子夬夬獨行遇雨若濡有慍無咎','臀無膚，其行次且，牽羊悔亡，聞言不信','莧陸夬夬，中行無咎','無號，終有凶'],
+  '天風姤':['繫于金柅，貞吉，有攸往，見凶','包有魚，無咎，不利賓','臀無膚，其行次且，厲，無大咎','包無魚，起凶','以杞包瓜，含章，有隕自天','姤其角，吝，無咎'],
+  '澤地萃':['有孚不終，乃亂乃萃，若號，一握為笑，勿恤，往無咎','引吉，無咎，孚乃利用禴','萃如嗟如，無攸利，往無咎，小吝','大吉無咎','萃有位，無咎，匪孚，元永貞，悔亡','齎咨涕洟，無咎'],
+  '地風升':['允升，大吉','孚乃利用禴，無咎','升虛邑','王用亨于岐山，吉無咎','貞吉，升階','冥升，利于不息之貞'],
+  '澤水困':['臀困于株木，入于幽谷，三歲不覿','困于酒食，朱紱方來，利用享祀','困于石，據于蒺藜，入于其宮，不見其妻，凶','來徐徐，困于金車，吝，有終','劓刖，困于赤紱，乃徐有說，利用祭祀','困于葛藟，于臲卼，曰動悔有悔，征吉'],
+  '水風井':['井泥不食，舊井無禽','井谷射鮒，甕敝漏','井渫不食，為我心惻，可用汲，王明並受其福','井甃，無咎','井冽，寒泉食','井收勿幕，有孚元吉'],
+  '澤火革':['鞏用黃牛之革','已日乃革之，征吉，無咎','征凶，貞厲，革言三就，有孚','悔亡，有孚改命，吉','大人虎變，未占有孚','君子豹變，小人革面，征凶，居貞吉'],
+  '火風鼎':['鼎顛趾，利出否，得妾以其子，無咎','鼎有實，我仇有疾，不我能即，吉','鼎耳革，其行塞，雉膏不食，方雨虧悔，終吉','鼎折足，覆公餗，其形渥，凶','鼎黃耳金鉉，利貞','鼎玉鉉，大吉，無不利'],
+  '震為雷':['震來虩虩，後笑言啞啞，吉','震來厲，億喪貝，躋于九陵，勿逐，七日得','震蘇蘇，震行無眚','震遂泥','震往來厲，億無喪，有事','震索索，視矍矍，征凶，震不于其躬，于其鄰，無咎'],
+  '艮為山':['艮其趾，無咎，利永貞','艮其腓，不拯其隨，其心不快','艮其限，列其夤，厲薰心','艮其身，無咎','艮其輔，言有序，悔亡','敦艮，吉'],
+  '風山漸':['鴻漸于干，小子厲有言，無咎','鴻漸于磐，飲食衎衎，吉','鴻漸于陸，夫征不復，婦孕不育，凶，利禦寇','鴻漸于木，或得其桷，無咎','鴻漸于陵，婦三歲不孕，終莫之勝，吉','鴻漸于逵，其羽可用為儀，吉'],
+  '雷澤歸妹':['歸妹以娣，跛能履，征吉','眇能視，利幽人之貞','歸妹以須，反歸以娣','歸妹愆期，遲歸有時','帝乙歸妹，其君之袂不如其娣之袂良，月幾望，吉','女承筐無實，士刲羊無血，無攸利'],
+  '雷火豐':['遇其配主，雖旬無咎，往有尚','豐其蔀，日中見斗，往得疑疾，有孚發若，吉','豐其沛，日中見沬，折其右肱，無咎','豐其蔀，日中見斗，遇其夷主，吉','來章，有慶譽，吉','豐其屋，蔀其家，闚其戶，闃其無人，三歲不覿，凶'],
+  '火山旅':['旅瑣瑣，斯其所取災','旅即次，懷其資，得童僕貞','旅焚其次，喪其童僕，貞厲','旅于處，得其資斧，我心不快','射雉一矢亡，終以譽命','鳥焚其巢，旅人先笑後號咷，喪牛于易，凶'],
+  '巽為風':['進退，利武人之貞','巽在床下，用史巫紛若，吉，無咎','頻巽，吝','悔亡，田獲三品','貞吉悔亡，無不利，無初有終','巽在床下，喪其資斧，貞凶'],
+  '兌為澤':['和兌，吉','孚兌，吉，悔亡','來兌，凶','商兌，未寧，介疾有喜','孚于剝，有厲','引兌'],
+  '風水渙':['用拯馬壯，吉','渙奔其機，悔亡','渙其躬，無悔','渙其群，元吉，渙有丘，匪夷所思','渙汗其大號，渙王居，無咎','渙其血，去逖出，無咎'],
+  '水澤節':['不出戶庭，無咎','不出門庭，凶','不節若，則嗟若，無咎','安節，亨','甘節，吉，往有尚','苦節，貞凶，悔亡'],
+  '風澤中孚':['虞吉，有它不燕','鶴鳴在陰，其子和之，我有好爵，吾與爾靡之','得敵，或鼓或罷，或泣或歌','月幾望，馬匹亡，無咎','有孚攣如，無咎','翰音登于天，貞凶'],
+  '雷山小過':['飛鳥以凶','過其祖，遇其妣，不及其君，遇其臣，無咎','弗過防之，從或戕之，凶','無咎，弗過遇之，往厲必戒，勿用永貞','密雲不雨，自我西郊，公弋取彼在穴','弗遇過之，飛鳥離之，凶，是謂災眚'],
+  '水火既濟':['曳其輪，濡其尾，無咎','婦喪其茀，勿逐，七日得','高宗伐鬼方，三年克之，小人勿用','繻有衣袽，終日戒','東鄰殺牛，不如西鄰之禴祭，實受其福','濡其首，厲'],
+  '火水未濟':['濡其尾，吝','曳其輪，貞吉','未濟征凶，利涉大川','貞吉悔亡，震用伐鬼方，三年有賞于大國','貞吉無悔，君子之光，有孚吉','有孚于飲酒，無咎，濡其首，有孚失是']
 };
 
 function getYaoCi(guaName, yaoNum){
