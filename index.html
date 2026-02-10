@@ -230,7 +230,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .daily-mini.open .daily-mini-arrow{transform:rotate(180deg)}
 .daily-mini-arrow{transition:transform .3s ease}
 /* Remedy Alert - emotional trigger */
-.remedy-alert{border:2px solid rgba(255,160,0,.4);background:linear-gradient(135deg,rgba(255,160,0,.08),rgba(139,0,0,.06));position:relative;overflow:visible}
+.remedy-alert{border:1px solid var(--c-border);background:linear-gradient(135deg,rgba(212,175,55,.04),rgba(30,12,12,.6));position:relative;overflow:visible}
 .remedy-alert-header{display:flex;align-items:flex-start;gap:var(--sp-md);margin-bottom:var(--sp-md)}
 .remedy-icon{font-size:2.2rem;flex-shrink:0;line-height:1}
 .remedy-title{color:var(--c-gold);font-size:1.15rem;margin:0 0 .3rem 0;font-weight:700}
@@ -243,7 +243,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .diag-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
 .diag-bar{height:100%;border-radius:4px;transition:width .6s ease}
 .diag-tag{font-size:.75rem;padding:2px 6px;border-radius:3px;font-weight:600}
-.diag-tag-lack{background:rgba(255,60,60,.2);color:#ff6b6b}
+.diag-tag-lack{background:rgba(160,140,255,.15);color:#b0a0ff}
 .diag-tag-excess{background:rgba(100,200,255,.2);color:#64c8ff}
 .diag-tag-ok{background:rgba(100,255,100,.15);color:#7ddf7d}
 .remedy-arrow{display:flex;align-items:center;justify-content:center;gap:var(--sp-sm);padding:var(--sp-sm) 0}
@@ -317,7 +317,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 
 /* — Shop Buttons — */
 .shop-btns{display:flex;flex-direction:column;gap:var(--sp-sm)}
-.shop-btn-card{display:flex;align-items:center;gap:var(--sp-md);padding:.85rem 1rem;border-radius:var(--r-md);border:1px solid var(--c-border);background:var(--c-bg-card-alt);color:var(--c-text);text-decoration:none;transition:all var(--t-fast);cursor:pointer;font-family:inherit;font-size:inherit;text-align:left;width:100%}
+.shop-btn-card{display:flex;align-items:center;gap:var(--sp-md);padding:1rem 1.2rem;border-radius:var(--r-md);border:1px solid var(--c-border);background:var(--c-bg-card-alt);color:var(--c-text);text-decoration:none;transition:all var(--t-fast);cursor:pointer;font-family:inherit;font-size:inherit;text-align:left;width:100%}
 .shop-btn-card:hover{border-color:var(--c-gold);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
 .shop-btn-card i{font-size:1.3rem;width:32px;text-align:center;flex:0 0 auto}
 .shop-btn-card div{display:flex;flex-direction:column;gap:1px}
@@ -325,7 +325,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .shop-btn-card.seven i{color:#00a040}
 .shop-btn-card.custom i{color:var(--c-gold)}
 .shop-btn-card strong{color:var(--c-text)}
-.shop-card{border-color:rgba(212,175,55,.3);background:linear-gradient(135deg,rgba(139,0,0,.08),rgba(212,175,55,.05))}
+.shop-card{border:2px solid rgba(212,175,55,.4);background:linear-gradient(135deg,rgba(139,0,0,.1),rgba(212,175,55,.06));margin-top:var(--sp-xl);padding:var(--sp-xl)}
 
 /* — Nav Shop — */
 .nav-shop{display:flex;gap:var(--sp-xs);align-items:center}
@@ -966,10 +966,9 @@ html{scroll-behavior:smooth}
     <div class="hero-icon">☽</div>
     <h1>你的命盤，藏著答案</h1>
     <p style="font-size:1rem;line-height:1.7;max-width:480px;margin:0 auto var(--sp-md)">感情卡關？事業迷茫？不確定下一步該怎麼走？<br>輸入出生資料，<strong style="color:var(--c-gold)">10 秒內</strong>告訴你答案。</p>
-    <div style="display:flex;justify-content:center;gap:var(--sp-lg);flex-wrap:wrap;margin-bottom:var(--sp-md)">
-      <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">5 套系統</div><div class="text-xs text-dim">八字+紫微+梅花+塔羅+姓名</div></div>
-      <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">免費</div><div class="text-xs text-dim">完整分析不收費</div></div>
-      <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">10 秒</div><div class="text-xs text-dim">馬上看到結果</div></div>
+    <div style="display:flex;justify-content:center;gap:var(--sp-md);flex-wrap:wrap;margin-bottom:var(--sp-md)">
+      <span class="tag tag-gold" style="font-size:.85rem;padding:.4rem .8rem">免費 · 10 秒出結果</span>
+      <span class="tag" style="font-size:.85rem;padding:.4rem .8rem;border:1px solid var(--c-border);color:var(--c-text-dim)">八字 · 紫微 · 梅花 · 塔羅 · 姓名</span>
     </div>
     <div style="background:rgba(0,0,0,.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);display:inline-flex;gap:var(--sp-md);flex-wrap:wrap;justify-content:center;font-size:.82rem;color:var(--c-text-dim)">
       <span>❝ 超準，點出我的盲點 ❞</span>
@@ -1103,26 +1102,26 @@ html{scroll-behavior:smooth}
     <div class="divider"></div><div id="r-factors"></div><div id="r-suggest" class="mt-md"></div>
   </div>
 
-  <!-- ⚠️ 五行失衡警示（情緒觸發點）-->
+  <!-- ☯ 五行能量分析 -->
   <div class="card remedy-alert" id="remedy-alert">
     <div class="remedy-alert-header">
-      <div class="remedy-icon" id="remedy-icon">⚠️</div>
+      <div class="remedy-icon" id="remedy-icon">☯</div>
       <div>
-        <h3 class="remedy-title" id="remedy-title">你的五行有明顯缺口</h3>
-        <p class="remedy-subtitle" id="remedy-subtitle">這可能是你目前困擾的根源</p>
+        <h3 class="remedy-title" id="remedy-title">你的五行能量分佈</h3>
+        <p class="remedy-subtitle" id="remedy-subtitle">了解能量場特質，找到最適合的提升方向</p>
       </div>
     </div>
     <div id="remedy-diagnosis" class="remedy-diagnosis"></div>
     <div class="remedy-arrow">
       <i class="fas fa-arrow-down" style="color:var(--c-gold);font-size:1.2rem"></i>
-      <span class="text-sm text-gold">以下是你的專屬調整方案</span>
+      <span class="text-sm text-gold">以下是為你量身打造的能量優化建議</span>
       <i class="fas fa-arrow-down" style="color:var(--c-gold);font-size:1.2rem"></i>
     </div>
   </div>
 
   <!-- 💎 改運處方（具體行動）-->
   <div class="card remedy-plan" id="remedy-plan">
-    <div class="card-title"><i class="fas fa-wand-magic-sparkles"></i> 你的專屬改運處方</div>
+    <div class="card-title"><i class="fas fa-wand-magic-sparkles"></i> 你的能量優化方案</div>
     <div id="remedy-actions" class="remedy-actions"></div>
   </div>
 
@@ -1140,21 +1139,25 @@ html{scroll-behavior:smooth}
   <div class="card shop-card">
     <div class="card-title"><i class="fas fa-shopping-bag"></i> 想把結果做成「專屬五行手鏈」？我幫你配到位</div>
     <p class="text-sm text-dim mb-md">依你結果的喜用神，給你 3 個實用搭配（可直接下單）</p>
+    <div style="display:flex;align-items:center;gap:var(--sp-sm);padding:var(--sp-sm) var(--sp-md);background:rgba(212,175,55,.06);border-radius:var(--r-sm);margin-bottom:var(--sp-md);border:1px solid rgba(212,175,55,.15)">
+      <span style="color:var(--c-gold);font-size:.85rem">⭐⭐⭐⭐⭐</span>
+      <span class="text-sm text-dim">「水晶很美，戴了之後心情真的有變好」— 蝦皮買家實評</span>
+    </div>
     <div class="shop-btns">
       <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener noreferrer" class="shop-btn-card shopee">
         <i class="fas fa-shopping-cart"></i>
-        <div><strong>🛒 蝦皮逛逛</strong><span class="text-xs">全館免運 + 關注9折</span></div>
+        <div><strong>🛒 立即選購・全館免運</strong><span class="text-xs">關注再享 9 折</span></div>
       </a>
       <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" rel="noopener noreferrer" class="shop-btn-card seven">
         <i class="fas fa-box"></i>
-        <div><strong>📦 賣貨便</strong><span class="text-xs">滿千免運 / 多件合併</span></div>
+        <div><strong>📦 7-11 取貨・滿千免運</strong><span class="text-xs">多件合併寄送</span></div>
       </a>
       <button class="shop-btn-card custom" onclick="openCustomModal()">
         <i class="fas fa-magic"></i>
-        <div><strong>✨ 我要客製</strong><span class="text-xs">填資料 / 預算版</span></div>
+        <div><strong>🧿 客製五行手鏈方案</strong><span class="text-xs">$1,000 起・48hr 回覆</span></div>
       </button>
     </div>
-    <p class="text-xs text-muted mt-md"><i class="fas fa-info-circle"></i> 預算版 / 加強版 / 收藏版：選一個就好</p>
+
   </div>
 
   <!-- 📊 可能性評估 (可收合) -->
@@ -1470,7 +1473,7 @@ function toggleCollapse(el){
   if(card) card.classList.toggle('open');
 }
 
-/* ═══ REMEDY: 五行失衡警示 + 改運處方 ═══ */
+/* ═══ REMEDY: 五行能量分析 + 優化建議 ═══ */
 function renderRemedy(bazi,type){
   const ep=bazi.ep||{}, dm=bazi.dm, el=bazi.dmEl, strong=bazi.strong;
   const fav=bazi.fav||[], unfav=bazi.unfav||[];
@@ -1488,11 +1491,11 @@ function renderRemedy(bazi,type){
     const ideal=20; // 平衡=20%
     const diff=pct-ideal;
     let tag,tagClass;
-    if(pct<=8){tag='嚴重不足';tagClass='diag-tag-lack';}
+    if(pct<=8){tag='待補充';tagClass='diag-tag-lack';}
     else if(pct<=14){tag='偏弱';tagClass='diag-tag-lack';}
     else if(pct<=26){tag='正常';tagClass='diag-tag-ok';}
     else if(pct<=35){tag='偏旺';tagClass='diag-tag-excess';}
-    else{tag='過旺';tagClass='diag-tag-excess';}
+    else{tag='偏強';tagClass='diag-tag-excess';}
 
     const state=states[e]||'';
     diagHTML+=`<div class="diag-row">
@@ -1503,24 +1506,24 @@ function renderRemedy(bazi,type){
     </div>`;
   });
 
-  // ── 警示標題（依嚴重度）──
+  // ── 能量分析標題 ──
   const weakEls=Object.entries(ep).filter(([e,v])=>(v/tot)<0.12).map(([e])=>e);
   const strongEls=Object.entries(ep).filter(([e,v])=>(v/tot)>0.33).map(([e])=>e);
   const alertEl=document.getElementById('remedy-alert');
 
-  let icon='⚠️', title='', subtitle='';
+  let icon='🔮', title='', subtitle='';
   if(weakEls.length>=2){
-    icon='🚨';title=`你的${weakEls.join('、')}行嚴重不足`;
-    subtitle='多項五行失衡，建議盡快調整能量場';
+    icon='🔮';title=`你的${weakEls.join('、')}行能量較薄弱`;
+    subtitle='補充對應頻率的能量，有助於整體運勢提升';
   }else if(weakEls.length===1){
-    icon='⚠️';title=`你的「${weakEls[0]}行」明顯不足`;
-    subtitle='這可能是目前運勢不順的關鍵原因';
+    icon='🔮';title=`發現「${weakEls[0]}行」能量偏弱`;
+    subtitle='適當補充可以讓這個面向更順暢';
   }else if(strongEls.length){
-    icon='💡';title=`你的${strongEls.join('、')}行過旺`;
-    subtitle='能量過度集中，需要洩導平衡';
+    icon='💡';title=`你的${strongEls.join('、')}行能量充沛`;
+    subtitle='適度引導分散，讓整體能量更均衡';
   }else{
-    icon='✨';title='你的五行相對均衡';
-    subtitle='微調即可讓運勢更上層樓';
+    icon='✨';title='你的五行能量分佈均衡';
+    subtitle='體質很好，小幅優化就能更上一層樓';
   }
 
   document.getElementById('remedy-icon').textContent=icon;
