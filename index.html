@@ -1541,34 +1541,95 @@ function renderRemedy(bazi,type){
   const TYPE_LABELS={love:'感情',career:'事業',wealth:'財運',health:'健康',general:'整體運勢',relationship:'人際',family:'家庭'};
   const typeLabel=TYPE_LABELS[type]||'運勢';
 
-  // 處方1: 五行補強
+  // 處方1: 五行補強（依喜用神，含命理解釋）
   const mainFav=fav[0]||'土';
+  const mainUnfav=unfav[0]||'';
+  const dmEl=bazi.dmEl;
+  const isStrong=bazi.strong;
+  
+  /* 生成命理原因說明（優先調候，次用通用） */
+  function explainWhy(dm, fav1, unfav1, strong){
+    /* 如果有調候結果，優先使用 */
+    if(bazi.tiaohou){
+      const th=bazi.tiaohou;
+      return `<strong>【${th.reason}】</strong>${th.detail}<br><br>${th.needReason}`;
+    }
+    /* 通用解釋 */
+    if(strong){
+      return `你是「${dm}」日主，身強，自身能量充沛。需要 <strong>${fav1}行</strong> 來洩掉多餘的力量，讓能量流動起來，才不會鬱積。`;
+    }else{
+      const keEl = BE_KE[dm];
+      const shengEl = BE_SHENG[dm];
+      if(fav1 === shengEl){
+        return `你是「${dm}」日主，身弱，命盤中「${keEl}行」（壓力/管束）偏旺。需要 <strong>${fav1}行</strong> 作為救星 —— ${fav1}能洩掉${keEl}的銳氣，再轉而生${dm}（${keEl}→${fav1}→${dm}，這叫「殺印相生」）。`;
+      }else{
+        return `你是「${dm}」日主，身弱，需要 <strong>${fav1}行</strong> 來幫扶自身力量，讓你站穩腳步。`;
+      }
+    }
+  }
+  
   const favCrystals={
     金:{stone:'白水晶 / 鈦晶',color:'白色、金色、銀色',dir:'正西方',food:'白色食物（白蘿蔔、豆腐、百合）'},
     木:{stone:'綠幽靈 / 東陵玉',color:'綠色、青色',dir:'正東方',food:'綠色蔬果（花椰菜、奇異果、菠菜）'},
-    水:{stone:'海藍寶 / 月光石',color:'藍色、黑色',dir:'正北方',food:'黑色食物（黑芝麻、海帶、藍莓）'},
+    水:{stone:'黑曜石 / 海藍寶 / 黑髮晶',color:'藍色、黑色',dir:'正北方',food:'黑色食物（黑芝麻、海帶、藍莓）'},
     火:{stone:'紅瑪瑙 / 石榴石',color:'紅色、紫色',dir:'正南方',food:'紅色食物（紅棗、枸杞、番茄）'},
     土:{stone:'黃水晶 / 虎眼石',color:'黃色、棕色',dir:'中央/東北',food:'黃色食物（南瓜、玉米、薑黃）'}
   };
   const fc=favCrystals[mainFav]||favCrystals['土'];
+  const whyText=explainWhy(dmEl, mainFav, mainUnfav, isStrong);
+  
   actions.push({
-    title:`補強「${mainFav}行」能量`,
-    desc:`你最需要的是${mainFav}行能量。日常多穿 <strong>${fc.color}</strong> 系服飾，居家或辦公 <strong>${fc.dir}</strong> 方位擺放水晶，飲食多攝取${fc.food}。`,
+    title:`你的命格需要「${mainFav}行」能量`,
+    desc:`${whyText}<br><br>日常多穿 <strong>${fc.color}</strong> 系服飾，居家或辦公 <strong>${fc.dir}</strong> 方位擺放水晶，飲食多攝取${fc.food}。`,
     crystal:`💎 推薦：${fc.stone}`
   });
 
-  // 處方2: 針對問題類型
+  // 處方2: 針對問題類型（動態過濾忌神）
+  const avoidSet=new Set(unfav);
+  function safeStone(stones, el){
+    /* 如果推薦的水晶五行是忌神，改推喜用神水晶 */
+    if(avoidSet.has(el)) return `<strong>${fc.stone.split('/')[0].trim()}</strong>（${mainFav}行）`;
+    return `<strong>${stones}</strong>`;
+  }
   const typeRemedy={
-    love:{title:'增強桃花 / 感情磁場',desc:'建議佩戴<strong>粉晶</strong>於左手增強異性緣，臥室西南方（坤位）放一對粉晶球，週五（金星日）是約會好日子。'},
-    career:{title:'提升事業貴人運',desc:'辦公桌左上角放<strong>綠幽靈</strong>或<strong>鈦晶</strong>招貴人，重要會議佩戴金色系飾品增強氣場，每月初一向正東方祈願。'},
-    wealth:{title:'開啟正偏財運通道',desc:'錢包內放小片<strong>黃水晶</strong>碎石招偏財，每月農曆初二、十六「做牙」，家中財位（大門斜對角）保持明亮。'},
+    love:{title:'增強桃花 / 感情磁場',desc:`建議佩戴${safeStone('粉晶','火')}於左手增強異性緣，臥室西南方（坤位）可擺放水晶球，週五（金星日）是約會好日子。`},
+    career:{title:'提升事業貴人運',desc:`辦公桌左上角放${safeStone('綠幽靈','木')}招貴人，重要會議佩戴${avoidSet.has('金')?`${mainFav}行系`:'金色系'}飾品增強氣場。`},
+    wealth:{title:'開啟正偏財運通道',desc:`錢包內放小片${safeStone('黃水晶','土')}碎石招偏財，每月農曆初二、十六「做牙」，家中財位（大門斜對角）保持明亮。`},
     health:{title:'五行養生調理方案',desc:`根據你的命盤，${mainFav}行不足可能影響相關臟腑。建議從飲食（${fc.food}）、作息（${mainFav==='水'?'早睡養腎':mainFav==='木'?'舒肝勿怒':mainFav==='火'?'午休養心':mainFav==='金'?'深呼吸養肺':'飲食規律養脾'}）著手。`},
     general:{title:'全方位運勢提升',desc:`今年最重要的是穩住${mainFav}行能量。選一條符合喜用神的水晶手鏈隨身佩戴，等於時刻在補運。`},
-    relationship:{title:'改善人際磁場',desc:'佩戴<strong>粉晶</strong>增加親和力，<strong>海藍寶</strong>幫助溝通表達，與人交流時嘗試在手腕佩戴暖色系水晶。'},
-    family:{title:'穩固家庭和諧能量',desc:'家中客廳放<strong>紫水晶洞</strong>或<strong>白水晶球</strong>淨化磁場，臥室避免放太多電子產品，餐桌擺黃色系水晶招和氣。'}
+    relationship:{title:'改善人際磁場',desc:`佩戴${safeStone('粉晶','火')}增加親和力，${safeStone('海藍寶','水')}幫助溝通表達。`},
+    family:{title:'穩固家庭和諧能量',desc:`家中客廳放${avoidSet.has('火')?`${mainFav}行水晶`:'<strong>紫水晶洞</strong>'}淨化磁場，臥室避免放太多電子產品。`}
   };
   const tr=typeRemedy[type]||typeRemedy.general;
   actions.push({title:tr.title,desc:tr.desc,crystal:null});
+
+  // 處方2.5: 忌神警告 — 告訴用戶不要碰什麼
+  if(unfav.length){
+    const avoidCrystals={
+      金:'白水晶、鈦晶、金髮晶、純銀飾品',
+      木:'綠幽靈、翡翠、橄欖石',
+      水:'海藍寶、月光石、藍紋瑪瑙',
+      火:'紅瑪瑙、石榴石、紫水晶',
+      土:'黃水晶、虎眼石（黃）、茶晶'
+    };
+    const avoidColors={金:'白色/金色/銀色',木:'綠色',水:'黑色/藍色',火:'紅色/紫色',土:'黃色/棕色'};
+    let avoidList=unfav.map(u=>`<strong>${u}行</strong>（${avoidColors[u]||''}）`).join('、');
+    let avoidStones=unfav.map(u=>avoidCrystals[u]||'').filter(Boolean).join('、');
+    
+    /* 如果有調候，使用調候的避開原因 */
+    let avoidExplain='';
+    if(bazi.tiaohou && bazi.tiaohou.avoidReason){
+      avoidExplain=bazi.tiaohou.avoidReason;
+    }else{
+      avoidExplain='配戴這些五行的水晶<strong>反而會讓運勢卡住</strong>。';
+    }
+    
+    actions.push({
+      title:'⛔ 避開這些（忌神提醒）',
+      desc:`${avoidExplain}<br><br>你的命盤中 ${avoidList} 需要避開。<br>具體避開：${avoidStones}。<br>如果之前有在戴這些，建議先暫時取下觀察看看。`,
+      crystal:null
+    });
+  }
 
   // 處方3: 大運建議
   const curDy=bazi.dayun?bazi.dayun.find(d=>d.isCurrent):null;
@@ -1878,6 +1939,160 @@ function computeBazi(year,month,day,hour,minute,gender){
   fav=[...new Set(fav)];
   unfav=[...new Set(unfav.filter(u=>!fav.includes(u)))];
 
+  // ── 調候用神修正（寒暖濕燥）──
+  let tiaohou=null;
+  (function adjustTiaoHou(){
+    const mzEl=WX_Z[mZ]; // 月支五行
+    const waterPct=(ec['水']/tot)*100;
+    const firePct=(ec['火']/tot)*100;
+    const goldPct=(ec['金']/tot)*100;
+    
+    /* 計算命盤寒暖度 */
+    const coldPct=((ec['水']+ec['金'])/tot)*100; // 水+金合計佔比
+    const warmPct=((ec['火']+ec['木']*0.3)/tot)*100; // 火+少量木
+    const coldRatio=coldPct/100;
+    const warmRatio=warmPct/100;
+    
+    /* 調候結果 */
+    
+    /* === 甲乙木日主 === */
+    if(dmEl==='木'){
+      // 木生秋冬（申酉月、亥子月）= 金旺水旺，天寒
+      const isAutumnWinter=['申','酉','亥','子','丑'].includes(mZ);
+      if(isAutumnWinter && coldPct>55 && firePct<10){
+        // 寒盤：水金合計超過55%，且火不到10%
+        if(waterPct>25){
+          tiaohou={
+            reason:'水多木漂',
+            detail:`你是${dm}木日主，生在秋冬，命盤水氣（${Math.round(waterPct)}%）和金氣（${Math.round(goldPct)}%）過重。水本來是你的救星（印星），但太多就變成「冰水泡花」，木的根基會腐爛。`,
+            need:['火','土'],
+            needReason:'需要「火」（太陽）暖局驅寒，讓木重新生長。「燥土」可以止水、固根。',
+            avoid:['水'],
+            avoidReason:'水已經泛濫，再補水等於往冰水加冰塊，會更沒精神、濕氣重、嗜睡。'
+          };
+        }else if(goldPct>25){
+          // 金重剋木，水不多 → 用水洩金生木（殺印相生）仍然可以
+          // 但如果冷，還是要帶點火
+          tiaohou={
+            reason:'金重剋木',
+            detail:`你是${dm}木日主，命盤金氣（${Math.round(goldPct)}%）過旺，壓力大。水雖可洩金生木，但盤偏寒，也需要火來暖局。`,
+            need:['水','火'],
+            needReason:'「水」洩金化殺，「火」暖局讓木有活力。',
+            avoid:['金'],
+            avoidReason:'金已經太多，再補金等於雪上加霜。'
+          };
+        }
+      }
+      // 木生夏月（巳午月）= 火旺木焚
+      const isSummer=['巳','午'].includes(mZ);
+      if(isSummer && firePct>25){
+        tiaohou={
+          reason:'火旺木焚',
+          detail:`你是${dm}木日主，生在夏天，火氣太旺，木會被燒盡。`,
+          need:['水'],
+          needReason:'需要水來潤木降溫，保住木的生機。',
+          avoid:['火'],
+          avoidReason:'火已經太旺，再添火只會讓木更快燃盡。'
+        };
+      }
+    }
+    
+    /* === 丙丁火日主 === */
+    if(dmEl==='火'){
+      const isWinter=['亥','子','丑'].includes(mZ);
+      if(isWinter && coldPct>55 && firePct<15){
+        tiaohou={
+          reason:'水寒火滅',
+          detail:`你是${dm}火日主，生在冬天，水氣過重，火有被澆滅之虞。`,
+          need:['木'],
+          needReason:'需要木來生火，讓火苗持續。木是最好的燃料。',
+          avoid:['水'],
+          avoidReason:'水已過多，再補水會讓火更弱。'
+        };
+      }
+    }
+    
+    /* === 庚辛金日主 === */
+    if(dmEl==='金'){
+      const isSummer=['巳','午','未'].includes(mZ);
+      if(isSummer && warmPct>50){
+        tiaohou={
+          reason:'火旺金熔',
+          detail:`你是${dm}金日主，生在夏天，火氣過旺，金有被熔化之虞。`,
+          need:['水'],
+          needReason:'需要水來降溫潤金，保住金的堅韌。',
+          avoid:['火'],
+          avoidReason:'火已經太旺，再添火金會更軟更弱。'
+        };
+      }
+    }
+    
+    /* === 壬癸水日主 === */
+    if(dmEl==='水'){
+      const isSummer=['巳','午','未'].includes(mZ);
+      if(isSummer && warmPct>50){
+        tiaohou={
+          reason:'土燥水涸',
+          detail:`你是${dm}水日主，生在夏天，火土過旺，水源有乾涸之危。`,
+          need:['金'],
+          needReason:'需要金來生水，維持水的源頭活力。',
+          avoid:['火','土'],
+          avoidReason:'火土已經太旺，再補會讓水更快蒸發。'
+        };
+      }
+      const isWinter=['亥','子'].includes(mZ);
+      if(isWinter && waterPct>30){
+        tiaohou={
+          reason:'水勢泛濫',
+          detail:`你是${dm}水日主，生在冬天，水氣極旺，需要土來築堤、火來暖局。`,
+          need:['土','火'],
+          needReason:'「土」築堤止水，「火」暖局調節。',
+          avoid:['水'],
+          avoidReason:'水已經泛濫，再補水無益。'
+        };
+      }
+    }
+    
+    /* === 戊己土日主 === */
+    if(dmEl==='土'){
+      const isWinter=['亥','子','丑'].includes(mZ);
+      if(isWinter && coldPct>55){
+        tiaohou={
+          reason:'寒土凍結',
+          detail:`你是${dm}土日主，生在冬天，水寒侵蝕，土地凍結無法生養。`,
+          need:['火'],
+          needReason:'需要火來暖土，讓土恢復生機。',
+          avoid:['水'],
+          avoidReason:'水氣過重，再補水土會更凍更寒。'
+        };
+      }
+    }
+    
+    /* === 如果觸發調候，修正 fav / unfav === */
+    if(tiaohou){
+      // 調候用神覆蓋通用喜用神
+      const newFav=tiaohou.need.filter(e=>e);
+      const newAvoid=tiaohou.avoid.filter(e=>e);
+      
+      // 把調候需要的放在 fav 最前面
+      newFav.forEach(e=>{
+        if(!fav.includes(e)) fav.unshift(e);
+        // 從忌神中移除（調候優先）
+        unfav=unfav.filter(u=>u!==e);
+      });
+      
+      // 把調候要避開的加入忌神
+      newAvoid.forEach(e=>{
+        if(!unfav.includes(e) && !newFav.includes(e)) unfav.unshift(e);
+        // 從喜用中移除
+        fav=fav.filter(f=>f!==e);
+      });
+      
+      fav=[...new Set(fav)];
+      unfav=[...new Set(unfav.filter(u=>!fav.includes(u)))];
+    }
+  })();
+
   // ── 十神 ──
   const gods={};
   ['year','month','day','hour'].forEach(p=>{
@@ -1935,7 +2150,7 @@ function computeBazi(year,month,day,hour,minute,gender){
     dayun.push({gz:dyG+dyZ,el:dyEl,ageStart:as,ageEnd:ae,isCurrent:isCur,level:lv,god:tenGod(dm,dyG),liuNian});
   }
 
-  return{pillars,dm,dmEl,strong,deLing,deDi,deShi,dmMonthState,selfRatio:Math.round(selfRatio*100),ec,ep,fav,unfav,gods,cs,shensha,nayin,dayun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]}};
+  return{pillars,dm,dmEl,strong,deLing,deDi,deShi,dmMonthState,selfRatio:Math.round(selfRatio*100),ec,ep,fav,unfav,gods,cs,shensha,nayin,dayun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou};
 }
 
 function computeStartAge(y,m,d,dir){
@@ -3956,10 +4171,10 @@ const CRYSTAL_DB={
     {n:'橄欖石',icon:'🌱',el:'木',d:'療癒心輪，帶來正能量與好運。',wear:'左手佩戴，可配合冥想。',taboo:'質地較軟，注意保護。'}
   ],
   水:[
-    {n:'海藍寶',icon:'💙',el:'水',d:'增強溝通力，平靜情緒，適合談判。',wear:'佩戴在喉輪附近（項鍊）效果最佳。',taboo:'避免長時間日曬。'},
-    {n:'藍紋瑪瑙',icon:'🔵',el:'水',d:'穩定情緒，增強語言表達能力。',wear:'左手佩戴，或做為項鍊。',taboo:'定期流水淨化。'},
-    {n:'月光石',icon:'🌙',el:'水',d:'增強直覺，助感情運，柔化個性。',wear:'滿月時佩戴效果更佳。',taboo:'硬度不高，避免碰撞。'},
-    {n:'拉長石',icon:'🌊',el:'水',d:'提升洞察力，保護能量場。',wear:'左手佩戴，出入複雜場所時效果好。',taboo:'避免超聲波清洗。'}
+    {n:'黑曜石',icon:'🖤',el:'水',d:'擋煞辟邪首選，以水洩金，化壓力為動力。',wear:'右手佩戴辟邪。',taboo:'定期流水淨化。'},
+    {n:'黑髮晶',icon:'🕸️',el:'水',d:'排除負能量，增強領袖魅力，官殺太旺者首選。',wear:'左手佩戴。',taboo:'磁場強，敏感體質注意。'},
+    {n:'海藍寶',icon:'💙',el:'水',d:'增強溝通力，平靜情緒，水氣滋養日主。',wear:'佩戴在喉輪附近（項鍊）效果最佳。',taboo:'避免長時間日曬。'},
+    {n:'藍虎眼',icon:'👁️',el:'水',d:'增強洞察力與決斷力，水氣護身。',wear:'左手佩戴。',taboo:'定期淨化。'}
   ],
   火:[
     {n:'紅瑪瑙',icon:'❤️',el:'火',d:'激發熱情，增強行動力與勇氣。',wear:'右手佩戴增強行動力。',taboo:'避免高溫環境。'},
@@ -5239,6 +5454,18 @@ const REAL_PRODUCTS = {
     {n:'青晶石',cat:'手鏈',icon:'🌌',el:'水',d:'開啟第三眼，增強直覺與靈性感知',price:'$2,604',wear:'冥想時佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'冰藍小熊',cat:'吊墜',icon:'🧸',el:'水',d:'可愛造型冰藍石，療癒安心，送禮首選',price:'$506',wear:'項鍊佩戴',
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑曜石',cat:'手鏈',icon:'🖤',el:'水',d:'擋煞辟邪首選！以水洩金，化壓力為動力',price:'$300-$500',wear:'右手佩戴辟邪',tags:['辟邪','擋煞'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'金曜石',cat:'手鏈',icon:'🌑',el:'水',d:'金色閃光黑曜石，強力辟邪+洩金護身',price:'$416',wear:'右手佩戴辟邪',tags:['辟邪','擋煞'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'銀曜石',cat:'手鏈',icon:'🌒',el:'水',d:'銀色光澤黑曜石，洩金氣+淨化能量場',price:'$350-$500',wear:'右手佩戴',tags:['辟邪','淨化'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑髮晶',cat:'手鏈',icon:'🕸️',el:'水',d:'排除負能量，增強領袖魅力，官殺太旺者首選',price:'$800-$2000',wear:'左手佩戴',tags:['辟邪','事業'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍虎眼',cat:'手鏈',icon:'👁️',el:'水',d:'增強洞察力與決斷力，水氣護身',price:'$500-$1200',wear:'左手佩戴',tags:['事業','決策'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑碧璽',cat:'手鏈',icon:'⬛',el:'水',d:'電氣石！擋煞辟邪防小人，穩定情緒接地',price:'$600-$1500',wear:'右手佩戴',tags:['辟邪','防小人'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   火: [
@@ -5278,8 +5505,7 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'太極石設計款',cat:'手鏈',icon:'☯️',el:'土',d:'陰陽平衡之石，調和身心能量場',price:'$1,836',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'金曜石',cat:'手鏈',icon:'🌑',el:'土',d:'辟邪擋煞首選！金色閃光護身符',price:'$416',wear:'右手佩戴辟邪',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+
     {n:'大地瑪瑙手排',cat:'手鏈',icon:'🐅',el:'土',d:'大地能量，穩定踏實，增強耐力',price:'$300',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'鐵膽石手排',cat:'手鏈',icon:'🗿',el:'土',d:'極強接地能量，排負+穩定心性',price:'$185',wear:'右手佩戴',
@@ -5389,19 +5615,23 @@ function smartRecommend(bazi, type, maxItems){
   }
   if(type==='career'){
     (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('事業')).forEach(p=>add(p,100));
-    (REAL_PRODUCTS.金||[]).filter(p=>p.n.includes('鈦晶')).forEach(p=>add(p,95));
+    /* 鈦晶屬金，只有喜用神含金才推 */
+    if(!avoidEls.has('金')) (REAL_PRODUCTS.金||[]).filter(p=>p.n.includes('鈦晶')).forEach(p=>add(p,95));
+    /* 水行的黑髮晶也適合事業 */
+    (REAL_PRODUCTS.水||[]).filter(p=>(p.tags||[]).includes('事業')).forEach(p=>add(p,90));
     (REAL_PRODUCTS.necklace||[]).filter(p=>(p.tags||[]).includes('事業')).forEach(p=>add(p,85));
   }
   if(type==='wealth'){
-    (REAL_PRODUCTS.土||[]).filter(p=>p.n.includes('黃水晶')).forEach(p=>add(p,100));
-    (REAL_PRODUCTS.木||[]).filter(p=>p.n.includes('綠幽靈')||p.n.includes('抹茶')).forEach(p=>add(p,95));
+    /* 招財水晶要過忌神濾：黃水晶屬土、鈦晶屬金、綠幽靈屬木 */
+    if(!avoidEls.has('土')) (REAL_PRODUCTS.土||[]).filter(p=>p.n.includes('黃水晶')).forEach(p=>add(p,100));
+    if(!avoidEls.has('木')) (REAL_PRODUCTS.木||[]).filter(p=>p.n.includes('綠幽靈')||p.n.includes('抹茶')).forEach(p=>add(p,95));
     (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('財運')).forEach(p=>add(p,90));
-    (REAL_PRODUCTS.金||[]).filter(p=>p.n.includes('鈦晶')).forEach(p=>add(p,85));
+    if(!avoidEls.has('金')) (REAL_PRODUCTS.金||[]).filter(p=>p.n.includes('鈦晶')).forEach(p=>add(p,85));
   }
   if(type==='health'){
     (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('健康')).forEach(p=>add(p,100));
-    (REAL_PRODUCTS.火||[]).filter(p=>p.n.includes('紫水晶')).forEach(p=>add(p,95));
-    (REAL_PRODUCTS.土||[]).filter(p=>p.n.includes('茶晶')).forEach(p=>add(p,85));
+    if(!avoidEls.has('火')) (REAL_PRODUCTS.火||[]).filter(p=>p.n.includes('紫水晶')).forEach(p=>add(p,95));
+    if(!avoidEls.has('土')) (REAL_PRODUCTS.土||[]).filter(p=>p.n.includes('茶晶')).forEach(p=>add(p,85));
   }
 
   // 2) 喜用神五行商品（一定是安全的，因為喜用神不會是忌神）
