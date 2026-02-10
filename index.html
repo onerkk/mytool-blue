@@ -1804,6 +1804,7 @@ function submitStep0(){
   const[hh,mm]=btime.split(':').map(Number);
   S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
   S.ziwei=computeZiwei(y,m,d,hh,gender.value);
+  mergeZiweiIntoBazi(); // 紫微整合進八字大運流年
   // 基本資料就緒，刷新需要八字的功能區
   renderDailyFortune();
   generateLuckyInfo();
@@ -1826,6 +1827,7 @@ function submitStep0Fast(){
   const[hh,mm]=btime.split(':').map(Number);
   S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
   S.ziwei=computeZiwei(y,m,d,hh,gender.value);
+  mergeZiweiIntoBazi(); // 紫微整合進八字大運流年
   renderDailyFortune();
   generateLuckyInfo();
   /* 自動梅花：用時間起卦 */
@@ -3032,6 +3034,12 @@ function parseQuestionIntent(question, type) {
   const kw = q.replace(/[？?！!，,。.、的了嗎呢吧啊喔哦]/g, '').trim();
   result.keywords = kw.split(/\s+/).filter(w => w.length >= 2);
 
+  // ═══ 主語方向偵測（主動vs被動）═══
+  // 被動：等待對方/外部做某事
+  result.isPassive = /有人|對方|他會|她會|他們會|別人|跟我|向我|來找我|主動找|會不會來|會來|追我|找我|連絡我|聯繫我|告白我|跟我告白|向我告白|對我|喜歡我|愛我|想我|回來找|有沒有人|會錄取|會加薪|會提拔|會升|會答應|會還|會通過|會同意|會幫|會支持|會接受|會原諒|公司會|老闆會|主管會|家人會|父母會|還我|給我|幫我/.test(q);
+  // 主動：我去做某事
+  result.isActive = /我[要想去該能可會]|我去|我主動|我追|我告白|我找|我聯繫|我連絡|能追到|追得到|追到|我能|我可以|我來|我做|我投|我買|我賣|我換|我辭|我創/.test(q);
+
   // 提取主題（六大方向都要有對應詞彙）
   const TOPIC_DICT = {
     love: /另一半|對象|他|她|伴侶|男友|女友|老公|老婆|愛人|戀人|曖昧|前任|桃花|結婚|離婚|復合|分手|告白|追|喜歡|暗戀|正緣|偏緣|緣分|姻緣|感情|戀愛|愛情|婚姻/,
@@ -3089,6 +3097,88 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     // 流年事象推導
     if(liuNian.events&&liuNian.events.length) evidence.push('事象：'+liuNian.events[0]);
   }
+
+  // ═══ 紫微斗數輔助判定（象徵體系）═══
+  const zw=S.ziwei;
+  let zwDxHint='', zwLnHint='', zwDxTheme='', zwLnFocus='';
+  if(zw){
+    const TYPE_GONG={love:'夫妻',career:'官祿',wealth:'財帛',health:'疾厄',relationship:'交友',family:'田宅'};
+    const relevantGong=TYPE_GONG[type];
+
+    // 紫微大限
+    const curDx=zw.daXian?zw.daXian.find(d=>d.isCurrent):null;
+    if(curDx){
+      const dxAdj=curDx.score>0?Math.min(curDx.score*0.3,2.5):Math.max(curDx.score*0.3,-2.5);
+      score+=dxAdj;
+
+      // 大限主星亮度
+      let dxInfo='紫微大限走「'+curDx.palaceName+'」宮（'+curDx.level+'）';
+      if(curDx.bright&&curDx.bright.length){
+        const brightStr=curDx.bright.map(b=>b.star+b.label).join('、');
+        dxInfo+='，'+brightStr;
+      }
+      evidence.push(dxInfo);
+
+      // 大限宮位象徵
+      if(curDx.theme){zwDxTheme=curDx.theme;evidence.push('十年主題：'+curDx.theme);}
+
+      // 大限星曜組合notes（廟旺+吉煞+特殊格局）
+      if(curDx.notes){
+        curDx.notes.slice(0,5).forEach(n=>{
+          if(!n.includes('大限')) evidence.push('大限宮：'+n); // 避免重複前綴
+          else evidence.push(n);
+        });
+      }
+
+      // 大限四化對問題方向
+      if(curDx.hua&&curDx.hua.length){
+        curDx.hua.forEach(h=>{
+          if(h.palace===relevantGong){
+            if(h.hua==='化祿'){score+=1.5;evidence.push('大限'+h.star+'化祿入'+h.palace+'→ 此方面有福氣');}
+            if(h.hua==='化權'){score+=1;evidence.push('大限'+h.star+'化權入'+h.palace+'→ 有掌控力');}
+            if(h.hua==='化科'){score+=0.5;evidence.push('大限'+h.star+'化科入'+h.palace+'→ 貴人相助');}
+            if(h.hua==='化忌'){score-=1.5;evidence.push('大限'+h.star+'化忌入'+h.palace+'→ 此方面有困擾');}
+          }
+          if(h.palace==='命宮'){
+            if(h.hua==='化祿'){score+=0.5;evidence.push('大限化祿入命，整體加持');}
+            if(h.hua==='化忌'){score-=0.5;evidence.push('大限化忌入命，整體壓力');}
+          }
+        });
+      }
+      zwDxHint=curDx.palaceName+'（'+curDx.stars.join('、')+' '+curDx.level+'）';
+    }
+
+    // 紫微流年盤
+    if(zw.getLiuNianZw){
+      try{
+        const zwLn=zw.getLiuNianZw(thisYear);
+        if(zwLn){
+          const lnAdj=zwLn.score>0?Math.min(zwLn.score*0.25,1.5):Math.max(zwLn.score*0.25,-1.5);
+          score+=lnAdj;
+
+          // 流年命宮+亮度
+          let lnInfo='紫微流年命宮走「'+zwLn.mingPalace+'」';
+          if(zwLn.bright&&zwLn.bright.length) lnInfo+='（'+zwLn.bright.map(b=>b.star+b.label).join('、')+' ）';
+          evidence.push(lnInfo);
+          if(zwLn.focus){zwLnFocus=zwLn.focus;evidence.push('今年重點：'+zwLn.focus);}
+
+          // 流年星曜組合notes
+          if(zwLn.notes) zwLn.notes.slice(0,3).forEach(n=>evidence.push('流年：'+n));
+
+          // 流年四化對問題方向
+          if(zwLn.hua&&zwLn.hua.length){
+            zwLn.hua.forEach(h=>{
+              if(h.palace===relevantGong||h.palace==='命宮'){
+                if(h.hua==='化祿'){score+=1;evidence.push('流年'+h.star+'化祿入'+h.palace);}
+                if(h.hua==='化忌'){score-=1;evidence.push('流年'+h.star+'化忌入'+h.palace);}
+              }
+            });
+          }
+          zwLnHint=zwLn.mingPalace;
+        }
+      }catch(e){}
+    }
+  }
   if(mh){
     if(mh.ty.f.includes('大吉')){score+=3;evidence.push('梅花卦象（大吉）');}
     else if(mh.ty.f==='吉'||mh.ty.f.includes('吉')){score+=2;evidence.push('梅花卦象（'+mh.ty.f+'）');}
@@ -3136,28 +3226,62 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     const hl=bazi.shensha&&bazi.shensha.includes('紅鸞');
     if(isYN){
       if(/復合|回來|挽回/.test(q)){
-        if(great) answer='<strong>有機會復合。</strong> 運勢顯示你們之間的緣分還沒斷，現在主動聯繫，對方接受的機率比你想的高。';
-        else if(good) answer='<strong>有一些機會。</strong> 對方心裡還有你，但需要你先展現改變，而不是重蹈覆轍。';
-        else answer='<strong>目前很難。</strong> 對方需要更多時間和空間，強行挽回反而會把人推得更遠。先專注自己的成長。';
+        const passive=intent.isPassive||/他會|她會|會回來|會不會回/.test(q);
+        if(passive){
+          // 被動：對方會回來嗎
+          if(great) answer='<strong>有機會。</strong> 運勢顯示你們之間的緣分還沒斷，對方心裡還有你的位置。不需要刻意做什麼，保持好自己的狀態，對方會注意到你的改變。';
+          else if(good) answer='<strong>有一些可能。</strong> 對方可能偶爾會想起你，但還沒下定決心。給對方空間，不要追得太緊，時間會幫你說話。';
+          else answer='<strong>短期內不太樂觀。</strong> 對方目前沒有回頭的打算。與其等待，不如先專注自己的成長。緣分到了，自然會有轉機。';
+        }else{
+          // 主動：我要挽回/復合
+          if(great) answer='<strong>有機會復合。</strong> 運勢顯示你們之間的緣分還沒斷，現在主動聯繫，對方接受的機率比你想的高。';
+          else if(good) answer='<strong>有一些機會。</strong> 對方心裡還有你，但需要你先展現改變，而不是重蹈覆轍。';
+          else answer='<strong>目前很難。</strong> 對方需要更多時間和空間，強行挽回反而會把人推得更遠。先專注自己的成長。';
+        }
       }else if(/結婚|嫁|娶|求婚/.test(q)){
         if(great) answer='<strong>婚運很好！</strong> '+(hl?'你命帶紅鸞星，近期特別有利結婚。':'目前運勢非常支持步入婚姻。')+'如果雙方有共識，今年就是好時機。';
         else if(good) answer='<strong>時機逐漸成熟。</strong> 婚姻大事不急，但運勢是支持的。把關係穩定下來，自然水到渠成。';
         else answer='<strong>建議不急。</strong> 目前不是匆忙決定婚事的好時機，先確認彼此是否真的適合。';
       }else if(/喜歡|愛我|在意|心裡有我/.test(q)){
-        if(good) answer='<strong>從你的桃花能量來看，你是有吸引力的。</strong> '+(pk?'你命帶桃花，異性緣本來就好。':'')+'但對方的心意需要從互動中感受，命理只能看你的磁場強不強。';
-        else answer='<strong>你目前的感情磁場偏弱。</strong> 可能讓對方感受不到你的吸引力。先把自己狀態調好，自信是最好的桃花。';
+        if(/喜歡我|愛我|在意我|心裡有我/.test(q)){
+          // 問對方對我的感覺
+          if(good) answer='<strong>從命理看，你是有吸引力的。</strong> '+(pk?'你命帶桃花，異性緣本來就好。':'')+'對方對你有好感的機率不低，但最終還是要從互動中確認。你可以觀察對方有沒有主動找你聊天、約你出去的跡象。';
+          else answer='<strong>對方可能還在猶豫。</strong> 目前你的感情磁場不夠強，可能讓對方感受不到明確的信號。試著多互動，讓對方有機會認識真正的你。';
+        }else{
+          // 問我喜歡的人（我喜歡他/她嗎等）
+          if(good) answer='<strong>從你的桃花能量來看，你是有吸引力的。</strong> '+(pk?'你命帶桃花，異性緣本來就好。':'')+'跟著心走，不要過度分析。';
+          else answer='<strong>你目前的感情磁場偏弱。</strong> 先把自己狀態調好，自信是最好的桃花。';
+        }
       }else if(/追|告白|表白/.test(q)){
-        if(great) answer='<strong>去吧！</strong> 運勢強力支持你主動出擊，真誠表達比套路更打動人。';
-        else if(good) answer='<strong>可以試試。</strong> 但不要一次押太重，先從約對方吃飯開始，循序漸進。';
-        else answer='<strong>先緩緩。</strong> 現在告白時機不太對，先從朋友關係慢慢經營，等感覺更熟了再說。';
+        const passive=intent.isPassive;
+        if(passive){
+          // 被動：有人會追我/跟我告白嗎
+          if(great) answer='<strong>有機會！</strong> 你目前的桃花能量很強，'+(pk?'命帶桃花加上運勢大好，':'')+'確實容易吸引到主動靠近的人。保持開放的態度，機會就在身邊。';
+          else if(good) answer='<strong>有一些可能。</strong> 你的魅力有被注意到，但對方可能還在觀望。如果你釋出一點善意的信號，對方更容易跨出那一步。';
+          else answer='<strong>短期內可能要等等。</strong> 目前桃花能量不夠強，不太容易吸引到主動告白的人。先把自己狀態調到最好，自信本身就是最強的桃花。';
+        }else{
+          // 主動：我去追/告白
+          if(great) answer='<strong>去吧！</strong> 運勢強力支持你主動出擊，真誠表達比套路更打動人。';
+          else if(good) answer='<strong>可以試試。</strong> 但不要一次押太重，先從約對方吃飯開始，循序漸進。';
+          else answer='<strong>先緩緩。</strong> 現在告白時機不太對，先從朋友關係慢慢經營，等感覺更熟了再說。';
+        }
       }else if(/分手/.test(q)){
         if(good) answer='<strong>目前關係穩定。</strong> 運勢不支持分手的方向，有問題可以溝通解決。';
         else answer='<strong>感情確實在一個低潮期。</strong> 但低潮不代表要分手，先冷靜想想問題的根源是什麼。';
       }else{
-        if(great) answer='<strong>會的。</strong> 各方面運勢都指向正面，感情方面很有機會。';
-        else if(good) answer='<strong>有機會。</strong> 多數指標正面，關鍵在於你願不願意主動。';
-        else if(!bad) answer='<strong>有可能，但急不來。</strong> 條件還不完全成熟，邊調整邊等待。';
-        else answer='<strong>目前比較困難。</strong> 感情能量偏弱，先把自己狀態調好再說。';
+        const passive=intent.isPassive;
+        if(passive){
+          // 被動：有人會...嗎 / 他/她會...嗎
+          if(great) answer='<strong>有機會的。</strong> 運勢顯示你在感情上有被眷顧的跡象，對方（或潛在對象）是有可能主動的。';
+          else if(good) answer='<strong>有一些可能。</strong> 但需要一點時間醞釀，不要太著急。保持你的魅力和開放態度。';
+          else if(!bad) answer='<strong>可能要再等等。</strong> 目前對方還沒有明確的行動跡象。順其自然，不要給自己太大壓力。';
+          else answer='<strong>短期內比較難。</strong> 感情磁場偏弱，不太容易等到對方主動。先照顧好自己。';
+        }else{
+          if(great) answer='<strong>會的。</strong> 各方面運勢都指向正面，感情方面很有機會。';
+          else if(good) answer='<strong>有機會。</strong> 多數指標正面，關鍵在於你願不願意主動。';
+          else if(!bad) answer='<strong>有可能，但急不來。</strong> 條件還不完全成熟，邊調整邊等待。';
+          else answer='<strong>目前比較困難。</strong> 感情能量偏弱，先把自己狀態調好再說。';
+        }
       }
       tip='多穿'+FC[favEl]+'色系增加好感度。'+(pk?'桃花方位佩戴粉晶效果更好。':'佩戴粉晶提升桃花磁場。');
     }else if(isWhen){
@@ -3195,10 +3319,18 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     const ym=bazi.shensha&&bazi.shensha.includes('驛馬');
     if(isYN){
       if(/升遷|升職|加薪|晉升/.test(q)){
-        if(great) answer='<strong>很有機會！</strong> 今年運勢強力支持升遷，你的努力會被上面看到。把握這波，主動爭取，別等著被提拔。';
-        else if(good) answer='<strong>有機會，但要自己推一把。</strong> 運勢偏好，但光做不說不行。適度讓主管知道你的成果，別當隱形人。';
-        else if(!bad) answer='<strong>機會有，但競爭激烈。</strong> 你可能不是唯一的候選人，需要在關鍵時刻展現不可替代的價值。';
-        else answer='<strong>今年升遷有難度。</strong> 不是你不夠好，而是時機還沒到。先默默累積實力，你的機會在後面。';
+        const passive=intent.isPassive||/會升|會提拔|會加薪|老闆會|主管會/.test(q);
+        if(passive){
+          // 被動：主管會提拔我嗎/公司會加薪嗎
+          if(great) answer='<strong>機會很大。</strong> 運勢顯示你的表現有被上面看到，主管心裡有數。這段時間做好份內的事，好消息會自己來。';
+          else if(good) answer='<strong>有可能，但不是板上釘釘。</strong> 你是候選人之一，但決定權不在你手上。做好表現、保持好的人際關係，等待結果。';
+          else answer='<strong>短期內不太樂觀。</strong> 目前公司/主管可能還沒有這個打算。不要氣餒，繼續累積實力，時機到了自然會輪到你。';
+        }else{
+          if(great) answer='<strong>很有機會！</strong> 今年運勢強力支持升遷，你的努力會被上面看到。把握這波，主動爭取，別等著被提拔。';
+          else if(good) answer='<strong>有機會，但要自己推一把。</strong> 運勢偏好，但光做不說不行。適度讓主管知道你的成果，別當隱形人。';
+          else if(!bad) answer='<strong>機會有，但競爭激烈。</strong> 你可能不是唯一的候選人，需要在關鍵時刻展現不可替代的價值。';
+          else answer='<strong>今年升遷有難度。</strong> 不是你不夠好，而是時機還沒到。先默默累積實力，你的機會在後面。';
+        }
       }else if(/考上|考試|考過|上榜|考運/.test(q)){
         if(great) answer='<strong>考運很好！</strong> '+(wc?'你命帶文昌星，天生利考試，加上運勢大好，好好準備幾乎穩了。':'運勢強力支持，只要有充分準備，上榜機率很高。');
         else if(good) answer='<strong>有機會考上。</strong> '+(wc?'文昌星幫助你在考場上發揮得好。':'運勢偏好，但別因此掉以輕心。')+'最後這段時間的衝刺是關鍵。';
@@ -3219,9 +3351,17 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
         else if(!bad) answer='<strong>有一些風險但可控。</strong> 做好本分、跟主管保持良好關係、別捲入辦公室政治，你就能穩住。';
         else answer='<strong>確實要有心理準備。</strong> 運勢顯示工作環境有不穩定因素。建議悄悄更新履歷、準備 Plan B，手上有選擇就不慌。';
       }else if(/面試|錄取|offer/.test(q)){
-        if(great) answer='<strong>面試運很好！</strong> 自信地去，你的表現會讓對方印象深刻。';
-        else if(good) answer='<strong>有機會錄取。</strong> 準備充分一點，把自己最好的一面展現出來。';
-        else answer='<strong>可能需要多投幾家。</strong> 不要把期望放在一個籃子裡，多面試幾家增加機率。';
+        const passive=intent.isPassive||/會錄取|會上|會通過|結果/.test(q);
+        if(passive){
+          // 被動：已面完等結果 / 公司會錄取我嗎
+          if(great) answer='<strong>機會很大。</strong> 運勢顯示結果偏向正面，你的表現應該有留下好印象。耐心等消息。';
+          else if(good) answer='<strong>有一定機會。</strong> 但可能需要再等一等，或者會有第二輪面試。不要因為等待就放棄其他機會。';
+          else answer='<strong>結果可能不太理想。</strong> 不代表你不好，面試有很多變數。建議同時投其他公司，多一個選擇多一條路。';
+        }else{
+          if(great) answer='<strong>面試運很好！</strong> 自信地去，你的表現會讓對方印象深刻。';
+          else if(good) answer='<strong>有機會錄取。</strong> 準備充分一點，把自己最好的一面展現出來。';
+          else answer='<strong>可能需要多投幾家。</strong> 不要把期望放在一個籃子裡，多面試幾家增加機率。';
+        }
       }else{
         if(great) answer='<strong>可以。</strong> 運勢各方面都支持，放手去做，會有好結果。';
         else if(good) answer='<strong>偏向可以。</strong> 多數指標正面，大膽行動。';
@@ -3266,25 +3406,49 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     const caiPct=caiEl&&bazi.ep?bazi.ep[caiEl]:0;
     if(isYN){
       if(/投資|股|基金|加密|幣|ETF/.test(q)){
-        if(great) answer='<strong>目前投資運不錯。</strong> 卦象和運勢都偏向正面，適合進場。但記住：再好的運勢也要設停損，不要把全部家當壓上去。';
-        else if(good) answer='<strong>小額投入可以。</strong> 運勢偏好但不到穩賺不賠，控制在你能承受損失的範圍內。試水溫就好，別梭哈。';
-        else if(!bad) answer='<strong>建議觀望。</strong> 目前運勢對投資不算有利，如果已經有部位就抱著，沒有的話不急著進場。';
-        else answer='<strong>不建議現在投資。</strong> 運勢顯示財運低迷，進場虧損的機率偏高。守住現金，等運勢轉好再說。';
+        const waiting=/回本|解套|會漲|會跌|賣掉|出場|停損|抱|持有/.test(q);
+        if(waiting){
+          // 已入場：等結果/該不該出場
+          if(great) answer='<strong>可以繼續持有。</strong> 運勢偏好，目前的投資有回升的機會。但記得設好停利點，見好就收。';
+          else if(good) answer='<strong>還有一些機會。</strong> 短期可能震盪，但方向不算太差。如果已經快到停損點，就按紀律走。';
+          else answer='<strong>建議認真考慮減碼。</strong> 運勢對投資不利，死扛不一定等得到回本。先保住本金，留得青山在。';
+        }else{
+          // 未入場：能不能投
+          if(great) answer='<strong>目前投資運不錯。</strong> 卦象和運勢都偏向正面，適合進場。但記住：再好的運勢也要設停損，不要把全部家當壓上去。';
+          else if(good) answer='<strong>小額投入可以。</strong> 運勢偏好但不到穩賺不賠，控制在你能承受損失的範圍內。試水溫就好，別梭哈。';
+          else if(!bad) answer='<strong>建議觀望。</strong> 目前運勢對投資不算有利，如果已經有部位就抱著，沒有的話不急著進場。';
+          else answer='<strong>不建議現在投資。</strong> 運勢顯示財運低迷，進場虧損的機率偏高。守住現金，等運勢轉好再說。';
+        }
       }else if(/買房|置產|買車|大額/.test(q)){
         if(great) answer='<strong>可以入手。</strong> 運勢支持大額購置，如果是剛需而且預算允許，今年是好時機。';
         else if(good) answer='<strong>可以考慮，但別超出預算。</strong> 運勢偏好，但量力而為。貸款壓力不要超過收入的40%。';
         else answer='<strong>建議再等等。</strong> 現在財運不夠穩，大額支出容易造成後續壓力。不急的話，等運勢更好的時候再出手。';
       }else if(/債|還錢|借|貸款/.test(q)){
-        if(good) answer='<strong>財務狀況會逐漸好轉。</strong> 運勢支持你改善財務，建議制定還款計畫，一步一步來。小的先還，大的慢慢談。';
-        else answer='<strong>過程會比較辛苦，但不是還不了。</strong> 運勢偏弱代表需要更多時間。先控制不必要的開支，最低還款額一定要繳，別讓信用破掉。';
+        const passive=intent.isPassive||/還我|會還|他還|她還|對方還|借出/.test(q);
+        if(passive){
+          // 被動：別人會還我錢嗎
+          if(good) answer='<strong>有機會拿回來。</strong> 運勢偏好，對方有可能還，但不要完全被動等。找個適當的時機提醒一下，態度溫和但明確。';
+          else answer='<strong>要有心理準備可能拿不全。</strong> 運勢對催債不太有利，對方可能拖或只還一部分。如果金額大，考慮留下書面證據或走法律途徑。錢借出去的時候就要想到可能回不來。';
+        }else{
+          if(good) answer='<strong>財務狀況會逐漸好轉。</strong> 運勢支持你改善財務，建議制定還款計畫，一步一步來。小的先還，大的慢慢談。';
+          else answer='<strong>過程會比較辛苦，但不是還不了。</strong> 運勢偏弱代表需要更多時間。先控制不必要的開支，最低還款額一定要繳，別讓信用破掉。';
+        }
       }else if(/偏財|中獎|橫財|彩票|運氣/.test(q)){
         if(great&&caiPct>20) answer='<strong>偏財運不錯。</strong> 你的財星旺加上運勢好，小試手氣可以。但偏財就是偏財，不能當成主要收入，點到為止。';
         else if(good) answer='<strong>偏財運一般。</strong> 不是完全沒有，但別抱太大期望。娛樂性質玩玩可以，認真投入就傻了。';
         else answer='<strong>偏財運偏弱。</strong> 目前不是靠運氣賺錢的時候，踏踏實實的正財才是王道。';
       }else if(/賺|收入|薪|進帳/.test(q)){
-        if(great) answer='<strong>財運很好！</strong> 今年有機會增加收入，不管是加薪、獎金還是副業，積極爭取會有回報。';
-        else if(good) answer='<strong>收入有成長空間。</strong> 運勢偏好，但錢不會自己跑來，主動開源是關鍵。';
-        else answer='<strong>收入可能持平或有壓力。</strong> 今年不太適合期待大幅加薪，穩住現有收入最重要。';
+        const passive=intent.isPassive||/會加薪|老闆會|公司會/.test(q);
+        if(passive){
+          // 被動：老闆會加薪嗎 / 公司會調薪嗎
+          if(great) answer='<strong>加薪機會很大。</strong> 運勢顯示你的價值有被看到，今年有可能得到加薪或獎金。保持好表現就行。';
+          else if(good) answer='<strong>有一些機會。</strong> 但不是鐵板釘釘。如果很久沒調了，可以找適當時機跟主管談談，但要用成績說話。';
+          else answer='<strong>短期內加薪可能有難度。</strong> 不是你不值得，而是公司或環境因素。可以先充實自己的能力，等更好的時機再爭取。';
+        }else{
+          if(great) answer='<strong>財運很好！</strong> 今年有機會增加收入，不管是加薪、獎金還是副業，積極爭取會有回報。';
+          else if(good) answer='<strong>收入有成長空間。</strong> 運勢偏好，但錢不會自己跑來，主動開源是關鍵。';
+          else answer='<strong>收入可能持平或有壓力。</strong> 今年不太適合期待大幅加薪，穩住現有收入最重要。';
+        }
       }else{
         if(great) answer='<strong>可以。</strong> 財運各方面條件都好，放心去做。';
         else if(good) answer='<strong>偏向可以。</strong> 有賺錢的機會，行動是關鍵。';
@@ -3389,8 +3553,15 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     const js=bazi.shensha&&bazi.shensha.includes('劫煞');
     if(isYN){
       if(/和好|化解|修復|道歉/.test(q)){
-        if(good) answer='<strong>有和好的可能。</strong> 運勢顯示關係有修復的空間。重點是誰先低頭不重要，重要的是你在意這段關係。先釋出善意，對方會感受到的。';
-        else answer='<strong>需要一些時間。</strong> 現在雙方可能都還在氣頭上，強行和解反而會讓事情更糟。給彼此空間冷靜，等情緒過了再談。';
+        const passive=intent.isPassive||/他會|她會|對方會|會不會.*和好|會.*原諒/.test(q);
+        if(passive){
+          // 被動：對方會跟我和好嗎/會原諒我嗎
+          if(good) answer='<strong>對方有可能釋懷。</strong> 運勢顯示關係有鬆動的跡象，對方不是完全不想理你。不要急著逼對方表態，給他/她一點時間消化。';
+          else answer='<strong>對方目前還沒準備好。</strong> 強行要對方回應反而有反效果。先把你能做的做好，對方看在眼裡，時間到了自然會有轉機。';
+        }else{
+          if(good) answer='<strong>有和好的可能。</strong> 運勢顯示關係有修復的空間。重點是誰先低頭不重要，重要的是你在意這段關係。先釋出善意，對方會感受到的。';
+          else answer='<strong>需要一些時間。</strong> 現在雙方可能都還在氣頭上，強行和解反而會讓事情更糟。給彼此空間冷靜，等情緒過了再談。';
+        }
       }else if(/貴人|信任|可靠|真心/.test(q)){
         if(good) answer='<strong>你的貴人運還不錯。</strong> '+(gr?'命帶天乙貴人，你天生容易遇到幫助你的人。保持真誠和感恩，貴人會持續出現。':'運勢支持有人相助，但要自己主動經營關係。別等人家來幫你，先去幫別人。');
         else answer='<strong>近期貴人運偏弱。</strong> 凡事多靠自己比較穩。不是說沒有好人，而是這段期間容易看錯人。重要決定先自己判斷，別完全聽別人的。';
@@ -3399,9 +3570,17 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
         else if(!good) answer='<strong>風險不高但也不能大意。</strong> 職場上永遠要有防人之心。做好自己的事，少參與八卦，不得罪人就不會被針對。';
         else answer='<strong>目前看起來還好。</strong> 運勢穩定，身邊沒有明顯的小人跡象。但防人之心不可無，重要的事情還是要留底。';
       }else if(/合作|合夥|一起做/.test(q)){
-        if(great) answer='<strong>合作運勢很好。</strong> 如果找到對的人，現在是一起衝的好時機。但再好的朋友也要把合約寫清楚，醜話說在前面。';
-        else if(good) answer='<strong>可以合作，但要有規則。</strong> 運勢偏好，但別因為信任就什麼都用口頭說。權責分明、帳目透明、退出機制先談好。';
-        else answer='<strong>合作要非常謹慎。</strong> 目前運勢不太適合深度綁定，如果要合作，先從小規模試起，彼此磨合了再加大。不要一開始就投入太多。';
+        const passive=intent.isPassive||/他會|她會|對方會|會答應|會同意|願意/.test(q);
+        if(passive){
+          // 被動：對方會答應合作嗎
+          if(great) answer='<strong>對方答應的機會很大。</strong> 運勢顯示合作條件成熟，對方也在尋找合作夥伴。拿出具體方案去談，比空口白話有說服力。';
+          else if(good) answer='<strong>有機會，但對方可能要考慮。</strong> 不會馬上答應，需要你展現合作的價值和誠意。準備好數據和計畫再提。';
+          else answer='<strong>對方目前可能不太願意。</strong> 不是你不好，可能是時機或條件還不到位。先建立更深的信任，讓對方看到你的能力再談。';
+        }else{
+          if(great) answer='<strong>合作運勢很好。</strong> 如果找到對的人，現在是一起衝的好時機。但再好的朋友也要把合約寫清楚，醜話說在前面。';
+          else if(good) answer='<strong>可以合作，但要有規則。</strong> 運勢偏好，但別因為信任就什麼都用口頭說。權責分明、帳目透明、退出機制先談好。';
+          else answer='<strong>合作要非常謹慎。</strong> 目前運勢不太適合深度綁定，如果要合作，先從小規模試起，彼此磨合了再加大。不要一開始就投入太多。';
+        }
       }else if(/人緣|人際|提升|改善/.test(q)){
         if(good) answer='<strong>人際方面有正面發展空間。</strong> '+(gr?'你命帶貴人星，人緣天生不差。':'')+'多出席社交場合、主動打招呼、記住別人的名字和喜好。人際就是這些小事。';
         else answer='<strong>人際需要一些時間經營。</strong> 目前運勢對社交不算特別有利，但不代表不能改善。從身邊最親近的人開始，一個一個經營好。';
@@ -3436,11 +3615,25 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
   else if(type==='family'){
     if(isYN){
       if(/連絡|聯繫|聯絡|回來|見面|相認/.test(q)){
-        if(good) answer='<strong>有機會重新連繫。</strong> 血緣是最深的牽繫，就算疏遠了也不會斷。現在主動聯繫，對方接受的可能性比你想的高。一通電話、一則訊息，不需要長篇大論，「我想你了」就夠了。';
-        else answer='<strong>緣分還在，只是時機要等。</strong> 現在對方可能還沒準備好，強求反而有反效果。你可以先寫一封不需要回覆的信或訊息，讓對方知道你的心意，然後給他/她時間。';
+        const passive=intent.isPassive||/他會|她會|會連絡|會來|會回來|會找我|聯繫我|連絡我/.test(q);
+        if(passive){
+          // 被動：對方會主動連絡我嗎
+          if(good) answer='<strong>有機會的。</strong> 對方心裡還有這份牽掛，只是可能不知道怎麼開口。你不用刻意做什麼，保持開放的態度，消息可能會在你意想不到的時候出現。';
+          else answer='<strong>可能需要再等一等。</strong> 對方目前還沒準備好主動聯繫。不要因此難過——有些人需要更長的時間。你可以先發一個不需要回覆的簡單訊息，讓對方知道門一直開著。';
+        }else{
+          if(good) answer='<strong>有機會重新連繫。</strong> 血緣是最深的牽繫，就算疏遠了也不會斷。現在主動聯繫，對方接受的可能性比你想的高。一通電話、一則訊息，不需要長篇大論，「我想你了」就夠了。';
+          else answer='<strong>緣分還在，只是時機要等。</strong> 現在對方可能還沒準備好，強求反而有反效果。你可以先寫一封不需要回覆的信或訊息，讓對方知道你的心意，然後給他/她時間。';
+        }
       }else if(/支持|同意|接受|答應/.test(q)){
-        if(good) answer='<strong>家人最終會支持你的。</strong> 但溝通方式很重要——不要用爭吵的方式，用「讓他們看到結果」的方式。先做出一點成績，家人自然會從反對變成支持。';
-        else answer='<strong>短期可能不太容易。</strong> 家人的反對往往出於擔心而不是不愛你。耐心溝通，聽聽他們擔心什麼，一一回應，比直接衝撞有效。';
+        const passive=intent.isPassive||/家人會|父母會|爸媽會|會支持|會同意|會接受|會答應/.test(q);
+        if(passive){
+          // 被動：家人會支持嗎/父母會同意嗎
+          if(good) answer='<strong>家人最終會理解的。</strong> 現在可能還在觀望或擔心，但他們的反對不是不愛你。給他們一點時間消化，同時用行動證明你的決定是對的。';
+          else answer='<strong>短期內家人可能不會鬆口。</strong> 他們的擔心有他們的道理。不要急著要答案，先做好準備工作，等你有了具體成果或計畫，再拿去跟家人談會更有說服力。';
+        }else{
+          if(good) answer='<strong>家人最終會支持你的。</strong> 但溝通方式很重要——不要用爭吵的方式，用「讓他們看到結果」的方式。先做出一點成績，家人自然會從反對變成支持。';
+          else answer='<strong>短期可能不太容易。</strong> 家人的反對往往出於擔心而不是不愛你。耐心溝通，聽聽他們擔心什麼，一一回應，比直接衝撞有效。';
+        }
       }else if(/搬家|買房|置產|裝潢/.test(q)){
         if(good) answer='<strong>運勢支持居家變動。</strong> 搬家或裝潢的話今年是好時機。建議往'+FD[favEl]+'方向找房子或安排主臥。';
         else answer='<strong>建議緩一緩。</strong> 居家大事不急著做決定，尤其是大額支出要量力而為。再等等，會有更好的機會。';
@@ -3883,6 +4076,101 @@ const ZW_MAJOR=[
 const ZW_LUCKY=['文昌','文曲','左輔','右弼','天魁','天鉞'];
 // 4 煞星
 const ZW_SHA=['擎羊','陀羅','火星','鈴星'];
+
+// ═══ 14主星廟旺利平陷表（業界標準）═══
+// 地支順序: 子丑寅卯辰巳午未申酉戌亥 (0-11)
+// 值: 4=廟, 3=旺, 2=得地/利, 1=平, 0=不得/落陷
+const STAR_BRIGHT={
+  紫微:[1,3,2,1,3,2,4,3,2,1,3,2],    // 午廟,丑未旺
+  天機:[2,0,3,4,1,2,0,3,4,1,2,3],    // 卯廟,寅申旺
+  太陽:[0,1,2,3,3,4,4,3,2,1,0,0],    // 巳午廟,卯辰旺（日出日落）
+  武曲:[2,4,1,0,3,1,2,4,1,0,3,1],    // 丑未廟,辰戌旺
+  天同:[3,1,0,2,1,0,3,2,1,4,1,2],    // 子廟,酉旺
+  廉貞:[1,0,3,1,2,4,2,0,3,1,2,3],    // 巳廟,寅申旺
+  天府:[2,1,3,1,2,4,3,1,2,3,1,2],    // 巳午廟,寅戌旺
+  太陰:[4,3,2,1,0,0,0,1,2,3,3,4],    // 子亥廟,丑酉旺（夜晚明亮）
+  貪狼:[2,1,4,1,2,1,3,1,4,1,2,1],    // 寅申廟,午旺
+  巨門:[2,1,3,4,1,2,0,1,3,4,1,2],    // 卯酉廟,寅申旺
+  天相:[2,1,3,1,2,4,2,1,3,1,2,3],    // 巳廟,寅申旺
+  天梁:[1,2,3,4,3,2,1,2,3,1,2,1],    // 卯廟,辰旺
+  七殺:[2,1,3,1,2,4,3,1,3,1,2,1],    // 巳午廟,寅申旺
+  破軍:[2,3,1,0,3,1,2,3,1,0,3,1]     // 丑未廟,辰戌旺
+};
+const BRIGHT_LABEL={4:'廟',3:'旺',2:'得地',1:'平',0:'落陷'};
+const BRIGHT_SCORE={4:3, 3:2, 2:1, 1:0, 0:-2}; // 廟=+3, 旺=+2, 得地=+1, 平=0, 落陷=-2
+
+// 取得星曜在某宮位的亮度
+function getStarBright(starName, branchIdx){
+  if(!STAR_BRIGHT[starName]) return {label:'平', score:0};
+  const val=STAR_BRIGHT[starName][branchIdx]||1;
+  return {label:BRIGHT_LABEL[val]||'平', score:BRIGHT_SCORE[val]||0, val};
+}
+
+// ═══ 宮位吉凶綜合分析函數 ═══
+// 分析一個宮位裡所有星曜的組合效果
+function analyzePalace(palace, branchIdx){
+  if(!palace||!palace.stars) return {score:0,notes:[],bright:[]};
+  let score=0, notes=[], bright=[];
+  const stars=palace.stars;
+  const majors=stars.filter(s=>s.type==='major');
+  const luckys=stars.filter(s=>['lucky','minor'].includes(s.type));
+  const shas=stars.filter(s=>s.type==='sha');
+
+  // 1. 主星亮度評分
+  majors.forEach(s=>{
+    const b=getStarBright(s.name, branchIdx);
+    bright.push({star:s.name, ...b});
+    score+=b.score;
+    if(b.val>=3) notes.push(s.name+b.label+'（力量強）');
+    if(b.val===0) notes.push(s.name+'落陷（力量弱，反凶）');
+  });
+
+  // 2. 吉星組合加分
+  const luckyNames=luckys.map(s=>s.name);
+  if(luckyNames.includes('左輔')||luckyNames.includes('右弼')){score+=1.5;notes.push('輔弼夾持，有人助力');}
+  if(luckyNames.includes('天魁')||luckyNames.includes('天鉞')){score+=1.5;notes.push('魁鉞貴人，逢凶化吉');}
+  if(luckyNames.includes('文昌')||luckyNames.includes('文曲')){score+=1;notes.push('昌曲文運，利考試名聲');}
+  if(luckyNames.includes('祿存')){score+=2;notes.push('祿存同宮，財祿豐厚');}
+  if(luckyNames.includes('天馬')&&luckyNames.includes('祿存')){score+=1;notes.push('祿馬交馳，財源滾滾');}
+
+  // 3. 煞星組合扣分
+  const shaNames=shas.map(s=>s.name);
+  shas.forEach(s=>{
+    score-=1.5;
+    if(s.name==='擎羊') notes.push('擎羊同宮，易有衝突刑傷');
+    if(s.name==='陀羅') notes.push('陀羅同宮，拖延纏繞');
+    if(s.name==='火星') notes.push('火星同宮，突發變動');
+    if(s.name==='鈴星') notes.push('鈴星同宮，暗中不利');
+  });
+
+  // 4. 特殊組合
+  // 火貪/鈴貪格（突然發財）
+  if(majors.some(s=>s.name==='貪狼')&&(shaNames.includes('火星')||shaNames.includes('鈴星'))){
+    const b=bright.find(x=>x.star==='貪狼');
+    if(b&&b.val>=2){score+=3;notes.push('火貪/鈴貪格，突發暴利之兆');}
+  }
+  // 殺破狼（變動格局）
+  const sbw=majors.filter(s=>['七殺','破軍','貪狼'].includes(s.name));
+  if(sbw.length>=2){notes.push('殺破狼匯聚，人生大變動期');}
+  // 府相朝垣（穩定格局）
+  if(majors.some(s=>s.name==='天府')&&majors.some(s=>s.name==='天相')){score+=2;notes.push('府相朝垣，格局穩健');}
+  // 巨門+化忌（口舌是非）
+  const juMen=stars.find(s=>s.name==='巨門');
+  if(juMen&&juMen.hua==='化忌'){score-=2;notes.push('巨門化忌，口舌是非不斷');}
+  // 廉貞+化忌（牢獄之災的象徵）
+  const lianZhen=stars.find(s=>s.name==='廉貞');
+  if(lianZhen&&lianZhen.hua==='化忌'){score-=2;notes.push('廉貞化忌，官非纏身注意法律');}
+
+  // 5. 四化加分
+  stars.forEach(s=>{
+    if(s.hua==='化祿'){score+=2;notes.push(s.name+'化祿，此宮有福氣');}
+    if(s.hua==='化權'){score+=1;notes.push(s.name+'化權，有掌控力');}
+    if(s.hua==='化科'){score+=1;notes.push(s.name+'化科，貴人名聲');}
+    if(s.hua==='化忌'&&!['巨門','廉貞'].includes(s.name)){score-=2;notes.push(s.name+'化忌，此宮有阻礙');}
+  });
+
+  return {score, notes, bright, majorCount:majors.length, luckyCount:luckys.length, shaCount:shas.length};
+}
 // 4 化
 const ZW_HUA=['化祿','化權','化科','化忌'];
 
@@ -4010,12 +4298,42 @@ function computeZiwei(year,month,day,hour,gender){
   addStarToPalace(palaces,'左輔','minor',(lunar.month+3)%12);
   addStarToPalace(palaces,'右弼','minor',(11-lunar.month+12)%12);
 
-  // 安煞星（簡化）
+  // 安煞星（業界標準查表法）
   const yZhiIdx = DZ.indexOf(yZhi);
-  addStarToPalace(palaces,'擎羊','sha',(yZhiIdx+1)%12);
-  addStarToPalace(palaces,'陀羅','sha',(yZhiIdx-1+12)%12);
-  addStarToPalace(palaces,'火星','sha',(yZhiIdx+2)%12);
-  addStarToPalace(palaces,'鈴星','sha',(yZhiIdx+10)%12);
+  
+  // 擎羊陀羅：依年干查表（標準安星法）
+  // 擎羊在祿存後一位，陀羅在祿存前一位
+  const QY_TABLE={甲:3,乙:4,丙:6,丁:7,戊:6,己:7,庚:9,辛:10,壬:0,癸:1};
+  const TL_TABLE={甲:1,乙:2,丙:4,丁:5,戊:4,己:5,庚:7,辛:8,壬:10,癸:11};
+  addStarToPalace(palaces,'擎羊','sha',QY_TABLE[yGan]!==undefined?QY_TABLE[yGan]:3);
+  addStarToPalace(palaces,'陀羅','sha',TL_TABLE[yGan]!==undefined?TL_TABLE[yGan]:1);
+
+  // 火星：依年支分組+時支查表
+  // 寅午戌年從丑(1)起，申子辰年從寅(2)起，巳酉丑年從卯(3)起，亥卯未年從酉(9)起
+  const HX_BASE={寅:1,午:1,戌:1, 申:2,子:2,辰:2, 巳:3,酉:3,丑:3, 亥:9,卯:9,未:9};
+  const hxBase=HX_BASE[yZhi]!==undefined?HX_BASE[yZhi]:2;
+  addStarToPalace(palaces,'火星','sha',(hxBase+shi)%12);
+
+  // 鈴星：依年支分組+時支查表
+  // 寅午戌年從卯(3)起，申子辰年從戌(10)起，巳酉丑年從戌(10)起，亥卯未年從戌(10)起
+  const LX_BASE={寅:3,午:3,戌:3, 申:10,子:10,辰:10, 巳:10,酉:10,丑:10, 亥:10,卯:10,未:10};
+  const lxBase=LX_BASE[yZhi]!==undefined?LX_BASE[yZhi]:10;
+  addStarToPalace(palaces,'鈴星','sha',(lxBase+shi)%12);
+
+  // 安天魁天鉞（依年干·業界標準）
+  // 甲戊庚→魁丑(1)鉞未(7), 乙己→魁子(0)鉞申(8), 丙丁→魁亥(11)鉞酉(9), 辛→魁午(6)鉞寅(2), 壬癸→魁卯(3)鉞巳(5)
+  const TIANKU_TABLE={甲:1,戊:1,庚:1, 乙:0,己:0, 丙:11,丁:11, 辛:6, 壬:3,癸:3};
+  const TIANYUE_TABLE={甲:7,戊:7,庚:7, 乙:8,己:8, 丙:9,丁:9, 辛:2, 壬:5,癸:5};
+  addStarToPalace(palaces,'天魁','lucky',TIANKU_TABLE[yGan]!==undefined?TIANKU_TABLE[yGan]:1);
+  addStarToPalace(palaces,'天鉞','lucky',TIANYUE_TABLE[yGan]!==undefined?TIANYUE_TABLE[yGan]:7);
+
+  // 安祿存（依年干）
+  const LUCUN_TABLE={甲:2,乙:3,丙:5,丁:6,戊:5,己:6,庚:8,辛:9,壬:11,癸:0}; // 祿存位置(地支idx)
+  addStarToPalace(palaces,'祿存','lucky',LUCUN_TABLE[yGan]!==undefined?LUCUN_TABLE[yGan]:2);
+
+  // 安天馬（依年支）
+  const TIANMA_TABLE={寅:8,申:2,巳:11,亥:5,子:2,午:8,卯:5,酉:11,辰:2,戌:8,丑:11,未:5};
+  addStarToPalace(palaces,'天馬','lucky',TIANMA_TABLE[yZhi]!==undefined?TIANMA_TABLE[yZhi]:2);
 
   // 四化
   const sihua = SIHUA_TABLE[yGan] || SIHUA_TABLE['甲'];
@@ -4039,12 +4357,259 @@ function computeZiwei(year,month,day,hour,gender){
   const mingZhu=MING_ZHU[yZhiIdx2]||'貪狼';
   const shenZhu=SHEN_ZHU[yZhiIdx2]||'火星';
 
-  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx};
+  // ═══ 大限（紫微斗數大運）═══
+  // 大限起始歲=五行局局數，每十年一宮
+  // 陽男陰女順行，陰男陽女逆行
+  const yGanYY=YY_G[yGan]; // 陽/陰
+  const dxFwd=(gender==='male'&&yGanYY==='陽')||(gender==='female'&&yGanYY==='陰');
+  const dxDir=dxFwd?1:-1;
+  const dxStartAge=wuxingJu; // 大限起始歲=五行局數
+  const daXian=[];
+  for(let i=0;i<12;i++){
+    const dxPalaceIdx=((mingIdx+(i*dxDir)*1)%12+12)%12; // 大限走的宮位地支index
+    // 但大限走的是12宮（命宮開始）
+    // 正確：大限從命宮出發，每十年進一宮
+    const dxGongIdx=i; // 在palaces陣列裡的index
+    const ageStart=dxStartAge+i*10;
+    const ageEnd=ageStart+9;
+    const curAge=new Date().getFullYear()-year;
+    const isCur=curAge>=ageStart&&curAge<=ageEnd;
+
+    // 大限宮位 = 命宮 ± i
+    const dxBranchIdx=((mingIdx+i*dxDir)%12+12)%12;
+    const dxBranch=DZ[dxBranchIdx];
+    // 大限天干：用命宮天干按順/逆推
+    const dxGanIdx=((mingGanIdx+i*dxDir)%10+10)%10;
+    const dxGan=TG[dxGanIdx];
+
+    // 找大限宮位對應的原盤宮位
+    const origPalace=palaces.find(p=>p.branch===dxBranch);
+    const dxPalaceName=origPalace?origPalace.name:'';
+    const dxStars=origPalace?origPalace.stars:[];
+
+    // 大限四化（依大限天干）
+    const dxSihua=SIHUA_TABLE[dxGan]||SIHUA_TABLE['甲'];
+    const dxHua=[];
+    [{type:'祿',label:'化祿'},{type:'權',label:'化權'},{type:'科',label:'化科'},{type:'忌',label:'化忌'}].forEach(h=>{
+      const sn=dxSihua[h.type];
+      palaces.forEach(p=>{
+        const found=p.stars.find(s=>s.name===sn);
+        if(found) dxHua.push({star:sn,hua:h.label,palace:p.name,palaceBranch:p.branch});
+      });
+    });
+
+    // ═══ 大限吉凶評估（紫微斗數象徵體系）═══
+    const hasMajor=dxStars.filter(s=>s.type==='major');
+    const hasLucky=dxStars.filter(s=>['lucky','minor'].includes(s.type));
+    const hasSha=dxStars.filter(s=>s.type==='sha');
+
+    // 用analyzePalace做完整宮位分析（含廟旺落陷+吉煞組合+特殊格局）
+    const dxAnalysis=analyzePalace(origPalace, dxBranchIdx);
+    let dxScore=dxAnalysis.score;
+    let dxNotes=[...dxAnalysis.notes];
+
+    // 大限四化飛入各宮的影響
+    dxHua.forEach(h=>{
+      // 四化飛入本命盤的對應宮位
+      const targetPalace=palaces.find(p=>p.name===h.palace);
+      if(h.hua==='化祿'){
+        dxScore+=2;
+        dxNotes.push('大限'+h.star+'化祿入'+h.palace+'（'+h.star+'帶來'+h.palace+'領域的機會）');
+      }
+      if(h.hua==='化權'){
+        dxScore+=1;
+        dxNotes.push('大限'+h.star+'化權入'+h.palace+'（'+h.palace+'領域有掌控力）');
+      }
+      if(h.hua==='化科'){
+        dxScore+=0.5;
+        dxNotes.push('大限'+h.star+'化科入'+h.palace+'（'+h.palace+'領域有貴人）');
+      }
+      if(h.hua==='化忌'){
+        dxScore-=2;
+        dxNotes.push('大限'+h.star+'化忌入'+h.palace+'（'+h.palace+'領域有困擾）');
+        // 四化疊加：大限化忌+原盤化忌=雙忌（大凶）
+        if(targetPalace){
+          const origJi=targetPalace.stars.find(s=>s.hua==='化忌');
+          if(origJi){dxScore-=2;dxNotes.push('⚠ 大限化忌疊原盤化忌於'+h.palace+'（雙忌疊加，大凶）');}
+        }
+      }
+    });
+
+    // 大限宮位象徵含義（走到什麼宮=人生主題）
+    const DX_THEME={
+      命宮:'自我發展期',兄弟:'人脈拓展期',夫妻:'感情重點期',子女:'創造力/子女期',
+      財帛:'理財重點期',疾厄:'健康注意期',遷移:'變動發展期',交友:'社交擴展期',
+      官祿:'事業衝刺期',田宅:'安家置業期',福德:'心靈成長期',父母:'長輩/學業期'
+    };
+    const dxTheme=DX_THEME[dxPalaceName]||'';
+
+    let dxLevel='平';
+    if(dxScore>=6) dxLevel='大吉';
+    else if(dxScore>=3) dxLevel='中吉';
+    else if(dxScore>=1) dxLevel='小吉';
+    else if(dxScore>=-1) dxLevel='平';
+    else if(dxScore>=-3) dxLevel='小凶';
+    else if(dxScore>=-6) dxLevel='中凶';
+    else dxLevel='大凶';
+
+    daXian.push({
+      ageStart,ageEnd,isCurrent:isCur,
+      branch:dxBranch,gan:dxGan,
+      palaceName:dxPalaceName,theme:dxTheme,
+      stars:hasMajor.map(s=>s.name),
+      lucky:hasLucky.map(s=>s.name),
+      sha:hasSha.map(s=>s.name),
+      bright:dxAnalysis.bright,
+      hua:dxHua,notes:dxNotes,
+      level:dxLevel,score:dxScore
+    });
+  }
+
+  // ═══ 流年盤（依流年地支走宮）═══
+  // 流年命宮 = 流年地支所在宮位（斗數流年以太歲入命）
+  function getLiuNianZw(lnYear){
+    const lnZI=((lnYear-4)%12+12)%12;
+    const lnGI=((lnYear-4)%10+10)%10;
+    const lnZ=DZ[lnZI], lnG=TG[lnGI];
+    // 流年命宮 = 太歲地支所在的原盤宮位
+    const lnMingPalace=palaces.find(p=>p.branch===lnZ);
+    // 流年四化（依流年天干）
+    const lnSH=SIHUA_TABLE[lnG]||SIHUA_TABLE['甲'];
+    const lnHua=[];
+    [{type:'祿',label:'化祿'},{type:'權',label:'化權'},{type:'科',label:'化科'},{type:'忌',label:'化忌'}].forEach(h=>{
+      const sn=lnSH[h.type];
+      palaces.forEach(p=>{
+        const found=p.stars.find(s=>s.name===sn);
+        if(found) lnHua.push({star:sn,hua:h.label,palace:p.name});
+      });
+    });
+    // ═══ 流年吉凶（紫微象徵體系）═══
+    const lnBranchIdx=DZ.indexOf(lnZ);
+    const lnAnalysis=analyzePalace(lnMingPalace, lnBranchIdx);
+    let lnScore=lnAnalysis.score;
+    let lnNotes=[...lnAnalysis.notes];
+
+    // 流年四化飛入各宮
+    lnHua.forEach(h=>{
+      const targetP=palaces.find(p=>p.name===h.palace);
+      if(h.hua==='化祿'){
+        lnScore+=1.5;
+        lnNotes.push(h.star+'化祿入'+h.palace);
+        // 化祿入命/財/官=大好
+        if(['命宮','財帛','官祿'].includes(h.palace)) lnScore+=0.5;
+      }
+      if(h.hua==='化權'){lnScore+=1;lnNotes.push(h.star+'化權入'+h.palace);}
+      if(h.hua==='化科'){lnScore+=0.5;lnNotes.push(h.star+'化科入'+h.palace);}
+      if(h.hua==='化忌'){
+        lnScore-=1.5;
+        lnNotes.push(h.star+'化忌入'+h.palace);
+        if(['命宮','財帛','官祿','疾厄'].includes(h.palace)) lnScore-=0.5;
+        // 流年化忌疊原盤化忌
+        if(targetP){
+          const origJi=targetP.stars.find(s=>s.hua==='化忌');
+          if(origJi){lnScore-=2;lnNotes.push('⚠ 流年化忌疊原盤化忌於'+h.palace+'（雙忌）');}
+        }
+        // 流年化忌疊大限化忌
+        const curDx=daXian.find(d=>d.isCurrent);
+        if(curDx&&curDx.hua){
+          const dxJi=curDx.hua.find(dh=>dh.palace===h.palace&&dh.hua==='化忌');
+          if(dxJi){lnScore-=2;lnNotes.push('⚠ 流年化忌疊大限化忌於'+h.palace+'（雙忌大凶）');}
+        }
+      }
+    });
+
+    // 流年走宮象徵
+    const lnMingName=lnMingPalace?lnMingPalace.name:'';
+    const LN_FOCUS={
+      命宮:'自我表現',財帛:'財運收入',官祿:'事業升遷',夫妻:'感情婚姻',
+      疾厄:'健康注意',遷移:'外出變動',交友:'人際社交',田宅:'家庭居住',
+      子女:'創意/子女',福德:'心靈享受',兄弟:'人脈合作',父母:'長輩/學業'
+    };
+    const lnFocus=LN_FOCUS[lnMingName]||'';
+
+    return {year:lnYear,gz:lnG+lnZ,mingPalace:lnMingName,focus:lnFocus,hua:lnHua,score:lnScore,notes:lnNotes,bright:lnAnalysis.bright};
+  }
+
+  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw};
 }
 
 function addStarToPalace(palaces, name, type, zhiIdx){
   const pIdx = palaces.findIndex(p=> DZ.indexOf(p.branch) === zhiIdx);
   if(pIdx>=0) palaces[pIdx].stars.push({name, type});
+}
+
+// ═══ 紫微斗數整合進八字大運流年吉凶 ═══
+// 在S.bazi和S.ziwei都算完後呼叫
+function mergeZiweiIntoBazi(){
+  if(!S.bazi||!S.ziwei||!S.ziwei.daXian) return;
+  const bazi=S.bazi, zw=S.ziwei;
+  const thisYear=new Date().getFullYear();
+
+  bazi.dayun.forEach(dy=>{
+    // 找同期的紫微大限
+    const matchDx=zw.daXian.find(dx=>
+      (dy.ageStart>=dx.ageStart&&dy.ageStart<=dx.ageEnd)||
+      (dx.ageStart>=dy.ageStart&&dx.ageStart<=dy.ageEnd)
+    );
+    if(!matchDx) return;
+
+    // 紫微大限score按比例加入八字大運score
+    const zwWeight=0.35; // 紫微佔35%的權重
+    const zwAdj=matchDx.score*zwWeight;
+    dy.score+=zwAdj;
+
+    // 加入紫微notes
+    if(matchDx.bright&&matchDx.bright.length){
+      dy.notes.push('紫微大限走'+matchDx.palaceName+'（'+matchDx.bright.map(b=>b.star+b.label).join('、')+' ）');
+    }else{
+      dy.notes.push('紫微大限走'+matchDx.palaceName+'（'+matchDx.level+'）');
+    }
+    if(matchDx.theme) dy.notes.push('十年主題：'+matchDx.theme);
+    // 重要的大限notes（廟旺、吉煞組合、四化、特殊格局）
+    if(matchDx.notes){
+      matchDx.notes.slice(0,3).forEach(n=>dy.notes.push('紫微：'+n));
+    }
+
+    // 重新計算大運level
+    const s=dy.score;
+    if(s>=6) dy.level='大吉';
+    else if(s>=3) dy.level='中吉';
+    else if(s>=1) dy.level='小吉';
+    else if(s>=-1) dy.level='平';
+    else if(s>=-3) dy.level='小凶';
+    else if(s>=-6) dy.level='中凶';
+    else dy.level='大凶';
+
+    // 紫微流年整合進八字流年
+    if(dy.liuNian&&zw.getLiuNianZw){
+      dy.liuNian.forEach(ln=>{
+        try{
+          const zwLn=zw.getLiuNianZw(ln.year);
+          if(!zwLn) return;
+
+          // 紫微流年score按比例加入
+          const lnZwAdj=zwLn.score*0.3;
+          ln.score+=lnZwAdj;
+
+          // 紫微流年notes
+          if(zwLn.mingPalace) ln.notes.push('紫微流年走'+zwLn.mingPalace);
+          if(zwLn.focus) ln.notes.push('重點：'+zwLn.focus);
+          if(zwLn.bright&&zwLn.bright.length) ln.notes.push(zwLn.bright.map(b=>b.star+b.label).join('、'));
+          if(zwLn.notes) zwLn.notes.slice(0,2).forEach(n=>ln.notes.push(n));
+
+          // 重新計算流年level
+          const ls=ln.score;
+          if(ls>=5) ln.level='大吉';
+          else if(ls>=3) ln.level='中吉';
+          else if(ls>=1) ln.level='小吉';
+          else if(ls>=-1) ln.level='平';
+          else if(ls>=-3) ln.level='小凶';
+          else if(ls>=-5) ln.level='中凶';
+          else ln.level='大凶';
+        }catch(e){}
+      });
+    }
+  });
 }
 
 function getWuxingJu(gan, zhi){
@@ -4893,16 +5458,32 @@ function toggleLiuNian(dyIdx){
   el.classList.remove('hidden');
   const curYear=new Date().getFullYear();
   let html=`<div class="card" style="padding:var(--sp-md);margin:0"><div class="card-title text-sm"><i class="fas fa-calendar"></i> ${dy.gz}大運（${dy.ageStart}-${dy.ageEnd}歲）流年明細</div>`;
+  // 紫微大限同期資訊
+  if(S.ziwei&&S.ziwei.daXian){
+    const matchDx=S.ziwei.daXian.find(dx=>dx.ageStart===dy.ageStart||(dy.ageStart>=dx.ageStart&&dy.ageStart<=dx.ageEnd));
+    if(matchDx){
+      html+=`<p style="font-size:.78rem;color:var(--c-gold);margin-bottom:8px">紫微大限同期：走「${matchDx.palaceName}」宮（${matchDx.level}）`;
+      if(matchDx.stars.length) html+=`，主星${matchDx.stars.join('、')}`;
+      if(matchDx.hua.length) html+=`。四化：${matchDx.hua.map(h=>h.star+h.hua+'入'+h.palace).join('、')}`;
+      html+='</p>';
+    }
+  }
   html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px">';
   dy.liuNian.forEach(ln=>{
     const isCur=ln.year===curYear;
     const cls=ln.level==='吉'?'tag-green':ln.level==='凶'?'tag-red':'tag-gold';
+    // 紫微流年
+    let zwLnTip='';
+    if(S.ziwei&&S.ziwei.getLiuNianZw){
+      try{const zwLn=S.ziwei.getLiuNianZw(ln.year);if(zwLn&&zwLn.mingPalace)zwLnTip=zwLn.mingPalace;}catch(e){}
+    }
     html+=`<div style="padding:6px;border:1px solid ${isCur?'var(--c-gold)':'var(--c-border)'};border-radius:var(--r-sm);background:${isCur?'rgba(212,175,55,.08)':'var(--c-bg-card)'};font-size:.8rem;text-align:center">
       <strong>${ln.year}</strong><br>
       <span class="serif">${ln.gz}</span><br>
       <span class="el-tag el-${ln.el}">${ln.el}</span>
       <span class="tag ${cls}" style="font-size:.6rem">${ln.level}</span><br>
       <span class="text-xs text-muted">${ln.god}</span>
+      ${zwLnTip?'<br><span style="font-size:.6rem;color:var(--c-dim)">紫微:'+zwLnTip+'</span>':''}
       ${isCur?'<br><span class="text-xs text-gold">← 今年</span>':''}
     </div>`;
   });
