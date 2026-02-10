@@ -1139,9 +1139,13 @@ html{scroll-behavior:smooth}
   <div class="card shop-card">
     <div class="card-title"><i class="fas fa-shopping-bag"></i> 想把結果做成「專屬五行手鏈」？我幫你配到位</div>
     <p class="text-sm text-dim mb-md">依你結果的喜用神，給你 3 個實用搭配（可直接下單）</p>
-    <div style="display:flex;align-items:center;gap:var(--sp-sm);padding:var(--sp-sm) var(--sp-md);background:rgba(212,175,55,.06);border-radius:var(--r-sm);margin-bottom:var(--sp-md);border:1px solid rgba(212,175,55,.15)">
-      <span style="color:var(--c-gold);font-size:.85rem">⭐⭐⭐⭐⭐</span>
-      <span class="text-sm text-dim">「水晶很美，戴了之後心情真的有變好」— 蝦皮買家實評</span>
+    <div id="shop-social-proof" style="padding:var(--sp-sm) var(--sp-md);background:rgba(212,175,55,.06);border-radius:var(--r-sm);margin-bottom:var(--sp-md);border:1px solid rgba(212,175,55,.15)">
+      <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:4px">
+        <span style="color:var(--c-gold);font-size:.8rem">⭐⭐⭐⭐⭐</span>
+        <span class="text-xs text-muted" id="shop-review-meta"></span>
+      </div>
+      <p class="text-sm" style="color:var(--c-text-dim);margin:0;line-height:1.5">「<span id="shop-review-text"></span>」</p>
+      <div style="text-align:right;margin-top:4px"><span class="text-xs text-muted" id="shop-review-product"></span></div>
     </div>
     <div class="shop-btns">
       <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener noreferrer" class="shop-btn-card shopee">
@@ -4362,6 +4366,18 @@ function runAnalysis(){
   try{
     const rxEl=document.getElementById('rx-date');
     if(rxEl){const d=new Date();rxEl.textContent=d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
+    /* 在 CTA 區塊顯示真實買家評價 */
+    try{
+      if(typeof REVIEWS!=='undefined'&&REVIEWS.length){
+        const r=REVIEWS[Math.floor(Math.random()*REVIEWS.length)];
+        const metaEl=document.getElementById('shop-review-meta');
+        const textEl=document.getElementById('shop-review-text');
+        const prodEl=document.getElementById('shop-review-product');
+        if(metaEl)metaEl.textContent=r.name+' · '+r.time;
+        if(textEl)textEl.textContent=r.text;
+        if(prodEl)prodEl.textContent='購買：'+r.crystal;
+      }
+    }catch(e){}
     runAnalysisV2();
   }catch(e){
     console.error('runAnalysis error:', e);
