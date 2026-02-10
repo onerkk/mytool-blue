@@ -965,11 +965,11 @@ html{scroll-behavior:smooth}
   <div class="hero">
     <div class="hero-icon">☽</div>
     <h1>你的命盤，藏著答案</h1>
-    <p style="font-size:1rem;line-height:1.7;max-width:480px;margin:0 auto var(--sp-md)">感情卡關？事業迷茫？不確定下一步該怎麼走？<br>輸入出生資料，<strong style="color:var(--c-gold)">90 秒內</strong>告訴你答案。</p>
+    <p style="font-size:1rem;line-height:1.7;max-width:480px;margin:0 auto var(--sp-md)">感情卡關？事業迷茫？不確定下一步該怎麼走？<br>輸入出生資料，<strong style="color:var(--c-gold)">10 秒內</strong>告訴你答案。</p>
     <div style="display:flex;justify-content:center;gap:var(--sp-lg);flex-wrap:wrap;margin-bottom:var(--sp-md)">
       <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">5 套系統</div><div class="text-xs text-dim">八字+紫微+梅花+塔羅+姓名</div></div>
       <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">免費</div><div class="text-xs text-dim">完整分析不收費</div></div>
-      <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">90 秒</div><div class="text-xs text-dim">馬上看到結果</div></div>
+      <div style="text-align:center"><div style="font-size:1.5rem;font-weight:700;color:var(--c-gold)">10 秒</div><div class="text-xs text-dim">馬上看到結果</div></div>
     </div>
     <div style="background:rgba(0,0,0,.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);display:inline-flex;gap:var(--sp-md);flex-wrap:wrap;justify-content:center;font-size:.82rem;color:var(--c-text-dim)">
       <span>❝ 超準，點出我的盲點 ❞</span>
@@ -979,9 +979,7 @@ html{scroll-behavior:smooth}
   </div>
   <div class="stepper" id="main-stepper">
     <div class="stepper-item active"><div class="stepper-dot">1</div><span>填資料</span></div><div class="stepper-line"></div>
-    <div class="stepper-item"><div class="stepper-dot">2</div><span>起卦</span></div><div class="stepper-line"></div>
-    <div class="stepper-item"><div class="stepper-dot">3</div><span>抽牌</span></div><div class="stepper-line"></div>
-    <div class="stepper-item"><div class="stepper-dot">4</div><span>看結果</span></div>
+    <div class="stepper-item"><div class="stepper-dot">2</div><span>看結果</span></div>
   </div>
   <div class="card">
     <div class="card-title"><i class="fas fa-question-circle"></i> 你的問題</div>
@@ -1021,8 +1019,9 @@ html{scroll-behavior:smooth}
       <input type="text" class="form-input" id="f-name" placeholder="用於姓名學分析">
     </div>
   </div>
-  <div class="actions actions-center">
-    <button class="btn btn-primary btn-lg" onclick="submitStep0()"><i class="fas fa-arrow-right"></i> 下一步：梅花易數</button>
+  <div class="actions actions-center" style="flex-direction:column;gap:var(--sp-sm)">
+    <button class="btn btn-primary btn-lg" onclick="submitStep0Fast()"><i class="fas fa-bolt"></i> 立即看結果</button>
+    <button class="btn btn-outline btn-sm" onclick="submitStep0()" style="opacity:0.7"><i class="fas fa-sliders-h"></i> 進階：手動起卦＋抽牌</button>
   </div>
 </section>
 
@@ -1128,7 +1127,16 @@ html{scroll-behavior:smooth}
   </div>
 
   <!-- 🛒 水晶推薦 + 賣場 -->
-  <div class="card"><div class="card-title"><i class="fas fa-gem"></i> 處方水晶 — 依你命盤精選</div><div id="r-crystal"></div></div>
+  <div class="card" style="border:2px solid var(--c-gold);background:linear-gradient(135deg,rgba(30,12,12,0.95),rgba(20,8,8,0.98));position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;right:0;background:var(--c-gold);color:var(--c-bg-deep);padding:4px 16px;font-size:.7rem;font-weight:700;border-radius:0 0 0 12px">命理處方箋</div>
+    <div class="card-title" style="font-size:1.2rem;margin-top:var(--sp-sm)"><i class="fas fa-file-medical"></i> 能量水晶處方 — 依你命盤精選</div>
+    <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap;margin-bottom:var(--sp-md);padding:var(--sp-sm);background:rgba(0,0,0,.2);border-radius:var(--r-sm);border-left:3px solid var(--c-gold)">
+      <div class="text-xs"><span class="text-dim">分析師：</span><span class="text-gold">靜月之光</span></div>
+      <div class="text-xs"><span class="text-dim">處方日期：</span><span id="rx-date" class="text-gold"></span></div>
+      <div class="text-xs"><span class="text-dim">有效期：</span><span class="text-gold">長期適用</span></div>
+    </div>
+    <div id="r-crystal"></div>
+  </div>
   <div class="card shop-card">
     <div class="card-title"><i class="fas fa-shopping-bag"></i> 想把結果做成「專屬五行手鏈」？我幫你配到位</div>
     <p class="text-sm text-dim mb-md">依你結果的喜用神，給你 3 個實用搭配（可直接下單）</p>
@@ -1252,71 +1260,12 @@ html{scroll-behavior:smooth}
     <button class="btn-remind" id="btn-remind" onclick="addReminder7Days()"><i class="fas fa-bell"></i> 7天後提醒我再測一次</button>
     <p class="text-xs text-muted mt-xs">會下載 .ics 日曆檔，自動加入手機行事曆</p>
   </div>
-</section>
 
-</div><!-- /app -->
+  <!-- 趣味功能（結果頁底部，看完結果才看到） -->
+  <div class="card mt-lg" style="text-align:center;border-style:dashed;opacity:0.85">
+    <p class="text-dim" style="margin-bottom:var(--sp-sm)">🎮 看完結果了？來玩點有趣的</p>
 
-<!-- 客製表單 Modal -->
-<div class="modal-overlay" id="custom-modal" style="display:none">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeCustomModal()">&times;</button>
-    <h3 class="serif text-gold mb-md"><i class="fas fa-magic"></i> 能量手鏈客製服務</h3>
-    <form id="custom-form" action="https://formsubmit.co/onerkk@gmail.com" method="POST" onsubmit="return prepareCustomSubmit()">
-      <!-- formsubmit.co config -->
-      <input type="hidden" name="_subject" id="cf-subject-hidden" value="【客製詢問】能量手鏈">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
-      <input type="hidden" name="_next" id="cf-next-url" value="">
-      <input type="text" name="_honey" style="display:none">
-      <input type="hidden" name="占卜分析摘要" id="cf-analysis-hidden" value="">
-      <div class="form-group">
-        <label class="form-label">姓名 <span class="req">*</span></label>
-        <input type="text" class="form-input" id="cf-name" name="姓名" required placeholder="您的姓名">
-      </div>
-      <div class="form-group">
-        <label class="form-label">出生日期 <span class="req">*</span></label>
-        <input type="date" class="form-input" id="cf-bday" name="出生日期" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">想解決的問題 <span class="req">*</span></label>
-        <textarea class="form-textarea" id="cf-question" name="想解決的問題" required placeholder="例：想提升事業運、改善感情、招財等..."></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">預算範圍 <span class="req">*</span></label>
-        <select class="form-select" id="cf-budget" name="預算範圍" required>
-          <option value="">請選擇</option>
-          <option value="預算版（$1,000-$3,000）">預算版（$1,000 - $3,000）</option>
-          <option value="加強版（$3,000-$6,000）">加強版（$3,000 - $6,000）</option>
-          <option value="收藏版（$6,000以上）">收藏版（$6,000 以上）</option>
-        </select>
-      </div>
-      <div class="actions" style="margin-top:var(--sp-lg)">
-        <button type="button" class="btn btn-outline" onclick="closeCustomModal()">取消</button>
-        <button type="submit" class="btn btn-gold" id="cf-submit-btn"><i class="fas fa-paper-plane"></i> 送出詢問</button>
-      </div>
-      <p class="text-xs text-muted mt-md"><i class="fas fa-lock"></i> 表單直接寄到店家信箱，不經第三方儲存。首次送出後會收到確認信。</p>
-      <details class="text-xs text-muted mt-sm" style="cursor:pointer">
-        <summary style="color:var(--c-gold);opacity:0.7">隱私說明（點擊展開）</summary>
-        <div style="margin-top:var(--sp-xs);line-height:1.8;opacity:0.8">
-          <p>• <strong>收集項目：</strong>姓名、性別、出生日期時間、Email、問題描述</p>
-          <p>• <strong>用途：</strong>僅用於製作客製化水晶手鏈建議及回覆詢問</p>
-          <p>• <strong>保存方式：</strong>資料透過 Email 傳送，不儲存於伺服器或資料庫</p>
-          <p>• <strong>刪除方式：</strong>如需刪除資料，請來信至店家信箱告知即可</p>
-          <p>• <strong>占卜資料：</strong>頁面上的八字/塔羅計算皆在你的瀏覽器本地執行，不上傳任何伺服器</p>
-        </div>
-      </details>
-    </form>
-    <div id="cf-sent" class="hidden mt-lg text-center">
-      <div style="font-size:2rem;margin-bottom:var(--sp-sm)">✅</div>
-      <h4 class="text-gold mb-sm">詢問已送出！</h4>
-      <p class="text-sm text-dim mb-md">我們會盡快透過 Email 回覆您。</p>
-      <button class="btn btn-outline" onclick="closeCustomModal()"><i class="fas fa-check"></i> 關閉</button>
-    </div>
-  </div>
-</div>
 
-<!-- ========== 互動功能區 (收合式，不擋主流程) ========== -->
-<div class="app" style="padding-top:0">
   <div class="daily-mini" style="margin:0 0 var(--sp-sm) 0">
     <div class="daily-mini-toggle" onclick="this.parentElement.classList.toggle('open');if(!this._init){initExtraFeatures();this._init=true}">
       <span><i class="fas fa-magic"></i> 趣味功能：運勢籤 · 水晶配對 · 五行問答...</span>
@@ -1420,7 +1369,70 @@ html{scroll-behavior:smooth}
     </div>
   </div>
 </div>
-</div></div></div>
+  </div></div></div>
+  </div>
+</section>
+
+</div><!-- /app -->
+
+<!-- 客製表單 Modal -->
+<div class="modal-overlay" id="custom-modal" style="display:none">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCustomModal()">&times;</button>
+    <h3 class="serif text-gold mb-md"><i class="fas fa-magic"></i> 能量手鏈客製服務</h3>
+    <form id="custom-form" action="https://formsubmit.co/onerkk@gmail.com" method="POST" onsubmit="return prepareCustomSubmit()">
+      <!-- formsubmit.co config -->
+      <input type="hidden" name="_subject" id="cf-subject-hidden" value="【客製詢問】能量手鏈">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_next" id="cf-next-url" value="">
+      <input type="text" name="_honey" style="display:none">
+      <input type="hidden" name="占卜分析摘要" id="cf-analysis-hidden" value="">
+      <div class="form-group">
+        <label class="form-label">姓名 <span class="req">*</span></label>
+        <input type="text" class="form-input" id="cf-name" name="姓名" required placeholder="您的姓名">
+      </div>
+      <div class="form-group">
+        <label class="form-label">出生日期 <span class="req">*</span></label>
+        <input type="date" class="form-input" id="cf-bday" name="出生日期" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">想解決的問題 <span class="req">*</span></label>
+        <textarea class="form-textarea" id="cf-question" name="想解決的問題" required placeholder="例：想提升事業運、改善感情、招財等..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">預算範圍 <span class="req">*</span></label>
+        <select class="form-select" id="cf-budget" name="預算範圍" required>
+          <option value="">請選擇</option>
+          <option value="預算版（$1,000-$3,000）">預算版（$1,000 - $3,000）</option>
+          <option value="加強版（$3,000-$6,000）">加強版（$3,000 - $6,000）</option>
+          <option value="收藏版（$6,000以上）">收藏版（$6,000 以上）</option>
+        </select>
+      </div>
+      <div class="actions" style="margin-top:var(--sp-lg)">
+        <button type="button" class="btn btn-outline" onclick="closeCustomModal()">取消</button>
+        <button type="submit" class="btn btn-gold" id="cf-submit-btn"><i class="fas fa-paper-plane"></i> 送出詢問</button>
+      </div>
+      <p class="text-xs text-muted mt-md"><i class="fas fa-lock"></i> 表單直接寄到店家信箱，不經第三方儲存。首次送出後會收到確認信。</p>
+      <details class="text-xs text-muted mt-sm" style="cursor:pointer">
+        <summary style="color:var(--c-gold);opacity:0.7">隱私說明（點擊展開）</summary>
+        <div style="margin-top:var(--sp-xs);line-height:1.8;opacity:0.8">
+          <p>• <strong>收集項目：</strong>姓名、性別、出生日期時間、Email、問題描述</p>
+          <p>• <strong>用途：</strong>僅用於製作客製化水晶手鏈建議及回覆詢問</p>
+          <p>• <strong>保存方式：</strong>資料透過 Email 傳送，不儲存於伺服器或資料庫</p>
+          <p>• <strong>刪除方式：</strong>如需刪除資料，請來信至店家信箱告知即可</p>
+          <p>• <strong>占卜資料：</strong>頁面上的八字/塔羅計算皆在你的瀏覽器本地執行，不上傳任何伺服器</p>
+        </div>
+      </details>
+    </form>
+    <div id="cf-sent" class="hidden mt-lg text-center">
+      <div style="font-size:2rem;margin-bottom:var(--sp-sm)">✅</div>
+      <h4 class="text-gold mb-sm">詢問已送出！</h4>
+      <p class="text-sm text-dim mb-md">我們會盡快透過 Email 回覆您。</p>
+      <button class="btn btn-outline" onclick="closeCustomModal()"><i class="fas fa-check"></i> 關閉</button>
+    </div>
+  </div>
+</div>
 
 <!-- 水晶詳情 Modal -->
 <div class="crystal-detail-modal hidden" id="crystal-detail-modal"></div>
@@ -1683,6 +1695,32 @@ function submitStep0(){
   renderDailyFortune();
   generateLuckyInfo();
   goStep(1);
+}
+
+function submitStep0Fast(){
+  /* 一鍵直達：自動梅花起卦 + 自動塔羅抽牌 → 直接看結果 */
+  drawnCards=[];
+  S.meihua=null;S.tarot={drawn:[],spread:[]};
+  const type=document.getElementById('f-type').value;
+  const question=document.getElementById('f-question').value.trim();
+  const gender=document.querySelector('input[name="gender"]:checked');
+  const bdate=document.getElementById('f-bdate').value;
+  if(!type||!question||!gender||!bdate){alert('請填寫所有必要欄位');return}
+  const btime=document.getElementById('f-btime').value||'12:00';
+  const name=document.getElementById('f-name').value.trim();
+  S.form={type,question,gender:gender.value,bdate,btime,name};
+  const[y,m,d]=bdate.split('-').map(Number);
+  const[hh,mm]=btime.split(':').map(Number);
+  S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
+  S.ziwei=computeZiwei(y,m,d,hh,gender.value);
+  renderDailyFortune();
+  generateLuckyInfo();
+  /* 自動梅花：用時間起卦 */
+  calcMhTime();
+  /* 自動塔羅：快速全抽 */
+  while(drawnCards.length<10) drawCard();
+  /* 直接跳到結果 */
+  goStep(3);
 }
 
 function computeBazi(year,month,day,hour,minute,gender){
@@ -4319,6 +4357,8 @@ function runAnalysisV2(){
 // Override runAnalysis to use V2
 function runAnalysis(){
   try{
+    const rxEl=document.getElementById('rx-date');
+    if(rxEl){const d=new Date();rxEl.textContent=d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
     runAnalysisV2();
   }catch(e){
     console.error('runAnalysis error:', e);
