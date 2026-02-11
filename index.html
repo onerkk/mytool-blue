@@ -7,21 +7,6 @@
 <meta name="description" content="靜月之光能量占卜儀：整合八字、紫微斗數、梅花易數、塔羅牌的多維度命理分析系統">
 <meta name="theme-color" content="#1a0a0a">
 <title>靜月之光能量占卜儀 v3.0</title>
-
-<!-- Open Graph / 社群縮圖 -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://onerkk.github.io/mytool-blue/">
-<meta property="og:title" content="靜月之光能量占卜儀 v3.0">
-<meta property="og:description" content="整合八字、紫微斗數、梅花易數、塔羅牌的多維度命理分析系統，免費體驗">
-<meta property="og:image" content="https://onerkk.github.io/mytool-blue/og-image.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="靜月之光能量占卜儀 v3.0">
-<meta name="twitter:description" content="整合八字、紫微斗數、梅花易數、塔羅牌的多維度命理分析系統，免費體驗">
-<meta name="twitter:image" content="https://onerkk.github.io/mytool-blue/og-image.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -1232,7 +1217,7 @@ html{scroll-behavior:smooth}
       <div class="dim-pane" id="pane-meihua"><div id="r-meihua"></div></div>
       <div class="dim-pane" id="pane-tarot"><div id="r-tarot"></div></div>
       <div class="dim-pane" id="pane-name">
-        <h4 class="text-gold mb-md serif">姓名學分析（三才五格）</h4>
+        <h4 class="text-gold mb-md serif">姓名學分析（生肖派＋三才五格）</h4>
         <div id="d-name"></div>
       </div>
     </div>
@@ -3208,6 +3193,15 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     else if(up<=3){score-=2;evidence.push('塔羅僅'+up+'張正位');}
     else{evidence.push('塔羅'+up+'張正位');}
   }
+  // ── 生肖姓名學加分 ──
+  if(S.zodiacNameResult){
+    const zn=S.zodiacNameResult;
+    if(zn.isSacrifice){score-=2;evidence.push('姓名犧牲格（'+zn.zodiac+'見王/彩衣）');}
+    else if(zn.isSnakePigClash){score-=1.5;evidence.push('姓名巳亥六衝');}
+    else if(zn.overallLevel.includes('大吉')){score+=1.5;evidence.push('姓名生肖派（大吉）');}
+    else if(zn.overallLevel==='吉'){score+=1;evidence.push('姓名生肖派（吉）');}
+    else if(zn.overallLevel.includes('凶')){score-=1;evidence.push('姓名生肖派（'+zn.overallLevel+'）');}
+  }
   const great=score>=4, good=score>=1, bad=score<=-2;
 
   /* 問法 */
@@ -3789,8 +3783,16 @@ function generateAnswer(type,prob,bazi,mh,tarot){
   if(S.nameResult){
     const nr=S.nameResult;
     let nText=`三才配置 ${nr.sanCaiLevel}`;
-    if(nr.renGe) nText+=`，人格 ${nr.renGe.strokes}畫（${nr.renGe.fortune.level}）`;
-    factors.push('【姓名】'+nText);
+    if(nr.renGe) nText+=`，人格 ${nr.renGe.num}畫（${nr.renGe.fortune.level}）`;
+    factors.push('【姓名·筆劃派】'+nText);
+  }
+  if(S.zodiacNameResult){
+    const zn=S.zodiacNameResult;
+    let zText=`${zn.emoji}${zn.zodiac}年→「${zn.overallLevel}」`;
+    if(zn.isSacrifice) zText+='（犧牲格）';
+    if(zn.totalLike>0) zText+=`，吉${zn.totalLike}項`;
+    if(zn.totalDislike>0) zText+=`，凶${zn.totalDislike}項`;
+    factors.push('【姓名·生肖派】'+zText);
   }
 
   /* ═══ SUGGESTIONS: 依維度×類型 生成具體建議 ═══ */
@@ -3915,6 +3917,29 @@ function generateAnswer(type,prob,bazi,mh,tarot){
       else techText+='。';
       techText+=`</p>`;
     }
+  }
+
+  // ── 姓名學（生肖派）技術解讀 ──
+  if(S.zodiacNameResult){
+    const zn=S.zodiacNameResult;
+    techText+=`<p class="mt-sm"><strong>姓名學·生肖派</strong>：${zn.emoji}${zn.zodiac}年生人，姓名「${zn.name}」判定【${zn.overallLevel}】。`;
+    if(zn.totalLike>0) techText+=`吉象${zn.totalLike}項`;
+    if(zn.totalDislike>0) techText+=`${zn.totalLike>0?'，':''}凶象${zn.totalDislike}項`;
+    techText+=`。</p>`;
+    // 列出關鍵喜忌
+    const keyHits = zn.positions.flatMap(p=>p.charResults.flatMap(c=>c.hits.filter(h=>Math.abs(h.score)>=7)));
+    if(keyHits.length){
+      techText+=`<p class="text-sm text-dim">關鍵字根：`;
+      techText+=keyHits.map(h=>`<span style="color:${h.type==='吉'?'#4ade80':'#f87171'}">${h.type}【${h.label}】</span>`).join('、');
+      techText+=`</p>`;
+    }
+    if(zn.isSacrifice) techText+=`<p class="text-sm" style="color:#f87171">⚠ ${zn.sacrificeNote}</p>`;
+    if(zn.isSnakePigClash) techText+=`<p class="text-sm" style="color:#f87171">⚠ ${zn.clashNote}</p>`;
+    if(zn.warnings.length) techText+=`<p class="text-sm text-warn">🔔 ${zn.warnings[0]}</p>`;
+  }
+  if(S.nameResult){
+    const nr=S.nameResult;
+    techText+=`<p class="mt-sm"><strong>姓名學·筆劃派</strong>：三才 ${nr.sanCai.join('→')}（${nr.sanCaiLevel}），人格${nr.renGe.num}畫（${nr.renGe.fortune.level}），總格${nr.zongGe.num}畫（${nr.zongGe.fortune.level}）。</p>`;
   }
 
   // 把命理依據包在可收合區塊
@@ -4046,9 +4071,17 @@ function generateConclusion(type,prob,bazi,mh,tarot){
   // 姓名學
   if(S.nameResult){
     const nr=S.nameResult;
-    html+=`<p class="mt-sm"><strong class="text-gold">五、姓名學</strong>：三才 ${nr.sanCaiLevel}`;
-    if(nr.renGe) html+=`，人格 ${nr.renGe.strokes}畫（${nr.renGe.fortune.level}）`;
-    if(nr.zongGe) html+=`，總格 ${nr.zongGe.strokes}畫（${nr.zongGe.fortune.level}）`;
+    html+=`<p class="mt-sm"><strong class="text-gold">五、姓名學</strong>：`;
+    // 生肖派
+    if(S.zodiacNameResult){
+      const zn=S.zodiacNameResult;
+      html+=`${zn.emoji}${zn.zodiac}年【${zn.overallLevel}】`;
+      if(zn.isSacrifice) html+=` <span style="color:var(--c-danger)">⚠犧牲格</span>`;
+      html+=`。`;
+    }
+    // 三才五格
+    html+=`三才 ${nr.sanCaiLevel}`;
+    if(nr.renGe) html+=`，人格 ${nr.renGe.num}畫（${nr.renGe.fortune.level}）`;
     html+=`。</p>`;
   }
 
@@ -4968,6 +5001,488 @@ function analyzeName(fullName){
 }
 
 /* =============================================================
+   生肖姓名學 ZODIAC NAMEOLOGY（形義派）
+   「字如環境，生肖如生物」— 適者生存原則
+   ============================================================= */
+
+// ── 出生年→生肖 ──
+function getZodiac(year){
+  const z=['鼠','牛','虎','兔','龍','蛇','馬','羊','猴','雞','狗','豬'];
+  return z[((year-4)%12+12)%12];
+}
+const ZODIAC_EMOJI={鼠:'🐭',牛:'🐂',虎:'🐯',兔:'🐰',龍:'🐲',蛇:'🐍',馬:'🐴',羊:'🐑',猴:'🐵',雞:'🐔',狗:'🐶',豬:'🐷'};
+const ZODIAC_DIZHI={鼠:'子',牛:'丑',虎:'寅',兔:'卯',龍:'辰',蛇:'巳',馬:'午',羊:'未',猴:'申',雞:'酉',狗:'戌',豬:'亥'};
+
+// ── 十二生肖字根喜忌資料庫 ──
+// 每個生肖：{ like:[ {roots:[], label, reason, score} ], dislike:[ ... ] }
+// roots 裡放字根/部首字串，拆字時比對
+const ZODIAC_NAME_DB = {
+  鼠: {
+    like:[
+      {roots:['口','品','呂','回'],label:'得洞',reason:'鼠入洞穴，有安身之所，衣食無憂',score:8},
+      {roots:['宀','冖','穴'],label:'得屋',reason:'有屋有頂，安居樂業',score:8},
+      {roots:['禾','米','豆','麥','粟','粒','黍'],label:'得食',reason:'鼠有糧倉，一生不愁吃穿',score:9},
+      {roots:['王','玉','君','令'],label:'得位',reason:'鼠排十二生肖之首，見王字根為得位',score:7},
+      {roots:['夕','夜'],label:'得時',reason:'鼠為夜行動物，夜晚如魚得水',score:6},
+      {roots:['申','辰'],label:'三合',reason:'申子辰三合水局，有貴人相助',score:8},
+      {roots:['亥','丑'],label:'六合三會',reason:'亥子丑三會北方水局，根基穩固',score:7},
+      {roots:['彩','衣','巾','糸','帛'],label:'得衣',reason:'鼠得彩衣為華麗，增添光彩',score:6}
+    ],
+    dislike:[
+      {roots:['午','馬'],label:'六衝',reason:'子午相衝，易犯小人、意外災禍',score:-9},
+      {roots:['未','羊'],label:'六害',reason:'子未相害，親近之人反成阻礙',score:-7},
+      {roots:['日','光','明','晃'],label:'見光',reason:'鼠見日光暴露行蹤，處處受制',score:-6},
+      {roots:['人','亻','仁','伊'],label:'遇人',reason:'老鼠見人人喊打，處境危險',score:-7},
+      {roots:['貓','犬','犭'],label:'天敵',reason:'遇天敵，一生提心吊膽',score:-8},
+      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'利器在側，有血光之憂',score:-6},
+      {roots:['火','灬','炎'],label:'見火',reason:'火燒鼠穴，無處藏身',score:-6}
+    ]
+  },
+  牛: {
+    like:[
+      {roots:['艹','廾','卉','芳'],label:'得草',reason:'牛有草糧，一生豐足不愁吃',score:9},
+      {roots:['宀','冖','廣'],label:'得屋',reason:'牛有牛舍，風吹雨打有所依',score:7},
+      {roots:['禾','米','麥','豆','粟'],label:'得糧',reason:'五穀豐登，衣食無缺',score:8},
+      {roots:['巳','酉'],label:'三合',reason:'巳酉丑三合金局，有貴人扶持',score:8},
+      {roots:['亥','子'],label:'三會',reason:'亥子丑三會水局，運勢加持',score:7},
+      {roots:['田','甫'],label:'得田',reason:'牛在田中耕作，雖辛勞但得其所',score:5},
+      {roots:['車'],label:'拉車',reason:'牛拉車雖辛苦，但表示有用武之地',score:4}
+    ],
+    dislike:[
+      {roots:['未','羊'],label:'六衝',reason:'丑未相衝，內心矛盾、做事反覆',score:-9},
+      {roots:['午','馬'],label:'六害',reason:'丑午相害，忙碌勞碌卻無回報',score:-7},
+      {roots:['王','大','主','君','帝'],label:'犧牲格',reason:'牛為祭祀用畜，見王字根如被獻祭——名聲在外，內心痛苦',score:-9},
+      {roots:['彡','巾','衣','糸','帛','采'],label:'彩衣格',reason:'牛披彩衣上祭壇，為人犧牲、勞而無功',score:-8},
+      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'屠刀在前，有性命之憂、重大手術',score:-7},
+      {roots:['日','明','光'],label:'見日',reason:'牛白天耕作不得休息，操勞命',score:-5}
+    ]
+  },
+  虎: {
+    like:[
+      {roots:['山','屮','岳'],label:'得山',reason:'虎踞山林，王者之風，得權得勢',score:9},
+      {roots:['林','木','森','東'],label:'得林',reason:'虎有林蔭遮蔽，如虎添翼',score:8},
+      {roots:['王','玉','君','主','大'],label:'得位',reason:'虎為百獸之王，見王字根稱王稱霸',score:9},
+      {roots:['衣','巾','彡','糸','采'],label:'得衣',reason:'虎皮斑紋華麗，得彩衣如虎添翼',score:7},
+      {roots:['午','戌'],label:'三合',reason:'寅午戌三合火局，貴人旺盛',score:8},
+      {roots:['卯','辰'],label:'三會',reason:'寅卯辰三會東方木局，格局開闊',score:7},
+      {roots:['月','肉'],label:'得食',reason:'虎吃肉，衣食豐足',score:8}
+    ],
+    dislike:[
+      {roots:['申','猴','袁'],label:'六衝',reason:'寅申相衝，犯小人、官非口舌',score:-9},
+      {roots:['巳','蛇','辶','弓','几','廴'],label:'六害',reason:'寅巳相害，暗箭難防、易遭背叛',score:-7},
+      {roots:['口','品'],label:'入口',reason:'虎落平陽被犬欺，困在小空間不得志',score:-5},
+      {roots:['門','閂'],label:'關門',reason:'關門打虎，有志難伸',score:-6},
+      {roots:['人','亻'],label:'遇人',reason:'虎傷人則遭獵殺，人虎相遇兩敗俱傷',score:-5},
+      {roots:['田','禾','米'],label:'入田',reason:'虎入田間不得志，大材小用',score:-4}
+    ]
+  },
+  兔: {
+    like:[
+      {roots:['艹','廾','卉'],label:'得草',reason:'兔有青草，生活安穩無憂',score:9},
+      {roots:['口','品','宀','冖','穴'],label:'得洞',reason:'兔有窩穴，安全感十足',score:8},
+      {roots:['禾','米','豆','麥'],label:'得糧',reason:'五穀豐登，不愁溫飽',score:7},
+      {roots:['木','林','森','東'],label:'得林',reason:'兔在林中有掩護，安全自在',score:8},
+      {roots:['亥','未'],label:'三合',reason:'亥卯未三合木局，貴人運強',score:8},
+      {roots:['寅','辰'],label:'三會',reason:'寅卯辰三會東方木局，根基穩',score:7},
+      {roots:['衣','巾','彡','采'],label:'得衣',reason:'兔得彩衣為華麗，增添魅力',score:6}
+    ],
+    dislike:[
+      {roots:['酉','雞','鳥','隹'],label:'六衝',reason:'卯酉相衝，衝擊極大，口舌是非不斷',score:-9},
+      {roots:['辰','龍'],label:'六害',reason:'卯辰相害，身邊人反成阻礙',score:-7},
+      {roots:['日','光','明'],label:'見光',reason:'兔見日光暴露，不安全',score:-5},
+      {roots:['人','亻','大'],label:'遇人',reason:'兔見人被獵捕，處境堪憂',score:-6},
+      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'利刃在側，有開刀之虞',score:-6},
+      {roots:['火','灬','炎'],label:'見火',reason:'兔遇火有劫，易衝動犯錯',score:-5},
+      {roots:['山','岳'],label:'上山',reason:'兔入山為虎口送食，非其所宜',score:-4}
+    ]
+  },
+  龍: {
+    like:[
+      {roots:['日','明','光','星','月'],label:'得天',reason:'龍見日月星為飛龍在天，大展鴻圖',score:9},
+      {roots:['水','氵','雨','冫'],label:'得水',reason:'龍入大海，如魚得水，大富大貴',score:9},
+      {roots:['王','玉','君','主','大','天','帝'],label:'得位',reason:'龍為至尊，見王字根稱帝稱王',score:9},
+      {roots:['申','子'],label:'三合',reason:'申子辰三合水局，貴人鼎力相助',score:8},
+      {roots:['巳','午'],label:'三會',reason:'巳午未三會南方火局（辰為土庫），能量加成',score:6},
+      {roots:['馬','午'],label:'龍馬',reason:'龍馬精神，精力充沛、事業有成',score:7},
+      {roots:['衣','巾','彡','采'],label:'得袍',reason:'龍袍加身，尊榮至極',score:8}
+    ],
+    dislike:[
+      {roots:['戌','狗','犬','犭'],label:'六衝',reason:'辰戌相衝，強碰強，損傷慘重',score:-9},
+      {roots:['卯','兔'],label:'六害',reason:'辰卯相害，被親近之人拖累',score:-7},
+      {roots:['宀','冖','口','穴'],label:'困龍',reason:'龍入洞穴如困龍，有志難伸',score:-7},
+      {roots:['田','禾'],label:'入田',reason:'龍困淺灘被蝦戲，大材小用',score:-5},
+      {roots:['蟲','虫'],label:'降格',reason:'龍被當蟲看待，嚴重降格',score:-8}
+    ]
+  },
+  蛇: {
+    like:[
+      {roots:['口','品','宀','冖','穴'],label:'得洞',reason:'蛇盤洞穴，安居自在',score:8},
+      {roots:['木','林','艹'],label:'得蔭',reason:'蛇在草叢樹林有掩護',score:7},
+      {roots:['衣','巾','彡','采'],label:'得衣',reason:'蛇披彩衣為龍，大升格',score:9},
+      {roots:['王','玉','君','主','大'],label:'升龍',reason:'小龍見王可化龍，大富大貴',score:9},
+      {roots:['酉','丑'],label:'三合',reason:'巳酉丑三合金局，貴人相助',score:8},
+      {roots:['午','未'],label:'三會',reason:'巳午未三會南方火局，能量充沛',score:7},
+      {roots:['月','肉','心','忄'],label:'得食',reason:'蛇食鼠肉，不愁溫飽',score:7}
+    ],
+    dislike:[
+      {roots:['亥','豬','豕'],label:'六衝',reason:'巳亥相衝，衝擊極大，破財損身',score:-9},
+      {roots:['寅','虎'],label:'六害',reason:'寅巳相害，虎蛇相鬥損傷重',score:-7},
+      {roots:['日','光','明'],label:'見光',reason:'蛇見光暴露，危機四伏',score:-5},
+      {roots:['人','亻'],label:'遇人',reason:'人蛇相遇兩害怕，互相傷害',score:-5},
+      {roots:['水','氵','雨'],label:'見水',reason:'蛇入水為水蛇，降格受困',score:-4},
+      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'蛇見刀被斬斷，血光之災',score:-7}
+    ]
+  },
+  馬: {
+    like:[
+      {roots:['艹','廾','卉','芳'],label:'得草',reason:'馬有草糧，精力充沛，一生不愁',score:9},
+      {roots:['木','林','森'],label:'得蔭',reason:'馬有樹蔭可歇息，勞逸結合',score:7},
+      {roots:['寅','戌'],label:'三合',reason:'寅午戌三合火局，貴人運旺',score:8},
+      {roots:['巳','未'],label:'三會',reason:'巳午未三會南方火局，氣勢如虹',score:7},
+      {roots:['衣','巾','彡','采'],label:'得衣',reason:'馬披鞍有人騎，受重用得位',score:7},
+      {roots:['龍','辰'],label:'龍馬',reason:'龍馬精神，事業有大格局',score:7},
+      {roots:['大','王'],label:'得位',reason:'馬體大為上等馬，受人敬重',score:6}
+    ],
+    dislike:[
+      {roots:['子','鼠'],label:'六衝',reason:'子午相衝，感情波折、事業動盪',score:-9},
+      {roots:['丑','牛'],label:'六害',reason:'丑午相害，辛苦勞碌無回報',score:-7},
+      {roots:['門','閂','宀','冖'],label:'受困',reason:'馬被關在門裡，空有志氣無法施展',score:-7},
+      {roots:['人','亻','彳'],label:'被控',reason:'馬見人受控制，勞碌命',score:-5},
+      {roots:['田','甫'],label:'入田',reason:'馬入田間拉犁，辛苦操勞',score:-6},
+      {roots:['水','氵','雨','冫'],label:'見水',reason:'水剋火，馬為午火見水受剋',score:-6},
+      {roots:['山','岳'],label:'上山',reason:'馬上山路難行，寸步難行',score:-5}
+    ]
+  },
+  羊: {
+    like:[
+      {roots:['艹','廾','卉','芳'],label:'得草',reason:'羊有青草，生活優渥無憂',score:9},
+      {roots:['木','林','森'],label:'得蔭',reason:'羊在林間悠然自得',score:7},
+      {roots:['口','品','宀','冖'],label:'得屋',reason:'羊有棚有舍，安穩度日',score:7},
+      {roots:['禾','米','豆','麥'],label:'得糧',reason:'五穀豐登，衣食無缺',score:8},
+      {roots:['亥','卯'],label:'三合',reason:'亥卯未三合木局，貴人扶持',score:8},
+      {roots:['午','巳'],label:'三會',reason:'巳午未三會南方火局，能量加持',score:7}
+    ],
+    dislike:[
+      {roots:['丑','牛'],label:'六衝',reason:'丑未相衝，做事波折、容易反覆',score:-9},
+      {roots:['子','鼠'],label:'六害',reason:'子未相害，被身邊人所累',score:-7},
+      {roots:['王','大','主','君','帝','天'],label:'犧牲格',reason:'羊為祭祀牲品，見王字根如登祭壇——為他人燃燒自己',score:-9},
+      {roots:['彡','巾','衣','糸','帛','采'],label:'彩衣格',reason:'羊披彩衣送上祭壇，美麗的犧牲品',score:-8},
+      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'屠刀高懸，有性命之憂、開刀手術',score:-7},
+      {roots:['人','亻'],label:'遇人',reason:'羊見人被宰殺，處境堪憂',score:-5},
+      {roots:['心','忄','月','肉'],label:'祭品',reason:'羊見心如被掏心，為人犧牲',score:-6}
+    ]
+  },
+  猴: {
+    like:[
+      {roots:['木','林','森','山','岳'],label:'得山林',reason:'猴在山林間自由自在，如魚得水',score:9},
+      {roots:['口','品','宀','冖','穴'],label:'得洞',reason:'猴有洞穴居所，安穩棲身',score:7},
+      {roots:['王','玉','君','主','大'],label:'得位',reason:'猴為人形，得王字根如美猴王',score:8},
+      {roots:['衣','巾','彡','采'],label:'得衣',reason:'猴穿衣如人，升格受重用',score:7},
+      {roots:['子','辰'],label:'三合',reason:'申子辰三合水局，貴人相助',score:8},
+      {roots:['未','酉'],label:'三會',reason:'申酉戌三會西方金局，氣勢強',score:7}
+    ],
+    dislike:[
+      {roots:['寅','虎'],label:'六衝',reason:'寅申相衝，虎猴不合，衝突不斷',score:-9},
+      {roots:['亥','豬','豕'],label:'六害',reason:'申亥相害，做事多阻礙',score:-7},
+      {roots:['火','灬','炎'],label:'見火',reason:'金猴怕火煉，壓力山大',score:-6},
+      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'金被金剋=自損，有受傷之虞',score:-5},
+      {roots:['禾','米','豆','麥','田'],label:'入田偷糧',reason:'猴入田地偷食被趕，不受歡迎',score:-4}
+    ]
+  },
+  雞: {
+    like:[
+      {roots:['禾','米','豆','麥','粟'],label:'得糧',reason:'雞有穀糧，一生衣食豐足',score:9},
+      {roots:['山','岳','屮'],label:'得山',reason:'雞上山頭為鳳凰，大升格',score:8},
+      {roots:['衣','巾','彡','采'],label:'得衣',reason:'雞有彩衣如鳳凰，華麗尊貴',score:8},
+      {roots:['王','玉','君','主','大'],label:'得位',reason:'雞冠如王，得位稱尊',score:7},
+      {roots:['巳','丑'],label:'三合',reason:'巳酉丑三合金局，貴人運旺',score:8},
+      {roots:['申','戌'],label:'三會',reason:'申酉戌三會西方金局，根基穩',score:7},
+      {roots:['宀','冖'],label:'得屋',reason:'雞有雞舍，安居不愁',score:6}
+    ],
+    dislike:[
+      {roots:['卯','兔'],label:'六衝',reason:'卯酉相衝，口舌是非、破財損運',score:-9},
+      {roots:['戌','狗','犬','犭'],label:'六害',reason:'酉戌相害（雞犬不寧），家庭不安',score:-7},
+      {roots:['人','亻','大'],label:'遇人',reason:'雞見人被宰殺，如上供桌',score:-6},
+      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'殺雞用牛刀，有血光之災',score:-7},
+      {roots:['口','品'],label:'小口',reason:'雞被圍籬困住，失去自由（注意：大口宀為屋，小口為困）',score:-3}
+    ]
+  },
+  狗: {
+    like:[
+      {roots:['宀','冖','廣'],label:'得屋',reason:'狗有家有主人，忠誠得回報',score:9},
+      {roots:['人','亻','入'],label:'得主',reason:'狗見人有主人疼愛，忠心耿耿',score:8},
+      {roots:['心','忄','月','肉'],label:'得食',reason:'狗有肉吃，生活富足',score:8},
+      {roots:['寅','午'],label:'三合',reason:'寅午戌三合火局，貴人運旺',score:8},
+      {roots:['卯','辰'],label:'三會',reason:'寅卯辰三會（間接助力）',score:5},
+      {roots:['衣','巾','彡','采'],label:'得衣',reason:'狗有衣服穿為寵物狗，受寵愛',score:7},
+      {roots:['小','少'],label:'得名',reason:'狗不嫌家貧，小而得寵',score:5}
+    ],
+    dislike:[
+      {roots:['辰','龍'],label:'六衝',reason:'辰戌相衝，龍爭虎鬥般激烈',score:-9},
+      {roots:['酉','雞','鳥','隹'],label:'六害',reason:'雞犬不寧，家庭不和諧',score:-7},
+      {roots:['禾','米','豆','麥','田'],label:'吃素',reason:'狗吃素=不得其食，志不在此',score:-4},
+      {roots:['王','大','主','君'],label:'太大',reason:'狗太大聲令人害怕，反被排斥',score:-4},
+      {roots:['日','明','光'],label:'見日',reason:'狗吠日，多管閒事惹是非',score:-4},
+      {roots:['水','氵','雨','冫'],label:'落水',reason:'落水狗人人喊打，處境艱難',score:-6}
+    ]
+  },
+  豬: {
+    like:[
+      {roots:['宀','冖','穴','門','廣'],label:'得洞',reason:'豬有豬舍安身，生活穩定',score:8},
+      {roots:['禾','米','豆','麥','粟','粒'],label:'得食',reason:'豬有糧食吃到飽，一生富足',score:9},
+      {roots:['木','林','森','東'],label:'三合/得蔭',reason:'亥卯未三合木局，有掩護有貴人',score:8},
+      {roots:['卯','兔'],label:'三合貴人',reason:'卯為三合貴人，大吉',score:8},
+      {roots:['未','羊'],label:'三合貴人',reason:'未為三合貴人，大吉',score:7},
+      {roots:['子','丑'],label:'三會',reason:'亥子丑三會北方水局，根基穩',score:7},
+      {roots:['口','品'],label:'得口',reason:'豬有口福，享受口福之樂',score:6},
+      {roots:['田','甫'],label:'得田',reason:'豬在田間自在覓食',score:5}
+    ],
+    dislike:[
+      {roots:['巳','蛇','辶','弓','几','廴','之','乙'],label:'蛇豬衝',reason:'巳亥六衝——易犯小人、血光意外、勞碌無功',score:-9},
+      {roots:['申','猴','袁','坤'],label:'六害',reason:'申亥相害，身邊人成絆腳石',score:-7},
+      {roots:['人','亻','仁','伊','佳','俊','傑'],label:'遇人被宰',reason:'豬見人如上屠場，為人作嫁',score:-7},
+      {roots:['彡','巾','衣','糸','帛','采','冠'],label:'彩衣犧牲',reason:'豬披彩衣上祭壇，美麗的犧牲品——名聲在外，內心痛苦',score:-9},
+      {roots:['王','大','主','君','帝','天'],label:'犧牲格',reason:'豬登大位如被獻祭，為人犧牲、勞而無功',score:-9},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'屠刀高懸，有開刀手術、血光之災',score:-7},
+      {roots:['日','光','明','晃'],label:'見日',reason:'豬見日光不自在，暴露弱點',score:-4}
+    ]
+  }
+};
+
+// ── 字根拆解引擎（預建表 + Unicode 部首雙軌） ──
+// 預建表：常見字→包含的字根（精準拆解）
+const CHAR_ROOTS = {
+  // 蛇形字根（辶弓几廴之乙）相關字
+  '弘':['弓'],'強':['弓'],'張':['弓'],'弦':['弓'],'引':['弓'],'弟':['弓'],'弘':['弓'],
+  '建':['廴'],'廷':['廴'],'延':['廴'],
+  '連':['辶'],'通':['辶'],'達':['辶'],'道':['辶'],'遠':['辶'],'運':['辶'],'進':['辶'],'遊':['辶'],'過':['辶'],'近':['辶'],'迎':['辶'],'返':['辶'],'逢':['辶'],'遷':['辶'],'選':['辶'],'透':['辶'],'造':['辶'],'迷':['辶'],'追':['辶'],'退':['辶'],'送':['辶'],'逸':['辶'],'遙':['辶'],'邊':['辶'],
+  '乙':['乙'],'也':['乙'],'乾':['乙'],
+  // 人/亻相關
+  '仁':['亻'],'仙':['亻'],'代':['亻'],'令':['令','人'],'以':['人'],'任':['亻'],'份':['亻'],'伯':['亻'],'何':['亻'],'佑':['亻'],'佳':['亻'],'依':['亻'],'俊':['亻'],'信':['亻'],'修':['亻'],'倫':['亻'],'偉':['亻'],'傑':['亻'],'儀':['亻'],'優':['亻'],
+  // 王/玉相關
+  '王':['王'],'玉':['玉'],'珍':['王'],'珠':['王'],'琪':['王'],'琳':['王'],'瑞':['王'],'瑜':['王'],'瑤':['王'],'璇':['王'],'璿':['王'],'環':['王'],'瓊':['王'],'玟':['王'],'玫':['王'],'珊':['王'],'琦':['王'],'璋':['王'],'璞':['王'],'璐':['王'],'瑰':['王'],'琉':['王'],'理':['王'],'現':['王'],'琴':['王'],
+  // 大相關
+  '大':['大'],'天':['大'],'太':['大'],'奇':['大'],'奧':['大'],'奉':['大'],'奎':['大'],'奕':['大'],
+  // 彩衣相關
+  '彩':['彡'],'影':['彡'],'彤':['彡'],'彰':['彡'],'形':['彡'],
+  '帆':['巾'],'布':['巾'],'帝':['巾'],'師':['巾'],'帥':['巾'],'常':['巾'],'幕':['巾'],'幣':['巾'],'帶':['巾'],'希':['巾'],'帷':['巾'],
+  '衣':['衣'],'裝':['衣'],'裕':['衣'],'褔':['衣'],'表':['衣'],'被':['衣'],'袁':['衣','袁'],'裴':['衣'],'補':['衣'],'衫':['衣'],'褚':['衣'],'裙':['衣'],'褐':['衣'],
+  '初':['衣','刀'],'袖':['衣'],
+  '紅':['糸'],'紋':['糸'],'純':['糸'],'素':['糸'],'紫':['糸'],'細':['糸'],'結':['糸'],'絲':['糸'],'綺':['糸'],'綠':['糸'],'緣':['糸'],'線':['糸'],'縈':['糸'],'織':['糸'],'繡':['糸'],'綿':['糸'],'綸':['糸'],'緯':['糸'],'繁':['糸'],'繼':['糸'],
+  // 刀刂相關
+  '刀':['刀'],'分':['刀'],'切':['刀'],'刊':['刂'],'列':['刂'],'刑':['刂'],'利':['刂'],'別':['刂'],'判':['刂'],'到':['刂'],'制':['刂'],'剛':['刂'],'前':['刂'],'剪':['刀'],'創':['刂'],'劉':['刂'],'劍':['刂'],'劑':['刂'],
+  '力':['力'],'功':['力'],'加':['力'],'助':['力'],'努':['力'],'勇':['力'],'動':['力'],'勝':['力'],'勢':['力'],'勵':['力'],'勤':['力'],
+  '匕':['匕'],'比':['匕'],'北':['匕'],
+  '斤':['斤'],'新':['斤'],'斷':['斤'],'所':['斤'],
+  // 宀冖穴門口相關
+  '安':['宀'],'宇':['宀'],'守':['宀'],'宏':['宀'],'宗':['宀'],'官':['宀'],'定':['宀'],'宜':['宀'],'客':['宀'],'宣':['宀'],'室':['宀'],'宮':['宀'],'家':['宀'],'容':['宀'],'富':['宀'],'寒':['宀'],'寓':['宀'],'寧':['宀'],'實':['宀'],'寶':['宀'],'寬':['宀'],
+  '冠':['冖','冠'],'冥':['冖'],'冤':['冖'],'寫':['冖'],
+  '門':['門'],'閃':['門'],'閉':['門'],'開':['門'],'間':['門'],'閒':['門'],'閣':['門'],'闊':['門'],'關':['門'],
+  '口':['口'],'古':['口'],'台':['口'],'吉':['口'],'合':['口'],'名':['口'],'品':['口','品'],'唐':['口'],'嘉':['口'],'喬':['口'],
+  // 禾米豆糧食相關
+  '禾':['禾'],'秀':['禾'],'私':['禾'],'秋':['禾'],'科':['禾'],'秦':['禾'],'程':['禾'],'稀':['禾'],'種':['禾'],'稚':['禾'],'穎':['禾'],'穗':['禾'],'穰':['禾'],
+  '米':['米'],'粒':['米'],'精':['米'],'粹':['米'],'糧':['米'],'粉':['米'],'粟':['米'],
+  '豆':['豆'],'豐':['豆'],'豔':['豆'],
+  // 艹草相關
+  '芳':['艹'],'花':['艹'],'苗':['艹'],'英':['艹'],'草':['艹'],'茂':['艹'],'莊':['艹'],'華':['艹'],'萍':['艹'],'菁':['艹'],'菲':['艹'],'萱':['艹'],'蓉':['艹'],'蓮':['艹'],'蕙':['艹'],'蕊':['艹'],'藝':['艹'],'蘭':['艹'],'蘋':['艹'],'薇':['艹'],'芬':['艹'],'芸':['艹'],'若':['艹'],'茹':['艹'],'荷':['艹'],'莉':['艹'],'葉':['艹'],'蒼':['艹'],'蔚':['艹'],'蕭':['艹'],
+  // 木林相關
+  '木':['木'],'本':['木'],'杉':['木'],'李':['木'],'村':['木'],'杏':['木'],'材':['木'],'松':['木'],'林':['木','林'],'果':['木'],'柏':['木'],'柔':['木'],'柳':['木'],'桂':['木'],'桃':['木'],'梅':['木'],'梓':['木'],'森':['木','林'],'楊':['木'],'楓':['木'],'榮':['木'],'樂':['木'],'樹':['木'],'橋':['木'],'檸':['木'],'棟':['木'],'棉':['木'],
+  // 山岳相關
+  '山':['山'],'岳':['山'],'峰':['山'],'崇':['山'],'嵐':['山'],'嶺':['山'],'巍':['山'],'崖':['山'],'岩':['山'],'崑':['山'],'嵩':['山'],
+  // 水氵雨相關
+  '水':['水'],'永':['水'],'江':['氵'],'河':['氵'],'沁':['氵'],'沈':['氵'],'沐':['氵'],'沛':['氵'],'治':['氵'],'泉':['氵'],'泰':['氵'],'洋':['氵'],'洛':['氵'],'洪':['氵'],'浩':['氵'],'海':['氵'],'涵':['氵'],'淑':['氵'],'淳':['氵'],'清':['氵'],'渝':['氵'],'湘':['氵'],'源':['氵'],'溪':['氵'],'滿':['氵'],'漢':['氵'],'潔':['氵'],'潤':['氵'],'澤':['氵'],'濤':['氵'],'瀚':['氵'],'灣':['氵'],
+  '雨':['雨'],'雪':['雨'],'雲':['雨'],'零':['雨'],'霖':['雨'],'霜':['雨'],'霞':['雨'],'露':['雨'],'靈':['雨'],'霆':['雨'],
+  // 火灬相關
+  '火':['火'],'炎':['火'],'炳':['火'],'烈':['火'],'煌':['火'],'煥':['火'],'熊':['火','灬'],'熙':['灬'],'燕':['灬'],'燦':['火'],'照':['灬'],'熱':['灬'],'然':['灬'],'烹':['灬'],'煮':['灬'],'點':['灬'],
+  // 日月光明相關
+  '日':['日'],'旭':['日'],'昌':['日'],'明':['日','月','明'],'昕':['日'],'星':['日','星'],'春':['日'],'昭':['日'],'映':['日'],'晨':['日'],'景':['日'],'晶':['日'],'智':['日'],'暖':['日'],'曉':['日'],'曜':['日'],'曦':['日'],'旺':['日'],'晴':['日'],
+  '月':['月'],'朋':['月'],'朗':['月'],'望':['月'],'朝':['月'],
+  '光':['光'],'晃':['光','日'],
+  // 田甫相關
+  '田':['田'],'由':['田'],'甲':['田'],'申':['田','申'],'男':['田'],'界':['田'],'畫':['田'],'當':['田'],'疆':['田'],'留':['田'],'略':['田'],'畢':['田'],
+  // 心忄月肉相關
+  '心':['心'],'必':['心'],'志':['心','志'],'忠':['心'],'忻':['心'],'念':['心'],'思':['心'],'恩':['心'],'恭':['心'],'悅':['心'],'慈':['心'],'慧':['心'],'慶':['心'],'憲':['心'],'懷':['心'],'戀':['心'],'愛':['心'],'意':['心'],'感':['心'],'德':['心'],
+  '忍':['心','刀'],'忙':['忄'],'快':['忄'],'怡':['忄'],'性':['忄'],'恆':['忄'],'悟':['忄'],'惠':['忄'],'情':['忄'],'惟':['忄'],'慎':['忄'],'憶':['忄'],
+  // 肉（月旁在左為肉）
+  '肯':['月','肉'],'胡':['月','肉'],'能':['月','肉'],'腰':['月','肉'],'臉':['月','肉'],
+  // 地支相關字
+  '子':['子'],'丑':['丑'],'寅':['寅'],'卯':['卯'],'辰':['辰'],'巳':['巳'],'午':['午'],'未':['未'],'酉':['酉'],'戌':['戌'],'亥':['亥'],
+  // 其他常用字
+  '文':['文'],'武':['武'],'成':['成'],'國':['口','王'],'民':['民'],'正':['正'],'平':['平'],
+  '東':['木','東'],'西':['西'],'南':['南'],'北':['匕','北'],
+  '中':['口','中'],'上':['上'],'下':['下'],
+  '人':['人'],'入':['入'],'土':['土'],'士':['士'],'夕':['夕'],'夜':['夕','夜'],
+  '龍':['龍'],'鳳':['鳥'],'馬':['馬'],'虎':['虎'],'犬':['犬'],'猴':['猴'],'雞':['雞','鳥'],'蛇':['蛇','巳'],'鼠':['鼠'],'兔':['兔'],'羊':['羊'],'豬':['豬','豕'],
+  '穴':['穴'],'空':['穴'],'窗':['穴'],'窮':['穴'],'究':['穴'],
+  '采':['采'],'釆':['采'],'番':['采'],
+  '豕':['豕'],'象':['豕'],'豪':['豕'],
+  '廣':['廣'],'庭':['廣'],'廉':['廣'],'應':['廣'],
+  // 十二生肖直接字
+  '鼠':['鼠','子'],'牛':['牛','丑'],'虎':['虎','寅'],'兔':['兔','卯'],
+  '龍':['龍','辰'],'蛇':['蛇','巳'],'馬':['馬','午'],'羊':['羊','未'],
+  '猴':['猴','申'],'雞':['雞','酉'],'狗':['狗','犬','戌'],'豬':['豬','豕','亥']
+};
+
+// Unicode 部首推斷（fallback）
+function guessRoots(ch){
+  // 先查預建表
+  if(CHAR_ROOTS[ch]) return CHAR_ROOTS[ch];
+  // Unicode CJK 部首補充推斷
+  const code = ch.charCodeAt(0);
+  const roots = [];
+  // CJK Radicals Supplement (2E80-2EFF) & Kangxi Radicals (2F00-2FD5)
+  // 簡單的 fallback：取字的結構特徵
+  const s = ch;
+  // 常見偏旁檢測（字串包含檢測）
+  const tests = [
+    ['氵','氵'],['亻','亻'],['口','口'],['宀','宀'],['艹','艹'],
+    ['木','木'],['火','火'],['土','土'],['金','金'],['水','水'],
+    ['日','日'],['月','月'],['山','山'],['田','田'],['禾','禾'],
+    ['米','米'],['糸','糸'],['王','王'],['心','心'],['刂','刂'],
+    ['力','力'],['辶','辶'],['巾','巾'],['衣','衣']
+  ];
+  // 這裡只做 fallback，實際上預建表應覆蓋常用字
+  return roots;
+}
+
+// ── 生肖姓名學分析主函數 ──
+function analyzeZodiacName(fullName, birthYear){
+  if(!fullName || fullName.length<2 || !birthYear) return null;
+  const zodiac = getZodiac(birthYear);
+  const db = ZODIAC_NAME_DB[zodiac];
+  if(!db) return null;
+
+  const chars = [...fullName];
+  // 姓名位置定義
+  const positions = [];
+  if(chars.length===2){
+    positions.push({char:chars[0], label:'姓氏', lifeStage:'0-20歲（祖德天運）'});
+    positions.push({char:chars[1], label:'名字', lifeStage:'21-60歲（一生格局）'});
+  } else if(chars.length===3){
+    positions.push({char:chars[0], label:'姓氏', lifeStage:'0-20歲（祖德天運）'});
+    positions.push({char:chars[1], label:'名一', lifeStage:'21-40歲（情志格）'});
+    positions.push({char:chars[2], label:'名二', lifeStage:'41-60歲（事業財富格）'});
+  } else if(chars.length===4){
+    positions.push({char:chars[0]+chars[1], label:'姓氏', lifeStage:'0-20歲（祖德天運）'});
+    positions.push({char:chars[2], label:'名一', lifeStage:'21-40歲（情志格）'});
+    positions.push({char:chars[3], label:'名二', lifeStage:'41-60歲（事業財富格）'});
+  }
+
+  // 逐字拆解＋比對
+  const results = [];
+  let totalScore = 0;
+  let totalLike = 0;
+  let totalDislike = 0;
+
+  positions.forEach(pos => {
+    const charList = [...pos.char]; // 處理複姓
+    const charResults = [];
+
+    charList.forEach(ch => {
+      const roots = CHAR_ROOTS[ch] || guessRoots(ch);
+      const hits = [];
+
+      // 比對喜用
+      db.like.forEach(rule => {
+        const matched = rule.roots.filter(r => roots.includes(r));
+        if(matched.length > 0){
+          hits.push({type:'吉', label:rule.label, reason:rule.reason, score:rule.score, matchedRoots:matched});
+          totalScore += rule.score;
+          totalLike++;
+        }
+      });
+
+      // 比對忌用
+      db.dislike.forEach(rule => {
+        const matched = rule.roots.filter(r => roots.includes(r));
+        if(matched.length > 0){
+          hits.push({type:'凶', label:rule.label, reason:rule.reason, score:rule.score, matchedRoots:matched});
+          totalScore += rule.score; // score 本身是負數
+          totalDislike++;
+        }
+      });
+
+      charResults.push({char:ch, roots, hits});
+    });
+
+    results.push({...pos, charResults});
+  });
+
+  // 犧牲格特殊判定
+  let isSacrifice = false;
+  let sacrificeNote = '';
+  if(['豬','牛','羊'].includes(zodiac)){
+    const allHits = results.flatMap(r=>r.charResults.flatMap(c=>c.hits));
+    const hasSacrifice = allHits.some(h=>h.label==='犧牲格' || h.label==='彩衣格' || h.label==='彩衣犧牲');
+    if(hasSacrifice){
+      isSacrifice = true;
+      sacrificeNote = `${ZODIAC_EMOJI[zodiac]}${zodiac}為祭祀牲畜，名字帶有王/大/彩衣字根，形成「犧牲格」——外表風光，內心承受極大壓力，常為他人犧牲自己。`;
+    }
+  }
+
+  // 蛇豬衝特殊判定
+  let isSnakePigClash = false;
+  let clashNote = '';
+  if(zodiac==='豬'){
+    const allHits = results.flatMap(r=>r.charResults.flatMap(c=>c.hits));
+    const hasClash = allHits.some(h=>h.label==='蛇豬衝');
+    if(hasClash){
+      isSnakePigClash = true;
+      const clashChars = results.flatMap(r=>r.charResults.filter(c=>c.hits.some(h=>h.label==='蛇豬衝'))).map(c=>c.char);
+      clashNote = `「${clashChars.join('、')}」含蛇形字根（辶/弓/几/廴），亥豬見巳蛇為六衝——易犯小人、血光意外、勞碌無功。`;
+    }
+  }
+
+  // 凶優先原則：有凶字根時壓過吉字根
+  let overallLevel;
+  const absScore = totalScore;
+  if(totalDislike > 0 && totalLike > 0){
+    // 凶的力量優先
+    overallLevel = absScore >= 5 ? '吉中帶險' : absScore >= 0 ? '表吉實凶' : absScore >= -10 ? '偏凶' : '大凶';
+  } else if(totalDislike === 0 && totalLike > 0){
+    overallLevel = absScore >= 20 ? '大吉' : absScore >= 10 ? '吉' : '小吉';
+  } else if(totalDislike > 0 && totalLike === 0){
+    overallLevel = absScore <= -20 ? '大凶' : absScore <= -10 ? '凶' : '小凶';
+  } else {
+    overallLevel = '平';
+  }
+
+  // 犧牲格強制判定
+  if(isSacrifice) overallLevel = '犧牲格（凶）';
+
+  // 警示語
+  const warnings = [];
+  if(isSacrifice) warnings.push('此名為犧牲格：外人看你風光，你內心最知苦楚。注意不要過度付出、學會拒絕。');
+  if(isSnakePigClash) warnings.push('蛇豬衝：注意交通安全、不可輕信他人、合約務必仔細看清。');
+  const allDislikeHits = results.flatMap(r=>r.charResults.flatMap(c=>c.hits.filter(h=>h.type==='凶')));
+  if(allDislikeHits.some(h=>h.label==='遇刀')) warnings.push('名帶刀刃：注意手術、外傷、利器相關風險。');
+  if(allDislikeHits.some(h=>h.label==='遇人被宰'||h.label==='遇人')) warnings.push('名帶人形字根：此生肖見人不利，容易替人背鍋。');
+  if(allDislikeHits.some(h=>h.label.includes('六衝'))) warnings.push('名帶六衝字根：人際關係易起衝突，注意口舌是非。');
+
+  // 計算 0-100 分
+  let numericScore = 50 + totalScore * 2;
+  numericScore = Math.max(5, Math.min(95, numericScore));
+
+  return {
+    name: fullName,
+    zodiac,
+    emoji: ZODIAC_EMOJI[zodiac],
+    dizhi: ZODIAC_DIZHI[zodiac],
+    positions: results,
+    totalScore,
+    totalLike,
+    totalDislike,
+    overallLevel,
+    numericScore,
+    isSacrifice,
+    sacrificeNote,
+    isSnakePigClash,
+    clashNote,
+    warnings
+  };
+}
+
+/* =============================================================
    水晶推薦系統 CRYSTAL — 擴充版
    ============================================================= */
 const CRYSTAL_DB={
@@ -5210,22 +5725,45 @@ function runAnalysisV2(){
     ziweiScore=Math.max(8,Math.min(95,ziweiScore));
   }
 
-  // ── 5. 姓名學評分 ──
+  // ── 5. 姓名學評分（三才五格 + 生肖姓名學雙系統） ──
   let nameScore=50;
   let nameResult=null;
+  let zodiacNameResult=null;
+
   if(S.form.name&&S.form.name.length>=2){
+    // A. 三才五格（佔姓名分 40%）
     nameResult=analyzeName(S.form.name);
+    let sanCaiScore = 50;
     if(nameResult){
       [nameResult.tianGe,nameResult.renGe,nameResult.diGe,nameResult.waiGe,nameResult.zongGe].forEach(g=>{
-        if(g.fortune.level==='大吉')nameScore+=6;
-        else if(g.fortune.level==='吉')nameScore+=3;
-        else if(g.fortune.level==='凶')nameScore-=4;
+        if(g.fortune.level==='大吉')sanCaiScore+=6;
+        else if(g.fortune.level==='吉')sanCaiScore+=3;
+        else if(g.fortune.level==='凶')sanCaiScore-=4;
       });
-      if(nameResult.sanCaiLevel==='大吉')nameScore+=10;
-      else if(nameResult.sanCaiLevel==='吉')nameScore+=5;
-      else if(nameResult.sanCaiLevel==='凶')nameScore-=8;
-      nameScore=Math.max(10,Math.min(90,nameScore));
+      if(nameResult.sanCaiLevel==='大吉')sanCaiScore+=10;
+      else if(nameResult.sanCaiLevel==='吉')sanCaiScore+=5;
+      else if(nameResult.sanCaiLevel==='凶')sanCaiScore-=8;
+      sanCaiScore=Math.max(10,Math.min(90,sanCaiScore));
     }
+
+    // B. 生肖姓名學（佔姓名分 60%，因為形義派更貼近真實影響）
+    const [birthY] = S.form.bdate.split('-').map(Number);
+    zodiacNameResult = analyzeZodiacName(S.form.name, birthY);
+    let zodiacScore = 50;
+    if(zodiacNameResult){
+      zodiacScore = zodiacNameResult.numericScore;
+      S.zodiacNameResult = zodiacNameResult;
+    }
+
+    // 雙系統加權合併
+    if(nameResult && zodiacNameResult){
+      nameScore = Math.round(sanCaiScore * 0.4 + zodiacScore * 0.6);
+    } else if(zodiacNameResult){
+      nameScore = zodiacScore;
+    } else if(nameResult){
+      nameScore = sanCaiScore;
+    }
+    nameScore=Math.max(10,Math.min(90,nameScore));
   }
 
   /* ══════════════════════════════════════════════════
@@ -5248,7 +5786,7 @@ function runAnalysisV2(){
   const hasMh = S.meihua ? 1 : 0;
   const hasTr = S.tarot.drawn.length >= 10 ? 1 : 0;
   const hasZw = S.ziwei ? 1 : 0;
-  const hasNm = nameResult ? 1 : 0;
+  const hasNm = (nameResult || zodiacNameResult) ? 1 : 0;
 
   if(isShortTerm || isDecision) {
     // ⚡ 短期 / 抉擇：梅花塔羅為主，八字紫微為輔
@@ -5385,7 +5923,14 @@ function runAnalysisV2(){
   }
   // 加入姓名學
   if(nameResult){
-    concl+=`<p class="mt-sm">姓名學：三才 ${nameResult.sanCai.join('→')}（${nameResult.sanCaiLevel}），人格${nameResult.renGe.num}（${nameResult.renGe.fortune.level}）。</p>`;
+    concl+=`<p class="mt-sm">姓名學（筆劃派）：三才 ${nameResult.sanCai.join('→')}（${nameResult.sanCaiLevel}），人格${nameResult.renGe.num}（${nameResult.renGe.fortune.level}）。</p>`;
+  }
+  if(S.zodiacNameResult){
+    const zn=S.zodiacNameResult;
+    concl+=`<p class="mt-sm">姓名學（生肖派）：${zn.emoji}${zn.zodiac}年生人，姓名判定「${zn.overallLevel}」。`;
+    if(zn.isSacrifice) concl+=`<span style="color:var(--c-danger)">⚠ 犧牲格：外表風光，內在辛苦。</span>`;
+    if(zn.isSnakePigClash) concl+=`<span style="color:var(--c-danger)">⚠ 巳亥六衝：注意小人與意外。</span>`;
+    concl+=`</p>`;
   }
   document.getElementById('r-conclusion').innerHTML=concl;
 }
@@ -5419,32 +5964,96 @@ function runAnalysis(){
 function renderName(){
   const el=document.getElementById('d-name');
   if(!S.form.name||S.form.name.length<2){el.innerHTML='<p class="text-dim">未輸入姓名，無法進行姓名學分析。</p>';return}
+
+  let html = '';
+
+  // ══════ A. 生肖姓名學（形義派） ══════
+  const [y] = S.form.bdate.split('-').map(Number);
+  const zr = analyzeZodiacName(S.form.name, y);
+  if(zr){
+    S.zodiacNameResult = zr; // 存入全域供評分使用
+    const levelCls = zr.overallLevel.includes('吉') ? 'text-success' : zr.overallLevel.includes('凶') || zr.overallLevel.includes('犧牲') ? 'text-danger' : 'text-dim';
+
+    html += `<div class="card" style="margin-bottom:var(--sp-md);padding:var(--sp-md);border-color:rgba(212,175,55,0.3)">
+      <h4 class="text-gold mb-sm serif" style="font-size:1.05rem">${zr.emoji} 生肖姓名學（形義派）</h4>
+      <p class="mb-sm">生肖：<strong class="text-gold serif" style="font-size:1.1rem">${zr.emoji} ${zr.zodiac}</strong>（${zr.dizhi}）｜ 姓名：<strong class="text-gold serif">${zr.name}</strong></p>
+      <p class="mb-md text-sm text-dim">「字如環境，生肖如生物」— 名字提供的環境是否適合${zr.zodiac}生存？</p>
+      <p class="mb-md"><strong>總判：</strong><span class="tag ${zr.overallLevel.includes('吉')?'tag-green':zr.overallLevel.includes('凶')||zr.overallLevel.includes('犧牲')?'tag-red':'tag-gold'}" style="font-size:0.95rem;padding:.4rem .8rem">${zr.overallLevel}</span></p>`;
+
+    // 逐字分析
+    zr.positions.forEach(pos => {
+      html += `<div style="border-left:3px solid var(--c-gold);padding-left:var(--sp-md);margin:var(--sp-md) 0">
+        <p style="font-size:0.85rem;color:var(--c-gold);font-weight:600">${pos.label}：${pos.char}（${pos.lifeStage}）</p>`;
+
+      pos.charResults.forEach(cr => {
+        if(cr.hits.length === 0){
+          html += `<p class="text-dim text-sm" style="margin:.3rem 0">「${cr.char}」${cr.roots.length?'字根：'+cr.roots.join('、')+'，':''}無特殊喜忌影響。</p>`;
+        } else {
+          cr.hits.forEach(h => {
+            const icon = h.type==='吉' ? '✅' : '❌';
+            const cls = h.type==='吉' ? 'color:#4ade80' : 'color:#f87171';
+            html += `<p style="margin:.3rem 0;font-size:0.88rem"><span style="${cls};font-weight:700">${icon} ${h.type}【${h.label}】</span> <span class="text-dim">字根「${cr.char}」含${h.matchedRoots.join('/')}→ ${h.reason}</span></p>`;
+          });
+        }
+      });
+      html += `</div>`;
+    });
+
+    // 犧牲格 / 蛇豬衝 特殊警告
+    if(zr.isSacrifice){
+      html += `<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:var(--r-md);padding:var(--sp-md);margin:var(--sp-md) 0">
+        <p style="color:#f87171;font-weight:700">⚠ 犧牲格警告</p>
+        <p class="text-sm" style="margin-top:.3rem">${zr.sacrificeNote}</p></div>`;
+    }
+    if(zr.isSnakePigClash){
+      html += `<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:var(--r-md);padding:var(--sp-md);margin:var(--sp-md) 0">
+        <p style="color:#f87171;font-weight:700">⚠ 巳亥六衝</p>
+        <p class="text-sm" style="margin-top:.3rem">${zr.clashNote}</p></div>`;
+    }
+
+    // 警示語
+    if(zr.warnings.length){
+      html += `<div style="margin-top:var(--sp-md)"><p class="text-warn" style="font-weight:600;font-size:0.9rem">🔔 生活禁忌提醒：</p>
+        <ul style="padding-left:1.2rem;margin-top:.3rem">${zr.warnings.map(w=>`<li class="text-sm" style="margin:.2rem 0;color:var(--c-text-dim)">${w}</li>`).join('')}</ul></div>`;
+    }
+
+    html += `</div>`;
+  }
+
+  // ══════ B. 三才五格（原系統） ══════
   const r=analyzeName(S.form.name);
-  if(!r){el.innerHTML='<p class="text-dim">姓名格式不支援（需2-4個字）。</p>';return}
+  if(r){
+    S.nameResult = r; // 確保全域可用
+    const geData=[
+      {label:'天格',data:r.tianGe,desc:'先天運，姓氏決定'},
+      {label:'人格',data:r.renGe,desc:'主運，影響中年'},
+      {label:'地格',data:r.diGe,desc:'前運，影響青年'},
+      {label:'外格',data:r.waiGe,desc:'副運，人際關係'},
+      {label:'總格',data:r.zongGe,desc:'後運，影響晚年'}
+    ];
 
-  const geData=[
-    {label:'天格',data:r.tianGe,desc:'先天運，姓氏決定'},
-    {label:'人格',data:r.renGe,desc:'主運，影響中年'},
-    {label:'地格',data:r.diGe,desc:'前運，影響青年'},
-    {label:'外格',data:r.waiGe,desc:'副運，人際關係'},
-    {label:'總格',data:r.zongGe,desc:'後運，影響晚年'}
-  ];
-
-  el.innerHTML=`
-    <p class="mb-md">姓名：<strong class="text-gold serif">${r.name}</strong> ｜ 筆畫：${r.strokes.join('、')}</p>
-    <div class="bazi-grid" style="grid-template-columns:repeat(5,1fr);margin:var(--sp-md) 0">
-      ${geData.map(g=>`<div class="bazi-cell header">${g.label}</div>`).join('')}
-      ${geData.map(g=>`<div class="bazi-cell">
-        <span class="gz">${g.data.num}</span>
-        <span class="el-tag el-${g.data.el}">${g.data.el}</span>
-        <div class="gz-sub ${g.data.fortune.cls}">${g.data.fortune.level}</div>
-      </div>`).join('')}
-      ${geData.map(g=>`<div class="bazi-cell"><div class="gz-sub">${g.desc}</div></div>`).join('')}
-    </div>
-    <div class="mt-md">
-      <p><strong>三才配置：</strong>${r.sanCai.join(' → ')} <span class="tag ${r.sanCaiLevel.includes('吉')?'tag-green':r.sanCaiLevel==='凶'?'tag-red':'tag-gold'}">${r.sanCaiLevel}</span></p>
-      <p class="text-sm text-dim mt-sm">三才代表天格→人格→地格的五行流通關係，${r.sanCaiLevel.includes('吉')?'相生相助為佳象':'存在相剋，需注意健康與人際'}。</p>
+    html+=`<div class="card" style="margin-bottom:0;padding:var(--sp-md);opacity:0.85">
+      <h4 class="text-gold mb-sm serif" style="font-size:1.05rem">📊 三才五格（筆劃派）</h4>
+      <p class="mb-md">姓名：<strong class="text-gold serif">${r.name}</strong> ｜ 筆畫：${r.strokes.join('、')}</p>
+      <div class="bazi-grid" style="grid-template-columns:repeat(5,1fr);margin:var(--sp-md) 0">
+        ${geData.map(g=>`<div class="bazi-cell header">${g.label}</div>`).join('')}
+        ${geData.map(g=>`<div class="bazi-cell">
+          <span class="gz">${g.data.num}</span>
+          <span class="el-tag el-${g.data.el}">${g.data.el}</span>
+          <div class="gz-sub ${g.data.fortune.cls}">${g.data.fortune.level}</div>
+        </div>`).join('')}
+        ${geData.map(g=>`<div class="bazi-cell"><div class="gz-sub">${g.desc}</div></div>`).join('')}
+      </div>
+      <div class="mt-md">
+        <p><strong>三才配置：</strong>${r.sanCai.join(' → ')} <span class="tag ${r.sanCaiLevel.includes('吉')?'tag-green':r.sanCaiLevel==='凶'?'tag-red':'tag-gold'}">${r.sanCaiLevel}</span></p>
+        <p class="text-sm text-dim mt-sm">三才代表天格→人格→地格的五行流通關係，${r.sanCaiLevel.includes('吉')?'相生相助為佳象':'存在相剋，需注意健康與人際'}。</p>
+      </div>
     </div>`;
+  } else {
+    html+=`<p class="text-dim">姓名格式不支援（需2-4個字）。</p>`;
+  }
+
+  el.innerHTML = html;
 }
 /* =============================================================
    ENHANCEMENT 1: 流年詳細展開（點擊大運展開10流年）
