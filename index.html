@@ -8938,19 +8938,18 @@ showMH = function(r){
    ENHANCEMENT 9: 列印 / 分享
    ============================================================= */
 function printResult(){
-  window.print();
+  try{ window.print(); }catch(e){ alert('列印功能需要在瀏覽器中開啟此頁面才能使用'); }
 }
 
 function shareResult(){
   const prob=document.getElementById('r-vprob').textContent;
   const label=document.getElementById('r-vlabel').textContent;
-  const text=`靜月之光占卜結果：${label} ${prob}\n問題：${S.form.question}\n\n（更多詳情請使用靜月之光能量占卜儀）`;
+  const text=`靜月之光占卜結果：${label} ${prob}\n問題：${S.form.question}\n\n免費測你的運勢 👉 ${SITE_URL}`;
   if(navigator.share){
-    navigator.share({title:'靜月之光占卜結果',text}).catch(()=>{});
+    navigator.share({title:'靜月之光占卜結果',text,url:SITE_URL}).catch(()=>{});
   }else{
     navigator.clipboard.writeText(text).then(()=>alert('結果已複製到剪貼簿！')).catch(()=>{});
   }
-  // Track share achievement
   if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
 }
 /* =============================================================
@@ -9055,6 +9054,8 @@ document.addEventListener('keydown',function(e){
    FEATURE 1: 商品化水晶推薦（含賣場連結 + 商品類別）
    ============================================================= */
 // 產品類型對應的 SVG 圖示（手鍊/手排/項鍊/雕刻件）
+const SITE_URL = 'https://jingyue-blue.netlify.app';
+const catIcon = {手鏈:'📿', 手排:'⌚', 項鍊:'🔗', 雕刻件:'🗿', 吊墜:'🏷️', 裸石:'💍', 客製:'✨'};
 function getProductSVG(cat, name){
   // 根據產品名稱判斷顏色
   const colorMap = [
@@ -9167,8 +9168,6 @@ function renderProductCrystal(bazi,type){
   const special=TYPE_PRODUCTS[type]||[];
   const all=[...special,...base];
   const display=all.slice(0,4);
-
-  const catIcon={手鏈:'⌚',吊墜:'📿',裸石:'💍',客製:'✨'};
 
   document.getElementById('r-crystal').innerHTML=`
     <div class="crystal-rec-header">
@@ -9320,7 +9319,7 @@ function generateResultCard(){
   ctx.font='14px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.7)';
   ctx.fillText('靜月之光能量占卜儀',W/2,yq+55);
   ctx.font='12px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.5)';
-  ctx.fillText(window.location.href.split('?')[0],W/2,yq+78);
+  ctx.fillText(SITE_URL,W/2,yq+78);
 
   // Footer
   ctx.font='12px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.35)';
@@ -9353,19 +9352,24 @@ function wrapText(ctx,text,x,y,maxW,lineH){
 }
 
 function saveResultCard(){
-  const canvas=generateResultCard();
-  canvas.toBlob(function(blob){
-    if(!blob)return;
-    // Try native share first (mobile)
-    if(navigator.share&&navigator.canShare){
-      const file=new File([blob],'靜月占卜結果.png',{type:'image/png'});
-      if(navigator.canShare({files:[file]})){
-        navigator.share({title:'我的靜月占卜結果',text:'免費測你的命理結果！',files:[file]}).catch(()=>downloadBlob(blob));
-        return;
+  try{
+    const canvas=generateResultCard();
+    canvas.toBlob(function(blob){
+      if(!blob){alert('圖片生成失敗，請再試一次');return;}
+      // Try native share first (mobile)
+      if(navigator.share&&navigator.canShare){
+        const file=new File([blob],'靜月占卜結果.png',{type:'image/png'});
+        if(navigator.canShare({files:[file]})){
+          navigator.share({title:'我的靜月占卜結果',text:'靜月之光幫我配了專屬能量水晶 ✨ 免費測你的運勢 👉 '+SITE_URL,files:[file]}).catch(()=>downloadBlob(blob));
+          return;
+        }
       }
-    }
-    downloadBlob(blob);
-  },'image/png');
+      downloadBlob(blob);
+    },'image/png');
+  }catch(e){
+    console.error('存圖錯誤:',e);
+    alert('存圖失敗：'+e.message+'\n請確認已完成占卜分析');
+  }
 }
 
 function downloadBlob(blob){
@@ -9382,8 +9386,8 @@ let hasShared=false;
 
 function shareToUnlock(){
   /* 這個函數會被下方的 patch 覆蓋，保留作 fallback */
-  const url=window.location.href.split('?')[0];
-  const text='我剛用「靜月之光」測了命理結果，超準！免費測你的 👉 ';
+  const url=SITE_URL;
+  const text='靜月之光幫我配了專屬能量水晶，分析超細 ✨ 免費測你的運勢 👉 ';
   if(!S.bazi){alert('請先完成占卜分析再分享哦！');return}
   if(navigator.share){
     navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
@@ -9666,7 +9670,6 @@ const _origRenderProductCrystal = typeof renderProductCrystal === 'function' ? r
 renderProductCrystal = function(bazi, type){
   const need = bazi.fav[0];
   const products = smartRecommend(bazi, type, 6);
-  const catIcon = {手鏈:'📿', 手排:'⌚', 項鍊:'🔗', 雕刻件:'🗿', 吊墜:'🏷️', 裸石:'💍', 客製:'✨'};
 
   document.getElementById('r-crystal').innerHTML = `
     <div class="crystal-rec-header">
@@ -9821,8 +9824,8 @@ function copyDiscountCode(){
 const _origShareToUnlock = shareToUnlock;
 let _shareAttempts = 0;
 shareToUnlock = function(){
-  const url = window.location.href.split('?')[0];
-  const text = '我剛用「靜月之光」測了命理結果，超準！免費測你的 👉 ';
+  const url = SITE_URL;
+  const text = '靜月之光幫我配了專屬能量水晶，分析超細 ✨ 免費測你的運勢 👉 ';
   
   /* 防護：必須完成占卜才能分享（防機器人直接觸發） */
   if(!S.bazi){
@@ -10002,8 +10005,8 @@ function addReminder7Days(){
     'DTSTART:' + fmt(remind),
     'DTEND:' + fmt(new Date(remind.getTime()+30*60*1000)),
     'SUMMARY:⏰ 靜月之光：該回來測一下運勢了！',
-    'DESCRIPTION:上次測的結果已經過了7天，運勢可能有變化。\\n免費再測一次：' + window.location.href.split('?')[0],
-    'URL:' + window.location.href.split('?')[0],
+    'DESCRIPTION:上次測的結果已經過了7天，運勢可能有變化。\\n免費再測一次：' + SITE_URL,
+    'URL:' + SITE_URL,
     'TRANSP:TRANSPARENT',
     'BEGIN:VALARM',
     'TRIGGER:-PT10M',
@@ -10671,7 +10674,7 @@ function showQuizResult(){
 
 function shareQuizResult(crystal, traits){
   const text = `我的命定水晶是「${crystal}」！特質：${traits}。你的呢？快來測 👉 `;
-  const url = window.location.href.split('?')[0];
+  const url = SITE_URL;
   if(navigator.share){
     navigator.share({title:'我的命定水晶',text:text,url:url}).catch(()=>{});
   } else {
@@ -11287,7 +11290,7 @@ function showZodiacResult(a, b){
 
 function shareZodiacMatch(a, b, score){
   const text = `${a} ❤️ ${b} 配對指數 ${score}%！你跟誰配？快來測 👉 `;
-  const url = window.location.href.split('?')[0];
+  const url = SITE_URL;
   if(navigator.share) navigator.share({title:'生肖配對',text,url}).catch(()=>{});
   else { navigator.clipboard.writeText(text+url).then(()=>alert('已複製！')); }
 }
