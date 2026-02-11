@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -677,6 +677,15 @@ body::before{
   border-color:rgba(212,175,55,0.2)!important;
 }
 .product-icon{font-size:2.5rem!important}
+.product-img{
+  width:80px;height:80px;border-radius:var(--r-md);
+  object-fit:cover;flex:0 0 auto;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  border:1px solid rgba(212,175,55,0.15);
+  background:rgba(40,20,20,0.5);
+}
+/* ── 水晶造型圖系統（SVG inline） ── */
+.cv-wrap{flex:0 0 auto;width:80px;height:76px;display:flex;align-items:center;justify-content:center}
 .product-price{
   font-size:1.15rem!important;
   background:linear-gradient(135deg,var(--c-gold),var(--c-gold-light));
@@ -2994,6 +3003,8 @@ function parseQuestionIntent(question, type) {
     isAmount: false,      // 多少/幾個
     isDirection: false,   // 方向/卻向/哪裡
     isShould: false,      // 該不該/要不要
+    isMeetNew: false,     // 遇到/找到新對象、新工作、新機會
+    isQuality: false,     // 關於品質/真假/好壞（真正愛我、真心、靠譜）
     subject: '',          // 問題主題
     optionA: '',          // 選項A
     optionB: '',          // 選項B
@@ -3030,6 +3041,14 @@ function parseQuestionIntent(question, type) {
 
   // 方向題
   if(/哪裡|何處|卻哪|方向|地點|城市|國家/.test(q)) result.isDirection = true;
+
+  // 遇到/找到新事物（不是問已有對象，而是問「能不能遇到」）
+  if(/遇到|找到|碰到|認識到|等到|出現|降臨|來到/.test(q) && /[人對象伴侶工作機會]/.test(q)) result.isMeetNew = true;
+  // 「遇到真正愛我的人」「找到對的人」也算
+  if(/遇到.*[人對象]|找到.*[人對象]|等到.*[人對象]|出現.*[人對象]/.test(q)) result.isMeetNew = true;
+
+  // 品質/真偽問題（真正愛我、真心對我、靠譜、值得信任）
+  if(/真正|真心|真的|認真|靠譜|值得|穩定.*對象|長久|一輩子/.test(q)) result.isQuality = true;
 
   // 提取關鍵詞
   const kw = q.replace(/[？?！!，,。.、的了嗎呢吧啊喔哦]/g, '').trim();
@@ -3243,9 +3262,17 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
         if(great) answer='<strong>婚運很好！</strong> '+(hl?'你命帶紅鸞星，近期特別有利結婚。':'目前運勢非常支持步入婚姻。')+'如果雙方有共識，今年就是好時機。';
         else if(good) answer='<strong>時機逐漸成熟。</strong> 婚姻大事不急，但運勢是支持的。把關係穩定下來，自然水到渠成。';
         else answer='<strong>建議不急。</strong> 目前不是匆忙決定婚事的好時機，先確認彼此是否真的適合。';
-      }else if(/喜歡|愛我|在意|心裡有我/.test(q)){
+      }else if(intent.isMeetNew || /遇到|找到|碰到|認識|等到.*對[象的]|正緣|真愛|真正愛|對的人|穩定.*對象/.test(q)){
+        // ★ 問「能不能遇到/找到對的人、真正愛我的人」— 不是問特定對象
+        const timeHint=isWhen?(good?'今年運勢支持桃花，時機正在靠近。':'今年桃花能量還在蓄積，不要急。'):'';
+        if(great) answer='<strong>有機會遇到！</strong> '+(pk?'你命帶桃花，加上運勢大好，今年遇到認真對你的人的機率很高。':'目前桃花能量旺盛，認真經營社交圈，對的人就在不遠處。')+'關鍵是你要先清楚自己要什麼樣的人，才不會重蹈覆轍。'+timeHint;
+        else if(good) answer='<strong>有機會，但要自己篩選。</strong> '+(pk?'你桃花不缺，問題不是遇不到人，而是遇到的品質參差不齊。':'運勢偏好，異性緣有提升。')+'建議提高標準、不要因為寂寞就將就。慢慢來，寧缺勿濫才能遇到真心的。'+timeHint;
+        else if(!bad) answer='<strong>有可能，但需要時間。</strong> 目前桃花能量不算特別強，不太容易一下子就遇到完全對的人。先把自己生活過好——有自己的興趣、朋友圈、穩定的心態，好的對象反而會被你吸引。'+timeHint;
+        else answer='<strong>短期內可能要耐心等。</strong> 目前感情磁場偏弱，容易遇到不適合的人。'+(/只想上|只想.*身體|不認真|玩玩|渣/.test(q)?'你的直覺沒有錯，現階段確實容易吸引到不認真的對象。先暫停感情上的追求，把能量放在自己身上，當你狀態變好了，吸引來的人品質也會不同。':'先專注提升自己，等桃花運轉好了，自然會遇到對的人。');
+        tip='多穿'+FC[favEl]+'色系提升正桃花。'+(pk?'桃花方位佩戴粉晶篩選正緣。':'佩戴粉晶+白水晶，招桃花的同時淨化爛桃花。');
+      }else if(/喜歡|愛我|在意|心裡有我/.test(q) && !intent.isMeetNew){
         if(/喜歡我|愛我|在意我|心裡有我/.test(q)){
-          // 問對方對我的感覺
+          // 問特定對方對我的感覺（確認不是「遇到愛我的人」）
           if(good) answer='<strong>從命理看，你是有吸引力的。</strong> '+(pk?'你命帶桃花，異性緣本來就好。':'')+'對方對你有好感的機率不低，但最終還是要從互動中確認。你可以觀察對方有沒有主動找你聊天、約你出去的跡象。';
           else answer='<strong>對方可能還在猶豫。</strong> 目前你的感情磁場不夠強，可能讓對方感受不到明確的信號。試著多互動，讓對方有機會認識真正的你。';
         }else{
@@ -3363,6 +3390,13 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
           else if(good) answer='<strong>有機會錄取。</strong> 準備充分一點，把自己最好的一面展現出來。';
           else answer='<strong>可能需要多投幾家。</strong> 不要把期望放在一個籃子裡，多面試幾家增加機率。';
         }
+      }else if(intent.isMeetNew || /找到.*工作|遇到.*機會|找到.*方向|遇到.*伯樂|遇到.*貴人|有沒有.*機會/.test(q)){
+        // ★ 問「能不能找到好工作/遇到好機會」
+        const timeHint=isWhen?(good?'今年運勢對求職有利。':'今年時機還在醞釀。'):'';
+        if(great) answer='<strong>機會正在靠近！</strong> '+(ym?'你命帶驛馬，適合變動，新的好機會就在不遠處。':'運勢強力支持你找到新方向。')+'積極投遞、多參加活動，好消息會比你想的快。'+timeHint;
+        else if(good) answer='<strong>有機會找到。</strong> 運勢偏好，但好工作不會自己來敲門。主動出擊——更新履歷、擴大人脈、多參加行業聚會，機會就在行動中。'+timeHint;
+        else if(!bad) answer='<strong>需要多一點耐心。</strong> 好機會不是沒有，但可能不會馬上出現。先充實自己的能力和履歷，等準備好了，機會自然會來。'+timeHint;
+        else answer='<strong>短期內可能要多嘗試。</strong> 運勢對求職不太配合，可能需要投更多家、面更多次。不要灰心，把每次面試當練習，運勢轉好後會有突破。'+timeHint;
       }else{
         if(great) answer='<strong>可以。</strong> 運勢各方面都支持，放手去做，會有好結果。';
         else if(good) answer='<strong>偏向可以。</strong> 多數指標正面，大膽行動。';
@@ -3450,10 +3484,15 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
           else if(good) answer='<strong>收入有成長空間。</strong> 運勢偏好，但錢不會自己跑來，主動開源是關鍵。';
           else answer='<strong>收入可能持平或有壓力。</strong> 今年不太適合期待大幅加薪，穩住現有收入最重要。';
         }
+      }else if(/改善|好轉|翻身|脫貧|財務自由|有錢|變好|賺到/.test(q) || (intent.isMeetNew && /錢|財|收入|機會/.test(q))){
+        // ★ 問「財務能不能改善/什麼時候能翻身」
+        const timeHint=isWhen?(good?'今年財運有起色的跡象。':'今年財運還在蓄積，急不來。'):'';
+        if(great) answer='<strong>財務有明顯改善的機會！</strong> 運勢強力支持，只要你願意行動——開源比節流更重要。今年是積極理財的好時機。'+timeHint;
+        else if(good) answer='<strong>會慢慢好起來的。</strong> 財運正在往上走，不會一夜暴富，但穩定成長是看得到的。重點是開始行動，比如學新技能、找副業、整理消費習慣。'+timeHint;
+        else if(!bad) answer='<strong>需要時間和計畫。</strong> 財務改善不靠運氣靠方法。先記帳30天搞清楚錢花在哪，然後制定具體的開源節流計畫。一步一步來。'+timeHint;
+        else answer='<strong>短期內比較辛苦。</strong> 運勢對財運不太配合，但這不是永遠的。先守住不虧損，減少不必要的支出，等運勢轉好後積極出擊。'+timeHint;
       }else{
-        if(great) answer='<strong>可以。</strong> 財運各方面條件都好，放心去做。';
-        else if(good) answer='<strong>偏向可以。</strong> 有賺錢的機會，行動是關鍵。';
-        else if(!bad) answer='<strong>有機會但要謹慎。</strong> 可以嘗試但控制風險。';
+        if(!bad) answer='<strong>有機會但要謹慎。</strong> 可以嘗試但控制風險。';
         else answer='<strong>目前建議保守。</strong> 守住現有的比追求新的更重要。';
       }
       tip='在'+FD[favEl]+'方位辦公或放錢包有助財運。穿'+FC[favEl]+'色談生意。';
@@ -5986,7 +6025,7 @@ function renderProductCrystal(bazi,type){
     </div>
     <div class="product-grid">${display.map(p=>`
       <div class="product-card">
-        <div class="product-icon">${p.icon}</div>
+        ${p.img?`<img class="product-img" src="${p.img}" alt="${p.n}" onerror="this.outerHTML=getCrystalVisual(${JSON.stringify({n:p.n,cat:p.cat}).replace(/"/g,'&quot;')})">`:(typeof getCrystalVisual==='function'?getCrystalVisual(p):`<div class="product-icon">${p.icon}</div>`)}
         <div class="product-body">
           <div class="product-name">${p.n}</div>
           <div class="product-meta">
@@ -6271,8 +6310,6 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'白水晶手排',cat:'手鏈',icon:'💍',el:'金',d:'大顆粒排珠，淨化能量更強，適合辦公佩戴',price:'$396',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'鑽切白水晶',cat:'手鏈',icon:'✨',el:'金',d:'切割面折射光芒，提升靈性能量與專注力',price:'$320',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'鈦晶手排',cat:'手鏈',icon:'⚡',el:'金',d:'招正財偏財首選！增強領導力與決斷力',price:'$3,334-$21,950',wear:'面試/簽約時佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'白水晶鳳凰項鍊',cat:'項鍊',icon:'🔮',el:'金',d:'鳳凰涅槃，淨化+重生能量，收藏級項鍊',price:'$3,372',wear:'貼近心輪佩戴',
@@ -6294,8 +6331,6 @@ const REAL_PRODUCTS = {
     {n:'綠碧璽',cat:'手鏈',icon:'💎',el:'木',d:'旺事業財運，激發創造力',price:'$1,644',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'東陵玉',cat:'手鏈',icon:'🌿',el:'木',d:'舒緩壓力，帶來好運與正能量',price:'$176',wear:'隨身佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠髮晶手排',cat:'手鏈',icon:'🌱',el:'木',d:'招正財+貴人，髮絲代表生長能量',price:'$4,332',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'綠水晶隨型',cat:'手鏈',icon:'💍',el:'木',d:'天然隨型綠水晶，招正財聚能量',price:'$2,028',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
@@ -6327,8 +6362,6 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'青晶石',cat:'手鏈',icon:'🌌',el:'水',d:'開啟第三眼，增強直覺與靈性感知',price:'$2,604',wear:'冥想時佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'冰藍小熊',cat:'吊墜',icon:'🧸',el:'水',d:'可愛造型冰藍石，療癒安心，送禮首選',price:'$506',wear:'項鍊佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'黑曜石',cat:'手鏈',icon:'🖤',el:'水',d:'擋煞辟邪首選！以水洩金，化壓力為動力',price:'$300-$500',wear:'右手佩戴辟邪',tags:['辟邪','擋煞'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'金曜石',cat:'手鏈',icon:'🌑',el:'水',d:'金色閃光黑曜石，強力辟邪+洩金護身',price:'$416',wear:'右手佩戴辟邪',tags:['辟邪','擋煞'],
@@ -6345,7 +6378,7 @@ const REAL_PRODUCTS = {
   火: [
     {n:'紅瑪瑙',cat:'手鏈',icon:'❤️',el:'火',d:'激發熱情，增強行動力與勇氣',price:'$300-$454',wear:'右手佩戴增行動力',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紅瑪瑙設計款',cat:'手鏈',icon:'💗',el:'火',d:'設計師款紅瑪瑙，熱情+時尚兼具',price:'$1,260',wear:'右手佩戴',
+    {n:'波斯瑪瑙設計款',cat:'手鏈',icon:'💗',el:'火',d:'波斯風情瑪瑙，熱情+時尚兼具',price:'$1,260',wear:'右手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'紫水晶',cat:'手鏈',icon:'💜',el:'火',d:'安神助眠，穩定情緒，靈性提升首選',price:'$588-$1,606',wear:'睡前佩戴或放枕下',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
@@ -6373,13 +6406,12 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'茶晶',cat:'手鏈',icon:'🍵',el:'土',d:'排除負能量，穩定心性，接地氣',price:'$684-$742',wear:'佩戴或放客廳',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'虎眼石（藍）',cat:'手鏈',icon:'🐯',el:'土',d:'增強決斷力，招財辟邪，穩定心性',price:'$7,600',wear:'右手佩戴增氣場',
+    {n:'虎眼石',cat:'手鏈',icon:'🐯',el:'土',d:'增強決斷力，招財辟邪，穩定心性',price:'$7,600',wear:'右手佩戴增氣場',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'阿拉善',cat:'手鏈',icon:'🗿',el:'土',d:'戈壁能量石，穩定+接地+增強耐力',price:'$281-$454',wear:'隨身佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'太極石設計款',cat:'手鏈',icon:'☯️',el:'土',d:'陰陽平衡之石，調和身心能量場',price:'$1,836',wear:'左手佩戴',
+    {n:'超八',cat:'手鏈',icon:'🌈',el:'土',d:'八大礦物共生，全方位平衡五行能量',price:'$454',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-
     {n:'大地瑪瑙手排',cat:'手鏈',icon:'🐅',el:'土',d:'大地能量，穩定踏實，增強耐力',price:'$300',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'鐵膽石手排',cat:'手鏈',icon:'🗿',el:'土',d:'極強接地能量，排負+穩定心性',price:'$185',wear:'右手佩戴',
@@ -6403,42 +6435,78 @@ const REAL_PRODUCTS = {
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'金太陽',cat:'手鏈',icon:'🌞',el:'火',d:'金色太陽光芒，招正財+增強領導力',price:'$8,748-$21,325',wear:'左手佩戴',tags:['財運','事業'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'情侶對鍊',cat:'項鍊',icon:'💑',el:'全',d:'情侶款對鍊，感情加溫必備',price:'$1,226',wear:'成對佩戴',tags:['愛情'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'老山檀香圓珠',cat:'手鏈',icon:'📿',el:'土',d:'百年老山檀香，安神助眠，靜心修行',price:'$3,756',wear:'念佛/冥想佩戴',tags:['健康','靈性'],
+    {n:'老山檀香圓珠',cat:'手鏈',icon:'📿',el:'木',d:'百年老山檀香，安神助眠，靜心修行',price:'$3,756',wear:'念佛/冥想佩戴',tags:['健康','靈性'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'沉香無事牌',cat:'吊墜',icon:'🏷️',el:'木',d:'無事牌寓意平安無事，沉香安神定氣',price:'$492',wear:'項鍊佩戴',tags:['平安','健康'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'太陽花手排',cat:'手鏈',icon:'🌻',el:'火',d:'向陽而生，增強正能量與行動力',price:'$1,387-$2,028',wear:'左手佩戴',tags:['事業','自信'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'咖啡鈦太陽花手排',cat:'手鏈',icon:'☕',el:'金',d:'鈦晶+太陽花，招財+正能量雙效',price:'$2,988',wear:'左手佩戴',tags:['財運','事業'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彼得石手排',cat:'手鏈',icon:'🌀',el:'水',d:'暴風雨石！激發洞察力與變革勇氣',price:'$681',wear:'左手佩戴',tags:['事業','決策'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍彼得算盤珠',cat:'手鏈',icon:'🌀',el:'水',d:'算盤珠型彼得石，洞察力與智慧象徵',price:'$2,604',wear:'左手佩戴',tags:['事業','智慧'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑髮手排',cat:'手鏈',icon:'🕸️',el:'水',d:'排除負能量，增強領袖魅力與決斷力',price:'$9,708-$16,620',wear:'左手佩戴',tags:['辟邪','事業'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩髮圓珠',cat:'手鏈',icon:'🌈',el:'全',d:'多色髮晶共生，全方位開運旺事業',price:'$5,868',wear:'左手佩戴',tags:['全能','事業'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩超七圓珠',cat:'手鏈',icon:'🌈',el:'全',d:'七礦共生圓珠，全方位能量平衡',price:'$1,387',wear:'左手佩戴',tags:['全能'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩銅超七',cat:'手鏈',icon:'✨',el:'全',d:'含銅礦超七，導能量+增強行動力',price:'$972',wear:'左手佩戴',tags:['全能'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩色天鐵手排',cat:'手鏈',icon:'🌈',el:'全',d:'天鐵手排大顆粒，宇宙能量+氣場強大',price:'$10,308',wear:'左手佩戴',tags:['全能','辟邪'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'阿富汗碧璽',cat:'手鏈',icon:'💎',el:'火',d:'稀有產地碧璽，強力招桃花+旺人緣',price:'$5,484',wear:'左手佩戴',tags:['愛情','人緣'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'糖果碧璽',cat:'手鏈',icon:'🍭',el:'火',d:'多彩糖果色碧璽，療癒心靈+招桃花',price:'$395-$18,825',wear:'左手佩戴',tags:['愛情','療癒'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑曜石貔貅',cat:'擺件',icon:'🖤',el:'水',d:'貔貅招財辟邪，黑曜石加持擋煞力強',price:'$2,988',wear:'放財位或辦公桌',tags:['財運','辟邪'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白松石x黑曜石設計款',cat:'手鏈',icon:'⚪',el:'全',d:'白松石淨化+黑曜辟邪，設計師款',price:'$400',wear:'左手佩戴',tags:['辟邪','淨化'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紫黃白水設計款',cat:'手鏈',icon:'💜',el:'全',d:'紫水晶+黃水晶+白水晶三色組合',price:'$400',wear:'左手佩戴',tags:['全能'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'摩根石設計款',cat:'手鏈',icon:'💗',el:'水',d:'摩根石設計師款，溫柔療癒招真愛',price:'$400',wear:'左手佩戴',tags:['愛情'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅幽靈設計款',cat:'手鏈',icon:'❤️',el:'火',d:'紅幽靈+設計元素，增強行動力與熱情',price:'$450',wear:'右手佩戴',tags:['事業','行動力'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅膠花設計款',cat:'手鏈',icon:'🌺',el:'火',d:'紅膠花水晶，招桃花+增強人際魅力',price:'$506',wear:'左手佩戴',tags:['愛情'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'鷹眼堇青石設計款',cat:'手鏈',icon:'👁️',el:'水',d:'鷹眼石+堇青石，增強決策力與洞察力',price:'$780',wear:'左手佩戴',tags:['事業','決策'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'鐵膽石圓珠',cat:'手鏈',icon:'🗿',el:'土',d:'強力接地能量，排除負面思緒',price:'$185',wear:'右手佩戴',tags:['辟邪'],
+     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'龍宮舍利',cat:'手鏈',icon:'🐚',el:'土',d:'龍宮舍利化石，鎮宅安神，靈性修行聖品',price:'$231-$423',wear:'隨身佩戴或供奉',tags:['靈性','平安'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   // 項鍊吊墜
   necklace: [
-    {n:'銀曜項鍊（關公）',cat:'項鍊',icon:'⚔️',el:'土',d:'關公護身，招財辟邪，生意人必備',price:'$492',wear:'出門佩戴',tags:['財運','辟邪'],
+    {n:'銀曜項鍊（關公）',cat:'項鍊',icon:'⚔️',el:'水',d:'關公護身，招財辟邪，生意人必備',price:'$492',wear:'出門佩戴',tags:['財運','辟邪'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'金曜項鍊（龍牌）',cat:'項鍊',icon:'🐉',el:'土',d:'龍牌護身符，氣場強大，事業亨通',price:'$492',wear:'出門佩戴',tags:['事業','辟邪'],
+    {n:'金曜項鍊（龍牌）',cat:'項鍊',icon:'🐉',el:'水',d:'龍牌護身符，氣場強大，事業亨通',price:'$492',wear:'出門佩戴',tags:['事業','辟邪'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'銀曜項鍊（九尾狐）',cat:'項鍊',icon:'🦊',el:'土',d:'九尾狐招桃花，增強魅力與異性緣',price:'$492',wear:'約會佩戴',tags:['愛情','桃花'],
+    {n:'銀曜項鍊（九尾狐）',cat:'項鍊',icon:'🦊',el:'水',d:'九尾狐招桃花，增強魅力與異性緣',price:'$492',wear:'約會佩戴',tags:['愛情','桃花'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑曜項鍊無事牌',cat:'項鍊',icon:'🏷️',el:'土',d:'黑曜石無事牌，辟邪+平安',price:'$469',wear:'隨身佩戴',tags:['平安','辟邪'],
+    {n:'黑曜磨砂心經',cat:'項鍊',icon:'📿',el:'水',d:'心經護身符，辟邪化煞，安定心神',price:'$204-$377',wear:'隨身佩戴',tags:['辟邪','平安'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑曜磨砂心經',cat:'項鍊',icon:'📿',el:'土',d:'心經護身符，辟邪化煞，安定心神',price:'$204-$377',wear:'隨身佩戴',tags:['辟邪','平安'],
+    {n:'黑曜磨砂心經（桶珠）',cat:'項鍊',icon:'📿',el:'水',d:'桶珠款心經護身符，辟邪+個性設計',price:'$300',wear:'隨身佩戴',tags:['辟邪','平安'],
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   // 辟邪系列
   protection: [
-    {n:'黑閃靈',cat:'手鏈',icon:'⚫',el:'土',d:'超強辟邪擋煞，排除一切負能量',price:'$1,798',wear:'右手佩戴',
+    {n:'黑閃靈',cat:'手鏈',icon:'⚫',el:'水',d:'超強辟邪擋煞，排除一切負能量',price:'$1,798',wear:'右手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'彩閃靈',cat:'手鏈',icon:'🌈',el:'全',d:'辟邪+開運雙效，彩色閃靈能量全面',price:'$4,908',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩虹黑曜石',cat:'手鏈',icon:'🌈',el:'土',d:'黑曜石中的極品，辟邪+七彩光芒',price:'$1,882',wear:'右手佩戴',
+    {n:'彩虹黑曜石',cat:'手鏈',icon:'🌈',el:'水',d:'黑曜石中的極品，辟邪+七彩光芒',price:'$1,882',wear:'右手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑碧璽三圈',cat:'手鏈',icon:'⬛',el:'土',d:'三圈纏繞設計，全面辟邪防護',price:'$588',wear:'右手佩戴',
+    {n:'黑碧璽三圈',cat:'手鏈',icon:'⬛',el:'水',d:'三圈纏繞設計，全面辟邪防護',price:'$588',wear:'右手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'西北非隕石',cat:'手鏈',icon:'☄️',el:'全',d:'外太空隕石能量，護身辟邪極強',price:'$1,068-$1,184',wear:'右手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   // 桃花系列
   love_special: [
-    {n:'粉晶',cat:'手鏈',icon:'💕',el:'土',d:'招桃花首選！增強感情運與人際魅力',price:'$204-$272',wear:'左手佩戴，約會必備',
+    {n:'粉晶',cat:'手鏈',icon:'💕',el:'火',d:'招桃花首選！增強感情運與人際魅力',price:'$204-$272',wear:'左手佩戴，約會必備',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'星光草荓晶',cat:'手鏈',icon:'🍓',el:'火',d:'增強異性緣，帶來甜蜜戀愛機會',price:'$300-$454',wear:'左手佩戴',
      shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
@@ -6452,6 +6520,188 @@ const REAL_PRODUCTS = {
    智慧推薦引擎 — 取代 PRODUCT_DB + TYPE_PRODUCTS
    根據：喜用神 × 問題類型 × 價格帶分佈 推薦最佳商品
    ============================================================= */
+/* =============================================================
+   水晶視覺 — 依產品類型用 SVG 產生對應造型
+   手鏈=圓環珠串 手排=橫排方珠 項鍊=鏈+吊墜 圓珠=球 etc.
+   ============================================================= */
+function getCrystalVisual(p){
+  const n=p.n||'', cat=p.cat||'';
+  /* ── 顏色映射 ── */
+  const CMAP=[
+    {k:/白水晶|白阿賽|透石膏|白幽靈|白松石/,c:'#ccd',c2:'#aab',c3:'#e8e8f0'},
+    {k:/鈦晶|金髮|金太陽|咖啡鈦/,c:'#d4a020',c2:'#8b6508',c3:'#ffe680'},
+    {k:/綠幽靈|抹茶|綠碧璽|東陵|綠水晶|四季|綠龍|綠月光/,c:'#3cb371',c2:'#1a6b1a',c3:'#90ee90'},
+    {k:/海藍寶|藍玉髓|藍彼得|藍磷灰|堇青石|藍方解|青晶|藍虎眼|鷹眼堇青/,c:'#4682b4',c2:'#1a3c5c',c3:'#87ceeb'},
+    {k:/黑曜|金曜|銀曜|黑閃靈|黑碧璽|黑髮|彩虹黑曜/,c:'#444',c2:'#111',c3:'#777'},
+    {k:/粉晶|粉紅碧璽|摩根石|薔薇|煙花雨|紅膠花/,c:'#e87fa0',c2:'#c04070',c3:'#ffb6c1'},
+    {k:/紫水晶|紫牙烏|紫龍晶|紫金砂|紫黃白/,c:'#9370db',c2:'#5a3d7a',c3:'#d8bfff'},
+    {k:/紅瑪|紅虎眼|紅花碧|紅碧璽|紅幽靈|波斯瑪/,c:'#dc3545',c2:'#8b1520',c3:'#ff8a8a'},
+    {k:/黃水晶|茶晶|虎眼|阿拉善|鐵膽|大地瑪|白水茶|超八/,c:'#daa520',c2:'#8b6914',c3:'#ffe082'},
+    {k:/太陽花|骨幹太陽|利比亞/,c:'#e68a00',c2:'#bf360c',c3:'#ffcc80'},
+    {k:/彩超七|彩閃靈|彩色天鐵|彩銅|彩髮|天鐵五行|銀曜石五行/,c:'rainbow',c2:'#888',c3:'#ddd'},
+    {k:/碧璽|糖果碧璽|阿富汗/,c:'#20b2aa',c2:'#005555',c3:'#7fffd4'},
+    {k:/檀木|檀香|老山|沉香/,c:'#8b6343',c2:'#5d3d20',c3:'#d2a679'},
+    {k:/龍宮舍利/,c:'#c4a56e',c2:'#8b7340',c3:'#f0e0c8'},
+    {k:/月光石/,c:'#9da8c0',c2:'#6070a0',c3:'#e0e8ff'},
+    {k:/草莓|草苺|草荓/,c:'#d66',c2:'#933',c3:'#faa'},
+    {k:/隕石|多寶/,c:'#666',c2:'#333',c3:'#999'},
+    {k:/心經/,c:'#333',c2:'#111',c3:'#666'},
+    {k:/貔貅/,c:'#333',c2:'#111',c3:'#555'},
+  ];
+  const cm=CMAP.find(m=>m.k.test(n));
+  const c=cm?cm.c:'#aaa', c2=cm?cm.c2:'#666', c3=cm?cm.c3:'#ddd';
+  const isRainbow=c==='rainbow';
+  // rainbow 用多色
+  const rc=['#e55','#e92','#da0','#5a5','#48b','#86d'];
+
+  /* ── SVG 生成器 ── */
+  const W=76,H=72;
+  const hdr=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="flex:0 0 auto">`;
+  const hlDef=`<defs><radialGradient id="hl_${n.length}"><stop offset="0%" stop-color="white" stop-opacity="0.6"/><stop offset="100%" stop-color="white" stop-opacity="0"/></radialGradient></defs>`;
+
+  // 畫珠子（圓形，帶高光）
+  function bead(cx,cy,r,color){
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="${c2}" stroke-width="0.5"/>
+      <ellipse cx="${cx-r*0.25}" cy="${cy-r*0.25}" rx="${r*0.35}" ry="${r*0.25}" fill="white" opacity="0.45" transform="rotate(-20 ${cx} ${cy})"/>`;
+  }
+
+  // ── 項鍊/吊墜/無事牌 ──
+  if(/項鍊|吊墜|無事牌/.test(n) || cat==='項鍊'){
+    const pc=isRainbow?'#888':c;
+    let pendantShape='';
+    if(/關公|龍牌|九尾狐|貔貅/.test(n)){
+      // 雕刻牌子
+      pendantShape=`<rect x="28" y="30" width="20" height="28" rx="4" fill="${pc}" stroke="${c2}" stroke-width="1"/>
+        <ellipse cx="35" cy="36" rx="4" ry="3" fill="white" opacity="0.2"/>
+        <text x="38" y="51" text-anchor="middle" font-size="12">${/關公/.test(n)?'⚔️':/龍牌/.test(n)?'🐉':/九尾狐/.test(n)?'🦊':'🏺'}</text>`;
+    }else if(/心經/.test(n)){
+      // 桶珠/圓牌
+      pendantShape=`<rect x="26" y="32" width="24" height="26" rx="8" fill="${pc}" stroke="${c2}" stroke-width="1"/>
+        <line x1="31" y1="40" x2="45" y2="40" stroke="${c3}" stroke-width="0.5" opacity="0.4"/>
+        <line x1="31" y1="44" x2="45" y2="44" stroke="${c3}" stroke-width="0.5" opacity="0.4"/>
+        <line x1="31" y1="48" x2="45" y2="48" stroke="${c3}" stroke-width="0.5" opacity="0.4"/>
+        <text x="38" y="46" text-anchor="middle" font-size="6" fill="${c3}" opacity="0.5">經</text>`;
+    }else{
+      // 一般吊墜（水滴形）
+      pendantShape=`<path d="M38 30 Q48 42 42 55 Q38 60 34 55 Q28 42 38 30Z" fill="${pc}" stroke="${c2}" stroke-width="0.8"/>
+        <ellipse cx="36" cy="40" rx="3" ry="4" fill="white" opacity="0.25"/>`;
+    }
+    // 金色鏈子
+    return `<div style="flex:0 0 auto">${hdr}
+      <path d="M20 8 Q38 22 56 8" fill="none" stroke="#d4a020" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="20" cy="8" r="2" fill="#d4a020"/><circle cx="56" cy="8" r="2" fill="#d4a020"/>
+      <line x1="38" y1="20" x2="38" y2="32" stroke="#d4a020" stroke-width="1.2"/>
+      <circle cx="38" cy="28" r="3" fill="#d4a020" opacity="0.6"/>
+      ${pendantShape}
+    </svg></div>`;
+  }
+
+  // ── 手排：橫排方珠 ──
+  if(/手排/.test(n)){
+    const beadW=10,beadH=24,gap=2,count=5;
+    const startX=(W-count*(beadW+gap)+gap)/2;
+    const y=(H-beadH)/2;
+    let beads='';
+    for(let i=0;i<count;i++){
+      const bc=isRainbow?rc[i%rc.length]:c;
+      const x=startX+i*(beadW+gap);
+      beads+=`<rect x="${x}" y="${y}" width="${beadW}" height="${beadH}" rx="3" fill="${bc}" stroke="${c2}" stroke-width="0.7"/>
+        <rect x="${x+2}" y="${y+3}" width="${beadW*0.4}" height="${beadH*0.15}" rx="1" fill="white" opacity="0.3" transform="rotate(-8 ${x+3} ${y+4})"/>`;
+    }
+    // 穿繩
+    const ropeY=H/2;
+    return `<div style="flex:0 0 auto">${hdr}
+      <line x1="${startX-4}" y1="${ropeY}" x2="${startX+count*(beadW+gap)}" y2="${ropeY}" stroke="#a08060" stroke-width="1.5" opacity="0.5"/>
+      ${beads}
+    </svg></div>`;
+  }
+
+  // ── 設計款：多色珠子混搭 ──
+  if(/設計款/.test(n)){
+    // 弧形排列多色珠
+    const colors=isRainbow?rc:[c3,c,c2,c3,c];
+    let beads='';
+    const cx=W/2, cy=H/2+4, r=22;
+    for(let i=0;i<colors.length;i++){
+      const ang=Math.PI+i*(Math.PI/(colors.length-1));
+      const bx=cx+r*Math.cos(ang), by=cy+r*Math.sin(ang);
+      beads+=bead(bx,by,6,colors[i]);
+    }
+    // 穿線
+    return `<div style="flex:0 0 auto">${hdr}
+      <ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r}" fill="none" stroke="#a08060" stroke-width="1" opacity="0.3" stroke-dasharray="3 5"/>
+      ${beads}
+    </svg></div>`;
+  }
+
+  // ── 圓珠/算盤珠：單顆大珠 ──
+  if(/圓珠|算盤珠/.test(n)){
+    const cx=W/2, cy=H/2;
+    const bc=isRainbow?'url(#rb)':c;
+    const rbDef=isRainbow?`<defs><linearGradient id="rb" x1="0" y1="0" x2="1" y2="1">${rc.map((co,i)=>`<stop offset="${i/(rc.length-1)*100}%" stop-color="${co}"/>`).join('')}</linearGradient></defs>`:'';
+    return `<div style="flex:0 0 auto">${hdr}${rbDef}
+      <circle cx="${cx}" cy="${cy}" r="24" fill="${bc}" stroke="${c2}" stroke-width="1"/>
+      <circle cx="${cx}" cy="${cy}" r="22" fill="none" stroke="${c2}" stroke-width="0.3" opacity="0.3"/>
+      <ellipse cx="${cx-7}" cy="${cy-8}" rx="8" ry="6" fill="white" opacity="0.35" transform="rotate(-15 ${cx-7} ${cy-8})"/>
+      <ellipse cx="${cx+8}" cy="${cy+10}" rx="4" ry="3" fill="white" opacity="0.15"/>
+      <circle cx="${cx}" cy="${cy-25}" r="2.5" fill="#a08060" opacity="0.6"/>
+      <line x1="${cx}" y1="${cy-24}" x2="${cx}" y2="${cy-28}" stroke="#a08060" stroke-width="1" opacity="0.4"/>
+    </svg></div>`;
+  }
+
+  // ── 貔貅/雕件 ──
+  if(/貔貅|關公|龍牌|九尾狐|舍利/.test(n)){
+    const icon=/貔貅/.test(n)?'🏺':/關公/.test(n)?'⚔️':/龍牌/.test(n)?'🐉':/九尾狐/.test(n)?'🦊':'📿';
+    const bc=isRainbow?'#888':c;
+    return `<div style="flex:0 0 auto">${hdr}
+      <rect x="18" y="12" width="40" height="48" rx="10" fill="${bc}" stroke="${c2}" stroke-width="1"/>
+      <ellipse cx="32" cy="22" rx="8" ry="5" fill="white" opacity="0.15" transform="rotate(-10 32 22)"/>
+      <text x="38" y="44" text-anchor="middle" font-size="18">${icon}</text>
+    </svg></div>`;
+  }
+
+  // ── 裸石/擺件/隨型/聚寶盆 ──
+  if(/裸石|擺件|隨型|聚寶盆/.test(n)){
+    const bc=isRainbow?'#888':c;
+    return `<div style="flex:0 0 auto">${hdr}
+      <polygon points="38,8 56,24 52,56 24,56 20,24" fill="${bc}" stroke="${c2}" stroke-width="1"/>
+      <polygon points="38,8 48,20 38,16 28,20" fill="${c3}" opacity="0.3"/>
+      <line x1="38" y1="16" x2="38" y2="56" stroke="${c2}" stroke-width="0.3" opacity="0.3"/>
+      <line x1="20" y1="24" x2="56" y2="24" stroke="${c2}" stroke-width="0.3" opacity="0.3"/>
+      <ellipse cx="32" cy="28" rx="5" ry="4" fill="white" opacity="0.2" transform="rotate(-15 32 28)"/>
+    </svg></div>`;
+  }
+
+  // ── 三圈手鏈 ──
+  if(/三圈/.test(n)){
+    const cx=W/2, cy=H/2;
+    const bc=isRainbow?'#888':c;
+    return `<div style="flex:0 0 auto">${hdr}
+      <circle cx="${cx}" cy="${cy}" r="28" fill="none" stroke="${bc}" stroke-width="4" opacity="0.5"/>
+      <circle cx="${cx}" cy="${cy}" r="22" fill="none" stroke="${bc}" stroke-width="4" opacity="0.7"/>
+      <circle cx="${cx}" cy="${cy}" r="16" fill="none" stroke="${bc}" stroke-width="4"/>
+      ${bead(cx,cy-28,3,c3)}${bead(cx,cy-22,3,c3)}${bead(cx,cy-16,3,c3)}
+      ${bead(cx,cy+28,3,c3)}${bead(cx,cy+22,3,c3)}${bead(cx,cy+16,3,c3)}
+    </svg></div>`;
+  }
+
+  // ── 默認：手鏈（圓環+珠子） ──
+  const cx=W/2, cy=H/2;
+  const R=24, beadR=5, beadCount=8;
+  let beads='';
+  for(let i=0;i<beadCount;i++){
+    const ang=i*(2*Math.PI/beadCount)-Math.PI/2;
+    const bx=cx+R*Math.cos(ang), by=cy+R*Math.sin(ang);
+    const bc=isRainbow?rc[i%rc.length]:c;
+    beads+=bead(bx,by,beadR,bc);
+  }
+  // 穿繩（圓環）
+  return `<div style="flex:0 0 auto">${hdr}
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#a08060" stroke-width="1.5" opacity="0.3"/>
+    ${beads}
+  </svg></div>`;
+}
+
 function smartRecommend(bazi, type, maxItems){
   maxItems = maxItems || 6;
   const need = bazi.fav[0]; // 喜用神第一位
@@ -6562,7 +6812,7 @@ renderProductCrystal = function(bazi, type){
     </div>
     <div class="product-grid">${products.map(p=>`
       <div class="product-card">
-        <div class="product-icon">${p.icon}</div>
+        ${p.img?`<img class="product-img" src="${p.img}" alt="${p.n}" onerror="this.outerHTML=getCrystalVisual(${JSON.stringify({n:p.n,cat:p.cat}).replace(/"/g,'&quot;')})">`:(typeof getCrystalVisual==='function'?getCrystalVisual(p):`<div class="product-icon">${p.icon}</div>`)}
         <div class="product-body">
           <div class="product-name">${p.n}</div>
           <div class="product-meta">
