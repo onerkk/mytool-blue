@@ -991,9 +991,9 @@ html{scroll-behavior:smooth}
       <span class="tag" style="font-size:.85rem;padding:.4rem .8rem;border:1px solid var(--c-border);color:var(--c-text-dim)">八字 · 紫微 · 梅花 · 塔羅 · 姓名</span>
     </div>
     <div style="background:rgba(0,0,0,.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);display:inline-flex;gap:var(--sp-md);flex-wrap:wrap;justify-content:center;font-size:.82rem;color:var(--c-text-dim)">
-      <span>❝ 超準，點出我的盲點 ❞</span>
-      <span>❝ 分析比算命師還細 ❞</span>
-      <span>❝ 分享給全辦公室了 ❞</span>
+      <span>⚡ 10 秒出結果</span>
+      <span>🔒 本地運算不上傳</span>
+      <span>📱 可存圖分享</span>
     </div>
   </div>
   <div class="stepper" id="main-stepper">
@@ -1034,7 +1034,9 @@ html{scroll-behavior:smooth}
     <div class="form-group">
       <label class="form-label">出生時間</label>
       <input type="time" class="form-input" id="f-btime">
-      <div class="form-hint">不確定可留空，系統以 12:00 估算</div>
+      <label style="display:flex;align-items:center;gap:.4rem;margin-top:.4rem;font-size:.82rem;color:var(--c-text-dim);cursor:pointer">
+        <input type="checkbox" id="f-btime-unsure" onchange="if(this.checked){document.getElementById('f-btime').value='';document.getElementById('f-btime').disabled=true}else{document.getElementById('f-btime').disabled=false}"> 不確定出生時間（系統以 12:00 估算，時柱準度會降低）
+      </label>
     </div>
     <div class="form-group">
       <label class="form-label">姓名（選填）</label>
@@ -1086,7 +1088,7 @@ html{scroll-behavior:smooth}
     <button class="btn btn-outline" onclick="goStep(2)"><i class="fas fa-forward"></i> 跳過</button>
     <button class="btn btn-primary" onclick="goStep(2)"><i class="fas fa-arrow-right"></i> 下一步：塔羅牌</button>
   </div>
-  <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 跳過梅花或塔羅不影響八字分析，但會降低交叉驗證權重</p>
+  <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 多起卦 → 多得「風險提醒＋避雷方向」，跳過僅影響交叉驗證深度</p>
 </section>
 
 <!-- ========== STEP 2: TAROT ========== -->
@@ -1106,7 +1108,7 @@ html{scroll-behavior:smooth}
     <button class="btn btn-outline" onclick="skipToResult()"><i class="fas fa-forward"></i> 跳過塔羅</button>
     <button class="btn btn-primary" id="btn-analyze" onclick="goStep(3)" disabled><i class="fas fa-chart-bar"></i> 進行分析</button>
   </div>
-  <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 跳過塔羅不影響八字分析，但會降低交叉驗證權重</p>
+  <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 多抽塔羅 → 多得「時間點＋行動建議」，完整分析準確度更高</p>
 </section>
 
 <!-- ========== STEP 3: RESULT ========== -->
@@ -1714,6 +1716,9 @@ function skipToResult(){goStep(3)}
 
 /* — Char counter — */
 document.getElementById('f-question').addEventListener('input',function(){document.getElementById('f-char').textContent=this.value.length});
+// 動態 placeholder：根據問題類型切換範例
+const PLACEHOLDER_MAP={love:'例：我跟他還有機會復合嗎？/今年會遇到正緣嗎？',career:'例：我今年適合轉職嗎？/該選 A 公司還是 B 公司？',wealth:'例：最近適合投資嗎？/今年有偏財運嗎？',health:'例：我最近身體不太好，要注意什麼？',relationship:'例：跟同事相處不好，該怎麼改善？',family:'例：跟爸媽意見不合，怎麼溝通比較好？'};
+document.getElementById('f-type').addEventListener('change',function(){const ph=PLACEHOLDER_MAP[this.value]||'例：我今年適合轉職嗎？';document.getElementById('f-question').placeholder=ph;});
 
 /* =============================================================
    天干地支 CORE DATA
@@ -5185,316 +5190,2496 @@ const ZODIAC_DIZHI={鼠:'子',牛:'丑',虎:'寅',兔:'卯',龍:'辰',蛇:'巳',
 // 每個生肖：{ like:[ {roots:[], label, reason, score} ], dislike:[ ... ] }
 // roots 裡放字根/部首字串，拆字時比對
 const ZODIAC_NAME_DB = {
-  鼠: {
-    like:[
-      {roots:['口','品','宀','冖','穴','門','广'],label:'得洞',reason:'鼠有洞穴藏身，安全感十足',score:8},
-      {roots:['禾','米','豆','麥','粟','粒'],label:'得糧',reason:'鼠有糧食，一生衣食無缺',score:9},
-      {roots:['王','玉','君','主','令'],label:'得位',reason:'鼠排生肖第一，見王稱尊',score:8},
-      {roots:['丑','辰'],label:'三合',reason:'申子辰三合水局，貴人運旺',score:8},
-      {roots:['亥','丑'],label:'三會',reason:'亥子丑三會北方水局，根基穩固',score:7},
-      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'鼠有彩衣華麗，增添氣場',score:7},
-      {roots:['夕','夜'],label:'得時',reason:'鼠為夜行動物，夜晚得勢',score:6},
-      {roots:['金'],label:'得金',reason:'生水之源，財運亨通',score:6},
-      {roots:['水','氵','雨','冫'],label:'得水',reason:'子為水，見水如魚得水',score:7},
-      {roots:['木','林','竹'],label:'得蔭',reason:'有樹蔭庇護，安全自在',score:5},
-      {roots:['食'],label:'得食',reason:'有食不缺，生活富足',score:6},
-      {roots:['貝'],label:'得財',reason:'財寶入庫，財運佳',score:6}
+  "鼠": {
+    "like": [
+      {
+        "roots": [
+          "口",
+          "品",
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广",
+          "冂"
+        ],
+        "label": "得洞",
+        "reason": "鼠有洞穴藏身，安全感十足",
+        "score": 8
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥",
+          "粟"
+        ],
+        "label": "得糧",
+        "reason": "鼠愛五穀雜糧，衣食無缺",
+        "score": 9
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "主",
+          "天"
+        ],
+        "label": "稱王",
+        "reason": "鼠排行老大，逢大稱王得位",
+        "score": 8
+      },
+      {
+        "roots": [
+          "申",
+          "辰"
+        ],
+        "label": "三合",
+        "reason": "申子辰三合水局，貴人運強",
+        "score": 8
+      },
+      {
+        "roots": [
+          "亥",
+          "丑",
+          "牛"
+        ],
+        "label": "三會",
+        "reason": "亥子丑三會北方水局，根基穩固",
+        "score": 7
+      },
+      {
+        "roots": [
+          "艹"
+        ],
+        "label": "得草",
+        "reason": "田間有草有糧，安穩富足",
+        "score": 6
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "得水",
+        "reason": "子鼠屬水，逢水旺得助力",
+        "score": 7
+      },
+      {
+        "roots": [
+          "金",
+          "钅"
+        ],
+        "label": "逢金",
+        "reason": "金生水，得長輩助力提攜",
+        "score": 6
+      },
+      {
+        "roots": [
+          "木",
+          "林"
+        ],
+        "label": "得木",
+        "reason": "鼠在林間有掩護，安全自在",
+        "score": 5
+      },
+      {
+        "roots": [
+          "田"
+        ],
+        "label": "得田",
+        "reason": "鼠入田中有糧食，豐衣足食",
+        "score": 6
+      },
+      {
+        "roots": [
+          "夕"
+        ],
+        "label": "得夕",
+        "reason": "鼠為夜行動物，逢夕如魚得水",
+        "score": 5
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "得衣",
+        "reason": "鼠披彩衣華麗其身，增添魅力",
+        "score": 6
+      },
+      {
+        "roots": [
+          "礻"
+        ],
+        "label": "得福",
+        "reason": "鼠逢示旁有福祿加身",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['午','馬'],label:'六衝',reason:'子午相衝，易犯小人、意外災禍',score:-9},
-      {roots:['未','羊'],label:'六害',reason:'子未相害，親近之人反成阻礙',score:-7},
-      {roots:['人','亻','入'],label:'遇人',reason:'鼠見人如過街老鼠，人人喊打',score:-6},
-      {roots:['日','光','明','白'],label:'見光',reason:'鼠見日光暴露行蹤，處境危險',score:-5},
-      {roots:['蛇','巳','辶','弓','几','廴'],label:'遇蛇',reason:'蛇吞鼠，天敵在側',score:-6},
-      {roots:['火','灬'],label:'見火',reason:'鼠懼火，有災厄之虞',score:-5},
-      {roots:['石'],label:'遇石',reason:'鼠過街遭石打，處境艱難',score:-3},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有血光之憂',score:-6}
+    "dislike": [
+      {
+        "roots": [
+          "午",
+          "馬"
+        ],
+        "label": "六衝",
+        "reason": "子午相衝，衝擊大，感情事業受損",
+        "score": -9
+      },
+      {
+        "roots": [
+          "未",
+          "羊"
+        ],
+        "label": "六害",
+        "reason": "子未相害，做事常有阻礙",
+        "score": -7
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "見火",
+        "reason": "子為水忌火，水火不容",
+        "score": -6
+      },
+      {
+        "roots": [
+          "日",
+          "光",
+          "明"
+        ],
+        "label": "見光",
+        "reason": "鼠見光即死，處境危險",
+        "score": -6
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "遇人",
+        "reason": "人見老鼠人人喊打，不利",
+        "score": -4
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "遇肉",
+        "reason": "鼠雖雜食但見肉代表危險投機",
+        "score": -3
+      },
+      {
+        "roots": [
+          "土"
+        ],
+        "label": "逢土",
+        "reason": "土剋水，鼠逢土受剋阻礙多",
+        "score": -4
+      },
+      {
+        "roots": [
+          "小",
+          "少"
+        ],
+        "label": "逢小",
+        "reason": "鼠為生肖之首，逢小降格",
+        "score": -3
+      }
     ]
   },
-  牛: {
-    like:[
-      {roots:['艹','廾','卉','竹'],label:'得草',reason:'牛有青草吃，生活無憂',score:9},
-      {roots:['禾','米','豆','麥','粟','粒'],label:'得糧',reason:'五穀豐登，衣食無缺',score:9},
-      {roots:['宀','冖','門','穴','广'],label:'得屋',reason:'牛有牛棚安身，穩定安全',score:8},
-      {roots:['巳','酉'],label:'三合',reason:'巳酉丑三合金局，有貴人扶持',score:8},
-      {roots:['亥','子'],label:'三會',reason:'亥子丑三會水局，運勢加持',score:7},
-      {roots:['田','甫'],label:'得田',reason:'牛在田間耕作，適得其所',score:8},
-      {roots:['車'],label:'得車',reason:'牛拉車，有工作能力，受重用',score:6},
-      {roots:['水','氵','雨','冫'],label:'得水',reason:'牛需飲水，有水滋潤',score:5},
-      {roots:['金'],label:'得金',reason:'丑土生金，財運助力',score:5}
+  "牛": {
+    "like": [
+      {
+        "roots": [
+          "艹"
+        ],
+        "label": "得草",
+        "reason": "牛為草食動物，有草安穩飽足",
+        "score": 9
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥",
+          "粟"
+        ],
+        "label": "得糧",
+        "reason": "牛逢五穀有吃有喝，福祿雙全",
+        "score": 8
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "得水",
+        "reason": "丑牛土藏水，逢水相生順遂",
+        "score": 7
+      },
+      {
+        "roots": [
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广"
+        ],
+        "label": "得屋",
+        "reason": "牛有牛棚安居，受人保護",
+        "score": 7
+      },
+      {
+        "roots": [
+          "巳",
+          "蛇",
+          "辶",
+          "弓",
+          "几",
+          "廴"
+        ],
+        "label": "六合",
+        "reason": "巳丑合金，貴人運旺",
+        "score": 8
+      },
+      {
+        "roots": [
+          "酉",
+          "雞",
+          "鳥"
+        ],
+        "label": "三合",
+        "reason": "巳酉丑三合金局，助力宏大",
+        "score": 8
+      },
+      {
+        "roots": [
+          "子",
+          "鼠",
+          "亥"
+        ],
+        "label": "三會",
+        "reason": "亥子丑三會北方水局，根基穩",
+        "score": 7
+      },
+      {
+        "roots": [
+          "田"
+        ],
+        "label": "得田",
+        "reason": "牛在田中耕作有用武之地",
+        "score": 6
+      },
+      {
+        "roots": [
+          "車"
+        ],
+        "label": "拉車",
+        "reason": "牛拉車雖辛勞但受重用",
+        "score": 4
+      },
+      {
+        "roots": [
+          "金",
+          "钅"
+        ],
+        "label": "逢金",
+        "reason": "土生金，才華能發揮",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['未','羊'],label:'六衝',reason:'丑未相衝，內心矛盾、做事反覆',score:-9},
-      {roots:['午','馬'],label:'六害',reason:'丑午相害，忙碌勞碌卻無回報',score:-7},
-      {roots:['王','大','主','君','帝','天'],label:'太大',reason:'牛太大負擔重，為人作嫁',score:-5},
-      {roots:['衣','巾','彡','采','糸'],label:'彩衣犧牲',reason:'牛披彩衣上供桌，犧牲格',score:-8},
-      {roots:['礻'],label:'祭祀',reason:'牛見祭祀如上供桌，為人犧牲',score:-7},
-      {roots:['人','亻','入'],label:'遇人',reason:'牛為人所驅使，勞而無功',score:-5},
-      {roots:['日','光','明','白'],label:'見日',reason:'牛耕田曬太陽，辛苦勞碌',score:-4},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'屠刀在前，有性命之憂、重大手術',score:-8},
-      {roots:['火','灬'],label:'見火',reason:'火烤牛肉，有災厄之象',score:-5},
-      {roots:['山','岳'],label:'上山',reason:'牛上山頭，辛苦異常',score:-4}
+    "dislike": [
+      {
+        "roots": [
+          "未",
+          "羊"
+        ],
+        "label": "六衝",
+        "reason": "丑未相衝，做事波折反覆",
+        "score": -9
+      },
+      {
+        "roots": [
+          "午",
+          "馬"
+        ],
+        "label": "六害",
+        "reason": "丑午相害，辛苦勞碌無回報",
+        "score": -7
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "天",
+          "帝"
+        ],
+        "label": "稱王",
+        "reason": "牛逢大為犧牲祭品，勞碌命",
+        "score": -7
+      },
+      {
+        "roots": [
+          "日",
+          "光",
+          "明"
+        ],
+        "label": "見日",
+        "reason": "牛在烈日下耕作成喘牛",
+        "score": -5
+      },
+      {
+        "roots": [
+          "山",
+          "岳"
+        ],
+        "label": "上山",
+        "reason": "牛走山路辛苦異常",
+        "score": -5
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "遇肉",
+        "reason": "牛為草食不食肉，見肉缺財",
+        "score": -4
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "披衣",
+        "reason": "牛披彩衣如祭品，犧牲奉獻",
+        "score": -6
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "見火",
+        "reason": "火剋金，有損牛之運勢",
+        "score": -4
+      },
+      {
+        "roots": [
+          "礻"
+        ],
+        "label": "祭祀",
+        "reason": "牛見示旁如被祭祀，大凶",
+        "score": -7
+      }
     ]
   },
-  虎: {
-    like:[
-      {roots:['山','岳','阝'],label:'得山',reason:'虎嘯山林，適得其所、威風凜凜',score:9},
-      {roots:['木','林','森','東','竹'],label:'得林',reason:'虎在林中如魚得水，發揮所長',score:9},
-      {roots:['王','玉','君','主','大','天'],label:'得位',reason:'虎為百獸之王，見王得位',score:9},
-      {roots:['午','戌'],label:'三合',reason:'寅午戌三合火局，貴人旺盛',score:8},
-      {roots:['卯','辰'],label:'三會',reason:'寅卯辰三會東方木局，格局開闊',score:7},
-      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'虎添翼如彩衣加身，威風更盛',score:8},
-      {roots:['口','品'],label:'入口',reason:'虎張口有肉吃，不愁溫飽',score:7},
-      {roots:['心','忄','月','肉'],label:'得食',reason:'虎有肉吃，生活富足',score:8},
-      {roots:['水','氵','雨','冫'],label:'得水',reason:'虎有水飲，生命力旺盛',score:5},
-      {roots:['人','亻','入'],label:'得人',reason:'虎見人=有肉食，得勢',score:6},
-      {roots:['金'],label:'得金',reason:'虎添利爪，更添威力',score:5}
+  "虎": {
+    "like": [
+      {
+        "roots": [
+          "山",
+          "岳",
+          "岡"
+        ],
+        "label": "得山",
+        "reason": "虎嘯山林，適得其所",
+        "score": 9
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森",
+          "東"
+        ],
+        "label": "得林",
+        "reason": "虎居森林中如魚得水",
+        "score": 9
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "天",
+          "帝",
+          "主"
+        ],
+        "label": "稱王",
+        "reason": "虎為森林之王，稱王得位",
+        "score": 9
+      },
+      {
+        "roots": [
+          "午",
+          "馬"
+        ],
+        "label": "六合",
+        "reason": "寅午合火，貴人助力",
+        "score": 8
+      },
+      {
+        "roots": [
+          "戌",
+          "犬",
+          "犭"
+        ],
+        "label": "三合",
+        "reason": "寅午戌三合火局，力量強大",
+        "score": 8
+      },
+      {
+        "roots": [
+          "卯",
+          "兔"
+        ],
+        "label": "三會",
+        "reason": "寅卯辰三會東方木局",
+        "score": 6
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "得肉",
+        "reason": "虎為肉食動物，有肉飽足",
+        "score": 8
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "得衣",
+        "reason": "虎披彩衣為華麗猛虎，威風加倍",
+        "score": 7
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "得水",
+        "reason": "水生木，虎得水滋養",
+        "score": 5
+      },
+      {
+        "roots": [
+          "口",
+          "品"
+        ],
+        "label": "開口",
+        "reason": "虎開口展威風，能力發揮",
+        "score": 6
+      }
     ],
-    dislike:[
-      {roots:['申','猴'],label:'六衝',reason:'寅申相衝，犯小人、官非口舌',score:-9},
-      {roots:['巳','蛇','辶','弓','几','廴'],label:'六害',reason:'寅巳相害，暗箭難防、易遭背叛',score:-7},
-      {roots:['日','光','明','白'],label:'兩虎',reason:'一山不容二虎，競爭激烈',score:-4},
-      {roots:['門'],label:'入門',reason:'虎入門如被關籠中，有志難伸',score:-5},
-      {roots:['宀','冖','穴','广'],label:'被困',reason:'虎落平陽被犬欺，英雄無用武之地',score:-6},
-      {roots:['田','甫'],label:'入田',reason:'虎入田間嚇人，不受歡迎',score:-5},
-      {roots:['禾','米','豆','麥'],label:'吃素',reason:'虎為肉食動物，有糧不合口',score:-3},
-      {roots:['小','少'],label:'太小',reason:'虎太小失威嚴，被人看輕',score:-4},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有血光之憂',score:-5}
+    "dislike": [
+      {
+        "roots": [
+          "申",
+          "猴"
+        ],
+        "label": "六衝",
+        "reason": "寅申相衝，衝突極大",
+        "score": -9
+      },
+      {
+        "roots": [
+          "巳",
+          "蛇",
+          "辶",
+          "弓",
+          "几",
+          "廴"
+        ],
+        "label": "六害",
+        "reason": "蛇虎相害，互相傷害",
+        "score": -7
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "遇人",
+        "reason": "虎落平陽被犬欺，人伐虎不利",
+        "score": -5
+      },
+      {
+        "roots": [
+          "日",
+          "光",
+          "明"
+        ],
+        "label": "見光",
+        "reason": "虎在白日行動易暴露",
+        "score": -3
+      },
+      {
+        "roots": [
+          "門",
+          "宀"
+        ],
+        "label": "入門",
+        "reason": "虎入平地被關，有志難伸",
+        "score": -4
+      },
+      {
+        "roots": [
+          "小",
+          "少"
+        ],
+        "label": "逢小",
+        "reason": "虎逢小降格為貓，失威風",
+        "score": -5
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥"
+        ],
+        "label": "逢糧",
+        "reason": "虎不食五穀，英雄無用武之地",
+        "score": -3
+      },
+      {
+        "roots": [
+          "田"
+        ],
+        "label": "入田",
+        "reason": "虎入田中被困，無法發揮",
+        "score": -3
+      }
     ]
   },
-  兔: {
-    like:[
-      {roots:['艹','廾','卉','竹'],label:'得草',reason:'兔有青草，生活安穩無憂',score:9},
-      {roots:['口','品','宀','冖','穴','門','广'],label:'得洞',reason:'兔有窩穴，安全感十足',score:8},
-      {roots:['禾','米','豆','麥'],label:'得糧',reason:'五穀豐登，不愁溫飽',score:7},
-      {roots:['木','林','森','東'],label:'得林',reason:'兔在林中有掩護，安全自在',score:8},
-      {roots:['亥','未'],label:'三合',reason:'亥卯未三合木局，貴人運強',score:8},
-      {roots:['寅','辰'],label:'三會',reason:'寅卯辰三會東方木局，根基穩',score:7},
-      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'兔得彩衣為華麗，增添魅力',score:6},
-      {roots:['水','氵','雨','冫'],label:'得水',reason:'水生木，兔得水滋養',score:5},
-      {roots:['食'],label:'得食',reason:'有食不缺，安穩富足',score:5},
-      {roots:['金'],label:'得金',reason:'金飾點綴，增添貴氣',score:4}
+  "兔": {
+    "like": [
+      {
+        "roots": [
+          "艹",
+          "竹"
+        ],
+        "label": "得草",
+        "reason": "兔有青草，生活安穩無憂",
+        "score": 9
+      },
+      {
+        "roots": [
+          "口",
+          "品",
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广"
+        ],
+        "label": "得洞",
+        "reason": "兔有窩穴，安全感十足",
+        "score": 8
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥"
+        ],
+        "label": "得糧",
+        "reason": "五穀豐登，不愁溫飽",
+        "score": 7
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森",
+          "東"
+        ],
+        "label": "得林",
+        "reason": "兔在林中有掩護，安全自在",
+        "score": 8
+      },
+      {
+        "roots": [
+          "亥",
+          "未"
+        ],
+        "label": "三合",
+        "reason": "亥卯未三合木局，貴人運強",
+        "score": 8
+      },
+      {
+        "roots": [
+          "寅"
+        ],
+        "label": "三會",
+        "reason": "寅卯辰三會東方木局，根基穩",
+        "score": 6
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "得衣",
+        "reason": "兔得彩衣為華麗，增添魅力",
+        "score": 6
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "得水",
+        "reason": "水生木，兔得水滋養",
+        "score": 5
+      },
+      {
+        "roots": [
+          "食"
+        ],
+        "label": "得食",
+        "reason": "有食不缺，安穩富足",
+        "score": 5
+      },
+      {
+        "roots": [
+          "小",
+          "少"
+        ],
+        "label": "得小",
+        "reason": "兔為小動物，小而得位",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['酉','雞','鳥','隹','羽','飛'],label:'六衝',reason:'卯酉相衝，衝擊極大，口舌是非不斷',score:-9},
-      {roots:['辰','龍'],label:'六害',reason:'卯辰相害，身邊人反成阻礙',score:-7},
-      {roots:['日','光','明','白'],label:'見光',reason:'兔見日光暴露，不安全',score:-5},
-      {roots:['人','亻','入','大'],label:'遇人',reason:'兔見人被獵捕，處境堪憂',score:-6},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利刃在側，有開刀之虞',score:-6},
-      {roots:['火','灬'],label:'見火',reason:'兔遇火有劫，易衝動犯錯',score:-5},
-      {roots:['山','岳','阝'],label:'上山',reason:'兔入山為虎口送食，非其所宜',score:-4},
-      {roots:['王','玉','君','主','天'],label:'太大',reason:'兔太大引注目被捕，不宜張揚',score:-4},
-      {roots:['心','忄','月','肉'],label:'遇肉',reason:'兔為草食動物，見肉不合其性',score:-3},
-      {roots:['石'],label:'遇石',reason:'兔撞石受傷，處境不利',score:-3}
+    "dislike": [
+      {
+        "roots": [
+          "酉",
+          "雞",
+          "鳥",
+          "隹",
+          "羽",
+          "飛",
+          "金",
+          "钅",
+          "西"
+        ],
+        "label": "六衝",
+        "reason": "卯酉相衝，口舌是非不斷",
+        "score": -9
+      },
+      {
+        "roots": [
+          "辰",
+          "龍"
+        ],
+        "label": "六害",
+        "reason": "卯辰相害，身邊人反成阻礙",
+        "score": -7
+      },
+      {
+        "roots": [
+          "日",
+          "光",
+          "明",
+          "白"
+        ],
+        "label": "見光",
+        "reason": "兔見日光暴露，處境危險",
+        "score": -5
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "遇人",
+        "reason": "守株待兔，見人被獵捕",
+        "score": -6
+      },
+      {
+        "roots": [
+          "大",
+          "王",
+          "玉",
+          "君",
+          "主",
+          "天",
+          "帝"
+        ],
+        "label": "太大",
+        "reason": "兔太大引注目被捕，不宜張揚",
+        "score": -5
+      },
+      {
+        "roots": [
+          "刀",
+          "刂",
+          "匕",
+          "力",
+          "斤"
+        ],
+        "label": "遇刀",
+        "reason": "利刃在側，有開刀之虞",
+        "score": -6
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "見火",
+        "reason": "兔遇火有劫，易衝動犯錯",
+        "score": -5
+      },
+      {
+        "roots": [
+          "山",
+          "岳",
+          "阝"
+        ],
+        "label": "上山",
+        "reason": "兔入山為虎口送食",
+        "score": -4
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "遇肉",
+        "reason": "兔為草食動物，見肉不合",
+        "score": -3
+      },
+      {
+        "roots": [
+          "石"
+        ],
+        "label": "遇石",
+        "reason": "兔撞石受傷，處境不利",
+        "score": -3
+      }
     ]
   },
-  龍: {
-    like:[
-      {roots:['日','明','光','星','月','白'],label:'得天',reason:'龍見日月星為飛龍在天，大展鴻圖',score:9},
-      {roots:['水','氵','雨','冫'],label:'得水',reason:'龍入大海，如魚得水，大富大貴',score:9},
-      {roots:['王','玉','君','主','大','天','帝'],label:'得位',reason:'龍為至尊，見王字根稱帝稱王',score:9},
-      {roots:['申','子'],label:'三合',reason:'申子辰三合水局，貴人鼎力相助',score:8},
-      {roots:['巳','午'],label:'三會',reason:'巳午未三會南方火局，能量加成',score:6},
-      {roots:['馬','午'],label:'龍馬',reason:'龍馬精神，精力充沛、事業有成',score:7},
-      {roots:['衣','巾','彡','采','糸'],label:'得袍',reason:'龍袍加身，尊榮至極',score:8},
-      {roots:['金'],label:'得金',reason:'龍爪金鱗，威力加倍',score:6},
-      {roots:['魚'],label:'得魚',reason:'龍魚共水，如虎添翼',score:5},
-      {roots:['目'],label:'得目',reason:'龍目炯炯，洞察力強',score:4},
-      {roots:['貝'],label:'得寶',reason:'龍守寶庫，財富豐盈',score:6}
+  "龍": {
+    "like": [
+      {
+        "roots": [
+          "日",
+          "明",
+          "光",
+          "星"
+        ],
+        "label": "得天",
+        "reason": "龍見日月星飛龍在天，大展鴻圖",
+        "score": 9
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "得水",
+        "reason": "龍入大海如魚得水，大富大貴",
+        "score": 9
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "君",
+          "主",
+          "大",
+          "天",
+          "帝"
+        ],
+        "label": "得位",
+        "reason": "龍為至尊，見王字根稱帝",
+        "score": 9
+      },
+      {
+        "roots": [
+          "申",
+          "猴"
+        ],
+        "label": "三合",
+        "reason": "申子辰三合水局，貴人助力",
+        "score": 8
+      },
+      {
+        "roots": [
+          "子",
+          "鼠"
+        ],
+        "label": "三合",
+        "reason": "申子辰三合水局，財運順暢",
+        "score": 8
+      },
+      {
+        "roots": [
+          "月"
+        ],
+        "label": "明珠",
+        "reason": "龍得月明珠，日月同輝",
+        "score": 7
+      },
+      {
+        "roots": [
+          "馬",
+          "午"
+        ],
+        "label": "龍馬",
+        "reason": "龍馬精神，事業亨通",
+        "score": 6
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "得衣",
+        "reason": "龍披彩衣增添威嚴",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['戌','狗','犬','犭'],label:'六衝',reason:'辰戌相衝，強碰強，損傷慘重',score:-9},
-      {roots:['卯','兔'],label:'六害',reason:'辰卯相害，被親近之人拖累',score:-7},
-      {roots:['宀','冖','口','穴','門','广'],label:'困龍',reason:'龍入洞穴如困龍，有志難伸',score:-7},
-      {roots:['田','甫'],label:'入田',reason:'龍困淺灘=入田降格，壯志難酬',score:-6},
-      {roots:['禾','米','豆','麥'],label:'吃素',reason:'龍非草食，降格為蛇',score:-4},
-      {roots:['小','少'],label:'太小',reason:'龍太小變蛇，降格失威',score:-5},
-      {roots:['虎','寅'],label:'龍虎鬥',reason:'龍虎相爭兩敗俱傷',score:-5},
-      {roots:['石'],label:'困石',reason:'龍困石中難飛騰',score:-3},
-      {roots:['山','岳','阝'],label:'入山',reason:'龍入山=困龍，施展不開',score:-4}
+    "dislike": [
+      {
+        "roots": [
+          "戌",
+          "犬",
+          "犭"
+        ],
+        "label": "六衝",
+        "reason": "辰戌正衝，生肖最大忌",
+        "score": -9
+      },
+      {
+        "roots": [
+          "卯",
+          "兔"
+        ],
+        "label": "六害",
+        "reason": "玉兔見龍雲裡去，相害",
+        "score": -7
+      },
+      {
+        "roots": [
+          "山",
+          "岳",
+          "阝"
+        ],
+        "label": "龍虎鬥",
+        "reason": "山為虎鄉，龍虎相鬥",
+        "score": -6
+      },
+      {
+        "roots": [
+          "虎",
+          "寅"
+        ],
+        "label": "龍虎鬥",
+        "reason": "龍虎鬥兩敗俱傷",
+        "score": -6
+      },
+      {
+        "roots": [
+          "口",
+          "品"
+        ],
+        "label": "困龍",
+        "reason": "小口困龍，有志難伸",
+        "score": -5
+      },
+      {
+        "roots": [
+          "辶",
+          "弓",
+          "几",
+          "廴",
+          "乙"
+        ],
+        "label": "降格",
+        "reason": "龍降格為蛇，地位降低",
+        "score": -5
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥",
+          "艹"
+        ],
+        "label": "逢糧",
+        "reason": "龍不食人間煙火",
+        "score": -3
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "肉"
+        ],
+        "label": "遇肉",
+        "reason": "龍不食肉類五穀",
+        "score": -3
+      },
+      {
+        "roots": [
+          "未",
+          "羊"
+        ],
+        "label": "天羅",
+        "reason": "辰未天羅地網，多禍多愁",
+        "score": -5
+      },
+      {
+        "roots": [
+          "小",
+          "少"
+        ],
+        "label": "逢小",
+        "reason": "龍逢小降格，失威嚴",
+        "score": -4
+      }
     ]
   },
-  蛇: {
-    like:[
-      {roots:['口','品','宀','冖','穴','門','广'],label:'得洞',reason:'蛇有洞穴安身，安全無虞',score:8},
-      {roots:['木','林','森','東','竹'],label:'得林',reason:'蛇在樹林中悠遊自在',score:8},
-      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'蛇有華麗鱗片，如彩衣加身',score:7},
-      {roots:['王','玉','君','主','大','天'],label:'升龍',reason:'小龍見王可化龍，大富大貴',score:9},
-      {roots:['酉','丑'],label:'三合',reason:'巳酉丑三合金局，貴人相助',score:8},
-      {roots:['午','未'],label:'三會',reason:'巳午未三會南方火局，能量充沛',score:7},
-      {roots:['心','忄','月','肉'],label:'得食',reason:'蛇有肉吃，生活富足',score:7},
-      {roots:['田','甫'],label:'得田',reason:'蛇在田間捕鼠，適得其所',score:6},
-      {roots:['金'],label:'得金',reason:'巳酉丑合金局，金為貴人',score:6},
-      {roots:['目'],label:'得目',reason:'蛇目銳利，洞察力強',score:4}
+  "蛇": {
+    "like": [
+      {
+        "roots": [
+          "口",
+          "品",
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广"
+        ],
+        "label": "得洞",
+        "reason": "蛇有洞穴棲息，安全自在",
+        "score": 8
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森"
+        ],
+        "label": "得林",
+        "reason": "蛇在林中攀爬自如，如魚得水",
+        "score": 7
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "得衣",
+        "reason": "蛇披彩衣轉升為龍",
+        "score": 8
+      },
+      {
+        "roots": [
+          "酉",
+          "雞",
+          "鳥",
+          "隹",
+          "羽"
+        ],
+        "label": "六合",
+        "reason": "巳酉合金，貴人運旺",
+        "score": 8
+      },
+      {
+        "roots": [
+          "丑",
+          "牛"
+        ],
+        "label": "三合",
+        "reason": "巳酉丑三合金局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "午",
+          "馬"
+        ],
+        "label": "六合",
+        "reason": "巳午會南方火局",
+        "score": 7
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "得肉",
+        "reason": "蛇為肉食動物，有肉飽足",
+        "score": 7
+      },
+      {
+        "roots": [
+          "田"
+        ],
+        "label": "得田",
+        "reason": "蛇在田間有食物來源",
+        "score": 5
+      },
+      {
+        "roots": [
+          "辶",
+          "弓",
+          "几",
+          "廴",
+          "乙"
+        ],
+        "label": "同形",
+        "reason": "蛇形字根為同類相助",
+        "score": 6
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "得火",
+        "reason": "巳蛇屬火，見火比旺",
+        "score": 5
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "天"
+        ],
+        "label": "稱王",
+        "reason": "蛇有稱王之意（小龍）",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['亥','豬','豕'],label:'六衝',reason:'巳亥相衝，衝擊極大，破財損身',score:-9},
-      {roots:['寅','虎'],label:'六害',reason:'寅巳相害，虎蛇相鬥損傷重',score:-7},
-      {roots:['人','亻','入'],label:'遇人',reason:'人蛇相遇兩害怕，互相傷害',score:-6},
-      {roots:['日','光','明','白'],label:'見光',reason:'蛇見光暴露，處境危險',score:-5},
-      {roots:['水','氵','雨','冫'],label:'見水',reason:'水澆蛇洞，災厄臨頭',score:-5},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有打蛇之虞',score:-6},
-      {roots:['禾','米','豆','麥'],label:'吃素',reason:'蛇為肉食動物，有糧不合口',score:-3},
-      {roots:['石'],label:'遇石',reason:'被打草驚蛇，處境不利',score:-3},
-      {roots:['山','岳','阝'],label:'上山',reason:'蛇上山遇鷹，天敵在上',score:-3}
+    "dislike": [
+      {
+        "roots": [
+          "亥",
+          "豬",
+          "豕"
+        ],
+        "label": "六衝",
+        "reason": "巳亥相衝，衝擊極大",
+        "score": -9
+      },
+      {
+        "roots": [
+          "寅",
+          "虎"
+        ],
+        "label": "六害",
+        "reason": "蛇虎相害，互相傷害",
+        "score": -7
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "遇人",
+        "reason": "人蛇相遇兩害怕",
+        "score": -5
+      },
+      {
+        "roots": [
+          "日",
+          "光",
+          "明"
+        ],
+        "label": "見光",
+        "reason": "蛇怕暴露在陽光下",
+        "score": -4
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "見水",
+        "reason": "蛇入水有溺水之虞",
+        "score": -4
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥",
+          "艹"
+        ],
+        "label": "逢糧",
+        "reason": "蛇不食五穀雜糧",
+        "score": -3
+      },
+      {
+        "roots": [
+          "山",
+          "岳"
+        ],
+        "label": "上山",
+        "reason": "蛇在山中遇老虎不利",
+        "score": -3
+      },
+      {
+        "roots": [
+          "石"
+        ],
+        "label": "遇石",
+        "reason": "打草驚蛇之虞",
+        "score": -3
+      }
     ]
   },
-  馬: {
-    like:[
-      {roots:['艹','廾','卉','竹'],label:'得草',reason:'馬有青草，生活安穩',score:9},
-      {roots:['禾','米','豆','麥','粟','粒'],label:'得糧',reason:'馬有五穀草料，衣食豐足',score:8},
-      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'馬披鞍韉如穿衣，受人重用',score:8},
-      {roots:['寅','戌'],label:'三合',reason:'寅午戌三合火局，貴人運旺',score:8},
-      {roots:['巳','未'],label:'三會',reason:'巳午未三會南方火局，氣勢如虹',score:7},
-      {roots:['木','林','森','東'],label:'得林',reason:'馬在草原林間馳騁，自由自在',score:7},
-      {roots:['龍','辰'],label:'龍馬',reason:'龍馬精神，精力旺盛',score:7},
-      {roots:['人','亻','入'],label:'得人',reason:'馬有人騎，受人重用、信任',score:6},
-      {roots:['金'],label:'得金',reason:'金鞍配好馬，富貴加身',score:6},
-      {roots:['目'],label:'得目',reason:'馬目銳利，方向感強',score:4},
-      {roots:['貝'],label:'得財',reason:'馬到成功，財運亨通',score:5}
+  "馬": {
+    "like": [
+      {
+        "roots": [
+          "艹"
+        ],
+        "label": "得草",
+        "reason": "馬有草原奔馳，自在快意",
+        "score": 9
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥"
+        ],
+        "label": "得糧",
+        "reason": "馬有五穀飽足安穩",
+        "score": 7
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森",
+          "東"
+        ],
+        "label": "得林",
+        "reason": "馬在林間有蔭有靠",
+        "score": 6
+      },
+      {
+        "roots": [
+          "寅",
+          "虎"
+        ],
+        "label": "六合",
+        "reason": "寅午合火，貴人助力",
+        "score": 8
+      },
+      {
+        "roots": [
+          "戌",
+          "犬",
+          "犭"
+        ],
+        "label": "三合",
+        "reason": "寅午戌三合火局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "未",
+          "羊"
+        ],
+        "label": "三合",
+        "reason": "午未合，桃花貴人旺",
+        "score": 7
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "得衣",
+        "reason": "馬披彩衣為良駒，得遇伯樂",
+        "score": 7
+      },
+      {
+        "roots": [
+          "龍",
+          "辰"
+        ],
+        "label": "龍馬",
+        "reason": "龍馬精神，事業亨通",
+        "score": 6
+      },
+      {
+        "roots": [
+          "大",
+          "王",
+          "玉",
+          "君",
+          "天"
+        ],
+        "label": "稱王",
+        "reason": "馬逢大為良駒受重用",
+        "score": 5
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "得火",
+        "reason": "午馬屬火，見火比旺",
+        "score": 5
+      },
+      {
+        "roots": [
+          "山",
+          "岳"
+        ],
+        "label": "得山",
+        "reason": "馬在山中自在奔馳",
+        "score": 5
+      },
+      {
+        "roots": [
+          "宀",
+          "冖",
+          "穴",
+          "門"
+        ],
+        "label": "得屋",
+        "reason": "馬有馬廄安居",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['子','鼠'],label:'六衝',reason:'子午相衝，感情波折、事業動盪',score:-9},
-      {roots:['丑','牛'],label:'六害',reason:'丑午相害，辛苦勞碌無回報',score:-7},
-      {roots:['山','岳','阝'],label:'上山',reason:'馬上山路難行，有志難伸',score:-5},
-      {roots:['宀','冖','口','穴','門','广'],label:'受困',reason:'馬被關在馬廄中，失去自由',score:-6},
-      {roots:['水','氵','雨','冫'],label:'見水',reason:'馬入水溺，有危險',score:-5},
-      {roots:['田','甫'],label:'入田',reason:'馬入田踩壞莊稼，犯錯受罰',score:-5},
-      {roots:['王','大','主','君','天'],label:'太大',reason:'大馬難駕馭，反被排斥',score:-4},
-      {roots:['石'],label:'絆腳石',reason:'馬遇石絆腳，跌倒受傷',score:-4},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'馬革裹屍，有刀傷之虞',score:-5}
+    "dislike": [
+      {
+        "roots": [
+          "子",
+          "鼠"
+        ],
+        "label": "六衝",
+        "reason": "子午相衝，衝擊極大",
+        "score": -9
+      },
+      {
+        "roots": [
+          "丑",
+          "牛"
+        ],
+        "label": "六害",
+        "reason": "丑午相害，勞碌無功",
+        "score": -7
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "見水",
+        "reason": "馬入水有溺水之虞",
+        "score": -5
+      },
+      {
+        "roots": [
+          "田"
+        ],
+        "label": "入田",
+        "reason": "馬入田地被困耕田勞碌",
+        "score": -5
+      },
+      {
+        "roots": [
+          "口",
+          "品"
+        ],
+        "label": "開口",
+        "reason": "馬開口不祥，好馬不吃回頭草",
+        "score": -3
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "遇人",
+        "reason": "馬被人騎驅使勞碌",
+        "score": -4
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "遇肉",
+        "reason": "馬為草食動物不食肉",
+        "score": -3
+      },
+      {
+        "roots": [
+          "石"
+        ],
+        "label": "遇石",
+        "reason": "馬行石路不穩",
+        "score": -3
+      }
     ]
   },
-  羊: {
-    like:[
-      {roots:['艹','廾','卉','竹'],label:'得草',reason:'羊有青草，生活無憂',score:9},
-      {roots:['禾','米','豆','麥','粟','粒'],label:'得糧',reason:'五穀豐登，衣食無缺',score:9},
-      {roots:['宀','冖','門','穴','广'],label:'得屋',reason:'羊有羊舍安身，穩定安全',score:8},
-      {roots:['亥','卯'],label:'三合',reason:'亥卯未三合木局，貴人扶持',score:8},
-      {roots:['巳','午'],label:'三會',reason:'巳午未三會南方火局，能量加持',score:7},
-      {roots:['木','林','森','東'],label:'得林',reason:'有樹蔭遮護，安全舒適',score:7},
-      {roots:['口','品'],label:'得口',reason:'羊有口=善（吉字），口福享用',score:6},
-      {roots:['食'],label:'得食',reason:'有食物不愁餓',score:6},
-      {roots:['水','氵','雨','冫'],label:'得水',reason:'羊有水飲，生命滋潤',score:5},
-      {roots:['金'],label:'得金',reason:'金飾增貴氣',score:4}
+  "羊": {
+    "like": [
+      {
+        "roots": [
+          "艹",
+          "竹"
+        ],
+        "label": "得草",
+        "reason": "羊有青草飽足安穩",
+        "score": 9
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥"
+        ],
+        "label": "得糧",
+        "reason": "羊逢五穀不愁吃穿",
+        "score": 8
+      },
+      {
+        "roots": [
+          "口",
+          "品",
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广"
+        ],
+        "label": "得洞",
+        "reason": "羊有欄有洞受保護",
+        "score": 7
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森",
+          "東"
+        ],
+        "label": "得林",
+        "reason": "羊在林中有蔭安穩",
+        "score": 7
+      },
+      {
+        "roots": [
+          "亥",
+          "豬",
+          "豕"
+        ],
+        "label": "三合",
+        "reason": "亥卯未三合木局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "卯",
+          "兔"
+        ],
+        "label": "三合",
+        "reason": "亥卯未三合木局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "午",
+          "馬"
+        ],
+        "label": "六合",
+        "reason": "午未合，桃花貴人旺",
+        "score": 7
+      },
+      {
+        "roots": [
+          "小",
+          "少"
+        ],
+        "label": "得小",
+        "reason": "羊喜小得位，安穩自在",
+        "score": 6
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "得水",
+        "reason": "羊逢水有滋潤",
+        "score": 4
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "得火",
+        "reason": "未羊土藏火，見火比旺",
+        "score": 5
+      },
+      {
+        "roots": [
+          "食"
+        ],
+        "label": "得食",
+        "reason": "有食安穩",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['丑','牛'],label:'六衝',reason:'丑未相衝，做事波折、容易反覆',score:-9},
-      {roots:['子','鼠'],label:'六害',reason:'子未相害，被身邊人所累',score:-7},
-      {roots:['王','大','主','君','帝','天'],label:'犧牲格',reason:'羊太大如上供桌，為人犧牲',score:-8},
-      {roots:['衣','巾','彡','采','糸'],label:'彩衣犧牲',reason:'羊披彩衣上祭壇，華麗的犧牲品',score:-8},
-      {roots:['礻'],label:'祭祀',reason:'羊見示旁如上祭壇，為人犧牲',score:-8},
-      {roots:['人','亻','入'],label:'遇人',reason:'羊見人被宰殺，處境堪憂',score:-6},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'屠刀高懸，有性命之憂、開刀手術',score:-8},
-      {roots:['心','忄','月','肉'],label:'見肉',reason:'羊為草食，見肉非其性',score:-3},
-      {roots:['山','岳','阝'],label:'上山',reason:'羊上山為羚羊，勞碌奔波',score:-3},
-      {roots:['日','光','明','白'],label:'見日',reason:'烈日曝曬，辛苦不堪',score:-3}
+    "dislike": [
+      {
+        "roots": [
+          "丑",
+          "牛"
+        ],
+        "label": "六衝",
+        "reason": "丑未相衝，做事反覆波折",
+        "score": -9
+      },
+      {
+        "roots": [
+          "子",
+          "鼠"
+        ],
+        "label": "六害",
+        "reason": "子未相害，常遇阻礙",
+        "score": -7
+      },
+      {
+        "roots": [
+          "辰",
+          "龍"
+        ],
+        "label": "天羅",
+        "reason": "辰為天羅困羊，有志難伸",
+        "score": -6
+      },
+      {
+        "roots": [
+          "戌",
+          "犬",
+          "犭"
+        ],
+        "label": "地網",
+        "reason": "戌為地網困羊",
+        "score": -6
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "天",
+          "帝"
+        ],
+        "label": "太大",
+        "reason": "羊逢大為祭品犧牲",
+        "score": -7
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "披衣",
+        "reason": "羊披彩衣上供桌",
+        "score": -6
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "遇肉",
+        "reason": "羊為草食見肉失落",
+        "score": -4
+      },
+      {
+        "roots": [
+          "刀",
+          "刂",
+          "匕",
+          "力",
+          "斤"
+        ],
+        "label": "遇刀",
+        "reason": "羊逢刀為被宰殺",
+        "score": -6
+      },
+      {
+        "roots": [
+          "日",
+          "光",
+          "明"
+        ],
+        "label": "見日",
+        "reason": "羊在烈日下辛苦",
+        "score": -3
+      }
     ]
   },
-  猴: {
-    like:[
-      {roots:['山','岳','阝'],label:'得山林',reason:'猴在山林中稱王，自在逍遙',score:9},
-      {roots:['木','林','森','東','竹'],label:'得林',reason:'猴有樹攀爬，如魚得水',score:9},
-      {roots:['王','玉','君','主','大','天'],label:'得位',reason:'猴為山中之王，見王得位',score:8},
-      {roots:['子','辰'],label:'三合',reason:'申子辰三合水局，貴人助力',score:8},
-      {roots:['未','酉'],label:'三會',reason:'申酉戌三會西方金局',score:6},
-      {roots:['口','品','宀','冖','穴','門','广'],label:'得洞',reason:'猴有洞穴藏身，安全無虞',score:7},
-      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'猴穿衣如美猴王，威風凜凜',score:7},
-      {roots:['心','忄','月','肉'],label:'得食',reason:'猴有果肉吃，不愁溫飽',score:6},
-      {roots:['人','亻','入'],label:'得人',reason:'猴見人可表演受寵，得勢',score:5},
-      {roots:['水','氵','雨','冫'],label:'得水',reason:'申子辰合水，有水得運',score:5},
-      {roots:['金'],label:'得金',reason:'申為金，金金相輝',score:6}
+  "猴": {
+    "like": [
+      {
+        "roots": [
+          "口",
+          "品",
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广"
+        ],
+        "label": "得洞",
+        "reason": "猴有洞穴棲息安全",
+        "score": 8
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森",
+          "東"
+        ],
+        "label": "得林",
+        "reason": "猴在林中攀爬自如",
+        "score": 9
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥"
+        ],
+        "label": "得糧",
+        "reason": "猴有五穀安穩飽足",
+        "score": 7
+      },
+      {
+        "roots": [
+          "子",
+          "鼠"
+        ],
+        "label": "三合",
+        "reason": "申子辰三合水局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "辰",
+          "龍"
+        ],
+        "label": "三合",
+        "reason": "申子辰三合水局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "得水",
+        "reason": "金生水，猴逢水聰明伶俐",
+        "score": 6
+      },
+      {
+        "roots": [
+          "金",
+          "钅"
+        ],
+        "label": "得金",
+        "reason": "申猴屬金，見金比旺",
+        "score": 6
+      },
+      {
+        "roots": [
+          "土"
+        ],
+        "label": "得土",
+        "reason": "土生金，猴逢土有根基",
+        "score": 5
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "得人",
+        "reason": "猴得人緣好，有貴人",
+        "score": 5
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "天"
+        ],
+        "label": "稱王",
+        "reason": "猴為山中王，得位有威",
+        "score": 7
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "得衣",
+        "reason": "猴披衣如人，增添智慧",
+        "score": 5
+      },
+      {
+        "roots": [
+          "山",
+          "岳"
+        ],
+        "label": "得山",
+        "reason": "猴在山中自在為王",
+        "score": 6
+      },
+      {
+        "roots": [
+          "礻"
+        ],
+        "label": "得示",
+        "reason": "示旁含申為猴本位",
+        "score": 7
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "得肉",
+        "reason": "猴為雜食動物有肉飽足",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['寅','虎'],label:'六衝',reason:'寅申相衝，虎猴不合，衝突不斷',score:-9},
-      {roots:['亥','豬','豕'],label:'六害',reason:'申亥相害，被身邊人拖累',score:-7},
-      {roots:['田','甫'],label:'入田偷糧',reason:'猴入田地偷食，不受歡迎',score:-4},
-      {roots:['禾','米','豆','麥'],label:'偷食',reason:'猴偷五穀=做賊心虛',score:-4},
-      {roots:['日','光','明','白'],label:'見光',reason:'猴見光暴露行蹤',score:-3},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有傷害之虞',score:-5},
-      {roots:['火','灬'],label:'見火',reason:'火燒花果山，災厄臨頭',score:-5},
-      {roots:['辶','弓','几','廴'],label:'遇蛇',reason:'蛇猴不合，暗中使絆',score:-3},
-      {roots:['石'],label:'困石',reason:'被壓五行山下，受困不自由',score:-4}
+    "dislike": [
+      {
+        "roots": [
+          "寅",
+          "虎"
+        ],
+        "label": "六衝",
+        "reason": "寅申相衝，衝突極大",
+        "score": -9
+      },
+      {
+        "roots": [
+          "亥",
+          "豬",
+          "豕"
+        ],
+        "label": "六害",
+        "reason": "豬遇猿猴似箭投",
+        "score": -7
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "見火",
+        "reason": "火剋金，猴逢火受傷",
+        "score": -6
+      },
+      {
+        "roots": [
+          "田"
+        ],
+        "label": "入田",
+        "reason": "猴入田被獵人追捕",
+        "score": -4
+      },
+      {
+        "roots": [
+          "辶",
+          "弓",
+          "几",
+          "廴",
+          "乙"
+        ],
+        "label": "蛇形",
+        "reason": "巳猴相刑害",
+        "score": -4
+      },
+      {
+        "roots": [
+          "刀",
+          "刂",
+          "匕",
+          "力",
+          "斤"
+        ],
+        "label": "遇刀",
+        "reason": "利器在旁有傷害之虞",
+        "score": -5
+      }
     ]
   },
-  雞: {
-    like:[
-      {roots:['禾','米','豆','麥','粟'],label:'得糧',reason:'雞有穀糧，一生衣食豐足',score:9},
-      {roots:['山','岳','屮','阝'],label:'得山',reason:'雞上山頭為鳳凰，大升格',score:8},
-      {roots:['衣','巾','彡','采','糸','羽','飛'],label:'得衣',reason:'雞有彩衣/羽毛如鳳凰，華麗尊貴',score:8},
-      {roots:['王','玉','君','主','大'],label:'得位',reason:'雞冠如王，得位稱尊',score:7},
-      {roots:['巳','丑'],label:'三合',reason:'巳酉丑三合金局，貴人運旺',score:8},
-      {roots:['申','戌'],label:'三會',reason:'申酉戌三會西方金局，根基穩',score:7},
-      {roots:['宀','冖','门','广'],label:'得屋',reason:'雞有雞舍，安居不愁',score:6},
-      {roots:['金'],label:'得金',reason:'酉為金，金金相輝更吉',score:7},
-      {roots:['日','光','明'],label:'見日',reason:'雞司晨報曉，見日得其時',score:6},
-      {roots:['目'],label:'得目',reason:'雞目銳利，能找到食物',score:4},
-      {roots:['竹','木','林'],label:'得棲',reason:'雞有樹木可棲息',score:5}
+  "雞": {
+    "like": [
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥",
+          "粟"
+        ],
+        "label": "得糧",
+        "reason": "雞有五穀安穩飽足",
+        "score": 9
+      },
+      {
+        "roots": [
+          "艹"
+        ],
+        "label": "得草",
+        "reason": "雞逢草有食物來源",
+        "score": 7
+      },
+      {
+        "roots": [
+          "虫"
+        ],
+        "label": "得蟲",
+        "reason": "雞食蟲安穩自在",
+        "score": 6
+      },
+      {
+        "roots": [
+          "口",
+          "品",
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广"
+        ],
+        "label": "得洞",
+        "reason": "雞有雞舍安居",
+        "score": 7
+      },
+      {
+        "roots": [
+          "丑",
+          "牛"
+        ],
+        "label": "三合",
+        "reason": "巳酉丑三合金局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "巳",
+          "蛇",
+          "辶",
+          "弓",
+          "几",
+          "廴"
+        ],
+        "label": "三合",
+        "reason": "巳酉丑三合金局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸",
+          "羽",
+          "飛"
+        ],
+        "label": "得衣",
+        "reason": "雞有羽毛華麗增添魅力",
+        "score": 7
+      },
+      {
+        "roots": [
+          "山",
+          "岳"
+        ],
+        "label": "得山",
+        "reason": "雞上山為鳳凰升格",
+        "score": 7
+      },
+      {
+        "roots": [
+          "金",
+          "钅"
+        ],
+        "label": "得金",
+        "reason": "酉雞屬金，見金比旺",
+        "score": 6
+      },
+      {
+        "roots": [
+          "土"
+        ],
+        "label": "得土",
+        "reason": "土生金，根基穩固",
+        "score": 5
+      },
+      {
+        "roots": [
+          "小",
+          "少"
+        ],
+        "label": "得小",
+        "reason": "雞逢小安穩得位",
+        "score": 4
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "天"
+        ],
+        "label": "稱王",
+        "reason": "雞上山稱鳳凰得位",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['卯','兔'],label:'六衝',reason:'卯酉相衝，口舌是非、破財損運',score:-9},
-      {roots:['戌','狗','犬','犭'],label:'六害',reason:'酉戌相害（雞犬不寧），家庭不安',score:-7},
-      {roots:['人','亻','大'],label:'遇人',reason:'雞見人被宰殺，如上供桌',score:-6},
-      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'殺雞用牛刀，有血光之災',score:-7},
-      {roots:['口','品'],label:'小口',reason:'雞被圍籬困住，失去自由（大口宀為屋，小口為困）',score:-3},
-      {roots:['水','氵','雨','冫'],label:'落水',reason:'落湯雞，狼狽不堪',score:-4},
-      {roots:['火','灬'],label:'見火',reason:'烤雞=災厄',score:-5},
-      {roots:['石'],label:'遇石',reason:'卵擊石，自不量力',score:-3},
-      {roots:['礻'],label:'祭祀',reason:'雞見祭祀恐上供桌',score:-5}
+    "dislike": [
+      {
+        "roots": [
+          "卯",
+          "兔"
+        ],
+        "label": "六衝",
+        "reason": "卯酉相衝，衝擊極大",
+        "score": -9
+      },
+      {
+        "roots": [
+          "戌",
+          "犬",
+          "犭"
+        ],
+        "label": "六害",
+        "reason": "金雞遇犬淚雙流",
+        "score": -7
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "見水",
+        "reason": "雞落水不吉，有溺水之虞",
+        "score": -5
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "遇肉",
+        "reason": "雞為禽食不食肉",
+        "score": -4
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森"
+        ],
+        "label": "逢木",
+        "reason": "金剋木耗損精力",
+        "score": -3
+      },
+      {
+        "roots": [
+          "刀",
+          "刂",
+          "匕",
+          "力",
+          "斤"
+        ],
+        "label": "遇刀",
+        "reason": "雞遇刀如被宰殺",
+        "score": -6
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "遇人",
+        "reason": "雞逢人被宰殺",
+        "score": -5
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "見火",
+        "reason": "烤雞大凶",
+        "score": -6
+      }
     ]
   },
-  狗: {
-    like:[
-      {roots:['宀','冖','廣','門','广'],label:'得屋',reason:'狗有家有主人，忠誠得回報',score:9},
-      {roots:['人','亻','入'],label:'得主',reason:'狗見人有主人疼愛，忠心耿耿',score:8},
-      {roots:['心','忄','月','肉'],label:'得食',reason:'狗有肉吃，生活富足',score:8},
-      {roots:['寅','午'],label:'三合',reason:'寅午戌三合火局，貴人運旺',score:8},
-      {roots:['卯','辰'],label:'三會',reason:'寅卯辰三會（間接助力）',score:5},
-      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'狗有衣服穿為寵物狗，受寵愛',score:7},
-      {roots:['小','少'],label:'得名',reason:'狗不嫌家貧，小而得寵',score:5},
-      {roots:['木','林','竹'],label:'得蔭',reason:'有樹蔭休息，安穩自在',score:4},
-      {roots:['食'],label:'得食',reason:'有食物不缺',score:5},
-      {roots:['貝'],label:'得財',reason:'忠犬守財，財運穩',score:5}
+  "狗": {
+    "like": [
+      {
+        "roots": [
+          "口",
+          "品",
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广"
+        ],
+        "label": "得洞",
+        "reason": "狗有家有窩，忠心守護",
+        "score": 8
+      },
+      {
+        "roots": [
+          "心",
+          "忄",
+          "月",
+          "肉"
+        ],
+        "label": "得肉",
+        "reason": "狗為肉食動物，有肉飽足",
+        "score": 9
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥"
+        ],
+        "label": "得糧",
+        "reason": "狗有五穀安穩",
+        "score": 6
+      },
+      {
+        "roots": [
+          "寅",
+          "虎"
+        ],
+        "label": "三合",
+        "reason": "寅午戌三合火局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "午",
+          "馬"
+        ],
+        "label": "三合",
+        "reason": "寅午戌三合火局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "卯",
+          "兔"
+        ],
+        "label": "六合",
+        "reason": "卯戌合火，貴人運旺",
+        "score": 8
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "得人",
+        "reason": "狗為人類忠僕，有人依靠",
+        "score": 7
+      },
+      {
+        "roots": [
+          "小",
+          "少"
+        ],
+        "label": "得小",
+        "reason": "狗逢小可愛得人疼",
+        "score": 5
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "得衣",
+        "reason": "狗披衣受人寵愛",
+        "score": 6
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森"
+        ],
+        "label": "得林",
+        "reason": "狗在林中自在",
+        "score": 4
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "得火",
+        "reason": "戌狗土藏金，見火溫暖",
+        "score": 5
+      },
+      {
+        "roots": [
+          "土"
+        ],
+        "label": "得土",
+        "reason": "狗逢土根基穩",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['辰','龍'],label:'六衝',reason:'辰戌相衝，龍爭虎鬥般激烈',score:-9},
-      {roots:['酉','雞','鳥','隹','羽','飛'],label:'六害',reason:'雞犬不寧，家庭不和諧',score:-7},
-      {roots:['禾','米','豆','麥','田'],label:'吃素',reason:'狗吃素=不得其食，志不在此',score:-4},
-      {roots:['王','大','主','君'],label:'太大',reason:'狗太大聲令人害怕，反被排斥',score:-4},
-      {roots:['日','光','明','白'],label:'見日',reason:'狗吠日，多管閒事惹是非',score:-4},
-      {roots:['水','氵','雨','冫'],label:'落水',reason:'落水狗人人喊打，處境艱難',score:-6},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有傷害之虞',score:-5},
-      {roots:['火','灬'],label:'見火',reason:'狗急跳牆，火急不安',score:-4},
-      {roots:['石'],label:'遇石',reason:'狗碰石傷身',score:-3},
-      {roots:['辶','弓','几','廴'],label:'遇蛇',reason:'蛇犬不合，暗中算計',score:-3}
+    "dislike": [
+      {
+        "roots": [
+          "辰",
+          "龍"
+        ],
+        "label": "六衝",
+        "reason": "辰戌正衝，天羅地網",
+        "score": -9
+      },
+      {
+        "roots": [
+          "酉",
+          "雞",
+          "鳥",
+          "隹",
+          "羽",
+          "飛"
+        ],
+        "label": "六害",
+        "reason": "雞犬不寧，口舌是非",
+        "score": -7
+      },
+      {
+        "roots": [
+          "丑",
+          "牛"
+        ],
+        "label": "三刑",
+        "reason": "丑戌相刑，是非煩惱",
+        "score": -6
+      },
+      {
+        "roots": [
+          "未",
+          "羊"
+        ],
+        "label": "相破",
+        "reason": "未戌相破，做事反覆",
+        "score": -5
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "落水",
+        "reason": "落水狗人人喊打",
+        "score": -6
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥",
+          "艹"
+        ],
+        "label": "素食",
+        "reason": "狗為肉食見素不飽",
+        "score": -3
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "天"
+        ],
+        "label": "太大",
+        "reason": "狗稱王有虎視耽耽之憂",
+        "score": -4
+      },
+      {
+        "roots": [
+          "日",
+          "光",
+          "明"
+        ],
+        "label": "見日",
+        "reason": "狗吠日，愛管閒事徒勞",
+        "score": -4
+      },
+      {
+        "roots": [
+          "田"
+        ],
+        "label": "入田",
+        "reason": "狗入田追兔不受歡迎",
+        "score": -3
+      }
     ]
   },
-  豬: {
-    like:[
-      {roots:['宀','冖','穴','門','廣','广'],label:'得洞',reason:'豬有豬舍安身，生活穩定',score:8},
-      {roots:['禾','米','豆','麥','粟','粒'],label:'得食',reason:'豬有糧食吃到飽，一生富足',score:9},
-      {roots:['木','林','森','東','竹'],label:'三合/得蔭',reason:'亥卯未三合木局，有掩護有貴人',score:8},
-      {roots:['卯','兔'],label:'三合貴人',reason:'卯為三合貴人，大吉',score:8},
-      {roots:['未','羊'],label:'三合貴人',reason:'未為三合貴人，大吉',score:7},
-      {roots:['子','丑'],label:'三會',reason:'亥子丑三會北方水局，根基穩',score:7},
-      {roots:['口','品'],label:'得口',reason:'豬有口福，享受口福之樂',score:6},
-      {roots:['田','甫'],label:'得田',reason:'豬在田間自在覓食',score:5},
-      {roots:['水','氵','雨','冫'],label:'得水',reason:'亥為水，見水如魚得水',score:6},
-      {roots:['金'],label:'得金',reason:'金生水，金為助力',score:5},
-      {roots:['食'],label:'享食',reason:'豬有食最享福',score:7},
-      {roots:['貝'],label:'得財',reason:'財寶入庫，豐衣足食',score:5}
+  "豬": {
+    "like": [
+      {
+        "roots": [
+          "口",
+          "品",
+          "宀",
+          "冖",
+          "穴",
+          "門",
+          "广"
+        ],
+        "label": "得洞",
+        "reason": "豬有豬圈安居，被養育照顧",
+        "score": 8
+      },
+      {
+        "roots": [
+          "禾",
+          "米",
+          "豆",
+          "麥",
+          "粟"
+        ],
+        "label": "得糧",
+        "reason": "豬有五穀安穩飽足",
+        "score": 9
+      },
+      {
+        "roots": [
+          "艹"
+        ],
+        "label": "得草",
+        "reason": "豬逢草有食物安穩",
+        "score": 7
+      },
+      {
+        "roots": [
+          "卯",
+          "兔"
+        ],
+        "label": "三合",
+        "reason": "亥卯未三合木局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "未",
+          "羊"
+        ],
+        "label": "三合",
+        "reason": "亥卯未三合木局",
+        "score": 8
+      },
+      {
+        "roots": [
+          "子",
+          "鼠"
+        ],
+        "label": "三會",
+        "reason": "亥子丑三會北方水局",
+        "score": 7
+      },
+      {
+        "roots": [
+          "丑",
+          "牛"
+        ],
+        "label": "三會",
+        "reason": "亥子丑三會水局",
+        "score": 7
+      },
+      {
+        "roots": [
+          "木",
+          "林",
+          "森",
+          "東"
+        ],
+        "label": "得林",
+        "reason": "豬在林中有木有靠",
+        "score": 6
+      },
+      {
+        "roots": [
+          "月"
+        ],
+        "label": "得月",
+        "reason": "月為卯兔，三合有助",
+        "score": 6
+      },
+      {
+        "roots": [
+          "水",
+          "氵",
+          "雨",
+          "冫"
+        ],
+        "label": "得水",
+        "reason": "亥豬屬水，逢水旺",
+        "score": 6
+      },
+      {
+        "roots": [
+          "金",
+          "钅"
+        ],
+        "label": "得金",
+        "reason": "金生水，有長輩助力",
+        "score": 5
+      },
+      {
+        "roots": [
+          "田"
+        ],
+        "label": "得田",
+        "reason": "豬在田中有糧有食",
+        "score": 5
+      }
     ],
-    dislike:[
-      {roots:['巳','蛇','辶','弓','几','廴','之','乙'],label:'蛇豬衝',reason:'巳亥六衝——易犯小人、血光意外、勞碌無功',score:-9},
-      {roots:['申','猴','袁','坤'],label:'六害',reason:'申亥相害，身邊人成絆腳石',score:-7},
-      {roots:['人','亻','仁','伊','佳','俊','傑'],label:'遇人被宰',reason:'豬見人如上屠場，為人作嫁',score:-7},
-      {roots:['彡','巾','衣','糸','帛','采','冠'],label:'彩衣犧牲',reason:'豬披彩衣上祭壇，犧牲品——名聲在外，內心痛苦',score:-9},
-      {roots:['王','大','主','君','帝','天'],label:'犧牲格',reason:'豬登大位如被獻祭，為人犧牲、勞而無功',score:-9},
-      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'屠刀高懸，有開刀手術、血光之災',score:-7},
-      {roots:['日','光','明','白'],label:'見日',reason:'豬見日光不自在，暴露弱點',score:-4},
-      {roots:['礻'],label:'祭祀',reason:'豬見祭祀如上供桌，為人犧牲',score:-8},
-      {roots:['火','灬'],label:'見火',reason:'烤豬=大災厄',score:-6},
-      {roots:['山','岳','阝'],label:'上山',reason:'豬上山勞碌，非其所宜',score:-3}
+    "dislike": [
+      {
+        "roots": [
+          "巳",
+          "蛇"
+        ],
+        "label": "六衝",
+        "reason": "巳亥相衝，衝擊極大",
+        "score": -9
+      },
+      {
+        "roots": [
+          "辶",
+          "弓",
+          "几",
+          "廴",
+          "乙"
+        ],
+        "label": "蛇形",
+        "reason": "蛇形字根=六衝巳蛇",
+        "score": -8
+      },
+      {
+        "roots": [
+          "申",
+          "猴"
+        ],
+        "label": "六害",
+        "reason": "豬遇猿猴似箭投",
+        "score": -7
+      },
+      {
+        "roots": [
+          "衣",
+          "巾",
+          "彡",
+          "采",
+          "糸"
+        ],
+        "label": "披衣",
+        "reason": "豬披彩衣上供桌祭祀",
+        "score": -7
+      },
+      {
+        "roots": [
+          "王",
+          "玉",
+          "大",
+          "君",
+          "天",
+          "帝"
+        ],
+        "label": "太大",
+        "reason": "豬逢大為祭品犧牲",
+        "score": -6
+      },
+      {
+        "roots": [
+          "刀",
+          "刂",
+          "匕",
+          "力",
+          "斤"
+        ],
+        "label": "遇刀",
+        "reason": "殺豬刀大凶",
+        "score": -7
+      },
+      {
+        "roots": [
+          "礻"
+        ],
+        "label": "祭祀",
+        "reason": "豬見祭祀如上供桌",
+        "score": -8
+      },
+      {
+        "roots": [
+          "火",
+          "灬"
+        ],
+        "label": "見火",
+        "reason": "烤豬大凶",
+        "score": -6
+      },
+      {
+        "roots": [
+          "山",
+          "岳",
+          "阝"
+        ],
+        "label": "上山",
+        "reason": "豬上山勞碌",
+        "score": -3
+      },
+      {
+        "roots": [
+          "人",
+          "亻",
+          "入"
+        ],
+        "label": "遇人",
+        "reason": "人豬相遇，豬被宰殺",
+        "score": -5
+      }
     ]
   }
 };
@@ -6327,7 +8512,7 @@ function renderName(){
 
       pos.charResults.forEach(cr => {
         if(cr.hits.length === 0){
-          html += `<p class="text-dim text-sm" style="margin:.3rem 0">「${cr.char}」${cr.roots.length?'字根：'+cr.roots.join('、')+'，':''}無特殊喜忌影響。</p>`;
+          html += `<p class="text-dim text-sm" style="margin:.3rem 0">「${cr.char}」字根：${cr.roots.length?cr.roots.join('、'):'（未收錄）'}，${cr.roots.length?'對此生肖屬中性，不加分也不扣分':'此字較為少見，無法判定字根'}。</p>`;
         } else {
           cr.hits.forEach(h => {
             const icon = h.type==='吉' ? '✅' : '❌';
@@ -8603,14 +10788,29 @@ if(_origRunAnalysis){
    Init all engagement features
    ============================================================= */
 document.addEventListener('DOMContentLoaded', function(){
-  renderDailyFortune();
-  renderAchievements();
-  renderCrystalEncyclopedia();
-  initReviewCarousel();
+  // 延遲初始化：結果頁出現時才渲染重 DOM 功能
+  let extraInited = false;
+  function initExtraFeatures(){
+    if(extraInited) return;
+    extraInited = true;
+    renderDailyFortune();
+    renderAchievements();
+    renderCrystalEncyclopedia();
+    initReviewCarousel();
+  }
+  // 監聽結果頁出現
+  const obs = new IntersectionObserver((entries)=>{
+    if(entries[0].isIntersecting){ initExtraFeatures(); obs.disconnect(); }
+  },{threshold:0.1});
+  const step3 = document.getElementById('step-3');
+  if(step3) obs.observe(step3);
+  // fallback: 如果 IntersectionObserver 不支援或 3 秒後結果頁仍未出現
+  setTimeout(initExtraFeatures, 5000);
   
   // Nav tab switching for new sections
   document.querySelectorAll('.nav-extra-tab').forEach(tab=>{
     tab.addEventListener('click', function(){
+      initExtraFeatures(); // 確保點 tab 時已初始化
       const target = this.dataset.target;
       document.querySelectorAll('.extra-section').forEach(s=>s.classList.add('hidden'));
       const section = document.getElementById(target);
