@@ -248,6 +248,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .daily-mini-arrow{transition:transform .3s ease}
 /* Remedy Alert - emotional trigger */
 .remedy-alert{border:1px solid var(--c-border);background:linear-gradient(135deg,rgba(212,175,55,.04),rgba(30,12,12,.6));position:relative;overflow:visible}
+.remedy-alert.alert-danger{border-color:rgba(248,113,113,0.5);background:linear-gradient(135deg,rgba(180,30,30,.12),rgba(30,12,12,.8));animation:pulse-danger 2s ease-in-out infinite}
+@keyframes pulse-danger{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,0)}50%{box-shadow:0 0 20px 2px rgba(248,113,113,0.15)}}
 .remedy-alert-header{display:flex;align-items:flex-start;gap:var(--sp-md);margin-bottom:var(--sp-md)}
 .remedy-icon{font-size:2.2rem;flex-shrink:0;line-height:1}
 .remedy-title{color:var(--c-gold);font-size:1.15rem;margin:0 0 .3rem 0;font-weight:700}
@@ -260,7 +262,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .diag-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
 .diag-bar{height:100%;border-radius:4px;transition:width .6s ease}
 .diag-tag{font-size:.75rem;padding:2px 6px;border-radius:3px;font-weight:600}
-.diag-tag-lack{background:rgba(160,140,255,.15);color:#b0a0ff}
+.diag-tag-lack{background:rgba(248,113,113,.2);color:#f87171}
+.diag-tag-critical{background:rgba(248,60,60,.25);color:#ff4444;font-weight:700}
 .diag-tag-excess{background:rgba(100,200,255,.2);color:#64c8ff}
 .diag-tag-ok{background:rgba(100,255,100,.15);color:#7ddf7d}
 .remedy-arrow{display:flex;align-items:center;justify-content:center;gap:var(--sp-sm);padding:var(--sp-sm) 0}
@@ -1289,14 +1292,21 @@ html{scroll-behavior:smooth}
     <p class="text-xs text-muted mt-xs">會下載 .ics 日曆檔，自動加入手機行事曆</p>
   </div>
 
-  <!-- 趣味功能（結果頁底部，看完結果才看到） -->
-  <div class="card mt-lg" style="text-align:center;border-style:dashed;opacity:0.85">
-    <p class="text-dim" style="margin-bottom:var(--sp-sm)">🎮 看完結果了？來玩點有趣的</p>
-
+  <!-- 趣味功能（分享後才解鎖） -->
+  <div class="mt-lg" id="extra-features-gate" style="text-align:center;padding:var(--sp-md) 0">
+    <!-- 鎖定狀態 -->
+    <div id="extra-locked" class="card" style="border-style:dashed;border-color:rgba(255,255,255,0.1);padding:var(--sp-lg);text-align:center">
+      <p style="font-size:1.5rem;margin-bottom:var(--sp-sm)">🔒</p>
+      <p class="text-gold serif" style="font-size:1rem;margin-bottom:var(--sp-xs)">分享解鎖更多功能</p>
+      <p class="text-dim text-sm" style="margin-bottom:var(--sp-md)">分享給朋友後，即可開啟每日運勢籤、水晶配對、五行問答等趣味功能</p>
+      <button class="btn btn-outline btn-sm" onclick="shareToUnlock()"><i class="fas fa-paper-plane"></i> 分享並解鎖</button>
+    </div>
+    <!-- 解鎖後的趣味功能（初始隱藏） -->
+    <div id="extra-unlocked" style="display:none">
 
   <div class="daily-mini" style="margin:0 0 var(--sp-sm) 0">
     <div class="daily-mini-toggle" onclick="this.parentElement.classList.toggle('open');if(!this._init){initExtraFeatures();this._init=true}">
-      <span><i class="fas fa-magic"></i> 趣味功能：運勢籤 · 水晶配對 · 五行問答...</span>
+      <span><i class="fas fa-magic"></i> 🎮 趣味功能：運勢籤 · 水晶配對 · 五行問答...</span>
       <i class="fas fa-chevron-down daily-mini-arrow"></i>
     </div>
     <div class="daily-mini-body">
@@ -1516,7 +1526,8 @@ function renderRemedy(bazi,type){
     const ideal=20; // 平衡=20%
     const diff=pct-ideal;
     let tag,tagClass;
-    if(pct<=8){tag='待補充';tagClass='diag-tag-lack';}
+    if(pct<=5){tag='嚴重不足';tagClass='diag-tag-critical';}
+    else if(pct<=10){tag='不足';tagClass='diag-tag-critical';}
     else if(pct<=14){tag='偏弱';tagClass='diag-tag-lack';}
     else if(pct<=26){tag='正常';tagClass='diag-tag-ok';}
     else if(pct<=35){tag='偏旺';tagClass='diag-tag-excess';}
@@ -1538,22 +1549,29 @@ function renderRemedy(bazi,type){
 
   let icon='🔮', title='', subtitle='';
   if(weakEls.length>=2){
-    icon='🔮';title=`你的${weakEls.join('、')}行能量較薄弱`;
-    subtitle='補充對應頻率的能量，有助於整體運勢提升';
+    icon='⚠️';title=`檢測結果：你的能量磁場嚴重「缺${weakEls.join('、')}」！`;
+    subtitle=`這導致你最近做事提不起勁、容易遇阻。你需要補充「${weakEls.map(e=>e+'行').join('＋')}」能量來平衡。`;
+    alertEl.classList.add('alert-danger');
   }else if(weakEls.length===1){
-    icon='🔮';title=`發現「${weakEls[0]}行」能量偏弱`;
-    subtitle='適當補充可以讓這個面向更順暢';
+    const weakDesc={金:'決斷力不足、容易猶豫、呼吸系統弱',木:'缺乏衝勁、肝火鬱結、做事拖延',水:'智慧受阻、腎氣不足、容易招小人',火:'做事提不起勁、心氣不足、貴人運弱',土:'根基不穩、腸胃虛弱、存不住錢'};
+    icon='⚠️';title=`檢測結果：你的能量磁場嚴重「缺${weakEls[0]}」！`;
+    subtitle=`這導致你${weakDesc[weakEls[0]]||'最近運勢受阻'}。你需要補充「${weakEls[0]+'行'}」能量來平衡。`;
+    alertEl.classList.add('alert-danger');
   }else if(strongEls.length){
     icon='💡';title=`你的${strongEls.join('、')}行能量充沛`;
     subtitle='適度引導分散，讓整體能量更均衡';
+    alertEl.classList.remove('alert-danger');
   }else{
     icon='✨';title='你的五行能量分佈均衡';
     subtitle='體質很好，小幅優化就能更上一層樓';
+    alertEl.classList.remove('alert-danger');
   }
 
   document.getElementById('remedy-icon').textContent=icon;
   document.getElementById('remedy-title').textContent=title;
+  document.getElementById('remedy-title').style.color=weakEls.length>0?'#f87171':'var(--c-gold)';
   document.getElementById('remedy-subtitle').textContent=subtitle;
+  document.getElementById('remedy-subtitle').style.color=weakEls.length>0?'#fca5a5':'var(--c-text-dim)';
   document.getElementById('remedy-diagnosis').innerHTML=diagHTML;
 
   // ── 改運處方 ──
@@ -3057,6 +3075,39 @@ function parseQuestionIntent(question, type) {
   // 主動：我去做某事
   result.isActive = /我[要想去該能可會]|我去|我主動|我追|我告白|我找|我聯繫|我連絡|能追到|追得到|追到|我能|我可以|我來|我做|我投|我買|我賣|我換|我辭|我創/.test(q);
 
+  // ═══ 問他人運勢偵測 ═══
+  // 使用者問的不是自己，而是某個第三方的運勢/狀況
+  const thirdPartyMatch = q.match(/(?:母親|媽媽?|爸爸?|父親|兒子|女兒|小孩|孩子|老公|老婆|另一半|伴侶|男友|女友|前任|朋友|同事|老闆|主管|哥哥?|姐姐?|姊姊?|弟弟?|妹妹?|公公|婆婆|爺爺|奶奶|外公|外婆)(?:的|今年|最近|目前)?(?:運勢|運氣|狀況|身體|健康|工作|事業|財運|感情|姻緣|前途|未來|發展|情況|如何|怎麼樣|怎樣|好不好|好嗎)/);
+  const thirdPartyMatch2 = q.match(/(?:今年|最近|目前)(?:母親|媽媽?|爸爸?|父親|兒子|女兒|小孩|孩子|老公|老婆|另一半|伴侶|男友|女友|前任|朋友|同事|老闆|哥哥?|姐姐?|姊姊?|弟弟?|妹妹?)(?:的)?(?:運勢|運氣|狀況|身體|健康|工作|事業|財運|感情|如何|怎麼樣|怎樣|好不好|好嗎)/);
+  result.isThirdParty = !!(thirdPartyMatch || thirdPartyMatch2);
+  result.thirdPartyRole = '';
+  if(result.isThirdParty){
+    const roleMatch = q.match(/母親|媽媽?|爸爸?|父親|兒子|女兒|小孩|孩子|老公|老婆|另一半|伴侶|男友|女友|前任|朋友|同事|老闆|主管|哥哥?|姐姐?|姊姊?|弟弟?|妹妹?|公公|婆婆|爺爺|奶奶|外公|外婆/);
+    result.thirdPartyRole = roleMatch ? roleMatch[0] : '';
+    // 判斷這個人對應八字的哪個六親
+    const roleToBazi = {
+      '母親':'印星','媽媽':'印星','媽':'印星','父親':'偏財','爸爸':'偏財','爸':'偏財',
+      '兒子':'食傷','女兒':'食傷','小孩':'食傷','孩子':'食傷',
+      '老公':'官殺','老婆':'財星','另一半':'配偶','伴侶':'配偶','男友':'官殺','女友':'財星',
+      '前任':'配偶','朋友':'比劫','同事':'比劫','老闆':'官殺','主管':'官殺',
+      '哥哥':'比肩','姐姐':'比肩','姊姊':'比肩','弟弟':'劫財','妹妹':'劫財',
+      '哥':'比肩','姐':'比肩','姊':'比肩','弟':'劫財','妹':'劫財',
+      '公公':'偏財','婆婆':'印星','爺爺':'偏財','奶奶':'印星','外公':'偏財','外婆':'印星'
+    };
+    result.thirdPartyBazi = roleToBazi[result.thirdPartyRole] || '';
+    // 對應紫微宮位
+    const roleToZiwei = {
+      '母親':'父母','媽媽':'父母','媽':'父母','父親':'父母','爸爸':'父母','爸':'父母',
+      '兒子':'子女','女兒':'子女','小孩':'子女','孩子':'子女',
+      '老公':'夫妻','老婆':'夫妻','另一半':'夫妻','伴侶':'夫妻','男友':'夫妻','女友':'夫妻',
+      '前任':'夫妻','朋友':'交友','同事':'交友','老闆':'官祿','主管':'官祿',
+      '哥哥':'兄弟','姐姐':'兄弟','姊姊':'兄弟','弟弟':'兄弟','妹妹':'兄弟',
+      '哥':'兄弟','姐':'兄弟','姊':'兄弟','弟':'兄弟','妹':'兄弟',
+      '公公':'父母','婆婆':'父母','爺爺':'父母','奶奶':'父母','外公':'父母','外婆':'父母'
+    };
+    result.thirdPartyZiwei = roleToZiwei[result.thirdPartyRole] || '';
+  }
+
   // 提取主題（六大方向都要有對應詞彙）
   const TOPIC_DICT = {
     love: /另一半|對象|他|她|伴侶|男友|女友|老公|老婆|愛人|戀人|曖昧|前任|桃花|結婚|離婚|復合|分手|告白|追|喜歡|暗戀|正緣|偏緣|緣分|姻緣|感情|戀愛|愛情|婚姻/,
@@ -3090,6 +3141,107 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
   let liuNian=null;
   if(curDy&&curDy.liuNian) liuNian=curDy.liuNian.find(l=>l.year===thisYear);
   const q=intent.rawQuestion||'';
+
+  // ══════ 攔截：問他人運勢 ══════
+  // 從使用者命盤的六親星/宮位推導，而非直接答自己的運勢
+  if(intent.isThirdParty && intent.thirdPartyRole){
+    const role = intent.thirdPartyRole;
+    const baziRef = intent.thirdPartyBazi || '';
+    const zwGong = intent.thirdPartyZiwei || '';
+
+    // 從八字推導六親星的強弱
+    let sixRelScore = 0;
+    let sixRelEvidence = [];
+    const sixRelMap = {'印星':typeof BE_SHENG!=='undefined'?BE_SHENG[el]:'','偏財':typeof KE!=='undefined'?KE[el]:'','食傷':typeof SHENG!=='undefined'?SHENG[el]:'','官殺':typeof KE_BY!=='undefined'?KE_BY:null,'財星':typeof KE!=='undefined'?KE[el]:'','比劫':el,'配偶':strong?typeof KE!=='undefined'?KE[el]:'':typeof KE_BY!=='undefined'?null:'','比肩':el,'劫財':el};
+    // 簡化：從五行能量推估
+    if(baziRef==='印星'){
+      const inEl=typeof BE_SHENG!=='undefined'?BE_SHENG[el]:'';
+      if(inEl && bazi.ep && bazi.ep[inEl]>20){sixRelScore+=2;sixRelEvidence.push('你命盤印星旺，代表'+role+'對你有力，'+role+'本身狀態不差');}
+      else if(inEl && bazi.ep && bazi.ep[inEl]>10){sixRelScore+=1;sixRelEvidence.push('印星中等，'+role+'尚可');}
+      else{sixRelScore-=1;sixRelEvidence.push('印星偏弱，'+role+'可能有些辛苦或與你緣分較薄');}
+    } else if(baziRef==='偏財'){
+      const caiEl=typeof KE!=='undefined'?KE[el]:'';
+      if(caiEl && bazi.ep && bazi.ep[caiEl]>20){sixRelScore+=2;sixRelEvidence.push('偏財旺，'+role+'對你有助力，'+role+'自身也還不錯');}
+      else if(caiEl && bazi.ep && bazi.ep[caiEl]>10){sixRelScore+=1;}
+      else{sixRelScore-=1;sixRelEvidence.push('偏財偏弱，'+role+'可能比較辛勞');}
+    } else if(baziRef==='食傷'){
+      const shiEl=typeof SHENG!=='undefined'?SHENG[el]:'';
+      if(shiEl && bazi.ep && bazi.ep[shiEl]>20){sixRelScore+=2;sixRelEvidence.push('食傷旺，'+role+'聰明有活力');}
+      else if(shiEl && bazi.ep && bazi.ep[shiEl]>10){sixRelScore+=1;}
+      else{sixRelScore-=1;sixRelEvidence.push('食傷弱，'+role+'發展可能較平淡');}
+    } else if(baziRef==='官殺'){
+      const guanEl=typeof KE_BY!=='undefined'&&typeof KE_BY==='object'?'':typeof KE!=='undefined'?Object.keys(KE).find(k=>KE[k]===el)||'':'';
+      sixRelScore+=0; // 中性
+      sixRelEvidence.push('從官殺星看'+role);
+    } else {
+      sixRelEvidence.push('從你的命盤推導'+role+'的狀況');
+    }
+
+    // 從紫微宮位推導
+    let zwInfo = '';
+    if(S.ziwei && zwGong){
+      const GONG_MAP={'父母':9,'夫妻':2,'子女':3,'兄弟':7,'交友':7,'官祿':8};
+      const gIdx = GONG_MAP[zwGong];
+      if(gIdx!==undefined && S.ziwei.palaces[gIdx]){
+        const palace = S.ziwei.palaces[gIdx];
+        const stars = palace.stars || [];
+        const goodStars=['紫微','天府','天同','天梁','天相','太陽','太陰'];
+        const badStars=['擎羊','陀羅','火星','鈴星'];
+        const hasGood = stars.some(s=>goodStars.includes(s.name));
+        const hasBad = stars.some(s=>badStars.includes(s.name));
+        const hasLu = stars.some(s=>s.hua==='化祿');
+        const hasJi = stars.some(s=>s.hua==='化忌');
+        if(hasLu){sixRelScore+=2;zwInfo=`紫微${zwGong}宮有化祿，${role}方面有福氣。`;}
+        else if(hasGood&&!hasBad){sixRelScore+=1;zwInfo=`紫微${zwGong}宮吉星坐守，${role}狀況不錯。`;}
+        else if(hasJi){sixRelScore-=2;zwInfo=`紫微${zwGong}宮有化忌，${role}方面要注意。`;}
+        else if(hasBad){sixRelScore-=1;zwInfo=`紫微${zwGong}宮有煞星，${role}可能有些波折。`;}
+        else{zwInfo=`紫微${zwGong}宮星曜中性，${role}狀況平穩。`;}
+      }
+    }
+
+    // 大運對六親的影響
+    let dyHint = '';
+    if(curDy){
+      if(curDy.level.includes('吉')){sixRelScore+=1;dyHint=`你目前大運${curDy.gz}（${curDy.level}），整體運勢好的時候，身邊的人也會受到正面影響。`;}
+      else if(curDy.level.includes('凶')){sixRelScore-=1;dyHint=`你目前大運${curDy.gz}（${curDy.level}），運勢有壓力時，與${role}的互動也可能出現摩擦。`;}
+      else{dyHint=`你目前大運${curDy.gz}（${curDy.level}），運勢平穩。`;}
+    }
+
+    // 組裝回答
+    let answer = '';
+    const overall = sixRelScore >= 2 ? 'great' : sixRelScore >= 0 ? 'good' : 'tough';
+    const aspect = q.match(/運勢|運氣|狀況|身體|健康|工作|事業|財運|感情|前途/)?.[0] || '運勢';
+
+    if(overall==='great'){
+      answer = `<strong>${role}今年${aspect}不錯。</strong> `;
+      answer += `從你的命盤來看，代表${role}的六親星能量充足，表示${role}自身狀態良好，跟你的關係也和諧。`;
+      if(zwInfo) answer += zwInfo;
+      if(dyHint) answer += dyHint;
+      answer += ` 有利時期多陪伴${role}、表達關心，雙方關係會更緊密。`;
+    } else if(overall==='good'){
+      answer = `<strong>${role}今年${aspect}尚可，沒有大問題。</strong> `;
+      answer += `從你的命盤推導，${role}的狀況屬於平穩中有小波動。`;
+      if(zwInfo) answer += zwInfo;
+      if(dyHint) answer += dyHint;
+      answer += ` 建議多關心${role}的${aspect==='健康'||aspect==='身體'?'飲食作息':'日常生活'}，有問題及早發現。`;
+    } else {
+      answer = `<strong>${role}今年可能會比較辛苦。</strong> `;
+      answer += `從你的命盤來看，代表${role}的六親星能量偏弱，表示${role}可能面臨一些壓力或挑戰。`;
+      if(zwInfo) answer += zwInfo;
+      if(dyHint) answer += dyHint;
+      answer += ` 建議多花時間陪伴${role}，主動關心${role}的狀況，有需要就幫忙分擔。`;
+    }
+
+    // 補充說明
+    answer += `<p class="text-sm text-dim" style="margin-top:.8rem">💡 <strong>注意：</strong>此分析是從你的命盤推導${role}的狀況（六親星＋紫微宮位），能反映你與${role}之間的互動能量。若要精確分析${role}本人的運勢，需要${role}的出生時辰另行排盤。</p>`;
+
+    const FD={金:'西方',木:'東方',水:'北方',火:'南方',土:'中央'};
+    const FC={金:'白/銀',木:'綠',水:'藍/黑',火:'紅/紫',土:'黃/棕'};
+    const favEl=fav[0]||'土';
+    const tip=`想增強與${role}的和諧能量，可在家中${FD[favEl]}方位擺放綠植或水晶。`;
+
+    return `<div style="border-left:3px solid var(--c-gold);padding-left:1rem;margin-bottom:1rem">${answer}</div><p class="text-sm text-dim" style="margin-top:.5rem">💡 ${tip}</p>`;
+  }
 
   /* ═══ 綜合評分（四步分析法） ═══ */
   let score=0, evidence=[];
@@ -5035,237 +5187,319 @@ const ZODIAC_DIZHI={鼠:'子',牛:'丑',虎:'寅',兔:'卯',龍:'辰',蛇:'巳',
 const ZODIAC_NAME_DB = {
   鼠: {
     like:[
-      {roots:['口','品','呂','回'],label:'得洞',reason:'鼠入洞穴，有安身之所，衣食無憂',score:8},
-      {roots:['宀','冖','穴'],label:'得屋',reason:'有屋有頂，安居樂業',score:8},
-      {roots:['禾','米','豆','麥','粟','粒','黍'],label:'得食',reason:'鼠有糧倉，一生不愁吃穿',score:9},
-      {roots:['王','玉','君','令'],label:'得位',reason:'鼠排十二生肖之首，見王字根為得位',score:7},
-      {roots:['夕','夜'],label:'得時',reason:'鼠為夜行動物，夜晚如魚得水',score:6},
-      {roots:['申','辰'],label:'三合',reason:'申子辰三合水局，有貴人相助',score:8},
-      {roots:['亥','丑'],label:'六合三會',reason:'亥子丑三會北方水局，根基穩固',score:7},
-      {roots:['彩','衣','巾','糸','帛'],label:'得衣',reason:'鼠得彩衣為華麗，增添光彩',score:6}
+      {roots:['口','品','宀','冖','穴','門','广'],label:'得洞',reason:'鼠有洞穴藏身，安全感十足',score:8},
+      {roots:['禾','米','豆','麥','粟','粒'],label:'得糧',reason:'鼠有糧食，一生衣食無缺',score:9},
+      {roots:['王','玉','君','主','令'],label:'得位',reason:'鼠排生肖第一，見王稱尊',score:8},
+      {roots:['丑','辰'],label:'三合',reason:'申子辰三合水局，貴人運旺',score:8},
+      {roots:['亥','丑'],label:'三會',reason:'亥子丑三會北方水局，根基穩固',score:7},
+      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'鼠有彩衣華麗，增添氣場',score:7},
+      {roots:['夕','夜'],label:'得時',reason:'鼠為夜行動物，夜晚得勢',score:6},
+      {roots:['金'],label:'得金',reason:'生水之源，財運亨通',score:6},
+      {roots:['水','氵','雨','冫'],label:'得水',reason:'子為水，見水如魚得水',score:7},
+      {roots:['木','林','竹'],label:'得蔭',reason:'有樹蔭庇護，安全自在',score:5},
+      {roots:['食'],label:'得食',reason:'有食不缺，生活富足',score:6},
+      {roots:['貝'],label:'得財',reason:'財寶入庫，財運佳',score:6}
     ],
     dislike:[
       {roots:['午','馬'],label:'六衝',reason:'子午相衝，易犯小人、意外災禍',score:-9},
       {roots:['未','羊'],label:'六害',reason:'子未相害，親近之人反成阻礙',score:-7},
-      {roots:['日','光','明','晃'],label:'見光',reason:'鼠見日光暴露行蹤，處處受制',score:-6},
-      {roots:['人','亻','仁','伊'],label:'遇人',reason:'老鼠見人人喊打，處境危險',score:-7},
-      {roots:['貓','犬','犭'],label:'天敵',reason:'遇天敵，一生提心吊膽',score:-8},
-      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'利器在側，有血光之憂',score:-6},
-      {roots:['火','灬','炎'],label:'見火',reason:'火燒鼠穴，無處藏身',score:-6}
+      {roots:['人','亻','入'],label:'遇人',reason:'鼠見人如過街老鼠，人人喊打',score:-6},
+      {roots:['日','光','明','白'],label:'見光',reason:'鼠見日光暴露行蹤，處境危險',score:-5},
+      {roots:['蛇','巳','辶','弓','几','廴'],label:'遇蛇',reason:'蛇吞鼠，天敵在側',score:-6},
+      {roots:['火','灬'],label:'見火',reason:'鼠懼火，有災厄之虞',score:-5},
+      {roots:['石'],label:'遇石',reason:'鼠過街遭石打，處境艱難',score:-3},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有血光之憂',score:-6}
     ]
   },
   牛: {
     like:[
-      {roots:['艹','廾','卉','芳'],label:'得草',reason:'牛有草糧，一生豐足不愁吃',score:9},
-      {roots:['宀','冖','廣'],label:'得屋',reason:'牛有牛舍，風吹雨打有所依',score:7},
-      {roots:['禾','米','麥','豆','粟'],label:'得糧',reason:'五穀豐登，衣食無缺',score:8},
+      {roots:['艹','廾','卉','竹'],label:'得草',reason:'牛有青草吃，生活無憂',score:9},
+      {roots:['禾','米','豆','麥','粟','粒'],label:'得糧',reason:'五穀豐登，衣食無缺',score:9},
+      {roots:['宀','冖','門','穴','广'],label:'得屋',reason:'牛有牛棚安身，穩定安全',score:8},
       {roots:['巳','酉'],label:'三合',reason:'巳酉丑三合金局，有貴人扶持',score:8},
       {roots:['亥','子'],label:'三會',reason:'亥子丑三會水局，運勢加持',score:7},
-      {roots:['田','甫'],label:'得田',reason:'牛在田中耕作，雖辛勞但得其所',score:5},
-      {roots:['車'],label:'拉車',reason:'牛拉車雖辛苦，但表示有用武之地',score:4}
+      {roots:['田','甫'],label:'得田',reason:'牛在田間耕作，適得其所',score:8},
+      {roots:['車'],label:'得車',reason:'牛拉車，有工作能力，受重用',score:6},
+      {roots:['水','氵','雨','冫'],label:'得水',reason:'牛需飲水，有水滋潤',score:5},
+      {roots:['金'],label:'得金',reason:'丑土生金，財運助力',score:5}
     ],
     dislike:[
       {roots:['未','羊'],label:'六衝',reason:'丑未相衝，內心矛盾、做事反覆',score:-9},
       {roots:['午','馬'],label:'六害',reason:'丑午相害，忙碌勞碌卻無回報',score:-7},
-      {roots:['王','大','主','君','帝'],label:'犧牲格',reason:'牛為祭祀用畜，見王字根如被獻祭——名聲在外，內心痛苦',score:-9},
-      {roots:['彡','巾','衣','糸','帛','采'],label:'彩衣格',reason:'牛披彩衣上祭壇，為人犧牲、勞而無功',score:-8},
-      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'屠刀在前，有性命之憂、重大手術',score:-7},
-      {roots:['日','明','光'],label:'見日',reason:'牛白天耕作不得休息，操勞命',score:-5}
+      {roots:['王','大','主','君','帝','天'],label:'太大',reason:'牛太大負擔重，為人作嫁',score:-5},
+      {roots:['衣','巾','彡','采','糸'],label:'彩衣犧牲',reason:'牛披彩衣上供桌，犧牲格',score:-8},
+      {roots:['礻'],label:'祭祀',reason:'牛見祭祀如上供桌，為人犧牲',score:-7},
+      {roots:['人','亻','入'],label:'遇人',reason:'牛為人所驅使，勞而無功',score:-5},
+      {roots:['日','光','明','白'],label:'見日',reason:'牛耕田曬太陽，辛苦勞碌',score:-4},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'屠刀在前，有性命之憂、重大手術',score:-8},
+      {roots:['火','灬'],label:'見火',reason:'火烤牛肉，有災厄之象',score:-5},
+      {roots:['山','岳'],label:'上山',reason:'牛上山頭，辛苦異常',score:-4}
     ]
   },
   虎: {
     like:[
-      {roots:['山','屮','岳'],label:'得山',reason:'虎踞山林，王者之風，得權得勢',score:9},
-      {roots:['林','木','森','東'],label:'得林',reason:'虎有林蔭遮蔽，如虎添翼',score:8},
-      {roots:['王','玉','君','主','大'],label:'得位',reason:'虎為百獸之王，見王字根稱王稱霸',score:9},
-      {roots:['衣','巾','彡','糸','采'],label:'得衣',reason:'虎皮斑紋華麗，得彩衣如虎添翼',score:7},
+      {roots:['山','岳','阝'],label:'得山',reason:'虎嘯山林，適得其所、威風凜凜',score:9},
+      {roots:['木','林','森','東','竹'],label:'得林',reason:'虎在林中如魚得水，發揮所長',score:9},
+      {roots:['王','玉','君','主','大','天'],label:'得位',reason:'虎為百獸之王，見王得位',score:9},
       {roots:['午','戌'],label:'三合',reason:'寅午戌三合火局，貴人旺盛',score:8},
       {roots:['卯','辰'],label:'三會',reason:'寅卯辰三會東方木局，格局開闊',score:7},
-      {roots:['月','肉'],label:'得食',reason:'虎吃肉，衣食豐足',score:8}
+      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'虎添翼如彩衣加身，威風更盛',score:8},
+      {roots:['口','品'],label:'入口',reason:'虎張口有肉吃，不愁溫飽',score:7},
+      {roots:['心','忄','月','肉'],label:'得食',reason:'虎有肉吃，生活富足',score:8},
+      {roots:['水','氵','雨','冫'],label:'得水',reason:'虎有水飲，生命力旺盛',score:5},
+      {roots:['人','亻','入'],label:'得人',reason:'虎見人=有肉食，得勢',score:6},
+      {roots:['金'],label:'得金',reason:'虎添利爪，更添威力',score:5}
     ],
     dislike:[
-      {roots:['申','猴','袁'],label:'六衝',reason:'寅申相衝，犯小人、官非口舌',score:-9},
+      {roots:['申','猴'],label:'六衝',reason:'寅申相衝，犯小人、官非口舌',score:-9},
       {roots:['巳','蛇','辶','弓','几','廴'],label:'六害',reason:'寅巳相害，暗箭難防、易遭背叛',score:-7},
-      {roots:['口','品'],label:'入口',reason:'虎落平陽被犬欺，困在小空間不得志',score:-5},
-      {roots:['門','閂'],label:'關門',reason:'關門打虎，有志難伸',score:-6},
-      {roots:['人','亻'],label:'遇人',reason:'虎傷人則遭獵殺，人虎相遇兩敗俱傷',score:-5},
-      {roots:['田','禾','米'],label:'入田',reason:'虎入田間不得志，大材小用',score:-4}
+      {roots:['日','光','明','白'],label:'兩虎',reason:'一山不容二虎，競爭激烈',score:-4},
+      {roots:['門'],label:'入門',reason:'虎入門如被關籠中，有志難伸',score:-5},
+      {roots:['宀','冖','穴','广'],label:'被困',reason:'虎落平陽被犬欺，英雄無用武之地',score:-6},
+      {roots:['田','甫'],label:'入田',reason:'虎入田間嚇人，不受歡迎',score:-5},
+      {roots:['禾','米','豆','麥'],label:'吃素',reason:'虎為肉食動物，有糧不合口',score:-3},
+      {roots:['小','少'],label:'太小',reason:'虎太小失威嚴，被人看輕',score:-4},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有血光之憂',score:-5}
     ]
   },
   兔: {
     like:[
-      {roots:['艹','廾','卉'],label:'得草',reason:'兔有青草，生活安穩無憂',score:9},
-      {roots:['口','品','宀','冖','穴'],label:'得洞',reason:'兔有窩穴，安全感十足',score:8},
+      {roots:['艹','廾','卉','竹'],label:'得草',reason:'兔有青草，生活安穩無憂',score:9},
+      {roots:['口','品','宀','冖','穴','門','广'],label:'得洞',reason:'兔有窩穴，安全感十足',score:8},
       {roots:['禾','米','豆','麥'],label:'得糧',reason:'五穀豐登，不愁溫飽',score:7},
       {roots:['木','林','森','東'],label:'得林',reason:'兔在林中有掩護，安全自在',score:8},
       {roots:['亥','未'],label:'三合',reason:'亥卯未三合木局，貴人運強',score:8},
       {roots:['寅','辰'],label:'三會',reason:'寅卯辰三會東方木局，根基穩',score:7},
-      {roots:['衣','巾','彡','采'],label:'得衣',reason:'兔得彩衣為華麗，增添魅力',score:6}
+      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'兔得彩衣為華麗，增添魅力',score:6},
+      {roots:['水','氵','雨','冫'],label:'得水',reason:'水生木，兔得水滋養',score:5},
+      {roots:['食'],label:'得食',reason:'有食不缺，安穩富足',score:5},
+      {roots:['金'],label:'得金',reason:'金飾點綴，增添貴氣',score:4}
     ],
     dislike:[
-      {roots:['酉','雞','鳥','隹'],label:'六衝',reason:'卯酉相衝，衝擊極大，口舌是非不斷',score:-9},
+      {roots:['酉','雞','鳥','隹','羽','飛'],label:'六衝',reason:'卯酉相衝，衝擊極大，口舌是非不斷',score:-9},
       {roots:['辰','龍'],label:'六害',reason:'卯辰相害，身邊人反成阻礙',score:-7},
-      {roots:['日','光','明'],label:'見光',reason:'兔見日光暴露，不安全',score:-5},
-      {roots:['人','亻','大'],label:'遇人',reason:'兔見人被獵捕，處境堪憂',score:-6},
-      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'利刃在側，有開刀之虞',score:-6},
-      {roots:['火','灬','炎'],label:'見火',reason:'兔遇火有劫，易衝動犯錯',score:-5},
-      {roots:['山','岳'],label:'上山',reason:'兔入山為虎口送食，非其所宜',score:-4}
+      {roots:['日','光','明','白'],label:'見光',reason:'兔見日光暴露，不安全',score:-5},
+      {roots:['人','亻','入','大'],label:'遇人',reason:'兔見人被獵捕，處境堪憂',score:-6},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利刃在側，有開刀之虞',score:-6},
+      {roots:['火','灬'],label:'見火',reason:'兔遇火有劫，易衝動犯錯',score:-5},
+      {roots:['山','岳','阝'],label:'上山',reason:'兔入山為虎口送食，非其所宜',score:-4},
+      {roots:['王','玉','君','主','天'],label:'太大',reason:'兔太大引注目被捕，不宜張揚',score:-4},
+      {roots:['心','忄','月','肉'],label:'遇肉',reason:'兔為草食動物，見肉不合其性',score:-3},
+      {roots:['石'],label:'遇石',reason:'兔撞石受傷，處境不利',score:-3}
     ]
   },
   龍: {
     like:[
-      {roots:['日','明','光','星','月'],label:'得天',reason:'龍見日月星為飛龍在天，大展鴻圖',score:9},
+      {roots:['日','明','光','星','月','白'],label:'得天',reason:'龍見日月星為飛龍在天，大展鴻圖',score:9},
       {roots:['水','氵','雨','冫'],label:'得水',reason:'龍入大海，如魚得水，大富大貴',score:9},
       {roots:['王','玉','君','主','大','天','帝'],label:'得位',reason:'龍為至尊，見王字根稱帝稱王',score:9},
       {roots:['申','子'],label:'三合',reason:'申子辰三合水局，貴人鼎力相助',score:8},
-      {roots:['巳','午'],label:'三會',reason:'巳午未三會南方火局（辰為土庫），能量加成',score:6},
+      {roots:['巳','午'],label:'三會',reason:'巳午未三會南方火局，能量加成',score:6},
       {roots:['馬','午'],label:'龍馬',reason:'龍馬精神，精力充沛、事業有成',score:7},
-      {roots:['衣','巾','彡','采'],label:'得袍',reason:'龍袍加身，尊榮至極',score:8}
+      {roots:['衣','巾','彡','采','糸'],label:'得袍',reason:'龍袍加身，尊榮至極',score:8},
+      {roots:['金'],label:'得金',reason:'龍爪金鱗，威力加倍',score:6},
+      {roots:['魚'],label:'得魚',reason:'龍魚共水，如虎添翼',score:5},
+      {roots:['目'],label:'得目',reason:'龍目炯炯，洞察力強',score:4},
+      {roots:['貝'],label:'得寶',reason:'龍守寶庫，財富豐盈',score:6}
     ],
     dislike:[
       {roots:['戌','狗','犬','犭'],label:'六衝',reason:'辰戌相衝，強碰強，損傷慘重',score:-9},
       {roots:['卯','兔'],label:'六害',reason:'辰卯相害，被親近之人拖累',score:-7},
-      {roots:['宀','冖','口','穴'],label:'困龍',reason:'龍入洞穴如困龍，有志難伸',score:-7},
-      {roots:['田','禾'],label:'入田',reason:'龍困淺灘被蝦戲，大材小用',score:-5},
-      {roots:['蟲','虫'],label:'降格',reason:'龍被當蟲看待，嚴重降格',score:-8}
+      {roots:['宀','冖','口','穴','門','广'],label:'困龍',reason:'龍入洞穴如困龍，有志難伸',score:-7},
+      {roots:['田','甫'],label:'入田',reason:'龍困淺灘=入田降格，壯志難酬',score:-6},
+      {roots:['禾','米','豆','麥'],label:'吃素',reason:'龍非草食，降格為蛇',score:-4},
+      {roots:['小','少'],label:'太小',reason:'龍太小變蛇，降格失威',score:-5},
+      {roots:['虎','寅'],label:'龍虎鬥',reason:'龍虎相爭兩敗俱傷',score:-5},
+      {roots:['石'],label:'困石',reason:'龍困石中難飛騰',score:-3},
+      {roots:['山','岳','阝'],label:'入山',reason:'龍入山=困龍，施展不開',score:-4}
     ]
   },
   蛇: {
     like:[
-      {roots:['口','品','宀','冖','穴'],label:'得洞',reason:'蛇盤洞穴，安居自在',score:8},
-      {roots:['木','林','艹'],label:'得蔭',reason:'蛇在草叢樹林有掩護',score:7},
-      {roots:['衣','巾','彡','采'],label:'得衣',reason:'蛇披彩衣為龍，大升格',score:9},
-      {roots:['王','玉','君','主','大'],label:'升龍',reason:'小龍見王可化龍，大富大貴',score:9},
+      {roots:['口','品','宀','冖','穴','門','广'],label:'得洞',reason:'蛇有洞穴安身，安全無虞',score:8},
+      {roots:['木','林','森','東','竹'],label:'得林',reason:'蛇在樹林中悠遊自在',score:8},
+      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'蛇有華麗鱗片，如彩衣加身',score:7},
+      {roots:['王','玉','君','主','大','天'],label:'升龍',reason:'小龍見王可化龍，大富大貴',score:9},
       {roots:['酉','丑'],label:'三合',reason:'巳酉丑三合金局，貴人相助',score:8},
       {roots:['午','未'],label:'三會',reason:'巳午未三會南方火局，能量充沛',score:7},
-      {roots:['月','肉','心','忄'],label:'得食',reason:'蛇食鼠肉，不愁溫飽',score:7}
+      {roots:['心','忄','月','肉'],label:'得食',reason:'蛇有肉吃，生活富足',score:7},
+      {roots:['田','甫'],label:'得田',reason:'蛇在田間捕鼠，適得其所',score:6},
+      {roots:['金'],label:'得金',reason:'巳酉丑合金局，金為貴人',score:6},
+      {roots:['目'],label:'得目',reason:'蛇目銳利，洞察力強',score:4}
     ],
     dislike:[
       {roots:['亥','豬','豕'],label:'六衝',reason:'巳亥相衝，衝擊極大，破財損身',score:-9},
       {roots:['寅','虎'],label:'六害',reason:'寅巳相害，虎蛇相鬥損傷重',score:-7},
-      {roots:['日','光','明'],label:'見光',reason:'蛇見光暴露，危機四伏',score:-5},
-      {roots:['人','亻'],label:'遇人',reason:'人蛇相遇兩害怕，互相傷害',score:-5},
-      {roots:['水','氵','雨'],label:'見水',reason:'蛇入水為水蛇，降格受困',score:-4},
-      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'蛇見刀被斬斷，血光之災',score:-7}
+      {roots:['人','亻','入'],label:'遇人',reason:'人蛇相遇兩害怕，互相傷害',score:-6},
+      {roots:['日','光','明','白'],label:'見光',reason:'蛇見光暴露，處境危險',score:-5},
+      {roots:['水','氵','雨','冫'],label:'見水',reason:'水澆蛇洞，災厄臨頭',score:-5},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有打蛇之虞',score:-6},
+      {roots:['禾','米','豆','麥'],label:'吃素',reason:'蛇為肉食動物，有糧不合口',score:-3},
+      {roots:['石'],label:'遇石',reason:'被打草驚蛇，處境不利',score:-3},
+      {roots:['山','岳','阝'],label:'上山',reason:'蛇上山遇鷹，天敵在上',score:-3}
     ]
   },
   馬: {
     like:[
-      {roots:['艹','廾','卉','芳'],label:'得草',reason:'馬有草糧，精力充沛，一生不愁',score:9},
-      {roots:['木','林','森'],label:'得蔭',reason:'馬有樹蔭可歇息，勞逸結合',score:7},
+      {roots:['艹','廾','卉','竹'],label:'得草',reason:'馬有青草，生活安穩',score:9},
+      {roots:['禾','米','豆','麥','粟','粒'],label:'得糧',reason:'馬有五穀草料，衣食豐足',score:8},
+      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'馬披鞍韉如穿衣，受人重用',score:8},
       {roots:['寅','戌'],label:'三合',reason:'寅午戌三合火局，貴人運旺',score:8},
       {roots:['巳','未'],label:'三會',reason:'巳午未三會南方火局，氣勢如虹',score:7},
-      {roots:['衣','巾','彡','采'],label:'得衣',reason:'馬披鞍有人騎，受重用得位',score:7},
-      {roots:['龍','辰'],label:'龍馬',reason:'龍馬精神，事業有大格局',score:7},
-      {roots:['大','王'],label:'得位',reason:'馬體大為上等馬，受人敬重',score:6}
+      {roots:['木','林','森','東'],label:'得林',reason:'馬在草原林間馳騁，自由自在',score:7},
+      {roots:['龍','辰'],label:'龍馬',reason:'龍馬精神，精力旺盛',score:7},
+      {roots:['人','亻','入'],label:'得人',reason:'馬有人騎，受人重用、信任',score:6},
+      {roots:['金'],label:'得金',reason:'金鞍配好馬，富貴加身',score:6},
+      {roots:['目'],label:'得目',reason:'馬目銳利，方向感強',score:4},
+      {roots:['貝'],label:'得財',reason:'馬到成功，財運亨通',score:5}
     ],
     dislike:[
       {roots:['子','鼠'],label:'六衝',reason:'子午相衝，感情波折、事業動盪',score:-9},
       {roots:['丑','牛'],label:'六害',reason:'丑午相害，辛苦勞碌無回報',score:-7},
-      {roots:['門','閂','宀','冖'],label:'受困',reason:'馬被關在門裡，空有志氣無法施展',score:-7},
-      {roots:['人','亻','彳'],label:'被控',reason:'馬見人受控制，勞碌命',score:-5},
-      {roots:['田','甫'],label:'入田',reason:'馬入田間拉犁，辛苦操勞',score:-6},
-      {roots:['水','氵','雨','冫'],label:'見水',reason:'水剋火，馬為午火見水受剋',score:-6},
-      {roots:['山','岳'],label:'上山',reason:'馬上山路難行，寸步難行',score:-5}
+      {roots:['山','岳','阝'],label:'上山',reason:'馬上山路難行，有志難伸',score:-5},
+      {roots:['宀','冖','口','穴','門','广'],label:'受困',reason:'馬被關在馬廄中，失去自由',score:-6},
+      {roots:['水','氵','雨','冫'],label:'見水',reason:'馬入水溺，有危險',score:-5},
+      {roots:['田','甫'],label:'入田',reason:'馬入田踩壞莊稼，犯錯受罰',score:-5},
+      {roots:['王','大','主','君','天'],label:'太大',reason:'大馬難駕馭，反被排斥',score:-4},
+      {roots:['石'],label:'絆腳石',reason:'馬遇石絆腳，跌倒受傷',score:-4},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'馬革裹屍，有刀傷之虞',score:-5}
     ]
   },
   羊: {
     like:[
-      {roots:['艹','廾','卉','芳'],label:'得草',reason:'羊有青草，生活優渥無憂',score:9},
-      {roots:['木','林','森'],label:'得蔭',reason:'羊在林間悠然自得',score:7},
-      {roots:['口','品','宀','冖'],label:'得屋',reason:'羊有棚有舍，安穩度日',score:7},
-      {roots:['禾','米','豆','麥'],label:'得糧',reason:'五穀豐登，衣食無缺',score:8},
+      {roots:['艹','廾','卉','竹'],label:'得草',reason:'羊有青草，生活無憂',score:9},
+      {roots:['禾','米','豆','麥','粟','粒'],label:'得糧',reason:'五穀豐登，衣食無缺',score:9},
+      {roots:['宀','冖','門','穴','广'],label:'得屋',reason:'羊有羊舍安身，穩定安全',score:8},
       {roots:['亥','卯'],label:'三合',reason:'亥卯未三合木局，貴人扶持',score:8},
-      {roots:['午','巳'],label:'三會',reason:'巳午未三會南方火局，能量加持',score:7}
+      {roots:['巳','午'],label:'三會',reason:'巳午未三會南方火局，能量加持',score:7},
+      {roots:['木','林','森','東'],label:'得林',reason:'有樹蔭遮護，安全舒適',score:7},
+      {roots:['口','品'],label:'得口',reason:'羊有口=善（吉字），口福享用',score:6},
+      {roots:['食'],label:'得食',reason:'有食物不愁餓',score:6},
+      {roots:['水','氵','雨','冫'],label:'得水',reason:'羊有水飲，生命滋潤',score:5},
+      {roots:['金'],label:'得金',reason:'金飾增貴氣',score:4}
     ],
     dislike:[
       {roots:['丑','牛'],label:'六衝',reason:'丑未相衝，做事波折、容易反覆',score:-9},
       {roots:['子','鼠'],label:'六害',reason:'子未相害，被身邊人所累',score:-7},
-      {roots:['王','大','主','君','帝','天'],label:'犧牲格',reason:'羊為祭祀牲品，見王字根如登祭壇——為他人燃燒自己',score:-9},
-      {roots:['彡','巾','衣','糸','帛','采'],label:'彩衣格',reason:'羊披彩衣送上祭壇，美麗的犧牲品',score:-8},
-      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'屠刀高懸，有性命之憂、開刀手術',score:-7},
-      {roots:['人','亻'],label:'遇人',reason:'羊見人被宰殺，處境堪憂',score:-5},
-      {roots:['心','忄','月','肉'],label:'祭品',reason:'羊見心如被掏心，為人犧牲',score:-6}
+      {roots:['王','大','主','君','帝','天'],label:'犧牲格',reason:'羊太大如上供桌，為人犧牲',score:-8},
+      {roots:['衣','巾','彡','采','糸'],label:'彩衣犧牲',reason:'羊披彩衣上祭壇，華麗的犧牲品',score:-8},
+      {roots:['礻'],label:'祭祀',reason:'羊見示旁如上祭壇，為人犧牲',score:-8},
+      {roots:['人','亻','入'],label:'遇人',reason:'羊見人被宰殺，處境堪憂',score:-6},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'屠刀高懸，有性命之憂、開刀手術',score:-8},
+      {roots:['心','忄','月','肉'],label:'見肉',reason:'羊為草食，見肉非其性',score:-3},
+      {roots:['山','岳','阝'],label:'上山',reason:'羊上山為羚羊，勞碌奔波',score:-3},
+      {roots:['日','光','明','白'],label:'見日',reason:'烈日曝曬，辛苦不堪',score:-3}
     ]
   },
   猴: {
     like:[
-      {roots:['木','林','森','山','岳'],label:'得山林',reason:'猴在山林間自由自在，如魚得水',score:9},
-      {roots:['口','品','宀','冖','穴'],label:'得洞',reason:'猴有洞穴居所，安穩棲身',score:7},
-      {roots:['王','玉','君','主','大'],label:'得位',reason:'猴為人形，得王字根如美猴王',score:8},
-      {roots:['衣','巾','彡','采'],label:'得衣',reason:'猴穿衣如人，升格受重用',score:7},
-      {roots:['子','辰'],label:'三合',reason:'申子辰三合水局，貴人相助',score:8},
-      {roots:['未','酉'],label:'三會',reason:'申酉戌三會西方金局，氣勢強',score:7}
+      {roots:['山','岳','阝'],label:'得山林',reason:'猴在山林中稱王，自在逍遙',score:9},
+      {roots:['木','林','森','東','竹'],label:'得林',reason:'猴有樹攀爬，如魚得水',score:9},
+      {roots:['王','玉','君','主','大','天'],label:'得位',reason:'猴為山中之王，見王得位',score:8},
+      {roots:['子','辰'],label:'三合',reason:'申子辰三合水局，貴人助力',score:8},
+      {roots:['未','酉'],label:'三會',reason:'申酉戌三會西方金局',score:6},
+      {roots:['口','品','宀','冖','穴','門','广'],label:'得洞',reason:'猴有洞穴藏身，安全無虞',score:7},
+      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'猴穿衣如美猴王，威風凜凜',score:7},
+      {roots:['心','忄','月','肉'],label:'得食',reason:'猴有果肉吃，不愁溫飽',score:6},
+      {roots:['人','亻','入'],label:'得人',reason:'猴見人可表演受寵，得勢',score:5},
+      {roots:['水','氵','雨','冫'],label:'得水',reason:'申子辰合水，有水得運',score:5},
+      {roots:['金'],label:'得金',reason:'申為金，金金相輝',score:6}
     ],
     dislike:[
       {roots:['寅','虎'],label:'六衝',reason:'寅申相衝，虎猴不合，衝突不斷',score:-9},
-      {roots:['亥','豬','豕'],label:'六害',reason:'申亥相害，做事多阻礙',score:-7},
-      {roots:['火','灬','炎'],label:'見火',reason:'金猴怕火煉，壓力山大',score:-6},
-      {roots:['刀','刂','匕','力'],label:'遇刀',reason:'金被金剋=自損，有受傷之虞',score:-5},
-      {roots:['禾','米','豆','麥','田'],label:'入田偷糧',reason:'猴入田地偷食被趕，不受歡迎',score:-4}
+      {roots:['亥','豬','豕'],label:'六害',reason:'申亥相害，被身邊人拖累',score:-7},
+      {roots:['田','甫'],label:'入田偷糧',reason:'猴入田地偷食，不受歡迎',score:-4},
+      {roots:['禾','米','豆','麥'],label:'偷食',reason:'猴偷五穀=做賊心虛',score:-4},
+      {roots:['日','光','明','白'],label:'見光',reason:'猴見光暴露行蹤',score:-3},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有傷害之虞',score:-5},
+      {roots:['火','灬'],label:'見火',reason:'火燒花果山，災厄臨頭',score:-5},
+      {roots:['辶','弓','几','廴'],label:'遇蛇',reason:'蛇猴不合，暗中使絆',score:-3},
+      {roots:['石'],label:'困石',reason:'被壓五行山下，受困不自由',score:-4}
     ]
   },
   雞: {
     like:[
       {roots:['禾','米','豆','麥','粟'],label:'得糧',reason:'雞有穀糧，一生衣食豐足',score:9},
-      {roots:['山','岳','屮'],label:'得山',reason:'雞上山頭為鳳凰，大升格',score:8},
-      {roots:['衣','巾','彡','采'],label:'得衣',reason:'雞有彩衣如鳳凰，華麗尊貴',score:8},
+      {roots:['山','岳','屮','阝'],label:'得山',reason:'雞上山頭為鳳凰，大升格',score:8},
+      {roots:['衣','巾','彡','采','糸','羽','飛'],label:'得衣',reason:'雞有彩衣/羽毛如鳳凰，華麗尊貴',score:8},
       {roots:['王','玉','君','主','大'],label:'得位',reason:'雞冠如王，得位稱尊',score:7},
       {roots:['巳','丑'],label:'三合',reason:'巳酉丑三合金局，貴人運旺',score:8},
       {roots:['申','戌'],label:'三會',reason:'申酉戌三會西方金局，根基穩',score:7},
-      {roots:['宀','冖'],label:'得屋',reason:'雞有雞舍，安居不愁',score:6}
+      {roots:['宀','冖','门','广'],label:'得屋',reason:'雞有雞舍，安居不愁',score:6},
+      {roots:['金'],label:'得金',reason:'酉為金，金金相輝更吉',score:7},
+      {roots:['日','光','明'],label:'見日',reason:'雞司晨報曉，見日得其時',score:6},
+      {roots:['目'],label:'得目',reason:'雞目銳利，能找到食物',score:4},
+      {roots:['竹','木','林'],label:'得棲',reason:'雞有樹木可棲息',score:5}
     ],
     dislike:[
       {roots:['卯','兔'],label:'六衝',reason:'卯酉相衝，口舌是非、破財損運',score:-9},
       {roots:['戌','狗','犬','犭'],label:'六害',reason:'酉戌相害（雞犬不寧），家庭不安',score:-7},
       {roots:['人','亻','大'],label:'遇人',reason:'雞見人被宰殺，如上供桌',score:-6},
       {roots:['刀','刂','匕','力'],label:'遇刀',reason:'殺雞用牛刀，有血光之災',score:-7},
-      {roots:['口','品'],label:'小口',reason:'雞被圍籬困住，失去自由（注意：大口宀為屋，小口為困）',score:-3}
+      {roots:['口','品'],label:'小口',reason:'雞被圍籬困住，失去自由（大口宀為屋，小口為困）',score:-3},
+      {roots:['水','氵','雨','冫'],label:'落水',reason:'落湯雞，狼狽不堪',score:-4},
+      {roots:['火','灬'],label:'見火',reason:'烤雞=災厄',score:-5},
+      {roots:['石'],label:'遇石',reason:'卵擊石，自不量力',score:-3},
+      {roots:['礻'],label:'祭祀',reason:'雞見祭祀恐上供桌',score:-5}
     ]
   },
   狗: {
     like:[
-      {roots:['宀','冖','廣'],label:'得屋',reason:'狗有家有主人，忠誠得回報',score:9},
+      {roots:['宀','冖','廣','門','广'],label:'得屋',reason:'狗有家有主人，忠誠得回報',score:9},
       {roots:['人','亻','入'],label:'得主',reason:'狗見人有主人疼愛，忠心耿耿',score:8},
       {roots:['心','忄','月','肉'],label:'得食',reason:'狗有肉吃，生活富足',score:8},
       {roots:['寅','午'],label:'三合',reason:'寅午戌三合火局，貴人運旺',score:8},
       {roots:['卯','辰'],label:'三會',reason:'寅卯辰三會（間接助力）',score:5},
-      {roots:['衣','巾','彡','采'],label:'得衣',reason:'狗有衣服穿為寵物狗，受寵愛',score:7},
-      {roots:['小','少'],label:'得名',reason:'狗不嫌家貧，小而得寵',score:5}
+      {roots:['衣','巾','彡','采','糸'],label:'得衣',reason:'狗有衣服穿為寵物狗，受寵愛',score:7},
+      {roots:['小','少'],label:'得名',reason:'狗不嫌家貧，小而得寵',score:5},
+      {roots:['木','林','竹'],label:'得蔭',reason:'有樹蔭休息，安穩自在',score:4},
+      {roots:['食'],label:'得食',reason:'有食物不缺',score:5},
+      {roots:['貝'],label:'得財',reason:'忠犬守財，財運穩',score:5}
     ],
     dislike:[
       {roots:['辰','龍'],label:'六衝',reason:'辰戌相衝，龍爭虎鬥般激烈',score:-9},
-      {roots:['酉','雞','鳥','隹'],label:'六害',reason:'雞犬不寧，家庭不和諧',score:-7},
+      {roots:['酉','雞','鳥','隹','羽','飛'],label:'六害',reason:'雞犬不寧，家庭不和諧',score:-7},
       {roots:['禾','米','豆','麥','田'],label:'吃素',reason:'狗吃素=不得其食，志不在此',score:-4},
       {roots:['王','大','主','君'],label:'太大',reason:'狗太大聲令人害怕，反被排斥',score:-4},
-      {roots:['日','明','光'],label:'見日',reason:'狗吠日，多管閒事惹是非',score:-4},
-      {roots:['水','氵','雨','冫'],label:'落水',reason:'落水狗人人喊打，處境艱難',score:-6}
+      {roots:['日','光','明','白'],label:'見日',reason:'狗吠日，多管閒事惹是非',score:-4},
+      {roots:['水','氵','雨','冫'],label:'落水',reason:'落水狗人人喊打，處境艱難',score:-6},
+      {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'利器在側，有傷害之虞',score:-5},
+      {roots:['火','灬'],label:'見火',reason:'狗急跳牆，火急不安',score:-4},
+      {roots:['石'],label:'遇石',reason:'狗碰石傷身',score:-3},
+      {roots:['辶','弓','几','廴'],label:'遇蛇',reason:'蛇犬不合，暗中算計',score:-3}
     ]
   },
   豬: {
     like:[
-      {roots:['宀','冖','穴','門','廣'],label:'得洞',reason:'豬有豬舍安身，生活穩定',score:8},
+      {roots:['宀','冖','穴','門','廣','广'],label:'得洞',reason:'豬有豬舍安身，生活穩定',score:8},
       {roots:['禾','米','豆','麥','粟','粒'],label:'得食',reason:'豬有糧食吃到飽，一生富足',score:9},
-      {roots:['木','林','森','東'],label:'三合/得蔭',reason:'亥卯未三合木局，有掩護有貴人',score:8},
+      {roots:['木','林','森','東','竹'],label:'三合/得蔭',reason:'亥卯未三合木局，有掩護有貴人',score:8},
       {roots:['卯','兔'],label:'三合貴人',reason:'卯為三合貴人，大吉',score:8},
       {roots:['未','羊'],label:'三合貴人',reason:'未為三合貴人，大吉',score:7},
       {roots:['子','丑'],label:'三會',reason:'亥子丑三會北方水局，根基穩',score:7},
       {roots:['口','品'],label:'得口',reason:'豬有口福，享受口福之樂',score:6},
-      {roots:['田','甫'],label:'得田',reason:'豬在田間自在覓食',score:5}
+      {roots:['田','甫'],label:'得田',reason:'豬在田間自在覓食',score:5},
+      {roots:['水','氵','雨','冫'],label:'得水',reason:'亥為水，見水如魚得水',score:6},
+      {roots:['金'],label:'得金',reason:'金生水，金為助力',score:5},
+      {roots:['食'],label:'享食',reason:'豬有食最享福',score:7},
+      {roots:['貝'],label:'得財',reason:'財寶入庫，豐衣足食',score:5}
     ],
     dislike:[
       {roots:['巳','蛇','辶','弓','几','廴','之','乙'],label:'蛇豬衝',reason:'巳亥六衝——易犯小人、血光意外、勞碌無功',score:-9},
       {roots:['申','猴','袁','坤'],label:'六害',reason:'申亥相害，身邊人成絆腳石',score:-7},
       {roots:['人','亻','仁','伊','佳','俊','傑'],label:'遇人被宰',reason:'豬見人如上屠場，為人作嫁',score:-7},
-      {roots:['彡','巾','衣','糸','帛','采','冠'],label:'彩衣犧牲',reason:'豬披彩衣上祭壇，美麗的犧牲品——名聲在外，內心痛苦',score:-9},
+      {roots:['彡','巾','衣','糸','帛','采','冠'],label:'彩衣犧牲',reason:'豬披彩衣上祭壇，犧牲品——名聲在外，內心痛苦',score:-9},
       {roots:['王','大','主','君','帝','天'],label:'犧牲格',reason:'豬登大位如被獻祭，為人犧牲、勞而無功',score:-9},
       {roots:['刀','刂','匕','力','斤'],label:'遇刀',reason:'屠刀高懸，有開刀手術、血光之災',score:-7},
-      {roots:['日','光','明','晃'],label:'見日',reason:'豬見日光不自在，暴露弱點',score:-4}
+      {roots:['日','光','明','白'],label:'見日',reason:'豬見日光不自在，暴露弱點',score:-4},
+      {roots:['礻'],label:'祭祀',reason:'豬見祭祀如上供桌，為人犧牲',score:-8},
+      {roots:['火','灬'],label:'見火',reason:'烤豬=大災厄',score:-6},
+      {roots:['山','岳','阝'],label:'上山',reason:'豬上山勞碌，非其所宜',score:-3}
     ]
   }
 };
 
-// ── 字根拆解引擎（預建表 + Unicode 部首雙軌） ──
+// ── 字根拆解引擎// ── 字根拆解引擎（預建表 + Unicode 部首雙軌） ──
 // 預建表：常見字→包含的字根（精準拆解）
 const CHAR_ROOTS = {
   // 蛇形字根（辶弓几廴之乙）相關字
@@ -5336,29 +5570,119 @@ const CHAR_ROOTS = {
   // 十二生肖直接字
   '鼠':['鼠','子'],'牛':['牛','丑'],'虎':['虎','寅'],'兔':['兔','卯'],
   '龍':['龍','辰'],'蛇':['蛇','巳'],'馬':['馬','午'],'羊':['羊','未'],
-  '猴':['猴','申'],'雞':['雞','酉'],'狗':['狗','犬','戌'],'豬':['豬','豕','亥']
+  '猴':['猴','申'],'雞':['雞','酉'],'狗':['狗','犬','戌'],'豬':['豬','豕','亥'],
+  // ═══ 擴充：常用名字用字（500+） ═══
+  // 含「羽」的字（羽=鳥/雞相關）
+  '羽':['羽'],'翔':['羽'],'翊':['羽'],'翎':['羽'],'翠':['羽'],'翰':['羽'],'翼':['羽'],'翹':['羽'],'羿':['羽'],
+  '飛':['飛'],
+  // 含「函」「凡」「凌」等（冫/冖/凵）
+  '函':['水','氵'],'凡':['几'],'凌':['冫','氵'],'冰':['冫','氵'],'冷':['冫','氵'],'凜':['冫','氵'],'凝':['冫','氵'],'准':['冫','氵'],'凍':['冫','氵'],'涼':['氵'],'淩':['氵'],
+  // 含「宸」「辰」等
+  '宸':['宀','辰'],'辰':['辰'],'晨':['日','辰'],'振':['辰'],
+  // 含「彥」「顏」等
+  '彥':['彡','文'],'顏':['彡','頁'],
+  // 含「瑋」「瑄」等（王旁）
+  '瑋':['王'],'瑄':['王'],'瑾':['王'],'璽':['王'],'琬':['王'],'琇':['王'],'琪':['王'],'琳':['王'],'瑩':['王'],'瑞':['王'],'瑜':['王'],'瑤':['王'],'珩':['王'],'珮':['王'],'琰':['王'],'瑗':['王'],'璟':['王'],'璇':['王'],'璿':['王'],'瓏':['王'],'玥':['王'],'珺':['王'],'瑆':['王'],'璐':['王'],'瑢':['王'],'琍':['王'],'璦':['王'],'琅':['王'],'珂':['王'],'琮':['王'],'璘':['王'],'瑒':['王'],'珈':['王'],'珧':['王'],'珣':['王'],'琯':['王'],'琸':['王'],'琤':['王'],'瑁':['王'],'瑀':['王'],'瑂':['王'],'瑝':['王'],
+  // 含「恩」「惠」「慈」等（心/忄）
+  '恩':['心'],'惠':['心'],'慈':['心'],'悅':['忄'],'愷':['心'],'憲':['心'],'懿':['心'],'怡':['忄'],'恬':['忄'],'恆':['忄'],'惟':['忄'],'愉':['忄'],'慎':['忄'],'憶':['忄'],'懷':['心'],'恕':['心'],'悠':['心'],'惇':['忄'],'慧':['心'],'懋':['心'],'愫':['心'],'懿':['心'],
+  // 含「祐」「祥」等（示/礻）
+  '祐':['礻'],'祥':['礻'],'祺':['礻'],'禎':['礻'],'禧':['礻'],'福':['礻'],'祿':['礻'],'神':['礻'],'祈':['礻'],'祝':['礻'],'祖':['礻'],'禪':['礻'],'禮':['礻'],
+  // 含「軒」「輝」等（車）
+  '軒':['車'],'輝':['車','光'],'輔':['車'],'轉':['車'],'軾':['車'],
+  // 含「鈞」「銘」等（金/钅）
+  '鈞':['金'],'銘':['金'],'鋒':['金'],'鑫':['金'],'鐘':['金'],'錦':['金'],'鍾':['金'],'鑰':['金'],'銓':['金'],'鎧':['金'],'鑠':['金'],'釗':['金'],'鈺':['金'],'鈿':['金'],'鉉':['金'],
+  // 含「睿」「睦」等（目）
+  '睿':['目'],'睦':['目'],'睛':['目'],'瞳':['目'],'瞻':['目'],'矚':['目'],'盼':['目'],'眉':['目'],'眸':['目'],'瞬':['目'],
+  // 含「皓」「皎」等（白）
+  '皓':['白','日'],'皎':['白'],'皙':['白'],
+  // 含「語」「詩」等（言）
+  '語':['言'],'詩':['言'],'諾':['言'],'誠':['言'],'謙':['言'],'詠':['言'],'諭':['言'],'詮':['言'],'誼':['言'],'諦':['言'],'謝':['言'],'論':['言'],'詹':['言'],'諳':['言'],'讓':['言'],
+  // 含「豪」「家」等
+  '豪':['豕'],'家':['宀','豕'],
+  // 含「霖」「霈」「霓」等（雨）
+  '霖':['雨','林','木'],'霈':['雨'],'霓':['雨'],'靖':['立'],'霏':['雨'],'霆':['雨'],'靈':['雨'],'霞':['雨'],'霜':['雨'],'露':['雨'],
+  // 含「逸」「遙」等（辶）
+  '逸':['辶','兔'],'遙':['辶'],'逍':['辶'],'遠':['辶'],'邁':['辶'],
+  // 含「陽」「隆」等（阜/阝）
+  '陽':['阝','日'],'隆':['阝'],'陵':['阝'],'陸':['阝'],'院':['阝'],'隱':['阝'],'階':['阝'],'陳':['阝'],
+  // 含「雅」「雄」等（隹）
+  '雅':['隹'],'雄':['隹'],'雋':['隹'],'集':['隹','木'],'雍':['隹'],'雯':['雨','文'],'雲':['雨'],
+  // 含「韻」「音」等
+  '韻':['音'],'韋':['韋'],'音':['音'],
+  // 含「駿」「驊」等（馬）
+  '駿':['馬'],'驊':['馬'],'騏':['馬'],'驍':['馬'],'驥':['馬'],'騰':['馬'],
+  // 含「嘉」「喬」「善」等（口/吉）
+  '嘉':['口'],'喬':['口'],'善':['口','羊'],'喜':['口'],'嘯':['口'],'嗣':['口'],
+  // 含「鵬」「鴻」等（鳥）
+  '鵬':['鳥'],'鴻':['鳥','氵'],'鳳':['鳥'],'鶴':['鳥'],'鷹':['鳥'],'鸞':['鳥'],
+  // 含「哲」「啟」等
+  '哲':['口'],'啟':['口'],'呈':['口'],'君':['口'],'吟':['口'],'周':['口'],
+  // 含「俞」「愈」等
+  '俞':['亻','月'],'愈':['心','月'],'瑜':['王','月'],
+  // 含「亭」「亮」「京」（高/亠）
+  '亭':['亠','口'],'亮':['亠','口'],'京':['亠','口'],'亦':['亠'],
+  // 含「冠」（冖）
+  '冠':['冖'],'軍':['冖','車'],
+  // 含「仲」「俊」「傑」等（亻）
+  '仲':['亻'],'俊':['亻'],'傑':['亻'],'偉':['亻'],'倫':['亻'],'儀':['亻'],'佩':['亻'],'佑':['亻'],'伶':['亻'],'侑':['亻'],'佰':['亻'],'佐':['亻'],'修':['亻'],'信':['亻'],'儒':['亻'],'優':['亻'],'億':['亻'],
+  // 含「銀」「鑫」等已在金
+  // 含「竹」「筠」等
+  '竹':['竹'],'筠':['竹'],'笙':['竹'],'箏':['竹'],'簫':['竹'],'策':['竹'],'筱':['竹'],'篤':['竹'],
+  // 含「虹」「蝶」等（虫）
+  '虹':['虫'],'蝶':['虫'],'蜻':['虫'],'螢':['虫'],'蟬':['虫'],
+  // 含「豐」「豔」等
+  '豐':['豆','豐'],'豔':['豆'],
+  // 含「堅」「城」「培」等（土）
+  '堅':['土'],'城':['土'],'培':['土'],'基':['土'],'塘':['土'],'境':['土'],'墨':['土'],'壁':['土'],'壇':['土'],'坤':['土'],'堃':['土'],'堯':['土'],'垣':['土'],'均':['土'],'坊':['土'],'圻':['土'],'埸':['土'],'域':['土'],
+  // 含「柏」「楷」等（已在木）
+  // 含「尚」
+  '尚':['口'],'堂':['土','口'],'當':['田','口'],
+  // 含「頤」「碩」等
+  '頤':['頁'],'碩':['石','頁'],'頌':['頁'],
+  // 含「貝」
+  '貞':['貝'],'財':['貝'],'賢':['貝'],'貴':['貝'],'賓':['貝'],'賜':['貝'],'資':['貝'],
+  // 含「辛」
+  '辛':['辛'],'辜':['辛'],'辟':['辛'],
+  // 含「石」
+  '石':['石'],'岩':['山','石'],'碧':['石','王'],'磊':['石'],'研':['石'],'確':['石'],
+  // 含「立」
+  '立':['立'],'端':['立'],'竣':['立'],'站':['立'],'章':['立'],'童':['立'],
+  // 含「厂」「广」
+  '廣':['广'],'庭':['广'],'廉':['广'],'廷':['廴'],'康':['广'],'庸':['广'],'庫':['广'],'序':['广'],'廈':['广'],'度':['广'],
+  // 數字常用
+  '一':['一'],'二':['二'],'三':['三'],'四':['口'],'五':['五'],'六':['六'],'七':['七'],'八':['八'],'九':['九'],'十':['十'],'百':['白'],'千':['千'],'萬':['艹'],
+  // 顏色常用
+  '白':['白'],'黑':['黑'],'赤':['赤'],'青':['青'],'黃':['黃','田'],'紅':['糸'],
+  // 含「長」「永」「恆」
+  '長':['長'],'永':['水'],'恆':['忄'],'恒':['忄'],
+  // 含「少」「小」
+  '少':['小'],'小':['小'],'尖':['小','大'],
+  // 含「妍」「娟」「婷」等（女）
+  '妍':['女'],'娟':['女'],'婷':['女'],'婉':['女'],'姍':['女'],'妮':['女'],'姿':['女'],'媛':['女'],'嫻':['女'],'妤':['女'],'姝':['女'],'娜':['女'],'婕':['女'],'媚':['女'],'嫣':['女'],'嬌':['女'],'姞':['女'],'姵':['女'],'婧':['女'],'嫦':['女'],'娉':['女'],'婓':['女'],'姮':['女'],
+  // 含「豕」相關
+  '豕':['豕'],'象':['豕'],'豪':['豕'],'豫':['豕'],'豹':['豕'],
+  // 含「穴」相關
+  '穴':['穴'],'空':['穴'],'窗':['穴'],'窮':['穴'],'究':['穴'],'穎':['禾','穴'],
+  // 含「采」
+  '采':['采'],'釆':['采'],'番':['采','田'],'彩':['彡','采'],'釋':['采']
 };
 
 // Unicode 部首推斷（fallback）
+// ═══ 康熙 214 部首 → 生肖字根映射 ═══
+// ═══ 偏旁→字 完整映射表（4300+ 常用字，71 部首組） ═══
+const RADICAL_DB=[{c:"仁仃仇仍仕他付代令以仙仗仞仟仡仫份仰仲件任仿伉伊伍伎伏伐休伙伯估伴伶伸伺似佃但位低住佐佑何佗佚佛作佞佩佬佯佰佳併來侃侈例侍供依侖侗侘侚侮侯侵便俁係促俄俊俎俐俑俗俚俞俟信修俯俱俳俸俺俾倆倉個倌倍倏們倒倔倖倘候倚倜借倡倦倫倭假偃偉偏偕偶偷偵偽傀傅傍傑傘備催傭傲傳傷傻傾僅僑僕僖僚價僧僭僮僵儀億儂儉儐儒儘儲儷儸儺",r:['人','亻']},{c:"汁汀汃汋汍汎汏汐汕汗汙汛汝汞江池汨汪汰汲汴決沁沂沃沅沈沉沌沐沒沓沖沙沛沫沮沱河沸油沺治沼沾況泄泅泉泊泌泓法泗泛泡波泣泥注泫泮泯泰泱洄洋洌洎洗洛洞津洧洩洪洮洲洵洶活洽派流浙浚浣浤浦浩浪浮浴海浸涉涊涎涓涔涕涮涯液涵涸涼淇淋淌淏淑淒淕淘淙淚淝淞淡淥淦淨淩淪淫淬淮深淳淵混淹添淼清渙渝渟渠渡渣渤渥溈温渲渴游湃湊湍湖湘湛湜湞湟湧湮湯源準溝溟溢溥溧溪溫溯溶溺滂滄滅滇滋滌滑滓滔滕滘滙滬滯滲滴滷滸滾滿漁漂漆漏漓漠漢漣漩漪漫漬漯漲漳漸漾潁潑潔潘潛潞潤潭潮澄澈澎澤澧澱激濃濕濘濛濟濤濫濬濮濱濺濾瀅瀉瀋瀑瀕瀘瀚瀛瀝瀟瀦瀧灌灑灘灝灣",r:['水','氵']},{c:"口古句另叨叩只叫召叭叮可台史右叶號司叻吁吃各吆合吉吊同名后吏吐向吒君吟吠否吧吩含吭吮吳吵吶吸吹吻吾呀呂呃呆呈告呎呢呤周咀呱呵呻呼命咖咦咧咨咩咪咫咬咯品咳咸哀哄哆哇哈哉員哥哦哨哩哭哮哲哺唁唄唇唉唐唑唧唬售唯唱唸商啃啄啊問啓啜啞啡啣啤啥啦啪啬啵喂善喃喇喉喊喋喘喚喜喝喧嗅嗆嗎嗑嗔嗚嗜嗡嗣嗤嗦嗨嗬嗯嗲嘀嘆嘈嘉嘍嘎嘔嘗嘛嘩嘮嘯嘲嘴嘶噁噎噓噗噙噠噢噤器噩噪噬噱噴噶噸嚀嚇嚎嚐嚕嚙嚨嚮嚴嚷嚼囂囉囊囑囔",r:['口']},{c:"宀它宅宇守安宋完宏宓宕宗官宙定宛宜客宣室宥宦宧宮宰宴家宸容宿寂寄寅密寇富寐寒寓寔察寡寢寤實寧審寫寬寮寰寱寶",r:['宀']},{c:"心必忌忍忖志忘忙忡快忱忻念忽忿怎怒怔怕怖思怡急性怨怪恃恆恍恐恕恙恢恣恤恥恨恩恪恫恬恭息恰悄悉悔悖悚悟悠患悲悶悸悻悼情惆惇惋惑惕惘惚惜惟惠惡惦惰惱惲惶惹愁愆愈愉愍愎意愕愚愛感愧愴愷慄慈態慌慎慕慘慚慟慣慧慨慫慮慰慳慵慶慷慾憂憊憋憎憐憑憔憚憤憧憨憩憫憬憲憶憾懂懇懈應懊懋懌懍懦懲懵懶懷懸懺懼懾戀",r:['心','忄']},{c:"木未末本札朮朱朵杆杉李杏材村杓杖杜杞束杯杰東杲杳杵杷松板枉析枋枕林枚果枝枯架枷柄柏某柑柒染柔柘柚柜柝柞柢查柩柬柮柯柱柳柴柵柿栓栖栗校栩株核根格栽桀桂桃桅桉案桌桎桐桑桓桔桕桶梁梅梆梏梓梗梢梧梨梭梯械梱梳梵梶棄棉棋棍棒棕棗棘棚棟棠棣棧森棲棵棻椅椎植椒椿楊楓楔楗楚楞楠楣楫業楷楹榆榔榕榛榜榨榭榮榱榴槁構槍槐槓槤槳樁樂樊樑標樓樞模樣樵樸樹樺橄橋橘機橡橫檀檄檎檐檔檜檢檬檳櫃櫓櫚櫛櫥櫸櫻權欄",r:['木']},{c:"水永氾汁汀江汝汗汙汛池汪沁沃沈沉沐沒沖沙沛河油治沼泉泊泌法泡波泣泥注泰洋洗洛洞津洪浙浩浪浮浴海涉涵淇淑淚清淵減渡港湖源準溪溫滅滑滿漁漂演漫潔潛潮澤濃瀑灌灣",r:['水','氵']},{c:"日旦旨早旬旭旱昂昃昆昇昉昊昌明昏昕星映春昧昨昭昱昶昻是時晃晉晏晒晗晚晝晞晟晤晦晨晰晳晴晶智暄暇暈暉暌暐暑暖暗暘暝暢暨暫暮暱暴曄曆曉曖曙曚曛曜曝曦曩曬曰曳曷書曹曼曾會朋朔朗朝期朦朧",r:['日']},{c:"月有朋服朔朗望朝期朦朧肉肋肌肖肘肚肛肝股肢肥肩肪肯育肴胃背胎胖胚胡胤胥胸能脂脅脈脊脖脣脩脫脯脹腆腈腋腎腐腔腕腥腦腫腰腳腸腹腺腿膀膂膈膊膏膚膛膜膝膠膨膩膳膺膽膾臀臂臆臉臍臟臠",r:['月','肉']},{c:"艾芊芋芍芎芙芝芡芥芬芭芮芯花芳芸芹芻芽苑苒苓苔苗苛苜苞苟苡苣苦苧苫英苳苹茁茂范茄茅茉茗茜茨茫茭茯茱茲茴茵茶茹荀荃荊荏草荒荔荖荷荸荻莊莉莎莒莓莖莘莛莞莠莢莧莩莪莫莽菁菅菇菊菌菏菓菜菠菡菩菪菱菲菴菸菽萃萄萊萌萍萎萬萱萸萼落葉葑著葛葡葦葩葫葬葭葳葵葷蒂蒐蒔蒙蒜蒞蒟蒡蒨蒲蒸蒺蒼蒿蓀蓁蓄蓉蓋蓑蓓蓬蓮蔑蔓蔔蔗蔚蔡蔣蔥蔬蔭蕃蕈蕉蕊蕙蕨蕩蕪蕭蕾薄薇薈薊薏薑薔薛薦薩薪薫薰藉藍藏藐藝藤藥藩藻蘆蘇蘊蘋蘑蘚蘭蘿董華虎",r:['艹']},{c:"女奴奶她好妁妃妄妊妍妒妓妖妙妝妞妣妤妥妨妮妯妲妳妹妻妾姆姊始姐姑姒姓委姚姜姝姞姣姥姦姨姪姬姮姵姶姻姿威娃娉娑娘娛娜娟娠娣娥娩娶婁婆婉婊婕婚婦婧婪婷婺媒媚媛媧媲媳媽嫁嫂嫉嫌嫖嫘嫚嫡嫣嫦嫩嫻嬈嬉嬌嬋嬖嬛嬤嬪嬰嬴嬸嬿孀孃",r:['女']},{c:"王玉玎玓玖玗玘玟玠玡玢玥玦玧玩玫玬環玲玳玷玹玻珀珂珅珈珉珊珍珏珒珖珙珞珠珣珥珧珩班珮珺珽琄琇琉琊琍琎琛琝琢琤琥琦琨琪琮琯琲琳琴琵琶琺琿瑁瑂瑄瑆瑋瑕瑗瑙瑚瑛瑜瑝瑞瑟瑠瑢瑤瑧瑩瑪瑭瑮瑯瑰瑱瑳瑶瑾璀璁璃璇璈璉璋璐璘璜璞璟璠璣璥璦璧璨璩璪璫璬璮璲璵璸璹璽璿瓊瓏瓔瓘瓚瓛理現",r:['王','玉']},{c:"系紀紂約紅紆紉紊紋納紐紓純紗紘紙級紛紜素紡索紫紮累細紳紹紺終組絃結絕給絡絢統絲絨經綁綏綑綜綠綢綣綬維綱網綴綸綺綻綽綾緊緋緒緘線緜緝緞締緣編緩緬緯練緻縈縊縛縝縞縣縫縮縱總績繁繃繆繇繋織繕繖繚繞繡繩繪繫繭繰繳繹繼繽纂纈纏纓纖纜",r:['糸']},{c:"言訂訃計訊訌討訐訓訕託記訛訝訟訣訥訪設許訴訶診註詆詈詉詐詒詔評詘詛詞詠詡詢詣試詩詫詬詭詮詰話該詳詹詼誅誇誌認誓誕誘語誠誡誣誤誥誦誨說誰課誹誼調諄談請諍諏諒論諗諜諞諠諡諢諧諫諭諮諱諳諶諷諸諺諻諼諾謀謁謂謄謇謊謎謐謔謗謙謚講謝謠謡謨謫謬謳謹謾譁證譊譎譏譖識譙譚譜譫譬譯議譴護譽讀讒讓讖讚讜",r:['言']},{c:"金釗釘針釣釦釧釩釵鈀鈉鈍鈎鈐鈔鈕鈞鈣鈦鈪鈴鈺鈿鉀鉅鉉鉋鉍鉑鉚鉛鉤鉦鉸銀銃銅銑銓銖銘銜銠銦銨銩銬銭銮銳銷鋁鋅鋇鋌鋏鋒鋤鋪鋰鋸鋼錄錐錘錚錛錠錢錦錨錫錮錯錳錶鍊鍋鍍鍔鍛鍥鍬鍰鍵鍺鍾鎂鎊鎔鎖鎗鎚鎛鎢鎧鎬鎮鎳鏃鏈鏊鏐鏑鏗鏘鏜鏝鏞鏡鏢鏤鏨鐃鐓鐔鐘鐙鐡鐫鐬鐮鐲鐳鐵鐶鐸鐺鐿鑄鑊鑌鑑鑒鑠鑣鑫鑰鑲鑷鑼鑽鑾鑿",r:['金']},{c:"辶迂迄迅迎近返迢迤迥迦迪迫迭述迴迷迸追退送逃逅逆逋逍透逐逑途逕逖逗這通逛逝速造逢連逮週進逵逶逸逹逼遂遇遊運遍過遏遐遑遒道達違遘遙遜遞遠遣遨適遭遮遵遷選遺遼避邀邁還邇邈邊邏",r:['辶']},{c:"田由甲申男甸町畋界畏畔留畜略畝番畢畦畫當畸畹畿疆疇",r:['田']},{c:"山屹岌岐岑岔岡岢岣岩岫岬岱岳岷峇峋峒峙峨峪峭峯峰峴峻崁崆崇崎崑崔崖崗崙崛崢崤崧崩嵇嵌嵐嵩嵬嵯嶄嶇嶋嶒嶔嶙嶝嶠嶢嶧嶮嶰嶴嶺嶼巍巒巔",r:['山']},{c:"火灰灸灼災炅炆炊炎炒炕炙炤炫炬炭炮炯炰炱炳炷炸烈烊烋烏烘烙烜烝烤烯烴烹烽焉焊焙焚焜焠焦焯焰焱然煉煊煌煎煒煕煖煗煙煜煞煤煥照煩煮煲煸熄熊熏熔熙熛熟熠熨熬熱熹熾燁燃燈燉燊燎營燒燔燕燙燜燠燥燦燧燬燭燮燴燹燻燼燿爆爍爐爛爨爪爬爭爯爲爵爸爹爺爻爽爿",r:['火','灬']},{c:"禾禿秀私秉秋科秒秕秘租秣秤秦秧秩移稀稅程稍稔稗稚稜稞稟稠種稱稻稼稽稿穀穂穆穌積穎穗穡穢穩穫穰穴",r:['禾']},{c:"米籽粉粒粕粗粘粟粢粥粧粱粲粳粵粹粽精粿糊糕糖糗糙糜糞糟糠糢糧糨糯糰糲糸",r:['米']},{c:"竹竺竿笄笆笈笊笏笑笙笛笞笠笥符笨笩第笭笮笱笳笵笸筅筆筇筊筋筌等筍筏筐筑筒答策筠筥筧筬筮筱筲筵筷箄箇箋箍箏箒箔箕算箝管箬箭箱箴箸節篁範篆篇篋篌篙篝篠篤篩篪篲篳篷篾簀簇簍簑簒簙簞簡簣簧簪簫簷簸簽簾簿籃籌籍籐籙籟籠籤籥籩籬籮籲",r:['竹']},{c:"衣表衫衩衰衲衷衹衽衾袁袂袈袋袍袒袖袗袞袤袪被袱裁裂裊裎裏裔裕裘裙補裝裟裡裨裳裴裸裹裼製褂複褊褐褒褓褔褚褟褥褪褫褰褲褶褸褻襁襄襌襖襝襟襠襤襦襪襬襯襲襴襾",r:['衣']},{c:"刀刁刃分切刈刊刎刑列初判別利刪到制刷刺刻剃則削前剋剌剎剔剖剛剝剩剪副割創剷剽剿劃劈劉劊劍劑劚力功加劣助努劫劬勁勃勇勉勐勒動勘務勛勝勞勢勤勦勰勳勵勸勻勾匀勿包匆匈匍匏匐匕化北匙匝匠匡匣匪匯匱匹匾",r:['刀','刂']},{c:"巾市布帆帋帑帔帕帖帗帘帙帚帛帝帟帢帥師席帳帶帷常帽幃幄幅幌幔幕幗幘幛幟幡幢幣幫幬幭干平年幷幸幹幻幼幽幾庁",r:['巾']},{c:"彡形彣彤彥彧彩彪彫彬彭彰影彲彳彷役彼往征待徇很徉徊律後徐徑徒得徘徙從御徧復循微徵德徹徽",r:['彡']},{c:"弓弔引弗弘弛弟弢弦弧弩弭弱張強弼彀彈彊彎",r:['弓']},{c:"門閂閃閉開閎閏閑閒間閔閘閡閣閤閥閨閩閫閬閭閱閲閹閻閼閽闆闇闈闊闋闌闍闐闑闓闔闕闖關闘闚闛闞闡闢",r:['門']},{c:"隹隻隼雀雁雄雅集雇雉雋雌雍雎雒雕雖雙雛雜雞離難",r:['隹']},{c:"雨雩雪雫雯雱雲零雷雹電需霄霆震霈霉霍霎霏霑霓霖霜霞霧霪霰露霸霹靂靄靈靖靚靛靜",r:['雨']},{c:"羽羿翁翅翊翌翎翏習翔翕翛翟翠翡翦翩翫翮翰翱翳翹翻翼耀",r:['羽']},{c:"豕豚象豢豨豪豬豫豸豹豺貂貉貊貌貍貓貔",r:['豕']},{c:"犬犯狀狂狄狎狐狒狗狙狠狡狩狸狹狻狼猙猛猜猝猥猩猴猶猷猾獄獅獎獗獠獨獰獲獵獷獸獺獻",r:['犬','犭']},{c:"馬馭馮馱馳馴馹駁駃駈駐駑駒駔駕駘駙駛駝駟駢駭駰駱駿騁騂騅騎騏騖騙騤騫騭騮騰騶騷騸驀驁驂驃驄驅驊驌驍驎驏驕驗驘驚驛驟驢驤驥驦驪驫",r:['馬']},{c:"鳥鳩鳳鳴鳶鴉鴕鴛鴝鴞鴟鴣鴦鴨鴻鴿鵑鵓鵜鵝鵠鵡鵪鵬鵯鵲鵺鶇鶉鶊鶖鶘鶚鶡鶩鶯鶴鶹鶺鶻鷂鷄鷓鷗鷙鷚鷥鷦鷯鷲鷸鷹鷺鸚鸛鸞鸝",r:['鳥']},{c:"龍龎龐龔龕龜",r:['龍']},{c:"虎虐虔處虛虜號虞虧虩虫虯虱虹虺蛀蛄蛆蛇蛉蛋蛎蛐蛑蛙蛛蛞蛟蛤蛭蛯蛹蛻蜀蜂蜃蜆蜈蜊蜍蜒蜓蜘蜚蜜蜞蜡蜢蜥蜩蜮蜱蜴蜷蜻蜾蝌蝎蝓蝕蝗蝙蝟蝠蝦蝨蝮蝰蝴蝶蝸蝻螂螃螄螈螉螋融螐螗螘螞螟螢螣螨螫螭螯螳螵螺螻蟀蟄蟆蟈蟋蟎蟑蟒蟜蟠蟬蟯蟲蟳蟹蟻蟾蠅蠍蠔蠕蠖蠛蠟蠡蠢蠣蠱蠶蠹蠻",r:['虎']},{c:"貝貞負財貢貧貨販貪貫責貯貰貲貳貴貶買貸費貼貽貿賀賁賂賃賄賅資賈賊賑賒賓賕賚賜賞賠賡賢賣賤賦質賫賬賭賰賴賵賺賻購賽贄贅贈贊贋贍贏贓贖贗贛",r:['貝']},{c:"石砂砌砍砒研砝砟砢砥砦砧砩砭砰砲砷砸砼硃硅硎硏硒硝硤硨硫硬硯硼碇碉碌碎碑碗碘碚碞碟碣碧碩碰碳碴碼碾磁磅磊磋磐磚磨磬磯磲磷磺礁礅礎礙礦礪礫礬礱",r:['石']},{c:"穴究空穹穿突窄窈窒窕窖窗窘窟窠窣窩窪窮窯窰窳窺窿竄竅竇竊竈",r:['穴']},{c:"邑邢那邦邪邯邱邲邳邵邸邽邾郁郅郇郊郎郗郛部郝郡郢郤郭都鄂鄉鄒鄔鄗鄘鄙鄞鄢鄧鄭鄰鄱鄴鄺阡阮阪阬阱防阻阿陀附陂陋陌降限陔陘陛陜陝陞陟院陣除陪陬陰陲陳陵陶陷陸隄隅隆隈隊隋隍階隔隕際障隧隨險隱隴隸隹",r:['阝']},{c:"目盯盲直盼盾相眇眈眉眊看眙眛眞真眠眥眦眨眩眭眯眴眶眷眸眺眼着睛睜睞睡睢督睥睦睨睪睫睬睹睽睾睿瞄瞅瞇瞋瞌瞎瞑瞞瞟瞠瞥瞧瞪瞬瞭瞰瞳瞻瞼瞿矇矍矓矗",r:['目']},{c:"酉酊酋酌配酎酐酒酗酡酢酣酥酩酪酬酮酯酲酳酴酵酷酸醃醇醉醋醍醐醒醜醞醢醣醪醫醬醮醯醱醴醵醺釀",r:['酉']},{c:"示社祀祁祂祇祈祉祊祋祐祓祕祖祗祚祛祜祝神祟祠祢祥票祧祭祺祼祿禁禂禄禊禍禎福禑禓禔禕禖禘禛禝禞禟禡禢禤禥禧禨禪禫禬禮禰禱禳禴禸禹禺禽禾",r:['礻']},{c:"白百皂的皆皇皈皋皎皓皖皙皚皛皜皝皞皮",r:['白']},{c:"立站竑竟章竣童竭端競竹",r:['立']},{c:"小少尖尚尞尢尤尨尪尬就尷尸尹尺尻尼尾局屁屆屈屉届屋屌屍屎屏屐屑展屠屢屣層履屬屯",r:['小','少']},{c:"大天太夫央失夷夸夾奄奇奈奉奎奏契奔奕奘套奚奠奢奧奪奮奰",r:['大']},{c:"子孑孔孕孖字存孛孜孝孟季孤孥孩孫孰孱孳孵學孺孻孼孽",r:['子']},{c:"牛牝牟牡牢牣牤牧物牲牴特牽犀犁犂犄犇犉犋犍犏犒犖犛犢犧犬",r:['牛']},{c:"食飢飯飲飴飼飽飾餃餅餉養餌餐餒餓餕餘餛餞餡館餮餵餾饅饈饉饊饋饌饑饒饕饗饞饢",r:['食']},{c:"魚魛魟魣魨魩魬魯魴魷魺鮀鮁鮃鮊鮋鮍鮎鮑鮒鮓鮗鮚鮜鮝鮞鮠鮡鮣鮦鮨鮪鮫鮭鮮鮰鮲鮳鯀鯁鯉鯊鯒鯔鯖鯗鯛鯝鯡鯤鯧鯨鯪鯰鯷鯽鰈鰉鰍鰓鰜鰟鰣鰥鰭鰱鰲鰳鰷鰹鰻鰼鰾鱅鱈鱉鱒鱔鱖鱗鱘鱚鱝鱟鱠鱣鱧鱨鱭鱮鱲鱷鱸鱺",r:['魚']},{c:"羊羌美羔羚羞羡羣群義羲羶羹羺羼羽",r:['羊']},{c:"豆豇豈豉豊豌豎豐豔豗",r:['豆']},{c:"采釉釋番悉",r:['采']},{c:"飛飜飝",r:['飛']},{c:"鼠鼡鼢鼩鼫鼬鼯鼱鼴鼷鼹鼻",r:['鼠']},{c:"麥麩麪麫麯麰麴麵麸",r:['麥']},{c:"黃黈黌黎黏",r:['黃','田']},{c:"冗冘冠冢冤冥冪冬冰冱冲冶冷冽凄凅准凇凈凊凋凌凍凜凝凞几凡凰凱凳凶凸凹",r:['冖']},{c:"廴廷建廻延廿",r:['廴']},{c:"广庁序庄底庇店庚府庠度座庫庭庵庶庸康庾廁廂廈廉廊廓廖廚廛廝廟廠廡廢廣廨廩廬廰廱廳",r:['广']},{c:"文斌斐斑斕斗料斛斜斝斞斟斡斤斥斧斫斬新斲斷斸",r:['文']},{c:"几凡凰凱凳凶凸凹",r:['几']},{c:"車軋軌軍軒軔軛軟軸軹軺軻軼軾較輅輈載輊輒輓輔輕輛輜輝輞輟輦輩輪輬輮輯輳輶輸輻輾輿轂轅轆轉轊轍轎轔轗轘轙轟轡轢轤",r:['車']},{c:"夕外多夜夢夥夠夤",r:['夕']},{c:"乙乞也乳乾亂事云互五井亙亞亟亡亢交亦亨享京亭亮亳亶亹",r:['乙']},{c:"匕化北匙匜匝匠匡匣匪匯匱匹匾",r:['匕']},{c:"力功加劣助努劫劬勁勃勇勉勐勒動勘務勛勝勞勢勤勦勰勳勵勸勻勾勿包匆匈匍匏匐",r:['力']},{c:"辰辱農辸辳",r:['辰']},{c:"斤斥斧斫斬斯新斲斷",r:['斤']}];
+
 function guessRoots(ch){
-  // 先查預建表
+  // 層 1: 精確預建表（最高優先，含特殊字如「函」「逸」等）
   if(CHAR_ROOTS[ch]) return CHAR_ROOTS[ch];
-  // Unicode CJK 部首補充推斷
-  const code = ch.charCodeAt(0);
-  const roots = [];
-  // CJK Radicals Supplement (2E80-2EFF) & Kangxi Radicals (2F00-2FD5)
-  // 簡單的 fallback：取字的結構特徵
-  const s = ch;
-  // 常見偏旁檢測（字串包含檢測）
-  const tests = [
-    ['氵','氵'],['亻','亻'],['口','口'],['宀','宀'],['艹','艹'],
-    ['木','木'],['火','火'],['土','土'],['金','金'],['水','水'],
-    ['日','日'],['月','月'],['山','山'],['田','田'],['禾','禾'],
-    ['米','米'],['糸','糸'],['王','王'],['心','心'],['刂','刂'],
-    ['力','力'],['辶','辶'],['巾','巾'],['衣','衣']
-  ];
-  // 這裡只做 fallback，實際上預建表應覆蓋常用字
-  return roots;
+  
+  // 層 2: RADICAL_DB 完整偏旁映射（覆蓋 4300+ 常用字）
+  for(let i=0; i<RADICAL_DB.length; i++){
+    if(RADICAL_DB[i].c.includes(ch)) return RADICAL_DB[i].r;
+  }
+  
+  // 層 3: 回傳空陣列（該字確實不在任何已知偏旁組中）
+  return [];
 }
 
 // ── 生肖姓名學分析主函數 ──
@@ -6545,6 +6869,47 @@ document.addEventListener('keydown',function(e){
 /* =============================================================
    FEATURE 1: 商品化水晶推薦（含賣場連結 + 商品類別）
    ============================================================= */
+// 產品類型對應的 SVG 圖示（手鍊/手排/項鍊/雕刻件）
+function getProductSVG(cat, name){
+  // 根據產品名稱判斷顏色
+  const colorMap = [
+    // 黑色系
+    [/黑曜|黑髮|黑碧璽|黑閃靈|沉香/,'#1a1a2e','#333355'],
+    // 藍色系
+    [/海藍寶|藍虎眼|藍彼得|藍磷灰|藍玉髓|藍方解石|青晶石|堇青石|鷹眼堇青/,'#1e5799','#4a90d9'],
+    // 紫色系
+    [/紫水晶|紫龍晶|紫金砂|紫黃白/,'#6b2fa0','#9b59b6'],
+    // 粉色系
+    [/粉晶|摩根石|粉紅碧璽|薔薇石|煙花雨薔葳|星光草苺|彩色草莓/,'#d4618c','#f0a0c0'],
+    // 紅色系
+    [/紅瑪腦|紅龍宮|紅花碧玉|紅虎眼|紅幽靈|紅膠花|紅靈骸骨/,'#b22222','#e05050'],
+    // 綠色系
+    [/綠幽靈|綠碧璽|綠檀木|綠龍晶|綠月光|綠水晶|東陵玉|抹茶幽靈|四季幽靈/,'#2d7d46','#4db870'],
+    // 金黃色系
+    [/金太陽|金髮|金曜|鈦晶|咖啡鈦|太陽花|骨幹太陽|茶晶|黃龍宮|利比亞黃金|黃水晶/,'#b8860b','#d4af37'],
+    // 白/透明系
+    [/白水晶|白幽靈|白阿賽|透石膏|白龍宮|月光石|白松石/,'#c0c0d0','#e8e8f0'],
+    // 銀灰系
+    [/銀曜|鐵膽石|彼得石/,'#606880','#8898a8'],
+    // 彩色系
+    [/彩超七|彩銅超七|超八|糖果碧璽|阿富汗碧璽|多寶隕石|彩閃靈|彩髮|彩虹黑曜|彩色天鐵|天鐵五行|阿拉善|波斯瑪腦/,'#c07020','#e0a050'],
+    // 琥珀/檀木系
+    [/老山檀香|沉香/,'#6b4226','#a0704a'],
+  ];
+  let c1='#d4af37', c2='#b8860b'; // 預設金色
+  if(name){
+    for(const [re,a,b] of colorMap){
+      if(re.test(name)){c1=b;c2=a;break;}
+    }
+  }
+  const svgs = {
+    '手鏈': `<svg viewBox="0 0 64 64" width="48" height="48"><circle cx="32" cy="32" r="22" fill="none" stroke="${c1}" stroke-width="2.5" stroke-dasharray="8 4"/><circle cx="32" cy="10" r="4.5" fill="${c1}"/><circle cx="51" cy="21" r="4" fill="${c2}" opacity="0.85"/><circle cx="51" cy="43" r="4" fill="${c1}" opacity="0.85"/><circle cx="32" cy="54" r="4.5" fill="${c2}"/><circle cx="13" cy="43" r="4" fill="${c1}" opacity="0.85"/><circle cx="13" cy="21" r="4" fill="${c2}" opacity="0.85"/></svg>`,
+    '手排': `<svg viewBox="0 0 64 64" width="48" height="48"><rect x="8" y="22" width="48" height="20" rx="10" fill="none" stroke="${c1}" stroke-width="2.5"/><rect x="12" y="26" width="10" height="12" rx="2" fill="${c2}" opacity="0.7"/><rect x="27" y="26" width="10" height="12" rx="2" fill="${c1}" opacity="0.7"/><rect x="42" y="26" width="10" height="12" rx="2" fill="${c2}" opacity="0.7"/></svg>`,
+    '項鍊': `<svg viewBox="0 0 64 64" width="48" height="48"><path d="M20 8 Q32 4 44 8 Q52 12 52 28 L44 42 Q32 50 20 42 L12 28 Q12 12 20 8Z" fill="none" stroke="${c1}" stroke-width="2"/><circle cx="32" cy="38" r="6" fill="${c2}" opacity="0.8"/><path d="M26 38 L32 32 L38 38 L32 44Z" fill="${c1}" opacity="0.6"/></svg>`,
+    '雕刻件': `<svg viewBox="0 0 64 64" width="48" height="48"><path d="M32 8 L48 20 L44 48 Q32 56 20 48 L16 20Z" fill="none" stroke="${c1}" stroke-width="2.5"/><circle cx="32" cy="28" r="5" fill="${c2}" opacity="0.6"/><path d="M24 38 Q32 44 40 38" fill="none" stroke="${c1}" stroke-width="1.5"/></svg>`
+  };
+  return svgs[cat] || svgs['手鏈'];
+}
 const PRODUCT_DB={
   金:[
     {n:'白水晶手鏈',cat:'手鏈',icon:'💍',el:'金',d:'淨化能量場，增強思維清晰度',price:'$580-$1,280',
@@ -6626,7 +6991,7 @@ function renderProductCrystal(bazi,type){
     </div>
     <div class="product-grid">${display.map(p=>`
       <div class="product-card">
-        <div class="product-icon">${p.icon}</div>
+        <div class="product-icon">${getProductSVG(p.cat,p.n)}</div>
         <div class="product-body">
           <div class="product-name">${p.n}</div>
           <div class="product-meta">
@@ -6737,7 +7102,7 @@ function generateResultCard(){
     const prods=PRODUCT_DB[need]||PRODUCT_DB['土'];
     ctx.font='16px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.85)';
     prods.slice(0,3).forEach((p,i)=>{
-      ctx.fillText(`${p.icon} ${p.n}（${p.cat}）— ${p.d}`,60,y4+30+i*28);
+      ctx.fillText(`${catIcon[p.cat]||'💎'} ${p.n}（${p.cat}）— ${p.d}`,60,y4+30+i*28);
     });
   }
 
@@ -6839,7 +7204,7 @@ function shareToUnlock(){
     navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
       hasShared=true; updateShareGate();
     }).catch(()=>{
-      showShareHint('分享取消了，完成分享才能取得折扣碼哦 😊');
+      showShareHint('💡 分享連結給朋友後即可解鎖，再試一次吧！');
     });
   }else{
     showCopyShareDialog(text+url);
@@ -6894,6 +7259,8 @@ function updateShareGate(){
     if(hasShared){
       gate.classList.add('hidden');
       retestBtn.classList.remove('hidden');
+      // 同時解鎖趣味功能
+      unlockExtraFeatures();
     }
   }
 }
@@ -6906,188 +7273,108 @@ function retestAfterShare(){
 // 實際商品庫 — 依五行分類，取代表性品項（同名取價格帶）
 const REAL_PRODUCTS = {
   金: [
-    // 白水晶系列
-    {n:'白水晶',cat:'手鏈',icon:'💍',el:'金',d:'淨化能量場，增強思維清晰度，萬能調和石',price:'$320-$396',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'白水晶手排',cat:'手鏈',icon:'💍',el:'金',d:'大顆粒排珠，淨化能量更強，適合辦公佩戴',price:'$396',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'鑽切白水晶',cat:'手鏈',icon:'✨',el:'金',d:'切割面折射光芒，提升靈性能量與專注力',price:'$320',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'鈦晶手排',cat:'手鏈',icon:'⚡',el:'金',d:'招正財偏財首選！增強領導力與決斷力',price:'$3,334-$21,950',wear:'面試/簽約時佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'白水晶鳳凰項鍊',cat:'項鍊',icon:'🔮',el:'金',d:'鳳凰涅槃，淨化+重生能量，收藏級項鍊',price:'$3,372',wear:'貼近心輪佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'金髮晶',cat:'手鏈',icon:'🌟',el:'金',d:'招財旺事業，金色髮絲象徵財富能量',price:'$761',wear:'左手佩戴招財',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'白幽靈',cat:'手鏈',icon:'💠',el:'金',d:'淨化磁場，提升靈性直覺力',price:'$396',wear:'冥想時佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'白阿賽設計款',cat:'手鏈',icon:'💫',el:'金',d:'高頻能量石，提升靈性連結與直覺',price:'$420',wear:'冥想/靜心時佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'透石膏',cat:'手鏈',icon:'🗿',el:'金',d:'淨化空間能量，帶來心靈平靜',price:'$358',wear:'放臥室或隨身',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
+    {n:'鐵膽石手排',cat:'手排',el:'金',d:'沉穩接地能量，增強意志力與穩定性',price:'$185',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'鐵膽石圓珠手鍊',cat:'手鏈',el:'金',d:'鐵膽護身，強化金行決斷力',price:'$185',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白龍宮舍利手鍊',cat:'手鏈',el:'金',d:'佛門聖物，淨化磁場、增強靈性',price:'$231',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白水晶手鍊',cat:'手鏈',el:'金',d:'萬能調和石，淨化能量場，增強思維清晰度',price:'$339',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'透石膏手鍊',cat:'手鏈',el:'金',d:'高頻淨化石，清理負能量，提升靈性直覺',price:'$358',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白水晶手排',cat:'手排',el:'金',d:'大顆粒排珠，淨化能量更強，適合辦公佩戴',price:'$396',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白幽靈手鍊',cat:'手鏈',el:'金',d:'淨化磁場，提升靈性直覺，增強專注力',price:'$396',wear:'冥想時佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'金曜石手鍊',cat:'手鏈',el:'金',d:'頂級辟邪石，金色光澤增強財運與氣場',price:'$416',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白阿賽設計款手鍊',cat:'手鏈',el:'金',d:'高頻水晶，靈性提升與淨化',price:'$420',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'銀曜項鍊（關公）',cat:'項鍊',el:'金',d:'關公護身，辟邪擋煞，增強正氣',price:'$492',wear:'出門佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'金曜項鍊（龍牌）',cat:'項鍊',el:'金',d:'龍牌護身符，氣場強大，事業亨通',price:'$492',wear:'出門佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'銀曜項鍊（九尾狐）',cat:'項鍊',el:'金',d:'九尾狐招桃花，增強魅力與人緣',price:'$492',wear:'出門佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'金髮晶手鍊',cat:'手鏈',el:'金',d:'招正財，增強領導力與自信',price:'$761',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'鈦晶手排',cat:'手排',el:'金',d:'招正財偏財首選！增強領導力與決斷力',price:'$3,334-$21,950',wear:'面試/簽約時佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白水晶鳳凰項鍊',cat:'項鍊',el:'金',d:'鳳凰涅槃，淨化+重生能量，收藏級項鍊',price:'$3,372',wear:'貼近心輪佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'銀曜石五行設計款手鍊',cat:'手鏈',el:'金',d:'五行平衡設計，全方位防護',price:'$3,622',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩色天鐵手鍊',cat:'手鏈',el:'金',d:'宇宙隕鐵能量，全方位防護與提升',price:'$4,548',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'天鐵五行設計款手鍊',cat:'手鏈',el:'金',d:'天鐵+五行水晶，量身打造能量組合',price:'$5,484',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'金太陽手鍊',cat:'手鏈',el:'金',d:'太陽般溫暖能量，招貴人、增自信',price:'$8,748-$21,325',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩色天鐵手排',cat:'手排',el:'金',d:'宇宙級能量手排，天鐵+彩色美感',price:'$10,308',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   木: [
-    {n:'綠幽靈',cat:'手鏈',icon:'💚',el:'木',d:'招正財首選！事業穩步上升，上班族必備',price:'$684-$10,668',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'抹茶幽靈',cat:'手鏈',icon:'🍵',el:'木',d:'稀有抹茶色幽靈，招正財+安定心性',price:'$8,748',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠碧璽',cat:'手鏈',icon:'💎',el:'木',d:'旺事業財運，激發創造力',price:'$1,644',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'東陵玉',cat:'手鏈',icon:'🌿',el:'木',d:'舒緩壓力，帶來好運與正能量',price:'$176',wear:'隨身佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠髮晶手排',cat:'手鏈',icon:'🌱',el:'木',d:'招正財+貴人，髮絲代表生長能量',price:'$4,332',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠水晶隨型',cat:'手鏈',icon:'💍',el:'木',d:'天然隨型綠水晶，招正財聚能量',price:'$2,028',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'四季幽靈手排',cat:'手鏈',icon:'🌈',el:'木',d:'四季色彩幽靈，全方位招財開運',price:'$2,988',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠龍晶',cat:'手鏈',icon:'🐉',el:'木',d:'天然龍紋，旺事業+護身辟邪',price:'$1,068-$2,028',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠檀木手鍊',cat:'手鏈',icon:'🌳',el:'木',d:'天然檀木清香，安神定氣，適合修行佩戴',price:'$224-$492',wear:'隨身佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'綠月光',cat:'手鏈',icon:'🌕',el:'木',d:'稀有綠色月光石，增強直覺+招好運',price:'$108',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
+    {n:'綠月光手鍊',cat:'手鏈',el:'木',d:'月光般柔和，安撫情緒、增強直覺',price:'$108',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'東陵玉手鍊',cat:'手鏈',el:'木',d:'療癒系綠石，穩定情緒、增強正能量',price:'$176',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'綠檀木手鍊',cat:'手鏈',el:'木',d:'天然檀木清香，安神定氣，適合修行佩戴',price:'$224-$492',wear:'隨身佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'沉香無事牌項鍊',cat:'項鍊',el:'木',d:'沉香安神定氣，無事牌寓意平安',price:'$492',wear:'貼近心輪',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'綠幽靈手鍊',cat:'手鏈',el:'木',d:'正財之石，事業穩步上升，聚財守財',price:'$684-$10,668',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'綠龍晶手鍊',cat:'手鏈',el:'木',d:'龍脈能量，增強事業運與領導力',price:'$1,068-$2,028',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'綠碧璽手鍊',cat:'手鏈',el:'木',d:'心輪之石，療癒情緒、增強包容力',price:'$1,644',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'綠水晶隨型手鍊',cat:'手鏈',el:'木',d:'隨形自然美，木行能量充沛',price:'$2,028',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'四季幽靈手排',cat:'手排',el:'木',d:'四季輪轉能量，全面平衡身心',price:'$2,988',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'老山檀香圓珠手鍊',cat:'手鏈',el:'木',d:'百年老山檀，安神定氣，修行者首選',price:'$3,756',wear:'隨身佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'抹茶幽靈手鍊',cat:'手鏈',el:'木',d:'稀有抹茶色幽靈，事業財運雙強化',price:'$8,748',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   水: [
-    {n:'海藍寶',cat:'手鏈',icon:'💙',el:'水',d:'增強溝通力，平靜情緒，談判必備',price:'$2,028-$23,825',wear:'佩戴在喉輪附近最佳',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'海藍寶手排',cat:'手鏈',icon:'🌊',el:'水',d:'大顆粒海藍寶，溝通力與勇氣加倍',price:'$2,988',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'月光石',cat:'手鏈',icon:'🌙',el:'水',d:'增強直覺，助感情運，柔化個性',price:'$9,708',wear:'滿月佩戴效果更佳',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'藍玉髓',cat:'手鏈',icon:'🔵',el:'水',d:'穩定情緒，增強語言表達力',price:'$588',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'藍彼得石圓珠',cat:'手鏈',icon:'🌀',el:'水',d:'暴風雨石！激發洞察力與變革勇氣',price:'$9,708',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'藍磷灰',cat:'手鏈',icon:'💍',el:'水',d:'增強意志力與目標感，學習考試佳',price:'$396',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'堇青石',cat:'手鏈',icon:'🔮',el:'水',d:'指引方向之石，幫助做出正確決定',price:'$875',wear:'需要決策時佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'藍方解石',cat:'手鏈',icon:'💠',el:'水',d:'溝通之石，打開喉輪，增強表達',price:'$300',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'青晶石',cat:'手鏈',icon:'🌌',el:'水',d:'開啟第三眼，增強直覺與靈性感知',price:'$2,604',wear:'冥想時佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'冰藍小熊',cat:'吊墜',icon:'🧸',el:'水',d:'可愛造型冰藍石，療癒安心，送禮首選',price:'$506',wear:'項鍊佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑曜石',cat:'手鏈',icon:'🖤',el:'水',d:'擋煞辟邪首選！以水洩金，化壓力為動力',price:'$300-$500',wear:'右手佩戴辟邪',tags:['辟邪','擋煞'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'金曜石',cat:'手鏈',icon:'🌑',el:'水',d:'金色閃光黑曜石，強力辟邪+洩金護身',price:'$416',wear:'右手佩戴辟邪',tags:['辟邪','擋煞'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'銀曜石',cat:'手鏈',icon:'🌒',el:'水',d:'銀色光澤黑曜石，洩金氣+淨化能量場',price:'$350-$500',wear:'右手佩戴',tags:['辟邪','淨化'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑髮晶',cat:'手鏈',icon:'🕸️',el:'水',d:'排除負能量，增強領袖魅力，官殺太旺者首選',price:'$800-$2000',wear:'左手佩戴',tags:['辟邪','事業'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'藍虎眼',cat:'手鏈',icon:'👁️',el:'水',d:'增強洞察力與決斷力，水氣護身',price:'$500-$1200',wear:'左手佩戴',tags:['事業','決策'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑碧璽',cat:'手鏈',icon:'⬛',el:'水',d:'電氣石！擋煞辟邪防小人，穩定情緒接地',price:'$600-$1500',wear:'右手佩戴',tags:['辟邪','防小人'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
+    {n:'黑曜磨砂心經手鍊',cat:'手鏈',el:'水',d:'心經加持，辟邪擋煞，淨化負能量',price:'$204-$377',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍方解石手鍊',cat:'手鏈',el:'水',d:'清澈藍色，舒緩焦慮、增強表達力',price:'$300',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑曜磨砂心經（桶珠）手鍊',cat:'手鏈',el:'水',d:'桶珠款心經黑曜，辟邪能量加倍',price:'$300',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍磷灰手鍊',cat:'手鏈',el:'水',d:'激發潛能，增強學習力與專注力',price:'$396',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白松石x黑曜石設計款手鍊',cat:'手鏈',el:'水',d:'白松石安神+黑曜辟邪，雙重守護',price:'$400',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍玉髓手鍊',cat:'手鏈',el:'水',d:'喉輪之石，增強溝通力與自信表達',price:'$588',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑碧璽三圈手鍊',cat:'手鏈',el:'水',d:'頂級辟邪石，三圈加強防護能量',price:'$588',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紫龍晶手鍊',cat:'手鏈',el:'水',d:'靈性提升，增強直覺與冥想品質',price:'$646',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彼得石手排',cat:'手排',el:'水',d:'暴風雨之石，增強勇氣與果斷力',price:'$681',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'鷹眼堇青石設計款手鍊',cat:'手鏈',el:'水',d:'鷹眼般銳利洞察力，提升判斷力',price:'$780',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'堇青石手鍊',cat:'手鏈',el:'水',d:'水手之石，指引方向、增強直覺',price:'$875',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑閃靈手鍊',cat:'手鏈',el:'水',d:'閃靈鑽能量，淨化+轉化負能量',price:'$1,798',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'海藍寶手鍊',cat:'手鏈',el:'水',d:'勇氣之石，增強溝通力與平靜心',price:'$2,028-$23,825',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍彼得算盤珠手鍊',cat:'手鏈',el:'水',d:'彼得石算盤珠款，智慧與勇氣並存',price:'$2,604',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'青晶石手鍊',cat:'手鏈',el:'水',d:'深邃藍色，增強洞察力與智慧',price:'$2,604',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑曜石貔貅雕刻件',cat:'雕刻件',el:'水',d:'貔貅招財辟邪，黑曜石能量加持',price:'$2,988',wear:'隨身攜帶或擺放',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'海藍寶手排',cat:'手排',el:'水',d:'大顆海藍寶，勇氣能量更強',price:'$2,988',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'黑髮手排',cat:'手排',el:'水',d:'黑髮晶辟邪擋煞，排除負能量首選',price:'$9,708-$16,620',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍彼得圓珠手鍊',cat:'手鏈',el:'水',d:'頂級彼得石，暴風雨能量守護',price:'$9,708',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   火: [
-    {n:'紅瑪瑙',cat:'手鏈',icon:'❤️',el:'火',d:'激發熱情，增強行動力與勇氣',price:'$300-$454',wear:'右手佩戴增行動力',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紅瑪瑙設計款',cat:'手鏈',icon:'💗',el:'火',d:'設計師款紅瑪瑙，熱情+時尚兼具',price:'$1,260',wear:'右手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紫水晶',cat:'手鏈',icon:'💜',el:'火',d:'安神助眠，穩定情緒，靈性提升首選',price:'$588-$1,606',wear:'睡前佩戴或放枕下',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紅虎眼',cat:'手鏈',icon:'🔴',el:'火',d:'增強意志力與行動力，辟邪擋煞',price:'$435',wear:'右手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紅花碧玉手排',cat:'手鏈',icon:'🌺',el:'火',d:'天然花紋碧玉，增強生命力與穩定感',price:'$464',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紫牙烏',cat:'手鏈',icon:'🍇',el:'火',d:'石榴石系列，提升活力與桃花運',price:'$1,952',wear:'貼身佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'粉紅碧璽圓珠',cat:'手鏈',icon:'💕',el:'火',d:'強力招桃花！增強人際魅力',price:'$13,548',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'薔薇石',cat:'手鏈',icon:'🌹',el:'火',d:'愛情療癒石，修復心輪，招桃花',price:'$1,798',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'煙花雨薔薇石',cat:'手鏈',icon:'🍆',el:'火',d:'獨特煙花紋理，療癒心靈+招桃花',price:'$2,220',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紫龍晶',cat:'手鏈',icon:'🐲',el:'火',d:'智慧+靈性提升，紫色龍紋獨特美感',price:'$646',wear:'冥想佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紫金砂',cat:'手鏈',icon:'✨',el:'火',d:'閃耀紫金光，辟邪+提升靈性',price:'$339',wear:'隨身佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'利比亞黃金隕石',cat:'手鏈',icon:'☄️',el:'火',d:'來自宇宙的能量！極強顯化力與意志力',price:'$1,644',wear:'冥想/許願時佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
+    {n:'粉晶手鍊',cat:'手鏈',el:'火',d:'愛情之石，招桃花、增強人緣與魅力',price:'$204',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'粉晶手排',cat:'手排',el:'火',d:'大顆粉晶，愛情能量加倍',price:'$272',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅龍宮舍利鼓珠手鍊',cat:'手鏈',el:'火',d:'佛門聖物鼓珠款，護身增運',price:'$281-$320',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅龍宮舍利手鍊',cat:'手鏈',el:'火',d:'佛門聖物，增強正氣與勇氣',price:'$297-$350',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'摩根石手鍊',cat:'手鏈',el:'火',d:'高頻愛情石，溫柔療癒，吸引真愛',price:'$300',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅瑪腦手鍊',cat:'手鏈',el:'火',d:'火行正能量，增強活力與行動力',price:'$300-$454',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'星光草苺晶手鍊',cat:'手鏈',el:'火',d:'星光閃爍，招正緣、增強愛情磁場',price:'$300-$454',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紫金砂手鍊',cat:'手鏈',el:'火',d:'紫色星光閃耀，提升貴人運與魅力',price:'$339',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紫黃白水設計款手鍊',cat:'手鏈',el:'火',d:'紫黃白三色水晶設計款，全面提升',price:'$400',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'摩根石設計款手鍊',cat:'手鏈',el:'火',d:'設計款摩根石，獨特美感+愛情能量',price:'$400',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅靈骸骨舍利手鍊',cat:'手鏈',el:'火',d:'稀有骸骨舍利，強力護身辟邪',price:'$431',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅幽靈設計款手鍊',cat:'手鏈',el:'火',d:'紅幽靈招財，設計款獨特美感',price:'$450',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅花碧玉手排',cat:'手排',el:'火',d:'天然紅花紋理，增強生命力與行動力',price:'$464',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅膠花設計款手鍊',cat:'手鏈',el:'火',d:'紅膠花水晶，獨特設計+火行能量',price:'$506',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紫水晶三圈手鍊',cat:'手鏈',el:'火',d:'三圈紫水晶，智慧能量三倍提升',price:'$588',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩色草莓晶手鍊',cat:'手鏈',el:'火',d:'彩色草莓晶，增強桃花與人際魅力',price:'$608',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紫水晶手鍊',cat:'手鏈',el:'火',d:'智慧之石，增強直覺、提升專注力與貴人運',price:'$875-$1,606',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'太陽花手排',cat:'手排',el:'火',d:'太陽花般綻放能量，增強自信與活力',price:'$1,387-$2,028',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'薔薇石手鍊',cat:'手鏈',el:'火',d:'療癒情傷，重建自信與自愛',price:'$1,798',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'煙花雨薔葳石手鍊',cat:'手鏈',el:'火',d:'如煙花般絢爛，增強魅力與吸引力',price:'$2,220',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'骨幹太陽石手鍊',cat:'手鏈',el:'火',d:'太陽般溫暖能量，驅散負面、增強正氣',price:'$2,777',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'月光石手鍊',cat:'手鏈',el:'火',d:'女性守護石，增強直覺與柔性能量',price:'$9,708',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'粉紅碧璽圓珠手鍊',cat:'手鏈',el:'火',d:'頂級粉紅碧璽，招正緣、增強愛情能量',price:'$13,548',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ],
   土: [
-    {n:'黃水晶',cat:'手鏈',icon:'💛',el:'土',d:'招偏財首選！提升自信與個人魅力',price:'$233-$492',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'茶晶',cat:'手鏈',icon:'🍵',el:'土',d:'排除負能量，穩定心性，接地氣',price:'$684-$742',wear:'佩戴或放客廳',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'虎眼石（藍）',cat:'手鏈',icon:'🐯',el:'土',d:'增強決斷力，招財辟邪，穩定心性',price:'$7,600',wear:'右手佩戴增氣場',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'阿拉善',cat:'手鏈',icon:'🗿',el:'土',d:'戈壁能量石，穩定+接地+增強耐力',price:'$281-$454',wear:'隨身佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'太極石設計款',cat:'手鏈',icon:'☯️',el:'土',d:'陰陽平衡之石，調和身心能量場',price:'$1,836',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-
-    {n:'大地瑪瑙手排',cat:'手鏈',icon:'🐅',el:'土',d:'大地能量，穩定踏實，增強耐力',price:'$300',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'鐵膽石手排',cat:'手鏈',icon:'🗿',el:'土',d:'極強接地能量，排負+穩定心性',price:'$185',wear:'右手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'白水茶晶設計款',cat:'手鏈',icon:'☕',el:'土',d:'白水晶+茶晶組合，淨化+穩定雙效',price:'$506',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
-  ],
-  // 跨五行特殊商品
-  special: [
-    {n:'彩超七',cat:'手鏈',icon:'🌈',el:'全',d:'七種礦物共生！全方位開運招財',price:'$972-$41,325',wear:'左手佩戴',tags:['全能','招財'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'多寶隕石手鍊',cat:'手鏈',icon:'☄️',el:'全',d:'多種隕石能量集合，宇宙級防護',price:'$5,484',wear:'左手佩戴',tags:['辟邪','全能'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'天鐵五行設計款',cat:'手鏈',icon:'⚔️',el:'全',d:'天鐵（隕鐵）+五行元素，強力護身開運',price:'$5,484',wear:'左手佩戴',tags:['五行','辟邪'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'銀曜石五行設計款',cat:'手鏈',icon:'🌟',el:'全',d:'銀曜石+五行配色，辟邪+五行平衡',price:'$3,622',wear:'右手佩戴',tags:['五行','辟邪'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩色天鐵手鍊',cat:'手鏈',icon:'🌈',el:'全',d:'彩色天鐵，宇宙能量+藝術美感',price:'$4,548-$10,308',wear:'左手佩戴',tags:['全能'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'骨幹太陽石',cat:'手鏈',icon:'☀️',el:'火',d:'正能量之王！自信、領導力、活力全開',price:'$2,777',wear:'日間佩戴',tags:['事業','自信'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'金太陽',cat:'手鏈',icon:'🌞',el:'火',d:'金色太陽光芒，招正財+增強領導力',price:'$8,748-$21,325',wear:'左手佩戴',tags:['財運','事業'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'情侶對鍊',cat:'項鍊',icon:'💑',el:'全',d:'情侶款對鍊，感情加溫必備',price:'$1,226',wear:'成對佩戴',tags:['愛情'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'老山檀香圓珠',cat:'手鏈',icon:'📿',el:'土',d:'百年老山檀香，安神助眠，靜心修行',price:'$3,756',wear:'念佛/冥想佩戴',tags:['健康','靈性'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'沉香無事牌',cat:'吊墜',icon:'🏷️',el:'木',d:'無事牌寓意平安無事，沉香安神定氣',price:'$492',wear:'項鍊佩戴',tags:['平安','健康'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
-  ],
-  // 項鍊吊墜
-  necklace: [
-    {n:'銀曜項鍊（關公）',cat:'項鍊',icon:'⚔️',el:'土',d:'關公護身，招財辟邪，生意人必備',price:'$492',wear:'出門佩戴',tags:['財運','辟邪'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'金曜項鍊（龍牌）',cat:'項鍊',icon:'🐉',el:'土',d:'龍牌護身符，氣場強大，事業亨通',price:'$492',wear:'出門佩戴',tags:['事業','辟邪'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'銀曜項鍊（九尾狐）',cat:'項鍊',icon:'🦊',el:'土',d:'九尾狐招桃花，增強魅力與異性緣',price:'$492',wear:'約會佩戴',tags:['愛情','桃花'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑曜項鍊無事牌',cat:'項鍊',icon:'🏷️',el:'土',d:'黑曜石無事牌，辟邪+平安',price:'$469',wear:'隨身佩戴',tags:['平安','辟邪'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑曜磨砂心經',cat:'項鍊',icon:'📿',el:'土',d:'心經護身符，辟邪化煞，安定心神',price:'$204-$377',wear:'隨身佩戴',tags:['辟邪','平安'],
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
-  ],
-  // 辟邪系列
-  protection: [
-    {n:'黑閃靈',cat:'手鏈',icon:'⚫',el:'土',d:'超強辟邪擋煞，排除一切負能量',price:'$1,798',wear:'右手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩閃靈',cat:'手鏈',icon:'🌈',el:'全',d:'辟邪+開運雙效，彩色閃靈能量全面',price:'$4,908',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩虹黑曜石',cat:'手鏈',icon:'🌈',el:'土',d:'黑曜石中的極品，辟邪+七彩光芒',price:'$1,882',wear:'右手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'黑碧璽三圈',cat:'手鏈',icon:'⬛',el:'土',d:'三圈纏繞設計，全面辟邪防護',price:'$588',wear:'右手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'西北非隕石',cat:'手鏈',icon:'☄️',el:'全',d:'外太空隕石能量，護身辟邪極強',price:'$1,068-$1,184',wear:'右手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
-  ],
-  // 桃花系列
-  love_special: [
-    {n:'粉晶',cat:'手鏈',icon:'💕',el:'土',d:'招桃花首選！增強感情運與人際魅力',price:'$204-$272',wear:'左手佩戴，約會必備',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'星光草荓晶',cat:'手鏈',icon:'🍓',el:'火',d:'增強異性緣，帶來甜蜜戀愛機會',price:'$300-$454',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩色草荓晶',cat:'手鏈',icon:'🍇',el:'火',d:'多色草荓晶，全面提升人際與桃花運',price:'$608',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'摩根石',cat:'手鏈',icon:'💗',el:'水',d:'高頻愛情石，溫柔療癒，吸引真愛',price:'$300',wear:'左手佩戴',
-     shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
+    {n:'黃龍宮舍利手鍊',cat:'手鏈',el:'土',d:'佛門聖物，穩定磁場、增強財運',price:'$262-$423',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'阿拉善手鍊',cat:'手鏈',el:'土',d:'戈壁精華，穩定能量、增強接地力',price:'$281-$454',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'糖果碧璽手鍊',cat:'手鏈',el:'土',d:'繽紛碧璽，全方位平衡五行能量',price:'$395-$18,825',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅虎眼手鍊',cat:'手鏈',el:'土',d:'虎眼般銳利，增強果斷力與勇氣',price:'$435',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'超八手鍊',cat:'手鏈',el:'土',d:'超級八面體，全能型能量石',price:'$454',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'白水茶晶設計款手鍊',cat:'手鏈',el:'土',d:'白水晶+茶晶設計款，淨化+穩定',price:'$506',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'茶晶手鍊',cat:'手鏈',el:'土',d:'接地之石，穩定情緒、增強安全感',price:'$684-$742',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩銅超七手鍊',cat:'手鏈',el:'土',d:'含銅礦超七，能量頻率更高更全面',price:'$972',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'波斯瑪腦設計款手鍊',cat:'手鏈',el:'土',d:'異域風情瑪腦，穩定能量+獨特美感',price:'$1,260',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩超七圓珠手鍊',cat:'手鏈',el:'土',d:'七種礦物共生，全面提升身心靈',price:'$1,387',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'利比亞黃金隕石手鍊',cat:'手鏈',el:'土',d:'隕石級能量，提升意志力與財運',price:'$1,644',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩虹黑曜石手鍊',cat:'手鏈',el:'土',d:'彩虹光辟邪，轉化負能量為正能量',price:'$1,882',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'咖啡鈦太陽花手排',cat:'手排',el:'土',d:'咖啡鈦+太陽花，招財+穩定雙效',price:'$2,988',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩閃靈手鍊',cat:'手鏈',el:'土',d:'彩色閃靈鑽，全頻譜能量淨化',price:'$4,908',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'阿富汗碧璽手鍊',cat:'手鏈',el:'土',d:'稀有阿富汗產地碧璽，能量純淨強大',price:'$5,484',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'多寶隕石手鍊',cat:'手鏈',el:'土',d:'多種隕石能量集合，宇宙級防護',price:'$5,484',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩髮圓珠手鍊',cat:'手鏈',el:'土',d:'多色髮晶，招財+人緣+事業全面提升',price:'$5,868',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍虎眼手鍊',cat:'手鏈',el:'土',d:'藍色虎眼增強洞察力與決斷力',price:'$7,600',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩超七手鍊',cat:'手鏈',el:'土',d:'頂級彩超七，收藏級全能能量石',price:'$41,325',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ]
-};
+}
 /* =============================================================
    智慧推薦引擎 — 取代 PRODUCT_DB + TYPE_PRODUCTS
    根據：喜用神 × 問題類型 × 價格帶分佈 推薦最佳商品
@@ -7194,7 +7481,7 @@ const _origRenderProductCrystal = typeof renderProductCrystal === 'function' ? r
 renderProductCrystal = function(bazi, type){
   const need = bazi.fav[0];
   const products = smartRecommend(bazi, type, 6);
-  const catIcon = {手鏈:'⌚', 項鍊:'📿', 吊墜:'🏷️', 裸石:'💍', 客製:'✨'};
+  const catIcon = {手鏈:'📿', 手排:'⌚', 項鍊:'🔗', 雕刻件:'🗿', 吊墜:'🏷️', 裸石:'💍', 客製:'✨'};
 
   document.getElementById('r-crystal').innerHTML = `
     <div class="crystal-rec-header">
@@ -7202,7 +7489,7 @@ renderProductCrystal = function(bazi, type){
     </div>
     <div class="product-grid">${products.map(p=>`
       <div class="product-card">
-        <div class="product-icon">${p.icon}</div>
+        <div class="product-icon">${getProductSVG(p.cat,p.n)}</div>
         <div class="product-body">
           <div class="product-name">${p.n}</div>
           <div class="product-meta">
@@ -7276,6 +7563,22 @@ function generateDiscountCode(){
   return _dd(_dc[idx]);
 }
 
+// ── 分享後解鎖趣味功能 ──
+function unlockExtraFeatures(){
+  const locked = document.getElementById('extra-locked');
+  const unlocked = document.getElementById('extra-unlocked');
+  if(locked) locked.style.display = 'none';
+  if(unlocked) unlocked.style.display = 'block';
+  // 記住已解鎖
+  try{ localStorage.setItem('jy_extra_unlocked','1'); }catch(e){}
+}
+// 頁面載入時檢查是否之前已解鎖
+try{
+  if(localStorage.getItem('jy_extra_unlocked')==='1'){
+    document.addEventListener('DOMContentLoaded',()=>{ unlockExtraFeatures(); });
+  }
+}catch(e){}
+
 function showDiscountAfterShare(){
   const el = document.getElementById('discount-reveal');
   if(!el) return;
@@ -7286,10 +7589,15 @@ function showDiscountAfterShare(){
   if(lastClaim && (now - parseInt(lastClaim)) < 86400000){
     const hrs = Math.ceil((86400000 - (now - parseInt(lastClaim))) / 3600000);
     alert('你已經領過折扣碼了！\n\n' + hrs + ' 小時後可再次領取。');
+    // 即使領過碼，也解鎖趣味功能
+    unlockExtraFeatures();
     return;
   }
   
   el.classList.remove('hidden');
+  
+  // 解鎖趣味功能
+  unlockExtraFeatures();
   
   /* 延遲顯示：先遮罩，倒數 5 秒後才揭示完整碼 */
   const code = generateDiscountCode();
@@ -7337,25 +7645,33 @@ shareToUnlock = function(){
     return;
   }
   
-  if(navigator.share){
+  // 手機版：用系統分享
+  if(navigator.share && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)){
     navigator.share({title:'靜月之光占卜',text:text,url:url}).then(()=>{
       hasShared=true; updateShareGate(); showDiscountAfterShare();
       if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
     }).catch(()=>{
-      showShareHint('分享取消了，完成分享才能取得折扣碼哦 😊');
+      // 使用者取消 → 不顯示負面訊息，改用友善提示
+      const gate = document.getElementById('extra-features-gate');
+      if(gate){
+        let hint = gate.querySelector('.share-hint-temp');
+        if(!hint){
+          hint = document.createElement('p');
+          hint.className = 'share-hint-temp';
+          hint.style.cssText = 'color:var(--c-gold);font-size:0.85rem;margin-top:0.5rem;';
+          gate.appendChild(hint);
+        }
+        hint.textContent = '💡 分享連結給朋友後即可解鎖，再試一次吧！';
+        setTimeout(()=>{ if(hint) hint.textContent=''; }, 4000);
+      }
     });
   }else{
-    /* 桌面版：複製連結後要求二次確認 + 延遲 */
-    _shareAttempts++;
+    /* 桌面版：直接複製連結 + 一步確認 */
     navigator.clipboard.writeText(text+url).then(()=>{
-      /* 第一次按：只複製，提示去分享 */
-      if(_shareAttempts <= 1){
-        alert('分享連結已複製到剪貼簿！✨\n\n請貼到 LINE / IG / FB 分享給朋友。\n分享完成後，回來再按一次「分享」按鈕領取折扣碼。');
-        return;
-      }
-      /* 第二次按：才給碼（至少經過一次複製動作） */
       const confirmed = confirm(
-        '確認你已經把連結分享給朋友了嗎？\n\n按「確定」領取 9 折折扣碼。'
+        '分享連結已複製到剪貼簿！✨\n\n' +
+        '請貼到 LINE / IG / FB 分享給朋友。\n\n' +
+        '已經分享了嗎？按「確定」解鎖折扣碼＋趣味功能。'
       );
       if(confirmed){
         hasShared=true; updateShareGate(); showDiscountAfterShare();
