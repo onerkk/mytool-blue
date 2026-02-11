@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -3375,10 +3375,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     else if(zn.overallLevel==='吉'){score+=1;evidence.push('姓名生肖派（吉）');}
     else if(zn.overallLevel.includes('凶')){score-=1;evidence.push('姓名生肖派（'+zn.overallLevel+'）');}
   }
-  // ? ? prob (finalProb) ????????,????
-  const great = prob >= 65;
-  const good  = prob >= 52 || (prob >= 40 && score >= 2);
-  const bad   = prob < 25 || (prob < 40 && score <= -2);
+  const great=score>=4, good=score>=1, bad=score<=-2;
 
   /* 問法 */
   const isYN=intent.isYesNo, isWhen=intent.isWhen, isHow=intent.isHow;
