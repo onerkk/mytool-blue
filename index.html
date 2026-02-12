@@ -9575,7 +9575,7 @@ const PRODUCT_DB={
 
 // 問題類型特殊商品
 const TYPE_PRODUCTS={
-  love:[{n:'粉晶手鏈',cat:'手鏈',icon:'💕',el:'土',d:'招桃花首選！增強異性緣',price:'$480-$1,500',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'左手佩戴，約會必備'}],
+  love:[{n:'粉晶手鏈',cat:'手鏈',icon:'💕',el:'火',d:'招桃花首選！增強異性緣',price:'$480-$1,500',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'左手佩戴，約會必備'}],
   career:[{n:'鈦晶手鏈',cat:'手鏈',icon:'⚡',el:'金',d:'事業晉升首選！領導力UP',price:'$1,800-$5,000',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'面試/開會佩戴'}],
   wealth:[{n:'綠幽靈聚寶盆',cat:'裸石',icon:'💰',el:'木',d:'招正財偏財！放辦公桌超旺',price:'$1,200-$3,800',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'放財位或收銀台'}],
   health:[{n:'紫水晶手鏈',cat:'手鏈',icon:'💜',el:'火',d:'安神助眠，促進身心平衡',price:'$580-$1,800',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'睡前佩戴或放枕下'}]
@@ -9610,7 +9610,16 @@ function renderActionCard(bazi, type, answer){
   const crystalAdvice = {
     金:'白水晶、鈦晶',木:'綠幽靈、綠碧璽',水:'海藍寶、黑曜石',火:'紫水晶、紅瑪瑙',土:'黃水晶、茶晶'
   };
-  actions.push(`<strong>能量：</strong>佩戴 ${crystalAdvice[favEl]} 補強${favEl}行，效果加倍`);
+
+  // 計算缺行（用於精確推薦）
+  const ep = bazi.ep||{};
+  const tot = Object.values(ep).reduce((a,b)=>a+b,0)||60;
+  const weakEls = Object.entries(ep).filter(([e,v])=>(v/tot)<0.12).map(([e])=>e);
+  const avoidEls = new Set(bazi.unfav||[]);
+  // 推薦行 = 缺行（排除忌神衝突）或喜用神
+  const recEl = (weakEls.filter(e=>!avoidEls.has(e))[0]) || favEl;
+
+  actions.push(`<strong>能量：</strong>佩戴 ${crystalAdvice[recEl]} 補強${recEl}行，效果加倍`);
 
   // 渲染行動指令
   const actionsEl = document.getElementById('r-actions');
@@ -9621,10 +9630,13 @@ function renderActionCard(bazi, type, answer){
     </div>
   `).join('');
 
-  // 嵌入式水晶推薦（從 smartRecommend 拿第一個商品）
+  // 嵌入式水晶推薦 — 直接從缺行/喜用行的 REAL_PRODUCTS 抓
   const crystalEl = document.getElementById('r-action-crystal');
   try{
-    const recs = (typeof smartRecommend==='function') ? smartRecommend(bazi, type, 2) : [];
+    // 直接取缺行對應的產品，不走 smartRecommend（避免喜用神覆蓋）
+    let inlinePicks = (REAL_PRODUCTS[recEl]||[]).filter(p=> !avoidEls.has(p.el) || p.el==='全');
+    if(inlinePicks.length===0) inlinePicks = (REAL_PRODUCTS[favEl]||[]);
+    const recs = inlinePicks.slice(0,2);
     if(recs.length > 0){
       const p = recs[0];
       const shopUrl = p.shopee || 'https://tw.shp.ee/2n5Mo2w';
@@ -9664,20 +9676,68 @@ function renderActionCard(bazi, type, answer){
     const qsTitle = document.getElementById('qs-title');
     const qsSub = document.getElementById('qs-subtitle');
     if(qs){
-      const recs = (typeof smartRecommend==='function') ? smartRecommend(bazi, type, 5) : [];
       const ep = bazi.ep||{};
       const tot = Object.values(ep).reduce((a,b)=>a+b,0)||60;
       const weakEls = Object.entries(ep).filter(([e,v])=>(v/tot)<0.12).map(([e])=>e);
-      if(weakEls.length>0){
+      const avoidEls = new Set(bazi.unfav||[]);
+
+      // 核心修正：推薦邏輯以「缺行」為最高優先
+      // 1. 缺什麼行 → 直接推該行的水晶
+      // 2. 沒有缺行 → 推喜用神
+      // 3. 忌神行的產品絕對排除
+      let targetEls = [];
+      if(weakEls.length > 0){
+        // 有缺行：優先推缺行水晶（排除忌神衝突）
+        targetEls = weakEls.filter(e => !avoidEls.has(e));
+        if(targetEls.length === 0) targetEls = [favEl]; // 缺行全是忌神時退回喜用
         qsTitle.textContent = `你的${weakEls.join('、')}行不足，需要補強`;
-        qsSub.textContent = `佩戴以下水晶可有效提升${weakEls.join('、')}行能量`;
+        qsSub.textContent = `佩戴以下水晶直接補充${targetEls.join('、')}行能量`;
       }else{
+        targetEls = [favEl];
         qsTitle.textContent = `增強你的${favEl}行能量`;
         qsSub.textContent = `喜用神${favEl}行 — 這些水晶跟你最合`;
       }
-      if(recs.length>0){
+
+      // 從 REAL_PRODUCTS 直接抓對應五行的產品
+      let picks = [];
+      const seen2 = new Set();
+      function addPick(item){
+        if(seen2.has(item.n)) return;
+        if(avoidEls.has(item.el) && item.el !== '全') return;
+        seen2.add(item.n);
+        picks.push(item);
+      }
+
+      // 優先：目標五行的產品
+      targetEls.forEach(te => {
+        (REAL_PRODUCTS[te]||[]).forEach(p => addPick(p));
+      });
+      // 補充：五行「全」的永遠可以
+      (REAL_PRODUCTS.special||[]).filter(p=>p.el==='全').forEach(p=>addPick(p));
+      // 再補：喜用神產品（如果目標行已不夠）
+      if(picks.length < 5){
+        (REAL_PRODUCTS[favEl]||[]).forEach(p => addPick(p));
+      }
+
+      // 價格多樣化：低中高各取
+      if(picks.length > 5){
+        const parseP = s => parseInt((s||'0').replace(/[^0-9]/g,''))||0;
+        picks.sort((a,b)=>parseP(a.price)-parseP(b.price));
+        const low = picks.filter(p=>parseP(p.price)<500).slice(0,2);
+        const mid = picks.filter(p=>parseP(p.price)>=500&&parseP(p.price)<3000).slice(0,2);
+        const high = picks.filter(p=>parseP(p.price)>=3000).slice(0,1);
+        picks = [...low,...mid,...high];
+        if(picks.length < 5){
+          // 補到5個
+          (REAL_PRODUCTS[targetEls[0]]||[]).forEach(p=>{
+            if(picks.length<5 && !seen2.has(p.n+'_qs')){picks.push(p);seen2.add(p.n+'_qs');}
+          });
+        }
+      }
+
+      if(picks.length > 0){
         const elEmoji = {金:'🤍',木:'💚',水:'💙',火:'💜',土:'💛','全':'🌈'};
-        qs.innerHTML = recs.slice(0,5).map(p => `
+        qs.innerHTML = picks.slice(0,5).map(p => `
           <a href="${p.shopee||'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" class="qs-item">
             <div class="qs-item-icon">${elEmoji[p.el]||'💎'}</div>
             <div class="qs-item-name">${p.n}</div>
@@ -10094,23 +10154,23 @@ const REAL_PRODUCTS = {
   土: [
     {n:'黃龍宮舍利手鍊',cat:'手鏈',el:'土',d:'佛門聖物，穩定磁場、增強財運',price:'$262-$423',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'阿拉善手鍊',cat:'手鏈',el:'土',d:'戈壁精華，穩定能量、增強接地力',price:'$281-$454',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'糖果碧璽手鍊',cat:'手鏈',el:'土',d:'繽紛碧璽，全方位平衡五行能量',price:'$395-$18,825',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'紅虎眼手鍊',cat:'手鏈',el:'土',d:'虎眼般銳利，增強果斷力與勇氣',price:'$435',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'超八手鍊',cat:'手鏈',el:'土',d:'超級八面體，全能型能量石',price:'$454',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'糖果碧璽手鍊',cat:'手鏈',el:'火',d:'繽紛碧璽，增強桃花魅力與正向能量',price:'$395-$18,825',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'紅虎眼手鍊',cat:'手鏈',el:'火',d:'紅色虎眼石，增強果斷力與熱情行動力',price:'$435',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'超八手鍊',cat:'手鏈',el:'全',d:'超級八面體，多礦物共生全能型能量石',price:'$454',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'白水茶晶設計款手鍊',cat:'手鏈',el:'土',d:'白水晶+茶晶設計款，淨化+穩定',price:'$506',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'茶晶手鍊',cat:'手鏈',el:'土',d:'接地之石，穩定情緒、增強安全感',price:'$684-$742',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩銅超七手鍊',cat:'手鏈',el:'土',d:'含銅礦超七，能量頻率更高更全面',price:'$972',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'波斯瑪腦設計款手鍊',cat:'手鏈',el:'土',d:'異域風情瑪腦，穩定能量+獨特美感',price:'$1,260',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩超七圓珠手鍊',cat:'手鏈',el:'土',d:'七種礦物共生，全面提升身心靈',price:'$1,387',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩銅超七手鍊',cat:'手鏈',el:'全',d:'含銅礦超七，七種礦物共生能量全面',price:'$972',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'波斯瑪腦設計款手鍊',cat:'手鏈',el:'火',d:'異域風情紅瑪腦，穩定情緒增強熱情',price:'$1,260',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩超七圓珠手鍊',cat:'手鏈',el:'全',d:'七種礦物共生，全面提升身心靈',price:'$1,387',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'利比亞黃金隕石手鍊',cat:'手鏈',el:'土',d:'隕石級能量，提升意志力與財運',price:'$1,644',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩虹黑曜石手鍊',cat:'手鏈',el:'土',d:'彩虹光辟邪，轉化負能量為正能量',price:'$1,882',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩虹黑曜石手鍊',cat:'手鏈',el:'水',d:'彩虹光辟邪，轉化負能量為正能量',price:'$1,882',wear:'右手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
     {n:'咖啡鈦太陽花手排',cat:'手排',el:'土',d:'咖啡鈦+太陽花，招財+穩定雙效',price:'$2,988',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩閃靈手鍊',cat:'手鏈',el:'土',d:'彩色閃靈鑽，全頻譜能量淨化',price:'$4,908',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'阿富汗碧璽手鍊',cat:'手鏈',el:'土',d:'稀有阿富汗產地碧璽，能量純淨強大',price:'$5,484',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'多寶隕石手鍊',cat:'手鏈',el:'土',d:'多種隕石能量集合，宇宙級防護',price:'$5,484',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩髮圓珠手鍊',cat:'手鏈',el:'土',d:'多色髮晶，招財+人緣+事業全面提升',price:'$5,868',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'藍虎眼手鍊',cat:'手鏈',el:'土',d:'藍色虎眼增強洞察力與決斷力',price:'$7,600',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
-    {n:'彩超七手鍊',cat:'手鏈',el:'土',d:'頂級彩超七，收藏級全能能量石',price:'$41,325',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
+    {n:'彩閃靈手鍊',cat:'手鏈',el:'全',d:'彩色閃靈鑽，全頻譜能量淨化',price:'$4,908',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'阿富汗碧璽手鍊',cat:'手鏈',el:'火',d:'稀有阿富汗碧璽，強力補火提升正能量',price:'$5,484',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'多寶隕石手鍊',cat:'手鏈',el:'全',d:'多種隕石能量集合，宇宙級全方位防護',price:'$5,484',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩髮圓珠手鍊',cat:'手鏈',el:'全',d:'多色髮晶，招財+人緣+事業全面提升',price:'$5,868',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'藍虎眼手鍊',cat:'手鏈',el:'水',d:'藍色虎眼增強洞察力與決斷力',price:'$7,600',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'},
+    {n:'彩超七手鍊',cat:'手鏈',el:'全',d:'頂級彩超七，收藏級全能能量石',price:'$41,325',wear:'左手佩戴',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}
   ]
 }
 /* =============================================================
