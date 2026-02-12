@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -105,7 +105,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .dy-item:nth-child(5){animation-delay:.2s}
 
 /* — Cards — */
-.card{background:var(--c-bg-card);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-lg);margin-bottom:var(--sp-lg);box-shadow:var(--sh-card);transition:border-color var(--t-fast)}
+.card{background:var(--c-bg-card);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-lg);margin-bottom:2rem;box-shadow:var(--sh-card);transition:border-color var(--t-fast)}
 .card:hover{border-color:var(--c-border-hi)}
 .card-title{font-family:var(--f-display);font-weight:700;font-size:1.15rem;color:var(--c-gold);margin-bottom:var(--sp-md);display:flex;align-items:center;gap:var(--sp-sm)}
 .card-title i{font-size:1rem;opacity:.8}
@@ -516,6 +516,207 @@ body::before{
   border-color:rgba(212,175,55,0.25)!important;
   box-shadow:0 12px 40px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)!important;
 }
+
+/* ═══ Hook Grid (首屏四宮格) ═══ */
+.hook-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-md);
+  max-width:400px;margin:0 auto;
+}
+.hook-card{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:var(--sp-lg) var(--sp-sm);
+  background:rgba(30,12,12,0.7);
+  border:1.5px solid rgba(212,175,55,0.18);
+  border-radius:var(--r-lg);
+  cursor:pointer;transition:all .25s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.hook-card:hover,.hook-card:active{
+  border-color:var(--c-gold);
+  background:rgba(212,175,55,0.08);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(212,175,55,0.15);
+}
+.hook-emoji{font-size:2rem;line-height:1}
+.hook-title{font-weight:700;font-size:1rem;color:var(--c-gold-light);font-family:var(--f-display)}
+.hook-sub{font-size:.78rem;color:var(--c-text-muted)}
+.hook-card-mini{
+  padding:.5rem 1rem;background:rgba(30,12,12,0.5);
+  border:1px solid rgba(212,175,55,0.12);border-radius:var(--r-pill);
+  color:var(--c-text-dim);font-size:.82rem;cursor:pointer;
+  transition:all .2s ease;-webkit-tap-highlight-color:transparent;
+}
+.hook-card-mini:hover,.hook-card-mini:active{
+  border-color:var(--c-gold);color:var(--c-gold);
+  background:rgba(212,175,55,0.06);
+}
+
+/* ═══ Preset Questions ═══ */
+.q-preset-grid{display:flex;flex-direction:column;gap:6px}
+.q-preset-btn{
+  display:block;width:100%;text-align:left;
+  padding:10px 14px;
+  background:rgba(255,255,255,0.03);
+  border:1.5px solid rgba(212,175,55,0.12);
+  border-radius:var(--r-sm);
+  color:var(--c-text);font-size:.9rem;
+  cursor:pointer;transition:all .2s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.q-preset-btn:hover,.q-preset-btn.selected{
+  border-color:var(--c-gold);
+  background:rgba(212,175,55,0.08);
+  color:var(--c-gold-light);
+}
+.q-preset-btn.selected::before{
+  content:'✓ ';color:var(--c-gold);font-weight:700;
+}
+
+/* ═══ Advance Toggle ═══ */
+.advance-toggle{margin-top:var(--sp-md);border-top:1px solid rgba(255,255,255,0.06);padding-top:var(--sp-sm)}
+.advance-toggle summary{
+  cursor:pointer;font-size:.82rem;color:var(--c-text-muted);
+  display:flex;align-items:center;gap:.4rem;
+  list-style:none;-webkit-tap-highlight-color:transparent;
+}
+.advance-toggle summary::-webkit-details-marker{display:none}
+.advance-toggle[open] summary{color:var(--c-gold)}
+.advance-arrow{font-size:.65rem;transition:transform .2s ease}
+.advance-toggle[open] .advance-arrow{transform:rotate(90deg)}
+
+/* ═══ CTA Pulse ═══ */
+.btn-cta-pulse{
+  animation:cta-glow 2s ease-in-out infinite;
+}
+@keyframes cta-glow{
+  0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,0.3)}
+  50%{box-shadow:0 0 20px 4px rgba(212,175,55,0.2)}
+}
+
+/* ═══ Action Card (行動指令) ═══ */
+.action-card{
+  border:1.5px solid rgba(212,175,55,0.3)!important;
+  background:linear-gradient(135deg,rgba(212,175,55,0.04),rgba(30,12,12,0.8))!important;
+}
+.action-item{
+  display:flex;align-items:flex-start;gap:var(--sp-sm);
+  padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.action-item:last-child{border-bottom:none}
+.action-num{
+  flex:0 0 28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--c-gold);color:var(--c-bg-deep);
+  border-radius:50%;font-weight:700;font-size:.8rem;
+}
+.action-text{flex:1;font-size:.95rem;line-height:1.6}
+.action-text strong{color:var(--c-gold-light)}
+
+/* 嵌入式水晶推薦小卡 */
+.inline-crystal{
+  display:flex;align-items:center;gap:var(--sp-sm);
+  padding:10px 14px;margin-top:8px;
+  background:rgba(212,175,55,0.06);
+  border:1px solid rgba(212,175,55,0.2);
+  border-radius:var(--r-sm);
+  cursor:pointer;transition:all .2s ease;
+  text-decoration:none;color:inherit;
+}
+.inline-crystal:hover{
+  border-color:var(--c-gold);
+  background:rgba(212,175,55,0.12);
+}
+.inline-crystal-icon{font-size:1.5rem;flex:0 0 auto}
+.inline-crystal-info{flex:1}
+.inline-crystal-name{font-weight:600;font-size:.9rem;color:var(--c-gold-light)}
+.inline-crystal-desc{font-size:.75rem;color:var(--c-text-dim)}
+.inline-crystal-price{font-size:.8rem;color:var(--c-gold);font-weight:700;white-space:nowrap}
+.inline-crystal-arrow{color:var(--c-gold);font-size:.8rem}
+
+/* ═══ Quick Shop Card (快捷導購) ═══ */
+.quick-shop-card{
+  border:1.5px solid rgba(212,175,55,0.25)!important;
+  background:linear-gradient(180deg,rgba(212,175,55,0.03),rgba(30,12,12,0.8))!important;
+}
+.qs-item{
+  flex:0 0 140px;
+  background:rgba(0,0,0,0.25);
+  border:1px solid rgba(212,175,55,0.15);
+  border-radius:var(--r-md);
+  padding:12px 10px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s ease;
+  text-decoration:none;
+  color:inherit;
+  display:block;
+}
+.qs-item:hover{
+  border-color:var(--c-gold);
+  background:rgba(212,175,55,0.06);
+  transform:translateY(-2px);
+}
+.qs-item-icon{font-size:1.8rem;margin-bottom:6px}
+.qs-item-name{font-size:.8rem;font-weight:600;color:var(--c-gold-light);line-height:1.3;margin-bottom:4px}
+.qs-item-el{font-size:.65rem;color:var(--c-text-muted)}
+.qs-item-price{font-size:.8rem;font-weight:700;color:var(--c-gold);margin-top:4px}
+
+/* ═══ Sticky Bottom CTA (結果頁常駐) ═══ */
+.sticky-cta{
+  position:fixed;bottom:0;left:0;right:0;z-index:800;
+  background:linear-gradient(0deg,rgba(13,4,4,0.98) 0%,rgba(13,4,4,0.92) 100%);
+  backdrop-filter:blur(12px);
+  border-top:1px solid rgba(212,175,55,0.25);
+  padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 10px);
+  display:none;
+  transform:translateY(100%);
+  transition:transform .4s ease;
+}
+.sticky-cta.visible{
+  display:block;
+  transform:translateY(0);
+}
+.sticky-cta-inner{
+  max-width:960px;margin:0 auto;
+  display:flex;align-items:center;gap:10px;
+}
+.sticky-cta-text{
+  flex:1;font-size:.8rem;color:var(--c-text-dim);line-height:1.3;
+}
+.sticky-cta-text strong{color:var(--c-gold);font-size:.85rem}
+.sticky-cta-btn{
+  flex:0 0 auto;
+  padding:10px 20px;
+  background:linear-gradient(135deg,var(--c-gold),#b8941f);
+  color:var(--c-bg-deep);
+  border:none;border-radius:var(--r-pill);
+  font-weight:700;font-size:.85rem;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;
+  box-shadow:0 2px 12px rgba(212,175,55,0.3);
+  transition:all .2s ease;
+}
+.sticky-cta-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 16px rgba(212,175,55,0.4);
+}
+
+/* ═══ Loading Steps ═══ */
+.loading-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;
+  background:rgba(13,4,4,0.95);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--sp-md);
+}
+.loading-step{
+  display:flex;align-items:center;gap:var(--sp-sm);
+  font-size:.9rem;color:var(--c-text-muted);
+  transition:color .3s ease;
+}
+.loading-step.done{color:var(--c-success)}
+.loading-step.active{color:var(--c-gold)}
+.loading-step i{width:20px;text-align:center}
 
 /* ── 卡片標題裝飾線 ── */
 .card-title{
@@ -980,73 +1181,124 @@ html{scroll-behavior:smooth}
 
 <div class="app">
 
-<!-- ========== STEP 0: INPUT ========== -->
+<!-- ========== STEP 0: INPUT (Redesigned Funnel) ========== -->
 <section class="step active" id="step-0">
-  <div class="hero">
-    <div class="hero-icon">☽</div>
-    <h1>你的命盤，藏著答案</h1>
-    <p style="font-size:1rem;line-height:1.7;max-width:480px;margin:0 auto var(--sp-md)">感情卡關？事業迷茫？不確定下一步該怎麼走？<br>輸入出生資料，<strong style="color:var(--c-gold)">10 秒內</strong>告訴你答案。</p>
-    <div style="display:flex;justify-content:center;gap:var(--sp-md);flex-wrap:wrap;margin-bottom:var(--sp-md)">
-      <span class="tag tag-gold" style="font-size:.85rem;padding:.4rem .8rem">免費 · 10 秒出結果</span>
-      <span class="tag" style="font-size:.85rem;padding:.4rem .8rem;border:1px solid var(--c-border);color:var(--c-text-dim)">八字 · 紫微 · 梅花 · 塔羅 · 姓名</span>
+
+  <!-- ═══ PHASE A: Hook Screen ═══ -->
+  <div id="hook-screen">
+    <div class="hero">
+      <div class="hero-icon">☽</div>
+      <h1>10 秒看懂你現在缺什麼能量</h1>
+      <p style="font-size:.95rem;line-height:1.7;max-width:420px;margin:0 auto var(--sp-md);color:var(--c-text-dim)">選一個你最在意的方向，馬上告訴你答案</p>
     </div>
-    <div style="background:rgba(0,0,0,.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);display:inline-flex;gap:var(--sp-md);flex-wrap:wrap;justify-content:center;font-size:.82rem;color:var(--c-text-dim)">
-      <span>⚡ 10 秒出結果</span>
-      <span>🔒 本地運算不上傳</span>
-      <span>📱 可存圖分享</span>
+
+    <!-- 四宮格 Hook -->
+    <div class="hook-grid">
+      <button class="hook-card" onclick="pickType('love')">
+        <span class="hook-emoji">💕</span>
+        <span class="hook-title">感情桃花</span>
+        <span class="hook-sub">今年有桃花嗎？</span>
+      </button>
+      <button class="hook-card" onclick="pickType('career')">
+        <span class="hook-emoji">💼</span>
+        <span class="hook-title">事業方向</span>
+        <span class="hook-sub">該不該換工作？</span>
+      </button>
+      <button class="hook-card" onclick="pickType('wealth')">
+        <span class="hook-emoji">💰</span>
+        <span class="hook-title">財運投資</span>
+        <span class="hook-sub">今年財運如何？</span>
+      </button>
+      <button class="hook-card" onclick="pickType('health')">
+        <span class="hook-emoji">🏥</span>
+        <span class="hook-title">健康身心</span>
+        <span class="hook-sub">我該注意什麼？</span>
+      </button>
+    </div>
+    <!-- 次要入口 -->
+    <div style="display:flex;justify-content:center;gap:var(--sp-sm);margin-top:var(--sp-md);flex-wrap:wrap">
+      <button class="hook-card-mini" onclick="pickType('relationship')">🤝 人際合作</button>
+      <button class="hook-card-mini" onclick="pickType('family')">🏠 家庭親子</button>
+    </div>
+    <div style="display:flex;justify-content:center;gap:var(--sp-md);margin-top:var(--sp-lg);font-size:.78rem;color:var(--c-text-muted)">
+      <span>⚡ 免費 · 10 秒出結果</span>
+      <span>🔒 資料不上傳</span>
     </div>
   </div>
-  <div class="stepper" id="main-stepper">
-    <div class="stepper-item active"><div class="stepper-dot">1</div><span>填資料</span></div><div class="stepper-line"></div>
-    <div class="stepper-item"><div class="stepper-dot">2</div><span>看結果</span></div>
-  </div>
-  <div class="card">
-    <div class="card-title"><i class="fas fa-question-circle"></i> 你的問題</div>
-    <div class="form-group">
-      <label class="form-label">問題類型 <span class="req">*</span></label>
-      <select class="form-select" id="f-type"><option value="">請選擇方向</option>
-        <option value="love">💕 感情 / 桃花 / 婚姻</option>
-        <option value="career">💼 事業 / 工作 / 學業</option>
-        <option value="wealth">💰 財運 / 投資 / 收入</option>
-        <option value="health">🏥 健康 / 身體 / 心理</option>
-        <option value="relationship">🤝 人際 / 社交 / 合作</option>
-        <option value="family">🏠 家庭 / 親子 / 長輩</option></select>
+
+  <!-- ═══ PHASE B: Quick Input (hidden until type picked) ═══ -->
+  <div id="input-screen" style="display:none">
+    <!-- 已選類型 breadcrumb -->
+    <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
+      <button class="btn btn-outline btn-sm" onclick="backToHook()" style="padding:.3rem .6rem"><i class="fas fa-arrow-left"></i></button>
+      <span class="tag tag-gold" id="chosen-type-tag" style="font-size:.85rem;padding:.4rem .8rem"></span>
     </div>
-    <div class="form-group">
-      <label class="form-label">你現在最想問的一件事 <span class="req">*</span></label>
-      <textarea class="form-textarea" id="f-question" placeholder="例：我今年適合轉職嗎？" maxlength="500"></textarea>
-      <div class="form-hint"><span id="f-char">0</span>/500</div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title"><i class="fas fa-user"></i> 出生資料</div>
-    <div class="form-group">
-      <label class="form-label">性別 <span class="req">*</span></label>
-      <div class="radio-pills">
-        <label class="radio-pill"><input type="radio" name="gender" value="male"><span>男</span></label>
-        <label class="radio-pill"><input type="radio" name="gender" value="female"><span>女</span></label>
+
+    <!-- 預設問題選擇 -->
+    <div class="card">
+      <div class="card-title"><i class="fas fa-question-circle"></i> 你想問什麼？</div>
+      <div class="form-group">
+        <div class="q-preset-grid" id="q-presets"></div>
+        <div id="q-custom-wrap" style="display:none;margin-top:var(--sp-sm)">
+          <textarea class="form-textarea" id="f-question" placeholder="輸入你的問題…" maxlength="500" style="min-height:60px"></textarea>
+          <div class="form-hint"><span id="f-char">0</span>/500</div>
+        </div>
       </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">出生日期（國曆）<span class="req">*</span></label>
-      <input type="date" class="form-input" id="f-bdate">
+
+    <!-- 基本資料（精簡） -->
+    <div class="card">
+      <div class="card-title"><i class="fas fa-user"></i> 出生資料</div>
+      <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap">
+        <div class="form-group" style="flex:0 0 auto">
+          <label class="form-label">性別 <span class="req">*</span></label>
+          <div class="radio-pills">
+            <label class="radio-pill"><input type="radio" name="gender" value="male"><span>男</span></label>
+            <label class="radio-pill"><input type="radio" name="gender" value="female"><span>女</span></label>
+          </div>
+        </div>
+        <div class="form-group" style="flex:1 1 200px">
+          <label class="form-label">出生日期（國曆）<span class="req">*</span></label>
+          <input type="date" class="form-input" id="f-bdate">
+        </div>
+      </div>
+      <!-- 進階：收合 -->
+      <details class="advance-toggle" id="advance-fields">
+        <summary><i class="fas fa-chevron-right advance-arrow"></i> 填更多，結果更準（選填）</summary>
+        <div style="padding-top:var(--sp-md)">
+          <div class="form-group">
+            <label class="form-label">出生時間</label>
+            <input type="time" class="form-input" id="f-btime">
+            <label style="display:flex;align-items:center;gap:.4rem;margin-top:.4rem;font-size:.82rem;color:var(--c-text-dim);cursor:pointer">
+              <input type="checkbox" id="f-btime-unsure" onchange="if(this.checked){document.getElementById('f-btime').value='';document.getElementById('f-btime').disabled=true}else{document.getElementById('f-btime').disabled=false}"> 不確定出生時間
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">姓名</label>
+            <input type="text" class="form-input" id="f-name" placeholder="用於姓名學分析">
+          </div>
+        </div>
+      </details>
     </div>
-    <div class="form-group">
-      <label class="form-label">出生時間</label>
-      <input type="time" class="form-input" id="f-btime">
-      <label style="display:flex;align-items:center;gap:.4rem;margin-top:.4rem;font-size:.82rem;color:var(--c-text-dim);cursor:pointer">
-        <input type="checkbox" id="f-btime-unsure" onchange="if(this.checked){document.getElementById('f-btime').value='';document.getElementById('f-btime').disabled=true}else{document.getElementById('f-btime').disabled=false}"> 不確定出生時間（系統以 12:00 估算，時柱準度會降低）
-      </label>
-    </div>
-    <div class="form-group">
-      <label class="form-label">姓名（選填）</label>
-      <input type="text" class="form-input" id="f-name" placeholder="用於姓名學分析">
+
+    <!-- CTA -->
+    <div class="actions actions-center" style="flex-direction:column;gap:var(--sp-sm)">
+      <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-go" onclick="submitStep0Fast()"><i class="fas fa-bolt"></i> 看我的命盤分析</button>
+      <button class="btn btn-outline btn-sm" onclick="submitStep0()" style="opacity:0.6"><i class="fas fa-sliders-h"></i> 進階：手動起卦＋抽牌</button>
     </div>
   </div>
-  <div class="actions actions-center" style="flex-direction:column;gap:var(--sp-sm)">
-    <button class="btn btn-primary btn-lg" onclick="submitStep0Fast()"><i class="fas fa-bolt"></i> 立即看結果</button>
-    <button class="btn btn-outline btn-sm" onclick="submitStep0()" style="opacity:0.7"><i class="fas fa-sliders-h"></i> 進階：手動起卦＋抽牌</button>
-  </div>
+
+  <!-- hidden select for backward compat -->
+  <select class="form-select" id="f-type" style="display:none">
+    <option value="">請選擇方向</option>
+    <option value="love">💕 感情</option>
+    <option value="career">💼 事業</option>
+    <option value="wealth">💰 財運</option>
+    <option value="health">🏥 健康</option>
+    <option value="relationship">🤝 人際</option>
+    <option value="family">🏠 家庭</option>
+  </select>
+
 </section>
 
 <!-- ========== STEP 1: MEIHUA ========== -->
@@ -1111,8 +1363,10 @@ html{scroll-behavior:smooth}
   <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 多抽塔羅 → 多得「時間點＋行動建議」，完整分析準確度更高</p>
 </section>
 
-<!-- ========== STEP 3: RESULT ========== -->
+<!-- ========== STEP 3: RESULT (Redesigned 3-Layer) ========== -->
 <section class="step" id="step-3">
+
+  <!-- ═══ 層1：一屏結論 + 行動指令（不用滑就看完）═══ -->
   <!-- 🎯 大判定 -->
   <div class="result-verdict" id="r-verdict">
     <div class="verdict-label" id="r-vlabel">分析中…</div>
@@ -1120,76 +1374,64 @@ html{scroll-behavior:smooth}
     <div class="verdict-note" id="r-vnote"></div>
   </div>
 
-  <!-- 🎯 直接回答你的問題 -->
-  <div class="card"><div class="card-title"><i class="fas fa-bullseye"></i> 直接回答</div>
+  <!-- 🎯 核心回答（精簡） -->
+  <div class="card">
+    <div class="card-title"><i class="fas fa-bullseye"></i> 直接回答</div>
     <div id="r-question" class="text-dim mb-md"></div>
     <div id="r-answer" class="serif" style="font-size:1.05rem;line-height:1.8"></div>
-    <div class="divider"></div><div id="r-factors"></div><div id="r-suggest" class="mt-md"></div>
   </div>
 
-  <!-- ☯ 五行能量分析 -->
-  <div class="card remedy-alert" id="remedy-alert">
-    <div class="remedy-alert-header">
-      <div class="remedy-icon" id="remedy-icon">☯</div>
+  <!-- ⚡ 行動指令 + 嵌入水晶推薦（導購節點1）-->
+  <div class="card action-card" id="action-card">
+    <div class="card-title" style="color:var(--c-gold);font-size:1.1rem"><i class="fas fa-bolt"></i> 本月行動指令</div>
+    <div id="r-actions" style="margin-bottom:var(--sp-md)"></div>
+    <!-- 行動指令裡的水晶推薦（自然導購）-->
+    <div id="r-action-crystal"></div>
+  </div>
+
+  <!-- 🛒 快捷導購區（導購節點2 — 最高轉換率位置）-->
+  <div class="card quick-shop-card" id="quick-shop">
+    <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
+      <span style="font-size:1.4rem">💎</span>
       <div>
-        <h3 class="remedy-title" id="remedy-title">你的五行能量分佈</h3>
-        <p class="remedy-subtitle" id="remedy-subtitle">了解能量場特質，找到最適合的提升方向</p>
+        <div style="font-weight:700;color:var(--c-gold);font-size:1rem" id="qs-title">補強你的能量</div>
+        <div class="text-xs text-dim" id="qs-subtitle">依你的命盤精選</div>
       </div>
     </div>
-    <div id="remedy-diagnosis" class="remedy-diagnosis"></div>
-    <div class="remedy-arrow">
-      <i class="fas fa-arrow-down" style="color:var(--c-gold);font-size:1.2rem"></i>
-      <span class="text-sm text-gold">以下是為你量身打造的能量優化建議</span>
-      <i class="fas fa-arrow-down" style="color:var(--c-gold);font-size:1.2rem"></i>
+    <div id="qs-products" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:var(--sp-sm);-webkit-overflow-scrolling:touch"></div>
+    <div style="display:flex;gap:var(--sp-sm);margin-top:var(--sp-md);flex-wrap:wrap">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="btn btn-primary" style="flex:1;min-width:140px;text-align:center;font-size:.85rem"><i class="fas fa-shopping-cart"></i> 蝦皮選購</a>
+      <button class="btn btn-outline" onclick="openCustomModal()" style="flex:1;min-width:140px;font-size:.85rem"><i class="fas fa-magic"></i> 客製配對</button>
     </div>
   </div>
 
-  <!-- 💎 改運處方（具體行動）-->
-  <div class="card remedy-plan" id="remedy-plan">
-    <div class="card-title"><i class="fas fa-wand-magic-sparkles"></i> 你的能量優化方案</div>
-    <div id="remedy-actions" class="remedy-actions"></div>
-  </div>
+  <!-- ═══ 層2：詳細分析（預設收合）═══ -->
 
-  <!-- 🛒 水晶推薦 + 賣場 -->
-  <div class="card" style="border:2px solid var(--c-gold);background:linear-gradient(135deg,rgba(30,12,12,0.95),rgba(20,8,8,0.98));position:relative;overflow:hidden">
-    <div style="position:absolute;top:0;right:0;background:var(--c-gold);color:var(--c-bg-deep);padding:4px 16px;font-size:.7rem;font-weight:700;border-radius:0 0 0 12px">命理處方箋</div>
-    <div class="card-title" style="font-size:1.2rem;margin-top:var(--sp-sm)"><i class="fas fa-file-medical"></i> 能量水晶處方 — 依你命盤精選</div>
-    <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap;margin-bottom:var(--sp-md);padding:var(--sp-sm);background:rgba(0,0,0,.2);border-radius:var(--r-sm);border-left:3px solid var(--c-gold)">
-      <div class="text-xs"><span class="text-dim">分析師：</span><span class="text-gold">靜月之光</span></div>
-      <div class="text-xs"><span class="text-dim">處方日期：</span><span id="rx-date" class="text-gold"></span></div>
-      <div class="text-xs"><span class="text-dim">有效期：</span><span class="text-gold">長期適用</span></div>
+  <!-- ☯ 五行能量（收合） -->
+  <div class="card collapsible-card" id="remedy-alert-wrap">
+    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
+      <span><i class="fas fa-yin-yang"></i> 你的五行能量分佈</span>
+      <i class="fas fa-chevron-down collapse-arrow"></i>
     </div>
-    <div id="r-crystal"></div>
-  </div>
-  <div class="card shop-card">
-    <div class="card-title"><i class="fas fa-shopping-bag"></i> 想把結果做成「專屬五行手鏈」？我幫你配到位</div>
-    <p class="text-sm text-dim mb-md">依你結果的喜用神，給你 3 個實用搭配（可直接下單）</p>
-    <div id="shop-social-proof" style="padding:var(--sp-sm) var(--sp-md);background:rgba(212,175,55,.06);border-radius:var(--r-sm);margin-bottom:var(--sp-md);border:1px solid rgba(212,175,55,.15)">
-      <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:4px">
-        <span style="color:var(--c-gold);font-size:.8rem">⭐⭐⭐⭐⭐</span>
-        <span class="text-xs text-muted" id="shop-review-meta"></span>
+    <div class="collapsible-body">
+      <div class="remedy-alert" id="remedy-alert" style="border:none;background:none;box-shadow:none;padding:0;margin:0">
+        <div id="remedy-diagnosis" class="remedy-diagnosis"></div>
       </div>
-      <p class="text-sm" style="color:var(--c-text-dim);margin:0;line-height:1.5">「<span id="shop-review-text"></span>」</p>
-      <div style="text-align:right;margin-top:4px"><span class="text-xs text-muted" id="shop-review-product"></span></div>
     </div>
-    <div class="shop-btns">
-      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener noreferrer" class="shop-btn-card shopee">
-        <i class="fas fa-shopping-cart"></i>
-        <div><strong>🛒 立即選購・全館免運</strong><span class="text-xs">關注再享 9 折</span></div>
-      </a>
-      <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" rel="noopener noreferrer" class="shop-btn-card seven">
-        <i class="fas fa-box"></i>
-        <div><strong>📦 7-11 取貨・滿千免運</strong><span class="text-xs">多件合併寄送</span></div>
-      </a>
-      <button class="shop-btn-card custom" onclick="openCustomModal()">
-        <i class="fas fa-magic"></i>
-        <div><strong>🧿 客製五行手鏈方案</strong><span class="text-xs">$1,000 起・48hr 回覆</span></div>
-      </button>
-    </div>
-
   </div>
 
-  <!-- 📊 可能性評估 (可收合) -->
+  <!-- 💎 能量優化方案（收合） -->
+  <div class="card collapsible-card" id="remedy-plan-wrap">
+    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
+      <span><i class="fas fa-wand-magic-sparkles"></i> 能量優化方案</span>
+      <i class="fas fa-chevron-down collapse-arrow"></i>
+    </div>
+    <div class="collapsible-body">
+      <div id="remedy-actions" class="remedy-actions"></div>
+    </div>
+  </div>
+
+  <!-- 📊 可能性評估 (收合) -->
   <div class="card collapsible-card">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
       <span><i class="fas fa-chart-line"></i> 可能性評估</span>
@@ -1199,10 +1441,11 @@ html{scroll-behavior:smooth}
       <div class="prob-meter"><div class="prob-bar"><div class="prob-fill" id="r-pfill" style="width:0%"></div></div>
       <div class="prob-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
       <div id="r-pbreak" class="mt-md text-sm"></div>
+      <div class="divider"></div><div id="r-factors"></div><div id="r-suggest" class="mt-md"></div>
     </div>
   </div>
 
-  <!-- 📋 命理詳解 (可收合) -->
+  <!-- 📋 命理詳解 (收合) -->
   <div class="card collapsible-card">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
       <span><i class="fas fa-scroll"></i> 命理詳細分析</span>
@@ -1244,7 +1487,7 @@ html{scroll-behavior:smooth}
     </div>
   </div>
 
-  <!-- 📝 總結 (可收合) -->
+  <!-- 📝 總結 (收合) -->
   <div class="card collapsible-card">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
       <span><i class="fas fa-moon"></i> 靜月分析師總結</span>
@@ -1252,6 +1495,48 @@ html{scroll-behavior:smooth}
     </div>
     <div class="collapsible-body">
       <div id="r-conclusion" class="text-sm" style="line-height:1.8"></div>
+    </div>
+  </div>
+
+  <!-- ═══ 層3：完整水晶處方 + 賣場（導購節點2&3）═══ -->
+
+  <!-- 🛒 水晶處方（完整版） -->
+  <div class="card" style="border:2px solid var(--c-gold);background:linear-gradient(135deg,rgba(30,12,12,0.95),rgba(20,8,8,0.98));position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;right:0;background:var(--c-gold);color:var(--c-bg-deep);padding:4px 16px;font-size:.7rem;font-weight:700;border-radius:0 0 0 12px">命理處方箋</div>
+    <div class="card-title" style="font-size:1.2rem;margin-top:var(--sp-sm)"><i class="fas fa-file-medical"></i> 能量水晶處方 — 依你命盤精選</div>
+    <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap;margin-bottom:var(--sp-md);padding:var(--sp-sm);background:rgba(0,0,0,.2);border-radius:var(--r-sm);border-left:3px solid var(--c-gold)">
+      <div class="text-xs"><span class="text-dim">分析師：</span><span class="text-gold">靜月之光</span></div>
+      <div class="text-xs"><span class="text-dim">處方日期：</span><span id="rx-date" class="text-gold"></span></div>
+      <div class="text-xs"><span class="text-dim">有效期：</span><span class="text-gold">長期適用</span></div>
+    </div>
+    <div id="r-crystal"></div>
+  </div>
+
+  <!-- 🛒 賣場 CTA -->
+  <div class="card shop-card">
+    <div class="card-title"><i class="fas fa-shopping-bag"></i> 把命盤結果做成「專屬五行手鏈」</div>
+    <p class="text-sm text-dim mb-md">依你的喜用神精選搭配（可直接下單）</p>
+    <div id="shop-social-proof" style="padding:var(--sp-sm) var(--sp-md);background:rgba(212,175,55,.06);border-radius:var(--r-sm);margin-bottom:var(--sp-md);border:1px solid rgba(212,175,55,.15)">
+      <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:4px">
+        <span style="color:var(--c-gold);font-size:.8rem">⭐⭐⭐⭐⭐</span>
+        <span class="text-xs text-muted" id="shop-review-meta"></span>
+      </div>
+      <p class="text-sm" style="color:var(--c-text-dim);margin:0;line-height:1.5">「<span id="shop-review-text"></span>」</p>
+      <div style="text-align:right;margin-top:4px"><span class="text-xs text-muted" id="shop-review-product"></span></div>
+    </div>
+    <div class="shop-btns">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener noreferrer" class="shop-btn-card shopee">
+        <i class="fas fa-shopping-cart"></i>
+        <div><strong>🛒 立即選購・全館免運</strong><span class="text-xs">關注再享 9 折</span></div>
+      </a>
+      <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" rel="noopener noreferrer" class="shop-btn-card seven">
+        <i class="fas fa-box"></i>
+        <div><strong>📦 7-11 取貨・滿千免運</strong><span class="text-xs">多件合併寄送</span></div>
+      </a>
+      <button class="shop-btn-card custom" onclick="openCustomModal()">
+        <i class="fas fa-magic"></i>
+        <div><strong>🧿 客製五行手鏈方案</strong><span class="text-xs">$1,000 起・48hr 回覆</span></div>
+      </button>
     </div>
   </div>
 
@@ -1281,8 +1566,11 @@ html{scroll-behavior:smooth}
     <p class="text-sm mt-sm" id="discount-timer" style="color:var(--c-gold)"></p>
     <p class="text-sm text-dim mt-xs">蝦皮下單時輸入此碼享 <strong style="color:var(--c-gold)">9折優惠</strong></p>
     <button class="btn btn-outline btn-sm mt-sm" onclick="copyDiscountCode()"><i class="fas fa-copy"></i> 複製折扣碼</button>
-    <div class="mt-md">
-      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 立即前往蝦皮選購</a>
+    <!-- 折扣碼後的個性化推薦 -->
+    <div id="discount-crystal-rec" style="margin-top:var(--sp-md);padding:var(--sp-md);background:rgba(212,175,55,0.04);border-radius:var(--r-md);border:1px solid rgba(212,175,55,0.15)"></div>
+    <div class="mt-md" style="display:flex;gap:var(--sp-sm);flex-wrap:wrap;justify-content:center">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 用折扣碼去選購</a>
+      <button class="btn btn-outline" onclick="openCustomModal()"><i class="fas fa-magic"></i> 客製手鏈</button>
     </div>
   </div>
   <div class="actions actions-center mt-lg hidden" id="btn-retest">
@@ -1411,6 +1699,8 @@ html{scroll-behavior:smooth}
 </div>
   </div></div></div>
   </div>
+  <!-- bottom spacer for sticky CTA -->
+  <div style="height:80px"></div>
 </section>
 
 </div><!-- /app -->
@@ -1569,11 +1859,11 @@ function renderRemedy(bazi,type){
     alertEl.classList.remove('alert-danger');
   }
 
-  document.getElementById('remedy-icon').textContent=icon;
-  document.getElementById('remedy-title').textContent=title;
-  document.getElementById('remedy-title').style.color=weakEls.length>0?'#f87171':'var(--c-gold)';
-  document.getElementById('remedy-subtitle').textContent=subtitle;
-  document.getElementById('remedy-subtitle').style.color=weakEls.length>0?'#fca5a5':'var(--c-text-dim)';
+  document.getElementById('remedy-icon')&&(document.getElementById('remedy-icon').textContent=icon);
+  document.getElementById('remedy-title')&&(document.getElementById('remedy-title').textContent=title);
+  if(document.getElementById('remedy-title'))document.getElementById('remedy-title').style.color=weakEls.length>0?'#f87171':'var(--c-gold)';
+  document.getElementById('remedy-subtitle')&&(document.getElementById('remedy-subtitle').textContent=subtitle);
+  if(document.getElementById('remedy-subtitle'))document.getElementById('remedy-subtitle').style.color=weakEls.length>0?'#fca5a5':'var(--c-text-dim)';
   document.getElementById('remedy-diagnosis').innerHTML=diagHTML;
 
   // ── 改運處方 ──
@@ -1709,9 +1999,36 @@ function goStep(n){
   document.querySelectorAll('.nav-link').forEach((l,i)=>l.classList.toggle('active',i===n));
   document.querySelectorAll('.stepper-item').forEach((s,i)=>{s.classList.remove('active','done');if(i<n)s.classList.add('done');if(i===n)s.classList.add('active')});
   S.step=n; window.scrollTo({top:0,behavior:'smooth'});
-  if(n===3) runAnalysis();
+  if(n===3){
+    runAnalysis();
+    // 延遲顯示 sticky CTA（讓用戶先看到內容）
+    setTimeout(()=>{
+      const cta=document.getElementById('sticky-cta');
+      if(cta){
+        // 個性化文案
+        if(S.bazi&&S.bazi.fav){
+          const fav=S.bazi.fav[0]||'土';
+          const ep=S.bazi.ep||{};
+          const weakEls=Object.entries(ep).filter(([e,v])=>(v/(Object.values(ep).reduce((a,b)=>a+b,0)||60))<0.12).map(([e])=>e);
+          const label=document.getElementById('sticky-cta-label');
+          const desc=document.getElementById('sticky-cta-desc');
+          if(weakEls.length>0){
+            label.innerHTML=`💎 你的五行缺${weakEls.join('、')}！`;
+            desc.textContent=`佩戴${fav}行水晶補強能量，運勢立即提升`;
+          }else{
+            label.innerHTML=`💎 你的喜用神：${fav}行`;
+            desc.textContent=`佩戴${fav}行水晶加倍好運`;
+          }
+        }
+        cta.classList.add('visible');
+      }
+    }, 3000);
+  }else{
+    const cta=document.getElementById('sticky-cta');
+    if(cta) cta.classList.remove('visible');
+  }
 }
-function resetAll(){S.bazi=null;S.meihua=null;S.tarot={drawn:[],spread:[]};S.ziwei=null;goStep(0);document.getElementById('mh-result').classList.add('hidden');document.getElementById('t-hand').innerHTML='';document.getElementById('t-remain').textContent='10';document.getElementById('btn-draw').disabled=false;document.getElementById('btn-analyze').disabled=true;document.getElementById('t-spread-sec').classList.add('hidden')}
+function resetAll(){S.bazi=null;S.meihua=null;S.tarot={drawn:[],spread:[]};S.ziwei=null;goStep(0);document.getElementById('mh-result').classList.add('hidden');document.getElementById('t-hand').innerHTML='';document.getElementById('t-remain').textContent='10';document.getElementById('btn-draw').disabled=false;document.getElementById('btn-analyze').disabled=true;document.getElementById('t-spread-sec').classList.add('hidden');drawnCards=[];/* 重置 hook screen */try{document.getElementById('hook-screen').style.display='block';document.getElementById('input-screen').style.display='none';}catch(e){}}
 function skipToResult(){goStep(3)}
 
 /* — Char counter — */
@@ -1831,6 +2148,57 @@ function getShenSha(pillars){
 /* =============================================================
    BAZI COMPUTATION (完整版)
    ============================================================= */
+/* ═══ HOOK FLOW: 首屏四宮格互動 ═══ */
+const Q_PRESETS = {
+  love: ['今年有桃花嗎？','他/她喜歡我嗎？','適合復合嗎？','什麼時候能脫單？','我的感情會順利嗎？'],
+  career: ['今年適合轉職嗎？','該不該跳槽？','我適合創業嗎？','工作會有升遷機會嗎？','怎麼找到適合的方向？'],
+  wealth: ['今年財運如何？','適合投資嗎？','什麼時候財運會好轉？','偏財運好不好？','怎麼改善財務狀況？'],
+  health: ['今年健康要注意什麼？','我的體質適合什麼養生？','壓力大怎麼調適？','家人健康會好嗎？','我需要做什麼健康檢查？'],
+  relationship: ['人際關係會改善嗎？','適合跟對方合作嗎？','怎麼改善職場人際？','朋友靠得住嗎？','該怎麼拓展人脈？'],
+  family: ['跟家人關係會好轉嗎？','親子溝通怎麼改善？','家庭運勢如何？','長輩健康要注意什麼？','家裡的問題會解決嗎？']
+};
+const TYPE_LABELS_SHORT = {love:'💕 感情桃花',career:'💼 事業方向',wealth:'💰 財運投資',health:'🏥 健康身心',relationship:'🤝 人際合作',family:'🏠 家庭親子'};
+let selectedPresetQ = '';
+
+function pickType(type){
+  document.getElementById('f-type').value = type;
+  document.getElementById('hook-screen').style.display = 'none';
+  document.getElementById('input-screen').style.display = 'block';
+  document.getElementById('chosen-type-tag').textContent = TYPE_LABELS_SHORT[type] || type;
+  // 渲染預設問題
+  const presets = Q_PRESETS[type] || [];
+  const grid = document.getElementById('q-presets');
+  selectedPresetQ = '';
+  grid.innerHTML = presets.map(q => `<button class="q-preset-btn" onclick="selectPreset(this,'${q.replace(/'/g,"\\'")}')">${q}</button>`).join('') +
+    `<button class="q-preset-btn" onclick="showCustomQ(this)" style="color:var(--c-text-muted)"><i class="fas fa-pen" style="margin-right:4px"></i> 我想自己寫問題</button>`;
+  document.getElementById('q-custom-wrap').style.display = 'none';
+  // 滾動到頂部
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function backToHook(){
+  document.getElementById('input-screen').style.display = 'none';
+  document.getElementById('hook-screen').style.display = 'block';
+  document.getElementById('f-type').value = '';
+}
+
+function selectPreset(btn, q){
+  document.querySelectorAll('.q-preset-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedPresetQ = q;
+  document.getElementById('f-question').value = q;
+  document.getElementById('q-custom-wrap').style.display = 'none';
+}
+
+function showCustomQ(btn){
+  document.querySelectorAll('.q-preset-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedPresetQ = '';
+  document.getElementById('q-custom-wrap').style.display = 'block';
+  document.getElementById('f-question').value = '';
+  document.getElementById('f-question').focus();
+}
+
 function submitStep0(){
   const type=document.getElementById('f-type').value;
   const question=document.getElementById('f-question').value.trim();
@@ -1852,30 +2220,75 @@ function submitStep0(){
 }
 
 function submitStep0Fast(){
-  /* 一鍵直達：自動梅花起卦 + 自動塔羅抽牌 → 直接看結果 */
   drawnCards=[];
   S.meihua=null;S.tarot={drawn:[],spread:[]};
   const type=document.getElementById('f-type').value;
   const question=document.getElementById('f-question').value.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
   const bdate=document.getElementById('f-bdate').value;
-  if(!type||!question||!gender||!bdate){alert('請填寫所有必要欄位');return}
+  if(!type||!question||!gender||!bdate){alert('請填寫：問題、性別、出生日期');return}
   const btime=document.getElementById('f-btime').value||'12:00';
   const name=document.getElementById('f-name').value.trim();
   S.form={type,question,gender:gender.value,bdate,btime,name};
-  const[y,m,d]=bdate.split('-').map(Number);
-  const[hh,mm]=btime.split(':').map(Number);
-  S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
-  S.ziwei=computeZiwei(y,m,d,hh,gender.value);
-  mergeZiweiIntoBazi(); // 紫微整合進八字大運流年
-  renderDailyFortune();
-  generateLuckyInfo();
-  /* 自動梅花：用時間起卦 */
-  calcMhTime();
-  /* 自動塔羅：快速全抽 */
-  while(drawnCards.length<10) drawCard();
-  /* 直接跳到結果 */
-  goStep(3);
+
+  /* ═══ Loading 動畫 ═══ */
+  const overlay = document.createElement('div');
+  overlay.className = 'loading-overlay';
+  overlay.id = 'loading-overlay';
+  const steps = [
+    {id:'ls-bazi', text:'排八字四柱命盤…'},
+    {id:'ls-ziwei', text:'排紫微斗數命盤…'},
+    {id:'ls-meihua', text:'梅花易數起卦…'},
+    {id:'ls-tarot', text:'凱爾特十字塔羅排列…'},
+    {id:'ls-fuse', text:'五維度融合分析…'}
+  ];
+  overlay.innerHTML = `<div class="hero-icon" style="font-size:2.5rem;margin-bottom:var(--sp-md)">☽</div>
+    <p style="color:var(--c-gold);font-family:var(--f-display);font-size:1.1rem;margin-bottom:var(--sp-lg)">正在為你解讀命盤…</p>
+    ${steps.map(s=>`<div class="loading-step" id="${s.id}"><i class="fas fa-circle" style="font-size:.5rem"></i> ${s.text}</div>`).join('')}`;
+  document.body.appendChild(overlay);
+
+  const [y,m,d]=bdate.split('-').map(Number);
+  const [hh,mm]=btime.split(':').map(Number);
+
+  let stepIdx = 0;
+  function tick(id, fn){
+    return new Promise(resolve => {
+      setTimeout(()=>{
+        const el = document.getElementById(id);
+        if(el){el.classList.add('active');el.querySelector('i').className='fas fa-spinner fa-spin';}
+        setTimeout(()=>{
+          fn();
+          if(el){el.classList.remove('active');el.classList.add('done');el.querySelector('i').className='fas fa-check';}
+          resolve();
+        }, 200);
+      }, 250);
+    });
+  }
+
+  (async()=>{
+    await tick('ls-bazi', ()=>{
+      S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
+    });
+    await tick('ls-ziwei', ()=>{
+      S.ziwei=computeZiwei(y,m,d,hh,gender.value);
+      mergeZiweiIntoBazi();
+      renderDailyFortune();
+      generateLuckyInfo();
+    });
+    await tick('ls-meihua', ()=>{
+      calcMhTime();
+    });
+    await tick('ls-tarot', ()=>{
+      while(drawnCards.length<10) drawCard();
+    });
+    await tick('ls-fuse', ()=>{});
+    // 完成 → 跳到結果
+    setTimeout(()=>{
+      const ol = document.getElementById('loading-overlay');
+      if(ol) ol.remove();
+      goStep(3);
+    }, 400);
+  })();
 }
 
 function computeBazi(year,month,day,hour,minute,gender){
@@ -8438,6 +8851,9 @@ function runAnalysisV2(){
   if(typeof renderProductCrystal==='function')renderProductCrystal(b,type);
   else renderCrystalExpanded(b,type);
 
+  // ── Action Card (行動指令 + 嵌入水晶推薦) ──
+  try{ renderActionCard(b, type, answer); }catch(e){ console.error('renderActionCard:',e); }
+
   // ── Remedy Alert + Plan ──
   try{renderRemedy(b,type);}catch(e){console.error('renderRemedy:',e);}
 
@@ -9165,6 +9581,115 @@ const TYPE_PRODUCTS={
   health:[{n:'紫水晶手鏈',cat:'手鏈',icon:'💜',el:'火',d:'安神助眠，促進身心平衡',price:'$580-$1,800',shopee:'https://tw.shp.ee/2n5Mo2w',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'睡前佩戴或放枕下'}]
 };
 
+/* ═══ renderActionCard: 行動指令 + 嵌入水晶推薦（導購節點1）═══ */
+function renderActionCard(bazi, type, answer){
+  const fav = bazi.fav || [];
+  const el = bazi.dmEl;
+  const FC = {金:'白色',木:'綠色',水:'黑色/藍色',火:'紅色/紫色',土:'黃色/咖啡色'};
+  const FD = {金:'正西',木:'正東',水:'正北',火:'正南',土:'中央/東北'};
+  const FFood = {金:'白色食物（山藥、百合、杏仁）',木:'綠色蔬菜（花椰菜、菠菜、奇異果）',水:'黑色食物（黑芝麻、海帶、藍莓）',火:'紅色食物（紅棗、枸杞、番茄）',土:'黃色食物（南瓜、地瓜、玉米）'};
+
+  const favEl = fav[0] || '土';
+  const actions = [];
+
+  // 行動1: 穿搭色彩
+  actions.push(`<strong>穿搭：</strong>本月多穿 ${FC[favEl]} 系服飾，增強${favEl}行能量`);
+
+  // 行動2: 根據類型給不同建議
+  const typeActions = {
+    love: `<strong>社交：</strong>往 ${FD[favEl]} 方向的場所社交，桃花運更旺`,
+    career: `<strong>方向：</strong>辦公桌朝 ${FD[favEl]} 方位，面試/洽公往 ${FD[favEl]} 方向更有利`,
+    wealth: `<strong>理財：</strong>重要財務決定在${FD[favEl]}方位進行，多吃${FFood[favEl]}增強財氣`,
+    health: `<strong>養生：</strong>多吃${FFood[favEl]}，每天${favEl==='水'?'泡腳暖身':favEl==='木'?'伸展15分鐘':favEl==='火'?'午休15分鐘':favEl==='金'?'深呼吸練習':'飯後散步20分鐘'}`,
+    relationship: `<strong>人脈：</strong>往 ${FD[favEl]} 方向拓展人脈，穿 ${FC[favEl]} 色赴約`,
+    family: `<strong>居家：</strong>家中 ${FD[favEl]} 方位保持整潔明亮，增強家庭和諧能量`
+  };
+  actions.push(typeActions[type] || typeActions.career);
+
+  // 行動3: 水晶佩戴（自然導購入口）
+  const crystalAdvice = {
+    金:'白水晶、鈦晶',木:'綠幽靈、綠碧璽',水:'海藍寶、黑曜石',火:'紫水晶、紅瑪瑙',土:'黃水晶、茶晶'
+  };
+  actions.push(`<strong>能量：</strong>佩戴 ${crystalAdvice[favEl]} 補強${favEl}行，效果加倍`);
+
+  // 渲染行動指令
+  const actionsEl = document.getElementById('r-actions');
+  actionsEl.innerHTML = actions.map((a,i) => `
+    <div class="action-item">
+      <div class="action-num">${i+1}</div>
+      <div class="action-text">${a}</div>
+    </div>
+  `).join('');
+
+  // 嵌入式水晶推薦（從 smartRecommend 拿第一個商品）
+  const crystalEl = document.getElementById('r-action-crystal');
+  try{
+    const recs = (typeof smartRecommend==='function') ? smartRecommend(bazi, type, 2) : [];
+    if(recs.length > 0){
+      const p = recs[0];
+      const shopUrl = p.shopee || 'https://tw.shp.ee/2n5Mo2w';
+      crystalEl.innerHTML = `
+        <div style="border-top:1px solid rgba(212,175,55,0.15);padding-top:var(--sp-md);margin-top:var(--sp-sm)">
+          <p class="text-xs text-dim" style="margin-bottom:8px"><i class="fas fa-gem"></i> 根據你的命盤，最適合的能量水晶：</p>
+          <a href="${shopUrl}" target="_blank" rel="noopener" class="inline-crystal">
+            <span class="inline-crystal-icon">${p.el==='金'?'🤍':p.el==='木'?'💚':p.el==='水'?'💙':p.el==='火'?'💜':p.el==='全'?'🌈':'💛'}</span>
+            <div class="inline-crystal-info">
+              <div class="inline-crystal-name">${p.n}</div>
+              <div class="inline-crystal-desc">${p.d ? p.d.substring(0,30)+'…' : p.el+'行能量水晶'}</div>
+            </div>
+            <span class="inline-crystal-price">${p.price||''}</span>
+            <i class="fas fa-chevron-right inline-crystal-arrow"></i>
+          </a>
+          ${recs.length > 1 ? `<a href="${recs[1].shopee || shopUrl}" target="_blank" rel="noopener" class="inline-crystal" style="margin-top:6px">
+            <span class="inline-crystal-icon">${recs[1].el==='金'?'🤍':recs[1].el==='木'?'💚':recs[1].el==='水'?'💙':recs[1].el==='火'?'💜':recs[1].el==='全'?'🌈':'💛'}</span>
+            <div class="inline-crystal-info">
+              <div class="inline-crystal-name">${recs[1].n}</div>
+              <div class="inline-crystal-desc">${recs[1].d ? recs[1].d.substring(0,30)+'…' : recs[1].el+'行能量水晶'}</div>
+            </div>
+            <span class="inline-crystal-price">${recs[1].price||''}</span>
+            <i class="fas fa-chevron-right inline-crystal-arrow"></i>
+          </a>` : ''}
+          <div style="text-align:center;margin-top:var(--sp-sm)">
+            <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="text-xs" style="color:var(--c-gold)">
+              查看更多適合你的水晶 →
+            </a>
+          </div>
+        </div>`;
+    }
+  }catch(e){ console.error('inline crystal:', e); }
+
+  // ── Quick Shop 快捷導購 ──
+  try{
+    const qs = document.getElementById('qs-products');
+    const qsTitle = document.getElementById('qs-title');
+    const qsSub = document.getElementById('qs-subtitle');
+    if(qs){
+      const recs = (typeof smartRecommend==='function') ? smartRecommend(bazi, type, 5) : [];
+      const ep = bazi.ep||{};
+      const tot = Object.values(ep).reduce((a,b)=>a+b,0)||60;
+      const weakEls = Object.entries(ep).filter(([e,v])=>(v/tot)<0.12).map(([e])=>e);
+      if(weakEls.length>0){
+        qsTitle.textContent = `你的${weakEls.join('、')}行不足，需要補強`;
+        qsSub.textContent = `佩戴以下水晶可有效提升${weakEls.join('、')}行能量`;
+      }else{
+        qsTitle.textContent = `增強你的${favEl}行能量`;
+        qsSub.textContent = `喜用神${favEl}行 — 這些水晶跟你最合`;
+      }
+      if(recs.length>0){
+        const elEmoji = {金:'🤍',木:'💚',水:'💙',火:'💜',土:'💛','全':'🌈'};
+        qs.innerHTML = recs.slice(0,5).map(p => `
+          <a href="${p.shopee||'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" class="qs-item">
+            <div class="qs-item-icon">${elEmoji[p.el]||'💎'}</div>
+            <div class="qs-item-name">${p.n}</div>
+            <div class="qs-item-el">${p.el}行</div>
+            <div class="qs-item-price">${p.price||''}</div>
+          </a>
+        `).join('');
+      }
+    }
+  }catch(e){ console.error('quick shop:', e); }
+}
+
 function renderProductCrystal(bazi,type){
   const need=bazi.fav[0];
   const base=PRODUCT_DB[need]||PRODUCT_DB['土'];
@@ -9453,6 +9978,27 @@ function updateShareGate(){
       retestBtn.classList.remove('hidden');
       // 同時解鎖趣味功能
       unlockExtraFeatures();
+      // 折扣碼區水晶推薦
+      try{
+        const recDiv=document.getElementById('discount-crystal-rec');
+        if(recDiv && S.bazi){
+          const recs=(typeof smartRecommend==='function')?smartRecommend(S.bazi,S.form.type||'career',3):[];
+          if(recs.length>0){
+            const p=recs[0];
+            recDiv.innerHTML=`
+              <p class="text-sm" style="color:var(--c-text-dim);margin-bottom:8px"><i class="fas fa-gem" style="color:var(--c-gold)"></i> 用折扣碼購買最適合你的水晶：</p>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:1.5rem">${p.el==='金'?'🤍':p.el==='木'?'💚':p.el==='水'?'💙':p.el==='火'?'💜':p.el==='全'?'🌈':'💛'}</span>
+                <div style="flex:1">
+                  <div style="font-weight:600;color:var(--c-gold-light);font-size:.9rem">${p.n}</div>
+                  <div class="text-xs text-dim">${p.d||''}</div>
+                </div>
+                <div style="font-weight:700;color:var(--c-gold)">${p.price||''}</div>
+              </div>
+              ${recs.length>1?`<div style="margin-top:6px;font-size:.78rem;color:var(--c-text-muted)">也推薦：${recs.slice(1,3).map(r=>r.n).join('、')}</div>`:''}`;
+          }
+        }
+      }catch(e){}
     }
   }
 }
@@ -11419,4 +11965,17 @@ document.addEventListener('DOMContentLoaded', function(){
   renderZodiacMatch();
   generateLuckyInfo();
 });
-</script></body></html>
+</script>
+<!-- Sticky Bottom CTA for Result Page -->
+<div class="sticky-cta" id="sticky-cta">
+  <div class="sticky-cta-inner">
+    <div class="sticky-cta-text">
+      <strong id="sticky-cta-label">💎 你的五行缺什麼？</strong><br>
+      <span id="sticky-cta-desc">依命盤精選水晶，補強能量</span>
+    </div>
+    <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="sticky-cta-btn" id="sticky-cta-btn" onclick="event.preventDefault();document.getElementById('quick-shop').scrollIntoView({behavior:'smooth',block:'center'});">
+      <i class="fas fa-gem"></i> 看推薦水晶
+    </a>
+  </div>
+</div>
+</body></html>
