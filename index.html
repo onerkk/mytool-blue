@@ -1792,7 +1792,7 @@ html{scroll-behavior:smooth}
   <div class="modal-box">
     <button class="modal-close" onclick="closeCustomModal()">&times;</button>
     <h3 class="serif text-gold mb-md"><i class="fas fa-magic"></i> 能量手鏈客製服務</h3>
-    <form id="custom-form" action="https://formsubmit.co/0a8ab0ffc0e5c5879693806bc12ed0f7" method="POST" onsubmit="return prepareCustomSubmit()">
+    <form id="custom-form" action="https://formsubmit.co/onerkk@gmail.com" method="POST" onsubmit="return prepareCustomSubmit()">
       <!-- formsubmit.co config -->
       <input type="hidden" name="_subject" id="cf-subject-hidden" value="【客製詢問】能量手鏈">
       <input type="hidden" name="_captcha" value="false">
@@ -9528,7 +9528,7 @@ document.addEventListener('click',function(e){
   if(e.target.id==='custom-modal')closeCustomModal();
 });
 
-function submitCustomForm(e){e.preventDefault()} // deprecated, kept for safety
+function submitCustomForm(e){e.preventDefault()} // deprecated
 
 function prepareCustomSubmit(){
   var name=document.getElementById('cf-name').value.trim();
@@ -9551,16 +9551,17 @@ function prepareCustomSubmit(){
     if(S.tarot&&S.tarot.drawn&&S.tarot.drawn.length)summary+='塔羅：'+S.tarot.drawn[0].n+'（'+(S.tarot.drawn[0].isUp?'正位':'逆位')+'）\n';
   }
 
-  /* 組合完整訊息（同時給 email 和 LINE 用） */
-  var msg='【客製詢問】'+name+'\n';
-  msg+='出生日期：'+(bday?bday.value:'')+'\n';
-  msg+='想解決的問題：'+(question?question.value:'')+'\n';
-  msg+='預算範圍：'+(budget?budget.value:'')+'\n';
-  if(summary){msg+='\n--- 命盤分析 ---\n'+summary;}
+  /* 完整訊息文字 */
+  var fullMsg='【靜月之光 客製詢問】\n';
+  fullMsg+='姓名：'+name+'\n';
+  fullMsg+='出生日期：'+(bday?bday.value:'')+'\n';
+  fullMsg+='想解決的問題：'+(question?question.value:'')+'\n';
+  fullMsg+='預算範圍：'+(budget?budget.value:'')+'\n';
+  if(summary){fullMsg+='\n--- 命盤分析 ---\n'+summary;}
 
   if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 送出中...';}
 
-  /* ====== 第一層：formsubmit 寄信到信箱 ====== */
+  /* ====== Email (formsubmit) ====== */
   var emailPayload={
     name:name,
     _subject:'【客製詢問】'+name+' - 能量手鏈',
@@ -9572,47 +9573,53 @@ function prepareCustomSubmit(){
     _captcha:'false'
   };
 
-  var emailOk=false;
-
-  fetch('https://formsubmit.co/ajax/0a8ab0ffc0e5c5879693806bc12ed0f7',{
+  fetch('https://formsubmit.co/ajax/onerkk@gmail.com',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify(emailPayload)
-  }).then(function(r){return r.json();}).then(function(data){
-    emailOk=data.success;
-  }).catch(function(){
-    emailOk=false;
-  }).finally(function(){
-
-    /* ====== 第二層：同時開 LINE 通知 ====== */
-    var lineMsg=msg;
-    var lineUrl='https://line.me/R/oaMessage/@moneyshop/?'+encodeURIComponent(lineMsg);
-
-    /* 複製訊息到剪貼簿（備用） */
-    try{navigator.clipboard.writeText(msg);}catch(e){}
-
-    if(emailOk){
-      /* Email 成功 → 提示同時加 LINE */
-      if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> 送出詢問';}
-      var goLine=confirm(
-        '✅ 詢問已寄到店家信箱！\n\n'+
-        '想更快得到回覆？\n按「確定」同時透過 LINE 聯繫\n(LINE ID: moneyshop)'
-      );
-      if(goLine)window.open(lineUrl,'_blank');
-      closeCustomModal();
-    }else{
-      /* Email 失敗 → 走 LINE */
-      if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> 送出詢問';}
-      var goLine2=confirm(
-        '📱 訊息內容已複製！\n\n'+
-        '按「確定」→ 開啟 LINE 傳送給靜月之光\n'+
-        '(LINE ID: moneyshop)\n\n'+
-        '按「取消」→ 手動加 LINE 貼上內容'
-      );
-      if(goLine2)window.open(lineUrl,'_blank');
-      closeCustomModal();
-    }
+  }).then(function(r){return r.json()}).then(function(data){
+    console.log('formsubmit result:',data);
+  }).catch(function(err){
+    console.log('formsubmit error:',err);
   });
+
+  /* ====== LINE 通知（直接開 LINE 對話並預填訊息）====== */
+  /* 先複製到剪貼簿 */
+  try{navigator.clipboard.writeText(fullMsg);}catch(e){
+    try{
+      var ta=document.createElement('textarea');
+      ta.value=fullMsg;
+      ta.style.cssText='position:fixed;left:-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }catch(e2){}
+  }
+
+  /* 延遲一下讓 email 先送，然後導向 LINE */
+  setTimeout(function(){
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> 送出詢問';}
+    document.body.style.overflow='';
+
+    /* 用 LINE URL scheme 開啟對話 */
+    var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    var lineId='moneyshop';
+
+    if(isMobile){
+      /* 手機：直接開 LINE app 的加好友頁面 */
+      window.location.href='https://line.me/R/ti/p/~'+lineId;
+      setTimeout(function(){
+        alert('📋 訊息已複製到剪貼簿！\n\n請在 LINE 對話中「長按貼上」即可送出詢問。\n\n如果 LINE 沒有開啟，請手動搜尋 LINE ID：'+lineId);
+      },1500);
+    }else{
+      /* 桌面：開 LINE 網頁版 */
+      window.open('https://line.me/R/ti/p/~'+lineId,'_blank');
+      alert('📋 訊息已複製到剪貼簿！\n\n請在 LINE 對話中「Ctrl+V 貼上」即可送出詢問。\n\nLINE ID：'+lineId);
+    }
+
+    closeCustomModal();
+  },1200);
 
   return false;
 }
