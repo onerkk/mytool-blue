@@ -1792,7 +1792,7 @@ html{scroll-behavior:smooth}
   <div class="modal-box">
     <button class="modal-close" onclick="closeCustomModal()">&times;</button>
     <h3 class="serif text-gold mb-md"><i class="fas fa-magic"></i> 能量手鏈客製服務</h3>
-    <form id="custom-form" action="https://formsubmit.co/onerkk@gmail.com" method="POST" onsubmit="return prepareCustomSubmit()">
+    <form id="custom-form" action="https://formsubmit.co/0a8ab0ffc0e5c5879693806bc12ed0f7" method="POST" onsubmit="return prepareCustomSubmit()">
       <!-- formsubmit.co config -->
       <input type="hidden" name="_subject" id="cf-subject-hidden" value="【客製詢問】能量手鏈">
       <input type="hidden" name="_captcha" value="false">
@@ -9532,27 +9532,36 @@ function submitCustomForm(e){e.preventDefault()} // deprecated, kept for safety
 
 function prepareCustomSubmit(){
   var name=document.getElementById('cf-name').value.trim();
-  if(!name){alert('\u8ACB\u8F38\u5165\u59D3\u540D');return false;}
+  if(!name){alert('請輸入姓名');return false;}
 
   var btn=document.getElementById('cf-submit-btn');
-
-  /* Gather form data */
   var bday=document.getElementById('cf-bday');
   var question=document.getElementById('cf-question');
   var budget=document.getElementById('cf-budget');
 
+  /* 組合命盤摘要 */
   var summary='';
   if(S.bazi){
-    summary+='\u65E5\u4E3B\uFF1A'+S.bazi.dm+'\uFF08'+S.bazi.dmEl+'\uFF09| \u8EAB'+(S.bazi.strong?'\u5F37':'\u5F31')+'\n';
-    summary+='\u559C\u7528\u795E\uFF1A'+S.bazi.fav.join('\u3001')+'\n';
-    summary+='\u5FCC\u795E\uFF1A'+S.bazi.unfav.join('\u3001')+'\n';
+    summary+='日主：'+S.bazi.dm+'（'+S.bazi.dmEl+'）| 身'+(S.bazi.strong?'強':'弱')+'\n';
+    summary+='喜用神：'+S.bazi.fav.join('、')+'\n';
+    summary+='忌神：'+S.bazi.unfav.join('、')+'\n';
     var curDy=S.bazi.dayun?S.bazi.dayun.find(function(d){return d.isCurrent}):null;
-    if(curDy)summary+='\u7576\u524D\u5927\u904B\uFF1A'+curDy.gz+'\uFF08'+curDy.level+'\uFF09\n';
-    if(S.bazi.shensha&&S.bazi.shensha.length)summary+='\u795E\u7162\uFF1A'+S.bazi.shensha.join('\u3001')+'\n';
-    if(S.tarot&&S.tarot.drawn&&S.tarot.drawn.length)summary+='\u5854\u7F85\uFF1A'+S.tarot.drawn[0].n+'\uFF08'+(S.tarot.drawn[0].isUp?'\u6B63\u4F4D':'\u9006\u4F4D')+'\uFF09\n';
+    if(curDy)summary+='當前大運：'+curDy.gz+'（'+curDy.level+'）\n';
+    if(S.bazi.shensha&&S.bazi.shensha.length)summary+='神煞：'+S.bazi.shensha.join('、')+'\n';
+    if(S.tarot&&S.tarot.drawn&&S.tarot.drawn.length)summary+='塔羅：'+S.tarot.drawn[0].n+'（'+(S.tarot.drawn[0].isUp?'正位':'逆位')+'）\n';
   }
 
-  var payload={
+  /* 組合完整訊息（同時給 email 和 LINE 用） */
+  var msg='【客製詢問】'+name+'\n';
+  msg+='出生日期：'+(bday?bday.value:'')+'\n';
+  msg+='想解決的問題：'+(question?question.value:'')+'\n';
+  msg+='預算範圍：'+(budget?budget.value:'')+'\n';
+  if(summary){msg+='\n--- 命盤分析 ---\n'+summary;}
+
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 送出中...';}
+
+  /* ====== 第一層：formsubmit 寄信到信箱 ====== */
+  var emailPayload={
     name:name,
     _subject:'【客製詢問】'+name+' - 能量手鏈',
     '出生日期':bday?bday.value:'',
@@ -9563,72 +9572,52 @@ function prepareCustomSubmit(){
     _captcha:'false'
   };
 
-  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> \u9001\u51FA\u4E2D...';}
+  var emailOk=false;
 
-  /* Use formsubmit AJAX endpoint (supports CORS, works from file://) */
-  fetch('https://formsubmit.co/ajax/onerkk@gmail.com',{
+  fetch('https://formsubmit.co/ajax/0a8ab0ffc0e5c5879693806bc12ed0f7',{
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify(payload)
+    body:JSON.stringify(emailPayload)
   }).then(function(r){return r.json();}).then(function(data){
-    if(data.success){
-      if(btn)btn.innerHTML='<i class="fas fa-check"></i> 已送出';
-      setTimeout(function(){
-        closeCustomModal();
-        document.getElementById('custom-form').reset();
-        alert('✅ 詢問已送出！我們會盡快透過 LINE 回覆您。');
-      },800);
+    emailOk=data.success;
+  }).catch(function(){
+    emailOk=false;
+  }).finally(function(){
+
+    /* ====== 第二層：同時開 LINE 通知 ====== */
+    var lineMsg=msg;
+    var lineUrl='https://line.me/R/oaMessage/@moneyshop/?'+encodeURIComponent(lineMsg);
+
+    /* 複製訊息到剪貼簿（備用） */
+    try{navigator.clipboard.writeText(msg);}catch(e){}
+
+    if(emailOk){
+      /* Email 成功 → 提示同時加 LINE */
+      if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> 送出詢問';}
+      var goLine=confirm(
+        '✅ 詢問已寄到店家信箱！\n\n'+
+        '想更快得到回覆？\n按「確定」同時透過 LINE 聯繫\n(LINE ID: moneyshop)'
+      );
+      if(goLine)window.open(lineUrl,'_blank');
+      closeCustomModal();
     }else{
-      /* formsubmit returned error - use LINE fallback */
-      document.body.style.overflow='';
-      _customLineFallback(name,payload);
+      /* Email 失敗 → 走 LINE */
+      if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> 送出詢問';}
+      var goLine2=confirm(
+        '📱 訊息內容已複製！\n\n'+
+        '按「確定」→ 開啟 LINE 傳送給靜月之光\n'+
+        '(LINE ID: moneyshop)\n\n'+
+        '按「取消」→ 手動加 LINE 貼上內容'
+      );
+      if(goLine2)window.open(lineUrl,'_blank');
+      closeCustomModal();
     }
-  }).catch(function(err){
-    console.log('formsubmit error:',err);
-    /* Network error - use LINE fallback */
-    document.body.style.overflow='';
-    _customLineFallback(name,payload);
   });
 
-  return false; /* always prevent default form submit */
+  return false;
 }
 
-function _customLineFallback(name,payload){
-  var btn=document.getElementById('cf-submit-btn');
-  
-  /* 組合訊息內容 */
-  var msg='【客製詢問】\n';
-  msg+='姓名：'+name+'\n';
-  msg+='出生日期：'+(payload['出生日期']||'')+'\n';
-  msg+='問題：'+(payload['問題描述']||'')+'\n';
-  msg+='預算：'+(payload['預算範圍']||'')+'\n\n';
-  msg+='--- 分析摘要 ---\n'+(payload['分析摘要']||'');
-  
-  /* 嘗試開啟 LINE */
-  var lineUrl='https://line.me/R/oaMessage/@moneyshop/?'+encodeURIComponent(msg);
-  
-  /* 同時複製內容到剪貼簿 */
-  try{
-    navigator.clipboard.writeText(msg);
-  }catch(e){}
-  
-  /* 顯示引導對話框 */
-  var userChoice=confirm(
-    '📱 詢問內容已複製！\n\n'+
-    '按「確定」→ 開啟 LINE 傳送給靜月之光\n'+
-    '(LINE ID: moneyshop)\n\n'+
-    '按「取消」→ 手動加 LINE 貼上內容'
-  );
-  
-  if(userChoice){
-    window.open(lineUrl,'_blank');
-  }
-  
-  if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> 送出詢問';}
-  document.body.style.overflow='';
-}
-
-function copyCfContent(){} // no longer needed but kept for safety
+function copyCfContent(){} // kept for safety
 
 function toggleFab(){
   document.getElementById('fab-menu').classList.toggle('hidden');
