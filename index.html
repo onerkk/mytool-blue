@@ -461,6 +461,47 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
   .dim-pane{display:block!important;margin-bottom:1rem}
   .dim-tabs{display:none!important}
 }
+/* 能量行事曆 + 靈氣濾鏡 */
+.cal30-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:var(--sp-md) 0}
+.cal30-hdr{text-align:center;font-size:.7rem;font-weight:600;color:var(--c-text-muted);padding:4px 0}
+.cal30-day{text-align:center;font-size:.75rem;padding:5px 2px;border-radius:6px;border:1px solid transparent;cursor:pointer;transition:all var(--t-fast);min-height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.cal30-day.empty{border:none;pointer-events:none}
+.cal30-day .cd-num{font-weight:600;line-height:1;font-size:.78rem}
+.cal30-day .cd-icon{font-size:.6rem;line-height:1}
+.cal30-day.lv5{border-color:rgba(74,222,128,.45);background:rgba(74,222,128,.12);color:#4ade80}
+.cal30-day.lv4{border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.08);color:#93bbfd}
+.cal30-day.lv3{border-color:rgba(212,175,55,.3);background:rgba(212,175,55,.06);color:var(--c-gold)}
+.cal30-day.lv2{border-color:var(--c-border);background:rgba(255,255,255,.03);color:var(--c-text-dim)}
+.cal30-day.lv1{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.05);color:#fbbf24}
+.cal30-day.lv0{border-color:rgba(248,113,113,.25);background:rgba(248,113,113,.06);color:#f87171}
+.cal30-day.lvN{border-color:rgba(220,50,50,.35);background:rgba(220,50,50,.1);color:#ef4444}
+.cal30-day.is-today{box-shadow:0 0 0 2px var(--c-gold);border-color:var(--c-gold)}
+.cal30-legend{display:flex;flex-wrap:wrap;gap:var(--sp-xs) var(--sp-sm);margin:var(--sp-sm) 0;padding:var(--sp-xs) var(--sp-sm);background:rgba(0,0,0,.2);border-radius:var(--r-sm);font-size:.65rem;color:var(--c-text-muted)}
+.cal30-legend span{display:flex;align-items:center;gap:3px}
+.cal30-legend i{width:8px;height:8px;display:inline-block;border-radius:2px}
+.cal30-mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-xs)}
+.cal30-mnav button{background:none;border:1px solid var(--c-border);color:var(--c-gold);width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all var(--t-fast)}
+.cal30-mnav button:hover{border-color:var(--c-border-hi);background:rgba(212,175,55,.08)}
+.cal30-mt{font-family:var(--f-display);font-weight:700;font-size:.95rem;color:var(--c-gold)}
+.cal30-det{margin:var(--sp-md) 0;max-height:300px;overflow-y:auto}
+.cal30-di{display:flex;gap:var(--sp-sm);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:flex-start;font-size:.8rem}
+.cal30-di:last-child{border-bottom:none}
+.cal30-sts{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-xs);margin:var(--sp-sm) 0}
+.cal30-st{text-align:center;padding:6px;background:rgba(0,0,0,.2);border-radius:var(--r-sm);border:1px solid var(--c-border)}
+.cal30-sn{font-family:var(--f-display);font-weight:900;font-size:1.1rem;line-height:1.2}
+.cal30-sl{font-size:.65rem;color:var(--c-text-muted);margin-top:1px}
+.cal30-ct{display:inline-flex;align-items:center;gap:3px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);border-radius:var(--r-sm);padding:1px 5px;font-size:.7rem;color:var(--c-gold);margin-top:2px}
+.aura-up{border:2px dashed rgba(212,175,55,.25);border-radius:var(--r-lg);padding:var(--sp-lg);text-align:center;cursor:pointer;transition:all var(--t-smooth)}
+.aura-up:hover{border-color:var(--c-gold);background:rgba(212,175,55,.03)}
+.aura-cw{position:relative;margin:var(--sp-md) 0;text-align:center}
+.aura-cw canvas{max-width:100%;border-radius:var(--r-md);border:2px solid var(--c-border-hi);box-shadow:0 8px 40px rgba(0,0,0,.4)}
+.aura-nfo{text-align:center;margin:var(--sp-md) 0;padding:var(--sp-md);border:1px solid var(--c-border-hi);border-radius:var(--r-md);background:linear-gradient(180deg,rgba(212,175,55,.04),rgba(139,0,0,.04))}
+.aura-orb{width:56px;height:56px;border-radius:50%;margin:0 auto var(--sp-sm);animation:aGlow 2s ease-in-out infinite alternate}
+@keyframes aGlow{from{transform:scale(1);filter:brightness(1)}to{transform:scale(1.06);filter:brightness(1.15)}}
+.aura-cn{font-family:var(--f-display);font-weight:900;font-size:1.2rem}
+.aura-cd{font-size:.82rem;color:var(--c-text-dim);margin-top:2px}
+.aura-sh{background:rgba(212,175,55,.04);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:var(--sp-sm) var(--sp-md);margin-top:var(--sp-sm);text-align:center;font-size:.78rem;color:var(--c-text-dim)}
+.aura-sh strong{color:var(--c-gold)}
 /* =============================================================
    UI POLISH v2 — 全站視覺升級
    ============================================================= */
@@ -1629,6 +1670,8 @@ html{scroll-behavior:smooth}
     <button class="nav-extra-tab" data-target="sec-lucky">🍀 今日幸運</button>
     <button class="nav-extra-tab" data-target="sec-encyclopedia">📖 水晶百科</button>
     <button class="nav-extra-tab" data-target="sec-achievements">🏆 成就徽章</button>
+    <button class="nav-extra-tab" data-target="sec-calendar30">&#x1F4C5; 能量行事曆</button>
+    <button class="nav-extra-tab" data-target="sec-aura-filter">&#x1F52E; 靈氣濾鏡</button>
     <button class="nav-extra-tab" data-target="sec-reviews">💬 使用者好評</button>
   </div>
 
@@ -1707,6 +1750,25 @@ html{scroll-behavior:smooth}
   </div>
 
   <!-- 好評輪播 -->
+  
+  <!-- 能量行事曆 -->
+  <div class="extra-section hidden" id="sec-calendar30">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-calendar-days"></i> 能量行事曆</div>
+      <p class="text-sm text-dim mb-sm">依八字日主&#x00D7;喜忌神&#x00D7;每日干支&#x00D7;姓名學交叉推算 30 天吉凶</p>
+      <div id="cal30-box"></div>
+    </div>
+  </div>
+
+  <!-- 靈氣濾鏡 -->
+  <div class="extra-section hidden" id="sec-aura-filter">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-wand-magic-sparkles"></i> 靈氣濾鏡</div>
+      <p class="text-sm text-dim mb-sm">依八字五行缺失自動套用能量光暈</p>
+      <div id="aura-box"></div>
+    </div>
+  </div>
+
   <div class="extra-section hidden" id="sec-reviews">
     <div class="card">
       <div class="card-title"><i class="fas fa-comments"></i> 買家真實回饋</div>
@@ -9469,37 +9531,104 @@ document.addEventListener('click',function(e){
 function submitCustomForm(e){e.preventDefault()} // deprecated, kept for safety
 
 function prepareCustomSubmit(){
-  const name=document.getElementById('cf-name').value.trim();
-  if(!name)return false;
+  var name=document.getElementById('cf-name').value.trim();
+  if(!name){alert('\u8ACB\u8F38\u5165\u59D3\u540D');return false;}
 
-  // Set subject with name
-  document.getElementById('cf-subject-hidden').value='【客製詢問】'+name+' - 能量手鏈';
+  var btn=document.getElementById('cf-submit-btn');
 
-  // Set _next to current page so user returns after submit
-  document.getElementById('cf-next-url').value=window.location.href;
+  /* Gather form data */
+  var gender=document.getElementById('cf-gender');
+  var bdate=document.getElementById('cf-bdate');
+  var btime=document.getElementById('cf-btime');
+  var userEmail=document.getElementById('cf-email');
+  var question=document.getElementById('cf-question');
 
-  // Build analysis summary
-  let summary='';
+  var summary='';
   if(S.bazi){
-    summary+='日主：'+S.bazi.dm+'（'+S.bazi.dmEl+'）| 身'+(S.bazi.strong?'強':'弱')+'\n';
-    summary+='喜用神：'+S.bazi.fav.join('、')+'\n';
-    summary+='忌神：'+S.bazi.unfav.join('、')+'\n';
-    const curDy=S.bazi.dayun.find(d=>d.isCurrent);
-    if(curDy)summary+='當前大運：'+curDy.gz+'（'+curDy.level+'）\n';
-    if(S.bazi.shensha.length)summary+='神煞：'+S.bazi.shensha.join('、')+'\n';
-    if(S.meihua)summary+='梅花：'+S.meihua.ben.n+'，體用'+S.meihua.ty.r+'（'+S.meihua.ty.f+'）\n';
-    if(S.tarot.drawn.length)summary+='塔羅核心牌：'+S.tarot.drawn[0].n+'（'+(S.tarot.drawn[0].isUp?'正位':'逆位')+'）\n';
-    const prob=document.getElementById('r-vprob');
-    if(prob&&prob.textContent!=='0%')summary+='綜合機率：'+prob.textContent+'\n';
+    summary+='\u65E5\u4E3B\uFF1A'+S.bazi.dm+'\uFF08'+S.bazi.dmEl+'\uFF09| \u8EAB'+(S.bazi.strong?'\u5F37':'\u5F31')+'\n';
+    summary+='\u559C\u7528\u795E\uFF1A'+S.bazi.fav.join('\u3001')+'\n';
+    summary+='\u5FCC\u795E\uFF1A'+S.bazi.unfav.join('\u3001')+'\n';
+    var curDy=S.bazi.dayun?S.bazi.dayun.find(function(d){return d.isCurrent}):null;
+    if(curDy)summary+='\u7576\u524D\u5927\u904B\uFF1A'+curDy.gz+'\uFF08'+curDy.level+'\uFF09\n';
+    if(S.bazi.shensha&&S.bazi.shensha.length)summary+='\u795E\u7162\uFF1A'+S.bazi.shensha.join('\u3001')+'\n';
+    if(S.tarot&&S.tarot.drawn&&S.tarot.drawn.length)summary+='\u5854\u7F85\uFF1A'+S.tarot.drawn[0].n+'\uFF08'+(S.tarot.drawn[0].isUp?'\u6B63\u4F4D':'\u9006\u4F4D')+'\uFF09\n';
   }
-  document.getElementById('cf-analysis-hidden').value=summary||'（使用者未完成占卜分析）';
 
-  // Change button to loading
-  const btn=document.getElementById('cf-submit-btn');
-  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 送出中...';
-  btn.disabled=true;
+  var payload={
+    name:name,
+    _subject:'\u3010\u5BA2\u88FD\u8A62\u554F\u3011'+name+' - \u80FD\u91CF\u624B\u93C8',
+    '\u6027\u5225':gender?gender.value:'',
+    '\u751F\u65E5':bdate?bdate.value:'',
+    '\u51FA\u751F\u6642\u9593':btime?btime.value:'',
+    email:userEmail?userEmail.value:'',
+    '\u554F\u984C\u63CF\u8FF0':question?question.value:'',
+    '\u5206\u6790\u6458\u8981':summary||'\uFF08\u672A\u5B8C\u6210\u5206\u6790\uFF09',
+    _template:'table',
+    _captcha:'false'
+  };
 
-  return true; // allow form submission to formsubmit.co
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> \u9001\u51FA\u4E2D...';}
+
+  /* Use formsubmit AJAX endpoint (supports CORS, works from file://) */
+  fetch('https://formsubmit.co/ajax/onerkk@gmail.com',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(function(r){return r.json();}).then(function(data){
+    if(data.success){
+      if(btn)btn.innerHTML='<i class="fas fa-check"></i> \u5DF2\u9001\u51FA';
+      setTimeout(function(){
+        var modal=document.getElementById('custom-modal');
+        if(modal)modal.classList.add('hidden');
+        var conf=document.getElementById('custom-confirm-modal');
+        if(conf)conf.classList.remove('hidden');
+      },800);
+    }else{
+      /* formsubmit returned error - maybe needs activation */
+      _customMailtoFallback(name,payload);
+    }
+  }).catch(function(err){
+    console.log('formsubmit error:',err);
+    /* Network error - use mailto fallback */
+    _customMailtoFallback(name,payload);
+  });
+
+  return false; /* always prevent default form submit */
+}
+
+function _customMailtoFallback(name,payload){
+  var body='\u59D3\u540D\uFF1A'+name+'\n';
+  body+='\u6027\u5225\uFF1A'+(payload['\u6027\u5225']||'')+'\n';
+  body+='\u751F\u65E5\uFF1A'+(payload['\u751F\u65E5']||'')+'\n';
+  body+='\u51FA\u751F\u6642\u9593\uFF1A'+(payload['\u51FA\u751F\u6642\u9593']||'')+'\n';
+  body+='Email\uFF1A'+(payload.email||'')+'\n';
+  body+='\u554F\u984C\uFF1A'+(payload['\u554F\u984C\u63CF\u8FF0']||'')+'\n\n';
+  body+='--- \u5206\u6790\u6458\u8981 ---\n'+(payload['\u5206\u6790\u6458\u8981']||'');
+  var subject=payload._subject||'\u5BA2\u88FD\u8A62\u554F';
+  var mailto='mailto:onerkk@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+
+  var btn=document.getElementById('cf-submit-btn');
+
+  /* Try opening mailto */
+  var w=window.open(mailto,'_blank');
+
+  /* Also show a manual copy dialog in case mailto doesn't work */
+  setTimeout(function(){
+    var copyText='\u6536\u4EF6\u4EBA\uFF1Aonerkk@gmail.com\n\u4E3B\u65E8\uFF1A'+subject+'\n\n'+body;
+    if(confirm('\u5982\u679C\u90F5\u4EF6\u6C92\u6709\u81EA\u52D5\u958B\u555F\uFF0C\u8ACB\u6309\u300C\u78BA\u5B9A\u300D\u8907\u88FD\u5167\u5BB9\u5F8C\u624B\u52D5\u5BC4\u4FE1\u5230 onerkk@gmail.com')){
+      try{
+        navigator.clipboard.writeText(copyText);
+        alert('\u5DF2\u8907\u88FD\uFF01\u8ACB\u958B\u555F\u4F60\u7684\u4FE1\u7BB1\u8CBC\u4E0A\u5167\u5BB9\u5BC4\u5230 onerkk@gmail.com');
+      }catch(e){
+        var ta=document.createElement('textarea');ta.value=copyText;ta.style.cssText='position:fixed;left:0;top:0;width:100%;height:200px;z-index:99999';
+        document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');
+        alert('\u5DF2\u8907\u88FD\uFF01\u8ACB\u958B\u555F\u4F60\u7684\u4FE1\u7BB1\u8CBC\u4E0A\u5167\u5BB9\u5BC4\u5230 onerkk@gmail.com');
+        document.body.removeChild(ta);
+      }
+    }
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> \u9001\u51FA\u8A62\u554F';}
+  },500);
 }
 
 function copyCfContent(){} // no longer needed but kept for safety
@@ -10074,25 +10203,15 @@ function showShareHint(msg){
 }
 
 function showCopyShareDialog(text){
-  // Step 1: Copy to clipboard
-  navigator.clipboard.writeText(text).then(()=>{
-    // Step 2: Ask user to confirm they've pasted & shared
-    const confirmed = confirm(
-      '分享連結已複製到剪貼簿！✨\n\n' +
-      '請貼到 LINE / IG / FB 分享給朋友。\n\n' +
-      '已經分享了嗎？按「確定」解鎖再測一次。'
-    );
-    if(confirmed){
-      hasShared=true;
-      updateShareGate();
-    } else {
-      showShareHint('把連結貼給朋友後，再按一次分享按鈕即可解鎖 ✨');
-    }
-  }).catch(()=>{
-    prompt('複製以下連結分享給朋友：', text);
-    // Don't auto-unlock on prompt fallback either
-    showShareHint('分享給朋友後，再按一次即可解鎖 ✨');
-  });
+  function _doCopy(t){try{var ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}catch(e){}}
+  function _afterCopy(){
+    var confirmed=confirm('分享連結已複製到剪貼簿！✨\n\n請貼到 LINE / IG / FB 分享給朋友。\n\n已經分享了嗎？按「確定」解鎖再測一次。');
+    if(confirmed){hasShared=true;updateShareGate();}
+    else{showShareHint('💡 分享連結給朋友後即可解鎖，再試一次吧！');}
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(_afterCopy).catch(function(){_doCopy(text);_afterCopy();});
+  }else{_doCopy(text);_afterCopy();}
 }
 
 function fallbackCopyShare(text){
@@ -10534,20 +10653,26 @@ shareToUnlock = function(){
       }
     });
   }else{
-    /* 桌面版：直接複製連結 + 一步確認 */
-    navigator.clipboard.writeText(text+url).then(()=>{
-      const confirmed = confirm(
-        '分享連結已複製到剪貼簿！✨\n\n' +
-        '請貼到 LINE / IG / FB 分享給朋友。\n\n' +
-        '已經分享了嗎？按「確定」解鎖折扣碼＋趣味功能。'
-      );
-      if(confirmed){
-        hasShared=true; updateShareGate(); showDiscountAfterShare();
-        if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
-      }
-    }).catch(()=>{
-      prompt('複製以下連結分享給朋友：', text+url);
-    });
+    /* 桌面版：複製連結 + 確認 (多重 fallback) */
+    var _shareText=text+url;
+    function _doShareOK(){
+      hasShared=true; updateShareGate(); showDiscountAfterShare();
+      if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
+    }
+    function _doShareConfirm(){
+      var ok=confirm('分享連結已複製到剪貼簿！✨\n\n請貼到 LINE / IG / FB 分享給朋友。\n\n已經分享了嗎？按「確定」解鎖折扣碼＋趣味功能。');
+      if(ok) _doShareOK();
+    }
+    function _copyFallback(){
+      var ta=document.createElement('textarea');ta.value=_shareText;ta.style.cssText='position:fixed;left:-9999px';
+      document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);
+      _doShareConfirm();
+    }
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(_shareText).then(_doShareConfirm).catch(_copyFallback);
+      }else{_copyFallback();}
+    }catch(e){prompt('複製以下連結分享給朋友：',_shareText);_doShareOK();}
   }
 };
 
@@ -12096,6 +12221,665 @@ document.addEventListener('DOMContentLoaded', function(){
   renderZodiacMatch();
   generateLuckyInfo();
 });
+
+/* =============================================================
+   FEATURE: 能量行事曆 + 靈氣濾鏡 v2
+   八字×姓名學交叉驗證
+   ============================================================= */
+
+/* ── 任意日期干支計算 ── */
+function getDateGZ(y,m,d){
+  var base=new Date(1900,0,1),tgt=new Date(y,m-1,d);
+  var diff=Math.floor((tgt-base)/864e5);
+  var dc=((diff+10)%60+60)%60;
+  var gi=dc%10,zi=dc%12;
+  return{gan:TG[gi],zhi:DZ[zi],el:WX_G[TG[gi]],gi:gi,zi:zi};
+}
+
+/* ── 每日運勢計算（八字×姓名學交叉驗證）── */
+function computeDateFortune(bazi,dateObj){
+  var y=dateObj.getFullYear(),m=dateObj.getMonth()+1,d=dateObj.getDate();
+  var gz=getDateGZ(y,m,d);
+  var dm=bazi.dm,dmEl=bazi.dmEl;
+  var tEl=gz.el,tG=gz.gan,tZ=gz.zhi;
+  var score=50;
+
+  // 1. 十神
+  var god=tenGod(dm,tG);
+  var gs={'比肩':8,'劫財':3,'食神':10,'傷官':2,'偏財':7,'正財':12,'七殺':-8,'正官':5,'偏印':6,'正印':10};
+  score+=(gs[god]||0);
+
+  // 2. 喜忌神
+  if(bazi.fav.indexOf(tEl)>=0) score+=15;
+  if(bazi.unfav.indexOf(tEl)>=0) score-=15;
+
+  // 3. 地支藏干
+  var cg=CG[tZ]||[];
+  cg.forEach(function(g){
+    if(bazi.fav.indexOf(WX_G[g])>=0) score+=4;
+    if(bazi.unfav.indexOf(WX_G[g])>=0) score-=4;
+  });
+
+  // 4. 沖合日支
+  var dZ=bazi.pillars.day.zhi;
+  var isChong=LIU_CHONG[tZ]===dZ;
+  var isHe=LIU_HE[tZ]===dZ;
+  if(isChong) score-=12;
+  if(isHe) score+=10;
+
+  // 5. 十二長生
+  var cs=changSheng(dm,tZ);
+  var csS={'長生':10,'沐浴':2,'冠帶':6,'臨官':8,'帝旺':12,'衰':-2,'病':-5,'死':-8,'墓':-6,'絕':-10,'胎':1,'養':3};
+  score+=(csS[cs]||0);
+
+  // 6. 大運
+  var cd=bazi.dayun?bazi.dayun.find(function(x){return x.isCurrent}):null;
+  if(cd){
+    if(bazi.fav.indexOf(cd.el)>=0) score+=5;
+    if(bazi.unfav.indexOf(cd.el)>=0) score-=5;
+  }
+
+  // 7. 姓名學交叉：生肖派結果加減
+  if(typeof S!=='undefined'&&S.zodiacNameResult){
+    var zn=S.zodiacNameResult;
+    if(zn.overallLevel==='大吉') score+=3;
+    else if(zn.overallLevel==='吉') score+=1;
+    else if(zn.overallLevel&&zn.overallLevel.indexOf('凶')>=0) score-=3;
+    // 犧牲格特殊扣分
+    if(zn.isSacrifice) score-=2;
+  }
+
+  score=Math.max(10,Math.min(95,score));
+
+  // 籤等
+  var sign,icon,cls,tip;
+  if(score>=85){sign='上上籤';icon='\u{1F31F}';cls='lv5';tip='諸事皆宜，天時與命盤高度契合';}
+  else if(score>=75){sign='大吉';icon='\u{1F34A}';cls='lv4';tip='運勢旺盛，適合重大決定';}
+  else if(score>=65){sign='上吉';icon='\u2728';cls='lv3';tip='貴人星動，積極推進事務';}
+  else if(score>=55){sign='中吉';icon='\u{1F319}';cls='lv2';tip='穩中求進，適合規劃學習';}
+  else if(score>=45){sign='小吉';icon='\u26C5';cls='lv2';tip='小有進展，耐心等待時機';}
+  else if(score>=35){sign='中平';icon='\u2601';cls='lv1';tip='宜守不宜攻，韜光養晦';}
+  else if(score>=25){sign='小凶';icon='\u{1F30A}';cls='lv0';tip='注意人際摩擦，凡事留退路';}
+  else{sign='凶';icon='\u26A1';cls='lvN';tip='沖煞之日，宜靜不宜動';}
+
+  // 水晶推薦
+  var favEl=bazi.fav[0]||dmEl;
+  var cMap={'金':['鈦晶','白水晶','銀髮晶'],'木':['綠幽靈','東陵玉','綠碧璽'],'水':['海藍寶','月光石','拉長石'],'火':['紅瑪瑙','紫水晶','太陽石'],'土':['黃水晶','虎眼石','茶晶']};
+  var cList=cMap[favEl]||cMap['土'];
+  var crystal=cList[(d+m)%cList.length];
+
+  return{date:dateObj,ds:dateObj.toISOString().slice(0,10),score:score,sign:sign,icon:icon,cls:cls,tip:tip,crystal:crystal,god:god,cs:cs,gz:tG+tZ,tEl:tEl,favEl:favEl,isChong:isChong,isHe:isHe};
+}
+
+/* ── 行事曆渲染 ── */
+var cal30Data=[];
+var cal30VM=0;
+
+function renderCal30(){
+  var box=document.getElementById('cal30-box');
+  if(!box)return;
+  if(!S.bazi){
+    box.innerHTML='<div class="text-center" style="padding:var(--sp-lg)"><p class="text-dim text-sm mb-md">\u9700\u8981\u5148\u5B8C\u6210\u57FA\u672C\u8CC7\u6599\uFF08\u751F\u65E5\u6642\u8FB0\uFF09</p><button class="btn btn-gold btn-sm" onclick="goStep(0)"><i class="fas fa-pen"></i> \u524D\u5F80\u586B\u5BEB</button></div>';
+    return;
+  }
+  cal30Data=[];
+  var today=new Date();today.setHours(0,0,0,0);
+  for(var i=0;i<60;i++){
+    var dd=new Date(today);dd.setDate(dd.getDate()+i);
+    cal30Data.push(computeDateFortune(S.bazi,dd));
+  }
+  var f30=cal30Data.slice(0,30);
+  var ji=0,ping=0,xiong=0;
+  f30.forEach(function(x){if(x.score>=65)ji++;else if(x.score>=35)ping++;else xiong++;});
+
+  var znTag='';
+  if(S.zodiacNameResult){
+    var zn=S.zodiacNameResult;
+    znTag='<p class="text-xs text-muted mt-xs">\u59D3\u540D\u5B78\u4EA4\u53C9\uFF1A'+zn.emoji+zn.zodiac+'\u5E74\u751F\u4EBA\u300C'+zn.name+'\u300D\u5224\u5B9A\u3010'+zn.overallLevel+'\u3011\uFF0C\u5DF2\u7D0D\u5165\u6BCF\u65E5\u8A08\u7B97</p>';
+  }
+
+  box.innerHTML='<div class="cal30-sts"><div class="cal30-st"><div class="cal30-sn" style="color:#4ade80">'+ji+'</div><div class="cal30-sl">\u5409\u65E5\uFF08\u9069\u5408\u884C\u52D5\uFF09</div></div><div class="cal30-st"><div class="cal30-sn" style="color:var(--c-text-dim)">'+ping+'</div><div class="cal30-sl">\u5E73\u7A69\u65E5</div></div><div class="cal30-st"><div class="cal30-sn" style="color:#f87171">'+xiong+'</div><div class="cal30-sl">\u4F4E\u8C37\u4F11\u990A\u65E5</div></div></div>'+znTag+'<div class="cal30-mnav"><button onclick="cal30CM(-1)" id="cal30p" style="visibility:hidden"><i class="fas fa-chevron-left"></i></button><div class="cal30-mt" id="cal30t"></div><button onclick="cal30CM(1)" id="cal30n"><i class="fas fa-chevron-right"></i></button></div><div class="cal30-grid" id="cal30g"></div><div class="cal30-legend"><span><i style="background:rgba(74,222,128,.5)"></i>\u5927\u5409</span><span><i style="background:rgba(96,165,250,.4)"></i>\u4E0A\u5409</span><span><i style="background:rgba(212,175,55,.3)"></i>\u4E2D\u5409</span><span><i style="background:rgba(255,255,255,.1)"></i>\u5C0F\u5409/\u4E2D\u5E73</span><span><i style="background:rgba(248,113,113,.3)"></i>\u5C0F\u51F6</span><span><i style="background:rgba(220,50,50,.4)"></i>\u51F6</span></div><div style="margin-top:var(--sp-md)"><div class="card-title" style="font-size:.9rem"><i class="fas fa-list"></i> \u6BCF\u65E5\u8A73\u60C5</div><div class="cal30-det" id="cal30d"></div></div><div style="display:flex;flex-direction:column;gap:var(--sp-xs);margin-top:var(--sp-md)"><button class="btn btn-gold btn-sm" onclick="dlCal30(\'all\')"><i class="fas fa-calendar-plus"></i> \u4E0B\u8F09\u5B8C\u6574\u884C\u4E8B\u66C6\uFF08.ics\uFF09</button><button class="btn btn-outline btn-sm" onclick="dlCal30(\'hl\')"><i class="fas fa-star"></i> \u53EA\u4E0B\u8F09\u5409\u65E5\uFF0B\u51F6\u65E5\u63D0\u9192</button></div><p class="text-xs text-muted mt-sm text-center">\u4E0B\u8F09 .ics \u6A94\u5373\u53EF\u532F\u5165 iPhone / Google / Outlook</p>';
+
+  cal30VM=0;
+  renderCal30G();
+  renderCal30D();
+}
+
+function renderCal30G(){
+  var today=new Date();today.setHours(0,0,0,0);
+  var bm=new Date(today.getFullYear(),today.getMonth()+cal30VM,1);
+  var yr=bm.getFullYear(),mo=bm.getMonth();
+  var te=document.getElementById('cal30t');
+  if(te)te.textContent=yr+'\u5E74 '+(mo+1)+'\u6708';
+  var g=document.getElementById('cal30g');
+  if(!g)return;
+  g.innerHTML='';
+  ['\u65E5','\u4E00','\u4E8C','\u4E09','\u56DB','\u4E94','\u516D'].forEach(function(n){
+    var e=document.createElement('div');e.className='cal30-hdr';e.textContent=n;g.appendChild(e);
+  });
+  var fd=bm.getDay();
+  for(var i=0;i<fd;i++){var e=document.createElement('div');e.className='cal30-day empty';g.appendChild(e);}
+  var dim=new Date(yr,mo+1,0).getDate();
+  var ts=today.toISOString().slice(0,10);
+  for(var d=1;d<=dim;d++){
+    var dObj=new Date(yr,mo,d);
+    var ds=dObj.toISOString().slice(0,10);
+    var data=null;
+    for(var j=0;j<cal30Data.length;j++){if(cal30Data[j].ds===ds){data=cal30Data[j];break;}}
+    var e=document.createElement('div');
+    e.className='cal30-day';
+    if(data){
+      e.classList.add(data.cls);
+      e.innerHTML='<span class="cd-num">'+d+'</span><span class="cd-icon">'+data.icon+'</span>';
+      e.title=data.sign+' '+data.tip+' \uFF5C\u{1F48E} '+data.crystal;
+    }else{
+      e.innerHTML='<span class="cd-num" style="color:var(--c-text-muted)">'+d+'</span>';
+    }
+    if(ds===ts)e.classList.add('is-today');
+    g.appendChild(e);
+  }
+  var pb=document.getElementById('cal30p'),nb=document.getElementById('cal30n');
+  if(pb)pb.style.visibility=cal30VM>0?'visible':'hidden';
+  if(nb)nb.style.visibility=cal30VM<1?'visible':'hidden';
+}
+
+function cal30CM(dir){cal30VM=Math.max(0,Math.min(1,cal30VM+dir));renderCal30G();}
+
+function renderCal30D(){
+  var list=document.getElementById('cal30d');
+  if(!list)return;
+  var f30=cal30Data.slice(0,30);
+  var html='';
+  var wds=['\u65E5','\u4E00','\u4E8C','\u4E09','\u56DB','\u4E94','\u516D'];
+  f30.forEach(function(day){
+    var d=day.date;
+    var wd=wds[d.getDay()];
+    var ct=day.isChong?' <span style="color:#f87171;font-size:.7rem">\u26A0\u6C96</span>':'';
+    var ht=day.isHe?' <span style="color:#4ade80;font-size:.7rem">\u2713\u5408</span>':'';
+    html+='<div class="cal30-di"><div style="min-width:48px;font-weight:700;color:var(--c-text-dim);font-size:.78rem">'+(d.getMonth()+1)+'/'+d.getDate()+'<br><span style="font-size:.65rem;color:var(--c-text-muted)">\u9031'+wd+'</span></div><div style="min-width:16px;text-align:center">'+day.icon+'</div><div style="flex:1;line-height:1.5"><strong style="font-size:.78rem">'+day.sign+'</strong> <span class="text-xs text-muted">'+day.gz+'('+day.tEl+')\u00B7'+day.god+'</span>'+ct+ht+'<br><span style="color:var(--c-text-dim);font-size:.75rem">'+day.tip+'</span><br><span class="cal30-ct"><i class="fas fa-gem" style="font-size:.6rem"></i> '+day.crystal+'</span></div></div>';
+  });
+  list.innerHTML=html;
+}
+
+function fmtICS(d){return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
+
+function dlCal30(mode){
+  if(!cal30Data.length)return;
+  var days=cal30Data.slice(0,30);
+  if(mode==='hl')days=days.filter(function(x){return x.score>=65||x.score<35;});
+  var dm=S.bazi?S.bazi.dm:'';
+  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//JingYue//Cal30//ZH','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:\u975C\u6708\u4E4B\u5149 \u80FD\u91CF\u884C\u4E8B\u66C6','X-WR-TIMEZONE:Asia/Taipei'];
+  days.forEach(function(day){
+    var ds=fmtICS(day.date);
+    lines.push('BEGIN:VEVENT','UID:jy-'+ds+'-'+dm+'@jingyue.com','DTSTART;VALUE=DATE:'+ds,'DTEND;VALUE=DATE:'+ds,'SUMMARY:'+day.icon+' '+day.sign+'\uFF08'+day.gz+'\uFF09','DESCRIPTION:'+day.tip+'\\n\u{1F48E} \u5EFA\u8B70\u914D\u6234\uFF1A'+day.crystal+'\\n\u5341\u795E\uFF1A'+day.god+'\\n\\n\u2726 \u975C\u6708\u4E4B\u5149\u80FD\u91CF\u884C\u4E8B\u66C6 \u2726','TRANSP:TRANSPARENT','BEGIN:VALARM','TRIGGER:-PT0M','ACTION:DISPLAY','DESCRIPTION:'+day.icon+' '+day.sign+' \u5EFA\u8B70\u914D\u6234\uFF1A'+day.crystal,'END:VALARM','END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  var blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='\u975C\u6708\u4E4B\u5149_\u884C\u4E8B\u66C6_'+dm+'.ics';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+/* ── 靈氣濾鏡 ── */
+/* ═══════════════════════════════════════════════════════
+   靈氣濾鏡 v4 — 七脈輪×八字×姓名學 當日能量分析
+   ═══════════════════════════════════════════════════════ */
+
+/*
+  核心邏輯：
+  1. 算出當日干支的五行
+  2. 結合八字日主、喜忌神、十神、沖合、姓名學
+  3. 計算五行能量分佈（金木水火土各多少%）
+  4. 最強五行 → 對應脈輪（五行→脈輪映射）
+  5. 水晶推薦依「喜用神」，絕不推忌神的水晶
+*/
+
+/* 七脈輪資料（真實脈輪體系） */
+var CHAKRA_DATA={
+  root:{name:'\u6D77\u5E95\u8F2A',en:'Root Chakra',color:'#dc2626',glow:'rgba(220,38,38,',
+    body:'\u9AA8\u76C6\u5E95\u90E8\u3001\u96D9\u817F\u3001\u8170\u690E',
+    theme:'\u5B89\u5168\u611F\u3001\u751F\u5B58\u672C\u80FD\u3001\u8173\u8E0F\u5BE6\u5730',
+    balanced:'\u5145\u6EFF\u6D3B\u529B\u3001\u611F\u5230\u5B89\u7A69\u8E0F\u5BE6\uFF0C\u751F\u547D\u529B\u65FA\u76DB',
+    imbalanced:'\u7126\u616E\u4E0D\u5B89\u3001\u7F3A\u4E4F\u5B89\u5168\u611F\uFF0C\u5BB9\u6613\u75B2\u52DE'},
+  sacral:{name:'\u81CD\u9AA8\u8F2A',en:'Sacral Chakra',color:'#ea580c',glow:'rgba(234,88,12,',
+    body:'\u4E0B\u8179\u90E8\u3001\u751F\u6B96\u7CFB\u7D71\u3001\u814E\u81DF',
+    theme:'\u60C5\u611F\u3001\u6109\u6085\u3001\u5275\u9020\u529B\u3001\u611F\u5B98\u4EAB\u53D7',
+    balanced:'\u60C5\u611F\u8C50\u6CBB\u3001\u5275\u9020\u529B\u6D3B\u8E8D\uFF0C\u4EBA\u969B\u95DC\u4FC2\u5713\u6ED1',
+    imbalanced:'\u60C5\u7DD2\u58D3\u6291\u3001\u7F6A\u60E1\u611F\uFF0C\u5275\u9020\u529B\u53D7\u963B'},
+  solar:{name:'\u592A\u967D\u795E\u7D93\u53E2\u8F2A',en:'Solar Plexus',color:'#eab308',glow:'rgba(234,179,8,',
+    body:'\u4E0A\u8179\u90E8\u3001\u80C3\u3001\u809D\u81BD',
+    theme:'\u81EA\u4FE1\u3001\u610F\u5FD7\u529B\u3001\u500B\u4EBA\u529B\u91CF\u3001\u81EA\u5C0A',
+    balanced:'\u81EA\u4FE1\u5145\u6EFF\u3001\u610F\u5FD7\u5805\u5B9A\uFF0C\u4E8B\u696D\u904B\u52E2\u5F37\u52C1',
+    imbalanced:'\u81EA\u5351\u6216\u63A7\u5236\u6B32\u5F37\u3001\u6D88\u5316\u554F\u984C\u3001\u512A\u67D4\u5BE1\u65B7'},
+  heart:{name:'\u5FC3\u8F2A',en:'Heart Chakra',color:'#22c55e',glow:'rgba(34,197,94,',
+    body:'\u80F8\u53E3\u3001\u5FC3\u81DF\u3001\u80BA\u90E8\u3001\u624B\u81C2',
+    theme:'\u611B\u3001\u540C\u7406\u5FC3\u3001\u7642\u7652\u3001\u5305\u5BB9\u63A5\u7D0D',
+    balanced:'\u5145\u6EFF\u611B\u8207\u6148\u60B2\u3001\u8207\u4ED6\u4EBA\u548C\u8AE7\u5171\u8655\uFF0C\u5FC3\u9748\u5E73\u9759',
+    imbalanced:'\u5C01\u9589\u81EA\u6211\u3001\u904E\u5EA6\u4ED8\u51FA\u3001\u60B2\u50B7\u96E3\u4EE5\u91CB\u61F7'},
+  throat:{name:'\u5589\u8F2A',en:'Throat Chakra',color:'#3b82f6',glow:'rgba(59,130,246,',
+    body:'\u5589\u5634\u3001\u9838\u90E8\u3001\u7532\u72C0\u817A',
+    theme:'\u8868\u9054\u3001\u6E9D\u901A\u3001\u771F\u5BE6\u3001\u81E3\u670D',
+    balanced:'\u8868\u9054\u6E05\u6670\u3001\u5BE6\u8A71\u5BE6\u8AAA\uFF0C\u6E9D\u901A\u9806\u66A2\u6709\u529B',
+    imbalanced:'\u58D3\u6291\u4E0D\u8A00\u6216\u53E3\u7121\u906E\u6514\u3001\u5014\u5F37\u9867\u56FA'},
+  third_eye:{name:'\u7709\u5FC3\u8F2A',en:'Third Eye',color:'#6d28d9',glow:'rgba(109,40,217,',
+    body:'\u7709\u5FC3\u3001\u984D\u982D\u3001\u677E\u679C\u9AD4\u3001\u795E\u7D93\u7CFB\u7D71',
+    theme:'\u76F4\u89BA\u3001\u6D1E\u5BDF\u529B\u3001\u5167\u5728\u667A\u6167\u3001\u89BA\u5BDF',
+    balanced:'\u76F4\u89BA\u654F\u92B3\u3001\u6D1E\u5BDF\u529B\u5F37\uFF0C\u80FD\u770B\u900F\u4E8B\u7269\u672C\u8CEA',
+    imbalanced:'\u6DF7\u4E82\u3001\u8FF7\u5931\u65B9\u5411\u3001\u6D3B\u5728\u5E7B\u8C61\u4E2D'},
+  crown:{name:'\u9802\u8F2A',en:'Crown Chakra',color:'#a855f7',glow:'rgba(168,85,247,',
+    body:'\u982D\u9802\u3001\u5927\u8166\u76AE\u5C64',
+    theme:'\u9748\u6027\u3001\u5B87\u5B99\u9023\u7D50\u3001\u958B\u609F\u3001\u8D85\u8D8A',
+    balanced:'\u9748\u6027\u89BA\u9192\u3001\u8207\u5B87\u5B99\u5408\u4E00\uFF0C\u5167\u5FC3\u5E73\u548C\u5145\u5BE6',
+    imbalanced:'\u7591\u96E2\u3001\u8FF7\u4FE1\u3001\u8207\u5167\u5728\u65B7\u9023'}
+};
+
+/* 五行→脈輪映射（核心邏輯）
+   火→海底輪(生命力)+臍骨輪(熱情)
+   土→太陽神經叢(穩定+意志)
+   木→心輪(生長+療癒)
+   水→喉輪(溝通)+眉心輪(智慧)
+   金→頂輪(純淨+超越)
+*/
+var EL_CHAKRA={
+  '\u706B':['root','sacral'],
+  '\u571F':['solar'],
+  '\u6728':['heart'],
+  '\u6C34':['throat','third_eye'],
+  '\u91D1':['crown']
+};
+
+/* 水晶推薦（按喜用神五行，絕不推忌神五行的水晶）*/
+var CRYSTAL_BY_FAV={
+  '\u91D1':['\u9226\u6676','\u767D\u6C34\u6676','\u9280\u9AEE\u6676','\u767D\u5E7B\u5F71\u6C34\u6676'],
+  '\u6728':['\u7DA0\u5E7D\u9748','\u6771\u9675\u7389','\u7DA0\u78A7\u74BD','\u7FE0\u9285\u7926'],
+  '\u6C34':['\u6D77\u85CD\u5BF6','\u6708\u5149\u77F3','\u62C9\u9577\u77F3','\u85CD\u7D0B\u77F3'],
+  '\u706B':['\u7D05\u746A\u7459','\u77F3\u69B4\u77F3','\u592A\u967D\u77F3','\u8840\u73C0'],
+  '\u571F':['\u9EC3\u6C34\u6676','\u864E\u773C\u77F3','\u8336\u6676','\u5357\u7D05\u746A\u7459']
+};
+
+var auraImg=null;
+
+function hexToRGBA(hex,a){
+  var r=0,g=0,b=0;
+  if(hex.length===7){r=parseInt(hex.slice(1,3),16);g=parseInt(hex.slice(3,5),16);b=parseInt(hex.slice(5,7),16);}
+  else if(hex.length===4){r=parseInt(hex[1]+hex[1],16);g=parseInt(hex[2]+hex[2],16);b=parseInt(hex[3]+hex[3],16);}
+  return 'rgba('+r+','+g+','+b+','+a+')';
+}
+
+/* ── 當日脈輪能量分析 ── */
+function analyzeTodayChakra(bazi){
+  var today=new Date();
+  var y=today.getFullYear(),m=today.getMonth()+1,d=today.getDate();
+  var gz=getDateGZ(y,m,d);
+  var dm=bazi.dm,dmEl=bazi.dmEl;
+  var tG=gz.gan,tZ=gz.zhi,tEl=gz.el;
+
+  /* Step 1: 計算五行能量分佈 */
+  var elScore={'\u91D1':0,'\u6728':0,'\u6C34':0,'\u706B':0,'\u571F':0};
+
+  // 日干五行 (本命底色)
+  elScore[dmEl]+=15;
+
+  // 當日天干五行
+  elScore[tEl]+=20;
+
+  // 當日地支藏干
+  var cg=CG[tZ]||[];
+  cg.forEach(function(g){elScore[WX_G[g]]+=8;});
+
+  // 十神影響：不同十神激發不同五行
+  var god=tenGod(dm,tG);
+  // 十神的五行就是天干的五行，已在上面加了
+  // 但十神關係影響能量方向
+  var godBoost={'\u6BD4\u80A9':dmEl,'\u52AB\u8CA1':dmEl,'\u98DF\u795E':null,'\u50B7\u5B98':null,'\u504F\u8CA1':null,'\u6B63\u8CA1':null,'\u4E03\u6BBA':null,'\u6B63\u5B98':null,'\u504F\u5370':null,'\u6B63\u5370':null};
+  // 食傷生財→火土連動, 印星→水木連動
+  if(god==='\u98DF\u795E'||god==='\u50B7\u5B98'){
+    // 食傷洩秀→創造力（臍骨輪/心輪能量）
+    elScore['\u706B']+=5;elScore['\u6728']+=5;
+  }
+  if(god==='\u6B63\u5370'||god==='\u504F\u5370'){
+    // 印星→智慧直覺（眉心輪能量）
+    elScore['\u6C34']+=5;elScore['\u91D1']+=3;
+  }
+  if(god==='\u6B63\u8CA1'||god==='\u504F\u8CA1'){
+    // 財星→物質穩定（太陽叢能量）
+    elScore['\u571F']+=5;elScore['\u706B']+=3;
+  }
+  if(god==='\u6B63\u5B98'||god==='\u4E03\u6BBA'){
+    // 官殺→壓力/挑戰→海底輪
+    elScore['\u706B']+=5;
+  }
+
+  // 喜神加強，忌神減弱
+  bazi.fav.forEach(function(el){elScore[el]+=10;});
+  bazi.unfav.forEach(function(el){elScore[el]-=8;});
+
+  // 沖合影響
+  var dZ=bazi.pillars.day.zhi;
+  if(LIU_CHONG[tZ]===dZ){elScore['\u706B']+=6;} // 沖→不安→海底輪
+  if(LIU_HE[tZ]===dZ){elScore['\u6728']+=6;}    // 合→和諧→心輪
+
+  // 姓名學加減
+  if(typeof S!=='undefined'&&S.zodiacNameResult){
+    var zn=S.zodiacNameResult;
+    if(zn.overallLevel==='\u5927\u5409'){elScore['\u91D1']+=5;elScore['\u6C34']+=3;}
+    else if(zn.overallLevel==='\u5409'){elScore['\u6728']+=4;}
+    else if(zn.overallLevel&&zn.overallLevel.indexOf('\u51F6')>=0){elScore['\u706B']+=5;}
+    if(zn.isSacrifice){elScore['\u706B']+=4;}
+  }
+
+  // 確保沒有負值
+  for(var k in elScore){if(elScore[k]<0)elScore[k]=0;}
+
+  /* Step 2: 找最強五行 → 對應脈輪 */
+  var maxEl='',maxVal=0,total=0;
+  for(var k in elScore){
+    total+=elScore[k];
+    if(elScore[k]>maxVal){maxVal=elScore[k];maxEl=k;}
+  }
+
+  // 計算百分比
+  var elPct={};
+  for(var k in elScore){elPct[k]=total>0?Math.round(elScore[k]/total*100):20;}
+
+  // 映射到脈輪
+  var chakraKeys=EL_CHAKRA[maxEl]||['heart'];
+  // 如果有兩個脈輪對應，選第一個（主脈輪）
+  // 但若分數很高（>60%），可能激活第二個
+  var primaryKey=chakraKeys[0];
+  var secondaryKey=chakraKeys.length>1?chakraKeys[1]:null;
+  var ch=CHAKRA_DATA[primaryKey];
+
+  /* Step 3: 吉凶（基於整體能量平衡度）*/
+  var score=50;
+  var godS={'\u6BD4\u80A9':5,'\u52AB\u8CA1':2,'\u98DF\u795E':8,'\u50B7\u5B98':1,'\u504F\u8CA1':6,'\u6B63\u8CA1':10,'\u4E03\u6BBA':-8,'\u6B63\u5B98':4,'\u504F\u5370':5,'\u6B63\u5370':8};
+  score+=(godS[god]||0);
+  if(bazi.fav.indexOf(tEl)>=0)score+=12;
+  if(bazi.unfav.indexOf(tEl)>=0)score-=12;
+  cg.forEach(function(g){
+    if(bazi.fav.indexOf(WX_G[g])>=0)score+=3;
+    if(bazi.unfav.indexOf(WX_G[g])>=0)score-=3;
+  });
+  if(LIU_CHONG[tZ]===dZ)score-=10;
+  if(LIU_HE[tZ]===dZ)score+=8;
+  var cs=changSheng(dm,tZ);
+  var csS={'\u9577\u751F':8,'\u6C90\u6D74':1,'\u51A0\u5E36':5,'\u81E8\u5B98':7,'\u5E1D\u65FA':10,'\u8870':-2,'\u75C5':-5,'\u6B7B':-8,'\u5893':-6,'\u7D55':-10,'\u80CE':1,'\u990A':3};
+  score+=(csS[cs]||0);
+  if(S.zodiacNameResult){
+    var zn=S.zodiacNameResult;
+    if(zn.overallLevel==='\u5927\u5409')score+=4;
+    else if(zn.overallLevel==='\u5409')score+=2;
+    else if(zn.overallLevel&&zn.overallLevel.indexOf('\u51F6')>=0)score-=4;
+  }
+  score=Math.max(10,Math.min(95,score));
+
+  var fortune,fIcon;
+  if(score>=80){fortune='\u5927\u5409';fIcon='\u{1F31F}';}
+  else if(score>=65){fortune='\u4E0A\u5409';fIcon='\u2728';}
+  else if(score>=50){fortune='\u4E2D\u5409';fIcon='\u{1F319}';}
+  else if(score>=35){fortune='\u4E2D\u5E73';fIcon='\u26C5';}
+  else{fortune='\u504F\u51F6';fIcon='\u26A1';}
+
+  /* Step 4: 水晶推薦（只用喜用神的水晶！）*/
+  var favEl=bazi.fav[0]||dmEl;
+  var cList=CRYSTAL_BY_FAV[favEl]||CRYSTAL_BY_FAV['\u6C34'];
+  // 確保推的水晶不是忌神五行
+  var safeCrystals=[];
+  for(var el in CRYSTAL_BY_FAV){
+    if(bazi.unfav.indexOf(el)<0){
+      CRYSTAL_BY_FAV[el].forEach(function(cr){safeCrystals.push({name:cr,el:el});});
+    }
+  }
+  // 優先喜用神的
+  var crystal=cList[(d+m)%cList.length];
+  // 如果喜用神水晶的五行剛好是忌神（不太可能但防禦）
+  if(bazi.unfav.indexOf(favEl)>=0&&safeCrystals.length>0){
+    crystal=safeCrystals[(d+m)%safeCrystals.length].name;
+  }
+
+  return{
+    chakra:ch,chakraKey:primaryKey,secondaryKey:secondaryKey,
+    elScore:elScore,elPct:elPct,maxEl:maxEl,
+    score:score,fortune:fortune,fIcon:fIcon,
+    god:god,cs:cs,gz:tG+tZ,tEl:tEl,crystal:crystal,favEl:favEl
+  };
+}
+
+/* ── 初始化 ── */
+function renderAuraFilter(){
+  var box=document.getElementById('aura-box');
+  if(!box)return;
+  if(!S.bazi){
+    box.innerHTML='<div class="text-center" style="padding:var(--sp-lg)"><p class="text-dim text-sm mb-md">\u9700\u8981\u5148\u5B8C\u6210\u57FA\u672C\u8CC7\u6599\uFF08\u751F\u65E5\u6642\u8FB0\uFF09</p><button class="btn btn-gold btn-sm" onclick="goStep(0)"><i class="fas fa-pen"></i> \u524D\u5F80\u586B\u5BEB</button></div>';
+    return;
+  }
+  box.innerHTML='<div class="aura-up" id="aura-uz" onclick="document.getElementById(\'aura-fi\').click()"><div style="font-size:2.5rem;color:var(--c-gold);opacity:.6;margin-bottom:var(--sp-sm)"><i class="fas fa-cloud-arrow-up"></i></div><p class="text-sm text-dim">\u9EDE\u64CA\u4E0A\u50B3\u6216\u62D6\u66F3\u81EA\u62CD\u7167</p><p style="color:var(--c-gold);font-weight:700;margin-top:4px">\u5206\u6790\u7576\u65E5\u4E03\u8108\u8F2A\u80FD\u91CF\u8272</p><p class="text-xs text-muted mt-xs">\u652F\u63F4 JPG / PNG\uFF0C\u4E0A\u50B3\u5F8C\u81EA\u52D5\u5206\u6790</p></div><input type="file" id="aura-fi" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleAF(this.files[0])"><div id="aura-progress" style="display:none"></div><div id="aura-result" style="display:none"></div>';
+  setTimeout(function(){
+    var uz=document.getElementById('aura-uz');if(!uz)return;
+    uz.addEventListener('dragover',function(e){e.preventDefault();uz.style.borderColor='var(--c-gold)';});
+    uz.addEventListener('dragleave',function(){uz.style.borderColor='';});
+    uz.addEventListener('drop',function(e){e.preventDefault();uz.style.borderColor='';if(e.dataTransfer.files.length)handleAF(e.dataTransfer.files[0]);});
+  },100);
+}
+
+/* ── 上傳處理 ── */
+function handleAF(file){
+  if(!file||!file.type.startsWith('image/')||!S.bazi)return;
+  var tc=analyzeTodayChakra(S.bazi);
+  var ch=tc.chakra;
+  document.getElementById('aura-uz').style.display='none';
+  var prog=document.getElementById('aura-progress');
+  prog.style.display='block';
+  prog.innerHTML='<div style="text-align:center;padding:var(--sp-xl) var(--sp-md)"><div class="aura-orb" style="width:48px;height:48px;background:radial-gradient(circle,'+ch.color+','+ch.glow+'0.15));box-shadow:0 0 30px '+ch.glow+'0.4);margin:0 auto var(--sp-md)"></div><p class="text-sm" style="color:'+ch.color+'">\u6B63\u5728\u5206\u6790\u80FD\u91CF\u5834\u2026</p><div style="width:80%;max-width:300px;margin:var(--sp-sm) auto 0;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div id="aura-bar" style="width:0%;height:100%;background:linear-gradient(90deg,'+ch.color+','+ch.glow+'0.5));border-radius:3px;transition:width 0.3s"></div></div><p id="aura-pct" class="text-xs text-muted mt-xs">0%</p></div>';
+  [{t:200,p:15,s:'\u8B80\u53D6\u7576\u65E5\u5E72\u652F\u2026'},{t:600,p:35,s:'\u5206\u6790\u4E94\u884C\u80FD\u91CF\u5206\u4F48\u2026'},{t:1000,p:55,s:'\u4EA4\u53C9\u59D3\u540D\u5B78\u9A57\u8B49\u2026'},{t:1400,p:75,s:'\u5C0D\u61C9\u4E03\u8108\u8F2A\u2026'},{t:1800,p:90,s:'\u5408\u6210\u6C23\u5834\u7167\u7247\u2026'}].forEach(function(x){
+    setTimeout(function(){
+      var b=document.getElementById('aura-bar'),p=document.getElementById('aura-pct');
+      if(b)b.style.width=x.p+'%';if(p)p.textContent=x.p+'% '+x.s;
+    },x.t);
+  });
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      auraImg=img;
+      setTimeout(function(){
+        var b=document.getElementById('aura-bar'),p=document.getElementById('aura-pct');
+        if(b)b.style.width='100%';if(p)p.textContent='100% \u5B8C\u6210\uFF01';
+        setTimeout(showAuraResult,400);
+      },2000);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── 顯示結果 ── */
+function showAuraResult(){
+  if(!auraImg||!S.bazi)return;
+  var tc=analyzeTodayChakra(S.bazi);
+  var ch=tc.chakra;
+  var dm=S.bazi.dm,dmEl=S.bazi.dmEl;
+  var prog=document.getElementById('aura-progress');if(prog)prog.style.display='none';
+  var res=document.getElementById('aura-result');if(!res)return;
+  var today=new Date();var ds=(today.getMonth()+1)+'/'+today.getDate();
+
+  var znLine='';
+  if(S.zodiacNameResult){
+    var zn=S.zodiacNameResult;
+    znLine='<div style="font-size:.75rem;color:var(--c-text-muted);margin-top:4px">\u59D3\u540D\u5B78\uFF1A'+zn.emoji+zn.zodiac+'\u5E74\u751F\u4EBA\u3010'+zn.overallLevel+'\u3011\u5DF2\u7D0D\u5165\u8A08\u7B97</div>';
+  }
+
+  /* 五行能量條 */
+  var elNames={'\u91D1':'\u91D1','\u6728':'\u6728','\u6C34':'\u6C34','\u706B':'\u706B','\u571F':'\u571F'};
+  var elColors={'\u91D1':'#d4af37','\u6728':'#22c55e','\u6C34':'#3b82f6','\u706B':'#ef4444','\u571F':'#eab308'};
+  var barsHtml='<div style="display:grid;grid-template-columns:32px 1fr 32px;gap:4px;align-items:center;margin:var(--sp-sm) 0;font-size:.72rem">';
+  ['\u6728','\u706B','\u571F','\u91D1','\u6C34'].forEach(function(el){
+    var pct=tc.elPct[el]||0;
+    var isFav=S.bazi.fav.indexOf(el)>=0;
+    var isUnfav=S.bazi.unfav.indexOf(el)>=0;
+    var tag=isFav?' \u559C':isUnfav?' \u5FCC':'';
+    barsHtml+='<span style="color:'+elColors[el]+';font-weight:700">'+elNames[el]+tag+'</span>';
+    barsHtml+='<div style="height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+elColors[el]+';border-radius:4px;transition:width .6s"></div></div>';
+    barsHtml+='<span style="color:var(--c-text-muted)">'+pct+'%</span>';
+  });
+  barsHtml+='</div>';
+
+  res.style.display='block';
+  res.innerHTML='<div class="aura-cw"><canvas id="aura-cv" style="display:block;margin:0 auto"></canvas></div>'
+    +'<div class="aura-nfo" style="margin-top:var(--sp-md)">'
+    +'<div class="aura-orb" style="background:radial-gradient(circle,#fff,'+ch.color+');box-shadow:0 0 40px '+ch.glow+'0.5),0 0 80px '+ch.glow+'0.25)"></div>'
+    +'<div class="aura-cn" style="color:'+ch.color+'">'+ds+' \u7576\u65E5\u80FD\u91CF\uFF1A'+ch.name+'</div>'
+    +'<div style="font-size:.9rem;font-weight:600;color:'+ch.color+';margin-top:2px">'+ch.en+' \u2502 '+tc.fIcon+' '+tc.fortune+'</div>'
+    +'<div style="font-size:.82rem;color:var(--c-text-dim);margin-top:6px;line-height:1.6"><strong>\u4E3B\u984C\uFF1A</strong>'+ch.theme+'</div>'
+    +'<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.6"><strong>\u5C0D\u61C9\u8EAB\u9AD4\uFF1A</strong>'+ch.body+'</div>'
+    +'<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.6"><strong>\u80FD\u91CF\u5E73\u8861\u6642\uFF1A</strong>'+ch.balanced+'</div>'
+    +'<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.6"><strong>\u80FD\u91CF\u5931\u8861\u6642\uFF1A</strong>'+ch.imbalanced+'</div>'
+    +barsHtml
+    +'<div style="font-size:.75rem;color:var(--c-text-muted);margin-top:var(--sp-xs);line-height:1.6">'
+    +'\u7576\u65E5\u5E72\u652F\uFF1A'+tc.gz+'('+tc.tEl+') \u5341\u795E\uFF1A'+tc.god+' \u9577\u751F\uFF1A'+tc.cs
+    +' \u2502 \u65E5\u4E3B\u300C'+dm+'\u300D('+dmEl+') \u559C\u7528\uFF1A'+S.bazi.fav.join('\u3001')
+    +' \u2502 \u80FD\u91CF\u5206\u6578\uFF1A'+tc.score+'/100'
+    +'<br>\u5EFA\u8B70\u914D\u6234\uFF1A<strong style="color:var(--c-gold)">'+tc.crystal+'</strong>\uFF08'+tc.favEl+'\u884C\u559C\u7528\u795E\u6C34\u6676\uFF09'
+    +znLine
+    +'</div></div>'
+    +'<div style="display:flex;gap:var(--sp-xs);margin-top:var(--sp-md);justify-content:center;flex-wrap:wrap">'
+    +'<button class="btn btn-gold btn-sm" onclick="dlAura()"><i class="fas fa-download"></i> \u4E0B\u8F09\u80FD\u91CF\u7167\u7247</button>'
+    +'<button class="btn btn-outline btn-sm" onclick="resetAF()"><i class="fas fa-redo"></i> \u91CD\u65B0\u4E0A\u50B3</button>'
+    +'</div>'
+    +'<div class="aura-sh" style="margin-top:var(--sp-sm)"><strong>#\u975C\u6708\u4E4B\u5149 #\u80FD\u91CF\u5149\u74B0 #'+ch.name+' #\u6C34\u6676\u7642\u7652</strong></div>';
+
+  setTimeout(genAura,120);
+}
+
+/* ── Canvas 氣場合成 ── */
+function genAura(){
+  if(!auraImg||!S.bazi)return;
+  var tc=analyzeTodayChakra(S.bazi);
+  var ch=tc.chakra;
+  var cv=document.getElementById('aura-cv');
+  if(!cv)return;
+  var ctx=cv.getContext('2d');
+  var img=auraImg;
+  var mx=700,sc=Math.min(mx/img.width,mx/img.height,1);
+  var iw=Math.round(img.width*sc),ih=Math.round(img.height*sc);
+  var pad=Math.round(Math.max(iw,ih)*0.18);
+  var lh=22; /* line height for info text */
+  var infoLines=6; /* exactly 6 lines of info */
+  var bb=20+lh*infoLines+16; /* top margin + lines + bottom margin */
+  cv.width=iw+pad*2;cv.height=ih+pad*2+bb;
+  var cx=pad+iw/2,cy=pad+ih*0.4;
+  var cw=cv.width;
+
+  var secKeys=EL_CHAKRA[tc.maxEl];
+  var secCh=secKeys&&secKeys.length>1?CHAKRA_DATA[secKeys[1]]:null;
+  var sec=secCh?secCh.color:'#ff8c00';
+
+  ctx.fillStyle='#080210';ctx.fillRect(0,0,cw,cv.height);
+
+  var r1=Math.max(iw,ih)*0.9;
+  var g1=ctx.createRadialGradient(cx,cy,r1*0.08,cx,cy,r1);
+  g1.addColorStop(0,hexToRGBA(sec,0.3));g1.addColorStop(0.35,hexToRGBA(sec,0.1));g1.addColorStop(0.7,hexToRGBA(sec,0.02));g1.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g1;ctx.fillRect(0,0,cw,cv.height);
+
+  ctx.save();ctx.translate(cx,cy);ctx.scale(1,1.4);
+  var r2=Math.max(iw,ih)*0.55;
+  var g2=ctx.createRadialGradient(0,0,r2*0.03,0,0,r2);
+  g2.addColorStop(0,hexToRGBA(ch.color,0.7));g2.addColorStop(0.25,hexToRGBA(ch.color,0.4));g2.addColorStop(0.55,hexToRGBA(ch.color,0.12));g2.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g2;ctx.fillRect(-cw,-cv.height,cw*2,cv.height*2);ctx.restore();
+
+  var hy=cy-ih*0.18,r3=Math.max(iw,ih)*0.28;
+  var g3=ctx.createRadialGradient(cx,hy,0,cx,hy,r3);
+  g3.addColorStop(0,hexToRGBA('#ffffff',0.35));g3.addColorStop(0.15,hexToRGBA(ch.color,0.55));g3.addColorStop(0.5,hexToRGBA(ch.color,0.12));g3.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g3;ctx.fillRect(0,0,cw,cv.height);
+
+  ctx.drawImage(img,pad,pad,iw,ih);
+
+  var et=ctx.createLinearGradient(pad,pad,pad,pad+ih*0.3);
+  et.addColorStop(0,hexToRGBA(ch.color,0.45));et.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=et;ctx.fillRect(pad,pad,iw,ih*0.3);
+  var eb=ctx.createLinearGradient(pad,pad+ih,pad,pad+ih*0.75);
+  eb.addColorStop(0,hexToRGBA(ch.color,0.35));eb.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=eb;ctx.fillRect(pad,pad+ih*0.75,iw,ih*0.25);
+  var elg=ctx.createLinearGradient(pad,pad,pad+iw*0.25,pad);
+  elg.addColorStop(0,hexToRGBA(ch.color,0.35));elg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=elg;ctx.fillRect(pad,pad,iw*0.25,ih);
+  var erg=ctx.createLinearGradient(pad+iw,pad,pad+iw*0.75,pad);
+  erg.addColorStop(0,hexToRGBA(ch.color,0.35));erg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=erg;ctx.fillRect(pad+iw*0.75,pad,iw*0.25,ih);
+
+  for(var i=0;i<24;i++){
+    var ang=(Math.PI*2*i)/24+Math.random()*0.25;
+    var dist=Math.min(iw,ih)*0.4+Math.random()*pad*1.2;
+    var sx=cx+Math.cos(ang)*dist,sy=cy+Math.sin(ang)*dist*1.15;
+    ctx.save();ctx.globalAlpha=0.35+Math.random()*0.5;ctx.fillStyle='#fff';ctx.shadowColor=ch.color;ctx.shadowBlur=10;
+    ctx.beginPath();ctx.arc(sx,sy,1+Math.random()*2.5,0,Math.PI*2);ctx.fill();
+    if(Math.random()>0.5){ctx.strokeStyle=hexToRGBA(ch.color,0.6);ctx.lineWidth=0.6;ctx.beginPath();ctx.moveTo(sx-5,sy);ctx.lineTo(sx+5,sy);ctx.moveTo(sx,sy-5);ctx.lineTo(sx,sy+5);ctx.stroke();}
+    ctx.restore();
+  }
+
+  ctx.save();ctx.strokeStyle=hexToRGBA(ch.color,0.5);ctx.lineWidth=2;ctx.shadowColor=ch.color;ctx.shadowBlur=20;
+  ctx.strokeRect(pad-1,pad-1,iw+2,ih+2);ctx.restore();
+
+  /* ═══ BOTTOM: only 6 lines, clean layout ═══ */
+  var by=pad*2+ih+4;
+  ctx.fillStyle='rgba(8,2,16,0.95)';ctx.fillRect(0,by-4,cw,bb+4);
+  var dlg=ctx.createLinearGradient(0,by,cw,by);
+  dlg.addColorStop(0,'rgba(0,0,0,0)');dlg.addColorStop(0.2,hexToRGBA(ch.color,0.5));dlg.addColorStop(0.8,hexToRGBA(ch.color,0.5));dlg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=dlg;ctx.fillRect(0,by-1,cw,2);
+
+  var today=new Date();
+  var ds=(today.getMonth()+1)+'/'+today.getDate();
+  var fs=Math.max(13,Math.round(cw*0.022));
+  var y0=by+18;
+  ctx.textAlign='center';
+
+  /* Line 1 */
+  ctx.font='bold '+Math.round(fs*1.3)+'px "Noto Serif TC",serif';
+  ctx.fillStyle=ch.color;ctx.shadowColor=ch.color;ctx.shadowBlur=10;
+  ctx.fillText(ds+' \u7576\u65E5\u80FD\u91CF\uFF1A'+ch.name,cw/2,y0);
+  ctx.shadowBlur=0;
+  /* Line 2 */
+  ctx.font='bold '+fs+'px "Noto Sans TC",sans-serif';
+  ctx.fillStyle='rgba(245,230,211,0.85)';
+  ctx.fillText(ch.en+' \u2502 '+tc.fIcon+' '+tc.fortune,cw/2,y0+lh);
+  /* Line 3 */
+  ctx.font=fs+'px "Noto Sans TC",sans-serif';
+  ctx.fillStyle='rgba(245,230,211,0.7)';
+  ctx.fillText('\u4E3B\u984C\uFF1A'+ch.theme,cw/2,y0+lh*2);
+  /* Line 4 */
+  ctx.fillText('\u5C0D\u61C9\u8EAB\u9AD4\uFF1A'+ch.body,cw/2,y0+lh*3);
+  /* Line 5 */
+  ctx.fillText('\u5E73\u8861\u6642\uFF1A'+ch.balanced,cw/2,y0+lh*4);
+  /* Line 6 */
+  ctx.fillText('\u5931\u8861\u6642\uFF1A'+ch.imbalanced,cw/2,y0+lh*5);
+}
+
+function dlAura(){
+  var cv=document.getElementById('aura-cv');if(!cv)return;
+  var tc=analyzeTodayChakra(S.bazi);
+  var a=document.createElement('a');a.download='\u975C\u6708\u4E4B\u5149_'+tc.chakra.name+'.png';a.href=cv.toDataURL('image/png',0.95);a.click();
+}
+
+function resetAF(){
+  auraImg=null;
+  var fi=document.getElementById('aura-fi');if(fi)fi.value='';
+  var uz=document.getElementById('aura-uz');if(uz)uz.style.display='';
+  var prog=document.getElementById('aura-progress');if(prog){prog.style.display='none';prog.innerHTML='';}
+  var res=document.getElementById('aura-result');if(res){res.style.display='none';res.innerHTML='';}
+}
+
+
+/* ── Hook into existing system ── */
+(function(){
+  var _s0=window.submitStep0;
+  if(_s0)window.submitStep0=function(){_s0.apply(this,arguments);setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},500);};
+  var _sf=window.submitStep0Fast;
+  if(_sf)window.submitStep0Fast=function(){_sf.apply(this,arguments);setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},4000);};
+  var _ei=window.initExtraFeatures;
+  if(_ei)window.initExtraFeatures=function(){_ei.apply(this,arguments);try{renderCal30();renderAuraFilter();}catch(e){}};
+  if(typeof S!=='undefined'&&S.bazi)setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},300);
+})();
+
 </script>
 <!-- Sticky Bottom CTA for Result Page -->
 <div class="sticky-cta" id="sticky-cta">

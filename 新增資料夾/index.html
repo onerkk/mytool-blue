@@ -2467,14 +2467,15 @@ function computeBazi(year,month,day,hour,minute,gender){
   }else{
     // 身弱：印(生我) + 比劫(同我)
     // APP 規律：優先取 印星+比劫
-    // 若印星已經很旺(>30%)，只取比劫
+    // 身弱喜用神規則（9案例逆向驗證）：
+    // 1. 比劫（日主五行）永遠取 — 身弱=日主不足，比劫=自身力量
+    // 2. 印星>30%時不取印星（已旺不補，如陳弘林水32%）
+    // 3. 印星≤30%時印星+比劫都取
     const yinPct=ec[yinEl]?(ec[yinEl]/tot):0;
     if(yinPct>0.30){
       fav=[dmEl]; // 印星偏旺，只補比劫
-    }else if(ec[dmEl]&&(ec[dmEl]/tot>0.30)){
-      fav=[yinEl]; // 比劫偏旺，只補印星
     }else{
-      fav=[dmEl,yinEl]; // 一般情況：印星+比劫都取
+      fav=[dmEl,yinEl]; // 比劫+印星都取
     }
     // 忌神：最旺的剋洩五行（只取1-2個最關鍵的）
     const keMe=BE_KE[dmEl]; // 官殺（剋我）
