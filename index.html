@@ -204,11 +204,11 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 /* current 已用 !important 統一覆蓋所有 dy-lv 邊框色 */
 
 /* — Hexagram — */
-.hex-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-md);margin:var(--sp-md) 0}
-.hex-card{text-align:center;padding:var(--sp-md);background:rgba(0,0,0,.2);border:1px solid var(--c-border);border-radius:var(--r-md)}
-.hex-card h4{color:var(--c-text-dim);font-size:.8rem;margin-bottom:var(--sp-sm)}
-.hex-sym{font-size:2.5rem;line-height:1;margin-bottom:var(--sp-xs)}
-.hex-name{font-family:var(--f-display);font-weight:700;color:var(--c-gold)}
+.hex-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-sm);margin:var(--sp-md) 0;overflow:hidden}
+.hex-card{text-align:center;padding:var(--sp-sm);background:rgba(0,0,0,.2);border:1px solid var(--c-border);border-radius:var(--r-md);min-width:0;overflow:hidden}
+.hex-card h4{color:var(--c-text-dim);font-size:.75rem;margin-bottom:var(--sp-xs)}
+.hex-sym{font-size:1.8rem;line-height:1;margin-bottom:var(--sp-xs)}
+.hex-name{font-family:var(--f-display);font-weight:700;color:var(--c-gold);font-size:0.95rem;word-break:keep-all}
 
 /* — Tarot — */
 .tarot-hand{display:flex;justify-content:center;gap:var(--sp-sm);flex-wrap:wrap;padding:var(--sp-lg) 0}
@@ -339,7 +339,9 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
   .nav-links{display:none}
   .stepper{flex-wrap:wrap;gap:.3rem}
   .stepper-line{width:16px}
-  .hex-grid{gap:var(--sp-sm)}
+  .hex-grid{gap:var(--sp-xs)}
+  .hex-card{padding:var(--sp-xs) 2px}
+  .hex-name{font-size:0.85rem}
 }
 @media(max-width:380px){
   .hero h1{font-size:1.3rem}
@@ -2290,6 +2292,45 @@ function submitStep0(){
   goStep(1);
 }
 
+/* ══ 占卜結果快取：同人+同類型 24 小時內鎖定梅花/塔羅結果 ══ */
+const DIVINE_CACHE_KEY = 'jy_divine_cache';
+const DIVINE_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+function getDivineCacheKey(bdate, gender, type) {
+  return bdate + '|' + gender + '|' + type;
+}
+
+function loadDivineCache(bdate, gender, type) {
+  try {
+    const raw = localStorage.getItem(DIVINE_CACHE_KEY);
+    if (!raw) return null;
+    const cache = JSON.parse(raw);
+    const key = getDivineCacheKey(bdate, gender, type);
+    const entry = cache[key];
+    if (!entry) return null;
+    if (Date.now() - entry.ts > DIVINE_CACHE_TTL) {
+      delete cache[key];
+      localStorage.setItem(DIVINE_CACHE_KEY, JSON.stringify(cache));
+      return null;
+    }
+    return entry;
+  } catch(e) { return null; }
+}
+
+function saveDivineCache(bdate, gender, type, meihua, tarotDrawn) {
+  try {
+    let cache = {};
+    try { cache = JSON.parse(localStorage.getItem(DIVINE_CACHE_KEY)) || {}; } catch(e){}
+    const key = getDivineCacheKey(bdate, gender, type);
+    cache[key] = { ts: Date.now(), meihua, tarotDrawn };
+    const now = Date.now();
+    for (const k of Object.keys(cache)) {
+      if (now - cache[k].ts > DIVINE_CACHE_TTL) delete cache[k];
+    }
+    localStorage.setItem(DIVINE_CACHE_KEY, JSON.stringify(cache));
+  } catch(e) {}
+}
+
 function submitStep0Fast(){
   drawnCards=[];
   S.meihua=null;S.tarot={drawn:[],spread:[]};
@@ -2326,13 +2367,27 @@ function submitStep0Fast(){
   const [y,m,d]=bdate.split('-').map(Number);
   const [hh,mm]=btime.split(':').map(Number);
 
+  // 檢查 24 小時快取（同人+同問題類型 → 鎖定梅花/塔羅結果）
+  const cached = loadDivineCache(bdate, gender.value, type);
+  S._usedCache = !!cached;
+
   // 實際計算函數（瞬間完成）
   const fns = [
     ()=>{ S.bazi=computeBazi(y,m,d,hh,mm,gender.value); },
     ()=>{ S.ziwei=computeZiwei(y,m,d,hh,gender.value); mergeZiweiIntoBazi(); renderDailyFortune(); generateLuckyInfo(); },
-    ()=>{ calcMhTime(); },
-    ()=>{ while(drawnCards.length<10) drawCard(); },
-    ()=>{}
+    ()=>{
+      if(cached && cached.meihua) { S.meihua = cached.meihua; }
+      else { calcMhTime(); }
+    },
+    ()=>{
+      if(cached && cached.tarotDrawn && cached.tarotDrawn.length >= 10) {
+        drawnCards = cached.tarotDrawn.map(c => c.id);
+        S.tarot.drawn = cached.tarotDrawn;
+      } else { while(drawnCards.length<10) drawCard(); }
+    },
+    ()=>{
+      if(!cached) { saveDivineCache(bdate, gender.value, type, S.meihua, S.tarot.drawn); }
+    }
   ];
 
   // 打亂步驟完成順序（隨機跳躍）
@@ -3419,6 +3474,77 @@ function renderBazi(){
 
 
 
+/* ── 梅花易數依問題類型解讀 ── */
+function getMeihuaTypeReading(r, type) {
+  const ty = r.ty;  // 體用關係
+  const benName = r.ben.n || '';
+  const bianName = r.bian.n || '';
+  const f = ty.f;   // 大吉/吉/小吉/小凶/凶/平
+  const rel = ty.r;  // 用生體/體生用/體克用/用克體/比和
+
+  // 體用五行
+  const tiEl = r.tiG.el;
+  const yoEl = r.yoG.el;
+
+  const isGood = f.includes('吉');
+  const isBad = f.includes('凶');
+
+  const TYPE_READING = {
+    love: {
+      '用生體': '對方對你有好感或主動付出的跡象，這段感情中你是被滋養的一方。把握機會，適時回應對方的心意。',
+      '體生用': '你對這段感情投入較多，容易單方面付出。建議保留一些自我空間，別在感情中迷失自己。',
+      '體克用': '你在感情中較佔主導，對方可能比較被動。雖然可以掌控節奏，但要注意別讓對方感到壓迫。',
+      '用克體': '感情上有外在壓力或阻礙，可能是第三者、家人反對或現實條件不合。需要耐心溝通與等待。',
+      '比和': '雙方頻率接近，相處自然舒服。這段關係有穩定發展的基礎，保持現狀就好。'
+    },
+    career: {
+      '用生體': '有貴人相助或外部資源湧入，事業發展得到助力。把握這波機會，積極爭取。',
+      '體生用': '工作上付出多但回報慢，可能做了很多但成果被他人收割。調整策略，減少無效努力。',
+      '體克用': '你有能力掌控局面，但需要主動出擊。適合開拓新業務、主導專案。',
+      '用克體': '職場上有壓力或競爭對手很強，當前不宜硬碰硬。蟄伏積累實力，等時機成熟再出手。',
+      '比和': '工作環境穩定，同事關係和諧。適合穩步推進計畫，不宜大幅變動。'
+    },
+    wealth: {
+      '用生體': '有財來找你的跡象，可能是意外之財或投資回報。適合接受機會，但不要貪多。',
+      '體生用': '錢財容易外流，花費大於收入。注意節流，減少不必要的開銷和衝動消費。',
+      '體克用': '能夠掌控財務狀況，適合主動理財、催收欠款。但用力過度反而不利。',
+      '用克體': '財運受阻，可能有意外支出或投資虧損。暫時守財為上，不宜冒險。',
+      '比和': '財務狀況平穩，不會有大起大落。適合穩健型理財，定期儲蓄。'
+    },
+    health: {
+      '用生體': '身體得到滋養，適合養生調理。目前的保健方式有效，繼續保持。',
+      '體生用': '精力消耗過大，容易疲勞或免疫力下降。需要多休息，減少過度勞累。',
+      '體克用': '體質尚可，但要注意飲食節制。身體在對抗某些不良因素，別過度消耗。',
+      '用克體': '健康方面要特別注意，可能有隱患或舊疾復發。建議做健康檢查，不要忽視身體警訊。',
+      '比和': '身體狀態平穩，維持現有作息即可。適合養成規律運動習慣。'
+    },
+    general: {
+      '用生體': '整體運勢不錯，外在環境對你有利。順勢而為，好運自然來。',
+      '體生用': '付出較多的時期，但不必灰心，積累的努力終會有回報。',
+      '體克用': '你有掌控局面的能力，只要方向正確，結果不會太差。',
+      '用克體': '當前處於逆境期，建議低調行事，避免做重大決定。',
+      '比和': '運勢平穩，生活順遂。維持現狀是最好的策略。'
+    }
+  };
+
+  // 匹配問題類型，找不到就用 general
+  const typeMap = TYPE_READING[type] || TYPE_READING[(['relationship','family'].includes(type) ? 'love' : 'general')];
+  const reading = typeMap[rel] || TYPE_READING.general[rel] || '';
+
+  // 變卦趨勢解讀
+  let trend = '';
+  const bianGood = ['乾','離','兌','巽'];
+  const bianBad = ['坎','艮'];
+  if(bianName) {
+    const bn1 = bianName.charAt(0) || '';
+    if(bianGood.some(g => bianName.includes(g))) trend = '變卦走向正面，後續發展趨於好轉。';
+    else if(bianBad.some(b => bianName.includes(b))) trend = '變卦偏阻滯，後續需要更多耐心。';
+    else trend = '變卦趨勢中性，事在人為。';
+  }
+
+  return { reading, trend };
+}
+
 function renderMeihua(){
   if(!S.meihua){document.getElementById('r-meihua').innerHTML='<p class="text-dim">未進行梅花易數起卦</p>';return}
   const r=S.meihua;
@@ -3430,11 +3556,12 @@ function renderMeihua(){
 
   document.getElementById('r-meihua').innerHTML=`
     <div class="hex-grid">
-      <div class="hex-card"><h4>本卦</h4>${renderYaoLines(benLines,r.dong)}<div class="hex-name" style="margin-top:0.5rem;font-size:1.1rem">${r.ben.n}</div><div class="hex-sym" style="font-size:1.5rem;opacity:0.5">${r.ben.u}</div></div>
-      <div class="hex-card"><h4>互卦</h4>${renderYaoLines(huLines)}<div class="hex-name" style="margin-top:0.5rem;font-size:1.1rem">${r.hu.n}</div><div class="hex-sym" style="font-size:1.5rem;opacity:0.5">${r.hu.u}</div></div>
-      <div class="hex-card"><h4>變卦</h4>${renderYaoLines(bianLines)}<div class="hex-name" style="margin-top:0.5rem;font-size:1.1rem">${r.bian.n}</div><div class="hex-sym" style="font-size:1.5rem;opacity:0.5">${r.bian.u}</div></div>
+      <div class="hex-card"><h4>本卦</h4>${renderYaoLines(benLines,r.dong)}<div class="hex-name" style="margin-top:0.4rem">${r.ben.n}</div><div class="hex-sym">${r.ben.u}</div></div>
+      <div class="hex-card"><h4>互卦</h4>${renderYaoLines(huLines)}<div class="hex-name" style="margin-top:0.4rem">${r.hu.n}</div><div class="hex-sym">${r.hu.u}</div></div>
+      <div class="hex-card"><h4>變卦</h4>${renderYaoLines(bianLines)}<div class="hex-name" style="margin-top:0.4rem">${r.bian.n}</div><div class="hex-sym">${r.bian.u}</div></div>
     </div>
     <p class="mt-md"><strong>體用：</strong><span class="tag tag-gold">${r.ty.r}</span> <span class="tag ${r.ty.f.includes('吉')?'tag-green':'tag-red'}">${r.ty.f}</span> — ${r.ty.d}</p>
+    ${(()=>{ const tr=getMeihuaTypeReading(r, S.form?S.form.type:'general'); return tr.reading?`<div style="margin-top:0.75rem;padding:0.75rem;background:rgba(212,175,55,0.06);border-left:3px solid var(--c-gold);border-radius:0 var(--r-sm) var(--r-sm) 0"><p style="font-size:0.9rem;line-height:1.6"><strong style="color:var(--c-gold)">📋 針對你的問題：</strong>${tr.reading}</p>${tr.trend?`<p class="text-sm text-dim mt-sm"><i class="fas fa-chart-line"></i> ${tr.trend}</p>`:''}</div>`:''})()}
     <p class="mt-sm"><strong>卦辭：</strong>${r.ben.j}</p>
     <p><strong>解讀：</strong>${r.ben.m}</p>
     <p><strong>動爻：</strong>第 ${r.dong} 爻（${benLines[r.dong-1]?'陽→陰':'陰→陽'}）</p>
@@ -3443,14 +3570,17 @@ function renderMeihua(){
 
 function renderTarot(){
   if(!S.tarot.drawn.length){document.getElementById('r-tarot').innerHTML='<p class="text-dim">未進行塔羅抽牌</p>';return}
+  const tarotType=S.form?S.form.type:'general';
   document.getElementById('r-tarot').innerHTML=S.tarot.drawn.map((c,i)=>{
     const imgSrc=typeof getTarotCardImage==='function'?getTarotCardImage(c):'';
+    const genericMeaning=c.isUp?c.up:c.rv;
+    const typeMeaning=typeof getTarotTypeMeaning==='function'?getTarotTypeMeaning(c.id, c.isUp, tarotType):null;
     return `
     <div style="display:flex;gap:var(--sp-md);align-items:flex-start;padding:var(--sp-sm) 0;border-bottom:1px solid var(--c-border)">
       <span class="tag tag-gold" style="flex:0 0 auto">${i+1}</span>
       ${imgSrc?`<img src="${imgSrc}" alt="${c.n}" style="width:56px;height:88px;border-radius:4px;flex-shrink:0;border:1px solid rgba(212,175,55,0.3);${c.isUp?'':'transform:rotate(180deg)'}">`:``}
       <div><strong class="text-gold">${c.pos}</strong>：${c.n} <span class="tag ${c.isUp?'tag-blue':'tag-red'}">${c.isUp?'正':'逆'}</span>
-      <p class="text-sm text-dim">${c.isUp?c.up:c.rv}</p></div>
+      <p class="text-sm text-dim">${genericMeaning}</p>${typeMeaning?`<p class="text-sm" style="color:var(--c-gold);margin-top:2px">★ ${getTypeLabel(tarotType)}解讀：${typeMeaning}</p>`:''}</div>
     </div>`;
   }).join('');
 }
@@ -3530,7 +3660,8 @@ function _runAnalysisV1_unused(){
   document.getElementById('r-vprob').textContent=finalProb+'%';
   document.getElementById('r-vnote').textContent=vnote;
   document.getElementById('r-pfill').style.width=finalProb+'%';
-  document.getElementById('r-question').innerHTML=`<strong>問題：</strong>${question}<br><span class="tag tag-gold">${getTypeLabel(type)}</span>${(S.form.btime===''||!document.getElementById('f-btime')?.value)?'<br><span class="text-xs" style="color:var(--c-warn)"><i class="fas fa-exclamation-triangle"></i> 出生時間未填，以 12:00 估算，時柱及部分判定準確度降低</span>':''}`;
+  const _ch1 = S._usedCache ? '<br><span class="text-xs" style="color:var(--c-info)"><i class="fas fa-lock"></i> 24小時內同類問題，卦象已鎖定（確保結果一致）</span>' : '';
+  document.getElementById('r-question').innerHTML=`<strong>問題：</strong>${question}<br><span class="tag tag-gold">${getTypeLabel(type)}</span>${(S.form.btime===''||!document.getElementById('f-btime')?.value)?'<br><span class="text-xs" style="color:var(--c-warn)"><i class="fas fa-exclamation-triangle"></i> 出生時間未填，以 12:00 估算，時柱及部分判定準確度降低</span>':''}${_ch1}`;
 
   // Direct answer
   const answer=generateAnswer(type,finalProb,b,S.meihua,S.tarot);
@@ -3591,8 +3722,8 @@ function parseQuestionIntent(question, type) {
   // 如何題
   if(/如何|怎麼|怎樣|方法|辦法|做法|策略/.test(q)) result.isHow = true;
 
-  // 選擇題
-  const compareMatch = q.match(/(.{1,15})[還是或](.{1,15})/);
+  // 選擇題 — 只有「還是」和「或」才是選擇，單獨的「是」不算
+  const compareMatch = q.match(/(.{1,15})(?:還是|或者|或是)(.{1,15})/);
   if(compareMatch) {
     result.isCompare = true;
     result.optionA = compareMatch[1].trim();
@@ -3911,20 +4042,23 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     else if(zn.overallLevel.includes('凶')){score-=1;evidence.push('姓名生肖派（'+zn.overallLevel+'）');}
   }
   // ? ? prob (finalProb) ????????,????
+  // 判定閾值：與 verdict 標籤一致
+  // >=78 大吉, >=65 偏吉, >=52 中性偏可行, >=40 中性偏保守, >=25 偏凶, <25 大凶
   const great = prob >= 65;
-  const good  = prob >= 52 || (prob >= 40 && score >= 2);
-  const bad   = prob < 25 || (prob < 40 && score <= -2);
+  const good  = prob >= 52;
+  const bad   = prob < 40;
 
   /* 問法 */
   const isYN=intent.isYesNo, isWhen=intent.isWhen, isHow=intent.isHow;
-  const isWhy=/為什麼|為何|怎麼會|什麼原因|原因/.test(q);
+  const isWhy=/為什麼|為何|怎麼會|什麼原因|原因|怎麼回事|怎麼了|發生什麼|什麼事|什麼問題|出了什麼/.test(q);
   const isChoice=intent.isShould||intent.isCompare;
 
   /* 時間 */
   let goodYears=[], badYears=[];
+  const _thisYear = new Date().getFullYear();
   if(curDy&&curDy.liuNian){
-    goodYears=curDy.liuNian.filter(ln=>ln.level.includes('旺盛')||ln.level.includes('極強')||ln.level.includes('上升')).map(ln=>ln.year+'年').slice(0,3);
-    badYears=curDy.liuNian.filter(ln=>ln.level.includes('凶')).map(ln=>ln.year+'年').slice(0,2);
+    goodYears=curDy.liuNian.filter(ln=>ln.year>=_thisYear&&(ln.level.includes('旺盛')||ln.level.includes('極強')||ln.level.includes('上升')||ln.level==='大吉'||ln.level==='中吉')).map(ln=>ln.year+'年').slice(0,3);
+    badYears=curDy.liuNian.filter(ln=>ln.year>=_thisYear&&(ln.level.includes('凶')||ln.level.includes('低迷')||ln.level.includes('補運'))).map(ln=>ln.year+'年').slice(0,2);
   }
   const yearInfo=goodYears.length?'有利年份：'+goodYears.join('、')+'。':'';
   const dyInfo=curDy?'目前大運'+curDy.gz+'（'+curDy.level+'）'+(curDy.notes&&curDy.notes.length?'，'+curDy.notes[0]:'')+'。':'';
@@ -4103,6 +4237,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     }else if(isWhy){
       if(/找不到|沒工作|失業/.test(q)) answer='<strong>不是你不行，是方法和時機的問題。</strong> '+(bad?'目前運勢偏弱，確實比較辛苦。但運勢是會轉的。':'運勢其實不差，問題可能在求職方向或面試表現上。')+'建議調整履歷亮點、擴大投遞範圍、找人模擬面試。';
       else if(/升遷|不順|卡住/.test(q)) answer=(strong?'<strong>你能力不差，但可能太有稜角。</strong> 職場不只看能力，也看關係。適度圓滑不是虛偽，是智慧。':'<strong>你太低調了。</strong> 默默做事但不被看到是職場最大的冤枉。學會「適度展現成果」，讓主管知道你做了什麼。')+(bad?' 加上目前運勢對事業不太配合，雙重影響下確實辛苦。':'');
+      else if(/沒訂單|沒生意|沒客人|業績差|業績掉|營收|副業.*沒|接不到|沒案子/.test(q)) answer=(bad?'<strong>運勢確實在低谷期。</strong> 這段時間外在環境不太配合，不完全是你的問題。但等運勢不如主動調整——檢視你的產品定位、行銷管道是否需要更新，趁低谷期優化流程。':'<strong>問題可能出在策略而不是運氣。</strong> 運勢其實不差，建議回頭檢視：產品有沒有跟上市場需求？行銷方式是不是太單一？客戶回購率如何？有時候停下來調整方向，比硬撐更有效。')+(lnEventHint?' 今年事象提示：'+lnEventHint:'');
       else answer=(strong?'<strong>你可能太急了。</strong> 事業需要時間累積，不要因為一時的不順就全盤否定自己。':'<strong>你可能太安於現狀了。</strong> 舒適圈待久了就不想動了，但機會不會等你準備好才來。')+(bad?' 運勢目前偏弱，但這是階段性的，不是永久的。':'');
       tip='穿'+FC[favEl]+'色增強工作能量。';
     }else if(isChoice){
@@ -4178,8 +4313,9 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       }
       tip='在'+FD[favEl]+'方位辦公或放錢包有助財運。穿'+FC[favEl]+'色談生意。';
     }else if(isWhen){
-      if(good) answer='<strong>目前財運就不錯。</strong> '+dyInfo+(yearInfo||'把握當下，開源節流雙管齊下。');
-      else answer='<strong>財運還在蓄勢中。</strong> '+dyInfo+(yearInfo||'現階段先存錢、少花，等運勢好了再積極出手。');
+      const badYearInfo=badYears.length?'需注意年份：'+badYears.join('、')+'，這些年份要特別控制開支、避免冒險投資。':'';
+      if(good) answer='<strong>目前財運就不錯。</strong> '+dyInfo+(yearInfo||'把握當下，開源節流雙管齊下。')+(badYearInfo?' '+badYearInfo:'');
+      else answer='<strong>財運還在蓄勢中。</strong> '+dyInfo+(yearInfo?yearInfo+'等有利年份再積極出手。':'現階段先存錢、少花，等運勢好了再積極出手。')+(badYearInfo?' '+badYearInfo:'');
       tip='有利時期果斷出手，不利時期守住本金。';
     }else if(isHow){
       answer='<strong>給你三個理財建議：</strong>';
@@ -4367,6 +4503,12 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       }else if(/孩子|小孩|兒子|女兒|親子/.test(q)){
         if(good) answer='<strong>親子關係會好轉。</strong> 孩子需要的不是你的管教而是你的理解。試著少說教、多傾聽。問「你覺得呢」比說「你應該」有效一百倍。';
         else answer='<strong>親子溝通需要調整方式。</strong> 你越管，孩子越反抗。試著放手讓他們做決定，在旁邊當顧問而不是指揮官。';
+      }else if(/健康|身體|生病|開刀|住院|檢查|看醫|看病|長輩.*注意|爸媽.*注意|父母.*注意/.test(q)){
+        // 家庭type下問健康問題（通常是問家人的健康）
+        const elderWord=(/爺|奶|外公|外婆|阿公|阿嬤|長輩|爸|媽|父|母|公婆/.test(q))?'長輩':'家人';
+        if(good) answer=`<strong>${elderWord}健康整體還好。</strong> 但年紀大了本來就要多注意。建議定期健康檢查，尤其是心血管和骨質方面。平時多關心${elderWord}的飲食作息，有異狀不要拖。`;
+        else answer=`<strong>要特別留意${elderWord}健康。</strong> 運勢顯示這段時間家人健康方面有些隱憂，特別注意慢性病控制和意外預防。建議安排一次全面健檢，早發現早處理。平時多打電話關心，有不舒服就陪去看醫生。`;
+        tip=`多關心${elderWord}飲食起居。家中`+FD[favEl]+`方位擺放綠植有助健康氣場。`;
       }else{
         if(good) answer='<strong>可以。</strong> 家庭運勢偏好，適合處理家庭大事。';
         else answer='<strong>需要更多耐心。</strong> 家庭方面有些阻力，多溝通少爭執。';
@@ -4377,12 +4519,23 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       else answer='<strong>需要給彼此時間。</strong> '+dyInfo+'家庭的事急不來，慢慢經營。';
       tip='有利時期多回家陪伴、多溝通。';
     }else if(isHow){
+      if(/健康|身體|生病|開刀|住院|檢查|看醫|看病|注意什麼|要注意/.test(q)&&/長輩|爸|媽|父|母|爺|奶|外公|外婆|阿公|阿嬤|公婆|家人|親人/.test(q)){
+        const elderWord=(/爺|奶|外公|外婆|阿公|阿嬤|長輩/.test(q))?'長輩':(/爸|父/.test(q))?'父親':(/媽|母/.test(q))?'母親':'家人';
+        const healthEl=bazi.fav[0]||'木';
+        const weakOrgan={金:'肺部、呼吸道、皮膚',木:'肝膽、筋骨、眼睛',水:'腎臟、泌尿、耳朵',火:'心臟、血壓、小腸',土:'脾胃、消化系統、肌肉'}[healthEl]||'脾胃';
+        answer=`<strong>${elderWord}健康需要留意這幾點：</strong>`;
+        detail=`1️⃣ 從你的命盤來看，疾厄宮氣場偏${bad?'弱':'中性'}，${elderWord}健康方面${bad?'確實有隱憂，不能掉以輕心':'需要日常保養，防患未然'}。`;
+        detail+=` 2️⃣ 依五行喜忌，建議特別注意${weakOrgan}方面。定期安排健康檢查，有慢性病要穩定控制。`;
+        detail+=` 3️⃣ ${elderWord}的生活環境也要注意——居家防滑、充足照明、適量運動。心理健康也很重要，多陪伴聊天比什麼補品都有效。`;
+        tip=`家中`+FD[favEl]+`方位擺放綠植有助健康氣場。多帶${elderWord}到戶外走走。`;
+      }else{
       answer='<strong>給你三個家庭建議：</strong>';
       detail='1️⃣ '+(strong?'你想掌控一切，但家人不是員工。練習「放手」，讓家人自己做決定，就算做錯了也是他們的學習。':'你總是把委屈往肚裡吞，但累積的不滿遲早會爆。練習「說出來」，合理的不爽不丟人。');
       if(/婆媳|公婆/.test(q)) detail+=' 2️⃣ 婆媳關係的關鍵人是你的另一半。拉他/她進來一起面對，不要自己硬扛。 3️⃣ 保持禮貌距離比假裝親密好。每週固定時間探望，其他時間各過各的。';
       else if(/親子|小孩|孩子/.test(q)) detail+=' 2️⃣ 每天花15分鐘純粹聊天（不是問功課），讓孩子感受到你關心他這個人，不只關心他的成績。 3️⃣ 在家裡建立「可以犯錯」的安全感，孩子才會跟你說真話。';
       else detail+=' 2️⃣ 家庭關係修復靠「行動」不是「說教」。與其說一百句「我都是為你好」，不如做一頓飯、接一次車。 3️⃣ 定期的家庭活動（一起吃飯、出遊）比什麼都有效。';
       tip='家中'+FD[favEl]+'方位是和諧能量位，適合放全家福或綠植。';
+      }
     }else if(isWhy){
       if(/不和|吵|鬧/.test(q)) answer=(strong?'<strong>你在家裡可能太強勢了。</strong> 你覺得是為家人好，但他們感受到的是控制和壓力。家不是講道理的地方，是講感情的地方。':'<strong>你在家裡壓抑太久了。</strong> 一直忍讓不代表和諧，只是把問題藏起來。找個適合的時機好好談一次，把心裡的話說清楚。')+(bad?' 加上運勢偏弱，家庭摩擦確實比平時多。但這是階段性的。':'');
       else if(/疏遠|不連絡|斷/.test(q)) answer='<strong>家人之間的疏遠通常不是因為不愛，而是不知道怎麼表達。</strong> 每個人都在等對方先開口，結果誰都不開口。你先踏出第一步，哪怕只是一條簡單的訊息。'+(bad?' 運勢顯示目前不是最佳時機，但不代表不能做。心到了，時機自然會對。':'');
@@ -8952,7 +9105,8 @@ function runAnalysisV2(){
   document.getElementById('r-vprob').textContent=finalProb+'%';
   document.getElementById('r-vnote').textContent=vnote;
   document.getElementById('r-pfill').style.width=finalProb+'%';
-  document.getElementById('r-question').innerHTML=`<strong>問題：</strong>${question}<br><span class="tag tag-gold">${getTypeLabel(type)}</span>${(S.form.btime===''||!document.getElementById('f-btime')?.value)?'<br><span class="text-xs" style="color:var(--c-warn)"><i class="fas fa-exclamation-triangle"></i> 出生時間未填，以 12:00 估算，時柱及部分判定準確度降低</span>':''}`;
+  const _ch2 = S._usedCache ? '<br><span class="text-xs" style="color:var(--c-info)"><i class="fas fa-lock"></i> 24小時內同類問題，卦象已鎖定（確保結果一致）</span>' : '';
+  document.getElementById('r-question').innerHTML=`<strong>問題：</strong>${question}<br><span class="tag tag-gold">${getTypeLabel(type)}</span>${(S.form.btime===''||!document.getElementById('f-btime')?.value)?'<br><span class="text-xs" style="color:var(--c-warn)"><i class="fas fa-exclamation-triangle"></i> 出生時間未填，以 12:00 估算，時柱及部分判定準確度降低</span>':''}${_ch2}`;
 
   // ── Answer ──
   const answer=generateAnswer(type,finalProb,b,S.meihua,S.tarot);
@@ -11585,6 +11739,7 @@ document.addEventListener('DOMContentLoaded', function(){
     renderAchievements();
     renderCrystalEncyclopedia();
     initReviewCarousel();
+    generateLuckyInfo();
   }
   // 監聽結果頁出現
   const obs = new IntersectionObserver((entries)=>{
@@ -11605,6 +11760,8 @@ document.addEventListener('DOMContentLoaded', function(){
       if(section) section.classList.remove('hidden');
       document.querySelectorAll('.nav-extra-tab').forEach(t=>t.classList.remove('active'));
       this.classList.add('active');
+      // 特定 tab 需要重新渲染（可能 S.bazi 在 initExtraFeatures 後才就緒）
+      if(target==='sec-lucky' && S.bazi) generateLuckyInfo();
       section.scrollIntoView({behavior:'smooth',block:'start'});
     });
   });
@@ -12272,21 +12429,66 @@ function computeDateFortune(bazi,dateObj){
   score=Math.max(10,Math.min(95,score));
 
   // 籤等
-  var sign,icon,cls,tip;
-  if(score>=85){sign='上上籤';icon='\u{1F31F}';cls='lv5';tip='諸事皆宜，天時與命盤高度契合';}
-  else if(score>=75){sign='大吉';icon='\u{1F34A}';cls='lv4';tip='運勢旺盛，適合重大決定';}
-  else if(score>=65){sign='上吉';icon='\u2728';cls='lv3';tip='貴人星動，積極推進事務';}
-  else if(score>=55){sign='中吉';icon='\u{1F319}';cls='lv2';tip='穩中求進，適合規劃學習';}
-  else if(score>=45){sign='小吉';icon='\u26C5';cls='lv2';tip='小有進展，耐心等待時機';}
-  else if(score>=35){sign='中平';icon='\u2601';cls='lv1';tip='宜守不宜攻，韜光養晦';}
-  else if(score>=25){sign='小凶';icon='\u{1F30A}';cls='lv0';tip='注意人際摩擦，凡事留退路';}
-  else{sign='凶';icon='\u26A1';cls='lvN';tip='沖煞之日，宜靜不宜動';}
+  var sign,icon,cls;
+  if(score>=85){sign='上上籤';icon='\u{1F31F}';cls='lv5';}
+  else if(score>=75){sign='大吉';icon='\u{1F34A}';cls='lv4';}
+  else if(score>=65){sign='上吉';icon='\u2728';cls='lv3';}
+  else if(score>=55){sign='中吉';icon='\u{1F319}';cls='lv2';}
+  else if(score>=45){sign='小吉';icon='\u26C5';cls='lv2';}
+  else if(score>=35){sign='中平';icon='\u2601';cls='lv1';}
+  else if(score>=25){sign='小凶';icon='\u{1F30A}';cls='lv0';}
+  else{sign='凶';icon='\u26A1';cls='lvN';}
 
-  // 水晶推薦
+  // ── 詳細提示（結合十神、沖合、長生、喜忌） ──
+  var tipParts=[];
+
+  // 十神解讀（針對日常生活）
+  var godTip={
+    '比肩':'同儕互動多，適合團隊合作、交流想法',
+    '劫財':'競爭壓力大，守財為上、少借錢出去',
+    '食神':'靈感充沛，適合創作、學習、享受美食',
+    '傷官':'表達慾強但容易得罪人，說話前三思',
+    '偏財':'偏財運動，可小試投資、留意意外收入',
+    '正財':'正財穩定，適合處理帳務、簽約、談薪',
+    '七殺':'壓力較大，注意與上司或權威人士的互動',
+    '正官':'貴人運佳，適合拜訪長輩、處理公事',
+    '偏印':'思緒活躍但不安定，適合研究、不宜衝動決定',
+    '正印':'學習運強，適合進修、考試、閱讀充電'
+  };
+  if(godTip[god]) tipParts.push(god+'日：'+godTip[god]);
+
+  // 沖合提示
+  if(isChong) tipParts.push('⚠ 日支逢沖（'+tZ+'沖'+dZ+'），情緒波動大、注意交通安全');
+  if(isHe) tipParts.push('✓ 日支逢合（'+tZ+'合'+dZ+'），人際和諧、合作順利');
+
+  // 長生狀態
+  var csTip={
+    '長生':'精神飽滿，開始新事物的好時機',
+    '沐浴':'桃花旺但判斷力下降，感情事冷靜處理',
+    '冠帶':'自信心強，適合展現自我、談判',
+    '臨官':'事業運佳，適合爭取機會、主動出擊',
+    '帝旺':'能量巔峰，但物極必反、勿過度冒險',
+    '衰':'體力下降，適當休息比硬撐更有效率',
+    '病':'身體要注意，避免過勞、多喝水多休息',
+    '死':'能量低谷，宜靜不宜動、處理收尾工作',
+    '墓':'適合整理、反省、收納，不宜開始新計畫',
+    '絕':'低潮期，保守行事、等待轉機',
+    '胎':'醞釀期，可以規劃但不急著行動',
+    '養':'恢復期，慢慢養精蓄銳、打好基礎'
+  };
+  if(csTip[cs]) tipParts.push(cs+'位：'+csTip[cs]);
+
+  // 喜忌提示
+  if(bazi.fav.indexOf(tEl)>=0) tipParts.push('今日天干'+tG+'屬'+tEl+'為喜用神，整體能量加持');
+  else if(bazi.unfav.indexOf(tEl)>=0) tipParts.push('今日天干'+tG+'屬'+tEl+'為忌神，行事宜低調謹慎');
+
+  var tip=tipParts.slice(0,3).join('。')+'。';
+
+  // 水晶：不再每天輪換，統一推薦喜用神對應水晶
   var favEl=bazi.fav[0]||dmEl;
   var cMap={'金':['鈦晶','白水晶','銀髮晶'],'木':['綠幽靈','東陵玉','綠碧璽'],'水':['海藍寶','月光石','拉長石'],'火':['紅瑪瑙','紫水晶','太陽石'],'土':['黃水晶','虎眼石','茶晶']};
   var cList=cMap[favEl]||cMap['土'];
-  var crystal=cList[(d+m)%cList.length];
+  var crystal=cList[0];
 
   return{date:dateObj,ds:dateObj.toISOString().slice(0,10),score:score,sign:sign,icon:icon,cls:cls,tip:tip,crystal:crystal,god:god,cs:cs,gz:tG+tZ,tEl:tEl,favEl:favEl,isChong:isChong,isHe:isHe};
 }
@@ -12376,7 +12578,7 @@ function renderCal30D(){
     var wd=wds[d.getDay()];
     var ct=day.isChong?' <span style="color:#f87171;font-size:.7rem">\u26A0\u6C96</span>':'';
     var ht=day.isHe?' <span style="color:#4ade80;font-size:.7rem">\u2713\u5408</span>':'';
-    html+='<div class="cal30-di"><div style="min-width:48px;font-weight:700;color:var(--c-text-dim);font-size:.78rem">'+(d.getMonth()+1)+'/'+d.getDate()+'<br><span style="font-size:.65rem;color:var(--c-text-muted)">\u9031'+wd+'</span></div><div style="min-width:16px;text-align:center">'+day.icon+'</div><div style="flex:1;line-height:1.5"><strong style="font-size:.78rem">'+day.sign+'</strong> <span class="text-xs text-muted">'+day.gz+'('+day.tEl+')\u00B7'+day.god+'</span>'+ct+ht+'<br><span style="color:var(--c-text-dim);font-size:.75rem">'+day.tip+'</span><br><span class="cal30-ct"><i class="fas fa-gem" style="font-size:.6rem"></i> '+day.crystal+'</span></div></div>';
+    html+='<div class="cal30-di"><div style="min-width:48px;font-weight:700;color:var(--c-text-dim);font-size:.78rem">'+(d.getMonth()+1)+'/'+d.getDate()+'<br><span style="font-size:.65rem;color:var(--c-text-muted)">\u9031'+wd+'</span></div><div style="min-width:16px;text-align:center">'+day.icon+'</div><div style="flex:1;line-height:1.5"><strong style="font-size:.78rem">'+day.sign+'</strong> <span class="text-xs text-muted">'+day.gz+'('+day.tEl+')\u00B7'+day.god+'</span>'+ct+ht+'<br><span style="color:var(--c-text-dim);font-size:.75rem">'+day.tip+'</span></div></div>';
   });
   list.innerHTML=html;
 }
