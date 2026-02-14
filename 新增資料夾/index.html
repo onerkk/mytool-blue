@@ -1792,14 +1792,8 @@ html{scroll-behavior:smooth}
   <div class="modal-box">
     <button class="modal-close" onclick="closeCustomModal()">&times;</button>
     <h3 class="serif text-gold mb-md"><i class="fas fa-magic"></i> 能量手鏈客製服務</h3>
-    <form id="custom-form" action="https://formsubmit.co/onerkk@gmail.com" method="POST" onsubmit="return prepareCustomSubmit()">
-      <!-- formsubmit.co config -->
-      <input type="hidden" name="_subject" id="cf-subject-hidden" value="【客製詢問】能量手鏈">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_template" value="table">
-      <input type="hidden" name="_next" id="cf-next-url" value="">
-      <input type="text" name="_honey" style="display:none">
-      <input type="hidden" name="占卜分析摘要" id="cf-analysis-hidden" value="">
+    <form id="custom-form" action="#" method="POST" onsubmit="return prepareCustomSubmit()">
+      <!-- Google Forms 送出 -->
       <div class="form-group">
         <label class="form-label">姓名 <span class="req">*</span></label>
         <input type="text" class="form-input" id="cf-name" name="姓名" required placeholder="您的姓名">
@@ -1816,9 +1810,9 @@ html{scroll-behavior:smooth}
         <label class="form-label">預算範圍 <span class="req">*</span></label>
         <select class="form-select" id="cf-budget" name="預算範圍" required>
           <option value="">請選擇</option>
-          <option value="預算版（$1,000-$3,000）">預算版（$1,000 - $3,000）</option>
-          <option value="加強版（$3,000-$6,000）">加強版（$3,000 - $6,000）</option>
-          <option value="收藏版（$6,000以上）">收藏版（$6,000 以上）</option>
+          <option value="$1000~$3000（基本）">預算版（$1,000 - $3,000）</option>
+          <option value="$3000~$6000（進階）">加強版（$3,000 - $6,000）</option>
+          <option value="$6000以上（收藏級）">收藏版（$6,000 以上）</option>
         </select>
       </div>
       <div class="actions" style="margin-top:var(--sp-lg)">
@@ -9528,110 +9522,96 @@ document.addEventListener('click',function(e){
   if(e.target.id==='custom-modal')closeCustomModal();
 });
 
-function submitCustomForm(e){e.preventDefault()} // deprecated, kept for safety
+function submitCustomForm(e){e.preventDefault()} // deprecated
 
 function prepareCustomSubmit(){
   var name=document.getElementById('cf-name').value.trim();
-  if(!name){alert('\u8ACB\u8F38\u5165\u59D3\u540D');return false;}
+  if(!name){alert('請輸入姓名');return false;}
 
   var btn=document.getElementById('cf-submit-btn');
-
-  /* Gather form data */
-  var gender=document.getElementById('cf-gender');
-  var bdate=document.getElementById('cf-bdate');
-  var btime=document.getElementById('cf-btime');
-  var userEmail=document.getElementById('cf-email');
+  var bday=document.getElementById('cf-bday');
   var question=document.getElementById('cf-question');
+  var budget=document.getElementById('cf-budget');
 
+  /* 組合命盤摘要 */
   var summary='';
   if(S.bazi){
-    summary+='\u65E5\u4E3B\uFF1A'+S.bazi.dm+'\uFF08'+S.bazi.dmEl+'\uFF09| \u8EAB'+(S.bazi.strong?'\u5F37':'\u5F31')+'\n';
-    summary+='\u559C\u7528\u795E\uFF1A'+S.bazi.fav.join('\u3001')+'\n';
-    summary+='\u5FCC\u795E\uFF1A'+S.bazi.unfav.join('\u3001')+'\n';
+    summary+='日主：'+S.bazi.dm+'（'+S.bazi.dmEl+'）| 身'+(S.bazi.strong?'強':'弱')+'\n';
+    summary+='喜用神：'+S.bazi.fav.join('、')+'\n';
+    summary+='忌神：'+S.bazi.unfav.join('、')+'\n';
     var curDy=S.bazi.dayun?S.bazi.dayun.find(function(d){return d.isCurrent}):null;
-    if(curDy)summary+='\u7576\u524D\u5927\u904B\uFF1A'+curDy.gz+'\uFF08'+curDy.level+'\uFF09\n';
-    if(S.bazi.shensha&&S.bazi.shensha.length)summary+='\u795E\u7162\uFF1A'+S.bazi.shensha.join('\u3001')+'\n';
-    if(S.tarot&&S.tarot.drawn&&S.tarot.drawn.length)summary+='\u5854\u7F85\uFF1A'+S.tarot.drawn[0].n+'\uFF08'+(S.tarot.drawn[0].isUp?'\u6B63\u4F4D':'\u9006\u4F4D')+'\uFF09\n';
+    if(curDy)summary+='當前大運：'+curDy.gz+'（'+curDy.level+'）\n';
+    if(S.bazi.shensha&&S.bazi.shensha.length)summary+='神煞：'+S.bazi.shensha.join('、')+'\n';
+    if(S.tarot&&S.tarot.drawn&&S.tarot.drawn.length)summary+='塔羅：'+S.tarot.drawn[0].n+'（'+(S.tarot.drawn[0].isUp?'正位':'逆位')+'）\n';
   }
 
-  var payload={
-    name:name,
-    _subject:'\u3010\u5BA2\u88FD\u8A62\u554F\u3011'+name+' - \u80FD\u91CF\u624B\u93C8',
-    '\u6027\u5225':gender?gender.value:'',
-    '\u751F\u65E5':bdate?bdate.value:'',
-    '\u51FA\u751F\u6642\u9593':btime?btime.value:'',
-    email:userEmail?userEmail.value:'',
-    '\u554F\u984C\u63CF\u8FF0':question?question.value:'',
-    '\u5206\u6790\u6458\u8981':summary||'\uFF08\u672A\u5B8C\u6210\u5206\u6790\uFF09',
-    _template:'table',
-    _captcha:'false'
-  };
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> 送出中...';}
 
-  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> \u9001\u51FA\u4E2D...';}
+  /* ====== Google Forms 送出（自動存到試算表 + email 通知你）====== */
+  var gfBase='https://docs.google.com/forms/d/e/1FAIpQLSchbIKzqppOIviTdBsVIUAaxVISNlCc64g7I91WZmTnL7kwvA/formResponse';
+  var formData=new URLSearchParams();
+  formData.append('entry.151817671', name);
+  formData.append('entry.1531021168', bday?bday.value:'');
+  formData.append('entry.642234587', question?question.value:'');
+  formData.append('entry.259743395', budget?budget.value:'');
+  formData.append('entry.1784473588', summary||'（未完成分析）');
 
-  /* Use formsubmit AJAX endpoint (supports CORS, works from file://) */
-  fetch('https://formsubmit.co/ajax/onerkk@gmail.com',{
+  fetch(gfBase,{
     method:'POST',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify(payload)
-  }).then(function(r){return r.json();}).then(function(data){
-    if(data.success){
-      if(btn)btn.innerHTML='<i class="fas fa-check"></i> \u5DF2\u9001\u51FA';
-      setTimeout(function(){
-        var modal=document.getElementById('custom-modal');
-        if(modal)modal.classList.add('hidden');
-        var conf=document.getElementById('custom-confirm-modal');
-        if(conf)conf.classList.remove('hidden');
-      },800);
-    }else{
-      /* formsubmit returned error - maybe needs activation */
-      _customMailtoFallback(name,payload);
-    }
+    mode:'no-cors',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:formData.toString()
+  }).then(function(){
+    console.log('Google Form submitted');
   }).catch(function(err){
-    console.log('formsubmit error:',err);
-    /* Network error - use mailto fallback */
-    _customMailtoFallback(name,payload);
+    console.log('Google Form error:',err);
   });
 
-  return false; /* always prevent default form submit */
-}
+  /* ====== 同時準備 LINE 訊息 ====== */
+  var fullMsg='【靜月之光 客製詢問】\n';
+  fullMsg+='姓名：'+name+'\n';
+  fullMsg+='出生日期：'+(bday?bday.value:'')+'\n';
+  fullMsg+='想解決的問題：'+(question?question.value:'')+'\n';
+  fullMsg+='預算範圍：'+(budget?budget.value:'')+'\n';
+  if(summary){fullMsg+='\n--- 命盤分析 ---\n'+summary;}
 
-function _customMailtoFallback(name,payload){
-  var body='\u59D3\u540D\uFF1A'+name+'\n';
-  body+='\u6027\u5225\uFF1A'+(payload['\u6027\u5225']||'')+'\n';
-  body+='\u751F\u65E5\uFF1A'+(payload['\u751F\u65E5']||'')+'\n';
-  body+='\u51FA\u751F\u6642\u9593\uFF1A'+(payload['\u51FA\u751F\u6642\u9593']||'')+'\n';
-  body+='Email\uFF1A'+(payload.email||'')+'\n';
-  body+='\u554F\u984C\uFF1A'+(payload['\u554F\u984C\u63CF\u8FF0']||'')+'\n\n';
-  body+='--- \u5206\u6790\u6458\u8981 ---\n'+(payload['\u5206\u6790\u6458\u8981']||'');
-  var subject=payload._subject||'\u5BA2\u88FD\u8A62\u554F';
-  var mailto='mailto:onerkk@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  /* 複製到剪貼簿 */
+  try{navigator.clipboard.writeText(fullMsg);}catch(e){
+    try{
+      var ta=document.createElement('textarea');
+      ta.value=fullMsg;
+      ta.style.cssText='position:fixed;left:-9999px';
+      document.body.appendChild(ta);ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }catch(e2){}
+  }
 
-  var btn=document.getElementById('cf-submit-btn');
-
-  /* Try opening mailto */
-  var w=window.open(mailto,'_blank');
-
-  /* Also show a manual copy dialog in case mailto doesn't work */
+  /* 延遲後導向 LINE + 恢復按鈕 */
   setTimeout(function(){
-    var copyText='\u6536\u4EF6\u4EBA\uFF1Aonerkk@gmail.com\n\u4E3B\u65E8\uFF1A'+subject+'\n\n'+body;
-    if(confirm('\u5982\u679C\u90F5\u4EF6\u6C92\u6709\u81EA\u52D5\u958B\u555F\uFF0C\u8ACB\u6309\u300C\u78BA\u5B9A\u300D\u8907\u88FD\u5167\u5BB9\u5F8C\u624B\u52D5\u5BC4\u4FE1\u5230 onerkk@gmail.com')){
-      try{
-        navigator.clipboard.writeText(copyText);
-        alert('\u5DF2\u8907\u88FD\uFF01\u8ACB\u958B\u555F\u4F60\u7684\u4FE1\u7BB1\u8CBC\u4E0A\u5167\u5BB9\u5BC4\u5230 onerkk@gmail.com');
-      }catch(e){
-        var ta=document.createElement('textarea');ta.value=copyText;ta.style.cssText='position:fixed;left:0;top:0;width:100%;height:200px;z-index:99999';
-        document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');
-        alert('\u5DF2\u8907\u88FD\uFF01\u8ACB\u958B\u555F\u4F60\u7684\u4FE1\u7BB1\u8CBC\u4E0A\u5167\u5BB9\u5BC4\u5230 onerkk@gmail.com');
-        document.body.removeChild(ta);
-      }
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> 送出詢問';}
+    document.body.style.overflow='';
+
+    var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    var lineId='moneyshop';
+
+    if(isMobile){
+      window.location.href='https://line.me/R/ti/p/~'+lineId;
+      setTimeout(function(){
+        alert('📋 訊息已複製到剪貼簿！\n\n請在 LINE 對話中「長按貼上」即可送出詢問。\n\n如果 LINE 沒有開啟，請手動搜尋 LINE ID：'+lineId);
+      },1500);
+    }else{
+      window.open('https://line.me/R/ti/p/~'+lineId,'_blank');
+      alert('📋 訊息已複製到剪貼簿！\n\n請在 LINE 對話中「Ctrl+V 貼上」即可送出詢問。\n\nLINE ID：'+lineId);
     }
-    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> \u9001\u51FA\u8A62\u554F';}
-  },500);
+
+    closeCustomModal();
+  },1200);
+
+  return false;
 }
 
-function copyCfContent(){} // no longer needed but kept for safety
+function copyCfContent(){} // kept for safety
 
 function toggleFab(){
   document.getElementById('fab-menu').classList.toggle('hidden');

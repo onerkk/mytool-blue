@@ -721,7 +721,7 @@ body::before{
   background:linear-gradient(0deg,rgba(13,4,4,0.98) 0%,rgba(13,4,4,0.92) 100%);
   backdrop-filter:blur(12px);
   border-top:1px solid rgba(212,175,55,0.25);
-  padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 10px);
+  padding:6px 12px calc(env(safe-area-inset-bottom,0px) + 6px);
   display:none;
   transform:translateY(100%);
   transition:transform .4s ease;
@@ -1175,7 +1175,7 @@ html{scroll-behavior:smooth}
 .review-meta{font-size:0.75rem;color:var(--c-text-muted)}
 .review-text{color:var(--c-text);line-height:1.6;font-size:0.9rem;margin-bottom:var(--sp-sm)}
 .review-product{display:flex;justify-content:flex-end}
-.extra-nav{display:flex;gap:var(--sp-xs);overflow-x:auto;padding:var(--sp-sm) 0;margin:var(--sp-lg) 0 var(--sp-sm);border-bottom:1px solid rgba(255,255,255,0.06);-webkit-overflow-scrolling:touch}
+.extra-nav{display:flex;gap:var(--sp-xs);overflow-x:auto;padding:var(--sp-sm) 0;margin:var(--sp-lg) 0 var(--sp-sm);border-bottom:1px solid rgba(255,255,255,0.06);-webkit-overflow-scrolling:touch;position:sticky;top:48px;z-index:50;background:rgba(13,4,4,0.95);backdrop-filter:blur(8px)}
 .nav-extra-tab{padding:0.5rem 1rem;border-radius:var(--r-pill);font-size:0.82rem;white-space:nowrap;border:1px solid rgba(255,255,255,0.06);background:none;color:var(--c-text-dim);cursor:pointer;transition:all 0.3s}
 .nav-extra-tab.active{background:rgba(212,175,55,0.1);color:var(--c-gold);border-color:rgba(212,175,55,0.3)}
 .extra-section{padding:var(--sp-md) 0}
@@ -11212,7 +11212,7 @@ function renderCrystalEncyclopedia(){
   
   container.innerHTML = allCrystals.map(c=>`
     <div class="ency-card" onclick="showCrystalDetail('${c.n.replace(/'/g,"\\'")}')">
-      <div class="ency-icon">${c.icon}</div>
+      <div class="ency-icon">${c.icon||catIcon[c.cat]||'💎'}</div>
       <div class="ency-name">${c.n}</div>
       <div class="ency-meta">
         ${c.el!=='全'?`<span class="el-tag el-${c.el} text-xs">${c.el}行</span>`:'<span class="tag text-xs" style="color:var(--c-gold)">五行全</span>'}
@@ -11241,7 +11241,7 @@ function showCrystalDetail(name){
     <div class="cdm-overlay" onclick="closeCrystalDetail()"></div>
     <div class="cdm-content">
       <button class="cdm-close" onclick="closeCrystalDetail()"><i class="fas fa-times"></i></button>
-      <div class="cdm-icon">${crystal.icon}</div>
+      <div class="cdm-icon">${crystal.icon||catIcon[crystal.cat]||'💎'}</div>
       <h3 class="cdm-name">${crystal.n}</h3>
       <div class="cdm-tags">
         ${crystal.el!=='全'?`<span class="el-tag el-${crystal.el}">${crystal.el}行</span>`:'<span class="tag" style="color:var(--c-gold)">五行全</span>'}
@@ -12871,6 +12871,7 @@ function resetAF(){
     <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="sticky-cta-btn" id="sticky-cta-btn" onclick="event.preventDefault();document.getElementById('quick-shop').scrollIntoView({behavior:'smooth',block:'center'});">
       <i class="fas fa-gem"></i> 看推薦水晶
     </a>
+    <button onclick="document.getElementById('sticky-cta').classList.remove('visible');document.getElementById('sticky-cta').style.display='none';" style="background:none;border:none;color:var(--c-text-muted);font-size:1.1rem;padding:4px 8px;cursor:pointer;line-height:1;flex:0 0 auto;" aria-label="關閉">✕</button>
   </div>
 </div>
 </body></html>
