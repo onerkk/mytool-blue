@@ -9537,11 +9537,9 @@ function prepareCustomSubmit(){
   var btn=document.getElementById('cf-submit-btn');
 
   /* Gather form data */
-  var gender=document.getElementById('cf-gender');
-  var bdate=document.getElementById('cf-bdate');
-  var btime=document.getElementById('cf-btime');
-  var userEmail=document.getElementById('cf-email');
+  var bday=document.getElementById('cf-bday');
   var question=document.getElementById('cf-question');
+  var budget=document.getElementById('cf-budget');
 
   var summary='';
   if(S.bazi){
@@ -9556,13 +9554,11 @@ function prepareCustomSubmit(){
 
   var payload={
     name:name,
-    _subject:'\u3010\u5BA2\u88FD\u8A62\u554F\u3011'+name+' - \u80FD\u91CF\u624B\u93C8',
-    '\u6027\u5225':gender?gender.value:'',
-    '\u751F\u65E5':bdate?bdate.value:'',
-    '\u51FA\u751F\u6642\u9593':btime?btime.value:'',
-    email:userEmail?userEmail.value:'',
-    '\u554F\u984C\u63CF\u8FF0':question?question.value:'',
-    '\u5206\u6790\u6458\u8981':summary||'\uFF08\u672A\u5B8C\u6210\u5206\u6790\uFF09',
+    _subject:'【客製詢問】'+name+' - 能量手鏈',
+    '出生日期':bday?bday.value:'',
+    '問題描述':question?question.value:'',
+    '預算範圍':budget?budget.value:'',
+    '分析摘要':summary||'（未完成分析）',
     _template:'table',
     _captcha:'false'
   };
@@ -9576,59 +9572,60 @@ function prepareCustomSubmit(){
     body:JSON.stringify(payload)
   }).then(function(r){return r.json();}).then(function(data){
     if(data.success){
-      if(btn)btn.innerHTML='<i class="fas fa-check"></i> \u5DF2\u9001\u51FA';
+      if(btn)btn.innerHTML='<i class="fas fa-check"></i> 已送出';
       setTimeout(function(){
-        var modal=document.getElementById('custom-modal');
-        if(modal)modal.classList.add('hidden');
-        var conf=document.getElementById('custom-confirm-modal');
-        if(conf)conf.classList.remove('hidden');
+        closeCustomModal();
+        document.getElementById('custom-form').reset();
+        alert('✅ 詢問已送出！我們會盡快透過 LINE 回覆您。');
       },800);
     }else{
-      /* formsubmit returned error - maybe needs activation */
-      _customMailtoFallback(name,payload);
+      /* formsubmit returned error - use LINE fallback */
+      document.body.style.overflow='';
+      _customLineFallback(name,payload);
     }
   }).catch(function(err){
     console.log('formsubmit error:',err);
-    /* Network error - use mailto fallback */
-    _customMailtoFallback(name,payload);
+    /* Network error - use LINE fallback */
+    document.body.style.overflow='';
+    _customLineFallback(name,payload);
   });
 
   return false; /* always prevent default form submit */
 }
 
-function _customMailtoFallback(name,payload){
-  var body='\u59D3\u540D\uFF1A'+name+'\n';
-  body+='\u6027\u5225\uFF1A'+(payload['\u6027\u5225']||'')+'\n';
-  body+='\u751F\u65E5\uFF1A'+(payload['\u751F\u65E5']||'')+'\n';
-  body+='\u51FA\u751F\u6642\u9593\uFF1A'+(payload['\u51FA\u751F\u6642\u9593']||'')+'\n';
-  body+='Email\uFF1A'+(payload.email||'')+'\n';
-  body+='\u554F\u984C\uFF1A'+(payload['\u554F\u984C\u63CF\u8FF0']||'')+'\n\n';
-  body+='--- \u5206\u6790\u6458\u8981 ---\n'+(payload['\u5206\u6790\u6458\u8981']||'');
-  var subject=payload._subject||'\u5BA2\u88FD\u8A62\u554F';
-  var mailto='mailto:onerkk@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
-
+function _customLineFallback(name,payload){
   var btn=document.getElementById('cf-submit-btn');
-
-  /* Try opening mailto */
-  var w=window.open(mailto,'_blank');
-
-  /* Also show a manual copy dialog in case mailto doesn't work */
-  setTimeout(function(){
-    var copyText='\u6536\u4EF6\u4EBA\uFF1Aonerkk@gmail.com\n\u4E3B\u65E8\uFF1A'+subject+'\n\n'+body;
-    if(confirm('\u5982\u679C\u90F5\u4EF6\u6C92\u6709\u81EA\u52D5\u958B\u555F\uFF0C\u8ACB\u6309\u300C\u78BA\u5B9A\u300D\u8907\u88FD\u5167\u5BB9\u5F8C\u624B\u52D5\u5BC4\u4FE1\u5230 onerkk@gmail.com')){
-      try{
-        navigator.clipboard.writeText(copyText);
-        alert('\u5DF2\u8907\u88FD\uFF01\u8ACB\u958B\u555F\u4F60\u7684\u4FE1\u7BB1\u8CBC\u4E0A\u5167\u5BB9\u5BC4\u5230 onerkk@gmail.com');
-      }catch(e){
-        var ta=document.createElement('textarea');ta.value=copyText;ta.style.cssText='position:fixed;left:0;top:0;width:100%;height:200px;z-index:99999';
-        document.body.appendChild(ta);ta.select();
-        document.execCommand('copy');
-        alert('\u5DF2\u8907\u88FD\uFF01\u8ACB\u958B\u555F\u4F60\u7684\u4FE1\u7BB1\u8CBC\u4E0A\u5167\u5BB9\u5BC4\u5230 onerkk@gmail.com');
-        document.body.removeChild(ta);
-      }
-    }
-    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> \u9001\u51FA\u8A62\u554F';}
-  },500);
+  
+  /* 組合訊息內容 */
+  var msg='【客製詢問】\n';
+  msg+='姓名：'+name+'\n';
+  msg+='出生日期：'+(payload['出生日期']||'')+'\n';
+  msg+='問題：'+(payload['問題描述']||'')+'\n';
+  msg+='預算：'+(payload['預算範圍']||'')+'\n\n';
+  msg+='--- 分析摘要 ---\n'+(payload['分析摘要']||'');
+  
+  /* 嘗試開啟 LINE */
+  var lineUrl='https://line.me/R/oaMessage/@moneyshop/?'+encodeURIComponent(msg);
+  
+  /* 同時複製內容到剪貼簿 */
+  try{
+    navigator.clipboard.writeText(msg);
+  }catch(e){}
+  
+  /* 顯示引導對話框 */
+  var userChoice=confirm(
+    '📱 詢問內容已複製！\n\n'+
+    '按「確定」→ 開啟 LINE 傳送給靜月之光\n'+
+    '(LINE ID: moneyshop)\n\n'+
+    '按「取消」→ 手動加 LINE 貼上內容'
+  );
+  
+  if(userChoice){
+    window.open(lineUrl,'_blank');
+  }
+  
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> 送出詢問';}
+  document.body.style.overflow='';
 }
 
 function copyCfContent(){} // no longer needed but kept for safety
