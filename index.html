@@ -1274,6 +1274,215 @@ html{scroll-behavior:smooth}
 .yao-visual{display:flex;flex-direction:column;gap:5px;padding:8px 0;width:70px;margin:0 auto}
 .yao-row{display:flex;align-items:center;justify-content:center;height:8px;gap:0}
 .yao-dong{filter:drop-shadow(0 0 3px rgba(232,201,104,0.5))}
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI OVERHAUL — 儀式感升級
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 浮動粒子 ── */
+.particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.particle{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,0.6),transparent 70%);animation:particleFloat linear infinite;opacity:0}
+@keyframes particleFloat{
+  0%{opacity:0;transform:translateY(100vh) scale(0)}
+  10%{opacity:1}
+  90%{opacity:1}
+  100%{opacity:0;transform:translateY(-10vh) scale(1)}
+}
+
+/* ── 月亮 Hero 升級 ── */
+.hero-moon{
+  position:relative;width:80px;height:80px;margin:0 auto var(--sp-md);
+}
+.hero-moon-crescent{
+  width:80px;height:80px;
+  border-radius:50%;
+  background:transparent;
+  box-shadow:inset -18px 2px 0 0 var(--c-gold-light),
+    0 0 30px rgba(212,175,55,0.3),
+    0 0 60px rgba(212,175,55,0.15),
+    0 0 100px rgba(212,175,55,0.08);
+  animation:moonBreath 4s ease-in-out infinite;
+}
+@keyframes moonBreath{
+  0%,100%{opacity:0.85;transform:scale(0.98);box-shadow:inset -18px 2px 0 0 var(--c-gold-light),0 0 30px rgba(212,175,55,0.25),0 0 60px rgba(212,175,55,0.1)}
+  50%{opacity:1;transform:scale(1.02);box-shadow:inset -18px 2px 0 0 #f0d060,0 0 40px rgba(212,175,55,0.4),0 0 80px rgba(212,175,55,0.2),0 0 120px rgba(212,175,55,0.08)}
+}
+
+/* ── 六宮格 ── */
+.hook-grid-6{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  max-width:480px;margin:0 auto;
+}
+.hook-card-v2{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:var(--sp-md) var(--sp-xs);
+  background:rgba(30,12,12,0.6);
+  border:1.5px solid rgba(212,175,55,0.15);
+  border-radius:var(--r-lg);
+  cursor:pointer;transition:all .3s cubic-bezier(0.4,0,0.2,1);
+  -webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
+}
+.hook-card-v2::before{
+  content:'';position:absolute;inset:0;
+  border-radius:var(--r-lg);
+  background:radial-gradient(circle at 50% 50%,rgba(212,175,55,0.06),transparent 70%);
+  opacity:0;transition:opacity .3s;
+}
+.hook-card-v2:hover::before,.hook-card-v2:active::before{opacity:1}
+.hook-card-v2:hover,.hook-card-v2:active{
+  border-color:var(--c-gold);
+  transform:translateY(-3px);
+  box-shadow:0 8px 28px rgba(212,175,55,0.18);
+}
+.hook-card-v2 .hook-emoji{
+  font-size:1.8rem;line-height:1;
+  filter:drop-shadow(0 0 8px rgba(212,175,55,0.3));
+}
+.hook-card-v2 .hook-title{font-weight:700;font-size:.88rem;color:var(--c-gold-light);font-family:var(--f-display)}
+.hook-card-v2 .hook-sub{font-size:.72rem;color:var(--c-text-muted)}
+@media(max-width:380px){
+  .hook-grid-6{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ── 卡片進場動畫 ── */
+.card-reveal{opacity:0;transform:translateY(24px);transition:opacity .6s cubic-bezier(0.16,1,0.3,1),transform .6s cubic-bezier(0.16,1,0.3,1)}
+.card-reveal.visible{opacity:1;transform:none}
+
+/* ── 社會認同計數 ── */
+.social-proof-count{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:var(--r-pill);
+  background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.12);
+  font-size:.78rem;color:var(--c-gold);margin:var(--sp-sm) auto 0;
+}
+.social-proof-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:dotPulse 2s infinite}
+@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── 塔羅牌升級 ── */
+.tarot-deck-card{flex:0 0 72px!important;height:108px!important}
+@media(max-width:640px){.tarot-deck-card{flex:0 0 64px!important;height:96px!important}}
+.tarot-deck-card-inner{
+  transition:all .3s ease!important;
+  background:linear-gradient(145deg,#1a0c2e,#0e0620)!important;
+}
+.tarot-deck-card:hover .tarot-deck-card-inner{
+  border-color:var(--c-gold)!important;
+  box-shadow:0 0 20px rgba(212,175,55,0.4),0 4px 16px rgba(0,0,0,.5)!important;
+}
+/* 翻牌動畫 */
+.tarot-deck-card.flipping{
+  animation:tarotFlip .6s ease-in-out;
+  pointer-events:none;
+}
+@keyframes tarotFlip{
+  0%{transform:translateY(0) rotateY(0)}
+  30%{transform:translateY(-20px) rotateY(0) scale(1.1)}
+  50%{transform:translateY(-20px) rotateY(90deg) scale(1.1)}
+  70%{transform:translateY(-20px) rotateY(180deg) scale(1.1)}
+  100%{transform:translateY(0) rotateY(360deg) scale(1)}
+}
+/* 飛入牌陣 */
+.tarot-deck-card.flying{
+  position:fixed!important;z-index:999;
+  transition:all .5s cubic-bezier(0.34,1.56,0.64,1)!important;
+}
+/* 牌陣接牌 */
+.tarot-chosen-slot.receiving{animation:slotBounce .4s ease}
+@keyframes slotBounce{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+/* ── 梅花起卦動畫 ── */
+.mh-casting-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;
+  background:rgba(13,4,4,0.95);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:var(--sp-md);
+}
+.mh-yao-anim{
+  display:flex;flex-direction:column-reverse;gap:8px;align-items:center;
+}
+.mh-yao-line{
+  width:120px;height:10px;border-radius:2px;
+  opacity:0;transform:scaleX(0);
+  transition:all .5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.mh-yao-line.yang{background:var(--c-gold)}
+.mh-yao-line.yin{
+  background:transparent;
+  border-left:52px solid var(--c-gold);
+  border-right:52px solid var(--c-gold);
+  width:120px;box-sizing:border-box;
+}
+.mh-yao-line.show{opacity:1;transform:scaleX(1)}
+.mh-yao-line.dong{filter:drop-shadow(0 0 6px rgba(232,201,104,0.8))}
+.mh-gua-name{
+  font-family:var(--f-display);font-size:2rem;font-weight:900;
+  color:var(--c-gold);opacity:0;transform:scale(0.5);
+  transition:all .6s cubic-bezier(0.34,1.56,0.64,1);
+  text-shadow:0 0 30px rgba(212,175,55,0.5);
+}
+.mh-gua-name.show{opacity:1;transform:scale(1)}
+
+/* ── 環形進度條（結果頁 Verdict）── */
+.verdict-ring{
+  position:relative;width:160px;height:160px;margin:0 auto var(--sp-md);
+}
+.verdict-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.verdict-ring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:8}
+.verdict-ring-fill{
+  fill:none;stroke-width:8;stroke-linecap:round;
+  transition:stroke-dashoffset 2s cubic-bezier(0.4,0,0.2,1),stroke 1s ease;
+}
+.verdict-ring-center{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;
+}
+.verdict-ring-pct{font-size:2.2rem;font-weight:900;font-family:var(--f-display);letter-spacing:1px}
+.verdict-ring-label{font-size:.85rem;color:var(--c-text-dim);margin-top:2px}
+.verdict-sources{
+  display:flex;justify-content:center;gap:var(--sp-md);margin-top:var(--sp-sm);
+  font-size:.72rem;color:var(--c-text-muted);
+}
+.verdict-source{display:flex;flex-direction:column;align-items:center;gap:2px}
+.verdict-source i{font-size:1rem;color:var(--c-gold);opacity:.6}
+
+/* ── 載入動畫升級 ── */
+.loading-bagua{
+  width:80px;height:80px;margin-bottom:var(--sp-lg);
+  animation:baguaSpin 3s linear infinite;
+  opacity:.6;
+}
+@keyframes baguaSpin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.loading-step-text{
+  font-size:.85rem;color:var(--c-text-muted);
+  transition:all .4s ease;
+  min-height:1.2em;text-align:center;
+}
+.loading-step-text.active{color:var(--c-gold);font-weight:500}
+
+/* ── 按鈕漣漪效果 ── */
+.ripple{position:relative;overflow:hidden}
+.ripple-wave{
+  position:absolute;border-radius:50%;
+  background:rgba(212,175,55,0.3);
+  transform:scale(0);animation:rippleExpand .6s ease-out;
+  pointer-events:none;
+}
+@keyframes rippleExpand{to{transform:scale(4);opacity:0}}
+
+/* ── 回答區升級 ── */
+.answer-block{
+  position:relative;
+  padding-left:var(--sp-md);
+  border-left:3px solid var(--c-gold);
+  font-family:var(--f-display);
+  font-size:1.05rem;line-height:2;
+}
+
+/* ── 數字跳動 ── */
+.count-up{display:inline-block}
+
 </style>
 </head>
 <body>
@@ -1298,41 +1507,50 @@ html{scroll-behavior:smooth}
 
   <!-- ═══ PHASE A: Hook Screen ═══ -->
   <div id="hook-screen">
-    <div class="hero">
-      <div class="hero-icon">☽</div>
-      <h1>10 秒看懂你現在缺什麼能量</h1>
-      <p style="font-size:.95rem;line-height:1.7;max-width:420px;margin:0 auto var(--sp-md);color:var(--c-text-dim)">選一個你最在意的方向，馬上告訴你答案</p>
+    <!-- 浮動粒子 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="hero" style="position:relative;z-index:1">
+      <div class="hero-moon"><div class="hero-moon-crescent"></div></div>
+      <h1 style="font-size:clamp(1.4rem,4.5vw,1.9rem);letter-spacing:0.03em">你的命盤，藏著答案</h1>
+      <p style="font-size:.85rem;line-height:1.7;max-width:420px;margin:0 auto 4px;color:var(--c-text-dim)">融合八字 · 紫微 · 梅花 · 塔羅的多維命理分析</p>
+      <div class="social-proof-count"><span class="social-proof-dot"></span> 今日已有 <strong id="visitor-count" class="count-up">0</strong> 人查看命盤</div>
     </div>
 
-    <!-- 四宮格 Hook -->
-    <div class="hook-grid">
-      <button class="hook-card" onclick="pickType('love')">
+    <!-- 六宮格 -->
+    <div class="hook-grid-6" style="position:relative;z-index:1">
+      <button class="hook-card-v2" onclick="pickType('love')">
         <span class="hook-emoji">💕</span>
         <span class="hook-title">感情桃花</span>
         <span class="hook-sub">今年有桃花嗎？</span>
       </button>
-      <button class="hook-card" onclick="pickType('career')">
+      <button class="hook-card-v2" onclick="pickType('career')">
         <span class="hook-emoji">💼</span>
         <span class="hook-title">事業方向</span>
         <span class="hook-sub">該不該換工作？</span>
       </button>
-      <button class="hook-card" onclick="pickType('wealth')">
+      <button class="hook-card-v2" onclick="pickType('wealth')">
         <span class="hook-emoji">💰</span>
         <span class="hook-title">財運投資</span>
         <span class="hook-sub">今年財運如何？</span>
       </button>
-      <button class="hook-card" onclick="pickType('health')">
+      <button class="hook-card-v2" onclick="pickType('health')">
         <span class="hook-emoji">🏥</span>
         <span class="hook-title">健康身心</span>
-        <span class="hook-sub">我該注意什麼？</span>
+        <span class="hook-sub">該注意什麼？</span>
+      </button>
+      <button class="hook-card-v2" onclick="pickType('relationship')">
+        <span class="hook-emoji">🤝</span>
+        <span class="hook-title">人際合作</span>
+        <span class="hook-sub">小人還是貴人？</span>
+      </button>
+      <button class="hook-card-v2" onclick="pickType('family')">
+        <span class="hook-emoji">🏠</span>
+        <span class="hook-title">家庭親子</span>
+        <span class="hook-sub">家庭和諧嗎？</span>
       </button>
     </div>
-    <!-- 次要入口 -->
-    <div style="display:flex;justify-content:center;gap:var(--sp-sm);margin-top:var(--sp-md);flex-wrap:wrap">
-      <button class="hook-card-mini" onclick="pickType('relationship')">🤝 人際合作</button>
-      <button class="hook-card-mini" onclick="pickType('family')">🏠 家庭親子</button>
-    </div>
-    <div style="display:flex;justify-content:center;gap:var(--sp-md);margin-top:var(--sp-lg);font-size:.78rem;color:var(--c-text-muted)">
+    <div style="display:flex;justify-content:center;gap:var(--sp-md);margin-top:var(--sp-lg);font-size:.75rem;color:var(--c-text-muted);position:relative;z-index:1">
       <span>⚡ 免費 · 10 秒出結果</span>
       <span>🔒 資料不上傳</span>
     </div>
@@ -1396,7 +1614,7 @@ html{scroll-behavior:smooth}
     <!-- CTA -->
     <div class="actions actions-center" style="flex-direction:column;gap:var(--sp-sm)">
       <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-go" onclick="submitStep0Fast()"><i class="fas fa-bolt"></i> 看我的命盤分析</button>
-      <button class="btn btn-outline btn-sm" onclick="submitStep0()" style="opacity:0.6"><i class="fas fa-sliders-h"></i> 進階：手動起卦＋抽牌</button>
+      <button type="button" class="btn btn-outline btn-sm" onclick="submitStep0()" style="opacity:0.6"><i class="fas fa-sliders-h"></i> 進階：手動起卦＋抽牌</button>
     </div>
   </div>
 
@@ -1490,9 +1708,24 @@ html{scroll-behavior:smooth}
   <!-- ═══ 層1：一屏結論 + 行動指令（不用滑就看完）═══ -->
   <!-- 🎯 大判定 -->
   <div class="result-verdict" id="r-verdict">
-    <div class="verdict-label" id="r-vlabel">分析中…</div>
-    <div class="verdict-prob" id="r-vprob">0%</div>
+    <div class="verdict-ring" id="verdict-ring">
+      <svg viewBox="0 0 160 160">
+        <circle class="verdict-ring-bg" cx="80" cy="80" r="70"/>
+        <circle class="verdict-ring-fill" id="verdict-ring-fill" cx="80" cy="80" r="70"
+          stroke-dasharray="440" stroke-dashoffset="440"/>
+      </svg>
+      <div class="verdict-ring-center">
+        <div class="verdict-ring-pct" id="r-vprob">0%</div>
+        <div class="verdict-ring-label" id="r-vlabel">分析中…</div>
+      </div>
+    </div>
     <div class="verdict-note" id="r-vnote"></div>
+    <div class="verdict-sources">
+      <div class="verdict-source"><i class="fas fa-yin-yang"></i>八字</div>
+      <div class="verdict-source"><i class="fas fa-hexagon"></i>梅花</div>
+      <div class="verdict-source"><i class="fas fa-star"></i>塔羅</div>
+      <div class="verdict-source"><i class="fas fa-th"></i>紫微</div>
+    </div>
   </div>
 
   <!-- 🎯 核心回答（精簡） -->
@@ -2290,6 +2523,7 @@ const Q_PRESETS = {
   family: ['跟家人關係會好轉嗎？','親子溝通怎麼改善？','家庭運勢如何？','長輩健康要注意什麼？','家裡的問題會解決嗎？']
 };
 const TYPE_LABELS_SHORT = {love:'💕 感情桃花',career:'💼 事業方向',wealth:'💰 財運投資',health:'🏥 健康身心',relationship:'🤝 人際合作',family:'🏠 家庭親子'};
+const TYPE_LABEL_TO_TYPE = (function(){const o={};for(const[k,v]of Object.entries(TYPE_LABELS_SHORT))o[v]=k;return o;})();
 let selectedPresetQ = '';
 
 function pickType(type){
@@ -2332,23 +2566,35 @@ function showCustomQ(btn){
 }
 
 function submitStep0(){
-  const type=document.getElementById('f-type').value;
-  const question=document.getElementById('f-question').value.trim();
+  let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || '';
+  if (!type) {
+    var tagEl = document.getElementById('chosen-type-tag');
+    if (tagEl && tagEl.textContent && TYPE_LABEL_TO_TYPE[tagEl.textContent.trim()]) {
+      type = TYPE_LABEL_TO_TYPE[tagEl.textContent.trim()];
+      if (document.getElementById('f-type')) document.getElementById('f-type').value = type;
+    }
+  }
+  var question = (document.getElementById('f-question') && document.getElementById('f-question').value) ? document.getElementById('f-question').value.trim() : '';
+  if (!question && typeof selectedPresetQ === 'string') question = selectedPresetQ.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
-  const bdate=document.getElementById('f-bdate').value;
-  if(!type||!question||!gender||!bdate){alert('請填寫所有必要欄位');return}
-  const btime=document.getElementById('f-btime').value||'12:00';
-  const name=document.getElementById('f-name').value.trim();
+  const bdate=document.getElementById('f-bdate') ? document.getElementById('f-bdate').value : '';
+  if(!type||!question||!gender||!bdate){ alert('請填寫所有必要欄位（方向、問題、性別、出生日期）'); return; }
+  const btime=(document.getElementById('f-btime')&&document.getElementById('f-btime').value)||'12:00';
+  const name=document.getElementById('f-name')?document.getElementById('f-name').value.trim():'';
   S.form={type,question,gender:gender.value,bdate,btime,name};
-  const[y,m,d]=bdate.split('-').map(Number);
-  const[hh,mm]=btime.split(':').map(Number);
-  S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
-  S.ziwei=computeZiwei(y,m,d,hh,gender.value);
-  mergeZiweiIntoBazi(); // 紫微整合進八字大運流年
-  // 基本資料就緒，刷新需要八字的功能區
-  renderDailyFortune();
-  generateLuckyInfo();
-  goStep(1);
+  try {
+    const[y,m,d]=bdate.split('-').map(Number);
+    const[hh,mm]=btime.split(':').map(Number);
+    S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
+    S.ziwei=computeZiwei(y,m,d,hh,gender.value);
+    mergeZiweiIntoBazi(); // 紫微整合進八字大運流年
+    if (typeof renderDailyFortune==='function') renderDailyFortune();
+    if (typeof generateLuckyInfo==='function') generateLuckyInfo();
+    goStep(1);
+  } catch(e) {
+    console.error('submitStep0', e);
+    alert('資料處理時發生錯誤，請確認出生日期與時間格式正確。');
+  }
 }
 
 /* ══ 占卜結果快取：同人+同類型 24 小時內鎖定梅花/塔羅結果 ══ */
@@ -3693,7 +3939,7 @@ function drawCard(){
 function autoDraw(){
   // Init deck if not yet
   if(!deckShuffled.length) initTarotDeck();
-  // Quick draw all remaining
+  // Quick draw all remaining — 每張間隔需 > pickAnimating 鎖定時間(550ms)
   const remaining=10-drawnCards.length;
   let delay=0;
   for(let i=0;i<remaining;i++){
@@ -3701,7 +3947,7 @@ function autoDraw(){
       const deckEl=document.querySelector('.tarot-deck-card:not(.picked)');
       if(deckEl) pickCard(parseInt(deckEl.dataset.idx),deckEl);
     },delay);
-    delay+=120;
+    delay+=620;
   }
 }
 
@@ -14695,6 +14941,213 @@ function resetAF(){
   var _ei=window.initExtraFeatures;
   if(_ei)window.initExtraFeatures=function(){_ei.apply(this,arguments);try{renderCal30();renderAuraFilter();}catch(e){}};
   if(typeof S!=='undefined'&&S.bazi)setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},300);
+})();
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI OVERHAUL — JavaScript 互動系統
+   ═══════════════════════════════════════════════════════════ */
+
+// ── 浮動粒子 ──
+(function initParticles(){
+  const box=document.getElementById('particles');
+  if(!box)return;
+  for(let i=0;i<18;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const size=Math.random()*4+2;
+    p.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+6}s;animation-delay:${Math.random()*6}s;`;
+    box.appendChild(p);
+  }
+})();
+
+// ── 社會認同計數動畫 ──
+(function initVisitorCount(){
+  const el=document.getElementById('visitor-count');
+  if(!el)return;
+  const base=1200+Math.floor(Math.random()*800);
+  const today=new Date();
+  const seed=today.getFullYear()*10000+today.getMonth()*100+today.getDate();
+  const target=base+(seed%500);
+  let current=0;
+  const step=Math.ceil(target/40);
+  const timer=setInterval(()=>{
+    current+=step;
+    if(current>=target){current=target;clearInterval(timer)}
+    el.textContent=current.toLocaleString();
+  },30);
+})();
+
+// ── 按鈕漣漪效果 ──
+document.addEventListener('click',function(e){
+  const btn=e.target.closest('.btn,.hook-card-v2');
+  if(!btn)return;
+  const rect=btn.getBoundingClientRect();
+  const wave=document.createElement('span');
+  wave.className='ripple-wave';
+  const size=Math.max(rect.width,rect.height)*2;
+  wave.style.cssText=`width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px;`;
+  btn.style.position=btn.style.position||'relative';
+  btn.style.overflow='hidden';
+  btn.appendChild(wave);
+  setTimeout(()=>wave.remove(),600);
+});
+
+// ── 卡片進場動畫（Intersection Observer）──
+(function initCardReveal(){
+  // 只對結果頁(step-3)的卡片做進場動畫，不影響其他步驟
+  const step3=document.getElementById('step-3');
+  if(!step3)return;
+  const cards=step3.querySelectorAll('.card,.collapsible-card,.action-card,.quick-shop-card');
+  cards.forEach(c=>c.classList.add('card-reveal'));
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}
+    });
+  },{threshold:0.1,rootMargin:'0px 0px -30px 0px'});
+  cards.forEach(c=>obs.observe(c));
+})();
+
+// ── 塔羅翻牌動畫（非侵入式 — 用 CSS 增強原始動畫）──
+// 不覆蓋 pickCard，而是透過 MutationObserver 偵測牌被選中後加動畫
+(function upgradeTarotPick(){
+  const deck=document.getElementById('t-deck');
+  if(!deck)return;
+  const obs=new MutationObserver((muts)=>{
+    muts.forEach(m=>{
+      if(m.type==='attributes'&&m.attributeName==='class'){
+        const el=m.target;
+        if(el.classList.contains('picked')&&!el.dataset.animated){
+          el.dataset.animated='1';
+          // 牌陣接牌彈跳
+          const slotIdx=document.querySelectorAll('.tarot-deck-card.picked').length-1;
+          const slot=document.getElementById('t-slot-'+slotIdx);
+          if(slot){
+            slot.classList.add('receiving');
+            setTimeout(()=>slot.classList.remove('receiving'),400);
+          }
+        }
+      }
+    });
+  });
+  // 延遲觀察，等牌堆初始化
+  setTimeout(()=>{
+    const cards=deck.querySelectorAll('.tarot-deck-card');
+    cards.forEach(c=>obs.observe(c,{attributes:true}));
+  },1000);
+})();
+
+// ── 梅花起卦動畫（非侵入式 — 偵測 mh-result 出現後播放動畫）──
+(function upgradeMeihua(){
+  const mhResult=document.getElementById('mh-result');
+  if(!mhResult)return;
+  const obs=new MutationObserver(()=>{
+    if(!mhResult.classList.contains('hidden')&&!mhResult.dataset.animated){
+      mhResult.dataset.animated='1';
+      // 播放起卦動畫
+      if(!S.meihua||!S.meihua.ben)return;
+      const overlay=document.createElement('div');
+      overlay.className='mh-casting-overlay';
+      const guaName=S.meihua.ben.n||'卦';
+      overlay.innerHTML=`<div class="mh-yao-anim" id="mh-anim-yaos"></div><div class="mh-gua-name" id="mh-anim-name">${guaName}</div>`;
+      document.body.appendChild(overlay);
+      const yaosEl=overlay.querySelector('#mh-anim-yaos');
+      const nameEl=overlay.querySelector('#mh-anim-name');
+      const yaos=S.meihua.ben.yaos||[1,1,1,0,0,0];
+      const dong=S.meihua.dong||1;
+      yaos.forEach((y,i)=>{
+        const line=document.createElement('div');
+        line.className='mh-yao-line '+(y?'yang':'yin');
+        if(i+1===dong) line.classList.add('dong');
+        yaosEl.appendChild(line);
+        setTimeout(()=>line.classList.add('show'),300+i*350);
+      });
+      setTimeout(()=>nameEl.classList.add('show'),300+yaos.length*350+200);
+      setTimeout(()=>{
+        overlay.style.opacity='0';overlay.style.transition='opacity .5s';
+        setTimeout(()=>overlay.remove(),500);
+      },300+yaos.length*350+1500);
+    }
+    // Reset for next time
+    if(mhResult.classList.contains('hidden')) mhResult.dataset.animated='';
+  });
+  obs.observe(mhResult,{attributes:true,attributeFilter:['class']});
+})();
+
+// ── 環形進度條動畫 ──
+(function upgradeVerdict(){
+  const origSetVerdict=window._setVerdictDisplay;
+  
+  // Hook into the verdict display
+  const observer=new MutationObserver(()=>{
+    const probEl=document.getElementById('r-vprob');
+    const ringFill=document.getElementById('verdict-ring-fill');
+    if(!probEl||!ringFill)return;
+    
+    const text=probEl.textContent;
+    const match=text.match(/(\d+)/);
+    if(!match)return;
+    
+    const pct=parseInt(match[1]);
+    const circumference=2*Math.PI*70; // r=70
+    const offset=circumference*(1-pct/100);
+    
+    // Set color based on score
+    let color;
+    if(pct>=70) color='#4ade80';
+    else if(pct>=55) color='#d4af37';
+    else if(pct>=40) color='#fbbf24';
+    else color='#f87171';
+    
+    ringFill.style.stroke=color;
+    ringFill.style.strokeDashoffset=offset;
+    
+    // Animate number count up
+    const start=0;
+    const duration=1500;
+    const startTime=performance.now();
+    function animate(time){
+      const elapsed=time-startTime;
+      const progress=Math.min(elapsed/duration,1);
+      const eased=1-Math.pow(1-progress,3);
+      const current=Math.round(start+(pct-start)*eased);
+      probEl.textContent=current+'%';
+      if(progress<1) requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+    
+    observer.disconnect();
+  });
+  
+  const target=document.getElementById('r-vprob');
+  if(target) observer.observe(target,{childList:true,characterData:true,subtree:true});
+})();
+
+// ── 載入動畫升級 ──
+(function upgradeLoading(){
+  const overlay=document.querySelector('.loading-overlay');
+  if(!overlay)return;
+  
+  // Add bagua spinner if not exists
+  if(!overlay.querySelector('.loading-bagua')){
+    const bagua=document.createElement('div');
+    bagua.className='loading-bagua';
+    bagua.innerHTML='<svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(212,175,55,0.3)" stroke-width="1.5"/><path d="M40 2a38 38 0 0 1 0 76" fill="rgba(212,175,55,0.15)" stroke="rgba(212,175,55,0.5)" stroke-width="1.5"/><path d="M40 2a38 38 0 0 0 0 76" fill="rgba(139,0,0,0.15)" stroke="rgba(139,0,0,0.5)" stroke-width="1.5"/><circle cx="40" cy="21" r="6" fill="rgba(212,175,55,0.4)"/><circle cx="40" cy="59" r="6" fill="rgba(139,0,0,0.4)"/><circle cx="40" cy="21" r="2.5" fill="rgba(139,0,0,0.6)"/><circle cx="40" cy="59" r="2.5" fill="rgba(212,175,55,0.6)"/></svg>';
+    overlay.insertBefore(bagua,overlay.firstChild);
+  }
+})();
+
+// ── 回答區視覺升級 ──
+(function upgradeAnswerDisplay(){
+  const obs=new MutationObserver(()=>{
+    const answerEl=document.getElementById('r-answer');
+    if(answerEl&&answerEl.innerHTML.length>10&&!answerEl.classList.contains('answer-block')){
+      answerEl.classList.add('answer-block');
+    }
+  });
+  const target=document.getElementById('r-answer');
+  if(target) obs.observe(target,{childList:true,subtree:true});
 })();
 
 </script>
