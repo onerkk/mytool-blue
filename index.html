@@ -265,6 +265,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .tarot-reveal-front .tc-dir.rv{color:#f66;background:rgba(255,102,102,.1)}
 .tarot-reveal-front .tc-img{width:48px;height:74px;object-fit:cover;border-radius:3px}
 .tarot-pick-hint{text-align:center;padding:6px;font-size:.7rem;color:var(--c-gold);opacity:0;animation:hintPulse 2s infinite}
+.energy-locked-badge{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 14px;background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.05));border:1px solid rgba(212,175,55,.35);border-radius:20px;font-size:.75rem;color:var(--c-gold);animation:lockPulse 3s ease-in-out infinite}
+@keyframes lockPulse{0%,100%{box-shadow:0 0 0 0 rgba(212,175,55,0)}50%{box-shadow:0 0 12px 2px rgba(212,175,55,.2)}}
 @keyframes hintPulse{0%,100%{opacity:.3}50%{opacity:.8}}
 
 /* — Result — */
@@ -1361,8 +1363,8 @@ html{scroll-behavior:smooth}
 @keyframes dotPulse{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ── 塔羅牌升級 ── */
-.tarot-deck-card{flex:0 0 72px!important;height:108px!important}
-@media(max-width:640px){.tarot-deck-card{flex:0 0 64px!important;height:96px!important}}
+.tarot-deck-card{flex:0 0 52px!important;height:80px!important}
+@media(max-width:640px){.tarot-deck-card{flex:0 0 46px!important;height:72px!important}}
 .tarot-deck-card-inner{
   transition:all .3s ease!important;
   background:linear-gradient(145deg,#1a0c2e,#0e0620)!important;
@@ -1677,7 +1679,7 @@ html{scroll-behavior:smooth}
 <section class="step" id="step-2">
   <div class="card">
     <div class="card-title"><i class="fas fa-star"></i> 金色黎明塔羅牌</div>
-    <p class="text-dim text-sm mb-sm" style="text-align:center">靜心冥想你的問題，然後從牌堆中選出 <strong class="text-gold">10</strong> 張牌</p>
+    <p class="text-dim text-sm mb-sm" style="text-align:center">凝神冥想你的問題，然後從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張牌</p>
     <p class="tarot-pick-hint" id="pick-hint">← 滑動瀏覽，點選你有感覺的牌 →</p>
     <p class="text-dim text-xs" style="text-align:center" id="t-remain-text">已選 <strong id="t-remain-picked" class="text-gold">0</strong> / 10 張</p>
 
@@ -2601,6 +2603,18 @@ function submitStep0(){
 const DIVINE_CACHE_KEY = 'jy_divine_cache';
 const DIVINE_CACHE_TTL = 24 * 60 * 60 * 1000;
 
+/* ═══ Seeded PRNG (mulberry32) — 同人同天同問=同結果 ═══ */
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h>>>0;}
+function mulberry32(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function makeSeededRng(bdate,gender,type){
+  const today=new Date();const dayKey=today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+  const seed=hashStr(bdate+'|'+gender+'|'+type+'|'+dayKey);
+  return mulberry32(seed);
+}
+function seededShuffle(arr,rng){
+  const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;
+}
+
 function getDivineCacheKey(bdate, gender, type) {
   return bdate + '|' + gender + '|' + type;
 }
@@ -2690,12 +2704,13 @@ function submitStep0Fast(){
         S.tarot.drawn = cached.tarotDrawn;
         S.tarot.spread = cached.tarotDrawn;
       } else {
-        // Auto-draw silently for fast mode
-        deckShuffled=[...TAROT].sort(()=>Math.random()-0.5);
+        // Auto-draw with seeded RNG — 同人同天同類問題=同結果
+        const _rng=makeSeededRng(bdate,gender.value,type);
+        deckShuffled=seededShuffle(TAROT,_rng);
         drawnCards=[];
         for(let i=0;i<10;i++){
           const card=deckShuffled[i];
-          const isUp=Math.random()>0.35;
+          const isUp=_rng()>0.35;
           drawnCards.push({...card,isUp,pos:CELTIC_POS[i]});
         }
         S.tarot.drawn=drawnCards;
@@ -3517,6 +3532,21 @@ function showMH(r){
     <p><strong>卦辭：</strong>${r.ben.j}</p><p><strong>解讀：</strong>${r.ben.m}</p>
     <p><strong>動爻：</strong>第 ${r.dong} 爻</p><p class="mt-sm"><strong>變卦：</strong>${r.bian.m}</p>`;
   document.getElementById('mh-result').classList.remove('hidden');
+  // 起卦成功後鎖定所有起卦按鈕
+  lockMhButtons();
+}
+function lockMhButtons(){
+  document.querySelectorAll('#mhf-time .btn, #mhf-number .btn, #mhf-char .btn, #mhf-random .btn').forEach(btn=>{
+    btn.disabled=true;btn.style.opacity='0.4';btn.style.cursor='not-allowed';
+  });
+  const wrap=document.querySelector('#step-1 .card');
+  if(wrap&&!wrap.querySelector('.mh-lock-hint')){
+    const hint=document.createElement('div');
+    hint.className='mh-lock-hint';
+    hint.style.cssText='text-align:center;margin-top:8px;font-size:.72rem;color:var(--c-gold);opacity:.7';
+    hint.innerHTML='<i class="fas fa-lock" style="margin-right:4px"></i>卦象已定，不可重複起卦';
+    wrap.appendChild(hint);
+  }
 }
 
 /* 漢字筆畫數（簡表） */
@@ -3531,7 +3561,27 @@ function setMhMethod(m){
     else{btn.classList.add('btn-outline');btn.classList.remove('btn-tab-active')}
   });
 }
+
+/* ═══ 梅花起卦鎖定：同次占問只能起一次卦 ═══ */
+function showMhLockedMsg(){
+  const el=document.getElementById('mh-detail');
+  if(el&&!el.querySelector('.mh-locked-msg')){
+    const msg=document.createElement('div');
+    msg.className='mh-locked-msg energy-locked-badge';
+    msg.style.marginTop='12px';
+    msg.innerHTML='<i class="fas fa-lock"></i> 卦象已定 — 同一問題不可重複起卦，心誠則靈';
+    el.appendChild(msg);
+  }
+  const resultEl=document.getElementById('mh-result');
+  if(resultEl){
+    resultEl.style.transition='box-shadow .3s';
+    resultEl.style.boxShadow='0 0 20px rgba(212,175,55,.4)';
+    setTimeout(()=>{resultEl.style.boxShadow='';},1500);
+  }
+}
+
 function calcMhTime(){
+  if(S.meihua){showMhLockedMsg();return;}
   const now=new Date();
   const y=now.getFullYear(),mo=now.getMonth()+1,d=now.getDate();
   const h=now.getHours(),mi=now.getMinutes(),sec=now.getSeconds();
@@ -3574,12 +3624,14 @@ function calcMhTime(){
   }
 }
 function calcMhNumber(){
+  if(S.meihua){showMhLockedMsg();return;}
   const n1=parseInt(document.getElementById('mh-n1').value)||1;
   const n2=parseInt(document.getElementById('mh-n2').value)||1;
   const n3=parseInt(document.getElementById('mh-n3').value)||1;
   showMH(calcMH(n1,n2,Math.min(6,Math.max(1,n3))));
 }
 function calcMhChar(){
+  if(S.meihua){showMhLockedMsg();return;}
   const ch=document.getElementById('mh-char').value.trim();
   if(!ch){alert('請輸入漢字');return}
   const chars=[...ch];
@@ -3590,6 +3642,7 @@ function calcMhChar(){
   showMH(calcMH(un,ln,dy));
 }
 function calcMhRandom(){
+  if(S.meihua){showMhLockedMsg();return;}
   showMH(calcMH(Math.ceil(Math.random()*8),Math.ceil(Math.random()*8),Math.ceil(Math.random()*6)));
 }
 /* =============================================================
@@ -3806,8 +3859,13 @@ let deckShuffled=[];
 let pickAnimating=false;
 
 function initTarotDeck(){
-  // Shuffle all 78 cards
-  deckShuffled=[...TAROT].sort(()=>Math.random()-0.5);
+  // Shuffle all 78 cards — seeded if form data available
+  if(S.form&&S.form.bdate&&S.form.gender&&S.form.type){
+    const _rng=makeSeededRng(S.form.bdate,S.form.gender,S.form.type);
+    deckShuffled=seededShuffle(TAROT,_rng);
+  } else {
+    deckShuffled=[...TAROT].sort(()=>Math.random()-0.5);
+  }
   drawnCards=[];
   pickAnimating=false;
 
@@ -3830,9 +3888,9 @@ function initTarotDeck(){
       <div class="tarot-chosen-slot" id="t-slot-6"><span class="slot-num">7</span><span class="slot-label">${posLabels[6]}</span></div>
     </div>`;
 
-  // Render scrollable deck (show 22-30 cards for selection feel)
+  // Render scrollable deck — ALL 78 cards
   const deckEl=document.getElementById('t-deck');
-  const showCount=Math.min(deckShuffled.length,30);
+  const showCount=deckShuffled.length;
   deckEl.innerHTML='';
   for(let i=0;i<showCount;i++){
     const card=deckShuffled[i];
@@ -3862,7 +3920,13 @@ function pickCard(deckIdx,deckEl){
   pickAnimating=true;
 
   const card=deckShuffled[deckIdx];
-  const isUp=Math.random()>0.35;
+  // Seeded: 同張牌在同人同天=同正逆位
+  let isUp;
+  if(S.form&&S.form.bdate&&S.form.gender&&S.form.type){
+    const _r=makeSeededRng(S.form.bdate,S.form.gender,S.form.type);
+    for(let _k=0;_k<=card.id;_k++) _r();
+    isUp=_r()>0.35;
+  } else { isUp=Math.random()>0.35; }
   const slotIdx=drawnCards.length;
   const pos=CELTIC_POS[slotIdx];
 
@@ -4297,7 +4361,7 @@ function _runAnalysisV1_unused(){
   document.getElementById('r-vprob').textContent=finalProb+'%';
   document.getElementById('r-vnote').textContent=vnote;
   document.getElementById('r-pfill').style.width=finalProb+'%';
-  const _ch1 = S._usedCache ? '<br><span class="text-xs" style="color:var(--c-info)"><i class="fas fa-lock"></i> 24小時內同類問題，卦象已鎖定（確保結果一致）</span>' : '';
+  const _ch1 = S._usedCache ? '<div class="energy-locked-badge"><i class="fas fa-lock"></i> 此問題能量已鎖定 — 同日同問，卦象與牌陣維持首次占問結果</div>' : '';
   document.getElementById('r-question').innerHTML=`<strong>問題：</strong>${question}<br><span class="tag tag-gold">${getTypeLabel(type)}</span>${(S.form.btime===''||!document.getElementById('f-btime')?.value)?'<br><span class="text-xs" style="color:var(--c-warn)"><i class="fas fa-exclamation-triangle"></i> 出生時間未填，以 12:00 估算，時柱及部分判定準確度降低</span>':''}${_ch1}`;
 
   // Direct answer
@@ -10721,7 +10785,7 @@ function runAnalysisV2(){
   document.getElementById('r-vprob').textContent=finalProb+'%';
   document.getElementById('r-vnote').textContent=vnote;
   document.getElementById('r-pfill').style.width=finalProb+'%';
-  const _ch2 = S._usedCache ? '<br><span class="text-xs" style="color:var(--c-info)"><i class="fas fa-lock"></i> 24小時內同類問題，卦象已鎖定（確保結果一致）</span>' : '';
+  const _ch2 = S._usedCache ? '<div class="energy-locked-badge"><i class="fas fa-lock"></i> 此問題能量已鎖定 — 同日同問，卦象與牌陣維持首次占問結果</div>' : '';
   document.getElementById('r-question').innerHTML=`<strong>問題：</strong>${question}<br><span class="tag tag-gold">${getTypeLabel(type)}</span>${(S.form.btime===''||!document.getElementById('f-btime')?.value)?'<br><span class="text-xs" style="color:var(--c-warn)"><i class="fas fa-exclamation-triangle"></i> 出生時間未填，以 12:00 估算，時柱及部分判定準確度降低</span>':''}${_ch2}`;
 
   // ── Answer ──
