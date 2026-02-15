@@ -4098,11 +4098,11 @@ function parseQuestionIntent(question, type) {
   };
 
   // 是非題
-  if(/[會能可有]不[會能可有]|是否|是不是|好不好|適合嗎|行嗎|可以嗎|嗎[？?]?$/.test(q)) result.isYesNo = true;
+  if(/[會能可有]不[會能可有]|是否|是不是|好不好|適合嗎|行嗎|可以嗎|嗎[？?]?$|有機會|有希望|有可能|來得及|還有救|值得|划算/.test(q)) result.isYesNo = true;
   if(/該不該|要不要|應不應該|值不值/.test(q)) { result.isShould = true; result.isYesNo = true; }
 
   // 時間題
-  if(/何時|什麼時候|幾時|多久|幾月|哪一年|今年|明年|幾年/.test(q)) result.isWhen = true;
+  if(/何時|什麼時候|幾時|多久|幾月|哪一年|今年|明年|幾年|還要等|等多久|哪時|後年/.test(q)) result.isWhen = true;
 
   // 年齡題
   if(/幾歲|多大|年齡|多老|年紀/.test(q)) result.isAge = true;
@@ -4110,8 +4110,10 @@ function parseQuestionIntent(question, type) {
   // 誰/什麼人
   if(/是誰|什麼人|什麼樣的人|哪[個位種]人|什麼類型|什麼個性/.test(q)) result.isWho = true;
 
-  // 如何題
-  if(/如何|怎麼|怎樣|方法|辦法|做法|策略/.test(q)) result.isHow = true;
+  // 如何題（排除「你覺得如何/怎樣」這類詢問意見的用法）
+  if(/如何|怎麼[做辦改善提升進行準備開始]|怎樣[做才能]|方法|辦法|做法|策略/.test(q) && !/覺得如何|覺得怎[麼樣]|看法如何|意見如何|你覺得|如何[？?]$|怎樣[？?]$|怎麼樣[？?]$/.test(q)) result.isHow = true;
+  // 「你覺得如何/怎樣」「...如何？」是詢問意見 → 當作 isYesNo 處理
+  if(/覺得如何|覺得怎[麼樣]|看法如何|你覺得|你[看認]為|好不好|如何[？?]$|怎樣[？?]$|怎麼樣[？?]$/.test(q) && !result.isYesNo) result.isYesNo = true;
 
   // 選擇題 — 只有「還是」和「或」才是選擇，單獨的「是」不算
   const compareMatch = q.match(/(.{1,15})(?:還是|或者|或是)(.{1,15})/);
@@ -4662,6 +4664,46 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       }else if(/分手/.test(q)){
         if(good) answer='<strong>目前關係穩定。</strong> 運勢不支持分手的方向，有問題可以溝通解決。';
         else answer='<strong>感情確實在一個低潮期。</strong> 但低潮不代表要分手，先冷靜想想問題的根源是什麼。';
+      }else if(/曖昧|模糊|什麼關係|算交往|友達以上/.test(q)){
+        if(good) answer='<strong>這段曖昧有發展空間。</strong> 對方對你有好感但還在觀望。找好時機把話說清楚，曖昧太久反而消磨感情。';
+        else answer='<strong>這段曖昧可能會拖比較久。</strong> 對方目前沒有明確要交往的意思。能接受不清不楚嗎？不行就直接問清楚。';
+      }else if(/冷戰|冷淡|不理我|不回|已讀|消失|忽冷忽熱/.test(q)){
+        if(good) answer='<strong>只是暫時的冷淡。</strong> 對方可能在處理自己的事。給一點空間但不要完全消失，偶爾傳個輕鬆的訊息就好。';
+        else answer='<strong>要有心理準備。</strong> 對方的冷淡可能不只是一時的。先退一步把注意力放回自己身上。';
+      }else if(/出軌|外遇|劈腿|偷吃|第三者|小三|花心/.test(q)){
+        if(good) answer='<strong>目前看來關係是忠誠的。</strong> 不需要疑神疑鬼，信任是雙向的。一直懷疑反而會把對方推遠。';
+        else answer='<strong>確實有些不穩定的信號。</strong> 感情磁場有波動但不代表一定有外遇。有疑慮就直接溝通，不要自己猜。';
+      }else if(/異地|遠距|不同城市|不同國家/.test(q)){
+        if(good) answer='<strong>異地但感情還在。</strong> 你們之間的連結還很強。固定的聯繫節奏和明確的見面計畫是關鍵。';
+        else answer='<strong>異地確實有挑戰。</strong> 距離正在消磨感情。如果沒有結束異地的時間表，要認真討論未來了。';
+      }else if(/年紀差|年齡差|差很多歲|姐弟|忘年/.test(q)){
+        if(good) answer='<strong>年齡不是問題。</strong> 這段關係的核心是契合的。只要你們相處舒服就不需要在意別人眼光。';
+        else answer='<strong>年齡差距帶來的不只是數字。</strong> 生活習慣和價值觀可能不同。需要在根本問題上好好溝通。';
+      }else if(/前男友|前女友|前任|忘不了|放不下/.test(q)){
+        if(good) answer='<strong>你有能力翻過這一頁。</strong> 感情能量正在恢復中。過去的已經過去了，往前走更好的在等你。';
+        else answer='<strong>放下需要時間。</strong> 與其把能量花在離開的人身上不如投資讓自己變好的事。時間會治癒一切。';
+      }else if(/吵架|爭吵|鬧|生氣|溝通不良|講不聽/.test(q)){
+        if(good) answer='<strong>吵架是溝通的一種方式。</strong> 問題不大只是表達方式需要調整。先說我覺得而不是你都是。';
+        else answer='<strong>頻繁的衝突確實消耗感情。</strong> 溝通模式出了問題。考慮找第三方聊聊會更清楚。';
+      }else if(/見家長|見父母|家人反對|父母不同意/.test(q)){
+        if(good) answer='<strong>時機不錯。</strong> 家庭方面的能量正面。準備好第一印象，禮貌大方做真實的自己就好。';
+        else answer='<strong>可能要多準備。</strong> 長輩方面有些阻力。不要急著一次搞定，讓對方家人慢慢認識你。';
+            }else if(/感情淡|沒感覺|無性|沒激情|婚姻倦怠|老夫老妻|沒愛了/.test(q)){
+        if(good) answer='<strong>感情可以重新點燃。</strong> 運勢顯示你們之間還有連結。試著安排約會、做一些以前交往時做的事。感情需要經營。';
+        else answer='<strong>確實進入了瓶頸期。</strong> 感情變淡不一定是不愛了，可能只是太習慣了。找時間認真談一次，看看彼此還想不想走下去。';
+      }else if(/對的人|真命天子|靈魂伴侶|命中注定|適不適合|合不合/.test(q)){
+        if(good) answer='<strong>從命盤來看你們的契合度不錯。</strong> 但沒有完美的另一半，只有願意一起成長的人。關鍵是你們處理問題的方式合不合。';
+        else answer='<strong>你們之間確實有一些需要磨合的地方。</strong> 不代表不適合，但需要雙方都願意調整。如果只有你一個人在努力，那就要重新考慮了。';
+      }else if(/網戀|交友軟體|網路認識|線上認識|網友/.test(q)){
+        if(good) answer='<strong>這段網路緣分有發展空間。</strong> 但線上跟線下是兩回事。盡快安排見面，真實相處才能確認感覺。注意安全，第一次見面選公開場合。';
+        else answer='<strong>先保持謹慎。</strong> 網路認識的人需要更多時間驗證。不要太快交心或給錢。如果對方一直找理由不見面，就要提高警覺。';
+      }else if(/暗戀|單相思|喜歡但不敢說|怎麼讓.*注意/.test(q)){
+        if(good) answer='<strong>運勢支持你踏出那一步。</strong> 暗戀只會越來越苦。不需要直接告白，可以先創造多相處的機會，讓對方認識真正的你。';
+        else answer='<strong>目前時機還不太成熟。</strong> 先從朋友做起，多互動建立信任感。如果對方完全沒有回應，適時放手也是對自己好。';
+      }else if(/同居|住一起|搬去住/.test(q)){
+        if(good) answer='<strong>可以考慮。</strong> 但同居前先談好生活習慣和經濟分擔。很多情侶同居後才發現不合適。';
+        else answer='<strong>建議再等等。</strong> 目前感情還有些不穩定因素，同居可能會放大問題。';
+      
       }else{
         const passive=intent.isPassive;
         if(passive){
@@ -4756,6 +4798,29 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
           else if(good) answer='<strong>有機會錄取。</strong> 準備充分一點，把自己最好的一面展現出來。';
           else answer='<strong>可能需要多投幾家。</strong> 不要把期望放在一個籃子裡，多面試幾家增加機率。';
         }
+            }else if(/主管|老闆|上司|被針對|被刁難|很機車|不公平|偏心/.test(q)){
+        if(good) answer='<strong>跟上司的關係會好轉。</strong> 運勢顯示有貴人幫助。先忍一忍，做好自己的事，用成績說話。如果實在不合理就找更上一層反映。';
+        else answer='<strong>職場上確實委屈了。</strong> 跟不對的主管硬碰硬只會吃虧。默默準備退路，同時紀錄不合理的對待，保護自己。';
+      }else if(/讀什麼|科系|研究所|要不要念|升學|進修|留學/.test(q)){
+        if(strong) answer='<strong>你適合挑戰型的領域。</strong> 商管、法律、資工這類有競爭性的科系適合你。進修對你的職涯會有明顯加分。';
+        else answer='<strong>你適合專精型的領域。</strong> 選你真正有興趣的，不要只看出路。有熱情才能走得長久。如果是為了鍍金才念，效果會打折。';
+      }else if(/副業|兼職|斜槓|接案|做生意/.test(q)){
+        if(great) answer='<strong>副業運勢很好！</strong> 現在是發展第二收入的好時機。選跟你專業相關的副業成功率最高。';
+        else if(good) answer='<strong>可以開始嘗試。</strong> 先從小規模開始週末花幾小時測試市場反應再加大投入。';
+        else answer='<strong>現在不是好時機。</strong> 精力和運氣不足以支撐兩份工作。先把本業顧好。';
+      }else if(/適合什麼行業|適合做什麼|什麼工作適合|方向|出路/.test(q)){
+        if(strong) answer='<strong>你有領導力和決斷力。</strong> 適合管理、業務、創業型工作。往'+(FD[favEl]||'')+'方向發展更有利。';
+        else answer='<strong>你適合專注細心的工作。</strong> 像是研究、技術、設計、教育等。往'+(FD[favEl]||'')+'方向發展更有利。';
+      }else if(/同事|職場人際|辦公室政治|被排擠|被針對/.test(q)){
+        if(good) answer='<strong>同事關係會改善。</strong> 主動釋出善意但不需要討好任何人。做好自己的事讓能力說話。';
+        else answer='<strong>職場人際確實有壓力。</strong> 少說多做不站隊不傳話。維持專業距離就好。';
+      }else if(/壓力大|好累|撐不住|倦怠|不想上班/.test(q)){
+        if(good) answer='<strong>你只是需要充電。</strong> 問題不在工作本身而是太久沒休息了。安排一個假期吧。';
+        else answer='<strong>確實到了臨界點。</strong> 運勢也在低谷。先處理最緊急的事其他能放就放。';
+      }else if(/加班|被壓榨|做不完|工作量/.test(q)){
+        if(good) answer='<strong>你的付出會被看到。</strong> 現在的辛苦是在累積籌碼。但也要學會設底線。';
+        else answer='<strong>現在的處境確實不好受。</strong> 這份工作值得你這樣犧牲嗎？不值得就準備退路。';
+      
       }else{
         if(great) answer='<strong>可以。</strong> 運勢各方面都支持，放手去做，會有好結果。';
         else if(good) answer='<strong>偏向可以。</strong> 多數指標正面，大膽行動。';
@@ -4844,6 +4909,28 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
           else if(good) answer='<strong>收入有成長空間。</strong> 運勢偏好，但錢不會自己跑來，主動開源是關鍵。';
           else answer='<strong>收入可能持平或有壓力。</strong> 今年不太適合期待大幅加薪，穩住現有收入最重要。';
         }
+            }else if(/欠錢|被欠|還錢|借出去|要不回|賴帳|不還/.test(q)){
+        if(good) answer='<strong>有機會要回來。</strong> 運勢支持債務處理。找個好時機好好談，態度堅定但不撕破臉。必要時留下書面紀錄。';
+        else answer='<strong>要回來的機率不高。</strong> 對方可能真的沒錢或根本不想還。評估一下金額值不值得你花時間追。以後借錢記得寫借據。';
+      }else if(/財運.*好轉|什麼時候.*有錢|何時.*發財|窮.*什麼時候/.test(q)){
+        if(good) answer='<strong>財運已經在好轉了。</strong> 把握現在的機會多存多賺。你的有利方位在'+FD[favEl]+'，穿'+FC[favEl]+'色增強財運。';
+        else answer='<strong>財運好轉還需要一點時間。</strong> 目前先穩住不要大支出。'+dyInfo+(yearInfo||'耐心等待運勢翻轉。');
+      }else if(/保險|儲蓄險|理賠/.test(q)){
+        if(good) answer='<strong>可以考慮。</strong> 運勢支持長期財務規劃。保險重保障不重投報率。';
+        else answer='<strong>先顧好現金流。</strong> 運勢偏弱時不適合增加固定支出。先確保緊急預備金充足。';
+      }else if(/被騙|詐騙|被坑|騙錢/.test(q)){
+        if(bad) answer='<strong>確實要特別小心。</strong> 判斷力受影響容易被迷惑。任何要你先匯款或保證獲利的都要警覺。';
+        else answer='<strong>基本上還好但防人之心不可無。</strong> 報酬率太高的一定有問題。大額支出前多問幾個人。';
+      }else if(/合夥|合資|一起投資|股東/.test(q)){
+        if(good) answer='<strong>可以合夥但要有規則。</strong> 權責分明帳目透明退出機制先談好。';
+        else answer='<strong>合夥要非常謹慎。</strong> 目前運勢不太適合深度綁定。錢的事一定要白紙黑字。';
+      }else if(/存錢|理財|怎麼存|省錢/.test(q)){
+        if(good) answer='<strong>理財方向正確。</strong> 先存緊急預備金3到6個月生活費。運勢不錯可以考慮低風險基金。';
+        else answer='<strong>穩穩來就好。</strong> 先存緊急預備金。記帳一個月你會發現錢都花在哪了。';
+      }else if(/房貸|貸款壓力|繳不出|經濟壓力/.test(q)){
+        if(good) answer='<strong>財務壓力會逐漸緩解。</strong> 可以考慮轉貸降息或增加副業收入。';
+        else answer='<strong>確實辛苦但不是沒辦法。</strong> 先控制不必要開支。困難的話跟銀行談協商還款方案。';
+      
       }else{
         if(great) answer='<strong>可以。</strong> 財運各方面條件都好，放心去做。';
         else if(good) answer='<strong>偏向可以。</strong> 有賺錢的機會，行動是關鍵。';
@@ -4901,6 +4988,27 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       }else if(/好|康復|好轉|恢復/.test(q)){
         if(good) answer='<strong>會好轉的。</strong> 運勢支持身體恢復。配合治療、好好休息、注意飲食，身體會慢慢好起來。';
         else answer='<strong>需要一些時間。</strong> 恢復過程可能比你預期的慢一點，不要急。持續調理、保持好心情，身體有自癒能力。';
+      }else if(/減肥|瘦|胖|體重|身材|減重/.test(q)){
+        if(good) answer='<strong>減重運勢不錯。</strong> 現在開始執行計畫身體配合度比較高。不要極端節食，靠運動加飲食調整才能持久。';
+        else answer='<strong>減重會比較辛苦。</strong> 體質代謝偏慢不要期待快速見效。慢慢來反而穩，每週減0.5公斤就很好了。';
+      }else if(/憂鬱|焦慮|恐慌|心理|情緒低落|低潮/.test(q)){
+        answer='<strong>心理健康跟身體健康一樣重要。</strong> 你願意關注這個問題本身就是好的開始。建議找專業心理諮商師聊聊。';
+        detail='你的五行'+wk+'行偏弱，情緒容易受影響。日常可以透過運動和規律作息來調節。';
+      }else if(/過敏|蕁麻疹|濕疹|氣喘|鼻炎/.test(q)){
+        answer='<strong>過敏跟你的體質有關。</strong> 你的五行'+wk+'行偏弱容易在'+bp+'方面出問題。建議從飲食和生活環境調整減少過敏原接觸。';
+      }else if(/慢性病|長期吃藥|控制病情|副作用/.test(q)){
+        if(good) answer='<strong>病情控制方向正確。</strong> 運勢支持身體恢復配合醫囑持續治療會穩定改善。不要自己停藥或換藥。';
+        else answer='<strong>要更注意控制。</strong> 運勢偏弱時抵抗力也會下降。按時吃藥定期回診不能鬆懈。';
+            }else if(/戒菸|戒酒|戒|上癮|成癮|依賴/.test(q)){
+        if(good) answer='<strong>現在戒的成功率比較高。</strong> 運勢支持你做出改變。找到替代的紓壓方式是關鍵。不要一個人硬撐，找人陪你一起。';
+        else answer='<strong>會比較辛苦但不是做不到。</strong> 運勢低的時候意志力也比較弱。建議尋求專業協助，不丟臉的。一步一步來，偶爾失敗也沒關係。';
+      }else if(/家人.*健康|爸.*身體|媽.*身體|父母.*健康|長輩.*身體|幫.*問/.test(q)){
+        answer='<strong>你很有孝心。</strong> 從命理角度來看，';
+        if(good) answer+='家人健康運勢穩定。提醒他們定期健檢，飲食注意均衡就好。多陪伴本身就是最好的良藥。';
+        else answer+='家人健康方面要多留意。建議安排一次全面健檢，有問題早發現早治療。你的關心和陪伴對他們很重要。';
+      }else if(/養生|調理|進補|補身/.test(q)){
+        answer='<strong>從你的命盤看養生方向：</strong> 你的五行'+wk+'行最弱對應'+bp+'。飲食多吃'+WF[wk]+'。日常保養：'+WH[wk]+'。';
+      
       }else{
         if(good) answer='<strong>健康狀況整體還行。</strong> 注意日常保養就好，特別是'+bp+'方面。';
         else answer='<strong>健康要多留心。</strong> 特別注意'+bp+'。建議定期健檢，有不舒服別拖。';
@@ -4977,6 +5085,22 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
           else if(good) answer='<strong>可以合作，但要有規則。</strong> 運勢偏好，但別因為信任就什麼都用口頭說。權責分明、帳目透明、退出機制先談好。';
           else answer='<strong>合作要非常謹慎。</strong> 目前運勢不太適合深度綁定，如果要合作，先從小規模試起，彼此磨合了再加大。不要一開始就投入太多。';
         }
+      }else if(/社恐|社交恐懼|內向|不善交際|害羞/.test(q)){
+        if(good) answer='<strong>運勢其實很支持你社交。</strong> 你不是不會交朋友只是需要合適的環境。從兩三個人的小聚會開始。';
+        else answer='<strong>不用勉強自己。</strong> 內向不是缺點。一對一的深度交流比一群人的熱鬧更適合你。有幾個真心朋友就夠了。';
+            }else if(/霸凌|被欺負|被排擠|被孤立|被針對|被笑/.test(q)){
+        answer='<strong>這不是你的錯。</strong> 被霸凌的人從來不需要為別人的惡意負責。';
+        if(good) answer+='運勢顯示情況會改善。勇敢跟信任的人求助，不要一個人承受。';
+        else answer+='目前的處境確實很難受。如果環境無法改變，離開不是逃避而是保護自己。一定要跟信任的人說。';
+      }else if(/要不要繼續|斷捨離|要不要.*來往|值不值得.*交|遠離|有毒/.test(q)){
+        if(good) answer='<strong>這段關係還有維持的價值。</strong> 但可以調整距離和相處模式。不是所有關係都要親密，保持舒服的距離就好。';
+        else answer='<strong>你的直覺可能是對的。</strong> 如果一段關係讓你一直消耗能量卻得不到回饋，適時遠離是對自己的保護。你不欠任何人。';
+      }else if(/友情|絕交|友誼|好朋友/.test(q)){
+        if(good) answer='<strong>友誼有修復空間。</strong> 真正的朋友不會因為一次衝突就斷了。先冷靜幾天然後主動釋出善意。';
+        else answer='<strong>有些友情確實走到了盡頭。</strong> 不是所有關係都要強行維持。放手不代表不珍惜只是接受人生的自然變化。';
+      }else if(/鄰居|噪音|糾紛|官司|被告/.test(q)){
+        if(good) answer='<strong>事情會順利解決。</strong> 運勢支持和平處理能協調就協調。非得走法律程序今年的運勢對你有利。';
+        else answer='<strong>盡量避免對簿公堂。</strong> 運勢偏弱時打官司特別消耗。能和解就和解退一步海闊天空。';
       }else if(/人緣|人際|提升|改善/.test(q)){
         if(good) answer='<strong>人際方面有正面發展空間。</strong> '+(gr?'你命帶貴人星，人緣天生不差。':'')+'多出席社交場合、主動打招呼、記住別人的名字和喜好。人際就是這些小事。';
         else answer='<strong>人際需要一些時間經營。</strong> 目前運勢對社交不算特別有利，但不代表不能改善。從身邊最親近的人開始，一個一個經營好。';
@@ -5033,6 +5157,24 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       }else if(/搬家|買房|置產|裝潢/.test(q)){
         if(good) answer='<strong>運勢支持居家變動。</strong> 搬家或裝潢的話今年是好時機。建議往'+FD[favEl]+'方向找房子或安排主臥。';
         else answer='<strong>建議緩一緩。</strong> 居家大事不急著做決定，尤其是大額支出要量力而為。再等等，會有更好的機會。';
+      }else if(/離婚|分居/.test(q)){
+        if(good) answer='<strong>婚姻還有轉圜的餘地。</strong> 離婚是大事不要在情緒激動時做決定。先冷靜一個月再看。';
+        else answer='<strong>如果真的走不下去了。</strong> 離婚前要做好準備——經濟獨立、小孩安排、法律諮詢都想清楚。';
+      }else if(/生小孩|生孩子|生幾個|要不要生|生育/.test(q)){
+        if(good) answer='<strong>生育運勢不錯。</strong> 目前是可以考慮的時機。雙方都準備好了再說。經濟基礎和心理準備同樣重要。';
+        else answer='<strong>可以再準備一下。</strong> 目前條件還不太成熟。先把身體調養好經濟穩定下來時機到了自然水到渠成。';
+      }else if(/遺產|繼承|分家產|財產分配/.test(q)){
+        if(good) answer='<strong>處理遺產的運勢不錯。</strong> 趁運勢好把事情講清楚。最好有白紙黑字法律文件比口頭承諾有保障。';
+        else answer='<strong>這種事容易傷感情。</strong> 運勢偏弱時處理財產分配容易有糾紛。建議找律師或公正的長輩協調。';
+            }else if(/叛逆|不聽話|管不動|頂嘴|教養|教育方式|管教/.test(q)){
+        if(good) answer='<strong>親子關係會改善。</strong> 叛逆期是成長的一部分。多聽少說，試著理解他們的世界。你越放鬆他們反而越願意靠近你。';
+        else answer='<strong>確實是辛苦的階段。</strong> 但硬碰硬只會讓關係更糟。找一個他們信任的第三方（老師、親戚）幫忙溝通。耐心是唯一的路。';
+      }else if(/同住|搬出去|跟父母住|跟公婆住|要不要.*一起住/.test(q)){
+        if(good) answer='<strong>同住的運勢還行。</strong> 但一定要先談好生活規則和各自的空間。有衝突很正常，關鍵是有沒有溝通管道。';
+        else answer='<strong>建議保持一點距離。</strong> 目前的磁場不太適合太密切的相處。如果可以住附近但不同一屋簷下，是最好的平衡。';
+      }else if(/再婚|二婚|重組家庭/.test(q)){
+        if(good) answer='<strong>可以勇敢追求幸福。</strong> 運勢支持開展新關係。過去的經驗不是包袱而是讓你更知道自己要什麼。';
+        else answer='<strong>再等等讓自己準備好。</strong> 目前還在療傷期。先把自己和孩子的生活穩定下來感情的事順其自然就好。';
       }else if(/改善|和好|緩和|修復/.test(q)){
         if(good) answer='<strong>關係會改善的。</strong> 運勢顯示家庭的僵局正在鬆動。不需要做什麼大事，從每天多說一句關心的話、多幫忙做一件家事開始。小事累積比大動作有效。';
         else answer='<strong>需要耐心。</strong> 家庭關係不是一天壞掉的，也不會一天修好。先從「不吵」做起，不反駁、不翻舊帳，讓家裡的氣氛慢慢緩和。';
@@ -5098,9 +5240,165 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     tip='穿'+FC[favEl]+'色增強運勢。';
   }
 
+  /* ═══ 回答增強器：確保先正面回應，再補充深度 ═══ */
+  (function enrichResponse(){
+    // ---------- A) 正面回應前置：偵測是否有答非所問 ----------
+    // 如果 answer 裡沒有直接回應使用者的核心關鍵詞，加入直接回應
+    var qLower = q || '';
+    var needDirectAnswer = false;
+    var directPrefix = '';
+
+    // 判斷概率等級的中文描述
+    var probWord = prob >= 78 ? '很好' : prob >= 65 ? '不錯' : prob >= 52 ? '尚可' : prob >= 40 ? '偏弱' : prob >= 25 ? '不太好' : '很差';
+    var probYN = prob >= 65 ? '可以' : prob >= 52 ? '可以試試，但要謹慎' : prob >= 40 ? '目前不太建議' : '不建議';
+    var probFeel = prob >= 65 ? '偏正面' : prob >= 52 ? '中性偏保守' : '偏負面';
+
+    // 偵測使用者的核心問題
+    if(/你覺得|你[看認]為|如何[？?]$|怎樣[？?]$|怎麼樣[？?]$|好不好|好嗎[？?]?$|可以嗎|行嗎|適合嗎/.test(qLower)){
+      // 使用者在問意見/可行性
+      needDirectAnswer = true;
+      if(prob >= 65) directPrefix = '<strong>整體來看是可以的。</strong> 命理各方面指標偏正面（綜合評分 '+Math.round(prob)+'%），運勢是支持你的方向。';
+      else if(prob >= 52) directPrefix = '<strong>可以，但建議謹慎評估。</strong> 命理指標中性偏保守（綜合評分 '+Math.round(prob)+'%），不是不行，但需要做好準備再行動。';
+      else if(prob >= 40) directPrefix = '<strong>目前時機不算理想。</strong> 命理指標偏弱（綜合評分 '+Math.round(prob)+'%），建議先觀望或做好充足準備，不要衝動行事。';
+      else directPrefix = '<strong>目前不太建議。</strong> 多數命理指標偏負面（綜合評分 '+Math.round(prob)+'%），阻力較多，風險偏高。如果不急，建議等運勢好轉再行動。';
+    }
+    else if(/多少錢|賺多少|中多少|幾元|幾塊/.test(qLower)){
+      needDirectAnswer = true;
+      if(prob >= 65) directPrefix = '<strong>偏財運'+probWord+'。</strong> 從命理看，你近期有一些偏財的機運。不過命理無法預測具體金額，只能告訴你運勢的方向——小試手氣可以，但不要把它當收入來源。';
+      else directPrefix = '<strong>偏財運'+probWord+'。</strong> 命理無法預測具體金額，但從運勢來看，目前不是靠運氣賺錢的好時機。與其花錢試手氣，不如把錢存下來。';
+    }
+    else if(/會[不]?會|能[不]?能|有沒有|可[不]?可以|是[不]?是/.test(qLower) && !answer.match(/^<strong>[會有能可是]|^<strong>目前|^<strong>短期|^<strong>不太|^<strong>很有|^<strong>有機會|^<strong>沒問題|^<strong>可以|^<strong>不建議|^<strong>建議|^<strong>偏向/)){
+      // 是非題但 answer 沒有直接回答
+      needDirectAnswer = true;
+      if(prob >= 65) directPrefix = '<strong>從命理來看，'+probYN+'。</strong> 各方面指標偏正面。';
+      else if(prob >= 52) directPrefix = '<strong>有機會，但不是十拿九穩。</strong> 指標中性，需要自己多努力。';
+      else if(prob >= 40) directPrefix = '<strong>目前條件不太充分。</strong> 多數指標偏保守，建議再等等或做更充分的準備。';
+      else directPrefix = '<strong>短期內比較困難。</strong> 阻力較多，建議先調整策略。';
+    }
+
+    // 如果需要前置回應，但原 answer 已經有實質內容，就把原 answer 當作補充
+    if(needDirectAnswer && directPrefix){
+      // 檢查原 answer 是不是太短或太空泛
+      var origClean = answer.replace(/<[^>]*>/g, '').trim();
+      if(origClean.length < 15 || /^(給你|以下|建議|注意|穿|多)/.test(origClean)){
+        // 原 answer 太空泛，直接替換
+        answer = directPrefix;
+      } else {
+        // 原 answer 有內容但沒直接回應，加在前面
+        answer = directPrefix + ' ' + answer.replace(/^<strong>[^<]*<\/strong>\s*/, '');
+      }
+    }
+
+    // ---------- B) 確保每個回答都有深度 ----------
+    var favData_r={
+      '金':{food:'山藥、百合、白蘿蔔',drink:'杏仁茶或梨子汁',sport:'健走或瑜伽',habit:'深呼吸10分鐘，養肺安神',color:'白色/銀色系',subcolor:'米白或香檳金',motherColor:'駝色或卡其色'},
+      '木':{food:'花椰菜、菠菜、奇異果',drink:'綠茶或檸檬水',sport:'慢跑或登山',habit:'伸展操15分鐘，疏通肝氣',color:'綠色系',subcolor:'墨綠或橄欖綠',motherColor:'藏青或黛藍'},
+      '水':{food:'黑芝麻、海帶、藍莓',drink:'黑豆水或溫開水',sport:'游泳或冥想',habit:'睡前泡腳，11點前入睡',color:'藍色/黑色系',subcolor:'藏青或深灰',motherColor:'米白或淺灰'},
+      '火':{food:'紅棗、枸杞、番茄',drink:'紅棗茶或玫瑰花茶',sport:'有氧舞蹈或跑步',habit:'午間小憩15分鐘，養心安神',color:'紅色/紫色系',subcolor:'酒紅或玫瑰粉',motherColor:'墨綠或森林綠'},
+      '土':{food:'南瓜、地瓜、玉米',drink:'薑茶或四神湯',sport:'散步或太極',habit:'三餐定時定量，飯後散步20分鐘',color:'黃色/棕色系',subcolor:'駝色或焦糖色',motherColor:'酒紅或珊瑚橘'}
+    };
+    var fd_r=favData_r[favEl]||favData_r['土'];
+    var dirName_r=FD[favEl]||'中央';
+
+    // 如果 detail 為空，自動補充
+    if(!detail){
+      var parts=[];
+
+      // 深度解讀
+      var dyText='';
+      if(curDy){
+        if(curDy.level.indexOf('旺盛')>=0||curDy.level.indexOf('極強')>=0||curDy.level.indexOf('上升')>=0)
+          dyText='你目前正處於十年大運的上升期（'+curDy.gz+'），整體能量充沛，做事比較容易成功。';
+        else if(curDy.level.indexOf('偏弱')>=0||curDy.level.indexOf('低迷')>=0||curDy.level.indexOf('補運')>=0)
+          dyText='你目前的十年大運（'+curDy.gz+'）處於蓄力階段，外在助力較少，需要靠自己穩扎穩打。';
+        else
+          dyText='你目前的十年大運（'+curDy.gz+'）處於平穩期，不會大起大落。';
+      }
+
+      var lnText='';
+      if(liuNian){
+        if(liuNian.level.indexOf('旺盛')>=0||liuNian.level==='大吉'||liuNian.level==='中吉')
+          lnText='今年流年（'+liuNian.gz+'）運勢偏好，是把握機會的一年。';
+        else if(liuNian.level.indexOf('凶')>=0||liuNian.level.indexOf('低迷')>=0)
+          lnText='今年流年（'+liuNian.gz+'）運勢偏弱，宜守不宜攻。';
+        else
+          lnText='今年流年（'+liuNian.gz+'）運勢中性，平穩度過。';
+      }
+
+      var mhText='';
+      if(mh){
+        var rel=mh.ty?mh.ty.r:'';
+        if(rel==='用生體') mhText='梅花卦象顯示有外在助力，貴人或環境會幫到你。';
+        else if(rel==='比和') mhText='梅花卦象顯示事態平順，不會有大阻礙。';
+        else if(rel==='體克用') mhText='梅花卦象顯示你有能力掌控局面，但過程需要花些力氣。';
+        else if(rel==='體生用') mhText='梅花卦象顯示付出會比較多，回報需要耐心等待。';
+        else if(rel==='用克體') mhText='梅花卦象顯示阻力較大，外在環境對你不太有利，需要更謹慎。';
+      }
+
+      if(dyText||lnText||mhText){
+        parts.push('<p style="line-height:1.7;margin-top:0.5rem"><strong style="color:var(--c-gold)">🔍 深度解讀：</strong>'+(dyText?dyText+' ':'')+(lnText?lnText+' ':'')+(mhText?mhText:'')+'</p>');
+      }
+
+      // 具體行動建議
+      var actionItems=[];
+      if(type==='wealth'){
+        actionItems.push(great||good?'<strong>理財行動：</strong>目前財運有支撐，可以把閒置資金投入低風險工具（定存、ETF），但單筆不超過可承受虧損的額度。':'<strong>理財行動：</strong>現階段先穩住現金流，減少非必要訂閱和衝動消費。每月至少存收入的15%作為緊急預備金。');
+        actionItems.push('<strong>開運飲食：</strong>工作日多吃'+fd_r.food+'，下午來杯'+fd_r.drink+'，補充'+favEl+'行能量。');
+        actionItems.push('<strong>財位佈局：</strong>辦公桌面朝'+dirName_r+'，錢包放'+dirName_r+'方位。穿'+fd_r.subcolor+'色系談生意或面試更有利。');
+      }else if(type==='love'){
+        actionItems.push(great||good?'<strong>桃花行動：</strong>多參加社交活動，往'+dirName_r+'方向的場所走動。穿'+fd_r.subcolor+'配'+fd_r.motherColor+'，提升異性緣。':'<strong>自我提升：</strong>先把自己狀態調好——規律運動（推薦'+fd_r.sport+'），保持好氣色就是最強桃花。');
+        actionItems.push('<strong>開運飲食：</strong>約會可選有'+fd_r.food.split('、')[0]+'的餐廳，日常喝'+fd_r.drink+'調理氣色。');
+        actionItems.push('<strong>能量調整：</strong>佩戴粉晶或紅紋石增強桃花磁場。家中'+dirName_r+'方位保持整潔明亮。');
+      }else if(type==='career'){
+        actionItems.push(great||good?'<strong>職場行動：</strong>運勢支持你積極爭取，主動展現成果讓上面看到。有好機會出現就果斷行動。':'<strong>職場策略：</strong>目前運勢需要蓄力，專注提升核心技能。找一個值得信賴的前輩借力，比獨撐更聰明。');
+        actionItems.push('<strong>效率提升：</strong>每天最重要的事在上午完成，下班後做'+fd_r.sport+'放鬆。'+fd_r.habit);
+        actionItems.push('<strong>穿搭開運：</strong>重要場合穿'+fd_r.subcolor+'為主色調，搭配'+fd_r.motherColor+'配件。辦公桌面朝'+dirName_r+'方位。');
+      }else if(type==='health'){
+        actionItems.push('<strong>養生重點：</strong>'+fd_r.habit+'。每週至少3次'+fd_r.sport+'，每次30分鐘以上。');
+        actionItems.push('<strong>食療建議：</strong>多吃'+fd_r.food+'，搭配'+fd_r.drink+'。'+(bad?'身體較虛時忌熬夜、忌冰冷飲食。':'維持均衡飲食即可。'));
+        actionItems.push('<strong>環境調整：</strong>臥室或休息區往'+dirName_r+'方位佈置。穿'+fd_r.color+'居家服有助身心放鬆。');
+      }else if(type==='relationship'){
+        actionItems.push(great||good?'<strong>社交行動：</strong>貴人在'+dirName_r+'方向，多參加那個方位的聚會。每月約一個重要的人吃飯，主動維繫人脈。':'<strong>人際策略：</strong>不需要討好所有人，找到真正欣賞你的圈子更重要。每週安排一次深度對話，勝過頻繁泛泛之交。');
+        actionItems.push('<strong>社交穿搭：</strong>社交場合穿'+fd_r.subcolor+'為主，搭配'+fd_r.motherColor+'配件，提升親和力。');
+        actionItems.push('<strong>能量補充：</strong>多吃'+fd_r.food+'，喝'+fd_r.drink+'。社交前做幾次深呼吸調整狀態。');
+      }else if(type==='family'){
+        actionItems.push('<strong>家庭互動：</strong>本月多花時間陪伴家人。一頓用心的晚餐勝過千言萬語。');
+        actionItems.push('<strong>居家風水：</strong>家中'+dirName_r+'方位保持整潔明亮，擺放綠植或暖色燈飾增強和諧能量。');
+        actionItems.push('<strong>家庭飲食：</strong>家庭餐桌上多準備'+fd_r.food+'，全家一起喝'+fd_r.drink+'。');
+      }else{
+        actionItems.push('<strong>穿搭開運：</strong>以'+fd_r.subcolor+'為主色調，搭配'+fd_r.motherColor+'配件。');
+        actionItems.push('<strong>飲食調理：</strong>多吃'+fd_r.food+'，搭配'+fd_r.drink+'。');
+        actionItems.push('<strong>方位運用：</strong>重要事情往'+dirName_r+'方位進行。');
+      }
+
+      if(actionItems.length){
+        parts.push('<div style="margin-top:0.6rem;padding:0.6rem 0.8rem;background:rgba(212,175,55,0.04);border-radius:8px;line-height:1.7">');
+        parts.push('<p style="font-weight:600;color:var(--c-gold,#d4af37);margin-bottom:0.4rem;font-size:0.9rem">📋 具體建議</p>');
+        actionItems.forEach(function(item){parts.push('<p style="margin:0.3rem 0;font-size:0.92rem">'+item+'</p>');});
+        parts.push('</div>');
+      }
+
+      // 時機提示
+      if(yearInfo||badYears.length){
+        var timingText='<p style="margin-top:0.5rem;font-size:0.9rem;line-height:1.6"><strong style="color:var(--c-gold)">⏰ 時機提示：</strong>';
+        if(yearInfo) timingText+=yearInfo+' ';
+        if(badYears.length) timingText+='需留意年份：'+badYears.join('、')+'。';
+        timingText+='</p>';
+        parts.push(timingText);
+      }
+
+      if(parts.length) detail=parts.join('');
+    }
+
+    // 升級太短的 tip
+    if(tip&&tip.length<30){
+      tip=tip+'佩戴與'+favEl+'行相關的水晶（如'+({'金':'白水晶、鈦晶','木':'綠幽靈、綠碧璽','水':'海藍寶、黑曜石','火':'紫水晶、紅瑪瑙','土':'黃水晶、茶晶'}[favEl]||'白水晶')+'）效果更好。多吃'+fd_r.food+'補充能量。';
+    }
+  })();
+
   /* ═══ 組合輸出 ═══ */
   let html='<p style="font-size:1.05rem;line-height:1.8">'+answer+'</p>';
-  if(detail) html+='<p style="line-height:1.7">'+detail+'</p>';
+  if(detail) html+='<div style="line-height:1.7">'+detail+'</div>';
 
   // ── 命理佐證摘要（可見，不摺疊）──
   // 從 evidence 中挑選最關鍵的 3-5 條直接展示
@@ -10923,52 +11221,103 @@ const TYPE_PRODUCTS={
 
 /* ═══ renderActionCard: 行動指令 + 嵌入水晶推薦（導購節點1）═══ */
 function renderActionCard(bazi, type, answer){
-  const fav = bazi.fav || [];
-  const el = bazi.dmEl;
-  const FC = {金:'白色',木:'綠色',水:'黑色/藍色',火:'紅色/紫色',土:'黃色/咖啡色'};
-  const FD = {金:'正西',木:'正東',水:'正北',火:'正南',土:'中央/東北'};
-  const FFood = {金:'白色食物（山藥、百合、杏仁）',木:'綠色蔬菜（花椰菜、菠菜、奇異果）',水:'黑色食物（黑芝麻、海帶、藍莓）',火:'紅色食物（紅棗、枸杞、番茄）',土:'黃色食物（南瓜、地瓜、玉米）'};
+  var fav = bazi.fav || [];
+  var unfav = bazi.unfav || [];
+  var el = bazi.dmEl;
+  var strong = bazi.strong;
+  var favEl = fav[0] || '土';
+  var ep = bazi.ep||{};
+  var tot = Object.values(ep).reduce(function(a,b){return a+b;},0)||60;
+  var weakEls = Object.entries(ep).filter(function(x){return (x[1]/tot)<0.12;}).map(function(x){return x[0];});
+  var avoidEls = new Set(unfav||[]);
+  var recEl = (weakEls.filter(function(e){return !avoidEls.has(e);})[0]) || favEl;
 
-  const favEl = fav[0] || '土';
-  const actions = [];
-
-  // 行動1: 穿搭色彩
-  actions.push(`<strong>穿搭：</strong>本月多穿 ${FC[favEl]} 系服飾，增強${favEl}行能量`);
-
-  // 行動2: 根據類型給不同建議
-  const typeActions = {
-    love: `<strong>社交：</strong>往 ${FD[favEl]} 方向的場所社交，桃花運更旺`,
-    career: `<strong>方向：</strong>辦公桌朝 ${FD[favEl]} 方位，面試/洽公往 ${FD[favEl]} 方向更有利`,
-    wealth: `<strong>理財：</strong>重要財務決定在${FD[favEl]}方位進行，多吃${FFood[favEl]}增強財氣`,
-    health: `<strong>養生：</strong>多吃${FFood[favEl]}，每天${favEl==='水'?'泡腳暖身':favEl==='木'?'伸展15分鐘':favEl==='火'?'午休15分鐘':favEl==='金'?'深呼吸練習':'飯後散步20分鐘'}`,
-    relationship: `<strong>人脈：</strong>往 ${FD[favEl]} 方向拓展人脈，穿 ${FC[favEl]} 色赴約`,
-    family: `<strong>居家：</strong>家中 ${FD[favEl]} 方位保持整潔明亮，增強家庭和諧能量`
+  var EL={
+    '金':{mc:'白色/銀色',sc:['米白','淺灰','香檳金','銀白'],dir:'正西',food:['山藥','百合','杏仁','白蘿蔔','蓮子','水梨','銀耳'],drink:['杏仁茶','梨子汁','蓮藕茶','薏仁水'],habit:'深呼吸練習10分鐘',sport:'健走、游泳、瑜伽',crystal:['白水晶','鈦晶']},
+    '木':{mc:'綠色',sc:['墨綠','橄欖綠','抹茶色','森林綠'],dir:'正東',food:['花椰菜','菠菜','奇異果','綠豆','芹菜','酪梨','毛豆'],drink:['綠茶','檸檬水','薄荷茶'],habit:'伸展操15分鐘，疏通肝氣',sport:'慢跑、登山、太極',crystal:['綠幽靈','綠碧璽']},
+    '水':{mc:'黑色/深藍',sc:['藏青','黛藍','深灰','墨色'],dir:'正北',food:['黑芹麻','海帶','藍莓','黑豆','紫菜','黑木耳','核桃'],drink:['黑豆水','溫開水','蔓越莓汁'],habit:'睡前泡腳暖身，11點前入睡',sport:'游泳、瑜伽、冥想',crystal:['海藍寶','黑曜石']},
+    '火':{mc:'紅色/紫色',sc:['酒紅','玫瑰粉','暗紫','珊瑚橘'],dir:'正南',food:['紅棗','枸杞','番茄','紅豆','櫻桃','紅蘿蔔','甜椒'],drink:['紅棗茶','枸杞菊花茶','洛神花茶','玫瑰花茶'],habit:'午間小憩15分鐘，養心安神',sport:'有氧舞蹈、跑步、桌球',crystal:['紫水晶','紅瑪瑙']},
+    '土':{mc:'黃色/棕色',sc:['駝色','卡其','焦糖色','大地色'],dir:'中央/東北',food:['南瓜','地瓜','玉米','薑','小米','馬鈴薯','香蕉'],drink:['薑茶','四神湯','蜂蜜水','燕麥奶'],habit:'三餐定時定量，飯後散步20分鐘',sport:'散步、太極、園藝',crystal:['黃水晶','茶晶']}
   };
-  actions.push(typeActions[type] || typeActions.career);
+  var favData=EL[favEl]||EL['土'];
+  var recData=EL[recEl]||EL['土'];
 
-  // 行動3: 水晶佩戴（自然導購入口）
-  const crystalAdvice = {
-    金:'白水晶、鈦晶',木:'綠幽靈、綠碧璽',水:'海藍寶、黑曜石',火:'紫水晶、紅瑪瑙',土:'黃水晶、茶晶'
+  function pick(arr,n){if(!arr||!arr.length)return[];var s=[].concat(arr);for(var i=s.length-1;i>0;i--){var j=Math.floor(Math.random()*i);var t=s[i];s[i]=s[j];s[j]=t;}return s.slice(0,Math.min(n||1,s.length));}
+
+  var SHENG={'金':'土','木':'水','水':'金','火':'木','土':'火'};
+  var motherEl=SHENG[favEl];var motherData=EL[motherEl];
+  var actions=[];
+
+  /* 1. 穿搭 */
+  var mainC=pick(favData.sc,1)[0]||favData.mc;
+  var accC=motherData?pick(motherData.sc,1)[0]:'米白';
+  var sceneMap={love:'約會穿搭建議',career:'重要場合穿搭',wealth:'談生意或理財時',health:'日常穿著建議',relationship:'社交場合建議',family:'居家或家庭聚會時'};
+  var scene=sceneMap[type]||'日常穿搭';
+  actions.push('<strong>穿搭：</strong>'+scene+'以 <em>'+mainC+'</em> 為主色調，搭配 <em>'+accC+'</em> 系配件，自然提升'+favEl+'行能量');
+
+  /* 2. 方位 */
+  var dirMap={
+    love:'<strong>桃花方位：</strong>社交、約會往 '+favData.dir+' 方向走，桃花運更旺',
+    career:'<strong>方位：</strong>辦公桌面朝 '+favData.dir+'，面試或洽公往 '+favData.dir+' 方向更順利',
+    wealth:'<strong>財位：</strong>重要財務決定在 '+favData.dir+' 方位進行，錢包放 '+favData.dir+' 方',
+    health:'<strong>養生方位：</strong>運動或散步往 '+favData.dir+' 方向走，有助氣場恢復',
+    relationship:'<strong>人脈方位：</strong>拓展人脈往 '+favData.dir+' 方向，聚餐選 '+favData.dir+' 方的餐廳',
+    family:'<strong>居家風水：</strong>家中 '+favData.dir+' 方位保持整潔明亮，有助家庭和諧'
   };
+  actions.push(dirMap[type]||dirMap.career);
 
-  // 計算缺行（用於精確推薦）
-  const ep = bazi.ep||{};
-  const tot = Object.values(ep).reduce((a,b)=>a+b,0)||60;
-  const weakEls = Object.entries(ep).filter(([e,v])=>(v/tot)<0.12).map(([e])=>e);
-  const avoidEls = new Set(bazi.unfav||[]);
-  // 推薦行 = 缺行（排除忌神衝突）或喜用神
-  const recEl = (weakEls.filter(e=>!avoidEls.has(e))[0]) || favEl;
+  /* 3. 飲食 */
+  var mf=pick(favData.food,2);var md=pick(favData.drink,1)[0];
+  var extraF='';
+  if(recEl!==favEl&&!avoidEls.has(recEl)){var rf=pick(recData.food,1);if(rf.length)extraF='，也可適量補充'+rf[0]+'（補'+recEl+'行）';}
+  var foodMap={
+    health:'<strong>飲食：</strong>多吃 '+mf.join('、')+'，搭配 '+md+extraF,
+    wealth:'<strong>飲食：</strong>談生意前喝杯 '+md+' 提神，平日多吃 '+mf.join('、')+' 養氣'+extraF,
+    love:'<strong>飲食：</strong>約會可選有 '+mf[0]+' 的餐廳，日常喝 '+md+' 調理氣色',
+    career:'<strong>飲食：</strong>工作日多吃 '+mf.join('、')+' 補充能量，下午茶來杯 '+md,
+    relationship:'<strong>飲食：</strong>聚餐選有 '+mf.join('、')+' 的菜色，飲品推薦 '+md,
+    family:'<strong>飲食：</strong>家庭餐桌上多準備 '+mf.join('、')+'，全家一起喝 '+md
+  };
+  actions.push(foodMap[type]||foodMap.health);
 
-  actions.push(`<strong>能量：</strong>佩戴 ${crystalAdvice[recEl]} 補強${recEl}行，效果加倍`);
+  /* 4. 心態/策略 */
+  var mindMap={
+    love:strong?'<strong>心態：</strong>感情中適度放軟姿態，傾聽比表達更重要。主動關心但不控制':'<strong>心態：</strong>對自己多一點信心，你值得被好好對待。不要委屈自己遷就不適合的人',
+    career:strong?'<strong>策略：</strong>執行力夠強，重點放在「選對方向」而非「更加努力」。學會授權':'<strong>策略：</strong>找到值得信賴的前輩或團隊借力，不要凡事獨撐。累積實力比衝刺更重要',
+    wealth:strong?'<strong>心態：</strong>有賺錢能力但容易衝動消費，每筆超過日薪的支出先等24小時':'<strong>心態：</strong>理財先理心，不焦慮才不會做錯決定。先存再花，養成自動轉帳習慣',
+    health:'<strong>作息：</strong>'+favData.habit,
+    relationship:strong?'<strong>心態：</strong>你容易主導社交，記得多聽少說。真誠比圓滑更能贏得信任':'<strong>心態：</strong>不需要討好所有人，找到真正欣賞你的圈子。質量比數量重要',
+    family:'<strong>互動：</strong>本月多花時間陪伴家人，一頓用心的晚餐勝過千言萬語'
+  };
+  actions.push(mindMap[type]||mindMap.career);
 
-  // 渲染行動指令
-  const actionsEl = document.getElementById('r-actions');
-  actionsEl.innerHTML = actions.map((a,i) => `
-    <div class="action-item">
-      <div class="action-num">${i+1}</div>
-      <div class="action-text">${a}</div>
-    </div>
-  `).join('');
+  /* 5. 生活習慣 */
+  var sp1=favData.sport.split('、')[0];
+  var lifeMap={
+    love:'<strong>提升魅力：</strong>規律運動（推薦'+sp1+'），保持好氣色就是最強桃花',
+    career:'<strong>效率提升：</strong>每天最重要的事在上午完成，下班後做'+sp1+'放鬆腦袋',
+    wealth:'<strong>開源節流：</strong>記帳一個月找出無感消費，省下的錢定期定額投入穩健工具',
+    health:'<strong>運動：</strong>推薦 '+favData.sport+'，每週至少3次、每次30分鐘',
+    relationship:'<strong>社交充電：</strong>每週安排一次小型聚會或深度對話，勝過大型應酬',
+    family:'<strong>家庭儀式：</strong>固定每週一個「家庭時間」，可以是一起煮飯、散步或看電影'
+  };
+  actions.push(lifeMap[type]||lifeMap.career);
+
+  /* 6. 能量水晶 */
+  actions.push('<strong>能量：</strong>佩戴 '+recData.crystal.join('、')+' 補強'+recEl+'行，效果加倍');
+
+  /* 7. 時機（僅大運特別好或壞時顯示）*/
+  var curDy=bazi.dayun?bazi.dayun.find(function(d){return d.isCurrent;}):null;
+  if(curDy&&(curDy.level.indexOf('旺盛')>=0||curDy.level.indexOf('極強')>=0||curDy.level.indexOf('上升')>=0)){
+    var tG={love:'運勢上升期，主動出擊成功率高',career:'大運加持，適合爭取升遷或創業',wealth:'財運正旺，適合積極開源，但見好就收',health:'身體底子好的時候正適合建立運動習慣',relationship:'貴人運旺，多參加活動認識新朋友',family:'家庭運順，有重大家庭決定可以進行'};
+    actions.push('<strong>時機：</strong>'+(tG[type]||tG.career));
+  } else if(curDy&&(curDy.level.indexOf('偏弱')>=0||curDy.level.indexOf('低迷')>=0||curDy.level.indexOf('補運')>=0)){
+    var tB={love:'運勢蓄力中，不急著定下來，先讓自己變得更好',career:'大運偏弱期，宜守不宜攻，充實自己等下一波機會',wealth:'不宜冒險投資，穩健儲蓄最重要',health:'身體較虛的時期，多休息少硬撐',relationship:'人際上可能有些摩擦，退一步海闊天空',family:'家庭事務宜保守處理，重大決定先緩緩'};
+    actions.push('<strong>時機：</strong>'+(tB[type]||tB.career));
+  }
+
+  var actionsEl = document.getElementById('r-actions');
+  actionsEl.innerHTML = actions.filter(function(a){return a;}).map(function(a,i){return '<div class="action-item"><div class="action-num">'+(i+1)+'</div><div class="action-text">'+a+'</div></div>';}).join('');
 
   // 嵌入式水晶推薦 — 直接從缺行/喜用行的 REAL_PRODUCTS 抓
   const crystalEl = document.getElementById('r-action-crystal');
