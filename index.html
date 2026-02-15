@@ -4700,6 +4700,9 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       }else if(/暗戀|單相思|喜歡但不敢說|怎麼讓.*注意/.test(q)){
         if(good) answer='<strong>運勢支持你踏出那一步。</strong> 暗戀只會越來越苦。不需要直接告白，可以先創造多相處的機會，讓對方認識真正的你。';
         else answer='<strong>目前時機還不太成熟。</strong> 先從朋友做起，多互動建立信任感。如果對方完全沒有回應，適時放手也是對自己好。';
+      }else if(/選誰|選哪|兩個|A還是B|哪一個比較好|該選|跟誰/.test(q)){
+        if(good) answer='<strong>你心裡其實有答案了。</strong> 選讓你感到安心的那個，不是讓你心跳加速的那個。心跳會退，安心不會。運勢偏向穩定的選擇。';
+        else answer='<strong>兩個都不是最佳時機。</strong> 如果你猶豫不決代表都沒有到非他不可的程度。不急的話先都保持距離觀察，時間會幫你篩選。';
       }else if(/同居|住一起|搬去住/.test(q)){
         if(good) answer='<strong>可以考慮。</strong> 但同居前先談好生活習慣和經濟分擔。很多情侶同居後才發現不合適。';
         else answer='<strong>建議再等等。</strong> 目前感情還有些不穩定因素，同居可能會放大問題。';
@@ -4804,6 +4807,9 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       }else if(/讀什麼|科系|研究所|要不要念|升學|進修|留學/.test(q)){
         if(strong) answer='<strong>你適合挑戰型的領域。</strong> 商管、法律、資工這類有競爭性的科系適合你。進修對你的職涯會有明顯加分。';
         else answer='<strong>你適合專精型的領域。</strong> 選你真正有興趣的，不要只看出路。有熱情才能走得長久。如果是為了鍍金才念，效果會打折。';
+      }else if(/退休|什麼時候.*退|夠不夠.*退|提早退休|退休金/.test(q)){
+        if(good) answer='<strong>財務規劃方向正確。</strong> 按照目前的節奏持續累積，退休生活不用太擔心。重點是退休後要有事做，不然會無聊到生病。';
+        else answer='<strong>再多準備一些比較安心。</strong> 目前的存款和被動收入可能還不夠支撐理想的退休生活。現在開始加強儲蓄和投資還來得及。';
       }else if(/副業|兼職|斜槓|接案|做生意/.test(q)){
         if(great) answer='<strong>副業運勢很好！</strong> 現在是發展第二收入的好時機。選跟你專業相關的副業成功率最高。';
         else if(good) answer='<strong>可以開始嘗試。</strong> 先從小規模開始週末花幾小時測試市場反應再加大投入。';
@@ -5006,6 +5012,8 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
         answer='<strong>你很有孝心。</strong> 從命理角度來看，';
         if(good) answer+='家人健康運勢穩定。提醒他們定期健檢，飲食注意均衡就好。多陪伴本身就是最好的良藥。';
         else answer+='家人健康方面要多留意。建議安排一次全面健檢，有問題早發現早治療。你的關心和陪伴對他們很重要。';
+      }else if(/要不要.*看醫|該不該.*檢查|要不要.*健檢|需不需要.*看|要不要去醫院|該不該去/.test(q)){
+        answer='<strong>去。</strong> 會問這個問題代表你心裡已經不安了。身體的事寧可多檢查一次也不要拖。早發現早治療，花一個下午換心安絕對值得。';
       }else if(/養生|調理|進補|補身/.test(q)){
         answer='<strong>從你的命盤看養生方向：</strong> 你的五行'+wk+'行最弱對應'+bp+'。飲食多吃'+WF[wk]+'。日常保養：'+WH[wk]+'。';
       
@@ -5172,6 +5180,12 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       }else if(/同住|搬出去|跟父母住|跟公婆住|要不要.*一起住/.test(q)){
         if(good) answer='<strong>同住的運勢還行。</strong> 但一定要先談好生活規則和各自的空間。有衝突很正常，關鍵是有沒有溝通管道。';
         else answer='<strong>建議保持一點距離。</strong> 目前的磁場不太適合太密切的相處。如果可以住附近但不同一屋簷下，是最好的平衡。';
+      }else if(/搬出去|獨立|離開家|自己住|想搬|出去住/.test(q)){
+        if(good) answer='<strong>時機不錯，可以考慮。</strong> 獨立生活會讓你成長很多。先確保經濟能撐住——房租不超過收入三分之一是基本原則。';
+        else answer='<strong>再準備一下比較穩。</strong> 經濟基礎還不夠穩固就搬出去壓力會很大。先存好至少三個月的緊急預備金再行動。';
+      }else if(/寵物|毛小孩|貓|狗|養.*寵物|寵物.*健康/.test(q)){
+        if(good) answer='<strong>適合養寵物。</strong> 你目前的生活狀態和能量場適合有毛小孩陪伴。寵物能幫你穩定情緒增加正能量。記得定期帶去健檢。';
+        else answer='<strong>先評估自己的狀態。</strong> 養寵物是長期承諾，要確保你有足夠的時間、空間和經濟能力。如果生活還不穩定，等穩定了再養也不遲。';
       }else if(/再婚|二婚|重組家庭/.test(q)){
         if(good) answer='<strong>可以勇敢追求幸福。</strong> 運勢支持開展新關係。過去的經驗不是包袱而是讓你更知道自己要什麼。';
         else answer='<strong>再等等讓自己準備好。</strong> 目前還在療傷期。先把自己和孩子的生活穩定下來感情的事順其自然就好。';
@@ -5394,6 +5408,111 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
     if(tip&&tip.length<30){
       tip=tip+'佩戴與'+favEl+'行相關的水晶（如'+({'金':'白水晶、鈦晶','木':'綠幽靈、綠碧璽','水':'海藍寶、黑曜石','火':'紫水晶、紅瑪瑙','土':'黃水晶、茶晶'}[favEl]||'白水晶')+'）效果更好。多吃'+fd_r.food+'補充能量。';
     }
+  })();
+
+  /* ═══ 正面回應前置器 ═══ */
+  (function(){
+    // 1. 「你覺得如何/好嗎」型問題 — 先給明確態度
+    if(/你覺得|覺得如何|覺得怎|好不好|好嗎|如何[？?]$|怎樣[？?]$|怎麼樣[？?]$/.test(q)){
+      const opinion = prob>=65 ? '整體來看是可以的（綜合評分'+prob+'%），' :
+                      prob>=50 ? '可以，但建議謹慎（綜合評分'+prob+'%），' :
+                      '目前不太建議（綜合評分'+prob+'%），';
+      if(answer && !/整體來看|可以但|不太建議/.test(answer)){
+        answer = '<strong>'+opinion+'</strong> ' + answer.replace(/<strong>/,'').replace(/<\/strong>/,'');
+      }
+    }
+
+    // 2. 「多少錢/中多少」型問題 — 命理無法預測具體數字
+    if(/多少錢|中多少|贏多少|賺多少錢|幾萬|幾百萬/.test(q)){
+      const pcfStr = prob>=60 ? '偏財運不錯' : prob>=45 ? '偏財運普通' : '偏財運偏弱';
+      const prefix = '<strong>'+pcfStr+'。</strong> 命理無法預測具體金額，但從運勢方向來看——';
+      if(answer && !/偏財運|具體金額/.test(answer)){
+        answer = prefix + answer.replace(/<strong>/g,'').replace(/<\/strong>/g,'');
+      }
+    }
+
+    // 3. 是非題但 answer 沒直接回答 — 自動補上態度
+    if(isYN && answer && !/可以|有機會|會的|不建議|困難|穩定|不錯|目前|整體/.test(answer.substring(0,30))){
+      const att = great ? '從命理來看，可以。' : good ? '從命理來看，有機會。' : '從命理來看，目前有些困難。';
+      answer = '<strong>'+att+'</strong> ' + answer;
+    }
+  })();
+
+  /* ═══ 回答增強器 — 自動補充 detail ═══ */
+  (function(){
+    if(detail && detail.length > 50) return; // 已有足夠 detail，不覆蓋
+
+    const parts = [];
+
+    // 🔍 深度解讀 — 大運/流年/卦象白話翻譯
+    const dyPhase = curDy ? (curDy.age ? '你目前'+curDy.age+'歲前後的十年大運' : '目前的十年大運') : '';
+    if(dyPhase){
+      let dyDesc = dyPhase;
+      if(curDy.score) dyDesc += curDy.score > 0 ? '處於上升期，外在助力充足' : '處於蓄力階段，外在助力較少';
+      else dyDesc += '正在轉換中';
+      dyDesc += '。';
+      if(liuNian){
+        dyDesc += thisYear+'年流年';
+        if(liuNian.score) dyDesc += liuNian.score > 0 ? '運勢偏好，把握機會。' : '運勢平穩，穩紮穩打為上。';
+        if(liuNian.clash && liuNian.clash.length) dyDesc += '流年沖：'+liuNian.clash.join('、')+'，注意相關領域。';
+      }
+      parts.push('<p style="margin:0.3rem 0">🔍 <strong>深度解讀：</strong>'+dyDesc+'</p>');
+    }
+
+    // 梅花卦象白話
+    if(mh && mh.ben && mh.ben.n){
+      let guaDesc = '梅花卦象「'+mh.ben.n+'」';
+      if(mh.bian && mh.bian.n) guaDesc += '變「'+mh.bian.n+'」';
+      guaDesc += '——';
+      const tiYong = mh.tiStrong;
+      guaDesc += tiYong ? '體用關係顯示你佔優勢，事情發展順利。' : '體用關係顯示阻力較大，需要更謹慎。';
+      parts.push('<p style="margin:0.3rem 0">'+guaDesc+'</p>');
+    }
+
+    // 📋 具體建議 — 根據六大類型定制
+    const crystalMap = {'金':'白水晶、鈦晶','木':'綠幽靈、綠碧璽','水':'海藍寶、黑曜石','火':'紫水晶、紅瑪瑙','土':'黃水晶、茶晶'};
+    const foodMap = {'金':'白色食物（山藥、百合、蓮子）','木':'綠色蔬菜（菠菜、花椰菜、奇異果）','水':'黑色食物（黑芝麻、海帶、黑豆）','火':'紅色食物（紅棗、枸杞、番茄）','土':'黃色食物（南瓜、地瓜、玉米）'};
+    const crystal = crystalMap[favEl]||'白水晶';
+    const food = foodMap[favEl]||'當季蔬果';
+    let advice = '<p style="margin:0.3rem 0">📋 <strong>具體建議：</strong></p><ol style="margin:0.2rem 0;padding-left:1.2rem;line-height:1.7">';
+    if(type==='love'){
+      advice += '<li>'+(pk?'你桃花旺，重點是選對人不是認識更多人。':'多參加朋友聚會或興趣社團增加緣分。')+'往'+FD[favEl]+'方向社交更有利。</li>';
+      advice += '<li>佩戴粉晶或'+crystal+'增強感情磁場。</li>';
+      advice += '<li>多吃'+food+'，穿'+FC[favEl]+'色系約會。</li>';
+    } else if(type==='career'){
+      advice += '<li>'+(strong?'你有領導氣質，爭取獨立負責的項目展現能力。':'你適合深耕專業，把一項技能做到極致讓自己不可替代。')+'</li>';
+      advice += '<li>'+(wc?'利用文昌運去考證照或進修。':'學一項新技能提升競爭力。')+'</li>';
+      advice += '<li>穿'+FC[favEl]+'色上班。往'+FD[favEl]+'方向發展更有利。</li>';
+    } else if(type==='wealth'){
+      advice += '<li>'+(good?'適合穩健型投資（定存、基金定期定額）。':'先守住現金流，避免高風險操作。')+'</li>';
+      advice += '<li>多吃'+food+'補財運能量。錢包用'+FC[favEl]+'色。</li>';
+      advice += '<li>辦公桌或家中'+FD[favEl]+'方位擺放'+crystal+'招財。</li>';
+    } else if(type==='health'){
+      advice += '<li>你的五行'+wk+'行偏弱，'+bp+'方面要特別注意。</li>';
+      advice += '<li>飲食多吃'+WF[wk]+'。</li>';
+      advice += '<li>日常保養：'+WH[wk]+'</li>';
+    } else if(type==='relationship'){
+      advice += '<li>'+(gr?'你命帶天乙貴人，貴人運不錯。':'多結交比你年長或有經驗的朋友。')+'往'+FD[favEl]+'方向的人是你的貴人方位。</li>';
+      advice += '<li>佩戴'+crystal+'增強人際和諧。</li>';
+      advice += '<li>穿'+FC[favEl]+'色參加社交場合。</li>';
+    } else if(type==='family'){
+      advice += '<li>家中'+FD[favEl]+'方位擺放綠植或水晶增強和諧氣場。</li>';
+      advice += '<li>穿'+FC[favEl]+'色回家有助家庭能量。</li>';
+      advice += '<li>重大家庭決定選在運勢好的時期處理。</li>';
+    }
+    advice += '</ol>';
+    parts.push(advice);
+
+    // ⏰ 時機提示
+    if(goodYears && goodYears.length){
+      let timing = '<p style="margin:0.3rem 0">⏰ <strong>時機提示：</strong>';
+      timing += '有利年份：'+goodYears.join('、')+'。';
+      if(badYears && badYears.length) timing += '需留意：'+badYears.join('、')+'。';
+      timing += '</p>';
+      parts.push(timing);
+    }
+
+    if(parts.length) detail = (detail||'') + parts.join('');
   })();
 
   /* ═══ 組合輸出 ═══ */
