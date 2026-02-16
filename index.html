@@ -1505,10 +1505,7 @@ html{scroll-behavior:smooth}
 .count-up{display:inline-block}
 
 </style>
-<style>
-body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}
-input,textarea,select,[contenteditable]{-webkit-user-select:text;-moz-user-select:text;user-select:text;}
-</style>
+<style>body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}input,textarea,select,[contenteditable]{-webkit-user-select:text;-moz-user-select:text;user-select:text;}</style>
 </head>
 <body>
 <nav class="nav"><div class="nav-inner">
@@ -2212,7 +2209,6 @@ input,textarea,select,[contenteditable]{-webkit-user-select:text;-moz-user-selec
   </div>
 </div>
 <script>
-// ═══ 保護層 ═══
 (function(){
   var _h=window.location.hostname;
   if(_h!=='onerkk.github.io'&&_h!=='localhost'&&_h!=='127.0.0.1'&&!_h.includes('192.168')){
@@ -2220,36 +2216,19 @@ input,textarea,select,[contenteditable]{-webkit-user-select:text;-moz-user-selec
     return;
   }
 })();
-
-// 禁止右鍵
 document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});
-
-// 禁止 F12 / Ctrl+Shift+I / Ctrl+U
 document.addEventListener('keydown',function(e){
   if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')){
     e.preventDefault();return false;
   }
 });
-
-// 禁止選取（input/textarea 除外）
 document.addEventListener('selectstart',function(e){
   if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable) return;
   e.preventDefault();
 });
 document.addEventListener('dragstart',function(e){e.preventDefault();});
-
-// 反調試
-(function _ad(){
-  setInterval(function(){
-    var t0=performance.now();debugger;
-    if(performance.now()-t0>100){document.body.innerHTML='';window.location.reload();}
-  },4000);
-})();
-
-// Console 清除
+(function(){setInterval(function(){var t0=performance.now();debugger;if(performance.now()-t0>100){document.body.innerHTML='';window.location.reload();}},4000);})();
 setInterval(function(){try{console.clear();}catch(e){}},3000);
-
-// ═══ 主程式 ═══
 
 /* =============================================================
    GLOBAL STATE
@@ -6468,8 +6447,63 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
     } else if(/存錢|儲蓄|理財|怎麼存|改善.*財|財務.*狀況|怎麼理|省錢|節省|月光|存不到/.test(q)){
       story=strong?'身強扛財能力好，適合積極理財。設定自動扣款強迫儲蓄。':'身弱財來財去，最重要的是「先存再花」。';
       story+=caiStrong?'你有偏財運，但偏財不等於穩定，正財為主偏財為輔。':'財星偏弱，靠紀律存錢比追求高報酬重要。';
-    } else if(/中獎|樂透|偏財|橫財|賭/.test(q)){
-      story=caiStrong&&good?'偏財運確實不差，可以小額試試手氣。':'偏財運一般，不建議把希望放在博弈上，腳踏實地更實在。';
+    } else if(/中獎|樂透|偏財|橫財|賭|刮刮樂|彩券|彩票|幾號|威力彩|大樂透|運彩|簽牌|明牌/.test(q)){
+      story=caiStrong&&good?'偏財運確實不差，小額試試手氣可以。':'偏財運一般，小玩怡情就好。';
+      // ── 五大系統推算幸運號碼 ──
+      const luckyNums=new Set();
+      // 1. 八字：日主五行 → 河圖數
+      const elNums={金:[4,9],木:[3,8],水:[1,6],火:[2,7],土:[5,10]}[el]||[5];
+      elNums.forEach(n=>luckyNums.add(n));
+      // 八字：喜用神五行 → 河圖數
+      if(mainFav){
+        const favNums={金:[4,9],木:[3,8],水:[1,6],火:[2,7],土:[5,10]}[mainFav]||[];
+        favNums.forEach(n=>luckyNums.add(n));
+      }
+      // 2. 梅花：本卦上下卦數 + 動爻數
+      const mhData=S&&S.meihua;
+      if(mhData){
+        if(mhData.up&&mhData.up.n) luckyNums.add(mhData.up.n);
+        if(mhData.lo&&mhData.lo.n) luckyNums.add(mhData.lo.n);
+        if(mhData.dong) luckyNums.add(mhData.dong);
+        // 本卦卦序數
+        if(mhData.ben&&typeof guaNum==='function'){
+          const bn=guaNum(mhData.ben);
+          if(bn) luckyNums.add(bn);
+        }
+      }
+      // 3. 塔羅：抽到的牌號
+      const tarotData=S&&S.tarot&&S.tarot.drawn;
+      if(tarotData&&tarotData.length){
+        tarotData.forEach(c=>{
+          if(c&&typeof c.id==='number') luckyNums.add(c.id<=9?c.id:(c.id%10));
+        });
+      }
+      // 4. 紫微：命宮主星數
+      const zwData=S&&S.ziwei;
+      if(zwData&&zwData.mingPalace){
+        const mp=zwData.mingPalace;
+        if(mp.index!==undefined) luckyNums.add((mp.index%10)+1);
+      }
+      // 5. 天干地支：日柱干支序數
+      const dmIdx={甲:1,乙:2,丙:3,丁:4,戊:5,己:6,庚:7,辛:8,壬:9,癸:10}[bazi.dm]||0;
+      if(dmIdx) luckyNums.add(dmIdx);
+      // 組合：去掉0和>49的數（適用大樂透），排序
+      const allNums=[...luckyNums].filter(n=>n>0&&n<=49).sort((a,b)=>a-b);
+      // 額外生成組合號碼（喜用五行數 × 梅花卦數）
+      const comboNums=new Set();
+      if(elNums[0]&&mhData&&mhData.dong){
+        comboNums.add(Math.abs(elNums[0]*10+mhData.dong)%49+1);
+        comboNums.add(Math.abs(elNums[1]*mhData.dong)%49+1);
+      }
+      if(dmIdx&&tarotData&&tarotData[0]){
+        comboNums.add(Math.abs(dmIdx*3+tarotData[0].id)%49+1);
+      }
+      const extraNums=[...comboNums].filter(n=>!allNums.includes(n)&&n>0).sort((a,b)=>a-b);
+      const finalNums=[...allNums,...extraNums].slice(0,8);
+      
+      story+=' 根據你的五大系統能量推算——';
+      story+='<br>🔮 <strong>今日幸運號碼：'+finalNums.join('、')+'</strong>';
+      story+='<br><span style="font-size:.85rem;color:var(--c-text-dim)">（八字河圖數＋梅花卦數＋塔羅牌號＋紫微星曜＋日主天干綜合推算，僅供參考娛樂）</span>';
     } else if(/賺錢|開源|增加收入|怎麼賺|增加財富|致富|發財|財運怎麼提升|怎麼.*有錢|收入/.test(q)){
       story=strong?'身強適合主動出擊——創業、接案、投資都可以考慮。':'身弱適合穩定環境賺錢——專注本業加上副業為輔。';
       if(shiStr>15) story+='你食傷旺，適合靠創意、教學、寫作等方式增加收入。';
