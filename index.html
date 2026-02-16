@@ -1505,7 +1505,6 @@ html{scroll-behavior:smooth}
 .count-up{display:inline-block}
 
 </style>
-<style>body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}input,textarea,select,[contenteditable]{-webkit-user-select:text;-moz-user-select:text;user-select:text;}</style>
 </head>
 <body>
 <nav class="nav"><div class="nav-inner">
@@ -2209,13 +2208,6 @@ html{scroll-behavior:smooth}
   </div>
 </div>
 <script>
-(function(){var _h=window.location.hostname;if(_h!=='onerkk.github.io'&&_h!=='localhost'&&_h!=='127.0.0.1'&&!_h.includes('192.168')){document.body.innerHTML='<div style="text-align:center;padding:100px;color:#888;font-size:1.5rem">⛔ 未授權的域名</div>';return;}})();
-document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});
-document.addEventListener('keydown',function(e){if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')){e.preventDefault();return false;}});
-document.addEventListener('selectstart',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;e.preventDefault();});
-document.addEventListener('dragstart',function(e){e.preventDefault();});
-setInterval(function(){try{console.clear();}catch(e){}},3000);
-
 /* =============================================================
    GLOBAL STATE
    ============================================================= */
@@ -6693,6 +6685,15 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
       story+='｜當日日期能量';
       story+='</span>';
       story+='<br><span style="font-size:.78rem;color:var(--c-text-muted)">⚠ 號碼僅供娛樂參考，請理性消費</span>';
+    } else if(/副業|兼職|斜槓|經營|賣場|網拍|電商|開店|做生意|攤位|擺攤|商店|線上.*賣|賣.*東西|怎麼.*賣|如何.*賣|生意.*怎麼|怎麼.*經營|成長|營收|業績|客源|客人|流量/.test(q)){
+      story=strong?'身強適合主動出擊，經營事業不怕投入精力。':'身弱建議穩中求進，不要一口氣鋪太大。';
+      if(shiStr>15) story+='你食傷旺，適合做內容行銷、教學分享來吸引客群。';
+      else if(caiStrong) story+='你財星旺，商業直覺不錯，對市場需求有嗅覺。';
+      else story+='財星偏弱，經營重點放在「回頭客」和「口碑」而非大量投放。';
+      story+=good?'目前運勢支持拓展，可以嘗試新的推廣方式。':mid?'穩步前進就好，不急著大擴張。':'先守住現有客群，把基本面做穩。';
+      // 五行對應經營建議
+      const bizTip={'金':'重品質和專業形象，走精品路線','木':'重內容和知識分享，靠口碑發酵','水':'重社群和人脈連結，多互動多曝光','火':'重視覺和行銷包裝，快速抓眼球','土':'重信任和服務穩定，老客帶新客'}[el]||'';
+      if(bizTip) story+='你的五行屬性適合的經營策略：'+bizTip+'。';
     } else if(/賺錢|開源|增加收入|怎麼賺|增加財富|致富|發財|財運怎麼提升|怎麼.*有錢|收入/.test(q)){
       story=strong?'身強適合主動出擊——創業、接案、投資都可以考慮。':'身弱適合穩定環境賺錢——專注本業加上副業為輔。';
       if(shiStr>15) story+='你食傷旺，適合靠創意、教學、寫作等方式增加收入。';
