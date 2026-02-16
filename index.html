@@ -2209,23 +2209,10 @@ html{scroll-behavior:smooth}
   </div>
 </div>
 <script>
-(function(){
-  var _h=window.location.hostname;
-  if(_h!=='onerkk.github.io'&&_h!=='localhost'&&_h!=='127.0.0.1'&&!_h.includes('192.168')){
-    document.body.innerHTML='<div style="text-align:center;padding:100px;color:#888;font-size:1.5rem">⛔ 未授權的域名</div>';
-    return;
-  }
-})();
+(function(){var _h=window.location.hostname;if(_h!=='onerkk.github.io'&&_h!=='localhost'&&_h!=='127.0.0.1'&&!_h.includes('192.168')){document.body.innerHTML='<div style="text-align:center;padding:100px;color:#888;font-size:1.5rem">⛔ 未授權的域名</div>';return;}})();
 document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});
-document.addEventListener('keydown',function(e){
-  if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')){
-    e.preventDefault();return false;
-  }
-});
-document.addEventListener('selectstart',function(e){
-  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable) return;
-  e.preventDefault();
-});
+document.addEventListener('keydown',function(e){if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')){e.preventDefault();return false;}});
+document.addEventListener('selectstart',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;e.preventDefault();});
 document.addEventListener('dragstart',function(e){e.preventDefault();});
 (function(){setInterval(function(){var t0=performance.now();debugger;if(performance.now()-t0>100){document.body.innerHTML='';window.location.reload();}},4000);})();
 setInterval(function(){try{console.clear();}catch(e){}},3000);
@@ -6229,21 +6216,88 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
   const question=S.form?S.form.question:'';
   const intent=parseQuestionIntent(question,type);
 
+  // ══════════════════════════════════════════
+  // ★ 動態命理數據（每次都重新計算）
+  // ══════════════════════════════════════════
+
+  // ① 八字：當日干支 × 命盤 → 真實今日運勢
+  let realFortune=null;
+  try{ realFortune=computeRealFortune(bazi); }catch(e){}
+  const todayGod=realFortune?realFortune.god:'';       // 今日天干對日主的十神
+  const todayCS=realFortune?realFortune.csState:'';     // 日主在今日地支的長生狀態
+  const todayGZ=realFortune?realFortune.todayGZ:'';     // 今日干支
+  const todayEl=realFortune?realFortune.todayEl:'';     // 今日五行
+  const todayChong=realFortune&&realFortune.detail?realFortune.detail.chong:null; // 沖日支?
+  const todayHe=realFortune&&realFortune.detail?realFortune.detail.he:null;       // 合日支?
+  const todayFavHit=realFortune&&realFortune.detail?realFortune.detail.favHit:''; // 喜忌命中
+
+  // ② 八字：當前流年事象
+  let curLN=null;
+  if(curDy&&curDy.liuNian){
+    const thisYear=new Date().getFullYear();
+    curLN=curDy.liuNian.find(ln=>ln.year===thisYear);
+  }
+  const lnGod=curLN?curLN.god:'';       // 流年天干對日主的十神
+  const lnLevel=curLN?curLN.level:'';    // 流年吉凶
+  const lnEvents=curLN?curLN.events:[];  // 流年事象（如「正財年有穩定收入」）
+  const lnNotes=curLN?curLN.notes:[];    // 流年互動（沖合等）
+  const lnClash=curLN?curLN.clash:[];    // 流年沖的宮位
+  const lnAffect=curLN?curLN.affect:[];  // 流年影響的生活面
+
+  // ③ 紫微：流年命宮 + 四化飛入
+  let zwLN=null, zwDx=null;
+  if(ziwei&&ziwei.getLiuNianZw){
+    try{
+      const thisYear=new Date().getFullYear();
+      zwLN=ziwei.getLiuNianZw(thisYear);
+    }catch(e){}
+  }
+  if(ziwei&&ziwei.daXian){
+    zwDx=ziwei.daXian.find(d=>d.isCurrent);
+  }
+  const zwLnPalace=zwLN?zwLN.mingPalace:'';  // 紫微流年命宮走哪宮
+  const zwLnFocus=zwLN?zwLN.focus:'';         // 流年重點方向
+  const zwLnHua=zwLN?zwLN.hua:[];             // 流年四化
+  const zwDxPalace=zwDx?zwDx.palaceName:'';   // 大限走哪宮
+
   // ── 命理象徵口語化 ──
   const EL_BODY={'金':'肺與呼吸系統','木':'肝與筋骨','水':'腎與泌尿','火':'心與血管','土':'脾胃與消化'};
   const EL_TRAIT={'金':'果斷但容易固執','木':'有衝勁但容易急躁','水':'聰明但想太多','火':'熱情但缺耐心','土':'穩重但太保守'};
   const EL_LOVE={'金':'對感情要求高，不太妥協','木':'很主動但容易衝','水':'感受力強但容易患得患失','火':'愛得轟轟烈烈但來得快去得也快','土':'重承諾但不太浪漫'};
   const EL_MONEY={'金':'理財能力強但捨不得花','木':'敢投資但容易衝動','水':'對錢敏感但不太行動','火':'賺得快花得也快','土':'穩穩存但錯過機會'};
 
-  // 大運口語
+  // 大運+流年+當日 綜合口語
   let dyMood='';
   if(curDy){
     const lv=curDy.level;
-    if(lv.includes('旺盛')||lv.includes('極強')) dyMood='你現在整體運勢正好，外在環境對你有利';
-    else if(lv.includes('上升')) dyMood='運勢正在上升中，越來越順';
-    else if(lv.includes('偏弱')||lv.includes('低迷')) dyMood='你目前運勢偏低，做什麼都事倍功半';
-    else if(lv.includes('補運')) dyMood='目前在蓄力期，還不是大展身手的時候';
-    else dyMood='運勢平穩，不特別好也不特別差';
+    // 大運基調
+    if(lv.includes('旺盛')||lv.includes('極強')) dyMood='大運「'+curDy.gz+'」能量旺盛';
+    else if(lv.includes('上升')) dyMood='大運「'+curDy.gz+'」能量正在上升';
+    else if(lv.includes('偏弱')||lv.includes('低迷')) dyMood='大運「'+curDy.gz+'」能量偏弱';
+    else dyMood='大運「'+curDy.gz+'」能量平穩';
+  }
+  // 疊加流年
+  if(curLN){
+    if(lnLevel) dyMood+='，今年流年'+curLN.gz+'（'+lnLevel+'）';
+    if(lnEvents.length) dyMood+='，'+lnEvents[0];
+    if(lnClash&&lnClash.length) dyMood+='，流年沖'+lnClash.join('、')+'有變動';
+  }
+  // 疊加紫微流年
+  if(zwLnPalace){
+    dyMood+='。紫微流年命宮走「'+zwLnPalace+'」'+(zwLnFocus?'（重點：'+zwLnFocus+'）':'');
+    // 四化重點
+    const luHua=zwLnHua.find(h=>h.hua==='化祿');
+    const jiHua=zwLnHua.find(h=>h.hua==='化忌');
+    if(luHua) dyMood+='，'+luHua.star+'化祿入'+luHua.palace+'是今年的福氣所在';
+    if(jiHua) dyMood+='，'+jiHua.star+'化忌入'+jiHua.palace+'要特別留意';
+  }
+  // 疊加當日
+  if(realFortune){
+    dyMood+='。今日（'+todayGZ+'）天干對你為【'+todayGod+'】';
+    if(todayCS==='帝旺'||todayCS==='臨官'||todayCS==='長生') dyMood+='，日主處'+todayCS+'位，精力充沛';
+    else if(todayCS==='病'||todayCS==='死'||todayCS==='墓'||todayCS==='絕') dyMood+='，日主處'+todayCS+'位，能量低落';
+    if(todayChong) dyMood+='。'+todayChong;
+    else if(todayHe) dyMood+='。'+todayHe;
   }
 
   // 梅花口語（象徵不是卦名）
@@ -6264,16 +6318,95 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
     }
   }
 
-  // 塔羅口語（牌義不是牌名）
+  // ═══════════════════════════════════════════════════════
+  // 塔羅十字陣口語解讀 — 根據問題類型選取關鍵牌位
+  // 金色黎明凱爾特十字陣：
+  //   0=核心現狀  1=阻礙因素  2=過去基礎  3=未來發展
+  //   4=可能結果  5=近期未來  6=自我態度  7=環境影響
+  //   8=希望恐懼  9=最終結果
+  // ═══════════════════════════════════════════════════════
   let tarotStory='';
   if(tarot&&tarot.drawn&&tarot.drawn.length>=10){
-    const core=tarot.drawn[0],obst=tarot.drawn[1],result=tarot.drawn[9];
-    const cM=typeof getTarotTypeMeaning==='function'?getTarotTypeMeaning(core.id,core.isUp,type):(core.isUp?core.up:core.rv);
-    const rM=typeof getTarotTypeMeaning==='function'?getTarotTypeMeaning(result.id,result.isUp,type):(result.isUp?result.up:result.rv);
-    const oM=typeof getTarotTypeMeaning==='function'?getTarotTypeMeaning(obst.id,obst.isUp,type):(obst.isUp?obst.up:obst.rv);
-    if(cM) tarotStory='你現在的狀態是「'+cM+'」';
-    if(oM) tarotStory+=(tarotStory?'，卡住你的是「':'卡住你的是「')+oM+'」';
-    if(rM) tarotStory+=(tarotStory?'，最終走向「':'走向「')+rM+'」';
+    const d=tarot.drawn;
+    // 取每張牌的問題類型專屬解讀
+    function _tm(idx){
+      const c=d[idx];
+      if(!c) return '';
+      const tm=typeof getTarotTypeMeaning==='function'?getTarotTypeMeaning(c.id,c.isUp,type):null;
+      return tm||(c.isUp?c.up:c.rv)||'';
+    }
+    function _dir(idx){return d[idx].isUp?'正位':'逆位';}
+    function _nm(idx){return d[idx].n;}
+
+    // 根據問題類型，選取最關鍵的牌位組合
+    if(type==='love'){
+      // 感情：核心(0) + 阻礙(1) + 自我(6) + 對方/環境(7) + 結果(9)
+      tarotStory='塔羅牌陣顯示——';
+      tarotStory+='你的感情核心（'+_nm(0)+' '+_dir(0)+'）：'+_tm(0);
+      tarotStory+='。阻礙你的是（'+_nm(1)+' '+_dir(1)+'）：'+_tm(1);
+      tarotStory+='。你自己的態度（'+_nm(6)+' '+_dir(6)+'）：'+_tm(6);
+      tarotStory+='。對方或環境（'+_nm(7)+' '+_dir(7)+'）：'+_tm(7);
+      // 希望恐懼牌揭示潛意識
+      if(!d[8].isUp) tarotStory+='。你內心深處擔憂的（'+_nm(8)+' 逆位）：'+_tm(8);
+      else tarotStory+='。你內心期盼的（'+_nm(8)+' 正位）：'+_tm(8);
+      tarotStory+='。<strong>最終走向（'+_nm(9)+' '+_dir(9)+'）：'+_tm(9)+'</strong>';
+
+    } else if(type==='career'){
+      // 事業：核心(0) + 阻礙(1) + 未來趨勢(3) + 近期(5) + 環境(7) + 結果(9)
+      tarotStory='塔羅牌陣顯示——';
+      tarotStory+='事業核心（'+_nm(0)+' '+_dir(0)+'）：'+_tm(0);
+      tarotStory+='。主要阻礙（'+_nm(1)+' '+_dir(1)+'）：'+_tm(1);
+      tarotStory+='。接下來的趨勢（'+_nm(3)+' '+_dir(3)+'）：'+_tm(3);
+      tarotStory+='。近期會發生（'+_nm(5)+' '+_dir(5)+'）：'+_tm(5);
+      tarotStory+='。職場環境（'+_nm(7)+' '+_dir(7)+'）：'+_tm(7);
+      tarotStory+='。<strong>最終走向（'+_nm(9)+' '+_dir(9)+'）：'+_tm(9)+'</strong>';
+
+    } else if(type==='wealth'){
+      // 財運：核心(0) + 阻礙(1) + 過去理財(2) + 近期(5) + 自我態度(6) + 結果(9)
+      tarotStory='塔羅牌陣顯示——';
+      tarotStory+='財務核心（'+_nm(0)+' '+_dir(0)+'）：'+_tm(0);
+      tarotStory+='。阻礙財運的（'+_nm(1)+' '+_dir(1)+'）：'+_tm(1);
+      tarotStory+='。過去理財習慣（'+_nm(2)+' '+_dir(2)+'）：'+_tm(2);
+      tarotStory+='。近期財務（'+_nm(5)+' '+_dir(5)+'）：'+_tm(5);
+      tarotStory+='。你的理財態度（'+_nm(6)+' '+_dir(6)+'）：'+_tm(6);
+      tarotStory+='。<strong>財運最終走向（'+_nm(9)+' '+_dir(9)+'）：'+_tm(9)+'</strong>';
+
+    } else if(type==='health'){
+      // 健康：核心(0) + 影響因素(1) + 過去習慣(2) + 自我態度(6) + 擔憂(8) + 結果(9)
+      tarotStory='塔羅牌陣顯示——';
+      tarotStory+='健康核心（'+_nm(0)+' '+_dir(0)+'）：'+_tm(0);
+      tarotStory+='。影響健康的因素（'+_nm(1)+' '+_dir(1)+'）：'+_tm(1);
+      tarotStory+='。過去生活習慣（'+_nm(2)+' '+_dir(2)+'）：'+_tm(2);
+      tarotStory+='。你的養生態度（'+_nm(6)+' '+_dir(6)+'）：'+_tm(6);
+      tarotStory+='。你擔憂的（'+_nm(8)+' '+_dir(8)+'）：'+_tm(8);
+      tarotStory+='。<strong>健康走向（'+_nm(9)+' '+_dir(9)+'）：'+_tm(9)+'</strong>';
+
+    } else if(type==='relationship'){
+      // 人際：核心(0) + 阻礙(1) + 自我(6) + 環境/他人(7) + 近期(5) + 結果(9)
+      tarotStory='塔羅牌陣顯示——';
+      tarotStory+='人際核心（'+_nm(0)+' '+_dir(0)+'）：'+_tm(0);
+      tarotStory+='。人際障礙（'+_nm(1)+' '+_dir(1)+'）：'+_tm(1);
+      tarotStory+='。你的社交態度（'+_nm(6)+' '+_dir(6)+'）：'+_tm(6);
+      tarotStory+='。他人對你的影響（'+_nm(7)+' '+_dir(7)+'）：'+_tm(7);
+      tarotStory+='。近期人際變化（'+_nm(5)+' '+_dir(5)+'）：'+_tm(5);
+      tarotStory+='。<strong>人際最終走向（'+_nm(9)+' '+_dir(9)+'）：'+_tm(9)+'</strong>';
+
+    } else {
+      // 家庭或通用：核心(0) + 阻礙(1) + 過去(2) + 環境(7) + 希望恐懼(8) + 結果(9)
+      tarotStory='塔羅牌陣顯示——';
+      tarotStory+='核心現狀（'+_nm(0)+' '+_dir(0)+'）：'+_tm(0);
+      tarotStory+='。主要阻礙（'+_nm(1)+' '+_dir(1)+'）：'+_tm(1);
+      tarotStory+='。根源（'+_nm(2)+' '+_dir(2)+'）：'+_tm(2);
+      tarotStory+='。環境影響（'+_nm(7)+' '+_dir(7)+'）：'+_tm(7);
+      if(!d[8].isUp) tarotStory+='。你擔憂的（'+_nm(8)+' 逆位）：'+_tm(8);
+      else tarotStory+='。你期盼的（'+_nm(8)+' 正位）：'+_tm(8);
+      tarotStory+='。<strong>最終走向（'+_nm(9)+' '+_dir(9)+'）：'+_tm(9)+'</strong>';
+    }
+
+    // 交叉驗證提示
+    const _posCards=[d[0].isUp,d[9].isUp];
+    if(_posCards[0]&&_posCards[1]) tarotStory+='<br><span style="font-size:.85rem;color:var(--c-text-dim)">✦ 核心牌與結果牌皆正位，整體能量正向</span>';
+    else if(!_posCards[0]&&!_posCards[1]) tarotStory+='<br><span style="font-size:.85rem;color:var(--c-text-dim)">✦ 核心牌與結果牌皆逆位，需要根本性調整</span>';
   }
 
   // 紫微口語
@@ -6283,12 +6416,33 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
     const gN={love:'夫妻',career:'官祿',wealth:'財帛',health:'疾厄',family:'田宅',relationship:'交友'}[type];
     if(gI!==undefined&&ziwei.palaces&&ziwei.palaces[gI]){
       const sts=ziwei.palaces[gI].stars||[];
+      const majors=sts.filter(s=>s.type==='major').map(s=>s.name+(s.brightness?'('+s.brightness+')':''));
       const hasLu=sts.some(s=>s.hua==='化祿');
       const hasJi=sts.some(s=>s.hua==='化忌');
       const hasBad=sts.some(s=>['擎羊','陀羅','火星','鈴星','地空','地劫'].includes(s.name));
-      if(hasLu) zwStory='紫微斗數顯示這方面本身有福氣';
-      else if(hasJi) zwStory='紫微斗數顯示這方面容易有煩惱';
-      else if(hasBad) zwStory='過程可能有波折，但不代表結果不好';
+      // 原盤基調
+      zwStory='紫微'+gN+'宮';
+      if(majors.length) zwStory+='有'+majors.join('、');
+      if(hasLu) zwStory+='，化祿入宮，本身有福氣';
+      else if(hasJi) zwStory+='，化忌入宮，這方面容易有煩惱';
+      else if(hasBad) zwStory+='，煞星入宮，過程有波折';
+    }
+    // 流年四化是否飛入問題宮位
+    if(zwLnHua.length&&gN){
+      const huaIn=zwLnHua.filter(h=>h.palace===gN+'宮'||h.palace===gN);
+      huaIn.forEach(h=>{
+        zwStory+='。今年流年'+h.star+h.hua+'飛入'+gN+'宮';
+        if(h.hua==='化祿') zwStory+='，加持這方面的運勢';
+        if(h.hua==='化忌') zwStory+='，今年這方面壓力較大';
+      });
+    }
+    // 大限走宮與問題方向交叉
+    if(zwDx&&zwDxPalace){
+      const dxMatch={love:['夫妻','子女'],career:['官祿','遷移'],wealth:['財帛','福德'],health:['疾厄','命宮'],family:['田宅','父母'],relationship:['交友','兄弟']};
+      const relPalaces=dxMatch[type]||[];
+      if(relPalaces.includes(zwDxPalace)){
+        zwStory+='。大限正走「'+zwDxPalace+'」，跟你問的問題直接相關，這十年這方面是重點課題';
+      }
     }
   }
 
@@ -6373,7 +6527,7 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
       story+=good?'整體感情運不錯，主動出擊會有驚喜。':mid?'感情運平穩，好好經營現有關係。':'感情運偏弱，先把自己狀態調好。';
     }
     if(mhStory) story+=mhStory+'。';
-    if(tarotStory) story+=tarotStory+'。';
+    if(tarotStory) story+='<br><br>'+tarotStory;
     if(dyMood) story+=dyMood+'。';
   }
   // ═══════════════════════════════════════
@@ -6424,7 +6578,7 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
       story+=good?'事業運整體不錯，把握機會。':mid?'事業平穩，穩中求進。':'事業有些壓力，先守住再說。';
     }
     if(mhStory) story+=mhStory+'。';
-    if(tarotStory) story+=tarotStory+'。';
+    if(tarotStory) story+='<br><br>'+tarotStory;
     if(dyMood&&!story.includes('運勢')) story+=dyMood+'。';
   }
   // ═══════════════════════════════════════
@@ -6449,61 +6603,97 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
       story+=caiStrong?'你有偏財運，但偏財不等於穩定，正財為主偏財為輔。':'財星偏弱，靠紀律存錢比追求高報酬重要。';
     } else if(/中獎|樂透|偏財|橫財|賭|刮刮樂|彩券|彩票|幾號|威力彩|大樂透|運彩|簽牌|明牌/.test(q)){
       story=caiStrong&&good?'偏財運確實不差，小額試試手氣可以。':'偏財運一般，小玩怡情就好。';
-      // ── 五大系統推算幸運號碼 ──
-      const luckyNums=new Set();
-      // 1. 八字：日主五行 → 河圖數
-      const elNums={金:[4,9],木:[3,8],水:[1,6],火:[2,7],土:[5,10]}[el]||[5];
-      elNums.forEach(n=>luckyNums.add(n));
-      // 八字：喜用神五行 → 河圖數
-      if(mainFav){
-        const favNums={金:[4,9],木:[3,8],水:[1,6],火:[2,7],土:[5,10]}[mainFav]||[];
-        favNums.forEach(n=>luckyNums.add(n));
+
+      // ══════════════════════════════════
+      // 五大系統交叉推算幸運號碼
+      // 核心邏輯：每個系統產出「種子數」，再用數學交叉組合
+      // ══════════════════════════════════
+
+      // ① 八字種子：日主天干序數 × 喜用五行河圖數
+      const _tgMap={甲:1,乙:2,丙:3,丁:4,戊:5,己:6,庚:7,辛:8,壬:9,癸:10};
+      const _htMap={金:[4,9],木:[3,8],水:[1,6],火:[2,7],土:[5,10]};
+      const _dmN=_tgMap[bazi.dm]||5;
+      const _favPair=_htMap[mainFav]||[5,10];
+      const _unfPair=_htMap[mainUnfav]||[0,0];
+      const baziSeed1=(_dmN*_favPair[0])%49+1;   // 天干×喜用河圖
+      const baziSeed2=(_dmN+_favPair[1])%49+1;    // 天干+喜用河圖
+      const baziSeed3=Math.abs(_dmN*10+_favPair[0]-_unfPair[0])%49+1; // 天干十位+喜用-忌神
+
+      // ② 梅花種子：卦數交叉
+      const _mh=S&&S.meihua;
+      let mhSeed1=0,mhSeed2=0,mhSeed3=0;
+      if(_mh){
+        const _upN=(_mh.up&&_mh.up.n)||1;
+        const _loN=(_mh.lo&&_mh.lo.n)||8;
+        const _dong=_mh.dong||1;
+        const _total=_upN+_loN+_dong; // 上卦+下卦+動爻=總數
+        mhSeed1=(_upN*_loN+_dong)%49+1;      // 上卦×下卦+動爻
+        mhSeed2=(_total*_dong)%49+1;          // 總數×動爻
+        mhSeed3=Math.abs(_upN*10+_loN)%49+1;  // 上卦十位+下卦
       }
-      // 2. 梅花：本卦上下卦數 + 動爻數
-      const mhData=S&&S.meihua;
-      if(mhData){
-        if(mhData.up&&mhData.up.n) luckyNums.add(mhData.up.n);
-        if(mhData.lo&&mhData.lo.n) luckyNums.add(mhData.lo.n);
-        if(mhData.dong) luckyNums.add(mhData.dong);
-        // 本卦卦序數
-        if(mhData.ben&&typeof guaNum==='function'){
-          const bn=guaNum(mhData.ben);
-          if(bn) luckyNums.add(bn);
+
+      // ③ 塔羅種子：前3張主要牌號交叉
+      const _td=S&&S.tarot&&S.tarot.drawn;
+      let tarotSeed1=0,tarotSeed2=0;
+      if(_td&&_td.length>=3){
+        const t1=_td[0].id||0, t2=_td[1].id||0, t3=_td[2].id||0;
+        tarotSeed1=(t1+t2+t3)%49+1;           // 前3牌加總
+        tarotSeed2=Math.abs(t1*t2-t3)%49+1;   // 前2牌相乘-第3牌
+      }else if(_td&&_td.length>0){
+        tarotSeed1=(_td[0].id*3)%49+1;
+      }
+
+      // ④ 紫微種子：命宮位置×財帛宮位置
+      const _zw=S&&S.ziwei;
+      let zwSeed=0;
+      if(_zw&&_zw.palaces){
+        const mingIdx=_zw.palaces.findIndex(p=>p&&p.name==='命宮');
+        const caiIdx=_zw.palaces.findIndex(p=>p&&p.name==='財帛');
+        if(mingIdx>=0&&caiIdx>=0){
+          zwSeed=((mingIdx+1)*(caiIdx+1))%49+1;
+        }else if(mingIdx>=0){
+          zwSeed=((mingIdx+1)*_dmN)%49+1;
         }
       }
-      // 3. 塔羅：抽到的牌號
-      const tarotData=S&&S.tarot&&S.tarot.drawn;
-      if(tarotData&&tarotData.length){
-        tarotData.forEach(c=>{
-          if(c&&typeof c.id==='number') luckyNums.add(c.id<=9?c.id:(c.id%10));
-        });
+
+      // ⑤ 日期種子：用今天的日期干支
+      const _today=new Date();
+      const _dateN=_today.getDate();
+      const _monthN=_today.getMonth()+1;
+      const dateSeed=(_dateN*_monthN+_dmN)%49+1;
+
+      // ══ 最終交叉組合 ══
+      // 從各系統種子中取最有意義的號碼
+      const _seeds=[baziSeed1,baziSeed2,baziSeed3,mhSeed1,mhSeed2,mhSeed3,tarotSeed1,tarotSeed2,zwSeed,dateSeed];
+      // 去重、去0、範圍1-49
+      const _unique=[...new Set(_seeds.filter(n=>n>0&&n<=49))];
+
+      // 如果不夠6個，用種子交叉生成更多
+      let _extra=[];
+      if(_unique.length<6){
+        for(let i=0;i<_unique.length-1&&_unique.length+_extra.length<6;i++){
+          const x=(_unique[i]+_unique[i+1])%49+1;
+          if(!_unique.includes(x)&&!_extra.includes(x)) _extra.push(x);
+        }
       }
-      // 4. 紫微：命宮主星數
-      const zwData=S&&S.ziwei;
-      if(zwData&&zwData.mingPalace){
-        const mp=zwData.mingPalace;
-        if(mp.index!==undefined) luckyNums.add((mp.index%10)+1);
-      }
-      // 5. 天干地支：日柱干支序數
-      const dmIdx={甲:1,乙:2,丙:3,丁:4,戊:5,己:6,庚:7,辛:8,壬:9,癸:10}[bazi.dm]||0;
-      if(dmIdx) luckyNums.add(dmIdx);
-      // 組合：去掉0和>49的數（適用大樂透），排序
-      const allNums=[...luckyNums].filter(n=>n>0&&n<=49).sort((a,b)=>a-b);
-      // 額外生成組合號碼（喜用五行數 × 梅花卦數）
-      const comboNums=new Set();
-      if(elNums[0]&&mhData&&mhData.dong){
-        comboNums.add(Math.abs(elNums[0]*10+mhData.dong)%49+1);
-        comboNums.add(Math.abs(elNums[1]*mhData.dong)%49+1);
-      }
-      if(dmIdx&&tarotData&&tarotData[0]){
-        comboNums.add(Math.abs(dmIdx*3+tarotData[0].id)%49+1);
-      }
-      const extraNums=[...comboNums].filter(n=>!allNums.includes(n)&&n>0).sort((a,b)=>a-b);
-      const finalNums=[...allNums,...extraNums].slice(0,8);
-      
-      story+=' 根據你的五大系統能量推算——';
-      story+='<br>🔮 <strong>今日幸運號碼：'+finalNums.join('、')+'</strong>';
-      story+='<br><span style="font-size:.85rem;color:var(--c-text-dim)">（八字河圖數＋梅花卦數＋塔羅牌號＋紫微星曜＋日主天干綜合推算，僅供參考娛樂）</span>';
+      const _final=[..._unique,..._extra].slice(0,6).sort((a,b)=>a-b);
+
+      // 特別號（用所有種子加總）
+      const _specSum=_seeds.reduce((a,b)=>a+b,0);
+      let _special=_specSum%49+1;
+      while(_final.includes(_special)) _special=_special%49+1;
+
+      story+='<br><br>🔮 根據你的命盤，五大系統交叉推算：';
+      story+='<br>📌 <strong>命理幸運號碼：'+_final.join('、')+'</strong>';
+      story+='<br>⭐ <strong>特別號：'+_special+'</strong>';
+      story+='<br><span style="font-size:.82rem;line-height:1.6;color:var(--c-text-dim)">';
+      story+='推算依據：八字日主'+bazi.dm+'（天干序'+_dmN+'）× 喜用'+mainFav+'行河圖數';
+      if(_mh) story+='｜梅花上卦'+(_mh.up?_mh.up.n:'')+'下卦'+(_mh.lo?_mh.lo.n:'')+'動爻'+(_mh.dong||'');
+      if(_td&&_td.length>=3) story+='｜塔羅前三牌（'+_td[0].n+'、'+_td[1].n+'、'+_td[2].n+'）';
+      if(zwSeed) story+='｜紫微命宮×財帛宮';
+      story+='｜當日日期能量';
+      story+='</span>';
+      story+='<br><span style="font-size:.78rem;color:var(--c-text-muted)">⚠ 號碼僅供娛樂參考，請理性消費</span>';
     } else if(/賺錢|開源|增加收入|怎麼賺|增加財富|致富|發財|財運怎麼提升|怎麼.*有錢|收入/.test(q)){
       story=strong?'身強適合主動出擊——創業、接案、投資都可以考慮。':'身弱適合穩定環境賺錢——專注本業加上副業為輔。';
       if(shiStr>15) story+='你食傷旺，適合靠創意、教學、寫作等方式增加收入。';
@@ -6525,7 +6715,7 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
       story+=good?'今年財運整體不錯。':mid?'財運平穩，量入為出。':'財運偏弱，保守為上。';
     }
     if(mhStory) story+=mhStory+'。';
-    if(tarotStory) story+=tarotStory+'。';
+    if(tarotStory) story+='<br><br>'+tarotStory;
     if(dyMood) story+=dyMood+'。';
   }
   // ═══════════════════════════════════════
@@ -6584,7 +6774,7 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
       story+='養生重點：'+({'金':'養肺（深呼吸、保濕、避免乾燥）','木':'疏肝（少熬夜、多伸展、控制情緒）','水':'養腎（早睡、黑色食物、避免過勞）','火':'養心（午休、減少焦慮、紅色食物）','土':'健脾（飲食規律、少生冷、黃色食物）'}[mainFav]||'均衡飲食與規律作息')+'。';
     }
     if(mhStory) story+=mhStory+'。';
-    if(tarotStory) story+=tarotStory+'。';
+    if(tarotStory) story+='<br><br>'+tarotStory;
   }
   // ═══════════════════════════════════════
   // 👥 人際 RELATIONSHIP
@@ -6621,7 +6811,7 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
       story+=good?'目前人際運不錯，多社交。':mid?'人際平穩，維持現有關係。':'人際有壓力，少說多聽。';
     }
     if(mhStory) story+=mhStory+'。';
-    if(tarotStory) story+=tarotStory+'。';
+    if(tarotStory) story+='<br><br>'+tarotStory;
     if(dyMood) story+=dyMood+'。';
   }
   // ═══════════════════════════════════════
@@ -6665,7 +6855,7 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
       story+=good?'家庭運整體不錯。':mid?'家庭關係平穩。':'家庭有些壓力，多溝通少猜疑。';
     }
     if(mhStory) story+=mhStory+'。';
-    if(tarotStory) story+=tarotStory+'。';
+    if(tarotStory) story+='<br><br>'+tarotStory;
     if(dyMood) story+=dyMood+'。';
     if(zwStory) story+=zwStory+'。';
   }
@@ -6676,7 +6866,7 @@ function generateHook(type,prob,bazi,mh,tarot,ziwei){
     story='你的性格'+(EL_TRAIT[el]||'')+'。';
     if(dyMood) story+=dyMood+'。';
     if(mhStory) story+=mhStory+'。';
-    if(tarotStory) story+=tarotStory+'。';
+    if(tarotStory) story+='<br><br>'+tarotStory;
   }
 
 
