@@ -1505,6 +1505,7 @@ html{scroll-behavior:smooth}
 .count-up{display:inline-block}
 
 </style>
+<style>body{-webkit-user-select:none;-moz-user-select:none;user-select:none;}input,textarea,select,[contenteditable]{-webkit-user-select:text;-moz-user-select:text;user-select:text;}</style>
 </head>
 <body>
 <nav class="nav"><div class="nav-inner">
@@ -1635,7 +1636,33 @@ html{scroll-behavior:smooth}
         <div style="padding-top:var(--sp-md)">
           <div class="form-group">
             <label class="form-label">出生時間</label>
-            <input type="time" class="form-input" id="f-btime">
+            <select class="form-input" id="f-btime">
+              <option value="">請選擇</option>
+              <option value="00:00">00:00（子時）</option>
+              <option value="01:00">01:00（丑時）</option>
+              <option value="02:00">02:00（丑時）</option>
+              <option value="03:00">03:00（寅時）</option>
+              <option value="04:00">04:00（寅時）</option>
+              <option value="05:00">05:00（卯時）</option>
+              <option value="06:00">06:00（卯時）</option>
+              <option value="07:00">07:00（辰時）</option>
+              <option value="08:00">08:00（辰時）</option>
+              <option value="09:00">09:00（巳時）</option>
+              <option value="10:00">10:00（巳時）</option>
+              <option value="11:00">11:00（午時）</option>
+              <option value="12:00">12:00（午時）</option>
+              <option value="13:00">13:00（未時）</option>
+              <option value="14:00">14:00（未時）</option>
+              <option value="15:00">15:00（申時）</option>
+              <option value="16:00">16:00（申時）</option>
+              <option value="17:00">17:00（酉時）</option>
+              <option value="18:00">18:00（酉時）</option>
+              <option value="19:00">19:00（戌時）</option>
+              <option value="20:00">20:00（戌時）</option>
+              <option value="21:00">21:00（亥時）</option>
+              <option value="22:00">22:00（亥時）</option>
+              <option value="23:00">23:00（子時）</option>
+            </select>
             <label style="display:flex;align-items:center;gap:.4rem;margin-top:.4rem;font-size:.82rem;color:var(--c-text-dim);cursor:pointer">
               <input type="checkbox" id="f-btime-unsure" onchange="if(this.checked){document.getElementById('f-btime').value='';document.getElementById('f-btime').disabled=true}else{document.getElementById('f-btime').disabled=false}"> 不確定出生時間
             </label>
@@ -2208,6 +2235,13 @@ html{scroll-behavior:smooth}
   </div>
 </div>
 <script>
+(function(){var _h=window.location.hostname;if(_h!=='onerkk.github.io'&&_h!=='localhost'&&_h!=='127.0.0.1'&&!_h.includes('192.168')){document.body.innerHTML='<div style="text-align:center;padding:100px;color:#888;font-size:1.5rem">⛔ 未授權的域名</div>';return;}})();
+document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});
+document.addEventListener('keydown',function(e){if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')){e.preventDefault();return false;}});
+document.addEventListener('selectstart',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;e.preventDefault();});
+document.addEventListener('dragstart',function(e){e.preventDefault();});
+setInterval(function(){try{console.clear();}catch(e){}},3000);
+
 /* =============================================================
    GLOBAL STATE
    ============================================================= */
