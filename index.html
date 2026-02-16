@@ -1788,9 +1788,9 @@ html{scroll-behavior:smooth}
       </div>
     </div>
     <div id="qs-products" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:var(--sp-sm);-webkit-overflow-scrolling:touch"></div>
-    <div style="display:flex;gap:var(--sp-sm);margin-top:var(--sp-md);flex-wrap:wrap">
-      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="btn" style="flex:1;min-width:140px;text-align:center;font-size:.85rem;background:#ee4d2d;color:#fff;border:1px solid #ee4d2d"><i class="fas fa-shopping-cart"></i> 去逛幫你挑的分類</a>
-      <button class="btn" onclick="openCustomModal()" style="flex:1;min-width:140px;font-size:.85rem;background:var(--c-gold);color:#1a0a0a;border:1px solid var(--c-gold)"><i class="fas fa-magic"></i> 量身客製</button>
+    <div style="display:flex;gap:10px;margin-top:var(--sp-md)">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:10px;background:linear-gradient(135deg,#ff6b4a,#ee4d2d);color:#fff;text-decoration:none;font-size:.82rem;font-weight:600;border:none;box-shadow:0 4px 12px rgba(238,77,45,.35),inset 0 1px 0 rgba(255,255,255,.2);transition:all .2s"><i class="fas fa-shopping-cart"></i> 逛推薦分類</a>
+      <button onclick="openCustomModal()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:10px;background:linear-gradient(135deg,#e8c547,#d4af37);color:#1a0a0a;font-size:.82rem;font-weight:600;border:none;box-shadow:0 4px 12px rgba(212,175,55,.35),inset 0 1px 0 rgba(255,255,255,.3);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-magic"></i> 量身客製</button>
     </div>
   </div>
 
@@ -1958,10 +1958,10 @@ html{scroll-behavior:smooth}
       <p class="text-sm" style="color:var(--c-text-dim);margin:0;line-height:1.5">「<span id="shop-review-text"></span>」</p>
       <div style="text-align:right;margin-top:4px"><span class="text-xs text-muted" id="shop-review-product"></span></div>
     </div>
-    <div style="display:flex;gap:var(--sp-sm);flex-wrap:wrap;justify-content:center">
-      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" class="btn" style="font-size:.85rem;background:#ee4d2d;color:#fff;border:1px solid #ee4d2d"><i class="fas fa-shopping-cart"></i> 蝦皮選購</a>
-      <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" rel="noopener" class="btn" style="font-size:.85rem;background:#00a040;color:#fff;border:1px solid #00a040"><i class="fas fa-box"></i> 7-11 取貨</a>
-      <button class="btn" onclick="openCustomModal()" style="font-size:.85rem;background:var(--c-gold);color:#1a0a0a;border:1px solid var(--c-gold)"><i class="fas fa-magic"></i> 客製手鏈</button>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:4px">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:220px;padding:13px 20px;border-radius:12px;background:linear-gradient(135deg,#ff6b4a,#ee4d2d);color:#fff;text-decoration:none;font-size:.88rem;font-weight:600;border:none;box-shadow:0 4px 14px rgba(238,77,45,.35),inset 0 1px 0 rgba(255,255,255,.2);transition:all .2s"><i class="fas fa-shopping-cart"></i> 蝦皮選購</a>
+      <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:220px;padding:13px 20px;border-radius:12px;background:linear-gradient(135deg,#2ecc71,#00a040);color:#fff;text-decoration:none;font-size:.88rem;font-weight:600;border:none;box-shadow:0 4px 14px rgba(0,160,64,.35),inset 0 1px 0 rgba(255,255,255,.2);transition:all .2s"><i class="fas fa-box"></i> 7-11 取貨</a>
+      <button onclick="openCustomModal()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:220px;padding:13px 20px;border-radius:12px;background:linear-gradient(135deg,#e8c547,#d4af37);color:#1a0a0a;font-size:.88rem;font-weight:600;border:none;box-shadow:0 4px 14px rgba(212,175,55,.35),inset 0 1px 0 rgba(255,255,255,.3);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-magic"></i> 客製手鏈</button>
     </div>
   </div>
 
@@ -1969,19 +1969,19 @@ html{scroll-behavior:smooth}
   <div class="card" style="text-align:center">
     <div class="card-title"><i class="fas fa-share-alt"></i> 分享你的占卜結果</div>
     <p class="text-sm text-dim mb-md">存成圖片分享到 IG / LINE，朋友也能免費測！</p>
-    <div class="actions actions-center" style="gap:var(--sp-md);flex-wrap:wrap">
-      <button class="btn-save-card" onclick="saveResultCard()"><i class="fas fa-download"></i> 存圖分享</button>
-      <button class="btn btn-outline" onclick="printResult()"><i class="fas fa-print"></i> 列印</button>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="saveResultCard()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:.85rem;font-weight:600;border:none;box-shadow:0 4px 14px rgba(102,126,234,.35),inset 0 1px 0 rgba(255,255,255,.2);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-download"></i> 存圖分享</button>
+      <button onclick="printResult()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.06));color:var(--c-text-dim);font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.15);box-shadow:0 2px 8px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.08);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-print"></i> 列印</button>
     </div>
   </div>
 
   <!-- 再測 -->
   <div class="card mt-lg" id="share-gate" style="text-align:center">
-    <h4 style="margin-bottom:var(--sp-sm)">🔄 想再測一次？</h4>
-    <button class="btn btn-gold btn-full" onclick="retestAfterShare()" style="max-width:320px;margin:0 auto var(--sp-md)"><i class="fas fa-redo"></i> 重新開始新的占卜</button>
+    <h4 style="margin-bottom:var(--sp-md)">🔄 想再測一次？</h4>
+    <button onclick="retestAfterShare()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:260px;margin:0 auto var(--sp-md);padding:14px 20px;border-radius:12px;background:linear-gradient(135deg,#e8c547,#d4af37);color:#1a0a0a;font-size:.92rem;font-weight:700;border:none;box-shadow:0 4px 16px rgba(212,175,55,.4),inset 0 1px 0 rgba(255,255,255,.3);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-redo"></i> 重新開始新的占卜</button>
     <div style="border-top:1px solid var(--c-border);padding-top:var(--sp-md);margin-top:var(--sp-sm)">
       <p class="text-sm text-dim">🎁 分享給朋友可獲得專屬折扣碼</p>
-      <button class="btn btn-outline btn-sm mt-sm" onclick="shareToUnlock()"><i class="fas fa-paper-plane"></i> 分享並取得折扣碼</button>
+      <button onclick="shareToUnlock()" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.05));color:var(--c-text-dim);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.12);box-shadow:0 2px 8px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.06);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-paper-plane"></i> 分享並取得折扣碼</button>
     </div>
   </div>
   <div class="discount-reveal hidden mt-lg" id="discount-reveal">
@@ -2214,7 +2214,6 @@ document.addEventListener('contextmenu',function(e){e.preventDefault();return fa
 document.addEventListener('keydown',function(e){if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&(e.key==='I'||e.key==='J'||e.key==='C'))||(e.ctrlKey&&e.key==='u')){e.preventDefault();return false;}});
 document.addEventListener('selectstart',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;e.preventDefault();});
 document.addEventListener('dragstart',function(e){e.preventDefault();});
-(function(){setInterval(function(){var t0=performance.now();debugger;if(performance.now()-t0>100){document.body.innerHTML='';window.location.reload();}},4000);})();
 setInterval(function(){try{console.clear();}catch(e){}},3000);
 
 /* =============================================================
