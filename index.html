@@ -27061,6 +27061,43 @@ function analyzeMeihuaTags(mh, type) {
     tags.push({ sys: 'meihua', tag: 'timing', label: '應期：' + timing.speed, category: 'timing', direction: 'neutral', weight: 1, detail: timing.el ? '動爻' + timing.el + '行，' + timing.speed + '，' + (timing.est || '') : timing.speed });
   }
 
+  // ══ H. [v5.0] Domain 分化 ══
+  var mhType = type || 'general';
+  var WX_DOMAIN = {
+    love: { favor: ['水','木'], desc: '感情需要滋潤和生長' },
+    career: { favor: ['木','火'], desc: '事業需要成長和展現' },
+    wealth: { favor: ['土','金'], desc: '財運需要穩固和收穫' },
+    health: { favor: ['土','水'], desc: '健康需要穩定和滋養' },
+    relationship: { favor: ['水','木'], desc: '人際需要流動和包容' },
+    family: { favor: ['土','火'], desc: '家庭需要穩固和溫暖' }
+  };
+  var domainCfg = WX_DOMAIN[mhType];
+  if (domainCfg && tiEl) {
+    if (domainCfg.favor.includes(tiEl)) {
+      tags.push({ sys: 'meihua', tag: 'ti_domain_match', label: '體卦五行（' + tiEl + '）與議題相合', category: 'structure', direction: 'pos', weight: 2, detail: tiEl + '行與此類問題有天然親和力' });
+    }
+  }
+
+  // ══ I. [v5.0] 變卦走勢 timing ══
+  if (bian.effect) {
+    var bianTimDir = 'neutral';
+    if (bian.effect.includes('有利') || bian.effect.includes('好轉')) bianTimDir = 'pos';
+    else if (bian.effect.includes('壓力') || bian.effect.includes('不樂觀')) bianTimDir = 'neg';
+    if (bianTimDir !== 'neutral') {
+      tags.push({ sys: 'meihua', tag: 'bian_trend_' + bianTimDir, label: '走勢' + (bianTimDir === 'pos' ? '往好的方向發展' : '有惡化趨勢'), category: 'timing', direction: bianTimDir, weight: 3, detail: '變卦顯示：' + bian.effect });
+    }
+  }
+
+  // ══ J. [v5.0] 用卦旺衰 timing ══
+  if (ws.yong) {
+    var yoWS = ws.yong;
+    if (yoWS.level === '旺' || yoWS.level === '相') {
+      tags.push({ sys: 'meihua', tag: 'yong_wang', label: '用卦當月得令（' + yoWS.level + '）', category: 'timing', direction: rel === '用克體' ? 'neg' : 'pos', weight: 2, detail: '對方能量旺' });
+    } else if (yoWS.level === '囚' || yoWS.level === '死') {
+      tags.push({ sys: 'meihua', tag: 'yong_shuai', label: '用卦當月失令（' + yoWS.level + '）', category: 'timing', direction: rel === '用克體' ? 'pos' : 'neg', weight: 2, detail: '對方能量弱' });
+    }
+  }
+
   return tags;
 }
 
@@ -27195,6 +27232,28 @@ function analyzeTarotTags(drawn, type) {
     tags.push({ sys: 'tarot', tag: 'spread_very_pos', label: '牌陣整體偏正面（' + posCount + '/10正面）', category: 'structure', direction: 'pos', weight: 2, detail: '大部分牌指向正面，整體能量好' });
   } else if (negCount >= 7) {
     tags.push({ sys: 'tarot', tag: 'spread_very_neg', label: '牌陣整體偏負面（' + negCount + '/10負面）', category: 'structure', direction: 'neg', weight: 2, detail: '大部分牌指向負面，需謹慎' });
+  }
+
+  // ══ I. [v5.0] 希望/恐懼牌（位置8）══
+  var hopeCard = d[8];
+  var hopeDir = cardDir(hopeCard);
+  tags.push({ sys: 'tarot', tag: 'hope_' + hopeDir, label: '希望/恐懼「' + hopeCard.n + '」' + (hopeCard.isUp ? '正位' : '逆位'), category: 'structure', direction: hopeDir, weight: 2, detail: '內心投射：' + (getMeaning(8).length > 40 ? getMeaning(8).slice(0,40) + '…' : getMeaning(8)) });
+
+  // ══ J. [v5.0] 過去牌（位置3）── timing ══
+  var pastCard = d[3];
+  var pastDir = cardDir(pastCard);
+  tags.push({ sys: 'tarot', tag: 'past_' + pastDir, label: '近期過去「' + pastCard.n + '」' + (pastCard.isUp ? '正位' : '逆位'), category: 'timing', direction: pastDir, weight: 2, detail: '剛經歷的：' + (getMeaning(3).length > 40 ? getMeaning(3).slice(0,40) + '…' : getMeaning(3)) });
+
+  // ══ K. [v5.0] 目標牌（位置4）══
+  var goalCard = d[4];
+  var goalDir = cardDir(goalCard);
+  tags.push({ sys: 'tarot', tag: 'goal_' + goalDir, label: '目標「' + goalCard.n + '」' + (goalCard.isUp ? '正位' : '逆位'), category: 'timing', direction: goalDir, weight: 2, detail: '追求的方向：' + (getMeaning(4).length > 40 ? getMeaning(4).slice(0,40) + '…' : getMeaning(4)) });
+
+  // ══ L. [v5.0] 結果+走向一致性（timing共振）══
+  if (outDir === nearDir && outDir !== 'neutral') {
+    tags.push({ sys: 'tarot', tag: 'outcome_trend_align', label: '結果牌與走向牌一致（' + (outDir === 'pos' ? '正面' : '負面') + '）', category: 'timing', direction: outDir, weight: 3, detail: '趨勢確定性高' });
+  } else if (outDir !== nearDir && outDir !== 'neutral' && nearDir !== 'neutral') {
+    tags.push({ sys: 'tarot', tag: 'outcome_trend_conflict', label: '結果牌與走向牌方向衝突', category: 'timing', direction: 'neutral', weight: 2, detail: '過程可能有轉折' });
   }
 
   return tags;
@@ -27372,6 +27431,32 @@ function analyzeNatalTags(natal, type) {
     tags.push({ sys: 'natal', tag: 'overall_tense', label: '星盤整體緊張', category: 'structure', direction: 'neg', weight: 2, detail: '凶相位（' + totalBad + '）遠多於吉相位（' + totalGood + '），整體需更多努力' });
   }
 
+  // ══ G. [v5.0] Transit 行運 timing ══
+  if (typeof S !== 'undefined' && S.transit) {
+    var tr = S.transit;
+    if (tr.jupiter) {
+      var jH = tr.jupiter.house;
+      if (cfg.houses.includes(jH)) {
+        tags.push({ sys: 'natal', tag: 'tr_jupiter_topic', label: '木星行運' + cfg.label + '宮（' + jH + '宮）', category: 'timing', direction: 'pos', weight: 4, detail: '木星帶來此方面擴張和好運' });
+      }
+    }
+    if (tr.saturn) {
+      var sH = tr.saturn.house;
+      if (cfg.houses.includes(sH)) {
+        tags.push({ sys: 'natal', tag: 'tr_saturn_topic', label: '土星行運' + cfg.label + '宮（' + sH + '宮）', category: 'timing', direction: 'neg', weight: 4, detail: '土星帶來此方面壓力考驗' });
+      }
+    }
+    if (tr.aspects && tr.aspects.length) {
+      var trGood = tr.aspects.filter(function(a) { return a.good; }).length;
+      var trBad = tr.aspects.filter(function(a) { return !a.good; }).length;
+      if (trGood > trBad + 1) {
+        tags.push({ sys: 'natal', tag: 'tr_aspects_good', label: '行運相位偏吉（' + trGood + '吉/' + trBad + '凶）', category: 'timing', direction: 'pos', weight: 3, detail: '近期天象有利' });
+      } else if (trBad > trGood + 1) {
+        tags.push({ sys: 'natal', tag: 'tr_aspects_bad', label: '行運相位偏凶（' + trBad + '凶/' + trGood + '吉）', category: 'timing', direction: 'neg', weight: 3, detail: '近期天象帶來壓力' });
+      }
+    }
+  }
+
   return tags;
 }
 
@@ -27485,6 +27570,33 @@ function analyzeNameTags(nameResult, zodiacNameResult, type) {
         });
       });
     });
+  }
+
+  // ══ C. [v5.0] 三才五行流通度 → timing tag ══
+  if (nameResult && nameResult.sanCai) {
+    var sc = nameResult.sanCai;
+    var tiEl2 = sc[0] || '', renEl2 = sc[1] || '', diEl2 = sc[2] || '';
+    var SHENG2 = { '木':'火', '火':'土', '土':'金', '金':'水', '水':'木' };
+    var flows = 0;
+    if (SHENG2[tiEl2] === renEl2) flows++;
+    if (SHENG2[renEl2] === diEl2) flows++;
+    if (tiEl2 === renEl2) flows++;
+    if (renEl2 === diEl2) flows++;
+    if (flows >= 2) {
+      tags.push({ sys: 'name', tag: 'sancai_flow', label: '三才五行流通順暢', category: 'timing', direction: 'pos', weight: 2, detail: '天人地五行相生或比和，基礎運勢好' });
+    } else if (flows === 0) {
+      tags.push({ sys: 'name', tag: 'sancai_block', label: '三才五行流通受阻', category: 'timing', direction: 'neg', weight: 2, detail: '天人地五行不流通，基礎運勢受壓' });
+    }
+  }
+
+  // ══ D. [v5.0] 補齊缺少的 domain 覆蓋 ══
+  if (nameResult && !type) {
+    // general case 也報人格
+    if (nameResult.renGe && nameResult.renGe.fortune) {
+      var rgL = nameResult.renGe.fortune.level || '平';
+      var rgD = (rgL === '大吉' || rgL === '吉') ? 'pos' : rgL === '凶' ? 'neg' : 'neutral';
+      tags.push({ sys: 'name', tag: 'renge_general', label: '人格（主運）' + nameResult.renGe.num + '劃（' + rgL + '）', category: 'structure', direction: rgD, weight: 2, detail: '人格為核心運勢指標' });
+    }
   }
 
   return tags;
