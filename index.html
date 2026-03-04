@@ -32310,14 +32310,48 @@ function computeRealFortune(bazi){
   if(csTip[csState]) tipParts.push(csTip[csState]);
   var tip = tipParts.slice(0,3).join('。')+'。';
 
+  // ── 構建 detail 物件（showFortuneResult 需要）──
+  var detail = {
+    godDesc: god+'：日主'+dm+'遇流日天干'+tG,
+    favHit: bazi.fav.includes(tEl) ? '✓ 今日五行'+tEl+'為喜用神，加分' : bazi.unfav.includes(tEl) ? '✗ 今日五行'+tEl+'為忌神，減分' : '今日五行'+tEl+'為閒神',
+    csDesc: '十二長生：'+csState+'（'+dm+'遇'+tZ+'）',
+    chong: isChong ? '⚠ 日支沖（'+dZ+'沖'+tZ+'），今日磁場動盪' : '',
+    he: isHe ? '✓ 日支合（'+dZ+'合'+tZ+'），今日人際和諧' : ''
+  };
+
+  // ── 動態提示 ──
+  var dynNote = '';
+  if(isChong && score<=40) dynNote = '今天日支逢沖且運勢偏低，建議重要事情延後處理';
+  else if(score>=75) dynNote = '今日多維度訊號一致偏正面，適合積極行動';
+
+  // ── 月令提示 ──
+  var monthNote = '';
+  try{
+    var mzhi = bazi.pillars.month.zhi;
+    if(mzhi) monthNote = '命主月令'+mzhi+'，流日'+tZ+'交互影響已納入計算';
+  }catch(e){}
+
+  // ── 星宿提示 ──
+  var xingxiuNote = _28XS[_xi]+'宿（'+(_28L[_xi]==='吉'?'吉宿，宜進取':'凶宿，宜保守')+' ）';
+
+  // ── 宜忌整理 ──
+  var yiJiObj = {yi:yj.yi.split('・'), ji:yj.ji.split('・')};
+
   return {
     score:score, sign:sign, icon:icon, msg:msg, tip:tip,
-    crystal:crystal, god:god, cs:csState, gz:tG+tZ, tEl:tEl,
-    favEl:favEl, isChong:isChong, isHe:isHe,
+    crystal:crystal.n||crystal, crystalReason:crystal.reason||'補充喜用神能量',
+    god:god, cs:csState, csState:csState, gz:tG+tZ, todayGZ:tG+tZ,
+    tEl:tEl, el:favEl, favEl:favEl,
+    isChong:isChong, isHe:isHe,
     yi:yj.yi, ji:yj.ji,
     xingxiu:_28XS[_xi]+'宿', xingxiuLuck:_28L[_xi],
     jyDailyNote:jyDailyNote,
-    tagBonus:Math.round(tagBonus)
+    tagBonus:Math.round(tagBonus),
+    detail:detail,
+    dynNote:dynNote,
+    xingxiuNote:xingxiuNote,
+    monthNote:monthNote,
+    yiJi:yiJiObj
   };
 }
 
@@ -32420,12 +32454,12 @@ function showFortuneResult(f){
 
   // ── 今日焦點與行動建議 ──
   const godTip = godWhite[f.god] || '順其自然，保持平常心';
-  const csTip = csWhite[f.csState] || '保持穩定節奏';
+  const csTip = csWhite[f.csState||f.cs] || '保持穩定節奏';
   
   let focusItems = [];
   focusItems.push(godTip.split('—')[0].trim());
-  if(f.detail.chong) focusItems.push('⚡ 沖日：今天磁場較動盪，大事緩一緩');
-  if(f.detail.he) focusItems.push('💫 合日：今天磁場和諧，推進事務順利');
+  if(f.detail && f.detail.chong) focusItems.push('⚡ 沖日：今天磁場較動盪，大事緩一緩');
+  if(f.detail && f.detail.he) focusItems.push('💫 合日：今天磁場和諧，推進事務順利');
   if(f.score >= 70) focusItems.push('🔥 高能日：把最重要的事排在今天');
   else if(f.score <= 35) focusItems.push('🛡️ 低能日：避免重大決策，保存能量');
 
@@ -32478,7 +32512,7 @@ function showFortuneResult(f){
       <div class="fortune-sign-text">${f.sign}</div>
       <p class="fortune-msg">${f.msg}</p>
       <div style="margin:var(--sp-sm) 0;font-size:0.85rem;color:var(--c-text-dim)">
-        今日干支：<span class="tag tag-gold">${f.todayGZ}</span>
+        今日干支：<span class="tag tag-gold">${f.todayGZ||f.gz||''}</span>
         <span style="color:${scoreColor};font-weight:700;margin-left:var(--sp-sm)">運勢分數 ${f.score}</span>
       </div>
 
@@ -32512,22 +32546,22 @@ function showFortuneResult(f){
           <i class="fas fa-chart-bar"></i> 展開查看命理數據
         </summary>
         <div style="background:rgba(0,0,0,0.2);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);margin-top:0.3rem;font-size:0.78rem;color:var(--c-text-dim);line-height:1.8">
-          <p>${f.detail.godDesc}</p>
-          <p>${f.detail.favHit}</p>
-          <p>${f.detail.csDesc}</p>
-          ${f.detail.chong?'<p style="color:var(--c-danger)">'+f.detail.chong+'</p>':''}
-          ${f.detail.he?'<p style="color:var(--c-success)">'+f.detail.he+'</p>':''}
+          <p>${f.detail?f.detail.godDesc:'—'}</p>
+          <p>${f.detail?f.detail.favHit:'—'}</p>
+          <p>${f.detail?f.detail.csDesc:'—'}</p>
+          ${f.detail&&f.detail.chong?'<p style="color:var(--c-danger)">'+f.detail.chong+'</p>':''}
+          ${f.detail&&f.detail.he?'<p style="color:var(--c-success)">'+f.detail.he+'</p>':''}
         </div>
       </details>
 
       <div class="fortune-divider"></div>
       <div class="fortune-crystal-rec">
-        <p class="text-sm"><strong>今日推薦水晶（依喜用神${f.el}行）：</strong></p>
+        <p class="text-sm"><strong>今日推薦水晶（依喜用神${f.el||f.favEl||''}行）：</strong></p>
         <div class="fortune-crystal-card">
-          <span class="fortune-crystal-name">${f.crystal}</span>
-          <span class="el-tag el-${f.el} text-xs">${f.el}行</span>
+          <span class="fortune-crystal-name">${typeof f.crystal==='object'?(f.crystal.n||f.crystal):f.crystal}</span>
+          <span class="el-tag el-${f.el||f.favEl||''} text-xs">${f.el||f.favEl||''}行</span>
         </div>
-        <p class="text-xs text-dim">${f.crystalReason}</p>
+        <p class="text-xs text-dim">${f.crystalReason||(typeof f.crystal==='object'?f.crystal.reason:'')||'補充喜用神能量'}</p>
         <div class="fortune-buy-btns mt-sm">
           <a href="${prod?prod.shopee:'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮入手</a>
           <a href="${prod?prod.seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}" target="_blank" rel="noopener" class="product-btn seven"><i class="fas fa-box"></i> 7-11</a>
