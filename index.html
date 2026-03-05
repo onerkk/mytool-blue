@@ -20444,6 +20444,27 @@ function approxLunar(y,m,d){
   }
 }
 
+// ═══ 紫微斗數常數（14主星、六煞星、六吉星、十二宮名）═══
+const ZW_MAJOR = [
+  {name:'紫微',el:'土',yin:true,bright:['子','午','巳','未']},
+  {name:'天機',el:'木',yin:true,bright:['子','午','卯','酉']},
+  {name:'太陽',el:'火',yin:false,bright:['巳','午','未','寅','卯','辰']},
+  {name:'武曲',el:'金',yin:true,bright:['辰','戌','丑','未']},
+  {name:'天同',el:'水',yin:false,bright:['子','午','巳','酉']},
+  {name:'廉貞',el:'火',yin:true,bright:['寅','申','巳','亥']},
+  {name:'天府',el:'土',yin:false,bright:['丑','卯','巳','酉']},
+  {name:'太陰',el:'水',yin:true,bright:['酉','戌','亥','子']},
+  {name:'貪狼',el:'木',yin:false,bright:['寅','午','辰','戌']},
+  {name:'巨門',el:'土',yin:true,bright:['子','午','辰','戌']},
+  {name:'天相',el:'水',yin:false,bright:['子','午','丑','未']},
+  {name:'天梁',el:'土',yin:false,bright:['子','午','卯','酉']},
+  {name:'七殺',el:'金',yin:true,bright:['寅','申','子','午']},
+  {name:'破軍',el:'水',yin:false,bright:['子','午','寅','申']}
+];
+const ZW_SHA = ['擎羊','陀羅','火星','鈴星','地空','地劫'];
+const ZW_LUCKY = ['文昌','文曲','左輔','右弼','天魁','天鉞'];
+const ZW_PALACES = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','父母宮','福德宮'];
+
 function computeZiwei(year,month,day,hour,gender){
   const lunar = approxLunar(year,month,day);
   const yGan = TG[((year-4)%10+10)%10];
