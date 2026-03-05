@@ -26199,7 +26199,41 @@ function parseQuestionMeta(q) {
   var kwPatterns = ['桃花','升遷','分手','錄取','破財','投資','離職','復合','創業','考試','健檢','手術','懷孕','結婚','跳槽','合作','貴人','簽約','借錢','轉職','出國'];
   kwPatterns.forEach(function(k) { if (text.includes(k)) kw.push(k); });
 
-  return { domain: domain, horizon: horizon, windowDays: windowDays, keywords: kw };
+  // subIntent — 子問題識別（讓 unified engine 對不同子問題產出不同分數）
+  var subIntent = 'general';
+  if(domain === 'love'){
+    if(/桃花|異性緣|有對象|有人喜歡|有人追|脫單/.test(text)) subIntent = 'peach';
+    else if(/復合|回來|挽回|前[任男女]|再一起/.test(text)) subIntent = 'reunion';
+    else if(/結婚|嫁|娶|婚期|求婚|訂婚/.test(text)) subIntent = 'marriage';
+    else if(/分手|離婚|該不該分|要不要離/.test(text)) subIntent = 'breakup';
+    else if(/曖昧|喜歡我|對方.*心|真心|認真|在乎/.test(text)) subIntent = 'feelings';
+    else if(/外遇|出軌|劈腿|小三|偷吃/.test(text)) subIntent = 'affair';
+    else if(/懷孕|生[小孩子]|寶寶|子女/.test(text)) subIntent = 'child';
+  } else if(domain === 'career'){
+    if(/升遷|升職|加薪|晉升/.test(text)) subIntent = 'promotion';
+    else if(/轉職|跳槽|換工作|離職|辭職/.test(text)) subIntent = 'jobchange';
+    else if(/創業|開店|開公司|自己做/.test(text)) subIntent = 'startup';
+    else if(/面試|錄取|offer/.test(text)) subIntent = 'interview';
+    else if(/考試|考上|考公|證照|國考/.test(text)) subIntent = 'exam';
+    else if(/合作|合夥|簽約/.test(text)) subIntent = 'partner';
+  } else if(domain === 'wealth'){
+    if(/偏財|中獎|彩券|樂透|投機/.test(text)) subIntent = 'windfall';
+    else if(/投資|股票|基金|買房/.test(text)) subIntent = 'invest';
+    else if(/正財|薪水|收入|加薪/.test(text)) subIntent = 'income';
+    else if(/破財|欠錢|負債|借貸/.test(text)) subIntent = 'loss';
+  } else if(domain === 'health'){
+    if(/手術|開刀/.test(text)) subIntent = 'surgery';
+    else if(/心理|焦慮|憂鬱|壓力|失眠/.test(text)) subIntent = 'mental';
+    else if(/懷孕|備孕|生育/.test(text)) subIntent = 'fertility';
+  } else if(domain === 'relationship'){
+    if(/貴人|靠山|誰能幫/.test(text)) subIntent = 'noble';
+    else if(/小人|防人|被害|被騙/.test(text)) subIntent = 'villain';
+  } else if(domain === 'family'){
+    if(/婆媳|公婆|岳父母/.test(text)) subIntent = 'inlaw';
+    else if(/子女|小孩|教育/.test(text)) subIntent = 'children';
+  }
+
+  return { domain: domain, horizon: horizon, windowDays: windowDays, keywords: kw, subIntent: subIntent };
 }
 
 // ── B. getSystemWeights ──
@@ -26619,6 +26653,44 @@ function combineBySymbolOverlap(symbols, weights, meta) {
   var keyMap = { bazi:'bazi', ziwei:'ziwei', astro:'astro', meihua:'meihua', tarot:'tarot', vedic:'vedic', name:'name' };
   var domain = (meta && meta.domain) || 'general';
   var horizon = (meta && meta.horizon) || 'mid';
+  var subIntent = (meta && meta.subIntent) || 'general';
+
+  // ═══ SUB_INTENT_TAG_BOOST：子問題 → 重點 tag → 加權倍數 ═══
+  // 讓同一個人問不同子問題時，不同的 tag 權重會變化
+  // 沒列在這裡的 tag 倍數 = 1（不變）
+  var SUB_INTENT_TAG_BOOST = {
+    // ── 感情子問題 ──
+    peach: {'命帶桃花':3,'紅鸞入命':3,'配偶星為喜用':2,'配偶星旺':2,'孤辰入命':2.5,'寡宿入命':2.5,'感情大限佳':2,'感情受阻':1.5},
+    reunion: {'感情受阻':3,'感情宮落陷':3,'配偶星為忌神':2.5,'福德宮化忌':2,'感情流年沖':2,'配偶星為喜用':1.5},
+    marriage: {'配偶星為喜用':3,'感情大限佳':3,'紅鸞入命':2.5,'配偶星透干':2,'時機有利':2,'孤辰入命':2},
+    breakup: {'感情受阻':3,'感情宮落陷':3,'感情流年沖':2.5,'福德宮化忌':2,'配偶星為忌神':2},
+    feelings: {'配偶星旺':2.5,'配偶星為喜用':2,'配偶星透干':2.5,'感情受阻':2,'福德宮煞星重':2},
+    affair: {'福德宮煞星重':3,'福德宮化忌':2.5,'感情宮落陷':2,'命帶桃花':2,'紅鸞入命':1.5},
+    child: {'配偶星為喜用':2,'感情大限佳':2,'配偶星旺':2.5,'體質基礎穩固':2},
+    // ── 事業子問題 ──
+    promotion: {'官殺為喜用':3,'官祿宮廟旺':3,'印星有力後台':2.5,'身強可扛責任':2,'貴人助力':2,'時機有利':2},
+    jobchange: {'遷移宮化祿（外出有利）':3,'事業大限佳':2,'身強可扛責任':2,'阻力增加':2,'官殺為忌神':2},
+    startup: {'身強可扛責任':3,'食傷旺技術強':2.5,'財運上升':2,'進帳增加':2,'比劫旺劫財':2.5,'官殺為忌神':1.5},
+    interview: {'官殺為喜用':2.5,'貴人助力':2.5,'時機有利':2.5,'遷移宮化祿（外出有利）':2,'印星有力後台':2},
+    exam: {'印星有力後台':3,'貴人助力':2,'官殺為喜用':2,'食傷旺技術強':2},
+    partner: {'合作有利':3,'合作順利':3,'比劫旺劫財':2.5,'食傷旺技術強':2},
+    // ── 財運子問題 ──
+    windfall: {'財運上升':2.5,'進帳增加':2,'大運帶財星':2.5,'比劫旺劫財':3,'財星弱':2.5,'守財重要':2},
+    invest: {'財運上升':2.5,'進帳增加':2,'財星弱':2.5,'守財重要':2.5,'現金流吃緊':2,'大運帶財星':2},
+    income: {'財星為喜用':3,'進帳增加':2.5,'大運帶財星':2,'身強可扛責任':2},
+    loss: {'比劫旺劫財':3,'現金流吃緊':3,'守財重要':2.5,'財星弱':2,'田宅宮化忌（財庫漏）':2.5},
+    // ── 健康子問題 ──
+    surgery: {'特定臟腑弱':3,'忌神過旺':2.5,'體質偏敏感':2,'時機有利':2,'恢復改善':2.5},
+    mental: {'福德宮化忌（心理壓力）':3,'福德宮煞星重':3,'心理壓力大':2.5,'情緒波動':2.5,'阻力增加':1.5},
+    fertility: {'配偶星為喜用':2,'體質基礎穩固':2.5,'恢復改善':2,'感情大限佳':2},
+    // ── 人際子問題 ──
+    noble: {'貴人出現':3,'貴人助力':3,'合作順利':2,'印星有力後台':2.5},
+    villain: {'同溫競爭':3,'社交阻力':2.5,'阻力增加':2,'比劫旺劫財':2},
+    // ── 家庭子問題 ──
+    inlaw: {'家庭摩擦':3,'爭執風險':2.5,'長輩因素':2.5,'長輩支持':2},
+    children: {'親子關係好':3,'爭執風險':2.5,'配偶星為喜用':2}
+  };
+  var _boostMap = SUB_INTENT_TAG_BOOST[subIntent] || {};
 
   // ── TAG_ID_MAP：tag id → TAGS_BY_DOMAIN 標準標籤的靜態映射 ──
   // 各系統 rawTag.tag（固定 id）直接對應字典標準 tag，不靠字串比對
@@ -26876,7 +26948,8 @@ function combineBySymbolOverlap(symbols, weights, meta) {
       // 若三條路徑都未命中，不入庫
       if (!matchedTag) return;
 
-      var contrib = w * sym.confidence * (tw / 5);
+      var _boost = _boostMap[matchedTag] || 1;
+      var contrib = w * sym.confidence * (tw / 5) * _boost;
       if (!tagScore[matchedTag]) { tagScore[matchedTag] = 0; tagSupport[matchedTag] = []; tagEvidence[matchedTag] = {}; }
       tagScore[matchedTag] += contrib;
       var sysName = sysZh[sys] || sys;
@@ -26892,7 +26965,8 @@ function combineBySymbolOverlap(symbols, weights, meta) {
       sym.tags.forEach(function(tagStr) {
         var matched = allDomainTags.find(function(dt) { return tagStr.includes(dt) || dt.includes(tagStr); });
         if (!matched) return;
-        var contrib2 = w * sym.confidence * 0.5;
+        var _boost2 = _boostMap[matched] || 1;
+        var contrib2 = w * sym.confidence * 0.5 * _boost2;
         if (!tagScore[matched]) { tagScore[matched] = 0; tagSupport[matched] = []; tagEvidence[matched] = {}; }
         tagScore[matched] += contrib2;
         var sn2 = sysZh[sys] || sys;
@@ -29960,19 +30034,40 @@ function runAnalysisV2(){
   // finalProb 來自 unified engine（tag-overlap + sigmoid）
   let finalProb = _uResult.finalProb;
 
-  // ═══ 問題專屬 finalProb 調整（Phase 5）═══
-  // unified engine 的 finalProb 只看 type，同 type 不同問題會相同
-  // 這裡根據具體問題從命盤中抽取專屬指標，讓不同問題有真正不同的分數
+  // ═══ 600 分支精準調整（取代舊的 adjustProbByQuestion 微調）═══
+  // 600 分支的 evScore 已精確到每個子問題看哪些宮位/星曜
+  // 把它從「附加微調」提升為「核心混合」
+  var _evBlendInfo = { evScore:0, evProb:50, evCount:0, weight:0, method:'none' };
   try {
+    if(typeof getSubIntentEvidence === 'function' && b){
+      var _ev600 = getSubIntentEvidence(question, b, S.meihua, S.tarot);
+      if(_ev600 && _ev600.length > 0){
+        var _evS = (typeof _ev600.score === 'number') ? _ev600.score : 0;
+        // evScore → evidence_prob：50 為中性，每分 ±4%
+        var _evProb = Math.max(15, Math.min(90, Math.round(50 + _evS * 4)));
+        // 混合權重：600 分支匹配越多條 → evidence 佔比越高
+        var _evWeight = 0;
+        if(_ev600.length >= 5) _evWeight = 0.45;      // 精確匹配（5+ 條 evidence）
+        else if(_ev600.length >= 3) _evWeight = 0.35;  // 好匹配
+        else if(_ev600.length >= 1) _evWeight = 0.20;  // 粗略匹配
+        // blend: finalProb = unified * (1-w) + evidence * w
+        var _blended = Math.round(finalProb * (1 - _evWeight) + _evProb * _evWeight);
+        _blended = Math.max(10, Math.min(95, _blended));
+        _evBlendInfo = { evScore:_evS, evProb:_evProb, evCount:_ev600.length, weight:_evWeight, method:'blend', before:finalProb, after:_blended };
+        finalProb = _blended;
+      }
+    }
+    // 舊的 adjustProbByQuestion 仍保留作為補充（但權重降低）
     var _qAdj = adjustProbByQuestion(question, type, b, S.ziwei, S.natal, S.jyotish, S.meihua, S.tarot);
+    // 降低舊調整的影響力（原本 ±40，現在最多 ±15，因為主要調整已由 600 分支完成）
+    _qAdj = Math.max(-15, Math.min(15, Math.round(_qAdj * 0.4)));
     if(_qAdj !== 0){
-      console.log('[問題專屬調整] question="'+question+'" type='+type+' adj='+_qAdj+' before='+finalProb+' after='+(finalProb+_qAdj));
       finalProb = Math.max(10, Math.min(95, Math.round(finalProb + _qAdj)));
     }
-    // 存儲供debug顯示
     S._qAdj = _qAdj || 0;
+    S._evBlend = _evBlendInfo;
     S._qAdjBefore = _uResult.finalProb;
-  } catch(e){ console.warn('[問題專屬調整] error:', e); S._qAdj = 0; }
+  } catch(e){ S._qAdj = 0; S._evBlend = _evBlendInfo; }
 
   // 掛載供後續 render 使用
   S._uResult = _uResult;
@@ -30243,7 +30338,16 @@ function runAnalysisV2(){
             _uR.comb.topTags.slice(0,4).map(t => `<span style="color:var(--c-gold)">${t.tag}</span>`).join(' ') + `</div>`;
         }
 
-        fusionHtml = agreeHtml + conflictHtml + rulingHtml + confHtml + tagHtml;
+        // ── 6. 600 分支精準分析影響 ──
+        let evBlendHtml = '';
+        if(S._evBlend && S._evBlend.method === 'blend'){
+          const eb = S._evBlend;
+          const _ebDir = eb.evScore > 0 ? '正面' : eb.evScore < 0 ? '負面' : '中性';
+          const _ebColor = eb.evScore > 0 ? '#4ade80' : eb.evScore < 0 ? '#f87171' : '#fbbf24';
+          evBlendHtml = `<div style="margin:3px 0;font-size:.68rem;opacity:.7">🔍 問題專屬分析（${eb.evCount}項證據）：<span style="color:${_ebColor}">${_ebDir}</span>（通用${eb.before}% → 專屬${eb.after}%）</div>`;
+        }
+
+        fusionHtml = agreeHtml + conflictHtml + rulingHtml + confHtml + tagHtml + evBlendHtml;
 
         // ★ 自動模式提示
         if(S._autoMode){
