@@ -178,6 +178,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .step{display:none;animation:fadeIn .45s ease both}
 .step.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
@@ -29883,8 +29884,9 @@ function runAnalysisV2(){
   }
   document.getElementById('r-conclusion').innerHTML=concl;
 
-  // 注入 AI 深度解讀按鈕
-  if (typeof injectAIButton === 'function') injectAIButton();
+  // ═══ AI 深度解讀自動觸發 ═══
+  // 離線內容已渲染完畢（作為 fallback），現在嘗試 AI 重寫
+  try{ _tryAIRewrite(question, type, finalProb); }catch(e){ console.error('AI rewrite trigger error:', e); }
 
   // ═══ 站長觀點（人格化判斷）═══
   try{
@@ -37111,6 +37113,11 @@ function closeAdmin(){
 // AI 深度解讀整合 — Cloudflare Worker Proxy
 // ═══════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════
+// AI 深度解讀整合 — Cloudflare Worker Proxy
+// 模式：API 可用時自動覆蓋結果頁；API 用完/失敗時保留離線內容
+// ═══════════════════════════════════════════════════════════════════
+
 const AI_WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
 const AI_ADMIN_TOKEN = 'jy_admin_2026';
 const AI_USED_KEY = 'jy_ai_used';
@@ -37129,7 +37136,7 @@ function markAIUsedToday() {
 }
 
 function isAdminUser() {
-  return localStorage.getItem('jy_admin') === AI_ADMIN_TOKEN;
+  return S._isAdmin || localStorage.getItem('jy_admin') === AI_ADMIN_TOKEN;
 }
 
 function buildAIPayload(question, focusType) {
@@ -37209,7 +37216,7 @@ function buildAIPayload(question, focusType) {
     tarotData = {
       cards: ta.drawn.slice(0,10).map(function(c,i){return{
         position: ta.spread&&ta.spread[i]?ta.spread[i]:'位置'+(i+1),
-        name: c.name||c.n||'', reversed: c.reversed||c.rev||false,
+        name: c.name||c.n||'', reversed: !c.isUp,
         keywords: c.keywords||c.kw||[]
       };})
     };
@@ -37251,9 +37258,9 @@ function buildAIPayload(question, focusType) {
   if (ur) {
     unifiedVerdict = ur.comb ? ur.comb.finalDir : 'mid';
     if (ur.comb && ur.comb.topTags) {
-      var posTags=ur.comb.topTags.filter(function(t){return t.direction==='pos';}).map(function(t){return t.tag;});
-      var negTags=ur.comb.topTags.filter(function(t){return t.direction==='neg';}).map(function(t){return t.tag;});
-      if(posTags.length&&negTags.length) conflictPairs.push(posTags.slice(0,2).join('+')+' vs '+negTags.slice(0,2).join('+'));
+      var posTags2=ur.comb.topTags.filter(function(t){return t.direction==='pos';}).map(function(t){return t.tag;});
+      var negTags2=ur.comb.topTags.filter(function(t){return t.direction==='neg';}).map(function(t){return t.tag;});
+      if(posTags2.length&&negTags2.length) conflictPairs.push(posTags2.slice(0,2).join('+')+' vs '+negTags2.slice(0,2).join('+'));
     }
     if(S._arbitration&&S._arbitration.conflicts){
       S._arbitration.conflicts.forEach(function(c){if(c.desc)conflictPairs.push(c.desc);else if(c.systems)conflictPairs.push(c.systems.join(' vs '));});
@@ -37282,75 +37289,161 @@ async function callAIDeepReading(question, focusType) {
   return data;
 }
 
-function injectAIButton() {
-  if (document.getElementById('ai-deep-btn')) return;
-  var answerEl = document.getElementById('r-answer');
-  if (!answerEl) return;
-  var used = hasUsedAIToday() && !isAdminUser();
-  var wrapper = document.createElement('div');
-  wrapper.id = 'ai-deep-wrapper';
-  wrapper.style.cssText = 'margin-top:1rem;text-align:center;';
-  wrapper.innerHTML =
-    '<button id="ai-deep-btn" onclick="triggerAIDeepReading()" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:.7rem 1.5rem;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .3s;box-shadow:0 2px 12px rgba(139,92,246,.3);'+(used?'opacity:.5;pointer-events:none;':'')+'" '+(used?'disabled':'')+'><i class="fas fa-brain" style="margin-right:.4rem"></i>'+(used?'今日 AI 深度解讀已使用':'AI 深度解讀（每日一次）')+'</button>'+
-    '<p style="font-size:.72rem;color:var(--c-text-dim);margin-top:.4rem;opacity:.7">'+(used?'每人每天可免費使用一次':'由 AI 根據七維命理數據撰寫專屬解讀')+'</p>'+
-    '<div id="ai-deep-result" style="display:none;margin-top:1rem;text-align:left;"></div>';
-  answerEl.parentNode.insertBefore(wrapper, answerEl.nextSibling);
-}
+// ═══ 核心：自動 AI 重寫結果頁 ═══
+// 策略：離線內容已經渲染好（作為 fallback），這裡嘗試用 AI 覆蓋
+// 如果 API 用完或失敗，離線內容原封不動保留
 
-async function triggerAIDeepReading() {
-  var btn = document.getElementById('ai-deep-btn');
-  var resultDiv = document.getElementById('ai-deep-result');
-  if (!btn || !resultDiv) return;
-  var question = (S.form ? S.form.question : '') || '';
-  var focusType = (S.form ? S.form.type : 'career') || 'career';
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI 正在解讀你的命盤...';
-  btn.style.opacity = '0.7';
-  resultDiv.style.display = 'block';
-  resultDiv.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--c-text-dim)"><div style="font-size:1.5rem;margin-bottom:.5rem">🔮</div><div>正在整合七大命理系統數據，AI 深度解讀中...</div><div style="font-size:.75rem;margin-top:.3rem;opacity:.6">通常需要 10-20 秒</div></div>';
+async function _tryAIRewrite(question, focusType, finalProb) {
+  // 判斷是否可以呼叫 AI
+  var _admin = isAdminUser();
+  if (!_admin && hasUsedAIToday()) {
+    console.log('[AI] 今日已使用，保持離線模式');
+    _showOfflineBadge();
+    return;
+  }
+
+  // 保存離線內容（以便 API 失敗時恢復）
+  var answerEl = document.getElementById('r-answer');
+  var expertEl = document.getElementById('r-expert-comment');
+  var act2El = document.getElementById('act2-cards');
+  
+  var _offlineBackup = {
+    answer: answerEl ? answerEl.innerHTML : '',
+    expert: expertEl ? expertEl.innerHTML : '',
+    act2: act2El ? act2El.innerHTML : '',
+  };
+
+  // ── 顯示 AI 載入狀態 ──
+  if (answerEl) {
+    answerEl.innerHTML = 
+      '<div id="ai-loading-state" style="text-align:center;padding:2rem 1rem">' +
+        '<div style="margin-bottom:1rem">' +
+          '<div style="width:48px;height:48px;margin:0 auto;border:3px solid rgba(139,92,246,.2);border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite"></div>' +
+        '</div>' +
+        '<div style="font-size:1rem;color:var(--c-gold);font-weight:600;margin-bottom:.5rem">AI 正在深度解讀你的命盤…</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.6">' +
+          '融合七大命理系統數據，為你撰寫專屬分析<br>' +
+          '<span style="font-size:.72rem;opacity:.6">通常需要 10-20 秒</span>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // 隱藏站長觀點（等 AI 替換）
+  if (expertEl) expertEl.style.opacity = '0.3';
+
   try {
     var data = await callAIDeepReading(question, focusType);
     var r = data.result;
-    var dimConfig = [
-      {key:'bazi',label:'八字命理',icon:'☯️'},{key:'ziwei',label:'紫微斗數',icon:'⭐'},
-      {key:'meihua',label:'梅花易數',icon:'☰'},{key:'tarot',label:'塔羅牌',icon:'🃏'},
-      {key:'natal',label:'西洋星盤',icon:'♈'},{key:'vedic',label:'吠陀占星',icon:'🕉️'},
-      {key:'name',label:'姓名學',icon:'文'}
-    ];
-    var html = '<div style="border-top:1px solid rgba(139,92,246,.3);padding-top:1rem;"><h3 style="color:var(--c-gold,#fbbf24);font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem"><span style="font-size:1.2rem">🧠</span> AI 七維深度解讀</h3>';
-    dimConfig.forEach(function(dim){
-      var text = r[dim.key];
-      if (!text) return;
-      html += '<div style="margin-bottom:1rem;padding:.8rem 1rem;background:rgba(255,255,255,.03);border-radius:8px;border-left:3px solid rgba(139,92,246,.4)"><div style="font-size:.8rem;color:var(--c-gold,#fbbf24);font-weight:600;margin-bottom:.4rem">'+dim.icon+' '+dim.label+'</div><div style="font-size:.92rem;line-height:1.75;color:var(--c-text,#e0e0e0)">'+_escHtml(text)+'</div></div>';
-    });
-    if (r.conclusion) {
-      html += '<div style="margin-top:1.2rem;padding:1rem 1.2rem;background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(99,102,241,.05));border-radius:10px;border:1px solid rgba(139,92,246,.2)"><div style="font-size:.9rem;color:var(--c-gold,#fbbf24);font-weight:700;margin-bottom:.5rem">🔮 最終結論</div><div style="font-size:.95rem;line-height:1.8;color:var(--c-text,#e0e0e0)">'+_escHtml(r.conclusion)+'</div></div>';
-    }
-    if (data.isAdmin && data.usage) {
-      html += '<div style="font-size:.65rem;color:var(--c-text-dim);margin-top:.5rem;opacity:.5">[Admin] Input: '+data.usage.input_tokens+' tokens, Output: '+data.usage.output_tokens+' tokens</div>';
-    }
-    html += '</div>';
-    resultDiv.innerHTML = html;
-    btn.innerHTML = '<i class="fas fa-check"></i> AI 深度解讀完成';
-    btn.style.background = 'rgba(74,222,128,.2)';
-    btn.style.color = '#4ade80';
+    
+    // ═══ AI 成功：重寫結果頁 ═══
+    _renderAIResult(r, data, focusType, finalProb);
+    
+    console.log('[AI] 深度解讀成功', _admin ? '[管理員]' : '');
+    
   } catch (err) {
-    console.error('AI deep reading error:', err);
+    console.warn('[AI] 深度解讀失敗，恢復離線內容:', err);
+    
+    // 恢復離線內容
+    if (answerEl) answerEl.innerHTML = _offlineBackup.answer;
+    if (expertEl) { expertEl.innerHTML = _offlineBackup.expert; expertEl.style.opacity = '1'; }
+    if (act2El) act2El.innerHTML = _offlineBackup.act2;
+    
     if (err.status === 429) {
-      btn.innerHTML = '今日 AI 深度解讀已使用';
-      btn.style.opacity = '0.5';
-      resultDiv.innerHTML = '<div style="text-align:center;padding:1rem;color:#fbbf24;font-size:.9rem">'+(err.message||'每人每天可免費使用一次 AI 深度解讀')+'</div>';
+      _showOfflineBadge();
       markAIUsedToday();
     } else {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-brain"></i> 重試 AI 深度解讀';
-      btn.style.opacity = '1';
-      resultDiv.innerHTML = '<div style="text-align:center;padding:1rem;color:#f87171;font-size:.85rem">AI 解讀暫時無法使用，請稍後再試<br><span style="font-size:.72rem;opacity:.6">'+(err.error||err.message||'網路錯誤')+'</span></div>';
+      // 網路錯誤等，靜默 fallback，不打擾使用者
+      console.warn('[AI] 離線模式（網路錯誤）');
     }
   }
 }
 
+// ═══ 渲染 AI 結果到結果頁 ═══
+function _renderAIResult(r, data, focusType, finalProb) {
+  var answerEl = document.getElementById('r-answer');
+  var expertEl = document.getElementById('r-expert-comment');
+  
+  if (!answerEl || !r) return;
+
+  // ── 主回答區：AI 全文 ──
+  var html = '';
+  
+  // AI 標記
+  html += '<div style="display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .7rem;border-radius:20px;background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(99,102,241,.08));border:1px solid rgba(139,92,246,.2);font-size:.72rem;color:#a78bfa;margin-bottom:1rem">';
+  html += '<span style="font-size:.8rem">🧠</span> AI 深度解讀';
+  html += '</div>';
+
+  // 各維度解讀（不再用 tab，直接流式排列）
+  var dimConfig = [
+    {key:'bazi',label:'八字命理',icon:'☯️',color:'#e2b96f'},
+    {key:'ziwei',label:'紫微斗數',icon:'⭐',color:'#c084fc'},
+    {key:'meihua',label:'梅花易數',icon:'☰',color:'#60a5fa'},
+    {key:'tarot',label:'塔羅牌',icon:'🃏',color:'#f472b6'},
+    {key:'natal',label:'西洋星盤',icon:'♈',color:'#34d399'},
+    {key:'vedic',label:'吠陀占星',icon:'🕉️',color:'#fb923c'},
+    {key:'name',label:'姓名學',icon:'文',color:'#a78bfa'}
+  ];
+
+  var hasDimContent = false;
+  dimConfig.forEach(function(dim) {
+    var text = r[dim.key];
+    if (!text) return;
+    hasDimContent = true;
+    html += '<div style="margin-bottom:1.2rem;padding:.8rem 1rem;background:rgba(255,255,255,.02);border-radius:10px;border-left:3px solid ' + dim.color + '">';
+    html += '<div style="font-size:.78rem;color:' + dim.color + ';font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.3rem">';
+    html += '<span>' + dim.icon + '</span> ' + dim.label;
+    html += '</div>';
+    html += '<div style="font-size:.95rem;line-height:1.85;color:var(--c-text,#e0e0e0)">' + _escHtml(text) + '</div>';
+    html += '</div>';
+  });
+
+  // 最終結論
+  if (r.conclusion) {
+    html += '<div style="margin-top:1.5rem;padding:1.2rem;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.05));border-radius:12px;border:1px solid rgba(212,175,55,.2)">';
+    html += '<div style="font-size:.88rem;color:var(--c-gold,#fbbf24);font-weight:700;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem"><span style="font-size:1.1rem">🔮</span> 最終結論</div>';
+    html += '<div style="font-size:1rem;line-height:1.9;color:var(--c-text,#e0e0e0);font-weight:500">' + _escHtml(r.conclusion) + '</div>';
+    html += '</div>';
+  }
+
+  // Admin token info
+  if (data.isAdmin && data.usage) {
+    html += '<div style="font-size:.62rem;color:var(--c-text-dim);margin-top:.8rem;opacity:.4;text-align:right">[Admin] In:' + data.usage.input_tokens + ' Out:' + data.usage.output_tokens + ' tokens</div>';
+  }
+
+  answerEl.innerHTML = html;
+
+  // ── 站長觀點：AI 模式時隱藏（AI 已經包含深度觀點）──
+  if (expertEl) expertEl.style.display = 'none';
+
+  // ── 隱藏「完整問答分析」和「為什麼這樣判斷」（AI 已涵蓋）──
+  var fullEl = document.getElementById('r-answer-full');
+  if (fullEl && fullEl.closest('.collapsible-card')) fullEl.closest('.collapsible-card').style.display = 'none';
+
+  // act2-cards 的三張摘要卡片：在 AI 模式下用 details 收折
+  var act2El = document.getElementById('act2-cards');
+  if (act2El && act2El.innerHTML.trim()) {
+    var oldAct2 = act2El.innerHTML;
+    // 找到 act2 前面的「為什麼這樣判斷」標題，隱藏它
+    var act2Title = act2El.previousElementSibling;
+    if (act2Title) act2Title.style.display = 'none';
+    // 把 act2 內容包進 details（讓想看的人還是能看）
+    act2El.innerHTML = '<details style="margin-top:.5rem"><summary style="cursor:pointer;color:var(--c-gold);font-size:.82rem;text-align:center">📊 查看各系統分析細節</summary><div style="margin-top:.5rem">' + oldAct2 + '</div></details>';
+  }
+}
+
+// ═══ 離線模式標記 ═══
+function _showOfflineBadge() {
+  var answerEl = document.getElementById('r-answer');
+  if (!answerEl) return;
+  // 在離線內容最前面加一個小提示
+  var badge = '<div style="display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:.68rem;color:var(--c-text-dim);margin-bottom:.8rem">';
+  badge += '<span>📡</span> 離線分析模式（每日一次免費 AI 深度解讀已使用）';
+  badge += '</div>';
+  answerEl.innerHTML = badge + answerEl.innerHTML;
+}
+
 function _escHtml(str){if(!str)return'';return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');}
+
 
 </script>
 <!-- Sticky Bottom CTA for Result Page -->
