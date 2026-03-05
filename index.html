@@ -17,8 +17,8 @@
 <meta property="og:url" content="https://onerkk.github.io/mytool-blue/">
 <meta property="og:title" content="免費算命｜八字紫微塔羅梅花七維命理分析 — 靜月之光">
 <meta property="og:description" content="免費線上算命！整合八字、紫微斗數、梅花易數、塔羅牌、西洋星盤、吠陀占星、姓名學，七大系統交叉分析你的感情、事業、財運、健康。輸入生日10秒出結果。">
-<meta property="og:image" content="https://onerkk.github.io/mytool-blue/ogimage.jpg?v=5.0">
-<meta property="og:image:secure_url" content="https://onerkk.github.io/mytool-blue/ogimage.jpg?v=5.0">
+<meta property="og:image" content="https://onerkk.github.io/mytool-blue/ogimage.jpg?v=5.1">
+<meta property="og:image:secure_url" content="https://onerkk.github.io/mytool-blue/ogimage.jpg?v=5.1">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/jpeg">
@@ -29,7 +29,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="免費算命｜八字紫微塔羅梅花七維命理分析 — 靜月之光">
 <meta name="twitter:description" content="七大命理系統交叉分析：八字、紫微斗數、梅花易數、塔羅牌、星盤、吠陀、姓名學。免費、10秒出結果。">
-<meta name="twitter:image" content="https://onerkk.github.io/mytool-blue/ogimage.jpg?v=5.0">
+<meta name="twitter:image" content="https://onerkk.github.io/mytool-blue/ogimage.jpg?v=5.1">
 <!-- Structured Data: WebApplication -->
 <script type="application/ld+json">
 {
@@ -13915,6 +13915,43 @@ function chartVerdict(bazi, mh, tarot, focusType){
 // cv = chartVerdict output (carries .focusType)
 // opts = { good, bad, mixed, goodTip, badTip, mixedTip }
 // 自動呼叫 build7D 取得各系統白話，插入回答
+// ═══ 三層解題格式面板 ═══
+// 第二層：規則證據（從 subEv 取 top 3）
+// 第三層：A/B 行動方案（基於 cv + domain）
+function buildThreeLayerPanel(cv, subEv, question, domain){
+  if(!cv || !subEv || !subEv.length) return '';
+  var html = '';
+  var horizon = (typeof S!=='undefined' && S._lastMeta) ? S._lastMeta.horizon : 'mid';
+  var topEv = subEv.slice(0,3);
+  if(topEv.length){
+    html += '<div style="margin:8px 0;padding:8px 10px;background:rgba(212,175,55,.04);border-radius:6px;border-left:3px solid var(--c-gold)">';
+    html += '<p style="font-size:.72rem;color:var(--c-gold);font-weight:600;margin-bottom:4px">📋 判斷依據</p>';
+    topEv.forEach(function(e){ html += '<p style="font-size:.7rem;margin:2px 0;opacity:.85">• ' + e + '</p>'; });
+    html += '</div>';
+  }
+  var isGood = cv.isGood, isBad = cv.isBad;
+  var actions = {
+    love:{good:{a:'主動出擊：增加社交頻率，接受朋友介紹',b:'穩健經營：維持現有關係品質，讓對方主動靠近'},mixed:{a:'觀望試探：先建立友誼基礎，不急著表態',b:'自我提升：把精力放在提升魅力和自信上'},bad:{a:'冷靜評估：給彼此空間，不要在低潮期做決定',b:'轉移焦點：先專注工作和健康，感情順其自然'}},
+    career:{good:{a:'積極爭取：主動提案、談升遷加薪',b:'穩扎穩打：鞏固現有成果，累積實力'},mixed:{a:'騎驢找馬：在現職穩住的同時探索機會',b:'深耕現狀：把手上的事做到極致，等時機成熟'},bad:{a:'準備後路：更新履歷，拓展人脈',b:'韜光養晦：低調做事，避免成為焦點'}},
+    wealth:{good:{a:'適度擴張：增加投資比例，把握機會',b:'穩健增長：維持定期定額，不追高'},mixed:{a:'分散風險：不要把雞蛋放同一個籃子',b:'守住現金流：減少非必要開支，增加儲蓄'},bad:{a:'止損保本：減少高風險部位，確保基本盤',b:'完全防守：暫停新投資，保留現金應對變化'}},
+    health:{good:{a:'維持習慣：繼續目前的作息和運動節奏',b:'適度提升：嘗試新的養生方法或健檢'},mixed:{a:'重點改善：針對弱項（睡眠/飲食/運動）調整',b:'預防為主：安排健康檢查，早發現早處理'},bad:{a:'積極就醫：不要拖延，有症狀就看醫生',b:'全面休養：減少工作量，把健康放第一位'}},
+    relationship:{good:{a:'主動連結：多參加社交活動，拓展圈子',b:'深化關係：跟重要的人多花時間相處'},mixed:{a:'選擇性社交：把能量用在值得的人身上',b:'設立界線：減少消耗性的人際互動'},bad:{a:'化解矛盾：主動溝通，不要讓問題發酵',b:'適度距離：暫時保持距離，等情緒平復'}},
+    family:{good:{a:'增進互動：安排家庭活動，多表達關心',b:'穩定維持：保持現有的家庭節奏和默契'},mixed:{a:'開放溝通：有話直說，避免累積不滿',b:'各退一步：尊重彼此的空間和選擇'},bad:{a:'尋求協助：考慮家族諮詢或第三方調解',b:'保護自己：設立底線，必要時保持距離'}}
+  };
+  var domainActions = actions[domain] || actions.career;
+  var level = isGood ? 'good' : isBad ? 'bad' : 'mixed';
+  var pair = domainActions[level] || domainActions.mixed;
+  var _hzTitle = horizon==='short'?'⚡ 即刻行動':horizon==='long'?'🧭 長期方向':'🎯 行動方案';
+  var _hzLabelA = horizon==='short'?'立即':horizon==='long'?'方向':'積極';
+  var _hzLabelB = horizon==='short'?'保底':horizon==='long'?'避雷':'穩健';
+  html += '<div style="margin:6px 0;padding:8px 10px;background:rgba(74,222,128,.03);border-radius:6px;border-left:3px solid #4ade80">';
+  html += '<p style="font-size:.72rem;color:#4ade80;font-weight:600;margin-bottom:4px">'+_hzTitle+'</p>';
+  html += '<p style="font-size:.7rem;margin:2px 0"><strong>A '+_hzLabelA+'：</strong>' + pair.a + '</p>';
+  html += '<p style="font-size:.7rem;margin:2px 0"><strong>B '+_hzLabelB+'：</strong>' + pair.b + '</p>';
+  html += '</div>';
+  return html;
+}
+
 function chartAnswer(cv, opts){
   if(!opts) opts={};
   var isG=cv.isGood, isB=cv.isBad;
@@ -17635,6 +17672,8 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       var _newEvL=_subEvL.filter(function(e){return answer.indexOf(e)===-1;}).slice(0,4);
       if(_newEvL.length) answer+=' <span style="opacity:.9">'+_newEvL.join('。')+'。</span>';
     }
+    // ── 三層解題面板 ──
+    try { var _cvPanel=verdictFromProb(prob,'love'); answer+=buildThreeLayerPanel(_cvPanel, _subEvL, q, 'love'); } catch(e){}
   }
 
   // ================== 💼 事業 ==================
@@ -17949,6 +17988,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       var _newEv=_subEv.filter(function(e){return answer.indexOf(e)===-1;}).slice(0,4);
       if(_newEv.length) answer+=' <span style="opacity:.9">'+_newEv.join('。')+'。</span>';
     }
+    try { var _cvPanelC=verdictFromProb(prob,'career'); answer+=buildThreeLayerPanel(_cvPanelC, _subEv, q, 'career'); } catch(e){}
   }
 
   // ================== 💰 財運 ==================
@@ -18121,6 +18161,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       var _newEvW=_subEvW.filter(function(e){return answer.indexOf(e)===-1;}).slice(0,4);
       if(_newEvW.length) answer+=' <span style="opacity:.9">'+_newEvW.join('。')+'。</span>';
     }
+    try { var _cvPanelW=verdictFromProb(prob,'wealth'); answer+=buildThreeLayerPanel(_cvPanelW, _subEvW, q, 'wealth'); } catch(e){}
   }
 
   // ================== 🏥 健康 ==================
@@ -18324,6 +18365,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       var _newEvH=_subEvH.filter(function(e){return answer.indexOf(e)===-1;}).slice(0,4);
       if(_newEvH.length) answer+=' <span style="opacity:.9">'+_newEvH.join('。')+'。</span>';
     }
+    try { var _cvPanelH=verdictFromProb(prob,'health'); answer+=buildThreeLayerPanel(_cvPanelH, _subEvH, q, 'health'); } catch(e){}
   }
 
   // ================== 🤝 人際 ==================
@@ -18389,6 +18431,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
         var _newEvR=_subEvR.filter(function(e){return answer.indexOf(e)===-1;}).slice(0,4);
         if(_newEvR.length) answer+=' <span style="opacity:.9">'+_newEvR.join('。')+'。</span>';
       }
+      try { var _cvPanelR=verdictFromProb(prob,'relationship'); answer+=buildThreeLayerPanel(_cvPanelR, _subEvR, q, 'relationship'); } catch(e){}
       // ═══ 七維度補充（人際）═══
       var _7dR=readAllDimensions(bazi, mh, tarot, 'relationship');
       var _rParts=[];
@@ -18538,6 +18581,7 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
         var _newEvFam=_subEvFam.filter(function(e){return answer.indexOf(e)===-1;}).slice(0,4);
         if(_newEvFam.length) answer+=' <span style="opacity:.9">'+_newEvFam.join('。')+'。</span>';
       }
+      try { var _cvPanelF=verdictFromProb(prob,'family'); answer+=buildThreeLayerPanel(_cvPanelF, _subEvFam, q, 'family'); } catch(e){}
       // 七維度內容前置
       if(_7text){answer+=_wrap7Detail(_7text);}
       tip='家中'+FD[favEl]+'方位擺放綠植或水晶增強和諧。穿'+FC[favEl]+'色回家。';
@@ -27600,18 +27644,7 @@ function runUnifiedEngine(questionText, type, context) {
   var comb = combineBySymbolOverlap(symbols, weights, meta);
   var finalProb = mapStrengthToProb(comb.rawStrength, comb.finalDir, meta.horizon, comb.avgConfidence);
 
-  // ── Debug Console ──
-  console.group('%c[UNIFIED ENGINE v1.0 Debug]', 'color:#d4af37;font-weight:bold;font-size:13px');
-  console.log('📋 meta:', JSON.stringify(meta));
-  console.log('⚖️  weights:', Object.entries(weights).map(function(e){return e[0]+'='+(e[1]*100).toFixed(1)+'%';}).join(' | '));
-  Object.keys(symbols).forEach(function(sys) {
-    var s = symbols[sys];
-    if (!s || s.confidence === 0) return;
-    console.log('  [' + sys + '] dir=' + s.dir + ' conf=' + s.confidence.toFixed(2) + ' score=' + s.score + ' tags=[' + s.tags.slice(0,5).join(',') + ']');
-  });
-  console.log('🏆 topTags:', comb.topTags.slice(0,5).map(function(t){return '"'+t.tag+'"('+t.score.toFixed(3)+')['+t.supportSystems.join(',')+']';}).join(' | '));
-  console.log('🎯 finalDir=' + comb.finalDir + ' rawStrength=' + comb.rawStrength.toFixed(3) + ' finalProb=' + finalProb + '%');
-  console.groupEnd();
+
 
   return {
     meta: meta,
@@ -30153,39 +30186,71 @@ function runAnalysisV2(){
         }
 
         // Debug 資訊 HTML
-        let debugHtml = '';
-        if(dbg){
-          const vetoColor = dbg.vetoTriggered ? '#f87171' : '#4ade80';
-          const contraColor = (dbg.contradictionCount > 0) ? '#fbbf24' : '#4ade80';
-          debugHtml = `<br><span style="opacity:.5;font-size:.62rem;line-height:1.4">` +
-            `🔬 主幹核分=${dbg.coreScore} · 輔助均分=${dbg.auxScore} · 融合=${dbg.finalScoreRaw}` +
-            (S._qAdj ? ` · <span style="color:${S._qAdj>0?'#4ade80':'#f87171'}">問題調整=${S._qAdj>0?'+':''}${S._qAdj}</span>` : '') +
-            `</span>`;
-          if(S._uResult) {
-            const _ud = S._uResult;
-            console.group('%c[UNIFIED+ARBITRATE Combined Debug]', 'color:#d4af37;font-weight:bold');
-            console.log('🎯 Unified finalProb:', _ud.finalProb, '| dir:', _ud.comb.finalDir, '| rawStrength:', _ud.comb.rawStrength.toFixed(3));
-            console.log('⚖️  weights:', JSON.stringify(Object.fromEntries(Object.entries(_ud.weights).map(function(e){return [e[0],(e[1]*100).toFixed(1)+'%'];}))));
-            console.log('🏷 topTags:', _ud.comb.topTags.slice(0,5).map(function(t){return t.tag+'('+t.supportSystems.join(',')+')'}).join(' | '));
-            console.log('📊 Arbitrate coreScore:', dbg.coreScore, '| auxScore:', dbg.auxScore);
-            console.log('VETO:', dbg.vetoReason, '| 矛盾:', dbg.contradictionPull);
-            console.groupEnd();
-          }
+        // ═══ 新融合裁決面板 — 一致/矛盾/裁決/可信度 ═══
+        const _arb = S._arbitration;
+        const _uR = S._uResult;
+        let fusionHtml = '';
+
+        // ── 1. 一致訊號 ──
+        let agreeHtml = '';
+        if(_arb && _arb.concordance && _arb.concordance.agrees.length > 0){
+          const sysZhMap = {bazi:'八字',ziwei:'紫微',jyotish:'吠陀',natal:'星盤',meihua:'梅花',tarot:'塔羅',name:'姓名'};
+          const topAgrees = _arb.concordance.agrees.slice(0,3);
+          const agreePairs = topAgrees.map(a => sysZhMap[a.systems[0]]+'＋'+sysZhMap[a.systems[1]]).join('、');
+          const agreeDir = topAgrees[0] && topAgrees[0].direction === 'positive' ? '正面' : '偏弱';
+          agreeHtml = `<div style="margin:2px 0;font-size:.7rem">✅ <span style="color:#4ade80">一致訊號</span>：${agreePairs} 都指向<strong>${agreeDir}</strong></div>`;
+        } else {
+          agreeHtml = `<div style="margin:2px 0;font-size:.7rem">✅ <span style="color:#4ade80">一致訊號</span>：各系統未形成明確共識</div>`;
         }
 
-        // topTags from unified engine — 白話化
-        const _uTopTagsHtml = (S._uResult && S._uResult.comb.topTags.length > 0) ?
-          '<br><span style="opacity:.6;font-size:.62rem">🏷 關鍵訊號：' +
-          S._uResult.comb.topTags.slice(0,4).map(function(t){
-            return '<span style="color:var(--c-gold)">'+t.tag+'</span>';
-          }).join(' ') + '</span>' : '';
+        // ── 2. 矛盾訊號 ──
+        let conflictHtml = '';
+        if(_arb && _arb.concordance && _arb.concordance.disagrees.length > 0){
+          const sysZhMap2 = {bazi:'八字',ziwei:'紫微',jyotish:'吠陀',natal:'星盤',meihua:'梅花',tarot:'塔羅',name:'姓名'};
+          const topConf = _arb.concordance.disagrees.slice(0,2);
+          const confTexts = topConf.map(c => {
+            const sA = sysZhMap2[c.sysA.sys]||c.sysA.sys;
+            const sB = sysZhMap2[c.sysB.sys]||c.sysB.sys;
+            const dA = c.sysA.pol > 0 ? '偏正' : '偏負';
+            const dB = c.sysB.pol > 0 ? '偏正' : '偏負';
+            return sA+'('+dA+') vs '+sB+'('+dB+')';
+          }).join('；');
+          conflictHtml = `<div style="margin:2px 0;font-size:.7rem">⚠️ <span style="color:#fbbf24">矛盾訊號</span>：${confTexts}</div>`;
+        }
 
-        arbEl.innerHTML =
-          `<span style="color:var(--c-gold)">🧠</span> ${leadText}` +
-          ` · <span style="color:${agreeColor}">${agreement}</span>` +
-          `<br><span style="opacity:.65">${finalProb}% = ${probExplain}</span>` +
-          _uTopTagsHtml +
-          debugHtml;
+        // ── 3. 裁決依據（基於 horizon）──
+        const _hzLabel = {short:'短期',mid:'中期',long:'長期'}[_uR && _uR.meta ? _uR.meta.horizon : 'mid'] || '中期';
+        const _hzRule = {
+          short:'以動態系統（梅花/塔羅）和流年訊號為主要裁決依據',
+          mid:'靜態系統（八字/紫微/星盤/吠陀）和動態系統並重',
+          long:'以靜態命格系統（八字/紫微/星盤/吠陀）為核心裁決依據'
+        }[_uR && _uR.meta ? _uR.meta.horizon : 'mid'] || '各系統均衡參考';
+        const rulingHtml = `<div style="margin:2px 0;font-size:.7rem">🧭 <span style="color:var(--c-gold)">裁決規則</span>：你問的是${_hzLabel}問題 → ${_hzRule}</div>`;
+
+        // ── 4. 可信度 ──
+        const _conf = _arb ? _arb.confidence : 0.5;
+        const _confLabel = _conf >= 0.7 ? '高' : _conf >= 0.5 ? '中' : '低';
+        const _confColor = _conf >= 0.7 ? '#4ade80' : _conf >= 0.5 ? '#fbbf24' : '#f87171';
+        const _confIcon = _conf >= 0.7 ? '🟢' : _conf >= 0.5 ? '🟡' : '🔴';
+        const _agreeN = _arb && _arb.concordance ? _arb.concordance.agrees.length : 0;
+        const _conflN = _arb && _arb.concordance ? _arb.concordance.disagrees.length : 0;
+        const confHtml = `<div style="margin:2px 0;font-size:.7rem">${_confIcon} <span style="color:${_confColor}">可信度：${_confLabel}</span>（${dimCount}個系統，${_agreeN}組一致，${_conflN}組矛盾）</div>`;
+
+        // ── 5. 關鍵訊號 tags ──
+        let tagHtml = '';
+        if(_uR && _uR.comb && _uR.comb.topTags && _uR.comb.topTags.length > 0){
+          tagHtml = `<div style="margin:3px 0;font-size:.68rem;opacity:.7">🏷 關鍵訊號：` +
+            _uR.comb.topTags.slice(0,4).map(t => `<span style="color:var(--c-gold)">${t.tag}</span>`).join(' ') + `</div>`;
+        }
+
+        fusionHtml = agreeHtml + conflictHtml + rulingHtml + confHtml + tagHtml;
+
+        // ★ 自動模式提示
+        if(S._autoMode){
+          fusionHtml += `<div style="font-size:.58rem;opacity:.4;margin-top:2px">（自動五維 · 手動模式可啟用梅花＋塔羅）</div>`;
+        }
+
+        arbEl.innerHTML = fusionHtml;
       }
     }
   }catch(e){}
