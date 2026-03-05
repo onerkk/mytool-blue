@@ -37433,6 +37433,49 @@ function submitFeedbackDetail(){
   document.getElementById('fb-thanks').style.display='block';
 }
 
+// ═══ 結果頁到達通知（非管理員每次到結果頁都寄信給站長）═══
+function _reportAnalysisResult(question, type, prob){
+  // 管理員不寄
+  if(S._isAdmin) { console.log('[管理員] 跳過結果頁通知'); return; }
+  
+  var FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLScy7dai3NRsoEcHnQbbPmu_tdO7-M1o47BQYhFRnrcOKgQkEw/formResponse';
+  
+  try {
+    var name = S.form ? (S.form.name||'匿名') : '匿名';
+    var bdate = S.form ? (S.form.bdate||'') : '';
+    var btime = S.form ? (S.form.btime||'') : '';
+    var gender = S.form ? (S.form.gender||'') : '';
+    
+    var summary = '📊 結果頁到達通知\n';
+    summary += '時間：' + new Date().toLocaleString('zh-TW') + '\n';
+    summary += '姓名：' + name + '\n';
+    summary += '生日：' + bdate + ' ' + btime + '\n';
+    summary += '性別：' + gender + '\n';
+    summary += '問題：' + (question||'(空)') + '\n';
+    summary += '類型：' + (type||'general') + '\n';
+    summary += '綜合分數：' + (prob||0) + '%\n';
+    
+    // 八字摘要
+    if(S.bazi){
+      summary += '日主：' + S.bazi.dm + '(' + S.bazi.dmEl + ') ' + (S.bazi.strong?'身強':'身弱') + '\n';
+      summary += '喜用：' + (S.bazi.fav||[]).join('、') + '\n';
+    }
+    
+    var fd = new FormData();
+    fd.append('entry.58291651', '📊到達結果頁');
+    fd.append('entry.594815381', question||'(空)');
+    fd.append('entry.992906923', type||'general');
+    fd.append('entry.1912010772', name + ' | ' + bdate + ' ' + btime + ' | ' + gender);
+    fd.append('entry.954354158', '綜合分數：'+prob+'%');
+    fd.append('entry.619318702', summary);
+    fetch(FORM_URL, {method:'POST', mode:'no-cors', body:fd})
+      .then(function(){ console.log('[通知] 結果頁到達已回報'); })
+      .catch(function(e){ console.warn('[通知] 回報失敗:', e); });
+  } catch(e) {
+    console.warn('[通知] _reportAnalysisResult error:', e);
+  }
+}
+
 // ── Google Forms 靜默提交 ──
 function _sendFeedbackToForms(rating,reasons,comment){
   // 管理員不送出 Google Forms（不寄信）
@@ -40792,18 +40835,23 @@ async function _tryAIRewriteAnswer(question, focusType, prob) {
     var body = { payload: payload };
     if (admin) body.admin_token = AI_ADMIN_TOKEN;
     
+    console.log('[AI] 呼叫 Worker...', admin ? '[管理員]' : '', AI_WORKER_URL);
+    
     var resp = await fetch(AI_WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
+    
+    console.log('[AI] Worker 回應 HTTP', resp.status);
     var data = await resp.json();
+    console.log('[AI] Worker 回傳:', JSON.stringify(data).substring(0, 200));
     
     if (!resp.ok) throw Object.assign({ status: resp.status }, data);
     if (!admin) _aiMarkUsed();
     
     var r = data.result;
-    if (!r) throw new Error('empty result');
+    if (!r) throw new Error('Worker 回傳 result 為空');
     
     // ═══ 成功：用 AI 內容替換 r-answer ═══
     var html = '';
@@ -40841,10 +40889,17 @@ async function _tryAIRewriteAnswer(question, focusType, prob) {
     console.log('[AI] ✅ 核心回答已重寫' + (admin ? ' [管理員]' : ''));
     
   } catch(err) {
-    console.warn('[AI] 重寫失敗，保持離線:', err.message || err);
+    console.warn('[AI] 重寫失敗，保持離線:', err.message || err, err.status || '');
     // 移除 loader，恢復離線內容
     var ld = document.getElementById('ai-loader');
     if (ld) ld.remove();
+    // 管理員顯示錯誤原因（一般使用者無感）
+    if (admin) {
+      var errDiv = document.createElement('div');
+      errDiv.style.cssText = 'font-size:.65rem;color:#f87171;margin-top:.5rem;padding:.3rem .5rem;background:rgba(248,113,113,.06);border-radius:4px;';
+      errDiv.textContent = '[Admin AI Debug] ' + (err.status||'') + ' ' + (err.error||err.message||'未知錯誤');
+      el.appendChild(errDiv);
+    }
     // 如果 429，標記已用
     if (err.status === 429) _aiMarkUsed();
   }
