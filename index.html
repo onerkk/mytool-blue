@@ -33215,6 +33215,11 @@ function runAnalysisV2(){
   }catch(e){}
   
   document.getElementById('r-answer').innerHTML=answer.text + evidenceNote;
+  
+  // ═══ AI 核心回答重寫（方案A：只重寫 r-answer 區域）═══
+  // 離線內容已渲染好（作為 fallback），嘗試用 AI 覆蓋
+  try{ _tryAIRewriteAnswer(question, type, finalProb); }catch(e){ console.error('[AI] trigger error:', e); }
+  
   // 隱藏舊的「完整問答分析」卡（已併入主區）
   var _fullEl2=document.getElementById('r-answer-full');
   if(_fullEl2) _fullEl2.closest('.collapsible-card').style.display='none';
@@ -40678,6 +40683,182 @@ function closeAdmin(){
   };
 })();
 
+// ═══════════════════════════════════════════════════════════════════
+// AI 核心回答重寫（方案 A）— 只重寫 r-answer，其他全部離線
+// Worker: jy-ai-proxy.onerkk.workers.dev
+// 策略：離線內容先渲染 → AI 嘗試覆蓋 → 失敗就保持離線（使用者無感）
+// ═══════════════════════════════════════════════════════════════════
+
+const AI_WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
+const AI_ADMIN_TOKEN = 'jy_admin_2026';
+const AI_USED_KEY = 'jy_ai_used';
+
+function _aiHasUsedToday() {
+  try {
+    var d = JSON.parse(localStorage.getItem(AI_USED_KEY) || '{}');
+    return d.date === new Date().toISOString().slice(0,10) && d.used === true;
+  } catch(e) { return false; }
+}
+function _aiMarkUsed() {
+  localStorage.setItem(AI_USED_KEY, JSON.stringify({ date: new Date().toISOString().slice(0,10), used: true }));
+}
+function _aiIsAdmin() {
+  return S._isAdmin || false;
+}
+
+function _buildAIPayloadLight(question, focusType) {
+  // 精簡版 payload — 只傳必要數據，控制 input tokens
+  var b = S.bazi, zw = S.ziwei, mh = S.meihua, ta = S.tarot;
+  var payload = { question: question, focusType: focusType, dims: {} };
+  
+  if (b) {
+    var ep = b.ep || {};
+    var curDy = b.dayun ? b.dayun.find(function(d){return d.isCurrent;}) : null;
+    var yr = new Date().getFullYear();
+    var ln = curDy && curDy.liuNian ? curDy.liuNian.find(function(l){return l.year===yr;}) : null;
+    payload.dims.bazi = {
+      dm: b.dm, el: b.dmEl, strong: b.strong,
+      fav: (b.fav||[]).slice(0,2), unfav: (b.unfav||[]).slice(0,2),
+      tenGod: { cai:Math.round((ep['財']||0)+(ep['才']||0)), guan:Math.round((ep['官']||0)+(ep['殺']||0)), shi:Math.round((ep['食']||0)+(ep['傷']||0)), yin:Math.round((ep['印']||0)+(ep['梟']||0)), bi:Math.round((ep['比']||0)+(ep['劫']||0)) },
+      shensha: (b.shensha||[]).slice(0,5),
+      branch: (b.branchInteractions||[]).slice(0,3).map(function(x){return x.type+':'+x.desc;}),
+      dy: curDy ? curDy.gz+'('+curDy.level+')' : null,
+      ln: ln ? ln.gz+'('+ln.level+')' : null,
+      geju: b.specialStructure ? b.specialStructure.name : null,
+      gender: b.gender
+    };
+  }
+  
+  if (zw && zw.palaces) {
+    var FP = {love:2,career:8,wealth:4,health:5,relationship:7,family:9};
+    var fi = FP[focusType] || 8;
+    var mp = zw.palaces[0], fp = zw.palaces[fi];
+    function _ep(p){ if(!p||!p.stars) return null; return { majors:p.stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name+(s.hua||'');}), shas:p.stars.filter(function(s){return s.type==='sha';}).map(function(s){return s.name;}) }; }
+    payload.dims.ziwei = { ming: _ep(mp), focus: _ep(fp), focusName: ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','父母宮','福德宮'][fi] };
+  }
+  
+  if (mh && mh.ty) {
+    payload.dims.meihua = { ben: mh.ben?mh.ben.u:null, bian: mh.bian?mh.bian.u:null, rel: mh.ty.r, judge: mh.ty.f };
+  }
+  
+  if (ta && ta.drawn && ta.drawn.length >= 10) {
+    // 只傳核心3張牌（現況、阻礙、結果）
+    var _ti = [0,1,9];
+    payload.dims.tarot = _ti.map(function(i){ var c=ta.drawn[i]; return { pos:ta.spread&&ta.spread[i]?ta.spread[i]:'P'+(i+1), name:c.name||c.n||'', rev:!c.isUp }; });
+  }
+  
+  if (S.natal && S.natal.planets) {
+    var pl = S.natal.planets;
+    function _pi(n){ var p=pl[n]; return p ? (p.sign||'')+'/'+(p.house||'')+'H' : null; }
+    payload.dims.natal = { sun:_pi('太陽'), moon:_pi('月亮'), venus:_pi('金星'), mars:_pi('火星'), saturn:_pi('土星') };
+  }
+  
+  if (S.jyotish) {
+    var j = S.jyotish;
+    payload.dims.vedic = { asc: j.ascSign||null, md: j.currentMD?j.currentMD.zh:null, sade: j.sadeSati?j.sadeSati.active:false };
+  }
+  
+  // unified engine 結論
+  if (S._uResult && S._uResult.comb) {
+    payload.verdict = S._uResult.comb.finalDir;
+    var pt = S._uResult.comb.topTags || [];
+    payload.topTags = pt.slice(0,4).map(function(t){ return t.direction+':'+t.tag; });
+  }
+  
+  return payload;
+}
+
+async function _tryAIRewriteAnswer(question, focusType, prob) {
+  var admin = _aiIsAdmin();
+  if (!admin && _aiHasUsedToday()) {
+    console.log('[AI] 今日已使用，保持離線');
+    return; // 靜默，離線內容不動
+  }
+  
+  var el = document.getElementById('r-answer');
+  if (!el) return;
+  
+  // 保存離線內容
+  var _backup = el.innerHTML;
+  
+  // 顯示 loading（在離線內容下方疊加，不替換）
+  var loader = document.createElement('div');
+  loader.id = 'ai-loader';
+  loader.innerHTML = '<div style="text-align:center;padding:1rem;margin-top:.8rem;border-top:1px solid rgba(139,92,246,.15)"><div style="display:inline-block;width:28px;height:28px;border:2px solid rgba(139,92,246,.2);border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite"></div><div style="font-size:.78rem;color:#a78bfa;margin-top:.4rem">AI 正在為你深度解讀…</div></div>';
+  el.appendChild(loader);
+  
+  try {
+    var payload = _buildAIPayloadLight(question, focusType);
+    var body = { payload: payload };
+    if (admin) body.admin_token = AI_ADMIN_TOKEN;
+    
+    var resp = await fetch(AI_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    var data = await resp.json();
+    
+    if (!resp.ok) throw Object.assign({ status: resp.status }, data);
+    if (!admin) _aiMarkUsed();
+    
+    var r = data.result;
+    if (!r) throw new Error('empty result');
+    
+    // ═══ 成功：用 AI 內容替換 r-answer ═══
+    var html = '';
+    
+    // AI 標記
+    html += '<div style="display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:16px;background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(99,102,241,.06));border:1px solid rgba(139,92,246,.15);font-size:.68rem;color:#a78bfa;margin-bottom:.8rem">';
+    html += '🧠 AI 深度解讀</div>';
+    
+    // AI 回答主體（一段流暢的文字，不分維度）
+    if (typeof r === 'string') {
+      html += '<div style="font-size:1rem;line-height:1.9">' + r.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
+    } else {
+      // 如果 Worker 回傳分維度的 object
+      var dimOrder = ['bazi','ziwei','meihua','tarot','natal','vedic','name','conclusion'];
+      var dimLabel = {bazi:'☯ 八字',ziwei:'⭐ 紫微',meihua:'☰ 梅花',tarot:'🃏 塔羅',natal:'♈ 星盤',vedic:'🕉 吠陀',name:'文 姓名',conclusion:'🔮 結論'};
+      dimOrder.forEach(function(k){
+        if (!r[k]) return;
+        if (k === 'conclusion') {
+          html += '<div style="margin-top:1rem;padding:1rem;background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(139,92,246,.04));border-radius:10px;border:1px solid rgba(212,175,55,.15)">';
+          html += '<div style="font-size:.85rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">🔮 結論</div>';
+          html += '<div style="font-size:1rem;line-height:1.9">' + r[k].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div></div>';
+        } else {
+          html += '<div style="margin-bottom:.6rem;font-size:.92rem;line-height:1.8"><span style="color:var(--c-gold);font-size:.75rem">' + (dimLabel[k]||k) + '</span> ';
+          html += r[k].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
+        }
+      });
+    }
+    
+    // Admin info
+    if (admin && data.usage) {
+      html += '<div style="font-size:.6rem;color:var(--c-text-dim);margin-top:.5rem;opacity:.35;text-align:right">[Admin] In:' + data.usage.input_tokens + ' Out:' + data.usage.output_tokens + '</div>';
+    }
+    
+    el.innerHTML = html;
+    console.log('[AI] ✅ 核心回答已重寫' + (admin ? ' [管理員]' : ''));
+    
+  } catch(err) {
+    console.warn('[AI] 重寫失敗，保持離線:', err.message || err);
+    // 移除 loader，恢復離線內容
+    var ld = document.getElementById('ai-loader');
+    if (ld) ld.remove();
+    // 如果 429，標記已用
+    if (err.status === 429) _aiMarkUsed();
+  }
+}
+
+</script>
+<script>
+// spin animation（如果還沒定義）
+if (!document.getElementById('ai-spin-css')) {
+  var st = document.createElement('style');
+  st.id = 'ai-spin-css';
+  st.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+  document.head.appendChild(st);
+}
 </script>
 <!-- Sticky Bottom CTA for Result Page -->
 <div class="sticky-cta" id="sticky-cta">
