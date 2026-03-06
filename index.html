@@ -33216,9 +33216,8 @@ function runAnalysisV2(){
   
   document.getElementById('r-answer').innerHTML=answer.text + evidenceNote;
   
-  // ═══ AI 核心回答重寫（方案A：只重寫 r-answer 區域）═══
-  // 離線內容已渲染好（作為 fallback），嘗試用 AI 覆蓋
-  try{ _tryAIRewriteAnswer(question, type, finalProb); }catch(e){ console.error('[AI] trigger error:', e); }
+  // ═══ AI 深度解析按鈕（每日一次免費）═══
+  try{ _injectAIButton(); }catch(e){ console.error('[AI] button inject error:', e); }
   
   // 隱藏舊的「完整問答分析」卡（已併入主區）
   var _fullEl2=document.getElementById('r-answer-full');
@@ -40727,115 +40726,130 @@ function closeAdmin(){
 })();
 
 // ═══════════════════════════════════════════════════════════════════
-// AI 核心回答重寫（方案 A）— 只重寫 r-answer，其他全部離線
-// Worker: jy-ai-proxy.onerkk.workers.dev
-// 策略：離線內容先渲染 → AI 嘗試覆蓋 → 失敗就保持離線（使用者無感）
+// AI 深度解析（按鈕觸發・每日一次免費・管理員無限）
 // ═══════════════════════════════════════════════════════════════════
 
 const AI_WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
 const AI_ADMIN_TOKEN = 'jy_admin_2026';
 const AI_USED_KEY = 'jy_ai_used';
 
-function _aiHasUsedToday() {
-  try {
-    var d = JSON.parse(localStorage.getItem(AI_USED_KEY) || '{}');
-    return d.date === new Date().toISOString().slice(0,10) && d.used === true;
-  } catch(e) { return false; }
+function _aiUsedToday() {
+  try { var d=JSON.parse(localStorage.getItem(AI_USED_KEY)||'{}'); return d.date===new Date().toISOString().slice(0,10)&&d.used; } catch(e){ return false; }
 }
 function _aiMarkUsed() {
-  localStorage.setItem(AI_USED_KEY, JSON.stringify({ date: new Date().toISOString().slice(0,10), used: true }));
+  localStorage.setItem(AI_USED_KEY, JSON.stringify({date:new Date().toISOString().slice(0,10),used:true}));
 }
-function _aiIsAdmin() {
-  return S._isAdmin || false;
+function _aiIsAdmin() { return S._isAdmin || false; }
+
+// ── 注入 AI 按鈕到 r-answer 下方 ──
+function _injectAIButton() {
+  if (document.getElementById('ai-deep-wrap')) return;
+  var answerEl = document.getElementById('r-answer');
+  if (!answerEl) return;
+  
+  var admin = _aiIsAdmin();
+  var used = !admin && _aiUsedToday();
+  
+  var wrap = document.createElement('div');
+  wrap.id = 'ai-deep-wrap';
+  wrap.style.cssText = 'margin-top:1.2rem;text-align:center;';
+  
+  wrap.innerHTML = 
+    '<button id="ai-deep-btn" onclick="_triggerAIDeep()" style="' +
+    'background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;' +
+    'padding:.75rem 1.8rem;border-radius:12px;font-size:.95rem;font-weight:600;' +
+    'cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(139,92,246,.3);' +
+    'font-family:inherit;' +
+    (used ? 'opacity:.45;pointer-events:none;' : '') + '" ' +
+    (used ? 'disabled' : '') + '>' +
+    '<span style="margin-right:.4rem">🧠</span>' +
+    (used ? '今日 AI 深度解析已使用' : 'AI 深度解析' + (admin ? '' : '（每日一次免費）')) +
+    '</button>' +
+    '<p style="font-size:.7rem;color:var(--c-text-dim);margin-top:.4rem;opacity:.6">' +
+    (used ? '每人每天一次免費・明天再來' : 'AI 根據你的七套命理數據撰寫專屬深度解讀') +
+    '</p>' +
+    '<div id="ai-deep-result" style="display:none;margin-top:1rem;text-align:left;"></div>';
+  
+  answerEl.parentNode.insertBefore(wrap, answerEl.nextSibling);
 }
 
-function _buildAIPayloadLight(question, focusType) {
-  // 精簡版 payload — 只傳必要數據，控制 input tokens
+// ── 精簡版 payload ──
+function _buildPayload() {
+  var q = S.form ? S.form.question : '';
+  var ft = S.form ? S.form.type : 'general';
   var b = S.bazi, zw = S.ziwei, mh = S.meihua, ta = S.tarot;
-  var payload = { question: question, focusType: focusType, dims: {} };
+  var p = { question:q, focusType:ft, dims:{} };
   
   if (b) {
-    var ep = b.ep || {};
-    var curDy = b.dayun ? b.dayun.find(function(d){return d.isCurrent;}) : null;
-    var yr = new Date().getFullYear();
-    var ln = curDy && curDy.liuNian ? curDy.liuNian.find(function(l){return l.year===yr;}) : null;
-    payload.dims.bazi = {
-      dm: b.dm, el: b.dmEl, strong: b.strong,
-      fav: (b.fav||[]).slice(0,2), unfav: (b.unfav||[]).slice(0,2),
-      tenGod: { cai:Math.round((ep['財']||0)+(ep['才']||0)), guan:Math.round((ep['官']||0)+(ep['殺']||0)), shi:Math.round((ep['食']||0)+(ep['傷']||0)), yin:Math.round((ep['印']||0)+(ep['梟']||0)), bi:Math.round((ep['比']||0)+(ep['劫']||0)) },
-      shensha: (b.shensha||[]).slice(0,5),
-      branch: (b.branchInteractions||[]).slice(0,3).map(function(x){return x.type+':'+x.desc;}),
-      dy: curDy ? curDy.gz+'('+curDy.level+')' : null,
-      ln: ln ? ln.gz+'('+ln.level+')' : null,
-      geju: b.specialStructure ? b.specialStructure.name : null,
-      gender: b.gender
+    var ep=b.ep||{};
+    var dy=b.dayun?b.dayun.find(function(d){return d.isCurrent;}):null;
+    var yr=new Date().getFullYear();
+    var ln=dy&&dy.liuNian?dy.liuNian.find(function(l){return l.year===yr;}):null;
+    p.dims.bazi = {
+      dm:b.dm, el:b.dmEl, strong:b.strong,
+      fav:(b.fav||[]).slice(0,2), unfav:(b.unfav||[]).slice(0,2),
+      tenGod:{cai:Math.round((ep['財']||0)+(ep['才']||0)),guan:Math.round((ep['官']||0)+(ep['殺']||0)),shi:Math.round((ep['食']||0)+(ep['傷']||0)),yin:Math.round((ep['印']||0)+(ep['梟']||0)),bi:Math.round((ep['比']||0)+(ep['劫']||0))},
+      shensha:(b.shensha||[]).slice(0,6),
+      branch:(b.branchInteractions||[]).slice(0,3).map(function(x){return x.type+':'+x.desc;}),
+      dy:dy?dy.gz+'('+dy.level+'/'+dy.el+')':null,
+      ln:ln?ln.gz+'('+ln.level+')':null,
+      geju:b.specialStructure?b.specialStructure.name:null,
+      gender:b.gender
     };
   }
-  
-  if (zw && zw.palaces) {
-    var FP = {love:2,career:8,wealth:4,health:5,relationship:7,family:9};
-    var fi = FP[focusType] || 8;
-    var mp = zw.palaces[0], fp = zw.palaces[fi];
-    function _ep(p){ if(!p||!p.stars) return null; return { majors:p.stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name+(s.hua||'');}), shas:p.stars.filter(function(s){return s.type==='sha';}).map(function(s){return s.name;}) }; }
-    payload.dims.ziwei = { ming: _ep(mp), focus: _ep(fp), focusName: ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','父母宮','福德宮'][fi] };
+  if (zw&&zw.palaces) {
+    var FP={love:2,career:8,wealth:4,health:5,relationship:7,family:9};
+    var fi=FP[ft]||8; var mp=zw.palaces[0], fp=zw.palaces[fi];
+    function _ep2(pal){if(!pal||!pal.stars)return null;return{m:pal.stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name+(s.hua||'');}),sha:pal.stars.filter(function(s){return s.type==='sha';}).map(function(s){return s.name;})};}
+    p.dims.ziwei={ming:_ep2(mp),focus:_ep2(fp),focusName:['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','父母宮','福德宮'][fi]};
   }
-  
-  if (mh && mh.ty) {
-    payload.dims.meihua = { ben: mh.ben?mh.ben.u:null, bian: mh.bian?mh.bian.u:null, rel: mh.ty.r, judge: mh.ty.f };
+  if (mh&&mh.ty) { p.dims.meihua={ben:mh.ben?mh.ben.u:null,bian:mh.bian?mh.bian.u:null,rel:mh.ty.r,judge:mh.ty.f}; }
+  if (ta&&ta.drawn&&ta.drawn.length>=10) {
+    p.dims.tarot=[0,1,5,9].map(function(i){var c=ta.drawn[i];return{pos:ta.spread&&ta.spread[i]?ta.spread[i]:'P'+(i+1),name:c.name||c.n||'',rev:!c.isUp};});
   }
-  
-  if (ta && ta.drawn && ta.drawn.length >= 10) {
-    // 只傳核心3張牌（現況、阻礙、結果）
-    var _ti = [0,1,9];
-    payload.dims.tarot = _ti.map(function(i){ var c=ta.drawn[i]; return { pos:ta.spread&&ta.spread[i]?ta.spread[i]:'P'+(i+1), name:c.name||c.n||'', rev:!c.isUp }; });
+  if (S.natal&&S.natal.planets) {
+    var pl=S.natal.planets;
+    function _pi2(n){var pp=pl[n];return pp?(pp.sign||'')+'/'+(pp.house||'')+'H':null;}
+    p.dims.natal={sun:_pi2('太陽'),moon:_pi2('月亮'),venus:_pi2('金星'),mars:_pi2('火星'),saturn:_pi2('土星'),asc:S.natal.ascSign||null};
   }
-  
-  if (S.natal && S.natal.planets) {
-    var pl = S.natal.planets;
-    function _pi(n){ var p=pl[n]; return p ? (p.sign||'')+'/'+(p.house||'')+'H' : null; }
-    payload.dims.natal = { sun:_pi('太陽'), moon:_pi('月亮'), venus:_pi('金星'), mars:_pi('火星'), saturn:_pi('土星') };
-  }
-  
   if (S.jyotish) {
-    var j = S.jyotish;
-    payload.dims.vedic = { asc: j.ascSign||null, md: j.currentMD?j.currentMD.zh:null, sade: j.sadeSati?j.sadeSati.active:false };
+    var j=S.jyotish;
+    p.dims.vedic={asc:j.ascSign||null,md:j.currentMD?j.currentMD.zh:null,sade:j.sadeSati?j.sadeSati.active:false,nk:j.nakshatra||null};
   }
-  
-  // unified engine 結論
-  if (S._uResult && S._uResult.comb) {
-    payload.verdict = S._uResult.comb.finalDir;
-    var pt = S._uResult.comb.topTags || [];
-    payload.topTags = pt.slice(0,4).map(function(t){ return t.direction+':'+t.tag; });
+  if (S._uResult&&S._uResult.comb) {
+    p.verdict=S._uResult.comb.finalDir;
+    p.topTags=(S._uResult.comb.topTags||[]).slice(0,5).map(function(t){return t.direction+':'+t.tag;});
   }
-  
-  return payload;
+  return p;
 }
 
-async function _tryAIRewriteAnswer(question, focusType, prob) {
+// ── 按鈕觸發 AI ──
+async function _triggerAIDeep() {
+  var btn = document.getElementById('ai-deep-btn');
+  var resultDiv = document.getElementById('ai-deep-result');
+  if (!btn || !resultDiv) return;
+  
   var admin = _aiIsAdmin();
-  if (!admin && _aiHasUsedToday()) {
-    console.log('[AI] 今日已使用，保持離線');
-    return; // 靜默，離線內容不動
-  }
   
-  var el = document.getElementById('r-answer');
-  if (!el) return;
-  
-  // 保存離線內容
-  var _backup = el.innerHTML;
-  
-  // 顯示 loading（在離線內容下方疊加，不替換）
-  var loader = document.createElement('div');
-  loader.id = 'ai-loader';
-  loader.innerHTML = '<div style="text-align:center;padding:1rem;margin-top:.8rem;border-top:1px solid rgba(139,92,246,.15)"><div style="display:inline-block;width:28px;height:28px;border:2px solid rgba(139,92,246,.2);border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite"></div><div style="font-size:.78rem;color:#a78bfa;margin-top:.4rem">AI 正在為你深度解讀…</div></div>';
-  el.appendChild(loader);
+  // 更新按鈕狀態
+  btn.disabled = true;
+  btn.innerHTML = '<span style="margin-right:.4rem">⏳</span>AI 正在深度解讀你的命盤…';
+  btn.style.opacity = '0.7';
+  btn.style.cursor = 'wait';
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = 
+    '<div style="text-align:center;padding:1.5rem">' +
+    '<div style="display:inline-block;width:36px;height:36px;border:3px solid rgba(139,92,246,.2);border-top-color:#8b5cf6;border-radius:50%;animation:spin 1s linear infinite"></div>' +
+    '<div style="font-size:.85rem;color:#a78bfa;margin-top:.6rem">融合七大命理系統數據中…</div>' +
+    '<div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.3rem">通常需要 15-30 秒</div>' +
+    '</div>';
   
   try {
-    var payload = _buildAIPayloadLight(question, focusType);
+    var payload = _buildPayload();
     var body = { payload: payload };
     if (admin) body.admin_token = AI_ADMIN_TOKEN;
     
-    console.log('[AI] 呼叫 Worker...', admin ? '[管理員]' : '', AI_WORKER_URL);
+    console.log('[AI] 呼叫 Worker...', admin?'[管理員]':'');
     
     var resp = await fetch(AI_WORKER_URL, {
       method: 'POST',
@@ -40843,67 +40857,123 @@ async function _tryAIRewriteAnswer(question, focusType, prob) {
       body: JSON.stringify(body)
     });
     
-    console.log('[AI] Worker 回應 HTTP', resp.status);
+    console.log('[AI] HTTP', resp.status);
     var data = await resp.json();
-    console.log('[AI] Worker 回傳:', JSON.stringify(data).substring(0, 200));
     
-    if (!resp.ok) throw Object.assign({ status: resp.status }, data);
+    if (!resp.ok) throw Object.assign({status:resp.status}, data);
     if (!admin) _aiMarkUsed();
     
     var r = data.result;
-    if (!r) throw new Error('Worker 回傳 result 為空');
+    if (!r) throw new Error('AI 回傳為空');
     
-    // ═══ 成功：用 AI 內容替換 r-answer ═══
+    // ═══ 成功：渲染 AI 結果 ═══
     var html = '';
+    html += '<div style="border-top:2px solid rgba(139,92,246,.3);padding-top:1.2rem;">';
+    html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:1rem">';
+    html += '<span style="font-size:1.2rem">🧠</span>';
+    html += '<span style="font-size:1rem;font-weight:700;color:#a78bfa">AI 深度解析</span>';
+    html += '</div>';
     
-    // AI 標記
-    html += '<div style="display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:16px;background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(99,102,241,.06));border:1px solid rgba(139,92,246,.15);font-size:.68rem;color:#a78bfa;margin-bottom:.8rem">';
-    html += '🧠 AI 深度解讀</div>';
-    
-    // AI 回答主體（一段流暢的文字，不分維度）
+    // AI 回傳純文字，解析【段落標題】格式
     if (typeof r === 'string') {
-      html += '<div style="font-size:1rem;line-height:1.9">' + r.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
+      // 解析【xxx】段落標題
+      var sections = r.split(/(?=【)/);
+      var hasSection = /【.+?】/.test(r);
+      
+      if (hasSection && sections.length > 1) {
+        // 有段落標題格式
+        var sectionStyles = {
+          '核心答案': {bg:'rgba(212,175,55,.06)',border:'var(--c-gold,#d4af37)',icon:'🎯',titleColor:'var(--c-gold,#d4af37)'},
+          '多系統交集': {bg:'rgba(139,92,246,.05)',border:'#8b5cf6',icon:'🔗',titleColor:'#a78bfa'},
+          '阻力與變數': {bg:'rgba(248,113,113,.04)',border:'#f87171',icon:'⚠️',titleColor:'#f87171'},
+          '建議行動': {bg:'rgba(74,222,128,.04)',border:'#4ade80',icon:'💡',titleColor:'#4ade80'},
+          '實際建議': {bg:'rgba(74,222,128,.04)',border:'#4ade80',icon:'💡',titleColor:'#4ade80'},
+          '一句總結': {bg:'linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.05))',border:'var(--c-gold,#d4af37)',icon:'✨',titleColor:'var(--c-gold,#d4af37)'}
+        };
+        
+        sections.forEach(function(sec) {
+          sec = sec.trim();
+          if (!sec) return;
+          var titleMatch = sec.match(/^【(.+?)】/);
+          if (titleMatch) {
+            var title = titleMatch[1];
+            var content = sec.replace(/^【.+?】\s*/, '').trim();
+            if (!content) return;
+            var style = sectionStyles[title] || {bg:'rgba(255,255,255,.02)',border:'rgba(255,255,255,.1)',icon:'📋',titleColor:'var(--c-text-dim)'};
+            
+            if (title === '一句總結') {
+              // 總結用特殊樣式
+              html += '<div style="margin-top:1rem;padding:1rem 1.2rem;background:'+style.bg+';border-radius:10px;border:1px solid rgba(212,175,55,.2);text-align:center">';
+              html += '<div style="font-size:1.05rem;line-height:1.8;color:var(--c-gold,#d4af37);font-weight:600">'+style.icon+' '+content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>';
+              html += '</div>';
+            } else {
+              html += '<div style="margin-bottom:1rem;padding:.8rem 1rem;background:'+style.bg+';border-radius:8px;border-left:3px solid '+style.border+'">';
+              html += '<div style="font-size:.78rem;color:'+style.titleColor+';font-weight:600;margin-bottom:.4rem">'+style.icon+' '+title+'</div>';
+              html += '<div style="font-size:.93rem;line-height:1.85;color:var(--c-text,#e0e0e0)">';
+              html += content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n\n/g,'</div><div style="margin-top:.5rem;font-size:.93rem;line-height:1.85;color:var(--c-text,#e0e0e0)">').replace(/\n/g,'<br>');
+              html += '</div></div>';
+            }
+          } else {
+            // 沒有標題的段落
+            html += '<div style="font-size:.93rem;line-height:1.85;margin-bottom:.8rem">';
+            html += sec.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+            html += '</div>';
+          }
+        });
+      } else {
+        // 純文字沒有段落標題
+        html += '<div style="font-size:.95rem;line-height:2;color:var(--c-text,#e0e0e0)">';
+        html += r.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n\n/g,'</div><div style="font-size:.95rem;line-height:2;color:var(--c-text,#e0e0e0);margin-top:.8rem">').replace(/\n/g,'<br>');
+        html += '</div>';
+      }
     } else {
-      // 如果 Worker 回傳分維度的 object
-      var dimOrder = ['bazi','ziwei','meihua','tarot','natal','vedic','name','conclusion'];
-      var dimLabel = {bazi:'☯ 八字',ziwei:'⭐ 紫微',meihua:'☰ 梅花',tarot:'🃏 塔羅',natal:'♈ 星盤',vedic:'🕉 吠陀',name:'文 姓名',conclusion:'🔮 結論'};
+      // 相容舊版 JSON 格式
+      var dimOrder=['bazi','ziwei','meihua','tarot','natal','vedic','name','conclusion'];
+      var dimLabel={bazi:'☯ 八字',ziwei:'⭐ 紫微',meihua:'☰ 梅花',tarot:'🃏 塔羅',natal:'♈ 星盤',vedic:'🕉 吠陀',name:'文 姓名',conclusion:'🔮 結論'};
       dimOrder.forEach(function(k){
-        if (!r[k]) return;
-        if (k === 'conclusion') {
-          html += '<div style="margin-top:1rem;padding:1rem;background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(139,92,246,.04));border-radius:10px;border:1px solid rgba(212,175,55,.15)">';
-          html += '<div style="font-size:.85rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">🔮 結論</div>';
-          html += '<div style="font-size:1rem;line-height:1.9">' + r[k].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div></div>';
-        } else {
-          html += '<div style="margin-bottom:.6rem;font-size:.92rem;line-height:1.8"><span style="color:var(--c-gold);font-size:.75rem">' + (dimLabel[k]||k) + '</span> ';
-          html += r[k].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
-        }
+        if(!r[k])return;
+        html+='<div style="margin-bottom:.8rem;font-size:.92rem;line-height:1.8">';
+        html+=r[k].replace(/\n/g,'<br>')+'</div>';
       });
     }
     
-    // Admin info
+    // Admin token info
     if (admin && data.usage) {
-      html += '<div style="font-size:.6rem;color:var(--c-text-dim);margin-top:.5rem;opacity:.35;text-align:right">[Admin] In:' + data.usage.input_tokens + ' Out:' + data.usage.output_tokens + '</div>';
+      html += '<div style="font-size:.6rem;color:var(--c-text-dim);margin-top:.8rem;opacity:.35;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' tokens ≈ $'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div>';
     }
     
-    el.innerHTML = html;
-    console.log('[AI] ✅ 核心回答已重寫' + (admin ? ' [管理員]' : ''));
+    html += '</div>';
+    resultDiv.innerHTML = html;
+    
+    // 更新按鈕
+    btn.innerHTML = '<span style="margin-right:.4rem">✅</span>AI 深度解析完成';
+    btn.style.background = 'rgba(74,222,128,.15)';
+    btn.style.color = '#4ade80';
+    btn.style.boxShadow = 'none';
+    
+    console.log('[AI] ✅ 深度解析完成', admin?'[管理員]':'');
     
   } catch(err) {
-    console.warn('[AI] 重寫失敗，保持離線:', err.message || err, err.status || '');
-    // 移除 loader，恢復離線內容
-    var ld = document.getElementById('ai-loader');
-    if (ld) ld.remove();
-    // 管理員顯示錯誤原因（一般使用者無感）
-    if (admin) {
-      var errDiv = document.createElement('div');
-      errDiv.style.cssText = 'font-size:.65rem;color:#f87171;margin-top:.5rem;padding:.3rem .5rem;background:rgba(248,113,113,.06);border-radius:4px;';
-      errDiv.textContent = '[Admin AI Debug] ' + (err.status||'') + ' ' + (err.error||err.message||'未知錯誤');
-      el.appendChild(errDiv);
+    console.error('[AI] 失敗:', err);
+    
+    if (err.status === 429) {
+      _aiMarkUsed();
+      btn.innerHTML = '<span style="margin-right:.4rem">🔒</span>今日 AI 深度解析已使用';
+      btn.style.opacity = '0.45';
+      resultDiv.innerHTML = '<div style="text-align:center;padding:1rem;color:#fbbf24;font-size:.85rem">每人每天一次免費 AI 深度解析<br>明天再來！</div>';
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<span style="margin-right:.4rem">🔄</span>重試 AI 深度解析';
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      var errMsg = err.error || err.detail || err.message || '未知錯誤';
+      resultDiv.innerHTML = '<div style="text-align:center;padding:1rem;color:#f87171;font-size:.82rem">AI 暫時無法使用，請稍後再試' +
+        (admin ? '<br><span style="font-size:.65rem;opacity:.5">[Debug] '+err.status+' '+errMsg+'</span>' : '') +
+        '</div>';
     }
-    // 如果 429，標記已用
-    if (err.status === 429) _aiMarkUsed();
   }
 }
+
 
 </script>
 <script>
