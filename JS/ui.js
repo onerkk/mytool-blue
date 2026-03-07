@@ -381,7 +381,7 @@ function resetAll(){
   // 恢復管理員狀態（或重新偵測）
   var _nameEl=document.getElementById('f-name');
   var _bdateEl=document.getElementById('f-bdate');
-  S._isAdmin = wasAdmin || (_nameEl && _nameEl.value.includes('弘林')) || (_bdateEl && _bdateEl.value==='1983-08-25') || !!(window._JY_ADMIN_TOKEN);
+  S._isAdmin = wasAdmin || !!(window._JY_ADMIN_TOKEN);
   // 重置問題和類型欄位（但保留姓名、生日、時辰、性別）
   try{
     var fType=document.getElementById('f-type'); if(fType) fType.value='';
@@ -516,8 +516,8 @@ function submitStep0(){
   const name=document.getElementById('f-name')?document.getElementById('f-name').value.trim():'';
   S.form={type,question,gender:gender.value,bdate,btime,name};
   S._autoMode = false; // 手動模式：使用者自己操作梅花/塔羅
-  // 管理員判定（完整匹配：1983-08-25 + 未時 + 男 + 弘林）
-  S._isAdmin = (bdate==='1983-08-25' && name.includes('弘林') && gender.value==='male') || !!(window._JY_ADMIN_TOKEN);
+  // 管理員判定（僅透過 URL token 認證，不在前端暴露判斷條件）
+  S._isAdmin = !!(window._JY_ADMIN_TOKEN);
   try {
     const[y,m,d]=bdate.split('-').map(Number);
     const[hh,mm]=btime.split(':').map(Number);
@@ -659,9 +659,8 @@ function submitStep0Fast(){
 
   const cached = loadDivineCache(bdate, gender.value, type, question);
   // 管理員帳號不受能量鎖定限制（可重複測試）
-  // 判定條件：1983-08-25 + 姓名含「弘林」+ 男性（三條件都要符合）
-  const _nameVal = document.getElementById('f-name') ? document.getElementById('f-name').value.trim() : '';
-  const _isAdmin = (bdate==='1983-08-25' && _nameVal.includes('弘林') && gender.value==='male') || !!(window._JY_ADMIN_TOKEN);
+  // 管理員判定（僅透過 URL token 認證）
+  const _isAdmin = !!(window._JY_ADMIN_TOKEN);
   S._isAdmin = _isAdmin;  // 全域存取（跳過回饋寄信等）
   S._usedCache = _isAdmin ? false : !!cached;
 
