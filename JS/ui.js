@@ -2,6 +2,21 @@
 // ui.js — 靜月之光模組化拆分
 // ═══════════════════════════════════════════════════════════════
 
+// ── Admin Token：從 URL ?token=xxx 或 sessionStorage 讀取 ──
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var t = params.get('token');
+  if (t) {
+    try { sessionStorage.setItem('_jy_at', t); } catch(e){}
+    // 清掉 URL 裡的 token 參數（不留痕跡）
+    params.delete('token');
+    var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + window.location.hash;
+    window.history.replaceState({}, '', newUrl);
+  }
+  window._JY_ADMIN_TOKEN = t || '';
+  try { if (!window._JY_ADMIN_TOKEN) window._JY_ADMIN_TOKEN = sessionStorage.getItem('_jy_at') || ''; } catch(e){}
+})();
+
 // ── toggleCollapse + renderRemedy + goStep + resetAll (lines 26-418) ──
 /* Collapsible toggle */
 function toggleCollapse(el){

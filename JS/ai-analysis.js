@@ -23928,7 +23928,7 @@ function generateAIConclusion(type, prob, bazi, mh, tarot){
 // AI 多維命理深度解讀（按鈕觸發・每日一次免費・管理員無限）
 // ═══════════════════════════════════════════════════════════════════
 
-const AI_WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
+const AI_WORKER_URL = '/api/ai';
 // Admin 身份改由 Worker 端用出生資料比對，前端不再存放任何 token
 const AI_USED_KEY = 'jy_ai_used';
 
@@ -24089,11 +24089,7 @@ async function _triggerAIDeep() {
     var payload = _buildPayload();
     var body = { payload: payload };
     if (admin) {
-      body.admin_id = {
-        bdate: S.form ? S.form.bdate : '',
-        name: S.form ? S.form.name : '',
-        gender: S.form ? S.form.gender : ''
-      };
+      body.admin_token = window._JY_ADMIN_TOKEN || '';
     }
     
     var resp = await fetch(AI_WORKER_URL, {
