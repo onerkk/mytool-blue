@@ -13824,95 +13824,275 @@ function generateQAResponse(intent, type, prob, bazi, mh, tarot) {
       if(firstPoint&&firstPoint.length>4&&firstPoint.length<50) natalInsight=firstPoint;
     }
 
-    // ═══ 按問題類型生成故事 ═══
+    // ═══ 按問題類型生成故事（真人口吻 v2）═══
+
+    // 輔助：把命理變量織成自然的句子，不是條列
+    function _weave(parts){ return parts.filter(Boolean).join(''); }
+    // 輔助：隨機選一個開場轉折詞，避免每次都一樣
+    var _turns=['說真的，','坦白講，','其實呢，','不瞞你說，','老實跟你講，'];
+    var _turn=_turns[Math.floor(Math.random()*_turns.length)];
+    var _turns2=['不過呢，','但話說回來，','只是呢，','問題在於，','比較麻煩的是，'];
+    var _turn2=_turns2[Math.floor(Math.random()*_turns2.length)];
+
     if(type==='career'){
       narrative='';
-      if(directAnswer) narrative+=directAnswer+' ';
-      if(starTrait) narrative+=starTrait+'。';
-      narrative+=abilityWord+'。';
-      narrative+=timingWord+'——';
+      if(directAnswer) narrative+=directAnswer+'\n\n';
 
       if(allPos){
-        narrative+='各方面條件都到位了。如果你一直在等一個「對的時間」，就是現在。方向對了就全力以赴，猶豫才是最大的成本。';
+        narrative+=_weave([
+          abilityWord?abilityWord+'——':'',
+          '而且現在的時機也對。',
+          starTrait?'以你的特質來說，'+starTrait.replace('你','')+'，這條路走下去不會錯。':'',
+          '\n\n你現在的狀態，就像是跑道已經清空、風向也對了。還在等什麼？',
+          mindWord?' '+mindWord+'，趁現在這股氣還在，動起來。':'',
+        ]);
       } else if(allNeg){
-        narrative+='老實說現在不是衝的時候。不是你能力不行，而是外在環境和內在狀態都還沒到最佳位置。先蓄力、先學習、先把基本功打好，等風來你才接得住。';
+        narrative+=_weave([
+          _turn,
+          '現在不是衝的時候。',
+          abilityWord?abilityWord+'，能力不是問題。':'',
+          _turn2+'外面的環境跟你內在的節奏對不上。',
+          '\n\n這段時間比較像是在磨刀——',
+          '刀還沒磨好就下場，砍不動還容易傷到自己。',
+          starTrait?'你'+starTrait.replace('你','')+'，這種底子放著不會過期，等風來你才接得住。':'',
+        ]);
       } else if(hasConflict){
-        if(baziGood&&mhBad) narrative+='你的實力夠，但短期的環境不太配合。方向是對的，但步調可以放慢一點。';
-        else if(baziBad&&zwGood) narrative+='你的走勢在往上，雖然底子普通但後天的努力正在累積。繼續走，不要停。';
-        else if(trBad) narrative+='你的條件還行，但你自己心裡還沒定下來。先把內心的拉扯處理好，想清楚自己到底要什麼，再行動。';
-        else narrative+='有些條件到位了，有些還差一點。不需要全部完美才動，但需要有策略——分階段來，每一步都留退路。';
+        narrative+=_weave([abilityWord?abilityWord+'。':'']);
+        if(baziGood&&mhBad){
+          narrative+='你的實力是夠的，這一點盤面說得很清楚。'+_turn2+'短期的環境有點卡——就像你已經準備好上場了，但裁判還沒吹哨。\n\n方向沒問題，步調放慢一點就好。';
+        } else if(baziBad&&zwGood){
+          narrative+='你的走勢正在往上爬。底子雖然不算頂尖，但後天累積的東西正在發酵。\n\n'+_turn+'這種時候最忌諱的就是停下來。繼續走，哪怕慢一點。';
+        } else if(trBad){
+          narrative+='條件其實還行，'+_turn2+'你自己心裡好像還沒定下來。\n\n有一種感覺，像是你站在十字路口，左看看右看看，遲遲不踏出去。先把這個拉扯處理掉——想清楚自己到底要什麼，比什麼都重要。';
+        } else {
+          narrative+='有些牌已經翻開了，有些還蓋著。不需要等到所有條件都完美才動——'+_turn+'完美的時機從來不存在。\n\n分階段來，每一步都留退路。';
+        }
       } else {
-        narrative+='條件中等，沒有特別大的助力也沒什麼地雷。成敗取決於你自己的行動力和決心。';
+        narrative+=_weave([
+          abilityWord?abilityWord+'。':'',
+          timingWord+'。\n\n',
+          '沒有特別大的順風，也沒有什麼地雷。這種局面，成敗就看你自己——你願意比別人多走一步，結果就會不一樣。',
+        ]);
       }
-      if(mindWord&&!narrative.includes('心裡')) narrative+=' '+mindWord+'。';
-      if(natalInsight&&!narrative.includes('星盤')) narrative+=' 星盤也顯示：'+natalInsight+'。';
+      if(natalInsight&&!narrative.includes(natalInsight.substring(0,6))) narrative+='\n\n還有一點——'+natalInsight+'。這也值得留意。';
 
     } else if(type==='wealth'){
       narrative='';
-      if(directAnswer) narrative+=directAnswer+' ';
-      narrative+=abilityWord+'。';
-      narrative+=timingWord+'。';
+      if(directAnswer) narrative+=directAnswer+'\n\n';
 
       if(allPos){
-        narrative+='財路目前是通的，把握機會但記住一個原則：賺到該收就收，不貪才能留住。';
+        narrative+=_weave([
+          abilityWord?abilityWord+'，':'',
+          '而且'+timingWord.replace('現在是好時機','現在財路是通的')+'。\n\n',
+          '機會在的時候要把握，但記住一個原則——賺到了該收就收。',
+          '貪字頭上一把刀，能留住的才是你的。',
+        ]);
       } else if(allNeg){
-        narrative+='目前不適合大額投資或冒險理財。守住現有的資產，減少不必要的支出。市場不好的時候，不虧就是賺。';
+        narrative+=_weave([
+          _turn,
+          abilityWord?abilityWord+'。':'',
+          _turn2+'現在不是進場的好時候。\n\n',
+          '大環境跟你的節奏都還沒對上，這時候硬做只會多虧。',
+          '守住手上的，減少不必要的花費。市場不好的時候，不虧就是賺——這句話很老但很真。',
+        ]);
       } else if(hasConflict){
-        if(baziGood&&mhBad) narrative+='你有賺錢的能力，但短期市場或機會不太配合。錢會來，但不是現在。';
-        else if(baziBad&&mhGood) narrative+='當下有個短暫的機會窗口，但別投太大。小試一下可以，梭哈不行。';
-        else narrative+='財運一般，穩健型理財比追高殺低靠譜得多。';
+        if(baziGood&&mhBad){
+          narrative+=abilityWord+'。賺錢的能力你有，'+_turn2+'短期的市場不太配合。\n\n錢會來的，但不是現在。就像你站在河邊等魚——魚群還沒到，拿著網下去只是白費力氣。';
+        } else if(baziBad&&mhGood){
+          narrative+=_turn+'眼前有個小窗口。'+_turn2+'這個窗口不大，不要梭哈。\n\n小金額試試水溫可以，但不要把身家壓上去。這種機會像是便利店的限時折扣——撿到就好，不值得排隊。';
+        } else {
+          narrative+=_weave([abilityWord?abilityWord+'。':'',timingWord+'。\n\n','現階段穩健比激進靠譜得多。定期存、分散放，比追漲殺跌實在。']);
+        }
       } else {
-        narrative+='財運不算特別旺也不差。穩健理財、定期儲蓄，比衝動投資靠譜。';
+        narrative+=_weave([
+          abilityWord?abilityWord+'。':'',
+          '財運不算特別旺，但也不差。\n\n',
+          '穩健理財、固定存、少碰看不懂的東西——聽起來無聊，但能做到這三件事的人，十年後比大部分人都好。',
+        ]);
       }
-      if(natalInsight&&!narrative.includes('星盤')) narrative+=' 星盤也顯示：'+natalInsight+'。';
+      if(natalInsight&&!narrative.includes(natalInsight.substring(0,6))) narrative+='\n\n另外，'+natalInsight+'——這對你的財務決策也有影響。';
 
     } else if(type==='love'){
       narrative='';
-      if(directAnswer) narrative+=directAnswer+' ';
-      if(starTrait) narrative+=starTrait+'，這也影響你的感情模式。';
-      narrative+=timingWord+'。';
+      if(directAnswer) narrative+=directAnswer+'\n\n';
 
       if(allPos){
-        narrative+='感情的條件和時機都在。別再等了——主動一點，讓對的人看到你。好的感情不是等來的，是你準備好了才遇得到。';
+        narrative+=_weave([
+          starTrait?starTrait+'——而這也讓你在感情裡有自己的魅力。':'',
+          timingWord!=='時機中等'?timingWord+'。':'',
+          '\n\n感情這件事，條件到了、時機也到了，剩下的就是你願不願意讓對的人看見你。',
+          '好的感情不是坐在家裡等來的——是你準備好了，然後走出去，它就在那裡。',
+        ]);
       } else if(allNeg){
-        narrative+='感情方面目前確實有壓力，不急。可能是你自己還沒準備好，也可能是遇到的人都不對。先把自己的狀態調整好，對的人會在對的時間出現。';
+        narrative+=_weave([
+          _turn+'感情方面，現在確實有點悶。',
+          '\n\n',
+          '可能是你自己心裡還有些東西沒放下，也可能是最近遇到的人頻率都不太對。',
+          '不用急——你現在的狀態就像土壤還在養著，花還沒到開的時候。',
+          '\n\n先把自己照顧好。對的人不會因為你晚了幾個月就錯過。',
+        ]);
       } else if(hasConflict){
-        if(trBad) narrative+='你的心裡可能還有矛盾——嘴上說想要穩定，但潛意識裡還在抗拒。先問問自己到底想要什麼。';
-        else if(baziGood&&mhBad) narrative+='你的條件不差，但現在的時機差了一點。不需要刻意追求，保持開放心態就好。';
-        else narrative+='感情順其自然就好。不需要為了「有人陪」而將就，但也不要把門關上。';
+        if(trBad){
+          narrative+='你心裡好像有一些拉扯——嘴上說想穩定，但潛意識裡好像還在抗拒什麼。\n\n'+_turn+'在想清楚自己到底要什麼之前，遇到誰都很難定下來。這不是對方的問題，是你自己還沒準備好跟一個人真的靠近。';
+        } else if(baziGood&&mhBad){
+          narrative+=_weave([
+            abilityWord?abilityWord.replace('底子','條件')+'，':'',
+            _turn2+'時機差了一點點。',
+            '\n\n不需要刻意去追什麼——保持你自己的狀態就好。緣分這東西，硬找找不到，但你準備好的時候它自己會冒出來。',
+          ]);
+        } else {
+          narrative+='感情這件事，不需要非黑即白。\n\n不用為了「有人陪」而將就，但也不要把門鎖死。留一條縫——讓光透進來就好。';
+        }
       } else {
-        narrative+='感情是順其自然的事。不需要刻意追求，但也不要把門關上。保持開放心態，好的會自己來。';
+        narrative+=_weave([
+          timingWord!=='時機中等'?timingWord+'。':'',
+          '\n\n感情急不得。你現在的狀態就是——保持開放，但不強求。',
+          '該來的時候你會知道的，那種感覺很自然，不需要分析。',
+        ]);
       }
-      if(mindWord&&!narrative.includes('心裡')&&!narrative.includes('矛盾')) narrative+=' '+mindWord+'。';
-      if(natalInsight&&!narrative.includes('星盤')) narrative+=' 星盤也顯示：'+natalInsight+'。';
+      if(starTrait&&!narrative.includes(starTrait.substring(0,4))&&allNeg){
+        narrative+='\n\n對了，'+starTrait.replace('你','你是那種')+'的人，感情裡記得別太ㄍㄧㄥ。';
+      }
+      if(mindWord&&!narrative.includes('心裡')&&!narrative.includes('拉扯')&&!narrative.includes('矛盾')) narrative+=' '+mindWord+'。';
+      if(natalInsight&&!narrative.includes(natalInsight.substring(0,6))) narrative+='\n\n'+natalInsight+'——這也是你感情模式的一部分。';
 
     } else if(type==='health'){
       narrative='';
-      if(directAnswer) narrative+=directAnswer+' ';
-      narrative+=abilityWord.replace('底子','體質').replace('實力','底子')+'。';
+      if(directAnswer) narrative+=directAnswer+'\n\n';
+      var _bodyWord=abilityWord.replace('底子','體質').replace('實力','底子').replace('條件','體質');
 
       if(overallDir==='pos'){
-        narrative+='健康底子不差，保持現有作息和運動習慣就好。不需要太焦慮，但定期體檢是基本功。';
+        narrative+=_weave([
+          _bodyWord?_bodyWord+'。':'',
+          '\n\n身體的底子還不錯，不需要太焦慮。但「不錯」不代表可以揮霍——',
+          '定期體檢是基本功，作息盡量規律。',
+          '你現在的身體就像一台保養還行的車，繼續維護就好，不需要大修。',
+        ]);
       } else if(overallDir==='neg'){
-        narrative+='身體方面需要特別注意。不要忽視任何異常信號——小毛病拖成大問題才是最虧的。定期做健康檢查，心理壓力也別忽視，找到釋放壓力的方式。';
+        narrative+=_weave([
+          _turn,
+          _bodyWord?_bodyWord+'。':'',
+          '\n\n身體在發信號，不要忽視。',
+          '小毛病拖著不管，最後變大問題才是最虧的。',
+          '\n\n定期做健康檢查，心理壓力也算——你的精神狀態跟身體是連在一起的。',
+          '找到一個能持續做的運動，不用激烈，散步都行。重點是「持續」。',
+        ]);
       } else {
-        narrative+='健康狀況中等，沒大問題但也不能放鬆。規律作息、適度運動、少熬夜——老話但真的有用。';
+        narrative+=_weave([
+          _bodyWord?_bodyWord+'。':'',
+          '\n\n沒什麼大問題，但也不能放鬆。',
+          '規律作息、適度運動、少熬夜——聽起來很老套，但能做到這三件的人真的不多。',
+          '\n\n身體是所有事情的地基。地基穩了，上面蓋什麼都行。',
+        ]);
       }
-      if(natalInsight&&!narrative.includes('星盤')) narrative+=' 星盤也顯示：'+natalInsight+'。';
+      if(natalInsight&&!narrative.includes(natalInsight.substring(0,6))) narrative+='\n\n另外，'+natalInsight+'——留意一下。';
+
+    } else if(type==='relationship'){
+      narrative='';
+      if(directAnswer) narrative+=directAnswer+'\n\n';
+
+      if(allPos){
+        narrative+=_weave([
+          abilityWord?abilityWord+'。':'',
+          starTrait?starTrait+'——這讓你在人際關係裡有天然的優勢。':'',
+          '\n\n你現在的人際能量是流通的。想拓展的就去拓展，想修復的就主動開口。',
+          '人跟人之間的事，主動的那個人永遠不會虧。',
+        ]);
+      } else if(allNeg){
+        narrative+=_weave([
+          _turn+'人際方面最近有點消耗。',
+          '\n\n不是你做錯了什麼，有時候就是頻率不對。',
+          '該遠的人就讓他遠，不需要每段關係都維護。',
+          '\n\n你的精力是有限的——花在對的人身上才值得。',
+        ]);
+      } else if(hasConflict){
+        narrative+=_weave([
+          '你的人際關係有好的一面，也有卡住的地方。',
+          '\n\n'+_turn2+'有些人你怎麼經營都經營不好——那不是你的問題，是頻率的問題。',
+          '把精力放在那些互動起來舒服的關係上。其他的，隨緣就好。',
+        ]);
+      } else {
+        narrative+=_weave([
+          abilityWord?abilityWord+'。':'',
+          '\n\n人際關係沒有大波動。',
+          '這種時候適合做一件事——主動約一個你很久沒聯繫的人吃飯。',
+          '很多好的機會，都藏在你以為已經斷了的關係裡。',
+        ]);
+      }
+      if(natalInsight&&!narrative.includes(natalInsight.substring(0,6))) narrative+='\n\n還有，'+natalInsight+'。';
+
+    } else if(type==='family'){
+      narrative='';
+      if(directAnswer) narrative+=directAnswer+'\n\n';
+
+      if(allPos){
+        narrative+=_weave([
+          '家裡的事，目前的能量是好的。',
+          '\n\n如果有什麼想跟家人說的，現在是開口的好時候。',
+          '家人之間的問題，往往不是「說不通」，而是「一直沒說」。',
+          timingWord!=='時機中等'?'\n\n'+timingWord+'，趁氣氛好的時候把話聊開。':'',
+        ]);
+      } else if(allNeg){
+        narrative+=_weave([
+          _turn+'家裡的事，最近確實有壓力。',
+          '\n\n家人之間的摩擦，通常不是誰對誰錯的問題——是每個人都在用自己的方式在乎，但表達方式撞在一起了。',
+          '\n\n這段時間盡量別在情緒上頭的時候說重話。能忍一時，不是軟弱，是智慧。',
+        ]);
+      } else if(hasConflict){
+        narrative+=_weave([
+          '家裡的狀況有好有壞——好的是基礎在，壞的是溝通出了問題。',
+          '\n\n'+_turn+'家人之間最怕的不是吵架，是冷戰。',
+          '有話就說，說的時候注意語氣。同樣一句話，用不同的口氣說出來，效果天差地別。',
+        ]);
+      } else {
+        narrative+=_weave([
+          '家庭運勢平穩，沒有大風大浪。',
+          '\n\n這種時候適合做一些小事——一起吃頓飯、聊聊天、問問對方最近怎麼樣。',
+          '家人之間的關係，靠的不是大事件，是這些日常的小時刻。',
+        ]);
+      }
+      if(natalInsight&&!narrative.includes(natalInsight.substring(0,6))) narrative+='\n\n'+natalInsight+'——這跟你的家庭互動模式有關。';
 
     } else {
-      // general / relationship / family
+      // general
       narrative='';
-      if(directAnswer) narrative+=directAnswer+' ';
-      if(starTrait) narrative+=starTrait+'。';
-      narrative+=abilityWord+'。';
-      narrative+=timingWord+'。';
+      if(directAnswer) narrative+=directAnswer+'\n\n';
 
-      if(allPos) narrative+='整體走勢不錯，現在是可以積極行動的時期。想做什麼就做，別再拖了。';
-      else if(allNeg) narrative+='目前各方面的阻力偏大，急不來。穩住節奏，等條件成熟再出手。退一步不是認輸，是為了更好的進攻。';
-      else if(hasConflict) narrative+='有些面向是好的，有些卡住了。不需要等到所有條件完美才行動，但要有計劃，一步一步來。';
-      else narrative+='運勢不上不下。這種時候最考驗的是你自己——機會不會從天上掉，要自己去找。';
-      if(natalInsight&&!narrative.includes('星盤')) narrative+=' 星盤也顯示：'+natalInsight+'。';
+      if(allPos){
+        narrative+=_weave([
+          abilityWord?abilityWord+'。':'',
+          starTrait?starTrait+'。':'',
+          '\n\n'+timingWord+'——各方面都在配合你。',
+          '你現在就像是順風局，不需要做什麼驚天動地的事，順著走就好。',
+          '\n\n但「順風」不代表可以鬆懈。風會變的，趁現在多走幾步。',
+        ]);
+      } else if(allNeg){
+        narrative+=_weave([
+          _turn,
+          abilityWord?abilityWord+'，能力不是問題。':'',
+          _turn2+'外面的風暫時是逆的。',
+          '\n\n這段時間不適合大動作。穩住自己的節奏，把該做的事做好，其他的先放一放。',
+          '逆風的時候硬飛，只會消耗更多燃料。等風轉了再加速。',
+          starTrait?'\n\n你'+starTrait.replace('你','')+'，這種底子不會因為一段逆風就沒了。':'',
+        ]);
+      } else if(hasConflict){
+        narrative+=_weave([
+          abilityWord?abilityWord+'。':'',
+          '\n\n有些事情在推你往前，有些在拉你後退——這是正常的。',
+          '不需要等到所有燈都是綠色才出發。',
+          '\n\n'+_turn+'先處理那個最卡的點。一旦打通了，其他的會跟著動起來。',
+        ]);
+      } else {
+        narrative+=_weave([
+          abilityWord?abilityWord+'。':'',
+          timingWord+'。',
+          '\n\n沒有特別的順風，也沒有什麼地雷。',
+          '這種局面最考驗的是你自己——你比別人多想一步、多做一步，結果就會不一樣。',
+          starTrait?'\n\n'+starTrait+'。善用這個特質。':'',
+        ]);
+      }
+      if(mindWord&&!narrative.includes('心裡')) narrative+='\n\n'+mindWord+'。';
+      if(natalInsight&&!narrative.includes(natalInsight.substring(0,6))) narrative+='\n\n'+natalInsight+'——值得留意。';
     }
 
     // 清理
