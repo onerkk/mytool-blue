@@ -460,6 +460,10 @@
   <!-- 🎯 核心回答（精簡版：一句刺點話 + 交叉故事）-->
   <div class="card" style="border-left:3px solid var(--c-gold)">
     <div id="r-answer" class="serif" style="font-size:1.05rem;line-height:1.8"></div>
+    <!-- 隱藏占位：供 JS 寫入，不顯示 -->
+    <div id="r-question" style="display:none"></div>
+    <div id="r-answer-full" style="display:none"></div>
+    <div id="r-conclusion" style="display:none"></div>
   </div>
 
   <!-- 🛒 你現在最該做的事（第一屏CTA核心）-->
@@ -480,22 +484,10 @@
 
   <!-- ═══ 以下全部收折：想看細節再展開 ═══ -->
 
-  <!-- 🎯 完整問答分析（收折）-->
-  <div class="card collapsible-card">
+  <!-- ⚡ 行動指令 + 嵌入水晶（默認展開 — 使用者最在意的「怎麼做」）-->
+  <div class="card collapsible-card open" id="action-card">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
-      <span><i class="fas fa-bullseye"></i> 完整問答分析</span>
-      <i class="fas fa-chevron-down collapse-arrow"></i>
-    </div>
-    <div class="collapsible-body">
-      <div id="r-question" class="text-dim mb-md"></div>
-      <div id="r-answer-full" class="serif" style="font-size:.95rem;line-height:1.8"></div>
-    </div>
-  </div>
-
-  <!-- ⚡ 行動指令 + 嵌入水晶（收折）-->
-  <div class="card collapsible-card" id="action-card">
-    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
-      <span><i class="fas fa-bolt"></i> 本月行動指令</span>
+      <span><i class="fas fa-bolt"></i> 你現在可以做的事</span>
       <i class="fas fa-chevron-down collapse-arrow"></i>
     </div>
     <div class="collapsible-body">
@@ -505,56 +497,33 @@
   </div>
 
   <!-- ══════════════════════════════════════════
-       第二幕：為什麼這樣判斷（三張摘要卡片）
+       為什麼這樣判斷（三張摘要卡片 — 收折）
        ══════════════════════════════════════════ -->
-  <div style="text-align:center;padding:var(--sp-md) 0 var(--sp-sm)">
-    <span class="text-dim text-sm" style="letter-spacing:.1em">▼ 為什麼這樣判斷 ▼</span>
-  </div>
-  <div id="act2-cards"></div>
-
-  <!-- ══════════════════════════════════════════
-       第三幕：深度資料（全部折疊）
-       ══════════════════════════════════════════ -->
-  <div style="text-align:center;padding:var(--sp-md) 0 var(--sp-sm)">
-    <span class="text-dim text-xs" style="letter-spacing:.1em">▼ 深度命理資料 ▼</span>
-  </div>
-
-  <!-- ☯ 五行能量（已移至命理詳細分析，此處隱藏）-->
-  <div class="card collapsible-card" id="remedy-alert-wrap" style="display:none">
+  <div class="card collapsible-card">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
-      <span><i class="fas fa-yin-yang"></i> 五行能量分佈</span>
+      <span><i class="fas fa-gavel"></i> 為什麼這樣判斷</span>
       <i class="fas fa-chevron-down collapse-arrow"></i>
     </div>
     <div class="collapsible-body">
-      <div class="remedy-alert" id="remedy-alert" style="border:none;background:none;box-shadow:none;padding:0;margin:0">
-        <div id="remedy-diagnosis" class="remedy-diagnosis"></div>
+      <div id="act2-cards"></div>
+      <!-- 可能性評估（併入此區）-->
+      <div style="margin-top:var(--sp-md)">
+        <div class="prob-meter"><div class="prob-bar"><div class="prob-fill" id="r-pfill" style="width:0%"></div></div>
+        <div class="prob-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
+        <div id="r-pbreak" class="mt-md text-sm"></div>
+        <div id="r-factors" style="margin-top:var(--sp-sm)"></div>
+        <div id="r-suggest" style="display:none"></div>
       </div>
     </div>
   </div>
 
-  <!-- 💎 能量優化方案（與行動指令重複，已合併至行動指令）-->
-  <div class="card collapsible-card" id="remedy-plan-wrap" style="display:none">
-    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
-      <span><i class="fas fa-wand-magic-sparkles"></i> 能量優化方案</span>
-      <i class="fas fa-chevron-down collapse-arrow"></i>
-    </div>
-    <div class="collapsible-body">
-      <div id="remedy-actions" class="remedy-actions"></div>
-    </div>
-  </div>
-
-  <!-- 📊 可能性評估 -->
-  <div class="card collapsible-card">
-    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
-      <span><i class="fas fa-chart-line"></i> 可能性評估</span>
-      <i class="fas fa-chevron-down collapse-arrow"></i>
-    </div>
-    <div class="collapsible-body">
-      <div class="prob-meter"><div class="prob-bar"><div class="prob-fill" id="r-pfill" style="width:0%"></div></div>
-      <div class="prob-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div>
-      <div id="r-pbreak" class="mt-md text-sm"></div>
-      <div class="divider"></div><div id="r-factors"></div><div id="r-suggest" class="mt-md" style="display:none"></div>
-    </div>
+  <!-- ══════════════════════════════════════════
+       深度命理資料（全部折疊）
+       ══════════════════════════════════════════ -->
+  <!-- 隱藏占位：供 JS 寫入，不顯示 -->
+  <div style="display:none">
+    <div id="remedy-alert-wrap"><div class="remedy-alert" id="remedy-alert"><div id="remedy-diagnosis" class="remedy-diagnosis"></div></div></div>
+    <div id="remedy-plan-wrap"><div id="remedy-actions" class="remedy-actions"></div></div>
   </div>
 
   <!-- 📋 命理詳解 -->
@@ -642,17 +611,6 @@
         <h4 class="text-gold mb-md serif">姓名學分析（生肖派＋三才五格）</h4>
         <div id="d-name"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- 📝 總結（已併入「七維度深度拆解」，此區段隱藏） -->
-  <div class="card collapsible-card" style="display:none">
-    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
-      <span><i class="fas fa-moon"></i> 靜月分析師總結</span>
-      <i class="fas fa-chevron-down collapse-arrow"></i>
-    </div>
-    <div class="collapsible-body">
-      <div id="r-conclusion" class="text-sm" style="line-height:1.8"></div>
     </div>
   </div>
 
