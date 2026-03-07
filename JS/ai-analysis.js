@@ -4748,14 +4748,15 @@ function verdictFromProb(prob, focusType){
 
     // ── prob 數值保護層：防止符號層與分數層嚴重矛盾 ──
     // finalProb 是綜合加權的數值結果，不能被符號投票完全推翻
-    if(prob >= 65 && (verdict === 'strong_neg' || verdict === 'conditional_neg')){
-      // 分數明顯偏高，最低給 high_variance
+    if(prob >= 58 && (verdict === 'strong_neg' || verdict === 'conditional_neg')){
+      // 分數 >= 58 卻被判負面，至少給 high_variance
       verdict = 'high_variance'; isGood = false; isBad = false;
-    } else if(prob >= 58 && verdict === 'strong_neg'){
+    } else if(prob >= 50 && verdict === 'strong_neg'){
       verdict = 'conditional_neg'; isGood = false; isBad = true;
-    } else if(prob <= 38 && (verdict === 'strong_pos' || verdict === 'conditional_pos')){
+    } else if(prob <= 42 && (verdict === 'strong_pos' || verdict === 'conditional_pos')){
+      // 分數 <= 42 卻被判正面，至少給 high_variance
       verdict = 'high_variance'; isGood = false; isBad = false;
-    } else if(prob <= 45 && verdict === 'strong_pos'){
+    } else if(prob <= 50 && verdict === 'strong_pos'){
       verdict = 'conditional_pos'; isGood = true; isBad = false;
     }
   }
@@ -20580,11 +20581,19 @@ function renderAct2Summary(bazi,ziwei,mh,tarot,type,prob){
     probLo = Math.max(5, _act2Prob - 5); probHi = Math.min(35, _act2Prob + 5);
     probLabel = '凶'; probColor = '#f87171';
   } else if (_vType === 'conditional_neg') {
-    probLo = Math.max(20, _act2Prob - 8); probHi = Math.min(48, _act2Prob + 8);
+    probLo = Math.max(15, _act2Prob - 10); probHi = Math.min(50, _act2Prob + 5);
     probLabel = '偏凶'; probColor = '#fb923c';
   } else {
     // high_variance — 區間加寬
     probLo = Math.max(30, _act2Prob - 14); probHi = Math.min(70, _act2Prob + 14);
+    probLabel = '變數大'; probColor = '#facc15';
+  }
+  // ── 安全閥：防止 Lo > Hi 倒掛 ──
+  if(probLo > probHi){
+    var _mid = Math.round((_act2Prob));
+    probLo = Math.max(10, _mid - 8);
+    probHi = Math.min(90, _mid + 8);
+    // 倒掛代表 verdictType 跟 prob 數值嚴重矛盾，用 high_variance
     probLabel = '變數大'; probColor = '#facc15';
   }
 
