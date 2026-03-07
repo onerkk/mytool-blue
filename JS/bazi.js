@@ -4,7 +4,7 @@
 
 // ── Security + polyfill + global S (lines 1-25) ──
 (function(){
-  var _0x=['onerkk.github.io','mytool-blue.pages.dev','localhost','127.0.0.1'];
+  var _0x=['onerkk.github.io','mytool-blue.pages.dev','jingyue.uk','localhost','127.0.0.1'];
   var _h=location.hostname;
   var _ok=false;
   for(var i=0;i<_0x.length;i++){if(_h===_0x[i]||_h.endsWith('.'+_0x[i])){_ok=true;break;}}

@@ -6,6 +6,7 @@
 
 // ═══ 安全：只允許自家網站呼叫 ═══
 const ALLOWED_ORIGINS = [
+  'https://jingyue.uk',
   'https://mytool-blue.pages.dev',
   'https://onerkk.github.io',
 ];
