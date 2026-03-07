@@ -2,19 +2,45 @@
 // ui.js — 靜月之光模組化拆分
 // ═══════════════════════════════════════════════════════════════
 
-// ── Admin Token：從 URL ?token=xxx 或 localStorage 讀取 ──
+// ── Admin Token：從 URL #admin=xxx 或 ?token=xxx 或 localStorage 讀取 ──
+// 用 hash fragment 最可靠（伺服器重導向不會吃掉 # 後面的內容）
 (function(){
-  var params = new URLSearchParams(window.location.search);
-  var t = params.get('token');
-  if (t) {
-    try { localStorage.setItem('_jy_at', t); } catch(e){}
-    // 清掉 URL 裡的 token 參數（不留痕跡）
-    params.delete('token');
-    var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + window.location.hash;
-    window.history.replaceState({}, '', newUrl);
+  var token = '';
+  
+  // 優先：hash fragment（#admin=xxx）— 不會被伺服器重導向吃掉
+  var hash = window.location.hash || '';
+  var hashMatch = hash.match(/[#&]admin=([^&]+)/);
+  if (hashMatch) {
+    token = decodeURIComponent(hashMatch[1]);
+    // 清掉 hash 裡的 admin 參數（不留痕跡）
+    var cleanHash = hash.replace(/[#&]admin=[^&]+/, '').replace(/^#&/, '#').replace(/^#$/, '');
+    window.history.replaceState({}, '', window.location.pathname + window.location.search + cleanHash);
   }
-  window._JY_ADMIN_TOKEN = t || '';
-  try { if (!window._JY_ADMIN_TOKEN) window._JY_ADMIN_TOKEN = localStorage.getItem('_jy_at') || ''; } catch(e){}
+  
+  // 備用：query string（?token=xxx）
+  if (!token) {
+    var params = new URLSearchParams(window.location.search);
+    var t = params.get('token');
+    if (t) {
+      token = t;
+      params.delete('token');
+      var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + window.location.hash;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }
+  
+  // 存入 localStorage（持久化）
+  if (token) {
+    try { localStorage.setItem('_jy_at', token); } catch(e){}
+  }
+  
+  // 最終：從 localStorage 讀取
+  if (!token) {
+    try { token = localStorage.getItem('_jy_at') || ''; } catch(e){}
+  }
+  
+  window._JY_ADMIN_TOKEN = token;
+  if (token) console.log('[Admin] Token loaded');
 })();
 
 // ── toggleCollapse + renderRemedy + goStep + resetAll (lines 26-418) ──
