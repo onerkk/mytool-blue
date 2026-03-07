@@ -19987,7 +19987,7 @@ function runAnalysisV2(){
   
   // 隱藏舊的「完整問答分析」卡（已併入主區）
   var _fullEl2=document.getElementById('r-answer-full');
-  if(_fullEl2) _fullEl2.closest('.collapsible-card').style.display='none';
+  if(_fullEl2) { var _fullCard=_fullEl2.closest('.collapsible-card'); if(_fullCard) _fullCard.style.display='none'; }
   document.getElementById('r-factors').innerHTML=answer.factors?`<div class="detail-toggle-wrap" style="margin-top:.5rem"><div class="detail-toggle-btn" onclick="this.parentElement.classList.toggle('open')" style="cursor:pointer;display:flex;align-items:center;gap:.5rem;color:var(--c-text-dim);font-size:.85rem;padding:.3rem 0"><i class="fas fa-chevron-right" style="font-size:.7rem;transition:transform .3s"></i><span>影響因子（${answer.factors.length}項）</span></div><div class="detail-toggle-body" style="max-height:0;overflow:hidden;transition:max-height .4s ease"><ul class="text-sm" style="padding:.5rem 1.2rem;color:var(--c-text-dim)">${answer.factors.map(f=>'<li style="margin:.3rem 0">'+f+'</li>').join('')}</ul></div></div>`:'';
   document.getElementById('r-suggest').innerHTML=answer.suggestions?`<h4 class="text-gold serif mt-md mb-sm">行動建議</h4><ol class="text-sm" style="padding-left:1.2rem;color:var(--c-text-dim)">${answer.suggestions.map(s=>'<li style="margin:.3rem 0">'+s+'</li>').join('')}</ol>`:'';
 
