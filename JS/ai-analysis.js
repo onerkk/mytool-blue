@@ -19668,6 +19668,137 @@ function runAnalysisV2(){
     }
   }catch(e){}
   
+  // ═══ 七維度深度敘事補強（讓離線回答也像 API 一樣深入）═══
+  try {
+    var enrichParts = [];
+    var _enrichType = type;
+    var _enrichQ = qText || '';
+    
+    // ── 1. 紫微：抓焦點宮位的星曜+四化 ──
+    if(S.ziwei && S.ziwei.palaces){
+      var _zwGongMap = {love:2, career:8, wealth:4, health:5, relationship:7, family:9, general:0};
+      var _zwIdx = _zwGongMap[_enrichType] || 0;
+      var _zwPal = S.ziwei.palaces[_zwIdx];
+      var _zwGongName = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','父母宮','福德宮'][_zwIdx];
+      if(_zwPal && _zwPal.stars){
+        var _zwMajors = _zwPal.stars.filter(function(s){return s.type==='major';});
+        var _zwHua = _zwPal.stars.filter(function(s){return s.hua;});
+        var _zwSha = _zwPal.stars.filter(function(s){return s.type==='sha'||s.name==='擎羊'||s.name==='陀羅'||s.name==='火星'||s.name==='鈴星'||s.name==='地空'||s.name==='地劫';});
+        if(_zwMajors.length){
+          var _zwDesc = _zwGongName + _zwMajors.map(function(s){return s.name + (s.bright ? '(' + s.bright + ')' : '');}).join('、');
+          if(_zwHua.length) _zwDesc += '，' + _zwHua.map(function(s){return s.name + s.hua;}).join('、');
+          if(_zwSha.length >= 2) _zwDesc += '，煞星干擾（' + _zwSha.map(function(s){return s.name;}).join('、') + '）';
+          enrichParts.push(_zwDesc);
+        }
+      }
+    }
+    
+    // ── 2. 梅花：體用關係 + 變卦結果 ──
+    if(mh && mh.ty){
+      var _mhRel = mh.ty.r || '';
+      var _mhJudge = mh.ty.f || '';
+      var _mhRelDesc = {'用生體':'外部環境在幫你','體生用':'你在消耗能量給外部','體克用':'你掌控局面','用克體':'外力在壓制你','比和':'雙方勢均力敵'}[_mhRel] || _mhRel;
+      var _mhText = '梅花卦象「' + _mhRel + '」——' + _mhRelDesc + '（' + _mhJudge + '）';
+      if(mh.bian && mh.bian.n) _mhText += '，變卦「' + mh.bian.n + '」看結果走向';
+      enrichParts.push(_mhText);
+    }
+    
+    // ── 3. 塔羅：核心牌+結果牌 ──
+    if(tarot && tarot.drawn && tarot.drawn.length >= 10){
+      var _t0 = tarot.drawn[0], _t9 = tarot.drawn[9];
+      var _tText = '塔羅核心牌' + _t0.n + (_t0.isUp ? '正位' : '逆位');
+      _tText += '，結果牌' + _t9.n + (_t9.isUp ? '正位' : '逆位');
+      if(!_t9.isUp) _tText += '——結果需要調整方向';
+      else _tText += '——結果走向正面';
+      // 加入阻礙牌
+      var _t1 = tarot.drawn[1];
+      if(_t1 && !_t1.isUp) _tText += '。阻礙你的是' + _t1.n + '逆位';
+      enrichParts.push(_tText);
+    }
+    
+    // ── 4. 星盤：關鍵行星宮位 ──
+    if(S.natal && S.natal.planets){
+      var _npArr = [];
+      var _npl = S.natal.planets;
+      if(_enrichType === 'love'){
+        if(_npl['金星']) _npArr.push('金星' + (_npl['金星'].sign||'') + (_npl['金星'].house ? '/' + _npl['金星'].house + '宮' : ''));
+        if(_npl['火星'] && [5,7,8].indexOf(_npl['火星'].house) !== -1) _npArr.push('火星' + _npl['火星'].house + '宮');
+      } else if(_enrichType === 'career'){
+        if(_npl['土星']) _npArr.push('土星' + (_npl['土星'].sign||'') + (_npl['土星'].house ? '/' + _npl['土星'].house + '宮' : ''));
+        if(S.natal.mcSign) _npArr.push('MC天頂' + S.natal.mcSign.name);
+      } else if(_enrichType === 'wealth'){
+        if(_npl['木星']) _npArr.push('木星' + (_npl['木星'].sign||'') + (_npl['木星'].house ? '/' + _npl['木星'].house + '宮' : ''));
+      }
+      if(_npl['月亮']) _npArr.push('月亮' + (_npl['月亮'].sign||''));
+      if(_npArr.length) enrichParts.push('星盤：' + _npArr.join('、'));
+    }
+    
+    // ── 5. 吠陀：大運主星 + 相關宮位主星 ──
+    if(S.jyotish){
+      var _jyParts = [];
+      if(S.jyotish.currentMD){
+        var _mdLord = S.jyotish.currentMD.lord;
+        var _mdPl = S.jyotish.planets ? S.jyotish.planets[_mdLord] : null;
+        var _mdDig = _mdPl ? ({exalted:'入廟（強）',debilitated:'落陷（弱）',own:'自宮（穩）',enemy:'敵對（不利）'}[_mdPl.dignity]||'') : '';
+        _jyParts.push('吠陀大運' + S.jyotish.currentMD.zh + (_mdDig ? _mdDig : ''));
+      }
+      if(S.jyotish.sadeSati && S.jyotish.sadeSati.active) _jyParts.push('⚠土星回歸期（Sade Sati）');
+      if(_jyParts.length) enrichParts.push(_jyParts.join('、'));
+    }
+    
+    // ── 6. 八字：大運流年 + 關鍵十神 ──
+    if(b){
+      var _bzParts = [];
+      if(b.dayun){
+        var _curDy2 = b.dayun.find(function(d){return d.isCurrent;});
+        if(_curDy2) _bzParts.push('大運' + _curDy2.gz + '（' + _curDy2.level + '）');
+      }
+      var _thisYr = new Date().getFullYear();
+      if(b.dayun){
+        var _curDy3 = b.dayun.find(function(d){return d.isCurrent;});
+        if(_curDy3 && _curDy3.liuNian){
+          var _ln2 = _curDy3.liuNian.find(function(l){return l.year === _thisYr;});
+          if(_ln2) _bzParts.push(_thisYr + '年流年' + _ln2.gz + '（' + _ln2.level + '）');
+        }
+      }
+      if(b.shensha && b.shensha.length){
+        var _keysha = b.shensha.filter(function(s){
+          return ['桃花','紅鸞','天喜','天乙貴人','驛馬','劫煞','羊刃','亡神','華蓋','文昌'].indexOf(s) !== -1;
+        }).slice(0, 3);
+        if(_keysha.length) _bzParts.push('神煞：' + _keysha.join('、'));
+      }
+      if(_bzParts.length) enrichParts.push('八字：' + _bzParts.join('，'));
+    }
+    
+    // ── 7. 姓名學：摘要 ──
+    if(S.nameResult){
+      var _nmParts = [];
+      if(S.nameResult.sanCaiLevel) _nmParts.push('三才' + S.nameResult.sanCai.join('→') + '（' + S.nameResult.sanCaiLevel + '）');
+      if(S.nameResult.renGe && S.nameResult.renGe.fortune) _nmParts.push('人格' + S.nameResult.renGe.num + '（' + S.nameResult.renGe.fortune.level + '）');
+      if(_nmParts.length) enrichParts.push('姓名：' + _nmParts.join('、'));
+    }
+    
+    // ── 組裝補強區塊 ──
+    if(enrichParts.length >= 3){
+      evidenceNote = '<div style="margin-top:.8rem;padding:.8rem 1rem;background:rgba(139,92,246,.04);border-left:3px solid #8b5cf6;border-radius:8px">';
+      evidenceNote += '<p style="font-size:.74rem;color:#a78bfa;font-weight:700;margin-bottom:.5rem">🔮 七維命理交叉判讀</p>';
+      enrichParts.forEach(function(ep2){
+        evidenceNote += '<p style="font-size:.82rem;line-height:1.7;margin:.3rem 0;color:var(--c-text-dim)">• ' + ep2 + '</p>';
+      });
+      // 交集信號
+      if(S._uResult && S._uResult.comb && S._uResult.comb.topTags && S._uResult.comb.topTags.length){
+        var _topSigs = S._uResult.comb.topTags.slice(0, 4).map(function(t){
+          return (t.direction === 'pos' ? '✅ ' : t.direction === 'neg' ? '⚠️ ' : '') + t.tag + '（' + t.supportSystems.join('/') + '）';
+        });
+        evidenceNote += '<p style="font-size:.74rem;color:#a78bfa;font-weight:700;margin-top:.6rem;margin-bottom:.3rem">🏷 多系統交集信號</p>';
+        _topSigs.forEach(function(sig){
+          evidenceNote += '<p style="font-size:.82rem;line-height:1.7;margin:.2rem 0">' + sig + '</p>';
+        });
+      }
+      evidenceNote += '</div>';
+    }
+  } catch(e){ console.error('enrich7D:', e); }
+  
   document.getElementById('r-answer').innerHTML=answer.text + evidenceNote;
   
   // ═══ AI 深度解析按鈕（每日一次免費）═══
