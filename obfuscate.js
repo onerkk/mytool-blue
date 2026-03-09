@@ -22,7 +22,14 @@ const FILES_TO_OBFUSCATE = [
   'JS/ai-analysis.js',
   'JS/meihua_output_layer.js',
   'JS/meihua_upgrade.js',
-  'JS/renderMeihua_upgrade.js',
+  'JS/renderMeihua_upgrade.js',  
+  'JS/bazi_upgrade.js',
+  'JS/jyotish_full_upgrade.js',
+  'JS/meihua_upgrade2.js',
+  'JS/name_upgrade.js',
+  'JS/render_upgrade.js',
+  'JS/tarot_upgrade.js',
+  'JS/western_upgrade.js',
 ];
 
 // 不混淆的檔案（UI 操作，混淆容易出問題）
