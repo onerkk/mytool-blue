@@ -28193,6 +28193,20 @@ renderTarot = function(){
     if (discountReveal) discountReveal.style.display = 'none';
 
     // 10. 分享存圖 + 趣味功能 → 保留（曝光管道 + 互動黏性）
+
+    // 11. 底部 CTA 區加標題（評價+購買）
+    var socialProof = document.getElementById('shop-social-proof');
+    if (socialProof && !socialProof.dataset.titled) {
+      socialProof.dataset.titled = '1';
+      var ctaCard = socialProof.closest('.card');
+      if (ctaCard) {
+        // 在卡片頂部插入標題
+        var titleDiv = document.createElement('div');
+        titleDiv.style.cssText = 'display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem';
+        titleDiv.innerHTML = '<span style="font-size:1.1rem">💎</span><span style="font-size:.92rem;font-weight:700;color:var(--c-gold)">能量水晶・實際買家評價</span>';
+        ctaCard.insertBefore(titleDiv, ctaCard.firstChild);
+      }
+    }
   }
 
   // ══ 覆寫 _injectAIButton — 隱藏所有離線區塊 + 自動觸發 AI ══
