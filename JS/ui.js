@@ -640,7 +640,7 @@ function submitStep0Fast(){
   const btime=document.getElementById('f-btime').value||'12:00';
   const name=document.getElementById('f-name').value.trim();
   S.form={type,question,gender:gender.value,bdate,btime,name};
-  S._autoMode = true; // ★ 自動模式標記：不含梅花/塔羅
+  S._autoMode = true; // ★ 自動模式標記：梅花時間起卦 + 塔羅種子抽牌
   const overlay = document.createElement('div');
   overlay.className = 'loading-overlay';
   overlay.id = 'loading-overlay';
@@ -699,13 +699,58 @@ function submitStep0Fast(){
     ()=>{ S.bazi=computeBazi(y,m,d,hh,mm,gender.value); try{if(S.bazi&&typeof enhanceBazi==='function')enhanceBazi(S.bazi);}catch(e){} },
     ()=>{ S.ziwei=computeZiwei(y,m,d,hh,gender.value); mergeZiweiIntoBazi(); renderDailyFortune(); generateLuckyInfo(); if(typeof renderZiweiFunZone==='function') try{renderZiweiFunZone();}catch(e){} if(typeof renderJyotishFunZone==='function') try{renderJyotishFunZone();}catch(e){} if(typeof renderNameFunZone==='function') try{renderNameFunZone();}catch(e){} if(typeof renderNatalFunZone==='function') try{renderNatalFunZone();}catch(e){} },
     ()=>{
-      // ★ 自動模式：不啟動梅花，保持 null
-      S.meihua = null;
+      // ★ 自動模式：時間起卦（正統梅花時間法）
+      try {
+        const now = new Date();
+        const ny=now.getFullYear(), nmo=now.getMonth()+1, nd=now.getDate();
+        const nh=now.getHours(), nmi=now.getMinutes();
+        let lunarY=ny, lunarM=nmo, lunarD=nd;
+        try {
+          if(typeof Lunar!=='undefined' && Lunar.Solar){
+            const solar=Lunar.Solar.fromYmd(ny,nmo,nd);
+            const lunar=solar.getLunar();
+            lunarY=lunar.getYear(); lunarM=lunar.getMonth(); lunarD=lunar.getDay();
+          }
+        } catch(e){ console.warn('[AutoMH] 農曆轉換失敗，使用西曆:', e); }
+        const yzhi=((lunarY-4)%12+12)%12+1;
+        const shichen=Math.floor(((nh+1)%24)/2)+1;
+        const upNum=(yzhi+lunarM+lunarD)%8||8;
+        const loNum=(yzhi+lunarM+lunarD+shichen)%8||8;
+        const dongNum=(yzhi+lunarM+lunarD+shichen)%6||6;
+        const mhResult = calcMH(upNum, loNum, dongNum);
+        S.meihua = mhResult;
+        // calcMH 內部用 'general'，這裡用實際問題類型重跑 output layer
+        try { if(typeof buildMeihuaOutput==='function') buildMeihuaOutput(S.meihua, S.form.type||'general'); } catch(e){}
+        try { if(typeof enhanceMeihua==='function') enhanceMeihua(S.meihua); } catch(e){ console.warn('[AutoMH] enhanceMeihua:', e); }
+        console.log('[AutoMode] 梅花時間起卦完成:', S.meihua.ben.m);
+      } catch(e) {
+        console.error('[AutoMode] 梅花起卦失敗:', e);
+        S.meihua = null;
+      }
     },
     ()=>{
-      // ★ 自動模式：不啟動塔羅，保持空
-      drawnCards = [];
-      S.tarot = {drawn:[], spread:[]};
+      // ★ 自動模式：種子洗牌 + 自動抽10張（凱爾特十字）
+      try {
+        const _rng = makeSeededRng(S.form.bdate, S.form.gender, S.form.type, S.form.question);
+        const shuffled = seededShuffle(TAROT, _rng);
+        const autoDrawn = [];
+        for(let i=0; i<10; i++){
+          const card = shuffled[i];
+          // 用同一 seed 決定正逆位（與手動模式一致）
+          const _r2 = makeSeededRng(S.form.bdate, S.form.gender, S.form.type, S.form.question);
+          for(let _k=0; _k<=card.id; _k++) _r2();
+          const isUp = _r2() > 0.35;
+          autoDrawn.push({...card, isUp, pos: CELTIC_POS[i]});
+        }
+        drawnCards = autoDrawn;
+        S.tarot = {drawn: autoDrawn, spread: autoDrawn};
+        try { if(typeof enhanceTarot==='function') enhanceTarot(S.tarot); } catch(e){ console.warn('[AutoTarot] enhanceTarot:', e); }
+        console.log('[AutoMode] 塔羅自動抽牌完成:', autoDrawn.map(c=>c.n+(c.isUp?'正':'逆')).join(', '));
+      } catch(e) {
+        console.error('[AutoMode] 塔羅抽牌失敗:', e);
+        drawnCards = [];
+        S.tarot = {drawn:[], spread:[]};
+      }
     },
     ()=>{
       // 西洋星盤計算
@@ -727,8 +772,8 @@ function submitStep0Fast(){
     }
   ];
 
-  const statusTexts=['排八字四柱命盤…','排紫微斗數命盤…','梅花易數（手動模式啟用）','塔羅牌（手動模式啟用）','西洋占星星盤…','吠陀占星計算…','五維融合分析…'];
-  const subTexts=['出生資料 × 個性與事件力量','人生12個領域 × 4種關鍵能量','自動模式下不啟動，請用手動模式','自動模式下不啟動，請用手動模式','行星 × 生活領域 × 彼此互動','八字 × 紫微 × 星盤 × 吠陀 × 姓名'];
+  const statusTexts=['排八字四柱命盤…','排紫微斗數命盤…','梅花易數時間起卦…','塔羅牌自動抽牌…','西洋占星星盤…','吠陀占星計算…','七維融合分析…'];
+  const subTexts=['出生資料 × 個性與事件力量','人生12個領域 × 4種關鍵能量','當下時間 × 卦象捕捉問題本質','種子洗牌 × 凱爾特十字牌陣','行星 × 生活領域 × 彼此互動','八字 × 紫微 × 梅花 × 塔羅 × 星盤 × 吠陀 × 姓名'];
   const dimIds=['ld-bazi','ld-ziwei','ld-meihua','ld-tarot','ld-natal','ld-name'];
   const TOTAL_MS=3600;
 
