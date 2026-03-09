@@ -27881,3 +27881,297 @@ renderTarot = function(){
     }
   };
 })();
+// ═══════════════════════════════════════════════════════════════
+// 離線模式升級：命盤摘要卡 + AI 英雄按鈕
+// 把「答非所問的離線回答」替換成「命盤數據摘要 + AI 核心入口」
+// ═══════════════════════════════════════════════════════════════
+(function() {
+  'use strict';
+
+  // ══ 工具：從 S 提取命盤摘要 ══
+  function _getDataSnapshot() {
+    var snap = { systems: [], score: 0, dir: 'mid', question: '', type: '' };
+    try { snap.question = (S.form && S.form.question) ? S.form.question : ''; } catch(e) {}
+    try { snap.type = (S.form && S.form.type) ? S.form.type : 'general'; } catch(e) {}
+    try { if (S._uResult && S._uResult.comb) { snap.score = S._uResult.comb.score || 0; snap.dir = S._uResult.comb.finalDir || 'mid'; } } catch(e) {}
+
+    // 八字
+    try { if (S.bazi) {
+      var b = S.bazi, p = b.pillars;
+      var line = p ? (p.year||'')+' '+( p.month||'')+' '+(p.day||'')+' '+(p.hour||'') : '已排';
+      var ex = [];
+      if (b.dm) ex.push('日主 '+b.dm);
+      if (b.fav && b.fav.length) ex.push('喜 '+(Array.isArray(b.fav)?b.fav.join(''):b.fav));
+      snap.systems.push({name:'八字',icon:'☯',data:line.trim(),sub:ex.join('　')});
+    }} catch(e) {}
+
+    // 紫微
+    try { if (S.ziwei && S.ziwei.palaces) {
+      var ming = S.ziwei.palaces[0];
+      var stars = ming && ming.stars ? ming.stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name;}).join('、') : '';
+      var sub = [];
+      if (S.ziwei.mingZhu) sub.push('命主 '+S.ziwei.mingZhu);
+      if (S.ziwei.wuxingJu) sub.push(S.ziwei.wuxingJu);
+      snap.systems.push({name:'紫微',icon:'⬡',data:stars?'命宮：'+stars:'命盤已排',sub:sub.join('　')});
+    }} catch(e) {}
+
+    // 梅花
+    try { if (S.meihua && S.meihua.ty) {
+      var mh = S.meihua;
+      snap.systems.push({name:'梅花',icon:'☰',data:(mh.ben&&mh.ben.n||'')+' → '+(mh.bian&&mh.bian.n||''),sub:'體用：'+(mh.ty.r||'')});
+    }} catch(e) {}
+
+    // 塔羅
+    try { if (S.tarot && S.tarot.drawn && S.tarot.drawn.length >= 3) {
+      var d = S.tarot.drawn;
+      var cn = d.slice(0,3).map(function(c){return (c.name||c.n)+(c.isUp?'↑':'↓');}).join('、');
+      snap.systems.push({name:'塔羅',icon:'✦',data:cn+(d.length>3?' …共'+d.length+'張':''),sub:''});
+    }} catch(e) {}
+
+    // 西占
+    try { if (S.natal && S.natal.planets) {
+      var n = S.natal;
+      var sun = n.planets['太陽']?n.planets['太陽'].sign:'';
+      var moon = n.planets['月亮']?n.planets['月亮'].sign:'';
+      var asc = n.ascSign?n.ascSign.name:'';
+      snap.systems.push({name:'西占',icon:'☉',data:'☉'+sun+'　☽'+moon+'　ASC '+asc,sub:''});
+    }} catch(e) {}
+
+    // 吠陀
+    try { if (S.jyotish) {
+      var j = S.jyotish, pts = [];
+      if (j.lagnaSign) pts.push('Lagna '+j.lagnaSign);
+      if (j.currentMD&&j.currentMD.lord) pts.push('主運 '+j.currentMD.lord);
+      if (j.janmaNakshatra) pts.push('月宿 '+(j.janmaNakshatra.zh||j.janmaNakshatra.en||''));
+      snap.systems.push({name:'吠陀',icon:'🕉',data:pts.join('　'),sub:''});
+    }} catch(e) {}
+
+    // 姓名
+    try { if (S.nameResult) {
+      var nr = S.nameResult;
+      var lv = nr.sanCaiLevel||'';
+      var rg = nr.renGe?(nr.renGe.fortune?nr.renGe.fortune.level:''):'';
+      snap.systems.push({name:'姓名',icon:'📛',data:'三才 '+lv+(rg?'　人格 '+rg:''),sub:''});
+    }} catch(e) {}
+
+    return snap;
+  }
+
+  // ══ 渲染命盤摘要卡 ══
+  function _renderDataCard(snap) {
+    var h = '';
+    h += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem">';
+    h += '<span style="font-size:1.05rem">☽</span>';
+    h += '<span style="font-size:.86rem;font-weight:700;color:var(--c-gold)">七套系統已計算完成</span>';
+    h += '</div>';
+
+    if (snap.systems.length) {
+      h += '<div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.8rem">';
+      snap.systems.forEach(function(sys) {
+        h += '<div style="display:flex;align-items:baseline;gap:.5rem;padding:.3rem .5rem;background:rgba(255,255,255,.025);border-radius:6px;border-left:2px solid rgba(212,175,55,.3)">';
+        h += '<span style="font-size:.73rem;min-width:2.6rem;color:var(--c-gold);font-weight:600">'+sys.icon+' '+sys.name+'</span>';
+        h += '<span style="font-size:.8rem;color:var(--c-text,#e0d8c8)">'+sys.data+'</span>';
+        if (sys.sub) h += '<span style="font-size:.7rem;color:var(--c-text-dim);margin-left:auto;white-space:nowrap">'+sys.sub+'</span>';
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+
+    // 交叉信號標籤
+    try { if (S._uResult&&S._uResult.comb&&S._uResult.comb.topTags&&S._uResult.comb.topTags.length) {
+      var tags = S._uResult.comb.topTags.slice(0,4);
+      h += '<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.7rem">';
+      tags.forEach(function(t) {
+        var c = t.direction==='pos'?'rgba(74,222,128,.7)':t.direction==='neg'?'rgba(248,113,113,.7)':'rgba(251,191,36,.7)';
+        var bg = t.direction==='pos'?'rgba(74,222,128,.08)':t.direction==='neg'?'rgba(248,113,113,.08)':'rgba(251,191,36,.08)';
+        h += '<span style="display:inline-block;padding:2px 7px;border-radius:10px;font-size:.68rem;color:'+c+';background:'+bg+';border:1px solid '+c.replace(',.7)',',.2)')+'">'+
+          (t.direction==='pos'?'↑':t.direction==='neg'?'↓':'~')+' '+t.tag+'</span>';
+      });
+      h += '</div>';
+    }} catch(e) {}
+
+    h += '<div style="border-top:1px solid rgba(212,175,55,.15);margin:.5rem 0"></div>';
+    h += '<div style="text-align:center;padding:.2rem 0">';
+    h += '<p style="font-size:.84rem;color:var(--c-text-dim);margin:0 0 .15rem;line-height:1.6">數據已備齊，讓 AI 老師幫你整合解讀</p>';
+    h += '<p style="font-size:.7rem;color:var(--c-text-muted);margin:0">七套系統的結果，由 AI 翻譯成你聽得懂的答案</p>';
+    h += '</div>';
+    return h;
+  }
+
+  // ══ 渲染 AI 英雄按鈕 ══
+  function _renderHeroBtn(admin, used) {
+    var h = '';
+    h += '<div style="text-align:center;padding:.8rem 0 .3rem">';
+    h += '<button id="ai-deep-btn" onclick="_triggerAIDeep()" style="'+
+      'display:inline-flex;align-items:center;justify-content:center;gap:.5rem;'+
+      'width:100%;max-width:340px;'+
+      'background:linear-gradient(135deg,rgba(139,92,246,.25),rgba(212,175,55,.18),rgba(139,92,246,.12));'+
+      'color:#fff;border:2px solid rgba(212,175,55,.5);'+
+      'padding:1.1rem 2rem;border-radius:14px;font-size:1.05rem;font-weight:700;'+
+      'cursor:pointer;transition:all .3s;font-family:inherit;'+
+      'box-shadow:0 4px 24px rgba(139,92,246,.3),0 2px 10px rgba(212,175,55,.15);'+
+      'letter-spacing:.05em;'+
+      (used?'opacity:.4;pointer-events:none;':'animation:ai-hero-glow 2.5s ease-in-out infinite;')+'" '+
+      (used?'disabled':'')+'>'+
+      (used?'🔒 今日解讀已開啟':'<span style="font-size:1.2rem">🌙</span> 開啟深層解讀')+
+    '</button>';
+    h += '<div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.45rem;opacity:.55">'+
+      (admin?'👑 管理員模式・無限次':used?'每人每日 1 次・剩餘 0 次・00:00 重置':'✦ 免費・每人每日 1 次')+
+    '</div></div>';
+    h += '<style>@keyframes ai-hero-glow{0%,100%{box-shadow:0 4px 24px rgba(139,92,246,.3),0 2px 10px rgba(212,175,55,.15)}50%{box-shadow:0 8px 36px rgba(139,92,246,.5),0 4px 16px rgba(212,175,55,.3)}}</style>';
+    h += '<div id="ai-deep-result" style="display:none"></div>';
+    return h;
+  }
+
+  // ══ 覆寫 _injectAIButton — 接管 r-answer ══
+  _injectAIButton = function() {
+    var answerEl = document.getElementById('r-answer');
+    var wrapEl = document.getElementById('ai-deep-wrap');
+    if (!answerEl) return;
+
+    var admin = _aiIsAdmin();
+    var used = !admin && _aiUsedToday();
+
+    // 保存離線回答（供 Google Forms 通知）
+    var txt = answerEl.innerText || '';
+    if (txt.length > 5) answerEl.setAttribute('data-offline-answer', txt.substring(0,800));
+
+    // 組裝新內容
+    var snap = _getDataSnapshot();
+    answerEl.innerHTML = _renderDataCard(snap) + _renderHeroBtn(admin, used);
+
+    // 隱藏舊的 ai-deep-wrap
+    if (wrapEl) wrapEl.style.display = 'none';
+  };
+
+  // ══ 覆寫 _triggerAIDeep — AI 結果直接寫回 r-answer ══
+  _triggerAIDeep = async function() {
+    var btn = document.getElementById('ai-deep-btn');
+    var resultDiv = document.getElementById('ai-deep-result');
+    if (!btn || !resultDiv) return;
+
+    var admin = _aiIsAdmin();
+    btn.disabled = true;
+    btn.innerHTML = '<span style="font-size:1.2rem">☽</span> 正在翻閱你的命盤…';
+    btn.style.opacity = '0.6';
+    btn.style.cursor = 'wait';
+    btn.style.animation = 'none';
+
+    try{ var sticky=document.getElementById('sticky-cta'); if(sticky){sticky.classList.remove('visible');sticky.style.display='none';}}catch(_e){}
+
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="text-align:center;padding:1.5rem 1rem">'+
+      '<div style="position:relative;width:50px;height:50px;margin:0 auto .7rem">'+
+        '<div style="position:absolute;inset:0;border:2px solid rgba(212,175,55,.1);border-radius:50%"></div>'+
+        '<div style="position:absolute;inset:0;border:2px solid transparent;border-top-color:var(--c-gold,#d4af37);border-radius:50%;animation:spin 1.2s linear infinite"></div>'+
+        '<div style="position:absolute;inset:6px;border:2px solid transparent;border-bottom-color:rgba(139,92,246,.5);border-radius:50%;animation:spin 2s linear infinite reverse"></div>'+
+        '<div style="position:absolute;inset:50%;transform:translate(-50%,-50%);font-size:1rem">☽</div>'+
+      '</div>'+
+      '<div style="font-size:.88rem;color:var(--c-gold);font-weight:600;margin-bottom:.2rem">正在為你翻閱命盤…</div>'+
+      '<div id="ai-loading-phase" style="font-size:.75rem;color:var(--c-text-dim);transition:opacity .3s">交叉比對七套系統中</div>'+
+    '</div>';
+
+    var phases=['交叉比對七套系統中','閱讀八字與紫微命盤…','解讀梅花易數卦象…','翻閱塔羅牌面訊息…','對照西洋與吠陀星盤…','整合交叉訊號，找出關鍵…','正在為你組織語言…'];
+    var pi=0, pt=setInterval(function(){
+      pi++; if(pi>=phases.length) pi=phases.length-1;
+      var el=document.getElementById('ai-loading-phase');
+      if(el){el.style.opacity='0';setTimeout(function(){if(el){el.textContent=phases[pi];el.style.opacity='1';}},300);}
+    },3500);
+
+    try {
+      var payload = _buildPayload();
+      var body = { payload: payload };
+      if (window._JY_ADMIN_TOKEN) body.admin_token = window._JY_ADMIN_TOKEN;
+      var resp = await fetch(AI_WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      var data = await resp.json();
+      clearInterval(pt);
+      if (!resp.ok) throw Object.assign({status:resp.status}, data);
+      if (!admin) _aiMarkUsed();
+
+      var r = data.result;
+      if (!r) throw new Error('回傳為空');
+
+      // ── 渲染 AI 結果到 r-answer ──
+      var answerEl = document.getElementById('r-answer');
+      if (!answerEl) return;
+
+      function _esc(s){ return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
+
+      var ai = '';
+      ai += '<div class="ai-spotlight" style="padding:1.2rem;border-radius:14px">';
+      ai += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem">';
+      ai += '<span style="font-size:1.1rem">🌙</span>';
+      ai += '<span style="font-size:.92rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解讀</span>';
+      if (admin&&data.usage) ai += '<span style="font-size:.55rem;color:var(--c-text-dim);margin-left:auto;opacity:.4">['+data.usage.input_tokens+'in/'+data.usage.output_tokens+'out ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+']</span>';
+      ai += '</div>';
+
+      if (typeof r==='object' && r!==null) {
+        if (r.directAnswer) {
+          ai += '<div style="font-size:1.1rem;font-weight:700;line-height:1.7;color:var(--c-gold-pale,#f5e6b8);margin-bottom:.8rem;padding-bottom:.6rem;border-bottom:1px solid rgba(212,175,55,.15)">'+_esc(r.directAnswer)+'</div>';
+        }
+        var mainText = r.answer||'';
+        if (mainText) {
+          mainText.split(/\n\n+/).forEach(function(para,idx){
+            para=para.trim(); if(!para) return;
+            var escaped = para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+            if (idx===0 && !r.directAnswer) {
+              ai += '<div style="font-size:1.02rem;font-weight:600;line-height:1.9;color:var(--c-gold-pale,#f5e6b8);margin-bottom:.7rem">'+escaped+'</div>';
+            } else {
+              ai += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.6rem">'+escaped+'</div>';
+            }
+          });
+        }
+        if (r.timing) {
+          ai += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(251,191,36,.06);border-left:3px solid rgba(251,191,36,.4);border-radius:6px;font-size:.85rem;color:var(--c-text-dim);line-height:1.7"><span style="color:var(--c-gold);font-weight:600">⏳ 時機</span>　'+_esc(r.timing)+'</div>';
+        }
+        var closing = r.oneliner||r.summary||'';
+        if (closing) {
+          ai += '<div style="margin-top:.8rem;text-align:center;color:var(--c-gold);font-weight:700;line-height:1.8;font-size:.95rem">'+_esc(closing)+'</div>';
+        }
+      } else {
+        var txt2 = String(r||'').replace(/【[^】]*】\s*/g,'').replace(/\n{3,}/g,'\n\n').trim();
+        txt2.split(/\n\n+/).forEach(function(para,idx){
+          para=para.trim(); if(!para) return;
+          var escaped = para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+          ai += '<div style="font-size:'+(idx===0?'1rem':'0.92rem')+';'+(idx===0?'font-weight:600;color:var(--c-gold-pale,#f5e6b8)':'color:var(--c-text,#e0d8c8)')+';line-height:1.9;margin-bottom:.6rem">'+escaped+'</div>';
+        });
+      }
+
+      if (admin && data.symbols) {
+        ai += '<details style="margin-top:.6rem"><summary style="font-size:.6rem;color:#a78bfa;opacity:.4;cursor:pointer">[Admin] Step1 Symbols</summary>';
+        ai += '<pre style="font-size:.55rem;color:#a78bfa;opacity:.5;white-space:pre-wrap;max-height:200px;overflow:auto">'+JSON.stringify(data.symbols,null,2).replace(/</g,'&lt;')+'</pre></details>';
+      }
+      if (admin) { try {
+        var _rk=Object.keys(payload.readings||{});
+        var _rs=_rk.map(function(k){return k+':'+JSON.stringify(payload.readings[k]).length;});
+        ai += '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.4;word-break:break-all">[payload] '+JSON.stringify(payload).length+'字 | readings: '+_rs.join(', ')+'</div>';
+      } catch(e){} }
+
+      ai += '</div>';
+      answerEl.innerHTML = ai;
+
+      var parentCard = answerEl.closest('.card');
+      if (parentCard) parentCard.style.borderLeftColor = 'rgba(139,92,246,.5)';
+
+    } catch(err) {
+      clearInterval(pt);
+      console.error('[AI]', err);
+      if (err.status===429 && !admin) {
+        try{_aiMarkUsed();}catch(_e){}
+        btn.innerHTML='🔒 今日解讀已使用'; btn.style.opacity='0.4'; btn.disabled=true; btn.style.pointerEvents='none';
+        resultDiv.innerHTML='<div style="text-align:center;padding:.6rem;color:var(--c-gold);font-size:.8rem">今天這題已看過・00:00 後可再看 1 次</div>';
+      } else {
+        btn.disabled=false;
+        btn.innerHTML=admin?'<span style="font-size:1.2rem">🌙</span> 重試（Admin）':'<span style="font-size:1.2rem">🌙</span> 重試深度解讀';
+        btn.style.opacity='1'; btn.style.cursor='pointer'; btn.style.pointerEvents='auto';
+        btn.style.animation='ai-hero-glow 2.5s ease-in-out infinite';
+        resultDiv.innerHTML='<div style="text-align:center;padding:.6rem;color:#f87171;font-size:.78rem">'+
+          (admin&&err.status===429?'Worker 429 但你是管理員，可重試':'暫時無法使用，請稍後再試')+
+          (admin?'<br><span style="font-size:.58rem;opacity:.4">[Debug] '+(err.status||'')+' '+(err.error||err.detail||err.message||'')+'</span>':'')+
+        '</div>';
+      }
+    }
+  };
+
+  console.log('[Patch] 離線模式已升級：命盤摘要卡 + AI 英雄按鈕');
+})();
