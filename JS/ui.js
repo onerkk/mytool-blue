@@ -4564,7 +4564,7 @@ showAuraResult = function(){
           'box-shadow:0 0 30px rgba(212,175,55,.08),inset 0 0 20px rgba(212,175,55,.03);' +
           'letter-spacing:.08em;' +
           'animation:home-cta-breathe 3s ease-in-out infinite">' +
-          '🌙 問一個問題' +
+          '🌙 開始解讀' +
         '</button>'
       ) +
 

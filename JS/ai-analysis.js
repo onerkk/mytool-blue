@@ -28083,9 +28083,20 @@ renderTarot = function(){
 
     // 5. 可能性進度條（r-pfill 等）已在「為什麼這樣判斷」裡面，隨父元素隱藏
 
-    // 6. 水晶處方保留（跟 AI 不矛盾，是獨立推薦）
-    // 7. quick-shop 保留（商業 CTA）
+    // 6. quick-shop（推薦水晶簡化版 — 跟完整水晶處方重複）
+    var qsEl = document.getElementById('quick-shop');
+    if (qsEl) qsEl.style.display = 'none';
+    // 7. quick-shop 保留（商業 CTA）— 已隱藏
     // 8. feedback 保留
+
+    // 9. 「想再測一次」— API 模式下不提供重複測試（額度限制）
+    var shareGate = document.getElementById('share-gate');
+    if (shareGate) shareGate.style.display = 'none';
+    // discount-reveal（折扣碼）
+    var discountReveal = document.getElementById('discount-reveal');
+    if (discountReveal) discountReveal.style.display = 'none';
+
+    // 10. 分享存圖 + 趣味功能 → 保留（曝光管道 + 互動黏性）
   }
 
   // ══ 覆寫 _injectAIButton — 隱藏所有離線區塊 + 自動觸發 AI ══
@@ -28319,6 +28330,158 @@ renderTarot = function(){
       }
     }
   };
+
+  // ══ 覆寫 generateResultCard — AI 風格分享圖 ══
+  var _origGenerateCard = (typeof generateResultCard === 'function') ? generateResultCard : null;
+
+  generateResultCard = function() {
+    var canvas = document.createElement('canvas');
+    var W = 750, H = 1334;
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext('2d');
+
+    // ── 背景：深色漸層 ──
+    var grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, '#1a0808'); grad.addColorStop(0.4, '#2a0f0f'); grad.addColorStop(1, '#0d0404');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+
+    // ── 裝飾邊框 ──
+    ctx.strokeStyle = 'rgba(212,175,55,0.35)'; ctx.lineWidth = 2;
+    ctx.strokeRect(28, 28, W - 56, H - 56);
+    ctx.strokeStyle = 'rgba(212,175,55,0.1)'; ctx.lineWidth = 1;
+    ctx.strokeRect(40, 40, W - 80, H - 80);
+
+    // ── 頂部品牌 ──
+    ctx.fillStyle = '#D4AF37'; ctx.font = 'bold 28px "Noto Serif TC",serif'; ctx.textAlign = 'center';
+    ctx.fillText('☽ 靜月之光', W / 2, 85);
+    ctx.font = '14px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.fillText('七套命理交叉驗證', W / 2, 112);
+
+    // ── 金色分隔線 ──
+    function _goldLine(y) {
+      var g = ctx.createLinearGradient(60, y, W - 60, y);
+      g.addColorStop(0, 'transparent'); g.addColorStop(0.5, 'rgba(212,175,55,0.5)'); g.addColorStop(1, 'transparent');
+      ctx.strokeStyle = g; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(W - 60, y); ctx.stroke();
+    }
+    _goldLine(130);
+
+    // ── 問題 ──
+    var question = (S.form && S.form.question) ? S.form.question : '綜合運勢';
+    var typeMap = { love: '感情', career: '事業', wealth: '財運', health: '健康', relationship: '人際', family: '家庭', general: '綜合' };
+    var typeLabel = typeMap[(S.form && S.form.type) || 'general'] || '綜合';
+    ctx.textAlign = 'center'; ctx.font = '16px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(212,175,55,0.7)';
+    ctx.fillText('【' + typeLabel + '】', W / 2, 160);
+    ctx.font = '20px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    _wrapCenter(ctx, question, W / 2, 192, W - 140, 28);
+
+    // ── AI 回答摘要 ──
+    var aiEl = document.querySelector('#r-answer .ai-spotlight');
+    var y = 270;
+
+    if (aiEl) {
+      // directAnswer
+      var daEl = aiEl.querySelector('div[style*="border-bottom"]');
+      if (daEl && daEl.textContent.trim()) {
+        ctx.fillStyle = 'rgba(212,175,55,0.08)';
+        roundRect(ctx, 50, y - 10, W - 100, 70, 12); ctx.fill();
+        ctx.strokeStyle = 'rgba(212,175,55,0.3)'; ctx.stroke();
+        ctx.font = 'bold 24px "Noto Serif TC",serif'; ctx.fillStyle = '#D4AF37'; ctx.textAlign = 'center';
+        _wrapCenter(ctx, daEl.textContent.trim(), W / 2, y + 25, W - 140, 30);
+        y += 90;
+      }
+
+      // 主文段落（取前 400 字）
+      var paraEls = aiEl.querySelectorAll('div[style*="line-height:1.9"]');
+      if (paraEls.length) {
+        ctx.font = '17px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.textAlign = 'left';
+        var fullText = '';
+        paraEls.forEach(function(p) { fullText += p.textContent.trim() + '\n\n'; });
+        fullText = fullText.substring(0, 500).trim();
+        if (fullText.length >= 500) fullText += '…';
+        y = _wrapLeft(ctx, fullText, 65, y + 10, W - 130, 26);
+        y += 15;
+      }
+
+      // timing
+      var timingEl = aiEl.querySelector('div[style*="border-left:3px solid rgba(251"]');
+      if (timingEl && timingEl.textContent.trim()) {
+        ctx.fillStyle = 'rgba(251,191,36,0.06)';
+        roundRect(ctx, 50, y, W - 100, 50, 8); ctx.fill();
+        ctx.strokeStyle = 'rgba(251,191,36,0.2)'; ctx.stroke();
+        ctx.font = '15px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(251,191,36,0.8)'; ctx.textAlign = 'left';
+        var timingText = timingEl.textContent.trim().substring(0, 80);
+        ctx.fillText(timingText, 65, y + 30);
+        y += 65;
+      }
+    } else {
+      // fallback: 沒有 AI 結果，用離線資料
+      if (_origGenerateCard) return _origGenerateCard();
+      ctx.font = '18px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.textAlign = 'center';
+      ctx.fillText('（等待解讀中…）', W / 2, y + 30);
+      y += 80;
+    }
+
+    // ── 水晶推薦（簡要）──
+    if (S.bazi && S.bazi.fav) {
+      y = Math.max(y, 900);
+      _goldLine(y);
+      y += 25;
+      ctx.font = 'bold 18px "Noto Sans TC",sans-serif'; ctx.fillStyle = '#D4AF37'; ctx.textAlign = 'center';
+      ctx.fillText('💎 推薦能量：' + S.bazi.fav.slice(0, 2).join('+') + '行', W / 2, y + 5);
+      y += 35;
+    }
+
+    // ── 底部 CTA ──
+    y = Math.max(y, 1080);
+    _goldLine(y);
+    y += 30;
+    ctx.fillStyle = 'rgba(212,175,55,0.06)';
+    roundRect(ctx, W / 2 - 180, y, 360, 90, 14); ctx.fill();
+    ctx.strokeStyle = 'rgba(212,175,55,0.25)'; ctx.stroke();
+    ctx.font = 'bold 18px "Noto Serif TC",serif'; ctx.fillStyle = '#D4AF37'; ctx.textAlign = 'center';
+    ctx.fillText('🌙 免費測你的命理結果', W / 2, y + 30);
+    ctx.font = '13px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillText('jingyue.uk', W / 2, y + 55);
+    ctx.font = '12px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fillText('八字 · 紫微 · 梅花 · 塔羅 · 星盤 · 吠陀 · 姓名', W / 2, y + 75);
+
+    // ── Footer ──
+    ctx.font = '11px "Noto Sans TC",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.textAlign = 'center';
+    ctx.fillText('🛒 蝦皮: tw.shp.ee/2n5Mo2w ｜ 📦 7-11賣貨便', W / 2, H - 45);
+    ctx.fillText(new Date().toLocaleDateString('zh-TW') + ' 生成', W / 2, H - 28);
+
+    return canvas;
+  };
+
+  // 輔助：置中換行
+  function _wrapCenter(ctx, text, cx, y, maxW, lineH) {
+    var chars = Array.from(text); var line = '';
+    for (var i = 0; i < chars.length; i++) {
+      var test = line + chars[i];
+      if (ctx.measureText(test).width > maxW && line) {
+        ctx.fillText(line, cx, y); y += lineH; line = chars[i];
+      } else { line = test; }
+    }
+    if (line) ctx.fillText(line, cx, y);
+    return y + lineH;
+  }
+
+  // 輔助：左對齊換行（回傳結束 y）
+  function _wrapLeft(ctx, text, x, y, maxW, lineH) {
+    var lines = text.split('\n');
+    for (var li = 0; li < lines.length; li++) {
+      var chars = Array.from(lines[li]); var line = '';
+      for (var i = 0; i < chars.length; i++) {
+        var test = line + chars[i];
+        if (ctx.measureText(test).width > maxW && line) {
+          ctx.fillText(line, x, y); y += lineH; line = chars[i];
+        } else { line = test; }
+      }
+      if (line) { ctx.fillText(line, x, y); y += lineH; }
+      if (li < lines.length - 1 && !lines[li]) y += lineH * 0.3; // 段落間距
+    }
+    return y;
+  }
 
   console.log('[Patch v2] 離線模式已升級：命盤摘要卡 + AI 英雄按鈕');
 })();
