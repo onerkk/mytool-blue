@@ -17295,32 +17295,32 @@ function analyzeBaziTags(bazi, type) {
     var spouseIsFav = isMale ? caiIsFav : guanIsFav;
     var spouseTou = isMale ? caiTouGan : elInGan(guanEl);
 
-    tags.push({ sys: 'bazi', tag: spouseIsFav ? 'spouse_xi' : 'spouse_ji', label: spouseName + (spouseIsFav ? '為喜用' : '為忌神'), category: 'structure', direction: spouseIsFav ? 'pos' : 'neg', weight: 5, detail: (isMale ? '男命看財星為配偶' : '女命看官殺為配偶') + '，' + (spouseIsFav ? '遇到的對象大機率正面影響' : '容易遇到壓力型對象') });
+    tags.push({ sys: 'bazi', tag: spouseIsFav ? 'spouse_xi' : 'spouse_ji', label: spouseName + (spouseIsFav ? '為喜用' : '為忌神'), category: 'structure', direction: spouseIsFav ? 'pos' : 'neg', weight: 5, detail: spouseIsFav ? '你天生容易吸引到對你好的人，遇到的對象通常會讓你的生活變得更好，是那種越相處越舒服的類型' : '你容易被某種類型的人吸引，但這種人往往給你帶來壓力多過幸福。你需要學會分辨：讓你心動的人，不一定是對你好的人' });
     if (spousePct > 15) {
-      tags.push({ sys: 'bazi', tag: 'spouse_wang', label: spouseName + '旺（' + spousePct + '%）', category: 'structure', direction: spouseIsFav ? 'pos' : 'neutral', weight: 3, detail: '配偶星能量充足，感情機會不缺' });
+      tags.push({ sys: 'bazi', tag: 'spouse_wang', label: spouseName + '旺（' + spousePct + '%）', category: 'structure', direction: spouseIsFav ? 'pos' : 'neutral', weight: 3, detail: spouseIsFav ? '你的感情機會其實不少，問題從來不是沒有人喜歡你，而是你自己太挑或太猶豫' : '身邊不缺追求者，但對方的質量參差不齊，要小心被表面條件迷惑' });
     } else if (spousePct < 8) {
-      tags.push({ sys: 'bazi', tag: 'spouse_ruo', label: spouseName + '弱（' + spousePct + '%）', category: 'structure', direction: 'neg', weight: 3, detail: '配偶星力量不足，緣分來得晚或需主動經營' });
+      tags.push({ sys: 'bazi', tag: 'spouse_ruo', label: spouseName + '弱（' + spousePct + '%）', category: 'structure', direction: 'neg', weight: 3, detail: '你不是沒有桃花，而是緣分來得比別人慢。不要因此焦慮或降低標準，你的感情是慢熱型的，一旦來了反而穩' });
     }
     if (spouseTou) {
-      tags.push({ sys: 'bazi', tag: 'spouse_tou', label: spouseName + '透出天干', category: 'structure', direction: 'pos', weight: 2, detail: '配偶星透干，感情緣分明顯' });
+      tags.push({ sys: 'bazi', tag: 'spouse_tou', label: spouseName + '透出天干', category: 'structure', direction: 'pos', weight: 2, detail: '你的桃花是明面上的那種，不是暗戀或曖昧，而是會有人明確地對你示好或表態' });
     }
     var dayZhiEl = (typeof WX_Z !== 'undefined') ? WX_Z[dayZhi] : '';
     if (dayZhiEl) {
       var dayZhiIsFav = fav.includes(dayZhiEl);
-      tags.push({ sys: 'bazi', tag: dayZhiIsFav ? 'fuqi_gong_xi' : (unfav.includes(dayZhiEl) ? 'fuqi_gong_ji' : 'fuqi_gong_mid'), label: '日支（夫妻宮）' + dayZhi + (dayZhiIsFav ? '為喜用' : unfav.includes(dayZhiEl) ? '為忌神' : '中性'), category: 'structure', direction: dayZhiIsFav ? 'pos' : unfav.includes(dayZhiEl) ? 'neg' : 'neutral', weight: 3, detail: '夫妻宮代表婚姻品質' });
+      tags.push({ sys: 'bazi', tag: dayZhiIsFav ? 'fuqi_gong_xi' : (unfav.includes(dayZhiEl) ? 'fuqi_gong_ji' : 'fuqi_gong_mid'), label: '日支（夫妻宮）' + dayZhi + (dayZhiIsFav ? '為喜用' : unfav.includes(dayZhiEl) ? '為忌神' : '中性'), category: 'structure', direction: dayZhiIsFav ? 'pos' : unfav.includes(dayZhiEl) ? 'neg' : 'neutral', weight: 3, detail: dayZhiIsFav ? '你的婚姻體質不錯，跟另一半在一起會讓你更好，是互相加分的組合' : unfav.includes(dayZhiEl) ? '你的感情容易起伏，跟伴侶之間的磨合比一般人多，需要更多耐心和溝通' : '你的感情模式中等，不會太順也不會太差，關鍵看你怎麼經營' });
     }
     if (lnZhi && dayZhi && CHONG_MAP[lnZhi] === dayZhi) {
-      tags.push({ sys: 'bazi', tag: 'liunian_chong_ri', label: '流年沖日支（夫妻宮）', category: 'timing', direction: 'neg', weight: 4, detail: thisYear + '年' + lnZhi + '沖' + dayZhi + '，感情容易有變動' });
+      tags.push({ sys: 'bazi', tag: 'liunian_chong_ri', label: '流年沖日支（夫妻宮）', category: 'timing', direction: 'neg', weight: 4, detail: thisYear + '年你的感情會有明顯的變動——可能是突然出現新對象、也可能是現有關係出現轉折。不管哪種，這一年感情不會平靜' });
     }
-    if (shensha.includes('桃花')) tags.push({ sys: 'bazi', tag: 'taohua', label: '命帶桃花', category: 'structure', direction: 'pos', weight: 2, detail: '異性緣佳' });
-    if (shensha.includes('紅鸞')) tags.push({ sys: 'bazi', tag: 'hongluan', label: '紅鸞入命', category: 'structure', direction: 'pos', weight: 2, detail: '主婚姻喜事' });
-    if (shensha.includes('孤辰')) tags.push({ sys: 'bazi', tag: 'guchen', label: '孤辰入命', category: 'structure', direction: 'neg', weight: 2, detail: '個性獨立，感情需主動' });
-    if (shensha.includes('寡宿')) tags.push({ sys: 'bazi', tag: 'guasu', label: '寡宿入命', category: 'structure', direction: 'neg', weight: 2, detail: '感情態度保守被動' });
+    if (shensha.includes('桃花')) tags.push({ sys: 'bazi', tag: 'taohua', label: '命帶桃花', category: 'structure', direction: 'pos', weight: 2, detail: '你天生有吸引異性的特質，不是刻意的，就是自然而然會被注意到。這是優勢但也是風險——容易吸引到只看外表的人' });
+    if (shensha.includes('紅鸞')) tags.push({ sys: 'bazi', tag: 'hongluan', label: '紅鸞入命', category: 'structure', direction: 'pos', weight: 2, detail: '你的命格裡有「遇到對的人就會很快定下來」的特質，一旦動心就是認真的，不會只想玩玩' });
+    if (shensha.includes('孤辰')) tags.push({ sys: 'bazi', tag: 'guchen', label: '孤辰入命', category: 'structure', direction: 'neg', weight: 2, detail: '你的個性偏獨立，習慣一個人處理事情。這在感情裡會讓對方覺得你不需要他，你得學會適時示弱' });
+    if (shensha.includes('寡宿')) tags.push({ sys: 'bazi', tag: 'guasu', label: '寡宿入命', category: 'structure', direction: 'neg', weight: 2, detail: '你在感情上比較被動，不太會主動表達好感。如果你一直等對方先開口，很多機會就這樣過去了' });
     if (!isMale && shiPct > 20) {
-      tags.push({ sys: 'bazi', tag: 'shi_ke_guan', label: '食傷旺剋官（' + shiPct + '%）', category: 'structure', direction: 'neg', weight: 4, detail: '女命食傷剋官殺，對伴侶要求高，感情多波折' });
+      tags.push({ sys: 'bazi', tag: 'shi_ke_guan', label: '食傷旺剋官（' + shiPct + '%）', category: 'structure', direction: 'neg', weight: 4, detail: '你對另一半的要求很高，而且會忍不住想改造對方。你覺得是為他好，但對方感受到的是被嫌棄。這是你感情裡最大的課題' });
     }
     if (dyGod && (dyGod.includes('財') || dyGod.includes('官'))) {
-      tags.push({ sys: 'bazi', tag: 'dayun_spouse_love', label: '大運帶配偶星（' + dyGod + '）', category: 'timing', direction: 'pos', weight: 3, detail: '大運帶' + (isMale ? '財星' : '官殺') + '，感情事件機率較高' });
+      tags.push({ sys: 'bazi', tag: 'dayun_spouse_love', label: '大運帶配偶星（' + dyGod + '）', category: 'timing', direction: 'pos', weight: 3, detail: '你目前走的這步大運，感情事件發生的機率比平常高很多。不是說一定會遇到，但如果你願意走出去，緣分就在附近' });
     }
 
   } else if (type === 'career') {
@@ -24253,399 +24253,243 @@ function _injectAIButton() {
     '<div id="ai-deep-result" style="display:none"></div>';
 }
 
-// ── 頂規白話版 payload v5 — 最大化每個系統的細節提取 ──
+// ── _buildPayload v6 — 原始命理資料直送 AI ──
+// 不做白話翻譯，讓 AI 自己從結構化資料推導洞察
 function _buildPayload() {
   var q = S.form ? S.form.question : '';
   var ft = S.form ? S.form.type : 'general';
-  var b = S.bazi, zw = S.ziwei, mh = S.meihua, ta = S.tarot;
   var p = { question:q, focusType:ft, readings:{} };
   var f = S.form || {};
   p.name = f.name || f.fullName || '';
   p.gender = (f.gender || f.sex || '') === 'male' ? '男' : '女';
   p.birth = f.birth || f.birthDate || [f.year||f.y||'', f.month||f.m||'', f.day||f.d||'', f.hour||f.h||f.time||''].filter(Boolean).join('-');
-
-  var _EM = {木:'行動力/成長',火:'熱情/表現',土:'穩定/踏實',金:'決斷/原則',水:'智慧/靈活'};
-  function _elM(el){return _EM[el]||el;}
-  var _SM = {牡羊:'衝勁/開創',金牛:'穩定/享受',雙子:'靈活/溝通',巨蟹:'情感/安全感',獅子:'自信/表現',處女:'細節/分析',天秤:'合作/平衡',天蠍:'深度/掌控',射手:'自由/擴展',摩羯:'責任/目標',水瓶:'獨立/創新',雙魚:'直覺/敏感'};
-  function _sM(s){return _SM[s]||s;}
   var yr = new Date().getFullYear();
   function _s(v){return v==null?'':String(v);}
+  function _j(obj, maxLen){
+    try { var s = JSON.stringify(obj); return maxLen && s.length > maxLen ? s.substring(0, maxLen) + '...(截斷)' : s; }
+    catch(e){ return ''; }
+  }
 
-  // ═══ 1. 八字 ═══
-  if (b) { try {
-    var L = [];
-    var ep = b.ep || {};
+  // ═══ 1. 八字 — 原始結構化資料 ═══
+  if (S.bazi) { try {
+    var b = S.bazi;
     var dy = b.dayun ? b.dayun.find(function(d){return d.isCurrent;}) : null;
     var ln = dy && dy.liuNian ? dy.liuNian.find(function(l){return l.year===yr;}) : null;
-
-    L.push('日主' + _s(b.dm) + '（' + _elM(b.dmEl) + '型），' + (b.strong ? '能量充足適合主動' : '能量偏弱適合合作借力'));
-    if (b.selfRatio) L.push('自身能量佔' + b.selfRatio + '%');
-    if (b.specialStructure && b.specialStructure.desc) L.push('特殊格局：' + b.specialStructure.desc);
-    if (b.zhengGe && b.zhengGe.zh) L.push(b.zhengGe.zh);
-
-    // 十神
-    var tgAll = Object.entries(ep).filter(function(e){return e[1]>0;}).sort(function(a,c){return c[1]-a[1];});
-    var _TGM = {比肩:'同伴',劫財:'競爭',食神:'才華',傷官:'反叛衝勁',正財:'穩定收入',偏財:'意外之財',正官:'規範',七殺:'挑戰',正印:'貴人庇護',偏印:'獨特天賦'};
-    if (tgAll.length) L.push('人生能量：' + tgAll.slice(0,5).map(function(e){return (_TGM[e[0]]||e[0])+'('+Math.round(e[1])+')';}).join('、'));
-
-    // 喜忌
-    L.push('有利能量：' + (b.fav||[]).map(_elM).join('、') + '；不利：' + (b.unfav||[]).map(_elM).join('、'));
-    if (b.tiaohou) L.push('調候：' + b.tiaohou);
-
-    // 神煞
-    var allSS = (b.shensha||[]).slice(0,10);
-    if (b.extraShenSha) allSS = allSS.concat(b.extraShenSha.map(function(x){return typeof x==='string'?x:x.name;}));
-    var _SSM = {桃花:'異性緣旺',驛馬:'多動/變動',華蓋:'藝術/孤高',天乙貴人:'有貴人',文昌:'考運佳',羊刃:'剛烈',將星:'領導',祿神:'衣食無缺',紅鸞:'姻緣將至',天喜:'喜事',劫煞:'意外風險'};
-    if (allSS.length) L.push('命格特質：' + allSS.map(function(s){return _SSM[s]||s;}).join('、'));
-
-    // 地支
-    if (b.branchInteractions && b.branchInteractions.length) {
-      L.push('四柱互動：' + b.branchInteractions.slice(0,6).map(function(x){return x.desc+(x.score>0?'(利)':x.score<0?'(不利)':'');}).join('、'));
-    }
-
-    // 十神組合
-    if (b.tenGodCombos && b.tenGodCombos.length) L.push('十神格局：' + b.tenGodCombos.map(function(c){return c.zh||c.name;}).join('。'));
-    if (b.hiddenInteractions && b.hiddenInteractions.length) L.push('隱性互動：' + b.hiddenInteractions.slice(0,4).map(function(h){return h.zh||h.type+h.from+'→'+h.to;}).join('。'));
-
-    // 大運
-    if (dy) {
-      var dyS = dy.score||0;
-      L.push('目前大運：' + dy.gz + '（' + (dy.level||'') + '），走' + (dy.palaceName||'') + '。' +
-        (dyS>=3?'環境非常支持':dyS>=1?'平穩偏好':dyS>=-1?'平穩期':' 壓力期'));
-      if (dy.theme) L.push('十年主題：' + dy.theme);
-      if (dy.stars && dy.stars.length) L.push('大運星曜：' + dy.stars.join('、'));
-      if (dy.notes && dy.notes.length) L.push(dy.notes.slice(0,3).join('。'));
-    }
-
-    // 流年+未來
-    if (dy && dy.liuNian) {
-      var next3 = dy.liuNian.filter(function(l){return l.year>=yr && l.year<=yr+2;});
-      if (next3.length) L.push('近三年：' + next3.map(function(l){var s=l.score||0; return l.year+'年'+(s>=2?'好':s>=0?'穩':s>=-1?'壓力':'注意')+(l.notes&&l.notes.length?' ('+l.notes[0]+')':'');}).join('、'));
-    }
-    if (b.suiYunBingLin && b.suiYunBingLin.active && b.suiYunBingLin.zh) L.push(b.suiYunBingLin.zh);
-
-    // 流月
-    if (b.liuYue && b.liuYue.length) {
-      var gM = b.liuYue.filter(function(m){return m.label==='大吉'||m.label==='吉';}).map(function(m){return m.monthName;});
-      var bM = b.liuYue.filter(function(m){return m.label==='凶'||m.label==='大凶';}).map(function(m){return m.monthName;});
-      if (gM.length) L.push('有利月份：' + gM.join('、'));
-      if (bM.length) L.push('需注意：' + bM.join('、'));
-    }
-    if (b.nayin) L.push('命格：' + b.nayin);
-
-    p.readings.bazi = L.join('\n');
+    p.readings.bazi = {
+      四柱: b.pillars ? {年:b.pillars.year, 月:b.pillars.month, 日:b.pillars.day, 時:b.pillars.hour} : null,
+      日主: b.dm, 日主五行: b.dmEl, 身強弱: b.strong ? '身強' : '身弱',
+      同黨比例: b.selfRatio,
+      喜用神: b.fav, 忌神: b.unfav, 調候: b.tiaohou || null,
+      十神能量: b.ep || null,
+      神煞: b.shensha || [],
+      地支互動: (b.branchInteractions||[]).slice(0,8).map(function(x){return {類型:x.type, 描述:x.desc, 吉凶:x.score>0?'吉':x.score<0?'凶':'中'};}),
+      特殊格局: b.specialStructure ? {類型:b.specialStructure.type, 說明:b.specialStructure.desc} : null,
+      正格: b.zhengGe ? {格名:b.zhengGe.geName, 說明:b.zhengGe.zh} : null,
+      當前大運: dy ? {干支:dy.gz, 等級:dy.level, 分數:dy.score, 走宮:dy.palaceName, 主題:dy.theme, 主星:dy.stars, 吉星:dy.lucky, 煞星:dy.sha, 備註:dy.notes} : null,
+      今年流年: ln ? {干支:ln.gz, 等級:ln.level, 分數:ln.score, 備註:ln.notes} : null,
+      近三年: dy && dy.liuNian ? dy.liuNian.filter(function(l){return l.year>=yr&&l.year<=yr+2;}).map(function(l){return {年:l.year, 干支:l.gz, 分數:l.score, 等級:l.level};}) : null,
+      流月: b.liuYue ? b.liuYue.map(function(m){return {月:m.monthName, 吉凶:m.label};}) : null,
+      納音: b.nayin || null,
+      十神組合: b.tenGodCombos ? b.tenGodCombos.map(function(c){return c.zh||c.name;}) : null,
+      暗合暗沖: b.hiddenInteractions ? b.hiddenInteractions.map(function(h){return h.zh||h.type+h.from+'→'+h.to;}) : null,
+      歲運並臨: b.suiYunBingLin && b.suiYunBingLin.active ? b.suiYunBingLin.zh : null,
+      額外神煞: b.extraShenSha ? b.extraShenSha.map(function(x){return typeof x==='string'?x:x.name+':'+x.zh;}) : null
+    };
   } catch(e){ console.error('payload bazi:', e); } }
 
-  // ═══ 2. 紫微斗數 ═══
-  if (zw && zw.palaces) { try {
-    var L = [];
+  // ═══ 2. 紫微斗數 — 原始結構化資料 ═══
+  if (S.ziwei && S.ziwei.palaces) { try {
+    var zw = S.ziwei;
     var FP = {love:2,career:8,wealth:4,health:5,relationship:7,family:9};
     var fi = FP[ft] || 8;
-    var focusNames = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','父母宮','福德宮'];
+    var palaceNames = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','父母宮','福德宮'];
 
-    function _palFull(pal) {
-      if (!pal || !pal.stars) return '';
-      var mj = pal.stars.filter(function(s){return s.type==='major';});
-      var mn = pal.stars.filter(function(s){return s.type==='minor';});
-      var lk = pal.stars.filter(function(s){return s.type==='lucky';});
-      var sh = pal.stars.filter(function(s){return s.type==='sha';});
-      var huas = mj.concat(mn).filter(function(s){return s.hua;});
-      var t = pal.name + '：';
-      t += mj.length ? '主星' + mj.map(function(s){return s.name;}).join('+') : '無主星（借對宮星）';
-      if (mn.length) t += '，輔星' + mn.map(function(s){return s.name;}).join('+');
-      if (lk.length) t += '，吉星' + lk.map(function(s){return s.name;}).join('+');
-      if (sh.length) t += '，煞星' + sh.map(function(s){return s.name;}).join('+') + '帶來壓力';
-      if (huas.length) {
-        var _huaM = {'化祿':'福氣機會','化權':'掌控力','化科':'貴人名聲','化忌':'阻力糾結'};
-        t += '。' + huas.map(function(s){return s.name + '帶來' + (_huaM[s.hua]||s.hua);}).join('、');
-      }
-      return t;
+    function _palRaw(pal){
+      if(!pal||!pal.stars) return null;
+      return {
+        宮名: pal.name,
+        主星: pal.stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name + (s.hua||'') + (s.brightness ? '('+s.brightness+')' : '');}),
+        輔星: pal.stars.filter(function(s){return s.type==='minor';}).map(function(s){return s.name + (s.hua||'');}),
+        吉星: pal.stars.filter(function(s){return s.type==='lucky';}).map(function(s){return s.name;}),
+        煞星: pal.stars.filter(function(s){return s.type==='sha';}).map(function(s){return s.name;})
+      };
     }
+    // 送關鍵宮位：命、議題、遷移、官祿、財帛、福德、夫妻
+    var keyIdx = [0, fi, 6, 8, 4, 11, 2];
+    var seen = {}, palData = [];
+    keyIdx.forEach(function(idx){ if(seen[idx]||!zw.palaces[idx]) return; seen[idx]=true; palData.push(_palRaw(zw.palaces[idx])); });
 
-    // 6個關鍵宮位
-    var keyIdx = [0, fi, 6, 8, 4, 11]; // 命、焦點、遷移、官祿、財帛、福德
-    // 如果問感情加夫妻宮，問事業加官祿等
-    if (ft==='love' && keyIdx.indexOf(2)===-1) keyIdx.push(2);
-    if (ft==='health' && keyIdx.indexOf(5)===-1) keyIdx.push(5);
-    var seen = {};
-    keyIdx.forEach(function(idx){
-      if (seen[idx] || !zw.palaces[idx]) return;
-      seen[idx] = true;
-      var s = _palFull(zw.palaces[idx]);
-      if (s) L.push(s);
-    });
-
-    // 四化（修正：hua 值是 "化祿" 不是 "祿"）
-    if (zw.sihua && Array.isArray(zw.sihua) && zw.sihua.length) {
-      var _huaM2 = {'化祿':'帶來福氣和機會','化權':'帶來掌控力','化科':'帶來貴人和名聲','化忌':'帶來阻力和糾結'};
-      L.push('四化能量流：' + zw.sihua.map(function(v){
-        return _s(v.star) + '在' + _s(v.palace) + (_huaM2[v.hua]||_s(v.hua));
-      }).join('；'));
-    }
-
-    // 大限（完整版）
     var curDx = zw.daXian ? zw.daXian.find(function(d){return d.isCurrent;}) : null;
-    if (curDx) {
-      var dxText = '目前十年大運（' + _s(curDx.ageStart) + '-' + _s(curDx.ageEnd) + '歲）走' + _s(curDx.palaceName) + '，';
-      dxText += (curDx.score>=3?'運勢非常好':curDx.score>=1?'偏好':curDx.score>=-1?'平穩':'壓力大');
-      if (curDx.stars && curDx.stars.length) dxText += '，有' + curDx.stars.join('+') + '坐鎮';
-      if (curDx.lucky && curDx.lucky.length) dxText += '，吉星' + curDx.lucky.join('+') + '加持';
-      if (curDx.sha && curDx.sha.length) dxText += '，但有' + curDx.sha.join('+') + '干擾';
-      if (curDx.theme) dxText += '。十年主題：' + curDx.theme;
-      if (curDx.notes && curDx.notes.length) dxText += '。' + curDx.notes.slice(0,3).join('、');
-      L.push(dxText);
-    }
+    var curLn = null;
+    try { if(zw.getLiuNianZw) curLn = zw.getLiuNianZw(yr); } catch(e){}
 
-    // 流年
-    try {
-      var curLn = zw.getLiuNianZw ? zw.getLiuNianZw(yr) : null;
-      if (curLn) {
-        var lnText = yr + '年流年走' + _s(curLn.mingPalace) + '，';
-        lnText += (curLn.score>=2?'順利':curLn.score>=0?'平穩':'有挑戰');
-        if (curLn.focus) lnText += '。重點方向：' + curLn.focus;
-        if (curLn.notes && curLn.notes.length) lnText += '。' + curLn.notes.slice(0,3).join('、');
-        L.push(lnText);
-      }
-    } catch(e){}
-
-    if (zw.mingZhu) L.push('命主星：' + zw.mingZhu);
-    if (zw.shenZhu) L.push('身主星：' + zw.shenZhu);
-    if (zw.wuxingJu) L.push('五行局：' + zw.wuxingJu);
-
-    p.readings.ziwei = L.join('\n');
+    p.readings.ziwei = {
+      宮位: palData,
+      四化: zw.sihua || [],
+      五行局: zw.wuxingJu, 命主: zw.mingZhu, 身主: zw.shenZhu,
+      當前大限: curDx ? {干支:curDx.gz, 分數:curDx.score, 等級:curDx.level, 走宮:curDx.palaceName, 主題:curDx.theme, 主星:curDx.stars, 吉星:curDx.lucky, 煞星:curDx.sha, 年齡:curDx.ageStart+'-'+curDx.ageEnd, 備註:(curDx.notes||[]).slice(0,4)} : null,
+      今年流年: curLn ? {干支:curLn.gz, 走宮:curLn.mingPalace, 重點:curLn.focus, 分數:curLn.score, 備註:(curLn.notes||[]).slice(0,4)} : null
+    };
   } catch(e){ console.error('payload ziwei:', e); } }
 
-  // ═══ 3. 梅花易數 ═══
-  if (mh && mh.ty) { try {
-    var L = [];
-    var relM = {'用生體':'外在環境支持你，機會主動靠近','比和':'內外一致，勢均力敵','體克用':'你能主導但要花力氣','體生用':'你在付出，回報慢','用克體':'外在壓力大，你被動'};
-    var judgeM = {'大吉':'非常有利','吉':'有利','小吉':'偏好有條件','平':'不好不壞','小凶':'有阻礙','凶':'困難重重'};
-    L.push('判定：' + (judgeM[mh.ty.f]||mh.ty.f) + '。' + (relM[mh.ty.r]||mh.ty.d||''));
-    L.push('起卦：' + (mh.ben?mh.ben.n:'?') + '→變卦' + (mh.bian?mh.bian.n:'?') + '，互卦' + (mh.hu?mh.hu.n:'?'));
-    if (mh.dong) L.push('動爻：第' + mh.dong + '爻');
-    // narrative
-    var nb = mh.analysis && mh.analysis.narrativeBlocks;
-    if (nb) {
-      if (nb.situation) L.push('現況：' + nb.situation);
-      if (nb.coreTension) L.push('矛盾：' + nb.coreTension);
-      if (nb.trend) L.push('走向：' + nb.trend);
-      if (typeof nb.risk === 'string' && nb.risk) L.push('風險：' + nb.risk);
-      if (typeof nb.timing === 'string') L.push('應期：' + nb.timing);
-      if (typeof nb.action === 'string') L.push('建議：' + nb.action);
-    }
-    if (mh.dongYaoDeep && mh.dongYaoDeep.zh) L.push(mh.dongYaoDeep.zh);
-    if (mh.tiYongDeep && mh.tiYongDeep.zh) L.push('力量對比：' + mh.tiYongDeep.zh);
-    if (mh.huGuaDeep && mh.huGuaDeep.zh) L.push('過程：' + mh.huGuaDeep.zh);
-    // 萬物類象
-    if (mh.upWanwu && mh.upWanwu.person) L.push('上卦象徵：' + _s(mh.upWanwu.person) + '/' + _s(mh.upWanwu.thing));
-    if (mh.loWanwu && mh.loWanwu.person) L.push('下卦象徵：' + _s(mh.loWanwu.person) + '/' + _s(mh.loWanwu.thing));
-    p.readings.meihua = L.join('\n');
+  // ═══ 3. 梅花易數 — 原始結構化資料 ═══
+  if (S.meihua && S.meihua.ty) { try {
+    var mh = S.meihua;
+    p.readings.meihua = {
+      體卦: {名:mh.tiG?mh.tiG.name:'', 五行:mh.tiG?mh.tiG.el:''},
+      用卦: {名:mh.yoG?mh.yoG.name:'', 五行:mh.yoG?mh.yoG.el:''},
+      體用關係: mh.ty.r, 吉凶: mh.ty.f, 說明: mh.ty.d,
+      本卦: {名:mh.ben?mh.ben.n:'', 卦辭:mh.ben?mh.ben.j:'', 解讀:mh.ben?mh.ben.m:''},
+      互卦: {名:mh.hu?mh.hu.n:''},
+      變卦: {名:mh.bian?mh.bian.n:'', 解讀:mh.bian?mh.bian.m:''},
+      動爻: mh.dong,
+      分析: mh.analysis ? {
+        現況: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.situation : null,
+        矛盾: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.coreTension : null,
+        走向: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.trend : null,
+        風險: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.risk : null,
+        應期: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.timing : null,
+        行動: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.action : null
+      } : null
+    };
   } catch(e){ console.error('payload meihua:', e); } }
 
-  // ═══ 4. 塔羅 ═══
-  if (ta && ta.drawn && ta.drawn.length >= 3) { try {
-    var L = [];
-    var posL = ['你的現狀','最大挑戰','過去影響','近期發展','你的心態','外在影響','你的態度','外在環境','希望與恐懼','最終結果'];
-    // 根據問題類型選擇對應的牌面解讀欄位
-    var ftMeanKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love',general:''}[ft] || '';
-    ta.drawn.slice(0,10).forEach(function(c,i){
-      var posLabel = posL[i] || ('第'+(i+1)+'張');
+  // ═══ 4. 塔羅 — 原始結構化資料（含問題類型專屬解讀）═══
+  if (S.tarot && S.tarot.drawn && S.tarot.drawn.length >= 3) { try {
+    var ta = S.tarot;
+    var posL = ['現狀','挑戰','過去','近期發展','心態','外在影響','態度','環境','希望與恐懼','最終結果'];
+    var ftKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love'}[ft] || '';
+    var cards = ta.drawn.slice(0,10).map(function(c,i){
       var card = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
-      var kw = c.isUp ? (card.kwUp||card.kw||'') : (card.kwRv||'');
-      // 優先使用問題類型專屬解讀（loveUp/careerUp），fallback 到通用解讀
-      var typedMeaning = '';
-      if (ftMeanKey) {
-        typedMeaning = c.isUp ? (card[ftMeanKey+'Up']||'') : (card[ftMeanKey+'Rv']||'');
+      var obj = {
+        位置: posL[i] || '第'+(i+1)+'張',
+        牌名: c.name || c.n,
+        正逆: c.isUp ? '正位' : '逆位',
+        關鍵字: c.isUp ? (card.kwUp||'') : (card.kwRv||''),
+        通用解讀: c.isUp ? (card.up||'') : (card.rv||''),
+        建議: c.isUp ? (card.adviceUp||'') : (card.adviceRv||'')
+      };
+      // 問題類型專屬解讀
+      if (ftKey) {
+        obj.針對本題解讀 = c.isUp ? (card[ftKey+'Up']||'') : (card[ftKey+'Rv']||'');
       }
-      var genericMeaning = c.isUp ? (card.meanUp||card.up||'') : (card.meanRv||card.rv||'');
-      var meaning = typedMeaning || genericMeaning;
-      var advice = c.isUp ? (card.adviceUp||'') : (card.adviceRv||'');
-      var text = posLabel + '：' + _s(c.name||c.n) + (c.isUp?'(正)':'(逆)');
-      if (kw) text += ' — ' + kw;
-      // 不截斷，完整送出牌面含義
-      if (meaning) text += '。' + meaning;
-      if (advice) text += '。建議：' + advice;
-      L.push(text);
+      return obj;
     });
-    if (ta.suitAnalysis) {
-      var sa = ta.suitAnalysis;
-      var elText = sa.dominantElement ? '主導能量' + _elM(sa.dominantElement) : '';
-      if (sa.missingElements && sa.missingElements.length) elText += '，缺少' + sa.missingElements.map(_elM).join('和');
-      if (sa.reversedRatio > 50) elText += '，逆位過半（內在阻塞需釋放）';
-      if (sa.majorRatio > 40) elText += '，大牌多（命運層面主導）';
-      if (elText) L.push(elText);
-    }
-    if (ta.numerology) L.push('數字學化約' + _s(ta.numerology.finalNum) + '（' + _s(ta.numerology.finalMeaning) + '）');
-    if (ta.kabbalah && ta.kabbalah.length) L.push('生命之樹：' + ta.kabbalah.slice(0,3).map(function(k){return _s(k.cardName)+'→'+_s(k.sephirotZh)+'：'+_s(k.meaning);}).join('；'));
-    p.readings.tarot = L.join('\n');
+    p.readings.tarot = {
+      牌陣: cards,
+      元素分析: ta.suitAnalysis || null,
+      數字學: ta.numerology || null,
+      卡巴拉: ta.kabbalah ? ta.kabbalah.slice(0,3) : null
+    };
   } catch(e){ console.error('payload tarot:', e); } }
 
-  // ═══ 5. 西洋占星 ═══
+  // ═══ 5. 西洋占星 — 原始結構化資料 ═══
   if (S.natal && S.natal.planets) { try {
-    var L = [];
-    var pl = S.natal.planets;
-    function _plT(name, key) {
-      var pp = pl[name]; if (!pp || !pp.sign) return '';
-      return key + '：' + pp.sign + '（' + _sM(pp.sign) + '）' + pp.house + '宮' + (pp.retrograde?'逆行':'');
-    }
-    ['太陽/核心性格','月亮/情感模式','水星/思考溝通','金星/愛情風格','火星/行動模式','木星/機會擴展','土星/責任考驗','天王/突破創新','海王/直覺夢想','冥王/深層轉化'].forEach(function(pair){
-      var parts = pair.split('/');
-      var t = _plT(parts[0], parts[1]);
-      if (t) L.push(t);
+    var n = S.natal;
+    var planets = {};
+    Object.keys(n.planets).forEach(function(name){
+      var pl = n.planets[name];
+      if (!pl) return;
+      planets[name] = {星座:pl.sign, 宮位:pl.house, 度數:pl.degree, 逆行:!!pl.retrograde};
     });
-    if (S.natal.ascSign) L.push('外在形象：' + _s(S.natal.ascSign.name) + '（' + _sM(S.natal.ascSign.name) + '）');
-    if (S.natal.mcSign) L.push('事業方向：' + _s(S.natal.mcSign.name) + '（' + _sM(S.natal.mcSign.name) + '）');
-    if (S.natal.sect) L.push(S.natal.sect.isDaytime ? '日間出生，自信行動力強' : '夜間出生，直覺內省力強');
-
-    // 相位
-    if (S.natal.aspects && S.natal.aspects.length) {
-      var ga = S.natal.aspects.filter(function(a){return a.good;}).length;
-      var ba = S.natal.aspects.filter(function(a){return !a.good;}).length;
-      L.push('相位：和諧' + ga + '個/緊張' + ba + '個');
-      var top5 = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);}).slice(0,5);
-      L.push('主要相位：' + top5.map(function(a){return _s(a.p1)+_s(a.sym)+_s(a.p2)+(a.good?'(和諧)':'(緊張)');}).join('、'));
-    }
-    if (S.natal.aspectPatterns && S.natal.aspectPatterns.length) L.push('特殊結構：' + S.natal.aspectPatterns.map(function(pt){return pt.meaning||pt.zh||pt.name;}).join('。'));
-    if (S.natal.dispositorChain && S.natal.dispositorChain.meaning) L.push('能量流向：' + S.natal.dispositorChain.meaning);
-    if (S.natal.profections && S.natal.profections.meaning) L.push('今年主題：' + S.natal.profections.meaning);
-    if (S.natal.transits && S.natal.transits.aspects) {
-      var slow = S.natal.transits.aspects.filter(function(a){return a.isSlow;}).slice(0,5);
-      if (slow.length) L.push('當前行運：' + slow.map(function(a){return _s(a.transitPlanet)+(a.nature==='challenging'?'帶來挑戰':'帶來機會')+'（影響'+_s(a.natalPlanet)+'）';}).join('；'));
-    }
-    if (S.natal.progressions && S.natal.progressions.summary) L.push('推運：' + S.natal.progressions.summary);
-    if (S.natal.solarReturn && S.natal.solarReturn.ascSign) L.push('今年太陽回歸上升' + S.natal.solarReturn.ascSign.name + '（年度主題' + _sM(S.natal.solarReturn.ascSign.name) + '）');
-
-    p.readings.natal = L.join('\n');
+    p.readings.natal = {
+      行星: planets,
+      上升: n.ascSign ? n.ascSign.name : null,
+      天頂: n.mcSign ? n.mcSign.name : null,
+      日夜盤: n.sect ? (n.sect.isDaytime ? '日盤' : '夜盤') : null,
+      相位: n.aspects ? n.aspects.slice(0,10).map(function(a){return {星1:a.p1, 相位:a.name||a.sym, 星2:a.p2, 和諧:a.good, 容許度:a.diff};}) : null,
+      圖形相位: n.aspectPatterns ? n.aspectPatterns.map(function(pt){return {名稱:pt.name||pt.zh, 涉及:pt.planets, 含義:pt.meaning};}) : null,
+      年主星: n.profections ? n.profections.summary || n.profections.meaning : null,
+      行運: n.transits && n.transits.aspects ? n.transits.aspects.filter(function(a){return a.isSlow;}).slice(0,5).map(function(a){return {行運星:a.transitPlanet, 相位:a.sym, 本命星:a.natalPlanet, 性質:a.nature, 容許度:a.orb};}) : null,
+      推運摘要: n.progressions ? n.progressions.summary : null,
+      太陽回歸: n.solarReturn && n.solarReturn.ascSign ? '上升'+n.solarReturn.ascSign.name : null
+    };
   } catch(e){ console.error('payload natal:', e); } }
 
-  // ═══ 6. 吠陀占星 ═══
+  // ═══ 6. 吠陀占星 — 原始結構化資料 ═══
   if (S.jyotish) { try {
-    var j = S.jyotish, L = [];
-    L.push('上升' + _s(j.lagnaSign) + '，月亮' + _s(j.moonSign) + '，太陽' + _s(j.sunSign));
-    if (j.currentMD) {
-      var mdM = {Sun:'權威/自我',Moon:'情感/家庭',Mars:'行動/競爭',Mercury:'溝通/學習',Jupiter:'擴展/福報',Venus:'享受/關係',Saturn:'責任/考驗',Rahu:'突破/非傳統',Ketu:'放下/靈性'};
-      L.push('主運勢主題：' + (mdM[j.currentMD.lord]||_s(j.currentMD.lord)) + (j.currentAD ? '，副運：'+_s(j.currentAD.zh) : '') + (j.currentPD ? '，小運：'+_s(j.currentPD.zh) : ''));
-    }
-    if (j.yogas && j.yogas.length) L.push('命盤格局：' + j.yogas.slice(0,6).map(function(y){return y.zh?y.zh.substring(0,60):_s(y.name);}).join('。'));
-    var sb = j.shadbala_v2 || j.shadbala;
-    if (sb) {
-      var sbL = [];
-      ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'].forEach(function(pn){
-        var s = sb[pn]; if (s && (s.ratio>=1.3||s.ratio<=0.7)) sbL.push((typeof JY_PLANETS!=='undefined'&&JY_PLANETS[pn]?JY_PLANETS[pn].zh:pn)+(s.ratio>=1.3?'非常有力':'偏弱'));
-      });
-      if (sbL.length) L.push('行星力量：' + sbL.join('、'));
-    }
-    if (j.houseLords) {
-      var fhM = {love:7,career:10,wealth:2,health:6,relationship:7,family:4,general:1};
-      var fl = j.houseLords.find(function(hl){return hl.house===(fhM[ft]||1);});
-      if (fl) L.push('問題相關領域主宰力量' + ({exalted:'非常強',moola:'有力',own:'穩定',friend:'尚可',neutral:'普通',enemy:'偏弱',debilitated:'很弱'}[fl.lordDignity]||'') + '，落在第' + fl.lordBhava + '宮');
-    }
-    if (j.sadeSati && j.sadeSati.active) L.push('正經歷人生重大考驗期（' + ({rising:'上升期',peak:'高峰期',setting:'下降期'}[j.sadeSati.phase]||'') + '），壓力大但成長快');
-    if (j.janmaNakshatra) L.push('情緒特質：' + _s(j.janmaNakshatra.zh || j.janmaNakshatra.en));
-    if (j.refinedGochar) {
-      var gch = j.refinedGochar.filter(function(g){return g.isSlow;}).slice(0,4);
-      if (gch.length) L.push('當前行運：' + gch.map(function(g){return _s(g.planetZh)+(g.effectiveGood?'帶好影響':'帶壓力')+'(力道'+g.bindus+'/8)';}).join('、'));
-    }
-    if (j.crossValidation && j.crossValidation.signals) L.push('交叉驗證：' + j.crossValidation.signals.slice(0,3).map(function(s){return _s(s.zh);}).join('。'));
-    if (j.charaDasha && j.charaDasha.current) L.push('Jaimini運勢：' + _s(j.charaDasha.current.signZh) + '(' + _s(j.charaDasha.current.lordZh) + '主宰)');
-    if (j.karakamsa && j.karakamsa.zh) L.push('靈魂指引：' + j.karakamsa.zh);
-
-    p.readings.vedic = L.join('\n');
+    var j = S.jyotish;
+    p.readings.vedic = {
+      上升: j.lagnaSign, 月亮: j.moonSign, 太陽: j.sunSign,
+      主運Dasha: j.currentMD ? {主星:j.currentMD.lord, 說明:j.currentMD.zh} : null,
+      副運: j.currentAD ? j.currentAD.zh : null,
+      小運: j.currentPD ? j.currentPD.zh : null,
+      Yoga: j.yogas ? j.yogas.slice(0,6).map(function(y){return {名:y.name, 說明:y.zh};}) : null,
+      月宿: j.janmaNakshatra ? (j.janmaNakshatra.zh||j.janmaNakshatra.en) : null,
+      SadeSati: j.sadeSati ? {活躍:j.sadeSati.active, 階段:j.sadeSati.phase} : null,
+      宮主: j.houseLords ? j.houseLords.filter(function(hl){
+        var focus = {love:7,career:10,wealth:2,health:6,relationship:7,family:4,general:1}[ft]||1;
+        return hl.house===focus || hl.house===1;
+      }).map(function(hl){return {宮:hl.house, 主星:hl.lord, 落宮:hl.lordBhava, 力量:hl.lordDignity};}) : null,
+      行運: j.refinedGochar ? j.refinedGochar.filter(function(g){return g.isSlow;}).slice(0,4).map(function(g){return {星:g.planetZh, 吉凶:g.effectiveGood?'吉':'凶', 力道:g.bindus};}) : null,
+      CharaDasha: j.charaDasha && j.charaDasha.current ? {星座:j.charaDasha.current.signZh, 主星:j.charaDasha.current.lordZh} : null,
+      Karakamsa: j.karakamsa ? j.karakamsa.zh : null
+    };
   } catch(e){ console.error('payload vedic:', e); } }
 
-  // ═══ 7. 姓名學 ═══
+  // ═══ 7. 姓名學 — 原始結構化資料 ═══
   if (S.nameResult) { try {
-    var nr = S.nameResult, L = [];
-    function _geT(ge, name) {
-      if (!ge) return '';
-      return name + _s(ge.num) + '（' + _s(ge.el) + '行' + (ge.fortune?'，'+ge.fortune.level:'') + (ge.shuliDetail?'，'+ge.shuliDetail.zh:'') + '）';
-    }
-    ['tianGe/天格','renGe/人格','diGe/地格','waiGe/外格','zongGe/總格'].forEach(function(pair){
-      var k = pair.split('/');
-      var t = _geT(nr[k[0]], k[1]);
-      if (t) L.push(t);
-    });
-    if (nr.sanCaiLevel) L.push('三才：' + (nr.sanCai||[]).join('→') + '（' + ({大吉:'極和諧',吉:'良好',平:'普通',凶:'有阻礙'}[nr.sanCaiLevel]||nr.sanCaiLevel) + '）');
-    if (nr.sanCaiDetail) L.push(nr.sanCaiDetail);
-    if (nr.baziMatch && nr.baziMatch.zh) L.push(nr.baziMatch.zh);
-    p.readings.name = L.filter(Boolean).join('\n');
+    var nr = S.nameResult;
+    function _geRaw(ge){return ge?{數:ge.num, 五行:ge.el, 吉凶:ge.fortune?ge.fortune.level:'', 數理:ge.shuliDetail?ge.shuliDetail.zh:''}:null;}
+    p.readings.name = {
+      天格:_geRaw(nr.tianGe), 人格:_geRaw(nr.renGe), 地格:_geRaw(nr.diGe),
+      外格:_geRaw(nr.waiGe), 總格:_geRaw(nr.zongGe),
+      三才: nr.sanCai, 三才等級: nr.sanCaiLevel, 三才詳解: nr.sanCaiDetail,
+      八字契合: nr.baziMatch ? nr.baziMatch.zh : null
+    };
   } catch(e){ console.error('payload name:', e); } }
   if (S.zodiacNameResult) { try {
+    if(!p.readings.name) p.readings.name = {};
     var zr = S.zodiacNameResult;
-    if (!p.readings.name) p.readings.name = '';
-    p.readings.name += '\n生肖' + _s(zr.zodiac) + '姓名學：' + _s(zr.overallLevel);
-    if (zr.goodRoots && zr.goodRoots.length) p.readings.name += '。好字根：' + zr.goodRoots.slice(0,4).join('、');
-    if (zr.badRoots && zr.badRoots.length) p.readings.name += '。不利字根：' + zr.badRoots.slice(0,4).join('、');
+    p.readings.name.生肖 = zr.zodiac;
+    p.readings.name.生肖姓名學等級 = zr.overallLevel;
+    p.readings.name.好字根 = zr.goodRoots;
+    p.readings.name.壞字根 = zr.badRoots;
   } catch(e){} }
 
-  // ═══ 七維融合 ═══
+  // ═══ 七維融合結論 ═══
   if (S._uResult && S._uResult.comb) {
     var comb = S._uResult.comb;
-    p.verdict = comb.finalDir === 'pos' ? '多數正面' : comb.finalDir === 'neg' ? '多數負面' : '正反各半';
+    p.verdict = comb.finalDir === 'pos' ? '正面' : comb.finalDir === 'neg' ? '負面' : '中性';
     p.compositeScore = comb.score || null;
     if (comb.topTags && comb.topTags.length) {
-      p.crossSignals = comb.topTags.slice(0,8).map(function(t){
-        return (t.direction==='pos'?'✓':'✗') + t.tag + '（' + (t.supportSystems||[]).join('/')+' 系統共同指出）';
+      p.crossSignals = comb.topTags.slice(0,10).map(function(t){
+        return {方向:t.direction, 標籤:t.tag, 來源系統:(t.supportSystems||[]), 數量:t.systemCount};
       });
     }
   }
 
-  // ═══ 核心：把每個系統的精準命理 Tags 送給 AI ═══
-  // 這是 AI 做深度交叉分析的關鍵資料
+  // ═══ 各系統 Tags（AI 交叉分析的核心依據）═══
   try {
-    var tagSystems = {
-      bazi: S.baziTags,
-      ziwei: S.ziweiTags,
-      natal: S.natalTags,
-      meihua: S.meihuaTags,
-      tarot: S.tarotTags,
-      vedic: S.jyotishTags,
-      name: S.nameTags
-    };
-    var crossDetail = [];
-    var sysNames = {bazi:'八字',ziwei:'紫微',natal:'西占',meihua:'梅花',tarot:'塔羅',vedic:'吠陀',name:'姓名'};
+    var tagSystems = {bazi:S.baziTags, ziwei:S.ziweiTags, natal:S.natalTags, meihua:S.meihuaTags, tarot:S.tarotTags, vedic:S.jyotishTags, name:S.nameTags};
+    var allTags = [];
     Object.keys(tagSystems).forEach(function(sys){
       var tags = tagSystems[sys];
       if (!tags || !tags.length) return;
-      // 按 weight 排序，取最重要的 tags
-      var sorted = tags.slice().sort(function(a,b){return (b.weight||1)-(a.weight||1);});
-      var top = sorted.slice(0, 8);
-      top.forEach(function(t){
-        if (!t.detail && !t.label) return;
-        var dir = t.direction === 'pos' ? '✓' : t.direction === 'neg' ? '✗' : '◈';
-        crossDetail.push(dir + '【' + sysNames[sys] + '】' + (t.detail || t.label));
+      tags.sort(function(a,b){return (b.weight||1)-(a.weight||1);}).slice(0,10).forEach(function(t){
+        allTags.push({系統:sys, 方向:t.direction, 權重:t.weight, 標籤:t.label, 細節:t.detail, 類別:t.category});
       });
     });
-    if (crossDetail.length) {
-      p.readings.crossAnalysis = '以下是七套系統針對這個問題的關鍵命理訊號（✓=有利 ✗=不利 ◈=中性）：\n' + crossDetail.join('\n');
-    }
-  } catch(e){ console.error('payload crossTags:', e); }
-
-  // ── Fallback：空的系統用原始資料補 ──
-  try {
-    if (!p.readings.bazi && b) p.readings.bazi = '日主' + _s(b.dm) + '（' + _s(b.dmEl) + '），' + (b.strong?'身強':'身弱') + '。喜用：' + (b.fav||[]).join(',');
-    if (!p.readings.ziwei && zw && zw.palaces) {
-      var _zm = zw.palaces[0] && zw.palaces[0].stars ? zw.palaces[0].stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name;}).join(',') : '';
-      p.readings.ziwei = '命宮：' + _zm;
-    }
-    if (!p.readings.meihua && mh && mh.ty) p.readings.meihua = '體用：' + mh.ty.r + '，' + mh.ty.f + '。' + (mh.ty.d||'');
-    if (!p.readings.tarot && ta && ta.drawn && ta.drawn.length) p.readings.tarot = ta.drawn.slice(0,10).map(function(c,i){return '第'+(i+1)+'張：'+_s(c.name||c.n)+(c.isUp?'(正)':'(逆)');}).join('、');
-    if (!p.readings.natal && S.natal && S.natal.planets) {
-      var _parts = [];
-      if (S.natal.planets['太陽']) _parts.push('太陽'+S.natal.planets['太陽'].sign);
-      if (S.natal.planets['月亮']) _parts.push('月亮'+S.natal.planets['月亮'].sign);
-      if (S.natal.ascSign) _parts.push('上升'+_s(S.natal.ascSign.name));
-      p.readings.natal = _parts.join('，');
-    }
-    if (!p.readings.vedic && S.jyotish) p.readings.vedic = '上升' + _s(S.jyotish.lagnaSign) + '，月亮' + _s(S.jyotish.moonSign) + (S.jyotish.currentMD?'，主運'+_s(S.jyotish.currentMD.zh):'');
-    if (!p.readings.name && S.nameResult && S.nameResult.renGe) p.readings.name = '人格' + S.nameResult.renGe.num + '，三才' + (S.nameResult.sanCai||[]).join('') + '→' + _s(S.nameResult.sanCaiLevel);
+    if (allTags.length) p.tags = allTags;
   } catch(e){}
+
+  // ── payload 大小安全閥 ──
+  var payloadJson = JSON.stringify(p);
+  if (payloadJson.length > 25000) {
+    // 如果太大，壓縮塔羅（最佔空間）
+    if (p.readings.tarot && p.readings.tarot.牌陣) {
+      p.readings.tarot.牌陣 = p.readings.tarot.牌陣.map(function(c){
+        return {位置:c.位置, 牌名:c.牌名, 正逆:c.正逆, 針對本題解讀:c.針對本題解讀||c.通用解讀, 建議:c.建議};
+      });
+    }
+    payloadJson = JSON.stringify(p);
+  }
 
   // Debug
   try {
     var _rKeys = Object.keys(p.readings||{});
-    var _rSizes = _rKeys.map(function(k){return k+':'+((p.readings[k]||'').length||0)+'字';});
-    console.log('[AI] readings:', _rSizes.join(', '));
+    var _rSizes = _rKeys.map(function(k){return k+':'+JSON.stringify(p.readings[k]).length+'字';});
+    console.log('[AI] readings:', _rSizes.join(', '), '| tags:', (p.tags||[]).length, '| total:', payloadJson.length);
   } catch(e){}
   return p;
 }
@@ -27765,7 +27609,7 @@ renderTarot = function(){
     return p;
   };
 
-  function _renderAIEnergyCard(energy){
+  function _renderAIEnergyCard(energy){ return "";
     if(!energy) return '';
     var html = '<div style="margin-top:1rem;padding:.9rem 1rem;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(255,255,255,.02));border:1px solid rgba(212,175,55,.18);border-radius:12px">';
     html += '<div style="font-size:.92rem;font-weight:700;color:var(--c-gold);margin-bottom:.45rem">💎 依你的命盤與這次問題，較適合的能量方向</div>';
