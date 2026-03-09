@@ -27826,7 +27826,7 @@ renderTarot = function(){
         if (admin) {
           try {
             var _dr = Object.keys(payload.readings||{});
-            var _ds = _dr.map(function(k){return k+':'+((payload.readings[k]||'').length||0);});
+            var _ds = _dr.map(function(k){var v=payload.readings[k]; return k+':'+(typeof v==='string'?v.length:JSON.stringify(v||'').length);});
             var _dt = JSON.stringify(payload).length;
             resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload] '+_dt+'字 | readings: '+_ds.join(', ')+'</div></div>');
           } catch(e){}
