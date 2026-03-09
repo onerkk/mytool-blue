@@ -28073,35 +28073,20 @@ renderTarot = function(){
         }
         resultDiv.innerHTML = resultHtml;
       } else {
-        var html = '<div class="card" style="border-left:3px solid #8b5cf6;margin-top:.5rem"><div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem"><span style="font-size:1.1rem">💬</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">我陪你把這題慢慢說清楚</span></div>';
+        var html = '<div class="card" style="border-left:3px solid #8b5cf6;margin-top:.5rem"><div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem"><span style="font-size:1.1rem">🌙</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解讀</span></div>';
         var txt = String(r||'');
-        var sections = txt.split(/(?=【)/);
-        var hasSection = /【.+?】/.test(txt);
-        if (hasSection && sections.length > 1) {
-          var sectionStyles = {
-            '核心答案': {bg:'rgba(212,175,55,.06)',border:'var(--c-gold,#d4af37)',icon:'🌙',tc:'var(--c-gold,#d4af37)',label:'我先直接跟你說'},
-            '七維共識': {bg:'rgba(139,92,246,.05)',border:'#8b5cf6',icon:'🔗',tc:'#a78bfa'},
-            '關鍵原因': {bg:'rgba(139,92,246,.05)',border:'#8b5cf6',icon:'✨',tc:'#a78bfa',label:'我看到的關鍵點'},
-            '多系統交集': {bg:'rgba(139,92,246,.05)',border:'#8b5cf6',icon:'✨',tc:'#a78bfa',label:'我看到的交叉訊號'},
-            '關鍵原因': {bg:'rgba(139,92,246,.05)',border:'#8b5cf6',icon:'✨',tc:'#a78bfa',label:'我看到的關鍵點'},
-            '阻力與變數': {bg:'rgba(248,113,113,.04)',border:'#f87171',icon:'🍂',tc:'#f87171',label:'這題真正卡住的地方'},
-            '建議行動': {bg:'rgba(74,222,128,.04)',border:'#4ade80',icon:'🕯️',tc:'#4ade80',label:'你現在可以先這樣做'},
-            '能量支持': {bg:'rgba(212,175,55,.05)',border:'var(--c-gold)',icon:'💎',tc:'var(--c-gold)'},
-            '一句總結': {bg:'linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.05))',border:'var(--c-gold)',icon:'',tc:'var(--c-gold)',label:'最後我想跟你說'}
-          };
-          sections.forEach(function(sec){
-            sec = sec.trim(); if(!sec) return;
-            var m = sec.match(/^【(.+?)】/);
-            if(!m){ html += '<div style="font-size:.92rem;line-height:1.9;margin-bottom:.65rem">'+txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')+'</div>'; return; }
-            var title=m[1], content=sec.replace(/^【.+?】\s*/,'').trim(); if(!content) return;
-            var st=sectionStyles[title]||{bg:'rgba(255,255,255,.02)',border:'rgba(255,255,255,.1)',icon:'📋',tc:'var(--c-text-dim)',label:title};
-            if(title==='一句總結') html += '<div style="margin-top:.8rem;padding:.8rem 1rem;background:'+st.bg+';border-radius:8px;border:1px solid rgba(212,175,55,.2);text-align:center"><div style="font-size:1rem;line-height:1.8;color:var(--c-gold);font-weight:600">'+st.icon+' '+content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div></div>';
-            else if(title==='核心答案') html += '<div class="ai-spotlight" style="margin-bottom:.8rem;padding:1rem 1.2rem;background:'+st.bg+';border-radius:12px;border-left:3px solid '+st.border+'"><div style="display:inline-block;font-size:.65rem;font-weight:700;color:var(--c-gold);background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.25);border-radius:20px;padding:2px 10px;margin-bottom:.4rem;letter-spacing:.05em">✦ 看這裡</div><div style="font-size:.72rem;color:'+st.tc+';font-weight:600;margin-bottom:.3rem">'+st.icon+' '+(st.label||title)+'</div><div style="font-size:.95rem;line-height:1.9;font-weight:600;color:var(--c-gold-pale,#f5e6b8)">'+content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\n\\n/g,'<br><br>').replace(/\\n/g,'<br>')+'</div></div>';
-            else html += '<div class="content-secondary" style="margin-bottom:.8rem;padding:.6rem .8rem;background:'+st.bg+';border-radius:6px;border-left:3px solid '+st.border+'"><div style="font-size:.72rem;color:'+st.tc+';font-weight:600;margin-bottom:.3rem">'+st.icon+' '+title+'</div><div style="font-size:.9rem;line-height:1.85;color:var(--c-text,#e0e0e0)">'+content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\\n\\n/g,'<br><br>').replace(/\\n/g,'<br>')+'</div></div>';
-          });
-        } else {
-          html += '<div style="font-size:.92rem;line-height:1.9">'+txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')+'</div>';
-        }
+        // 移除【】標記，自然段落渲染
+        var cleanTxt = txt.replace(/【[^】]*】\s*/g, '').replace(/\n{3,}/g, '\n\n').trim();
+        var paras = cleanTxt.split(/\n\n+/);
+        paras.forEach(function(para, idx) {
+          para = para.trim(); if (!para) return;
+          var escaped = para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+          if (idx === 0) {
+            html += '<div style="font-size:1rem;font-weight:600;line-height:1.9;color:var(--c-gold-pale,#f5e6b8);margin-bottom:.8rem">' + escaped + '</div>';
+          } else {
+            html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' + escaped + '</div>';
+          }
+        });
         html += _renderAIEnergyCard(payload.energyRecommendation);
         if (admin && data.usage) html += '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div>';
         html += '</div>';
