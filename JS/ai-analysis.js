@@ -28054,6 +28054,40 @@ renderTarot = function(){
     if (miniMh) miniMh.innerHTML = '';
   }
 
+  // ══ AI 成功後隱藏離線區塊（避免矛盾）══
+  function _hideOfflineSections() {
+    // 1. 環形分數區（verdict ring + 各系統小數字 + 風險提示）
+    var verdictEl = document.getElementById('r-verdict');
+    if (verdictEl) verdictEl.style.display = 'none';
+
+    // 2. 問題回顯（已在 AI 回答內自帶上下文）
+    var qHero = document.getElementById('r-question-hero');
+    if (qHero) qHero.style.display = 'none';
+
+    // 3.「你現在可以做的事」（離線行動建議，跟 AI 脫節）
+    var actionCard = document.getElementById('action-card');
+    if (actionCard) actionCard.style.display = 'none';
+
+    // 4.「為什麼這樣判斷」（離線裁決邏輯）
+    //    它是 r-answer 卡片後面的第二個 collapsible-card
+    var collapsibles = document.querySelectorAll('#step-3 .collapsible-card');
+    collapsibles.forEach(function(card) {
+      var title = card.querySelector('.card-title');
+      if (!title) return;
+      var text = title.textContent || '';
+      // 隱藏「為什麼這樣判斷」和「命理詳細分析」— AI 已整合所有資訊
+      if (text.indexOf('為什麼') !== -1 || text.indexOf('命理詳細') !== -1) {
+        card.style.display = 'none';
+      }
+    });
+
+    // 5. 可能性進度條（r-pfill 等）已在「為什麼這樣判斷」裡面，隨父元素隱藏
+
+    // 6. 水晶處方保留（跟 AI 不矛盾，是獨立推薦）
+    // 7. quick-shop 保留（商業 CTA）
+    // 8. feedback 保留
+  }
+
   // ══ 覆寫 _injectAIButton — 接管 r-answer + 清理雜訊 ══
   _injectAIButton = function() {
     var answerEl = document.getElementById('r-answer');
@@ -28185,6 +28219,9 @@ renderTarot = function(){
 
       var parentCard = answerEl.closest('.card');
       if (parentCard) parentCard.style.borderLeftColor = 'rgba(139,92,246,.5)';
+
+      // ══ AI 成功：隱藏所有離線模式區塊（避免跟 AI 回答矛盾）══
+      _hideOfflineSections();
 
     } catch(err) {
       clearInterval(pt);
