@@ -24306,12 +24306,27 @@ function _buildPayload() {
 
     function _palRaw(pal){
       if(!pal||!pal.stars) return null;
+      var majors = pal.stars.filter(function(s){return s.type==='major';});
+      // 星曜組合解讀（雙星同宮）
+      var comboText = '';
+      if (majors.length >= 2 && typeof STAR_COMBO_TALK !== 'undefined') {
+        var palName = pal.name || '';
+        var combos = STAR_COMBO_TALK[palName];
+        if (combos) {
+          var key = majors.map(function(s){return s.name;}).sort().join('+');
+          if (combos[key]) comboText = combos[key];
+          // 也試反序
+          if (!comboText) { var key2 = majors.map(function(s){return s.name;}).reverse().sort().join('+'); if (combos[key2]) comboText = combos[key2]; }
+        }
+      }
       return {
         宮名: pal.name,
-        主星: pal.stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name + (s.hua||'') + (s.brightness ? '('+s.brightness+')' : '');}),
+        主星: majors.map(function(s){return s.name + (s.hua||'') + (s.brightness ? '('+s.brightness+')' : '');}),
         輔星: pal.stars.filter(function(s){return s.type==='minor';}).map(function(s){return s.name + (s.hua||'');}),
-        吉星: pal.stars.filter(function(s){return s.type==='lucky';}).map(function(s){return s.name;}),
-        煞星: pal.stars.filter(function(s){return s.type==='sha';}).map(function(s){return s.name;})
+        吉星: pal.stars.filter(function(s){return s.type==='lucky'||s.type==='吉';}).map(function(s){return s.name;}),
+        煞星: pal.stars.filter(function(s){return s.type==='sha'||s.type==='凶';}).map(function(s){return s.name;}),
+        雜曜: pal.stars.filter(function(s){return s.type==='general';}).map(function(s){return s.name;}),
+        星曜組合: comboText || null
       };
     }
     // 送關鍵宮位：命、議題、遷移、官祿、財帛、福德、夫妻
@@ -24438,7 +24453,45 @@ function _buildPayload() {
       }).map(function(hl){return {宮:hl.house, 主星:hl.lord, 落宮:hl.lordBhava, 力量:hl.lordDignity};}) : null,
       行運: j.refinedGochar ? j.refinedGochar.filter(function(g){return g.isSlow;}).slice(0,4).map(function(g){return {星:g.planetZh, 吉凶:g.effectiveGood?'吉':'凶', 力道:g.bindus};}) : null,
       CharaDasha: j.charaDasha && j.charaDasha.current ? {星座:j.charaDasha.current.signZh, 主星:j.charaDasha.current.lordZh} : null,
-      Karakamsa: j.karakamsa ? j.karakamsa.zh : null
+      Karakamsa: j.karakamsa ? j.karakamsa.zh : null,
+      行星關係: j.planets ? (function(){
+        var rels = [];
+        var pNames = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
+        var zhMap = {Sun:'太陽',Moon:'月亮',Mars:'火星',Mercury:'水星',Jupiter:'木星',Venus:'金星',Saturn:'土星'};
+        pNames.forEach(function(p){
+          var pl = j.planets[p];
+          if (!pl || !pl.relations) return;
+          var friends = [], enemies = [];
+          Object.keys(pl.relations).forEach(function(other){
+            var r = pl.relations[other];
+            var compound = r.compound || r.temporal || '';
+            if (compound === 'friend' || compound === 'great_friend') friends.push(zhMap[other]||other);
+            if (compound === 'enemy' || compound === 'great_enemy') enemies.push(zhMap[other]||other);
+          });
+          if (friends.length || enemies.length) {
+            rels.push({星:zhMap[p]||p, 友:friends.join('、'), 敵:enemies.join('、')});
+          }
+        });
+        return rels.length ? rels : null;
+      })() : null,
+      Shadbala摘要: j.shadbala ? (function(){
+        var sb = [];
+        Object.keys(j.shadbala).forEach(function(p){
+          var s = j.shadbala[p];
+          if (s && s.label) sb.push({星:p, 力量:s.label, 比值:s.ratio ? s.ratio.toFixed(2) : ''});
+        });
+        return sb.length ? sb.slice(0,7) : null;
+      })() : null,
+      Ashtakavarga重點: j.ashtakavarga ? (function(){
+        var av = [];
+        Object.keys(j.ashtakavarga).forEach(function(house){
+          var score = j.ashtakavarga[house];
+          if (typeof score === 'number' && (score >= 30 || score <= 22)) {
+            av.push({宮:house, 分:score, 強弱:score>=30?'強':'弱'});
+          }
+        });
+        return av.length ? av : null;
+      })() : null
     };
   } catch(e){ console.error('payload vedic:', e); } }
 
@@ -24450,7 +24503,20 @@ function _buildPayload() {
       天格:_geRaw(nr.tianGe), 人格:_geRaw(nr.renGe), 地格:_geRaw(nr.diGe),
       外格:_geRaw(nr.waiGe), 總格:_geRaw(nr.zongGe),
       三才: nr.sanCai, 三才等級: nr.sanCaiLevel, 三才詳解: nr.sanCaiDetail,
-      八字契合: nr.baziMatch ? nr.baziMatch.zh : null
+      八字契合: nr.baziMatch ? nr.baziMatch.zh : null,
+      筆畫: nr.strokes ? nr.strokes : null,
+      人格五行: nr.renGe ? nr.renGe.el : null,
+      地格五行: nr.diGe ? nr.diGe.el : null,
+      人地關係: (nr.renGe && nr.diGe) ? (function(){
+        var r = nr.renGe.el, d = nr.diGe.el;
+        var gen = {'木':'火','火':'土','土':'金','金':'水','水':'木'};
+        if (gen[r] === d) return r + '生' + d + '（順生，基礎好）';
+        if (gen[d] === r) return d + '生' + r + '（被生，有支撐）';
+        var ke = {'木':'土','土':'水','水':'火','火':'金','金':'木'};
+        if (ke[r] === d) return r + '剋' + d + '（上剋下，壓力大）';
+        if (ke[d] === r) return d + '剋' + r + '（下剋上，根基不穩）';
+        return r + '與' + d + '（比和或無直接關係）';
+      })() : null
     };
   } catch(e){ console.error('payload name:', e); } }
   if (S.zodiacNameResult) { try {
@@ -24460,7 +24526,22 @@ function _buildPayload() {
     p.readings.name.生肖姓名學等級 = zr.overallLevel;
     p.readings.name.好字根 = zr.goodRoots;
     p.readings.name.壞字根 = zr.badRoots;
+    p.readings.name.生肖詳解 = zr.details ? zr.details.substring(0, 200) : null;
   } catch(e){} }
+
+  // 姓名問事分析（如果有）
+  try {
+    if (p.readings.name && typeof analyzeNameQuestion === 'function') {
+      var _nqResult = analyzeNameQuestion(S.nameResult, S.zodiacNameResult, {
+        type: ft, question: q, bazi: S.bazi || null
+      });
+      if (_nqResult) {
+        p.readings.name.問事分數 = _nqResult.score || null;
+        p.readings.name.問事方向 = _nqResult.direction || null;
+        p.readings.name.問事摘要 = _nqResult.verdict || _nqResult.verdictShort || null;
+      }
+    }
+  } catch(e){}
 
   // ═══ 七維融合結論 ═══
   if (S._uResult && S._uResult.comb) {
