@@ -28088,7 +28088,7 @@ renderTarot = function(){
     // 8. feedback 保留
   }
 
-  // ══ 覆寫 _injectAIButton — 接管 r-answer + 清理雜訊 ══
+  // ══ 覆寫 _injectAIButton — 隱藏所有離線區塊 + 自動觸發 AI ══
   _injectAIButton = function() {
     var answerEl = document.getElementById('r-answer');
     var wrapEl = document.getElementById('ai-deep-wrap');
@@ -28101,50 +28101,112 @@ renderTarot = function(){
     var txt = answerEl.innerText || '';
     if (txt.length > 5) answerEl.setAttribute('data-offline-answer', txt.substring(0, 800));
 
-    // 組裝新內容
-    var snap = _getDataSnapshot();
-    answerEl.innerHTML = _renderDataCard(snap) + _renderHeroBtn(admin, used);
-
-    // 隱藏舊的 ai-deep-wrap
+    // ── 立即隱藏所有離線區塊 ──
+    _hideOfflineSections();
+    _cleanVerdictNoise();
     if (wrapEl) wrapEl.style.display = 'none';
 
-    // 清除分數下方裁決雜訊
-    _cleanVerdictNoise();
+    if (used) {
+      // ── 額度已用：顯示提示，不觸發 API ──
+      answerEl.innerHTML =
+        '<div style="text-align:center;padding:2rem 1rem">' +
+          '<div style="font-size:2.5rem;margin-bottom:.8rem">🌙</div>' +
+          '<div style="font-size:1rem;font-weight:700;color:var(--c-gold);margin-bottom:.5rem">今日免費解讀已使用</div>' +
+          '<div style="font-size:.85rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:.3rem">每人每天可免費解讀 1 次</div>' +
+          '<div style="font-size:.78rem;color:var(--c-text-muted)">午夜 00:00 自動重置</div>' +
+        '</div>';
+    } else {
+      // ── 尚有額度：顯示華麗 loading + 自動觸發 AI ──
+      answerEl.innerHTML = _renderAILoading();
+
+      // 隱藏的按鈕（供 _triggerAIDeep 內部找到）
+      var hiddenBtn = document.createElement('button');
+      hiddenBtn.id = 'ai-deep-btn';
+      hiddenBtn.style.display = 'none';
+      answerEl.appendChild(hiddenBtn);
+      var hiddenResult = document.createElement('div');
+      hiddenResult.id = 'ai-deep-result';
+      hiddenResult.style.display = 'none';
+      answerEl.appendChild(hiddenResult);
+
+      // 延遲一小段讓 DOM 穩定，然後自動呼叫 AI
+      setTimeout(function() {
+        _triggerAIDeep();
+      }, 600);
+    }
   };
+
+  // ══ 華麗 AI 載入動畫 ══
+  function _renderAILoading() {
+    return '<div style="text-align:center;padding:2.5rem 1rem">' +
+      // 月亮 + 環形動畫
+      '<div style="position:relative;width:80px;height:80px;margin:0 auto 1.2rem">' +
+        '<div style="position:absolute;inset:0;border:2px solid rgba(212,175,55,.08);border-radius:50%"></div>' +
+        '<div style="position:absolute;inset:0;border:2.5px solid transparent;border-top-color:var(--c-gold,#d4af37);border-radius:50%;animation:spin 1.5s linear infinite"></div>' +
+        '<div style="position:absolute;inset:8px;border:2px solid transparent;border-bottom-color:rgba(139,92,246,.4);border-radius:50%;animation:spin 2.5s linear infinite reverse"></div>' +
+        '<div style="position:absolute;inset:18px;border:1.5px solid transparent;border-left-color:rgba(212,175,55,.3);border-radius:50%;animation:spin 3.5s linear infinite"></div>' +
+        '<div style="position:absolute;inset:50%;transform:translate(-50%,-50%);font-size:1.6rem;filter:drop-shadow(0 0 8px rgba(212,175,55,.4))">🌙</div>' +
+      '</div>' +
+      // 主標題
+      '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem;letter-spacing:.05em">靜月老師正在翻閱你的命盤</div>' +
+      // 階段文字
+      '<div id="ai-loading-phase" style="font-size:.82rem;color:var(--c-text-dim);transition:opacity .4s;line-height:1.6">交叉比對七套系統中…</div>' +
+      // 系統列表（逐步點亮）
+      '<div id="ai-loading-systems" style="display:flex;justify-content:center;gap:.6rem;margin-top:1rem;flex-wrap:wrap">' +
+        '<span class="ai-sys-dot" style="opacity:.3;font-size:.7rem;color:var(--c-text-dim);transition:all .5s">☯ 八字</span>' +
+        '<span class="ai-sys-dot" style="opacity:.3;font-size:.7rem;color:var(--c-text-dim);transition:all .5s">⬡ 紫微</span>' +
+        '<span class="ai-sys-dot" style="opacity:.3;font-size:.7rem;color:var(--c-text-dim);transition:all .5s">☰ 梅花</span>' +
+        '<span class="ai-sys-dot" style="opacity:.3;font-size:.7rem;color:var(--c-text-dim);transition:all .5s">✦ 塔羅</span>' +
+        '<span class="ai-sys-dot" style="opacity:.3;font-size:.7rem;color:var(--c-text-dim);transition:all .5s">☉ 西占</span>' +
+        '<span class="ai-sys-dot" style="opacity:.3;font-size:.7rem;color:var(--c-text-dim);transition:all .5s">🕉 吠陀</span>' +
+        '<span class="ai-sys-dot" style="opacity:.3;font-size:.7rem;color:var(--c-text-dim);transition:all .5s">📛 姓名</span>' +
+      '</div>' +
+    '</div>';
+  }
 
   // ══ 覆寫 _triggerAIDeep — AI 結果直接寫回 r-answer ══
   _triggerAIDeep = async function() {
     var btn = document.getElementById('ai-deep-btn');
     var resultDiv = document.getElementById('ai-deep-result');
-    if (!btn || !resultDiv) return;
-
+    // btn 可能是隱藏的（自動觸發模式）
     var admin = _aiIsAdmin();
-    btn.disabled = true;
-    btn.innerHTML = '<span style="font-size:1.2rem">☽</span> 正在翻閱你的命盤…';
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'wait';
-    btn.style.animation = 'none';
 
     try { var sticky = document.getElementById('sticky-cta'); if (sticky) { sticky.classList.remove('visible'); sticky.style.display = 'none'; } } catch(_e) {}
 
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<div style="text-align:center;padding:1.5rem 1rem">' +
-      '<div style="position:relative;width:50px;height:50px;margin:0 auto .7rem">' +
-        '<div style="position:absolute;inset:0;border:2px solid rgba(212,175,55,.1);border-radius:50%"></div>' +
-        '<div style="position:absolute;inset:0;border:2px solid transparent;border-top-color:var(--c-gold,#d4af37);border-radius:50%;animation:spin 1.2s linear infinite"></div>' +
-        '<div style="position:absolute;inset:6px;border:2px solid transparent;border-bottom-color:rgba(139,92,246,.5);border-radius:50%;animation:spin 2s linear infinite reverse"></div>' +
-        '<div style="position:absolute;inset:50%;transform:translate(-50%,-50%);font-size:1rem">☽</div>' +
-      '</div>' +
-      '<div style="font-size:.88rem;color:var(--c-gold);font-weight:600;margin-bottom:.2rem">正在為你翻閱命盤…</div>' +
-      '<div id="ai-loading-phase" style="font-size:.75rem;color:var(--c-text-dim);transition:opacity .3s">交叉比對七套系統中</div>' +
-    '</div>';
-
-    var phases = ['交叉比對七套系統中', '閱讀八字與紫微命盤…', '解讀梅花易數卦象…', '翻閱塔羅牌面訊息…', '對照西洋與吠陀星盤…', '整合交叉訊號，找出關鍵…', '正在為你組織語言…'];
-    var pi = 0, pt = setInterval(function() {
-      pi++; if (pi >= phases.length) pi = phases.length - 1;
+    // ── loading 階段：逐步點亮系統 + 文字輪播 ──
+    var phases = [
+      { text: '閱讀八字命盤…', dotIdx: 0 },
+      { text: '排列紫微斗數…', dotIdx: 1 },
+      { text: '解讀梅花卦象…', dotIdx: 2 },
+      { text: '翻閱塔羅牌面…', dotIdx: 3 },
+      { text: '對照西洋星盤…', dotIdx: 4 },
+      { text: '比對吠陀占星…', dotIdx: 5 },
+      { text: '整合姓名能量…', dotIdx: 6 },
+      { text: '交叉驗證，找出關鍵…', dotIdx: -1 },
+      { text: '正在為你組織語言…', dotIdx: -1 }
+    ];
+    var pi = 0;
+    var pt = setInterval(function() {
+      pi++;
+      if (pi >= phases.length) pi = phases.length - 1;
+      var phase = phases[pi];
       var el = document.getElementById('ai-loading-phase');
-      if (el) { el.style.opacity = '0'; setTimeout(function() { if (el) { el.textContent = phases[pi]; el.style.opacity = '1'; } }, 300); }
-    }, 3500);
+      if (el) {
+        el.style.opacity = '0';
+        setTimeout(function() {
+          if (el) { el.textContent = phase.text; el.style.opacity = '1'; }
+        }, 300);
+      }
+      // 點亮對應的系統 dot
+      if (phase.dotIdx >= 0) {
+        var dots = document.querySelectorAll('.ai-sys-dot');
+        if (dots[phase.dotIdx]) {
+          dots[phase.dotIdx].style.opacity = '1';
+          dots[phase.dotIdx].style.color = 'var(--c-gold,#d4af37)';
+          dots[phase.dotIdx].style.fontWeight = '700';
+        }
+      }
+    }, 2200);
 
     try {
       var payload = _buildPayload();
@@ -28226,19 +28288,34 @@ renderTarot = function(){
     } catch(err) {
       clearInterval(pt);
       console.error('[AI]', err);
+      var answerEl2 = document.getElementById('r-answer');
+      if (!answerEl2) return;
       if (err.status === 429 && !admin) {
         try { _aiMarkUsed(); } catch(_e) {}
-        btn.innerHTML = '🔒 今日解讀已使用'; btn.style.opacity = '0.4'; btn.disabled = true; btn.style.pointerEvents = 'none';
-        resultDiv.innerHTML = '<div style="text-align:center;padding:.6rem;color:var(--c-gold);font-size:.8rem">今天這題已看過・00:00 後可再看 1 次</div>';
+        answerEl2.innerHTML =
+          '<div style="text-align:center;padding:2rem 1rem">' +
+            '<div style="font-size:2rem;margin-bottom:.6rem">🔒</div>' +
+            '<div style="font-size:1rem;font-weight:700;color:var(--c-gold);margin-bottom:.4rem">今日免費解讀已使用</div>' +
+            '<div style="font-size:.82rem;color:var(--c-text-dim)">午夜 00:00 重置・明天再來</div>' +
+          '</div>';
       } else {
-        btn.disabled = false;
-        btn.innerHTML = admin ? '<span style="font-size:1.2rem">🌙</span> 重試（Admin）' : '<span style="font-size:1.2rem">🌙</span> 重試深度解讀';
-        btn.style.opacity = '1'; btn.style.cursor = 'pointer'; btn.style.pointerEvents = 'auto';
-        btn.style.animation = 'ai-hero-glow 2.5s ease-in-out infinite';
-        resultDiv.innerHTML = '<div style="text-align:center;padding:.6rem;color:#f87171;font-size:.78rem">' +
-          (admin && err.status === 429 ? 'Worker 429 但你是管理員，可重試' : '暫時無法使用，請稍後再試') +
-          (admin ? '<br><span style="font-size:.58rem;opacity:.4">[Debug] ' + (err.status || '') + ' ' + (err.error || err.detail || err.message || '') + '</span>' : '') +
-        '</div>';
+        answerEl2.innerHTML =
+          '<div style="text-align:center;padding:2rem 1rem">' +
+            '<div style="font-size:2rem;margin-bottom:.6rem">⚠️</div>' +
+            '<div style="font-size:.95rem;color:var(--c-text-dim);margin-bottom:1rem">解讀暫時無法使用</div>' +
+            (admin ? '<div style="font-size:.6rem;color:#f87171;opacity:.5;margin-bottom:.8rem">[Debug] ' + (err.status||'') + ' ' + (err.error||err.detail||err.message||'') + '</div>' : '') +
+            '<button onclick="_triggerAIDeep()" style="' +
+              'display:inline-flex;align-items:center;justify-content:center;gap:.4rem;' +
+              'padding:.8rem 2rem;border-radius:12px;font-size:.92rem;font-weight:600;' +
+              'background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(212,175,55,.15));' +
+              'color:var(--c-gold,#d4af37);border:1.5px solid rgba(212,175,55,.4);' +
+              'cursor:pointer;font-family:inherit;transition:all .2s">' +
+              '<span style="font-size:1.1rem">🌙</span> 重新嘗試' +
+            '</button>' +
+            // 隱藏的 btn+result 供 retry 用
+            '<button id="ai-deep-btn" style="display:none"></button>' +
+            '<div id="ai-deep-result" style="display:none"></div>' +
+          '</div>';
       }
     }
   };

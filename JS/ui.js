@@ -4460,3 +4460,215 @@ showAuraResult = function(){
     };
   }
 })();
+
+// ═══════════════════════════════════════════════════════════════
+// 首頁重設計 + 每日免費額度管控
+// 拿掉六宮格，改為神秘感單一入口
+// ═══════════════════════════════════════════════════════════════
+(function() {
+  'use strict';
+
+  // ══ 檢查今日是否已用 ══
+  function _checkUsedToday() {
+    if (window._JY_ADMIN_TOKEN) return false;
+    try {
+      var d = JSON.parse(localStorage.getItem('jy_ai_used') || '{}');
+      var today = new Date();
+      var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+      if (d.date !== todayStr) return false;
+      if (d.used) return true;
+      if (d.people) {
+        var keys = Object.keys(d.people);
+        for (var i = 0; i < keys.length; i++) {
+          if (d.people[keys[i]] && d.people[keys[i]].used) return true;
+        }
+      }
+      return false;
+    } catch(e) { return false; }
+  }
+
+  // ══ 已用完彈窗 ══
+  function _showUsedModal() {
+    if (document.getElementById('jy-used-modal')) return;
+    var modal = document.createElement('div');
+    modal.id = 'jy-used-modal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);animation:fadeIn .3s';
+    modal.innerHTML =
+      '<div style="max-width:320px;width:88%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
+        '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
+        '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">今日的緣分已用盡</h3>' +
+        '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">命盤每天只能翻閱一次</p>' +
+        '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.5rem">子時（00:00）重置，明天再來問</p>' +
+        '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
+          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);text-decoration:none;font-size:.85rem;font-weight:600;border:1px solid rgba(212,175,55,.3)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
+          '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);font-size:.82rem;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-family:inherit">知道了</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+  }
+
+  // ══ 重設計首頁 hook-screen ══
+  function _redesignHomepage() {
+    var hookScreen = document.getElementById('hook-screen');
+    if (!hookScreen) return;
+
+    var isAdmin = !!(window._JY_ADMIN_TOKEN);
+    var used = _checkUsedToday();
+
+    // 保留粒子背景
+    var particles = hookScreen.querySelector('.particles');
+    var particlesHtml = particles ? particles.outerHTML : '';
+
+    hookScreen.innerHTML = particlesHtml +
+    '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;min-height:75vh;justify-content:center;padding:2rem 1rem">' +
+
+      // 月亮（保留 admin 彩蛋）
+      '<div class="hero-moon" id="hero-moon" onclick="_moonTap()" style="margin-bottom:1.5rem">' +
+        '<div class="hero-moon-crescent"></div>' +
+      '</div>' +
+
+      // 計數器（保留但低調）
+      '<div class="counter-badge" id="counter-badge" style="margin-bottom:1.2rem"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
+
+      // 主標語
+      '<h1 style="font-size:clamp(1.5rem,5vw,2rem);letter-spacing:.06em;text-align:center;margin-bottom:.5rem;font-family:var(--f-display,serif);color:var(--c-text,#e8e0d0)">' +
+        '靜月之光' +
+      '</h1>' +
+
+      '<p style="font-size:.9rem;color:var(--c-text-dim,#a09880);text-align:center;max-width:280px;line-height:1.8;margin-bottom:.3rem">' +
+        '七套命理交叉驗證' +
+      '</p>' +
+      '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);text-align:center;max-width:300px;line-height:1.7;margin-bottom:2rem">' +
+        '八字 · 紫微 · 梅花 · 塔羅 · 星盤 · 吠陀 · 姓名' +
+      '</p>' +
+
+      // CTA 按鈕
+      (used && !isAdmin ?
+        // 已用完狀態
+        '<div style="text-align:center">' +
+          '<div style="font-size:1.8rem;margin-bottom:.6rem;opacity:.5">🔒</div>' +
+          '<p style="font-size:.88rem;color:var(--c-text-dim);margin-bottom:.2rem">今日的緣分已用盡</p>' +
+          '<p style="font-size:.75rem;color:var(--c-text-muted)">子時重置・明天再來</p>' +
+        '</div>'
+        :
+        // 可用狀態 — 直接進入 input，讓用戶在那邊選類型+填資料
+        '<button id="home-cta-btn" onclick="_enterFromHome()" style="' +
+          'display:flex;align-items:center;justify-content:center;gap:.6rem;' +
+          'width:100%;max-width:300px;' +
+          'padding:1.1rem 2rem;border-radius:14px;' +
+          'background:transparent;' +
+          'color:var(--c-gold,#d4af37);' +
+          'font-size:1.05rem;font-weight:700;font-family:var(--f-display,serif);' +
+          'border:1.5px solid rgba(212,175,55,.4);' +
+          'cursor:pointer;transition:all .3s;' +
+          'box-shadow:0 0 30px rgba(212,175,55,.08),inset 0 0 20px rgba(212,175,55,.03);' +
+          'letter-spacing:.08em;' +
+          'animation:home-cta-breathe 3s ease-in-out infinite">' +
+          '🌙 問一個問題' +
+        '</button>'
+      ) +
+
+      // 底部提示
+      '<div style="margin-top:1.5rem;text-align:center">' +
+        (isAdmin ?
+          '<span style="font-size:.7rem;color:#a78bfa;opacity:.5">👑 管理員・無限次</span>' :
+          used ?
+            '' :
+            '<span style="font-size:.73rem;color:var(--c-text-muted,#6b6355)">✦ 每日免費一次命理解讀</span>'
+        ) +
+      '</div>' +
+
+    '</div>' +
+
+    // 呼吸動畫
+    '<style>@keyframes home-cta-breathe{0%,100%{box-shadow:0 0 30px rgba(212,175,55,.08),inset 0 0 20px rgba(212,175,55,.03);border-color:rgba(212,175,55,.4)}50%{box-shadow:0 0 45px rgba(212,175,55,.15),inset 0 0 30px rgba(212,175,55,.06);border-color:rgba(212,175,55,.6)}}</style>';
+  }
+
+  // ══ 從首頁進入 — 顯示 input-screen 帶類型選擇 ══
+  window._enterFromHome = function() {
+    if (_checkUsedToday()) { _showUsedModal(); return; }
+    document.getElementById('hook-screen').style.display = 'none';
+    var tp = document.getElementById('trust-preview');
+    if (tp) tp.style.display = 'none';
+
+    // 在 input-screen 最頂部注入類型選擇（如果還沒注入的話）
+    var inputScreen = document.getElementById('input-screen');
+    if (inputScreen && !document.getElementById('jy-type-picker')) {
+      var picker = document.createElement('div');
+      picker.id = 'jy-type-picker';
+      picker.className = 'card';
+      picker.style.cssText = 'margin-bottom:var(--sp-md)';
+      picker.innerHTML =
+        '<div class="card-title" style="margin-bottom:.6rem"><i class="fas fa-compass"></i> 你想問哪方面？</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem">' +
+          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'love\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">💕</span>感情</button>' +
+          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'career\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">💼</span>事業</button>' +
+          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'wealth\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">💰</span>財運</button>' +
+          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'health\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">🏥</span>健康</button>' +
+          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'relationship\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">🤝</span>人際</button>' +
+          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'family\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">🏠</span>家庭</button>' +
+        '</div>';
+      inputScreen.insertBefore(picker, inputScreen.firstChild);
+
+      // 隱藏 breadcrumb（已選類型 tag + 返回按鈕 — 改用新 picker）
+      var breadcrumb = inputScreen.querySelector('.tag.tag-gold');
+      if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display = 'none';
+    }
+
+    inputScreen.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  window._pickTypeNew = function(type) {
+    document.getElementById('f-type').value = type;
+    // 高亮選中
+    document.querySelectorAll('.jy-tp-btn').forEach(function(b) {
+      b.style.borderColor = 'rgba(255,255,255,.08)';
+      b.style.background = 'rgba(255,255,255,.03)';
+      b.style.color = 'var(--c-text-dim)';
+    });
+    event.currentTarget.style.borderColor = 'rgba(212,175,55,.5)';
+    event.currentTarget.style.background = 'rgba(212,175,55,.08)';
+    event.currentTarget.style.color = 'var(--c-gold,#d4af37)';
+
+    // 載入問題預設
+    if (typeof Q_PRESETS !== 'undefined' && typeof selectedPresetQ !== 'undefined') {
+      var presets = Q_PRESETS[type] || [];
+      var grid = document.getElementById('q-presets');
+      if (grid) {
+        selectedPresetQ = '';
+        grid.innerHTML = presets.map(function(q) {
+          return '<button class="q-preset-btn" onclick="selectPreset(this,\'' + q.replace(/'/g, "\\'") + '\')">' + q + '</button>';
+        }).join('') +
+        '<button class="q-preset-btn" onclick="showCustomQ(this)" style="color:var(--c-text-muted)"><i class="fas fa-pen" style="margin-right:4px"></i> 自己寫問題</button>';
+      }
+    }
+  };
+
+  // ══ 攔截 submitStep0 / submitStep0Fast ══
+  var _origSubmit0 = window.submitStep0;
+  var _origSubmit0Fast = window.submitStep0Fast;
+
+  window.submitStep0 = function() {
+    if (_checkUsedToday()) { _showUsedModal(); return; }
+    if (_origSubmit0) _origSubmit0.apply(this, arguments);
+  };
+
+  window.submitStep0Fast = function() {
+    if (_checkUsedToday()) { _showUsedModal(); return; }
+    if (_origSubmit0Fast) _origSubmit0Fast.apply(this, arguments);
+  };
+
+  // ══ 執行 ══
+  function _init() {
+    _redesignHomepage();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _init);
+  } else {
+    setTimeout(_init, 100);
+  }
+
+  console.log('[Home] 首頁重設計 + 額度管控已啟用');
+})();
