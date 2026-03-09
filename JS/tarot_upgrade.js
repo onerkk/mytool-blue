@@ -1,1 +1,653 @@
-var _0x4d339c=_0xa74f;(function(_0x12c8b4,_0x567626){var _0xdaf05d=_0xa74f,_0x4529ca=_0x12c8b4();while(!![]){try{var _0x53958a=parseInt(_0xdaf05d(0x1f4))/(0x362*0x4+-0x1e9e+0x1117)*(parseInt(_0xdaf05d(0x235))/(0xeff+0x87c+-0x7d3*0x3))+-parseInt(_0xdaf05d(0x22e))/(-0x515*-0x1+-0x9f5+0x4e3)+-parseInt(_0xdaf05d(0x220))/(0x230+-0xc11+0x95*0x11)+parseInt(_0xdaf05d(0x279))/(0x1*-0x235d+0x17*0x123+-0x5*-0x1d9)*(parseInt(_0xdaf05d(0x1af))/(0x1d43+-0x12ba+0x3*-0x381))+-parseInt(_0xdaf05d(0x204))/(0x1589+-0x245e+0x4f4*0x3)*(-parseInt(_0xdaf05d(0x1c8))/(0x2*0x42+0x175+-0x47*0x7))+parseInt(_0xdaf05d(0x211))/(-0x63d+-0x1d6a+0x23b0)+parseInt(_0xdaf05d(0x1f9))/(0x207*0x8+-0x1afc+0xace);if(_0x53958a===_0x567626)break;else _0x4529ca['push'](_0x4529ca['shift']());}catch(_0x54a14a){_0x4529ca['push'](_0x4529ca['shift']());}}}(_0x3d64,0x10541*-0x9+-0x10d6c0+0x2eaa7*0xd));var _0x1c3ba2=(function(){var _0x40354a=!![];return function(_0x30a084,_0x13dbcc){var _0x4df48d=_0x40354a?function(){var _0x245fc8=_0xa74f;if(_0x13dbcc){var _0x63b5d6=_0x13dbcc[_0x245fc8(0x253)](_0x30a084,arguments);return _0x13dbcc=null,_0x63b5d6;}}:function(){};return _0x40354a=![],_0x4df48d;};}()),_0x5df215=_0x1c3ba2(this,function(){var _0x122844=_0xa74f,_0x37e657={'\x6f\x4f\x58\x78\x44':_0x122844(0x20d)+_0x122844(0x236)};return _0x5df215['\x74\x6f\x53\x74\x72\x69\x6e\x67']()[_0x122844(0x1cb)](_0x37e657['\x6f\x4f\x58\x78\x44'])['\x74\x6f\x53\x74\x72\x69\x6e\x67']()[_0x122844(0x241)+_0x122844(0x246)](_0x5df215)[_0x122844(0x1cb)](_0x37e657[_0x122844(0x1c9)]);});_0x5df215();var TAROT_NUMEROLOGY={0x0:{'\x7a\x68':_0x4d339c(0x284),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u7121\u9650\u53ef\u80fd\u3001\u65b0\u7684\u5faa'+_0x4d339c(0x202)+'\u80fd'},0x1:{'\x7a\x68':_0x4d339c(0x1c2),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u958b\u59cb\u3001\u610f\u5fd7\u529b\u3001\u500b'+'\u9ad4\u5316\u3001\u4e3b\u52d5\u5275\u9020'},0x2:{'\x7a\x68':_0x4d339c(0x1bf),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u4e8c\u5143\u3001\u5e73\u8861\u3001\u76f4\u89ba'+_0x4d339c(0x251)},0x3:{'\x7a\x68':_0x4d339c(0x1d0),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x25a)+'\u3001\u6210\u9577\u3001\u4e09\u4f4d\u4e00\u9ad4'},0x4:{'\x7a\x68':_0x4d339c(0x287),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x219)+_0x4d339c(0x244)},0x5:{'\x7a\x68':_0x4d339c(0x283),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x286)+_0x4d339c(0x24d)},0x6:{'\x7a\x68':_0x4d339c(0x293),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u548c\u8ae7\u3001\u8cac\u4efb\u3001\u9078\u64c7'+_0x4d339c(0x20b)},0x7:{'\x7a\x68':_0x4d339c(0x268),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x1fa)+_0x4d339c(0x26e)},0x8:{'\x7a\x68':_0x4d339c(0x250),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x263)+_0x4d339c(0x23c)},0x9:{'\x7a\x68':_0x4d339c(0x1d4),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u5b8c\u6210\u3001\u667a\u6167\u3001\u7368\u8655'+'\u3001\u4eba\u9053\u3001\u8f49\u5316'},0xa:{'\x7a\x68':_0x4d339c(0x222),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x1a9)+'\u91cd\u65b0\u958b\u59cb\u3001\u547d\u904b'}};function tarotNumerologyAnalysis(_0x1ae15b){var _0xa3d3db=_0x4d339c,_0x353fa4={'\x66\x71\x45\x51\x54':function(_0x39071d,_0x5012d6){return _0x39071d+_0x5012d6;},'\x41\x46\x74\x73\x61':function(_0x14eee4,_0x2f6cc4){return _0x14eee4%_0x2f6cc4;},'\x45\x6a\x61\x78\x6d':function(_0x4ab066,_0x34a22d){return _0x4ab066-_0x34a22d;},'\x77\x65\x68\x48\x64':function(_0x4de1cc,_0x19c545){return _0x4de1cc>_0x19c545;},'\x46\x4a\x48\x42\x58':function(_0x1d9c91,_0x53c982){return _0x1d9c91>=_0x53c982;},'\x4f\x70\x66\x56\x6d':function(_0x5213d2,_0x211987){return _0x5213d2(_0x211987);},'\x4b\x69\x6b\x77\x67':function(_0x1a9e7c,_0x445d31){return _0x1a9e7c+_0x445d31;},'\x6d\x67\x4b\x67\x67':function(_0x56bf68,_0x26bcfd){return _0x56bf68+_0x26bcfd;},'\x6a\x5a\x51\x46\x6a':function(_0x81e403,_0x1091ed){return _0x81e403%_0x1091ed;},'\x70\x44\x4d\x6b\x52':function(_0x1f8a7a,_0x13d7e6){return _0x1f8a7a+_0x13d7e6;},'\x4c\x58\x61\x61\x47':'\u724c\u9663\u6578\u5b57\u5b78\u7e3d\u548c\u5316'+'\u7d04\u70ba'};if(!_0x1ae15b||!_0x1ae15b[_0xa3d3db(0x1cf)])return null;var _0x36fd5d={},_0x3b5b88=0x15f1+0xd98*0x1+-0x2389;_0x1ae15b[_0xa3d3db(0x209)](function(_0x27deee){var _0x44d13c=_0xa3d3db,_0x40d063=(_0x44d13c(0x1a7)+_0x44d13c(0x22a))[_0x44d13c(0x213)]('\x7c'),_0xbb3dfc=-0x172b+0x21b5+-0xa8a;while(!![]){switch(_0x40d063[_0xbb3dfc++]){case'\x30':_0x36fd5d[_0x199791]++;continue;case'\x31':var _0x526357;continue;case'\x32':_0x3b5b88+=_0x199791;continue;case'\x33':var _0x199791=_0x526357;continue;case'\x34':while(_0x199791>0x19d2+-0x1e64+0x49c)_0x199791=_0x353fa4[_0x44d13c(0x1c4)](Math['\x66\x6c\x6f\x6f\x72'](_0x199791/(-0x2*0xef+-0x1*0x737+-0x5*-0x1d3)),_0x353fa4['\x41\x46\x74\x73\x61'](_0x199791,-0x21c2*-0x1+-0x1a36+0x1*-0x782));continue;case'\x35':if(_0x27deee['\x69\x64']<-0x1*0xd4b+0x122a+-0x4c9)_0x526357=_0x27deee['\x69\x64'];else{_0x526357=_0x353fa4['\x45\x6a\x61\x78\x6d'](_0x27deee['\x69\x64'],-0x191c+-0xf75+0x28a7)%(0x1*-0xd27+-0x19cd*-0x1+-0xc98)+(0x1f*-0x3d+-0x3d*-0x95+0x1c1d*-0x1);if(_0x353fa4[_0x44d13c(0x1c3)](_0x526357,-0x1203+0xfbb+-0x42*-0x9))_0x526357=_0x526357-(0x29b*-0x1+-0x1a0*-0x16+0xf*-0x235);}continue;case'\x36':if(!_0x36fd5d[_0x199791])_0x36fd5d[_0x199791]=-0x2*0x40+0x3*-0x209+0x69b;continue;}break;}});var _0x840183=_0x3b5b88;while(_0x840183>0x1*0x2339+-0x2586+0x263)_0x840183=_0x353fa4[_0xa3d3db(0x207)](Math[_0xa3d3db(0x24f)](_0x840183/(-0x2421+-0x19*-0x73+0x18f0)),_0x353fa4[_0xa3d3db(0x1aa)](_0x840183,-0x21b4+0x2504+-0x1*0x346));var _0x19148a=[];Object[_0xa3d3db(0x229)](_0x36fd5d)[_0xa3d3db(0x209)](function(_0x50b378){var _0x591b8f=_0xa3d3db;if(_0x353fa4[_0x591b8f(0x25f)](_0x36fd5d[_0x50b378],-0x53f+-0xc21+0x1162)){var _0x617d48=TAROT_NUMEROLOGY[parseInt(_0x50b378)]||{};_0x19148a[_0x591b8f(0x238)]({'\x6e\x75\x6d\x62\x65\x72':_0x353fa4['\x4f\x70\x66\x56\x6d'](parseInt,_0x50b378),'\x63\x6f\x75\x6e\x74':_0x36fd5d[_0x50b378],'\x6d\x65\x61\x6e\x69\x6e\x67':_0x617d48[_0x591b8f(0x27e)]||'','\x7a\x68':_0x353fa4['\x66\x71\x45\x51\x54'](_0x353fa4[_0x591b8f(0x1e8)]('\u6578\u5b57'+_0x50b378,'\u51fa\u73fe')+_0x36fd5d[_0x50b378]+'\u6b21\uff1a',_0x617d48['\x6d\x65\x61\x6e\x69\x6e\x67']||_0x591b8f(0x1b3)+'\u8abf')});}});var _0x13df2b=TAROT_NUMEROLOGY[_0x840183]||{};return{'\x6e\x75\x6d\x43\x6f\x75\x6e\x74\x73':_0x36fd5d,'\x74\x6f\x74\x61\x6c\x52\x65\x64\x75\x63\x74\x69\x6f\x6e':_0x3b5b88,'\x66\x69\x6e\x61\x6c\x4e\x75\x6d':_0x840183,'\x66\x69\x6e\x61\x6c\x4d\x65\x61\x6e\x69\x6e\x67':_0x13df2b['\x6d\x65\x61\x6e\x69\x6e\x67']||'','\x64\x6f\x6d\x69\x6e\x61\x6e\x74\x4e\x75\x6d\x73':_0x19148a,'\x7a\x68':_0x353fa4[_0xa3d3db(0x269)](_0x353fa4[_0xa3d3db(0x234)]+_0x840183,'\uff1a')+(_0x13df2b[_0xa3d3db(0x27e)]||'')};}function tarotThreeCardSpread(_0x5d868d,_0x28324d){var _0x257db7=_0x4d339c,_0x3158d6={'\x58\x53\x47\x72\x5a':'\x34\x7c\x33\x7c\x31\x7c\x36\x7c'+'\x32\x7c\x30\x7c\x35','\x56\x6b\x50\x54\x4d':_0x257db7(0x1df),'\x50\x52\x5a\x48\x48':'\u5143\u7d20\uff0c\u6574\u500b\u6642\u9593\u8ef8'+'\u7531\u540c\u4e00\u80a1\u80fd\u91cf\u8cab\u7a7f','\x63\x45\x7a\x4b\x75':_0x257db7(0x1d1)+_0x257db7(0x256),'\x59\x7a\x54\x72\x69':function(_0x466884,_0x180f88){return _0x466884===_0x180f88;},'\x6f\x55\x58\x57\x4b':function(_0x5c86fe,_0x2e9959){return _0x5c86fe!==_0x2e9959;}},_0x3fe8c6=_0x3158d6[_0x257db7(0x280)][_0x257db7(0x213)]('\x7c'),_0x3fc824=0x132f+0xcf7*-0x1+-0x638;while(!![]){switch(_0x3fe8c6[_0x3fc824++]){case'\x30':if(_0x434d42)_0x5b3305=_0x3158d6[_0x257db7(0x1e5)]+_0x1e794b[-0x433*-0x3+0x17e8+0x1bd*-0x15]+_0x3158d6[_0x257db7(0x26f)];continue;case'\x31':var _0x1e794b=_0x14e7e2[_0x257db7(0x1e6)](function(_0x1fb12c){var _0x314883=_0x257db7;return _0x1fb12c['\x63\x61\x72\x64']?_0x1fb12c[_0x314883(0x289)]['\x65\x6c']||'':'';});continue;case'\x32':var _0x5b3305='';continue;case'\x33':var _0x14e7e2=[{'\x6e\x61\x6d\x65':'\u904e\u53bb','\x7a\x68':_0x257db7(0x1e4)+'\u9019\u88e1\u7684\u56e0\u7d20\uff09','\x63\x61\x72\x64':_0x5d868d[-0xcd9+-0xd3f*0x1+0xa*0x29c]},{'\x6e\x61\x6d\x65':'\u73fe\u5728','\x7a\x68':_0x257db7(0x25e)+_0x257db7(0x21e),'\x63\x61\x72\x64':_0x5d868d[-0x62*0x55+0x1e6+0x3*0xa37]},{'\x6e\x61\x6d\x65':'\u672a\u4f86','\x7a\x68':_0x3158d6[_0x257db7(0x1ee)],'\x63\x61\x72\x64':_0x5d868d[0x4*0x388+0x1279+-0x2097]}];continue;case'\x34':if(!_0x5d868d||_0x5d868d[_0x257db7(0x1cf)]<-0x16e6+-0x2*-0x3b5+0x1*0xf7f)return null;continue;case'\x35':return{'\x74\x79\x70\x65':'\x74\x68\x72\x65\x65\x5f\x63\x61'+'\x72\x64','\x7a\x68':_0x257db7(0x290)+_0x257db7(0x262),'\x70\x6f\x73\x69\x74\x69\x6f\x6e\x73':_0x14e7e2,'\x65\x6c\x65\x6d\x65\x6e\x74\x4e\x61\x72\x72\x61\x74\x69\x76\x65':_0x5b3305};case'\x36':var _0x434d42=_0x1e794b[-0x1acb+-0x2539*0x1+0x3c4*0x11]===_0x1e794b[-0x12ab*0x1+-0x5e*-0x65+0x935*-0x2]&&_0x3158d6[_0x257db7(0x1e0)](_0x1e794b[-0x167e+-0x9d2+0x1*0x2051],_0x1e794b[0x2*0x12e2+-0x1*-0x1e82+-0x4444])&&_0x3158d6['\x6f\x55\x58\x57\x4b'](_0x1e794b[-0xd05+0x582+-0x3*-0x281],'');continue;}break;}}function _0xa74f(_0x4b85ea,_0x1d5b20){_0x4b85ea=_0x4b85ea-(0x1187*-0x1+0xc1d+-0x1c4*-0x4);var _0x2fddb6=_0x3d64();var _0x13d56b=_0x2fddb6[_0x4b85ea];if(_0xa74f['\x6e\x68\x45\x70\x53\x53']===undefined){var _0x12095e=function(_0x1c1c4e){var _0x1b44c9='\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x2b\x2f\x3d';var _0x4c9812='',_0xfe1710='',_0xf4cbfc=_0x4c9812+_0x12095e;for(var _0x30d7d1=0x96d+0x3c3+-0x4*0x34c,_0xb646a3,_0x1f49cb,_0x2c7f82=0x1*0x943+0x9b*0x4+-0xbaf;_0x1f49cb=_0x1c1c4e['\x63\x68\x61\x72\x41\x74'](_0x2c7f82++);~_0x1f49cb&&(_0xb646a3=_0x30d7d1%(0x2b*-0x63+0x1f*-0xd3+0x2a32)?_0xb646a3*(0x18c4+0x1e*-0xda+-0x2c*-0x6)+_0x1f49cb:_0x1f49cb,_0x30d7d1++%(0x22e2+0x1*0x16d3+-0x39b1))?_0x4c9812+=_0xf4cbfc['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x2c7f82+(-0x23*-0x4f+-0x796*0x3+-0x1*-0xbff))-(0x1672+0xac1+-0x2129)!==0x5a8+0x34b+-0x8f3?String['\x66\x72\x6f\x6d\x43\x68\x61\x72\x43\x6f\x64\x65'](-0x19*-0x130+0x257b+-0x422c&_0xb646a3>>(-(0x10*0x16a+-0x22*0xcd+-0x4*-0x127)*_0x30d7d1&0x1045+-0x4*-0x2f3+-0x1c0b)):_0x30d7d1:0x1*0x1945+-0xf8d+-0x4dc*0x2){_0x1f49cb=_0x1b44c9['\x69\x6e\x64\x65\x78\x4f\x66'](_0x1f49cb);}for(var _0x5c0be1=-0xb8d*-0x1+-0x1*-0x2548+-0x30d5,_0x251f2b=_0x4c9812['\x6c\x65\x6e\x67\x74\x68'];_0x5c0be1<_0x251f2b;_0x5c0be1++){_0xfe1710+='\x25'+('\x30\x30'+_0x4c9812['\x63\x68\x61\x72\x43\x6f\x64\x65\x41\x74'](_0x5c0be1)['\x74\x6f\x53\x74\x72\x69\x6e\x67'](0x2245+0x1*-0x1ea8+-0x38d))['\x73\x6c\x69\x63\x65'](-(0x1cea+-0x25a3*0x1+0x8bb*0x1));}return decodeURIComponent(_0xfe1710);};_0xa74f['\x48\x63\x42\x77\x4b\x47']=_0x12095e,_0xa74f['\x4c\x71\x6f\x55\x69\x4a']={},_0xa74f['\x6e\x68\x45\x70\x53\x53']=!![];}var _0x1bfb37=_0x2fddb6[0x115a+-0x225a+0x1100],_0x50a118=_0x4b85ea+_0x1bfb37,_0xa4e50e=_0xa74f['\x4c\x71\x6f\x55\x69\x4a'][_0x50a118];if(!_0xa4e50e){var _0x3cd029=function(_0x4c66b2){this['\x54\x62\x54\x6f\x72\x71']=_0x4c66b2,this['\x5a\x58\x52\x50\x56\x6d']=[-0x1513+-0x3a0+0x20f*0xc,-0xbc8*-0x2+0xe95+0x1d1*-0x15,0x2541+0x29*-0x61+-0x5*0x458],this['\x53\x7a\x44\x5a\x63\x7a']=function(){return'\x6e\x65\x77\x53\x74\x61\x74\x65';},this['\x6d\x73\x6d\x55\x59\x58']='\x5c\x77\x2b\x20\x2a\x5c\x28\x5c\x29\x20\x2a\x7b\x5c\x77\x2b\x20\x2a',this['\x67\x4d\x49\x6d\x65\x59']='\x5b\x27\x7c\x22\x5d\x2e\x2b\x5b\x27\x7c\x22\x5d\x3b\x3f\x20\x2a\x7d';};_0x3cd029['\x70\x72\x6f\x74\x6f\x74\x79\x70\x65']['\x69\x65\x5a\x67\x50\x68']=function(){var _0xead5c9=new RegExp(this['\x6d\x73\x6d\x55\x59\x58']+this['\x67\x4d\x49\x6d\x65\x59']),_0x3aa10f=_0xead5c9['\x74\x65\x73\x74'](this['\x53\x7a\x44\x5a\x63\x7a']['\x74\x6f\x53\x74\x72\x69\x6e\x67']())?--this['\x5a\x58\x52\x50\x56\x6d'][0x1a76+0xa3*0x28+-0x15*0x279]:--this['\x5a\x58\x52\x50\x56\x6d'][-0x92*-0x41+-0x234c+-0x1c6];return this['\x6e\x68\x51\x58\x71\x4a'](_0x3aa10f);},_0x3cd029['\x70\x72\x6f\x74\x6f\x74\x79\x70\x65']['\x6e\x68\x51\x58\x71\x4a']=function(_0x1b26af){if(!Boolean(~_0x1b26af))return _0x1b26af;return this['\x59\x68\x61\x45\x42\x74'](this['\x54\x62\x54\x6f\x72\x71']);},_0x3cd029['\x70\x72\x6f\x74\x6f\x74\x79\x70\x65']['\x59\x68\x61\x45\x42\x74']=function(_0x48bbfe){for(var _0x21b011=-0x1eb*-0x11+-0x7ba+-0x18e1,_0x5b5256=this['\x5a\x58\x52\x50\x56\x6d']['\x6c\x65\x6e\x67\x74\x68'];_0x21b011<_0x5b5256;_0x21b011++){this['\x5a\x58\x52\x50\x56\x6d']['\x70\x75\x73\x68'](Math['\x72\x6f\x75\x6e\x64'](Math['\x72\x61\x6e\x64\x6f\x6d']())),_0x5b5256=this['\x5a\x58\x52\x50\x56\x6d']['\x6c\x65\x6e\x67\x74\x68'];}return _0x48bbfe(this['\x5a\x58\x52\x50\x56\x6d'][0x1315+0x37*0x2+-0x1383]);},new _0x3cd029(_0xa74f)['\x69\x65\x5a\x67\x50\x68'](),_0x13d56b=_0xa74f['\x48\x63\x42\x77\x4b\x47'](_0x13d56b),_0xa74f['\x4c\x71\x6f\x55\x69\x4a'][_0x50a118]=_0x13d56b;}else _0x13d56b=_0xa4e50e;return _0x13d56b;}function tarotCrossSpread(_0x20ecb4,_0x25a4ef){var _0x4e230d=_0x4d339c,_0x9512d={'\x4f\x45\x59\x61\x71':'\u672a\u4f86\u7684\u767c\u5c55\u8da8\u52e2','\x6e\x7a\x41\x66\x64':'\u6700\u4f73\u884c\u52d5\u5efa\u8b70'};if(!_0x20ecb4||_0x20ecb4[_0x4e230d(0x1cf)]<0xcdc+0x1*-0x264a+0x1973)return null;return{'\x74\x79\x70\x65':'\x63\x72\x6f\x73\x73','\x7a\x68':_0x4e230d(0x218),'\x70\x6f\x73\x69\x74\x69\x6f\x6e\x73':[{'\x6e\x61\x6d\x65':'\u73fe\u72c0','\x7a\x68':'\u73fe\u5728\u7684\u8655\u5883','\x63\x61\x72\x64':_0x20ecb4[0x10*-0x241+-0x1845+0x3c55]},{'\x6e\x61\x6d\x65':'\u6311\u6230','\x7a\x68':_0x4e230d(0x21c),'\x63\x61\x72\x64':_0x20ecb4[0x1823+-0x1*-0x935+-0x2157]},{'\x6e\x61\x6d\x65':'\u904e\u53bb','\x7a\x68':'\u904e\u53bb\u7684\u5f71\u97ff','\x63\x61\x72\x64':_0x20ecb4[0x16bb+0x17ff*0x1+-0x2eb8]},{'\x6e\x61\x6d\x65':'\u672a\u4f86','\x7a\x68':_0x9512d[_0x4e230d(0x1b7)],'\x63\x61\x72\x64':_0x20ecb4[0x47*-0x44+0x32f*0x1+0xfb0]},{'\x6e\x61\x6d\x65':'\u5efa\u8b70','\x7a\x68':_0x9512d[_0x4e230d(0x21f)],'\x63\x61\x72\x64':_0x20ecb4[-0xdd2+0x1*-0x1867+-0x2f1*-0xd]}]};}function tarotHorseshoeSpread(_0x78293e,_0x4ddc02){var _0x4e7a21=_0x4d339c,_0x434d9c={'\x48\x65\x55\x6c\x68':function(_0x53fe4c,_0x7f807e){return _0x53fe4c<_0x7f807e;},'\x4b\x52\x6a\x50\x54':_0x4e7a21(0x1d5)+'\x65','\x72\x62\x49\x58\x67':_0x4e7a21(0x26a),'\x56\x58\x70\x47\x44':'\u76ee\u524d\u7684\u8655\u5883','\x65\x68\x6d\x75\x43':_0x4e7a21(0x277),'\x4f\x42\x64\x53\x53':_0x4e7a21(0x28a),'\x52\x79\x7a\x77\x6c':'\u4f60\u61c9\u63a1\u53d6\u7684\u614b\u5ea6','\x4c\x54\x47\x68\x6d':_0x4e7a21(0x226),'\x66\x74\x73\x6f\x46':_0x4e7a21(0x1ac)};if(!_0x78293e||_0x434d9c[_0x4e7a21(0x201)](_0x78293e[_0x4e7a21(0x1cf)],0x197a+0x31b*-0x5+-0x9ec))return null;return{'\x74\x79\x70\x65':_0x434d9c[_0x4e7a21(0x264)],'\x7a\x68':_0x4e7a21(0x242),'\x70\x6f\x73\x69\x74\x69\x6f\x6e\x73':[{'\x6e\x61\x6d\x65':'\u904e\u53bb','\x7a\x68':_0x434d9c[_0x4e7a21(0x20f)],'\x63\x61\x72\x64':_0x78293e[-0x4ae+-0x2*0x9ad+0x602*0x4]},{'\x6e\x61\x6d\x65':'\u73fe\u5728','\x7a\x68':_0x434d9c[_0x4e7a21(0x212)],'\x63\x61\x72\x64':_0x78293e[-0x2*-0x1235+0x7*-0xe+-0x2407]},{'\x6e\x61\x6d\x65':_0x4e7a21(0x23f),'\x7a\x68':_0x434d9c[_0x4e7a21(0x28e)],'\x63\x61\x72\x64':_0x78293e[-0x1b08+0x20e3+-0x5d9]},{'\x6e\x61\x6d\x65':'\u74b0\u5883','\x7a\x68':_0x434d9c['\x4f\x42\x64\x53\x53'],'\x63\x61\x72\x64':_0x78293e[0x5*0x493+-0x196+0x2*-0xaa3]},{'\x6e\x61\x6d\x65':'\u614b\u5ea6','\x7a\x68':_0x434d9c['\x52\x79\x7a\x77\x6c'],'\x63\x61\x72\x64':_0x78293e[0x1*0x1543+0x1f54*-0x1+0xa15]},{'\x6e\x61\x6d\x65':'\u884c\u52d5','\x7a\x68':_0x434d9c['\x4c\x54\x47\x68\x6d'],'\x63\x61\x72\x64':_0x78293e[-0x89b*-0x3+-0x2d6+-0x16f6]},{'\x6e\x61\x6d\x65':'\u7d50\u679c','\x7a\x68':_0x434d9c[_0x4e7a21(0x231)],'\x63\x61\x72\x64':_0x78293e[0x391*-0x1+-0xe48*0x1+0x11df]}]};}var TAROT_KABBALAH={0x0:{'\x70\x61\x74\x68':'\x31\x31','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x26d)+_0x4d339c(0x1d6),'\x7a\x68':'\u738b\u51a0\u2192\u667a\u6167','\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x205),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x245)+_0x4d339c(0x1c1)},0x1:{'\x70\x61\x74\x68':'\x31\x32','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x1b5)+'\x69\x6e\x61\x68','\x7a\x68':'\u738b\u51a0\u2192\u7406\u89e3','\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x1ff),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x27a)+_0x4d339c(0x24b)},0x2:{'\x70\x61\x74\x68':'\x31\x33','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x1f0)+_0x4d339c(0x22f),'\x7a\x68':_0x4d339c(0x225),'\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x28d),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x1f2)+'\u76f4\u89ba\u7684\u901a\u9053'},0x3:{'\x70\x61\x74\x68':'\x31\x34','\x73\x65\x70\x68\x69\x72\x6f\x74':'\x43\x68\x6f\x6b\x6d\x61\x68\u2192'+_0x4d339c(0x1f5),'\x7a\x68':_0x4d339c(0x261),'\x6c\x65\x74\x74\x65\x72':'\x44\x61\x6c\x65\x74\x68','\x6d\x65\x61\x6e\x69\x6e\x67':'\u8c50\u76db\u4e4b\u9580\uff0c\u5275\u9020\u8207'+_0x4d339c(0x252)},0x4:{'\x70\x61\x74\x68':'\x31\x35','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x240)+'\x54\x69\x70\x68\x65\x72\x65\x74'+'\x68','\x7a\x68':_0x4d339c(0x247),'\x6c\x65\x74\x74\x65\x72':'\x48\x65','\x6d\x65\x61\x6e\x69\x6e\x67':'\u9748\u6027\u7684\u7a97\u53e3\uff0c\u5167\u5728'+'\u6559\u5c0e'},0x5:{'\x70\x61\x74\x68':'\x31\x36','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x240)+'\x43\x68\x65\x73\x65\x64','\x7a\x68':_0x4d339c(0x260),'\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x22c),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u9748\u9b42\u7684\u9078\u64c7\uff0c\u4e0a\u4e0b'+'\u7684\u9023\u7d50'},0x6:{'\x70\x61\x74\x68':'\x31\x37','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x221)+_0x4d339c(0x248),'\x7a\x68':'\u7406\u89e3\u2192\u7f8e','\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x255),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u5c0d\u7acb\u7684\u7d50\u5408\uff0c\u95dc\u4fc2'+_0x4d339c(0x223)},0x7:{'\x70\x61\x74\x68':'\x31\x38','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x276)+_0x4d339c(0x1cc),'\x7a\x68':_0x4d339c(0x227),'\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x288),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x28c)+'\u9650\u5236'},0x8:{'\x70\x61\x74\x68':'\x31\x39','\x73\x65\x70\x68\x69\x72\x6f\x74':'\x43\x68\x65\x73\x65\x64\u2192\x47'+'\x65\x62\x75\x72\x61\x68','\x7a\x68':_0x4d339c(0x1de),'\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x24c),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x208)+'\u5728\u91ce\u7378'},0x9:{'\x70\x61\x74\x68':'\x32\x30','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x243)+_0x4d339c(0x22f),'\x7a\x68':'\u6148\u60b2\u2192\u7f8e','\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x20c),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x1ba)+'\u4e4b\u5149'},0xa:{'\x70\x61\x74\x68':'\x32\x31','\x73\x65\x70\x68\x69\x72\x6f\x74':'\x43\x68\x65\x73\x65\x64\u2192\x4e'+_0x4d339c(0x1ce),'\x7a\x68':_0x4d339c(0x275),'\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x1b1),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u547d\u904b\u4e4b\u8f2a\uff0c\u696d\u529b\u7684'+'\u5faa\u74b0'},0xb:{'\x70\x61\x74\x68':'\x32\x32','\x73\x65\x70\x68\x69\x72\x6f\x74':'\x47\x65\x62\x75\x72\x61\x68\u2192'+_0x4d339c(0x1ab)+'\x68','\x7a\x68':'\u529b\u91cf\u2192\u7f8e','\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x1ec),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x1bd)+_0x4d339c(0x26c)},0xc:{'\x70\x61\x74\x68':'\x32\x33','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x23e)+_0x4d339c(0x1a6),'\x7a\x68':_0x4d339c(0x1da),'\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x27d),'\x6d\x65\x61\x6e\x69\x6e\x67':'\u72a7\u7272\u8207\u81e3\u670d\uff0c\u6c34\u7684'+'\u6d17\u79ae'},0xd:{'\x70\x61\x74\x68':'\x32\x34','\x73\x65\x70\x68\x69\x72\x6f\x74':'\x54\x69\x70\x68\x65\x72\x65\x74'+_0x4d339c(0x216)+'\x68','\x7a\x68':_0x4d339c(0x22d),'\x6c\x65\x74\x74\x65\x72':'\x4e\x75\x6e','\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x273)+'\u7684\u8f49\u5316'},0xe:{'\x70\x61\x74\x68':'\x32\x35','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x1ab)+'\x68\u2192\x59\x65\x73\x6f\x64','\x7a\x68':_0x4d339c(0x28f),'\x6c\x65\x74\x74\x65\x72':'\x53\x61\x6d\x65\x6b\x68','\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x23b)+_0x4d339c(0x1e3)},0xf:{'\x70\x61\x74\x68':'\x32\x36','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x1ab)+_0x4d339c(0x259),'\x7a\x68':_0x4d339c(0x1c7),'\x6c\x65\x74\x74\x65\x72':'\x41\x79\x69\x6e','\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x24a)+_0x4d339c(0x1f1)},0x10:{'\x70\x61\x74\x68':'\x32\x37','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x1f8)+_0x4d339c(0x1a6),'\x7a\x68':_0x4d339c(0x237),'\x6c\x65\x74\x74\x65\x72':'\x50\x65\x68','\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x1e2)+'\u6467\u6bc0'},0x11:{'\x70\x61\x74\x68':'\x32\x38','\x73\x65\x70\x68\x69\x72\x6f\x74':'\x4e\x65\x74\x7a\x61\x63\x68\u2192'+_0x4d339c(0x203),'\x7a\x68':_0x4d339c(0x1d8),'\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x249),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x26b)+_0x4d339c(0x1be)},0x12:{'\x70\x61\x74\x68':'\x32\x39','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x1f8)+'\x4d\x61\x6c\x6b\x75\x74\x68','\x7a\x68':_0x4d339c(0x21d),'\x6c\x65\x74\x74\x65\x72':'\x51\x6f\x70\x68','\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x239)+_0x4d339c(0x1ef)},0x13:{'\x70\x61\x74\x68':'\x33\x30','\x73\x65\x70\x68\x69\x72\x6f\x74':'\x48\x6f\x64\u2192\x59\x65\x73\x6f'+'\x64','\x7a\x68':_0x4d339c(0x20e),'\x6c\x65\x74\x74\x65\x72':_0x4d339c(0x281),'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x1d3)+_0x4d339c(0x1bc)},0x14:{'\x70\x61\x74\x68':'\x33\x31','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x278)+_0x4d339c(0x1ed),'\x7a\x68':_0x4d339c(0x1ae),'\x6c\x65\x74\x74\x65\x72':'\x53\x68\x69\x6e','\x6d\x65\x61\x6e\x69\x6e\x67':_0x4d339c(0x23d)+_0x4d339c(0x1bc)},0x15:{'\x70\x61\x74\x68':'\x33\x32','\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4d339c(0x266)+_0x4d339c(0x265),'\x7a\x68':_0x4d339c(0x1eb),'\x6c\x65\x74\x74\x65\x72':'\x54\x61\x76','\x6d\x65\x61\x6e\x69\x6e\x67':'\u4e16\u754c\u7684\u5b8c\u6210\uff0c\u5b87\u5b99'+'\u4e4b\u821e'}};function tarotKabbalahAnalysis(_0x8a3cd7){var _0x4edead=_0x4d339c,_0x44c40c={'\x54\x7a\x4a\x5a\x76':function(_0x408821,_0x195482){return _0x408821<_0x195482;}};if(!_0x8a3cd7||!_0x8a3cd7[_0x4edead(0x1cf)])return[];var _0x2d8f5b=[];return _0x8a3cd7['\x66\x6f\x72\x45\x61\x63\x68'](function(_0x5bf3c0){var _0x40c420=_0x4edead;if(_0x44c40c[_0x40c420(0x228)](_0x5bf3c0['\x69\x64'],-0x1607*-0x1+-0x182*0x13+0x6b5)){if(_0x40c420(0x24e)!==_0x40c420(0x25b)){var _0x57ca31=TAROT_KABBALAH[_0x5bf3c0['\x69\x64']];_0x57ca31&&_0x2d8f5b[_0x40c420(0x238)]({'\x63\x61\x72\x64\x49\x64':_0x5bf3c0['\x69\x64'],'\x63\x61\x72\x64\x4e\x61\x6d\x65':_0x5bf3c0['\x6e\x61\x6d\x65']||'','\x70\x61\x74\x68':_0x57ca31[_0x40c420(0x1e9)],'\x73\x65\x70\x68\x69\x72\x6f\x74':_0x57ca31['\x73\x65\x70\x68\x69\x72\x6f\x74'],'\x73\x65\x70\x68\x69\x72\x6f\x74\x5a\x68':_0x57ca31['\x7a\x68'],'\x6c\x65\x74\x74\x65\x72':_0x57ca31['\x6c\x65\x74\x74\x65\x72'],'\x6d\x65\x61\x6e\x69\x6e\x67':_0x57ca31[_0x40c420(0x27e)]});}else _0x2d580f[_0x21989b]>_0x14ae31&&(_0x263333=_0x4de11f[_0x432992],_0x4a4b77=_0x2488a8);}}),_0x2d8f5b;}function tarotSuitAnalysis(_0x1e5069){var _0x119080=_0x4d339c,_0x2061bd={'\x76\x57\x7a\x79\x56':function(_0x1de0d5,_0x478d52){return _0x1de0d5%_0x478d52;},'\x4f\x50\x66\x6c\x74':function(_0x478a79,_0x978667){return _0x478a79-_0x978667;},'\x66\x50\x43\x43\x6e':function(_0x43b484,_0xb7a7c9){return _0x43b484/_0xb7a7c9;},'\x4d\x65\x64\x48\x53':function(_0x586a00,_0x18e37c){return _0x586a00===_0x18e37c;},'\x4a\x75\x72\x4e\x71':function(_0x196eca,_0x20c882){return _0x196eca<_0x20c882;},'\x41\x67\x6e\x71\x6e':_0x119080(0x26a),'\x53\x79\x41\x6f\x72':_0x119080(0x23f),'\x6d\x50\x6e\x59\x59':_0x119080(0x277),'\x63\x41\x43\x4d\x72':function(_0x2c415d,_0x5a1d42){return _0x2c415d===_0x5a1d42;},'\x54\x7a\x4d\x61\x6d':_0x119080(0x257),'\x52\x73\x5a\x65\x56':'\x76\x45\x70\x63\x65','\x4b\x4d\x66\x41\x56':_0x119080(0x291),'\x6c\x6c\x41\x68\x4c':_0x119080(0x1c6),'\x42\x76\x66\x43\x74':_0x119080(0x1ea)+'\x73','\x4d\x4a\x69\x7a\x6c':function(_0x49cb8f,_0x3b110c){return _0x49cb8f>_0x3b110c;},'\x66\x44\x75\x54\x55':function(_0x210b7d,_0x2836fa){return _0x210b7d/_0x2836fa;},'\x78\x68\x76\x4c\x58':function(_0x1eef89,_0x55444c){return _0x1eef89*_0x55444c;},'\x68\x74\x41\x4e\x6d':function(_0x27c5c3,_0x32c176){return _0x27c5c3+_0x32c176;},'\x59\x4c\x65\x71\x74':function(_0x1a3fbd,_0x1b6c0d){return _0x1a3fbd+_0x1b6c0d;},'\x65\x70\x6b\x57\x52':function(_0x5a75ad,_0x11ac21){return _0x5a75ad+_0x11ac21;},'\x56\x73\x73\x48\x59':'\u7121\u4e3b\u5c0e\u5143\u7d20','\x41\x77\x53\x44\x73':function(_0x3a07f4,_0x555305){return _0x3a07f4+_0x555305;},'\x49\x4d\x44\x62\x47':function(_0x4552ab,_0x2cdf73){return _0x4552ab>=_0x2cdf73;},'\x55\x48\x57\x43\x7a':_0x119080(0x27c)+_0x119080(0x1f3),'\x66\x72\x53\x75\x4d':_0x119080(0x1cd)+_0x119080(0x285)};if(!_0x1e5069||!_0x1e5069[_0x119080(0x1cf)])return null;var _0x329066={'\x6d\x61\x6a\x6f\x72':0x0,'\x77\x61\x6e\x64\x73':0x0,'\x63\x75\x70\x73':0x0,'\x73\x77\x6f\x72\x64\x73':0x0,'\x70\x65\x6e\x74\x61\x63\x6c\x65\x73':0x0,'\x63\x6f\x75\x72\x74':0x0,'\x70\x69\x70':0x0},_0x25c8d0=0x10a6*0x1+0x4*-0x81d+0xfce;_0x1e5069[_0x119080(0x209)](function(_0x43275c){var _0x33e822=_0x119080,_0x3ed447=('\x35\x7c\x32\x7c\x31\x7c\x34\x7c'+_0x33e822(0x1b8))[_0x33e822(0x213)]('\x7c'),_0x62429b=-0x6f8+-0x18b*-0xf+-0x1*0x102d;while(!![]){switch(_0x3ed447[_0x62429b++]){case'\x30':if(_0x4868d3>0x637*0x1+0xa04+-0x1031)_0x329066[_0x33e822(0x22b)]++;else _0x329066[_0x33e822(0x232)]++;continue;case'\x31':var _0x4868d3=_0x2061bd['\x76\x57\x7a\x79\x56'](_0x2061bd['\x4f\x50\x66\x6c\x74'](_0x43275c['\x69\x64'],0x2*-0x2bd+-0x20*0x61+0x11b0),0x13e7+0x359*-0x3+-0x9ce)+(0x1*-0x1251+-0x252a+-0x43*-0xd4);continue;case'\x32':var _0x1b1061=Math[_0x33e822(0x24f)](_0x2061bd[_0x33e822(0x1d9)](_0x43275c['\x69\x64']-(-0xb*-0xdb+0xfd3+-0x1926),-0x1333+-0x7b2*0x4+0x3209));continue;case'\x33':if(_0x43275c['\x72\x65\x76\x65\x72\x73\x65\x64'])_0x25c8d0++;continue;case'\x34':if(_0x1b1061===-0x1a1*0xb+-0x1*0x52f+0x171a)_0x329066['\x77\x61\x6e\x64\x73']++;else{if(_0x2061bd['\x4d\x65\x64\x48\x53'](_0x1b1061,0x167*-0x13+0x1e7a+0x4*-0xf5))_0x329066['\x63\x75\x70\x73']++;else{if(_0x1b1061===-0x4*-0x77b+0x2*-0x97e+-0xaee)_0x329066[_0x33e822(0x1c6)]++;else _0x329066[_0x33e822(0x1ea)+'\x73']++;}}continue;case'\x35':if(_0x43275c['\x69\x64']<0x4a9*0x1+0xb09+-0x7ce*0x2){_0x329066[_0x33e822(0x254)]++;return;}continue;}break;}});var _0x3e1634={'\x77\x61\x6e\x64\x73':'\u706b','\x63\x75\x70\x73':'\u6c34','\x73\x77\x6f\x72\x64\x73':'\u98a8','\x70\x65\x6e\x74\x61\x63\x6c\x65\x73':'\u571f'},_0x8ef543='',_0x110e6f=-0xbc5+-0x20ca+-0x29f*-0x11;['\x77\x61\x6e\x64\x73',_0x2061bd['\x4b\x4d\x66\x41\x56'],_0x2061bd['\x6c\x6c\x41\x68\x4c'],_0x119080(0x1ea)+'\x73'][_0x119080(0x209)](function(_0x3b442e){var _0x2cb036=_0x119080,_0x49d505={'\x6a\x42\x6a\x65\x41':function(_0x58e904,_0x87dbb8){var _0x449a42=_0xa74f;return _0x2061bd[_0x449a42(0x1dc)](_0x58e904,_0x87dbb8);},'\x65\x45\x48\x57\x78':_0x2061bd['\x41\x67\x6e\x71\x6e'],'\x62\x4c\x47\x69\x78':_0x2061bd['\x53\x79\x41\x6f\x72'],'\x7a\x76\x62\x6a\x63':_0x2061bd[_0x2cb036(0x206)],'\x69\x72\x64\x75\x73':'\u5468\u570d\u4eba\u7684\u5f71\u97ff','\x43\x57\x53\x68\x56':_0x2cb036(0x226),'\x57\x63\x42\x69\x65':_0x2cb036(0x1ac)};if(_0x2061bd[_0x2cb036(0x274)](_0x2061bd[_0x2cb036(0x217)],_0x2061bd[_0x2cb036(0x217)])){if(_0x329066[_0x3b442e]>_0x110e6f){if(_0x2061bd[_0x2cb036(0x1c0)]!==_0x2cb036(0x1dd))_0x110e6f=_0x329066[_0x3b442e],_0x8ef543=_0x3b442e;else{if(eZQKKQ[_0x2cb036(0x21a)](_0x223304['\x69\x64'],0xb6+-0x1*-0x130a+-0x13aa)){var _0x4f6d2b=_0x53c9d9[_0x4501ae['\x69\x64']];_0x4f6d2b&&_0x42d9c2[_0x2cb036(0x238)]({'\x63\x61\x72\x64\x49\x64':_0x23101a['\x69\x64'],'\x63\x61\x72\x64\x4e\x61\x6d\x65':_0x277b81[_0x2cb036(0x28b)]||'','\x70\x61\x74\x68':_0x4f6d2b[_0x2cb036(0x1e9)],'\x73\x65\x70\x68\x69\x72\x6f\x74':_0x4f6d2b['\x73\x65\x70\x68\x69\x72\x6f\x74'],'\x73\x65\x70\x68\x69\x72\x6f\x74\x5a\x68':_0x4f6d2b['\x7a\x68'],'\x6c\x65\x74\x74\x65\x72':_0x4f6d2b['\x6c\x65\x74\x74\x65\x72'],'\x6d\x65\x61\x6e\x69\x6e\x67':_0x4f6d2b[_0x2cb036(0x27e)]});}}}}else{if(!_0x974e74||_0x4b85ea[_0x2cb036(0x1cf)]<0xc2e+-0x56+0xb*-0x113)return null;return{'\x74\x79\x70\x65':_0x2cb036(0x1d5)+'\x65','\x7a\x68':_0x2cb036(0x242),'\x70\x6f\x73\x69\x74\x69\x6f\x6e\x73':[{'\x6e\x61\x6d\x65':'\u904e\u53bb','\x7a\x68':eZQKKQ['\x65\x45\x48\x57\x78'],'\x63\x61\x72\x64':_0x1d5b20[-0x9de+0x1fbd+-0x1*0x15df]},{'\x6e\x61\x6d\x65':'\u73fe\u5728','\x7a\x68':_0x2cb036(0x1db),'\x63\x61\x72\x64':_0x2fddb6[0x20ec+0x74a+-0x2835]},{'\x6e\x61\x6d\x65':eZQKKQ[_0x2cb036(0x258)],'\x7a\x68':eZQKKQ[_0x2cb036(0x271)],'\x63\x61\x72\x64':_0x13d56b[-0x1bd8+0xdc5+0xe15]},{'\x6e\x61\x6d\x65':'\u74b0\u5883','\x7a\x68':eZQKKQ[_0x2cb036(0x1a8)],'\x63\x61\x72\x64':_0x12095e[-0x6fd*0x2+0x1*-0x22bb+0x30b8]},{'\x6e\x61\x6d\x65':'\u614b\u5ea6','\x7a\x68':_0x2cb036(0x1ad),'\x63\x61\x72\x64':_0x1bfb37[-0x10c8+0x1f9*-0x3+0x1*0x16b7]},{'\x6e\x61\x6d\x65':'\u884c\u52d5','\x7a\x68':eZQKKQ[_0x2cb036(0x1f6)],'\x63\x61\x72\x64':_0x50a118[-0x146c+0x62e*0x6+-0x10a3]},{'\x6e\x61\x6d\x65':'\u7d50\u679c','\x7a\x68':eZQKKQ[_0x2cb036(0x1f7)],'\x63\x61\x72\x64':_0xa4e50e[-0x7f*0x29+0x220f+-0x6d9*0x2]}]};}});var _0x4dc747=[];return[_0x119080(0x25c),_0x119080(0x291),_0x119080(0x1c6),_0x2061bd[_0x119080(0x1b6)]]['\x66\x6f\x72\x45\x61\x63\x68'](function(_0x5319da){var _0x4287fe=_0x119080;if(_0x2061bd[_0x4287fe(0x274)](_0x329066[_0x5319da],-0x35d+0x1*0x1964+0x1*-0x1607)&&_0x1e5069['\x6c\x65\x6e\x67\x74\x68']>=0x22fb+-0x33b*-0x3+-0x2ca9)_0x4dc747[_0x4287fe(0x238)](_0x3e1634[_0x5319da]);}),{'\x63\x6f\x75\x6e\x74\x73':_0x329066,'\x72\x65\x76\x65\x72\x73\x65\x64\x43\x6f\x75\x6e\x74':_0x25c8d0,'\x72\x65\x76\x65\x72\x73\x65\x64\x52\x61\x74\x69\x6f':_0x2061bd[_0x119080(0x25d)](_0x1e5069[_0x119080(0x1cf)],0x1f6e+-0x2a*-0x70+-0x31ce)?Math[_0x119080(0x1fb)](_0x25c8d0/_0x1e5069[_0x119080(0x1cf)]*(-0xe1d+0x23b9+-0x1538)):-0x2094+-0x4d*0xe+0x115*0x22,'\x64\x6f\x6d\x69\x6e\x61\x6e\x74\x53\x75\x69\x74':_0x8ef543,'\x64\x6f\x6d\x69\x6e\x61\x6e\x74\x45\x6c\x65\x6d\x65\x6e\x74':_0x3e1634[_0x8ef543]||'','\x6d\x69\x73\x73\x69\x6e\x67\x45\x6c\x65\x6d\x65\x6e\x74\x73':_0x4dc747,'\x6d\x61\x6a\x6f\x72\x52\x61\x74\x69\x6f':_0x1e5069[_0x119080(0x1cf)]>0x107e+0xa4*-0x3+-0x2ea*0x5?Math[_0x119080(0x1fb)](_0x2061bd[_0x119080(0x1b4)](_0x329066[_0x119080(0x254)],_0x1e5069[_0x119080(0x1cf)])*(-0x87a+-0x6c*-0x10+0x21e)):0x127a+-0x5e0+-0x64d*0x2,'\x63\x6f\x75\x72\x74\x52\x61\x74\x69\x6f':_0x1e5069['\x6c\x65\x6e\x67\x74\x68']>0x1ac7+0x24e2+-0x2b*0x17b?Math['\x72\x6f\x75\x6e\x64'](_0x2061bd['\x78\x68\x76\x4c\x58'](_0x329066[_0x119080(0x22b)]/_0x1e5069[_0x119080(0x1cf)],-0x1d3*0x5+-0x156*-0x17+-0x1*0x1537)):0x1*0x1df+0x2486+-0x2665,'\x7a\x68':_0x2061bd[_0x119080(0x214)](_0x2061bd[_0x119080(0x1b9)](_0x8ef543?_0x2061bd[_0x119080(0x214)](_0x2061bd[_0x119080(0x1b9)](_0x2061bd[_0x119080(0x233)]('\u4e3b\u5c0e\u5143\u7d20\uff1a'+_0x3e1634[_0x8ef543]+'\uff08',_0x8ef543),'\x20'),_0x110e6f)+'\u5f35\uff09':_0x2061bd[_0x119080(0x224)],_0x2061bd[_0x119080(0x25d)](_0x4dc747[_0x119080(0x1cf)],-0x1*-0xe1d+0x76a+-0x1*0x1587)?_0x2061bd[_0x119080(0x215)](_0x119080(0x267),_0x4dc747['\x6a\x6f\x69\x6e']('\u3001')):'')+(_0x2061bd[_0x119080(0x1c5)](_0x329066[_0x119080(0x254)],0xa*-0xe2+0x545+0x392)?_0x2061bd[_0x119080(0x27b)]:''),_0x25c8d0>_0x2061bd[_0x119080(0x1b4)](_0x1e5069[_0x119080(0x1cf)],-0xca0+-0x30*0x5b+0x1db2)?_0x2061bd['\x66\x72\x53\x75\x4d']:'')};}function enhanceTarot(_0x6b31fb){var _0x4aee11=_0x4d339c,_0x153820={'\x4d\x68\x4a\x54\x50':function(_0x3ec7ed,_0x4244ef,_0xfa1c28){return _0x3ec7ed(_0x4244ef,_0xfa1c28);},'\x51\x4b\x67\x67\x70':'\x67\x65\x6e\x65\x72\x61\x6c','\x55\x47\x78\x73\x75':function(_0x594151,_0x1b242d){return _0x594151<_0x1b242d;},'\x71\x65\x74\x4d\x6d':function(_0x21ff7e,_0xeee220){return _0x21ff7e===_0xeee220;},'\x76\x46\x56\x66\x55':'\x51\x41\x77\x48\x46','\x76\x53\x68\x4e\x62':function(_0x58bc0e,_0x1e770c){return _0x58bc0e(_0x1e770c);},'\x68\x69\x4b\x76\x6b':'\x79\x47\x49\x47\x79','\x4b\x50\x41\x68\x72':function(_0x15c982,_0x1ac3c9,_0x38022a){return _0x15c982(_0x1ac3c9,_0x38022a);},'\x79\x76\x74\x50\x6f':function(_0x4adb92,_0x2f0b1c,_0xda7324){return _0x4adb92(_0x2f0b1c,_0xda7324);}};if(!_0x6b31fb||!_0x6b31fb[_0x4aee11(0x1e7)]||!_0x6b31fb[_0x4aee11(0x1e7)][_0x4aee11(0x1cf)])return _0x6b31fb;var _0x24234c=_0x6b31fb['\x64\x72\x61\x77\x6e'];try{if(_0x153820[_0x4aee11(0x23a)](_0x153820[_0x4aee11(0x21b)],_0x4aee11(0x1fc)))_0x6b31fb[_0x4aee11(0x1b2)+'\x67\x79']=_0x153820[_0x4aee11(0x1fd)](tarotNumerologyAnalysis,_0x24234c);else try{_0xc0df2f[_0x4aee11(0x1bb)+'\x61\x6c\x79\x73\x69\x73']=_0x153820[_0x4aee11(0x272)](_0x2a9117,_0x845b88,_0x2ff450[_0x4aee11(0x1e1)]||_0x153820[_0x4aee11(0x270)]);}catch(_0x56333e){}}catch(_0xb44b89){_0x4aee11(0x1b0)!==_0x153820[_0x4aee11(0x292)]?_0x6b31fb['\x6e\x75\x6d\x65\x72\x6f\x6c\x6f'+'\x67\x79']=null:_0x50ba7d[_0x4aee11(0x1bb)+_0x4aee11(0x210)]=_0x2ec77a(_0x5de9c3,_0x277b2e['\x74\x79\x70\x65']||_0x153820[_0x4aee11(0x270)]);}if(_0x24234c[_0x4aee11(0x1cf)]===-0x1*-0x185c+0x5*-0x4c9+-0x6c)try{_0x6b31fb[_0x4aee11(0x1bb)+_0x4aee11(0x210)]=_0x153820['\x4b\x50\x41\x68\x72'](tarotThreeCardSpread,_0x24234c,_0x6b31fb[_0x4aee11(0x1e1)]||_0x153820[_0x4aee11(0x270)]);}catch(_0x3aa0b6){}else{if(_0x153820['\x71\x65\x74\x4d\x6d'](_0x24234c[_0x4aee11(0x1cf)],-0x1a38+-0x5fd+0x203a)){if(_0x4aee11(0x20a)!==_0x4aee11(0x1ca))try{_0x6b31fb[_0x4aee11(0x1bb)+'\x61\x6c\x79\x73\x69\x73']=_0x153820['\x79\x76\x74\x50\x6f'](tarotCrossSpread,_0x24234c,_0x6b31fb[_0x4aee11(0x1e1)]||_0x4aee11(0x200));}catch(_0x1fccc3){}else{if(!_0xf4cbfc||!_0x30d7d1[_0x4aee11(0x1cf)])return[];var _0x16db40=[];return _0xb646a3[_0x4aee11(0x209)](function(_0x1588e3){var _0xc076a6=_0x4aee11;if(KbTbgN[_0xc076a6(0x1fe)](_0x1588e3['\x69\x64'],0x96*-0x3b+0x144e+0xe5a)){var _0xa30039=_0x5c0be1[_0x1588e3['\x69\x64']];_0xa30039&&_0x16db40['\x70\x75\x73\x68']({'\x63\x61\x72\x64\x49\x64':_0x1588e3['\x69\x64'],'\x63\x61\x72\x64\x4e\x61\x6d\x65':_0x1588e3[_0xc076a6(0x28b)]||'','\x70\x61\x74\x68':_0xa30039[_0xc076a6(0x1e9)],'\x73\x65\x70\x68\x69\x72\x6f\x74':_0xa30039[_0xc076a6(0x27f)],'\x73\x65\x70\x68\x69\x72\x6f\x74\x5a\x68':_0xa30039['\x7a\x68'],'\x6c\x65\x74\x74\x65\x72':_0xa30039[_0xc076a6(0x230)],'\x6d\x65\x61\x6e\x69\x6e\x67':_0xa30039['\x6d\x65\x61\x6e\x69\x6e\x67']});}}),_0x16db40;}}else{if(_0x24234c[_0x4aee11(0x1cf)]===-0x1*0x146b+0x1b0d+-0x69b)try{_0x6b31fb[_0x4aee11(0x1bb)+'\x61\x6c\x79\x73\x69\x73']=tarotHorseshoeSpread(_0x24234c,_0x6b31fb['\x74\x79\x70\x65']||_0x4aee11(0x200));}catch(_0x26ba69){}}}try{_0x6b31fb['\x6b\x61\x62\x62\x61\x6c\x61\x68']=tarotKabbalahAnalysis(_0x24234c);}catch(_0x20abd5){_0x6b31fb[_0x4aee11(0x1d2)]=[];}try{_0x6b31fb[_0x4aee11(0x282)+'\x79\x73\x69\x73']=tarotSuitAnalysis(_0x24234c);}catch(_0x2bfd04){_0x6b31fb['\x73\x75\x69\x74\x41\x6e\x61\x6c'+_0x4aee11(0x1d7)]=null;}return _0x6b31fb;}function _0x3d64(){var _0x19bd53=['\x35\x37\x36\x6f\x34\x4f\x41\x73\x35\x51\x41\x55\x36\x69\x63\x61','\x6e\x4a\x75\x58\x6e\x64\x69\x30\x79\x78\x6e\x67\x79\x4d\x6e\x54','\x42\x30\x39\x79\x45\x65\x71','\x7a\x75\x39\x50\x7a\x30\x43','\x43\x32\x76\x48\x43\x4d\x6e\x4f','\x79\x4e\x76\x59\x79\x77\x47','\x34\x34\x6f\x37\x36\x79\x63\x67\x35\x6c\x32\x6e\x36\x79\x67\x6f\x35\x79\x32\x6b\x37\x37\x59\x69\x35\x79\x77\x4e\x35\x7a\x59\x4f','\x7a\x78\x72\x36\x79\x77\x6e\x4f','\x42\x67\x76\x55\x7a\x33\x72\x4f','\x35\x6c\x49\x6a\x6c\x2b\x77\x4c\x53\x2b\x45\x41\x48\x2b\x41\x76\x55\x61','\x35\x50\x59\x51\x35\x6c\x36\x67\x37\x37\x59\x69\x35\x41\x41\x63\x35\x50\x36\x43\x35\x6c\x2b\x44\x35\x4f\x59\x62\x35\x34\x2b\x2b','\x41\x32\x66\x49\x79\x4d\x66\x53\x79\x77\x47','\x35\x41\x73\x51\x36\x7a\x4d\x39\x35\x35\x51\x65\x35\x79\x77\x6a\x36\x6c\x59\x44\x37\x37\x59\x6d\x35\x4f\x73\x70\x36\x6b\x32\x79','\x35\x6c\x4d\x44\x6c\x2b\x4d\x41\x53\x45\x49\x61\x48\x45\x41\x76\x55\x61','\x41\x67\x39\x59\x43\x32\x76\x5a\x41\x67\x38','\x41\x67\x39\x52\x42\x77\x66\x4f','\x45\x78\x6e\x50\x43\x57','\x35\x79\x55\x44\x35\x79\x49\x50\x34\x4f\x41\x73\x35\x7a\x2b\x36\x35\x36\x73\x6f','\x7a\x4c\x62\x64\x71\x32\x34','\x35\x79\x51\x42\x36\x79\x45\x70\x34\x4f\x41\x73\x35\x51\x41\x55\x36\x69\x63\x61','\x35\x35\x55\x55\x35\x79\x4d\x6e\x35\x35\x51\x65\x36\x6a\x4d\x76\x35\x41\x6b\x64','\x73\x4e\x76\x59\x74\x4e\x65','\x42\x32\x44\x69\x77\x68\x65','\x35\x4f\x77\x69\x35\x4f\x6b\x59\x34\x4f\x41\x73\x35\x79\x51\x42\x36\x79\x45\x70','\x35\x6c\x49\x6a\x35\x42\x59\x31\x35\x34\x4d\x6d\x35\x7a\x63\x6d\x35\x34\x6b\x36','\x77\x78\x50\x75\x43\x4d\x4b','\x44\x68\x4c\x57\x7a\x71','\x36\x7a\x55\x33\x35\x50\x6f\x6b\x35\x41\x67\x75\x37\x37\x59\x6d\x36\x69\x49\x6b\x35\x37\x77\x71\x35\x51\x45\x6c\x35\x35\x51\x65','\x35\x35\x51\x65\x36\x79\x67\x74\x36\x6c\x45\x56','\x36\x79\x67\x6f\x35\x79\x36\x37\x37\x37\x59\x69\x35\x42\x32\x58\x36\x7a\x2b\x2f\x35\x6c\x32\x47\x36\x6c\x77\x57\x35\x79\x49\x57','\x76\x4d\x54\x71\x76\x65\x30','\x42\x77\x66\x57','\x7a\x68\x6a\x48\x44\x32\x34','\x73\x32\x4c\x52\x44\x32\x43','\x43\x67\x66\x30\x41\x61','\x43\x67\x76\x55\x44\x67\x66\x4a\x42\x67\x75','\x35\x7a\x2b\x36\x35\x36\x73\x6f\x34\x4f\x41\x73\x35\x34\x36\x6c\x35\x7a\x59\x6c','\x74\x67\x66\x54\x7a\x77\x71','\x44\x78\x72\x4f','\x79\x30\x76\x36\x73\x33\x75','\x36\x6b\x32\x79\x35\x35\x51\x65\x35\x50\x45\x66\x35\x36\x49\x6c','\x73\x32\x76\x30\x41\x67\x76\x59\x34\x4f\x41\x73\x76\x61','\x35\x35\x51\x65\x36\x7a\x32\x49\x35\x42\x63\x6e','\x36\x6c\x45\x4f\x36\x6c\x41\x6b\x35\x52\x45\x58\x35\x52\x45\x31\x35\x35\x51\x65\x35\x51\x4d\x6c\x35\x51\x49\x72\x37\x37\x59\x6d','\x37\x37\x59\x69\x35\x7a\x67\x39\x36\x79\x67\x6c\x35\x6c\x49\x37\x36\x41\x67\x6d\x35\x42\x59\x33\x35\x34\x6f\x69\x37\x37\x59\x6a','\x6d\x5a\x43\x35\x6d\x74\x66\x36\x75\x32\x7a\x6e\x42\x4d\x4b','\x71\x4d\x4c\x55\x79\x77\x47','\x71\x31\x44\x74\x41\x66\x79','\x76\x32\x6e\x63\x41\x77\x75','\x74\x4d\x76\x30\x45\x4d\x66\x4a\x41\x6f\x6b\x67\x4b\x47','\x6d\x74\x65\x31\x6e\x4a\x75\x31\x6d\x68\x6a\x74\x74\x75\x39\x32\x76\x57','\x35\x79\x2b\x6e\x35\x4f\x63\x44\x34\x34\x63\x62\x35\x36\x77\x45\x35\x36\x45\x79\x34\x34\x63\x62\x35\x79\x77\x4e\x35\x7a\x59\x4f','\x43\x4d\x39\x31\x42\x4d\x71','\x75\x75\x66\x33\x73\x65\x79','\x44\x4c\x6e\x4f\x74\x4d\x69','\x76\x75\x44\x34\x43\x33\x75','\x71\x4d\x76\x30\x41\x61','\x7a\x32\x76\x55\x7a\x78\x6a\x48\x42\x61','\x73\x67\x76\x76\x42\x67\x47','\x35\x35\x6b\x57\x36\x6c\x77\x33\x36\x42\x55\x45\x34\x34\x63\x62\x35\x37\x73\x75\x35\x37\x6b\x35\x35\x35\x51\x65\x35\x52\x32\x42','\x77\x77\x76\x5a\x42\x32\x71','\x6e\x64\x4c\x68\x7a\x67\x58\x5a\x74\x4b\x71','\x71\x77\x58\x4c\x43\x67\x47','\x42\x76\x62\x55\x77\x76\x4b','\x42\x77\x44\x6c\x7a\x32\x43','\x35\x4f\x73\x42\x35\x35\x51\x65\x35\x79\x51\x42\x36\x79\x45\x70\x37\x37\x59\x6d\x36\x41\x41\x30\x35\x50\x59\x6e\x35\x79\x77\x4e','\x7a\x4d\x39\x59\x72\x77\x66\x4a\x41\x61','\x44\x77\x58\x77\x73\x32\x71','\x34\x34\x63\x62\x35\x4f\x73\x42\x34\x34\x63\x62\x35\x37\x36\x6f','\x77\x77\x39\x4b','\x6b\x63\x47\x4f\x6c\x49\x53\x50\x6b\x59\x4b','\x35\x51\x41\x55\x36\x69\x63\x61\x34\x4f\x41\x73\x35\x7a\x2b\x36\x35\x36\x73\x6f','\x43\x4d\x6a\x6a\x77\x67\x43','\x79\x77\x58\x35\x43\x32\x4c\x5a','\x6d\x74\x65\x57\x6f\x74\x6d\x57\x6e\x4a\x44\x73\x7a\x4d\x58\x74\x44\x4d\x75','\x76\x4c\x48\x57\x72\x30\x71','\x43\x33\x62\x53\x41\x78\x71','\x41\x68\x72\x62\x74\x4d\x30','\x71\x78\x44\x74\x72\x68\x6d','\x41\x6f\x6b\x67\x4b\x4b\x35\x4c\x44\x68\x50\x48\x79\x57','\x76\x68\x50\x6e\x79\x77\x30','\x35\x79\x32\x62\x35\x41\x32\x78\x35\x34\x4d\x6d\x36\x7a\x4d\x4a','\x35\x36\x4d\x50\x35\x41\x36\x41\x34\x34\x63\x62\x35\x37\x77\x71\x35\x51\x45\x6c\x34\x34\x63\x62\x35\x36\x45\x50\x35\x42\x51\x70','\x41\x4b\x6a\x51\x7a\x75\x65','\x44\x4b\x7a\x77\x7a\x4c\x75','\x36\x7a\x32\x49\x36\x69\x45\x4f\x35\x35\x51\x65\x35\x4f\x59\x72\x35\x4f\x49\x57\x35\x4f\x49\x77\x36\x7a\x49\x37\x35\x36\x73\x7a','\x35\x79\x55\x44\x35\x79\x49\x50\x34\x4f\x41\x73\x35\x34\x36\x6c\x35\x7a\x59\x6c','\x35\x35\x51\x65\x35\x51\x63\x34\x35\x42\x2b\x64\x36\x69\x6f\x39\x36\x79\x45\x70\x37\x37\x59\x6a','\x42\x4e\x50\x62\x7a\x4d\x71','\x6d\x4a\x6d\x32\x6e\x64\x69\x35\x6e\x4b\x6e\x48\x44\x4d\x50\x32\x7a\x57','\x71\x4d\x4c\x55\x79\x77\x4a\x49\x48\x50\x6a\x75\x41\x71','\x35\x79\x32\x62\x6c\x2b\x77\x72\x56\x45\x4d\x62\x49\x2b\x41\x76\x55\x61','\x35\x35\x51\x65\x36\x69\x63\x64\x36\x41\x4d\x78','\x76\x4e\x6e\x5a\x73\x66\x4b','\x35\x34\x36\x6c\x35\x79\x41\x47\x34\x4f\x41\x73\x35\x37\x36\x6f','\x35\x42\x55\x36\x36\x6b\x32\x57\x35\x35\x51\x65\x35\x79\x77\x33\x36\x41\x55\x75\x36\x6b\x67\x6d\x35\x79\x55\x76','\x35\x35\x63\x67\x36\x6b\x45\x4a\x34\x4f\x41\x73\x35\x79\x51\x42\x36\x79\x45\x70','\x76\x68\x50\x6b\x77\x4e\x79','\x41\x32\x76\x35\x43\x57','\x6e\x4e\x57\x57\x46\x64\x69','\x79\x32\x39\x31\x43\x4e\x71','\x76\x4d\x66\x32','\x35\x37\x36\x6f\x34\x4f\x41\x73\x35\x79\x55\x44\x35\x79\x49\x50','\x6d\x5a\x69\x30\x6d\x64\x61\x31\x6e\x66\x44\x6c\x41\x30\x44\x58\x41\x57','\x41\x78\x62\x4f\x7a\x78\x6a\x4c\x44\x67\x47','\x42\x67\x76\x30\x44\x67\x76\x59','\x7a\x4e\x72\x5a\x42\x30\x79','\x43\x67\x4c\x57','\x7a\x78\x62\x52\x76\x31\x69','\x74\x66\x48\x48\x79\x75\x43','\x6d\x74\x6a\x4b\x45\x77\x76\x62\x44\x4c\x6d','\x6b\x59\x4b\x52\x6a\x61','\x35\x79\x55\x44\x35\x79\x49\x50\x34\x4f\x41\x73\x35\x51\x41\x55\x36\x69\x63\x61','\x43\x68\x76\x5a\x41\x61','\x35\x50\x59\x69\x35\x6c\x51\x55\x35\x35\x51\x65\x35\x42\x4d\x37\x36\x6c\x67\x48\x37\x37\x59\x6d\x35\x52\x32\x42\x35\x4f\x73\x70','\x43\x77\x76\x30\x74\x77\x30','\x35\x36\x2b\x61\x35\x79\x49\x32\x36\x69\x49\x68\x36\x6b\x51\x2f\x35\x7a\x6b\x6d\x37\x37\x59\x6d\x35\x41\x73\x50\x35\x6c\x32\x2f','\x34\x34\x63\x62\x35\x34\x73\x48\x36\x7a\x4d\x71\x34\x34\x63\x62\x35\x34\x4d\x50\x36\x6c\x6f\x51','\x35\x50\x59\x61\x35\x42\x36\x6d\x35\x35\x51\x65\x35\x41\x2b\x50\x35\x79\x49\x4b\x37\x37\x59\x6d\x36\x7a\x32\x69\x36\x41\x32\x63','\x72\x32\x76\x49\x44\x78\x6a\x48\x41\x6f\x6b\x67\x4b\x47','\x36\x7a\x51\x58\x36\x6a\x45\x70\x35\x42\x32\x58\x36\x7a\x2b\x2f','\x71\x32\x48\x56\x41\x32\x31\x48\x41\x6f\x6b\x67\x4b\x47','\x79\x32\x39\x55\x43\x33\x72\x59\x44\x77\x6d','\x36\x41\x41\x53\x36\x6c\x4d\x65\x35\x42\x32\x49\x35\x34\x4d\x6d\x36\x7a\x4d\x4a','\x71\x32\x48\x4c\x43\x32\x76\x4b\x34\x4f\x41\x73\x76\x61','\x34\x34\x63\x62\x35\x7a\x2b\x36\x35\x36\x73\x6f\x34\x34\x63\x62\x35\x79\x55\x7a\x35\x41\x2b\x4d','\x35\x36\x77\x45\x36\x69\x67\x77\x35\x35\x51\x65\x35\x4f\x73\x41\x36\x69\x63\x66\x37\x37\x59\x6d\x35\x37\x73\x75\x35\x37\x6b\x35','\x44\x67\x39\x59','\x35\x50\x4d\x36\x35\x4f\x77\x4e\x34\x4f\x41\x73\x35\x37\x36\x6f','\x43\x67\x48\x4c\x43\x4d\x76\x30\x41\x61','\x76\x68\x50\x48\x7a\x67\x72\x50','\x35\x34\x4d\x50\x36\x6c\x6f\x51\x35\x35\x51\x65\x36\x6b\x51\x79\x35\x4f\x6f\x72\x37\x37\x59\x6d\x36\x7a\x4d\x57\x35\x42\x32\x58','\x35\x4f\x63\x4e\x36\x6c\x32\x6a\x35\x79\x59\x77\x35\x34\x6b\x36\x35\x42\x32\x49\x35\x42\x59\x70','\x76\x67\x76\x30\x41\x61','\x34\x34\x63\x62\x36\x69\x45\x51\x35\x35\x73\x58\x34\x34\x63\x62\x35\x41\x32\x34\x35\x37\x2b\x73','\x71\x75\x6a\x72\x41\x4b\x34','\x7a\x4d\x58\x56\x42\x33\x69','\x35\x79\x77\x52\x6c\x2b\x77\x6b\x4d\x2b\x4d\x68\x4a\x2b\x41\x76\x55\x61','\x34\x34\x63\x62\x35\x36\x32\x6a\x35\x42\x36\x66\x34\x34\x63\x62\x35\x7a\x63\x69\x35\x6c\x32\x43','\x35\x4f\x36\x4c\x35\x50\x73\x32\x35\x35\x51\x65\x35\x37\x77\x71\x35\x7a\x63\x69','\x79\x78\x62\x57\x42\x68\x4b','\x42\x77\x66\x51\x42\x33\x69','\x77\x4d\x66\x50\x42\x47','\x35\x34\x55\x61\x35\x35\x51\x65\x36\x6c\x77\x57\x35\x7a\x63\x72\x37\x37\x59\x6a','\x73\x78\x44\x52\x76\x77\x34','\x79\x4b\x58\x68\x41\x78\x47','\x41\x6f\x6b\x67\x4b\x4b\x48\x56\x7a\x61','\x35\x79\x4d\x31\x36\x79\x63\x47\x34\x34\x63\x62\x36\x6c\x67\x71\x35\x35\x55\x42\x34\x34\x63\x62\x36\x6b\x67\x4f\x36\x79\x67\x75','\x73\x65\x48\x75\x76\x68\x75','\x44\x32\x66\x55\x7a\x68\x6d','\x74\x75\x50\x50\x45\x4d\x57','\x35\x34\x2b\x2b\x35\x7a\x59\x4f\x37\x37\x59\x69\x35\x6c\x32\x47\x35\x51\x32\x4a\x35\x7a\x59\x4f\x35\x37\x41\x74\x35\x51\x32\x33','\x72\x4b\x50\x69\x71\x4c\x47','\x35\x50\x4d\x36\x35\x4f\x77\x4e\x34\x4f\x41\x73\x35\x4f\x77\x69\x35\x4f\x6b\x59','\x35\x50\x4d\x36\x35\x4f\x77\x4e\x34\x4f\x41\x73\x35\x35\x63\x67\x36\x6b\x45\x4a','\x35\x7a\x59\x4f\x6c\x45\x41\x43\x51\x55\x73\x2b\x48\x55\x2b\x38\x49\x71','\x35\x79\x51\x42\x36\x79\x45\x70\x34\x34\x63\x62\x35\x4f\x36\x6d\x35\x4f\x36\x4e\x34\x34\x63\x62\x35\x51\x77\x54\x35\x79\x51\x42','\x73\x31\x6a\x51\x75\x66\x71','\x42\x67\x54\x31\x44\x67\x47','\x77\x77\x76\x5a\x42\x32\x74\x49\x48\x50\x6a\x6e\x79\x71','\x34\x34\x6f\x37\x35\x37\x59\x36\x35\x41\x73\x58\x37\x37\x59\x41','\x35\x6c\x49\x64\x6c\x2b\x41\x69\x53\x6f\x49\x37\x49\x55\x41\x76\x55\x61','\x43\x65\x72\x6e\x41\x31\x69','\x36\x79\x67\x6f\x35\x79\x36\x37\x35\x35\x51\x65\x35\x42\x32\x58\x36\x7a\x2b\x2f','\x35\x50\x49\x46\x35\x50\x49\x46\x35\x35\x51\x65\x35\x42\x49\x6d\x35\x50\x59\x42\x37\x37\x59\x6d\x36\x7a\x32\x69\x35\x4f\x63\x4e','\x35\x35\x51\x65\x35\x51\x32\x4a\x35\x37\x36\x50','\x73\x32\x76\x30\x41\x67\x76\x59\x34\x4f\x41\x73\x71\x57','\x35\x4f\x36\x49\x35\x37\x73\x49\x34\x34\x63\x62\x35\x6c\x2b\x48\x35\x6c\x55\x57\x34\x34\x63\x62\x35\x79\x55\x44\x35\x79\x49\x50','\x75\x66\x6a\x41\x73\x65\x47','\x75\x75\x54\x4e\x7a\x33\x61','\x45\x4e\x7a\x49\x41\x4d\x6d','\x74\x77\x48\x6b\x76\x66\x61','\x35\x51\x32\x37\x35\x6c\x51\x48\x36\x69\x49\x68\x36\x79\x45\x6e\x35\x35\x73\x46\x37\x37\x59\x6d\x35\x51\x63\x35\x35\x50\x59\x53','\x79\x30\x66\x64\x74\x78\x69','\x35\x4f\x77\x69\x35\x4f\x6b\x59\x34\x4f\x41\x73\x35\x79\x55\x44\x35\x79\x49\x50','\x71\x4d\x4c\x55\x79\x77\x4a\x49\x48\x50\x6a\x68\x7a\x71','\x35\x6c\x32\x47\x35\x79\x2b\x56\x36\x69\x6f\x39\x35\x42\x2b\x39\x35\x35\x77\x4c\x35\x35\x51\x65\x35\x7a\x55\x47\x35\x37\x73\x47','\x73\x67\x39\x4b\x34\x4f\x41\x73\x74\x77\x66\x53\x41\x57','\x6d\x74\x71\x31\x41\x4e\x4c\x5a\x7a\x4d\x66\x53','\x35\x79\x4d\x31\x36\x79\x63\x47\x35\x35\x51\x65\x35\x4f\x73\x70\x35\x42\x2b\x78\x37\x37\x59\x6d\x35\x42\x63\x68\x35\x36\x77\x45','\x76\x75\x48\x78\x71\x33\x4f','\x34\x34\x6f\x37\x35\x41\x73\x4e\x36\x7a\x49\x2f\x35\x34\x49\x2b\x35\x79\x77\x6c\x36\x79\x6b\x4a\x35\x79\x67\x70\x35\x41\x73\x41','\x74\x77\x76\x54','\x42\x77\x76\x48\x42\x4d\x4c\x55\x7a\x57','\x43\x32\x76\x57\x41\x67\x4c\x59\x42\x33\x71','\x77\x66\x6e\x68\x43\x4c\x4f','\x75\x4d\x76\x5a\x41\x61','\x43\x33\x76\x50\x44\x65\x66\x55\x79\x77\x57','\x35\x6c\x51\x75\x6c\x2b\x41\x76\x4d\x45\x45\x41\x48\x2b\x41\x76\x55\x61','\x36\x7a\x55\x32\x6c\x2b\x41\x65\x4d\x55\x49\x61\x48\x45\x41\x76\x55\x61','\x36\x7a\x49\x37\x35\x41\x67\x45\x36\x7a\x59\x61\x36\x6b\x41\x62\x36\x79\x45\x6c\x35\x50\x73\x2b\x37\x37\x59\x6a','\x36\x6b\x36\x6b\x35\x79\x55\x76\x34\x34\x63\x62\x36\x6b\x67\x44\x35\x36\x51\x62\x34\x34\x63\x62\x35\x4f\x59\x72\x35\x4f\x49\x57','\x35\x7a\x55\x42\x6c\x2b\x45\x41\x48\x2b\x77\x34\x4e\x45\x41\x76\x55\x61','\x71\x32\x48\x4c\x44\x67\x47','\x79\x32\x66\x59\x7a\x61','\x35\x7a\x67\x4f\x35\x7a\x59\x6e\x35\x6c\x51\x36\x35\x35\x51\x65\x35\x42\x32\x58\x36\x7a\x2b\x2f','\x42\x4d\x66\x54\x7a\x71','\x35\x4f\x73\x70\x35\x42\x2b\x78\x35\x35\x51\x65\x35\x4f\x49\x57\x36\x6c\x55\x6b\x37\x37\x59\x6d\x35\x36\x51\x62\x35\x36\x63\x30','\x72\x32\x4c\x54\x7a\x77\x57','\x7a\x77\x48\x54\x44\x75\x6d','\x35\x37\x36\x6f\x34\x4f\x41\x73\x35\x7a\x2b\x36\x35\x36\x73\x6f','\x35\x6c\x49\x6a\x35\x34\x4d\x6d\x36\x7a\x4d\x4a\x37\x37\x59\x69\x36\x79\x67\x6f\x35\x79\x36\x37\x6c\x45\x45\x70\x56\x47','\x79\x33\x76\x57\x43\x57','\x41\x67\x4c\x6c\x44\x4d\x53','\x35\x79\x77\x54\x6c\x2b\x41\x69\x47\x6f\x73\x36\x55\x55\x41\x76\x55\x61','\x73\x67\x39\x4b','\x6d\x78\x57\x31\x46\x64\x6e\x38\x6e\x68\x57','\x41\x78\x6a\x4b\x44\x78\x6d','\x35\x42\x36\x51\x35\x35\x6b\x57\x35\x37\x77\x71\x35\x50\x32\x46\x34\x34\x63\x62\x35\x7a\x55\x45\x35\x51\x32\x34\x34\x34\x63\x62','\x41\x4c\x50\x72\x72\x4d\x4f','\x76\x67\x4c\x57\x41\x67\x76\x59\x7a\x78\x71','\x35\x50\x59\x61\x35\x79\x2b\x56\x36\x69\x6f\x39\x35\x35\x51\x65\x35\x37\x77\x71\x35\x50\x36\x43','\x35\x6c\x32\x47\x35\x4f\x45\x6a\x35\x4f\x36\x48\x35\x79\x2b\x77\x35\x35\x51\x65\x35\x4f\x77\x6c\x35\x42\x51\x4d','\x35\x51\x41\x55\x36\x69\x63\x61\x34\x4f\x41\x73\x35\x34\x36\x6c\x35\x7a\x59\x6c','\x6e\x4a\x6d\x57\x6e\x4a\x62\x49\x42\x4d\x35\x6d\x75\x4e\x71','\x42\x68\x48\x78\x44\x78\x61','\x73\x32\x66\x57\x41\x61','\x42\x4e\x76\x54\x7a\x78\x6a\x56\x42\x67\x38','\x35\x51\x32\x4b\x35\x50\x77\x34\x35\x41\x32\x78\x35\x35\x51\x65\x36\x69\x6f\x39\x36\x79\x45\x70\x36\x6b\x6b\x52\x35\x42\x59\x33','\x7a\x4b\x72\x31\x76\x66\x75','\x73\x32\x76\x30\x41\x67\x76\x59\x34\x4f\x41\x73\x71\x47','\x71\x4e\x7a\x4d\x71\x33\x71','\x74\x30\x76\x7a\x79\x78\x65','\x6d\x68\x57\x5a','\x77\x75\x58\x4c\x43\x78\x71','\x35\x41\x32\x4b\x35\x34\x32\x4f\x35\x35\x51\x65\x35\x50\x4d\x36\x36\x69\x63\x66\x37\x37\x59\x6d\x35\x79\x77\x4e\x35\x7a\x59\x4f','\x43\x33\x62\x59\x7a\x77\x66\x4b\x71\x77\x34','\x35\x35\x51\x65\x36\x6b\x41\x36\x36\x79\x41\x73','\x35\x7a\x55\x47\x35\x50\x36\x43\x35\x35\x51\x65\x35\x41\x73\x50\x35\x42\x4d\x5a\x37\x37\x59\x6d\x35\x41\x36\x68\x35\x41\x36\x7a','\x35\x35\x51\x65\x35\x42\x59\x76\x35\x42\x63\x6f','\x35\x6c\x51\x6d\x6c\x2b\x77\x4c\x53\x2b\x45\x4c\x52\x45\x77\x70\x55\x6f\x41\x76\x55\x61','\x75\x4e\x6e\x41\x7a\x76\x79','\x35\x4f\x73\x70\x36\x6b\x32\x79\x35\x35\x51\x65\x36\x41\x6f\x42\x36\x6c\x51\x6e','\x35\x6c\x49\x61\x6c\x2b\x4d\x54\x4c\x6f\x49\x48\x4b\x2b\x77\x34\x51\x2b\x41\x76\x55\x61','\x44\x32\x76\x4f\x73\x67\x71','\x7a\x4e\x66\x66\x75\x76\x71','\x73\x75\x31\x65\x79\x4b\x43','\x43\x33\x44\x56\x43\x4d\x72\x5a'];_0x3d64=function(){return _0x19bd53;};return _0x3d64();}
+// ══════════════════════════════════════════════════════════════════════
+// 🃏 塔羅 TOP-TIER UPGRADE
+// 牌號數字學 · 多牌陣支持 · 卡巴拉生命之樹 · 元素尊貴交叉
+// ══════════════════════════════════════════════════════════════════════
+// 載入順序：tarot.js 之後
+// enhanceTarot(S.tarot) 在塔羅抽牌後呼叫
+
+// ── 1. 牌號數字學 (Numerology) ──
+// 大阿爾克那 0-21 每張的數字意義
+// 小阿爾克那 Ace-10 + 宮廷牌的數字意義
+
+var TAROT_NUMEROLOGY = {
+  0: {zh:'零/愚者數', meaning:'無限可能、新的循環起點、純粹的潛能'},
+  1: {zh:'一/魔術師數', meaning:'開始、意志力、個體化、主動創造'},
+  2: {zh:'二/女祭司數', meaning:'二元、平衡、直覺、等待、合作'},
+  3: {zh:'三/女皇數', meaning:'創造、豐盛、表達、成長、三位一體'},
+  4: {zh:'四/皇帝數', meaning:'穩定、結構、秩序、基礎、務實'},
+  5: {zh:'五/教皇數', meaning:'變動、衝突、挑戰、自由、學習'},
+  6: {zh:'六/戀人數', meaning:'和諧、責任、選擇、愛、美'},
+  7: {zh:'七/戰車數', meaning:'反思、神秘、內在探索、信仰、勝利'},
+  8: {zh:'八/力量數', meaning:'力量、掌控、業力、無限、物質'},
+  9: {zh:'九/隱者數', meaning:'完成、智慧、獨處、人道、轉化'},
+  10: {zh:'十/命運數', meaning:'循環結束、回歸、重新開始、命運'}
+};
+
+function tarotNumerologyAnalysis(drawn) {
+  if (!drawn || !drawn.length) return null;
+
+  // 統計每個數字出現次數
+  var numCounts = {};
+  var totalReduction = 0;
+
+  drawn.forEach(function(card) {
+    var num;
+    if (card.id < 22) {
+      // 大阿爾克那
+      num = card.id;
+    } else {
+      // 小阿爾克那
+      num = ((card.id - 22) % 14) + 1;
+      if (num > 10) num = num - 10; // 宮廷牌映射為11-14→1-4
+    }
+
+    // 數字學化約
+    var reduced = num;
+    while (reduced > 10) reduced = Math.floor(reduced / 10) + (reduced % 10);
+    if (!numCounts[reduced]) numCounts[reduced] = 0;
+    numCounts[reduced]++;
+    totalReduction += reduced;
+  });
+
+  // 化約總和
+  var finalNum = totalReduction;
+  while (finalNum > 22) finalNum = Math.floor(finalNum / 10) + (finalNum % 10);
+
+  // 找重複數字（主題）
+  var dominantNums = [];
+  Object.keys(numCounts).forEach(function(n) {
+    if (numCounts[n] >= 2) {
+      var info = TAROT_NUMEROLOGY[parseInt(n)] || {};
+      dominantNums.push({
+        number: parseInt(n),
+        count: numCounts[n],
+        meaning: info.meaning || '',
+        zh: '數字' + n + '出現' + numCounts[n] + '次：' + (info.meaning || '此數字的能量被強調')
+      });
+    }
+  });
+
+  var finalInfo = TAROT_NUMEROLOGY[finalNum] || {};
+
+  return {
+    numCounts: numCounts,
+    totalReduction: totalReduction,
+    finalNum: finalNum,
+    finalMeaning: finalInfo.meaning || '',
+    dominantNums: dominantNums,
+    zh: '牌陣數字學總和化約為' + finalNum + '：' + (finalInfo.meaning || '')
+  };
+}
+
+
+// ── 2. 多牌陣支持 ──
+
+// 三牌陣（過去-現在-未來）
+function tarotThreeCardSpread(drawn, type) {
+  if (!drawn || drawn.length < 3) return null;
+
+  var positions = [
+    {name: '過去', zh: '過去（影響你走到這裡的因素）', card: drawn[0]},
+    {name: '現在', zh: '現在（你正在經歷的核心能量）', card: drawn[1]},
+    {name: '未來', zh: '未來（如果保持現狀的走向）', card: drawn[2]}
+  ];
+
+  // 時間軸元素分析
+  var els = positions.map(function(p) { return p.card ? (p.card.el || '') : ''; });
+  var allSame = els[0] === els[1] && els[1] === els[2] && els[0] !== '';
+  var narrative = '';
+  if (allSame) narrative = '三張牌同為' + els[0] + '元素，整個時間軸由同一股能量貫穿';
+
+  return {
+    type: 'three_card',
+    zh: '三牌陣（過去-現在-未來）',
+    positions: positions,
+    elementNarrative: narrative
+  };
+}
+
+// 五牌十字陣
+function tarotCrossSpread(drawn, type) {
+  if (!drawn || drawn.length < 5) return null;
+
+  return {
+    type: 'cross',
+    zh: '十字牌陣',
+    positions: [
+      {name: '現狀', zh: '現在的處境', card: drawn[0]},
+      {name: '挑戰', zh: '面臨的挑戰或阻礙', card: drawn[1]},
+      {name: '過去', zh: '過去的影響', card: drawn[2]},
+      {name: '未來', zh: '未來的發展趨勢', card: drawn[3]},
+      {name: '建議', zh: '最佳行動建議', card: drawn[4]}
+    ]
+  };
+}
+
+// 馬蹄形牌陣（7張）
+function tarotHorseshoeSpread(drawn, type) {
+  if (!drawn || drawn.length < 7) return null;
+
+  return {
+    type: 'horseshoe',
+    zh: '馬蹄形牌陣',
+    positions: [
+      {name: '過去', zh: '過去的影響', card: drawn[0]},
+      {name: '現在', zh: '目前的處境', card: drawn[1]},
+      {name: '隱藏影響', zh: '你可能忽略的因素', card: drawn[2]},
+      {name: '環境', zh: '周圍人的影響', card: drawn[3]},
+      {name: '態度', zh: '你應採取的態度', card: drawn[4]},
+      {name: '行動', zh: '建議的具體行動', card: drawn[5]},
+      {name: '結果', zh: '最可能的結果', card: drawn[6]}
+    ]
+  };
+}
+
+
+// ── 3. 卡巴拉生命之樹對應 ──
+// 大阿爾克那與生命之樹 22 條路徑的對應
+
+var TAROT_KABBALAH = {
+  0:  {path:'11', sephirot:'Kether→Chokmah',     zh:'王冠→智慧',   letter:'Aleph',  meaning:'神聖的愚者，純粹意識的飛躍'},
+  1:  {path:'12', sephirot:'Kether→Binah',        zh:'王冠→理解',   letter:'Beth',   meaning:'創造的意志，將神性轉化為形式'},
+  2:  {path:'13', sephirot:'Kether→Tiphereth',    zh:'王冠→美',     letter:'Gimel',  meaning:'跨越深淵的橋樑，直覺的通道'},
+  3:  {path:'14', sephirot:'Chokmah→Binah',       zh:'智慧→理解',   letter:'Daleth', meaning:'豐盛之門，創造與接收的結合'},
+  4:  {path:'15', sephirot:'Chokmah→Tiphereth',   zh:'智慧→美',     letter:'He',     meaning:'靈性的窗口，內在教導'},
+  5:  {path:'16', sephirot:'Chokmah→Chesed',      zh:'智慧→慈悲',   letter:'Vav',    meaning:'靈魂的選擇，上下的連結'},
+  6:  {path:'17', sephirot:'Binah→Tiphereth',     zh:'理解→美',     letter:'Zain',   meaning:'對立的結合，關係的考驗'},
+  7:  {path:'18', sephirot:'Binah→Geburah',       zh:'理解→力量',   letter:'Cheth',  meaning:'意志的戰車，突破限制'},
+  8:  {path:'19', sephirot:'Chesed→Geburah',      zh:'慈悲→力量',   letter:'Teth',   meaning:'愛的力量，馴服內在野獸'},
+  9:  {path:'20', sephirot:'Chesed→Tiphereth',    zh:'慈悲→美',     letter:'Yod',    meaning:'孤獨的智者，內在之光'},
+  10: {path:'21', sephirot:'Chesed→Netzach',      zh:'慈悲→勝利',   letter:'Kaph',   meaning:'命運之輪，業力的循環'},
+  11: {path:'22', sephirot:'Geburah→Tiphereth',   zh:'力量→美',     letter:'Lamed',  meaning:'因果的天平，宇宙的正義'},
+  12: {path:'23', sephirot:'Geburah→Hod',         zh:'力量→榮耀',   letter:'Mem',    meaning:'犧牲與臣服，水的洗禮'},
+  13: {path:'24', sephirot:'Tiphereth→Netzach',   zh:'美→勝利',     letter:'Nun',    meaning:'死亡與重生，根本的轉化'},
+  14: {path:'25', sephirot:'Tiphereth→Yesod',     zh:'美→基礎',     letter:'Samekh', meaning:'節制與調和，天使的道路'},
+  15: {path:'26', sephirot:'Tiphereth→Hod',       zh:'美→榮耀',     letter:'Ayin',   meaning:'物質的誘惑，陰影的面對'},
+  16: {path:'27', sephirot:'Netzach→Hod',         zh:'勝利→榮耀',   letter:'Peh',    meaning:'雷擊塔，舊結構的摧毀'},
+  17: {path:'28', sephirot:'Netzach→Yesod',       zh:'勝利→基礎',   letter:'Tzaddi', meaning:'星星的希望，靈性的引導'},
+  18: {path:'29', sephirot:'Netzach→Malkuth',     zh:'勝利→王國',   letter:'Qoph',   meaning:'月亮的幻象，潛意識的旅程'},
+  19: {path:'30', sephirot:'Hod→Yesod',           zh:'榮耀→基礎',   letter:'Resh',   meaning:'太陽的光輝，意識的覺醒'},
+  20: {path:'31', sephirot:'Hod→Malkuth',         zh:'榮耀→王國',   letter:'Shin',   meaning:'最後的審判，靈魂的覺醒'},
+  21: {path:'32', sephirot:'Yesod→Malkuth',       zh:'基礎→王國',   letter:'Tav',    meaning:'世界的完成，宇宙之舞'}
+};
+
+function tarotKabbalahAnalysis(drawn) {
+  if (!drawn || !drawn.length) return [];
+
+  var results = [];
+  drawn.forEach(function(card) {
+    if (card.id < 22) {
+      var kb = TAROT_KABBALAH[card.id];
+      if (kb) {
+        results.push({
+          cardId: card.id,
+          cardName: card.name || '',
+          path: kb.path,
+          sephirot: kb.sephirot,
+          sephirotZh: kb.zh,
+          letter: kb.letter,
+          meaning: kb.meaning
+        });
+      }
+    }
+  });
+
+  return results;
+}
+
+
+// ── 4. 牌組數量統計深化 ──
+
+function tarotSuitAnalysis(drawn) {
+  if (!drawn || !drawn.length) return null;
+
+  var counts = {major: 0, wands: 0, cups: 0, swords: 0, pentacles: 0, court: 0, pip: 0};
+  var reversedCount = 0;
+
+  drawn.forEach(function(card) {
+    if (card.id < 22) { counts.major++; return; }
+    var suitIdx = Math.floor((card.id - 22) / 14);
+    var cardNum = ((card.id - 22) % 14) + 1;
+    if (suitIdx === 0) counts.wands++;
+    else if (suitIdx === 1) counts.cups++;
+    else if (suitIdx === 2) counts.swords++;
+    else counts.pentacles++;
+    if (cardNum > 10) counts.court++;
+    else counts.pip++;
+    if (card.reversed) reversedCount++;
+  });
+
+  // 主導元素
+  var suitMap = {wands: '火', cups: '水', swords: '風', pentacles: '土'};
+  var dominant = '';
+  var maxCount = 0;
+  ['wands','cups','swords','pentacles'].forEach(function(s) {
+    if (counts[s] > maxCount) { maxCount = counts[s]; dominant = s; }
+  });
+
+  // 缺失元素
+  var missing = [];
+  ['wands','cups','swords','pentacles'].forEach(function(s) {
+    if (counts[s] === 0 && drawn.length >= 3) missing.push(suitMap[s]);
+  });
+
+  return {
+    counts: counts,
+    reversedCount: reversedCount,
+    reversedRatio: drawn.length > 0 ? Math.round(reversedCount / drawn.length * 100) : 0,
+    dominantSuit: dominant,
+    dominantElement: suitMap[dominant] || '',
+    missingElements: missing,
+    majorRatio: drawn.length > 0 ? Math.round(counts.major / drawn.length * 100) : 0,
+    courtRatio: drawn.length > 0 ? Math.round(counts.court / drawn.length * 100) : 0,
+    zh: (dominant ? '主導元素：' + suitMap[dominant] + '（' + dominant + ' ' + maxCount + '張）' : '無主導元素') +
+        (missing.length > 0 ? '・缺失：' + missing.join('、') : '') +
+        (counts.major >= 3 ? '・大阿爾克那偏多（命運主題強烈）' : '') +
+        (reversedCount > drawn.length / 2 ? '・逆位過半（內在阻塞需要釋放）' : '')
+  };
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// 5. 牌陣自動選擇系統 — 根據問題性質匹配最適牌陣
+// ══════════════════════════════════════════════════════════════════════
+
+// ── 所有牌陣定義 ──
+var SPREAD_DEFS = {
+  three_card: {
+    id: 'three_card', zh: '三牌陣（過去-現在-未來）', count: 3,
+    desc: '快速直覺，適合是非題',
+    positions: [
+      { name: '過去', zh: '影響你走到這裡的因素' },
+      { name: '現在', zh: '你正在經歷的核心能量' },
+      { name: '未來', zh: '如果保持現狀的走向' }
+    ]
+  },
+  either_or: {
+    id: 'either_or', zh: '二選一牌陣', count: 5,
+    desc: '面對抉擇時，看清兩條路',
+    positions: [
+      { name: '你', zh: '你目前的狀態與核心需求' },
+      { name: 'A 選項', zh: '選 A 的能量與發展' },
+      { name: 'B 選項', zh: '選 B 的能量與發展' },
+      { name: 'A 結果', zh: '走 A 路的最終走向' },
+      { name: 'B 結果', zh: '走 B 路的最終走向' }
+    ]
+  },
+  relationship: {
+    id: 'relationship', zh: '關係牌陣', count: 6,
+    desc: '看透兩個人之間的真實狀態',
+    positions: [
+      { name: '你', zh: '你在這段關係中的狀態' },
+      { name: '對方', zh: '對方在這段關係中的狀態' },
+      { name: '關係現狀', zh: '你們之間目前的能量' },
+      { name: '挑戰', zh: '這段關係面臨的考驗' },
+      { name: '建議', zh: '最適合的應對方式' },
+      { name: '走向', zh: '關係未來的發展方向' }
+    ]
+  },
+  horseshoe: {
+    id: 'horseshoe', zh: '馬蹄形牌陣', count: 7,
+    desc: '全面解析，平衡深度與廣度',
+    positions: [
+      { name: '過去', zh: '過去的影響' },
+      { name: '現在', zh: '目前的處境' },
+      { name: '隱藏影響', zh: '你可能忽略的因素' },
+      { name: '環境', zh: '周圍人的影響' },
+      { name: '態度', zh: '你應採取的態度' },
+      { name: '行動', zh: '建議的具體行動' },
+      { name: '結果', zh: '最可能的結果' }
+    ]
+  },
+  timeline: {
+    id: 'timeline', zh: '時間線牌陣', count: 5,
+    desc: '回答「什麼時候」「要多久」',
+    positions: [
+      { name: '過去根源', zh: '事情的源頭在哪裡' },
+      { name: '近期狀態', zh: '目前正在發生什麼' },
+      { name: '轉折點', zh: '什麼會觸發改變' },
+      { name: '發展', zh: '轉折之後的走勢' },
+      { name: '最終結果', zh: '事情最終會怎樣' }
+    ]
+  },
+  celtic_cross: {
+    id: 'celtic_cross', zh: '凱爾特十字牌陣', count: 10,
+    desc: '最完整的深度解析',
+    positions: [
+      { name: '現況核心', zh: '現在的核心狀態' },
+      { name: '阻礙', zh: '正在阻擋你的力量' },
+      { name: '根因', zh: '底層動機或根源' },
+      { name: '近期過去', zh: '最近發生的相關事件' },
+      { name: '顯性目標', zh: '你意識層面的期望' },
+      { name: '近期走向', zh: '短期內的發展方向' },
+      { name: '你的位置', zh: '你在情境中的角色' },
+      { name: '外界環境', zh: '外在人事的影響' },
+      { name: '希望與恐懼', zh: '你最深層的期待和擔心' },
+      { name: '最終結果', zh: '事情的最終走向' }
+    ]
+  }
+};
+
+// ── 問題性質偵測 → 牌陣匹配 ──
+function detectSpreadType(question, type) {
+  var q = (question || '').trim();
+
+  // 1. 是非題 → 三牌陣
+  if (/^(會不會|有沒有|該不該|可不可以|能不能|是不是|適不適合|好不好|值不值)/.test(q) ||
+      /嗎[？?]?\s*$/.test(q) && q.length < 30) {
+    return 'three_card';
+  }
+
+  // 2. 二選一 → 二選一牌陣
+  if (/還是|或者|A.*B|選.*哪|二選一|兩個.*選/.test(q)) {
+    return 'either_or';
+  }
+
+  // 3. 時機題 → 時間線牌陣
+  if (/什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|時間點|來得及/.test(q)) {
+    return 'timeline';
+  }
+
+  // 4. 關係題（感情類 + 特定關鍵字）→ 關係牌陣
+  if (type === 'love' || type === 'relationship' || type === 'family') {
+    if (/他|她|對方|另一半|前任|現任|老公|老婆|男友|女友|伴侶|喜歡的人|曖昧|之間|怎麼想|心裡|真心/.test(q)) {
+      return 'relationship';
+    }
+  }
+
+  // 5. 深度開放題（長問句、無明確指向）→ 凱爾特十字
+  if (q.length > 40 || /整體|全面|深入|詳細|大方向/.test(q)) {
+    return 'celtic_cross';
+  }
+
+  // 6. 預設：根據問題類型
+  var typeDefault = {
+    love: 'relationship',
+    career: 'horseshoe',
+    wealth: 'horseshoe',
+    health: 'horseshoe',
+    relationship: 'relationship',
+    family: 'relationship',
+    general: 'horseshoe'
+  };
+  return typeDefault[type] || 'horseshoe';
+}
+
+// ── 建構牌陣結果物件（通用）──
+function buildSpreadResult(drawn, spreadId) {
+  var def = SPREAD_DEFS[spreadId];
+  if (!def) return null;
+  if (!drawn || drawn.length < def.count) return null;
+
+  var positions = def.positions.map(function(pos, i) {
+    var card = drawn[i];
+    return {
+      name: pos.name,
+      zh: pos.zh,
+      card: card,
+      cardName: card ? (card.name || card.n) : '',
+      isUp: card ? card.isUp : true
+    };
+  });
+
+  return {
+    type: spreadId,
+    zh: def.zh,
+    count: def.count,
+    desc: def.desc,
+    positions: positions
+  };
+}
+
+// ── 全域存取：當前選擇的牌陣 ──
+var _currentSpreadId = 'celtic_cross'; // 預設
+function getCurrentSpread() { return _currentSpreadId; }
+function setCurrentSpread(id) { if (SPREAD_DEFS[id]) _currentSpreadId = id; }
+function getCurrentSpreadDef() { return SPREAD_DEFS[_currentSpreadId] || SPREAD_DEFS.celtic_cross; }
+
+// ══════════════════════════════════════════════════════════════════════
+// 6. showSpread 覆寫 — 適配所有牌陣類型
+// ══════════════════════════════════════════════════════════════════════
+(function() {
+  var _origShowSpread = (typeof showSpread === 'function') ? showSpread : null;
+
+  showSpread = function() {
+    S.tarot.drawn = drawnCards;
+    S.tarot.spread = drawnCards;
+    document.getElementById('t-spread-sec').classList.remove('hidden');
+
+    var el = document.getElementById('t-spread');
+    if (!el) return;
+
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var spreadId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
+
+    // 牌陣標題
+    var titleHtml = '<div style="text-align:center;margin-bottom:.8rem">';
+    titleHtml += '<span style="font-size:.85rem;color:var(--c-gold);font-weight:700">' + (def ? def.zh : '凱爾特十字牌陣') + '</span>';
+    if (def && def.desc) titleHtml += '<br><span style="font-size:.72rem;color:var(--c-text-muted)">' + def.desc + '</span>';
+    titleHtml += '</div>';
+
+    // 每張牌的卡片
+    var cardsHtml = '';
+    var count = def ? Math.min(def.count, drawnCards.length) : drawnCards.length;
+
+    for (var i = 0; i < count; i++) {
+      var c = drawnCards[i];
+      if (!c) continue;
+      var posName = '';
+      var posZh = '';
+      if (def && def.positions && def.positions[i]) {
+        posName = def.positions[i].name;
+        posZh = def.positions[i].zh;
+      } else {
+        posName = (c.pos || '第' + (i + 1) + '張');
+        posZh = '';
+      }
+
+      // 取 deep 解讀
+      var dp = (typeof getTarotDeep === 'function') ? getTarotDeep(c) : {};
+      var coreDesc = c.isUp ? (dp.coreUp || '') : (dp.coreRv || '');
+      var adviceDesc = c.isUp ? (dp.adviceUp || '') : (dp.adviceRv || '');
+      var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
+
+      // 問題類型專屬解讀
+      var ftKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love'}[(S.form && S.form.type) || ''] || '';
+      var typeReading = '';
+      if (ftKey) {
+        var fullCard = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
+        typeReading = c.isUp ? (fullCard[ftKey + 'Up'] || '') : (fullCard[ftKey + 'Rv'] || '');
+      }
+
+      // 元素對應色
+      var elColor = {'火':'#ef4444','水':'#3b82f6','風':'#22d3ee','土':'#a78b5a','水星':'#8b5cf6','金星':'#f472b6','木星':'#38bdf8','土星':'#475569','月亮':'#a3e635','太陽':'#fbbf24'}[c.el] || 'var(--c-gold)';
+
+      cardsHtml += '<div class="card" style="padding:.8rem;margin-bottom:.5rem;border-left:3px solid ' + elColor + '">';
+
+      // 頂部：位置 + 正逆位
+      cardsHtml += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
+      cardsHtml += '<span class="tag tag-gold" style="font-size:.75rem">' + (i + 1) + '. ' + posName + '</span>';
+      cardsHtml += '<span class="tag ' + (c.isUp ? 'tag-blue' : 'tag-red') + '" style="font-size:.7rem">' + (c.isUp ? '正位' : '逆位') + '</span>';
+      cardsHtml += '</div>';
+
+      // 位置含義（如果有）
+      if (posZh) {
+        cardsHtml += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.4rem">' + posZh + '</div>';
+      }
+
+      // 牌名 + 圖片
+      cardsHtml += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
+      if (imgSrc) {
+        cardsHtml += '<img src="' + imgSrc + '" alt="' + c.n + '" style="width:65px;height:100px;border-radius:6px;flex-shrink:0;object-fit:cover;' + (c.isUp ? '' : 'transform:rotate(180deg)') + '">';
+      }
+      cardsHtml += '<div style="flex:1">';
+      cardsHtml += '<strong class="text-gold serif" style="font-size:.95rem">' + c.n + '</strong>';
+      if (c.el) cardsHtml += '<span style="font-size:.68rem;color:' + elColor + ';margin-left:.4rem">' + c.el + '</span>';
+
+      // 關鍵字
+      var kw = c.isUp ? (c.kwUp || '') : (c.kwRv || '');
+      if (!kw) { var fc = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c; kw = c.isUp ? (fc.kwUp || '') : (fc.kwRv || ''); }
+      if (kw) cardsHtml += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.2rem">🔑 ' + kw + '</div>';
+
+      // 基本解讀
+      cardsHtml += '<p style="font-size:.82rem;color:var(--c-text-dim);margin-top:.3rem;line-height:1.6">' + (c.isUp ? c.up : c.rv) + '</p>';
+
+      // 專屬解讀
+      if (typeReading) {
+        cardsHtml += '<p style="font-size:.8rem;color:var(--c-gold-light,#e8c968);margin-top:.3rem;line-height:1.6;border-top:1px solid rgba(212,175,55,.1);padding-top:.3rem">📌 ' + typeReading + '</p>';
+      }
+
+      // 深度解讀
+      if (coreDesc) cardsHtml += '<p style="font-size:.78rem;color:var(--c-gold-light,#d4af37);margin-top:.2rem;line-height:1.5;opacity:.85">' + coreDesc + '</p>';
+      if (adviceDesc) cardsHtml += '<p style="font-size:.72rem;opacity:.6;margin-top:.15rem">💡 ' + adviceDesc + '</p>';
+
+      cardsHtml += '</div></div></div>';
+    }
+
+    el.innerHTML = titleHtml + cardsHtml;
+  };
+})();
+
+function enhanceTarot(tarot) {
+  if (!tarot || !tarot.drawn || !tarot.drawn.length) return tarot;
+
+  var drawn = tarot.drawn;
+
+  // 1. 數字學分析
+  try { tarot.numerology = tarotNumerologyAnalysis(drawn); } catch(e) { tarot.numerology = null; }
+
+  // 2. 根據當前牌陣建構結果
+  try {
+    var spreadId = _currentSpreadId || 'celtic_cross';
+    tarot.spreadAnalysis = buildSpreadResult(drawn, spreadId);
+    tarot.spreadType = spreadId;
+    tarot.spreadDef = SPREAD_DEFS[spreadId] || null;
+  } catch(e) { console.warn('[Tarot] spread build error:', e); }
+
+  // 3. 卡巴拉
+  try { tarot.kabbalah = tarotKabbalahAnalysis(drawn); } catch(e) { tarot.kabbalah = []; }
+
+  // 4. 牌組深度統計
+  try { tarot.suitAnalysis = tarotSuitAnalysis(drawn); } catch(e) { tarot.suitAnalysis = null; }
+
+  return tarot;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// 7. 手動牌陣切換 UI
+// ══════════════════════════════════════════════════════════════════════
+function injectSpreadSelector() {
+  var step2 = document.getElementById('step-2');
+  if (!step2 || document.getElementById('jy-spread-selector')) return;
+  var container = document.createElement('div');
+  container.id = 'jy-spread-selector';
+  container.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;margin:.5rem 0 .8rem;padding:0 .5rem';
+  var spreads = ['three_card','either_or','timeline','relationship','horseshoe','celtic_cross'];
+  var labels = {three_card:'3牌',either_or:'二選一',timeline:'時間線',relationship:'關係',horseshoe:'馬蹄形',celtic_cross:'凱爾特'};
+  spreads.forEach(function(id) {
+    var btn = document.createElement('button');
+    btn.className = 'jy-spread-btn'; btn.dataset.spread = id;
+    btn.textContent = labels[id] || id;
+    btn.style.cssText = 'padding:.3rem .6rem;border-radius:8px;font-size:.7rem;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--c-text-dim);cursor:pointer;font-family:inherit;transition:all .2s';
+    btn.onclick = function() {
+      if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
+      container.querySelectorAll('.jy-spread-btn').forEach(function(b) {
+        b.style.borderColor = 'rgba(255,255,255,.1)'; b.style.background = 'rgba(255,255,255,.03)'; b.style.color = 'var(--c-text-dim)';
+      });
+      btn.style.borderColor = 'rgba(212,175,55,.5)'; btn.style.background = 'rgba(212,175,55,.08)'; btn.style.color = 'var(--c-gold,#d4af37)';
+      drawnCards = []; deckShuffled = [];
+      if (typeof initTarotDeck === 'function') initTarotDeck();
+    };
+    var currentId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
+    if (id === currentId) { btn.style.borderColor = 'rgba(212,175,55,.5)'; btn.style.background = 'rgba(212,175,55,.08)'; btn.style.color = 'var(--c-gold,#d4af37)'; }
+    container.appendChild(btn);
+  });
+  var deckWrap = step2.querySelector('.tarot-deck-wrap');
+  if (deckWrap) deckWrap.parentNode.insertBefore(container, deckWrap);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// 8. 金色黎明宮廷牌元素對應
+// ══════════════════════════════════════════════════════════════════════
+var GD_COURT_ELEMENTS = {
+  63:{rank:'King',suit:'火',rankEl:'火',combo:'火中之火',zh:'權杖國王：純粹的火焰意志，極致的領導力與創造力，但容易暴烈失控'},
+  62:{rank:'Queen',suit:'火',rankEl:'水',combo:'火中之水',zh:'權杖皇后：火焰中的滋養力，熱情但有包容，直覺敏銳的引導者'},
+  61:{rank:'Knight',suit:'火',rankEl:'風',combo:'火中之風',zh:'權杖騎士：火焰被風助燃，衝動冒進，行動力爆發但難以持久'},
+  60:{rank:'Page',suit:'火',rankEl:'土',combo:'火中之土',zh:'權杖侍從：火焰在土壤中紮根，有想法但還在學習如何落地執行'},
+  49:{rank:'King',suit:'水',rankEl:'火',combo:'水中之火',zh:'聖杯國王：情感中的意志力，外表冷靜但內心有強烈的保護慾和決斷力'},
+  48:{rank:'Queen',suit:'水',rankEl:'水',combo:'水中之水',zh:'聖杯皇后：純粹的情感直覺，最深層的共感力，但容易被情緒淹沒'},
+  47:{rank:'Knight',suit:'水',rankEl:'風',combo:'水中之風',zh:'聖杯騎士：情感的信使，浪漫理想化，帶來邀請但可能不切實際'},
+  46:{rank:'Page',suit:'水',rankEl:'土',combo:'水中之土',zh:'聖杯侍從：情感的新芽，剛開始學習感受，純真但脆弱'},
+  35:{rank:'King',suit:'風',rankEl:'火',combo:'風中之火',zh:'寶劍國王：思維的最高權威，判斷銳利但可能冷酷'},
+  34:{rank:'Queen',suit:'風',rankEl:'水',combo:'風中之水',zh:'寶劍皇后：以直覺輔助理性，看穿表象的洞察力'},
+  33:{rank:'Knight',suit:'風',rankEl:'風',combo:'風中之風',zh:'寶劍騎士：純粹的思維風暴，極快但容易過於激進'},
+  32:{rank:'Page',suit:'風',rankEl:'土',combo:'風中之土',zh:'寶劍侍從：剛開始學習分析，好奇但缺乏經驗'},
+  77:{rank:'King',suit:'土',rankEl:'火',combo:'土中之火',zh:'錢幣國王：物質世界的掌控者，穩健但可能過於物質化'},
+  76:{rank:'Queen',suit:'土',rankEl:'水',combo:'土中之水',zh:'錢幣皇后：大地中的滋養泉源，實際但懂得享受'},
+  75:{rank:'Knight',suit:'土',rankEl:'風',combo:'土中之風',zh:'錢幣騎士：穩扎穩打的行動者，專注效率和可靠性'},
+  74:{rank:'Page',suit:'土',rankEl:'土',combo:'土中之土',zh:'錢幣侍從：純粹的物質學徒，踏實但尚未成熟'}
+};
+
+function getGDCourtElement(card) { return card ? (GD_COURT_ELEMENTS[card.id] || null) : null; }
+
+// 覆寫 enhanceTarot — 注入宮廷牌元素
+var _etBase = enhanceTarot;
+enhanceTarot = function(tarot) {
+  tarot = _etBase(tarot);
+  if (!tarot || !tarot.drawn) return tarot;
+  tarot.drawn.forEach(function(c) { var gd = getGDCourtElement(c); if (gd) c.gdCourt = gd; });
+  var courts = tarot.drawn.filter(function(c) { return !!c.gdCourt; });
+  if (courts.length) {
+    tarot.courtElementAnalysis = { count: courts.length, cards: courts.map(function(c) { return {name:c.n||c.name, combo:c.gdCourt.combo, zh:c.gdCourt.zh}; }) };
+  }
+  return tarot;
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// 9. showSpread 覆寫 — 適配所有牌陣
+// ══════════════════════════════════════════════════════════════════════
+(function() {
+  showSpread = function() {
+    S.tarot.drawn = drawnCards; S.tarot.spread = drawnCards;
+    document.getElementById('t-spread-sec').classList.remove('hidden');
+    var el = document.getElementById('t-spread'); if (!el) return;
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var h = '<div style="text-align:center;margin-bottom:.8rem"><span style="font-size:.85rem;color:var(--c-gold);font-weight:700">' + (def ? def.zh : '牌陣') + '</span>';
+    if (def && def.desc) h += '<br><span style="font-size:.72rem;color:var(--c-text-muted)">' + def.desc + '</span>';
+    h += '</div>';
+    var count = def ? Math.min(def.count, drawnCards.length) : drawnCards.length;
+    var ftKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love'}[(S.form&&S.form.type)||''] || '';
+    for (var i = 0; i < count; i++) {
+      var c = drawnCards[i]; if (!c) continue;
+      var posName = (def&&def.positions&&def.positions[i]) ? def.positions[i].name : (c.pos||'第'+(i+1)+'張');
+      var posZh = (def&&def.positions&&def.positions[i]) ? def.positions[i].zh : '';
+      var dp = (typeof getTarotDeep === 'function') ? getTarotDeep(c) : {};
+      var coreDesc = c.isUp ? (dp.coreUp||'') : (dp.coreRv||'');
+      var adviceDesc = c.isUp ? (dp.adviceUp||'') : (dp.adviceRv||'');
+      var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
+      var fc = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
+      var typeR = ftKey ? (c.isUp ? (fc[ftKey+'Up']||'') : (fc[ftKey+'Rv']||'')) : '';
+      var elC = {'火':'#ef4444','水':'#3b82f6','風':'#22d3ee','土':'#a78b5a'}[c.el] || 'var(--c-gold)';
+      var gdInfo = c.gdCourt ? '<div style="font-size:.7rem;color:#a78bfa;margin-top:.2rem">⚡ ' + c.gdCourt.combo + '</div>' : '';
+      h += '<div class="card" style="padding:.8rem;margin-bottom:.5rem;border-left:3px solid '+elC+'">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
+      h += '<span class="tag tag-gold" style="font-size:.75rem">'+(i+1)+'. '+posName+'</span>';
+      h += '<span class="tag '+(c.isUp?'tag-blue':'tag-red')+'" style="font-size:.7rem">'+(c.isUp?'正位':'逆位')+'</span></div>';
+      if (posZh) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">'+posZh+'</div>';
+      h += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
+      if (imgSrc) h += '<img src="'+imgSrc+'" alt="'+c.n+'" style="width:65px;height:100px;border-radius:6px;flex-shrink:0;'+(c.isUp?'':'transform:rotate(180deg)')+'">';
+      h += '<div style="flex:1"><strong class="text-gold serif" style="font-size:.95rem">'+c.n+'</strong>';
+      var kw = c.isUp ? (fc.kwUp||'') : (fc.kwRv||'');
+      if (kw) h += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.15rem">🔑 '+kw+'</div>';
+      h += gdInfo;
+      h += '<p style="font-size:.82rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">'+(c.isUp?fc.up:fc.rv)+'</p>';
+      if (typeR) h += '<p style="font-size:.8rem;color:var(--c-gold-light,#e8c968);margin-top:.25rem;line-height:1.6;border-top:1px solid rgba(212,175,55,.1);padding-top:.25rem">📌 '+typeR+'</p>';
+      if (coreDesc) h += '<p style="font-size:.78rem;color:var(--c-gold-light);margin-top:.15rem;line-height:1.5;opacity:.85">'+coreDesc+'</p>';
+      if (adviceDesc) h += '<p style="font-size:.72rem;opacity:.6;margin-top:.1rem">💡 '+adviceDesc+'</p>';
+      h += '</div></div></div>';
+    }
+    el.innerHTML = h;
+    // 注入牌陣選擇器（手動模式）
+    try { injectSpreadSelector(); } catch(e) {}
+  };
+})();

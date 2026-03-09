@@ -729,23 +729,38 @@ function submitStep0Fast(){
       }
     },
     ()=>{
-      // ★ 自動模式：種子洗牌 + 自動抽10張（凱爾特十字）
+      // ★ 自動模式：種子洗牌 + 根據牌陣張數抽牌
       try {
+        // 偵測牌陣
+        var _spreadId = 'celtic_cross';
+        if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+          _spreadId = detectSpreadType(S.form.question || '', S.form.type || 'general');
+          setCurrentSpread(_spreadId);
+        }
+        var _spreadDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+        var _count = _spreadDef ? _spreadDef.count : 10;
+
         const _rng = makeSeededRng(S.form.bdate, S.form.gender, S.form.type, S.form.question);
         const shuffled = seededShuffle(TAROT, _rng);
         const autoDrawn = [];
-        for(let i=0; i<10; i++){
+        for(let i=0; i<_count; i++){
           const card = shuffled[i];
-          // 用同一 seed 決定正逆位（與手動模式一致）
+          // 用同一 seed 決定正逆位（金色黎明傳統：接近 50%）
           const _r2 = makeSeededRng(S.form.bdate, S.form.gender, S.form.type, S.form.question);
           for(let _k=0; _k<=card.id; _k++) _r2();
-          const isUp = _r2() > 0.35;
-          autoDrawn.push({...card, isUp, pos: CELTIC_POS[i]});
+          const isUp = _r2() > 0.48; // #6 修正：逆位約48%，接近金色黎明傳統
+          var _posName = '';
+          if (_spreadDef && _spreadDef.positions && _spreadDef.positions[i]) {
+            _posName = _spreadDef.positions[i].name;
+          } else if (typeof CELTIC_POS !== 'undefined') {
+            _posName = CELTIC_POS[i] || '';
+          }
+          autoDrawn.push({...card, isUp, pos: _posName});
         }
         drawnCards = autoDrawn;
-        S.tarot = {drawn: autoDrawn, spread: autoDrawn};
+        S.tarot = {drawn: autoDrawn, spread: autoDrawn, spreadType: _spreadId, spreadDef: _spreadDef};
         try { if(typeof enhanceTarot==='function') enhanceTarot(S.tarot); } catch(e){ console.warn('[AutoTarot] enhanceTarot:', e); }
-        console.log('[AutoMode] 塔羅自動抽牌完成:', autoDrawn.map(c=>c.n+(c.isUp?'正':'逆')).join(', '));
+        console.log('[AutoMode] 牌陣:'+_spreadId+'('+_count+'張) 抽牌:', autoDrawn.map(c=>c.n+(c.isUp?'正':'逆')).join(', '));
       } catch(e) {
         console.error('[AutoMode] 塔羅抽牌失敗:', e);
         drawnCards = [];
@@ -4670,5 +4685,131 @@ showAuraResult = function(){
     setTimeout(_init, 100);
   }
 
-  console.log('[Home] 首頁重設計 + 額度管控已啟用');
+  // ══ 覆寫塔羅 — 根據問題自動選牌陣 ══
+  var _origInitDeck = window.initTarotDeck;
+  window.initTarotDeck = function() {
+    // 偵測問題類型 → 選牌陣
+    var q = (S.form && S.form.question) ? S.form.question : '';
+    var t = (S.form && S.form.type) ? S.form.type : 'general';
+    if (typeof detectSpreadType === 'function') {
+      var spreadId = detectSpreadType(q, t);
+      if (typeof setCurrentSpread === 'function') setCurrentSpread(spreadId);
+      console.log('[Tarot] 問題偵測 → 牌陣:', spreadId);
+    }
+
+    // 取當前牌陣定義
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var count = def ? def.count : 10;
+
+    // 更新 step-2 標題和說明
+    try {
+      var hint = document.getElementById('pick-hint');
+      if (hint) hint.textContent = '← 滑動瀏覽，選出 ' + count + ' 張牌 →';
+      var remainText = document.getElementById('t-remain-text');
+      if (remainText) remainText.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + count + ' 張';
+
+      // 顯示牌陣名稱
+      var titleEl = document.querySelector('#step-2 .card-title');
+      if (titleEl && def) {
+        titleEl.innerHTML = '<i class="fas fa-star"></i> ' + def.zh;
+      }
+
+      // 在牌陣標題下方加一行說明
+      var descEl = document.getElementById('jy-spread-desc');
+      if (!descEl && def) {
+        descEl = document.createElement('p');
+        descEl.id = 'jy-spread-desc';
+        descEl.style.cssText = 'text-align:center;font-size:.78rem;color:var(--c-text-muted);margin-top:-.3rem;margin-bottom:.5rem';
+        var cardTitleParent = document.querySelector('#step-2 .card-title');
+        if (cardTitleParent && cardTitleParent.parentNode) {
+          cardTitleParent.parentNode.insertBefore(descEl, cardTitleParent.nextSibling);
+        }
+      }
+      if (descEl && def) descEl.textContent = def.desc;
+    } catch(e) { console.warn('[Tarot UI]', e); }
+
+    // 呼叫原始 initTarotDeck（它會渲染牌堆）
+    if (_origInitDeck) _origInitDeck();
+
+    // ── 渲染牌位 layout（覆蓋凱爾特十字的固定 HTML）──
+    try {
+      if (def && def.id !== 'celtic_cross') {
+        var chosen = document.getElementById('t-chosen');
+        if (chosen) {
+          var slotsHtml = '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;padding:.5rem">';
+          def.positions.forEach(function(pos, i) {
+            slotsHtml += '<div class="tarot-chosen-slot" id="t-slot-' + i + '" style="width:70px;min-height:100px;border-radius:8px;border:1.5px dashed rgba(212,175,55,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.3rem">';
+            slotsHtml += '<span class="slot-num" style="font-size:.7rem;color:var(--c-gold);font-weight:700">' + (i + 1) + '</span>';
+            slotsHtml += '<span class="slot-label" style="font-size:.6rem;color:var(--c-text-muted);text-align:center;line-height:1.3;margin-top:.2rem">' + pos.name + '</span>';
+            slotsHtml += '</div>';
+          });
+          slotsHtml += '</div>';
+          chosen.innerHTML = slotsHtml;
+        }
+      }
+    } catch(e) { console.warn('[Tarot Layout]', e); }
+  };
+
+  // ══ 覆寫 autoDraw — 根據牌陣張數抽牌 ══
+  var _origAutoDraw = window.autoDraw;
+  window.autoDraw = function() {
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var targetCount = def ? def.count : 10;
+
+    // 調整 btn-analyze 的啟用條件
+    if (!deckShuffled.length) initTarotDeck();
+    if (drawnCards.length >= targetCount) return;
+
+    var deckEl = document.getElementById('t-deck');
+    if (!deckEl) return;
+    var cards = deckEl.querySelectorAll('.tarot-deck-card:not(.picked)');
+    if (!cards.length) return;
+
+    var remaining = targetCount - drawnCards.length;
+    var toPick = Array.from(cards).slice(0, remaining);
+
+    var delay = 0;
+    toPick.forEach(function(cardEl, i) {
+      setTimeout(function() {
+        cardEl.click();
+      }, delay);
+      delay += 200;
+    });
+  };
+
+  // ══ 覆寫 pickCard 的完成判定 — 根據牌陣張數 ══
+  // 監聽 drawnCards 長度，到達目標數量時啟用分析按鈕
+  var _origPickCard = window.pickCard;
+  if (_origPickCard) {
+    window.pickCard = function(deckIdx, deckEl) {
+      _origPickCard(deckIdx, deckEl);
+      // 檢查是否到達目標數量
+      var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+      var targetCount = def ? def.count : 10;
+      var btn = document.getElementById('btn-analyze');
+      if (btn && drawnCards.length >= targetCount) {
+        btn.disabled = false;
+      }
+    };
+  }
+
+  // ══ 覆寫自動模式抽牌（submitStep0Fast 裡的塔羅區段）══
+  // 在 submitStep0Fast 的覆寫鏈裡，塔羅抽牌部分需要知道牌陣張數
+  // 由於 submitStep0Fast 已被覆寫（rate limit check），在這裡再包一層
+  var _prevSubmitFast = window.submitStep0Fast;
+  window.submitStep0Fast = function() {
+    // 先偵測牌陣（在 form 資料填入後）
+    var qEl = document.getElementById('f-question');
+    var tEl = document.getElementById('f-type');
+    var q = qEl ? qEl.value.trim() : '';
+    var t = tEl ? tEl.value : 'general';
+    if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+      setCurrentSpread(detectSpreadType(q, t));
+      console.log('[AutoMode] 牌陣偵測:', getCurrentSpread());
+    }
+    // 繼續原始流程
+    if (_prevSubmitFast) _prevSubmitFast.apply(this, arguments);
+  };
+
+  console.log('[Home] 首頁重設計 + 額度管控 + 塔羅牌陣已啟用');
 })();

@@ -24354,32 +24354,47 @@ function _buildPayload() {
     };
   } catch(e){ console.error('payload meihua:', e); } }
 
-  // ═══ 4. 塔羅 — 原始結構化資料（含問題類型專屬解讀）═══
+  // ═══ 4. 塔羅 — 原始結構化資料（含牌陣類型 + 問題專屬解讀）═══
   if (S.tarot && S.tarot.drawn && S.tarot.drawn.length >= 3) { try {
     var ta = S.tarot;
-    var posL = ['現狀','挑戰','過去','近期發展','心態','外在影響','態度','環境','希望與恐懼','最終結果'];
+    // 取牌陣定義（如果有）
+    var spreadDef = ta.spreadDef || (typeof getCurrentSpreadDef === 'function' ? getCurrentSpreadDef() : null);
+    var spreadId = ta.spreadType || (typeof getCurrentSpread === 'function' ? getCurrentSpread() : 'celtic_cross');
     var ftKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love'}[ft] || '';
-    var cards = ta.drawn.slice(0,10).map(function(c,i){
+
+    var cards = ta.drawn.slice(0, spreadDef ? spreadDef.count : 10).map(function(c, i) {
       var card = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
+      var posName = '';
+      var posZh = '';
+      if (spreadDef && spreadDef.positions && spreadDef.positions[i]) {
+        posName = spreadDef.positions[i].name;
+        posZh = spreadDef.positions[i].zh;
+      } else {
+        posName = '第' + (i + 1) + '張';
+      }
       var obj = {
-        位置: posL[i] || '第'+(i+1)+'張',
+        位置: posName,
+        位置含義: posZh,
         牌名: c.name || c.n,
         正逆: c.isUp ? '正位' : '逆位',
-        關鍵字: c.isUp ? (card.kwUp||'') : (card.kwRv||''),
-        通用解讀: c.isUp ? (card.up||'') : (card.rv||''),
-        建議: c.isUp ? (card.adviceUp||'') : (card.adviceRv||'')
+        關鍵字: c.isUp ? (card.kwUp || '') : (card.kwRv || ''),
+        通用解讀: c.isUp ? (card.up || '') : (card.rv || ''),
+        建議: c.isUp ? (card.adviceUp || '') : (card.adviceRv || '')
       };
-      // 問題類型專屬解讀
       if (ftKey) {
-        obj.針對本題解讀 = c.isUp ? (card[ftKey+'Up']||'') : (card[ftKey+'Rv']||'');
+        obj.針對本題解讀 = c.isUp ? (card[ftKey + 'Up'] || '') : (card[ftKey + 'Rv'] || '');
       }
       return obj;
     });
     p.readings.tarot = {
+      牌陣類型: spreadId,
+      牌陣名稱: spreadDef ? spreadDef.zh : '凱爾特十字',
+      牌陣說明: spreadDef ? spreadDef.desc : '',
       牌陣: cards,
       元素分析: ta.suitAnalysis || null,
       數字學: ta.numerology || null,
-      卡巴拉: ta.kabbalah ? ta.kabbalah.slice(0,3) : null
+      卡巴拉: ta.kabbalah ? ta.kabbalah.slice(0, 3) : null,
+      宮廷牌元素: ta.courtElementAnalysis || null
     };
   } catch(e){ console.error('payload tarot:', e); } }
 
