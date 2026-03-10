@@ -408,7 +408,7 @@
       <button class="btn btn-outline btn-sm" onclick="autoDraw()" style="opacity:.6"><i class="fas fa-bolt"></i> 快速全抽</button>
     </div>
   </div>
-  <div id="t-spread-sec" class="hidden"><div class="card"><div class="card-title"><i class="fas fa-cross"></i> 凱爾特十字牌陣</div><div id="t-spread"></div></div></div>
+  <div id="t-spread-sec" class="hidden"><div class="card"><div class="card-title" id="t-spread-title"><i class="fas fa-cross"></i> <span id="t-spread-title-text">塔羅牌陣解讀</span></div><div id="t-spread"></div></div></div>
   <div class="actions">
     <button class="btn btn-outline" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> 上一步</button>
     <button class="btn btn-outline" onclick="skipToResult()"><i class="fas fa-forward"></i> 跳過塔羅</button>
@@ -418,7 +418,7 @@
 </section>
 
 <!-- ========== STEP 3: RESULT (Redesigned 3-Layer) ========== -->
-<section class="step" id="step-3" style="padding-bottom:7rem">
+<section class="step" id="step-3" style="padding-top:2.5rem;padding-bottom:7rem">
 
   <!-- ══════════════════════════════════════════
        第一幕：診斷 + 處方（一屏完成轉換）

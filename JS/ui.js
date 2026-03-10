@@ -4731,28 +4731,21 @@ showAuraResult = function(){
     // 呼叫原始 initTarotDeck（它會渲染牌堆）
     if (_origInitDeck) _origInitDeck();
 
-    // ── 渲染牌位 layout（使用 tarot_upgrade.js 的 buildSlotLayout 或 fallback）──
+    // ── 牌位 layout 已由 tarot_upgrade.js 的 initTarotDeck override 處理 ──
+    // 只在 buildSlotLayout 不可用時做 fallback
     try {
       if (def && def.id !== 'celtic_cross') {
         var chosen = document.getElementById('t-chosen');
-        if (chosen) {
-          // 嘗試用 tarot_upgrade.js 的 buildSlotLayout（有結構化佈局）
+        if (chosen && !chosen.querySelector('.jy-wrap')) {
+          // tarot_upgrade 的佈局沒生效，做 fallback
           var customHtml = (typeof buildSlotLayout === 'function') ? buildSlotLayout(def.id, def) : null;
           if (customHtml) {
             chosen.innerHTML = customHtml;
-          } else {
-            // Fallback: 簡單 flex 排列 + position:relative!important
-            var slotsHtml = '<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px">';
-            def.positions.forEach(function(pos, i) {
-              slotsHtml += '<div class="tarot-chosen-slot" id="t-slot-' + i + '" style="position:relative!important;width:62px;height:92px;border-radius:8px;border:1.5px dashed rgba(212,175,55,.25);display:flex;flex-direction:column;align-items:center;justify-content:center">';
-              slotsHtml += '<span class="slot-num" style="font-size:.7rem;color:var(--c-gold);font-weight:700">' + (i + 1) + '</span>';
-              slotsHtml += '<span class="slot-label" style="position:absolute;bottom:-14px;font-size:.5rem;color:var(--c-text-muted);text-align:center;white-space:nowrap">' + pos.name + '</span>';
-              slotsHtml += '</div>';
-            });
-            slotsHtml += '</div>';
-            chosen.innerHTML = slotsHtml;
           }
         }
+        // 更新 t-spread-sec 的標題
+        var titleText = document.getElementById('t-spread-title-text');
+        if (titleText && def) titleText.textContent = def.zh;
       }
     } catch(e) { console.warn('[Tarot Layout]', e); }
   };
