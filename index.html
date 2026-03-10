@@ -424,8 +424,8 @@
        第一幕：診斷 + 處方（一屏完成轉換）
        ══════════════════════════════════════════ -->
 
-  <!-- 🎯 大判定 -->
-  <div class="result-verdict" id="r-verdict">
+  <!-- 🎯 大判定（隱藏 — API 主導，不再顯示分數圓環）-->
+  <div class="result-verdict" id="r-verdict" style="display:none">
     <div class="verdict-ring" id="verdict-ring">
       <svg viewBox="0 0 160 160">
         <circle class="verdict-ring-bg" cx="80" cy="80" r="70"/>
@@ -454,11 +454,11 @@
   <!-- 🎯 你問的問題（第一屏可見）-->
   <div id="r-question-hero" class="text-dim" style="text-align:center;font-size:.9rem;margin:-0.5rem 0 0.5rem;padding:0 var(--sp-md)"></div>
 
-  <!-- 🔮 AI 多維命理深度解讀（按鈕 + 結果區）-->
-  <div id="ai-deep-wrap" style="display:none"></div>
+  <!-- 🔮 AI 多維命理深度解讀（主內容區）-->
+  <div id="ai-deep-wrap"></div>
 
-  <!-- 🎯 核心回答（精簡版：一句刺點話 + 交叉故事）-->
-  <div class="card" style="border-left:3px solid var(--c-gold)">
+  <!-- 🎯 核心回答（隱藏 — 只當數據容器，不顯示舊離線介面）-->
+  <div class="card" style="display:none;border-left:3px solid var(--c-gold)">
     <div id="r-answer" class="serif" style="font-size:1.05rem;line-height:1.8"></div>
     <!-- 隱藏占位：供 JS 寫入，不顯示 -->
     <div id="r-question" style="display:none"></div>
@@ -485,7 +485,8 @@
   <!-- ═══ 以下全部收折：想看細節再展開 ═══ -->
 
   <!-- ⚡ 行動指令 + 嵌入水晶（默認展開 — 使用者最在意的「怎麼做」）-->
-  <div class="card collapsible-card open" id="action-card">
+  <!-- ⚡ 行動指令（隱藏 — API 回答已包含行動建議）-->
+  <div class="card collapsible-card open" id="action-card" style="display:none">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
       <span><i class="fas fa-bolt"></i> 你現在可以做的事</span>
       <i class="fas fa-chevron-down collapse-arrow"></i>
@@ -499,7 +500,7 @@
   <!-- ══════════════════════════════════════════
        為什麼這樣判斷（三張摘要卡片 — 收折）
        ══════════════════════════════════════════ -->
-  <div class="card collapsible-card">
+  <div class="card collapsible-card" style="display:none">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
       <span><i class="fas fa-gavel"></i> 為什麼這樣判斷</span>
       <i class="fas fa-chevron-down collapse-arrow"></i>
