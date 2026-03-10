@@ -14542,28 +14542,23 @@ function _injectAIButton() {
   
   var admin = _aiIsAdmin();
   var used = !admin && _aiUsedToday();
-  var remaining = used ? 0 : 1;
   
-  wrap.style.display = 'block';
-  wrap.innerHTML = 
-    '<div style="text-align:center;padding:1.2rem 0 .5rem">' +
-    '<button id="ai-deep-btn" onclick="_triggerAIDeep()" style="' +
-    'background:linear-gradient(135deg,rgba(139,92,246,.3),rgba(212,175,55,.2),rgba(139,92,246,.15));' +
-    'color:#fff;border:2px solid rgba(212,175,55,.5);' +
-    'padding:1rem 2.2rem;border-radius:var(--r-pill,24px);font-size:1.05rem;font-weight:700;' +
-    'cursor:pointer;transition:all .3s;font-family:inherit;' +
-    'box-shadow:0 4px 20px rgba(139,92,246,.25), 0 2px 8px rgba(212,175,55,.15);' +
-    'letter-spacing:.05em;' +
-    (used ? 'opacity:.4;pointer-events:none;' : 'animation:ai-btn-glow 2.5s ease-in-out infinite;') + '" ' +
-    (used ? 'disabled' : '') + '>' +
-    (used ? '🔒 今日解讀已開啟' : '🌙 開啟七維深層解讀') +
-    '</button>' +
-    '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.45rem;opacity:.6">' +
-    (used ? '每人每日限定 1 次・剩餘 0 次・00:00 重置' : '✦ 每人每日限定 1 次・剩餘 ' + remaining + ' 次') +
-    '</div>' +
-    '</div>' +
-    '<style>@keyframes ai-btn-glow{0%,100%{box-shadow:0 4px 20px rgba(139,92,246,.25),0 2px 8px rgba(212,175,55,.15)}50%{box-shadow:0 6px 28px rgba(139,92,246,.4),0 3px 12px rgba(212,175,55,.25)}}</style>' +
-    '<div id="ai-deep-result" style="display:none"></div>';
+  // 已用完額度：顯示提示，不呼叫 API
+  if (used) {
+    wrap.innerHTML = 
+      '<div style="text-align:center;padding:2rem 1rem">' +
+      '<div style="font-size:1.2rem;margin-bottom:.5rem">🔒</div>' +
+      '<div style="font-size:.9rem;color:var(--c-gold);font-weight:600;margin-bottom:.3rem">今日解讀額度已用盡</div>' +
+      '<div style="font-size:.72rem;color:var(--c-text-dim);opacity:.6">每人每日限定 1 次・00:00 重置</div>' +
+      '</div>';
+    return;
+  }
+  
+  // 建立結果容器 + 自動觸發 API
+  wrap.innerHTML = '<div id="ai-deep-result"></div>';
+  setTimeout(function() {
+    try { _triggerAIDeep(); } catch(e) { console.error('[AI] auto-trigger error:', e); }
+  }, 300);
 }
 
 // ── 頂規白話版 payload v5 — 最大化每個系統的細節提取 ──
@@ -14972,21 +14967,16 @@ function _buildPayload() {
 
 // ── 按鈕觸發 AI ──
 async function _triggerAIDeep() {
-  var btn = document.getElementById('ai-deep-btn');
   var resultDiv = document.getElementById('ai-deep-result');
-  if (!btn || !resultDiv) return;
+  if (!resultDiv) return;
   
   var admin = _aiIsAdmin();
   
-  btn.disabled = true;
-  btn.innerHTML = '💬 正在替你整理這題…';
-  btn.style.opacity = '0.6';
-  btn.style.cursor = 'wait';
   resultDiv.style.display = 'block';
   resultDiv.innerHTML = 
     '<div style="text-align:center;padding:1.5rem">' +
     '<div style="display:inline-block;width:36px;height:36px;border:3px solid rgba(212,175,55,.2);border-top-color:var(--c-gold,#d4af37);border-radius:50%;animation:spin 1s linear infinite"></div>' +
-    '<div style="font-size:.85rem;color:var(--c-gold);margin-top:.6rem">正在替你把這題慢慢理清楚…</div>' +
+    '<div style="font-size:.85rem;color:var(--c-gold);margin-top:.6rem">正在翻閱你的命盤…</div>' +
     '<div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.3rem">約需 15-30 秒</div>' +
     '</div>';
   
@@ -15125,26 +15115,19 @@ async function _triggerAIDeep() {
     html += '</div>';
     resultDiv.innerHTML = html;
     
-    btn.innerHTML = '✅ 已替你整理完成';
-    btn.style.background = 'rgba(74,222,128,.1)';
-    btn.style.borderColor = 'rgba(74,222,128,.3)';
-    btn.style.color = '#4ade80';
-    btn.style.boxShadow = 'none';
-    
   } catch(err) {
     console.error('[AI]', err);
     if (err.status === 429 && !admin) {
-      btn.innerHTML = '🔒 今日解讀已使用';
-      btn.style.opacity = '0.4';
       resultDiv.innerHTML = '<div style="text-align:center;padding:.8rem;color:var(--c-gold);font-size:.82rem">今天這題已看過・00:00 後可再看 1 次</div>';
     } else {
-      btn.disabled = false;
-      btn.innerHTML = admin ? '🔮 重試（Admin）' : '🔮 重試深度解讀';
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-      resultDiv.innerHTML = '<div style="text-align:center;padding:.8rem;color:#f87171;font-size:.8rem">' +
-        (admin && err.status === 429 ? 'Worker 429 但你是管理員，可重試' : '暫時無法使用，請稍後再試') +
-        (admin ? '<br><span style="font-size:.6rem;opacity:.4">[Debug] '+(err.status||'')+' '+(err.error||err.detail||err.message||JSON.stringify(err).substring(0,200))+'</span>' : '') + '</div>';
+      resultDiv.innerHTML = '<div style="text-align:center;padding:1rem">' +
+        '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">' +
+        (admin && err.status === 429 ? 'Worker 429 但你是管理員，可重試' : '暫時連線不順，請再試一次') +
+        (admin ? '<br><span style="font-size:.6rem;opacity:.4">[Debug] '+(err.status||'')+' '+(err.error||err.detail||err.message||JSON.stringify(err).substring(0,200))+'</span>' : '') +
+        '</div>' +
+        '<button onclick="_triggerAIDeep()" style="padding:.7rem 1.8rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit">' +
+        (admin ? '🔮 重試（Admin）' : '🔮 再試一次') +
+        '</button></div>';
     }
   }
 }
@@ -18244,14 +18227,9 @@ renderTarot = function(){
   }
 
   _triggerAIDeep = async function() {
-    var btn = document.getElementById('ai-deep-btn');
     var resultDiv = document.getElementById('ai-deep-result');
-    if (!btn || !resultDiv) return;
+    if (!resultDiv) return;
     var admin = _aiIsAdmin();
-    btn.disabled = true;
-    btn.innerHTML = '☽ 正在翻閱你的命盤…';
-    btn.style.opacity = '0.6';
-    btn.style.cursor = 'wait';
     resultDiv.style.display = 'block';
     try{ var sticky=document.getElementById('sticky-cta'); if(sticky){ sticky.classList.remove('visible'); sticky.style.display='none'; } }catch(_e){}
     resultDiv.innerHTML = '<div style="text-align:center;padding:2rem 1.5rem">' +
@@ -18328,31 +18306,21 @@ renderTarot = function(){
         html += '</div>';
         resultDiv.innerHTML = html;
       }
-      btn.innerHTML = '✅ 已替你整理完成';
-      btn.style.background = 'rgba(74,222,128,.1)';
-      btn.style.borderColor = 'rgba(74,222,128,.3)';
-      btn.style.color = '#4ade80';
-      btn.style.boxShadow = 'none';
     } catch(err) {
       clearInterval(_aiPhaseTimer);
       console.error('[AI]', err);
       if (err.status === 429 && !admin) {
-        // Server confirmed rate limited — re-sync localStorage
         try{ _aiMarkUsed(); }catch(_e){}
-        btn.innerHTML = '🔒 今日解讀已使用';
-        btn.style.opacity = '0.4';
-        btn.disabled = true;
-        btn.style.pointerEvents = 'none';
         resultDiv.innerHTML = '<div style="text-align:center;padding:.8rem;color:var(--c-gold);font-size:.82rem">今天這題已看過・00:00 後可再看 1 次</div>';
       } else {
-        btn.disabled = false;
-        btn.innerHTML = admin ? '🔮 重試（Admin）' : '🔮 重試深度解讀';
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
-        btn.style.pointerEvents = 'auto';
-        resultDiv.innerHTML = '<div style="text-align:center;padding:.8rem;color:#f87171;font-size:.8rem">' +
-          (admin && err.status === 429 ? 'Worker 429 但你是管理員，可重試' : '暫時無法使用，請稍後再試') +
-          (admin ? '<br><span style="font-size:.6rem;opacity:.4">[Debug] '+(err.status||'')+' '+(err.error||err.detail||err.message||'')+'</span>' : '') + '</div>';
+        resultDiv.innerHTML = '<div style="text-align:center;padding:1rem">' +
+          '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">' +
+          (admin && err.status === 429 ? 'Worker 429 但你是管理員，可重試' : '暫時連線不順，請再試一次') +
+          (admin ? '<br><span style="font-size:.6rem;opacity:.4">[Debug] '+(err.status||'')+' '+(err.error||err.detail||err.message||'')+'</span>' : '') +
+          '</div>' +
+          '<button onclick="_triggerAIDeep()" style="padding:.7rem 1.8rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit">' +
+          (admin ? '🔮 重試（Admin）' : '🔮 再試一次') +
+          '</button></div>';
       }
     }
   };
