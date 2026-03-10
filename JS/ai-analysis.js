@@ -24293,7 +24293,8 @@ function _buildPayload() {
       十神組合: b.tenGodCombos ? b.tenGodCombos.map(function(c){return c.zh||c.name;}) : null,
       暗合暗沖: b.hiddenInteractions ? b.hiddenInteractions.map(function(h){return h.zh||h.type+h.from+'→'+h.to;}) : null,
       歲運並臨: b.suiYunBingLin && b.suiYunBingLin.active ? b.suiYunBingLin.zh : null,
-      額外神煞: b.extraShenSha ? b.extraShenSha.map(function(x){return typeof x==='string'?x:x.name+':'+x.zh;}) : null
+      額外神煞: b.extraShenSha ? b.extraShenSha.map(function(x){return typeof x==='string'?x:x.name+':'+x.zh;}) : null,
+      空亡: b.kongwang ? (Array.isArray(b.kongwang) ? b.kongwang.join('、') : b.kongwang) : null
     };
   } catch(e){ console.error('payload bazi:', e); } }
 
@@ -24343,7 +24344,9 @@ function _buildPayload() {
       四化: zw.sihua || [],
       五行局: zw.wuxingJu, 命主: zw.mingZhu, 身主: zw.shenZhu,
       當前大限: curDx ? {干支:curDx.gz, 分數:curDx.score, 等級:curDx.level, 走宮:curDx.palaceName, 主題:curDx.theme, 主星:curDx.stars, 吉星:curDx.lucky, 煞星:curDx.sha, 年齡:curDx.ageStart+'-'+curDx.ageEnd, 備註:(curDx.notes||[]).slice(0,4)} : null,
-      今年流年: curLn ? {干支:curLn.gz, 走宮:curLn.mingPalace, 重點:curLn.focus, 分數:curLn.score, 備註:(curLn.notes||[]).slice(0,4)} : null
+      今年流年: curLn ? {干支:curLn.gz, 走宮:curLn.mingPalace, 重點:curLn.focus, 分數:curLn.score, 備註:(curLn.notes||[]).slice(0,4)} : null,
+      身宮: (function(){ try { var sp = zw.palaces.find(function(p){return p.isShenGong;}); return sp ? sp.name : (zw.shenGongPalace || null); } catch(e){ return null; } })(),
+      三方四正: (function(){ try { if (!zw.palaces || !zw.palaces[fi]) return null; var target = fi; var sanfang = [(target+4)%12, (target+8)%12, (target+6)%12]; return sanfang.map(function(idx){ var pal = zw.palaces[idx]; if(!pal) return null; var majors = pal.stars ? pal.stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name+(s.hua||'');}) : []; return {宮:pal.name, 主星:majors}; }).filter(Boolean); } catch(e){ return null; } })()
     };
   } catch(e){ console.error('payload ziwei:', e); } }
 
@@ -24364,7 +24367,8 @@ function _buildPayload() {
         走向: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.trend : null,
         風險: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.risk : null,
         應期: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.timing : null,
-        行動: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.action : null
+        行動: mh.analysis.narrativeBlocks ? mh.analysis.narrativeBlocks.action : null,
+        旺衰: mh.analysis.wangShuai ? {體:mh.analysis.wangShuai.ti?mh.analysis.wangShuai.ti.level:'', 用:mh.analysis.wangShuai.yo?mh.analysis.wangShuai.yo.level:''} : null
       } : null
     };
   } catch(e){ console.error('payload meihua:', e); } }
@@ -24399,6 +24403,21 @@ function _buildPayload() {
       if (ftKey) {
         obj.針對本題解讀 = c.isUp ? (card[ftKey + 'Up'] || '') : (card[ftKey + 'Rv'] || '');
       }
+      // TAROT_DEEP 深度解讀（心理/事件/風險/時間/人物）
+      var dp = (typeof TAROT_DEEP !== 'undefined' && TAROT_DEEP[c.id]) ? TAROT_DEEP[c.id] : null;
+      if (dp) {
+        obj.深層含義 = c.isUp ? (dp.coreUp || '') : (dp.coreRv || '');
+        obj.心理狀態 = c.isUp ? (dp.psycheUp || '') : (dp.psycheRv || '');
+        obj.可能事件 = c.isUp ? (dp.eventUp || '') : (dp.eventRv || '');
+        obj.風險提醒 = c.isUp ? (dp.riskUp || '') : (dp.riskRv || '');
+        obj.時間節奏 = c.isUp ? (dp.timeUp || '') : (dp.timeRv || '');
+        obj.人物形象 = c.isUp ? (dp.personUp || '') : (dp.personRv || '');
+      }
+      // 宮廷牌金色黎明元素
+      if (c.gdCourt) {
+        obj.元素組合 = c.gdCourt.combo;
+        obj.元素解讀 = c.gdCourt.zh;
+      }
       return obj;
     });
     p.readings.tarot = {
@@ -24432,7 +24451,8 @@ function _buildPayload() {
       年主星: n.profections ? n.profections.summary || n.profections.meaning : null,
       行運: n.transits && n.transits.aspects ? n.transits.aspects.filter(function(a){return a.isSlow;}).slice(0,5).map(function(a){return {行運星:a.transitPlanet, 相位:a.sym, 本命星:a.natalPlanet, 性質:a.nature, 容許度:a.orb};}) : null,
       推運摘要: n.progressions ? n.progressions.summary : null,
-      太陽回歸: n.solarReturn && n.solarReturn.ascSign ? '上升'+n.solarReturn.ascSign.name : null
+      太陽回歸: n.solarReturn && n.solarReturn.ascSign ? '上升'+n.solarReturn.ascSign.name : null,
+      行星強弱: n.planetStrength ? (function(){ var ps = []; Object.keys(n.planetStrength).forEach(function(name){ var v = n.planetStrength[name]; if (typeof v === 'number') ps.push({星:name, 強度:v}); }); return ps.length ? ps : null; })() : null
     };
   } catch(e){ console.error('payload natal:', e); } }
 
@@ -24491,7 +24511,10 @@ function _buildPayload() {
           }
         });
         return av.length ? av : null;
-      })() : null
+      })() : null,
+      D9婚姻盤: j.d9 ? (function(){ try { var d9 = j.d9; var summary = d9.summary || d9.zh || ''; if (!summary && d9.lagnaSign) summary = 'D9上升' + d9.lagnaSign; return summary || null; } catch(e){ return null; } })() : null,
+      D4房產盤: j.d4 ? (function(){ try { return j.d4.summary || j.d4.zh || null; } catch(e){ return null; } })() : null,
+      燃燒行星: j.combustPlanets ? j.combustPlanets.map(function(c){ return {星:c.planet||c.name, 距日:c.distance, 影響:c.zh||c.effect||'能量被太陽灼傷'}; }) : (function(){ try { if (!j.planets) return null; var cb = []; Object.keys(j.planets).forEach(function(p){ var pl = j.planets[p]; if (pl && pl.combust) cb.push({星:p, 影響:'此星被太陽灼傷，能量受損'}); }); return cb.length ? cb : null; } catch(e){ return null; } })()
     };
   } catch(e){ console.error('payload vedic:', e); } }
 
