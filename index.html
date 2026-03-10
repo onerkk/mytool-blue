@@ -466,8 +466,8 @@
     <div id="r-conclusion" style="display:none"></div>
   </div>
 
-  <!-- 🛒 你現在最該做的事（第一屏CTA核心）-->
-  <div class="card quick-shop-card" id="quick-shop">
+  <!-- 🛒 快速推薦（隱藏 — 由完整水晶處方取代）-->
+  <div class="card quick-shop-card" id="quick-shop" style="display:none">
     <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
       <span style="font-size:1.4rem">💎</span>
       <div>
@@ -527,8 +527,8 @@
     <div id="remedy-plan-wrap"><div id="remedy-actions" class="remedy-actions"></div></div>
   </div>
 
-  <!-- 📋 命理詳解 -->
-  <div class="card collapsible-card">
+  <!-- 📋 命理詳解（隱藏 — API 已整合所有解讀）-->
+  <div class="card collapsible-card" style="display:none">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
       <span><i class="fas fa-scroll"></i> 命理詳細分析</span>
       <i class="fas fa-chevron-down collapse-arrow"></i>
@@ -643,30 +643,21 @@
     </div>
   </div>
 
-  <!-- 存圖分享 -->
-  <div class="card" style="text-align:center">
+  <!-- 存圖分享（canvas 動態產生）-->
+  <div class="card" style="text-align:center" id="share-card-section">
     <div class="card-title"><i class="fas fa-share-alt"></i> 分享你的占卜結果</div>
-    <p class="text-sm text-dim mb-md">存成圖片分享到 IG / LINE，朋友也能免費測！</p>
+    <p class="text-sm text-dim mb-md">存成精美圖片分享到 IG / LINE，朋友也能免費測！</p>
+    <div id="share-preview" style="margin:0 auto .8rem;max-width:360px;border-radius:12px;overflow:hidden;border:1px solid rgba(212,175,55,.2)"></div>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button onclick="saveResultCard()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.08));color:var(--c-gold);font-size:.85rem;font-weight:600;border:1.5px solid rgba(212,175,55,.4);box-shadow:0 4px 14px rgba(212,175,55,.08);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-download"></i> 存圖分享</button>
-      <button onclick="printResult()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.06));color:var(--c-text-dim);font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.15);box-shadow:0 2px 8px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.08);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-print"></i> 列印</button>
+      <button onclick="generateShareImage()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.08));color:var(--c-gold);font-size:.85rem;font-weight:600;border:1.5px solid rgba(212,175,55,.4);box-shadow:0 4px 14px rgba(212,175,55,.08);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-download"></i> 產生分享圖</button>
     </div>
   </div>
 
-  <!-- 再測 -->
-  <div class="card mt-lg" id="share-gate" style="text-align:center">
-    <h4 style="margin-bottom:var(--sp-md)">🔄 想再測一次？</h4>
-    <button onclick="retestAfterShare()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:260px;margin:0 auto var(--sp-md);padding:14px 20px;border-radius:12px;background:linear-gradient(135deg,#e8c547,#d4af37);color:#1a0a0a;font-size:.92rem;font-weight:700;border:none;box-shadow:0 4px 16px rgba(212,175,55,.4),inset 0 1px 0 rgba(255,255,255,.3);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-redo"></i> 重新開始新的占卜</button>
-    <div style="border-top:1px solid var(--c-border);padding-top:var(--sp-md);margin-top:var(--sp-sm)">
-      <p class="text-sm text-dim">🎁 分享給朋友可獲得專屬折扣碼</p>
-      <button onclick="shareToUnlock()" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.05));color:var(--c-text-dim);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.12);box-shadow:0 2px 8px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.06);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-paper-plane"></i> 分享並取得折扣碼</button>
-    </div>
-  </div>
-  <div class="discount-reveal hidden mt-lg" id="discount-reveal">
-    <h4 style="color:var(--c-gold);margin-bottom:var(--sp-sm)">🍁 感謝分享！你的專屬折扣碼：</h4>
+  <!-- 再測（已移除）-->
+  <!-- 折扣碼區（保留但隱藏，JS 可能引用）-->
+  <div class="discount-reveal hidden mt-lg" id="discount-reveal" style="display:none">
     <div class="discount-code" id="discount-code">JY2025VIP</div>
-    <p class="text-sm text-dim mt-sm" id="discount-timer">在蝦皮賣場結帳時輸入此碼可享額外折扣</p>
-    <div id="discount-crystal-rec" class="mt-md"></div>
+    <div id="discount-crystal-rec"></div>
   </div>
 
   <!-- ═══ 趣味功能區 ═══ -->

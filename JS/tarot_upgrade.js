@@ -744,3 +744,181 @@ enhanceTarot = function(tarot) {
 
   console.log('[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成');
 })();
+
+// ══════════════════════════════════════════════════════════════════════
+// 10. 牌陣自適應佈局 — 覆寫 initTarotDeck + pickCard 完成判定
+// ══════════════════════════════════════════════════════════════════════
+(function() {
+
+  // ── 牌位佈局生成器 ──
+  function buildSlotLayout(spreadId, def) {
+    if (!def) return null; // fallback 到原版凱爾特
+    var count = def.count;
+    var positions = def.positions || [];
+    var html = '';
+
+    if (spreadId === 'celtic_cross') {
+      // 原版凱爾特十字 — 不改
+      return null;
+    }
+
+    if (spreadId === 'three_card') {
+      // 三牌陣：水平排列
+      html += '<div style="display:flex;justify-content:center;gap:12px;padding:10px 0">';
+      for (var i = 0; i < 3; i++) {
+        var pos = positions[i] ? positions[i].name : '第'+(i+1)+'張';
+        html += '<div class="tarot-chosen-slot" id="t-slot-'+i+'" style="position:relative;width:68px;height:100px">';
+        html += '<span class="slot-num">'+(i+1)+'</span>';
+        html += '<span class="slot-label">'+pos+'</span></div>';
+      }
+      html += '</div>';
+      return html;
+    }
+
+    if (spreadId === 'either_or') {
+      // 二選一：上1中2下2
+      html += '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0">';
+      // 你
+      html += '<div class="tarot-chosen-slot" id="t-slot-0" style="position:relative;width:68px;height:100px">';
+      html += '<span class="slot-num">1</span><span class="slot-label">'+(positions[0]?positions[0].name:'你')+'</span></div>';
+      // A vs B
+      html += '<div style="display:flex;gap:24px">';
+      html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px">';
+      html += '<div style="font-size:.65rem;color:var(--c-gold);font-weight:600">A 選項</div>';
+      html += '<div class="tarot-chosen-slot" id="t-slot-1" style="position:relative;width:68px;height:100px"><span class="slot-num">2</span><span class="slot-label">'+(positions[1]?positions[1].name:'A')+'</span></div>';
+      html += '<div class="tarot-chosen-slot" id="t-slot-3" style="position:relative;width:68px;height:100px"><span class="slot-num">4</span><span class="slot-label">'+(positions[3]?positions[3].name:'A結果')+'</span></div>';
+      html += '</div>';
+      html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px">';
+      html += '<div style="font-size:.65rem;color:var(--c-gold);font-weight:600">B 選項</div>';
+      html += '<div class="tarot-chosen-slot" id="t-slot-2" style="position:relative;width:68px;height:100px"><span class="slot-num">3</span><span class="slot-label">'+(positions[2]?positions[2].name:'B')+'</span></div>';
+      html += '<div class="tarot-chosen-slot" id="t-slot-4" style="position:relative;width:68px;height:100px"><span class="slot-num">5</span><span class="slot-label">'+(positions[4]?positions[4].name:'B結果')+'</span></div>';
+      html += '</div></div></div>';
+      return html;
+    }
+
+    if (spreadId === 'relationship') {
+      // 關係牌陣：上排2（你/對方）中排1（關係）下排3
+      html += '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0">';
+      html += '<div style="display:flex;gap:20px">';
+      html += '<div class="tarot-chosen-slot" id="t-slot-0" style="position:relative;width:68px;height:100px"><span class="slot-num">1</span><span class="slot-label">'+(positions[0]?positions[0].name:'你')+'</span></div>';
+      html += '<div class="tarot-chosen-slot" id="t-slot-1" style="position:relative;width:68px;height:100px"><span class="slot-num">2</span><span class="slot-label">'+(positions[1]?positions[1].name:'對方')+'</span></div>';
+      html += '</div>';
+      html += '<div class="tarot-chosen-slot" id="t-slot-2" style="position:relative;width:68px;height:100px"><span class="slot-num">3</span><span class="slot-label">'+(positions[2]?positions[2].name:'關係')+'</span></div>';
+      html += '<div style="display:flex;gap:10px">';
+      for (var i = 3; i < 6; i++) {
+        html += '<div class="tarot-chosen-slot" id="t-slot-'+i+'" style="position:relative;width:68px;height:100px"><span class="slot-num">'+(i+1)+'</span><span class="slot-label">'+(positions[i]?positions[i].name:'')+'</span></div>';
+      }
+      html += '</div></div>';
+      return html;
+    }
+
+    if (spreadId === 'timeline') {
+      // 時間線：水平5張
+      html += '<div style="display:flex;justify-content:center;gap:8px;padding:10px 0;flex-wrap:wrap">';
+      for (var i = 0; i < 5; i++) {
+        var pos = positions[i] ? positions[i].name : '第'+(i+1)+'張';
+        html += '<div class="tarot-chosen-slot" id="t-slot-'+i+'" style="position:relative;width:60px;height:88px">';
+        html += '<span class="slot-num">'+(i+1)+'</span>';
+        html += '<span class="slot-label">'+pos+'</span></div>';
+      }
+      // 箭頭指示
+      html += '</div>';
+      html += '<div style="text-align:center;font-size:.65rem;color:var(--c-text-dim);margin-top:2px">← 過去 ─── 現在 ─── 未來 →</div>';
+      return html;
+    }
+
+    if (spreadId === 'horseshoe') {
+      // 馬蹄形：弧形7張 (簡化為上3中1下3)
+      html += '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0">';
+      html += '<div style="display:flex;gap:8px">';
+      for (var i = 0; i < 3; i++) {
+        html += '<div class="tarot-chosen-slot" id="t-slot-'+i+'" style="position:relative;width:60px;height:88px"><span class="slot-num">'+(i+1)+'</span><span class="slot-label">'+(positions[i]?positions[i].name:'')+'</span></div>';
+      }
+      html += '</div>';
+      html += '<div class="tarot-chosen-slot" id="t-slot-3" style="position:relative;width:68px;height:100px"><span class="slot-num">4</span><span class="slot-label">'+(positions[3]?positions[3].name:'環境')+'</span></div>';
+      html += '<div style="display:flex;gap:8px">';
+      for (var i = 4; i < 7; i++) {
+        html += '<div class="tarot-chosen-slot" id="t-slot-'+i+'" style="position:relative;width:60px;height:88px"><span class="slot-num">'+(i+1)+'</span><span class="slot-label">'+(positions[i]?positions[i].name:'')+'</span></div>';
+      }
+      html += '</div></div>';
+      return html;
+    }
+
+    // Generic fallback: horizontal grid
+    html += '<div style="display:flex;justify-content:center;gap:8px;padding:10px 0;flex-wrap:wrap">';
+    for (var i = 0; i < count; i++) {
+      var pos = positions[i] ? positions[i].name : '第'+(i+1)+'張';
+      html += '<div class="tarot-chosen-slot" id="t-slot-'+i+'" style="position:relative;width:60px;height:88px">';
+      html += '<span class="slot-num">'+(i+1)+'</span>';
+      html += '<span class="slot-label">'+pos+'</span></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  // ── 覆寫 initTarotDeck ──
+  var _origInitTarotDeck = window.initTarotDeck;
+  window.initTarotDeck = function() {
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var spreadId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
+    var targetCount = def ? def.count : 10;
+
+    // 先呼叫原版（處理洗牌、deck 渲染、drawnCards 重置）
+    _origInitTarotDeck();
+
+    // 然後替換牌位佈局（如果不是凱爾特）
+    var customLayout = buildSlotLayout(spreadId, def);
+    if (customLayout) {
+      var chosen = document.getElementById('t-chosen');
+      if (chosen) chosen.innerHTML = customLayout;
+    }
+
+    // 更新說明文字
+    try {
+      var descEl = document.querySelector('#step-2 .text-dim.text-sm.mb-sm');
+      if (descEl) {
+        descEl.innerHTML = '凝神冥想你的問題，然後從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">' + targetCount + '</strong> 張牌';
+      }
+      var countEl = document.getElementById('t-remain-text');
+      if (countEl) {
+        countEl.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + targetCount + ' 張';
+      }
+    } catch(e) {}
+  };
+
+  // ── 覆寫 pickCard — 修正完成判定 + pickAnimating 保護 ──
+  var _origPickCard2 = window.pickCard;
+  window.pickCard = function(deckIdx, deckEl) {
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var targetCount = def ? def.count : 10;
+
+    // 已到目標數量，不再抽
+    if (drawnCards.length >= targetCount) return;
+
+    // 呼叫原版 pickCard（它內部有 pickAnimating 鎖）
+    _origPickCard2(deckIdx, deckEl);
+
+    // 原版的完成判定是 >=10，對非凱爾特不會觸發
+    // 所以我們在這裡補一個判定
+    if (targetCount < 10) {
+      // 用 setTimeout 等原版 pickCard 的動畫完成（550ms）
+      setTimeout(function() {
+        if (drawnCards.length >= targetCount) {
+          var btn = document.getElementById('btn-analyze');
+          if (btn) btn.disabled = false;
+          var hint = document.getElementById('pick-hint');
+          if (hint) hint.style.display = 'none';
+          S.tarot.drawn = drawnCards;
+          S.tarot.spread = drawnCards;
+          if (typeof showSpread === 'function') showSpread();
+          setTimeout(function() {
+            var act = document.querySelector('#step-2 .actions');
+            if (act) act.scrollIntoView({behavior:'smooth', block:'center'});
+          }, 400);
+        }
+      }, 600);
+    }
+  };
+
+  console.log('[牌陣] 自適應佈局 + 完成判定已啟用');
+})();

@@ -10807,7 +10807,7 @@ function runAnalysis(){
           const titleDiv=document.createElement('div');
           titleDiv.className='review-title-injected';
           titleDiv.style.cssText='text-align:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(212,175,55,.15)';
-          titleDiv.innerHTML='<span style="font-size:.82rem;font-weight:700;color:var(--c-gold);letter-spacing:.05em"><i class="fas fa-gem" style="margin-right:5px;font-size:.75rem"></i>能量水晶・實際買家評價</span>';
+          titleDiv.innerHTML='<span style="font-size:.82rem;font-weight:700;color:var(--c-gold);letter-spacing:.05em"><i class="fas fa-gem" style="margin-right:5px;font-size:.75rem"></i>蝦皮賣場評價</span>';
           proofEl.insertBefore(titleDiv,proofEl.firstChild);
         }
       }
@@ -14936,6 +14936,43 @@ function _buildPayload() {
     }
   }
 
+  // ═══ 跨系統標籤（七維度 tags 精華）═══
+  try {
+    var allTags = [];
+    var _tagSources = [
+      { key: '八字', tags: S.baziTags },
+      { key: '紫微', tags: S.ziweiTags },
+      { key: '梅花', tags: S.meihuaTags },
+      { key: '塔羅', tags: S.tarotTags },
+      { key: '星盤', tags: S.natalTags },
+      { key: '吠陀', tags: S.jyotishTags },
+      { key: '姓名', tags: S.nameTags }
+    ];
+    _tagSources.forEach(function(src) {
+      if (src.tags && src.tags.length) {
+        src.tags.slice(0, 8).forEach(function(t) {
+          allTags.push({
+            system: src.key,
+            direction: t.direction || 'mid',
+            label: t.label || t.tag || '',
+            weight: t.weight || 1
+          });
+        });
+      }
+    });
+    if (allTags.length) p.tags = allTags;
+  } catch(e) { console.error('payload tags:', e); }
+
+  // ═══ 姓名學問事結果（如果有）═══
+  try {
+    if (S._nameQuestionResult && S._nameQuestionResult.answer) {
+      var nqr = S._nameQuestionResult;
+      p.readings.name = (p.readings.name || '') + '\n問事結果：' + (nqr.answer || '') + 
+        (nqr.score ? '（分數' + nqr.score + '）' : '') +
+        (nqr.evidence ? '。依據：' + nqr.evidence.slice(0, 3).join('、') : '');
+    }
+  } catch(e) {}
+
   // ── Fallback：空的系統用原始資料補 ──
   try {
     if (!p.readings.bazi && b) p.readings.bazi = '日主' + _s(b.dm) + '（' + _s(b.dmEl) + '），' + (b.strong?'身強':'身弱') + '。喜用：' + (b.fav||[]).join(',');
@@ -18325,3 +18362,211 @@ renderTarot = function(){
     }
   };
 })();
+// ═══════════════════════════════════════════════════════════════════════
+// Canvas 分享圖產生器 — 從 AI 回答中提取精華，產生精美分享圖
+// ═══════════════════════════════════════════════════════════════════════
+function generateShareImage() {
+  var previewEl = document.getElementById('share-preview');
+  if (!previewEl) return;
+  
+  // 取 AI 回答的關鍵文字
+  var resultEl = document.getElementById('ai-deep-result');
+  var aiText = '';
+  var directAnswer = '';
+  
+  if (resultEl) {
+    // 嘗試從結構化結果取 directAnswer
+    var daEl = resultEl.querySelector('[data-field="directAnswer"]');
+    if (daEl) directAnswer = daEl.textContent.trim();
+    
+    // 嘗試取第一段文字作為摘要
+    if (!directAnswer) {
+      var firstP = resultEl.querySelector('div[style*="font-weight:600"], div[style*="font-size:1rem"]');
+      if (firstP) directAnswer = firstP.textContent.trim();
+    }
+    
+    // fallback: 取所有文字的前150字
+    if (!directAnswer) {
+      aiText = resultEl.textContent.trim();
+      directAnswer = aiText.substring(0, 150);
+    }
+  }
+  
+  // 如果還是沒有，用離線摘要
+  if (!directAnswer) {
+    var rAnswer = document.getElementById('r-answer');
+    if (rAnswer) directAnswer = rAnswer.textContent.trim().substring(0, 150);
+  }
+  
+  if (!directAnswer) directAnswer = '你的命盤解讀已完成';
+  
+  // 截斷到合理長度
+  if (directAnswer.length > 120) directAnswer = directAnswer.substring(0, 117) + '…';
+  
+  var question = (S.form && S.form.question) ? S.form.question : '';
+  var typeLabel = {love:'感情',career:'事業',wealth:'財運',health:'健康',relationship:'人際',family:'家庭'}[(S.form && S.form.type)] || '整體';
+  var name = (S.form && S.form.name) ? S.form.name : '';
+  
+  // Canvas 設定
+  var W = 720, H = 1280;
+  var canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  var ctx = canvas.getContext('2d');
+  
+  // 背景漸層
+  var bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#1a0e05');
+  bg.addColorStop(0.3, '#2a1508');
+  bg.addColorStop(0.7, '#1a0a0a');
+  bg.addColorStop(1, '#0d0805');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+  
+  // 裝飾：金色邊框
+  ctx.strokeStyle = 'rgba(212,175,55,0.3)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(30, 30, W-60, H-60);
+  
+  // 裝飾：內框
+  ctx.strokeStyle = 'rgba(212,175,55,0.1)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(45, 45, W-90, H-90);
+  
+  // 月亮圖示
+  ctx.font = '80px serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('☽', W/2, 140);
+  
+  // 標題
+  ctx.font = 'bold 42px "Noto Serif TC", serif';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('靜月之光', W/2, 210);
+  
+  // 副標
+  ctx.font = '22px "Noto Sans TC", sans-serif';
+  ctx.fillStyle = 'rgba(212,175,55,0.6)';
+  ctx.fillText('七套命理交叉驗證', W/2, 250);
+  
+  // 分隔線
+  ctx.beginPath();
+  ctx.moveTo(200, 285);
+  ctx.lineTo(W-200, 285);
+  ctx.strokeStyle = 'rgba(212,175,55,0.3)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  
+  // 問題類型標籤
+  ctx.font = 'bold 24px "Noto Sans TC", sans-serif';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('✦ ' + typeLabel + ' ✦', W/2, 330);
+  
+  // 問題
+  if (question) {
+    ctx.font = '26px "Noto Sans TC", sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    var qLines = wrapText(ctx, '「' + question + '」', W - 140);
+    var qY = 380;
+    qLines.forEach(function(line) {
+      ctx.fillText(line, W/2, qY);
+      qY += 38;
+    });
+  }
+  
+  // AI 回答區域 — 金色框
+  var ansY = question ? 380 + (wrapText(ctx, '「'+question+'」', W-140).length * 38) + 40 : 380;
+  
+  // 回答框背景
+  ctx.fillStyle = 'rgba(212,175,55,0.04)';
+  roundRect(ctx, 60, ansY, W-120, 0, 16); // 先不畫，算高度
+  
+  ctx.font = '28px "Noto Serif TC", serif';
+  ctx.fillStyle = '#f5e6b8';
+  var ansLines = wrapText(ctx, directAnswer, W - 180);
+  var ansBoxH = ansLines.length * 42 + 60;
+  
+  // 畫回答框
+  ctx.fillStyle = 'rgba(212,175,55,0.05)';
+  roundRect(ctx, 60, ansY, W-120, ansBoxH, 16);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(212,175,55,0.2)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, 60, ansY, W-120, ansBoxH, 16);
+  ctx.stroke();
+  
+  // 回答文字
+  ctx.font = '28px "Noto Serif TC", serif';
+  ctx.fillStyle = '#f5e6b8';
+  var aY = ansY + 45;
+  ansLines.forEach(function(line) {
+    ctx.fillText(line, W/2, aY);
+    aY += 42;
+  });
+  
+  // 底部資訊
+  var bottomY = H - 180;
+  
+  // 分隔線
+  ctx.beginPath();
+  ctx.moveTo(200, bottomY);
+  ctx.lineTo(W-200, bottomY);
+  ctx.strokeStyle = 'rgba(212,175,55,0.2)';
+  ctx.stroke();
+  
+  // 網址
+  ctx.font = 'bold 28px "Noto Sans TC", sans-serif';
+  ctx.fillStyle = '#d4af37';
+  ctx.fillText('jingyue.uk', W/2, bottomY + 50);
+  
+  ctx.font = '20px "Noto Sans TC", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.fillText('每日免費一次命理解讀', W/2, bottomY + 85);
+  
+  ctx.font = '18px "Noto Sans TC", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.fillText('八字 · 紫微 · 梅花 · 塔羅 · 星盤 · 吠陀 · 姓名', W/2, bottomY + 115);
+  
+  // 顯示預覽
+  var dataUrl = canvas.toDataURL('image/png');
+  previewEl.innerHTML = '<img src="' + dataUrl + '" style="width:100%;display:block;border-radius:12px">';
+  
+  // 自動下載
+  var link = document.createElement('a');
+  link.download = '靜月之光_' + typeLabel + '_' + (name || '解讀') + '.png';
+  link.href = dataUrl;
+  link.click();
+}
+
+// Canvas 文字換行工具
+function wrapText(ctx, text, maxWidth) {
+  var lines = [];
+  var chars = text.split('');
+  var line = '';
+  for (var i = 0; i < chars.length; i++) {
+    var testLine = line + chars[i];
+    if (ctx.measureText(testLine).width > maxWidth && line.length > 0) {
+      lines.push(line);
+      line = chars[i];
+    } else {
+      line = testLine;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+// Canvas 圓角矩形工具
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}

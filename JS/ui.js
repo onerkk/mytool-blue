@@ -1115,8 +1115,8 @@ function _sendFeedbackToForms(rating,reasons,comment){
 
 // ── 結果頁顯示時自動顯示回饋區 ──
 function showFeedbackSection(){
-  // 管理員不顯示回饋區
-  if(S._isAdmin) return;
+  // 回饋區已移除
+  return;
   const fb=document.getElementById('feedback-section');
   if(fb) fb.style.display='block';
   // 重置狀態
@@ -4773,7 +4773,7 @@ showAuraResult = function(){
       setTimeout(function() {
         cardEl.click();
       }, delay);
-      delay += 200;
+      delay += 700;
     });
   };
 
