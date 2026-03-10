@@ -28397,7 +28397,7 @@ renderTarot = function(){
         if (r.timing) {
           ai += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(251,191,36,.06);border-left:3px solid rgba(251,191,36,.4);border-radius:6px;font-size:.85rem;color:var(--c-text-dim);line-height:1.7"><span style="color:var(--c-gold);font-weight:600">⏳ 時機</span>　' + _esc(r.timing) + '</div>';
         }
-        var closing = r.oneliner || r.summary || '';
+        var closing = r.closing || r.oneliner || r.summary || '';
         if (closing) {
           ai += '<div style="margin-top:.8rem;text-align:center;color:var(--c-gold);font-weight:700;line-height:1.8;font-size:.95rem">' + _esc(closing) + '</div>';
         }
