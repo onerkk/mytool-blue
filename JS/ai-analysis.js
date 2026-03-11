@@ -18722,6 +18722,445 @@ function enrichWithSemanticCodes(systemEvidence) {
 })();
 
 
+
+// ═══════════════════════════════════════════════════════════════
+// 命理組合推理引擎 v1.0
+// 
+// 目的：在 tags + 語義碼交叉之上，做條件式組合推理
+// 產出「命理師筆記」—— 不是信號清單，是已經推理好的結論
+// AI 只需要把結論翻譯成人話，不需要自己做命理推理
+//
+// 用法：在 _buildPayload 的最後呼叫 buildDivinationReasoning(payload)
+// 產出的 payload.divinationNotes 會被送進 Worker 給 AI 讀
+// ═══════════════════════════════════════════════════════════════
+
+function buildDivinationReasoning(payload) {
+  var notes = [];
+  var type = payload.focusType || 'general';
+  var q = payload.question || '';
+  var gender = (typeof S !== 'undefined' && S.form) ? S.form.gender : '';
+  var isMale = (gender === 'M' || gender === 'male');
+
+  // ── 收集各系統核心數據 ──
+  var b = (typeof S !== 'undefined') ? S.bazi : null;
+  var zw = (typeof S !== 'undefined') ? S.ziwei : null;
+  var mh = (typeof S !== 'undefined') ? S.meihua : null;
+  var ta = (typeof S !== 'undefined') ? S.tarot : null;
+  var nt = (typeof S !== 'undefined') ? S.natal : null;
+  var jy = (typeof S !== 'undefined') ? S.jyotish : null;
+
+  var strong = b ? b.strong : null;
+  var fav = b ? (b.fav || []) : [];
+  var unfav = b ? (b.unfav || []) : [];
+  var ep = b ? (b.ep || b.weightedEC || {}) : {};
+  var dmEl = b ? b.dmEl : '';
+  var specialStructure = b ? b.specialStructure : null;
+
+  // ── 收集語義碼交叉結果 ──
+  var cross = payload.crossSummary || payload.consensus || {};
+  var semTable = cross.semantic_cross_table || [];
+  var mainSymbols = cross.main_symbols || [];
+  var riskSymbols = cross.risk_symbols || [];
+  var conflicts = cross.conflict_pairs || [];
+
+  // ── 輔助函數 ──
+  function semOverlap(code) {
+    for (var i = 0; i < semTable.length; i++) {
+      if (semTable[i].code === code) return semTable[i].overlap || 0;
+    }
+    return 0;
+  }
+  function hasSem(code) { return semOverlap(code) >= 1; }
+  function highConfirm(code) { return semOverlap(code) >= 3; }
+  function midConfirm(code) { return semOverlap(code) >= 2; }
+
+  // 梅花核心判斷
+  var mhRel = '', mhJudge = '', mhBianDir = '';
+  if (mh && mh.ty) {
+    mhRel = mh.ty.r || '';
+    mhJudge = mh.ty.f || '';
+  }
+  // 塔羅核心牌
+  var tarotCore = '', tarotCross = '', tarotOutcome = '';
+  if (ta && ta.drawn && ta.drawn.length >= 10) {
+    var d0 = ta.drawn[0], d1 = ta.drawn[1], d9 = ta.drawn[9];
+    tarotCore = d0.n + (d0.isUp ? '正' : '逆');
+    tarotCross = d1.n + (d1.isUp ? '正' : '逆');
+    tarotOutcome = d9.n + (d9.isUp ? '正' : '逆');
+  }
+
+  // ══════════════════════════════════════
+  // 財運組合推理
+  // ══════════════════════════════════════
+  if (type === 'wealth') {
+    // ── 核心判斷：身強弱 × 財星喜忌 ──
+    if (strong === true && hasSem('WEALTH.STAR.FAVORABLE')) {
+      notes.push({
+        conclusion: '身強 + 財星為喜用 = 你有能力賺錢也留得住，這是最理想的求財格局',
+        confidence: midConfirm('WEALTH.STAR.FAVORABLE') ? '高' : '中',
+        condition: null,
+        systems: ['八字']
+      });
+    } else if (strong === true && hasSem('WEALTH.STAR.UNFAVORABLE')) {
+      notes.push({
+        conclusion: '身強但財星為忌 = 你有能力但財路方向不對，賺錢費力或為財所困',
+        confidence: '中',
+        condition: '換方向或領域可能改善',
+        systems: ['八字']
+      });
+    } else if (strong === false && hasSem('WEALTH.STAR.FAVORABLE')) {
+      notes.push({
+        conclusion: '身弱但財星為喜 = 方向對但你扛不住大財，需要貴人或團隊支撐',
+        confidence: '中',
+        condition: '有印星扶持（貴人/靠山）時能力提升',
+        systems: ['八字']
+      });
+    } else if (strong === false && (hasSem('WEALTH.STAR.STRONG') || ep[dmEl] < 10)) {
+      notes.push({
+        conclusion: '身弱 + 財星旺 = 錢越多壓力越大，不適合高風險操作',
+        confidence: '高',
+        condition: '量力而為，先穩後進',
+        systems: ['八字']
+      });
+    }
+
+    // ── 食傷生財鏈 ──
+    if (hasSem('WEALTH.GENERATION.ACTIVE') && strong) {
+      notes.push({
+        conclusion: '食傷生財 + 身強 = 靠技術/才華賺錢的路最通',
+        confidence: '高',
+        condition: null,
+        systems: ['八字']
+      });
+    } else if (hasSem('WEALTH.GENERATION.ACTIVE') && !strong) {
+      notes.push({
+        conclusion: '食傷生財但身弱 = 有才華但消耗太大，會把自己掏空',
+        confidence: '中',
+        condition: '需控制產出節奏，不要什麼都接',
+        systems: ['八字']
+      });
+    }
+
+    // ── 時機窗口交叉 ──
+    var wealthTimingCount = 0;
+    if (hasSem('TIMING.LUCK.WEALTH_WINDOW')) wealthTimingCount++;
+    if (hasSem('TIMING.YEAR.WEALTH_WINDOW')) wealthTimingCount++;
+    if (hasSem('TIMING.TRANSIT.EXPANSION')) wealthTimingCount++;
+    if (hasSem('TIMING.DASHA.TOPIC_HIT')) wealthTimingCount++;
+    if (wealthTimingCount >= 2) {
+      notes.push({
+        conclusion: '多系統同時指向財運時間窗口開啟（' + wealthTimingCount + '套確認）',
+        confidence: '高',
+        condition: strong ? '底盤扛得住，可以積極把握' : '底盤偏弱，把握機會但控制風險',
+        systems: ['八字', '吠陀', '星盤'].slice(0, wealthTimingCount)
+      });
+    }
+
+    // ── 梅花 + 塔羅快照 ──
+    if (mhRel === '用生體' && (mhJudge === '大吉' || mhJudge === '吉')) {
+      notes.push({
+        conclusion: '梅花卦象顯示外部環境在幫你（用生體），財路有外來助力',
+        confidence: '中',
+        condition: '這是當下快照，把握當前窗口',
+        systems: ['梅花']
+      });
+    } else if (mhRel === '用克體') {
+      notes.push({
+        conclusion: '梅花卦象顯示外在環境在壓制你，財務上有阻力來自外部',
+        confidence: '中',
+        condition: '不宜主動出擊，先守住再說',
+        systems: ['梅花']
+      });
+    }
+
+    // ── 紫微財庫 ──
+    if (hasSem('WEALTH.STORAGE.INFLOW') && hasSem('WEALTH.EARNING.STABLE')) {
+      notes.push({
+        conclusion: '紫微的財庫和賺錢管道都亮燈 = 有進帳也留得住',
+        confidence: '中',
+        condition: null,
+        systems: ['紫微']
+      });
+    } else if (hasSem('WEALTH.STORAGE.LEAK')) {
+      notes.push({
+        conclusion: '紫微財庫有漏 = 錢進來也容易流出，守財是關鍵',
+        confidence: '中',
+        condition: '需要強化儲蓄紀律',
+        systems: ['紫微']
+      });
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 感情組合推理
+  // ══════════════════════════════════════
+  if (type === 'love') {
+    // ── 配偶星 × 身強弱 ──
+    if (hasSem('LOVE.SPOUSE.FAVORABLE') && hasSem('LOVE.SPOUSE.STRONG')) {
+      notes.push({
+        conclusion: '配偶星為喜用且旺 = 感情機會不缺，遇到的人大概率正面影響你',
+        confidence: midConfirm('LOVE.SPOUSE.FAVORABLE') ? '高' : '中',
+        condition: null,
+        systems: ['八字']
+      });
+    } else if (hasSem('LOVE.SPOUSE.UNFAVORABLE')) {
+      notes.push({
+        conclusion: '配偶星為忌 = 容易遇到消耗型或壓力型對象，不是沒有感情而是遇到的人讓你累',
+        confidence: '中',
+        condition: '需要學會辨識什麼樣的人適合你',
+        systems: ['八字']
+      });
+    }
+
+    // ── 女命食傷剋官 ──
+    if (!isMale && hasSem('LOVE.CLASH.SPOUSE')) {
+      notes.push({
+        conclusion: '食傷旺剋官殺 = 你對伴侶要求很高，容易挑剔或想改造對方',
+        confidence: '高',
+        condition: '不是沒人追你，是你看不上。降低控制欲反而順利',
+        systems: ['八字']
+      });
+    }
+
+    // ── 桃花信號交叉 ──
+    var loveTimingCount = 0;
+    if (hasSem('LOVE.ATTRACTION.STRONG')) loveTimingCount++;
+    if (hasSem('LOVE.MARRIAGE.SIGNAL')) loveTimingCount++;
+    if (hasSem('TIMING.LUCK.LOVE_WINDOW')) loveTimingCount++;
+    if (hasSem('LOVE.PLANET.ACTIVE')) loveTimingCount++;
+    if (loveTimingCount >= 2) {
+      notes.push({
+        conclusion: '多重桃花信號（' + loveTimingCount + '套確認）= 今年確實有感情事件的機率',
+        confidence: loveTimingCount >= 3 ? '高' : '中',
+        condition: null,
+        systems: ['八字', '吠陀', '星盤']
+      });
+    }
+
+    // ── 內在卡點偵測 ──
+    if (hasSem('LOVE.ANXIETY.HIGH') || hasSem('LOVE.STRESS.HIGH')) {
+      var hasExternal = loveTimingCount >= 1;
+      if (hasExternal) {
+        notes.push({
+          conclusion: '外在有機會但你內心糾結 = 桃花來了你可能不敢接',
+          confidence: '中',
+          condition: '最大的卡點不是對方而是你自己的猶豫',
+          systems: ['紫微', '塔羅']
+        });
+      } else {
+        notes.push({
+          conclusion: '內心壓力大，感情上容易想太多或自我消耗',
+          confidence: '中',
+          condition: '先處理內在狀態再考慮感情',
+          systems: ['紫微']
+        });
+      }
+    }
+
+    // ── 流年沖日支 ──
+    if (hasSem('TIMING.YEAR.LOVE_SHOCK')) {
+      notes.push({
+        conclusion: '今年流年沖夫妻宮 = 感情一定有變動（好壞取決於現狀）',
+        confidence: '高',
+        condition: '單身的可能遇到人，有伴的可能有考驗',
+        systems: ['八字']
+      });
+    }
+
+    // ── 梅花+塔羅快照 ──
+    if (mhRel === '用生體') {
+      notes.push({
+        conclusion: '梅花顯示對方（用）在向你（體）靠近，有人主動的跡象',
+        confidence: '中',
+        condition: null,
+        systems: ['梅花']
+      });
+    } else if (mhRel === '體生用') {
+      notes.push({
+        conclusion: '梅花顯示你在付出但對方在接收 = 你比較主動，對方比較被動',
+        confidence: '中',
+        condition: '注意不要一頭熱',
+        systems: ['梅花']
+      });
+    }
+
+    // ── 吠陀金星強弱 ──
+    if (hasSem('LOVE.DEEPER.STRONG')) {
+      notes.push({
+        conclusion: '吠陀 D9 盤金星強勢 = 深層感情品質好，適合長期關係',
+        confidence: '中',
+        condition: null,
+        systems: ['吠陀']
+      });
+    } else if (hasSem('LOVE.DEEPER.WEAK')) {
+      notes.push({
+        conclusion: '吠陀 D9 盤金星弱 = 短期火花容易有，但深層契合度需考驗',
+        confidence: '中',
+        condition: '不要被初期吸引力迷惑',
+        systems: ['吠陀']
+      });
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 事業組合推理
+  // ══════════════════════════════════════
+  if (type === 'career') {
+    // ── 身強弱 × 格局 ──
+    if (strong && hasSem('CAREER.TALENT.STRONG')) {
+      notes.push({
+        conclusion: '身強 + 食傷旺 = 才華就是你的武器，適合靠專業技能發展',
+        confidence: '中',
+        condition: null,
+        systems: ['八字']
+      });
+    }
+    if (specialStructure && specialStructure.type === '從殺格') {
+      notes.push({
+        conclusion: '從殺格 = 你適合在大組織/體制裡發展，不適合單打獨鬥',
+        confidence: '高',
+        condition: '找到對的組織比找到對的方向更重要',
+        systems: ['八字']
+      });
+    }
+    if (hasSem('CAREER.STYLE.ENTREPRENEURIAL')) {
+      notes.push({
+        conclusion: '殺破狼格局 = 適合開創變動型事業，坐不住辦公室',
+        confidence: '中',
+        condition: '但需要看時機（大運/Dasha 是否配合）',
+        systems: ['紫微']
+      });
+    }
+
+    // ── 時機交叉 ──
+    var careerTimingPos = 0, careerTimingNeg = 0;
+    if (hasSem('TIMING.LUCK.POSITIVE')) careerTimingPos++;
+    if (hasSem('TIMING.YEAR.POSITIVE')) careerTimingPos++;
+    if (hasSem('TIMING.TRANSIT.EXPANSION')) careerTimingPos++;
+    if (hasSem('TIMING.LUCK.NEGATIVE')) careerTimingNeg++;
+    if (hasSem('TIMING.YEAR.NEGATIVE')) careerTimingNeg++;
+    if (hasSem('TIMING.TRANSIT.PRESSURE')) careerTimingNeg++;
+    if (hasSem('TIMING.SATURN_RETURN.ACTIVE')) careerTimingNeg++;
+
+    if (careerTimingPos >= 2 && careerTimingNeg === 0) {
+      notes.push({
+        conclusion: '多系統時運偏吉（' + careerTimingPos + '套）= 目前是事業發展的好時機',
+        confidence: '高',
+        condition: null,
+        systems: ['八字', '吠陀', '星盤']
+      });
+    } else if (careerTimingNeg >= 2 && careerTimingPos === 0) {
+      notes.push({
+        conclusion: '多系統時運偏凶（' + careerTimingNeg + '套）= 目前不適合大動作，以守為主',
+        confidence: '高',
+        condition: '不是方向錯，是時機不對。等時運過了再衝',
+        systems: ['八字', '吠陀', '星盤']
+      });
+    } else if (careerTimingPos >= 1 && careerTimingNeg >= 1) {
+      notes.push({
+        conclusion: '時運信號矛盾 = 有機會但也有壓力，是「邊打邊走」的階段',
+        confidence: '中',
+        condition: '小步試錯，不要 all in',
+        systems: ['八字', '吠陀', '星盤']
+      });
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 健康組合推理
+  // ══════════════════════════════════════
+  if (type === 'health') {
+    if (hasSem('HEALTH.VITALITY.WEAK') && hasSem('HEALTH.MENTAL.STRESSED')) {
+      notes.push({
+        conclusion: '身體能量弱 + 心理壓力大 = 身心同時透支的狀態',
+        confidence: '高',
+        condition: '先顧心理再顧身體，壓力是根源',
+        systems: ['八字', '紫微', '吠陀']
+      });
+    }
+    if (hasSem('TIMING.SATURN_RETURN.ACTIVE') && hasSem('HEALTH.VITALITY.WEAK')) {
+      notes.push({
+        conclusion: '土星考驗期 + 體質偏弱 = 這段時間特別需要注意健康',
+        confidence: '高',
+        condition: '定期檢查，不要硬撐',
+        systems: ['吠陀', '八字']
+      });
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 通用：跨系統矛盾處理
+  // ══════════════════════════════════════
+  if (conflicts.length >= 1) {
+    var topConflict = conflicts[0];
+    notes.push({
+      conclusion: '系統間存在矛盾信號：正面「' + (topConflict.positive || '') + '」vs 負面「' + (topConflict.negative || '') + '」',
+      confidence: '需要條件判斷',
+      condition: '這代表結果不是單向好壞，而是取決於你怎麼應對。' + (topConflict.explanation || ''),
+      systems: topConflict.systems || []
+    });
+  }
+
+  // ══════════════════════════════════════
+  // 通用：靜態 vs 即時的分歧處理
+  // ══════════════════════════════════════
+  var staticDir = null, snapshotDir = null;
+  // 靜態系統方向（八字+紫微+星盤+吠陀）
+  var staticPos = 0, staticNeg = 0;
+  if (hasSem('TIMING.LUCK.POSITIVE') || hasSem('TIMING.YEAR.POSITIVE')) staticPos++;
+  if (hasSem('TIMING.LUCK.NEGATIVE') || hasSem('TIMING.YEAR.NEGATIVE')) staticNeg++;
+  if (hasSem('OVERALL.HARMONY.HIGH')) staticPos++;
+  if (hasSem('OVERALL.TENSION.HIGH')) staticNeg++;
+  staticDir = staticPos > staticNeg ? 'pos' : staticNeg > staticPos ? 'neg' : 'mid';
+
+  // 即時快照方向（梅花+塔羅）
+  var snapPos = 0, snapNeg = 0;
+  if (hasSem('SNAPSHOT.VERDICT.POSITIVE') || hasSem('SNAPSHOT.VERDICT.STRONG_POSITIVE')) snapPos++;
+  if (hasSem('SNAPSHOT.VERDICT.NEGATIVE') || hasSem('SNAPSHOT.VERDICT.STRONG_NEGATIVE')) snapNeg++;
+  if (hasSem('SNAPSHOT.OUTCOME.FAVORABLE')) snapPos++;
+  if (hasSem('SNAPSHOT.OUTCOME.UNFAVORABLE')) snapNeg++;
+  snapshotDir = snapPos > snapNeg ? 'pos' : snapNeg > snapPos ? 'neg' : 'mid';
+
+  if (staticDir && snapshotDir && staticDir !== snapshotDir && staticDir !== 'mid' && snapshotDir !== 'mid') {
+    if (staticDir === 'pos' && snapshotDir === 'neg') {
+      notes.push({
+        conclusion: '命盤底盤不差，但當下快照偏負 = 長期有基礎，短期遇阻礙',
+        confidence: '中',
+        condition: '短期的困難不代表方向錯了，撐過去就好轉',
+        systems: ['八字/紫微/星盤', '梅花/塔羅']
+      });
+    } else if (staticDir === 'neg' && snapshotDir === 'pos') {
+      notes.push({
+        conclusion: '命盤底盤偏弱，但當下快照偏正 = 有短期機會但根基不穩',
+        confidence: '中',
+        condition: '把握眼前機會但不要過度擴張，因為底盤撐不住長期',
+        systems: ['八字/紫微/星盤', '梅花/塔羅']
+      });
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 組裝結果
+  // ══════════════════════════════════════
+  payload.divinationNotes = notes;
+
+  // 產出供 AI 閱讀的文字版
+  if (notes.length) {
+    var lines = ['【命理組合推理結果】'];
+    lines.push('以下是程式根據七套系統的信號交叉後做出的條件式推理。你必須以此為骨架來回答，不需要自己重新推理。');
+    lines.push('');
+    notes.forEach(function(n, i) {
+      lines.push((i + 1) + '. ' + n.conclusion);
+      if (n.condition) lines.push('   條件：' + n.condition);
+      lines.push('   信心：' + n.confidence + '｜來源：' + (n.systems || []).join('、'));
+    });
+    payload.divinationNoteText = lines.join('\n');
+  }
+
+  return payload;
+}
+
+
 // ═══════════════════════════════════════════════════════════════
 // _buildPayload v5 — 全方向三段式深度仲裁輔助框架
 // 目標：讓 worker 在所有題型都能拿到統一的深挖框架，不只感情題
@@ -18799,6 +19238,9 @@ function enrichWithSemanticCodes(systemEvidence) {
     } catch(e){
       console.warn('[buildPayload v5 framework] error:', e);
     }
+    // [REASONING] 命理組合推理 — 最後一步
+    try { buildDivinationReasoning(p); } catch(e) { console.warn("[divination reasoning]", e); }
+
     return p;
   };
 })();
