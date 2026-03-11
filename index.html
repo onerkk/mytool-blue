@@ -418,8 +418,147 @@
   <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 多抽塔羅 → 多得「時間點＋行動建議」，完整分析準確度更高</p>
 </section>
 
+<!-- ========== STEP TAROT: 塔羅快讀結果頁 ========== -->
+<section class="step" id="step-tarot" style="padding-top:2rem;padding-bottom:7rem">
+
+  <!-- 🎯 你問的問題 -->
+  <div id="tarot-question-hero" class="text-dim" style="text-align:center;font-size:.9rem;margin:0 0 .8rem;padding:0 var(--sp-md)"></div>
+
+  <!-- 🔮 AI 塔羅深度解讀 -->
+  <div id="tarot-ai-wrap"></div>
+
+  <!-- 🃏 牌面展示（抽到的牌） -->
+  <div class="card collapsible-card open" id="tarot-spread-card">
+    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
+      <span><i class="fas fa-star"></i> <span id="tarot-spread-title">你的牌陣</span></span>
+      <i class="fas fa-chevron-down collapse-arrow"></i>
+    </div>
+    <div class="collapsible-body">
+      <div id="tarot-spread-display"></div>
+    </div>
+  </div>
+
+  <!-- 💎 水晶能量推薦（AI + 牌面元素） -->
+  <div class="card" id="tarot-crystal-rec" style="border:1px solid rgba(212,175,55,.25)">
+    <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
+      <span style="font-size:1.4rem">💎</span>
+      <div>
+        <div style="font-weight:700;color:var(--c-gold);font-size:1rem" id="tarot-crystal-title">適合你現在的能量</div>
+        <div class="text-xs text-dim" id="tarot-crystal-subtitle">根據牌面感應到的，帶在身上會幫到你</div>
+      </div>
+    </div>
+    <div id="tarot-crystal-content"></div>
+    <div style="display:flex;gap:10px;margin-top:var(--sp-md)">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.08));color:var(--c-gold);text-decoration:none;font-size:.82rem;font-weight:600;border:1.5px solid rgba(212,175,55,.4)"><i class="fas fa-shopping-cart"></i> 逛水晶</a>
+      <button onclick="openCustomModal()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:10px;background:transparent;color:var(--c-gold);font-size:.82rem;font-weight:600;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit"><i class="fas fa-magic"></i> 量身客製</button>
+    </div>
+  </div>
+
+  <!-- 📊 分享 -->
+  <div class="card" style="text-align:center">
+    <p class="text-sm text-dim" style="margin-bottom:var(--sp-sm)">覺得準嗎？分享給朋友也來測</p>
+    <button onclick="generateShareImage()" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:transparent;color:var(--c-gold);font-size:.82rem;font-weight:600;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit"><i class="fas fa-share-alt"></i> 產生分享圖</button>
+  </div>
+
+  <!-- ═══ 想看更深？七維度入口 ═══ -->
+  <div class="card" id="tarot-to-full" style="border:2px solid rgba(212,175,55,.3);text-align:center;margin-top:var(--sp-lg)">
+    <div style="font-size:1.5rem;margin-bottom:var(--sp-sm)">🌙</div>
+    <h3 class="serif text-gold" style="font-size:1.1rem;margin-bottom:var(--sp-xs)">想知道命盤怎麼看這件事？</h3>
+    <p class="text-dim text-sm" style="margin-bottom:var(--sp-md);line-height:1.7">輸入生辰，解鎖八字・紫微・梅花・星盤・吠陀・姓名學<br>七套系統交叉驗證，看得更透更準</p>
+
+    <!-- 完整表單（跟首頁 input-screen 結構一樣） -->
+    <div id="tarot-full-form" style="text-align:left">
+      <!-- 問題（沿用塔羅的問題，可修改） -->
+      <div class="card" style="margin-bottom:var(--sp-sm)">
+        <div class="card-title" style="font-size:.85rem"><i class="fas fa-question-circle"></i> 你的問題</div>
+        <textarea class="form-textarea" id="f2-question" placeholder="沿用塔羅的問題，或輸入新的…" maxlength="500" style="min-height:50px"></textarea>
+      </div>
+
+      <!-- 出生資料 -->
+      <div class="card" style="margin-bottom:var(--sp-sm)">
+        <div class="card-title" style="font-size:.85rem"><i class="fas fa-user"></i> 出生資料</div>
+        <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap">
+          <div class="form-group" style="flex:0 0 auto">
+            <label class="form-label">性別 <span class="req">*</span></label>
+            <div class="radio-pills">
+              <label class="radio-pill"><input type="radio" name="gender2" value="male"><span>男</span></label>
+              <label class="radio-pill"><input type="radio" name="gender2" value="female"><span>女</span></label>
+            </div>
+          </div>
+          <div class="form-group" style="flex:1 1 200px">
+            <label class="form-label">出生日期（國曆）<span class="req">*</span></label>
+            <input type="date" class="form-input" id="f2-bdate">
+          </div>
+        </div>
+        <details class="advance-toggle">
+          <summary><i class="fas fa-chevron-right advance-arrow"></i> 填更多，結果更準（選填）</summary>
+          <div style="padding-top:var(--sp-md)">
+            <div class="form-group">
+              <label class="form-label">出生時間</label>
+              <select class="form-input" id="f2-btime">
+                <option value="">請選擇</option>
+                <option value="00:00">00:00（子時）</option>
+                <option value="01:00">01:00（丑時）</option>
+                <option value="02:00">02:00（丑時）</option>
+                <option value="03:00">03:00（寅時）</option>
+                <option value="04:00">04:00（寅時）</option>
+                <option value="05:00">05:00（卯時）</option>
+                <option value="06:00">06:00（卯時）</option>
+                <option value="07:00">07:00（辰時）</option>
+                <option value="08:00">08:00（辰時）</option>
+                <option value="09:00">09:00（巳時）</option>
+                <option value="10:00">10:00（巳時）</option>
+                <option value="11:00">11:00（午時）</option>
+                <option value="12:00">12:00（午時）</option>
+                <option value="13:00">13:00（未時）</option>
+                <option value="14:00">14:00（未時）</option>
+                <option value="15:00">15:00（申時）</option>
+                <option value="16:00">16:00（申時）</option>
+                <option value="17:00">17:00（酉時）</option>
+                <option value="18:00">18:00（酉時）</option>
+                <option value="19:00">19:00（戌時）</option>
+                <option value="20:00">20:00（戌時）</option>
+                <option value="21:00">21:00（亥時）</option>
+                <option value="22:00">22:00（亥時）</option>
+                <option value="23:00">23:00（子時）</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">姓名</label>
+              <input type="text" class="form-input" id="f2-name" placeholder="用於姓名學分析">
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;padding:var(--sp-sm) 0">
+        <button class="btn btn-primary btn-lg btn-cta-pulse" onclick="enterFullAnalysis()" style="width:100%"><i class="fas fa-bolt"></i> 解鎖七維命盤分析</button>
+        <p style="font-size:.7rem;opacity:.45;margin:.4rem 0 0">每日免費一次 · 八字 · 紫微 · 梅花 · 塔羅 · 星盤 · 吠陀 · 姓名</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 再測一次 -->
+  <div style="text-align:center;margin-top:var(--sp-lg)">
+    <button class="btn btn-outline btn-sm" onclick="resetToHome()" style="opacity:.6"><i class="fas fa-redo"></i> 重新抽牌</button>
+  </div>
+
+</section>
+
 <!-- ========== STEP 3: RESULT (Redesigned 3-Layer) ========== -->
 <section class="step" id="step-3" style="padding-top:2.5rem;padding-bottom:7rem">
+
+  <!-- ═══ 頂部 Tab：七維深度 / 塔羅快讀 ═══ -->
+  <div id="result-mode-tabs" style="display:none;margin-bottom:var(--sp-md)">
+    <div style="display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid rgba(212,175,55,.2)">
+      <button class="result-tab active" id="tab-full" onclick="switchResultTab('full')" style="flex:1;padding:.6rem;font-size:.82rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;background:rgba(212,175,55,.12);color:var(--c-gold)"><i class="fas fa-chart-bar"></i> 七維深度</button>
+      <button class="result-tab" id="tab-tarot-back" onclick="switchResultTab('tarot')" style="flex:1;padding:.6rem;font-size:.82rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;background:transparent;color:var(--c-text-dim)"><i class="fas fa-star"></i> 塔羅快讀</button>
+    </div>
+  </div>
+
+  <!-- 七維度結果的實際內容（原有） -->
+  <div id="full-result-content">
 
   <!-- ══════════════════════════════════════════
        第一幕：診斷 + 處方（一屏完成轉換）
@@ -894,6 +1033,17 @@
   </div>
 
   <div style="height:80px"></div>
+
+  </div><!-- /full-result-content -->
+
+  <!-- ═══ 塔羅快讀回看（tab切換時顯示） ═══ -->
+  <div id="tarot-back-content" style="display:none">
+    <div id="tarot-back-question" class="text-dim" style="text-align:center;font-size:.9rem;margin:0 0 .8rem;padding:0 var(--sp-md)"></div>
+    <div id="tarot-back-ai"></div>
+    <div id="tarot-back-spread" class="card"></div>
+    <div id="tarot-back-crystal" class="card" style="border:1px solid rgba(212,175,55,.25)"></div>
+  </div>
+
 </section>
 
 </div><!-- /app -->
