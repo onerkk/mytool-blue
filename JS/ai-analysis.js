@@ -18746,6 +18746,23 @@ renderTarot = function(){
       html += '</div>';
       resultDiv.innerHTML = html;
     }
+
+    // ═══ API 分析完成後自動展開水晶處方面板 ═══
+    try {
+      setTimeout(function(){
+        var crystalCard = document.getElementById('r-crystal');
+        if (crystalCard) {
+          var collapsibleCard = crystalCard.closest('.collapsible-card');
+          if (collapsibleCard && !collapsibleCard.classList.contains('open')) {
+            collapsibleCard.classList.add('open');
+            // 稍微延遲後平滑捲動到水晶推薦區
+            setTimeout(function(){
+              collapsibleCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 500);
+          }
+        }
+      }, 1200); // 給使用者 1.2 秒看完 AI 回答開頭再展開
+    } catch(_e) {}
   }
 })();
 // ═══════════════════════════════════════════════════════════════════════
