@@ -19037,3 +19037,283 @@ function _rrect(ctx, x, y, w, h, r) {
 
   setTimeout(function(){ _syncCrystalReadyState(); }, 120);
 })();
+
+
+/* =============================================================
+   [CLEAN OVERRIDE v20260311] 七維問題抽取 + 單一水晶流程真源
+   ============================================================= */
+(function(){
+  'use strict';
+  function esc(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function arr(v){ return Array.isArray(v) ? v.filter(Boolean) : (v==null||v===''?[]:[v]); }
+  function txt(v){
+    if(v==null) return '';
+    if(typeof v === 'string') return v.trim();
+    if(typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if(Array.isArray(v)) return v.map(txt).filter(Boolean).join('；');
+    if(typeof v === 'object') return Object.keys(v).map(function(k){ return k+':'+txt(v[k]); }).filter(Boolean).join('；');
+    return String(v);
+  }
+  function mergeUnique(list){
+    var out=[];
+    arr(list).forEach(function(x){
+      var t = txt(x).trim();
+      if(t && out.indexOf(t)<0) out.push(t);
+    });
+    return out;
+  }
+  function firstNonEmpty(){
+    for(var i=0;i<arguments.length;i++){
+      var t = txt(arguments[i]).trim();
+      if(t) return t;
+    }
+    return '';
+  }
+  function getQuestionContext(){
+    var type = (window.S && S.form && S.form.type) || 'general';
+    var question = (window.S && S.form && S.form.question) || '';
+    return { type:type, question:question };
+  }
+  function summarizeSystem(name, qResult, narrative){
+    qResult = qResult || {};
+    var direct = firstNonEmpty(qResult.directAnswer, qResult.summary, qResult.judgement, qResult.verdict);
+    var timing = firstNonEmpty(qResult.timingText, qResult.timing, qResult.window, qResult.when);
+    var strategies = mergeUnique([qResult.action, qResult.actions, qResult.strategies, qResult.advice]);
+    var positives = mergeUnique([qResult.opportunities, qResult.positives, qResult.supports, qResult.greenFlags]);
+    var negatives = mergeUnique([qResult.blockers, qResult.negatives, qResult.risks, qResult.redFlags]);
+    var variables = mergeUnique([qResult.variables, qResult.conditions, qResult.watchouts]);
+    var evidence = mergeUnique([qResult.evidence, qResult.keySignals, qResult.tags]);
+    var score = qResult.score!=null ? qResult.score : (qResult.confidenceScore!=null ? qResult.confidenceScore : '');
+    var confidence = qResult.confidence!=null ? qResult.confidence : '';
+    var reading = [];
+    if(direct) reading.push('直接判定：' + direct);
+    if(score!=='' || confidence!=='') reading.push('強度：' + [score!==''?('score '+score):'', confidence!==''?('confidence '+confidence):''].filter(Boolean).join('｜'));
+    if(positives.length) reading.push('正向訊號：' + positives.slice(0,6).join('、'));
+    if(negatives.length) reading.push('反向訊號：' + negatives.slice(0,6).join('、'));
+    if(variables.length) reading.push('變數：' + variables.slice(0,5).join('、'));
+    if(strategies.length) reading.push('建議行動：' + strategies.slice(0,5).join('、'));
+    if(timing) reading.push('時間節奏：' + timing);
+    if(evidence.length) reading.push('證據：' + evidence.slice(0,6).map(txt).join('、'));
+    if(narrative) reading.push('補充敘事：' + txt(narrative).slice(0,520));
+    return {
+      direct: direct,
+      score: score,
+      confidence: confidence,
+      positives: positives,
+      negatives: negatives,
+      variables: variables,
+      actions: strategies,
+      timing: timing,
+      evidence: evidence,
+      narrative: txt(narrative),
+      reading: reading.join('\n')
+    };
+  }
+  function collectQuestionReadings(){
+    var ctx = getQuestionContext();
+    var type = ctx.type, question = ctx.question;
+    var out = {};
+    try{
+      if(window.S && S.bazi){
+        var synth = (typeof _jd7Dims==='function') ? _jd7Dims(type) : null;
+        var reading = [];
+        if(synth && synth.directAnswer) reading.push('直接判定：'+txt(synth.directAnswer));
+        if(synth && synth.why) reading.push('原因：'+txt(synth.why));
+        if(synth && synth.bottleneck) reading.push('卡點：'+txt(synth.bottleneck));
+        if(synth && synth.action) reading.push('建議行動：'+txt(synth.action));
+        if(synth && synth.timing) reading.push('時間節奏：'+txt(synth.timing));
+        var fav = (S.bazi.fav||[]).filter(Boolean), unfav = (S.bazi.unfav||[]).filter(Boolean);
+        if(fav.length) reading.push('喜用神：第一'+(fav[0]||'')+(fav[1]?'；第二'+fav[1]:''));
+        if(unfav.length) reading.push('避開：'+unfav.slice(0,3).join('、'));
+        out.bazi = { direct:firstNonEmpty(synth&&synth.directAnswer), positives:mergeUnique([synth&&synth.support]), negatives:mergeUnique([synth&&synth.bottleneck]), variables:[], actions:mergeUnique([synth&&synth.action]), timing:firstNonEmpty(synth&&synth.timing), evidence:mergeUnique([synth&&synth.why]), narrative:'', reading:reading.join('\n') };
+      }
+    }catch(e){ console.error('qr bazi', e); }
+    try{
+      if(window.S && S.ziwei && typeof analyzeZiweiQuestion==='function'){
+        var qr = analyzeZiweiQuestion(S.ziwei, type, question);
+        var na = (typeof buildZiweiNarrative==='function') ? buildZiweiNarrative(qr, S.ziwei, type) : '';
+        out.ziwei = summarizeSystem('ziwei', qr, na);
+      }
+    }catch(e){ console.error('qr ziwei', e); }
+    try{
+      if(window.S && S.meihua && typeof analyzeMeihuaQuestion==='function'){
+        var qr2 = analyzeMeihuaQuestion(S.meihua, type, question);
+        out.meihua = summarizeSystem('meihua', qr2, qr2&&qr2.summary);
+      }
+    }catch(e){ console.error('qr meihua', e); }
+    try{
+      if(window.S && S.tarot && typeof analyzeTarotQuestion==='function'){
+        var qr3 = analyzeTarotQuestion(S.tarot, type, question);
+        out.tarot = summarizeSystem('tarot', qr3, qr3&&qr3.summary);
+      }
+    }catch(e){ console.error('qr tarot', e); }
+    try{
+      if(window.S && S.natal && typeof analyzeNatalQuestion==='function'){
+        var qr4 = analyzeNatalQuestion(S.natal, type, question);
+        var na4 = (typeof buildNatalNarrative==='function') ? buildNatalNarrative(qr4, S.natal, type) : '';
+        out.natal = summarizeSystem('natal', qr4, na4);
+      }
+    }catch(e){ console.error('qr natal', e); }
+    try{
+      var jy = (window.S && (S.jyotish || S.vedic));
+      if(jy && typeof analyzeJyotishQuestion==='function'){
+        var qr5 = analyzeJyotishQuestion(jy, type, question);
+        var na5 = (typeof buildJyotishNarrative==='function') ? buildJyotishNarrative(qr5, jy, type) : '';
+        out.vedic = summarizeSystem('vedic', qr5, na5);
+      }
+    }catch(e){ console.error('qr vedic', e); }
+    try{
+      var nr = window.S && S.nameResult;
+      var zr = window.S && S.zodiacNameResult;
+      if((nr || zr) && typeof analyzeNameQuestion==='function'){
+        var qr6 = analyzeNameQuestion(nr, zr, { type:type, question:question, bazi:(window.S&&S.bazi)||null });
+        var na6 = (typeof buildNameNarrative==='function') ? buildNameNarrative(qr6, nr, zr, type) : '';
+        out.name = summarizeSystem('name', qr6, na6);
+      }
+    }catch(e){ console.error('qr name', e); }
+    return out;
+  }
+
+  function deriveEnergyForm(type, question){
+    var b = window.S && S.bazi ? S.bazi : {};
+    var fav = Array.isArray(b.fav) ? b.fav.filter(Boolean).slice(0,2) : [];
+    var unfav = Array.isArray(b.unfav) ? b.unfav.filter(Boolean).slice(0,3) : [];
+    var need = (typeof _deriveSevenNeeds==='function') ? _deriveSevenNeeds(type, question) : { primary:'stable', secondary:'clarity' };
+    function label(v){ return (typeof _aiNeedLabel==='function') ? _aiNeedLabel(v) : (v||''); }
+    function mapNeedToElement(code, fallback){
+      if(typeof _needToElement === 'function') return _needToElement(code, fallback, fav[1]||fav[0]);
+      var m = { stable:'土', clarity:'水', growth:'木', connection:'火', protection:'金', action:'木', expression:'火', flow:'水', grounding:'土' };
+      return m[code] || fallback || fav[0] || '土';
+    }
+    var primaryEl = mapNeedToElement(need.primary, fav[0]);
+    var secondaryEl = mapNeedToElement(need.secondary, fav[1]||fav[0]);
+    var balanced = [];
+    [fav[0], fav[1], primaryEl, secondaryEl].forEach(function(el){ if(el && balanced.indexOf(el)<0 && unfav.indexOf(el)<0) balanced.push(el); });
+    if(!balanced.length) balanced = fav.length ? fav.slice(0,2) : ['土'];
+    return {
+      firstYongshen: fav[0] || '',
+      secondYongshen: fav[1] || '',
+      avoid: unfav,
+      primaryNeed: need.primary || 'stable',
+      secondaryNeed: need.secondary || 'clarity',
+      primaryNeedLabel: label(need.primary || 'stable'),
+      secondaryNeedLabel: label(need.secondary || 'clarity'),
+      modes: {
+        seven: { key:'seven', label:'七維平衡', elements: balanced.slice(0,2), desc:'第一喜用神、第二喜用神，再疊加這題真正的主需求。' },
+        first: { key:'first', label:'第一喜用神', elements: fav[0] ? [fav[0]] : balanced.slice(0,1), desc:'先補主軸，適合需要穩住底盤時。' },
+        second: { key:'second', label:'第二喜用神', elements: fav[1] ? [fav[1]] : (fav[0] ? [fav[0]] : balanced.slice(0,1)), desc:'用輔助喜用神補位，避免只補單核。' }
+      }
+    };
+  }
+
+  window._jyQuestionReadings = collectQuestionReadings;
+  window.buildSevenEnergyRecommendation = function(type, question){
+    var ctx = getQuestionContext();
+    type = type || ctx.type;
+    question = question || ctx.question;
+    var ef = deriveEnergyForm(type, question);
+    ef.rationale = [
+      ef.firstYongshen ? ('第一喜用神：'+ef.firstYongshen) : '',
+      ef.secondYongshen ? ('第二喜用神：'+ef.secondYongshen) : '',
+      '七維主需求：'+ef.primaryNeedLabel,
+      '七維次需求：'+ef.secondaryNeedLabel,
+      ef.avoid && ef.avoid.length ? ('避開：'+ef.avoid.join('、')) : ''
+    ].filter(Boolean);
+    return ef;
+  };
+
+  var _baseBuildPayload = (typeof _buildPayload === 'function') ? _buildPayload : null;
+  window._buildPayload = function(){
+    var payload = _baseBuildPayload ? _baseBuildPayload() : { question:(window.S&&S.form&&S.form.question)||'', focusType:(window.S&&S.form&&S.form.type)||'general', readings:{} };
+    var qrs = collectQuestionReadings();
+    payload.questionReadings = qrs;
+    payload.readings = payload.readings || {};
+    ['bazi','ziwei','meihua','tarot','natal','vedic','name'].forEach(function(k){
+      if(qrs[k] && qrs[k].reading){ payload.readings[k] = qrs[k].reading; }
+    });
+    payload.systemPayloads = payload.systemPayloads || payload.systems || {};
+    Object.keys(qrs).forEach(function(k){
+      payload.systemPayloads[k] = Object.assign({}, payload.systemPayloads[k]||{}, {
+        summary: qrs[k].direct,
+        supports: qrs[k].positives,
+        risks: qrs[k].negatives,
+        neutralSignals: qrs[k].variables,
+        timing: qrs[k].timing,
+        evidence: qrs[k].evidence,
+        confidence: qrs[k].confidence,
+        score: qrs[k].score,
+        rawFeatures: qrs[k].narrative ? qrs[k].narrative.slice(0,420) : ''
+      });
+    });
+    payload.energy_form = deriveEnergyForm(payload.focusType, payload.question);
+    payload.energyRecommendation = payload.energy_form;
+    return payload;
+  };
+
+  function isDeepSuccess(data){ return !!(data && data.result && !data.error); }
+  function setReady(flag, resultObj){
+    try{ if(window.S) S._aiDeepReady = !!flag; }catch(e){}
+    if(flag){
+      try{ window.dispatchEvent(new CustomEvent('jy:ai-complete', { detail:{ ok:true, result:resultObj||null } })); }catch(e){}
+    } else {
+      try{ window.dispatchEvent(new CustomEvent('jy:ai-complete', { detail:{ ok:false } })); }catch(e){}
+    }
+  }
+
+  function renderAIResultCard(r, payload, data, admin){
+    if(typeof _renderAIResultObject === 'function' && typeof r === 'object' && r){
+      var html = _renderAIResultObject(r);
+      if(admin && data && data.usage){
+        html = html.replace(/<\/div>\s*$/, '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div></div>');
+      }
+      if(admin){
+        try{
+          var keys = Object.keys(payload.readings||{});
+          var sizes = keys.map(function(k){ return k+':'+((payload.readings[k]||'').length||0); }).join(', ');
+          var total = JSON.stringify(payload).length;
+          html = html.replace(/<\/div>\s*$/, '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload] '+total+'字 | readings: '+sizes+'</div></div>');
+        }catch(e){}
+      }
+      return html;
+    }
+    var direct = txt(r&&r.directAnswer);
+    var answer = txt(r&&r.answer || r);
+    var closing = txt(r&& (r.closing || r.oneliner || r.summary));
+    var html2 = '<div class="card" style="border-left:3px solid #8b5cf6;margin-top:.5rem;margin-bottom:6rem">';
+    html2 += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem"><span style="font-size:1.1rem">🌙</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解讀</span></div>';
+    if(direct) html2 += '<div style="font-size:1.15rem;font-weight:700;color:var(--c-gold);line-height:1.7;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid rgba(212,175,55,.15)">'+esc(direct)+'</div>';
+    answer.split(/\n\n+/).forEach(function(p, idx){ p = p.trim(); if(!p) return; html2 += '<div style="font-size:'+(idx===0&&!direct?'1rem;font-weight:600':' .92rem')+';line-height:1.9;color:'+(idx===0&&!direct?'var(--c-gold-pale,#f5e6b8)':'var(--c-text,#e0d8c8)')+';margin-bottom:.7rem">'+esc(p).replace(/\n/g,'<br>')+'</div>'; });
+    if(closing) html2 += '<div style="margin-top:.8rem;padding:.7rem 1rem;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.04));border-radius:8px;border:1px solid rgba(212,175,55,.15);text-align:center"><div style="font-size:.98rem;line-height:1.7;color:var(--c-gold);font-weight:600">'+esc(closing)+'</div></div>';
+    if(admin){
+      try{ var keys2 = Object.keys(payload.readings||{}); var sizes2 = keys2.map(function(k){ return k+':'+((payload.readings[k]||'').length||0); }).join(', '); var total2 = JSON.stringify(payload).length; html2 += '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload] '+total2+'字 | readings: '+sizes2+'</div>'; }catch(e){}
+    }
+    html2 += '</div>';
+    return html2;
+  }
+
+  window._triggerAIDeep = async function(){
+    var resultDiv = document.getElementById('ai-deep-result');
+    if(!resultDiv) return;
+    var admin = (typeof _aiIsAdmin==='function') ? _aiIsAdmin() : false;
+    setReady(false);
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="text-align:center;padding:2rem 1.2rem 2.3rem"><div style="font-size:1rem;color:var(--c-gold);font-weight:700;letter-spacing:.02em;margin-bottom:.25rem">正在為你翻閱命盤…</div><div style="font-size:.8rem;color:var(--c-text-dim);min-height:1.25rem">交叉比對七套系統中</div></div>';
+    try{
+      var payload = window._buildPayload();
+      var body = { payload: payload };
+      if(window._JY_ADMIN_TOKEN) body.admin_token = window._JY_ADMIN_TOKEN || '';
+      var resp = await fetch(AI_WORKER_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+      var data = await resp.json();
+      if(!resp.ok) throw Object.assign({ status:resp.status }, data || {});
+      if(!admin && typeof _aiMarkUsed==='function') _aiMarkUsed();
+      if(!isDeepSuccess(data)) throw new Error('回傳為空');
+      resultDiv.innerHTML = renderAIResultCard(data.result, payload, data, admin);
+      setReady(true, data.result);
+      try{ if(window.S && S.bazi && typeof window.renderProductCrystal === 'function'){ window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general'); } }catch(e){}
+    }catch(err){
+      console.error('[AI clean override]', err);
+      setReady(false);
+      resultDiv.innerHTML = '<div style="text-align:center;padding:1rem"><div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">'+(admin&&err.status===429?'Worker 429 但你是管理員，可重試':'暫時連線不順，請再試一次')+(admin?'<br><span style="font-size:.6rem;opacity:.4">[Debug] '+esc(err.status||'')+' '+esc(err.error||err.detail||err.message||'')+'</span>':'')+'</div><button onclick="_triggerAIDeep()" style="padding:.7rem 1.8rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit">'+(admin?'🔮 重試（Admin）':'🔮 再試一次')+'</button></div>';
+    }
+  };
+})();

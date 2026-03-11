@@ -4838,3 +4838,93 @@ showAuraResult = function(){
     if(typeof _origToggleCollapse==='function') return _origToggleCollapse(el);
   };
 })();
+
+
+/* =============================================================
+   [CLEAN UI OVERRIDE v20260311] 單一水晶渲染入口
+   ============================================================= */
+(function(){
+  'use strict';
+  function esc(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function crystalReady(){ return !!(window.S && S._aiDeepReady === true); }
+  function wearFallback(p){
+    var w = p && (p.wear || p.use || p.w || '');
+    if(w) return w;
+    var el = p && (p.el || '');
+    var cat = p && (p.cat || '手鍊');
+    return (el ? el+'行' : '目前') + '補位，適合先從'+cat+'開始配戴。';
+  }
+  function setCrystalCardOpen(open){
+    var card = document.getElementById('crystal-card');
+    if(!card) return;
+    if(open) card.classList.add('open'); else card.classList.remove('open');
+  }
+  function pickProducts(elements, type, limit){
+    if(typeof _pickByElements === 'function') return _pickByElements(elements, type, limit||6);
+    return [];
+  }
+  window.renderProductCrystal = function(bazi, type){
+    var root = document.getElementById('r-crystal');
+    if(!root) return;
+    var energy = (typeof window.buildSevenEnergyRecommendation === 'function') ? window.buildSevenEnergyRecommendation(type||((window.S&&S.form&&S.form.type)||'general'), (window.S&&S.form&&S.form.question)||'') : null;
+    if(!energy) { root.innerHTML = ''; return; }
+    if(!(window.S)) window.S = {};
+    if(!S._crystalMode || !energy.modes[S._crystalMode]) S._crystalMode = 'seven';
+
+    if(!crystalReady()){
+      root.innerHTML = '<div style="padding:.95rem 1rem;border:1px solid rgba(212,175,55,.16);border-radius:18px;background:linear-gradient(180deg,rgba(212,175,55,.035),rgba(255,255,255,.01))"><div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">先等上方七維分析完成</div><div style="font-size:.82rem;line-height:1.9;color:var(--c-text-dim)">這裡先不偷跑推薦。等上方答案完成後，會依 <strong style="color:var(--c-gold)">第一喜用神</strong>、<strong style="color:var(--c-gold)">第二喜用神</strong>、<strong style="color:var(--c-gold)">七維主次需求</strong> 自動展開。</div></div>';
+      return;
+    }
+
+    var mode = energy.modes[S._crystalMode] || energy.modes.seven;
+    var els = (mode.elements||[]).filter(function(el){ return energy.avoid.indexOf(el)<0; });
+    if(!els.length) els = [energy.firstYongshen || energy.secondYongshen || '土'];
+    var products = pickProducts(els, type||((window.S&&S.form&&S.form.type)||'general'), 6);
+    var rows = [
+      ['第一喜用神', energy.firstYongshen || '未明確'],
+      ['第二喜用神', energy.secondYongshen || '未明確'],
+      ['七維主需求', energy.primaryNeedLabel || energy.primaryNeed || '未明確'],
+      ['七維次需求', energy.secondaryNeedLabel || energy.secondaryNeed || '未明確'],
+      ['本次模式', mode.label],
+      ['避開方向', energy.avoid && energy.avoid.length ? energy.avoid.join('、') : '目前無明顯避開項']
+    ];
+    var buttons = Object.keys(energy.modes).map(function(k){
+      var m = energy.modes[k];
+      var active = k === S._crystalMode;
+      return '<button type="button" onclick="window.selectCrystalMode(\''+k+'\')" style="padding:.56rem .82rem;border-radius:999px;border:1px solid '+(active?'rgba(212,175,55,.45)':'rgba(212,175,55,.16)')+';background:'+(active?'rgba(212,175,55,.14)':'rgba(255,255,255,.02)')+';color:'+(active?'var(--c-gold)':'var(--c-text-dim)')+';font-size:.78rem;font-weight:700">'+esc(m.label)+'</button>';
+    }).join('');
+    var table = '<div style="display:grid;grid-template-columns:120px 1fr;gap:.55rem .7rem;padding:.85rem 0">' + rows.map(function(r){ return '<div style="color:var(--c-text-dim);font-size:.78rem">'+esc(r[0])+'</div><div style="color:var(--c-text);font-size:.82rem;line-height:1.8">'+esc(r[1])+'</div>'; }).join('') + '</div>';
+    var cards = products.length ? products.map(function(p){
+      var shopee = p.shopee || 'https://tw.shp.ee/2n5Mo2w';
+      var seven = p.seven || 'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232&utm_source=threads&utm_medium=social&utm_content=link_in_bio';
+      return '<div class="product-card"><div class="product-icon">'+(typeof getProductSVG==='function'?getProductSVG(p.cat||'手鍊', p.n||p.name||''):'💎')+'</div><div class="product-body"><div class="product-name">'+esc(p.n||p.name||'能量手鍊')+'</div><div class="product-meta"><span class="tag tag-gold text-xs">'+esc((window.catIcon&&catIcon[p.cat])||'💍')+' '+esc(p.cat||'手鍊')+'</span><span class="el-tag el-'+esc(p.el||'全')+' text-xs">'+esc((p.el||'全'))+'行</span></div><p class="product-desc">'+esc(p.d||p.desc||((p.el||'')+'行補位'))+'</p>'+(p.price?'<p class="product-price">'+esc(p.price)+'</p>':'')+'<p class="product-wear"><i class="fas fa-hand-holding-heart"></i> '+esc(wearFallback(p))+'</p><div class="product-actions"><a href="'+esc(shopee)+'" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮</a><a href="'+esc(seven)+'" target="_blank" rel="noopener" class="product-btn seven"><i class="fas fa-box"></i> 7-11</a></div></div></div>';
+    }).join('') : '<div style="padding:.85rem;border:1px dashed rgba(212,175,55,.18);border-radius:14px;color:var(--c-text-dim);font-size:.82rem">目前沒有抓到完全對應現貨，建議改用客製搭配。</div>';
+    root.innerHTML = '<div class="crystal-rec-header"><p>把上方答案，落成你現在真正適合的配戴方向。</p><p style="font-size:.78rem;color:var(--c-text-dim);margin-top:.3rem">'+esc(mode.desc||'')+'</p></div><div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.35rem 0 .3rem">'+buttons+'</div>'+table+'<div class="product-grid">'+cards+'</div>';
+  };
+
+  window.selectCrystalMode = function(mode){
+    if(!crystalReady()) return;
+    if(!(window.S)) window.S = {};
+    S._crystalMode = mode || 'seven';
+    if(window.renderProductCrystal) window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general');
+  };
+
+  window.toggleCollapse = function(el){
+    var card = el && el.closest ? el.closest('.collapsible-card') : null;
+    if(!card) return;
+    if(card.id === 'crystal-card' && !crystalReady()) return;
+    card.classList.toggle('open');
+  };
+
+  window.addEventListener('jy:ai-complete', function(ev){
+    if(ev && ev.detail && ev.detail.ok){
+      try{ if(window.renderProductCrystal && window.S && S.bazi) window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general'); }catch(e){}
+      setCrystalCardOpen(true);
+    } else {
+      setCrystalCardOpen(false);
+      try{ if(window.renderProductCrystal && window.S && S.bazi) window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general'); }catch(e){}
+    }
+  });
+
+  setTimeout(function(){ try{ if(window.renderProductCrystal && window.S && S.bazi) window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general'); }catch(e){} }, 200);
+})();
