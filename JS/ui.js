@@ -279,9 +279,19 @@ function goStep(n){
     S.step = (numIdx >= 0) ? numIdx : targetId;
     window.scrollTo({top:0,behavior:'smooth'});
     if(targetId==='step-2'){
-      if(drawnCards.length>=10 && !S._isAdmin) showTarotLocked(); // 已有快取牌，顯示鎖定（管理員不受限）
-      else if(drawnCards.length>=10 && S._isAdmin){ drawnCards=[]; deckShuffled=[]; initTarotDeck(); } // 管理員重置
-      else if(!deckShuffled.length) initTarotDeck(); // 首次初始化牌堆
+      if(drawnCards.length>=10 && !S._isAdmin) showTarotLocked();
+      else if(drawnCards.length>=10 && S._isAdmin){ drawnCards=[]; deckShuffled=[]; initTarotDeck(); }
+      else if(!deckShuffled.length) initTarotDeck();
+      // 塔羅模式：隱藏「上一步」（梅花）和「跳過塔羅」
+      var btnBackMH = document.getElementById('btn-back-meihua');
+      var btnSkipTR = document.getElementById('btn-skip-tarot');
+      if (S._tarotOnlyMode) {
+        if (btnBackMH) btnBackMH.style.display = 'none';
+        if (btnSkipTR) btnSkipTR.style.display = 'none';
+      } else {
+        if (btnBackMH) btnBackMH.style.display = '';
+        if (btnSkipTR) btnSkipTR.style.display = '';
+      }
     }
     if(targetId==='step-3'){
       runAnalysis();
@@ -5199,14 +5209,50 @@ function resetToHome() {
         newBtn.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); submitTarotQuick(); });
         btnGo.parentNode.replaceChild(newBtn, btnGo);
       }
-      // 隱藏手動模式按鈕
-      var manualBtn = inputScreen.querySelector('.btn-outline.btn-sm');
-      if (manualBtn && manualBtn.textContent.indexOf('手動') >= 0) {
-        manualBtn.parentElement.style.display = 'none';
-      }
+      // 手動模式按鈕 → 改為「手動抽牌模式」（不含梅花，不需生辰）
+      var allBtns = inputScreen.querySelectorAll('button');
+      allBtns.forEach(function(btn) {
+        if (btn.getAttribute('onclick') === 'submitStep0()') {
+          btn.removeAttribute('onclick');
+          btn.innerHTML = '<i class="fas fa-hand-pointer"></i> 手動抽牌模式';
+          btn.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            // 檢查類型和問題
+            var t = document.getElementById('f-type') ? document.getElementById('f-type').value : '';
+            var q = document.getElementById('f-question') ? document.getElementById('f-question').value.trim() : '';
+            if (!t || !q) { alert('請選擇方向並輸入問題'); return; }
+            S.form = { type: t, question: q, gender: '', bdate: '', btime: '', name: '' };
+            S._tarotOnlyMode = true;
+            S._autoMode = false;
+            drawnCards = [];
+            S.tarot = { drawn: [], spread: [] };
+            // 偵測牌陣
+            if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+              var sid = detectSpreadType(q, t);
+              var qm = (q.match(/[？?]/g) || []).length;
+              if (qm >= 2 && (sid === 'three_card' || sid === 'timeline')) sid = (t === 'love' || t === 'relationship' || t === 'family') ? 'relationship' : 'five_card';
+              if (qm >= 3) sid = 'celtic_cross';
+              setCurrentSpread(sid);
+            }
+            // 跳到抽牌頁（step-2）
+            goStep(2);
+          });
+        }
+      });
+      // 修改手動模式說明
+      var actionsDivs = inputScreen.querySelectorAll('.actions-center p, .actions p');
+      actionsDivs.forEach(function(p) {
+        if (p.textContent.indexOf('自己起梅花') >= 0 || p.textContent.indexOf('手抽塔羅') >= 0 || p.textContent.indexOf('親手抽') >= 0) {
+          p.textContent = '親手選牌，體驗更沉浸';
+        }
+      });
       // 修改底部說明
-      var subtitle = inputScreen.querySelector('.actions-center p');
-      if (subtitle) subtitle.textContent = '金色黎明塔羅牌 · AI 深度解讀';
+      var subtitles = inputScreen.querySelectorAll('p');
+      subtitles.forEach(function(p) {
+        if (p.textContent.indexOf('七維命理') >= 0) {
+          p.textContent = '金色黎明塔羅牌 · AI 深度解讀';
+        }
+      });
     }
   };
 })();

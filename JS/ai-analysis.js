@@ -19518,15 +19518,35 @@ async function _triggerTarotAI() {
 
   var admin = !!(window._JY_ADMIN_TOKEN);
 
-  // Loading 動畫
-  resultDiv.innerHTML = '<div style="text-align:center;padding:2rem 1.2rem">' +
-    '<div style="position:relative;width:100px;height:100px;margin:0 auto .8rem">' +
-      '<div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16) 0%,rgba(212,175,55,0) 70%);animation:jyPulseGlow 3s ease-in-out infinite"></div>' +
-      '<div style="position:absolute;left:50%;top:50%;width:70px;height:70px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid transparent;border-top-color:var(--c-gold,#d4af37);animation:jySpinGold 2s linear infinite"></div>' +
-      '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.5rem">🃏</div>' +
+  // Loading 動畫（塔羅牌浮水印閃爍）
+  resultDiv.innerHTML = '<div style="text-align:center;padding:2.5rem 1rem 2rem;position:relative;overflow:hidden;min-height:280px">' +
+    // 浮水印塔羅牌背面（大、半透明、閃爍）
+    '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">' +
+      '<div style="width:140px;height:210px;border-radius:12px;border:2px solid rgba(139,92,246,.12);background:linear-gradient(170deg,rgba(26,15,62,.6),rgba(42,31,78,.4));box-shadow:0 0 50px rgba(139,92,246,.08);animation:jyCardWatermark 3s ease-in-out infinite;position:relative;overflow:hidden">' +
+        // 牌背花紋
+        '<div style="position:absolute;inset:8px;border-radius:8px;border:1px solid rgba(212,175,55,.1);display:flex;align-items:center;justify-content:center">' +
+          '<div style="font-size:3.5rem;opacity:.15;animation:jyCardSymbol 4s ease-in-out infinite">☽</div>' +
+        '</div>' +
+        // 四角星
+        '<div style="position:absolute;top:8px;left:10px;font-size:.6rem;color:rgba(212,175,55,.15)">✦</div>' +
+        '<div style="position:absolute;top:8px;right:10px;font-size:.6rem;color:rgba(212,175,55,.15)">✦</div>' +
+        '<div style="position:absolute;bottom:8px;left:10px;font-size:.6rem;color:rgba(212,175,55,.15)">✦</div>' +
+        '<div style="position:absolute;bottom:8px;right:10px;font-size:.6rem;color:rgba(212,175,55,.15)">✦</div>' +
+        // 掃描光
+        '<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(212,175,55,0) 0%,rgba(212,175,55,.06) 45%,rgba(139,92,246,.08) 55%,rgba(212,175,55,0) 100%);background-size:100% 200%;animation:jyCardScan 2.5s ease-in-out infinite"></div>' +
+      '</div>' +
     '</div>' +
-    '<div style="font-size:.95rem;color:var(--c-gold);font-weight:700;margin-bottom:.2rem">正在解讀你的牌面…</div>' +
-    '<div id="tarot-ai-phase" style="font-size:.78rem;color:var(--c-text-dim);transition:opacity .3s">感應牌面之間的訊號</div>' +
+    // 前景文字
+    '<div style="position:relative;z-index:1;margin-top:230px">' +
+      '<div style="font-size:.95rem;color:var(--c-gold);font-weight:700;margin-bottom:.25rem">正在解讀你的牌面…</div>' +
+      '<div id="tarot-ai-phase" style="font-size:.78rem;color:var(--c-text-dim);transition:opacity .35s;min-height:1.2rem">感應牌面之間的訊號</div>' +
+    '</div>' +
+    // 動畫 keyframes
+    '<style>' +
+      '@keyframes jyCardWatermark{0%,100%{opacity:.35;transform:scale(1) rotate(0deg)}30%{opacity:.55;transform:scale(1.02) rotate(.5deg)}70%{opacity:.4;transform:scale(.99) rotate(-.3deg)}}' +
+      '@keyframes jyCardSymbol{0%,100%{opacity:.12;transform:scale(1)}50%{opacity:.22;transform:scale(1.08)}}' +
+      '@keyframes jyCardScan{0%{background-position:0 0}100%{background-position:0 200%}}' +
+    '</style>' +
   '</div>';
 
   // 階段文字輪播
