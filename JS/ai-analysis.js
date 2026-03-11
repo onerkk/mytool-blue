@@ -63,8 +63,6 @@ window.__plainHtml = window.__plainHtml || function(html){ return window.__plain
 // ══════════════════════════════════════════════════════
 // 西洋星盤渲染 (SVG圓形星盤 + 行星表 + 相位 + 解讀)
 // ══════════════════════════════════════════════════════
-function _n360(d){ return ((d % 360) + 360) % 360; }
-
 function renderNatalChart(){
   const n = S.natal; 
   if(!n){
@@ -1878,7 +1876,146 @@ function getTypeLabel(t){return{love:'感情',career:'事業',wealth:'財運',he
 /* ═══════════════════════════════════════════════════════════
    問答對齊引擎 — 解析使用者問句，產出針對性回答
    ═══════════════════════════════════════════════════════════ */
-// [SURGERY] parseQuestionIntent removed — never called, offline-only
+function parseQuestionIntent(question, type) {
+  const q = question || '';
+  const result = {
+    isYesNo: false,       // 是否是「會不會/能不能/好不好」
+    isWhen: false,        // 何時
+    isWho: false,         // 誰/什麼人
+    isAge: false,         // 幾歲/年齡
+    isHow: false,         // 如何/怎麼
+    isCompare: false,     // A還是B
+    isAmount: false,      // 多少/幾個
+    isDirection: false,   // 方向/卻向/哪裡
+    isShould: false,      // 該不該/要不要
+    subject: '',          // 問題主題
+    optionA: '',          // 選項A
+    optionB: '',          // 選項B
+    keywords: [],         // 關鍵詞
+    rawQuestion: q
+  };
+
+  // 是非題
+  if(/[會能可有]不[會能可有]|是否|是不是|好不好|適合嗎|行嗎|可以嗎|嗎[？?]?$|有機會|有希望|有可能|來得及|還有救|值得|划算/.test(q)) result.isYesNo = true;
+  // 擴充：含「會」「要」「能」等動詞 + 問號結尾 → 也是 yes/no 題
+  if(!result.isYesNo && /[會要能可該都].*[？?]$/.test(q)) result.isYesNo = true;
+  if(/該不該|要不要|應不應該|值不值/.test(q)) { result.isShould = true; result.isYesNo = true; }
+
+  // 時間題
+  if(/何時|什麼時候|幾時|多久|幾月|哪一年|今年|明年|幾年|還要等|等多久|哪時|後年/.test(q)) result.isWhen = true;
+  // 修正：如果同時是 isYesNo + isWhen，isYesNo 優先（用戶主要想知道 yes/no，「今年」只是時間限定）
+  // 例：「今年會跟我發生性行為嗎？」→ isYesNo 優先，不是問「什麼時候」
+  if(result.isYesNo && result.isWhen && !/何時|什麼時候|幾時|多久|等多久|哪時/.test(q)) {
+    result.isWhen = false;
+  }
+
+  // 年齡題
+  if(/幾歲|多大|年齡|多老|年紀/.test(q)) result.isAge = true;
+
+  // 誰/什麼人
+  if(/是誰|什麼人|什麼樣的人|哪[個位種]人|什麼類型|什麼個性/.test(q)) result.isWho = true;
+
+  // 如何題（排除「你覺得如何/怎樣」這類詢問意見的用法）
+  if(/如何|怎麼[^？?]|怎麼樣才|怎樣[做才能]|方法|辦法|做法|策略|[該怎]麼辦|有什麼.*建議|可以怎[麼樣]/.test(q) && !/覺得如何|覺得怎[麼樣]|看法如何|意見如何|你覺得|如何[？?]$|怎樣[？?]$|怎麼樣[？?]$/.test(q)) result.isHow = true;
+  // 「你覺得如何/怎樣」「...如何？」是詢問意見 → 當作 isYesNo 處理
+  // 但「XX運勢如何」「XX狀況如何」是問狀態，不是 Yes/No
+  if(/覺得如何|覺得怎[麼樣]|看法如何|你覺得|你[看認]為|好不好/.test(q) && !result.isYesNo) result.isYesNo = true;
+  // 「如何？/怎樣？」結尾：先檢查前面是否有狀態詞
+  if(/如何[？?]$|怎樣[？?]$|怎麼樣[？?]$/.test(q) && !result.isYesNo){
+    // 如果前面有運勢/狀況/發展等狀態詞 → 歸為狀態題，不是 isYesNo
+    if(!/運勢|運氣|狀況|狀態|發展|前途|前景|趨勢|走勢|方向|展望|財運|桃花運|事業運|健康運|感情運|家庭運|人際運/.test(q)){
+      result.isYesNo = true;
+    }
+    // 否則不設 isYesNo，讓它走 general/狀態 分支
+  }
+
+  // 選擇題 — 只有「還是」和「或」才是選擇，單獨的「是」不算
+  const compareMatch = q.match(/(.{1,15})(?:還是|或者|或是)(.{1,15})/);
+  if(compareMatch) {
+    result.isCompare = true;
+    result.optionA = compareMatch[1].trim();
+    result.optionB = compareMatch[2].trim();
+  }
+
+  // 數量題
+  if(/多少|幾[個位張條隻]/.test(q)) result.isAmount = true;
+
+  // 方向題
+  if(/哪裡|何處|卻哪|方向|地點|城市|國家/.test(q)) result.isDirection = true;
+
+  // 提取關鍵詞
+  const kw = q.replace(/[？?！!，,。.、的了嗎呢吧啊喔哦]/g, '').trim();
+  result.keywords = kw.split(/\s+/).filter(w => w.length >= 2);
+
+  // ═══ 主語方向偵測（主動vs被動）═══
+  // 被動：等待對方/外部做某事
+  result.isPassive = /有人|對方|他會|她會|他們會|別人|跟我|向我|來找我|主動找|會不會來|會來|追我|找我|連絡我|聯繫我|告白我|跟我告白|向我告白|對我|喜歡我|愛我|想我|回來找|有沒有人|會錄取|會加薪|會提拔|會升|會答應|會還|會通過|會同意|會幫|會支持|會接受|會原諒|公司會|老闆會|主管會|家人會|父母會|還我|給我|幫我/.test(q);
+  // 主動：我去做某事
+  result.isActive = /我[要想去該能可會]|我去|我主動|我追|我告白|我找|我聯繫|我連絡|能追到|追得到|追到|我能|我可以|我來|我做|我投|我買|我賣|我換|我辭|我創/.test(q);
+
+  // ═══ 事業情境：創業者 vs 受僱者 ═══
+  result.isEntrepreneur = /創業|副業|開店|接案|生意|擺攤|自營|自己做|自己開|當老闆|做生意|加盟|網拍|自由業|承包|外包|自媒體|開公司|營業/.test(q);
+  result.isEmployee = /找工作|轉職|升遷|面試|加薪|跳槽|離職|考試|進修|任職|公司.*錄取|投履歷|新工作/.test(q);
+
+  // ═══ 問他人運勢偵測 ═══
+  // 使用者問的不是自己，而是某個第三方的運勢/狀況
+  const thirdPartyMatch = q.match(/(?:母親|媽媽?|爸爸?|父親|兒子|女兒|小孩|孩子|老公|老婆|另一半|伴侶|男友|女友|前任|朋友|同事|老闆|主管|哥哥?|姐姐?|姊姊?|弟弟?|妹妹?|公公|婆婆|爺爺|奶奶|外公|外婆)(?:的|今年|最近|目前)?(?:運勢|運氣|狀況|身體|健康|工作|事業|財運|感情|姻緣|前途|未來|發展|情況|如何|怎麼樣|怎樣|好不好|好嗎)/);
+  const thirdPartyMatch2 = q.match(/(?:今年|最近|目前)(?:母親|媽媽?|爸爸?|父親|兒子|女兒|小孩|孩子|老公|老婆|另一半|伴侶|男友|女友|前任|朋友|同事|老闆|哥哥?|姐姐?|姊姊?|弟弟?|妹妹?)(?:的)?(?:運勢|運氣|狀況|身體|健康|工作|事業|財運|感情|如何|怎麼樣|怎樣|好不好|好嗎)/);
+  result.isThirdParty = !!(thirdPartyMatch || thirdPartyMatch2);
+  result.thirdPartyRole = '';
+  if(result.isThirdParty){
+    const roleMatch = q.match(/母親|媽媽?|爸爸?|父親|兒子|女兒|小孩|孩子|老公|老婆|另一半|伴侶|男友|女友|前任|朋友|同事|老闆|主管|哥哥?|姐姐?|姊姊?|弟弟?|妹妹?|公公|婆婆|爺爺|奶奶|外公|外婆/);
+    result.thirdPartyRole = roleMatch ? roleMatch[0] : '';
+    // 判斷這個人對應八字的哪個六親
+    const roleToBazi = {
+      '母親':'印星','媽媽':'印星','媽':'印星','父親':'偏財','爸爸':'偏財','爸':'偏財',
+      '兒子':'食傷','女兒':'食傷','小孩':'食傷','孩子':'食傷',
+      '老公':'官殺','老婆':'財星','另一半':'配偶','伴侶':'配偶','男友':'官殺','女友':'財星',
+      '前任':'配偶','朋友':'比劫','同事':'比劫','老闆':'官殺','主管':'官殺',
+      '哥哥':'比肩','姐姐':'比肩','姊姊':'比肩','弟弟':'劫財','妹妹':'劫財',
+      '哥':'比肩','姐':'比肩','姊':'比肩','弟':'劫財','妹':'劫財',
+      '公公':'偏財','婆婆':'印星','爺爺':'偏財','奶奶':'印星','外公':'偏財','外婆':'印星'
+    };
+    result.thirdPartyBazi = roleToBazi[result.thirdPartyRole] || '';
+    // 對應紫微宮位
+    const roleToZiwei = {
+      '母親':'父母','媽媽':'父母','媽':'父母','父親':'父母','爸爸':'父母','爸':'父母',
+      '兒子':'子女','女兒':'子女','小孩':'子女','孩子':'子女',
+      '老公':'夫妻','老婆':'夫妻','另一半':'夫妻','伴侶':'夫妻','男友':'夫妻','女友':'夫妻',
+      '前任':'夫妻','朋友':'交友','同事':'交友','老闆':'官祿','主管':'官祿',
+      '哥哥':'兄弟','姐姐':'兄弟','姊姊':'兄弟','弟弟':'兄弟','妹妹':'兄弟',
+      '哥':'兄弟','姐':'兄弟','姊':'兄弟','弟':'兄弟','妹':'兄弟',
+      '公公':'父母','婆婆':'父母','爺爺':'父母','奶奶':'父母','外公':'父母','外婆':'父母'
+    };
+    result.thirdPartyZiwei = roleToZiwei[result.thirdPartyRole] || '';
+  }
+
+  // 提取主題（六大方向都要有對應詞彙）
+  const TOPIC_DICT = {
+    love: /另一半|對象|他|她|伴侶|男友|女友|老公|老婆|愛人|戀人|曖昧|前任|桃花|結婚|離婚|復合|分手|告白|追|喜歡|暗戀|正緣|偏緣|緣分|姻緣|感情|戀愛|愛情|婚姻/,
+    career: /工作|事業|公司|職業|升遷|轉職|創業|面試|老闆|同事|考試|學業|讀書|進修|加薪|離職|跳槽|副業|主管|職場|就業|換工作/,
+    wealth: /錢|財|投資|股票|基金|房|薪水|收入|存款|理財|借貸|債|買|賣|賺|虧|開源|節流|中獎|偏財|正財/,
+    health: /身體|健康|病|痛|不舒服|過敏|失眠|睡眠|疲勞|累|精神|情緒|壓力|焦慮|憂鬱|手術|開刀|懷孕|生育|視力|腸胃|心臟|肝|腎|肺|脾|頭|腰|背|皮膚|過勞|養生|中醫|西醫|減肥|運動|飲食|注意|調理|體質|免疫|血壓|血糖|濕氣/,
+    relationship: /朋友|人際|社交|合作|貴人|小人|同學|鄰居|合夥|團隊|溝通|衝突|吵架|誤會|信任|被騙|背叛|口舌|是非/,
+    family: /家人|父母|爸|媽|兒子|女兒|小孩|孩子|親子|長輩|公婆|婆媳|手足|兄弟|姊妹|家庭|搬家|房子|裝潢|遺產/
+  };
+  
+  if(TOPIC_DICT[type]) {
+    result.subject = q.match(TOPIC_DICT[type])?.[0] || {love:'感情',career:'事業',wealth:'財運',health:'身體狀況',relationship:'人際關係',family:'家庭'}[type];
+  } else {
+    result.subject = kw.slice(0, 10) || '所問之事';
+  }
+  
+  // 健康專屬：辨識問的是哪個部位/症狀
+  if(type === 'health') {
+    result.healthOrgan = q.match(/肝|心|脾|胃|肺|腎|腸|膽|膀胱|頭|眼|耳|口|鼻|喉|腰|背|骨|關節|皮膚|血|神經/)?.[0] || null;
+    result.healthSymptom = q.match(/痛|累|失眠|焦慮|憂鬱|過敏|發炎|腫|麻|暈|噁心|咳|喘|便秘|腹瀉|濕疹|掉髮/)?.[0] || null;
+  }
+
+  return result;
+}
+
+
 // ── Lottery number generation (lines 8096-8549) ──
 // ═══ 樂透號碼生成（各維度獨立推算 → 交叉驗證）═══
 function generateLotteryNumbers(bazi, mh, tarot, question, prob){
@@ -3167,8 +3304,6 @@ function detectGeJu(bazi){
   var gods = bazi.gods;
   var pillars = bazi.pillars;
   var ep = bazi.ep || {};
-  var _beShengMap = {'木':'水','火':'木','土':'火','金':'土','水':'金'};
-  var yinEl = _beShengMap[dmEl] || '';
   
   // 月柱天干十神（月干透出什麼）
   var monthGanGod = gods.month ? gods.month.gan : '';
@@ -3423,9 +3558,6 @@ function talkBaziFor(bazi, focusType){
   if(!bazi) return '';
   var ep=bazi.ep||{};
   var strong=bazi.strong;
-  var dmEl=bazi.dmEl||'';
-  var _beShengMap2={'木':'水','火':'木','土':'火','金':'土','水':'金'};
-  var yinEl=_beShengMap2[dmEl]||'';
   var texts=[];
   
   // ── 特殊格局（從格/化氣格）優先描述 ──
@@ -5201,7 +5333,26 @@ function chartVerdict(bazi, mh, tarot, focusType){
 // 第三層：A/B 行動方案（基於 cv + domain）
 // ═══ [REMOVED] buildThreeLayerPanel + chartAnswer ═══
 // 舊離線介面模板，已由 API 全面取代
-// [SURGERY] Dead stubs removed: buildThreeLayerPanel, getSubIntentEvidence, generateQAResponse, generate*Story
+function buildThreeLayerPanel() { return ''; }
+function chartAnswer() { return ''; }
+
+// ═══ [REMOVED] getSubIntentEvidence ~5100 lines ═══
+// 600+ 分支的離線問題證據抽取，已由 API 全面取代
+// 保留空殼讓 adjustProbByQuestion 的 typeof check 不報錯
+function getSubIntentEvidence(q, bazi, mh, tarot) {
+  return { score: 0, evidence: [], details: '' };
+}
+
+// ═══ [REMOVED] generateQAResponse ~3770 lines ═══
+// 舊離線問答回應產生器，已由 API 全面取代
+function generateQAResponse() { return ''; }
+
+// ═══ [REMOVED] generateZiweiStory/NameStory/BaziStory/NatalStory ~635 lines ═══
+// 舊離線敘事產生器，已由 API 全面取代
+function generateZiweiStory() { return ''; }
+function generateNameStory() { return ''; }
+function generateBaziStory() { return ''; }
+function generateNatalStory() { return ''; }
 
 // ═══ [SIMPLIFIED] generateAnswer — API 主導，離線只回傳最小結構 ═══
 function generateAnswer(type, prob, bazi, mh, tarot) {
@@ -6361,6 +6512,7 @@ function combineBySymbolOverlap(symbols, weights, meta) {
     'tr_aspects_bad':{'general':'整體阻礙'},
     'sun_career_strong':{'career':'身強可扛責任','general':'能量充足'},
     'jupiter_wealth_house':{'wealth':'意外之財','general':'貴人助力'},
+    'moon_family':{'family':'家庭和諧','general':'整體順利'},
     // 姓名學
     'sancai_pos':{'general':'整體順利'},
     'sancai_neg':{'general':'阻力增加'},
@@ -6739,7 +6891,410 @@ function mapStrengthToProb(rawStrength, finalDir, horizon, avgConfidence) {
 // 每個子意圖都有「基礎偏移」（問題本身的難度/傾向）+ 命理指標加減
 // 回傳 -30 到 +30 之間的調整值
 // ═══════════════════════════════════════════════════════════════
-// [SURGERY] adjustProbByQuestion removed — never called, offline-only
+function adjustProbByQuestion(q, type, bazi, ziwei, natal, jyotish, meihua, tarot){
+  var adj = 0;
+  if(!q || !type) return 0;
+  
+  var ss = bazi && bazi.shensha ? bazi.shensha : [];
+  var strong = bazi ? bazi.strong : false;
+  var ep = bazi ? (bazi.ep||{}) : {};
+  var dm = bazi ? bazi.dm : '';
+  var dmEl = bazi ? bazi.dmEl : '';
+  var curDy = (bazi && bazi.dayun) ? bazi.dayun.find(function(d){return d.isCurrent;}) : null;
+  var dyGod = '';
+  if(curDy && curDy.gz && dm && typeof tenGod==='function') dyGod = tenGod(dm, curDy.gz.charAt(0));
+  
+  function rp(name){ return typeof readPalace==='function' ? readPalace(name) : null; }
+  
+  var KE={木:'土',火:'金',土:'水',金:'木',水:'火'};
+  var SH={木:'火',火:'土',土:'金',金:'水',水:'木'};
+  var BS={木:'水',火:'木',土:'火',金:'土',水:'金'};
+  var caiEl=dmEl?(KE[dmEl]||''):'';
+  var guanEl=''; if(dmEl){ for(var k in KE){if(KE[k]===dmEl){guanEl=k;break;}} }
+  var yinEl=dmEl?(BS[dmEl]||''):'';
+  var shiEl=dmEl?(SH[dmEl]||''):'';
+  
+  // 梅花快速判分
+  var mhFav = 0;
+  if(meihua && meihua.ty){
+    var r = meihua.ty.r;
+    if(r==='用生體') mhFav = 5;
+    else if(r==='體克用') mhFav = 3;
+    else if(r==='比和') mhFav = 1;
+    else if(r==='體生用') mhFav = -3;
+    else if(r==='用克體') mhFav = -5;
+  }
+  // 塔羅核心牌
+  var tarotCore = 0;
+  if(tarot && tarot.drawn && tarot.drawn.length>=10){
+    var c = tarot.drawn[0];
+    if(c) tarotCore = c.isUp ? 4 : -4;
+  }
+  // 塔羅結果牌
+  var tarotResult = 0;
+  if(tarot && tarot.drawn && tarot.drawn.length>=10){
+    var cr = tarot.drawn[9];
+    if(cr) tarotResult = cr.isUp ? 3 : -3;
+  }
+
+  // ══════════════════════════════════════
+  // 感情 (love)
+  // ══════════════════════════════════════
+  if(type === 'love'){
+    var fqP=rp('夫妻'), fqLu=fqP&&fqP.huaLu, fqJi=fqP&&fqP.huaJi, fqBr=fqP&&fqP.isBright, fqSh=fqP&&fqP.hasSha;
+    var hasPeach=ss.includes('桃花'), hasHL=ss.includes('紅鸞'), hasTX=ss.includes('天喜'), hasGC=ss.includes('孤辰')||ss.includes('寡宿');
+    var venH=0; if(natal&&natal.planets&&natal.planets['金星']) venH=natal.planets['金星'].house;
+
+    if(/職場.*桃花|辦公室.*桃花|同事.*桃花|工作.*桃花|公司.*桃花|上班.*桃花/.test(q)){
+      adj=-3; var gP=rp('官祿'),nP=rp('僕役');
+      if(gP&&gP.huaLu) adj+=5; if(gP&&gP.huaJi) adj-=4;
+      if(nP&&nP.huaLu) adj+=5; if(nP&&nP.hasSha) adj-=3;
+      if(hasPeach) adj+=3; if(hasGC) adj-=4;
+      if(venH===6||venH===10) adj+=4;
+    } else if(/桃花|有沒有桃花|異性緣|有對象|有人喜歡|有人追/.test(q)){
+      adj=(hasPeach||hasHL)?2:-2;
+      if(hasPeach) adj+=4; if(hasHL) adj+=5; if(hasTX) adj+=3;
+      if(hasGC) adj-=5; if(fqLu) adj+=4; if(fqJi) adj-=4;
+      if(venH===5||venH===7) adj+=3;
+    } else if(/脫單|什麼時候.*[有遇]|幾歲.*[嫁娶]|正緣|姻緣|另一半/.test(q)){
+      adj=-3; if(hasPeach||hasHL) adj+=5; if(hasGC) adj-=6;
+      if(fqLu) adj+=4; if(dyGod==='正財'||dyGod==='正官') adj+=4;
+    } else if(/復合|回來|挽回|和好|前[任男女]|再一起|忘不了|放不下/.test(q)){
+      adj=-8; if(fqLu) adj+=6; if(fqJi) adj-=4; if(fqSh) adj-=3;
+      adj+=mhFav; adj+=Math.round(tarotCore*0.5);
+    } else if(/喜歡我|愛我|在意我|心裡有我|[他她].*怎麼想|[他她].*想法|對方.*態度/.test(q)){
+      adj=(mhFav>0)?2:-2; adj+=mhFav; adj+=tarotCore;
+      if(fqLu) adj+=2;
+    } else if(/結婚|嫁|娶|求婚|訂婚|婚期|步入婚姻/.test(q)){
+      adj=-5; if(hasHL) adj+=8; if(hasTX) adj+=4;
+      if(fqLu) adj+=5; if(fqJi) adj-=4; if(fqBr) adj+=3;
+      if(dyGod==='正財'||dyGod==='正官') adj+=5;
+      if(venH===7) adj+=3;
+    } else if(/告白|表白|追|主動|追得到|怎麼追|成功率/.test(q)){
+      adj=-2; adj+=mhFav; adj+=Math.round(tarotResult*0.5);
+    } else if(/曖昧|模糊|什麼關係|算交往|友達以上|搞不清|算不算/.test(q)){
+      adj=-1; adj+=mhFav; adj+=Math.round(tarotCore*0.5);
+    } else if(/冷戰|冷淡|不理我|不回|已讀|消失|忽冷忽熱|封鎖/.test(q)){
+      adj=-5; if(fqLu) adj+=4; if(fqJi) adj-=3;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/出軌|外遇|劈腿|偷吃|第三者|小三|花心|不忠/.test(q)){
+      adj=-6; if(fqSh) adj-=4; if(fqJi) adj-=3;
+      if(ss.includes('紅艷煞')) adj-=3;
+      if(fqLu) adj+=4;
+    } else if(/分手|離婚|分居|分開|該分|要不要分/.test(q)){
+      adj=-4; if(fqJi) adj-=4; if(fqLu) adj+=5;
+      adj+=mhFav;
+    } else if(/穩定|長久|順利|走下去|有未來|有結果|走得遠/.test(q)){
+      adj=1; if(fqBr) adj+=4; if(fqSh) adj-=3;
+      if(fqLu) adj+=3; if(fqJi) adj-=3;
+      adj+=tarotResult;
+    } else if(/真心|認真|玩玩|誠意|在乎|靠譜/.test(q)){
+      adj=(mhFav>0)?2:-2; adj+=mhFav;
+    } else if(/異地|遠距|不同城市|不同國家|分隔兩地/.test(q)){
+      adj=-3; var qmP=rp('遷移');
+      if(qmP&&qmP.huaLu) adj+=5; if(qmP&&qmP.huaJi) adj-=4;
+      if(fqLu) adj+=3;
+    } else if(/吵架|爭吵|溝通|講不聽|鬧|生氣|冷暴力/.test(q)){
+      adj=-3; if(fqJi) adj-=3; if(fqLu) adj+=3;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/選誰|選哪|兩個|哪一個|該選|二選一/.test(q)){
+      adj=-1; adj+=Math.round(mhFav*0.5);
+    } else if(/見家長|家人反對|父母不同意|不祝福/.test(q)){
+      adj=-4; var fpP=rp('父母');
+      if(fpP&&fpP.huaLu) adj+=5; if(fpP&&fpP.huaJi) adj-=4;
+    } else if(/暗戀|單相思|喜歡但不敢|默默喜歡/.test(q)){
+      adj=-2; if(venH===12) adj-=3;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/同居|住一起|搬去住/.test(q)){
+      adj=-1; var tzP=rp('田宅');
+      if(tzP&&tzP.huaLu) adj+=4; if(tzP&&tzP.huaJi) adj-=4;
+    } else if(/網戀|交友軟體|網路認識|Tinder|約會APP/.test(q)){
+      adj=-2; var qmP2=rp('遷移');
+      if(qmP2&&qmP2.huaLu) adj+=4;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/感情淡|沒感覺|無性|婚姻倦怠|沒愛了/.test(q)){
+      adj=-5; if(fqJi) adj-=3; if(fqLu) adj+=3;
+    } else if(/幸福|嫁得好|婚姻.*好|美滿/.test(q)){
+      adj=1; if(fqBr) adj+=4; if(fqLu) adj+=3;
+      if(venH===7) adj+=3;
+    } else if(/[他她]會.*主動|對方.*主動|會不會主動|會.*找我/.test(q)){
+      adj=-2; adj+=mhFav;
+    } else if(/對的人|適不適合|合不合|般配|相配/.test(q)){
+      adj=1; if(fqBr) adj+=3; if(fqSh) adj-=3;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/生小孩|生孩子|懷孕|備孕/.test(q)){
+      adj=-2; var zwP=rp('子女');
+      if(zwP&&zwP.huaLu) adj+=5; if(zwP&&zwP.huaJi) adj-=4;
+    } else {
+      adj=Math.round(mhFav*0.3)+tarotResult;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 事業 (career)
+  // ══════════════════════════════════════
+  else if(type === 'career'){
+    var gwP=rp('官祿'), gwLu=gwP&&gwP.huaLu, gwJi=gwP&&gwP.huaJi, gwKe=gwP&&gwP.huaKe;
+    var qmP=rp('遷移');
+
+    if(/升遷|升職|晉升|被提拔|被重用|升官/.test(q)){
+      adj=-2; if(gwLu) adj+=6; if(gwJi) adj-=5; if(gwKe) adj+=3;
+      if(dyGod==='正官'||dyGod==='正印') adj+=5;
+      if(ss.includes('將星')) adj+=3;
+    } else if(/加薪|調薪|薪水|漲薪|薪資/.test(q)){
+      adj=-2; var cbP=rp('財帛');
+      if(cbP&&cbP.huaLu) adj+=5; if(dyGod==='正財') adj+=4;
+    } else if(/考試|考上|上榜|考運|國考|證照|執照|檢定|多益|雅思|研究所/.test(q)){
+      adj=-3; if(ss.includes('文昌')) adj+=6; if(ss.includes('學堂')) adj+=3;
+      var yp=ep[yinEl]||0; if(yp>15) adj+=4;
+      if(dyGod==='正印'||dyGod==='偏印') adj+=5;
+      var fpP=rp('父母'); if(fpP&&fpP.huaKe) adj+=4;
+    } else if(/跳槽|轉職|換工作|離職|該留|該走|留還是走|換跑道|轉行/.test(q)){
+      adj=-1; if(qmP&&qmP.huaLu) adj+=5; if(qmP&&qmP.huaJi) adj-=4;
+      if(gwLu) adj+=3; if(gwJi) adj-=3;
+      if(ss.includes('驛馬')) adj+=3;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/創業|開店|開公司|自己做|當老闆|做生意|擺攤|電商|自媒體/.test(q)){
+      adj=-4; if(strong) adj+=5; else adj-=3;
+      var sp=ep[shiEl]||0,cp=ep[caiEl]||0;
+      if(sp>15&&cp>8) adj+=4;
+      if(dyGod==='七殺'||dyGod==='偏財') adj+=4;
+    } else if(/面試|錄取|offer|有消息|會上|被錄|入選/.test(q)){
+      adj=-2; if(gwLu) adj+=5; if(gwKe) adj+=3;
+      if(qmP&&qmP.huaLu) adj+=3;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/裁員|失業|被開|被辭|資遣|被fire|炒魷魚/.test(q)){
+      adj=-5; if(gwJi) adj-=4; if(gwLu) adj+=5;
+      if(ss.includes('天乙貴人')) adj+=3;
+    } else if(/找工作|就業|求職|找到工作/.test(q)){
+      adj=-2; if(gwLu) adj+=4; if(qmP&&qmP.huaLu) adj+=3;
+      if(ss.includes('驛馬')) adj+=3;
+    } else if(/副業|兼職|斜槓|接案|被動收入|外快/.test(q)){
+      adj=-1; var fdP=rp('福德');
+      if(fdP&&fdP.huaLu) adj+=4;
+      if(strong) adj+=2; else adj-=2;
+    } else if(/適合.*工作|職業方向|做什麼好|找方向|出路|前途|天賦/.test(q)){
+      adj=1; // 方向題中性偏正面
+      if(gwLu) adj+=3; if(gwJi) adj-=2;
+    } else if(/主管|老闆|上司|被針對|被刁難|被打壓/.test(q)){
+      adj=-4; if(gwJi) adj-=3; if(gwLu) adj+=3;
+      var puP=rp('僕役'); if(puP&&puP.hasSha) adj-=3;
+    } else if(/同事|職場人際|被排擠|辦公室政治|合不來/.test(q)){
+      adj=-3; var puP2=rp('僕役');
+      if(puP2&&puP2.huaLu) adj+=4; if(puP2&&puP2.hasSha) adj-=3;
+    } else if(/壓力大|好累|撐不住|倦怠|不想上班|過勞|加班/.test(q)){
+      adj=-4; var fdP2=rp('福德');
+      if(fdP2&&fdP2.huaJi) adj-=3; if(!strong) adj-=3;
+    } else if(/讀什麼|科系|升學|進修|留學|碩士|博士|MBA/.test(q)){
+      adj=-1; if(ss.includes('文昌')) adj+=4;
+      var yp2=ep[yinEl]||0; if(yp2>15) adj+=3;
+    } else if(/退休|提早退休|養老/.test(q)){
+      adj=-1; var cbP2=rp('財帛');
+      if(cbP2&&cbP2.huaLu) adj+=3; if(strong) adj+=2;
+    } else if(/業績|訂單|營收|客源|沒生意|接不到|沒案子/.test(q)){
+      adj=-3; if(gwLu) adj+=4; if(gwJi) adj-=3;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/合約|簽約|談判|報價/.test(q)){
+      adj=-1; if(gwLu) adj+=3; adj+=Math.round(mhFav*0.5);
+    } else if(/專案|案子|計畫|提案|能成|做得成/.test(q)){
+      adj=-1; if(gwLu) adj+=3; adj+=Math.round(mhFav*0.5);
+    } else if(/事業|工作.*如何|工作.*怎|職場/.test(q)){
+      adj=1; if(gwLu) adj+=3; if(gwJi) adj-=3;
+      if(dyGod==='正官') adj+=3;
+    } else {
+      adj=Math.round(mhFav*0.3)+tarotResult;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 財運 (wealth)
+  // ══════════════════════════════════════
+  else if(type === 'wealth'){
+    var cbP=rp('財帛'), cbLu=cbP&&cbP.huaLu, cbJi=cbP&&cbP.huaJi, cbSh=cbP&&cbP.hasSha;
+    var caiPct=ep[caiEl]||0;
+
+    if(/投資|股|基金|加密|幣|ETF|期貨|權證|外匯|美股|台股/.test(q)){
+      adj=-5; if(cbLu) adj+=5; if(cbJi) adj-=5; if(cbSh) adj-=3;
+      if(strong) adj+=3; else adj-=3;
+      if(dyGod==='偏財') adj+=5;
+    } else if(/偏財|橫財|中獎|彩券|樂透|刮刮樂|意外之財/.test(q)){
+      adj=-12; if(dyGod==='偏財') adj+=8;
+      if(caiPct>20&&strong) adj+=5; if(!strong) adj-=3;
+    } else if(/買房|房子|置產|房貸|不動產|預售屋/.test(q)){
+      adj=-3; var tzP=rp('田宅');
+      if(tzP&&tzP.huaLu) adj+=7; if(tzP&&tzP.huaJi) adj-=5;
+      if(tzP&&tzP.isBright) adj+=3;
+    } else if(/加薪|漲薪|薪水|調薪|收入|進帳|賺/.test(q)){
+      adj=-1; if(cbLu) adj+=4; if(dyGod==='正財') adj+=4;
+      if(dyGod==='偏財') adj+=2;
+    } else if(/借錢|欠錢|債|還錢|卡債|倒帳|被欠/.test(q)){
+      adj=-5; if(cbJi) adj-=4; if(!strong) adj-=3;
+    } else if(/破財|虧|賠|損失|被騙|詐騙|被坑/.test(q)){
+      adj=-6; if(cbSh) adj-=3; if(cbJi) adj-=3;
+      if(ss.includes('劫煞')) adj-=3;
+    } else if(/存錢|理財|省錢|月光|花光|記帳/.test(q)){
+      adj=-1; if(cbLu) adj+=3; if(strong) adj+=2; else adj-=2;
+    } else if(/合夥|合資|一起投資|股東/.test(q)){
+      adj=-3; var puP=rp('僕役');
+      if(puP&&puP.huaLu) adj+=4; if(puP&&puP.hasSha) adj-=4;
+    } else if(/房貸壓力|經濟壓力|繳不出|入不敷出/.test(q)){
+      adj=-5; if(cbLu) adj+=4; if(!strong) adj-=3;
+    } else if(/保險|儲蓄險|理賠|保單/.test(q)){
+      adj=-1; if(cbLu) adj+=2;
+    } else if(/財運.*好轉|什麼時候.*有錢|何時.*發財|翻身|財務自由/.test(q)){
+      adj=-3; if(cbLu) adj+=4; if(dyGod==='正財'||dyGod==='偏財') adj+=4;
+    } else if(/財運|財.*如何|今年.*財/.test(q)){
+      adj=(cbLu)?2:(cbJi?-2:1);
+      if(dyGod==='正財') adj+=3; if(dyGod==='偏財') adj+=2;
+      adj+=tarotResult;
+    } else {
+      adj=Math.round(mhFav*0.3)+tarotResult;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 健康 (health)
+  // ══════════════════════════════════════
+  else if(type === 'health'){
+    var jkP=rp('疾厄'), jkLu=jkP&&jkP.huaLu, jkJi=jkP&&jkP.huaJi, jkBr=jkP&&jkP.isBright, jkDk=jkP&&jkP.isDark;
+
+    if(/手術|開刀/.test(q)){
+      adj=-8; if(jkBr) adj+=5; if(jkDk) adj-=5;
+      if(ss.includes('天德貴人')||ss.includes('月德貴人')) adj+=5;
+    } else if(/懷孕|備孕|生小孩|生育|試管|凍卵/.test(q)){
+      adj=-3; var zwP=rp('子女');
+      if(zwP&&zwP.huaLu) adj+=6; if(zwP&&zwP.huaJi) adj-=4;
+      var sp=ep[shiEl]||0; if(sp>15) adj+=3;
+    } else if(/減肥|瘦|胖|體重|減重|體脂/.test(q)){
+      adj=-2; if(strong) adj+=3; else adj-=2;
+    } else if(/憂鬱|焦慮|恐慌|心理|情緒低落|低潮|心情差/.test(q)){
+      adj=-4; var fdP=rp('福德');
+      if(fdP&&fdP.huaJi) adj-=4; if(fdP&&fdP.huaLu) adj+=4;
+    } else if(/失眠|睡不好|睡不著|淺眠|多夢/.test(q)){
+      adj=-3; var fdP2=rp('福德');
+      if(fdP2&&fdP2.huaJi) adj-=3;
+    } else if(/過敏|蕁麻疹|濕疹|氣喘|鼻炎|皮膚/.test(q)){
+      adj=-2; if(jkBr) adj+=3; if(jkDk) adj-=3;
+    } else if(/慢性病|長期吃藥|糖尿|高血壓|痛風|甲狀腺/.test(q)){
+      adj=-4; if(jkBr) adj+=3;
+      if(ss.includes('天德貴人')||ss.includes('月德貴人')) adj+=3;
+    } else if(/戒菸|戒酒|戒|上癮|成癮|依賴/.test(q)){
+      adj=-4; if(strong) adj+=4; else adj-=3;
+    } else if(/家人.*健康|爸.*身體|媽.*身體|長輩.*身體/.test(q)){
+      adj=-2; var fpP=rp('父母');
+      if(fpP&&fpP.huaLu) adj+=4; if(fpP&&fpP.huaJi) adj-=3;
+    } else if(/會好|康復|痊癒|好轉|恢復|治得好/.test(q)){
+      adj=-2; if(jkBr) adj+=5; if(jkDk) adj-=4;
+      if(ss.includes('天德貴人')||ss.includes('月德貴人')) adj+=4;
+    } else if(/復發|會不會再|反覆|再犯/.test(q)){
+      adj=-5; if(jkJi) adj-=3; if(jkBr) adj+=3;
+    } else if(/壓力|紓壓|放鬆|減壓/.test(q)){
+      adj=-2; var fdP3=rp('福德');
+      if(fdP3&&fdP3.huaLu) adj+=3;
+    } else if(/累|疲|沒精神|沒力|體力|容易累/.test(q)){
+      adj=-2; if(!strong) adj-=3; if(jkBr) adj+=2;
+    } else if(/注意什麼|要注意|小心什麼|健康.*注意/.test(q)){
+      adj=-1; if(jkJi) adj-=3; if(jkBr) adj+=2;
+    } else if(/養生|調理|進補|保養/.test(q)){
+      adj=1; if(jkBr) adj+=2;
+    } else if(/健康|身體|身體.*如何|健康.*怎/.test(q)){
+      adj=1; if(jkBr) adj+=3; if(jkJi) adj-=3;
+      adj+=tarotResult;
+    } else {
+      adj=Math.round(mhFav*0.3)+tarotResult;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 人際 (relationship)
+  // ══════════════════════════════════════
+  else if(type === 'relationship'){
+    var puP=rp('僕役');
+
+    if(/和好|化解|修復|道歉|破冰|重修舊好/.test(q)){
+      adj=-3; if(puP&&puP.huaLu) adj+=5;
+      adj+=Math.round(mhFav*0.5);
+    } else if(/貴人|伯樂|有人幫|靠山/.test(q)){
+      adj=1; if(ss.includes('天乙貴人')) adj+=5;
+      if(ss.includes('天德貴人')||ss.includes('月德貴人')) adj+=3;
+      if(puP&&puP.huaLu) adj+=3;
+    } else if(/小人|背叛|陷害|被害|被整|被排擠|搞我|是非/.test(q)){
+      adj=-5; if(puP&&puP.hasSha) adj-=3; if(puP&&puP.huaJi) adj-=3;
+      if(ss.includes('天乙貴人')) adj+=4;
+    } else if(/合作|合夥|搭檔|夥伴|團隊合作/.test(q)){
+      adj=-1; if(puP&&puP.huaLu) adj+=4; if(puP&&puP.hasSha) adj-=4;
+    } else if(/信任|可靠|真心|靠得住|能信|交心/.test(q)){
+      adj=(mhFav>0)?2:-2; adj+=mhFav;
+    } else if(/朋友|社交|交友|人緣|人脈|孤獨|寂寞/.test(q)){
+      adj=1; if(puP&&puP.huaLu) adj+=3; if(puP&&puP.huaJi) adj-=3;
+    } else if(/人際|關係.*如何/.test(q)){
+      adj=1; if(puP&&puP.huaLu) adj+=3; if(puP&&puP.hasSha) adj-=3;
+      adj+=tarotResult;
+    } else {
+      adj=Math.round(mhFav*0.3)+tarotResult;
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 家庭 (family)
+  // ══════════════════════════════════════
+  else if(type === 'family'){
+    if(/婆媳|公婆|妯娌|岳父|岳母|婆婆|公公/.test(q)){
+      adj=-3; var fpP=rp('父母');
+      if(fpP&&fpP.huaLu) adj+=4; if(fpP&&fpP.huaJi) adj-=4;
+    } else if(/孩子|小孩|兒子|女兒|親子|叛逆|教養|管教/.test(q)){
+      adj=1; var zwP=rp('子女');
+      if(zwP&&zwP.huaLu) adj+=4; if(zwP&&zwP.huaJi) adj-=4;
+    } else if(/父母|爸|媽|爸媽|跟家人|家人關係/.test(q)){
+      adj=1; var fpP2=rp('父母');
+      if(fpP2&&fpP2.huaLu) adj+=4; if(fpP2&&fpP2.huaJi) adj-=4;
+    } else if(/兄弟|姊妹|手足|哥哥|弟弟|姊姊|妹妹/.test(q)){
+      adj=1; var xdP=rp('兄弟');
+      if(xdP&&xdP.huaLu) adj+=4; if(xdP&&xdP.huaJi) adj-=4;
+    } else if(/遺產|繼承|分家產|財產分配/.test(q)){
+      adj=-4; var tzP=rp('田宅'), xdP2=rp('兄弟');
+      if(tzP&&tzP.huaLu) adj+=4; if(xdP2&&xdP2.huaJi) adj-=3;
+    } else if(/搬家|搬遷|換房/.test(q)){
+      adj=-1; var tzP2=rp('田宅'), qmP=rp('遷移');
+      if(tzP2&&tzP2.huaLu) adj+=4; if(qmP&&qmP.huaLu) adj+=3;
+    } else if(/家庭|家運|家.*如何/.test(q)){
+      adj=1; var fpP3=rp('父母');
+      if(fpP3&&fpP3.huaLu) adj+=3; if(fpP3&&fpP3.huaJi) adj-=3;
+      adj+=tarotResult;
+    } else {
+      adj=Math.round(mhFav*0.3)+tarotResult;
+    }
+  }
+
+  // 保底：adj=0 時根據梅花/塔羅/身強弱給微量方向
+  if(adj === 0){
+    if(mhFav > 0 || tarotCore > 0) adj = 1;
+    else if(mhFav < 0 || tarotCore < 0) adj = -1;
+    else adj = (strong ? 1 : -1);
+  }
+  
+  // ── 注入 getSubIntentEvidence 的宮位星曜分數 ──
+  // 600 分支多維度交叉判斷，是問題專屬的核心信號
+  try {
+    if(typeof getSubIntentEvidence === 'function'){
+      var _evResult = getSubIntentEvidence(q, bazi, meihua, tarot);
+      if(_evResult && typeof _evResult.score === 'number' && _evResult.score !== 0){
+        var _evDelta = _evResult.score * 2.5;
+        _evDelta = Math.max(-25, Math.min(25, _evDelta));
+        // |adj|>3 = adjustProbByQuestion 有精確匹配 → evidence 做補充 (40%)
+        // |adj|<=3 = 只是保底值 → evidence 做主驅動 (100%)
+        var _hasSpecificMatch = Math.abs(adj) > 3;
+        var _evWeight = _hasSpecificMatch ? 0.4 : 1.0;
+        var _before = adj;
+        adj += Math.round(_evDelta * _evWeight);
+      } else {
+      }
+    }
+  } catch(e){}
+  
+  return Math.max(-40, Math.min(40, adj));
+}
+
 function runUnifiedEngine(questionText, type, context) {
   var q = questionText || '';
   var meta = parseQuestionMeta(q);
@@ -9828,8 +10383,6 @@ function runAnalysisV2(){
     }
     
     // ── 2. 梅花：體用關係 + 變卦結果 ──
-    var mh = S.meihua;
-    var tarot = S.tarot;
     if(mh && mh.ty){
       var _mhRel = mh.ty.r || '';
       var _mhJudge = mh.ty.f || '';
@@ -10272,14 +10825,455 @@ function runAnalysis(){
 /* ═══════════════════════════════════════════════════
    站長觀點自動生成（基於各維度獨立判斷的辯證觀點）
    ═══════════════════════════════════════════════════ */
-function generateExpertComment(bazi,ziwei,mh,tarot,type,prob,fav,unfavEl) {
-  // [SURGERY] 離線模式已移除，站長觀點由 AI 產生
-  return "";
+function generateExpertComment(bazi,ziwei,mh,tarot,type,prob,fav,unfavEl){
+  const dm=bazi.dm,el=bazi.dmEl,strong=bazi.strong;
+  const curDy=bazi.dayun?bazi.dayun.find(d=>d.isCurrent):null;
+  const typeLabel={'love':'感情','career':'事業','wealth':'財運','health':'健康','general':'整體運勢','relationship':'人際','family':'家庭'}[type]||'這件事';
+
+  // ═══ 從 unified engine 取交集結果 ═══
+  const uRes = S._uResult;
+  const comb = uRes ? uRes.comb : null;
+  const topTags = comb ? comb.topTags : [];
+  const finalDir = comb ? comb.finalDir : 'mid';
+  const conflicts = comb ? (comb.conflictPairs || []) : [];
+
+  // 紫微主星個性化建議
+  let zwStarTip='';
+  if(ziwei){
+    const mm=ziwei.palaces[0]?ziwei.palaces[0].stars.filter(s=>s.type==='major'):[];
+    if(mm.length){
+      const sn=mm[0].name;
+      const tips={'紫微':'決定了就別回頭','天機':'設個期限逼自己做決定','太陽':'多往外走','武曲':'耐心等時機','天同':'多找人商量','廉貞':'穩住情緒','天府':'按自己步調','太陰':'計畫好就踏出去','貪狼':'專注比才華重要','巨門':'少說多做','天相':'找對的人合作','天梁':'放寬心','七殺':'策略比速度重要','破軍':'確認真的想要再投入'};
+      if(tips[sn]) zwStarTip=tips[sn]+'。';
+    }
+  }
+
+  // ═══ 用 topTags 交集敘述（不再拼接「八字說…紫微說…」）═══
+  let opening='', mid='', closing='';
+
+  // 開頭：直接講你的狀態
+  if(strong) opening='你的基礎條件不錯，有底氣去拼。';
+  else opening='你的先天條件普通，但不代表做不到——只是需要更聰明的策略。';
+
+  // 提取交集訊息
+  var posTags = topTags.filter(function(t){ return t.direction==='pos'; });
+  var negTags = topTags.filter(function(t){ return t.direction==='neg'; });
+  var multiSysTags = topTags.filter(function(t){ return t.systemCount >= 2; });
+
+  // 中段：基於交集結論
+  if(finalDir === 'pos' && posTags.length >= 2 && negTags.length === 0){
+    // 全面看好
+    var sysStr = multiSysTags.length > 0 ? multiSysTags[0].supportSystems.join('、') : '多套系統';
+    var tagStr = posTags.slice(0,2).map(function(t){return t.tag;}).join('、');
+    mid = sysStr + '一致指向正面訊號（' + tagStr + '），你的條件、時機、環境都在對的位置。';
+    closing = '但越順越要冷靜。' + typeLabel + '方向是對的，把握窗口期，別因為太樂觀而忽略細節。';
+  } else if(finalDir === 'neg' && negTags.length >= 2 && posTags.length === 0){
+    // 全面不利
+    var nSysStr = multiSysTags.length > 0 ? multiSysTags[0].supportSystems.join('、') : '多套系統';
+    var nTagStr = negTags.slice(0,2).map(function(t){return t.tag;}).join('、');
+    mid = '說直白一點，' + nSysStr + '都指向保守訊號（' + nTagStr + '）——目前的條件和環境不太配合。';
+    closing = '但這不是永久的。重點是穩住基本盤、充實自己，等條件好轉再動。';
+  } else if(posTags.length > 0 && negTags.length > 0){
+    // ★ 矛盾辯證——用交集中的具體衝突
+    var posStr = posTags.slice(0,2).map(function(t){return t.tag;}).join('、');
+    var negStr = negTags.slice(0,2).map(function(t){return t.tag;}).join('、');
+    var posFrom = posTags[0] ? posTags[0].supportSystems.join('+') : '';
+    var negFrom = negTags[0] ? negTags[0].supportSystems.join('+') : '';
+
+    if(conflicts.length > 0){
+      var c0 = conflicts[0];
+      mid = '有矛盾需要注意：' + posFrom + '指向「' + posStr + '」，但' + negFrom + '指向「' + negStr + '」。不是一面倒的好或壞。';
+      closing = '建議分階段推進——先小範圍嘗試，有正回饋再加碼，留退路比衝鋒重要。';
+    } else {
+      mid = '正面訊號有「' + posStr + '」，但同時也有「' + negStr + '」的提醒。';
+      closing = '不需要太悲觀也不需要太樂觀。做好準備、控制風險，按節奏走。';
+    }
+  } else if(posTags.length > negTags.length){
+    mid = '整體偏正面，' + (posTags[0] ? '主要看到「' + posTags[0].tag + '」的訊號' : '條件和時機都還行') + '。';
+    if(type==='love') closing='主動增加社交頻率，機會不會自己來。';
+    else if(type==='career') closing='有機會別猶豫，猶豫才是最大的損失。';
+    else if(type==='wealth') closing='可以小額嘗試，但80%精力放主業。';
+    else closing='把握有利條件，同時預留備案。';
+  } else {
+    mid = '阻力偏大，' + (negTags[0] ? '「' + negTags[0].tag + '」的訊號比較明顯' : '外在環境和條件目前不太支持') + '。';
+    const nextDy=bazi.dayun?bazi.dayun.find(d2=>!d2.isCurrent&&d2.ageStart>(curDy?curDy.ageStart:0)):null;
+    if(nextDy) closing='但運勢會轉。現階段充實自己、做好準備，等條件好轉你才接得住。';
+    else closing='現階段穩住基本盤，等更好的時機再出手。';
+  }
+
+  if(zwStarTip) closing+=' '+zwStarTip;
+
+  // 信心度補充
+  if(comb && comb.avgConfidence >= 0.7 && finalDir === 'pos'){
+    closing += ' 多套命理系統一致看好，這個判斷的可信度較高。';
+  } else if(comb && comb.avgConfidence >= 0.7 && finalDir === 'neg'){
+    closing += ' 多套系統都提示需謹慎，時機很重要。';
+  } else if(comb && comb.avgConfidence < 0.45){
+    closing += ' 不過各系統之間有些分歧，建議觀察一段時間再做最終決定。';
+  }
+
+  const ps='<p style="line-height:1.9;font-size:.95rem">';
+  return `${ps}${opening}</p>${ps}${mid}</p>${ps}${closing}</p>`;
 }
-function renderAct2Summary(bazi,ziwei,mh,tarot,type,prob) {
-  // [SURGERY] 離線模式已移除，Act2 由 AI 產生
-  return;
+
+/* ═══════════════════════════════════════════════════
+   第二幕：三張摘要卡片（先天命格/當下能量/姓名影響）
+   ═══════════════════════════════════════════════════ */
+function renderAct2Summary(bazi,ziwei,mh,tarot,type,prob){
+  var wrapEl=document.getElementById('act2-cards');
+  if(!wrapEl) return;
+
+  var el=bazi.dmEl, strong=bazi.strong, fav=bazi.fav||[], unfav=bazi.unfav||[];
+  var curDy=bazi.dayun?bazi.dayun.find(function(d){return d.isCurrent;}):null;
+  var typeLabel={'love':'感情桃花','career':'事業方向','wealth':'財運投資','health':'健康身心','relationship':'人際合作','family':'家庭親子'}[type]||'整體運勢';
+
+  // ═══ 從 unified engine 取交集結果 ═══
+  var uRes = S._uResult;
+  var comb = uRes ? uRes.comb : null;
+  var topTags = comb ? comb.topTags || [] : [];
+  var finalDir = comb ? comb.finalDir : 'mid';
+  var syms = uRes ? uRes.symbols || {} : {};
+
+  var longSys = ['bazi','ziwei','jyotish'];
+  var shortSys = ['meihua','tarot'];
+  var sysKeys = ['bazi','ziwei','meihua','tarot','natal','jyotish','name'];
+
+  // 計算長短線方向
+  var longPos=0, longNeg=0, shortPos=0, shortNeg=0;
+  sysKeys.forEach(function(k){
+    var s = syms[k];
+    if(!s) return;
+    if(longSys.indexOf(k)>=0){ if(s.dir==='pos') longPos++; else if(s.dir==='neg') longNeg++; }
+    if(shortSys.indexOf(k)>=0){ if(s.dir==='pos') shortPos++; else if(s.dir==='neg') shortNeg++; }
+  });
+  var longTerm = longPos>=2?'pos':longNeg>=2?'neg':'mid';
+  var shortTerm = shortPos>=1?'pos':shortNeg>=2?'neg':'mid';
+
+  // 收集 topTags 分類
+  var posTags=[], negTags=[], actionTags=[], timingTags=[];
+  topTags.forEach(function(t){
+    var lbl = t.tag || t.label || '';
+    if(t.direction==='pos') posTags.push(lbl);
+    else if(t.direction==='neg') negTags.push(lbl);
+    var domain = S._lastMeta ? S._lastMeta.domain : 'general';
+    var domTags = typeof TAGS_BY_DOMAIN!=='undefined' ? TAGS_BY_DOMAIN[domain] : null;
+    if(domTags){
+      if(domTags.action && domTags.action.indexOf(lbl)>=0) actionTags.push(lbl);
+      if(domTags.timing && domTags.timing.indexOf(lbl)>=0) timingTags.push(lbl);
+    }
+  });
+
+  // ═══ 卡片1：核心能量定錨 ═══
+  var anchor='';
+  var posStr = posTags.length ? '「' + posTags.slice(0,3).join('、') + '」' : '';
+  var negStr = negTags.length ? '「' + negTags.slice(0,3).join('、') + '」' : '';
+
+  if(longTerm==='pos'&&shortTerm==='pos'){
+    anchor=typeLabel+'長短線訊號一致正面。' + (posStr ? '多系統共同指向' + posStr + '，' : '') + '這是難得的「天時地利」窗口，適合大膽行動。';
+  } else if(longTerm==='pos'&&shortTerm==='neg'){
+    anchor=typeLabel+'本命底蘊與大環境支持你' + (posStr ? '（' + posStr + '）' : '') + '，但短期執行面出現盲點' + (negStr ? '（' + negStr + '）' : '') + '。修正短期阻礙就能回到正軌。';
+  } else if(longTerm==='neg'&&shortTerm==='pos'){
+    anchor='從長遠結構看，' + typeLabel + '存在根本阻礙' + (negStr ? '（' + negStr + '）' : '') + '。但近期能量場開了一扇窗' + (posStr ? '（' + posStr + '）' : '') + '，見好就收是最高指導原則。';
+  } else if(longTerm==='neg'&&shortTerm==='neg'){
+    anchor=typeLabel+'長短線訊號都帶壓力' + (negStr ? '（' + negStr + '）' : '') + '，目前不是衝鋒的時機。重心放在自我修復和策略調整上。';
+  } else {
+    anchor=typeLabel+'的訊號混合：' + (posStr ? '正面有' + posStr + '，' : '') + (negStr ? '阻力有' + negStr + '，' : '') + '分步推進、保持彈性是關鍵。';
+  }
+
+  if(prob<45 && posTags.length>0){
+    anchor+=' 值得留意的是，部分系統仍指向正面訊號（' + posTags.slice(0,2).join('、') + '），方向本身可行，但整體能量偏弱（' + prob + '%）。先用最小成本驗證，等環境配合時再全力推進。';
+  }
+  if(prob>=65 && negTags.length>=2){
+    anchor+=' 不過，仍有多個系統發出短期警訊（' + negTags.slice(0,2).join('、') + '），執行時留意細節。';
+  }
+
+  // 潛意識反差偵測
+  var subconNote='';
+  if(S.natal&&ziwei){
+    var mingStars=ziwei.palaces[0]?ziwei.palaces[0].stars.filter(function(s){return s.type==='major';}):[];
+    var moonSign=S.natal.planets&&S.natal.planets['月亮']?S.natal.planets['月亮'].sign:'';
+    if(mingStars.some(function(s){return ['七殺','破軍','廉貞'].indexOf(s.name)>=0;})&&['雙魚','巨蟹','天蠍'].indexOf(moonSign)>=0){
+      subconNote='你外在展現強勢與獨立（' + mingStars.map(function(s){return s.name;}).join('+') + '坐命），內在卻極度需要情緒共鳴（月亮' + moonSign + '）。這種反差是你在' + typeLabel + '領域疲憊的暗中根源。';
+    }
+  }
+
+  var card1='<p style="font-size:.95rem;line-height:1.8">' + anchor + '</p>';
+  if(subconNote) card1+='<p class="mt-sm" style="font-size:.88rem;line-height:1.7;color:var(--c-text-dim);padding:.5rem;background:rgba(124,108,205,.06);border-radius:6px">🔮 ' + subconNote + '</p>';
+
+  // ═══ 卡片2：七維度深度拆解（build7D + tags 融合） ═══
+  var _7dAct2=typeof build7D==='function'?build7D(bazi,mh,tarot,type):{parts:[],score:0};
+  var card2='<div style="font-size:.88rem;line-height:1.8">';
+
+  // build7D 各維度解讀（命盤推導的實質內容）
+  var _7partsAct2=_7dAct2.parts.filter(function(p){return p&&p.length>5;});
+  if(_7partsAct2.length){
+    card2+='<p>📐 <strong>各維度命盤解讀</strong>：</p>';
+    card2+='<div style="padding-left:.5rem;border-left:2px solid rgba(212,175,55,.2)">';
+    _7partsAct2.forEach(function(p){ card2+='<p style="margin:.3rem 0">'+p+'</p>'; });
+    card2+='</div>';
+  }
+
+  // tags 補充（系統層面的標籤信號）
+  var sysTagSources = [
+    {key:'bazi', tags:S.baziTags, label:'八字'},
+    {key:'ziwei', tags:S.ziweiTags, label:'紫微'},
+    {key:'meihua', tags:S.meihuaTags, label:'梅花'},
+    {key:'tarot', tags:S.tarotTags, label:'塔羅'},
+    {key:'natal', tags:S.natalTags, label:'星盤'},
+    {key:'jyotish', tags:S.jyotishTags, label:'吠陀'},
+    {key:'name', tags:S.nameTags, label:'姓名'}
+  ];
+  var longNarr=[], shortNarr=[], auxNarr=[];
+  sysTagSources.forEach(function(src){
+    if(!src.tags || !src.tags.length) return;
+    var topT = src.tags.filter(function(t){return t.weight>=3;}).slice(0,3);
+    if(!topT.length) topT = src.tags.slice(0,2);
+    var labels = topT.map(function(t){
+      var dir = t.direction==='pos'?'↑':t.direction==='neg'?'↓':'→';
+      return dir + t.label;
+    }).join('、');
+    var note = src.label + '：' + labels;
+    if(longSys.indexOf(src.key)>=0) longNarr.push(note);
+    else if(shortSys.indexOf(src.key)>=0) shortNarr.push(note);
+    else auxNarr.push(note);
+  });
+  if(longNarr.length||shortNarr.length||auxNarr.length){
+    card2+='<details style="margin-top:.5rem"><summary style="cursor:pointer;color:var(--c-gold);font-size:.82rem">🏷️ 系統信號標籤</summary><div style="padding:.3rem 0;font-size:.82rem">';
+    if(longNarr.length) card2+='<p>📐 長線：' + longNarr.join('。') + '。</p>';
+    if(shortNarr.length) card2+='<p>⚡ 當下：' + shortNarr.join('。') + '。</p>';
+    if(auxNarr.length) card2+='<p>🔭 輔助：' + auxNarr.join('。') + '。</p>';
+    card2+='</div></details>';
+  }
+
+  if(posTags.length && negTags.length){
+    card2+='<p class="mt-sm" style="color:var(--c-warn)">⚖️ 訊號衝突：正面（' + posTags.slice(0,2).join('、') + '）vs 阻力（' + negTags.slice(0,2).join('、') + '）— 裁決為「' + (finalDir==='pos'?'偏正面':finalDir==='neg'?'偏負面':'中性') + '」。</p>';
+  }
+  card2+='</div>';
+
+  // ═══ 卡片3：戰略行動指南（unified engine finalProb 驅動）═══
+  // Phase 2: prob 是 renderAct2Summary(..., finalProb) 傳入的參數，優先用 prob
+  var _act2Prob = (typeof prob !== 'undefined' && prob !== null && prob !== 0) ? prob : (typeof finalProb !== 'undefined' ? finalProb : 50);
+  var card3='<div style="font-size:.88rem;line-height:1.8">';
+
+  // 方向建議（根據 prob + 長短線）
+  var _dirAdvice='';
+  if(_act2Prob>=72) _dirAdvice=typeLabel+'各方面條件到位，適合大膽行動。';
+  else if(_act2Prob>=58) _dirAdvice=typeLabel+'方向正確，穩步推進即可。';
+  else if(_act2Prob>=45) _dirAdvice=typeLabel+'信號各半，分步推進、保持彈性。';
+  else if(_act2Prob>=30) _dirAdvice=typeLabel+'有壓力，先穩住基礎再說。';
+  else _dirAdvice=typeLabel+'目前不宜大動作，專注自我修復。';
+
+  // 長短線交叉補充
+  if(longTerm==='pos'&&shortTerm==='neg') _dirAdvice+=' 大方向有利但短期有卡關，修正短期阻礙就能回到正軌。';
+  else if(longTerm==='neg'&&shortTerm==='pos') _dirAdvice+=' 近期有窗口但長期要再觀察，見好就收。';
+
+  var _strengthTip2 = strong ? '你能量充足，適合主導和開創。' : '不宜單打獨鬥，善用外在資源和貴人。';
+
+  var _timing2 = '';
+  if(timingTags.length) _timing2 = '時間訊號：' + timingTags.join('、') + '。';
+  else if(_act2Prob>=72) _timing2 = '現在就是好時機。';
+  else if(_act2Prob>=55) _timing2 = '近期可以開始布局。';
+  else if(_act2Prob>=40) _timing2 = '目前不急，等信號更明確再行動。';
+  else _timing2 = '先蓄力，等運勢回升再出手。';
+
+  if(curDy){
+    var _dyGan2=curDy.gz?curDy.gz.charAt(0):'';
+    var _dyEl2={'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'}[_dyGan2]||'';
+    if(fav.indexOf(_dyEl2)>=0) _timing2+=' 大運走' + _dyEl2 + '行，補足你的能量。';
+    else if(unfav.indexOf(_dyEl2)>=0) _timing2+=' 大運走' + _dyEl2 + '行，帶來額外壓力。';
+  }
+
+  var _actionStr2 = '';
+  if(actionTags.length) _actionStr2 = '建議行動：' + actionTags.join('、') + '。';
+
+  var _wxLabel={'木':'木（綠色系）','火':'火（紅色系）','土':'土（黃色系）','金':'金（白色系）','水':'水（黑/藍色系）'};
+  var _favEl2=fav[0]||'';
+  var _energyAdvice2='';
+  if(bazi.specialStructure){
+    _energyAdvice2=bazi.specialStructure.type+'，最重要的是順應格局方向，強化'+(_wxLabel[_favEl2]||_favEl2)+'的能量。';
+    if(unfav[0]) _energyAdvice2+='避免'+(_wxLabel[unfav[0]]||unfav[0])+'破格。';
+  } else if(!strong){
+    _energyAdvice2='能量偏弱，最重要的是補足'+(_wxLabel[_favEl2]||_favEl2)+'的能量。';
+    if(fav.length>1) _energyAdvice2+='搭配'+(_wxLabel[fav[1]]||fav[1])+'輔助。';
+  } else {
+    _energyAdvice2='能量充足，重點是把多餘能量導向'+(_wxLabel[_favEl2]||_favEl2)+'方向發揮。';
+    if(unfav[0]) _energyAdvice2+='避免再補'+(_wxLabel[unfav[0]]||unfav[0])+'。';
+  }
+
+  card3+='<p>📌 <strong>' + typeLabel + '方向</strong>：' + _dirAdvice + '</p>';
+  card3+='<p>📌 <strong>你的特質</strong>：' + _strengthTip2 + '</p>';
+  card3+='<p>📌 <strong>時機</strong>：' + _timing2 + '</p>';
+  if(_actionStr2) card3+='<p>📌 <strong>行動</strong>：' + _actionStr2 + '</p>';
+  card3+='<p>📌 <strong>能量調校</strong>：' + _energyAdvice2 + '</p>';
+  card3+='</div>';
+
+  // ════════════════════════════════════════════
+  // 輸出層重構：三段式架構
+  // 段一：最終裁決（prob 區間 + 一句話定性）
+  // 段二：三系統交集證據（強制跨系統，最多3條）
+  // 段三：分歧點與避雷（有衝突才出現）
+  // ════════════════════════════════════════════
+
+  // ── 段一：最終裁決 ──
+  var _verdict = typeof verdictFromProb === 'function' ? verdictFromProb(_act2Prob, type) : null;
+  var _vType = _verdict ? _verdict.verdictType : 'high_variance';
+  var _conflictN = comb ? (comb.conflictPairs ? comb.conflictPairs.length : 0) : 0;
+
+  // prob 區間（不是單點）
+  var probLo, probHi, probLabel, probColor;
+  if (_vType === 'strong_pos') {
+    probLo = Math.max(65, _act2Prob - 5); probHi = Math.min(97, _act2Prob + 5);
+    probLabel = '吉'; probColor = '#4ade80';
+  } else if (_vType === 'conditional_pos') {
+    probLo = Math.max(52, _act2Prob - 8); probHi = Math.min(80, _act2Prob + 8);
+    probLabel = '偏吉'; probColor = '#a3e635';
+  } else if (_vType === 'strong_neg') {
+    probLo = Math.max(5, _act2Prob - 5); probHi = Math.min(35, _act2Prob + 5);
+    probLabel = '凶'; probColor = '#f87171';
+  } else if (_vType === 'conditional_neg') {
+    probLo = Math.max(15, _act2Prob - 10); probHi = Math.min(50, _act2Prob + 5);
+    probLabel = '偏凶'; probColor = '#fb923c';
+  } else {
+    // high_variance — 區間加寬
+    probLo = Math.max(30, _act2Prob - 14); probHi = Math.min(70, _act2Prob + 14);
+    probLabel = '變數大'; probColor = '#facc15';
+  }
+  // ── 安全閥：防止 Lo > Hi 倒掛 ──
+  if(probLo > probHi){
+    var _mid = Math.round((_act2Prob));
+    probLo = Math.max(10, _mid - 8);
+    probHi = Math.min(90, _mid + 8);
+    // 倒掛代表 verdictType 跟 prob 數值嚴重矛盾，用 high_variance
+    probLabel = '變數大'; probColor = '#facc15';
+  }
+
+  // 一句話定性
+  var _verdictLine = '';
+  var _vLabel = {'strong_pos':'多系統一致看好，可信度高。',
+                 'conditional_pos':'整體偏正面，但有前提條件，不能掉以輕心。',
+                 'high_variance':'正反訊號並存，結果取決於你的執行方式。',
+                 'conditional_neg':'整體偏不利，但還有轉機，不是沒有出路。',
+                 'strong_neg':'多系統一致提示阻力，此刻不宜大動作。'}[_vType] || '各系統分歧，需審慎判斷。';
+  _verdictLine = _vLabel;
+  if (_conflictN >= 2) _verdictLine += '（系統間有 ' + _conflictN + ' 組分歧，判斷區間已相應加寬）';
+
+  var panelVerdict =
+    '<div class="card act2-card" style="border-left:3px solid ' + probColor + '">' +
+      '<div class="card-title" style="font-size:.95rem"><i class="fas fa-gavel"></i> 最終裁決</div>' +
+      '<div style="font-size:.88rem;line-height:1.9">' +
+        '<div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem">' +
+          '<span style="font-size:1.6rem;font-weight:700;color:' + probColor + '">' + probLabel + '</span>' +
+          '<span style="font-size:.82rem;color:var(--c-text-dim)">參考區間 ' + probLo + '%–' + probHi + '%</span>' +
+          '<span style="font-size:.75rem;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.06);color:var(--c-text-dim)">涵蓋各系統分歧的合理範圍</span>' +
+        '</div>' +
+        '<p>' + _verdictLine + '</p>' +
+        '<p style="margin-top:.4rem">' + _dirAdvice + ' ' + _strengthTip2 + '</p>' +
+        (_timing2 ? '<p style="margin-top:.3rem;color:var(--c-text-dim);font-size:.82rem">⏱ ' + _timing2 + '</p>' : '') +
+      '</div>' +
+    '</div>';
+
+  // ── 段二：三系統交集證據 ──
+  // 從 topTags 中取 systemCount>=2 的 tag，強制來自不同系統
+  var _evidenceItems = [];
+  var _usedSystems = new Set();
+  var _tagPool = (comb && comb.topTags) ? comb.topTags.filter(function(t){ return t.systemCount >= 2; }) : [];
+  // 先補充 systemCount==1 的（若 tagPool 不足3條）
+  var _tagPool2 = (comb && comb.topTags) ? comb.topTags.filter(function(t){ return t.systemCount === 1; }) : [];
+  var _tagAll = _tagPool.concat(_tagPool2);
+
+  _tagAll.forEach(function(t) {
+    if (_evidenceItems.length >= 3) return;
+    // 找一個尚未被用過的系統作為主要來源
+    var newSys = t.supportSystems.find(function(s){ return !_usedSystems.has(s); });
+    if (!newSys && _evidenceItems.length > 0) return; // 系統重複，跳過
+    if (newSys) _usedSystems.add(newSys);
+    else if (t.supportSystems.length) _usedSystems.add(t.supportSystems[0]);
+
+    // 取 evidenceBySystem 的詳細說明
+    var _detail = '';
+    var _ebs = t.evidenceBySystem || {};
+    var _ebsKey = newSys || (t.supportSystems[0] || '');
+    if (_ebs[_ebsKey] && _ebs[_ebsKey].length) _detail = _ebs[_ebsKey][0];
+
+    var _dirIcon = t.direction === 'pos' ? '✅' : t.direction === 'neg' ? '⚠️' : '→';
+    var _sysTag = t.supportSystems.length >= 2
+      ? t.supportSystems.join('+') + ' 共振'
+      : (t.supportSystems[0] || '');
+
+    _evidenceItems.push(
+      '<div style="padding:.4rem .5rem;border-radius:6px;background:rgba(255,255,255,.03);margin-bottom:.3rem">' +
+        '<span style="font-weight:600">' + _dirIcon + ' ' + t.tag + '</span>' +
+        '<span style="font-size:.78rem;color:var(--c-text-dim);margin-left:.5rem">[' + _sysTag + ']</span>' +
+        (_detail ? '<div style="font-size:.8rem;color:var(--c-text-dim);margin-top:.15rem;padding-left:.3rem">' + _detail + '</div>' : '') +
+      '</div>'
+    );
+  });
+
+  // 若完全沒有入庫 tag（表示修正A後所有 rawTags 都未命中 TAGS_BY_DOMAIN），給一個清楚的說明
+  var _evidenceHTML = _evidenceItems.length
+    ? _evidenceItems.join('')
+    : '<p style="color:var(--c-text-dim);font-size:.82rem">各系統訊號未命中共同標籤，無法列出交叉驗證證據。建議補充完整出生資料或換一個更具體的問題。</p>';
+
+  var panelEvidence =
+    '<div class="card act2-card" style="border-left:3px solid #7C6CCD">' +
+      '<div class="card-title" style="font-size:.95rem"><i class="fas fa-link"></i> 跨系統交集證據</div>' +
+      '<div style="font-size:.88rem;line-height:1.8">' +
+        '<p style="font-size:.78rem;color:var(--c-text-dim);margin-bottom:.5rem">以下每條來自不同命理系統，是真實交集，非一個系統的重複敘述。</p>' +
+        _evidenceHTML +
+        ((_act2Prob >= 65 && negTags.length >= 2)
+          ? '<p style="margin-top:.5rem;font-size:.8rem;color:var(--c-warn)">⚠ 注意：整體看好，但仍有負向訊號（' + negTags.slice(0,2).join('、') + '），執行時留意這些環節。</p>'
+          : '') +
+      '</div>' +
+    '</div>';
+
+  // ── 段三：分歧點與避雷（有衝突才顯示）──
+  var panelConflict = '';
+  var _conflicts = (comb && comb.conflictPairs) ? comb.conflictPairs : [];
+  if (_conflicts.length > 0) {
+    var _conflictRows = _conflicts.slice(0, 3).map(function(cp) {
+      var _posFrom = (cp.posSys || []).join('+') || '部分系統';
+      var _negFrom = (cp.negSys || []).join('+') || '部分系統';
+      var _winner = cp.resolved === 'pos' ? '裁決採正面（' + _posFrom + '優先）' : '裁決採保守（' + _negFrom + '優先）';
+      return '<div style="padding:.4rem .5rem;border-radius:6px;background:rgba(251,191,36,.05);margin-bottom:.3rem;border-left:2px solid rgba(251,191,36,.3)">' +
+        '<span style="font-size:.82rem">⚖ <strong>' + cp.pos + '</strong>（' + _posFrom + '）vs <strong>' + cp.neg + '</strong>（' + _negFrom + '）</span>' +
+        '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.1rem">' + _winner + '</div>' +
+      '</div>';
+    }).join('');
+
+    // 分歧對應的避雷建議
+    var _safetyAction = '';
+    if (_conflictN >= 3) _safetyAction = '系統分歧明顯，建議分三個月以小步驟驗證，不要一次性重注。';
+    else if (_conflictN === 2) _safetyAction = '有兩組訊號互相矛盾，先做最低成本的試探，觀察到訊號明確再加碼。';
+    else _safetyAction = '有一組訊號有分歧，不影響整體方向，但執行時留意衝突環節。';
+
+    if (_actionStr2) _safetyAction += ' 具體建議：' + _actionStr2;
+
+    panelConflict =
+      '<div class="card act2-card" style="border-left:3px solid #facc15">' +
+        '<div class="card-title" style="font-size:.95rem"><i class="fas fa-exclamation-triangle"></i> 系統分歧與避雷</div>' +
+        '<div style="font-size:.88rem;line-height:1.8">' +
+          _conflictRows +
+          '<p style="margin-top:.5rem;padding:.4rem .6rem;background:rgba(251,191,36,.06);border-radius:6px">🛡 ' + _safetyAction + '</p>' +
+          (_energyAdvice2 ? '<p style="margin-top:.4rem;font-size:.82rem;color:var(--c-text-dim)">💠 能量調校：' + _energyAdvice2 + '</p>' : '') +
+        '</div>' +
+      '</div>';
+  } else {
+    // 無衝突時，把能量調校並入裁決卡，此處顯示一個「訊號一致」的確認
+    panelConflict =
+      '<div class="card act2-card" style="border-left:3px solid rgba(74,222,128,.3)">' +
+        '<div class="card-title" style="font-size:.95rem"><i class="fas fa-check-circle"></i> 訊號一致性確認</div>' +
+        '<div style="font-size:.88rem;line-height:1.8">' +
+          '<p>✅ 各系統之間無顯著矛盾，裁決結果可信度相對較高。</p>' +
+          (_actionStr2 ? '<p style="margin-top:.4rem">📌 建議行動：' + _actionStr2 + '</p>' : '') +
+          (_energyAdvice2 ? '<p style="margin-top:.3rem;font-size:.82rem;color:var(--c-text-dim)">💠 能量調校：' + _energyAdvice2 + '</p>' : '') +
+        '</div>' +
+      '</div>';
+  }
+
+  wrapEl.innerHTML = panelVerdict + panelEvidence + panelConflict;
 }
+
+
 function renderName(){
   const el=document.getElementById('d-name');
   if(!S.form.name||S.form.name.length<2){el.innerHTML='<p class="text-dim">未輸入姓名，無法進行姓名學分析。</p>';return}
@@ -17402,8 +18396,27 @@ renderTarot = function(){
   };
 
   function _renderAIEnergyCard(energy){
-    // 能量方向卡已移除
+    // 能量方向卡已移除 — 不再獨立顯示
     return '';
+    html += '<div style="font-size:.8rem;line-height:1.8;color:var(--c-text-dim)">';
+    if(energy.firstYongshen) html += '第一用神：'+energy.firstYongshen+'。 ';
+    if(energy.secondYongshen) html += '第二用神：'+energy.secondYongshen+'。 ';
+    if(energy.primaryNeedLabel) html += '本題主需求：'+energy.primaryNeedLabel+'。 ';
+    if(energy.secondaryNeedLabel) html += '次需求：'+energy.secondaryNeedLabel+'。 ';
+    if(energy.avoid && energy.avoid.length) html += '忌神避開：'+energy.avoid.join('、')+'。';
+    html += '</div>';
+    if(energy.picks && energy.picks.length){
+      html += '<div style="margin-top:.75rem">';
+      energy.picks.slice(0,3).forEach(function(p, idx){
+        html += '<a href="'+(p.shopee||'https://tw.shp.ee/2n5Mo2w')+'" target="_blank" rel="noopener" class="inline-crystal" style="margin-top:'+(idx? '8px':'0')+'">'
+          + '<span class="inline-crystal-icon">'+(typeof getProductSVG==='function'?getProductSVG(p.cat||'手鍊', p.name||''):'💎')+'</span>'
+          + '<div class="inline-crystal-info"><div class="inline-crystal-name">'+(p.name||'能量手鍊')+'</div><div class="inline-crystal-desc">'+((p.desc||'').substring(0,34) + ((p.desc||'').length>34?'…':''))+'</div></div>'
+          + '<span class="inline-crystal-price">'+(p.price||'')+'</span><i class="fas fa-chevron-right inline-crystal-arrow"></i></a>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
   }
 
   function _cleanAIText(v){
@@ -17572,7 +18585,8 @@ renderTarot = function(){
         '<span style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(212,175,55,.88);border:1px solid rgba(212,175,55,.16);background:rgba(212,175,55,.05)">姓名</span>' +
       '</div>' +
       '</div>';
-    // ── loading 階段文字輪播 ──
+
+    // ── loading 階段文字 fallback 輪播（SSE progress 會覆蓋）──
     var _aiLoadPhases = ['交叉比對七套系統中', '閱讀八字與紫微命盤…', '解讀梅花易數卦象…', '翻閱塔羅牌面訊息…', '對照西洋與吠陀星盤…', '整合交叉訊號，找出關鍵…', '將散落訊號熔成一條清晰的答案…'];
     var _aiPhaseIdx = 0;
     var _aiPhaseTimer = setInterval(function(){
@@ -17580,74 +18594,100 @@ renderTarot = function(){
       if(_aiPhaseIdx >= _aiLoadPhases.length) _aiPhaseIdx = _aiLoadPhases.length - 1;
       var el = document.getElementById('ai-loading-phase');
       if(el){ el.style.opacity = '0'; setTimeout(function(){ if(el){ el.textContent = _aiLoadPhases[_aiPhaseIdx]; el.style.opacity = '1'; }}, 300); }
-    }, 3500);
+    }, 4500);
+
     try {
       var payload = _buildPayload();
       var body = { payload: payload };
       if (window._JY_ADMIN_TOKEN) {
-        // 僅透過 token 認證，不送明文個資
         body.admin_token = window._JY_ADMIN_TOKEN || '';
       }
+
+      // ═══ SSE Streaming fetch ═══
       var resp = await fetch(AI_WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      var data = await resp.json();
-      clearInterval(_aiPhaseTimer);
-      if (!resp.ok) throw Object.assign({status:resp.status}, data);
-      if (!admin) _aiMarkUsed();
-      var r = data.result;
-      if (!r) throw new Error('回傳為空');
-      if (typeof r === 'object' && r !== null) {
-        if (!r.support_energy && payload.energyRecommendation) r.support_energy = payload.energyRecommendation;
-        var resultHtml = _renderAIResultObject(r);
-        // Admin usage info: append inside the card
-        if (admin && data.usage) {
-          resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div></div>');
-        }
-        // Admin: show readings debug
-        if (admin) {
-          try {
-            var _dr = Object.keys(payload.readings||{});
-            var _ds = _dr.map(function(k){return k+':'+((payload.readings[k]||'').length||0);});
-            var _dt = JSON.stringify(payload).length;
-            var _drRaw = Object.keys(payload.rawReadings||{}).filter(function(k){ return k !== 'jyotish'; });
-            var _dsRaw = _drRaw.map(function(k){return k+':'+((payload.rawReadings[k]||'').length||0);});
-            resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload v3-force-4k-5k] '+_dt+'字 | raw: '+_dsRaw.join(', ')+' | final: '+_ds.join(', ')+'</div></div>');
-          } catch(e){}
-        }
-        resultDiv.innerHTML = resultHtml;
-      } else {
-        var html = '<div class="card" style="border-left:3px solid #8b5cf6;margin-top:.5rem"><div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem"><span style="font-size:1.1rem">🌙</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解讀</span></div>';
-        var txt = String(r||'');
-        // 移除【】標記，自然段落渲染
-        var cleanTxt = txt.replace(/【[^】]*】\s*/g, '').replace(/\n{3,}/g, '\n\n').trim();
-        var paras = cleanTxt.split(/\n\n+/);
-        paras.forEach(function(para, idx) {
-          para = para.trim(); if (!para) return;
-          var escaped = para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-          if (idx === 0) {
-            html += '<div style="font-size:1rem;font-weight:600;line-height:1.9;color:var(--c-gold-pale,#f5e6b8);margin-bottom:.8rem">' + escaped + '</div>';
-          } else {
-            html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' + escaped + '</div>';
-          }
-        });
-        // [REMOVED] html += _renderAIEnergyCard(payload.energyRecommendation);
-        if (admin && data.usage) html += '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div>';
-        if (admin) {
-          try {
-            var _dr2 = Object.keys(payload.readings||{});
-            var _ds2 = _dr2.map(function(k){return k+':'+((payload.readings[k]||'').length||0);});
-            var _dt2 = JSON.stringify(payload).length;
-            var _drRaw2 = Object.keys(payload.rawReadings||{}).filter(function(k){ return k !== 'jyotish'; });
-            var _dsRaw2 = _drRaw2.map(function(k){return k+':'+((payload.rawReadings[k]||'').length||0);});
-            html += '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload v3-force-4k-5k] '+_dt2+'字 | raw: '+_dsRaw2.join(', ')+' | final: '+_ds2.join(', ')+'</div>';
-          } catch(e){}
-        }
-        html += '</div>';
-        resultDiv.innerHTML = html;
+
+      // ── 非 SSE 回應（check、rate limit 等）直接用 JSON 處理 ──
+      var contentType = resp.headers.get('Content-Type') || '';
+      if (contentType.indexOf('text/event-stream') === -1) {
+        var data = await resp.json();
+        clearInterval(_aiPhaseTimer);
+        if (!resp.ok) throw Object.assign({status: resp.status}, data);
+        // 舊格式相容：直接拿 result
+        if (!admin) _aiMarkUsed();
+        var r = data.result;
+        if (!r) throw new Error('回傳為空');
+        _renderFinalResult(resultDiv, r, data, payload, admin);
+        return;
       }
+
+      // ═══ SSE 串流讀取 ═══
+      var reader = resp.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = '';
+      var finalData = null;
+      var sseError = null;
+
+      while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        buffer += decoder.decode(chunk.value, { stream: true });
+
+        // 解析 SSE 事件（以 \n\n 分隔）
+        var parts = buffer.split('\n\n');
+        buffer = parts.pop(); // 最後一段可能不完整，留在 buffer
+
+        for (var pi = 0; pi < parts.length; pi++) {
+          var block = parts[pi].trim();
+          if (!block) continue;
+          var eventType = 'message';
+          var eventData = '';
+          var lines = block.split('\n');
+          for (var li = 0; li < lines.length; li++) {
+            if (lines[li].indexOf('event: ') === 0) {
+              eventType = lines[li].substring(7).trim();
+            } else if (lines[li].indexOf('data: ') === 0) {
+              eventData += lines[li].substring(6);
+            }
+          }
+
+          if (eventType === 'progress') {
+            // 更新 loading 階段文字
+            try {
+              var prog = JSON.parse(eventData);
+              var phaseEl = document.getElementById('ai-loading-phase');
+              if (phaseEl && prog.message) {
+                phaseEl.style.opacity = '0';
+                (function(msg) {
+                  setTimeout(function(){
+                    if (phaseEl) { phaseEl.textContent = msg; phaseEl.style.opacity = '1'; }
+                  }, 280);
+                })(prog.message);
+              }
+            } catch(_e) {}
+          } else if (eventType === 'result') {
+            try { finalData = JSON.parse(eventData); } catch(_e) { finalData = null; }
+          } else if (eventType === 'error') {
+            try { sseError = JSON.parse(eventData); } catch(_e) { sseError = { error: eventData }; }
+          }
+        }
+      }
+
+      clearInterval(_aiPhaseTimer);
+
+      if (sseError) {
+        throw { status: 500, error: sseError.error || '伺服器錯誤' };
+      }
+      if (!finalData || !finalData.result) {
+        throw new Error('回傳為空');
+      }
+
+      if (!admin) _aiMarkUsed();
+      _renderFinalResult(resultDiv, finalData.result, finalData, payload, admin);
+
     } catch(err) {
       clearInterval(_aiPhaseTimer);
       console.error('[AI]', err);
@@ -17666,6 +18706,47 @@ renderTarot = function(){
       }
     }
   };
+
+  // ═══ 共用渲染函數：SSE 和 JSON 兩種模式都呼叫這個 ═══
+  function _renderFinalResult(resultDiv, r, data, payload, admin) {
+    if (!r.support_energy && payload.energyRecommendation) r.support_energy = payload.energyRecommendation;
+    if (typeof r === 'object' && r !== null && (r.directAnswer || r.answer)) {
+      var resultHtml = _renderAIResultObject(r);
+      if (admin && data.usage) {
+        var costStr = '$' + ((data.usage.input_tokens||0)*3/1e6 + (data.usage.output_tokens||0)*15/1e6).toFixed(4);
+        resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+(data.usage.input_tokens||0)+' Out:'+(data.usage.output_tokens||0)+' ≈'+costStr+'</div></div>');
+      }
+      if (admin) {
+        try {
+          var _dr = Object.keys(payload.readings||{});
+          var _ds = _dr.map(function(k){return k+':'+((payload.readings[k]||'').length||0);});
+          var _dt = JSON.stringify(payload).length;
+          var _drRaw = Object.keys(payload.rawReadings||{}).filter(function(k){ return k !== 'jyotish'; });
+          var _dsRaw = _drRaw.map(function(k){return k+':'+((payload.rawReadings[k]||'').length||0);});
+          resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload v3-force-4k-5k] '+_dt+'字 | raw: '+_dsRaw.join(', ')+' | final: '+_ds.join(', ')+'</div></div>');
+        } catch(e){}
+      }
+      resultDiv.innerHTML = resultHtml;
+    } else {
+      // fallback: 純文字
+      var html = '<div class="card" style="border-left:3px solid #8b5cf6;margin-top:.5rem"><div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem"><span style="font-size:1.1rem">🌙</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解讀</span></div>';
+      var txt = String(typeof r === 'string' ? r : (r.answer || JSON.stringify(r)));
+      var cleanTxt = txt.replace(/【[^】]*】\s*/g, '').replace(/\n{3,}/g, '\n\n').trim();
+      var paras = cleanTxt.split(/\n\n+/);
+      paras.forEach(function(para, idx) {
+        para = para.trim(); if (!para) return;
+        var escaped = para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+        if (idx === 0) {
+          html += '<div style="font-size:1rem;font-weight:600;line-height:1.9;color:var(--c-gold-pale,#f5e6b8);margin-bottom:.8rem">' + escaped + '</div>';
+        } else {
+          html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' + escaped + '</div>';
+        }
+      });
+      if (admin && data.usage) html += '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div>';
+      html += '</div>';
+      resultDiv.innerHTML = html;
+    }
+  }
 })();
 // ═══════════════════════════════════════════════════════════════════════
 // Canvas 分享圖產生器 — 從 AI 回答中提取精華，產生精美分享圖
@@ -18004,458 +19085,6 @@ function _rrect(ctx, x, y, w, h, r) {
 }
 
 
-
-// ═══════════════════════════════════════════════════════════════
-// 七維語義碼交叉引擎 v1.0
-// 
-// 目的：用統一語義碼取代文字比對，讓七套系統真正做到交叉驗證
-// 
-// 使用方式：
-// 1. 每個 analyzeXxxTags 函數的 tag 物件加上 sem 欄位（語義碼陣列）
-// 2. _sbBuildCross 改用 sem 做比對而非 label 文字
-// 3. 送給 AI 的 crossSummary 品質大幅提升
-//
-// 語義碼命名規則：
-//   DOMAIN.ASPECT.QUALITY
-//   例：WEALTH.STAR.FAVORABLE = 財星為喜用
-//        LOVE.SPOUSE.STRONG   = 配偶星旺
-//        TIMING.LUCK.POSITIVE = 時運偏吉
-// ═══════════════════════════════════════════════════════════════
-
-// ── 語義碼映射表：每套系統的 tag → 語義碼 ──
-// 一個 tag 可以對應多個語義碼（因為一個信號可能同時涉及結構和時機）
-var SEMANTIC_MAP = {
-
-  // ════════════════════════════════════════
-  // A. 結構層（命盤底盤，不隨時間變）
-  // ════════════════════════════════════════
-
-  // ── 身體/能量基礎 ──
-  'body_strong':       ['SELF.STRENGTH.STRONG'],
-  'body_weak':         ['SELF.STRENGTH.WEAK'],
-
-  // ── 財運結構 ──
-  'cai_wei_xi':        ['WEALTH.STAR.FAVORABLE'],
-  'cai_wei_ji':        ['WEALTH.STAR.UNFAVORABLE'],
-  'cai_tou_gan':       ['WEALTH.CHANNEL.VISIBLE'],
-  'cai_bu_tou':        ['WEALTH.CHANNEL.HIDDEN'],
-  'cai_you_gen':       ['WEALTH.ROOT.GROUNDED'],
-  'cai_wang':          ['WEALTH.STAR.STRONG'],
-  'cai_ruo':           ['WEALTH.STAR.WEAK'],
-  'shi_sheng_cai':     ['WEALTH.GENERATION.ACTIVE'],       // 食傷生財
-  'shi_ruo_cai_duan':  ['WEALTH.GENERATION.BLOCKED'],      // 生財鏈斷裂
-  'bi_jie_cai':        ['WEALTH.LEAK.COMPETITION'],         // 比劫劫財
-  'shen_qiang_cai':    ['WEALTH.CAPACITY.STRONG'],
-  'shen_ruo_cai':      ['WEALTH.CAPACITY.WEAK'],
-  'tianzhai_lu':       ['WEALTH.STORAGE.INFLOW'],           // 紫微田宅宮化祿
-  'tianzhai_ji':       ['WEALTH.STORAGE.LEAK'],             // 紫微田宅宮化忌
-  'guanlu_bright':     ['WEALTH.EARNING.STABLE', 'CAREER.PALACE.STRONG'],
-  '11lord_wealth':     ['WEALTH.HOUSE.STRONG'],             // 吠陀11宮主
-  'jupiter_wealth':    ['WEALTH.BENEFIC.ACTIVE'],           // 吠陀木星在財位
-  'jupiter_wealth_house': ['WEALTH.BENEFIC.ACTIVE'],        // 星盤木星在財宮
-  'sun_career_strong': ['CAREER.PLANET.STRONG', 'SELF.STRENGTH.STRONG'],
-  'yoga_Dhana':        ['WEALTH.SPECIAL.YOGA'],
-  'sav_topic':         ['TOPIC.HOUSE.STRONG'],              // 吠陀吉點高（依議題）
-
-  // ── 感情結構 ──
-  'spouse_xi':         ['LOVE.SPOUSE.FAVORABLE'],
-  'spouse_ji':         ['LOVE.SPOUSE.UNFAVORABLE'],
-  'spouse_wang':       ['LOVE.SPOUSE.STRONG'],
-  'spouse_ruo':        ['LOVE.SPOUSE.WEAK'],
-  'spouse_tou':        ['LOVE.SPOUSE.VISIBLE'],
-  'fuqi_gong_xi':      ['LOVE.PALACE.FAVORABLE'],
-  'fuqi_gong_ji':      ['LOVE.PALACE.UNFAVORABLE'],
-  'fuqi_gong_mid':     ['LOVE.PALACE.NEUTRAL'],
-  'taohua':            ['LOVE.ATTRACTION.STRONG'],
-  'hongluan':          ['LOVE.MARRIAGE.SIGNAL'],
-  'guchen':            ['LOVE.ISOLATION.RISK'],
-  'guasu':             ['LOVE.PASSIVE.RISK'],
-  'shi_ke_guan':       ['LOVE.CLASH.SPOUSE'],               // 女命食傷剋官
-  'fuqi_pojun':        ['LOVE.INSTABILITY.HIGH'],            // 夫妻宮破軍
-  'fude_ji_love':      ['LOVE.ANXIETY.HIGH'],                // 福德宮化忌
-  'fude_sha_love':     ['LOVE.STRESS.HIGH'],
-  'venus_love':        ['LOVE.PLANET.ACTIVE'],
-  'venus_sign':        ['LOVE.STYLE.DEFINED'],
-  'venus_d9_strong':   ['LOVE.DEEPER.STRONG'],               // D9盤金星強
-  'venus_d9_weak':     ['LOVE.DEEPER.WEAK'],
-  'dsc_sign':          ['LOVE.PARTNER.TYPE'],
-
-  // ── 事業結構 ──
-  'shi_wang_career':   ['CAREER.TALENT.STRONG'],
-  'shi_ruo_career':    ['CAREER.TALENT.WEAK'],
-  'yin_wang_career':   ['CAREER.SUPPORT.STRONG'],
-  'guan_you_li_rel':   ['CAREER.AUTHORITY.ACTIVE', 'RELATIONSHIP.AUTHORITY.ACTIVE'],
-  'sha_po_lang':       ['CAREER.STYLE.ENTREPRENEURIAL'],
-  'qianyi_lu_career':  ['CAREER.EXTERNAL.FAVORABLE'],
-  'saturn_career':     ['CAREER.DISCIPLINE.STRONG'],
-
-  // ── 健康結構 ──
-  'sun_weak_health':   ['HEALTH.VITALITY.WEAK'],
-  'mars_strong_health':['HEALTH.VITALITY.STRONG'],
-  'ji_wang_health':    ['HEALTH.RISK.HIGH'],
-  'fude_sha_health':   ['HEALTH.MENTAL.STRESSED'],
-  'fude_ji_health':    ['HEALTH.MENTAL.ANXIOUS'],
-
-  // ── 人際結構 ──
-  'bi_ping_rel':       ['RELATIONSHIP.PEER.NEUTRAL'],
-  'bi_wang_rel':       ['RELATIONSHIP.COMPETITION.HIGH'],
-  'shi_wang_rel':      ['RELATIONSHIP.EXPRESSION.STRONG'],
-  'yin_ruo_rel':       ['RELATIONSHIP.SUPPORT.WEAK'],
-  'jupiter_rel':       ['RELATIONSHIP.BENEFIC.ACTIVE'],
-  'xiongdi_bright':    ['RELATIONSHIP.SIBLING.STRONG'],
-  'xiongdi_ji':        ['RELATIONSHIP.SIBLING.STRESSED'],
-  'qianyi_lu_rel':     ['RELATIONSHIP.SOCIAL.FAVORABLE'],
-
-  // ── 家庭結構 ──
-  'moon_family':       ['FAMILY.EMOTIONAL.BASE'],
-  'fumu_bright':       ['FAMILY.PARENT.STRONG'],
-  'fumu_ji':           ['FAMILY.PARENT.STRESSED'],
-  'fumu_lu':           ['FAMILY.PARENT.FAVORABLE'],
-  'fumu_sha':          ['FAMILY.PARENT.PRESSURED'],
-  'zinv_bright':       ['FAMILY.CHILD.STRONG'],
-  'zinv_ji':           ['FAMILY.CHILD.STRESSED'],
-  'zinv_empty':        ['FAMILY.CHILD.ABSENT'],
-
-  // ── 星盤整體 ──
-  'overall_harmonious':['OVERALL.HARMONY.HIGH'],
-  'overall_tense':     ['OVERALL.TENSION.HIGH'],
-  'aspects_good':      ['OVERALL.ASPECTS.FAVORABLE'],
-  'aspects_bad':       ['OVERALL.ASPECTS.UNFAVORABLE'],
-  'aspects_mixed':     ['OVERALL.ASPECTS.MIXED'],
-  'lagna_lord_':       ['SELF.RULER.DEFINED'],
-
-  // ── 紫微結構 ──
-  'ming_star_':        ['SELF.PALACE.DEFINED'],
-  'daxian_':           ['TIMING.DECADE.DEFINED'],
-  'dx_lu_':            ['TIMING.DECADE.INFLOW'],
-  'dx_ji_':            ['TIMING.DECADE.PRESSURE'],
-  'dx_quan_':          ['TIMING.DECADE.POWER'],
-
-  // ── 姓名學 ──
-  'sancai_':           ['NAME.SANCAI.DEFINED'],
-  'sancai_flow':       ['NAME.SANCAI.FAVORABLE'],
-  'sancai_block':      ['NAME.SANCAI.UNFAVORABLE'],
-  'ge_topic_':         ['NAME.GE.DEFINED'],
-  'renge_general':     ['NAME.RENGE.DEFINED'],
-  'zodiac_name_':      ['NAME.ZODIAC.DEFINED'],
-  'zodiac_hit_':       ['NAME.ZODIAC.HIT'],
-  'sacrifice':         ['NAME.SACRIFICE.RISK'],
-  'snake_pig_clash':   ['NAME.CLASH.RISK'],
-
-  // ── 吠陀特殊 ──
-  'sade_sati':         ['TIMING.SATURN_RETURN.ACTIVE'],
-  'dosha_':            ['STRUCTURE.DOSHA.ACTIVE'],
-  'yoga_':             ['STRUCTURE.YOGA.ACTIVE'],
-  'dasha_md_':         ['TIMING.DASHA.DEFINED'],
-  'dasha_activates_topic': ['TIMING.DASHA.TOPIC_HIT'],
-  'dasha_in_topic_house':  ['TIMING.DASHA.TOPIC_HIT'],
-
-  // ════════════════════════════════════════
-  // B. 時機層（會隨時間變的）
-  // ════════════════════════════════════════
-
-  // ── 八字時機 ──
-  'dayun_pos':         ['TIMING.LUCK.POSITIVE'],
-  'dayun_neg':         ['TIMING.LUCK.NEGATIVE'],
-  'dayun_neutral':     ['TIMING.LUCK.NEUTRAL'],
-  'liunian_pos':       ['TIMING.YEAR.POSITIVE'],
-  'liunian_neg':       ['TIMING.YEAR.NEGATIVE'],
-  'liunian_neutral':   ['TIMING.YEAR.NEUTRAL'],
-  'dayun_dai_cai':     ['TIMING.LUCK.WEALTH_WINDOW'],
-  'liunian_dai_cai':   ['TIMING.YEAR.WEALTH_WINDOW'],
-  'dayun_bi_jie_wealth': ['TIMING.LUCK.WEALTH_DRAIN'],
-  'dayun_spouse_love': ['TIMING.LUCK.LOVE_WINDOW'],
-  'liunian_chong_ri':  ['TIMING.YEAR.LOVE_SHOCK'],
-  'liunian_chong_ri_family': ['TIMING.YEAR.FAMILY_SHOCK'],
-  'dayun_career_':     ['TIMING.LUCK.CAREER_SHIFT'],
-  'liunian_zw':        ['TIMING.YEAR.ZIWEI_SHIFT'],
-
-  // ── 紫微時機 ──
-  'ln_lu_':            ['TIMING.YEAR.INFLOW'],
-  'ln_ji_':            ['TIMING.YEAR.PRESSURE'],
-
-  // ── 星盤行運 ──
-  'tr_jupiter_topic':  ['TIMING.TRANSIT.EXPANSION'],
-  'tr_saturn_topic':   ['TIMING.TRANSIT.PRESSURE'],
-  'tr_aspects_good':   ['TIMING.TRANSIT.FAVORABLE'],
-  'tr_aspects_bad':    ['TIMING.TRANSIT.UNFAVORABLE'],
-
-  // ── 梅花時機 ──
-  'ti_wang':           ['TIMING.MONTH.SELF_STRONG'],
-  'ti_shuai':          ['TIMING.MONTH.SELF_WEAK'],
-  'yong_wang':         ['TIMING.MONTH.OTHER_STRONG'],
-  'yong_shuai':        ['TIMING.MONTH.OTHER_WEAK'],
-  'bian_trend_pos':    ['TIMING.TREND.IMPROVING'],
-  'bian_trend_neg':    ['TIMING.TREND.WORSENING'],
-
-  // ════════════════════════════════════════
-  // C. 即時快照層（梅花/塔羅的核心判斷）
-  // ════════════════════════════════════════
-
-  // ── 梅花核心 ──
-  'ti_yong_pos':       ['SNAPSHOT.VERDICT.POSITIVE'],
-  'ti_yong_neg':       ['SNAPSHOT.VERDICT.NEGATIVE'],
-  'ti_yong_neutral':   ['SNAPSHOT.VERDICT.NEUTRAL'],
-  'hu_gua_pos':        ['SNAPSHOT.PROCESS.FAVORABLE'],
-  'hu_gua_neg':        ['SNAPSHOT.PROCESS.UNFAVORABLE'],
-  'hu_gua_neutral':    ['SNAPSHOT.PROCESS.NEUTRAL'],
-  'bian_gua_pos':      ['SNAPSHOT.OUTCOME.FAVORABLE'],
-  'bian_gua_neg':      ['SNAPSHOT.OUTCOME.UNFAVORABLE'],
-  'bian_gua_neutral':  ['SNAPSHOT.OUTCOME.NEUTRAL'],
-  'dong_in_ti':        ['SNAPSHOT.AGENCY.SELF'],
-  'dong_in_yong':      ['SNAPSHOT.AGENCY.EXTERNAL'],
-  'ti_domain_match':   ['SNAPSHOT.ALIGNMENT.MATCHED'],
-
-  // ── 塔羅核心 ──
-  'root_':             ['SNAPSHOT.ROOT.DEFINED'],
-  'present_':          ['SNAPSHOT.PRESENT.DEFINED'],
-  'outcome_':          ['SNAPSHOT.OUTCOME.DEFINED'],
-  'hope_':             ['SNAPSHOT.HOPE.DEFINED'],
-  'self_':             ['SNAPSHOT.SELFIMAGE.DEFINED'],
-  'environ_':          ['SNAPSHOT.ENVIRONMENT.DEFINED'],
-  'past_':             ['SNAPSHOT.PAST.DEFINED'],
-  'near_':             ['SNAPSHOT.NEARFUTURE.DEFINED'],
-  'possible_':         ['SNAPSHOT.POSSIBLE.DEFINED'],
-  'outcome_trend_align':   ['SNAPSHOT.OUTCOME.ALIGNED'],
-  'outcome_trend_conflict':['SNAPSHOT.OUTCOME.CONFLICTED'],
-  'spread_very_pos':   ['SNAPSHOT.VERDICT.STRONG_POSITIVE'],
-  'spread_very_neg':   ['SNAPSHOT.VERDICT.STRONG_NEGATIVE'],
-  'court_heavy':       ['SNAPSHOT.PEOPLE.HEAVY'],
-  'court_as_crossing': ['SNAPSHOT.PEOPLE.OBSTACLE'],
-  'court_as_outcome':  ['SNAPSHOT.PEOPLE.RESULT'],
-  'suit_sword_cup_tension':  ['SNAPSHOT.CONFLICT.EMOTION_VS_LOGIC'],
-  'suit_wand_cup_tension':   ['SNAPSHOT.CONFLICT.ACTION_VS_EMOTION'],
-  'suit_sword_pent_pressure':['SNAPSHOT.CONFLICT.LOGIC_VS_RESOURCE'],
-  'combo_':            ['SNAPSHOT.COMBO.DEFINED'],
-  'arc_rise':          ['SNAPSHOT.ARC.RISING'],
-  'arc_decline':       ['SNAPSHOT.ARC.DECLINING'],
-  'arc_twist':         ['SNAPSHOT.ARC.TWISTING'],
-  'arc_full_positive': ['SNAPSHOT.ARC.FULL_POSITIVE'],
-  'arc_full_negative': ['SNAPSHOT.ARC.FULL_NEGATIVE'],
-  'arc_patience':      ['SNAPSHOT.ARC.PATIENCE_NEEDED'],
-  'arc_warning':       ['SNAPSHOT.ARC.WARNING'],
-  'dual_confirm_':     ['SNAPSHOT.DUAL.CONFIRMED'],
-};
-
-// ── 語義碼描述表（供 AI 閱讀）──
-var SEM_DESCRIPTIONS = {
-  'WEALTH.STAR.FAVORABLE':   '財星為喜用，求財方向正確',
-  'WEALTH.STAR.UNFAVORABLE': '財星為忌神，求財反增壓力',
-  'WEALTH.HOUSE.STRONG':     '財務宮位力量充足',
-  'WEALTH.BENEFIC.ACTIVE':   '吉星進入財務領域',
-  'WEALTH.STORAGE.INFLOW':   '財庫有進帳信號',
-  'WEALTH.STORAGE.LEAK':     '財庫有漏損信號',
-  'WEALTH.GENERATION.ACTIVE':'才華變現管道暢通',
-  'WEALTH.GENERATION.BLOCKED':'才華變現管道受阻',
-  'WEALTH.CAPACITY.STRONG':  '承擔財務風險能力充足',
-  'WEALTH.CAPACITY.WEAK':    '承擔財務風險能力不足',
-  'LOVE.SPOUSE.FAVORABLE':   '配偶星為喜用，遇到的對象正面影響',
-  'LOVE.SPOUSE.UNFAVORABLE': '配偶星為忌神，容易遇壓力型對象',
-  'LOVE.SPOUSE.STRONG':      '配偶星能量充足，感情機會不缺',
-  'LOVE.SPOUSE.WEAK':        '配偶星力量不足，緣分需主動經營',
-  'LOVE.ATTRACTION.STRONG':  '異性緣佳',
-  'LOVE.PALACE.FAVORABLE':   '婚姻宮對感情有利',
-  'LOVE.PALACE.UNFAVORABLE': '婚姻宮對感情不利',
-  'TIMING.LUCK.POSITIVE':    '大運/大限走勢偏吉',
-  'TIMING.LUCK.NEGATIVE':    '大運/大限走勢偏凶',
-  'TIMING.YEAR.POSITIVE':    '今年流年偏吉',
-  'TIMING.YEAR.NEGATIVE':    '今年流年偏凶',
-  'TIMING.LUCK.WEALTH_WINDOW':'大運帶財星，財運窗口開',
-  'TIMING.YEAR.WEALTH_WINDOW':'流年帶財星，今年有財務事件',
-  'TIMING.TRANSIT.EXPANSION': '木星行運帶來此方面擴張',
-  'TIMING.TRANSIT.PRESSURE':  '土星行運帶來此方面壓力',
-  'TIMING.SATURN_RETURN.ACTIVE':'正值土星考驗期',
-  'SNAPSHOT.VERDICT.POSITIVE': '即時卦象/牌面整體偏正面',
-  'SNAPSHOT.VERDICT.NEGATIVE': '即時卦象/牌面整體偏負面',
-  'SNAPSHOT.OUTCOME.FAVORABLE':'變卦/結果牌走向正面',
-  'SNAPSHOT.OUTCOME.UNFAVORABLE':'變卦/結果牌走向負面',
-  'SNAPSHOT.OUTCOME.ALIGNED':  '結果與核心一致',
-  'SNAPSHOT.OUTCOME.CONFLICTED':'結果與核心衝突',
-  'SELF.STRENGTH.STRONG':      '自身能量充足',
-  'SELF.STRENGTH.WEAK':        '自身能量不足',
-  'OVERALL.HARMONY.HIGH':      '整體格局和諧',
-  'OVERALL.TENSION.HIGH':      '整體格局緊張',
-};
-
-
-// ═══════════════════════════════════════════════════════════════
-// 核心函數：為 tag 附加語義碼
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * 給一個 tag 物件附加 sem 陣列
- * 支援精確匹配和前綴匹配（例如 'dayun_pos' 精確匹配，'dayun_career_七殺' 前綴匹配 'dayun_career_'）
- */
-function attachSemanticCodes(tag) {
-  if (!tag || !tag.tag) return tag;
-  var tagName = tag.tag;
-  
-  // 1. 精確匹配
-  if (SEMANTIC_MAP[tagName]) {
-    tag.sem = SEMANTIC_MAP[tagName];
-    return tag;
-  }
-  
-  // 2. 前綴匹配（處理 'dayun_career_七殺' → 匹配 'dayun_career_'）
-  var keys = Object.keys(SEMANTIC_MAP);
-  for (var i = 0; i < keys.length; i++) {
-    var k = keys[i];
-    if (k.endsWith('_') && tagName.indexOf(k) === 0) {
-      tag.sem = SEMANTIC_MAP[k];
-      return tag;
-    }
-  }
-  
-  // 3. 無匹配 → 根據 direction 給通用碼
-  if (tag.direction === 'pos') tag.sem = ['SIGNAL.POSITIVE'];
-  else if (tag.direction === 'neg') tag.sem = ['SIGNAL.NEGATIVE'];
-  else tag.sem = ['SIGNAL.NEUTRAL'];
-  
-  return tag;
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// 新版交叉比對引擎：用語義碼做真正的跨系統驗證
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * 取代原本的 _sbBuildCross
- * 輸入：systemEvidence（每套系統的 tags 已經 attachSemanticCodes）
- * 輸出：跟原版相同格式的 cross 物件，但基於語義碼比對
- */
-function buildSemanticCross(systemEvidence) {
-  var semMap = Object.create(null); // semanticCode → { code, systems[], tags[], direction }
-  var systems = Object.keys(systemEvidence || {});
-  
-  systems.forEach(function(sys) {
-    var ev = systemEvidence[sys] || {};
-    var tags = ev.tags || [];
-    tags.forEach(function(t) {
-      if (!t.sem || !t.sem.length) return;
-      t.sem.forEach(function(code) {
-        if (!code || code.startsWith('SIGNAL.')) return; // 跳過通用碼
-        if (!semMap[code]) {
-          semMap[code] = {
-            code: code,
-            description: SEM_DESCRIPTIONS[code] || code,
-            systems: [],
-            tags: [],
-            directions: [],
-            weights: [],
-            details: []
-          };
-        }
-        var entry = semMap[code];
-        if (entry.systems.indexOf(sys) < 0) entry.systems.push(sys);
-        entry.tags.push(t);
-        entry.directions.push(t.direction || 'neutral');
-        entry.weights.push(t.weight || 1);
-        entry.details.push(sys + '：' + (t.label || t.tag));
-      });
-    });
-  });
-  
-  // 計算每個語義碼的交叉強度
-  var arr = Object.keys(semMap).map(function(code) {
-    var x = semMap[code];
-    var overlap = x.systems.length;
-    var avgWeight = x.weights.reduce(function(a, b) { return a + b; }, 0) / x.weights.length;
-    
-    // 方向一致性：所有 tag 都是同方向則一致
-    var posCount = x.directions.filter(function(d) { return d === 'pos'; }).length;
-    var negCount = x.directions.filter(function(d) { return d === 'neg'; }).length;
-    var totalDir = posCount + negCount;
-    var dirConsensus = totalDir > 0 ? Math.max(posCount, negCount) / totalDir : 0.5;
-    var mainDir = posCount >= negCount ? 'pos' : 'neg';
-    
-    return {
-      code: code,
-      description: x.description,
-      systems: x.systems,
-      overlap: overlap,
-      avgWeight: Math.round(avgWeight * 10) / 10,
-      direction: mainDir,
-      dirConsensus: Math.round(dirConsensus * 100),
-      score: Number((overlap * avgWeight * dirConsensus).toFixed(2)),
-      details: x.details.slice(0, 8),
-      // 保留原始 label 供 AI 閱讀
-      humanLabel: x.tags.slice(0, 3).map(function(t) { return t.label || t.tag; }).join('；')
-    };
-  }).sort(function(a, b) { return b.score - a.score || b.overlap - a.overlap; });
-  
-  // 分類
-  var mainSymbols = arr.filter(function(x) { return x.overlap >= 2 && x.direction === 'pos'; }).slice(0, 8);
-  var riskSymbols = arr.filter(function(x) { return x.overlap >= 2 && x.direction === 'neg'; }).slice(0, 8);
-  // 單系統但高權重的變數
-  var variables = arr.filter(function(x) { return x.overlap === 1 && x.avgWeight >= 3; }).slice(0, 10);
-  
-  // 偵測矛盾：同一語義領域同時有正面和負面
-  var conflicts = [];
-  mainSymbols.forEach(function(pos) {
-    riskSymbols.forEach(function(neg) {
-      // 同一領域（WEALTH vs WEALTH, LOVE vs LOVE, TIMING vs TIMING）
-      var posDomain = pos.code.split('.')[0];
-      var negDomain = neg.code.split('.')[0];
-      if (posDomain === negDomain) {
-        var interSystems = pos.systems.filter(function(s) { return neg.systems.indexOf(s) >= 0; });
-        conflicts.push({
-          positive: pos.humanLabel || pos.description,
-          positive_code: pos.code,
-          negative: neg.humanLabel || neg.description,
-          negative_code: neg.code,
-          domain: posDomain,
-          systems: interSystems.length ? interSystems : pos.systems.concat(neg.systems),
-          overlap: interSystems.length,
-          explanation: posDomain + ' 領域同時有推進與阻力信號，代表條件式結果。'
-        });
-      }
-    });
-  });
-  conflicts = conflicts.sort(function(a, b) { return b.overlap - a.overlap; }).slice(0, 8);
-  
-  // 組裝輸出（跟原版 _sbBuildCross 格式相容）
-  return {
-    main_symbols: mainSymbols.map(function(x) {
-      return { symbol: x.humanLabel || x.description, code: x.code, systems: x.systems, overlap: x.overlap, score: x.score, dirConsensus: x.dirConsensus, details: x.details };
-    }),
-    risk_symbols: riskSymbols.map(function(x) {
-      return { symbol: x.humanLabel || x.description, code: x.code, systems: x.systems, overlap: x.overlap, score: x.score, dirConsensus: x.dirConsensus, details: x.details };
-    }),
-    variable_symbols: variables.map(function(x) {
-      return { symbol: x.humanLabel || x.description, code: x.code, systems: x.systems, overlap: x.overlap, score: x.score, details: x.details, kind: x.direction === 'neg' ? 'risks' : 'variables' };
-    }),
-    conflict_pairs: conflicts,
-    narrative_spine: mainSymbols.slice(0, 4).map(function(x) { return x.description; }),
-    narrative_risks: riskSymbols.slice(0, 4).map(function(x) { return x.description; }),
-    narrative_variables: variables.slice(0, 4).map(function(x) { return x.description; }),
-    // 新增：語義碼層面的完整交叉表（供 debug 和 AI 深度分析）
-    semantic_cross_table: arr.filter(function(x) { return x.overlap >= 2; }).slice(0, 20).map(function(x) {
-      return { code: x.code, desc: x.description, systems: x.systems, overlap: x.overlap, dir: x.direction, consensus: x.dirConsensus + '%', score: x.score };
-    })
-  };
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// 整合入口：在 _sbBuildSystemEvidence 後呼叫
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * 對一整套 systemEvidence 的所有 tags 做語義碼標記
- * 在 buildPayload v4 的 _sbBuildSystemEvidence 後呼叫
- */
-function enrichWithSemanticCodes(systemEvidence) {
-  Object.keys(systemEvidence || {}).forEach(function(sys) {
-    var ev = systemEvidence[sys];
-    if (ev && ev.tags) {
-      ev.tags = ev.tags.map(attachSemanticCodes);
-    }
-  });
-  return systemEvidence;
-}
-
-
 // ═══════════════════════════════════════════════════════════════
 // _buildPayload v4 — 七維象徵交集決策版
 // 目標：保留七維全部象徵，不讓長文字數主導敘事；改由交集/矛盾/變數做主軸
@@ -18673,13 +19302,10 @@ function enrichWithSemanticCodes(systemEvidence) {
         systemEvidence[key] = _sbBuildSystemEvidence(key, sp, raw, dim);
       });
 
-      // [SEMANTIC] 為所有 tags 附加語義碼，再用語義碼做交叉比對
-      enrichWithSemanticCodes(systemEvidence);
-      var cross = buildSemanticCross(systemEvidence);
+      var cross = _sbBuildCross(systemEvidence);
       p.symbolicEvidence = systemEvidence;
       p.crossSummary = {
         spine: cross.narrative_spine,
-        semantic_cross_table: cross.semantic_cross_table,
         risks: cross.narrative_risks,
         variables: cross.narrative_variables,
         main_symbols: cross.main_symbols,
@@ -18720,445 +19346,6 @@ function enrichWithSemanticCodes(systemEvidence) {
     return p;
   };
 })();
-
-
-
-// ═══════════════════════════════════════════════════════════════
-// 命理組合推理引擎 v1.0
-// 
-// 目的：在 tags + 語義碼交叉之上，做條件式組合推理
-// 產出「命理師筆記」—— 不是信號清單，是已經推理好的結論
-// AI 只需要把結論翻譯成人話，不需要自己做命理推理
-//
-// 用法：在 _buildPayload 的最後呼叫 buildDivinationReasoning(payload)
-// 產出的 payload.divinationNotes 會被送進 Worker 給 AI 讀
-// ═══════════════════════════════════════════════════════════════
-
-function buildDivinationReasoning(payload) {
-  var notes = [];
-  var type = payload.focusType || 'general';
-  var q = payload.question || '';
-  var gender = (typeof S !== 'undefined' && S.form) ? S.form.gender : '';
-  var isMale = (gender === 'M' || gender === 'male');
-
-  // ── 收集各系統核心數據 ──
-  var b = (typeof S !== 'undefined') ? S.bazi : null;
-  var zw = (typeof S !== 'undefined') ? S.ziwei : null;
-  var mh = (typeof S !== 'undefined') ? S.meihua : null;
-  var ta = (typeof S !== 'undefined') ? S.tarot : null;
-  var nt = (typeof S !== 'undefined') ? S.natal : null;
-  var jy = (typeof S !== 'undefined') ? S.jyotish : null;
-
-  var strong = b ? b.strong : null;
-  var fav = b ? (b.fav || []) : [];
-  var unfav = b ? (b.unfav || []) : [];
-  var ep = b ? (b.ep || b.weightedEC || {}) : {};
-  var dmEl = b ? b.dmEl : '';
-  var specialStructure = b ? b.specialStructure : null;
-
-  // ── 收集語義碼交叉結果 ──
-  var cross = payload.crossSummary || payload.consensus || {};
-  var semTable = cross.semantic_cross_table || [];
-  var mainSymbols = cross.main_symbols || [];
-  var riskSymbols = cross.risk_symbols || [];
-  var conflicts = cross.conflict_pairs || [];
-
-  // ── 輔助函數 ──
-  function semOverlap(code) {
-    for (var i = 0; i < semTable.length; i++) {
-      if (semTable[i].code === code) return semTable[i].overlap || 0;
-    }
-    return 0;
-  }
-  function hasSem(code) { return semOverlap(code) >= 1; }
-  function highConfirm(code) { return semOverlap(code) >= 3; }
-  function midConfirm(code) { return semOverlap(code) >= 2; }
-
-  // 梅花核心判斷
-  var mhRel = '', mhJudge = '', mhBianDir = '';
-  if (mh && mh.ty) {
-    mhRel = mh.ty.r || '';
-    mhJudge = mh.ty.f || '';
-  }
-  // 塔羅核心牌
-  var tarotCore = '', tarotCross = '', tarotOutcome = '';
-  if (ta && ta.drawn && ta.drawn.length >= 10) {
-    var d0 = ta.drawn[0], d1 = ta.drawn[1], d9 = ta.drawn[9];
-    tarotCore = d0.n + (d0.isUp ? '正' : '逆');
-    tarotCross = d1.n + (d1.isUp ? '正' : '逆');
-    tarotOutcome = d9.n + (d9.isUp ? '正' : '逆');
-  }
-
-  // ══════════════════════════════════════
-  // 財運組合推理
-  // ══════════════════════════════════════
-  if (type === 'wealth') {
-    // ── 核心判斷：身強弱 × 財星喜忌 ──
-    if (strong === true && hasSem('WEALTH.STAR.FAVORABLE')) {
-      notes.push({
-        conclusion: '身強 + 財星為喜用 = 你有能力賺錢也留得住，這是最理想的求財格局',
-        confidence: midConfirm('WEALTH.STAR.FAVORABLE') ? '高' : '中',
-        condition: null,
-        systems: ['八字']
-      });
-    } else if (strong === true && hasSem('WEALTH.STAR.UNFAVORABLE')) {
-      notes.push({
-        conclusion: '身強但財星為忌 = 你有能力但財路方向不對，賺錢費力或為財所困',
-        confidence: '中',
-        condition: '換方向或領域可能改善',
-        systems: ['八字']
-      });
-    } else if (strong === false && hasSem('WEALTH.STAR.FAVORABLE')) {
-      notes.push({
-        conclusion: '身弱但財星為喜 = 方向對但你扛不住大財，需要貴人或團隊支撐',
-        confidence: '中',
-        condition: '有印星扶持（貴人/靠山）時能力提升',
-        systems: ['八字']
-      });
-    } else if (strong === false && (hasSem('WEALTH.STAR.STRONG') || ep[dmEl] < 10)) {
-      notes.push({
-        conclusion: '身弱 + 財星旺 = 錢越多壓力越大，不適合高風險操作',
-        confidence: '高',
-        condition: '量力而為，先穩後進',
-        systems: ['八字']
-      });
-    }
-
-    // ── 食傷生財鏈 ──
-    if (hasSem('WEALTH.GENERATION.ACTIVE') && strong) {
-      notes.push({
-        conclusion: '食傷生財 + 身強 = 靠技術/才華賺錢的路最通',
-        confidence: '高',
-        condition: null,
-        systems: ['八字']
-      });
-    } else if (hasSem('WEALTH.GENERATION.ACTIVE') && !strong) {
-      notes.push({
-        conclusion: '食傷生財但身弱 = 有才華但消耗太大，會把自己掏空',
-        confidence: '中',
-        condition: '需控制產出節奏，不要什麼都接',
-        systems: ['八字']
-      });
-    }
-
-    // ── 時機窗口交叉 ──
-    var wealthTimingCount = 0;
-    if (hasSem('TIMING.LUCK.WEALTH_WINDOW')) wealthTimingCount++;
-    if (hasSem('TIMING.YEAR.WEALTH_WINDOW')) wealthTimingCount++;
-    if (hasSem('TIMING.TRANSIT.EXPANSION')) wealthTimingCount++;
-    if (hasSem('TIMING.DASHA.TOPIC_HIT')) wealthTimingCount++;
-    if (wealthTimingCount >= 2) {
-      notes.push({
-        conclusion: '多系統同時指向財運時間窗口開啟（' + wealthTimingCount + '套確認）',
-        confidence: '高',
-        condition: strong ? '底盤扛得住，可以積極把握' : '底盤偏弱，把握機會但控制風險',
-        systems: ['八字', '吠陀', '星盤'].slice(0, wealthTimingCount)
-      });
-    }
-
-    // ── 梅花 + 塔羅快照 ──
-    if (mhRel === '用生體' && (mhJudge === '大吉' || mhJudge === '吉')) {
-      notes.push({
-        conclusion: '梅花卦象顯示外部環境在幫你（用生體），財路有外來助力',
-        confidence: '中',
-        condition: '這是當下快照，把握當前窗口',
-        systems: ['梅花']
-      });
-    } else if (mhRel === '用克體') {
-      notes.push({
-        conclusion: '梅花卦象顯示外在環境在壓制你，財務上有阻力來自外部',
-        confidence: '中',
-        condition: '不宜主動出擊，先守住再說',
-        systems: ['梅花']
-      });
-    }
-
-    // ── 紫微財庫 ──
-    if (hasSem('WEALTH.STORAGE.INFLOW') && hasSem('WEALTH.EARNING.STABLE')) {
-      notes.push({
-        conclusion: '紫微的財庫和賺錢管道都亮燈 = 有進帳也留得住',
-        confidence: '中',
-        condition: null,
-        systems: ['紫微']
-      });
-    } else if (hasSem('WEALTH.STORAGE.LEAK')) {
-      notes.push({
-        conclusion: '紫微財庫有漏 = 錢進來也容易流出，守財是關鍵',
-        confidence: '中',
-        condition: '需要強化儲蓄紀律',
-        systems: ['紫微']
-      });
-    }
-  }
-
-  // ══════════════════════════════════════
-  // 感情組合推理
-  // ══════════════════════════════════════
-  if (type === 'love') {
-    // ── 配偶星 × 身強弱 ──
-    if (hasSem('LOVE.SPOUSE.FAVORABLE') && hasSem('LOVE.SPOUSE.STRONG')) {
-      notes.push({
-        conclusion: '配偶星為喜用且旺 = 感情機會不缺，遇到的人大概率正面影響你',
-        confidence: midConfirm('LOVE.SPOUSE.FAVORABLE') ? '高' : '中',
-        condition: null,
-        systems: ['八字']
-      });
-    } else if (hasSem('LOVE.SPOUSE.UNFAVORABLE')) {
-      notes.push({
-        conclusion: '配偶星為忌 = 容易遇到消耗型或壓力型對象，不是沒有感情而是遇到的人讓你累',
-        confidence: '中',
-        condition: '需要學會辨識什麼樣的人適合你',
-        systems: ['八字']
-      });
-    }
-
-    // ── 女命食傷剋官 ──
-    if (!isMale && hasSem('LOVE.CLASH.SPOUSE')) {
-      notes.push({
-        conclusion: '食傷旺剋官殺 = 你對伴侶要求很高，容易挑剔或想改造對方',
-        confidence: '高',
-        condition: '不是沒人追你，是你看不上。降低控制欲反而順利',
-        systems: ['八字']
-      });
-    }
-
-    // ── 桃花信號交叉 ──
-    var loveTimingCount = 0;
-    if (hasSem('LOVE.ATTRACTION.STRONG')) loveTimingCount++;
-    if (hasSem('LOVE.MARRIAGE.SIGNAL')) loveTimingCount++;
-    if (hasSem('TIMING.LUCK.LOVE_WINDOW')) loveTimingCount++;
-    if (hasSem('LOVE.PLANET.ACTIVE')) loveTimingCount++;
-    if (loveTimingCount >= 2) {
-      notes.push({
-        conclusion: '多重桃花信號（' + loveTimingCount + '套確認）= 今年確實有感情事件的機率',
-        confidence: loveTimingCount >= 3 ? '高' : '中',
-        condition: null,
-        systems: ['八字', '吠陀', '星盤']
-      });
-    }
-
-    // ── 內在卡點偵測 ──
-    if (hasSem('LOVE.ANXIETY.HIGH') || hasSem('LOVE.STRESS.HIGH')) {
-      var hasExternal = loveTimingCount >= 1;
-      if (hasExternal) {
-        notes.push({
-          conclusion: '外在有機會但你內心糾結 = 桃花來了你可能不敢接',
-          confidence: '中',
-          condition: '最大的卡點不是對方而是你自己的猶豫',
-          systems: ['紫微', '塔羅']
-        });
-      } else {
-        notes.push({
-          conclusion: '內心壓力大，感情上容易想太多或自我消耗',
-          confidence: '中',
-          condition: '先處理內在狀態再考慮感情',
-          systems: ['紫微']
-        });
-      }
-    }
-
-    // ── 流年沖日支 ──
-    if (hasSem('TIMING.YEAR.LOVE_SHOCK')) {
-      notes.push({
-        conclusion: '今年流年沖夫妻宮 = 感情一定有變動（好壞取決於現狀）',
-        confidence: '高',
-        condition: '單身的可能遇到人，有伴的可能有考驗',
-        systems: ['八字']
-      });
-    }
-
-    // ── 梅花+塔羅快照 ──
-    if (mhRel === '用生體') {
-      notes.push({
-        conclusion: '梅花顯示對方（用）在向你（體）靠近，有人主動的跡象',
-        confidence: '中',
-        condition: null,
-        systems: ['梅花']
-      });
-    } else if (mhRel === '體生用') {
-      notes.push({
-        conclusion: '梅花顯示你在付出但對方在接收 = 你比較主動，對方比較被動',
-        confidence: '中',
-        condition: '注意不要一頭熱',
-        systems: ['梅花']
-      });
-    }
-
-    // ── 吠陀金星強弱 ──
-    if (hasSem('LOVE.DEEPER.STRONG')) {
-      notes.push({
-        conclusion: '吠陀 D9 盤金星強勢 = 深層感情品質好，適合長期關係',
-        confidence: '中',
-        condition: null,
-        systems: ['吠陀']
-      });
-    } else if (hasSem('LOVE.DEEPER.WEAK')) {
-      notes.push({
-        conclusion: '吠陀 D9 盤金星弱 = 短期火花容易有，但深層契合度需考驗',
-        confidence: '中',
-        condition: '不要被初期吸引力迷惑',
-        systems: ['吠陀']
-      });
-    }
-  }
-
-  // ══════════════════════════════════════
-  // 事業組合推理
-  // ══════════════════════════════════════
-  if (type === 'career') {
-    // ── 身強弱 × 格局 ──
-    if (strong && hasSem('CAREER.TALENT.STRONG')) {
-      notes.push({
-        conclusion: '身強 + 食傷旺 = 才華就是你的武器，適合靠專業技能發展',
-        confidence: '中',
-        condition: null,
-        systems: ['八字']
-      });
-    }
-    if (specialStructure && specialStructure.type === '從殺格') {
-      notes.push({
-        conclusion: '從殺格 = 你適合在大組織/體制裡發展，不適合單打獨鬥',
-        confidence: '高',
-        condition: '找到對的組織比找到對的方向更重要',
-        systems: ['八字']
-      });
-    }
-    if (hasSem('CAREER.STYLE.ENTREPRENEURIAL')) {
-      notes.push({
-        conclusion: '殺破狼格局 = 適合開創變動型事業，坐不住辦公室',
-        confidence: '中',
-        condition: '但需要看時機（大運/Dasha 是否配合）',
-        systems: ['紫微']
-      });
-    }
-
-    // ── 時機交叉 ──
-    var careerTimingPos = 0, careerTimingNeg = 0;
-    if (hasSem('TIMING.LUCK.POSITIVE')) careerTimingPos++;
-    if (hasSem('TIMING.YEAR.POSITIVE')) careerTimingPos++;
-    if (hasSem('TIMING.TRANSIT.EXPANSION')) careerTimingPos++;
-    if (hasSem('TIMING.LUCK.NEGATIVE')) careerTimingNeg++;
-    if (hasSem('TIMING.YEAR.NEGATIVE')) careerTimingNeg++;
-    if (hasSem('TIMING.TRANSIT.PRESSURE')) careerTimingNeg++;
-    if (hasSem('TIMING.SATURN_RETURN.ACTIVE')) careerTimingNeg++;
-
-    if (careerTimingPos >= 2 && careerTimingNeg === 0) {
-      notes.push({
-        conclusion: '多系統時運偏吉（' + careerTimingPos + '套）= 目前是事業發展的好時機',
-        confidence: '高',
-        condition: null,
-        systems: ['八字', '吠陀', '星盤']
-      });
-    } else if (careerTimingNeg >= 2 && careerTimingPos === 0) {
-      notes.push({
-        conclusion: '多系統時運偏凶（' + careerTimingNeg + '套）= 目前不適合大動作，以守為主',
-        confidence: '高',
-        condition: '不是方向錯，是時機不對。等時運過了再衝',
-        systems: ['八字', '吠陀', '星盤']
-      });
-    } else if (careerTimingPos >= 1 && careerTimingNeg >= 1) {
-      notes.push({
-        conclusion: '時運信號矛盾 = 有機會但也有壓力，是「邊打邊走」的階段',
-        confidence: '中',
-        condition: '小步試錯，不要 all in',
-        systems: ['八字', '吠陀', '星盤']
-      });
-    }
-  }
-
-  // ══════════════════════════════════════
-  // 健康組合推理
-  // ══════════════════════════════════════
-  if (type === 'health') {
-    if (hasSem('HEALTH.VITALITY.WEAK') && hasSem('HEALTH.MENTAL.STRESSED')) {
-      notes.push({
-        conclusion: '身體能量弱 + 心理壓力大 = 身心同時透支的狀態',
-        confidence: '高',
-        condition: '先顧心理再顧身體，壓力是根源',
-        systems: ['八字', '紫微', '吠陀']
-      });
-    }
-    if (hasSem('TIMING.SATURN_RETURN.ACTIVE') && hasSem('HEALTH.VITALITY.WEAK')) {
-      notes.push({
-        conclusion: '土星考驗期 + 體質偏弱 = 這段時間特別需要注意健康',
-        confidence: '高',
-        condition: '定期檢查，不要硬撐',
-        systems: ['吠陀', '八字']
-      });
-    }
-  }
-
-  // ══════════════════════════════════════
-  // 通用：跨系統矛盾處理
-  // ══════════════════════════════════════
-  if (conflicts.length >= 1) {
-    var topConflict = conflicts[0];
-    notes.push({
-      conclusion: '系統間存在矛盾信號：正面「' + (topConflict.positive || '') + '」vs 負面「' + (topConflict.negative || '') + '」',
-      confidence: '需要條件判斷',
-      condition: '這代表結果不是單向好壞，而是取決於你怎麼應對。' + (topConflict.explanation || ''),
-      systems: topConflict.systems || []
-    });
-  }
-
-  // ══════════════════════════════════════
-  // 通用：靜態 vs 即時的分歧處理
-  // ══════════════════════════════════════
-  var staticDir = null, snapshotDir = null;
-  // 靜態系統方向（八字+紫微+星盤+吠陀）
-  var staticPos = 0, staticNeg = 0;
-  if (hasSem('TIMING.LUCK.POSITIVE') || hasSem('TIMING.YEAR.POSITIVE')) staticPos++;
-  if (hasSem('TIMING.LUCK.NEGATIVE') || hasSem('TIMING.YEAR.NEGATIVE')) staticNeg++;
-  if (hasSem('OVERALL.HARMONY.HIGH')) staticPos++;
-  if (hasSem('OVERALL.TENSION.HIGH')) staticNeg++;
-  staticDir = staticPos > staticNeg ? 'pos' : staticNeg > staticPos ? 'neg' : 'mid';
-
-  // 即時快照方向（梅花+塔羅）
-  var snapPos = 0, snapNeg = 0;
-  if (hasSem('SNAPSHOT.VERDICT.POSITIVE') || hasSem('SNAPSHOT.VERDICT.STRONG_POSITIVE')) snapPos++;
-  if (hasSem('SNAPSHOT.VERDICT.NEGATIVE') || hasSem('SNAPSHOT.VERDICT.STRONG_NEGATIVE')) snapNeg++;
-  if (hasSem('SNAPSHOT.OUTCOME.FAVORABLE')) snapPos++;
-  if (hasSem('SNAPSHOT.OUTCOME.UNFAVORABLE')) snapNeg++;
-  snapshotDir = snapPos > snapNeg ? 'pos' : snapNeg > snapPos ? 'neg' : 'mid';
-
-  if (staticDir && snapshotDir && staticDir !== snapshotDir && staticDir !== 'mid' && snapshotDir !== 'mid') {
-    if (staticDir === 'pos' && snapshotDir === 'neg') {
-      notes.push({
-        conclusion: '命盤底盤不差，但當下快照偏負 = 長期有基礎，短期遇阻礙',
-        confidence: '中',
-        condition: '短期的困難不代表方向錯了，撐過去就好轉',
-        systems: ['八字/紫微/星盤', '梅花/塔羅']
-      });
-    } else if (staticDir === 'neg' && snapshotDir === 'pos') {
-      notes.push({
-        conclusion: '命盤底盤偏弱，但當下快照偏正 = 有短期機會但根基不穩',
-        confidence: '中',
-        condition: '把握眼前機會但不要過度擴張，因為底盤撐不住長期',
-        systems: ['八字/紫微/星盤', '梅花/塔羅']
-      });
-    }
-  }
-
-  // ══════════════════════════════════════
-  // 組裝結果
-  // ══════════════════════════════════════
-  payload.divinationNotes = notes;
-
-  // 產出供 AI 閱讀的文字版
-  if (notes.length) {
-    var lines = ['【命理組合推理結果】'];
-    lines.push('以下是程式根據七套系統的信號交叉後做出的條件式推理。你必須以此為骨架來回答，不需要自己重新推理。');
-    lines.push('');
-    notes.forEach(function(n, i) {
-      lines.push((i + 1) + '. ' + n.conclusion);
-      if (n.condition) lines.push('   條件：' + n.condition);
-      lines.push('   信心：' + n.confidence + '｜來源：' + (n.systems || []).join('、'));
-    });
-    payload.divinationNoteText = lines.join('\n');
-  }
-
-  return payload;
-}
 
 
 // ═══════════════════════════════════════════════════════════════
@@ -19238,9 +19425,6 @@ function buildDivinationReasoning(payload) {
     } catch(e){
       console.warn('[buildPayload v5 framework] error:', e);
     }
-    // [REASONING] 命理組合推理 — 最後一步
-    try { buildDivinationReasoning(p); } catch(e) { console.warn("[divination reasoning]", e); }
-
     return p;
   };
 })();
