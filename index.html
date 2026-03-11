@@ -411,9 +411,9 @@
   </div>
   <div id="t-spread-sec" class="hidden"><div class="card"><div class="card-title" id="t-spread-title"><i class="fas fa-cross"></i> <span id="t-spread-title-text">塔羅牌陣解讀</span></div><div id="t-spread"></div></div></div>
   <div class="actions">
-    <button class="btn btn-outline" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> 上一步</button>
-    <button class="btn btn-outline" onclick="skipToResult()"><i class="fas fa-forward"></i> 跳過塔羅</button>
-    <button class="btn btn-primary" id="btn-analyze" onclick="goStep(3)" disabled><i class="fas fa-chart-bar"></i> 進行分析</button>
+    <button class="btn btn-outline" id="btn-back-meihua" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> 上一步</button>
+    <button class="btn btn-outline" id="btn-skip-tarot" onclick="skipToResult()"><i class="fas fa-forward"></i> 跳過塔羅</button>
+    <button class="btn btn-primary" id="btn-analyze" onclick="if(S._tarotOnlyMode){S.tarot.drawn=drawnCards;S.tarot.spread=drawnCards;try{if(typeof enhanceTarot==='function')enhanceTarot(S.tarot);}catch(e){}showTarotResult();}else{goStep(3);}" disabled><i class="fas fa-chart-bar"></i> 進行分析</button>
   </div>
   <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 多抽塔羅 → 多得「時間點＋行動建議」，完整分析準確度更高</p>
 </section>
