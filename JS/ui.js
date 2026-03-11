@@ -2503,6 +2503,12 @@ function lighten(hex, amt){
 // Cache generated card images
 const _tarotImageCache = {};
 function getTarotCardImage(card){
+  // 優先使用真實牌面圖片（tarot_img/ 資料夾）
+  // fallback 到 Canvas 生成的簡易圖
+  if (card && card.id != null) {
+    var imgPath = 'tarot_img/' + (card.id < 10 ? '0' : '') + card.id + '.webp';
+    return imgPath;
+  }
   if(!_tarotImageCache[card.id]){
     _tarotImageCache[card.id] = generateTarotCardImage(card);
   }
