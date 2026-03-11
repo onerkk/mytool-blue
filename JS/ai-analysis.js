@@ -14664,8 +14664,16 @@ function _buildPayload() {
 
     // 流年+未來
     if (dy && dy.liuNian) {
+      // 當年流年干支（關鍵信號）
+      var curLn = dy.liuNian.find(function(l){return l.year===yr;});
+      if (curLn) {
+        var lnText = yr + '年流年' + _s(curLn.gz) + '（' + (curLn.level||'') + '）';
+        if (curLn.notes && curLn.notes.length) lnText += '。' + curLn.notes.slice(0,3).join('、');
+        if (curLn.theme) lnText += '。主題：' + curLn.theme;
+        L.push(lnText);
+      }
       var next3 = dy.liuNian.filter(function(l){return l.year>=yr && l.year<=yr+2;});
-      if (next3.length) L.push('近三年：' + next3.map(function(l){var s=l.score||0; return l.year+'年'+(s>=2?'好':s>=0?'穩':s>=-1?'壓力':'注意')+(l.notes&&l.notes.length?' ('+l.notes[0]+')':'');}).join('、'));
+      if (next3.length) L.push('近三年：' + next3.map(function(l){var s=l.score||0; return l.year+'年'+_s(l.gz)+(s>=2?'好':s>=0?'穩':s>=-1?'壓力':'注意')+(l.notes&&l.notes.length?' ('+l.notes[0]+')':'');}).join('、'));
     }
     if (b.suiYunBingLin && b.suiYunBingLin.active && b.suiYunBingLin.zh) L.push(b.suiYunBingLin.zh);
 
@@ -14707,18 +14715,14 @@ function _buildPayload() {
       return t;
     }
 
-    // 6個關鍵宮位
-    var keyIdx = [0, fi, 6, 8, 4, 11]; // 命、焦點、遷移、官祿、財帛、福德
-    // 如果問感情加夫妻宮，問事業加官祿等
-    if (ft==='love' && keyIdx.indexOf(2)===-1) keyIdx.push(2);
-    if (ft==='health' && keyIdx.indexOf(5)===-1) keyIdx.push(5);
+    // 全部12宮位（不漏任何一宮，AI 需要完整命盤才能看透）
     var seen = {};
-    keyIdx.forEach(function(idx){
-      if (seen[idx] || !zw.palaces[idx]) return;
+    for (var idx = 0; idx < 12; idx++) {
+      if (seen[idx] || !zw.palaces[idx]) continue;
       seen[idx] = true;
       var s = _palFull(zw.palaces[idx]);
       if (s) L.push(s);
-    });
+    }
 
     // 四化（修正：hua 值是 "化祿" 不是 "祿"）
     if (zw.sihua && Array.isArray(zw.sihua) && zw.sihua.length) {
@@ -14784,6 +14788,12 @@ function _buildPayload() {
     L.push('判定：' + (judgeM[mh.ty.f]||mh.ty.f) + '。' + (relM[mh.ty.r]||mh.ty.d||''));
     L.push('起卦：' + (mh.ben?mh.ben.n:'?') + '→變卦' + (mh.bian?mh.bian.n:'?') + '，互卦' + (mh.hu?mh.hu.n:'?'));
     if (mh.dong) L.push('動爻：第' + mh.dong + '爻');
+    // 體卦用卦五行（核心判斷依據）
+    if (mh.tiG && mh.yoG) {
+      L.push('體卦：' + _s(mh.tiG.name) + '（' + _s(mh.tiG.el) + '行）／用卦：' + _s(mh.yoG.name) + '（' + _s(mh.yoG.el) + '行）');
+    }
+    // 上下卦五行屬性
+    if (mh.up && mh.up.el) L.push('上卦' + _s(mh.up.name) + '（' + _s(mh.up.el) + '行）／下卦' + _s(mh.lo && mh.lo.name || '?') + '（' + _s(mh.lo && mh.lo.el || '?') + '行）');
     // narrative
     var nb = mh.analysis && mh.analysis.narrativeBlocks;
     if (nb) {
@@ -14881,19 +14891,29 @@ function _buildPayload() {
     if (S.natal.mcSign) L.push('事業方向：' + _s(S.natal.mcSign.name) + '（' + _sM(S.natal.mcSign.name) + '）');
     if (S.natal.sect) L.push(S.natal.sect.isDaytime ? '日間出生，自信行動力強' : '夜間出生，直覺內省力強');
 
+    // 宮位星座分佈
+    if (S.natal.houses && S.natal.houses.length) {
+      var houseLabels = {1:'自我',2:'財帛',3:'溝通',4:'家庭',5:'創造',6:'健康',7:'婚姻/合作',8:'轉化',9:'信仰',10:'事業',11:'朋友',12:'潛意識'};
+      var houseParts = [];
+      S.natal.houses.forEach(function(h, i) {
+        if (h && h.sign) houseParts.push('第'+(i+1)+'宮('+_s(houseLabels[i+1]||'')+')：'+_s(h.sign));
+      });
+      if (houseParts.length) L.push('宮位分佈：' + houseParts.join('、'));
+    }
+
     // 相位
     if (S.natal.aspects && S.natal.aspects.length) {
       var ga = S.natal.aspects.filter(function(a){return a.good;}).length;
       var ba = S.natal.aspects.filter(function(a){return !a.good;}).length;
       L.push('相位：和諧' + ga + '個/緊張' + ba + '個');
-      var top5 = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);}).slice(0,5);
+      var top5 = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);}).slice(0,10);
       L.push('主要相位：' + top5.map(function(a){return _s(a.p1)+_s(a.sym)+_s(a.p2)+(a.good?'(和諧)':'(緊張)');}).join('、'));
     }
     if (S.natal.aspectPatterns && S.natal.aspectPatterns.length) L.push('特殊結構：' + S.natal.aspectPatterns.map(function(pt){return pt.meaning||pt.zh||pt.name;}).join('。'));
     if (S.natal.dispositorChain && S.natal.dispositorChain.meaning) L.push('能量流向：' + S.natal.dispositorChain.meaning);
     if (S.natal.profections && S.natal.profections.meaning) L.push('今年主題：' + S.natal.profections.meaning);
     if (S.natal.transits && S.natal.transits.aspects) {
-      var slow = S.natal.transits.aspects.filter(function(a){return a.isSlow;}).slice(0,5);
+      var slow = S.natal.transits.aspects.filter(function(a){return a.isSlow;}).slice(0,8);
       if (slow.length) L.push('當前行運：' + slow.map(function(a){return _s(a.transitPlanet)+(a.nature==='challenging'?'帶來挑戰':'帶來機會')+'（影響'+_s(a.natalPlanet)+'）';}).join('；'));
     }
     if (S.natal.progressions && S.natal.progressions.summary) L.push('推運：' + S.natal.progressions.summary);
@@ -14910,7 +14930,7 @@ function _buildPayload() {
       var mdM = {Sun:'權威/自我',Moon:'情感/家庭',Mars:'行動/競爭',Mercury:'溝通/學習',Jupiter:'擴展/福報',Venus:'享受/關係',Saturn:'責任/考驗',Rahu:'突破/非傳統',Ketu:'放下/靈性'};
       L.push('主運勢主題：' + (mdM[j.currentMD.lord]||_s(j.currentMD.lord)) + (j.currentAD ? '，副運：'+_s(j.currentAD.zh) : '') + (j.currentPD ? '，小運：'+_s(j.currentPD.zh) : ''));
     }
-    if (j.yogas && j.yogas.length) L.push('命盤格局：' + j.yogas.slice(0,6).map(function(y){return y.zh?y.zh.substring(0,60):_s(y.name);}).join('。'));
+    if (j.yogas && j.yogas.length) L.push('命盤格局：' + j.yogas.slice(0,10).map(function(y){return y.zh?y.zh.substring(0,120):_s(y.name);}).join('。'));
     var sb = j.shadbala_v2 || j.shadbala;
     if (sb) {
       var sbL = [];
@@ -14927,17 +14947,45 @@ function _buildPayload() {
     if (j.sadeSati && j.sadeSati.active) L.push('正經歷人生重大考驗期（' + ({rising:'上升期',peak:'高峰期',setting:'下降期'}[j.sadeSati.phase]||'') + '），壓力大但成長快');
     if (j.janmaNakshatra) L.push('情緒特質：' + _s(j.janmaNakshatra.zh || j.janmaNakshatra.en));
     if (j.refinedGochar) {
-      var gch = j.refinedGochar.filter(function(g){return g.isSlow;}).slice(0,4);
+      var gch = j.refinedGochar.filter(function(g){return g.isSlow;}).slice(0,6);
       if (gch.length) L.push('當前行運：' + gch.map(function(g){return _s(g.planetZh)+(g.effectiveGood?'帶好影響':'帶壓力')+'(力道'+g.bindus+'/8)';}).join('、'));
     }
     if (j.crossValidation && j.crossValidation.signals) L.push('交叉驗證：' + j.crossValidation.signals.slice(0,3).map(function(s){return _s(s.zh);}).join('。'));
     if (j.charaDasha && j.charaDasha.current) L.push('Jaimini運勢：' + _s(j.charaDasha.current.signZh) + '(' + _s(j.charaDasha.current.lordZh) + '主宰)');
     if (j.karakamsa && j.karakamsa.zh) L.push('靈魂指引：' + j.karakamsa.zh);
 
+    // 行星主盤位置（關鍵：sign + bhava + dignity + retrograde）
+    if (j.planets) {
+      var mainParts = [];
+      var _jpZh = (typeof JY_PLANETS !== 'undefined') ? JY_PLANETS : {};
+      ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'].forEach(function(pn) {
+        var pp = j.planets[pn];
+        if (!pp) return;
+        var zh = (_jpZh[pn] && _jpZh[pn].zh) ? _jpZh[pn].zh : pn;
+        var t = zh + '在' + _s(pp.sign) + '第' + (pp.bhava||'?') + '宮';
+        if (pp.dignity) t += '(' + pp.dignity + ')';
+        if (pp.retrograde) t += '逆行';
+        mainParts.push(t);
+      });
+      if (mainParts.length) L.push('行星位置：' + mainParts.join('、'));
+
+      // functionalNature（行星對此命盤是吉是凶）
+      if (j.functionalNature) {
+        var fnParts = [];
+        Object.keys(j.functionalNature).forEach(function(pn) {
+          var fn = j.functionalNature[pn];
+          if (!fn) return;
+          var zh = (_jpZh[pn] && _jpZh[pn].zh) ? _jpZh[pn].zh : pn;
+          fnParts.push(zh + '=' + _s(fn));
+        });
+        if (fnParts.length) L.push('行星吉凶：' + fnParts.join('、'));
+      }
+    }
+
     // D9 Navamsa（婚姻/靈魂層面）
     if (j.planets) {
       var d9Parts = [];
-      ['Sun','Moon','Venus','Jupiter','Mars'].forEach(function(pn) {
+      ['Sun','Moon','Venus','Jupiter','Mars','Saturn'].forEach(function(pn) {
         var pp = j.planets[pn];
         if (pp && pp.navamsa) {
           var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
@@ -14947,15 +14995,16 @@ function _buildPayload() {
       if (d9Parts.length) L.push('靈魂盤(D9)：' + d9Parts.join('、'));
     }
 
-    // Ashtakavarga 宮位力量
+    // Ashtakavarga 宮位力量（全部12宮）
     if (j.ashtakavarga && j.ashtakavarga.houseSarva) {
       var avParts = [];
-      var fhM2 = {love:7,career:10,wealth:2,health:6,relationship:7,family:4};
-      var focusHouse = fhM2[ft] || 1;
-      [1, focusHouse, 7, 10].forEach(function(h) {
+      for (var h = 1; h <= 12; h++) {
         var sav = j.ashtakavarga.houseSarva[h-1];
-        if (sav !== undefined) avParts.push('第'+h+'宮('+({1:'自我',2:'財帛',4:'家庭',6:'健康',7:'婚姻/合作',10:'事業',12:'潛意識'}[h]||'')+')'+sav+'分'+(sav>=28?'強':sav>=25?'中':'弱'));
-      });
+        if (sav !== undefined) {
+          var hLabel = {1:'自我',2:'財帛',3:'手足',4:'家庭',5:'子女',6:'健康',7:'婚姻/合作',8:'變動',9:'福報',10:'事業',11:'收益',12:'潛意識'}[h] || '';
+          avParts.push('第'+h+'宮('+hLabel+')'+sav+'分');
+        }
+      }
       if (avParts.length) L.push('宮位力量：' + avParts.join('、'));
     }
 
@@ -18140,39 +18189,6 @@ renderTarot = function(){
         var out = sections.filter(Boolean).join('\n\n');
         if (!out) return '';
 
-        if (out.length < minLen) {
-          var fillers = [];
-          if (summary) fillers.push('【摘要重述】\n' + summary);
-          if (rawText) fillers.push('【原始判讀重述】\n' + rawText);
-          if (flattenPool.length) fillers.push('【欄位重點重列】\n- ' + flattenPool.slice(0, 180).join('\n- '));
-          if (spJson) fillers.push('【系統載荷重列】\n' + spJson);
-          if (sourceJson) fillers.push('【來源資料重列】\n' + sourceJson);
-          var idx = 0;
-          while (out.length < minLen && fillers.length) {
-            out += '\n\n' + fillers[idx % fillers.length];
-            idx += 1;
-            if (idx > 10) break;
-          }
-        }
-
-        if (out.length > maxLen) out = _clipText(out, maxLen);
-        if (out.length < minLen) {
-          var tailBase = (summary || rawText || name || '此系統原始資料偏少，以下為結構重述與補齊。');
-          var tail = '\n\n【長度補齊】\n' + tailBase;
-          var guard = 0;
-          while (out.length < minLen && guard < 200) {
-            out += tail;
-            guard += 1;
-          }
-        }
-        if (out.length < minLen) {
-          var hardPad = ('\n【補齊片段】' + (name || 'system') + ' evidence');
-          var guard2 = 0;
-          while (out.length < minLen && guard2 < 2000) {
-            out += hardPad;
-            guard2 += 1;
-          }
-        }
         if (out.length > maxLen) out = _clipText(out, maxLen);
         return out;
       }
@@ -18228,9 +18244,9 @@ renderTarot = function(){
         }
       };
 
-      var targetRange = { min: 4000, max: 5000 };
+      var targetRange = { min: 0, max: 8000 };
       p.readings = p.readings || {};
-      p.__balancedReadingsVersion = 'v3-force-4k-5k';
+      p.__balancedReadingsVersion = 'v3-no-pad-8k';
       Object.keys(normalizedMap).forEach(function(k){
         var item = normalizedMap[k] || {};
         var normalized = _buildNormalizedReading(k, item.raw, item.sp, item.source, targetRange.min, targetRange.max);
@@ -19384,8 +19400,10 @@ function _rrect(ctx, x, y, w, h, r) {
       };
 
       p.readings = p.readings || {};
+      // ── 不覆蓋原始 readings！另存到 symbolicReadings 讓 AI 同時看到兩份 ──
+      p.symbolicReadings = {};
       Object.keys(sysMap).forEach(function(key){
-        p.readings[key] = _sbRenderReading(sysMap[key], systemEvidence[key]);
+        p.symbolicReadings[key] = _sbRenderReading(sysMap[key], systemEvidence[key]);
       });
       if (p.readings.jyotish) delete p.readings.jyotish;
     } catch (e) {
