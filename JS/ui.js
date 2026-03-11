@@ -246,40 +246,67 @@ function renderRemedy(bazi,type){
 /* Lazy init for extra features (only when user opens the panel) */
 // initExtraFeatures 定義在下方 DOMContentLoaded 中
 function goStep(n){
-  if(n===3 && !S.bazi){alert('請先填寫基本資料');return}
+  // ── 支持 ID 字串或數字 ──
+  var targetId;
+  if (typeof n === 'string') {
+    targetId = n; // 直接傳 'step-tarot' 等
+  } else {
+    // 數字 → 映射到原有 step ID（向下相容）
+    var stepMap = {0:'step-0', 1:'step-1', 2:'step-2', 3:'step-3'};
+    targetId = stepMap[n];
+    if (!targetId) return;
+  }
+
+  if(targetId==='step-3' && !S.bazi){alert('請先填寫基本資料');return}
   
   // ── 步驟轉場動畫 ──
-  const needsTransition=(S.step===1&&n===2)||(S.step===2&&n===3);
+  var currentId = 'step-' + S.step;
+  if (typeof S.step === 'string') currentId = S.step;
+  var needsTransition = (currentId==='step-1'&&targetId==='step-2') || (currentId==='step-2'&&targetId==='step-3');
   
   function doSwitch(){
-    document.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('active',i===n));
-    document.querySelectorAll('.nav-link').forEach((l,i)=>l.classList.toggle('active',i===n));
-    document.querySelectorAll('.stepper-item').forEach((s,i)=>{s.classList.remove('active','done');if(i<n)s.classList.add('done');if(i===n)s.classList.add('active')});
-    S.step=n; window.scrollTo({top:0,behavior:'smooth'});
-    if(n===2){
+    document.querySelectorAll('.step').forEach(function(s){
+      s.classList.toggle('active', s.id === targetId);
+    });
+    // nav-link 和 stepper 只對數字步驟有效
+    var stepNum = {0:'step-0',1:'step-1',2:'step-2',3:'step-3'};
+    var numIdx = -1;
+    Object.keys(stepNum).forEach(function(k){ if(stepNum[k]===targetId) numIdx=parseInt(k); });
+    if (numIdx >= 0) {
+      document.querySelectorAll('.nav-link').forEach(function(l,i){l.classList.toggle('active',i===numIdx)});
+      document.querySelectorAll('.stepper-item').forEach(function(s,i){s.classList.remove('active','done');if(i<numIdx)s.classList.add('done');if(i===numIdx)s.classList.add('active')});
+    }
+    S.step = (numIdx >= 0) ? numIdx : targetId;
+    window.scrollTo({top:0,behavior:'smooth'});
+    if(targetId==='step-2'){
       if(drawnCards.length>=10 && !S._isAdmin) showTarotLocked(); // 已有快取牌，顯示鎖定（管理員不受限）
       else if(drawnCards.length>=10 && S._isAdmin){ drawnCards=[]; deckShuffled=[]; initTarotDeck(); } // 管理員重置
       else if(!deckShuffled.length) initTarotDeck(); // 首次初始化牌堆
     }
-    if(n===3){
+    if(targetId==='step-3'){
       runAnalysis();
-      setTimeout(()=>{
-        const cta=document.getElementById('sticky-cta');
+      setTimeout(function(){
+        var cta=document.getElementById('sticky-cta');
         if(cta){
           if(S.bazi&&S.bazi.fav){
-            const favAll=S.bazi.fav;
-            const fav=favAll[0]||'土';
-            const favLabel=favAll.length>1?favAll.slice(0,2).join('＋'):fav;
-            const th=S.bazi.tiaohou;
-            const label=document.getElementById('sticky-cta-label');
-            const desc=document.getElementById('sticky-cta-desc');
-            label.innerHTML=`💎 現在更適合你的：${favLabel}行能量配戴`;
-            desc.textContent=th?`${th.reason} — 先看命盤，再挑更貼近你現在狀態的款式`:`先看命盤，再挑更貼近你現在狀態的 ${favLabel} 行款式`;
+            var favAll=S.bazi.fav;
+            var fav=favAll[0]||'土';
+            var favLabel=favAll.length>1?favAll.slice(0,2).join('＋'):fav;
+            var th=S.bazi.tiaohou;
+            var label=document.getElementById('sticky-cta-label');
+            var desc=document.getElementById('sticky-cta-desc');
+            if(label) label.innerHTML='💎 現在更適合你的：'+favLabel+'行能量配戴';
+            if(desc) desc.textContent=th?(th.reason+' — 先看命盤，再挑更貼近你現在狀態的款式'):('先看命盤，再挑更貼近你現在狀態的 '+favLabel+' 行款式');
           }
           cta.classList.add('visible');
         }
       }, 3000);
-      setTimeout(()=>{ showFeedbackSection(); }, 4000);
+      setTimeout(function(){ showFeedbackSection(); }, 4000);
+      // 如果從塔羅進來的，顯示 tab
+      if (S._fromTarot) {
+        var tabs = document.getElementById('result-mode-tabs');
+        if (tabs) tabs.style.display = 'block';
+      }
     }else{
       const cta=document.getElementById('sticky-cta');
       if(cta) cta.classList.remove('visible');
@@ -4545,28 +4572,19 @@ showAuraResult = function(){
       '<div class="counter-badge" id="counter-badge" style="margin-bottom:1.2rem"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
 
       // 主標語
-      '<h1 style="font-size:clamp(1.5rem,5vw,2rem);letter-spacing:.06em;text-align:center;margin-bottom:.5rem;font-family:var(--f-display,serif);color:var(--c-text,#e8e0d0)">' +
+      '<h1 style="font-size:clamp(1.5rem,5vw,2rem);letter-spacing:.06em;text-align:center;margin-bottom:.6rem;font-family:var(--f-display,serif);color:var(--c-text,#e8e0d0)">' +
         '靜月之光' +
       '</h1>' +
 
-      '<p style="font-size:.9rem;color:var(--c-text-dim,#a09880);text-align:center;max-width:280px;line-height:1.8;margin-bottom:.3rem">' +
-        '七套命理交叉驗證' +
+      '<p style="font-size:.95rem;color:var(--c-text-dim,#a09880);text-align:center;max-width:300px;line-height:1.9;margin-bottom:.4rem;font-family:var(--f-display,serif)">' +
+        '你心裡的事，牌都知道' +
       '</p>' +
-      '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);text-align:center;max-width:300px;line-height:1.7;margin-bottom:2rem">' +
-        '八字 · 紫微 · 梅花 · 塔羅 · 星盤 · 吠陀 · 姓名' +
+      '<p style="font-size:.76rem;color:var(--c-text-muted,#6b6355);text-align:center;max-width:320px;line-height:1.7;margin-bottom:2rem">' +
+        '金色黎明塔羅牌 · AI 深度解讀<br>不用填生日，抽牌就有答案' +
       '</p>' +
 
-      // CTA 按鈕
-      (used && !isAdmin ?
-        // 已用完狀態
-        '<div style="text-align:center">' +
-          '<div style="font-size:1.8rem;margin-bottom:.6rem;opacity:.5">🔒</div>' +
-          '<p style="font-size:.88rem;color:var(--c-text-dim);margin-bottom:.2rem">今日的緣分已用盡</p>' +
-          '<p style="font-size:.75rem;color:var(--c-text-muted)">子時重置・明天再來</p>' +
-        '</div>'
-        :
-        // 可用狀態 — 直接進入 input，讓用戶在那邊選類型+填資料
-        '<button id="home-cta-btn" onclick="_enterFromHome()" style="' +
+      // CTA 按鈕（塔羅快讀永遠可用）
+      '<button id="home-cta-btn" onclick="_enterFromHome()" style="' +
           'display:flex;align-items:center;justify-content:center;gap:.6rem;' +
           'width:100%;max-width:300px;' +
           'padding:1.1rem 2rem;border-radius:14px;' +
@@ -4579,16 +4597,13 @@ showAuraResult = function(){
           'letter-spacing:.08em;' +
           'animation:home-cta-breathe 3s ease-in-out infinite">' +
           '🌙 開始解讀' +
-        '</button>'
-      ) +
+        '</button>' +
 
       // 底部提示
       '<div style="margin-top:1.5rem;text-align:center">' +
         (isAdmin ?
           '<span style="font-size:.7rem;color:#a78bfa;opacity:.5">👑 管理員・無限次</span>' :
-          used ?
-            '' :
-            '<span style="font-size:.73rem;color:var(--c-text-muted,#6b6355)">✦ 每日免費一次命理解讀</span>'
+          '<span style="font-size:.73rem;color:var(--c-text-muted,#6b6355)">✦ 免費塔羅解讀 · 不限次數</span>'
         ) +
       '</div>' +
 
@@ -4600,7 +4615,7 @@ showAuraResult = function(){
 
   // ══ 從首頁進入 — 顯示 input-screen 帶類型選擇 ══
   window._enterFromHome = function() {
-    if (_checkUsedToday()) { _showUsedModal(); return; }
+    // 塔羅快讀不需要檢查額度
     document.getElementById('hook-screen').style.display = 'none';
     var tp = document.getElementById('trust-preview');
     if (tp) tp.style.display = 'none';
@@ -4816,4 +4831,298 @@ showAuraResult = function(){
   };
 
   console.log('[Home] 首頁重設計 + 額度管控 + 塔羅牌陣已啟用');
+})();
+
+
+// ═══════════════════════════════════════════════════════════════
+// 塔羅快速入口：新流程函數
+// ═══════════════════════════════════════════════════════════════
+
+// ── submitTarotQuick：只跑塔羅，不填生辰 ──
+function submitTarotQuick() {
+  var type = document.getElementById('f-type').value;
+  var question = document.getElementById('f-question').value.trim();
+  if (!type || !question) { alert('請選擇方向並輸入問題'); return; }
+
+  S.form = { type: type, question: question, gender: '', bdate: '', btime: '', name: '' };
+  S._tarotOnlyMode = true;
+  drawnCards = [];
+  S.meihua = null;
+  S.tarot = { drawn: [], spread: [] };
+
+  // ── 塔羅抽牌動畫 overlay ──
+  var overlay = document.createElement('div');
+  overlay.className = 'loading-overlay';
+  overlay.id = 'loading-overlay-tarot';
+
+  // 粒子
+  var particleHTML = '';
+  for (var i = 0; i < 20; i++) {
+    var x = Math.random() * 100, dur = 3 + Math.random() * 4, delay = Math.random() * 5;
+    particleHTML += '<div class="ld-particle" style="left:' + x + '%;bottom:-5%;--dur:' + dur + 's;--delay:' + delay + 's"></div>';
+  }
+
+  overlay.innerHTML =
+    '<div class="ld-particles">' + particleHTML + '</div>' +
+    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1.5rem">' +
+      '<div style="font-size:3rem;animation:home-cta-breathe 2s ease-in-out infinite">🃏</div>' +
+      '<div class="ld-status" id="ld-tarot-status" style="font-size:1rem;color:var(--c-gold)">正在為你翻牌…</div>' +
+      '<div class="ld-sub" id="ld-tarot-sub" style="font-size:.78rem;color:var(--c-text-dim)">凝神感應你的問題</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  // ── 偵測牌陣 ──
+  var spreadId = 'celtic_cross';
+  if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+    spreadId = detectSpreadType(question, type);
+    setCurrentSpread(spreadId);
+  }
+  var spreadDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+  var targetCount = spreadDef ? spreadDef.count : 10;
+
+  // ── 種子抽牌（用時間+問題+類型作為種子，不依賴生辰） ──
+  setTimeout(function() {
+    try {
+      var st = document.getElementById('ld-tarot-status');
+      var sb = document.getElementById('ld-tarot-sub');
+      if (st) { st.style.opacity = '0'; setTimeout(function(){ st.textContent = '感應牌面能量…'; st.style.opacity = '1'; }, 200); }
+      if (sb) { sb.style.opacity = '0'; setTimeout(function(){ sb.textContent = spreadDef ? spreadDef.zh + '（' + targetCount + '張）' : targetCount + '張牌'; sb.style.opacity = '1'; }, 200); }
+
+      // 用時間戳作為種子（每次都不同 = 當下能量）
+      var now = new Date();
+      var seed = now.getTime().toString() + question + type;
+      var _rng = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, now.toISOString()) : Math.random;
+      var shuffled = (typeof seededShuffle === 'function' && typeof TAROT !== 'undefined') ? seededShuffle(TAROT, _rng) : [];
+      var autoDrawn = [];
+
+      for (var i = 0; i < targetCount && i < shuffled.length; i++) {
+        var card = shuffled[i];
+        var _r2 = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, String(card.id)) : Math.random;
+        if (typeof _r2 === 'function') { for (var _k = 0; _k <= card.id; _k++) _r2(); }
+        var isUp = (typeof _r2 === 'function') ? (_r2() > 0.48) : (Math.random() > 0.48);
+        var posName = (spreadDef && spreadDef.positions && spreadDef.positions[i]) ? spreadDef.positions[i].name : '';
+        autoDrawn.push(Object.assign({}, card, { isUp: isUp, pos: posName }));
+      }
+
+      drawnCards = autoDrawn;
+      S.tarot = { drawn: autoDrawn, spread: autoDrawn, spreadType: spreadId, spreadDef: spreadDef };
+      try { if (typeof enhanceTarot === 'function') enhanceTarot(S.tarot); } catch(e) { console.warn('[TarotQuick] enhanceTarot:', e); }
+
+      console.log('[TarotQuick] 牌陣:' + spreadId + '(' + targetCount + '張) 抽牌完成');
+    } catch(e) {
+      console.error('[TarotQuick] 抽牌失敗:', e);
+      drawnCards = [];
+      S.tarot = { drawn: [], spread: [] };
+    }
+  }, 800);
+
+  // ── 完成 → 跳轉塔羅結果頁 ──
+  setTimeout(function() {
+    var st = document.getElementById('ld-tarot-status');
+    if (st) { st.style.opacity = '0'; setTimeout(function(){ st.textContent = '翻牌完成'; st.style.opacity = '1'; }, 200); }
+  }, 1800);
+
+  setTimeout(function() {
+    var ol = document.getElementById('loading-overlay-tarot');
+    if (ol) { ol.style.transition = 'opacity .5s'; ol.style.opacity = '0'; setTimeout(function(){ ol.remove(); }, 500); }
+    showTarotResult();
+  }, 2200);
+}
+
+// ── showTarotResult：顯示塔羅結果頁 ──
+function showTarotResult() {
+  goStep('step-tarot');
+
+  // 顯示問題
+  var hero = document.getElementById('tarot-question-hero');
+  if (hero) hero.innerHTML = '「' + (S.form.question || '') + '」';
+
+  // 沿用問題到七維度表單
+  var f2q = document.getElementById('f2-question');
+  if (f2q) f2q.value = S.form.question || '';
+
+  // 渲染牌面
+  renderTarotSpreadDisplay();
+
+  // 觸發 AI 塔羅解讀
+  if (typeof _triggerTarotAI === 'function') {
+    _triggerTarotAI();
+  }
+}
+
+// ── renderTarotSpreadDisplay：在塔羅結果頁渲染牌面 ──
+function renderTarotSpreadDisplay() {
+  var el = document.getElementById('tarot-spread-display');
+  if (!el) return;
+
+  var title = document.getElementById('tarot-spread-title');
+  var def = S.tarot.spreadDef || null;
+  if (title && def) title.textContent = def.zh || '你的牌陣';
+
+  var h = '';
+  var ftKey = { love:'love', career:'career', wealth:'wealth', health:'health', relationship:'love', family:'love' }[(S.form && S.form.type) || ''] || '';
+
+  (drawnCards || []).forEach(function(c, i) {
+    if (!c) return;
+    var posName = (def && def.positions && def.positions[i]) ? def.positions[i].name : ('第' + (i + 1) + '張');
+    var posZh = (def && def.positions && def.positions[i]) ? def.positions[i].zh : '';
+    var dp = (typeof getTarotDeep === 'function') ? getTarotDeep(c) : {};
+    var coreDesc = c.isUp ? (dp.coreUp || '') : (dp.coreRv || '');
+    var fc = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
+    var typeR = ftKey ? (c.isUp ? (fc[ftKey + 'Up'] || '') : (fc[ftKey + 'Rv'] || '')) : '';
+    var elC = { '火': '#ef4444', '水': '#3b82f6', '風': '#22d3ee', '土': '#a78b5a' }[c.el] || 'var(--c-gold)';
+    var kw = c.isUp ? (fc.kwUp || '') : (fc.kwRv || '');
+    var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
+    var gdInfo = c.gdCourt ? '<div style="font-size:.7rem;color:#a78bfa;margin-top:.2rem">⚡ ' + c.gdCourt.combo + '</div>' : '';
+
+    h += '<div class="card" style="padding:.7rem;margin-bottom:.4rem;border-left:3px solid ' + elC + '">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
+    h += '<span class="tag tag-gold" style="font-size:.75rem">' + (i + 1) + '. ' + posName + '</span>';
+    h += '<span class="tag ' + (c.isUp ? 'tag-blue' : 'tag-red') + '" style="font-size:.7rem">' + (c.isUp ? '正位' : '逆位') + '</span></div>';
+    if (posZh) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">' + posZh + '</div>';
+    h += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
+    if (imgSrc) h += '<img src="' + imgSrc + '" alt="' + c.n + '" style="width:55px;height:85px;border-radius:5px;flex-shrink:0;object-fit:cover;' + (c.isUp ? '' : 'transform:rotate(180deg)') + '">';
+    h += '<div style="flex:1"><strong class="text-gold serif" style="font-size:.9rem">' + (c.n || c.name) + '</strong>';
+    if (kw) h += '<div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.15rem">🔑 ' + kw + '</div>';
+    h += gdInfo;
+    h += '<p style="font-size:.78rem;color:var(--c-text-dim);margin-top:.2rem;line-height:1.5">' + (c.isUp ? fc.up : fc.rv) + '</p>';
+    if (typeR) h += '<p style="font-size:.76rem;color:var(--c-gold-light,#e8c968);margin-top:.2rem;line-height:1.5;border-top:1px solid rgba(212,175,55,.1);padding-top:.2rem">📌 ' + typeR + '</p>';
+    if (coreDesc) h += '<p style="font-size:.74rem;color:var(--c-gold-light);margin-top:.15rem;line-height:1.4;opacity:.85">' + coreDesc + '</p>';
+    h += '</div></div></div>';
+  });
+
+  el.innerHTML = h;
+}
+
+// ── enterFullAnalysis：從塔羅結果進七維度 ──
+function enterFullAnalysis() {
+  var question = document.getElementById('f2-question').value.trim();
+  var gender = document.querySelector('input[name="gender2"]:checked');
+  var bdate = document.getElementById('f2-bdate').value;
+  if (!question || !gender || !bdate) { alert('請填寫：問題、性別、出生日期'); return; }
+
+  var btime = document.getElementById('f2-btime').value || '12:00';
+  var name = document.getElementById('f2-name').value.trim();
+
+  // 把資料寫入原始表單（讓 submitStep0Fast 讀得到）
+  var fType = document.getElementById('f-type');
+  var fQuestion = document.getElementById('f-question');
+  var fBdate = document.getElementById('f-bdate');
+  var fBtime = document.getElementById('f-btime');
+  var fName = document.getElementById('f-name');
+
+  if (fType) fType.value = S.form.type || 'general';
+  if (fQuestion) fQuestion.value = question;
+  if (fBdate) fBdate.value = bdate;
+  if (fBtime) fBtime.value = btime;
+  if (fName) fName.value = name;
+
+  // 設置性別 radio
+  var genderRadios = document.querySelectorAll('input[name="gender"]');
+  genderRadios.forEach(function(r) { r.checked = (r.value === gender.value); });
+
+  // 保存塔羅快讀結果（tab 切回用）
+  S._tarotQuickResult = {
+    question: S.form.question,
+    aiHtml: document.getElementById('tarot-ai-wrap') ? document.getElementById('tarot-ai-wrap').innerHTML : '',
+    spreadHtml: document.getElementById('tarot-spread-display') ? document.getElementById('tarot-spread-display').innerHTML : '',
+    crystalHtml: document.getElementById('tarot-crystal-rec') ? document.getElementById('tarot-crystal-rec').innerHTML : ''
+  };
+  S._fromTarot = true;
+  S._tarotOnlyMode = false;
+
+  // 重置塔羅（當下能量，重新抽）
+  drawnCards = [];
+  S.tarot = { drawn: [], spread: [] };
+
+  // 觸發原始的完整流程
+  if (typeof submitStep0Fast === 'function') {
+    submitStep0Fast();
+  }
+}
+
+// ── switchResultTab：七維度/塔羅快讀 tab 切換 ──
+function switchResultTab(mode) {
+  var fullContent = document.getElementById('full-result-content');
+  var tarotContent = document.getElementById('tarot-back-content');
+  var tabFull = document.getElementById('tab-full');
+  var tabTarot = document.getElementById('tab-tarot-back');
+
+  if (mode === 'tarot' && S._tarotQuickResult) {
+    if (fullContent) fullContent.style.display = 'none';
+    if (tarotContent) {
+      tarotContent.style.display = 'block';
+      // 填入之前保存的塔羅結果
+      var tq = document.getElementById('tarot-back-question');
+      var tai = document.getElementById('tarot-back-ai');
+      var tsp = document.getElementById('tarot-back-spread');
+      var tcr = document.getElementById('tarot-back-crystal');
+      if (tq) tq.innerHTML = '「' + (S._tarotQuickResult.question || '') + '」';
+      if (tai) tai.innerHTML = S._tarotQuickResult.aiHtml || '';
+      if (tsp) tsp.innerHTML = S._tarotQuickResult.spreadHtml || '';
+      if (tcr) tcr.innerHTML = S._tarotQuickResult.crystalHtml || '';
+    }
+    if (tabFull) { tabFull.classList.remove('active'); tabFull.style.background = 'transparent'; tabFull.style.color = 'var(--c-text-dim)'; }
+    if (tabTarot) { tabTarot.classList.add('active'); tabTarot.style.background = 'rgba(212,175,55,.12)'; tabTarot.style.color = 'var(--c-gold)'; }
+  } else {
+    if (fullContent) fullContent.style.display = 'block';
+    if (tarotContent) tarotContent.style.display = 'none';
+    if (tabFull) { tabFull.classList.add('active'); tabFull.style.background = 'rgba(212,175,55,.12)'; tabFull.style.color = 'var(--c-gold)'; }
+    if (tabTarot) { tabTarot.classList.remove('active'); tabTarot.style.background = 'transparent'; tabTarot.style.color = 'var(--c-text-dim)'; }
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── resetToHome：重新開始 ──
+function resetToHome() {
+  S._tarotOnlyMode = false;
+  S._fromTarot = false;
+  S._tarotQuickResult = null;
+  drawnCards = [];
+  S.tarot = { drawn: [], spread: [] };
+  S.form = null;
+  goStep(0);
+  // 重新顯示首頁
+  var hookScreen = document.getElementById('hook-screen');
+  var inputScreen = document.getElementById('input-screen');
+  if (hookScreen) hookScreen.style.display = '';
+  if (inputScreen) inputScreen.style.display = 'none';
+}
+
+// ── 覆寫 _enterFromHome：塔羅模式下隱藏生辰表單 ──
+(function() {
+  var _prevEnterFromHome = window._enterFromHome;
+  window._enterFromHome = function() {
+    // 先標記為塔羅快速模式
+    S._tarotOnlyMode = true;
+    // 執行原始進入邏輯
+    if (_prevEnterFromHome) _prevEnterFromHome();
+    // 隱藏生辰相關的卡片
+    var inputScreen = document.getElementById('input-screen');
+    if (inputScreen) {
+      // 找到出生資料那張 card（第二張 .card）
+      var cards = inputScreen.querySelectorAll('.card');
+      cards.forEach(function(card) {
+        var title = card.querySelector('.card-title');
+        if (title && title.textContent.indexOf('出生資料') >= 0) {
+          card.style.display = 'none';
+          card.id = 'birth-data-card';
+        }
+      });
+      // 修改 CTA 按鈕文字
+      var btnGo = document.getElementById('btn-go');
+      if (btnGo) {
+        btnGo.innerHTML = '<i class="fas fa-star"></i> 開始塔羅解讀';
+        btnGo.onclick = function() { submitTarotQuick(); };
+      }
+      // 隱藏手動模式按鈕
+      var manualBtn = inputScreen.querySelector('.btn-outline.btn-sm');
+      if (manualBtn && manualBtn.textContent.indexOf('手動') >= 0) {
+        manualBtn.parentElement.style.display = 'none';
+      }
+      // 修改底部說明
+      var subtitle = inputScreen.querySelector('.actions-center p');
+      if (subtitle) subtitle.textContent = '金色黎明塔羅牌 · AI 深度解讀';
+    }
+  };
 })();
