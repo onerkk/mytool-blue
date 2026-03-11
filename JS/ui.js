@@ -4420,61 +4420,13 @@ showAuraResult = function(){
 
 
 /* =============================================================
-   [PATCH v9] 改運區升級：八字用神為底 + 七維修正當下需求
+   [PATCH v9 disabled] 恢復舊版八字喜用神改運 UI
    ============================================================= */
 (function(){
   if(typeof renderRemedy!=='function') return;
-  var _renderRemedyBase = renderRemedy;
-  function _uiEsc(s){ return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  renderRemedy = function(bazi, type){
-    _renderRemedyBase(bazi, type);
-    try{
-      if(typeof buildSevenEnergyRecommendation!=='function') return;
-      var energy = buildSevenEnergyRecommendation(type||((S.form&&S.form.type)||'general'), (S.form&&S.form.question)||'');
-      if(!energy) return;
-      var wrap = document.getElementById('remedy-actions');
-      if(!wrap) return;
-      var html = '<div class="action-item" style="border:1px solid rgba(212,175,55,.16);background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(255,255,255,.01))">'
-        + '<div class="action-num">7D</div>'
-        + '<div class="action-content">'
-        + '<div class="action-title">七維交叉後，這次更適合的能量方向</div>'
-        + '<div class="action-desc" style="line-height:1.9">'
-        + (energy.warmText ? _uiEsc(energy.warmText)+'<br><br>' : '')
-        + (energy.firstYongshen ? '第一用神：<strong>'+_uiEsc(energy.firstYongshen)+'</strong>。' : '')
-        + (energy.secondYongshen ? ' 第二用神：<strong>'+_uiEsc(energy.secondYongshen)+'</strong>。' : '')
-        + (energy.primaryNeedLabel ? '<br>本題主需求：<strong>'+_uiEsc(energy.primaryNeedLabel)+'</strong>。' : '')
-        + (energy.secondaryNeedLabel ? ' 次需求：<strong>'+_uiEsc(energy.secondaryNeedLabel)+'</strong>。' : '')
-        + (energy.avoid&&energy.avoid.length ? '<br>這次仍要避開：<strong>'+_uiEsc(energy.avoid.join('、'))+'</strong>。</br>' : '')
-        + ((energy.rationale&&energy.rationale.length) ? '<br>'+energy.rationale.slice(0,3).map(function(x){return '• '+_uiEsc(x);}).join('<br>') : '')
-        + '</div>';
-      if(energy.picks && energy.picks.length){
-        html += '<div style="margin-top:.6rem">';
-        energy.picks.slice(0,3).forEach(function(p, idx){
-          html += '<a href="'+(p.shopee||'https://tw.shp.ee/2n5Mo2w')+'" target="_blank" rel="noopener" class="inline-crystal" style="margin-top:'+(idx?'8px':'0')+'">'
-            + '<span class="inline-crystal-icon">'+(typeof getProductSVG==='function'?getProductSVG(p.cat||'手鍊', p.name||''):'💎')+'</span>'
-            + '<div class="inline-crystal-info"><div class="inline-crystal-name">'+_uiEsc(p.name||'能量水晶')+'</div><div class="inline-crystal-desc">'+_uiEsc((p.desc||'').slice(0,34))+((p.desc||'').length>34?'…':'')+'</div></div>'
-            + '<span class="inline-crystal-price">'+_uiEsc(p.price||'')+'</span><i class="fas fa-chevron-right inline-crystal-arrow"></i></a>';
-        });
-        html += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.55rem">這一區不是單純挑看起來順眼的水晶，而是先過八字喜用神，再用七維訊號微調成更貼近你這次問題的方向。</div>';
-        html += '</div>';
-      }
-      html += '</div></div>';
-      wrap.innerHTML = html + wrap.innerHTML;
-    }catch(e){ console.error('renderRemedy v9:', e); }
-  };
-
-  if(typeof _jd7BriefHTML==='function'){
-    var _jd7BriefHTMLBase = _jd7BriefHTML;
-    _jd7BriefHTML = function(type, title){
-      var html = _jd7BriefHTMLBase(type, title);
-      try{
-        var syn = _jd7Dims(type||'general');
-        if(!syn || !syn.directAnswer) return html;
-        return html.replace('</div></div>','<div style="font-size:.8rem;line-height:1.8;color:var(--c-text);margin-top:6px">'+_uiEsc(syn.directAnswer)+' </div></div></div>');
-      }catch(e){ return html; }
-    };
-  }
-})();
+  /* 保留原始 renderRemedy，不再額外插入七維交叉卡片，
+     讓結果頁維持舊版『八字喜用神』改運區樣式。 */
+})();;
 
 // ═══════════════════════════════════════════════════════════════
 // 首頁重設計 + 每日免費額度管控
@@ -4812,29 +4764,4 @@ showAuraResult = function(){
   };
 
   console.log('[Home] 首頁重設計 + 額度管控 + 塔羅牌陣已啟用');
-})();
-
-
-// ===== Crystal flow lock patch v11 =====
-(function(){
-  var _origToggleCollapse = window.toggleCollapse;
-  window.toggleCollapse = function(el){
-    try{
-      var card = el && el.closest ? el.closest('.collapsible-card') : null;
-      if(card && card.id === 'crystal-card'){
-        var ready = !!((window._jyIsCrystalReady && window._jyIsCrystalReady()) || (window.S && S._aiDeepReady));
-        if(!ready){
-          card.classList.remove('open');
-          try{
-            var body = document.getElementById('r-crystal');
-            if(body && !body.innerHTML.trim() && typeof window.renderProductCrystal==='function' && window.S && S.bazi){
-              window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general');
-            }
-          }catch(e){}
-          return;
-        }
-      }
-    }catch(e){}
-    if(typeof _origToggleCollapse==='function') return _origToggleCollapse(el);
-  };
 })();
