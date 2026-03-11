@@ -13564,70 +13564,9 @@ function renderActionCard(bazi, type, answer){
 }
 
 function renderProductCrystal(bazi,type){
-  const energy = (typeof buildSevenEnergyRecommendation==='function')
-    ? buildSevenEnergyRecommendation(type||((S.form&&S.form.type)||'general'), (S.form&&S.form.question)||'')
-    : null;
-
-  if(energy && energy.plans && energy.plans.length){
-    const lead = energy.firstYongshen && energy.secondYongshen
-      ? `本命先看 <span class="tag tag-gold">${energy.firstYongshen}行</span> ＋ <span class="tag tag-gold">${energy.secondYongshen}行</span>，再疊加這次問題真正需要的能量。`
-      : energy.firstYongshen
-        ? `本命先看 <span class="tag tag-gold">${energy.firstYongshen}行</span>，再疊加這次問題真正需要的能量。`
-        : '先看命盤主軸，再把這次問題真正需要的能量疊上去。';
-
-    const bridge = energy.warmText || '你剛剛看到的是答案；下面這一段，是把答案落成你現在比較適合的配戴方向。';
-
-    function renderPlan(plan, idx){
-      var picks = (plan.picks||[]).slice(0,2);
-      return `<div class="card" style="border:1px solid rgba(212,175,55,.16);background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(255,255,255,.01));margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(212,175,55,.12);color:var(--c-gold);font-size:.82rem;font-weight:700">${idx+1}</div>
-          <div>
-            <div style="font-size:.98rem;font-weight:700;color:var(--c-gold)">${plan.title}</div>
-            <div style="font-size:.8rem;color:var(--c-text-dim);line-height:1.7">${plan.subtitle||''}</div>
-          </div>
-        </div>
-        <div class="product-grid">${picks.map(p=>`
-          <div class="product-card">
-            <div class="product-icon">${getProductSVG(p.cat,p.name)}</div>
-            <div class="product-body">
-              <div class="product-name">${p.name}</div>
-              <div class="product-meta">
-                <span class="tag tag-gold text-xs">${catIcon[p.cat]||''} ${p.cat}</span>
-                <span class="el-tag el-${p.element} text-xs">${p.element}行</span>
-              </div>
-              <p class="product-desc">${p.desc||''}</p>
-              <p class="product-price">${p.price||''}</p>
-              <div class="product-actions">
-                <a href="${p.shopee||'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮</a>
-                <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" rel="noopener" class="product-btn seven"><i class="fas fa-box"></i> 7-11</a>
-              </div>
-            </div>
-          </div>`).join('')}</div>
-      </div>`;
-    }
-
-    document.getElementById('r-crystal').innerHTML=`
-      <div class="crystal-rec-header">
-        <p style="margin-bottom:.55rem">${lead}</p>
-        <p style="color:var(--c-text-dim);line-height:1.8">${bridge}</p>
-        <div style="margin-top:.55rem;font-size:.82rem;color:var(--c-text-dim)">七維主需求：<span class="tag tag-blue">${energy.primaryNeedLabel||'穩住底盤'}</span>　次需求：<span class="tag tag-gold">${energy.secondaryNeedLabel||'補足細節'}</span>${energy.avoid&&energy.avoid.length?`　避開：<span class="tag tag-red">${energy.avoid.join('、')}</span>`:''}</div>
-      </div>
-      <div style="margin-top:14px">
-        ${(energy.plans||[]).slice(0,3).map(renderPlan).join('')}
-      </div>
-      <div class="custom-cta mt-lg">
-        <button class="btn btn-gold btn-full" onclick="openCustomModal()">
-          <i class="fas fa-magic"></i> 依你這次命盤＋問題客製搭配
-        </button>
-        <p class="text-xs text-muted mt-sm text-center">不是單看五行缺什麼，而是把底盤、問題、避忌一起配進去</p>
-      </div>
-      <p class="text-xs text-muted mt-md text-center"><i class="fas fa-info-circle"></i> 本建議僅供能量校準參考，不具醫療或命運保證效力。</p>`;
-    return;
-  }
-
   const need=bazi.fav[0];
   const unfavSet = new Set(bazi.unfav||[]);
+  // 九階段：身弱求財不補財星
   const isW = (bazi.strength && bazi.strength < 50);
   const dE = bazi.dmEl || need;
   const cE = {'木':'土','火':'金','土':'水','金':'木','水':'火'}[dE];
@@ -14994,38 +14933,6 @@ function _buildPayload() {
     if (j.crossValidation && j.crossValidation.signals) L.push('交叉驗證：' + j.crossValidation.signals.slice(0,3).map(function(s){return _s(s.zh);}).join('。'));
     if (j.charaDasha && j.charaDasha.current) L.push('Jaimini運勢：' + _s(j.charaDasha.current.signZh) + '(' + _s(j.charaDasha.current.lordZh) + '主宰)');
     if (j.karakamsa && j.karakamsa.zh) L.push('靈魂指引：' + j.karakamsa.zh);
-    try {
-      var jq = (typeof analyzeJyotishQuestion === 'function') ? analyzeJyotishQuestion(j, ft, (S.form&&S.form.question)||'') : null;
-      var jn = (typeof buildJyotishNarrative === 'function') ? buildJyotishNarrative(jq, j, ft) : null;
-      if (jq && jq.yesNoAnswer) {
-        L.push('問事直答：' + _s(jq.yesNoAnswer) + '（分數' + _s(jq.score) + '，信心' + _s(jq.confidence) + '%）');
-        ['why1','why2','why3','riskPoint','action1','action2','timingText'].forEach(function(k){ if (jq[k]) L.push('問事重點：' + _s(jq[k])); });
-        if (jq.strategies && jq.strategies.length) L.push('策略：' + jq.strategies.slice(0,4).map(_s).join('、'));
-      }
-      if (jn) {
-        ['situation','coreConflict','risk','advice','timing'].forEach(function(k){ if (jn[k]) L.push('敘事：' + _s(jn[k])); });
-      }
-    } catch(e) {}
-    if (j.yogas && j.yogas.length) {
-      L.push('重要格局：' + j.yogas.slice(0,6).map(function(y){
-        return _s(y.zh || y.name) + (y.strength ? '（' + _s(y.strength) + '）' : '');
-      }).join('、'));
-    }
-    if (j.planets) {
-      var planetParts = [];
-      ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'].forEach(function(pn) {
-        var pp = j.planets[pn];
-        if (!pp) return;
-        planetParts.push(_s(pp.zh||pn) + '在' + _s(pp.rashi&&pp.rashi.zh) + '第' + _s(pp.bhava) + '宮' + (pp.dignity ? '（' + _s(pp.dignity) + '）' : ''));
-      });
-      if (planetParts.length) L.push('行星落座：' + planetParts.join('、'));
-    }
-    if (j.strengths) {
-      var sParts = Object.keys(j.strengths).slice(0,9).map(function(k){
-        return _s((j.planets&&j.planets[k]&&j.planets[k].zh)||k) + _s(j.strengths[k]);
-      });
-      if (sParts.length) L.push('行星力量總覽：' + sParts.join('、'));
-    }
 
     // D9 Navamsa（婚姻/靈魂層面）
     if (j.planets) {
@@ -18068,23 +17975,6 @@ renderTarot = function(){
     return scored.sort(function(a,b){ return b.__score-a.__score; }).slice(0,4);
   }
   function buildSevenEnergyRecommendation(type, question){
-    function _needElements(need){
-      var map = {
-        stable:['土','水'],
-        clarity:['水','金'],
-        action:['火','木'],
-        love:['火','水'],
-        wealth:['土','木','金'],
-        protect:['金','水'],
-        heal:['水','木','土']
-      };
-      return (map[need] || ['土']).slice();
-    }
-    function _fmtPicks(list){
-      return (list||[]).map(function(p){
-        return {name:p.n, element:p.el, desc:p.d||'', price:p.price||'', shopee:p.shopee||'https://tw.shp.ee/2n5Mo2w', cat:p.cat||'手鍊'};
-      });
-    }
     try{
       var b = (typeof S!=='undefined') ? S.bazi : null;
       var t = _aiQuestionType(type || (S.form&&S.form.type) || 'general');
@@ -18093,26 +17983,12 @@ renderTarot = function(){
       var fav = b && Array.isArray(b.fav) ? b.fav.filter(Boolean).slice(0,2) : [];
       var unfav = b && Array.isArray(b.unfav) ? b.unfav.filter(Boolean).slice(0,3) : [];
       var needs = _aiDeriveNeeds(t, synth||{});
-      var first = fav[0] || '';
-      var second = fav[1] || '';
-      var primaryNeedEls = _needElements(needs.primary);
-      var secondaryNeedEls = _needElements(needs.secondary);
-      var blendEls = Array.from(new Set([first, second].concat(primaryNeedEls).concat(secondaryNeedEls).filter(Boolean)));
-      var planBase = _aiPickProducts(first?[first]:fav, first?[first]:fav, ['stable', needs.secondary]).slice(0,2);
-      var planQuestion = _aiPickProducts(blendEls.length?blendEls:fav, primaryNeedEls, [needs.primary, needs.secondary]).slice(0,2);
-      var planBlend = _aiPickProducts(blendEls.length?blendEls:fav, blendEls.length?blendEls:fav, [needs.primary, needs.secondary]).slice(0,3);
-      var seen = {};
-      var picks = planBlend.filter(function(p){
-        var key = (p.n||'') + '|' + (p.el||'');
-        if(seen[key]) return false;
-        seen[key] = 1;
-        return true;
-      }).slice(0,4);
+      var picks = _aiPickProducts(fav, fav, [needs.primary, needs.secondary]);
       var reasons=[];
-      if(first) reasons.push('先以八字第一喜用神「'+first+'」做底盤，不再只抓單一缺項。');
-      if(second) reasons.push('第二喜用神「'+second+'」保留為輔補，避免整套配戴只剩一種元素。');
-      reasons.push('七維交叉後，這一題的主需求落在「'+_aiNeedLabel(needs.primary)+'」；次需求是「'+_aiNeedLabel(needs.secondary)+'」。');
-      if(unfav.length) reasons.push('忌神方向仍要避開：'+unfav.join('、')+'。');
+      if(fav[0]) reasons.push('能量建議仍以八字第一用神「'+fav[0]+'」為主。');
+      if(fav[1]) reasons.push('第二用神「'+fav[1]+'」可作輔助，讓配戴不只補本命，也更貼近這次問題。');
+      reasons.push('七維交叉後，這次優先需求落在「'+_aiNeedLabel(needs.primary)+'」；次要需求是「'+_aiNeedLabel(needs.secondary)+'」。');
+      if(unfav.length) reasons.push('需避開的忌神方向：'+unfav.join('、')+'。');
       var warm = _aiEnergyExplain(needs.primary, needs.secondary, synth||{});
       return {
         questionType:t,
@@ -18120,21 +17996,15 @@ renderTarot = function(){
         secondaryNeed:needs.secondary,
         primaryNeedLabel:_aiNeedLabel(needs.primary),
         secondaryNeedLabel:_aiNeedLabel(needs.secondary),
-        firstYongshen:first||'',
-        secondYongshen:second||'',
-        supportElements:[first, second].filter(Boolean),
+        firstYongshen:fav[0]||'',
+        secondYongshen:fav[1]||'',
         avoid:unfav,
         rationale:reasons,
         warmText:warm,
-        picks:_fmtPicks(picks),
-        plans:[
-          {key:'base', title:'穩底盤', subtitle:((first?('以第一喜用神「'+first+'」'):'以本命主軸')+'為主，適合長期配戴'), picks:_fmtPicks(planBase)},
-          {key:'question', title:'修這一題', subtitle:'把七維主需求「'+_aiNeedLabel(needs.primary)+'」疊上去，處理你現在最卡的那一段', picks:_fmtPicks(planQuestion)},
-          {key:'blend', title:'平衡型', subtitle:'第一喜用神＋第二喜用神＋本題需求一起看，適合不想補得太偏的人', picks:_fmtPicks(planBlend)}
-        ]
+        picks:picks.map(function(p){ return {name:p.n, element:p.el, desc:p.d||'', price:p.price||'', shopee:p.shopee||'https://tw.shp.ee/2n5Mo2w', cat:p.cat||'手鍊'}; })
       };
     }catch(e){
-      return { primaryNeed:'stable', secondaryNeed:'clarity', rationale:['能量推薦暫時無法完整建立：'+e.message], plans:[], picks:[] };
+      return { primaryNeed:'stable', secondaryNeed:'clarity', rationale:['能量推薦暫時無法完整建立：'+e.message], picks:[] };
     }
   }
   window.buildSevenEnergyRecommendation = buildSevenEnergyRecommendation;
@@ -18917,3 +18787,216 @@ function _rrect(ctx, x, y, w, h, r) {
   ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
   ctx.closePath();
 }
+
+
+// ===== Seven-dimension crystal flow patch v11 =====
+(function(){
+  function _esc(s){ return String(s||'').replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function _typeLabel(t){ try{return typeof getTypeLabel==='function'?getTypeLabel(t):(t||'整體');}catch(e){return t||'整體';} }
+  function _wearFallback(p){
+    if(!p) return '依手圍配戴，日常穩定使用即可';
+    if(p.wear && String(p.wear).trim() && String(p.wear).trim()!=='undefined') return String(p.wear).trim();
+    var el = p.el || '';
+    var cat = p.cat || '手鍊';
+    var map = {木:'左手穩定配戴，做事與成長題優先',火:'需要推進、曝光、行動時配戴',土:'日常穩定配戴，強化根基與承接',金:'談判、決策、斷捨離時配戴',水:'思考、直覺、保護場域時配戴',全:'依當天狀態彈性配戴'};
+    return cat+'建議：'+(map[el]||'依當下狀態配戴即可');
+  }
+  function _arr(v){ return Array.isArray(v)?v.filter(Boolean):[]; }
+  function _pickByElements(elements, type, limit){
+    var els = _arr(elements);
+    var out = [];
+    function pushUnique(list){
+      (list||[]).forEach(function(p){
+        if(!p || out.some(function(x){ return (x.n||x.name)===(p.n||p.name); })) return;
+        out.push(p);
+      });
+    }
+    try{
+      if(typeof smartRecommend==='function' && window.S && S.bazi){
+        pushUnique(smartRecommend(S.bazi, type, Math.max(limit||6, 6)) || []);
+      }
+    }catch(e){}
+    try{
+      if(typeof TYPE_PRODUCTS!=='undefined' && TYPE_PRODUCTS[type]){
+        pushUnique(TYPE_PRODUCTS[type].filter(function(p){ return !els.length || p.el==='全' || els.indexOf(p.el)>=0; }));
+      }
+      if(typeof PRODUCT_DB!=='undefined'){
+        els.forEach(function(el){ pushUnique((PRODUCT_DB[el]||[]).filter(Boolean)); });
+      }
+    }catch(e){}
+    var filtered = out.filter(function(p){ return !els.length || p.el==='全' || els.indexOf(p.el)>=0; });
+    return filtered.slice(0, limit||6);
+  }
+  function _deriveSevenNeeds(type, question){
+    try{
+      var synth = (typeof getSevenDimAnalysis==='function') ? getSevenDimAnalysis(type, question||'') : null;
+      var needs = (typeof _aiDeriveNeeds==='function') ? _aiDeriveNeeds(type, synth||{}) : {primary:'stable',secondary:'clarity'};
+      return { synth:synth, primary:needs.primary||'stable', secondary:needs.secondary||'clarity' };
+    }catch(e){
+      return { synth:null, primary:'stable', secondary:'clarity' };
+    }
+  }
+  function _needToElement(need, fav1, fav2){
+    var map = {stable:'土',clarity:'金',protect:'水',flow:'水',action:'火',love:'火',growth:'木',heal:'木',wealth:'土',career:'金'};
+    var el = map[need] || fav2 || fav1 || '土';
+    return el;
+  }
+
+  window.buildSevenEnergyRecommendation = function(type, question){
+    try{
+      var b = (typeof S!=='undefined') ? S.bazi : null;
+      var t = type || (S&&S.form&&S.form.type) || 'general';
+      var q = question || (S&&S.form&&S.form.question) || '';
+      var fav = b && Array.isArray(b.fav) ? b.fav.filter(Boolean).slice(0,2) : [];
+      var unfav = b && Array.isArray(b.unfav) ? b.unfav.filter(Boolean).slice(0,3) : [];
+      var n = _deriveSevenNeeds(t, q);
+      var primaryEl = _needToElement(n.primary, fav[0], fav[1]);
+      var secondaryEl = _needToElement(n.secondary, fav[1]||fav[0], fav[0]);
+      var sevenElements = [];
+      [fav[0], fav[1], primaryEl, secondaryEl].forEach(function(el){ if(el && sevenElements.indexOf(el)<0 && unfav.indexOf(el)<0) sevenElements.push(el); });
+      if(!sevenElements.length && fav[0]) sevenElements.push(fav[0]);
+      var modes = {
+        seven:{ key:'seven', label:'七維平衡', elements:sevenElements.slice(0,2), desc:'先看第一、第二喜用神，再疊加七維主需求與次需求。' },
+        first:{ key:'first', label:'第一喜用神', elements:fav[0]?[fav[0]]:sevenElements.slice(0,1), desc:'以本命底盤最核心的喜用神為主。' },
+        second:{ key:'second', label:'第二喜用神', elements:fav[1]?[fav[1]]:(fav[0]?[fav[0]]:sevenElements.slice(0,1)), desc:'用第二喜用神做輔助補位，避免只補單一方向。' }
+      };
+      return {
+        questionType:t,
+        firstYongshen:fav[0]||'',
+        secondYongshen:fav[1]||'',
+        primaryNeed:n.primary,
+        secondaryNeed:n.secondary,
+        primaryNeedLabel:(typeof _aiNeedLabel==='function')?_aiNeedLabel(n.primary):n.primary,
+        secondaryNeedLabel:(typeof _aiNeedLabel==='function')?_aiNeedLabel(n.secondary):n.secondary,
+        avoid:unfav,
+        sevenElements:sevenElements,
+        modes:modes,
+        synth:n.synth||null,
+        rationale:[
+          fav[0] ? '本命第一喜用神：'+fav[0]+'。' : '',
+          fav[1] ? '本命第二喜用神：'+fav[1]+'。' : '目前盤面未明確拉出第二喜用神，先以七維交叉補位。',
+          '七維交叉主需求：'+(((typeof _aiNeedLabel==='function')?_aiNeedLabel(n.primary):n.primary))+'。',
+          '七維交叉次需求：'+(((typeof _aiNeedLabel==='function')?_aiNeedLabel(n.secondary):n.secondary))+'。',
+          unfav.length ? '需避開：'+unfav.join('、')+'。' : ''
+        ].filter(Boolean)
+      };
+    }catch(e){
+      return { firstYongshen:'', secondYongshen:'', primaryNeed:'stable', secondaryNeed:'clarity', primaryNeedLabel:'穩定', secondaryNeedLabel:'釐清', avoid:[], sevenElements:['土'], modes:{seven:{key:'seven',label:'七維平衡',elements:['土'],desc:'先以穩定補位。'}}, rationale:['能量推薦建立失敗：'+e.message] };
+    }
+  };
+
+  window.renderProductCrystal = function(bazi, type){
+    var root = document.getElementById('r-crystal');
+    if(!root) return;
+    var ready = !!(window.S && S._aiDeepReady);
+    var ft = type || (window.S&&S.form&&S.form.type) || 'general';
+    var q = (window.S&&S.form&&S.form.question) || '';
+    var energy = window.buildSevenEnergyRecommendation(ft, q);
+    var selected = (window.S && S._crystalMode) || 'seven';
+    if(!energy.modes[selected]) selected = 'seven';
+    if(window.S) S._crystalMode = selected;
+
+    if(!ready){
+      root.innerHTML = '<div style="padding:.95rem 1rem;border:1px solid rgba(212,175,55,.16);border-radius:18px;background:linear-gradient(180deg,rgba(212,175,55,.035),rgba(255,255,255,.01))">'
+        + '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">先等上方七維分析完成</div>'
+        + '<div style="font-size:.82rem;line-height:1.9;color:var(--c-text-dim)">這裡不先偷跑商品。等 API 把答案收束後，才會自動展開，並依 <strong style="color:var(--c-gold)">第一喜用神</strong>、<strong style="color:var(--c-gold)">第二喜用神</strong>、<strong style="color:var(--c-gold)">七維主需求</strong> 做配戴方向。</div>'
+        + '</div>';
+      return;
+    }
+
+    var mode = energy.modes[selected] || energy.modes.seven;
+    var elements = (mode.elements||[]).filter(function(el){ return energy.avoid.indexOf(el)<0; });
+    if(!elements.length) elements = energy.sevenElements && energy.sevenElements.length ? energy.sevenElements.slice(0,2) : [energy.firstYongshen||'土'];
+    var products = _pickByElements(elements, ft, 6);
+    var rows = [
+      ['第一喜用神', energy.firstYongshen || '未明確'],
+      ['第二喜用神', energy.secondYongshen || '未明確'],
+      ['七維主需求', energy.primaryNeedLabel || energy.primaryNeed],
+      ['七維次需求', energy.secondaryNeedLabel || energy.secondary],
+      ['本次模式', mode.label],
+      ['避開方向', energy.avoid && energy.avoid.length ? energy.avoid.join('、') : '目前無明顯忌神限制']
+    ];
+    var buttons = Object.keys(energy.modes).map(function(key){
+      var m = energy.modes[key];
+      var active = key===selected;
+      return '<button type="button" onclick="window.selectCrystalMode(\''+key+'\')" style="padding:.56rem .82rem;border-radius:999px;border:1px solid '+(active?'rgba(212,175,55,.45)':'rgba(212,175,55,.16)')+';background:'+(active?'rgba(212,175,55,.14)':'rgba(255,255,255,.02)')+';color:'+(active?'var(--c-gold)':'var(--c-text-dim)')+';font-size:.78rem;font-weight:700">'+_esc(m.label)+'</button>';
+    }).join('');
+    var table = '<div style="display:grid;grid-template-columns:120px 1fr;gap:.55rem .7rem;padding:.85rem 0">' + rows.map(function(r){
+      return '<div style="color:var(--c-text-dim);font-size:.78rem">'+_esc(r[0])+'</div><div style="color:var(--c-text);font-size:.82rem;line-height:1.8">'+_esc(r[1])+'</div>';
+    }).join('') + '</div>';
+    var cards = products.length ? products.map(function(p){
+      var wear = _wearFallback(p);
+      var price = p.price || '';
+      var shopee = p.shopee || 'https://tw.shp.ee/2n5Mo2w';
+      var seven = p.seven || 'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232&utm_source=threads&utm_medium=social&utm_content=link_in_bio';
+      return '<div class="product-card">'
+        + '<div class="product-icon">'+(typeof getProductSVG==='function'?getProductSVG(p.cat||'手鍊', p.n||p.name||''):'💎')+'</div>'
+        + '<div class="product-body">'
+        + '<div class="product-name">'+_esc(p.n||p.name||'能量手鍊')+'</div>'
+        + '<div class="product-meta">'
+        + '<span class="tag tag-gold text-xs">'+_esc((window.catIcon&&catIcon[p.cat])||'💍')+' '+_esc(p.cat||'手鍊')+'</span>'
+        + '<span class="el-tag el-'+_esc(p.el||'全')+' text-xs">'+_esc((p.el||'全'))+'行</span>'
+        + '</div>'
+        + '<p class="product-desc">'+_esc(p.d||p.desc||((p.el||'')+'行能量補位'))+'</p>'
+        + (price?'<p class="product-price">'+_esc(price)+'</p>':'')
+        + '<p class="product-wear"><i class="fas fa-hand-holding-heart"></i> '+_esc(wear)+'</p>'
+        + '<div class="product-actions">'
+        + '<a href="'+_esc(shopee)+'" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮</a>'
+        + '<a href="'+_esc(seven)+'" target="_blank" rel="noopener" class="product-btn seven"><i class="fas fa-box"></i> 7-11</a>'
+        + '</div></div></div>';
+    }).join('') : '<div style="padding:.85rem;border:1px dashed rgba(212,175,55,.18);border-radius:14px;color:var(--c-text-dim);font-size:.82rem">目前沒有抓到對應現貨，建議改用客製搭配。</div>';
+
+    root.innerHTML = '<div class="crystal-rec-header">'
+      + '<p>先把上方答案收束，再把它落成你的配戴方向。</p>'
+      + '<p style="font-size:.78rem;color:var(--c-text-dim);margin-top:.3rem">'+_esc(mode.desc||'')+'</p>'
+      + '</div>'
+      + '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin:.35rem 0 .3rem">'+buttons+'</div>'
+      + table
+      + '<div class="product-grid">'+cards+'</div>';
+  };
+
+  window.selectCrystalMode = function(mode){
+    if(!(window.S && S._aiDeepReady && S.bazi)) return;
+    S._crystalMode = mode || 'seven';
+    window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general');
+  };
+
+  function _setCrystalCardOpen(open){
+    try{
+      var card = document.getElementById('crystal-card');
+      if(!card) return;
+      if(open) card.classList.add('open'); else card.classList.remove('open');
+    }catch(e){}
+  }
+  function _refreshCrystalAfterAI(){
+    try{
+      if(window.S && S.bazi && typeof window.renderProductCrystal==='function'){
+        window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general');
+      }
+    }catch(e){ console.error('render crystal after ai', e); }
+  }
+
+  if(typeof window._triggerAIDeep === 'function'){
+    var _origTriggerAIDeepV11 = window._triggerAIDeep;
+    window._triggerAIDeep = async function(){
+      try{ if(window.S){ S._aiDeepReady = false; } }catch(e){}
+      _setCrystalCardOpen(false);
+      _refreshCrystalAfterAI();
+      await _origTriggerAIDeepV11.apply(this, arguments);
+      var ok = false;
+      try{
+        var resultDiv = document.getElementById('ai-deep-result');
+        var txt = (resultDiv && resultDiv.textContent || '').trim();
+        ok = !!txt && txt.indexOf('暫時連線不順')<0 && txt.indexOf('再試一次')<0 && txt.indexOf('回傳為空')<0;
+      }catch(e){}
+      try{ if(window.S){ S._aiDeepReady = ok; } }catch(e){}
+      if(ok){
+        _refreshCrystalAfterAI();
+        _setCrystalCardOpen(true);
+      }else{
+        _setCrystalCardOpen(false);
+        _refreshCrystalAfterAI();
+      }
+    };
+  }
+})();
