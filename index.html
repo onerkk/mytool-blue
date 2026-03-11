@@ -755,10 +755,10 @@
     </div>
   </div>
 
-  <!-- ═══ 水晶處方（收折：完整版）═══ -->
-  <div class="card collapsible-card" style="border:1px solid rgba(212,175,55,.25)">
+  <!-- ═══ 水晶處方（收折：API 完成前鎖定）═══ -->
+  <div class="card collapsible-card" id="crystal-panel" style="border:1px solid rgba(212,175,55,.25);opacity:.5;pointer-events:none">
     <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
-      <span><i class="fas fa-gem"></i> 完整水晶處方 — 依你命盤精選</span>
+      <span><i class="fas fa-gem"></i> <span id="crystal-panel-title">完整水晶處方 — 等待命盤分析完成…</span></span>
       <i class="fas fa-chevron-down collapse-arrow"></i>
     </div>
     <div class="collapsible-body">
