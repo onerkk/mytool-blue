@@ -15221,7 +15221,7 @@ async function _triggerAIDeep() {
         var _dbgSizes = _dbgR.map(function(k){return k+':'+((payload.readings[k]||'').length||0);});
         var _dbgTotal = JSON.stringify(payload).length;
         var _dbgRaw = Object.keys(payload.rawReadings||{}).filter(function(k){ return k !== 'jyotish'; }).map(function(k){return k+':'+((payload.rawReadings[k]||'').length||0);});
-        html+='<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.4;word-break:break-all">[payload] '+_dbgTotal+'字 | raw: '+_dbgRaw.join(', ')+' | final: '+_dbgSizes.join(', ')+'</div>';
+        html+='<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.4;word-break:break-all">[payload v3-force-4k-5k] '+_dbgTotal+'字 | raw: '+_dbgRaw.join(', ')+' | final: '+_dbgSizes.join(', ')+'</div>';
       } catch(e){}
     }
     html += '</div>';
@@ -18119,6 +18119,7 @@ renderTarot = function(){
       function _buildNormalizedReading(name, rawText, sp, sourceObj, minLen, maxLen){
         minLen = minLen || 4000;
         maxLen = maxLen || 5000;
+        if (maxLen < minLen) maxLen = minLen;
         var sections = [];
         var summary = _summaryFromSystemPayload(sp);
         if (summary) sections.push('【系統摘要】\n' + summary);
@@ -18156,13 +18157,23 @@ renderTarot = function(){
 
         if (out.length > maxLen) out = _clipText(out, maxLen);
         if (out.length < minLen) {
-          var tail = '\n\n【長度補齊】\n' + (summary || rawText || name || '');
-          while (out.length < minLen && tail.trim()) {
+          var tailBase = (summary || rawText || name || '此系統原始資料偏少，以下為結構重述與補齊。');
+          var tail = '\n\n【長度補齊】\n' + tailBase;
+          var guard = 0;
+          while (out.length < minLen && guard < 200) {
             out += tail;
-            if (out.length > maxLen) break;
+            guard += 1;
           }
-          if (out.length > maxLen) out = _clipText(out, maxLen);
         }
+        if (out.length < minLen) {
+          var hardPad = ('\n【補齊片段】' + (name || 'system') + ' evidence');
+          var guard2 = 0;
+          while (out.length < minLen && guard2 < 2000) {
+            out += hardPad;
+            guard2 += 1;
+          }
+        }
+        if (out.length > maxLen) out = _clipText(out, maxLen);
         return out;
       }
 
@@ -18219,6 +18230,7 @@ renderTarot = function(){
 
       var targetRange = { min: 4000, max: 5000 };
       p.readings = p.readings || {};
+      p.__balancedReadingsVersion = 'v3-force-4k-5k';
       Object.keys(normalizedMap).forEach(function(k){
         var item = normalizedMap[k] || {};
         var normalized = _buildNormalizedReading(k, item.raw, item.sp, item.source, targetRange.min, targetRange.max);
@@ -18615,7 +18627,7 @@ renderTarot = function(){
             var _dt = JSON.stringify(payload).length;
             var _drRaw = Object.keys(payload.rawReadings||{}).filter(function(k){ return k !== 'jyotish'; });
             var _dsRaw = _drRaw.map(function(k){return k+':'+((payload.rawReadings[k]||'').length||0);});
-            resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload] '+_dt+'字 | raw: '+_dsRaw.join(', ')+' | final: '+_ds.join(', ')+'</div></div>');
+            resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload v3-force-4k-5k] '+_dt+'字 | raw: '+_dsRaw.join(', ')+' | final: '+_ds.join(', ')+'</div></div>');
           } catch(e){}
         }
         resultDiv.innerHTML = resultHtml;
@@ -18636,6 +18648,16 @@ renderTarot = function(){
         });
         // [REMOVED] html += _renderAIEnergyCard(payload.energyRecommendation);
         if (admin && data.usage) html += '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div>';
+        if (admin) {
+          try {
+            var _dr2 = Object.keys(payload.readings||{});
+            var _ds2 = _dr2.map(function(k){return k+':'+((payload.readings[k]||'').length||0);});
+            var _dt2 = JSON.stringify(payload).length;
+            var _drRaw2 = Object.keys(payload.rawReadings||{}).filter(function(k){ return k !== 'jyotish'; });
+            var _dsRaw2 = _drRaw2.map(function(k){return k+':'+((payload.rawReadings[k]||'').length||0);});
+            html += '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload v3-force-4k-5k] '+_dt2+'字 | raw: '+_dsRaw2.join(', ')+' | final: '+_ds2.join(', ')+'</div>';
+          } catch(e){}
+        }
         html += '</div>';
         resultDiv.innerHTML = html;
       }
