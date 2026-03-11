@@ -19015,3 +19015,266 @@ function _rrect(ctx, x, y, w, h, r) {
   ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
   ctx.closePath();
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// _buildPayload v4 — 七維象徵交集決策版
+// 目標：保留七維全部象徵，不讓長文字數主導敘事；改由交集/矛盾/變數做主軸
+// ═══════════════════════════════════════════════════════════════
+(function(){
+  var _buildPayloadPrev = _buildPayload;
+
+  function _sbTxt(v){ return v == null ? '' : String(v).replace(/\s+/g,' ').trim(); }
+  function _sbArr(v){ return Array.isArray(v) ? v : []; }
+  function _sbClip(s, n){ s = _sbTxt(s); return s.length > n ? s.slice(0, n) + '…' : s; }
+  function _sbUniq(arr){
+    var seen = Object.create(null), out = [];
+    (arr||[]).forEach(function(x){
+      var s = _sbTxt(x);
+      if (!s) return;
+      var k = s.toLowerCase();
+      if (seen[k]) return;
+      seen[k] = 1;
+      out.push(s);
+    });
+    return out;
+  }
+  function _sbSplitRaw(raw){
+    raw = _sbTxt(raw);
+    if (!raw) return [];
+    return raw.split(/\n+|(?<=[。！？；;])\s*/).map(function(x){ return _sbTxt(x); }).filter(Boolean);
+  }
+  function _sbTagNorm(t){
+    if (!t) return null;
+    var label = _sbTxt(t.label || t.tag || t.text || t.detail || '');
+    if (!label) return null;
+    var direction = t.direction || t.dir || t.polarity || 'mid';
+    if (direction === 'positive') direction = 'pos';
+    if (direction === 'negative') direction = 'neg';
+    if (['pos','neg','mid'].indexOf(direction) < 0) direction = 'mid';
+    var weight = Number(t.weight || t.score || 1);
+    if (!isFinite(weight) || weight <= 0) weight = 1;
+    return {
+      label: label,
+      direction: direction,
+      weight: weight,
+      detail: _sbClip(t.detail || t.text || '', 140)
+    };
+  }
+  function _sbExtractList(sp, keys){
+    var out = [];
+    if (!sp || typeof sp !== 'object') return out;
+    keys.forEach(function(k){
+      var v = sp[k];
+      if (!v) return;
+      if (Array.isArray(v)) {
+        v.forEach(function(item){
+          if (item == null) return;
+          if (typeof item === 'string') out.push(item);
+          else if (typeof item === 'object') out.push(item.detail || item.label || item.text || item.name || '');
+        });
+      } else if (typeof v === 'string') out.push(v);
+      else if (typeof v === 'object') {
+        Object.keys(v).forEach(function(sub){
+          var sv = v[sub];
+          if (Array.isArray(sv)) sv.forEach(function(item){ out.push(typeof item === 'string' ? item : (item && (item.detail || item.label || item.text || item.name)) || ''); });
+          else if (typeof sv === 'string') out.push(sv);
+        });
+      }
+    });
+    return _sbUniq(out).map(function(x){ return _sbClip(x, 160); }).filter(Boolean);
+  }
+  function _sbBuildSystemEvidence(sysKey, sp, raw, dim){
+    var tags = [];
+    _sbArr(sp && sp.tags).forEach(function(t){
+      var nt = _sbTagNorm(t);
+      if (nt) tags.push(nt);
+    });
+    _sbArr(dim && dim.tags).forEach(function(t){
+      var nt = _sbTagNorm(t);
+      if (nt) tags.push(nt);
+    });
+    tags = tags.filter(Boolean);
+
+    var supportPool = _sbExtractList(sp, ['supports','coreSupports','positiveSignals','evidence'])
+      .concat(_sbArr(dim && dim.tags).filter(function(t){ return (t.direction||t.dir)==='pos'; }).map(function(t){ return t.label || t.tag || t.detail || t.text || ''; }));
+    var riskPool = _sbExtractList(sp, ['risks','coreRisks','negativeSignals','warnings'])
+      .concat(_sbArr(dim && dim.tags).filter(function(t){ return (t.direction||t.dir)==='neg'; }).map(function(t){ return t.label || t.tag || t.detail || t.text || ''; }));
+    var variablePool = _sbExtractList(sp, ['neutralSignals','variables','conditions','counterSignals']);
+    var timingPool = _sbExtractList(sp, ['timing','time','windows']);
+    var actionPool = _sbExtractList(sp, ['actions','actionAdvice','advice','strategy']);
+    var corePool = _sbExtractList(sp, ['summary','verdict','reason','detail','core']);
+    var rawSeg = _sbSplitRaw(raw);
+    var rawImportant = rawSeg.slice(0, 8)
+      .concat(rawSeg.length > 16 ? rawSeg.slice(Math.max(8, Math.floor(rawSeg.length/2)-4), Math.max(12, Math.floor(rawSeg.length/2)+4)) : [])
+      .concat(rawSeg.length > 8 ? rawSeg.slice(-8) : []);
+    rawImportant = _sbUniq(rawImportant).map(function(x){ return _sbClip(x, 180); }).slice(0, 18);
+
+    return {
+      system: sysKey,
+      score: (sp && sp.score != null) ? sp.score : (dim && dim.score != null ? dim.score : null),
+      confidence: (sp && sp.confidence != null) ? sp.confidence : (dim && dim.confidence != null ? dim.confidence : null),
+      direction: sp && sp.direction ? sp.direction : (dim && dim.dir ? dim.dir : 'mid'),
+      verdict: _sbClip((sp && sp.verdict) || (dim && dim.verdict) || '', 200),
+      summary: _sbClip((sp && sp.summary) || (dim && dim.reason) || '', 280),
+      supports: _sbUniq(supportPool).slice(0, 12),
+      risks: _sbUniq(riskPool).slice(0, 12),
+      variables: _sbUniq(variablePool).slice(0, 10),
+      timing: _sbUniq(timingPool).slice(0, 8),
+      actions: _sbUniq(actionPool).slice(0, 8),
+      core: _sbUniq(corePool).slice(0, 12),
+      raw_fragments: rawImportant,
+      tags: tags.slice(0, 18)
+    };
+  }
+  function _sbCanonical(label){
+    label = _sbTxt(label).toLowerCase();
+    if (!label) return '';
+    label = label.replace(/[\[\]()（）【】「」『』'"、,，。；;：:！？!?]/g,'');
+    label = label.replace(/(很|太|較|偏|容易|可能|需要|出現|呈現|代表|顯示|顯現|狀態|傾向|問題|風險|阻礙|卡點|條件|訊號|跡象|課題|能量|互動|關係|局面|發展|結果)$/g,'');
+    return label;
+  }
+  function _sbBuildCross(systemEvidence){
+    var map = Object.create(null);
+    var systems = Object.keys(systemEvidence||{});
+    systems.forEach(function(sys){
+      var ev = systemEvidence[sys] || {};
+      ['supports','risks','variables'].forEach(function(kind){
+        _sbArr(ev[kind]).forEach(function(item){
+          var key = _sbCanonical(item);
+          if (!key) return;
+          if (!map[key]) map[key] = { key:key, label:item, kind:kind, systems:[], weights:[], details:[] };
+          if (map[key].systems.indexOf(sys) < 0) map[key].systems.push(sys);
+          var tw = 1;
+          var tag = _sbArr(ev.tags).find(function(t){ return _sbCanonical(t.label) === key; });
+          if (tag) tw = Number(tag.weight || 1) || 1;
+          map[key].weights.push(tw);
+          map[key].details.push(sys + '：' + item);
+        });
+      });
+    });
+    var arr = Object.keys(map).map(function(k){
+      var x = map[k];
+      var supportCount = x.systems.length;
+      var avgWeight = x.weights.length ? x.weights.reduce(function(a,b){ return a+b; },0) / x.weights.length : 1;
+      x.overlap = supportCount;
+      x.score = Number((supportCount * avgWeight).toFixed(2));
+      return x;
+    }).sort(function(a,b){ return b.score - a.score || b.overlap - a.overlap; });
+
+    var main = arr.filter(function(x){ return x.kind === 'supports' && x.overlap >= 2; }).slice(0, 8);
+    var risks = arr.filter(function(x){ return x.kind === 'risks' && x.overlap >= 2; }).slice(0, 8);
+    var vars = arr.filter(function(x){ return x.kind === 'variables' || x.overlap === 1; }).slice(0, 10);
+
+    var conflicts = [];
+    main.forEach(function(pos){
+      risks.forEach(function(neg){
+        var inter = pos.systems.filter(function(s){ return neg.systems.indexOf(s) >= 0; });
+        if (inter.length) {
+          conflicts.push({
+            positive: pos.label,
+            negative: neg.label,
+            systems: inter,
+            overlap: inter.length,
+            explanation: '同一批系統同時看到推進與阻力，代表不是單向好壞，而是條件式結果。'
+          });
+        }
+      });
+    });
+    conflicts = conflicts.slice(0, 8);
+
+    return {
+      main_symbols: main.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details.slice(0, 6) }; }),
+      risk_symbols: risks.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details.slice(0, 6) }; }),
+      variable_symbols: vars.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details.slice(0, 4), kind:x.kind }; }),
+      conflict_pairs: conflicts,
+      narrative_spine: main.slice(0,4).map(function(x){ return x.label; }),
+      narrative_risks: risks.slice(0,4).map(function(x){ return x.label; }),
+      narrative_variables: vars.slice(0,4).map(function(x){ return x.label; })
+    };
+  }
+  function _sbRenderReading(sysName, ev){
+    var lines = [];
+    lines.push('【系統角色】');
+    lines.push(sysName + '提供的是其中一條證據線，不可單獨主導結論。');
+    if (ev.verdict) { lines.push('【直接判斷】'); lines.push(ev.verdict); }
+    if (ev.summary) { lines.push('【摘要】'); lines.push(ev.summary); }
+    if (_sbArr(ev.supports).length) { lines.push('【支持象徵】'); lines.push('- ' + ev.supports.join('\n- ')); }
+    if (_sbArr(ev.risks).length) { lines.push('【負向象徵】'); lines.push('- ' + ev.risks.join('\n- ')); }
+    if (_sbArr(ev.variables).length) { lines.push('【變數】'); lines.push('- ' + ev.variables.join('\n- ')); }
+    if (_sbArr(ev.timing).length) { lines.push('【時機】'); lines.push('- ' + ev.timing.join('\n- ')); }
+    if (_sbArr(ev.actions).length) { lines.push('【行動建議】'); lines.push('- ' + ev.actions.join('\n- ')); }
+    if (_sbArr(ev.raw_fragments).length) { lines.push('【原始片段】'); lines.push('- ' + ev.raw_fragments.join('\n- ')); }
+    return lines.join('\n');
+  }
+
+  _buildPayload = function(){
+    var p = _buildPayloadPrev();
+    try {
+      var synth = (typeof S !== 'undefined' && S._sevenSummary) ? S._sevenSummary : null;
+      var dims = (synth && synth.dimResults) || (typeof S !== 'undefined' && S._dimResults) || [];
+      var structured = p.systemPayloads || p.systems || {};
+      var sysMap = {
+        bazi: '八字',
+        ziwei: '紫微斗數',
+        meihua: '梅花易數',
+        tarot: '塔羅',
+        natal: '西洋占星',
+        vedic: '吠陀占星',
+        name: '姓名學'
+      };
+      var systemEvidence = {};
+      Object.keys(sysMap).forEach(function(key){
+        var dim = _sbArr(dims).find(function(d){
+          var dk = ({'八字':'bazi','紫微':'ziwei','梅花':'meihua','塔羅':'tarot','星盤':'natal','吠陀':'vedic','姓名':'name'})[d.dim] || d.key || '';
+          return dk === key || (key === 'vedic' && ((d.key || '') === 'jyotish'));
+        }) || null;
+        var sp = structured[key] || (key === 'vedic' ? (structured.jyotish || null) : null) || null;
+        var raw = (p.rawReadings && (p.rawReadings[key] || (key === 'vedic' ? p.rawReadings.jyotish : ''))) || (p.readings && p.readings[key]) || '';
+        systemEvidence[key] = _sbBuildSystemEvidence(key, sp, raw, dim);
+      });
+
+      var cross = _sbBuildCross(systemEvidence);
+      p.symbolicEvidence = systemEvidence;
+      p.crossSummary = {
+        spine: cross.narrative_spine,
+        risks: cross.narrative_risks,
+        variables: cross.narrative_variables,
+        main_symbols: cross.main_symbols,
+        risk_symbols: cross.risk_symbols,
+        variable_symbols: cross.variable_symbols,
+        conflict_pairs: cross.conflict_pairs,
+        instruction: '主線看跨系統重疊最多的象徵；壞訊號不能刪；矛盾視為條件分支，不做平均。'
+      };
+      p.consensus = p.crossSummary;
+      p.crossSignals = cross.main_symbols.slice(0, 8).map(function(x){
+        return '主線：' + x.symbol + '（' + x.systems.join('/') + '，重疊' + x.overlap + '）';
+      }).concat(cross.risk_symbols.slice(0, 5).map(function(x){
+        return '風險：' + x.symbol + '（' + x.systems.join('/') + '，重疊' + x.overlap + '）';
+      }));
+      p.conflicts = cross.conflict_pairs.map(function(c){
+        return c.positive + ' ↔ ' + c.negative + '（' + c.systems.join('/') + '）';
+      });
+      p.storySkeleton = {
+        mainline: cross.narrative_spine,
+        badline: cross.narrative_risks,
+        variables: cross.narrative_variables,
+        bridge: [
+          '先逐題直答，再展開主線。',
+          '主線採用重疊最多的象徵。',
+          '壞訊號單獨列出，不可被好訊號蓋掉。',
+          '矛盾視為不同條件下的分支劇本。'
+        ]
+      };
+
+      p.readings = p.readings || {};
+      Object.keys(sysMap).forEach(function(key){
+        p.readings[key] = _sbRenderReading(sysMap[key], systemEvidence[key]);
+      });
+      if (p.readings.jyotish) delete p.readings.jyotish;
+    } catch (e) {
+      console.warn('[buildPayload v4 symbolic] error:', e);
+    }
+    return p;
+  };
+})();
