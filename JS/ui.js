@@ -4603,7 +4603,7 @@ showAuraResult = function(){
       '<div style="margin-top:1.5rem;text-align:center">' +
         (isAdmin ?
           '<span style="font-size:.7rem;color:#a78bfa;opacity:.5">👑 管理員・無限次</span>' :
-          '<span style="font-size:.73rem;color:var(--c-text-muted,#6b6355)">✦ 免費塔羅解讀 · 不限次數</span>'
+          '<span style="font-size:.73rem;color:var(--c-text-muted,#6b6355)">✦ 每日免費一次塔羅解讀</span>'
         ) +
       '</div>' +
 
@@ -5113,7 +5113,8 @@ function resetToHome() {
       var btnGo = document.getElementById('btn-go');
       if (btnGo) {
         btnGo.innerHTML = '<i class="fas fa-star"></i> 開始塔羅解讀';
-        btnGo.onclick = function() { submitTarotQuick(); };
+        btnGo.removeAttribute('onclick'); // 移除 HTML 屬性的 onclick
+        btnGo.onclick = function(e) { e.preventDefault(); e.stopPropagation(); submitTarotQuick(); };
       }
       // 隱藏手動模式按鈕
       var manualBtn = inputScreen.querySelector('.btn-outline.btn-sm');

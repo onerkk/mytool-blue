@@ -15137,7 +15137,29 @@ async function _triggerAIDeep() {
       body: JSON.stringify(body)
     });
     
-    var data = await resp.json();
+    // ── 解析 SSE stream ──
+    var data = {};
+    var _ct = resp.headers.get('content-type') || '';
+    if (_ct.indexOf('text/event-stream') >= 0) {
+      var _r = resp.body.getReader(); var _d = new TextDecoder(); var _b = '';
+      while (true) {
+        var _c = await _r.read(); if (_c.done) break;
+        _b += _d.decode(_c.value, { stream: true });
+        var _pp = _b.split('\n\n'); _b = _pp.pop();
+        for (var _pi = 0; _pi < _pp.length; _pi++) {
+          var _bl = _pp[_pi].trim(); if (!_bl) continue;
+          var _ll = _bl.split('\n'); var _ev = '', _ed = '';
+          for (var _li = 0; _li < _ll.length; _li++) {
+            if (_ll[_li].indexOf('event: ') === 0) _ev = _ll[_li].slice(7).trim();
+            else if (_ll[_li].indexOf('data: ') === 0) _ed += _ll[_li].slice(6);
+          }
+          if (_ev === 'result' && _ed) { try { data = JSON.parse(_ed); } catch(_){} }
+          else if (_ev === 'error' && _ed) { try { var _ee = JSON.parse(_ed); throw new Error(_ee.error || '錯誤'); } catch(_e){ if(_e.message) throw _e; } }
+        }
+      }
+    } else {
+      data = await resp.json();
+    }
     if (!resp.ok) {
       console.error('[AI] Worker error:', resp.status, data);
       throw Object.assign({status:resp.status}, data);
@@ -18606,7 +18628,45 @@ renderTarot = function(){
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      var data = await resp.json();
+      // ── 解析 SSE stream（Worker 回傳 text/event-stream）──
+      var data = {};
+      var contentType = resp.headers.get('content-type') || '';
+      if (contentType.indexOf('text/event-stream') >= 0) {
+        var _sseReader = resp.body.getReader();
+        var _sseDecoder = new TextDecoder();
+        var _sseBuf = '';
+        while (true) {
+          var _sseChunk = await _sseReader.read();
+          if (_sseChunk.done) break;
+          _sseBuf += _sseDecoder.decode(_sseChunk.value, { stream: true });
+          var _sseParts = _sseBuf.split('\n\n');
+          _sseBuf = _sseParts.pop();
+          for (var _sp = 0; _sp < _sseParts.length; _sp++) {
+            var _sseBlock = _sseParts[_sp].trim();
+            if (!_sseBlock) continue;
+            var _sseLines = _sseBlock.split('\n');
+            var _sseEvt = '', _sseData = '';
+            for (var _sl = 0; _sl < _sseLines.length; _sl++) {
+              if (_sseLines[_sl].indexOf('event: ') === 0) _sseEvt = _sseLines[_sl].slice(7).trim();
+              else if (_sseLines[_sl].indexOf('data: ') === 0) _sseData += _sseLines[_sl].slice(6);
+            }
+            if (_sseEvt === 'result' && _sseData) {
+              try { data = JSON.parse(_sseData); } catch(_pe){}
+            } else if (_sseEvt === 'progress' && _sseData) {
+              try {
+                var _prog = JSON.parse(_sseData);
+                var _phEl = document.getElementById('ai-loading-phase');
+                if (_phEl && _prog.message) { _phEl.style.opacity='0'; setTimeout(function(){if(_phEl){_phEl.textContent=_prog.message;_phEl.style.opacity='1';}},250); }
+              } catch(_pe2){}
+            } else if (_sseEvt === 'error' && _sseData) {
+              try { var _sseErr = JSON.parse(_sseData); throw new Error(_sseErr.error || '伺服器錯誤'); } catch(_e3){ if (_e3.message) throw _e3; }
+            }
+          }
+        }
+      } else {
+        // JSON fallback（舊 Worker 或錯誤回應）
+        data = await resp.json();
+      }
       clearInterval(_aiPhaseTimer);
       if (!resp.ok) throw Object.assign({status:resp.status}, data);
       if (!admin) _aiMarkUsed();
@@ -18631,6 +18691,8 @@ renderTarot = function(){
           } catch(e){}
         }
         resultDiv.innerHTML = resultHtml;
+        // 解鎖水晶處方面板
+        try { var _cp = document.getElementById('crystal-panel'); if(_cp){ _cp.style.opacity='1'; _cp.style.pointerEvents='auto'; var _ct=document.getElementById('crystal-panel-title'); if(_ct) _ct.textContent='完整水晶處方 — 依你命盤精選'; } } catch(_){}
       } else {
         var html = '<div class="card" style="border-left:3px solid #8b5cf6;margin-top:.5rem"><div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem"><span style="font-size:1.1rem">🌙</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解讀</span></div>';
         var txt = String(r||'');
@@ -18660,6 +18722,8 @@ renderTarot = function(){
         }
         html += '</div>';
         resultDiv.innerHTML = html;
+        // 解鎖水晶處方面板
+        try { var _cp2 = document.getElementById('crystal-panel'); if(_cp2){ _cp2.style.opacity='1'; _cp2.style.pointerEvents='auto'; var _ct2=document.getElementById('crystal-panel-title'); if(_ct2) _ct2.textContent='完整水晶處方 — 依你命盤精選'; } } catch(_){}
       }
     } catch(err) {
       clearInterval(_aiPhaseTimer);
@@ -19548,16 +19612,29 @@ async function _triggerTarotAI() {
     // ── 渲染結果 ──
     _renderTarotAIResult(resultDiv, r, admin);
 
+    // ── 存 closing 給分享圖用 ──
+    var _closing = (r.closing || r.oneliner || r.directAnswer || '').trim();
+    if (_closing) window._jyClosingText = _closing;
+
     // ── 渲染水晶推薦區 ──
     _renderTarotCrystal(r);
 
   } catch(err) {
     clearInterval(phaseTimer);
     console.error('[TarotAI]', err);
-    resultDiv.innerHTML = '<div style="text-align:center;padding:1rem">' +
-      '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">暫時連線不順，請再試一次</div>' +
-      '<button onclick="_triggerTarotAI()" style="padding:.7rem 1.5rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit">🃏 再試一次</button>' +
-    '</div>';
+    if (err.status === 429 || (err.code && err.code.indexOf('TAROT_RATE') >= 0)) {
+      resultDiv.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
+        '<div style="font-size:2rem;margin-bottom:.6rem;opacity:.6">🌙</div>' +
+        '<div style="font-size:.95rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">今日塔羅已用完</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">每天 1 次免費塔羅解讀<br>子時（00:00）重置，明天再來</div>' +
+        '<div style="font-size:.78rem;color:var(--c-text-muted)">想看更深的？填生辰解鎖七維度命盤分析 ↓</div>' +
+      '</div>';
+    } else {
+      resultDiv.innerHTML = '<div style="text-align:center;padding:1rem">' +
+        '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">暫時連線不順，請再試一次</div>' +
+        '<button onclick="_triggerTarotAI()" style="padding:.7rem 1.5rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit">🃏 再試一次</button>' +
+      '</div>';
+    }
   }
 }
 
