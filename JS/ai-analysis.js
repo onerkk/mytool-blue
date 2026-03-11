@@ -15220,7 +15220,8 @@ async function _triggerAIDeep() {
         var _dbgR = Object.keys(payload.readings||{});
         var _dbgSizes = _dbgR.map(function(k){return k+':'+((payload.readings[k]||'').length||0);});
         var _dbgTotal = JSON.stringify(payload).length;
-        html+='<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.4;word-break:break-all">[payload] '+_dbgTotal+'字 | readings: '+_dbgSizes.join(', ')+'</div>';
+        var _dbgRaw = Object.keys(payload.rawReadings||{}).filter(function(k){ return k !== 'jyotish'; }).map(function(k){return k+':'+((payload.rawReadings[k]||'').length||0);});
+        html+='<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.4;word-break:break-all">[payload] '+_dbgTotal+'字 | raw: '+_dbgRaw.join(', ')+' | final: '+_dbgSizes.join(', ')+'</div>';
       } catch(e){}
     }
     html += '</div>';
@@ -18022,6 +18023,209 @@ renderTarot = function(){
       var q = (typeof S !== 'undefined' && S.form) ? (S.form.question || '') : '';
       var ft = (typeof S !== 'undefined' && S.form) ? (S.form.type || 'general') : 'general';
 
+      // ═══ 0. readings 正規化：強制各維度落在 4000～5000 字，避免長文系統壓制其他維度 ═══
+      p.dims = p.dims || {};
+      p.rawReadings = Object.assign({}, p.readings || {});
+      if (p.rawReadings && p.rawReadings.jyotish && !p.rawReadings.vedic) p.rawReadings.vedic = p.rawReadings.jyotish;
+
+      function _clipText(s, maxLen){
+        s = s == null ? '' : String(s);
+        if (!maxLen || s.length <= maxLen) return s;
+        return s.slice(0, maxLen) + '…';
+      }
+      function _safeArr(v){ return Array.isArray(v) ? v : []; }
+      function _shortDir(d){
+        return d === 'positive' ? '偏正面' : d === 'negative' ? '偏負面' : '中性';
+      }
+      function _jsonSafe(v, maxLen){
+        try {
+          var seen = [];
+          var out = JSON.stringify(v, function(k, val){
+            if (typeof val === 'function') return '[Function]';
+            if (val && typeof val === 'object') {
+              if (seen.indexOf(val) >= 0) return '[Circular]';
+              seen.push(val);
+            }
+            return val;
+          }, 2) || '';
+          return _clipText(out, maxLen || 12000);
+        } catch(e) {
+          return '';
+        }
+      }
+      function _flattenEvidence(prefix, v, bucket, depth){
+        bucket = bucket || [];
+        depth = depth || 0;
+        if (depth > 3 || v == null) return bucket;
+        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+          var line = (prefix ? prefix + '：' : '') + String(v);
+          if (line && bucket.indexOf(line) === -1) bucket.push(line);
+          return bucket;
+        }
+        if (Array.isArray(v)) {
+          v.slice(0, 12).forEach(function(item, idx){
+            _flattenEvidence((prefix ? prefix + '[' + idx + ']' : '[' + idx + ']'), item, bucket, depth + 1);
+          });
+          return bucket;
+        }
+        Object.keys(v).slice(0, 20).forEach(function(k){
+          _flattenEvidence(prefix ? prefix + '.' + k : k, v[k], bucket, depth + 1);
+        });
+        return bucket;
+      }
+      function _summaryFromSystemPayload(sp){
+        if (!sp || typeof sp !== 'object') return '';
+        var lines = [];
+        if (sp.verdict) lines.push('結論：' + sp.verdict);
+        if (typeof sp.score === 'number' || typeof sp.confidence === 'number' || sp.direction) {
+          lines.push(
+            '評分：' + (typeof sp.score === 'number' ? sp.score + '/100' : '—') +
+            '｜信心：' + (typeof sp.confidence === 'number' ? sp.confidence + '%' : '—') +
+            '｜方向：' + _shortDir(sp.direction)
+          );
+        }
+        if (sp.summary) lines.push('摘要：' + sp.summary);
+
+        var supports = _safeArr(sp.supports).slice(0, 12).map(function(x){ return x && (x.detail || x.label || x.text) ? (x.detail || x.label || x.text) : ''; }).filter(Boolean);
+        var risks = _safeArr(sp.risks).slice(0, 10).map(function(x){ return x && (x.detail || x.label || x.text) ? (x.detail || x.label || x.text) : ''; }).filter(Boolean);
+        var neutral = _safeArr(sp.neutralSignals).slice(0, 8).map(function(x){ return x && (x.detail || x.label || x.text) ? (x.detail || x.label || x.text) : ''; }).filter(Boolean);
+        if (supports.length) lines.push('支持訊號：\n- ' + supports.join('\n- '));
+        if (risks.length) lines.push('風險訊號：\n- ' + risks.join('\n- '));
+        if (neutral.length) lines.push('保留點：\n- ' + neutral.join('\n- '));
+
+        if (sp.timing && (sp.timing.text || (_safeArr(sp.timing.goodWindows).length + _safeArr(sp.timing.riskWindows).length > 0))) {
+          var timing = [];
+          if (sp.timing.text) timing.push(sp.timing.text);
+          if (_safeArr(sp.timing.goodWindows).length) timing.push('有利時段：' + _safeArr(sp.timing.goodWindows).slice(0, 12).join('、'));
+          if (_safeArr(sp.timing.riskWindows).length) timing.push('注意時段：' + _safeArr(sp.timing.riskWindows).slice(0, 12).join('、'));
+          lines.push('時機：' + timing.join('；'));
+        }
+
+        if (sp.core && typeof sp.core === 'object') {
+          var coreBits = [];
+          Object.keys(sp.core).slice(0, 20).forEach(function(k){
+            var v = sp.core[k];
+            if (v == null) return;
+            if (Array.isArray(v) && v.length) coreBits.push(k + '：' + v.slice(0, 12).map(function(it){ return typeof it === 'string' ? it : _jsonSafe(it, 600); }).join('、'));
+            else if (typeof v === 'string' && v) coreBits.push(k + '：' + v);
+            else if (typeof v === 'object') coreBits.push(k + '：' + _jsonSafe(v, 1200));
+            else coreBits.push(k + '：' + String(v));
+          });
+          if (coreBits.length) lines.push('核心依據：\n- ' + coreBits.join('\n- '));
+        }
+
+        return lines.filter(Boolean).join('\n\n');
+      }
+      function _buildNormalizedReading(name, rawText, sp, sourceObj, minLen, maxLen){
+        minLen = minLen || 4000;
+        maxLen = maxLen || 5000;
+        var sections = [];
+        var summary = _summaryFromSystemPayload(sp);
+        if (summary) sections.push('【系統摘要】\n' + summary);
+        rawText = rawText == null ? '' : String(rawText).trim();
+        if (rawText) sections.push('【原始判讀】\n' + rawText);
+
+        var flattenPool = [];
+        if (sp) _flattenEvidence('', sp, flattenPool, 0);
+        if (sourceObj) _flattenEvidence('', sourceObj, flattenPool, 0);
+        flattenPool = flattenPool.filter(Boolean);
+        if (flattenPool.length) sections.push('【結構欄位展開】\n- ' + flattenPool.slice(0, 260).join('\n- '));
+
+        var sourceJson = _jsonSafe(sourceObj, 18000);
+        if (sourceJson) sections.push('【來源資料 JSON】\n' + sourceJson);
+        var spJson = _jsonSafe(sp, 12000);
+        if (spJson) sections.push('【系統載荷 JSON】\n' + spJson);
+
+        var out = sections.filter(Boolean).join('\n\n');
+        if (!out) return '';
+
+        if (out.length < minLen) {
+          var fillers = [];
+          if (summary) fillers.push('【摘要重述】\n' + summary);
+          if (rawText) fillers.push('【原始判讀重述】\n' + rawText);
+          if (flattenPool.length) fillers.push('【欄位重點重列】\n- ' + flattenPool.slice(0, 180).join('\n- '));
+          if (spJson) fillers.push('【系統載荷重列】\n' + spJson);
+          if (sourceJson) fillers.push('【來源資料重列】\n' + sourceJson);
+          var idx = 0;
+          while (out.length < minLen && fillers.length) {
+            out += '\n\n' + fillers[idx % fillers.length];
+            idx += 1;
+            if (idx > 10) break;
+          }
+        }
+
+        if (out.length > maxLen) out = _clipText(out, maxLen);
+        if (out.length < minLen) {
+          var tail = '\n\n【長度補齊】\n' + (summary || rawText || name || '');
+          while (out.length < minLen && tail.trim()) {
+            out += tail;
+            if (out.length > maxLen) break;
+          }
+          if (out.length > maxLen) out = _clipText(out, maxLen);
+        }
+        return out;
+      }
+
+      var structured = null;
+      if (typeof buildAPISystemPayloads === 'function') {
+        try {
+          structured = buildAPISystemPayloads();
+          if (structured && typeof structured === 'object') {
+            p.systemPayloads = structured;
+            p.systems = structured;
+          }
+        } catch (e) {
+          console.warn('[buildPayload] structured system payload build error:', e);
+        }
+      }
+
+      var normalizedMap = {
+        bazi: {
+          sp: structured && structured.bazi,
+          raw: p.rawReadings.bazi || p.readings.bazi,
+          source: (typeof S !== 'undefined' ? S.bazi : null)
+        },
+        ziwei: {
+          sp: structured && structured.ziwei,
+          raw: p.rawReadings.ziwei || p.readings.ziwei,
+          source: (typeof S !== 'undefined' ? S.ziwei : null)
+        },
+        meihua: {
+          sp: structured && structured.meihua,
+          raw: p.rawReadings.meihua || p.readings.meihua,
+          source: (typeof S !== 'undefined' ? S.meihua : null)
+        },
+        tarot: {
+          sp: structured && structured.tarot,
+          raw: p.rawReadings.tarot || p.readings.tarot,
+          source: (typeof S !== 'undefined' ? S.tarot : null)
+        },
+        natal: {
+          sp: structured && structured.natal,
+          raw: p.rawReadings.natal || p.readings.natal,
+          source: (typeof S !== 'undefined' ? (S.natal || S.astro) : null)
+        },
+        vedic: {
+          sp: structured && (structured.vedic || structured.jyotish),
+          raw: p.rawReadings.vedic || p.rawReadings.jyotish || p.readings.vedic || p.readings.jyotish,
+          source: (typeof S !== 'undefined' ? (S.jyotish || S.vedic) : null)
+        },
+        name: {
+          sp: structured && structured.name,
+          raw: p.rawReadings.name || p.readings.name,
+          source: (typeof S !== 'undefined' ? S.name : null)
+        }
+      };
+
+      var targetRange = { min: 4000, max: 5000 };
+      p.readings = p.readings || {};
+      Object.keys(normalizedMap).forEach(function(k){
+        var item = normalizedMap[k] || {};
+        var normalized = _buildNormalizedReading(k, item.raw, item.sp, item.source, targetRange.min, targetRange.max);
+        if (normalized) p.readings[k] = normalized;
+      });
+      if (p.readings.jyotish && !p.readings.vedic) p.readings.vedic = p.readings.jyotish;
+      try { delete p.readings.jyotish; } catch(e) {}
       // ═══ 1. 七維綜合分析 ═══
       var synth = (typeof getSevenDimAnalysis === 'function') ? getSevenDimAnalysis(ft, q) : null;
 
@@ -18409,7 +18613,9 @@ renderTarot = function(){
             var _dr = Object.keys(payload.readings||{});
             var _ds = _dr.map(function(k){return k+':'+((payload.readings[k]||'').length||0);});
             var _dt = JSON.stringify(payload).length;
-            resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload] '+_dt+'字 | readings: '+_ds.join(', ')+'</div></div>');
+            var _drRaw = Object.keys(payload.rawReadings||{}).filter(function(k){ return k !== 'jyotish'; });
+            var _dsRaw = _drRaw.map(function(k){return k+':'+((payload.rawReadings[k]||'').length||0);});
+            resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload] '+_dt+'字 | raw: '+_dsRaw.join(', ')+' | final: '+_ds.join(', ')+'</div></div>');
           } catch(e){}
         }
         resultDiv.innerHTML = resultHtml;
