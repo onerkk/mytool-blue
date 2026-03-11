@@ -19518,36 +19518,38 @@ async function _triggerTarotAI() {
 
   var admin = !!(window._JY_ADMIN_TOKEN);
 
-  // Loading 動畫（塔羅牌浮水印閃爍）
-  resultDiv.innerHTML = '<div style="text-align:center;padding:2.5rem 1rem 2rem;position:relative;overflow:hidden;min-height:280px">' +
-    // 浮水印塔羅牌背面（大、半透明、閃爍）
-    '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">' +
-      '<div style="width:140px;height:210px;border-radius:12px;border:2px solid rgba(139,92,246,.12);background:linear-gradient(170deg,rgba(26,15,62,.6),rgba(42,31,78,.4));box-shadow:0 0 50px rgba(139,92,246,.08);animation:jyCardWatermark 3s ease-in-out infinite;position:relative;overflow:hidden">' +
-        // 牌背花紋
-        '<div style="position:absolute;inset:8px;border-radius:8px;border:1px solid rgba(212,175,55,.1);display:flex;align-items:center;justify-content:center">' +
-          '<div style="font-size:3.5rem;opacity:.15;animation:jyCardSymbol 4s ease-in-out infinite">☽</div>' +
-        '</div>' +
-        // 四角星
-        '<div style="position:absolute;top:8px;left:10px;font-size:.6rem;color:rgba(212,175,55,.15)">✦</div>' +
-        '<div style="position:absolute;top:8px;right:10px;font-size:.6rem;color:rgba(212,175,55,.15)">✦</div>' +
-        '<div style="position:absolute;bottom:8px;left:10px;font-size:.6rem;color:rgba(212,175,55,.15)">✦</div>' +
-        '<div style="position:absolute;bottom:8px;right:10px;font-size:.6rem;color:rgba(212,175,55,.15)">✦</div>' +
-        // 掃描光
-        '<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(212,175,55,0) 0%,rgba(212,175,55,.06) 45%,rgba(139,92,246,.08) 55%,rgba(212,175,55,0) 100%);background-size:100% 200%;animation:jyCardScan 2.5s ease-in-out infinite"></div>' +
-      '</div>' +
+  // Loading 動畫（跟七維度同等級，塔羅主題）
+  resultDiv.innerHTML = '<div style="text-align:center;padding:2rem 1.2rem 2.3rem">' +
+    '<div style="position:relative;width:128px;height:128px;margin:0 auto .95rem">' +
+      '<div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.16) 0%,rgba(212,175,55,.06) 26%,rgba(139,92,246,0) 70%);animation:jyPulseGlow 3.4s ease-in-out infinite"></div>' +
+      '<div style="position:absolute;left:50%;top:50%;width:104px;height:104px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(139,92,246,.10);box-shadow:0 0 24px rgba(139,92,246,.06) inset"></div>' +
+      '<div style="position:absolute;left:50%;top:50%;width:88px;height:88px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid rgba(139,92,246,.08)"></div>' +
+      '<div style="position:absolute;left:50%;top:50%;width:88px;height:88px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid transparent;border-top-color:rgba(139,92,246,.7);border-right-color:rgba(212,175,55,.3);animation:jySpinGold 2s linear infinite"></div>' +
+      '<div style="position:absolute;left:50%;top:50%;width:64px;height:64px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid transparent;border-bottom-color:rgba(212,175,55,.55);border-left-color:rgba(96,165,250,.4);animation:jySpinPurple 3.1s linear infinite reverse"></div>' +
+      '<div style="position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.95) 0%,rgba(139,92,246,.25) 62%,rgba(139,92,246,0) 100%);animation:jyBreath 2.4s ease-in-out infinite"></div>' +
+      '<div style="position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:rgba(230,220,255,.95);box-shadow:0 0 12px rgba(200,180,255,.55)"></div>' +
+      '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.36rem;color:rgba(230,220,255,.95);text-shadow:0 0 10px rgba(139,92,246,.35)">🃏</div>' +
+      '<div style="position:absolute;left:50%;top:50%;width:2px;height:44px;transform-origin:center bottom;transform:translate(-50%,-100%) rotate(0deg);animation:jyOrbitA 3.6s linear infinite"><div style="width:8px;height:8px;border-radius:50%;background:rgba(139,92,246,.8);box-shadow:0 0 10px rgba(139,92,246,.35)"></div></div>' +
+      '<div style="position:absolute;left:50%;top:50%;width:2px;height:34px;transform-origin:center bottom;transform:translate(-50%,-100%) rotate(180deg);animation:jyOrbitB 2.8s linear infinite reverse"><div style="width:6px;height:6px;border-radius:50%;background:rgba(212,175,55,.8);box-shadow:0 0 8px rgba(212,175,55,.3)"></div></div>' +
     '</div>' +
-    // 前景文字
-    '<div style="position:relative;z-index:1;margin-top:230px">' +
-      '<div style="font-size:.95rem;color:var(--c-gold);font-weight:700;margin-bottom:.25rem">正在解讀你的牌面…</div>' +
-      '<div id="tarot-ai-phase" style="font-size:.78rem;color:var(--c-text-dim);transition:opacity .35s;min-height:1.2rem">感應牌面之間的訊號</div>' +
+    '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;letter-spacing:.02em;margin-bottom:.25rem">正在解讀你的牌面…</div>' +
+    '<div id="tarot-ai-phase" style="font-size:.8rem;color:var(--c-text-dim);transition:opacity .35s;min-height:1.25rem">感應牌面之間的訊號</div>' +
+    '<div style="max-width:320px;margin:.45rem auto 0;padding:.7rem .85rem;border-radius:16px;border:1px solid rgba(139,92,246,.14);background:linear-gradient(180deg,rgba(139,92,246,.045),rgba(212,175,55,.035));box-shadow:0 10px 28px rgba(0,0,0,.18) inset,0 0 0 1px rgba(255,255,255,.02);position:relative;overflow:hidden">' +
+      '<div style="position:absolute;inset:auto -30% 0 -30%;height:1px;background:linear-gradient(90deg,rgba(139,92,246,0),rgba(139,92,246,.26),rgba(212,175,55,.22),rgba(139,92,246,0));animation:jySweep 3.8s ease-in-out infinite"></div>' +
+      '<div style="font-size:.72rem;color:rgba(200,180,255,.82);letter-spacing:.08em;margin-bottom:.22rem">✦ 牌陣尚未收攏　能量仍在匯聚 ✦</div>' +
+      '<div style="font-size:.7rem;line-height:1.8;color:rgba(255,255,255,.5)">請靜守此頁，讓每張牌的訊號緩緩對齊；一念抽離，正在凝結的解讀也會隨之散去。</div>' +
     '</div>' +
-    // 動畫 keyframes
-    '<style>' +
-      '@keyframes jyCardWatermark{0%,100%{opacity:.35;transform:scale(1) rotate(0deg)}30%{opacity:.55;transform:scale(1.02) rotate(.5deg)}70%{opacity:.4;transform:scale(.99) rotate(-.3deg)}}' +
-      '@keyframes jyCardSymbol{0%,100%{opacity:.12;transform:scale(1)}50%{opacity:.22;transform:scale(1.08)}}' +
-      '@keyframes jyCardScan{0%{background-position:0 0}100%{background-position:0 200%}}' +
-    '</style>' +
-  '</div>';
+    '<div style="width:min(280px,82%);height:3px;border-radius:999px;background:rgba(139,92,246,.08);overflow:hidden;margin:.95rem auto .4rem">' +
+      '<div style="width:42%;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(139,92,246,0),rgba(139,92,246,.95),rgba(200,180,255,.9),rgba(139,92,246,0));background-size:180% 100%;animation:jyScan 1.8s ease-in-out infinite"></div>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:center;gap:.4rem;flex-wrap:wrap;margin-top:.55rem">' +
+      '<span style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(139,92,246,.88);border:1px solid rgba(139,92,246,.16);background:rgba(139,92,246,.05)">牌面</span>' +
+      '<span style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(139,92,246,.88);border:1px solid rgba(139,92,246,.16);background:rgba(139,92,246,.05)">位置</span>' +
+      '<span style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(139,92,246,.88);border:1px solid rgba(139,92,246,.16);background:rgba(139,92,246,.05)">元素</span>' +
+      '<span style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(139,92,246,.88);border:1px solid rgba(139,92,246,.16);background:rgba(139,92,246,.05)">數字學</span>' +
+      '<span style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(139,92,246,.88);border:1px solid rgba(139,92,246,.16);background:rgba(139,92,246,.05)">卡巴拉</span>' +
+    '</div>' +
+    '</div>';
 
   // 階段文字輪播
   var phases = ['感應牌面之間的訊號', '解讀位置之間的張力…', '讀取元素能量流向…', '拼湊出你問題的答案…'];
