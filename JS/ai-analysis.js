@@ -19000,3 +19000,358 @@ function _rrect(ctx, x, y, w, h, r) {
     };
   }
 })();
+
+
+// ===== JY phase12 question-first payload + stable crystal flow patch =====
+(function(){
+  function ss(v){ return v==null ? '' : String(v); }
+  function esc(s){ return ss(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function trunc(s, n){ s = ss(s).trim(); return s.length > n ? s.slice(0, n) + '…' : s; }
+  function arr(v){ if(Array.isArray(v)) return v.filter(Boolean); if(v==null||v==='') return []; return [v]; }
+  function uniq(a){ var out=[]; arr(a).forEach(function(x){ x=ss(x).trim(); if(x && out.indexOf(x)<0) out.push(x); }); return out; }
+  function joinList(a, sep){ return uniq(a).join(sep || '、'); }
+  function block(title, lines){ lines = arr(lines).map(function(x){ return ss(x).trim(); }).filter(Boolean); if(!lines.length) return ''; return title+'\n'+lines.map(function(x){ return '- '+x; }).join('\n'); }
+  function textBlock(title, txt){ txt = ss(txt).trim(); return txt ? title+'\n'+txt : ''; }
+  function mapNeedToElement(need, fallback1, fallback2){
+    var m = { stable:'土', clarity:'金', protect:'水', flow:'水', action:'火', love:'火', growth:'木', heal:'木', wealth:'土', career:'金', connection:'水' };
+    return m[need] || fallback2 || fallback1 || '';
+  }
+  function getNameResults(){
+    var nr = null, zr = null;
+    try{ nr = (typeof analyzeName === 'function' && S && S.form && S.form.name) ? analyzeName(S.form.name) : (S && S.nameResult ? S.nameResult : null); }catch(e){}
+    try{ zr = (typeof analyzeZodiacName === 'function' && S && S.form && S.form.name) ? analyzeZodiacName(S.form.name) : (S && S.zodiacNameResult ? S.zodiacNameResult : null); }catch(e){}
+    return { nr:nr, zr:zr };
+  }
+  function getQuestionReadings(ft, q){
+    var out = {};
+    try{
+      var b = S && S.bazi;
+      if(b){
+        var synth = (typeof getSevenDimAnalysis==='function') ? getSevenDimAnalysis(ft, q) : null;
+        var dr = synth && synth.dimResults ? synth.dimResults.find(function(x){ return x.dim==='bazi'; }) : null;
+        var lines = [];
+        if(b.dm) lines.push('日主：'+b.dm+'（'+ss(b.dmEl)+'）');
+        if(Array.isArray(b.fav) && b.fav.length) lines.push('第一喜用神：'+(b.fav[0]||'')+(b.fav[1]?'；第二喜用神：'+b.fav[1]:''));
+        if(Array.isArray(b.unfav) && b.unfav.length) lines.push('忌神：'+b.unfav.join('、'));
+        if(dr && dr.reason) lines.push('本題判斷：'+trunc(dr.reason,220));
+        if(dr && dr.detail) lines.push('結構補充：'+trunc(dr.detail,260));
+        out.bazi = { system:'八字', detail: lines, positive:[], negative:[], variables:[], actions:[] };
+      }
+    }catch(e){}
+    try{
+      if(S && S.ziwei && typeof analyzeZiweiQuestion==='function'){
+        var qr = analyzeZiweiQuestion(S.ziwei, ft, q) || {};
+        var na = (typeof buildZiweiNarrative==='function') ? buildZiweiNarrative(qr, S.ziwei, ft) : null;
+        out.ziwei = {
+          system:'紫微斗數',
+          direct: qr.yesNoAnswer || qr.directAnswer || qr.verdictShort || '',
+          score: qr.score, confidence: qr.confidence,
+          positive: uniq([qr.why1, qr.why2, qr.opportunities && qr.opportunities[0], na && na.situation]),
+          negative: uniq([qr.riskPoint, qr.blockers && qr.blockers[0], na && na.risk]),
+          variables: uniq([qr.variableToWatch, qr.counterSignals && qr.counterSignals[0], na && na.coreConflict]),
+          actions: uniq([qr.action1, qr.action2, qr.strategies && qr.strategies[0], na && na.advice]),
+          timing: qr.timingText || (na && na.timing) || ''
+        };
+      }
+    }catch(e){}
+    try{
+      if(S && S.meihua && typeof analyzeMeihuaQuestion==='function'){
+        var qr = analyzeMeihuaQuestion(S.meihua, ft, q) || {};
+        out.meihua = {
+          system:'梅花易數',
+          direct: qr.yesNoAnswer || qr.directAnswer || qr.summary || '',
+          score: qr.score, confidence: qr.confidence,
+          positive: uniq([qr.why1, qr.why2, qr.supports && qr.supports[0], qr.opportunities && qr.opportunities[0]]),
+          negative: uniq([qr.riskPoint, qr.blockers && qr.blockers[0]]),
+          variables: uniq([qr.variableToWatch, qr.counterSignals && qr.counterSignals[0], qr.trendText]),
+          actions: uniq([qr.action1, qr.action2, qr.strategies && qr.strategies[0]]),
+          timing: qr.timingText || qr.timing || ''
+        };
+      }
+    }catch(e){}
+    try{
+      if(S && S.tarot && typeof analyzeTarotQuestion==='function'){
+        var qr = analyzeTarotQuestion(S.tarot, ft, q) || {};
+        out.tarot = {
+          system:'塔羅',
+          direct: qr.yesNoAnswer || qr.directAnswer || qr.summary || '',
+          score: qr.score, confidence: qr.confidence,
+          positive: uniq([qr.why1, qr.why2, qr.opportunities && qr.opportunities[0]]),
+          negative: uniq([qr.riskPoint, qr.blockers && qr.blockers[0]]),
+          variables: uniq([qr.variableToWatch, qr.counterSignals && qr.counterSignals[0]]),
+          actions: uniq([qr.action1, qr.action2, qr.strategies && qr.strategies[0]]),
+          timing: qr.timingText || qr.timing || ''
+        };
+      }
+    }catch(e){}
+    try{
+      if(S && S.natal && typeof analyzeNatalQuestion==='function'){
+        var qr = analyzeNatalQuestion(S.natal, ft, q) || {};
+        var na = (typeof buildNatalNarrative==='function') ? buildNatalNarrative(qr, S.natal, ft) : null;
+        out.natal = {
+          system:'西洋星盤',
+          direct: qr.yesNoAnswer || qr.directAnswer || qr.summary || '',
+          score: qr.score, confidence: qr.confidence,
+          positive: uniq([qr.why1, qr.why2, qr.opportunities && qr.opportunities[0], na && na.situation]),
+          negative: uniq([qr.riskPoint, qr.blockers && qr.blockers[0], na && na.risk]),
+          variables: uniq([qr.variableToWatch, qr.counterSignals && qr.counterSignals[0], na && na.coreConflict]),
+          actions: uniq([qr.action1, qr.action2, qr.strategies && qr.strategies[0], na && na.advice]),
+          timing: qr.timingText || (na && na.timing) || ''
+        };
+      }
+    }catch(e){}
+    try{
+      if(S && S.jyotish && typeof analyzeJyotishQuestion==='function'){
+        var qr = analyzeJyotishQuestion(S.jyotish, ft, q) || {};
+        var na = (typeof buildJyotishNarrative==='function') ? buildJyotishNarrative(qr, S.jyotish, ft) : null;
+        out.vedic = {
+          system:'吠陀占星',
+          direct: qr.yesNoAnswer || qr.directAnswer || qr.summary || '',
+          score: qr.score, confidence: qr.confidence,
+          positive: uniq([qr.why1, qr.why2, qr.why3, qr.opportunities && qr.opportunities[0], qr.evidence && qr.evidence[0], na && na.situation]),
+          negative: uniq([qr.riskPoint, qr.blockers && qr.blockers[0], qr.hiddenTruth, na && na.risk]),
+          variables: uniq([qr.variableToWatch, qr.counterSignals && qr.counterSignals[0], qr.tension, na && na.coreConflict]),
+          actions: uniq([qr.action1, qr.action2, qr.strategies && qr.strategies[0], qr.strategies && qr.strategies[1], na && na.advice]),
+          timing: qr.timingText || qr.timing || (na && na.timing) || '',
+          raw: qr
+        };
+      }
+    }catch(e){}
+    try{
+      var nz = getNameResults();
+      if((nz.nr || nz.zr) && typeof analyzeNameQuestion==='function'){
+        var qr = analyzeNameQuestion(nz.nr, nz.zr, { type:ft, question:q, bazi:(S&&S.bazi)||null }) || {};
+        var na = (typeof buildNameNarrative==='function') ? buildNameNarrative(qr, nz.nr, nz.zr, ft) : null;
+        out.name = {
+          system:'姓名學',
+          direct: qr.yesNoAnswer || qr.directAnswer || qr.summary || '',
+          score: qr.score, confidence: qr.confidence,
+          positive: uniq([qr.why1, qr.why2, qr.opportunities && qr.opportunities[0], qr.evidence && qr.evidence[0], na && na.situation]),
+          negative: uniq([qr.riskPoint, qr.blockers && qr.blockers[0], qr.hiddenTruth, na && na.risk]),
+          variables: uniq([qr.variableToWatch, qr.counterSignals && qr.counterSignals[0], na && na.coreConflict]),
+          actions: uniq([qr.action1, qr.action2, qr.strategies && qr.strategies[0], na && na.advice]),
+          timing: qr.timingText || qr.timing || '',
+          raw: qr
+        };
+      }
+    }catch(e){}
+    return out;
+  }
+  function detailToText(detail){
+    if(!detail) return '';
+    var parts = [];
+    if(detail.direct) parts.push('【直接判定】\n'+detail.direct);
+    if(detail.score!=null || detail.confidence!=null) parts.push('【本題強度】\n分數 '+ss(detail.score||'')+' ／ 信心 '+ss(detail.confidence||''));
+    if(detail.detail && detail.detail.length) parts.push('【問題關聯基底】\n'+detail.detail.join('\n'));
+    var a = block('【正向訊號】', detail.positive);
+    if(a) parts.push(a);
+    a = block('【反向訊號】', detail.negative);
+    if(a) parts.push(a);
+    a = block('【變數】', detail.variables);
+    if(a) parts.push(a);
+    a = block('【建議行動】', detail.actions);
+    if(a) parts.push(a);
+    a = textBlock('【時間節奏】', detail.timing);
+    if(a) parts.push(a);
+    if(detail.raw){
+      var extra = uniq([detail.raw.evidence && detail.raw.evidence[1], detail.raw.opportunities && detail.raw.opportunities[1], detail.raw.blockers && detail.raw.blockers[1], detail.raw.summary]);
+      a = block('【補充證據】', extra);
+      if(a) parts.push(a);
+    }
+    return parts.join('\n\n');
+  }
+  function buildEnergyForm(ft, q){
+    var b = (typeof S!=='undefined') ? S.bazi : null;
+    var fav = b && Array.isArray(b.fav) ? b.fav.filter(Boolean).slice(0,2) : [];
+    var unfav = b && Array.isArray(b.unfav) ? b.unfav.filter(Boolean).slice(0,3) : [];
+    var synth = null;
+    try{ synth = (typeof getSevenDimAnalysis==='function') ? getSevenDimAnalysis(ft, q) : null; }catch(e){}
+    var needs = { primary:'stable', secondary:'clarity' };
+    try{ needs = (typeof _aiDeriveNeeds==='function') ? _aiDeriveNeeds(ft, synth||{}) : needs; }catch(e){}
+    var pEl = mapNeedToElement(needs.primary, fav[0], fav[1]);
+    var sEl = mapNeedToElement(needs.secondary, fav[1]||fav[0], fav[0]);
+    var seven = [];
+    [fav[0], fav[1], pEl, sEl].forEach(function(el){ if(el && seven.indexOf(el)<0 && unfav.indexOf(el)<0) seven.push(el); });
+    return {
+      firstYongshen: fav[0] || '',
+      secondYongshen: fav[1] || '',
+      avoidElements: unfav,
+      sevenPrimaryNeed: needs.primary,
+      sevenSecondaryNeed: needs.secondary,
+      sevenPrimaryNeedLabel: (typeof _aiNeedLabel==='function') ? _aiNeedLabel(needs.primary) : needs.primary,
+      sevenSecondaryNeedLabel: (typeof _aiNeedLabel==='function') ? _aiNeedLabel(needs.secondary) : needs.secondary,
+      recommendedModes: [
+        { key:'seven', label:'七維平衡', elements: seven.slice(0,2), reason:'先看本命主副喜用，再疊加本題七維主次需求。' },
+        { key:'first', label:'第一喜用神', elements: fav[0] ? [fav[0]] : seven.slice(0,1), reason:'先補本命主軸。' },
+        { key:'second', label:'第二喜用神', elements: fav[1] ? [fav[1]] : (fav[0] ? [fav[0]] : seven.slice(0,1)), reason:'補第二層承接與修正。' }
+      ],
+      sevenElements: seven
+    };
+  }
+
+  var _origBuildPayload12 = window._buildPayload;
+  window._buildPayload = function(){
+    var p = _origBuildPayload12 ? _origBuildPayload12() : {};
+    try{
+      var ft = (S&&S.form&&S.form.type) || 'general';
+      var q = (S&&S.form&&S.form.question) || '';
+      p.questionReadings = getQuestionReadings(ft, q);
+      Object.keys(p.questionReadings||{}).forEach(function(k){
+        var txt = detailToText(p.questionReadings[k]);
+        if(txt){
+          p.readings = p.readings || {};
+          p.readings[k] = [ss(p.readings[k]).trim(), txt].filter(Boolean).join('\n\n');
+        }
+      });
+      p.energyForm = buildEnergyForm(ft, q);
+      p.meta = p.meta || {};
+      p.meta.payloadVersion = 'phase12-question-first';
+      p.meta.question = q;
+      p.meta.focusType = ft;
+    }catch(e){ console.error('[phase12] build payload enrich error', e); }
+    return p;
+  };
+
+  function renderAIResult(result, payload, usage, admin){
+    var root = document.getElementById('ai-deep-result');
+    if(!root) return;
+    var direct = ss(result.directAnswer || result.direct_answer || '');
+    var answer = ss(result.answer || '');
+    var closing = ss(result.closing || result.oneliner || result.summary || '');
+    var html = '<div class="card" style="border-left:3px solid #8b5cf6;margin-top:.5rem;margin-bottom:6rem">';
+    html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem"><span style="font-size:1.1rem">🌙</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・靜月分析師</span></div>';
+    if(direct){ html += '<div style="font-size:1.12rem;font-weight:700;color:var(--c-gold);line-height:1.75;margin-bottom:1rem;padding-bottom:.85rem;border-bottom:1px solid rgba(212,175,55,.15)">'+esc(direct)+'</div>'; }
+    answer.split(/\n\n+/).filter(Boolean).forEach(function(p, idx){
+      html += '<div style="font-size:'+(idx===0&&!direct?'1rem':' .92rem')+';line-height:1.95;color:'+(idx===0&&!direct?'var(--c-gold-pale,#f5e6b8)':'var(--c-text,#e0d8c8)')+';margin-bottom:.72rem">'+esc(p).replace(/\n/g,'<br>')+'</div>';
+    });
+    if(closing){
+      window._jyClosingText = closing;
+      html += '<div style="margin-top:.85rem;padding:.75rem 1rem;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.04));border-radius:8px;border:1px solid rgba(212,175,55,.15);text-align:center"><div style="font-size:.98rem;line-height:1.7;color:var(--c-gold);font-weight:600">'+esc(closing)+'</div></div>';
+    }
+    if(admin && usage){
+      html+='<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+(usage.input_tokens||0)+' Out:'+(usage.output_tokens||0)+' ≈$'+(((usage.input_tokens||0)*3/1e6)+((usage.output_tokens||0)*15/1e6)).toFixed(4)+'</div>';
+      try{
+        var keys = Object.keys(payload.readings||{});
+        var sizes = keys.map(function(k){ return k+':'+ss(payload.readings[k]).length; });
+        html+='<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.45;word-break:break-all">[payload] '+JSON.stringify(payload).length+'字 | readings: '+sizes.join(', ')+'</div>';
+      }catch(e){}
+    }
+    html += '</div>';
+    root.innerHTML = html;
+  }
+
+  function crystalModeUI(energy, selected){
+    var opts = (energy && energy.recommendedModes) || [];
+    var options = opts.map(function(m){ return '<option value="'+esc(m.key)+'"'+(m.key===selected?' selected':'')+'>'+esc(m.label)+'</option>'; }).join('');
+    return '<div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;margin:.2rem 0 .7rem">'
+      + '<label style="font-size:.8rem;color:var(--c-text-dim)">配戴模式</label>'
+      + '<select onchange="window.selectCrystalMode(this.value)" style="min-width:160px;padding:.58rem .8rem;border-radius:12px;border:1px solid rgba(212,175,55,.18);background:rgba(255,255,255,.03);color:var(--c-text);font-size:.82rem">'+options+'</select>'
+      + '</div>';
+  }
+
+  window.buildSevenEnergyRecommendation = function(type, question){
+    var ft = type || (S&&S.form&&S.form.type) || 'general';
+    var q = question || (S&&S.form&&S.form.question) || '';
+    var ef = (S && S._aiDeepResult && (S._aiDeepResult.energyForm || S._aiDeepResult.energy_form)) || buildEnergyForm(ft, q);
+    var modes = {};
+    arr(ef.recommendedModes).forEach(function(m){ modes[m.key] = { key:m.key, label:m.label, elements:arr(m.elements), desc:m.reason||'' }; });
+    if(!modes.seven){ modes.seven = { key:'seven', label:'七維平衡', elements:arr(ef.sevenElements).slice(0,2), desc:'先看本命，再疊加本題七維需求。' }; }
+    return {
+      firstYongshen: ef.firstYongshen || '',
+      secondYongshen: ef.secondYongshen || '',
+      primaryNeed: ef.sevenPrimaryNeed || 'stable',
+      secondaryNeed: ef.sevenSecondaryNeed || 'clarity',
+      primaryNeedLabel: ef.sevenPrimaryNeedLabel || ((typeof _aiNeedLabel==='function')?_aiNeedLabel(ef.sevenPrimaryNeed):ef.sevenPrimaryNeed),
+      secondaryNeedLabel: ef.sevenSecondaryNeedLabel || ((typeof _aiNeedLabel==='function')?_aiNeedLabel(ef.sevenSecondaryNeed):ef.sevenSecondaryNeed),
+      avoid: arr(ef.avoidElements),
+      sevenElements: arr(ef.sevenElements),
+      modes: modes,
+      rationale: [
+        ef.firstYongshen ? '第一喜用神：'+ef.firstYongshen : '',
+        ef.secondYongshen ? '第二喜用神：'+ef.secondYongshen : '',
+        ef.sevenPrimaryNeedLabel ? '七維主需求：'+ef.sevenPrimaryNeedLabel : '',
+        ef.sevenSecondaryNeedLabel ? '七維次需求：'+ef.sevenSecondaryNeedLabel : '',
+        arr(ef.avoidElements).length ? '避開：'+arr(ef.avoidElements).join('、') : ''
+      ].filter(Boolean)
+    };
+  };
+
+  function pickByElements(els, limit){
+    var out=[];
+    function add(list){ arr(list).forEach(function(p){ if(!p) return; var id = p.n||p.name||JSON.stringify(p); if(out.some(function(x){ return (x.n||x.name||'')===id; })) return; out.push(p); }); }
+    try{ if(typeof ALL_PRODUCTS!=='undefined') add(ALL_PRODUCTS.filter(function(p){ return !els.length || p.el==='全' || els.indexOf(p.el)>=0; })); }catch(e){}
+    try{ if(typeof PRODUCT_DB!=='undefined'){ els.forEach(function(el){ add((PRODUCT_DB[el]||[]).filter(Boolean)); }); } }catch(e){}
+    return out.slice(0, limit||6);
+  }
+  function wearFallback(p){ return ss(p.wear || p.use || p.desc || p.d || ((p.el||'')+'行補位，適合近期配戴')).replace(/^undefined$/i,'').trim() || '適合近期配戴，做穩定補位。'; }
+  function setCrystalOpen(open){ var card=document.getElementById('crystal-card'); if(card){ if(open) card.classList.add('open'); else card.classList.remove('open'); } }
+
+  window.renderProductCrystal = function(bazi, type){
+    var root = document.getElementById('r-crystal');
+    if(!root) return;
+    var ready = !!(window.S && S._aiDeepReady);
+    var ft = type || (S&&S.form&&S.form.type) || 'general';
+    var q = (S&&S.form&&S.form.question) || '';
+    var energy = window.buildSevenEnergyRecommendation(ft, q);
+    var selected = (S && S._crystalMode) || 'seven';
+    if(!energy.modes[selected]) selected = 'seven';
+    if(S) S._crystalMode = selected;
+    if(!ready){
+      root.innerHTML = '<div style="padding:.95rem 1rem;border:1px solid rgba(212,175,55,.16);border-radius:18px;background:linear-gradient(180deg,rgba(212,175,55,.035),rgba(255,255,255,.01))"><div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">先等上方七維分析完成</div><div style="font-size:.82rem;line-height:1.9;color:var(--c-text-dim)">這裡先不偷跑推薦。等上方回答完成後，會依 <strong style="color:var(--c-gold)">第一喜用神</strong>、<strong style="color:var(--c-gold)">第二喜用神</strong>、<strong style="color:var(--c-gold)">七維主次需求</strong> 自動展開，並給你可切換的配戴表單。</div></div>';
+      return;
+    }
+    var mode = energy.modes[selected] || energy.modes.seven;
+    var els = arr(mode.elements).filter(function(el){ return energy.avoid.indexOf(el)<0; });
+    if(!els.length) els = arr(energy.sevenElements).slice(0,2);
+    var rows = [
+      ['第一喜用神', energy.firstYongshen || '未明確'],
+      ['第二喜用神', energy.secondYongshen || '未明確'],
+      ['七維主需求', energy.primaryNeedLabel || energy.primaryNeed],
+      ['七維次需求', energy.secondaryNeedLabel || energy.secondaryNeed],
+      ['避開方向', energy.avoid.length ? energy.avoid.join('、') : '目前無明顯限制']
+    ];
+    var products = pickByElements(els, 6);
+    var cards = products.map(function(p){
+      var shopee = p.shopee || 'https://tw.shp.ee/2n5Mo2w';
+      var seven = p.seven || 'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232&utm_source=threads&utm_medium=social&utm_content=link_in_bio';
+      return '<div class="product-card"><div class="product-icon">'+(typeof getProductSVG==='function'?getProductSVG(p.cat||'手鍊', p.n||p.name||''):'💎')+'</div><div class="product-body"><div class="product-name">'+esc(p.n||p.name||'能量手鍊')+'</div><div class="product-meta"><span class="tag tag-gold text-xs">'+esc((window.catIcon&&catIcon[p.cat])||'💍')+' '+esc(p.cat||'手鍊')+'</span><span class="el-tag el-'+esc(p.el||'全')+' text-xs">'+esc(p.el||'全')+'行</span></div><p class="product-desc">'+esc(p.d||p.desc||((p.el||'')+'行補位'))+'</p>'+(p.price?'<p class="product-price">'+esc(p.price)+'</p>':'')+'<p class="product-wear"><i class="fas fa-hand-holding-heart"></i> '+esc(wearFallback(p))+'</p><div class="product-actions"><a href="'+esc(shopee)+'" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮</a><a href="'+esc(seven)+'" target="_blank" rel="noopener" class="product-btn seven"><i class="fas fa-box"></i> 7-11</a></div></div></div>';
+    }).join('');
+    if(!cards){ cards = '<div style="padding:.85rem;border:1px dashed rgba(212,175,55,.18);border-radius:14px;color:var(--c-text-dim);font-size:.82rem">目前沒有抓到對應現貨，建議改用客製搭配。</div>'; }
+    root.innerHTML = '<div class="crystal-rec-header"><p>上方答案收束後，這裡才把它落成你的配戴方向。</p><p style="font-size:.78rem;color:var(--c-text-dim);margin-top:.3rem">'+esc(mode.desc||'')+'</p></div>'
+      + crystalModeUI((S && S._aiDeepResult && (S._aiDeepResult.energyForm || S._aiDeepResult.energy_form)) || {recommendedModes:[]}, selected)
+      + '<div style="display:grid;grid-template-columns:120px 1fr;gap:.55rem .7rem;padding:.25rem 0 .85rem">'+rows.map(function(r){ return '<div style="color:var(--c-text-dim);font-size:.78rem">'+esc(r[0])+'</div><div style="color:var(--c-text);font-size:.82rem;line-height:1.85">'+esc(r[1])+'</div>'; }).join('')+'</div>'
+      + '<div class="product-grid">'+cards+'</div>';
+  };
+
+  window.selectCrystalMode = function(mode){ if(!(window.S && S._aiDeepReady)) return; S._crystalMode = mode || 'seven'; window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general'); };
+
+  window._triggerAIDeep = async function(){
+    var resultDiv = document.getElementById('ai-deep-result');
+    if(!resultDiv) return;
+    var admin = (typeof _aiIsAdmin==='function') ? _aiIsAdmin() : false;
+    try{ if(window.S){ S._aiDeepReady = false; S._aiDeepResult = null; } }catch(e){}
+    setCrystalOpen(false);
+    if(typeof window.renderProductCrystal==='function' && window.S && S.bazi){ window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general'); }
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="text-align:center;padding:1.5rem"><div style="display:inline-block;width:36px;height:36px;border:3px solid rgba(212,175,55,.2);border-top-color:var(--c-gold,#d4af37);border-radius:50%;animation:spin 1s linear infinite"></div><div style="font-size:.85rem;color:var(--c-gold);margin-top:.6rem">正在翻閱你的命盤…</div><div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.3rem">約需 15-30 秒</div></div>';
+    try{
+      var payload = window._buildPayload();
+      var body = { payload: payload };
+      if(window._JY_ADMIN_TOKEN) body.admin_token = window._JY_ADMIN_TOKEN || '';
+      var resp = await fetch(AI_WORKER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      var data = await resp.json();
+      if(!resp.ok) throw Object.assign({status:resp.status}, data);
+      if(!admin && typeof _aiMarkUsed==='function') _aiMarkUsed();
+      if(window.S){ S._aiDeepReady = true; S._aiDeepResult = data.result || {}; }
+      renderAIResult(data.result || {}, payload, data.usage, admin);
+      if(typeof window.renderProductCrystal==='function' && window.S && S.bazi){ window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general'); }
+      setCrystalOpen(true);
+    }catch(err){
+      console.error('[AI phase12]', err);
+      if(window.S){ S._aiDeepReady = false; }
+      resultDiv.innerHTML = '<div style="text-align:center;padding:1rem"><div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">'+(admin && err.status===429 ? 'Worker 429 但你是管理員，可重試' : '暫時連線不順，請再試一次')+(admin ? '<br><span style="font-size:.6rem;opacity:.4">[Debug] '+esc(err.status||'')+' '+esc(err.error||err.detail||err.message||'')+'</span>' : '')+'</div><button onclick="_triggerAIDeep()" style="padding:.7rem 1.8rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit">'+(admin ? '🔮 重試（Admin）' : '🔮 再試一次')+'</button></div>';
+      if(typeof window.renderProductCrystal==='function' && window.S && S.bazi){ window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general'); }
+      setCrystalOpen(false);
+    }
+  };
+})();
