@@ -18552,6 +18552,26 @@ renderTarot = function(){
     try{ _ensureAiLoadingFx(); }catch(_e){}
     resultDiv.style.display = 'block';
     try{ var sticky=document.getElementById('sticky-cta'); if(sticky){ sticky.classList.remove('visible'); sticky.style.display='none'; } }catch(_e){}
+    // ── 鎖定水晶處方面板：API 分析完成前不能打開 ──
+    try {
+      var _crystalEl = document.getElementById('r-crystal');
+      if (_crystalEl) {
+        var _crystalCard = _crystalEl.closest('.collapsible-card');
+        if (_crystalCard) {
+          _crystalCard.classList.remove('open');
+          _crystalCard.setAttribute('data-ai-locked', '1');
+        }
+      }
+      // 攔截 toggleCollapse：如果水晶面板被鎖定就不讓打開
+      if (!window._origToggleCollapse && typeof toggleCollapse === 'function') {
+        window._origToggleCollapse = toggleCollapse;
+        window.toggleCollapse = function(el) {
+          var card = el.closest('.collapsible-card');
+          if (card && card.getAttribute('data-ai-locked') === '1') return; // 鎖住
+          window._origToggleCollapse(el);
+        };
+      }
+    } catch(_e) {}
     resultDiv.innerHTML = '<div style="text-align:center;padding:2rem 1.2rem 2.3rem">' +
       '<div style="position:relative;width:128px;height:128px;margin:0 auto .95rem">' +
         '<div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.16) 0%,rgba(212,175,55,.06) 26%,rgba(212,175,55,0) 70%);animation:jyPulseGlow 3.4s ease-in-out infinite"></div>' +
@@ -18747,14 +18767,17 @@ renderTarot = function(){
       resultDiv.innerHTML = html;
     }
 
-    // ═══ API 分析完成後自動展開水晶處方面板 ═══
+    // ═══ API 分析完成後解鎖並自動展開水晶處方面板 ═══
     try {
       setTimeout(function(){
         var crystalCard = document.getElementById('r-crystal');
         if (crystalCard) {
           var collapsibleCard = crystalCard.closest('.collapsible-card');
-          if (collapsibleCard && !collapsibleCard.classList.contains('open')) {
-            collapsibleCard.classList.add('open');
+          if (collapsibleCard) {
+            collapsibleCard.removeAttribute('data-ai-locked'); // 解鎖
+            if (!collapsibleCard.classList.contains('open')) {
+              collapsibleCard.classList.add('open');
+            }
             // 稍微延遲後平滑捲動到水晶推薦區
             setTimeout(function(){
               collapsibleCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
