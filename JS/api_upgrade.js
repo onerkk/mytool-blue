@@ -111,6 +111,196 @@
     return { mode:mode||'mixed', text:text||'', goodWindows:_arr(good), riskWindows:_arr(risk) };
   }
 
+  function _normalizeCaseTag(tag){
+    return String(tag||'').replace(/\s+/g,' ').trim();
+  }
+  function _uniqCaseTags(arr, limit){
+    var seen = Object.create(null);
+    var out = [];
+    _arr(arr).forEach(function(item){
+      var tag = _normalizeCaseTag(item && item.tag || item && item.label || item);
+      if(!tag || seen[tag]) return;
+      seen[tag] = 1;
+      out.push(typeof item === 'string' ? { tag: tag, weight: 1 } : Object.assign({}, item, { tag: tag }));
+    });
+    return typeof limit === 'number' ? out.slice(0, limit) : out;
+  }
+  function _pushCaseTag(bucket, tag, weight, reason, system){
+    tag = _normalizeCaseTag(tag);
+    if(!tag) return;
+    bucket.push({ tag: tag, weight: Number(weight)||1, reason: reason||tag, system: system||'' });
+  }
+  function _scanCaseKeywords(text, system, bucketMap){
+    text = String(text||'');
+    if(!text) return;
+    var rules = {
+      essence:[
+        [/職場|主管|同事|上司|制度|權責/,'職場權力局',2.6],
+        [/曖昧|桃花|感情|喜歡|交往|對象|戀愛/,'情感拉扯局',2.4],
+        [/合作|客戶|合夥|資源交換|互利/,'條件交換局',2.2],
+        [/觀望|試探|保留|進退|模糊/,'試探觀望局',2.2],
+        [/壓力|責任|負擔|現實|承擔/,'現實壓力局',2.2],
+        [/重啟|回頭|復合|再來一次/,'回頭重啟局',2.1]
+      ],
+      motive:[
+        [/真心|長期|認真|穩定|經營/,'想穩定發展',2.8],
+        [/試探|觀望|不敢|拿捏|保留/,'先觀望試探',2.7],
+        [/寂寞|空虛|情緒出口|陪伴/,'情緒補位需求',2.5],
+        [/方便|順手|有人陪|現實需要|依賴/,'現實便利需求',2.4],
+        [/控制|主導|拿捏|權力|位置/,'權力位置考量',2.6],
+        [/逃避|轉移|避開|暫時/,'過渡逃避傾向',2.3]
+      ],
+      obstacle:[
+        [/壓力|負擔|沉重|責任|扛不住/,'承擔壓力',2.8],
+        [/距離|時間差|節奏|進度|時機/,'節奏時機不合',2.6],
+        [/第三者|他人眼光|規範|制度|現實/,'外部限制',2.6],
+        [/不穩|搖擺|反覆|矛盾|卡住/,'態度反覆',2.5],
+        [/不清楚|模糊|曖昧|未表態/,'關係界線不清',2.5],
+        [/資源|金錢|成本|現金流/,'資源成本壓力',2.4]
+      ],
+      opportunity:[
+        [/明確|推進|主動|靠近|開展/,'有推進窗口',2.5],
+        [/下半年|之後|漸漸|慢慢|後續/,'後段轉強',2.3],
+        [/穩定|成熟|務實|可談/,'可往穩定發展',2.6],
+        [/合作|互補|支援|照顧/,'彼此可互補',2.2],
+        [/突破|轉機|鬆動|打開/,'關係有突破點',2.5]
+      ],
+      path:[
+        [/先難後易|先卡後順|前阻後開/,'先卡後開',2.8],
+        [/慢慢|漸進|循序|一步一步/,'慢熱漸進',2.5],
+        [/很快|突然|快速|短期/,'短期快速變化',2.2],
+        [/反覆|拉扯|一下近一下遠/,'反覆拉扯',2.7],
+        [/穩住|定下來|落地|成局/,'可落地成形',2.5]
+      ],
+      validation:[
+        [/主動|聯絡|靠近|明講/,'看對方是否主動表態',2.4],
+        [/安排|時間|見面|行動/,'看是否有實際安排',2.4],
+        [/穩定|持續|反覆|消失/,'看互動是否穩定持續',2.3],
+        [/公開|承認|負責|承擔/,'看是否願意承擔與公開',2.4],
+        [/阻力|壓力|他人|制度/,'看外部阻力是否鬆動',2.2]
+      ]
+    };
+    Object.keys(rules).forEach(function(kind){
+      rules[kind].forEach(function(rule){
+        if(rule[0].test(text)) _pushCaseTag(bucketMap[kind], rule[1], rule[2], text.slice(0, 90), system);
+      });
+    });
+  }
+  function _aggregateCaseTags(list, limit){
+    var map = Object.create(null);
+    _arr(list).forEach(function(item){
+      var tag = _normalizeCaseTag(item && item.tag);
+      if(!tag) return;
+      if(!map[tag]) map[tag] = { tag: tag, weight: 0, systems: [], reasons: [] };
+      map[tag].weight += Number(item.weight)||1;
+      if(item.system && map[tag].systems.indexOf(item.system)===-1) map[tag].systems.push(item.system);
+      if(item.reason && map[tag].reasons.length < 4) map[tag].reasons.push(item.reason);
+    });
+    return Object.keys(map).map(function(tag){ return map[tag]; }).sort(function(a,b){
+      var ds = (b.systems.length - a.systems.length);
+      if(ds) return ds;
+      return (b.weight - a.weight);
+    }).slice(0, limit || 6);
+  }
+  function _buildCaseVector(system, payload, type, question){
+    var supports = _arr(payload && payload.supports);
+    var risks = _arr(payload && payload.risks);
+    var neutral = _arr(payload && payload.neutralSignals);
+    var evidence = _arr(payload && payload.evidence);
+    var timingText = _safe(payload && payload.timingText, '');
+    var summary = _safe(payload && payload.summary, '');
+    var verdict = _safe(payload && payload.verdict, '');
+    var fullText = [question, summary, verdict, timingText].concat(supports.map(function(x){return (x.detail||x.label||'');})).concat(risks.map(function(x){return (x.detail||x.label||'');})).concat(neutral.map(function(x){return (x.detail||x.label||'');})).join(' | ');
+    var bucketMap = { essence:[], motive:[], obstacle:[], opportunity:[], path:[], validation:[] };
+    _scanCaseKeywords(fullText, system, bucketMap);
+    evidence.slice(0, 12).forEach(function(e){
+      var txt = [e.label, e.detail, e.category, e.source].filter(Boolean).join(' | ');
+      _scanCaseKeywords(txt, system, bucketMap);
+      if(e.direction==='negative'){
+        _pushCaseTag(bucketMap.obstacle, e.label || '風險訊號', (e.weight||1)+0.6, txt, system);
+      } else if(e.direction==='positive'){
+        _pushCaseTag(bucketMap.opportunity, e.label || '助力訊號', (e.weight||1)+0.5, txt, system);
+      } else {
+        _pushCaseTag(bucketMap.path, e.label || '中性訊號', Math.max(1, e.weight||1), txt, system);
+      }
+    });
+    var questionText = String(question||'');
+    if(/他|她|對方|主管|同事|家人|前任|合作|客戶|另一半/.test(questionText)){
+      _pushCaseTag(bucketMap.motive, '涉及他方心態', 2.6, '題目直接涉及他人', system);
+    }
+    if(/何時|多久|幾月|什麼時候|今年|明年|下半年|上半年/.test(questionText)){
+      _pushCaseTag(bucketMap.path, '需要時間節奏判讀', 2.4, '題目直接問時間', system);
+      _pushCaseTag(bucketMap.validation, '時間點是否如期推進', 2.0, '題目直接問時間', system);
+    }
+    if(type==='love' || /感情|桃花|曖昧|同居|交往|婚姻|復合/.test(questionText)){
+      _pushCaseTag(bucketMap.essence, '關係型態判定', 2.5, '感情題核心', system);
+      _pushCaseTag(bucketMap.validation, '看靠近是否伴隨承擔', 2.3, '感情題關鍵驗證', system);
+    }
+    return {
+      essenceTags: _aggregateCaseTags(bucketMap.essence, 5),
+      motiveTags: _aggregateCaseTags(bucketMap.motive, 5),
+      obstacleTags: _aggregateCaseTags(bucketMap.obstacle, 6),
+      opportunityTags: _aggregateCaseTags(bucketMap.opportunity, 6),
+      pathTags: _aggregateCaseTags(bucketMap.path, 5),
+      validationHints: _aggregateCaseTags(bucketMap.validation, 5),
+      ambiguityScore: _cap(Math.round((_arr(neutral).length * 8) + (_arr(risks).length && _arr(supports).length ? 10 : 0) + (/可能|保留|觀察|條件/.test(summary+verdict) ? 10 : 0)), 0, 100),
+      directnessScore: _cap(Math.round((_arr(supports).length + _arr(risks).length) * 8 + (payload && payload.confidence || 0) * 0.35), 0, 100),
+      evidenceDepth: _arr(evidence).length + _arr(supports).length + _arr(risks).length,
+      digest: _uniqCaseTags([].concat(
+        _aggregateCaseTags(bucketMap.essence, 3),
+        _aggregateCaseTags(bucketMap.motive, 3),
+        _aggregateCaseTags(bucketMap.obstacle, 3),
+        _aggregateCaseTags(bucketMap.path, 3)
+      ), 8)
+    };
+  }
+  function _buildCrossCaseMatrix(activePayloads){
+    var essence = [], motive = [], obstacle = [], opportunity = [], path = [], validation = [];
+    var ambiguity = 0, directness = 0, depth = 0, systems = 0;
+    _arr(activePayloads).forEach(function(item){
+      var cv = item && item.caseVector;
+      if(!cv) return;
+      systems += 1;
+      ambiguity += Number(cv.ambiguityScore)||0;
+      directness += Number(cv.directnessScore)||0;
+      depth += Number(cv.evidenceDepth)||0;
+      essence = essence.concat(_arr(cv.essenceTags));
+      motive = motive.concat(_arr(cv.motiveTags));
+      obstacle = obstacle.concat(_arr(cv.obstacleTags));
+      opportunity = opportunity.concat(_arr(cv.opportunityTags));
+      path = path.concat(_arr(cv.pathTags));
+      validation = validation.concat(_arr(cv.validationHints));
+    });
+    var topEssence = _aggregateCaseTags(essence, 6);
+    var topMotives = _aggregateCaseTags(motive, 6);
+    var topObstacles = _aggregateCaseTags(obstacle, 8);
+    var topOpportunities = _aggregateCaseTags(opportunity, 8);
+    var topPaths = _aggregateCaseTags(path, 6);
+    var topValidation = _aggregateCaseTags(validation, 6);
+    var contradictions = [];
+    topOpportunities.slice(0,4).forEach(function(pos){
+      topObstacles.slice(0,6).forEach(function(neg){
+        if(pos.systems.some(function(s){ return neg.systems.indexOf(s) === -1; })) return;
+        if(/有推進窗口|可往穩定發展|關係有突破點/.test(pos.tag) && /承擔壓力|關係界線不清|態度反覆/.test(neg.tag)){
+          contradictions.push({ positive: pos.tag, negative: neg.tag, systems: pos.systems.filter(function(s){ return neg.systems.indexOf(s) !== -1; }) });
+        }
+      });
+    });
+    return {
+      topEssence: topEssence,
+      topMotives: topMotives,
+      topObstacles: topObstacles,
+      topOpportunities: topOpportunities,
+      topPaths: topPaths,
+      topValidation: topValidation,
+      contradictions: contradictions.slice(0, 6),
+      avgAmbiguity: systems ? Math.round(ambiguity / systems) : 0,
+      avgDirectness: systems ? Math.round(directness / systems) : 0,
+      evidenceDepthScore: depth,
+      systemsWithCaseVector: systems
+    };
+  }
+
   window.analyzeBaziQuestion = function(bazi, type, question){
     if(!bazi){
       return { yesNoAnswer:'八字資料不足，無法判斷。', direction:'neutral', score:50, confidence:20,
@@ -634,6 +824,9 @@
       var allSupports = [], allRisks = [];
       active.forEach(function(k){
         var p = payload[k];
+        try{
+          p.caseVector = _buildCaseVector(k, p, payload.meta.type, payload.meta.question);
+        }catch(e){ p.caseVector = null; }
         dirs[p.direction||'neutral'] = (dirs[p.direction||'neutral']||0) + 1;
         allSupports = allSupports.concat(_arr(p.supports).map(function(x){ x.system = x.system || k; return x; }));
         allRisks = allRisks.concat(_arr(p.risks).map(function(x){ x.system = x.system || k; return x; }));
@@ -642,6 +835,8 @@
       allRisks.sort(function(a,b){ return _weightOf(b)-_weightOf(a); });
       var avg = scores.length ? Math.round(scores.reduce(function(a,b){ return a+b; },0)/scores.length) : 50;
       var avgConf = confs.length ? Math.round(confs.reduce(function(a,b){ return a+b; },0)/confs.length) : 0;
+      var activePayloads = active.map(function(k){ return payload[k]; }).filter(Boolean);
+      var caseMatrix = _buildCrossCaseMatrix(activePayloads);
       payload.crossSystem = {
         activeSystems: active,
         averageScore: avg,
@@ -650,7 +845,8 @@
         directionCount: dirs,
         topSupports: allSupports.slice(0,8),
         topRisks: allRisks.slice(0,8),
-        summary: '七維有效系統 '+active.length+' 套，整體平均分 '+avg+'，共識偏向 '+(dirs.positive>dirs.negative?'正向':dirs.negative>dirs.positive?'逆風':'混合')+'。'
+        caseMatrix: caseMatrix,
+        summary: '七維有效系統 '+active.length+' 套，整體平均分 '+avg+'，共識偏向 '+(dirs.positive>dirs.negative?'正向':dirs.negative>dirs.positive?'逆風':'混合')+'。' + (caseMatrix.topEssence[0] ? ' 主線更像「'+caseMatrix.topEssence[0].tag+'」。' : '')
       };
     }catch(e){ payload.crossSystem = null; }
     return payload;
