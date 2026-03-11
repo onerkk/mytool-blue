@@ -95,22 +95,23 @@ function renderRemedy(bazi,type){
   const alertEl=document.getElementById('remedy-alert');
 
   let icon='🔮', title='', subtitle='';
+  const favPair=(fav||[]).filter(Boolean).slice(0,2);
+  const favText=favPair.length?favPair.map(e=>e+'行').join('＋'):'土行';
   if(weakEls.length>=2){
-    icon='⚠️';title=`檢測結果：你的能量磁場嚴重「缺${weakEls.join('、')}」！`;
-    subtitle=`這導致你最近做事提不起勁、容易遇阻。你需要補充「${weakEls.map(e=>e+'行').join('＋')}」能量來平衡。`;
+    icon='🜂';title=`這次不是亂補，而是先穩住你的 ${favText} 底盤`;
+    subtitle=`你這張命盤不是只有單一補法。先以 ${favText} 為主軸，再依問題情境做七維微調，才不會看完分析後，配戴方向卻接不起來。`;
     alertEl.classList.add('alert-danger');
   }else if(weakEls.length===1){
-    const weakDesc={金:'決斷力不足、容易猶豫、呼吸系統弱',木:'缺乏衝勁、肝火鬱結、做事拖延',水:'智慧受阻、腎氣不足、容易招小人',火:'做事提不起勁、心氣不足、貴人運弱',土:'根基不穩、腸胃虛弱、存不住錢'};
-    icon='⚠️';title=`檢測結果：你的能量磁場嚴重「缺${weakEls[0]}」！`;
-    subtitle=`這導致你${weakDesc[weakEls[0]]||'最近運勢受阻'}。你需要補充「${weakEls[0]+'行'}」能量來平衡。`;
+    icon='🜁';title=`把這次分析，落成你現在比較適合的配戴方向`;
+    subtitle=`本命主軸先看 ${favText}，不是只盯著單一缺項。下面會把命盤底盤、這一題的七維需求、以及要避開的方向拆開給你看。`;
     alertEl.classList.add('alert-danger');
   }else if(strongEls.length){
-    icon='💡';title=`你的${strongEls.join('、')}行能量充沛`;
-    subtitle='適度引導分散，讓整體能量更均衡';
+    icon='✦';title=`先看本命主軸，再決定這一題要怎麼補`;
+    subtitle=`你本身不是沒能量，而是要把力量用對地方。底盤以 ${favText} 為主，再把這次問題真正需要的那一段補上去。`;
     alertEl.classList.remove('alert-danger');
   }else{
-    icon='✨';title='你的五行能量分佈均衡';
-    subtitle='體質很好，小幅優化就能更上一層樓';
+    icon='☽';title='你不是缺更多資訊，而是缺更精準的補位';
+    subtitle=`先把剛剛那份分析收斂，再回到配戴。底盤以 ${favText} 為主，下面的方案會再疊加這次問題真正缺的那股力。`;
     alertEl.classList.remove('alert-danger');
   }
 
@@ -4420,7 +4421,7 @@ showAuraResult = function(){
 
 
 /* =============================================================
-   [PATCH v9] 改運區升級：八字用神為底 + 七維修正當下需求
+   [PATCH v10] 結果頁橋接：先承接分析答案，再導入七維配戴方向
    ============================================================= */
 (function(){
   if(typeof renderRemedy!=='function') return;
@@ -4437,7 +4438,7 @@ showAuraResult = function(){
       var html = '<div class="action-item" style="border:1px solid rgba(212,175,55,.16);background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(255,255,255,.01))">'
         + '<div class="action-num">7D</div>'
         + '<div class="action-content">'
-        + '<div class="action-title">七維交叉後，這次更適合的能量方向</div>'
+        + '<div class="action-title">看完上面的分析，接下來要補的是這個方向</div>'
         + '<div class="action-desc" style="line-height:1.9">'
         + (energy.warmText ? _uiEsc(energy.warmText)+'<br><br>' : '')
         + (energy.firstYongshen ? '第一用神：<strong>'+_uiEsc(energy.firstYongshen)+'</strong>。' : '')
@@ -4448,14 +4449,9 @@ showAuraResult = function(){
         + ((energy.rationale&&energy.rationale.length) ? '<br>'+energy.rationale.slice(0,3).map(function(x){return '• '+_uiEsc(x);}).join('<br>') : '')
         + '</div>';
       if(energy.picks && energy.picks.length){
-        html += '<div style="margin-top:.6rem">';
-        energy.picks.slice(0,3).forEach(function(p, idx){
-          html += '<a href="'+(p.shopee||'https://tw.shp.ee/2n5Mo2w')+'" target="_blank" rel="noopener" class="inline-crystal" style="margin-top:'+(idx?'8px':'0')+'">'
-            + '<span class="inline-crystal-icon">'+(typeof getProductSVG==='function'?getProductSVG(p.cat||'手鍊', p.name||''):'💎')+'</span>'
-            + '<div class="inline-crystal-info"><div class="inline-crystal-name">'+_uiEsc(p.name||'能量水晶')+'</div><div class="inline-crystal-desc">'+_uiEsc((p.desc||'').slice(0,34))+((p.desc||'').length>34?'…':'')+'</div></div>'
-            + '<span class="inline-crystal-price">'+_uiEsc(p.price||'')+'</span><i class="fas fa-chevron-right inline-crystal-arrow"></i></a>';
-        });
-        html += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.55rem">這一區不是單純挑看起來順眼的水晶，而是先過八字喜用神，再用七維訊號微調成更貼近你這次問題的方向。</div>';
+        html += '<div style="margin-top:.8rem;padding:.7rem .85rem;border-radius:10px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.12)">';
+        html += '<div style="font-size:.82rem;color:var(--c-gold);margin-bottom:.25rem">不是叫你看到什麼就買什麼。</div>';
+        html += '<div style="font-size:.8rem;line-height:1.8;color:var(--c-text-dim)">先用八字底盤抓住第一、第二喜用神，再把七維對這一題的主需求疊上去。下面看到的商品，不是額外插進來的廣告，而是把剛剛那份答案，落成你現在比較適合的配戴方向。</div>';
         html += '</div>';
       }
       html += '</div></div>';
