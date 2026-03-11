@@ -18767,7 +18767,7 @@ renderTarot = function(){
       resultDiv.innerHTML = html;
     }
 
-    // ═══ API 分析完成後解鎖並自動展開水晶處方面板 ═══
+    // ═══ API 分析完成後解鎖並自然展開水晶推薦 ═══
     try {
       setTimeout(function(){
         var crystalCard = document.getElementById('r-crystal');
@@ -18775,16 +18775,24 @@ renderTarot = function(){
           var collapsibleCard = crystalCard.closest('.collapsible-card');
           if (collapsibleCard) {
             collapsibleCard.removeAttribute('data-ai-locked'); // 解鎖
+
+            // ── 用 AI 的 energyNote 替換水晶區標題，讓過渡更自然 ──
+            var energyNote = (r && r.energyNote) ? r.energyNote : '';
+            if (energyNote) {
+              // 替換 collapsible-toggle 裡的文字
+              var toggleEl = collapsibleCard.querySelector('.collapsible-toggle span');
+              if (toggleEl) {
+                toggleEl.innerHTML = '<i class="fas fa-gem" style="margin-right:6px"></i>' + energyNote.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+              }
+            }
+
+            // 安靜展開，不捲動
             if (!collapsibleCard.classList.contains('open')) {
               collapsibleCard.classList.add('open');
             }
-            // 稍微延遲後平滑捲動到水晶推薦區
-            setTimeout(function(){
-              collapsibleCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 500);
           }
         }
-      }, 1200); // 給使用者 1.2 秒看完 AI 回答開頭再展開
+      }, 1500);
     } catch(_e) {}
   }
 })();
