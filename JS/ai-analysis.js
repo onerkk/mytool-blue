@@ -15261,7 +15261,7 @@ async function _triggerAIDeep() {
     }
     
     if (admin && data.usage) {
-      html+='<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div>';
+      html+='<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*1/1e6+data.usage.output_tokens*5/1e6).toFixed(4)+'</div>';
     }
     // Admin: show which readings were sent
     if (admin) {
@@ -18749,7 +18749,7 @@ renderTarot = function(){
     if (typeof r === 'object' && r !== null && (r.directAnswer || r.answer)) {
       var resultHtml = _renderAIResultObject(r);
       if (admin && data.usage) {
-        var costStr = '$' + ((data.usage.input_tokens||0)*3/1e6 + (data.usage.output_tokens||0)*15/1e6).toFixed(4);
+        var costStr = '$' + ((data.usage.input_tokens||0)*1/1e6 + (data.usage.output_tokens||0)*5/1e6).toFixed(4);
         resultHtml = resultHtml.replace(/<\/div>$/, '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+(data.usage.input_tokens||0)+' Out:'+(data.usage.output_tokens||0)+' ≈'+costStr+'</div></div>');
       }
       if (admin) {
@@ -18778,7 +18778,7 @@ renderTarot = function(){
           html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' + escaped + '</div>';
         }
       });
-      if (admin && data.usage) html += '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*3/1e6+data.usage.output_tokens*15/1e6).toFixed(4)+'</div>';
+      if (admin && data.usage) html += '<div style="font-size:.58rem;color:var(--c-text-dim);margin-top:.6rem;opacity:.3;text-align:right">[Admin] In:'+data.usage.input_tokens+' Out:'+data.usage.output_tokens+' ≈$'+(data.usage.input_tokens*1/1e6+data.usage.output_tokens*5/1e6).toFixed(4)+'</div>';
       html += '</div>';
       resultDiv.innerHTML = html;
     }
