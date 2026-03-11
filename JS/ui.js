@@ -4435,7 +4435,31 @@ showAuraResult = function(){
 (function() {
   'use strict';
 
-  // ══ 檢查今日是否已用 ══
+  // ══ 計算當前表單的 person signature（跟 Worker 端 buildPersonSignature 對齊）══
+  function _getFormPersonKey() {
+    try {
+      var nameEl = document.getElementById('f-name');
+      var bdateEl = document.getElementById('f-bdate');
+      var btimeEl = document.getElementById('f-btime');
+      var genderEl = document.querySelector('input[name="gender"]:checked');
+      var name = nameEl ? nameEl.value.trim() : '';
+      var bdate = bdateEl ? bdateEl.value.trim() : '';
+      var btime = btimeEl ? btimeEl.value.trim() : '';
+      var gender = genderEl ? genderEl.value : '';
+      var birth = bdate + (btime ? ' ' + btime : '');
+      var parts = [name, birth, gender].filter(Boolean);
+      if (!parts.length) return 'anon';
+      var raw = parts.join('|');
+      var hash = 0;
+      for (var i = 0; i < raw.length; i++) {
+        hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+        hash |= 0;
+      }
+      return 'sig_' + Math.abs(hash);
+    } catch(e) { return 'anon'; }
+  }
+
+  // ══ 本地快檢（帶 person signature，同裝置不同人不互鎖）══
   function _checkUsedToday() {
     if (window._JY_ADMIN_TOKEN) return false;
     try {
@@ -4443,15 +4467,38 @@ showAuraResult = function(){
       var today = new Date();
       var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
       if (d.date !== todayStr) return false;
-      if (d.used) return true;
-      if (d.people) {
-        var keys = Object.keys(d.people);
-        for (var i = 0; i < keys.length; i++) {
-          if (d.people[keys[i]] && d.people[keys[i]].used) return true;
-        }
-      }
+      var personKey = _getFormPersonKey();
+      if (d.people && d.people[personKey] && d.people[personKey].used) return true;
       return false;
     } catch(e) { return false; }
+  }
+
+  // ══ Worker 預檢（查 KV，不跑 AI，不花錢）══
+  async function _preCheckRateLimit() {
+    if (window._JY_ADMIN_TOKEN) return { allowed: true };
+    try {
+      var nameEl = document.getElementById('f-name');
+      var bdateEl = document.getElementById('f-bdate');
+      var btimeEl = document.getElementById('f-btime');
+      var genderEl = document.querySelector('input[name="gender"]:checked');
+      var payload = {
+        name: nameEl ? nameEl.value.trim() : '',
+        birth: (bdateEl ? bdateEl.value.trim() : '') + (btimeEl && btimeEl.value ? ' ' + btimeEl.value.trim() : ''),
+        gender: genderEl ? genderEl.value : ''
+      };
+      var body = { action: 'check', payload: payload };
+      if (window._JY_ADMIN_TOKEN) body.admin_token = window._JY_ADMIN_TOKEN;
+      var resp = await fetch('https://jy-ai-proxy.onerkk.workers.dev', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      var data = await resp.json();
+      return data;
+    } catch(e) {
+      console.warn('[PreCheck] failed, allowing:', e);
+      return { allowed: true };
+    }
   }
 
   // ══ 已用完彈窗 ══
@@ -4613,16 +4660,21 @@ showAuraResult = function(){
   };
 
   // ══ 攔截 submitStep0 / submitStep0Fast ══
+  // ★ 先本地快檢 → 再 Worker KV 預檢 → 都通過才放行
   var _origSubmit0 = window.submitStep0;
   var _origSubmit0Fast = window.submitStep0Fast;
 
-  window.submitStep0 = function() {
+  window.submitStep0 = async function() {
     if (_checkUsedToday()) { _showUsedModal(); return; }
+    var check = await _preCheckRateLimit();
+    if (!check.allowed) { _showUsedModal(); return; }
     if (_origSubmit0) _origSubmit0.apply(this, arguments);
   };
 
-  window.submitStep0Fast = function() {
+  window.submitStep0Fast = async function() {
     if (_checkUsedToday()) { _showUsedModal(); return; }
+    var check = await _preCheckRateLimit();
+    if (!check.allowed) { _showUsedModal(); return; }
     if (_origSubmit0Fast) _origSubmit0Fast.apply(this, arguments);
   };
 
@@ -4634,7 +4686,7 @@ showAuraResult = function(){
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', _init);
   } else {
-    setTimeout(_init, 100);
+    _init();
   }
 
   // ══ 覆寫塔羅 — 根據問題自動選牌陣 ══
