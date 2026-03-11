@@ -18885,10 +18885,36 @@ function _rrect(ctx, x, y, w, h, r) {
     }
   };
 
+  function _jyHasFinalAIResult(){
+    try{
+      var resultDiv = document.getElementById('ai-deep-result');
+      if(!resultDiv) return false;
+      var txt = (resultDiv.textContent || '').replace(/\s+/g,' ').trim();
+      if(!txt) return false;
+      if(txt.indexOf('正在為你翻閱命盤')>=0) return false;
+      if(txt.indexOf('交叉比對七套系統中')>=0) return false;
+      if(txt.indexOf('暫時連線不順')>=0) return false;
+      if(txt.indexOf('再試一次')>=0) return false;
+      if(txt.indexOf('回傳為空')>=0) return false;
+      if(txt.indexOf('先等上方七維分析完成')>=0) return false;
+      return true;
+    }catch(e){ return false; }
+  }
+  window._jyHasFinalAIResult = _jyHasFinalAIResult;
+
+  function _jyIsCrystalReady(){
+    try{
+      if(window.S && S._aiDeepReady) return true;
+    }catch(e){}
+    return _jyHasFinalAIResult();
+  }
+  window._jyIsCrystalReady = _jyIsCrystalReady;
+
   window.renderProductCrystal = function(bazi, type){
     var root = document.getElementById('r-crystal');
     if(!root) return;
-    var ready = !!(window.S && S._aiDeepReady);
+    var ready = _jyIsCrystalReady();
+    try{ if(window.S && ready) S._aiDeepReady = true; }catch(e){}
     var ft = type || (window.S&&S.form&&S.form.type) || 'general';
     var q = (window.S&&S.form&&S.form.question) || '';
     var energy = window.buildSevenEnergyRecommendation(ft, q);
@@ -18956,7 +18982,7 @@ function _rrect(ctx, x, y, w, h, r) {
   };
 
   window.selectCrystalMode = function(mode){
-    if(!(window.S && S._aiDeepReady && S.bazi)) return;
+    if(!(window._jyIsCrystalReady && window._jyIsCrystalReady() && window.S && S.bazi)) return;
     S._crystalMode = mode || 'seven';
     window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general');
   };
@@ -18976,6 +19002,18 @@ function _rrect(ctx, x, y, w, h, r) {
     }catch(e){ console.error('render crystal after ai', e); }
   }
 
+  function _syncCrystalReadyState(){
+    var ok = false;
+    try{ ok = _jyIsCrystalReady(); }catch(e){}
+    try{ if(window.S){ S._aiDeepReady = ok; } }catch(e){}
+    if(ok){
+      _refreshCrystalAfterAI();
+      _setCrystalCardOpen(true);
+    }
+    return ok;
+  }
+  window._syncCrystalReadyState = _syncCrystalReadyState;
+
   if(typeof window._triggerAIDeep === 'function'){
     var _origTriggerAIDeepV11 = window._triggerAIDeep;
     window._triggerAIDeep = async function(){
@@ -18983,120 +19021,19 @@ function _rrect(ctx, x, y, w, h, r) {
       _setCrystalCardOpen(false);
       _refreshCrystalAfterAI();
       await _origTriggerAIDeepV11.apply(this, arguments);
-      var ok = false;
-      try{
-        var resultDiv = document.getElementById('ai-deep-result');
-        var txt = (resultDiv && resultDiv.textContent || '').trim();
-        ok = !!txt && txt.indexOf('暫時連線不順')<0 && txt.indexOf('再試一次')<0 && txt.indexOf('回傳為空')<0;
-      }catch(e){}
-      try{ if(window.S){ S._aiDeepReady = ok; } }catch(e){}
-      if(ok){
-        _refreshCrystalAfterAI();
-        _setCrystalCardOpen(true);
-      }else{
-        _setCrystalCardOpen(false);
-        _refreshCrystalAfterAI();
-      }
+      [80, 260, 700, 1400, 2400].forEach(function(ms){
+        setTimeout(function(){ _syncCrystalReadyState(); }, ms);
+      });
     };
-  }
-})();
-
-
-// ===== Deep-ready robust sync patch v13 =====
-(function(){
-  function _jyResultDiv(){ return document.getElementById('ai-deep-result'); }
-  function _jyCard(){ return document.getElementById('crystal-card'); }
-  function _jyHasSuccessResult(){
-    try{
-      var box = _jyResultDiv();
-      if(!box) return false;
-      var status = (box.dataset && box.dataset.aiStatus) || '';
-      if(status === 'success') return true;
-      if(status === 'error' || status === 'loading') return false;
-      var txt = (box.textContent || '').trim();
-      if(!txt) return false;
-      if(/暫時連線不順|再試一次|回傳為空|Failed to fetch|只接受 POST|Worker error/i.test(txt)) return false;
-      if(/正在為你翻閱命盤|交叉比對七套系統中|靈線未收|星圖仍在對頻/.test(txt)) return false;
-      return !!box.querySelector('.card');
-    }catch(e){ return false; }
-  }
-  window._jyIsDeepReady = function(){
-    try{
-      var ready = !!(window.S && S._aiDeepReady);
-      if(ready) return true;
-      return _jyHasSuccessResult();
-    }catch(e){ return _jyHasSuccessResult(); }
-  };
-  window._jySyncDeepReady = function(forceOpen){
-    try{
-      var box = _jyResultDiv();
-      var ready = _jyHasSuccessResult();
-      if(box && box.dataset) box.dataset.aiStatus = ready ? 'success' : ((box.dataset.aiStatus==='loading')?'loading':(box.dataset.aiStatus||''));
-      if(window.S) S._aiDeepReady = ready;
-      if(typeof window.renderProductCrystal === 'function' && window.S && S.bazi){
-        window.renderProductCrystal(S.bazi, (S.form && S.form.type) || 'general');
-      }
-      var card = _jyCard();
-      if(card){
-        if(ready && forceOpen !== false) card.classList.add('open');
-        if(!ready) card.classList.remove('open');
-      }
-      return ready;
-    }catch(e){ return false; }
-  };
-
-  if(typeof window._triggerAIDeep === 'function' && !window._jyDeepReadyWrappedV13){
-    var _orig = window._triggerAIDeep;
-    window._triggerAIDeep = async function(){
-      var box = _jyResultDiv();
-      if(box && box.dataset) box.dataset.aiStatus = 'loading';
-      try{ if(window.S) S._aiDeepReady = false; }catch(e){}
-      try{ var card = _jyCard(); if(card) card.classList.remove('open'); }catch(e){}
-      try{
-        var ret = await _orig.apply(this, arguments);
-        setTimeout(function(){ window._jySyncDeepReady(true); }, 60);
-        setTimeout(function(){ window._jySyncDeepReady(true); }, 320);
-        setTimeout(function(){ window._jySyncDeepReady(true); }, 900);
-        return ret;
-      }catch(err){
-        try{ if(box && box.dataset) box.dataset.aiStatus = 'error'; }catch(e){}
-        try{ if(window.S) S._aiDeepReady = false; }catch(e){}
-        throw err;
-      }
-    };
-    window._jyDeepReadyWrappedV13 = true;
-  }
-
-  if(typeof window.renderProductCrystal === 'function' && !window._jyCrystalWrappedV13){
-    var _origRenderCrystal = window.renderProductCrystal;
-    window.renderProductCrystal = function(){
-      try{ if(window.S) S._aiDeepReady = window._jyIsDeepReady(); }catch(e){}
-      return _origRenderCrystal.apply(this, arguments);
-    };
-    window._jyCrystalWrappedV13 = true;
   }
 
   try{
-    var obsTarget = _jyResultDiv();
-    if(obsTarget && !obsTarget._jyObserverV13){
-      var ob = new MutationObserver(function(){
-        var box = _jyResultDiv();
-        if(!box) return;
-        var txt = (box.textContent || '').trim();
-        if(/暫時連線不順|再試一次|回傳為空|Failed to fetch|Worker error/i.test(txt)){
-          try{ if(box.dataset) box.dataset.aiStatus = 'error'; }catch(e){}
-          try{ if(window.S) S._aiDeepReady = false; }catch(e){}
-          return;
-        }
-        if(window._jyHasScheduledSyncV13) return;
-        window._jyHasScheduledSyncV13 = true;
-        setTimeout(function(){
-          window._jyHasScheduledSyncV13 = false;
-          window._jySyncDeepReady(true);
-        }, 120);
-      });
-      ob.observe(obsTarget, { childList:true, subtree:true, characterData:true });
-      obsTarget._jyObserverV13 = ob;
+    var _aiResultNode = document.getElementById('ai-deep-result');
+    if(_aiResultNode && typeof MutationObserver !== 'undefined'){
+      var _jyObs = new MutationObserver(function(){ _syncCrystalReadyState(); });
+      _jyObs.observe(_aiResultNode, { childList:true, subtree:true, characterData:true });
     }
   }catch(e){}
+
+  setTimeout(function(){ _syncCrystalReadyState(); }, 120);
 })();

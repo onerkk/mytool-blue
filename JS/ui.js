@@ -4822,7 +4822,7 @@ showAuraResult = function(){
     try{
       var card = el && el.closest ? el.closest('.collapsible-card') : null;
       if(card && card.id === 'crystal-card'){
-        var ready = !!(window.S && S._aiDeepReady);
+        var ready = !!((window._jyIsCrystalReady && window._jyIsCrystalReady()) || (window.S && S._aiDeepReady));
         if(!ready){
           card.classList.remove('open');
           try{
@@ -4837,45 +4837,4 @@ showAuraResult = function(){
     }catch(e){}
     if(typeof _origToggleCollapse==='function') return _origToggleCollapse(el);
   };
-})();
-
-
-// ===== Crystal toggle/auto-open final patch v13 =====
-(function(){
-  var _origToggle = window.toggleCollapse;
-  window.toggleCollapse = function(el){
-    try{
-      var card = el && el.closest ? el.closest('.collapsible-card') : null;
-      if(card && card.id === 'crystal-card'){
-        var ready = (typeof window._jyIsDeepReady === 'function') ? window._jyIsDeepReady() : !!(window.S && S._aiDeepReady);
-        try{ if(window.S) S._aiDeepReady = ready; }catch(e){}
-        if(!ready){
-          card.classList.remove('open');
-          try{
-            var body = document.getElementById('r-crystal');
-            if((!body || !body.innerHTML.trim()) && typeof window.renderProductCrystal==='function' && window.S && S.bazi){
-              window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general');
-            }
-          }catch(e){}
-          return;
-        }
-      }
-    }catch(e){}
-    if(typeof _origToggle==='function') return _origToggle(el);
-  };
-
-  function _forceCrystalOpenWhenReady(){
-    try{
-      var ready = (typeof window._jyIsDeepReady === 'function') ? window._jyIsDeepReady() : !!(window.S && S._aiDeepReady);
-      var card = document.getElementById('crystal-card');
-      if(!card) return;
-      if(ready){
-        card.classList.add('open');
-        if(typeof window._jySyncDeepReady === 'function') window._jySyncDeepReady(true);
-      }
-    }catch(e){}
-  }
-  setTimeout(_forceCrystalOpenWhenReady, 300);
-  setTimeout(_forceCrystalOpenWhenReady, 1200);
-  setTimeout(_forceCrystalOpenWhenReady, 2500);
 })();
