@@ -4822,7 +4822,7 @@ showAuraResult = function(){
     try{
       var card = el && el.closest ? el.closest('.collapsible-card') : null;
       if(card && card.id === 'crystal-card'){
-        var ready = !!(window.S && S._aiDeepReady);
+        var ready = !!((window._jyIsCrystalReady && window._jyIsCrystalReady()) || (window.S && S._aiDeepReady));
         if(!ready){
           card.classList.remove('open');
           try{

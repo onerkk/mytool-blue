@@ -18885,10 +18885,36 @@ function _rrect(ctx, x, y, w, h, r) {
     }
   };
 
+  function _jyHasFinalAIResult(){
+    try{
+      var resultDiv = document.getElementById('ai-deep-result');
+      if(!resultDiv) return false;
+      var txt = (resultDiv.textContent || '').replace(/\s+/g,' ').trim();
+      if(!txt) return false;
+      if(txt.indexOf('正在為你翻閱命盤')>=0) return false;
+      if(txt.indexOf('交叉比對七套系統中')>=0) return false;
+      if(txt.indexOf('暫時連線不順')>=0) return false;
+      if(txt.indexOf('再試一次')>=0) return false;
+      if(txt.indexOf('回傳為空')>=0) return false;
+      if(txt.indexOf('先等上方七維分析完成')>=0) return false;
+      return true;
+    }catch(e){ return false; }
+  }
+  window._jyHasFinalAIResult = _jyHasFinalAIResult;
+
+  function _jyIsCrystalReady(){
+    try{
+      if(window.S && S._aiDeepReady) return true;
+    }catch(e){}
+    return _jyHasFinalAIResult();
+  }
+  window._jyIsCrystalReady = _jyIsCrystalReady;
+
   window.renderProductCrystal = function(bazi, type){
     var root = document.getElementById('r-crystal');
     if(!root) return;
-    var ready = !!(window.S && S._aiDeepReady);
+    var ready = _jyIsCrystalReady();
+    try{ if(window.S && ready) S._aiDeepReady = true; }catch(e){}
     var ft = type || (window.S&&S.form&&S.form.type) || 'general';
     var q = (window.S&&S.form&&S.form.question) || '';
     var energy = window.buildSevenEnergyRecommendation(ft, q);
@@ -18956,7 +18982,7 @@ function _rrect(ctx, x, y, w, h, r) {
   };
 
   window.selectCrystalMode = function(mode){
-    if(!(window.S && S._aiDeepReady && S.bazi)) return;
+    if(!(window._jyIsCrystalReady && window._jyIsCrystalReady() && window.S && S.bazi)) return;
     S._crystalMode = mode || 'seven';
     window.renderProductCrystal(S.bazi, (S.form&&S.form.type)||'general');
   };
@@ -18976,6 +19002,18 @@ function _rrect(ctx, x, y, w, h, r) {
     }catch(e){ console.error('render crystal after ai', e); }
   }
 
+  function _syncCrystalReadyState(){
+    var ok = false;
+    try{ ok = _jyIsCrystalReady(); }catch(e){}
+    try{ if(window.S){ S._aiDeepReady = ok; } }catch(e){}
+    if(ok){
+      _refreshCrystalAfterAI();
+      _setCrystalCardOpen(true);
+    }
+    return ok;
+  }
+  window._syncCrystalReadyState = _syncCrystalReadyState;
+
   if(typeof window._triggerAIDeep === 'function'){
     var _origTriggerAIDeepV11 = window._triggerAIDeep;
     window._triggerAIDeep = async function(){
@@ -18983,20 +19021,19 @@ function _rrect(ctx, x, y, w, h, r) {
       _setCrystalCardOpen(false);
       _refreshCrystalAfterAI();
       await _origTriggerAIDeepV11.apply(this, arguments);
-      var ok = false;
-      try{
-        var resultDiv = document.getElementById('ai-deep-result');
-        var txt = (resultDiv && resultDiv.textContent || '').trim();
-        ok = !!txt && txt.indexOf('暫時連線不順')<0 && txt.indexOf('再試一次')<0 && txt.indexOf('回傳為空')<0;
-      }catch(e){}
-      try{ if(window.S){ S._aiDeepReady = ok; } }catch(e){}
-      if(ok){
-        _refreshCrystalAfterAI();
-        _setCrystalCardOpen(true);
-      }else{
-        _setCrystalCardOpen(false);
-        _refreshCrystalAfterAI();
-      }
+      [80, 260, 700, 1400, 2400].forEach(function(ms){
+        setTimeout(function(){ _syncCrystalReadyState(); }, ms);
+      });
     };
   }
+
+  try{
+    var _aiResultNode = document.getElementById('ai-deep-result');
+    if(_aiResultNode && typeof MutationObserver !== 'undefined'){
+      var _jyObs = new MutationObserver(function(){ _syncCrystalReadyState(); });
+      _jyObs.observe(_aiResultNode, { childList:true, subtree:true, characterData:true });
+    }
+  }catch(e){}
+
+  setTimeout(function(){ _syncCrystalReadyState(); }, 120);
 })();
