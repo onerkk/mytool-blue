@@ -178,7 +178,8 @@
     <!-- 浮動粒子 -->
     <div class="particles" id="particles"></div>
 
-    <div class="hero" style="position:relative;z-index:1">
+    <!-- ★ 舊六宮格已由 JS _redesignHomepage() 完全取代，這裡預設隱藏避免閃爍 -->
+    <div class="hero" style="position:relative;z-index:1;display:none">
       <div class="hero-moon" id="hero-moon" onclick="_moonTap()"><div class="hero-moon-crescent"></div></div>
       <div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>
       <h1 style="font-size:clamp(1.4rem,4.5vw,1.9rem);letter-spacing:0.03em">你的命盤，藏著答案</h1>
@@ -187,7 +188,7 @@
     </div>
 
     <!-- 六宮格 -->
-    <div class="hook-grid-6" style="position:relative;z-index:1">
+    <div class="hook-grid-6" style="position:relative;z-index:1;display:none">
       <button class="hook-card-v2" onclick="pickType('love')">
         <span class="hook-emoji">💕</span>
         <span class="hook-title">感情桃花</span>
@@ -219,7 +220,7 @@
         <span class="hook-sub">家庭和諧嗎？</span>
       </button>
     </div>
-    <div style="display:flex;justify-content:center;gap:var(--sp-md);margin-top:var(--sp-lg);font-size:.75rem;color:var(--c-text-muted);position:relative;z-index:1">
+    <div style="display:none;justify-content:center;gap:var(--sp-md);margin-top:var(--sp-lg);font-size:.75rem;color:var(--c-text-muted);position:relative;z-index:1">
       <span>⚡ 免費 · 10 秒出結果</span>
     </div>
   </div>
