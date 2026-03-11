@@ -797,6 +797,96 @@
     };
   });
 
+
+  function _pickCoreStrings(list, limit){
+    return _arr(list).slice(0, limit).map(function(item){
+      if(typeof item === 'string') return item;
+      return item.detail || item.label || item.tag || item.reason || '';
+    }).filter(Boolean);
+  }
+  function _buildOptimizedViews(payload){
+    var cross = payload.crossSystem || {};
+    var matrix = cross.caseMatrix || {};
+    var systems = ['bazi','ziwei','meihua','tarot','natal','jyotish','name'];
+    function systemLite(k){
+      var p = payload[k];
+      if(!p) return null;
+      return {
+        score:p.score,
+        confidence:p.confidence,
+        direction:p.direction,
+        summary:p.summary,
+        supports:_pickCoreStrings(p.supports,2),
+        risks:_pickCoreStrings(p.risks,2),
+        digest:_pickCoreStrings(p.caseVector && p.caseVector.digest,3)
+      };
+    }
+    function systemCase(k){
+      var p = payload[k];
+      if(!p) return null;
+      return {
+        score:p.score,
+        confidence:p.confidence,
+        direction:p.direction,
+        summary:p.summary,
+        supports:_pickCoreStrings(p.supports,3),
+        risks:_pickCoreStrings(p.risks,3),
+        neutral:_pickCoreStrings(p.neutralSignals,2),
+        essence:_pickCoreStrings(p.caseVector && p.caseVector.essenceTags,3),
+        motive:_pickCoreStrings(p.caseVector && p.caseVector.motiveTags,3),
+        obstacle:_pickCoreStrings(p.caseVector && p.caseVector.obstacleTags,3),
+        path:_pickCoreStrings(p.caseVector && p.caseVector.pathTags,3),
+        validation:_pickCoreStrings(p.caseVector && p.caseVector.validationHints,3)
+      };
+    }
+    var lite = {
+      meta: payload.meta,
+      verdict: cross.summary || '',
+      averageScore: cross.averageScore,
+      averageConfidence: cross.averageConfidence,
+      caseMatrix: {
+        topEssence:_pickCoreStrings(matrix.topEssence,2),
+        topMotives:_pickCoreStrings(matrix.topMotives,2),
+        topObstacles:_pickCoreStrings(matrix.topObstacles,3),
+        topPaths:_pickCoreStrings(matrix.topPaths,2),
+        topValidation:_pickCoreStrings(matrix.topValidation,2)
+      },
+      systems: {}
+    };
+    var caseView = {
+      meta: payload.meta,
+      verdict: cross.summary || '',
+      averageScore: cross.averageScore,
+      averageConfidence: cross.averageConfidence,
+      caseMatrix: {
+        topEssence:_pickCoreStrings(matrix.topEssence,4),
+        topMotives:_pickCoreStrings(matrix.topMotives,4),
+        topObstacles:_pickCoreStrings(matrix.topObstacles,5),
+        topOpportunities:_pickCoreStrings(matrix.topOpportunities,5),
+        topPaths:_pickCoreStrings(matrix.topPaths,4),
+        topValidation:_pickCoreStrings(matrix.topValidation,4),
+        contradictions:_pickCoreStrings(matrix.contradictions,4),
+        evidenceDepthScore: matrix.evidenceDepthScore,
+        avgAmbiguity: matrix.avgAmbiguity,
+        avgDirectness: matrix.avgDirectness
+      },
+      systems: {}
+    };
+    var deep = {
+      meta: payload.meta,
+      crossSystem: cross,
+      systems: {}
+    };
+    systems.forEach(function(k){
+      if(payload[k]){
+        lite.systems[k]=systemLite(k);
+        caseView.systems[k]=systemCase(k);
+        deep.systems[k]=payload[k];
+      }
+    });
+    return { lite: lite, case: caseView, deep: deep };
+  }
+
   window.buildAPISystemPayloads = function(){
     var payload = { meta:{ type:(S.form&&S.form.type)||'general', question:(S.form&&S.form.question)||'', generatedAt:new Date().toISOString(), focus:_questionFocus((S.form&&S.form.type)||'general') } };
     try{ payload.bazi = window.analyzeBaziQuestion ? analyzeBaziQuestion(S.bazi, payload.meta.type, payload.meta.question).apiPayload : null; }catch(e){ payload.bazi=null; }
@@ -849,6 +939,7 @@
         summary: '七維有效系統 '+active.length+' 套，整體平均分 '+avg+'，共識偏向 '+(dirs.positive>dirs.negative?'正向':dirs.negative>dirs.positive?'逆風':'混合')+'。' + (caseMatrix.topEssence[0] ? ' 主線更像「'+caseMatrix.topEssence[0].tag+'」。' : '')
       };
     }catch(e){ payload.crossSystem = null; }
+    try{ payload.optimizedViews = _buildOptimizedViews(payload); }catch(e){ payload.optimizedViews = null; }
     return payload;
   };
 
