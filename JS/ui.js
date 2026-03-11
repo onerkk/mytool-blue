@@ -4838,19 +4838,3 @@ showAuraResult = function(){
     if(typeof _origToggleCollapse==='function') return _origToggleCollapse(el);
   };
 })();
-
-
-// ===== JY phase12 crystal lock patch =====
-(function(){
-  var _prevToggle = window.toggleCollapse;
-  window.toggleCollapse = function(el){
-    try{
-      var card = el && el.closest ? el.closest('.collapsible-card') : null;
-      if(card && card.id === 'crystal-card'){
-        var ready = !!(window.S && S._aiDeepReady);
-        if(!ready){ card.classList.remove('open'); return; }
-      }
-    }catch(e){}
-    return _prevToggle ? _prevToggle(el) : undefined;
-  };
-})();
