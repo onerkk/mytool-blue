@@ -888,18 +888,20 @@ function submitStep0Fast(){
     if(ol){ol.style.transition='opacity .5s';ol.style.opacity='0';setTimeout(()=>ol.remove(),500);}
     goStep(3);
 
-    // ── OOTK：結果頁載入後啟動開鑰之法 ──
+    // ── OOTK：結果頁載入後啟動開鑰之法（走付費檢查）──
     if (window._pendingOOTK) {
       window._pendingOOTK = false;
       setTimeout(function() {
-        if (typeof startOOTK === 'function') {
+        if (typeof _jyStartOOTK === 'function') {
+          _jyStartOOTK();
+        } else if (typeof startOOTK === 'function') {
           startOOTK();
         } else if (typeof startOOTKFlow === 'function') {
           startOOTKFlow();
         } else {
           console.warn('[OOTK] startOOTK/startOOTKFlow 未定義');
         }
-      }, 600); // 等結果頁 DOM 穩定
+      }, 600);
     }
   }, TOTAL_MS+300);
 }
