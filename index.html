@@ -394,7 +394,8 @@
   <div class="card">
     <div class="card-title"><i class="fas fa-star"></i> 金色黎明塔羅牌</div>
     <p class="text-dim text-sm mb-sm" style="text-align:center">凝神冥想你的問題，然後從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張牌</p>
-    <p class="tarot-pick-hint" id="pick-hint">← 滑動瀏覽，點選你有感覺的牌 →</p>
+    <p class="tarot-pick-hint" id="pick-hint" style="text-align:center;font-size:.82rem;color:var(--c-gold);animation:jySwipeHint 2s ease-in-out infinite;margin:.4rem 0">👆 左右滑動瀏覽牌堆，點選你有感覺的牌</p>
+    <style>@keyframes jySwipeHint{0%,100%{transform:translateX(0);opacity:.7}50%{transform:translateX(6px);opacity:1}}</style>
     <p class="text-dim text-xs" style="text-align:center" id="t-remain-text">已選 <strong id="t-remain-picked" class="text-gold">0</strong> / 10 張</p>
 
     <!-- 已選牌位（10個凱爾特十字位） -->
