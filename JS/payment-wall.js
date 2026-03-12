@@ -10,11 +10,12 @@
   var PRICE_TAROT = 30;
   var PRICE_FULL = 50;
   var PRICE_OOTK = 40;
+  var PRICE_FOLLOWUP = 10;
 
   // ═══ 1. 付費牆 HTML ═══
 
   function _buildPaywallHTML(mode) {
-    var price = mode === 'ootk' ? PRICE_OOTK : (mode === 'tarot_only' ? PRICE_TAROT : PRICE_FULL);
+    var price = mode === 'ootk' ? PRICE_OOTK : (mode === 'tarot_followup' ? PRICE_FOLLOWUP : (mode === 'tarot_only' ? PRICE_TAROT : PRICE_FULL));
     var label = mode === 'ootk' ? '開鑰之法・五階段深度占卜' : (mode === 'tarot_only' ? '塔羅深度解讀' : '七維度 AI 深度解讀');
     var icon = mode === 'ootk' ? '🔑' : (mode === 'tarot_only' ? '🃏' : '🔮');
     var accent = mode === 'ootk' ? '212,175,55' : (mode === 'tarot_only' ? '139,92,246' : '212,175,55');
