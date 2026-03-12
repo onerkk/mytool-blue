@@ -327,54 +327,72 @@
     }, 3000);
   }
 
-  // ═══ 8. 攔截手動抽牌模式：監聽 step-2 出現 + 塔羅模式 → 檢查額度 ═══
+  // ═══ 8. 攔截所有入口按鈕（capturing phase，比 ui.js 的 handler 更早執行）═══
 
-  function _interceptManualTarot() {
-    var checking = false;
-    var observer = new MutationObserver(function(mutations) {
-      if (checking) return;
-      for (var i = 0; i < mutations.length; i++) {
-        var target = mutations[i].target;
-        if (!target || target.id !== 'step-2') continue;
-        // step-2 剛被加上 active class = 抽牌頁出現
-        if (!target.classList.contains('active')) continue;
-        if (!(window.S && window.S._tarotOnlyMode)) continue;
-        var isAdmin = !!(window._JY_ADMIN_TOKEN);
-        var hasPaidToken = !!localStorage.getItem('_jy_paid_token');
-        if (isAdmin || hasPaidToken) continue;
-        checking = true;
-        _checkTarotQuota(target);
-        return;
+  function _interceptAllButtons() {
+    document.addEventListener('click', function(e) {
+      // 如果已通過檢查（btn.click() 重觸發），放行
+      if (e._jyPayChecked) return;
+
+      var btn = e.target.closest ? e.target.closest('button') : null;
+      if (!btn) return;
+      var text = (btn.textContent || '').trim();
+
+      // ── 判斷是哪種按鈕 ──
+      var mode = null;
+      if (btn.id === 'btn-tarot-go' || text.indexOf('開始塔羅解讀') >= 0 || text.indexOf('手動抽牌模式') >= 0) {
+        mode = 'tarot_only';
+      } else if (text.indexOf('解鎖七維命盤分析') >= 0 || text.indexOf('看我的命盤分析') >= 0) {
+        mode = 'full';
       }
-    });
-    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
-  }
+      if (!mode) return;
 
-  async function _checkTarotQuota(step2El) {
-    try {
-      var checkResp = await fetch(WORKER_URL, {
+      // ── Admin / 付費用戶放行 ──
+      var isAdmin = !!(window._JY_ADMIN_TOKEN);
+      var hasPaidToken = !!localStorage.getItem('_jy_paid_token');
+      if (isAdmin || hasPaidToken) return;
+
+      // ── 阻止原始 handler 執行 ──
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      // ── 打 Worker 檢查額度 ──
+      var checkPayload = mode === 'tarot_only'
+        ? { action: 'check', payload: { mode: 'tarot_only' } }
+        : { action: 'check', payload: {} };
+
+      fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check', payload: { mode: 'tarot_only' } })
+        body: JSON.stringify(checkPayload)
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.allowed) {
+          // 額度用完 → 彈付費牆
+          var existing = document.getElementById('jy-pay-modal');
+          if (existing) existing.remove();
+          var m = document.createElement('div');
+          m.id = 'jy-pay-modal';
+          m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)';
+          m.innerHTML = _buildPaywallHTML(mode);
+          m.addEventListener('click', function(ev) { if (ev.target === m) m.remove(); });
+          document.body.appendChild(m);
+        } else {
+          // 額度OK → 重新觸發按鈕，帶標記跳過攔截
+          var newEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+          newEvent._jyPayChecked = true;
+          btn.dispatchEvent(newEvent);
+        }
+      })
+      .catch(function(err) {
+        console.warn('[PayWall] check failed, allowing:', err);
+        var newEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+        newEvent._jyPayChecked = true;
+        btn.dispatchEvent(newEvent);
       });
-      var checkData = await checkResp.json();
-      if (!checkData.allowed) {
-        // 額度用完 → 切回首頁步驟，彈付費牆
-        step2El.classList.remove('active');
-        // 找回首頁步驟並顯示
-        var step0 = document.getElementById('step-0');
-        if (step0) step0.classList.add('active');
 
-        var m = document.createElement('div');
-        m.id = 'jy-pay-modal';
-        m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)';
-        m.innerHTML = _buildPaywallHTML('tarot_only');
-        m.addEventListener('click', function(e) { if (e.target === m) m.remove(); });
-        document.body.appendChild(m);
-      }
-    } catch(e) {
-      console.warn('[PayWall] manual tarot check failed:', e);
-    }
+    }, true); // ← true = capturing phase，比任何 addEventListener 都早
   }
 
   // ═══ 初始化 ═══
@@ -385,7 +403,7 @@
     _hijackUsedModals();
     _watchCrystalPanel();
     _killOldOverlayFlash();
-    _interceptManualTarot();
+    _interceptAllButtons();
   }
 
   if (document.readyState === 'loading') {
