@@ -774,6 +774,15 @@ function submitStep0Fast(){
           _spreadId = detectSpreadType(S.form.question || '', S.form.type || 'general');
           setCurrentSpread(_spreadId);
         }
+
+        // ── OOTK 攔截：不走正常抽牌，標記後面啟動 OOTK 流程 ──
+        if (_spreadId === 'ootk') {
+          drawnCards = [];
+          S.tarot = { drawn: [], spread: [], spreadType: 'ootk' };
+          window._pendingOOTK = true;
+          console.log('[AutoMode] 偵測到開鑰之法，跳過抽牌，稍後啟動 OOTK');
+        } else {
+
         var _spreadDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
         var _count = _spreadDef ? _spreadDef.count : 10;
 
@@ -798,6 +807,7 @@ function submitStep0Fast(){
         S.tarot = {drawn: autoDrawn, spread: autoDrawn, spreadType: _spreadId, spreadDef: _spreadDef};
         try { if(typeof enhanceTarot==='function') enhanceTarot(S.tarot); } catch(e){ console.warn('[AutoTarot] enhanceTarot:', e); }
         console.log('[AutoMode] 牌陣:'+_spreadId+'('+_count+'張) 抽牌:', autoDrawn.map(c=>c.n+(c.isUp?'正':'逆')).join(', '));
+        } // ← end of else (non-OOTK)
       } catch(e) {
         console.error('[AutoMode] 塔羅抽牌失敗:', e);
         drawnCards = [];
@@ -877,6 +887,20 @@ function submitStep0Fast(){
     const ol=document.getElementById('loading-overlay');
     if(ol){ol.style.transition='opacity .5s';ol.style.opacity='0';setTimeout(()=>ol.remove(),500);}
     goStep(3);
+
+    // ── OOTK：結果頁載入後啟動開鑰之法 ──
+    if (window._pendingOOTK) {
+      window._pendingOOTK = false;
+      setTimeout(function() {
+        if (typeof startOOTK === 'function') {
+          startOOTK();
+        } else if (typeof startOOTKFlow === 'function') {
+          startOOTKFlow();
+        } else {
+          console.warn('[OOTK] startOOTK/startOOTKFlow 未定義');
+        }
+      }, 600); // 等結果頁 DOM 穩定
+    }
   }, TOTAL_MS+300);
 }
 
