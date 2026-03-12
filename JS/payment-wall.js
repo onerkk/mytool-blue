@@ -9,19 +9,21 @@
   var WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
   var PRICE_TAROT = 30;
   var PRICE_FULL = 50;
+  var PRICE_OOTK = 40;
 
   // ═══ 1. 付費牆 HTML ═══
 
   function _buildPaywallHTML(mode) {
-    var price = mode === 'tarot_only' ? PRICE_TAROT : PRICE_FULL;
-    var label = mode === 'tarot_only' ? '塔羅深度解讀' : '七維度 AI 深度解讀';
-    var icon = mode === 'tarot_only' ? '🃏' : '🔮';
-    var accent = mode === 'tarot_only' ? '139,92,246' : '212,175,55';
+    var price = mode === 'ootk' ? PRICE_OOTK : (mode === 'tarot_only' ? PRICE_TAROT : PRICE_FULL);
+    var label = mode === 'ootk' ? '開鑰之法・五階段深度占卜' : (mode === 'tarot_only' ? '塔羅深度解讀' : '七維度 AI 深度解讀');
+    var icon = mode === 'ootk' ? '🔑' : (mode === 'tarot_only' ? '🃏' : '🔮');
+    var accent = mode === 'ootk' ? '212,175,55' : (mode === 'tarot_only' ? '139,92,246' : '212,175,55');
+    var subtitle = mode === 'ootk' ? '金色黎明最高階占卜儀式' : '每人每天免費 1 次';
 
     return '<div style="max-width:340px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(' + accent + ',.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
       '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(' + accent + ',.3))">🌙</div>' +
-      '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">今日免費額度已用完</h3>' +
-      '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">每人每天免費 1 次</p>' +
+      '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">' + (mode === 'ootk' ? '開鑰之法' : '今日免費額度已用完') + '</h3>' +
+      '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">' + subtitle + '</p>' +
       '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.2rem">想再問一題？</p>' +
       '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="_jyStartPayment(\'' + mode + '\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(' + accent + ',.18),rgba(' + accent + ',.06));color:var(--c-gold,#d4af37);font-size:.9rem;font-weight:700;border:1.5px solid rgba(' + accent + ',.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(' + accent + ',.12)">' + icon + ' 解鎖' + label + ' NT$' + price + '</button>' +
