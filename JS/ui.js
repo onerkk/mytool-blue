@@ -4481,16 +4481,14 @@ showAuraResult = function(){
   // ══ 計算當前表單的 person signature（跟 Worker 端 buildPersonSignature 對齊）══
   function _getFormPersonKey() {
     try {
-      var nameEl = document.getElementById('f-name');
       var bdateEl = document.getElementById('f-bdate');
       var btimeEl = document.getElementById('f-btime');
       var genderEl = document.querySelector('input[name="gender"]:checked');
-      var name = nameEl ? nameEl.value.trim() : '';
       var bdate = bdateEl ? bdateEl.value.trim() : '';
       var btime = btimeEl ? btimeEl.value.trim() : '';
       var gender = genderEl ? genderEl.value : '';
       var birth = bdate + (btime ? ' ' + btime : '');
-      var parts = [name, birth, gender].filter(Boolean);
+      var parts = [birth, gender].filter(Boolean);
       if (!parts.length) return 'anon';
       var raw = parts.join('|');
       var hash = 0;
@@ -4520,12 +4518,10 @@ showAuraResult = function(){
   async function _preCheckRateLimit() {
     if (window._JY_ADMIN_TOKEN) return { allowed: true };
     try {
-      var nameEl = document.getElementById('f-name');
       var bdateEl = document.getElementById('f-bdate');
       var btimeEl = document.getElementById('f-btime');
       var genderEl = document.querySelector('input[name="gender"]:checked');
       var payload = {
-        name: nameEl ? nameEl.value.trim() : '',
         birth: (bdateEl ? bdateEl.value.trim() : '') + (btimeEl && btimeEl.value ? ' ' + btimeEl.value.trim() : ''),
         gender: genderEl ? genderEl.value : ''
       };
