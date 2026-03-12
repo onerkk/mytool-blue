@@ -328,23 +328,36 @@
   }
 
   // ═══ 8. 攔截所有入口按鈕（capturing phase，比 ui.js 的 handler 更早執行）═══
+  // ★ 不用中文字串比對（會被編碼搞壞），改用 ID / icon class / onclick 判斷
 
   function _interceptAllButtons() {
     document.addEventListener('click', function(e) {
-      // 如果已通過檢查（btn.click() 重觸發），放行
       if (e._jyPayChecked) return;
 
       var btn = e.target.closest ? e.target.closest('button') : null;
       if (!btn) return;
-      var text = (btn.textContent || '').trim();
 
-      // ── 判斷是哪種按鈕 ──
+      // ── 判斷是哪種按鈕（純用結構判斷，不用中文）──
       var mode = null;
-      if (btn.id === 'btn-tarot-go' || text.indexOf('開始塔羅解讀') >= 0 || text.indexOf('手動抽牌模式') >= 0) {
+      var icon = btn.querySelector('i');
+      var iconClass = icon ? icon.className : '';
+      var onclick = btn.getAttribute('onclick') || '';
+
+      // 塔羅按鈕：id=btn-tarot-go 或 icon=fa-hand-pointer（手動抽牌）
+      if (btn.id === 'btn-tarot-go') {
         mode = 'tarot_only';
-      } else if (text.indexOf('解鎖七維命盤分析') >= 0 || text.indexOf('看我的命盤分析') >= 0) {
+      } else if (iconClass.indexOf('fa-hand-pointer') >= 0) {
+        mode = 'tarot_only';
+      }
+      // 七維度按鈕：onclick 含 enterFullAnalysis 或 submitStep0Fast
+      else if (onclick.indexOf('enterFullAnalysis') >= 0) {
+        mode = 'full';
+      } else if (onclick.indexOf('submitStep0Fast') >= 0) {
+        mode = 'full';
+      } else if (btn.id === 'btn-go') {
         mode = 'full';
       }
+
       if (!mode) return;
 
       // ── Admin / 付費用戶放行 ──
@@ -369,7 +382,6 @@
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!data.allowed) {
-          // 額度用完 → 彈付費牆
           var existing = document.getElementById('jy-pay-modal');
           if (existing) existing.remove();
           var m = document.createElement('div');
@@ -379,7 +391,6 @@
           m.addEventListener('click', function(ev) { if (ev.target === m) m.remove(); });
           document.body.appendChild(m);
         } else {
-          // 額度OK → 重新觸發按鈕，帶標記跳過攔截
           var newEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
           newEvent._jyPayChecked = true;
           btn.dispatchEvent(newEvent);
@@ -392,7 +403,7 @@
         btn.dispatchEvent(newEvent);
       });
 
-    }, true); // ← true = capturing phase，比任何 addEventListener 都早
+    }, true);
   }
 
   // ═══ 初始化 ═══
