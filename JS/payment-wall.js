@@ -21,13 +21,13 @@
     var accent = mode === 'ootk' ? '212,175,55' : (mode === 'tarot_only' ? '139,92,246' : '212,175,55');
     var subtitle = mode === 'ootk' ? '金色黎明最高階占卜儀式' : '每人每天免費 1 次';
 
-    return '<div style="max-width:340px;width:90%;background:linear-gradient(145deg,#0e1018,#181a26);border:1.5px solid rgba(' + accent + ',.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
+    return '<div style="max-width:340px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(' + accent + ',.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
       '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(' + accent + ',.3))">🌙</div>' +
-      '<h3 style="color:var(--c-gold,var(--c-gold));font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">' + (mode === 'ootk' ? '開鑰之法' : '今日免費額度已用完') + '</h3>' +
-      '<p style="font-size:.85rem;color:var(--c-text-dim,rgba(232,234,240,0.6));line-height:1.7;margin-bottom:.3rem">' + subtitle + '</p>' +
-      '<p style="font-size:.78rem;color:var(--c-text-muted,rgba(232,234,240,0.35));margin-bottom:1.2rem">想再問一題？</p>' +
+      '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">' + (mode === 'ootk' ? '開鑰之法' : '今日免費額度已用完') + '</h3>' +
+      '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">' + subtitle + '</p>' +
+      '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.2rem">想再問一題？</p>' +
       '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-        '<button onclick="_jyStartPayment(\'' + mode + '\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(' + accent + ',.18),rgba(' + accent + ',.06));color:var(--c-gold,var(--c-gold));font-size:.9rem;font-weight:700;border:1.5px solid rgba(' + accent + ',.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(' + accent + ',.12)">' + icon + ' 解鎖' + label + ' NT$' + price + '</button>' +
+        '<button onclick="_jyStartPayment(\'' + mode + '\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(' + accent + ',.18),rgba(' + accent + ',.06));color:var(--c-gold,#d4af37);font-size:.9rem;font-weight:700;border:1.5px solid rgba(' + accent + ',.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(' + accent + ',.12)">' + icon + ' 解鎖' + label + ' NT$' + price + '</button>' +
         '<div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;margin-top:.3rem">' +
           '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">💳信用卡</span>' +
           '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">🏧ATM</span>' +
@@ -35,7 +35,7 @@
           '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)"> Pay</span>' +
         '</div>' +
         '<div style="font-size:.6rem;color:var(--c-text-muted);margin-top:.2rem;opacity:.5">付款由綠界科技安全處理</div>' +
-        '<button onclick="var m=document.getElementById(\'jy-pay-modal\');if(m)m.remove();" style="width:200px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text-dim,rgba(232,234,240,0.6));font-size:.78rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.2rem">00:00 重置免費次數</button>' +
+        '<button onclick="var m=document.getElementById(\'jy-pay-modal\');if(m)m.remove();" style="width:200px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);font-size:.78rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.2rem">00:00 重置免費次數</button>' +
       '</div>' +
     '</div>';
   }
@@ -53,7 +53,7 @@
     var loadModal = document.createElement('div');
     loadModal.id = 'jy-pay-modal';
     loadModal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75)';
-    loadModal.innerHTML = '<div style="background:#0e1018;border:1px solid rgba(139,92,246,.25);border-radius:16px;padding:2rem;text-align:center"><div style="font-size:1rem;color:var(--c-gold)">正在建立付款訂單…</div></div>';
+    loadModal.innerHTML = '<div style="background:#1a0a0a;border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:2rem;text-align:center"><div style="font-size:1rem;color:var(--c-gold)">正在建立付款訂單…</div></div>';
     document.body.appendChild(loadModal);
 
     try {
@@ -79,11 +79,11 @@
         var waitModal = document.createElement('div');
         waitModal.id = 'jy-pay-modal';
         waitModal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75)';
-        waitModal.innerHTML = '<div style="background:#0e1018;border:1px solid rgba(139,92,246,.25);border-radius:16px;padding:2rem 1.5rem;text-align:center;max-width:320px">' +
+        waitModal.innerHTML = '<div style="background:#1a0a0a;border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:2rem 1.5rem;text-align:center;max-width:320px">' +
           '<div style="font-size:1.5rem;margin-bottom:.6rem">💳</div>' +
           '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">付款頁面已開啟</div>' +
           '<div style="font-size:.8rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">請在新視窗完成付款<br>付完後點下面按鈕</div>' +
-          '<button onclick="_jyCheckPaymentAndUnlock()" style="width:200px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:var(--c-gold);font-size:.88rem;font-weight:600;border:1.5px solid rgba(139,92,246,.4);cursor:pointer;font-family:inherit">✅ 我已完成付款</button>' +
+          '<button onclick="_jyCheckPaymentAndUnlock()" style="width:200px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:600;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">✅ 我已完成付款</button>' +
           '<div style="font-size:.6rem;color:var(--c-text-muted);margin-top:.5rem;opacity:.5">如果新視窗被擋，請允許彈出視窗</div>' +
         '</div>';
         waitModal.addEventListener('click', function(e) { if (e.target === waitModal) waitModal.remove(); });
@@ -287,7 +287,7 @@
           '<div style="font-size:1.5rem;margin-bottom:.4rem">💎</div>' +
           '<div style="font-size:.95rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">AI 推薦：' + found + '</div>' +
           '<div style="font-size:.8rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:.8rem">根據你的命盤與問題方向，這顆水晶跟你目前的能量最共振</div>' +
-          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.12),rgba(139,92,246,.05));color:var(--c-gold);text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(139,92,246,.3)"><i class="fas fa-gem"></i> 看看 ' + found + '</a>' +
+          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.05));color:var(--c-gold);text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(212,175,55,.3)"><i class="fas fa-gem"></i> 看看 ' + found + '</a>' +
         '</div>';
     }
   }
