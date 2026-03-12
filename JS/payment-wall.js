@@ -330,47 +330,24 @@
   // ═══ 8. 攔截手動抽牌模式：監聽 step-2 出現 + 塔羅模式 → 檢查額度 ═══
 
   function _interceptManualTarot() {
-    // 策略：MutationObserver 監聽 step-2 被顯示（display 從 none 變成 block）
-    // 如果是塔羅模式且額度用完，立刻蓋回去
     var checking = false;
     var observer = new MutationObserver(function(mutations) {
       if (checking) return;
       for (var i = 0; i < mutations.length; i++) {
         var target = mutations[i].target;
-        if (!target || !target.id) continue;
-        // step-2 是抽牌頁
-        if (target.id === 'step-2' && target.style && target.style.display !== 'none') {
-          // 確認是塔羅模式
-          if (window.S && window.S._tarotOnlyMode) {
-            var isAdmin = !!(window._JY_ADMIN_TOKEN);
-            var hasPaidToken = !!localStorage.getItem('_jy_paid_token');
-            if (!isAdmin && !hasPaidToken) {
-              checking = true;
-              _checkTarotQuota(target);
-            }
-          }
-        }
-      }
-    });
-    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
-
-    // 也用 setInterval 兜底（有些 goStep 實現不改 style 而是改 class）
-    var lastStep2Visible = false;
-    setInterval(function() {
-      if (checking) return;
-      var step2 = document.getElementById('step-2');
-      if (!step2) return;
-      var visible = step2.offsetParent !== null || step2.style.display === 'block';
-      if (visible && !lastStep2Visible && window.S && window.S._tarotOnlyMode) {
+        if (!target || target.id !== 'step-2') continue;
+        // step-2 剛被加上 active class = 抽牌頁出現
+        if (!target.classList.contains('active')) continue;
+        if (!(window.S && window.S._tarotOnlyMode)) continue;
         var isAdmin = !!(window._JY_ADMIN_TOKEN);
         var hasPaidToken = !!localStorage.getItem('_jy_paid_token');
-        if (!isAdmin && !hasPaidToken) {
-          checking = true;
-          _checkTarotQuota(step2);
-        }
+        if (isAdmin || hasPaidToken) continue;
+        checking = true;
+        _checkTarotQuota(target);
+        return;
       }
-      lastStep2Visible = visible;
-    }, 500);
+    });
+    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
   }
 
   async function _checkTarotQuota(step2El) {
@@ -382,12 +359,11 @@
       });
       var checkData = await checkResp.json();
       if (!checkData.allowed) {
-        // 額度用完 → 隱藏抽牌頁，回到首頁，彈付費牆
-        step2El.style.display = 'none';
-        var hookScreen = document.getElementById('hook-screen');
-        if (hookScreen) hookScreen.style.display = 'block';
-        var inputScreen = document.getElementById('input-screen');
-        if (inputScreen) inputScreen.style.display = 'block';
+        // 額度用完 → 切回首頁步驟，彈付費牆
+        step2El.classList.remove('active');
+        // 找回首頁步驟並顯示
+        var step0 = document.getElementById('step-0');
+        if (step0) step0.classList.add('active');
 
         var m = document.createElement('div');
         m.id = 'jy-pay-modal';
