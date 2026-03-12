@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://onerkk.github.io/mytool-blue/sitemap.xml
+Sitemap: https://jingyue.uk/sitemap.xml
