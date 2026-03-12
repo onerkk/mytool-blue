@@ -327,6 +327,47 @@
     }, 3000);
   }
 
+  // ═══ 8. 攔截手動抽牌模式（goStep(2)）加限流 ═══
+
+  function _interceptManualTarot() {
+    var _origGoStep = window.goStep;
+    if (!_origGoStep) return;
+
+    window.goStep = async function(step) {
+      // 只攔截跳到 step 2（抽牌頁）且是塔羅模式
+      if (step === 2 && window.S && window.S._tarotOnlyMode) {
+        var isAdmin = !!(window._JY_ADMIN_TOKEN);
+        var hasPaidToken = !!localStorage.getItem('_jy_paid_token');
+
+        if (!isAdmin && !hasPaidToken) {
+          // 檢查塔羅額度
+          try {
+            var checkResp = await fetch(WORKER_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'check', payload: { mode: 'tarot_only' } })
+            });
+            var checkData = await checkResp.json();
+            if (!checkData.allowed) {
+              // 額度用完 → 顯示付費牆
+              var m = document.createElement('div');
+              m.id = 'jy-pay-modal';
+              m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)';
+              m.innerHTML = _buildPaywallHTML('tarot_only');
+              m.addEventListener('click', function(e) { if (e.target === m) m.remove(); });
+              document.body.appendChild(m);
+              return; // 不跳轉
+            }
+          } catch(e) {
+            console.warn('[PayWall] manual tarot precheck failed:', e);
+          }
+        }
+      }
+      // 正常跳轉
+      return _origGoStep.apply(this, arguments);
+    };
+  }
+
   // ═══ 初始化 ═══
 
   function _init() {
@@ -335,6 +376,7 @@
     _hijackUsedModals();
     _watchCrystalPanel();
     _killOldOverlayFlash();
+    _interceptManualTarot();
   }
 
   if (document.readyState === 'loading') {
