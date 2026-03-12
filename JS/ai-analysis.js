@@ -19661,40 +19661,97 @@ async function _triggerTarotAI() {
 }
 
 function _renderTarotAIResult(container, r, admin) {
-  var html = '<div class="card" style="border-left:3px solid #8b5cf6;margin-bottom:var(--sp-md)">';
+  var html = '';
 
-  // 標題
-  html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem">';
-  html += '<span style="font-size:1.1rem">🃏</span>';
-  html += '<span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解牌</span>';
-  html += '</div>';
-
-  // directAnswer
+  // ═══ directAnswer 大標題 ═══
   if (r.directAnswer) {
-    html += '<div style="font-size:1.15rem;font-weight:700;color:var(--c-gold-pale,#f5e6b8);margin-bottom:.8rem;line-height:1.6">' +
-      r.directAnswer.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
-  }
-
-  // answer
-  if (r.answer) {
-    var paras = r.answer.split(/\n\n+/);
-    paras.forEach(function(para) {
-      para = para.trim();
-      if (!para) return;
-      var escaped = para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-      html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' + escaped + '</div>';
-    });
-  }
-
-  // closing
-  if (r.closing) {
-    html += '<div style="text-align:center;margin-top:.8rem;padding-top:.6rem;border-top:1px solid rgba(212,175,55,.1)">';
-    html += '<span style="font-size:.88rem;color:var(--c-gold);font-style:italic;opacity:.85">' +
-      r.closing.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
+    html += '<div style="text-align:center;margin-bottom:1.2rem;padding:.8rem">';
+    html += '<div style="font-size:1.15rem;font-weight:700;color:var(--c-gold-pale,#f5e6b8);line-height:1.6">' +
+      (r.directAnswer || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
     html += '</div>';
   }
 
-  html += '</div>';
+  // ═══ 子問題逐題解讀（核心區域）═══
+  var subAnswers = r.subAnswers || [];
+  if (subAnswers.length) {
+    var drawn = (S.tarot && S.tarot.drawn) ? S.tarot.drawn : drawnCards || [];
+
+    subAnswers.forEach(function(sa, idx) {
+      var cardIdx = (sa.cardIndex != null) ? sa.cardIndex : idx;
+      var card = drawn[cardIdx] || null;
+      var imgSrc = card ? ((typeof getTarotCardImage === 'function') ? getTarotCardImage(card) : '') : '';
+      var cardName = card ? (card.n || card.name || '') : '';
+      var isUp = card ? card.isUp : true;
+
+      html += '<div class="card" style="margin-bottom:.6rem;border-left:3px solid rgba(139,92,246,.5);padding:.8rem">';
+
+      // 子問題標題
+      html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem">';
+      html += '<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(139,92,246,.15);color:rgba(139,92,246,.9);font-size:.7rem;font-weight:700;flex-shrink:0">' + (idx + 1) + '</span>';
+      html += '<span style="font-size:.85rem;color:var(--c-text-dim);line-height:1.5">' +
+        (sa.question || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
+      html += '</div>';
+
+      // 牌面 + 結論
+      html += '<div style="display:flex;gap:.8rem;align-items:flex-start;margin-bottom:.5rem">';
+
+      // 牌面圖
+      if (imgSrc) {
+        html += '<div style="flex-shrink:0;text-align:center">';
+        html += '<img src="' + imgSrc + '" alt="' + cardName + '" style="width:60px;height:96px;border-radius:6px;object-fit:cover;border:1px solid rgba(212,175,55,.2);' + (isUp ? '' : 'transform:rotate(180deg)') + '">';
+        html += '<div style="font-size:.65rem;color:var(--c-gold);margin-top:.25rem;font-weight:600">' + cardName + '</div>';
+        html += '<div style="font-size:.58rem;color:var(--c-text-muted)">' + (isUp ? '正位' : '逆位') + '</div>';
+        html += '</div>';
+      }
+
+      // 結論 + 解讀
+      html += '<div style="flex:1">';
+
+      // 直接結論（大字、醒目）
+      if (sa.conclusion) {
+        html += '<div style="font-size:1.05rem;font-weight:700;color:var(--c-gold-pale,#f5e6b8);margin-bottom:.4rem;line-height:1.5">' +
+          (sa.conclusion || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+      }
+
+      // 深度解讀
+      if (sa.reading) {
+        html += '<div style="font-size:.88rem;line-height:1.85;color:var(--c-text,#e0d8c8)">' +
+          (sa.reading || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
+      }
+
+      html += '</div></div></div>';
+    });
+  }
+
+  // ═══ fallback：如果 AI 沒有回 subAnswers，用舊的 answer 渲染 ═══
+  if (!subAnswers.length && r.answer) {
+    html += '<div class="card" style="border-left:3px solid #8b5cf6;padding:.8rem">';
+    html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem"><span style="font-size:1.1rem">🃏</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解牌</span></div>';
+    var paras = r.answer.split(/\n\n+/);
+    paras.forEach(function(para) {
+      para = para.trim(); if (!para) return;
+      html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' +
+        para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
+    });
+    html += '</div>';
+  }
+
+  // ═══ 總結 ═══
+  if (r.summary) {
+    html += '<div class="card" style="border-left:3px solid rgba(212,175,55,.4);padding:.8rem;margin-top:.3rem">';
+    html += '<div style="font-size:.9rem;line-height:1.9;color:var(--c-text,#e0d8c8)">' +
+      (r.summary || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
+    html += '</div>';
+  }
+
+  // ═══ closing ═══
+  if (r.closing) {
+    html += '<div style="text-align:center;margin-top:.8rem;padding:.6rem">';
+    html += '<span style="font-size:.88rem;color:var(--c-gold);font-style:italic;opacity:.85">' +
+      (r.closing || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
+    html += '</div>';
+  }
+
   container.innerHTML = html;
 }
 
