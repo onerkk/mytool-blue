@@ -327,45 +327,78 @@
     }, 3000);
   }
 
-  // ═══ 8. 攔截手動抽牌模式（goStep(2)）加限流 ═══
+  // ═══ 8. 攔截手動抽牌模式：監聽 step-2 出現 + 塔羅模式 → 檢查額度 ═══
 
   function _interceptManualTarot() {
-    var _origGoStep = window.goStep;
-    if (!_origGoStep) return;
-
-    window.goStep = async function(step) {
-      // 只攔截跳到 step 2（抽牌頁）且是塔羅模式
-      if (step === 2 && window.S && window.S._tarotOnlyMode) {
-        var isAdmin = !!(window._JY_ADMIN_TOKEN);
-        var hasPaidToken = !!localStorage.getItem('_jy_paid_token');
-
-        if (!isAdmin && !hasPaidToken) {
-          // 檢查塔羅額度
-          try {
-            var checkResp = await fetch(WORKER_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'check', payload: { mode: 'tarot_only' } })
-            });
-            var checkData = await checkResp.json();
-            if (!checkData.allowed) {
-              // 額度用完 → 顯示付費牆
-              var m = document.createElement('div');
-              m.id = 'jy-pay-modal';
-              m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)';
-              m.innerHTML = _buildPaywallHTML('tarot_only');
-              m.addEventListener('click', function(e) { if (e.target === m) m.remove(); });
-              document.body.appendChild(m);
-              return; // 不跳轉
+    // 策略：MutationObserver 監聽 step-2 被顯示（display 從 none 變成 block）
+    // 如果是塔羅模式且額度用完，立刻蓋回去
+    var checking = false;
+    var observer = new MutationObserver(function(mutations) {
+      if (checking) return;
+      for (var i = 0; i < mutations.length; i++) {
+        var target = mutations[i].target;
+        if (!target || !target.id) continue;
+        // step-2 是抽牌頁
+        if (target.id === 'step-2' && target.style && target.style.display !== 'none') {
+          // 確認是塔羅模式
+          if (window.S && window.S._tarotOnlyMode) {
+            var isAdmin = !!(window._JY_ADMIN_TOKEN);
+            var hasPaidToken = !!localStorage.getItem('_jy_paid_token');
+            if (!isAdmin && !hasPaidToken) {
+              checking = true;
+              _checkTarotQuota(target);
             }
-          } catch(e) {
-            console.warn('[PayWall] manual tarot precheck failed:', e);
           }
         }
       }
-      // 正常跳轉
-      return _origGoStep.apply(this, arguments);
-    };
+    });
+    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+
+    // 也用 setInterval 兜底（有些 goStep 實現不改 style 而是改 class）
+    var lastStep2Visible = false;
+    setInterval(function() {
+      if (checking) return;
+      var step2 = document.getElementById('step-2');
+      if (!step2) return;
+      var visible = step2.offsetParent !== null || step2.style.display === 'block';
+      if (visible && !lastStep2Visible && window.S && window.S._tarotOnlyMode) {
+        var isAdmin = !!(window._JY_ADMIN_TOKEN);
+        var hasPaidToken = !!localStorage.getItem('_jy_paid_token');
+        if (!isAdmin && !hasPaidToken) {
+          checking = true;
+          _checkTarotQuota(step2);
+        }
+      }
+      lastStep2Visible = visible;
+    }, 500);
+  }
+
+  async function _checkTarotQuota(step2El) {
+    try {
+      var checkResp = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'check', payload: { mode: 'tarot_only' } })
+      });
+      var checkData = await checkResp.json();
+      if (!checkData.allowed) {
+        // 額度用完 → 隱藏抽牌頁，回到首頁，彈付費牆
+        step2El.style.display = 'none';
+        var hookScreen = document.getElementById('hook-screen');
+        if (hookScreen) hookScreen.style.display = 'block';
+        var inputScreen = document.getElementById('input-screen');
+        if (inputScreen) inputScreen.style.display = 'block';
+
+        var m = document.createElement('div');
+        m.id = 'jy-pay-modal';
+        m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)';
+        m.innerHTML = _buildPaywallHTML('tarot_only');
+        m.addEventListener('click', function(e) { if (e.target === m) m.remove(); });
+        document.body.appendChild(m);
+      }
+    } catch(e) {
+      console.warn('[PayWall] manual tarot check failed:', e);
+    }
   }
 
   // ═══ 初始化 ═══
