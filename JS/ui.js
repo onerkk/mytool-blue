@@ -4923,6 +4923,9 @@ async function submitTarotQuick() {
   drawnCards = [];
   S.meihua = null;
   S.tarot = { drawn: [], spread: [] };
+  // 清除開鑰殘留狀態，避免下次塔羅快讀走錯渲染路線
+  window._ootkResults = null;
+  window._pendingOOTK = false;
 
   // ── 偵測牌陣 ──
   var spreadId = 'celtic_cross';
@@ -5005,7 +5008,6 @@ function showTarotResult() {
     var f2nm = document.getElementById('f2-name');
     if (f2nm) f2nm.value = S.form.name;
   }
-
   // 生辰已帶入 → 展開選填區讓用戶填名字
   if (S.form.bdate && S.form.gender) {
     var det = document.querySelector('#tarot-full-form .advance-toggle');
@@ -5152,6 +5154,8 @@ function resetToHome() {
   drawnCards = [];
   S.tarot = { drawn: [], spread: [] };
   S.form = null;
+  window._ootkResults = null;
+  window._pendingOOTK = false;
   goStep(0);
   // 重新顯示首頁
   var hookScreen = document.getElementById('hook-screen');
