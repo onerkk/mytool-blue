@@ -4573,14 +4573,14 @@ showAuraResult = function(){
     modal.id = 'jy-used-modal';
     modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);animation:fadeIn .3s';
     modal.innerHTML =
-      '<div style="max-width:320px;width:88%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(201,168,76,.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
+      '<div style="max-width:320px;width:88%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
         '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(201,168,76,.3))">🌙</div>' +
-        '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">今日的緣分已用盡</h3>' +
-        '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">命盤每天只能翻閱一次</p>' +
-        '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.5rem">子時（00:00）重置，明天再來問</p>' +
+        '<h3 style="color:var(--c-gold);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">今日的緣分已用盡</h3>' +
+        '<p style="font-size:.85rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:.3rem">命盤每天只能翻閱一次</p>' +
+        '<p style="font-size:.78rem;color:var(--c-text-muted);margin-bottom:1.5rem">子時（00:00）重置，明天再來問</p>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.06));color:var(--c-gold,#c9a84c);text-decoration:none;font-size:.85rem;font-weight:600;border:1px solid rgba(201,168,76,.3)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
-          '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);font-size:.82rem;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-family:inherit">知道了</button>' +
+          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.06));color:var(--c-gold);text-decoration:none;font-size:.85rem;font-weight:600;border:1px solid rgba(201,168,76,.3)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
+          '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.82rem;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-family:inherit">知道了</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(modal);
@@ -4610,14 +4610,14 @@ showAuraResult = function(){
       '<div class="counter-badge" id="counter-badge" style="margin-bottom:1.2rem"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
 
       // 主標語
-      '<h1 style="font-size:clamp(1.5rem,5vw,2rem);letter-spacing:.06em;text-align:center;margin-bottom:.6rem;font-family:var(--f-display,serif);color:var(--c-text,#e8e0d0)">' +
+      '<h1 style="font-size:clamp(1.5rem,5vw,2rem);letter-spacing:.06em;text-align:center;margin-bottom:.6rem;font-family:var(--f-display,serif);color:var(--c-text)">' +
         '靜月之光' +
       '</h1>' +
 
-      '<p style="font-size:.95rem;color:var(--c-text-dim,#a09880);text-align:center;max-width:300px;line-height:1.9;margin-bottom:.4rem;font-family:var(--f-display,serif)">' +
+      '<p style="font-size:.95rem;color:var(--c-text-dim);text-align:center;max-width:300px;line-height:1.9;margin-bottom:.4rem;font-family:var(--f-display,serif)">' +
         '你心裡的事，牌都知道' +
       '</p>' +
-      '<p style="font-size:.76rem;color:var(--c-text-muted,#6b6355);text-align:center;max-width:320px;line-height:1.7;margin-bottom:2rem">' +
+      '<p style="font-size:.76rem;color:var(--c-text-muted);text-align:center;max-width:320px;line-height:1.7;margin-bottom:2rem">' +
         '金色黎明塔羅牌 · AI 深度解讀<br>不用填生日，抽牌就有答案' +
       '</p>' +
 
@@ -4627,7 +4627,7 @@ showAuraResult = function(){
           'width:100%;max-width:300px;' +
           'padding:1.1rem 2rem;border-radius:14px;' +
           'background:transparent;' +
-          'color:var(--c-gold,#c9a84c);' +
+          'color:var(--c-gold);' +
           'font-size:1.05rem;font-weight:700;font-family:var(--f-display,serif);' +
           'border:1px solid rgba(201,168,76,.2);' +
           'cursor:pointer;transition:all .3s;' +
@@ -4641,7 +4641,7 @@ showAuraResult = function(){
       '<div style="margin-top:1.5rem;text-align:center">' +
         (isAdmin ?
           '<span style="font-size:.7rem;color:#c9a84c;opacity:.5">👑 管理員・無限次</span>' :
-          '<span style="font-size:.73rem;color:var(--c-text-muted,#6b6355)">✦ 每日免費一次塔羅解讀</span>'
+          '<span style="font-size:.73rem;color:var(--c-text-muted)">✦ 每日免費一次塔羅解讀</span>'
         ) +
       '</div>' +
 
@@ -4932,7 +4932,7 @@ async function submitTarotQuick() {
   overlay.innerHTML =
     '<style>' +
     '@keyframes jyTarotFloat{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-8px) rotate(2deg)}75%{transform:translateY(4px) rotate(-1.5deg)}}' +
-    '@keyframes jyTarotGlow{0%,100%{box-shadow:0 0 20px rgba(201,168,76,.1),0 0 60px rgba(201,168,76,.05)}50%{box-shadow:0 0 40px rgba(201,168,76,.25),0 0 80px rgba(201,168,76,.12)}}' +
+    '@keyframes jyTarotGlow{0%,100%{box-shadow:0 0 15px rgba(201,168,76,.05)}50%{box-shadow:0 0 25px rgba(201,168,76,.1)}}' +
     '@keyframes jyTarotSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}' +
     '@keyframes jyTarotFan{0%{transform:rotate(0deg) scale(.9);opacity:0}100%{opacity:1}}' +
     '@keyframes jyTarotPulse{0%,100%{opacity:.4}50%{opacity:1}}' +
@@ -4943,17 +4943,17 @@ async function submitTarotQuick() {
       // 卡牌扇形展開
       '<div style="position:relative;width:180px;height:200px;margin-bottom:1.2rem">' +
         // 背景光暈
-        '<div style="position:absolute;left:50%;top:50%;width:160px;height:160px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.12) 0%,rgba(201,168,76,.06) 40%,transparent 70%);animation:jyTarotGlow 3s ease-in-out infinite"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:160px;height:160px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.06) 0%,rgba(201,168,76,.03) 40%,transparent 70%);animation:jyTarotGlow 3s ease-in-out infinite"></div>' +
         // 旋轉環
-        '<div style="position:absolute;left:50%;top:50%;width:140px;height:140px;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(201,168,76,.3);border-right-color:rgba(201,168,76,.2);animation:jyTarotSpin 4s linear infinite;transform:translate(-50%,-50%)"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:110px;height:110px;border-radius:50%;border:1px solid transparent;border-bottom-color:rgba(201,168,76,.15);border-left-color:rgba(96,165,250,.15);animation:jyTarotSpin 3s linear infinite reverse;transform:translate(-50%,-50%)"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:140px;height:140px;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(201,168,76,.15);border-right-color:rgba(201,168,76,.1);animation:jyTarotSpin 4s linear infinite;transform:translate(-50%,-50%)"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:110px;height:110px;border-radius:50%;border:1px solid transparent;border-bottom-color:rgba(201,168,76,.08);border-left-color:rgba(96,165,250,.15);animation:jyTarotSpin 3s linear infinite reverse;transform:translate(-50%,-50%)"></div>' +
         // 五張扇形卡牌
         '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .2s both,jyTarotFloat 4s ease-in-out .2s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .35s both,jyTarotFloat 4s ease-in-out .5s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.5);box-shadow:0 4px 20px rgba(201,168,76,.15);transform-origin:bottom center;transform:rotate(0deg) translateY(-30px);animation:jyTarotFan .8s ease-out .5s both,jyTarotFloat 3.5s ease-in-out 0s infinite"><div style=\'text-align:center;padding-top:18px;font-size:1.5rem\'>🃏</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .65s both,jyTarotFloat 4s ease-in-out .8s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .8s both,jyTarotFloat 4s ease-in-out 1.1s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1px solid rgba(255,255,255,.1);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .2s both,jyTarotFloat 4s ease-in-out .2s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1px solid rgba(255,255,255,.1);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .35s both,jyTarotFloat 4s ease-in-out .5s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1px solid rgba(255,255,255,.12);box-shadow:0 4px 20px rgba(201,168,76,.15);transform-origin:bottom center;transform:rotate(0deg) translateY(-30px);animation:jyTarotFan .8s ease-out .5s both,jyTarotFloat 3.5s ease-in-out 0s infinite"><div style=\'text-align:center;padding-top:18px;font-size:1.5rem\'>🃏</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1px solid rgba(255,255,255,.1);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .65s both,jyTarotFloat 4s ease-in-out .8s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1px solid rgba(255,255,255,.1);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .8s both,jyTarotFloat 4s ease-in-out 1.1s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
         '</div>' +
         // 星星粒子
         '<div style="position:absolute;left:30%;top:20%;width:4px;height:4px;border-radius:50%;background:rgba(201,168,76,.8);animation:jyStarDrift 2.5s ease-out infinite"></div>' +
@@ -4962,12 +4962,12 @@ async function submitTarotQuick() {
       '</div>' +
 
       // 狀態文字
-      '<div id="ld-tarot-status" style="font-size:1.05rem;color:var(--c-gold,#c9a84c);font-weight:700;letter-spacing:.02em;margin-bottom:.3rem;transition:opacity .35s">正在為你翻牌…</div>' +
-      '<div id="ld-tarot-sub" style="font-size:.8rem;color:var(--c-text-dim,#a09880);transition:opacity .35s">凝神感應你的問題</div>' +
+      '<div id="ld-tarot-status" style="font-size:1.05rem;color:var(--c-gold);font-weight:700;letter-spacing:.02em;margin-bottom:.3rem;transition:opacity .35s">正在為你翻牌…</div>' +
+      '<div id="ld-tarot-sub" style="font-size:.8rem;color:var(--c-text-dim);transition:opacity .35s">凝神感應你的問題</div>' +
 
       // 進度條
       '<div style="width:min(260px,75%);height:3px;border-radius:999px;background:rgba(201,168,76,.08);overflow:hidden;margin-top:1rem">' +
-        '<div style="width:35%;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(201,168,76,0),rgba(201,168,76,.9),rgba(255,236,184,.8),rgba(201,168,76,0));background-size:180% 100%;animation:jyScan 1.8s ease-in-out infinite"></div>' +
+        '<div style="width:35%;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(201,168,76,0),rgba(201,168,76,.4),rgba(201,168,76,.5),rgba(201,168,76,0));background-size:180% 100%;animation:jyScan 1.8s ease-in-out infinite"></div>' +
       '</div>' +
 
       // 牌陣提示
@@ -5103,7 +5103,7 @@ function renderTarotSpreadDisplay() {
     if (kw) h += '<div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.15rem">🔑 ' + kw + '</div>';
     h += gdInfo;
     h += '<p style="font-size:.78rem;color:var(--c-text-dim);margin-top:.2rem;line-height:1.5">' + (c.isUp ? fc.up : fc.rv) + '</p>';
-    if (typeR) h += '<p style="font-size:.76rem;color:var(--c-gold-light,#e8c968);margin-top:.2rem;line-height:1.5;border-top:1px solid rgba(201,168,76,.1);padding-top:.2rem">📌 ' + typeR + '</p>';
+    if (typeR) h += '<p style="font-size:.76rem;color:var(--c-gold-light);margin-top:.2rem;line-height:1.5;border-top:1px solid rgba(201,168,76,.1);padding-top:.2rem">📌 ' + typeR + '</p>';
     if (coreDesc) h += '<p style="font-size:.74rem;color:var(--c-gold-light);margin-top:.15rem;line-height:1.4;opacity:.85">' + coreDesc + '</p>';
     h += '</div></div></div>';
   });

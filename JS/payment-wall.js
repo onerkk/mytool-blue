@@ -83,7 +83,7 @@
           '<div style="font-size:1.5rem;margin-bottom:.6rem">💳</div>' +
           '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">付款頁面已開啟</div>' +
           '<div style="font-size:.8rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">請在新視窗完成付款<br>付完後點下面按鈕</div>' +
-          '<button onclick="_jyCheckPaymentAndUnlock()" style="width:200px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.06));color:var(--c-gold);font-size:.88rem;font-weight:600;border:1.5px solid rgba(201,168,76,.4);cursor:pointer;font-family:inherit">✅ 我已完成付款</button>' +
+          '<button onclick="_jyCheckPaymentAndUnlock()" style="width:200px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.06));color:var(--c-gold);font-size:.88rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit">✅ 我已完成付款</button>' +
           '<div style="font-size:.6rem;color:var(--c-text-muted);margin-top:.5rem;opacity:.5">如果新視窗被擋，請允許彈出視窗</div>' +
         '</div>';
         waitModal.addEventListener('click', function(e) { if (e.target === waitModal) waitModal.remove(); });
