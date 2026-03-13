@@ -18632,9 +18632,8 @@ renderTarot = function(){
           }
         } catch(_e2) {
           try {
-            var _fix2 = _ext2.replace(/,\s*([\]}])/g, '$1').replace(/[\x00-\x1f]/g, function(ch) {
-              if (ch === '\n') return '\\n'; if (ch === '\r') return '\\r'; if (ch === '\t') return '\\t'; return '';
-            });
+            var _fix2 = _ext2.replace(/,\s*([\]}])/g, '$1');
+            _fix2 = _fixJsonStringNewlines(_fix2);
             var _rec2b = JSON.parse(_fix2);
             if (_rec2b && typeof _rec2b === 'object' && (_rec2b.directAnswer || _rec2b.answer || _rec2b.consensus)) {
               r = _rec2b; console.log('[AI] JSON recovered (fixed)');
@@ -19911,11 +19910,28 @@ async function _triggerTarotAI() {
   }
 }
 
+// ── 共用：修 JSON 字串值裡的 literal 換行（不動結構性換行）──
+function _fixJsonStringNewlines(s) {
+  var result = '', inStr = false, esc = false;
+  for (var i = 0; i < s.length; i++) {
+    var ch = s[i];
+    if (esc) { result += ch; esc = false; continue; }
+    if (ch === '\\' && inStr) { result += ch; esc = true; continue; }
+    if (ch === '"') { inStr = !inStr; result += ch; continue; }
+    if (inStr) {
+      if (ch === '\n') { result += '\\n'; continue; }
+      if (ch === '\r') { result += '\\r'; continue; }
+      if (ch === '\t') { result += '\\t'; continue; }
+    }
+    result += ch;
+  }
+  return result;
+}
+
 function _renderTarotAIResult(container, r, admin) {
   // ═══ JSON 修復：如果 r 只有 answer 且 answer 是 JSON 字串，嘗試重新解析 ═══
   if (r && !r.subAnswers && !r.directAnswer && typeof r.answer === 'string') {
     var _raw = r.answer.trim();
-    // 去 markdown fences
     if (_raw.indexOf('```') === 0) _raw = _raw.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
     var _fi = _raw.indexOf('{');
     var _li = _raw.lastIndexOf('}');
@@ -19925,35 +19941,26 @@ function _renderTarotAIResult(container, r, admin) {
       try {
         var _r1 = JSON.parse(_extracted);
         if (_r1 && typeof _r1 === 'object' && (_r1.subAnswers || _r1.directAnswer || _r1.summary)) {
-          r = _r1;
-          console.log('[TarotAI] JSON recovered (direct)');
+          r = _r1; console.log('[TarotAI] JSON recovered (direct)');
         }
       } catch(_e1) {
-        // 第二輪：修 trailing commas + control chars
+        // 第二輪：修 trailing commas + 只修字串值內的 literal 換行
         try {
-          var _fixed = _extracted
-            .replace(/,\s*([\]}])/g, '$1')
-            .replace(/[\x00-\x1f]/g, function(ch) {
-              if (ch === '\n') return '\\n';
-              if (ch === '\r') return '\\r';
-              if (ch === '\t') return '\\t';
-              return '';
-            });
+          var _fixed = _extracted.replace(/,\s*([\]}])/g, '$1');
+          _fixed = _fixJsonStringNewlines(_fixed);
           var _r2 = JSON.parse(_fixed);
           if (_r2 && typeof _r2 === 'object' && (_r2.subAnswers || _r2.directAnswer || _r2.summary)) {
-            r = _r2;
-            console.log('[TarotAI] JSON recovered (fixed)');
+            r = _r2; console.log('[TarotAI] JSON recovered (fixed)');
           }
         } catch(_e2) {
-          // 第三輪：regex 抽值（最後手段）
+          // 第三輪：regex 抽值（最後手段，[\s\S] 跨換行匹配）
           console.warn('[TarotAI] JSON parse failed, using regex fallback');
           try {
-            var _daMatch = _raw.match(/"directAnswer"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-            var _clMatch = _raw.match(/"closing"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-            var _smMatch = _raw.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-            // 抽 subAnswers 裡每個 conclusion + reading
+            var _daMatch = _raw.match(/"directAnswer"\s*:\s*"((?:[^"\\]|\\.|\n|\r)*)"/);
+            var _clMatch = _raw.match(/"closing"\s*:\s*"((?:[^"\\]|\\.|\n|\r)*)"/);
+            var _smMatch = _raw.match(/"summary"\s*:\s*"((?:[^"\\]|\\.|\n|\r)*)"/);
             var _subs = [];
-            var _saRe = /"conclusion"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"reading"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+            var _saRe = /"conclusion"\s*:\s*"((?:[^"\\]|\\.|\n|\r)*)"\s*,\s*"reading"\s*:\s*"((?:[^"\\]|\\.|\n|\r)*)"/g;
             var _saM;
             while ((_saM = _saRe.exec(_raw)) !== null) {
               _subs.push({ conclusion: _saM[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'), reading: _saM[2].replace(/\\n/g, '\n').replace(/\\"/g, '"') });
@@ -20798,9 +20805,8 @@ function _renderOOTKResult(container, r, admin) {
       var _ext = _raw.slice(_fi, _li + 1);
       try { var _rec = JSON.parse(_ext); if (_rec && (_rec.operations || _rec.directAnswer || _rec.subAnswers)) r = _rec; } catch(_e) {
         try {
-          var _fix = _ext.replace(/,\s*([\]}])/g, '$1').replace(/[\x00-\x1f]/g, function(ch) {
-            if (ch === '\n') return '\\n'; if (ch === '\r') return '\\r'; if (ch === '\t') return '\\t'; return '';
-          });
+          var _fix = _ext.replace(/,\s*([\]}])/g, '$1');
+          _fix = _fixJsonStringNewlines(_fix);
           var _rec2 = JSON.parse(_fix); if (_rec2 && (_rec2.operations || _rec2.directAnswer || _rec2.subAnswers)) r = _rec2;
         } catch(_e2) {}
       }
