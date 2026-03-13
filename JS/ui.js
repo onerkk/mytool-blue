@@ -4577,10 +4577,11 @@ showAuraResult = function(){
         '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
         '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">今日的緣分已用盡</h3>' +
         '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">命盤每天只能翻閱一次</p>' +
-        '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.5rem">子時（00:00）重置，明天再來問</p>' +
+        '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.2rem">子時（00:00）重置，或付費立即解鎖</p>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);text-decoration:none;font-size:.85rem;font-weight:600;border:1px solid rgba(212,175,55,.3)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
-          '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);font-size:.82rem;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-family:inherit">知道了</button>' +
+          '<button onclick="document.getElementById(\'jy-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🔮 立即解鎖 NT$50</button>' +
+          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);text-decoration:none;font-size:.82rem;border:1px solid rgba(255,255,255,.08)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
+          '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">明天再來</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(modal);
@@ -4902,10 +4903,13 @@ async function submitTarotQuick() {
           modal.id = 'tarot-used-modal';
           modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);padding:1rem';
           modal.innerHTML = '<div style="background:var(--c-bg-card,#1a1208);border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:2rem 1.5rem;max-width:320px;text-align:center">' +
-            '<div style="font-size:2rem;margin-bottom:.6rem">🌙</div>' +
+            '<div style="font-size:2rem;margin-bottom:.6rem">🃏</div>' +
             '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">今日塔羅已用完</div>' +
-            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">每天 1 次免費塔羅解讀<br>子時（00:00）重置，明天再來</div>' +
-            '<button onclick="this.closest(\'#tarot-used-modal\').remove()" style="padding:.6rem 1.5rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit">知道了</button>' +
+            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">每天 1 次免費塔羅解讀<br>子時（00:00）重置，或付費立即解鎖</div>' +
+            '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
+              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 立即解鎖 NT$30</button>' +
+              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">明天再來</button>' +
+            '</div>' +
           '</div>';
           modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
           document.body.appendChild(modal);
