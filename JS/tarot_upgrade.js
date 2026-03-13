@@ -1999,7 +1999,7 @@ enhanceTarot = function(tarot) {
     var parts = bdate.split('-');
     var bMonth = parts[1] ? parseInt(parts[1]) : 1;
     var bDay = parts[2] ? parseInt(parts[2]) : 15;
-    var gender = form.gender || 'male';
+    var gender = form.gender || '';
     var birthYear = parts[0] ? parseInt(parts[0]) : 1990;
     var age = new Date().getFullYear() - birthYear;
 

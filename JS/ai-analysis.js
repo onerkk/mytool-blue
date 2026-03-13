@@ -14550,7 +14550,8 @@ function _buildPayload() {
   var p = { question:q, focusType:ft, readings:{} };
   var f = S.form || {};
   p.name = f.name || f.fullName || '';
-  p.gender = (f.gender || f.sex || '') === 'male' ? '男' : '女';
+  var _g = f.gender || f.sex || '';
+  p.gender = _g === 'male' ? '男' : (_g === 'female' ? '女' : '');
   p.birth = f.birth || f.birthDate || [f.year||f.y||'', f.month||f.m||'', f.day||f.d||'', f.hour||f.h||f.time||''].filter(Boolean).join('-');
 
   var _EM = {木:'行動力/成長',火:'熱情/表現',土:'穩定/踏實',金:'決斷/原則',水:'智慧/靈活'};
