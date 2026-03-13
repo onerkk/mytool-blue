@@ -14662,6 +14662,7 @@ function _buildPayload() {
       });
       L.push('流月：' + mDetails.join('、'));
     }
+    if (b.liuNianGZ) L.push('今年流年干支：' + b.liuNianGZ);
     if (b.nayin) L.push('納音：' + b.nayin);
 
     // 五行分數
@@ -14892,6 +14893,38 @@ function _buildPayload() {
       L.push('體卦五行：'+_s(mh.analysis.tiYongEl.ti)+'，用卦五行：'+_s(mh.analysis.tiYongEl.yo));
     }
 
+    // ★ 梅花總判定（output_layer 產出）
+    if (mh.shortVerdict) L.push('快速判定：' + mh.shortVerdict);
+    if (mh.summary) L.push('綜合摘要：' + mh.summary);
+    if (mh.decisionHint) L.push('決策建議：' + mh.decisionHint);
+    if (mh.strategy) L.push('行動策略：' + (typeof mh.strategy === 'string' ? mh.strategy : _s(mh.strategy.zh || mh.strategy.text || '')));
+
+    // ★ 梅花應期（output_layer 完整版：速度/窗口/天數/趨勢）
+    if (mh.timing && typeof mh.timing === 'object') {
+      var tParts = [];
+      if (mh.timing.speed) tParts.push(mh.timing.speed);
+      if (mh.timing.windowLabel) tParts.push('窗口' + mh.timing.windowLabel);
+      if (mh.timing.tendency) tParts.push('趨勢' + mh.timing.tendency);
+      if (mh.timing.note) tParts.push(mh.timing.note);
+      if (tParts.length) L.push('應期詳情：' + tParts.join('，'));
+    }
+
+    // ★ 梅花風險評估（output_layer：等級+具體風險點）
+    if (mh.risk && typeof mh.risk === 'object') {
+      var rParts = [];
+      if (mh.risk.level) rParts.push('風險等級' + mh.risk.level);
+      if (mh.risk.points && mh.risk.points.length) rParts.push(mh.risk.points.slice(0, 4).join('、'));
+      if (rParts.length) L.push('風險評估：' + rParts.join('，'));
+    }
+
+    // ★ 梅花標籤（output_layer：結論性 tags）
+    if (mh.tags && mh.tags.length) {
+      var mtParts = mh.tags.filter(function(t) { return t && t.label; }).slice(0, 5).map(function(t) {
+        return (t.direction === 'pos' ? '✓' : t.direction === 'neg' ? '✗' : '·') + t.label;
+      });
+      if (mtParts.length) L.push('梅花結論：' + mtParts.join('、'));
+    }
+
     p.readings.meihua = L.join('\n');
   } catch(e){ console.error('payload meihua:', e); } }
 
@@ -15078,6 +15111,175 @@ function _buildPayload() {
         if (sav !== undefined) avParts.push('第'+h+'宮('+({1:'自我',2:'財帛',4:'家庭',6:'健康',7:'婚姻/合作',10:'事業',12:'潛意識'}[h]||'')+')'+sav+'分'+(sav>=28?'強':sav>=25?'中':'弱'));
       });
       if (avParts.length) L.push('宮位力量：' + avParts.join('、'));
+    }
+
+    // ★ Vargottama（行星在本命和D9同星座＝力量加倍）
+    if (j.vargottama) {
+      var vgParts = [];
+      Object.keys(j.vargottama).forEach(function(pn) {
+        var v = j.vargottama[pn];
+        if (v && v.isVargottama) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          vgParts.push(zhName + '(' + _s(v.rashiSign) + ')');
+        }
+      });
+      if (vgParts.length) L.push('Vargottama（力量加倍）：' + vgParts.join('、'));
+    }
+
+    // ★ Neecha Bhanga（落陷行星被救濟）
+    if (j.neechaBhanga) {
+      var nbParts = [];
+      Object.keys(j.neechaBhanga).forEach(function(pn) {
+        var nb = j.neechaBhanga[pn];
+        if (nb && nb.cancelled) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          nbParts.push(zhName + '落陷被救（' + (nb.conditions || []).slice(0, 2).join('、') + '）');
+        }
+      });
+      if (nbParts.length) L.push('落陷救濟：' + nbParts.join('、'));
+    }
+
+    // ★ Combustion（行星被太陽燃燒＝能量被削弱）
+    if (j.combustion) {
+      var cbParts = [];
+      Object.keys(j.combustion).forEach(function(pn) {
+        var cb = j.combustion[pn];
+        if (cb && cb.isCombust) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          cbParts.push(zhName + '(距太陽' + (cb.orb ? cb.orb.toFixed(1) + '°' : '') + ')');
+        }
+      });
+      if (cbParts.length) L.push('被太陽燃燒（能量削弱）：' + cbParts.join('、'));
+    }
+
+    // ★ Gandanta（星座交界危險點）
+    if (j.gandanta) {
+      var gaParts = [];
+      Object.keys(j.gandanta).forEach(function(pn) {
+        var ga = j.gandanta[pn];
+        if (ga && ga.isGandanta) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          gaParts.push(zhName + '在' + _s(ga.zone || '') + '交界');
+        }
+      });
+      if (gaParts.length) L.push('Gandanta（業力結點）：' + gaParts.join('、'));
+    }
+
+    // ★ Pushkara（吉祥度數）
+    if (j.pushkara) {
+      var pkParts = [];
+      Object.keys(j.pushkara).forEach(function(pn) {
+        var pk = j.pushkara[pn];
+        if (pk && (pk.isPushkaraNavamsa || pk.isPushkaraBhaga)) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          pkParts.push(zhName + (pk.isPushkaraBhaga ? '吉祥度數' : '吉祥D9'));
+        }
+      });
+      if (pkParts.length) L.push('Pushkara吉位：' + pkParts.join('、'));
+    }
+
+    // ★ Bhava Bala（宮位力量評分）
+    if (j.bhavaBala && j.bhavaBala.length) {
+      var bbFocus = [0, (fhM2[ft] || 1) - 1, 6, 9]; // 1宮、焦點宮、7宮、10宮
+      var bbParts = [];
+      bbFocus.forEach(function(hi) {
+        var bb = j.bhavaBala[hi];
+        if (bb) bbParts.push('第' + (hi + 1) + '宮=' + Math.round(bb.total || bb.score || 0));
+      });
+      if (bbParts.length) L.push('Bhava Bala：' + bbParts.join('、'));
+    }
+
+    // ★ Avasthas（行星心理狀態）
+    if (j.avasthas) {
+      var avParts2 = [];
+      ['Sun', 'Moon', 'Venus', 'Mars', 'Jupiter'].forEach(function(pn) {
+        var av = j.avasthas[pn];
+        if (av && av.baladi) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          avParts2.push(zhName + av.baladi.zh);
+        }
+      });
+      if (avParts2.length) L.push('行星狀態：' + avParts2.join('、'));
+    }
+
+    // ★ Chara Karakas（靈魂七主星 — Jaimini 體系）
+    if (j.charaKarakas && j.charaKarakas.length) {
+      var ckParts = j.charaKarakas.slice(0, 7).map(function(ck) {
+        var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[ck.planet]) ? JY_PLANETS[ck.planet].zh : ck.planet;
+        return (ck.karakaZh || ck.karaka) + '=' + zhName;
+      });
+      if (ckParts.length) L.push('Jaimini七主星：' + ckParts.join('、'));
+    }
+
+    // ★ Varga Strength（分盤力量）
+    if (j.vargaStrength) {
+      var vsParts = [];
+      Object.keys(j.vargaStrength).forEach(function(pn) {
+        var vs = j.vargaStrength[pn];
+        if (vs && vs.totalScore) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          vsParts.push(zhName + '=' + Math.round(vs.totalScore));
+        }
+      });
+      if (vsParts.length) L.push('Varga力量：' + vsParts.join('、'));
+    }
+
+    // ★ Graha Yuddha（行星戰爭 — 兩行星太近互爭）
+    if (j.grahaYuddha) {
+      var gwParts = [];
+      Object.keys(j.grahaYuddha).forEach(function(key) {
+        var gw = j.grahaYuddha[key];
+        if (gw && gw.isWar) {
+          gwParts.push(_s(gw.planet1Zh || gw.planet1) + '⚔' + _s(gw.planet2Zh || gw.planet2) + (gw.winner ? '，勝：' + _s(gw.winnerZh || gw.winner) : ''));
+        }
+      });
+      if (gwParts.length) L.push('行星戰爭：' + gwParts.join('、'));
+    }
+
+    // ★ Mrityu Bhaga（死亡度數 — 行星在危險度數）
+    if (j.mrityuBhaga) {
+      var mbParts = [];
+      Object.keys(j.mrityuBhaga).forEach(function(pn) {
+        var mb = j.mrityuBhaga[pn];
+        if (mb && mb.isInMrityuBhaga) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          mbParts.push(zhName + '在危險度數');
+        }
+      });
+      if (mbParts.length) L.push('Mrityu Bhaga（需特別注意）：' + mbParts.join('、'));
+    }
+
+    // ★ Combustion Cancellation（燃燒解除條件）
+    if (j.combustionCancellation) {
+      var ccParts = [];
+      Object.keys(j.combustionCancellation).forEach(function(pn) {
+        var cc = j.combustionCancellation[pn];
+        if (cc && cc.cancelled) {
+          var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
+          ccParts.push(zhName + '燃燒被解除');
+        }
+      });
+      if (ccParts.length) L.push('燃燒解除：' + ccParts.join('、'));
+    }
+
+    // ★ Argala（宮位影響力 — Jaimini）
+    if (j.argala && j.argala.length) {
+      var argFocus = j.argala.filter(function(a) { return a && a.house && (a.house === 1 || a.house === (fhM2[ft] || 1)); });
+      if (argFocus.length) {
+        L.push('Argala影響力：' + argFocus.map(function(a) {
+          return '第' + a.house + '宮←' + (a.supportingPlanets || []).join('+') + (a.obstructed ? '(被阻)' : '');
+        }).join('、'));
+      }
+    }
+
+    // ★ Arudha Padas（虛象宮位 — Jaimini）
+    if (j.arudhaPadas && j.arudhaPadas.length) {
+      var apFocus = j.arudhaPadas.filter(function(ap) { return ap && (ap.house === 1 || ap.house === (fhM2[ft] || 1) || ap.house === 7); });
+      if (apFocus.length) {
+        L.push('虛象宮位：' + apFocus.map(function(ap) {
+          return 'A' + ap.house + '落第' + _s(ap.pada) + '宮';
+        }).join('、'));
+      }
     }
 
     p.readings.vedic = L.join('\n');
