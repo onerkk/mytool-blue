@@ -20463,6 +20463,12 @@ async function _triggerOOTKAI(resultsOrSigId) {
   if (!wrap) return;
   var admin = !!(window._JY_ADMIN_TOKEN);
 
+  // 開鑰模式：隱藏普通牌陣展示和水晶推薦（沒跑這些）
+  var _sc = document.getElementById('tarot-spread-card');
+  var _cr = document.getElementById('tarot-crystal-rec');
+  if (_sc) _sc.style.display = 'none';
+  if (_cr) _cr.style.display = 'none';
+
   // 接受兩種呼叫方式：傳入已算好的 results，或傳入 significatorId 重新算
   var ootkResult;
   if (resultsOrSigId && typeof resultsOrSigId === 'object' && resultsOrSigId.op1) {

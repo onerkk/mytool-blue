@@ -4974,6 +4974,12 @@ async function submitTarotQuick() {
 function showTarotResult() {
   goStep('step-tarot');
 
+  // 確保牌陣和水晶可見（開鑰模式會隱藏，普通快讀要復原）
+  var _sc = document.getElementById('tarot-spread-card');
+  var _cr = document.getElementById('tarot-crystal-rec');
+  if (_sc) _sc.style.display = '';
+  if (_cr) _cr.style.display = '';
+
   // 顯示問題
   var hero = document.getElementById('tarot-question-hero');
   if (hero) hero.innerHTML = '「' + (S.form.question || '') + '」';
@@ -5033,12 +5039,6 @@ function renderTarotSpreadDisplay() {
   });
 
   el.innerHTML = h;
-}
-
-// ── ootkCTAClick：從塔羅快讀結果頁引導到七維度表單 ──
-function ootkCTAClick() {
-  var form = document.getElementById('tarot-to-full');
-  if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── enterFullAnalysis：從塔羅結果進七維度 ──
