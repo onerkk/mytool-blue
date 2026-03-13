@@ -4924,65 +4924,10 @@ async function submitTarotQuick() {
   S.meihua = null;
   S.tarot = { drawn: [], spread: [] };
 
-  // ── 塔羅抽牌動畫 overlay ──
-  var overlay = document.createElement('div');
-  overlay.className = 'loading-overlay';
-  overlay.id = 'loading-overlay-tarot';
-
-  overlay.innerHTML =
-    '<style>' +
-    '@keyframes jyTarotFloat{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-8px) rotate(2deg)}75%{transform:translateY(4px) rotate(-1.5deg)}}' +
-    '@keyframes jyTarotGlow{0%,100%{box-shadow:0 0 20px rgba(212,175,55,.1),0 0 60px rgba(139,92,246,.05)}50%{box-shadow:0 0 40px rgba(212,175,55,.25),0 0 80px rgba(139,92,246,.12)}}' +
-    '@keyframes jyTarotSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}' +
-    '@keyframes jyTarotFan{0%{transform:rotate(0deg) scale(.9);opacity:0}100%{opacity:1}}' +
-    '@keyframes jyTarotPulse{0%,100%{opacity:.4}50%{opacity:1}}' +
-    '@keyframes jyStarDrift{0%{transform:translateY(0) scale(1);opacity:.8}100%{transform:translateY(-30px) scale(.3);opacity:0}}' +
-    '</style>' +
-    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:0;padding:2rem">' +
-
-      // 卡牌扇形展開
-      '<div style="position:relative;width:180px;height:200px;margin-bottom:1.2rem">' +
-        // 背景光暈
-        '<div style="position:absolute;left:50%;top:50%;width:160px;height:160px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.12) 0%,rgba(139,92,246,.06) 40%,transparent 70%);animation:jyTarotGlow 3s ease-in-out infinite"></div>' +
-        // 旋轉環
-        '<div style="position:absolute;left:50%;top:50%;width:140px;height:140px;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(212,175,55,.3);border-right-color:rgba(139,92,246,.2);animation:jyTarotSpin 4s linear infinite;transform:translate(-50%,-50%)"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:110px;height:110px;border-radius:50%;border:1px solid transparent;border-bottom-color:rgba(212,175,55,.15);border-left-color:rgba(96,165,250,.15);animation:jyTarotSpin 3s linear infinite reverse;transform:translate(-50%,-50%)"></div>' +
-        // 五張扇形卡牌
-        '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .2s both,jyTarotFloat 4s ease-in-out .2s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .35s both,jyTarotFloat 4s ease-in-out .5s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.5);box-shadow:0 4px 20px rgba(212,175,55,.15);transform-origin:bottom center;transform:rotate(0deg) translateY(-30px);animation:jyTarotFan .8s ease-out .5s both,jyTarotFloat 3.5s ease-in-out 0s infinite"><div style=\'text-align:center;padding-top:18px;font-size:1.5rem\'>🃏</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .65s both,jyTarotFloat 4s ease-in-out .8s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .8s both,jyTarotFloat 4s ease-in-out 1.1s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
-        '</div>' +
-        // 星星粒子
-        '<div style="position:absolute;left:30%;top:20%;width:4px;height:4px;border-radius:50%;background:rgba(212,175,55,.8);animation:jyStarDrift 2.5s ease-out infinite"></div>' +
-        '<div style="position:absolute;left:65%;top:30%;width:3px;height:3px;border-radius:50%;background:rgba(167,139,250,.7);animation:jyStarDrift 3s ease-out .8s infinite"></div>' +
-        '<div style="position:absolute;left:45%;top:15%;width:3px;height:3px;border-radius:50%;background:rgba(255,236,184,.6);animation:jyStarDrift 2.8s ease-out 1.5s infinite"></div>' +
-      '</div>' +
-
-      // 狀態文字
-      '<div id="ld-tarot-status" style="font-size:1.05rem;color:var(--c-gold,#d4af37);font-weight:700;letter-spacing:.02em;margin-bottom:.3rem;transition:opacity .35s">正在為你翻牌…</div>' +
-      '<div id="ld-tarot-sub" style="font-size:.8rem;color:var(--c-text-dim,#a09880);transition:opacity .35s">凝神感應你的問題</div>' +
-
-      // 進度條
-      '<div style="width:min(260px,75%);height:3px;border-radius:999px;background:rgba(212,175,55,.08);overflow:hidden;margin-top:1rem">' +
-        '<div style="width:35%;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(212,175,55,0),rgba(212,175,55,.9),rgba(255,236,184,.8),rgba(212,175,55,0));background-size:180% 100%;animation:jyScan 1.8s ease-in-out infinite"></div>' +
-      '</div>' +
-
-      // 牌陣提示
-      '<div style="margin-top:.8rem;display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center">' +
-        '<span style="padding:.18rem .45rem;border-radius:999px;font-size:.64rem;color:rgba(212,175,55,.7);border:1px solid rgba(212,175,55,.12);background:rgba(212,175,55,.04)">金色黎明</span>' +
-        '<span style="padding:.18rem .45rem;border-radius:999px;font-size:.64rem;color:rgba(139,92,246,.7);border:1px solid rgba(139,92,246,.12);background:rgba(139,92,246,.04)" id="ld-tarot-spread-tag">牌陣偵測中</span>' +
-      '</div>' +
-    '</div>';
-  document.body.appendChild(overlay);
-
   // ── 偵測牌陣 ──
   var spreadId = 'celtic_cross';
   if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
     spreadId = detectSpreadType(question, type);
-    // 多問號 = 多子問題 → 升級牌陣
     var qMarkCount = (question.match(/[？?]/g) || []).length;
     if (qMarkCount >= 2 && (spreadId === 'three_card' || spreadId === 'timeline')) {
       spreadId = (type === 'love' || type === 'relationship' || type === 'family') ? 'relationship' : 'five_card';
@@ -4993,57 +4938,36 @@ async function submitTarotQuick() {
   var spreadDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
   var targetCount = spreadDef ? spreadDef.count : 10;
 
-  // Update spread tag immediately
-  var spreadTag = document.getElementById('ld-tarot-spread-tag');
-  if (spreadTag && spreadDef) spreadTag.textContent = spreadDef.zh || spreadId;
+  // ── 種子抽牌（用時間+問題+類型作為種子） ──
+  try {
+    var now = new Date();
+    var seed = now.getTime().toString() + question + type;
+    var _rng = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, now.toISOString()) : Math.random;
+    var shuffled = (typeof seededShuffle === 'function' && typeof TAROT !== 'undefined') ? seededShuffle(TAROT, _rng) : [];
+    var autoDrawn = [];
 
-  // ── 種子抽牌（用時間+問題+類型作為種子，不依賴生辰） ──
-  setTimeout(function() {
-    try {
-      var st = document.getElementById('ld-tarot-status');
-      var sb = document.getElementById('ld-tarot-sub');
-      if (st) { st.style.opacity = '0'; setTimeout(function(){ st.textContent = '感應牌面能量…'; st.style.opacity = '1'; }, 200); }
-      if (sb) { sb.style.opacity = '0'; setTimeout(function(){ sb.textContent = (spreadDef ? spreadDef.zh : '') + '・' + targetCount + ' 張牌'; sb.style.opacity = '1'; }, 200); }
-
-      // 用時間戳作為種子（每次都不同 = 當下能量）
-      var now = new Date();
-      var seed = now.getTime().toString() + question + type;
-      var _rng = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, now.toISOString()) : Math.random;
-      var shuffled = (typeof seededShuffle === 'function' && typeof TAROT !== 'undefined') ? seededShuffle(TAROT, _rng) : [];
-      var autoDrawn = [];
-
-      for (var i = 0; i < targetCount && i < shuffled.length; i++) {
-        var card = shuffled[i];
-        var _r2 = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, String(card.id)) : Math.random;
-        if (typeof _r2 === 'function') { for (var _k = 0; _k <= card.id; _k++) _r2(); }
-        var isUp = (typeof _r2 === 'function') ? (_r2() > 0.48) : (Math.random() > 0.48);
-        var posName = (spreadDef && spreadDef.positions && spreadDef.positions[i]) ? spreadDef.positions[i].name : '';
-        autoDrawn.push(Object.assign({}, card, { isUp: isUp, pos: posName }));
-      }
-
-      drawnCards = autoDrawn;
-      S.tarot = { drawn: autoDrawn, spread: autoDrawn, spreadType: spreadId, spreadDef: spreadDef };
-      try { if (typeof enhanceTarot === 'function') enhanceTarot(S.tarot); } catch(e) { console.warn('[TarotQuick] enhanceTarot:', e); }
-
-      console.log('[TarotQuick] 牌陣:' + spreadId + '(' + targetCount + '張) 抽牌完成');
-    } catch(e) {
-      console.error('[TarotQuick] 抽牌失敗:', e);
-      drawnCards = [];
-      S.tarot = { drawn: [], spread: [] };
+    for (var i = 0; i < targetCount && i < shuffled.length; i++) {
+      var card = shuffled[i];
+      var _r2 = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, String(card.id)) : Math.random;
+      if (typeof _r2 === 'function') { for (var _k = 0; _k <= card.id; _k++) _r2(); }
+      var isUp = (typeof _r2 === 'function') ? (_r2() > 0.48) : (Math.random() > 0.48);
+      var posName = (spreadDef && spreadDef.positions && spreadDef.positions[i]) ? spreadDef.positions[i].name : '';
+      autoDrawn.push(Object.assign({}, card, { isUp: isUp, pos: posName }));
     }
-  }, 800);
 
-  // ── 完成 → 跳轉塔羅結果頁 ──
-  setTimeout(function() {
-    var st = document.getElementById('ld-tarot-status');
-    if (st) { st.style.opacity = '0'; setTimeout(function(){ st.textContent = '翻牌完成'; st.style.opacity = '1'; }, 200); }
-  }, 1800);
+    drawnCards = autoDrawn;
+    S.tarot = { drawn: autoDrawn, spread: autoDrawn, spreadType: spreadId, spreadDef: spreadDef };
+    try { if (typeof enhanceTarot === 'function') enhanceTarot(S.tarot); } catch(e) { console.warn('[TarotQuick] enhanceTarot:', e); }
 
-  setTimeout(function() {
-    var ol = document.getElementById('loading-overlay-tarot');
-    if (ol) { ol.style.transition = 'opacity .5s'; ol.style.opacity = '0'; setTimeout(function(){ ol.remove(); }, 500); }
-    showTarotResult();
-  }, 2200);
+    console.log('[TarotQuick] 牌陣:' + spreadId + '(' + targetCount + '張) 抽牌完成');
+  } catch(e) {
+    console.error('[TarotQuick] 抽牌失敗:', e);
+    drawnCards = [];
+    S.tarot = { drawn: [], spread: [] };
+  }
+
+  // ── 直接跳轉塔羅結果頁 ──
+  showTarotResult();
 }
 
 // ── showTarotResult：顯示塔羅結果頁 ──
