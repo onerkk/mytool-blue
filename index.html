@@ -629,39 +629,6 @@
   <!-- 🔮 AI 塔羅深度解讀 -->
   <div id="tarot-ai-wrap"></div>
 
-  <!-- 🃏 牌面展示（抽到的牌） -->
-  <div class="card collapsible-card open" id="tarot-spread-card">
-    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
-      <span><i class="fas fa-star"></i> <span id="tarot-spread-title">你的牌陣</span></span>
-      <i class="fas fa-chevron-down collapse-arrow"></i>
-    </div>
-    <div class="collapsible-body">
-      <div id="tarot-spread-display"></div>
-    </div>
-  </div>
-
-  <!-- 💎 水晶能量推薦（AI + 牌面元素） -->
-  <div class="card" id="tarot-crystal-rec" style="border:1px solid rgba(201,168,76,.25)">
-    <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
-      <span style="font-size:1.4rem">💎</span>
-      <div>
-        <div style="font-weight:700;color:var(--c-gold);font-size:1rem" id="tarot-crystal-title">適合你現在的能量</div>
-        <div class="text-xs text-dim" id="tarot-crystal-subtitle">根據牌面感應到的，帶在身上會幫到你</div>
-      </div>
-    </div>
-    <div id="tarot-crystal-content"></div>
-    <div style="display:flex;gap:10px;margin-top:var(--sp-md)">
-      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:10px;background:transparent;color:var(--c-gold);text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1)"><i class="fas fa-shopping-cart"></i> 逛水晶</a>
-      <button onclick="openCustomModal()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:10px;background:transparent;color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit"><i class="fas fa-magic"></i> 量身客製</button>
-    </div>
-  </div>
-
-  <!-- 📊 分享 -->
-  <div class="card" style="text-align:center">
-    <p class="text-sm text-dim" style="margin-bottom:var(--sp-sm)">覺得準嗎？分享給朋友也來測</p>
-    <button onclick="generateShareImage()" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:transparent;color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit"><i class="fas fa-share-alt"></i> 產生分享圖</button>
-  </div>
-
   <!-- ═══ 想看更深？七維度入口 ═══ -->
   <div class="card" id="tarot-to-full" style="border:2px solid rgba(201,168,76,.3);text-align:center;margin-top:var(--sp-lg)">
     <div style="font-size:1.5rem;margin-bottom:var(--sp-sm)">🌙</div>
@@ -739,6 +706,39 @@
         <p style="font-size:.7rem;opacity:.45;margin:.4rem 0 0">每日免費一次 · 八字 · 紫微 · 梅花 · 塔羅 · 星盤 · 吠陀 · 姓名</p>
       </div>
     </div>
+  </div>
+
+  <!-- 🃏 牌面展示（抽到的牌） -->
+  <div class="card collapsible-card open" id="tarot-spread-card">
+    <div class="card-title collapsible-toggle" onclick="toggleCollapse(this)">
+      <span><i class="fas fa-star"></i> <span id="tarot-spread-title">你的牌陣</span></span>
+      <i class="fas fa-chevron-down collapse-arrow"></i>
+    </div>
+    <div class="collapsible-body">
+      <div id="tarot-spread-display"></div>
+    </div>
+  </div>
+
+  <!-- 💎 水晶能量推薦（AI + 牌面元素） -->
+  <div class="card" id="tarot-crystal-rec" style="border:1px solid rgba(201,168,76,.25)">
+    <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
+      <span style="font-size:1.4rem">💎</span>
+      <div>
+        <div style="font-weight:700;color:var(--c-gold);font-size:1rem" id="tarot-crystal-title">適合你現在的能量</div>
+        <div class="text-xs text-dim" id="tarot-crystal-subtitle">根據牌面感應到的，帶在身上會幫到你</div>
+      </div>
+    </div>
+    <div id="tarot-crystal-content"></div>
+    <div style="display:flex;gap:10px;margin-top:var(--sp-md)">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:10px;background:transparent;color:var(--c-gold);text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1)"><i class="fas fa-shopping-cart"></i> 逛水晶</a>
+      <button onclick="openCustomModal()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 14px;border-radius:10px;background:transparent;color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit"><i class="fas fa-magic"></i> 量身客製</button>
+    </div>
+  </div>
+
+  <!-- 📊 分享 -->
+  <div class="card" style="text-align:center">
+    <p class="text-sm text-dim" style="margin-bottom:var(--sp-sm)">覺得準嗎？分享給朋友也來測</p>
+    <button onclick="generateShareImage()" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:transparent;color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit"><i class="fas fa-share-alt"></i> 產生分享圖</button>
   </div>
 
   <!-- 再測一次 -->
