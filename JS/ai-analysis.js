@@ -14633,6 +14633,19 @@ function _buildPayload() {
       if (dy.theme) L.push('十年主題：' + dy.theme);
       if (dy.stars && dy.stars.length) L.push('大運星曜：' + dy.stars.join('、'));
       if (dy.notes && dy.notes.length) L.push(dy.notes.slice(0,3).join('。'));
+
+      // ★ 前後大運（讓 AI 判斷運勢走向：上升還是下降？）
+      if (b.dayun && b.dayun.length) {
+        var dyIdx = b.dayun.findIndex(function(d){return d.isCurrent;});
+        if (dyIdx > 0) {
+          var prev = b.dayun[dyIdx - 1];
+          L.push('上一個大運：' + prev.gz + '，score=' + (prev.score||0));
+        }
+        if (dyIdx >= 0 && dyIdx < b.dayun.length - 1) {
+          var next = b.dayun[dyIdx + 1];
+          L.push('下一個大運：' + next.gz + '，score=' + (next.score||0));
+        }
+      }
     }
 
     // 流年（保留干支 + 原始 score）
@@ -14756,6 +14769,19 @@ function _buildPayload() {
       if (curDx.notes && curDx.notes.length) {
         curDx.notes.slice(0, 8).forEach(function(n){ L.push(n); });
       }
+
+      // ★ 前後大限（讓 AI 判斷運勢走向）
+      if (zw.daXian && zw.daXian.length) {
+        var dxIdx = zw.daXian.findIndex(function(d){return d.isCurrent;});
+        if (dxIdx > 0) {
+          var prevDx = zw.daXian[dxIdx - 1];
+          L.push('上一個大限：走' + _s(prevDx.palaceName) + '，score=' + (prevDx.score||0));
+        }
+        if (dxIdx >= 0 && dxIdx < zw.daXian.length - 1) {
+          var nextDx = zw.daXian[dxIdx + 1];
+          L.push('下一個大限：走' + _s(nextDx.palaceName) + '，score=' + (nextDx.score||0));
+        }
+      }
     }
 
     // ★ 流年（完整版 + 四化完整列表）
@@ -14773,6 +14799,30 @@ function _buildPayload() {
         // ★ 流年 notes（最多 6 條，含三方四正分析）
         if (curLn.notes && curLn.notes.length) {
           curLn.notes.slice(0, 6).forEach(function(n){ L.push(n); });
+        }
+      }
+    } catch(e){}
+
+    // ★ 流月（紫微斗數月運，送近 6 個月讓 AI 判斷月份節奏）
+    try {
+      if (zw.getLiuYueZw) {
+        var liuYueAll = zw.getLiuYueZw(yr);
+        if (liuYueAll && liuYueAll.length) {
+          // 找當前農曆月（簡化：用西曆月-1近似）
+          var curMonth = new Date().getMonth() + 1; // 1-12
+          var lunarMonth = curMonth <= 1 ? 12 : curMonth - 1; // 粗略近似
+          // 送當前月前後各 3 個月（共 6 個月）
+          var monthsToSend = liuYueAll.filter(function(m) {
+            var diff = m.month - lunarMonth;
+            return diff >= -2 && diff <= 3;
+          });
+          if (!monthsToSend.length) monthsToSend = liuYueAll.slice(0, 6);
+          var lyParts = monthsToSend.map(function(m) {
+            var huaShort = m.hua.filter(function(h) { return h.hua === '化祿' || h.hua === '化忌'; })
+              .map(function(h) { return h.star + h.hua + '入' + h.palace; }).join('、');
+            return m.monthName + '(' + m.gz + ')走' + m.mingPalace + ',score=' + m.score + (huaShort ? '，' + huaShort : '');
+          });
+          if (lyParts.length) L.push('紫微流月：' + lyParts.join('；'));
         }
       }
     } catch(e){}
@@ -14990,7 +15040,7 @@ function _buildPayload() {
       var pp = pl[name]; if (!pp || !pp.sign) return '';
       return name + '：' + pp.sign + ' ' + pp.house + '宮' + (pp.retrograde?' R':'');
     }
-    ['太陽','月亮','水星','金星','火星','木星','土星','天王','海王','冥王'].forEach(function(name){
+    ['太陽','月亮','水星','金星','火星','木星','土星','天王','海王','冥王','北交','南交','凱龍'].forEach(function(name){
       var t = _plT(name);
       if (t) L.push(t);
     });
