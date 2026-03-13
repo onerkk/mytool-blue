@@ -578,6 +578,11 @@ function submitStep0(){
   const btime=(document.getElementById('f-btime')&&document.getElementById('f-btime').value)||'12:00';
   const name=document.getElementById('f-name')?document.getElementById('f-name').value.trim():'';
   S.form={type,question,gender:gender.value,bdate,btime,name};
+  // ★ 同步出生資料到開鑰/塔羅表單（f2），讓使用者切換時不用重填（姓名除外）
+  var _f2bd=document.getElementById('f2-bdate');if(_f2bd)_f2bd.value=bdate;
+  var _f2bt=document.getElementById('f2-btime');if(_f2bt)_f2bt.value=btime;
+  var _g2r=document.querySelectorAll('input[name="gender2"]');
+  _g2r.forEach(function(r){r.checked=(r.value===gender.value);});
   S._autoMode = false; // 手動模式：使用者自己操作梅花/塔羅
   // 管理員判定（僅透過 URL token 認證，不在前端暴露判斷條件）
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
@@ -677,6 +682,11 @@ function submitStep0Fast(){
   const btime=document.getElementById('f-btime').value||'12:00';
   const name=document.getElementById('f-name').value.trim();
   S.form={type,question,gender:gender.value,bdate,btime,name};
+  // ★ 同步出生資料到開鑰/塔羅表單（f2），讓使用者切換時不用重填（姓名除外）
+  var _f2bd=document.getElementById('f2-bdate');if(_f2bd)_f2bd.value=bdate;
+  var _f2bt=document.getElementById('f2-btime');if(_f2bt)_f2bt.value=btime;
+  var _g2r=document.querySelectorAll('input[name="gender2"]');
+  _g2r.forEach(function(r){r.checked=(r.value===gender.value);});
   S._autoMode = true; // ★ 自動模式標記：梅花時間起卦 + 塔羅種子抽牌
   const overlay = document.createElement('div');
   overlay.className = 'loading-overlay';
