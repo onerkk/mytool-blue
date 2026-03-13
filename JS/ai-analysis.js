@@ -18624,13 +18624,23 @@ renderTarot = function(){
       var _fi2 = _raw2.indexOf('{');
       var _li2 = _raw2.lastIndexOf('}');
       if (_fi2 !== -1 && _li2 > _fi2) {
+        var _ext2 = _raw2.slice(_fi2, _li2 + 1);
         try {
-          var _rec2 = JSON.parse(_raw2.slice(_fi2, _li2 + 1));
+          var _rec2 = JSON.parse(_ext2);
           if (_rec2 && typeof _rec2 === 'object' && (_rec2.directAnswer || _rec2.answer || _rec2.consensus)) {
-            r = _rec2;
-            console.log('[AI] JSON recovered from answer string');
+            r = _rec2; console.log('[AI] JSON recovered (direct)');
           }
-        } catch(_e2) {}
+        } catch(_e2) {
+          try {
+            var _fix2 = _ext2.replace(/,\s*([\]}])/g, '$1').replace(/[\x00-\x1f]/g, function(ch) {
+              if (ch === '\n') return '\\n'; if (ch === '\r') return '\\r'; if (ch === '\t') return '\\t'; return '';
+            });
+            var _rec2b = JSON.parse(_fix2);
+            if (_rec2b && typeof _rec2b === 'object' && (_rec2b.directAnswer || _rec2b.answer || _rec2b.consensus)) {
+              r = _rec2b; console.log('[AI] JSON recovered (fixed)');
+            }
+          } catch(_e2b) {}
+        }
       }
     }
 
@@ -19910,13 +19920,56 @@ function _renderTarotAIResult(container, r, admin) {
     var _fi = _raw.indexOf('{');
     var _li = _raw.lastIndexOf('}');
     if (_fi !== -1 && _li > _fi) {
+      var _extracted = _raw.slice(_fi, _li + 1);
+      // 第一輪：直接 parse
       try {
-        var _recovered = JSON.parse(_raw.slice(_fi, _li + 1));
-        if (_recovered && (typeof _recovered === 'object') && (_recovered.subAnswers || _recovered.directAnswer || _recovered.summary)) {
-          r = _recovered;
-          console.log('[TarotAI] JSON recovered from answer string');
+        var _r1 = JSON.parse(_extracted);
+        if (_r1 && typeof _r1 === 'object' && (_r1.subAnswers || _r1.directAnswer || _r1.summary)) {
+          r = _r1;
+          console.log('[TarotAI] JSON recovered (direct)');
         }
-      } catch(_e) { /* 真的不是 JSON，繼續走 fallback */ }
+      } catch(_e1) {
+        // 第二輪：修 trailing commas + control chars
+        try {
+          var _fixed = _extracted
+            .replace(/,\s*([\]}])/g, '$1')
+            .replace(/[\x00-\x1f]/g, function(ch) {
+              if (ch === '\n') return '\\n';
+              if (ch === '\r') return '\\r';
+              if (ch === '\t') return '\\t';
+              return '';
+            });
+          var _r2 = JSON.parse(_fixed);
+          if (_r2 && typeof _r2 === 'object' && (_r2.subAnswers || _r2.directAnswer || _r2.summary)) {
+            r = _r2;
+            console.log('[TarotAI] JSON recovered (fixed)');
+          }
+        } catch(_e2) {
+          // 第三輪：regex 抽值（最後手段）
+          console.warn('[TarotAI] JSON parse failed, using regex fallback');
+          try {
+            var _daMatch = _raw.match(/"directAnswer"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+            var _clMatch = _raw.match(/"closing"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+            var _smMatch = _raw.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+            // 抽 subAnswers 裡每個 conclusion + reading
+            var _subs = [];
+            var _saRe = /"conclusion"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"reading"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+            var _saM;
+            while ((_saM = _saRe.exec(_raw)) !== null) {
+              _subs.push({ conclusion: _saM[1].replace(/\\n/g, '\n').replace(/\\"/g, '"'), reading: _saM[2].replace(/\\n/g, '\n').replace(/\\"/g, '"') });
+            }
+            if (_daMatch || _subs.length) {
+              r = {
+                directAnswer: _daMatch ? _daMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"') : '',
+                subAnswers: _subs.length ? _subs : undefined,
+                summary: _smMatch ? _smMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"') : '',
+                closing: _clMatch ? _clMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"') : ''
+              };
+              console.log('[TarotAI] recovered via regex:', _subs.length, 'subs');
+            }
+          } catch(_e3) { console.warn('[TarotAI] regex fallback also failed'); }
+        }
+      }
     }
   }
 
@@ -19984,15 +20037,24 @@ function _renderTarotAIResult(container, r, admin) {
 
   // ═══ fallback：如果 AI 沒有回 subAnswers，用舊的 answer 渲染 ═══
   if (!subAnswers.length && r.answer) {
-    html += '<div class="card" style="border-left:3px solid #8b5cf6;padding:.8rem">';
-    html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem"><span style="font-size:1.1rem">🃏</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解牌</span></div>';
-    var paras = r.answer.split(/\n\n+/);
-    paras.forEach(function(para) {
-      para = para.trim(); if (!para) return;
-      html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' +
-        para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
-    });
-    html += '</div>';
+    // 如果 answer 長得像未解析的 JSON → 不顯示原始碼，改顯示重試
+    var _ansStr = String(r.answer).trim();
+    if (_ansStr.charAt(0) === '{' && _ansStr.indexOf('"directAnswer"') !== -1) {
+      html += '<div style="text-align:center;padding:1.2rem">' +
+        '<div style="font-size:.88rem;color:var(--c-text-dim);margin-bottom:.8rem">解讀格式異常，請再試一次</div>' +
+        '<button onclick="_triggerTarotAI()" style="padding:.6rem 1.3rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🃏 重新解讀</button>' +
+      '</div>';
+    } else {
+      html += '<div class="card" style="border-left:3px solid #8b5cf6;padding:.8rem">';
+      html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem"><span style="font-size:1.1rem">🃏</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解牌</span></div>';
+      var paras = r.answer.split(/\n\n+/);
+      paras.forEach(function(para) {
+        para = para.trim(); if (!para) return;
+        html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' +
+          para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
+      });
+      html += '</div>';
+    }
   }
 
   // ═══ 總結 ═══
@@ -20733,7 +20795,15 @@ function _renderOOTKResult(container, r, admin) {
     if (_raw.indexOf('```') === 0) _raw = _raw.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
     var _fi = _raw.indexOf('{'), _li = _raw.lastIndexOf('}');
     if (_fi !== -1 && _li > _fi) {
-      try { var _rec = JSON.parse(_raw.slice(_fi, _li + 1)); if (_rec && (_rec.operations || _rec.directAnswer || _rec.subAnswers)) r = _rec; } catch(_e) {}
+      var _ext = _raw.slice(_fi, _li + 1);
+      try { var _rec = JSON.parse(_ext); if (_rec && (_rec.operations || _rec.directAnswer || _rec.subAnswers)) r = _rec; } catch(_e) {
+        try {
+          var _fix = _ext.replace(/,\s*([\]}])/g, '$1').replace(/[\x00-\x1f]/g, function(ch) {
+            if (ch === '\n') return '\\n'; if (ch === '\r') return '\\r'; if (ch === '\t') return '\\t'; return '';
+          });
+          var _rec2 = JSON.parse(_fix); if (_rec2 && (_rec2.operations || _rec2.directAnswer || _rec2.subAnswers)) r = _rec2;
+        } catch(_e2) {}
+      }
     }
   }
 
