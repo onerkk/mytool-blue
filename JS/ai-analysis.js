@@ -19599,6 +19599,42 @@ function _buildTarotOnlyPayload() {
     numerologyText = (ta.numerology.finalNum || '') + '＝' + (ta.numerology.finalMeaning || '');
   }
 
+  // ★ 卡巴拉生命之樹（同步七維度）
+  var kabbalahText = '';
+  if (ta.kabbalah && ta.kabbalah.length) {
+    kabbalahText = ta.kabbalah.slice(0, 3).map(function(k) {
+      return (k.cardName || '') + '→' + (k.sephirotZh || '');
+    }).join('；');
+  }
+
+  // ★ 牌組共振（同步七維度）
+  var comboText = '';
+  try {
+    var _combos = typeof detectTarotCombos === 'function' ? detectTarotCombos(drawn.slice(0, def ? def.count : 10)) : [];
+    if (_combos.length) {
+      comboText = _combos.slice(0, 2).map(function(cb) {
+        return (cb.cards || []).join('×') + '——' + (cb.message || '').substring(0, 60);
+      }).join('；');
+    }
+  } catch(e) {}
+
+  // ★ 宮廷牌 GD 元素分析（同步七維度）
+  var courtElementText = '';
+  if (ta.courtElementAnalysis && ta.courtElementAnalysis.cards) {
+    courtElementText = ta.courtElementAnalysis.cards.map(function(c) {
+      return c.name + '=' + c.combo;
+    }).join('、');
+  }
+
+  // ★ 牌陣結構分析（同步七維度）
+  var spreadAnalysisText = '';
+  if (ta.spreadAnalysis && ta.spreadAnalysis.length) {
+    spreadAnalysisText = ta.spreadAnalysis.map(function(pos) {
+      if (!pos || !pos.cardName) return '';
+      return '〔' + (pos.name || '') + '〕' + (pos.cardName || '') + (pos.isUp ? '正' : '逆');
+    }).filter(Boolean).join('、');
+  }
+
   return {
     mode: 'tarot_only',
     question: (S.form && S.form.question) ? S.form.question : '',
@@ -19608,7 +19644,11 @@ function _buildTarotOnlyPayload() {
       spreadZh: (def && def.zh) ? def.zh : '',
       cards: cards,
       numerology: numerologyText,
-      elementInteraction: elementInteraction
+      elementInteraction: elementInteraction,
+      kabbalah: kabbalahText,
+      combos: comboText,
+      courtElements: courtElementText,
+      spreadAnalysis: spreadAnalysisText
     }
   };
 }
