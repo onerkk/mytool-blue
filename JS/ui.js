@@ -770,7 +770,11 @@ function submitStep0Fast(){
       try {
         // 偵測牌陣
         var _spreadId = 'celtic_cross';
-        if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+        if (window._forceOOTK) {
+          _spreadId = 'ootk';
+          window._forceOOTK = false;
+          if (typeof setCurrentSpread === 'function') setCurrentSpread('ootk');
+        } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
           _spreadId = detectSpreadType(S.form.question || '', S.form.type || 'general');
           setCurrentSpread(_spreadId);
         }
@@ -5033,6 +5037,13 @@ function renderTarotSpreadDisplay() {
   });
 
   el.innerHTML = h;
+}
+
+// ── ootkCTAClick：從塔羅快讀結果頁觸發開鑰之法 ──
+function ootkCTAClick() {
+  window._forceOOTK = true;
+  var form = document.getElementById('tarot-to-full');
+  if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── enterFullAnalysis：從塔羅結果進七維度 ──
