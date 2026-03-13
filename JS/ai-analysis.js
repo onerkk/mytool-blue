@@ -20874,6 +20874,17 @@ window._jyStartOOTK = function() {
       S.form.bdate = bd;
       S.form.btime = bt || '';
       S.form.gender = gender;
+      // 同步到七維度表單
+      var _f2bd = document.getElementById('f2-bdate');
+      if (_f2bd) _f2bd.value = bd;
+      var _f2bt = document.getElementById('f2-btime');
+      if (_f2bt && bt) _f2bt.value = bt;
+      if (gender) {
+        var _g2r = document.querySelectorAll('input[name="gender2"]');
+        _g2r.forEach(function(r) { r.checked = (r.value === gender); });
+      }
+      var _det = document.querySelector('#tarot-full-form .advance-toggle');
+      if (_det) _det.open = true;
       document.getElementById('ootk-birth-modal').remove();
       // 繼續開鑰流程
       window._jyStartOOTK();

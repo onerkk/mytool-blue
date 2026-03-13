@@ -4988,6 +4988,30 @@ function showTarotResult() {
   var f2q = document.getElementById('f2-question');
   if (f2q) f2q.value = S.form.question || '';
 
+  // 如果已有生辰性別（例如跑過開鑰），自動帶入七維度表單
+  if (S.form.bdate) {
+    var f2bd = document.getElementById('f2-bdate');
+    if (f2bd) f2bd.value = S.form.bdate;
+  }
+  if (S.form.btime) {
+    var f2bt = document.getElementById('f2-btime');
+    if (f2bt) f2bt.value = S.form.btime;
+  }
+  if (S.form.gender) {
+    var g2radios = document.querySelectorAll('input[name="gender2"]');
+    g2radios.forEach(function(r) { r.checked = (r.value === S.form.gender); });
+  }
+  if (S.form.name) {
+    var f2nm = document.getElementById('f2-name');
+    if (f2nm) f2nm.value = S.form.name;
+  }
+
+  // 生辰已帶入 → 展開選填區讓用戶填名字
+  if (S.form.bdate && S.form.gender) {
+    var det = document.querySelector('#tarot-full-form .advance-toggle');
+    if (det) det.open = true;
+  }
+
   // 渲染牌面
   renderTarotSpreadDisplay();
 
