@@ -1635,7 +1635,7 @@ function showFortuneResult(f){
       </div>
 
       <!-- 今日運勢焦點（白話文）-->
-      <div style="background:linear-gradient(135deg,rgba(212,175,55,0.06),rgba(212,175,55,0.02));border-radius:var(--r-md);padding:var(--sp-md);margin:var(--sp-sm) 0;border-left:3px solid rgba(212,175,55,0.3)">
+      <div style="background:linear-gradient(135deg,rgba(201,168,76,0.06),rgba(201,168,76,0.02));border-radius:var(--r-md);padding:var(--sp-md);margin:var(--sp-sm) 0;border-left:3px solid rgba(201,168,76,0.3)">
         <p style="font-weight:700;color:var(--c-gold);font-size:0.9rem;margin-bottom:0.4rem">🔮 今日運勢焦點</p>
         ${focusItems.map(t=>'<p style="font-size:0.88rem;line-height:1.7;margin:0.2rem 0">'+t+'</p>').join('')}
       </div>
@@ -1652,7 +1652,7 @@ function showFortuneResult(f){
         <summary style="cursor:pointer;font-size:0.85rem;color:var(--c-gold);padding:0.4rem 0;user-select:none;font-weight:600">
           📊 七維度命盤分析
         </summary>
-        <div style="background:rgba(212,175,55,0.04);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);margin-top:0.3rem;font-size:0.82rem;color:var(--c-text-dim);line-height:1.8;border-left:2px solid rgba(212,175,55,.2)">
+        <div style="background:rgba(201,168,76,0.04);border-radius:var(--r-md);padding:var(--sp-sm) var(--sp-md);margin-top:0.3rem;font-size:0.82rem;color:var(--c-text-dim);line-height:1.8;border-left:2px solid rgba(201,168,76,.2)">
           ${_7dDailyParts.map(function(p){return '<p style="margin:.2rem 0">'+p+'</p>';}).join('')}
         </div>
       </details>
@@ -1691,7 +1691,7 @@ function showFortuneResult(f){
   // ── 【升級F】在結果後追加新維度資訊 ──
   try{
     var _extraHtml = '';
-    if(f.dynNote) _extraHtml += '<div style="background:rgba(212,175,55,.08);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:.85rem">'+f.dynNote+'</div>';
+    if(f.dynNote) _extraHtml += '<div style="background:rgba(201,168,76,.08);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:.85rem">'+f.dynNote+'</div>';
     if(f.xingxiuNote) _extraHtml += '<p style="font-size:.8rem;opacity:.8;margin:4px 0">🌟 '+f.xingxiuNote+'</p>';
     if(f.monthNote) _extraHtml += '<p style="font-size:.8rem;opacity:.8;margin:4px 0">📅 '+f.monthNote+'</p>';
     if(f.yiJi && (f.yiJi.yi.length || f.yiJi.ji.length)){
@@ -2092,7 +2092,7 @@ function showQuizResult(){
     // 身強弱
     if(S.bazi.strong) multiDimNote += `<p style="font-size:.8rem;opacity:.8;margin:.2rem 0">💪 身強格局，適合佩戴能引導能量外放的水晶，助你把握機會。</p>`;
     else multiDimNote += `<p style="font-size:.8rem;opacity:.8;margin:.2rem 0">🛡 身弱格局，特別適合佩戴守護型水晶，穩定氣場、補充能量。</p>`;
-    if(multiDimNote) baziNote += `<div style="margin-top:.5rem;padding:.5rem;background:rgba(212,175,55,.05);border-radius:6px">${multiDimNote}</div>`;
+    if(multiDimNote) baziNote += `<div style="margin-top:.5rem;padding:.5rem;background:rgba(201,168,76,.05);border-radius:6px">${multiDimNote}</div>`;
   }
   
   // Find crystal from target element
@@ -2851,7 +2851,7 @@ function generateLuckyInfo(){
   const favEl2 = b.fav[1] || b.dmEl;
 
   const colorsByEl = {
-    '金': [{name:'白色',hex:'#f5f5f5',meaning:'金行正色，淨化氣場'},{name:'金色',hex:'#d4af37',meaning:'強化權威與成就'},{name:'銀色',hex:'#94a3b8',meaning:'冷靜理性，金行守護'}],
+    '金': [{name:'白色',hex:'#f5f5f5',meaning:'金行正色，淨化氣場'},{name:'金色',hex:'#c9a84c',meaning:'強化權威與成就'},{name:'銀色',hex:'#94a3b8',meaning:'冷靜理性，金行守護'}],
     '木': [{name:'綠色',hex:'#16a34a',meaning:'木行正色，健康成長'},{name:'青色',hex:'#06b6d4',meaning:'生發之力，貴人能量'},{name:'翠綠',hex:'#059669',meaning:'木行生機盎然'}],
     '水': [{name:'黑色',hex:'#1a1a1a',meaning:'水行正色，保護穩重'},{name:'藍色',hex:'#2563eb',meaning:'智慧溝通，水行流通'},{name:'深藍',hex:'#1e3a5f',meaning:'深沉內斂，水行蓄能'}],
     '火': [{name:'紅色',hex:'#dc2626',meaning:'火行正色，熱情行動力'},{name:'紫色',hex:'#9333ea',meaning:'靈性直覺，火行昇華'},{name:'橙色',hex:'#ea580c',meaning:'活力創造，火行擴展'}],
@@ -2985,7 +2985,7 @@ function generateLuckyInfo(){
           <div class="lucky-sub">${_dayEl}行日${_isDayFav?' ✅ 順風':_isDayClash?' ⚠ 逆風':''}</div>
         </div>
       </div>
-      <div style="margin-top:.6rem;padding:.5rem .8rem;background:${_isDayClash?'rgba(248,113,113,.08)':'rgba(212,175,55,.06)'};border-left:3px solid ${_isDayClash?'#f87171':'var(--c-gold)'};border-radius:0 6px 6px 0;font-size:.78rem;line-height:1.6">
+      <div style="margin-top:.6rem;padding:.5rem .8rem;background:${_isDayClash?'rgba(248,113,113,.08)':'rgba(201,168,76,.06)'};border-left:3px solid ${_isDayClash?'#f87171':'var(--c-gold)'};border-radius:0 6px 6px 0;font-size:.78rem;line-height:1.6">
         <p>${_favChakra.icon} <strong>今日脈輪處方</strong></p>
         <p style="margin:3px 0">${chakraText}</p>
         <p style="margin:3px 0">${chakraRx}</p>
@@ -3000,13 +3000,13 @@ function generateLuckyInfo(){
               var sys=t.supportSystems&&t.supportSystems.length>1?'['+t.supportSystems.join('+')+'共振]':'['+t.supportSystems.join('')+']';
               return '<span style="'+dir+';margin-right:.4rem">'+t.tag+'</span><span style="font-size:.72rem;color:#64748b">'+sys+'</span>';
             }).join('<br>');
-            return '<details style="margin-top:.5rem"><summary style="cursor:pointer;font-size:.8rem;color:var(--c-gold);padding:.3rem 0;font-weight:600">🔗 多系統象徵交集</summary><div style="font-size:.78rem;line-height:1.9;padding:.4rem .6rem;border-left:2px solid rgba(212,175,55,.2);margin-top:.2rem">'+_tagHtml+'</div></details>';
+            return '<details style="margin-top:.5rem"><summary style="cursor:pointer;font-size:.8rem;color:var(--c-gold);padding:.3rem 0;font-weight:600">🔗 多系統象徵交集</summary><div style="font-size:.78rem;line-height:1.9;padding:.4rem .6rem;border-left:2px solid rgba(201,168,76,.2);margin-top:.2rem">'+_tagHtml+'</div></details>';
           }
           if(typeof build7D!=='function'||!S.bazi) return '';
           var _7L=build7D(S.bazi, S.meihua||null, S.tarot||null, 'general');
           var _pL=_7L.parts.filter(function(p){return p&&p.length>5;});
           if(!_pL.length) return '';
-          return '<details style="margin-top:.5rem"><summary style="cursor:pointer;font-size:.8rem;color:var(--c-gold);padding:.3rem 0;font-weight:600">📊 命盤解讀</summary><div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.7;padding:.4rem .6rem;border-left:2px solid rgba(212,175,55,.2);margin-top:.2rem">'+_pL.map(function(p){return '<p style="margin:.15rem 0">'+p+'</p>';}).join('')+'</div></details>';
+          return '<details style="margin-top:.5rem"><summary style="cursor:pointer;font-size:.8rem;color:var(--c-gold);padding:.3rem 0;font-weight:600">📊 命盤解讀</summary><div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.7;padding:.4rem .6rem;border-left:2px solid rgba(201,168,76,.2);margin-top:.2rem">'+_pL.map(function(p){return '<p style="margin:.15rem 0">'+p+'</p>';}).join('')+'</div></details>';
         }catch(e){return '';}
       })()}
       <p class="text-xs text-muted mt-md">每日 00:00 更新 · 依你命盤喜用神 × 流日五行動態推算</p>
@@ -3198,12 +3198,12 @@ function renderCal30(){
       var _7Cal=build7D(S.bazi, S.meihua||null, S.tarot||null, 'general');
       var _7CalP=_7Cal.parts.filter(function(p){return p&&p.length>5;});
       if(_7CalP.length){
-        b7dCalTag='<details style="margin-top:.4rem"><summary style="cursor:pointer;font-size:.8rem;color:var(--c-gold);font-weight:600">📊 七維度命盤背景</summary><div style="font-size:.75rem;color:var(--c-text-dim);line-height:1.6;padding:.3rem .5rem;border-left:2px solid rgba(212,175,55,.2);margin-top:.2rem">'+_7CalP.map(function(p){return '<p style="margin:.1rem 0">'+p+'</p>';}).join('')+'</div></details>';
+        b7dCalTag='<details style="margin-top:.4rem"><summary style="cursor:pointer;font-size:.8rem;color:var(--c-gold);font-weight:600">📊 七維度命盤背景</summary><div style="font-size:.75rem;color:var(--c-text-dim);line-height:1.6;padding:.3rem .5rem;border-left:2px solid rgba(201,168,76,.2);margin-top:.2rem">'+_7CalP.map(function(p){return '<p style="margin:.1rem 0">'+p+'</p>';}).join('')+'</div></details>';
       }
     }
   }catch(e){}
 
-  box.innerHTML='<div class="cal30-sts"><div class="cal30-st"><div class="cal30-sn" style="color:#4ade80">'+ji+'</div><div class="cal30-sl">\u5409\u65E5\uFF08\u9069\u5408\u884C\u52D5\uFF09</div></div><div class="cal30-st"><div class="cal30-sn" style="color:var(--c-text-dim)">'+ping+'</div><div class="cal30-sl">\u5E73\u7A69\u65E5</div></div><div class="cal30-st"><div class="cal30-sn" style="color:#f87171">'+xiong+'</div><div class="cal30-sl">\u4F4E\u8C37\u4F11\u990A\u65E5</div></div></div>'+znTag+b7dCalTag+'<div class="cal30-mnav"><button onclick="cal30CM(-1)" id="cal30p" style="visibility:hidden"><i class="fas fa-chevron-left"></i></button><div class="cal30-mt" id="cal30t"></div><button onclick="cal30CM(1)" id="cal30n"><i class="fas fa-chevron-right"></i></button></div><div class="cal30-grid" id="cal30g"></div><div class="cal30-legend"><span><i style="background:rgba(74,222,128,.5)"></i>\u5927\u5409</span><span><i style="background:rgba(96,165,250,.4)"></i>\u4E0A\u5409</span><span><i style="background:rgba(212,175,55,.3)"></i>\u4E2D\u5409</span><span><i style="background:rgba(255,255,255,.1)"></i>\u5C0F\u5409/\u4E2D\u5E73</span><span><i style="background:rgba(248,113,113,.3)"></i>\u5C0F\u51F6</span><span><i style="background:rgba(220,50,50,.4)"></i>\u51F6</span></div><div style="margin-top:var(--sp-md)"><div class="card-title" style="font-size:.9rem"><i class="fas fa-list"></i> \u6BCF\u65E5\u8A73\u60C5</div><div class="cal30-det" id="cal30d"></div></div><div style="display:flex;flex-direction:column;gap:var(--sp-xs);margin-top:var(--sp-md)"><button class="btn btn-gold btn-sm" onclick="dlCal30(\'all\')"><i class="fas fa-calendar-plus"></i> \u4E0B\u8F09\u5B8C\u6574\u884C\u4E8B\u66C6\uFF08.ics\uFF09</button><button class="btn btn-outline btn-sm" onclick="dlCal30(\'hl\')"><i class="fas fa-star"></i> \u53EA\u4E0B\u8F09\u5409\u65E5\uFF0B\u51F6\u65E5\u63D0\u9192</button></div><p class="text-xs text-muted mt-sm text-center">\u4E0B\u8F09 .ics \u6A94\u5373\u53EF\u532F\u5165 iPhone / Google / Outlook</p>';
+  box.innerHTML='<div class="cal30-sts"><div class="cal30-st"><div class="cal30-sn" style="color:#4ade80">'+ji+'</div><div class="cal30-sl">\u5409\u65E5\uFF08\u9069\u5408\u884C\u52D5\uFF09</div></div><div class="cal30-st"><div class="cal30-sn" style="color:var(--c-text-dim)">'+ping+'</div><div class="cal30-sl">\u5E73\u7A69\u65E5</div></div><div class="cal30-st"><div class="cal30-sn" style="color:#f87171">'+xiong+'</div><div class="cal30-sl">\u4F4E\u8C37\u4F11\u990A\u65E5</div></div></div>'+znTag+b7dCalTag+'<div class="cal30-mnav"><button onclick="cal30CM(-1)" id="cal30p" style="visibility:hidden"><i class="fas fa-chevron-left"></i></button><div class="cal30-mt" id="cal30t"></div><button onclick="cal30CM(1)" id="cal30n"><i class="fas fa-chevron-right"></i></button></div><div class="cal30-grid" id="cal30g"></div><div class="cal30-legend"><span><i style="background:rgba(74,222,128,.5)"></i>\u5927\u5409</span><span><i style="background:rgba(96,165,250,.4)"></i>\u4E0A\u5409</span><span><i style="background:rgba(201,168,76,.3)"></i>\u4E2D\u5409</span><span><i style="background:rgba(255,255,255,.1)"></i>\u5C0F\u5409/\u4E2D\u5E73</span><span><i style="background:rgba(248,113,113,.3)"></i>\u5C0F\u51F6</span><span><i style="background:rgba(220,50,50,.4)"></i>\u51F6</span></div><div style="margin-top:var(--sp-md)"><div class="card-title" style="font-size:.9rem"><i class="fas fa-list"></i> \u6BCF\u65E5\u8A73\u60C5</div><div class="cal30-det" id="cal30d"></div></div><div style="display:flex;flex-direction:column;gap:var(--sp-xs);margin-top:var(--sp-md)"><button class="btn btn-gold btn-sm" onclick="dlCal30(\'all\')"><i class="fas fa-calendar-plus"></i> \u4E0B\u8F09\u5B8C\u6574\u884C\u4E8B\u66C6\uFF08.ics\uFF09</button><button class="btn btn-outline btn-sm" onclick="dlCal30(\'hl\')"><i class="fas fa-star"></i> \u53EA\u4E0B\u8F09\u5409\u65E5\uFF0B\u51F6\u65E5\u63D0\u9192</button></div><p class="text-xs text-muted mt-sm text-center">\u4E0B\u8F09 .ics \u6A94\u5373\u53EF\u532F\u5165 iPhone / Google / Outlook</p>';
 
   cal30VM=0;
   renderCal30G();
@@ -3597,7 +3597,7 @@ function showAuraResult(){
 
   /* 五行能量條 */
   var elNames={'\u91D1':'\u91D1','\u6728':'\u6728','\u6C34':'\u6C34','\u706B':'\u706B','\u571F':'\u571F'};
-  var elColors={'\u91D1':'#d4af37','\u6728':'#22c55e','\u6C34':'#3b82f6','\u706B':'#ef4444','\u571F':'#eab308'};
+  var elColors={'\u91D1':'#c9a84c','\u6728':'#22c55e','\u6C34':'#3b82f6','\u706B':'#ef4444','\u571F':'#eab308'};
   var barsHtml='<div style="display:grid;grid-template-columns:32px 1fr 32px;gap:4px;align-items:center;margin:var(--sp-sm) 0;font-size:.72rem">';
   ['\u6728','\u706B','\u571F','\u91D1','\u6C34'].forEach(function(el){
     var pct=tc.elPct[el]||0;
@@ -4107,7 +4107,7 @@ document.addEventListener('click',function(e){
     // Set color based on score
     let color;
     if(pct>=70) color='#4ade80';
-    else if(pct>=55) color='#d4af37';
+    else if(pct>=55) color='#c9a84c';
     else if(pct>=40) color='#fbbf24';
     else color='#f87171';
     
@@ -4144,7 +4144,7 @@ document.addEventListener('click',function(e){
   if(!overlay.querySelector('.loading-bagua')){
     const bagua=document.createElement('div');
     bagua.className='loading-bagua';
-    bagua.innerHTML='<svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(212,175,55,0.3)" stroke-width="1.5"/><path d="M40 2a38 38 0 0 1 0 76" fill="rgba(212,175,55,0.15)" stroke="rgba(212,175,55,0.5)" stroke-width="1.5"/><path d="M40 2a38 38 0 0 0 0 76" fill="rgba(139,0,0,0.15)" stroke="rgba(139,0,0,0.5)" stroke-width="1.5"/><circle cx="40" cy="21" r="6" fill="rgba(212,175,55,0.4)"/><circle cx="40" cy="59" r="6" fill="rgba(139,0,0,0.4)"/><circle cx="40" cy="21" r="2.5" fill="rgba(139,0,0,0.6)"/><circle cx="40" cy="59" r="2.5" fill="rgba(212,175,55,0.6)"/></svg>';
+    bagua.innerHTML='<svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="40" r="38" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/><path d="M40 2a38 38 0 0 1 0 76" fill="rgba(201,168,76,0.15)" stroke="rgba(201,168,76,0.5)" stroke-width="1.5"/><path d="M40 2a38 38 0 0 0 0 76" fill="rgba(139,0,0,0.15)" stroke="rgba(139,0,0,0.5)" stroke-width="1.5"/><circle cx="40" cy="21" r="6" fill="rgba(201,168,76,0.4)"/><circle cx="40" cy="59" r="6" fill="rgba(139,0,0,0.4)"/><circle cx="40" cy="21" r="2.5" fill="rgba(139,0,0,0.6)"/><circle cx="40" cy="59" r="2.5" fill="rgba(201,168,76,0.6)"/></svg>';
     overlay.insertBefore(bagua,overlay.firstChild);
   }
 })();
@@ -4423,8 +4423,8 @@ function _jd7Dims(type){
 function _jd7BriefHTML(type, title){
   var syn = _jd7Dims(type||'general');
   if(!syn) return '';
-  var c = syn.finalDir==='pos'?'#4caf50':syn.finalDir==='neg'?'#e05c2f':'#d4af37';
-  return '<div style="margin-top:10px;padding:10px 12px;background:rgba(212,175,55,.05);border-left:3px solid '+c+';border-radius:0 8px 8px 0">'
+  var c = syn.finalDir==='pos'?'#4caf50':syn.finalDir==='neg'?'#e05c2f':'#c9a84c';
+  return '<div style="margin-top:10px;padding:10px 12px;background:rgba(201,168,76,.05);border-left:3px solid '+c+';border-radius:0 8px 8px 0">'
     +'<div style="font-size:.86rem;font-weight:700;color:'+c+'">'+(title||'七維綜合提醒')+'｜'+(syn.shortConclusion||'')+'</div>'
     +'<div style="font-size:.8rem;line-height:1.7;color:var(--c-text-dim);margin-top:4px">'
     +(syn.coreSupports&&syn.coreSupports.length?('支持：'+syn.coreSupports.slice(0,2).join('；')+'。 '):'')
@@ -4454,7 +4454,7 @@ generateLuckyInfo = function(){
     var dims=(syn.dimResults||[]).slice().sort(function(a,b){return (b.score||0)-(a.score||0);});
     var top=dims.slice(0,3).map(function(d){return d.dim+' '+(d.verdict||'');});
     var low=dims.slice().sort(function(a,b){return (a.score||0)-(b.score||0);}).slice(0,2).map(function(d){return d.dim+' '+(d.reason||'');});
-    container.innerHTML += '<div style="margin-top:12px;padding:12px;border-radius:10px;background:rgba(212,175,55,.05);border-left:3px solid rgba(212,175,55,.45)">'
+    container.innerHTML += '<div style="margin-top:12px;padding:12px;border-radius:10px;background:rgba(201,168,76,.05);border-left:3px solid rgba(201,168,76,.45)">'
       +'<div style="font-size:.9rem;font-weight:700;color:var(--c-gold)">📡 七維幸運校正</div>'
       +'<div style="font-size:.82rem;line-height:1.8;color:var(--c-text-dim);margin-top:6px">'
       +(top.length?'今天最能借力的維度：'+top.join('｜')+'。 ':'')
@@ -4573,13 +4573,13 @@ showAuraResult = function(){
     modal.id = 'jy-used-modal';
     modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);animation:fadeIn .3s';
     modal.innerHTML =
-      '<div style="max-width:320px;width:88%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
-        '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
-        '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">今日的緣分已用盡</h3>' +
+      '<div style="max-width:320px;width:88%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(201,168,76,.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
+        '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(201,168,76,.3))">🌙</div>' +
+        '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">今日的緣分已用盡</h3>' +
         '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">命盤每天只能翻閱一次</p>' +
         '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.5rem">子時（00:00）重置，明天再來問</p>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);text-decoration:none;font-size:.85rem;font-weight:600;border:1px solid rgba(212,175,55,.3)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
+          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.06));color:var(--c-gold,#c9a84c);text-decoration:none;font-size:.85rem;font-weight:600;border:1px solid rgba(201,168,76,.3)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
           '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);font-size:.82rem;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-family:inherit">知道了</button>' +
         '</div>' +
       '</div>';
@@ -4627,13 +4627,13 @@ showAuraResult = function(){
           'width:100%;max-width:300px;' +
           'padding:1.1rem 2rem;border-radius:14px;' +
           'background:transparent;' +
-          'color:var(--c-gold,#d4af37);' +
+          'color:var(--c-gold,#c9a84c);' +
           'font-size:1.05rem;font-weight:700;font-family:var(--f-display,serif);' +
-          'border:1.5px solid rgba(212,175,55,.4);' +
+          'border:1px solid rgba(201,168,76,.2);' +
           'cursor:pointer;transition:all .3s;' +
-          'box-shadow:0 0 30px rgba(212,175,55,.08),inset 0 0 20px rgba(212,175,55,.03);' +
+          'box-shadow:none;' +
           'letter-spacing:.08em;' +
-          'animation:home-cta-breathe 3s ease-in-out infinite">' +
+          'animation:none">' +
           '🌙 開始解讀' +
         '</button>' +
 
@@ -4648,7 +4648,7 @@ showAuraResult = function(){
     '</div>' +
 
     // 呼吸動畫
-    '<style>@keyframes home-cta-breathe{0%,100%{box-shadow:0 0 30px rgba(212,175,55,.08),inset 0 0 20px rgba(212,175,55,.03);border-color:rgba(212,175,55,.4)}50%{box-shadow:0 0 45px rgba(212,175,55,.15),inset 0 0 30px rgba(212,175,55,.06);border-color:rgba(212,175,55,.6)}}</style>';
+    '<style><!-- removed --></style>';
   }
 
   // ══ 從首頁進入 — 顯示 input-screen 帶類型選擇 ══
@@ -4694,9 +4694,9 @@ showAuraResult = function(){
       b.style.background = 'rgba(255,255,255,.03)';
       b.style.color = 'var(--c-text-dim)';
     });
-    event.currentTarget.style.borderColor = 'rgba(212,175,55,.5)';
-    event.currentTarget.style.background = 'rgba(212,175,55,.08)';
-    event.currentTarget.style.color = 'var(--c-gold,#d4af37)';
+    event.currentTarget.style.borderColor = 'rgba(201,168,76,.2)';
+    event.currentTarget.style.background = 'rgba(201,168,76,.08)';
+    event.currentTarget.style.color = 'var(--c-gold,#c9a84c)';
 
     // 載入問題預設
     if (typeof Q_PRESETS !== 'undefined' && typeof selectedPresetQ !== 'undefined') {
@@ -4901,11 +4901,11 @@ async function submitTarotQuick() {
           var modal = document.createElement('div');
           modal.id = 'tarot-used-modal';
           modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);padding:1rem';
-          modal.innerHTML = '<div style="background:var(--c-bg-card,#1a1208);border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:2rem 1.5rem;max-width:320px;text-align:center">' +
+          modal.innerHTML = '<div style="background:var(--c-bg-card,#1a1208);border:1px solid rgba(201,168,76,.25);border-radius:16px;padding:2rem 1.5rem;max-width:320px;text-align:center">' +
             '<div style="font-size:2rem;margin-bottom:.6rem">🌙</div>' +
             '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">今日塔羅已用完</div>' +
             '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">每天 1 次免費塔羅解讀<br>子時（00:00）重置，明天再來</div>' +
-            '<button onclick="this.closest(\'#tarot-used-modal\').remove()" style="padding:.6rem 1.5rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit">知道了</button>' +
+            '<button onclick="this.closest(\'#tarot-used-modal\').remove()" style="padding:.6rem 1.5rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1px solid rgba(201,168,76,.2);font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit">知道了</button>' +
           '</div>';
           modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
           document.body.appendChild(modal);
@@ -4932,7 +4932,7 @@ async function submitTarotQuick() {
   overlay.innerHTML =
     '<style>' +
     '@keyframes jyTarotFloat{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-8px) rotate(2deg)}75%{transform:translateY(4px) rotate(-1.5deg)}}' +
-    '@keyframes jyTarotGlow{0%,100%{box-shadow:0 0 20px rgba(212,175,55,.1),0 0 60px rgba(201,168,76,.05)}50%{box-shadow:0 0 40px rgba(212,175,55,.25),0 0 80px rgba(201,168,76,.12)}}' +
+    '@keyframes jyTarotGlow{0%,100%{box-shadow:0 0 20px rgba(201,168,76,.1),0 0 60px rgba(201,168,76,.05)}50%{box-shadow:0 0 40px rgba(201,168,76,.25),0 0 80px rgba(201,168,76,.12)}}' +
     '@keyframes jyTarotSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}' +
     '@keyframes jyTarotFan{0%{transform:rotate(0deg) scale(.9);opacity:0}100%{opacity:1}}' +
     '@keyframes jyTarotPulse{0%,100%{opacity:.4}50%{opacity:1}}' +
@@ -4943,36 +4943,36 @@ async function submitTarotQuick() {
       // 卡牌扇形展開
       '<div style="position:relative;width:180px;height:200px;margin-bottom:1.2rem">' +
         // 背景光暈
-        '<div style="position:absolute;left:50%;top:50%;width:160px;height:160px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.12) 0%,rgba(201,168,76,.06) 40%,transparent 70%);animation:jyTarotGlow 3s ease-in-out infinite"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:160px;height:160px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.12) 0%,rgba(201,168,76,.06) 40%,transparent 70%);animation:jyTarotGlow 3s ease-in-out infinite"></div>' +
         // 旋轉環
-        '<div style="position:absolute;left:50%;top:50%;width:140px;height:140px;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(212,175,55,.3);border-right-color:rgba(201,168,76,.2);animation:jyTarotSpin 4s linear infinite;transform:translate(-50%,-50%)"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:110px;height:110px;border-radius:50%;border:1px solid transparent;border-bottom-color:rgba(212,175,55,.15);border-left-color:rgba(96,165,250,.15);animation:jyTarotSpin 3s linear infinite reverse;transform:translate(-50%,-50%)"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:140px;height:140px;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(201,168,76,.3);border-right-color:rgba(201,168,76,.2);animation:jyTarotSpin 4s linear infinite;transform:translate(-50%,-50%)"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:110px;height:110px;border-radius:50%;border:1px solid transparent;border-bottom-color:rgba(201,168,76,.15);border-left-color:rgba(96,165,250,.15);animation:jyTarotSpin 3s linear infinite reverse;transform:translate(-50%,-50%)"></div>' +
         // 五張扇形卡牌
         '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)">' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .2s both,jyTarotFloat 4s ease-in-out .2s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .35s both,jyTarotFloat 4s ease-in-out .5s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.5);box-shadow:0 4px 20px rgba(212,175,55,.15);transform-origin:bottom center;transform:rotate(0deg) translateY(-30px);animation:jyTarotFan .8s ease-out .5s both,jyTarotFloat 3.5s ease-in-out 0s infinite"><div style=\'text-align:center;padding-top:18px;font-size:1.5rem\'>🃏</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .65s both,jyTarotFloat 4s ease-in-out .8s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
-          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(212,175,55,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .8s both,jyTarotFloat 4s ease-in-out 1.1s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .2s both,jyTarotFloat 4s ease-in-out .2s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(-12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .35s both,jyTarotFloat 4s ease-in-out .5s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.5);box-shadow:0 4px 20px rgba(201,168,76,.15);transform-origin:bottom center;transform:rotate(0deg) translateY(-30px);animation:jyTarotFan .8s ease-out .5s both,jyTarotFloat 3.5s ease-in-out 0s infinite"><div style=\'text-align:center;padding-top:18px;font-size:1.5rem\'>🃏</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(12deg) translateY(-30px);animation:jyTarotFan .8s ease-out .65s both,jyTarotFloat 4s ease-in-out .8s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>✦</div></div>' +
+          '<div style="position:absolute;width:52px;height:78px;border-radius:6px;background:linear-gradient(135deg,#2a1f4e,#1a0f3e);border:1.5px solid rgba(201,168,76,.3);box-shadow:0 4px 15px rgba(0,0,0,.4);transform-origin:bottom center;transform:rotate(24deg) translateY(-30px);animation:jyTarotFan .8s ease-out .8s both,jyTarotFloat 4s ease-in-out 1.1s infinite"><div style=\'text-align:center;padding-top:22px;font-size:1.2rem;opacity:.7\'>☽</div></div>' +
         '</div>' +
         // 星星粒子
-        '<div style="position:absolute;left:30%;top:20%;width:4px;height:4px;border-radius:50%;background:rgba(212,175,55,.8);animation:jyStarDrift 2.5s ease-out infinite"></div>' +
+        '<div style="position:absolute;left:30%;top:20%;width:4px;height:4px;border-radius:50%;background:rgba(201,168,76,.8);animation:jyStarDrift 2.5s ease-out infinite"></div>' +
         '<div style="position:absolute;left:65%;top:30%;width:3px;height:3px;border-radius:50%;background:rgba(167,139,250,.7);animation:jyStarDrift 3s ease-out .8s infinite"></div>' +
         '<div style="position:absolute;left:45%;top:15%;width:3px;height:3px;border-radius:50%;background:rgba(255,236,184,.6);animation:jyStarDrift 2.8s ease-out 1.5s infinite"></div>' +
       '</div>' +
 
       // 狀態文字
-      '<div id="ld-tarot-status" style="font-size:1.05rem;color:var(--c-gold,#d4af37);font-weight:700;letter-spacing:.02em;margin-bottom:.3rem;transition:opacity .35s">正在為你翻牌…</div>' +
+      '<div id="ld-tarot-status" style="font-size:1.05rem;color:var(--c-gold,#c9a84c);font-weight:700;letter-spacing:.02em;margin-bottom:.3rem;transition:opacity .35s">正在為你翻牌…</div>' +
       '<div id="ld-tarot-sub" style="font-size:.8rem;color:var(--c-text-dim,#a09880);transition:opacity .35s">凝神感應你的問題</div>' +
 
       // 進度條
-      '<div style="width:min(260px,75%);height:3px;border-radius:999px;background:rgba(212,175,55,.08);overflow:hidden;margin-top:1rem">' +
-        '<div style="width:35%;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(212,175,55,0),rgba(212,175,55,.9),rgba(255,236,184,.8),rgba(212,175,55,0));background-size:180% 100%;animation:jyScan 1.8s ease-in-out infinite"></div>' +
+      '<div style="width:min(260px,75%);height:3px;border-radius:999px;background:rgba(201,168,76,.08);overflow:hidden;margin-top:1rem">' +
+        '<div style="width:35%;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(201,168,76,0),rgba(201,168,76,.9),rgba(255,236,184,.8),rgba(201,168,76,0));background-size:180% 100%;animation:jyScan 1.8s ease-in-out infinite"></div>' +
       '</div>' +
 
       // 牌陣提示
       '<div style="margin-top:.8rem;display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center">' +
-        '<span style="padding:.18rem .45rem;border-radius:999px;font-size:.64rem;color:rgba(212,175,55,.7);border:1px solid rgba(212,175,55,.12);background:rgba(212,175,55,.04)">金色黎明</span>' +
+        '<span style="padding:.18rem .45rem;border-radius:999px;font-size:.64rem;color:rgba(201,168,76,.7);border:1px solid rgba(201,168,76,.12);background:rgba(201,168,76,.04)">金色黎明</span>' +
         '<span style="padding:.18rem .45rem;border-radius:999px;font-size:.64rem;color:rgba(201,168,76,.7);border:1px solid rgba(201,168,76,.12);background:rgba(201,168,76,.04)" id="ld-tarot-spread-tag">牌陣偵測中</span>' +
       '</div>' +
     '</div>';
@@ -5103,7 +5103,7 @@ function renderTarotSpreadDisplay() {
     if (kw) h += '<div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.15rem">🔑 ' + kw + '</div>';
     h += gdInfo;
     h += '<p style="font-size:.78rem;color:var(--c-text-dim);margin-top:.2rem;line-height:1.5">' + (c.isUp ? fc.up : fc.rv) + '</p>';
-    if (typeR) h += '<p style="font-size:.76rem;color:var(--c-gold-light,#e8c968);margin-top:.2rem;line-height:1.5;border-top:1px solid rgba(212,175,55,.1);padding-top:.2rem">📌 ' + typeR + '</p>';
+    if (typeR) h += '<p style="font-size:.76rem;color:var(--c-gold-light,#e8c968);margin-top:.2rem;line-height:1.5;border-top:1px solid rgba(201,168,76,.1);padding-top:.2rem">📌 ' + typeR + '</p>';
     if (coreDesc) h += '<p style="font-size:.74rem;color:var(--c-gold-light);margin-top:.15rem;line-height:1.4;opacity:.85">' + coreDesc + '</p>';
     h += '</div></div></div>';
   });
@@ -5180,11 +5180,11 @@ function switchResultTab(mode) {
       if (tcr) tcr.innerHTML = S._tarotQuickResult.crystalHtml || '';
     }
     if (tabFull) { tabFull.classList.remove('active'); tabFull.style.background = 'transparent'; tabFull.style.color = 'var(--c-text-dim)'; }
-    if (tabTarot) { tabTarot.classList.add('active'); tabTarot.style.background = 'rgba(212,175,55,.12)'; tabTarot.style.color = 'var(--c-gold)'; }
+    if (tabTarot) { tabTarot.classList.add('active'); tabTarot.style.background = 'rgba(201,168,76,.12)'; tabTarot.style.color = 'var(--c-gold)'; }
   } else {
     if (fullContent) fullContent.style.display = 'block';
     if (tarotContent) tarotContent.style.display = 'none';
-    if (tabFull) { tabFull.classList.add('active'); tabFull.style.background = 'rgba(212,175,55,.12)'; tabFull.style.color = 'var(--c-gold)'; }
+    if (tabFull) { tabFull.classList.add('active'); tabFull.style.background = 'rgba(201,168,76,.12)'; tabFull.style.color = 'var(--c-gold)'; }
     if (tabTarot) { tabTarot.classList.remove('active'); tabTarot.style.background = 'transparent'; tabTarot.style.color = 'var(--c-text-dim)'; }
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
