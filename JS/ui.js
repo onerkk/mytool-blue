@@ -447,7 +447,7 @@ function resetAll(){
   S._isAdmin = wasAdmin || !!(window._JY_ADMIN_TOKEN);
   // 重置問題和類型欄位（但保留姓名、生日、時辰、性別）
   try{
-    var fType=document.getElementById('f-type'); if(fType) fType.value='';
+    var fType=document.getElementById('f-type'); if(fType) fType.value='general';
     var fQ=document.getElementById('f-question'); if(fQ){ fQ.value=''; }
     var fChar=document.getElementById('f-char'); if(fChar) fChar.textContent='0';
   }catch(e){}
@@ -541,7 +541,7 @@ function backToHook(){
   var tp=document.getElementById('trust-preview');
   if(tp) tp.style.display='none';
   document.getElementById('hook-screen').style.display = 'block';
-  document.getElementById('f-type').value = '';
+  document.getElementById('f-type').value = 'general';
 }
 
 function selectPreset(btn, q){
@@ -562,27 +562,23 @@ function showCustomQ(btn){
 }
 
 function submitStep0(){
-  let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || '';
-  if (!type) {
+  let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
+  if (!type || type === '') {
     var tagEl = document.getElementById('chosen-type-tag');
     if (tagEl && tagEl.textContent && TYPE_LABEL_TO_TYPE[tagEl.textContent.trim()]) {
       type = TYPE_LABEL_TO_TYPE[tagEl.textContent.trim()];
-      if (document.getElementById('f-type')) document.getElementById('f-type').value = type;
     }
+    if (!type) type = 'general';
+    if (document.getElementById('f-type')) document.getElementById('f-type').value = type;
   }
   var question = (document.getElementById('f-question') && document.getElementById('f-question').value) ? document.getElementById('f-question').value.trim() : '';
   if (!question && typeof selectedPresetQ === 'string') question = selectedPresetQ.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
   const bdate=document.getElementById('f-bdate') ? document.getElementById('f-bdate').value : '';
-  if(!type||!question||!gender||!bdate){ alert('請填寫所有必要欄位（方向、問題、性別、出生日期）'); return; }
+  if(!question||!gender||!bdate){ alert('請填寫：問題、性別、出生日期'); return; }
   const btime=(document.getElementById('f-btime')&&document.getElementById('f-btime').value)||'12:00';
   const name=document.getElementById('f-name')?document.getElementById('f-name').value.trim():'';
   S.form={type,question,gender:gender.value,bdate,btime,name};
-  // ★ 同步出生資料到開鑰/塔羅表單（f2），讓使用者切換時不用重填（姓名除外）
-  var _f2bd=document.getElementById('f2-bdate');if(_f2bd)_f2bd.value=bdate;
-  var _f2bt=document.getElementById('f2-btime');if(_f2bt)_f2bt.value=btime;
-  var _g2r=document.querySelectorAll('input[name="gender2"]');
-  _g2r.forEach(function(r){r.checked=(r.value===gender.value);});
   S._autoMode = false; // 手動模式：使用者自己操作梅花/塔羅
   // 管理員判定（僅透過 URL token 認證，不在前端暴露判斷條件）
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
@@ -674,19 +670,14 @@ function saveDivineCache(bdate, gender, type, meihua, tarotDrawn, question) {
 function submitStep0Fast(){
   drawnCards=[];
   S.meihua=null;S.tarot={drawn:[],spread:[]};
-  const type=document.getElementById('f-type').value;
+  const type=(document.getElementById('f-type')&&document.getElementById('f-type').value)||'general';
   const question=document.getElementById('f-question').value.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
   const bdate=document.getElementById('f-bdate').value;
-  if(!type||!question||!gender||!bdate){alert('請填寫：問題、性別、出生日期');return}
+  if(!question||!gender||!bdate){alert('請填寫：問題、性別、出生日期');return}
   const btime=document.getElementById('f-btime').value||'12:00';
   const name=document.getElementById('f-name').value.trim();
   S.form={type,question,gender:gender.value,bdate,btime,name};
-  // ★ 同步出生資料到開鑰/塔羅表單（f2），讓使用者切換時不用重填（姓名除外）
-  var _f2bd=document.getElementById('f2-bdate');if(_f2bd)_f2bd.value=bdate;
-  var _f2bt=document.getElementById('f2-btime');if(_f2bt)_f2bt.value=btime;
-  var _g2r=document.querySelectorAll('input[name="gender2"]');
-  _g2r.forEach(function(r){r.checked=(r.value===gender.value);});
   S._autoMode = true; // ★ 自動模式標記：梅花時間起卦 + 塔羅種子抽牌
   const overlay = document.createElement('div');
   overlay.className = 'loading-overlay';
@@ -4664,64 +4655,46 @@ showAuraResult = function(){
 
   // ══ 從首頁進入 — 顯示 input-screen 帶類型選擇 ══
   window._enterFromHome = function() {
-    // 塔羅快讀不需要檢查額度
     document.getElementById('hook-screen').style.display = 'none';
     var tp = document.getElementById('trust-preview');
     if (tp) tp.style.display = 'none';
 
-    // 在 input-screen 最頂部注入類型選擇（如果還沒注入的話）
     var inputScreen = document.getElementById('input-screen');
-    if (inputScreen && !document.getElementById('jy-type-picker')) {
-      var picker = document.createElement('div');
-      picker.id = 'jy-type-picker';
-      picker.className = 'card';
-      picker.style.cssText = 'margin-bottom:var(--sp-md)';
-      picker.innerHTML =
-        '<div class="card-title" style="margin-bottom:.6rem"><i class="fas fa-compass"></i> 你想問哪方面？</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem">' +
-          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'love\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">💕</span>感情</button>' +
-          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'career\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">💼</span>事業</button>' +
-          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'wealth\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">💰</span>財運</button>' +
-          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'health\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">🏥</span>健康</button>' +
-          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'relationship\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">🤝</span>人際</button>' +
-          '<button class="jy-tp-btn" onclick="_pickTypeNew(\'family\')" style="padding:.7rem .4rem;border-radius:10px;background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);color:var(--c-text-dim);font-size:.82rem;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:.25rem"><span style="font-size:1.2rem">🏠</span>家庭</button>' +
-        '</div>';
-      inputScreen.insertBefore(picker, inputScreen.firstChild);
 
-      // 隱藏 breadcrumb（已選類型 tag + 返回按鈕 — 改用新 picker）
-      var breadcrumb = inputScreen.querySelector('.tag.tag-gold');
-      if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display = 'none';
+    // 移除舊的類型選擇器（如果有）
+    var oldPicker = document.getElementById('jy-type-picker');
+    if (oldPicker) oldPicker.remove();
+
+    // 隱藏 breadcrumb
+    var breadcrumb = inputScreen.querySelector('.tag.tag-gold');
+    if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display = 'none';
+
+    // 隱藏舊的預設問題格子
+    var presetGrid = document.getElementById('q-presets');
+    if (presetGrid) presetGrid.style.display = 'none';
+
+    // 直接顯示自訂問題框
+    var customWrap = document.getElementById('q-custom-wrap');
+    if (customWrap) customWrap.style.display = 'block';
+
+    // 更新問題區標題
+    var qTitle = inputScreen.querySelector('.card-title');
+    if (qTitle && qTitle.textContent.indexOf('你想問什麼') >= 0) {
+      qTitle.innerHTML = '<i class="fas fa-question-circle"></i> 你想問什麼？';
+    }
+
+    // 設 placeholder 引導
+    var textarea = document.getElementById('f-question');
+    if (textarea) {
+      textarea.placeholder = '例如：今年有桃花嗎？我該不該換工作？副業做得起來嗎？';
+      textarea.focus();
     }
 
     inputScreen.style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  window._pickTypeNew = function(type) {
-    document.getElementById('f-type').value = type;
-    // 高亮選中
-    document.querySelectorAll('.jy-tp-btn').forEach(function(b) {
-      b.style.borderColor = 'rgba(255,255,255,.08)';
-      b.style.background = 'rgba(255,255,255,.03)';
-      b.style.color = 'var(--c-text-dim)';
-    });
-    event.currentTarget.style.borderColor = 'rgba(212,175,55,.5)';
-    event.currentTarget.style.background = 'rgba(212,175,55,.08)';
-    event.currentTarget.style.color = 'var(--c-gold,#d4af37)';
-
-    // 載入問題預設
-    if (typeof Q_PRESETS !== 'undefined' && typeof selectedPresetQ !== 'undefined') {
-      var presets = Q_PRESETS[type] || [];
-      var grid = document.getElementById('q-presets');
-      if (grid) {
-        selectedPresetQ = '';
-        grid.innerHTML = presets.map(function(q) {
-          return '<button class="q-preset-btn" onclick="selectPreset(this,\'' + q.replace(/'/g, "\\'") + '\')">' + q + '</button>';
-        }).join('') +
-        '<button class="q-preset-btn" onclick="showCustomQ(this)" style="color:var(--c-text-muted)"><i class="fas fa-pen" style="margin-right:4px"></i> 自己寫問題</button>';
-      }
-    }
-  };
+  // _pickTypeNew 已移除 — AI 自動從問題判斷類型
 
   // ══ 攔截 submitStep0 / submitStep0Fast ══
   // ★ 先本地快檢 → 再 Worker KV 預檢 → 都通過才放行
@@ -4889,9 +4862,9 @@ showAuraResult = function(){
 
 // ── submitTarotQuick：只跑塔羅，不填生辰 ──
 async function submitTarotQuick() {
-  var type = document.getElementById('f-type').value;
+  var type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
   var question = document.getElementById('f-question').value.trim();
-  if (!type || !question) { alert('請選擇方向並輸入問題'); return; }
+  if (!question) { alert('請輸入問題'); return; }
 
   // ── 預檢塔羅每日額度 ──
   var isAdmin = !!(window._JY_ADMIN_TOKEN);
@@ -5217,10 +5190,10 @@ function resetToHome() {
           btn.innerHTML = '<i class="fas fa-hand-pointer"></i> 手動抽牌模式';
           btn.addEventListener('click', function(e) {
             e.preventDefault(); e.stopPropagation();
-            // 檢查類型和問題
-            var t = document.getElementById('f-type') ? document.getElementById('f-type').value : '';
+            // 檢查問題
+            var t = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
             var q = document.getElementById('f-question') ? document.getElementById('f-question').value.trim() : '';
-            if (!t || !q) { alert('請選擇方向並輸入問題'); return; }
+            if (!q) { alert('請輸入問題'); return; }
             S.form = { type: t, question: q, gender: '', bdate: '', btime: '', name: '' };
             S._tarotOnlyMode = true;
             S._autoMode = false;
