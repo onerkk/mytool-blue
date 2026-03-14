@@ -4890,7 +4890,7 @@ async function submitTarotQuick() {
             '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">今日塔羅已用完</div>' +
             '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">每天 1 次免費塔羅解讀<br>子時（00:00）重置，或付費立即解鎖</div>' +
             '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 立即解鎖 NT$30</button>' +
+              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 立即解鎖 NT$45</button>' +
               '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">明天再來</button>' +
             '</div>' +
           '</div>';
