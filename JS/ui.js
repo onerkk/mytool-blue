@@ -447,7 +447,7 @@ function resetAll(){
   S._isAdmin = wasAdmin || !!(window._JY_ADMIN_TOKEN);
   // 重置問題和類型欄位（但保留姓名、生日、時辰、性別）
   try{
-    var fType=document.getElementById('f-type'); if(fType) fType.value='general';
+    var fType=document.getElementById('f-type'); if(fType) fType.value='';
     var fQ=document.getElementById('f-question'); if(fQ){ fQ.value=''; }
     var fChar=document.getElementById('f-char'); if(fChar) fChar.textContent='0';
   }catch(e){}
@@ -541,7 +541,7 @@ function backToHook(){
   var tp=document.getElementById('trust-preview');
   if(tp) tp.style.display='none';
   document.getElementById('hook-screen').style.display = 'block';
-  document.getElementById('f-type').value = 'general';
+  document.getElementById('f-type').value = '';
 }
 
 function selectPreset(btn, q){
@@ -562,23 +562,27 @@ function showCustomQ(btn){
 }
 
 function submitStep0(){
-  let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
-  if (!type || type === '') {
+  let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || '';
+  if (!type) {
     var tagEl = document.getElementById('chosen-type-tag');
     if (tagEl && tagEl.textContent && TYPE_LABEL_TO_TYPE[tagEl.textContent.trim()]) {
       type = TYPE_LABEL_TO_TYPE[tagEl.textContent.trim()];
+      if (document.getElementById('f-type')) document.getElementById('f-type').value = type;
     }
-    if (!type) type = 'general';
-    if (document.getElementById('f-type')) document.getElementById('f-type').value = type;
   }
   var question = (document.getElementById('f-question') && document.getElementById('f-question').value) ? document.getElementById('f-question').value.trim() : '';
   if (!question && typeof selectedPresetQ === 'string') question = selectedPresetQ.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
   const bdate=document.getElementById('f-bdate') ? document.getElementById('f-bdate').value : '';
-  if(!question||!gender||!bdate){ alert('請填寫：問題、性別、出生日期'); return; }
+  if(!type||!question||!gender||!bdate){ alert('請填寫所有必要欄位（方向、問題、性別、出生日期）'); return; }
   const btime=(document.getElementById('f-btime')&&document.getElementById('f-btime').value)||'12:00';
   const name=document.getElementById('f-name')?document.getElementById('f-name').value.trim():'';
   S.form={type,question,gender:gender.value,bdate,btime,name};
+  // ★ 同步出生資料到開鑰/塔羅表單（f2），讓使用者切換時不用重填（姓名除外）
+  var _f2bd=document.getElementById('f2-bdate');if(_f2bd)_f2bd.value=bdate;
+  var _f2bt=document.getElementById('f2-btime');if(_f2bt)_f2bt.value=btime;
+  var _g2r=document.querySelectorAll('input[name="gender2"]');
+  _g2r.forEach(function(r){r.checked=(r.value===gender.value);});
   S._autoMode = false; // 手動模式：使用者自己操作梅花/塔羅
   // 管理員判定（僅透過 URL token 認證，不在前端暴露判斷條件）
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
@@ -670,14 +674,19 @@ function saveDivineCache(bdate, gender, type, meihua, tarotDrawn, question) {
 function submitStep0Fast(){
   drawnCards=[];
   S.meihua=null;S.tarot={drawn:[],spread:[]};
-  const type=(document.getElementById('f-type')&&document.getElementById('f-type').value)||'general';
+  const type=document.getElementById('f-type').value;
   const question=document.getElementById('f-question').value.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
   const bdate=document.getElementById('f-bdate').value;
-  if(!question||!gender||!bdate){alert('請填寫：問題、性別、出生日期');return}
+  if(!type||!question||!gender||!bdate){alert('請填寫：問題、性別、出生日期');return}
   const btime=document.getElementById('f-btime').value||'12:00';
   const name=document.getElementById('f-name').value.trim();
   S.form={type,question,gender:gender.value,bdate,btime,name};
+  // ★ 同步出生資料到開鑰/塔羅表單（f2），讓使用者切換時不用重填（姓名除外）
+  var _f2bd=document.getElementById('f2-bdate');if(_f2bd)_f2bd.value=bdate;
+  var _f2bt=document.getElementById('f2-btime');if(_f2bt)_f2bt.value=btime;
+  var _g2r=document.querySelectorAll('input[name="gender2"]');
+  _g2r.forEach(function(r){r.checked=(r.value===gender.value);});
   S._autoMode = true; // ★ 自動模式標記：梅花時間起卦 + 塔羅種子抽牌
   const overlay = document.createElement('div');
   overlay.className = 'loading-overlay';
@@ -4655,46 +4664,15 @@ showAuraResult = function(){
 
   // ══ 從首頁進入 — 顯示 input-screen 帶類型選擇 ══
   window._enterFromHome = function() {
+    // 塔羅快讀不需要檢查額度
     document.getElementById('hook-screen').style.display = 'none';
     var tp = document.getElementById('trust-preview');
     if (tp) tp.style.display = 'none';
 
     var inputScreen = document.getElementById('input-screen');
-
-    // 移除舊的類型選擇器（如果有）
-    var oldPicker = document.getElementById('jy-type-picker');
-    if (oldPicker) oldPicker.remove();
-
-    // 隱藏 breadcrumb
-    var breadcrumb = inputScreen.querySelector('.tag.tag-gold');
-    if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display = 'none';
-
-    // 隱藏舊的預設問題格子
-    var presetGrid = document.getElementById('q-presets');
-    if (presetGrid) presetGrid.style.display = 'none';
-
-    // 直接顯示自訂問題框
-    var customWrap = document.getElementById('q-custom-wrap');
-    if (customWrap) customWrap.style.display = 'block';
-
-    // 更新問題區標題
-    var qTitle = inputScreen.querySelector('.card-title');
-    if (qTitle && qTitle.textContent.indexOf('你想問什麼') >= 0) {
-      qTitle.innerHTML = '<i class="fas fa-question-circle"></i> 你想問什麼？';
-    }
-
-    // 設 placeholder 引導
-    var textarea = document.getElementById('f-question');
-    if (textarea) {
-      textarea.placeholder = '例如：今年有桃花嗎？我該不該換工作？副業做得起來嗎？';
-      textarea.focus();
-    }
-
     inputScreen.style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  // _pickTypeNew 已移除 — AI 自動從問題判斷類型
 
   // ══ 攔截 submitStep0 / submitStep0Fast ══
   // ★ 先本地快檢 → 再 Worker KV 預檢 → 都通過才放行
@@ -4862,9 +4840,9 @@ showAuraResult = function(){
 
 // ── submitTarotQuick：只跑塔羅，不填生辰 ──
 async function submitTarotQuick() {
-  var type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
+  var type = document.getElementById('f-type').value;
   var question = document.getElementById('f-question').value.trim();
-  if (!question) { alert('請輸入問題'); return; }
+  if (!type || !question) { alert('請選擇方向並輸入問題'); return; }
 
   // ── 預檢塔羅每日額度 ──
   var isAdmin = !!(window._JY_ADMIN_TOKEN);
@@ -5190,10 +5168,10 @@ function resetToHome() {
           btn.innerHTML = '<i class="fas fa-hand-pointer"></i> 手動抽牌模式';
           btn.addEventListener('click', function(e) {
             e.preventDefault(); e.stopPropagation();
-            // 檢查問題
-            var t = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
+            // 檢查類型和問題
+            var t = document.getElementById('f-type') ? document.getElementById('f-type').value : '';
             var q = document.getElementById('f-question') ? document.getElementById('f-question').value.trim() : '';
-            if (!q) { alert('請輸入問題'); return; }
+            if (!t || !q) { alert('請選擇方向並輸入問題'); return; }
             S.form = { type: t, question: q, gender: '', bdate: '', btime: '', name: '' };
             S._tarotOnlyMode = true;
             S._autoMode = false;
