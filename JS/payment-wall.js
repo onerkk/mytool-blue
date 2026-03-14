@@ -8,8 +8,8 @@
 
   var WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
   var PRICE_TAROT = 30;
-  var PRICE_FULL = 50;
-  var PRICE_OOTK = 40;
+  var PRICE_FULL = 45;
+  var PRICE_OOTK = 45;
   var PRICE_FOLLOWUP = 10;
 
   // ═══ 1. 付費牆 HTML ═══
