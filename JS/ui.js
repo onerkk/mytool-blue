@@ -277,6 +277,8 @@ function goStep(n){
       document.querySelectorAll('.stepper-item').forEach(function(s,i){s.classList.remove('active','done');if(i<numIdx)s.classList.add('done');if(i===numIdx)s.classList.add('active')});
     }
     S.step = (numIdx >= 0) ? numIdx : targetId;
+    // ★ v14：pushState 讓瀏覽器返回鍵回到上一步
+    try { window.history.pushState({step: targetId}, '', ''); } catch(e){}
     window.scrollTo({top:0,behavior:'smooth'});
     if(targetId==='step-2'){
       var _uiMax=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10; if(drawnCards.length>=_uiMax && !S._isAdmin) showTarotLocked();
@@ -576,15 +578,17 @@ function submitStep0(){
   const gender=document.querySelector('input[name="gender"]:checked');
   const bdate=document.getElementById('f-bdate') ? document.getElementById('f-bdate').value : '';
   if(!question||!gender||!bdate){ alert('請填寫：問題、性別、出生日期'); return; }
-  const btime=(document.getElementById('f-btime')&&document.getElementById('f-btime').value)||'12:00';
+  const btime=(document.getElementById('f-btime')&&document.getElementById('f-btime').value)||'';
   const name=document.getElementById('f-name')?document.getElementById('f-name').value.trim():'';
   S.form={type,question,gender:gender.value,bdate,btime,name};
+  S.form.btimeUnknown = !btime;
   S._autoMode = false; // 手動模式：使用者自己操作梅花/塔羅
   // 管理員判定（僅透過 URL token 認證，不在前端暴露判斷條件）
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
   try {
     const[y,m,d]=bdate.split('-').map(Number);
-    const[hh,mm]=btime.split(':').map(Number);
+    const _btParts = btime ? btime.split(':').map(Number) : [12, 0];
+    const hh = _btParts[0], mm = _btParts[1] || 0;
     S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
     try { if(S.bazi && typeof enhanceBazi==='function') enhanceBazi(S.bazi); } catch(e) { console.error('enhanceBazi:', e); }
     S.ziwei=computeZiwei(y,m,d,hh,gender.value);
@@ -675,9 +679,10 @@ function submitStep0Fast(){
   const gender=document.querySelector('input[name="gender"]:checked');
   const bdate=document.getElementById('f-bdate').value;
   if(!question||!gender||!bdate){alert('請填寫：問題、性別、出生日期');return}
-  const btime=document.getElementById('f-btime').value||'12:00';
+  const btime=document.getElementById('f-btime').value||'';
   const name=document.getElementById('f-name').value.trim();
   S.form={type,question,gender:gender.value,bdate,btime,name};
+  S.form.btimeUnknown = !btime;
   S._autoMode = true; // ★ 自動模式標記：梅花時間起卦 + 塔羅種子抽牌
   const overlay = document.createElement('div');
   overlay.className = 'loading-overlay';
@@ -723,7 +728,8 @@ function submitStep0Fast(){
   document.body.appendChild(overlay);
 
   const [y,m,d]=bdate.split('-').map(Number);
-  const [hh,mm]=btime.split(':').map(Number);
+  const _btParts2 = btime ? btime.split(':').map(Number) : [12, 0];
+  const hh = _btParts2[0], mm = _btParts2[1] || 0;
 
   const cached = loadDivineCache(bdate, gender.value, type, question);
   // 管理員帳號不受能量鎖定限制（可重複測試）
@@ -905,6 +911,12 @@ function submitStep0Fast(){
       }, 600);
     }
   }, TOTAL_MS+300);
+
+  // ★ v14：超時保護——30秒後強制移除 overlay，防止計算卡死
+  setTimeout(function(){
+    var ol=document.getElementById('loading-overlay');
+    if(ol){ ol.style.transition='opacity .5s'; ol.style.opacity='0'; setTimeout(function(){ol.remove();},500); goStep(3); }
+  }, 30000);
 }
 
 
@@ -4532,8 +4544,9 @@ showAuraResult = function(){
     if (window._JY_ADMIN_TOKEN) return false;
     try {
       var d = JSON.parse(localStorage.getItem('jy_ai_used') || '{}');
-      var today = new Date();
-      var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+      // ★ v14：統一 UTC+8（跟 Worker 一致）
+      var now = new Date(Date.now() + 8 * 3600000);
+      var todayStr = now.getUTCFullYear() + '-' + String(now.getUTCMonth()+1).padStart(2,'0') + '-' + String(now.getUTCDate()).padStart(2,'0');
       if (d.date !== todayStr) return false;
       var personKey = _getFormPersonKey();
       if (d.people && d.people[personKey] && d.people[personKey].used) return true;
@@ -4546,11 +4559,16 @@ showAuraResult = function(){
     if (window._JY_ADMIN_TOKEN) return { allowed: true };
     try {
       var bdateEl = document.getElementById('f-bdate');
-      var btimeEl = document.getElementById('f-btime');
       var genderEl = document.querySelector('input[name="gender"]:checked');
+      var nameEl = document.getElementById('f-name');
+      // ★ v14：簽名必須跟 Worker buildPersonSignature 完全一致
+      // Worker 讀的是 payload.name / payload.birth(只有日期) / payload.gender(中文「男」「女」)
+      var genderVal = genderEl ? genderEl.value : '';
+      var genderZh = genderVal === 'male' ? '男' : (genderVal === 'female' ? '女' : '');
       var payload = {
-        birth: (bdateEl ? bdateEl.value.trim() : '') + (btimeEl && btimeEl.value ? ' ' + btimeEl.value.trim() : ''),
-        gender: genderEl ? genderEl.value : ''
+        name: nameEl ? nameEl.value.trim() : '',
+        birth: bdateEl ? bdateEl.value.trim() : '',
+        gender: genderZh
       };
       var body = { action: 'check', payload: payload };
       if (window._JY_ADMIN_TOKEN) body.admin_token = window._JY_ADMIN_TOKEN;
@@ -5038,7 +5056,7 @@ function renderTarotSpreadDisplay() {
     h += '<div class="card" style="padding:.7rem;margin-bottom:.4rem;border-left:3px solid ' + elC + '">';
     h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
     h += '<span class="tag tag-gold" style="font-size:.75rem">' + (i + 1) + '. ' + posName + '</span>';
-    h += '<span class="tag ' + (c.isUp ? 'tag-blue' : 'tag-red') + '" style="font-size:.7rem">' + (c.isUp ? '正位' : '逆位') + '</span></div>';
+    h += '<span class="tag ' + (c.isUp ? 'tag-blue' : 'tag-red') + '" style="font-size:.7rem">' + (c.isUp ? '順位' : '逆位') + '</span></div>';
     if (posZh) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">' + posZh + '</div>';
     h += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
     if (imgSrc) h += '<img src="' + imgSrc + '" alt="' + c.n + '" style="width:55px;height:85px;border-radius:5px;flex-shrink:0;object-fit:cover;' + (c.isUp ? '' : 'transform:rotate(180deg)') + '">';
@@ -5061,7 +5079,7 @@ function enterFullAnalysis() {
   var bdate = document.getElementById('f2-bdate').value;
   if (!question || !gender || !bdate) { alert('請填寫：問題、性別、出生日期'); return; }
 
-  var btime = document.getElementById('f2-btime').value || '12:00';
+  var btime = document.getElementById('f2-btime').value || '';
   var name = document.getElementById('f2-name').value.trim();
 
   // 把資料寫入原始表單（讓 submitStep0Fast 讀得到）
@@ -5228,4 +5246,482 @@ function resetToHome() {
       });
     }
   };
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// ★ v14 UX Enhancement Block
+// ═══════════════════════════════════════════════════════════════
+(function(){
+  // ── #1: popstate — 瀏覽器返回鍵回到上一步 ──
+  window.addEventListener('popstate', function(e){
+    var stepMap = {'step-0':0,'step-1':1,'step-2':2,'step-3':3,'step-tarot':'step-tarot'};
+    // 嘗試讀取 state，沒有就回首頁
+    if (e.state && e.state.step) {
+      var target = e.state.step;
+      // 直接切換步驟，不再 pushState（避免無限迴圈）
+      var el = document.getElementById(target);
+      if (el) {
+        document.querySelectorAll('.step').forEach(function(s){ s.classList.toggle('active', s.id === target); });
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
+    } else {
+      // 沒有 state → 回首頁
+      document.querySelectorAll('.step').forEach(function(s){ s.classList.toggle('active', s.id === 'step-0'); });
+      var hs = document.getElementById('hook-screen');
+      if(hs) hs.style.display = 'block';
+      var is = document.getElementById('input-screen');
+      if(is) is.style.display = 'none';
+      var tp = document.getElementById('trust-preview');
+      if(tp) tp.style.display = 'none';
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  });
+
+  // ── #2: sessionStorage 表單持久化 ──
+  function _saveForm(){
+    try {
+      var data = {
+        gender: (document.querySelector('input[name="gender"]:checked')||{}).value||'',
+        bdate: (document.getElementById('f-bdate')||{}).value||'',
+        btime: (document.getElementById('f-btime')||{}).value||'',
+        name: (document.getElementById('f-name')||{}).value||''
+      };
+      sessionStorage.setItem('_jy_form', JSON.stringify(data));
+    } catch(e){}
+  }
+  function _restoreForm(){
+    try {
+      var raw = sessionStorage.getItem('_jy_form');
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data.gender) {
+        var r = document.querySelector('input[name="gender"][value="'+data.gender+'"]');
+        if(r) r.checked = true;
+        var r2 = document.querySelector('input[name="gender2"][value="'+data.gender+'"]');
+        if(r2) r2.checked = true;
+      }
+      if (data.bdate) {
+        var bd = document.getElementById('f-bdate'); if(bd) bd.value = data.bdate;
+        var bd2 = document.getElementById('f2-bdate'); if(bd2) bd2.value = data.bdate;
+      }
+      if (data.btime) {
+        var bt = document.getElementById('f-btime'); if(bt) bt.value = data.btime;
+        var bt2 = document.getElementById('f2-btime'); if(bt2) bt2.value = data.btime;
+      }
+      if (data.name) {
+        var nm = document.getElementById('f-name'); if(nm) nm.value = data.name;
+        var nm2 = document.getElementById('f2-name'); if(nm2) nm2.value = data.name;
+      }
+    } catch(e){}
+  }
+  // 表單變更時自動存
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if (t && (t.name === 'gender' || t.id === 'f-bdate' || t.id === 'f-btime' || t.id === 'f-name' ||
+              t.name === 'gender2' || t.id === 'f2-bdate' || t.id === 'f2-btime' || t.id === 'f2-name')) {
+      _saveForm();
+    }
+  });
+  // 頁面載入時恢復
+  _restoreForm();
+
+  // ── #3: 日期 max 動態設為今天 ──
+  var _today = new Date().toISOString().split('T')[0];
+  ['f-bdate','f2-bdate'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.setAttribute('max', _today);
+  });
+
+  // ── #5: Toast 系統（取代 alert）──
+  var _toastContainer = null;
+  function _ensureToastContainer(){
+    if(_toastContainer) return;
+    _toastContainer = document.createElement('div');
+    _toastContainer.style.cssText = 'position:fixed;top:env(safe-area-inset-top,12px);left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;width:90%;max-width:380px';
+    document.body.appendChild(_toastContainer);
+  }
+  window._jyToast = function(msg, type){
+    _ensureToastContainer();
+    var t = document.createElement('div');
+    var bg = type==='error' ? 'rgba(239,68,68,.92)' : type==='success' ? 'rgba(34,197,94,.92)' : 'rgba(212,175,55,.92)';
+    t.style.cssText = 'padding:10px 18px;border-radius:12px;background:'+bg+';color:#fff;font-size:.85rem;line-height:1.5;text-align:center;pointer-events:auto;box-shadow:0 4px 20px rgba(0,0,0,.3);backdrop-filter:blur(8px);opacity:0;transform:translateY(-10px);transition:all .3s ease';
+    t.textContent = msg;
+    _toastContainer.appendChild(t);
+    requestAnimationFrame(function(){ t.style.opacity='1'; t.style.transform='translateY(0)'; });
+    setTimeout(function(){ t.style.opacity='0'; t.style.transform='translateY(-10px)'; setTimeout(function(){t.remove();},300); }, 3500);
+  };
+  // 覆寫表單驗證的 alert
+  var _origAlert = window.alert;
+  window.alert = function(msg){
+    if (typeof msg === 'string' && (msg.indexOf('請填寫') >= 0 || msg.indexOf('請先') >= 0 || msg.indexOf('請輸入') >= 0 || msg.indexOf('今日') >= 0 || msg.indexOf('已使用') >= 0)) {
+      window._jyToast(msg, 'error');
+    } else if (typeof msg === 'string' && msg.indexOf('已複製') >= 0) {
+      window._jyToast(msg, 'success');
+    } else {
+      _origAlert.call(window, msg);
+    }
+  };
+
+  // ── #11: 塔羅→七維度表單自動預填 ──
+  var _origEnterFull = window.enterFullAnalysis;
+  if (typeof _origEnterFull === 'function') {
+    window.enterFullAnalysis = function(){
+      // 從 f → f2 同步
+      var fields = [['f-bdate','f2-bdate'],['f-btime','f2-btime'],['f-name','f2-name']];
+      fields.forEach(function(pair){
+        var src = document.getElementById(pair[0]);
+        var dst = document.getElementById(pair[1]);
+        if(src && dst && src.value && !dst.value) dst.value = src.value;
+      });
+      // 性別同步
+      var g1 = document.querySelector('input[name="gender"]:checked');
+      if(g1 && g1.value){
+        var g2 = document.querySelector('input[name="gender2"][value="'+g1.value+'"]');
+        if(g2) g2.checked = true;
+      }
+      // 問題同步
+      var q1 = document.getElementById('f-question');
+      var q2 = document.getElementById('f2-question');
+      if(q1 && q2 && q1.value && !q2.value) q2.value = q1.value;
+      return _origEnterFull.apply(this, arguments);
+    };
+  }
+
+  // ── #12: Trust preview 動態年份 ──
+  var _origPickType = window.pickType;
+  if (typeof _origPickType === 'function') {
+    window.pickType = function(type){
+      var result = _origPickType.call(this, type);
+      // 動態更新年份內容（防過期）
+      var yr = new Date().getFullYear();
+      var trustText = document.getElementById('trust-text');
+      if (trustText && yr > 2026) {
+        trustText.innerHTML = '<p style="color:var(--c-gold);font-weight:600;margin-bottom:.5rem">🔮 你的命盤藏著答案</p>' +
+          '<p>每個人的八字不同，同樣的流年對每個人的影響完全不一樣。有人是吉、有人是凶，有人遇到的是機會、有人碰到的是考驗。</p>' +
+          '<p style="margin-top:.5rem;color:var(--c-text-dim);font-size:.9rem">以上是所有人的共相。<strong style="color:var(--c-gold)">只有結合你的出生時間，才能算出屬於你的答案。</strong></p>';
+      }
+      return result;
+    };
+  }
+
+  // ── #16: 問題字數計數器——選預設問題也更新 ──
+  var _origSelectPreset = window.selectPreset;
+  if (typeof _origSelectPreset === 'function') {
+    window.selectPreset = function(btn, q){
+      var result = _origSelectPreset.call(this, btn, q);
+      var counter = document.getElementById('f-char');
+      var input = document.getElementById('f-question');
+      if(counter && input) counter.textContent = input.value.length;
+      return result;
+    };
+  }
+
+  // ── #18: 回到頂部浮動按鈕 ──
+  var _bttBtn = document.createElement('button');
+  _bttBtn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+  _bttBtn.style.cssText = 'position:fixed;bottom:80px;right:16px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(212,175,55,.2);background:rgba(26,10,10,.85);color:var(--c-gold,#d4af37);font-size:.9rem;cursor:pointer;z-index:9990;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(8px);box-shadow:0 2px 12px rgba(0,0,0,.3)';
+  _bttBtn.onclick = function(){ window.scrollTo({top:0,behavior:'smooth'}); };
+  document.body.appendChild(_bttBtn);
+  var _bttVisible = false;
+  window.addEventListener('scroll', function(){
+    var show = window.scrollY > 600;
+    if(show !== _bttVisible){
+      _bttVisible = show;
+      _bttBtn.style.opacity = show ? '1' : '0';
+      _bttBtn.style.pointerEvents = show ? 'auto' : 'none';
+    }
+  }, {passive:true});
+
+  // ── #19: 塔羅牌堆 snap scroll ──
+  var _snapStyle = document.createElement('style');
+  _snapStyle.textContent = '.tarot-deck-scroll{scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}.tarot-deck-scroll>*{scroll-snap-align:center}';
+  document.head.appendChild(_snapStyle);
+
+  // ── #20: 梅花起卦方式 tab 過渡動畫 ──
+  var _mhTransStyle = document.createElement('style');
+  _mhTransStyle.textContent = '#mhf-time,#mhf-num,#mhf-char,#mhf-random{transition:opacity .25s ease,max-height .3s ease;overflow:hidden}';
+  document.head.appendChild(_mhTransStyle);
+
+  // ── #21: 動態圖片自動 lazy loading ──
+  if ('MutationObserver' in window) {
+    var _lazyObs = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        m.addedNodes.forEach(function(n){
+          if (n.nodeType !== 1) return;
+          var imgs = n.tagName === 'IMG' ? [n] : (n.querySelectorAll ? Array.from(n.querySelectorAll('img')) : []);
+          imgs.forEach(function(img){
+            if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
+            if (!img.hasAttribute('decoding')) img.setAttribute('decoding', 'async');
+          });
+        });
+      });
+    });
+    _lazyObs.observe(document.body, {childList:true, subtree:true});
+  }
+
+  // ── #22: Inline SVG favicon fallback（如果沒有 favicon.ico）──
+  if (!document.querySelector('link[rel="icon"][href$=".ico"]') || true) {
+    var _favSvg = document.createElement('link');
+    _favSvg.rel = 'icon';
+    _favSvg.type = 'image/svg+xml';
+    _favSvg.href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="85">🌙</text></svg>';
+    document.head.appendChild(_favSvg);
+  }
+
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// ★ v14 Animation & Motion System (JS Drivers)
+// ═══════════════════════════════════════════════════════════════
+(function(){
+  console.log('[Anim] v14 Animation system loading...');
+
+  // Respect reduced motion
+  var _prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (_prefersReduced) { console.log('[Anim] Reduced motion detected, skipping.'); return; }
+
+  // ── 1. Star Sky — generate random fixed stars ──
+  function _initStars(){
+    var existing = document.querySelector('.jy-stars');
+    if (existing) return;
+    var container = document.createElement('div');
+    container.className = 'jy-stars';
+    var count = Math.min(60, Math.floor(window.innerWidth * window.innerHeight / 15000));
+    for (var i = 0; i < count; i++){
+      var s = document.createElement('div');
+      s.className = 'jy-star' + (Math.random() > 0.82 ? ' lg' : '');
+      s.style.left = (Math.random() * 100).toFixed(1) + '%';
+      s.style.top = (Math.random() * 100).toFixed(1) + '%';
+      s.style.setProperty('--dur', (2 + Math.random() * 4).toFixed(1) + 's');
+      s.style.setProperty('--delay', (Math.random() * 3).toFixed(1) + 's');
+      s.style.setProperty('--lo', (0.1 + Math.random() * 0.15).toFixed(2));
+      s.style.setProperty('--hi', (0.5 + Math.random() * 0.4).toFixed(2));
+      container.appendChild(s);
+    }
+    document.body.insertBefore(container, document.body.firstChild);
+    console.log('[Anim] ✅ Stars created:', count, 'stars');
+  }
+
+  // ── 2. Vignette overlay ──
+  function _initVignette(){
+    if (document.querySelector('.jy-vignette')) return;
+    var v = document.createElement('div');
+    v.className = 'jy-vignette';
+    document.body.insertBefore(v, document.body.firstChild);
+  }
+
+  // ── 3. Title character-by-character reveal ──
+  function _initTitleReveal(){
+    // Try multiple selectors since _redesignHomepage creates h1 inside a wrapper div
+    var h1 = document.querySelector('#hook-screen h1');
+    if (!h1) { console.log('[Anim] Title h1 not found'); return; }
+    if (h1.dataset.jyRevealed) return;
+    h1.dataset.jyRevealed = '1';
+    var text = h1.textContent.trim();
+    if (!text) return;
+    h1.innerHTML = '';
+    h1.style.opacity = '1'; // ensure h1 itself visible
+    for (var i = 0; i < text.length; i++){
+      var span = document.createElement('span');
+      span.className = 'jy-char';
+      span.textContent = text[i];
+      span.style.animationDelay = (i * 0.15) + 's';
+      h1.appendChild(span);
+    }
+    console.log('[Anim] Title reveal:', text.length, 'chars');
+    // Subtitle fade - use simple sibling traversal
+    var sub = h1.nextElementSibling;
+    if (sub && sub.tagName === 'P'){
+      sub.classList.add('jy-line-fade');
+      sub.style.animationDelay = (text.length * 0.15 + 0.3) + 's';
+    }
+    var sub2 = sub ? sub.nextElementSibling : null;
+    if (sub2 && sub2.tagName === 'P'){
+      sub2.classList.add('jy-line-fade');
+      sub2.style.animationDelay = (text.length * 0.15 + 0.6) + 's';
+    }
+  }
+
+  // ── 4. CTA sweep class ──
+  function _initCtaSweep(){
+    var cta = document.getElementById('home-cta-btn');
+    if (cta && !cta.classList.contains('jy-cta-sweep')){
+      cta.classList.add('jy-cta-sweep');
+      console.log('[Anim] CTA sweep applied');
+    }
+  }
+
+  // ── 5. Scroll-driven nav moon rotation + parallax ──
+  var _scrollTicking = false;
+  function _onScroll(){
+    if (_scrollTicking) return;
+    _scrollTicking = true;
+    requestAnimationFrame(function(){
+      var sy = window.scrollY;
+      // Nav moon rotate
+      document.documentElement.style.setProperty('--nav-scroll', (sy / 100).toFixed(1));
+      _scrollTicking = false;
+    });
+  }
+  window.addEventListener('scroll', _onScroll, {passive: true});
+
+  // ── 6. Section stagger entrance (IntersectionObserver) ──
+  function _initStagger(){
+    if (!('IntersectionObserver' in window)) return;
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, {threshold: 0.1, rootMargin: '0px 0px -40px 0px'});
+
+    // Observe result cards when they appear
+    var _staggerObs = new MutationObserver(function(){
+      document.querySelectorAll('#step-3 .card:not(.jy-stagger)').forEach(function(card, i){
+        card.classList.add('jy-stagger');
+        card.style.transitionDelay = (i * 0.08) + 's';
+        observer.observe(card);
+      });
+    });
+    var step3 = document.getElementById('step-3');
+    if (step3) _staggerObs.observe(step3, {childList: true, subtree: true});
+  }
+
+  // ── 7. Tarot 3D flip on pick ──
+  function _initTarotFlip(){
+    // MutationObserver watches for .picked being added to tarot-deck-card
+    if (!('MutationObserver' in window)) return;
+    var _flipObs = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        if (m.type !== 'attributes' || m.attributeName !== 'class') return;
+        var el = m.target;
+        if (!el.classList.contains('tarot-deck-card')) return;
+        if (el.classList.contains('picked') && !el.dataset.jyFlipped){
+          el.dataset.jyFlipped = '1';
+          el.classList.remove('picked');
+          el.classList.add('flipping');
+          // Haptic feedback
+          if (navigator.vibrate) navigator.vibrate(30);
+          setTimeout(function(){
+            el.classList.remove('flipping');
+            el.classList.add('picked');
+          }, 1000);
+        }
+      });
+    });
+    var deckScroll = document.querySelector('.tarot-deck-scroll');
+    if (deckScroll){
+      _flipObs.observe(deckScroll, {attributes: true, attributeFilter: ['class'], subtree: true});
+    }
+    // Also watch for deck being re-created
+    var step2 = document.getElementById('step-2');
+    if (step2){
+      var _deckWatch = new MutationObserver(function(){
+        var ds = document.querySelector('.tarot-deck-scroll');
+        if (ds && !ds.dataset.jyFlipWatched){
+          ds.dataset.jyFlipWatched = '1';
+          _flipObs.observe(ds, {attributes: true, attributeFilter: ['class'], subtree: true});
+        }
+      });
+      _deckWatch.observe(step2, {childList: true, subtree: true});
+    }
+  }
+
+  // ── 8. AI text typewriter effect for directAnswer ──
+  window._jyTypewriter = function(el, text, speed){
+    if (!el || !text) return Promise.resolve();
+    speed = speed || 30;
+    el.textContent = '';
+    el.classList.add('jy-typing-cursor');
+    return new Promise(function(resolve){
+      var i = 0;
+      function tick(){
+        if (i < text.length){
+          el.textContent += text[i];
+          i++;
+          setTimeout(tick, speed);
+        } else {
+          el.classList.remove('jy-typing-cursor');
+          resolve();
+        }
+      }
+      tick();
+    });
+  };
+
+  // ── 9. Result reveal curtain ──
+  window._jyResultCurtain = function(el){
+    if (!el) return;
+    el.classList.add('jy-curtain');
+  };
+
+  // ── 10. Closing golden pulse ──
+  window._jyClosingPulse = function(el){
+    if (!el) return;
+    el.classList.add('jy-closing-pulse');
+  };
+
+  // ── 11. Crystal light beam ──
+  window._jyCrystalBeam = function(el){
+    if (!el) return;
+    el.classList.add('jy-crystal-beam');
+  };
+
+  // ── 12. Meihua yao growth animation ──
+  window._jyYaoGrow = function(container){
+    if (!container) return;
+    var rows = container.querySelectorAll('.yao-row');
+    rows.forEach(function(row, i){
+      row.classList.add('jy-yao-grow');
+      row.style.animationDelay = ((rows.length - 1 - i) * 0.15) + 's'; // bottom to top
+    });
+    // Dong yao pulse
+    var dongs = container.querySelectorAll('.yao-dong');
+    dongs.forEach(function(d){ d.classList.add('jy-yao-dong'); });
+  };
+
+  // ── Init all on DOM ready ──
+  function _initAllAnimations(){
+    console.log('[Anim] Initializing all animations...');
+    _initStars();
+    _initVignette();
+    _initCtaSweep();
+    _initStagger();
+    _initTarotFlip();
+    // Title reveal needs extra delay because _redesignHomepage replaces innerHTML
+    setTimeout(_initTitleReveal, 300);
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(_initAllAnimations, 150); });
+  } else {
+    setTimeout(_initAllAnimations, 150);
+  }
+
+  // ── Re-init title reveal after homepage redesign ──
+  var _hookScreen = document.getElementById('hook-screen');
+  if (_hookScreen && 'MutationObserver' in window){
+    var _hookObs = new MutationObserver(function(){
+      setTimeout(_initTitleReveal, 50);
+      setTimeout(_initCtaSweep, 50);
+    });
+    _hookObs.observe(_hookScreen, {childList: true});
+  }
+
+  // ── Auto-apply meihua yao animation when hex-grid appears ──
+  if ('MutationObserver' in window){
+    var _mhObs = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        m.addedNodes.forEach(function(n){
+          if (n.nodeType !== 1) return;
+          var yaoVis = n.classList && n.classList.contains('yao-visual') ? [n] : (n.querySelectorAll ? Array.from(n.querySelectorAll('.yao-visual')) : []);
+          yaoVis.forEach(function(v){ window._jyYaoGrow(v); });
+        });
+      });
+    });
+    _mhObs.observe(document.body, {childList: true, subtree: true});
+  }
+
 })();

@@ -12,8 +12,8 @@
   --c-gold:#c9a84c;--c-gold-light:#dfc373;--c-gold-pale:#f0e4be;
   --c-crimson:#27272a;--c-crimson-hi:#3f3f46;
 
-  /* ── Text: cool-toned whites ── */
-  --c-text:#e4e4e7;--c-text-dim:rgba(228,228,231,0.55);--c-text-muted:rgba(228,228,231,0.3);
+  /* ── Text: cool-toned whites (v14: bumped for WCAG contrast) ── */
+  --c-text:#e4e4e7;--c-text-dim:rgba(228,228,231,0.6);--c-text-muted:rgba(228,228,231,0.45);
 
   /* ── Semantic ── */
   --c-success:#34d399;--c-warn:#fbbf24;--c-danger:#fb7185;--c-info:#60a5fa;
@@ -64,7 +64,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .nav-brand{display:flex;align-items:center;gap:var(--sp-sm);font-family:var(--f-body);font-weight:600;font-size:0.95rem;color:var(--c-gold);letter-spacing:.02em}
 .nav-brand i{font-size:1.1rem;opacity:.8}
 .nav-links{display:flex;gap:var(--sp-xs);flex-wrap:wrap}
-.nav-link{padding:0.35rem 0.7rem;border-radius:var(--r-pill);font-size:0.78rem;font-weight:500;color:var(--c-text-dim);border:1px solid transparent;transition:all var(--t-fast);cursor:pointer;background:none;white-space:nowrap}
+.nav-link{padding:0.5rem 0.7rem;min-height:44px;border-radius:var(--r-pill);font-size:0.78rem;font-weight:500;color:var(--c-text-dim);border:1px solid transparent;transition:all var(--t-fast);cursor:pointer;background:none;white-space:nowrap;display:inline-flex;align-items:center}
 .nav-link:hover,.nav-link.active{color:var(--c-gold);border-color:rgba(201,168,76,0.25);background:rgba(255,255,255,0.06)}
 
 /* — Step Sections — */
@@ -199,7 +199,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .stepper-item{display:flex;flex-direction:column;align-items:center;gap:4px}
 .stepper-item span{font-size:.7rem;color:var(--c-text-muted)}
 .stepper-item.active span{color:var(--c-gold)}
-.stepper-dot{width:34px!important;height:34px!important;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;border:2px solid rgba(255,255,255,.1);color:var(--c-text-dim);background:rgba(0,0,0,.2);transition:all .4s ease}
+.stepper-dot{width:44px!important;height:44px!important;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;border:2px solid rgba(255,255,255,.1);color:var(--c-text-dim);background:rgba(0,0,0,.2);transition:all .4s ease}
 .stepper-item.active .stepper-dot{border-color:var(--c-gold);color:var(--c-gold);background:rgba(255,255,255,.1);box-shadow:0 0 14px rgba(201,168,76,.2)}
 .stepper-item.done .stepper-dot{border-color:rgba(201,168,76,.35);color:var(--c-gold-light);background:rgba(255,255,255,.06)}
 .stepper-line{flex:1;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.12),rgba(255,255,255,.04));margin:0 var(--sp-xs)}
@@ -464,7 +464,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .fab-shopee,.fab-711,.fab-custom{background:rgba(255,255,255,.06);color:var(--c-gold);border-color:rgba(201,168,76,.2)}
 .fab-menu{display:flex;flex-direction:column-reverse;gap:var(--sp-sm)}
 .fab-menu.hidden{display:none}
-@media(max-width:640px){.fab{width:42px;height:42px}.fab span{display:none}}
+@media(max-width:640px){.fab{width:44px;height:44px}.fab span{display:none}}
 
 /* — Product Grid — */
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))!important;gap:var(--sp-md);margin:var(--sp-md) 0}
@@ -1051,3 +1051,145 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 
 /* Smooth scroll */
 html{scroll-behavior:smooth}
+
+/* ═══ v14: Accessibility + Performance ═══ */
+
+/* Focus visible for keyboard navigation */
+:focus-visible{outline:2px solid var(--c-gold);outline-offset:2px;border-radius:var(--r-sm)}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
+
+/* Reduced motion preference */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+/* Image performance */
+img{max-width:100%;height:auto}
+img[loading="lazy"]{content-visibility:auto}
+
+/* Touch target minimum (WCAG 2.5.8) */
+.q-preset-btn{min-height:44px;display:flex;align-items:center}
+.cal30-day{min-width:44px;min-height:44px}
+
+/* ═══════════════════════════════════════════════════════════════
+   v14: Animation & Motion Design System — 靜月之光
+   Ethereal · Ritualistic · Minimal GPU-only (transform + opacity)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Star Sky Background ── */
+.jy-stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.jy-star{position:absolute;width:2px;height:2px;background:rgba(255,255,255,.8);border-radius:50%;will-change:opacity;animation:jyStar var(--dur,4s) var(--delay,0s) ease-in-out infinite}
+.jy-star.lg{width:3px;height:3px;background:rgba(223,195,115,.9);box-shadow:0 0 6px rgba(201,168,76,.5)}
+@keyframes jyStar{0%,100%{opacity:var(--lo,.1)}50%{opacity:var(--hi,.7)}}
+
+/* ── 2. Moon Halo ── */
+.hero-moon{overflow:visible}
+.hero-moon::before{
+  content:'';position:absolute;inset:-35px;border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,.2) 0%,rgba(201,168,76,.08) 40%,transparent 70%);
+  animation:moonHalo 4s ease-in-out infinite;animation-delay:.5s;pointer-events:none;z-index:-1;
+}
+@keyframes moonHalo{0%,100%{transform:scale(.9);opacity:.5}50%{transform:scale(1.15);opacity:1}}
+
+/* ── 3. Title Reveal ── */
+.jy-char{display:inline-block;opacity:0;transform:translateY(10px);animation:jyCharIn .5s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes jyCharIn{to{opacity:1;transform:translateY(0)}}
+.jy-line-fade{opacity:0;transform:translateY(8px);animation:jyLineFade .6s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes jyLineFade{to{opacity:1;transform:translateY(0)}}
+
+/* ── 4. CTA Button Sweep ── */
+@keyframes ctaSweep{0%{left:-40%;opacity:0}30%{opacity:1}100%{left:110%;opacity:0}}
+.jy-cta-sweep{position:relative;overflow:hidden}
+.jy-cta-sweep::after{
+  content:'';position:absolute;top:0;left:-40%;width:30%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+  animation:ctaSweep 5s ease-in-out infinite;pointer-events:none;
+}
+
+/* ── 5. Tarot 3D Flip ── */
+@keyframes tarotLift{0%{transform:scale(1) translateY(0)}100%{transform:scale(1.15) translateY(-20px)}}
+@keyframes tarotFlip{0%{transform:scale(1.15) translateY(-20px) rotateY(0)}100%{transform:scale(1.15) translateY(-20px) rotateY(180deg)}}
+.tarot-deck-card.flipping{animation:tarotLift .3s cubic-bezier(.34,1.56,.64,1) forwards;z-index:10}
+.tarot-deck-card.flipping .tarot-deck-card-inner{animation:tarotFlip .5s ease-in-out .3s forwards;transform-style:preserve-3d}
+.tarot-deck-card.flipping::after{
+  content:'';position:absolute;inset:-4px;border-radius:10px;
+  border:2px solid rgba(201,168,76,.5);opacity:0;
+  animation:tarotGlow .8s ease-out .2s forwards;pointer-events:none;
+}
+@keyframes tarotGlow{0%{opacity:0;transform:scale(.95)}50%{opacity:1}100%{opacity:0;transform:scale(1.1)}}
+
+/* ── 6. Meihua Yao Growth ── */
+.jy-yao-grow{opacity:0;transform:scaleX(0);animation:yaoGrow .4s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes yaoGrow{to{opacity:1;transform:scaleX(1)}}
+.jy-yao-dong{animation:yaoDongPulse 1.5s ease-in-out infinite}
+@keyframes yaoDongPulse{0%,100%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 8px rgba(167,139,250,.5))}}
+
+/* ── 7. Form Input Ripple ── */
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  animation:inputRipple .4s ease-out;
+}
+@keyframes inputRipple{0%{box-shadow:0 0 0 0 rgba(201,168,76,.3)}100%{box-shadow:0 0 0 8px transparent}}
+
+/* ── 8. Result Reveal — Curtain Open ── */
+@keyframes curtainOpen{
+  0%{clip-path:inset(50% 0 50% 0);opacity:0}
+  60%{clip-path:inset(5% 0 5% 0);opacity:1}
+  100%{clip-path:inset(0 0 0 0);opacity:1}
+}
+.jy-curtain{animation:curtainOpen .7s cubic-bezier(.16,1,.3,1) forwards}
+
+/* ── 9. AI Typing Cursor ── */
+.jy-typing-cursor::after{
+  content:'▎';color:var(--c-gold);animation:typeCursor .6s steps(2) infinite;font-weight:300;
+}
+@keyframes typeCursor{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── 10. Section Stagger Entrance ── */
+.jy-stagger{opacity:0;transform:translateY(20px);transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1)}
+.jy-stagger.visible{opacity:1;transform:translateY(0)}
+
+/* ── 11. Closing Golden Pulse ── */
+.jy-closing-pulse{
+  position:relative;
+  animation:closingAppear .6s cubic-bezier(.16,1,.3,1) forwards;
+}
+.jy-closing-pulse::before{
+  content:'';position:absolute;inset:-3px;border-radius:inherit;
+  border:1.5px solid var(--c-gold);opacity:0;
+  animation:closingBeat 1s ease-out .6s forwards;pointer-events:none;
+}
+@keyframes closingAppear{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+@keyframes closingBeat{0%{opacity:0;transform:scale(.98)}40%{opacity:.8;transform:scale(1.02)}100%{opacity:0;transform:scale(1.05)}}
+
+/* ── 12. Crystal Light Beam ── */
+.jy-crystal-beam{position:relative;overflow:hidden}
+.jy-crystal-beam::after{
+  content:'';position:absolute;bottom:0;left:50%;width:6px;height:0;
+  background:linear-gradient(0deg,rgba(201,168,76,.4),transparent);
+  transform:translateX(-50%);border-radius:3px;
+  animation:crystalBeam .8s cubic-bezier(.16,1,.3,1) .3s forwards;pointer-events:none;
+}
+@keyframes crystalBeam{0%{height:0;opacity:0}50%{height:60px;opacity:1}100%{height:80px;opacity:0}}
+
+/* ── 13. Dark Corner Vignette ── */
+.jy-vignette{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.15) 100%);
+  animation:vignetteBreath 8s ease-in-out infinite;
+}
+@keyframes vignetteBreath{0%,100%{opacity:.3}50%{opacity:.6}}
+
+/* ── 14. Gender Pill Flow Light ── */
+.radio-pill input:checked+span{
+  animation:pillFlow .4s ease-out;
+}
+@keyframes pillFlow{0%{box-shadow:inset -40px 0 20px rgba(201,168,76,.2)}50%{box-shadow:inset 0 0 20px rgba(201,168,76,.15)}100%{box-shadow:0 0 12px rgba(255,255,255,.12)}}
+
+/* ── 15. Nav Moon Rotate (driven by JS --scroll var) ── */
+.nav-brand i,.nav-brand .fa-moon{transition:transform .1s linear;transform:rotate(calc(var(--nav-scroll,0) * 1deg))}
+
+/* ── Home CTA breathe (upgrade existing) ── */
+@keyframes home-cta-breathe{
+  0%,100%{box-shadow:0 0 20px rgba(201,168,76,.06),inset 0 0 15px rgba(201,168,76,.02);border-color:rgba(201,168,76,.3)}
+  50%{box-shadow:0 0 35px rgba(201,168,76,.12),inset 0 0 25px rgba(201,168,76,.04);border-color:rgba(201,168,76,.5)}
+}
