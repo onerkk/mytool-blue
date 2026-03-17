@@ -1353,9 +1353,9 @@ details[open] > summary > .fa-chevron-right {
   box-shadow: 0 0 24px rgba(139,92,246,.06), inset 0 1px 0 rgba(139,92,246,.08);
 }
 .jy-tool-card.selected.jy-tool-ootk {
-  border-color: rgba(74,222,128,.35);
-  background: linear-gradient(135deg, rgba(74,222,128,.05), rgba(74,222,128,.01));
-  box-shadow: 0 0 24px rgba(74,222,128,.05), inset 0 1px 0 rgba(74,222,128,.06);
+  border-color: rgba(217,151,56,.4);
+  background: linear-gradient(135deg, rgba(217,151,56,.06), rgba(217,151,56,.015));
+  box-shadow: 0 0 24px rgba(217,151,56,.06), inset 0 1px 0 rgba(217,151,56,.08);
 }
 .jy-tool-card.selected.jy-tool-full {
   border-color: rgba(212,175,55,.4);
