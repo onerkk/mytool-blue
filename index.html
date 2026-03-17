@@ -459,8 +459,43 @@
       </div>
     </div>
 
-    <!-- 基本資料（v17 升級版） -->
-    <div class="card">
+    <!-- ═══ 工具選擇（三入口）═══ -->
+    <div class="card" id="tool-picker-card">
+      <div class="card-title"><i class="fas fa-compass"></i> 選擇分析方式</div>
+      <div class="jy-tool-grid">
+
+        <!-- 塔羅快讀 -->
+        <div class="jy-tool-card" id="tool-tarot" onclick="pickTool('tarot')">
+          <div class="jy-tool-icon" style="color:rgba(139,92,246,.9)">🃏</div>
+          <div class="jy-tool-name">塔羅快讀</div>
+          <div class="jy-tool-desc">此刻的牌面能量</div>
+          <div class="jy-tool-tag">不需出生資料・30秒出結果</div>
+          <div class="jy-tool-free" id="tool-tarot-badge">每日免費一次</div>
+        </div>
+
+        <!-- 開鑰之法 -->
+        <div class="jy-tool-card" id="tool-ootk" onclick="pickTool('ootk')">
+          <div class="jy-tool-icon" style="color:rgba(74,222,128,.9)">🔑</div>
+          <div class="jy-tool-name">開鑰之法</div>
+          <div class="jy-tool-desc">五層深潛・78張牌全用</div>
+          <div class="jy-tool-tag">需要出生資料</div>
+          <div class="jy-tool-free" id="tool-ootk-badge">每日免費一次</div>
+        </div>
+
+        <!-- 七維度 -->
+        <div class="jy-tool-card" id="tool-full" onclick="pickTool('full')">
+          <div class="jy-tool-icon" style="color:var(--c-gold)">🌙</div>
+          <div class="jy-tool-name">七維度交叉分析</div>
+          <div class="jy-tool-desc">八字×紫微×梅花×塔羅×星盤×吠陀×姓名</div>
+          <div class="jy-tool-tag">需要出生資料・最完整</div>
+          <div class="jy-tool-free" id="tool-full-badge">每日免費一次</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ 出生資料（OOTK/七維度時顯示）═══ -->
+    <div class="card" id="birth-form-card" style="display:none">
       <div class="card-title"><i class="fas fa-user"></i> 出生資料</div>
 
       <!-- 性別 -->
@@ -473,8 +508,8 @@
         </div>
       </div>
 
-      <!-- 出生日期：年/月/日 三欄 -->
-      <div class="form-group">
+      <!-- 出生日期 -->
+      <div class="form-group" id="birth-date-group">
         <label class="form-label">出生日期（國曆）<span class="req">*</span></label>
         <div class="jy-date-row">
           <select class="jy-select" id="f-byear" aria-label="出生年份"></select>
@@ -483,8 +518,8 @@
         </div>
       </div>
 
-      <!-- 出生時間：時/分 -->
-      <div class="form-group">
+      <!-- 出生時間 -->
+      <div class="form-group" id="birth-time-group">
         <label class="form-label">出生時間 <span style="font-size:.72rem;opacity:.55;font-weight:400;margin-left:.3rem">選填，強烈建議</span></label>
         <div class="jy-time-row">
           <select class="jy-select" id="f-bhour" aria-label="出生時"></select>
@@ -501,7 +536,7 @@
       </div>
 
       <!-- 出生地點 -->
-      <div class="form-group">
+      <div class="form-group" id="birth-location-group">
         <label class="form-label">出生地點 <span style="font-size:.72rem;opacity:.55;font-weight:400;margin-left:.3rem">用於真太陽時校正</span></label>
         <div class="jy-location-row">
           <select class="jy-select jy-select-wide" id="f-country" aria-label="出生國家"></select>
@@ -509,8 +544,8 @@
         </div>
         <div id="solar-time-preview" class="jy-solar-preview" style="display:none"></div>
         <details style="margin-top:.35rem">
-          <summary style="font-size:.72rem;color:var(--c-text-dim);cursor:pointer;user-select:none"><i class="fas fa-chevron-right" style="font-size:.6rem;margin-right:3px;transition:transform .2s"></i> 什麼是真太陽時？為什麼需要出生地點？</summary>
-          <div style="font-size:.7rem;color:var(--c-text-muted);line-height:1.7;padding:.4rem 0 0 .2rem">中國傳統命理（八字、紫微斗數）使用的是太陽實際位置決定的「時辰」，而非手錶上的時間。同一時刻，烏魯木齊和上海的太陽位置差距可達2小時。填寫出生地點後，系統會自動將你的出生時間校正為該地的真太陽時，讓八字時柱和紫微命宮更精確。西洋占星和吠陀占星也需要經緯度來計算準確的上升星座。</div>
+          <summary style="font-size:.72rem;color:var(--c-text-dim);cursor:pointer;user-select:none"><i class="fas fa-chevron-right" style="font-size:.6rem;margin-right:3px;transition:transform .2s"></i> 什麼是真太陽時？</summary>
+          <div style="font-size:.7rem;color:var(--c-text-muted);line-height:1.7;padding:.4rem 0 0 .2rem">中國傳統命理使用太陽實際位置決定「時辰」，而非手錶時間。同一時刻，烏魯木齊和上海的太陽位置差距可達2小時。填寫出生地點後，系統自動校正為真太陽時。西洋占星和吠陀也需要經緯度來計算準確的上升星座。</div>
         </details>
       </div>
 
@@ -520,18 +555,29 @@
         <input type="text" class="form-input" id="f-name" aria-label="姓名" placeholder="輸入你的姓名">
       </div>
 
-      <!-- 向後相容隱藏欄位 -->
       <input type="hidden" id="f-bdate">
       <input type="hidden" id="f-btime">
     </div>
 
-    <!-- CTA -->
-    <div class="actions actions-center" style="flex-direction:column;gap:6px;padding:0 var(--sp-md)">
-      <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-go" onclick="submitStep0Fast()" style="width:100%"><i class="fas fa-bolt"></i> 看我的命盤分析</button>
-      <p style="font-size:.7rem;opacity:.45;margin:0;text-align:center">七維命理：八字・紫微・梅花・塔羅・星盤・吠陀・姓名</p>
-      <div style="height:6px"></div>
-      <button type="button" class="btn btn-outline btn-sm" onclick="submitStep0()" style="width:100%;opacity:1;border-color:rgba(201,168,76,.4);color:var(--c-gold-light,#e8c968)"><i class="fas fa-layer-group"></i> 手動起卦＋抽牌模式</button>
-      <p style="font-size:.72rem;opacity:.55;margin:0;text-align:center">自己起梅花卦、親手抽塔羅牌，體驗更沉浸</p>
+    <!-- ═══ 塔羅最小表單（只有性別）═══ -->
+    <div class="card" id="tarot-mini-form" style="display:none">
+      <div class="card-title" style="font-size:.85rem"><i class="fas fa-user"></i> 基本資料（選填）</div>
+      <div class="form-group">
+        <label class="form-label">性別</label>
+        <div class="radio-pills">
+          <label class="radio-pill"><input type="radio" name="gender" value="male"><span>♂ 男</span></label>
+          <label class="radio-pill"><input type="radio" name="gender" value="female"><span>♀ 女</span></label>
+          <label class="radio-pill"><input type="radio" name="gender" value="other"><span>不透露</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CTA（根據工具變化）═══ -->
+    <div id="tool-cta" style="display:none">
+      <div class="actions actions-center" style="flex-direction:column;gap:6px;padding:0 var(--sp-md)">
+        <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-tool-go" style="width:100%"></button>
+        <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:0;text-align:center"></p>
+      </div>
     </div>
   </div>
 
@@ -629,11 +675,12 @@
   <!-- 🔮 AI 塔羅深度解讀 -->
   <div id="tarot-ai-wrap"></div>
 
-  <!-- ═══ 想看更深？七維度入口 ═══ -->
-  <div class="card" id="tarot-to-full" style="border:1.5px solid rgba(212,175,55,.25)!important;text-align:center;margin-top:var(--sp-lg);box-shadow:0 0 18px rgba(212,175,55,.04)!important">
-    <div style="font-size:1.5rem;margin-bottom:var(--sp-sm)">🌙</div>
-    <h3 class="serif text-gold" style="font-size:1.1rem;margin-bottom:var(--sp-xs)">想知道命盤怎麼看這件事？</h3>
-    <p class="text-dim text-sm" style="margin-bottom:var(--sp-md);line-height:1.7">輸入生辰，解鎖八字・紫微・梅花・星盤・吠陀・姓名學<br>七套系統交叉驗證，看得更透更準</p>
+  <!-- ═══ 想看更深？雙入口：開鑰 + 七維度 ═══ -->
+  <div class="card" id="tarot-to-full" style="border:1.5px solid rgba(212,175,55,.25)!important;margin-top:var(--sp-lg);box-shadow:0 0 18px rgba(212,175,55,.04)!important">
+    <div style="text-align:center;margin-bottom:var(--sp-md)">
+      <h3 class="serif text-gold" style="font-size:1.05rem;margin-bottom:.3rem">想用更高階的方式再看一次？</h3>
+      <p class="text-dim" style="font-size:.76rem;line-height:1.6;margin:0">填寫出生資料，解鎖完整命理分析</p>
+    </div>
 
     <!-- 完整表單 -->
     <div id="tarot-full-form" style="text-align:left">
@@ -703,9 +750,21 @@
         <input type="hidden" id="f2-btime">
       </div>
 
-      <div style="text-align:center;padding:var(--sp-sm) 0">
-        <button class="btn btn-primary btn-lg btn-cta-pulse" onclick="enterFullAnalysis()" style="width:100%"><i class="fas fa-bolt"></i> 七維命盤深度分析（每日免費一次）</button>
-        <p style="font-size:.7rem;opacity:.45;margin:.4rem 0 0">八字 · 紫微 · 梅花 · 塔羅 · 星盤 · 吠陀 · 姓名</p>
+      <div style="display:flex;flex-direction:column;gap:10px;padding:var(--sp-sm) 0">
+        <button class="btn btn-primary btn-lg btn-cta-pulse" onclick="enterFullAnalysis()" style="width:100%;background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.04));border-color:rgba(212,175,55,.4)">
+          <i class="fas fa-bolt"></i> 🌙 七維度交叉分析
+        </button>
+        <div style="display:flex;align-items:center;gap:.5rem;font-size:.68rem;color:var(--c-text-muted);justify-content:center">
+          <span>八字・紫微・梅花・塔羅・星盤・吠陀・姓名</span>
+          <span id="f2-full-badge" style="padding:1px 6px;border-radius:5px;background:rgba(74,222,128,.08);color:rgba(74,222,128,.85);border:1px solid rgba(74,222,128,.15);font-size:.6rem">每日免費一次</span>
+        </div>
+        <button class="btn btn-outline btn-lg" onclick="enterOOTKFromTarot()" style="width:100%;border-color:rgba(74,222,128,.3);color:rgba(74,222,128,.9)">
+          <i class="fas fa-key"></i> 🔑 開鑰之法・五層深潛
+        </button>
+        <div style="display:flex;align-items:center;gap:.5rem;font-size:.68rem;color:var(--c-text-muted);justify-content:center">
+          <span>金色黎明最高階儀式・78張牌全用</span>
+          <span id="f2-ootk-badge" style="padding:1px 6px;border-radius:5px;background:rgba(74,222,128,.08);color:rgba(74,222,128,.85);border:1px solid rgba(74,222,128,.15);font-size:.6rem">每日免費一次</span>
+        </div>
       </div>
     </div>
   </div>

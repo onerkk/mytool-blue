@@ -251,9 +251,10 @@ window.populateDateSelects = function(yearId, monthId, dayId) {
   var dSel = document.getElementById(dayId);
   if (!ySel || !mSel || !dSel) return;
 
-  // 年：1940-2026
+  // 年：1940-當前年份
   ySel.innerHTML = '<option value="">年</option>';
-  for (var y = 2026; y >= 1940; y--) {
+  var currentYear = new Date().getFullYear();
+  for (var y = currentYear; y >= 1940; y--) {
     var o = document.createElement('option');
     o.value = y; o.textContent = y;
     ySel.appendChild(o);

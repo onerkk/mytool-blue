@@ -610,6 +610,140 @@ function _calcSolarAndCompute(birth, genderValue) {
   return { solarY: solarY, solarM: solarM, solarD: solarD, solarHH: solarHH, solarMM: solarMM, clockY: y, clockM: m, clockD: d, clockHH: hh, clockMM: mm, geoLon: geoLon, geoLat: geoLat, solarInfo: solarInfo };
 }
 
+// ═══ v17：工具選擇系統 ═══
+var _selectedTool = null; // 'tarot' | 'ootk' | 'full'
+
+function pickTool(tool) {
+  _selectedTool = tool;
+
+  // 視覺選中
+  ['tool-tarot','tool-ootk','tool-full'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('selected');
+  });
+  var sel = document.getElementById('tool-' + tool);
+  if (sel) sel.classList.add('selected');
+
+  // 顯示/隱藏表單
+  var birthForm = document.getElementById('birth-form-card');
+  var tarotMini = document.getElementById('tarot-mini-form');
+  var cta = document.getElementById('tool-cta');
+  var btn = document.getElementById('btn-tool-go');
+  var sub = document.getElementById('btn-tool-sub');
+
+  if (tool === 'tarot') {
+    if (birthForm) birthForm.style.display = 'none';
+    if (tarotMini) tarotMini.style.display = 'block';
+    if (btn) { btn.innerHTML = '<i class="fas fa-magic"></i> 抽牌解讀'; btn.onclick = function(){ submitWithTool(); }; }
+    if (sub) sub.textContent = '此刻的牌面能量・不需出生資料';
+  } else if (tool === 'ootk') {
+    if (birthForm) birthForm.style.display = 'block';
+    if (tarotMini) tarotMini.style.display = 'none';
+    if (btn) { btn.innerHTML = '<i class="fas fa-key"></i> 開始五層深潛'; btn.onclick = function(){ submitWithTool(); }; }
+    if (sub) sub.textContent = '金色黎明最高階儀式・78張牌全部使用';
+  } else {
+    if (birthForm) birthForm.style.display = 'block';
+    if (tarotMini) tarotMini.style.display = 'none';
+    if (btn) { btn.innerHTML = '<i class="fas fa-bolt"></i> 七維命盤深度分析'; btn.onclick = function(){ submitWithTool(); }; }
+    if (sub) sub.textContent = '八字・紫微・梅花・塔羅・星盤・吠陀・姓名';
+  }
+  if (cta) cta.style.display = 'block';
+
+  // 滾動到 CTA
+  setTimeout(function() {
+    if (cta) cta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 200);
+
+  // 限流檢查（非阻塞，只更新 badge）
+  _checkToolQuota(tool);
+}
+
+function _checkToolQuota(tool) {
+  var modeMap = { tarot: 'tarot_only', ootk: 'ootk', full: 'full' };
+  var badgeId = 'tool-' + tool + '-badge';
+  var badge = document.getElementById(badgeId);
+  var isAdmin = !!(window._JY_ADMIN_TOKEN);
+  if (isAdmin) return; // admin 不限
+
+  var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
+  var checkBody = { action: 'check', payload: { mode: modeMap[tool] } };
+  var paidToken = localStorage.getItem('_jy_paid_token');
+  if (paidToken) checkBody.paid_token = paidToken;
+
+  fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(checkBody) })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.allowed && badge) {
+        var priceMap = { tarot: 45, ootk: 45, full: 50 };
+        badge.textContent = '今日已用・NT$' + priceMap[tool] + ' 解鎖';
+        badge.classList.add('used');
+      }
+    })
+    .catch(function() {}); // 失敗不阻塞
+}
+
+function submitWithTool() {
+  var question = (document.getElementById('f-question') && document.getElementById('f-question').value) ? document.getElementById('f-question').value.trim() : '';
+  if (!question && typeof selectedPresetQ === 'string') question = selectedPresetQ.trim();
+  if (!question) { alert('請先輸入你的問題'); return; }
+
+  var gender = document.querySelector('input[name="gender"]:checked');
+
+  if (_selectedTool === 'tarot') {
+    // 塔羅只需問題 + 性別（可選）
+    var type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
+    S.form = { type: type, question: question, gender: gender ? gender.value : 'other', bdate: '', btime: '', name: '', btimeUnknown: true };
+    S._tarotOnlyMode = true;
+    S._autoMode = false;
+    S._isAdmin = !!(window._JY_ADMIN_TOKEN);
+    drawnCards = [];
+    S.tarot = { drawn: [], spread: [] };
+    goStep(2); // 直接進塔羅抽牌
+    return;
+  }
+
+  // OOTK 和七維度需要出生資料
+  if (!gender) { alert('請選擇性別'); return; }
+  var birth = _readBirthForm();
+  if (!birth.y || !birth.m || !birth.d) { alert('請填寫出生日期'); return; }
+
+  var type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
+  S.form = { type: type, question: question, gender: gender.value, bdate: birth.bdate, btime: birth.btime, name: birth.name, btimeUnknown: birth.btimeUnknown };
+  S._isAdmin = !!(window._JY_ADMIN_TOKEN);
+
+  // 真太陽時
+  var c = _calcSolarAndCompute(birth, gender.value);
+
+  if (_selectedTool === 'ootk') {
+    // OOTK 流程：先算八字等基礎盤，再啟動 OOTK
+    S._tarotOnlyMode = false;
+    S._autoMode = false;
+    try {
+      S.bazi = computeBazi(c.solarY, c.solarM, c.solarD, c.solarHH, c.solarMM, gender.value);
+      try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
+      S.ziwei = computeZiwei(c.solarY, c.solarM, c.solarD, c.solarHH, gender.value);
+      try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
+      try { S.natal = computeNatalChart(c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, c.geoLon, c.geoLat); } catch(e) { S.natal = null; }
+      try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM); } catch(e) {}
+      try { S.jyotish = S.natal ? computeJyotish(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM) : null; } catch(e) { S.jyotish = null; }
+      try { if (S.jyotish && typeof enhanceJyotish === 'function') enhanceJyotish(S.jyotish); } catch(e) {}
+    } catch(e) { console.error('OOTK pre-calc:', e); }
+
+    // 啟動 OOTK（_jyStartOOTK 已含限流檢查+出生資料檢查）
+    if (typeof window._jyStartOOTK === 'function') {
+      window._jyStartOOTK();
+    } else if (typeof startOOTKFlow === 'function') {
+      startOOTKFlow();
+    }
+    return;
+  }
+
+  // 七維度：走 submitStep0Fast
+  S._tarotOnlyMode = false;
+  S._autoMode = true;
+  submitStep0Fast();
+}
+
 function submitStep0(){
   let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
   if (!type || type === '') {
@@ -5130,54 +5264,48 @@ function enterFullAnalysis() {
   var question = document.getElementById('f2-question').value.trim();
   var gender = document.querySelector('input[name="gender2"]:checked');
 
-  // ★ v17：從新版 select 讀取日期
-  var y2 = document.getElementById('f2-byear')?.value;
-  var m2 = document.getElementById('f2-bmonth')?.value;
-  var d2 = document.getElementById('f2-bday')?.value;
+  var y2 = parseInt(document.getElementById('f2-byear')?.value);
+  var m2 = parseInt(document.getElementById('f2-bmonth')?.value);
+  var d2 = parseInt(document.getElementById('f2-bday')?.value);
   if (!question || !gender || !y2 || !m2 || !d2) { alert('請填寫：問題、性別、出生日期'); return; }
 
   var h2 = document.getElementById('f2-bhour')?.value;
   var mi2 = document.getElementById('f2-bminute')?.value;
-  var name = document.getElementById('f2-name').value.trim();
+  var name = document.getElementById('f2-name')?.value?.trim() || '';
   var btimeUnsure2 = document.getElementById('f2-btime-unsure')?.checked;
 
-  // 組裝 bdate/btime（向後相容）
-  var bdate = y2 + '-' + (parseInt(m2)<10?'0':'') + parseInt(m2) + '-' + (parseInt(d2)<10?'0':'') + parseInt(d2);
-  var hh2 = (h2 !== '' && h2 != null && !isNaN(parseInt(h2))) ? parseInt(h2) : 12;
-  var mm2 = (mi2 !== '' && mi2 != null && !isNaN(parseInt(mi2))) ? parseInt(mi2) : 0;
-  if (btimeUnsure2) { hh2 = 12; mm2 = 0; }
-  var btime = btimeUnsure2 ? '' : ((hh2<10?'0':'') + hh2 + ':' + (mm2<10?'0':'') + mm2);
-
-  // 寫入隱藏欄位
-  var f2bd = document.getElementById('f2-bdate'); if(f2bd) f2bd.value = bdate;
-  var f2bt = document.getElementById('f2-btime'); if(f2bt) f2bt.value = btime;
-
-  // 同步到第一組表單的新欄位
-  var syncPairs = [['f2-byear','f-byear'],['f2-bmonth','f-bmonth'],['f2-bday','f-bday'],['f2-bhour','f-bhour'],['f2-bminute','f-bminute'],['f2-country','f-country'],['f2-city','f-city']];
-  syncPairs.forEach(function(pair) {
-    var src = document.getElementById(pair[0]);
-    var dst = document.getElementById(pair[1]);
-    if (src && dst) {
-      dst.value = src.value;
-      // 觸發 change 以更新聯動（如國家→城市）
-      dst.dispatchEvent(new Event('change'));
+  // ★ 同步寫入第一組表單（純 .value 賦值，不用 dispatchEvent）
+  var el;
+  el = document.getElementById('f-byear'); if (el) el.value = y2;
+  el = document.getElementById('f-bmonth'); if (el) el.value = m2;
+  el = document.getElementById('f-bday'); if (el) el.value = d2;
+  el = document.getElementById('f-bhour'); if (el) el.value = h2 || '';
+  el = document.getElementById('f-bminute'); if (el) el.value = mi2 || '';
+  el = document.getElementById('f-btime-unsure'); if (el) el.checked = !!btimeUnsure2;
+  el = document.getElementById('f-country'); if (el) {
+    var f2c = document.getElementById('f2-country');
+    if (f2c) el.value = f2c.value;
+    // 同步城市列表
+    if (typeof populateCitySelect === 'function' && f2c && f2c.value) {
+      populateCitySelect('f-city', f2c.value);
+      var f2ci = document.getElementById('f2-city');
+      var fci = document.getElementById('f-city');
+      if (f2ci && fci) fci.value = f2ci.value;
     }
-  });
+  }
+  el = document.getElementById('f-name'); if (el) el.value = name;
 
-  // 同步到第一組隱藏欄位
-  var fBdate = document.getElementById('f-bdate'); if(fBdate) fBdate.value = bdate;
-  var fBtime = document.getElementById('f-btime'); if(fBtime) fBtime.value = btime;
-  var fName = document.getElementById('f-name'); if(fName) fName.value = name;
-  var fType = document.getElementById('f-type'); if(fType) fType.value = S.form.type || 'general';
-  var fQuestion = document.getElementById('f-question'); if(fQuestion) fQuestion.value = question;
-
-  // 設置性別 radio
+  // 同步性別
   var genderRadios = document.querySelectorAll('input[name="gender"]');
   genderRadios.forEach(function(r) { r.checked = (r.value === gender.value); });
 
-  // 保存塔羅快讀結果（tab 切回用）
+  // 同步問題和類型
+  var fQuestion = document.getElementById('f-question'); if (fQuestion) fQuestion.value = question;
+  var fType = document.getElementById('f-type'); if (fType) fType.value = S.form?.type || 'general';
+
+  // 保存塔羅快讀結果
   S._tarotQuickResult = {
-    question: S.form.question,
+    question: S.form?.question || question,
     aiHtml: document.getElementById('tarot-ai-wrap') ? document.getElementById('tarot-ai-wrap').innerHTML : '',
     spreadHtml: document.getElementById('tarot-spread-display') ? document.getElementById('tarot-spread-display').innerHTML : '',
     crystalHtml: document.getElementById('tarot-crystal-rec') ? document.getElementById('tarot-crystal-rec').innerHTML : ''
@@ -5185,13 +5313,98 @@ function enterFullAnalysis() {
   S._fromTarot = true;
   S._tarotOnlyMode = false;
 
-  // 重置塔羅（當下能量，重新抽）
+  // 重置塔羅
   drawnCards = [];
   S.tarot = { drawn: [], spread: [] };
 
-  // 觸發原始的完整流程
+  // 觸發完整流程（submitStep0Fast 會從 f1 讀值）
   if (typeof submitStep0Fast === 'function') {
     submitStep0Fast();
+  }
+}
+
+// ── enterOOTKFromTarot：從塔羅結果進開鑰之法 ──
+function enterOOTKFromTarot() {
+  var question = document.getElementById('f2-question').value.trim();
+  var gender = document.querySelector('input[name="gender2"]:checked');
+  var y2 = parseInt(document.getElementById('f2-byear')?.value);
+  var m2 = parseInt(document.getElementById('f2-bmonth')?.value);
+  var d2 = parseInt(document.getElementById('f2-bday')?.value);
+  if (!question || !gender || !y2 || !m2 || !d2) { alert('請填寫：問題、性別、出生日期'); return; }
+
+  var h2 = document.getElementById('f2-bhour')?.value;
+  var mi2 = document.getElementById('f2-bminute')?.value;
+  var name = document.getElementById('f2-name')?.value?.trim() || '';
+  var btimeUnsure2 = document.getElementById('f2-btime-unsure')?.checked;
+  var loc2 = (typeof getSelectedBirthLocation === 'function') ? getSelectedBirthLocation('f2-country', 'f2-city') : null;
+
+  var hh2 = (h2 !== '' && h2 != null && !isNaN(parseInt(h2))) ? parseInt(h2) : 12;
+  var mm2 = (mi2 !== '' && mi2 != null && !isNaN(parseInt(mi2))) ? parseInt(mi2) : 0;
+  if (btimeUnsure2) { hh2 = 12; mm2 = 0; }
+  var bdate = y2 + '-' + (m2 < 10 ? '0' : '') + m2 + '-' + (d2 < 10 ? '0' : '') + d2;
+  var btime = btimeUnsure2 ? '' : ((hh2 < 10 ? '0' : '') + hh2 + ':' + (mm2 < 10 ? '0' : '') + mm2);
+
+  // 寫 S.form
+  var type = S.form?.type || 'general';
+  S.form = { type: type, question: question, gender: gender.value, bdate: bdate, btime: btime, name: name, btimeUnknown: btimeUnsure2 || (h2 === '' || h2 == null) };
+
+  // 真太陽時
+  var solarInfo = null;
+  if (loc2 && typeof calcTrueSolarTime === 'function' && !S.form.btimeUnknown) {
+    solarInfo = calcTrueSolarTime(y2, m2, d2, hh2, mm2, loc2.longitude, loc2.timezone);
+  }
+  S.form.trueSolar = solarInfo;
+  S.form.birthLocation = loc2;
+
+  // 同步隱藏欄位
+  var el;
+  el = document.getElementById('f-bdate'); if (el) el.value = bdate;
+  el = document.getElementById('f-btime'); if (el) el.value = btime;
+  el = document.getElementById('f-name'); if (el) el.value = name;
+
+  // 同步 f1 新欄位
+  try {
+    [['f2-byear','f-byear'],['f2-bmonth','f-bmonth'],['f2-bday','f-bday'],['f2-bhour','f-bhour'],['f2-bminute','f-bminute'],['f2-country','f-country']].forEach(function(pair) {
+      var src = document.getElementById(pair[0]);
+      var dst = document.getElementById(pair[1]);
+      if (src && dst) dst.value = src.value;
+    });
+    if (loc2 && typeof populateCitySelect === 'function') {
+      var f2c = document.getElementById('f2-country');
+      if (f2c && f2c.value) {
+        populateCitySelect('f-city', f2c.value);
+        var f2ci = document.getElementById('f2-city');
+        var fci = document.getElementById('f-city');
+        if (f2ci && fci) fci.value = f2ci.value;
+      }
+    }
+  } catch(e) {}
+
+  // 同步性別
+  document.querySelectorAll('input[name="gender"]').forEach(function(r) { r.checked = (r.value === gender.value); });
+
+  S._isAdmin = !!(window._JY_ADMIN_TOKEN);
+  S._tarotOnlyMode = false;
+
+  // 預算八字等基礎盤
+  var sY = solarInfo ? solarInfo.year : y2, sM = solarInfo ? solarInfo.month : m2, sD = solarInfo ? solarInfo.day : d2;
+  var sHH = solarInfo ? solarInfo.hour : hh2, sMM = solarInfo ? solarInfo.minute : mm2;
+  var geoLon = loc2 ? loc2.longitude : 121.56, geoLat = loc2 ? loc2.latitude : 25.04;
+  try {
+    S.bazi = computeBazi(sY, sM, sD, sHH, sMM, gender.value);
+    try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
+    S.ziwei = computeZiwei(sY, sM, sD, sHH, gender.value);
+    try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
+    try { S.natal = computeNatalChart(y2, m2, d2, hh2, mm2, geoLon, geoLat); } catch(e) { S.natal = null; }
+    try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, y2, m2, d2, hh2, mm2); } catch(e) {}
+    try { S.jyotish = S.natal ? computeJyotish(S.natal, y2, m2, d2, hh2, mm2) : null; } catch(e) { S.jyotish = null; }
+  } catch(e) { console.error('enterOOTKFromTarot calc:', e); }
+
+  // 啟動 OOTK（含限流+付費檢查）
+  if (typeof window._jyStartOOTK === 'function') {
+    window._jyStartOOTK();
+  } else if (typeof startOOTKFlow === 'function') {
+    startOOTKFlow();
   }
 }
 
