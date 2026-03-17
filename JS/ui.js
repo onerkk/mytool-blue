@@ -563,6 +563,53 @@ function showCustomQ(btn){
   document.getElementById('f-question').focus();
 }
 
+// ═══ v17：讀取新版出生表單 + 真太陽時計算 ═══
+function _readBirthForm() {
+  var y = parseInt(document.getElementById('f-byear')?.value);
+  var m = parseInt(document.getElementById('f-bmonth')?.value);
+  var d = parseInt(document.getElementById('f-bday')?.value);
+  var h = document.getElementById('f-bhour')?.value;
+  var mi = document.getElementById('f-bminute')?.value;
+  var name = document.getElementById('f-name') ? document.getElementById('f-name').value.trim() : '';
+  var loc = (typeof getSelectedBirthLocation === 'function') ? getSelectedBirthLocation('f-country', 'f-city') : null;
+  var btimeUnsure = document.getElementById('f-btime-unsure')?.checked;
+
+  var hh = (h !== '' && h != null && !isNaN(parseInt(h))) ? parseInt(h) : null;
+  var mm = (mi !== '' && mi != null && !isNaN(parseInt(mi))) ? parseInt(mi) : 0;
+  if (btimeUnsure || hh === null) { hh = 12; mm = 0; }
+
+  var bdate = y + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d;
+  var btime = (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+
+  // 同步到隱藏欄位
+  var bdateEl = document.getElementById('f-bdate');
+  var btimeEl = document.getElementById('f-btime');
+  if (bdateEl) bdateEl.value = bdate;
+  if (btimeEl) btimeEl.value = btimeUnsure ? '' : btime;
+
+  return { y: y, m: m, d: d, hh: hh, mm: mm, name: name, loc: loc, bdate: bdate, btime: btimeUnsure ? '' : btime, btimeUnknown: btimeUnsure || (h === '' || h == null) };
+}
+
+function _calcSolarAndCompute(birth, genderValue) {
+  var y = birth.y, m = birth.m, d = birth.d, hh = birth.hh, mm = birth.mm, loc = birth.loc;
+  // ★ 真太陽時校正（八字 + 紫微用）
+  var solarHH = hh, solarMM = mm, solarY = y, solarM = m, solarD = d;
+  var solarInfo = null;
+  if (loc && typeof calcTrueSolarTime === 'function' && !birth.btimeUnknown) {
+    solarInfo = calcTrueSolarTime(y, m, d, hh, mm, loc.longitude, loc.timezone);
+    solarY = solarInfo.year; solarM = solarInfo.month; solarD = solarInfo.day;
+    solarHH = solarInfo.hour; solarMM = solarInfo.minute;
+  }
+  S.form.trueSolar = solarInfo;
+  S.form.birthLocation = loc;
+
+  var geoLon = loc ? loc.longitude : 121.56;
+  var geoLat = loc ? loc.latitude : 25.04;
+
+  // 返回計算用的參數
+  return { solarY: solarY, solarM: solarM, solarD: solarD, solarHH: solarHH, solarMM: solarMM, clockY: y, clockM: m, clockD: d, clockHH: hh, clockMM: mm, geoLon: geoLon, geoLat: geoLat, solarInfo: solarInfo };
+}
+
 function submitStep0(){
   let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
   if (!type || type === '') {
@@ -576,32 +623,28 @@ function submitStep0(){
   var question = (document.getElementById('f-question') && document.getElementById('f-question').value) ? document.getElementById('f-question').value.trim() : '';
   if (!question && typeof selectedPresetQ === 'string') question = selectedPresetQ.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
-  const bdate=document.getElementById('f-bdate') ? document.getElementById('f-bdate').value : '';
-  if(!question||!gender||!bdate){ alert('請填寫：問題、性別、出生日期'); return; }
-  const btime=(document.getElementById('f-btime')&&document.getElementById('f-btime').value)||'';
-  const name=document.getElementById('f-name')?document.getElementById('f-name').value.trim():'';
-  S.form={type,question,gender:gender.value,bdate,btime,name};
-  S.form.btimeUnknown = !btime;
-  S._autoMode = false; // 手動模式：使用者自己操作梅花/塔羅
-  // 管理員判定（僅透過 URL token 認證，不在前端暴露判斷條件）
+  const birth = _readBirthForm();
+  if(!question||!gender||!birth.y||!birth.m||!birth.d){ alert('請填寫：問題、性別、出生日期'); return; }
+  S.form={type,question,gender:gender.value,bdate:birth.bdate,btime:birth.btime,name:birth.name};
+  S.form.btimeUnknown = birth.btimeUnknown;
+  S._autoMode = false;
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
   try {
-    const[y,m,d]=bdate.split('-').map(Number);
-    const _btParts = btime ? btime.split(':').map(Number) : [12, 0];
-    const hh = _btParts[0], mm = _btParts[1] || 0;
-    S.bazi=computeBazi(y,m,d,hh,mm,gender.value);
+    var c = _calcSolarAndCompute(birth, gender.value);
+    S.bazi=computeBazi(c.solarY,c.solarM,c.solarD,c.solarHH,c.solarMM,gender.value);
     try { if(S.bazi && typeof enhanceBazi==='function') enhanceBazi(S.bazi); } catch(e) { console.error('enhanceBazi:', e); }
-    S.ziwei=computeZiwei(y,m,d,hh,gender.value);
-    mergeZiweiIntoBazi(); // 紫微整合進八字大運流年
-    try { S.natal = computeNatalChart(y, m, d, hh, mm); } catch(e) { console.error('Natal(manual):', e); S.natal=null; }
-    try { if(S.natal && typeof enhanceNatalChart==='function') enhanceNatalChart(S.natal, y, m, d, hh, mm); } catch(e) { console.error('enhanceNatal:', e); }
-    try { S.jyotish = S.natal ? computeJyotish(S.natal, y, m, d, hh, mm) : null; } catch(e) { console.error('Jyotish:', e); S.jyotish=null; }
+    S.ziwei=computeZiwei(c.solarY,c.solarM,c.solarD,c.solarHH,gender.value);
+    mergeZiweiIntoBazi();
+    try { S.natal = computeNatalChart(c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, c.geoLon, c.geoLat); } catch(e) { console.error('Natal(manual):', e); S.natal=null; }
+    try { if(S.natal && typeof enhanceNatalChart==='function') enhanceNatalChart(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM); } catch(e) { console.error('enhanceNatal:', e); }
+    try { S.jyotish = S.natal ? computeJyotish(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM) : null; } catch(e) { console.error('Jyotish:', e); S.jyotish=null; }
     try { if(S.jyotish && typeof enhanceJyotish==='function') enhanceJyotish(S.jyotish); } catch(e) { console.error('enhanceJy1:', e); }
-    try { if(S.jyotish && typeof enhanceJyotish2==='function') enhanceJyotish2(S.jyotish, new Date(y, m-1, d)); } catch(e) { console.error('enhanceJy2:', e); }
+    try { if(S.jyotish && typeof enhanceJyotish2==='function') enhanceJyotish2(S.jyotish, new Date(c.clockY, c.clockM-1, c.clockD)); } catch(e) { console.error('enhanceJy2:', e); }
     if (typeof renderDailyFortune==='function') renderDailyFortune();
     if (typeof generateLuckyInfo==='function') generateLuckyInfo();
     if (typeof renderJyotishFunZone==='function') try{renderJyotishFunZone();}catch(e){}
     if (typeof renderNameFunZone==='function') try{renderNameFunZone();}catch(e){}
+    if (c.solarInfo) console.log('[TrueSolar]', birth.loc?.label, '| 時鐘:'+c.clockHH+':'+c.clockMM, '→ 真太陽:'+c.solarHH+':'+c.solarMM, '('+c.solarInfo.note+')');
     goStep(1);
   } catch(e) {
     console.error('submitStep0', e);
@@ -677,12 +720,10 @@ function submitStep0Fast(){
   const type=(document.getElementById('f-type')&&document.getElementById('f-type').value)||'general';
   const question=document.getElementById('f-question').value.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
-  const bdate=document.getElementById('f-bdate').value;
-  if(!question||!gender||!bdate){alert('請填寫：問題、性別、出生日期');return}
-  const btime=document.getElementById('f-btime').value||'';
-  const name=document.getElementById('f-name').value.trim();
-  S.form={type,question,gender:gender.value,bdate,btime,name};
-  S.form.btimeUnknown = !btime;
+  const birth = _readBirthForm();
+  if(!question||!gender||!birth.y||!birth.m||!birth.d){alert('請填寫：問題、性別、出生日期');return}
+  S.form={type,question,gender:gender.value,bdate:birth.bdate,btime:birth.btime,name:birth.name};
+  S.form.btimeUnknown = birth.btimeUnknown;
   S._autoMode = true; // ★ 自動模式標記：梅花時間起卦 + 塔羅種子抽牌
   const overlay = document.createElement('div');
   overlay.className = 'loading-overlay';
@@ -727,21 +768,20 @@ function submitStep0Fast(){
     <div class="ld-sub" id="ld-sub"></div>`;
   document.body.appendChild(overlay);
 
-  const [y,m,d]=bdate.split('-').map(Number);
-  const _btParts2 = btime ? btime.split(':').map(Number) : [12, 0];
-  const hh = _btParts2[0], mm = _btParts2[1] || 0;
+  // ★ v17：真太陽時計算
+  var c = _calcSolarAndCompute(birth, gender.value);
+  var y = c.clockY, m = c.clockM, d = c.clockD, hh = c.clockHH, mm = c.clockMM;
+  if (c.solarInfo) console.log('[TrueSolar]', birth.loc?.label, '| 時鐘:'+hh+':'+mm, '→ 真太陽:'+c.solarHH+':'+c.solarMM, '('+c.solarInfo.note+')');
 
-  const cached = loadDivineCache(bdate, gender.value, type, question);
-  // 管理員帳號不受能量鎖定限制（可重複測試）
-  // 管理員判定（僅透過 URL token 認證）
+  const cached = loadDivineCache(birth.bdate, gender.value, type, question);
   const _isAdmin = !!(window._JY_ADMIN_TOKEN);
-  S._isAdmin = _isAdmin;  // 全域存取（跳過回饋寄信等）
+  S._isAdmin = _isAdmin;
   S._usedCache = _isAdmin ? false : !!cached;
 
   // 計算函數
   const fns = [
-    ()=>{ S.bazi=computeBazi(y,m,d,hh,mm,gender.value); try{if(S.bazi&&typeof enhanceBazi==='function')enhanceBazi(S.bazi);}catch(e){} },
-    ()=>{ S.ziwei=computeZiwei(y,m,d,hh,gender.value); mergeZiweiIntoBazi(); renderDailyFortune(); generateLuckyInfo(); if(typeof renderZiweiFunZone==='function') try{renderZiweiFunZone();}catch(e){} if(typeof renderJyotishFunZone==='function') try{renderJyotishFunZone();}catch(e){} if(typeof renderNameFunZone==='function') try{renderNameFunZone();}catch(e){} if(typeof renderNatalFunZone==='function') try{renderNatalFunZone();}catch(e){} },
+    ()=>{ S.bazi=computeBazi(c.solarY,c.solarM,c.solarD,c.solarHH,c.solarMM,gender.value); try{if(S.bazi&&typeof enhanceBazi==='function')enhanceBazi(S.bazi);}catch(e){} },
+    ()=>{ S.ziwei=computeZiwei(c.solarY,c.solarM,c.solarD,c.solarHH,gender.value); mergeZiweiIntoBazi(); renderDailyFortune(); generateLuckyInfo(); if(typeof renderZiweiFunZone==='function') try{renderZiweiFunZone();}catch(e){} if(typeof renderJyotishFunZone==='function') try{renderJyotishFunZone();}catch(e){} if(typeof renderNameFunZone==='function') try{renderNameFunZone();}catch(e){} if(typeof renderNatalFunZone==='function') try{renderNatalFunZone();}catch(e){} },
     ()=>{
       // ★ 自動模式：時間起卦（正統梅花時間法）
       try {
@@ -823,7 +863,7 @@ function submitStep0Fast(){
     },
     ()=>{
       // 西洋星盤計算
-      try { S.natal = computeNatalChart(y, m, d, hh, mm); } catch(e) { 
+      try { S.natal = computeNatalChart(y, m, d, hh, mm, c.geoLon, c.geoLat); } catch(e) { 
         console.error('Natal chart error:', e); 
         S.natal = null;
         setTimeout(()=>{

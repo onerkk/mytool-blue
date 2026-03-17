@@ -459,69 +459,70 @@
       </div>
     </div>
 
-    <!-- 基本資料（精簡） -->
+    <!-- 基本資料（v17 升級版） -->
     <div class="card">
       <div class="card-title"><i class="fas fa-user"></i> 出生資料</div>
-      <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap">
-        <div class="form-group" style="flex:0 0 auto">
-          <label class="form-label">性別 <span class="req">*</span></label>
-          <div class="radio-pills">
-            <label class="radio-pill"><input type="radio" name="gender" value="male"><span>男</span></label>
-            <label class="radio-pill"><input type="radio" name="gender" value="female"><span>女</span></label>
-            <label class="radio-pill"><input type="radio" name="gender" value="other"><span>不透露</span></label>
-          </div>
-        </div>
-        <div class="form-group" style="flex:1 1 200px">
-          <label class="form-label">出生日期（國曆）<span class="req">*</span></label>
-          <input type="date" class="form-input" id="f-bdate" min="1920-01-01" aria-label="出生日期" max="2026-12-31">
+
+      <!-- 性別 -->
+      <div class="form-group">
+        <label class="form-label">性別 <span class="req">*</span></label>
+        <div class="radio-pills">
+          <label class="radio-pill"><input type="radio" name="gender" value="male"><span>♂ 男</span></label>
+          <label class="radio-pill"><input type="radio" name="gender" value="female"><span>♀ 女</span></label>
+          <label class="radio-pill"><input type="radio" name="gender" value="other"><span>不透露</span></label>
         </div>
       </div>
-      <!-- 進階：收合 -->
-      <details class="advance-toggle" id="advance-fields">
-        <summary><i class="fas fa-chevron-right advance-arrow"></i> 出生時辰＋姓名（強烈建議填寫）</summary>
-        <div style="padding-top:var(--sp-md)">
-          <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:8px 12px;margin-bottom:12px">
-            <p style="font-size:.78rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-exclamation-triangle" style="margin-right:4px"></i> <strong>沒填時辰＝八字少一柱、紫微命宮可能排錯</strong>。準確度會大幅下降。客製手鍊必須填寫時辰。</p>
-          </div>
-          <div class="form-group">
-            <label class="form-label">出生時間</label>
-            <select class="form-input" id="f-btime" aria-label="出生時間">
-              <option value="">請選擇</option>
-              <option value="00:00">00:00（子時）</option>
-              <option value="01:00">01:00（丑時）</option>
-              <option value="02:00">02:00（丑時）</option>
-              <option value="03:00">03:00（寅時）</option>
-              <option value="04:00">04:00（寅時）</option>
-              <option value="05:00">05:00（卯時）</option>
-              <option value="06:00">06:00（卯時）</option>
-              <option value="07:00">07:00（辰時）</option>
-              <option value="08:00">08:00（辰時）</option>
-              <option value="09:00">09:00（巳時）</option>
-              <option value="10:00">10:00（巳時）</option>
-              <option value="11:00">11:00（午時）</option>
-              <option value="12:00">12:00（午時）</option>
-              <option value="13:00">13:00（未時）</option>
-              <option value="14:00">14:00（未時）</option>
-              <option value="15:00">15:00（申時）</option>
-              <option value="16:00">16:00（申時）</option>
-              <option value="17:00">17:00（酉時）</option>
-              <option value="18:00">18:00（酉時）</option>
-              <option value="19:00">19:00（戌時）</option>
-              <option value="20:00">20:00（戌時）</option>
-              <option value="21:00">21:00（亥時）</option>
-              <option value="22:00">22:00（亥時）</option>
-              <option value="23:00">23:00（子時）</option>
-            </select>
-            <label style="display:flex;align-items:center;gap:.4rem;margin-top:.4rem;font-size:.82rem;color:var(--c-text-dim);cursor:pointer">
-              <input type="checkbox" id="f-btime-unsure" onchange="if(this.checked){document.getElementById('f-btime').value='';document.getElementById('f-btime').disabled=true}else{document.getElementById('f-btime').disabled=false}"> 不確定出生時間
-            </label>
-          </div>
-          <div class="form-group">
-            <label class="form-label">姓名</label>
-            <input type="text" class="form-input" id="f-name" aria-label="姓名" placeholder="用於姓名學分析">
-          </div>
+
+      <!-- 出生日期：年/月/日 三欄 -->
+      <div class="form-group">
+        <label class="form-label">出生日期（國曆）<span class="req">*</span></label>
+        <div class="jy-date-row">
+          <select class="jy-select" id="f-byear" aria-label="出生年份"></select>
+          <select class="jy-select" id="f-bmonth" aria-label="出生月份"></select>
+          <select class="jy-select" id="f-bday" aria-label="出生日"></select>
         </div>
-      </details>
+      </div>
+
+      <!-- 出生時間：時/分 -->
+      <div class="form-group">
+        <label class="form-label">出生時間 <span style="font-size:.72rem;opacity:.55;font-weight:400;margin-left:.3rem">選填，強烈建議</span></label>
+        <div class="jy-time-row">
+          <select class="jy-select" id="f-bhour" aria-label="出生時"></select>
+          <span class="jy-time-sep">:</span>
+          <select class="jy-select" id="f-bminute" aria-label="出生分"></select>
+        </div>
+        <label class="jy-checkbox-label" style="margin-top:.4rem">
+          <input type="checkbox" id="f-btime-unsure" onchange="var hS=document.getElementById('f-bhour'),mS=document.getElementById('f-bminute');if(this.checked){hS.value='';mS.value='';hS.disabled=true;mS.disabled=true}else{hS.disabled=false;mS.disabled=false}">
+          <span>我不知道確切出生時間</span>
+        </label>
+        <div style="background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:8px;padding:7px 10px;margin-top:.4rem">
+          <p style="font-size:.72rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-exclamation-triangle" style="margin-right:4px"></i> <strong>沒填時間＝八字少一柱、紫微命宮可能排錯</strong>，準確度大幅下降。</p>
+        </div>
+      </div>
+
+      <!-- 出生地點 -->
+      <div class="form-group">
+        <label class="form-label">出生地點 <span style="font-size:.72rem;opacity:.55;font-weight:400;margin-left:.3rem">用於真太陽時校正</span></label>
+        <div class="jy-location-row">
+          <select class="jy-select jy-select-wide" id="f-country" aria-label="出生國家"></select>
+          <select class="jy-select jy-select-wide" id="f-city" aria-label="出生城市"><option value="">選擇城市</option></select>
+        </div>
+        <div id="solar-time-preview" class="jy-solar-preview" style="display:none"></div>
+        <details style="margin-top:.35rem">
+          <summary style="font-size:.72rem;color:var(--c-text-dim);cursor:pointer;user-select:none"><i class="fas fa-chevron-right" style="font-size:.6rem;margin-right:3px;transition:transform .2s"></i> 什麼是真太陽時？為什麼需要出生地點？</summary>
+          <div style="font-size:.7rem;color:var(--c-text-muted);line-height:1.7;padding:.4rem 0 0 .2rem">中國傳統命理（八字、紫微斗數）使用的是太陽實際位置決定的「時辰」，而非手錶上的時間。同一時刻，烏魯木齊和上海的太陽位置差距可達2小時。填寫出生地點後，系統會自動將你的出生時間校正為該地的真太陽時，讓八字時柱和紫微命宮更精確。西洋占星和吠陀占星也需要經緯度來計算準確的上升星座。</div>
+        </details>
+      </div>
+
+      <!-- 姓名 -->
+      <div class="form-group">
+        <label class="form-label">姓名 <span style="font-size:.72rem;opacity:.55;font-weight:400;margin-left:.3rem">用於姓名學分析</span></label>
+        <input type="text" class="form-input" id="f-name" aria-label="姓名" placeholder="輸入你的姓名">
+      </div>
+
+      <!-- 向後相容隱藏欄位 -->
+      <input type="hidden" id="f-bdate">
+      <input type="hidden" id="f-btime">
     </div>
 
     <!-- CTA -->
@@ -1263,6 +1264,7 @@
   </div>
 </div>
 <script src="JS/bazi.js" defer></script>
+<script src="JS/solar-location.js" defer></script>
 <script src="JS/ziwei.js" defer></script>
 <script src="JS/tarot.js" defer></script>
 <script src="JS/bazi_upgrade.js" defer></script>
@@ -1304,4 +1306,5 @@
 
 <script src="JS/payment-wall.js" defer></script>
 
+<script>document.addEventListener('DOMContentLoaded',function(){if(typeof initBirthForm==='function')initBirthForm();});</script>
 </body></html>
