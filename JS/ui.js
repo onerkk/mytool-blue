@@ -626,24 +626,20 @@ function pickTool(tool) {
 
   // 顯示/隱藏表單
   var birthForm = document.getElementById('birth-form-card');
-  var tarotMini = document.getElementById('tarot-mini-form');
   var cta = document.getElementById('tool-cta');
   var btn = document.getElementById('btn-tool-go');
   var sub = document.getElementById('btn-tool-sub');
 
   if (tool === 'tarot') {
     if (birthForm) birthForm.style.display = 'none';
-    if (tarotMini) tarotMini.style.display = 'block';
     if (btn) { btn.innerHTML = '<i class="fas fa-magic"></i> 抽牌解讀'; btn.onclick = function(){ submitWithTool(); }; }
     if (sub) sub.textContent = '此刻的牌面能量・不需出生資料';
   } else if (tool === 'ootk') {
     if (birthForm) birthForm.style.display = 'block';
-    if (tarotMini) tarotMini.style.display = 'none';
     if (btn) { btn.innerHTML = '<i class="fas fa-key"></i> 開始五層深潛'; btn.onclick = function(){ submitWithTool(); }; }
     if (sub) sub.textContent = '金色黎明最高階儀式・78張牌全部使用';
   } else {
     if (birthForm) birthForm.style.display = 'block';
-    if (tarotMini) tarotMini.style.display = 'none';
     if (btn) { btn.innerHTML = '<i class="fas fa-bolt"></i> 七維命盤深度分析'; btn.onclick = function(){ submitWithTool(); }; }
     if (sub) sub.textContent = '八字・紫微・梅花・塔羅・星盤・吠陀・姓名';
   }

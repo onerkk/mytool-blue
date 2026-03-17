@@ -464,31 +464,40 @@
       <div class="card-title"><i class="fas fa-compass"></i> 選擇分析方式</div>
       <div class="jy-tool-grid">
 
-        <!-- 塔羅快讀 -->
-        <div class="jy-tool-card" id="tool-tarot" onclick="pickTool('tarot')">
-          <div class="jy-tool-icon" style="color:rgba(139,92,246,.9)">🃏</div>
-          <div class="jy-tool-name">塔羅快讀</div>
-          <div class="jy-tool-desc">此刻的牌面能量</div>
-          <div class="jy-tool-tag">不需出生資料・30秒出結果</div>
-          <div class="jy-tool-free" id="tool-tarot-badge">每日免費一次</div>
+        <div class="jy-tool-card jy-tool-tarot" id="tool-tarot" onclick="pickTool('tarot')">
+          <div class="jy-tool-head">
+            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
+            <div>
+              <div class="jy-tool-name">塔羅快讀</div>
+              <div class="jy-tool-desc">此刻的牌面能量</div>
+            </div>
+            <div class="jy-tool-free" id="tool-tarot-badge">每日免費一次</div>
+          </div>
+          <div class="jy-tool-tag">不需出生資料 · 30秒出結果</div>
         </div>
 
-        <!-- 開鑰之法 -->
-        <div class="jy-tool-card" id="tool-ootk" onclick="pickTool('ootk')">
-          <div class="jy-tool-icon" style="color:rgba(74,222,128,.9)">🔑</div>
-          <div class="jy-tool-name">開鑰之法</div>
-          <div class="jy-tool-desc">五層深潛・78張牌全用</div>
-          <div class="jy-tool-tag">需要出生資料</div>
-          <div class="jy-tool-free" id="tool-ootk-badge">每日免費一次</div>
+        <div class="jy-tool-card jy-tool-ootk" id="tool-ootk" onclick="pickTool('ootk')">
+          <div class="jy-tool-head">
+            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(34,197,94,.06));border-color:rgba(74,222,128,.25)"><i class="fas fa-key" style="color:rgba(74,222,128,.9)"></i></div>
+            <div>
+              <div class="jy-tool-name">開鑰之法</div>
+              <div class="jy-tool-desc">五層深潛 · 78張牌全用</div>
+            </div>
+            <div class="jy-tool-free" id="tool-ootk-badge">每日免費一次</div>
+          </div>
+          <div class="jy-tool-tag">需要出生資料 · 金色黎明最高階儀式</div>
         </div>
 
-        <!-- 七維度 -->
-        <div class="jy-tool-card" id="tool-full" onclick="pickTool('full')">
-          <div class="jy-tool-icon" style="color:var(--c-gold)">🌙</div>
-          <div class="jy-tool-name">七維度交叉分析</div>
-          <div class="jy-tool-desc">八字×紫微×梅花×塔羅×星盤×吠陀×姓名</div>
-          <div class="jy-tool-tag">需要出生資料・最完整</div>
-          <div class="jy-tool-free" id="tool-full-badge">每日免費一次</div>
+        <div class="jy-tool-card jy-tool-full" id="tool-full" onclick="pickTool('full')">
+          <div class="jy-tool-head">
+            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(234,179,8,.06));border-color:rgba(212,175,55,.3)"><i class="fas fa-moon" style="color:var(--c-gold)"></i></div>
+            <div>
+              <div class="jy-tool-name">七維度交叉分析</div>
+              <div class="jy-tool-desc">八字 × 紫微 × 梅花 × 塔羅 × 星盤 × 吠陀 × 姓名</div>
+            </div>
+            <div class="jy-tool-free" id="tool-full-badge">每日免費一次</div>
+          </div>
+          <div class="jy-tool-tag">需要出生資料 · 七套系統交叉驗證 · 最完整</div>
         </div>
 
       </div>
@@ -559,18 +568,7 @@
       <input type="hidden" id="f-btime">
     </div>
 
-    <!-- ═══ 塔羅最小表單（只有性別）═══ -->
-    <div class="card" id="tarot-mini-form" style="display:none">
-      <div class="card-title" style="font-size:.85rem"><i class="fas fa-user"></i> 基本資料（選填）</div>
-      <div class="form-group">
-        <label class="form-label">性別</label>
-        <div class="radio-pills">
-          <label class="radio-pill"><input type="radio" name="gender" value="male"><span>♂ 男</span></label>
-          <label class="radio-pill"><input type="radio" name="gender" value="female"><span>♀ 女</span></label>
-          <label class="radio-pill"><input type="radio" name="gender" value="other"><span>不透露</span></label>
-        </div>
-      </div>
-    </div>
+    <!-- ═══ 塔羅不需出生資料，無表單 ═══ -->
 
     <!-- ═══ CTA（根據工具變化）═══ -->
     <div id="tool-cta" style="display:none">
