@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>找不到頁面 — 靜月之光</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#08090f;color:#e8eaf0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;overflow:hidden}
+.wrap{text-align:center;padding:2rem;max-width:420px}
+.moon{font-size:4rem;margin-bottom:1rem;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+h1{font-size:1.5rem;color:#c9a84c;margin-bottom:.5rem;letter-spacing:.05em}
+p{font-size:.9rem;color:rgba(232,234,240,.6);line-height:1.8;margin-bottom:1.5rem}
+a{display:inline-block;padding:.6rem 1.6rem;border-radius:999px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.08));border:1.5px solid rgba(201,168,76,.35);color:#c9a84c;text-decoration:none;font-weight:700;font-size:.88rem;transition:all .3s}
+a:hover{background:rgba(201,168,76,.2);box-shadow:0 0 20px rgba(201,168,76,.15)}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 3s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:.8}}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="wrap" style="position:relative;z-index:1">
+  <div class="moon">☽</div>
+  <h1>這條路走不通</h1>
+  <p>你找的頁面不在這裡。<br>也許命運想帶你去別的地方。</p>
+  <a href="/">回到靜月之光</a>
+</div>
+<script>
+var s=document.getElementById('stars');
+for(var i=0;i<40;i++){
+  var d=document.createElement('div');d.className='star';
+  d.style.left=Math.random()*100+'%';d.style.top=Math.random()*100+'%';
+  d.style.animationDelay=Math.random()*3+'s';d.style.opacity=Math.random()*.5+.1;
+  s.appendChild(d);
+}
+</script>
+</body>
+</html>
