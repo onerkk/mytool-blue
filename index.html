@@ -958,25 +958,19 @@
     </div>
   </div>
 
-  <!-- ═══ 底部精簡CTA ═══ -->
-  <div class="card" style="border:1px solid rgba(201,168,76,.2);text-align:center">
-    <div id="shop-social-proof" style="padding:var(--sp-sm) var(--sp-md);background:rgba(201,168,76,.06);border-radius:var(--r-sm);margin-bottom:var(--sp-md);border:1px solid rgba(201,168,76,.1)">
-      <div style="display:flex;align-items:center;justify-content:center;gap:var(--sp-sm);margin-bottom:4px">
-        <span style="color:var(--c-gold);font-size:.8rem">⭐⭐⭐⭐⭐</span>
-        <span class="text-xs text-muted" id="shop-review-meta"></span>
-      </div>
-      <p class="text-sm" style="color:var(--c-text-dim);margin:0;line-height:1.5">「<span id="shop-review-text"></span>」</p>
-      <div style="text-align:right;margin-top:4px"><span class="text-xs text-muted" id="shop-review-product"></span></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;align-items:center;margin-top:4px">
-      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:220px;padding:13px 20px;border-radius:12px;background:transparent;color:var(--c-gold);text-decoration:none;font-size:.88rem;font-weight:600;border:1px solid rgba(255,255,255,.12);box-shadow:0 4px 14px rgba(201,168,76,.1);transition:all .2s"><i class="fas fa-shopping-cart"></i> 蝦皮選購</a>
-      <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:220px;padding:13px 20px;border-radius:12px;background:transparent;color:var(--c-gold);text-decoration:none;font-size:.88rem;font-weight:600;border:1px solid rgba(255,255,255,.12);box-shadow:0 4px 14px rgba(201,168,76,.1);transition:all .2s"><i class="fas fa-box"></i> 7-11 取貨</a>
-      <button onclick="openCustomModal()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:220px;padding:13px 20px;border-radius:12px;background:transparent;color:var(--c-gold);font-size:.88rem;font-weight:600;border:1px solid rgba(255,255,255,.12);box-shadow:0 4px 14px rgba(201,168,76,.1);cursor:pointer;transition:all .2s;font-family:inherit"><i class="fas fa-magic"></i> 客製手鏈</button>
+  <!-- ═══ 底部水晶 CTA（精簡版）═══ -->
+  <div class="card" style="border:1px solid rgba(201,168,76,.15);padding:var(--sp-md);text-align:center">
+    <div style="font-size:.82rem;color:var(--c-gold);font-weight:600;margin-bottom:var(--sp-xs)">💎 水晶能量配戴</div>
+    <div class="text-xs text-dim" style="margin-bottom:var(--sp-sm);line-height:1.6">依你的八字體質精選，蝦皮 / 7-11 皆可取貨</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="padding:8px 16px;border-radius:10px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);color:var(--c-gold);text-decoration:none;font-size:.8rem;font-weight:600;display:inline-flex;align-items:center;gap:5px"><i class="fas fa-shopping-cart"></i>蝦皮</a>
+      <a href="https://myship.7-11.com.tw/seller/profile?id=GM2601091690232" target="_blank" rel="noopener" style="padding:8px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.08);color:var(--c-text-dim);text-decoration:none;font-size:.8rem;display:inline-flex;align-items:center;gap:5px"><i class="fas fa-box"></i>7-11</a>
+      <button onclick="openCustomModal()" style="padding:8px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:transparent;color:var(--c-text-dim);font-size:.8rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px"><i class="fas fa-magic"></i>客製</button>
     </div>
   </div>
 
-  <!-- 存圖分享（canvas 動態產生）-->
-  <div class="card" style="text-align:center" id="share-card-section">
+  <!-- 存圖分享（已整合到 AI 結果內的 inline share bar）-->
+  <div class="card" style="text-align:center;display:none" id="share-card-section">
     <div class="card-title"><i class="fas fa-share-alt"></i> 分享你的占卜結果</div>
     <p class="text-sm text-dim mb-md">存成精美圖片分享到 IG / LINE，朋友也能免費測！</p>
     <div id="share-preview" style="margin:0 auto .8rem;max-width:360px;border-radius:12px;overflow:hidden;border:1px solid rgba(201,168,76,.2)"></div>
@@ -993,7 +987,7 @@
   </div>
 
   <!-- ═══ 趣味功能區 ═══ -->
-  <div class="mt-lg" id="extra-features-gate" style="text-align:center;padding:var(--sp-md) 0">
+  <div class="mt-lg" id="extra-features-gate" style="text-align:center;padding:var(--sp-md) 0;display:none">
     <!-- 鎖定狀態 -->
     <div id="extra-locked" class="card" style="border-style:dashed;border-color:rgba(255,255,255,0.1);padding:var(--sp-lg);text-align:center">
       <p style="font-size:1.5rem;margin-bottom:var(--sp-sm)">🔒</p>
@@ -1277,7 +1271,7 @@
 </div>
 
 <!-- 浮動按鈕 -->
-<div class="floating-root" id="floating-root">
+<div class="floating-root" id="floating-root" style="display:none">
   <button class="fab fab-toggle" onclick="toggleFab()" aria-label="選單"><i class="fas fa-ellipsis-v"></i></button>
   <div class="fab-menu hidden" id="fab-menu">
     <a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener noreferrer" class="fab fab-shopee" title="蝦皮逛逛"><i class="fas fa-shopping-cart"></i><span>蝦皮</span></a>
