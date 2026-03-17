@@ -311,34 +311,52 @@ window.populateTimeSelects = function(hourId, minuteId) {
 
 // ═══ 初始化所有下拉 ═══
 window.initBirthForm = function() {
+  // ── 第一組表單（#input-screen）──
   populateCountrySelect('f-country');
   populateDateSelects('f-byear', 'f-bmonth', 'f-bday');
   populateTimeSelects('f-bhour', 'f-bminute');
-
-  // 國家 → 城市聯動
   var countrySel = document.getElementById('f-country');
   if (countrySel) {
     countrySel.addEventListener('change', function() {
       populateCitySelect('f-city', this.value);
     });
   }
-
-  // 真太陽時即時預覽
   ['f-byear','f-bmonth','f-bday','f-bhour','f-bminute','f-country','f-city'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('change', updateSolarTimePreview);
   });
+
+  // ── 第二組表單（#tarot-to-full）──
+  populateCountrySelect('f2-country');
+  populateDateSelects('f2-byear', 'f2-bmonth', 'f2-bday');
+  populateTimeSelects('f2-bhour', 'f2-bminute');
+  var countrySel2 = document.getElementById('f2-country');
+  if (countrySel2) {
+    countrySel2.addEventListener('change', function() {
+      populateCitySelect('f2-city', this.value);
+    });
+  }
+  ['f2-byear','f2-bmonth','f2-bday','f2-bhour','f2-bminute','f2-country','f2-city'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('change', function() { updateSolarTimePreview2(); });
+  });
 };
 
 function updateSolarTimePreview() {
-  var preview = document.getElementById('solar-time-preview');
+  _doSolarPreview('f-byear','f-bmonth','f-bday','f-bhour','f-bminute','f-country','f-city','solar-time-preview');
+}
+function updateSolarTimePreview2() {
+  _doSolarPreview('f2-byear','f2-bmonth','f2-bday','f2-bhour','f2-bminute','f2-country','f2-city','solar-time-preview2');
+}
+function _doSolarPreview(yId,mId,dId,hId,miId,cId,ciId,previewId) {
+  var preview = document.getElementById(previewId);
   if (!preview) return;
-  var y = parseInt(document.getElementById('f-byear')?.value);
-  var m = parseInt(document.getElementById('f-bmonth')?.value);
-  var d = parseInt(document.getElementById('f-bday')?.value);
-  var h = parseInt(document.getElementById('f-bhour')?.value);
-  var mi = parseInt(document.getElementById('f-bminute')?.value);
-  var loc = getSelectedBirthLocation('f-country', 'f-city');
+  var y = parseInt(document.getElementById(yId)?.value);
+  var m = parseInt(document.getElementById(mId)?.value);
+  var d = parseInt(document.getElementById(dId)?.value);
+  var h = parseInt(document.getElementById(hId)?.value);
+  var mi = parseInt(document.getElementById(miId)?.value);
+  var loc = getSelectedBirthLocation(cId, ciId);
 
   if (!y || !m || !d || isNaN(h) || !loc) {
     preview.style.display = 'none';

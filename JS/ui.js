@@ -5040,10 +5040,23 @@ function showTarotResult() {
   if (S.form.bdate) {
     var f2bd = document.getElementById('f2-bdate');
     if (f2bd) f2bd.value = S.form.bdate;
+    // ★ v17：同步到新版 select
+    try {
+      var _parts = S.form.bdate.split('-').map(Number);
+      var _f2y = document.getElementById('f2-byear'); if(_f2y) _f2y.value = _parts[0];
+      var _f2m = document.getElementById('f2-bmonth'); if(_f2m) _f2m.value = _parts[1];
+      var _f2d = document.getElementById('f2-bday'); if(_f2d) { _f2d.dispatchEvent(new Event('change')); setTimeout(function(){ _f2d.value = _parts[2]; }, 50); }
+    } catch(e){}
   }
   if (S.form.btime) {
     var f2bt = document.getElementById('f2-btime');
     if (f2bt) f2bt.value = S.form.btime;
+    // ★ v17：同步到新版 select
+    try {
+      var _tparts = S.form.btime.split(':').map(Number);
+      var _f2h = document.getElementById('f2-bhour'); if(_f2h) _f2h.value = _tparts[0];
+      var _f2mi = document.getElementById('f2-bminute'); if(_f2mi) _f2mi.value = _tparts[1] || 0;
+    } catch(e){}
   }
   if (S.form.gender) {
     var g2radios = document.querySelectorAll('input[name="gender2"]');
@@ -5116,24 +5129,47 @@ function renderTarotSpreadDisplay() {
 function enterFullAnalysis() {
   var question = document.getElementById('f2-question').value.trim();
   var gender = document.querySelector('input[name="gender2"]:checked');
-  var bdate = document.getElementById('f2-bdate').value;
-  if (!question || !gender || !bdate) { alert('請填寫：問題、性別、出生日期'); return; }
 
-  var btime = document.getElementById('f2-btime').value || '';
+  // ★ v17：從新版 select 讀取日期
+  var y2 = document.getElementById('f2-byear')?.value;
+  var m2 = document.getElementById('f2-bmonth')?.value;
+  var d2 = document.getElementById('f2-bday')?.value;
+  if (!question || !gender || !y2 || !m2 || !d2) { alert('請填寫：問題、性別、出生日期'); return; }
+
+  var h2 = document.getElementById('f2-bhour')?.value;
+  var mi2 = document.getElementById('f2-bminute')?.value;
   var name = document.getElementById('f2-name').value.trim();
+  var btimeUnsure2 = document.getElementById('f2-btime-unsure')?.checked;
 
-  // 把資料寫入原始表單（讓 submitStep0Fast 讀得到）
-  var fType = document.getElementById('f-type');
-  var fQuestion = document.getElementById('f-question');
-  var fBdate = document.getElementById('f-bdate');
-  var fBtime = document.getElementById('f-btime');
-  var fName = document.getElementById('f-name');
+  // 組裝 bdate/btime（向後相容）
+  var bdate = y2 + '-' + (parseInt(m2)<10?'0':'') + parseInt(m2) + '-' + (parseInt(d2)<10?'0':'') + parseInt(d2);
+  var hh2 = (h2 !== '' && h2 != null && !isNaN(parseInt(h2))) ? parseInt(h2) : 12;
+  var mm2 = (mi2 !== '' && mi2 != null && !isNaN(parseInt(mi2))) ? parseInt(mi2) : 0;
+  if (btimeUnsure2) { hh2 = 12; mm2 = 0; }
+  var btime = btimeUnsure2 ? '' : ((hh2<10?'0':'') + hh2 + ':' + (mm2<10?'0':'') + mm2);
 
-  if (fType) fType.value = S.form.type || 'general';
-  if (fQuestion) fQuestion.value = question;
-  if (fBdate) fBdate.value = bdate;
-  if (fBtime) fBtime.value = btime;
-  if (fName) fName.value = name;
+  // 寫入隱藏欄位
+  var f2bd = document.getElementById('f2-bdate'); if(f2bd) f2bd.value = bdate;
+  var f2bt = document.getElementById('f2-btime'); if(f2bt) f2bt.value = btime;
+
+  // 同步到第一組表單的新欄位
+  var syncPairs = [['f2-byear','f-byear'],['f2-bmonth','f-bmonth'],['f2-bday','f-bday'],['f2-bhour','f-bhour'],['f2-bminute','f-bminute'],['f2-country','f-country'],['f2-city','f-city']];
+  syncPairs.forEach(function(pair) {
+    var src = document.getElementById(pair[0]);
+    var dst = document.getElementById(pair[1]);
+    if (src && dst) {
+      dst.value = src.value;
+      // 觸發 change 以更新聯動（如國家→城市）
+      dst.dispatchEvent(new Event('change'));
+    }
+  });
+
+  // 同步到第一組隱藏欄位
+  var fBdate = document.getElementById('f-bdate'); if(fBdate) fBdate.value = bdate;
+  var fBtime = document.getElementById('f-btime'); if(fBtime) fBtime.value = btime;
+  var fName = document.getElementById('f-name'); if(fName) fName.value = name;
+  var fType = document.getElementById('f-type'); if(fType) fType.value = S.form.type || 'general';
+  var fQuestion = document.getElementById('f-question'); if(fQuestion) fQuestion.value = question;
 
   // 設置性別 radio
   var genderRadios = document.querySelectorAll('input[name="gender"]');
@@ -5322,8 +5358,13 @@ function resetToHome() {
     try {
       var data = {
         gender: (document.querySelector('input[name="gender"]:checked')||{}).value||'',
-        bdate: (document.getElementById('f-bdate')||{}).value||'',
-        btime: (document.getElementById('f-btime')||{}).value||'',
+        byear: (document.getElementById('f-byear')||{}).value||'',
+        bmonth: (document.getElementById('f-bmonth')||{}).value||'',
+        bday: (document.getElementById('f-bday')||{}).value||'',
+        bhour: (document.getElementById('f-bhour')||{}).value||'',
+        bminute: (document.getElementById('f-bminute')||{}).value||'',
+        country: (document.getElementById('f-country')||{}).value||'',
+        city: (document.getElementById('f-city')||{}).value||'',
         name: (document.getElementById('f-name')||{}).value||''
       };
       sessionStorage.setItem('_jy_form', JSON.stringify(data));
@@ -5340,13 +5381,27 @@ function resetToHome() {
         var r2 = document.querySelector('input[name="gender2"][value="'+data.gender+'"]');
         if(r2) r2.checked = true;
       }
-      if (data.bdate) {
-        var bd = document.getElementById('f-bdate'); if(bd) bd.value = data.bdate;
-        var bd2 = document.getElementById('f2-bdate'); if(bd2) bd2.value = data.bdate;
-      }
-      if (data.btime) {
-        var bt = document.getElementById('f-btime'); if(bt) bt.value = data.btime;
-        var bt2 = document.getElementById('f2-btime'); if(bt2) bt2.value = data.btime;
+      // 新版 select 欄位
+      [['byear','f-byear','f2-byear'],['bmonth','f-bmonth','f2-bmonth'],['bday','f-bday','f2-bday'],['bhour','f-bhour','f2-bhour'],['bminute','f-bminute','f2-bminute'],['country','f-country','f2-country']].forEach(function(trio){
+        if(data[trio[0]]) {
+          var e1 = document.getElementById(trio[1]); if(e1) e1.value = data[trio[0]];
+          var e2 = document.getElementById(trio[2]); if(e2) e2.value = data[trio[0]];
+        }
+      });
+      // 國家→城市聯動需要延遲觸發
+      if(data.country) {
+        setTimeout(function(){
+          if(typeof populateCitySelect==='function'){
+            populateCitySelect('f-city', data.country);
+            populateCitySelect('f2-city', data.country);
+            if(data.city){
+              setTimeout(function(){
+                var c1=document.getElementById('f-city'); if(c1) c1.value=data.city;
+                var c2=document.getElementById('f2-city'); if(c2) c2.value=data.city;
+              },50);
+            }
+          }
+        },100);
       }
       if (data.name) {
         var nm = document.getElementById('f-name'); if(nm) nm.value = data.name;
@@ -5357,8 +5412,8 @@ function resetToHome() {
   // 表單變更時自動存
   document.addEventListener('change', function(e){
     var t = e.target;
-    if (t && (t.name === 'gender' || t.id === 'f-bdate' || t.id === 'f-btime' || t.id === 'f-name' ||
-              t.name === 'gender2' || t.id === 'f2-bdate' || t.id === 'f2-btime' || t.id === 'f2-name')) {
+    if (t && (t.name === 'gender' || t.name === 'gender2' || t.id === 'f-name' || t.id === 'f2-name' ||
+              /^f2?-(byear|bmonth|bday|bhour|bminute|country|city)$/.test(t.id))) {
       _saveForm();
     }
   });
@@ -5406,12 +5461,12 @@ function resetToHome() {
   var _origEnterFull = window.enterFullAnalysis;
   if (typeof _origEnterFull === 'function') {
     window.enterFullAnalysis = function(){
-      // 從 f → f2 同步
-      var fields = [['f-bdate','f2-bdate'],['f-btime','f2-btime'],['f-name','f2-name']];
-      fields.forEach(function(pair){
+      // ★ v17：從 f → f2 同步新版 select 欄位
+      var syncFields = [['f-byear','f2-byear'],['f-bmonth','f2-bmonth'],['f-bday','f2-bday'],['f-bhour','f2-bhour'],['f-bminute','f2-bminute'],['f-country','f2-country'],['f-city','f2-city'],['f-name','f2-name']];
+      syncFields.forEach(function(pair){
         var src = document.getElementById(pair[0]);
         var dst = document.getElementById(pair[1]);
-        if(src && dst && src.value && !dst.value) dst.value = src.value;
+        if(src && dst && src.value && !dst.value) { dst.value = src.value; dst.dispatchEvent(new Event('change')); }
       });
       // 性別同步
       var g1 = document.querySelector('input[name="gender"]:checked');
