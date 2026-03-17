@@ -30,6 +30,10 @@ const FILES_TO_OBFUSCATE = [
   'JS/render_upgrade.js',
   'JS/tarot_upgrade.js',
   'JS/western_upgrade.js',
+  'JS/api_upgrade.js',
+  'JS/payment-wall.js',
+  'JS/solar-location.js',
+  'JS/ui.js',
 ];
 
 // 不混淆的檔案（UI 操作，混淆容易出問題）

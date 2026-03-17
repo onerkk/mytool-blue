@@ -459,50 +459,6 @@
       </div>
     </div>
 
-    <!-- ═══ 工具選擇（三入口）═══ -->
-    <div class="card" id="tool-picker-card">
-      <div class="card-title"><i class="fas fa-compass"></i> 選擇分析方式</div>
-      <div class="jy-tool-grid">
-
-        <div class="jy-tool-card jy-tool-tarot" id="tool-tarot" onclick="pickTool('tarot')">
-          <div class="jy-tool-head">
-            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
-            <div>
-              <div class="jy-tool-name">塔羅快讀</div>
-              <div class="jy-tool-desc">此刻的牌面能量</div>
-            </div>
-            <div class="jy-tool-free" id="tool-tarot-badge">每日免費一次</div>
-          </div>
-          <div class="jy-tool-tag">不需出生資料 · 30秒出結果</div>
-        </div>
-
-        <div class="jy-tool-card jy-tool-ootk" id="tool-ootk" onclick="pickTool('ootk')">
-          <div class="jy-tool-head">
-            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(34,197,94,.06));border-color:rgba(74,222,128,.25)"><i class="fas fa-key" style="color:rgba(74,222,128,.9)"></i></div>
-            <div>
-              <div class="jy-tool-name">開鑰之法</div>
-              <div class="jy-tool-desc">五層深潛 · 78張牌全用</div>
-            </div>
-            <div class="jy-tool-free" id="tool-ootk-badge">每日免費一次</div>
-          </div>
-          <div class="jy-tool-tag">需要出生資料 · 金色黎明最高階儀式</div>
-        </div>
-
-        <div class="jy-tool-card jy-tool-full" id="tool-full" onclick="pickTool('full')">
-          <div class="jy-tool-head">
-            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(234,179,8,.06));border-color:rgba(212,175,55,.3)"><i class="fas fa-moon" style="color:var(--c-gold)"></i></div>
-            <div>
-              <div class="jy-tool-name">七維度交叉分析</div>
-              <div class="jy-tool-desc">八字 × 紫微 × 梅花 × 塔羅 × 星盤 × 吠陀 × 姓名</div>
-            </div>
-            <div class="jy-tool-free" id="tool-full-badge">每日免費一次</div>
-          </div>
-          <div class="jy-tool-tag">需要出生資料 · 七套系統交叉驗證 · 最完整</div>
-        </div>
-
-      </div>
-    </div>
-
     <!-- ═══ 出生資料（開鑰/七維度必填，塔羅選填）═══ -->
     <div class="card" id="birth-form-card">
       <div class="card-title"><i class="fas fa-user"></i> 出生資料</div>
@@ -569,13 +525,57 @@
       <input type="hidden" id="f-btime">
     </div>
 
+    <!-- ═══ 工具選擇（三入口）═══ -->
+    <div class="card" id="tool-picker-card">
+      <div class="card-title"><i class="fas fa-compass"></i> 選擇分析方式</div>
+      <div class="jy-tool-grid">
+
+        <div class="jy-tool-card jy-tool-tarot" id="tool-tarot" onclick="pickTool('tarot')">
+          <div class="jy-tool-head">
+            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
+            <div>
+              <div class="jy-tool-name">塔羅快讀</div>
+              <div class="jy-tool-desc">此刻的牌面能量</div>
+            </div>
+            <div class="jy-tool-free" id="tool-tarot-badge">每日免費一次</div>
+          </div>
+          <div class="jy-tool-tag">不需出生資料 · 30秒出結果</div>
+        </div>
+
+        <div class="jy-tool-card jy-tool-ootk" id="tool-ootk" onclick="pickTool('ootk')">
+          <div class="jy-tool-head">
+            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(34,197,94,.06));border-color:rgba(74,222,128,.25)"><i class="fas fa-key" style="color:rgba(74,222,128,.9)"></i></div>
+            <div>
+              <div class="jy-tool-name">開鑰之法</div>
+              <div class="jy-tool-desc">五層深潛 · 78張牌全用</div>
+            </div>
+            <div class="jy-tool-free" id="tool-ootk-badge">每日免費一次</div>
+          </div>
+          <div class="jy-tool-tag">需要出生資料 · 金色黎明最高階儀式</div>
+        </div>
+
+        <div class="jy-tool-card jy-tool-full" id="tool-full" onclick="pickTool('full')">
+          <div class="jy-tool-head">
+            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(234,179,8,.06));border-color:rgba(212,175,55,.3)"><i class="fas fa-moon" style="color:var(--c-gold)"></i></div>
+            <div>
+              <div class="jy-tool-name">七維度交叉分析</div>
+              <div class="jy-tool-desc">八字 × 紫微 × 梅花 × 塔羅 × 星盤 × 吠陀 × 姓名</div>
+            </div>
+            <div class="jy-tool-free" id="tool-full-badge">每日免費一次</div>
+          </div>
+          <div class="jy-tool-tag">需要出生資料 · 七套系統交叉驗證 · 最完整</div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ═══ 塔羅不需出生資料，無表單 ═══ -->
 
     <!-- ═══ CTA（根據工具變化）═══ -->
-    <div id="tool-cta" style="display:none">
+    <div id="tool-cta">
       <div class="actions actions-center" style="flex-direction:column;gap:6px;padding:0 var(--sp-md)">
-        <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-tool-go" style="width:100%"></button>
-        <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:0;text-align:center"></p>
+        <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-tool-go" onclick="submitWithTool()" style="width:100%"><i class="fas fa-bolt"></i> 七維命盤深度分析</button>
+        <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:0;text-align:center">選擇上方的分析方式，或直接開始七維度分析</p>
       </div>
     </div>
   </div>
