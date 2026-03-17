@@ -459,10 +459,10 @@
       </div>
     </div>
 
-    <!-- ═══ 出生資料（開鑰/七維度必填，塔羅選填）═══ -->
-    <div class="card" id="birth-form-card">
+    <!-- ═══ 出生資料 + 工具選擇 + CTA（全部一張卡片）═══ -->
+    <div class="card">
       <div class="card-title"><i class="fas fa-user"></i> 出生資料</div>
-      <div id="birth-form-hint" style="font-size:.72rem;color:var(--c-text-dim);margin-bottom:.6rem;line-height:1.5">開鑰之法和七維度分析需要填寫，塔羅快讀可跳過</div>
+      <div id="birth-form-hint" style="font-size:.72rem;color:var(--c-text-dim);margin-bottom:.8rem;line-height:1.5">開鑰之法和七維度需要填寫，塔羅快讀可跳過</div>
 
       <!-- 性別 -->
       <div class="form-group">
@@ -475,7 +475,7 @@
       </div>
 
       <!-- 出生日期 -->
-      <div class="form-group" id="birth-date-group">
+      <div class="form-group">
         <label class="form-label">出生日期（國曆）<span class="req">*</span></label>
         <div class="jy-date-row">
           <select class="jy-select" id="f-byear" aria-label="出生年份"></select>
@@ -485,7 +485,7 @@
       </div>
 
       <!-- 出生時間 -->
-      <div class="form-group" id="birth-time-group">
+      <div class="form-group">
         <label class="form-label">出生時間 <span style="font-size:.72rem;opacity:.55;font-weight:400;margin-left:.3rem">選填，強烈建議</span></label>
         <div class="jy-time-row">
           <select class="jy-select" id="f-bhour" aria-label="出生時"></select>
@@ -502,7 +502,7 @@
       </div>
 
       <!-- 出生地點 -->
-      <div class="form-group" id="birth-location-group">
+      <div class="form-group">
         <label class="form-label">出生地點 <span style="font-size:.72rem;opacity:.55;font-weight:400;margin-left:.3rem">用於真太陽時校正</span></label>
         <div class="jy-location-row">
           <select class="jy-select jy-select-wide" id="f-country" aria-label="出生國家"></select>
@@ -511,7 +511,7 @@
         <div id="solar-time-preview" class="jy-solar-preview" style="display:none"></div>
         <details style="margin-top:.35rem">
           <summary style="font-size:.72rem;color:var(--c-text-dim);cursor:pointer;user-select:none"><i class="fas fa-chevron-right" style="font-size:.6rem;margin-right:3px;transition:transform .2s"></i> 什麼是真太陽時？</summary>
-          <div style="font-size:.7rem;color:var(--c-text-muted);line-height:1.7;padding:.4rem 0 0 .2rem">中國傳統命理使用太陽實際位置決定「時辰」，而非手錶時間。同一時刻，烏魯木齊和上海的太陽位置差距可達2小時。填寫出生地點後，系統自動校正為真太陽時。西洋占星和吠陀也需要經緯度來計算準確的上升星座。</div>
+          <div style="font-size:.7rem;color:var(--c-text-muted);line-height:1.7;padding:.4rem 0 0 .2rem">中國傳統命理使用太陽實際位置決定「時辰」，而非手錶時間。同一時刻，烏魯木齊和上海的太陽位置差距可達2小時。填寫出生地點後，系統自動校正為真太陽時。</div>
         </details>
       </div>
 
@@ -523,25 +523,23 @@
 
       <input type="hidden" id="f-bdate">
       <input type="hidden" id="f-btime">
-    </div>
 
-    <!-- ═══ 工具選擇（三入口）═══ -->
-    <div class="card" id="tool-picker-card">
-      <div class="card-title"><i class="fas fa-compass"></i> 選擇分析方式</div>
+      <!-- ═══ 分隔線 ═══ -->
+      <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.15),transparent);margin:1.2rem 0"></div>
+
+      <!-- ═══ 工具選擇 ═══ -->
+      <div style="font-size:.82rem;font-weight:700;color:var(--c-text);margin-bottom:.6rem"><i class="fas fa-compass" style="color:var(--c-gold);margin-right:.3rem"></i>選擇分析方式</div>
       <div class="jy-tool-grid">
-
         <div class="jy-tool-card jy-tool-tarot" id="tool-tarot" onclick="pickTool('tarot')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
             <div>
               <div class="jy-tool-name">塔羅快讀</div>
-              <div class="jy-tool-desc">此刻的牌面能量</div>
+              <div class="jy-tool-desc">此刻的牌面能量 · 不需出生資料</div>
             </div>
             <div class="jy-tool-free" id="tool-tarot-badge">每日免費一次</div>
           </div>
-          <div class="jy-tool-tag">不需出生資料 · 30秒出結果</div>
         </div>
-
         <div class="jy-tool-card jy-tool-ootk" id="tool-ootk" onclick="pickTool('ootk')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(74,222,128,.15),rgba(34,197,94,.06));border-color:rgba(74,222,128,.25)"><i class="fas fa-key" style="color:rgba(74,222,128,.9)"></i></div>
@@ -551,31 +549,23 @@
             </div>
             <div class="jy-tool-free" id="tool-ootk-badge">每日免費一次</div>
           </div>
-          <div class="jy-tool-tag">需要出生資料 · 金色黎明最高階儀式</div>
         </div>
-
-        <div class="jy-tool-card jy-tool-full" id="tool-full" onclick="pickTool('full')">
+        <div class="jy-tool-card jy-tool-full selected" id="tool-full" onclick="pickTool('full')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(234,179,8,.06));border-color:rgba(212,175,55,.3)"><i class="fas fa-moon" style="color:var(--c-gold)"></i></div>
             <div>
               <div class="jy-tool-name">七維度交叉分析</div>
-              <div class="jy-tool-desc">八字 × 紫微 × 梅花 × 塔羅 × 星盤 × 吠陀 × 姓名</div>
+              <div class="jy-tool-desc">八字×紫微×梅花×塔羅×星盤×吠陀×姓名</div>
             </div>
             <div class="jy-tool-free" id="tool-full-badge">每日免費一次</div>
           </div>
-          <div class="jy-tool-tag">需要出生資料 · 七套系統交叉驗證 · 最完整</div>
         </div>
-
       </div>
-    </div>
 
-    <!-- ═══ 塔羅不需出生資料，無表單 ═══ -->
-
-    <!-- ═══ CTA（根據工具變化）═══ -->
-    <div id="tool-cta">
-      <div class="actions actions-center" style="flex-direction:column;gap:6px;padding:0 var(--sp-md)">
+      <!-- ═══ CTA ═══ -->
+      <div style="margin-top:1rem">
         <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-tool-go" onclick="submitWithTool()" style="width:100%"><i class="fas fa-bolt"></i> 七維命盤深度分析</button>
-        <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:0;text-align:center">選擇上方的分析方式，或直接開始七維度分析</p>
+        <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:.4rem 0 0;text-align:center">選擇上方的分析方式，或直接開始</p>
       </div>
     </div>
   </div>
