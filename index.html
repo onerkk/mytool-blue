@@ -660,11 +660,17 @@
 <!-- ========== STEP TAROT: 塔羅快讀結果頁 ========== -->
 <section class="step" id="step-tarot" style="padding-top:2rem;padding-bottom:7rem">
 
+  <!-- ═══ P0-1：統一結果導航 ═══ -->
+  <div id="jy-result-nav-tarot" class="jy-result-nav" style="display:none"></div>
+
   <!-- 🎯 你問的問題 -->
   <div id="tarot-question-hero" class="text-dim" style="text-align:center;font-size:.9rem;margin:0 0 .8rem;padding:0 var(--sp-md)"></div>
 
   <!-- 🔮 AI 塔羅深度解讀 -->
   <div id="tarot-ai-wrap"></div>
+
+  <!-- 🔮 OOTK 結果（獨立容器，切換用）-->
+  <div id="ootk-ai-wrap" style="display:none"></div>
 
   <!-- ═══ 想看更深？七維度入口 ═══ -->
   <div class="card" id="tarot-to-full" style="border:1.5px solid rgba(212,175,55,.25)!important;text-align:center;margin-top:var(--sp-lg);box-shadow:0 0 18px rgba(212,175,55,.04)!important">
@@ -743,6 +749,9 @@
     </div>
   </div>
 
+  <!-- ═══ P0-2：趣味區（塔羅/OOTK結果頁也能看到）═══ -->
+  <div id="extra-features-gate-tarot" style="display:none;text-align:center;padding:var(--sp-md) 0"></div>
+
   <!-- 重新問一題 -->
   <div style="text-align:center;margin-top:var(--sp-md);padding-bottom:2rem">
     <button onclick="S._tarotOnlyMode=true;drawnCards=[];S.tarot={drawn:[],spread:[]};goStep(0);window.scrollTo({top:0,behavior:'smooth'})" style="padding:.55rem 1.2rem;border-radius:10px;background:transparent;color:var(--c-text-dim);border:1px solid rgba(255,255,255,.1);font-size:.82rem;cursor:pointer;font-family:inherit"><i class="fas fa-redo" style="margin-right:4px"></i>重新問一題</button>
@@ -753,13 +762,8 @@
 <!-- ========== STEP 3: RESULT (Redesigned 3-Layer) ========== -->
 <section class="step" id="step-3" style="padding-top:2.5rem;padding-bottom:7rem">
 
-  <!-- ═══ 頂部 Tab：七維深度 / 塔羅快讀 ═══ -->
-  <div id="result-mode-tabs" style="display:none;margin-bottom:var(--sp-md)">
-    <div style="display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid rgba(201,168,76,.2)">
-      <button class="result-tab active" id="tab-full" onclick="switchResultTab('full')" style="flex:1;padding:.6rem;font-size:.82rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;background:rgba(201,168,76,.12);color:var(--c-gold)"><i class="fas fa-chart-bar"></i> 七維深度</button>
-      <button class="result-tab" id="tab-tarot-back" onclick="switchResultTab('tarot')" style="flex:1;padding:.6rem;font-size:.82rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;background:transparent;color:var(--c-text-dim)"><i class="fas fa-star"></i> 塔羅快讀</button>
-    </div>
-  </div>
+  <!-- ═══ P0-1：統一結果導航 ═══ -->
+  <div id="jy-result-nav-full" class="jy-result-nav" style="display:none"></div>
 
   <!-- 七維度結果的實際內容（原有） -->
   <div id="full-result-content">

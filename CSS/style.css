@@ -1486,3 +1486,33 @@ details[open] > summary > .fa-chevron-right {
   0%,100% { box-shadow: 0 2px 8px rgba(0,0,0,.15); }
   50% { box-shadow: 0 2px 14px rgba(0,0,0,.2), 0 0 12px rgba(255,255,255,.04); }
 }
+
+/* ══════════════════════════════════════
+   P0-1: 統一結果頁導航
+   ══════════════════════════════════════ */
+.jy-result-nav{display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid rgba(201,168,76,.2);margin-bottom:var(--sp-md,1rem)}
+.jy-result-nav-btn{flex:1;padding:.6rem .4rem;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;background:transparent;color:var(--c-text-dim,#a09880);transition:background .25s,color .25s;display:flex;align-items:center;justify-content:center;gap:.35rem;min-height:44px}
+.jy-result-nav-btn.active{background:rgba(201,168,76,.12);color:var(--c-gold,#c9a84c)}
+.jy-result-nav-btn:not(.active):hover{background:rgba(201,168,76,.06)}
+.jy-result-nav-btn+.jy-result-nav-btn{border-left:1px solid rgba(201,168,76,.1)}
+.jy-result-nav-btn i{font-size:.72rem}
+
+/* ══════════════════════════════════════
+   P0-3: OOTK 分堆動畫
+   ══════════════════════════════════════ */
+.ootk-pile-scene{position:relative;width:100%;max-width:340px;height:220px;margin:0 auto}
+.ootk-pile-deck{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:10}
+.ootk-pile-deck-card{position:absolute;width:36px;height:56px;border-radius:4px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(135deg,#1a1a2e 0%,#0f1a2e 100%);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.ootk-pile-slot{position:absolute;bottom:0;width:60px;text-align:center}
+.ootk-pile-slot-stack{position:relative;height:70px;margin-bottom:.3rem}
+.ootk-pile-slot-label{font-size:.65rem;font-weight:600;white-space:nowrap}
+.ootk-pile-slot[data-el="fire"]{left:8%}.ootk-pile-slot[data-el="fire"] .ootk-pile-slot-label{color:#ef4444}
+.ootk-pile-slot[data-el="water"]{left:30%}.ootk-pile-slot[data-el="water"] .ootk-pile-slot-label{color:#3b82f6}
+.ootk-pile-slot[data-el="air"]{left:52%}.ootk-pile-slot[data-el="air"] .ootk-pile-slot-label{color:#c9a84c}
+.ootk-pile-slot[data-el="earth"]{left:74%}.ootk-pile-slot[data-el="earth"] .ootk-pile-slot-label{color:#22c55e}
+.ootk-fly-card{position:absolute;width:36px;height:56px;border-radius:4px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(135deg,#1a1a2e,#0f1a2e);transition:all .45s cubic-bezier(.34,1.56,.64,1);opacity:1;z-index:20}
+.ootk-fly-card.landed{z-index:1}
+.ootk-pile-count{position:absolute;right:-6px;top:-6px;font-size:.55rem;background:rgba(0,0,0,.7);color:var(--c-gold);border-radius:99px;padding:1px 5px;min-width:16px;text-align:center;border:1px solid rgba(201,168,76,.2)}
+@keyframes ootk-deck-glow{0%,100%{box-shadow:0 0 8px rgba(201,168,76,.15)}50%{box-shadow:0 0 20px rgba(201,168,76,.35)}}
+.ootk-pile-deck{animation:ootk-deck-glow 2s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){.ootk-fly-card{transition:none}.ootk-pile-deck{animation:none}}
