@@ -1487,9 +1487,7 @@ details[open] > summary > .fa-chevron-right {
   50% { box-shadow: 0 2px 14px rgba(0,0,0,.2), 0 0 12px rgba(255,255,255,.04); }
 }
 
-/* ══════════════════════════════════════
-   P0-1: 統一結果頁導航
-   ══════════════════════════════════════ */
+/* ══ P0-1：統一結果頁導航 ══ */
 .jy-result-nav{display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid rgba(201,168,76,.2);margin-bottom:var(--sp-md,1rem)}
 .jy-result-nav-btn{flex:1;padding:.6rem .4rem;font-size:.8rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;background:transparent;color:var(--c-text-dim,#a09880);transition:background .25s,color .25s;display:flex;align-items:center;justify-content:center;gap:.35rem;min-height:44px}
 .jy-result-nav-btn.active{background:rgba(201,168,76,.12);color:var(--c-gold,#c9a84c)}
@@ -1497,9 +1495,7 @@ details[open] > summary > .fa-chevron-right {
 .jy-result-nav-btn+.jy-result-nav-btn{border-left:1px solid rgba(201,168,76,.1)}
 .jy-result-nav-btn i{font-size:.72rem}
 
-/* ══════════════════════════════════════
-   P0-3: OOTK 分堆動畫
-   ══════════════════════════════════════ */
+/* ══ P0-3：OOTK 分堆動畫 ══ */
 .ootk-pile-scene{position:relative;width:100%;max-width:340px;height:220px;margin:0 auto}
 .ootk-pile-deck{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:10}
 .ootk-pile-deck-card{position:absolute;width:36px;height:56px;border-radius:4px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(135deg,#1a1a2e 0%,#0f1a2e 100%);box-shadow:0 1px 3px rgba(0,0,0,.4)}
