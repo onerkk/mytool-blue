@@ -1512,3 +1512,14 @@ details[open] > summary > .fa-chevron-right {
 @keyframes ootk-deck-glow{0%,100%{box-shadow:0 0 8px rgba(201,168,76,.15)}50%{box-shadow:0 0 20px rgba(201,168,76,.35)}}
 .ootk-pile-deck{animation:ootk-deck-glow 2s ease-in-out infinite}
 @media(prefers-reduced-motion:reduce){.ootk-fly-card{transition:none}.ootk-pile-deck{animation:none}}
+
+/* ══ 靜月對話氣泡 ══ */
+.jy-chat{margin:.6rem 0}
+.jy-chat-row{display:flex;gap:.6rem;align-items:flex-start;margin-bottom:.8rem}
+.jy-chat-avatar{flex-shrink:0;width:36px;height:36px;border-radius:50%;overflow:hidden;border:1.5px solid rgba(201,168,76,.3);margin-top:.1rem}
+.jy-chat-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.jy-chat-avatar-spacer{flex-shrink:0;width:36px}
+.jy-chat-bubble{flex:1;min-width:0;padding:.65rem .85rem;border-radius:2px 14px 14px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.08)}
+.jy-chat-da{font-size:1.05rem;font-weight:700;color:var(--c-gold-pale,#f5e6b8);line-height:1.7;background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(139,92,246,.03));border-color:rgba(212,175,55,.18)}
+.jy-chat-p{font-size:.92rem;line-height:1.95;color:var(--c-text,#e0d8c8);margin-bottom:.55rem}
+.jy-chat-p:last-child{margin-bottom:0}
