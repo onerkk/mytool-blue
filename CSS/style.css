@@ -1579,3 +1579,170 @@ details[open] > summary > .fa-chevron-right {
   .jy-bg-slide{animation:none !important;opacity:0}
   .jy-bg-s1{opacity:.35}
 }
+
+/* ═══════════════════════════════════════════════════
+   靜月之光 — 首頁重設計 v26b
+   ═══════════════════════════════════════════════════ */
+
+/* 主容器 */
+.jy-home{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+  min-height:85vh;justify-content:center;
+  padding:3rem 1.2rem 2rem;
+  text-align:center;
+}
+
+/* 月亮：小一點，定位在上方 */
+.jy-home-moon{position:relative;width:56px;height:56px;margin:0 auto 1.8rem}
+.jy-home-moon .hero-moon-crescent{
+  width:56px;height:56px;border-radius:50%;background:transparent;
+  box-shadow:inset -14px 2px 0 0 var(--c-gold-light,#dfc373),
+    0 0 40px rgba(201,168,76,.2),
+    0 0 80px rgba(201,168,76,.08);
+  animation:moonBreath 4s ease-in-out infinite;
+}
+
+/* 主標：大、有存在感 */
+.jy-home-title{
+  font-family:var(--f-display,'Noto Serif TC',serif);
+  font-size:clamp(2.2rem,7vw,3.2rem);
+  font-weight:900;
+  letter-spacing:.12em;
+  color:var(--c-gold,#d4af37);
+  margin:0 0 .7rem;
+  line-height:1.3;
+  text-shadow:0 0 60px rgba(201,168,76,.2),0 2px 4px rgba(0,0,0,.3);
+}
+
+/* 副標 */
+.jy-home-sub{
+  font-family:var(--f-display,'Noto Serif TC',serif);
+  font-size:clamp(1rem,3.5vw,1.2rem);
+  color:rgba(232,224,208,.8);
+  letter-spacing:.08em;
+  margin:0 0 1.2rem;
+  line-height:1.8;
+}
+
+/* 裝飾分隔線 */
+.jy-home-divider{
+  display:flex;align-items:center;gap:.8rem;
+  margin:0 auto 1.2rem;width:200px;
+  opacity:.35;
+}
+.jy-home-divider::before,.jy-home-divider::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,var(--c-gold,#d4af37),transparent);
+}
+.jy-home-divider span{font-size:.55rem;color:var(--c-gold,#d4af37)}
+
+/* 描述 */
+.jy-home-desc{
+  font-size:.82rem;
+  color:var(--c-text-muted,#6b6355);
+  letter-spacing:.04em;
+  margin:0 0 2.2rem;
+  line-height:1.7;
+}
+
+/* CTA 按鈕 */
+.jy-home-cta{
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+  width:100%;max-width:280px;
+  padding:1rem 2rem;
+  border-radius:999px;
+  background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.04));
+  color:var(--c-gold,#d4af37);
+  font-size:1.05rem;font-weight:700;
+  font-family:var(--f-display,'Noto Serif TC',serif);
+  letter-spacing:.1em;
+  border:1.5px solid rgba(212,175,55,.35);
+  cursor:pointer;
+  transition:all .4s cubic-bezier(.25,.8,.25,1);
+  box-shadow:0 0 40px rgba(212,175,55,.06);
+  animation:jy-cta-glow 3s ease-in-out infinite;
+  position:relative;overflow:hidden;
+}
+.jy-home-cta::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 40%,rgba(212,175,55,.08) 50%,transparent 60%);
+  transform:translateX(-100%);
+  animation:jy-cta-shine 4s ease-in-out infinite;
+}
+.jy-home-cta:active{
+  transform:scale(.97);
+  background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.08));
+}
+.jy-home-cta-text{position:relative;z-index:1}
+.jy-home-cta-arrow{
+  position:relative;z-index:1;
+  font-size:1.1rem;
+  transition:transform .3s;
+}
+.jy-home-cta:hover .jy-home-cta-arrow{transform:translateX(3px)}
+
+@keyframes jy-cta-glow{
+  0%,100%{box-shadow:0 0 40px rgba(212,175,55,.06);border-color:rgba(212,175,55,.35)}
+  50%{box-shadow:0 0 60px rgba(212,175,55,.12),0 0 20px rgba(212,175,55,.06) inset;border-color:rgba(212,175,55,.55)}
+}
+@keyframes jy-cta-shine{
+  0%,70%,100%{transform:translateX(-100%)}
+  85%{transform:translateX(100%)}
+}
+
+/* 快問按鈕 */
+.jy-home-quick{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  gap:.45rem;margin-top:1.3rem;max-width:360px;
+}
+.jy-qk{
+  display:flex;align-items:center;gap:.3rem;
+  padding:.5rem .9rem;
+  border-radius:999px;
+  font-size:.78rem;font-family:inherit;
+  color:rgba(232,224,208,.55);
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  cursor:pointer;
+  transition:all .3s;
+  white-space:nowrap;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+}
+.jy-qk:active,.jy-qk:hover{
+  color:var(--c-gold,#d4af37);
+  background:rgba(212,175,55,.08);
+  border-color:rgba(212,175,55,.25);
+  box-shadow:0 0 12px rgba(212,175,55,.08);
+}
+.jy-qk-icon{font-size:.82rem}
+
+/* 每日一牌 */
+.jy-home-daily{
+  margin-top:2rem;text-align:center;
+  max-width:300px;width:100%;
+}
+.jy-home-daily-toggle{
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  margin-bottom:.6rem;
+  font-size:.76rem;
+  color:var(--c-text-muted,#6b6355);
+  letter-spacing:.06em;
+  transition:color .2s;
+}
+.jy-home-daily-toggle:hover{color:var(--c-text-dim,#a09880)}
+.jy-home-daily-arr{font-size:.5rem;transition:transform .3s}
+
+/* 底部 */
+.jy-home-footer{
+  margin-top:2rem;
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+}
+.jy-home-quota{
+  font-size:.68rem;
+  color:var(--c-text-muted,#6b6355);
+  letter-spacing:.03em;
+  opacity:.7;
+}
