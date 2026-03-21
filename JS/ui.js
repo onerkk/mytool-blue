@@ -2933,13 +2933,13 @@ const _majorArcanaNames = {
   15:'devil',16:'tower',17:'star',18:'moon',19:'sun',20:'judgement',21:'world'
 };
 function getTarotCardImage(card){
-  // 大阿爾克那(0-21)：AI 生圖 .jpg，小阿爾克那(22+)：原 .webp
+  // 全 78 張 AI 生圖：大阿 XX-name.jpg，小阿 XX.jpg
   if (card && card.id != null) {
     var prefix = (card.id < 10 ? '0' : '') + card.id;
     if (_majorArcanaNames[card.id]) {
       return 'tarot_img/' + prefix + '-' + _majorArcanaNames[card.id] + '.jpg';
     }
-    return 'tarot_img/' + prefix + '.webp';
+    return 'tarot_img/' + prefix + '.jpg';
   }
   if(!_tarotImageCache[card.id]){
     _tarotImageCache[card.id] = generateTarotCardImage(card);
