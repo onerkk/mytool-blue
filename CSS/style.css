@@ -1523,3 +1523,59 @@ details[open] > summary > .fa-chevron-right {
 .jy-chat-da{font-size:1.05rem;font-weight:700;color:var(--c-gold-pale,#f5e6b8);line-height:1.7;background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(139,92,246,.03));border-color:rgba(212,175,55,.18)}
 .jy-chat-p{font-size:.92rem;line-height:1.95;color:var(--c-text,#e0d8c8);margin-bottom:.55rem}
 .jy-chat-p:last-child{margin-bottom:0}
+
+/* ═══════════════════════════════════════════════════
+   靜月之光 — 首頁背景輪播 v26b
+   6張圖交叉淡入 + 微縮放 Ken Burns
+   ═══════════════════════════════════════════════════ */
+#jy-bg-slideshow{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.jy-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;animation:jy-bgFade 48s infinite;will-change:opacity,transform}
+.jy-bg-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,9,15,.72) 0%,rgba(8,9,15,.55) 40%,rgba(8,9,15,.78) 100%);z-index:1}
+
+/* 各張背景圖 */
+.jy-bg-s1{background-image:url('../img/bg-sphere.jpg');animation-delay:0s}
+.jy-bg-s2{background-image:url('../img/bg-tarot.jpg');animation-delay:8s}
+.jy-bg-s3{background-image:url('../img/bg-astrolabe.jpg');animation-delay:16s}
+.jy-bg-s4{background-image:url('../img/bg-amethyst.jpg');animation-delay:24s}
+.jy-bg-s5{background-image:url('../img/bg-silk.jpg');animation-delay:32s}
+.jy-bg-s6{background-image:url('../img/bg-candle.jpg');animation-delay:40s}
+
+/* Ken Burns 微動：每張用不同起終點避免單調 */
+.jy-bg-s1{animation:jy-bgFade 48s infinite, jy-kb1 48s infinite}
+.jy-bg-s2{animation:jy-bgFade 48s 8s infinite, jy-kb2 48s 8s infinite}
+.jy-bg-s3{animation:jy-bgFade 48s 16s infinite, jy-kb1 48s 16s infinite}
+.jy-bg-s4{animation:jy-bgFade 48s 24s infinite, jy-kb2 48s 24s infinite}
+.jy-bg-s5{animation:jy-bgFade 48s 32s infinite, jy-kb1 48s 32s infinite}
+.jy-bg-s6{animation:jy-bgFade 48s 40s infinite, jy-kb2 48s 40s infinite}
+
+/* 淡入淡出：每張佔 16.67%（8s/48s），前後 2s 過渡 */
+@keyframes jy-bgFade{
+  0%{opacity:0}
+  4.17%{opacity:1}
+  12.5%{opacity:1}
+  16.67%{opacity:0}
+  100%{opacity:0}
+}
+
+/* Ken Burns 慢速縮放+平移 — 型態A */
+@keyframes jy-kb1{
+  0%{transform:scale(1.05) translate(0,0)}
+  16.67%{transform:scale(1.12) translate(-1.5%,-1%)}
+  100%{transform:scale(1.05) translate(0,0)}
+}
+/* Ken Burns 型態B（反向） */
+@keyframes jy-kb2{
+  0%{transform:scale(1.08) translate(1%,-0.5%)}
+  16.67%{transform:scale(1.02) translate(-0.5%,1%)}
+  100%{transform:scale(1.08) translate(1%,-0.5%)}
+}
+
+/* 確保 hook-screen 內容在輪播之上 */
+#hook-screen{position:relative;z-index:2}
+#step-0{position:relative;overflow:hidden}
+
+/* 無障礙：減少動畫 */
+@media(prefers-reduced-motion:reduce){
+  .jy-bg-slide{animation:none !important;opacity:0}
+  .jy-bg-s1{opacity:.35}
+}
