@@ -300,7 +300,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .tarot-deck-card.picked{opacity:.2;pointer-events:none;transform:scale(.85)}
 .tarot-deck-card-inner{
   width:100%;height:100%;border-radius:8px;
-  background:url('/tarot_img/back.webp') center/cover no-repeat;
+  background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
   border:1px solid rgba(212,175,55,.25);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 8px rgba(212,175,55,.06);
@@ -317,7 +317,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .tarot-deck-card-inner::after{content:'';}
 .tarot-card-back{
   width:58px;height:90px;border-radius:8px;
-  background:url('/tarot_img/back.webp') center/cover no-repeat;
+  background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
   border:1px solid rgba(212,175,55,.25);
   box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 8px rgba(212,175,55,.06);
   cursor:pointer;transition:transform .25s,opacity .3s;
@@ -325,7 +325,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .tarot-card-back:hover{transform:translateY(-10px)}
 .tarot-fly-card{
   position:fixed;z-index:9999;border-radius:8px;
-  background:url('/tarot_img/back.webp') center/cover no-repeat;
+  background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
   border:1px solid rgba(212,175,55,.3);
   box-shadow:0 4px 20px rgba(212,175,55,.15);
   transition:left .5s cubic-bezier(.4,0,.2,1),top .5s cubic-bezier(.4,0,.2,1),width .5s,height .5s;
@@ -1498,7 +1498,7 @@ details[open] > summary > .fa-chevron-right {
 /* ══ P0-3：OOTK 分堆動畫 ══ */
 .ootk-pile-scene{position:relative;width:100%;max-width:340px;height:220px;margin:0 auto}
 .ootk-pile-deck{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:10}
-.ootk-pile-deck-card{position:absolute;width:36px;height:56px;border-radius:4px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(135deg,#1a1a2e 0%,#0f1a2e 100%);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.ootk-pile-deck-card{position:absolute;width:36px;height:56px;border-radius:4px;border:1px solid rgba(201,168,76,.3);background:url('/tarot_img/card-back.jpg') center/cover no-repeat;box-shadow:0 1px 3px rgba(0,0,0,.4)}
 .ootk-pile-slot{position:absolute;bottom:0;width:60px;text-align:center}
 .ootk-pile-slot-stack{position:relative;height:70px;margin-bottom:.3rem}
 .ootk-pile-slot-label{font-size:.65rem;font-weight:600;white-space:nowrap}
@@ -1506,7 +1506,7 @@ details[open] > summary > .fa-chevron-right {
 .ootk-pile-slot[data-el="water"]{left:30%}.ootk-pile-slot[data-el="water"] .ootk-pile-slot-label{color:#3b82f6}
 .ootk-pile-slot[data-el="air"]{left:52%}.ootk-pile-slot[data-el="air"] .ootk-pile-slot-label{color:#c9a84c}
 .ootk-pile-slot[data-el="earth"]{left:74%}.ootk-pile-slot[data-el="earth"] .ootk-pile-slot-label{color:#22c55e}
-.ootk-fly-card{position:absolute;width:36px;height:56px;border-radius:4px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(135deg,#1a1a2e,#0f1a2e);transition:all .45s cubic-bezier(.34,1.56,.64,1);opacity:1;z-index:20}
+.ootk-fly-card{position:absolute;width:36px;height:56px;border-radius:4px;border:1px solid rgba(201,168,76,.3);background:url('/tarot_img/card-back.jpg') center/cover no-repeat;transition:all .45s cubic-bezier(.34,1.56,.64,1);opacity:1;z-index:20}
 .ootk-fly-card.landed{z-index:1}
 .ootk-pile-count{position:absolute;right:-6px;top:-6px;font-size:.55rem;background:rgba(0,0,0,.7);color:var(--c-gold);border-radius:99px;padding:1px 5px;min-width:16px;text-align:center;border:1px solid rgba(201,168,76,.2)}
 @keyframes ootk-deck-glow{0%,100%{box-shadow:0 0 8px rgba(201,168,76,.15)}50%{box-shadow:0 0 20px rgba(201,168,76,.35)}}
