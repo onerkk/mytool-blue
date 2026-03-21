@@ -5026,13 +5026,8 @@ showAuraResult = function(){
     hookScreen.innerHTML = particlesHtml +
     '<div class="jy-home">' +
 
-      // 頂部留白 + 月亮符號（極簡，不搶背景的戲）
-      '<div class="jy-home-moon" id="hero-moon" onclick="_moonTap()">' +
-        '<div class="hero-moon-crescent"></div>' +
-      '</div>' +
-
       // 主標語：大字，有力
-      '<h1 class="jy-home-title">靜月之光</h1>' +
+      '<h1 class="jy-home-title" id="hero-moon" onclick="_moonTap()">靜月之光</h1>' +
 
       // 副標：一句話勾住
       '<p class="jy-home-sub">你心裡的事，牌都知道</p>' +
