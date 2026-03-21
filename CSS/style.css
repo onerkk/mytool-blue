@@ -816,7 +816,19 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .conclusion p{line-height:2!important;margin-bottom:var(--sp-md)!important;color:rgba(232,234,240,.8)!important}
 
 /* ── Tarot card images ── */
-.tc-img{width:100%;height:auto;border-radius:4px;display:block;margin-bottom:4px}
+.tc-img{width:100%;height:auto;border-radius:4px;display:block;margin-bottom:4px;max-height:72px;object-fit:cover}
+
+/* ── Tarot reveal card in slot ── */
+.tarot-chosen-slot{overflow:hidden}
+.tarot-reveal{width:100%;height:100%;perspective:600px}
+.tarot-reveal-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s ease-in-out}
+.tarot-reveal.flipping .tarot-reveal-inner{transform:rotateY(180deg)}
+.tarot-reveal-back,.tarot-reveal-front{position:absolute;inset:0;backface-visibility:hidden;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.tarot-reveal-back{background:url('/tarot_img/card-back.jpg') center/cover no-repeat;border:1px solid rgba(212,175,55,.2)}
+.tarot-reveal-front{transform:rotateY(180deg);background:var(--c-bg-card-alt,#1a1a2e);border:1px solid rgba(255,255,255,.1);padding:2px}
+.tarot-reveal-front .tc-img{width:100%;height:auto;max-height:68px;object-fit:cover;border-radius:3px;flex-shrink:0}
+.tarot-reveal-front .tc-name{font-family:var(--f-display);font-weight:700;font-size:.52rem;color:var(--c-gold);margin-top:1px;line-height:1.2;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.tarot-reveal-front .tc-dir{font-size:.45rem;color:var(--c-text-dim);line-height:1}
 .t-card-face.t-front{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px}
 .t-card-face.t-front .tc-name{font-size:.7rem;margin-top:2px}
 .tc-spread-img{box-shadow:0 2px 8px rgba(0,0,0,.3);border:1px solid rgba(201,168,76,.2)}
