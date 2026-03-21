@@ -1530,7 +1530,7 @@ details[open] > summary > .fa-chevron-right {
    ═══════════════════════════════════════════════════ */
 #jy-bg-slideshow{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
 .jy-bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;animation:jy-bgFade 48s infinite;will-change:opacity,transform}
-.jy-bg-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,9,15,.72) 0%,rgba(8,9,15,.55) 40%,rgba(8,9,15,.78) 100%);z-index:1}
+.jy-bg-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,9,15,.82) 0%,rgba(8,9,15,.65) 40%,rgba(8,9,15,.85) 100%);z-index:1}
 
 /* 各張背景圖 */
 .jy-bg-s1{background-image:url('../img/bg-sphere.jpg');animation-delay:0s}
@@ -1588,8 +1588,8 @@ details[open] > summary > .fa-chevron-right {
 .jy-home{
   position:relative;z-index:2;
   display:flex;flex-direction:column;align-items:center;
-  min-height:85vh;justify-content:center;
-  padding:3rem 1.2rem 2rem;
+  min-height:80vh;justify-content:center;
+  padding:2rem 1.2rem 2rem;
   text-align:center;
 }
 
@@ -1606,13 +1606,13 @@ details[open] > summary > .fa-chevron-right {
 /* 主標：大、有存在感 */
 .jy-home-title{
   font-family:var(--f-display,'Noto Serif TC',serif);
-  font-size:clamp(2.2rem,7vw,3.2rem);
+  font-size:clamp(2.4rem,8vw,3.5rem);
   font-weight:900;
-  letter-spacing:.12em;
+  letter-spacing:.15em;
   color:var(--c-gold,#d4af37);
-  margin:0 0 .7rem;
+  margin:0 0 .8rem;
   line-height:1.3;
-  text-shadow:0 0 60px rgba(201,168,76,.2),0 2px 4px rgba(0,0,0,.3);
+  text-shadow:0 0 60px rgba(201,168,76,.25),0 2px 4px rgba(0,0,0,.4);
 }
 
 /* 副標 */
@@ -1652,15 +1652,15 @@ details[open] > summary > .fa-chevron-right {
   width:100%;max-width:280px;
   padding:1rem 2rem;
   border-radius:999px;
-  background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.04));
+  background:transparent;
   color:var(--c-gold,#d4af37);
   font-size:1.05rem;font-weight:700;
   font-family:var(--f-display,'Noto Serif TC',serif);
   letter-spacing:.1em;
-  border:1.5px solid rgba(212,175,55,.35);
+  border:1.5px solid rgba(212,175,55,.4);
   cursor:pointer;
   transition:all .4s cubic-bezier(.25,.8,.25,1);
-  box-shadow:0 0 40px rgba(212,175,55,.06);
+  box-shadow:0 0 30px rgba(212,175,55,.06);
   animation:jy-cta-glow 3s ease-in-out infinite;
   position:relative;overflow:hidden;
 }
@@ -1672,7 +1672,7 @@ details[open] > summary > .fa-chevron-right {
 }
 .jy-home-cta:active{
   transform:scale(.97);
-  background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.08));
+  background:rgba(212,175,55,.08);
 }
 .jy-home-cta-text{position:relative;z-index:1}
 .jy-home-cta-arrow{
@@ -1683,8 +1683,8 @@ details[open] > summary > .fa-chevron-right {
 .jy-home-cta:hover .jy-home-cta-arrow{transform:translateX(3px)}
 
 @keyframes jy-cta-glow{
-  0%,100%{box-shadow:0 0 40px rgba(212,175,55,.06);border-color:rgba(212,175,55,.35)}
-  50%{box-shadow:0 0 60px rgba(212,175,55,.12),0 0 20px rgba(212,175,55,.06) inset;border-color:rgba(212,175,55,.55)}
+  0%,100%{box-shadow:0 0 20px rgba(212,175,55,.04);border-color:rgba(212,175,55,.4)}
+  50%{box-shadow:0 0 40px rgba(212,175,55,.1);border-color:rgba(212,175,55,.6)}
 }
 @keyframes jy-cta-shine{
   0%,70%,100%{transform:translateX(-100%)}
