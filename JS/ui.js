@@ -5024,74 +5024,58 @@ showAuraResult = function(){
     var particlesHtml = particles ? particles.outerHTML : '';
 
     hookScreen.innerHTML = particlesHtml +
-    '<div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;min-height:75vh;justify-content:center;padding:2rem 1rem">' +
+    '<div class="jy-home">' +
 
-      // 月亮（保留 admin 彩蛋）
-      '<div class="hero-moon" id="hero-moon" onclick="_moonTap()" style="margin-bottom:1.5rem">' +
+      // 頂部留白 + 月亮符號（極簡，不搶背景的戲）
+      '<div class="jy-home-moon" id="hero-moon" onclick="_moonTap()">' +
         '<div class="hero-moon-crescent"></div>' +
       '</div>' +
 
-      // 計數器（保留但低調）
-      '<div class="counter-badge" id="counter-badge" style="margin-bottom:1.2rem"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
+      // 主標語：大字，有力
+      '<h1 class="jy-home-title">靜月之光</h1>' +
 
-      // 主標語
-      '<h1 style="font-size:clamp(1.5rem,5vw,2rem);letter-spacing:.06em;text-align:center;margin-bottom:.6rem;font-family:var(--f-display,serif);color:var(--c-text,#e8e0d0)">' +
-        '靜月之光' +
-      '</h1>' +
+      // 副標：一句話勾住
+      '<p class="jy-home-sub">你心裡的事，牌都知道</p>' +
 
-      '<p style="font-size:.95rem;color:var(--c-text-dim,#a09880);text-align:center;max-width:300px;line-height:1.9;margin-bottom:.4rem;font-family:var(--f-display,serif)">' +
-        '你心裡的事，牌都知道' +
-      '</p>' +
-      '<p style="font-size:.76rem;color:var(--c-text-muted,#6b6355);text-align:center;max-width:320px;line-height:1.7;margin-bottom:2rem">' +
-        '金色黎明塔羅牌 · AI 深度解讀<br>不用填生日，抽牌就有答案' +
-      '</p>' +
+      // 分隔線裝飾
+      '<div class="jy-home-divider"><span>✦</span></div>' +
 
-      // CTA 按鈕（塔羅快讀永遠可用）
-      '<button id="home-cta-btn" onclick="_enterFromHome()" style="' +
-          'display:flex;align-items:center;justify-content:center;gap:.6rem;' +
-          'width:100%;max-width:300px;' +
-          'padding:1.1rem 2rem;border-radius:14px;' +
-          'background:transparent;' +
-          'color:var(--c-gold,#d4af37);' +
-          'font-size:1.05rem;font-weight:700;font-family:var(--f-display,serif);' +
-          'border:1.5px solid rgba(212,175,55,.4);' +
-          'cursor:pointer;transition:all .3s;' +
-          'box-shadow:0 0 30px rgba(212,175,55,.08),inset 0 0 20px rgba(212,175,55,.03);' +
-          'letter-spacing:.08em;' +
-          'animation:home-cta-breathe 3s ease-in-out infinite">' +
-          '🌙 開始解讀' +
-        '</button>' +
+      // 說明（極短）
+      '<p class="jy-home-desc">七套命理系統 × AI 深度交叉解讀</p>' +
 
-      // ★ v26：零思考入口 — 一句話直接抽牌
-      '<div style="margin-top:1.2rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;max-width:340px">' +
-        '<button class="jy-quick-q" onclick="_quickAsk(\'今年有桃花嗎？\')">🌸 有桃花嗎</button>' +
-        '<button class="jy-quick-q" onclick="_quickAsk(\'我該換工作嗎？\')">💼 該換工作嗎</button>' +
-        '<button class="jy-quick-q" onclick="_quickAsk(\'今年財運如何？\')">💰 財運如何</button>' +
-        '<button class="jy-quick-q" onclick="_quickAsk(\'他是認真的嗎？\')">💕 他認真嗎</button>' +
+      // CTA
+      '<button id="home-cta-btn" class="jy-home-cta" onclick="_enterFromHome()">' +
+        '<span class="jy-home-cta-text">開始解讀</span>' +
+        '<span class="jy-home-cta-arrow">→</span>' +
+      '</button>' +
+
+      // 快問按鈕
+      '<div class="jy-home-quick">' +
+        '<button class="jy-qk" onclick="_quickAsk(\'今年有桃花嗎？\')"><span class="jy-qk-icon">🌸</span>有桃花嗎</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'我該換工作嗎？\')"><span class="jy-qk-icon">💼</span>該換工作嗎</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'今年財運如何？\')"><span class="jy-qk-icon">💰</span>財運如何</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'他是認真的嗎？\')"><span class="jy-qk-icon">💕</span>他認真嗎</button>' +
       '</div>' +
 
-      // ★ v26：每日一牌
-      '<div id="daily-card-wrap" style="margin-top:1.8rem;text-align:center;max-width:280px;width:100%">' +
-        '<div onclick="_toggleDailyCard()" style="cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;margin-bottom:.6rem">' +
-          '<span style="font-size:.78rem;color:var(--c-text-muted,#6b6355);letter-spacing:.06em">✦ 今日一牌</span>' +
-          '<i id="daily-card-arrow" class="fas fa-chevron-down" style="font-size:.55rem;color:var(--c-text-muted,#6b6355);transition:transform .3s"></i>' +
+      // 每日一牌
+      '<div class="jy-home-daily" id="daily-card-wrap">' +
+        '<div onclick="_toggleDailyCard()" class="jy-home-daily-toggle">' +
+          '<span>✦ 今日一牌</span>' +
+          '<i id="daily-card-arrow" class="fas fa-chevron-down jy-home-daily-arr"></i>' +
         '</div>' +
         '<div id="daily-card-body" style="display:none"></div>' +
       '</div>' +
 
-      // 底部提示
-      '<div style="margin-top:1.5rem;text-align:center">' +
+      // 計數 + 底部
+      '<div class="jy-home-footer">' +
+        '<div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
         (isAdmin ?
-          '<span style="font-size:.7rem;color:#a78bfa;opacity:.5">👑 管理員・無限次</span>' :
-          '<span style="font-size:.73rem;color:var(--c-text-muted,#6b6355)">✦ 塔羅・七維度・開鑰 每日各免費一次</span>'
+          '<div class="jy-home-quota">👑 管理員・無限次</div>' :
+          '<div class="jy-home-quota">塔羅・七維度・開鑰 每日各免費一次</div>'
         ) +
       '</div>' +
 
-    '</div>' +
-
-    // 呼吸動畫
-    '<style>@keyframes home-cta-breathe{0%,100%{box-shadow:0 0 30px rgba(212,175,55,.08),inset 0 0 20px rgba(212,175,55,.03);border-color:rgba(212,175,55,.4)}50%{box-shadow:0 0 45px rgba(212,175,55,.15),inset 0 0 30px rgba(212,175,55,.06);border-color:rgba(212,175,55,.6)}}' +
-    '.jy-quick-q{padding:.45rem .8rem;border-radius:999px;font-size:.76rem;color:var(--c-text-dim,#a09880);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;font-family:inherit;transition:all .25s;white-space:nowrap}.jy-quick-q:active{background:rgba(212,175,55,.12);border-color:rgba(212,175,55,.3);color:var(--c-gold,#d4af37)}</style>';
+    '</div>';
   }
 
   // ★ v26：零思考入口 — 點了直接跑塔羅
