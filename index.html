@@ -476,7 +476,7 @@
       <div class="form-group">
         <div class="q-preset-grid" id="q-presets"></div>
         <div id="q-custom-wrap" style="display:none;margin-top:var(--sp-sm)">
-          <textarea class="form-textarea" id="f-question" aria-label="你的問題" placeholder="輸入你的問題…" maxlength="500" style="min-height:60px"></textarea>
+          <textarea class="form-textarea" id="f-question" aria-label="你的問題" placeholder="輸入你的問題…" maxlength="500" style="min-height:44px"></textarea>
           <div class="form-hint"><span id="f-char">0</span>/500</div>
         </div>
       </div>
@@ -555,21 +555,21 @@
         <div class="jy-tool-card jy-tool-tarot" id="tool-tarot" onclick="pickTool('tarot')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
-            <div><div class="jy-tool-name">塔羅快讀</div><div class="jy-tool-desc">此刻的牌面能量 · 不需出生資料</div></div>
+            <div><div class="jy-tool-name">塔羅快讀</div><div class="jy-tool-desc">一個問題，抽牌就有答案<br><span style="opacity:.6">不需出生資料・30 秒出結果</span></div></div>
             <div class="jy-tool-free" id="tool-tarot-badge">每日免費一次</div>
           </div>
         </div>
         <div class="jy-tool-card jy-tool-ootk" id="tool-ootk" onclick="pickTool('ootk')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(217,151,56,.18),rgba(217,151,56,.06));border-color:rgba(217,151,56,.3)"><i class="fas fa-key" style="color:rgba(217,151,56,.9)"></i></div>
-            <div><div class="jy-tool-name">開鑰之法</div><div class="jy-tool-desc">五層深潛 · 78張牌全用</div></div>
+            <div><div class="jy-tool-name">開鑰之法</div><div class="jy-tool-desc">78 張牌五層深潛，問到根源<br><span style="opacity:.6">需出生資料・金色黎明最高階儀式</span></div></div>
             <div class="jy-tool-free" id="tool-ootk-badge">每日免費一次</div>
           </div>
         </div>
         <div class="jy-tool-card jy-tool-full selected" id="tool-full" onclick="pickTool('full')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(234,179,8,.06));border-color:rgba(212,175,55,.3)"><i class="fas fa-moon" style="color:var(--c-gold)"></i></div>
-            <div><div class="jy-tool-name">七維度交叉分析</div><div class="jy-tool-desc">八字×紫微×梅花×塔羅×星盤×吠陀×姓名</div></div>
+            <div><div class="jy-tool-name">七維度交叉分析</div><div class="jy-tool-desc">七套命理系統交叉比對，看最完整的你<br><span style="opacity:.6">需出生資料・八字 紫微 梅花 塔羅 星盤 吠陀 姓名</span></div></div>
             <div class="jy-tool-free" id="tool-full-badge">每日免費一次</div>
           </div>
         </div>
@@ -577,9 +577,9 @@
     </div>
 
     <!-- CTA -->
-    <div class="actions actions-center" style="flex-direction:column;gap:6px;padding:0 var(--sp-md)">
+    <div id="tool-cta" class="actions actions-center" style="flex-direction:column;gap:6px;padding:0 var(--sp-md)">
       <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-tool-go" onclick="submitWithTool()" style="width:100%"><i class="fas fa-bolt"></i> 七維命盤深度分析</button>
-      <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:0;text-align:center">選擇上方的分析方式，或直接開始</p>
+      <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:0;text-align:center">八字・紫微・梅花・塔羅・星盤・吠陀・姓名</p>
     </div>
   </div>
 
@@ -1354,7 +1354,7 @@
 
     <!-- 聯絡（審核必要） -->
     <div style="text-align:center;margin-bottom:1.2rem">
-      <p style="margin-bottom:.3rem"><a href="mailto:onerkk@gmail.com" style="color:rgba(212,175,55,.45);text-decoration:none">onerkk@gmail.com</a></p>
+      <p style="margin-bottom:.3rem"><a href="/cdn-cgi/l/email-protection#5c3332392e37371c3b313d3530723f3331" style="color:rgba(212,175,55,.45);text-decoration:none"><span class="__cf_email__" data-cfemail="610e0f04130a0a21060c00080d4f020e0c">[email&#160;protected]</span></a></p>
       <p style="margin-bottom:.3rem"><a href="tel:0928399169" style="color:rgba(212,175,55,.45);text-decoration:none">0928-399-169</a></p>
       <p><a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="color:rgba(212,175,55,.35);text-decoration:none">蝦皮賣場</a><span style="margin:0 .5rem;opacity:.3">·</span><span>週一至週五 10:00–20:00</span></p>
     </div>
@@ -1378,7 +1378,4 @@
   </div>
 </footer>
 
-<script src="JS/payment-wall.js?v=20260321" defer></script>
-
-<script>document.addEventListener('DOMContentLoaded',function(){if(typeof initBirthForm==='function')initBirthForm();});</script>
-</body></html>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static
