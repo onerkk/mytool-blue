@@ -1369,16 +1369,16 @@ details[open] > summary > .fa-chevron-right {
   gap: 12px;
 }
 .jy-tool-orb {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  border: 1px solid;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1.5px solid;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.15rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
 }
 .jy-tool-name {
   font-size: .88rem;
@@ -1684,29 +1684,29 @@ details[open] > summary > .fa-chevron-right {
 .jy-home-cta{
   display:flex;align-items:center;justify-content:center;gap:.6rem;
   width:100%;max-width:280px;
-  padding:.85rem 2rem;
+  padding:.9rem 2rem;
   border-radius:999px;
-  background:transparent;
-  color:var(--c-gold,#d4af37);
-  font-size:1.05rem;font-weight:700;
+  background:linear-gradient(135deg,#b8941f 0%,#d4af37 40%,#e8c84a 60%,#c9a020 100%);
+  color:#1a0e00;
+  font-size:1.05rem;font-weight:800;
   font-family:var(--f-display,'Noto Serif TC',serif);
   letter-spacing:.1em;
-  border:1.5px solid rgba(212,175,55,.4);
+  border:none;
   cursor:pointer;
   transition:all .4s cubic-bezier(.25,.8,.25,1);
-  box-shadow:0 0 30px rgba(212,175,55,.06);
-  animation:jy-cta-glow 3s ease-in-out infinite;
+  box-shadow:0 4px 24px rgba(212,175,55,.25),0 0 60px rgba(212,175,55,.1);
+  animation:jy-cta-glow 2.5s ease-in-out infinite;
   position:relative;overflow:hidden;
 }
 .jy-home-cta::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,transparent 40%,rgba(212,175,55,.08) 50%,transparent 60%);
+  content:'';position:absolute;inset:0;border-radius:999px;
+  background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.25) 50%,transparent 70%);
   transform:translateX(-100%);
-  animation:jy-cta-shine 4s ease-in-out infinite;
+  animation:jy-cta-shine 3.5s ease-in-out infinite;
 }
 .jy-home-cta:active{
-  transform:scale(.97);
-  background:rgba(212,175,55,.08);
+  transform:scale(.96);
+  box-shadow:0 2px 12px rgba(212,175,55,.3);
 }
 .jy-home-cta-text{position:relative;z-index:1}
 .jy-home-cta-arrow{
@@ -1717,12 +1717,12 @@ details[open] > summary > .fa-chevron-right {
 .jy-home-cta:hover .jy-home-cta-arrow{transform:translateX(3px)}
 
 @keyframes jy-cta-glow{
-  0%,100%{box-shadow:0 0 20px rgba(212,175,55,.04);border-color:rgba(212,175,55,.4)}
-  50%{box-shadow:0 0 40px rgba(212,175,55,.1);border-color:rgba(212,175,55,.6)}
+  0%,100%{box-shadow:0 4px 24px rgba(212,175,55,.2),0 0 50px rgba(212,175,55,.08)}
+  50%{box-shadow:0 4px 32px rgba(212,175,55,.35),0 0 80px rgba(212,175,55,.15)}
 }
 @keyframes jy-cta-shine{
-  0%,70%,100%{transform:translateX(-100%)}
-  85%{transform:translateX(100%)}
+  0%,65%,100%{transform:translateX(-100%)}
+  80%{transform:translateX(100%)}
 }
 
 /* 快問按鈕 */
@@ -1732,25 +1732,23 @@ details[open] > summary > .fa-chevron-right {
 }
 .jy-qk{
   display:flex;align-items:center;gap:.3rem;
-  padding:.5rem .9rem;
+  padding:.45rem .8rem;
   border-radius:999px;
-  font-size:.78rem;font-family:inherit;
-  color:rgba(232,224,208,.55);
-  background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.06);
+  font-size:.76rem;font-family:inherit;
+  color:rgba(212,175,55,.65);
+  background:rgba(212,175,55,.04);
+  border:1px solid rgba(212,175,55,.12);
   cursor:pointer;
   transition:all .3s;
   white-space:nowrap;
-  backdrop-filter:blur(4px);
-  -webkit-backdrop-filter:blur(4px);
 }
 .jy-qk:active,.jy-qk:hover{
   color:var(--c-gold,#d4af37);
-  background:rgba(212,175,55,.08);
-  border-color:rgba(212,175,55,.25);
+  background:rgba(212,175,55,.1);
+  border-color:rgba(212,175,55,.3);
   box-shadow:0 0 12px rgba(212,175,55,.08);
 }
-.jy-qk-icon{font-size:.82rem}
+.jy-qk-icon{font-size:.78rem}
 
 /* 每日一牌 */
 .jy-home-daily{
@@ -1761,12 +1759,16 @@ details[open] > summary > .fa-chevron-right {
   cursor:pointer;
   display:flex;align-items:center;justify-content:center;gap:.4rem;
   margin-bottom:.6rem;
+  padding:.5rem 1rem;
   font-size:.76rem;
-  color:var(--c-text-muted,#6b6355);
+  color:var(--c-gold,#d4af37);
   letter-spacing:.06em;
-  transition:color .2s;
+  transition:all .25s;
+  border:1px solid rgba(212,175,55,.12);
+  border-radius:999px;
+  background:rgba(212,175,55,.03);
 }
-.jy-home-daily-toggle:hover{color:var(--c-text-dim,#a09880)}
+.jy-home-daily-toggle:hover{color:var(--c-gold);background:rgba(212,175,55,.06);border-color:rgba(212,175,55,.2)}
 .jy-home-daily-arr{font-size:.5rem;transition:transform .3s}
 
 /* 底部 */
