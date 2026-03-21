@@ -19784,6 +19784,9 @@ renderTarot = function(){
         try { var _efg = document.getElementById('extra-features-gate'); if(_efg) _efg.style.display = 'block'; } catch(_){}
         // P0-1：標記七維度結果完成 + 刷新導航
         try { window._jyResultModes = window._jyResultModes || {}; window._jyResultModes.full = true; if (typeof _refreshAllNavs === 'function') _refreshAllNavs('full'); } catch(_){}
+        // v26b：隱藏舊水晶區塊（inline處方已取代）+ 顯示回饋按鈕
+        try { var _rc = document.getElementById('r-crystal'); if (_rc) _rc.style.display = 'none'; } catch(_){}
+        try { if (typeof showFeedbackSection === 'function') setTimeout(showFeedbackSection, 3000); } catch(_fe) {}
       } else {
         // ★ v22 核彈：else 分支最後防線
         var _lastResort = false;
@@ -19840,6 +19843,9 @@ renderTarot = function(){
         try { var _efg2 = document.getElementById('extra-features-gate'); if(_efg2) _efg2.style.display = 'block'; } catch(_){}
         // P0-1：標記七維度結果完成 + 刷新導航
         try { window._jyResultModes = window._jyResultModes || {}; window._jyResultModes.full = true; if (typeof _refreshAllNavs === 'function') _refreshAllNavs('full'); } catch(_){}
+        // v26b：隱藏舊水晶區塊 + 顯示回饋按鈕（核彈路徑）
+        try { var _rc2 = document.getElementById('r-crystal'); if (_rc2) _rc2.style.display = 'none'; } catch(_){}
+        try { if (typeof showFeedbackSection === 'function') setTimeout(showFeedbackSection, 3000); } catch(_fe) {}
       }
     } catch(err) {
       clearInterval(_aiPhaseTimer);
