@@ -5057,6 +5057,7 @@ showAuraResult = function(){
 
       // 快問按鈕
       '<div class="jy-home-quick">' +
+        '<div style="width:100%;text-align:center;font-size:.68rem;color:var(--c-text-muted,#6b6355);margin-bottom:.2rem;letter-spacing:.04em">不用想，點了就問 ↓</div>' +
         '<button class="jy-qk" onclick="_quickAsk(\'今年有桃花嗎？\')"><span class="jy-qk-icon">🌸</span>有桃花嗎</button>' +
         '<button class="jy-qk" onclick="_quickAsk(\'我該換工作嗎？\')"><span class="jy-qk-icon">💼</span>該換工作嗎</button>' +
         '<button class="jy-qk" onclick="_quickAsk(\'今年財運如何？\')"><span class="jy-qk-icon">💰</span>財運如何</button>' +
@@ -5116,6 +5117,27 @@ showAuraResult = function(){
     }
   };
 
+  // Auto-show daily card mini preview in the toggle button
+  setTimeout(function() {
+    if (typeof TAROT === 'undefined' || !TAROT.length) return;
+    var today = new Date();
+    var dateStr = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
+    var hash = 0;
+    for (var i = 0; i < dateStr.length; i++) hash = ((hash << 5) - hash) + dateStr.charCodeAt(i);
+    hash = Math.abs(hash);
+    var idx = hash % TAROT.length;
+    var card = TAROT[idx];
+    var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(card) : '';
+    var isUp = (hash % 7) > 2;
+    var toggleEl = document.querySelector('.jy-home-daily-toggle');
+    if (toggleEl && imgSrc) {
+      toggleEl.innerHTML =
+        '<img src="' + imgSrc + '" style="width:22px;height:34px;border-radius:3px;object-fit:cover;border:1px solid rgba(212,175,55,.2);' + (isUp ? '' : 'transform:rotate(180deg)') + '">' +
+        '<span>今日一牌 · ' + (card.n || '') + '</span>' +
+        '<i id="daily-card-arrow" class="fas fa-chevron-down jy-home-daily-arr"></i>';
+    }
+  }, 800);
+
   function _renderDailyCard(container) {
     if (typeof TAROT === 'undefined' || !TAROT.length) {
       container.innerHTML = '<p style="font-size:.8rem;color:var(--c-text-muted)">牌組載入中…</p>';
@@ -5141,13 +5163,17 @@ showAuraResult = function(){
     // 從 GD 牌組取關鍵字
     var keyword = isUp ? (card.kwUp || '') : (card.kwRv || '');
 
+    var cardImg = (typeof getTarotCardImage === 'function') ? getTarotCardImage(card) : '';
+
     container.innerHTML =
-      '<div style="padding:1rem;border-radius:12px;background:rgba(212,175,55,.03);border:1px solid rgba(212,175,55,.1)">' +
-        '<div style="font-size:1.1rem;margin-bottom:.3rem">' + (isUp ? '☀️' : '🌑') + '</div>' +
-        '<div style="font-size:.95rem;color:var(--c-gold,#d4af37);font-weight:700;font-family:var(--f-display,serif);margin-bottom:.2rem">' + name + '</div>' +
-        '<div style="font-size:.72rem;color:var(--c-text-muted,#6b6355);margin-bottom:.5rem">' + upLabel + (keyword ? ' · ' + keyword : '') + '</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim,#a09880);line-height:1.7">' + brief + '</div>' +
-        '<button onclick="_quickAsk(\'今天要注意什麼？\')" style="margin-top:.8rem;padding:.4rem 1rem;border-radius:999px;font-size:.72rem;color:rgba(212,175,55,.7);border:1px solid rgba(212,175,55,.15);background:rgba(212,175,55,.04);cursor:pointer;font-family:inherit;transition:all .25s">🔮 用這張牌問靜月</button>' +
+      '<div style="padding:1rem;border-radius:12px;background:rgba(212,175,55,.03);border:1px solid rgba(212,175,55,.1);display:flex;gap:.8rem;align-items:flex-start">' +
+        (cardImg ? '<img src="' + cardImg + '" style="width:60px;height:92px;border-radius:6px;object-fit:cover;border:1px solid rgba(212,175,55,.2);flex-shrink:0;' + (isUp ? '' : 'transform:rotate(180deg)') + '">' : '') +
+        '<div style="flex:1">' +
+          '<div style="font-size:.95rem;color:var(--c-gold,#d4af37);font-weight:700;font-family:var(--f-display,serif);margin-bottom:.15rem">' + name + ' <span style="font-size:.72rem;font-weight:400;opacity:.6">' + upLabel + '</span></div>' +
+          (keyword ? '<div style="font-size:.72rem;color:var(--c-text-muted,#6b6355);margin-bottom:.4rem">' + keyword + '</div>' : '') +
+          '<div style="font-size:.8rem;color:var(--c-text-dim,#a09880);line-height:1.7">' + brief + '</div>' +
+          '<button onclick="_quickAsk(\'今天要注意什麼？\')" style="margin-top:.6rem;padding:.35rem .9rem;border-radius:999px;font-size:.72rem;color:rgba(212,175,55,.7);border:1px solid rgba(212,175,55,.15);background:rgba(212,175,55,.04);cursor:pointer;font-family:inherit;transition:all .25s">🔮 用這張牌問靜月</button>' +
+        '</div>' +
       '</div>';
   }
 
