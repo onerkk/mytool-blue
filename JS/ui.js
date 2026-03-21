@@ -2926,12 +2926,20 @@ function lighten(hex, amt){
 
 // Cache generated card images
 const _tarotImageCache = {};
+const _majorArcanaNames = {
+  0:'fool',1:'magician',2:'high-priestess',3:'empress',4:'emperor',
+  5:'hierophant',6:'lovers',7:'chariot',8:'strength',9:'hermit',
+  10:'wheel',11:'justice',12:'hanged-man',13:'death',14:'temperance',
+  15:'devil',16:'tower',17:'star',18:'moon',19:'sun',20:'judgement',21:'world'
+};
 function getTarotCardImage(card){
-  // 優先使用真實牌面圖片（tarot_img/ 資料夾）
-  // fallback 到 Canvas 生成的簡易圖
+  // 大阿爾克那(0-21)：AI 生圖 .jpg，小阿爾克那(22+)：原 .webp
   if (card && card.id != null) {
-    var imgPath = 'tarot_img/' + (card.id < 10 ? '0' : '') + card.id + '.webp';
-    return imgPath;
+    var prefix = (card.id < 10 ? '0' : '') + card.id;
+    if (_majorArcanaNames[card.id]) {
+      return 'tarot_img/' + prefix + '-' + _majorArcanaNames[card.id] + '.jpg';
+    }
+    return 'tarot_img/' + prefix + '.webp';
   }
   if(!_tarotImageCache[card.id]){
     _tarotImageCache[card.id] = generateTarotCardImage(card);
