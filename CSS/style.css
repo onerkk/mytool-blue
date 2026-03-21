@@ -1605,10 +1605,10 @@ details[open] > summary > .fa-chevron-right {
 
 /* 月牙徽章 */
 .jy-home-emblem{
-  width:clamp(100px,28vw,140px);
+  width:clamp(64px,18vw,88px);
   height:auto;
-  margin:0 auto 1rem;
-  filter:drop-shadow(0 0 20px rgba(201,168,76,.3)) drop-shadow(0 0 40px rgba(201,168,76,.1));
+  margin:0 auto .6rem;
+  filter:drop-shadow(0 0 15px rgba(201,168,76,.3)) drop-shadow(0 0 30px rgba(201,168,76,.1));
   animation:jy-emblem-float 5s ease-in-out infinite;
   cursor:pointer;
 }
@@ -1655,14 +1655,14 @@ details[open] > summary > .fa-chevron-right {
   font-size:clamp(1rem,3.5vw,1.2rem);
   color:rgba(232,224,208,.8);
   letter-spacing:.08em;
-  margin:0 0 1.2rem;
+  margin:0 0 .8rem;
   line-height:1.8;
 }
 
 /* 裝飾分隔線 */
 .jy-home-divider{
   display:flex;align-items:center;gap:.8rem;
-  margin:0 auto 1.2rem;width:200px;
+  margin:0 auto .8rem;width:200px;
   opacity:.35;
 }
 .jy-home-divider::before,.jy-home-divider::after{
@@ -1676,7 +1676,7 @@ details[open] > summary > .fa-chevron-right {
   font-size:.82rem;
   color:var(--c-text-muted,#6b6355);
   letter-spacing:.04em;
-  margin:0 0 2.2rem;
+  margin:0 0 1.4rem;
   line-height:1.7;
 }
 
@@ -1684,7 +1684,7 @@ details[open] > summary > .fa-chevron-right {
 .jy-home-cta{
   display:flex;align-items:center;justify-content:center;gap:.6rem;
   width:100%;max-width:280px;
-  padding:1rem 2rem;
+  padding:.85rem 2rem;
   border-radius:999px;
   background:transparent;
   color:var(--c-gold,#d4af37);
@@ -1728,7 +1728,7 @@ details[open] > summary > .fa-chevron-right {
 /* 快問按鈕 */
 .jy-home-quick{
   display:flex;flex-wrap:wrap;justify-content:center;
-  gap:.45rem;margin-top:1.3rem;max-width:360px;
+  gap:.45rem;margin-top:1rem;max-width:360px;
 }
 .jy-qk{
   display:flex;align-items:center;gap:.3rem;
@@ -1754,7 +1754,7 @@ details[open] > summary > .fa-chevron-right {
 
 /* 每日一牌 */
 .jy-home-daily{
-  margin-top:2rem;text-align:center;
+  margin-top:1.2rem;text-align:center;
   max-width:300px;width:100%;
 }
 .jy-home-daily-toggle{
@@ -1771,7 +1771,7 @@ details[open] > summary > .fa-chevron-right {
 
 /* 底部 */
 .jy-home-footer{
-  margin-top:2rem;
+  margin-top:1rem;
   display:flex;flex-direction:column;align-items:center;gap:.5rem;
 }
 .jy-home-quota{
