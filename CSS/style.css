@@ -1603,7 +1603,21 @@ details[open] > summary > .fa-chevron-right {
   animation:moonBreath 4s ease-in-out infinite;
 }
 
-/* 主標：大、有存在感 */
+/* 月牙徽章 */
+.jy-home-emblem{
+  width:clamp(100px,28vw,140px);
+  height:auto;
+  margin:0 auto 1rem;
+  filter:drop-shadow(0 0 20px rgba(201,168,76,.3)) drop-shadow(0 0 40px rgba(201,168,76,.1));
+  animation:jy-emblem-float 5s ease-in-out infinite;
+  cursor:pointer;
+}
+@keyframes jy-emblem-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+
+/* 主標：大、發光 */
 .jy-home-title{
   font-family:var(--f-display,'Noto Serif TC',serif);
   font-size:clamp(2.4rem,8vw,3.5rem);
@@ -1612,7 +1626,27 @@ details[open] > summary > .fa-chevron-right {
   color:var(--c-gold,#d4af37);
   margin:0 0 .8rem;
   line-height:1.3;
-  text-shadow:0 0 60px rgba(201,168,76,.25),0 2px 4px rgba(0,0,0,.4);
+  text-shadow:
+    0 0 10px rgba(212,175,55,.6),
+    0 0 30px rgba(212,175,55,.3),
+    0 0 60px rgba(212,175,55,.15),
+    0 0 100px rgba(201,168,76,.08);
+  animation:jy-title-glow 3s ease-in-out infinite;
+}
+@keyframes jy-title-glow{
+  0%,100%{
+    text-shadow:
+      0 0 10px rgba(212,175,55,.5),
+      0 0 30px rgba(212,175,55,.2),
+      0 0 60px rgba(212,175,55,.1);
+  }
+  50%{
+    text-shadow:
+      0 0 15px rgba(212,175,55,.8),
+      0 0 40px rgba(212,175,55,.4),
+      0 0 80px rgba(212,175,55,.2),
+      0 0 120px rgba(201,168,76,.1);
+  }
 }
 
 /* 副標 */
