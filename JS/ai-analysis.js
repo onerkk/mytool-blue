@@ -19777,6 +19777,24 @@ renderTarot = function(){
         // v26b：隱藏舊水晶區塊（inline處方已取代）+ 顯示回饋按鈕
         try { var _rc = document.getElementById('r-crystal'); if (_rc) _rc.style.display = 'none'; } catch(_){}
         try { if (typeof showFeedbackSection === 'function') setTimeout(showFeedbackSection, 3000); } catch(_fe) {}
+        // ★ v28：sticky-cta 也在 AI 完成後才顯示
+        try {
+          setTimeout(function(){
+            var cta = document.getElementById('sticky-cta');
+            if (cta) {
+              if (S.bazi && S.bazi.fav) {
+                var favAll = S.bazi.fav;
+                var favLabel = favAll.length > 1 ? favAll.slice(0,2).join('＋') : (favAll[0]||'土');
+                var th = S.bazi.tiaohou;
+                var label = document.getElementById('sticky-cta-label');
+                var desc = document.getElementById('sticky-cta-desc');
+                if (label) label.innerHTML = '💎 現在更適合你的：' + favLabel + '行能量配戴';
+                if (desc) desc.textContent = th ? (th.reason + ' — 先看命盤，再挑更貼近你現在狀態的款式') : ('先看命盤，再挑更貼近你現在狀態的 ' + favLabel + ' 行款式');
+              }
+              cta.classList.add('visible');
+            }
+          }, 2000);
+        } catch(_) {}
       } else {
         // ★ v22 核彈：else 分支最後防線
         var _lastResort = false;
@@ -19836,6 +19854,21 @@ renderTarot = function(){
         // v26b：隱藏舊水晶區塊 + 顯示回饋按鈕（核彈路徑）
         try { var _rc2 = document.getElementById('r-crystal'); if (_rc2) _rc2.style.display = 'none'; } catch(_){}
         try { if (typeof showFeedbackSection === 'function') setTimeout(showFeedbackSection, 3000); } catch(_fe) {}
+        // ★ v28：sticky-cta（核彈路徑）
+        try {
+          setTimeout(function(){
+            var cta = document.getElementById('sticky-cta');
+            if (cta) {
+              if (S.bazi && S.bazi.fav) {
+                var favAll = S.bazi.fav;
+                var favLabel = favAll.length > 1 ? favAll.slice(0,2).join('＋') : (favAll[0]||'土');
+                var label = document.getElementById('sticky-cta-label');
+                if (label) label.innerHTML = '💎 現在更適合你的：' + favLabel + '行能量配戴';
+              }
+              cta.classList.add('visible');
+            }
+          }, 2000);
+        } catch(_) {}
       }
     } catch(err) {
       clearInterval(_aiPhaseTimer);
@@ -21979,7 +22012,7 @@ async function _triggerOOTKAI(resultsOrSigId) {
     var tagWrap = document.getElementById('ootk-loading-tags');
     if (tagWrap) {
       var tags = tagWrap.querySelectorAll('span');
-      var lightIdx = Math.min(4, Math.floor(phaseIdx / 2));
+      var lightIdx = Math.min(phaseIdx, 4);
       for (var ti = 0; ti < tags.length; ti++) {
         if (ti <= lightIdx) { tags[ti].style.color = 'rgba(212,175,55,.88)'; tags[ti].style.borderColor = 'rgba(212,175,55,.3)'; tags[ti].style.background = 'rgba(212,175,55,.08)'; }
       }
@@ -22544,7 +22577,6 @@ function _renderStoryChat(text) {
   if (!paras.length) return '';
 
   var html = '<div class="jy-chat">';
-  var showAvatar = true; // only show avatar on first bubble in a sequence
   for (var i = 0; i < paras.length; i++) {
     var p = paras[i].replace(/\n/g, '<br>');
     var plainLen = paras[i].replace(/<[^>]+>/g, '').length;
@@ -22556,15 +22588,9 @@ function _renderStoryChat(text) {
         '<div class="jy-chat-hl-text">' + p + '</div>' +
         '<div class="jy-chat-hl-line"></div>' +
       '</div>';
-      showAvatar = true; // next bubble gets avatar again
     } else {
       html += '<div class="jy-chat-row">';
-      if (showAvatar) {
-        html += '<div class="jy-chat-avatar"><img src="' + JINGYUE_AVATAR + '" alt="靜月" onerror="this.style.display=\'none\'"></div>';
-        showAvatar = false;
-      } else {
-        html += '<div class="jy-chat-avatar-spacer"></div>';
-      }
+      html += '<div class="jy-chat-avatar"><img src="' + JINGYUE_AVATAR + '" alt="靜月" onerror="this.style.display=\'none\'"></div>';
       html += '<div class="jy-chat-bubble"><div class="jy-chat-p">' + p + '</div></div>';
       html += '</div>';
     }
