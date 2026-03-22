@@ -2595,19 +2595,14 @@ enhanceTarot = function(tarot) {
 
     // 🔑 OOTK 專屬 loading（v21：牌象風格 + tag 初始亮燈 + 進度條）
     wrap.innerHTML = '<div style="text-align:center;padding:2rem 1.2rem 2.3rem">' +
-      '<div style="position:relative;width:128px;height:128px;margin:0 auto .95rem">' +
-        '<div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.16) 0%,rgba(201,168,76,.06) 26%,transparent 70%);animation:jyPulseGlow 3.4s ease-in-out infinite"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:104px;height:104px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(201,168,76,.10);box-shadow:0 0 24px rgba(201,168,76,.06) inset"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:88px;height:88px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid rgba(201,168,76,.08)"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:88px;height:88px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid transparent;border-top-color:rgba(201,168,76,.7);border-right-color:rgba(201,168,76,.3);animation:jySpinGold 2s linear infinite"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:64px;height:64px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid transparent;border-bottom-color:rgba(139,92,246,.55);border-left-color:rgba(96,165,250,.4);animation:jySpinPurple 3.1s linear infinite reverse"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.95) 0%,rgba(201,168,76,.25) 62%,transparent 100%);animation:jyBreath 2.4s ease-in-out infinite"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:rgba(255,245,220,.95);box-shadow:0 0 12px rgba(201,168,76,.55)"></div>' +
-        '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.36rem;color:rgba(255,245,220,.95);text-shadow:0 0 10px rgba(201,168,76,.35)">🔑</div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:2px;height:44px;transform-origin:center bottom;transform:translate(-50%,-100%) rotate(0deg);animation:jyOrbitA 3.6s linear infinite"><div style="width:8px;height:8px;border-radius:50%;background:rgba(201,168,76,.8);box-shadow:0 0 10px rgba(201,168,76,.35)"></div></div>' +
-        '<div style="position:absolute;left:50%;top:50%;width:2px;height:34px;transform-origin:center bottom;transform:translate(-50%,-100%) rotate(180deg);animation:jyOrbitB 2.8s linear infinite reverse"><div style="width:6px;height:6px;border-radius:50%;background:rgba(167,139,250,.8);box-shadow:0 0 8px rgba(167,139,250,.3)"></div></div>' +
+      '<div style="position:relative;width:min(300px,80vw);aspect-ratio:5/7;margin:0 auto .6rem;border-radius:18px;overflow:hidden;box-shadow:0 0 40px rgba(212,175,55,.12)">' +
+        '<img src="/img/loading-ootk.png" alt="" style="width:100%;height:100%;object-fit:cover;animation:jyImgPulse 4s ease-in-out infinite">' +
+        '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(10,8,4,.6) 70%,rgba(10,8,4,.92))"></div>' +
+        '<div style="position:absolute;inset:0;border-radius:18px;border:1px solid rgba(212,175,55,.2)"></div>' +
+        '<div style="position:absolute;bottom:1rem;left:0;right:0;text-align:center">' +
+          '<div style="font-size:1.05rem;color:var(--c-gold);font-weight:700;letter-spacing:.03em;text-shadow:0 2px 12px rgba(0,0,0,.7)">靜月正在為你開鑰…</div>' +
+        '</div>' +
       '</div>' +
-      '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;letter-spacing:.02em;margin-bottom:.25rem">五階段深度解讀中…</div>' +
       '<div id="ootk-ai-phase" style="font-size:.8rem;color:var(--c-text-dim);transition:opacity .35s;min-height:1.25rem">讀取四元素分堆…</div>' +
       // 牌象 snippet
       '<div id="ootk-loading-snippet" style="max-width:320px;margin:.6rem auto 0;padding:.6rem .85rem;border-radius:12px;border:1px solid rgba(201,168,76,.12);background:rgba(201,168,76,.04);min-height:2.5rem">' +
