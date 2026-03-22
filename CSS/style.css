@@ -291,45 +291,76 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .t-front .tc-name{font-family:var(--f-display);font-weight:700;font-size:.72rem;color:var(--c-gold)}
 .t-front .tc-dir{font-size:.6rem;color:var(--c-text-dim)}
 
-/* ── Interactive Tarot Deck ── */
-.tarot-deck-wrap{position:relative;width:100%;overflow:hidden;padding:16px 0}
-.tarot-deck-scroll{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:12px 24px;scrollbar-width:none}
-.tarot-deck-scroll::-webkit-scrollbar{display:none}
-.tarot-deck-card{flex:0 0 58px;height:90px;perspective:800px;cursor:pointer;scroll-snap-align:center;transition:transform .25s,opacity .3s;position:relative}
-.tarot-deck-card:hover{transform:translateY(-10px)}
-.tarot-deck-card.picked{opacity:.2;pointer-events:none;transform:scale(.85)}
+/* ── 3D Dual-Row Tarot Deck ── */
+.tarot-deck-wrap{position:relative;width:100%;overflow:hidden;padding:8px 0}
+.tarot-3d-stage{position:relative;width:100%;height:218px;perspective:900px;overflow:hidden}
+.tarot-3d-row{display:flex;gap:10px;position:absolute;left:0;will-change:transform;padding:0 10px}
+.tarot-3d-row.tarot-3d-top{top:4px}
+.tarot-3d-row.tarot-3d-bot{bottom:4px}
+.tarot-deck-card{flex:0 0 64px;height:99px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:filter .15s,opacity .35s}
+.tarot-deck-card.picked{opacity:0;pointer-events:none;transition:opacity .35s .05s}
 .tarot-deck-card-inner{
   width:100%;height:100%;border-radius:8px;
   background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
-  border:1px solid rgba(212,175,55,.25);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 8px rgba(212,175,55,.06);
+  border:1.5px solid rgba(212,175,55,.18);
+  box-shadow:0 2px 8px rgba(0,0,0,.45),0 0 6px rgba(212,175,55,.04);
   position:relative;overflow:hidden;
+  animation:tarot3dFloat 3.2s ease-in-out infinite;
+  animation-delay:var(--float-delay,0s);
+  transition:box-shadow .25s,border-color .25s;
 }
-
-/* Tarot card shimmer */
+/* Shimmer on hover */
 .tarot-deck-card-inner::before{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.08) 50%,transparent 70%);
-  opacity:0;transition:opacity .3s;
+  background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.1) 50%,transparent 70%);
+  opacity:0;transition:opacity .25s;pointer-events:none;
 }
 .tarot-deck-card:hover .tarot-deck-card-inner::before{opacity:1}
-.tarot-deck-card-inner::after{content:'';}
+/* Center-glow highlight */
+.tarot-deck-card.deck-center .tarot-deck-card-inner{
+  box-shadow:0 0 14px rgba(212,175,55,.35),0 0 28px rgba(212,175,55,.1),0 2px 8px rgba(0,0,0,.45);
+  border-color:rgba(212,175,55,.5);
+}
+/* Lift phase */
+.tarot-deck-card.lifting{z-index:100;animation:tarot3dLift .35s cubic-bezier(.34,1.56,.64,1) forwards !important}
+.tarot-deck-card.lifting .tarot-deck-card-inner{
+  box-shadow:0 0 22px rgba(212,175,55,.55),0 10px 36px rgba(0,0,0,.55);
+  border-color:rgba(212,175,55,.7);animation:none;
+}
+@keyframes tarot3dFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes tarot3dLift{0%{transform:scale(1) translateY(0)}100%{transform:scale(1.28) translateY(-32px)}}
+/* Gold particles */
+.tarot-particle{
+  position:fixed;width:5px;height:5px;border-radius:50%;
+  background:radial-gradient(circle,#ffd700 30%,#c9a84c);
+  pointer-events:none;z-index:9998;
+  animation:tarotParticleBurst .55s ease-out forwards;
+}
+@keyframes tarotParticleBurst{
+  0%{opacity:1;transform:scale(1) translate(0,0)}
+  100%{opacity:0;transform:scale(.2) translate(var(--px),var(--py))}
+}
+/* Fly card */
+.tarot-fly-card{
+  position:fixed;z-index:9999;border-radius:8px;
+  background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
+  border:1.5px solid rgba(212,175,55,.4);
+  box-shadow:0 6px 28px rgba(212,175,55,.2),0 10px 40px rgba(0,0,0,.45);
+  transition:left .55s cubic-bezier(.4,0,.2,1),top .55s cubic-bezier(.4,0,.2,1),width .55s,height .55s;
+  pointer-events:none;
+}
+/* Legacy compat */
 .tarot-card-back{
   width:58px;height:90px;border-radius:8px;
   background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
   border:1px solid rgba(212,175,55,.25);
-  box-shadow:0 1px 4px rgba(0,0,0,.3),0 0 8px rgba(212,175,55,.06);
-  cursor:pointer;transition:transform .25s,opacity .3s;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;
 }
-.tarot-card-back:hover{transform:translateY(-10px)}
-.tarot-fly-card{
-  position:fixed;z-index:9999;border-radius:8px;
-  background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
-  border:1px solid rgba(212,175,55,.3);
-  box-shadow:0 4px 20px rgba(212,175,55,.15);
-  transition:left .5s cubic-bezier(.4,0,.2,1),top .5s cubic-bezier(.4,0,.2,1),width .5s,height .5s;
-  pointer-events:none;
+/* Reduced motion: kill floating + auto-scroll handled in JS */
+@media(prefers-reduced-motion:reduce){
+  .tarot-deck-card-inner{animation:none}
+  .tarot-deck-card.lifting{animation:none;transform:scale(1.15) translateY(-10px)}
+  .tarot-particle{animation:none;display:none}
 }
 
 /* Chosen area */
@@ -1124,17 +1155,11 @@ img[loading="lazy"]{content-visibility:auto}
   animation:ctaSweep 5s ease-in-out infinite;pointer-events:none;
 }
 
-/* ── 5. Tarot 3D Flip ── */
-@keyframes tarotLift{0%{transform:scale(1) translateY(0)}100%{transform:scale(1.15) translateY(-20px)}}
-@keyframes tarotFlip{0%{transform:scale(1.15) translateY(-20px) rotateY(0)}100%{transform:scale(1.15) translateY(-20px) rotateY(180deg)}}
-.tarot-deck-card.flipping{animation:tarotLift .3s cubic-bezier(.34,1.56,.64,1) forwards;z-index:10}
-.tarot-deck-card.flipping .tarot-deck-card-inner{animation:tarotFlip .5s ease-in-out .3s forwards;transform-style:preserve-3d}
-.tarot-deck-card.flipping::after{
-  content:'';position:absolute;inset:-4px;border-radius:10px;
-  border:2px solid rgba(201,168,76,.5);opacity:0;
-  animation:tarotGlow .8s ease-out .2s forwards;pointer-events:none;
-}
-@keyframes tarotGlow{0%{opacity:0;transform:scale(.95)}50%{opacity:1}100%{opacity:0;transform:scale(1.1)}}
+/* ── 5. Tarot 3D Flip (slot reveal) ── */
+/* Lift/float keyframes moved to 3D deck section above */
+/* Slot receiving pulse */
+.tarot-chosen-slot.receiving{animation:slotReceive .35s ease-out}
+@keyframes slotReceive{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
 
 /* ── 6. Meihua Yao Growth ── */
 .jy-yao-grow{opacity:0;transform:scaleX(0);animation:yaoGrow .4s cubic-bezier(.16,1,.3,1) forwards}
