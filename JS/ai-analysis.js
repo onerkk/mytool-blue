@@ -14876,7 +14876,7 @@ function _buildPayload() {
       var posLabel = posL[i] || (c.pos || '第'+(i+1)+'張');
       // ★ Bug A 修復：readings.tarot 也用「順/逆」，避免黑名單詞彙洩漏到七維度路由
       var text = '【' + posLabel + '】' + _s(c.name||c.n) + (c.isUp===true?'（順）':'（逆）');
-      if (c.sc) text += '　畫面：' + c.sc;
+      if (c.sc) text += '\n　→ 畫面：' + c.sc;
       if (c.el) text += '　' + c.el;
       // ★ #3：補 positionMeaning，讓七維度路由也能讀到牌陣位置含義
       var posMeaning = _posMeanings[i] || '';
@@ -22135,6 +22135,12 @@ function _buildOOTKPayload() {
     if (!c) return '?';
     return (c.n || c.name || '?') + (c.isUp === true ? '（順）' : '（逆）');
   }
+  function cardStrFull(c) {
+    if (!c) return '?';
+    var s = (c.n || c.name || '?') + (c.isUp === true ? '（順）' : '（逆）');
+    if (c.sc) s += '〔畫面：' + c.sc + '〕';
+    return s;
+  }
 
   function buildOpData(op, idx) {
     var lines = [];
@@ -22206,7 +22212,7 @@ function _buildOOTKPayload() {
       op.keyCards.forEach(function(kc, ki) {
         var c = kc.card;
         if (!c) return;
-        var text = '  ' + cardStr(c);
+        var text = '  ' + cardStrFull(c);
         // 元素尊嚴
         if (op.dignities && op.dignities[ki]) {
           var dig = op.dignities[ki];
@@ -22226,7 +22232,7 @@ function _buildOOTKPayload() {
       var pairTexts = op.pairs.slice(0, 5).map(function(pr, pi) {
         var l = pr.left || pr.card1;
         var r = pr.right || pr.card2;
-        var text = (_distLabels[pi] || '#'+(pi+1)) + ' ' + cardStr(l) + ' ↔ ' + cardStr(r);
+        var text = (_distLabels[pi] || '#'+(pi+1)) + ' ' + cardStrFull(l) + ' ↔ ' + cardStrFull(r);
         if (pr.dignity) text += '(' + pr.dignity + ')';
         return text;
       });
