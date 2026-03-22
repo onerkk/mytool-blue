@@ -4,38 +4,50 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>找不到頁面 — 靜月之光</title>
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#08090f;color:#e8eaf0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;overflow:hidden}
-.wrap{text-align:center;padding:2rem;max-width:420px}
-.moon{font-size:4rem;margin-bottom:1rem;animation:float 3s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-h1{font-size:1.5rem;color:#c9a84c;margin-bottom:.5rem;letter-spacing:.05em}
-p{font-size:.9rem;color:rgba(232,234,240,.6);line-height:1.8;margin-bottom:1.5rem}
-a{display:inline-block;padding:.6rem 1.6rem;border-radius:999px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.08));border:1.5px solid rgba(201,168,76,.35);color:#c9a84c;text-decoration:none;font-weight:700;font-size:.88rem;transition:all .3s}
-a:hover{background:rgba(201,168,76,.2);box-shadow:0 0 20px rgba(201,168,76,.15)}
-.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
-.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 3s ease-in-out infinite}
-@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:.8}}
+body{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#050510;color:#e0d8c8;font-family:'Noto Serif TC','Georgia',serif;
+  text-align:center;padding:2rem 1.5rem;
+}
+.img-wrap{
+  width:min(280px,70vw);margin-bottom:1.5rem;
+  animation:float 4s ease-in-out infinite;
+}
+.img-wrap img{width:100%;height:auto;border-radius:16px;box-shadow:0 8px 40px rgba(212,175,55,.12)}
+h1{
+  font-size:clamp(1.8rem,6vw,2.5rem);font-weight:900;letter-spacing:.1em;
+  color:#d4af37;margin-bottom:.5rem;
+  text-shadow:0 0 8px rgba(212,175,55,.25);
+}
+.sub{font-size:1rem;color:rgba(224,216,200,.5);margin-bottom:2rem;line-height:1.7}
+.btn{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.8rem;border-radius:999px;
+  background:linear-gradient(135deg,#b8941f,#d4af37,#e8c84a,#c9a020);
+  color:#1a0e00;font-size:.95rem;font-weight:700;
+  text-decoration:none;font-family:inherit;
+  box-shadow:0 4px 20px rgba(212,175,55,.15);
+  transition:transform .2s,box-shadow .2s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(212,175,55,.25)}
+.btn:active{transform:scale(.97)}
+.footer{margin-top:3rem;font-size:.7rem;color:rgba(160,152,128,.3)}
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-10px)}
+}
 </style>
 </head>
 <body>
-<div class="stars" id="stars"></div>
-<div class="wrap" style="position:relative;z-index:1">
-  <div class="moon">☽</div>
-  <h1>這條路走不通</h1>
-  <p>你找的頁面不在這裡。<br>也許命運想帶你去別的地方。</p>
-  <a href="/">回到靜月之光</a>
+<div class="img-wrap">
+  <img src="/img/404.jpg" alt="迷路的燈籠">
 </div>
-<script>
-var s=document.getElementById('stars');
-for(var i=0;i<40;i++){
-  var d=document.createElement('div');d.className='star';
-  d.style.left=Math.random()*100+'%';d.style.top=Math.random()*100+'%';
-  d.style.animationDelay=Math.random()*3+'s';d.style.opacity=Math.random()*.5+.1;
-  s.appendChild(d);
-}
-</script>
+<h1>迷路了</h1>
+<p class="sub">這條路走不通，但命運還有別的安排。</p>
+<a href="/" class="btn">☽ 回到靜月之光</a>
+<div class="footer">© 2025–2026 靜月之光</div>
 </body>
 </html>
