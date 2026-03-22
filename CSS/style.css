@@ -1536,6 +1536,67 @@ details[open] > summary > .fa-chevron-right {
 .jy-chat-p{font-size:.92rem;line-height:1.95;color:var(--c-text,#e0d8c8);margin-bottom:.55rem}
 .jy-chat-p:last-child{margin-bottom:0}
 
+/* ── Story highlight quote (short punchy paragraphs) ── */
+.jy-chat-highlight{
+  text-align:center;padding:1rem .5rem;margin:.6rem 0;
+}
+.jy-chat-hl-text{
+  font-size:1.05rem;font-weight:700;line-height:1.7;
+  color:var(--c-gold-pale,#f5e6b8);
+  font-family:var(--f-display,'Noto Serif TC',serif);
+  padding:.2rem 0;
+}
+.jy-chat-hl-line{
+  width:40px;height:1px;margin:0 auto;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.3),transparent);
+}
+.jy-chat-hl-line:first-child{margin-bottom:.5rem}
+.jy-chat-hl-line:last-child{margin-top:.5rem}
+
+/* ── Card strip (horizontal scrolling) ── */
+.jy-card-strip{
+  margin:.6rem 0;overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.jy-card-strip::-webkit-scrollbar{display:none}
+.jy-card-strip-inner{
+  display:flex;gap:.5rem;padding:.4rem .2rem;
+  justify-content:center;flex-wrap:wrap;
+}
+.jy-card-strip-item{
+  flex-shrink:0;text-align:center;width:48px;
+}
+.jy-card-strip-img{
+  width:44px;height:68px;border-radius:4px;object-fit:cover;
+  border:1px solid rgba(212,175,55,.2);
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.jy-card-strip-name{
+  font-size:.5rem;color:var(--c-gold,#c9a84c);
+  margin-top:.2rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.jy-card-strip-dir{
+  font-size:.45rem;line-height:1;
+}
+.jy-card-strip-dir.up{color:rgba(96,165,250,.7)}
+.jy-card-strip-dir.rv{color:rgba(239,68,68,.6)}
+
+/* ── Section divider ── */
+.jy-section-div{
+  display:flex;align-items:center;gap:.6rem;
+  margin:.8rem 0;
+}
+.jy-section-div::before,.jy-section-div::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,55,.12),transparent);
+}
+.jy-section-div span{
+  font-size:.7rem;color:rgba(212,175,55,.3);
+  letter-spacing:.1em;
+}
+
 /* ═══════════════════════════════════════════════════
    靜月之光 — 首頁背景輪播 v26b
    6張圖交叉淡入 + 微縮放 Ken Burns
