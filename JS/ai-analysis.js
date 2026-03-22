@@ -19557,10 +19557,7 @@ renderTarot = function(){
       html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem"><span style="font-size:1.1rem">🌙</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">我陪你把這題慢慢說清楚</span></div>';
 
       if(r.answer || r.core_answer){
-        var ansText2 = _aiTxt(r.answer||r.core_answer);
-        var ansHtml2 = ansText2.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        ansHtml2 = ansHtml2.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-        html += '<div class="ai-spotlight" style="margin-bottom:.8rem;padding:1rem 1.2rem;background:rgba(212,175,55,.06);border-left:3px solid var(--c-gold);border-radius:12px"><div style="display:inline-block;font-size:.65rem;font-weight:700;color:var(--c-gold);background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.25);border-radius:20px;padding:2px 10px;margin-bottom:.4rem;letter-spacing:.05em">✦ 看這裡</div><div style="font-size:.74rem;color:var(--c-gold);font-weight:700;margin-bottom:.25rem">🌙 我先直接跟你說</div><div style="font-size:.95rem;line-height:1.9;font-weight:600;color:var(--c-gold-pale,#f5e6b8)">'+ansHtml2+'</div></div>';
+        html += _renderStoryChat(_aiTxt(r.answer||r.core_answer));
       }
 
       var sectionMap = [
@@ -19574,11 +19571,12 @@ renderTarot = function(){
         if(!val || val === 'null' || val === null) return;
         var body = Array.isArray(val) ? val.join('；') : _cleanAIText(val);
         if(_isTooThinAIText(body)) return;
+        body = _cleanAITerms(body);
         html += '<div class="content-secondary" style="margin-bottom:.8rem;padding:.65rem .85rem;background:rgba(255,255,255,.02);border-left:3px solid '+item[2]+';border-radius:8px"><div style="font-size:.72rem;color:'+item[2]+';font-weight:700;margin-bottom:.25rem">'+item[1]+'</div><div style="font-size:.9rem;line-height:1.85">'+_escapeAIHtml(body)+'</div></div>';
       });
 
       if(!_isTooThinAIText(r.summary) && _cleanAIText(r.summary).length >= 10){
-        html += '<div style="margin-top:.85rem;text-align:center;color:var(--c-gold);font-weight:700;line-height:1.9;font-size:.95rem">'+_escapeAIHtml(r.summary)+'</div>';
+        html += '<div style="margin-top:.85rem;text-align:center;color:var(--c-gold);font-weight:700;line-height:1.9;font-size:.95rem">'+_escapeAIHtml(_cleanAITerms(r.summary))+'</div>';
       }
 
       var _crystalName2 = (r.crystalRec || '').trim();
@@ -21335,32 +21333,21 @@ function _renderTarotAIResult(container, r, admin) {
         '<button onclick="_triggerTarotAI()" style="padding:.6rem 1.3rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🃏 重新解讀</button>' +
       '</div>';
     } else {
-      html += '<div class="card" style="border-left:3px solid #8b5cf6;padding:.8rem">';
-      html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem"><span style="font-size:1.1rem">🃏</span><span style="font-size:.95rem;font-weight:700;color:var(--c-gold)">靜月之光・為你解牌</span></div>';
-      var paras = r.answer.split(/\n\n+/);
-      paras.forEach(function(para) {
-        para = para.trim(); if (!para) return;
-        html += '<div style="font-size:.92rem;line-height:1.9;color:var(--c-text,#e0d8c8);margin-bottom:.7rem">' +
-          para.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>') + '</div>';
-      });
-      html += '</div>';
+      html += _renderStoryChat(r.answer);
     }
   }
   } // end 向後相容 else
 
   // ═══ 總結（舊結構 summary / 新結構已有 story）═══
   if (r.summary && !r.story) {
-    html += '<div class="card" style="border-left:3px solid rgba(212,175,55,.4);padding:.8rem;margin-top:.3rem">';
-    html += '<div style="font-size:.9rem;line-height:1.9;color:var(--c-text,#e0d8c8)">' +
-      (r.summary || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>') + '</div>';
-    html += '</div>';
+    html += _renderStoryChat(r.summary);
   }
 
   // ═══ closing ═══
   if (r.closing) {
     html += '<div id="jy-closing-tarot" style="margin-top:.8rem;padding:.9rem 1.1rem;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.05));border-radius:12px;border:1px solid rgba(212,175,55,.2);text-align:center">';
     html += '<div style="font-size:1.05rem;line-height:1.85;color:var(--c-gold);font-weight:700">' +
-      (r.closing || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+      _cleanAITerms((r.closing || '')).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
     html += '</div>';
   }
 
@@ -21806,7 +21793,7 @@ async function _triggerTarotFollowUp() {
 
     if (r.closing) {
       fuHtml += '<div style="text-align:center;margin-top:.3rem;font-size:.82rem;color:var(--c-gold);font-style:italic;opacity:.85">' +
-        (r.closing || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+        _cleanAITerms(r.closing || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
     }
 
     fuArea.innerHTML = fuHtml;
@@ -22425,9 +22412,7 @@ function _renderOOTKResult(container, r, admin) {
   // summary
   if (r.summary) {
     html += _renderSectionDivider();
-    html += '<div style="margin-bottom:.8rem;padding:.7rem .9rem;border-radius:12px;border-left:3px solid rgba(96,165,250,.5);background:rgba(96,165,250,.04)">';
-    html += '<div style="font-size:.9rem;line-height:1.95;color:var(--c-text,#e0d8c8)">' + _esc(r.summary).replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>') + '</div>';
-    html += '</div>';
+    html += _renderStoryChat(r.summary);
   }
 
   // ═══ 五階段 operations（收合）═══
@@ -22483,7 +22468,7 @@ function _renderOOTKResult(container, r, admin) {
   if (r.closing && !(r.closing.length >= 8 && r.closing.length <= 80)) {
     html += _renderSectionDivider('☽');
     html += '<div id="jy-closing-ootk" style="margin-top:.8rem;padding:.9rem 1.1rem;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.05));border-radius:12px;border:1px solid rgba(212,175,55,.2);text-align:center">';
-    html += '<div style="font-size:1.05rem;line-height:1.85;color:var(--c-gold);font-weight:700">' + _esc(r.closing) + '</div>';
+    html += '<div style="font-size:1.05rem;line-height:1.85;color:var(--c-gold);font-weight:700">' + _esc(_cleanAITerms(r.closing)) + '</div>';
     html += '</div>';
   }
 
@@ -22644,8 +22629,30 @@ function _renderStoryChat(text) {
   if (!text) return '';
   text = _cleanAITerms(text);
   var escaped = _esc(text);
-  var paras = escaped.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').split(/\n\n+/).filter(function(p) { return p.trim().length > 0; });
-  if (!paras.length) return '';
+  var rawParas = escaped.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').split(/\n\n+/).filter(function(p) { return p.trim().length > 0; });
+  if (!rawParas.length) return '';
+
+  // ★ v28：如果單段太長（>200字），按句子自動切段成對話氣泡
+  var paras = [];
+  rawParas.forEach(function(p) {
+    var plainLen = p.replace(/<[^>]+>/g, '').length;
+    if (plainLen <= 200) {
+      paras.push(p);
+    } else {
+      // 按句尾切（。！？⋯）
+      var sentences = p.split(/(?<=[。！？⋯\n])\s*/);
+      var buf = '';
+      for (var si = 0; si < sentences.length; si++) {
+        buf += sentences[si];
+        // 每 100-180 字切一段，或到最後一句
+        if (buf.length >= 120 || si === sentences.length - 1) {
+          if (buf.trim().length > 0) paras.push(buf.trim());
+          buf = '';
+        }
+      }
+      if (buf.trim().length > 0) paras.push(buf.trim());
+    }
+  });
 
   var html = '<div class="jy-chat">';
   for (var i = 0; i < paras.length; i++) {
@@ -22697,6 +22704,8 @@ function _renderSectionDivider(icon) {
 function _renderDirectAnswerChat(text) {
   if (!text) return '';
   text = _cleanAITerms(text);
+  // ★ v28：超過 150 字就用 _renderStoryChat 自動切段成多個氣泡
+  if (text.length > 150) return _renderStoryChat(text);
   return '<div class="jy-chat"><div class="jy-chat-row">' +
     '<div class="jy-chat-avatar"><img src="' + JINGYUE_AVATAR + '" alt="靜月" onerror="this.style.display=\'none\'"></div>' +
     '<div class="jy-chat-bubble jy-chat-da">' + _esc(text) + '</div>' +
