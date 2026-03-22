@@ -598,7 +598,7 @@ function skipToResult(){goStep(3)}
 /* — Char counter — */
 document.getElementById('f-question').addEventListener('input',function(){document.getElementById('f-char').textContent=this.value.length});
 // 動態 placeholder：根據問題類型切換範例
-const PLACEHOLDER_MAP={love:'例：我跟他還有機會復合嗎？/今年會遇到正緣嗎？',career:'例：我今年適合轉職嗎？/該選 A 公司還是 B 公司？',wealth:'例：最近適合投資嗎？/今年有偏財運嗎？',health:'例：我最近身體不太好，要注意什麼？',relationship:'例：跟同事相處不好，該怎麼改善？',family:'例：跟爸媽意見不合，怎麼溝通比較好？'};
+const PLACEHOLDER_MAP={love:'例：他是不是真的喜歡我？為什麼突然冷淡了？',career:'例：我該接這個 offer 嗎？留在現在的公司會比較好嗎？',wealth:'例：這筆投資值得做嗎？下半年有沒有賺錢的機會？',health:'例：我最近睡不好是什麼原因？身體哪裡要特別注意？',relationship:'例：跟他的關係還有救嗎？我該先開口還是等他？',family:'例：爸媽反對我的選擇，我該聽他們的嗎？'};
 document.getElementById('f-type').addEventListener('change',function(){const ph=PLACEHOLDER_MAP[this.value]||'例：我今年適合轉職嗎？';document.getElementById('f-question').placeholder=ph;});
 
 
@@ -5051,13 +5051,13 @@ showAuraResult = function(){
         '<span class="jy-home-cta-arrow">→</span>' +
       '</button>' +
 
-      // 快問按鈕
+      // 快問按鈕（v28：更具體的問題 → 更準的解讀）
       '<div class="jy-home-quick">' +
         '<div style="width:100%;text-align:center;font-size:.68rem;color:var(--c-text-muted,#6b6355);margin-bottom:.2rem;letter-spacing:.04em">不用想，點了就問 ↓</div>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'今年有桃花嗎？\')"><span class="jy-qk-icon">🌸</span>有桃花嗎</button>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'我該換工作嗎？\')"><span class="jy-qk-icon">💼</span>該換工作嗎</button>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'今年財運如何？\')"><span class="jy-qk-icon">💰</span>財運如何</button>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'他是認真的嗎？\')"><span class="jy-qk-icon">💕</span>他認真嗎</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'他心裡到底怎麼看我？是認真的還是在觀望？\')"><span class="jy-qk-icon">💕</span>他怎麼看我</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'我現在這份工作該留還是走？留下來會怎樣、走了會怎樣？\')"><span class="jy-qk-icon">💼</span>工作該留嗎</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'下半年感情會有新的發展嗎？我需要主動還是等？\')"><span class="jy-qk-icon">🌸</span>感情有機會嗎</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'我最近做的這個決定是對的嗎？會帶我去哪裡？\')"><span class="jy-qk-icon">⚖️</span>決定對嗎</button>' +
       '</div>' +
 
       // 每日一牌
@@ -5206,7 +5206,7 @@ showAuraResult = function(){
     // 設 placeholder 引導
     var textarea = document.getElementById('f-question');
     if (textarea) {
-      textarea.placeholder = '例如：今年有桃花嗎？我該不該換工作？副業做得起來嗎？';
+      textarea.placeholder = '問越具體越準——例如：他為什麼最近不主動找我了？我該先開口嗎？';
       textarea.focus();
     }
 

@@ -14876,6 +14876,7 @@ function _buildPayload() {
       var posLabel = posL[i] || (c.pos || '第'+(i+1)+'張');
       // ★ Bug A 修復：readings.tarot 也用「順/逆」，避免黑名單詞彙洩漏到七維度路由
       var text = '【' + posLabel + '】' + _s(c.name||c.n) + (c.isUp===true?'（順）':'（逆）');
+      if (c.sc) text += '　畫面：' + c.sc;
       if (c.el) text += '　' + c.el;
       // ★ #3：補 positionMeaning，讓七維度路由也能讀到牌陣位置含義
       var posMeaning = _posMeanings[i] || '';
