@@ -5333,7 +5333,6 @@ showAuraResult = function(){
     var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
     var targetCount = def ? def.count : 10;
 
-    // 調整 btn-analyze 的啟用條件
     if (!deckShuffled.length) initTarotDeck();
     if (drawnCards.length >= targetCount) return;
 
@@ -5342,16 +5341,29 @@ showAuraResult = function(){
     var cards = deckEl.querySelectorAll('.tarot-deck-card:not(.picked)');
     if (!cards.length) return;
 
+    // ★ v28 fix：去重（雙份牌堆會有 clone，同 data-idx 只取第一個）
+    var seen = {};
+    var unique = [];
+    for (var i = 0; i < cards.length; i++) {
+      var idx = cards[i].dataset.idx;
+      if (!seen[idx]) { seen[idx] = 1; unique.push(cards[i]); }
+    }
     var remaining = targetCount - drawnCards.length;
-    var toPick = Array.from(cards).slice(0, remaining);
+    var toPick = unique.slice(0, remaining);
 
-    var delay = 0;
-    toPick.forEach(function(cardEl, i) {
-      setTimeout(function() {
-        cardEl.click();
-      }, delay);
-      delay += 700;
-    });
+    // ★ v28 fix：等前一張動畫完才抽下一張（不用固定延遲）
+    var step = 0;
+    function _nextPick() {
+      if (step >= toPick.length || drawnCards.length >= targetCount) return;
+      if (typeof pickAnimating !== 'undefined' && pickAnimating) {
+        setTimeout(_nextPick, 80);
+        return;
+      }
+      pickCard(parseInt(toPick[step].dataset.idx), toPick[step]);
+      step++;
+      setTimeout(_nextPick, 150);
+    }
+    _nextPick();
   };
 
   // ══ 覆寫 pickCard 的完成判定 — 根據牌陣張數 ══
