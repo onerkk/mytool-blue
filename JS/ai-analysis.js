@@ -13851,6 +13851,21 @@ function _notifyComplete(mode, aiResult) {
     var gender = (S.form && S.form.gender) ? (S.form.gender === 'male' ? '男' : (S.form.gender === 'female' ? '女' : '')) : '';
     var typeLabel = {'love':'感情','career':'事業','wealth':'財運','health':'健康','relationship':'人際','family':'家庭','general':'整體'}[(S.form && S.form.type)] || '整體';
     var r = aiResult || {};
+    // ★ v28：strip thinking — 通知不應包含 AI 內部草稿
+    if (r.thinking) delete r.thinking;
+    // 如果 r.answer 是 raw JSON 字串（parse 失敗的 fallback），嘗試提取 story/directAnswer
+    if (typeof r.answer === 'string' && r.answer.indexOf('"thinking"') >= 0) {
+      try {
+        var _notifParsed = JSON.parse(r.answer.replace(/[\x00-\x1F]+/g, ' '));
+        if (_notifParsed && _notifParsed.story) {
+          r = _notifParsed;
+          delete r.thinking;
+        }
+      } catch(_npe) {
+        // parse 失敗就把 thinking 區塊正則砍掉
+        r.answer = r.answer.replace(/"thinking"\s*:\s*\{[^}]*(?:\{[^}]*\}[^}]*)*\}\s*,?\s*/g, '');
+      }
+    }
     // ★ v16：完整抓取 AI 回答
     var answerParts = [];
     if (r.directAnswer) answerParts.push(r.directAnswer);
@@ -18508,7 +18523,19 @@ renderTarot = function(){
           var _outCard = _drawnSlice[_drawnSlice.length - 1];
           if (_outCard) {
             p.dims.tarot.outcomeCard = (_outCard.name || _outCard.n || '') + (_outCard.isUp === true ? '（順）' : '（逆）');
+            if (_outCard.sc) p.dims.tarot.outcomeScene = _outCard.sc;
           }
+          // ★ v28：關鍵牌面場景（讓七維度 AI 也能讀畫面）
+          var _keyScenes = [];
+          // 阻礙位（第2張）
+          if (_drawnSlice[1] && _drawnSlice[1].sc) _keyScenes.push('阻礙位（' + (_drawnSlice[1].n || '') + '）：' + _drawnSlice[1].sc);
+          // 根因位（第3張）
+          if (_drawnSlice[2] && _drawnSlice[2].sc) _keyScenes.push('根因位（' + (_drawnSlice[2].n || '') + '）：' + _drawnSlice[2].sc);
+          // 自己位（第7張）
+          if (_drawnSlice[6] && _drawnSlice[6].sc) _keyScenes.push('自己位（' + (_drawnSlice[6].n || '') + '）：' + _drawnSlice[6].sc);
+          // 結果位
+          if (_outCard && _outCard.sc) _keyScenes.push('結果位（' + (_outCard.n || '') + '）：' + _outCard.sc);
+          if (_keyScenes.length) p.dims.tarot.keyScenes = _keyScenes.join('｜');
           // 正逆位比例（整體能量方向）
           var _upCount = _drawnSlice.filter(function(c) { return c.isUp === true; }).length;
           p.dims.tarot.uprightRatio = _upCount + '/' + _drawnSlice.length;
@@ -19373,8 +19400,8 @@ renderTarot = function(){
       // ═══ v28 三層結構：Tier1=裁決+收尾+節奏 → Tier2=五層摘要 → Tier3=完整故事 ═══
 
       // ── Tier 1：closing 提到最前面（用戶第一眼看到裁決+收束）──
-      var oneRaw = (r.closing || r.oneliner || r.summary || '').replace(/\*\*/g,'').trim();
-      window._jyClosingText = (r.directAnswer || oneRaw || '').replace(/\*\*/g,'').trim();
+      var oneRaw = _cleanAITerms((r.closing || r.oneliner || r.summary || '').replace(/\*\*/g,'').trim());
+      window._jyClosingText = _cleanAITerms((r.directAnswer || oneRaw || '').replace(/\*\*/g,'').trim());
       if(oneRaw && oneRaw.length >= 5){
         html += '<div id="jy-closing-full" style="margin-top:.8rem;margin-bottom:.6rem;padding:.9rem 1.1rem;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.05));border-radius:12px;border:1px solid rgba(212,175,55,.2);text-align:center">';
         html += '<div style="font-size:1.05rem;line-height:1.85;color:var(--c-gold);font-weight:700">' + _safeHtml(oneRaw) + '</div>';
@@ -19383,7 +19410,7 @@ renderTarot = function(){
 
       // ── Tier 1 附加：節奏提示（從 layers.timing.conclusion 取）──
       if (r.layers && r.layers.timing) {
-        var _timingConcl = typeof r.layers.timing === 'object' ? (r.layers.timing.conclusion || '') : '';
+        var _timingConcl = _cleanAITerms(typeof r.layers.timing === 'object' ? (r.layers.timing.conclusion || '') : '');
         if (_timingConcl && _timingConcl.length >= 3) {
           html += '<div style="margin-bottom:1rem;padding:.5rem .8rem;border-radius:8px;background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.15);text-align:center">';
           html += '<span style="font-size:.72rem;color:rgba(59,130,246,.8);font-weight:600">⏳ 本期節奏：</span>';
@@ -19420,8 +19447,8 @@ renderTarot = function(){
           _hasLayers.forEach(function(k, idx) {
             var c = _lCfg[k];
             var layerObj = r.layers[k];
-            var concl = typeof layerObj === 'object' ? (layerObj.conclusion || '') : '';
-            var reading = typeof layerObj === 'object' ? (layerObj.reading || '').replace(/\*\*/g,'').trim() : (typeof layerObj === 'string' ? layerObj.replace(/\*\*/g,'').trim() : '');
+            var concl = _cleanAITerms(typeof layerObj === 'object' ? (layerObj.conclusion || '') : '');
+            var reading = _cleanAITerms(typeof layerObj === 'object' ? (layerObj.reading || '').replace(/\*\*/g,'').trim() : (typeof layerObj === 'string' ? layerObj.replace(/\*\*/g,'').trim() : ''));
             html += '<div style="padding:.45rem 0;' + (idx < _hasLayers.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,.04)' : '') + '">';
             html += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.15rem">';
             html += '<div style="width:22px;height:22px;border-radius:6px;background:' + c.numBg + ';color:' + c.numColor + ';font-size:.55rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700">' + c.num + '</div>';
@@ -20705,6 +20732,7 @@ function _buildTarotOnlyPayload() {
       role: _roles[i] || 'background'
     };
     if (c.gdCourt) card.gdCourt = c.gdCourt.combo;
+    if (c.sc) card.sc = c.sc;
     return card;
   });
 
@@ -22325,7 +22353,23 @@ function _buildOOTKPayload() {
         pileElement: cross.pileElement || '',
         elementFlow: cross.elementFlow || null,
         layerAlignment: layerAlignment
-      }
+      },
+      // ★ v28：關鍵牌面場景（獨立區塊，AI 先看畫面再讀數據）
+      keyCardScenes: (function() {
+        var scenes = [];
+        var opLabels = ['四元素','十二宮位','十二星座','三十六旬','生命之樹'];
+        ['op1','op2','op3','op4','op5'].forEach(function(k, i) {
+          var op = results[k];
+          if (!op) return;
+          if (op.keyCards) {
+            op.keyCards.forEach(function(kc) {
+              var c = kc.card;
+              if (c && c.sc) scenes.push(opLabels[i] + '關鍵牌（' + (c.n || c.name) + '）：' + c.sc);
+            });
+          }
+        });
+        return scenes.length ? scenes : null;
+      })()
     }
   };
   if (_cc.catalog.length) {
@@ -22469,6 +22513,40 @@ function _renderOOTKResult(container, r, admin) {
   _appendFollowUpUI(container, 'ootk');
 }
 
+// ═══ v28：AI 輸出後處理——硬殺術語 ═══
+// Haiku 禁用詞無效，這是最後防線：渲染前正則刪除所有命理術語
+function _cleanAITerms(s) {
+  if (!s || typeof s !== 'string') return s || '';
+  // 1. 系統方法名——直接刪除整個提及
+  s = s.replace(/(?:八字|紫微斗數?|西洋占星|吠陀占星|梅花易數|姓名學|凱爾特十字)(?:的|裡|中|上|說|看|盤)?/g, '');
+  // 2. OOTK 方法名
+  s = s.replace(/Op\.\d|四元素|十二宮位|十二星座|三十六旬|生命之樹/g, '');
+  s = s.replace(/Chokmah|Malkuth|Yesod|Kether|Binah|Chesed|Geburah|Tiphereth|Netzach|Hod|Sephir(?:ah?|ot)/gi, '');
+  // 3. 宮位名——替換成人話
+  s = s.replace(/第(\d+)宮/g, function(m, n) {
+    var map = {'1':'你自己','2':'你的錢','3':'你的溝通','4':'你的家','5':'你的創造力','6':'你的日常','7':'你跟另一個人之間','8':'你的深層連結','9':'你的信念','10':'你的事業','11':'你的圈子','12':'你的潛意識'};
+    return map[n] || '';
+  });
+  s = s.replace(/命宮/g, '你的核心').replace(/夫妻宮/g, '你跟另一個人之間').replace(/官祿宮/g, '工作上');
+  s = s.replace(/財帛宮/g, '你跟錢的關係').replace(/子女宮/g, '你做自己東西的那股衝勁').replace(/疾厄宮/g, '身心狀態');
+  s = s.replace(/遷移宮/g, '外面的機會').replace(/田宅宮/g, '你的家和根').replace(/福德宮/g, '內心的滿足感');
+  s = s.replace(/交友宮|僕役宮/g, '你的人脈').replace(/父母宮/g, '長輩的影響');
+  // 4. 術語→人話
+  s = s.replace(/逆位/g, '卡住').replace(/正位/g, '順的');
+  s = s.replace(/化忌/g, '卡點').replace(/化祿/g, '資源進場').replace(/化權/g, '掌控力增強').replace(/化科/g, '名聲加分');
+  s = s.replace(/大限/g, '你這十年').replace(/流年/g, '今年').replace(/流月/g, '這幾個月');
+  s = s.replace(/身弱/g, '你自身能量偏薄').replace(/身強/g, '你自身能量偏強');
+  s = s.replace(/Dasha/gi, '時運週期').replace(/Yoga/gi, '特殊格局').replace(/Nakshatra/gi, '月宿');
+  s = s.replace(/Gandanta/gi, '轉彎的卡點').replace(/Sade\s*Sati/gi, '土星考驗期');
+  // 5. 分析口吻詞——直接刪
+  s = s.replace(/(?:代表|指向|顯示|反映|意味著|象徵|暗示著|可以看出|進一步來看|值得注意的是|整體來說|綜合判斷|從這裡看|碰撞|交叉比對)/g, '');
+  s = s.replace(/牌面上|這張牌|從牌面來看|我看到|我看你的|盤裡|數據|從.*?來看/g, '');
+  // 6. 清理多餘空白和標點
+  s = s.replace(/[，,]{2,}/g, '，').replace(/[。]{2,}/g, '。').replace(/^\s*[，,。]\s*/gm, '');
+  s = s.replace(/\s{2,}/g, ' ').trim();
+  return s;
+}
+
 function _esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ═══════════════════════════════════════════════════════════════
@@ -22564,6 +22642,7 @@ window._jyShareMoment = function() {
 
 function _renderStoryChat(text) {
   if (!text) return '';
+  text = _cleanAITerms(text);
   var escaped = _esc(text);
   var paras = escaped.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').split(/\n\n+/).filter(function(p) { return p.trim().length > 0; });
   if (!paras.length) return '';
@@ -22617,6 +22696,7 @@ function _renderSectionDivider(icon) {
 // directAnswer 也用對話風格
 function _renderDirectAnswerChat(text) {
   if (!text) return '';
+  text = _cleanAITerms(text);
   return '<div class="jy-chat"><div class="jy-chat-row">' +
     '<div class="jy-chat-avatar"><img src="' + JINGYUE_AVATAR + '" alt="靜月" onerror="this.style.display=\'none\'"></div>' +
     '<div class="jy-chat-bubble jy-chat-da">' + _esc(text) + '</div>' +
