@@ -293,17 +293,45 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 
 /* ── 3D Dual-Row Tarot Deck ── */
 .tarot-deck-wrap{position:relative;width:100%;overflow:hidden;padding:8px 0}
-.tarot-3d-stage{position:relative;width:100%;height:218px;perspective:900px;overflow:hidden}
-.tarot-3d-row{display:flex;gap:10px;position:absolute;left:0;will-change:transform;padding:0 10px}
-.tarot-3d-row.tarot-3d-top{top:4px}
-.tarot-3d-row.tarot-3d-bot{bottom:4px}
-.tarot-deck-card{flex:0 0 64px;height:99px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:filter .15s,opacity .35s}
+.tarot-3d-stage{
+  position:relative;width:100%;height:260px;perspective:600px;overflow:hidden;
+  border-radius:12px;background:#0a0a1a;
+}
+/* 6-image background slideshow */
+.tarot-stage-bg{position:absolute;inset:0;z-index:0}
+.tarot-stage-bg-img{
+  position:absolute;inset:0;background-size:cover;background-position:center;
+  opacity:0;will-change:opacity,transform;
+  animation:tarotBgCycle 36s ease-in-out infinite;
+}
+.tarot-stage-bg-img:nth-child(1){animation-delay:0s}
+.tarot-stage-bg-img:nth-child(2){animation-delay:6s}
+.tarot-stage-bg-img:nth-child(3){animation-delay:12s}
+.tarot-stage-bg-img:nth-child(4){animation-delay:18s}
+.tarot-stage-bg-img:nth-child(5){animation-delay:24s}
+.tarot-stage-bg-img:nth-child(6){animation-delay:30s}
+@keyframes tarotBgCycle{
+  0%,2%{opacity:0;transform:scale(1)}
+  5%,22%{opacity:1;transform:scale(1.05)}
+  27%,100%{opacity:0;transform:scale(1.1)}
+}
+/* Vignette + dim overlay so cards pop */
+.tarot-stage-bg::after{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 85% 80% at 50% 50%,transparent 40%,rgba(10,10,26,.65) 100%),
+    linear-gradient(180deg,rgba(10,10,26,.2) 0%,transparent 20%,transparent 80%,rgba(10,10,26,.3) 100%);
+}
+.tarot-3d-row{display:flex;gap:4px;position:absolute;left:0;will-change:transform;padding:0 6px;transform-style:preserve-3d;z-index:2}
+.tarot-3d-row.tarot-3d-top{top:0;transform-origin:center bottom}
+.tarot-3d-row.tarot-3d-bot{bottom:0;transform-origin:center top}
+.tarot-deck-card{flex:0 0 72px;height:108px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:filter .15s,opacity .35s}
 .tarot-deck-card.picked{opacity:0;pointer-events:none;transition:opacity .35s .05s}
 .tarot-deck-card-inner{
-  width:100%;height:100%;border-radius:8px;
+  width:100%;height:100%;border-radius:6px;
   background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
   border:1.5px solid rgba(212,175,55,.18);
-  box-shadow:0 2px 8px rgba(0,0,0,.45),0 0 6px rgba(212,175,55,.04);
+  box-shadow:0 2px 8px rgba(0,0,0,.5),0 0 6px rgba(212,175,55,.04);
   position:relative;overflow:hidden;
   animation:tarot3dFloat 3.2s ease-in-out infinite;
   animation-delay:var(--float-delay,0s);
@@ -312,23 +340,23 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 /* Shimmer on hover */
 .tarot-deck-card-inner::before{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.1) 50%,transparent 70%);
-  opacity:0;transition:opacity .25s;pointer-events:none;
+  background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.12) 50%,transparent 70%);
+  opacity:0;transition:opacity .25s;pointer-events:none;border-radius:6px;
 }
 .tarot-deck-card:hover .tarot-deck-card-inner::before{opacity:1}
 /* Center-glow highlight */
 .tarot-deck-card.deck-center .tarot-deck-card-inner{
-  box-shadow:0 0 14px rgba(212,175,55,.35),0 0 28px rgba(212,175,55,.1),0 2px 8px rgba(0,0,0,.45);
-  border-color:rgba(212,175,55,.5);
+  box-shadow:0 0 16px rgba(212,175,55,.4),0 0 32px rgba(212,175,55,.12),0 2px 8px rgba(0,0,0,.5);
+  border-color:rgba(212,175,55,.55);
 }
 /* Lift phase */
 .tarot-deck-card.lifting{z-index:100;animation:tarot3dLift .35s cubic-bezier(.34,1.56,.64,1) forwards !important}
 .tarot-deck-card.lifting .tarot-deck-card-inner{
-  box-shadow:0 0 22px rgba(212,175,55,.55),0 10px 36px rgba(0,0,0,.55);
+  box-shadow:0 0 24px rgba(212,175,55,.6),0 10px 40px rgba(0,0,0,.55);
   border-color:rgba(212,175,55,.7);animation:none;
 }
-@keyframes tarot3dFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes tarot3dLift{0%{transform:scale(1) translateY(0)}100%{transform:scale(1.28) translateY(-32px)}}
+@keyframes tarot3dFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes tarot3dLift{0%{transform:scale(1) translateY(0)}100%{transform:scale(1.3) translateY(-34px)}}
 /* Gold particles */
 .tarot-particle{
   position:fixed;width:5px;height:5px;border-radius:50%;
@@ -342,7 +370,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 }
 /* Fly card */
 .tarot-fly-card{
-  position:fixed;z-index:9999;border-radius:8px;
+  position:fixed;z-index:9999;border-radius:6px;
   background:url('/tarot_img/card-back.jpg') center/cover no-repeat;
   border:1.5px solid rgba(212,175,55,.4);
   box-shadow:0 6px 28px rgba(212,175,55,.2),0 10px 40px rgba(0,0,0,.45);
@@ -356,11 +384,13 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
   border:1px solid rgba(212,175,55,.25);
   box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;
 }
-/* Reduced motion: kill floating + auto-scroll handled in JS */
+/* Reduced motion */
 @media(prefers-reduced-motion:reduce){
   .tarot-deck-card-inner{animation:none}
   .tarot-deck-card.lifting{animation:none;transform:scale(1.15) translateY(-10px)}
   .tarot-particle{animation:none;display:none}
+  .tarot-stage-bg-img{animation:none}
+  .tarot-stage-bg-img:first-child{opacity:1}
 }
 
 /* Chosen area */
