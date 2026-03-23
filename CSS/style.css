@@ -1898,3 +1898,42 @@ details[open] > summary > .fa-chevron-right {
   letter-spacing:.03em;
   opacity:.7;
 }
+
+/* ── v28：step-2 塔羅抽牌頁面 — 暗色神秘風一致化 ── */
+#step-2>.card{
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  padding:0 var(--sp-md);
+}
+#step-2>.card>.card-title{
+  border-bottom:1px solid rgba(212,175,55,.12);
+  color:var(--c-gold);
+  justify-content:center;
+  font-size:1.05rem;
+}
+#step-2 .tarot-pick-hint{
+  color:var(--c-gold) !important;
+  text-shadow:0 0 12px rgba(212,175,55,.15);
+}
+#step-2 .tarot-chosen-area{
+  background:rgba(10,10,26,.4);
+  border-radius:12px;
+  border:1px solid rgba(212,175,55,.08);
+  padding:var(--sp-md) var(--sp-sm);
+  margin-bottom:var(--sp-sm);
+}
+#step-2 .btn-outline{
+  border-color:rgba(212,175,55,.25);
+  color:rgba(212,175,55,.7);
+}
+#step-2 .btn-outline:hover{
+  border-color:rgba(212,175,55,.5);
+  color:var(--c-gold);
+  background:rgba(212,175,55,.06);
+}
+#step-2 .actions{
+  background:transparent;
+  border-top:1px solid rgba(212,175,55,.08);
+  padding-top:var(--sp-md);
+}
