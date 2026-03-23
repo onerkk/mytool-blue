@@ -330,7 +330,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .tarot-3d-row{display:flex;gap:4px;position:absolute;left:0;will-change:transform;padding:0 6px;transform-style:preserve-3d;z-index:2}
 .tarot-3d-row.tarot-3d-top{top:0;transform-origin:center bottom}
 .tarot-3d-row.tarot-3d-bot{bottom:0;transform-origin:center top}
-.tarot-deck-card{flex:0 0 72px;height:108px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:filter .15s,opacity .35s}
+.tarot-deck-card{flex:0 0 72px;height:108px;cursor:pointer;position:relative;transform-style:flat;transition:filter .15s,opacity .35s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .tarot-deck-card.picked{opacity:0;pointer-events:none;transition:opacity .35s .05s}
 .tarot-deck-card-inner{
   width:100%;height:100%;border-radius:6px;
