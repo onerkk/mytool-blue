@@ -1334,8 +1334,8 @@ img[loading="lazy"]{content-visibility:auto}
   gap: 8px;
 }
 .jy-date-row .jy-select:nth-child(1) { flex: 1.5; min-width: 88px; }
-.jy-date-row .jy-select:nth-child(2) { flex: 1; min-width: 72px; }
-.jy-date-row .jy-select:nth-child(3) { flex: 1; min-width: 72px; }
+.jy-date-row .jy-select:nth-child(2) { flex: 1; min-width: 78px; padding-right: 24px; }
+.jy-date-row .jy-select:nth-child(3) { flex: 1; min-width: 78px; padding-right: 24px; }
 
 /* ── 時間雙欄 ── */
 .jy-time-row {
