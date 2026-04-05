@@ -406,8 +406,8 @@ function handleExcelUpload(e) {
     try {
       const data = new Uint8Array(ev.target.result);
       const wb = XLSX.read(data, { type: 'array' });
-      // 優先讀「進銷總表」，沒有就讀第一個 sheet
-      const sheetName = wb.SheetNames.find(s => s.includes('進銷') || s.includes('庫存')) || wb.SheetNames[0];
+      // 優先讀「進銷總表」
+      const sheetName = wb.SheetNames.find(s => s === '進銷總表') || wb.SheetNames.find(s => s.includes('進銷')) || wb.SheetNames[0];
       const ws = wb.Sheets[sheetName];
       
       // 找到真正的標題行（含「品項」或「品名」或「水晶」的那行）
