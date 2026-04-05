@@ -55,6 +55,9 @@ const OBF_OPTS = {
   selfDefending: true,
   renameGlobals: false,
   unicodeEscapeSequence: true,
+  // ★ Step 7: 域名鎖定（混淆器級，每個檔案都檢查）
+  domainLock: ['jingyue.uk', '.jingyue.uk'],
+  domainLockRedirectUrl: 'about:blank',
   target: 'browser',
   sourceMap: false,
 };
@@ -107,7 +110,7 @@ if (fs.existsSync(ASW)) {
     fs.writeFileSync(ASWB, sw, 'utf-8');
     console.log('🔄 ' + ASW + '...');
     try {
-      const r = JavaScriptObfuscator.obfuscate(sw, { ...OBF_OPTS, selfDefending: false });
+      const r = JavaScriptObfuscator.obfuscate(sw, { ...OBF_OPTS, selfDefending: false, domainLock: [] });
       fs.writeFileSync(ASW, r.getObfuscatedCode(), 'utf-8');
       console.log('   ✅ admin-sw.js 完成'); success++;
     } catch(err) { console.error('   ❌ ' + err.message); failed++; }
