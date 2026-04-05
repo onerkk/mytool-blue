@@ -405,7 +405,11 @@ async function loadDashboard() {
     const list = data.notifications || [];
     
     const today = new Date(Date.now() + 8*3600000).toISOString().slice(0,10);
-    const todayItems = list.filter(n => (n.time||'').startsWith(today));
+    const todayItems = list.filter(n => {
+      if (!n.time) return false;
+      if (n.time.startsWith(today)) return true;
+      try { var d8 = new Date(new Date(n.time).getTime() + 8*3600000); return d8.toISOString().slice(0,10) === today; } catch(_) { return false; }
+    });
     
     document.getElementById('s-total').textContent = list.length;
     document.getElementById('s-today').textContent = todayItems.length;
