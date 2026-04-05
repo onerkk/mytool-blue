@@ -279,7 +279,7 @@ let workerFileContent = null;
 })();
 
 function _adminGoogleLogin() {
-  var redirect = encodeURIComponent(window.location.origin + '/admin.html');
+  var redirect = encodeURIComponent(window.location.href.split('#')[0]);
   window.location.href = WORKER_URL + '/auth/google?redirect=' + redirect;
 }
 

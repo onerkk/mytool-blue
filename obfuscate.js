@@ -1,350 +1,519 @@
 /**
- * 靜月之光 — JS 混淆腳本（終極版）
- * 
- * 超越收費版混淆器的功能：
- *   ✦ RC4 字串加密 + 多層包裝器（逆向工具無法自動解）
- *   ✦ 控制流扁平化（邏輯變成 switch-case 迷宮）
- *   ✦ 域名鎖定（雙層：混淆器級 + 自寫運行時校驗）
- *   ✦ 反調試陷阱（開 DevTools 直接卡死 + 計時偵測）
- *   ✦ 反 iframe 嵌入（別人不能用 iframe 偷嵌你的頁面）
- *   ✦ 環境偵測（防止在 Node.js 裡離線解析）
- *   ✦ Console 攔截偵測（有人 hook console 會觸發）
- *   ✦ 鍵盤 / 右鍵封鎖（F12, Ctrl+Shift+I, 右鍵全擋）
- *   ✦ 函數 toString 陷阱（讀原始碼會拿到假資料）
- *   ✦ 自我防護（格式化程式碼後直接壞掉）
- *   ✦ 死碼注入 + 物件 key 混淆
+ * 靜月之光 — JS 混淆腳本（終極版 + 程式碼虛擬化）
  *
- * 保護層自動注入到 ui.js 開頭，混淆時一起加密
- * 
+ * 安裝依賴：npm install javascript-obfuscator acorn
+ *
  * 使用方式：
  *   cd D:\mytool-blue
  *   node obfuscate.js
  *   git add . && git commit -m "obfuscate" && git push origin master
+ *
+ * 功能：
+ *   ✦ 程式碼虛擬化（自定義字節碼 VM — 收費版核心功能）
+ *   ✦ RC4 字串加密 + 多層包裝器
+ *   ✦ 域名鎖定（雙層）+ 反調試 + 反 iframe
+ *   ✦ 控制流扁平化 + 死碼注入 + 自我防護
  */
 
 const JavaScriptObfuscator = require('javascript-obfuscator');
+const acorn = require('acorn');
 const fs = require('fs');
 const path = require('path');
 
 // ═══════════════════════════════════════════════
-// JS/ 資料夾要混淆的檔案
+// 檔案清單
 // ═══════════════════════════════════════════════
 const JS_FILES = [
-  'JS/ai-analysis.js',
-  'JS/api_upgrade.js',
-  'JS/bazi.js',
-  'JS/bazi_upgrade.js',
-  'JS/jyotish_full_upgrade.js',
-  'JS/meihua_output_layer.js',
-  'JS/meihua_upgrade.js',
-  'JS/meihua_upgrade2.js',
-  'JS/name_upgrade.js',
-  'JS/payment-wall.js',
-  'JS/render_upgrade.js',
-  'JS/renderMeihua_upgrade.js',
-  'JS/solar-location.js',
-  'JS/tarot.js',
-  'JS/tarot_upgrade.js',
-  'JS/ui.js',
-  'JS/western_upgrade.js',
-  'JS/ziwei.js',
+  'JS/ai-analysis.js','JS/api_upgrade.js','JS/bazi.js','JS/bazi_upgrade.js',
+  'JS/jyotish_full_upgrade.js','JS/meihua_output_layer.js','JS/meihua_upgrade.js',
+  'JS/meihua_upgrade2.js','JS/name_upgrade.js','JS/payment-wall.js',
+  'JS/render_upgrade.js','JS/renderMeihua_upgrade.js','JS/solar-location.js',
+  'JS/tarot.js','JS/tarot_upgrade.js','JS/ui.js','JS/western_upgrade.js','JS/ziwei.js',
 ];
-
-// 保護層注入目標（最早載入的 JS）
 const SHIELD_TARGET = 'JS/ui.js';
-
 const JS_BACKUP_DIR = 'JS_backup';
 
 // ═══════════════════════════════════════════════
-// 保護層原始碼（注入後會跟 ui.js 一起被混淆）
+// 防護盾原始碼（會被編譯成字節碼）
 // ═══════════════════════════════════════════════
-const SHIELD_CODE = `
-// ═══ 靜月之光 防護盾 ═══
-(function(){
-  'use strict';
-  var _jy_ok = true;
-
-  // ── 1. 域名鎖定（運行時校驗，混淆器的 domainLock 是第一層，這是第二層）──
+const SHIELD_SOURCE = `(function(){
+  var _ok = true;
   try {
     var _h = window.location.hostname;
-    var _allowed = ['jingyue.uk','localhost','127.0.0.1',''];
-    var _pass = false;
-    for (var i = 0; i < _allowed.length; i++) {
-      if (_h === _allowed[i] || _h.indexOf('.jingyue.uk') !== -1) { _pass = true; break; }
+    var _al = ['jingyue.uk','localhost','127.0.0.1',''];
+    var _p = false;
+    for (var i = 0; i < _al.length; i++) {
+      if (_h === _al[i] || _h.indexOf('.jingyue.uk') !== -1) { _p = true; break; }
     }
-    if (!_pass) { _jy_ok = false; }
-  } catch(e) { _jy_ok = false; }
-
-  // ── 2. 反 iframe 嵌入（防止被別的網站嵌入）──
+    if (!_p) { _ok = false; }
+  } catch(e) { _ok = false; }
   try {
     if (window.self !== window.top) {
-      // 被 iframe 嵌入了
-      try { window.top.location.href = window.location.href; } catch(e) {
-        _jy_ok = false;
-      }
+      try { window.top.location.href = window.location.href; } catch(e2) { _ok = false; }
     }
   } catch(e) {}
-
-  // ── 3. 環境偵測（防止在 Node.js / Puppeteer 無頭環境解析）──
   try {
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
-      _jy_ok = false;
-    }
-    // 偵測 Puppeteer / Playwright 自動化工具
-    if (navigator.webdriver === true) {
-      _jy_ok = false;
-    }
-    // 偵測 PhantomJS
-    if (window.callPhantom || window._phantom) {
-      _jy_ok = false;
-    }
+    if (navigator.webdriver === true) { _ok = false; }
+    if (window.callPhantom || window._phantom) { _ok = false; }
   } catch(e) {}
-
-  // ── 4. 反調試：多層 debugger 陷阱 + 計時偵測 ──
-  var _dbgCount = 0;
-  function _antiDebug() {
-    var _start = Date.now();
+  var _dc = 0;
+  function _ad() {
+    var _s = Date.now();
     debugger;
-    var _elapsed = Date.now() - _start;
-    if (_elapsed > 100) {
-      _dbgCount++;
-      if (_dbgCount > 2) {
-        // 有人持續開著 DevTools，破壞頁面
+    if (Date.now() - _s > 100) {
+      _dc = _dc + 1;
+      if (_dc > 2) {
         try {
-          document.body.innerHTML = '<div style="background:#000;color:#333;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:monospace">.</div>';
-          // 清除所有計時器
-          var id = setTimeout(function(){}, 0);
-          while (id--) { clearTimeout(id); clearInterval(id); }
+          document.body.innerHTML = '';
+          var _id = setTimeout(function(){}, 0);
+          while (_id) { clearTimeout(_id); clearInterval(_id); _id = _id - 1; }
         } catch(e) {}
       }
     }
   }
-  // 隨機間隔執行（不是固定的，更難被 hook 掉）
-  function _scheduleAntiDebug() {
-    var _delay = 2000 + Math.floor(Math.random() * 3000);
-    setTimeout(function(){ _antiDebug(); _scheduleAntiDebug(); }, _delay);
+  function _sa() {
+    var _d = 2000 + Math.floor(Math.random() * 3000);
+    setTimeout(function(){ _ad(); _sa(); }, _d);
   }
-  _scheduleAntiDebug();
-
-  // ── 5. Console 覆寫偵測（有人 hook console.log 來偷看資料）──
-  try {
-    var _origLog = console.log;
-    var _nativeStr = Function.prototype.toString.call(_origLog);
-    if (_nativeStr.indexOf('native code') === -1 && _nativeStr.indexOf('[Command Line API]') === -1) {
-      // console.log 被替換了（可能是攔截器）
-      // 不直接壞掉，但停止輸出敏感資訊
-      window._jy_console_compromised = true;
-    }
-  } catch(e) {}
-
-  // ── 6. 鍵盤 / 右鍵封鎖 ──
-  document.addEventListener('contextmenu', function(e) {
-    if (!window._JY_ADMIN_TOKEN) e.preventDefault();
+  _sa();
+  document.addEventListener('contextmenu', function(ev) {
+    if (!window._JY_ADMIN_TOKEN) { ev.preventDefault(); }
   }, true);
-
-  document.addEventListener('keydown', function(e) {
-    if (window._JY_ADMIN_TOKEN) return; // Admin 不擋
-    // F12
-    if (e.keyCode === 123) { e.preventDefault(); return false; }
-    // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C
-    if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
-      e.preventDefault(); return false;
-    }
-    // Ctrl+U（查看原始碼）
-    if (e.ctrlKey && e.keyCode === 85) { e.preventDefault(); return false; }
+  document.addEventListener('keydown', function(ev) {
+    if (window._JY_ADMIN_TOKEN) { return; }
+    if (ev.keyCode === 123) { ev.preventDefault(); }
+    if (ev.ctrlKey && ev.shiftKey && (ev.keyCode === 73 || ev.keyCode === 74 || ev.keyCode === 67)) { ev.preventDefault(); }
+    if (ev.ctrlKey && ev.keyCode === 85) { ev.preventDefault(); }
   }, true);
-
-  // ── 7. 函數 toString 陷阱（讀函數原始碼會拿到假資料）──
   try {
-    var _origToString = Function.prototype.toString;
+    var _ot = Function.prototype.toString;
     Function.prototype.toString = function() {
-      // 如果有人對我們的函數做 toString()，回傳假的
-      var _result = _origToString.call(this);
-      if (_result.indexOf('_jy') !== -1 || _result.indexOf('jingyue') !== -1) {
+      var _r = _ot.call(this);
+      if (_r.indexOf('_jy') !== -1 || _r.indexOf('jingyue') !== -1) {
         return 'function () { [native code] }';
       }
-      return _result;
+      return _r;
     };
-    // 保護 toString 自己不被偵測
     Function.prototype.toString.toString = function() {
       return 'function toString() { [native code] }';
     };
   } catch(e) {}
-
-  // ── 8. 偵測 source map 請求攔截 ──
-  // （有人可能用 Service Worker 攔截 .js.map 請求來嘗試還原）
-  // 不需要額外處理，因為我們不產生 source map
-
-  // ── 執行域名校驗結果 ──
-  if (!_jy_ok) {
-    try {
-      document.body.innerHTML = '';
-      window.location.href = 'about:blank';
-    } catch(e) {}
-    return;
+  if (!_ok) {
+    try { document.body.innerHTML = ''; window.location.href = 'about:blank'; } catch(e) {}
   }
-})();
-`;
+})();`;
+
+// ═══════════════════════════════════════════════
+// VM 運行時（瀏覽器端解釋器，~50行）
+// ═══════════════════════════════════════════════
+const VM_RUNTIME = `function _jyVM(P,E){
+var s=P.s,B=P.b,K=P.k,f=P.f||[],pc=0,S=[],sc=E||{},ts=[];
+var bc=[];for(var _i=0;_i<B.length;_i++)bc[_i]=B[_i]^K.charCodeAt(_i%K.length);
+function u16(){var v=(bc[pc]<<8)|bc[pc+1];pc+=2;return v}
+function pop(){return S.pop()}
+function push(v){S.push(v)}
+while(pc<bc.length){try{while(pc<bc.length){var op=bc[pc++];switch(op){
+case 1:push(bc[pc++]);break;
+case 2:push(s[u16()]);break;
+case 3:push(!0);break;case 4:push(!1);break;case 5:push(null);break;case 6:push(void 0);break;
+case 8:push(u16());break;case 9:push(-u16());break;
+case 16:{var n=s[u16()];push(n in sc?sc[n]:typeof window!=='undefined'?window[n]:void 0);break}
+case 17:sc[s[u16()]]=pop();break;
+case 18:{var k=pop(),o=pop();push(o[k]);break}
+case 19:{var v=pop(),k=pop(),o=pop();o[k]=v;break}
+case 23:push(sc['this']||this);break;
+case 32:{var b=pop(),a=pop();push(a+b);break}
+case 33:{var b=pop(),a=pop();push(a-b);break}
+case 34:{var b=pop(),a=pop();push(a*b);break}
+case 35:{var b=pop(),a=pop();push(a===b);break}
+case 36:{var b=pop(),a=pop();push(a!==b);break}
+case 37:push(!pop());break;
+case 40:{var b=pop(),a=pop();push(a>b);break}
+case 41:{var b=pop(),a=pop();push(a<b);break}
+case 42:{var b=pop(),a=pop();push(a>=b);break}
+case 43:{var b=pop(),a=pop();push(a<=b);break}
+case 44:push(typeof pop());break;
+case 45:{var b=pop(),a=pop();push(a==b);break}
+case 46:{var b=pop(),a=pop();push(a!=b);break}
+case 47:push(-pop());break;
+case 48:pc=u16();break;
+case 49:{var t=u16();if(!pop())pc=t;break}
+case 50:{var t=u16();if(pop())pc=t;break}
+case 64:{var n=bc[pc++],ar=[];for(var i=0;i<n;i++)ar.unshift(pop());var m=pop(),o=pop();push(o[m].apply(o,ar));break}
+case 65:{var n=bc[pc++],ar=[];for(var i=0;i<n;i++)ar.unshift(pop());push(pop().apply(null,ar));break}
+case 66:{var n=bc[pc++],ar=[];for(var i=0;i<n;i++)ar.unshift(pop());push(ar);break}
+case 68:{var idx=u16(),sp=f[idx],cs=sc;push(function(){for(var i=0;i<sp.p.length;i++)cs[sp.p[i]]=arguments[i];cs['this']=this;return _jyVM(sp,cs)});break}
+case 80:pop();break;
+case 81:push(S[S.length-1]);break;
+case 82:ts.push({a:u16(),sl:S.length});break;
+case 83:ts.pop();break;
+case 84:debugger;break;
+case 255:return pop();
+}}}catch(err){if(ts.length){var fr=ts.pop();S.length=fr.sl;push(err);pc=fr.a}else{break}}}
+}`;
+
+// ═══════════════════════════════════════════════
+// 字節碼編譯器（Node.js 端，用 acorn 解析 AST）
+// ═══════════════════════════════════════════════
+class VMCompiler {
+  constructor() { this.bc = []; this.strings = []; this.functions = []; this.breakStack = []; }
+  addStr(s) { let i = this.strings.indexOf(s); if (i === -1) { i = this.strings.length; this.strings.push(s); } return i; }
+  emit(...ops) { this.bc.push(...ops); }
+  emit16(v) { this.bc.push((v >> 8) & 0xFF, v & 0xFF); }
+  pos() { return this.bc.length; }
+  patch16(p, v) { this.bc[p] = (v >> 8) & 0xFF; this.bc[p + 1] = v & 0xFF; }
+
+  compile(code) {
+    const ast = acorn.parse(code, { ecmaVersion: 2020 });
+    let body = ast.body;
+    // 偵測 IIFE 並直接編譯內部
+    if (body.length === 1 && body[0].type === 'ExpressionStatement') {
+      const expr = body[0].expression;
+      if (expr.type === 'CallExpression' && expr.callee.type === 'FunctionExpression') {
+        body = expr.callee.body.body;
+      }
+    }
+    // 先提升 FunctionDeclaration
+    for (const n of body) { if (n.type === 'FunctionDeclaration') this.funcDecl(n); }
+    for (const n of body) { if (n.type !== 'FunctionDeclaration') this.stmt(n); }
+    return { s: this.strings, b: this.bc, f: this.functions, p: [], k: '' };
+  }
+
+  stmt(n) {
+    if (!n) return;
+    switch (n.type) {
+      case 'BlockStatement': n.body.forEach(c => this.stmt(c)); break;
+      case 'ExpressionStatement':
+        if (n.expression.type === 'Literal' && typeof n.expression.value === 'string') break; // skip 'use strict'
+        this.expr(n.expression); this.emit(80); break;
+      case 'VariableDeclaration':
+        for (const d of n.declarations) {
+          if (d.init) this.expr(d.init); else this.emit(6);
+          this.emit(17); this.emit16(this.addStr(d.id.name));
+        } break;
+      case 'IfStatement':
+        this.expr(n.test); this.emit(49);
+        const jz = this.pos(); this.emit16(0);
+        this.stmt(n.consequent);
+        if (n.alternate) {
+          this.emit(48); const jmp = this.pos(); this.emit16(0);
+          this.patch16(jz, this.pos()); this.stmt(n.alternate); this.patch16(jmp, this.pos());
+        } else { this.patch16(jz, this.pos()); }
+        break;
+      case 'ForStatement':
+        if (n.init) { if (n.init.type === 'VariableDeclaration') this.stmt(n.init); else { this.expr(n.init); this.emit(80); } }
+        const ls = this.pos();
+        this.breakStack.push([]);
+        let lePos;
+        if (n.test) { this.expr(n.test); this.emit(49); lePos = this.pos(); this.emit16(0); }
+        this.stmt(n.body);
+        if (n.update) { this.expr(n.update); this.emit(80); }
+        this.emit(48); this.emit16(ls);
+        const endF = this.pos();
+        if (n.test) this.patch16(lePos, endF);
+        this.breakStack.pop().forEach(p => this.patch16(p, endF));
+        break;
+      case 'WhileStatement': {
+        const ws = this.pos();
+        this.breakStack.push([]);
+        this.expr(n.test); this.emit(49); const we = this.pos(); this.emit16(0);
+        this.stmt(n.body);
+        this.emit(48); this.emit16(ws);
+        const endW = this.pos(); this.patch16(we, endW);
+        this.breakStack.pop().forEach(p => this.patch16(p, endW));
+        break;
+      }
+      case 'ReturnStatement':
+        if (n.argument) this.expr(n.argument); else this.emit(6);
+        this.emit(255); break;
+      case 'BreakStatement':
+        this.emit(48);
+        if (this.breakStack.length) this.breakStack[this.breakStack.length - 1].push(this.pos());
+        this.emit16(0); break;
+      case 'TryStatement': {
+        this.emit(82); const cp = this.pos(); this.emit16(0);
+        this.stmt(n.block); this.emit(83);
+        this.emit(48); const ap = this.pos(); this.emit16(0);
+        this.patch16(cp, this.pos());
+        if (n.handler) {
+          if (n.handler.param) { this.emit(17); this.emit16(this.addStr(n.handler.param.name)); }
+          else this.emit(80);
+          this.stmt(n.handler.body);
+        } else { this.emit(80); }
+        this.patch16(ap, this.pos());
+        if (n.finalizer) this.stmt(n.finalizer);
+        break;
+      }
+      case 'FunctionDeclaration': break; // handled by hoist
+      case 'EmptyStatement': break;
+      case 'DebuggerStatement': this.emit(84); break;
+      default: console.warn('[VM] Unsupported stmt:', n.type);
+    }
+  }
+
+  expr(n) {
+    if (!n) { this.emit(6); return; }
+    const binOps = {'+':32,'-':33,'*':34,'===':35,'!==':36,'>':40,'<':41,'>=':42,'<=':43,'==':45,'!=':46};
+    switch (n.type) {
+      case 'Literal':
+        if (typeof n.value === 'number') this.emitNum(n.value);
+        else if (typeof n.value === 'string') { this.emit(2); this.emit16(this.addStr(n.value)); }
+        else if (n.value === true) this.emit(3);
+        else if (n.value === false) this.emit(4);
+        else if (n.value === null) this.emit(5);
+        break;
+      case 'Identifier':
+        this.emit(16); this.emit16(this.addStr(n.name)); break;
+      case 'ThisExpression': this.emit(23); break;
+      case 'MemberExpression':
+        this.expr(n.object);
+        if (n.computed) this.expr(n.property);
+        else { this.emit(2); this.emit16(this.addStr(n.property.name)); }
+        this.emit(18); break;
+      case 'CallExpression':
+        if (n.callee.type === 'MemberExpression') {
+          this.expr(n.callee.object);
+          if (n.callee.computed) this.expr(n.callee.property);
+          else { this.emit(2); this.emit16(this.addStr(n.callee.property.name)); }
+          n.arguments.forEach(a => this.expr(a));
+          this.emit(64, n.arguments.length);
+        } else {
+          this.expr(n.callee);
+          n.arguments.forEach(a => this.expr(a));
+          this.emit(65, n.arguments.length);
+        }
+        break;
+      case 'BinaryExpression':
+        this.expr(n.left); this.expr(n.right);
+        if (binOps[n.operator] !== undefined) this.emit(binOps[n.operator]);
+        else { console.warn('[VM] Unsupported op:', n.operator); this.emit(6); }
+        break;
+      case 'LogicalExpression':
+        this.expr(n.left); this.emit(81); // DUP
+        if (n.operator === '&&') {
+          this.emit(49); const sk = this.pos(); this.emit16(0);
+          this.emit(80); this.expr(n.right); this.patch16(sk, this.pos());
+        } else {
+          this.emit(50); const sk = this.pos(); this.emit16(0);
+          this.emit(80); this.expr(n.right); this.patch16(sk, this.pos());
+        }
+        break;
+      case 'UnaryExpression':
+        if (n.operator === '-' && n.argument.type === 'Literal' && typeof n.argument.value === 'number') {
+          this.emitNum(-n.argument.value);
+        } else if (n.operator === 'typeof') {
+          this.expr(n.argument); this.emit(44);
+        } else {
+          this.expr(n.argument);
+          if (n.operator === '!') this.emit(37);
+          else if (n.operator === '-') this.emit(47);
+        }
+        break;
+      case 'UpdateExpression': {
+        const vn = n.argument.name;
+        if (n.prefix) {
+          this.emit(16); this.emit16(this.addStr(vn));
+          this.emit(1, 1); this.emit(n.operator === '++' ? 32 : 33);
+          this.emit(81); this.emit(17); this.emit16(this.addStr(vn));
+        } else {
+          this.emit(16); this.emit16(this.addStr(vn));
+          this.emit(81); this.emit(1, 1); this.emit(n.operator === '++' ? 32 : 33);
+          this.emit(17); this.emit16(this.addStr(vn));
+        }
+        break;
+      }
+      case 'AssignmentExpression':
+        if (n.left.type === 'Identifier') {
+          if (n.operator === '=') { this.expr(n.right); }
+          else {
+            this.emit(16); this.emit16(this.addStr(n.left.name));
+            this.expr(n.right);
+            const aop = {'+=' :32, '-=':33, '*=':34};
+            this.emit(aop[n.operator] || 32);
+          }
+          this.emit(81); this.emit(17); this.emit16(this.addStr(n.left.name));
+        } else if (n.left.type === 'MemberExpression') {
+          this.expr(n.left.object);
+          if (n.left.computed) this.expr(n.left.property);
+          else { this.emit(2); this.emit16(this.addStr(n.left.property.name)); }
+          this.expr(n.right);
+          this.emit(19); this.emit(6); // SET_PROP + push undef as expr result
+        }
+        break;
+      case 'ArrayExpression':
+        (n.elements || []).forEach(e => this.expr(e || { type: 'Literal', value: null }));
+        this.emit(66, (n.elements || []).length); break;
+      case 'ObjectExpression':
+        this.emit(2); this.emit16(this.addStr('Object')); // push "Object"
+        // Simplified: create empty object, then set properties
+        // Actually just push {}:
+        this.bc.pop(); this.bc.pop(); this.bc.pop(); // undo the PUSH_STR
+        // Create object via array trick:
+        this.emit(6); // push undefined placeholder
+        // Actually let me just emit new object via JSON trick
+        // For shield code, ObjectExpression isn't used, so skip
+        console.warn('[VM] ObjectExpression not fully supported');
+        break;
+      case 'FunctionExpression':
+        this.funcExpr(n); break;
+      case 'ConditionalExpression':
+        this.expr(n.test); this.emit(49);
+        const te = this.pos(); this.emit16(0);
+        this.expr(n.consequent); this.emit(48);
+        const tend = this.pos(); this.emit16(0);
+        this.patch16(te, this.pos()); this.expr(n.alternate);
+        this.patch16(tend, this.pos()); break;
+      case 'SequenceExpression':
+        n.expressions.forEach((e, i) => {
+          this.expr(e);
+          if (i < n.expressions.length - 1) this.emit(80);
+        }); break;
+      default:
+        console.warn('[VM] Unsupported expr:', n.type); this.emit(6);
+    }
+  }
+
+  emitNum(n) {
+    if (Number.isInteger(n) && n >= 0 && n <= 255) { this.emit(1, n); }
+    else if (Number.isInteger(n) && n > 255 && n <= 65535) { this.emit(8); this.emit16(n); }
+    else if (Number.isInteger(n) && n < 0 && n >= -65535) { this.emit(9); this.emit16(-n); }
+    else { this.emit(2); this.emit16(this.addStr(String(n))); } // fallback
+  }
+
+  funcDecl(n) {
+    const sub = new VMCompiler();
+    for (const c of n.body.body) { if (c.type === 'FunctionDeclaration') sub.funcDecl(c); }
+    for (const c of n.body.body) { if (c.type !== 'FunctionDeclaration') sub.stmt(c); }
+    const idx = this.functions.length;
+    this.functions.push({ s: sub.strings, b: sub.bc, f: sub.functions, p: n.params.map(p => p.name), k: '' });
+    this.emit(68); this.emit16(idx);
+    this.emit(17); this.emit16(this.addStr(n.id.name));
+  }
+
+  funcExpr(n) {
+    const sub = new VMCompiler();
+    for (const c of n.body.body) { if (c.type === 'FunctionDeclaration') sub.funcDecl(c); }
+    for (const c of n.body.body) { if (c.type !== 'FunctionDeclaration') sub.stmt(c); }
+    const idx = this.functions.length;
+    this.functions.push({ s: sub.strings, b: sub.bc, f: sub.functions, p: n.params.map(p => p.name), k: '' });
+    this.emit(68); this.emit16(idx);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// 字節碼加密 + 產生虛擬化後的防護盾
+// ═══════════════════════════════════════════════
+function generateKey(len) {
+  const c = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let k = '';
+  for (let i = 0; i < len; i++) k += c[Math.floor(Math.random() * c.length)];
+  return k;
+}
+
+function encryptProgram(prog, key) {
+  prog.k = key;
+  prog.b = prog.b.map((v, i) => v ^ key.charCodeAt(i % key.length));
+  if (prog.f) prog.f.forEach(sp => encryptProgram(sp, key));
+}
+
+function generateVirtualizedShield() {
+  console.log('🛡️  編譯防護盾 → 自定義字節碼...');
+  const compiler = new VMCompiler();
+  const program = compiler.compile(SHIELD_SOURCE);
+  const key = generateKey(32);
+  encryptProgram(program, key);
+  const bcLen = program.b.length;
+  const strCount = program.s.length;
+  const funcCount = program.f.length;
+  console.log(`   📊 字節碼: ${bcLen} bytes | 字串表: ${strCount} | 子程式: ${funcCount}`);
+  return VM_RUNTIME + '\n_jyVM(' + JSON.stringify(program) + ');\n';
+}
 
 // ═══════════════════════════════════════════════
 // 混淆設定（最高實用強度）
 // ═══════════════════════════════════════════════
-const OBFUSCATION_OPTIONS = {
+const OBF_OPTS = {
   compact: true,
-
-  // 控制流扁平化
-  controlFlowFlattening: true,
-  controlFlowFlatteningThreshold: 0.75,
-
-  // 死碼注入
-  deadCodeInjection: true,
-  deadCodeInjectionThreshold: 0.4,
-
-  // 變數名 hex
+  controlFlowFlattening: true, controlFlowFlatteningThreshold: 0.75,
+  deadCodeInjection: true, deadCodeInjectionThreshold: 0.4,
   identifierNamesGenerator: 'hexadecimal',
-
-  // 數字轉運算式
   numbersToExpressions: true,
-
-  // 字串 RC4 加密
-  stringArray: true,
-  stringArrayEncoding: ['rc4'],
-  stringArrayThreshold: 0.75,
-  rotateStringArray: true,
-  shuffleStringArray: true,
-  splitStrings: true,
-  splitStringsChunkLength: 6,
-
-  // 多層字串包裝器
-  stringArrayWrappersCount: 3,
-  stringArrayWrappersChainedCalls: true,
-  stringArrayWrappersParametersMaxCount: 4,
-  stringArrayWrappersType: 'function',
-
-  // 字串呼叫轉換
-  stringArrayCallsTransform: true,
-  stringArrayCallsTransformThreshold: 0.75,
-
-  // 物件 key 混淆
+  stringArray: true, stringArrayEncoding: ['rc4'], stringArrayThreshold: 0.75,
+  rotateStringArray: true, shuffleStringArray: true,
+  splitStrings: true, splitStringsChunkLength: 6,
+  stringArrayWrappersCount: 3, stringArrayWrappersChainedCalls: true,
+  stringArrayWrappersParametersMaxCount: 4, stringArrayWrappersType: 'function',
+  stringArrayCallsTransform: true, stringArrayCallsTransformThreshold: 0.75,
   transformObjectKeys: true,
-
-  // 反調試（混淆器級）
-  debugProtection: true,
-  debugProtectionInterval: 2000,
-
-  // 保留 console
+  debugProtection: true, debugProtectionInterval: 2000,
   disableConsoleOutput: false,
-
-  // 自我防護（格式化就壞）
   selfDefending: true,
-
-  // 不重命名全域（跨檔案不會壞）
   renameGlobals: false,
-
-  // Unicode 跳脫
   unicodeEscapeSequence: true,
-
-  // 域名鎖定（混淆器級，第一層）
   domainLock: ['jingyue.uk', '.jingyue.uk'],
   domainLockRedirectUrl: 'about:blank',
-
-  target: 'browser',
-  sourceMap: false,
+  target: 'browser', sourceMap: false,
 };
-
-// 大檔案降低部分強度
-const LARGE_FILE_OPTIONS = {
-  controlFlowFlatteningThreshold: 0.4,
-  deadCodeInjectionThreshold: 0.2,
-  splitStringsChunkLength: 10,
-  stringArrayWrappersCount: 2,
-  debugProtection: false,
-  debugProtectionInterval: 0,
-};
-
-// Service Worker 專用（關掉不相容選項）
-const SW_OPTIONS = {
-  selfDefending: false,
-  debugProtection: false,
-  debugProtectionInterval: 0,
-  domainLock: [],
-};
+const LARGE_OPTS = { controlFlowFlatteningThreshold: 0.4, deadCodeInjectionThreshold: 0.2,
+  splitStringsChunkLength: 10, stringArrayWrappersCount: 2,
+  debugProtection: false, debugProtectionInterval: 0 };
+const SW_OPTS = { selfDefending: false, debugProtection: false, debugProtectionInterval: 0, domainLock: [] };
+const ADMIN_OPTS = { domainLock: [], domainLockRedirectUrl: '', debugProtection: false, debugProtectionInterval: 0 };
 
 // ═══════════════════════════════════════════════
 // 開始
 // ═══════════════════════════════════════════════
 console.log('');
-console.log('🔒 靜月之光 JS 混淆工具（終極版）');
-console.log('════════════════════════════════════════');
-console.log('');
-console.log('   ✦ RC4 加密 + 多層包裝器');
-console.log('   ✦ 域名鎖定（雙層）');
-console.log('   ✦ 反調試陷阱 + 計時偵測');
-console.log('   ✦ 反 iframe / 反自動化');
-console.log('   ✦ 鍵盤右鍵封鎖');
-console.log('   ✦ toString 陷阱');
-console.log('   ✦ 控制流扁平化 + 死碼注入');
+console.log('🔒 靜月之光 JS 混淆工具（終極版 + VM 虛擬化）');
+console.log('════════════════════════════════════════════════');
 console.log('');
 
-let totalSuccess = 0;
-let totalFailed = 0;
+let totalOK = 0, totalFail = 0;
+
+// 產生虛擬化後的防護盾
+let SHIELD_CODE;
+try {
+  SHIELD_CODE = generateVirtualizedShield();
+  console.log('   ✅ 防護盾已編譯為字節碼（逆向者需理解自定義 VM 指令集）');
+} catch (err) {
+  console.error('   ❌ 防護盾編譯失敗:', err.message);
+  console.log('   ↩️  改用未虛擬化版本');
+  SHIELD_CODE = SHIELD_SOURCE + '\n';
+}
+console.log('');
 
 // ───────────────────────────────────────────────
 // Part 1: JS/ 資料夾
 // ───────────────────────────────────────────────
 console.log('📁 [Part 1] JS/ 資料夾');
 console.log('────────────────────────────────');
+if (!fs.existsSync(JS_BACKUP_DIR)) fs.mkdirSync(JS_BACKUP_DIR, { recursive: true });
 
-if (!fs.existsSync(JS_BACKUP_DIR)) {
-  fs.mkdirSync(JS_BACKUP_DIR, { recursive: true });
-  console.log(`📁 建立備份資料夾: ${JS_BACKUP_DIR}/`);
-}
-
-for (const filePath of JS_FILES) {
-  const fullPath = path.resolve(filePath);
-
-  if (!fs.existsSync(fullPath)) {
-    console.log(`⚠️  找不到: ${filePath}，跳過`);
-    totalFailed++;
-    continue;
+for (const fp of JS_FILES) {
+  const full = path.resolve(fp);
+  if (!fs.existsSync(full)) { console.log(`⚠️  找不到: ${fp}`); totalFail++; continue; }
+  const fn = path.basename(fp);
+  fs.copyFileSync(full, path.join(JS_BACKUP_DIR, fn));
+  let code = fs.readFileSync(full, 'utf-8');
+  if (fp === SHIELD_TARGET) {
+    console.log(`🛡️  注入虛擬化防護盾 → ${fp}`);
+    code = SHIELD_CODE + code;
   }
-
-  const fileName = path.basename(filePath);
-  const backupPath = path.join(JS_BACKUP_DIR, fileName);
-
-  // 備份
-  fs.copyFileSync(fullPath, backupPath);
-
-  let originalCode = fs.readFileSync(fullPath, 'utf-8');
-
-  // ★ 注入保護層到 ui.js 開頭（混淆前注入，一起加密）
-  if (filePath === SHIELD_TARGET) {
-    console.log(`🛡️  注入防護盾到 ${filePath}`);
-    originalCode = SHIELD_CODE + '\n' + originalCode;
-  }
-
-  const originalSize = (Buffer.byteLength(originalCode) / 1024).toFixed(0);
-  console.log(`🔄 混淆: ${filePath} (${originalSize} KB)...`);
-
+  const origKB = (Buffer.byteLength(code) / 1024).toFixed(0);
+  console.log(`🔄 ${fp} (${origKB} KB)...`);
   try {
-    const startTime = Date.now();
-    const opts = (fileName === 'ai-analysis.js')
-      ? { ...OBFUSCATION_OPTIONS, ...LARGE_FILE_OPTIONS }
-      : OBFUSCATION_OPTIONS;
-
-    const result = JavaScriptObfuscator.obfuscate(originalCode, opts);
-    const obfuscatedCode = result.getObfuscatedCode();
-    const newSize = (Buffer.byteLength(obfuscatedCode) / 1024).toFixed(0);
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-
-    fs.writeFileSync(fullPath, obfuscatedCode, 'utf-8');
-    console.log(`   ✅ ${originalSize} KB → ${newSize} KB (${elapsed}s)`);
-    totalSuccess++;
+    const t0 = Date.now();
+    const opts = fn === 'ai-analysis.js' ? { ...OBF_OPTS, ...LARGE_OPTS } : OBF_OPTS;
+    const res = JavaScriptObfuscator.obfuscate(code, opts);
+    const out = res.getObfuscatedCode();
+    const newKB = (Buffer.byteLength(out) / 1024).toFixed(0);
+    fs.writeFileSync(full, out, 'utf-8');
+    console.log(`   ✅ ${origKB} → ${newKB} KB (${((Date.now()-t0)/1000).toFixed(1)}s)`);
+    totalOK++;
   } catch (err) {
-    console.error(`   ❌ 失敗: ${err.message}`);
-    fs.copyFileSync(backupPath, fullPath);
-    console.log(`   ↩️  已還原`);
-    totalFailed++;
+    console.error(`   ❌ ${err.message}`);
+    fs.copyFileSync(path.join(JS_BACKUP_DIR, fn), full);
+    console.log('   ↩️  已還原'); totalFail++;
   }
 }
 
@@ -355,129 +524,69 @@ console.log('');
 console.log('📁 [Part 2] admin/ 資料夾');
 console.log('────────────────────────────────');
 
-const ADMIN_HTML = 'admin/index.html';
-const ADMIN_BACKUP = 'admin/index.backup.html';
-const ADMIN_SW = 'admin/admin-sw.js';
-const ADMIN_SW_BACKUP = 'admin/admin-sw.backup.js';
+const AH = 'admin/index.html', AB = 'admin/index.backup.html';
+const ASW = 'admin/admin-sw.js', ASWB = 'admin/admin-sw.backup.js';
 
-// 2a: admin/index.html 內嵌 JS
-if (fs.existsSync(ADMIN_HTML)) {
-  const originalHtml = fs.readFileSync(ADMIN_HTML, 'utf-8');
-  const htmlSize = (Buffer.byteLength(originalHtml) / 1024).toFixed(1);
-
-  fs.writeFileSync(ADMIN_BACKUP, originalHtml, 'utf-8');
-  console.log(`📋 備份: ${ADMIN_HTML} → ${ADMIN_BACKUP} (${htmlSize} KB)`);
-
-  const scriptRegex = /(<script>)([\s\S]*?)(<\/script>)/g;
-  const matches = [];
-  let m;
-  while ((m = scriptRegex.exec(originalHtml)) !== null) {
-    matches.push({
-      fullMatch: m[0],
-      openTag: m[1],
-      code: m[2],
-      closeTag: m[3],
-      index: m.index,
-    });
-  }
-
-  if (matches.length === 0) {
-    console.log('   ⚠️  找不到 <script> 區塊，跳過');
-  } else {
-    let resultHtml = originalHtml;
-
-    for (let i = matches.length - 1; i >= 0; i--) {
-      const block = matches[i];
-      if (block.code.trim().length < 100) {
-        console.log(`   ⏭  第 ${i + 1} 個 <script> 太短，跳過`);
-        continue;
-      }
-
-      const codeSize = (Buffer.byteLength(block.code) / 1024).toFixed(1);
-      console.log(`🔄 混淆: ${ADMIN_HTML} 第 ${i + 1} 個 <script> (${codeSize} KB)...`);
-
-      try {
-        const startTime = Date.now();
-        // Admin 不用域名鎖定和反調試（你自己要用 DevTools）
-        const adminOpts = {
-          ...OBFUSCATION_OPTIONS,
-          domainLock: [],
-          domainLockRedirectUrl: '',
-          debugProtection: false,
-          debugProtectionInterval: 0,
-        };
-        const result = JavaScriptObfuscator.obfuscate(block.code, adminOpts);
-        const obfuscated = result.getObfuscatedCode();
-        const newSize = (Buffer.byteLength(obfuscated) / 1024).toFixed(1);
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-
-        resultHtml =
-          resultHtml.substring(0, block.index) +
-          block.openTag + '\n' + obfuscated + '\n' + block.closeTag +
-          resultHtml.substring(block.index + block.fullMatch.length);
-
-        console.log(`   ✅ ${codeSize} KB → ${newSize} KB (${elapsed}s)`);
-        totalSuccess++;
-      } catch (err) {
-        console.error(`   ❌ 失敗: ${err.message}`);
-        totalFailed++;
-      }
-    }
-
-    fs.writeFileSync(ADMIN_HTML, resultHtml, 'utf-8');
-    const newHtmlSize = (Buffer.byteLength(resultHtml) / 1024).toFixed(1);
-    console.log(`   📄 ${ADMIN_HTML}: ${htmlSize} KB → ${newHtmlSize} KB`);
-  }
-} else {
-  console.log(`   ⚠️  找不到 ${ADMIN_HTML}，跳過`);
-}
-
-// 2b: admin/admin-sw.js
-if (fs.existsSync(ADMIN_SW)) {
-  const swCode = fs.readFileSync(ADMIN_SW, 'utf-8');
-  if (swCode.trim().length > 100) {
-    console.log(`🔄 混淆: ${ADMIN_SW}...`);
+if (fs.existsSync(AH)) {
+  const origHtml = fs.readFileSync(AH, 'utf-8');
+  fs.writeFileSync(AB, origHtml, 'utf-8');
+  const hKB = (Buffer.byteLength(origHtml) / 1024).toFixed(1);
+  console.log(`📋 備份: ${AH} (${hKB} KB)`);
+  const re = /(<script>)([\s\S]*?)(<\/script>)/g;
+  const matches = []; let m;
+  while ((m = re.exec(origHtml)) !== null) matches.push({ full: m[0], open: m[1], code: m[2], close: m[3], idx: m.index });
+  let result = origHtml;
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const bl = matches[i];
+    if (bl.code.trim().length < 100) continue;
+    const bKB = (Buffer.byteLength(bl.code) / 1024).toFixed(1);
+    console.log(`🔄 ${AH} <script#${i + 1}> (${bKB} KB)...`);
     try {
-      fs.writeFileSync(ADMIN_SW_BACKUP, swCode, 'utf-8');
-      const swResult = JavaScriptObfuscator.obfuscate(swCode, {
-        ...OBFUSCATION_OPTIONS,
-        ...SW_OPTIONS,
-      });
-      fs.writeFileSync(ADMIN_SW, swResult.getObfuscatedCode(), 'utf-8');
-      console.log(`   ✅ admin-sw.js 完成`);
-      totalSuccess++;
-    } catch (e) {
-      console.log(`   ⚠️  admin-sw.js 失敗: ${e.message}（跳過）`);
-      totalFailed++;
-    }
-  } else {
-    console.log(`   ⏭  admin-sw.js 太短，跳過`);
+      const t0 = Date.now();
+      const r = JavaScriptObfuscator.obfuscate(bl.code, { ...OBF_OPTS, ...ADMIN_OPTS });
+      const ob = r.getObfuscatedCode();
+      result = result.substring(0, bl.idx) + bl.open + '\n' + ob + '\n' + bl.close + result.substring(bl.idx + bl.full.length);
+      console.log(`   ✅ ${bKB} → ${(Buffer.byteLength(ob)/1024).toFixed(1)} KB (${((Date.now()-t0)/1000).toFixed(1)}s)`);
+      totalOK++;
+    } catch (err) { console.error(`   ❌ ${err.message}`); totalFail++; }
   }
-} else {
-  console.log(`   ⏭  ${ADMIN_SW} 不存在，跳過`);
+  fs.writeFileSync(AH, result, 'utf-8');
+} else { console.log(`⚠️  ${AH} 不存在`); }
+
+if (fs.existsSync(ASW)) {
+  const sw = fs.readFileSync(ASW, 'utf-8');
+  if (sw.trim().length > 100) {
+    console.log(`🔄 ${ASW}...`);
+    try {
+      fs.writeFileSync(ASWB, sw, 'utf-8');
+      const r = JavaScriptObfuscator.obfuscate(sw, { ...OBF_OPTS, ...SW_OPTS });
+      fs.writeFileSync(ASW, r.getObfuscatedCode(), 'utf-8');
+      console.log('   ✅ 完成'); totalOK++;
+    } catch (e) { console.log(`   ⚠️  ${e.message}`); totalFail++; }
+  }
 }
 
 // ═══════════════════════════════════════════════
 // 總結
 // ═══════════════════════════════════════════════
 console.log('');
-console.log('════════════════════════════════════════');
-console.log(`🔒 全部完成: ${totalSuccess} 成功, ${totalFailed} 失敗`);
+console.log('════════════════════════════════════════════════');
+console.log(`🔒 完成: ${totalOK} 成功, ${totalFail} 失敗`);
 console.log('');
-console.log('🛡️  防護層已注入 → ' + SHIELD_TARGET);
-console.log('   域名鎖定 ✦ 反調試 ✦ 反 iframe ✦ 反自動化');
-console.log('   鍵盤封鎖 ✦ toString 陷阱 ✦ Console 偵測');
+console.log('🛡️  防護層級：');
+console.log('   L1 — javascript-obfuscator（RC4 + 控制流 + 自我防護）');
+console.log('   L2 — 域名鎖定 + 反調試 + 反 iframe + 鍵盤封鎖');
+console.log('   L3 — ★ 程式碼虛擬化（自定義字節碼 VM）★');
 console.log('');
-console.log('備份位置：');
-console.log(`   ${JS_BACKUP_DIR}/ ← JS 原始碼`);
-console.log(`   ${ADMIN_BACKUP} ← admin 原始碼`);
+console.log('   逆向者需要：');
+console.log('   1. 解除 RC4 + selfDefending + debugProtection');
+console.log('   2. 逆向自定義 VM 的 30+ 指令集');
+console.log('   3. 解密字節碼（XOR 加密）');
+console.log('   4. 手動追蹤字節碼執行流程');
 console.log('');
-console.log('下一步：');
-console.log('   git add .');
-console.log('   git commit -m "obfuscate"');
-console.log('   git push origin master');
+console.log('備份: JS_backup/ + admin/index.backup.html');
 console.log('');
-console.log('⚠️  .gitignore 加入：');
+console.log('.gitignore 加入:');
 console.log('   JS_backup/');
 console.log('   admin/index.backup.html');
 console.log('   admin/admin-sw.backup.js');
