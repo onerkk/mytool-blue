@@ -147,12 +147,13 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 <!-- ══ Main App ══ -->
 <div id="mainApp" style="display:none">
   <div class="header">
-    <h1><span>🌙</span> 靜月之光 管理後台</h1>
+    <h1><span>🌙</span> 靜月之光 管理後台 <a href="https://jingyue.uk" target="_blank" style="font-size:12px;background:rgba(255,255,255,.15);padding:4px 12px;border-radius:6px;color:#fff;margin-left:8px;text-decoration:none">前往網站 ↗</a></h1>
   </div>
 
   <div class="tabs">
     <div class="tab active" data-tab="dashboard">總覽</div>
     <div class="tab" data-tab="inventory">庫存管理</div>
+    <div class="tab" data-tab="feedback">回饋</div>
     <div class="tab" data-tab="worker">Worker管理</div>
   </div>
 
@@ -183,6 +184,16 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 
     <!-- ══ Inventory ══ -->
     <div id="sec-inventory" class="section">
+
+    <!-- ══ Feedback ══ -->
+    <div id="sec-feedback" class="section">
+      <div class="notify-section">
+        <div class="notify-header">
+          <h3>📊 用戶回饋</h3>
+        </div>
+        <div id="feedbackList" class="notify-list"><div class="loading"></div></div>
+      </div>
+    </div>
       <div class="inv-upload">
         <h3>📦 庫存資料更新</h3>
         <p>上傳 Excel 檔案自動更新水晶庫存資料</p>
@@ -292,6 +303,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'feedback') loadFeedback();
   });
 });
 
@@ -344,7 +356,8 @@ function renderNotifications(list) {
         <span class="notify-time">${time}</span>
       </div>
       <div class="notify-name">${esc(n.name || '匿名')}</div>
-      ${n.question ? `<div class="notify-q">${esc(n.question)}</div>` : ''}
+      ${n.question ? `<div class="notify-q">❓ ${esc(n.question)}</div>` : ''}
+      ${n.story ? `<div class="notify-q" style="margin-top:6px;color:var(--text);border-left:2px solid var(--accent);padding-left:8px;white-space:pre-wrap">💬 ${esc(n.story)}</div>` : ''}
       <div class="notify-badges">
         ${n.paid ? '<span class="badge badge-paid">💰 付費</span>' : '<span class="badge">免費</span>'}
         ${n.followUp ? '<span class="badge">追問</span>' : ''}
@@ -360,6 +373,35 @@ async function clearNotifications() {
     toast('已清除');
     loadDashboard();
   } catch(e) { toast('清除失敗: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// Feedback
+// ═══════════════════════════════════════════════
+async function loadFeedback() {
+  const el = document.getElementById('feedbackList');
+  el.innerHTML = '<div class="loading"></div>';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/feedback?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    const list = data.feedbacks || [];
+    if (!list.length) { el.innerHTML = '<div class="empty">暫無回饋</div>'; return; }
+    el.innerHTML = list.map(fb => {
+      const time = fb.time ? new Date(fb.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+      const ratingIcon = fb.rating === 'good' ? '👍 準' : '👎 不準';
+      const ratingClass = fb.rating === 'good' ? 'mode-tarot' : 'mode-followup';
+      return `<div class="notify-item">
+        <div class="notify-meta">
+          <span class="notify-mode ${ratingClass}">${ratingIcon}</span>
+          <span class="notify-time">${time}</span>
+        </div>
+        <div class="notify-name">${esc(fb.name || '匿名')}</div>
+        ${fb.question ? `<div class="notify-q">❓ ${esc(fb.question)}</div>` : ''}
+        ${fb.reasons ? `<div class="notify-q" style="margin-top:4px;color:var(--danger)">原因：${esc(fb.reasons)}</div>` : ''}
+        ${fb.comment ? `<div class="notify-q" style="margin-top:4px;color:var(--text-dim)">💬 ${esc(fb.comment)}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
 }
 
 // ═══════════════════════════════════════════════
