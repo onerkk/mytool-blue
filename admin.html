@@ -207,7 +207,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div class="cf-fields">
             <div class="cf-field">
               <label>Account ID</label>
-              <input type="text" id="cfAccountId" placeholder="Cloudflare Account ID" autocomplete="off">
+              <input type="text" id="cfAccountId" value="4b1e8e7d70f88962c914932ee8c7655a" autocomplete="off">
             </div>
             <div class="cf-field">
               <label>API Token</label>
@@ -254,7 +254,7 @@ function doLogin() {
       return r.json();
     })
     .then(() => {
-      sessionStorage.setItem('jy_admin_token', token);
+      localStorage.setItem('jy_admin_token', token);
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'block';
       loadDashboard();
@@ -270,7 +270,7 @@ function doLogin() {
 
 // auto-login
 (function() {
-  const saved = sessionStorage.getItem('jy_admin_token');
+  const saved = localStorage.getItem('jy_admin_token');
   if (saved) { document.getElementById('tokenInput').value = saved; doLogin(); }
   document.getElementById('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 })();
@@ -466,13 +466,14 @@ async function checkWorkerStatus() {
     document.getElementById('workerStatusText').textContent = '離線';
   }
   
-  // restore CF credentials
-  const saved = sessionStorage.getItem('jy_cf_creds');
+  // restore CF credentials (localStorage = 永久保存)
+  const saved = localStorage.getItem('jy_cf_creds');
   if (saved) {
     try {
       const c = JSON.parse(saved);
-      document.getElementById('cfAccountId').value = c.accountId || '';
-      document.getElementById('cfWorkerName').value = c.workerName || 'jy-ai-proxy';
+      if (c.accountId) document.getElementById('cfAccountId').value = c.accountId;
+      if (c.workerName) document.getElementById('cfWorkerName').value = c.workerName;
+      if (c.apiToken) document.getElementById('cfApiToken').value = c.apiToken;
     } catch(_) {}
   }
 }
@@ -498,8 +499,8 @@ async function deployWorker() {
   if (!accountId || !apiToken) { toast('請填入 Cloudflare Account ID 和 API Token'); return; }
   if (!workerFileContent) { toast('請先選擇 worker.js 檔案'); return; }
   
-  // save creds (not api token)
-  sessionStorage.setItem('jy_cf_creds', JSON.stringify({ accountId, workerName }));
+  // save creds to localStorage (永久保存，下次自動帶入)
+  localStorage.setItem('jy_cf_creds', JSON.stringify({ accountId, workerName, apiToken }));
   
   const btn = document.getElementById('btnDeploy');
   btn.disabled = true;
