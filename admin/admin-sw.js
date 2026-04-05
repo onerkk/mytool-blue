@@ -1,6 +1,6 @@
-const CACHE_NAME = 'jy-admin-v1';
+const CACHE_NAME = 'jy-admin-v2';
 const ASSETS = [
-  './admin.html',
+  './',
   './icon-192.png',
   './icon-512.png'
 ];

@@ -2,7 +2,7 @@
   "name": "靜月之光 管理後台",
   "short_name": "靜月後台",
   "description": "靜月之光 AI命理平台管理後台",
-  "start_url": "./admin.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0d0f14",
   "theme_color": "#0d0f14",
