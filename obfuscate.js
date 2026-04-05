@@ -30,9 +30,9 @@ if(!_ok){try{document.body.innerHTML='';window.location.href='about:blank';}catc
 const OBF_OPTS = {
   compact: true,
   controlFlowFlattening: true,
-  controlFlowFlatteningThreshold: 0.7,  // ★ Step 6: 0.5 → 0.7
+  controlFlowFlatteningThreshold: 0.75, // ★ Final: 最高實用值
   deadCodeInjection: true,
-  deadCodeInjectionThreshold: 0.3,      // ★ Step 6: 0.2 → 0.3
+  deadCodeInjectionThreshold: 0.4,     // ★ Final: 0.3 → 0.4
   identifierNamesGenerator: 'hexadecimal',
   numbersToExpressions: true,
   stringArray: true,
@@ -43,12 +43,12 @@ const OBF_OPTS = {
   splitStrings: true,
   splitStringsChunkLength: 8,
   // ★ Step 4: 字串多層包裝器
-  stringArrayWrappersCount: 2,
+  stringArrayWrappersCount: 3,           // ★ Final: 2 → 3 層
   stringArrayWrappersChainedCalls: true,
-  stringArrayWrappersParametersMaxCount: 3,
+  stringArrayWrappersParametersMaxCount: 4, // ★ Final: 3 → 4
   stringArrayWrappersType: 'function',
   stringArrayCallsTransform: true,
-  stringArrayCallsTransformThreshold: 0.5,
+  stringArrayCallsTransformThreshold: 0.75, // ★ Final: 0.5 → 0.75
   // ★ Step 5: 物件 key 混淆
   transformObjectKeys: true,
   disableConsoleOutput: false,
@@ -77,10 +77,10 @@ for (const filePath of JS_FILES) {
   let code = fs.readFileSync(fullPath, 'utf-8');
   let opts = { ...OBF_OPTS };
   if (fileName === 'ai-analysis.js') {
-    opts.controlFlowFlatteningThreshold = 0.4;  // 大檔降低
-    opts.deadCodeInjectionThreshold = 0.15;
+    opts.controlFlowFlatteningThreshold = 0.5;
+    opts.deadCodeInjectionThreshold = 0.2;
     opts.splitStringsChunkLength = 12;
-    opts.stringArrayWrappersCount = 1;
+    opts.stringArrayWrappersCount = 2;
   }
   if (filePath === SHIELD_TARGET) {
     console.log('🛡️  注入防護盾 → ' + filePath);
