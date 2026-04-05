@@ -21,7 +21,6 @@ if(_h!=='jingyue.uk'&&_h.indexOf('.jingyue.uk')===-1&&_h!=='localhost'&&_h!=='12
 }catch(e){_ok=false;}
 try{if(window.self!==window.top){try{window.top.location.href=window.location.href;}catch(e){_ok=false;}}}catch(e){}
 try{if(navigator.webdriver===true)_ok=false;if(window.callPhantom||window._phantom)_ok=false;}catch(e){}
-var _dc=0,_dh=0;function _dd(){if(_dc>=15||window._JY_ADMIN_TOKEN)return;_dc++;try{var _t=performance.now();debugger;if(performance.now()-_t>80){_dh++;if(_dh>=3){try{document.body.innerHTML='';var _z=setTimeout(function(){},0);while(_z>0){clearTimeout(_z);clearInterval(_z);_z--;}}catch(x){}return;}}else{if(_dh>0)_dh--;}}catch(x){}setTimeout(_dd,5000+_dc*1000+Math.floor(Math.random()*3000));}setTimeout(_dd,8000);
 document.addEventListener('contextmenu',function(e){if(!window._JY_ADMIN_TOKEN)e.preventDefault();},true);
 document.addEventListener('keydown',function(e){if(window._JY_ADMIN_TOKEN)return;if(e.keyCode===123){e.preventDefault();return false;}if(e.ctrlKey&&e.shiftKey&&(e.keyCode===73||e.keyCode===74||e.keyCode===67)){e.preventDefault();return false;}if(e.ctrlKey&&e.keyCode===85){e.preventDefault();return false;}},true);
 try{var _ot=Function.prototype.toString;Function.prototype.toString=function(){var _r=_ot.call(this);if(_r.indexOf('_jy')!==-1||_r.indexOf('jingyue')!==-1)return'function () { [native code] }';return _r;};Function.prototype.toString.toString=function(){return'function toString() { [native code] }';};}catch(e){}
@@ -31,9 +30,9 @@ if(!_ok){try{document.body.innerHTML='';window.location.href='about:blank';}catc
 const OBF_OPTS = {
   compact: true,
   controlFlowFlattening: true,
-  controlFlowFlatteningThreshold: 0.5,
+  controlFlowFlatteningThreshold: 0.7,  // ★ Step 6: 0.5 → 0.7
   deadCodeInjection: true,
-  deadCodeInjectionThreshold: 0.2,
+  deadCodeInjectionThreshold: 0.3,      // ★ Step 6: 0.2 → 0.3
   identifierNamesGenerator: 'hexadecimal',
   numbersToExpressions: true,
   stringArray: true,
@@ -75,8 +74,8 @@ for (const filePath of JS_FILES) {
   let code = fs.readFileSync(fullPath, 'utf-8');
   let opts = { ...OBF_OPTS };
   if (fileName === 'ai-analysis.js') {
-    opts.controlFlowFlatteningThreshold = 0.3;
-    opts.deadCodeInjectionThreshold = 0.1;
+    opts.controlFlowFlatteningThreshold = 0.4;  // 大檔降低
+    opts.deadCodeInjectionThreshold = 0.15;
     opts.splitStringsChunkLength = 12;
     opts.stringArrayWrappersCount = 1;
   }
