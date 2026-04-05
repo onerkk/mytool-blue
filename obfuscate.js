@@ -42,6 +42,15 @@ const OBF_OPTS = {
   shuffleStringArray: true,
   splitStrings: true,
   splitStringsChunkLength: 8,
+  // ★ Step 4: 字串多層包裝器
+  stringArrayWrappersCount: 2,
+  stringArrayWrappersChainedCalls: true,
+  stringArrayWrappersParametersMaxCount: 3,
+  stringArrayWrappersType: 'function',
+  stringArrayCallsTransform: true,
+  stringArrayCallsTransformThreshold: 0.5,
+  // ★ Step 5: 物件 key 混淆
+  transformObjectKeys: true,
   disableConsoleOutput: false,
   selfDefending: true,
   renameGlobals: false,
@@ -68,6 +77,7 @@ for (const filePath of JS_FILES) {
     opts.controlFlowFlatteningThreshold = 0.3;
     opts.deadCodeInjectionThreshold = 0.1;
     opts.splitStringsChunkLength = 12;
+    opts.stringArrayWrappersCount = 1;
   }
   if (filePath === SHIELD_TARGET) {
     console.log('🛡️  注入防護盾 → ' + filePath);
