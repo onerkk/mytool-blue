@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>靜月之光 管理後台</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0f14;--card:#161a23;--card-border:#262b38;
+  --text:#e2e4ea;--text-dim:#7a7f8e;--accent:#6c7bff;
+  --accent-glow:rgba(108,123,255,.15);--success:#34d399;
+  --warn:#fbbf24;--danger:#f87171;
+  --header-bg:linear-gradient(135deg,#2a2060 0%,#3b2a80 50%,#5c3a9e 100%);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+
+/* ── Login ── */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:40px 30px;width:100%;max-width:360px;text-align:center}
+.login-box h2{margin-bottom:8px;font-size:20px}
+.login-box p{color:var(--text-dim);font-size:13px;margin-bottom:24px}
+.login-box input{width:100%;padding:12px 16px;border-radius:10px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:15px;outline:none;margin-bottom:16px}
+.login-box input:focus{border-color:var(--accent)}
+.login-box button{width:100%;padding:12px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.login-box button:active{opacity:.7}
+.login-err{color:var(--danger);font-size:13px;margin-top:10px;display:none}
+
+/* ── Header ── */
+.header{background:var(--header-bg);padding:18px 20px 14px;position:sticky;top:0;z-index:100}
+.header h1{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
+.header h1 span{font-size:22px}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:0;background:var(--card);border-bottom:1px solid var(--card-border);overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:55px;z-index:99}
+.tab{flex:none;padding:13px 18px;font-size:13px;font-weight:500;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s}
+.tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.tab:active{opacity:.6}
+
+/* ── Content ── */
+.content{padding:16px;max-width:800px;margin:0 auto}
+.section{display:none}
+.section.active{display:block}
+
+/* ── Stats Grid ── */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:16px 12px;text-align:center;transition:border-color .2s}
+.stat-card:active{border-color:var(--accent)}
+.stat-num{font-size:28px;font-weight:700;color:var(--accent);line-height:1.2}
+.stat-label{font-size:11px;color:var(--text-dim);margin-top:4px;display:flex;align-items:center;justify-content:center;gap:4px}
+
+/* ── Notification List ── */
+.notify-section{margin-top:16px}
+.notify-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.notify-header h3{font-size:15px;font-weight:600}
+.btn-clear{padding:6px 14px;border-radius:8px;border:1px solid var(--danger);color:var(--danger);background:transparent;font-size:12px;cursor:pointer}
+.btn-clear:active{background:var(--danger);color:#fff}
+.notify-list{display:flex;flex-direction:column;gap:8px}
+.notify-item{background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px}
+.notify-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.notify-mode{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600}
+.mode-full{background:rgba(108,123,255,.15);color:var(--accent)}
+.mode-tarot{background:rgba(52,211,153,.15);color:var(--success)}
+.mode-ootk{background:rgba(251,191,36,.15);color:var(--warn)}
+.mode-followup{background:rgba(248,113,113,.15);color:var(--danger)}
+.notify-time{font-size:11px;color:var(--text-dim)}
+.notify-name{font-size:13px;font-weight:600}
+.notify-q{font-size:12px;color:var(--text-dim);margin-top:2px}
+.notify-badges{display:flex;gap:6px;margin-top:6px}
+.badge{font-size:10px;padding:2px 6px;border-radius:3px;background:#262b38;color:var(--text-dim)}
+.badge-paid{background:rgba(251,191,36,.15);color:var(--warn)}
+
+/* ── Inventory ── */
+.inv-upload{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:20px;margin-bottom:16px}
+.inv-upload h3{font-size:15px;margin-bottom:4px}
+.inv-upload p{font-size:12px;color:var(--text-dim);margin-bottom:14px}
+.btn-upload{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.btn-upload:active{opacity:.7}
+.inv-current{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:20px}
+.inv-current h3{font-size:15px;margin-bottom:4px}
+.inv-count{font-size:12px;color:var(--text-dim);margin-bottom:12px}
+.inv-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.inv-table{width:100%;border-collapse:collapse;font-size:12px}
+.inv-table th{text-align:left;padding:8px 10px;background:#1c2030;color:var(--text-dim);font-weight:600;border-bottom:1px solid var(--card-border);white-space:nowrap}
+.inv-table td{padding:8px 10px;border-bottom:1px solid #1c2030;white-space:nowrap}
+.inv-table tr:hover td{background:var(--accent-glow)}
+.btn-download{padding:6px 14px;border-radius:8px;border:1px solid var(--card-border);color:var(--text);background:transparent;font-size:12px;cursor:pointer;margin-top:10px}
+.btn-download:active{background:var(--card-border)}
+.btn-del-item{background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:2px 6px}
+
+/* ── Worker ── */
+.worker-section{display:flex;flex-direction:column;gap:16px}
+.worker-card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:20px}
+.worker-card h3{font-size:15px;margin-bottom:4px}
+.worker-card p{font-size:12px;color:var(--text-dim);margin-bottom:14px}
+.worker-status{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
+.status-dot.offline{background:var(--danger)}
+.worker-info{font-size:12px;color:var(--text-dim)}
+textarea.worker-editor{width:100%;min-height:200px;background:#0d0f14;color:var(--text);border:1px solid var(--card-border);border-radius:8px;padding:12px;font-family:'SF Mono',Menlo,monospace;font-size:11px;resize:vertical;outline:none}
+textarea.worker-editor:focus{border-color:var(--accent)}
+.btn-deploy{padding:10px 20px;border-radius:10px;border:none;background:var(--success);color:#0d0f14;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px}
+.btn-deploy:active{opacity:.7}
+.btn-deploy:disabled{opacity:.4;cursor:not-allowed}
+.cf-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.cf-field label{font-size:12px;color:var(--text-dim);display:block;margin-bottom:4px}
+.cf-field input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;outline:none}
+.cf-field input:focus{border-color:var(--accent)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#2a2e3a;color:var(--text);padding:10px 24px;border-radius:10px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;border:1px solid var(--card-border)}
+.toast.show{opacity:1}
+
+/* ── Loading ── */
+.loading{display:flex;justify-content:center;padding:40px}
+.loading::after{content:'';width:28px;height:28px;border:3px solid var(--card-border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- ══ Login Screen ══ -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-box">
+    <h2>🌙 靜月之光</h2>
+    <p>管理後台</p>
+    <input type="password" id="tokenInput" placeholder="輸入管理員 Token" autocomplete="off">
+    <button onclick="doLogin()">登入</button>
+    <div id="loginErr" class="login-err"></div>
+  </div>
+</div>
+
+<!-- ══ Main App ══ -->
+<div id="mainApp" style="display:none">
+  <div class="header">
+    <h1><span>🌙</span> 靜月之光 管理後台</h1>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="dashboard">總覽</div>
+    <div class="tab" data-tab="inventory">庫存管理</div>
+    <div class="tab" data-tab="worker">Worker管理</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ Dashboard ══ -->
+    <div id="sec-dashboard" class="section active">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-num" id="s-total">-</div><div class="stat-label">📊 總使用次數</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-today">-</div><div class="stat-label">📅 今日使用</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-paid">-</div><div class="stat-label">💰 付費次數</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-full">-</div><div class="stat-label">🔮 七維度</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-tarot">-</div><div class="stat-label">🃏 塔羅快讀</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-ootk">-</div><div class="stat-label">🗝️ 開鑰之法</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-followup">-</div><div class="stat-label">💬 追問</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-inv">-</div><div class="stat-label">📦 庫存品項</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-uptime">-</div><div class="stat-label">⏱ Worker</div></div>
+      </div>
+
+      <div class="notify-section">
+        <div class="notify-header">
+          <h3>📋 最近使用紀錄</h3>
+          <button class="btn-clear" onclick="clearNotifications()">清除全部</button>
+        </div>
+        <div id="notifyList" class="notify-list"><div class="loading"></div></div>
+      </div>
+    </div>
+
+    <!-- ══ Inventory ══ -->
+    <div id="sec-inventory" class="section">
+      <div class="inv-upload">
+        <h3>📦 庫存資料更新</h3>
+        <p>上傳 Excel 檔案自動更新水晶庫存資料</p>
+        <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelUpload(event)">
+        <button class="btn-upload" onclick="document.getElementById('excelFile').click()">📂 選擇 Excel 檔案</button>
+      </div>
+      <div class="inv-current">
+        <h3>目前資料</h3>
+        <div class="inv-count" id="invCount">載入中...</div>
+        <div class="inv-table-wrap" id="invTableWrap"></div>
+        <button class="btn-download" onclick="downloadInventoryJSON()">⬇ 下載 JSON</button>
+      </div>
+    </div>
+
+    <!-- ══ Worker ══ -->
+    <div id="sec-worker" class="section">
+      <div class="worker-section">
+        <div class="worker-card">
+          <h3>⚡ Worker 狀態</h3>
+          <div class="worker-status">
+            <div class="status-dot" id="workerDot"></div>
+            <span id="workerStatusText">檢查中...</span>
+          </div>
+          <div class="worker-info" id="workerVersion"></div>
+        </div>
+
+        <div class="worker-card">
+          <h3>🚀 部署 Worker</h3>
+          <p>上傳新的 worker.js 部署到 Cloudflare。需要 Cloudflare API 憑證。</p>
+          <div class="cf-fields">
+            <div class="cf-field">
+              <label>Account ID</label>
+              <input type="text" id="cfAccountId" placeholder="Cloudflare Account ID" autocomplete="off">
+            </div>
+            <div class="cf-field">
+              <label>API Token</label>
+              <input type="password" id="cfApiToken" placeholder="Cloudflare API Token" autocomplete="off">
+            </div>
+            <div class="cf-field">
+              <label>Worker 名稱</label>
+              <input type="text" id="cfWorkerName" value="jy-ai-proxy" autocomplete="off">
+            </div>
+          </div>
+          <input type="file" id="workerFile" accept=".js" style="display:none" onchange="handleWorkerFile(event)">
+          <button class="btn-upload" onclick="document.getElementById('workerFile').click()">📂 選擇 worker.js</button>
+          <div id="workerFileName" style="font-size:12px;color:var(--text-dim);margin-top:8px"></div>
+          <button class="btn-deploy" id="btnDeploy" disabled onclick="deployWorker()">🚀 部署到 Cloudflare</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// Config
+// ═══════════════════════════════════════════════
+const WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
+let adminToken = '';
+let inventoryData = [];
+let workerFileContent = null;
+
+// ═══════════════════════════════════════════════
+// Login
+// ═══════════════════════════════════════════════
+function doLogin() {
+  const token = document.getElementById('tokenInput').value.trim();
+  if (!token) return;
+  adminToken = token;
+  // verify by fetching notifications
+  fetch(`${WORKER_URL}/admin/notifications?token=${encodeURIComponent(token)}`)
+    .then(r => {
+      if (r.status === 401) throw new Error('Token 錯誤');
+      return r.json();
+    })
+    .then(() => {
+      sessionStorage.setItem('jy_admin_token', token);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      loadDashboard();
+      loadInventory();
+      checkWorkerStatus();
+    })
+    .catch(e => {
+      const el = document.getElementById('loginErr');
+      el.textContent = e.message || '連線失敗';
+      el.style.display = 'block';
+    });
+}
+
+// auto-login
+(function() {
+  const saved = sessionStorage.getItem('jy_admin_token');
+  if (saved) { document.getElementById('tokenInput').value = saved; doLogin(); }
+  document.getElementById('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+})();
+
+// ═══════════════════════════════════════════════
+// Tabs
+// ═══════════════════════════════════════════════
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ═══════════════════════════════════════════════
+// Dashboard
+// ═══════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/notifications?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    const list = data.notifications || [];
+    
+    const today = new Date(Date.now() + 8*3600000).toISOString().slice(0,10);
+    const todayItems = list.filter(n => (n.time||'').startsWith(today));
+    
+    document.getElementById('s-total').textContent = list.length;
+    document.getElementById('s-today').textContent = todayItems.length;
+    document.getElementById('s-paid').textContent = list.filter(n => n.paid).length;
+    document.getElementById('s-full').textContent = list.filter(n => n.mode === 'full').length;
+    document.getElementById('s-tarot').textContent = list.filter(n => n.mode === 'tarot').length;
+    document.getElementById('s-ootk').textContent = list.filter(n => n.mode === 'ootk').length;
+    document.getElementById('s-followup').textContent = list.filter(n => n.followUp).length;
+    document.getElementById('s-uptime').textContent = '✓';
+    
+    renderNotifications(list);
+  } catch(e) {
+    document.getElementById('notifyList').innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>';
+  }
+}
+
+function renderNotifications(list) {
+  const el = document.getElementById('notifyList');
+  if (!list.length) { el.innerHTML = '<div class="empty">暫無使用紀錄</div>'; return; }
+  
+  el.innerHTML = list.slice(0, 50).map(n => {
+    const modeMap = {
+      'full': ['七維度', 'mode-full'],
+      'tarot': ['塔羅快讀', 'mode-tarot'],
+      'ootk': ['開鑰之法', 'mode-ootk'],
+      'full_followup': ['七維度追問', 'mode-followup'],
+      'tarot_followup': ['塔羅追問', 'mode-followup'],
+      'ootk_followup': ['開鑰追問', 'mode-followup']
+    };
+    const [modeLabel, modeClass] = modeMap[n.mode] || [n.mode, 'mode-full'];
+    const time = n.time ? new Date(n.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+    
+    return `<div class="notify-item">
+      <div class="notify-meta">
+        <span class="notify-mode ${modeClass}">${modeLabel}</span>
+        <span class="notify-time">${time}</span>
+      </div>
+      <div class="notify-name">${esc(n.name || '匿名')}</div>
+      ${n.question ? `<div class="notify-q">${esc(n.question)}</div>` : ''}
+      <div class="notify-badges">
+        ${n.paid ? '<span class="badge badge-paid">💰 付費</span>' : '<span class="badge">免費</span>'}
+        ${n.followUp ? '<span class="badge">追問</span>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function clearNotifications() {
+  if (!confirm('確定清除所有使用紀錄？')) return;
+  try {
+    await fetch(`${WORKER_URL}/admin/notifications?token=${encodeURIComponent(adminToken)}`, { method: 'DELETE' });
+    toast('已清除');
+    loadDashboard();
+  } catch(e) { toast('清除失敗: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// Inventory
+// ═══════════════════════════════════════════════
+async function loadInventory() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/inventory?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    inventoryData = data.items || [];
+    renderInventory();
+    document.getElementById('s-inv').textContent = inventoryData.length;
+  } catch(e) {
+    document.getElementById('invCount').textContent = '載入失敗';
+  }
+}
+
+function renderInventory() {
+  document.getElementById('invCount').textContent = `品項數: ${inventoryData.length}`;
+  const wrap = document.getElementById('invTableWrap');
+  
+  if (!inventoryData.length) {
+    wrap.innerHTML = '<div class="empty">尚無庫存資料，請上傳 Excel</div>';
+    return;
+  }
+  
+  // get all keys from first item
+  const keys = Object.keys(inventoryData[0]);
+  
+  wrap.innerHTML = `<table class="inv-table">
+    <thead><tr>${keys.map(k => `<th>${esc(k)}</th>`).join('')}<th>操作</th></tr></thead>
+    <tbody>${inventoryData.map((item, i) => 
+      `<tr>${keys.map(k => `<td>${esc(String(item[k]||''))}</td>`).join('')}<td><button class="btn-del-item" onclick="deleteInvItem(${i})">✕</button></td></tr>`
+    ).join('')}</tbody>
+  </table>`;
+}
+
+function handleExcelUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = async function(ev) {
+    try {
+      const data = new Uint8Array(ev.target.result);
+      const wb = XLSX.read(data, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(ws);
+      
+      if (!json.length) { toast('Excel 檔案是空的'); return; }
+      
+      // upload to KV
+      const r = await fetch(`${WORKER_URL}/admin/inventory?token=${encodeURIComponent(adminToken)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: json })
+      });
+      const result = await r.json();
+      
+      if (result.ok) {
+        inventoryData = json;
+        renderInventory();
+        document.getElementById('s-inv').textContent = json.length;
+        toast(`已更新 ${json.length} 筆庫存資料`);
+      } else {
+        toast('更新失敗: ' + (result.error || ''));
+      }
+    } catch(err) {
+      toast('解析失敗: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+}
+
+async function deleteInvItem(idx) {
+  inventoryData.splice(idx, 1);
+  // save back
+  try {
+    await fetch(`${WORKER_URL}/admin/inventory?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: inventoryData })
+    });
+    renderInventory();
+    document.getElementById('s-inv').textContent = inventoryData.length;
+    toast('已刪除');
+  } catch(e) { toast('刪除失敗'); }
+}
+
+function downloadInventoryJSON() {
+  if (!inventoryData.length) { toast('沒有資料'); return; }
+  const blob = new Blob([JSON.stringify(inventoryData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'crystal_inventory.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════
+// Worker Management
+// ═══════════════════════════════════════════════
+async function checkWorkerStatus() {
+  try {
+    const r = await fetch(`${WORKER_URL}/version`);
+    const data = await r.json();
+    document.getElementById('workerDot').className = 'status-dot';
+    document.getElementById('workerStatusText').textContent = '運行中';
+    document.getElementById('workerVersion').textContent = `版本: ${data.version || 'unknown'} | 部署: ${data.deployed ? new Date(data.deployed).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}) : '-'}`;
+  } catch(e) {
+    document.getElementById('workerDot').className = 'status-dot offline';
+    document.getElementById('workerStatusText').textContent = '離線';
+  }
+  
+  // restore CF credentials
+  const saved = sessionStorage.getItem('jy_cf_creds');
+  if (saved) {
+    try {
+      const c = JSON.parse(saved);
+      document.getElementById('cfAccountId').value = c.accountId || '';
+      document.getElementById('cfWorkerName').value = c.workerName || 'jy-ai-proxy';
+    } catch(_) {}
+  }
+}
+
+function handleWorkerFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    workerFileContent = ev.target.result;
+    document.getElementById('workerFileName').textContent = `✓ ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+    document.getElementById('btnDeploy').disabled = false;
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+async function deployWorker() {
+  const accountId = document.getElementById('cfAccountId').value.trim();
+  const apiToken = document.getElementById('cfApiToken').value.trim();
+  const workerName = document.getElementById('cfWorkerName').value.trim() || 'jy-ai-proxy';
+  
+  if (!accountId || !apiToken) { toast('請填入 Cloudflare Account ID 和 API Token'); return; }
+  if (!workerFileContent) { toast('請先選擇 worker.js 檔案'); return; }
+  
+  // save creds (not api token)
+  sessionStorage.setItem('jy_cf_creds', JSON.stringify({ accountId, workerName }));
+  
+  const btn = document.getElementById('btnDeploy');
+  btn.disabled = true;
+  btn.textContent = '⏳ 部署中...';
+  
+  try {
+    // Deploy via Cloudflare API
+    // Use FormData for script upload
+    const metadata = {
+      main_module: 'worker.js',
+      compatibility_date: '2024-01-01',
+      bindings: []
+    };
+    
+    const formData = new FormData();
+    formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    formData.append('worker.js', new Blob([workerFileContent], { type: 'application/javascript+module' }), 'worker.js');
+    
+    const r = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
+      {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${apiToken}` },
+        body: formData
+      }
+    );
+    
+    const result = await r.json();
+    
+    if (result.success) {
+      toast('✓ Worker 部署成功！');
+      checkWorkerStatus();
+    } else {
+      const errMsg = result.errors?.map(e => e.message).join(', ') || '部署失敗';
+      toast('✗ ' + errMsg);
+    }
+  } catch(e) {
+    toast('部署錯誤: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 部署到 Cloudflare';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// Utilities
+// ═══════════════════════════════════════════════
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
