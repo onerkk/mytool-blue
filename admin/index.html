@@ -515,24 +515,13 @@ async function deployWorker() {
   btn.textContent = '⏳ 部署中...';
   
   try {
-    // Deploy via Cloudflare API
-    // Use FormData for script upload
-    const metadata = {
-      main_module: 'worker.js',
-      compatibility_date: '2024-01-01',
-      bindings: []
-    };
-    
-    const formData = new FormData();
-    formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-    formData.append('worker.js', new Blob([workerFileContent], { type: 'application/javascript+module' }), 'worker.js');
-    
+    // 透過 Worker 中轉部署（避免 CORS 問題）
     const r = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}`,
+      `${WORKER_URL}/admin/deploy-worker?token=${encodeURIComponent(adminToken)}`,
       {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${apiToken}` },
-        body: formData
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId, apiToken, workerName, code: workerFileContent })
       }
     );
     
@@ -542,7 +531,7 @@ async function deployWorker() {
       toast('✓ Worker 部署成功！');
       checkWorkerStatus();
     } else {
-      const errMsg = result.errors?.map(e => e.message).join(', ') || '部署失敗';
+      const errMsg = result.errors?.map(e => e.message).join(', ') || result.error || '部署失敗';
       toast('✗ ' + errMsg);
     }
   } catch(e) {
