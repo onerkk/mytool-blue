@@ -406,24 +406,47 @@ function handleExcelUpload(e) {
     try {
       const data = new Uint8Array(ev.target.result);
       const wb = XLSX.read(data, { type: 'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(ws);
+      // 優先讀「進銷總表」，沒有就讀第一個 sheet
+      const sheetName = wb.SheetNames.find(s => s.includes('進銷') || s.includes('庫存')) || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
       
-      if (!json.length) { toast('Excel 檔案是空的'); return; }
+      // 找到真正的標題行（含「品項」或「品名」或「水晶」的那行）
+      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+      let headerRow = 0;
+      for (let r = range.s.r; r <= Math.min(range.s.r + 10, range.e.r); r++) {
+        for (let c = range.s.c; c <= range.e.c; c++) {
+          const cell = ws[XLSX.utils.encode_cell({r, c})];
+          const val = cell ? String(cell.v || '') : '';
+          if (val.includes('品項') || val.includes('品名') || val.includes('水晶名稱')) {
+            headerRow = r;
+            break;
+          }
+        }
+        if (headerRow > 0) break;
+      }
+      
+      const json = XLSX.utils.sheet_to_json(ws, { range: headerRow, defval: '' });
+      // 過濾空行（品項名稱為空的）
+      const filtered = json.filter(row => {
+        const name = row['品項名稱'] || row['品名'] || row['水晶名稱'] || row['name'] || '';
+        return name && typeof name === 'string' && name.length > 0;
+      });
+      
+      if (!filtered.length) { toast('找不到有效的庫存資料'); return; }
       
       // upload to KV
       const r = await fetch(`${WORKER_URL}/admin/inventory?token=${encodeURIComponent(adminToken)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: json })
+        body: JSON.stringify({ items: filtered })
       });
       const result = await r.json();
       
       if (result.ok) {
-        inventoryData = json;
+        inventoryData = filtered;
         renderInventory();
-        document.getElementById('s-inv').textContent = json.length;
-        toast(`已更新 ${json.length} 筆庫存資料`);
+        document.getElementById('s-inv').textContent = filtered.length;
+        toast(`已更新 ${filtered.length} 筆庫存資料`);
       } else {
         toast('更新失敗: ' + (result.error || ''));
       }
