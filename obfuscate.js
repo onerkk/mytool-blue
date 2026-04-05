@@ -67,26 +67,19 @@ for (const filePath of JS_FILES) {
   }
 }
 
-// admin
-const AH = 'admin/index.html', AB = 'admin/index.backup.html';
-if (fs.existsSync(AH)) {
-  const html = fs.readFileSync(AH, 'utf-8');
-  fs.writeFileSync(AB, html, 'utf-8');
-  const re = /(<script>)([\s\S]*?)(<\/script>)/g;
-  const matches = []; let m;
-  while ((m = re.exec(html)) !== null) matches.push({full:m[0],open:m[1],code:m[2],close:m[3],idx:m.index});
-  let result = html;
-  for (let i = matches.length-1; i >= 0; i--) {
-    const bl = matches[i];
-    if (bl.code.trim().length < 100) continue;
+// admin（只混淆 admin-sw.js，index.html 是後台不需要混淆）
+const ASW = 'admin/admin-sw.js', ASWB = 'admin/admin-sw.backup.js';
+if (fs.existsSync(ASW)) {
+  const sw = fs.readFileSync(ASW, 'utf-8');
+  if (sw.trim().length > 100) {
+    fs.writeFileSync(ASWB, sw, 'utf-8');
+    console.log('🔄 ' + ASW + '...');
     try {
-      const r = JavaScriptObfuscator.obfuscate(bl.code, { ...OBF_OPTS, selfDefending: false });
-      result = result.substring(0,bl.idx)+bl.open+'\n'+r.getObfuscatedCode()+'\n'+bl.close+result.substring(bl.idx+bl.full.length);
-      console.log('   ✅ admin <script>');
-      success++;
-    } catch(err) { console.error('   ❌ admin: '+err.message); failed++; }
+      const r = JavaScriptObfuscator.obfuscate(sw, { ...OBF_OPTS, selfDefending: false });
+      fs.writeFileSync(ASW, r.getObfuscatedCode(), 'utf-8');
+      console.log('   ✅ admin-sw.js 完成'); success++;
+    } catch(err) { console.error('   ❌ ' + err.message); failed++; }
   }
-  fs.writeFileSync(AH, result, 'utf-8');
 }
 
 console.log('');
