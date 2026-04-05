@@ -80,7 +80,7 @@ if (fs.existsSync(AH)) {
     const bl = matches[i];
     if (bl.code.trim().length < 100) continue;
     try {
-      const r = JavaScriptObfuscator.obfuscate(bl.code, OBF_OPTS);
+      const r = JavaScriptObfuscator.obfuscate(bl.code, { ...OBF_OPTS, selfDefending: false });
       result = result.substring(0,bl.idx)+bl.open+'\n'+r.getObfuscatedCode()+'\n'+bl.close+result.substring(bl.idx+bl.full.length);
       console.log('   ✅ admin <script>');
       success++;
