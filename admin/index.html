@@ -156,6 +156,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="inventory">庫存管理</div>
     <div class="tab" data-tab="feedback">回饋</div>
     <div class="tab" data-tab="worker">Worker管理</div>
+    <div class="tab" data-tab="admins">管理員</div>
   </div>
 
   <div class="content">
@@ -244,6 +245,19 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div id="workerFileName" style="font-size:12px;color:var(--text-dim);margin-top:8px"></div>
           <button class="btn-deploy" id="btnDeploy" disabled onclick="deployWorker()">🚀 部署到 Cloudflare</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ══ Admin Users ══ -->
+    <div id="sec-admins" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>👤 管理員 Google 帳號白名單</h3>
+        <p>這些 Google 帳號登入後可直接進入管理後台（不需要 Token）</p>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input type="email" id="newAdminEmail" placeholder="輸入 Google Email" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')addAdminUser()">
+          <button onclick="addAdminUser()" style="padding:10px 18px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">＋ 新增</button>
+        </div>
+        <div id="adminUserList" style="display:flex;flex-direction:column;gap:8px"><div class="loading"></div></div>
       </div>
     </div>
 
@@ -393,6 +407,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.add('active');
     document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
     if (tab.dataset.tab === 'feedback') loadFeedback();
+    if (tab.dataset.tab === 'admins') loadAdminUsers();
   });
 });
 
@@ -698,6 +713,56 @@ async function deployWorker() {
     btn.disabled = false;
     btn.textContent = '🚀 部署到 Cloudflare';
   }
+}
+
+// ═══════════════════════════════════════════════
+// Admin User Management
+// ═══════════════════════════════════════════════
+async function loadAdminUsers() {
+  const el = document.getElementById('adminUserList');
+  el.innerHTML = '<div class="loading"></div>';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/users?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    const users = data.users || [];
+    if (!users.length) { el.innerHTML = '<div class="empty">尚未新增管理員帳號</div>'; return; }
+    el.innerHTML = users.map(email =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px">
+        <span style="font-size:13px">${esc(email)}</span>
+        <button onclick="removeAdminUser('${email.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;padding:2px 6px">✕</button>
+      </div>`
+    ).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
+}
+
+async function addAdminUser() {
+  const input = document.getElementById('newAdminEmail');
+  const email = input.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { toast('請輸入有效的 Email'); return; }
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/users?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await r.json();
+    if (data.ok) { toast('✓ 已新增 ' + email); input.value = ''; loadAdminUsers(); }
+    else { toast('失敗: ' + (data.error || '')); }
+  } catch(e) { toast('錯誤: ' + e.message); }
+}
+
+async function removeAdminUser(email) {
+  if (!confirm('確定移除 ' + email + '？')) return;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/users?token=${encodeURIComponent(adminToken)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await r.json();
+    if (data.ok) { toast('✓ 已移除'); loadAdminUsers(); }
+    else { toast('失敗: ' + (data.error || '')); }
+  } catch(e) { toast('錯誤: ' + e.message); }
 }
 
 // ═══════════════════════════════════════════════
