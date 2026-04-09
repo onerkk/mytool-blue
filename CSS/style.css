@@ -69,7 +69,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 
 /* — Step Sections — */
 .step{display:none;animation:fadeIn .5s var(--t-smooth) both}
-.step.active{display:block}
+.step.active{display:block;position:relative;z-index:1}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
@@ -920,7 +920,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .yao-dong{filter:drop-shadow(0 0 3px rgba(196,181,253,.4))}
 
 /* ── 浮動粒子 ── */
-.particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;overflow:hidden}
 .particle{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.5),transparent 70%);animation:particleFloat linear infinite;opacity:0}
 @keyframes particleFloat{0%{opacity:0;transform:translateY(100vh) scale(0)}10%{opacity:.8}90%{opacity:.8}100%{opacity:0;transform:translateY(-10vh) scale(1)}}
 
@@ -1175,7 +1175,7 @@ img[loading="lazy"]{content-visibility:auto}
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── 1. Star Sky Background ── */
-.jy-stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.jy-stars{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
 .jy-star{position:absolute;width:2px;height:2px;background:rgba(255,255,255,.8);border-radius:50%;will-change:opacity;animation:jyStar var(--dur,4s) var(--delay,0s) ease-in-out infinite}
 .jy-star.lg{width:3px;height:3px;background:rgba(223,195,115,.9);box-shadow:0 0 6px rgba(201,168,76,.5)}
 @keyframes jyStar{0%,100%{opacity:var(--lo,.1)}50%{opacity:var(--hi,.7)}}
@@ -1265,11 +1265,10 @@ img[loading="lazy"]{content-visibility:auto}
 
 /* ── 13. Dark Corner Vignette ── */
 .jy-vignette{
-  position:fixed;inset:0;pointer-events:none;z-index:0;
+  position:fixed;inset:0;pointer-events:none;z-index:-1;
   background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.15) 100%);
-  animation:vignetteBreath 8s ease-in-out infinite;
+  opacity:.4;
 }
-@keyframes vignetteBreath{0%,100%{opacity:.3}50%{opacity:.6}}
 
 /* ── 14. Gender Pill Flow Light ── */
 .radio-pill input:checked+span{
@@ -1418,15 +1417,8 @@ details[open] > summary > .fa-chevron-right {
   cursor: pointer;
   transition: all .35s cubic-bezier(.4,0,.2,1);
   overflow: hidden;
-}
-.jy-tool-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 14px;
-  opacity: 0;
-  transition: opacity .35s;
-  pointer-events: none;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 .jy-tool-card:active {
   transform: scale(.98);
@@ -1727,6 +1719,8 @@ details[open] > summary > .fa-chevron-right {
 
 /* 確保 hook-screen 內容在輪播之上 */
 #hook-screen{position:relative;z-index:2}
+#input-screen{position:relative;z-index:2;background:rgba(8,9,15,.97);border-radius:16px;margin-top:8px}
+#trust-preview{position:relative;z-index:2;background:rgba(8,9,15,.97);border-radius:16px;margin-top:8px}
 #step-0{position:relative;overflow:hidden}
 
 /* 無障礙：減少動畫 */

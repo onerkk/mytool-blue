@@ -9,7 +9,7 @@ const JS_FILES = [
   'JS/bazi_upgrade.js','JS/jyotish_full_upgrade.js','JS/meihua_upgrade2.js',
   'JS/name_upgrade.js','JS/render_upgrade.js','JS/tarot_upgrade.js',
   'JS/western_upgrade.js','JS/api_upgrade.js','JS/payment-wall.js',
-  'JS/solar-location.js','JS/ui.js',
+  'JS/solar-location.js','JS/ui.js','JS/guide.js',
 ];
 const SHIELD_TARGET = 'JS/ui.js';
 const JS_BACKUP_DIR = 'JS_backup';
