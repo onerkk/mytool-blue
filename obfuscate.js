@@ -10,6 +10,7 @@ const JS_FILES = [
   'JS/name_upgrade.js','JS/render_upgrade.js','JS/tarot_upgrade.js',
   'JS/western_upgrade.js','JS/api_upgrade.js','JS/payment-wall.js',
   'JS/solar-location.js','JS/ui.js','JS/guide.js','JS/tool-guide.js',
+  'JS/photo-upload.js',
 ];
 const SHIELD_TARGET = 'JS/ui.js';
 const JS_BACKUP_DIR = 'JS_backup';
