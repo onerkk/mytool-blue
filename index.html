@@ -479,6 +479,10 @@
           <textarea class="form-textarea" id="f-question" aria-label="你的問題" placeholder="輸入你的問題…" maxlength="500" style="min-height:44px"></textarea>
           <div class="form-hint"><span id="f-char">0</span>/500</div>
         </div>
+        <div id="jy-context-chips" style="display:none;margin-top:.5rem">
+          <div style="font-size:.68rem;color:var(--c-text-muted,#7a7060);margin-bottom:.35rem">補充你的狀況（選填，幫助更精準）</div>
+          <div id="jy-context-grid" style="display:flex;flex-wrap:wrap;gap:.35rem"></div>
+        </div>
       </div>
     </div>
 
@@ -556,21 +560,21 @@
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
             <div><div class="jy-tool-name">塔羅快讀</div><div class="jy-tool-desc">一個問題，抽牌就有答案<br><span style="opacity:.6">不需出生資料・30 秒出結果</span></div></div>
-            <div class="jy-tool-free" id="tool-tarot-badge">每日免費一次（任選一種）</div>
+            <div class="jy-tool-free" id="tool-tarot-badge">前 3 次免費體驗</div>
           </div>
         </div>
         <div class="jy-tool-card jy-tool-ootk" id="tool-ootk" onclick="pickTool('ootk')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(217,151,56,.18),rgba(217,151,56,.06));border-color:rgba(217,151,56,.3)"><i class="fas fa-key" style="color:rgba(217,151,56,.9)"></i></div>
             <div><div class="jy-tool-name">開鑰之法</div><div class="jy-tool-desc">78 張牌五層深潛，問到根源<br><span style="opacity:.6">需出生資料・金色黎明最高階儀式</span></div></div>
-            <div class="jy-tool-free" id="tool-ootk-badge">每日免費一次（任選一種）</div>
+            <div class="jy-tool-free" id="tool-ootk-badge">前 3 次免費體驗</div>
           </div>
         </div>
         <div class="jy-tool-card jy-tool-full selected" id="tool-full" onclick="pickTool('full')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(234,179,8,.06));border-color:rgba(212,175,55,.3)"><i class="fas fa-moon" style="color:var(--c-gold)"></i></div>
             <div><div class="jy-tool-name">七維度交叉分析</div><div class="jy-tool-desc">七套命理系統交叉比對，看最完整的你<br><span style="opacity:.6">需出生資料・八字 紫微 梅花 塔羅 星盤 吠陀 姓名</span></div></div>
-            <div class="jy-tool-free" id="tool-full-badge">每日免費一次（任選一種）</div>
+            <div class="jy-tool-free" id="tool-full-badge">前 3 次免費體驗</div>
           </div>
         </div>
       </div>
@@ -1336,6 +1340,55 @@
     每次操作到結果頁 = 1 人次<br>連點月亮 5 下開啟 · 重整後隱藏
   </div>
 </div>
+
+
+<!-- ═══ 定價方案 ═══ -->
+<section id="jy-pricing" style="max-width:440px;margin:2rem auto;padding:0 1rem">
+  <div style="text-align:center;margin-bottom:1.5rem">
+    <div style="font-size:1.1rem;color:var(--c-gold,#c9a84c);font-weight:700;font-family:var(--f-display,serif)">方案與定價</div>
+    <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);margin-top:.3rem">所有方案都包含追問功能</div>
+  </div>
+
+  <!-- 免費 -->
+  <div style="padding:.8rem 1rem;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:.6rem">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
+      <span style="font-size:.88rem;font-weight:700;color:var(--c-text,#e0d8c8)">免費體驗</span>
+      <span style="font-size:.82rem;color:var(--c-gold,#c9a84c);font-weight:700">NT$0</span>
+    </div>
+    <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.7">
+      三套工具各 1 次（共 3 次）・需 Google 登入<br>含追問・不含照片分析
+    </div>
+  </div>
+
+  <!-- 會員 -->
+  <div style="padding:.8rem 1rem;border-radius:12px;background:rgba(212,175,55,.04);border:1.5px solid rgba(212,175,55,.2);margin-bottom:.6rem;position:relative">
+    <div style="position:absolute;top:-.45rem;right:.8rem;padding:.1rem .5rem;border-radius:4px;background:var(--c-gold,#c9a84c);color:#1a0a0a;font-size:.55rem;font-weight:700;letter-spacing:.05em">推薦</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
+      <span style="font-size:.88rem;font-weight:700;color:var(--c-gold,#c9a84c)">靜月會員</span>
+      <span style="font-size:.82rem;color:var(--c-gold,#c9a84c);font-weight:700">NT$799<span style="font-size:.65rem;font-weight:400;opacity:.7">/月</span></span>
+    </div>
+    <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.8">
+      🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">每日 3 次</strong><br>
+      🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 5 次</strong><br>
+      📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>
+      🔮 Opus 深度解析 <strong style="color:#c084fc">每月 2 次免費</strong><br>
+      ⚡ 額外 Opus <strong style="color:#c084fc">會員半價</strong>
+    </div>
+  </div>
+
+  <!-- 單次 -->
+  <div style="padding:.8rem 1rem;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:.6rem">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
+      <span style="font-size:.88rem;font-weight:700;color:var(--c-text,#e0d8c8)">單次購買</span>
+      <span style="font-size:.7rem;color:var(--c-text-muted,#8a7d6b)">僅限信用卡</span>
+    </div>
+    <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.8">
+      七維度 NT$69 ・ 塔羅 NT$29 ・ 開鑰 NT$29<br>
+      <span style="color:#c084fc">Opus 深度</span>：七維度 NT$99 ・ 塔羅/開鑰 NT$49<br>
+      <span style="color:#c084fc">會員 Opus</span>：七維度 NT$49 ・ 塔羅/開鑰 NT$29
+    </div>
+  </div>
+</section>
 
 
 <!-- ═══ Footer ═══ -->
