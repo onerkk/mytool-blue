@@ -485,12 +485,19 @@ function renderNotifications(list) {
         <span class="notify-mode ${modeClass}">${modeLabel}</span>
         <span class="notify-time">${time}</span>
       </div>
-      <div class="notify-name">${esc(n.name || '匿名')}</div>
+      <div class="notify-name">${esc(n.name || '匿名')}${n.depth === 'opus' ? ' <span style="color:#c084fc;font-size:10px">🔮Opus</span>' : ''}</div>
       ${n.question ? `<div class="notify-q">❓ ${esc(n.question)}</div>` : ''}
-      ${n.story ? `<div class="notify-q" style="margin-top:6px;color:var(--text);border-left:2px solid var(--accent);padding-left:8px;white-space:pre-wrap">💬 ${esc(n.story)}</div>` : ''}
+      ${n.photos && n.photos.length ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:#c084fc">📷 ${n.photos.join(', ')}</div>` : ''}
+      ${n.result && n.result.closing ? `<div style="margin-top:6px;padding:6px 10px;border-radius:8px;background:rgba(212,175,55,.08);font-size:12px;color:var(--accent);font-weight:600">✦ ${esc(n.result.closing)}</div>` : ''}
+      ${n.result && n.result.yesNo && n.result.yesNo.length ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${n.result.yesNo.map(y => '<span style="font-size:10px;padding:1px 6px;border-radius:10px;border:1px solid rgba(212,175,55,.2);color:var(--text-dim)">' + esc(y.q||'') + '：' + esc(y.a||'') + '</span>').join('')}</div>` : ''}
+      ${n.result && n.result.directAnswer ? `<div class="notify-q" style="margin-top:4px">📌 ${esc(n.result.directAnswer.substring(0, 300))}</div>` : ''}
+      ${n.result && n.result.story ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">💬 完整 story（${n.result.story.length}字）</summary><div style="margin-top:4px;font-size:11px;color:var(--text);border-left:2px solid var(--accent);padding-left:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(n.result.story)}</div></details>` : (n.story ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">💬 story（舊格式）</summary><div style="margin-top:4px;font-size:11px;color:var(--text);border-left:2px solid var(--accent);padding-left:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(n.story)}</div></details>` : '')}
+      ${n.result && n.result.layers ? `<div style="margin-top:4px;font-size:10px;color:var(--text-dim)">${Object.entries(n.result.layers).map(([k,v]) => k + '：' + esc(v)).join(' ｜ ')}</div>` : ''}
       <div class="notify-badges">
         ${n.paid ? '<span class="badge badge-paid">💰 付費</span>' : '<span class="badge">免費</span>'}
         ${n.followUp ? '<span class="badge">追問</span>' : ''}
+        ${n.result && n.result.crystalRec ? '<span class="badge" style="background:rgba(147,51,234,.1);color:#c084fc">💎 ' + esc(n.result.crystalRec) + '</span>' : ''}
+        ${n.usage ? '<span class="badge" style="opacity:.5">In:' + (n.usage.in||0) + ' Out:' + (n.usage.out||0) + (n.usage.cache_r ? ' C:'+n.usage.cache_r : '') + '</span>' : ''}
       </div>
     </div>`;
   }).join('');
