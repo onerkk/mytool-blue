@@ -487,7 +487,7 @@ function renderNotifications(list) {
       </div>
       <div class="notify-name">${esc(n.name || '匿名')}${n.depth === 'opus' ? ' <span style="color:#c084fc;font-size:10px">🔮Opus</span>' : ''}</div>
       ${n.question ? `<div class="notify-q">❓ ${esc(n.question)}</div>` : ''}
-      ${n.photos && n.photos.length ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:#c084fc">📷 ${n.photos.join(', ')}</div>` : ''}
+      ${n.photos && n.photos.length ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:#c084fc">📷 ${n.photos.join(', ')} <button onclick="_loadPhotos('${esc(n._key||'')}',this)" style="margin-left:6px;padding:2px 8px;border-radius:4px;background:rgba(147,51,234,.15);color:#c084fc;border:1px solid rgba(147,51,234,.25);font-size:10px;cursor:pointer">查看照片</button></div>` : ''}
       ${n.result && n.result.closing ? `<div style="margin-top:6px;padding:6px 10px;border-radius:8px;background:rgba(212,175,55,.08);font-size:12px;color:var(--accent);font-weight:600">✦ ${esc(n.result.closing)}</div>` : ''}
       ${n.result && n.result.yesNo && n.result.yesNo.length ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${n.result.yesNo.map(y => '<span style="font-size:10px;padding:1px 6px;border-radius:10px;border:1px solid rgba(212,175,55,.2);color:var(--text-dim)">' + esc(y.q||'') + '：' + esc(y.a||'') + '</span>').join('')}</div>` : ''}
       ${n.result && n.result.directAnswer ? `<div class="notify-q" style="margin-top:4px">📌 ${esc(n.result.directAnswer.substring(0, 300))}</div>` : ''}
@@ -497,10 +497,58 @@ function renderNotifications(list) {
         ${n.paid ? '<span class="badge badge-paid">💰 付費</span>' : '<span class="badge">免費</span>'}
         ${n.followUp ? '<span class="badge">追問</span>' : ''}
         ${n.result && n.result.crystalRec ? '<span class="badge" style="background:rgba(147,51,234,.1);color:#c084fc">💎 ' + esc(n.result.crystalRec) + '</span>' : ''}
-        ${n.usage ? '<span class="badge" style="opacity:.5">In:' + (n.usage.in||0) + ' Out:' + (n.usage.out||0) + (n.usage.cache_r ? ' C:'+n.usage.cache_r : '') + '</span>' : ''}
+        ${n.usage ? (function(){
+          var isOp = (n.depth === 'opus');
+          var pIn = isOp ? 5 : 3, pOut = isOp ? 25 : 15;
+          var pCR = isOp ? 0.5 : 0.3, pCW = isOp ? 6.25 : 3.75;
+          var inT = n.usage.in||0, outT = n.usage.out||0, cR = n.usage.cache_r||0, cW = n.usage.cache_w||0;
+          var regIn = Math.max(0, inT - cR - cW);
+          var usd = (regIn*pIn + cR*pCR + cW*pCW + outT*pOut) / 1e6;
+          var twd = (usd * 32).toFixed(1);
+          return '<span class="badge" style="background:rgba(212,175,55,.1);color:var(--accent)">≈NT$' + twd + '</span>' +
+            '<span class="badge" style="opacity:.35;font-size:9px">' + (isOp?'Opus':'Sonnet') + ' In:' + inT.toLocaleString() + (cR ? ' Cache:'+Math.round(cR/1000)+'K' : '') + ' Out:' + outT.toLocaleString() + '</span>';
+        })() : ''}
       </div>
     </div>`;
   }).join('');
+}
+
+// ★ v39：查看用戶照片
+async function _loadPhotos(nKey, btn) {
+  if (!nKey) return;
+  btn.textContent = '載入中...';
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/photos?token=${encodeURIComponent(adminToken)}&key=${encodeURIComponent(nKey)}`);
+    const data = await r.json();
+    const photos = data.photos || {};
+    const keys = Object.keys(photos);
+    if (!keys.length) { btn.textContent = '無照片'; return; }
+    const labels = { face:'臉部', palmLeft:'左手掌', palmRight:'右手掌', crystal:'水晶' };
+    var container = btn.closest('.notify-q');
+    var gallery = document.createElement('div');
+    gallery.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:8px';
+    keys.forEach(function(k) {
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'text-align:center';
+      var img = document.createElement('img');
+      var src = photos[k];
+      if (src && src.indexOf('data:') !== 0) src = 'data:image/jpeg;base64,' + src;
+      img.src = src;
+      img.style.cssText = 'width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.1)';
+      var label = document.createElement('div');
+      label.style.cssText = 'font-size:10px;color:var(--text-dim);margin-top:2px';
+      label.textContent = labels[k] || k;
+      wrap.appendChild(img);
+      wrap.appendChild(label);
+      gallery.appendChild(wrap);
+    });
+    container.appendChild(gallery);
+    btn.style.display = 'none';
+  } catch(e) {
+    btn.textContent = '載入失敗';
+    console.error(e);
+  }
 }
 
 async function clearNotifications() {
