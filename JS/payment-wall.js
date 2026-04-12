@@ -16,11 +16,7 @@
 
   function _buildPaywallHTML(mode) {
     var singlePrice = mode === 'full' ? 69 : 29;
-    // ★ v41：會員 Opus 半價
-    var _isMem = !!(parseInt(localStorage.getItem('_jy_sub_expires') || '0') > Date.now());
-    var opusSinglePrice = _isMem
-      ? ((mode === 'tarot_only' || mode === 'ootk') ? 29 : 49)
-      : ((mode === 'tarot_only' || mode === 'ootk') ? 49 : 99);
+    var opusSinglePrice = (mode === 'tarot_only' || mode === 'ootk') ? 49 : 99;
     var toolName = mode === 'full' ? '七維度' : (mode === 'tarot_only' ? '塔羅' : '開鑰');
     return '<div style="max-width:360px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
       '<div style="font-size:2.8rem;margin-bottom:.8rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
@@ -70,7 +66,7 @@
       var resp = await fetch(WORKER_URL + '/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: mode, type: type, session_token: localStorage.getItem('_jy_session') || '' })
+        body: JSON.stringify({ mode: mode, type: type, session_token: localStorage.getItem('_jy_session_token') || '' })
       });
       var data = await resp.json();
       if (data.error) throw new Error(data.error);
@@ -85,10 +81,7 @@
       if (payWin) {
         payWin.document.write(data.html);
         payWin.document.close();
-        var _isMemP = !!(parseInt(localStorage.getItem('_jy_sub_expires') || '0') > Date.now());
-        var opusDisplayPrice = _isMemP
-          ? ((mode === 'tarot_only' || mode === 'ootk') ? 29 : 49)
-          : ((mode === 'tarot_only' || mode === 'ootk') ? 49 : PRICE_OPUS);
+        var opusDisplayPrice = (mode === 'tarot_only' || mode === 'ootk') ? 49 : PRICE_OPUS;
         var singleDisplayPrice = mode === 'full' ? 69 : 29;
         var labelText = type === 'opus_single' ? 'Opus深度解析 NT$' + opusDisplayPrice : (type === 'single' ? '單次解讀 NT$' + singleDisplayPrice : '會員 NT$' + PRICE_SUB);
         // 關閉 Opus 付費 modal（如果存在）
@@ -154,6 +147,8 @@
         for (var j = 0; j < added.length; j++) {
           var node = added[j];
           if (node.nodeType !== 1) continue;
+          // ★ v42：排除 trial banner——它是結果頁的資訊提示，不是錯誤訊息，不該觸發付費牆
+          if (node.id === 'jy-trial-banner') continue;
 
           // 七維度已用完 modal
           if (node.id === 'jy-used-modal') {
@@ -423,14 +418,11 @@
       // ── 打 Worker 檢查額度 ──
       var checkPayload = mode === 'tarot_only'
         ? { action: 'check', payload: { mode: 'tarot_only' } }
-        : { action: 'check', payload: { mode: 'full' } };
+        : { action: 'check', payload: {} };
 
       // ★ v29：附帶 paid_token（單次購買 or 舊的訂閱 token）
       var pt = localStorage.getItem('_jy_paid_token');
       if (pt) checkPayload.paid_token = pt;
-      // ★ v41：附帶 session_token（否則 Worker 無法識別用戶→永遠回 LOGIN_REQUIRED）
-      var st = localStorage.getItem('_jy_session');
-      if (st) checkPayload.session_token = st;
 
       fetch(WORKER_URL, {
         method: 'POST',
@@ -440,13 +432,6 @@
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!data.allowed) {
-          // ★ v41：未登入→跳登入提示，不跳付費牆
-          if (data.code === 'LOGIN_REQUIRED') {
-            if (typeof _showLoginModal === 'function') { _showLoginModal(); }
-            else if (typeof _jyGoogleLogin === 'function') { _jyGoogleLogin(); }
-            else { alert('請先登入 Google 帳號'); }
-            return;
-          }
           var existing = document.getElementById('jy-pay-modal');
           if (existing) existing.remove();
           var m = document.createElement('div');
