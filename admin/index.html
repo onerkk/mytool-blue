@@ -445,6 +445,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'feedback') loadFeedback();
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
+    if (tab.dataset.tab === 'worker') checkWorkerStatus();
   });
 });
 
@@ -610,6 +611,7 @@ async function loadFeedback() {
           <span class="notify-time">${time}</span>
         </div>
         <div class="notify-name">${esc(fb.name || '匿名')}</div>
+        ${(fb.birth || fb.gender || fb.birthLocation) ? `<div class="notify-q" style="font-size:11px;color:var(--text-dim)">👤 ${[fb.gender === 'male' ? '男' : fb.gender === 'female' ? '女' : fb.gender, fb.birth, fb.birthTime, fb.birthLocation].filter(Boolean).map(esc).join(' ・ ')}</div>` : ''}
         ${fb.question ? `<div class="notify-q">❓ ${esc(fb.question)}</div>` : ''}
         ${fb.reasons ? `<div class="notify-q" style="margin-top:4px;color:var(--danger)">原因：${esc(fb.reasons)}</div>` : ''}
         ${fb.comment ? `<div class="notify-q" style="margin-top:4px;color:var(--text-dim)">💬 ${esc(fb.comment)}</div>` : ''}
