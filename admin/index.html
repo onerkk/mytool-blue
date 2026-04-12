@@ -210,6 +210,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
       <div class="notify-section">
         <div class="notify-header">
           <h3>📊 用戶回饋</h3>
+          <button onclick="clearAllFeedback()" style="padding:4px 12px;border-radius:6px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#ef4444;font-size:12px;cursor:pointer;float:right;margin-top:-28px">🗑 清除全部</button>
         </div>
         <div id="feedbackList" class="notify-list"><div class="loading"></div></div>
       </div>
@@ -577,6 +578,17 @@ async function clearNotifications() {
 // ═══════════════════════════════════════════════
 // Feedback
 // ═══════════════════════════════════════════════
+// ★ v42：清除全部回饋
+async function clearAllFeedback() {
+  if (!confirm('確定清除全部回饋？此操作不可復原。')) return;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/feedback?token=${encodeURIComponent(adminToken)}`, { method: 'DELETE' });
+    const data = await r.json();
+    alert('已清除 ' + (data.deleted || 0) + ' 筆回饋');
+    loadFeedback();
+  } catch(e) { alert('清除失敗: ' + e.message); }
+}
+
 async function loadFeedback() {
   const el = document.getElementById('feedbackList');
   el.innerHTML = '<div class="loading"></div>';
