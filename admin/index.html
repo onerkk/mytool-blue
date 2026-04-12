@@ -589,15 +589,23 @@ async function loadFeedback() {
       const time = fb.time ? new Date(fb.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
       const ratingIcon = fb.rating === 'good' ? '👍 準' : '👎 不準';
       const ratingClass = fb.rating === 'good' ? 'mode-tarot' : 'mode-followup';
+      const toolMap = { tarot: '🃏塔羅', ootk: '🔑開鑰', full: '🌙七維度' };
+      const toolBadge = fb.tool ? `<span class="notify-mode" style="background:rgba(212,175,55,.15);color:var(--gold)">${toolMap[fb.tool] || fb.tool}</span>` : '';
       return `<div class="notify-item">
         <div class="notify-meta">
           <span class="notify-mode ${ratingClass}">${ratingIcon}</span>
+          ${toolBadge}
           <span class="notify-time">${time}</span>
         </div>
         <div class="notify-name">${esc(fb.name || '匿名')}</div>
         ${fb.question ? `<div class="notify-q">❓ ${esc(fb.question)}</div>` : ''}
         ${fb.reasons ? `<div class="notify-q" style="margin-top:4px;color:var(--danger)">原因：${esc(fb.reasons)}</div>` : ''}
         ${fb.comment ? `<div class="notify-q" style="margin-top:4px;color:var(--text-dim)">💬 ${esc(fb.comment)}</div>` : ''}
+        ${fb.cards ? `<div class="notify-q" style="margin-top:6px;font-size:11px;color:var(--text-dim);border-top:1px solid rgba(255,255,255,.06);padding-top:6px">🃏 ${esc(fb.cards)}</div>` : ''}
+        ${fb.aiClosing ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--gold)">🔮 Closing: ${esc(fb.aiClosing)}</div>` : ''}
+        ${fb.aiDirectAnswer ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim)">📋 ${esc(fb.aiDirectAnswer.substring(0,150))}${fb.aiDirectAnswer.length > 150 ? '…' : ''}</div>` : ''}
+        ${fb.aiYesNo ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim)">🏷 ${esc(fb.aiYesNo)}</div>` : ''}
+        ${fb.aiStory ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">📖 展開完整 story</summary><div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim);white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(fb.aiStory)}</div></details>` : ''}
       </div>`;
     }).join('');
   } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
