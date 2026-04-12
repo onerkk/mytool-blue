@@ -160,6 +160,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="inventory">庫存管理</div>
     <div class="tab" data-tab="feedback">回饋</div>
     <div class="tab" data-tab="worker">Worker管理</div>
+    <div class="tab" data-tab="users">用戶管理</div>
     <div class="tab" data-tab="admins">管理員</div>
   </div>
 
@@ -249,6 +250,18 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div id="workerFileName" style="font-size:12px;color:var(--text-dim);margin-top:8px"></div>
           <button class="btn-deploy" id="btnDeploy" disabled onclick="deployWorker()">🚀 部署到 Cloudflare</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ══ 用戶管理 ══ -->
+    <div id="sec-users" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3>👥 已登入用戶</h3>
+          <button onclick="loadUsersData()" style="padding:6px 14px;border-radius:8px;border:1px solid var(--accent);color:var(--accent);background:transparent;font-size:12px;cursor:pointer">🔄 刷新</button>
+        </div>
+        <div id="usersStats" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap"></div>
+        <div id="usersList" style="display:flex;flex-direction:column;gap:10px"><div class="loading"></div></div>
       </div>
     </div>
 
@@ -430,6 +443,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
     if (tab.dataset.tab === 'feedback') loadFeedback();
     if (tab.dataset.tab === 'admins') loadAdminUsers();
+    if (tab.dataset.tab === 'users') loadUsersData();
   });
 });
 
@@ -838,6 +852,124 @@ async function removeAdminUser(email) {
     });
     const data = await r.json();
     if (data.ok) { toast('✓ 已移除'); loadAdminUsers(); }
+    else { toast('失敗: ' + (data.error || '')); }
+  } catch(e) { toast('錯誤: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// 用戶管理
+// ═══════════════════════════════════════════════
+let _usersCache = [];
+async function loadUsersData() {
+  const el = document.getElementById('usersList');
+  el.innerHTML = '<div class="loading"></div>';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/users-data?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    _usersCache = data.users || [];
+    const totalUsers = _usersCache.length;
+    const members = _usersCache.filter(u => u.plan === 'member').length;
+    const freeUsers = totalUsers - members;
+
+    document.getElementById('usersStats').innerHTML =
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(108,123,255,.1);color:var(--accent);font-size:13px;font-weight:600">👥 ${totalUsers} 位用戶</span>` +
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--warn);font-size:13px;font-weight:600">👑 ${members} 位會員</span>` +
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px;font-weight:600">🆓 ${freeUsers} 位免費</span>`;
+
+    if (!_usersCache.length) { el.innerHTML = '<div class="empty">尚無登入用戶</div>'; return; }
+    renderUsersList(_usersCache);
+  } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
+}
+
+function renderUsersList(users) {
+  const el = document.getElementById('usersList');
+  el.innerHTML = users.map((u, idx) => {
+    const isMember = u.plan === 'member';
+    const planBadge = isMember
+      ? `<span style="padding:2px 8px;border-radius:4px;background:rgba(251,191,36,.15);color:var(--warn);font-size:11px;font-weight:600">👑 會員</span>`
+      : `<span style="padding:2px 8px;border-radius:4px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:11px;font-weight:600">🆓 免費</span>`;
+    const expires = isMember && u.subExpires
+      ? `<span style="font-size:10px;color:var(--text-dim)">到期 ${new Date(u.subExpires).toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei'})}</span>`
+      : '';
+
+    // 使用次數行
+    let quotaRows = '';
+    if (!isMember) {
+      quotaRows = `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim)" data-user-idx="${idx}">
+        免費已用: <strong style="color:${u.freeUsed >= u.freeLimit ? 'var(--danger)' : 'var(--text)'}">${u.freeUsed}/${u.freeLimit}</strong>
+        <button onclick="_editQuota(${idx},'free_total',${u.freeUsed})" style="padding:1px 6px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer">✏️</button>
+      </div>`;
+    } else {
+      quotaRows = `<div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--text-dim)" data-user-idx="${idx}">
+        <span>塔羅日: <strong style="color:var(--text)">${u.subDailyUsed}/${u.subDailyLimit}</strong>
+          <button onclick="_editQuota(${idx},'sub_daily',${u.subDailyUsed})" style="padding:1px 6px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer">✏️</button>
+        </span>
+        <span>七維月: <strong style="color:var(--text)">${u.d7MonthUsed}/${u.d7MonthLimit}</strong>
+          <button onclick="_editQuota(${idx},'7d_month',${u.d7MonthUsed})" style="padding:1px 6px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer">✏️</button>
+        </span>
+        <span>Opus月: <strong style="color:var(--text)">${u.opusMonthUsed}/${u.opusMonthLimit}</strong>
+          <button onclick="_editQuota(${idx},'opus_month',${u.opusMonthUsed})" style="padding:1px 6px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer">✏️</button>
+        </span>
+      </div>`;
+    }
+
+    // 授予/撤銷會員按鈕
+    const subAction = isMember
+      ? `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`
+      : `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','grant')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予會員</button>`;
+
+    return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:14px 16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <div style="font-size:14px;font-weight:600">${esc(u.name || '未命名')}</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${esc(u.email)}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${planBadge}
+          ${subAction}
+        </div>
+      </div>
+      ${expires ? `<div style="margin-bottom:4px">${expires}</div>` : ''}
+      ${quotaRows}
+    </div>`;
+  }).join('');
+}
+
+function _editQuota(idx, quotaType, currentVal) {
+  const u = _usersCache[idx];
+  if (!u) return;
+  const labels = { free_total: '免費總次數', sub_daily: '今日塔羅/OOTK次數', '7d_month': '本月七維度次數', opus_month: '本月Opus次數' };
+  const newVal = prompt(`${u.email}\n修改【${labels[quotaType]}】\n目前: ${currentVal}\n\n輸入新數值:`, currentVal);
+  if (newVal === null) return;
+  const v = parseInt(newVal);
+  if (isNaN(v) || v < 0) { toast('請輸入有效數字'); return; }
+  fetch(`${WORKER_URL}/admin/update-quota?token=${encodeURIComponent(adminToken)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: u.email, quotaType, value: v })
+  }).then(r => r.json()).then(data => {
+    if (data.ok) { toast('✓ 已更新 ' + labels[quotaType] + ' → ' + v); loadUsersData(); }
+    else { toast('失敗: ' + (data.error || '')); }
+  }).catch(e => toast('錯誤: ' + e.message));
+}
+
+async function _setSubscription(email, action) {
+  const label = action === 'grant' ? '授予會員' : '撤銷會員';
+  if (!confirm(`確定要${label}？\n${email}`)) return;
+  let days = 30;
+  if (action === 'grant') {
+    const d = prompt('會員天數:', '30');
+    if (d === null) return;
+    days = parseInt(d) || 30;
+  }
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/set-subscription?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, action, days })
+    });
+    const data = await r.json();
+    if (data.ok) { toast(`✓ ${label}成功`); loadUsersData(); }
     else { toast('失敗: ' + (data.error || '')); }
   } catch(e) { toast('錯誤: ' + e.message); }
 }
