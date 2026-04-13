@@ -418,7 +418,11 @@
       // ── 打 Worker 檢查額度 ──
       var checkPayload = mode === 'tarot_only'
         ? { action: 'check', payload: { mode: 'tarot_only' } }
-        : { action: 'check', payload: {} };
+        : { action: 'check', payload: { mode: mode } };
+
+      // ★ v43：附帶 session_token 讓 Worker 識別會員
+      var st = window._JY_SESSION_TOKEN;
+      if (st) checkPayload.session_token = st;
 
       // ★ v29：附帶 paid_token（單次購買 or 舊的訂閱 token）
       var pt = localStorage.getItem('_jy_paid_token');
