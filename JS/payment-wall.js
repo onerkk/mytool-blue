@@ -421,7 +421,8 @@
         : { action: 'check', payload: { mode: mode } };
 
       // ★ v43：附帶 session_token 讓 Worker 識別會員
-      var st = window._JY_SESSION_TOKEN;
+      var st = window._JY_SESSION_TOKEN || '';
+      if (!st) { try { st = localStorage.getItem('_jy_session') || ''; } catch(_e){} }
       if (st) checkPayload.session_token = st;
 
       // ★ v29：附帶 paid_token（單次購買 or 舊的訂閱 token）
@@ -445,6 +446,10 @@
           m.addEventListener('click', function(ev) { if (ev.target === m) m.remove(); });
           document.body.appendChild(m);
         } else {
+          // ★ v43：Worker 確認是會員 → 更新 localStorage（修復 _jy_sub_expires 未寫入的 race condition）
+          if (data.subscription) {
+            try { localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 7)); } catch(_e){}
+          }
           var newEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
           newEvent._jyPayChecked = true;
           btn.dispatchEvent(newEvent);
