@@ -160,13 +160,52 @@ function injectStyles() {
 
 // ── 主渲染：根據工具類型渲染照片上傳區 ──
 var _currentRenderedTool = null;
+var _memberCheckPromise = null;
 
-function renderPhotoUpload(tool) {
+function _hasActiveMemberCache() {
+  try {
+    var exp = parseInt(localStorage.getItem('_jy_sub_expires') || '0', 10);
+    if (exp > Date.now()) return true;
+  } catch (e) {}
+  return !!window._JY_IS_MEMBER;
+}
+
+function _checkMemberStatusOnce() {
+  if (_memberCheckPromise) return _memberCheckPromise;
+  if (!window._JY_SESSION_TOKEN || window._JY_ADMIN_TOKEN) {
+    return Promise.resolve(false);
+  }
+  var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
+  _memberCheckPromise = fetch(AI_URL + '/check-subscription', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_token: window._JY_SESSION_TOKEN })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var active = !!(data && data.active);
+    window._JY_IS_MEMBER = active;
+    try {
+      if (active && data.expiresAt) localStorage.setItem('_jy_sub_expires', String(data.expiresAt));
+      else if (!active) localStorage.removeItem('_jy_sub_expires');
+    } catch (e) {}
+    return active;
+  })
+  .catch(function() {
+    return _hasActiveMemberCache();
+  })
+  .finally(function() {
+    _memberCheckPromise = null;
+  });
+  return _memberCheckPromise;
+}
+
+function renderPhotoUpload(tool, forceRefresh) {
   tool = tool || 'full';
   var fields = getFieldsForTool(tool);
 
-  // ★ v39：面相/手相照片是會員專屬（水晶照片所有人可用）
-  var _isMember = !!(localStorage.getItem('_jy_sub_expires') && parseInt(localStorage.getItem('_jy_sub_expires')) > Date.now());
+  // ★ v40：管理員與會員都直接全開；會員狀態優先吃本地快取，沒有再向 Worker 即時確認
+  var _isMember = _hasActiveMemberCache();
   var _isAdmin = !!(window._JY_ADMIN_TOKEN);
   if (!_isMember && !_isAdmin && tool !== 'tarot' && tool !== 'ootk') {
     // 非會員：只保留水晶照片欄位，面相手相顯示鎖定
@@ -174,8 +213,17 @@ function renderPhotoUpload(tool) {
   }
 
   // 避免重複渲染同一工具
-  if (_currentRenderedTool === tool) return;
+  if (!forceRefresh && _currentRenderedTool === tool) return;
   _currentRenderedTool = tool;
+
+  if (!_isAdmin && !_isMember && tool !== 'tarot' && tool !== 'ootk' && window._JY_SESSION_TOKEN) {
+    _checkMemberStatusOnce().then(function(active) {
+      if (active) {
+        _currentRenderedTool = null;
+        renderPhotoUpload(tool, true);
+      }
+    });
+  }
 
   // ★ 清除不屬於新工具的照片（七維度→塔羅時移除臉/手照片，避免浪費 token）
   if (window._jyPhotos) {
