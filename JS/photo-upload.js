@@ -1,33 +1,29 @@
 // ═══════════════════════════════════════════════════════════════
-// photo-upload.js — v38 面相/手相/水晶照片上傳模組
-// 動態注入 DOM，壓縮圖片，存入 window._jyPhotos 供 payload 讀取
+// photo-upload.js — v40b 面相/手相/水晶照片上傳模組
+// 修正：管理員/會員在七維度一定全開；不依賴 window.pickTool 掛載
+// 其他功能不變
 // ═══════════════════════════════════════════════════════════════
 (function(){
 'use strict';
 
-// ── 全域照片儲存 ──
 window._jyPhotos = null;
 
-// ── 常數 ──
-var MAX_PX = 768;       // 最長邊壓到 768px
-var QUALITY = 0.75;     // JPEG 品質
-var MAX_SIZE_MB = 4;    // 單張上限 4MB（壓縮前）
+var MAX_PX = 768;
+var QUALITY = 0.75;
+var MAX_SIZE_MB = 4;
 
-// ── 照片欄位定義 ──
 var PHOTO_FIELDS = {
-  face:      { icon: 'fa-portrait',    label: '臉部照片',   hint: '正面自拍・光線充足' },
-  palmLeft:  { icon: 'fa-hand-paper',  label: '左手掌',     hint: '手心朝上・手指張開' },
-  palmRight: { icon: 'fa-hand-paper',  label: '右手掌',     hint: '手心朝上・手指張開' },
-  crystal:   { icon: 'fa-gem',         label: '水晶照片',   hint: '拍你正在配戴的水晶' }
+  face:      { icon: 'fa-portrait',   label: '臉部照片', hint: '正面自拍・光線充足' },
+  palmLeft:  { icon: 'fa-hand-paper', label: '左手掌',   hint: '手心朝上・手指張開' },
+  palmRight: { icon: 'fa-hand-paper', label: '右手掌',   hint: '手心朝上・手指張開' },
+  crystal:   { icon: 'fa-gem',        label: '水晶照片', hint: '拍你正在配戴的水晶' }
 };
 
-// ── 根據工具決定顯示哪些上傳欄位 ──
 function getFieldsForTool(tool) {
   if (tool === 'tarot' || tool === 'ootk') return ['crystal'];
-  return ['face', 'palmLeft', 'palmRight', 'crystal']; // full / direct
+  return ['face', 'palmLeft', 'palmRight', 'crystal'];
 }
 
-// ── 圖片壓縮：縮放到 MAX_PX 並轉 base64 JPEG ──
 function compressImage(file) {
   return new Promise(function(resolve, reject) {
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
@@ -43,14 +39,14 @@ function compressImage(file) {
         var w = img.width, h = img.height;
         if (w > MAX_PX || h > MAX_PX) {
           if (w > h) { h = Math.round(h * MAX_PX / w); w = MAX_PX; }
-          else       { w = Math.round(w * MAX_PX / h); h = MAX_PX; }
+          else { w = Math.round(w * MAX_PX / h); h = MAX_PX; }
         }
         var canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
+        canvas.width = w;
+        canvas.height = h;
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        var dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
-        resolve(dataUrl);
+        resolve(canvas.toDataURL('image/jpeg', QUALITY));
       };
       img.src = reader.result;
     };
@@ -58,19 +54,17 @@ function compressImage(file) {
   });
 }
 
-// ── 儲存照片到全域 ──
 function savePhoto(key, dataUrl) {
   if (!window._jyPhotos) window._jyPhotos = {};
   window._jyPhotos[key] = dataUrl;
 }
+
 function removePhoto(key) {
-  if (window._jyPhotos) {
-    delete window._jyPhotos[key];
-    if (Object.keys(window._jyPhotos).length === 0) window._jyPhotos = null;
-  }
+  if (!window._jyPhotos) return;
+  delete window._jyPhotos[key];
+  if (!Object.keys(window._jyPhotos).length) window._jyPhotos = null;
 }
 
-// ── 建立單一上傳欄位的 HTML ──
 function createUploadSlot(key, field) {
   var slot = document.createElement('div');
   slot.className = 'jy-photo-slot';
@@ -86,22 +80,18 @@ function createUploadSlot(key, field) {
       '<button class="jy-photo-remove" id="photo-rm-' + key + '" title="移除">&times;</button>' +
     '</div>' +
     '<input type="file" accept="image/*" id="photo-input-' + key + '" style="display:none" />';
-
   return slot;
 }
 
-// ── 綁定事件 ──
 function bindSlotEvents(key) {
   var btn = document.getElementById('photo-btn-' + key);
   var input = document.getElementById('photo-input-' + key);
   var preview = document.getElementById('photo-preview-' + key);
   var img = document.getElementById('photo-img-' + key);
   var rm = document.getElementById('photo-rm-' + key);
-
-  if (!btn || !input) return;
+  if (!btn || !input || !preview || !img || !rm) return;
 
   btn.addEventListener('click', function() { input.click(); });
-
   input.addEventListener('change', function() {
     var file = input.files && input.files[0];
     if (!file) return;
@@ -129,7 +119,6 @@ function bindSlotEvents(key) {
   });
 }
 
-// ── 注入 CSS ──
 function injectStyles() {
   if (document.getElementById('jy-photo-styles')) return;
   var style = document.createElement('style');
@@ -140,27 +129,35 @@ function injectStyles() {
     '.jy-photo-title i{font-size:.75rem}' +
     '.jy-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}' +
     '.jy-photo-slot{position:relative}' +
-    '.jy-photo-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;' +
-      'padding:16px 8px;border-radius:10px;border:1px dashed rgba(212,175,55,.25);background:rgba(0,0,0,.15);' +
-      'cursor:pointer;transition:border-color .2s,background .2s;min-height:80px;text-align:center}' +
+    '.jy-photo-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:16px 8px;border-radius:10px;border:1px dashed rgba(212,175,55,.25);background:rgba(0,0,0,.15);cursor:pointer;transition:border-color .2s,background .2s;min-height:80px;text-align:center}' +
     '.jy-photo-btn:hover{border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.06)}' +
     '.jy-photo-btn i{font-size:1.2rem;color:rgba(212,175,55,.6)}' +
     '.jy-photo-label{font-size:.78rem;color:var(--c-text,#e8e0d0);font-weight:500}' +
     '.jy-photo-hint{font-size:.65rem;color:var(--c-text-dim,#8a8070);line-height:1.2}' +
-    '.jy-photo-preview{display:flex;align-items:center;justify-content:center;position:relative;' +
-      'border-radius:10px;overflow:hidden;border:1px solid rgba(212,175,55,.3);background:#000;min-height:80px}' +
+    '.jy-photo-preview{display:flex;align-items:center;justify-content:center;position:relative;border-radius:10px;overflow:hidden;border:1px solid rgba(212,175,55,.3);background:#000;min-height:80px}' +
     '.jy-photo-preview img{width:100%;height:80px;object-fit:cover;display:block}' +
-    '.jy-photo-remove{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;' +
-      'background:rgba(0,0,0,.7);color:#fff;border:none;font-size:14px;line-height:22px;text-align:center;' +
-      'cursor:pointer;padding:0}' +
+    '.jy-photo-remove{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;border:none;font-size:14px;line-height:22px;text-align:center;cursor:pointer;padding:0}' +
     '.jy-photo-note{font-size:.65rem;color:var(--c-text-dim,#8a8070);margin-top:6px;text-align:center}' +
     '@media(max-width:360px){.jy-photo-grid{grid-template-columns:repeat(2,1fr)}}';
   document.head.appendChild(style);
 }
 
-// ── 主渲染：根據工具類型渲染照片上傳區 ──
-var _currentRenderedTool = null;
+var _currentRenderedState = '';
 var _memberCheckPromise = null;
+var _lastObservedTool = null;
+var _lastObservedAccess = null;
+
+function _getSelectedTool() {
+  if (typeof window._selectedTool !== 'undefined' && window._selectedTool) return window._selectedTool;
+  if (typeof _selectedTool !== 'undefined' && _selectedTool) return _selectedTool;
+  var fullCard = document.getElementById('tool-full');
+  var tarotCard = document.getElementById('tool-tarot');
+  var ootkCard = document.getElementById('tool-ootk');
+  if (fullCard && fullCard.classList.contains('selected')) return 'full';
+  if (tarotCard && tarotCard.classList.contains('selected')) return 'tarot';
+  if (ootkCard && ootkCard.classList.contains('selected')) return 'ootk';
+  return 'full';
+}
 
 function _hasActiveMemberCache() {
   try {
@@ -170,31 +167,35 @@ function _hasActiveMemberCache() {
   return !!window._JY_IS_MEMBER;
 }
 
+function _isAdmin() {
+  return !!window._JY_ADMIN_TOKEN;
+}
+
+function _isPrivileged() {
+  return _isAdmin() || _hasActiveMemberCache();
+}
+
 function _checkMemberStatusOnce() {
   if (_memberCheckPromise) return _memberCheckPromise;
-  if (!window._JY_SESSION_TOKEN || window._JY_ADMIN_TOKEN) {
-    return Promise.resolve(false);
-  }
+  if (!window._JY_SESSION_TOKEN || _isAdmin()) return Promise.resolve(false);
   var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
   _memberCheckPromise = fetch(AI_URL + '/check-subscription', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ session_token: window._JY_SESSION_TOKEN })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
+  }).then(function(r) {
+    return r.json();
+  }).then(function(data) {
     var active = !!(data && data.active);
     window._JY_IS_MEMBER = active;
     try {
       if (active && data.expiresAt) localStorage.setItem('_jy_sub_expires', String(data.expiresAt));
-      else if (!active) localStorage.removeItem('_jy_sub_expires');
+      if (!active) localStorage.removeItem('_jy_sub_expires');
     } catch (e) {}
     return active;
-  })
-  .catch(function() {
+  }).catch(function() {
     return _hasActiveMemberCache();
-  })
-  .finally(function() {
+  }).finally(function() {
     _memberCheckPromise = null;
   });
   return _memberCheckPromise;
@@ -202,48 +203,29 @@ function _checkMemberStatusOnce() {
 
 function renderPhotoUpload(tool, forceRefresh) {
   tool = tool || 'full';
+  var privileged = _isPrivileged();
   var fields = getFieldsForTool(tool);
+  if (!privileged && tool !== 'tarot' && tool !== 'ootk') fields = ['crystal'];
 
-  // ★ v40：管理員與會員都直接全開；會員狀態優先吃本地快取，沒有再向 Worker 即時確認
-  var _isMember = _hasActiveMemberCache();
-  var _isAdmin = !!(window._JY_ADMIN_TOKEN);
-  if (!_isMember && !_isAdmin && tool !== 'tarot' && tool !== 'ootk') {
-    // 非會員：只保留水晶照片欄位，面相手相顯示鎖定
-    fields = ['crystal'];
-  }
+  var stateKey = tool + '|' + (privileged ? 'all' : 'crystal');
+  if (!forceRefresh && _currentRenderedState === stateKey) return;
+  _currentRenderedState = stateKey;
 
-  // 避免重複渲染同一工具
-  if (!forceRefresh && _currentRenderedTool === tool) return;
-  _currentRenderedTool = tool;
-
-  if (!_isAdmin && !_isMember && tool !== 'tarot' && tool !== 'ootk' && window._JY_SESSION_TOKEN) {
-    _checkMemberStatusOnce().then(function(active) {
-      if (active) {
-        _currentRenderedTool = null;
-        renderPhotoUpload(tool, true);
-      }
-    });
-  }
-
-  // ★ 清除不屬於新工具的照片（七維度→塔羅時移除臉/手照片，避免浪費 token）
   if (window._jyPhotos) {
     var validKeys = {};
     fields.forEach(function(k) { validKeys[k] = true; });
     Object.keys(window._jyPhotos).forEach(function(k) {
       if (!validKeys[k]) delete window._jyPhotos[k];
     });
-    if (Object.keys(window._jyPhotos).length === 0) window._jyPhotos = null;
+    if (!Object.keys(window._jyPhotos).length) window._jyPhotos = null;
   }
 
-  // 移除舊的
   var old = document.getElementById('jy-photo-upload');
   if (old) old.remove();
 
-  // 找注入點：問題卡片後面
   var questionCard = document.getElementById('q-custom-wrap');
   var parentCard = questionCard ? questionCard.closest('.card') : null;
   if (!parentCard) {
-    // fallback：找 step-0 裡第一個 .card
     var step0 = document.getElementById('step-0');
     if (step0) {
       var cards = step0.querySelectorAll('.card');
@@ -252,7 +234,6 @@ function renderPhotoUpload(tool, forceRefresh) {
   }
   if (!parentCard) return;
 
-  // 建立容器
   var wrap = document.createElement('div');
   wrap.id = 'jy-photo-upload';
   wrap.className = 'jy-photo-card';
@@ -262,82 +243,85 @@ function renderPhotoUpload(tool, forceRefresh) {
     : '<i class="fas fa-gem"></i> 上傳水晶照片（選填）';
 
   var memberNotice = '';
-  if (!_isMember && !_isAdmin && tool !== 'tarot' && tool !== 'ootk') {
-    memberNotice = '<div style="margin-top:.5rem;padding:.5rem .7rem;border-radius:8px;background:rgba(147,51,234,.06);border:1px solid rgba(147,51,234,.15);font-size:.7rem;color:#c084fc;line-height:1.6;text-align:center">' +
-      '📷 面相＋手相照片分析是<strong>會員專屬</strong>功能<br>開通會員讓七維度分析更精準深入</div>';
+  if (!privileged && tool !== 'tarot' && tool !== 'ootk') {
+    memberNotice = '<div style="margin-top:.5rem;padding:.5rem .7rem;border-radius:8px;background:rgba(147,51,234,.06);border:1px solid rgba(147,51,234,.15);font-size:.7rem;color:#c084fc;line-height:1.6;text-align:center">📷 面相＋手相照片分析是<strong>會員專屬</strong>功能<br>開通會員讓七維度分析更精準深入</div>';
   }
 
-  wrap.innerHTML = '<div class="jy-photo-title">' + titleText + '</div><div class="jy-photo-grid" id="jy-photo-grid"></div>' +
-    memberNotice +
-    '<div class="jy-photo-note">照片僅用於本次分析，不會儲存</div>';
-
-  // 插到問題卡片後面
+  wrap.innerHTML = '<div class="jy-photo-title">' + titleText + '</div><div class="jy-photo-grid" id="jy-photo-grid"></div>' + memberNotice + '<div class="jy-photo-note">照片僅用於本次分析，不會儲存</div>';
   parentCard.parentNode.insertBefore(wrap, parentCard.nextSibling);
 
-  // 填入上傳欄位
   var grid = document.getElementById('jy-photo-grid');
   fields.forEach(function(key) {
     var slot = createUploadSlot(key, PHOTO_FIELDS[key]);
     grid.appendChild(slot);
-    // 如果之前已有照片（切換工具後保留），恢復預覽
     if (window._jyPhotos && window._jyPhotos[key]) {
       var btn = slot.querySelector('.jy-photo-btn');
       var preview = slot.querySelector('.jy-photo-preview');
       var img = slot.querySelector('img');
       if (btn) btn.style.display = 'none';
-      if (preview) { preview.style.display = 'flex'; }
+      if (preview) preview.style.display = 'flex';
       if (img) img.src = window._jyPhotos[key];
     }
   });
-
-  // 綁定事件
   fields.forEach(function(key) { bindSlotEvents(key); });
 }
 
-// ── 清除所有照片（重置時呼叫）──
 function clearPhotos() {
   window._jyPhotos = null;
-  _currentRenderedTool = null;
+  _currentRenderedState = '';
   var el = document.getElementById('jy-photo-upload');
   if (el) el.remove();
 }
 
-// ── 監聽工具切換 ──
 function hookToolSwitch() {
-  // 攔截 pickTool
-  if (typeof window.pickTool === 'function') {
+  if (typeof window.pickTool === 'function' && !window.pickTool.__jy_photo_wrapped__) {
     var _origPickTool = window.pickTool;
-    window.pickTool = function(tool) {
-      _origPickTool(tool);
-      renderPhotoUpload(tool);
+    var wrapped = function(tool) {
+      var out = _origPickTool.apply(this, arguments);
+      setTimeout(function() { renderPhotoUpload(tool, true); }, 0);
+      return out;
     };
+    wrapped.__jy_photo_wrapped__ = true;
+    window.pickTool = wrapped;
   }
-  // 攔截 resetAll（清除照片）
-  if (typeof window.resetAll === 'function') {
+  if (typeof window.resetAll === 'function' && !window.resetAll.__jy_photo_wrapped__) {
     var _origReset = window.resetAll;
-    window.resetAll = function() {
+    var resetWrapped = function() {
       clearPhotos();
       return _origReset.apply(this, arguments);
     };
+    resetWrapped.__jy_photo_wrapped__ = true;
+    window.resetAll = resetWrapped;
   }
 }
 
-// ── 初始化 ──
+function watchState() {
+  setInterval(function() {
+    hookToolSwitch();
+    var tool = _getSelectedTool();
+    var access = _isPrivileged() ? 'all' : 'crystal';
+    if (tool !== _lastObservedTool || access !== _lastObservedAccess) {
+      _lastObservedTool = tool;
+      _lastObservedAccess = access;
+      renderPhotoUpload(tool, true);
+    }
+  }, 700);
+}
+
 function init() {
   injectStyles();
-  // 等 DOM 就緒
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      hookToolSwitch();
-      // 初始渲染（預設工具）
-      var tool = (typeof _selectedTool !== 'undefined') ? _selectedTool : 'full';
-      renderPhotoUpload(tool);
-    });
-  } else {
+  function start() {
     hookToolSwitch();
-    var tool = (typeof _selectedTool !== 'undefined') ? _selectedTool : 'full';
-    renderPhotoUpload(tool);
+    renderPhotoUpload(_getSelectedTool(), true);
+    if (window._JY_SESSION_TOKEN && !_isPrivileged() && _getSelectedTool() !== 'tarot' && _getSelectedTool() !== 'ootk') {
+      _checkMemberStatusOnce().then(function(active) {
+        if (active || _isAdmin()) renderPhotoUpload(_getSelectedTool(), true);
+      });
+    }
+    watchState();
   }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 }
 
 init();
