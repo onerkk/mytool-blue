@@ -366,27 +366,27 @@ ctx.strokeStyle='rgba(201,168,76,0.25)';ctx.lineWidth=1;
 ctx.beginPath();ctx.moveTo(50,74);ctx.lineTo(W-50,74);ctx.stroke();
 // ── 右側：籤號直書 ──
 var numText='第'+CN[p.n]+'籤';
-ctx.fillStyle='#c9a84c';ctx.font='bold 44px "Noto Serif TC",serif';
+ctx.fillStyle='#c9a84c';ctx.font='bold 42px "Noto Serif TC",serif';
 ctx.textAlign='center';
 for(var ni=0;ni<numText.length;ni++){
-ctx.fillText(numText[ni],W-60,130+ni*52);
+ctx.fillText(numText[ni],W-55,120+ni*48);
 }
 // 干支+等級
-ctx.fillStyle='#6b5530';ctx.font='26px "Noto Serif TC",serif';
-ctx.fillText(p.g[0],W-120,170);
-ctx.fillText(p.g[1],W-120,204);
+ctx.fillStyle='#6b5530';ctx.font='24px "Noto Serif TC",serif';
+ctx.fillText(p.g[0],W-115,155);
+ctx.fillText(p.g[1],W-115,185);
 var rc=_rc(p.r);
 ctx.fillStyle=rc.c==='var(--c-gold)'?'#c9a84c':rc.c;
-ctx.font='22px "Noto Serif TC",serif';
-ctx.fillText(p.r,W-120,250);
-// ── 籤詩直書（4句從右到左，緊湊排列）──
+ctx.font='20px "Noto Serif TC",serif';
+ctx.fillText(p.r,W-115,225);
+// ── 籤詩直書（4句從右到左，緊湊）──
 var lines=p.p.split('\\n');
-ctx.fillStyle='#2c1810';ctx.font='bold 40px "Noto Serif TC",serif';
+ctx.fillStyle='#2c1810';ctx.font='bold 36px "Noto Serif TC",serif';
 ctx.textAlign='center';
-var poemRightX=W-190;
-var colGap=72;
-var charH=50;
-var poemTopY=130;
+var poemRightX=W-180;
+var colGap=65;
+var charH=46;
+var poemTopY=110;
 for(var li=0;li<lines.length;li++){
 var line=lines[li];
 var lx=poemRightX-li*colGap;
@@ -394,12 +394,12 @@ for(var ci=0;ci<line.length;ci++){
 ctx.fillText(line[ci],lx,poemTopY+ci*charH);
 }
 }
-// ── 五行方位+典故（詩句下方）──
-var infoY=poemTopY+7*charH+20;
-ctx.fillStyle='rgba(100,70,20,0.5)';ctx.font='italic 18px "Noto Serif TC",serif';
+// ── 五行方位+典故 ──
+var infoY=poemTopY+7*charH+16;
+ctx.fillStyle='rgba(100,70,20,0.5)';ctx.font='italic 17px "Noto Serif TC",serif';
 ctx.textAlign='center';
-ctx.fillText(p.t,W/2-30,infoY);
-ctx.fillText('典故：'+p.s,W/2-30,infoY+28);
+ctx.fillText(p.t,W/2-40,infoY);
+ctx.fillText('典故：'+p.s,W/2-40,infoY+24);
 // ── 底部品牌金色條 ──
 var brandY=H-48;
 var brandGrad=ctx.createLinearGradient(0,brandY,W,brandY);
