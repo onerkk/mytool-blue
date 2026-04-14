@@ -338,19 +338,19 @@ var wmImg=new Image();wmImg.crossOrigin='anonymous';
 wmImg.onload=function(){
 // ── 背景 ──
 ctx.fillStyle='#fdf6e3';ctx.fillRect(0,0,W,H);
-// ── 女神浮水印（佔下半 60%，彩色，上方淡出融合）──
-var wmH=H*0.65;var wmY=H-wmH-50;
+// ── 女神浮水印（佔下半，彩色，上方淡出融合）──
+var wmH=H*0.6;var wmY=H-wmH-48;
 var wmAspect=wmImg.width/wmImg.height;
 var drawW=W-40,drawH=drawW/wmAspect;
 if(drawH<wmH)drawH=wmH;
 var drawX=(W-drawW)/2;
-ctx.save();ctx.globalAlpha=0.85;
+ctx.save();ctx.globalAlpha=0.8;
 ctx.drawImage(wmImg,drawX,wmY,drawW,drawH);
 ctx.restore();
 // 上方淡出漸層（讓女神頭部自然融入背景）
-var fadeH=220;
+var fadeH=260;
 var grad=ctx.createLinearGradient(0,wmY,0,wmY+fadeH);
-grad.addColorStop(0,'#fdf6e3');grad.addColorStop(0.6,'rgba(253,246,227,0.7)');grad.addColorStop(1,'rgba(253,246,227,0)');
+grad.addColorStop(0,'#fdf6e3');grad.addColorStop(0.5,'rgba(253,246,227,0.75)');grad.addColorStop(1,'rgba(253,246,227,0)');
 ctx.fillStyle=grad;ctx.fillRect(0,wmY,W,fadeH);
 // ── 金色外框 ──
 ctx.strokeStyle='#c9a84c';ctx.lineWidth=8;
@@ -366,27 +366,27 @@ ctx.strokeStyle='rgba(201,168,76,0.25)';ctx.lineWidth=1;
 ctx.beginPath();ctx.moveTo(50,74);ctx.lineTo(W-50,74);ctx.stroke();
 // ── 右側：籤號直書 ──
 var numText='第'+CN[p.n]+'籤';
-ctx.fillStyle='#c9a84c';ctx.font='bold 42px "Noto Serif TC",serif';
+ctx.fillStyle='#c9a84c';ctx.font='bold 46px "Noto Serif TC",serif';
 ctx.textAlign='center';
 for(var ni=0;ni<numText.length;ni++){
-ctx.fillText(numText[ni],W-55,120+ni*48);
+ctx.fillText(numText[ni],W-55,120+ni*52);
 }
 // 干支+等級
-ctx.fillStyle='#6b5530';ctx.font='24px "Noto Serif TC",serif';
-ctx.fillText(p.g[0],W-115,155);
-ctx.fillText(p.g[1],W-115,185);
+ctx.fillStyle='#6b5530';ctx.font='26px "Noto Serif TC",serif';
+ctx.fillText(p.g[0],W-118,160);
+ctx.fillText(p.g[1],W-118,192);
 var rc=_rc(p.r);
 ctx.fillStyle=rc.c==='var(--c-gold)'?'#c9a84c':rc.c;
-ctx.font='20px "Noto Serif TC",serif';
-ctx.fillText(p.r,W-115,225);
-// ── 籤詩直書（4句從右到左，緊湊）──
+ctx.font='22px "Noto Serif TC",serif';
+ctx.fillText(p.r,W-118,235);
+// ── 籤詩直書（4句從右到左）──
 var lines=p.p.split('\n');
-ctx.fillStyle='#2c1810';ctx.font='bold 36px "Noto Serif TC",serif';
+ctx.fillStyle='#2c1810';ctx.font='bold 40px "Noto Serif TC",serif';
 ctx.textAlign='center';
-var poemRightX=W-180;
-var colGap=65;
-var charH=46;
-var poemTopY=110;
+var poemRightX=W-185;
+var colGap=72;
+var charH=48;
+var poemTopY=108;
 for(var li=0;li<lines.length;li++){
 var line=lines[li];
 var lx=poemRightX-li*colGap;
@@ -394,12 +394,12 @@ for(var ci=0;ci<line.length;ci++){
 ctx.fillText(line[ci],lx,poemTopY+ci*charH);
 }
 }
-// ── 五行方位+典故 ──
-var infoY=poemTopY+7*charH+16;
-ctx.fillStyle='rgba(100,70,20,0.5)';ctx.font='italic 17px "Noto Serif TC",serif';
+// ── 五行方位+典故（置中）──
+var infoY=poemTopY+7*charH+18;
+ctx.fillStyle='rgba(100,70,20,0.5)';ctx.font='italic 18px "Noto Serif TC",serif';
 ctx.textAlign='center';
-ctx.fillText(p.t,W/2-40,infoY);
-ctx.fillText('典故：'+p.s,W/2-40,infoY+24);
+ctx.fillText(p.t,W/2,infoY);
+ctx.fillText('典故：'+p.s,W/2,infoY+26);
 // ── 底部品牌金色條 ──
 var brandY=H-48;
 var brandGrad=ctx.createLinearGradient(0,brandY,W,brandY);
