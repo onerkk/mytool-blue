@@ -380,7 +380,7 @@ ctx.fillStyle=rc.c==='var(--c-gold)'?'#c9a84c':rc.c;
 ctx.font='20px "Noto Serif TC",serif';
 ctx.fillText(p.r,W-115,225);
 // ── 籤詩直書（4句從右到左，緊湊）──
-var lines=p.p.split('\\n');
+var lines=p.p.split('\n');
 ctx.fillStyle='#2c1810';ctx.font='bold 36px "Noto Serif TC",serif';
 ctx.textAlign='center';
 var poemRightX=W-180;
