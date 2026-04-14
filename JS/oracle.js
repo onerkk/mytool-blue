@@ -197,7 +197,7 @@ h+='<div class="orc-fade orc-center-phase"><div class="orc-card-info"><div class
 }
 else if(_phase==='allowThrowing'){
 // ★ 一鏡到底：龍紋背景 → 拋杯 → 同畫面換結果圖落地 → 文字淡入
-h+='<div class="orc-dragon-phase" style="background-image:url('+IMG.dragonBg+')"><div class="orc-dragon-overlay"></div>';
+h+='<div class="orc-dragon-phase" style="background-image:url('+IMG.templeBg+')"><div class="orc-dragon-overlay"></div>';
 h+='<div id="orc-jiao-zone" style="position:relative;z-index:2;min-height:220px;display:flex;align-items:center;justify-content:center">';
 h+='<div class="orc-toss-jiao orc-toss-L"><img src="'+IMG.jiaoFlat+'" alt="" class="orc-toss-img"></div>';
 h+='<div class="orc-toss-jiao orc-toss-R"><img src="'+IMG.jiaoFlatR+'" alt="" class="orc-toss-img"></div>';
@@ -217,7 +217,7 @@ else if(_phase==='drawn'){
 h+='<div class="orc-fade"><div class="orc-qiantong-wrap"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img"></div><div class="orc-card-info"><div class="orc-card-label">求得籤詩</div><div class="orc-card-num">第'+CN[_poem.n]+'籤 '+_poem.g+'</div><div class="orc-card-need">您必須擲出 3 次聖筊，方能解籤</div></div><div class="orc-holy-count">'+_holy+' / 3 聖杯</div><button class="orc-btn-primary" onclick="_oracleThrow()">擲 筊</button></div>';
 }
 else if(_phase==='throwing'){
-h+='<div class="orc-dragon-phase" style="background-image:url('+IMG.dragonBg+')"><div class="orc-dragon-overlay"></div>';
+h+='<div class="orc-dragon-phase" style="background-image:url('+IMG.templeBg+')"><div class="orc-dragon-overlay"></div>';
 h+='<div class="orc-card-info" style="position:relative;z-index:2"><div class="orc-card-num" style="font-size:1.1rem;color:#ffd700;text-shadow:0 2px 6px rgba(0,0,0,0.5)">第'+CN[_poem.n]+'籤 '+_poem.g+'</div></div>';
 h+='<div id="orc-jiao-zone" style="position:relative;z-index:2;min-height:220px;display:flex;align-items:center;justify-content:center">';
 h+='<div class="orc-toss-jiao orc-toss-L"><img src="'+IMG.jiaoFlat+'" alt="" class="orc-toss-img"></div>';
@@ -355,8 +355,11 @@ css.textContent='\
 .orc-back{background:none;border:none;color:#c9a84c;font-size:1.1rem;cursor:pointer;padding:.4rem;min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center}\
 .orc-topbar-title{font-size:.9rem;color:#c9a84c;letter-spacing:4px;font-weight:600}\
 .orc-body{position:relative;z-index:1;max-width:420px;margin:0 auto;padding:1.5rem 1rem 3rem;text-align:center}\
-.orc-deity-wrap{width:260px;height:auto;margin:0 auto 1rem;overflow:visible}\
-.orc-deity-img{width:100%;height:auto;object-fit:contain;filter:drop-shadow(0 0 40px rgba(201,168,76,0.3))}\
+.orc-deity-wrap{width:260px;height:auto;margin:0 auto 1rem;overflow:visible;position:relative}\
+.orc-deity-wrap::before{content:"";position:absolute;inset:-20px;background:radial-gradient(circle,rgba(201,168,76,0.25) 0%,rgba(201,168,76,0.08) 40%,transparent 70%);border-radius:50%;animation:orc-deityAura 3s ease-in-out infinite;pointer-events:none}\
+.orc-deity-img{width:100%;height:auto;object-fit:contain;filter:drop-shadow(0 0 30px rgba(201,168,76,0.4)) drop-shadow(0 0 60px rgba(201,168,76,0.15));animation:orc-deityGlow 3s ease-in-out infinite}\
+@keyframes orc-deityAura{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.08);opacity:1}}\
+@keyframes orc-deityGlow{0%,100%{filter:drop-shadow(0 0 30px rgba(201,168,76,0.4)) drop-shadow(0 0 60px rgba(201,168,76,0.15))}50%{filter:drop-shadow(0 0 40px rgba(201,168,76,0.6)) drop-shadow(0 0 80px rgba(201,168,76,0.25))}}\
 .orc-title{font-size:2rem;font-weight:900;letter-spacing:8px;margin:0 0 .3rem;background:linear-gradient(180deg,#f5e6c8 0%,#c9a84c 50%,#8b6914 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}\
 .orc-subtitle{font-size:.78rem;color:#8b7355;letter-spacing:3px;margin:0 0 .8rem}\
 .orc-divider{text-align:center;color:#c9a84c;font-size:.6rem;margin:.8rem 0;opacity:.5}\
@@ -408,8 +411,8 @@ css.textContent='\
 .orc-confirm-badge{display:inline-block;padding:.25rem 1rem;margin-bottom:1rem;background:rgba(201,168,76,0.1);border-radius:20px;font-size:.75rem;color:#c9a84c;letter-spacing:2px}\
 .orc-vcard{border-radius:12px;overflow:hidden;border:3px solid #c9a84c;box-shadow:0 8px 40px rgba(201,168,76,0.15);margin-bottom:.5rem}\
 .orc-vcard-inner{position:relative;overflow:hidden}\
-.orc-vcard-wm{position:absolute;inset:0;background-size:cover;background-position:center bottom;opacity:.15;pointer-events:none}\
-.orc-vcard-content{position:relative;z-index:1;background:linear-gradient(180deg,rgba(253,246,227,0.95) 0%,rgba(245,238,220,0.9) 50%,rgba(237,228,204,0.85) 100%);padding:1.5rem 1rem}\
+.orc-vcard-wm{position:absolute;inset:0;background-size:cover;background-position:center bottom;opacity:.25;pointer-events:none;z-index:0}\
+.orc-vcard-content{position:relative;z-index:1;background:linear-gradient(180deg,rgba(253,246,227,0.82) 0%,rgba(245,238,220,0.7) 50%,rgba(240,232,213,0.6) 100%);padding:1.5rem 1rem}\
 .orc-vcard-header{font-size:.6rem;color:rgba(120,80,30,0.5);letter-spacing:4px;margin-bottom:.8rem;text-align:center}\
 .orc-vcard-body{display:flex;justify-content:center;gap:.5rem;min-height:280px;padding:.5rem 0}\
 .orc-vpoem{display:flex;flex-direction:row-reverse;gap:0;justify-content:center}\
