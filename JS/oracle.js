@@ -195,26 +195,17 @@ else if(_phase==='allowAsk'){
 h+='<div class="orc-fade orc-center-phase"><div class="orc-card-info"><div class="orc-card-label">請示神明</div><div class="orc-card-num" style="font-size:1.1rem">神明是否在位？</div></div><p class="orc-note" style="margin-bottom:1rem">擲出聖筊，方可搖籤筒</p><button class="orc-btn-primary" onclick="_oracleAllowThrow()">擲 筊 請 示</button></div>';
 }
 else if(_phase==='allowThrowing'){
-h+='<div class="orc-fade orc-dragon-phase" style="background-image:url('+IMG.dragonBg+')"><div class="orc-dragon-overlay"></div>';
-h+='<div class="orc-toss-stage" style="position:relative;z-index:2">';
+// ★ 一鏡到底：龍紋背景 → 拋杯 → 同畫面換結果圖落地 → 文字淡入
+h+='<div class="orc-dragon-phase" style="background-image:url('+IMG.dragonBg+')"><div class="orc-dragon-overlay"></div>';
+h+='<div id="orc-jiao-zone" style="position:relative;z-index:2;min-height:220px;display:flex;align-items:center;justify-content:center">';
 h+='<div class="orc-toss-jiao orc-toss-L"><img src="'+IMG.jiaoFlat+'" alt="" class="orc-toss-img"></div>';
 h+='<div class="orc-toss-jiao orc-toss-R"><img src="'+IMG.jiaoFlatR+'" alt="" class="orc-toss-img"></div>';
 h+='</div>';
-h+='<p class="orc-pray-text" style="position:relative;z-index:2;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.6)">擲筊請示中...</p></div>';
-}
-else if(_phase==='allowResult'){
-var alb=_allowResult==='holy'?'聖筊 — 神明在位':_allowResult==='laugh'?'笑筊 — 再請示一次':'陰筊 — 再請示一次';
-var aco=_allowResult==='holy'?'#ffd700':'#e67e22';
-var aJL=_allowResult==='holy'?IMG.jiaoFlat:_allowResult==='laugh'?IMG.jiaoFlat:IMG.jiaoRound;
-var aJR=_allowResult==='holy'?IMG.jiaoRound:_allowResult==='laugh'?IMG.jiaoFlatR:IMG.jiaoRoundR;
-h+='<div class="orc-fade orc-dragon-phase" style="background-image:url('+IMG.dragonBg+')"><div class="orc-dragon-overlay"></div>';
-h+='<div class="orc-result-badge-big" style="border-color:'+aco+'"><span style="color:'+aco+'">'+(_allowResult==='holy'?'聖 筊':'再請示')+'</span></div>';
-h+='<div class="orc-land-stage" style="position:relative;z-index:2"><div class="orc-land-jiao orc-land-drop-L"><img src="'+aJL+'" alt="" class="orc-land-img"></div><div class="orc-land-jiao orc-land-drop-R"><img src="'+aJR+'" alt="" class="orc-land-img"></div></div>';
-h+='<p style="font-size:.95rem;color:'+aco+';margin-bottom:1.2rem;letter-spacing:3px;position:relative;z-index:2;text-shadow:0 2px 6px rgba(0,0,0,0.5)">'+alb+'</p>';
-if(_allowResult==='holy'){h+='<button class="orc-btn-primary" style="position:relative;z-index:2" onclick="_oracleStartShake()">搖 籤 筒</button>';}
-else{h+='<button class="orc-btn-primary" style="position:relative;z-index:2" onclick="_oracleAllowThrow()">再 擲 筊</button>';}
+h+='<p id="orc-throw-label" class="orc-pray-text" style="position:relative;z-index:2;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.6)">擲筊請示中...</p>';
+h+='<div id="orc-throw-ui" style="position:relative;z-index:2;text-align:center;opacity:0;transition:opacity .5s"></div>';
 h+='</div>';
 }
+else if(_phase==='allowResult'){_phase='allowThrowing';_render();return;}
 else if(_phase==='shaking'){
 h+='<div class="orc-fade orc-center-phase"><div class="orc-qiantong-shake-wrap"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img orc-tube-shake"></div><p class="orc-pray-text">搖籤筒中<span class="orc-dots"></span></p><p class="orc-note">靜候神明賜籤</p></div>';
 }
@@ -225,28 +216,17 @@ else if(_phase==='drawn'){
 h+='<div class="orc-fade"><div class="orc-qiantong-wrap"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img"></div><div class="orc-card-info"><div class="orc-card-label">求得籤詩</div><div class="orc-card-num">第'+CN[_poem.n]+'籤 '+_poem.g+'</div><div class="orc-card-need">您必須擲出 3 次聖筊，方能解籤</div></div><div class="orc-holy-count">'+_holy+' / 3 聖杯</div><button class="orc-btn-primary" onclick="_oracleThrow()">擲 筊</button></div>';
 }
 else if(_phase==='throwing'){
-h+='<div class="orc-fade orc-dragon-phase" style="background-image:url('+IMG.dragonBg+')"><div class="orc-dragon-overlay"></div>';
+h+='<div class="orc-dragon-phase" style="background-image:url('+IMG.dragonBg+')"><div class="orc-dragon-overlay"></div>';
 h+='<div class="orc-card-info" style="position:relative;z-index:2"><div class="orc-card-num" style="font-size:1.1rem;color:#ffd700;text-shadow:0 2px 6px rgba(0,0,0,0.5)">第'+CN[_poem.n]+'籤 '+_poem.g+'</div></div>';
-h+='<div class="orc-toss-stage" style="position:relative;z-index:2">';
+h+='<div id="orc-jiao-zone" style="position:relative;z-index:2;min-height:220px;display:flex;align-items:center;justify-content:center">';
 h+='<div class="orc-toss-jiao orc-toss-L"><img src="'+IMG.jiaoFlat+'" alt="" class="orc-toss-img"></div>';
 h+='<div class="orc-toss-jiao orc-toss-R"><img src="'+IMG.jiaoFlatR+'" alt="" class="orc-toss-img"></div>';
 h+='</div>';
-h+='<p class="orc-pray-text" style="position:relative;z-index:2;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.6)">擲筊中...</p></div>';
-}
-else if(_phase==='result'){
-var lb=_throwResult==='holy'?'聖筊':_throwResult==='laugh'?'笑筊':'陰筊';
-var co=_throwResult==='holy'?'#ffd700':_throwResult==='laugh'?'#e67e22':'#7f8c8d';
-var rJL=_throwResult==='holy'?IMG.jiaoFlat:_throwResult==='laugh'?IMG.jiaoFlat:IMG.jiaoRound;
-var rJR=_throwResult==='holy'?IMG.jiaoRound:_throwResult==='laugh'?IMG.jiaoFlatR:IMG.jiaoRoundR;
-h+='<div class="orc-fade orc-dragon-phase" style="background-image:url('+IMG.dragonBg+')"><div class="orc-dragon-overlay"></div>';
-h+='<div class="orc-card-info" style="position:relative;z-index:2"><div class="orc-card-num" style="font-size:1.1rem;color:#ffd700;text-shadow:0 2px 6px rgba(0,0,0,0.5)">第'+CN[_poem.n]+'籤 '+_poem.g+'</div></div>';
-h+='<div class="orc-result-badge-big" style="border-color:'+co+'"><span style="color:'+co+'">'+lb+'</span></div>';
-h+='<div class="orc-land-stage" style="position:relative;z-index:2"><div class="orc-land-jiao orc-land-drop-L"><img src="'+rJL+'" alt="" class="orc-land-img"></div><div class="orc-land-jiao orc-land-drop-R"><img src="'+rJR+'" alt="" class="orc-land-img"></div></div>';
-h+='<div class="orc-holy-count" style="position:relative;z-index:2;color:#ffd700;text-shadow:0 2px 4px rgba(0,0,0,0.5)">'+_holy+' / 3 聖杯</div>';
-if(_throwResult==='holy'){h+='<button class="orc-btn-primary" style="position:relative;z-index:2" onclick="_oracleContinue()">繼續擲筊</button>';}
-else{var msg=_throwResult==='laugh'?'笑筊 — 神明笑而不答，請重新抽籤':'陰筊 — 神明未允，請重新抽籤';h+='<p style="font-size:.85rem;color:#fca5a5;margin-bottom:1rem;position:relative;z-index:2">'+msg+'</p><button class="orc-btn-outline" style="position:relative;z-index:2;color:#ffd700;border-color:#ffd700" onclick="_oracleRedraw()">重新抽籤</button>';}
+h+='<p id="orc-throw-label" class="orc-pray-text" style="position:relative;z-index:2;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.6)">擲筊中...</p>';
+h+='<div id="orc-throw-ui" style="position:relative;z-index:2;text-align:center;opacity:0;transition:opacity .5s"></div>';
 h+='</div>';
 }
+else if(_phase==='result'){_phase='throwing';_render();return;}
 else if(_phase==='poem'){
 var rc=_rc(_poem.r),lines=_poem.p.split('\n');
 h+='<div class="orc-fade">';
@@ -285,16 +265,56 @@ window._oracleClose=function(){var w=_getWrap();w.style.display='none';document.
 // ★ v6c: intro → guide → pray → allowAsk → allowThrow → shake → rise → drawn
 window._oracleShowGuide=function(){_phase='guide';_render()};
 window._oracleStartPray=function(){_phase='praying';_holy=0;_throwResult=null;_allowResult=null;_render();var c=0;_prayTimer=setInterval(function(){c++;var d=_getWrap().querySelector('.orc-dots');if(d){var s='';for(var i=0;i<(c%4);i++)s+='．';d.textContent=s}if(c>=8){clearInterval(_prayTimer);_prayTimer=null;_phase='allowAsk';_render()}},450)};
-window._oracleAllowThrow=function(){_phase='allowThrowing';_render();_playThrow();setTimeout(function(){var r=Math.random();if(r<0.5)_allowResult='holy';else if(r<0.75)_allowResult='laugh';else _allowResult='dark';if(_allowResult==='holy')_playHoly();_phase='allowResult';_render()},1800)};
+window._oracleAllowThrow=function(){
+_phase='allowThrowing';_render();_playThrow();
+// Step 1: toss animation plays via CSS (1.2s)
+// Step 2: at 1.2s, swap jiao zone to result images + show label
+setTimeout(function(){
+var r=Math.random();
+if(r<0.5)_allowResult='holy';else if(r<0.75)_allowResult='laugh';else _allowResult='dark';
+if(_allowResult==='holy')_playHoly();
+var aJL=_allowResult==='holy'?IMG.jiaoFlat:_allowResult==='laugh'?IMG.jiaoFlat:IMG.jiaoRound;
+var aJR=_allowResult==='holy'?IMG.jiaoRound:_allowResult==='laugh'?IMG.jiaoFlatR:IMG.jiaoRoundR;
+var zone=document.getElementById('orc-jiao-zone');
+if(zone){zone.innerHTML='<div class="orc-land-jiao orc-land-drop-L"><img src="'+aJL+'" alt="" class="orc-land-img"></div><div class="orc-land-jiao orc-land-drop-R"><img src="'+aJR+'" alt="" class="orc-land-img"></div>';}
+var lb=document.getElementById('orc-throw-label');
+var alb=_allowResult==='holy'?'聖筊 — 神明在位':_allowResult==='laugh'?'笑筊 — 再請示一次':'陰筊 — 再請示一次';
+var aco=_allowResult==='holy'?'#ffd700':'#e67e22';
+if(lb){lb.textContent=alb;lb.style.color=aco;}
+// Step 3: at 1.8s, fade in button
+setTimeout(function(){
+var ui=document.getElementById('orc-throw-ui');
+if(ui){
+if(_allowResult==='holy'){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleStartShake()">搖 籤 筒</button>';}
+else{ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleAllowThrow()">再 擲 筊</button>';}
+ui.style.opacity='1';}
+},600);
+},1200);
+};
 window._oracleStartShake=function(){_poem=P[Math.floor(Math.random()*60)];_phase='shaking';_render();_playShake();var sc=0;_prayTimer=setInterval(function(){sc++;var d2=_getWrap().querySelector('.orc-dots');if(d2){var s2='';for(var j=0;j<(sc%4);j++)s2+='．';d2.textContent=s2}if(sc>=5){clearInterval(_prayTimer);_prayTimer=null;_phase='rising';_render();setTimeout(function(){_phase='drawn';_render()},2200)}},400)};
 window._oracleThrow=function(){_phase='throwing';_render();_playThrow();
 setTimeout(function(){
 var r=Math.random();
 if(r<0.5)_throwResult='holy';else if(r<0.75)_throwResult='laugh';else _throwResult='dark';
-if(_throwResult==='holy'){_playHoly();_holy++;if(_holy>=3){_phase='poem';}else{_phase='result';}}
-else{_holy=0;_phase='result';}
-_render();
-},1800);};
+if(_throwResult==='holy'){_playHoly();_holy++;} else{_holy=0;}
+var rJL=_throwResult==='holy'?IMG.jiaoFlat:_throwResult==='laugh'?IMG.jiaoFlat:IMG.jiaoRound;
+var rJR=_throwResult==='holy'?IMG.jiaoRound:_throwResult==='laugh'?IMG.jiaoFlatR:IMG.jiaoRoundR;
+var zone=document.getElementById('orc-jiao-zone');
+if(zone){zone.innerHTML='<div class="orc-land-jiao orc-land-drop-L"><img src="'+rJL+'" alt="" class="orc-land-img"></div><div class="orc-land-jiao orc-land-drop-R"><img src="'+rJR+'" alt="" class="orc-land-img"></div>';}
+var lb=document.getElementById('orc-throw-label');
+var txt=_throwResult==='holy'?'聖筊':_throwResult==='laugh'?'笑筊':'陰筊';
+var co=_throwResult==='holy'?'#ffd700':_throwResult==='laugh'?'#e67e22':'#7f8c8d';
+if(lb){lb.innerHTML=txt+' <span style="font-size:.8rem;opacity:.7">'+_holy+'/3 聖杯</span>';lb.style.color=co;}
+setTimeout(function(){
+var ui=document.getElementById('orc-throw-ui');
+if(ui){
+if(_throwResult==='holy'&&_holy>=3){ui.innerHTML='<button class="orc-btn-primary" onclick="_phase=\'poem\';_render()">查 看 籤 詩</button>';}
+else if(_throwResult==='holy'){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleContinue()">繼續擲筊</button>';}
+else{var msg=_throwResult==='laugh'?'神明笑而不答，請重新抽籤':'神明未允，請重新抽籤';
+ui.innerHTML='<p style="font-size:.82rem;color:#fca5a5;margin-bottom:.8rem">'+msg+'</p><button class="orc-btn-outline" style="color:#ffd700;border-color:#ffd700" onclick="_oracleRedraw()">重新抽籤</button>';}
+ui.style.opacity='1';}
+},600);
+},1200);};
 window._oracleContinue=function(){_throwResult=null;_phase='drawn';_render()};
 window._oracleRedraw=function(){_holy=0;_throwResult=null;_oracleStartShake()};
 window._oracleReset=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_render()};
