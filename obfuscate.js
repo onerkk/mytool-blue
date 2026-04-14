@@ -8,7 +8,7 @@ const JS_FILES = [
   'JS/meihua_output_layer.js','JS/meihua_upgrade.js','JS/renderMeihua_upgrade.js',
   'JS/bazi_upgrade.js','JS/jyotish_full_upgrade.js','JS/meihua_upgrade2.js',
   'JS/name_upgrade.js','JS/render_upgrade.js','JS/tarot_upgrade.js',
-  'JS/western_upgrade.js','JS/api_upgrade.js',
+  'JS/western_upgrade.js','JS/api_upgrade.js','JS/oracle.js',
   'JS/solar-location.js','JS/ui.js',
 ];
 const SHIELD_TARGET = 'JS/ui.js';

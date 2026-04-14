@@ -1882,6 +1882,22 @@ details[open] > summary > .fa-chevron-right {
 }
 .jy-qk-icon{font-size:.78rem}
 
+/* 靜月靈籤入口 */
+.jy-home-oracle{margin-top:1rem;width:100%;max-width:300px}
+.jy-oracle-btn{
+  width:100%;display:flex;align-items:center;gap:.7rem;
+  padding:.7rem 1rem;border-radius:12px;cursor:pointer;
+  background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(201,168,76,0.03));
+  border:1px solid rgba(201,168,76,0.18);
+  transition:all .25s;font-family:inherit;text-align:left
+}
+.jy-oracle-btn:hover{border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.1);transform:translateY(-1px)}
+.jy-oracle-icon{font-size:1.4rem;flex-shrink:0}
+.jy-oracle-text{flex:1;display:flex;flex-direction:column;gap:.15rem}
+.jy-oracle-text strong{font-size:.82rem;color:var(--c-gold);letter-spacing:2px}
+.jy-oracle-text small{font-size:.62rem;color:var(--c-text-muted);letter-spacing:1px}
+.jy-oracle-arrow{color:var(--c-text-muted);font-size:.65rem;flex-shrink:0}
+
 /* 每日一牌 */
 .jy-home-daily{
   margin-top:1.2rem;text-align:center;
