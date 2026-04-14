@@ -285,30 +285,16 @@ window._oracleClose=function(){var w=_getWrap();w.style.display='none';document.
 // ★ v6c: intro → guide → pray → allowAsk → allowThrow → shake → rise → drawn
 window._oracleShowGuide=function(){_phase='guide';_render()};
 window._oracleStartPray=function(){_phase='praying';_holy=0;_throwResult=null;_allowResult=null;_render();var c=0;_prayTimer=setInterval(function(){c++;var d=_getWrap().querySelector('.orc-dots');if(d){var s='';for(var i=0;i<(c%4);i++)s+='．';d.textContent=s}if(c>=8){clearInterval(_prayTimer);_prayTimer=null;_phase='allowAsk';_render()}},450)};
-window._oracleAllowThrow=function(){_phase='allowThrowing';_render();_playThrow();setTimeout(function(){var r=Math.random();if(r<0.5)_allowResult='holy';else if(r<0.75)_allowResult='laugh';else _allowResult='dark';var stage=_getWrap().querySelector('.orc-throw-stage');if(stage){var j1=_allowResult==='dark'?'round':'flat';var j2=_allowResult==='holy'?'round':_allowResult==='laugh'?'flat':'round';var imgs=stage.querySelectorAll('.orc-jiao-img');if(imgs[0])imgs[0].src=(j1==='flat'?IMG.jiaoFlat:IMG.jiaoRound);if(imgs[1])imgs[1].src=(j2==='flat'?IMG.jiaoFlat:IMG.jiaoRound);var divs=stage.querySelectorAll('.orc-throw-jiao');if(divs[0])divs[0].className='orc-throw-jiao orc-land-L';if(divs[1])divs[1].className='orc-throw-jiao orc-land-R';}if(_allowResult==='holy')_playHoly();setTimeout(function(){_phase='allowResult';_render()},1000)},1200)};
+window._oracleAllowThrow=function(){_phase='allowThrowing';_render();_playThrow();setTimeout(function(){var r=Math.random();if(r<0.5)_allowResult='holy';else if(r<0.75)_allowResult='laugh';else _allowResult='dark';if(_allowResult==='holy')_playHoly();_phase='allowResult';_render()},1800)};
 window._oracleStartShake=function(){_poem=P[Math.floor(Math.random()*60)];_phase='shaking';_render();_playShake();var sc=0;_prayTimer=setInterval(function(){sc++;var d2=_getWrap().querySelector('.orc-dots');if(d2){var s2='';for(var j=0;j<(sc%4);j++)s2+='．';d2.textContent=s2}if(sc>=5){clearInterval(_prayTimer);_prayTimer=null;_phase='rising';_render();setTimeout(function(){_phase='drawn';_render()},2200)}},400)};
 window._oracleThrow=function(){_phase='throwing';_render();_playThrow();
 setTimeout(function(){
 var r=Math.random();
 if(r<0.5)_throwResult='holy';else if(r<0.75)_throwResult='laugh';else _throwResult='dark';
-var stage=_getWrap().querySelector('.orc-throw-stage');
-if(stage){
-var j1=_throwResult==='dark'?'round':'flat';
-var j2=_throwResult==='holy'?'round':_throwResult==='laugh'?'flat':'round';
-var imgs=stage.querySelectorAll('.orc-jiao-img');
-if(imgs[0])imgs[0].src=(j1==='flat'?IMG.jiaoFlat:IMG.jiaoRound);
-if(imgs[1])imgs[1].src=(j2==='flat'?IMG.jiaoFlat:IMG.jiaoRound);
-var divs=stage.querySelectorAll('.orc-throw-jiao');
-if(divs[0]){divs[0].className='orc-throw-jiao orc-land-L';}
-if(divs[1]){divs[1].className='orc-throw-jiao orc-land-R';}
-}
-if(_throwResult==='holy'){_playHoly();}
-setTimeout(function(){
-if(_throwResult==='holy'){_holy++;if(_holy>=3){_phase='poem';}else{_phase='result';}}
+if(_throwResult==='holy'){_playHoly();_holy++;if(_holy>=3){_phase='poem';}else{_phase='result';}}
 else{_holy=0;_phase='result';}
 _render();
-},1000);
-},1200);};
+},1800);};
 window._oracleContinue=function(){_throwResult=null;_phase='drawn';_render()};
 window._oracleRedraw=function(){_holy=0;_throwResult=null;_oracleStartShake()};
 window._oracleReset=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_render()};
