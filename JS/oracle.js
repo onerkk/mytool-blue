@@ -19,6 +19,7 @@ var IMG = {
   jiaoRound:'img/oracle/oracle-jiao-round.png',
   jiaoRoundR:'img/oracle/oracle-jiao-round-r.png',
   dragonBg:'img/oracle/oracle-dragon-bg.jpg',
+  cardWm:'img/oracle/oracle-card-wm.jpg',
   templeBg:'img/oracle/oracle-temple-bg.jpg'
 };
 
@@ -231,9 +232,11 @@ else if(_phase==='poem'){
 var rc=_rc(_poem.r),lines=_poem.p.split('\n');
 h+='<div class="orc-fade">';
 h+='<div class="orc-confirm-badge">✦ 三聖杯確認 ✦</div>';
-// ★ v6 直書籤詩卡
-h+='<div class="orc-vcard"><div class="orc-vcard-inner">';
-h+='<div class="orc-vcard-header">靜月之光 所賜靈籤</div>';
+// ★ v7 籤詩卡：浮水印底圖 + 直書 + 分享
+h+='<div id="orc-share-card" class="orc-vcard"><div class="orc-vcard-inner">';
+h+='<div class="orc-vcard-wm" style="background-image:url('+IMG.cardWm+')"></div>';
+h+='<div class="orc-vcard-content">';
+h+='<div class="orc-vcard-header">靜月之光 ・ 六十甲子靈籤</div>';
 h+='<div class="orc-vcard-body">';
 h+='<div class="orc-vpoem">';
 for(var i=0;i<lines.length;i++){h+='<div class="orc-vpoem-line orc-poem-line" style="animation-delay:'+(0.4+i*0.2)+'s">'+lines[i]+'</div>';}
@@ -241,8 +244,11 @@ h+='</div>';
 h+='<div class="orc-vcard-meta"><div class="orc-vcard-num">第'+CN[_poem.n]+'籤</div><div class="orc-vcard-gz">'+_poem.g+'</div><div class="orc-rank-badge" style="color:'+rc.c+';background:'+rc.bg+';border-color:'+rc.bd+'">'+_poem.r+'</div></div>';
 h+='</div>';
 h+='<div class="orc-vcard-footer">'+_poem.t+'<br>典故：'+_poem.s+'</div>';
-h+='</div></div>';
-// ★ v6b 鎮海宮風格解說：紅底黑字・藍邊條標題・段落式
+h+='<div class="orc-vcard-brand">jingyue.uk ・ 靜月之光</div>';
+h+='</div></div></div>';
+// 分享按鈕
+h+='<div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem"><button class="orc-btn-share" onclick="_oracleShare()"><i class="fas fa-share-alt"></i> 分享籤詩</button><button class="orc-btn-share" onclick="_oracleDownload()"><i class="fas fa-download"></i> 儲存圖片</button></div>';
+// 解說區
 var dd=D[_poem.n];if(dd){
 h+='<div class="orc-jh-section">';
 h+='<div class="orc-jh-heading">解說</div>';
@@ -315,8 +321,29 @@ ui.innerHTML='<p style="font-size:.82rem;color:#fca5a5;margin-bottom:.8rem">'+ms
 ui.style.opacity='1';}
 },600);
 },1200);};
-window._oracleContinue=function(){_throwResult=null;_phase='drawn';_render()};
+window._oracleContinue=function(){_throwResult=null;_oracleThrow()};
 window._oracleViewPoem=function(){_phase='poem';_render()};
+window._oracleShare=function(){
+var card=document.getElementById('orc-share-card');
+if(!card)return;
+import('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js').catch(function(){}).then(function(){
+if(typeof html2canvas==='undefined'){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onload=function(){_doShare(card)};document.head.appendChild(s)}else{_doShare(card)}
+})};
+function _doShare(card){
+html2canvas(card,{useCORS:true,scale:2,backgroundColor:null}).then(function(cv){
+cv.toBlob(function(blob){
+if(navigator.share&&navigator.canShare){
+var f=new File([blob],'jingyue-oracle.png',{type:'image/png'});
+if(navigator.canShare({files:[f]})){navigator.share({title:'靜月靈籤',text:'靜月之光 ・ 六十甲子靈籤',files:[f]}).catch(function(){});}
+else{_dlBlob(blob)}
+}else{_dlBlob(blob)}
+},'image/png')})};
+window._oracleDownload=function(){
+var card=document.getElementById('orc-share-card');if(!card)return;
+if(typeof html2canvas==='undefined'){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onload=function(){_doDl(card)};document.head.appendChild(s)}else{_doDl(card)}
+};
+function _doDl(card){html2canvas(card,{useCORS:true,scale:2,backgroundColor:null}).then(function(cv){_dlBlob(cv.toDataURL('image/png'))})}
+function _dlBlob(d){var a=document.createElement('a');a.href=typeof d==='string'?d:URL.createObjectURL(d);a.download='jingyue-oracle.png';a.click()}
 window._oracleRedraw=function(){_holy=0;_throwResult=null;_oracleStartShake()};
 window._oracleReset=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_render()};
 
@@ -379,8 +406,10 @@ css.textContent='\
 @keyframes orc-landL{0%{transform:translateY(-60px) rotate(-20deg);opacity:0}30%{transform:translateY(8px) rotate(5deg);opacity:1}60%{transform:translateY(-4px) rotate(-2deg);opacity:1}100%{transform:translateY(0) rotate(-8deg);opacity:1}}\
 @keyframes orc-landR{0%{transform:translateY(-50px) rotate(20deg);opacity:0}30%{transform:translateY(8px) rotate(-5deg);opacity:1}60%{transform:translateY(-4px) rotate(2deg);opacity:1}100%{transform:translateY(0) rotate(10deg);opacity:1}}\
 .orc-confirm-badge{display:inline-block;padding:.25rem 1rem;margin-bottom:1rem;background:rgba(201,168,76,0.1);border-radius:20px;font-size:.75rem;color:#c9a84c;letter-spacing:2px}\
-.orc-vcard{border-radius:4px;overflow:hidden;border:3px solid #c9a84c;box-shadow:0 8px 40px rgba(201,168,76,0.15),inset 0 0 60px rgba(201,168,76,0.05)}\
-.orc-vcard-inner{background:linear-gradient(135deg,#fdf6e3 0%,#f5eedc 50%,#ede4cc 100%);padding:1.5rem 1rem}\
+.orc-vcard{border-radius:12px;overflow:hidden;border:3px solid #c9a84c;box-shadow:0 8px 40px rgba(201,168,76,0.15);margin-bottom:.5rem}\
+.orc-vcard-inner{position:relative;overflow:hidden}\
+.orc-vcard-wm{position:absolute;inset:0;background-size:cover;background-position:center bottom;opacity:.15;pointer-events:none}\
+.orc-vcard-content{position:relative;z-index:1;background:linear-gradient(180deg,rgba(253,246,227,0.95) 0%,rgba(245,238,220,0.9) 50%,rgba(237,228,204,0.85) 100%);padding:1.5rem 1rem}\
 .orc-vcard-header{font-size:.6rem;color:rgba(120,80,30,0.5);letter-spacing:4px;margin-bottom:.8rem;text-align:center}\
 .orc-vcard-body{display:flex;justify-content:center;gap:.5rem;min-height:280px;padding:.5rem 0}\
 .orc-vpoem{display:flex;flex-direction:row-reverse;gap:0;justify-content:center}\
@@ -390,6 +419,9 @@ css.textContent='\
 .orc-vcard-gz{font-size:.85rem;color:#6b5530;letter-spacing:3px}\
 .orc-rank-badge{display:inline-block;padding:.2rem .4rem;border:1px solid;border-radius:4px;font-size:.7rem;letter-spacing:2px;writing-mode:horizontal-tb}\
 .orc-vcard-footer{text-align:center;font-size:.68rem;color:rgba(120,80,30,0.5);margin-top:.6rem;line-height:1.8;border-top:1px solid rgba(201,168,76,0.2);padding-top:.5rem}\
+.orc-vcard-brand{text-align:center;font-size:.55rem;color:rgba(139,105,20,0.35);letter-spacing:3px;margin-top:.8rem;padding-top:.4rem;border-top:1px solid rgba(201,168,76,0.1)}\
+.orc-btn-share{background:rgba(201,168,76,0.15);color:#c9a84c;border:1px solid rgba(201,168,76,0.3);padding:.6rem 1.2rem;border-radius:999px;font-size:.82rem;letter-spacing:2px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.4rem;transition:all .25s}\
+.orc-btn-share:hover{background:rgba(201,168,76,0.25)}\
 .orc-jh-section{margin-top:1rem;background:#8b1a1a;border-radius:10px;padding:1rem 1rem 1.2rem;text-align:left}\
 .orc-jh-heading{font-size:1.1rem;font-weight:900;color:#fff;padding-left:.6rem;border-left:4px solid #3b82f6;margin-bottom:.6rem;line-height:1.4}\
 .orc-jh-text{font-size:.82rem;line-height:1.9;color:rgba(255,255,255,0.92);margin-bottom:.5rem}\
@@ -426,8 +458,8 @@ css.textContent='\
 .orc-result-badge-big{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;padding:.6rem 1.6rem;border:2px solid;border-radius:12px;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);margin-bottom:.8rem}\
 .orc-result-badge-big span{font-size:1.8rem;font-weight:900;letter-spacing:6px;text-shadow:0 2px 8px rgba(0,0,0,0.4)}\
 .orc-incense-wrap{display:flex;justify-content:center;margin-bottom:1rem}\
-.orc-incense-img{width:180px;height:auto;animation:orc-incenseFloat 3s ease-in-out infinite}\
-@keyframes orc-incenseFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}\
+.orc-incense-img{width:180px;height:auto;animation:orc-incensePulse 3s ease-in-out infinite}\
+@keyframes orc-incensePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}\
 ';
 document.head.appendChild(css);
 console.log('[Oracle] 靜月靈籤 v6c loaded — 求籤須知捲軸+直書籤詩卡+紅底金字解說+搖筒籤升起動畫+廟宇背景');
