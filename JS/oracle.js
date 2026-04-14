@@ -308,7 +308,7 @@ if(lb){lb.innerHTML=txt+' <span style="font-size:.8rem;opacity:.7">'+_holy+'/3 �
 setTimeout(function(){
 var ui=document.getElementById('orc-throw-ui');
 if(ui){
-if(_throwResult==='holy'&&_holy>=3){ui.innerHTML='<button class="orc-btn-primary" onclick="_phase=\'poem\';_render()">查 看 籤 詩</button>';}
+if(_throwResult==='holy'&&_holy>=3){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleViewPoem()">查 看 籤 詩</button>';}
 else if(_throwResult==='holy'){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleContinue()">繼續擲筊</button>';}
 else{var msg=_throwResult==='laugh'?'神明笑而不答，請重新抽籤':'神明未允，請重新抽籤';
 ui.innerHTML='<p style="font-size:.82rem;color:#fca5a5;margin-bottom:.8rem">'+msg+'</p><button class="orc-btn-outline" style="color:#ffd700;border-color:#ffd700" onclick="_oracleRedraw()">重新抽籤</button>';}
@@ -316,6 +316,7 @@ ui.style.opacity='1';}
 },600);
 },1200);};
 window._oracleContinue=function(){_throwResult=null;_phase='drawn';_render()};
+window._oracleViewPoem=function(){_phase='poem';_render()};
 window._oracleRedraw=function(){_holy=0;_throwResult=null;_oracleStartShake()};
 window._oracleReset=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_render()};
 
@@ -413,15 +414,15 @@ css.textContent='\
 .orc-toss-stage{display:flex;justify-content:center;gap:1.5rem;margin:1.5rem 0;min-height:180px;align-items:flex-end}\
 .orc-toss-jiao{width:120px}\
 .orc-toss-img{width:100%;height:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5))}\
-.orc-toss-L{animation:orc-tossUp 1.2s ease-in-out}\
-.orc-toss-R{animation:orc-tossUp 1.2s ease-in-out .1s}\
+.orc-toss-L{animation:orc-tossUp 1.1s ease-in-out both}\
+.orc-toss-R{animation:orc-tossUp 1.1s ease-in-out .08s both}\
 .orc-land-stage{display:flex;justify-content:center;gap:2rem;margin:1rem 0;min-height:160px;align-items:center}\
 .orc-land-jiao{width:140px}\
 .orc-land-img{width:100%;height:auto;filter:drop-shadow(0 6px 16px rgba(0,0,0,0.5))}\
 .orc-land-drop-L{animation:orc-landDrop .6s cubic-bezier(0.34,1.56,0.64,1) both}\
 .orc-land-drop-R{animation:orc-landDrop .6s cubic-bezier(0.34,1.56,0.64,1) .15s both}\
-@keyframes orc-tossUp{0%{transform:translateY(0) rotate(0);opacity:1}30%{transform:translateY(-160px) rotate(-180deg);opacity:1}55%{transform:translateY(-200px) rotate(-360deg);opacity:.9}75%{transform:translateY(-80px) rotate(-500deg);opacity:.6}100%{transform:translateY(40px) rotate(-720deg);opacity:0}}\
-@keyframes orc-landDrop{0%{transform:translateY(-80px) scale(0.7);opacity:0}50%{transform:translateY(8px) scale(1.05);opacity:1}70%{transform:translateY(-4px) scale(0.98);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}\
+@keyframes orc-tossUp{0%{transform:translateY(0) rotate(0) scale(1)}25%{transform:translateY(-180px) rotate(-180deg) scale(.85)}50%{transform:translateY(-220px) rotate(-360deg) scale(.75)}75%{transform:translateY(-100px) rotate(-540deg) scale(.85)}100%{transform:translateY(0) rotate(-720deg) scale(1)}}\
+@keyframes orc-landDrop{0%{transform:scale(0.85);opacity:0.7}40%{transform:scale(1.06);opacity:1}70%{transform:scale(0.97)}100%{transform:scale(1);opacity:1}}\
 .orc-result-badge-big{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;padding:.6rem 1.6rem;border:2px solid;border-radius:12px;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);margin-bottom:.8rem}\
 .orc-result-badge-big span{font-size:1.8rem;font-weight:900;letter-spacing:6px;text-shadow:0 2px 8px rgba(0,0,0,0.4)}\
 .orc-incense-wrap{display:flex;justify-content:center;margin-bottom:1rem}\
