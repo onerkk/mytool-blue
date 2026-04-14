@@ -331,89 +331,87 @@ window._oracleViewPoem=function(){_phase='poem';_render()};
 // ★ v9 Canvas API 繪製分享圖 — 長條書籤比例
 function _drawShareCard(callback){
 var p=_poem;if(!p)return;
-var W=750,H=1334; // 書籤比例 ≈ 9:16
+var W=750,H=1200;
 var cv=document.createElement('canvas');cv.width=W;cv.height=H;
 var ctx=cv.getContext('2d');
-// 載入浮水印圖
 var wmImg=new Image();wmImg.crossOrigin='anonymous';
 wmImg.onload=function(){
 // ── 背景 ──
 ctx.fillStyle='#fdf6e3';ctx.fillRect(0,0,W,H);
+// ── 女神浮水印（佔下半 60%，彩色，上方淡出融合）──
+var wmH=H*0.65;var wmY=H-wmH-50;
+var wmAspect=wmImg.width/wmImg.height;
+var drawW=W-40,drawH=drawW/wmAspect;
+if(drawH<wmH)drawH=wmH;
+var drawX=(W-drawW)/2;
+ctx.save();ctx.globalAlpha=0.85;
+ctx.drawImage(wmImg,drawX,wmY,drawW,drawH);
+ctx.restore();
+// 上方淡出漸層（讓女神頭部自然融入背景）
+var fadeH=220;
+var grad=ctx.createLinearGradient(0,wmY,0,wmY+fadeH);
+grad.addColorStop(0,'#fdf6e3');grad.addColorStop(0.6,'rgba(253,246,227,0.7)');grad.addColorStop(1,'rgba(253,246,227,0)');
+ctx.fillStyle=grad;ctx.fillRect(0,wmY,W,fadeH);
 // ── 金色外框 ──
 ctx.strokeStyle='#c9a84c';ctx.lineWidth=8;
-ctx.strokeRect(12,12,W-24,H-24);
-// 內框
-ctx.strokeStyle='rgba(201,168,76,0.4)';ctx.lineWidth=1.5;
-ctx.strokeRect(24,24,W-48,H-48);
+ctx.strokeRect(10,10,W-20,H-20);
+ctx.strokeStyle='rgba(201,168,76,0.35)';ctx.lineWidth=1.5;
+ctx.strokeRect(22,22,W-44,H-44);
 // ── 頂部標題 ──
-ctx.fillStyle='rgba(139,105,20,0.45)';
-ctx.font='22px "Noto Serif TC",serif';ctx.textAlign='center';
-ctx.fillText('靜月之光 ・ 六十甲子靈籤',W/2,70);
-// ── 分隔線 ──
-ctx.strokeStyle='rgba(201,168,76,0.3)';ctx.lineWidth=1;
-ctx.beginPath();ctx.moveTo(60,88);ctx.lineTo(W-60,88);ctx.stroke();
+ctx.fillStyle='rgba(139,105,20,0.5)';
+ctx.font='21px "Noto Serif TC",serif';ctx.textAlign='center';
+ctx.fillText('靜月之光 ・ 六十甲子靈籤',W/2,58);
+// 分隔線
+ctx.strokeStyle='rgba(201,168,76,0.25)';ctx.lineWidth=1;
+ctx.beginPath();ctx.moveTo(50,74);ctx.lineTo(W-50,74);ctx.stroke();
 // ── 右側：籤號直書 ──
 var numText='第'+CN[p.n]+'籤';
-ctx.fillStyle='#c9a84c';ctx.font='bold 52px "Noto Serif TC",serif';
+ctx.fillStyle='#c9a84c';ctx.font='bold 44px "Noto Serif TC",serif';
 ctx.textAlign='center';
 for(var ni=0;ni<numText.length;ni++){
-ctx.fillText(numText[ni],W-70,160+ni*62);
+ctx.fillText(numText[ni],W-60,130+ni*52);
 }
-// 干支
-ctx.fillStyle='#6b5530';ctx.font='30px "Noto Serif TC",serif';
-ctx.fillText(p.g[0],W-130,200);
-ctx.fillText(p.g[1],W-130,240);
-// 等級徽章
+// 干支+等級
+ctx.fillStyle='#6b5530';ctx.font='26px "Noto Serif TC",serif';
+ctx.fillText(p.g[0],W-120,170);
+ctx.fillText(p.g[1],W-120,204);
 var rc=_rc(p.r);
 ctx.fillStyle=rc.c==='var(--c-gold)'?'#c9a84c':rc.c;
-ctx.font='24px "Noto Serif TC",serif';
-ctx.fillText(p.r,W-130,300);
-// ── 籤詩直書（從右到左）──
+ctx.font='22px "Noto Serif TC",serif';
+ctx.fillText(p.r,W-120,250);
+// ── 籤詩直書（4句從右到左，緊湊排列）──
 var lines=p.p.split('\\n');
-ctx.fillStyle='#2c1810';ctx.font='bold 46px "Noto Serif TC",serif';
+ctx.fillStyle='#2c1810';ctx.font='bold 40px "Noto Serif TC",serif';
 ctx.textAlign='center';
-var poemStartX=W-210;
-var poemGap=80;
+var poemRightX=W-190;
+var colGap=72;
+var charH=50;
+var poemTopY=130;
 for(var li=0;li<lines.length;li++){
 var line=lines[li];
-var lx=poemStartX-li*poemGap;
+var lx=poemRightX-li*colGap;
 for(var ci=0;ci<line.length;ci++){
-ctx.fillText(line[ci],lx,170+ci*62);
+ctx.fillText(line[ci],lx,poemTopY+ci*charH);
 }
 }
-// ── 五行方位+典故 ──
-ctx.fillStyle='rgba(139,105,20,0.5)';ctx.font='20px "Noto Serif TC",serif';
+// ── 五行方位+典故（詩句下方）──
+var infoY=poemTopY+7*charH+20;
+ctx.fillStyle='rgba(100,70,20,0.5)';ctx.font='italic 18px "Noto Serif TC",serif';
 ctx.textAlign='center';
-ctx.fillText(p.t,W/2,H*0.52);
-ctx.fillText('典故：'+p.s,W/2,H*0.52+30);
-// ── 浮水印圖 ──
-var wmY=H*0.55;
-var wmH=H-wmY-70;
-var wmW=W-48;
-// 先畫漸層遮罩讓圖跟上方融合
-ctx.save();
-ctx.globalAlpha=0.6;
-ctx.drawImage(wmImg,24,wmY,wmW,wmH);
-ctx.restore();
-// 上方淡出
-var grad=ctx.createLinearGradient(0,wmY,0,wmY+80);
-grad.addColorStop(0,'#fdf6e3');grad.addColorStop(1,'rgba(253,246,227,0)');
-ctx.fillStyle=grad;ctx.fillRect(24,wmY,wmW,80);
+ctx.fillText(p.t,W/2-30,infoY);
+ctx.fillText('典故：'+p.s,W/2-30,infoY+28);
 // ── 底部品牌金色條 ──
-var brandY=H-58;
+var brandY=H-48;
 var brandGrad=ctx.createLinearGradient(0,brandY,W,brandY);
 brandGrad.addColorStop(0,'#c9a84c');brandGrad.addColorStop(1,'#8b6914');
-ctx.fillStyle=brandGrad;ctx.fillRect(12,brandY,W-24,46);
-ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='20px monospace';
-ctx.textAlign='left';ctx.fillText('jingyue.uk',36,brandY+30);
-ctx.textAlign='right';ctx.font='20px "Noto Serif TC",serif';
-ctx.fillText('靜月之光',W-36,brandY+30);
+ctx.fillStyle=brandGrad;ctx.fillRect(10,brandY,W-20,38);
+ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='18px monospace';
+ctx.textAlign='left';ctx.fillText('jingyue.uk',30,brandY+26);
+ctx.textAlign='right';ctx.font='18px "Noto Serif TC",serif';
+ctx.fillText('靜月之光',W-30,brandY+26);
 callback(cv);
 };
-wmImg.onerror=function(){
-// 即使圖片載入失敗也畫（沒浮水印）
-wmImg.onload();
-};
+wmImg.onerror=function(){wmImg.onload()};
 wmImg.src=IMG.cardWm;
 }
 window._oracleShare=function(){
@@ -521,9 +519,9 @@ css.textContent='\
 .orc-card8-label{font-size:.58rem;color:rgba(139,105,20,0.45);letter-spacing:4px;text-align:center;margin-bottom:.8rem}\
 .orc-card8-poem-area{display:flex;justify-content:center;gap:.5rem;min-height:260px;padding:.3rem 0}\
 .orc-card8-info{text-align:center;font-size:.68rem;color:rgba(139,105,20,0.5);margin-top:.6rem;line-height:1.8}\
-.orc-card8-wm{width:100%;height:280px;overflow:hidden;position:relative}\
-.orc-card8-wm-img{width:100%;height:100%;object-fit:cover;object-position:center 60%;opacity:.9}\
-.orc-card8-wm::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#fdf8ee 0%,transparent 30%,transparent 100%);z-index:1;pointer-events:none}\
+.orc-card8-wm{width:100%;overflow:hidden;position:relative}\
+.orc-card8-wm-img{width:100%;height:auto;display:block;opacity:.9}\
+.orc-card8-wm::before{content:"";position:absolute;top:0;left:0;right:0;height:100px;background:linear-gradient(180deg,#fdf8ee,rgba(253,248,238,0.5),transparent);z-index:1;pointer-events:none}\
 .orc-card8-brand{display:flex;justify-content:space-between;align-items:center;padding:.5rem 1rem;background:linear-gradient(90deg,#c9a84c,#8b6914);font-size:.6rem;color:rgba(255,255,255,0.85);letter-spacing:3px}\
 .orc-jh-section{margin-top:1rem;background:#8b1a1a;border-radius:10px;padding:1rem 1rem 1.2rem;text-align:left}\
 .orc-jh-heading{font-size:1.1rem;font-weight:900;color:#fff;padding-left:.6rem;border-left:4px solid #3b82f6;margin-bottom:.6rem;line-height:1.4}\
