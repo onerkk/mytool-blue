@@ -162,6 +162,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="worker">Worker管理</div>
     <div class="tab" data-tab="users">用戶管理</div>
     <div class="tab" data-tab="admins">管理員</div>
+    <div class="tab" data-tab="settings">設定</div>
   </div>
 
   <div class="content">
@@ -276,6 +277,49 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <button onclick="addAdminUser()" style="padding:10px 18px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">＋ 新增</button>
         </div>
         <div id="adminUserList" style="display:flex;flex-direction:column;gap:8px"><div class="loading"></div></div>
+      </div>
+    </div>
+
+    <!-- ══ Settings ══ -->
+    <div id="sec-settings" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>⚙️ AI 模型設定</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">切換各工具的基礎模型（Opus 加成不受影響，永遠用 Opus）</p>
+        <div style="display:flex;flex-direction:column;gap:14px" id="modelConfigForm">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="min-width:80px;font-size:13px;font-weight:600;color:var(--accent)">🔮 七維度</span>
+            <select id="mc-7d" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
+              <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+              <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="min-width:80px;font-size:13px;font-weight:600;color:#34d399">🃏 塔羅</span>
+            <select id="mc-tarot" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
+              <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+              <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="min-width:80px;font-size:13px;font-weight:600;color:#fbbf24">🗝️ 開鑰</span>
+            <select id="mc-ootk" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
+              <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+              <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+          <button onclick="saveModelConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存</button>
+          <span id="mcStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+        <div style="margin-top:14px;padding:12px;border-radius:8px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15)">
+          <div style="font-size:11px;color:#fbbf24;font-weight:600;margin-bottom:4px">⚡ 成本參考</div>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.8">
+            Sonnet 七維度 ≈ NT$25/次｜塔羅 ≈ NT$5-7/次<br>
+            Haiku 約為 Sonnet 的 1/10 成本，但品質可能下降<br>
+            Opus 加成不受此設定影響（永遠用 claude-opus-4-6）
+          </div>
+        </div>
       </div>
     </div>
 
@@ -446,6 +490,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
+    if (tab.dataset.tab === 'settings') loadModelConfig();
   });
 });
 
@@ -996,6 +1041,50 @@ async function _setSubscription(email, action) {
     if (data.ok) { toast(`✓ ${label}成功`); loadUsersData(); }
     else { toast('失敗: ' + (data.error || '')); }
   } catch(e) { toast('錯誤: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════════
+// Model Config (v43)
+// ═══════════════════════════════════════════════
+async function loadModelConfig() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/model-config?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (data.ok && data.config) {
+      document.getElementById('mc-7d').value = data.config['7d'] || 'claude-sonnet-4-6';
+      document.getElementById('mc-tarot').value = data.config.tarot || 'claude-sonnet-4-6';
+      document.getElementById('mc-ootk').value = data.config.ootk || 'claude-sonnet-4-6';
+      document.getElementById('mcStatus').textContent = '已載入目前設定';
+    }
+  } catch(e) {
+    document.getElementById('mcStatus').textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveModelConfig() {
+  try {
+    const cfg = {
+      '7d': document.getElementById('mc-7d').value,
+      tarot: document.getElementById('mc-tarot').value,
+      ootk: document.getElementById('mc-ootk').value
+    };
+    const r = await fetch(`${WORKER_URL}/admin/model-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 模型設定已儲存');
+      const labels = { 'claude-sonnet-4-6': 'Sonnet', 'claude-haiku-4-5-20251001': 'Haiku' };
+      document.getElementById('mcStatus').textContent = 
+        `七維度: ${labels[data.config['7d']]} ｜ 塔羅: ${labels[data.config.tarot]} ｜ 開鑰: ${labels[data.config.ootk]}`;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
 }
 
 // ═══════════════════════════════════════════════
