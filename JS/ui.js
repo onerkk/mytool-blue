@@ -1879,18 +1879,22 @@ function submitFeedback(rating){
    ============================================================= */
 
 // ── Daily fortune + calendar + chakra + aura + achievements + quiz + reviews + admin (lines 35578-38748) ──
-const _origRPC2 = renderProductCrystal;
-renderProductCrystal = function(bazi, type){
-  _origRPC2(bazi, type);
-};
+if (typeof renderProductCrystal === 'function') {
+  const _origRPC2 = renderProductCrystal;
+  renderProductCrystal = function(bazi, type){
+    _origRPC2(bazi, type);
+  };
+}
 
 /* =============================================================
    Patch conclusion to use AI style
    ============================================================= */
-const _origGenConclusion = generateConclusion;
-generateConclusion = function(type, prob, bazi, mh, tarot){
-  return generateAIConclusion(type, prob, bazi, mh, tarot);
-};
+if (typeof generateConclusion === 'function') {
+  const _origGenConclusion = generateConclusion;
+  generateConclusion = function(type, prob, bazi, mh, tarot){
+    return generateAIConclusion(type, prob, bazi, mh, tarot);
+  };
+}
 
 /* =============================================================
    Init on DOMContentLoaded
