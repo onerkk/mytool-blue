@@ -143,9 +143,9 @@ h+='<div class="jy-pw"><div class="jy-ph"><div class="jy-pn"></div><div class="j
 h+='<div class="mn-nav"><div class="b">\uD83C\uDF19 靜月之光</div><div class="s">\uD83D\uDED2 蝦皮</div></div>';
 h+='<div class="mn-cd"><div class="mn-ct">❓ 你想問什麼？</div><div class="mn-inp" style="border-color:rgba(201,168,76,.18)">今年桃花運勢？</div></div>';
 h+='<div style="padding:2px 8px"><div style="font-size:.48rem;color:#c9a84c;margin-bottom:2px">🔮 選擇分析方式</div></div>';
-h+='<div class="mn-tl hi"><div class="ico">⭐</div><div><div class="nm">塔羅快讀</div><div class="ds">一個問題，抽牌就有答案<br>不需任何資料・只要問題和選牌</div><div class="bg">首 3 次免費體驗</div></div></div>';
-h+='<div class="mn-tl"><div class="ico">🔑</div><div><div class="nm">開鑰之法</div><div class="ds">78 張牌五層深潛，問到根源<br>需出生資料・金色黎明最高階</div><div class="bg">首 3 次免費體驗</div></div></div>';
-h+='<div class="mn-tl"><div class="ico">🌙</div><div><div class="nm">七維度交叉分析</div><div class="ds">七套命理系統交叉比對<br>需出生資料・八字 紫微 梅花 塔羅 星盤 吠陀 姓名</div><div class="bg">首 3 次免費體驗</div></div></div>';
+h+='<div class="mn-tl hi"><div class="ico">⭐</div><div><div class="nm">塔羅快讀</div><div class="ds">一個問題，抽牌就有答案<br>不需任何資料・只要問題和選牌</div><div class="bg">免費體驗 1 次</div></div></div>';
+h+='<div class="mn-tl"><div class="ico">🔑</div><div><div class="nm">開鑰之法</div><div class="ds">78 張牌五層深潛，問到根源<br>需出生資料・金色黎明最高階</div><div class="bg">免費體驗 1 次</div></div></div>';
+h+='<div class="mn-tl"><div class="ico">🌙</div><div><div class="nm">七維度交叉分析</div><div class="ds">七套命理系統交叉比對<br>需出生資料・八字 紫微 梅花 塔羅 星盤 吠陀 姓名</div><div class="bg">免費體驗 1 次</div></div></div>';
 h+='</div></div>';
 h+='<div class="jy-arr" style="left:28%;top:168px"></div>';
 h+='<div class="jy-fgr" style="left:24%;top:185px">👆</div>';
@@ -234,7 +234,7 @@ h+='</div></div>';
 h+='<div class="jy-arr" style="right:34%;top:215px"></div>';
 h+='<div class="jy-fgr" style="right:28%;top:232px">👆</div>';
 h+='</div>';
-h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問，點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>前 3 次免費體驗（含追問）<br>會員 NT$799/月 塔羅每日 3 次＋七維度每月 5 次</small></div></div>';
+h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問，點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>三套工具各免費體驗 1 次（含追問）<br>會員 NT$799/月 塔羅每日 3 次＋七維度每月 5 次</small></div></div>';
 h+='</div>';
 
 h+='<div class="jy-div"></div>';
