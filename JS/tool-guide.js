@@ -263,10 +263,33 @@
 
   function sendFeedback(rating, reasons, comment) {
     var url = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
-    var q = (window.S && window.S.form) ? (window.S.form.question || '') : '';
-    var type = (window.S && window.S.form) ? (window.S.form.type || '') : '';
-    var name = (window.S && window.S.form) ? (window.S.form.name || '匿名') : '匿名';
-    var tool = detectTool();
+    // ★ v43：從 _jyFeedbackSnapshot 讀完整上下文（跟 ui.js 一致）
+    var snap = window._jyFeedbackSnapshot || {};
+    var q = snap.question || ((window.S && window.S.form) ? (window.S.form.question || '') : '');
+    var type = snap.type || ((window.S && window.S.form) ? (window.S.form.type || '') : '');
+    var name = snap.name || ((window.S && window.S.form) ? (window.S.form.name || '匿名') : '匿名');
+    var tool = snap.tool || detectTool();
+    var birth = snap.birth || ((window.S && window.S.form) ? (window.S.form.bdate || '') : '');
+    var birthTime = snap.birthTime || ((window.S && window.S.form) ? (window.S.form.btime || '') : '');
+    var gender = snap.gender || ((window.S && window.S.form) ? (window.S.form.gender || '') : '');
+    var birthLocation = snap.birthLocation || '';
+    var aiClosing = snap.aiClosing || '';
+    var aiDirectAnswer = snap.aiDirectAnswer || '';
+    var aiYesNo = snap.aiYesNo || '';
+    var aiStory = snap.aiStory || '';
+    var cards = snap.cards || '';
+    // fallback：快照沒有時從 _jyPrevFullResult 讀
+    if (!aiClosing && !aiDirectAnswer) {
+      try {
+        var prev = window._jyPrevFullResult ? JSON.parse(window._jyPrevFullResult) : null;
+        if (prev) {
+          aiClosing = (prev.closing || '').substring(0, 80);
+          aiDirectAnswer = (prev.directAnswer || '').substring(0, 300);
+          aiStory = (prev.story || '').substring(0, 800);
+          if (prev.yesNo) aiYesNo = JSON.stringify(prev.yesNo).substring(0, 200);
+        }
+      } catch(_) {}
+    }
     fetch(url + '/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -277,7 +300,16 @@
         tool: tool,
         reasons: reasons.join('、'),
         comment: comment.substring(0, 500),
-        name: name.substring(0, 20)
+        name: name.substring(0, 20),
+        cards: cards,
+        aiClosing: aiClosing,
+        aiDirectAnswer: aiDirectAnswer,
+        aiYesNo: aiYesNo,
+        aiStory: aiStory,
+        birth: birth,
+        birthTime: birthTime,
+        gender: gender,
+        birthLocation: birthLocation
       })
     }).catch(function(){});
   }
