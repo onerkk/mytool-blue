@@ -1151,6 +1151,7 @@
         </label>
       </div>
       <textarea id="fb-comment" placeholder="其他想說的...（選填）" style="width:100%;margin-top:0.5rem;padding:0.4rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--c-text,#e8e0d0);font-size:0.8rem;resize:vertical;min-height:40px"></textarea>
+      <textarea id="fb-actual" placeholder="實際上是什麼狀況？（選填，越具體越能幫我們改進）&#10;例：時間已過但沒發生／對方早已有伴侶／方向剛好相反..." style="width:100%;margin-top:0.5rem;padding:0.4rem;background:rgba(212,175,55,0.04);border:1px solid rgba(212,175,55,0.15);border-radius:6px;color:var(--c-text,#e8e0d0);font-size:0.8rem;resize:vertical;min-height:50px"></textarea>
       <button onclick="submitFeedbackDetail()" style="margin-top:0.5rem;width:100%;padding:0.5rem;background:var(--c-gold,#c9a84c);color:#1a1a2e;border:none;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer">送出回饋</button>
     </div>
     <!-- 送出後的感謝 -->
@@ -1294,14 +1295,14 @@
     <div style="position:absolute;top:-.45rem;right:.8rem;padding:.1rem .5rem;border-radius:4px;background:var(--c-gold,#c9a84c);color:#1a0a0a;font-size:.55rem;font-weight:700;letter-spacing:.05em">推薦</div>
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
       <span style="font-size:.88rem;font-weight:700;color:var(--c-gold,#c9a84c)">靜月會員</span>
-      <span style="font-size:.82rem;color:var(--c-gold,#c9a84c);font-weight:700">NT$799<span style="font-size:.65rem;font-weight:400;opacity:.7">/月</span></span>
+      <span style="font-size:.82rem;color:var(--c-gold,#c9a84c);font-weight:700">NT$1,299<span style="font-size:.65rem;font-weight:400;opacity:.7">/月</span></span>
     </div>
     <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.8">
       🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">每日 3 次</strong><br>
       🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 5 次</strong><br>
       📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>
-      🔮 Opus 深度解析 <strong style="color:#c084fc">每月 2 次免費</strong><br>
-      ⚡ 額外 Opus <strong style="color:#c084fc">會員半價</strong>
+      🔮 深度解析 <strong style="color:#c084fc">每月 2 次免費</strong><br>
+      ⚡ 額外深度解析 <strong style="color:#c084fc">會員半價</strong>
     </div>
   </div>
 
@@ -1313,8 +1314,8 @@
     </div>
     <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.8">
       七維度 NT$69 ・ 塔羅 NT$29 ・ 開鑰 NT$29<br>
-      <span style="color:#c084fc">Opus 深度</span>：七維度 NT$99 ・ 塔羅/開鑰 NT$49<br>
-      <span style="color:#c084fc">會員 Opus</span>：七維度 NT$49 ・ 塔羅/開鑰 NT$29
+      <span style="color:#c084fc">深度解析</span>：七維度 NT$99 ・ 塔羅/開鑰 NT$49<br>
+      <span style="color:#c084fc">會員深度解析</span>：七維度 NT$49 ・ 塔羅/開鑰 NT$29
     </div>
   </div>
 </section>
@@ -1382,12 +1383,12 @@
       <div style="margin-top:.6rem;padding:.8rem;border-radius:10px;border:1px solid rgba(212,175,55,.06);background:rgba(212,175,55,.02);font-size:.72rem;color:rgba(200,190,170,.55);line-height:1.8">
         <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">免費體驗</p>
         <p style="margin-bottom:.8rem">三套工具（塔羅快讀・開鑰之法・七維度）共 3 次免費體驗（含追問）。需 Google 登入。不含照片分析。用完後可開通會員或單次購買。</p>
-        <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">靜月會員 NT$799/月</p>
-        <p style="margin-bottom:.8rem">塔羅＋開鑰每日 3 次（含追問）・七維度每月 5 次・面相＋手相＋水晶照片分析（會員專屬）・Opus 深度解析每月 2 次免費・額外 Opus 享會員半價。30 天有效。</p>
+        <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">靜月會員 NT$1,299/月</p>
+        <p style="margin-bottom:.8rem">塔羅＋開鑰每日 3 次（含追問）・七維度每月 5 次・面相＋手相＋水晶照片分析（會員專屬）・深度解析每月 2 次免費・額外深度解析 享會員半價。30 天有效。</p>
         <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">單次購買（非會員）</p>
         <p style="margin-bottom:.3rem">標準解讀（Sonnet）：七維度 NT$69 ／ 塔羅 NT$29 ／ 開鑰 NT$29（含追問）</p>
-        <p style="margin-bottom:.8rem">深度解析（Opus）：七維度 NT$99 ／ 塔羅 NT$49 ／ 開鑰 NT$49</p>
-        <p style="margin-bottom:.6rem;color:rgba(147,51,234,.5);font-weight:600">Opus 深度解析</p>
+        <p style="margin-bottom:.8rem">深度解析：七維度 NT$99 ／ 塔羅 NT$49 ／ 開鑰 NT$49</p>
+        <p style="margin-bottom:.6rem;color:rgba(147,51,234,.5);font-weight:600">深度解析</p>
         <p style="margin-bottom:.8rem">使用最頂級推理引擎，因果鏈深挖到底，系統間矛盾正面裁決。會員享半價：七維度 NT$49 ／ 塔羅・開鑰 NT$29。</p>
         <p style="margin-bottom:.6rem;color:rgba(200,190,170,.5);font-weight:600">付款方式</p>
         <p style="margin-bottom:.5rem">透過綠界科技（ECPay）第三方支付，支援信用卡、ATM 轉帳、超商代碼繳費。</p>

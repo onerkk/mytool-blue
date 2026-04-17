@@ -8,9 +8,10 @@
   'use strict';
 
   var WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
-  var PRICE_SUB = 799;
+  var PRICE_SUB = 1299;
   var PRICE_SINGLE = 69;
   var PRICE_OPUS = 99;
+  var PRICE_SINGLE_FOLLOWUP = 19;
 
   // ═══ 1. 付費牆 HTML ═══
 
@@ -26,13 +27,13 @@
         '🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">每日 3 次</strong><br>' +
         '🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 5 次</strong><br>' +
         '📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>' +
-        '🔮 Opus 深度解析 <strong style="color:#c084fc">每月 2 次免費</strong><br>' +
-        '⚡ 額外 Opus 享 <strong style="color:#c084fc">會員半價</strong>' +
+        '🔮 深度解析 <strong style="color:#c084fc">每月 2 次免費</strong><br>' +
+        '⚡ 額外深度解析享 <strong style="color:#c084fc">會員半價</strong>' +
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#c9a84c);font-size:.9rem;font-weight:700;border:1.5px solid rgba(212,175,55,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(212,175,55,.12)">🌙 開通會員 NT$' + PRICE_SUB + '/月</button>' +
         '<button onclick="_jyStartPayment(\'' + mode + '\',\'single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));color:var(--c-text,#e8dcc8);font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.12);cursor:pointer;font-family:inherit">⚡ ' + toolName + '單次 NT$' + singlePrice + '</button>' +
-        '<button onclick="_jyStartPayment(\'' + mode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.1),rgba(147,51,234,.04));color:#c084fc;font-size:.85rem;font-weight:600;border:1px solid rgba(147,51,234,.25);cursor:pointer;font-family:inherit">🔮 Opus 深度 NT$' + opusSinglePrice + '</button>' +
+        '<button onclick="_jyStartPayment(\'' + mode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.1),rgba(147,51,234,.04));color:#c084fc;font-size:.85rem;font-weight:600;border:1px solid rgba(147,51,234,.25);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + opusSinglePrice + '</button>' +
         '<div style="font-size:.58rem;color:var(--c-text-muted,#7a7060);margin-top:-.1rem;opacity:.7">單次僅限信用卡・含追問</div>' +
         '<div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;margin-top:.3rem">' +
           '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">💳信用卡</span>' +
@@ -83,7 +84,10 @@
         payWin.document.close();
         var opusDisplayPrice = (mode === 'tarot_only' || mode === 'ootk') ? 49 : PRICE_OPUS;
         var singleDisplayPrice = mode === 'full' ? 69 : 29;
-        var labelText = type === 'opus_single' ? 'Opus深度解析 NT$' + opusDisplayPrice : (type === 'single' ? '單次解讀 NT$' + singleDisplayPrice : '會員 NT$' + PRICE_SUB);
+        var labelText = type === 'opus_single' ? '深度解析 NT$' + opusDisplayPrice
+                      : type === 'followup_single' ? '追問單次 NT$' + PRICE_SINGLE_FOLLOWUP
+                      : type === 'single' ? '單次解讀 NT$' + singleDisplayPrice
+                      : '會員 NT$' + PRICE_SUB;
         // 關閉 Opus 付費 modal（如果存在）
         try { var _om = document.getElementById('jy-opus-pay-modal'); if (_om) _om.remove(); } catch(_) {}
         var waitModal = document.createElement('div');
@@ -123,12 +127,43 @@
       if (data.paid) {
         localStorage.setItem('_jy_paid_token', pending.tradeNo);
         localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
-        // ★ v29：只有訂閱才存到期時間
-        if (pending.type !== 'single' && pending.type !== 'opus_single') {
+        // ★ v29：只有訂閱才存到期時間（單次/深度/追問單次皆不是訂閱）
+        if (pending.type !== 'single' && pending.type !== 'opus_single' && pending.type !== 'followup_single') {
           localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 30));
         }
         localStorage.removeItem('_jy_pending_payment');
         var m = document.getElementById('jy-pay-modal'); if (m) m.remove();
+
+        // ★ v46.2 修 bug #27：追問單次付款後不 reload(會清掉首輪結果+追問區,
+        //                     使用者付了錢卻找不到原本要追問的那筆解讀)。
+        //                     改為顯示成功 banner,頁面狀態保留,使用者可直接點追問按鈕,
+        //                     precheck 會帶上剛寫入的 fu token 放行。
+        if (pending.type === 'followup_single') {
+          var banner = document.createElement('div');
+          banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,rgba(34,197,94,.92),rgba(22,163,74,.95));color:white;text-align:center;padding:14px;font-size:.88rem;font-weight:600;box-shadow:0 2px 16px rgba(0,0,0,.3);transition:transform .4s';
+          banner.textContent = '✅ 付款成功！追問單次已解鎖，請點「抽補充牌」繼續';
+          document.body.prepend(banner);
+          setTimeout(function() {
+            banner.style.transform = 'translateY(-100%)';
+            setTimeout(function() { banner.remove(); }, 500);
+          }, 3500);
+          // 付費牆 UI 可能蓋在原追問區上——還原成可點的追問 UI
+          try {
+            var _fuA = document.getElementById('tarot-followup-area');
+            if (_fuA && typeof _appendFollowUpUI === 'function') {
+              var _srcMode = _fuA.getAttribute('data-source') || 'tarot';
+              var _parent = _fuA.parentNode;
+              // 移除付費牆,重建追問 UI(樣式一致)
+              _fuA.remove();
+              _appendFollowUpUI(_parent, _srcMode);
+              // 滾到追問區讓使用者看到
+              var _newFuA = document.getElementById('tarot-followup-area');
+              if (_newFuA) _newFuA.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          } catch(_e) { console.warn('[Payment] fu UI restore failed:', _e); }
+          return; // 不 reload
+        }
+
         window.location.reload();
       } else {
         alert('尚未收到付款通知，請等幾秒後再按一次');
@@ -252,14 +287,26 @@
       var rd = document.getElementById('ai-deep-result');
       var tw = document.getElementById('tarot-ai-wrap');
       var ow = document.getElementById('ootk-ai-wrap');
+      // ★ 追問結果容器（tarot-followup-result-N），追問單次付費跑完後也要清 token
+      var fuResults = document.querySelectorAll('[id^="tarot-followup-result-"]');
+      var hasFuResult = false;
+      for (var _i = 0; _i < fuResults.length; _i++) {
+        var _fu = fuResults[_i];
+        if (_fu && _fu.innerHTML.length > 300 && _fu.textContent.indexOf('正在') === -1) { hasFuResult = true; break; }
+      }
       var hasResult = (rd && rd.innerHTML.length > 300 && rd.textContent.indexOf('正在') === -1) ||
                       (tw && tw.innerHTML.length > 300 && tw.textContent.indexOf('正在') === -1) ||
-                      (ow && ow.innerHTML.length > 300 && ow.textContent.indexOf('正在') === -1);
+                      (ow && ow.innerHTML.length > 300 && ow.textContent.indexOf('正在') === -1) ||
+                      hasFuResult;
       if (hasResult) {
         done = true;
         // ★ Opus token 只在 Opus 分析完成時清除，不被標準分析誤刪
+        // ★ followup_single token 只在追問結果完成時才清除
         var _ptType = localStorage.getItem('_jy_paid_token_type');
-        if (_ptType !== 'opus_single' || window._jyOpusDepth) {
+        var _shouldClear = true;
+        if (_ptType === 'opus_single' && !window._jyOpusDepth) _shouldClear = false;
+        if (_ptType === 'followup_single' && !hasFuResult) _shouldClear = false;
+        if (_shouldClear) {
           localStorage.removeItem('_jy_paid_token');
           localStorage.removeItem('_jy_paid_token_type');
         }
@@ -353,10 +400,10 @@
     var paidTradeNo = params.get('paid');
     if (!paidTradeNo) return;
 
-    // ★ v29：從 pending 判斷是單次還是訂閱
+    // ★ v29：從 pending 判斷是單次還是訂閱（追問單次也屬 single 類）
     var pending = null;
     try { pending = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null'); } catch(_) {}
-    var isSingle = (pending && (pending.type === 'single' || pending.type === 'opus_single'));
+    var isSingle = (pending && (pending.type === 'single' || pending.type === 'opus_single' || pending.type === 'followup_single'));
 
     history.replaceState(null, '', window.location.pathname + window.location.hash);
     localStorage.setItem('_jy_paid_token', paidTradeNo);
@@ -368,7 +415,10 @@
 
     var banner = document.createElement('div');
     banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,rgba(34,197,94,.92),rgba(22,163,74,.95));color:white;text-align:center;padding:14px;font-size:.88rem;font-weight:600;box-shadow:0 2px 16px rgba(0,0,0,.3);transition:transform .4s';
-    banner.textContent = isSingle ? '✅ 付款成功！單次解讀已解鎖' : '✅ 付款成功！30 天會員已開通';
+    var _bannerTxt = '✅ 付款成功！30 天會員已開通';
+    if (pending && pending.type === 'followup_single') _bannerTxt = '✅ 付款成功！追問單次已解鎖，請回到原本的解讀頁點追問';
+    else if (isSingle) _bannerTxt = '✅ 付款成功！單次解讀已解鎖';
+    banner.textContent = _bannerTxt;
     document.body.prepend(banner);
     setTimeout(function() {
       banner.style.transform = 'translateY(-100%)';
