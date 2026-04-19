@@ -20318,8 +20318,9 @@ renderTarot = function(){
       if (_pt) body.paid_token = _pt;
       // ★ v36：SSE timeout 防止永久 loading
       // v49+：120s → 300s（5 分鐘），支援 Opus 4.7 max effort + 深度七維度判讀
+      // v52：300s → 600s（10 分鐘），max effort + 1M context + 大 system prompt 偶爾會跑到 6-8 分鐘
       var _abortCtrl = new AbortController();
-      var _abortTimer = setTimeout(function() { _abortCtrl.abort(); }, 300000);
+      var _abortTimer = setTimeout(function() { _abortCtrl.abort(); }, 600000);
       var resp = await fetch(AI_WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -20653,7 +20654,7 @@ renderTarot = function(){
       // ★ v36：SSE timeout → 顯示友善錯誤
       if (err.name === 'AbortError') {
         resultDiv.innerHTML = '<div style="text-align:center;padding:1rem">' +
-          '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">⏱ 分析逾時（超過 5 分鐘），請重試一次</div>' +
+          '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">⏱ 分析逾時（超過 10 分鐘），請重試一次</div>' +
           '<button onclick="_triggerAIDeep()" style="padding:.7rem 1.8rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit">' +
           '重新分析</button></div>';
         return;
@@ -22161,8 +22162,9 @@ async function _triggerTarotAI() {
 
     // ★ v51：塔羅首輪 timeout + AbortController（對齊七維度首輪 20321-20322）
     //   塔羅 Opus 深度 + 大牌陣（celtic_cross 等）也可能 30-60s，手機弱訊號下同樣會卡
+    // v52：300s → 600s（10 分鐘），對齊七維度
     var _tarotAbortCtrl = new AbortController();
-    var _tarotAbortTimer = setTimeout(function() { _tarotAbortCtrl.abort(); }, 300000);
+    var _tarotAbortTimer = setTimeout(function() { _tarotAbortCtrl.abort(); }, 600000);
 
     // ── SSE streaming（跟七維度一樣的 SSE 讀取） ──
     var resp = await fetch(AI_WORKER_URL, {
@@ -23324,9 +23326,10 @@ async function _triggerTarotFollowUp() {
   var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
   // ★ v51：追問 fetch timeout + AbortController（對齊七維度首輪 20321-20322）
   //   為什麼：手機弱訊號下，若 Worker stream 中途出錯 / Opus 4.7 thinking 過長 / 網路 idle 斷流，
-  //   原本 fetch 會一直卡住。用 300s timeout + abort 強制結束，走 catch 顯示具體錯誤。
+  //   原本 fetch 會一直卡住。用 600s timeout + abort 強制結束，走 catch 顯示具體錯誤。
+  // v52：300s → 600s（10 分鐘），對齊首輪三模式
   var _fuAbortCtrl = new AbortController();
-  var _fuAbortTimer = setTimeout(function() { _fuAbortCtrl.abort(); }, 300000);
+  var _fuAbortTimer = setTimeout(function() { _fuAbortCtrl.abort(); }, 600000);
   // ★ v51：SSE reader 補抓「event: error」的真實錯誤訊息（對齊塔羅首輪 22207-22209）
   //   原本只處理 result/thinking，Worker 端任何例外 sendSSE('error') 後前端只剩「回傳為空」通用訊息
   var _fuSSEError = null;
@@ -23556,7 +23559,7 @@ async function _triggerTarotFollowUp() {
     // ★ v46：錯誤路徑也要解鎖按鈕（避免按鈕卡在 disabled）
     _unlockFuBtn();
     // ★ v51：依錯誤類型給不同文案（讓用戶知道是網路還是伺服器問題，別再含糊地「連線不順」）
-    //   - AbortError：300s timeout 觸發 abort（通常是 Opus 4.7 思考過久或網路極慢）
+    //   - AbortError：600s timeout 觸發 abort（通常是 Opus 4.7 思考過久或網路極慢）
     //   - 具體訊息：Worker 端的真實錯誤（API 過載、token 爆、模組例外等）
     //   - 其他：fetch 網路失敗、JSON parse 失敗等，fallback 通用訊息
     var _fuErrMsg = '連線不順，請再試一次';
