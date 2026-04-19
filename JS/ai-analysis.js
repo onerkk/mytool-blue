@@ -20499,7 +20499,21 @@ renderTarot = function(){
         window._jyActiveResultMode = 'full';
         try { window._jyPrevFullResult = JSON.stringify(r); } catch(_e) {}
         // ★ v42b：回饋快照——結果渲染時一次性存好，不再依賴 S.form（可能被重置）
+        // v52：加 model + dims 結構化資料，給 admin 回饋分析用
         try {
+          // 嘗試從 SSE data.usage 或 window._jyLastUsage 取得 model id
+          var _fbModel = '';
+          try {
+            if (data && data.usage && data.usage.modelId) _fbModel = data.usage.modelId;
+            else if (window._jyLastUsage && window._jyLastUsage.modelId) _fbModel = window._jyLastUsage.modelId;
+          } catch(_mdlE) {}
+          // 抓 dims（AI 實際看到的七套系統結構化資料）
+          var _fbDims = null;
+          try {
+            if (window._jyFullPayloadCache && window._jyFullPayloadCache.dims) {
+              _fbDims = window._jyFullPayloadCache.dims;
+            }
+          } catch(_dmE) {}
           window._jyFeedbackSnapshot = {
             tool: 'full',
             question: (S.form && S.form.question) || '',
@@ -20509,11 +20523,16 @@ renderTarot = function(){
             birthTime: (S.form && S.form.btime) || '',
             gender: (S.form && S.form.gender) || '',
             birthLocation: '',
-            aiClosing: (r.closing || '').substring(0, 80),
-            aiDirectAnswer: (r.directAnswer || '').substring(0, 300),
-            aiYesNo: r.yesNo ? JSON.stringify(r.yesNo).substring(0, 200) : '',
-            aiStory: (r.story || '').substring(0, 800),
-            cards: ''
+            aiClosing: (r.closing || '').substring(0, 200),
+            aiDirectAnswer: (r.directAnswer || '').substring(0, 800),
+            aiYesNo: r.yesNo ? JSON.stringify(r.yesNo).substring(0, 400) : '',
+            aiStory: (r.story || '').substring(0, 5000),
+            cards: '',
+            // v52 新欄位
+            model: _fbModel,
+            dims: _fbDims,
+            cardData: null,
+            ootk: null
           };
           try {
             if (S.form && S.form.birthLocation) window._jyFeedbackSnapshot.birthLocation = S.form.birthLocation.city || S.form.birthLocation.name || '';
@@ -20523,7 +20542,7 @@ renderTarot = function(){
             if (r.layers && typeof r.layers === 'object') {
               var _lp = [];
               Object.keys(r.layers).forEach(function(k) { if (r.layers[k] && r.layers[k].conclusion) _lp.push(k + ':' + r.layers[k].conclusion); });
-              window._jyFeedbackSnapshot.cards = _lp.join(' | ').substring(0, 400);
+              window._jyFeedbackSnapshot.cards = _lp.join(' | ').substring(0, 800);
             }
           } catch(_lc) {}
         } catch(_fs) {}
@@ -22194,10 +22213,11 @@ async function _triggerTarotAI() {
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
-              // Admin debug
-              if (admin && parsed.usage) {
-                console.log('[TarotAI] Usage:', parsed.usage);
+              // v52：無論 admin 與否都存 usage（給回饋按模型分組統計用）
+              //      admin 額外會看到 _adminCostHTML，非 admin 只是拿 modelId 送回饋
+              if (parsed.usage) {
                 window._jyLastUsage = parsed.usage;
+                if (admin) console.log('[TarotAI] Usage:', parsed.usage);
               }
             } catch(_){}
           } else if (evtType === 'progress' && evtData) {
@@ -22259,9 +22279,9 @@ async function _triggerTarotAI() {
       if (_tabTarot2) _tabTarot2.innerHTML = '<i class="fas fa-star"></i> 塔羅快讀';
     }
     // ═══ v38: Admin 費用顯示（塔羅+開鑰）═══
+    // v52：不刪 _jyLastUsage，留給下面的 snapshot 抓 modelId
     if (admin && window._jyLastUsage) {
       resultDiv.innerHTML += _adminCostHTML(window._jyLastUsage);
-      delete window._jyLastUsage;
     }
     // ═══ v38: Admin payload debug（塔羅+開鑰）═══
     if (admin && window._jyLastTarotPayload) {
@@ -22295,8 +22315,52 @@ async function _triggerTarotAI() {
     // ★ v15：存完整 AI 結果 JSON，追問時送給 AI 當完整背景
     try { window._jyPrevFullResult = JSON.stringify(r); } catch(_e) { window._jyPrevFullResult = ''; }
     // ★ v42b：回饋快照——結果渲染時一次性存好
+    // v52：加 model + cardData（塔羅）+ ootk（開鑰）+ dims 結構化資料
     try {
       var _fbTool = _isOOTK ? 'ootk' : 'tarot';
+      // model id（從 usage 抓）
+      var _fbModel2 = '';
+      try {
+        if (window._jyLastUsage && window._jyLastUsage.modelId) _fbModel2 = window._jyLastUsage.modelId;
+      } catch(_mdlE2) {}
+      // dims（塔羅也有八字/紫微背景）
+      var _fbDims2 = null;
+      try {
+        if (window._jyLastTarotPayload && window._jyLastTarotPayload.dims) {
+          _fbDims2 = window._jyLastTarotPayload.dims;
+        }
+      } catch(_dmE2) {}
+      // cardData（塔羅牌局：spreadType + cards + positions 語義）
+      var _fbCardData = null;
+      try {
+        if (!_isOOTK && window._jyLastTarotPayload && window._jyLastTarotPayload.tarotData) {
+          var _td = window._jyLastTarotPayload.tarotData;
+          _fbCardData = {
+            spreadType: _td.spreadType || '',
+            spreadLabel: _td.spreadLabel || '',
+            positions: _td.positions || null,   // 每張牌的位置語義（現狀/挑戰/結果...）
+            cards: _td.cards || [],             // 每張牌 {name, isUp, position}
+            oppositions: _td.oppositions || null // 對立牌分析（若有）
+          };
+        }
+      } catch(_cdE) {}
+      // ootk（五階段完整牌局）
+      var _fbOotk = null;
+      try {
+        if (_isOOTK && window._ootkResults) {
+          var _oR = window._ootkResults;
+          _fbOotk = {
+            significator: _oR.significator || null,
+            stages: {
+              op1: _oR.op1 || null,
+              op2: _oR.op2 || null,
+              op3: _oR.op3 || null,
+              op4: _oR.op4 || null,
+              op5: _oR.op5 || null
+            }
+          };
+        }
+      } catch(_ookE) {}
       window._jyFeedbackSnapshot = {
         tool: _fbTool,
         question: (S.form && S.form.question) || question || '',
@@ -22306,11 +22370,16 @@ async function _triggerTarotAI() {
         birthTime: (S.form && S.form.btime) || '',
         gender: (S.form && S.form.gender) || '',
         birthLocation: '',
-        aiClosing: (r.closing || '').substring(0, 80),
-        aiDirectAnswer: (r.directAnswer || '').substring(0, 300),
-        aiYesNo: r.yesNo ? JSON.stringify(r.yesNo).substring(0, 200) : '',
-        aiStory: (r.story || '').substring(0, 800),
-        cards: ''
+        aiClosing: (r.closing || '').substring(0, 200),
+        aiDirectAnswer: (r.directAnswer || '').substring(0, 800),
+        aiYesNo: r.yesNo ? JSON.stringify(r.yesNo).substring(0, 400) : '',
+        aiStory: (r.story || '').substring(0, 5000),
+        cards: '',
+        // v52 新欄位
+        model: _fbModel2,
+        dims: _fbDims2,
+        cardData: _fbCardData,
+        ootk: _fbOotk
       };
       try {
         if (S.form && S.form.birthLocation) window._jyFeedbackSnapshot.birthLocation = S.form.birthLocation.city || '';
@@ -22321,10 +22390,10 @@ async function _triggerTarotAI() {
           var _oOps = window._ootkResults;
           var _oc = [];
           ['op1','op2','op3','op4','op5'].forEach(function(k){ if (_oOps[k] && _oOps[k].keyCards) _oc.push(k.toUpperCase() + ':' + _oOps[k].keyCards.map(function(c){return c.name||c;}).join(',')); });
-          window._jyFeedbackSnapshot.cards = _oc.join(' | ').substring(0, 400);
+          window._jyFeedbackSnapshot.cards = _oc.join(' | ').substring(0, 800);
         } else {
           var _dc = (typeof drawnCards !== 'undefined') ? drawnCards : [];
-          if (_dc.length) window._jyFeedbackSnapshot.cards = _dc.map(function(c){ return (c.isUp ? '正' : '逆') + ' ' + (c.n || c.name || ''); }).join('、').substring(0, 400);
+          if (_dc.length) window._jyFeedbackSnapshot.cards = _dc.map(function(c){ return (c.isUp ? '正' : '逆') + ' ' + (c.n || c.name || ''); }).join('、').substring(0, 800);
         }
       } catch(_cc) {}
     } catch(_fs) {}
@@ -23863,7 +23932,24 @@ function _renderOOTKResult(container, r, admin) {
   window._jyActiveResultMode = 'ootk';
   try { window._jyPrevFullResult = JSON.stringify(r); } catch(_e) {}
   // ★ v42b：回饋快照——OOTK 結果渲染時一次性存好
+  // v52：加 model + dims + ootk 結構化
   try {
+    var _fbModel3 = '';
+    try { if (window._jyLastUsage && window._jyLastUsage.modelId) _fbModel3 = window._jyLastUsage.modelId; } catch(_me3) {}
+    var _fbDims3 = null;
+    try {
+      if (window._jyLastTarotPayload && window._jyLastTarotPayload.dims) _fbDims3 = window._jyLastTarotPayload.dims;
+    } catch(_de3) {}
+    var _fbOotk3 = null;
+    try {
+      if (window._ootkResults) {
+        var _oR3 = window._ootkResults;
+        _fbOotk3 = {
+          significator: _oR3.significator || null,
+          stages: { op1: _oR3.op1 || null, op2: _oR3.op2 || null, op3: _oR3.op3 || null, op4: _oR3.op4 || null, op5: _oR3.op5 || null }
+        };
+      }
+    } catch(_oe3) {}
     window._jyFeedbackSnapshot = {
       tool: 'ootk',
       question: (S.form && S.form.question) || '',
@@ -23873,11 +23959,16 @@ function _renderOOTKResult(container, r, admin) {
       birthTime: (S.form && S.form.btime) || '',
       gender: (S.form && S.form.gender) || '',
       birthLocation: '',
-      aiClosing: (r.closing || '').substring(0, 80),
-      aiDirectAnswer: (r.directAnswer || '').substring(0, 300),
-      aiYesNo: r.yesNo ? JSON.stringify(r.yesNo).substring(0, 200) : '',
-      aiStory: (r.story || '').substring(0, 800),
-      cards: ''
+      aiClosing: (r.closing || '').substring(0, 200),
+      aiDirectAnswer: (r.directAnswer || '').substring(0, 800),
+      aiYesNo: r.yesNo ? JSON.stringify(r.yesNo).substring(0, 400) : '',
+      aiStory: (r.story || '').substring(0, 5000),
+      cards: '',
+      // v52 新欄位
+      model: _fbModel3,
+      dims: _fbDims3,
+      cardData: null,
+      ootk: _fbOotk3
     };
     try {
       if (S.form && S.form.birthLocation) window._jyFeedbackSnapshot.birthLocation = S.form.birthLocation.city || '';
@@ -23888,7 +23979,7 @@ function _renderOOTKResult(container, r, admin) {
         var _oOps2 = window._ootkResults;
         var _oc2 = [];
         ['op1','op2','op3','op4','op5'].forEach(function(k){ if (_oOps2[k] && _oOps2[k].keyCards) _oc2.push(k.toUpperCase() + ':' + _oOps2[k].keyCards.map(function(c){return c.name||c;}).join(',')); });
-        window._jyFeedbackSnapshot.cards = _oc2.join(' | ').substring(0, 400);
+        window._jyFeedbackSnapshot.cards = _oc2.join(' | ').substring(0, 800);
       }
     } catch(_cc) {}
   } catch(_fs) {}
