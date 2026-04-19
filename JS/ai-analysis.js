@@ -20317,8 +20317,9 @@ renderTarot = function(){
       var _pt = localStorage.getItem('_jy_paid_token');
       if (_pt) body.paid_token = _pt;
       // ★ v36：SSE timeout 防止永久 loading
+      // v49+：120s → 300s（5 分鐘），支援 Opus 4.7 max effort + 深度七維度判讀
       var _abortCtrl = new AbortController();
-      var _abortTimer = setTimeout(function() { _abortCtrl.abort(); }, 120000);
+      var _abortTimer = setTimeout(function() { _abortCtrl.abort(); }, 300000);
       var resp = await fetch(AI_WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -20639,7 +20640,7 @@ renderTarot = function(){
       // ★ v36：SSE timeout → 顯示友善錯誤
       if (err.name === 'AbortError') {
         resultDiv.innerHTML = '<div style="text-align:center;padding:1rem">' +
-          '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">⏱ 分析逾時（超過 2 分鐘），請重試一次</div>' +
+          '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">⏱ 分析逾時（超過 5 分鐘），請重試一次</div>' +
           '<button onclick="_triggerAIDeep()" style="padding:.7rem 1.8rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit">' +
           '重新分析</button></div>';
         return;
