@@ -20354,21 +20354,13 @@ renderTarot = function(){
               // ★ v20：不覆蓋 ai-loading-phase——client-side phase timer 負責輪播
               try { var _prog = JSON.parse(_sseData); } catch(_pe2){}
             } else if (_sseEvt === 'thinking' && _sseData) {
-              // ★ v47d：Opus 4.7 adaptive thinking 摘要，即時顯示給用戶看
-              try {
-                var _thinkTxt = _sseData.replace(/^\s+|\s+$/g, '');
-                if (_thinkTxt && _thinkTxt.length > 0) {
-                  // 停掉輪播 timer（如果還在跑），把 phase 改成即時思考摘要
-                  try { clearInterval(_aiPhaseTimer); } catch(_tke){}
-                  var _tkEl = document.getElementById('ai-loading-phase');
-                  if (_tkEl) {
-                    // 限制長度避免撐破 UI
-                    var _tkShow = _thinkTxt.length > 80 ? _thinkTxt.slice(-80) : _thinkTxt;
-                    _tkEl.style.opacity = '0';
-                    (function(msg){ setTimeout(function(){ if (_tkEl) { _tkEl.textContent = '🤔 ' + msg; _tkEl.style.opacity = '1'; } }, 200); })(_tkShow);
-                  }
-                }
-              } catch(_tke2){}
+              // v51：關閉 thinking_delta 前端顯示
+              // 原因：Opus 4.7 adaptive thinking 的 chunk 切片時機不定，
+              // 經常把「...字左右的完整回應」這種自白型句子切在奇怪位置，
+              // 加上 slice(-80) 保尾，導致用戶看到「🤔 字左右的完整回應。」這種半句。
+              // 改讓輪播 phase timer 自己跑，視覺更穩定、也不暴露模型內部自白。
+              // （thinking_delta 仍會進 console 可供 debug，但不覆寫 UI）
+              try { if (window._JY_DEBUG) console.log('[thinking]', _sseData); } catch(_tke2){}
             } else if (_sseEvt === 'error' && _sseData) {
               try { var _sseErr = JSON.parse(_sseData); throw new Error(_sseErr.error || '伺服器錯誤'); } catch(_e3){ if (_e3.message) throw _e3; }
             }
@@ -20494,7 +20486,7 @@ renderTarot = function(){
             if (flash) flash.remove();
           }, 1000);
           // ★ v42 fix：追問 UI 必須在 innerHTML 之後 append，否則被覆蓋
-          try { if (typeof _appendMemoryBadge === 'function') _appendMemoryBadge(resultDiv, r, 'full'); } catch(_mb) { console.warn('[7d memory badge]', _mb); }
+          // v51：靜月記事本前端入口已移除（記錄只在後台）
           try { if (typeof _appendFollowUpUI === 'function') _appendFollowUpUI(resultDiv, 'full'); } catch(_fu) { console.warn('[7d followup UI]', _fu); }
         }, 550);
         // 解鎖水晶處方面板
@@ -20617,7 +20609,7 @@ renderTarot = function(){
         try { if (typeof showFeedbackSection === 'function') setTimeout(showFeedbackSection, 3000); } catch(_fe) {}
         try { if (typeof _showTrialBanner === 'function') setTimeout(_showTrialBanner, 1500); } catch(_tb) {}
         // ★ v29b：七維度追問系統（核彈路徑）
-        try { if (typeof _appendMemoryBadge === 'function') _appendMemoryBadge(resultDiv, r, 'full'); } catch(_mb){}
+        // v51：靜月記事本前端入口已移除
         try { if (typeof _appendFollowUpUI === 'function') _appendFollowUpUI(resultDiv, 'full'); } catch(_fu) {}
         // ★ v28：sticky-cta（核彈路徑）
         try {
@@ -22732,7 +22724,7 @@ function _renderTarotAIResult(container, r, admin) {
   } catch(_animErr) { console.warn('[Anim:tarot]', _animErr); }
 
   // ═══ 追問 + 補抽牌 UI ═══
-  try { if (typeof _appendMemoryBadge === 'function') _appendMemoryBadge(container, r, 'tarot'); } catch(_mb){}
+  // v51：靜月記事本前端入口已移除
   _appendFollowUpUI(container, 'tarot');
 }
 
@@ -22821,185 +22813,6 @@ function _showTrialBanner() {
   } catch(_e) {}
 }
 
-// ═══════════════════════════════════════════════════════════════
-// v48 Step 5：靜月記事本 UI
-// - _appendMemoryBadge(container, result, sourceMode)：結果頁掛一個徽章
-// - _openMemoryModal()：開全部記憶列表 modal
-// - 只對登入用戶顯示（未登入時 _JY_SESSION_TOKEN 為空）
-// ═══════════════════════════════════════════════════════════════
-function _appendMemoryBadge(container, result, sourceMode) {
-  try {
-    if (!container) return;
-    // 未登入（或匿名）不顯示
-    if (!window._JY_SESSION_TOKEN) return;
-    // 追問模式不顯示（追問不寫記憶）
-    if (sourceMode === 'fu' || sourceMode === 'followup') return;
-    var notes = (result && Array.isArray(result.memoryNotes)) ? result.memoryNotes : [];
-    // 主路徑：本次 AI 有產出 memoryNotes；就算是 0 條也要顯示入口（讓用戶可查歷史）
-    var count = notes.length;
-    // 移除舊徽章（如果結果頁重繪）
-    try {
-      var _old = container.querySelector('.jy-mem-badge');
-      if (_old) _old.remove();
-    } catch(_){}
-    var badge = document.createElement('div');
-    badge.className = 'jy-mem-badge';
-    badge.style.cssText = 'margin:1.1rem .2rem .2rem;padding:.85rem 1rem;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.06));border:1px solid rgba(212,175,55,.25);display:flex;align-items:center;justify-content:space-between;gap:.6rem;cursor:pointer;transition:all .25s';
-    badge.onmouseenter = function(){ badge.style.background='linear-gradient(135deg,rgba(212,175,55,.14),rgba(139,92,246,.1))'; };
-    badge.onmouseleave = function(){ badge.style.background='linear-gradient(135deg,rgba(212,175,55,.08),rgba(139,92,246,.06))'; };
-    var countTxt = count > 0
-      ? '本次已記下 <strong style="color:#d4af37">' + count + ' 條</strong>重點供下次參考'
-      : '查看我過去的靜月記事本';
-    badge.innerHTML =
-      '<div style="display:flex;align-items:center;gap:.6rem;flex:1;min-width:0">' +
-        '<span style="font-size:1.3rem;flex:none">📖</span>' +
-        '<div style="font-size:.82rem;color:#d4c098;line-height:1.4;min-width:0">' +
-          '<div style="font-weight:600;color:#e8d9a8">靜月記事本</div>' +
-          '<div style="font-size:.72rem;color:#a09880;margin-top:.15rem">' + countTxt + '</div>' +
-        '</div>' +
-      '</div>' +
-      '<span style="color:#d4af37;font-size:.75rem;flex:none;padding:.3rem .7rem;border-radius:8px;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3)">查看 ›</span>';
-    badge.addEventListener('click', function(){ _openMemoryModal(); });
-    container.appendChild(badge);
-  } catch(_e) { try { console.warn('[memory badge]', _e); } catch(_){} }
-}
-
-function _openMemoryModal() {
-  var existed = document.getElementById('jy-mem-modal');
-  if (existed) existed.remove();
-  var m = document.createElement('div');
-  m.id = 'jy-mem-modal';
-  m.style.cssText = 'position:fixed;inset:0;z-index:99998;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);padding:0';
-  m.innerHTML =
-    '<div style="width:100%;max-width:520px;max-height:92vh;background:linear-gradient(155deg,#1a1410,#231a14);border:1px solid rgba(212,175,55,.3);border-radius:18px 18px 0 0;padding:1.3rem 1.1rem 1.6rem;box-shadow:0 -24px 80px rgba(0,0,0,.6);overflow-y:auto;-webkit-overflow-scrolling:touch">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">' +
-        '<div style="display:flex;align-items:center;gap:.5rem">' +
-          '<span style="font-size:1.3rem">📖</span>' +
-          '<h3 style="color:#d4af37;font-size:1rem;margin:0;font-weight:600">靜月記事本</h3>' +
-        '</div>' +
-        '<button onclick="document.getElementById(\'jy-mem-modal\').remove()" style="background:transparent;border:none;color:#a09880;font-size:1.4rem;cursor:pointer;padding:.2rem .6rem;line-height:1">×</button>' +
-      '</div>' +
-      '<p style="color:#a09880;font-size:.72rem;line-height:1.6;margin:0 0 .9rem">靜月每次讀完盤都會記下你最值得半年後驗證的幾條判斷，下次讀盤時自動當作背景。最多 30 條、365 天後自動過期。</p>' +
-      '<div id="jy-mem-modal-body" style="min-height:200px"><div style="text-align:center;padding:2rem;color:#a09880;font-size:.8rem">讀取中…</div></div>' +
-      '<div id="jy-mem-modal-actions" style="margin-top:1rem;display:none;justify-content:flex-end"></div>' +
-    '</div>';
-  m.addEventListener('click', function(e){ if(e.target === m) m.remove(); });
-  document.body.appendChild(m);
-  _loadUserMemoryList();
-}
-
-async function _loadUserMemoryList() {
-  var body = document.getElementById('jy-mem-modal-body');
-  var actions = document.getElementById('jy-mem-modal-actions');
-  if (!body) return;
-  if (!window._JY_SESSION_TOKEN) {
-    body.innerHTML = '<div style="text-align:center;padding:2rem;color:#a09880;font-size:.8rem">請先登入才能查看個人記事本</div>';
-    return;
-  }
-  var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
-  try {
-    var r = await fetch(AI_URL + '/user/memory', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_token: window._JY_SESSION_TOKEN })
-    });
-    var data = await r.json();
-    if (!data.ok) {
-      body.innerHTML = '<div style="text-align:center;padding:2rem;color:#e9a875;font-size:.8rem">' + (data.error === 'not_logged_in' ? '請先登入' : ('載入失敗：' + (data.error || '未知錯誤'))) + '</div>';
-      return;
-    }
-    var notes = data.notes || [];
-    if (notes.length === 0) {
-      body.innerHTML = '<div style="text-align:center;padding:2rem 1rem;color:#a09880;font-size:.82rem;line-height:1.7">目前還沒有記事本內容。<br><span style="font-size:.72rem;opacity:.75">讀過盤後，靜月會自動記下最值得驗證的判斷。</span></div>';
-      if (actions) actions.style.display = 'none';
-      return;
-    }
-    var modeLabels = { full: '七維度', tarot: '塔羅', ootk: '開鑰' };
-    var modeColors = { full: 'rgba(212,175,55,.18);color:#d4af37', tarot: 'rgba(192,132,252,.18);color:#c084fc', ootk: 'rgba(52,211,153,.18);color:#34d399' };
-    var html = '<div style="display:flex;flex-direction:column;gap:.6rem">';
-    notes.forEach(function(n, idx) {
-      var d = new Date(n.t || 0);
-      var ymd = d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
-      var modeLabel = modeLabels[n.mode] || (n.mode || '—');
-      var modeColor = modeColors[n.mode] || 'rgba(122,127,142,.15);color:#a09880';
-      var systemsHtml = (n.systems && n.systems.length)
-        ? '<div style="margin-top:.35rem;font-size:.64rem;color:#7d7260">來自：' + n.systems.map(function(s){ return _esc(s); }).join('・') + '</div>'
-        : '';
-      var tVal = Number(n.t) || 0;
-      var insightSafe = String(n.insight || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
-      html +=
-        '<div style="background:rgba(255,255,255,.02);border:1px solid rgba(212,175,55,.12);border-radius:10px;padding:.7rem .85rem">' +
-          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;margin-bottom:.4rem;flex-wrap:wrap">' +
-            '<div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center">' +
-              '<span style="padding:.1rem .45rem;border-radius:4px;background:' + modeColor + ';font-size:.65rem;font-weight:600">' + modeLabel + '</span>' +
-              '<span style="padding:.1rem .45rem;border-radius:4px;background:rgba(251,191,36,.1);color:#fbbf24;font-size:.65rem">' + _esc(n.topic || '整體') + '</span>' +
-              '<span style="padding:.1rem .45rem;border-radius:4px;background:rgba(122,127,142,.12);color:#a09880;font-size:.65rem">⏱ ' + _esc(n.timeWindow || '無時限') + '</span>' +
-              '<span style="font-size:.62rem;color:#7d7260">' + ymd + '</span>' +
-            '</div>' +
-            '<button onclick="_deleteMyMemoryNote(' + tVal + ",'" + insightSafe + "')" + '" style="padding:.2rem .5rem;border-radius:5px;background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);font-size:.65rem;cursor:pointer;white-space:nowrap">🗑</button>' +
-          '</div>' +
-          '<div style="font-size:.82rem;line-height:1.55;color:#e8d9a8">' + _esc(n.insight || '') + '</div>' +
-          systemsHtml +
-        '</div>';
-    });
-    html += '</div>';
-    html += '<div style="text-align:center;margin-top:.9rem;font-size:.66rem;color:#7d7260">共 ' + notes.length + ' / ' + (data.maxEntries || 30) + ' 條</div>';
-    body.innerHTML = html;
-    if (actions) {
-      actions.style.display = 'flex';
-      actions.innerHTML = '<button onclick="_clearMyMemory()" style="padding:.45rem 1rem;border-radius:8px;background:rgba(248,113,113,.08);color:#f87171;border:1px solid rgba(248,113,113,.25);font-size:.74rem;cursor:pointer;font-family:inherit">🗑 全部清除</button>';
-    }
-  } catch(e) {
-    body.innerHTML = '<div style="text-align:center;padding:2rem;color:#e9a875;font-size:.8rem">錯誤：' + _esc(e.message || String(e)) + '</div>';
-  }
-}
-
-// 前端 _esc 可能不存在（ai-analysis.js 裡沒全域定義），建一個保底
-function _esc(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-async function _deleteMyMemoryNote(t, insight) {
-  if (!window._JY_SESSION_TOKEN) return;
-  if (!confirm('確定刪除這條記憶？')) return;
-  var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
-  try {
-    var r = await fetch(AI_URL + '/user/memory-delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_token: window._JY_SESSION_TOKEN, t: t, insight: insight })
-    });
-    var data = await r.json();
-    if (data.ok) { _loadUserMemoryList(); }
-    else { alert('刪除失敗：' + (data.error || '')); }
-  } catch(e) { alert('錯誤：' + e.message); }
-}
-
-async function _clearMyMemory() {
-  if (!window._JY_SESSION_TOKEN) return;
-  if (!confirm('確定清除全部記事本？此動作無法復原。')) return;
-  var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
-  try {
-    var r = await fetch(AI_URL + '/user/memory-clear', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_token: window._JY_SESSION_TOKEN })
-    });
-    var data = await r.json();
-    if (data.ok) { _loadUserMemoryList(); }
-    else { alert('清除失敗：' + (data.error || '')); }
-  } catch(e) { alert('錯誤：' + e.message); }
-}
-
-// Expose globally (for inline onclick)
-try {
-  window._openMemoryModal = _openMemoryModal;
-  window._deleteMyMemoryNote = _deleteMyMemoryNote;
-  window._clearMyMemory = _clearMyMemory;
-  window._loadUserMemoryList = _loadUserMemoryList;
-} catch(_){}
 
 function _appendFollowUpUI(container, sourceMode, insertAfterEl) {
   // ★ v15：追問不限次數（付費限制由 Worker 控制）
@@ -24148,7 +23961,7 @@ function _renderOOTKResult(container, r, admin) {
   } catch(_animErr) { console.warn('[Anim:ootk]', _animErr); }
 
   // 追問
-  try { if (typeof _appendMemoryBadge === 'function') _appendMemoryBadge(container, r, 'ootk'); } catch(_mb){}
+  // v51：靜月記事本前端入口已移除
   _appendFollowUpUI(container, 'ootk');
 }
 
