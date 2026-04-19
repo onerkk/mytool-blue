@@ -441,6 +441,110 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v49+：Opus 4.7 Effort Level 卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>🎯 Opus 4.7 Effort Level</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px">
+          控制付費深度（七維度/塔羅/開鑰選 Opus 深度）的 thinking effort。切換後<strong style="color:var(--accent)">即時生效</strong>不需重新部署 Worker。
+        </p>
+
+        <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02);margin-bottom:12px">
+          <div style="display:flex;flex-direction:column;gap:10px" id="opusEffortRadios">
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer" data-level="max">
+              <input type="radio" name="oe-level" value="max" style="margin-top:2px" />
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600;color:var(--accent)">max（極深，預設）</div>
+                <div style="font-size:11px;color:var(--text-dim);line-height:1.55;margin-top:3px">
+                  2026/4 官方新選項 · intelligence-demanding tasks 最高等級<br>
+                  thinking 32K tokens · 單次 <strong>3-5 分鐘</strong> · 判讀最深 · 成本最高<br>
+                  <span style="color:#fbbf24">⚠ 實測可能超時，前端 timeout 已設 5 分鐘</span>
+                </div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer" data-level="xhigh">
+              <input type="radio" name="oe-level" value="xhigh" style="margin-top:2px" />
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600;color:var(--text)">xhigh（深度，v47 原配置）</div>
+                <div style="font-size:11px;color:var(--text-dim);line-height:1.55;margin-top:3px">
+                  thinking 32K tokens · 單次 <strong>1.5-3 分鐘</strong> · 已實測穩定<br>
+                  品質與 max 差距 5-10% · 體驗最平衡<br>
+                  <span style="color:#22c55e">✓ 遇到 max 超時問題時建議降到此級別</span>
+                </div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer" data-level="high">
+              <input type="radio" name="oe-level" value="high" style="margin-top:2px" />
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600;color:var(--text)">high（快速）</div>
+                <div style="font-size:11px;color:var(--text-dim);line-height:1.55;margin-top:3px">
+                  thinking 16K tokens · 單次 <strong>30-90 秒</strong> · 成本最低<br>
+                  品質比 xhigh 約低 10-15% · 緊急情況退回用<br>
+                  <span style="color:var(--text-dim)">付費用戶體感可能與 Sonnet 差異不明顯</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveOpus47Effort()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Effort Level</button>
+          <span id="oeStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+        <div style="margin-top:12px;padding:10px;border-radius:8px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);font-size:11px;color:var(--text-dim);line-height:1.6">
+          <strong style="color:var(--accent)">使用建議</strong>：先用 max 跑 3-5 次感受實際時間。若頻繁超時或用戶抱怨等太久，降到 xhigh。<br>
+          只對 <strong>Opus 4.7 付費深度</strong>生效。其他模型（Sonnet/Haiku/Opus 4.6）不受影響。
+        </div>
+      </div>
+
+      <!-- ═══ v49：Haiku 4.5 Extended Thinking 卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>🧠 Haiku 4.5 Extended Thinking</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px">
+          Haiku 4.5 是第一個支援 extended thinking 的 Haiku。實測品質 6.20 → 7.29（+17%）。命理推理屬 multi-step reasoning，建議保持開啟。
+        </p>
+
+        <!-- 全域開關 -->
+        <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02);margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" id="ht-enabled" style="width:18px;height:18px;cursor:pointer" />
+            <span style="font-size:13px;font-weight:600">全域啟用 Haiku Thinking</span>
+          </label>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.55;padding-left:28px">
+            關閉 = Haiku 退回原本模式（成本較低但品質下降）<br>
+            預設開啟，成本從 Sonnet 1/10 → 約 1/3
+          </div>
+        </div>
+
+        <!-- Budget Tokens -->
+        <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02);margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+            <span style="font-size:13px;font-weight:600;min-width:120px">Thinking Budget</span>
+            <input type="number" id="ht-budget" step="500" min="1024" max="8000" value="4000" style="width:110px;padding:8px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px" />
+            <span style="font-size:11px;color:var(--text-dim)">tokens（1024-8000）</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-dim);padding-left:0;line-height:1.55">
+            預設 4000（官方 code review benchmark 驗證值）。提高 → 推理更深但成本更高。降低 → 省成本但深度下降。
+          </div>
+        </div>
+
+        <!-- 追問是否開 -->
+        <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02);margin-bottom:12px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+            <input type="checkbox" id="ht-include-followup" style="width:18px;height:18px;cursor:pointer" />
+            <span style="font-size:13px;font-weight:600">追問也開 Thinking</span>
+          </label>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.55;padding-left:28px">
+            關閉 = 追問走原本模式（省一半成本）<br>
+            開啟 = 追問也用 thinking（品質一致但成本較高）
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveHaikuThinking()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Haiku Thinking</button>
+          <span id="htStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v44：定價設定卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>💰 定價設定</h3>
@@ -640,7 +744,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47Effort(); loadHaikuThinking(); }
   });
 });
 
@@ -1475,6 +1579,125 @@ async function saveFollowupConfig() {
       var onCount = 0;
       _FU_MODULE_META.forEach(function(m) { if (modules[m.key]) onCount++; });
       if (statusEl) statusEl.textContent = '每筆綁 ' + pr + ' 次｜模組 ' + onCount + '/' + _FU_MODULE_META.length + ' 啟用';
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v49+：Opus 4.7 Effort Level Config
+// ═══════════════════════════════════════════════
+async function loadOpus47Effort() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/opus47-effort-config?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) return;
+    const level = (data.config && data.config.level) || 'max';
+    // 設定 radio
+    const radios = document.querySelectorAll('input[name="oe-level"]');
+    radios.forEach(function(rb) { rb.checked = (rb.value === level); });
+    // 高亮當前選擇的卡片
+    _oeHighlight(level);
+    // 狀態顯示
+    const statusEl = document.getElementById('oeStatus');
+    if (statusEl) statusEl.textContent = '當前: ' + level;
+  } catch(e) {
+    console.error('[loadOpus47Effort]', e);
+  }
+}
+
+function _oeHighlight(level) {
+  const labels = document.querySelectorAll('#opusEffortRadios label[data-level]');
+  labels.forEach(function(lb) {
+    if (lb.dataset.level === level) {
+      lb.style.borderColor = 'rgba(212,175,55,.5)';
+      lb.style.background = 'rgba(212,175,55,.08)';
+    } else {
+      lb.style.borderColor = 'var(--card-border)';
+      lb.style.background = '#0d0f14';
+    }
+  });
+}
+
+async function saveOpus47Effort() {
+  const statusEl = document.getElementById('oeStatus');
+  try {
+    const checked = document.querySelector('input[name="oe-level"]:checked');
+    const level = checked ? checked.value : 'max';
+    const r = await fetch(`${WORKER_URL}/admin/opus47-effort-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level: level })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Effort Level: ' + level);
+      _oeHighlight(level);
+      if (statusEl) statusEl.textContent = '當前: ' + level + '（剛剛儲存）';
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// 綁定 radio change 事件做即時高亮
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.name === 'oe-level') {
+    _oeHighlight(e.target.value);
+  }
+});
+
+// ═══════════════════════════════════════════════
+// v49：Haiku 4.5 Extended Thinking Config
+// ═══════════════════════════════════════════════
+async function loadHaikuThinking() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/haiku-thinking-config?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) return;
+    const cfg = data.config || {};
+    const enEl = document.getElementById('ht-enabled');
+    const bgEl = document.getElementById('ht-budget');
+    const fuEl = document.getElementById('ht-include-followup');
+    if (enEl) enEl.checked = (cfg.enabled !== false);
+    if (bgEl) bgEl.value = (typeof cfg.budgetTokens === 'number') ? cfg.budgetTokens : 4000;
+    if (fuEl) fuEl.checked = (cfg.includeFollowup !== false);
+    const statusEl = document.getElementById('htStatus');
+    if (statusEl) {
+      statusEl.textContent = (cfg.enabled !== false ? '✓ 已啟用' : '✗ 已停用') + ' · budget ' + (cfg.budgetTokens || 4000);
+    }
+  } catch(e) {
+    console.error('[loadHaikuThinking]', e);
+  }
+}
+
+async function saveHaikuThinking() {
+  const statusEl = document.getElementById('htStatus');
+  try {
+    const enEl = document.getElementById('ht-enabled');
+    const bgEl = document.getElementById('ht-budget');
+    const fuEl = document.getElementById('ht-include-followup');
+    const enabled = enEl ? !!enEl.checked : true;
+    var budget = bgEl ? parseInt(bgEl.value) : 4000;
+    if (isNaN(budget) || budget < 1024) budget = 1024;
+    if (budget > 8000) budget = 8000;
+    const includeFollowup = fuEl ? !!fuEl.checked : true;
+    const r = await fetch(`${WORKER_URL}/admin/haiku-thinking-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: enabled, budgetTokens: budget, includeFollowup: includeFollowup })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Haiku Thinking');
+      if (statusEl) {
+        statusEl.textContent = (enabled ? '✓ 已啟用' : '✗ 已停用') + ' · budget ' + budget;
+      }
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
