@@ -403,7 +403,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div style="font-size:11px;color:#fbbf24;font-weight:600;margin-bottom:4px">⚡ 成本參考</div>
           <div style="font-size:11px;color:var(--text-dim);line-height:1.8">
             Sonnet 七維度 ≈ NT$25/次｜塔羅 ≈ NT$5-7/次<br>
-            Haiku 約為 Sonnet 的 1/10 成本，但品質可能下降<br>
+            Haiku 約為 Sonnet 的 1/3 成本，開 thinking 後約 1/2–2/3；品質實測 +17%<br>
             Opus 4.7 使用新 tokenizer，同樣文字可能多產 35% tokens
           </div>
         </div>
@@ -438,58 +438,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button onclick="saveFollowupConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存追問設定</button>
           <span id="fcStatus" style="font-size:12px;color:var(--text-dim)"></span>
-        </div>
-      </div>
-
-      <!-- ═══ v49：Haiku 4.5 Thinking 設定卡片 ═══ -->
-      <div class="worker-card" style="margin-bottom:16px">
-        <h3>🧠 Haiku 4.5 Extended Thinking</h3>
-        <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px">
-          Haiku 4.5 是 Anthropic 首個支援 extended thinking 的 Haiku 模型。開啟後 Haiku 會先「思考」再回答，命理推理品質實測 +17%（基準分 6.20→7.29，贏率 58%）。<br>
-          <span style="color:#fbbf24">成本影響：</span>thinking tokens 按 output 計費（$5/MTok），預估每次 +NT$0.3-0.5。
-        </p>
-
-        <!-- 總開關 -->
-        <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02);margin-bottom:14px">
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-            <input type="checkbox" id="ht-enabled" style="width:18px;height:18px;cursor:pointer" />
-            <span style="font-size:13px;font-weight:600">啟用 Haiku Thinking（總開關）</span>
-          </label>
-          <div style="margin-top:6px;margin-left:28px;font-size:11px;color:var(--text-dim)">
-            關閉 = Haiku 退回原本行為（無 thinking，僅直接推理）<br>
-            開啟 = 命理深度判讀品質明顯提升，但單次成本增加 30-40%
-          </div>
-        </div>
-
-        <!-- Thinking budget -->
-        <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02);margin-bottom:14px">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:13px;font-weight:600;min-width:160px">Thinking Budget (tokens)</span>
-            <input type="number" id="ht-budget" step="500" min="1024" max="8000" value="4000" style="width:100px;padding:8px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px" />
-            <span style="font-size:11px;color:var(--text-dim)">範圍 1024-8000，預設 4000</span>
-          </div>
-          <div style="margin-top:8px;font-size:11px;color:var(--text-dim);line-height:1.8">
-            <span style="color:#60a5fa">2000</span>：最省，簡單題夠用，複雜格局不夠深<br>
-            <span style="color:#fbbf24">4000</span>：推薦值（官方 benchmark 用 4096 跑出 58% 勝率）<br>
-            <span style="color:#f87171">8000</span>：最深度，成本也最高；命理一般用不到那麼多
-          </div>
-        </div>
-
-        <!-- 追問是否開 -->
-        <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02);margin-bottom:14px">
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-            <input type="checkbox" id="ht-include-followup" style="width:18px;height:18px;cursor:pointer" />
-            <span style="font-size:13px;font-weight:600">追問也啟用 Thinking</span>
-          </label>
-          <div style="margin-top:6px;margin-left:28px;font-size:11px;color:var(--text-dim)">
-            打勾 = 追問也用 thinking（品質高、成本高）<br>
-            不打勾 = 追問跳過 thinking（省成本；追問通常比主解讀簡單）
-          </div>
-        </div>
-
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="saveHaikuThinkingConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Haiku Thinking 設定</button>
-          <span id="htStatus" style="font-size:12px;color:var(--text-dim)"></span>
         </div>
       </div>
 
@@ -692,7 +640,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadHaikuThinkingConfig(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); }
   });
 });
 
@@ -1527,74 +1475,6 @@ async function saveFollowupConfig() {
       var onCount = 0;
       _FU_MODULE_META.forEach(function(m) { if (modules[m.key]) onCount++; });
       if (statusEl) statusEl.textContent = '每筆綁 ' + pr + ' 次｜模組 ' + onCount + '/' + _FU_MODULE_META.length + ' 啟用';
-    } else {
-      toast('儲存失敗: ' + (data.error || ''));
-    }
-  } catch(e) {
-    toast('錯誤: ' + e.message);
-  }
-}
-
-// ═══════════════════════════════════════════════
-// Haiku 4.5 Thinking Config (v49)
-// ═══════════════════════════════════════════════
-async function loadHaikuThinkingConfig() {
-  const statusEl = document.getElementById('htStatus');
-  try {
-    const r = await fetch(`${WORKER_URL}/admin/haiku-thinking-config?token=${encodeURIComponent(adminToken)}`);
-    const data = await r.json();
-    if (data.ok && data.config) {
-      const cfg = data.config;
-      const enEl = document.getElementById('ht-enabled');
-      const bdEl = document.getElementById('ht-budget');
-      const fuEl = document.getElementById('ht-include-followup');
-      if (enEl) enEl.checked = (cfg.enabled !== false);
-      if (bdEl) bdEl.value = (typeof cfg.budgetTokens === 'number') ? cfg.budgetTokens : 4000;
-      if (fuEl) fuEl.checked = (cfg.includeFollowup !== false);
-      if (statusEl) {
-        statusEl.textContent = cfg.enabled
-          ? ('已啟用｜Budget ' + cfg.budgetTokens + ' tokens｜追問' + (cfg.includeFollowup ? '也開' : '不開'))
-          : '目前關閉';
-      }
-    } else {
-      // 預設全開
-      const enEl = document.getElementById('ht-enabled');
-      const bdEl = document.getElementById('ht-budget');
-      const fuEl = document.getElementById('ht-include-followup');
-      if (enEl) enEl.checked = true;
-      if (bdEl) bdEl.value = 4000;
-      if (fuEl) fuEl.checked = true;
-      if (statusEl) statusEl.textContent = '使用預設值';
-    }
-  } catch(e) {
-    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
-  }
-}
-
-async function saveHaikuThinkingConfig() {
-  const statusEl = document.getElementById('htStatus');
-  try {
-    const enEl = document.getElementById('ht-enabled');
-    const bdEl = document.getElementById('ht-budget');
-    const fuEl = document.getElementById('ht-include-followup');
-    const enabled = enEl ? !!enEl.checked : true;
-    var budget = parseInt(bdEl ? bdEl.value : '4000');
-    if (isNaN(budget) || budget < 1024) budget = 1024;
-    if (budget > 8000) budget = 8000;
-    const includeFollowup = fuEl ? !!fuEl.checked : true;
-    const r = await fetch(`${WORKER_URL}/admin/haiku-thinking-config?token=${encodeURIComponent(adminToken)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled: enabled, budgetTokens: budget, includeFollowup: includeFollowup })
-    });
-    const data = await r.json();
-    if (data.ok) {
-      toast('✓ 已儲存 Haiku Thinking 設定');
-      if (statusEl) {
-        statusEl.textContent = enabled
-          ? ('已啟用｜Budget ' + budget + '｜追問' + (includeFollowup ? '也開' : '不開'))
-          : '目前關閉';
-      }
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
