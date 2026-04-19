@@ -13929,7 +13929,7 @@ function _injectAIButton() {
       '<div style="font-size:1.2rem;margin-bottom:.5rem">🔒</div>' +
       '<div style="font-size:.9rem;color:var(--c-gold);font-weight:600;margin-bottom:.3rem">今日免費額度已用盡</div>' +
       '<div style="font-size:.72rem;color:var(--c-text-dim);opacity:.6;margin-bottom:1rem">三套工具各免費體驗 1 次</div>' +
-      '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🔮 開通會員 NT$1,299/月</button>' +
+      '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🔮 開通會員（NT$999 起）</button>' +
       '</div>' +
       // ★ 即使免費用完，仍顯示 Opus 付費入口
       _buildOpusUpsellHTML() +
@@ -13964,7 +13964,7 @@ function _injectAIButton() {
           '• 語氣像坐在你對面的人跟你說話' +
         '</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' +
-          (admin ? '🔧 管理員・無限使用' : '會員每月 2 次免費・額外半價 NT$49｜非會員 NT$99') +
+          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$99｜非會員 NT$169') +
         '</div>' +
       '</div>' +
     '</div>' +
@@ -14052,7 +14052,7 @@ function _showOpusPayModal(code, mode) {
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="_jyStartPayment(\'' + payMode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.18),rgba(147,51,234,.06));color:#c084fc;font-size:.9rem;font-weight:700;border:1.5px solid rgba(147,51,234,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(147,51,234,.12)">🔮 單次深度解析 ' + price + '</button>' +
-        '<button onclick="_jyStartPayment(\'' + payMode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(212,175,55,.25);cursor:pointer;font-family:inherit">🌙 會員 NT$1,299/月（含深度解析每月 2 次免費）</button>' +
+        '<button onclick="_jyStartPayment(\'' + payMode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(212,175,55,.25);cursor:pointer;font-family:inherit">🌙 查看會員方案（NT$999／NT$1,999）</button>' +
         '<button onclick="document.getElementById(\'jy-opus-pay-modal\').remove()" style="width:200px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.1rem">返回</button>' +
       '</div>' +
     '</div>';
@@ -20662,15 +20662,15 @@ renderTarot = function(){
       if (err.status === 429 && !admin) {
         try{ var __subE2 = parseInt(localStorage.getItem('_jy_sub_expires')||'0'); if (__subE2 <= Date.now()) _aiMarkUsed(); }catch(_e){}
         var _errCode = err.code || '';
-        var _errIcon = '🌙', _errTitle = '七維度免費體驗已用完', _errDesc = '開通會員繼續使用<br>塔羅每日 3 次＋七維度每月 5 次＋📷照片分析';
-        if (_errCode === '7D_MONTHLY_USED') { _errIcon = '📊'; _errTitle = '本月七維度配額已用完'; _errDesc = '會員每月 5 次七維度（塔羅/開鑰不受影響）<br>或單次購買 NT$69'; }
+        var _errIcon = '🌙', _errTitle = '七維度免費體驗已用完', _errDesc = '開通會員或單次購買<br>標準會員 NT$999／高級會員 NT$1,999';
+        if (_errCode === '7D_MONTHLY_USED') { _errIcon = '📊'; _errTitle = '本月七維度配額已用完'; _errDesc = '高級會員每月 5 次・標準會員每月 2 次<br>或單次購買 NT$79'; }
         else if (_errCode === 'SUB_DAILY_USED') { _errIcon = '⏰'; _errTitle = '今日配額已用完'; _errDesc = '明天再來，或單次購買 NT$69'; }
         else if (_errCode === 'PHOTO_MEMBER_ONLY') { _errIcon = '📷'; _errTitle = '照片分析是會員專屬功能'; _errDesc = '開通會員即可上傳面相＋手相＋水晶照片<br>讓七維度分析更深入精準'; }
         resultDiv.innerHTML = '<div style="text-align:center;padding:1.2rem">' +
           '<div style="font-size:1.4rem;margin-bottom:.5rem">' + _errIcon + '</div>' +
           '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">' + _errTitle + '</div>' +
           '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">' + _errDesc + '</div>' +
-          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員 NT$1,299/月</button>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員（NT$999 起）</button>' +
           '</div>';
       } else {
         // ★ v51：區分 SSE 真實錯誤訊息（非 admin 用戶也要看到具體原因）
@@ -22050,7 +22050,7 @@ async function _triggerTarotAI() {
           '</button>' +
         '</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5">' +
-          (admin ? '🔧 管理員・無限使用' : '會員每月 2 次免費・額外半價 NT$29｜非會員 NT$49') +
+          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$49｜非會員 NT$79') +
         '</div>' +
       '</div>';
     return;
@@ -22479,7 +22479,7 @@ async function _triggerTarotAI() {
     console.error('[TarotAI]', err);
     if (err.status === 429 || (err.code && (err.code.indexOf('RATE') >= 0 || err.code.indexOf('FREE') >= 0 || err.code.indexOf('DAILY') >= 0 || err.code.indexOf('USED') >= 0))) {
       var _tErrCode = err.code || '';
-      var _tIcon = '🃏', _tTitle = '塔羅免費體驗已用完', _tDesc = '開通會員繼續使用<br>塔羅每日 3 次＋七維度每月 5 次＋📷照片分析';
+      var _tIcon = '🃏', _tTitle = '塔羅免費體驗已用完', _tDesc = '開通會員或單次購買<br>標準會員 NT$999／高級會員 NT$1,999';
       if (_tErrCode === 'SUB_DAILY_USED') { _tIcon = '⏰'; _tTitle = '今日塔羅/開鑰配額已用完'; _tDesc = '明天再來，或單次購買 NT$29'; }
       var _tMode = (window._jyActiveResultMode === 'ootk') ? 'ootk' : 'tarot_only';
       resultDiv.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
@@ -22487,7 +22487,7 @@ async function _triggerTarotAI() {
         '<div style="font-size:.95rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">' + _tTitle + '</div>' +
         '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">' + _tDesc + '</div>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'' + _tMode + '\')" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員 NT$1,299/月</button>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'' + _tMode + '\')" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員（NT$999 起）</button>' +
         '</div>' +
       '</div>';
     } else {
@@ -22897,7 +22897,7 @@ function _showTrialBanner() {
     
     banner.innerHTML =
       '<div style="font-size:.75rem;color:rgba(212,175,55,.8);font-weight:600;margin-bottom:.2rem">🌙 ' + usesText + '</div>' +
-      '<div style="font-size:.68rem;color:var(--c-text-dim);line-height:1.6">開通會員 NT$1,299/月 → 七維度每月 5 次＋塔羅每日 3 次＋開鑰每日 3 次＋📷照片分析</div>';
+      '<div style="font-size:.68rem;color:var(--c-text-dim);line-height:1.6">標準會員 NT$999/月 → 塔羅＋開鑰每日各 1 次・七維度每月 2 次<br>高級會員 NT$1,999/月 → 塔羅＋開鑰每日各 2 次・七維度每月 5 次・深度解析每月 1 次免費・📷照片分析</div>';
     
     var targets = ['tarot-followup-area', 'jy-closing-full', 'jy-closing-tarot', 'jy-closing-ootk', 'result-area'];
     for (var i = 0; i < targets.length; i++) {
@@ -24445,9 +24445,9 @@ window._jyStartOOTK = function() {
       md.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
         '<div style="font-size:1.8rem;margin-bottom:.6rem">' + (_ootkFreeUp ? '⏰' : '🔑') + '</div>' +
         '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">' + (_ootkFreeUp ? '開鑰免費體驗已用完' : '免費次數已用完') + '</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">開通會員 → 塔羅每日 3 次＋七維度每月 5 次＋📷照片分析</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">標準會員 NT$999 → 塔羅＋開鑰每日各 1 次・七維度每月 2 次<br>高級會員 NT$1,999 → 塔羅＋開鑰每日各 2 次・七維度每月 5 次・📷照片分析</div>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-        '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'subscription\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🌙 開通會員 NT$1,299/月</button>' +
+        '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'subscription\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🌙 開通會員（NT$999 起）</button>' +
         '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'single\');" style="width:220px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text,#e8dcc8);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit">⚡ 開鑰單次 NT$29</button>' +
         '<button onclick="document.getElementById(\'ootk-used-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用，謝謝</button>' +
         '</div>' +

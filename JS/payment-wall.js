@@ -8,40 +8,82 @@
   'use strict';
 
   var WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
-  var PRICE_SUB = 1299;
-  var PRICE_SINGLE = 69;
-  var PRICE_OPUS = 99;
-  var PRICE_SINGLE_FOLLOWUP = 19;
+  // v52 定價（2026/4/19 重構）
+  var PRICE_SUB_STANDARD = 999;       // 標準會員
+  var PRICE_SUB_PREMIUM = 1999;       // 高級會員（含 Opus 免費 1 次）
+  var PRICE_SUB = PRICE_SUB_STANDARD; // 向下相容別名
+  var PRICE_SINGLE_7D = 79;           // 七維度 Sonnet 單次
+  var PRICE_SINGLE_TAROT = 39;        // 塔羅 Sonnet 單次
+  var PRICE_SINGLE_OOTK = 39;         // 開鑰 Sonnet 單次
+  var PRICE_SINGLE = PRICE_SINGLE_7D; // 向下相容別名
+  var PRICE_OPUS_7D = 169;            // 七維度 Opus 單次（非會員/標準會員）
+  var PRICE_OPUS_TAROT = 79;          // 塔羅 Opus 單次（非會員/標準會員）
+  var PRICE_OPUS_OOTK = 79;           // 開鑰 Opus 單次（非會員/標準會員）
+  var PRICE_OPUS = PRICE_OPUS_7D;     // 向下相容別名
+  var PRICE_OPUS_7D_MEMBER = 99;      // 高級會員加購：七維度 Opus
+  var PRICE_OPUS_TAROT_MEMBER = 49;   // 高級會員加購：塔羅 Opus
+  var PRICE_OPUS_OOTK_MEMBER = 49;    // 高級會員加購：開鑰 Opus
+  var PRICE_SINGLE_FOLLOWUP = 29;     // 追問單次（只走 Sonnet；Opus 追問不開放）
 
   // ═══ 1. 付費牆 HTML ═══
 
   function _buildPaywallHTML(mode) {
-    var singlePrice = mode === 'full' ? 69 : 29;
-    var opusSinglePrice = (mode === 'tarot_only' || mode === 'ootk') ? 49 : 99;
+    var singlePrice = mode === 'full' ? PRICE_SINGLE_7D : (mode === 'tarot_only' ? PRICE_SINGLE_TAROT : PRICE_SINGLE_OOTK);
+    // v52: Opus 單次顯示「非會員/標準會員價」。高級會員結帳時 worker 自動判定給加購優惠
+    var opusSinglePrice = (mode === 'tarot_only') ? PRICE_OPUS_TAROT : (mode === 'ootk' ? PRICE_OPUS_OOTK : PRICE_OPUS_7D);
     var toolName = mode === 'full' ? '七維度' : (mode === 'tarot_only' ? '塔羅' : '開鑰');
-    return '<div style="max-width:360px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
-      '<div style="font-size:2.8rem;margin-bottom:.8rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
-      '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.1rem;margin-bottom:.3rem;font-family:var(--f-display,serif)">靜月會員</h3>' +
-      '<p style="font-size:1.3rem;color:var(--c-gold-pale,#f5e6b8);font-weight:700;margin-bottom:.15rem">NT$' + PRICE_SUB + '<span style="font-size:.7rem;font-weight:400;opacity:.7"> /月</span></p>' +
-      '<div style="font-size:.78rem;color:var(--c-text-dim,#a09880);line-height:1.8;margin-bottom:.8rem;text-align:left;padding:0 .4rem">' +
-        '🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">每日 3 次</strong><br>' +
-        '🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 5 次</strong><br>' +
-        '📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>' +
-        '🔮 深度解析 <strong style="color:#c084fc">每月 2 次免費</strong><br>' +
-        '⚡ 額外深度解析享 <strong style="color:#c084fc">會員半價</strong>' +
-      '</div>' +
-      '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-        '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#c9a84c);font-size:.9rem;font-weight:700;border:1.5px solid rgba(212,175,55,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(212,175,55,.12)">🌙 開通會員 NT$' + PRICE_SUB + '/月</button>' +
-        '<button onclick="_jyStartPayment(\'' + mode + '\',\'single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));color:var(--c-text,#e8dcc8);font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.12);cursor:pointer;font-family:inherit">⚡ ' + toolName + '單次 NT$' + singlePrice + '</button>' +
-        '<button onclick="_jyStartPayment(\'' + mode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.1),rgba(147,51,234,.04));color:#c084fc;font-size:.85rem;font-weight:600;border:1px solid rgba(147,51,234,.25);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + opusSinglePrice + '</button>' +
-        '<div style="font-size:.58rem;color:var(--c-text-muted,#7a7060);margin-top:-.1rem;opacity:.7">單次僅限信用卡・含追問</div>' +
-        '<div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;margin-top:.3rem">' +
-          '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">💳信用卡</span>' +
-          '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">🏧ATM</span>' +
-          '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">🏪超商</span>' +
+
+    // v52 付費牆：兩張會員卡（標準/高級）+ 單次 + Opus 單次
+    return '<div style="max-width:380px;width:92%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:1.8rem 1.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6);max-height:92vh;overflow-y:auto">' +
+      '<div style="font-size:2.4rem;margin-bottom:.5rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
+      '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.05rem;margin-bottom:.8rem;font-family:var(--f-display,serif)">選擇適合你的方案</h3>' +
+
+      // ── 標準會員卡 ──
+      '<div style="padding:.85rem .9rem;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);margin-bottom:.6rem;text-align:left">' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.35rem">' +
+          '<span style="font-size:.92rem;font-weight:700;color:var(--c-text,#e8dcc8)">標準會員</span>' +
+          '<span style="font-size:1rem;color:var(--c-gold,#c9a84c);font-weight:700">NT$' + PRICE_SUB_STANDARD + '<span style="font-size:.62rem;font-weight:400;opacity:.7"> /月</span></span>' +
         '</div>' +
-        '<div style="font-size:.6rem;color:var(--c-text-muted);margin-top:.2rem;opacity:.5">付款由綠界科技安全處理</div>' +
-        '<button onclick="var m=document.getElementById(\'jy-pay-modal\');if(m){m.remove();return;} var p=this.closest(\'[style*=text-align]\');if(p)p.innerHTML=\'<div style=padding:1rem;text-align:center;color:var(--c-text-muted);font-size:.8rem>需要時隨時回來 🌙</div>\';" style="width:200px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);font-size:.78rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.2rem">先不用，謝謝</button>' +
+        '<div style="font-size:.7rem;color:var(--c-text-dim,#a09880);line-height:1.75;margin-bottom:.55rem">' +
+          '🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">每日各 1 次</strong><br>' +
+          '🌙 七維度 <strong style="color:var(--c-gold)">每月 2 次</strong><br>' +
+          '📷 照片分析會員專屬<br>' +
+          '<span style="opacity:.7">深度解析需單次加購</span>' +
+        '</div>' +
+        '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription_standard\')" style="width:100%;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.14),rgba(212,175,55,.04));color:var(--c-gold,#c9a84c);font-size:.82rem;font-weight:700;border:1px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">開通標準會員</button>' +
+      '</div>' +
+
+      // ── 高級會員卡（推薦） ──
+      '<div style="padding:.85rem .9rem;border-radius:14px;background:rgba(212,175,55,.06);border:1.5px solid rgba(212,175,55,.4);margin-bottom:.6rem;text-align:left;position:relative">' +
+        '<div style="position:absolute;top:-.5rem;right:.7rem;padding:.1rem .45rem;border-radius:4px;background:var(--c-gold,#c9a84c);color:#1a0a0a;font-size:.54rem;font-weight:700;letter-spacing:.08em">推薦</div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.35rem">' +
+          '<span style="font-size:.92rem;font-weight:700;color:var(--c-gold,#c9a84c)">高級會員</span>' +
+          '<span style="font-size:1rem;color:var(--c-gold,#c9a84c);font-weight:700">NT$' + PRICE_SUB_PREMIUM + '<span style="font-size:.62rem;font-weight:400;opacity:.7"> /月</span></span>' +
+        '</div>' +
+        '<div style="font-size:.7rem;color:var(--c-text-dim,#a09880);line-height:1.75;margin-bottom:.55rem">' +
+          '🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">每日各 2 次</strong><br>' +
+          '🌙 七維度 <strong style="color:var(--c-gold)">每月 5 次</strong><br>' +
+          '🔮 深度解析 <strong style="color:#c084fc">每月 1 次免費</strong><br>' +
+          '⚡ 深度解析加購優惠 <strong style="color:#c084fc">七維 NT$99／塔羅開鑰 NT$49</strong><br>' +
+          '📷 照片分析會員專屬' +
+        '</div>' +
+        '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription_premium\')" style="width:100%;padding:11px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.22),rgba(212,175,55,.08));color:var(--c-gold,#c9a84c);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.55);cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(212,175,55,.15)">🌙 開通高級會員</button>' +
+      '</div>' +
+
+      // ── 單次購買區 ──
+      '<div style="display:flex;flex-direction:column;gap:.4rem;align-items:center;margin-top:.5rem">' +
+        '<div style="font-size:.62rem;color:var(--c-text-muted,#8a7d6b);letter-spacing:.05em;opacity:.7;margin-bottom:.1rem">── 或單次購買 ──</div>' +
+        '<button onclick="_jyStartPayment(\'' + mode + '\',\'single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));color:var(--c-text,#e8dcc8);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.12);cursor:pointer;font-family:inherit">⚡ ' + toolName + '單次 NT$' + singlePrice + '</button>' +
+        '<button onclick="_jyStartPayment(\'' + mode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.1),rgba(147,51,234,.04));color:#c084fc;font-size:.82rem;font-weight:600;border:1px solid rgba(147,51,234,.28);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + opusSinglePrice + '</button>' +
+        '<div style="font-size:.55rem;color:var(--c-text-muted,#7a7060);margin-top:-.1rem;opacity:.7">單次僅限信用卡・含 1 次免費追問</div>' +
+        '<div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;margin-top:.25rem">' +
+          '<span style="font-size:.56rem;padding:.12rem .38rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">💳信用卡</span>' +
+          '<span style="font-size:.56rem;padding:.12rem .38rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">🏧ATM</span>' +
+          '<span style="font-size:.56rem;padding:.12rem .38rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">🏪超商</span>' +
+          '<span style="font-size:.56rem;padding:.12rem .38rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">※單次僅限信用卡</span>' +
+        '</div>' +
+        '<div style="font-size:.56rem;color:var(--c-text-muted);margin-top:.15rem;opacity:.5">付款由綠界科技安全處理</div>' +
+        '<button onclick="var m=document.getElementById(\'jy-pay-modal\');if(m){m.remove();return;} var p=this.closest(\'[style*=text-align]\');if(p)p.innerHTML=\'<div style=padding:1rem;text-align:center;color:var(--c-text-muted);font-size:.8rem>需要時隨時回來 🌙</div>\';" style="width:200px;padding:9px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);font-size:.75rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.3rem">先不用，謝謝</button>' +
       '</div>' +
     '</div>';
   }
@@ -82,12 +124,13 @@
       if (payWin) {
         payWin.document.write(data.html);
         payWin.document.close();
-        var opusDisplayPrice = (mode === 'tarot_only' || mode === 'ootk') ? 49 : PRICE_OPUS;
-        var singleDisplayPrice = mode === 'full' ? 69 : 29;
+        var opusDisplayPrice = (mode === 'tarot_only') ? PRICE_OPUS_TAROT : (mode === 'ootk' ? PRICE_OPUS_OOTK : PRICE_OPUS_7D);
+        var singleDisplayPrice = mode === 'full' ? PRICE_SINGLE_7D : (mode === 'tarot_only' ? PRICE_SINGLE_TAROT : PRICE_SINGLE_OOTK);
         var labelText = type === 'opus_single' ? '深度解析 NT$' + opusDisplayPrice
                       : type === 'followup_single' ? '追問單次 NT$' + PRICE_SINGLE_FOLLOWUP
                       : type === 'single' ? '單次解讀 NT$' + singleDisplayPrice
-                      : '會員 NT$' + PRICE_SUB;
+                      : type === 'subscription_premium' ? '高級會員 NT$' + PRICE_SUB_PREMIUM
+                      : '標準會員 NT$' + PRICE_SUB_STANDARD;
         // 關閉 Opus 付費 modal（如果存在）
         try { var _om = document.getElementById('jy-opus-pay-modal'); if (_om) _om.remove(); } catch(_) {}
         var waitModal = document.createElement('div');
