@@ -213,7 +213,56 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <h3>📊 用戶回饋</h3>
           <button onclick="clearAllFeedback()" style="padding:4px 12px;border-radius:6px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#ef4444;font-size:12px;cursor:pointer;float:right;margin-top:-28px">🗑 清除全部</button>
         </div>
+
+        <!-- v52: 準確率統計卡 -->
+        <div id="feedbackStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(108,123,255,.06);border:1px solid rgba(108,123,255,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">🔮 七維度 準確率</div>
+            <div id="stat-full" style="font-size:20px;font-weight:700;color:var(--accent)">-</div>
+            <div id="stat-full-detail" style="font-size:10px;color:var(--text-dim);margin-top:2px">-</div>
+          </div>
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">🃏 塔羅 準確率</div>
+            <div id="stat-tarot" style="font-size:20px;font-weight:700;color:#a78bfa">-</div>
+            <div id="stat-tarot-detail" style="font-size:10px;color:var(--text-dim);margin-top:2px">-</div>
+          </div>
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">🗝️ 開鑰 準確率</div>
+            <div id="stat-ootk" style="font-size:20px;font-weight:700;color:#fbbf24">-</div>
+            <div id="stat-ootk-detail" style="font-size:10px;color:var(--text-dim);margin-top:2px">-</div>
+          </div>
+        </div>
+
+        <!-- v52: 按模型分組統計（動態填充） -->
+        <div id="feedbackByModel" style="margin-bottom:16px;padding:12px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid var(--card-border);display:none">
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">按模型分組</div>
+          <div id="feedbackByModelRows" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+
+        <!-- v52: filter + 匯出 CSV -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+          <button id="fbFilterAll" onclick="filterFeedback('all')" style="padding:6px 14px;border-radius:999px;background:var(--accent);color:#fff;border:none;font-size:12px;cursor:pointer;font-weight:600">全部</button>
+          <button id="fbFilterBad" onclick="filterFeedback('bad')" style="padding:6px 14px;border-radius:999px;background:transparent;color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:12px;cursor:pointer;font-weight:600">👎 只看不準</button>
+          <button id="fbFilterGood" onclick="filterFeedback('good')" style="padding:6px 14px;border-radius:999px;background:transparent;color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:12px;cursor:pointer;font-weight:600">👍 只看準</button>
+          <button onclick="exportFeedbackCSV()" style="padding:6px 14px;border-radius:999px;background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:12px;cursor:pointer;font-weight:600;margin-left:auto">📥 匯出 CSV</button>
+        </div>
+
         <div id="feedbackList" class="notify-list"><div class="loading"></div></div>
+      </div>
+    </div>
+
+    <!-- v52: 回饋 payload modal -->
+    <div id="fbPayloadModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);padding:20px;overflow-y:auto" onclick="if(event.target===this)closeFbPayloadModal()">
+      <div style="max-width:900px;margin:0 auto;background:var(--bg-card);border:1px solid var(--card-border);border-radius:12px;padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h3 style="margin:0;font-size:16px">🔍 完整 Payload</h3>
+          <button onclick="closeFbPayloadModal()" style="padding:6px 14px;border-radius:6px;background:transparent;border:1px solid var(--card-border);color:var(--text-dim);cursor:pointer">關閉</button>
+        </div>
+        <div id="fbPayloadContent" style="font-family:monospace;font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-all;max-height:70vh;overflow-y:auto;padding:12px;border-radius:8px;background:#0d0f14;border:1px solid var(--card-border);color:#9ca3af"></div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="copyFbPayload()" style="padding:8px 16px;border-radius:6px;background:var(--accent);color:#fff;border:none;font-size:12px;cursor:pointer;font-weight:600">📋 複製 JSON</button>
+          <span id="fbCopyStatus" style="font-size:11px;color:var(--text-dim);align-self:center"></span>
+        </div>
       </div>
     </div>
 
@@ -853,40 +902,234 @@ async function clearAllFeedback() {
   } catch(e) { alert('清除失敗: ' + e.message); }
 }
 
+// v52：全域存一份 feedback list 給 filter/export 用
+let _fbAllList = [];
+let _fbFilterMode = 'all'; // all | good | bad
+
 async function loadFeedback() {
   const el = document.getElementById('feedbackList');
   el.innerHTML = '<div class="loading"></div>';
   try {
-    const r = await fetch(`${WORKER_URL}/admin/feedback?token=${encodeURIComponent(adminToken)}`);
-    const data = await r.json();
-    const list = data.feedbacks || [];
-    if (!list.length) { el.innerHTML = '<div class="empty">暫無回饋</div>'; return; }
-    el.innerHTML = list.map(fb => {
-      const time = fb.time ? new Date(fb.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
-      const ratingIcon = fb.rating === 'good' ? '👍 準' : '👎 不準';
-      const ratingClass = fb.rating === 'good' ? 'mode-tarot' : 'mode-followup';
-      const toolMap = { tarot: '🃏塔羅', ootk: '🔑開鑰', full: '🌙七維度' };
-      const toolBadge = fb.tool ? `<span class="notify-mode" style="background:rgba(212,175,55,.15);color:var(--gold)">${toolMap[fb.tool] || fb.tool}</span>` : '';
-      return `<div class="notify-item">
-        <div class="notify-meta">
-          <span class="notify-mode ${ratingClass}">${ratingIcon}</span>
-          ${toolBadge}
-          <span class="notify-time">${time}</span>
-        </div>
-        <div class="notify-name">${esc(fb.name || '匿名')}</div>
-        ${(fb.birth || fb.gender || fb.birthLocation) ? `<div class="notify-q" style="font-size:11px;color:var(--text-dim)">👤 ${[fb.gender === 'male' ? '男' : fb.gender === 'female' ? '女' : fb.gender, fb.birth, fb.birthTime, fb.birthLocation].filter(Boolean).map(esc).join(' ・ ')}</div>` : ''}
-        ${fb.question ? `<div class="notify-q">❓ ${esc(fb.question)}</div>` : ''}
-        ${fb.reasons ? `<div class="notify-q" style="margin-top:4px;color:var(--danger)">原因：${esc(fb.reasons)}</div>` : ''}
-        ${fb.actual ? `<div class="notify-q" style="margin-top:6px;padding:6px 10px;border-radius:6px;background:rgba(212,175,55,.08);border-left:3px solid var(--gold);color:var(--gold);font-size:12px">💡 實際狀況：${esc(fb.actual)}</div>` : ''}
-        ${fb.comment ? `<div class="notify-q" style="margin-top:4px;color:var(--text-dim)">💬 ${esc(fb.comment)}</div>` : ''}
-        ${fb.cards ? `<div class="notify-q" style="margin-top:6px;font-size:11px;color:var(--text-dim);border-top:1px solid rgba(255,255,255,.06);padding-top:6px">🃏 ${esc(fb.cards)}</div>` : ''}
-        ${fb.aiClosing ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--gold)">🔮 Closing: ${esc(fb.aiClosing)}</div>` : ''}
-        ${fb.aiDirectAnswer ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim)">📋 ${esc(fb.aiDirectAnswer.substring(0,150))}${fb.aiDirectAnswer.length > 150 ? '…' : ''}</div>` : ''}
-        ${fb.aiYesNo ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim)">🏷 ${esc(fb.aiYesNo)}</div>` : ''}
-        ${fb.aiStory ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">📖 展開完整 story</summary><div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim);white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(fb.aiStory)}</div></details>` : ''}
-      </div>`;
-    }).join('');
+    // 同時載入回饋列表 + 統計
+    const [listR, statsR] = await Promise.all([
+      fetch(`${WORKER_URL}/admin/feedback?token=${encodeURIComponent(adminToken)}`),
+      fetch(`${WORKER_URL}/admin/feedback-stats?token=${encodeURIComponent(adminToken)}`).catch(()=>null)
+    ]);
+    const data = await listR.json();
+    _fbAllList = data.feedbacks || [];
+    // 更新統計卡
+    if (statsR) {
+      try {
+        const statsData = await statsR.json();
+        if (statsData.ok) _renderFeedbackStats(statsData);
+      } catch(_) {}
+    }
+    _renderFeedbackList();
   } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
+}
+
+function _renderFeedbackStats(stats) {
+  function pct(g, b) {
+    const total = g + b;
+    if (!total) return { text: '-', detail: '尚無資料' };
+    const rate = Math.round(g / total * 100);
+    return { text: rate + '%', detail: '👍' + g + ' / 👎' + b + '（' + total + '筆）' };
+  }
+  const bt = stats.byTool || {};
+  const full = pct(bt.full?.good || 0, bt.full?.bad || 0);
+  const tarot = pct(bt.tarot_only?.good || 0, bt.tarot_only?.bad || 0);
+  const ootk = pct(bt.ootk?.good || 0, bt.ootk?.bad || 0);
+  document.getElementById('stat-full').textContent = full.text;
+  document.getElementById('stat-full-detail').textContent = full.detail;
+  document.getElementById('stat-tarot').textContent = tarot.text;
+  document.getElementById('stat-tarot-detail').textContent = tarot.detail;
+  document.getElementById('stat-ootk').textContent = ootk.text;
+  document.getElementById('stat-ootk-detail').textContent = ootk.detail;
+  // 按模型分組
+  const byModel = stats.byModel || {};
+  const modelKeys = Object.keys(byModel);
+  const modelBox = document.getElementById('feedbackByModel');
+  const modelRows = document.getElementById('feedbackByModelRows');
+  if (modelKeys.length && modelBox && modelRows) {
+    const labels = {
+      'claude-sonnet-4-6': 'Sonnet 4.6',
+      'claude-haiku-4-5': 'Haiku 4.5',
+      'claude-opus-4-6': 'Opus 4.6',
+      'claude-opus-4-7': 'Opus 4.7'
+    };
+    modelRows.innerHTML = modelKeys.map(function(m) {
+      const s = byModel[m];
+      const total = s.good + s.bad;
+      const rate = total ? Math.round(s.good / total * 100) : 0;
+      return '<div style="display:flex;align-items:center;gap:10px;font-size:12px">' +
+        '<span style="min-width:100px;font-weight:600">' + (labels[m] || m) + '</span>' +
+        '<div style="flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden">' +
+          '<div style="width:' + rate + '%;height:100%;background:linear-gradient(90deg,#22c55e,#a3e635)"></div>' +
+        '</div>' +
+        '<span style="min-width:40px;text-align:right;color:#22c55e">' + rate + '%</span>' +
+        '<span style="min-width:90px;color:var(--text-dim);font-size:11px">👍' + s.good + ' 👎' + s.bad + '</span>' +
+      '</div>';
+    }).join('');
+    modelBox.style.display = 'block';
+  } else if (modelBox) {
+    modelBox.style.display = 'none';
+  }
+}
+
+function _renderFeedbackList() {
+  const el = document.getElementById('feedbackList');
+  let list = _fbAllList;
+  if (_fbFilterMode === 'good') list = list.filter(function(fb){ return fb.rating === 'good'; });
+  else if (_fbFilterMode === 'bad') list = list.filter(function(fb){ return fb.rating === 'bad'; });
+  if (!list.length) { el.innerHTML = '<div class="empty">' + (_fbFilterMode === 'all' ? '暫無回饋' : '此篩選下無資料') + '</div>'; return; }
+  el.innerHTML = list.map(function(fb, idx) {
+    const time = fb.time ? new Date(fb.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+    const ratingIcon = fb.rating === 'good' ? '👍 準' : '👎 不準';
+    const ratingClass = fb.rating === 'good' ? 'mode-tarot' : 'mode-followup';
+    const toolMap = { tarot: '🃏塔羅', ootk: '🔑開鑰', full: '🌙七維度' };
+    const toolBadge = fb.tool ? `<span class="notify-mode" style="background:rgba(212,175,55,.15);color:var(--gold)">${toolMap[fb.tool] || fb.tool}</span>` : '';
+    const modelLabels = { 'claude-sonnet-4-6': 'Sonnet', 'claude-haiku-4-5': 'Haiku', 'claude-opus-4-6': 'Opus4.6', 'claude-opus-4-7': 'Opus4.7' };
+    const modelBadge = fb.model ? `<span class="notify-mode" style="background:rgba(167,139,250,.12);color:#a78bfa;font-size:10px">${modelLabels[fb.model] || fb.model}</span>` : '';
+    // v52: 有 dims/cardData/ootk 才顯示 🔍 payload 按鈕
+    const hasPayload = !!(fb.dims || fb.cardData || fb.ootk);
+    const payloadBtn = hasPayload ? `<button onclick="openFbPayloadModal(${idx})" style="margin-left:auto;padding:3px 10px;border-radius:4px;background:rgba(108,123,255,.1);border:1px solid rgba(108,123,255,.25);color:var(--accent);font-size:10px;cursor:pointer;font-weight:600">🔍 payload</button>` : '';
+    return `<div class="notify-item">
+      <div class="notify-meta" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span class="notify-mode ${ratingClass}">${ratingIcon}</span>
+        ${toolBadge}
+        ${modelBadge}
+        <span class="notify-time">${time}</span>
+        ${payloadBtn}
+      </div>
+      <div class="notify-name">${esc(fb.name || '匿名')}</div>
+      ${(fb.birth || fb.gender || fb.birthLocation) ? `<div class="notify-q" style="font-size:11px;color:var(--text-dim)">👤 ${[fb.gender === 'male' ? '男' : fb.gender === 'female' ? '女' : fb.gender, fb.birth, fb.birthTime, fb.birthLocation].filter(Boolean).map(esc).join(' ・ ')}</div>` : ''}
+      ${fb.question ? `<div class="notify-q">❓ ${esc(fb.question)}</div>` : ''}
+      ${fb.reasons ? `<div class="notify-q" style="margin-top:4px;color:var(--danger)">原因：${esc(fb.reasons)}</div>` : ''}
+      ${fb.actual ? `<div class="notify-q" style="margin-top:6px;padding:6px 10px;border-radius:6px;background:rgba(212,175,55,.08);border-left:3px solid var(--gold);color:var(--gold);font-size:12px">💡 實際狀況：${esc(fb.actual)}</div>` : ''}
+      ${fb.comment ? `<div class="notify-q" style="margin-top:4px;color:var(--text-dim)">💬 ${esc(fb.comment)}</div>` : ''}
+      ${fb.cards ? `<div class="notify-q" style="margin-top:6px;font-size:11px;color:var(--text-dim);border-top:1px solid rgba(255,255,255,.06);padding-top:6px">🃏 ${esc(fb.cards)}</div>` : ''}
+      ${fb.aiClosing ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--gold)">🔮 Closing: ${esc(fb.aiClosing)}</div>` : ''}
+      ${fb.aiDirectAnswer ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim)">📋 ${esc(fb.aiDirectAnswer.substring(0,150))}${fb.aiDirectAnswer.length > 150 ? '…' : ''}</div>` : ''}
+      ${fb.aiYesNo ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim)">🏷 ${esc(fb.aiYesNo)}</div>` : ''}
+      ${fb.aiStory ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">📖 展開完整 story</summary><div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim);white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(fb.aiStory)}</div></details>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// v52: filter 切換
+function filterFeedback(mode) {
+  _fbFilterMode = mode;
+  ['all','good','bad'].forEach(function(m){
+    const btn = document.getElementById('fbFilter' + m.charAt(0).toUpperCase() + m.slice(1));
+    if (!btn) return;
+    if (m === mode) {
+      btn.style.background = m === 'bad' ? '#ef4444' : (m === 'good' ? '#22c55e' : 'var(--accent)');
+      btn.style.color = '#fff';
+      btn.style.border = 'none';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = m === 'bad' ? '#ef4444' : (m === 'good' ? '#22c55e' : 'var(--accent)');
+      btn.style.border = '1px solid ' + (m === 'bad' ? 'rgba(239,68,68,.3)' : (m === 'good' ? 'rgba(34,197,94,.3)' : 'rgba(108,123,255,.3)'));
+    }
+  });
+  _renderFeedbackList();
+}
+
+// v52: payload modal
+let _fbPayloadCurrent = null;
+function openFbPayloadModal(idx) {
+  const fb = _fbAllList[idx];
+  if (!fb) return;
+  _fbPayloadCurrent = fb;
+  const content = document.getElementById('fbPayloadContent');
+  // 嘗試 parse dims / cardData / ootk 字串回 object 以便 pretty print
+  function _tryParse(s) {
+    if (!s) return null;
+    if (typeof s === 'object') return s;
+    try { return JSON.parse(s); } catch(_) { return s; }
+  }
+  const payload = {
+    meta: {
+      time: fb.time,
+      rating: fb.rating,
+      tool: fb.tool,
+      model: fb.model || '(unknown)',
+      name: fb.name,
+      birth: fb.birth,
+      birthTime: fb.birthTime,
+      gender: fb.gender,
+      birthLocation: fb.birthLocation
+    },
+    userInput: {
+      question: fb.question,
+      type: fb.type,
+      reasons: fb.reasons,
+      comment: fb.comment,
+      actual: fb.actual
+    },
+    aiOutput: {
+      directAnswer: fb.aiDirectAnswer,
+      closing: fb.aiClosing,
+      yesNo: fb.aiYesNo,
+      story: fb.aiStory,
+      layersOrOps: fb.cards
+    },
+    dims: _tryParse(fb.dims),
+    cardData: _tryParse(fb.cardData),
+    ootk: _tryParse(fb.ootk)
+  };
+  content.textContent = JSON.stringify(payload, null, 2);
+  document.getElementById('fbPayloadModal').style.display = 'block';
+  document.getElementById('fbCopyStatus').textContent = '';
+}
+function closeFbPayloadModal() {
+  document.getElementById('fbPayloadModal').style.display = 'none';
+  _fbPayloadCurrent = null;
+}
+function copyFbPayload() {
+  const content = document.getElementById('fbPayloadContent');
+  if (!content) return;
+  const text = content.textContent;
+  try {
+    navigator.clipboard.writeText(text).then(function(){
+      document.getElementById('fbCopyStatus').textContent = '✓ 已複製';
+    }).catch(function(){
+      // fallback for older browsers
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); document.getElementById('fbCopyStatus').textContent = '✓ 已複製'; } catch(_) {}
+      document.body.removeChild(ta);
+    });
+  } catch(_) {}
+}
+
+// v52: 匯出 CSV（匯出當前 filter 的結果）
+function exportFeedbackCSV() {
+  let list = _fbAllList;
+  if (_fbFilterMode === 'good') list = list.filter(function(fb){ return fb.rating === 'good'; });
+  else if (_fbFilterMode === 'bad') list = list.filter(function(fb){ return fb.rating === 'bad'; });
+  if (!list.length) { toast('此篩選下無資料可匯出'); return; }
+  // CSV 欄位：時間、評分、模式、模型、姓名、性別、生日、時辰、出生地、問題、類型、原因、實際、留言、牌面摘要、Closing、DirectAnswer、YesNo
+  const headers = ['time','rating','tool','model','name','gender','birth','birthTime','birthLocation','question','type','reasons','actual','comment','cards','aiClosing','aiDirectAnswer','aiYesNo','aiStory'];
+  function _cell(v) {
+    if (v === null || v === undefined) return '';
+    const s = String(v).replace(/"/g, '""').replace(/\r?\n/g, ' ');
+    return '"' + s + '"';
+  }
+  const rows = [headers.map(function(h){return '"'+h+'"';}).join(',')];
+  list.forEach(function(fb) {
+    rows.push(headers.map(function(h){ return _cell(fb[h] || ''); }).join(','));
+  });
+  // BOM 讓 Excel 正確識別 UTF-8
+  const csv = '\ufeff' + rows.join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'jingyue-feedback-' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('✓ 已匯出 ' + list.length + ' 筆');
 }
 
 // ═══════════════════════════════════════════════
