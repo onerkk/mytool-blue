@@ -1162,14 +1162,18 @@ function renderUsersList(users) {
       ? `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`
       : `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','grant')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予會員</button>`;
 
+    // v48：查看/管理用戶靜月記事本
+    const memoryBtn = `<button onclick="_viewUserMemory('${u.email.replace(/'/g,"\\'")}')" style="padding:3px 10px;border-radius:6px;background:rgba(147,51,234,.1);color:#a855f7;border:1px solid rgba(147,51,234,.25);font-size:11px;cursor:pointer">📖 記事本</button>`;
+
     return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:14px 16px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
         <div>
           <div style="font-size:14px;font-weight:600">${esc(u.name || '未命名')}</div>
           <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${esc(u.email)}</div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
           ${planBadge}
+          ${memoryBtn}
           ${subAction}
         </div>
       </div>
@@ -1177,6 +1181,103 @@ function renderUsersList(users) {
       ${quotaRows}
     </div>`;
   }).join('');
+}
+
+// v48：查看用戶靜月記事本
+async function _viewUserMemory(email) {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/memory?token=${encodeURIComponent(adminToken)}&email=${encodeURIComponent(email)}`);
+    const data = await r.json();
+    if (!data.ok) { toast('查詢失敗: ' + (data.error || '')); return; }
+    _renderMemoryModal(email, data.notes || [], data.maxEntries || 30);
+  } catch(e) { toast('錯誤: ' + e.message); }
+}
+
+function _renderMemoryModal(email, notes, maxEntries) {
+  // 移除舊的 modal（避免疊加）
+  const old = document.getElementById('memoryModal');
+  if (old) old.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'memoryModal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;max-width:720px;width:100%;max-height:calc(100vh - 80px);overflow-y:auto;color:var(--text)';
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div>
+      <div style="font-size:16px;font-weight:600">📖 ${esc(email)} 的靜月記事本</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:2px">共 ${notes.length} 條（上限 ${maxEntries} 條，FIFO 淘汰舊的）</div>
+    </div>
+    <button onclick="document.getElementById('memoryModal').remove()" style="padding:4px 10px;border-radius:6px;background:transparent;color:var(--text-dim);border:1px solid var(--card-border);cursor:pointer">✕ 關閉</button>
+  </div>`;
+
+  if (notes.length === 0) {
+    html += `<div style="padding:30px;text-align:center;color:var(--text-dim);background:var(--card);border-radius:10px">（此用戶尚無記憶）</div>`;
+  } else {
+    html += `<div style="margin-bottom:12px;display:flex;gap:8px">
+      <button onclick="_clearUserMemory('${email.replace(/'/g,"\\'")}')" style="padding:6px 12px;border-radius:8px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.25);font-size:12px;cursor:pointer">🗑️ 清空全部記憶</button>
+    </div>`;
+    html += '<div style="display:flex;flex-direction:column;gap:8px">';
+    // v48 bug 修：把 notes 快取到 window._memCache，刪除時從快取取 t+insight 再送後端
+    // 避免 insight 含引號導致 HTML injection，同時解決 race condition（後端用 t+insight 精確匹配）
+    window._memCache = { email, notes };
+    notes.forEach((n, i) => {
+      const d = new Date(n.t || Date.now());
+      const ymd = d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
+      const modeLabel = { '7d': '七維度', 'tarot': '塔羅', 'ootk': '開鑰' }[n.mode] || n.mode || '-';
+      const sysTag = (n.systems && n.systems.length) ? `<span style="font-size:10px;color:var(--text-dim)">（${n.systems.map(esc).join('+')}）</span>` : '';
+      html += `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">
+              ${ymd}｜<strong style="color:var(--accent)">${esc(modeLabel)}</strong>｜${esc(n.topic || '整體')}｜${esc(n.timeWindow || '無時限')} ${sysTag}
+            </div>
+            <div style="font-size:13px;line-height:1.5">${esc(n.insight || '')}</div>
+          </div>
+          <button onclick="_deleteUserMemoryNote(${i})" style="padding:3px 8px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer;flex-shrink:0">刪除</button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  box.innerHTML = html;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+async function _deleteUserMemoryNote(index) {
+  // v48 bug 修：從 window._memCache 取得 email + 該條的 t+insight，傳給後端精確匹配
+  const cache = window._memCache;
+  if (!cache || !cache.notes || !cache.notes[index]) { toast('記憶索引失效，請重新開啟'); return; }
+  const note = cache.notes[index];
+  if (!confirm(`刪除第 ${index + 1} 條記憶？\n\n「${(note.insight || '').substring(0, 50)}${(note.insight || '').length > 50 ? '…' : ''}」`)) return;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/memory-delete?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cache.email, t: note.t, insight: note.insight })
+    });
+    const data = await r.json();
+    if (data.ok) { toast('✓ 已刪除'); _viewUserMemory(cache.email); }
+    else { toast('失敗: ' + (data.error || '')); }
+  } catch(e) { toast('錯誤: ' + e.message); }
+}
+
+async function _clearUserMemory(email) {
+  if (!confirm(`確定清空 ${email} 的全部記憶？\n\n此操作無法復原。`)) return;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/memory-clear?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await r.json();
+    if (data.ok) { toast('✓ 已清空'); _viewUserMemory(email); }
+    else { toast('失敗: ' + (data.error || '')); }
+  } catch(e) { toast('錯誤: ' + e.message); }
 }
 
 function _editQuota(idx, quotaType, currentVal) {
