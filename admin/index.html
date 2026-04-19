@@ -161,7 +161,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="feedback">回饋</div>
     <div class="tab" data-tab="worker">Worker管理</div>
     <div class="tab" data-tab="users">用戶管理</div>
-    <div class="tab" data-tab="memory">用戶記憶</div>
     <div class="tab" data-tab="admins">管理員</div>
     <div class="tab" data-tab="settings">設定</div>
   </div>
@@ -265,26 +264,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
         <div id="usersStats" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap"></div>
         <div id="usersList" style="display:flex;flex-direction:column;gap:10px"><div class="loading"></div></div>
-      </div>
-    </div>
-
-    <!-- ══ 用戶記憶 (v48 Step 4) ══ -->
-    <div id="sec-memory" class="section">
-      <div class="worker-card" style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <h3>📖 靜月記事本（用戶記憶）</h3>
-        </div>
-        <p style="margin:0 0 12px;color:var(--text-dim);font-size:12px;line-height:1.6">
-          每位用戶每次讀盤 AI 會存 1-5 條判斷到這裡，下次自動注入 prompt 作為背景。<br>
-          最多保留 30 條（新的在前、FIFO 淘汰舊的），TTL 365 天。查詢需要用戶 email。
-        </p>
-        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
-          <input type="email" id="memEmailInput" placeholder="輸入用戶 Google Email" style="flex:1;min-width:200px;padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')loadUserMemory()">
-          <button onclick="loadUserMemory()" style="padding:10px 18px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">🔍 查詢</button>
-          <button onclick="clearUserMemory()" style="padding:10px 18px;border-radius:8px;border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.1);color:var(--danger);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">🗑 全部清除</button>
-        </div>
-        <div id="memStats" style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap"></div>
-        <div id="memList" style="display:flex;flex-direction:column;gap:10px"></div>
       </div>
     </div>
 
@@ -1183,6 +1162,10 @@ function renderUsersList(users) {
       ? `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`
       : `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','grant')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予會員</button>`;
 
+    // v51：靜月記事本按鈕（卡片底部獨立一行）
+    const _emailEsc = u.email.replace(/'/g, "\\'");
+    const memoryBtn = `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(108,123,255,.15)"><button onclick="openMemoryModal('${_emailEsc}','${esc(u.name || '')}')" style="padding:5px 12px;border-radius:6px;background:rgba(108,123,255,.08);color:var(--accent);border:1px solid rgba(108,123,255,.25);font-size:11px;cursor:pointer;font-weight:600">📖 記事本</button></div>`;
+
     return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:14px 16px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
         <div>
@@ -1196,6 +1179,7 @@ function renderUsersList(users) {
       </div>
       ${expires ? `<div style="margin-bottom:4px">${expires}</div>` : ''}
       ${quotaRows}
+      ${memoryBtn}
     </div>`;
   }).join('');
 }
@@ -1250,37 +1234,85 @@ async function _setSubscription(email, action) {
 }
 
 // ═══════════════════════════════════════════════
-// v48 Step 4: 用戶記憶管理
+// v48 Step 4 → v51：用戶記憶管理（改 modal 整合在「用戶管理」卡片）
 // ═══════════════════════════════════════════════
 let _memCache = { email: '', notes: [] };
 
+// 開啟 modal（從用戶卡片「📖 記事本」按鈕觸發）
+function openMemoryModal(email, userName) {
+  email = String(email || '').trim().toLowerCase();
+  if (!email) { toast('缺少 email'); return; }
+  // 建立或取得 overlay
+  let ov = document.getElementById('memModalOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'memModalOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:0';
+    ov.innerHTML =
+      '<div id="memModalBox" style="width:100%;max-width:720px;max-height:86vh;background:var(--bg);border:1px solid var(--card-border);border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 32px rgba(0,0,0,.6)">' +
+        '<div style="padding:14px 16px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none">' +
+          '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">' +
+            '<span style="font-size:1.2rem">📖</span>' +
+            '<div style="min-width:0;flex:1">' +
+              '<div id="memModalTitle" style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>' +
+              '<div id="memModalSubtitle" style="font-size:11px;color:var(--text-dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>' +
+            '</div>' +
+          '</div>' +
+          '<button onclick="closeMemoryModal()" style="padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:var(--text-dim);font-size:12px;cursor:pointer;flex:none">✕</button>' +
+        '</div>' +
+        '<div id="memModalStats" style="padding:10px 16px 0;display:flex;gap:6px;flex-wrap:wrap"></div>' +
+        '<div id="memList" style="padding:10px 16px 16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px"></div>' +
+        '<div style="padding:12px 16px;border-top:1px solid var(--card-border);display:flex;justify-content:space-between;gap:8px;flex:none;background:var(--card)">' +
+          '<button onclick="clearUserMemory()" style="padding:8px 14px;border-radius:8px;border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.08);color:var(--danger);font-size:12px;font-weight:600;cursor:pointer">🗑 全部清除</button>' +
+          '<button onclick="closeMemoryModal()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text-dim);font-size:12px;cursor:pointer">關閉</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    // 點背景關閉
+    ov.addEventListener('click', function(e){ if (e.target === ov) closeMemoryModal(); });
+  } else {
+    ov.style.display = 'flex';
+  }
+  document.getElementById('memModalTitle').textContent = userName || email;
+  document.getElementById('memModalSubtitle').textContent = email + (userName ? '' : '');
+  _memCache = { email: email, notes: [] };
+  loadUserMemory();
+}
+
+function closeMemoryModal() {
+  const ov = document.getElementById('memModalOverlay');
+  if (ov) ov.style.display = 'none';
+  _memCache = { email: '', notes: [] };
+}
+
 async function loadUserMemory() {
-  const emailEl = document.getElementById('memEmailInput');
-  const email = String(emailEl.value || '').trim().toLowerCase();
-  if (!email) { toast('請輸入 email'); return; }
+  const email = _memCache.email;
+  if (!email) return;
   const listEl = document.getElementById('memList');
-  const statsEl = document.getElementById('memStats');
-  listEl.innerHTML = '<div class="loading"></div>';
-  statsEl.innerHTML = '';
+  const statsEl = document.getElementById('memModalStats');
+  if (listEl) listEl.innerHTML = '<div class="loading"></div>';
+  if (statsEl) statsEl.innerHTML = '';
   try {
     const r = await fetch(`${WORKER_URL}/admin/memory?token=${encodeURIComponent(adminToken)}&email=${encodeURIComponent(email)}`);
     const data = await r.json();
-    if (!data.ok) { listEl.innerHTML = '<div class="empty">載入失敗: ' + (data.error || '未知錯誤') + '</div>'; return; }
+    if (!data.ok) { if (listEl) listEl.innerHTML = '<div class="empty">載入失敗: ' + (data.error || '未知錯誤') + '</div>'; return; }
     _memCache = { email: data.email, notes: data.notes || [] };
-    statsEl.innerHTML =
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(108,123,255,.1);color:var(--accent);font-size:13px;font-weight:600">📖 ${data.count} 條記憶</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px">上限 ${data.maxEntries} 條</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px">${esc(data.email)}</span>`;
+    if (statsEl) {
+      statsEl.innerHTML =
+        `<span style="padding:4px 10px;border-radius:6px;background:rgba(108,123,255,.1);color:var(--accent);font-size:11px;font-weight:600">📖 ${data.count} 條</span>` +
+        `<span style="padding:4px 10px;border-radius:6px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:11px">上限 ${data.maxEntries}</span>`;
+    }
     renderMemoryList(_memCache.notes);
   } catch(e) {
-    listEl.innerHTML = '<div class="empty">錯誤: ' + e.message + '</div>';
+    if (listEl) listEl.innerHTML = '<div class="empty">錯誤: ' + e.message + '</div>';
   }
 }
 
 function renderMemoryList(notes) {
   const el = document.getElementById('memList');
+  if (!el) return;
   if (!notes || notes.length === 0) {
-    el.innerHTML = '<div class="empty">這位用戶還沒有記憶（未讀過盤或未登入時讀盤）</div>';
+    el.innerHTML = '<div class="empty" style="padding:24px 0">這位用戶還沒有記憶（未讀過盤或未登入時讀盤）</div>';
     return;
   }
   el.innerHTML = notes.map((n, idx) => {
@@ -1296,17 +1328,17 @@ function renderMemoryList(notes) {
     // 刪除用 t+insight 精確匹配，避 race condition
     const tEsc = Number(n.t) || 0;
     const insightEsc = String(n.insight || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
-    return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px">
+    return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:10px 12px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <span style="padding:2px 8px;border-radius:4px;background:${modeColor};font-size:11px;font-weight:600">${modeLabel}</span>
-          <span style="padding:2px 8px;border-radius:4px;background:rgba(251,191,36,.1);color:var(--warn);font-size:11px">${esc(n.topic || '整體')}</span>
-          <span style="padding:2px 8px;border-radius:4px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:11px">⏱ ${esc(n.timeWindow || '無時限')}</span>
-          <span style="font-size:11px;color:var(--text-dim)">${ymd} ${hm}</span>
+          <span style="padding:2px 7px;border-radius:4px;background:${modeColor};font-size:10px;font-weight:600">${modeLabel}</span>
+          <span style="padding:2px 7px;border-radius:4px;background:rgba(251,191,36,.1);color:var(--warn);font-size:10px">${esc(n.topic || '整體')}</span>
+          <span style="padding:2px 7px;border-radius:4px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:10px">⏱ ${esc(n.timeWindow || '無時限')}</span>
+          <span style="font-size:10px;color:var(--text-dim)">${ymd} ${hm}</span>
         </div>
-        <button onclick="deleteMemoryNote(${tEsc},'${insightEsc}')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer;white-space:nowrap">🗑</button>
+        <button onclick="deleteMemoryNote(${tEsc},'${insightEsc}')" style="padding:2px 8px;border-radius:5px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:10px;cursor:pointer;white-space:nowrap">🗑</button>
       </div>
-      <div style="font-size:13px;line-height:1.6;color:var(--text)">${esc(n.insight || '')}</div>
+      <div style="font-size:12.5px;line-height:1.55;color:var(--text)">${esc(n.insight || '')}</div>
       ${systemsHtml}
     </div>`;
   }).join('');
@@ -1328,8 +1360,8 @@ async function deleteMemoryNote(t, insight) {
 }
 
 async function clearUserMemory() {
-  const email = String(document.getElementById('memEmailInput').value || '').trim().toLowerCase();
-  if (!email) { toast('請先輸入 email'); return; }
+  const email = _memCache.email;
+  if (!email) return;
   if (!confirm(`確定清除 ${email} 的全部記憶？\n此動作無法復原。`)) return;
   try {
     const r = await fetch(`${WORKER_URL}/admin/memory-clear?token=${encodeURIComponent(adminToken)}`, {
