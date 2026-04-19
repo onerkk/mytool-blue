@@ -20653,9 +20653,17 @@ renderTarot = function(){
           '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員 NT$1,299/月</button>' +
           '</div>';
       } else {
+        // ★ v51：區分 SSE 真實錯誤訊息（非 admin 用戶也要看到具體原因）
+        var _aiErrMsg = admin && err.status === 429 ? 'Worker 429 但你是管理員，可重試' : '暫時連線不順，請再試一次';
+        if (!admin && err && err.message && err.message !== '回傳為空' && err.message !== '伺服器錯誤' && err.message !== 'Failed to fetch' && !err.status) {
+          // 只對「SSE 內拋出的 server error（有 message 無 status）」替換訊息，避免吃掉 network error
+          var _aiRaw = String(err.message);
+          if (_aiRaw.length > 80) _aiRaw = _aiRaw.slice(0, 80) + '…';
+          _aiErrMsg = _aiRaw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
         resultDiv.innerHTML = '<div style="text-align:center;padding:1rem">' +
           '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">' +
-          (admin && err.status === 429 ? 'Worker 429 但你是管理員，可重試' : '暫時連線不順，請再試一次') +
+          _aiErrMsg +
           (admin ? '<br><span style="font-size:.6rem;opacity:.4">[Debug] '+(err.status||'')+' '+(err.error||err.detail||err.message||'')+'</span>' : '') +
           '</div>' +
           '<button onclick="_triggerAIDeep()" style="padding:.7rem 1.8rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit">' +
@@ -22132,11 +22140,17 @@ async function _triggerTarotAI() {
     var _pt = localStorage.getItem('_jy_paid_token');
     if (_pt) body.paid_token = _pt;
 
+    // ★ v51：塔羅首輪 timeout + AbortController（對齊七維度首輪 20321-20322）
+    //   塔羅 Opus 深度 + 大牌陣（celtic_cross 等）也可能 30-60s，手機弱訊號下同樣會卡
+    var _tarotAbortCtrl = new AbortController();
+    var _tarotAbortTimer = setTimeout(function() { _tarotAbortCtrl.abort(); }, 300000);
+
     // ── SSE streaming（跟七維度一樣的 SSE 讀取） ──
     var resp = await fetch(AI_WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: _tarotAbortCtrl.signal
     });
 
     // ★ v20：不在這裡 clearInterval——SSE streaming 時 timer 要繼續跑
@@ -22144,6 +22158,7 @@ async function _triggerTarotAI() {
 
     if (!resp.ok) {
       clearInterval(phaseTimer);
+      try { clearTimeout(_tarotAbortTimer); } catch(_) {} // v51
       var errData = {};
       try { errData = await resp.json(); } catch(_){}
       throw Object.assign({ status: resp.status }, errData);
@@ -22222,6 +22237,7 @@ async function _triggerTarotAI() {
 
     // ★ v20：SSE 讀完才清除 timer
     clearInterval(phaseTimer);
+    try { clearTimeout(_tarotAbortTimer); } catch(_) {} // v51
     // ★ v29c：bar 跳 100%
     try { var _tb = document.getElementById('tarot-loading-bar'); if (_tb) { _tb.style.animation='none'; _tb.style.width='100%'; _tb.style.transition='width .4s'; } } catch(_) {}
     // ★ v29c fix：只看 _jyActiveResultMode，不看 window._ootkResults（OOTK 結果殘留會污染塔羅判斷）
@@ -22388,6 +22404,7 @@ async function _triggerTarotAI() {
 
   } catch(err) {
     clearInterval(phaseTimer);
+    try { clearTimeout(_tarotAbortTimer); } catch(_) {} // v51
     console.error('[TarotAI]', err);
     if (err.status === 429 || (err.code && (err.code.indexOf('RATE') >= 0 || err.code.indexOf('FREE') >= 0 || err.code.indexOf('DAILY') >= 0 || err.code.indexOf('USED') >= 0))) {
       var _tErrCode = err.code || '';
@@ -22403,8 +22420,17 @@ async function _triggerTarotAI() {
         '</div>' +
       '</div>';
     } else {
+      // ★ v51：區分 AbortError / 伺服器具體錯誤 / 通用錯誤
+      var _tErrMsg = '暫時連線不順，請再試一次';
+      if (err && (err.name === 'AbortError' || /aborted/i.test(err.message || ''))) {
+        _tErrMsg = '等太久了，請再試一次（網路可能不穩）';
+      } else if (err && err.message && err.message !== '回傳為空' && err.message !== '伺服器錯誤' && err.message !== 'Failed to fetch') {
+        var _tRaw = String(err.message);
+        if (_tRaw.length > 80) _tRaw = _tRaw.slice(0, 80) + '…';
+        _tErrMsg = _tRaw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
       resultDiv.innerHTML = '<div style="text-align:center;padding:1rem">' +
-        '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">暫時連線不順，請再試一次</div>' +
+        '<div style="color:#f87171;font-size:.82rem;margin-bottom:.8rem">' + _tErrMsg + '</div>' +
         '<button onclick="_triggerTarotAI()" style="padding:.7rem 1.5rem;border-radius:12px;background:transparent;color:var(--c-gold);border:1.5px solid rgba(212,175,55,.4);font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit">🃏 再試一次</button>' +
       '</div>';
     }
@@ -23227,6 +23253,14 @@ async function _triggerTarotFollowUp() {
 
   // ── 呼叫 Worker ──
   var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
+  // ★ v51：追問 fetch timeout + AbortController（對齊七維度首輪 20321-20322）
+  //   為什麼：手機弱訊號下，若 Worker stream 中途出錯 / Opus 4.7 thinking 過長 / 網路 idle 斷流，
+  //   原本 fetch 會一直卡住。用 300s timeout + abort 強制結束，走 catch 顯示具體錯誤。
+  var _fuAbortCtrl = new AbortController();
+  var _fuAbortTimer = setTimeout(function() { _fuAbortCtrl.abort(); }, 300000);
+  // ★ v51：SSE reader 補抓「event: error」的真實錯誤訊息（對齊塔羅首輪 22207-22209）
+  //   原本只處理 result/thinking，Worker 端任何例外 sendSSE('error') 後前端只剩「回傳為空」通用訊息
+  var _fuSSEError = null;
   try {
     var body = { payload: payload };
     if (window._JY_ADMIN_TOKEN) body.admin_token = window._JY_ADMIN_TOKEN;
@@ -23236,12 +23270,14 @@ async function _triggerTarotFollowUp() {
 
     var resp = await fetch(AI_URL, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: _fuAbortCtrl.signal
     });
 
     // ★ v46：401 LOGIN_REQUIRED — 未登入使用者的攔截
     if (resp.status === 401) {
       try { clearInterval(_fuBarTimer); } catch(_) {}
+      try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
       _showLoginRequired();
       window._jyTarotFollowUps--;
       _unlockFuBtn();
@@ -23252,6 +23288,7 @@ async function _triggerTarotFollowUp() {
     //        這裡是最後一道攔截（Worker 可能回 SSE 前就 402 中斷）
     if (resp.status === 402) {
       try { clearInterval(_fuBarTimer); } catch(_) {}
+      try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
       try {
         var _402 = await resp.json();
         if (_402 && _402.code === 'FOLLOWUP_NEED_PAYMENT') {
@@ -23309,6 +23346,15 @@ async function _triggerTarotFollowUp() {
                 }
               }
             } catch(_tke5){}
+          } else if (evtType === 'error' && evtData) {
+            // ★ v51：捕 Worker 端真實錯誤（對齊塔羅首輪 22207-22209）
+            //   Worker aiProcess catch 區會 sendSSE('error', { error: err.message })。
+            //   原本追問沒處理 → 錯誤被吃掉 → 只剩「回傳為空」的通用訊息。
+            //   改成記下訊息、讓外層 catch 顯示給用戶。
+            try {
+              var _fuErrParsed = JSON.parse(evtData);
+              _fuSSEError = (_fuErrParsed && _fuErrParsed.error) ? _fuErrParsed.error : '伺服器錯誤';
+            } catch(_fuEe) { _fuSSEError = '伺服器錯誤'; }
           }
         }
       }
@@ -23317,6 +23363,7 @@ async function _triggerTarotFollowUp() {
       // ★ v46：JSON fallback 的 402 路由
       if (data && data.code === 'FOLLOWUP_NEED_PAYMENT') {
         try { clearInterval(_fuBarTimer); } catch(_) {}
+        try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
         _showFollowUpPaywall();
         window._jyTarotFollowUps--;
         _unlockFuBtn();
@@ -23324,6 +23371,7 @@ async function _triggerTarotFollowUp() {
       }
       if (data.error && (data.code === 'FOLLOWUP_RATE_LIMITED' || data.code === 'FREE_RATE_LIMITED' || data.code === 'FREE_USED_UP')) {
         try { clearInterval(_fuBarTimer); } catch(_) {}
+        try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
         // 一律路由到追問付費牆
         _showFollowUpPaywall();
         window._jyTarotFollowUps--;
@@ -23332,6 +23380,13 @@ async function _triggerTarotFollowUp() {
       }
       r = data.result || data;
     }
+
+    // ★ v51：SSE 全部讀完 → clearTimeout（避免後段處理被 abort）
+    try { clearTimeout(_fuAbortTimer); } catch(_) {}
+
+    // ★ v51：如果 SSE 串流中 Worker 送過 error event，在這裡統一拋錯
+    //   （比 "回傳為空" 有用 100 倍——用戶/你都能看到真實失敗原因）
+    if (_fuSSEError) throw new Error(_fuSSEError);
 
     if (!r) throw new Error('回傳為空');
 
@@ -23426,11 +23481,30 @@ async function _triggerTarotFollowUp() {
 
   } catch(err) {
     try { clearInterval(_fuBarTimer); } catch(_) {}
+    // ★ v51：catch 區也保險 clearTimeout，避免後續 abort 誤觸
+    try { clearTimeout(_fuAbortTimer); } catch(_) {}
     console.error('[TarotFollowUp]', err);
     // ★ v46：錯誤路徑也要解鎖按鈕（避免按鈕卡在 disabled）
     _unlockFuBtn();
+    // ★ v51：依錯誤類型給不同文案（讓用戶知道是網路還是伺服器問題，別再含糊地「連線不順」）
+    //   - AbortError：300s timeout 觸發 abort（通常是 Opus 4.7 思考過久或網路極慢）
+    //   - 具體訊息：Worker 端的真實錯誤（API 過載、token 爆、模組例外等）
+    //   - 其他：fetch 網路失敗、JSON parse 失敗等，fallback 通用訊息
+    var _fuErrMsg = '連線不順，請再試一次';
+    var _fuErrHint = '';
+    if (err && (err.name === 'AbortError' || /aborted/i.test(err.message || ''))) {
+      _fuErrMsg = '等太久了，請再試一次';
+      _fuErrHint = '（網路可能不穩，或伺服器思考過久）';
+    } else if (err && err.message && err.message !== '回傳為空' && err.message !== '伺服器錯誤') {
+      // 伺服器端的具體錯誤訊息，直接顯示給用戶（截斷避免過長）
+      var _rawMsg = String(err.message);
+      if (_rawMsg.length > 80) _rawMsg = _rawMsg.slice(0, 80) + '…';
+      _fuErrMsg = _rawMsg;
+    }
+    var _escMsg = String(_fuErrMsg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var _escHint = _fuErrHint ? ('<div style="color:var(--c-text-dim);font-size:.72rem;margin-top:.2rem">' + _fuErrHint + '</div>') : '';
     fuArea.innerHTML =
-      '<div style="text-align:center;padding:.6rem;color:#f87171;font-size:.82rem">連線不順，請再試一次</div>' +
+      '<div style="text-align:center;padding:.6rem;color:#f87171;font-size:.82rem">' + _escMsg + _escHint + '</div>' +
       '<button onclick="window._jyTarotFollowUps--;_triggerTarotFollowUp()" style="display:block;margin:.3rem auto;padding:.4rem .8rem;border-radius:8px;background:transparent;border:1px solid rgba(139,92,246,.2);color:rgba(139,92,246,.9);font-size:.78rem;cursor:pointer;font-family:inherit">重試</button>';
   }
 }
