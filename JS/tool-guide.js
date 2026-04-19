@@ -76,6 +76,9 @@
       .then(function(data){
         var line = document.getElementById('jy-trial-line');
         if(!line) return;
+        // v52：動態讀 _JY_PRICING
+        var _tgP = (typeof window!=='undefined' && window._JY_PRICING) || { SUB_STANDARD: 999, SUB_PREMIUM: 1999 };
+        var _subLine = '標準 NT$' + _tgP.SUB_STANDARD + '／高級 NT$' + (_tgP.SUB_PREMIUM||1999).toLocaleString() + '/月';
         if(data.subscription && data.quotaType){
           var qt = data.quotaType === '7d_monthly' ? '七維度每月' : '塔羅每日';
           line.innerHTML = '☽ 會員・' + qt + ' ' + data.limit + ' 次（已用 ' + (data.used||0) + ' 次）';
@@ -88,11 +91,11 @@
           var color = fl <= 1 ? 'rgba(239,68,68,.8)' : 'rgba(212,175,55,.7)';
           line.innerHTML = fl > 0
             ? '☽ 免費體驗・還剩 <span style="color:'+color+';font-weight:700">'+fl+'</span> 次'
-            : '☽ <span style="color:rgba(239,68,68,.8);font-weight:700">免費已用完</span>・會員 NT$799/月（塔羅每日3次＋七維度每月5次）';
+            : '☽ <span style="color:rgba(239,68,68,.8);font-weight:700">免費已用完</span>・會員 ' + _subLine;
           return;
         }
-        if(data.code === 'LOGIN_REQUIRED'){ line.innerHTML = '☽ 登入 Google 即享 3 次免費體驗'; return; }
-        line.innerHTML = '☽ 前 3 次免費體驗・NT$799/月 會員暢用';
+        if(data.code === 'LOGIN_REQUIRED'){ line.innerHTML = '☽ 登入 Google 即享免費體驗'; return; }
+        line.innerHTML = '☽ 三套工具各免費 1 次・會員 ' + _subLine;
       })
       .catch(function(){ var l=document.getElementById('jy-trial-line'); if(l) l.innerHTML='☽ 前 3 次免費體驗'; });
   }

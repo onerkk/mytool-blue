@@ -234,7 +234,9 @@ h+='</div></div>';
 h+='<div class="jy-arr" style="right:34%;top:215px"></div>';
 h+='<div class="jy-fgr" style="right:28%;top:232px">👆</div>';
 h+='</div>';
-h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問，點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>三套工具各免費體驗 1 次（含追問）<br>會員 NT$799/月 塔羅每日 3 次＋七維度每月 5 次</small></div></div>';
+// v52：動態讀 _JY_PRICING（ai-analysis.js 先載入，此處已可用；fallback 保底）
+var _gP = (typeof window !== 'undefined' && window._JY_PRICING) || { SUB_STANDARD: 999, SUB_PREMIUM: 1999 };
+h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問，點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>三套工具各免費體驗 1 次（含追問）<br>標準會員 NT$' + _gP.SUB_STANDARD + '/月 塔羅＋開鑰每日各 1 次、七維度每月 2 次<br>高級會員 NT$' + (_gP.SUB_PREMIUM||1999).toLocaleString() + '/月 塔羅＋開鑰每日各 2 次、七維度每月 5 次＋深度解析每月 1 次免費</small></div></div>';
 h+='</div>';
 
 h+='<div class="jy-div"></div>';
