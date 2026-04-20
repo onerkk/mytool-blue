@@ -24111,7 +24111,13 @@ function _buildOOTKPayload() {
         recurringDetail: recurringDetail,
         pileElement: cross.pileElement || '',
         elementFlow: cross.elementFlow || null,
-        layerAlignment: layerAlignment
+        layerAlignment: layerAlignment,
+        // ═══ v52：補送 tarot_upgrade.js 2100-2103 算好但原本漏傳的 4 個進階欄位 ═══
+        // worker 的 buildOotkUserMessage 10764-10775 有讀，但原本前端沒送 → 永遠 undefined
+        crossPairCards: cross.crossPairCards || [],
+        elementEnvironment: cross.elementEnvironment || '',
+        elementShift: cross.elementShift || '',
+        keyCardNames: cross.keyCardNames || []
       },
       numberPatterns: ootk_numberPatterns,
       majorWeight: ootk_majorWeight,
