@@ -312,6 +312,22 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <button onclick="loadUsersData()" style="padding:6px 14px;border-radius:8px;border:1px solid var(--accent);color:var(--accent);background:transparent;font-size:12px;cursor:pointer">🔄 刷新</button>
         </div>
         <div id="usersStats" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap"></div>
+        <div id="usersPagination" style="display:none;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px;padding:10px 12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border);flex-wrap:wrap">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <button id="usersPagePrev" onclick="loadUsersData(_usersPageState.currentPage - 1)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:12px;cursor:pointer">◀ 上一頁</button>
+            <span id="usersPageInfo" style="font-size:12px;color:var(--text-dim);padding:0 8px"></span>
+            <button id="usersPageNext" onclick="loadUsersData(_usersPageState.currentPage + 1)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:12px;cursor:pointer">下一頁 ▶</button>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;color:var(--text-dim)">每頁</span>
+            <select id="usersPageSize" onchange="loadUsersData(1)" style="padding:4px 8px;border-radius:4px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:11px;cursor:pointer">
+              <option value="25">25</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </div>
+        </div>
         <div id="usersList" style="display:flex;flex-direction:column;gap:10px"><div class="loading"></div></div>
       </div>
     </div>
@@ -519,6 +535,76 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v53：Opus 4.6 Effort Level 卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>🎯 Opus 4.6 Effort Level</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
+          只對 Opus 4.6 生效（會員深度路徑使用）。即時切換，不需重新部署。<br>
+          官方 2026/04 文件：4.6 系列已將 budget_tokens 標為 deprecated，自動升級到 adaptive thinking + effort。<br>
+          <span style="color:#fbbf24">max</span>：最深判讀，2-4 分鐘。
+          <span style="color:#60a5fa">high</span>：官方預設，1-2 分鐘。
+          <span style="color:#34d399">medium</span>：平衡，30-60 秒。
+          <span style="color:#7a7f8e">low</span>：快速，15-30 秒。
+        </p>
+        <div id="opus46EffortGrid" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="opus46-effort" value="max" style="width:16px;height:16px;accent-color:#fbbf24;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#fbbf24">max</span><br><span style="font-size:11px;color:var(--text-dim)">最深・2-4 分</span></span>
+          </label>
+          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="opus46-effort" value="high" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">high</span><br><span style="font-size:11px;color:var(--text-dim)">官方預設・1-2 分</span></span>
+          </label>
+          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="opus46-effort" value="medium" style="width:16px;height:16px;accent-color:#34d399;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#34d399">medium</span><br><span style="font-size:11px;color:var(--text-dim)">平衡・30-60 秒</span></span>
+          </label>
+          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="opus46-effort" value="low" style="width:16px;height:16px;accent-color:#7a7f8e;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#7a7f8e">low</span><br><span style="font-size:11px;color:var(--text-dim)">快速・15-30 秒</span></span>
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveOpus46EffortConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Effort 設定</button>
+          <span id="opus46EffortStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
+      <!-- ═══ v53：Sonnet 4.6 Effort Level 卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>⚡ Sonnet 4.6 Effort Level</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
+          只對 Sonnet 4.6 生效（標準會員主力 + 單次付費路徑）。即時切換。<br>
+          官方說明：Sonnet 4.6 也支援 adaptive thinking + effort（不只 Opus），預設 high。<br>
+          <span style="color:#fbbf24">max</span>：最深，1.5-3 分鐘。
+          <span style="color:#60a5fa">high</span>：官方預設，45-90 秒。
+          <span style="color:#34d399">medium</span>：平衡，20-40 秒。
+          <span style="color:#7a7f8e">low</span>：快速，10-20 秒。
+        </p>
+        <div id="sonnet46EffortGrid" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="sonnet46-effort" value="max" style="width:16px;height:16px;accent-color:#fbbf24;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#fbbf24">max</span><br><span style="font-size:11px;color:var(--text-dim)">最深・1.5-3 分</span></span>
+          </label>
+          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="sonnet46-effort" value="high" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">high</span><br><span style="font-size:11px;color:var(--text-dim)">官方預設・45-90 秒</span></span>
+          </label>
+          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="sonnet46-effort" value="medium" style="width:16px;height:16px;accent-color:#34d399;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#34d399">medium</span><br><span style="font-size:11px;color:var(--text-dim)">平衡・20-40 秒</span></span>
+          </label>
+          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="sonnet46-effort" value="low" style="width:16px;height:16px;accent-color:#7a7f8e;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#7a7f8e">low</span><br><span style="font-size:11px;color:var(--text-dim)">快速・10-20 秒</span></span>
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveSonnet46EffortConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Effort 設定</button>
+          <span id="sonnet46EffortStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v49：Haiku 4.5 Thinking 卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>🧠 Haiku 4.5 Thinking</h3>
@@ -551,10 +637,10 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 
       <!-- ═══ v56/v57：Prompt Upgrades 卡片（Anthropic 官方技巧） ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
-        <h3>✨ v58 提示詞升級（命理專屬）</h3>
+        <h3>✨ v57 提示詞升級（命理專屬）</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
           基於 Anthropic 官方 prompt engineering best practices + reduce-hallucinations 的完整技巧集。<br>
-          共 <strong>13 項</strong> 可個別開關做 A/B 測試。預設配置已按官方建議優化。
+          共 <strong>12 項</strong> 可個別開關做 A/B 測試。預設配置已按官方建議優化。
         </p>
         <div style="display:flex;flex-direction:column;gap:10px">
 
@@ -660,18 +746,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </label>
           <!-- ═══════════════ v57 結束 ═══════════════ -->
 
-          <!-- ═══════════════ v58：西洋占星深度 ═══════════════ -->
-          <div style="font-size:11px;color:var(--accent);font-weight:600;margin:6px 0;letter-spacing:0.5px">── v58 新增技巧 ──</div>
-
-          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="checkbox" id="v58-western-deep" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
-            <span style="flex:1">
-              <span style="font-size:13px;font-weight:600">♃ Western Deep 西洋占星深度訓練</span><br>
-              <span style="font-size:11px;color:var(--text-dim)">Hellenistic 正統派骨架（Valens/Ptolemy/Brennan/Demetra George）。注入六步驟讀盤流程：Sect→Dignity→Domicile Lord→月亮Aspect→Time Lord→Transit。取代現代心理派通俗讀法。全模型注入。預設開</span>
-            </span>
-          </label>
-          <!-- ═══════════════ v58 結束 ═══════════════ -->
-
           <div style="padding:12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border)">
             <div style="font-size:13px;font-weight:600;margin-bottom:10px">⚡ Sonnet 4.6 Effort Level</div>
             <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">官方：「Sonnet 4.6 預設 high 會高延遲，建議 medium 平衡速度與品質」。只影響非深度路徑的 Sonnet，不影響 Opus 深度。</div>
@@ -693,7 +767,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
 
         <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="saveV56Config()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v58 設定</button>
+          <button onclick="saveV56Config()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v57 設定</button>
           <button onclick="resetV56Config()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text-dim);font-size:13px;cursor:pointer">↺ 恢復預設</button>
           <span id="v56Status" style="font-size:12px;color:var(--text-dim)"></span>
         </div>
@@ -898,7 +972,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadHaikuThinkingConfig(); loadV56Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadOpus46EffortConfig(); loadSonnet46EffortConfig(); loadHaikuThinkingConfig(); loadV56Config(); }
   });
 });
 
@@ -1540,36 +1614,99 @@ async function removeAdminUser(email) {
 // ═══════════════════════════════════════════════
 let _usersCache = [];
 let _fuGlobalCache = { perResult: 1, modules: {} }; // v47：追問全域配置
-async function loadUsersData() {
+// v53：分頁狀態（給「上一頁/下一頁」按鈕用）
+var _usersPageState = { currentPage: 1, pageSize: 50, totalPages: 1 };
+
+async function loadUsersData(page) {
   const el = document.getElementById('usersList');
+  const paginationEl = document.getElementById('usersPagination');
+  const pageInfoEl = document.getElementById('usersPageInfo');
+  const pagePrevEl = document.getElementById('usersPagePrev');
+  const pageNextEl = document.getElementById('usersPageNext');
+  const pageSizeEl = document.getElementById('usersPageSize');
+  const statsEl = document.getElementById('usersStats');
+
+  // 頁碼參數處理：未傳 → 用當前頁；傳了 → 採用該頁
+  let _page;
+  if (typeof page === 'number' && page >= 1) _page = page;
+  else if (typeof page === 'string' && /^\d+$/.test(page)) _page = parseInt(page);
+  else _page = (_usersPageState && _usersPageState.currentPage) || 1;
+  let _pageSize = pageSizeEl ? parseInt(pageSizeEl.value) || 50 : 50;
+  if (_pageSize < 10 || _pageSize > 200) _pageSize = 50;
+
   el.innerHTML = '<div class="loading"></div>';
   try {
-    const r = await fetch(`${WORKER_URL}/admin/users-data?token=${encodeURIComponent(adminToken)}`);
+    const r = await fetch(`${WORKER_URL}/admin/users-data?token=${encodeURIComponent(adminToken)}&page=${_page}&pageSize=${_pageSize}`);
+    if (!r.ok) {
+      let errMsg = `HTTP ${r.status}`;
+      try { const errBody = await r.json(); if (errBody.error) errMsg += ': ' + errBody.error; } catch(_){}
+      el.innerHTML = '<div class="empty">載入失敗 — ' + errMsg + '<br><span style="font-size:11px;color:var(--text-dim)">Worker 端錯誤，請檢查 Cloudflare Worker logs</span></div>';
+      if (statsEl) statsEl.innerHTML = '';
+      if (paginationEl) paginationEl.style.display = 'none';
+      return;
+    }
     const data = await r.json();
+    if (data.error) {
+      el.innerHTML = '<div class="empty">後端錯誤: ' + data.error + (data.stack ? '<br><pre style="font-size:10px;color:var(--text-dim);text-align:left;overflow-x:auto;max-width:100%">' + data.stack.substring(0, 500) + '</pre>' : '') + '</div>';
+      if (statsEl) statsEl.innerHTML = '';
+      if (paginationEl) paginationEl.style.display = 'none';
+      return;
+    }
+
     _usersCache = data.users || [];
-    // v47：後端回的全域追問配置，renderUsersList 需要用來顯示 fuPerResult 的「預設/自訂」狀態
     _fuGlobalCache = data.fuGlobal || { perResult: 1, modules: {} };
-    const totalUsers = _usersCache.length;
-    const members = _usersCache.filter(u => u.plan === 'member').length;
-    const freeUsers = totalUsers - members;
 
-    document.getElementById('usersStats').innerHTML =
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(108,123,255,.1);color:var(--accent);font-size:13px;font-weight:600">👥 ${totalUsers} 位用戶</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--warn);font-size:13px;font-weight:600">👑 ${members} 位會員</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px;font-weight:600">🆓 ${freeUsers} 位免費</span>`;
+    // v53：用 globalStats 顯示總計（不是當頁的用戶數）
+    const gs = data.globalStats || { totalUsers: 0, members: 0, premiumMembers: 0, standardMembers: 0, freeUsers: 0 };
+    const _premiumBadge = (gs.premiumMembers > 0) ? `<span style="padding:6px 14px;border-radius:8px;background:rgba(168,85,247,.15);color:#a855f7;font-size:13px;font-weight:600">💎 ${gs.premiumMembers} 位高級</span>` : '';
+    const _standardBadge = (gs.standardMembers > 0) ? `<span style="padding:6px 14px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--warn);font-size:13px;font-weight:600">👑 ${gs.standardMembers} 位標準</span>` : '';
+    if (statsEl) statsEl.innerHTML =
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(108,123,255,.1);color:var(--accent);font-size:13px;font-weight:600">👥 ${gs.totalUsers} 位用戶</span>` +
+      _premiumBadge +
+      _standardBadge +
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px;font-weight:600">🆓 ${gs.freeUsers} 位免費</span>`;
 
-    if (!_usersCache.length) { el.innerHTML = '<div class="empty">尚無登入用戶</div>'; return; }
+    // v53：分頁 metadata
+    _usersPageState.currentPage = data.currentPage || _page;
+    _usersPageState.pageSize = data.pageSize || _pageSize;
+    _usersPageState.totalPages = data.totalPages || 1;
+
+    // 顯示/隱藏分頁控制列：只有總頁數 > 1 才顯示
+    if (paginationEl) {
+      if (_usersPageState.totalPages > 1) {
+        paginationEl.style.display = 'flex';
+        if (pageInfoEl) pageInfoEl.textContent = `第 ${_usersPageState.currentPage} / ${_usersPageState.totalPages} 頁（共 ${gs.totalUsers} 位）`;
+        if (pagePrevEl) pagePrevEl.disabled = (_usersPageState.currentPage <= 1);
+        if (pagePrevEl) pagePrevEl.style.opacity = (_usersPageState.currentPage <= 1) ? '0.4' : '1';
+        if (pageNextEl) pageNextEl.disabled = (_usersPageState.currentPage >= _usersPageState.totalPages);
+        if (pageNextEl) pageNextEl.style.opacity = (_usersPageState.currentPage >= _usersPageState.totalPages) ? '0.4' : '1';
+      } else {
+        paginationEl.style.display = 'none';
+      }
+    }
+
+    if (!_usersCache.length) {
+      el.innerHTML = '<div class="empty">' + (gs.totalUsers > 0 ? '此頁無資料' : '尚無登入用戶<br><span style="font-size:11px;color:var(--text-dim)">如果你確定有用戶，請打開 DevTools Console 查看詳細</span>') + '</div>';
+      return;
+    }
     renderUsersList(_usersCache);
-  } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
+  } catch(e) {
+    el.innerHTML = '<div class="empty">載入失敗（network 錯誤）: ' + e.message + '</div>';
+    if (statsEl) statsEl.innerHTML = '';
+    if (paginationEl) paginationEl.style.display = 'none';
+  }
 }
 
 function renderUsersList(users) {
   const el = document.getElementById('usersList');
   el.innerHTML = users.map((u, idx) => {
     const isMember = u.plan === 'member';
-    const planBadge = isMember
-      ? `<span style="padding:2px 8px;border-radius:4px;background:rgba(251,191,36,.15);color:var(--warn);font-size:11px;font-weight:600">👑 會員</span>`
-      : `<span style="padding:2px 8px;border-radius:4px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:11px;font-weight:600">🆓 免費</span>`;
+    const isPremium = isMember && (u.tier === 'premium');
+    const planBadge = isPremium
+      ? `<span style="padding:2px 8px;border-radius:4px;background:rgba(168,85,247,.15);color:#a855f7;font-size:11px;font-weight:600">💎 高級</span>`
+      : (isMember
+        ? `<span style="padding:2px 8px;border-radius:4px;background:rgba(251,191,36,.15);color:var(--warn);font-size:11px;font-weight:600">👑 標準</span>`
+        : `<span style="padding:2px 8px;border-radius:4px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:11px;font-weight:600">🆓 免費</span>`);
     const expires = isMember && u.subExpires
       ? `<span style="font-size:10px;color:var(--text-dim)">到期 ${new Date(u.subExpires).toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei'})}</span>`
       : '';
@@ -2129,6 +2266,100 @@ async function saveOpus47EffortConfig() {
 }
 
 // ═══════════════════════════════════════════════
+// Opus 4.6 Effort Level Config (v53)
+// ═══════════════════════════════════════════════
+async function loadOpus46EffortConfig() {
+  const statusEl = document.getElementById('opus46EffortStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/opus46-effort-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const level = data.config.level || 'high';
+      const radios = document.getElementsByName('opus46-effort');
+      for (let i = 0; i < radios.length; i++) {
+        radios[i].checked = (radios[i].value === level);
+      }
+      if (statusEl) statusEl.textContent = '當前：' + level;
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveOpus46EffortConfig() {
+  const statusEl = document.getElementById('opus46EffortStatus');
+  try {
+    const radios = document.getElementsByName('opus46-effort');
+    let level = 'high';
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) { level = radios[i].value; break; }
+    }
+    const r = await fetch(`${WORKER_URL}/admin/opus46-effort-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level: level })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Opus 4.6 Effort');
+      if (statusEl) statusEl.textContent = '已儲存：' + level;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// Sonnet 4.6 Effort Level Config (v53)
+// ═══════════════════════════════════════════════
+async function loadSonnet46EffortConfig() {
+  const statusEl = document.getElementById('sonnet46EffortStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/sonnet46-effort-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const level = data.config.level || 'high';
+      const radios = document.getElementsByName('sonnet46-effort');
+      for (let i = 0; i < radios.length; i++) {
+        radios[i].checked = (radios[i].value === level);
+      }
+      if (statusEl) statusEl.textContent = '當前：' + level;
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveSonnet46EffortConfig() {
+  const statusEl = document.getElementById('sonnet46EffortStatus');
+  try {
+    const radios = document.getElementsByName('sonnet46-effort');
+    let level = 'high';
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) { level = radios[i].value; break; }
+    }
+    const r = await fetch(`${WORKER_URL}/admin/sonnet46-effort-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level: level })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Sonnet 4.6 Effort');
+      if (statusEl) statusEl.textContent = '已儲存：' + level;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
 // Haiku 4.5 Thinking Config (v49)
 // ═══════════════════════════════════════════════
 async function loadHaikuThinkingConfig() {
@@ -2197,9 +2428,7 @@ let _v56Defaults = {
   explicitCoT: false,
   literalInstructions: true,
   groundInQuotes7D: false,
-  groundInQuotesTarot: true,
-  // v58
-  westernDeep: true
+  groundInQuotesTarot: true
 };
 
 async function loadV56Config() {
@@ -2232,7 +2461,6 @@ async function loadV56Config() {
       const litEl = document.getElementById('v57-lit');
       const giq7dEl = document.getElementById('v57-giq-7d');
       const giqtEl = document.getElementById('v57-giq-t');
-      const wdEl = document.getElementById('v58-western-deep');
       if (eklEl) eklEl.checked = (c.externalKnowledgeLock !== false);
       if (rolesEl) rolesEl.checked = (c.enhancedRoles !== false);
       if (fuUhEl) fuUhEl.checked = (c.followupUncertainty !== false);
@@ -2241,7 +2469,6 @@ async function loadV56Config() {
       if (litEl) litEl.checked = (c.literalInstructions !== false);
       if (giq7dEl) giq7dEl.checked = !!c.groundInQuotes7D;
       if (giqtEl) giqtEl.checked = (c.groundInQuotesTarot !== false);
-      if (wdEl) wdEl.checked = (c.westernDeep !== false);
       // Sonnet effort
       const effort = c.sonnetEffort || 'medium';
       document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === effort); });
@@ -2260,8 +2487,7 @@ async function loadV56Config() {
         if (c.literalInstructions) on.push('Lit');
         if (c.groundInQuotes7D) on.push('GQ7D');
         if (c.groundInQuotesTarot) on.push('GQT');
-        if (c.westernDeep) on.push('WD');
-        statusEl.textContent = '啟用(' + on.length + '/13): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + effort;
+        statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + effort;
       }
     }
   } catch(e) {
@@ -2287,7 +2513,6 @@ async function saveV56Config() {
     const litEl = document.getElementById('v57-lit');
     const giq7dEl = document.getElementById('v57-giq-7d');
     const giqtEl = document.getElementById('v57-giq-t');
-    const wdEl = document.getElementById('v58-western-deep');
     const body = {
       // v56
       selfAudit: saEl ? !!saEl.checked : true,
@@ -2303,9 +2528,7 @@ async function saveV56Config() {
       explicitCoT: cotEl ? !!cotEl.checked : false,
       literalInstructions: litEl ? !!litEl.checked : true,
       groundInQuotes7D: giq7dEl ? !!giq7dEl.checked : false,
-      groundInQuotesTarot: giqtEl ? !!giqtEl.checked : true,
-      // v58
-      westernDeep: wdEl ? !!wdEl.checked : true
+      groundInQuotesTarot: giqtEl ? !!giqtEl.checked : true
     };
     const r = await fetch(`${WORKER_URL}/admin/v56-prompt-config?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
@@ -2314,7 +2537,7 @@ async function saveV56Config() {
     });
     const data = await r.json();
     if (data.ok) {
-      toast('✓ 已儲存 v56+v57+v58 設定');
+      toast('✓ 已儲存 v56+v57 設定');
       const on = [];
       if (body.selfAudit) on.push('SA');
       if (body.uncertaintyHonesty) on.push('UH');
@@ -2328,8 +2551,7 @@ async function saveV56Config() {
       if (body.literalInstructions) on.push('Lit');
       if (body.groundInQuotes7D) on.push('GQ7D');
       if (body.groundInQuotesTarot) on.push('GQT');
-      if (body.westernDeep) on.push('WD');
-      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/13): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + body.sonnetEffort;
+      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + body.sonnetEffort;
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
@@ -2366,9 +2588,6 @@ function resetV56Config() {
   if (litEl) litEl.checked = d.literalInstructions;
   if (giq7dEl) giq7dEl.checked = d.groundInQuotes7D;
   if (giqtEl) giqtEl.checked = d.groundInQuotesTarot;
-  // v58
-  const wdEl = document.getElementById('v58-western-deep');
-  if (wdEl) wdEl.checked = d.westernDeep;
   document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === d.sonnetEffort); });
   toast('已恢復預設（記得按儲存）');
 }
