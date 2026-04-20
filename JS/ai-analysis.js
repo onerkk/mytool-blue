@@ -23372,7 +23372,7 @@ async function _triggerTarotFollowUp() {
       '<div style="text-align:center;padding:1.2rem 1rem">' +
         '<div style="font-size:1.6rem;margin-bottom:.4rem">💫</div>' +
         '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.35rem">這筆解讀的免費追問已用完</div>' +
-        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">每筆解讀綁 1 次免費追問<br>第 2 次起每次 NT$' + window.JY_PRICES.FOLLOWUP + '</div>' +
+        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">每筆解讀附贈免費追問額度（已用完）<br>追問單次每次 NT$' + window.JY_PRICES.FOLLOWUP + '</div>' +
         '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'' + sourceMode + '\',\'followup_single\')" style="padding:.6rem 1.5rem;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(147,51,234,.08));border:1.5px solid rgba(139,92,246,.45);color:#c084fc;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit">💎 追問單次 NT$' + window.JY_PRICES.FOLLOWUP + '</button>' +
       '</div>';
   }
@@ -23383,7 +23383,7 @@ async function _triggerTarotFollowUp() {
       '<div style="text-align:center;padding:1.2rem 1rem">' +
         '<div style="font-size:1.6rem;margin-bottom:.4rem">🔐</div>' +
         '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.35rem">追問需要登入</div>' +
-        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">登入 Google 帳號後即可追問<br>每筆解讀綁 1 次免費追問</div>' +
+        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">登入 Google 帳號後即可追問<br>每筆解讀附贈免費追問額度</div>' +
         '<button onclick="if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin()" style="padding:.6rem 1.3rem;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));border:1.5px solid rgba(212,175,55,.4);color:var(--c-gold);font-size:.86rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Google 登入</button>' +
       '</div>';
   }
@@ -24714,7 +24714,7 @@ window._jyStartOOTK = function() {
       md.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
         '<div style="font-size:1.8rem;margin-bottom:.6rem">' + (_ootkFreeUp ? '⏰' : '🔑') + '</div>' +
         '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">' + (_ootkFreeUp ? '開鑰免費體驗已用完' : '免費次數已用完') + '</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">標準會員 NT$' + window.JY_PRICES.SUB_STANDARD + ' → 塔羅＋開鑰每日各 1 次・七維度每月 2 次<br>高級會員 NT$' + window.JY_PRICES.SUB_PREMIUM + ' → 塔羅＋開鑰每日各 2 次・七維度每月 5 次・📷照片分析</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">標準會員 NT$' + window.JY_PRICES.SUB_STANDARD + ' → 塔羅＋開鑰每日各 1 次・七維度每月 2 次<br>高級會員 NT$' + window.JY_PRICES.SUB_PREMIUM + ' → 塔羅＋開鑰每日各 2 次・七維度每月 5 次・深度解析每月 1 次免費・📷照片分析</div>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'subscription\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🌙 開通會員（NT$' + window.JY_PRICES.SUB_STANDARD + ' 起）</button>' +
         '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'single\');" style="width:220px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text,#e8dcc8);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit">⚡ 開鑰單次 NT$' + window.JY_PRICES.SINGLE_OOTK + '</button>' +
