@@ -312,20 +312,21 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <button onclick="loadUsersData()" style="padding:6px 14px;border-radius:8px;border:1px solid var(--accent);color:var(--accent);background:transparent;font-size:12px;cursor:pointer">🔄 刷新</button>
         </div>
         <div id="usersStats" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap"></div>
-        <div id="usersPagination" style="display:none;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px;padding:10px 12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border);flex-wrap:wrap">
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-            <button id="usersPagePrev" onclick="loadUsersData(_usersPageState.currentPage - 1)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:12px;cursor:pointer">◀ 上一頁</button>
-            <span id="usersPageInfo" style="font-size:12px;color:var(--text-dim);padding:0 8px"></span>
-            <button id="usersPageNext" onclick="loadUsersData(_usersPageState.currentPage + 1)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:12px;cursor:pointer">下一頁 ▶</button>
+        <div id="usersPagination" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px;padding:10px 12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border)">
+          <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:nowrap">
+            <button id="usersPagePrev" onclick="loadUsersData(_usersPageState.currentPage - 1)" style="padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0">◀ 上頁</button>
+            <span id="usersPageInfo" style="font-size:11px;color:var(--text-dim);text-align:center;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+            <button id="usersPageNext" onclick="loadUsersData(_usersPageState.currentPage + 1)" style="padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0">下頁 ▶</button>
           </div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <span style="font-size:11px;color:var(--text-dim)">每頁</span>
+          <div style="display:flex;gap:6px;align-items:center;justify-content:center">
+            <span style="font-size:11px;color:var(--text-dim)">每頁顯示</span>
             <select id="usersPageSize" onchange="loadUsersData(1)" style="padding:4px 8px;border-radius:4px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:11px;cursor:pointer">
               <option value="25">25</option>
               <option value="50" selected>50</option>
               <option value="100">100</option>
               <option value="200">200</option>
             </select>
+            <span style="font-size:11px;color:var(--text-dim)">筆</span>
           </div>
         </div>
         <div id="usersList" style="display:flex;flex-direction:column;gap:10px"><div class="loading"></div></div>
@@ -1746,22 +1747,37 @@ function renderUsersList(users) {
       </div>`;
     }
 
-    // 授予/撤銷會員按鈕
-    const subAction = isMember
-      ? `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`
-      : `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','grant')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予會員</button>`;
+    // v53：依 tier 顯示不同按鈕組
+    //   高級會員 → [⬇️ 降為標準] [撤銷會員]
+    //   標準會員 → [⬆️ 升為高級] [撤銷會員]
+    //   免費      → [授予標準]   [授予高級]
+    const _emEsc = u.email.replace(/'/g,"\\'");
+    let subAction;
+    if (isPremium) {
+      subAction =
+        `<button onclick="_changeTier('${_emEsc}','standard')" style="padding:3px 10px;border-radius:6px;background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.3);font-size:11px;cursor:pointer;font-weight:600">⬇️ 降為標準</button>` +
+        `<button onclick="_setSubscription('${_emEsc}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`;
+    } else if (isMember) {
+      subAction =
+        `<button onclick="_changeTier('${_emEsc}','premium')" style="padding:3px 10px;border-radius:6px;background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.35);font-size:11px;cursor:pointer;font-weight:600">⬆️ 升為高級</button>` +
+        `<button onclick="_setSubscription('${_emEsc}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`;
+    } else {
+      subAction =
+        `<button onclick="_setSubscription('${_emEsc}','grant','standard')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予標準</button>` +
+        `<button onclick="_setSubscription('${_emEsc}','grant','premium')" style="padding:3px 10px;border-radius:6px;background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.35);font-size:11px;cursor:pointer;font-weight:600">授予高級</button>`;
+    }
 
     // v51：靜月記事本按鈕（卡片底部獨立一行）
     const _emailEsc = u.email.replace(/'/g, "\\'");
     const memoryBtn = `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(108,123,255,.15)"><button onclick="openMemoryModal('${_emailEsc}','${esc(u.name || '')}')" style="padding:5px 12px;border-radius:6px;background:rgba(108,123,255,.08);color:var(--accent);border:1px solid rgba(108,123,255,.25);font-size:11px;cursor:pointer;font-weight:600">📖 記事本</button></div>`;
 
     return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:14px 16px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
-        <div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px">
           <div style="font-size:14px;font-weight:600">${esc(u.name || '未命名')}</div>
-          <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${esc(u.email)}</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px;word-break:break-all">${esc(u.email)}</div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           ${planBadge}
           ${subAction}
         </div>
@@ -1801,8 +1817,15 @@ function _editQuota(idx, quotaType, currentVal) {
   }).catch(e => toast('錯誤: ' + e.message));
 }
 
-async function _setSubscription(email, action) {
-  const label = action === 'grant' ? '授予會員' : '撤銷會員';
+async function _setSubscription(email, action, tier) {
+  // v53：tier 參數（'standard' | 'premium'，僅 grant 用）
+  const _tier = (tier === 'premium') ? 'premium' : 'standard';
+  let label;
+  if (action === 'grant') {
+    label = (_tier === 'premium') ? '授予【高級會員】' : '授予【標準會員】';
+  } else {
+    label = '撤銷會員';
+  }
   if (!confirm(`確定要${label}？\n${email}`)) return;
   let days = 30;
   if (action === 'grant') {
@@ -1814,8 +1837,31 @@ async function _setSubscription(email, action) {
     const r = await fetch(`${WORKER_URL}/admin/set-subscription?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, action, days })
+      body: JSON.stringify({ email, action, days, tier: _tier })
     });
+    const data = await r.json();
+    if (data.ok) { toast(`✓ ${label}成功`); loadUsersData(); }
+    else { toast('失敗: ' + (data.error || '')); }
+  } catch(e) { toast('錯誤: ' + e.message); }
+}
+
+// v53：升降級 tier（保留原到期日，只改 tier 欄位）
+async function _changeTier(email, newTier) {
+  const _t = (newTier === 'premium') ? 'premium' : 'standard';
+  const label = (_t === 'premium') ? '升級為【高級會員】' : '降為【標準會員】';
+  if (!confirm(`確定要將 ${email}\n${label}？\n\n（保留原到期日，不影響已付費天數）`)) return;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/set-tier?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, tier: _t })
+    });
+    if (!r.ok) {
+      let errMsg = `HTTP ${r.status}`;
+      try { const eb = await r.json(); if (eb.error) errMsg += ': ' + eb.error; } catch(_){}
+      toast('失敗: ' + errMsg);
+      return;
+    }
     const data = await r.json();
     if (data.ok) { toast(`✓ ${label}成功`); loadUsersData(); }
     else { toast('失敗: ' + (data.error || '')); }
