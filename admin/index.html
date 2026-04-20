@@ -470,7 +470,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="font-size:13px;font-weight:600;min-width:180px">每筆解讀綁 N 次免費追問</span>
             <input type="number" id="fc-per-result" step="1" min="0" max="100" value="1" style="width:90px;padding:8px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px" />
-            <span style="font-size:11px;color:var(--text-dim)">設 0 = 停用免費追問（所有人直接 NT$19/次）</span>
+            <span style="font-size:11px;color:var(--text-dim)">設 0 = 停用免費追問（所有人直接 NT$29/次）</span>
           </div>
         </div>
 
@@ -1471,11 +1471,15 @@ async function loadUsersData() {
     _fuGlobalCache = data.fuGlobal || { perResult: 1, modules: {} };
     const totalUsers = _usersCache.length;
     const members = _usersCache.filter(u => u.plan === 'member').length;
+    // v52：細分 standard / premium
+    const premiumN = _usersCache.filter(u => u.plan === 'member' && u.tier === 'premium').length;
+    const standardN = members - premiumN;
     const freeUsers = totalUsers - members;
 
     document.getElementById('usersStats').innerHTML =
       `<span style="padding:6px 14px;border-radius:8px;background:rgba(108,123,255,.1);color:var(--accent);font-size:13px;font-weight:600">👥 ${totalUsers} 位用戶</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--warn);font-size:13px;font-weight:600">👑 ${members} 位會員</span>` +
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(147,51,234,.12);color:#c084fc;font-size:13px;font-weight:600">💎 ${premiumN} 位高級</span>` +
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--warn);font-size:13px;font-weight:600">👑 ${standardN} 位標準</span>` +
       `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px;font-weight:600">🆓 ${freeUsers} 位免費</span>`;
 
     if (!_usersCache.length) { el.innerHTML = '<div class="empty">尚無登入用戶</div>'; return; }
@@ -1487,8 +1491,12 @@ function renderUsersList(users) {
   const el = document.getElementById('usersList');
   el.innerHTML = users.map((u, idx) => {
     const isMember = u.plan === 'member';
+    // v52：會員再細分 standard / premium 徽章
+    const _tier = u.tier || (isMember ? 'standard' : null);
     const planBadge = isMember
-      ? `<span style="padding:2px 8px;border-radius:4px;background:rgba(251,191,36,.15);color:var(--warn);font-size:11px;font-weight:600">👑 會員</span>`
+      ? (_tier === 'premium'
+          ? `<span style="padding:2px 8px;border-radius:4px;background:rgba(147,51,234,.18);color:#c084fc;font-size:11px;font-weight:600" title="NT$1,999/月">💎 高級會員</span>`
+          : `<span style="padding:2px 8px;border-radius:4px;background:rgba(251,191,36,.15);color:var(--warn);font-size:11px;font-weight:600" title="NT$999/月">👑 標準會員</span>`)
       : `<span style="padding:2px 8px;border-radius:4px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:11px;font-weight:600">🆓 免費</span>`;
     const expires = isMember && u.subExpires
       ? `<span style="font-size:10px;color:var(--text-dim)">到期 ${new Date(u.subExpires).toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei'})}</span>`
@@ -1530,9 +1538,19 @@ function renderUsersList(users) {
     }
 
     // 授予/撤銷會員按鈕
-    const subAction = isMember
-      ? `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`
-      : `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','grant')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予會員</button>`;
+    // v52：會員多一顆「切換層級」讓 admin 能 standard ↔ premium 升降級
+    const _emSafe = u.email.replace(/'/g,"\\'");
+    let subAction;
+    if (isMember) {
+      const _altTier = (_tier === 'premium') ? 'standard' : 'premium';
+      const _altLabel = (_altTier === 'premium') ? '升級→💎高級' : '降級→👑標準';
+      subAction =
+        `<button onclick="_setSubscription('${_emSafe}','grant','${_altTier}')" style="padding:3px 10px;border-radius:6px;background:rgba(147,51,234,.08);color:#c084fc;border:1px solid rgba(147,51,234,.2);font-size:11px;cursor:pointer;margin-right:4px">${_altLabel}</button>` +
+        `<button onclick="_setSubscription('${_emSafe}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`;
+    } else {
+      subAction =
+        `<button onclick="_setSubscription('${_emSafe}','grant')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予會員</button>`;
+    }
 
     // v51：靜月記事本按鈕（卡片底部獨立一行）
     const _emailEsc = u.email.replace(/'/g, "\\'");
@@ -1584,23 +1602,36 @@ function _editQuota(idx, quotaType, currentVal) {
   }).catch(e => toast('錯誤: ' + e.message));
 }
 
-async function _setSubscription(email, action) {
+async function _setSubscription(email, action, tier) {
   const label = action === 'grant' ? '授予會員' : '撤銷會員';
-  if (!confirm(`確定要${label}？\n${email}`)) return;
+  if (!confirm(`確定要${label}？\n${email}${tier ? ' ('+tier+')' : ''}`)) return;
   let days = 30;
+  // v52：grant 未指定 tier → 讓 admin 選；revoke 不需要
+  let finalTier = tier;
   if (action === 'grant') {
+    if (!finalTier) {
+      const pick = prompt('授予哪個層級？\n輸入 1 = 標準會員 NT$999/月\n輸入 2 = 高級會員 NT$1,999/月（含 Opus 免費）', '2');
+      if (pick === null) return;
+      finalTier = (String(pick).trim() === '1') ? 'standard' : 'premium';
+    }
     const d = prompt('會員天數:', '30');
     if (d === null) return;
     days = parseInt(d) || 30;
   }
   try {
+    const _body = { email, action, days };
+    if (finalTier) _body.tier = finalTier;
     const r = await fetch(`${WORKER_URL}/admin/set-subscription?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, action, days })
+      body: JSON.stringify(_body)
     });
     const data = await r.json();
-    if (data.ok) { toast(`✓ ${label}成功`); loadUsersData(); }
+    if (data.ok) {
+      const _tierMsg = data.tier ? ' ('+data.tier+')' : '';
+      toast(`✓ ${label}成功${_tierMsg}`);
+      loadUsersData();
+    }
     else { toast('失敗: ' + (data.error || '')); }
   } catch(e) { toast('錯誤: ' + e.message); }
 }
