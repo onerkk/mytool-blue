@@ -2,6 +2,49 @@
 // ui.js — 靜月之光模組化拆分
 // ═══════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════
+// 【v52 中央定價表】務必與 worker.js 第 30-52 行常數保持一致
+// 改 worker 常數時這裡也要改，否則會出現「前端顯示 A 實收 B」的
+// 價格欺騙 bug。所有前端 NT$ 文案都從這裡讀，不要寫死數字。
+// ═══════════════════════════════════════════════════════════════
+(function(){
+  window.JY_PRICES = {
+    SUB_STANDARD: 999,        // 標準會員 / 月
+    SUB_PREMIUM: 1999,        // 高級會員 / 月
+    SINGLE_7D: 79,            // 七維度 Sonnet 單次
+    SINGLE_TAROT: 39,         // 塔羅 Sonnet 單次
+    SINGLE_OOTK: 39,          // 開鑰 Sonnet 單次
+    FOLLOWUP: 29,             // 追問單次（Sonnet）
+    OPUS_7D: 169,             // 七維度 Opus 單次（非會員／標準會員）
+    OPUS_TAROT: 79,           // 塔羅 Opus 單次（非會員／標準會員）
+    OPUS_OOTK: 79,            // 開鑰 Opus 單次（非會員／標準會員）
+    OPUS_7D_MEMBER: 99,       // 七維度 Opus 單次（高級會員加購）
+    OPUS_TAROT_MEMBER: 49,    // 塔羅 Opus 單次（高級會員加購）
+    OPUS_OOTK_MEMBER: 49      // 開鑰 Opus 單次（高級會員加購）
+  };
+  // ── tier helper：前端各處判斷「高級會員 vs 其他」的單一事實源 ──
+  //   value: 'premium' | 'standard' | null
+  //   premium 才享 Opus 加購優惠價 (99/49)，其他收單次價 (169/79)
+  window._jyGetUserTier = function(){
+    try {
+      if (window._jyUserTier === 'premium' || window._jyUserTier === 'standard') return window._jyUserTier;
+      var v = localStorage.getItem('_jy_user_tier');
+      if (v === 'premium' || v === 'standard') return v;
+    } catch(_){}
+    return null;
+  };
+  window._jyIsPremium = function(){ return window._jyGetUserTier() === 'premium'; };
+  // 依模式 + tier 取 Opus 單次價格
+  window._jyOpusPriceFor = function(mode){
+    var P = window.JY_PRICES;
+    var isPrem = window._jyIsPremium();
+    if (mode === 'full' || mode === '7d') return isPrem ? P.OPUS_7D_MEMBER : P.OPUS_7D;
+    if (mode === 'tarot' || mode === 'tarot_only') return isPrem ? P.OPUS_TAROT_MEMBER : P.OPUS_TAROT;
+    if (mode === 'ootk') return isPrem ? P.OPUS_OOTK_MEMBER : P.OPUS_OOTK;
+    return isPrem ? P.OPUS_7D_MEMBER : P.OPUS_7D;
+  };
+})();
+
 // ── v52 Ayanamsa 模式初始化 ──
 // 讀 localStorage（admin toggle 或進階使用者設定）
 // 預設 Lahiri（業界標準），可切 Raman（Raman 自己使用的版本）
@@ -1042,7 +1085,7 @@ function submitWithTool() {
                 _pm.innerHTML = (typeof _buildPaywallHTML === 'function') ? _buildPaywallHTML('tarot_only') :
                   '<div style="background:#1a0a0a;border:1px solid rgba(201,168,76,.25);border-radius:16px;padding:2rem;text-align:center;max-width:320px">' +
                   '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">免費次數已用完</div>' +
-                  '<button onclick="_jyStartPayment(\'tarot_only\')" style="padding:.6rem 1.5rem;border-radius:10px;background:rgba(212,175,55,.1);color:var(--c-gold);border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit;font-weight:700">🌙 開通會員 NT$1,299/月</button>' +
+                  '<button onclick="_jyStartPayment(\'tarot_only\')" style="padding:.6rem 1.5rem;border-radius:10px;background:rgba(212,175,55,.1);color:var(--c-gold);border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit;font-weight:700">🌙 開通會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + ' 起</button>' +
                   '<br><button onclick="this.parentElement.parentElement.remove()" style="margin-top:.5rem;padding:.4rem 1rem;background:none;border:none;color:var(--c-text-muted);cursor:pointer;font-size:.75rem">明天再來</button></div>';
                 _pm.addEventListener('click', function(ev) { if (ev.target === _pm) _pm.remove(); });
                 document.body.appendChild(_pm);
@@ -5310,7 +5353,7 @@ showAuraResult = function(){
         '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">感謝你的體驗</p>' +
         '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.2rem">此工具免費體驗已用完，開通會員即可大量使用所有功能</p>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-          '<button onclick="document.getElementById(\'jy-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🔮 開通會員 NT$1,299/月</button>' +
+          '<button onclick="document.getElementById(\'jy-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🔮 開通會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + ' 起</button>' +
           '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);text-decoration:none;font-size:.82rem;border:1px solid rgba(255,255,255,.08)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
           '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用了</button>' +
         '</div>' +
@@ -5408,7 +5451,7 @@ showAuraResult = function(){
         '<div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
         (isAdmin ?
           '<div class="jy-home-quota">👑 管理員・無限次</div>' :
-          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅・開鑰 各免費體驗 1 次・ <strong style="color:var(--c-gold)">NT$1,299/月 會員（七維度 5次/月、塔羅 3次/日、開鑰 3次/日）</strong></div>'
+          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅・開鑰 各免費體驗 1 次・ <strong style="color:var(--c-gold)">標準會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + '／高級會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_PREMIUM) || 1999) + '</strong></div>'
         ) +
       '</div>' +
 
@@ -5448,20 +5491,34 @@ showAuraResult = function(){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_token: sessionToken })
     }).then(function(r){ return r.json(); }).then(function(data){
+      // ★ v52：存 tier 到 window + localStorage，給 Opus 付費 modal 及其他地方讀取
+      try {
+        if (data.active && (data.tier === 'premium' || data.tier === 'standard')) {
+          window._jyUserTier = data.tier;
+          localStorage.setItem('_jy_user_tier', data.tier);
+        } else {
+          window._jyUserTier = null;
+          localStorage.removeItem('_jy_user_tier');
+        }
+      } catch(_){}
       var el = document.getElementById('jy-home-quota-text');
       if (!el) return;
       if (data.active) {
-        // 會員
+        // 會員（區分 standard / premium）
+        var _tier = (data.tier === 'premium') ? 'premium' : 'standard';
+        var _tierLabel = (_tier === 'premium') ? '高級會員' : '標準會員';
         var daysLeft = Math.ceil((data.expiresAt - Date.now()) / 86400000);
-        var tarotLeft = Math.max(0, (data.dailyLimit || 3) - (data.dailyUsed || 0));
-        var d7Left = Math.max(0, (data.d7Limit || 5) - (data.d7Used || 0));
-        el.innerHTML = '🌙 <strong style="color:var(--c-gold)">會員</strong> ・ ' +
+        var tarotLeft = Math.max(0, (data.dailyLimit || 0) - (data.dailyUsed || 0));
+        var d7Left = Math.max(0, (data.d7Limit || 0) - (data.d7Used || 0));
+        el.innerHTML = '🌙 <strong style="color:var(--c-gold)">' + _tierLabel + '</strong> ・ ' +
           '塔羅今日剩 <strong style="color:var(--c-gold)">' + tarotLeft + '</strong> 次 ・ ' +
           '七維度本月剩 <strong style="color:var(--c-gold)">' + d7Left + '</strong> 次 ・ ' +
           '<span style="opacity:.6">' + daysLeft + '天到期</span>';
         localStorage.setItem('_jy_sub_expires', String(data.expiresAt));
       } else {
         // 免費用戶
+        var _P = window.JY_PRICES || { SUB_STANDARD: 999 };
+        var _upsellText = '開通會員 NT$' + _P.SUB_STANDARD + ' 起';
         var fs = data.freeStatus;
         if (fs) {
           var parts = [];
@@ -5473,17 +5530,17 @@ showAuraResult = function(){
           if (usedOotk < 1) parts.push('開鑰');
           if (parts.length > 0) {
             el.innerHTML = '✨ 免費體驗剩餘：<strong style="color:var(--c-gold)">' + parts.join('、') + '</strong> ・ ' +
-              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">開通會員 NT$1,299/月</span>';
+              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</span>';
           } else {
-            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">開通會員 NT$1,299/月</strong>';
+            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</strong>';
           }
         } else {
           var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 3;
           if (freeLeft > 0) {
             el.innerHTML = '✨ 免費體驗剩餘 <strong style="color:var(--c-gold)">' + freeLeft + '</strong> 次 ・ ' +
-              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">開通會員 NT$1,299/月</span>';
+              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</span>';
           } else {
-            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">開通會員 NT$1,299/月</strong>';
+            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</strong>';
           }
         }
         localStorage.removeItem('_jy_sub_expires');
@@ -5838,9 +5895,9 @@ async function submitTarotQuick() {
           modal.innerHTML = '<div style="background:var(--c-bg-card,#1a1208);border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:2rem 1.5rem;max-width:320px;text-align:center">' +
             '<div style="font-size:2rem;margin-bottom:.6rem">🃏</div>' +
             '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">此工具免費體驗已用完</div>' +
-            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">三套工具各可免費體驗 1 次<br>開通會員（七維度 5次/月、塔羅 3次/日、開鑰 3次/日）</div>' +
+            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">三套工具各可免費體驗 1 次<br>開通會員可大量使用（標準 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + '／高級 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_PREMIUM) || 1999) + '）</div>' +
             '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 開通會員 NT$1,299/月</button>' +
+              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 開通會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + ' 起</button>' +
               '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">明天再來</button>' +
             '</div>' +
           '</div>';
