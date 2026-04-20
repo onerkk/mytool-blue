@@ -470,7 +470,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="font-size:13px;font-weight:600;min-width:180px">每筆解讀綁 N 次免費追問</span>
             <input type="number" id="fc-per-result" step="1" min="0" max="100" value="1" style="width:90px;padding:8px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px" />
-            <span style="font-size:11px;color:var(--text-dim)">設 0 = 停用免費追問（所有人直接 NT$29/次）</span>
+            <span style="font-size:11px;color:var(--text-dim)">設 0 = 停用免費追問（所有人直接 NT$19/次）</span>
           </div>
         </div>
 
@@ -549,73 +549,71 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
-      <!-- ═══ v52：Ayanamsa 模式切換卡片 ═══ -->
+      <!-- ═══ v56：Prompt Upgrades 卡片（Anthropic 官方技巧） ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
-        <h3>🕉️ 吠陀占星 Ayanamsa 模式</h3>
+        <h3>✨ v56 提示詞升級</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
-          只對吠陀占星計算生效。<strong>切換後需清除瀏覽器快取 + 重新起盤</strong>才生效。<br>
-          <span style="color:#60a5fa">Lahiri</span>：業界標準，印度官方採用,大多數軟體預設。<br>
-          <span style="color:#fbbf24">Raman</span>：B.V. Raman 本人使用的 Ayanamsa，比 Lahiri 少約 1°11'。<br>
-          <span style="color:#f87171">⚠️ 警告</span>：兩者差距可使邊緣行星跨星座、Nakshatra Pada 改變、Vimshottari 起運行星可能不同——整個時間線重排。
+          基於 Anthropic 官方 prompt engineering best practices 的新技巧。<br>
+          可個別開關做 A/B 測試。預設全開（Ground in Quotes 除外，它會拉長輸出時間）。
         </p>
-        <div id="ayanamsaModeGrid" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="ayanamsa-mode" value="lahiri" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
-            <span style="flex:1">
-              <span style="font-size:13px;font-weight:600;color:#60a5fa">Lahiri（Chitrapaksha）</span><br>
-              <span style="font-size:11px;color:var(--text-dim)">業界標準・印度官方</span>
-            </span>
-          </label>
-          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="ayanamsa-mode" value="raman" style="width:16px;height:16px;accent-color:#fbbf24;cursor:pointer">
-            <span style="flex:1">
-              <span style="font-size:13px;font-weight:600;color:#fbbf24">Raman</span><br>
-              <span style="font-size:11px;color:var(--text-dim)">B.V. Raman 本人版・差 1°11'</span>
-            </span>
-          </label>
-        </div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="saveAyanamsaMode()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Ayanamsa</button>
-          <span id="ayanamsaModeStatus" style="font-size:12px;color:var(--text-dim)"></span>
-        </div>
-      </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
 
-      <!-- ═══ v51：八字派別設定卡片 ═══ -->
-      <div class="worker-card" style="margin-bottom:16px">
-        <h3>☯️ 八字派別</h3>
-        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
-          只對八字分析的 AI 判讀框架生效（算法不變，只換解讀思維）。即時切換，不需重新部署。<br>
-          <span style="color:#fbbf24">Mixed（推薦）</span>：依題目自動選派，最接近老師傅讀盤模式。<br>
-          <span style="color:#60a5fa">Classical</span>：傳統旺衰派（邵偉華一系），身強弱→格局→用神→行運。<br>
-          <span style="color:#34d399">Geju</span>：格局派（當代最流行），宗《子平真詮》，月令取格為主。<br>
-          <span style="color:#f87171">Blind</span>：盲派（段建業），宮位取象+神煞斷事，六親凶災最準。<br>
-          <span style="color:#a78bfa">Xinpai</span>：新派（李涵辰），簡化版，大運流年為王。
-        </p>
-        <div id="baziSchoolGrid" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="bazi-school" value="mixed" style="width:16px;height:16px;accent-color:#fbbf24;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#fbbf24">Mixed 混合派</span><br><span style="font-size:11px;color:var(--text-dim)">推薦預設・動態選派</span></span>
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v56-selfaudit" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔍 Self-Audit 收尾自檢</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「Ask Claude to self-check. This catches errors reliably.」— 寫完後自檢三點（盤面依據/時間精度/人物來源）</span>
+            </span>
           </label>
-          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="bazi-school" value="classical" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">Classical 傳統派</span><br><span style="font-size:11px;color:var(--text-dim)">旺衰+格局+用神</span></span>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v56-uncertainty" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🤐 Uncertainty Honesty 允許說不知道</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「If evidence is missing, instruct it to say 'unknown.'」— 允許 AI 直接說「盤面沒給答案」而不是編造</span>
+            </span>
           </label>
-          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="bazi-school" value="geju" style="width:16px;height:16px;accent-color:#34d399;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#34d399">Geju 格局派</span><br><span style="font-size:11px;color:var(--text-dim)">月令取格・當代主流</span></span>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v56-positive" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">✅ Positive Examples 正面示範清單</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「Positive examples > negative examples」— 用五個好風格示範取代禁令，只注入 OOTK</span>
+            </span>
           </label>
-          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="bazi-school" value="blind" style="width:16px;height:16px;accent-color:#f87171;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#f87171">Blind 盲派</span><br><span style="font-size:11px;color:var(--text-dim)">宮位+神煞+取象</span></span>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v56-ground" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📌 Ground in Quotes 先引用後解讀</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方長 context 技巧：先引用盤面關鍵訊號，再展開解讀。會拉長輸出 10-20%。只注入 OOTK。</span>
+            </span>
           </label>
-          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="bazi-school" value="xinpai" style="width:16px;height:16px;accent-color:#a78bfa;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#a78bfa">Xinpai 新派</span><br><span style="font-size:11px;color:var(--text-dim)">李涵辰・簡化版</span></span>
-          </label>
+
+          <div style="padding:12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px">⚡ Sonnet 4.6 Effort Level</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">官方：「Sonnet 4.6 預設 high 會高延遲，建議 medium 平衡速度與品質」。只影響非深度路徑的 Sonnet，不影響 Opus 深度。</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+                <input type="radio" name="v56-sonnet-effort" value="low" style="width:14px;height:14px;accent-color:#34d399;cursor:pointer">
+                <span><span style="font-size:12px;font-weight:600;color:#34d399">low</span><br><span style="font-size:10px;color:var(--text-dim)">最快</span></span>
+              </label>
+              <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+                <input type="radio" name="v56-sonnet-effort" value="medium" style="width:14px;height:14px;accent-color:#60a5fa;cursor:pointer">
+                <span><span style="font-size:12px;font-weight:600;color:#60a5fa">medium</span><br><span style="font-size:10px;color:var(--text-dim)">平衡</span></span>
+              </label>
+              <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+                <input type="radio" name="v56-sonnet-effort" value="high" style="width:14px;height:14px;accent-color:#fbbf24;cursor:pointer">
+                <span><span style="font-size:12px;font-weight:600;color:#fbbf24">high</span><br><span style="font-size:10px;color:var(--text-dim)">最深</span></span>
+              </label>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="saveBaziSchool()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存派別</button>
-          <span id="baziSchoolStatus" style="font-size:12px;color:var(--text-dim)"></span>
+
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveV56Config()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v56 設定</button>
+          <button onclick="resetV56Config()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text-dim);font-size:13px;cursor:pointer">↺ 恢復預設</button>
+          <span id="v56Status" style="font-size:12px;color:var(--text-dim)"></span>
         </div>
       </div>
 
@@ -818,7 +816,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadHaikuThinkingConfig(); loadAyanamsaMode(); loadBaziSchool(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadHaikuThinkingConfig(); loadV56Config(); }
   });
 });
 
@@ -1460,107 +1458,35 @@ async function removeAdminUser(email) {
 // ═══════════════════════════════════════════════
 let _usersCache = [];
 let _fuGlobalCache = { perResult: 1, modules: {} }; // v47：追問全域配置
-// v53b 分頁狀態
-let _usersPage = 0;
-let _usersPageSize = 50;
-let _usersTotalPages = 1;
-let _usersTotalUsers = 0;
-async function loadUsersData(page) {
-  if (typeof page === 'number' && page >= 0) _usersPage = page;
+async function loadUsersData() {
   const el = document.getElementById('usersList');
   el.innerHTML = '<div class="loading"></div>';
   try {
-    const _qs = `token=${encodeURIComponent(adminToken)}&page=${_usersPage}&pageSize=${_usersPageSize}`;
-    const r = await fetch(`${WORKER_URL}/admin/users-data?${_qs}`);
-    // v53 bug fix：先檢查 HTTP 狀態，避免 worker 回 500/401 時被靜默吞成「尚無登入用戶」
-    // 之前的 bug：worker 任何錯誤(subrequest 爆炸/unauthorized/KV 空)都被前端當作「正常但無用戶」
-    if (!r.ok) {
-      let _errText = '';
-      try { const _errData = await r.json(); _errText = _errData.error || JSON.stringify(_errData); }
-      catch(_) { try { _errText = await r.text(); } catch(_e) { _errText = '(無法讀取錯誤內容)'; } }
-      el.innerHTML = '<div class="empty" style="color:var(--danger,#ef4444)">載入失敗 HTTP ' + r.status + ': ' + (_errText || '(空)') + '</div>';
-      // 統計列也清零並標示錯誤
-      var _stEl = document.getElementById('usersStats');
-      if (_stEl) _stEl.innerHTML = '<span style="padding:6px 14px;border-radius:8px;background:rgba(239,68,68,.1);color:var(--danger,#ef4444);font-size:13px;font-weight:600">⚠️ 後端錯誤 ' + r.status + '</span>';
-      return;
-    }
+    const r = await fetch(`${WORKER_URL}/admin/users-data?token=${encodeURIComponent(adminToken)}`);
     const data = await r.json();
     _usersCache = data.users || [];
+    // v47：後端回的全域追問配置，renderUsersList 需要用來顯示 fuPerResult 的「預設/自訂」狀態
     _fuGlobalCache = data.fuGlobal || { perResult: 1, modules: {} };
-    // v53b 同步分頁狀態（以 server 回的為準，處理 page 越界夾回）
-    _usersPage = (typeof data.page === 'number') ? data.page : 0;
-    _usersPageSize = (typeof data.pageSize === 'number') ? data.pageSize : 50;
-    _usersTotalPages = (typeof data.totalPages === 'number') ? data.totalPages : 1;
-    _usersTotalUsers = (typeof data.totalUsers === 'number') ? data.totalUsers : _usersCache.length;
-
-    // v53b：統計優先用全庫 globalStats（不受當頁影響），fallback 到當頁統計
-    const gs = data.globalStats || null;
-    const totalUsers = gs ? gs.totalUsers : _usersCache.length;
-    const premiumN = gs ? gs.premium : _usersCache.filter(u => u.plan === 'member' && u.tier === 'premium').length;
-    const standardN = gs ? gs.standard : _usersCache.filter(u => u.plan === 'member' && u.tier !== 'premium').length;
-    const freeUsers = gs ? gs.free : (_usersCache.length - (premiumN + standardN));
-    const pageLabel = _usersTotalPages > 1
-      ? `<span style="padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--text-dim);font-size:12px;font-weight:600">第 ${_usersPage + 1} / ${_usersTotalPages} 頁（每頁 ${_usersPageSize}）</span>`
-      : '';
+    const totalUsers = _usersCache.length;
+    const members = _usersCache.filter(u => u.plan === 'member').length;
+    const freeUsers = totalUsers - members;
 
     document.getElementById('usersStats').innerHTML =
       `<span style="padding:6px 14px;border-radius:8px;background:rgba(108,123,255,.1);color:var(--accent);font-size:13px;font-weight:600">👥 ${totalUsers} 位用戶</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(147,51,234,.12);color:#c084fc;font-size:13px;font-weight:600">💎 ${premiumN} 位高級</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--warn);font-size:13px;font-weight:600">👑 ${standardN} 位標準</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px;font-weight:600">🆓 ${freeUsers} 位免費</span>` +
-      pageLabel;
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--warn);font-size:13px;font-weight:600">👑 ${members} 位會員</span>` +
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px;font-weight:600">🆓 ${freeUsers} 位免費</span>`;
 
-    if (!_usersCache.length) { el.innerHTML = '<div class="empty">尚無登入用戶</div>'; _renderUsersPagination(); return; }
+    if (!_usersCache.length) { el.innerHTML = '<div class="empty">尚無登入用戶</div>'; return; }
     renderUsersList(_usersCache);
-    _renderUsersPagination();
   } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
-}
-
-// v53b：分頁控制列渲染（在 usersList 後追加）
-function _renderUsersPagination() {
-  let el = document.getElementById('usersPagination');
-  if (!el) {
-    // 動態建立容器，位置在 usersList 後面
-    const list = document.getElementById('usersList');
-    if (!list || !list.parentNode) return;
-    el = document.createElement('div');
-    el.id = 'usersPagination';
-    el.style.cssText = 'display:flex;justify-content:center;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap';
-    list.parentNode.insertBefore(el, list.nextSibling);
-  }
-  if (_usersTotalPages <= 1) { el.innerHTML = ''; return; }
-  const prevDisabled = _usersPage <= 0;
-  const nextDisabled = _usersPage >= _usersTotalPages - 1;
-  // 頁碼顯示邏輯：顯示當頁前後各 2 頁 + 首尾頁
-  const pages = [];
-  const add = p => { if (!pages.includes(p) && p >= 0 && p < _usersTotalPages) pages.push(p); };
-  add(0);
-  for (let p = _usersPage - 2; p <= _usersPage + 2; p++) add(p);
-  add(_usersTotalPages - 1);
-  pages.sort((a, b) => a - b);
-  let html = '';
-  html += `<button onclick="loadUsersData(${Math.max(0, _usersPage - 1)})" ${prevDisabled ? 'disabled' : ''} style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:${prevDisabled ? 'var(--text-dim)' : 'var(--accent)'};font-size:13px;cursor:${prevDisabled ? 'not-allowed' : 'pointer'};opacity:${prevDisabled ? '.4' : '1'}">← 上一頁</button>`;
-  let last = -1;
-  pages.forEach(p => {
-    if (last >= 0 && p - last > 1) html += `<span style="color:var(--text-dim);padding:0 4px">…</span>`;
-    const active = p === _usersPage;
-    html += `<button onclick="loadUsersData(${p})" style="padding:6px 12px;border-radius:6px;border:1px solid ${active ? 'var(--accent)' : 'var(--card-border)'};background:${active ? 'rgba(108,123,255,.15)' : 'transparent'};color:${active ? 'var(--accent)' : 'var(--text)'};font-size:13px;cursor:pointer;font-weight:${active ? '600' : '400'};min-width:34px">${p + 1}</button>`;
-    last = p;
-  });
-  html += `<button onclick="loadUsersData(${Math.min(_usersTotalPages - 1, _usersPage + 1)})" ${nextDisabled ? 'disabled' : ''} style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:${nextDisabled ? 'var(--text-dim)' : 'var(--accent)'};font-size:13px;cursor:${nextDisabled ? 'not-allowed' : 'pointer'};opacity:${nextDisabled ? '.4' : '1'}">下一頁 →</button>`;
-  el.innerHTML = html;
 }
 
 function renderUsersList(users) {
   const el = document.getElementById('usersList');
   el.innerHTML = users.map((u, idx) => {
     const isMember = u.plan === 'member';
-    // v52：會員再細分 standard / premium 徽章
-    const _tier = u.tier || (isMember ? 'standard' : null);
     const planBadge = isMember
-      ? (_tier === 'premium'
-          ? `<span style="padding:2px 8px;border-radius:4px;background:rgba(147,51,234,.18);color:#c084fc;font-size:11px;font-weight:600" title="NT$1,999/月">💎 高級會員</span>`
-          : `<span style="padding:2px 8px;border-radius:4px;background:rgba(251,191,36,.15);color:var(--warn);font-size:11px;font-weight:600" title="NT$999/月">👑 標準會員</span>`)
+      ? `<span style="padding:2px 8px;border-radius:4px;background:rgba(251,191,36,.15);color:var(--warn);font-size:11px;font-weight:600">👑 會員</span>`
       : `<span style="padding:2px 8px;border-radius:4px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:11px;font-weight:600">🆓 免費</span>`;
     const expires = isMember && u.subExpires
       ? `<span style="font-size:10px;color:var(--text-dim)">到期 ${new Date(u.subExpires).toLocaleDateString('zh-TW',{timeZone:'Asia/Taipei'})}</span>`
@@ -1602,29 +1528,21 @@ function renderUsersList(users) {
     }
 
     // 授予/撤銷會員按鈕
-    // v52：會員多一顆「切換層級」讓 admin 能 standard ↔ premium 升降級
-    const _emSafe = u.email.replace(/'/g,"\\'");
-    let subAction;
-    if (isMember) {
-      const _altTier = (_tier === 'premium') ? 'standard' : 'premium';
-      const _altLabel = (_altTier === 'premium') ? '升級→💎高級' : '降級→👑標準';
-      subAction =
-        `<button onclick="_setSubscription('${_emSafe}','grant','${_altTier}')" style="padding:3px 10px;border-radius:6px;background:rgba(147,51,234,.08);color:#c084fc;border:1px solid rgba(147,51,234,.2);font-size:11px;cursor:pointer;margin-right:4px">${_altLabel}</button>` +
-        `<button onclick="_setSubscription('${_emSafe}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`;
-    } else {
-      subAction =
-        `<button onclick="_setSubscription('${_emSafe}','grant')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予會員</button>`;
-    }
+    const subAction = isMember
+      ? `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','revoke')" style="padding:3px 10px;border-radius:6px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);font-size:11px;cursor:pointer">撤銷會員</button>`
+      : `<button onclick="_setSubscription('${u.email.replace(/'/g,"\\'")}','grant')" style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);font-size:11px;cursor:pointer">授予會員</button>`;
 
     // v51：靜月記事本按鈕（卡片底部獨立一行）
     const _emailEsc = u.email.replace(/'/g, "\\'");
     const memoryBtn = `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(108,123,255,.15)"><button onclick="openMemoryModal('${_emailEsc}','${esc(u.name || '')}')" style="padding:5px 12px;border-radius:6px;background:rgba(108,123,255,.08);color:var(--accent);border:1px solid rgba(108,123,255,.25);font-size:11px;cursor:pointer;font-weight:600">📖 記事本</button></div>`;
 
     return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:14px 16px">
-      <div style="margin-bottom:8px">
-        <div style="font-size:14px;font-weight:600">${esc(u.name || '未命名')}</div>
-        <div style="font-size:12px;color:var(--text-dim);margin-top:2px;word-break:break-all">${esc(u.email)}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <div style="font-size:14px;font-weight:600">${esc(u.name || '未命名')}</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${esc(u.email)}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
           ${planBadge}
           ${subAction}
         </div>
@@ -1664,36 +1582,23 @@ function _editQuota(idx, quotaType, currentVal) {
   }).catch(e => toast('錯誤: ' + e.message));
 }
 
-async function _setSubscription(email, action, tier) {
+async function _setSubscription(email, action) {
   const label = action === 'grant' ? '授予會員' : '撤銷會員';
-  if (!confirm(`確定要${label}？\n${email}${tier ? ' ('+tier+')' : ''}`)) return;
+  if (!confirm(`確定要${label}？\n${email}`)) return;
   let days = 30;
-  // v52：grant 未指定 tier → 讓 admin 選；revoke 不需要
-  let finalTier = tier;
   if (action === 'grant') {
-    if (!finalTier) {
-      const pick = prompt('授予哪個層級？\n輸入 1 = 標準會員 NT$999/月\n輸入 2 = 高級會員 NT$1,999/月（含 Opus 免費）', '2');
-      if (pick === null) return;
-      finalTier = (String(pick).trim() === '1') ? 'standard' : 'premium';
-    }
     const d = prompt('會員天數:', '30');
     if (d === null) return;
     days = parseInt(d) || 30;
   }
   try {
-    const _body = { email, action, days };
-    if (finalTier) _body.tier = finalTier;
     const r = await fetch(`${WORKER_URL}/admin/set-subscription?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(_body)
+      body: JSON.stringify({ email, action, days })
     });
     const data = await r.json();
-    if (data.ok) {
-      const _tierMsg = data.tier ? ' ('+data.tier+')' : '';
-      toast(`✓ ${label}成功${_tierMsg}`);
-      loadUsersData();
-    }
+    if (data.ok) { toast(`✓ ${label}成功`); loadUsersData(); }
     else { toast('失敗: ' + (data.error || '')); }
   } catch(e) { toast('錯誤: ' + e.message); }
 }
@@ -2193,85 +2098,101 @@ async function saveHaikuThinkingConfig() {
 }
 
 // ═══════════════════════════════════════════════
-// Ayanamsa 模式切換（v52）
-// 純前端 localStorage 設定，切換後需清快取+重新起盤才生效
+// v56 Prompt Upgrades Config
 // ═══════════════════════════════════════════════
-function loadAyanamsaMode() {
-  try {
-    var mode = localStorage.getItem('jy_ayanamsa_mode');
-    if (mode !== 'raman' && mode !== 'lahiri') mode = 'lahiri';
-    var radios = document.getElementsByName('ayanamsa-mode');
-    for (var i = 0; i < radios.length; i++) {
-      radios[i].checked = (radios[i].value === mode);
-    }
-    var statusEl = document.getElementById('ayanamsaModeStatus');
-    if (statusEl) statusEl.textContent = '目前：' + mode;
-  } catch(e) {
-    console.warn('loadAyanamsaMode:', e);
-  }
-}
+let _v56Defaults = {
+  selfAudit: true,
+  uncertaintyHonesty: true,
+  positiveExamples: true,
+  groundInQuotes: false,
+  sonnetEffort: 'medium'
+};
 
-function saveAyanamsaMode() {
+async function loadV56Config() {
+  const statusEl = document.getElementById('v56Status');
   try {
-    var radios = document.getElementsByName('ayanamsa-mode');
-    var mode = 'lahiri';
-    for (var i = 0; i < radios.length; i++) {
-      if (radios[i].checked) { mode = radios[i].value; break; }
+    const r = await fetch(`${WORKER_URL}/admin/v56-prompt-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) {
+      if (statusEl) statusEl.textContent = '載入失敗 ' + r.status;
+      return;
     }
-    localStorage.setItem('jy_ayanamsa_mode', mode);
-    window.JY_AYANAMSA_MODE = mode;
-    var statusEl = document.getElementById('ayanamsaModeStatus');
-    if (statusEl) statusEl.textContent = '已儲存：' + mode + '（下次起盤生效，需清快取）';
-    toast('✓ Ayanamsa 已切換為 ' + mode + '（需清快取+重新起盤）');
-  } catch(e) {
-    toast('儲存失敗：' + e.message);
-  }
-}
-
-// ═══════════════════════════════════════════════
-// Bazi School Config (v51) — 後端 KV 儲存
-// ═══════════════════════════════════════════════
-async function loadBaziSchool() {
-  const statusEl = document.getElementById('baziSchoolStatus');
-  try {
-    const r = await fetch(`${WORKER_URL}/admin/bazi-school?token=${encodeURIComponent(adminToken)}`);
     const data = await r.json();
     if (data.ok && data.config) {
-      const school = data.config.school || 'mixed';
-      const radios = document.getElementsByName('bazi-school');
-      for (let i = 0; i < radios.length; i++) {
-        radios[i].checked = (radios[i].value === school);
+      const c = data.config;
+      if (data.defaults) _v56Defaults = data.defaults;
+      const saEl = document.getElementById('v56-selfaudit');
+      const uhEl = document.getElementById('v56-uncertainty');
+      const peEl = document.getElementById('v56-positive');
+      const gqEl = document.getElementById('v56-ground');
+      if (saEl) saEl.checked = (c.selfAudit !== false);
+      if (uhEl) uhEl.checked = (c.uncertaintyHonesty !== false);
+      if (peEl) peEl.checked = (c.positiveExamples !== false);
+      if (gqEl) gqEl.checked = !!c.groundInQuotes;
+      const effort = c.sonnetEffort || 'medium';
+      document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === effort); });
+      if (statusEl) {
+        const on = [];
+        if (c.selfAudit) on.push('SA');
+        if (c.uncertaintyHonesty) on.push('UH');
+        if (c.positiveExamples) on.push('PE');
+        if (c.groundInQuotes) on.push('GQ');
+        statusEl.textContent = '啟用: ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + effort;
       }
-      if (statusEl) statusEl.textContent = '當前：' + school;
     }
   } catch(e) {
     if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
   }
 }
 
-async function saveBaziSchool() {
-  const statusEl = document.getElementById('baziSchoolStatus');
+async function saveV56Config() {
+  const statusEl = document.getElementById('v56Status');
   try {
-    const radios = document.getElementsByName('bazi-school');
-    let school = 'mixed';
-    for (let i = 0; i < radios.length; i++) {
-      if (radios[i].checked) { school = radios[i].value; break; }
-    }
-    const r = await fetch(`${WORKER_URL}/admin/bazi-school?token=${encodeURIComponent(adminToken)}`, {
+    const saEl = document.getElementById('v56-selfaudit');
+    const uhEl = document.getElementById('v56-uncertainty');
+    const peEl = document.getElementById('v56-positive');
+    const gqEl = document.getElementById('v56-ground');
+    const effortEl = document.querySelector('input[name="v56-sonnet-effort"]:checked');
+    const body = {
+      selfAudit: saEl ? !!saEl.checked : true,
+      uncertaintyHonesty: uhEl ? !!uhEl.checked : true,
+      positiveExamples: peEl ? !!peEl.checked : true,
+      groundInQuotes: gqEl ? !!gqEl.checked : false,
+      sonnetEffort: effortEl ? effortEl.value : 'medium'
+    };
+    const r = await fetch(`${WORKER_URL}/admin/v56-prompt-config?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ school: school })
+      body: JSON.stringify(body)
     });
     const data = await r.json();
     if (data.ok) {
-      toast('✓ 八字派別已切換為 ' + school);
-      if (statusEl) statusEl.textContent = '已儲存：' + school;
+      toast('✓ 已儲存 v56 設定');
+      const on = [];
+      if (body.selfAudit) on.push('SA');
+      if (body.uncertaintyHonesty) on.push('UH');
+      if (body.positiveExamples) on.push('PE');
+      if (body.groundInQuotes) on.push('GQ');
+      if (statusEl) statusEl.textContent = '啟用: ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + body.sonnetEffort;
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
   } catch(e) {
     toast('錯誤: ' + e.message);
   }
+}
+
+function resetV56Config() {
+  const d = _v56Defaults;
+  const saEl = document.getElementById('v56-selfaudit');
+  const uhEl = document.getElementById('v56-uncertainty');
+  const peEl = document.getElementById('v56-positive');
+  const gqEl = document.getElementById('v56-ground');
+  if (saEl) saEl.checked = d.selfAudit;
+  if (uhEl) uhEl.checked = d.uncertaintyHonesty;
+  if (peEl) peEl.checked = d.positiveExamples;
+  if (gqEl) gqEl.checked = d.groundInQuotes;
+  document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === d.sonnetEffort); });
+  toast('已恢復預設（記得按儲存）');
 }
 
 // ═══════════════════════════════════════════════
