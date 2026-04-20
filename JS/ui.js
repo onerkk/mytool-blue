@@ -1677,27 +1677,10 @@ function copyDiagnosticPack(){
 }
 
 // ── 評分按鈕 ──
+// v53 bug fix：原本這裡有舊版 submitFeedback（點「準」即送出），與下方 v42 新版衝突（頂層同名 function 重複宣告）。
+// 舊版已刪除；新版在下方約 1880 行處（「準」也要先顯示多選框，由 submitFeedbackDetail 收尾）。
+// 模組模式編譯會因重複宣告報錯；script 模式下舊版會被新版靜默覆蓋，但程式碼混淆且難維護。
 let _fbRating='';
-function submitFeedback(rating){
-  _fbRating=rating;
-  const goodBtn=document.getElementById('fb-good');
-  const badBtn=document.getElementById('fb-bad');
-  if(rating==='good'){
-    goodBtn.style.border='2px solid #22c55e';
-    goodBtn.style.background='rgba(34,197,94,0.15)';
-    badBtn.style.opacity='0.3';
-    badBtn.style.pointerEvents='none';
-    _sendFeedbackToForms(rating,[],'');
-    document.getElementById('fb-reason-box').style.display='none';
-    document.getElementById('fb-thanks').style.display='block';
-  } else {
-    badBtn.style.border='2px solid #ef4444';
-    badBtn.style.background='rgba(239,68,68,0.15)';
-    goodBtn.style.opacity='0.3';
-    goodBtn.style.pointerEvents='none';
-    document.getElementById('fb-reason-box').style.display='block';
-  }
-}
 
 // ── 送出回饋原因（準和不準都用）──
 function submitFeedbackDetail(){
@@ -1897,8 +1880,7 @@ function _injectDynamicFeedbackOptions() {
   reasonsDiv.innerHTML = html;
 }
 
-// ★ v42：準也有選項（覆蓋原本的 submitFeedback）
-var _origSubmitFeedback = (typeof submitFeedback === 'function') ? submitFeedback : null;
+// ★ v42：準也有選項（v53：已刪除舊的衝突版本，這裡變成唯一宣告）
 function submitFeedback(rating){
   _fbRating=rating;
   var goodBtn=document.getElementById('fb-good');

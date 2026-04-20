@@ -1,6 +1,10 @@
 // ═══════════════════════════════════════════════════════════════
-// photo-upload.js — v40b 面相/手相/水晶照片上傳模組
-// 修正：管理員/會員在七維度一定全開；不依賴 window.pickTool 掛載
+// photo-upload.js — v48 面相/手相/水晶照片上傳模組
+// v53 修正：photo-upload.js 規格未跟上 v48 升級（仍停在 v40b 的 768/0.75/4）
+// v48 升級理由（參考 photo-upload.md）：
+// - MAX_PX 768→1568：Claude Vision 建議 1568px；768 過度降低把手相紋路都吃掉了
+// - QUALITY 0.75→0.85：0.75 JPEG 壓縮偽影太明顯，細節失真
+// - MAX_SIZE_MB 4→8：手機直出照片普遍 3–6MB，放寬避免「太大」報錯
 // 其他功能不變
 // ═══════════════════════════════════════════════════════════════
 (function(){
@@ -8,9 +12,9 @@
 
 window._jyPhotos = null;
 
-var MAX_PX = 768;
-var QUALITY = 0.75;
-var MAX_SIZE_MB = 4;
+var MAX_PX = 1568;
+var QUALITY = 0.85;
+var MAX_SIZE_MB = 8;
 
 var PHOTO_FIELDS = {
   face:      { icon: 'fa-portrait',   label: '臉部照片', hint: '正面自拍・光線充足' },
