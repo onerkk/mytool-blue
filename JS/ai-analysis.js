@@ -18827,6 +18827,37 @@ renderTarot = function(){
       if (typeof S !== 'undefined' && S.ziwei && S.ziwei.palaces) {
         p.dims.ziwei = p.dims.ziwei || {};
         try {
+          // ★ v51：補齊紫微核心先天欄位（命主/身主/五行局/生年干支/來因宮）
+          // 這些欄位 ziwei.js 早就算好，但之前 payload 沒送，AI 缺少最基礎的紫微判讀資料
+          if (S.ziwei.mingZhu) p.dims.ziwei.mingZhu = S.ziwei.mingZhu;
+          if (S.ziwei.shenZhu) p.dims.ziwei.shenZhu = S.ziwei.shenZhu;
+          if (S.ziwei.wuxingJu) {
+            // wuxingJu 是數字（2/3/4/5/6），補上標籤讓 AI 直接讀懂
+            var _juLabels = {2:'水二局',3:'木三局',4:'金四局',5:'土五局',6:'火六局'};
+            var _juStartAge = {2:'2歲起運',3:'3歲起運',4:'4歲起運',5:'5歲起運',6:'6歲起運'};
+            p.dims.ziwei.wuxingJu = (_juLabels[S.ziwei.wuxingJu] || ('局數'+S.ziwei.wuxingJu))
+              + '（' + (_juStartAge[S.ziwei.wuxingJu] || '起運年齡=局數') + '）';
+          }
+          if (S.ziwei.yGan && S.ziwei.yZhi) p.dims.ziwei.birthGanZhi = S.ziwei.yGan + S.ziwei.yZhi + '年';
+          // 來因宮=生年化祿所落之宮（飛星派核心，代表此生福氣源頭）
+          try {
+            var _palNames14 = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','福德宮','父母宮'];
+            var _laiyinIdx = -1;
+            var _laiyinStar = '';
+            S.ziwei.palaces.forEach(function(pal, idx) {
+              if (!pal || !pal.stars) return;
+              pal.stars.forEach(function(star) {
+                if (star.hua === '化祿' && _laiyinIdx === -1) {
+                  _laiyinIdx = idx;
+                  _laiyinStar = star.name;
+                }
+              });
+            });
+            if (_laiyinIdx >= 0) {
+              p.dims.ziwei.laiyinGong = _palNames14[_laiyinIdx] + '（' + _laiyinStar + '化祿=此生福氣天賦源頭）';
+            }
+          } catch(_lyE) {}
+
           var huaStars = [];
           S.ziwei.palaces.forEach(function(pal, idx) {
             if (!pal || !pal.stars) return;
