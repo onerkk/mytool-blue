@@ -18820,6 +18820,31 @@ renderTarot = function(){
           // 牌陣類型
           if (_ta.spreadDef && _ta.spreadDef.zh) p.dims.tarot.spreadType = _ta.spreadDef.zh;
           else if (_ta.spreadType) p.dims.tarot.spreadType = _ta.spreadType;
+
+          // ═══ v52 Phase 2：七維度塔羅深度同步——和塔羅快讀同規模 ═══
+          // 原本七維度只送 5 個扁平欄位，現補齊 v37+v52 所有結構化資料
+          // 呼叫塔羅快讀的 payload 組裝函式抽取深度欄位
+          try {
+            if (typeof _buildTarotOnlyPayload === 'function') {
+              var _tarotFullPayload = _buildTarotOnlyPayload();
+              if (_tarotFullPayload && _tarotFullPayload.tarotData) {
+                var _td = _tarotFullPayload.tarotData;
+                // 傳承塔羅快讀算好的結構化資料
+                if (_td.opposingPairs && _td.opposingPairs.length) p.dims.tarot.opposingPairs = _td.opposingPairs;
+                if (_td.storyArc) p.dims.tarot.storyArc = _td.storyArc;
+                if (_td.numberPatterns && _td.numberPatterns.length) p.dims.tarot.numberPatterns = _td.numberPatterns;
+                if (_td.courtPeople && _td.courtPeople.length) p.dims.tarot.courtPeople = _td.courtPeople;
+                if (_td.tensions && _td.tensions.length) p.dims.tarot.tensions = _td.tensions;
+                if (_td.majorWeight) p.dims.tarot.majorWeight = _td.majorWeight;
+                if (_td.elementalDignity) p.dims.tarot.elementalDignity = _td.elementalDignity;
+                if (_td.timeConclusion) p.dims.tarot.timeConclusion = _td.timeConclusion;
+                if (_td.combos) p.dims.tarot.combos = _td.combos;
+                if (_td.courtElements) p.dims.tarot.courtElements = _td.courtElements;
+                // Signifier 代表牌（v52 新增）
+                if (_td.signifier) p.dims.tarot.signifier = _td.signifier;
+              }
+            }
+          } catch(_tdErr) { console.warn('[buildPayload v2] tarot deep sync:', _tdErr); }
         } catch(e) { console.warn('[buildPayload v2] tarot:', e); }
       }
 
@@ -22038,6 +22063,110 @@ function _buildTarotOnlyPayload() {
     courtPeople.push(person);
   });
 
+  // ═══ v52：Signifier（代表牌）軌跡分析 ═══
+  // 官方共識（Llewellyn/Labyrinthos/TetraTarot/Golden Dawn 傳統）：
+  // 每個星座對應一張宮廷牌作為命主「代表牌」，如果該牌出現在牌陣中，
+  // 這就是命主本人在當下能量結構中的位置——是塔羅讀得精準的關鍵訊號。
+  //
+  // GD 12 星座 → 宮廷牌對照（Aries→Queen of Wands 等）：
+  // 流派依據：https://www.llewellyn.com/blog/2022/05/five-ways-to-choose-a-significator/
+  //          https://www.tetratarot.com/Learn/Article/How-to-Choose-a-Tarot-Significator
+  var _signifier = null;
+  try {
+    // 1. 從 birth 推出太陽星座
+    var _sunSign = '';
+    if (birthText) {
+      var _bdMatch = String(birthText).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (_bdMatch) {
+        var _bMonth = parseInt(_bdMatch[2], 10);
+        var _bDay = parseInt(_bdMatch[3], 10);
+        // 星座邊界（粗略版——太陽在每個星座最多 ±1 日，用戶牌陣解讀不需精到分）
+        var _zodiacTable = [
+          { sign: 'capricorn', zh: '摩羯', start: [12, 22], end: [1, 19] },
+          { sign: 'aquarius', zh: '水瓶', start: [1, 20], end: [2, 18] },
+          { sign: 'pisces', zh: '雙魚', start: [2, 19], end: [3, 20] },
+          { sign: 'aries', zh: '白羊', start: [3, 21], end: [4, 19] },
+          { sign: 'taurus', zh: '金牛', start: [4, 20], end: [5, 20] },
+          { sign: 'gemini', zh: '雙子', start: [5, 21], end: [6, 20] },
+          { sign: 'cancer', zh: '巨蟹', start: [6, 21], end: [7, 22] },
+          { sign: 'leo', zh: '獅子', start: [7, 23], end: [8, 22] },
+          { sign: 'virgo', zh: '處女', start: [8, 23], end: [9, 22] },
+          { sign: 'libra', zh: '天秤', start: [9, 23], end: [10, 22] },
+          { sign: 'scorpio', zh: '天蠍', start: [10, 23], end: [11, 21] },
+          { sign: 'sagittarius', zh: '射手', start: [11, 22], end: [12, 21] }
+        ];
+        var _sunSignZh = '';
+        for (var _zi = 0; _zi < _zodiacTable.length; _zi++) {
+          var _zz = _zodiacTable[_zi];
+          if (_zz.sign === 'capricorn') {
+            if ((_bMonth === 12 && _bDay >= 22) || (_bMonth === 1 && _bDay <= 19)) {
+              _sunSign = _zz.sign; _sunSignZh = _zz.zh; break;
+            }
+          } else {
+            if ((_bMonth === _zz.start[0] && _bDay >= _zz.start[1]) ||
+                (_bMonth === _zz.end[0] && _bDay <= _zz.end[1])) {
+              _sunSign = _zz.sign; _sunSignZh = _zz.zh; break;
+            }
+          }
+        }
+
+        if (_sunSign) {
+          // 2. 星座 → GD 宮廷牌對照
+          var _zodiacToCourt = {
+            aries:       { court: '權杖皇后', suit: 'wand',  rank: 'queen' },
+            taurus:      { court: '錢幣騎士', suit: 'pent',  rank: 'knight' },
+            gemini:      { court: '寶劍國王', suit: 'sword', rank: 'king' },
+            cancer:      { court: '聖杯皇后', suit: 'cup',   rank: 'queen' },
+            leo:         { court: '權杖騎士', suit: 'wand',  rank: 'knight' },
+            virgo:       { court: '錢幣國王', suit: 'pent',  rank: 'king' },
+            libra:       { court: '寶劍皇后', suit: 'sword', rank: 'queen' },
+            scorpio:     { court: '聖杯騎士', suit: 'cup',   rank: 'knight' },
+            sagittarius: { court: '權杖國王', suit: 'wand',  rank: 'king' },
+            capricorn:   { court: '錢幣皇后', suit: 'pent',  rank: 'queen' },
+            aquarius:    { court: '寶劍騎士', suit: 'sword', rank: 'knight' },
+            pisces:      { court: '聖杯國王', suit: 'cup',   rank: 'king' }
+          };
+          var _sigInfo = _zodiacToCourt[_sunSign];
+
+          if (_sigInfo) {
+            // 3. 掃牌陣找代表牌是否出現——用名字包含匹配（塔羅牌庫中文名可能有「的」、「之」等變體）
+            var _sigIndex = -1;
+            var _sigNameNormalized = _sigInfo.court.replace(/[的之]/g, '');
+            for (var _ci = 0; _ci < drawn.length; _ci++) {
+              var _ccName = String(drawn[_ci].n || drawn[_ci].name || '').replace(/[的之]/g, '');
+              if (_ccName === _sigNameNormalized ||
+                  _ccName.indexOf(_sigNameNormalized) >= 0 ||
+                  _sigNameNormalized.indexOf(_ccName) >= 0) {
+                _sigIndex = _ci;
+                break;
+              }
+            }
+
+            _signifier = {
+              sunSign: _sunSignZh,
+              signifierCard: _sigInfo.court,
+              found: _sigIndex >= 0
+            };
+            if (_sigIndex >= 0) {
+              var _foundCard = drawn[_sigIndex];
+              var _foundPos = cards[_sigIndex] ? cards[_sigIndex].position : '';
+              var _foundRole = cards[_sigIndex] ? cards[_sigIndex].role : '';
+              _signifier.position = _foundPos;
+              _signifier.positionIndex = _sigIndex;
+              _signifier.role = _foundRole;
+              _signifier.isUp = _foundCard.isUp === true;
+              // 4. 根據出現位置產生 AI 可用的語意訊號
+              _signifier.insight = '命主本人（' + _sunSignZh + '座→' + _sigInfo.court + '）出現在位置「' + (_foundPos || '第' + (_sigIndex + 1) + '位') + '」(' + _foundRole + ')' +
+                (_foundCard.isUp === true ? '，正位——這就是命主在這件事裡的真實位置／心態' : '，逆位——命主在這題能量被壓制/轉向內化，看這張牌的具體逆位訊號定義命主現狀');
+            } else {
+              _signifier.insight = '命主本人（' + _sunSignZh + '座→' + _sigInfo.court + '）未出現在牌陣——這題的主軸不是命主自身狀態，而是外在事件或他人介入';
+            }
+          }
+        }
+      }
+    }
+  } catch(_sigErr) { _signifier = null; }
+
   // ── 組裝 ──
   var f = S.form || {};
   var genderText = f.gender === 'male' ? '男' : (f.gender === 'female' ? '女' : '');
@@ -22078,7 +22207,8 @@ function _buildTarotOnlyPayload() {
       majorWeight: majorWeight,
       courtPeople: courtPeople,
       opposingPairs: opposingPairs,
-      storyArc: storyArc
+      storyArc: storyArc,
+      signifier: _signifier
     }
   };
   if (_cc.catalog.length) {
