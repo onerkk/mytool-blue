@@ -97,7 +97,7 @@
         if(data.code === 'LOGIN_REQUIRED'){ line.innerHTML = '☽ 登入 Google 即享免費體驗'; return; }
         line.innerHTML = '☽ 三套工具各免費 1 次・會員 ' + _subLine;
       })
-      .catch(function(){ var l=document.getElementById('jy-trial-line'); if(l) l.innerHTML='☽ 前 3 次免費體驗'; });
+      .catch(function(){ var l=document.getElementById('jy-trial-line'); if(l) l.innerHTML='☽ 三套工具各免費 1 次'; });
   }
   var _orig = window.pickTool;
   window.pickTool = function(tool) { if (_orig) _orig(tool); injectGuide(); };
