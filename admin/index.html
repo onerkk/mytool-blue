@@ -1569,12 +1569,10 @@ function renderUsersList(users) {
     const memoryBtn = `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(108,123,255,.15)"><button onclick="openMemoryModal('${_emailEsc}','${esc(u.name || '')}')" style="padding:5px 12px;border-radius:6px;background:rgba(108,123,255,.08);color:var(--accent);border:1px solid rgba(108,123,255,.25);font-size:11px;cursor:pointer;font-weight:600">📖 記事本</button></div>`;
 
     return `<div style="background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:14px 16px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
-        <div>
-          <div style="font-size:14px;font-weight:600">${esc(u.name || '未命名')}</div>
-          <div style="font-size:12px;color:var(--text-dim);margin-top:2px">${esc(u.email)}</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center">
+      <div style="margin-bottom:8px">
+        <div style="font-size:14px;font-weight:600">${esc(u.name || '未命名')}</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:2px;word-break:break-all">${esc(u.email)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px">
           ${planBadge}
           ${subAction}
         </div>
