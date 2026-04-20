@@ -554,7 +554,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <h3>🕉️ 吠陀占星 Ayanamsa 模式</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
           只對吠陀占星計算生效。<strong>切換後需清除瀏覽器快取 + 重新起盤</strong>才生效。<br>
-          <span style="color:#60a5fa">Lahiri</span>：業界標準，印度官方採用，大多數軟體預設。<br>
+          <span style="color:#60a5fa">Lahiri</span>：業界標準，印度官方採用,大多數軟體預設。<br>
           <span style="color:#fbbf24">Raman</span>：B.V. Raman 本人使用的 Ayanamsa，比 Lahiri 少約 1°11'。<br>
           <span style="color:#f87171">⚠️ 警告</span>：兩者差距可使邊緣行星跨星座、Nakshatra Pada 改變、Vimshottari 起運行星可能不同——整個時間線重排。
         </p>
@@ -577,6 +577,45 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button onclick="saveAyanamsaMode()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Ayanamsa</button>
           <span id="ayanamsaModeStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
+      <!-- ═══ v51：八字派別設定卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>☯️ 八字派別</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
+          只對八字分析的 AI 判讀框架生效（算法不變，只換解讀思維）。即時切換，不需重新部署。<br>
+          <span style="color:#fbbf24">Mixed（推薦）</span>：依題目自動選派，最接近老師傅讀盤模式。<br>
+          <span style="color:#60a5fa">Classical</span>：傳統旺衰派（邵偉華一系），身強弱→格局→用神→行運。<br>
+          <span style="color:#34d399">Geju</span>：格局派（當代最流行），宗《子平真詮》，月令取格為主。<br>
+          <span style="color:#f87171">Blind</span>：盲派（段建業），宮位取象+神煞斷事，六親凶災最準。<br>
+          <span style="color:#a78bfa">Xinpai</span>：新派（李涵辰），簡化版，大運流年為王。
+        </p>
+        <div id="baziSchoolGrid" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="bazi-school" value="mixed" style="width:16px;height:16px;accent-color:#fbbf24;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#fbbf24">Mixed 混合派</span><br><span style="font-size:11px;color:var(--text-dim)">推薦預設・動態選派</span></span>
+          </label>
+          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="bazi-school" value="classical" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">Classical 傳統派</span><br><span style="font-size:11px;color:var(--text-dim)">旺衰+格局+用神</span></span>
+          </label>
+          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="bazi-school" value="geju" style="width:16px;height:16px;accent-color:#34d399;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#34d399">Geju 格局派</span><br><span style="font-size:11px;color:var(--text-dim)">月令取格・當代主流</span></span>
+          </label>
+          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="bazi-school" value="blind" style="width:16px;height:16px;accent-color:#f87171;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#f87171">Blind 盲派</span><br><span style="font-size:11px;color:var(--text-dim)">宮位+神煞+取象</span></span>
+          </label>
+          <label style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="bazi-school" value="xinpai" style="width:16px;height:16px;accent-color:#a78bfa;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#a78bfa">Xinpai 新派</span><br><span style="font-size:11px;color:var(--text-dim)">李涵辰・簡化版</span></span>
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveBaziSchool()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存派別</button>
+          <span id="baziSchoolStatus" style="font-size:12px;color:var(--text-dim)"></span>
         </div>
       </div>
 
@@ -779,7 +818,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadHaikuThinkingConfig(); loadAyanamsaMode(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadHaikuThinkingConfig(); loadAyanamsaMode(); loadBaziSchool(); }
   });
 });
 
@@ -2093,6 +2132,52 @@ function saveAyanamsaMode() {
     toast('✓ Ayanamsa 已切換為 ' + mode + '（需清快取+重新起盤）');
   } catch(e) {
     toast('儲存失敗：' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// Bazi School Config (v51) — 後端 KV 儲存
+// ═══════════════════════════════════════════════
+async function loadBaziSchool() {
+  const statusEl = document.getElementById('baziSchoolStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/bazi-school?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const school = data.config.school || 'mixed';
+      const radios = document.getElementsByName('bazi-school');
+      for (let i = 0; i < radios.length; i++) {
+        radios[i].checked = (radios[i].value === school);
+      }
+      if (statusEl) statusEl.textContent = '當前：' + school;
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveBaziSchool() {
+  const statusEl = document.getElementById('baziSchoolStatus');
+  try {
+    const radios = document.getElementsByName('bazi-school');
+    let school = 'mixed';
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) { school = radios[i].value; break; }
+    }
+    const r = await fetch(`${WORKER_URL}/admin/bazi-school?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ school: school })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 八字派別已切換為 ' + school);
+      if (statusEl) statusEl.textContent = '已儲存：' + school;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
   }
 }
 
