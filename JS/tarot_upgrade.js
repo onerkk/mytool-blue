@@ -1303,6 +1303,150 @@ enhanceTarot = function(tarot) {
     'pent-page':   {signs:['土'],          primary:'土'}
   };
 
+  // ═══ v55：宮廷牌面向表（Directional Dignity）═══
+  // 依 RWS 圖像實測分類（Parsifal's Wheel Tarot 2018 實測 + TarotPugs 三分法）
+  // 'left'=圖像主要方向面左；'right'=面右；'forward'=正面/中性
+  // ★ 重要規則：正位=原本面向；逆位=面向反轉（Golden Dawn Book T 原文：inverted court = 180度轉向）
+  var COURT_FACING = {
+    'wand-king':   'left',     'wand-queen':  'right',
+    'wand-knight': 'left',     'wand-page':   'right',
+    'cup-king':    'forward',  'cup-queen':   'left',
+    'cup-knight':  'right',    'cup-page':    'left',
+    'sword-king':  'forward',  'sword-queen': 'right',
+    'sword-knight':'left',     'sword-page':  'right',
+    'pent-king':   'forward',  'pent-queen':  'left',
+    'pent-knight': 'right',    'pent-page':   'forward'
+  };
+
+  // 取得宮廷牌實際面向（考慮正逆位反轉）
+  function getCourtFacing(card) {
+    if (!card) return null;
+    var s = card.suit || '';
+    var r = String(card.rank || '');
+    if (s === 'major') return null; // 大牌不適用
+    if (!(r === 'king' || r === 'queen' || r === 'knight' || r === 'page')) return null; // 只看宮廷牌
+    var key = s + '-' + r;
+    var baseFacing = COURT_FACING[key] || 'forward';
+    // 正逆位反轉
+    var isUp = (card.isUp === true);
+    if (!isUp) {
+      if (baseFacing === 'left') return 'right';
+      if (baseFacing === 'right') return 'left';
+      // forward 逆位 = 扭頭/回頭看——標記為 'averted'（避開視線）
+      return 'averted';
+    }
+    return baseFacing;
+  }
+
+  // Directional Dignity 分析（v55）
+  // 輸入：一串牌 + 特定位置（通常是 Significator 或某宮廷牌）
+  // 輸出：該位置宮廷牌跟左右鄰的互動關係
+  function computeDirectionalDignity(cards, idx) {
+    if (!cards || !cards.length || idx < 0 || idx >= cards.length) return null;
+    var self = cards[idx];
+    var selfFacing = getCourtFacing(self);
+    if (!selfFacing) return null; // 不是宮廷牌
+    var leftN = (idx > 0) ? cards[idx - 1] : null;
+    var rightN = (idx < cards.length - 1) ? cards[idx + 1] : null;
+    var leftFacing = leftN ? getCourtFacing(leftN) : null;
+    var rightFacing = rightN ? getCourtFacing(rightN) : null;
+    var result = {
+      card: self.n || self.name,
+      facing: selfFacing,
+      leftNeighbor: leftN ? (leftN.n || leftN.name) : null,
+      leftFacing: leftFacing,
+      rightNeighbor: rightN ? (rightN.n || rightN.name) : null,
+      rightFacing: rightFacing,
+      interactions: []
+    };
+    // 左鄰是宮廷牌：判斷對望關係
+    if (leftN && leftFacing) {
+      if (selfFacing === 'left' && leftFacing === 'right') {
+        result.interactions.push({
+          with: 'left',
+          type: 'mutual_gaze',
+          label: '互相對望',
+          meaning: '與左側人物（' + (leftN.n || leftN.name) + '）有直接互動——對話、合作、或衝突都可能，是這段關係的活躍雙方'
+        });
+      } else if (selfFacing === 'right' && leftFacing === 'right') {
+        result.interactions.push({
+          with: 'left',
+          type: 'same_direction',
+          label: '同向前進',
+          meaning: '與左側人物（' + (leftN.n || leftN.name) + '）朝同方向——並肩前進，但沒有互相注意'
+        });
+      } else if (selfFacing === 'left' && leftFacing === 'left') {
+        result.interactions.push({
+          with: 'left',
+          type: 'back_turned',
+          label: '背對對方',
+          meaning: '與左側人物（' + (leftN.n || leftN.name) + '）互相背對——疏離、無溝通、或各自抽身'
+        });
+      } else if (selfFacing === 'right' && leftFacing === 'left') {
+        result.interactions.push({
+          with: 'left',
+          type: 'diverging',
+          label: '分道揚鑣',
+          meaning: '與左側人物（' + (leftN.n || leftN.name) + '）背道而馳——關係正在走散'
+        });
+      } else if (selfFacing === 'averted' || leftFacing === 'averted') {
+        result.interactions.push({
+          with: 'left',
+          type: 'averted',
+          label: '避開視線',
+          meaning: '跟左側人物有張力但不直面——話沒說開的狀態'
+        });
+      }
+    }
+    // 右鄰是宮廷牌：判斷對望關係
+    if (rightN && rightFacing) {
+      if (selfFacing === 'right' && rightFacing === 'left') {
+        result.interactions.push({
+          with: 'right',
+          type: 'mutual_gaze',
+          label: '互相對望',
+          meaning: '與右側人物（' + (rightN.n || rightN.name) + '）有直接互動——對話、合作、或衝突，活躍雙方'
+        });
+      } else if (selfFacing === 'right' && rightFacing === 'right') {
+        result.interactions.push({
+          with: 'right',
+          type: 'same_direction',
+          label: '同向前進',
+          meaning: '與右側人物（' + (rightN.n || rightN.name) + '）朝同方向——並肩但沒有互相注意'
+        });
+      } else if (selfFacing === 'left' && rightFacing === 'right') {
+        result.interactions.push({
+          with: 'right',
+          type: 'diverging',
+          label: '分道揚鑣',
+          meaning: '與右側人物（' + (rightN.n || rightN.name) + '）背道而馳——關係正在走散'
+        });
+      } else if (selfFacing === 'left' && rightFacing === 'left') {
+        result.interactions.push({
+          with: 'right',
+          type: 'back_turned',
+          label: '背對對方',
+          meaning: '與右側人物（' + (rightN.n || rightN.name) + '）互相背對——疏離、無溝通'
+        });
+      } else if (selfFacing === 'averted' || rightFacing === 'averted') {
+        result.interactions.push({
+          with: 'right',
+          type: 'averted',
+          label: '避開視線',
+          meaning: '跟右側人物有張力但不直面——話沒說開'
+        });
+      }
+    }
+    // Significator 的面向含義（本身）
+    var selfMeaning;
+    if (selfFacing === 'left') selfMeaning = '朝向過去——還在處理之前的事件/關係';
+    else if (selfFacing === 'right') selfMeaning = '朝向未來——準備邁步/期待新階段';
+    else if (selfFacing === 'averted') selfMeaning = '正面逆位——閃避現狀、不想直面這件事';
+    else selfMeaning = '正面面對——站在當下、直面當前局面';
+    result.selfMeaning = selfMeaning;
+    return result;
+  }
+
   // 星座→宮位映射（自然宮位）
   var SIGN_HOUSE = {
     '牡羊':1,'金牛':2,'雙子':3,'巨蟹':4,'獅子':5,'處女':6,
@@ -1392,16 +1536,71 @@ enhanceTarot = function(tarot) {
   // 元素尊嚴（Elemental Dignities）
   // ════════════════════════════════════════════════
 
+  // ED_MAP v55：按 Book T 原文修正
+  // Book T 原文：「Cards of opposite natures on either side weaken it greatly.」
+  //              「Swords are inimical to Pentacles. Wands are inimical to Cups.」
+  //              「Swords are friendly with Cups and Wands. Wands are friendly with Swords and Pentacles.」
+  // 只有三類：同元素強化 / 友好 / 敵對（沒有 neutral——這是 Book T 明確的）
   var ED_MAP = {
-    '火+風':'strengthen','風+火':'strengthen',
-    '水+土':'strengthen','土+水':'strengthen',
+    // 同元素：強化（strengthen）
+    '火+火':'strengthen','水+水':'strengthen',
+    '風+風':'strengthen','土+土':'strengthen',
+    // 對立元素（火水、風土）：敵對削弱（weaken）
     '火+水':'weaken','水+火':'weaken',
     '風+土':'weaken','土+風':'weaken',
-    '火+土':'neutral','土+火':'neutral',
-    '水+風':'neutral','風+水':'neutral',
-    '火+火':'strengthen','水+水':'strengthen',
-    '風+風':'strengthen','土+土':'strengthen'
+    // 其他組合全部為友好（friendly）——按 Book T 原文
+    '火+風':'friendly','風+火':'friendly',
+    '水+土':'friendly','土+水':'friendly',
+    '火+土':'friendly','土+火':'friendly',
+    '水+風':'friendly','風+水':'friendly'
   };
+
+  // Triad 強度打分（v55）：-3 最弱 到 +3 最強
+  // 規則：
+  //   兩側同元素 = +3（大幅強化，好壞都放大）
+  //   兩側跟中間同元素 = +3
+  //   兩側全部友好 = +1
+  //   一側友好一側敵對 = 0（抵消）
+  //   兩側跟中間敵對 = -3（大幅削弱，可忽略）
+  //   兩側互相敵對（火+水 或 風+土）但跟中間不敵對 = -1（兩側內耗，中間牌反而獨立）
+  function computeTriadStrength(card, leftN, rightN) {
+    if (!card) return 0;
+    var cEl = getCardElement(card);
+    var leftEl = leftN ? getCardElement(leftN) : '';
+    var rightEl = rightN ? getCardElement(rightN) : '';
+    var lEd = (leftN && leftEl && cEl) ? (ED_MAP[cEl + '+' + leftEl] || 'friendly') : 'none';
+    var rEd = (rightN && rightEl && cEl) ? (ED_MAP[cEl + '+' + rightEl] || 'friendly') : 'none';
+    // 兩側都沒有（邊緣牌）返回 0
+    if (lEd === 'none' && rEd === 'none') return 0;
+    // 只有單側（邊緣牌）
+    if (lEd === 'none') {
+      if (rEd === 'strengthen') return 2;
+      if (rEd === 'weaken') return -2;
+      return 0;
+    }
+    if (rEd === 'none') {
+      if (lEd === 'strengthen') return 2;
+      if (lEd === 'weaken') return -2;
+      return 0;
+    }
+    // 雙側都有
+    if (lEd === 'strengthen' && rEd === 'strengthen') return 3;
+    if (lEd === 'weaken' && rEd === 'weaken') return -3;
+    if ((lEd === 'strengthen' && rEd === 'weaken') || (lEd === 'weaken' && rEd === 'strengthen')) return 0;
+    if (lEd === 'strengthen' && rEd === 'friendly') return 2;
+    if (lEd === 'friendly' && rEd === 'strengthen') return 2;
+    if (lEd === 'weaken' && rEd === 'friendly') return -2;
+    if (lEd === 'friendly' && rEd === 'weaken') return -2;
+    if (lEd === 'friendly' && rEd === 'friendly') {
+      // 再看左右兩側互為敵對與否
+      if (leftEl && rightEl) {
+        var lrEd = ED_MAP[leftEl + '+' + rightEl];
+        if (lrEd === 'weaken') return -1; // 兩側互相敵對→整體內耗
+      }
+      return 1;
+    }
+    return 0;
+  }
 
   function getCardElement(card) {
     if (!card) return '';
@@ -1885,14 +2084,31 @@ enhanceTarot = function(tarot) {
     var visited = {};
     var idx = startIdx;
     var maxSteps = 12; // 最多 12 步防止無限迴圈
+    // ★ v55：偵測 Ace 卡在同一循環的次數——若≥2次則切換 Crowley count=11 試第二讀法
+    var aceLoopDetect = 0;
+    var useCrowleyAce = false;
 
     for (var step = 0; step < maxSteps; step++) {
       var card = cards[idx];
-      if (!card || visited[idx]) break;
+      if (!card || visited[idx]) {
+        // ★ v55：若因 Ace 循環卡住，切到 Crowley 11 試一次
+        if (card && String(card.rank || '') === 'ace' && !useCrowleyAce && aceLoopDetect === 0) {
+          aceLoopDetect++;
+          useCrowleyAce = true;
+          // 從該 Ace 位置用 11 跳
+          var dirA = (card.isUp === true) ? 1 : -1;
+          for (var ca = 0; ca < 11; ca++) {
+            idx = (idx + dirA + cards.length) % cards.length;
+          }
+          continue;
+        }
+        break;
+      }
       keyCards.push({ card: card, position: idx });
       visited[idx] = true;
       var count = getCountValue(card);
-      // 正位向右，逆位向左
+      // ★ v55：若啟動 Crowley 模式且為 Ace，改用 11
+      if (useCrowleyAce && String(card.rank || '') === 'ace') count = 11;
       var cardIsUp = (card.isUp === true);
       var direction = cardIsUp ? 1 : -1;
       path.push({
@@ -1903,12 +2119,11 @@ enhanceTarot = function(tarot) {
         isUp: cardIsUp,
         direction: direction > 0 ? 'right' : 'left'
       });
-      // 移動（環繞）
       for (var c = 0; c < count; c++) {
         idx = (idx + direction + cards.length) % cards.length;
       }
     }
-    return { keyCards: keyCards, path: path };
+    return { keyCards: keyCards, path: path, usedCrowleyAce: useCrowleyAce };
   }
 
   // ════════════════════════════════════════════════
@@ -2079,6 +2294,239 @@ enhanceTarot = function(tarot) {
       }
     });
 
+    // ★ v55：Unaspected Cards 偵測（Source of the Nile）
+    // PHB 理論：活躍堆裡「不被任何 counting 路徑觸及」的牌=隱藏推力
+    // 尼羅河源頭——看不見但推動一切
+    var _unaspectedCards = {};
+    ['op1','op2','op3','op4','op5'].forEach(function(k) {
+      var op = results[k];
+      if (!op || !op.activeCards || !op.activeCards.length) return;
+      var touched = {};
+      // 計數路徑上的牌 id 都算「被觸及」
+      (op.countingPath || []).forEach(function(p) {
+        if (p && p.cardId != null) touched[p.cardId] = true;
+      });
+      // 配對上的牌也算「被觸及」
+      (op.pairs || []).forEach(function(pr) {
+        var l = pr.left || pr.card1;
+        var r = pr.right || pr.card2;
+        if (l && l.id != null) touched[l.id] = true;
+        if (r && r.id != null) touched[r.id] = true;
+      });
+      // 找出活躍堆裡沒被觸及的牌
+      var ua = [];
+      op.activeCards.forEach(function(c) {
+        if (c && c.id != null && !touched[c.id]) {
+          ua.push({ id: c.id, name: c.n || c.name, element: getCardElement(c) });
+        }
+      });
+      if (ua.length) _unaspectedCards[k] = ua;
+    });
+    // 跨層彙整：同一張牌在多層都是 unaspected = 超級隱藏推力
+    var _crossUnaspected = {};
+    for (var uak in _unaspectedCards) {
+      _unaspectedCards[uak].forEach(function(c) {
+        if (!_crossUnaspected[c.id]) _crossUnaspected[c.id] = { name: c.name, element: c.element, layers: [] };
+        _crossUnaspected[c.id].layers.push(uak);
+      });
+    }
+    var _strongUnaspected = [];
+    for (var cuk in _crossUnaspected) {
+      if (_crossUnaspected[cuk].layers.length >= 2) {
+        _strongUnaspected.push({
+          name: _crossUnaspected[cuk].name,
+          element: _crossUnaspected[cuk].element,
+          layers: _crossUnaspected[cuk].layers,
+          significance: _crossUnaspected[cuk].layers.length >= 3 ? 'critical' : 'notable'
+        });
+      }
+    }
+
+    // ★ v55：Triad 強度打分（每層 key card 的強弱）
+    // 用來讓 AI 只讀強牌，忽略被抵消的弱牌
+    var _triadStrengths = {};
+    ['op1','op2','op3','op4','op5'].forEach(function(k) {
+      var op = results[k];
+      if (!op || !op.keyCards || !op.keyCards.length) return;
+      var layerStrengths = [];
+      for (var i = 0; i < op.keyCards.length; i++) {
+        var thisCard = op.keyCards[i].card;
+        var leftCard = (i > 0) ? op.keyCards[i - 1].card : null;
+        var rightCard = (i < op.keyCards.length - 1) ? op.keyCards[i + 1].card : null;
+        var strength = computeTriadStrength(thisCard, leftCard, rightCard);
+        var label = 'neutral';
+        if (strength >= 2) label = 'strong';
+        else if (strength === 1) label = 'supported';
+        else if (strength === -1) label = 'contested';
+        else if (strength <= -2) label = 'weakened';
+        layerStrengths.push({
+          card: thisCard ? (thisCard.n || thisCard.name) : '',
+          strength: strength,
+          label: label
+        });
+      }
+      _triadStrengths[k] = layerStrengths;
+    });
+    // 全盤最強牌 + 最弱牌（≤-2 可忽略）
+    var _allStrongCards = [];
+    var _allWeakCards = [];
+    for (var tsk in _triadStrengths) {
+      _triadStrengths[tsk].forEach(function(ts) {
+        if (ts.strength >= 2 && _allStrongCards.indexOf(ts.card) < 0) {
+          _allStrongCards.push({ card: ts.card, layer: tsk, strength: ts.strength });
+        }
+        if (ts.strength <= -2 && _allWeakCards.indexOf(ts.card) < 0) {
+          _allWeakCards.push({ card: ts.card, layer: tsk, strength: ts.strength });
+        }
+      });
+    }
+
+    // ★ v55：Abandon Score（誠實退出分數）
+    // 三個條件檢查，每命中一個 +1，≥2 = 建議退出
+    var _abandonScore = 0;
+    var _abandonReasons = [];
+    // 條件 1：代表牌在五層 keyCards 中出現 ≤1 次
+    var _sigInKeyCards = 0;
+    ['op1','op2','op3','op4','op5'].forEach(function(k) {
+      var op = results[k];
+      if (!op || !op.keyCards) return;
+      op.keyCards.forEach(function(kc) {
+        if (kc.card && kc.card.id === significatorId) _sigInKeyCards++;
+      });
+    });
+    if (_sigInKeyCards <= 1) {
+      _abandonScore++;
+      _abandonReasons.push('代表牌在五層關鍵牌中只出現 ' + _sigInKeyCards + ' 次（≤1=用戶不在事件中心）');
+    }
+    // 條件 2：活躍堆平均張數 < 10
+    var _avgActiveSize = 0;
+    var _layerCount = 0;
+    ['op1','op2','op3','op4','op5'].forEach(function(k) {
+      var op = results[k];
+      if (op && op.activeCards) {
+        _avgActiveSize += op.activeCards.length;
+        _layerCount++;
+      }
+    });
+    _avgActiveSize = _layerCount > 0 ? _avgActiveSize / _layerCount : 0;
+    if (_avgActiveSize < 10) {
+      _abandonScore++;
+      _abandonReasons.push('活躍堆平均僅 ' + Math.round(_avgActiveSize) + ' 張（<10=數據稀疏）');
+    }
+    // 條件 3：弱化牌超過強化牌 2 倍（能量全面抵消）
+    if (_allWeakCards.length >= _allStrongCards.length * 2 && _allWeakCards.length >= 3) {
+      _abandonScore++;
+      _abandonReasons.push('弱化牌 (' + _allWeakCards.length + ') 明顯多於強化牌 (' + _allStrongCards.length + ')，整體能量在抵消');
+    }
+    var _abandonSuggested = _abandonScore >= 2;
+
+    // ★ v55：Pair Sequence 敘事化（pairs 加上 dignity 分類）
+    // 讓 AI 看到「推進/阻礙/中性」每對的走向
+    var _narrativePairs = {};
+    ['op1','op2','op3','op4','op5'].forEach(function(k) {
+      var op = results[k];
+      if (!op || !op.pairs || !op.pairs.length) return;
+      var seq = [];
+      op.pairs.forEach(function(pr, idx) {
+        var l = pr.left, r = pr.right;
+        if (!l || !r) return;
+        var dig = pr.dignity || elementalDignity(l, r);
+        // 近到遠的序號：idx=0 最內（最接近 Significator 最即時），越外越遠
+        var phase;
+        if (idx === 0) phase = '即時（最近期）';
+        else if (idx < 3) phase = '近期';
+        else if (idx < 6) phase = '中期';
+        else phase = '遠期（最終走向）';
+        var impact;
+        if (dig === 'strengthen') impact = '同頻強化——事件在這階段加速';
+        else if (dig === 'friendly') impact = '順勢推進——穩定發展';
+        else if (dig === 'weaken') impact = '對立阻礙——這階段有卡點';
+        else impact = '未定';
+        seq.push({
+          order: idx + 1,
+          phase: phase,
+          left: l.n || l.name,
+          right: r.n || r.name,
+          dignity: dig,
+          impact: impact
+        });
+      });
+      _narrativePairs[k] = seq;
+    });
+
+    // ★ v55：Directional Dignity（宮廷牌面向互動）
+    // 依 RWS 宮廷牌圖像實測面向 + Book T 正逆位反轉規則
+    // 掃五層所有活躍堆，找出所有宮廷牌之間的對望/背對/分道關係
+    var _directionalFindings = {};
+    ['op1','op2','op3','op4','op5'].forEach(function(k) {
+      var op = results[k];
+      if (!op || !op.activeCards || !op.activeCards.length) return;
+      var layerFindings = [];
+      // 掃該層每個宮廷牌位置
+      for (var di = 0; di < op.activeCards.length; di++) {
+        var curCard = op.activeCards[di];
+        if (!curCard) continue;
+        var curFacing = getCourtFacing(curCard);
+        if (!curFacing) continue; // 不是宮廷牌跳過
+        var dd = computeDirectionalDignity(op.activeCards, di);
+        if (dd && dd.interactions && dd.interactions.length) {
+          layerFindings.push(dd);
+        }
+      }
+      if (layerFindings.length) _directionalFindings[k] = layerFindings;
+    });
+    // 彙整最關鍵的互動（對望 + 分道優先）
+    var _keyDirectionalInteractions = [];
+    var layerZhDD = { op1: '四元素', op2: '十二宮', op3: '十二星座', op4: '三十六旬', op5: '生命之樹' };
+    for (var dfk in _directionalFindings) {
+      _directionalFindings[dfk].forEach(function(finding) {
+        finding.interactions.forEach(function(inter) {
+          // 只收重要的三類：對望、背對、分道（same_direction 較弱，略過）
+          if (inter.type === 'mutual_gaze' || inter.type === 'back_turned' || inter.type === 'diverging') {
+            _keyDirectionalInteractions.push({
+              layer: layerZhDD[dfk] || dfk,
+              cardA: finding.card,
+              cardB: inter.with === 'left' ? finding.leftNeighbor : finding.rightNeighbor,
+              type: inter.type,
+              label: inter.label,
+              meaning: inter.meaning
+            });
+          }
+        });
+      });
+    }
+
+    // 代表牌的面向（告訴 AI 用戶現在的姿態）
+    var _sigDirectional = null;
+    var sigC = TAROT.find(function(c) { return c.id === significatorId; });
+    if (sigC) {
+      // Significator 不在 active pile 直接讀，需要先在某層找到它來判定正逆位
+      for (var sdk in results) {
+        var _op = results[sdk];
+        if (_op && _op.activeCards) {
+          for (var sdi = 0; sdi < _op.activeCards.length; sdi++) {
+            if (_op.activeCards[sdi].id === significatorId) {
+              var _sigCopy = _op.activeCards[sdi];
+              var _sigFacing = getCourtFacing(_sigCopy);
+              if (_sigFacing) {
+                var _sigMeaning;
+                if (_sigFacing === 'left') _sigMeaning = '代表牌面左——你的注意力還在過去的事件上，沒完全轉向當下';
+                else if (_sigFacing === 'right') _sigMeaning = '代表牌面右——你的重心在未來/即將到來的階段，已經開始準備';
+                else if (_sigFacing === 'averted') _sigMeaning = '代表牌正面逆位——你正在閃避這件事，不想直面';
+                else _sigMeaning = '代表牌正面——你站在當下，沒有明顯的時間偏移';
+                _sigDirectional = {
+                  facing: _sigFacing,
+                  meaning: _sigMeaning
+                };
+              }
+              break;
+            }
+          }
+          if (_sigDirectional) break;
+        }
+      }
+    }
+
     results.crossAnalysis = {
       elementProgression: [
         results.op1.activePile,
@@ -2096,11 +2544,25 @@ enhanceTarot = function(tarot) {
         op4: (results.op4.decanSign || '') + (results.op4.decanPlanet ? '（' + results.op4.decanPlanet + '）' : ''),
         op5: (results.op5.activeSephirah || '') + (results.op5.sephirahZh ? '（' + results.op5.sephirahZh + '）' : '')
       },
-      // ★ v37 B5 新增
+      // ★ v37 B5
       crossPairCards: _crossPairCards,
       elementEnvironment: _layerElements.join('→'),
       elementShift: _elementShift,
-      keyCardNames: _keyCardNames
+      keyCardNames: _keyCardNames,
+      // ★ v55：四項新深度分析
+      unaspectedCards: _unaspectedCards,              // 各層未被觸及的牌（Source of the Nile）
+      strongUnaspected: _strongUnaspected,            // 跨層都是 unaspected=重大隱藏推力
+      triadStrengths: _triadStrengths,                // 每層 key card 的強度打分
+      strongCards: _allStrongCards,                    // 全盤強牌（AI 應重點讀）
+      weakCards: _allWeakCards,                        // 全盤弱牌（AI 可降級或忽略）
+      abandonScore: _abandonScore,                     // 0-3，≥2 建議退出
+      abandonReasons: _abandonReasons,                 // 退出理由清單
+      abandonSuggested: _abandonSuggested,             // true = 建議 AI 誠實退出
+      narrativePairs: _narrativePairs,                 // 配對敘事化（推進/阻礙）
+      // v55+：Directional Dignity（宮廷牌面向互動）
+      directionalFindings: _directionalFindings,       // 各層宮廷牌面向分析
+      keyDirectionalInteractions: _keyDirectionalInteractions, // 彙整：對望/背對/分道
+      significatorDirectional: _sigDirectional         // 代表牌自身面向含義
     };
 
     return results;

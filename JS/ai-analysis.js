@@ -24181,7 +24181,21 @@ function _buildOOTKPayload() {
         crossPairCards: cross.crossPairCards || [],
         elementEnvironment: cross.elementEnvironment || '',
         elementShift: cross.elementShift || '',
-        keyCardNames: cross.keyCardNames || []
+        keyCardNames: cross.keyCardNames || [],
+        // ═══ v55：OOTK 正統 Book T 深度運算（Source of Nile/Triad 強度/Narrative Pairs/Abandon）═══
+        unaspectedCards: cross.unaspectedCards || null,
+        strongUnaspected: cross.strongUnaspected || [],
+        triadStrengths: cross.triadStrengths || null,
+        strongCards: cross.strongCards || [],
+        weakCards: cross.weakCards || [],
+        abandonScore: cross.abandonScore || 0,
+        abandonReasons: cross.abandonReasons || [],
+        abandonSuggested: cross.abandonSuggested === true,
+        narrativePairs: cross.narrativePairs || null,
+        // ═══ v55+：Directional Dignity（宮廷牌面向互動，人物關係精度升級）═══
+        directionalFindings: cross.directionalFindings || null,
+        keyDirectionalInteractions: cross.keyDirectionalInteractions || [],
+        significatorDirectional: cross.significatorDirectional || null
       },
       numberPatterns: ootk_numberPatterns,
       majorWeight: ootk_majorWeight,
@@ -24366,6 +24380,132 @@ function _renderOOTKResult(container, r, admin) {
     });
     html += '</div></details>';
   }
+
+  // ═══ v55：OOTK 正統 Book T 深度運算展示（收合）═══
+  try {
+    var _v55Cross = (window._ootkResults && window._ootkResults.crossAnalysis) ? window._ootkResults.crossAnalysis : null;
+    if (_v55Cross) {
+      var hasV55 = (_v55Cross.strongUnaspected && _v55Cross.strongUnaspected.length) ||
+                   (_v55Cross.strongCards && _v55Cross.strongCards.length) ||
+                   (_v55Cross.weakCards && _v55Cross.weakCards.length) ||
+                   (_v55Cross.abandonSuggested === true) ||
+                   (_v55Cross.narrativePairs && Object.keys(_v55Cross.narrativePairs).length);
+      if (hasV55) {
+        html += '<details style="margin-bottom:.8rem;border:1px solid rgba(217,151,56,.18);border-radius:12px;overflow:hidden">';
+        html += '<summary style="padding:.7rem .9rem;font-size:.82rem;color:rgba(217,151,56,.9);cursor:pointer;user-select:none;background:linear-gradient(135deg,rgba(217,151,56,.05),rgba(217,151,56,.02));font-weight:600">';
+        html += '📐 Book T 深度運算<span style="font-size:.7rem;color:var(--c-text-muted);margin-left:.4rem">Golden Dawn 正統技巧——點擊展開</span>';
+        html += '</summary>';
+        html += '<div style="padding:.7rem .8rem;font-size:.78rem;line-height:1.7;color:var(--c-text)">';
+
+        // Abandon 警告（最優先顯示）
+        if (_v55Cross.abandonSuggested === true) {
+          html += '<div style="margin-bottom:.7rem;padding:.5rem .7rem;border-radius:8px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.06)">';
+          html += '<div style="font-weight:700;color:rgba(239,68,68,.95);margin-bottom:.3rem">⚠ 訊號不足（Abandon Score ' + (_v55Cross.abandonScore || 0) + '/3）</div>';
+          html += '<div style="font-size:.74rem;color:var(--c-text-dim)">Book T 正統規則判定這次盤面訊號不夠——靜月會誠實告訴你，而不是硬湊答案。</div>';
+          if (_v55Cross.abandonReasons && _v55Cross.abandonReasons.length) {
+            html += '<ul style="margin:.4rem 0 0 1.2rem;padding:0;font-size:.73rem;color:var(--c-text-dim)">';
+            _v55Cross.abandonReasons.forEach(function(rr) { html += '<li>' + _esc(rr) + '</li>'; });
+            html += '</ul>';
+          }
+          html += '</div>';
+        }
+
+        // 隱藏推力（Source of the Nile）
+        if (_v55Cross.strongUnaspected && _v55Cross.strongUnaspected.length) {
+          html += '<div style="margin-bottom:.7rem">';
+          html += '<div style="font-weight:700;color:rgba(168,85,247,.9);margin-bottom:.25rem">🌊 Source of the Nile（隱藏推力）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.3rem">活躍堆裡沒被計數/配對觸及的牌——看不見但在推動一切（PHB 理論）</div>';
+          _v55Cross.strongUnaspected.forEach(function(u) {
+            var layerZh = { op1: '四元素', op2: '十二宮', op3: '十二星座', op4: '三十六旬', op5: '生命之樹' };
+            var layers = (u.layers || []).map(function(L) { return layerZh[L] || L; }).join('、');
+            var tagColor = u.significance === 'critical' ? 'rgba(239,68,68,.9)' : 'rgba(234,179,8,.9)';
+            var tagText = u.significance === 'critical' ? '重大' : '顯著';
+            html += '<div style="padding:.3rem .5rem;margin-bottom:.25rem;border-radius:6px;background:rgba(168,85,247,.05);font-size:.75rem">';
+            html += '<span style="color:' + tagColor + ';font-weight:600">[' + tagText + ']</span> ';
+            html += '<span style="font-weight:600;color:var(--c-gold-pale,#f5e6b8)">' + _esc(u.name) + '</span>';
+            html += '<span style="color:var(--c-text-muted);margin-left:.3rem">（' + _esc(u.element) + '・' + _esc(layers) + '）</span>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+
+        // 強牌（Triad 加持）
+        if (_v55Cross.strongCards && _v55Cross.strongCards.length) {
+          html += '<div style="margin-bottom:.6rem">';
+          html += '<div style="font-weight:700;color:rgba(74,222,128,.9);margin-bottom:.25rem">💪 強化牌（Triad 左右鄰加持）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.25rem">這些牌的能量被左右鄰放大，靜月會重點解讀</div>';
+          var layerZh2 = { op1: '四元素', op2: '十二宮', op3: '十二星座', op4: '三十六旬', op5: '生命之樹' };
+          html += '<div style="font-size:.74rem;color:var(--c-text)">';
+          _v55Cross.strongCards.slice(0, 6).forEach(function(s, i) {
+            html += (i > 0 ? '、' : '') + '<span style="color:var(--c-gold-pale,#f5e6b8);font-weight:600">' + _esc(s.card) + '</span>';
+            html += '<span style="color:var(--c-text-muted);font-size:.7rem">（' + (layerZh2[s.layer] || s.layer) + '+' + s.strength + '）</span>';
+          });
+          html += '</div></div>';
+        }
+
+        // 弱牌（被抵消）
+        if (_v55Cross.weakCards && _v55Cross.weakCards.length) {
+          html += '<div style="margin-bottom:.6rem">';
+          html += '<div style="font-weight:700;color:rgba(156,163,175,.85);margin-bottom:.25rem">🌫️ 弱化牌（Triad 左右鄰削弱）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.25rem">這些牌力量被抵消，靜月會降級處理或不提</div>';
+          var layerZh3 = { op1: '四元素', op2: '十二宮', op3: '十二星座', op4: '三十六旬', op5: '生命之樹' };
+          html += '<div style="font-size:.74rem;color:var(--c-text-dim)">';
+          _v55Cross.weakCards.slice(0, 6).forEach(function(w, i) {
+            html += (i > 0 ? '、' : '') + '<span style="color:var(--c-text-muted)">' + _esc(w.card) + '</span>';
+            html += '<span style="color:var(--c-text-muted);font-size:.7rem">（' + (layerZh3[w.layer] || w.layer) + ' ' + w.strength + '）</span>';
+          });
+          html += '</div></div>';
+        }
+
+        // Narrative Pairs 時間軸（只示範 op1）
+        if (_v55Cross.narrativePairs && _v55Cross.narrativePairs.op1 && _v55Cross.narrativePairs.op1.length) {
+          html += '<div style="margin-bottom:.4rem">';
+          html += '<div style="font-weight:700;color:rgba(96,165,250,.9);margin-bottom:.25rem">⏳ 配對敘事時間軸（四元素層）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.3rem">從代表牌向外配對——即時到遠期的事件展開</div>';
+          _v55Cross.narrativePairs.op1.slice(0, 4).forEach(function(p) {
+            var impactColor = 'var(--c-text-dim)';
+            if (p.dignity === 'strengthen' || p.dignity === 'friendly') impactColor = 'rgba(74,222,128,.85)';
+            else if (p.dignity === 'weaken') impactColor = 'rgba(239,68,68,.85)';
+            html += '<div style="padding:.25rem .5rem;margin-bottom:.2rem;border-radius:6px;background:rgba(96,165,250,.04);font-size:.72rem">';
+            html += '<span style="color:rgba(96,165,250,.8);font-weight:600">' + _esc(p.phase) + '</span> ';
+            html += '<span style="color:var(--c-text)">' + _esc(p.left) + ' ↔ ' + _esc(p.right) + '</span>';
+            html += '<span style="display:block;color:' + impactColor + ';font-size:.7rem;margin-top:.1rem">→ ' + _esc(p.impact) + '</span>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+
+        // v55+：Directional Dignity（宮廷牌面向互動）
+        if (_v55Cross.significatorDirectional && _v55Cross.significatorDirectional.meaning) {
+          html += '<div style="margin-bottom:.5rem;padding:.4rem .6rem;border-radius:8px;background:rgba(236,72,153,.04);border:1px solid rgba(236,72,153,.12)">';
+          html += '<div style="font-weight:700;color:rgba(236,72,153,.9);margin-bottom:.2rem;font-size:.76rem">🧭 代表牌面向</div>';
+          html += '<div style="font-size:.75rem;color:var(--c-text)">' + _esc(_v55Cross.significatorDirectional.meaning) + '</div>';
+          html += '</div>';
+        }
+        if (_v55Cross.keyDirectionalInteractions && _v55Cross.keyDirectionalInteractions.length) {
+          html += '<div style="margin-bottom:.4rem">';
+          html += '<div style="font-weight:700;color:rgba(236,72,153,.9);margin-bottom:.25rem">👥 宮廷牌人物互動（Directional Dignity）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.3rem">RWS 宮廷牌面向決定人物間的關係——對望=互動、背對=疏離、分道=走散</div>';
+          _v55Cross.keyDirectionalInteractions.slice(0, 5).forEach(function(inter) {
+            var typeColor = 'var(--c-text-dim)';
+            var typeIcon = '•';
+            if (inter.type === 'mutual_gaze') { typeColor = 'rgba(74,222,128,.85)'; typeIcon = '👁'; }
+            else if (inter.type === 'back_turned') { typeColor = 'rgba(156,163,175,.85)'; typeIcon = '⤺'; }
+            else if (inter.type === 'diverging') { typeColor = 'rgba(239,68,68,.85)'; typeIcon = '⇹'; }
+            html += '<div style="padding:.3rem .5rem;margin-bottom:.2rem;border-radius:6px;background:rgba(236,72,153,.03);font-size:.73rem">';
+            html += '<span style="color:' + typeColor + ';font-weight:600">' + typeIcon + ' ' + _esc(inter.label) + '</span> ';
+            html += '<span style="color:var(--c-text-muted);font-size:.68rem">[' + _esc(inter.layer) + ']</span>';
+            html += '<div style="margin-top:.15rem;color:var(--c-text)">' + _esc(inter.cardA) + ' ↔ ' + _esc(inter.cardB || '鄰位') + '</div>';
+            html += '<div style="margin-top:.1rem;color:var(--c-text-dim);font-size:.68rem">' + _esc(inter.meaning) + '</div>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+
+        html += '</div></details>';
+      }
+    }
+  } catch (_v55err) { /* 忽略 v55 渲染錯誤不影響主流程 */ }
 
   // closing（金色結語）
   if (r.closing) {
