@@ -1460,11 +1460,18 @@ async function removeAdminUser(email) {
 // ═══════════════════════════════════════════════
 let _usersCache = [];
 let _fuGlobalCache = { perResult: 1, modules: {} }; // v47：追問全域配置
-async function loadUsersData() {
+// v53b 分頁狀態
+let _usersPage = 0;
+let _usersPageSize = 50;
+let _usersTotalPages = 1;
+let _usersTotalUsers = 0;
+async function loadUsersData(page) {
+  if (typeof page === 'number' && page >= 0) _usersPage = page;
   const el = document.getElementById('usersList');
   el.innerHTML = '<div class="loading"></div>';
   try {
-    const r = await fetch(`${WORKER_URL}/admin/users-data?token=${encodeURIComponent(adminToken)}`);
+    const _qs = `token=${encodeURIComponent(adminToken)}&page=${_usersPage}&pageSize=${_usersPageSize}`;
+    const r = await fetch(`${WORKER_URL}/admin/users-data?${_qs}`);
     // v53 bug fix：先檢查 HTTP 狀態，避免 worker 回 500/401 時被靜默吞成「尚無登入用戶」
     // 之前的 bug：worker 任何錯誤(subrequest 爆炸/unauthorized/KV 空)都被前端當作「正常但無用戶」
     if (!r.ok) {
@@ -1479,24 +1486,69 @@ async function loadUsersData() {
     }
     const data = await r.json();
     _usersCache = data.users || [];
-    // v47：後端回的全域追問配置，renderUsersList 需要用來顯示 fuPerResult 的「預設/自訂」狀態
     _fuGlobalCache = data.fuGlobal || { perResult: 1, modules: {} };
-    const totalUsers = _usersCache.length;
-    const members = _usersCache.filter(u => u.plan === 'member').length;
-    // v52：細分 standard / premium
-    const premiumN = _usersCache.filter(u => u.plan === 'member' && u.tier === 'premium').length;
-    const standardN = members - premiumN;
-    const freeUsers = totalUsers - members;
+    // v53b 同步分頁狀態（以 server 回的為準，處理 page 越界夾回）
+    _usersPage = (typeof data.page === 'number') ? data.page : 0;
+    _usersPageSize = (typeof data.pageSize === 'number') ? data.pageSize : 50;
+    _usersTotalPages = (typeof data.totalPages === 'number') ? data.totalPages : 1;
+    _usersTotalUsers = (typeof data.totalUsers === 'number') ? data.totalUsers : _usersCache.length;
+
+    // v53b：統計優先用全庫 globalStats（不受當頁影響），fallback 到當頁統計
+    const gs = data.globalStats || null;
+    const totalUsers = gs ? gs.totalUsers : _usersCache.length;
+    const premiumN = gs ? gs.premium : _usersCache.filter(u => u.plan === 'member' && u.tier === 'premium').length;
+    const standardN = gs ? gs.standard : _usersCache.filter(u => u.plan === 'member' && u.tier !== 'premium').length;
+    const freeUsers = gs ? gs.free : (_usersCache.length - (premiumN + standardN));
+    const pageLabel = _usersTotalPages > 1
+      ? `<span style="padding:6px 14px;border-radius:8px;background:rgba(255,255,255,.06);color:var(--text-dim);font-size:12px;font-weight:600">第 ${_usersPage + 1} / ${_usersTotalPages} 頁（每頁 ${_usersPageSize}）</span>`
+      : '';
 
     document.getElementById('usersStats').innerHTML =
       `<span style="padding:6px 14px;border-radius:8px;background:rgba(108,123,255,.1);color:var(--accent);font-size:13px;font-weight:600">👥 ${totalUsers} 位用戶</span>` +
       `<span style="padding:6px 14px;border-radius:8px;background:rgba(147,51,234,.12);color:#c084fc;font-size:13px;font-weight:600">💎 ${premiumN} 位高級</span>` +
       `<span style="padding:6px 14px;border-radius:8px;background:rgba(251,191,36,.1);color:var(--warn);font-size:13px;font-weight:600">👑 ${standardN} 位標準</span>` +
-      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px;font-weight:600">🆓 ${freeUsers} 位免費</span>`;
+      `<span style="padding:6px 14px;border-radius:8px;background:rgba(122,127,142,.15);color:var(--text-dim);font-size:13px;font-weight:600">🆓 ${freeUsers} 位免費</span>` +
+      pageLabel;
 
-    if (!_usersCache.length) { el.innerHTML = '<div class="empty">尚無登入用戶</div>'; return; }
+    if (!_usersCache.length) { el.innerHTML = '<div class="empty">尚無登入用戶</div>'; _renderUsersPagination(); return; }
     renderUsersList(_usersCache);
+    _renderUsersPagination();
   } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
+}
+
+// v53b：分頁控制列渲染（在 usersList 後追加）
+function _renderUsersPagination() {
+  let el = document.getElementById('usersPagination');
+  if (!el) {
+    // 動態建立容器，位置在 usersList 後面
+    const list = document.getElementById('usersList');
+    if (!list || !list.parentNode) return;
+    el = document.createElement('div');
+    el.id = 'usersPagination';
+    el.style.cssText = 'display:flex;justify-content:center;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap';
+    list.parentNode.insertBefore(el, list.nextSibling);
+  }
+  if (_usersTotalPages <= 1) { el.innerHTML = ''; return; }
+  const prevDisabled = _usersPage <= 0;
+  const nextDisabled = _usersPage >= _usersTotalPages - 1;
+  // 頁碼顯示邏輯：顯示當頁前後各 2 頁 + 首尾頁
+  const pages = [];
+  const add = p => { if (!pages.includes(p) && p >= 0 && p < _usersTotalPages) pages.push(p); };
+  add(0);
+  for (let p = _usersPage - 2; p <= _usersPage + 2; p++) add(p);
+  add(_usersTotalPages - 1);
+  pages.sort((a, b) => a - b);
+  let html = '';
+  html += `<button onclick="loadUsersData(${Math.max(0, _usersPage - 1)})" ${prevDisabled ? 'disabled' : ''} style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:${prevDisabled ? 'var(--text-dim)' : 'var(--accent)'};font-size:13px;cursor:${prevDisabled ? 'not-allowed' : 'pointer'};opacity:${prevDisabled ? '.4' : '1'}">← 上一頁</button>`;
+  let last = -1;
+  pages.forEach(p => {
+    if (last >= 0 && p - last > 1) html += `<span style="color:var(--text-dim);padding:0 4px">…</span>`;
+    const active = p === _usersPage;
+    html += `<button onclick="loadUsersData(${p})" style="padding:6px 12px;border-radius:6px;border:1px solid ${active ? 'var(--accent)' : 'var(--card-border)'};background:${active ? 'rgba(108,123,255,.15)' : 'transparent'};color:${active ? 'var(--accent)' : 'var(--text)'};font-size:13px;cursor:pointer;font-weight:${active ? '600' : '400'};min-width:34px">${p + 1}</button>`;
+    last = p;
+  });
+  html += `<button onclick="loadUsersData(${Math.min(_usersTotalPages - 1, _usersPage + 1)})" ${nextDisabled ? 'disabled' : ''} style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:${nextDisabled ? 'var(--text-dim)' : 'var(--accent)'};font-size:13px;cursor:${nextDisabled ? 'not-allowed' : 'pointer'};opacity:${nextDisabled ? '.4' : '1'}">下一頁 →</button>`;
+  el.innerHTML = html;
 }
 
 function renderUsersList(users) {
