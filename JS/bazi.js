@@ -4788,6 +4788,38 @@ function computeBazi(year,month,day,hour,minute,gender){
   //   校準依據：案例8(得令+21=弱) 案例11(得令+27=強) → 門檻25
   let strong = selfPts >= 31 || (deLing && selfPts >= 25);
   
+  // v51 身強弱七級分類（傳統命理標準分法）
+  // 依據：selfPts (0-60) + 月令權重（官方「月令占50%」調整）
+  //   月令（得令/失令）加減 10 分 — 月令是八字的綱領
+  //   日支（得地/失地）加減 5 分 — 日支是日主的根
+  //   天干（得勢/失勢）加減 3 分 — 天干是表面
+  // 校準點（adjusted = selfPts ± 月令加權）：
+  //   - >= 42  旺極（專旺態勢，接近從強格）
+  //   - >= 36  太旺（身強上緣）
+  //   - >= 30  偏旺（一般身強）
+  //   - >= 24  中和（日主持平）
+  //   - >= 18  偏弱（一般身弱）
+  //   - >= 12  太弱（身弱下緣）
+  //   - <  12  弱極（專弱態勢，接近從弱格）
+  // 此分級用於輸出展示與 AI 判讀，不影響 strong bool 舊邏輯
+  let _adjPts = selfPts;
+  // 月令：得令+10、失令-10
+  _adjPts += deLing ? 10 : -10;
+  // 日支：得地+5、失地-5
+  _adjPts += deDi ? 5 : -5;
+  // 天干：得勢+3、失勢-3（得勢=至少一個比劫或印透干）
+  _adjPts += deShi ? 3 : -3;
+  let strongLevel;
+  if (_adjPts >= 42) strongLevel = '旺極';
+  else if (_adjPts >= 36) strongLevel = '太旺';
+  else if (_adjPts >= 30) strongLevel = '偏旺';
+  else if (_adjPts >= 24) strongLevel = '中和';
+  else if (_adjPts >= 18) strongLevel = '偏弱';
+  else if (_adjPts >= 12) strongLevel = '太弱';
+  else strongLevel = '弱極';
+  // 中和特殊處理：強弱判定在門檻附近容易誤判，中和格局用神靈活
+  let isNeutral = (strongLevel === '中和');
+  
   // 結構類型（保留舊欄位相容性）
   let structType = (strong ? '身強' : '身弱') + '(' + Math.round(selfPts) + ')';
   let capacity = Math.round(selfPts);
@@ -5069,13 +5101,79 @@ function computeBazi(year,month,day,hour,minute,gender){
   fav = [...new Set(fav)];
   unfav = [...new Set(unfav.filter(u => !fav.includes(u)))];
   
+  // v51 病藥用神（子平取用五法之病藥法）
+  // 原理：命局中最突兀的忌神聚集 = 病。能剋制或化洩此病的五行 = 藥。
+  // 藥神往往就是最迫切的用神。
+  // 例：乙木日主命局金旺(申酉成勢) → 病在金(七殺無制) → 藥=火(丁火剋金)=病藥用神
+  let medicineGod = null;
+  (function detectMedicineGod(){
+    if (specialStructure) return; // 從格化氣格不走病藥
+    // 找最旺的忌神（分數最高且是 unfav）
+    let maxUnfavEl = null, maxUnfavScore = 0;
+    unfav.forEach(el => {
+      if ((ec[el]||0) > maxUnfavScore) {
+        maxUnfavEl = el;
+        maxUnfavScore = ec[el]||0;
+      }
+    });
+    // 病必須足夠嚴重：忌神分數 >= 18（佔 30% 以上）才算病
+    if (!maxUnfavEl || maxUnfavScore < 18) return;
+    // 藥=能剋制病的五行
+    const _ke_reverse = {金:'火',木:'金',水:'土',火:'水',土:'木'}; // 誰剋它
+    const _sheng_from = {金:'土',木:'水',水:'金',火:'木',土:'火'}; // 誰生它（我們要找洩病的=被病生的）
+    const _sheng_to = {金:'水',木:'火',水:'木',火:'土',土:'金'};   // 病生誰（洩病）
+    const _keEl = _ke_reverse[maxUnfavEl]; // 剋病
+    const _xieEl = _sheng_to[maxUnfavEl];  // 洩病
+    // 優先取剋，若剋神不在命局則取洩
+    let drug = null, drugMethod = null;
+    if ((ec[_keEl]||0) >= 3) { drug = _keEl; drugMethod = '剋'; }
+    else if ((ec[_xieEl]||0) >= 3) { drug = _xieEl; drugMethod = '洩'; }
+    else { drug = _keEl; drugMethod = '剋(命局無藥，待行運補)'; }
+    medicineGod = {
+      disease: maxUnfavEl,
+      diseaseScore: maxUnfavScore,
+      drug: drug,
+      method: drugMethod,
+      detail: '病在'+maxUnfavEl+'('+maxUnfavScore+'/60)，藥用'+drug+'('+drugMethod+')'
+    };
+  })();
+  
+  // v51 通關用神（子平取用五法之通關法）
+  // 原理：命局兩股相剋力量均衡時（如水火俱旺），取第三方五行通關調和
+  // 例：水火各佔 25/60，以木通關（水生木、木生火）
+  let relayGod = null;
+  (function detectRelayGod(){
+    if (specialStructure) return;
+    const _pairs = [
+      { a:'水', b:'火', relay:'木' },
+      { a:'金', b:'木', relay:'水' },
+      { a:'火', b:'金', relay:'土' },
+      { a:'木', b:'土', relay:'火' },
+      { a:'土', b:'水', relay:'金' }
+    ];
+    for (const p of _pairs) {
+      const sA = ec[p.a]||0, sB = ec[p.b]||0;
+      // 兩者均 >= 20 且差距 <= 5 = 對峙態勢
+      if (sA >= 20 && sB >= 20 && Math.abs(sA-sB) <= 5) {
+        relayGod = {
+          opponents: [p.a, p.b],
+          opponentScores: [sA, sB],
+          relay: p.relay,
+          detail: p.a+'('+sA+')vs'+p.b+'('+sB+')對峙，以'+p.relay+'通關'
+        };
+        break;
+      }
+    }
+  })();
+  
   // DEBUG: 追蹤用神判斷流程（上線後可移除）
   console.log('[八字DEBUG] 日主:'+dm+'('+dmEl+') | ec:', JSON.stringify(ec), 
     '| selfPts:'+selfPts, '| selfRatio:'+Math.round(selfRatio*100)+'%',
-    '| deLing:'+deLing, '| deDi:'+deDi, '| deShi:'+deShi,
-    '| strong:'+strong+' (selfPts>=31)',
+    '| 強弱級別:'+strongLevel+'('+(strong?'身強':'身弱')+')',
     '| specialStructure:'+(specialStructure?specialStructure.type:'null'),
-    '| fav:'+fav.join(','), '| unfav:'+unfav.join(','));
+    '| fav:'+fav.join(','), '| unfav:'+unfav.join(','),
+    '| medicineGod:'+(medicineGod?medicineGod.detail:'無'),
+    '| relayGod:'+(relayGod?relayGod.detail:'無'));
   // ───────────────────────────────────────────────────────────────────────────
 
   // ── 能量流向（保留舊欄位相容性）──
@@ -5621,7 +5719,7 @@ function computeBazi(year,month,day,hour,minute,gender){
   const zodiac = getZodiac(month, day);
   const xingxiu = getXingXiu(year, month, day);
 
-  return{_birthYear:year,pillars,dm,dmEl,strong,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialStructure:specialStructure,gender:gender,branchInteractions:branchInteractions};
+  return{_birthYear:year,pillars,dm,dmEl,strong,strongLevel,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialStructure:specialStructure,gender:gender,branchInteractions:branchInteractions};
 }
 
 
