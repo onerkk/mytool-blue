@@ -2,6 +2,20 @@
 // ui.js — 靜月之光模組化拆分
 // ═══════════════════════════════════════════════════════════════
 
+// ── v52 Ayanamsa 模式初始化 ──
+// 讀 localStorage（admin toggle 或進階使用者設定）
+// 預設 Lahiri（業界標準），可切 Raman（Raman 自己使用的版本）
+// 影響：bazi.js computeJyotish 兩個呼叫點會依此計算
+(function(){
+  try {
+    var mode = localStorage.getItem('jy_ayanamsa_mode');
+    if (mode !== 'raman' && mode !== 'lahiri') mode = 'lahiri';
+    window.JY_AYANAMSA_MODE = mode;
+  } catch(e) {
+    window.JY_AYANAMSA_MODE = 'lahiri';
+  }
+})();
+
 // ── Admin Token：從 URL #admin=xxx 或 ?token=xxx 或 localStorage 讀取 ──
 // 用 hash fragment 最可靠（伺服器重導向不會吃掉 # 後面的內容）
 (function(){

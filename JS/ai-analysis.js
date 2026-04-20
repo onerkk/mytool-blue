@@ -15139,6 +15139,24 @@ function _buildPayload() {
       L.push('Dasha主星：' + _s(j.currentMD.lord) + (j.currentMD.zh ? '（'+j.currentMD.zh+'）' : '') + (j.currentAD ? '，副運：'+_s(j.currentAD.zh) : '') + (j.currentPD ? '，小運：'+_s(j.currentPD.zh) : ''));
     }
     if (j.yogas && j.yogas.length) L.push('Yoga格局：' + j.yogas.slice(0,6).map(function(y){return y.zh?y.zh.substring(0,60):_s(y.name);}).join('。'));
+    // v52: Kala Sarpa / Mangal Dosha / Badhaka 三個新判定欄位
+    if (j.kalaSarpa) {
+      if (j.kalaSarpa.active) {
+        L.push('Kala Sarpa：' + _s(j.kalaSarpa.type) + '(' + _s(j.kalaSarpa.variant) + '=' + _s(j.kalaSarpa.variantZh) + ')，Rahu第' + j.kalaSarpa.rahuHouse + '宮。★Raman觀點：對個人盤影響有限，需檢查是否被吉Yoga抵消');
+      } else if (j.kalaSarpa.reason) {
+        L.push('Kala Sarpa：不成立(' + _s(j.kalaSarpa.reason) + ')');
+      }
+    }
+    if (j.mangalDosha) {
+      if (j.mangalDosha.active) {
+        L.push('Mangal Dosha：' + _s(j.mangalDosha.strengthLabel) + '，觸發點=' + j.mangalDosha.hits.map(function(h){return h.refZh+'第'+h.house+'宮';}).join('、'));
+      } else if (j.mangalDosha.technicallyPresent) {
+        L.push('Mangal Dosha：技術成立但已解消(' + (j.mangalDosha.cancellations||[]).join('；') + ')→不做凶論');
+      }
+    }
+    if (j.badhaka) {
+      L.push('Badhaka：' + _s(j.badhaka.signTypeZh) + '上升→第' + j.badhaka.badhakaHouse + '宮主=' + _s(j.badhaka.badhakaLord) + '落第' + j.badhaka.badhakaLordHouse + '宮，危險度=' + _s(j.badhaka.dangerLevel) + (j.badhaka.karmikNote ? '｜' + _s(j.badhaka.karmikNote) : ''));
+    }
     var sb = j.shadbala_v2 || j.shadbala;
     if (sb) {
       var sbL = [];
@@ -19344,6 +19362,26 @@ renderTarot = function(){
             p.dims.vedic.yogas = jy.yogas.slice(0, 5).map(function(y) {
               return (y.nameZh || y.name || '') + (y.effect ? '：' + y.effect : '');
             }).join('；');
+          }
+          // v52: Kala Sarpa / Mangal Dosha / Badhaka 三個新判定 → p.dims.vedic
+          if (jy.kalaSarpa) {
+            if (jy.kalaSarpa.active) {
+              p.dims.vedic.kalaSarpa = (jy.kalaSarpa.type || '') + '(' + (jy.kalaSarpa.variantZh || jy.kalaSarpa.variant || '') + ')，Rahu第' + jy.kalaSarpa.rahuHouse + '宮';
+            } else if (jy.kalaSarpa.reason) {
+              p.dims.vedic.kalaSarpa = '不成立（' + jy.kalaSarpa.reason + '）';
+            }
+          }
+          if (jy.mangalDosha) {
+            if (jy.mangalDosha.active) {
+              p.dims.vedic.mangalDosha = jy.mangalDosha.strengthLabel + '，觸發=' + (jy.mangalDosha.hits||[]).map(function(h){return h.refZh+'第'+h.house+'宮';}).join('、');
+            } else if (jy.mangalDosha.technicallyPresent) {
+              p.dims.vedic.mangalDosha = '技術成立已解消（' + (jy.mangalDosha.cancellations||[]).join('；') + '）';
+            } else {
+              p.dims.vedic.mangalDosha = '無';
+            }
+          }
+          if (jy.badhaka) {
+            p.dims.vedic.badhaka = (jy.badhaka.signTypeZh || '') + '上升→第' + jy.badhaka.badhakaHouse + '宮主=' + (jy.badhaka.badhakaLord || '') + '落第' + jy.badhaka.badhakaLordHouse + '宮(危險度=' + (jy.badhaka.dangerLevel || '') + ')' + (jy.badhaka.karmikNote ? '｜業力性障礙' : '');
           }
           // Ashtakavarga 總分
           if (jy.ashtakavarga && jy.ashtakavarga.total != null) {
