@@ -138,19 +138,28 @@ h+='</div>';
 
 // Step 2: 輸入問題+選工具
 h+='<div class="jy-ss" data-s>';
-h+='<div class="jy-sh"><div class="jy-sn">2</div><div class="jy-si"><h3>輸入問題，選分析方式</h3><p>問題越具體越準，選一種占卜工具</p></div></div>';
+h+='<div class="jy-sh"><div class="jy-sn">2</div><div class="jy-si"><h3>輸入問題，選填照片，選工具</h3><p>問題越具體越準，可上傳照片讓分析更深</p></div></div>';
 h+='<div class="jy-pw"><div class="jy-ph"><div class="jy-pn"></div><div class="jy-scr">';
 h+='<div class="mn-nav"><div class="b">\uD83C\uDF19 靜月之光</div><div class="s">\uD83D\uDED2 蝦皮</div></div>';
-h+='<div class="mn-cd"><div class="mn-ct">❓ 你想問什麼？</div><div class="mn-inp" style="border-color:rgba(201,168,76,.18)">今年桃花運勢？</div></div>';
-h+='<div style="padding:2px 8px"><div style="font-size:.48rem;color:#c9a84c;margin-bottom:2px">🔮 選擇分析方式</div></div>';
+h+='<div class="mn-cd"><div class="mn-ct">❓ 你想問什麼？</div><div class="mn-inp" style="border-color:rgba(201,168,76,.18)">他為什麼最近不主動找我了？</div></div>';
+h+='<div class="mn-cd" style="border-color:rgba(201,168,76,.15)"><div class="mn-ct">\uD83D\uDCF7 上傳照片（選填）・讓分析更深入</div>';
+h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:3px">';
+h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\uD83E\uDDD1</div><div style="font-size:.44rem;color:#c9a84c">臉部照片</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">正面自拍・光線足</div></div>';
+h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\u270B</div><div style="font-size:.44rem;color:#c9a84c">左手掌</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">手心朝上・張開</div></div>';
+h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\u270B</div><div style="font-size:.44rem;color:#c9a84c">右手掌</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">手心朝上・張開</div></div>';
+h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\uD83D\uDC8E</div><div style="font-size:.44rem;color:#c9a84c">水晶照片</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">拍你配戴的</div></div>';
+h+='</div>';
+h+='<div style="font-size:.36rem;color:rgba(228,228,231,.35);margin-top:3px;text-align:center">照片僅用於本次分析，不會儲存</div>';
+h+='</div>';
+h+='<div style="padding:2px 8px"><div style="font-size:.48rem;color:#c9a84c;margin-bottom:2px">\uD83D\uDD2E 選擇分析方式</div></div>';
 h+='<div class="mn-tl hi"><div class="ico">⭐</div><div><div class="nm">塔羅快讀</div><div class="ds">一個問題，抽牌就有答案<br>不需任何資料・只要問題和選牌</div><div class="bg">免費體驗 1 次</div></div></div>';
 h+='<div class="mn-tl"><div class="ico">🔑</div><div><div class="nm">開鑰之法</div><div class="ds">78 張牌五層深潛，問到根源<br>需出生資料・金色黎明最高階</div><div class="bg">免費體驗 1 次</div></div></div>';
 h+='<div class="mn-tl"><div class="ico">🌙</div><div><div class="nm">七維度交叉分析</div><div class="ds">七套命理系統交叉比對<br>需出生資料・八字 紫微 梅花 塔羅 星盤 吠陀 姓名</div><div class="bg">免費體驗 1 次</div></div></div>';
 h+='</div></div>';
-h+='<div class="jy-arr" style="left:28%;top:168px"></div>';
-h+='<div class="jy-fgr" style="left:24%;top:185px">👆</div>';
+h+='<div class="jy-arr" style="left:28%;top:300px"></div>';
+h+='<div class="jy-fgr" style="left:24%;top:317px">👆</div>';
 h+='</div>';
-h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">先打問題再選工具<small>塔羅快讀完全不用填資料<br>七維深度最完整（需要生辰）</small></div></div>';
+h+='<div class="jy-tip"><div class="ic">💡</div><div class="tx">照片是加分，不是必填<small>塔羅快讀完全不用填資料<br>上傳照片讓分析多一層參考，會員專屬</small></div></div>';
 h+='</div>';
 
 // Step 3: 填寫資料
@@ -175,22 +184,38 @@ h+='</div></div></div></div>';
 h+='<div class="jy-tip"><div class="ic">💡</div><div class="tx">塔羅快讀跳過這步，直接選牌<small>只有七維深度和開鑰之法需要填寫出生資料<br>不確定出生時間就勾「不知道」，也能算</small></div></div>';
 h+='</div>';
 
-// Step 4: 選牌
+// Step 4: 塔羅 Five-Card / 開鑰代表牌
 h+='<div class="jy-ss" data-s>';
-h+='<div class="jy-sh"><div class="jy-sn">4</div><div class="jy-si"><h3>按下分析按鈕 / 選牌</h3><p>塔羅和開鑰需要洗牌選牌，七維直接出結果</p></div></div>';
+h+='<div class="jy-sh"><div class="jy-sn">4</div><div class="jy-si"><h3>選牌 / 按分析按鈕</h3><p>塔羅抽5張；開鑰選代表牌+洗牌分堆</p></div></div>';
 h+='<div class="jy-pw"><div class="jy-ph"><div class="jy-pn"></div><div class="jy-scr">';
 h+='<div class="mn-nav"><div class="b">\uD83C\uDF19 靜月之光</div><div class="s">\uD83D\uDED2 蝦皮</div></div>';
-h+='<div class="mn-sp"><div style="font-size:.52rem;color:#c9a84c;margin-bottom:3px">⭐ Zodiac Spread（黃道十二宮）</div>';
-h+='<div style="font-size:.4rem;color:rgba(228,228,231,.35);margin-bottom:3px">凝神冥想你的問題，然後從 78 張塔羅牌中選出 13 張</div>';
-h+='<div class="ht">觸碰任一張你有感覺的牌，選出 13 張</div>';
-h+='<div style="font-size:.4rem;color:rgba(228,228,231,.45);margin:3px 0">已選 5 / 13 張</div>';
-h+='<div class="mn-tcs"><div class="mn-tc pk"></div><div class="mn-tc"></div><div class="mn-tc pk"></div><div class="mn-tc"></div><div class="mn-tc pk"></div><div class="mn-tc"></div><div class="mn-tc"></div><div class="mn-tc pk"></div><div class="mn-tc"></div></div>';
-h+='<div class="mn-tcs"><div class="mn-tc"></div><div class="mn-tc pk"></div><div class="mn-tc"></div><div class="mn-tc"></div><div class="mn-tc"></div><div class="mn-tc"></div><div class="mn-tc"></div><div class="mn-tc"></div><div class="mn-tc"></div></div>';
-h+='<div style="margin-top:5px;padding:5px 16px;border-radius:16px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);display:inline-block;font-size:.44rem;color:#c9a84c">🌀 洗牌・開始選牌</div>';
-h+='</div></div></div>';
-h+='<div class="jy-fgr" style="right:30%;bottom:140px">👆</div>';
+// 4a: 塔羅快讀 Five-Card Spread
+h+='<div class="mn-sp"><div style="font-size:.58rem;color:#c9a84c;margin-bottom:2px">\u2605 Five-Card Spread（五牌陣）</div>';
+h+='<div style="font-size:.38rem;color:rgba(228,228,231,.4);margin-bottom:2px">看現況＋原因＋阻礙＋建議＋結果</div>';
+h+='<div style="font-size:.4rem;color:#c9a84c;margin-bottom:3px">觸碰任一張你有感覺的牌，選出 5 張</div>';
+h+='<div style="font-size:.4rem;color:rgba(228,228,231,.5);margin-bottom:3px">已選 <span style="color:#c9a84c;font-weight:700">0</span> / 5 張</div>';
+h+='<div style="display:flex;gap:3px;justify-content:center;margin:3px 0"><div class="mn-tc" style="width:20px;height:32px;border:1px dashed rgba(201,168,76,.22)"></div><div class="mn-tc" style="width:20px;height:32px;border:1px dashed rgba(201,168,76,.22)"></div><div class="mn-tc" style="width:20px;height:32px;border:1px dashed rgba(201,168,76,.22)"></div></div>';
+h+='<div style="display:flex;gap:3px;justify-content:center"><div class="mn-tc" style="width:20px;height:32px;border:1px dashed rgba(201,168,76,.22)"></div><div class="mn-tc" style="width:20px;height:32px;border:1px dashed rgba(201,168,76,.22)"></div></div>';
+h+='<div style="margin-top:4px;padding:3px 0;background:linear-gradient(180deg,transparent,rgba(60,40,100,.1));border-top:1px solid rgba(201,168,76,.08)">';
+h+='<div style="display:flex;gap:1px;justify-content:center;overflow:hidden">';
+h+='<div class="mn-tc pk" style="width:18px;height:28px"></div><div class="mn-tc pk" style="width:18px;height:28px"></div><div class="mn-tc pk" style="width:18px;height:28px"></div><div class="mn-tc pk" style="width:18px;height:28px"></div><div class="mn-tc pk" style="width:18px;height:28px"></div><div class="mn-tc pk" style="width:18px;height:28px"></div>';
+h+='</div></div>';
+h+='<div style="font-size:.36rem;color:rgba(228,228,231,.35);margin-top:2px">\u2190 左右滑動瀏覽牌面 \u2192</div>';
 h+='</div>';
-h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">選牌憑直覺，選你最有感覺的<small>開鑰之法需要先選「代表牌」，系統會根據你的生辰推薦</small></div></div>';
+// 分隔線
+h+='<div style="border-top:1px solid rgba(201,168,76,.1);margin:5px 8px"></div>';
+// 4b: 開鑰 - 代表牌
+h+='<div class="mn-sp"><div style="font-size:.55rem;color:#c9a84c;margin-bottom:2px">\u2726 開鑰之法 \u2726</div>';
+h+='<div style="font-size:.38rem;color:rgba(228,228,231,.4);margin-bottom:3px">先選代表牌，再洗牌分四元素堆</div>';
+h+='<div style="background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.15);border-radius:6px;padding:4px;margin:2px 6px;display:flex;align-items:center;gap:5px;justify-content:center">';
+h+='<div style="width:24px;height:36px;background:linear-gradient(135deg,rgba(201,168,76,.3),rgba(201,168,76,.1));border:1px solid rgba(201,168,76,.4);border-radius:2px"></div>';
+h+='<div style="text-align:left"><div style="font-size:.42rem;color:#c9a84c;font-weight:700">金幣國王</div><div style="font-size:.32rem;color:rgba(228,228,231,.4)">根據星座推薦</div></div>';
+h+='</div>';
+h+='</div>';
+h+='</div></div>';
+h+='<div class="jy-fgr" style="left:45%;top:155px">\uD83D\uDC46</div>';
+h+='</div>';
+h+='<div class="jy-tip"><div class="ic">\uD83D\uDCA1</div><div class="tx">塔羅快讀抽 5 張；開鑰先選代表牌<small>塔羅五個位置：現況・原因・阻礙・建議・結果<br>開鑰根據星座推薦代表牌，或從 16 張宮廷牌自選</small></div></div>';
 h+='</div>';
 
 // Step 5: 等待
@@ -237,6 +262,34 @@ h+='</div>';
 // v52：動態讀 _JY_PRICING（ai-analysis.js 先載入，此處已可用；fallback 保底）
 var _gP = (typeof window !== 'undefined' && window._JY_PRICING) || { SUB_STANDARD: 999, SUB_PREMIUM: 1999 };
 h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問，點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>三套工具各免費體驗 1 次（含追問）<br>標準會員 NT$' + _gP.SUB_STANDARD + '/月 塔羅＋開鑰每日各 1 次、七維度每月 2 次<br>高級會員 NT$' + (_gP.SUB_PREMIUM||1999).toLocaleString() + '/月 塔羅＋開鑰每日各 2 次、七維度每月 5 次＋深度解析每月 1 次免費</small></div></div>';
+h+='</div>';
+
+// Step 8: 靜月靈籤（獨立功能）
+h+='<div class="jy-ss" data-s>';
+h+='<div class="jy-sh"><div class="jy-sn">8</div><div class="jy-si"><h3>另外，還有「靜月靈籤」</h3><p>傳統擲筊求籤・完全免費・不限次數</p></div></div>';
+h+='<div class="jy-pw"><div class="jy-ph"><div class="jy-pn"></div><div class="jy-scr">';
+h+='<div class="mn-nav"><div class="b">\uD83C\uDF19 靜月靈籤</div><div class="s">\uD83D\uDED2 蝦皮</div></div>';
+h+='<div style="text-align:center;padding:10px 8px;background:radial-gradient(ellipse at 50% 40%,rgba(180,120,50,.12),transparent 70%)">';
+h+='<div style="font-size:1.5rem;margin-bottom:3px">\uD83D\uDD4A\uFE0F</div>';
+h+='<div style="font-size:.78rem;color:#c9a84c;font-weight:700;letter-spacing:.08em;margin-bottom:3px">靜月靈籤</div>';
+h+='<div style="font-size:.5rem;color:rgba(228,228,231,.5)">六十甲子靈籤・神明指引</div>';
+h+='</div>';
+h+='<div style="padding:6px 10px">';
+h+='<div style="font-size:.5rem;color:#c9a84c;margin-bottom:3px;font-weight:600">\uD83D\uDCDC 求籤五步驟</div>';
+h+='<div style="font-size:.44rem;color:rgba(228,228,231,.55);line-height:1.55">';
+h+='<div style="margin-bottom:2px">① 心中默唸本人姓名、住址及所求事項</div>';
+h+='<div style="margin-bottom:2px">② 擲筊請示神明是否在位</div>';
+h+='<div style="margin-bottom:2px">③ 聖筊=允許賜籤 → 搖籤筒抽籤</div>';
+h+='<div style="margin-bottom:2px">④ 求得籤詩（第 X 籤）</div>';
+h+='<div>⑤ 連擲 3 次聖筊，方能正式解籤</div>';
+h+='</div>';
+h+='</div>';
+h+='<div style="margin:5px 10px;padding:6px;background:rgba(239,154,60,.06);border:1px solid rgba(239,154,60,.15);border-radius:6px">';
+h+='<div style="font-size:.4rem;color:#ef9a3c;line-height:1.45">※ 一支籤僅求一件事項<br>※ 笑筊=神明笑而不答，請重新抽籤</div>';
+h+='</div>';
+h+='</div></div>';
+h+='</div>';
+h+='<div class="jy-tip"><div class="ic">\uD83C\uDF19</div><div class="tx">靈籤入口在首頁<small>不用填資料、不用選工具<br>就是傳統廟宇求籤的數位版<br>完全免費・不限次數</small></div></div>';
 h+='</div>';
 
 h+='<div class="jy-div"></div>';
