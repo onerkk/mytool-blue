@@ -1465,6 +1465,18 @@ async function loadUsersData() {
   el.innerHTML = '<div class="loading"></div>';
   try {
     const r = await fetch(`${WORKER_URL}/admin/users-data?token=${encodeURIComponent(adminToken)}`);
+    // v53 bug fix：先檢查 HTTP 狀態，避免 worker 回 500/401 時被靜默吞成「尚無登入用戶」
+    // 之前的 bug：worker 任何錯誤(subrequest 爆炸/unauthorized/KV 空)都被前端當作「正常但無用戶」
+    if (!r.ok) {
+      let _errText = '';
+      try { const _errData = await r.json(); _errText = _errData.error || JSON.stringify(_errData); }
+      catch(_) { try { _errText = await r.text(); } catch(_e) { _errText = '(無法讀取錯誤內容)'; } }
+      el.innerHTML = '<div class="empty" style="color:var(--danger,#ef4444)">載入失敗 HTTP ' + r.status + ': ' + (_errText || '(空)') + '</div>';
+      // 統計列也清零並標示錯誤
+      var _stEl = document.getElementById('usersStats');
+      if (_stEl) _stEl.innerHTML = '<span style="padding:6px 14px;border-radius:8px;background:rgba(239,68,68,.1);color:var(--danger,#ef4444);font-size:13px;font-weight:600">⚠️ 後端錯誤 ' + r.status + '</span>';
+      return;
+    }
     const data = await r.json();
     _usersCache = data.users || [];
     // v47：後端回的全域追問配置，renderUsersList 需要用來顯示 fuPerResult 的「預設/自訂」狀態
