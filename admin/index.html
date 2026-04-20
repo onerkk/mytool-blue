@@ -551,10 +551,10 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 
       <!-- ═══ v56/v57：Prompt Upgrades 卡片（Anthropic 官方技巧） ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
-        <h3>✨ v57 提示詞升級（命理專屬）</h3>
+        <h3>✨ v58 提示詞升級（命理專屬）</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
           基於 Anthropic 官方 prompt engineering best practices + reduce-hallucinations 的完整技巧集。<br>
-          共 <strong>12 項</strong> 可個別開關做 A/B 測試。預設配置已按官方建議優化。
+          共 <strong>13 項</strong> 可個別開關做 A/B 測試。預設配置已按官方建議優化。
         </p>
         <div style="display:flex;flex-direction:column;gap:10px">
 
@@ -660,6 +660,18 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </label>
           <!-- ═══════════════ v57 結束 ═══════════════ -->
 
+          <!-- ═══════════════ v58：西洋占星深度 ═══════════════ -->
+          <div style="font-size:11px;color:var(--accent);font-weight:600;margin:6px 0;letter-spacing:0.5px">── v58 新增技巧 ──</div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v58-western-deep" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">♃ Western Deep 西洋占星深度訓練</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">Hellenistic 正統派骨架（Valens/Ptolemy/Brennan/Demetra George）。注入六步驟讀盤流程：Sect→Dignity→Domicile Lord→月亮Aspect→Time Lord→Transit。取代現代心理派通俗讀法。全模型注入。預設開</span>
+            </span>
+          </label>
+          <!-- ═══════════════ v58 結束 ═══════════════ -->
+
           <div style="padding:12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border)">
             <div style="font-size:13px;font-weight:600;margin-bottom:10px">⚡ Sonnet 4.6 Effort Level</div>
             <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">官方：「Sonnet 4.6 預設 high 會高延遲，建議 medium 平衡速度與品質」。只影響非深度路徑的 Sonnet，不影響 Opus 深度。</div>
@@ -681,7 +693,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
 
         <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="saveV56Config()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v57 設定</button>
+          <button onclick="saveV56Config()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v58 設定</button>
           <button onclick="resetV56Config()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text-dim);font-size:13px;cursor:pointer">↺ 恢復預設</button>
           <span id="v56Status" style="font-size:12px;color:var(--text-dim)"></span>
         </div>
@@ -2185,7 +2197,9 @@ let _v56Defaults = {
   explicitCoT: false,
   literalInstructions: true,
   groundInQuotes7D: false,
-  groundInQuotesTarot: true
+  groundInQuotesTarot: true,
+  // v58
+  westernDeep: true
 };
 
 async function loadV56Config() {
@@ -2218,6 +2232,7 @@ async function loadV56Config() {
       const litEl = document.getElementById('v57-lit');
       const giq7dEl = document.getElementById('v57-giq-7d');
       const giqtEl = document.getElementById('v57-giq-t');
+      const wdEl = document.getElementById('v58-western-deep');
       if (eklEl) eklEl.checked = (c.externalKnowledgeLock !== false);
       if (rolesEl) rolesEl.checked = (c.enhancedRoles !== false);
       if (fuUhEl) fuUhEl.checked = (c.followupUncertainty !== false);
@@ -2226,6 +2241,7 @@ async function loadV56Config() {
       if (litEl) litEl.checked = (c.literalInstructions !== false);
       if (giq7dEl) giq7dEl.checked = !!c.groundInQuotes7D;
       if (giqtEl) giqtEl.checked = (c.groundInQuotesTarot !== false);
+      if (wdEl) wdEl.checked = (c.westernDeep !== false);
       // Sonnet effort
       const effort = c.sonnetEffort || 'medium';
       document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === effort); });
@@ -2244,7 +2260,8 @@ async function loadV56Config() {
         if (c.literalInstructions) on.push('Lit');
         if (c.groundInQuotes7D) on.push('GQ7D');
         if (c.groundInQuotesTarot) on.push('GQT');
-        statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + effort;
+        if (c.westernDeep) on.push('WD');
+        statusEl.textContent = '啟用(' + on.length + '/13): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + effort;
       }
     }
   } catch(e) {
@@ -2270,6 +2287,7 @@ async function saveV56Config() {
     const litEl = document.getElementById('v57-lit');
     const giq7dEl = document.getElementById('v57-giq-7d');
     const giqtEl = document.getElementById('v57-giq-t');
+    const wdEl = document.getElementById('v58-western-deep');
     const body = {
       // v56
       selfAudit: saEl ? !!saEl.checked : true,
@@ -2285,7 +2303,9 @@ async function saveV56Config() {
       explicitCoT: cotEl ? !!cotEl.checked : false,
       literalInstructions: litEl ? !!litEl.checked : true,
       groundInQuotes7D: giq7dEl ? !!giq7dEl.checked : false,
-      groundInQuotesTarot: giqtEl ? !!giqtEl.checked : true
+      groundInQuotesTarot: giqtEl ? !!giqtEl.checked : true,
+      // v58
+      westernDeep: wdEl ? !!wdEl.checked : true
     };
     const r = await fetch(`${WORKER_URL}/admin/v56-prompt-config?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
@@ -2294,7 +2314,7 @@ async function saveV56Config() {
     });
     const data = await r.json();
     if (data.ok) {
-      toast('✓ 已儲存 v56+v57 設定');
+      toast('✓ 已儲存 v56+v57+v58 設定');
       const on = [];
       if (body.selfAudit) on.push('SA');
       if (body.uncertaintyHonesty) on.push('UH');
@@ -2308,7 +2328,8 @@ async function saveV56Config() {
       if (body.literalInstructions) on.push('Lit');
       if (body.groundInQuotes7D) on.push('GQ7D');
       if (body.groundInQuotesTarot) on.push('GQT');
-      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + body.sonnetEffort;
+      if (body.westernDeep) on.push('WD');
+      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/13): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + body.sonnetEffort;
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
@@ -2345,6 +2366,9 @@ function resetV56Config() {
   if (litEl) litEl.checked = d.literalInstructions;
   if (giq7dEl) giq7dEl.checked = d.groundInQuotes7D;
   if (giqtEl) giqtEl.checked = d.groundInQuotesTarot;
+  // v58
+  const wdEl = document.getElementById('v58-western-deep');
+  if (wdEl) wdEl.checked = d.westernDeep;
   document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === d.sonnetEffort); });
   toast('已恢復預設（記得按儲存）');
 }
