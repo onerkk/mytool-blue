@@ -549,12 +549,12 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
-      <!-- ═══ v56：Prompt Upgrades 卡片（Anthropic 官方技巧） ═══ -->
+      <!-- ═══ v56/v57：Prompt Upgrades 卡片（Anthropic 官方技巧） ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
-        <h3>✨ v56 提示詞升級</h3>
+        <h3>✨ v57 提示詞升級（命理專屬）</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
-          基於 Anthropic 官方 prompt engineering best practices 的新技巧。<br>
-          可個別開關做 A/B 測試。預設全開（Ground in Quotes 除外，它會拉長輸出時間）。
+          基於 Anthropic 官方 prompt engineering best practices + reduce-hallucinations 的完整技巧集。<br>
+          共 <strong>12 項</strong> 可個別開關做 A/B 測試。預設配置已按官方建議優化。
         </p>
         <div style="display:flex;flex-direction:column;gap:10px">
 
@@ -585,10 +585,80 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
             <input type="checkbox" id="v56-ground" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
             <span style="flex:1">
-              <span style="font-size:13px;font-weight:600">📌 Ground in Quotes 先引用後解讀</span><br>
+              <span style="font-size:13px;font-weight:600">📌 Ground in Quotes 先引用後解讀 (OOTK)</span><br>
               <span style="font-size:11px;color:var(--text-dim)">官方長 context 技巧：先引用盤面關鍵訊號，再展開解讀。會拉長輸出 10-20%。只注入 OOTK。</span>
             </span>
           </label>
+
+          <!-- ═══════════════ v57 新增（八個開關） ═══════════════ -->
+          <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
+            <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── v57 新增技巧 ──</div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v57-ekl" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔒 External Knowledge Lock 學理來源鎖定</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「only use information from provided documents」— 鎖定 Book T/子平真詮/紫微全書等正統經典，禁止滑到網路塔羅通俗寫法</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v57-roles" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🎭 Enhanced Roles 三模式詳細角色人設</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「role prompting can significantly boost accuracy」— 塔羅/OOTK/七維度各自獨立詳細角色（30年資歷、宗師依據、判讀招牌）</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v57-fu-uh" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">💬 Followup Uncertainty 追問也允許說不知道</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">追問常問難題（「具體哪天」「她姓什麼」）— 讓追問也適用誠實優先原則，不編造</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v57-ce" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔀 Counterexample Check 反例檢查</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方 reduce-hallucinations Advanced — Self-Audit 加入第 4 點：每個結論都檢查反例（避免遺漏警訊）</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v57-cot" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🧩 Explicit CoT 顯式推理路徑</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「Ask Claude to explain reasoning step-by-step」— 在 story 前寫 3-5 行推理路徑（出處→學理→結論）。會拉長輸出。</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v57-lit" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📐 Literal Instructions 字面化指令（僅 Opus 4.7）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">Opus 4.7 官方警示「will not silently generalize instructions」— 提醒「每一層」「所有」都是字面意思，不要省略</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v57-giq-7d" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📊 Ground in Quotes (七維度)</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">把 Ground in Quotes 擴及七維度。七維度 payload 超過 50k tokens，lost-in-the-middle 更嚴重。預設關（七維度已夠長）</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v57-giq-t" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🃏 Ground in Quotes (塔羅)</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">把 Ground in Quotes 擴及塔羅。塔羅輸出短，加這個不增加太多。預設開</span>
+            </span>
+          </label>
+          <!-- ═══════════════ v57 結束 ═══════════════ -->
 
           <div style="padding:12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border)">
             <div style="font-size:13px;font-weight:600;margin-bottom:10px">⚡ Sonnet 4.6 Effort Level</div>
@@ -611,7 +681,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
 
         <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="saveV56Config()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v56 設定</button>
+          <button onclick="saveV56Config()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v57 設定</button>
           <button onclick="resetV56Config()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text-dim);font-size:13px;cursor:pointer">↺ 恢復預設</button>
           <span id="v56Status" style="font-size:12px;color:var(--text-dim)"></span>
         </div>
@@ -2098,14 +2168,24 @@ async function saveHaikuThinkingConfig() {
 }
 
 // ═══════════════════════════════════════════════
-// v56 Prompt Upgrades Config
+// v56/v57 Prompt Upgrades Config
 // ═══════════════════════════════════════════════
 let _v56Defaults = {
+  // v56
   selfAudit: true,
   uncertaintyHonesty: true,
   positiveExamples: true,
   groundInQuotes: false,
-  sonnetEffort: 'medium'
+  sonnetEffort: 'medium',
+  // v57
+  externalKnowledgeLock: true,
+  enhancedRoles: true,
+  followupUncertainty: true,
+  counterexampleCheck: true,
+  explicitCoT: false,
+  literalInstructions: true,
+  groundInQuotes7D: false,
+  groundInQuotesTarot: true
 };
 
 async function loadV56Config() {
@@ -2120,6 +2200,7 @@ async function loadV56Config() {
     if (data.ok && data.config) {
       const c = data.config;
       if (data.defaults) _v56Defaults = data.defaults;
+      // v56 checkbox
       const saEl = document.getElementById('v56-selfaudit');
       const uhEl = document.getElementById('v56-uncertainty');
       const peEl = document.getElementById('v56-positive');
@@ -2128,15 +2209,42 @@ async function loadV56Config() {
       if (uhEl) uhEl.checked = (c.uncertaintyHonesty !== false);
       if (peEl) peEl.checked = (c.positiveExamples !== false);
       if (gqEl) gqEl.checked = !!c.groundInQuotes;
+      // v57 checkbox
+      const eklEl = document.getElementById('v57-ekl');
+      const rolesEl = document.getElementById('v57-roles');
+      const fuUhEl = document.getElementById('v57-fu-uh');
+      const ceEl = document.getElementById('v57-ce');
+      const cotEl = document.getElementById('v57-cot');
+      const litEl = document.getElementById('v57-lit');
+      const giq7dEl = document.getElementById('v57-giq-7d');
+      const giqtEl = document.getElementById('v57-giq-t');
+      if (eklEl) eklEl.checked = (c.externalKnowledgeLock !== false);
+      if (rolesEl) rolesEl.checked = (c.enhancedRoles !== false);
+      if (fuUhEl) fuUhEl.checked = (c.followupUncertainty !== false);
+      if (ceEl) ceEl.checked = (c.counterexampleCheck !== false);
+      if (cotEl) cotEl.checked = !!c.explicitCoT;
+      if (litEl) litEl.checked = (c.literalInstructions !== false);
+      if (giq7dEl) giq7dEl.checked = !!c.groundInQuotes7D;
+      if (giqtEl) giqtEl.checked = (c.groundInQuotesTarot !== false);
+      // Sonnet effort
       const effort = c.sonnetEffort || 'medium';
       document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === effort); });
+      // Status 列
       if (statusEl) {
         const on = [];
         if (c.selfAudit) on.push('SA');
         if (c.uncertaintyHonesty) on.push('UH');
         if (c.positiveExamples) on.push('PE');
         if (c.groundInQuotes) on.push('GQ');
-        statusEl.textContent = '啟用: ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + effort;
+        if (c.externalKnowledgeLock) on.push('EKL');
+        if (c.enhancedRoles) on.push('Roles');
+        if (c.followupUncertainty) on.push('FuUH');
+        if (c.counterexampleCheck) on.push('CE');
+        if (c.explicitCoT) on.push('CoT');
+        if (c.literalInstructions) on.push('Lit');
+        if (c.groundInQuotes7D) on.push('GQ7D');
+        if (c.groundInQuotesTarot) on.push('GQT');
+        statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + effort;
       }
     }
   } catch(e) {
@@ -2147,17 +2255,37 @@ async function loadV56Config() {
 async function saveV56Config() {
   const statusEl = document.getElementById('v56Status');
   try {
+    // v56
     const saEl = document.getElementById('v56-selfaudit');
     const uhEl = document.getElementById('v56-uncertainty');
     const peEl = document.getElementById('v56-positive');
     const gqEl = document.getElementById('v56-ground');
     const effortEl = document.querySelector('input[name="v56-sonnet-effort"]:checked');
+    // v57
+    const eklEl = document.getElementById('v57-ekl');
+    const rolesEl = document.getElementById('v57-roles');
+    const fuUhEl = document.getElementById('v57-fu-uh');
+    const ceEl = document.getElementById('v57-ce');
+    const cotEl = document.getElementById('v57-cot');
+    const litEl = document.getElementById('v57-lit');
+    const giq7dEl = document.getElementById('v57-giq-7d');
+    const giqtEl = document.getElementById('v57-giq-t');
     const body = {
+      // v56
       selfAudit: saEl ? !!saEl.checked : true,
       uncertaintyHonesty: uhEl ? !!uhEl.checked : true,
       positiveExamples: peEl ? !!peEl.checked : true,
       groundInQuotes: gqEl ? !!gqEl.checked : false,
-      sonnetEffort: effortEl ? effortEl.value : 'medium'
+      sonnetEffort: effortEl ? effortEl.value : 'medium',
+      // v57
+      externalKnowledgeLock: eklEl ? !!eklEl.checked : true,
+      enhancedRoles: rolesEl ? !!rolesEl.checked : true,
+      followupUncertainty: fuUhEl ? !!fuUhEl.checked : true,
+      counterexampleCheck: ceEl ? !!ceEl.checked : true,
+      explicitCoT: cotEl ? !!cotEl.checked : false,
+      literalInstructions: litEl ? !!litEl.checked : true,
+      groundInQuotes7D: giq7dEl ? !!giq7dEl.checked : false,
+      groundInQuotesTarot: giqtEl ? !!giqtEl.checked : true
     };
     const r = await fetch(`${WORKER_URL}/admin/v56-prompt-config?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
@@ -2166,13 +2294,21 @@ async function saveV56Config() {
     });
     const data = await r.json();
     if (data.ok) {
-      toast('✓ 已儲存 v56 設定');
+      toast('✓ 已儲存 v56+v57 設定');
       const on = [];
       if (body.selfAudit) on.push('SA');
       if (body.uncertaintyHonesty) on.push('UH');
       if (body.positiveExamples) on.push('PE');
       if (body.groundInQuotes) on.push('GQ');
-      if (statusEl) statusEl.textContent = '啟用: ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + body.sonnetEffort;
+      if (body.externalKnowledgeLock) on.push('EKL');
+      if (body.enhancedRoles) on.push('Roles');
+      if (body.followupUncertainty) on.push('FuUH');
+      if (body.counterexampleCheck) on.push('CE');
+      if (body.explicitCoT) on.push('CoT');
+      if (body.literalInstructions) on.push('Lit');
+      if (body.groundInQuotes7D) on.push('GQ7D');
+      if (body.groundInQuotesTarot) on.push('GQT');
+      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + body.sonnetEffort;
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
@@ -2183,6 +2319,7 @@ async function saveV56Config() {
 
 function resetV56Config() {
   const d = _v56Defaults;
+  // v56
   const saEl = document.getElementById('v56-selfaudit');
   const uhEl = document.getElementById('v56-uncertainty');
   const peEl = document.getElementById('v56-positive');
@@ -2191,6 +2328,23 @@ function resetV56Config() {
   if (uhEl) uhEl.checked = d.uncertaintyHonesty;
   if (peEl) peEl.checked = d.positiveExamples;
   if (gqEl) gqEl.checked = d.groundInQuotes;
+  // v57
+  const eklEl = document.getElementById('v57-ekl');
+  const rolesEl = document.getElementById('v57-roles');
+  const fuUhEl = document.getElementById('v57-fu-uh');
+  const ceEl = document.getElementById('v57-ce');
+  const cotEl = document.getElementById('v57-cot');
+  const litEl = document.getElementById('v57-lit');
+  const giq7dEl = document.getElementById('v57-giq-7d');
+  const giqtEl = document.getElementById('v57-giq-t');
+  if (eklEl) eklEl.checked = d.externalKnowledgeLock;
+  if (rolesEl) rolesEl.checked = d.enhancedRoles;
+  if (fuUhEl) fuUhEl.checked = d.followupUncertainty;
+  if (ceEl) ceEl.checked = d.counterexampleCheck;
+  if (cotEl) cotEl.checked = d.explicitCoT;
+  if (litEl) litEl.checked = d.literalInstructions;
+  if (giq7dEl) giq7dEl.checked = d.groundInQuotes7D;
+  if (giqtEl) giqtEl.checked = d.groundInQuotesTarot;
   document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === d.sonnetEffort); });
   toast('已恢復預設（記得按儲存）');
 }
