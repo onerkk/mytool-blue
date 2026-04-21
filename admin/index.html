@@ -708,20 +708,24 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <input type="number" id="mt-tarot_sonnet_haiku_6plus" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>Sonnet/Haiku 主 <span style="color:var(--text-dim)">（10+ 張牌）</span></div>
             <input type="number" id="mt-tarot_sonnet_haiku_10plus" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
-            <div>Opus 4.7 付費深度 <span style="color:#f59e0b">（含 thinking 預留）</span></div>
-            <input type="number" id="mt-tarot_opus_depth" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>Opus 4.7 深度 <span style="color:#f59e0b">（&lt;6 張牌）</span></div>
+            <input type="number" id="mt-tarot_opus_depth_default" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>Opus 4.7 深度 <span style="color:#f59e0b">（6-9 張牌）</span></div>
+            <input type="number" id="mt-tarot_opus_depth_6plus" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>Opus 4.7 深度 <span style="color:#f59e0b">（10+ 張牌）</span></div>
+            <input type="number" id="mt-tarot_opus_depth_10plus" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>追問 <span style="color:var(--text-dim)">（抽補充牌）</span></div>
             <input type="number" id="mt-tarot_followup" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
           </div>
         </div>
 
         <div style="padding:10px 12px;background:rgba(245,158,11,.08);border-radius:8px;border-left:3px solid #f59e0b;font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
-          <b style="color:#f59e0b">⚠️ 調整建議</b>：<br>
+          <b style="color:#f59e0b">⚠️ 調整建議</b>（v55 已升級 Opus 4.7 tokenizer 35% 緩衝）：<br>
           • Opus 深度路徑的 thinking 會吃 6000-14000 tokens，值要設到 thinking 預算 + 想要的 text 長度 + 10% buffer<br>
-          • 七維度 Opus 深度建議 <b>20000-28000</b>（effort=max 需要較大）<br>
-          • 開鑰 Opus 深度建議 <b>16000-22000</b><br>
-          • 塔羅 Opus 深度建議 <b>12000-16000</b><br>
-          • 值太小會導致 Out tokens 剛好打滿上限 = JSON 被截斷 = 畫面空白<br>
+          • 七維度 Opus 深度建議 <b>28000-36000</b>（effort=max 需要較大，Opus 4.7 tokenizer 比 4.6 多 1-1.35x）<br>
+          • 開鑰 Opus 深度建議 <b>20000-28000</b><br>
+          • 塔羅 Opus 深度：&lt;6 張 <b>12000-16000</b> / 6-9 張 <b>16000-20000</b> / 10+ 張 <b>20000-26000</b>（黃道十二宮 13 張一定要 20000+）<br>
+          • 值太小會導致 Out tokens 剛好打滿上限 = JSON 被截斷 = story 空白<br>
           • 值太大會增加成本，但 adaptive 會按需停止，不會每次打滿
         </div>
 
@@ -2606,7 +2610,8 @@ const MT_KEYS = [
   'direct_sonnet_haiku', 'direct_opus_depth', 'direct_followup',
   'ootk_sonnet_haiku', 'ootk_opus_depth', 'ootk_followup',
   'tarot_sonnet_haiku_default', 'tarot_sonnet_haiku_6plus', 'tarot_sonnet_haiku_10plus',
-  'tarot_opus_depth', 'tarot_followup'
+  'tarot_opus_depth_default', 'tarot_opus_depth_6plus', 'tarot_opus_depth_10plus',
+  'tarot_followup'
 ];
 
 async function loadMaxTokensConfig() {
