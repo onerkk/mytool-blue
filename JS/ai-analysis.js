@@ -22499,6 +22499,20 @@ async function _triggerTarotAI() {
                 }
               }
             } catch(_tke4){}
+          } else if (evtType === 'audit_start' && evtData) {
+            // v54：Best-of-N 開始核查
+            try {
+              var _auStart = JSON.parse(evtData);
+              window._jyAuditStart = _auStart && _auStart.message;
+              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge({ loading: true, message: _auStart.message }); } catch(_){}
+            } catch(_){}
+          } else if (evtType === 'audit' && evtData) {
+            // v54：Best-of-N 核查結果
+            try {
+              var _auRes = JSON.parse(evtData);
+              window._jyAuditResult = _auRes;
+              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge(_auRes); } catch(_){}
+            } catch(_){}
           } else if (evtType === 'error' && evtData) {
             try { var err = JSON.parse(evtData); throw new Error(err.error || '伺服器錯誤'); } catch(e){ throw e; }
           }
@@ -23681,6 +23695,20 @@ async function _triggerTarotFollowUp() {
                 }
               }
             } catch(_tke5){}
+          } else if (evtType === 'audit_start' && evtData) {
+            // v54：Best-of-N 開始核查（七維度追問也支援）
+            try {
+              var _auStart2 = JSON.parse(evtData);
+              window._jyAuditStart = _auStart2 && _auStart2.message;
+              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge({ loading: true, message: _auStart2.message }); } catch(_){}
+            } catch(_){}
+          } else if (evtType === 'audit' && evtData) {
+            // v54：Best-of-N 核查結果
+            try {
+              var _auRes2 = JSON.parse(evtData);
+              window._jyAuditResult = _auRes2;
+              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge(_auRes2); } catch(_){}
+            } catch(_){}
           } else if (evtType === 'error' && evtData) {
             // ★ v51：捕 Worker 端真實錯誤（對齊塔羅首輪 22207-22209）
             //   Worker aiProcess catch 區會 sendSSE('error', { error: err.message })。
@@ -24782,6 +24810,141 @@ function startOOTKFlow() {
 }
 window.startOOTKFlow = startOOTKFlow;
 window._triggerOOTKAI = window._ootkTriggerAI || function() { console.warn('[OOTK] _ootkTriggerAI not found'); };
+
+// ══════════════════════════════════════════════════════════════
+// v54 Best-of-N 事實核查徽章渲染
+// 觸發：SSE 收到 audit_start / audit event 後自動呼叫
+// 目的：在結果區下方顯示一個可點擊的徽章 + 可展開的 claim 清單
+// ══════════════════════════════════════════════════════════════
+window._jyRenderAuditBadge = function(audit) {
+  try {
+    if (!audit) return;
+
+    // 找掛載目標：結果區下方
+    // 優先順序：各模式的 result container
+    var _target = document.getElementById('ai-result-content')
+                 || document.getElementById('tarot-result-content')
+                 || document.getElementById('ootk-result-content')
+                 || document.querySelector('.ai-result-main')
+                 || document.querySelector('[data-result-container]');
+    if (!_target) {
+      // fallback：掛在 main 區域底部
+      _target = document.querySelector('main') || document.body;
+    }
+
+    // 移除舊徽章
+    var _old = document.getElementById('jy-audit-badge');
+    if (_old) _old.remove();
+
+    // loading 狀態
+    if (audit.loading) {
+      var _loadEl = document.createElement('div');
+      _loadEl.id = 'jy-audit-badge';
+      _loadEl.style.cssText = 'margin:1.2rem auto 0;max-width:680px;padding:.7rem 1rem;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(212,175,55,.03));border:1px solid rgba(212,175,55,.2);color:var(--c-gold,#d4af37);font-size:.82rem;text-align:center;animation:jyAuditPulse 1.8s ease-in-out infinite';
+      _loadEl.innerHTML = '<span style="display:inline-block">' + (audit.message || '✨ 正在對輸出做事實核查...') + '</span>';
+
+      // 加入 pulse 動畫 style
+      if (!document.getElementById('jy-audit-style')) {
+        var _st = document.createElement('style');
+        _st.id = 'jy-audit-style';
+        _st.textContent = '@keyframes jyAuditPulse{0%,100%{opacity:.65}50%{opacity:1}}'
+                        + '.jy-audit-claim{padding:.55rem .7rem;border-radius:8px;margin:.35rem 0;font-size:.8rem;line-height:1.55}'
+                        + '.jy-audit-claim.pass{background:rgba(110,188,110,.08);border-left:3px solid rgba(110,188,110,.5)}'
+                        + '.jy-audit-claim.soft{background:rgba(212,175,55,.08);border-left:3px solid rgba(212,175,55,.5)}'
+                        + '.jy-audit-claim.fail{background:rgba(220,100,100,.08);border-left:3px solid rgba(220,100,100,.5)}'
+                        + '.jy-audit-verdict{display:inline-block;padding:1px 8px;border-radius:4px;font-size:.72rem;font-weight:600;margin-right:.4rem}'
+                        + '.jy-audit-verdict.pass{background:rgba(110,188,110,.2);color:#6ebc6e}'
+                        + '.jy-audit-verdict.soft{background:rgba(212,175,55,.2);color:var(--c-gold,#d4af37)}'
+                        + '.jy-audit-verdict.fail{background:rgba(220,100,100,.2);color:#e88888}'
+                        + '.jy-audit-reason{color:var(--c-text-dim,#999);font-size:.72rem;margin-top:.25rem;font-style:italic}';
+        document.head.appendChild(_st);
+      }
+
+      _target.appendChild(_loadEl);
+      return;
+    }
+
+    // 沒結果或被跳過
+    if (audit.skipped || !audit.audit) {
+      return; // 靜默，不顯示
+    }
+
+    var _a = audit.audit;
+    var _claims = Array.isArray(_a.claims) ? _a.claims : [];
+    var _pass = _a.pass_count || 0;
+    var _soft = _a.soft_count || 0;
+    var _fail = _a.fail_count || 0;
+    var _total = _pass + _soft + _fail;
+
+    // 完全沒抽到 claim（可能 story 沒具體宣稱）→ 靜默
+    if (_total === 0) return;
+
+    // 整體狀態判定
+    var _overallText, _overallColor, _overallIcon;
+    if (_fail === 0 && _soft <= 1) {
+      _overallText = '事實核查通過';
+      _overallColor = 'rgba(110,188,110,.5)';
+      _overallIcon = '✓';
+    } else if (_fail === 0) {
+      _overallText = '部分宣稱建議降級';
+      _overallColor = 'rgba(212,175,55,.5)';
+      _overallIcon = '⚠';
+    } else {
+      _overallText = '發現可能編造的宣稱';
+      _overallColor = 'rgba(220,100,100,.5)';
+      _overallIcon = '⚠';
+    }
+
+    var _el = document.createElement('div');
+    _el.id = 'jy-audit-badge';
+    _el.style.cssText = 'margin:1.2rem auto 0;max-width:680px;border-radius:12px;background:rgba(20,16,10,.55);border:1px solid ' + _overallColor + ';overflow:hidden';
+
+    // 標頭（可點擊展開/收合）
+    var _summary = '<span style="font-size:1rem;margin-right:.4rem">' + _overallIcon + '</span>'
+                 + '<span style="font-weight:600;color:var(--c-gold,#d4af37)">' + _overallText + '</span>'
+                 + '<span style="margin-left:.6rem;font-size:.76rem;color:var(--c-text-dim,#aaa)">'
+                 + (_pass ? '✓' + _pass + ' ' : '')
+                 + (_soft ? '◐' + _soft + ' ' : '')
+                 + (_fail ? '✗' + _fail + ' ' : '')
+                 + '（共 ' + _total + ' 條判讀核查）'
+                 + '</span>'
+                 + '<span id="jy-audit-caret" style="float:right;color:var(--c-text-dim,#aaa);font-size:.88rem;transition:transform .2s">▾</span>';
+
+    var _list = '<div id="jy-audit-list" style="padding:.6rem .9rem .9rem;border-top:1px solid rgba(212,175,55,.12);display:none">';
+    for (var _ci = 0; _ci < _claims.length; _ci++) {
+      var _c = _claims[_ci] || {};
+      var _v = (_c.verdict === 'pass' || _c.verdict === 'soft' || _c.verdict === 'fail') ? _c.verdict : 'soft';
+      var _vLabel = _v === 'pass' ? '通過' : (_v === 'soft' ? '降級' : '未通過');
+      var _text = (_c.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      var _reason = (_c.reason || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      _list += '<div class="jy-audit-claim ' + _v + '">'
+             + '<span class="jy-audit-verdict ' + _v + '">' + _vLabel + '</span>'
+             + '<span>「' + _text + '」</span>'
+             + (_reason ? '<div class="jy-audit-reason">' + _reason + '</div>' : '')
+             + '</div>';
+    }
+    _list += '</div>';
+
+    _el.innerHTML = '<div id="jy-audit-header" style="padding:.7rem 1rem;cursor:pointer;font-size:.82rem;user-select:none">' + _summary + '</div>' + _list;
+
+    _target.appendChild(_el);
+
+    // 點擊展開/收合
+    var _header = document.getElementById('jy-audit-header');
+    var _listEl = document.getElementById('jy-audit-list');
+    var _caret = document.getElementById('jy-audit-caret');
+    if (_header && _listEl) {
+      _header.addEventListener('click', function() {
+        var _open = _listEl.style.display === 'block';
+        _listEl.style.display = _open ? 'none' : 'block';
+        if (_caret) _caret.style.transform = _open ? 'rotate(0deg)' : 'rotate(180deg)';
+      });
+    }
+  } catch (_renderErr) {
+    // 渲染失敗時安靜吞掉，不影響主結果顯示
+    console.warn('[v54] audit badge render failed:', _renderErr && _renderErr.message);
+  }
+};
 
 // ── OOTK 付費入口 ──
 window._jyStartOOTK = function() {
