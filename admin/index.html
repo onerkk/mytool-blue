@@ -636,6 +636,76 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v59.3：Max Tokens 設定卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>🎚️ Max Tokens 設定</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.6">
+          各模式的 max_tokens 上限（AI 單次輸出最大 token 數）。<br>
+          <b style="color:#f59e0b">Opus 深度付費</b>路徑的值必須比較大——adaptive thinking 會吃掉一半 tokens，要留足空間給最終 JSON 輸出，否則會被截斷（畫面空白）。<br>
+          <b style="color:#6c7bff">非付費主路徑</b>不啟用 thinking，值可以小一點。<br>
+          範圍：1000-64000。改完按「儲存」即時生效，不用重部署 worker。
+        </p>
+
+        <!-- 七維度 -->
+        <div style="margin-bottom:18px;padding:14px;background:rgba(108,123,255,.04);border-radius:10px;border:1px solid var(--card-border)">
+          <div style="font-size:14px;font-weight:700;color:#6c7bff;margin-bottom:10px">🔮 七維度（direct）</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center;font-size:12px">
+            <div>Sonnet/Haiku 主路徑 <span style="color:var(--text-dim)">（免費+標準會員）</span></div>
+            <input type="number" id="mt-direct_sonnet_haiku" min="1000" max="64000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>Opus 4.7 付費深度 <span style="color:#f59e0b">（含 thinking 預留）</span></div>
+            <input type="number" id="mt-direct_opus_depth" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>追問 <span style="color:var(--text-dim)">（無 thinking）</span></div>
+            <input type="number" id="mt-direct_followup" min="1000" max="64000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+          </div>
+        </div>
+
+        <!-- 開鑰 OOTK -->
+        <div style="margin-bottom:18px;padding:14px;background:rgba(108,123,255,.04);border-radius:10px;border:1px solid var(--card-border)">
+          <div style="font-size:14px;font-weight:700;color:#6c7bff;margin-bottom:10px">🔑 開鑰之法（ootk）</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center;font-size:12px">
+            <div>Sonnet/Haiku 主路徑</div>
+            <input type="number" id="mt-ootk_sonnet_haiku" min="1000" max="64000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>Opus 4.7 付費深度 <span style="color:#f59e0b">（含 thinking 預留）</span></div>
+            <input type="number" id="mt-ootk_opus_depth" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>追問</div>
+            <input type="number" id="mt-ootk_followup" min="1000" max="64000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+          </div>
+        </div>
+
+        <!-- 塔羅 -->
+        <div style="margin-bottom:18px;padding:14px;background:rgba(108,123,255,.04);border-radius:10px;border:1px solid var(--card-border)">
+          <div style="font-size:14px;font-weight:700;color:#6c7bff;margin-bottom:10px">🃏 塔羅快讀（tarot）</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center;font-size:12px">
+            <div>Sonnet/Haiku 主 <span style="color:var(--text-dim)">（&lt;6 張牌）</span></div>
+            <input type="number" id="mt-tarot_sonnet_haiku_default" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>Sonnet/Haiku 主 <span style="color:var(--text-dim)">（6-9 張牌）</span></div>
+            <input type="number" id="mt-tarot_sonnet_haiku_6plus" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>Sonnet/Haiku 主 <span style="color:var(--text-dim)">（10+ 張牌）</span></div>
+            <input type="number" id="mt-tarot_sonnet_haiku_10plus" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>Opus 4.7 付費深度 <span style="color:#f59e0b">（含 thinking 預留）</span></div>
+            <input type="number" id="mt-tarot_opus_depth" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <div>追問 <span style="color:var(--text-dim)">（抽補充牌）</span></div>
+            <input type="number" id="mt-tarot_followup" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+          </div>
+        </div>
+
+        <div style="padding:10px 12px;background:rgba(245,158,11,.08);border-radius:8px;border-left:3px solid #f59e0b;font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
+          <b style="color:#f59e0b">⚠️ 調整建議</b>：<br>
+          • Opus 深度路徑的 thinking 會吃 6000-14000 tokens，值要設到 thinking 預算 + 想要的 text 長度 + 10% buffer<br>
+          • 七維度 Opus 深度建議 <b>20000-28000</b>（effort=max 需要較大）<br>
+          • 開鑰 Opus 深度建議 <b>16000-22000</b><br>
+          • 塔羅 Opus 深度建議 <b>12000-16000</b><br>
+          • 值太小會導致 Out tokens 剛好打滿上限 = JSON 被截斷 = 畫面空白<br>
+          • 值太大會增加成本，但 adaptive 會按需停止，不會每次打滿
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveMaxTokensConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Max Tokens</button>
+          <button onclick="resetMaxTokensConfig()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text);font-size:13px;font-weight:600;cursor:pointer">↺ 重設為預設值</button>
+          <span id="maxTokensStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v56/v57：Prompt Upgrades 卡片（Anthropic 官方技巧） ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>✨ v57 提示詞升級（命理專屬）</h3>
@@ -973,7 +1043,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadOpus46EffortConfig(); loadSonnet46EffortConfig(); loadHaikuThinkingConfig(); loadV56Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadOpus46EffortConfig(); loadSonnet46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); }
   });
 });
 
@@ -2456,6 +2526,98 @@ async function saveHaikuThinkingConfig() {
   }
 }
 
+// ═══════════════════════════════════════════════
+// v59.3 Max Tokens Config
+// ═══════════════════════════════════════════════
+const MT_KEYS = [
+  'direct_sonnet_haiku', 'direct_opus_depth', 'direct_followup',
+  'ootk_sonnet_haiku', 'ootk_opus_depth', 'ootk_followup',
+  'tarot_sonnet_haiku_default', 'tarot_sonnet_haiku_6plus', 'tarot_sonnet_haiku_10plus',
+  'tarot_opus_depth', 'tarot_followup'
+];
+
+async function loadMaxTokensConfig() {
+  const statusEl = document.getElementById('maxTokensStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/max-tokens-config?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const c = data.config;
+      for (const k of MT_KEYS) {
+        const el = document.getElementById('mt-' + k);
+        if (el && typeof c[k] === 'number') el.value = c[k];
+      }
+      if (statusEl) statusEl.textContent = '已載入當前配置';
+    } else {
+      if (statusEl) statusEl.textContent = '載入失敗';
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入錯誤: ' + e.message;
+  }
+}
+
+async function saveMaxTokensConfig() {
+  const statusEl = document.getElementById('maxTokensStatus');
+  try {
+    const payload = {};
+    const invalid = [];
+    for (const k of MT_KEYS) {
+      const el = document.getElementById('mt-' + k);
+      if (!el) continue;
+      const v = parseInt(el.value);
+      if (isNaN(v) || v < 1000 || v > 64000) {
+        invalid.push(k + '=' + el.value);
+      } else {
+        payload[k] = v;
+      }
+    }
+    if (invalid.length) {
+      toast('❌ 數值超出 1000-64000 範圍: ' + invalid.join(', '));
+      return;
+    }
+    const r = await fetch(`${WORKER_URL}/admin/max-tokens-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Max Tokens 設定' + (data.rejected && data.rejected.length ? '（但有' + data.rejected.length + '項被拒絕）' : ''));
+      if (statusEl) statusEl.textContent = '已儲存｜即時生效';
+      if (data.rejected && data.rejected.length) {
+        console.warn('Rejected fields:', data.rejected);
+      }
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+async function resetMaxTokensConfig() {
+  if (!confirm('確定要重設為預設值嗎？\n\n預設值：\n七維度 Opus 深度=24000、Sonnet/Haiku=8192\n開鑰 Opus 深度=18000、Sonnet/Haiku=7000\n塔羅 Opus 深度=14000、Sonnet/Haiku=3000-4000')) return;
+  const statusEl = document.getElementById('maxTokensStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/max-tokens-config/reset?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST'
+    });
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const c = data.config;
+      for (const k of MT_KEYS) {
+        const el = document.getElementById('mt-' + k);
+        if (el && typeof c[k] === 'number') el.value = c[k];
+      }
+      toast('✓ 已重設為預設值');
+      if (statusEl) statusEl.textContent = '已重設｜即時生效';
+    } else {
+      toast('重設失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
 // ═══════════════════════════════════════════════
 // v56/v57 Prompt Upgrades Config
 // ═══════════════════════════════════════════════
