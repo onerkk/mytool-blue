@@ -18596,6 +18596,10 @@ renderTarot = function(){
               p.dims.meihua.timing = mhAnalysis.timing.label + '（' + (mhAnalysis.timing.range || '') + '）';
               if (mhAnalysis.timing.note) p.dims.meihua.timingNote = mhAnalysis.timing.note;
             }
+            // v55: 三法交集精確月份（AI 不自算，直接引用）
+            if (mhAnalysis.timingTriple) {
+              p.dims.meihua.timingTriple = mhAnalysis.timingTriple;
+            }
             if (mhAnalysis.risk) p.dims.meihua.risk = mhAnalysis.risk;
             if (mhAnalysis.strategy) p.dims.meihua.actionAdvice = mhAnalysis.strategy.slice(0, 3);
             if (mhAnalysis.structure) {
