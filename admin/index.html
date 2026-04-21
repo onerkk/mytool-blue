@@ -536,6 +536,32 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v54：Best-of-N 事實核查卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>🧪 Best-of-N 事實核查（付費 Opus）</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
+          只對付費 Opus 流程（七維度、塔羅、開鑰深度模式）觸發。<br>
+          機制：story 產出後，背景跑一次 Sonnet 4.6 當 judge，抽出 story 裡的「具體宣稱」（年份/月份/人物畫像/事件/格局名）逐條對照 payload，判 pass/soft/fail。<br>
+          前端：核查通過會顯示綠色徽章「✓ 事實核查通過」；有降級建議顯示金色；發現可能編造顯示紅色。用戶可點開看每條 claim 的核查理由。<br>
+          <span style="color:#fbbf24">成本</span>：每次多 ~NT$5-8（non-stream、10s timeout、失敗不阻塞主流程）。<br>
+          <span style="color:#6ebc6e">商業價值</span>：這是付費 Opus 的差異化——「已通過事實核查」徽章 = 信任加成。
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="bestofn-enabled" value="true" style="width:16px;height:16px;accent-color:#6ebc6e;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#6ebc6e">啟用</span><br><span style="font-size:11px;color:var(--text-dim)">每次 Opus 付費流程都跑核查（+NT$5-8/次）</span></span>
+          </label>
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="bestofn-enabled" value="false" style="width:16px;height:16px;accent-color:#7a7f8e;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#7a7f8e">關閉</span><br><span style="font-size:11px;color:var(--text-dim)">不跑核查，省成本（預設）</span></span>
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveBestofnConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Best-of-N 設定</button>
+          <span id="bestofnStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v53：Opus 4.6 Effort Level 卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>🎯 Opus 4.6 Effort Level</h3>
@@ -1043,7 +1069,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadOpus46EffortConfig(); loadSonnet46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadSonnet46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); }
   });
 });
 
@@ -2373,6 +2399,53 @@ async function saveOpus47EffortConfig() {
     if (data.ok) {
       toast('✓ 已儲存 Opus 4.7 Effort');
       if (statusEl) statusEl.textContent = '已儲存：' + level;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v54 Best-of-N 事實核查 Config
+// ═══════════════════════════════════════════════
+async function loadBestofnConfig() {
+  const statusEl = document.getElementById('bestofnStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/opus47-bestofn-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const enabled = !!data.config.enabled;
+      const radios = document.getElementsByName('bestofn-enabled');
+      for (let i = 0; i < radios.length; i++) {
+        radios[i].checked = (radios[i].value === String(enabled));
+      }
+      if (statusEl) statusEl.textContent = '當前：' + (enabled ? '啟用' : '關閉');
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveBestofnConfig() {
+  const statusEl = document.getElementById('bestofnStatus');
+  try {
+    const radios = document.getElementsByName('bestofn-enabled');
+    let enabled = false;
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) { enabled = (radios[i].value === 'true'); break; }
+    }
+    const r = await fetch(`${WORKER_URL}/admin/opus47-bestofn-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: enabled })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Best-of-N 設定');
+      if (statusEl) statusEl.textContent = '已儲存：' + (enabled ? '啟用' : '關閉');
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
