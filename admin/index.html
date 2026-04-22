@@ -1141,15 +1141,23 @@ async function _loadPhotos(nKey, btn) {
     keys.forEach(function(k) {
       var wrap = document.createElement('div');
       wrap.style.cssText = 'text-align:center';
-      var img = document.createElement('img');
       var src = photos[k];
-      if (src && src.indexOf('data:') !== 0) src = 'data:image/jpeg;base64,' + src;
-      img.src = src;
-      img.style.cssText = 'width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.1)';
+      // v60-hotfix8：src 為 null 代表 worker 端因太大而 drop，顯示提示不顯示破圖
+      if (src === null || src === undefined || src === '') {
+        var placeholder = document.createElement('div');
+        placeholder.style.cssText = 'width:120px;height:120px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.02);font-size:10px;color:var(--text-dim);text-align:center;padding:8px;box-sizing:border-box';
+        placeholder.innerHTML = '📷 照片太大<br>未保存';
+        wrap.appendChild(placeholder);
+      } else {
+        var img = document.createElement('img');
+        if (src.indexOf('data:') !== 0) src = 'data:image/jpeg;base64,' + src;
+        img.src = src;
+        img.style.cssText = 'width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.1)';
+        wrap.appendChild(img);
+      }
       var label = document.createElement('div');
       label.style.cssText = 'font-size:10px;color:var(--text-dim);margin-top:2px';
       label.textContent = labels[k] || k;
-      wrap.appendChild(img);
       wrap.appendChild(label);
       gallery.appendChild(wrap);
     });
