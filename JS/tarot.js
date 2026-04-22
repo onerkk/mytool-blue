@@ -2889,6 +2889,8 @@ function showTarotLocked(){
   // 啟用分析按鈕
   const btn=document.getElementById('btn-analyze');
   if(btn) btn.disabled=false;
+  // v60-hotfix7-g：抽完牌自動滾到分析按鈕，讓使用者看到下一步
+  if(btn) setTimeout(function(){ try { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(_) {} }, 400);
   // 更新計數
   const countEl=document.getElementById('t-remain-picked');
   var _tc = (S.tarot && S.tarot.spreadDef && S.tarot.spreadDef.count) ? S.tarot.spreadDef.count : 10; if(countEl) countEl.textContent=String(_tc);

@@ -369,7 +369,26 @@
   async function _jyUnlockAndTrigger() {
     var pending = null;
     try { pending = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null'); } catch(_) {}
+    // v60-hotfix7-f：多分頁 race 防呆
+    //   場景：付款開新分頁 A，原分頁 B 輪詢；A 付完先跑 _jyUnlockAndTrigger 會 removeItem pending；
+    //   B 切回來、輪詢或 _checkPaymentReturn 觸發時找不到 pending，結果沒解鎖、沒寫 token
+    //   修法：若 pending 是空的，從備份 _jy_last_paid 還原（備份在下面 write token 時存）
+    if (!pending) {
+      try {
+        var _bak = JSON.parse(localStorage.getItem('_jy_last_paid') || 'null');
+        // 備份 1 小時內有效（避免拿到很舊的資料）
+        if (_bak && _bak.tradeNo && _bak.ts && (Date.now() - _bak.ts < 3600000)) {
+          pending = _bak;
+        }
+      } catch(_){}
+    }
     if (!pending || !pending.tradeNo) return false;
+    // v60-hotfix7-f：先寫備份（_jy_last_paid），讓別的分頁/下次呼叫能還原
+    try {
+      localStorage.setItem('_jy_last_paid', JSON.stringify({
+        tradeNo: pending.tradeNo, mode: pending.mode, type: pending.type, ts: Date.now()
+      }));
+    } catch(_){}
     // 寫 token
     localStorage.setItem('_jy_paid_token', pending.tradeNo);
     localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
@@ -428,9 +447,22 @@
     // ★ 核心：自動觸發對應的 AI 分析函式
     var triggered = _jyAutoTriggerAfterPayment(pending);
     if (!triggered) {
-      // 沒觸發成功（例如頁面 state 消失、函式沒載入），fallback 到 reload
-      console.warn('[Payment] auto trigger returned false, falling back to reload');
-      setTimeout(function() { window.location.reload(); }, 1500);
+      // v60-hotfix7-f：沒觸發成功（例如 state 消失、函式沒載入、新分頁無 context）
+      //   原本 setTimeout reload → reload 後 URL ?paid 已被清掉、沒 state、使用者回到首頁
+      //   結果使用者以為「要再按一次」按下去又跳付費牆（token 明明已寫入但 state 丟了就沒人帶）
+      //   修法：不 reload，改顯眼持續提示，使用者按任何「解讀按鈕」時 paid_token 會自動帶上
+      console.warn('[Payment] auto trigger returned false, 顯示手動繼續提示');
+      var retryCard = document.createElement('div');
+      retryCard.id = 'jy-paid-retry-card';
+      retryCard.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:99998;max-width:90%;width:340px;background:linear-gradient(145deg,#1a3020,#0f2015);border:1.5px solid rgba(34,197,94,.45);border-radius:14px;padding:1.1rem 1rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+      retryCard.innerHTML =
+        '<div style="font-size:1.6rem;margin-bottom:.4rem">✅</div>' +
+        '<div style="font-size:1rem;color:#86efac;font-weight:700;margin-bottom:.4rem">付款成功</div>' +
+        '<div style="font-size:.8rem;color:#d1fae5;line-height:1.6;margin-bottom:.8rem">你已付費完成，請回到剛才的問題頁面，<strong style="color:#fff">再按一次解讀按鈕</strong>即可繼續（系統會自動帶上已付費憑證）</div>' +
+        '<button onclick="document.getElementById(\'jy-paid-retry-card\').remove()" style="width:100%;padding:9px;border-radius:10px;background:rgba(255,255,255,.1);color:#d1fae5;font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.15);cursor:pointer;font-family:inherit">知道了</button>';
+      document.body.appendChild(retryCard);
+      // 20 秒後自動消失
+      setTimeout(function() { var el = document.getElementById('jy-paid-retry-card'); if (el) el.remove(); }, 20000);
     }
     return true;
   }
@@ -710,25 +742,34 @@
     var paidTradeNo = params.get('paid');
     if (!paidTradeNo) return;
 
+    // v60-hotfix7-g：診斷 log（生產環境也留著，只在付款回跳時印，頻率低）
+    console.log('[Payment] 偵測到 ?paid=' + paidTradeNo + ' 回跳');
+
     // 立刻清掉 URL 參數避免重整重複觸發
     history.replaceState(null, '', window.location.pathname + window.location.hash);
 
     // 從 pending 拿 mode/type；若 pending 已被輪詢清掉，tradeNo 還在 localStorage 就不重跑
     var pending = null;
     try { pending = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null'); } catch(_) {}
+    console.log('[Payment] pending:', pending);
 
     // 若 pending 已被主視窗輪詢處理掉 → 不重複觸發（避免連按兩次）
     if (!pending || !pending.tradeNo || pending.tradeNo !== paidTradeNo) {
+      console.log('[Payment] pending 不匹配 / 已消化，走備援寫入 token');
       // 但 token 還是要確保寫入（防止輪詢沒跑到但綠界回跳成功的極罕見狀況）
       if (!localStorage.getItem('_jy_paid_token')) {
         localStorage.setItem('_jy_paid_token', paidTradeNo);
         localStorage.setItem('_jy_paid_token_type', 'single');
+        console.log('[Payment] token 已備援寫入: ' + paidTradeNo);
+      } else {
+        console.log('[Payment] _jy_paid_token 已存在，不覆寫: ' + localStorage.getItem('_jy_paid_token'));
       }
       return;
     }
 
     // 停止輪詢避免雙觸發
     if (_jyPayPollTimer) { clearInterval(_jyPayPollTimer); _jyPayPollTimer = null; }
+    console.log('[Payment] pending 匹配，走完整解鎖流程');
     // 走跟主視窗輪詢一樣的完整解鎖 + 觸發 AI 流程
     _jyUnlockAndTrigger();
   }
