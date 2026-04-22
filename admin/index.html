@@ -1826,19 +1826,19 @@ function renderUsersList(users) {
 
     let quotaRows = '';
     if (!isMember) {
-      // v60-hotfix2：免費用戶顯示實際上限（從 u.freeLimit 讀）+ 加「免費上限」統一改按鈕
-      //   後端 free_limit:{userKey} 是三工具共用的單一 KV，改這個值三工具同步調整。
-      //   欲個別停用某工具可把 free_7d/free_tarot/free_ootk 已用設到 >= freeLimit。
-      const _fl = (typeof u.freeLimit === 'number') ? u.freeLimit : 1;
-      quotaRows = `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--text-dim)" data-user-idx="${idx}">
-        <span>七維: <strong style="color:${u.free7d >= _fl ? 'var(--danger)' : 'var(--text)'}">${u.free7d}</strong>
-        <button onclick="_editQuota(${idx},'free_7d',${u.free7d})" style="padding:1px 5px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer">✏️</button>/<strong style="color:var(--warn)">${_fl}</strong></span>
-        <span>塔羅: <strong style="color:${u.freeTarot >= _fl ? 'var(--danger)' : 'var(--text)'}">${u.freeTarot}</strong>
-        <button onclick="_editQuota(${idx},'free_tarot',${u.freeTarot})" style="padding:1px 5px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer">✏️</button>/<strong style="color:var(--warn)">${_fl}</strong></span>
-        <span>開鑰: <strong style="color:${u.freeOotk >= _fl ? 'var(--danger)' : 'var(--text)'}">${u.freeOotk}</strong>
-        <button onclick="_editQuota(${idx},'free_ootk',${u.freeOotk})" style="padding:1px 5px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer">✏️</button>/<strong style="color:var(--warn)">${_fl}</strong></span>
-        <span style="margin-left:auto">免費上限: <strong style="color:var(--warn)">${_fl}</strong>
-        <button onclick="_editQuota(${idx},'free_limit',${_fl})" style="padding:1px 5px;border-radius:4px;background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2);font-size:10px;cursor:pointer;margin-left:2px" title="三工具共用：改這個值 = 同時調整七維/塔羅/開鑰上限">✏️</button></span>
+      // v60-hotfix2：免費用戶三工具獨立上限（跟會員格式一樣：已用 ✏️/上限 ✏️）
+      //   後端欄位：free7dLimit / freeTarotLimit / freeOotkLimit（fallback 順序：工具專屬 → 統一 free_limit → 預設）
+      //   isCustom 為 true 時上限文字用 warn 色（表示 admin 已自訂），false 時用 dim 色（表示走預設）
+      const _f7dL = (typeof u.free7dLimit === 'number') ? u.free7dLimit : 1;
+      const _fTarotL = (typeof u.freeTarotLimit === 'number') ? u.freeTarotLimit : 1;
+      const _fOotkL = (typeof u.freeOotkLimit === 'number') ? u.freeOotkLimit : 1;
+      const _f7dLColor = u.free7dLimitIsCustom ? 'var(--warn)' : 'var(--text-dim)';
+      const _fTarotLColor = u.freeTarotLimitIsCustom ? 'var(--warn)' : 'var(--text-dim)';
+      const _fOotkLColor = u.freeOotkLimitIsCustom ? 'var(--warn)' : 'var(--text-dim)';
+      quotaRows = `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;color:var(--text-dim)" data-user-idx="${idx}">
+        <span>七維: <strong style="color:${u.free7d >= _f7dL ? 'var(--danger)' : 'var(--text)'}">${u.free7d}</strong><button onclick="_editQuota(${idx},'free_7d',${u.free7d})" style="padding:1px 5px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer;margin:0 1px">✏️</button>/<strong style="color:${_f7dLColor}">${_f7dL}</strong><button onclick="_editQuota(${idx},'free_7d_limit',${_f7dL})" style="padding:1px 5px;border-radius:4px;background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2);font-size:10px;cursor:pointer;margin-left:1px">✏️</button></span>
+        <span>塔羅: <strong style="color:${u.freeTarot >= _fTarotL ? 'var(--danger)' : 'var(--text)'}">${u.freeTarot}</strong><button onclick="_editQuota(${idx},'free_tarot',${u.freeTarot})" style="padding:1px 5px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer;margin:0 1px">✏️</button>/<strong style="color:${_fTarotLColor}">${_fTarotL}</strong><button onclick="_editQuota(${idx},'free_tarot_limit',${_fTarotL})" style="padding:1px 5px;border-radius:4px;background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2);font-size:10px;cursor:pointer;margin-left:1px">✏️</button></span>
+        <span>開鑰: <strong style="color:${u.freeOotk >= _fOotkL ? 'var(--danger)' : 'var(--text)'}">${u.freeOotk}</strong><button onclick="_editQuota(${idx},'free_ootk',${u.freeOotk})" style="padding:1px 5px;border-radius:4px;background:rgba(108,123,255,.1);color:var(--accent);border:1px solid rgba(108,123,255,.2);font-size:10px;cursor:pointer;margin:0 1px">✏️</button>/<strong style="color:${_fOotkLColor}">${_fOotkL}</strong><button onclick="_editQuota(${idx},'free_ootk_limit',${_fOotkL})" style="padding:1px 5px;border-radius:4px;background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2);font-size:10px;cursor:pointer;margin-left:1px">✏️</button></span>
         ${_fuCellHtml}
       </div>`;
     } else {
@@ -1898,9 +1898,10 @@ function renderUsersList(users) {
 function _editQuota(idx, quotaType, currentVal) {
   const u = _usersCache[idx];
   if (!u) return;
-  const labels = { free_7d: '七維度免費已用', free_tarot: '塔羅免費已用', free_ootk: '開鑰免費已用', free_limit: '免費上限', sub_daily: '今日塔羅/OOTK已用', '7d_month': '本月七維度已用', opus_month: '本月Opus已用', sub_daily_limit: '塔羅/OOTK每日上限', '7d_limit': '七維度每月上限', opus_limit: 'Opus每月上限', fu_per_result: '追問/筆（每筆解讀綁幾次免費追問）' };
+  const labels = { free_7d: '七維度免費已用', free_tarot: '塔羅免費已用', free_ootk: '開鑰免費已用', free_limit: '免費上限（三工具共用）', free_7d_limit: '七維度免費上限', free_tarot_limit: '塔羅免費上限', free_ootk_limit: '開鑰免費上限', sub_daily: '今日塔羅/OOTK已用', '7d_month': '本月七維度已用', opus_month: '本月Opus已用', sub_daily_limit: '塔羅/OOTK每日上限', '7d_limit': '七維度每月上限', opus_limit: 'Opus每月上限', fu_per_result: '追問/筆（每筆解讀綁幾次免費追問）' };
   // v47：上限型 key（設 0 = 該用戶完全鎖住），跟使用型（設 0 = 重置已用）不同
-  const _limitTypes = { free_limit:1, sub_daily_limit:1, '7d_limit':1, opus_limit:1, fu_per_result:1 };
+  // v60-hotfix2：加三個獨立工具上限 key
+  const _limitTypes = { free_limit:1, free_7d_limit:1, free_tarot_limit:1, free_ootk_limit:1, sub_daily_limit:1, '7d_limit':1, opus_limit:1, fu_per_result:1 };
   const _isLimitType = !!_limitTypes[quotaType];
   const _hint = _isLimitType
     ? '\n\n💡 上限型：設 0 = 該用戶完全停用此額度（不是重置）'
