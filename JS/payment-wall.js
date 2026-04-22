@@ -48,9 +48,22 @@
 
   // ═══ 2. 付款流程 ═══
 
+  // v60-hotfix6 Bug H1：防止用戶連點付費按鈕建立多筆訂單
+  //   原本無防護，快速連點會：第一次 fetch create-payment 還沒回，第二次又發，
+  //   localStorage._jy_pending_payment 被後面那筆覆寫，前端追的是 tradeNo2，
+  //   但用戶可能付的是 tradeNo1 → 前端查不到付款狀態 = 付了錢沒答案。
+  //   修法：加 module-level flag，fetch 期間拒絕第二次點擊。
+  var _jyPaymentInFlight = false;
+
   window._jyStartPayment = async function(mode, type) {
     mode = mode || 'full';
     type = type || 'subscription';
+    // v60-hotfix6：防連點
+    if (_jyPaymentInFlight) {
+      console.warn('[Payment] 已有付款建立中，忽略重複請求');
+      return;
+    }
+    _jyPaymentInFlight = true;
     // 清除所有相關 modal
     ['jy-pay-modal','jy-used-modal','tarot-used-modal'].forEach(function(id) {
       var el = document.getElementById(id); if (el) el.remove();
@@ -115,6 +128,9 @@
       console.error('[Payment]', err);
       loadModal.remove();
       alert('付款建立失敗：' + (err.message || '請稍後再試'));
+    } finally {
+      // v60-hotfix6 Bug H1：無論成功失敗都清除 in-flight 旗標
+      _jyPaymentInFlight = false;
     }
   };
 
