@@ -634,7 +634,38 @@
           }
         } catch(_) {}
       }
-      return _realFetch.call(window, url, opts);
+      // v60-hotfix7-h：若是真實 AI fetch（有 payload），把 response 複製出來檢查錯誤
+      var _isAiFetch = false;
+      try {
+        if (opts && opts.body && typeof opts.body === 'string') {
+          var _b = JSON.parse(opts.body);
+          _isAiFetch = !!(_b.payload && !_b.action);
+        }
+      } catch(_){}
+      var _respPromise = _realFetch.call(window, url, opts);
+      if (_isAiFetch) {
+        _respPromise.then(function(resp) {
+          if (!resp.ok) {
+            resp.clone().json().then(function(errData) {
+              try {
+                alert('[DEBUG-AI-FAIL] AI 請求被 worker 拒絕!\n\n' +
+                  'status: ' + resp.status + '\n' +
+                  'error: ' + (errData.error || '(無)') + '\n' +
+                  'code: ' + (errData.code || '(無)') + '\n\n' +
+                  '--- 送出的 body ---\n' +
+                  '有帶 paid_token: ' + (JSON.parse(opts.body).paid_token ? '✓ ' + JSON.parse(opts.body).paid_token.slice(0,20) : '❌ 空') + '\n' +
+                  '有帶 session_token: ' + (JSON.parse(opts.body).session_token ? '✓' : '❌ 空') +
+                  '\n\n' +
+                  '--- localStorage ---\n' +
+                  '_jy_paid_token: ' + (localStorage.getItem('_jy_paid_token') || '❌ 空') + '\n' +
+                  '_jy_session: ' + (localStorage.getItem('_jy_session') ? '✓' : '❌ 空') + '\n' +
+                  'window._JY_SESSION_TOKEN: ' + (window._JY_SESSION_TOKEN ? '✓' : '❌ 空'));
+              } catch(_){}
+            }).catch(function(){});
+          }
+        }).catch(function(){});
+      }
+      return _respPromise;
     };
 
     // AI 結果出來後清 token（單次＋訂閱都清，訂閱靠 sub:{userKey} 繼續放行）
