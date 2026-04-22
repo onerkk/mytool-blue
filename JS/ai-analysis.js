@@ -2,6 +2,45 @@
 // 七維度白話文轉換器
 // 把常見術語補成一般人看得懂的說法，不改動底層邏輯
 // ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// 【v52 定價 fallback】ui.js 定義中央 JY_PRICES；此處只做保險
+// 若 ui.js 先載入 JY_PRICES 已存在就不覆蓋；若還沒載入則補上
+// 務必與 worker.js 第 30-52 行常數保持一致
+// ═══════════════════════════════════════════════════════════════
+if (!window.JY_PRICES) {
+  window.JY_PRICES = {
+    SUB_STANDARD: 999, SUB_PREMIUM: 1999,
+    SINGLE_7D: 79, SINGLE_TAROT: 39, SINGLE_OOTK: 39,
+    FOLLOWUP: 29,
+    OPUS_7D: 169, OPUS_TAROT: 79, OPUS_OOTK: 79,
+    OPUS_7D_MEMBER: 99, OPUS_TAROT_MEMBER: 49, OPUS_OOTK_MEMBER: 49
+  };
+}
+if (!window._jyGetUserTier) {
+  window._jyGetUserTier = function(){
+    try {
+      if (window._jyUserTier === 'premium' || window._jyUserTier === 'standard') return window._jyUserTier;
+      var v = localStorage.getItem('_jy_user_tier');
+      if (v === 'premium' || v === 'standard') return v;
+    } catch(_){}
+    return null;
+  };
+}
+if (!window._jyIsPremium) {
+  window._jyIsPremium = function(){ return window._jyGetUserTier() === 'premium'; };
+}
+if (!window._jyOpusPriceFor) {
+  window._jyOpusPriceFor = function(mode){
+    var P = window.JY_PRICES;
+    var isPrem = window._jyIsPremium();
+    if (mode === 'full' || mode === '7d') return isPrem ? P.OPUS_7D_MEMBER : P.OPUS_7D;
+    if (mode === 'tarot' || mode === 'tarot_only') return isPrem ? P.OPUS_TAROT_MEMBER : P.OPUS_TAROT;
+    if (mode === 'ootk') return isPrem ? P.OPUS_OOTK_MEMBER : P.OPUS_OOTK;
+    return isPrem ? P.OPUS_7D_MEMBER : P.OPUS_7D;
+  };
+}
+
 window.__plainReplace = window.__plainReplace || function(input){
   var s = input==null ? '' : String(input);
   var rules = [
@@ -13929,7 +13968,7 @@ function _injectAIButton() {
       '<div style="font-size:1.2rem;margin-bottom:.5rem">🔒</div>' +
       '<div style="font-size:.9rem;color:var(--c-gold);font-weight:600;margin-bottom:.3rem">今日免費額度已用盡</div>' +
       '<div style="font-size:.72rem;color:var(--c-text-dim);opacity:.6;margin-bottom:1rem">三套工具各免費體驗 1 次</div>' +
-      '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🔮 開通會員（NT$999 起）</button>' +
+      '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🔮 開通會員（NT$' + window.JY_PRICES.SUB_STANDARD + ' 起）</button>' +
       '</div>' +
       // ★ 即使免費用完，仍顯示 Opus 付費入口
       _buildOpusUpsellHTML() +
@@ -13964,18 +14003,23 @@ function _injectAIButton() {
           '• 語氣像坐在你對面的人跟你說話' +
         '</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' +
-          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$99｜非會員 NT$169') +
+          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$' + window.JY_PRICES.OPUS_7D_MEMBER + '｜非會員 NT$' + window.JY_PRICES.OPUS_7D) +
         '</div>' +
       '</div>' +
     '</div>' +
     '<div id="ai-deep-result"></div>';
 }
 
-// ★ Opus 免費用完後的付費入口
+// ★ Opus 免費用完後的付費入口（價格依 tier 動態）
 function _buildOpusUpsellHTML() {
+  var _opusPrice = (typeof window._jyOpusPriceFor === 'function')
+    ? window._jyOpusPriceFor('full')
+    : window.JY_PRICES.OPUS_7D; // fallback 非會員價
+  var _isPrem = (typeof window._jyIsPremium === 'function') ? window._jyIsPremium() : false;
+  var _subText = _isPrem ? '最強推理引擎・會員加購優惠' : '最強推理引擎';
   return '<div style="text-align:center;padding:.8rem 1rem 1rem;border-top:1px solid rgba(147,51,234,.1);margin-top:.5rem">' +
-    '<button onclick="_handleOpusClick()" style="padding:.55rem 1.3rem;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.12),rgba(147,51,234,.04));color:#c084fc;font-size:.82rem;font-weight:600;border:1px solid rgba(147,51,234,.3);cursor:pointer;font-family:inherit">🔮 深度解析 NT$99</button>' +
-    '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">最強推理引擎・會員專屬</div>' +
+    '<button onclick="_handleOpusClick()" style="padding:.55rem 1.3rem;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.12),rgba(147,51,234,.04));color:#c084fc;font-size:.82rem;font-weight:600;border:1px solid rgba(147,51,234,.3);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + _opusPrice + '</button>' +
+    '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' + _subText + '</div>' +
   '</div>';
 }
 
@@ -14026,9 +14070,23 @@ function _showOpusPayModal(code, mode) {
   var existing = document.getElementById('jy-opus-pay-modal');
   if (existing) existing.remove();
   
-  var is7D = (mode === 'full');
-  var price = is7D ? 'NT$99' : 'NT$49';
   var payMode = (mode === 'tarot') ? 'tarot_only' : mode;
+  // ★ v52 修正：依用戶 tier 動態取價，避免顯示 99 卻實收 169 的付費欺騙
+  //   高級會員 → 加購優惠價 (7D=99, 塔羅/開鑰=49)
+  //   非會員／標準會員 → 單次價 (7D=169, 塔羅/開鑰=79)
+  var _opusPrice = (typeof window._jyOpusPriceFor === 'function')
+    ? window._jyOpusPriceFor(mode)
+    : ((mode === 'full') ? window.JY_PRICES.OPUS_7D
+       : (mode === 'ootk') ? window.JY_PRICES.OPUS_OOTK : window.JY_PRICES.OPUS_TAROT);
+  var _isPrem = (typeof window._jyIsPremium === 'function') ? window._jyIsPremium() : false;
+  var price = 'NT$' + _opusPrice;
+  // 非會員/標準會員 → 提示「升級高級會員享優惠加購」
+  var _opusHintMsg = '';
+  if (!_isPrem) {
+    var _memPrice = (mode === 'full') ? window.JY_PRICES.OPUS_7D_MEMBER
+                 : (mode === 'ootk') ? window.JY_PRICES.OPUS_OOTK_MEMBER : window.JY_PRICES.OPUS_TAROT_MEMBER;
+    _opusHintMsg = '<div style="font-size:.66rem;color:#a78bfa;margin-bottom:.6rem;line-height:1.5">💡 高級會員加購優惠 NT$' + _memPrice + '（每月還送 1 次免費）</div>';
+  }
   
   var monthlyMsg = (code === 'OPUS_MONTHLY_USED')
     ? '<div style="font-size:.72rem;color:#fbbf24;margin-bottom:.6rem">本月免費深度解析額度已用完</div>'
@@ -14042,6 +14100,7 @@ function _showOpusPayModal(code, mode) {
       '<div style="font-size:2.5rem;margin-bottom:.6rem">🔮</div>' +
       '<h3 style="color:#c084fc;font-size:1.1rem;margin-bottom:.2rem;font-family:var(--f-display,serif)">深度解析</h3>' +
       monthlyMsg +
+      _opusHintMsg +
       '<div style="text-align:left;padding:.6rem .7rem;border-radius:10px;background:rgba(147,51,234,.06);border:1px solid rgba(147,51,234,.12);margin-bottom:1rem">' +
         '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.7">' +
           '✦ 最強推理引擎，因果鏈深挖到底<br>' +
@@ -14052,7 +14111,7 @@ function _showOpusPayModal(code, mode) {
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="_jyStartPayment(\'' + payMode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.18),rgba(147,51,234,.06));color:#c084fc;font-size:.9rem;font-weight:700;border:1.5px solid rgba(147,51,234,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(147,51,234,.12)">🔮 單次深度解析 ' + price + '</button>' +
-        '<button onclick="_jyStartPayment(\'' + payMode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(212,175,55,.25);cursor:pointer;font-family:inherit">🌙 查看會員方案（NT$999／NT$1,999）</button>' +
+        '<button onclick="_jyStartPayment(\'' + payMode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(212,175,55,.25);cursor:pointer;font-family:inherit">🌙 查看會員方案（NT$' + window.JY_PRICES.SUB_STANDARD + '／NT$' + window.JY_PRICES.SUB_PREMIUM + '）</button>' +
         '<button onclick="document.getElementById(\'jy-opus-pay-modal\').remove()" style="width:200px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.1rem">返回</button>' +
       '</div>' +
     '</div>';
@@ -15139,6 +15198,24 @@ function _buildPayload() {
       L.push('Dasha主星：' + _s(j.currentMD.lord) + (j.currentMD.zh ? '（'+j.currentMD.zh+'）' : '') + (j.currentAD ? '，副運：'+_s(j.currentAD.zh) : '') + (j.currentPD ? '，小運：'+_s(j.currentPD.zh) : ''));
     }
     if (j.yogas && j.yogas.length) L.push('Yoga格局：' + j.yogas.slice(0,6).map(function(y){return y.zh?y.zh.substring(0,60):_s(y.name);}).join('。'));
+    // v52: Kala Sarpa / Mangal Dosha / Badhaka 三個新判定欄位
+    if (j.kalaSarpa) {
+      if (j.kalaSarpa.active) {
+        L.push('Kala Sarpa：' + _s(j.kalaSarpa.type) + '(' + _s(j.kalaSarpa.variant) + '=' + _s(j.kalaSarpa.variantZh) + ')，Rahu第' + j.kalaSarpa.rahuHouse + '宮。★Raman觀點：對個人盤影響有限，需檢查是否被吉Yoga抵消');
+      } else if (j.kalaSarpa.reason) {
+        L.push('Kala Sarpa：不成立(' + _s(j.kalaSarpa.reason) + ')');
+      }
+    }
+    if (j.mangalDosha) {
+      if (j.mangalDosha.active) {
+        L.push('Mangal Dosha：' + _s(j.mangalDosha.strengthLabel) + '，觸發點=' + j.mangalDosha.hits.map(function(h){return h.refZh+'第'+h.house+'宮';}).join('、'));
+      } else if (j.mangalDosha.technicallyPresent) {
+        L.push('Mangal Dosha：技術成立但已解消(' + (j.mangalDosha.cancellations||[]).join('；') + ')→不做凶論');
+      }
+    }
+    if (j.badhaka) {
+      L.push('Badhaka：' + _s(j.badhaka.signTypeZh) + '上升→第' + j.badhaka.badhakaHouse + '宮主=' + _s(j.badhaka.badhakaLord) + '落第' + j.badhaka.badhakaLordHouse + '宮，危險度=' + _s(j.badhaka.dangerLevel) + (j.badhaka.karmikNote ? '｜' + _s(j.badhaka.karmikNote) : ''));
+    }
     var sb = j.shadbala_v2 || j.shadbala;
     if (sb) {
       var sbL = [];
@@ -18519,6 +18596,14 @@ renderTarot = function(){
               p.dims.meihua.timing = mhAnalysis.timing.label + '（' + (mhAnalysis.timing.range || '') + '）';
               if (mhAnalysis.timing.note) p.dims.meihua.timingNote = mhAnalysis.timing.note;
             }
+            // v55: 三法交集精確月份（AI 不自算，直接引用）
+            if (mhAnalysis.timingTriple) {
+              p.dims.meihua.timingTriple = mhAnalysis.timingTriple;
+            }
+            // v56: 十應訣之日應/刻應/方應（前端已算，AI 不自推）
+            if (mhAnalysis.tenAppliances) {
+              p.dims.meihua.tenAppliances = mhAnalysis.tenAppliances;
+            }
             if (mhAnalysis.risk) p.dims.meihua.risk = mhAnalysis.risk;
             if (mhAnalysis.strategy) p.dims.meihua.actionAdvice = mhAnalysis.strategy.slice(0, 3);
             if (mhAnalysis.structure) {
@@ -18537,6 +18622,19 @@ renderTarot = function(){
             p.dims.meihua = p.dims.meihua || {};
             if (mhRaw.ty && mhRaw.ty.r) p.dims.meihua.tiYong = mhRaw.ty.r + (mhRaw.ty.f ? '（' + mhRaw.ty.f + '）' : '');
             if (mhRaw.dong != null) p.dims.meihua.dongYao = '第' + mhRaw.dong + '爻';
+            // v56: anchor 需要的硬事實（本卦/變卦/體用卦名+五行）
+            if (mhRaw.ben && mhRaw.ben.n) p.dims.meihua.benName = mhRaw.ben.n;
+            if (mhRaw.bian && mhRaw.bian.n) p.dims.meihua.bianName = mhRaw.bian.n;
+            if (mhRaw.tiG) {
+              var _tiName = mhRaw.tiG.name || mhRaw.tiG.n || '';
+              var _tiEl = mhRaw.tiG.el || '';
+              if (_tiName) p.dims.meihua.tiGName = _tiName + (_tiEl ? '（五行=' + _tiEl + '）' : '');
+            }
+            if (mhRaw.yoG) {
+              var _yoName = mhRaw.yoG.name || mhRaw.yoG.n || '';
+              var _yoEl = mhRaw.yoG.el || '';
+              if (_yoName) p.dims.meihua.yoGName = _yoName + (_yoEl ? '（五行=' + _yoEl + '）' : '');
+            }
             // 旺衰從 mhAnalysis.wangShuai 取（analyzeMeihua 回傳的）
             if (mhAnalysis && mhAnalysis.wangShuai) {
               if (mhAnalysis.wangShuai.ti && mhAnalysis.wangShuai.ti.level) p.dims.meihua.tiStrength = mhAnalysis.wangShuai.ti.level;
@@ -18802,6 +18900,31 @@ renderTarot = function(){
           // 牌陣類型
           if (_ta.spreadDef && _ta.spreadDef.zh) p.dims.tarot.spreadType = _ta.spreadDef.zh;
           else if (_ta.spreadType) p.dims.tarot.spreadType = _ta.spreadType;
+
+          // ═══ v52 Phase 2：七維度塔羅深度同步——和塔羅快讀同規模 ═══
+          // 原本七維度只送 5 個扁平欄位，現補齊 v37+v52 所有結構化資料
+          // 呼叫塔羅快讀的 payload 組裝函式抽取深度欄位
+          try {
+            if (typeof _buildTarotOnlyPayload === 'function') {
+              var _tarotFullPayload = _buildTarotOnlyPayload();
+              if (_tarotFullPayload && _tarotFullPayload.tarotData) {
+                var _td = _tarotFullPayload.tarotData;
+                // 傳承塔羅快讀算好的結構化資料
+                if (_td.opposingPairs && _td.opposingPairs.length) p.dims.tarot.opposingPairs = _td.opposingPairs;
+                if (_td.storyArc) p.dims.tarot.storyArc = _td.storyArc;
+                if (_td.numberPatterns && _td.numberPatterns.length) p.dims.tarot.numberPatterns = _td.numberPatterns;
+                if (_td.courtPeople && _td.courtPeople.length) p.dims.tarot.courtPeople = _td.courtPeople;
+                if (_td.tensions && _td.tensions.length) p.dims.tarot.tensions = _td.tensions;
+                if (_td.majorWeight) p.dims.tarot.majorWeight = _td.majorWeight;
+                if (_td.elementalDignity) p.dims.tarot.elementalDignity = _td.elementalDignity;
+                if (_td.timeConclusion) p.dims.tarot.timeConclusion = _td.timeConclusion;
+                if (_td.combos) p.dims.tarot.combos = _td.combos;
+                if (_td.courtElements) p.dims.tarot.courtElements = _td.courtElements;
+                // Signifier 代表牌（v52 新增）
+                if (_td.signifier) p.dims.tarot.signifier = _td.signifier;
+              }
+            }
+          } catch(_tdErr) { console.warn('[buildPayload v2] tarot deep sync:', _tdErr); }
         } catch(e) { console.warn('[buildPayload v2] tarot:', e); }
       }
 
@@ -18809,6 +18932,37 @@ renderTarot = function(){
       if (typeof S !== 'undefined' && S.ziwei && S.ziwei.palaces) {
         p.dims.ziwei = p.dims.ziwei || {};
         try {
+          // ★ v51：補齊紫微核心先天欄位（命主/身主/五行局/生年干支/來因宮）
+          // 這些欄位 ziwei.js 早就算好，但之前 payload 沒送，AI 缺少最基礎的紫微判讀資料
+          if (S.ziwei.mingZhu) p.dims.ziwei.mingZhu = S.ziwei.mingZhu;
+          if (S.ziwei.shenZhu) p.dims.ziwei.shenZhu = S.ziwei.shenZhu;
+          if (S.ziwei.wuxingJu) {
+            // wuxingJu 是數字（2/3/4/5/6），補上標籤讓 AI 直接讀懂
+            var _juLabels = {2:'水二局',3:'木三局',4:'金四局',5:'土五局',6:'火六局'};
+            var _juStartAge = {2:'2歲起運',3:'3歲起運',4:'4歲起運',5:'5歲起運',6:'6歲起運'};
+            p.dims.ziwei.wuxingJu = (_juLabels[S.ziwei.wuxingJu] || ('局數'+S.ziwei.wuxingJu))
+              + '（' + (_juStartAge[S.ziwei.wuxingJu] || '起運年齡=局數') + '）';
+          }
+          if (S.ziwei.yGan && S.ziwei.yZhi) p.dims.ziwei.birthGanZhi = S.ziwei.yGan + S.ziwei.yZhi + '年';
+          // 來因宮=生年化祿所落之宮（飛星派核心，代表此生福氣源頭）
+          try {
+            var _palNames14 = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','福德宮','父母宮'];
+            var _laiyinIdx = -1;
+            var _laiyinStar = '';
+            S.ziwei.palaces.forEach(function(pal, idx) {
+              if (!pal || !pal.stars) return;
+              pal.stars.forEach(function(star) {
+                if (star.hua === '化祿' && _laiyinIdx === -1) {
+                  _laiyinIdx = idx;
+                  _laiyinStar = star.name;
+                }
+              });
+            });
+            if (_laiyinIdx >= 0) {
+              p.dims.ziwei.laiyinGong = _palNames14[_laiyinIdx] + '（' + _laiyinStar + '化祿=此生福氣天賦源頭）';
+            }
+          } catch(_lyE) {}
+
           var huaStars = [];
           S.ziwei.palaces.forEach(function(pal, idx) {
             if (!pal || !pal.stars) return;
@@ -19344,6 +19498,26 @@ renderTarot = function(){
             p.dims.vedic.yogas = jy.yogas.slice(0, 5).map(function(y) {
               return (y.nameZh || y.name || '') + (y.effect ? '：' + y.effect : '');
             }).join('；');
+          }
+          // v52: Kala Sarpa / Mangal Dosha / Badhaka 三個新判定 → p.dims.vedic
+          if (jy.kalaSarpa) {
+            if (jy.kalaSarpa.active) {
+              p.dims.vedic.kalaSarpa = (jy.kalaSarpa.type || '') + '(' + (jy.kalaSarpa.variantZh || jy.kalaSarpa.variant || '') + ')，Rahu第' + jy.kalaSarpa.rahuHouse + '宮';
+            } else if (jy.kalaSarpa.reason) {
+              p.dims.vedic.kalaSarpa = '不成立（' + jy.kalaSarpa.reason + '）';
+            }
+          }
+          if (jy.mangalDosha) {
+            if (jy.mangalDosha.active) {
+              p.dims.vedic.mangalDosha = jy.mangalDosha.strengthLabel + '，觸發=' + (jy.mangalDosha.hits||[]).map(function(h){return h.refZh+'第'+h.house+'宮';}).join('、');
+            } else if (jy.mangalDosha.technicallyPresent) {
+              p.dims.vedic.mangalDosha = '技術成立已解消（' + (jy.mangalDosha.cancellations||[]).join('；') + '）';
+            } else {
+              p.dims.vedic.mangalDosha = '無';
+            }
+          }
+          if (jy.badhaka) {
+            p.dims.vedic.badhaka = (jy.badhaka.signTypeZh || '') + '上升→第' + jy.badhaka.badhakaHouse + '宮主=' + (jy.badhaka.badhakaLord || '') + '落第' + jy.badhaka.badhakaLordHouse + '宮(危險度=' + (jy.badhaka.dangerLevel || '') + ')' + (jy.badhaka.karmikNote ? '｜業力性障礙' : '');
           }
           // Ashtakavarga 總分
           if (jy.ashtakavarga && jy.ashtakavarga.total != null) {
@@ -20662,15 +20836,15 @@ renderTarot = function(){
       if (err.status === 429 && !admin) {
         try{ var __subE2 = parseInt(localStorage.getItem('_jy_sub_expires')||'0'); if (__subE2 <= Date.now()) _aiMarkUsed(); }catch(_e){}
         var _errCode = err.code || '';
-        var _errIcon = '🌙', _errTitle = '七維度免費體驗已用完', _errDesc = '開通會員或單次購買<br>標準會員 NT$999／高級會員 NT$1,999';
-        if (_errCode === '7D_MONTHLY_USED') { _errIcon = '📊'; _errTitle = '本月七維度配額已用完'; _errDesc = '高級會員每月 5 次・標準會員每月 2 次<br>或單次購買 NT$79'; }
-        else if (_errCode === 'SUB_DAILY_USED') { _errIcon = '⏰'; _errTitle = '今日配額已用完'; _errDesc = '明天再來，或單次購買 NT$69'; }
+        var _errIcon = '🌙', _errTitle = '七維度免費體驗已用完', _errDesc = '開通會員或單次購買<br>標準會員 NT$' + window.JY_PRICES.SUB_STANDARD + '／高級會員 NT$' + window.JY_PRICES.SUB_PREMIUM + '';
+        if (_errCode === '7D_MONTHLY_USED') { _errIcon = '📊'; _errTitle = '本月七維度配額已用完'; _errDesc = '高級會員每月 5 次・標準會員每月 2 次<br>或單次購買 NT$' + window.JY_PRICES.SINGLE_7D; }
+        else if (_errCode === 'SUB_DAILY_USED') { _errIcon = '⏰'; _errTitle = '今日配額已用完'; _errDesc = '明天再來，或單次購買 NT$' + window.JY_PRICES.SINGLE_7D; }
         else if (_errCode === 'PHOTO_MEMBER_ONLY') { _errIcon = '📷'; _errTitle = '照片分析是會員專屬功能'; _errDesc = '開通會員即可上傳面相＋手相＋水晶照片<br>讓七維度分析更深入精準'; }
         resultDiv.innerHTML = '<div style="text-align:center;padding:1.2rem">' +
           '<div style="font-size:1.4rem;margin-bottom:.5rem">' + _errIcon + '</div>' +
           '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">' + _errTitle + '</div>' +
           '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">' + _errDesc + '</div>' +
-          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員（NT$999 起）</button>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員（NT$' + window.JY_PRICES.SUB_STANDARD + ' 起）</button>' +
           '</div>';
       } else {
         // ★ v51：區分 SSE 真實錯誤訊息（非 admin 用戶也要看到具體原因）
@@ -21969,6 +22143,110 @@ function _buildTarotOnlyPayload() {
     courtPeople.push(person);
   });
 
+  // ═══ v52：Signifier（代表牌）軌跡分析 ═══
+  // 官方共識（Llewellyn/Labyrinthos/TetraTarot/Golden Dawn 傳統）：
+  // 每個星座對應一張宮廷牌作為命主「代表牌」，如果該牌出現在牌陣中，
+  // 這就是命主本人在當下能量結構中的位置——是塔羅讀得精準的關鍵訊號。
+  //
+  // GD 12 星座 → 宮廷牌對照（Aries→Queen of Wands 等）：
+  // 流派依據：https://www.llewellyn.com/blog/2022/05/five-ways-to-choose-a-significator/
+  //          https://www.tetratarot.com/Learn/Article/How-to-Choose-a-Tarot-Significator
+  var _signifier = null;
+  try {
+    // 1. 從 birth 推出太陽星座
+    var _sunSign = '';
+    if (birthText) {
+      var _bdMatch = String(birthText).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (_bdMatch) {
+        var _bMonth = parseInt(_bdMatch[2], 10);
+        var _bDay = parseInt(_bdMatch[3], 10);
+        // 星座邊界（粗略版——太陽在每個星座最多 ±1 日，用戶牌陣解讀不需精到分）
+        var _zodiacTable = [
+          { sign: 'capricorn', zh: '摩羯', start: [12, 22], end: [1, 19] },
+          { sign: 'aquarius', zh: '水瓶', start: [1, 20], end: [2, 18] },
+          { sign: 'pisces', zh: '雙魚', start: [2, 19], end: [3, 20] },
+          { sign: 'aries', zh: '白羊', start: [3, 21], end: [4, 19] },
+          { sign: 'taurus', zh: '金牛', start: [4, 20], end: [5, 20] },
+          { sign: 'gemini', zh: '雙子', start: [5, 21], end: [6, 20] },
+          { sign: 'cancer', zh: '巨蟹', start: [6, 21], end: [7, 22] },
+          { sign: 'leo', zh: '獅子', start: [7, 23], end: [8, 22] },
+          { sign: 'virgo', zh: '處女', start: [8, 23], end: [9, 22] },
+          { sign: 'libra', zh: '天秤', start: [9, 23], end: [10, 22] },
+          { sign: 'scorpio', zh: '天蠍', start: [10, 23], end: [11, 21] },
+          { sign: 'sagittarius', zh: '射手', start: [11, 22], end: [12, 21] }
+        ];
+        var _sunSignZh = '';
+        for (var _zi = 0; _zi < _zodiacTable.length; _zi++) {
+          var _zz = _zodiacTable[_zi];
+          if (_zz.sign === 'capricorn') {
+            if ((_bMonth === 12 && _bDay >= 22) || (_bMonth === 1 && _bDay <= 19)) {
+              _sunSign = _zz.sign; _sunSignZh = _zz.zh; break;
+            }
+          } else {
+            if ((_bMonth === _zz.start[0] && _bDay >= _zz.start[1]) ||
+                (_bMonth === _zz.end[0] && _bDay <= _zz.end[1])) {
+              _sunSign = _zz.sign; _sunSignZh = _zz.zh; break;
+            }
+          }
+        }
+
+        if (_sunSign) {
+          // 2. 星座 → GD 宮廷牌對照
+          var _zodiacToCourt = {
+            aries:       { court: '權杖皇后', suit: 'wand',  rank: 'queen' },
+            taurus:      { court: '錢幣騎士', suit: 'pent',  rank: 'knight' },
+            gemini:      { court: '寶劍國王', suit: 'sword', rank: 'king' },
+            cancer:      { court: '聖杯皇后', suit: 'cup',   rank: 'queen' },
+            leo:         { court: '權杖騎士', suit: 'wand',  rank: 'knight' },
+            virgo:       { court: '錢幣國王', suit: 'pent',  rank: 'king' },
+            libra:       { court: '寶劍皇后', suit: 'sword', rank: 'queen' },
+            scorpio:     { court: '聖杯騎士', suit: 'cup',   rank: 'knight' },
+            sagittarius: { court: '權杖國王', suit: 'wand',  rank: 'king' },
+            capricorn:   { court: '錢幣皇后', suit: 'pent',  rank: 'queen' },
+            aquarius:    { court: '寶劍騎士', suit: 'sword', rank: 'knight' },
+            pisces:      { court: '聖杯國王', suit: 'cup',   rank: 'king' }
+          };
+          var _sigInfo = _zodiacToCourt[_sunSign];
+
+          if (_sigInfo) {
+            // 3. 掃牌陣找代表牌是否出現——用名字包含匹配（塔羅牌庫中文名可能有「的」、「之」等變體）
+            var _sigIndex = -1;
+            var _sigNameNormalized = _sigInfo.court.replace(/[的之]/g, '');
+            for (var _ci = 0; _ci < drawn.length; _ci++) {
+              var _ccName = String(drawn[_ci].n || drawn[_ci].name || '').replace(/[的之]/g, '');
+              if (_ccName === _sigNameNormalized ||
+                  _ccName.indexOf(_sigNameNormalized) >= 0 ||
+                  _sigNameNormalized.indexOf(_ccName) >= 0) {
+                _sigIndex = _ci;
+                break;
+              }
+            }
+
+            _signifier = {
+              sunSign: _sunSignZh,
+              signifierCard: _sigInfo.court,
+              found: _sigIndex >= 0
+            };
+            if (_sigIndex >= 0) {
+              var _foundCard = drawn[_sigIndex];
+              var _foundPos = cards[_sigIndex] ? cards[_sigIndex].position : '';
+              var _foundRole = cards[_sigIndex] ? cards[_sigIndex].role : '';
+              _signifier.position = _foundPos;
+              _signifier.positionIndex = _sigIndex;
+              _signifier.role = _foundRole;
+              _signifier.isUp = _foundCard.isUp === true;
+              // 4. 根據出現位置產生 AI 可用的語意訊號
+              _signifier.insight = '命主本人（' + _sunSignZh + '座→' + _sigInfo.court + '）出現在位置「' + (_foundPos || '第' + (_sigIndex + 1) + '位') + '」(' + _foundRole + ')' +
+                (_foundCard.isUp === true ? '，正位——這就是命主在這件事裡的真實位置／心態' : '，逆位——命主在這題能量被壓制/轉向內化，看這張牌的具體逆位訊號定義命主現狀');
+            } else {
+              _signifier.insight = '命主本人（' + _sunSignZh + '座→' + _sigInfo.court + '）未出現在牌陣——這題的主軸不是命主自身狀態，而是外在事件或他人介入';
+            }
+          }
+        }
+      }
+    }
+  } catch(_sigErr) { _signifier = null; }
+
   // ── 組裝 ──
   var f = S.form || {};
   var genderText = f.gender === 'male' ? '男' : (f.gender === 'female' ? '女' : '');
@@ -22009,7 +22287,8 @@ function _buildTarotOnlyPayload() {
       majorWeight: majorWeight,
       courtPeople: courtPeople,
       opposingPairs: opposingPairs,
-      storyArc: storyArc
+      storyArc: storyArc,
+      signifier: _signifier
     }
   };
   if (_cc.catalog.length) {
@@ -22050,7 +22329,7 @@ async function _triggerTarotAI() {
           '</button>' +
         '</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5">' +
-          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$49｜非會員 NT$79') +
+          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$' + window.JY_PRICES.OPUS_TAROT_MEMBER + '｜非會員 NT$' + window.JY_PRICES.OPUS_TAROT) +
         '</div>' +
       '</div>';
     return;
@@ -22241,6 +22520,20 @@ async function _triggerTarotAI() {
                 }
               }
             } catch(_tke4){}
+          } else if (evtType === 'audit_start' && evtData) {
+            // v54：Best-of-N 開始核查
+            try {
+              var _auStart = JSON.parse(evtData);
+              window._jyAuditStart = _auStart && _auStart.message;
+              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge({ loading: true, message: _auStart.message }); } catch(_){}
+            } catch(_){}
+          } else if (evtType === 'audit' && evtData) {
+            // v54：Best-of-N 核查結果
+            try {
+              var _auRes = JSON.parse(evtData);
+              window._jyAuditResult = _auRes;
+              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge(_auRes); } catch(_){}
+            } catch(_){}
           } else if (evtType === 'error' && evtData) {
             try { var err = JSON.parse(evtData); throw new Error(err.error || '伺服器錯誤'); } catch(e){ throw e; }
           }
@@ -22479,15 +22772,20 @@ async function _triggerTarotAI() {
     console.error('[TarotAI]', err);
     if (err.status === 429 || (err.code && (err.code.indexOf('RATE') >= 0 || err.code.indexOf('FREE') >= 0 || err.code.indexOf('DAILY') >= 0 || err.code.indexOf('USED') >= 0))) {
       var _tErrCode = err.code || '';
-      var _tIcon = '🃏', _tTitle = '塔羅免費體驗已用完', _tDesc = '開通會員或單次購買<br>標準會員 NT$999／高級會員 NT$1,999';
-      if (_tErrCode === 'SUB_DAILY_USED') { _tIcon = '⏰'; _tTitle = '今日塔羅/開鑰配額已用完'; _tDesc = '明天再來，或單次購買 NT$29'; }
+      var _tIcon = '🃏', _tTitle = '塔羅免費體驗已用完', _tDesc = '開通會員或單次購買<br>標準會員 NT$' + window.JY_PRICES.SUB_STANDARD + '／高級會員 NT$' + window.JY_PRICES.SUB_PREMIUM + '';
+      if (_tErrCode === 'SUB_DAILY_USED') {
+        _tIcon = '⏰'; _tTitle = '今日塔羅/開鑰配額已用完';
+        // 依當前工具取單次價（塔羅/開鑰都是 SINGLE_TAROT=SINGLE_OOTK=39）
+        var _tSinglePrice = (window._jyActiveResultMode === 'ootk') ? window.JY_PRICES.SINGLE_OOTK : window.JY_PRICES.SINGLE_TAROT;
+        _tDesc = '明天再來，或單次購買 NT$' + _tSinglePrice;
+      }
       var _tMode = (window._jyActiveResultMode === 'ootk') ? 'ootk' : 'tarot_only';
       resultDiv.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
         '<div style="font-size:2rem;margin-bottom:.6rem;opacity:.6">' + _tIcon + '</div>' +
         '<div style="font-size:.95rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">' + _tTitle + '</div>' +
         '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">' + _tDesc + '</div>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'' + _tMode + '\')" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員（NT$999 起）</button>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'' + _tMode + '\')" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 開通會員（NT$' + window.JY_PRICES.SUB_STANDARD + ' 起）</button>' +
         '</div>' +
       '</div>';
     } else {
@@ -22897,7 +23195,7 @@ function _showTrialBanner() {
     
     banner.innerHTML =
       '<div style="font-size:.75rem;color:rgba(212,175,55,.8);font-weight:600;margin-bottom:.2rem">🌙 ' + usesText + '</div>' +
-      '<div style="font-size:.68rem;color:var(--c-text-dim);line-height:1.6">標準會員 NT$999/月 → 塔羅＋開鑰每日各 1 次・七維度每月 2 次<br>高級會員 NT$1,999/月 → 塔羅＋開鑰每日各 2 次・七維度每月 5 次・深度解析每月 1 次免費・📷照片分析</div>';
+      '<div style="font-size:.68rem;color:var(--c-text-dim);line-height:1.6">標準會員 NT$' + window.JY_PRICES.SUB_STANDARD + '/月 → 塔羅＋開鑰每日各 1 次・七維度每月 2 次<br>高級會員 NT$' + window.JY_PRICES.SUB_PREMIUM + '/月 → 塔羅＋開鑰每日各 2 次・七維度每月 5 次・深度解析每月 1 次免費・📷照片分析</div>';
     
     var targets = ['tarot-followup-area', 'jy-closing-full', 'jy-closing-tarot', 'jy-closing-ootk', 'result-area'];
     for (var i = 0; i < targets.length; i++) {
@@ -23103,14 +23401,14 @@ async function _triggerTarotFollowUp() {
   // ★ v46：取出這筆解讀的 resultId（DOM data-result-id 優先，localStorage 備援）
   var _resultId = _jyGetResultId(sourceMode);
 
-  // ── 付費牆 UI（NT$19 追問單次）──
+  // ── 付費牆 UI（追問單次 NT$' + JY_PRICES.FOLLOWUP）──
   function _showFollowUpPaywall() {
     fuArea.innerHTML =
       '<div style="text-align:center;padding:1.2rem 1rem">' +
         '<div style="font-size:1.6rem;margin-bottom:.4rem">💫</div>' +
         '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.35rem">這筆解讀的免費追問已用完</div>' +
-        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">每筆解讀綁 1 次免費追問<br>第 2 次起每次 NT$19</div>' +
-        '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'' + sourceMode + '\',\'followup_single\')" style="padding:.6rem 1.5rem;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(147,51,234,.08));border:1.5px solid rgba(139,92,246,.45);color:#c084fc;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit">💎 追問單次 NT$19</button>' +
+        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">每筆解讀附贈免費追問額度（已用完）<br>追問單次每次 NT$' + window.JY_PRICES.FOLLOWUP + '</div>' +
+        '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'' + sourceMode + '\',\'followup_single\')" style="padding:.6rem 1.5rem;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(147,51,234,.08));border:1.5px solid rgba(139,92,246,.45);color:#c084fc;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit">💎 追問單次 NT$' + window.JY_PRICES.FOLLOWUP + '</button>' +
       '</div>';
   }
 
@@ -23120,7 +23418,7 @@ async function _triggerTarotFollowUp() {
       '<div style="text-align:center;padding:1.2rem 1rem">' +
         '<div style="font-size:1.6rem;margin-bottom:.4rem">🔐</div>' +
         '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.35rem">追問需要登入</div>' +
-        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">登入 Google 帳號後即可追問<br>每筆解讀綁 1 次免費追問</div>' +
+        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">登入 Google 帳號後即可追問<br>每筆解讀附贈免費追問額度</div>' +
         '<button onclick="if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin()" style="padding:.6rem 1.3rem;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));border:1.5px solid rgba(212,175,55,.4);color:var(--c-gold);font-size:.86rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Google 登入</button>' +
       '</div>';
   }
@@ -23418,6 +23716,20 @@ async function _triggerTarotFollowUp() {
                 }
               }
             } catch(_tke5){}
+          } else if (evtType === 'audit_start' && evtData) {
+            // v54：Best-of-N 開始核查（七維度追問也支援）
+            try {
+              var _auStart2 = JSON.parse(evtData);
+              window._jyAuditStart = _auStart2 && _auStart2.message;
+              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge({ loading: true, message: _auStart2.message }); } catch(_){}
+            } catch(_){}
+          } else if (evtType === 'audit' && evtData) {
+            // v54：Best-of-N 核查結果
+            try {
+              var _auRes2 = JSON.parse(evtData);
+              window._jyAuditResult = _auRes2;
+              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge(_auRes2); } catch(_){}
+            } catch(_){}
           } else if (evtType === 'error' && evtData) {
             // ★ v51：捕 Worker 端真實錯誤（對齊塔羅首輪 22207-22209）
             //   Worker aiProcess catch 區會 sendSSE('error', { error: err.message })。
@@ -23912,7 +24224,27 @@ function _buildOOTKPayload() {
         recurringDetail: recurringDetail,
         pileElement: cross.pileElement || '',
         elementFlow: cross.elementFlow || null,
-        layerAlignment: layerAlignment
+        layerAlignment: layerAlignment,
+        // ═══ v52：補送 tarot_upgrade.js 2100-2103 算好但原本漏傳的 4 個進階欄位 ═══
+        // worker 的 buildOotkUserMessage 10764-10775 有讀，但原本前端沒送 → 永遠 undefined
+        crossPairCards: cross.crossPairCards || [],
+        elementEnvironment: cross.elementEnvironment || '',
+        elementShift: cross.elementShift || '',
+        keyCardNames: cross.keyCardNames || [],
+        // ═══ v55：OOTK 正統 Book T 深度運算（Source of Nile/Triad 強度/Narrative Pairs/Abandon）═══
+        unaspectedCards: cross.unaspectedCards || null,
+        strongUnaspected: cross.strongUnaspected || [],
+        triadStrengths: cross.triadStrengths || null,
+        strongCards: cross.strongCards || [],
+        weakCards: cross.weakCards || [],
+        abandonScore: cross.abandonScore || 0,
+        abandonReasons: cross.abandonReasons || [],
+        abandonSuggested: cross.abandonSuggested === true,
+        narrativePairs: cross.narrativePairs || null,
+        // ═══ v55+：Directional Dignity（宮廷牌面向互動，人物關係精度升級）═══
+        directionalFindings: cross.directionalFindings || null,
+        keyDirectionalInteractions: cross.keyDirectionalInteractions || [],
+        significatorDirectional: cross.significatorDirectional || null
       },
       numberPatterns: ootk_numberPatterns,
       majorWeight: ootk_majorWeight,
@@ -24097,6 +24429,132 @@ function _renderOOTKResult(container, r, admin) {
     });
     html += '</div></details>';
   }
+
+  // ═══ v55：OOTK 正統 Book T 深度運算展示（收合）═══
+  try {
+    var _v55Cross = (window._ootkResults && window._ootkResults.crossAnalysis) ? window._ootkResults.crossAnalysis : null;
+    if (_v55Cross) {
+      var hasV55 = (_v55Cross.strongUnaspected && _v55Cross.strongUnaspected.length) ||
+                   (_v55Cross.strongCards && _v55Cross.strongCards.length) ||
+                   (_v55Cross.weakCards && _v55Cross.weakCards.length) ||
+                   (_v55Cross.abandonSuggested === true) ||
+                   (_v55Cross.narrativePairs && Object.keys(_v55Cross.narrativePairs).length);
+      if (hasV55) {
+        html += '<details style="margin-bottom:.8rem;border:1px solid rgba(217,151,56,.18);border-radius:12px;overflow:hidden">';
+        html += '<summary style="padding:.7rem .9rem;font-size:.82rem;color:rgba(217,151,56,.9);cursor:pointer;user-select:none;background:linear-gradient(135deg,rgba(217,151,56,.05),rgba(217,151,56,.02));font-weight:600">';
+        html += '📐 Book T 深度運算<span style="font-size:.7rem;color:var(--c-text-muted);margin-left:.4rem">Golden Dawn 正統技巧——點擊展開</span>';
+        html += '</summary>';
+        html += '<div style="padding:.7rem .8rem;font-size:.78rem;line-height:1.7;color:var(--c-text)">';
+
+        // Abandon 警告（最優先顯示）
+        if (_v55Cross.abandonSuggested === true) {
+          html += '<div style="margin-bottom:.7rem;padding:.5rem .7rem;border-radius:8px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.06)">';
+          html += '<div style="font-weight:700;color:rgba(239,68,68,.95);margin-bottom:.3rem">⚠ 訊號不足（Abandon Score ' + (_v55Cross.abandonScore || 0) + '/3）</div>';
+          html += '<div style="font-size:.74rem;color:var(--c-text-dim)">Book T 正統規則判定這次盤面訊號不夠——靜月會誠實告訴你，而不是硬湊答案。</div>';
+          if (_v55Cross.abandonReasons && _v55Cross.abandonReasons.length) {
+            html += '<ul style="margin:.4rem 0 0 1.2rem;padding:0;font-size:.73rem;color:var(--c-text-dim)">';
+            _v55Cross.abandonReasons.forEach(function(rr) { html += '<li>' + _esc(rr) + '</li>'; });
+            html += '</ul>';
+          }
+          html += '</div>';
+        }
+
+        // 隱藏推力（Source of the Nile）
+        if (_v55Cross.strongUnaspected && _v55Cross.strongUnaspected.length) {
+          html += '<div style="margin-bottom:.7rem">';
+          html += '<div style="font-weight:700;color:rgba(168,85,247,.9);margin-bottom:.25rem">🌊 Source of the Nile（隱藏推力）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.3rem">活躍堆裡沒被計數/配對觸及的牌——看不見但在推動一切（PHB 理論）</div>';
+          _v55Cross.strongUnaspected.forEach(function(u) {
+            var layerZh = { op1: '四元素', op2: '十二宮', op3: '十二星座', op4: '三十六旬', op5: '生命之樹' };
+            var layers = (u.layers || []).map(function(L) { return layerZh[L] || L; }).join('、');
+            var tagColor = u.significance === 'critical' ? 'rgba(239,68,68,.9)' : 'rgba(234,179,8,.9)';
+            var tagText = u.significance === 'critical' ? '重大' : '顯著';
+            html += '<div style="padding:.3rem .5rem;margin-bottom:.25rem;border-radius:6px;background:rgba(168,85,247,.05);font-size:.75rem">';
+            html += '<span style="color:' + tagColor + ';font-weight:600">[' + tagText + ']</span> ';
+            html += '<span style="font-weight:600;color:var(--c-gold-pale,#f5e6b8)">' + _esc(u.name) + '</span>';
+            html += '<span style="color:var(--c-text-muted);margin-left:.3rem">（' + _esc(u.element) + '・' + _esc(layers) + '）</span>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+
+        // 強牌（Triad 加持）
+        if (_v55Cross.strongCards && _v55Cross.strongCards.length) {
+          html += '<div style="margin-bottom:.6rem">';
+          html += '<div style="font-weight:700;color:rgba(74,222,128,.9);margin-bottom:.25rem">💪 強化牌（Triad 左右鄰加持）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.25rem">這些牌的能量被左右鄰放大，靜月會重點解讀</div>';
+          var layerZh2 = { op1: '四元素', op2: '十二宮', op3: '十二星座', op4: '三十六旬', op5: '生命之樹' };
+          html += '<div style="font-size:.74rem;color:var(--c-text)">';
+          _v55Cross.strongCards.slice(0, 6).forEach(function(s, i) {
+            html += (i > 0 ? '、' : '') + '<span style="color:var(--c-gold-pale,#f5e6b8);font-weight:600">' + _esc(s.card) + '</span>';
+            html += '<span style="color:var(--c-text-muted);font-size:.7rem">（' + (layerZh2[s.layer] || s.layer) + '+' + s.strength + '）</span>';
+          });
+          html += '</div></div>';
+        }
+
+        // 弱牌（被抵消）
+        if (_v55Cross.weakCards && _v55Cross.weakCards.length) {
+          html += '<div style="margin-bottom:.6rem">';
+          html += '<div style="font-weight:700;color:rgba(156,163,175,.85);margin-bottom:.25rem">🌫️ 弱化牌（Triad 左右鄰削弱）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.25rem">這些牌力量被抵消，靜月會降級處理或不提</div>';
+          var layerZh3 = { op1: '四元素', op2: '十二宮', op3: '十二星座', op4: '三十六旬', op5: '生命之樹' };
+          html += '<div style="font-size:.74rem;color:var(--c-text-dim)">';
+          _v55Cross.weakCards.slice(0, 6).forEach(function(w, i) {
+            html += (i > 0 ? '、' : '') + '<span style="color:var(--c-text-muted)">' + _esc(w.card) + '</span>';
+            html += '<span style="color:var(--c-text-muted);font-size:.7rem">（' + (layerZh3[w.layer] || w.layer) + ' ' + w.strength + '）</span>';
+          });
+          html += '</div></div>';
+        }
+
+        // Narrative Pairs 時間軸（只示範 op1）
+        if (_v55Cross.narrativePairs && _v55Cross.narrativePairs.op1 && _v55Cross.narrativePairs.op1.length) {
+          html += '<div style="margin-bottom:.4rem">';
+          html += '<div style="font-weight:700;color:rgba(96,165,250,.9);margin-bottom:.25rem">⏳ 配對敘事時間軸（四元素層）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.3rem">從代表牌向外配對——即時到遠期的事件展開</div>';
+          _v55Cross.narrativePairs.op1.slice(0, 4).forEach(function(p) {
+            var impactColor = 'var(--c-text-dim)';
+            if (p.dignity === 'strengthen' || p.dignity === 'friendly') impactColor = 'rgba(74,222,128,.85)';
+            else if (p.dignity === 'weaken') impactColor = 'rgba(239,68,68,.85)';
+            html += '<div style="padding:.25rem .5rem;margin-bottom:.2rem;border-radius:6px;background:rgba(96,165,250,.04);font-size:.72rem">';
+            html += '<span style="color:rgba(96,165,250,.8);font-weight:600">' + _esc(p.phase) + '</span> ';
+            html += '<span style="color:var(--c-text)">' + _esc(p.left) + ' ↔ ' + _esc(p.right) + '</span>';
+            html += '<span style="display:block;color:' + impactColor + ';font-size:.7rem;margin-top:.1rem">→ ' + _esc(p.impact) + '</span>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+
+        // v55+：Directional Dignity（宮廷牌面向互動）
+        if (_v55Cross.significatorDirectional && _v55Cross.significatorDirectional.meaning) {
+          html += '<div style="margin-bottom:.5rem;padding:.4rem .6rem;border-radius:8px;background:rgba(236,72,153,.04);border:1px solid rgba(236,72,153,.12)">';
+          html += '<div style="font-weight:700;color:rgba(236,72,153,.9);margin-bottom:.2rem;font-size:.76rem">🧭 代表牌面向</div>';
+          html += '<div style="font-size:.75rem;color:var(--c-text)">' + _esc(_v55Cross.significatorDirectional.meaning) + '</div>';
+          html += '</div>';
+        }
+        if (_v55Cross.keyDirectionalInteractions && _v55Cross.keyDirectionalInteractions.length) {
+          html += '<div style="margin-bottom:.4rem">';
+          html += '<div style="font-weight:700;color:rgba(236,72,153,.9);margin-bottom:.25rem">👥 宮廷牌人物互動（Directional Dignity）</div>';
+          html += '<div style="font-size:.73rem;color:var(--c-text-dim);margin-bottom:.3rem">RWS 宮廷牌面向決定人物間的關係——對望=互動、背對=疏離、分道=走散</div>';
+          _v55Cross.keyDirectionalInteractions.slice(0, 5).forEach(function(inter) {
+            var typeColor = 'var(--c-text-dim)';
+            var typeIcon = '•';
+            if (inter.type === 'mutual_gaze') { typeColor = 'rgba(74,222,128,.85)'; typeIcon = '👁'; }
+            else if (inter.type === 'back_turned') { typeColor = 'rgba(156,163,175,.85)'; typeIcon = '⤺'; }
+            else if (inter.type === 'diverging') { typeColor = 'rgba(239,68,68,.85)'; typeIcon = '⇹'; }
+            html += '<div style="padding:.3rem .5rem;margin-bottom:.2rem;border-radius:6px;background:rgba(236,72,153,.03);font-size:.73rem">';
+            html += '<span style="color:' + typeColor + ';font-weight:600">' + typeIcon + ' ' + _esc(inter.label) + '</span> ';
+            html += '<span style="color:var(--c-text-muted);font-size:.68rem">[' + _esc(inter.layer) + ']</span>';
+            html += '<div style="margin-top:.15rem;color:var(--c-text)">' + _esc(inter.cardA) + ' ↔ ' + _esc(inter.cardB || '鄰位') + '</div>';
+            html += '<div style="margin-top:.1rem;color:var(--c-text-dim);font-size:.68rem">' + _esc(inter.meaning) + '</div>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+
+        html += '</div></details>';
+      }
+    }
+  } catch (_v55err) { /* 忽略 v55 渲染錯誤不影響主流程 */ }
 
   // closing（金色結語）
   if (r.closing) {
@@ -24374,6 +24832,141 @@ function startOOTKFlow() {
 window.startOOTKFlow = startOOTKFlow;
 window._triggerOOTKAI = window._ootkTriggerAI || function() { console.warn('[OOTK] _ootkTriggerAI not found'); };
 
+// ══════════════════════════════════════════════════════════════
+// v54 Best-of-N 事實核查徽章渲染
+// 觸發：SSE 收到 audit_start / audit event 後自動呼叫
+// 目的：在結果區下方顯示一個可點擊的徽章 + 可展開的 claim 清單
+// ══════════════════════════════════════════════════════════════
+window._jyRenderAuditBadge = function(audit) {
+  try {
+    if (!audit) return;
+
+    // 找掛載目標：結果區下方
+    // 優先順序：各模式的 result container
+    var _target = document.getElementById('ai-result-content')
+                 || document.getElementById('tarot-result-content')
+                 || document.getElementById('ootk-result-content')
+                 || document.querySelector('.ai-result-main')
+                 || document.querySelector('[data-result-container]');
+    if (!_target) {
+      // fallback：掛在 main 區域底部
+      _target = document.querySelector('main') || document.body;
+    }
+
+    // 移除舊徽章
+    var _old = document.getElementById('jy-audit-badge');
+    if (_old) _old.remove();
+
+    // loading 狀態
+    if (audit.loading) {
+      var _loadEl = document.createElement('div');
+      _loadEl.id = 'jy-audit-badge';
+      _loadEl.style.cssText = 'margin:1.2rem auto 0;max-width:680px;padding:.7rem 1rem;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(212,175,55,.03));border:1px solid rgba(212,175,55,.2);color:var(--c-gold,#d4af37);font-size:.82rem;text-align:center;animation:jyAuditPulse 1.8s ease-in-out infinite';
+      _loadEl.innerHTML = '<span style="display:inline-block">' + (audit.message || '✨ 正在對輸出做事實核查...') + '</span>';
+
+      // 加入 pulse 動畫 style
+      if (!document.getElementById('jy-audit-style')) {
+        var _st = document.createElement('style');
+        _st.id = 'jy-audit-style';
+        _st.textContent = '@keyframes jyAuditPulse{0%,100%{opacity:.65}50%{opacity:1}}'
+                        + '.jy-audit-claim{padding:.55rem .7rem;border-radius:8px;margin:.35rem 0;font-size:.8rem;line-height:1.55}'
+                        + '.jy-audit-claim.pass{background:rgba(110,188,110,.08);border-left:3px solid rgba(110,188,110,.5)}'
+                        + '.jy-audit-claim.soft{background:rgba(212,175,55,.08);border-left:3px solid rgba(212,175,55,.5)}'
+                        + '.jy-audit-claim.fail{background:rgba(220,100,100,.08);border-left:3px solid rgba(220,100,100,.5)}'
+                        + '.jy-audit-verdict{display:inline-block;padding:1px 8px;border-radius:4px;font-size:.72rem;font-weight:600;margin-right:.4rem}'
+                        + '.jy-audit-verdict.pass{background:rgba(110,188,110,.2);color:#6ebc6e}'
+                        + '.jy-audit-verdict.soft{background:rgba(212,175,55,.2);color:var(--c-gold,#d4af37)}'
+                        + '.jy-audit-verdict.fail{background:rgba(220,100,100,.2);color:#e88888}'
+                        + '.jy-audit-reason{color:var(--c-text-dim,#999);font-size:.72rem;margin-top:.25rem;font-style:italic}';
+        document.head.appendChild(_st);
+      }
+
+      _target.appendChild(_loadEl);
+      return;
+    }
+
+    // 沒結果或被跳過
+    if (audit.skipped || !audit.audit) {
+      return; // 靜默，不顯示
+    }
+
+    var _a = audit.audit;
+    var _claims = Array.isArray(_a.claims) ? _a.claims : [];
+    var _pass = _a.pass_count || 0;
+    var _soft = _a.soft_count || 0;
+    var _fail = _a.fail_count || 0;
+    var _total = _pass + _soft + _fail;
+
+    // 完全沒抽到 claim（可能 story 沒具體宣稱）→ 靜默
+    if (_total === 0) return;
+
+    // 整體狀態判定
+    var _overallText, _overallColor, _overallIcon;
+    if (_fail === 0 && _soft <= 1) {
+      _overallText = '事實核查通過';
+      _overallColor = 'rgba(110,188,110,.5)';
+      _overallIcon = '✓';
+    } else if (_fail === 0) {
+      _overallText = '部分宣稱建議降級';
+      _overallColor = 'rgba(212,175,55,.5)';
+      _overallIcon = '⚠';
+    } else {
+      _overallText = '發現可能編造的宣稱';
+      _overallColor = 'rgba(220,100,100,.5)';
+      _overallIcon = '⚠';
+    }
+
+    var _el = document.createElement('div');
+    _el.id = 'jy-audit-badge';
+    _el.style.cssText = 'margin:1.2rem auto 0;max-width:680px;border-radius:12px;background:rgba(20,16,10,.55);border:1px solid ' + _overallColor + ';overflow:hidden';
+
+    // 標頭（可點擊展開/收合）
+    var _summary = '<span style="font-size:1rem;margin-right:.4rem">' + _overallIcon + '</span>'
+                 + '<span style="font-weight:600;color:var(--c-gold,#d4af37)">' + _overallText + '</span>'
+                 + '<span style="margin-left:.6rem;font-size:.76rem;color:var(--c-text-dim,#aaa)">'
+                 + (_pass ? '✓' + _pass + ' ' : '')
+                 + (_soft ? '◐' + _soft + ' ' : '')
+                 + (_fail ? '✗' + _fail + ' ' : '')
+                 + '（共 ' + _total + ' 條判讀核查）'
+                 + '</span>'
+                 + '<span id="jy-audit-caret" style="float:right;color:var(--c-text-dim,#aaa);font-size:.88rem;transition:transform .2s">▾</span>';
+
+    var _list = '<div id="jy-audit-list" style="padding:.6rem .9rem .9rem;border-top:1px solid rgba(212,175,55,.12);display:none">';
+    for (var _ci = 0; _ci < _claims.length; _ci++) {
+      var _c = _claims[_ci] || {};
+      var _v = (_c.verdict === 'pass' || _c.verdict === 'soft' || _c.verdict === 'fail') ? _c.verdict : 'soft';
+      var _vLabel = _v === 'pass' ? '通過' : (_v === 'soft' ? '降級' : '未通過');
+      var _text = (_c.text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      var _reason = (_c.reason || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      _list += '<div class="jy-audit-claim ' + _v + '">'
+             + '<span class="jy-audit-verdict ' + _v + '">' + _vLabel + '</span>'
+             + '<span>「' + _text + '」</span>'
+             + (_reason ? '<div class="jy-audit-reason">' + _reason + '</div>' : '')
+             + '</div>';
+    }
+    _list += '</div>';
+
+    _el.innerHTML = '<div id="jy-audit-header" style="padding:.7rem 1rem;cursor:pointer;font-size:.82rem;user-select:none">' + _summary + '</div>' + _list;
+
+    _target.appendChild(_el);
+
+    // 點擊展開/收合
+    var _header = document.getElementById('jy-audit-header');
+    var _listEl = document.getElementById('jy-audit-list');
+    var _caret = document.getElementById('jy-audit-caret');
+    if (_header && _listEl) {
+      _header.addEventListener('click', function() {
+        var _open = _listEl.style.display === 'block';
+        _listEl.style.display = _open ? 'none' : 'block';
+        if (_caret) _caret.style.transform = _open ? 'rotate(0deg)' : 'rotate(180deg)';
+      });
+    }
+  } catch (_renderErr) {
+    // 渲染失敗時安靜吞掉，不影響主結果顯示
+    console.warn('[v54] audit badge render failed:', _renderErr && _renderErr.message);
+  }
+};
+
 // ── OOTK 付費入口 ──
 window._jyStartOOTK = function() {
   // ── 檢查主表單是否有生辰資料（跟七維度共用同一個表單）──
@@ -24447,10 +25040,10 @@ window._jyStartOOTK = function() {
       md.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
         '<div style="font-size:1.8rem;margin-bottom:.6rem">' + (_ootkFreeUp ? '⏰' : '🔑') + '</div>' +
         '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">' + (_ootkIpUsed ? '此網路已使用過' : (_ootkFreeUp ? '開鑰免費體驗已用完' : '免費次數已用完')) + '</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">標準會員 NT$999 → 塔羅＋開鑰每日各 1 次・七維度每月 2 次<br>高級會員 NT$1,999 → 塔羅＋開鑰每日各 2 次・七維度每月 5 次・📷照片分析</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">標準會員 NT$' + window.JY_PRICES.SUB_STANDARD + ' → 塔羅＋開鑰每日各 1 次・七維度每月 2 次<br>高級會員 NT$' + window.JY_PRICES.SUB_PREMIUM + ' → 塔羅＋開鑰每日各 2 次・七維度每月 5 次・深度解析每月 1 次免費・📷照片分析</div>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-        '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'subscription\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🌙 開通會員（NT$999 起）</button>' +
-        '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'single\');" style="width:220px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text,#e8dcc8);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit">⚡ 開鑰單次 NT$29</button>' +
+        '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'subscription\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🌙 開通會員（NT$' + window.JY_PRICES.SUB_STANDARD + ' 起）</button>' +
+        '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'single\');" style="width:220px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text,#e8dcc8);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit">⚡ 開鑰單次 NT$' + window.JY_PRICES.SINGLE_OOTK + '</button>' +
         '<button onclick="document.getElementById(\'ootk-used-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用，謝謝</button>' +
         '</div>' +
       '</div>';

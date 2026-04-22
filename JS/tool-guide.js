@@ -171,6 +171,25 @@
     if (is && is.style.display !== 'none' && is.offsetParent !== null) { injectGuide(); clearInterval(_poll); }
   }, 500);
   setTimeout(function(){ clearInterval(_poll); }, 60000);
+
+  // v60-hotfix12：工具選擇頁的徽章更新要獨立觸發（不能只靠 injectGuide）
+  //   injectGuide 綁在 input-screen 出現時，但徽章在工具選擇頁就已經顯示。
+  //   等策略：
+  //     (1) DOMContentLoaded 時先嘗試——若 session_token 已就緒就更新
+  //     (2) 延遲 1500ms 再更新一次——給 Google 登入/session 驗證完成的時間
+  //     (3) 每次點「登入」按鈕後延遲 2000ms 再更新（徽章從「免費」變「會員」）
+  //   只要 tool-tarot-badge 等元素存在就能更新，不需 input-screen 存在。
+  function _tryUpdateBadges() {
+    if (document.getElementById('tool-tarot-badge')) updateToolBadges();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _tryUpdateBadges);
+  } else {
+    _tryUpdateBadges();
+  }
+  // 延遲重試：確保 ui.js 把 session_token 設到 window 後再查一次
+  setTimeout(_tryUpdateBadges, 1500);
+  setTimeout(_tryUpdateBadges, 4000);
 })();
 
 // ════════════════════════════════════════
