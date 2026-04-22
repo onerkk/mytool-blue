@@ -64,6 +64,71 @@
       '<div id="jy-trial-line" style="margin-top:.3rem;padding-top:.25rem;border-top:1px solid rgba(212,175,55,.06);font-size:.6rem;color:#8a7a6a;text-align:center">⏳</div>';
     cta.parentNode.insertBefore(p, cta);
     fetchTrialDays();
+    // v60-hotfix10：順便更新三個工具徽章
+    updateToolBadges();
+  }
+
+  // v60-hotfix10：根據用戶狀態動態更新三個工具徽章文字
+  //   原本 index.html 寫死「前 3 次免費體驗」，是 v39 遺留的錯誤文字。
+  //   真實規則：免費試用每工具 1 次（不重置），會員有配額，付費 token 當次放行。
+  //   狀態矩陣：
+  //     未登入 → 「登入享免費 1 次」
+  //     免費・未用過 → 「免費體驗 1 次」
+  //     免費・已用完 → 「單次 NT$XX」
+  //     標準會員 → 「會員・每日 1 次」(塔羅/開鑰) 或 「會員・每月 2 次」(七維)
+  //     高級會員 → 「高級・每日 2 次」或 「高級・每月 5 次」
+  function updateToolBadges() {
+    var url = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
+    var body = {};
+    if (window._JY_SESSION_TOKEN) body.session_token = window._JY_SESSION_TOKEN;
+    fetch(url.replace('/analyze','').replace(/\/$/, '') + '/check-subscription', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var _p = (typeof window!=='undefined' && window._JY_PRICING) || {};
+        var _p7d = _p.SINGLE_7D || 79;
+        var _pTarot = _p.SINGLE_TAROT || 39;
+        var _pOotk = _p.SINGLE_OOTK || 39;
+
+        // 會員（有 active 訂閱）
+        if (data.active) {
+          var isPremium = data.tier === 'premium';
+          var dailyLim = data.dailyLimit || 1;
+          var d7Lim = data.d7Limit || 2;
+          var tierLabel = isPremium ? '💎 高級' : '👑 標準';
+          var tarotBadge = tierLabel + '・每日 ' + (data.dailyUsed||0) + '/' + dailyLim + ' 次';
+          var ootkBadge = tierLabel + '・每日 ' + (data.dailyUsed||0) + '/' + dailyLim + ' 次';
+          var d7Badge = tierLabel + '・每月 ' + (data.d7Used||0) + '/' + d7Lim + ' 次';
+          setBadge('tool-tarot-badge', tarotBadge, isPremium ? '#a855f7' : '#fbbf24');
+          setBadge('tool-ootk-badge', ootkBadge, isPremium ? '#a855f7' : '#fbbf24');
+          setBadge('tool-full-badge', d7Badge, isPremium ? '#a855f7' : '#fbbf24');
+          return;
+        }
+
+        // 非會員：依 freeStatus 決定
+        var fs = data.freeStatus || { '7d': 0, tarot: 0, ootk: 0 };
+        // 塔羅
+        if (fs.tarot >= 1) setBadge('tool-tarot-badge', '單次 NT$' + _pTarot, 'rgba(212,175,55,.5)');
+        else setBadge('tool-tarot-badge', '免費體驗 1 次', '');
+        // 開鑰
+        if (fs.ootk >= 1) setBadge('tool-ootk-badge', '單次 NT$' + _pOotk, 'rgba(212,175,55,.5)');
+        else setBadge('tool-ootk-badge', '免費體驗 1 次', '');
+        // 七維
+        if (fs['7d'] >= 1) setBadge('tool-full-badge', '單次 NT$' + _p7d, 'rgba(212,175,55,.5)');
+        else setBadge('tool-full-badge', '免費體驗 1 次', '');
+      })
+      .catch(function(){
+        // 失敗就維持 HTML 預設文字「免費體驗 1 次」，不動
+      });
+  }
+  function setBadge(id, text, colorHint) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    if (colorHint) el.style.color = colorHint;
   }
   function fetchTrialDays() {
     var url = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
@@ -97,7 +162,7 @@
         if(data.code === 'LOGIN_REQUIRED'){ line.innerHTML = '☽ 登入 Google 即享免費體驗'; return; }
         line.innerHTML = '☽ 三套工具各免費 1 次・會員 ' + _subLine;
       })
-      .catch(function(){ var l=document.getElementById('jy-trial-line'); if(l) l.innerHTML='☽ 三套工具各免費 1 次'; });
+      .catch(function(){ var l=document.getElementById('jy-trial-line'); if(l) l.innerHTML='☽ 免費體驗 1 次'; });
   }
   var _orig = window.pickTool;
   window.pickTool = function(tool) { if (_orig) _orig(tool); injectGuide(); };
