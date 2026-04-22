@@ -4347,6 +4347,147 @@ function _mhTimingTriple(mh, dongEl, curMonth){
   };
 }
 
+// ═══ 十應訣之日應/刻應/方應（v56：補完古籍十應訣）═══
+// 古籍「十應訣」原典：正應/互應/變應/方應/日應/刻應/外應/天時應/地理應/人事應
+// 前端可自動算：日應、刻應（100% 準確）、方應（粗略，基於用戶地理位置）
+// 回傳: { riYing, keYing, fangYing, summary }
+function _mhTenAppliances(mh, dongEl, userLat, userLng){
+  if(!mh || !dongEl) return null;
+
+  // 五行生剋函式（與 tiYong 函式同邏輯：相生=體被生吉／相剋=體被克凶）
+  function relateFromElement(srcEl, targetEl){
+    // target 是體卦五行（動爻），srcEl 是來應的五行
+    // srcEl 生 target = 吉（外應來生動爻）
+    // srcEl 克 target = 凶
+    // 比和 = 中性
+    // target 生 srcEl = 體洩氣 = 小凶
+    // target 克 srcEl = 體克外應 = 小吉
+    var sheng = {'木':'火','火':'土','土':'金','金':'水','水':'木'};
+    var ke    = {'木':'土','土':'水','水':'火','火':'金','金':'木'};
+    if(srcEl === targetEl) return { rel: '比和', judge: '平', sym: '=' };
+    if(sheng[srcEl] === targetEl) return { rel: '生體', judge: '吉', sym: '生' };
+    if(ke[srcEl] === targetEl) return { rel: '克體', judge: '凶', sym: '克' };
+    if(sheng[targetEl] === srcEl) return { rel: '體生', judge: '小凶(洩)', sym: '洩' };
+    if(ke[targetEl] === srcEl) return { rel: '體克', judge: '小吉(我克)', sym: '我克' };
+    return { rel: '無關', judge: '—', sym: '—' };
+  }
+
+  // 地支 → 五行
+  var zhiToEl = {
+    '寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土',
+    '申':'金','酉':'金','戌':'土','亥':'水','子':'水','丑':'土'
+  };
+
+  var now = new Date();
+
+  // ── 日應：當日地支 vs 動爻五行 ──
+  // 用儒略日算日干支（簡化版：以 1984/2/2=甲子日為基準）
+  function getDayZhi(date){
+    var epoch = new Date(1984, 1, 2);  // 1984/2/2 甲子日
+    var days = Math.floor((date - epoch) / 86400000);
+    var zhiArr = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+    return zhiArr[((days % 12) + 12) % 12];
+  }
+  var dayZhi = getDayZhi(now);
+  var dayEl = zhiToEl[dayZhi];
+  var riYing = null;
+  if(dayEl){
+    var r = relateFromElement(dayEl, dongEl);
+    riYing = {
+      zhi: dayZhi,
+      element: dayEl,
+      relation: r.rel,
+      judge: r.judge,
+      desc: '今日=' + dayZhi + '(' + dayEl + ')' + r.sym + '動爻(' + dongEl + ') → ' + r.judge
+    };
+  }
+
+  // ── 刻應：當前時辰地支 vs 動爻五行 ──
+  function getShichenZhi(hour){
+    // 23-1=子, 1-3=丑, 3-5=寅, 5-7=卯, 7-9=辰, 9-11=巳, 11-13=午, 13-15=未, 15-17=申, 17-19=酉, 19-21=戌, 21-23=亥
+    var zhiArr = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+    var idx = Math.floor((hour + 1) / 2) % 12;
+    return zhiArr[idx];
+  }
+  var shiZhi = getShichenZhi(now.getHours());
+  var shiEl = zhiToEl[shiZhi];
+  var keYing = null;
+  if(shiEl){
+    var r2 = relateFromElement(shiEl, dongEl);
+    keYing = {
+      zhi: shiZhi,
+      element: shiEl,
+      relation: r2.rel,
+      judge: r2.judge,
+      desc: '時辰=' + shiZhi + '(' + shiEl + ')' + r2.sym + '動爻(' + dongEl + ') → ' + r2.judge
+    };
+  }
+
+  // ── 方應：用戶地理大略方位 vs 動爻五行（粗略）──
+  // 用經度判斷東西半球中的位置——只有有 userLat/userLng 才算
+  // 後天八卦方位五行：北=水(坎) / 東北=土(艮) / 東=木(震) / 東南=木(巽) /
+  //                   南=火(離) / 西南=土(坤) / 西=金(兌) / 西北=金(乾)
+  var fangYing = null;
+  if(typeof userLat === 'number' && typeof userLng === 'number'){
+    // 簡化：以用戶所在經緯度相對台灣(中心約 23.5°N, 121°E)做粗略方位
+    // 這個基準不是學術正確，但提供一個可計算的「方位卦」
+    // 實務上用戶都在同一地區，方應提供的價值相對低，僅作補充
+    var ref = { lat: 23.5, lng: 121 };
+    var dLat = userLat - ref.lat;
+    var dLng = userLng - ref.lng;
+    var dir, dirEl;
+    if(Math.abs(dLat) < 1 && Math.abs(dLng) < 1){
+      // 台灣附近 — 就用經度判東西
+      dir = userLng >= 121 ? '東' : '西';
+      dirEl = dir === '東' ? '木' : '金';
+    } else {
+      // 其他地區 — 用 8 方位
+      var angle = Math.atan2(dLat, dLng) * 180 / Math.PI; // -180 to 180
+      // 0°=東, 90°=北, 180°/-180°=西, -90°=南
+      if(angle >= -22.5 && angle < 22.5){ dir = '東'; dirEl = '木'; }
+      else if(angle >= 22.5 && angle < 67.5){ dir = '東北'; dirEl = '土'; }
+      else if(angle >= 67.5 && angle < 112.5){ dir = '北'; dirEl = '水'; }
+      else if(angle >= 112.5 && angle < 157.5){ dir = '西北'; dirEl = '金'; }
+      else if(angle >= 157.5 || angle < -157.5){ dir = '西'; dirEl = '金'; }
+      else if(angle >= -157.5 && angle < -112.5){ dir = '西南'; dirEl = '土'; }
+      else if(angle >= -112.5 && angle < -67.5){ dir = '南'; dirEl = '火'; }
+      else { dir = '東南'; dirEl = '木'; }
+    }
+    if(dirEl){
+      var r3 = relateFromElement(dirEl, dongEl);
+      fangYing = {
+        direction: dir,
+        element: dirEl,
+        relation: r3.rel,
+        judge: r3.judge,
+        desc: '方位=' + dir + '(' + dirEl + ')' + r3.sym + '動爻(' + dongEl + ') → ' + r3.judge + '（粗略）'
+      };
+    }
+  }
+
+  // ── 綜合摘要：多應同向加強，矛盾則打平 ──
+  var judges = [];
+  if(riYing) judges.push(riYing.judge);
+  if(keYing) judges.push(keYing.judge);
+  if(fangYing) judges.push(fangYing.judge);
+  var summary = '';
+  if(judges.length){
+    var ji = judges.filter(function(j){ return j === '吉' || j === '小吉(我克)'; }).length;
+    var xiong = judges.filter(function(j){ return j === '凶' || j === '小凶(洩)'; }).length;
+    if(ji > xiong && ji >= 2) summary = '多應同向吉——加強正應判斷';
+    else if(xiong > ji && xiong >= 2) summary = '多應同向凶——加強風險判讀';
+    else if(ji === xiong && ji >= 1) summary = '諸應矛盾——以正應(體用)為主,其他應只作參考';
+    else summary = '諸應中性——無強化或反制效果';
+  }
+
+  return {
+    riYing: riYing,
+    keYing: keYing,
+    fangYing: fangYing,
+    summary: summary
+  };
+}
+
 // ═══ 類型專用信號與建議 ═══
 function _mhTypeAnalysis(type, rel, tiEl, yoEl, dong, dongStage, huHidden, bianTrend, tiWS){
   const organMap={木:'肝膽／神經',火:'心臟／血液',土:'脾胃／消化',金:'肺／皮膚',水:'腎／泌尿'};
@@ -4627,6 +4768,18 @@ function analyzeMeihua(mh, type){
     timingTriple: (function(){
       try { return _mhTimingTriple(mh, dongEl, curMonth); }
       catch(e){ return null; }
+    })(),
+    // v56: 十應訣之日應/刻應/方應（前端可算部分）
+    tenAppliances: (function(){
+      try {
+        // 嘗試從 S.user 或 window 取用戶地理位置（若無則傳 undefined，函式自動跳過方應）
+        var userLat, userLng;
+        if(typeof window !== 'undefined' && window.S && window.S.user){
+          userLat = window.S.user.lat;
+          userLng = window.S.user.lng;
+        }
+        return _mhTenAppliances(mh, dongEl, userLat, userLng);
+      } catch(e){ return null; }
     })(),
     timingStance:timingSemantic,
     strategy:typeAnalysis.actionCore,

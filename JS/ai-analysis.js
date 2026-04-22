@@ -18600,6 +18600,10 @@ renderTarot = function(){
             if (mhAnalysis.timingTriple) {
               p.dims.meihua.timingTriple = mhAnalysis.timingTriple;
             }
+            // v56: 十應訣之日應/刻應/方應（前端已算，AI 不自推）
+            if (mhAnalysis.tenAppliances) {
+              p.dims.meihua.tenAppliances = mhAnalysis.tenAppliances;
+            }
             if (mhAnalysis.risk) p.dims.meihua.risk = mhAnalysis.risk;
             if (mhAnalysis.strategy) p.dims.meihua.actionAdvice = mhAnalysis.strategy.slice(0, 3);
             if (mhAnalysis.structure) {
@@ -18618,6 +18622,19 @@ renderTarot = function(){
             p.dims.meihua = p.dims.meihua || {};
             if (mhRaw.ty && mhRaw.ty.r) p.dims.meihua.tiYong = mhRaw.ty.r + (mhRaw.ty.f ? '（' + mhRaw.ty.f + '）' : '');
             if (mhRaw.dong != null) p.dims.meihua.dongYao = '第' + mhRaw.dong + '爻';
+            // v56: anchor 需要的硬事實（本卦/變卦/體用卦名+五行）
+            if (mhRaw.ben && mhRaw.ben.n) p.dims.meihua.benName = mhRaw.ben.n;
+            if (mhRaw.bian && mhRaw.bian.n) p.dims.meihua.bianName = mhRaw.bian.n;
+            if (mhRaw.tiG) {
+              var _tiName = mhRaw.tiG.name || mhRaw.tiG.n || '';
+              var _tiEl = mhRaw.tiG.el || '';
+              if (_tiName) p.dims.meihua.tiGName = _tiName + (_tiEl ? '（五行=' + _tiEl + '）' : '');
+            }
+            if (mhRaw.yoG) {
+              var _yoName = mhRaw.yoG.name || mhRaw.yoG.n || '';
+              var _yoEl = mhRaw.yoG.el || '';
+              if (_yoName) p.dims.meihua.yoGName = _yoName + (_yoEl ? '（五行=' + _yoEl + '）' : '');
+            }
             // 旺衰從 mhAnalysis.wangShuai 取（analyzeMeihua 回傳的）
             if (mhAnalysis && mhAnalysis.wangShuai) {
               if (mhAnalysis.wangShuai.ti && mhAnalysis.wangShuai.ti.level) p.dims.meihua.tiStrength = mhAnalysis.wangShuai.ti.level;
