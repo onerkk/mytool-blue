@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>付款觸發測試（不收費）</title>
+<style>
+body{margin:0;padding:20px;font-family:-apple-system,sans-serif;background:#0a0a10;color:#e5e5e5;line-height:1.6}
+.btn{display:block;width:100%;padding:16px;margin:12px 0;background:linear-gradient(135deg,#c9a84c,#a88936);color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer}
+.warn{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:14px;margin:12px 0;color:#fcd34d;font-size:.88rem}
+code{background:#14141c;padding:2px 8px;border-radius:4px;color:#c9a84c}
+</style>
+</head>
+<body>
+<h2>🧪 付款解鎖流程測試</h2>
+<div class="warn">
+此頁不會真的收費。<br>
+它會模擬「付款完成跳回 jingyue.uk」的情境，觸發 payment-wall.js 的 <code>_jyUnlockAndTrigger</code>。<br>
+這樣就能看到那一連串 alert DEBUG 訊息，確認 token 到底有沒有寫入 localStorage。
+</div>
+
+<button class="btn" onclick="runTest()">🚀 模擬付款完成並觸發解鎖</button>
+
+<div id="log" style="margin-top:20px;background:#14141c;padding:12px;border-radius:8px;font-size:.85rem;color:#a8a8b8;min-height:60px"></div>
+
+<script>
+function runTest() {
+  const fakeTradeNo = 'TESTFAKE' + Date.now();
+  try {
+    localStorage.setItem('_jy_pending_payment', JSON.stringify({
+      tradeNo: fakeTradeNo, mode: 'tarot_only', type: 'single', ts: Date.now()
+    }));
+    document.getElementById('log').innerHTML = '✅ 已寫入假 pending：<br><code>' + fakeTradeNo + '</code><br><br>即將跳到 jingyue.uk/?paid=' + fakeTradeNo + '<br>該頁應該會彈出多個 DEBUG alert';
+    setTimeout(function() {
+      location.href = 'https://jingyue.uk/?paid=' + fakeTradeNo;
+    }, 1000);
+  } catch(e) {
+    document.getElementById('log').innerHTML = '❌ localStorage 寫入失敗：' + e.message + '<br><br>這代表你的瀏覽器根本不讓 JS 寫 localStorage（可能是無痕模式或隱私設定）！';
+  }
+}
+</script>
+</body>
+</html>
