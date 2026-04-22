@@ -209,7 +209,19 @@ function renderPhotoUpload(tool, forceRefresh) {
   tool = tool || 'full';
   var privileged = _isPrivileged();
   var fields = getFieldsForTool(tool);
-  if (!privileged && tool !== 'tarot' && tool !== 'ootk') fields = ['crystal'];
+
+  // v60-hotfix7：非會員在七維度(full)模式下完全不顯示照片上傳入口
+  //   （舊版會顯示「僅水晶」+ 升級提示，但用戶要求徹底隱藏）
+  //   塔羅/開鑰模式下水晶照片仍開放給所有人（本來就是公開功能）
+  if (!privileged && tool !== 'tarot' && tool !== 'ootk') {
+    // 清掉可能殘留的舊 wrap
+    var _old = document.getElementById('jy-photo-upload');
+    if (_old) _old.remove();
+    // 清掉可能殘留的 photo state
+    if (window._jyPhotos) window._jyPhotos = null;
+    _currentRenderedState = tool + '|hidden';
+    return;
+  }
 
   var stateKey = tool + '|' + (privileged ? 'all' : 'crystal');
   if (!forceRefresh && _currentRenderedState === stateKey) return;
@@ -246,12 +258,7 @@ function renderPhotoUpload(tool, forceRefresh) {
     ? '<i class="fas fa-camera"></i> 上傳照片（選填）・讓分析更深入'
     : '<i class="fas fa-gem"></i> 上傳水晶照片（選填）';
 
-  var memberNotice = '';
-  if (!privileged && tool !== 'tarot' && tool !== 'ootk') {
-    memberNotice = '<div style="margin-top:.5rem;padding:.5rem .7rem;border-radius:8px;background:rgba(147,51,234,.06);border:1px solid rgba(147,51,234,.15);font-size:.7rem;color:#c084fc;line-height:1.6;text-align:center">📷 面相＋手相照片分析是<strong>會員專屬</strong>功能<br>開通會員讓七維度分析更精準深入</div>';
-  }
-
-  wrap.innerHTML = '<div class="jy-photo-title">' + titleText + '</div><div class="jy-photo-grid" id="jy-photo-grid"></div>' + memberNotice + '<div class="jy-photo-note">照片僅用於本次分析，不會儲存</div>';
+  wrap.innerHTML = '<div class="jy-photo-title">' + titleText + '</div><div class="jy-photo-grid" id="jy-photo-grid"></div><div class="jy-photo-note">照片僅用於本次分析，不會儲存</div>';
   parentCard.parentNode.insertBefore(wrap, parentCard.nextSibling);
 
   var grid = document.getElementById('jy-photo-grid');
