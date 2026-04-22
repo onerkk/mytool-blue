@@ -312,6 +312,12 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <button onclick="loadUsersData()" style="padding:6px 14px;border-radius:8px;border:1px solid var(--accent);color:var(--accent);background:transparent;font-size:12px;cursor:pointer">🔄 刷新</button>
         </div>
         <div id="usersStats" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap"></div>
+        <!-- v60-hotfix9：email 搜尋列 -->
+        <div style="display:flex;gap:6px;margin-bottom:12px;align-items:stretch">
+          <input type="text" id="usersSearchInput" placeholder="以 email 或姓名搜尋…" style="flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;font-family:inherit" />
+          <button onclick="searchUsers()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--accent);color:var(--accent);background:rgba(108,123,255,.08);font-size:12px;cursor:pointer;white-space:nowrap">🔍 查詢</button>
+          <button onclick="clearUsersSearch()" id="usersSearchClearBtn" style="padding:8px 12px;border-radius:8px;border:1px solid var(--card-border);color:var(--text-dim);background:transparent;font-size:12px;cursor:pointer;display:none">✕</button>
+        </div>
         <div id="usersPagination" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px;padding:10px 12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border)">
           <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:nowrap">
             <button id="usersPagePrev" onclick="loadUsersData(_usersPageState.currentPage - 1)" style="padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0">◀ 上頁</button>
@@ -1682,6 +1688,38 @@ let _usersCache = [];
 let _fuGlobalCache = { perResult: 1, modules: {} }; // v47：追問全域配置
 // v53：分頁狀態（給「上一頁/下一頁」按鈕用）
 var _usersPageState = { currentPage: 1, pageSize: 50, totalPages: 1 };
+// v60-hotfix9：搜尋狀態
+var _usersSearchQuery = '';
+
+// v60-hotfix9：email / 姓名搜尋
+function searchUsers() {
+  const inputEl = document.getElementById('usersSearchInput');
+  const query = (inputEl && inputEl.value || '').trim();
+  _usersSearchQuery = query;
+  // 顯示清除按鈕
+  const clearBtn = document.getElementById('usersSearchClearBtn');
+  if (clearBtn) clearBtn.style.display = query ? 'inline-block' : 'none';
+  loadUsersData(1); // 回到第 1 頁重新查
+}
+
+function clearUsersSearch() {
+  const inputEl = document.getElementById('usersSearchInput');
+  if (inputEl) inputEl.value = '';
+  _usersSearchQuery = '';
+  const clearBtn = document.getElementById('usersSearchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  loadUsersData(1);
+}
+
+// Enter 鍵觸發搜尋
+document.addEventListener('DOMContentLoaded', function() {
+  var inp = document.getElementById('usersSearchInput');
+  if (inp) {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); searchUsers(); }
+    });
+  }
+});
 
 async function loadUsersData(page) {
   const el = document.getElementById('usersList');
@@ -1702,7 +1740,7 @@ async function loadUsersData(page) {
 
   el.innerHTML = '<div class="loading"></div>';
   try {
-    const r = await fetch(`${WORKER_URL}/admin/users-data?token=${encodeURIComponent(adminToken)}&page=${_page}&pageSize=${_pageSize}`);
+    const r = await fetch(`${WORKER_URL}/admin/users-data?token=${encodeURIComponent(adminToken)}&page=${_page}&pageSize=${_pageSize}` + (_usersSearchQuery ? `&search=${encodeURIComponent(_usersSearchQuery)}` : ''));
     if (!r.ok) {
       let errMsg = `HTTP ${r.status}`;
       try { const errBody = await r.json(); if (errBody.error) errMsg += ': ' + errBody.error; } catch(_){}
@@ -1752,7 +1790,12 @@ async function loadUsersData(page) {
     }
 
     if (!_usersCache.length) {
-      el.innerHTML = '<div class="empty">' + (gs.totalUsers > 0 ? '此頁無資料' : '尚無登入用戶<br><span style="font-size:11px;color:var(--text-dim)">如果你確定有用戶，請打開 DevTools Console 查看詳細</span>') + '</div>';
+      // v60-hotfix9：搜尋模式下空結果要明確提示
+      if (_usersSearchQuery) {
+        el.innerHTML = '<div class="empty">查無符合「' + _usersSearchQuery + '」的用戶<br><span style="font-size:11px;color:var(--text-dim)">請檢查 email 或姓名是否正確</span></div>';
+      } else {
+        el.innerHTML = '<div class="empty">' + (gs.totalUsers > 0 ? '此頁無資料' : '尚無登入用戶<br><span style="font-size:11px;color:var(--text-dim)">如果你確定有用戶，請打開 DevTools Console 查看詳細</span>') + '</div>';
+      }
       return;
     }
     renderUsersList(_usersCache);
