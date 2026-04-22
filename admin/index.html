@@ -597,40 +597,14 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
-      <!-- ═══ v53：Sonnet 4.6 Effort Level 卡片 ═══ -->
-      <div class="worker-card" style="margin-bottom:16px">
-        <h3>⚡ Sonnet 4.6 Effort Level</h3>
-        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
-          只對 Sonnet 4.6 生效（標準會員主力 + 單次付費路徑）。即時切換。<br>
-          官方說明：Sonnet 4.6 也支援 adaptive thinking + effort（不只 Opus），預設 high。<br>
-          <span style="color:#fbbf24">max</span>：最深，1.5-3 分鐘。
-          <span style="color:#60a5fa">high</span>：官方預設，45-90 秒。
-          <span style="color:#34d399">medium</span>：平衡，20-40 秒。
-          <span style="color:#7a7f8e">low</span>：快速，10-20 秒。
-        </p>
-        <div id="sonnet46EffortGrid" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="sonnet46-effort" value="max" style="width:16px;height:16px;accent-color:#fbbf24;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#fbbf24">max</span><br><span style="font-size:11px;color:var(--text-dim)">最深・1.5-3 分</span></span>
-          </label>
-          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="sonnet46-effort" value="high" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">high</span><br><span style="font-size:11px;color:var(--text-dim)">官方預設・45-90 秒</span></span>
-          </label>
-          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="sonnet46-effort" value="medium" style="width:16px;height:16px;accent-color:#34d399;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#34d399">medium</span><br><span style="font-size:11px;color:var(--text-dim)">平衡・20-40 秒</span></span>
-          </label>
-          <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="radio" name="sonnet46-effort" value="low" style="width:16px;height:16px;accent-color:#7a7f8e;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#7a7f8e">low</span><br><span style="font-size:11px;color:var(--text-dim)">快速・10-20 秒</span></span>
-          </label>
-        </div>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="saveSonnet46EffortConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Effort 設定</button>
-          <span id="sonnet46EffortStatus" style="font-size:12px;color:var(--text-dim)"></span>
-        </div>
-      </div>
+
+      <!-- v60-hotfix4：Sonnet 4.6 Effort Level 卡片已移除。
+           原因：Anthropic API 2026/04 要求 adaptive thinking 啟用時 temperature 強制為 1,
+           而命理 AI 的 JSON schema 嚴格（layers 巢狀/cardReadings 陣列/memoryNotes 陣列）,
+           temp=1 會讓 Sonnet 自由發揮破壞 JSON 結構 → 前端 r 物件空 → 畫面空白。
+           實測 low/medium/high 都會壞,不是 effort 調整能解決的。
+           後端 callAI 的 Sonnet 4.6 thinking 分支保留（未來 API 規則放寬可重啟）,
+           三個主路徑的 enableThinking 都不啟用 Sonnet,admin UI 移除避免誤操作。 -->
 
       <!-- ═══ v49：Haiku 4.5 Thinking 卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
@@ -847,24 +821,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </label>
           <!-- ═══════════════ v57 結束 ═══════════════ -->
 
-          <div style="padding:12px;border-radius:8px;background:rgba(108,123,255,.04);border:1px solid var(--card-border)">
-            <div style="font-size:13px;font-weight:600;margin-bottom:10px">⚡ Sonnet 4.6 Effort Level</div>
-            <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">官方：「Sonnet 4.6 預設 high 會高延遲，建議 medium 平衡速度與品質」。只影響非深度路徑的 Sonnet，不影響 Opus 深度。</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-                <input type="radio" name="v56-sonnet-effort" value="low" style="width:14px;height:14px;accent-color:#34d399;cursor:pointer">
-                <span><span style="font-size:12px;font-weight:600;color:#34d399">low</span><br><span style="font-size:10px;color:var(--text-dim)">最快</span></span>
-              </label>
-              <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-                <input type="radio" name="v56-sonnet-effort" value="medium" style="width:14px;height:14px;accent-color:#60a5fa;cursor:pointer">
-                <span><span style="font-size:12px;font-weight:600;color:#60a5fa">medium</span><br><span style="font-size:10px;color:var(--text-dim)">平衡</span></span>
-              </label>
-              <label style="flex:1;min-width:100px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-                <input type="radio" name="v56-sonnet-effort" value="high" style="width:14px;height:14px;accent-color:#fbbf24;cursor:pointer">
-                <span><span style="font-size:12px;font-weight:600;color:#fbbf24">high</span><br><span style="font-size:10px;color:var(--text-dim)">最深</span></span>
-              </label>
-            </div>
-          </div>
+          <!-- v60-hotfix4：v56-sonnet-effort 子區塊已移除（跟已廢除的 Sonnet 4.6 Effort 卡片是同用途） -->
         </div>
 
         <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -1073,7 +1030,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadSonnet46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); }
   });
 });
 
@@ -2512,52 +2469,10 @@ async function saveOpus46EffortConfig() {
   }
 }
 
-// ═══════════════════════════════════════════════
-// Sonnet 4.6 Effort Level Config (v53)
-// ═══════════════════════════════════════════════
-async function loadSonnet46EffortConfig() {
-  const statusEl = document.getElementById('sonnet46EffortStatus');
-  try {
-    const r = await fetch(`${WORKER_URL}/admin/sonnet46-effort-config?token=${encodeURIComponent(adminToken)}`);
-    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
-    const data = await r.json();
-    if (data.ok && data.config) {
-      const level = data.config.level || 'high';
-      const radios = document.getElementsByName('sonnet46-effort');
-      for (let i = 0; i < radios.length; i++) {
-        radios[i].checked = (radios[i].value === level);
-      }
-      if (statusEl) statusEl.textContent = '當前：' + level;
-    }
-  } catch(e) {
-    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
-  }
-}
+// v60-hotfix4：Sonnet 4.6 Effort Level Config 函式已移除
+//   原因：API 規則導致 thinking+temp=1 破 JSON，相關 UI 已拿掉。
+//   後端 /admin/sonnet46-effort-config endpoint 保留（向後相容，若再開 UI 可用）。
 
-async function saveSonnet46EffortConfig() {
-  const statusEl = document.getElementById('sonnet46EffortStatus');
-  try {
-    const radios = document.getElementsByName('sonnet46-effort');
-    let level = 'high';
-    for (let i = 0; i < radios.length; i++) {
-      if (radios[i].checked) { level = radios[i].value; break; }
-    }
-    const r = await fetch(`${WORKER_URL}/admin/sonnet46-effort-config?token=${encodeURIComponent(adminToken)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ level: level })
-    });
-    const data = await r.json();
-    if (data.ok) {
-      toast('✓ 已儲存 Sonnet 4.6 Effort');
-      if (statusEl) statusEl.textContent = '已儲存：' + level;
-    } else {
-      toast('儲存失敗: ' + (data.error || ''));
-    }
-  } catch(e) {
-    toast('錯誤: ' + e.message);
-  }
-}
 
 // ═══════════════════════════════════════════════
 // Haiku 4.5 Thinking Config (v49)
@@ -2780,7 +2695,7 @@ async function loadV56Config() {
         if (c.literalInstructions) on.push('Lit');
         if (c.groundInQuotes7D) on.push('GQ7D');
         if (c.groundInQuotesTarot) on.push('GQT');
-        statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + effort;
+        statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無');
       }
     }
   } catch(e) {
@@ -2844,7 +2759,7 @@ async function saveV56Config() {
       if (body.literalInstructions) on.push('Lit');
       if (body.groundInQuotes7D) on.push('GQ7D');
       if (body.groundInQuotesTarot) on.push('GQT');
-      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無') + ' ｜ Sonnet=' + body.sonnetEffort;
+      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無');
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
