@@ -88,7 +88,11 @@
     })
       .then(function(r){ return r.json(); })
       .then(function(data){
-        var _p = (typeof window!=='undefined' && window._JY_PRICING) || {};
+        // v60-hotfix7：fallback 擴充到完整欄位，與 worker v52 /pricing 對齊
+        var _p = (typeof window!=='undefined' && window._JY_PRICING) || {
+          SUB_STANDARD: 999, SUB_PREMIUM: 1999,
+          SINGLE_7D: 79, SINGLE_TAROT: 39, SINGLE_OOTK: 39
+        };
         var _p7d = _p.SINGLE_7D || 79;
         var _pTarot = _p.SINGLE_TAROT || 39;
         var _pOotk = _p.SINGLE_OOTK || 39;

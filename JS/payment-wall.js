@@ -9,36 +9,64 @@
 
   var WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
 
-  // ═══ 定價常數（必須與 worker.js v52 同步）═══
-  var PRICE_SUB_STANDARD = 999;    // 標準會員/月
-  var PRICE_SUB_PREMIUM  = 1999;   // 高級會員/月（含 Opus 免費 1 次）
-  var PRICE_SINGLE_7D    = 79;     // 七維度 Sonnet 單次
-  var PRICE_SINGLE_TAROT = 39;     // 塔羅 Sonnet 單次
-  var PRICE_SINGLE_OOTK  = 39;     // 開鑰 Sonnet 單次
-  var PRICE_SINGLE_FOLLOWUP = 29;  // 追問單次
-  var PRICE_OPUS_7D       = 169;   // 七維度 Opus 單次（非會員）
-  var PRICE_OPUS_TAROT    = 79;    // 塔羅 Opus 單次（非會員）
-  var PRICE_OPUS_OOTK     = 79;    // 開鑰 Opus 單次（非會員）
-  var PRICE_OPUS_7D_MEMBER    = 99;  // 七維度 Opus（高級會員加購價）
-  var PRICE_OPUS_TAROT_MEMBER = 49;  // 塔羅 Opus（高級會員加購價）
-  var PRICE_OPUS_OOTK_MEMBER  = 49;  // 開鑰 Opus（高級會員加購價）
+  // ═══ 定價：優先從 window.JY_PRICES（由 pricing-loader.js 從 worker /pricing 動態載入）讀取 ═══
+  // 斷網或 pricing-loader 未載入時使用硬編保底值（與 worker.js v52 同步）
+  function P() {
+    return (window.JY_PRICES && typeof window.JY_PRICES === 'object') ? window.JY_PRICES : {
+      SUB_STANDARD: 999, SUB_PREMIUM: 1999,
+      SINGLE_7D: 79, SINGLE_TAROT: 39, SINGLE_OOTK: 39,
+      FOLLOWUP: 29,
+      OPUS_7D: 169, OPUS_TAROT: 79, OPUS_OOTK: 79,
+      OPUS_7D_MEMBER: 99, OPUS_TAROT_MEMBER: 49, OPUS_OOTK_MEMBER: 49
+    };
+  }
+  // 舊常數名保留給下面檔案後半段（付款流程、輪詢等）向下相容
+  Object.defineProperty(window, '_jyPricesRef', { get: P, configurable: true });
 
-  // 舊常數保留供其他段落向後兼容（不刪以防連帶壞事）
-  var PRICE_SUB = PRICE_SUB_STANDARD;
-  var PRICE_SINGLE = PRICE_SINGLE_7D;
-  var PRICE_OPUS = PRICE_OPUS_7D;
+  // 這些變數現在是 getter，永遠讀最新值
+  function _PRICE_SUB()      { return P().SUB_STANDARD; }
+  function _PRICE_SUB_PREM() { return P().SUB_PREMIUM; }
+  function _PRICE_FU()       { return P().FOLLOWUP; }
+  function _PRICE_OPUS_DEFAULT() { return P().OPUS_7D; }
+  // 舊程式碼用到的常數名重導向（保留給第 48 行後的付款流程邏輯讀）
+  var PRICE_SUB = 999;                    // 初始值，下方事件觸發後更新
+  var PRICE_SINGLE = 79;
+  var PRICE_OPUS = 169;
+  var PRICE_SINGLE_FOLLOWUP = 29;
+  function _syncLegacyConsts() {
+    var p = P();
+    PRICE_SUB = p.SUB_STANDARD;
+    PRICE_SINGLE = p.SINGLE_7D;
+    PRICE_OPUS = p.OPUS_7D;
+    PRICE_SINGLE_FOLLOWUP = p.FOLLOWUP;
+  }
+  _syncLegacyConsts();
+  // pricing-loader 抓到最新價時會派發這個事件 → 同步舊常數 → 下一次 openPaywall 自動用新價
+  window.addEventListener('jy-pricing-updated', _syncLegacyConsts);
 
   // ═══ 1. 付費牆 HTML ═══
 
   function _buildPaywallHTML(mode) {
+    var p = P();  // 每次打開付費牆都拿最新價
+    var PRICE_SUB_STANDARD = p.SUB_STANDARD;
+    var PRICE_SUB_PREMIUM  = p.SUB_PREMIUM;
+    var PRICE_SINGLE_FOLLOWUP = p.FOLLOWUP;
+
     // 依模式決定單次價 & 深度價
-    var singlePrice = mode === 'full' ? PRICE_SINGLE_7D
-                    : (mode === 'tarot_only' ? PRICE_SINGLE_TAROT : PRICE_SINGLE_OOTK);
-    var opusPriceNonMember = mode === 'full' ? PRICE_OPUS_7D
-                           : (mode === 'tarot_only' ? PRICE_OPUS_TAROT : PRICE_OPUS_OOTK);
-    var opusPriceMember = mode === 'full' ? PRICE_OPUS_7D_MEMBER
-                        : (mode === 'tarot_only' ? PRICE_OPUS_TAROT_MEMBER : PRICE_OPUS_OOTK_MEMBER);
+    var singlePrice = mode === 'full' ? p.SINGLE_7D
+                    : (mode === 'tarot_only' ? p.SINGLE_TAROT : p.SINGLE_OOTK);
+    var opusPriceNonMember = mode === 'full' ? p.OPUS_7D
+                           : (mode === 'tarot_only' ? p.OPUS_TAROT : p.OPUS_OOTK);
+    var opusPriceMember = mode === 'full' ? p.OPUS_7D_MEMBER
+                        : (mode === 'tarot_only' ? p.OPUS_TAROT_MEMBER : p.OPUS_OOTK_MEMBER);
     var toolName = mode === 'full' ? '七維度' : (mode === 'tarot_only' ? '塔羅' : '開鑰');
+
+    // 會員額度（來自 worker，預設與 worker v52 一致）
+    var tarotDailyStandard  = p.TAROT_DAILY_STANDARD  || 1;
+    var tarotDailyPremium   = p.TAROT_DAILY_PREMIUM   || 2;
+    var d7MonthlyStandard   = p.D7_MONTHLY_STANDARD   || 2;
+    var d7MonthlyPremium    = p.D7_MONTHLY_PREMIUM    || 5;
+    var opusMonthlyPremium  = (typeof p.OPUS_MONTHLY_PREMIUM === 'number') ? p.OPUS_MONTHLY_PREMIUM : 1;
 
     return '<div style="max-width:360px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2rem 1.3rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6);max-height:92vh;overflow-y:auto">' +
       '<div style="font-size:2.4rem;margin-bottom:.5rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
@@ -51,8 +79,8 @@
           '<span style="color:var(--c-gold-pale,#f5e6b8);font-weight:700;font-size:1.1rem">NT$' + PRICE_SUB_STANDARD + '<span style="font-size:.65rem;opacity:.7">/月</span></span>' +
         '</div>' +
         '<div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.7;text-align:left">' +
-          '🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">各每日 1 次</strong><br>' +
-          '🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 2 次</strong><br>' +
+          '🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">各每日 ' + tarotDailyStandard + ' 次</strong><br>' +
+          '🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 ' + d7MonthlyStandard + ' 次</strong><br>' +
           '📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>' +
           '💬 每次解讀含 <strong style="color:var(--c-gold)">1 次免費追問</strong><br>' +
           '🔮 深度解析需另加購 <strong style="color:#a09880">（無會員優惠）</strong>' +
@@ -68,11 +96,11 @@
           '<span style="color:#e9d5ff;font-weight:700;font-size:1.1rem">NT$' + PRICE_SUB_PREMIUM + '<span style="font-size:.65rem;opacity:.7">/月</span></span>' +
         '</div>' +
         '<div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.7;text-align:left">' +
-          '🃏 塔羅＋開鑰 <strong style="color:#c084fc">各每日 2 次</strong><br>' +
-          '🌙 七維度交叉分析 <strong style="color:#c084fc">每月 5 次</strong><br>' +
+          '🃏 塔羅＋開鑰 <strong style="color:#c084fc">各每日 ' + tarotDailyPremium + ' 次</strong><br>' +
+          '🌙 七維度交叉分析 <strong style="color:#c084fc">每月 ' + d7MonthlyPremium + ' 次</strong><br>' +
           '📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>' +
           '💬 每次解讀含 <strong style="color:#c084fc">1 次免費追問</strong><br>' +
-          '🔮 深度解析 <strong style="color:#c084fc">每月 1 次免費</strong><br>' +
+          '🔮 深度解析 <strong style="color:#c084fc">每月 ' + opusMonthlyPremium + ' 次免費</strong><br>' +
           '⚡ 額外深度加購享 <strong style="color:#c084fc">會員價 ' + opusPriceMember + '</strong>' +
             '<span style="opacity:.6">（原 ' + opusPriceNonMember + '）</span>' +
         '</div>' +

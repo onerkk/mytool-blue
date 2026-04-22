@@ -259,9 +259,20 @@ h+='</div></div>';
 h+='<div class="jy-arr" style="right:34%;top:215px"></div>';
 h+='<div class="jy-fgr" style="right:28%;top:232px">👆</div>';
 h+='</div>';
-// v52：動態讀 _JY_PRICING（ai-analysis.js 先載入，此處已可用；fallback 保底）
-var _gP = (typeof window !== 'undefined' && window._JY_PRICING) || { SUB_STANDARD: 999, SUB_PREMIUM: 1999 };
-h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問，點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>三套工具各免費體驗 1 次（含追問）<br>標準會員 NT$' + _gP.SUB_STANDARD + '/月 塔羅＋開鑰每日各 1 次、七維度每月 2 次<br>高級會員 NT$' + (_gP.SUB_PREMIUM||1999).toLocaleString() + '/月 塔羅＋開鑰每日各 2 次、七維度每月 5 次＋深度解析每月 1 次免費</small></div></div>';
+// v52：動態讀 _JY_PRICING（pricing-loader.js 先載入，此處已可用；fallback 保底）
+// v60-hotfix7：額度數字也動態化，worker 調整額度後前端自動跟上
+var _gP = (typeof window !== 'undefined' && window._JY_PRICING) || {
+  SUB_STANDARD: 999, SUB_PREMIUM: 1999,
+  TAROT_DAILY_STANDARD: 1, TAROT_DAILY_PREMIUM: 2,
+  D7_MONTHLY_STANDARD: 2, D7_MONTHLY_PREMIUM: 5,
+  OPUS_MONTHLY_PREMIUM: 1
+};
+var _gTdStd = _gP.TAROT_DAILY_STANDARD || 1;
+var _gTdPrm = _gP.TAROT_DAILY_PREMIUM  || 2;
+var _gD7Std = _gP.D7_MONTHLY_STANDARD  || 2;
+var _gD7Prm = _gP.D7_MONTHLY_PREMIUM   || 5;
+var _gOpPrm = (typeof _gP.OPUS_MONTHLY_PREMIUM === 'number') ? _gP.OPUS_MONTHLY_PREMIUM : 1;
+h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問，點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>三套工具各免費體驗 1 次（含追問）<br>標準會員 NT$' + _gP.SUB_STANDARD + '/月 塔羅＋開鑰每日各 ' + _gTdStd + ' 次、七維度每月 ' + _gD7Std + ' 次<br>高級會員 NT$' + (_gP.SUB_PREMIUM||1999).toLocaleString() + '/月 塔羅＋開鑰每日各 ' + _gTdPrm + ' 次、七維度每月 ' + _gD7Prm + ' 次＋深度解析每月 ' + _gOpPrm + ' 次免費</small></div></div>';
 h+='</div>';
 
 // Step 8: 靜月靈籤（獨立功能）
