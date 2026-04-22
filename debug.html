@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes">
+<title>靜月之光・付款診斷</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: #0a0a10; color: #e5e5e5; line-height: 1.6; min-height: 100vh;
+  }
+  h1 { font-size: 1.2rem; color: #c9a84c; margin: 0 0 .4rem; }
+  .sub { font-size: .8rem; color: #888; margin-bottom: 1.2rem; }
+  .card { background: #14141c; border: 1px solid #2a2a38; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .k { font-size: .75rem; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .v { font-size: .92rem; color: #e5e5e5; word-break: break-all; font-family: "Menlo", "Consolas", monospace; }
+  .v.null { color: #f87171; }
+  .v.ok { color: #86efac; }
+  .btn {
+    display: block; width: 100%; padding: 14px; margin: 16px 0;
+    background: linear-gradient(135deg,#c9a84c,#a88936); color: #000;
+    border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+  }
+  .btn:disabled { opacity: .5; }
+  .btn.secondary { background: #2a2a38; color: #c9a84c; }
+  .diag { padding: 14px; border-radius: 10px; margin: 12px 0; font-size: .95rem; font-weight: 600; line-height: 1.5; }
+  .diag.ok { background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.4); color: #86efac; }
+  .diag.bad { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4); color: #fca5a5; }
+  .diag.warn { background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.4); color: #fcd34d; }
+  .rec { background: #0f0f18; border: 1px solid #2a2a38; border-radius: 8px; padding: 10px; margin: 8px 0; font-size: .8rem; }
+  .rec .row { display: flex; justify-content: space-between; margin: 2px 0; gap: 8px; }
+  .rec .row .k { text-transform: none; font-size: .75rem; letter-spacing: 0; margin: 0; flex-shrink: 0; }
+  .rec .row .v { font-size: .8rem; text-align: right; }
+  .rec.valid { border-color: rgba(34,197,94,.3); background: rgba(34,197,94,.04); }
+  .rec.invalid { border-color: rgba(239,68,68,.3); background: rgba(239,68,68,.04); }
+  pre {
+    background: #0a0a10; color: #a8a8b8; border: 1px solid #2a2a38; border-radius: 8px;
+    padding: 10px; font-size: .7rem; overflow: auto; max-height: 400px; white-space: pre-wrap; word-break: break-all;
+  }
+  .step { font-size: .82rem; color: #888; margin: 8px 0; padding-left: 20px; position: relative; }
+  .step:before { content: "›"; position: absolute; left: 6px; color: #c9a84c; }
+  .step.done:before { content: "✓"; color: #86efac; }
+  .step.fail:before { content: "✗"; color: #f87171; }
+  a { color: #c9a84c; }
+  .hint { font-size: .75rem; color: #666; margin-top: 20px; padding-top: 12px; border-top: 1px solid #2a2a38; }
+</style>
+</head>
+<body>
+
+<h1>🔍 靜月之光・付款診斷</h1>
+<div class="sub">自動讀取你登入的 session，查詢所有付款紀錄與 token 狀態</div>
+
+<div id="steps"></div>
+
+<div id="result"></div>
+
+<button id="btn-run" class="btn">🔎 開始診斷</button>
+<button id="btn-clear" class="btn secondary" style="display:none">🗑️ 清除本機 paid token（付款失敗可試）</button>
+
+<div class="hint">
+  注意：此頁面必須從 jingyue.uk 網域或其同網域子路徑下開啟才能讀到你的登入資訊。<br>
+  若部署在 GitHub Pages (onerkk.github.io)，需與主網站用同樣的網域（jingyue.uk）才有效。<br>
+  若看不到 session，請先到 <a href="https://jingyue.uk">jingyue.uk</a> 登入一次。
+</div>
+
+<script>
+const WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
+const stepsEl = document.getElementById('steps');
+const resultEl = document.getElementById('result');
+const btnRun = document.getElementById('btn-run');
+const btnClear = document.getElementById('btn-clear');
+
+function step(text, cls) {
+  const d = document.createElement('div');
+  d.className = 'step' + (cls ? ' ' + cls : '');
+  d.textContent = text;
+  stepsEl.appendChild(d);
+  return d;
+}
+function card(title, value, isNull) {
+  return `<div class="card"><div class="k">${title}</div><div class="v${isNull ? ' null' : ''}">${value || '(null)'}</div></div>`;
+}
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, ch =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])
+  );
+}
+
+async function run() {
+  stepsEl.innerHTML = '';
+  resultEl.innerHTML = '';
+  btnRun.disabled = true;
+  btnRun.textContent = '⏳ 診斷中...';
+
+  // Step 1：讀 session
+  step('讀取 localStorage._jy_session');
+  const session = localStorage.getItem('_jy_session') || '';
+  const paidToken = localStorage.getItem('_jy_paid_token') || '';
+  const paidTokenType = localStorage.getItem('_jy_paid_token_type') || '';
+  const pendingPayment = localStorage.getItem('_jy_pending_payment') || '';
+  const lastPaid = localStorage.getItem('_jy_last_paid') || '';
+  const subExpires = localStorage.getItem('_jy_sub_expires') || '';
+
+  let html = '<h3 style="color:#c9a84c;font-size:.95rem;margin:16px 0 8px">📦 Local Storage 狀態</h3>';
+  html += card('_jy_session (登入憑證)', session ? session.slice(0, 20) + '...(共 ' + session.length + ' 字)' : null, !session);
+  html += card('_jy_paid_token (已付費 tradeNo)', paidToken || null, !paidToken);
+  html += card('_jy_paid_token_type', paidTokenType || null, !paidTokenType);
+  html += card('_jy_pending_payment', pendingPayment || null, !pendingPayment);
+  html += card('_jy_last_paid (備份)', lastPaid || null, !lastPaid);
+  html += card('_jy_sub_expires (訂閱到期)', subExpires ? new Date(parseInt(subExpires)).toLocaleString('zh-TW') + ' (' + (parseInt(subExpires) > Date.now() ? '有效' : '已過期') + ')' : null, !subExpires);
+  resultEl.innerHTML = html;
+
+  stepsEl.querySelector('.step').classList.add(session ? 'done' : 'fail');
+
+  if (!session) {
+    step('❌ 找不到 session，你可能沒登入，或這頁不是從 jingyue.uk 開啟', 'fail');
+    resultEl.innerHTML += '<div class="diag bad">❌ 請先到 <a href="https://jingyue.uk">jingyue.uk</a> 登入一次，然後再回到此頁診斷。</div>';
+    btnRun.disabled = false;
+    btnRun.textContent = '🔎 重新診斷';
+    return;
+  }
+
+  // Step 2：呼叫 /verify-token 用 session 掃所有付款
+  step('向 worker 查詢所有付款紀錄（用 session 掃）');
+  let data = null;
+  try {
+    const resp = await fetch(WORKER_URL + '/verify-token?s=' + encodeURIComponent(session));
+    data = await resp.json();
+  } catch(e) {
+    step('❌ Worker 連線失敗：' + e.message, 'fail');
+    resultEl.innerHTML += '<div class="diag bad">❌ 無法連到 worker，請檢查網路或 worker 是否部署最新版（需有 /verify-token endpoint）</div>';
+    btnRun.disabled = false;
+    btnRun.textContent = '🔎 重新診斷';
+    return;
+  }
+  stepsEl.lastElementChild.classList.add('done');
+
+  // Step 3：分析 worker 回傳
+  let html2 = '<h3 style="color:#c9a84c;font-size:.95rem;margin:20px 0 8px">🌐 Worker 回傳資訊</h3>';
+  html2 += card('登入 email', data.currentEmail, !data.currentEmail);
+  html2 += card('userKey', data.currentUserKey, !data.currentUserKey);
+  html2 += card('找到的付款筆數', String(data.totalFound || 0), (data.totalFound || 0) === 0);
+
+  // 診斷訊息
+  const diagCls = data.diagnosis && data.diagnosis.indexOf('✅') >= 0 ? 'ok'
+                 : data.diagnosis && data.diagnosis.indexOf('❌') >= 0 ? 'bad' : 'warn';
+  html2 += '<div class="diag ' + diagCls + '">' + escapeHtml(data.diagnosis || '(無診斷訊息)') + '</div>';
+
+  // 付款紀錄列表
+  if (data.records && data.records.length) {
+    html2 += '<h3 style="color:#c9a84c;font-size:.95rem;margin:20px 0 8px">💳 付款紀錄（新到舊，最多 10 筆）</h3>';
+    data.records.forEach(function(r, idx) {
+      const valid = r.hasValidToken;
+      html2 += '<div class="rec ' + (valid ? 'valid' : 'invalid') + '">';
+      html2 += '<div class="row"><span class="k">#' + (idx + 1) + ' tradeNo</span><span class="v">' + escapeHtml(r.tradeNo) + '</span></div>';
+      html2 += '<div class="row"><span class="k">金額</span><span class="v">NT$' + (r.amount || '?') + ' / ' + escapeHtml(r.mode || '?') + '</span></div>';
+      html2 += '<div class="row"><span class="k">訂單狀態</span><span class="v ' + (r.payStatus === 'paid' ? 'ok' : 'null') + '">' + escapeHtml(r.payStatus || '?') + '</span></div>';
+      html2 += '<div class="row"><span class="k">付款時間</span><span class="v">' + (r.paidAt ? new Date(r.paidAt).toLocaleString('zh-TW') : '(未付款)') + '</span></div>';
+      html2 += '<div class="row"><span class="k">paid_token KV</span><span class="v ' + (r.paidTokenValue ? 'ok' : 'null') + '">' + (r.paidTokenValue || '(null)') + '</span></div>';
+      html2 += '<div class="row"><span class="k">paid_owner</span><span class="v">' + (r.paidOwner || '(null)') + '</span></div>';
+      html2 += '<div class="row"><span class="k">可用於解讀</span><span class="v ' + (valid ? 'ok' : 'null') + '">' + (valid ? '✅ 是' : '❌ 否') + '</span></div>';
+      html2 += '</div>';
+    });
+  }
+
+  // 原始 JSON
+  html2 += '<h3 style="color:#c9a84c;font-size:.95rem;margin:20px 0 8px">🔧 原始 JSON</h3>';
+  html2 += '<pre>' + escapeHtml(JSON.stringify(data, null, 2)) + '</pre>';
+
+  resultEl.innerHTML += html2;
+
+  btnRun.disabled = false;
+  btnRun.textContent = '🔎 重新診斷';
+  btnClear.style.display = 'block';
+}
+
+btnClear.onclick = function() {
+  if (!confirm('確定清除所有已付費/訂閱的本機紀錄？（KV 端的付款紀錄不會被清）')) return;
+  ['_jy_paid_token','_jy_paid_token_type','_jy_pending_payment','_jy_last_paid','_jy_sub_expires'].forEach(function(k){
+    localStorage.removeItem(k);
+  });
+  alert('已清除');
+  run();
+};
+
+btnRun.onclick = run;
+</script>
+
+</body>
+</html>
