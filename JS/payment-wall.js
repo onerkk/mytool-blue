@@ -1,10 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
-// 💰 靜月之光 — 綠界付費牆 v52 (payment-wall.js)
-// v52 重構：
-//   - 定價全部從 window.JY_PRICES 讀取（ui.js 頂端定義，與 worker.js PRICE_* 對齊）
-//   - 雙層會員 standard (NT$999) / premium (NT$1999)
-//   - Opus 單次價依 tier 動態：高級會員加購 99/49、非會員／標準 169/79
-//   - 追問單次 NT$29
+// 💰 靜月之光 — 綠界付費牆 v3 (payment-wall.js)
+// v29：新增 NT$10 單次解讀（僅信用卡）
 // 載入位置：在 index.html 最底部（所有 JS 之後）
 // ═══════════════════════════════════════════════════════════════
 
@@ -12,86 +8,33 @@
   'use strict';
 
   var WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
-
-  // v52：從全域中央定價表動態讀取（getter）。若 ui.js 尚未載入就先給硬值 fallback。
-  function P() {
-    return window.JY_PRICES || {
-      SUB_STANDARD: 999, SUB_PREMIUM: 1999,
-      SINGLE_7D: 79, SINGLE_TAROT: 39, SINGLE_OOTK: 39,
-      FOLLOWUP: 29,
-      OPUS_7D: 169, OPUS_TAROT: 79, OPUS_OOTK: 79,
-      OPUS_7D_MEMBER: 99, OPUS_TAROT_MEMBER: 49, OPUS_OOTK_MEMBER: 49
-    };
-  }
-  // 依 mode 取單次價（標準 Sonnet）
-  function _singlePriceFor(mode) {
-    var _P = P();
-    if (mode === 'full' || mode === '7d') return _P.SINGLE_7D;
-    if (mode === 'tarot_only' || mode === 'tarot') return _P.SINGLE_TAROT;
-    if (mode === 'ootk') return _P.SINGLE_OOTK;
-    return _P.SINGLE_7D;
-  }
-  // 依 mode + tier 取 Opus 價（非會員/標準會員 → 原價；高級會員 → 加購優惠）
-  function _opusPriceFor(mode) {
-    // 優先用 ui.js 定義的 helper，確保全站一致
-    if (typeof window._jyOpusPriceFor === 'function') return window._jyOpusPriceFor(mode);
-    var _P = P();
-    var isPrem = false;
-    try { isPrem = (localStorage.getItem('_jy_user_tier') === 'premium'); } catch(_){}
-    if (mode === 'full' || mode === '7d') return isPrem ? _P.OPUS_7D_MEMBER : _P.OPUS_7D;
-    if (mode === 'tarot_only' || mode === 'tarot') return isPrem ? _P.OPUS_TAROT_MEMBER : _P.OPUS_TAROT;
-    if (mode === 'ootk') return isPrem ? _P.OPUS_OOTK_MEMBER : _P.OPUS_OOTK;
-    return isPrem ? _P.OPUS_7D_MEMBER : _P.OPUS_7D;
-  }
-  function _isPremium() {
-    if (typeof window._jyIsPremium === 'function') return window._jyIsPremium();
-    try { return localStorage.getItem('_jy_user_tier') === 'premium'; } catch(_){ return false; }
-  }
+  var PRICE_SUB = 1299;
+  var PRICE_SINGLE = 69;
+  var PRICE_OPUS = 99;
+  var PRICE_SINGLE_FOLLOWUP = 19;
 
   // ═══ 1. 付費牆 HTML ═══
 
   function _buildPaywallHTML(mode) {
-    var _P = P();
-    var singlePrice = _singlePriceFor(mode);
-    var opusSinglePrice = _opusPriceFor(mode);
+    var singlePrice = mode === 'full' ? 69 : 29;
+    var opusSinglePrice = (mode === 'tarot_only' || mode === 'ootk') ? 49 : 99;
     var toolName = mode === 'full' ? '七維度' : (mode === 'tarot_only' ? '塔羅' : '開鑰');
-    var isPrem = _isPremium();
-    // 非會員/標準會員才顯示「高級會員加購優惠價」hint
-    var _opusHint = '';
-    if (!isPrem) {
-      var _memPrice = (mode === 'full') ? _P.OPUS_7D_MEMBER
-                    : (mode === 'ootk') ? _P.OPUS_OOTK_MEMBER : _P.OPUS_TAROT_MEMBER;
-      _opusHint = '<div style="font-size:.58rem;color:#a78bfa;margin-top:.15rem;opacity:.85">高級會員加購優惠 NT$' + _memPrice + '</div>';
-    }
     return '<div style="max-width:360px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
       '<div style="font-size:2.8rem;margin-bottom:.8rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
-      '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.1rem;margin-bottom:.3rem;font-family:var(--f-display,serif)">靜月會員方案</h3>' +
-      // ── 雙層方案對比（NT$999 標準 / NT$1999 高級） ──
-      '<div style="display:flex;gap:.4rem;margin-bottom:.9rem;text-align:left">' +
-        '<div style="flex:1;padding:.55rem .5rem;border-radius:10px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.25)">' +
-          '<div style="font-size:.72rem;color:var(--c-gold);font-weight:700;margin-bottom:.15rem">👑 標準</div>' +
-          '<div style="font-size:.95rem;color:var(--c-gold-pale,#f5e6b8);font-weight:700">NT$' + _P.SUB_STANDARD + '<span style="font-size:.6rem;font-weight:400;opacity:.7">/月</span></div>' +
-          '<div style="font-size:.55rem;color:var(--c-text-dim,#a09880);line-height:1.6;margin-top:.3rem">塔羅/開鑰 1次/日<br>七維度 2次/月</div>' +
-        '</div>' +
-        '<div style="flex:1;padding:.55rem .5rem;border-radius:10px;background:rgba(147,51,234,.08);border:1px solid rgba(147,51,234,.35)">' +
-          '<div style="font-size:.72rem;color:#c084fc;font-weight:700;margin-bottom:.15rem">💎 高級</div>' +
-          '<div style="font-size:.95rem;color:#e9d5ff;font-weight:700">NT$' + _P.SUB_PREMIUM + '<span style="font-size:.6rem;font-weight:400;opacity:.7">/月</span></div>' +
-          '<div style="font-size:.55rem;color:var(--c-text-dim,#a09880);line-height:1.6;margin-top:.3rem">塔羅/開鑰 2次/日<br>七維度 5次/月<br>Opus 1次免費<br>📷照片分析</div>' +
-        '</div>' +
+      '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.1rem;margin-bottom:.3rem;font-family:var(--f-display,serif)">靜月會員</h3>' +
+      '<p style="font-size:1.3rem;color:var(--c-gold-pale,#f5e6b8);font-weight:700;margin-bottom:.15rem">NT$' + PRICE_SUB + '<span style="font-size:.7rem;font-weight:400;opacity:.7"> /月</span></p>' +
+      '<div style="font-size:.78rem;color:var(--c-text-dim,#a09880);line-height:1.8;margin-bottom:.8rem;text-align:left;padding:0 .4rem">' +
+        '🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">每日 3 次</strong><br>' +
+        '🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 5 次</strong><br>' +
+        '📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>' +
+        '🔮 深度解析 <strong style="color:#c084fc">每月 2 次免費</strong><br>' +
+        '⚡ 額外深度解析享 <strong style="color:#c084fc">會員半價</strong>' +
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-        // 標準會員
-        '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription_standard\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:12px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold,#c9a84c);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">👑 開通標準 NT$' + _P.SUB_STANDARD + '/月</button>' +
-        // 高級會員
-        '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription_premium\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.18),rgba(147,51,234,.06));color:#c084fc;font-size:.9rem;font-weight:700;border:1.5px solid rgba(147,51,234,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(147,51,234,.12)">💎 開通高級 NT$' + _P.SUB_PREMIUM + '/月</button>' +
-        // 單次
+        '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#c9a84c);font-size:.9rem;font-weight:700;border:1.5px solid rgba(212,175,55,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(212,175,55,.12)">🌙 開通會員 NT$' + PRICE_SUB + '/月</button>' +
         '<button onclick="_jyStartPayment(\'' + mode + '\',\'single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02));color:var(--c-text,#e8dcc8);font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.12);cursor:pointer;font-family:inherit">⚡ ' + toolName + '單次 NT$' + singlePrice + '</button>' +
-        // Opus 單次（依 tier 動態）
-        '<div style="width:220px">' +
-          '<button onclick="_jyStartPayment(\'' + mode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.1),rgba(147,51,234,.04));color:#c084fc;font-size:.85rem;font-weight:600;border:1px solid rgba(147,51,234,.25);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + opusSinglePrice + '</button>' +
-          _opusHint +
-        '</div>' +
-        '<div style="font-size:.58rem;color:var(--c-text-muted,#7a7060);margin-top:-.1rem;opacity:.7">單次僅限信用卡・含 1 次免費追問</div>' +
+        '<button onclick="_jyStartPayment(\'' + mode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.1),rgba(147,51,234,.04));color:#c084fc;font-size:.85rem;font-weight:600;border:1px solid rgba(147,51,234,.25);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + opusSinglePrice + '</button>' +
+        '<div style="font-size:.58rem;color:var(--c-text-muted,#7a7060);margin-top:-.1rem;opacity:.7">單次僅限信用卡・含追問</div>' +
         '<div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;margin-top:.3rem">' +
           '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">💳信用卡</span>' +
           '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">🏧ATM</span>' +
@@ -139,30 +82,32 @@
       if (payWin) {
         payWin.document.write(data.html);
         payWin.document.close();
-        // v52：label 顯示用的價格全部依 tier + mode 動態計算
-        var _P = P();
-        var _opusDisp = _opusPriceFor(mode);
-        var _singleDisp = _singlePriceFor(mode);
-        var _subPrice = (type === 'subscription_premium') ? _P.SUB_PREMIUM : _P.SUB_STANDARD;
-        var _subLabel = (type === 'subscription_premium') ? '高級會員' : '標準會員';
-        var labelText = type === 'opus_single' ? '深度解析 NT$' + _opusDisp
-                      : type === 'followup_single' ? '追問單次 NT$' + _P.FOLLOWUP
-                      : type === 'single' ? '單次解讀 NT$' + _singleDisp
-                      : _subLabel + ' NT$' + _subPrice;
+        var opusDisplayPrice = (mode === 'tarot_only' || mode === 'ootk') ? 49 : PRICE_OPUS;
+        var singleDisplayPrice = mode === 'full' ? 69 : 29;
+        var labelText = type === 'opus_single' ? '深度解析 NT$' + opusDisplayPrice
+                      : type === 'followup_single' ? '追問單次 NT$' + PRICE_SINGLE_FOLLOWUP
+                      : type === 'single' ? '單次解讀 NT$' + singleDisplayPrice
+                      : '會員 NT$' + PRICE_SUB;
         // 關閉 Opus 付費 modal（如果存在）
         try { var _om = document.getElementById('jy-opus-pay-modal'); if (_om) _om.remove(); } catch(_) {}
         var waitModal = document.createElement('div');
         waitModal.id = 'jy-pay-modal';
         waitModal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75)';
+        // v60-hotfix5：主視窗自動輪詢付款狀態（信用卡 3 秒內知道，ATM/超商會等到真的付完）
+        //   不再依賴用戶手動點「我已完成付款」（信用卡付完常常忘記回來按）
+        //   偵測到 paid=true 立刻觸發對應的 AI 分析函式，用戶不需任何操作
         waitModal.innerHTML = '<div style="background:#1a0a0a;border:1px solid rgba(201,168,76,.25);border-radius:16px;padding:2rem 1.5rem;text-align:center;max-width:320px">' +
           '<div style="font-size:1.5rem;margin-bottom:.6rem">💳</div>' +
           '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">付款頁面已開啟</div>' +
-          '<div style="font-size:.8rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">請在新視窗完成付款（' + labelText + '）<br>付完後點下面按鈕</div>' +
+          '<div style="font-size:.8rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:.8rem">請在新視窗完成付款（' + labelText + '）<br><span style="color:#fbbf24;font-weight:600">⚠️ 付完請回到此頁面</span>，系統會自動繼續為您生成解讀</div>' +
+          '<div id="jy-pay-autodetect" style="font-size:.75rem;color:#60a5fa;margin-bottom:.8rem;padding:.5rem;background:rgba(96,165,250,.08);border-radius:6px"><span class="jy-pay-dot">●</span> 自動偵測付款中...</div>' +
           '<button onclick="_jyCheckPaymentAndUnlock()" style="width:200px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.06));color:var(--c-gold);font-size:.88rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit">✅ 我已完成付款</button>' +
-          '<div style="font-size:.6rem;color:var(--c-text-muted);margin-top:.5rem;opacity:.5">如果新視窗被擋，請允許彈出視窗</div>' +
+          '<div style="font-size:.6rem;color:var(--c-text-muted);margin-top:.5rem;opacity:.5">如果自動偵測沒反應，請點上方按鈕</div>' +
         '</div>';
         waitModal.addEventListener('click', function(e) { if (e.target === waitModal) waitModal.remove(); });
         document.body.appendChild(waitModal);
+        // v60-hotfix5：啟動輪詢
+        _jyStartPaymentPoll(data.tradeNo);
       } else {
         document.open(); document.write(data.html); document.close();
       }
@@ -172,6 +117,150 @@
       alert('付款建立失敗：' + (err.message || '請稍後再試'));
     }
   };
+
+  // v60-hotfix5：付款成功後自動觸發對應 AI 分析的共用函式
+  //   key 理解：用戶付費時原頁面 state 仍在（S 物件、表單、本地分析結果都保留），
+  //   只要直接呼叫對應的 _triggerXXX 函式即可重啟 AI 分析流程。不需儲存 payload。
+  //   pending = { mode, type, tradeNo, ts }
+  //   mode: 'full' | 'tarot_only' | 'ootk'
+  //   type: 'single' | 'opus_single' | 'subscription' | 'subscription_premium' | 'followup_single'
+  function _jyAutoTriggerAfterPayment(pending) {
+    if (!pending) return false;
+    var mode = pending.mode || 'full';
+    var type = pending.type || 'single';
+    // 深度旗標：opus_single 一定是深度路徑，subscription 不是（會員可選）
+    if (type === 'opus_single') {
+      try { window._jyOpusDepth = true; } catch(_) {}
+    }
+    try {
+      // followup_single 維持原邏輯（_jyCheckPaymentAndUnlock 內已處理）
+      if (type === 'followup_single') return false;
+      // 訂閱型：reload 頁面（會員狀態已寫入，reload 後原表單還在）
+      //   但注意：reload 會清掉已生成的本地分析結果，用戶要從填表單開始
+      //   這個 case 少見（訂閱通常是免費用完才跳），暫不自動觸發，靠 reload 重啟流程
+      if (type === 'subscription' || type === 'subscription_standard' || type === 'subscription_premium') {
+        return false; // 走現有 reload 邏輯
+      }
+      // 單次 / Opus 單次：根據 mode 呼叫對應的 AI 觸發函式
+      if (mode === 'tarot_only') {
+        if (typeof window._triggerTarotAI === 'function') { window._triggerTarotAI(); return true; }
+        if (typeof _triggerTarotAI === 'function') { _triggerTarotAI(); return true; }
+      } else if (mode === 'ootk') {
+        if (typeof window._triggerOOTKAI === 'function') { window._triggerOOTKAI(); return true; }
+        if (typeof window._ootkTriggerAI === 'function') { window._ootkTriggerAI(); return true; }
+      } else {
+        // mode === 'full' 或其他 → 七維度
+        if (typeof window._triggerAIDeep === 'function') { window._triggerAIDeep(); return true; }
+        if (typeof _triggerAIDeep === 'function') { _triggerAIDeep(); return true; }
+      }
+    } catch (err) {
+      console.warn('[Payment] auto trigger failed:', err);
+    }
+    return false;
+  }
+
+  // v60-hotfix5：主視窗自動輪詢付款狀態
+  //   每 3 秒打一次 /check-payment，最多 10 分鐘（200 次）
+  //   成功 → 執行完整解鎖流程（寫 token + 觸發 AI）
+  //   失敗 → 停止輪詢，用戶仍可手動點「我已完成付款」
+  var _jyPayPollTimer = null;
+  var _jyPayPollCount = 0;
+  function _jyStartPaymentPoll(tradeNo) {
+    if (_jyPayPollTimer) { clearInterval(_jyPayPollTimer); _jyPayPollTimer = null; }
+    _jyPayPollCount = 0;
+    var MAX_POLLS = 200; // 3 秒 × 200 = 10 分鐘
+    _jyPayPollTimer = setInterval(async function() {
+      _jyPayPollCount++;
+      if (_jyPayPollCount > MAX_POLLS) {
+        clearInterval(_jyPayPollTimer); _jyPayPollTimer = null;
+        var hintEl = document.getElementById('jy-pay-autodetect');
+        if (hintEl) hintEl.innerHTML = '<span style="color:#fbbf24">⚠️ 自動偵測已停止，請手動點「我已完成付款」</span>';
+        return;
+      }
+      try {
+        var resp = await fetch(WORKER_URL + '/check-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tradeNo: tradeNo })
+        });
+        var data = await resp.json();
+        if (data.paid) {
+          clearInterval(_jyPayPollTimer); _jyPayPollTimer = null;
+          _jyUnlockAndTrigger(); // 走跟手動按鈕同樣的解鎖 + 觸發邏輯
+        }
+      } catch(_) { /* 網路短暫斷不中斷輪詢 */ }
+    }, 3000);
+  }
+
+  // v60-hotfix5：實際執行「寫 token → 觸發 AI」的核心邏輯（自動輪詢和手動按按鈕共用）
+  async function _jyUnlockAndTrigger() {
+    var pending = null;
+    try { pending = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null'); } catch(_) {}
+    if (!pending || !pending.tradeNo) return false;
+    // 寫 token
+    localStorage.setItem('_jy_paid_token', pending.tradeNo);
+    localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
+    if (pending.type !== 'single' && pending.type !== 'opus_single' && pending.type !== 'followup_single') {
+      localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 30));
+    }
+    localStorage.removeItem('_jy_pending_payment');
+    var m = document.getElementById('jy-pay-modal'); if (m) m.remove();
+
+    // followup_single 走現有邏輯（appendFollowUpUI 還原追問 UI）
+    if (pending.type === 'followup_single') {
+      var banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,rgba(34,197,94,.92),rgba(22,163,74,.95));color:white;text-align:center;padding:14px;font-size:.88rem;font-weight:600;box-shadow:0 2px 16px rgba(0,0,0,.3);transition:transform .4s';
+      banner.textContent = '✅ 付款成功！追問單次已解鎖，請點「抽補充牌」繼續';
+      document.body.prepend(banner);
+      setTimeout(function() {
+        banner.style.transform = 'translateY(-100%)';
+        setTimeout(function() { banner.remove(); }, 500);
+      }, 3500);
+      try {
+        var _fuA = document.getElementById('tarot-followup-area');
+        if (_fuA && typeof _appendFollowUpUI === 'function') {
+          var _srcMode = _fuA.getAttribute('data-source') || 'tarot';
+          var _parent = _fuA.parentNode;
+          _fuA.remove();
+          _appendFollowUpUI(_parent, _srcMode);
+          var _newFuA = document.getElementById('tarot-followup-area');
+          if (_newFuA) _newFuA.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch(_e) { console.warn('[Payment] fu UI restore failed:', _e); }
+      return true;
+    }
+
+    // 訂閱：reload 走現有流程（用戶重新填表 → 跑免費路徑會員放行）
+    if (pending.type === 'subscription' || pending.type === 'subscription_standard' || pending.type === 'subscription_premium') {
+      // 顯示成功 banner 1.5 秒後 reload
+      var banner2 = document.createElement('div');
+      banner2.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,rgba(34,197,94,.92),rgba(22,163,74,.95));color:white;text-align:center;padding:14px;font-size:.88rem;font-weight:600;box-shadow:0 2px 16px rgba(0,0,0,.3)';
+      banner2.textContent = '✅ 付款成功！30 天會員已開通，即將重新載入頁面...';
+      document.body.prepend(banner2);
+      setTimeout(function() { window.location.reload(); }, 1500);
+      return true;
+    }
+
+    // 單次 / Opus 單次：顯示 banner + 自動觸發 AI
+    var banner3 = document.createElement('div');
+    banner3.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,rgba(34,197,94,.92),rgba(22,163,74,.95));color:white;text-align:center;padding:14px;font-size:.88rem;font-weight:600;box-shadow:0 2px 16px rgba(0,0,0,.3);transition:transform .4s';
+    var isOpus = pending.type === 'opus_single';
+    banner3.textContent = isOpus ? '✅ 付款成功！深度解析正在為您生成...' : '✅ 付款成功！正在為您生成解讀...';
+    document.body.prepend(banner3);
+    setTimeout(function() {
+      banner3.style.transform = 'translateY(-100%)';
+      setTimeout(function() { banner3.remove(); }, 500);
+    }, 3500);
+
+    // ★ 核心：自動觸發對應的 AI 分析函式
+    var triggered = _jyAutoTriggerAfterPayment(pending);
+    if (!triggered) {
+      // 沒觸發成功（例如頁面 state 消失、函式沒載入），fallback 到 reload
+      console.warn('[Payment] auto trigger returned false, falling back to reload');
+      setTimeout(function() { window.location.reload(); }, 1500);
+    }
+    return true;
+  }
 
   window._jyCheckPaymentAndUnlock = async function() {
     var pending = null;
@@ -186,53 +275,11 @@
       });
       var data = await resp.json();
       if (data.paid) {
-        localStorage.setItem('_jy_paid_token', pending.tradeNo);
-        localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
-        // v52：訂閱類型（standard/premium/舊 'subscription'）都存到期時間，單次類不存
-        var _subTypes = ['subscription','subscription_standard','subscription_premium'];
-        if (_subTypes.indexOf(pending.type) >= 0) {
-          localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 30));
-          // v52：同步寫入用戶 tier，讓付費牆/Opus modal 立刻用新 tier 顯示價格
-          var _newTier = (pending.type === 'subscription_premium') ? 'premium' : 'standard';
-          try {
-            localStorage.setItem('_jy_user_tier', _newTier);
-            window._jyUserTier = _newTier;
-          } catch(_){}
-        }
-        localStorage.removeItem('_jy_pending_payment');
-        var m = document.getElementById('jy-pay-modal'); if (m) m.remove();
-
-        // ★ v46.2 修 bug #27：追問單次付款後不 reload(會清掉首輪結果+追問區,
-        //                     使用者付了錢卻找不到原本要追問的那筆解讀)。
-        //                     改為顯示成功 banner,頁面狀態保留,使用者可直接點追問按鈕,
-        //                     precheck 會帶上剛寫入的 fu token 放行。
-        if (pending.type === 'followup_single') {
-          var banner = document.createElement('div');
-          banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,rgba(34,197,94,.92),rgba(22,163,74,.95));color:white;text-align:center;padding:14px;font-size:.88rem;font-weight:600;box-shadow:0 2px 16px rgba(0,0,0,.3);transition:transform .4s';
-          banner.textContent = '✅ 付款成功！追問單次已解鎖，請點「抽補充牌」繼續';
-          document.body.prepend(banner);
-          setTimeout(function() {
-            banner.style.transform = 'translateY(-100%)';
-            setTimeout(function() { banner.remove(); }, 500);
-          }, 3500);
-          // 付費牆 UI 可能蓋在原追問區上——還原成可點的追問 UI
-          try {
-            var _fuA = document.getElementById('tarot-followup-area');
-            if (_fuA && typeof _appendFollowUpUI === 'function') {
-              var _srcMode = _fuA.getAttribute('data-source') || 'tarot';
-              var _parent = _fuA.parentNode;
-              // 移除付費牆,重建追問 UI(樣式一致)
-              _fuA.remove();
-              _appendFollowUpUI(_parent, _srcMode);
-              // 滾到追問區讓使用者看到
-              var _newFuA = document.getElementById('tarot-followup-area');
-              if (_newFuA) _newFuA.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          } catch(_e) { console.warn('[Payment] fu UI restore failed:', _e); }
-          return; // 不 reload
-        }
-
-        window.location.reload();
+        // v60-hotfix5：改走共用 _jyUnlockAndTrigger
+        //   包含：寫 token → 清 pending → 關 modal → 顯示 banner → 自動觸發對應 AI
+        //   追問/訂閱/單次/Opus 都有正確分支
+        if (_jyPayPollTimer) { clearInterval(_jyPayPollTimer); _jyPayPollTimer = null; }
+        await _jyUnlockAndTrigger();
       } else {
         alert('尚未收到付款通知，請等幾秒後再按一次');
       }
@@ -462,47 +509,36 @@
   }
 
   // ═══ 7. 從綠界付款回來 ═══
+  //   v60-hotfix5：綠界 OrderResultURL 觸發時（有些用戶會從綠界點「回商店」按鈕）,
+  //                統一走 _jyUnlockAndTrigger 流程（寫 token + 自動觸發 AI）
+  //                舊版只寫 token + 顯示 banner 就結束 = 用戶看不到答案 = 付款流失主因
 
   function _checkPaymentReturn() {
     var params = new URLSearchParams(window.location.search);
     var paidTradeNo = params.get('paid');
     if (!paidTradeNo) return;
 
-    // v52：從 pending 判斷是單次還是訂閱，並同步 tier
+    // 立刻清掉 URL 參數避免重整重複觸發
+    history.replaceState(null, '', window.location.pathname + window.location.hash);
+
+    // 從 pending 拿 mode/type；若 pending 已被輪詢清掉，tradeNo 還在 localStorage 就不重跑
     var pending = null;
     try { pending = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null'); } catch(_) {}
-    var isSingle = (pending && (pending.type === 'single' || pending.type === 'opus_single' || pending.type === 'followup_single'));
-    var _pType = pending && pending.type;
-    var _isSubPremium = (_pType === 'subscription_premium');
-    var _isSubStd = (_pType === 'subscription' || _pType === 'subscription_standard');
 
-    history.replaceState(null, '', window.location.pathname + window.location.hash);
-    localStorage.setItem('_jy_paid_token', paidTradeNo);
-    localStorage.setItem('_jy_paid_token_type', _pType || 'single');
-    if (!isSingle) {
-      localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 30));
-      // v52：同步 tier 讓 UI 立刻用對的價格顯示
-      var _newTier = _isSubPremium ? 'premium' : 'standard';
-      try {
-        localStorage.setItem('_jy_user_tier', _newTier);
-        window._jyUserTier = _newTier;
-      } catch(_){}
+    // 若 pending 已被主視窗輪詢處理掉 → 不重複觸發（避免連按兩次）
+    if (!pending || !pending.tradeNo || pending.tradeNo !== paidTradeNo) {
+      // 但 token 還是要確保寫入（防止輪詢沒跑到但綠界回跳成功的極罕見狀況）
+      if (!localStorage.getItem('_jy_paid_token')) {
+        localStorage.setItem('_jy_paid_token', paidTradeNo);
+        localStorage.setItem('_jy_paid_token_type', 'single');
+      }
+      return;
     }
-    localStorage.removeItem('_jy_pending_payment');
 
-    var banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,rgba(34,197,94,.92),rgba(22,163,74,.95));color:white;text-align:center;padding:14px;font-size:.88rem;font-weight:600;box-shadow:0 2px 16px rgba(0,0,0,.3);transition:transform .4s';
-    var _bannerTxt = '✅ 付款成功！30 天會員已開通';
-    if (pending && pending.type === 'followup_single') _bannerTxt = '✅ 付款成功！追問單次已解鎖，請回到原本的解讀頁點追問';
-    else if (isSingle) _bannerTxt = '✅ 付款成功！單次解讀已解鎖';
-    else if (_isSubPremium) _bannerTxt = '✅ 付款成功！💎 高級會員已開通 30 天';
-    else if (_isSubStd) _bannerTxt = '✅ 付款成功！👑 標準會員已開通 30 天';
-    banner.textContent = _bannerTxt;
-    document.body.prepend(banner);
-    setTimeout(function() {
-      banner.style.transform = 'translateY(-100%)';
-      setTimeout(function() { banner.remove(); }, 500);
-    }, 3000);
+    // 停止輪詢避免雙觸發
+    if (_jyPayPollTimer) { clearInterval(_jyPayPollTimer); _jyPayPollTimer = null; }
+    // 走跟主視窗輪詢一樣的完整解鎖 + 觸發 AI 流程
+    _jyUnlockAndTrigger();
   }
 
   // ═══ 8. 攔截所有入口按鈕（capturing phase，比 ui.js 的 handler 更早執行）═══
