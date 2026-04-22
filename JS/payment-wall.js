@@ -658,17 +658,52 @@
       var iconClass = icon ? icon.className : '';
       var onclick = btn.getAttribute('onclick') || '';
 
-      if (btn.id === 'btn-tarot-go') {
+      // v60-hotfix7 Bug 修復：
+      //   原本用 btn.id / onclick 寫死判斷 mode，結果：
+      //   - 塔羅用 pickTool('tarot')，按鈕 id 仍是 btn-go（只有罕見的純塔羅 flow 才會改成 btn-tarot-go）
+      //   - 開鑰用 pickTool('ootk')，按鈕 id 也是 btn-go
+      //   - 第 583 行 btn.id === 'btn-go' 就把塔羅/開鑰全部誤判為 full
+      //   → 付費牆顯示「七維度單次 NT$79」而非「塔羅單次 NT$39」
+      //   修法：先讀 ui.js 的 window._selectedTool（真理來源），再 fallback 到原判斷
+      //   _selectedTool 值: 'tarot' | 'ootk' | 'full'（pickTool 時寫入）
+
+      // ── (A) 優先讀目前選中的工具卡片（DOM 真理來源，不需動 ui.js）──
+      //   ui.js 的 pickTool() 會在 #tool-tarot / #tool-ootk / #tool-full 之一加 .selected class
+      //   這是 ui.js 第 919-928 行的行為，從 v17 起穩定未變
+      var selectedTool = null;
+      try {
+        var _elT = document.getElementById('tool-tarot');
+        var _elO = document.getElementById('tool-ootk');
+        var _elF = document.getElementById('tool-full');
+        if (_elT && _elT.classList && _elT.classList.contains('selected'))      selectedTool = 'tarot';
+        else if (_elO && _elO.classList && _elO.classList.contains('selected')) selectedTool = 'ootk';
+        else if (_elF && _elF.classList && _elF.classList.contains('selected')) selectedTool = 'full';
+      } catch(_) {}
+
+      // 只有在「確實是三個工具 CTA 按鈕」的情況下才啟用攔截
+      //   辨識 CTA 按鈕：btn-go / btn-tarot-go / onclick 含 enterFullAnalysis 或 submitStep0Fast / fa-hand-pointer 圖示
+      var isToolCTA = false;
+      if (btn.id === 'btn-go' || btn.id === 'btn-tarot-go') isToolCTA = true;
+      else if (onclick.indexOf('enterFullAnalysis') >= 0) isToolCTA = true;
+      else if (onclick.indexOf('submitStep0Fast') >= 0) isToolCTA = true;
+      else if (iconClass.indexOf('fa-hand-pointer') >= 0) isToolCTA = true;
+
+      if (!isToolCTA) return;
+
+      // ── (B) mode 決定：_selectedTool 優先，fallback 到舊邏輯 ──
+      if (selectedTool === 'tarot') {
         mode = 'tarot_only';
-      } else if (iconClass.indexOf('fa-hand-pointer') >= 0) {
-        mode = 'tarot_only';
-      }
-      else if (onclick.indexOf('enterFullAnalysis') >= 0) {
+      } else if (selectedTool === 'ootk') {
+        mode = 'ootk';
+      } else if (selectedTool === 'full') {
         mode = 'full';
-      } else if (onclick.indexOf('submitStep0Fast') >= 0) {
-        mode = 'full';
-      } else if (btn.id === 'btn-go') {
-        mode = 'full';
+      } else {
+        // _selectedTool 讀不到 → 退回舊邏輯
+        if (btn.id === 'btn-tarot-go') mode = 'tarot_only';
+        else if (iconClass.indexOf('fa-hand-pointer') >= 0) mode = 'tarot_only';
+        else if (onclick.indexOf('enterFullAnalysis') >= 0) mode = 'full';
+        else if (onclick.indexOf('submitStep0Fast') >= 0) mode = 'full';
+        else if (btn.id === 'btn-go') mode = 'full'; // 最後保底
       }
 
       if (!mode) return;
