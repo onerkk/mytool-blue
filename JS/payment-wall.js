@@ -228,10 +228,16 @@
     document.body.appendChild(loadModal);
 
     try {
+      // v60-hotfix7-d：修正 session token 讀取（原本讀錯 key 名 _jy_session_token，
+      //   全站正確 key 是 _jy_session；另外優先用 window._JY_SESSION_TOKEN（runtime 快取）
+      //   跟攔截器第 800-801 行的邏輯統一，避免同個檔案裡兩種取法不一致
+      var _st = window._JY_SESSION_TOKEN || '';
+      if (!_st) { try { _st = localStorage.getItem('_jy_session') || ''; } catch(_e){} }
+
       var resp = await fetch(WORKER_URL + '/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: mode, type: type, session_token: localStorage.getItem('_jy_session_token') || '' })
+        body: JSON.stringify({ mode: mode, type: type, session_token: _st })
       });
       var data = await resp.json();
       if (data.error) throw new Error(data.error);
