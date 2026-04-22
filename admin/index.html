@@ -137,13 +137,29 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 <div id="loginScreen" class="login-wrap">
   <div class="login-box">
     <h2>🌙 靜月之光</h2>
-    <p>管理後台</p>
-    <input type="password" id="tokenInput" placeholder="輸入管理員 Token" autocomplete="off">
-    <button onclick="doLogin()">登入</button>
-    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--card-border)">
-      <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">或使用管理員 Google 帳號登入</div>
-      <button onclick="_adminGoogleLogin()" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--card-border);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Google 登入</button>
+    <p>管理後台・雙重驗證</p>
+
+    <!-- Step 1: Google 登入狀態 -->
+    <div id="loginGoogleStep" style="margin-bottom:18px;padding:14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--card-border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">步驟 1・Google 登入</span>
+        <span id="loginGoogleStatus" style="font-size:11px;color:var(--warn)">⚠ 未登入</span>
+      </div>
+      <div id="loginGoogleDetail" style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.5">需使用白名單內的管理員 Google 帳號</div>
+      <button id="loginGoogleBtn" onclick="_adminGoogleLogin()" style="width:100%;padding:10px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--card-border);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Google 登入</button>
+      <button id="loginGoogleLogoutBtn" onclick="_adminGoogleLogout()" style="display:none;width:100%;padding:7px;border-radius:10px;background:transparent;border:1px solid var(--card-border);color:var(--text-dim);font-size:11px;cursor:pointer;margin-top:6px">切換 Google 帳號</button>
     </div>
+
+    <!-- Step 2: Token -->
+    <div id="loginTokenStep" style="padding:14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--card-border);opacity:.5;pointer-events:none;transition:opacity .3s" data-unlocked="0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">步驟 2・管理員 Token</span>
+        <span id="loginTokenStatus" style="font-size:11px;color:var(--text-dim)">待 Google 驗證</span>
+      </div>
+      <input type="password" id="tokenInput" placeholder="輸入管理員 Token" autocomplete="off" style="margin-bottom:10px">
+      <button onclick="doLogin()" style="margin-bottom:0">完成登入</button>
+    </div>
+
     <div id="loginErr" class="login-err"></div>
   </div>
 </div>
@@ -915,8 +931,22 @@ function _adminGoogleLogout() {
       body: JSON.stringify({ session_token: token })
     }).catch(function(){});
   }
-  try { localStorage.removeItem('_jy_session'); localStorage.removeItem('_jy_session_name'); } catch(e){}
+  try {
+    localStorage.removeItem('_jy_session');
+    localStorage.removeItem('_jy_session_name');
+    // v60-hotfix8：登出 Google 時一併登出 admin（雙重驗證邏輯一致性）
+    localStorage.removeItem('jy_admin_token');
+    localStorage.removeItem('jy_admin_google_email');
+  } catch(e){}
+  // 若已在主畫面 → 退回登入畫面
+  var main = document.getElementById('mainApp');
+  var login = document.getElementById('loginScreen');
+  if (main && main.style.display !== 'none') {
+    main.style.display = 'none';
+    if (login) login.style.display = '';
+  }
   _updateGoogleAuthBar();
+  if (typeof _updateLoginSteps === 'function') _updateLoginSteps();
 }
 
 function _updateGoogleAuthBar() {
@@ -957,70 +987,230 @@ function _updateGoogleAuthBar() {
         try { localStorage.removeItem('_jy_session'); localStorage.removeItem('_jy_session_name'); } catch(e){}
       }
       _updateGoogleAuthBar();
-    }).catch(function(){ _updateGoogleAuthBar(); });
+      _updateLoginSteps(); // v60-hotfix8：同步登入步驟 UI
+    }).catch(function(){
+      _updateGoogleAuthBar();
+      _updateLoginSteps();
+    });
   } else {
     // 延遲到 DOM ready
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', _updateGoogleAuthBar);
+      document.addEventListener('DOMContentLoaded', function(){ _updateGoogleAuthBar(); _updateLoginSteps(); });
     } else {
-      setTimeout(_updateGoogleAuthBar, 0);
+      setTimeout(function(){ _updateGoogleAuthBar(); _updateLoginSteps(); }, 0);
     }
   }
 })();
 
 // ═══════════════════════════════════════════════
-// Login
+// Login - v60-hotfix8：強制雙重驗證（Token + Google 白名單 email，兩個都對才放行）
 // ═══════════════════════════════════════════════
 function doLogin() {
+  const err = document.getElementById('loginErr');
+  err.style.display = 'none';
+
   const token = document.getElementById('tokenInput').value.trim();
-  if (!token) return;
-  adminToken = token;
-  // verify by fetching notifications
-  fetch(`${WORKER_URL}/admin/notifications?token=${encodeURIComponent(token)}`)
-    .then(r => {
-      if (r.status === 401) throw new Error('Token 錯誤');
-      return r.json();
+  if (!token) {
+    err.textContent = '請輸入管理員 Token';
+    err.style.display = 'block';
+    return;
+  }
+
+  // ── 先檢查 Google 是否登入 ──
+  let gs = '';
+  try { gs = localStorage.getItem('_jy_session') || ''; } catch(e){}
+  if (!gs) {
+    err.textContent = '請先完成「步驟 1・Google 登入」';
+    err.style.display = 'block';
+    return;
+  }
+
+  // ── 驗證 Google 帳號是否為白名單管理員 ──
+  fetch(WORKER_URL + '/admin/google-auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_token: gs })
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(gData){
+      if (!gData || !gData.ok) {
+        throw new Error('此 Google 帳號不在管理員白名單內');
+      }
+      // ── Google 通過 → 再驗 Token（兩邊都對才進入）──
+      return fetch(`${WORKER_URL}/admin/notifications?token=${encodeURIComponent(token)}`)
+        .then(function(r){
+          if (r.status === 401) throw new Error('Token 錯誤');
+          if (!r.ok) throw new Error('Token 驗證連線失敗');
+          return r.json();
+        })
+        .then(function(){
+          // ── 雙重驗證通過 → 綁定 Token 與 Google email（之後 auto-login 會比對）──
+          adminToken = token;
+          localStorage.setItem('jy_admin_token', token);
+          try {
+            localStorage.setItem('jy_admin_google_email', (gData.email || '').toLowerCase());
+          } catch(_){}
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('mainApp').style.display = 'block';
+          loadDashboard();
+          loadInventory();
+          checkWorkerStatus();
+          loadPricingConfig();
+          _updateGoogleAuthBar();
+        });
     })
-    .then(() => {
-      localStorage.setItem('jy_admin_token', token);
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-      loadDashboard();
-      loadInventory();
-      checkWorkerStatus();
-      loadPricingConfig(); // v44c：登入即載入定價，供通知列表計費使用
-      _updateGoogleAuthBar();
-    })
-    .catch(e => {
-      const el = document.getElementById('loginErr');
-      el.textContent = e.message || '連線失敗';
-      el.style.display = 'block';
+    .catch(function(e){
+      err.textContent = e.message || '登入失敗';
+      err.style.display = 'block';
     });
 }
 
-// auto-login
-(function() {
-  const saved = localStorage.getItem('jy_admin_token');
-  if (saved) { document.getElementById('tokenInput').value = saved; doLogin(); return; }
-  // ★ Google 白名單自動登入
-  var gs = '';
-  try { gs = localStorage.getItem('_jy_session') || ''; } catch(e){}
-  if (gs) {
+// ═══════════════════════════════════════════════
+// 登入畫面步驟 UI：Google 登入狀態決定 Token 步驟是否解鎖
+// ═══════════════════════════════════════════════
+function _updateLoginSteps() {
+  var gStatus = document.getElementById('loginGoogleStatus');
+  var gDetail = document.getElementById('loginGoogleDetail');
+  var gBtn = document.getElementById('loginGoogleBtn');
+  var gLogoutBtn = document.getElementById('loginGoogleLogoutBtn');
+  var tokenStep = document.getElementById('loginTokenStep');
+  var tokenStatus = document.getElementById('loginTokenStatus');
+  if (!gStatus || !tokenStep) return;
+
+  var sess = '';
+  var name = '';
+  try { sess = localStorage.getItem('_jy_session') || ''; } catch(e){}
+  try { name = localStorage.getItem('_jy_session_name') || ''; } catch(e){}
+
+  if (sess) {
+    // 有 session，但還要跟後端確認是否為管理員白名單
+    gStatus.textContent = '✓ 已登入';
+    gStatus.style.color = '#34d399';
+    gDetail.innerHTML = '已登入：<span style="color:#e5e7eb">' + (name || '(載入中)').replace(/</g,'&lt;') + '</span>';
+    if (gBtn) gBtn.style.display = 'none';
+    if (gLogoutBtn) gLogoutBtn.style.display = 'block';
+
+    // 驗證是否為白名單
     fetch(WORKER_URL + '/admin/google-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_token: gs })
+      body: JSON.stringify({ session_token: sess })
     }).then(function(r){ return r.json(); }).then(function(data){
-      if (data.ok && data.admin_token) {
-        adminToken = data.admin_token;
-        localStorage.setItem('jy_admin_token', data.admin_token);
+      if (data && data.ok) {
+        // 白名單通過 → 解鎖 Token 步驟
+        tokenStep.style.opacity = '1';
+        tokenStep.style.pointerEvents = 'auto';
+        tokenStep.setAttribute('data-unlocked', '1');
+        tokenStatus.textContent = '可輸入 Token';
+        tokenStatus.style.color = '#34d399';
+      } else {
+        // 已登 Google 但不是白名單
+        gStatus.textContent = '✗ 非管理員';
+        gStatus.style.color = 'var(--danger)';
+        gDetail.innerHTML = '<span style="color:var(--danger)">此帳號（' + (name || '').replace(/</g,'&lt;') + '）不在管理員白名單內</span><br>請切換帳號或聯絡既有管理員加入白名單';
+        tokenStep.style.opacity = '.5';
+        tokenStep.style.pointerEvents = 'none';
+        tokenStep.setAttribute('data-unlocked', '0');
+        tokenStatus.textContent = '待 Google 驗證';
+        tokenStatus.style.color = 'var(--text-dim)';
+      }
+    }).catch(function(){
+      // 連線失敗 → 謹慎起見不解鎖
+      tokenStep.style.opacity = '.5';
+      tokenStep.style.pointerEvents = 'none';
+      tokenStep.setAttribute('data-unlocked', '0');
+      tokenStatus.textContent = '驗證連線失敗';
+      tokenStatus.style.color = 'var(--warn)';
+    });
+  } else {
+    // 沒 Google session
+    gStatus.textContent = '⚠ 未登入';
+    gStatus.style.color = 'var(--warn)';
+    gDetail.textContent = '需使用白名單內的管理員 Google 帳號';
+    if (gBtn) gBtn.style.display = 'flex';
+    if (gLogoutBtn) gLogoutBtn.style.display = 'none';
+    tokenStep.style.opacity = '.5';
+    tokenStep.style.pointerEvents = 'none';
+    tokenStep.setAttribute('data-unlocked', '0');
+    tokenStatus.textContent = '待 Google 驗證';
+    tokenStatus.style.color = 'var(--text-dim)';
+  }
+}
+
+// auto-login - v60-hotfix8：強制雙重驗證（Token + Google 白名單）
+(function() {
+  // 先渲染登入步驟 UI
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _updateLoginSteps);
+  } else {
+    setTimeout(_updateLoginSteps, 0);
+  }
+
+  const savedToken = localStorage.getItem('jy_admin_token');
+  let gs = '';
+  try { gs = localStorage.getItem('_jy_session') || ''; } catch(e){}
+
+  // 雙重驗證缺一就不自動登入
+  if (!savedToken || !gs) {
+    // 若有 savedToken 但沒 Google session → 把 token 填回輸入框，等用戶補 Google
+    if (savedToken) {
+      var tInput = document.getElementById('tokenInput');
+      if (tInput) tInput.value = savedToken;
+    }
+    var ti = document.getElementById('tokenInput');
+    if (ti) ti.addEventListener('keydown', function(e){ if (e.key === 'Enter') doLogin(); });
+    return;
+  }
+
+  // 兩者都有 → 後端雙重驗證
+  fetch(WORKER_URL + '/admin/google-auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_token: gs })
+  }).then(function(r){ return r.json(); }).then(function(gData){
+    if (!gData || !gData.ok) {
+      // Google 白名單失敗 → 清掉 admin token 強制重新雙重驗證
+      localStorage.removeItem('jy_admin_token');
+      var tInput = document.getElementById('tokenInput');
+      if (tInput) tInput.value = '';
+      _updateLoginSteps();
+      return;
+    }
+    // Google 通過 → 驗 Token
+    return fetch(`${WORKER_URL}/admin/notifications?token=${encodeURIComponent(savedToken)}`)
+      .then(function(r){
+        if (r.status === 401) throw new Error('TOKEN_INVALID');
+        if (!r.ok) throw new Error('FETCH_FAIL');
+        return r.json();
+      })
+      .then(function(){
+        // 雙重驗證通過 → 自動進入
+        adminToken = savedToken;
+        try { localStorage.setItem('jy_admin_google_email', (gData.email || '').toLowerCase()); } catch(_){}
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
-        loadDashboard(); loadInventory(); checkWorkerStatus(); loadPricingConfig(); _updateGoogleAuthBar();
-      }
-    }).catch(function(){});
-  }
-  document.getElementById('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+        loadDashboard();
+        loadInventory();
+        checkWorkerStatus();
+        loadPricingConfig();
+        _updateGoogleAuthBar();
+      })
+      .catch(function(err){
+        // Token 失效 → 清掉，讓用戶重輸
+        if (err && err.message === 'TOKEN_INVALID') {
+          localStorage.removeItem('jy_admin_token');
+          var tInput = document.getElementById('tokenInput');
+          if (tInput) tInput.value = '';
+        }
+        _updateLoginSteps();
+      });
+  }).catch(function(){
+    // 連線失敗 → 不自動登入，讓用戶手動
+    _updateLoginSteps();
+  });
+
+  var ti = document.getElementById('tokenInput');
+  if (ti) ti.addEventListener('keydown', function(e){ if (e.key === 'Enter') doLogin(); });
 })();
 
 // ═══════════════════════════════════════════════
