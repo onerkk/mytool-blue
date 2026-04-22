@@ -493,12 +493,27 @@
 
           var txt = node.textContent || '';
 
+          // v60-hotfix7-c：排除 tool-guide.js 的狀態提示（它會顯示「☽ 免費已用完・會員...」
+          //   只是給使用者看的狀態文字，不是要觸發付費牆。之前誤攔截 → 工具選擇畫面也被塞付費牆）
+          var _isGuideText = false;
+          try {
+            if (node.id === 'jy-trial-line' || node.id === 'jy-tool-guide-panel') _isGuideText = true;
+            else if (node.closest) {
+              if (node.closest('#jy-trial-line') || node.closest('#jy-tool-guide-panel')) _isGuideText = true;
+            }
+          } catch(_) {}
+          if (_isGuideText) continue;
+
           // ai-deep-wrap 裡的額度已用完
           if (txt.indexOf('免費') >= 0 && (txt.indexOf('已用完') >= 0 || txt.indexOf('已用盡') >= 0)) {
             var wrap = node.closest('#ai-deep-wrap') || node.closest('#ai-deep-result') || node.parentElement;
             if (wrap) {
+              // v60-hotfix7-c：依實際工具 mode 顯示，不再寫死 full
+              var _m = _detectCurrentTool();
+              if (_m === 'tarot') _m = 'tarot_only';
+              if (!_m) _m = 'full'; // 偵測不到才退回 full
               setTimeout(function() {
-                wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' + _buildPaywallHTML('full') + '</div>';
+                wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' + _buildPaywallHTML(_m) + '</div>';
               }, 30);
               return;
             }
@@ -508,8 +523,12 @@
           if (txt.indexOf('今天這題已看過') >= 0 || txt.indexOf('月度配額') >= 0 || txt.indexOf('七維度配額') >= 0) {
             var p = node.closest('#ai-deep-result') || node.closest('#ai-deep-wrap');
             if (p) {
+              // v60-hotfix7-c：「七維度配額」「月度配額」明確是七維度，其他也依偵測
+              var _m2 = (txt.indexOf('七維度') >= 0 || txt.indexOf('月度配額') >= 0) ? 'full' : _detectCurrentTool();
+              if (_m2 === 'tarot') _m2 = 'tarot_only';
+              if (!_m2) _m2 = 'full';
               setTimeout(function() {
-                p.innerHTML = '<div style="text-align:center;padding:1.5rem">' + _buildPaywallHTML('full') + '</div>';
+                p.innerHTML = '<div style="text-align:center;padding:1.5rem">' + _buildPaywallHTML(_m2) + '</div>';
               }, 30);
               return;
             }
