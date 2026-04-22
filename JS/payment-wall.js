@@ -664,6 +664,17 @@
         if (_ptType === 'opus_single' && !window._jyOpusDepth) _shouldClear = false;
         if (_ptType === 'followup_single' && !hasFuResult) _shouldClear = false;
         if (_shouldClear) {
+          // v60-hotfix7-g DEBUG：抓到底是誰觸發這個清除
+          try {
+            alert('[DEBUG-CLEAR] ⚠️ 即將清除 paid_token!\n\n' +
+              '當前 token: ' + localStorage.getItem('_jy_paid_token') + '\n' +
+              '觸發容器內容長度:\n' +
+              '  ai-deep-result: ' + (rd ? rd.innerHTML.length : 'null') + '\n' +
+              '  tarot-ai-wrap: ' + (tw ? tw.innerHTML.length : 'null') + '\n' +
+              '  ootk-ai-wrap: ' + (ow ? ow.innerHTML.length : 'null') + '\n' +
+              '  hasFuResult: ' + hasFuResult + '\n' +
+              '  token_type: ' + _ptType);
+          } catch(_){}
           localStorage.removeItem('_jy_paid_token');
           localStorage.removeItem('_jy_paid_token_type');
         }
