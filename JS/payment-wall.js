@@ -47,6 +47,22 @@
   // ═══ 1. 付費牆 HTML ═══
 
   function _buildPaywallHTML(mode) {
+    // v60-hotfix7-c：同 _jyStartPayment，這裡也優先偵測實際當前工具
+    //   ui.js 有多處直接呼叫 _buildPaywallHTML 傳寫死 mode，偵測到真實工具時以真實為準
+    //   若是 mode 明確帶進來但 _detectCurrentTool 偵測失敗（三信號都沒命中），才用 mode 參數
+    try {
+      var _detectedMode = _detectCurrentTool();
+      if (_detectedMode === 'tarot') _detectedMode = 'tarot_only';
+      if (_detectedMode && _detectedMode !== mode) {
+        // 只在偵測結果 ≠ 叫方傳的 mode 時 log，方便以後除錯
+        console.warn('[Paywall] mode 偵測修正：叫方傳 "' + mode + '"，實際偵測為 "' + _detectedMode + '" → 以偵測為準');
+        mode = _detectedMode;
+      } else if (!mode && _detectedMode) {
+        mode = _detectedMode;
+      }
+    } catch(_) {}
+    if (!mode) mode = 'full';
+
     var p = P();  // 每次打開付費牆都拿最新價
     var PRICE_SUB_STANDARD = p.SUB_STANDARD;
     var PRICE_SUB_PREMIUM  = p.SUB_PREMIUM;
@@ -142,8 +158,56 @@
   //   修法：加 module-level flag，fetch 期間拒絕第二次點擊。
   var _jyPaymentInFlight = false;
 
+  // v60-hotfix7-b：共用的「當前工具 mode 偵測」函式
+  //   問題：ui.js 很多地方直接呼叫 _jyStartPayment('full') 寫死 mode，
+  //         不管使用者當下在塔羅還是開鑰，都會叫出七維度付費牆。
+  //   修法：不信任叫方傳的 mode，自己用多信號偵測當前工具；
+  //         只在偵測不到才 fallback 到叫方傳的 mode。
+  //   偵測優先順序：
+  //     1. S._tarotOnlyMode + S.tarot.spreadType → 塔羅 or 開鑰
+  //     2. window._pendingOOTK → 開鑰
+  //     3. DOM #tool-X 的 .selected class → pickTool 設的
+  function _detectCurrentTool() {
+    try {
+      // Signal 1: 塔羅 only 模式（開鑰底層也會設這個，所以要看 spreadType）
+      if (window.S && window.S._tarotOnlyMode === true) {
+        var _st = (window.S.tarot && window.S.tarot.spreadType) || '';
+        if (_st === 'ootk' || window._pendingOOTK === true) return 'ootk';
+        return 'tarot';
+      }
+      // Signal 2: 明確的開鑰旗標
+      if (window._pendingOOTK === true ||
+          (window.S && window.S.tarot && window.S.tarot.spreadType === 'ootk')) {
+        return 'ootk';
+      }
+      // Signal 3: DOM .selected class
+      var _elT = document.getElementById('tool-tarot');
+      var _elO = document.getElementById('tool-ootk');
+      var _elF = document.getElementById('tool-full');
+      if (_elT && _elT.classList && _elT.classList.contains('selected')) return 'tarot';
+      if (_elO && _elO.classList && _elO.classList.contains('selected')) return 'ootk';
+      if (_elF && _elF.classList && _elF.classList.contains('selected')) return 'full';
+    } catch(_) {}
+    return null;
+  }
+  // 對外暴露，讓其他檔案（例如 ui.js、tool-guide.js 若需要）也能用
+  window._jyDetectCurrentTool = _detectCurrentTool;
+
+  // _jyStartPayment 的 mode 正規化：
+  //   ui.js 可能傳 'tarot_only' / 'full' / 'ootk'
+  //   _detectCurrentTool 回傳 'tarot' / 'full' / 'ootk'（塔羅是 tarot 不是 tarot_only）
+  //   統一成 payment-wall 內部用的 'tarot_only' / 'full' / 'ootk'
+  function _normalizeMode(m) {
+    if (m === 'tarot') return 'tarot_only';
+    if (m === 'tarot_only' || m === 'full' || m === 'ootk') return m;
+    return null;
+  }
+
   window._jyStartPayment = async function(mode, type) {
-    mode = mode || 'full';
+    // v60-hotfix7-b：優先以「實際當前工具」為準，ui.js 傳的 mode 只當 fallback
+    var _detected = _normalizeMode(_detectCurrentTool());
+    var _fromArg   = _normalizeMode(mode);
+    mode = _detected || _fromArg || 'full';
     type = type || 'subscription';
     // v60-hotfix6：防連點
     if (_jyPaymentInFlight) {
@@ -667,18 +731,8 @@
       //   修法：先讀 ui.js 的 window._selectedTool（真理來源），再 fallback 到原判斷
       //   _selectedTool 值: 'tarot' | 'ootk' | 'full'（pickTool 時寫入）
 
-      // ── (A) 優先讀目前選中的工具卡片（DOM 真理來源，不需動 ui.js）──
-      //   ui.js 的 pickTool() 會在 #tool-tarot / #tool-ootk / #tool-full 之一加 .selected class
-      //   這是 ui.js 第 919-928 行的行為，從 v17 起穩定未變
-      var selectedTool = null;
-      try {
-        var _elT = document.getElementById('tool-tarot');
-        var _elO = document.getElementById('tool-ootk');
-        var _elF = document.getElementById('tool-full');
-        if (_elT && _elT.classList && _elT.classList.contains('selected'))      selectedTool = 'tarot';
-        else if (_elO && _elO.classList && _elO.classList.contains('selected')) selectedTool = 'ootk';
-        else if (_elF && _elF.classList && _elF.classList.contains('selected')) selectedTool = 'full';
-      } catch(_) {}
+      // ── (A) 使用共用偵測函式（多信號）──
+      var selectedTool = _detectCurrentTool();
 
       // 只有在「確實是三個工具 CTA 按鈕」的情況下才啟用攔截
       //   辨識 CTA 按鈕：btn-go / btn-tarot-go / onclick 含 enterFullAnalysis 或 submitStep0Fast / fa-hand-pointer 圖示
