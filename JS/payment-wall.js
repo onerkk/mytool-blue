@@ -382,16 +382,34 @@
         }
       } catch(_){}
     }
-    if (!pending || !pending.tradeNo) return false;
+    if (!pending || !pending.tradeNo) {
+      console.error('[JY-PAID-DEBUG] ❌ pending 是空的 or 沒 tradeNo, pending:', pending);
+      try { alert('[DEBUG-A] pending 讀不到或沒 tradeNo！\n\npending 值:\n' + JSON.stringify(pending)); } catch(_){}
+      return false;
+    }
     // v60-hotfix7-f：先寫備份（_jy_last_paid），讓別的分頁/下次呼叫能還原
+    console.log('[JY-PAID-DEBUG] ① 準備寫, pending:', pending);
     try {
       localStorage.setItem('_jy_last_paid', JSON.stringify({
         tradeNo: pending.tradeNo, mode: pending.mode, type: pending.type, ts: Date.now()
       }));
-    } catch(_){}
-    // 寫 token
-    localStorage.setItem('_jy_paid_token', pending.tradeNo);
-    localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
+    } catch(e){
+      try { alert('[DEBUG-B] _jy_last_paid setItem 拋錯: ' + e.message); } catch(_){}
+    }
+    // 寫 token — 關鍵步驟，失敗就全 gg
+    try {
+      localStorage.setItem('_jy_paid_token', pending.tradeNo);
+      localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
+      // ★ DEBUG：立刻讀回來驗證
+      var _verify = localStorage.getItem('_jy_paid_token');
+      if (_verify !== pending.tradeNo) {
+        try { alert('[DEBUG-C] ❌ setItem 成功但讀回不對！\n\n寫入: ' + pending.tradeNo + '\n讀回: ' + _verify); } catch(_){}
+      } else {
+        try { alert('[DEBUG-OK] ✅ token 已寫入並驗證成功!\n\ntradeNo: ' + pending.tradeNo + '\n\n接下來即將呼叫 _triggerTarotAI'); } catch(_){}
+      }
+    } catch(e){
+      try { alert('[DEBUG-D] ❌ _jy_paid_token setItem 直接拋錯: ' + e.message); } catch(_){}
+    }
     if (pending.type !== 'single' && pending.type !== 'opus_single' && pending.type !== 'followup_single') {
       localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 30));
     }
