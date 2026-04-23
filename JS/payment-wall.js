@@ -383,32 +383,21 @@
       } catch(_){}
     }
     if (!pending || !pending.tradeNo) {
-      console.error('[JY-PAID-DEBUG] ❌ pending 是空的 or 沒 tradeNo, pending:', pending);
-      try { alert('[DEBUG-A] pending 讀不到或沒 tradeNo！\n\npending 值:\n' + JSON.stringify(pending)); } catch(_){}
+      console.error('[Payment] pending 是空的 or 沒 tradeNo, pending:', pending);
       return false;
     }
     // v60-hotfix7-f：先寫備份（_jy_last_paid），讓別的分頁/下次呼叫能還原
-    console.log('[JY-PAID-DEBUG] ① 準備寫, pending:', pending);
     try {
       localStorage.setItem('_jy_last_paid', JSON.stringify({
         tradeNo: pending.tradeNo, mode: pending.mode, type: pending.type, ts: Date.now()
       }));
-    } catch(e){
-      try { alert('[DEBUG-B] _jy_last_paid setItem 拋錯: ' + e.message); } catch(_){}
-    }
-    // 寫 token — 關鍵步驟，失敗就全 gg
+    } catch(_){}
+    // 寫 token
     try {
       localStorage.setItem('_jy_paid_token', pending.tradeNo);
       localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
-      // ★ DEBUG：立刻讀回來驗證
-      var _verify = localStorage.getItem('_jy_paid_token');
-      if (_verify !== pending.tradeNo) {
-        try { alert('[DEBUG-C] ❌ setItem 成功但讀回不對！\n\n寫入: ' + pending.tradeNo + '\n讀回: ' + _verify); } catch(_){}
-      } else {
-        try { alert('[DEBUG-OK] ✅ token 已寫入並驗證成功!\n\ntradeNo: ' + pending.tradeNo + '\n\n接下來即將呼叫 _triggerTarotAI'); } catch(_){}
-      }
     } catch(e){
-      try { alert('[DEBUG-D] ❌ _jy_paid_token setItem 直接拋錯: ' + e.message); } catch(_){}
+      console.error('[Payment] _jy_paid_token setItem 失敗:', e);
     }
     if (pending.type !== 'single' && pending.type !== 'opus_single' && pending.type !== 'followup_single') {
       localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 30));
@@ -666,7 +655,7 @@
           }
         } catch(_) {}
       }
-      // v60-hotfix7-h：若是真實 AI fetch（有 payload），把 response 複製出來檢查錯誤
+      // v60-hotfix7-h：若是真實 AI fetch（有 payload）且被 worker 拒絕，console 印錯誤資訊（生產環境不彈 alert）
       var _isAiFetch = false;
       try {
         if (opts && opts.body && typeof opts.body === 'string') {
@@ -679,20 +668,13 @@
         _respPromise.then(function(resp) {
           if (!resp.ok) {
             resp.clone().json().then(function(errData) {
-              try {
-                alert('[DEBUG-AI-FAIL] AI 請求被 worker 拒絕!\n\n' +
-                  'status: ' + resp.status + '\n' +
-                  'error: ' + (errData.error || '(無)') + '\n' +
-                  'code: ' + (errData.code || '(無)') + '\n\n' +
-                  '--- 送出的 body ---\n' +
-                  '有帶 paid_token: ' + (JSON.parse(opts.body).paid_token ? '✓ ' + JSON.parse(opts.body).paid_token.slice(0,20) : '❌ 空') + '\n' +
-                  '有帶 session_token: ' + (JSON.parse(opts.body).session_token ? '✓' : '❌ 空') +
-                  '\n\n' +
-                  '--- localStorage ---\n' +
-                  '_jy_paid_token: ' + (localStorage.getItem('_jy_paid_token') || '❌ 空') + '\n' +
-                  '_jy_session: ' + (localStorage.getItem('_jy_session') ? '✓' : '❌ 空') + '\n' +
-                  'window._JY_SESSION_TOKEN: ' + (window._JY_SESSION_TOKEN ? '✓' : '❌ 空'));
-              } catch(_){}
+              console.warn('[Payment] AI 被 worker 拒絕:', {
+                status: resp.status,
+                error: errData.error,
+                code: errData.code,
+                hadPaidToken: !!JSON.parse(opts.body).paid_token,
+                hadSessionToken: !!JSON.parse(opts.body).session_token
+              });
             }).catch(function(){});
           }
         }).catch(function(){});
@@ -701,7 +683,29 @@
     };
 
     // AI 結果出來後清 token（單次＋訂閱都清，訂閱靠 sub:{userKey} 繼續放行）
+    //   v60-hotfix7-i：嚴格判斷什麼叫「AI 解讀完成」，不再光看 innerHTML.length
+    //     先前 bug：_triggerTarotAI 第一次呼叫會先顯示「選擇解讀深度」選單（HTML 長度 1375），
+    //       長度超過 300 + 不含「正在」→ 被誤判為 AI 完成 → 燒掉 token → 使用者按「標準解讀」時 token 已沒了
+    //     修法：加排除條件——如果內容含「選擇解讀深度」「⚡ 標準解讀」「🔮 深度解析」等關鍵字，
+    //       代表是選擇選單不是真的結果，跳過不清 token。只有真的 AI 解讀長文才燒。
     var done = false;
+    function _isRealAiResult(el) {
+      if (!el) return false;
+      var html = el.innerHTML || '';
+      var text = el.textContent || '';
+      if (html.length <= 300) return false;
+      // 排除「正在」loading 狀態
+      if (text.indexOf('正在') >= 0) return false;
+      // v60-hotfix7-i：排除「選擇解讀深度」選單（不是結果，是入口選擇）
+      if (text.indexOf('選擇解讀深度') >= 0) return false;
+      // 排除深度選擇的兩個按鈕文字
+      if (text.indexOf('標準解讀') >= 0 && text.indexOf('深度解析') >= 0 && text.indexOf('每日免費') >= 0) return false;
+      // 排除塔羅錯誤頁（「已用完」「開通會員」這些是錯誤顯示不是結果）
+      if (text.indexOf('免費體驗已用完') >= 0 || text.indexOf('今日塔羅') >= 0) return false;
+      // 排除付費牆
+      if (text.indexOf('單次 NT$') >= 0 && text.indexOf('或單次購買') >= 0) return false;
+      return true;
+    }
     var clearObs = new MutationObserver(function() {
       if (done) return;
       var rd = document.getElementById('ai-deep-result');
@@ -711,13 +715,9 @@
       var fuResults = document.querySelectorAll('[id^="tarot-followup-result-"]');
       var hasFuResult = false;
       for (var _i = 0; _i < fuResults.length; _i++) {
-        var _fu = fuResults[_i];
-        if (_fu && _fu.innerHTML.length > 300 && _fu.textContent.indexOf('正在') === -1) { hasFuResult = true; break; }
+        if (_isRealAiResult(fuResults[_i])) { hasFuResult = true; break; }
       }
-      var hasResult = (rd && rd.innerHTML.length > 300 && rd.textContent.indexOf('正在') === -1) ||
-                      (tw && tw.innerHTML.length > 300 && tw.textContent.indexOf('正在') === -1) ||
-                      (ow && ow.innerHTML.length > 300 && ow.textContent.indexOf('正在') === -1) ||
-                      hasFuResult;
+      var hasResult = _isRealAiResult(rd) || _isRealAiResult(tw) || _isRealAiResult(ow) || hasFuResult;
       if (hasResult) {
         done = true;
         // ★ Opus token 只在 Opus 分析完成時清除，不被標準分析誤刪
@@ -727,17 +727,6 @@
         if (_ptType === 'opus_single' && !window._jyOpusDepth) _shouldClear = false;
         if (_ptType === 'followup_single' && !hasFuResult) _shouldClear = false;
         if (_shouldClear) {
-          // v60-hotfix7-g DEBUG：抓到底是誰觸發這個清除
-          try {
-            alert('[DEBUG-CLEAR] ⚠️ 即將清除 paid_token!\n\n' +
-              '當前 token: ' + localStorage.getItem('_jy_paid_token') + '\n' +
-              '觸發容器內容長度:\n' +
-              '  ai-deep-result: ' + (rd ? rd.innerHTML.length : 'null') + '\n' +
-              '  tarot-ai-wrap: ' + (tw ? tw.innerHTML.length : 'null') + '\n' +
-              '  ootk-ai-wrap: ' + (ow ? ow.innerHTML.length : 'null') + '\n' +
-              '  hasFuResult: ' + hasFuResult + '\n' +
-              '  token_type: ' + _ptType);
-          } catch(_){}
           localStorage.removeItem('_jy_paid_token');
           localStorage.removeItem('_jy_paid_token_type');
         }
