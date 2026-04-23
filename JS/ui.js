@@ -1071,6 +1071,13 @@ function submitWithTool() {
           try {
             var _chkBody = { action: 'check', payload: { mode: 'tarot_only' } };
             if (window._JY_SESSION_TOKEN) _chkBody.session_token = window._JY_SESSION_TOKEN;
+            // v60-hotfix7-i：帶上 paid_token，讓付過費的人 precheck 能被認
+            //   原本沒帶 → 付完費點塔羅 → worker 走免費額度檢查 → 已用完就跳付費牆
+            //   修法：帶 token 讓 worker 第 13724 行那段 paid_token 檢查優先放行
+            try {
+              var _chkPt = localStorage.getItem('_jy_paid_token');
+              if (_chkPt) _chkBody.paid_token = _chkPt;
+            } catch(_){}
             var _chkResp = await fetch('https://jy-ai-proxy.onerkk.workers.dev', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(_chkBody)
@@ -5309,6 +5316,11 @@ showAuraResult = function(){
       var body = { action: 'check', payload: payload };
       if (window._JY_ADMIN_TOKEN) body.admin_token = window._JY_ADMIN_TOKEN;
       if (window._JY_SESSION_TOKEN) body.session_token = window._JY_SESSION_TOKEN;
+      // v60-hotfix7-i：帶 paid_token，讓付過費的人 precheck 能放行
+      try {
+        var _pt2 = localStorage.getItem('_jy_paid_token');
+        if (_pt2) body.paid_token = _pt2;
+      } catch(_){}
       var resp = await fetch('https://jy-ai-proxy.onerkk.workers.dev', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -5859,6 +5871,11 @@ async function submitTarotQuick() {
     try {
       var checkBody = { action: 'check', payload: { mode: 'tarot_only' } };
       if (window._JY_SESSION_TOKEN) checkBody.session_token = window._JY_SESSION_TOKEN;
+      // v60-hotfix7-i：帶 paid_token，讓付過費的人 precheck 能放行
+      try {
+        var _pt3 = localStorage.getItem('_jy_paid_token');
+        if (_pt3) checkBody.paid_token = _pt3;
+      } catch(_){}
       var checkResp = await fetch('https://jy-ai-proxy.onerkk.workers.dev', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

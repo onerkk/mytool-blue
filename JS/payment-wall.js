@@ -465,22 +465,54 @@
     // ★ 核心：自動觸發對應的 AI 分析函式
     var triggered = _jyAutoTriggerAfterPayment(pending);
     if (!triggered) {
-      // v60-hotfix7-f：沒觸發成功（例如 state 消失、函式沒載入、新分頁無 context）
-      //   原本 setTimeout reload → reload 後 URL ?paid 已被清掉、沒 state、使用者回到首頁
-      //   結果使用者以為「要再按一次」按下去又跳付費牆（token 明明已寫入但 state 丟了就沒人帶）
-      //   修法：不 reload，改顯眼持續提示，使用者按任何「解讀按鈕」時 paid_token 會自動帶上
-      console.warn('[Payment] auto trigger returned false, 顯示手動繼續提示');
+      // v60-hotfix7-i：不自動 reload 也不要求使用者手動重按
+      //   改用綠卡 + 一鍵繼續按鈕，按下去直接 click 塔羅／開鑰／七維度的 CTA
+      //   這樣 paid_token 已在 localStorage，按下去後後續 fetch 會自動帶上
+      console.warn('[Payment] auto trigger returned false, 顯示一鍵繼續卡');
+      var _continueBtn = '';
+      var _mode = pending.mode || 'full';
+      if (_mode === 'tarot_only') {
+        _continueBtn = '<button onclick="window._jyContinueAfterPay()" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(34,197,94,.8),rgba(22,163,74,.9));color:#fff;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">🃏 繼續塔羅解讀 →</button>';
+      } else if (_mode === 'ootk') {
+        _continueBtn = '<button onclick="window._jyContinueAfterPay()" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(217,151,56,.8),rgba(180,120,40,.9));color:#fff;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">🔑 繼續開鑰解讀 →</button>';
+      } else {
+        _continueBtn = '<button onclick="window._jyContinueAfterPay()" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.8),rgba(180,140,40,.9));color:#000;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">🌙 繼續七維度解讀 →</button>';
+      }
+
+      // 一鍵繼續：幫使用者點對應工具的 CTA（避開手動流程的所有 race）
+      window._jyContinueAfterPay = function() {
+        var el = document.getElementById('jy-paid-retry-card');
+        if (el) el.remove();
+        try {
+          var _m = pending.mode || 'full';
+          // 點對應工具 tile 選中工具
+          var toolId = _m === 'tarot_only' ? 'tool-tarot' : _m === 'ootk' ? 'tool-ootk' : 'tool-full';
+          var tile = document.getElementById(toolId);
+          if (tile && typeof tile.click === 'function') tile.click();
+          // 捲到問題輸入區
+          setTimeout(function() {
+            var q = document.getElementById('q-text') || document.getElementById('input-question');
+            if (q && q.scrollIntoView) q.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            else {
+              var cta = document.getElementById('tool-cta');
+              if (cta && cta.scrollIntoView) cta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+        } catch(err) {
+          console.warn('[Payment] _jyContinueAfterPay failed:', err);
+        }
+      };
+
       var retryCard = document.createElement('div');
       retryCard.id = 'jy-paid-retry-card';
       retryCard.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:99998;max-width:90%;width:340px;background:linear-gradient(145deg,#1a3020,#0f2015);border:1.5px solid rgba(34,197,94,.45);border-radius:14px;padding:1.1rem 1rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.5)';
       retryCard.innerHTML =
         '<div style="font-size:1.6rem;margin-bottom:.4rem">✅</div>' +
         '<div style="font-size:1rem;color:#86efac;font-weight:700;margin-bottom:.4rem">付款成功</div>' +
-        '<div style="font-size:.8rem;color:#d1fae5;line-height:1.6;margin-bottom:.8rem">你已付費完成，請回到剛才的問題頁面，<strong style="color:#fff">再按一次解讀按鈕</strong>即可繼續（系統會自動帶上已付費憑證）</div>' +
-        '<button onclick="document.getElementById(\'jy-paid-retry-card\').remove()" style="width:100%;padding:9px;border-radius:10px;background:rgba(255,255,255,.1);color:#d1fae5;font-size:.85rem;font-weight:600;border:1px solid rgba(255,255,255,.15);cursor:pointer;font-family:inherit">知道了</button>';
+        '<div style="font-size:.78rem;color:#d1fae5;line-height:1.6;margin-bottom:.9rem">付費憑證已寫入，按下方按鈕直接繼續</div>' +
+        _continueBtn +
+        '<button onclick="document.getElementById(\'jy-paid-retry-card\').remove()" style="width:100%;padding:8px;margin-top:.5rem;border-radius:10px;background:transparent;color:#6ee7b7;font-size:.78rem;border:none;cursor:pointer;font-family:inherit;opacity:.7">稍後手動繼續</button>';
       document.body.appendChild(retryCard);
-      // 20 秒後自動消失
-      setTimeout(function() { var el = document.getElementById('jy-paid-retry-card'); if (el) el.remove(); }, 20000);
     }
     return true;
   }
