@@ -298,33 +298,36 @@
   //   mode: 'full' | 'tarot_only' | 'ootk'
   //   type: 'single' | 'opus_single' | 'subscription' | 'subscription_premium' | 'followup_single'
   function _jyAutoTriggerAfterPayment(pending) {
-    if (!pending) return false;
+    if (!pending) { console.warn('[Payment] auto-trigger: no pending'); return false; }
     var mode = pending.mode || 'full';
     var type = pending.type || 'single';
+    console.log('[Payment] auto-trigger start, mode=' + mode + ', type=' + type);
     // 深度旗標：opus_single 一定是深度路徑，subscription 不是（會員可選）
     if (type === 'opus_single') {
       try { window._jyOpusDepth = true; } catch(_) {}
     }
     try {
       // followup_single 維持原邏輯（_jyCheckPaymentAndUnlock 內已處理）
-      if (type === 'followup_single') return false;
+      if (type === 'followup_single') { console.log('[Payment] auto-trigger: followup_single, skip'); return false; }
       // 訂閱型：reload 頁面（會員狀態已寫入，reload 後原表單還在）
-      //   但注意：reload 會清掉已生成的本地分析結果，用戶要從填表單開始
-      //   這個 case 少見（訂閱通常是免費用完才跳），暫不自動觸發，靠 reload 重啟流程
       if (type === 'subscription' || type === 'subscription_standard' || type === 'subscription_premium') {
-        return false; // 走現有 reload 邏輯
+        console.log('[Payment] auto-trigger: subscription, skip (will reload)');
+        return false;
       }
       // 單次 / Opus 單次：根據 mode 呼叫對應的 AI 觸發函式
       if (mode === 'tarot_only') {
-        if (typeof window._triggerTarotAI === 'function') { window._triggerTarotAI(); return true; }
-        if (typeof _triggerTarotAI === 'function') { _triggerTarotAI(); return true; }
+        if (typeof window._triggerTarotAI === 'function') { console.log('[Payment] auto-trigger: calling window._triggerTarotAI'); window._triggerTarotAI(); return true; }
+        if (typeof _triggerTarotAI === 'function') { console.log('[Payment] auto-trigger: calling _triggerTarotAI'); _triggerTarotAI(); return true; }
+        console.warn('[Payment] auto-trigger: _triggerTarotAI not found');
       } else if (mode === 'ootk') {
-        if (typeof window._triggerOOTKAI === 'function') { window._triggerOOTKAI(); return true; }
-        if (typeof window._ootkTriggerAI === 'function') { window._ootkTriggerAI(); return true; }
+        if (typeof window._triggerOOTKAI === 'function') { console.log('[Payment] auto-trigger: calling window._triggerOOTKAI'); window._triggerOOTKAI(); return true; }
+        if (typeof window._ootkTriggerAI === 'function') { console.log('[Payment] auto-trigger: calling window._ootkTriggerAI'); window._ootkTriggerAI(); return true; }
+        console.warn('[Payment] auto-trigger: ootk trigger not found');
       } else {
         // mode === 'full' 或其他 → 七維度
-        if (typeof window._triggerAIDeep === 'function') { window._triggerAIDeep(); return true; }
-        if (typeof _triggerAIDeep === 'function') { _triggerAIDeep(); return true; }
+        if (typeof window._triggerAIDeep === 'function') { console.log('[Payment] auto-trigger: calling window._triggerAIDeep'); window._triggerAIDeep(); return true; }
+        if (typeof _triggerAIDeep === 'function') { console.log('[Payment] auto-trigger: calling _triggerAIDeep'); _triggerAIDeep(); return true; }
+        console.warn('[Payment] auto-trigger: _triggerAIDeep not found');
       }
     } catch (err) {
       console.warn('[Payment] auto trigger failed:', err);
@@ -396,8 +399,9 @@
     try {
       localStorage.setItem('_jy_paid_token', pending.tradeNo);
       localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
+      _jyLog('SET paid_token', { token: pending.tradeNo, type: pending.type });
     } catch(e){
-      console.error('[Payment] _jy_paid_token setItem 失敗:', e);
+      _jyLog('SET paid_token FAILED', { error: e.message });
     }
     if (pending.type !== 'single' && pending.type !== 'opus_single' && pending.type !== 'followup_single') {
       localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 30));
@@ -468,27 +472,33 @@
         _continueBtn = '<button onclick="window._jyContinueAfterPay()" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.8),rgba(180,140,40,.9));color:#000;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">🌙 繼續七維度解讀 →</button>';
       }
 
-      // 一鍵繼續：幫使用者點對應工具的 CTA（避開手動流程的所有 race）
+      // 一鍵繼續：直接呼叫 pickTool 函式（最直接），不靠 click 事件
       window._jyContinueAfterPay = function() {
         var el = document.getElementById('jy-paid-retry-card');
         if (el) el.remove();
+        var _m = pending.mode || 'full';
+        var toolKey = _m === 'tarot_only' ? 'tarot' : _m === 'ootk' ? 'ootk' : 'full';
         try {
-          var _m = pending.mode || 'full';
-          // 點對應工具 tile 選中工具
-          var toolId = _m === 'tarot_only' ? 'tool-tarot' : _m === 'ootk' ? 'tool-ootk' : 'tool-full';
-          var tile = document.getElementById(toolId);
-          if (tile && typeof tile.click === 'function') tile.click();
-          // 捲到問題輸入區
+          // 1. 優先：直接呼叫全域 pickTool（index.html 的 onclick 也是呼叫這個）
+          if (typeof window.pickTool === 'function') {
+            window.pickTool(toolKey);
+          } else if (typeof pickTool === 'function') {
+            pickTool(toolKey);
+          } else {
+            // 2. fallback：模擬點擊
+            var toolId = _m === 'tarot_only' ? 'tool-tarot' : _m === 'ootk' ? 'tool-ootk' : 'tool-full';
+            var tile = document.getElementById(toolId);
+            if (tile && typeof tile.click === 'function') tile.click();
+          }
+          // 捲動到問題輸入區（讓使用者看到下一步要做什麼）
           setTimeout(function() {
-            var q = document.getElementById('q-text') || document.getElementById('input-question');
+            var q = document.getElementById('q-text') || document.getElementById('input-question') || document.getElementById('tool-cta');
             if (q && q.scrollIntoView) q.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            else {
-              var cta = document.getElementById('tool-cta');
-              if (cta && cta.scrollIntoView) cta.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          }, 300);
+          }, 400);
         } catch(err) {
           console.warn('[Payment] _jyContinueAfterPay failed:', err);
+          // 最終 fallback：直接 alert 指引
+          try { alert('付款成功！請手動點上方的「塔羅快讀」或「七維度」圖示，填入問題後按「開始解讀」即可繼續。'); } catch(_){}
         }
       };
 
@@ -668,14 +678,17 @@
         _respPromise.then(function(resp) {
           if (!resp.ok) {
             resp.clone().json().then(function(errData) {
-              console.warn('[Payment] AI 被 worker 拒絕:', {
+              _jyLog('AI REJECTED by worker', {
                 status: resp.status,
                 error: errData.error,
                 code: errData.code,
                 hadPaidToken: !!JSON.parse(opts.body).paid_token,
+                paidTokenValue: JSON.parse(opts.body).paid_token,
                 hadSessionToken: !!JSON.parse(opts.body).session_token
               });
             }).catch(function(){});
+          } else {
+            _jyLog('AI request OK', { status: resp.status });
           }
         }).catch(function(){});
       }
@@ -727,6 +740,16 @@
         if (_ptType === 'opus_single' && !window._jyOpusDepth) _shouldClear = false;
         if (_ptType === 'followup_single' && !hasFuResult) _shouldClear = false;
         if (_shouldClear) {
+          // v60-hotfix7-j：記錄清除事件
+          _jyLog('CLEAR paid_token', {
+            token: localStorage.getItem('_jy_paid_token'),
+            type: _ptType,
+            reason: 'clearObs detected AI result',
+            tw_len: tw ? tw.innerHTML.length : null,
+            tw_preview: tw ? (tw.textContent || '').slice(0, 100) : null,
+            rd_len: rd ? rd.innerHTML.length : null,
+            ow_len: ow ? ow.innerHTML.length : null
+          });
           localStorage.removeItem('_jy_paid_token');
           localStorage.removeItem('_jy_paid_token_type');
         }
