@@ -853,6 +853,164 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v62：Sonnet 4.6 / Opus 4.7 官方校準卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>🎯 v62 官方校準（Sonnet 4.6 / Opus 4.7）</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
+          基於 Anthropic 官方 2026-04 文件 + Sonnet 4.6 實戰。核心邏輯：<strong>校準 Sonnet 4.5 時代的強化語氣</strong>（官方警告會 overtrigger），<strong>加入官方減幻覺三招</strong>，<strong>補強命理深度</strong>。<br>
+          共 <strong>13 項</strong> 可個別開關。建議分階段部署（見 ℹ️ 備註）。
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+
+          <!-- Group A：Sonnet 4.6 / Opus 4.7 遷移校準 -->
+          <div style="margin-top:4px;padding-top:6px">
+            <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group A：官方遷移校準（強烈建議開啟） ──</div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-tone" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔧 Tone Calibration 語氣校準</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「Tune anti-laziness prompting. Claude 4.6 models may overtrigger on instructions needed for previous models.」— 預告把「強制/必須」改成正常語氣</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-oothink" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🧘 Overthinking Guard 過度思考控制</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方原文 prompt：「choose an approach and commit to it」— 避免 AI 反覆自我修正導致 story 寫到一半沒空間</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-literal" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📐 Literal Instruction v62 字面化校準</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">Opus 4.7「More literal instruction following」校準版。取代 v57-lit 的強語氣版本。兩個不要同時開</span>
+            </span>
+          </label>
+
+          <!-- Group B：官方減幻覺三招 -->
+          <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
+            <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group B：官方減幻覺三招（命理準確度核心） ──</div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-uncertain" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🤐 Allow Uncertainty 允許不確定（官方第 1 招）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「Allow Claude to say 'I don't know'」— AI 可直接說「盤面沒給明確答案」，避免硬湊。取代 v56-uncertainty</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-quote" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📎 Quote from Payload 從盤面引用（官方第 2 招）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「Ground responses in quotes」— 每個具體判斷附上 payload 出處（括號註記）。避免用訓練資料編造具體細節</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-verify" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔬 Claim Verification 自我驗證（官方第 3 招，預設關）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">官方：「Verify with citations」— 寫完後自檢每個預測有盤面支持。會拉長輸出，建議只開給付費線</span>
+            </span>
+          </label>
+
+          <!-- Group C：命理深度強化 -->
+          <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
+            <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group C：命理深度強化（真正提升分析品質） ──</div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-ziwei" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🌟 紫微飛星派技術</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">來因宮 + 自化（祿權科忌）+ 飛宮四化，補中州派只有星情的缺口。只在有紫微資料時注入。依據：ziweicn.com 飛星派實戰文獻</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-mangpai" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🎯 盲派八字象法</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">干支象 + 宮位象（身體部位/人生階段）+ 十神象 + 宾主理論。補格局論。只在有八字資料時注入。依據：盲派命理 Wiki + 實戰口訣</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-meihua" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🌸 梅花三要十應</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">應期精算到月份（不給「近期」「未來」）。AI 場景有使用限制。只在有梅花資料時注入。依據：邵雍《梅花易數》+ zhihu.com/p/682370205</span>
+            </span>
+          </label>
+
+          <!-- Group D：塔羅範例強化 -->
+          <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
+            <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group D：塔羅範例強化 ──</div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-tarot-key" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🃏 塔羅鑰匙牌 5 模式範例庫</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">把 V61 規則列表改成 5 個完整範例。解決塔羅第三層完成率低的問題。依據：官方「curate diverse canonical examples」</span>
+            </span>
+          </label>
+
+          <!-- Group E：舊模組控制 -->
+          <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
+            <div style="font-size:11px;color:#d4a574;font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group E：v56/v57 舊模組控制（遷移期） ──</div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-legacy-audit" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔄 保留 v56 自我校準</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">舊版 V56_SELF_AUDIT 建議配合 Tone Calibration 使用。預設開</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-legacy-cot" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">⚠️ 保留 V57 顯式推理路徑</span><br>
+              <span style="font-size:11px;color:#d4a574">官方建議關掉——adaptive thinking 已內建，強制寫會 overthink。預設關</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62-legacy-ce" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">⚠️ 保留 V57 反例檢查</span><br>
+              <span style="font-size:11px;color:#d4a574">官方建議關掉——強語氣「絕對不要假裝反例不存在」會 overtrigger。預設關</span>
+            </span>
+          </label>
+
+        </div>
+
+        <!-- 部署建議 -->
+        <div style="margin-top:14px;padding:12px;border-radius:8px;background:rgba(212,165,116,0.08);border:1px solid rgba(212,165,116,0.2);font-size:11px;line-height:1.7;color:var(--text-dim)">
+          <strong style="color:var(--accent)">ℹ️ 保守部署建議：</strong><br>
+          第 1 週：先開 Group A（overthinking + literal）跑 5-10 次讀盤比對<br>
+          第 2 週：加 Group B 的 allow-uncertainty + quote-from-payload<br>
+          第 3 週：逐一開啟 Group C 的三個命理模組（一次一個一週）<br>
+          第 4 週：加 Group D 塔羅範例庫<br>
+          <span style="color:#d4a574">⚠️ 緊急回滾：把全部關掉 → 自動回到 v61 狀態</span>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveV62Config()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v62 設定</button>
+          <button onclick="resetV62Config()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--card-border);background:transparent;color:var(--text-dim);font-size:13px;cursor:pointer">↺ 恢復預設</button>
+          <button onclick="v62AllOff()" style="padding:10px 20px;border-radius:8px;border:1px solid #c87878;background:transparent;color:#c87878;font-size:13px;cursor:pointer">⛔ 全部關閉（回 v61）</button>
+          <span id="v62Status" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v44：定價設定卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>💰 定價設定</h3>
@@ -1226,7 +1384,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
 
@@ -3039,6 +3197,157 @@ function resetV56Config() {
   if (giqtEl) giqtEl.checked = d.groundInQuotesTarot;
   document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === d.sonnetEffort); });
   toast('已恢復預設（記得按儲存）');
+}
+
+// ═══════════════════════════════════════════════
+// v62 Config (Sonnet 4.6 / Opus 4.7 官方校準)
+// ═══════════════════════════════════════════════
+// 依據：https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
+let _v62Defaults = {
+  // Group A
+  toneCalibration: true,
+  overthinkingGuard: true,
+  literalInstructionV62: true,
+  // Group B
+  allowUncertainty: true,
+  quoteFromPayload: true,
+  claimVerification: false,
+  // Group C
+  ziweiFeixing: true,
+  baziMangpai: true,
+  meihuaSanyao: true,
+  // Group D
+  tarotKeyExamples: true,
+  // Group E
+  legacySelfAudit: true,
+  legacyExplicitCoT: false,
+  legacyCounterexampleCheck: false
+};
+
+// v62 checkbox id → config key 對照
+const _V62_KEY_MAP = {
+  'v62-tone': 'toneCalibration',
+  'v62-oothink': 'overthinkingGuard',
+  'v62-literal': 'literalInstructionV62',
+  'v62-uncertain': 'allowUncertainty',
+  'v62-quote': 'quoteFromPayload',
+  'v62-verify': 'claimVerification',
+  'v62-ziwei': 'ziweiFeixing',
+  'v62-mangpai': 'baziMangpai',
+  'v62-meihua': 'meihuaSanyao',
+  'v62-tarot-key': 'tarotKeyExamples',
+  'v62-legacy-audit': 'legacySelfAudit',
+  'v62-legacy-cot': 'legacyExplicitCoT',
+  'v62-legacy-ce': 'legacyCounterexampleCheck'
+};
+
+async function loadV62Config() {
+  const statusEl = document.getElementById('v62Status');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/v62-prompt-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) {
+      if (statusEl) statusEl.textContent = '載入失敗 ' + r.status;
+      return;
+    }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const c = data.config;
+      if (data.defaults) _v62Defaults = data.defaults;
+      // 用 _V62_KEY_MAP 批量設定 checkbox
+      Object.keys(_V62_KEY_MAP).forEach(function(elId) {
+        const key = _V62_KEY_MAP[elId];
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const val = (typeof c[key] === 'boolean') ? c[key] : _v62Defaults[key];
+        el.checked = !!val;
+      });
+      // Status
+      if (statusEl) {
+        let on = 0;
+        Object.keys(_V62_KEY_MAP).forEach(function(elId) {
+          const el = document.getElementById(elId);
+          if (el && el.checked) on++;
+        });
+        statusEl.textContent = '啟用(' + on + '/13): ' + _v62BuildShortStatus();
+      }
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+function _v62BuildShortStatus() {
+  const labels = {
+    'v62-tone': 'Tone',
+    'v62-oothink': 'OOT',
+    'v62-literal': 'Lit',
+    'v62-uncertain': 'Unc',
+    'v62-quote': 'Quo',
+    'v62-verify': 'Ver',
+    'v62-ziwei': '紫飛',
+    'v62-mangpai': '盲派',
+    'v62-meihua': '梅',
+    'v62-tarot-key': '塔鑰',
+    'v62-legacy-audit': 'SA',
+    'v62-legacy-cot': 'CoT',
+    'v62-legacy-ce': 'CE'
+  };
+  const on = [];
+  Object.keys(labels).forEach(function(elId) {
+    const el = document.getElementById(elId);
+    if (el && el.checked) on.push(labels[elId]);
+  });
+  return on.length ? on.join('+') : '無';
+}
+
+async function saveV62Config() {
+  const statusEl = document.getElementById('v62Status');
+  try {
+    const body = {};
+    Object.keys(_V62_KEY_MAP).forEach(function(elId) {
+      const key = _V62_KEY_MAP[elId];
+      const el = document.getElementById(elId);
+      body[key] = el ? !!el.checked : _v62Defaults[key];
+    });
+    const r = await fetch(`${WORKER_URL}/admin/v62-prompt-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 v62 設定，下一個解讀生效');
+      let on = 0;
+      Object.keys(_V62_KEY_MAP).forEach(function(elId) {
+        const el = document.getElementById(elId);
+        if (el && el.checked) on++;
+      });
+      if (statusEl) statusEl.textContent = '啟用(' + on + '/13): ' + _v62BuildShortStatus();
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+function resetV62Config() {
+  const d = _v62Defaults;
+  Object.keys(_V62_KEY_MAP).forEach(function(elId) {
+    const key = _V62_KEY_MAP[elId];
+    const el = document.getElementById(elId);
+    if (el) el.checked = !!d[key];
+  });
+  toast('已恢復 v62 預設（記得按儲存）');
+}
+
+function v62AllOff() {
+  if (!confirm('確認全部關閉？系統會回到 v61 狀態（等同 v62 未啟用）。')) return;
+  Object.keys(_V62_KEY_MAP).forEach(function(elId) {
+    const el = document.getElementById(elId);
+    if (el) el.checked = false;
+  });
+  saveV62Config();
 }
 
 // ═══════════════════════════════════════════════
