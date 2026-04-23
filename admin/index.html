@@ -962,6 +962,39 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </span>
           </label>
 
+          <!-- Group F (v62b)：第三層強制收束（實測截圖驗證需要） -->
+          <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
+            <div style="font-size:11px;color:#4ade80;font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group F (v62b)：第三層強制收束 ──</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-bottom:6px;line-height:1.6;padding:6px;background:rgba(74,222,128,0.05);border-radius:6px">
+              ⚡ 實測截圖驗證：Sonnet 4.6 常做到第二層就收束，第三層只做 45%。<br>
+              本組三個開關放在 prompt 末端（recency bias 最強位置），強制 AI 收到「具體可執行動作」再交稿。
+            </div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62b-tarot-force" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔑 塔羅第三層強制收束</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">在 prompt 末端追加短而強的 trigger：寫完後必檢「有沒有指出鑰匙牌 + 24h 可做動作」，缺一個視為未完成。補強 V61_TAROT_LAYERED 的執行率</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62b-ootk-force" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🗝️ 開鑰行動入口強制收束</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">五層穿透後強制要求收束到「Op 能量最濃的那層 + 這週可做的具體動作」。補強 V61_OOTK_LAYERED 的行動入口執行率</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v62b-seven-action" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📅 七維度行動層（全新）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">七維度之前沒有第三層模組。新增「時運窗口 + 窗口前/中動作 + 驗證信號」四段結構，讓七維度讀完也能給用戶下一步動作。解決七維度結尾空話問題</span>
+            </span>
+          </label>
+
           <!-- Group E：舊模組控制 -->
           <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
             <div style="font-size:11px;color:#d4a574;font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group E：v56/v57 舊模組控制（遷移期） ──</div>
@@ -3218,6 +3251,10 @@ let _v62Defaults = {
   meihuaSanyao: true,
   // Group D
   tarotKeyExamples: true,
+  // Group F (v62b)
+  tarotForceKey: true,
+  ootkForceEntry: true,
+  sevenActionLayer: true,
   // Group E
   legacySelfAudit: true,
   legacyExplicitCoT: false,
@@ -3236,6 +3273,11 @@ const _V62_KEY_MAP = {
   'v62-mangpai': 'baziMangpai',
   'v62-meihua': 'meihuaSanyao',
   'v62-tarot-key': 'tarotKeyExamples',
+  // v62b 第三層強制收束
+  'v62b-tarot-force': 'tarotForceKey',
+  'v62b-ootk-force': 'ootkForceEntry',
+  'v62b-seven-action': 'sevenActionLayer',
+  // Group E
   'v62-legacy-audit': 'legacySelfAudit',
   'v62-legacy-cot': 'legacyExplicitCoT',
   'v62-legacy-ce': 'legacyCounterexampleCheck'
@@ -3268,7 +3310,7 @@ async function loadV62Config() {
           const el = document.getElementById(elId);
           if (el && el.checked) on++;
         });
-        statusEl.textContent = '啟用(' + on + '/13): ' + _v62BuildShortStatus();
+        statusEl.textContent = '啟用(' + on + '/16): ' + _v62BuildShortStatus();
       }
     }
   } catch(e) {
@@ -3288,6 +3330,9 @@ function _v62BuildShortStatus() {
     'v62-mangpai': '盲派',
     'v62-meihua': '梅',
     'v62-tarot-key': '塔鑰',
+    'v62b-tarot-force': '塔強',
+    'v62b-ootk-force': '鑰強',
+    'v62b-seven-action': '七動',
     'v62-legacy-audit': 'SA',
     'v62-legacy-cot': 'CoT',
     'v62-legacy-ce': 'CE'
@@ -3322,7 +3367,7 @@ async function saveV62Config() {
         const el = document.getElementById(elId);
         if (el && el.checked) on++;
       });
-      if (statusEl) statusEl.textContent = '啟用(' + on + '/13): ' + _v62BuildShortStatus();
+      if (statusEl) statusEl.textContent = '啟用(' + on + '/16): ' + _v62BuildShortStatus();
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
