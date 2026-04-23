@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>靜月之光・事件紀錄</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 12px; font-family: -apple-system, "PingFang TC", sans-serif; background: #0a0a10; color: #e5e5e5; line-height: 1.5; }
+  h1 { margin: 0 0 4px; font-size: 1rem; color: #c9a84c; }
+  .sub { font-size: .72rem; color: #888; margin-bottom: 12px; }
+  .btn { display: block; width: 100%; padding: 10px; margin: 6px 0; border: none; border-radius: 8px; font-size: .88rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .btn.gold { background: linear-gradient(135deg,#c9a84c,#a88936); color: #000; }
+  .btn.red { background: linear-gradient(135deg,#ef4444,#b91c1c); color: #fff; }
+  .entry { background: #14141c; border: 1px solid #2a2a38; border-radius: 6px; padding: 8px 10px; margin: 6px 0; font-size: .75rem; font-family: "Menlo", monospace; word-break: break-all; }
+  .entry.set { border-color: rgba(34,197,94,.4); background: rgba(34,197,94,.06); }
+  .entry.clear { border-color: rgba(239,68,68,.4); background: rgba(239,68,68,.06); }
+  .entry.rej { border-color: rgba(239,68,68,.5); background: rgba(239,68,68,.1); }
+  .entry.ok { border-color: rgba(34,197,94,.3); background: rgba(34,197,94,.04); }
+  .entry.info { border-color: rgba(59,130,246,.3); background: rgba(59,130,246,.04); }
+  .ts { color: #666; font-size: .65rem; }
+  .tag { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: .65rem; font-weight: 700; margin-right: 4px; }
+  .tag.set { background: #22c55e; color: #fff; }
+  .tag.clear { background: #ef4444; color: #fff; }
+  .tag.rej { background: #dc2626; color: #fff; }
+  .tag.ok { background: #16a34a; color: #fff; }
+  .tag.info { background: #3b82f6; color: #fff; }
+  pre { margin: 4px 0 0; color: #a8a8b8; font-size: .68rem; white-space: pre-wrap; }
+  .empty { text-align: center; color: #666; padding: 40px 0; font-size: .85rem; }
+</style>
+</head>
+<body>
+
+<h1>📜 靜月之光・事件紀錄</h1>
+<div class="sub">此頁顯示 payment-wall.js 近期所有關鍵事件（token 寫入/清除/AI 請求結果）</div>
+
+<button class="btn gold" onclick="render()">🔄 重新整理</button>
+<button class="btn red" onclick="if(confirm('清空紀錄？')){ localStorage.removeItem('_jy_debug_log'); render(); }">🗑️ 清空紀錄</button>
+
+<div id="logs"></div>
+
+<script>
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+function render() {
+  var logs = [];
+  try { logs = JSON.parse(localStorage.getItem('_jy_debug_log') || '[]'); } catch(_){}
+  var cont = document.getElementById('logs');
+  if (!logs.length) {
+    cont.innerHTML = '<div class="empty">🔍 還沒有紀錄<br><br>先到 jingyue.uk 走一次流程（付款→繼續→抽牌），再回這頁看</div>';
+    return;
+  }
+  var html = '';
+  for (var i = logs.length - 1; i >= 0; i--) {
+    var e = logs[i];
+    var msg = e.msg || '';
+    var cls = 'info', tag = 'info';
+    if (msg.indexOf('SET') === 0) { cls = 'set'; tag = 'set'; }
+    else if (msg.indexOf('CLEAR') === 0) { cls = 'clear'; tag = 'clear'; }
+    else if (msg.indexOf('REJECTED') > 0) { cls = 'rej'; tag = 'rej'; }
+    else if (msg.indexOf('OK') > 0) { cls = 'ok'; tag = 'ok'; }
+    html += '<div class="entry ' + cls + '">';
+    html += '<div><span class="tag ' + tag + '">' + tag.toUpperCase() + '</span>';
+    html += '<span class="ts">' + new Date(e.ts).toLocaleTimeString('zh-TW') + '</span></div>';
+    html += '<div style="color:#e5e5e5;font-weight:600;margin-top:4px">' + escapeHtml(msg) + '</div>';
+    if (e.extra) html += '<pre>' + escapeHtml(JSON.stringify(e.extra, null, 2)) + '</pre>';
+    html += '</div>';
+  }
+  cont.innerHTML = html;
+}
+render();
+</script>
+
+</body>
+</html>
