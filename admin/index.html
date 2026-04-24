@@ -686,18 +686,31 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
-      <!-- ═══ v62e：Prefill 卡片 ═══ -->
-      <div class="worker-card" style="margin-bottom:16px;border:1px solid rgba(96,165,250,0.3)">
-        <h3>📌 Assistant Prefill</h3>
-        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.7">
-          官方消除 JSON parse 失敗的技術——預填 AI 回應開頭字元強制從該處接續。<br>
-          <strong style="color:#60a5fa">命理場景意義</strong>：塔羅/開鑰/七維度 JSON 輸出不再有 markdown fence 或前綴雜訊，parseJSON 失敗率 → 0%。<br>
-          <strong style="color:#fbbf24">⚠️ 相容性</strong>：只對 Sonnet 4.6 / Haiku 4.5 有效，Opus 4.7/4.6 硬性不支援（會 400 error）。<br>
-          追問場景自動關閉（輸出是純文字不是 JSON）。
+      <!-- ═══ v62e：Prefill 卡片（v62f-hotfix：已停用）═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid rgba(239,68,68,0.5);opacity:0.7">
+        <h3>📌 Assistant Prefill <span style="font-size:11px;padding:3px 10px;background:#ef4444;color:#fff;border-radius:10px;margin-left:8px;font-weight:700">已停用</span></h3>
+        <div style="padding:14px;border-radius:8px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);margin-bottom:16px">
+          <div style="font-size:13px;color:#fca5a5;font-weight:600;margin-bottom:8px">⛔ 此功能已於 v62f-hotfix 強制停用</div>
+          <div style="font-size:12px;color:var(--text-dim);line-height:1.8">
+            <strong style="color:#fca5a5">原因</strong>：官方 2026-02 文件確認 Claude 4.5/4.6/4.7 <strong>全系列不支援 prefill</strong>：<br>
+            • Opus 4.7 ❌ 400 error<br>
+            • Opus 4.6 ❌ 400 error<br>
+            • <strong style="color:#ef4444">Sonnet 4.6 ❌ 400 error</strong>（我們原本以為支援，實測證實不支援）<br>
+            • Haiku 4.5 ❌ 400 error<br><br>
+            <strong style="color:#fca5a5">實測紀錄</strong>：2026-04-24 用戶回報 Sonnet 4.6 啟用後收到<br>
+            <code style="font-size:11px;background:#1a1d25;padding:2px 6px;border-radius:4px;color:#fbbf24">[invalid_request_error] This model does not support assistant message prefill.</code><br><br>
+            <strong style="color:#fca5a5">處理</strong>：worker.js 已在 callAI() 硬性跳過 prefill 注入，<br>
+            不管本卡片怎麼切都不會注入。本卡片保留僅作歷史記錄，<strong>勿操作</strong>。<br><br>
+            <a href="https://platform.claude.com/docs/en/about-claude/models/migration-guide" target="_blank" style="color:#60a5fa;font-size:11px">官方 migration guide →</a>
+          </div>
+        </div>
+
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.7;opacity:0.5">
+          [歷史記錄] 官方消除 JSON parse 失敗的技術——預填 AI 回應開頭字元強制從該處接續。
         </p>
 
-        <!-- 開關 -->
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <!-- 開關（已失效，UI 保留） -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;opacity:0.5;pointer-events:none">
           <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
             <input type="radio" name="prefill-enabled" value="true" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
             <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">啟用 Prefill</span><br><span style="font-size:11px;color:var(--text-dim)">消除 JSON parse 失敗（Sonnet/Haiku only）</span></span>
@@ -729,6 +742,43 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button onclick="savePrefillConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#60a5fa;color:#1a1a1a;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Prefill 設定</button>
           <span id="prefillStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
+      <!-- ═══ v62f-fix-4：Prompt Cache TTL 卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid rgba(251,191,36,0.3)">
+        <h3>⏰ Prompt Cache TTL <span style="font-size:11px;padding:2px 8px;background:rgba(251,191,36,0.2);color:#fcd34d;border-radius:10px;margin-left:6px">省錢關鍵</span></h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.7">
+          控制 system prompt cache 的存活時間。直接影響 cache write 成本。<br>
+          <strong style="color:#fcd34d">5m</strong>：cache write <strong>1x 價</strong>（Sonnet $3.75/M、Opus $6.25/M）—— Anthropic 預設<br>
+          <strong style="color:#fcd34d">1h</strong>：cache write <strong>2x 價</strong>（Sonnet $6/M、Opus $10/M）—— 需 beta header<br><br>
+          <strong style="color:#ef4444">⚠️ 何時該選 1h</strong>：同 1 小時內跑 <strong>3+ 次</strong>相同 system prompt 的讀盤才划算<br>
+          <strong style="color:#34d399">💰 何時該選 5m</strong>：日流量 &lt;30 次讀盤（靜月之光目前階段）
+        </p>
+
+        <!-- 選項 -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="cache-ttl" value="5m" style="width:16px;height:16px;accent-color:#34d399;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#34d399">5m（建議低流量）</span><br><span style="font-size:11px;color:var(--text-dim)">cache write 便宜 37%，預設 Anthropic 官方行為</span></span>
+          </label>
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="cache-ttl" value="1h" style="width:16px;height:16px;accent-color:#fcd34d;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#fcd34d">1h（高流量才划算）</span><br><span style="font-size:11px;color:var(--text-dim)">cache 存活 1 小時，但 write 2x 貴</span></span>
+          </label>
+        </div>
+
+        <!-- 實測數據說明 -->
+        <div style="padding:10px;border-radius:8px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:14px">
+          <strong style="color:#34d399">📊 靜月之光 2026-04-24 實測數據</strong>：<br>
+          三次 Sonnet/Opus 讀盤用 1h TTL 總成本 $3.19 ≈ NT$102<br>
+          其中 90% 是 cache write 費用（因為沒有 1 小時內多次請求可分攤）<br>
+          改 5m TTL 預期降至 <strong style="color:#fcd34d">$2.00 ≈ NT$64（省 37%）</strong>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveCacheTTLConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#fcd34d;color:#1a1a1a;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Cache TTL 設定</button>
+          <span id="cacheTTLStatus" style="font-size:12px;color:var(--text-dim)"></span>
         </div>
       </div>
 
@@ -1577,7 +1627,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadPrefillConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
 
@@ -3158,6 +3208,64 @@ async function savePrefillConfig() {
     if (data.ok) {
       toast('✓ 已儲存 Prefill 設定');
       if (statusEl) statusEl.textContent = '已儲存：' + (enabled ? '啟用' : '關閉') + ' / prefill="' + prefillText + '"';
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v62f-fix-4：Prompt Cache TTL Config
+// 官方：Anthropic Extended Cache TTL beta
+// ═══════════════════════════════════════════════
+async function loadCacheTTLConfig() {
+  const statusEl = document.getElementById('cacheTTLStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/cache-ttl-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const ttl = data.config.ttl || '5m';
+      const radios = document.getElementsByName('cache-ttl');
+      for (let i = 0; i < radios.length; i++) {
+        radios[i].checked = (radios[i].value === ttl);
+      }
+      if (statusEl) {
+        const priceHint = (ttl === '1h')
+          ? '（cache write 2x 價，只在高流量划算）'
+          : '（cache write 1x 價，低流量建議）';
+        statusEl.textContent = '當前：' + ttl + ' ' + priceHint;
+      }
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveCacheTTLConfig() {
+  const statusEl = document.getElementById('cacheTTLStatus');
+  try {
+    const radios = document.getElementsByName('cache-ttl');
+    let ttl = '5m';
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) { ttl = radios[i].value; break; }
+    }
+    const r = await fetch(`${WORKER_URL}/admin/cache-ttl-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ttl })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Cache TTL：' + ttl);
+      if (statusEl) {
+        const priceHint = (ttl === '1h')
+          ? '（cache write 2x 價）'
+          : '（cache write 1x 價，Anthropic 預設）';
+        statusEl.textContent = '已儲存：' + ttl + ' ' + priceHint;
+      }
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
