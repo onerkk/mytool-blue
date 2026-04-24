@@ -611,6 +611,127 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v62d：Advisor Tool 卡片（beta）═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid rgba(52,211,153,0.3)">
+        <h3>🧙‍♂️ Advisor Tool <span style="font-size:11px;padding:2px 8px;background:rgba(52,211,153,0.2);color:#6ee7b7;border-radius:10px;margin-left:6px">beta</span></h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.7">
+          官方 2026-04-09 推出，Sonnet/Haiku 執行時遇複雜判斷呼叫 Opus 當顧問。<br>
+          <strong style="color:#6ee7b7">命理場景意義</strong>：會員線 Sonnet 4.6 執行 + Opus 4.7 advisor ≈ 接近付費線品質，成本降 11.9%。<br>
+          <strong style="color:#6ee7b7">官方實測</strong>：SWE-bench Sonnet+Advisor 準確度 +2.7%、BrowseComp Haiku+Advisor 從 19.7% → 41.2%。<br>
+          <strong style="color:#fbbf24">⚠️ 相容性</strong>：只對非 Opus 4.7 executor 生效（付費線 Opus 4.7 已最強，不需要 advisor）。<br>
+          <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool" target="_blank" style="color:#60a5fa;font-size:11px">官方文件 →</a>
+        </p>
+
+        <!-- 開關 -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="advisor-enabled" value="true" style="width:16px;height:16px;accent-color:#6ee7b7;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#6ee7b7">啟用 Advisor</span><br><span style="font-size:11px;color:var(--text-dim)">會員線/免費線用 Sonnet+Opus 顧問</span></span>
+          </label>
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="advisor-enabled" value="false" style="width:16px;height:16px;accent-color:#7a7f8e;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#7a7f8e">關閉（預設）</span><br><span style="font-size:11px;color:var(--text-dim)">先實測 v62d 穩定後再開</span></span>
+          </label>
+        </div>
+
+        <!-- Advisor 模型選擇 -->
+        <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px">Advisor 模型</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <label style="flex:1;min-width:140px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);cursor:pointer">
+              <input type="radio" name="advisor-model" value="claude-opus-4-7" style="width:14px;height:14px;accent-color:#fbbf24">
+              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#fbbf24">Opus 4.7</span><br><span style="font-size:10px;color:var(--text-dim)">最強，建議</span></span>
+            </label>
+            <label style="flex:1;min-width:140px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);cursor:pointer">
+              <input type="radio" name="advisor-model" value="claude-opus-4-6" style="width:14px;height:14px;accent-color:#60a5fa">
+              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#60a5fa">Opus 4.6</span><br><span style="font-size:10px;color:var(--text-dim)">穩定，較便宜</span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Max Uses -->
+        <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:600">Max Uses（每次請求最多呼叫 advisor 幾次）</span>
+            <span id="advisorMaxUsesDisplay" style="font-size:14px;font-weight:600;color:#6ee7b7">2</span>
+          </div>
+          <input type="range" id="advisorMaxUsesSlider" min="1" max="5" step="1" value="2"
+                 style="width:100%;accent-color:#6ee7b7;cursor:pointer"
+                 oninput="document.getElementById('advisorMaxUsesDisplay').textContent = this.value">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim);margin-top:6px">
+            <span>1（省）</span>
+            <span>2-3（建議命理場景）</span>
+            <span>5（深）</span>
+          </div>
+        </div>
+
+        <!-- Caching -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="advisor-caching" style="width:14px;height:14px;accent-color:#6ee7b7">
+            <span style="flex:1"><span style="font-size:12px;font-weight:600">啟用 Advisor 端 Caching</span><br><span style="font-size:10px;color:var(--text-dim)">只在同一請求會呼叫 3+ 次才值得開</span></span>
+          </label>
+        </div>
+
+        <div style="padding:10px;border-radius:8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:14px">
+          <strong style="color:#fbbf24">⚠️ 命理場景建議</strong>：<br>
+          • 先開啟，advisor=Opus 4.7，max_uses=2，caching 關<br>
+          • 跑 5 次會員線七維度/開鑰讀盤，觀察 thinking progress 有沒有「🧙‍♂️ 正在請 Opus 顧問深度判讀...」提示<br>
+          • 看 story 的分析深度是否接近付費線
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveAdvisorToolConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#6ee7b7;color:#1a1a1a;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Advisor 設定</button>
+          <span id="advisorToolStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
+      <!-- ═══ v62e：Prefill 卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid rgba(96,165,250,0.3)">
+        <h3>📌 Assistant Prefill</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.7">
+          官方消除 JSON parse 失敗的技術——預填 AI 回應開頭字元強制從該處接續。<br>
+          <strong style="color:#60a5fa">命理場景意義</strong>：塔羅/開鑰/七維度 JSON 輸出不再有 markdown fence 或前綴雜訊，parseJSON 失敗率 → 0%。<br>
+          <strong style="color:#fbbf24">⚠️ 相容性</strong>：只對 Sonnet 4.6 / Haiku 4.5 有效，Opus 4.7/4.6 硬性不支援（會 400 error）。<br>
+          追問場景自動關閉（輸出是純文字不是 JSON）。
+        </p>
+
+        <!-- 開關 -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="prefill-enabled" value="true" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">啟用 Prefill</span><br><span style="font-size:11px;color:var(--text-dim)">消除 JSON parse 失敗（Sonnet/Haiku only）</span></span>
+          </label>
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="prefill-enabled" value="false" style="width:16px;height:16px;accent-color:#7a7f8e;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#7a7f8e">關閉（預設）</span><br><span style="font-size:11px;color:var(--text-dim)">保留現有 parseJSON fallback</span></span>
+          </label>
+        </div>
+
+        <!-- Prefill 文字 -->
+        <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">Prefill 文字（預填的開頭字元）</div>
+          <input type="text" id="prefillText" value="{" maxlength="10"
+                 style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#1a1d25;color:#fff;font-family:monospace;font-size:14px">
+          <div style="font-size:11px;color:var(--text-dim);margin-top:6px;line-height:1.6">
+            <strong>{</strong>（預設）→ 強制 AI 從 JSON 開始<br>
+            最多 10 字元。不建議改其他字元，除非你確定要什麼格式
+          </div>
+        </div>
+
+        <div style="padding:10px;border-radius:8px;background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:14px">
+          <strong style="color:#60a5fa">ℹ️ 部署後實測</strong>：<br>
+          • 觀察 Cloudflare worker logs 的 parseJSON failure 次數<br>
+          • 預期從每天數次 → 0 次<br>
+          • 若發現 AI 輸出被截斷或格式異常 → 可能 prefill 字元不符合場景，調整或關閉
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="savePrefillConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#60a5fa;color:#1a1a1a;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Prefill 設定</button>
+          <span id="prefillStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v54：Best-of-N 事實核查卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>🧪 Best-of-N 事實核查（付費 Opus）</h3>
@@ -1470,7 +1591,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadPrefillConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
 
@@ -2912,6 +3033,145 @@ async function saveTaskBudgetConfig() {
     if (data.ok) {
       toast('✓ 已儲存 Task Budget 設定');
       if (statusEl) statusEl.textContent = '已儲存：' + (enabled ? '啟用' : '關閉') + ' / ' + tokens + ' tokens';
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v62d：Advisor Tool Config (beta)
+// 官方：https://platform.claude.com/docs/en/agents-and-tools/tool-use/advisor-tool
+// ═══════════════════════════════════════════════
+async function loadAdvisorToolConfig() {
+  const statusEl = document.getElementById('advisorToolStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/advisor-tool-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const enabled = !!data.config.enabled;
+      const model = data.config.advisorModel || 'claude-opus-4-7';
+      const maxUses = data.config.maxUses || 2;
+      const caching = !!data.config.enableCaching;
+      // 開關
+      const enRadios = document.getElementsByName('advisor-enabled');
+      for (let i = 0; i < enRadios.length; i++) {
+        enRadios[i].checked = (enRadios[i].value === String(enabled));
+      }
+      // 模型
+      const mdRadios = document.getElementsByName('advisor-model');
+      for (let i = 0; i < mdRadios.length; i++) {
+        mdRadios[i].checked = (mdRadios[i].value === model);
+      }
+      // Max uses slider
+      const slider = document.getElementById('advisorMaxUsesSlider');
+      const display = document.getElementById('advisorMaxUsesDisplay');
+      if (slider) slider.value = maxUses;
+      if (display) display.textContent = maxUses;
+      // Caching
+      const cbCaching = document.getElementById('advisor-caching');
+      if (cbCaching) cbCaching.checked = caching;
+      if (statusEl) statusEl.textContent = '當前：' + (enabled ? '啟用' : '關閉') + ' / ' + model + ' / max_uses=' + maxUses;
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveAdvisorToolConfig() {
+  const statusEl = document.getElementById('advisorToolStatus');
+  try {
+    // 讀開關
+    const enRadios = document.getElementsByName('advisor-enabled');
+    let enabled = false;
+    for (let i = 0; i < enRadios.length; i++) {
+      if (enRadios[i].checked) { enabled = (enRadios[i].value === 'true'); break; }
+    }
+    // 讀模型
+    const mdRadios = document.getElementsByName('advisor-model');
+    let advisorModel = 'claude-opus-4-7';
+    for (let i = 0; i < mdRadios.length; i++) {
+      if (mdRadios[i].checked) { advisorModel = mdRadios[i].value; break; }
+    }
+    // 讀 max uses
+    const slider = document.getElementById('advisorMaxUsesSlider');
+    const maxUses = slider ? parseInt(slider.value, 10) : 2;
+    // 讀 caching
+    const cbCaching = document.getElementById('advisor-caching');
+    const enableCaching = cbCaching ? cbCaching.checked : false;
+    // 提交
+    const r = await fetch(`${WORKER_URL}/admin/advisor-tool-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled, advisorModel, maxUses, enableCaching })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Advisor 設定');
+      if (statusEl) statusEl.textContent = '已儲存：' + (enabled ? '啟用' : '關閉') + ' / ' + advisorModel + ' / max_uses=' + maxUses;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v62e：Prefill Config
+// 官方：Anthropic Prompt Engineering - prefill technique
+// ═══════════════════════════════════════════════
+async function loadPrefillConfig() {
+  const statusEl = document.getElementById('prefillStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/prefill-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const enabled = !!data.config.enabled;
+      const prefillText = data.config.prefillText || '{';
+      // 開關
+      const radios = document.getElementsByName('prefill-enabled');
+      for (let i = 0; i < radios.length; i++) {
+        radios[i].checked = (radios[i].value === String(enabled));
+      }
+      // 文字
+      const input = document.getElementById('prefillText');
+      if (input) input.value = prefillText;
+      if (statusEl) statusEl.textContent = '當前：' + (enabled ? '啟用' : '關閉') + ' / prefill="' + prefillText + '"';
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function savePrefillConfig() {
+  const statusEl = document.getElementById('prefillStatus');
+  try {
+    // 讀開關
+    const radios = document.getElementsByName('prefill-enabled');
+    let enabled = false;
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) { enabled = (radios[i].value === 'true'); break; }
+    }
+    // 讀文字
+    const input = document.getElementById('prefillText');
+    let prefillText = input ? input.value : '{';
+    if (!prefillText || prefillText.length === 0) prefillText = '{';
+    if (prefillText.length > 10) prefillText = prefillText.substring(0, 10);
+    // 提交
+    const r = await fetch(`${WORKER_URL}/admin/prefill-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled, prefillText })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Prefill 設定');
+      if (statusEl) statusEl.textContent = '已儲存：' + (enabled ? '啟用' : '關閉') + ' / prefill="' + prefillText + '"';
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
