@@ -558,6 +558,59 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v62c：Opus 4.7 Task Budget 卡片（beta）═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid rgba(139,92,246,0.3)">
+        <h3>⏱️ Opus 4.7 Task Budget <span style="font-size:11px;padding:2px 8px;background:rgba(139,92,246,0.2);color:#c4b5fd;border-radius:10px;margin-left:6px">beta</span></h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.7">
+          官方 2026-03 推出的 beta 功能，只對 <span style="color:#fbbf24">Opus 4.7</span> 有效（Sonnet 4.6 無效）。<br>
+          <strong style="color:#c4b5fd">核心原理</strong>：AI 看到 token 倒數會主動規劃「哪幾層還沒寫」，避免寫到一半自己收束。<br>
+          <strong style="color:#c4b5fd">命理場景用途</strong>：解決塔羅第三層完成率只有 45% 的根本問題——AI 看到還有 token 就會把鑰匙牌+動作+驗證信號寫完。<br>
+          <a href="https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-7" target="_blank" style="color:#60a5fa;font-size:11px">官方文件 →</a>
+        </p>
+
+        <!-- 開關 -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="task-budget-enabled" value="true" style="width:16px;height:16px;accent-color:#c4b5fd;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#c4b5fd">啟用 Task Budget</span><br><span style="font-size:11px;color:var(--text-dim)">AI 看到 token 倒數，主動寫完第三層（beta）</span></span>
+          </label>
+          <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="task-budget-enabled" value="false" style="width:16px;height:16px;accent-color:#7a7f8e;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#7a7f8e">關閉（預設）</span><br><span style="font-size:11px;color:var(--text-dim)">先實測 v62/v62b 穩定後再開</span></span>
+          </label>
+        </div>
+
+        <!-- Token 預算設定 -->
+        <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:600">Task Budget Tokens</span>
+            <span id="taskBudgetTokensDisplay" style="font-size:14px;font-weight:600;color:#c4b5fd">48000</span>
+          </div>
+          <input type="range" id="taskBudgetTokensSlider" min="20000" max="96000" step="4000" value="48000"
+                 style="width:100%;accent-color:#c4b5fd;cursor:pointer"
+                 oninput="document.getElementById('taskBudgetTokensDisplay').textContent = this.value">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim);margin-top:6px">
+            <span>20K（緊，可能裁切）</span>
+            <span>48K（建議，命理場景）</span>
+            <span>96K（鬆，接近無效）</span>
+          </div>
+        </div>
+
+        <!-- 警告 -->
+        <div style="padding:10px;border-radius:8px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:14px">
+          <strong style="color:#fbbf24">⚠️ 實測提醒</strong>：<br>
+          • Opus 4.7 字面化解讀強，太緊的 budget 可能讓 AI 裁切重點<br>
+          • DataCamp 實測某些場景 task_budget 會反而降低品質<br>
+          • 建議從 <span style="color:#c4b5fd">48000</span> 開始試，跑 5 次讀盤比對<br>
+          • 若發現輸出變短/省略層級 → 調高或關閉
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveTaskBudgetConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#c4b5fd;color:#1a1a1a;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Task Budget 設定</button>
+          <span id="taskBudgetStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v54：Best-of-N 事實核查卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>🧪 Best-of-N 事實核查（付費 Opus）</h3>
@@ -1417,7 +1470,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
 
@@ -2799,6 +2852,66 @@ async function saveOpus47EffortConfig() {
     if (data.ok) {
       toast('✓ 已儲存 Opus 4.7 Effort');
       if (statusEl) statusEl.textContent = '已儲存：' + level;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v62c：Opus 4.7 Task Budget Config (beta)
+// 官方：https://platform.claude.com/docs/en/about-claude/models/whats-new-claude-4-7
+// ═══════════════════════════════════════════════
+async function loadTaskBudgetConfig() {
+  const statusEl = document.getElementById('taskBudgetStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/opus47-task-budget-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const enabled = !!data.config.enabled;
+      const tokens = data.config.tokens || 48000;
+      // 設定開關
+      const radios = document.getElementsByName('task-budget-enabled');
+      for (let i = 0; i < radios.length; i++) {
+        radios[i].checked = (radios[i].value === String(enabled));
+      }
+      // 設定滑桿
+      const slider = document.getElementById('taskBudgetTokensSlider');
+      const display = document.getElementById('taskBudgetTokensDisplay');
+      if (slider) slider.value = tokens;
+      if (display) display.textContent = tokens;
+      if (statusEl) statusEl.textContent = '當前：' + (enabled ? '啟用' : '關閉') + ' / ' + tokens + ' tokens';
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveTaskBudgetConfig() {
+  const statusEl = document.getElementById('taskBudgetStatus');
+  try {
+    // 讀開關
+    const radios = document.getElementsByName('task-budget-enabled');
+    let enabled = false;
+    for (let i = 0; i < radios.length; i++) {
+      if (radios[i].checked) { enabled = (radios[i].value === 'true'); break; }
+    }
+    // 讀滑桿
+    const slider = document.getElementById('taskBudgetTokensSlider');
+    const tokens = slider ? parseInt(slider.value, 10) : 48000;
+    // 提交
+    const r = await fetch(`${WORKER_URL}/admin/opus47-task-budget-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: enabled, tokens: tokens })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Task Budget 設定');
+      if (statusEl) statusEl.textContent = '已儲存：' + (enabled ? '啟用' : '關閉') + ' / ' + tokens + ' tokens';
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
