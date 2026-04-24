@@ -1791,7 +1791,12 @@ function _sendFeedbackToForms(rating,reasons,comment,actual){
         model: model,
         dims: dims,
         cardData: cardData,
-        ootk: ootk
+        ootk: ootk,
+        // ★ v62f-fix-3：feedback 閉環——記錄當次 config 與 audit 結果
+        //   這樣以後可以做 A/B 統計：
+        //   「開 toneCalibration 的 Opus 七維度感情題」平均準度 vs 關的版本
+        v62Config: (typeof window !== 'undefined' && window._jyV62ConfigSnapshot) ? window._jyV62ConfigSnapshot : null,
+        auditResult: (typeof window !== 'undefined' && window._jyAuditResultSnapshot) ? window._jyAuditResultSnapshot : null
       })
     })
       .then(()=>console.log('[回饋] 已送出到 Worker'))

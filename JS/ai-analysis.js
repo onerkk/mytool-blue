@@ -20538,6 +20538,9 @@ renderTarot = function(){
               try { if (window._JY_DEBUG) console.log('[thinking]', _sseData); } catch(_tke2){}
             } else if (_sseEvt === 'error' && _sseData) {
               try { var _sseErr = JSON.parse(_sseData); throw new Error(_sseErr.error || '伺服器錯誤'); } catch(_e3){ if (_e3.message) throw _e3; }
+            } else if (_sseEvt === 'audit' && _sseData) {
+              // ★ v62f-fix-3：feedback 閉環——存 audit 結果快照
+              try { var _aud3 = JSON.parse(_sseData); if (_aud3 && _aud3.audit) window._jyAuditResultSnapshot = _aud3.audit; } catch(_){}
             }
           }
         }
@@ -20556,6 +20559,8 @@ renderTarot = function(){
       if (data.crystalProducts) window._jyCrystalProducts = data.crystalProducts;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
+      // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照讓 feedback 能帶回 worker
+      if (data.v62Config) window._jyV62ConfigSnapshot = data.v62Config;
       var r = data.result;
       if (!r) throw new Error('回傳為空');
       // ★ v46：存 resultId（追問免費資格換票用）
@@ -22494,6 +22499,8 @@ async function _triggerTarotAI() {
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
+              // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照
+              if (parsed.v62Config) window._jyV62ConfigSnapshot = parsed.v62Config;
               // v52：無論 admin 與否都存 usage（給回饋按模型分組統計用）
               //      admin 額外會看到 _adminCostHTML，非 admin 只是拿 modelId 送回饋
               if (parsed.usage) {
@@ -22501,6 +22508,9 @@ async function _triggerTarotAI() {
                 if (admin) console.log('[TarotAI] Usage:', parsed.usage);
               }
             } catch(_){}
+          } else if (evtType === 'audit' && evtData) {
+            // ★ v62f-fix-3：feedback 閉環——存 audit 結果快照
+            try { var _aud = JSON.parse(evtData); if (_aud && _aud.audit) window._jyAuditResultSnapshot = _aud.audit; } catch(_){}
           } else if (evtType === 'progress' && evtData) {
             // ★ v20：不覆蓋 tarot-ai-phase——client-side phase timer 負責輪播
             // SSE progress 只用於 debug logging
@@ -23702,7 +23712,12 @@ async function _triggerTarotFollowUp() {
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
+              // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照
+              if (parsed.v62Config) window._jyV62ConfigSnapshot = parsed.v62Config;
             } catch(_) {}
+          } else if (evtType === 'audit' && evtData) {
+            // ★ v62f-fix-3：feedback 閉環——存 audit 結果快照
+            try { var _aud2 = JSON.parse(evtData); if (_aud2 && _aud2.audit) window._jyAuditResultSnapshot = _aud2.audit; } catch(_){}
           } else if (evtType === 'thinking' && evtData) {
             // ★ v47d：Opus 4.7 adaptive thinking 摘要，即時顯示給用戶看
             try {
