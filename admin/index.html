@@ -1169,34 +1169,20 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </span>
           </label>
 
-          <!-- Group E：舊模組控制 -->
+          <!-- Group E：舊模組控制（v62f-fix 修正：實際控制權在 v56 卡片）-->
           <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
-            <div style="font-size:11px;color:#d4a574;font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group E：v56/v57 舊模組控制（遷移期） ──</div>
+            <div style="font-size:11px;color:#d4a574;font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group E：v56/v57 舊模組控制 ──</div>
+            <div style="font-size:11px;color:var(--text-dim);line-height:1.7;padding:12px;border-radius:8px;background:rgba(212,165,116,0.06);border:1px solid rgba(212,165,116,0.15)">
+              <strong style="color:#d4a574">ℹ️ 實際控制權在「v56 Prompt 升級」卡片</strong><br>
+              V56_SELF_AUDIT / V57_EXPLICIT_COT / V57_COUNTEREXAMPLE_CHECK 三個模組，<br>
+              實際由 <code style="color:#fbbf24">_v56Cfg.selfAudit / explicitCoT / counterexampleCheck</code> 控制。<br><br>
+              請到上面的「<strong>v56 Prompt 升級</strong>」卡片切換這三個開關。<br>
+              官方建議：<br>
+              • self-audit（自我校準）：開<br>
+              • explicit CoT（顯式推理）：<strong style="color:#d4a574">關</strong>（adaptive thinking 已內建）<br>
+              • counterexample check（反例檢查）：<strong style="color:#d4a574">關</strong>（會 overtrigger）
+            </div>
           </div>
-
-          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="checkbox" id="v62-legacy-audit" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
-            <span style="flex:1">
-              <span style="font-size:13px;font-weight:600">🔄 保留 v56 自我校準</span><br>
-              <span style="font-size:11px;color:var(--text-dim)">舊版 V56_SELF_AUDIT 建議配合 Tone Calibration 使用。預設開</span>
-            </span>
-          </label>
-
-          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="checkbox" id="v62-legacy-cot" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
-            <span style="flex:1">
-              <span style="font-size:13px;font-weight:600">⚠️ 保留 V57 顯式推理路徑</span><br>
-              <span style="font-size:11px;color:#d4a574">官方建議關掉——adaptive thinking 已內建，強制寫會 overthink。預設關</span>
-            </span>
-          </label>
-
-          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
-            <input type="checkbox" id="v62-legacy-ce" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
-            <span style="flex:1">
-              <span style="font-size:13px;font-weight:600">⚠️ 保留 V57 反例檢查</span><br>
-              <span style="font-size:11px;color:#d4a574">官方建議關掉——強語氣「絕對不要假裝反例不存在」會 overtrigger。預設關</span>
-            </span>
-          </label>
 
         </div>
 
@@ -3649,11 +3635,9 @@ const _V62_KEY_MAP = {
   // v62b 第三層強制收束
   'v62b-tarot-force': 'tarotForceKey',
   'v62b-ootk-force': 'ootkForceEntry',
-  'v62b-seven-action': 'sevenActionLayer',
-  // Group E
-  'v62-legacy-audit': 'legacySelfAudit',
-  'v62-legacy-cot': 'legacyExplicitCoT',
-  'v62-legacy-ce': 'legacyCounterexampleCheck'
+  'v62b-seven-action': 'sevenActionLayer'
+  // v62f-fix：移除三個 legacy 裝飾品（legacySelfAudit/legacyExplicitCoT/legacyCounterexampleCheck）
+  //          實際控制權在 _v56Cfg，改到 v56 卡片操作
 };
 
 async function loadV62Config() {
@@ -3683,7 +3667,7 @@ async function loadV62Config() {
           const el = document.getElementById(elId);
           if (el && el.checked) on++;
         });
-        statusEl.textContent = '啟用(' + on + '/16): ' + _v62BuildShortStatus();
+        statusEl.textContent = '啟用(' + on + '/13): ' + _v62BuildShortStatus();
       }
     }
   } catch(e) {
@@ -3705,10 +3689,7 @@ function _v62BuildShortStatus() {
     'v62-tarot-key': '塔鑰',
     'v62b-tarot-force': '塔強',
     'v62b-ootk-force': '鑰強',
-    'v62b-seven-action': '七動',
-    'v62-legacy-audit': 'SA',
-    'v62-legacy-cot': 'CoT',
-    'v62-legacy-ce': 'CE'
+    'v62b-seven-action': '七動'
   };
   const on = [];
   Object.keys(labels).forEach(function(elId) {
@@ -3740,7 +3721,7 @@ async function saveV62Config() {
         const el = document.getElementById(elId);
         if (el && el.checked) on++;
       });
-      if (statusEl) statusEl.textContent = '啟用(' + on + '/16): ' + _v62BuildShortStatus();
+      if (statusEl) statusEl.textContent = '啟用(' + on + '/13): ' + _v62BuildShortStatus();
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
