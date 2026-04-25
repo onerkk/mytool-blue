@@ -1219,6 +1219,74 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </span>
           </label>
 
+          <!-- ═══════════════════════════════════════════════════════════ -->
+          <!-- Group G (v63)：OOTK 正統 Book T 模式（C-嚴 修正）           -->
+          <!-- ═══════════════════════════════════════════════════════════ -->
+          <div style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--card-border);">
+            <div style="font-size:11px;color:#fbbf24;font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group G (v63)：OOTK 正統 Book T 模式 ──</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;line-height:1.7;padding:8px;background:rgba(251,191,36,0.05);border-radius:6px;border:1px solid rgba(251,191,36,0.15)">
+              <strong style="color:#fbbf24">📜 修正記錄（v63）：</strong>舊版把 counting 起點（即代表牌本身）誤標為「五層結論牌」送 AI，導致 Haiku 4.5 / Sonnet 4.6 / Opus 4.7 都會強調「五層結論一致」這個假訊號。<br>
+              本組依 Mathers Book T 原始手稿、Regardie《Golden Dawn》、Cicero《Magical Tarot》、Mary K. Greer 對 elemental dignities 的官方解析重構。<br>
+              <strong style="color:#fbbf24">正統 OOTK 沒有「結論牌」「五層收束」這些概念</strong> — Counting 走出的整串牌是「故事」（the story of the affair），不是某張單牌作結論。
+            </div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-ootk-orthodox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600;color:#fbbf24">🗝️ 正統 Book T 模式（主開關，建議開）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">開啟後：① 砍掉「五層結論牌」「主題集中」「五層收束」自創 prompt 欄位；② 改送「五個獨立故事」格式（每層 = counting story + pairing story + dignities + 活躍堆元素）；③ 注入正統戰技：Mathers contrary 直接刪原則、Greer 三狀態權重判斷、abandon divination 條件。<strong style="color:#fbbf24">關閉則回到舊版（已知有偏差）</strong></span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-ootk-counting-story" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📖 Counting Story 戰技（Book T）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">注入正統 Counting 解讀法：①「make a story of these cards. This story is that of the beginning of the affair.」②「Significator 是起點不是終點」③ 走過的整串牌按發現順序對應事件展開的時序。④ 終止條件：落到已訪 visited 牌就停。<strong>禁止把終點牌單獨稱為「結論」</strong></span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-ootk-pairing-story" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔗 Pairing Story 戰技（Book T）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">注入正統 Pairing 解讀法：①「Make another story, which should fill in the details omitted in the first」② 從 Significator 兩側對稱往外配對 ③ Pairing 講「細節補充」、Counting 講「主線發展」 ④ Pairing 與 Counting 等重要，不可只讀其一。提升 pairing 利用率（目前被冷落）</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-ootk-dignities-mathers" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">⚖️ Mathers 元素尊嚴正統規則</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">注入 Greer 闡釋的 Mathers 原規則：① Strong（同元素）= 強化主角戲 ② Friendly（火風/水土）= 配角推動 ③ Neutral（火土/風水）= 微弱影響 ④ Contrary（火水/風土）= <strong style="color:#fbbf24">Mathers 直接不讀</strong>（背景雜音，刪除）。Triad 中若兩側 contrary 而中間支持 → 中央牌單獨讀</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-ootk-five-independent" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔢 五階段獨立讀法（C-嚴核心）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">五個 Operation 各自獨立讀，AI 只說「這五層分別揭示了 X / Y / Z / W / V」，不強行綜合成單一結論。<strong style="color:#fbbf24">禁止「五層共振」「五層收束」「主題集中」</strong> 等自創跨層分析。Mathers 原文五個 Op 是「不同層次的獨立讀法」（表象 / 宮位背景 / 星座驅力 / 旬時機 / 質點本質）</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-ootk-abandon-rule" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🚫 Abandon Divination 條件（Book T）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">注入 Mathers 原文的 abandon 條件：① Op2 找不到 Significator 在合適宮位（兩次失敗）→ 建議重新詢問 ② 故事主線與問題明顯不符 → 建議放下，告訴用戶「這次能量不對盤」。<strong>誠實說「讀不出單一答案」優於硬拉結論</strong></span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-ootk-pile-element" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🌊 Op1 元素堆位置語意（Book T）</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">注入 Mathers Book T 對代表牌落入哪一堆的官方語意：Yod 火堆 = work/business、Heh 水堆 = love/pleasure、Vau 風堆 = quarrels/loss、Heh-final 土堆 = money/goods。<strong>對應到問題類型：問感情代表牌應落 Heh，落錯堆要點明「能量不在你問的方向」</strong></span>
+            </span>
+          </label>
+
           <!-- Group E：舊模組控制（v62f-fix 修正：實際控制權在 v56 卡片）-->
           <div style="margin-top:6px;padding-top:10px;border-top:1px dashed var(--card-border);">
             <div style="font-size:11px;color:#d4a574;font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group E：v56/v57 舊模組控制 ──</div>
@@ -3721,7 +3789,15 @@ let _v62Defaults = {
   // Group F (v62b)
   tarotForceKey: true,
   ootkForceEntry: true,
-  sevenActionLayer: true
+  sevenActionLayer: true,
+  // Group G (v63) — OOTK 正統 Book T 模式（C-嚴核心）
+  ootkOrthodoxBookT: true,        // 主開關：砍掉舊版自創概念、改送五個獨立故事
+  ootkCountingStory: true,        // Counting story 戰技
+  ootkPairingStory: true,         // Pairing story 戰技
+  ootkDignitiesMathers: true,     // Mathers 元素尊嚴正統規則（含 contrary 直接刪）
+  ootkFiveIndependent: true,      // 五階段獨立讀法（禁止強行收束）
+  ootkAbandonRule: true,          // Abandon divination 條件
+  ootkPileElementSemantic: true   // Op1 元素堆位置語意（Book T 原文）
   // v62f-fix：徹底移除 legacy 三個裝飾品，實際控制權在 v56 卡片
 };
 
@@ -3740,7 +3816,15 @@ const _V62_KEY_MAP = {
   // v62b 第三層強制收束
   'v62b-tarot-force': 'tarotForceKey',
   'v62b-ootk-force': 'ootkForceEntry',
-  'v62b-seven-action': 'sevenActionLayer'
+  'v62b-seven-action': 'sevenActionLayer',
+  // v63 OOTK 正統 Book T 模式（C-嚴）
+  'v63-ootk-orthodox': 'ootkOrthodoxBookT',
+  'v63-ootk-counting-story': 'ootkCountingStory',
+  'v63-ootk-pairing-story': 'ootkPairingStory',
+  'v63-ootk-dignities-mathers': 'ootkDignitiesMathers',
+  'v63-ootk-five-independent': 'ootkFiveIndependent',
+  'v63-ootk-abandon-rule': 'ootkAbandonRule',
+  'v63-ootk-pile-element': 'ootkPileElementSemantic'
   // v62f-fix：移除三個 legacy 裝飾品（legacySelfAudit/legacyExplicitCoT/legacyCounterexampleCheck）
   //          實際控制權在 _v56Cfg，改到 v56 卡片操作
 };
@@ -3772,7 +3856,7 @@ async function loadV62Config() {
           const el = document.getElementById(elId);
           if (el && el.checked) on++;
         });
-        statusEl.textContent = '啟用(' + on + '/13): ' + _v62BuildShortStatus();
+        statusEl.textContent = '啟用(' + on + '/20): ' + _v62BuildShortStatus();
       }
     }
   } catch(e) {
@@ -3794,7 +3878,14 @@ function _v62BuildShortStatus() {
     'v62-tarot-key': '塔鑰',
     'v62b-tarot-force': '塔強',
     'v62b-ootk-force': '鑰強',
-    'v62b-seven-action': '七動'
+    'v62b-seven-action': '七動',
+    'v63-ootk-orthodox': '鑰正',
+    'v63-ootk-counting-story': '鑰故',
+    'v63-ootk-pairing-story': '鑰配',
+    'v63-ootk-dignities-mathers': '鑰嚴',
+    'v63-ootk-five-independent': '鑰獨',
+    'v63-ootk-abandon-rule': '鑰棄',
+    'v63-ootk-pile-element': '鑰堆'
   };
   const on = [];
   Object.keys(labels).forEach(function(elId) {
