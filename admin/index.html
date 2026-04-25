@@ -1077,6 +1077,67 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v64：Sonnet 4.6 按工具獨立配置 effort ═══ -->
+      <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:18px;margin-top:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:16px;font-weight:700">🎚️ Sonnet 4.6 按工具獨立 effort</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#1f2933;color:#7dd3fc">v64</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
+          只對 Sonnet 4.6 標準路徑生效（Opus 4.7 / Haiku 4.5 / 深度模式不受影響）。<br>
+          每個工具可獨立挑 effort，「<b>繼承全局</b>」= 用上方 v56 全局 sonnetEffort。<br>
+          <b style="color:#fbbf24">建議配置（依官方+實戰）：</b>七維度 / 開鑰 = high（深度推理有用）；塔羅 / 追問 = medium（結構單純，省 30% 成本與延遲）。
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr;gap:10px">
+          <!-- 七維度 -->
+          <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14">
+            <span style="font-size:13px;font-weight:600">🔮 七維度（標準）</span>
+            <select id="v64-eff-d7" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#1a1f2a;color:#e5e7eb;font-size:13px;cursor:pointer">
+              <option value="">繼承全局</option>
+              <option value="low">low（快速 / 最省）</option>
+              <option value="medium">medium（平衡）</option>
+              <option value="high">high（深度推理）</option>
+            </select>
+          </div>
+          <!-- 開鑰之法 -->
+          <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14">
+            <span style="font-size:13px;font-weight:600">🔑 開鑰之法（標準）</span>
+            <select id="v64-eff-ootk" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#1a1f2a;color:#e5e7eb;font-size:13px;cursor:pointer">
+              <option value="">繼承全局</option>
+              <option value="low">low（快速 / 最省）</option>
+              <option value="medium">medium（平衡）</option>
+              <option value="high">high（深度推理）</option>
+            </select>
+          </div>
+          <!-- 塔羅快讀 -->
+          <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14">
+            <span style="font-size:13px;font-weight:600">🃏 塔羅快讀（標準）</span>
+            <select id="v64-eff-tarot" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#1a1f2a;color:#e5e7eb;font-size:13px;cursor:pointer">
+              <option value="">繼承全局</option>
+              <option value="low">low（快速 / 最省）</option>
+              <option value="medium">medium（平衡）</option>
+              <option value="high">high（深度推理）</option>
+            </select>
+          </div>
+          <!-- 追問 -->
+          <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14">
+            <span style="font-size:13px;font-weight:600">💬 追問（所有工具）</span>
+            <select id="v64-eff-followup" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#1a1f2a;color:#e5e7eb;font-size:13px;cursor:pointer">
+              <option value="">繼承全局</option>
+              <option value="low">low（快速 / 最省）</option>
+              <option value="medium">medium（平衡）</option>
+              <option value="high">high（深度推理）</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:#0a1320;border:1px solid #1e3a5f;font-size:11px;color:#7dd3fc;line-height:1.6">
+          ℹ️ 此設定跟上方 v56+v57 卡片共用同一個儲存按鈕（一起送 POST 到 /admin/v56-prompt-config）。改完直接按上方「💾 儲存 v57 設定」即可。
+        </div>
+      </div>
+      <!-- ═══ v64 結束 ═══ -->
+
       <!-- ═══ v62：Sonnet 4.6 / Opus 4.7 官方校準卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>🎯 v62 官方校準（Sonnet 4.6 / Opus 4.7）</h3>
@@ -3644,9 +3705,18 @@ async function loadV56Config() {
       if (litEl) litEl.checked = (c.literalInstructions !== false);
       if (giq7dEl) giq7dEl.checked = !!c.groundInQuotes7D;
       if (giqtEl) giqtEl.checked = (c.groundInQuotesTarot !== false);
-      // Sonnet effort
+      // Sonnet effort（全局 fallback）
       const effort = c.sonnetEffort || 'medium';
       document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === effort); });
+      // v64：4 工具獨立 effort 套值（值是字串，空字串 = 繼承）
+      const eff_d7El = document.getElementById('v64-eff-d7');
+      const eff_ootkEl = document.getElementById('v64-eff-ootk');
+      const eff_tarotEl = document.getElementById('v64-eff-tarot');
+      const eff_fuEl = document.getElementById('v64-eff-followup');
+      if (eff_d7El) eff_d7El.value = (typeof c.sonnetEffort_d7 === 'string') ? c.sonnetEffort_d7 : 'high';
+      if (eff_ootkEl) eff_ootkEl.value = (typeof c.sonnetEffort_ootk === 'string') ? c.sonnetEffort_ootk : 'high';
+      if (eff_tarotEl) eff_tarotEl.value = (typeof c.sonnetEffort_tarot === 'string') ? c.sonnetEffort_tarot : 'medium';
+      if (eff_fuEl) eff_fuEl.value = (typeof c.sonnetEffort_followup === 'string') ? c.sonnetEffort_followup : 'medium';
       // Status 列
       if (statusEl) {
         const on = [];
@@ -3688,6 +3758,11 @@ async function saveV56Config() {
     const litEl = document.getElementById('v57-lit');
     const giq7dEl = document.getElementById('v57-giq-7d');
     const giqtEl = document.getElementById('v57-giq-t');
+    // v64：4 個工具獨立 effort（select 下拉，空字串 = 繼承全局）
+    const eff_d7El = document.getElementById('v64-eff-d7');
+    const eff_ootkEl = document.getElementById('v64-eff-ootk');
+    const eff_tarotEl = document.getElementById('v64-eff-tarot');
+    const eff_fuEl = document.getElementById('v64-eff-followup');
     const body = {
       // v56
       selfAudit: saEl ? !!saEl.checked : true,
@@ -3703,7 +3778,12 @@ async function saveV56Config() {
       explicitCoT: cotEl ? !!cotEl.checked : false,
       literalInstructions: litEl ? !!litEl.checked : true,
       groundInQuotes7D: giq7dEl ? !!giq7dEl.checked : false,
-      groundInQuotesTarot: giqtEl ? !!giqtEl.checked : true
+      groundInQuotesTarot: giqtEl ? !!giqtEl.checked : true,
+      // v64：按工具獨立配置 Sonnet effort（空字串 = 繼承全局 sonnetEffort）
+      sonnetEffort_d7: eff_d7El ? eff_d7El.value : 'high',
+      sonnetEffort_ootk: eff_ootkEl ? eff_ootkEl.value : 'high',
+      sonnetEffort_tarot: eff_tarotEl ? eff_tarotEl.value : 'medium',
+      sonnetEffort_followup: eff_fuEl ? eff_fuEl.value : 'medium'
     };
     const r = await fetch(`${WORKER_URL}/admin/v56-prompt-config?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
