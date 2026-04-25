@@ -2767,20 +2767,20 @@ enhanceTarot = function(tarot) {
       // v63 CSS marker: ═══ v63 ② 洗牌儀式 ═══
       '.ootk-shuffle-box{position:relative;width:200px;height:200px;margin:0 auto}',
       '.ootk-shuffle-box.done .ootk-shuffle-card{opacity:0;transition:opacity .5s}',
-      '.ootk-shuffle-card{position:absolute;top:50%;left:50%;width:36px;height:54px;margin-left:-18px;margin-top:-27px;background:linear-gradient(135deg,#3a2a10,#1a1208);border:1px solid rgba(201,168,76,.4);border-radius:3px;animation:ootkShuffleSpin 1.6s ease-in-out;animation-fill-mode:both;box-shadow:0 2px 6px rgba(0,0,0,.5)}',
+      '.ootk-shuffle-card{position:absolute;top:50%;left:50%;width:36px;height:54px;margin-left:-18px;margin-top:-27px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.4);border-radius:3px;animation:ootkShuffleSpin 1.6s ease-in-out;animation-fill-mode:both;box-shadow:0 2px 6px rgba(0,0,0,.5)}',
       '@keyframes ootkShuffleSpin{0%{transform:translate(0,0) rotate(0deg);opacity:0}10%{opacity:1}50%{transform:translate(calc(cos(calc(var(--i)*15deg))*60px),calc(sin(calc(var(--i)*15deg))*60px)) rotate(calc(var(--i)*15deg))}100%{transform:translate(0,0) rotate(0deg);opacity:.6}}',
       // v63 CSS marker: ═══ v63 飛卡 ═══
-      '.ootk-fly-card-v63{position:absolute;width:20px;height:30px;background:linear-gradient(135deg,#5a4220,#2a1d08);border:1px solid rgba(201,168,76,.5);border-radius:2px;transition:all .45s cubic-bezier(.4,.1,.3,1);opacity:.95;z-index:5;pointer-events:none;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.5)}',
+      '.ootk-fly-card-v63{position:absolute;width:20px;height:30px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.5);border-radius:2px;transition:all .45s cubic-bezier(.4,.1,.3,1);opacity:.95;z-index:5;pointer-events:none;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.5)}',
       '.ootk-fly-card-v63.with-img{box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 8px rgba(201,168,76,.3)}',
       '.ootk-fly-card-v63.landed{opacity:.7;border-color:rgba(201,168,76,.3)}',
       // v63 CSS marker: ═══ v63 ③ Op1 YHVH 四元素堆 ═══
       '.ootk-op1-scene{position:relative;width:100%;max-width:380px;min-height:260px;margin:0 auto}',
-      '.ootk-op1-deck{position:absolute;top:8px;left:50%;width:32px;height:50px;margin-left:-16px;background:linear-gradient(135deg,#3a2a10,#1a1208);border:1px solid rgba(201,168,76,.5);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.62rem;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.5)}',
+      '.ootk-op1-deck{position:absolute;top:8px;left:50%;width:32px;height:50px;margin-left:-16px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.5);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.62rem;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.5);text-shadow:0 1px 2px #000}',
       '.ootk-op1-deck-count{font-size:.68rem;font-weight:700}',
       '.ootk-op1-piles{position:absolute;top:80px;left:0;right:0;display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;padding:0 .5rem}',
       '.ootk-op1-pile{position:relative;padding:.7rem .5rem;border:1px solid rgba(201,168,76,.12);border-radius:8px;background:rgba(255,255,255,.02);min-height:90px;transition:all .5s ease;text-align:center}',
       '.ootk-op1-pile-letter{position:absolute;top:.3rem;right:.4rem;font-size:1.1rem;color:var(--c-gold);opacity:.4;font-family:serif;font-weight:600}',
-      '.ootk-op1-pile-stack{height:24px;width:32px;margin:0 auto .25rem;position:relative}',
+      '.ootk-op1-pile-stack{height:50px;width:36px;margin:0 auto .35rem;position:relative;background:url("/tarot_img/card-back.jpg") center/cover #2a1d08;border:1px solid rgba(201,168,76,.4);border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 -2px 0 rgba(0,0,0,.3),2px 1px 0 -1px rgba(50,30,10,.6),4px 2px 0 -2px rgba(50,30,10,.4)}',
       '.ootk-op1-pile-meta{font-size:.7rem}',
       '.ootk-op1-pile-label{font-weight:700;color:var(--c-text);font-size:.78rem}',
       '.ootk-op1-pile-meaning{color:var(--c-text-dim);font-size:.62rem;margin-top:.1rem}',
@@ -2809,7 +2809,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op2-house.found{box-shadow:0 0 36px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.25),rgba(201,168,76,.1));transform:scale(1.3);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
       '.ootk-op2-house.found .ootk-op2-house-num,.ootk-op2-house.found .ootk-op2-house-desc,.ootk-op2-house.found .ootk-op2-house-count{color:var(--c-gold)}',
       '.ootk-op2-house.dimmed{opacity:.25;transform:scale(.88)}',
-      '.ootk-op2-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:#1a1208}',
+      '.ootk-op2-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
       '.ootk-op2-fly img{width:100%;height:100%;object-fit:cover;display:block}',
       // v63 CSS marker: ═══ v63 ③ Op3 12 星座 ═══
       '.ootk-op3-scene{padding:1rem 0;display:flex;justify-content:center}',
@@ -2831,7 +2831,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op3-sign.spotlight{box-shadow:0 0 22px rgba(168,85,247,.55);border-color:rgba(168,85,247,.85);background:rgba(168,85,247,.18);transform:scale(1.18);color:rgba(168,85,247,1);z-index:4}',
       '.ootk-op3-sign.found{box-shadow:0 0 36px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.25),rgba(201,168,76,.1));color:var(--c-gold);transform:scale(1.35);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
       '.ootk-op3-sign.dimmed{opacity:.25;transform:scale(.88)}',
-      '.ootk-op3-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:#1a1208}',
+      '.ootk-op3-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
       '.ootk-op3-fly img{width:100%;height:100%;object-fit:cover;display:block}',
       // v63 CSS marker: ═══ v63 ③ Op4 Sig 居中 + 36 環繞（最正統 Book T）═══
       '.ootk-op4-scene{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}',
@@ -2845,7 +2845,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op4-sig-name{font-size:.62rem;color:var(--c-gold);font-weight:700;text-align:center;line-height:1.15;letter-spacing:.3px;text-shadow:0 1px 2px rgba(0,0,0,.9)}',
       '.ootk-op4-sig-label{font-size:.42rem;color:rgba(255,255,255,.6);letter-spacing:2px;margin-top:.15rem;text-shadow:0 1px 2px rgba(0,0,0,.9)}',
       // ─── Op4 環繞 36 張牌（顯示真實牌照）───
-      '.ootk-op4-ring-card{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.3);border-radius:2px;overflow:hidden;opacity:0;transition:opacity .5s ease;transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.5);z-index:2;background:linear-gradient(135deg,#3a2a10,#1a1208)}',
+      '.ootk-op4-ring-card{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.3);border-radius:2px;overflow:hidden;opacity:0;transition:opacity .5s ease;transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.5);z-index:2;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08}',
       '.ootk-op4-ring-card.show{opacity:.95}',
       '.ootk-op4-ring-card img{width:100%;height:100%;object-fit:cover;display:block}',
       '.ootk-op4-decan-info{margin-top:1rem;padding:.6rem 1rem;border-radius:8px;background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.2);text-align:center;opacity:0;transform:translateY(8px);transition:all .6s ease;max-width:280px}',
@@ -2869,7 +2869,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op5-node.spotlight{box-shadow:0 0 18px rgba(34,197,94,.5);border-color:rgba(34,197,94,.7);transform:scale(1.18)}',
       '.ootk-op5-node.found{box-shadow:0 0 32px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.3) 0%,rgba(201,168,76,.1) 60%,transparent 100%);color:var(--c-gold);transform:scale(1.4);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
       '.ootk-op5-node.dimmed{opacity:.25;transform:scale(.85)}',
-      '.ootk-op5-fly{position:absolute;width:18px;height:28px;border:1px solid rgba(201,168,76,.6);border-radius:2px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.5),0 0 8px rgba(201,168,76,.3);z-index:7;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:#1a1208}',
+      '.ootk-op5-fly{position:absolute;width:18px;height:28px;border:1px solid rgba(201,168,76,.6);border-radius:2px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.5),0 0 8px rgba(201,168,76,.3);z-index:7;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
       '.ootk-op5-fly img{width:100%;height:100%;object-fit:cover;display:block}',
       '.ootk-op5-sig-card{position:absolute;top:50%;left:50%;width:52px;height:78px;margin-left:-26px;margin-top:-39px;border-radius:5px;border:2px solid var(--c-gold);overflow:hidden;opacity:0;transform:scale(.4);transition:opacity .8s ease,transform .8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 24px rgba(201,168,76,.6),0 4px 12px rgba(0,0,0,.7);z-index:8;background:#1a1208}',
       '.ootk-op5-sig-card.show{opacity:1;transform:scale(1)}',
@@ -3989,18 +3989,23 @@ enhanceTarot = function(tarot) {
       var activeIdx = SEPH_NAMES.indexOf(op.activeSephirah || '');
       if (activeIdx < 0) activeIdx = 9;
 
-      // 生命之樹位置 (200x320)
+      // 統一座標系:容器 240×360, 內部繪圖區 200×320 + 20px padding 四週
+      // 節點中心點(以容器左上為原點),NODE_R=18 半徑
+      var TREE_W = 240, TREE_H = 360;
+      var PAD = 20;        // 邊距
+      var NODE_R = 18;     // 節點半徑(直徑 36)
+      // 質點中心位置(統一座標系)
       var SEPH_POS = [
-        {x: 84, y: 16},   // 0 Kether (top center)
-        {x: 142, y: 64},  // 1 Chokmah (right)
-        {x: 26, y: 64},   // 2 Binah (left)
-        {x: 142, y: 124}, // 3 Chesed
-        {x: 26, y: 124},  // 4 Geburah
-        {x: 84, y: 158},  // 5 Tiphareth (center)
-        {x: 142, y: 196}, // 6 Netzach
-        {x: 26, y: 196},  // 7 Hod
-        {x: 84, y: 240},  // 8 Yesod
-        {x: 84, y: 286}   // 9 Malkuth
+        {x: 120, y: PAD + 16},          // 0 Kether (top center)
+        {x: 178, y: PAD + 64},          // 1 Chokmah (right upper)
+        {x: 62,  y: PAD + 64},          // 2 Binah (left upper)
+        {x: 178, y: PAD + 132},         // 3 Chesed (right mid)
+        {x: 62,  y: PAD + 132},         // 4 Geburah (left mid)
+        {x: 120, y: PAD + 178},         // 5 Tiphareth (center)
+        {x: 178, y: PAD + 224},         // 6 Netzach (right lower)
+        {x: 62,  y: PAD + 224},         // 7 Hod (left lower)
+        {x: 120, y: PAD + 268},         // 8 Yesod (center lower)
+        {x: 120, y: PAD + 318}          // 9 Malkuth (bottom)
       ];
       // 22 條 paths(對應 Tarot 大牌 22 張)
       var TREE_LINES = [
@@ -4008,7 +4013,6 @@ enhanceTarot = function(tarot) {
         [3,4],[3,5],[3,6],[4,5],[4,7],[5,6],[5,7],[5,8],
         [6,7],[6,8],[7,8],[8,9]
       ];
-      // active 質點對應的相鄰 path index(從上面 line array)
       function pathsOfNode(nodeIdx) {
         var arr = [];
         TREE_LINES.forEach(function(ln, i) {
@@ -4032,24 +4036,28 @@ enhanceTarot = function(tarot) {
 
       var scene = document.createElement('div');
       scene.className = 'ootk-op5-scene';
-      var html = '<div class="ootk-op5-tree" id="ootk-op5-tree">';
+      var html = '<div class="ootk-op5-tree" id="ootk-op5-tree" style="width:' + TREE_W + 'px;height:' + TREE_H + 'px">';
       html += '<div class="ootk-op5-tree-bg"></div>';
-      // SVG paths
-      html += '<svg class="ootk-op5-svg" viewBox="0 0 200 320">';
+      // SVG paths(同一座標系)
+      html += '<svg class="ootk-op5-svg" viewBox="0 0 ' + TREE_W + ' ' + TREE_H + '">';
       TREE_LINES.forEach(function(ln, i) {
         var a = SEPH_POS[ln[0]], b = SEPH_POS[ln[1]];
-        html += '<line class="ootk-op5-path" data-i="' + i + '" x1="' + (a.x + 16) + '" y1="' + (a.y + 16) + '" x2="' + (b.x + 16) + '" y2="' + (b.y + 16) + '" />';
+        html += '<line class="ootk-op5-path" data-i="' + i + '" x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" />';
       });
       html += '</svg>';
-      // Sephirot 節點
+      // Sephirot 節點(中心 = SEPH_POS, 用 left/top 等於 x-NODE_R, y-NODE_R)
       for (var ti = 0; ti < 10; ti++) {
-        html += '<div class="ootk-op5-node" data-idx="' + ti + '" style="left:' + SEPH_POS[ti].x + 'px;top:' + SEPH_POS[ti].y + 'px">';
+        var nx = SEPH_POS[ti].x - NODE_R;
+        var ny = SEPH_POS[ti].y - NODE_R;
+        html += '<div class="ootk-op5-node" data-idx="' + ti + '" style="left:' + nx + 'px;top:' + ny + 'px">';
         html += '<div class="ootk-op5-node-num">' + (ti + 1) + '</div>';
         html += '<div class="ootk-op5-node-name">' + SEPH_NAMES[ti].substring(0, 4) + '</div>';
         html += '</div>';
       }
-      // 中央代表牌(Sig)──最後浮現
-      html += '<div class="ootk-op5-sig-card" id="ootk-op5-sig">';
+      // 中央代表牌(Sig)──最後浮現,放在 Tiphareth (5 號)位置
+      var sigCx = SEPH_POS[5].x;
+      var sigCy = SEPH_POS[5].y;
+      html += '<div class="ootk-op5-sig-card" id="ootk-op5-sig" style="left:' + (sigCx - 26) + 'px;top:' + (sigCy - 39) + 'px">';
       if (sigImg) html += '<img src="' + sigImg + '" alt="' + sigName + '" />';
       html += '<div class="ootk-op5-sig-overlay"><div class="ootk-op5-sig-name">' + sigName + '</div></div>';
       html += '</div>';
@@ -4074,7 +4082,7 @@ enhanceTarot = function(tarot) {
         setTimeout(lightNode, 130);
       }
 
-      // 第二階段:從中央發真實牌照到各質點
+      // 第二階段:從中央 Tiphareth 發真實牌到各質點
       function dealCardsToSephirot() {
         caption.innerHTML = '🌳 發牌——將 78 張依 Golden Dawn 對應分入十質點';
         var dealCount = 0;
@@ -4086,6 +4094,7 @@ enhanceTarot = function(tarot) {
             return;
           }
           var nodeIdx = dealCount % 10;
+          if (nodeIdx === 5) { dealCount++; setTimeout(flyCard, 30); return; } // 跳過中心
           var node = scene.querySelector('.ootk-op5-node[data-idx="' + nodeIdx + '"]');
           if (node && visualDeck.length) {
             var card = visualDeck[(dealCount * 13) % visualDeck.length];
@@ -4094,14 +4103,12 @@ enhanceTarot = function(tarot) {
               var fly = document.createElement('div');
               fly.className = 'ootk-op5-fly';
               fly.innerHTML = '<img src="' + imgUrl + '" />';
-              // 從 Tiphareth (中央 5 號)出發
-              var startX = SEPH_POS[5].x + 6;
-              var startY = SEPH_POS[5].y + 6;
-              fly.style.left = startX + 'px';
-              fly.style.top = startY + 'px';
+              // 從 Tiphareth 中央起飛
+              fly.style.left = (SEPH_POS[5].x - 9) + 'px';
+              fly.style.top = (SEPH_POS[5].y - 14) + 'px';
               tree.appendChild(fly);
-              var targetX = SEPH_POS[nodeIdx].x + 6;
-              var targetY = SEPH_POS[nodeIdx].y + 6;
+              var targetX = SEPH_POS[nodeIdx].x - 9;
+              var targetY = SEPH_POS[nodeIdx].y - 14;
               requestAnimationFrame(function() {
                 fly.style.left = targetX + 'px';
                 fly.style.top = targetY + 'px';
@@ -4141,7 +4148,7 @@ enhanceTarot = function(tarot) {
               var sigEl = scene.querySelector('#ootk-op5-sig');
               if (sigEl) sigEl.classList.add('show');
             }, 400);
-            // 金光擴散圓（用統一 helper，含內外雙圈）
+            // 金光擴散
             setTimeout(function() {
               var tree = scene.querySelector('.ootk-op5-tree');
               if (tree) _emitGoldBurst(tree, nodes[activeIdx]);
