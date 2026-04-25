@@ -1995,7 +1995,7 @@ enhanceTarot = function(tarot) {
     //   → 跟 Op1-3 一樣，從 Sig 開始 counting，Sig 兩側往外 pairing
     //
     // Manuscript Q 版本（Mathers 原始手稿，最正統）：
-    //   → Counting 從第一張環繞牌起、按 dealing 方向（順時鐘）固定
+    //   → Counting 從第一張環繞牌起、按 dealing 方向(Manuscript Q「against direction of the Sun」=逆太陽方向)固定
     //   → Pairing 是環形對應：1↔36, 2↔35, 3↔34, ...
     //
     // 我們同時提供兩個版本給 AI，由 AI 決定如何讀（兩者都正統）
@@ -2004,7 +2004,7 @@ enhanceTarot = function(tarot) {
     var paired = ootkPairing(activeCards, sigIdx);       // Crowley 版本
 
     // Manuscript Q 版本：環形 counting 從第一張起、固定方向
-    var countedMQ = ootkCountingRing(ring);              // 從 ring[0] 起、順時鐘
+    var countedMQ = ootkCountingRing(ring);              // 從 ring[0] 起、依 dealing 方向(against the Sun)
     var pairedMQ = ootkPairingRing(ring);                // 1↔36, 2↔35...
 
     // 仍保留 GD decan 對應做為「時機線索」參考（不是分配依據）
@@ -2242,7 +2242,7 @@ enhanceTarot = function(tarot) {
   // 兩個版本都送給 AI，由 AI 視情況採用。
   // ════════════════════════════════════════════════════════════
 
-  // Op4 環形 counting：從第一張環繞牌起、按 dealing 方向（順時鐘）固定
+  // Op4 環形 counting:從第一張環繞牌起、按 dealing 方向(Manuscript Q「against direction of the Sun」)固定
   function ootkCountingRing(ring) {
     if (!ring || !ring.length) return { keyCards: [], path: [] };
     var keyCards = [];
@@ -2250,7 +2250,7 @@ enhanceTarot = function(tarot) {
     var visited = {};
     var idx = 0; // ★ Manuscript Q：從第 1 張環繞牌起，不是從 Sig
     var maxSteps = 12;
-    var direction = 1; // ★ Manuscript Q：永遠按 dealing 方向（順時鐘）固定
+    var direction = 1; // ★ Manuscript Q:永遠按 dealing 方向(against direction of the Sun = 逆太陽方向)固定
     var aceLoopDetect = 0;
     var useCrowleyAce = false;
 
@@ -2278,14 +2278,14 @@ enhanceTarot = function(tarot) {
         position: idx,
         countValue: count,
         isUp: cardIsUp,
-        direction: 'clockwise', // 永遠順時鐘
-        startDirection: 'clockwise'
+        direction: 'dealing', // 永遠按 dealing 方向(against the Sun)
+        startDirection: 'dealing'
       });
       for (var c = 0; c < count; c++) {
         idx = (idx + direction + ring.length) % ring.length;
       }
     }
-    return { keyCards: keyCards, path: path, usedCrowleyAce: useCrowleyAce, startDirection: 'clockwise' };
+    return { keyCards: keyCards, path: path, usedCrowleyAce: useCrowleyAce, startDirection: 'dealing' };
   }
 
   // Op4 環形 pairing：1↔36, 2↔35, 3↔34, ...
@@ -2419,6 +2419,26 @@ enhanceTarot = function(tarot) {
     'friend':  [10, 6],         // 水瓶/天秤
     'travel':  [2, 8, 10],      // 雙子/射手/水瓶
     'secret':  [7, 11],         // 天蠍/雙魚
+    'general': null
+  };
+
+  // ★ v64.2 正統 Crowley Op5:「Make up your mind where the Significator should be」
+  // 問題類型 → 合適 Sephirah 陣列(0-indexed: Kether=0, Malkuth=9)
+  // 但 Crowley 原文明說「failure does not necessarily imply abandon」——
+  //   Op5 只做「觀察是否符合預期」,不觸發 abandon、不重洗
+  // Sephirah 對應(基於 Kabbalistic 傳統 + PHB 補充):
+  //   Kether(王冠/源頭)、Chokmah(智慧/動力)、Binah(理解/形成)
+  //   Chesed(慈悲/擴張)、Geburah(嚴厲/收縮)、Tiphereth(美/平衡)
+  //   Netzach(勝利/情感)、Hod(榮耀/思維)、Yesod(基礎/直覺)、Malkuth(王國/物質)
+  var QUESTION_SEPHIROTH = {
+    'love':    [6, 3, 8],       // Tiphereth(平衡的愛)、Chesed(無條件愛)、Yesod(直覺連結)
+    'money':   [9, 3],          // Malkuth(物質)、Chesed(豐盛擴張)
+    'work':    [4, 6, 9],       // Geburah(行動力)、Tiphereth(志業)、Malkuth(物質成就)
+    'family':  [9, 3],          // Malkuth(根基)、Chesed(慈愛)
+    'health':  [9, 5],          // Malkuth(身體)、Geburah(平衡能量)
+    'friend':  [7, 6],          // Netzach(情感網路)、Tiphereth(連結中心)
+    'travel':  [1, 8],          // Chokmah(動力)、Yesod(夢想/想像)
+    'secret':  [2, 8],          // Binah(深層理解)、Yesod(潛意識)
     'general': null
   };
 
@@ -2594,9 +2614,40 @@ enhanceTarot = function(tarot) {
     var deck4 = shuffleNewDeck();
     results.op4 = ootkOp4(deck4, significatorId);
 
-    // ── Op5:生命之樹(Mathers 原文特別放寬「找錯位不必然失敗」) ──
+    // ── Op5:生命之樹(Crowley「Make up your mind where Significator should be」) ──
+    // Crowley 原文:「failure does not here necessarily imply that the divination has gone astray.」
+    // → Op5 只做「預期 vs 實際」觀察,不觸發 abandon、不重洗
+    var expectedSephiroth = QUESTION_SEPHIROTH[qType] || null;
     var deck5 = shuffleNewDeck();
     results.op5 = ootkOp5(deck5, significatorId);
+    results.op5.expectedSephiroth = expectedSephiroth;
+
+    // 找 Sig 落的 Sephirah index(0-indexed)
+    var SEPH_NAMES_5 = ['Kether','Chokmah','Binah','Chesed','Geburah','Tiphereth','Netzach','Hod','Yesod','Malkuth'];
+    var actualSephIdx = SEPH_NAMES_5.indexOf(results.op5.activeSephirah);
+
+    if (expectedSephiroth && actualSephIdx >= 0) {
+      var sephZh = ['王冠','智慧','理解','慈悲','嚴厲','美','勝利','榮耀','基礎','王國'];
+      if (expectedSephiroth.indexOf(actualSephIdx) >= 0) {
+        // Sig 落合適 Sephirah
+        results.op5.sephExpectationMet = true;
+        results.op5.sephExpectationNote =
+          'Op5 Sig 落於 ' + SEPH_NAMES_5[actualSephIdx] + '(' + sephZh[actualSephIdx] +
+          ')—— 與問題「' + getQTypeZh(qType) + '」的合適 Sephirah 一致,靈魂層級對應問題本質。';
+      } else {
+        // Sig 不在預期 Sephirah,但依 Crowley 原文「failure does not imply abandon」
+        // → 只做觀察附註,標明此次 Op5 揭示的是「靈魂功課跟你問的議題不同層」
+        results.op5.sephExpectationMet = false;
+        var expectedZh = expectedSephiroth.map(function(idx) {
+          return SEPH_NAMES_5[idx] + '(' + sephZh[idx] + ')';
+        }).join(' / ');
+        results.op5.sephExpectationNote =
+          'Op5 Sig 落於 ' + SEPH_NAMES_5[actualSephIdx] + '(' + sephZh[actualSephIdx] + '),' +
+          '非問題「' + getQTypeZh(qType) + '」預期的 ' + expectedZh + '。' +
+          '依 Crowley Book of Thoth 原文「failure does not necessarily imply abandon」—— ' +
+          'Op5 找錯位不必然意味讀盤失敗,而是揭示「你靈魂深處真正在處理的功課,跟你表面問的議題不在同一層」。';
+      }
+    }
 
     results.completedOperations = 5;
 
@@ -3524,6 +3575,27 @@ enhanceTarot = function(tarot) {
             'border:1px dashed rgba(201,168,76,.35);background:rgba(201,168,76,.04);">' +
             '<div style="font-size:.7rem;color:rgba(212,175,55,.85);line-height:1.6">' +
               '⚙️ Mathers 二次重洗:' + _esc(opData.retryNote) +
+            '</div>' +
+            '</div>';
+        } else if (opData.sephExpectationNote && opData.sephExpectationMet === false) {
+          // Op5「找錯位不必然意味失敗」(Crowley)— 紫色觀察卡
+          abandonBanner =
+            '<div style="margin:1rem 0;padding:1rem 1.1rem;border-radius:10px;' +
+            'border:1px solid rgba(168,85,247,.4);background:rgba(168,85,247,.06);">' +
+            '<div style="font-size:.85rem;font-weight:700;color:#c4b5fd;margin-bottom:.5rem">' +
+              '📍 Op5 預期觀察(Crowley「找錯位不必然意味失敗」)' +
+            '</div>' +
+            '<div style="font-size:.74rem;color:rgba(233,213,255,.92);line-height:1.65">' +
+              _esc(opData.sephExpectationNote) +
+            '</div>' +
+            '</div>';
+        } else if (opData.sephExpectationMet === true) {
+          // Op5 預期符合 — 簡短綠色提示
+          abandonBanner =
+            '<div style="margin:.8rem 0;padding:.6rem .85rem;border-radius:8px;' +
+            'border:1px dashed rgba(74,222,128,.3);background:rgba(74,222,128,.04);">' +
+            '<div style="font-size:.7rem;color:rgba(134,239,172,.85);line-height:1.6">' +
+              '✓ Op5 Sig 落合適 Sephirah:' + _esc(opData.sephExpectationNote) +
             '</div>' +
             '</div>';
         }

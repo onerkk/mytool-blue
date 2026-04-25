@@ -24054,6 +24054,20 @@ function _buildOOTKPayload() {
       }
     } else if (idx === 4) {
       lines.push('落在' + (op.activeSephirah||'?') + '（' + (op.sephirahZh||'') + '）');
+      // ★ v64.2 正統 Crowley Op5:Make up your mind where Significator should be
+      if (op.sephExpectationNote) {
+        lines.push('');
+        if (op.sephExpectationMet === false) {
+          lines.push('📍 Op5 預期觀察(Crowley 規範):');
+          lines.push(op.sephExpectationNote);
+          lines.push('AI 必讀:依 Crowley「failure does not necessarily imply abandon」,Op5 此處不 abandon,但要明寫:');
+          lines.push('「你問的是 ___,但你靈魂層次正在處理的是 ___ 的功課——這兩件事可能要分開看。」');
+          lines.push('');
+        } else {
+          lines.push('📍 Op5 預期觀察:' + op.sephExpectationNote);
+          lines.push('');
+        }
+      }
       if (op.sephirahMeaning) lines.push('意義：' + op.sephirahMeaning);
       if (op.sephirahDistribution) {
         var SEPH = ['Kether王冠','Chokmah智慧','Binah理解','Chesed慈悲','Geburah嚴厲','Tiphereth美','Netzach勝利','Hod榮耀','Yesod基礎','Malkuth王國'];
