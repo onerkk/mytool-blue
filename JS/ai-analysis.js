@@ -20382,6 +20382,24 @@ renderTarot = function(){
   _triggerAIDeep = async function() {
     var resultDiv = document.getElementById('ai-deep-result');
     if (!resultDiv) return;
+
+    // ★ v65 七維儀式:先跑儀式再執行原本流程
+    //   已在儀式中或從追問來則跳過
+    if (!window._jy7dRitualRunning && !window._jy7dSkipRitual) {
+      window._jy7dRitualRunning = true;
+      _runSevenDimRitual(function() {
+        window._jy7dRitualRunning = false;
+        _triggerAIDeepCore();
+      });
+      return;
+    }
+    return _triggerAIDeepCore();
+  };
+
+  // 原本 _triggerAIDeep 的內容改名為 _triggerAIDeepCore
+  async function _triggerAIDeepCore() {
+    var resultDiv = document.getElementById('ai-deep-result');
+    if (!resultDiv) return;
     // ★ 隱藏深度選擇器
     try { var _ds = document.getElementById('ai-depth-selector'); if (_ds) _ds.style.display = 'none'; } catch(_e) {}
     var admin = _aiIsAdmin();
@@ -20896,6 +20914,545 @@ function _ensureAiLoadingFx(){
     '@keyframes jy7dFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}';
   document.head.appendChild(s);
 }
+
+// ════════════════════════════════════════════════════════════════════
+// ★ v65 七維深潛儀式(Seven-Dimension Ritual)
+//
+// 設計理念:七維是「自動運算」,儀式不能來自「動作」,只能來自「揭示」。
+//   階段 1:北斗召喚祝禱(2.5s)— 七星依序亮 + 祝禱文中英對照
+//   階段 2:七維甦醒(每維 0.9s,共 6.3s)— 八字/紫微/梅花/塔羅/西洋/吠陀/姓名
+//                                          各自符號從中央升起 + 個人化定位文字
+//   階段 3:七維匯流(2s)— 收束到中央七芒星 + 「七維已就位」
+//
+// 已熟客(看過 2 次以上):自動精簡為 4 秒
+// 隨時可按右下角「跳過儀式 →」進入 loading
+// ════════════════════════════════════════════════════════════════════
+
+function _ensureSevenRitualFx(){
+  if(document.getElementById('jy-seven-ritual-fx')) return;
+  var s = document.createElement('style');
+  s.id = 'jy-seven-ritual-fx';
+  s.textContent =
+    // ── overlay 與背景 ──
+    '.jy-7d-overlay{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .9s ease;font-family:inherit}' +
+    '.jy-7d-overlay.fade-out{opacity:0;pointer-events:none}' +
+    '.jy-7d-bg{position:absolute;inset:0;background:url("/img/seven-invoc-bg.jpg") center/cover no-repeat,radial-gradient(ellipse at center,#0a0d18 0%,#000 70%);opacity:0;transition:opacity 1.4s ease}' +
+    '.jy-7d-overlay.show-bg .jy-7d-bg{opacity:.85}' +
+    // ── 階段 1 北斗七星 ──
+    '.jy-7d-stars{position:absolute;top:18%;left:50%;transform:translateX(-50%);width:min(360px,82vw);aspect-ratio:5/3;pointer-events:none}' +
+    '.jy-7d-star{position:absolute;width:14px;height:14px;border-radius:50%;background:#fde68a;box-shadow:0 0 18px rgba(253,230,138,.9),0 0 36px rgba(212,175,55,.5);opacity:0;transform:scale(.4);transition:opacity .35s ease,transform .35s ease}' +
+    '.jy-7d-star.lit{opacity:1;transform:scale(1)}' +
+    '.jy-7d-star::after{content:"";position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle,rgba(253,230,138,.55),transparent 70%);animation:jy7dStarPulse 2.5s ease-in-out infinite}' +
+    '@keyframes jy7dStarPulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.6);opacity:.9}}' +
+    // 北斗連線 SVG 用 stroke-dashoffset 動畫
+    '.jy-7d-lines{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .8s ease}' +
+    '.jy-7d-overlay.show-lines .jy-7d-lines{opacity:.55}' +
+    '.jy-7d-lines path{stroke:rgba(253,230,138,.7);stroke-width:1.2;fill:none;stroke-dasharray:600;stroke-dashoffset:600;transition:stroke-dashoffset 1.6s ease-out;filter:drop-shadow(0 0 4px rgba(253,230,138,.5))}' +
+    '.jy-7d-overlay.show-lines .jy-7d-lines path{stroke-dashoffset:0}' +
+    // ── 祝禱文捲軸 ──
+    '.jy-7d-scroll{position:absolute;top:54%;left:50%;transform:translate(-50%,0) scale(.92);width:min(560px,90vw);max-height:62vh;padding:1.6rem 1.4rem;background:linear-gradient(180deg,rgba(28,20,8,.92),rgba(15,11,4,.92));border:1px solid rgba(212,175,55,.32);border-radius:14px;box-shadow:0 0 60px rgba(212,175,55,.18),inset 0 0 24px rgba(212,175,55,.06);opacity:0;transition:opacity .9s ease,transform .9s ease;overflow-y:auto}' +
+    '.jy-7d-overlay.show-scroll .jy-7d-scroll{opacity:.97;transform:translate(-50%,0) scale(1)}' +
+    '.jy-7d-scroll-title{text-align:center;font-size:1.1rem;color:#fde68a;font-weight:700;letter-spacing:.08em;margin-bottom:.3rem;text-shadow:0 0 12px rgba(253,230,138,.4)}' +
+    '.jy-7d-scroll-sub{text-align:center;font-size:.7rem;color:rgba(212,175,55,.7);letter-spacing:.18em;margin-bottom:.7rem;font-style:italic}' +
+    '.jy-7d-scroll-divider{text-align:center;font-size:.62rem;color:rgba(212,175,55,.5);letter-spacing:.2em;margin-bottom:1rem}' +
+    '.jy-7d-prayer{font-size:.78rem;line-height:1.95;color:rgba(255,236,184,.92);text-align:center;letter-spacing:.04em}' +
+    '.jy-7d-prayer-en{font-size:.7rem;line-height:1.85;color:rgba(212,175,55,.6);text-align:center;font-style:italic;margin-top:.85rem;padding-top:.85rem;border-top:1px solid rgba(212,175,55,.18);letter-spacing:.03em}' +
+    // ── 階段 2 七維甦醒中央舞台 ──
+    '.jy-7d-stage{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(420px,86vw);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .5s ease}' +
+    '.jy-7d-overlay.show-stage .jy-7d-stage{opacity:1}' +
+    '.jy-7d-glyph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:scale(.7) translateY(20px);transition:opacity .55s ease,transform .55s ease;text-align:center}' +
+    '.jy-7d-glyph.active{opacity:1;transform:scale(1) translateY(0)}' +
+    '.jy-7d-glyph.fade-out{opacity:0;transform:scale(1.15) translateY(-30px);transition:opacity .35s ease,transform .35s ease}' +
+    '.jy-7d-glyph-symbol{font-size:2.2rem;color:#fde68a;text-shadow:0 0 24px rgba(253,230,138,.7);margin-bottom:.6rem;line-height:1.3;font-weight:300}' +
+    '.jy-7d-glyph-name{font-size:.9rem;color:#c9a84c;letter-spacing:.18em;margin-bottom:.7rem;font-weight:700}' +
+    '.jy-7d-glyph-data{font-size:.78rem;color:rgba(255,236,184,.9);line-height:1.7;max-width:88%;letter-spacing:.04em}' +
+    '.jy-7d-glyph-data b{color:#fde68a;font-weight:700}' +
+    // ★ v65.1 AI 圖容器 — 居中、發光、淡入
+    '.jy-7d-glyph-img-wrap{position:relative;width:min(220px,52vw);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;margin:0 auto .8rem;filter:drop-shadow(0 0 24px rgba(253,230,138,.35))}' +
+    '.jy-7d-glyph-img{width:100%;height:100%;object-fit:contain;animation:jy7dGlyphBreath 3s ease-in-out infinite}' +
+    '@keyframes jy7dGlyphBreath{0%,100%{filter:brightness(1) drop-shadow(0 0 12px rgba(253,230,138,.5));transform:scale(1)}50%{filter:brightness(1.15) drop-shadow(0 0 24px rgba(253,230,138,.8));transform:scale(1.04)}}' +
+    '.jy-7d-glyph-img-fallback{width:100%;height:100%;align-items:center;justify-content:center}' +
+    // 八字四柱
+    '.jy-7d-pillars{display:flex;gap:.55rem;justify-content:center;margin-bottom:.5rem}' +
+    '.jy-7d-pillar{display:flex;flex-direction:column;align-items:center;padding:.4rem .55rem;border:1px solid rgba(212,175,55,.4);border-radius:6px;background:rgba(212,175,55,.05);min-width:2rem}' +
+    '.jy-7d-pillar-tian{font-size:1rem;color:#fde68a;font-weight:700;line-height:1.2}' +
+    '.jy-7d-pillar-zhi{font-size:.85rem;color:rgba(212,175,55,.85);line-height:1.2}' +
+    '.jy-7d-pillar-label{font-size:.55rem;color:rgba(212,175,55,.5);margin-top:.3rem;letter-spacing:.15em}' +
+    // 紫微 12 宮環
+    '.jy-7d-ziwei-wheel{position:relative;width:120px;height:120px;margin-bottom:.5rem}' +
+    '.jy-7d-ziwei-cell{position:absolute;width:14px;height:14px;border-radius:50%;background:rgba(168,85,247,.18);border:1px solid rgba(168,85,247,.4);transform:translate(-50%,-50%)}' +
+    '.jy-7d-ziwei-cell.active{background:rgba(253,230,138,.85);border-color:#fde68a;box-shadow:0 0 12px rgba(253,230,138,.7)}' +
+    '.jy-7d-ziwei-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.65rem;color:rgba(212,175,55,.7);letter-spacing:.1em}' +
+    // 卦象六爻
+    '.jy-7d-hex{display:flex;flex-direction:column;gap:4px;margin-bottom:.5rem}' +
+    '.jy-7d-yao{width:60px;height:6px;background:#c9a84c;border-radius:1px;position:relative}' +
+    '.jy-7d-yao.broken{background:transparent}' +
+    '.jy-7d-yao.broken::before,.jy-7d-yao.broken::after{content:"";position:absolute;top:0;width:25px;height:6px;background:#c9a84c;border-radius:1px}' +
+    '.jy-7d-yao.broken::before{left:0}.jy-7d-yao.broken::after{right:0}' +
+    // 塔羅三牌
+    '.jy-7d-cards{display:flex;gap:6px;margin-bottom:.5rem;justify-content:center}' +
+    '.jy-7d-card{width:36px;height:54px;border-radius:4px;background:linear-gradient(135deg,#1a1530,#2d1f4a);border:1px solid rgba(212,175,55,.55);position:relative;box-shadow:0 4px 12px rgba(0,0,0,.5)}' +
+    '.jy-7d-card::before{content:"✦";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(253,230,138,.7);font-size:1rem}' +
+    // 黃道圈
+    '.jy-7d-zodiac{position:relative;width:120px;height:120px;border:1.5px solid rgba(212,175,55,.5);border-radius:50%;margin-bottom:.5rem}' +
+    '.jy-7d-zodiac::before{content:"";position:absolute;inset:-6px;border:1px solid rgba(212,175,55,.2);border-radius:50%}' +
+    '.jy-7d-zodiac-mark{position:absolute;width:6px;height:6px;border-radius:50%;background:#fde68a;transform:translate(-50%,-50%);box-shadow:0 0 8px rgba(253,230,138,.6)}' +
+    // 月宿弧線
+    '.jy-7d-moon{font-size:2.4rem;line-height:1;margin-bottom:.3rem;color:#e0e7ff;text-shadow:0 0 16px rgba(165,180,252,.6)}' +
+    '.jy-7d-nakshatra{display:flex;gap:3px;justify-content:center;margin-bottom:.5rem}' +
+    '.jy-7d-nakshatra-dot{width:4px;height:4px;border-radius:50%;background:rgba(165,180,252,.5)}' +
+    '.jy-7d-nakshatra-dot.active{background:#fde68a;box-shadow:0 0 6px rgba(253,230,138,.8);transform:scale(1.4)}' +
+    // 姓名五格
+    '.jy-7d-grids{display:flex;gap:.4rem;justify-content:center;margin-bottom:.5rem}' +
+    '.jy-7d-grid{width:30px;height:30px;border-radius:4px;border:1px solid rgba(212,175,55,.45);background:rgba(212,175,55,.06);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fde68a;font-weight:700;flex-direction:column}' +
+    '.jy-7d-grid-label{font-size:.5rem;color:rgba(212,175,55,.55);line-height:1}' +
+    '.jy-7d-grid-num{font-size:.75rem;color:#fde68a;line-height:1.2}' +
+    // ── 階段 3 七芒星匯流 ──
+    '.jy-7d-converge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(280px,72vw);aspect-ratio:1/1;opacity:0;transition:opacity .8s ease}' +
+    '.jy-7d-overlay.show-converge .jy-7d-converge{opacity:1}' +
+    '.jy-7d-heptagram{position:absolute;inset:0;background:url("/img/seven-center-glow.png") center/contain no-repeat;animation:jy7dHeptaSpin 16s linear infinite}' +
+    '@keyframes jy7dHeptaSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}' +
+    '.jy-7d-converge-text{position:absolute;top:108%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.95rem;color:#fde68a;font-weight:700;letter-spacing:.18em;text-shadow:0 0 16px rgba(253,230,138,.6)}' +
+    // ── 跳過按鈕 ──
+    '.jy-7d-skip{position:fixed;bottom:1.6rem;right:1.4rem;padding:.45rem .9rem;border-radius:18px;background:rgba(0,0,0,.65);border:1px solid rgba(212,175,55,.3);color:rgba(212,175,55,.7);font-size:.7rem;cursor:pointer;font-family:inherit;backdrop-filter:blur(8px);opacity:0;transition:opacity .4s ease;z-index:10000;letter-spacing:.05em}' +
+    '.jy-7d-skip.show{opacity:1}' +
+    '.jy-7d-skip:hover{color:#fde68a;border-color:rgba(212,175,55,.6);background:rgba(0,0,0,.85)}';
+  document.head.appendChild(s);
+}
+
+// 從 S 抽取七維個人化定位資料
+function _extractSevenDimSnippets() {
+  var snippets = {
+    bazi: { symbol: '☰', label: '八字', data: '' },
+    ziwei: { symbol: '✦', label: '紫微', data: '' },
+    meihua: { symbol: '☷', label: '梅花', data: '' },
+    tarot: { symbol: '🃏', label: '塔羅', data: '' },
+    natal: { symbol: '☉', label: '西洋', data: '' },
+    vedic: { symbol: '☾', label: '吠陀', data: '' },
+    name: { symbol: '名', label: '姓名', data: '' }
+  };
+
+  try {
+    // 八字
+    if (S && S.bazi) {
+      var b = S.bazi;
+      var pillars = [];
+      if (b.year && b.year.gz) pillars.push({ tian: b.year.gz[0], zhi: b.year.gz[1], label: '年' });
+      if (b.month && b.month.gz) pillars.push({ tian: b.month.gz[0], zhi: b.month.gz[1], label: '月' });
+      if (b.day && b.day.gz) pillars.push({ tian: b.day.gz[0], zhi: b.day.gz[1], label: '日' });
+      if (b.hour && b.hour.gz) pillars.push({ tian: b.hour.gz[0], zhi: b.hour.gz[1], label: '時' });
+      var dmStr = b.dm ? '日主<b>' + b.dm + '</b>' : '';
+      var strStr = (b.strength != null) ? ',五行偏<b>' + (b.strength > 55 ? '強' : b.strength < 45 ? '弱' : '中和') + '</b>' : '';
+      snippets.bazi.pillars = pillars;
+      snippets.bazi.data = (dmStr + strStr) || '正在排盤...';
+    }
+
+    // 紫微
+    if (S && S.ziwei && S.ziwei.mingGong) {
+      var mg = S.ziwei.mingGong;
+      var mainStar = mg.mainStar || (Array.isArray(mg.stars) ? mg.stars[0] : mg.stars) || '';
+      var bg = (S.ziwei.shenGong) ? (S.ziwei.shenGong.mainStar || '') : '';
+      snippets.ziwei.data = '命宮<b>' + mainStar + '</b>' + (bg ? ',身宮<b>' + bg + '</b>' : '');
+      // 命宮 index(0-11)
+      snippets.ziwei.mingIdx = (typeof mg.index === 'number') ? mg.index : 0;
+    }
+
+    // 梅花
+    if (S && S.meihua) {
+      var mh = S.meihua;
+      var ben = mh.benGua && (mh.benGua.name || mh.benGua.zh) || '';
+      var bian = mh.bianGua && (mh.bianGua.name || mh.bianGua.zh) || '';
+      // 六爻陰陽(用於繪製卦象)— 1=陽(實線), 0=陰(斷線)
+      var yao6 = [];
+      if (mh.benGua && Array.isArray(mh.benGua.yao)) yao6 = mh.benGua.yao.slice(0, 6);
+      else if (mh.yao && Array.isArray(mh.yao)) yao6 = mh.yao.slice(0, 6);
+      else { yao6 = [1,0,1,0,1,0]; } // fallback
+      snippets.meihua.yao = yao6;
+      snippets.meihua.data = '本卦<b>' + ben + '</b>' + (bian ? ',變卦<b>' + bian + '</b>' : '');
+    }
+
+    // 塔羅
+    if (S && S.tarot && S.tarot.drawn && S.tarot.drawn.length) {
+      var topThree = S.tarot.drawn.slice(0, 3);
+      var nameStr = topThree.map(function(c) {
+        return (c.n || c.name || '?') + (c.isUp === false ? '逆' : '正');
+      }).join('・');
+      snippets.tarot.cards = topThree;
+      snippets.tarot.data = nameStr;
+    } else {
+      snippets.tarot.data = '即將翻開命運的牌面...';
+    }
+
+    // 西洋
+    if (S && S.natal) {
+      var n = S.natal;
+      var sun = n.sun ? (n.sun.sign || n.sun.zh) : '';
+      var moon = n.moon ? (n.moon.sign || n.moon.zh) : '';
+      var asc = n.asc ? (n.asc.sign || n.asc.zh) : '';
+      var parts = [];
+      if (sun) parts.push('太陽<b>' + sun + '</b>');
+      if (moon) parts.push('月亮<b>' + moon + '</b>');
+      if (asc) parts.push('上升<b>' + asc + '</b>');
+      snippets.natal.data = parts.join(',') || '正在計算行星位置...';
+    }
+
+    // 吠陀
+    if (S && S.vedic) {
+      var v = S.vedic;
+      var nak = (v.moonNakshatra && (v.moonNakshatra.zh || v.moonNakshatra.name))
+                || (v.nakshatra && (v.nakshatra.zh || v.nakshatra.name)) || '';
+      var nakIdx = (v.moonNakshatra && typeof v.moonNakshatra.index === 'number') ? v.moonNakshatra.index
+                   : (v.nakshatra && typeof v.nakshatra.index === 'number') ? v.nakshatra.index : 0;
+      snippets.vedic.nakIdx = nakIdx;
+      snippets.vedic.data = nak ? '月亮宿<b>' + nak + '</b>' : '正在對照吠陀大運...';
+    }
+
+    // 姓名
+    if (S && S.name) {
+      var nm = S.name;
+      var grids = [];
+      if (nm.tian != null) grids.push({ label: '天', num: nm.tian });
+      if (nm.ren != null) grids.push({ label: '人', num: nm.ren });
+      if (nm.di != null) grids.push({ label: '地', num: nm.di });
+      if (nm.wai != null) grids.push({ label: '外', num: nm.wai });
+      if (nm.zong != null) grids.push({ label: '總', num: nm.zong });
+      snippets.name.grids = grids;
+      snippets.name.data = grids.length
+        ? '五格:' + grids.map(function(g){return '<b>' + g.num + '</b>';}).join('・')
+        : '正在解析姓名筆畫...';
+    }
+  } catch(e) { console.warn('[7d ritual] extract error:', e); }
+
+  return snippets;
+}
+
+// 渲染單個甦醒符號的 HTML
+function _renderSevenDimGlyph(key, snippet) {
+  var label = snippet.label;
+  var data = snippet.data || '';
+
+  // ★ v65.1 圖檔對應(每張 AI 圖 + 個人化文字疊加)
+  var IMG_MAP = {
+    bazi:   '/img/7d-bazi.png',
+    ziwei:  '/img/7d-ziwei.png',
+    meihua: '/img/7d-meihua.png',
+    tarot:  '/img/7d-tarot.png',
+    natal:  '/img/7d-natal.png',
+    vedic:  '/img/7d-vedic.png',
+    name:   '/img/7d-name.png'
+  };
+  var NAME_MAP = {
+    bazi:   '八字四柱',
+    ziwei:  '紫微斗數',
+    meihua: '梅花易數',
+    tarot:  '塔羅牌陣',
+    natal:  '西洋占星',
+    vedic:  '吠陀月宿',
+    name:   '姓名五格'
+  };
+  var imgUrl = IMG_MAP[key] || '';
+  var dimName = NAME_MAP[key] || label || '';
+
+  // 主視覺結構:AI 圖居中 + 系統名 + 個人化定位文字
+  return '<div class="jy-7d-glyph-img-wrap">' +
+           '<img class="jy-7d-glyph-img" src="' + imgUrl + '" alt="" ' +
+                'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+           // fallback 占位(若圖載失敗,顯示符號)
+           '<div class="jy-7d-glyph-img-fallback" style="display:none">' +
+             '<div class="jy-7d-glyph-symbol">' + (snippet.symbol || '✦') + '</div>' +
+           '</div>' +
+         '</div>' +
+         '<div class="jy-7d-glyph-name">' + dimName + '</div>' +
+         '<div class="jy-7d-glyph-data">' + data + '</div>';
+}
+
+// ★ v65 舊版 CSS-only glyph(備份保留,不再使用)
+function _renderSevenDimGlyph_legacy(key, snippet) {
+  var label = snippet.label;
+  var data = snippet.data || '';
+
+  if (key === 'bazi' && snippet.pillars && snippet.pillars.length) {
+    var pillarsHtml = snippet.pillars.map(function(p) {
+      return '<div class="jy-7d-pillar"><div class="jy-7d-pillar-tian">' + p.tian + '</div>' +
+             '<div class="jy-7d-pillar-zhi">' + p.zhi + '</div>' +
+             '<div class="jy-7d-pillar-label">' + p.label + '</div></div>';
+    }).join('');
+    return '<div class="jy-7d-pillars">' + pillarsHtml + '</div>' +
+           '<div class="jy-7d-glyph-name">八字四柱</div>' +
+           '<div class="jy-7d-glyph-data">' + data + '</div>';
+  }
+
+  if (key === 'ziwei') {
+    var cells = '';
+    var radius = 52;
+    for (var i = 0; i < 12; i++) {
+      var angle = (i * 30 - 90) * Math.PI / 180;
+      var cx = 60 + radius * Math.cos(angle);
+      var cy = 60 + radius * Math.sin(angle);
+      var active = (i === (snippet.mingIdx || 0)) ? ' active' : '';
+      cells += '<div class="jy-7d-ziwei-cell' + active + '" style="left:' + cx + 'px;top:' + cy + 'px"></div>';
+    }
+    return '<div class="jy-7d-ziwei-wheel">' + cells +
+           '<div class="jy-7d-ziwei-center">命</div></div>' +
+           '<div class="jy-7d-glyph-name">紫微斗數</div>' +
+           '<div class="jy-7d-glyph-data">' + data + '</div>';
+  }
+
+  if (key === 'meihua' && snippet.yao) {
+    var yaoHtml = snippet.yao.slice().reverse().map(function(y) {
+      return '<div class="jy-7d-yao' + (y === 0 ? ' broken' : '') + '"></div>';
+    }).join('');
+    return '<div class="jy-7d-hex">' + yaoHtml + '</div>' +
+           '<div class="jy-7d-glyph-name">梅花易數</div>' +
+           '<div class="jy-7d-glyph-data">' + data + '</div>';
+  }
+
+  if (key === 'tarot') {
+    return '<div class="jy-7d-cards">' +
+           '<div class="jy-7d-card" style="transform:rotate(-8deg)"></div>' +
+           '<div class="jy-7d-card" style="transform:translateY(-4px)"></div>' +
+           '<div class="jy-7d-card" style="transform:rotate(8deg)"></div>' +
+           '</div>' +
+           '<div class="jy-7d-glyph-name">塔羅牌陣</div>' +
+           '<div class="jy-7d-glyph-data">' + data + '</div>';
+  }
+
+  if (key === 'natal') {
+    var marks = '';
+    var radius = 56;
+    // 模擬太陽月亮上升的位置
+    [0, 90, 180].forEach(function(deg) {
+      var rad = (deg - 90) * Math.PI / 180;
+      var cx = 60 + radius * Math.cos(rad);
+      var cy = 60 + radius * Math.sin(rad);
+      marks += '<div class="jy-7d-zodiac-mark" style="left:' + cx + 'px;top:' + cy + 'px"></div>';
+    });
+    return '<div class="jy-7d-zodiac">' + marks + '</div>' +
+           '<div class="jy-7d-glyph-name">西洋占星</div>' +
+           '<div class="jy-7d-glyph-data">' + data + '</div>';
+  }
+
+  if (key === 'vedic') {
+    var dots = '';
+    for (var i = 0; i < 27; i++) {
+      var active = (i === (snippet.nakIdx || 0)) ? ' active' : '';
+      dots += '<div class="jy-7d-nakshatra-dot' + active + '"></div>';
+    }
+    return '<div class="jy-7d-moon">☾</div>' +
+           '<div class="jy-7d-nakshatra">' + dots + '</div>' +
+           '<div class="jy-7d-glyph-name">吠陀月宿</div>' +
+           '<div class="jy-7d-glyph-data">' + data + '</div>';
+  }
+
+  if (key === 'name' && snippet.grids && snippet.grids.length) {
+    var gridHtml = snippet.grids.map(function(g) {
+      return '<div class="jy-7d-grid">' +
+             '<div class="jy-7d-grid-label">' + g.label + '</div>' +
+             '<div class="jy-7d-grid-num">' + g.num + '</div></div>';
+    }).join('');
+    return '<div class="jy-7d-grids">' + gridHtml + '</div>' +
+           '<div class="jy-7d-glyph-name">姓名五格</div>' +
+           '<div class="jy-7d-glyph-data">' + data + '</div>';
+  }
+
+  // fallback
+  return '<div class="jy-7d-glyph-symbol">' + (snippet.symbol || '✦') + '</div>' +
+         '<div class="jy-7d-glyph-name">' + label + '</div>' +
+         '<div class="jy-7d-glyph-data">' + data + '</div>';
+}
+
+// 主儀式函數:跑完整 14.8 秒儀式或精簡 4 秒,完成後呼叫 onComplete()
+function _runSevenDimRitual(onComplete) {
+  _ensureSevenRitualFx();
+
+  // 已熟客自動精簡
+  var seenCount = parseInt(localStorage.getItem('_jy_seven_ritual_count') || '0') || 0;
+  var compact = seenCount >= 2;
+
+  // 抽資料
+  var snippets = _extractSevenDimSnippets();
+  var dimOrder = ['bazi','ziwei','meihua','tarot','natal','vedic','name'];
+
+  // ── 構造 overlay ──
+  var overlay = document.createElement('div');
+  overlay.className = 'jy-7d-overlay';
+
+  // 階段 1 結構
+  var html = '<div class="jy-7d-bg"></div>';
+
+  // 北斗七星(SVG 視窗座標 0-360 寬,0-216 高,5:3)
+  // Big Dipper 大致座標(從勺柄到勺尖):
+  //   1.玉衡 50,60  2.開陽 90,40  3.搖光 140,50  4.天權 195,80
+  //   5.天璣 250,90  6.天璇 300,75  7.天樞 340,55
+  var bdStars = [
+    {x:50,y:60}, {x:90,y:40}, {x:140,y:50}, {x:195,y:80},
+    {x:250,y:90}, {x:300,y:75}, {x:340,y:55}
+  ];
+
+  html += '<div class="jy-7d-stars">';
+  bdStars.forEach(function(s, i) {
+    var leftPct = (s.x / 360 * 100).toFixed(2) + '%';
+    var topPct = (s.y / 216 * 100).toFixed(2) + '%';
+    html += '<div class="jy-7d-star" data-idx="' + i + '" style="left:' + leftPct + ';top:' + topPct + '"></div>';
+  });
+
+  // SVG 連線(從第 1 顆到第 7 顆)
+  var pathD = 'M' + bdStars.map(function(s) { return s.x + ',' + s.y; }).join(' L');
+  html += '<svg class="jy-7d-lines" viewBox="0 0 360 216" preserveAspectRatio="xMidYMid meet">' +
+          '<path d="' + pathD + '"/></svg>';
+  html += '</div>';
+
+  // 祝禱捲軸
+  html += '<div class="jy-7d-scroll">' +
+            '<div class="jy-7d-scroll-title">✦ 七維深潛 ✦</div>' +
+            '<div class="jy-7d-scroll-sub">Seven Mirrors Convergence</div>' +
+            '<div class="jy-7d-scroll-divider">—— 七套體系交叉驗證 ——</div>' +
+            '<div class="jy-7d-prayer">' +
+              '我以北斗為軸,<br>' +
+              '召喚七面照命之鏡:<br>' +
+              '天干地支(八字)、紫微諸宿(紫微)、<br>' +
+              '河圖洛書(梅花)、卡巴拉與黃道(塔羅)、<br>' +
+              '行星與相位(西洋)、納沙特拉(吠陀)、<br>' +
+              '五格之數(姓名)。<br>' +
+              '<br>' +
+              '七鏡同照,真相無遁形。' +
+            '</div>' +
+            '<div class="jy-7d-prayer-en">' +
+              'I summon by the Pole Star<br>' +
+              'the seven mirrors of fate:<br>' +
+              'the Cycle of Heaven and Earth,<br>' +
+              'the Stars of the Purple Forbidden Enclosure,<br>' +
+              'the River-Map and Luo-Writing,<br>' +
+              'the Tree of Life and the Zodiac,<br>' +
+              'the Planets and their Aspects,<br>' +
+              'the Mansions of the Moon,<br>' +
+              'and the Numbers of the Name.<br>' +
+              '<br>' +
+              'Seven mirrors aligned — no shadow may hide.' +
+            '</div>' +
+          '</div>';
+
+  // 階段 2 中央舞台
+  html += '<div class="jy-7d-stage" id="jy-7d-stage"></div>';
+
+  // 階段 3 七芒星匯流
+  html += '<div class="jy-7d-converge">' +
+            '<div class="jy-7d-heptagram"></div>' +
+            '<div class="jy-7d-converge-text">七維已就位,開始交叉驗證</div>' +
+          '</div>';
+
+  // 跳過按鈕
+  html += '<button class="jy-7d-skip" id="jy-7d-skip">跳過儀式 →</button>';
+
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+
+  // ── 動畫節奏 ──
+  var timers = [];
+  function _t(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function _abortTimers() { timers.forEach(function(t){ clearTimeout(t); }); timers = []; }
+
+  function _finish() {
+    _abortTimers();
+    overlay.classList.add('fade-out');
+    setTimeout(function() {
+      try { overlay.remove(); } catch(_e){}
+      // 累計觀看次數
+      try { localStorage.setItem('_jy_seven_ritual_count', String(seenCount + 1)); } catch(_e){}
+      if (typeof onComplete === 'function') onComplete();
+    }, 900);
+  }
+
+  // 跳過按鈕
+  _t(function() {
+    var skipBtn = document.getElementById('jy-7d-skip');
+    if (skipBtn) {
+      skipBtn.classList.add('show');
+      skipBtn.onclick = _finish;
+    }
+  }, 1200);
+
+  if (compact) {
+    // ── 精簡版(4 秒):背景 + 七芒星收束直接過 ──
+    _t(function(){ overlay.classList.add('show-bg'); }, 80);
+    _t(function(){ overlay.classList.add('show-converge'); }, 1200);
+    _t(_finish, 3800);
+    return;
+  }
+
+  // ── 完整版 ──
+  // [0.0s] 背景淡入
+  _t(function(){ overlay.classList.add('show-bg'); }, 80);
+
+  // [1.0s] 七顆星依序亮(每顆 0.25s)
+  bdStars.forEach(function(_s, i) {
+    _t(function() {
+      var star = overlay.querySelector('.jy-7d-star[data-idx="' + i + '"]');
+      if (star) star.classList.add('lit');
+    }, 1000 + i * 250);
+  });
+
+  // [2.7s] 連線浮現
+  _t(function(){ overlay.classList.add('show-lines'); }, 2700);
+
+  // [3.2s] 祝禱文淡入
+  _t(function(){ overlay.classList.add('show-scroll'); }, 3200);
+
+  // [6.5s] 階段 2 開始 — 移除祝禱、開始七維甦醒
+  _t(function() {
+    overlay.classList.remove('show-scroll');
+    overlay.classList.remove('show-lines');
+    // 七星淡出
+    overlay.querySelectorAll('.jy-7d-star').forEach(function(s){ s.classList.remove('lit'); });
+    overlay.classList.add('show-stage');
+  }, 6500);
+
+  // [6.7s ~ 12.6s] 七維逐個甦醒,每個 0.85s
+  var stage = null;
+  _t(function(){ stage = document.getElementById('jy-7d-stage'); }, 6600);
+
+  dimOrder.forEach(function(key, i) {
+    var enterT = 6700 + i * 850;
+    var exitT = enterT + 750;
+    _t(function() {
+      if (!stage) stage = document.getElementById('jy-7d-stage');
+      if (!stage) return;
+      // 清除舊 glyph(只保留正在 fade-out 的避免閃爍)
+      stage.querySelectorAll('.jy-7d-glyph:not(.fade-out)').forEach(function(g){
+        g.classList.add('fade-out');
+        setTimeout(function(){ try{ g.remove(); }catch(_){} }, 350);
+      });
+      var glyph = document.createElement('div');
+      glyph.className = 'jy-7d-glyph';
+      glyph.innerHTML = _renderSevenDimGlyph(key, snippets[key]);
+      stage.appendChild(glyph);
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() { glyph.classList.add('active'); });
+      });
+    }, enterT);
+
+    // 在最後一個甦醒後 0.6s 才淡出(讓最後一個有完整顯示時間)
+    if (i < dimOrder.length - 1) {
+      _t(function() {
+        var current = stage && stage.querySelector('.jy-7d-glyph.active:not(.fade-out)');
+        // 不在這裡淡出,讓下一個 enter 時才觸發(避免空白)
+      }, exitT);
+    }
+  });
+
+  // [12.8s] 最後一個 glyph 淡出 + 階段 3 進入
+  _t(function() {
+    if (stage) {
+      stage.querySelectorAll('.jy-7d-glyph').forEach(function(g) { g.classList.add('fade-out'); });
+    }
+    overlay.classList.remove('show-stage');
+    overlay.classList.add('show-converge');
+  }, 12800);
+
+  // [14.8s] 完成
+  _t(_finish, 14800);
+}
+
 
 // ── Canvas 工具（共用）──
 function _wrap(ctx, text, maxW) {
