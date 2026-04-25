@@ -23964,6 +23964,19 @@ function _buildOOTKPayload() {
       lines.push('四元素分堆：火' + (p.fire||0) + '張 水' + (p.water||0) + '張 風' + (p.air||0) + '張 土' + (p.earth||0) + '張');
       lines.push('Significator 落入：' + (op.activePile||'?') + '（' + (op.meaning||'') + '）');
       lines.push('活躍堆共 ' + (op.activeCards ? op.activeCards.length : '?') + ' 張牌');
+      // ★ v64.1 正統 Mathers Book T:Op1 abandon 警示
+      if (op.abandonTriggered) {
+        lines.push('');
+        lines.push('🚨 ⚠️ Op1 ABANDON 警示(Mathers Book T 原文觸發)⚠️ 🚨');
+        lines.push(op.abandonReason);
+        lines.push('AI 必讀:本 Op1 為二次重洗後仍錯堆,依正統 Mathers 原則應 abandon。');
+        lines.push('解讀時必須誠實告訴用戶:盤面在告訴你「你心裡真正關心的議題,不是你問的這件事」。');
+        lines.push('禁止把錯堆硬解為合理(例:感情題 Sig 落火堆,絕不可解為「你的感情需要工作般的努力」)。');
+        lines.push('');
+      } else if (op.attempt === 2 && op.retryNote) {
+        lines.push('⚠️ Op1 經 Mathers 二次重洗:' + op.retryNote);
+        lines.push('');
+      }
       // ★ v37 #6：送完整活躍堆牌列表（帶 focusType 牌義，AI 需要知道每張牌的含義）
       if (op.activeCards && op.activeCards.length) {
         lines.push('活躍堆牌面：' + op.activeCards.map(function(c){ return cardStrFull(c); }).join('\n  '));
@@ -23971,12 +23984,37 @@ function _buildOOTKPayload() {
     } else if (idx === 1) {
       var HZH = ['自我','財帛','兄弟','田宅','子女','奴僕','夫妻','疾厄','遷移','官祿','福德','玄秘'];
       lines.push('落在第' + (op.activeHouse||0) + '宮（' + (HZH[(op.activeHouse||1)-1]||'') + '：' + (op.meaning||'') + '）');
+      // ★ v64.1 正統 Mathers Book T:Op2 abandon 警示
+      if (op.abandonTriggered) {
+        lines.push('');
+        lines.push('🚨 ⚠️ Op2 ABANDON 警示(Mathers Book T 原文觸發)⚠️ 🚨');
+        lines.push(op.abandonReason);
+        lines.push('AI 必讀:本 Op2 為二次重洗後仍錯位,依正統 Mathers 原則應 abandon。');
+        lines.push('解讀時必須給用戶 abandon 警示,禁止自圓其說把宮位硬解為符合問題。');
+        lines.push('例如:感情題 Sig 落第 2 宮(財帛),絕不可解為「社交資源圈」——這是非正統。');
+        lines.push('正確寫法:「依 Mathers Book T,你問的是感情(主 7 宮、cognate 5/8 宮),但 Sig 二次重洗仍落第 ' + op.activeHouse + ' 宮。Book T 規範此時應 abandon 這個 Op2,或重新檢視問題本質。」');
+        lines.push('');
+      } else if (op.attempt === 2 && op.retryNote) {
+        lines.push('⚠️ Op2 經 Mathers 二次重洗:' + op.retryNote);
+        lines.push('');
+      }
       if (op.houseDistribution) {
         var notable = op.houseDistribution.map(function(n,i){return n>0?HZH[i]+n+'張':null;}).filter(Boolean);
         lines.push('各宮分佈：' + notable.join('、'));
       }
     } else if (idx === 2) {
       lines.push('落在' + (op.activeSign||'?'));
+      // ★ v64.1 正統 PHB:Op3 弱訊號警示
+      if (op.weakSignalWarning) {
+        lines.push('');
+        lines.push('⚠️ Op3 弱訊號警示(PHB 補充規則,二次重洗仍錯位)');
+        lines.push(op.weakSignalReason);
+        lines.push('AI 必讀:本 Op3 訊號偏弱,解讀時須降權,不可給強斷言。');
+        lines.push('');
+      } else if (op.attempt === 2 && op.retryNote) {
+        lines.push('⚠️ Op3 經正統重洗:' + op.retryNote);
+        lines.push('');
+      }
       if (op.signTrump) lines.push('對應大牌：' + op.signTrump);
       if (op.signDistribution) {
         var SIGNS = ['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'];

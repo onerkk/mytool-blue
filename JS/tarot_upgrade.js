@@ -1685,18 +1685,21 @@ enhanceTarot = function(tarot) {
   // 數位模擬：以隨機切點模擬「直覺切牌」
 
   function ootkOp1(deck, significatorId) {
-    // ★ v25g：模擬真人手切牌——四堆大小不完全相等但不會極端
-    // 真實 OOTK 儀式四堆 ≈ 19-20 張，自然偏差 ±6 張（範圍約 12-27）
+    // ★ v64.1 正統 Mathers Book T:「cut each of the packets as nearly in the centre
+    //   as possible, putting each uppermost half to the right of and beside the lower
+    //   half, thus yielding four packets of nearly equal dimensions.」
+    // 正統做法:兩刀切,每刀盡量對半 → 四堆「nearly equal」
+    // 78 / 4 = 19.5,正統範圍應該在 19-20 ±3 內(16-22),不是隨意 12-27
     var len = deck.length; // 78
-    var MIN_PILE = 12;
-    var MAX_PILE = 27;
+    var MIN_PILE = 16;
+    var MAX_PILE = 22;
 
-    // 生成 4 個隨機堆大小，再正規化到總和 = 78
+    // 模擬人手「對半切」的自然偏差:每堆 19.5 ± 2.5,符合 Mathers「nearly equal」
     var sizes = [];
     for (var s = 0; s < 4; s++) {
-      sizes.push(Math.round(19.5 + (Math.random() - 0.5) * 14)); // 12.5 ~ 26.5
+      sizes.push(Math.round(19.5 + (Math.random() - 0.5) * 5)); // 17 ~ 22
     }
-    // 正規化：調整到總和 = len，每堆在 MIN_PILE ~ MAX_PILE
+    // 正規化:調整到總和 = len,每堆在 MIN_PILE ~ MAX_PILE
     var diff = len - sizes.reduce(function(a, b) { return a + b; }, 0);
     var safety = 0;
     while (diff !== 0 && safety < 200) {
@@ -2349,14 +2352,120 @@ enhanceTarot = function(tarot) {
     return deck;
   }
 
-  function runFullOOTK(significatorId) {
+  // ════════════════════════════════════════════════════════════
+  // ★ v64.1 正統 Mathers Book T:Op2/Op3 二次重洗 abandon 機制
+  //
+  // Mathers 原文(Manuscript Q):
+  //   "If the Significator be not found in the right packet referring to
+  //    the matter under consideration, the Diviner can shuffle and deal
+  //    once more, but if it again fails, the divination should be abandoned."
+  //
+  // 「合適宮位/星座」對應表(問題類型 → 期望的宮位 / cognate house):
+  //
+  // 問題類型對應宮位(Op2):
+  //   感情/婚姻 → 主 7 宮(夫妻),cognate 5 宮(戀愛)、8 宮(性/共有)
+  //   財務/金錢 → 主 2 宮(財帛),cognate 8 宮(共有資源)、10 宮(事業收入)
+  //   工作/事業 → 主 10 宮(官祿),cognate 6 宮(工作)、2 宮(收入)
+  //   家庭/居住 → 主 4 宮(田宅),cognate 3 宮(家人)、10 宮(母親)
+  //   健康/身體 → 主 6 宮(健康),cognate 1 宮(體格)、12 宮(慢性)
+  //   友情/社交 → 主 11 宮(朋友),cognate 3 宮(熟人)、7 宮(合夥)
+  //   學習/旅行 → 主 9 宮(遷移/學問),cognate 3 宮(短途)
+  //   隱私/秘密 → 主 12 宮(玄秘),cognate 8 宮(深層)
+  //
+  // 問題類型對應星座(Op3,依該題的能量本質):
+  //   感情 → 巨蟹(情感家庭)、天蠍(深度結合)、雙魚(浪漫)、金牛(穩定)
+  //   財務 → 金牛、摩羯、處女(土象,物質穩定)
+  //   工作 → 摩羯、處女、白羊(行動)、獅子(領導)
+  //   家庭 → 巨蟹、金牛
+  //   健康 → 處女、摩羯
+  //   學習 → 雙子、射手、水瓶
+  //   靈性 → 雙魚、天蠍、射手
+  // ════════════════════════════════════════════════════════════
+
+  // 問題類型 → 合適 Op1 元素堆
+  // Mathers Book T:Yod 火堆=work、Heh 水堆=love、Vav 風堆=quarrels/loss、Heh-final 土堆=money
+  var QUESTION_PILES = {
+    'love':    ['water'],            // 感情 → 水堆
+    'money':   ['earth'],            // 財務 → 土堆
+    'work':    ['fire'],             // 工作 → 火堆
+    'family':  ['earth', 'water'],   // 家庭 → 土/水(物質基礎+情感)
+    'health':  ['earth', 'fire'],    // 健康 → 土/火(體質+生命力)
+    'friend':  ['water', 'air'],     // 友情 → 水/風(情感+溝通)
+    'travel':  ['fire', 'air'],      // 學習旅行 → 火/風(行動+思維)
+    'secret':  ['water', 'air'],     // 秘密 → 水/風(深層+心思)
+    'general': null                  // 不限
+  };
+
+  // 問題類型 → 合適宮位陣列
+  var QUESTION_HOUSES = {
+    'love':    [7, 5, 8],   // 感情/婚姻
+    'money':   [2, 8, 10],  // 財務
+    'work':    [10, 6, 2],  // 工作/事業
+    'family':  [4, 3, 10],  // 家庭/居住
+    'health':  [6, 1, 12],  // 健康
+    'friend':  [11, 3, 7],  // 友情/社交
+    'travel':  [9, 3],      // 學習/旅行
+    'secret':  [12, 8],     // 隱私/秘密
+    'general': null         // 不限(不做 abandon 檢查)
+  };
+
+  // 問題類型 → 合適星座陣列(0-indexed: 牡羊=0, 雙魚=11)
+  var QUESTION_SIGNS = {
+    'love':    [3, 7, 11, 1],   // 巨蟹/天蠍/雙魚/金牛
+    'money':   [1, 9, 5],       // 金牛/摩羯/處女
+    'work':    [9, 5, 0, 4],    // 摩羯/處女/牡羊/獅子
+    'family':  [3, 1],          // 巨蟹/金牛
+    'health':  [5, 9],          // 處女/摩羯
+    'friend':  [10, 6],         // 水瓶/天秤
+    'travel':  [2, 8, 10],      // 雙子/射手/水瓶
+    'secret':  [7, 11],         // 天蠍/雙魚
+    'general': null
+  };
+
+  // 問題類型中文對照
+  function getQTypeZh(qType) {
+    var map = {
+      'love':    '感情/婚姻',
+      'money':   '財務',
+      'work':    '工作/事業',
+      'family':  '家庭/居住',
+      'health':  '健康',
+      'friend':  '友情/社交',
+      'travel':  '學習/旅行',
+      'secret':  '隱私/秘密',
+      'general': '一般'
+    };
+    return map[qType] || qType;
+  }
+
+  // 自動偵測問題類型(從用戶問題文字)
+  function detectQuestionType(question) {
+    var q = String(question || '').toLowerCase();
+    if (/愛情|戀愛|感情|交往|曖昧|男友|女友|喜歡|愛情|桃花|對象|分手|復合|婚姻|結婚|配偶|另一半|老公|老婆|love|relationship|marriage/.test(q)) return 'love';
+    if (/錢|財|錢財|收入|薪水|財務|存錢|理財|投資|money|finance|income|salary/.test(q)) return 'money';
+    if (/工作|事業|職場|升遷|轉職|跳槽|老闆|主管|同事|公司|career|job|work|business/.test(q)) return 'work';
+    if (/家庭|家人|父母|爸媽|搬家|住|家裡|住處|居住|home|family|house/.test(q)) return 'family';
+    if (/健康|身體|生病|病|看醫生|醫療|health|illness|disease/.test(q)) return 'health';
+    if (/朋友|社交|同學|聚會|友情|friend|social/.test(q)) return 'friend';
+    if (/讀書|考試|留學|出國|遊學|搬到|study|exam|travel/.test(q)) return 'travel';
+    if (/秘密|隱情|背叛|出軌|外遇|secret|affair/.test(q)) return 'secret';
+    return 'general';
+  }
+
+  // 檢查 Sig 是否落在合適宮位/星座
+  function isSigInExpectedPosition(activePosition, expectedPositions) {
+    if (!expectedPositions) return true; // general 類不檢查
+    return expectedPositions.indexOf(activePosition) >= 0;
+  }
+
+  function runFullOOTK(significatorId, questionText) {
     if (typeof TAROT === 'undefined') return null;
 
     // ════════════════════════════════════════════════════════════
-    // ★ v63 最正統 Book T：每階段獨立重新洗牌
+    // ★ v63 最正統 Book T:每階段獨立重新洗牌
     // Mathers Book T 原文五階段都明寫「Shuffle, etc., as before」
     // 每階段 78 張全副牌、全新洗牌、全新隨機正逆位
-    // 五個 Operation 是五次獨立的儀式，不是「同一次抽牌的五個切片」
+    // 五個 Operation 是五次獨立的儀式,不是「同一次抽牌的五個切片」
     // ════════════════════════════════════════════════════════════
 
     var results = {};
@@ -2368,19 +2477,124 @@ enhanceTarot = function(tarot) {
       element: getCardElement(sigCard)
     } : null;
 
-    // 每階段各自洗一副新的 78 張牌
+    // 偵測問題類型(用於 Op2/Op3 abandon 檢查)
+    var qType = detectQuestionType(questionText);
+    results.questionType = qType;
+    results.questionText = questionText || '';
+
+    // ── Op1:四元素分堆 — 正統 Mathers 二次重洗 abandon 機制 ──
+    // Mathers 原文 Op1:「告訴問者他要問什麼,如果說錯 → abandon」
+    // 程式碼層級實作:檢查 Sig 落堆是否符合問題類型
+    var expectedPiles = QUESTION_PILES[qType] || null;
     var deck1 = shuffleNewDeck();
     results.op1 = ootkOp1(deck1, significatorId);
+    results.op1.attempt = 1;
+    results.op1.expectedPiles = expectedPiles;
 
+    if (expectedPiles && expectedPiles.indexOf(results.op1.activePile) < 0) {
+      // 二次重洗
+      var deck1b = shuffleNewDeck();
+      var op1Retry = ootkOp1(deck1b, significatorId);
+      op1Retry.attempt = 2;
+      op1Retry.expectedPiles = expectedPiles;
+
+      if (expectedPiles.indexOf(op1Retry.activePile) < 0) {
+        // 二次仍錯堆 → abandon 警示(Mathers 原則)
+        op1Retry.abandonTriggered = true;
+        var pileZh = { fire: 'Yod 火堆', water: 'Heh 水堆', air: 'Vau 風堆', earth: 'Heh-final 土堆' };
+        var expectedZh = expectedPiles.map(function(p) { return pileZh[p] || p; }).join(' / ');
+        op1Retry.abandonReason =
+          '依 Mathers Book T,Op1 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
+          ')仍落於 ' + (pileZh[op1Retry.activePile] || op1Retry.activePile) +
+          '(非問題「' + getQTypeZh(qType) + '」的合適元素堆 ' + expectedZh + ')→ 此次盤面在告訴你:你心裡真正關心的議題,可能不是你問的這件事。應 abandon 或重新檢視問題。';
+        op1Retry.firstAttemptPile = results.op1.activePile;
+      } else {
+        op1Retry.abandonTriggered = false;
+        op1Retry.firstAttemptPile = results.op1.activePile;
+        var pileZh2 = { fire: 'Yod 火堆', water: 'Heh 水堆', air: 'Vau 風堆', earth: 'Heh-final 土堆' };
+        op1Retry.retryNote =
+          '第一次 Sig 落 ' + (pileZh2[results.op1.activePile] || results.op1.activePile) +
+          '(非合適),依 Mathers 重洗一次,第二次落 ' +
+          (pileZh2[op1Retry.activePile] || op1Retry.activePile) + '(合適),採用第二次。';
+      }
+      results.op1 = op1Retry;
+    }
+
+    // ── Op2:十二宮位 — 正統 Mathers 二次重洗 abandon 機制 ──
+    var expectedHouses = QUESTION_HOUSES[qType] || null;
     var deck2 = shuffleNewDeck();
     results.op2 = ootkOp2(deck2, significatorId);
+    results.op2.attempt = 1;
+    results.op2.expectedHouses = expectedHouses;
 
+    if (expectedHouses && !isSigInExpectedPosition(results.op2.activeHouse, expectedHouses)) {
+      // Mathers 原文:「shuffle and deal once more」── 重洗一次
+      var deck2b = shuffleNewDeck();
+      var op2Retry = ootkOp2(deck2b, significatorId);
+      op2Retry.attempt = 2;
+      op2Retry.expectedHouses = expectedHouses;
+
+      if (!isSigInExpectedPosition(op2Retry.activeHouse, expectedHouses)) {
+        // Mathers 原文:「if it again fails, the divination should be abandoned」
+        op2Retry.abandonTriggered = true;
+        op2Retry.abandonReason =
+          '依 Mathers Book T 原文,Op2 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
+          ')仍落於第 ' + op2Retry.activeHouse + ' 宮(非問題「' +
+          getQTypeZh(qType) + '」的合適宮位 ' + expectedHouses.join('/') + ' 宮)→ 此次 Op2 應 abandon。';
+        op2Retry.firstAttemptHouse = results.op2.activeHouse;
+      } else {
+        op2Retry.abandonTriggered = false;
+        op2Retry.firstAttemptHouse = results.op2.activeHouse;
+        op2Retry.retryNote =
+          '第一次 Sig 落第 ' + results.op2.activeHouse +
+          ' 宮(非合適),依 Mathers 重洗一次,第二次落第 ' +
+          op2Retry.activeHouse + ' 宮(合適),採用第二次。';
+      }
+      results.op2 = op2Retry;
+    }
+
+    // ── Op3:十二星座 — 正統 Mathers 二次重洗 abandon 機制 ──
+    // Mathers 原文沒明確要求 Op3 重洗,但既然「合適宮位邏輯」也適用於星座
+    // (PHB 補充規則),Op3 也採同樣機制保持正統一致性
+    var expectedSigns = QUESTION_SIGNS[qType] || null;
     var deck3 = shuffleNewDeck();
     results.op3 = ootkOp3(deck3, significatorId);
+    results.op3.attempt = 1;
+    results.op3.expectedSigns = expectedSigns;
 
+    if (expectedSigns) {
+      var op3SignIdx = SIGNS_ORDER.indexOf(results.op3.activeSign);
+      if (!isSigInExpectedPosition(op3SignIdx, expectedSigns)) {
+        var deck3b = shuffleNewDeck();
+        var op3Retry = ootkOp3(deck3b, significatorId);
+        op3Retry.attempt = 2;
+        op3Retry.expectedSigns = expectedSigns;
+        var op3RetrySignIdx = SIGNS_ORDER.indexOf(op3Retry.activeSign);
+
+        if (!isSigInExpectedPosition(op3RetrySignIdx, expectedSigns)) {
+          // Op3 二次仍錯位 → 不像 Op2 那樣硬性 abandon,而是給「弱訊號警示」
+          // (因為 Mathers 原文 Op3 沒明文 abandon)
+          op3Retry.weakSignalWarning = true;
+          op3Retry.weakSignalReason =
+            '依正統 Mathers/PHB,Op3 二次重洗後 Sig 仍落於 ' + op3Retry.activeSign +
+            '(非問題「' + getQTypeZh(qType) + '」的合適星座)→ 此 Op3 訊號偏弱,解讀時應降權。';
+          op3Retry.firstAttemptSign = results.op3.activeSign;
+        } else {
+          op3Retry.weakSignalWarning = false;
+          op3Retry.firstAttemptSign = results.op3.activeSign;
+          op3Retry.retryNote =
+            '第一次 Sig 落 ' + results.op3.activeSign +
+            ',重洗後落 ' + op3Retry.activeSign + ',採用第二次。';
+        }
+        results.op3 = op3Retry;
+      }
+    }
+
+    // ── Op4:三十六旬(Mathers 原文無 abandon 條件) ──
     var deck4 = shuffleNewDeck();
     results.op4 = ootkOp4(deck4, significatorId);
 
+    // ── Op5:生命之樹(Mathers 原文特別放寬「找錯位不必然失敗」) ──
     var deck5 = shuffleNewDeck();
     results.op5 = ootkOp5(deck5, significatorId);
 
@@ -3081,11 +3295,17 @@ enhanceTarot = function(tarot) {
   function _runOOTKSequence(significatorId) {
     _injectOOTKStyles();
 
-    // 跑五階段計算（引擎已改為每階段獨立洗牌）
+    // ★ v64.1 正統 Mathers Book T:傳入問題文字以啟動 Op2/Op3 abandon 機制
+    var questionText = '';
+    try {
+      questionText = (S && S.form && S.form.question) ? String(S.form.question) : '';
+    } catch(_qe) { questionText = ''; }
+
+    // 跑五階段計算(引擎已改為每階段獨立洗牌 + Mathers 二次重洗 abandon 邏輯)
     var results = null;
     try {
-      results = window.ootkRunFull ? window.ootkRunFull(significatorId) : null;
-    } catch(e) { console.error('[OOTK] runFull error:', e); alert('OOTK 計算引擎錯誤：' + e.message); return; }
+      results = window.ootkRunFull ? window.ootkRunFull(significatorId, questionText) : null;
+    } catch(e) { console.error('[OOTK] runFull error:', e); alert('OOTK 計算引擎錯誤:' + e.message); return; }
     if (!results) { alert('OOTK 引擎未載入'); return; }
 
     // 欄位別名（新引擎 → 渲染器）
@@ -3248,11 +3468,68 @@ enhanceTarot = function(tarot) {
 
     function showPhaseContent() {
       _advanceLock = false;
+      // ★ v64.1 inline HTML escape (避免 abandon 訊息中的 < > & 破壞 HTML)
+      function _esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
       var opData = results['op' + (currentPhase + 1)];
       var label = OP_LABELS[currentPhase];
       var phaseDiv = document.createElement('div');
       phaseDiv.className = 'ootk-phase';
-      phaseDiv.innerHTML = _renderPhase(currentPhase, label, opData, results);
+
+      // ★ v64.1 正統 Mathers Book T:abandon 警示 UI 渲染 + 用戶選擇
+      // 資料層觸發的 abandon/弱訊號警示必須讓用戶看見並做選擇
+      var abandonBanner = '';
+      if (opData) {
+        if (opData.abandonTriggered && opData.abandonReason) {
+          // Op1 / Op2 abandon — 醒目紅色警示卡
+          abandonBanner =
+            '<div style="margin:1rem 0;padding:1.2rem;border-radius:12px;' +
+            'border:2px solid #ef4444;background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(239,68,68,.06));' +
+            'box-shadow:0 0 24px rgba(239,68,68,.3),inset 0 0 12px rgba(239,68,68,.1);">' +
+            '<div style="font-size:.95rem;font-weight:700;color:#fca5a5;margin-bottom:.6rem;letter-spacing:.05em">' +
+              '🚨 Mathers Book T ABANDON 警示' +
+            '</div>' +
+            '<div style="font-size:.78rem;color:#fecaca;line-height:1.7;margin-bottom:.8rem">' +
+              _esc(opData.abandonReason) +
+            '</div>' +
+            '<div style="font-size:.7rem;color:rgba(254,202,202,.8);line-height:1.7;margin-bottom:.9rem;font-style:italic">' +
+              '依 Mathers Book T 原文,此 Op 經二次重洗 Sig 仍非合適位置——盤面在告訴你:' +
+              '你心裡真正關心的議題,可能不是你問的這件事。<br>' +
+              'Counting/Pairing 解讀仍可繼續(作為弱訊號參考),但 AI 會在解讀中標明此警示。' +
+            '</div>' +
+            '<div style="font-size:.7rem;color:rgba(255,200,150,.85);line-height:1.6;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.25);border-left:2px solid #fbbf24">' +
+              '★ Mathers 規範:你可以選擇「繼續讀(承認盤面更深訊息)」或「重抽整盤」。' +
+              '想重抽請關閉此頁回首頁重新開鑰,本次解讀預設為「繼續讀」。' +
+            '</div>' +
+            '</div>';
+        } else if (opData.weakSignalWarning && opData.weakSignalReason) {
+          // Op3 弱訊號 — 黃色警示卡(較柔和)
+          abandonBanner =
+            '<div style="margin:1rem 0;padding:1rem;border-radius:10px;' +
+            'border:1px solid rgba(251,191,36,.5);background:rgba(251,191,36,.08);">' +
+            '<div style="font-size:.85rem;font-weight:700;color:#fbbf24;margin-bottom:.5rem">' +
+              '⚠️ Op3 弱訊號警示(PHB 補充規則)' +
+            '</div>' +
+            '<div style="font-size:.74rem;color:rgba(254,243,199,.92);line-height:1.65">' +
+              _esc(opData.weakSignalReason) +
+            '</div>' +
+            '</div>';
+        } else if (opData.attempt === 2 && opData.retryNote) {
+          // 二次重洗成功(第二次落合適位置)— 灰色資訊卡
+          abandonBanner =
+            '<div style="margin:.8rem 0;padding:.7rem .9rem;border-radius:8px;' +
+            'border:1px dashed rgba(201,168,76,.35);background:rgba(201,168,76,.04);">' +
+            '<div style="font-size:.7rem;color:rgba(212,175,55,.85);line-height:1.6">' +
+              '⚙️ Mathers 二次重洗:' + _esc(opData.retryNote) +
+            '</div>' +
+            '</div>';
+        }
+      }
+
+      phaseDiv.innerHTML = abandonBanner + _renderPhase(currentPhase, label, opData, results);
       phasesEl.appendChild(phaseDiv);
       requestAnimationFrame(function() { requestAnimationFrame(function() { phaseDiv.classList.add('visible'); }); });
       setTimeout(function() { phaseDiv.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
