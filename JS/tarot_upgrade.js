@@ -1984,8 +1984,25 @@ enhanceTarot = function(tarot) {
     // counting/pairing 都從 Sig（位置 0）開始
     var activeCards = [sigCard].concat(ring);
     var sigIdx = 0; // Sig 永遠在第 0 位（居中）
-    var counted = ootkCounting(activeCards, sigIdx);
-    var paired = ootkPairing(activeCards, sigIdx);
+
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 雙版本支援（Crowley vs Manuscript Q）
+    //
+    // Crowley 版本（Book of Thoth, 1944）：「Count and pair as before」
+    //   → 跟 Op1-3 一樣，從 Sig 開始 counting，Sig 兩側往外 pairing
+    //
+    // Manuscript Q 版本（Mathers 原始手稿，最正統）：
+    //   → Counting 從第一張環繞牌起、按 dealing 方向（順時鐘）固定
+    //   → Pairing 是環形對應：1↔36, 2↔35, 3↔34, ...
+    //
+    // 我們同時提供兩個版本給 AI，由 AI 決定如何讀（兩者都正統）
+    // ════════════════════════════════════════════════════════════
+    var counted = ootkCounting(activeCards, sigIdx);     // Crowley 版本
+    var paired = ootkPairing(activeCards, sigIdx);       // Crowley 版本
+
+    // Manuscript Q 版本：環形 counting 從第一張起、固定方向
+    var countedMQ = ootkCountingRing(ring);              // 從 ring[0] 起、順時鐘
+    var pairedMQ = ootkPairingRing(ring);                // 1↔36, 2↔35...
 
     // 仍保留 GD decan 對應做為「時機線索」參考（不是分配依據）
     // — Sig 自身的 GD decan 屬性可作為時機本質的線索
@@ -2005,7 +2022,12 @@ enhanceTarot = function(tarot) {
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards)
+      dignities: ootkDignities(counted.keyCards),
+      // ★ v63 額外提供 Manuscript Q 正統版本（最原始 Mathers 手稿做法）
+      mq_keyCards: countedMQ.keyCards,
+      mq_countingPath: countedMQ.path,
+      mq_pairs: pairedMQ,
+      mq_startCard: ring[0] ? (ring[0].n || ring[0].name) : ''
     };
   }
 
@@ -2201,6 +2223,85 @@ enhanceTarot = function(tarot) {
       pairs.push({ left: cards[left], right: cards[right], dignity: ed });
       left--;
       right++;
+    }
+    return pairs;
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // ★ v63 Op4 Manuscript Q 版本（Mathers 原始手稿最正統做法）
+  //
+  // Mathers 原文（Manuscript Q）：
+  //   "instead of counting from the Significator itself, it begins from
+  //    the first card of the 36, and always goes in the direction of dealing"
+  //   "the cards are paired together; 1st and 36th; 2nd and 35th; 3rd and 34th"
+  //
+  // 與 Crowley Book of Thoth「count and pair as before」並列存在。
+  // 兩個版本都送給 AI，由 AI 視情況採用。
+  // ════════════════════════════════════════════════════════════
+
+  // Op4 環形 counting：從第一張環繞牌起、按 dealing 方向（順時鐘）固定
+  function ootkCountingRing(ring) {
+    if (!ring || !ring.length) return { keyCards: [], path: [] };
+    var keyCards = [];
+    var path = [];
+    var visited = {};
+    var idx = 0; // ★ Manuscript Q：從第 1 張環繞牌起，不是從 Sig
+    var maxSteps = 12;
+    var direction = 1; // ★ Manuscript Q：永遠按 dealing 方向（順時鐘）固定
+    var aceLoopDetect = 0;
+    var useCrowleyAce = false;
+
+    for (var step = 0; step < maxSteps; step++) {
+      var card = ring[idx];
+      if (!card || visited[idx]) {
+        if (card && String(card.rank || '') === 'ace' && !useCrowleyAce && aceLoopDetect === 0) {
+          aceLoopDetect++;
+          useCrowleyAce = true;
+          for (var ca = 0; ca < 11; ca++) {
+            idx = (idx + direction + ring.length) % ring.length;
+          }
+          continue;
+        }
+        break;
+      }
+      keyCards.push({ card: card, position: idx });
+      visited[idx] = true;
+      var count = getCountValue(card);
+      if (useCrowleyAce && String(card.rank || '') === 'ace') count = 11;
+      var cardIsUp = (card.isUp === true);
+      path.push({
+        cardId: card.id,
+        cardName: card.n || card.name,
+        position: idx,
+        countValue: count,
+        isUp: cardIsUp,
+        direction: 'clockwise', // 永遠順時鐘
+        startDirection: 'clockwise'
+      });
+      for (var c = 0; c < count; c++) {
+        idx = (idx + direction + ring.length) % ring.length;
+      }
+    }
+    return { keyCards: keyCards, path: path, usedCrowleyAce: useCrowleyAce, startDirection: 'clockwise' };
+  }
+
+  // Op4 環形 pairing：1↔36, 2↔35, 3↔34, ...
+  function ootkPairingRing(ring) {
+    if (!ring || !ring.length) return [];
+    var pairs = [];
+    var n = ring.length;
+    var half = Math.floor(n / 2);
+    for (var i = 0; i < half; i++) {
+      var left = ring[i];
+      var right = ring[n - 1 - i];
+      var ed = elementalDignity(left, right);
+      pairs.push({
+        left: left,
+        right: right,
+        dignity: ed,
+        leftPos: i + 1,    // 1-indexed
+        rightPos: n - i    // 1-indexed
+      });
     }
     return pairs;
   }
@@ -3675,9 +3776,10 @@ enhanceTarot = function(tarot) {
         }
 
         // 持續飛卡(前段密集、後段降頻)
+        // ★ 飛卡顯示的就是「正在發到該宮位的這張牌」（visualDeck[dealt-1]）
         var flyTrigger = (dealt < 24 && dealt % 3 === 1) || (dealt >= 24 && dealt < 48 && dealt % 6 === 1) || (dealt >= 48 && dealt % 12 === 1);
         if (flyTrigger && visualDeck.length) {
-          var card = visualDeck[(dealt * 7) % visualDeck.length];
+          var card = visualDeck[(dealt - 1) % visualDeck.length];
           var imgUrl = getImg(card);
           if (imgUrl && house) {
             var fly = document.createElement('div');
@@ -3822,21 +3924,32 @@ enhanceTarot = function(tarot) {
       }
 
       // 第二階段：發牌（飛卡到各星座）
+      // ★ Book T 正統：每張按 GD 星座屬性分到對應星座
+      // 動畫採真正 78 張依序發牌（不再「平均循環」誤導）
       function dealCardsToSigns() {
         caption.innerHTML = '♈ 發牌——按 Golden Dawn 對應，將 <b>78 張</b>分入十二星座';
         var dealCount = 0;
-        var maxDeals = 36; // 視覺示意，不是實際 78 張全發
+        var maxDeals = 78; // 真正發 78 張
         function flyCard() {
           if (dealCount >= maxDeals) {
             setTimeout(highlightActive, 400);
             return;
           }
-          var targetSignIdx = dealCount % 12;
+          // 取 visualDeck 真實牌的 GD 對應星座
+          var card = visualDeck[dealCount % visualDeck.length];
+          var targetSignIdx;
+          // 直接呼叫同檔閉包內的 getCardSignIdx 算 GD 屬性
+          if (card && typeof getCardSignIdx === 'function') {
+            try { targetSignIdx = getCardSignIdx(card); } catch(_e) {}
+          }
+          if (typeof targetSignIdx !== 'number' || targetSignIdx < 0 || targetSignIdx > 11) {
+            targetSignIdx = dealCount % 12;
+          }
           var targetSign = scene.querySelector('.ootk-op3-sign[data-idx="' + targetSignIdx + '"]');
-          if (targetSign && visualDeck.length) {
-            var card = visualDeck[(dealCount * 11) % visualDeck.length];
+          if (targetSign && card) {
             var imgUrl = getImg(card);
-            if (imgUrl) {
+            // 視覺優化：78 張全發但只在前 36 張產生飛卡實體（避免 DOM 過多）
+            if (imgUrl && dealCount < 36) {
               var fly = document.createElement('div');
               fly.className = 'ootk-op3-fly';
               fly.innerHTML = '<img src="' + imgUrl + '" />';
@@ -3855,12 +3968,14 @@ enhanceTarot = function(tarot) {
                 fly.style.transform = 'scale(.4)';
               });
               setTimeout(function() { fly.remove(); }, 700);
-              targetSign.classList.add('flash');
-              setTimeout(function() { targetSign.classList.remove('flash'); }, 250);
             }
+            targetSign.classList.add('flash');
+            setTimeout(function() { targetSign.classList.remove('flash'); }, 250);
           }
           dealCount++;
-          setTimeout(flyCard, dealCount < 12 ? 130 : 70);
+          // 節奏：前 12 張稍慢、12-36 中速、36+ 快速跑完 78 張
+          var delay = dealCount < 12 ? 130 : dealCount < 36 ? 70 : 30;
+          setTimeout(flyCard, delay);
         }
         flyCard();
       }
@@ -4103,30 +4218,42 @@ enhanceTarot = function(tarot) {
         setTimeout(lightNode, 130);
       }
 
-      // 第二階段:從中央 Tiphareth 發真實牌到各質點
+      // 第二階段：從畫面上方外部牌堆飛真實牌到各質點
+      // ★ Book T 原文：「Deal into ten packs in the form of the Tree of Life」
+      // 發牌來源是「外部牌堆」，不是 Tiphareth 中央。
+      // 每張按 GD 屬性（getCardSephirah）分到對應質點，不是平均循環。
       function dealCardsToSephirot() {
         caption.innerHTML = '🌳 發牌——將 78 張依 Golden Dawn 對應分入十質點';
         var dealCount = 0;
-        var maxDeals = 30;
+        var maxDeals = 78; // 真正發 78 張
         var tree = scene.querySelector('.ootk-op5-tree');
+        // 牌堆來源點：畫面上方（容器頂端中央，Kether 之上）
+        var DECK_X = TREE_W / 2 - 9;
+        var DECK_Y = -30;
         function flyCard() {
           if (dealCount >= maxDeals) {
             setTimeout(highlightActive, 400);
             return;
           }
-          var nodeIdx = dealCount % 10;
-          if (nodeIdx === 5) { dealCount++; setTimeout(flyCard, 30); return; } // 跳過中心
+          // 取真實牌的 GD Sephirah 屬性
+          var card = visualDeck[dealCount % visualDeck.length];
+          var nodeIdx;
+          if (card && typeof getCardSephirah === 'function') {
+            try { nodeIdx = getCardSephirah(card); } catch(_e) {}
+          }
+          if (typeof nodeIdx !== 'number' || nodeIdx < 0 || nodeIdx > 9) {
+            nodeIdx = dealCount % 10;
+          }
           var node = scene.querySelector('.ootk-op5-node[data-idx="' + nodeIdx + '"]');
-          if (node && visualDeck.length) {
-            var card = visualDeck[(dealCount * 13) % visualDeck.length];
+          if (node && card) {
             var imgUrl = getImg(card);
-            if (imgUrl) {
+            // 視覺優化：78 張全發但只在前 30 張產生飛卡實體
+            if (imgUrl && dealCount < 30) {
               var fly = document.createElement('div');
               fly.className = 'ootk-op5-fly';
               fly.innerHTML = '<img src="' + imgUrl + '" />';
-              // 從 Tiphareth 中央起飛
-              fly.style.left = (SEPH_POS[5].x - 9) + 'px';
-              fly.style.top = (SEPH_POS[5].y - 14) + 'px';
+              fly.style.left = DECK_X + 'px';
+              fly.style.top = DECK_Y + 'px';
               tree.appendChild(fly);
               var targetX = SEPH_POS[nodeIdx].x - 9;
               var targetY = SEPH_POS[nodeIdx].y - 14;
@@ -4137,12 +4264,13 @@ enhanceTarot = function(tarot) {
                 fly.style.transform = 'scale(.4)';
               });
               setTimeout(function() { fly.remove(); }, 700);
-              node.classList.add('flash');
-              setTimeout(function() { node.classList.remove('flash'); }, 280);
             }
+            node.classList.add('flash');
+            setTimeout(function() { node.classList.remove('flash'); }, 280);
           }
           dealCount++;
-          setTimeout(flyCard, dealCount < 10 ? 150 : 80);
+          var delay = dealCount < 10 ? 150 : dealCount < 30 ? 80 : 30;
+          setTimeout(flyCard, delay);
         }
         flyCard();
       }

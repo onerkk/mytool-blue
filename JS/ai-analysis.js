@@ -23986,6 +23986,34 @@ function _buildOOTKPayload() {
     } else if (idx === 3) {
       lines.push('聚焦旬：' + (op.decanSign||'') + ' ' + (op.decanRange||''));
       if (op.decanPlanet) lines.push('旬主星：' + op.decanPlanet);
+      // ★ v63 Manuscript Q 正統做法（Mathers 原始手稿）
+      if (op.mq_countingPath && op.mq_countingPath.length) {
+        lines.push('');
+        lines.push('【Op4 雙版本對照】');
+        lines.push('Crowley Book of Thoth (1944)：「Count and pair as before」→ 跟 Op1-3 一樣，從 Sig 起 counting、Sig 兩側往外 pair（已在「計數路徑」與「配對」段落顯示）');
+        lines.push('Mathers Manuscript Q (原始手稿)：Op4 是「特例」——counting 從第一張環繞牌起、永遠按 dealing 方向（順時鐘）；pairing 是 1↔36, 2↔35, 3↔34...');
+        lines.push('★ 兩個版本都正統，但起源不同。Manuscript Q 是更原始的 Mathers 手稿；Crowley 是後來的簡化版。建議讀解時兩者並參——尤其是 Manuscript Q 版本的環形對應 pairing 給出「事件的鏡像細節」。');
+        // MQ counting 路徑
+        lines.push('Manuscript Q Counting（從第 1 張順時鐘）：' + op.mq_countingPath.map(function(step) {
+          var stepIsUp = (step.isUp === true);
+          return cardStr({n:step.cardName, isUp:stepIsUp}) + '(值' + step.countValue + ')';
+        }).join(' → '));
+        // MQ pairing
+        if (op.mq_pairs && op.mq_pairs.length) {
+          var _digMq = {
+            'strengthen': '同元素強化',
+            'weaken':     '對立元素削弱',
+            'friendly':   '友善元素'
+          };
+          var mqPairTexts = op.mq_pairs.slice(0, 6).map(function(pr) {
+            var text = '#' + pr.leftPos + '↔#' + pr.rightPos + ' ' +
+                       cardStrFull(pr.left) + ' ↔ ' + cardStrFull(pr.right);
+            if (pr.dignity) text += '（' + (_digMq[pr.dignity] || pr.dignity) + '）';
+            return text;
+          });
+          lines.push('Manuscript Q Pairing（環形對應 1↔36, 2↔35...）：' + mqPairTexts.join('；'));
+        }
+      }
     } else if (idx === 4) {
       lines.push('落在' + (op.activeSephirah||'?') + '（' + (op.sephirahZh||'') + '）');
       if (op.sephirahMeaning) lines.push('意義：' + op.sephirahMeaning);
