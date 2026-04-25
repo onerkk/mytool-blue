@@ -1077,20 +1077,19 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
-      <!-- ═══ v64：Sonnet 4.6 按工具獨立配置 effort ═══ -->
+      <!-- ═══ v64a：Sonnet 4.6 按工具獨立配置 effort ═══ -->
       <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:18px;margin-top:14px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
           <span style="font-size:16px;font-weight:700">🎚️ Sonnet 4.6 按工具獨立 effort</span>
-          <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#1f2933;color:#7dd3fc">v64</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#1f2933;color:#7dd3fc">v64a</span>
         </div>
         <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
           只對 Sonnet 4.6 標準路徑生效（Opus 4.7 / Haiku 4.5 / 深度模式不受影響）。<br>
           每個工具可獨立挑 effort，「<b>繼承全局</b>」= 用上方 v56 全局 sonnetEffort。<br>
-          <b style="color:#fbbf24">建議配置（依官方+實戰）：</b>七維度 / 開鑰 = high（深度推理有用）；塔羅 / 追問 = medium（結構單純，省 30% 成本與延遲）。
+          <b style="color:#fbbf24">建議配置（依官方+實戰）：</b>七維度 / 開鑰 = high；塔羅 / 追問 = medium（省 30% 成本與延遲）。
         </div>
 
         <div style="display:grid;grid-template-columns:1fr;gap:10px">
-          <!-- 七維度 -->
           <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14">
             <span style="font-size:13px;font-weight:600">🔮 七維度（標準）</span>
             <select id="v64-eff-d7" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#1a1f2a;color:#e5e7eb;font-size:13px;cursor:pointer">
@@ -1100,7 +1099,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <option value="high">high（深度推理）</option>
             </select>
           </div>
-          <!-- 開鑰之法 -->
           <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14">
             <span style="font-size:13px;font-weight:600">🔑 開鑰之法（標準）</span>
             <select id="v64-eff-ootk" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#1a1f2a;color:#e5e7eb;font-size:13px;cursor:pointer">
@@ -1110,7 +1108,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <option value="high">high（深度推理）</option>
             </select>
           </div>
-          <!-- 塔羅快讀 -->
           <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14">
             <span style="font-size:13px;font-weight:600">🃏 塔羅快讀（標準）</span>
             <select id="v64-eff-tarot" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#1a1f2a;color:#e5e7eb;font-size:13px;cursor:pointer">
@@ -1120,7 +1117,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <option value="high">high（深度推理）</option>
             </select>
           </div>
-          <!-- 追問 -->
           <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14">
             <span style="font-size:13px;font-weight:600">💬 追問（所有工具）</span>
             <select id="v64-eff-followup" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#1a1f2a;color:#e5e7eb;font-size:13px;cursor:pointer">
@@ -1133,10 +1129,62 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
 
         <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:#0a1320;border:1px solid #1e3a5f;font-size:11px;color:#7dd3fc;line-height:1.6">
-          ℹ️ 此設定跟上方 v56+v57 卡片共用同一個儲存按鈕（一起送 POST 到 /admin/v56-prompt-config）。改完直接按上方「💾 儲存 v57 設定」即可。
+          ℹ️ 此設定跟上方 v56+v57 卡片共用同一個儲存按鈕（一起送 POST）。改完直接按上方「💾 儲存 v57 設定」即可。
         </div>
       </div>
-      <!-- ═══ v64 結束 ═══ -->
+
+      <!-- ═══ v64b：證據深度模組（thinking 內判讀深度提升） ═══ -->
+      <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:18px;margin-top:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:16px;font-weight:700">🧠 證據深度模組</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3f1d38;color:#f0abfc">v64b</span>
+          <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#1f2933;color:#fbbf24">A/B 測試中</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
+          這四項把抽象的「應該」變成 thinking 階段的硬規則——<b>不影響輸出風格，提升判讀深度</b>。<br>
+          <b style="color:#fbbf24">預設全關</b>，建議一個一個開、跑 5 次比較效果再決定要不要保留。<br>
+          副作用：每開一項 prompt 增加 3-5K tokens（cache 過後 0.1x 成本，影響有限）。
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v64-evidence-ledger" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📋 證據 Ledger</span>
+              <span style="font-size:11px;color:#7dd3fc;margin-left:6px">最值得開</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">寫 story 前 thinking 內強制建立「supporting / opposing signals」表，加權算信心。直接擋掉「講得很順但沒證據」。建議優先開七維度+開鑰測試。</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v64-conflict-resolution" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">⚖️ 衝突裁決硬權重</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">七系統打架時走六步驟硬計算（分組 → 權重 → 跨文化加成 → 先天/問事盤分層 → 時間精度 → 比值裁決）。避免 AI 憑語感說「既好又不好」。</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v64-time-scale" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">⏱️ 時間尺度分層</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">短期（梅花/塔羅）vs 中期（八字流月/西占行運）vs 長期（八字大運/紫微大限/吠陀 Mahadasha）強制分層。避免「下個月」跟「這十年」混講。追問也適用。</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v64-photo-auxiliary" style="margin-top:2px;width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📷 照片降級為輔助</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">手相/面相/水晶照片只能補強命盤主結論，不能單獨支撐判斷或推翻命盤。模糊照片必須說「無法判讀」。追問也適用。</span>
+            </span>
+          </label>
+        </div>
+
+        <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:#1a0f1a;border:1px solid #3f1d38;font-size:11px;color:#f0abfc;line-height:1.6">
+          ℹ️ 跟上方 v56+v57 共用同一個儲存按鈕。建議測試順序：① 證據 Ledger → 跑 5 次 → 看 thinking 內有沒有真的列表 → ② 衝突裁決 → ③ 時間尺度 → ④ 照片降級
+        </div>
+      </div>
 
       <!-- ═══ v62：Sonnet 4.6 / Opus 4.7 官方校準卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
@@ -3664,7 +3712,17 @@ let _v56Defaults = {
   explicitCoT: false,
   literalInstructions: true,
   groundInQuotes7D: false,
-  groundInQuotesTarot: true
+  groundInQuotesTarot: true,
+  // v64a：按工具獨立 effort
+  sonnetEffort_d7: 'high',
+  sonnetEffort_ootk: 'high',
+  sonnetEffort_tarot: 'medium',
+  sonnetEffort_followup: 'medium',
+  // v64b：證據深度模組（預設全關）
+  evidenceLedger: false,
+  conflictResolution: false,
+  timeScaleStrict: false,
+  photoAuxiliary: false
 };
 
 async function loadV56Config() {
@@ -3708,7 +3766,7 @@ async function loadV56Config() {
       // Sonnet effort（全局 fallback）
       const effort = c.sonnetEffort || 'medium';
       document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === effort); });
-      // v64：4 工具獨立 effort 套值（值是字串，空字串 = 繼承）
+      // v64a：4 工具獨立 effort 套值（空字串 = 繼承）
       const eff_d7El = document.getElementById('v64-eff-d7');
       const eff_ootkEl = document.getElementById('v64-eff-ootk');
       const eff_tarotEl = document.getElementById('v64-eff-tarot');
@@ -3717,6 +3775,15 @@ async function loadV56Config() {
       if (eff_ootkEl) eff_ootkEl.value = (typeof c.sonnetEffort_ootk === 'string') ? c.sonnetEffort_ootk : 'high';
       if (eff_tarotEl) eff_tarotEl.value = (typeof c.sonnetEffort_tarot === 'string') ? c.sonnetEffort_tarot : 'medium';
       if (eff_fuEl) eff_fuEl.value = (typeof c.sonnetEffort_followup === 'string') ? c.sonnetEffort_followup : 'medium';
+      // v64b：證據深度模組
+      const ledgerEl = document.getElementById('v64-evidence-ledger');
+      const conflictEl = document.getElementById('v64-conflict-resolution');
+      const timeEl = document.getElementById('v64-time-scale');
+      const photoEl = document.getElementById('v64-photo-auxiliary');
+      if (ledgerEl) ledgerEl.checked = !!c.evidenceLedger;
+      if (conflictEl) conflictEl.checked = !!c.conflictResolution;
+      if (timeEl) timeEl.checked = !!c.timeScaleStrict;
+      if (photoEl) photoEl.checked = !!c.photoAuxiliary;
       // Status 列
       if (statusEl) {
         const on = [];
@@ -3732,7 +3799,12 @@ async function loadV56Config() {
         if (c.literalInstructions) on.push('Lit');
         if (c.groundInQuotes7D) on.push('GQ7D');
         if (c.groundInQuotesTarot) on.push('GQT');
-        statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無');
+        // v64b
+        if (c.evidenceLedger) on.push('Ledger');
+        if (c.conflictResolution) on.push('Conflict');
+        if (c.timeScaleStrict) on.push('TimeScale');
+        if (c.photoAuxiliary) on.push('Photo');
+        statusEl.textContent = '啟用(' + on.length + '/16): ' + (on.length ? on.join('+') : '無');
       }
     }
   } catch(e) {
@@ -3758,11 +3830,16 @@ async function saveV56Config() {
     const litEl = document.getElementById('v57-lit');
     const giq7dEl = document.getElementById('v57-giq-7d');
     const giqtEl = document.getElementById('v57-giq-t');
-    // v64：4 個工具獨立 effort（select 下拉，空字串 = 繼承全局）
+    // v64a：4 工具獨立 effort
     const eff_d7El = document.getElementById('v64-eff-d7');
     const eff_ootkEl = document.getElementById('v64-eff-ootk');
     const eff_tarotEl = document.getElementById('v64-eff-tarot');
     const eff_fuEl = document.getElementById('v64-eff-followup');
+    // v64b：證據深度模組
+    const ledgerEl = document.getElementById('v64-evidence-ledger');
+    const conflictEl = document.getElementById('v64-conflict-resolution');
+    const timeEl = document.getElementById('v64-time-scale');
+    const photoEl = document.getElementById('v64-photo-auxiliary');
     const body = {
       // v56
       selfAudit: saEl ? !!saEl.checked : true,
@@ -3779,11 +3856,16 @@ async function saveV56Config() {
       literalInstructions: litEl ? !!litEl.checked : true,
       groundInQuotes7D: giq7dEl ? !!giq7dEl.checked : false,
       groundInQuotesTarot: giqtEl ? !!giqtEl.checked : true,
-      // v64：按工具獨立配置 Sonnet effort（空字串 = 繼承全局 sonnetEffort）
+      // v64a：4 工具獨立 effort（空字串 = 繼承全局）
       sonnetEffort_d7: eff_d7El ? eff_d7El.value : 'high',
       sonnetEffort_ootk: eff_ootkEl ? eff_ootkEl.value : 'high',
       sonnetEffort_tarot: eff_tarotEl ? eff_tarotEl.value : 'medium',
-      sonnetEffort_followup: eff_fuEl ? eff_fuEl.value : 'medium'
+      sonnetEffort_followup: eff_fuEl ? eff_fuEl.value : 'medium',
+      // v64b：證據深度模組
+      evidenceLedger: ledgerEl ? !!ledgerEl.checked : false,
+      conflictResolution: conflictEl ? !!conflictEl.checked : false,
+      timeScaleStrict: timeEl ? !!timeEl.checked : false,
+      photoAuxiliary: photoEl ? !!photoEl.checked : false
     };
     const r = await fetch(`${WORKER_URL}/admin/v56-prompt-config?token=${encodeURIComponent(adminToken)}`, {
       method: 'POST',
@@ -3806,7 +3888,12 @@ async function saveV56Config() {
       if (body.literalInstructions) on.push('Lit');
       if (body.groundInQuotes7D) on.push('GQ7D');
       if (body.groundInQuotesTarot) on.push('GQT');
-      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/12): ' + (on.length ? on.join('+') : '無');
+      // v64b
+      if (body.evidenceLedger) on.push('Ledger');
+      if (body.conflictResolution) on.push('Conflict');
+      if (body.timeScaleStrict) on.push('TimeScale');
+      if (body.photoAuxiliary) on.push('Photo');
+      if (statusEl) statusEl.textContent = '啟用(' + on.length + '/16): ' + (on.length ? on.join('+') : '無');
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
@@ -3844,6 +3931,24 @@ function resetV56Config() {
   if (giq7dEl) giq7dEl.checked = d.groundInQuotes7D;
   if (giqtEl) giqtEl.checked = d.groundInQuotesTarot;
   document.querySelectorAll('input[name="v56-sonnet-effort"]').forEach(function(el){ el.checked = (el.value === d.sonnetEffort); });
+  // v64a：4 工具獨立 effort
+  const eff_d7El = document.getElementById('v64-eff-d7');
+  const eff_ootkEl = document.getElementById('v64-eff-ootk');
+  const eff_tarotEl = document.getElementById('v64-eff-tarot');
+  const eff_fuEl = document.getElementById('v64-eff-followup');
+  if (eff_d7El) eff_d7El.value = (typeof d.sonnetEffort_d7 === 'string') ? d.sonnetEffort_d7 : 'high';
+  if (eff_ootkEl) eff_ootkEl.value = (typeof d.sonnetEffort_ootk === 'string') ? d.sonnetEffort_ootk : 'high';
+  if (eff_tarotEl) eff_tarotEl.value = (typeof d.sonnetEffort_tarot === 'string') ? d.sonnetEffort_tarot : 'medium';
+  if (eff_fuEl) eff_fuEl.value = (typeof d.sonnetEffort_followup === 'string') ? d.sonnetEffort_followup : 'medium';
+  // v64b：證據深度模組（預設全關）
+  const ledgerEl = document.getElementById('v64-evidence-ledger');
+  const conflictEl = document.getElementById('v64-conflict-resolution');
+  const timeEl = document.getElementById('v64-time-scale');
+  const photoEl = document.getElementById('v64-photo-auxiliary');
+  if (ledgerEl) ledgerEl.checked = !!d.evidenceLedger;
+  if (conflictEl) conflictEl.checked = !!d.conflictResolution;
+  if (timeEl) timeEl.checked = !!d.timeScaleStrict;
+  if (photoEl) photoEl.checked = !!d.photoAuxiliary;
   toast('已恢復預設（記得按儲存）');
 }
 
