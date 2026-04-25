@@ -2770,7 +2770,8 @@ enhanceTarot = function(tarot) {
       '.ootk-shuffle-card{position:absolute;top:50%;left:50%;width:36px;height:54px;margin-left:-18px;margin-top:-27px;background:linear-gradient(135deg,#3a2a10,#1a1208);border:1px solid rgba(201,168,76,.4);border-radius:3px;animation:ootkShuffleSpin 1.6s ease-in-out;animation-fill-mode:both;box-shadow:0 2px 6px rgba(0,0,0,.5)}',
       '@keyframes ootkShuffleSpin{0%{transform:translate(0,0) rotate(0deg);opacity:0}10%{opacity:1}50%{transform:translate(calc(cos(calc(var(--i)*15deg))*60px),calc(sin(calc(var(--i)*15deg))*60px)) rotate(calc(var(--i)*15deg))}100%{transform:translate(0,0) rotate(0deg);opacity:.6}}',
       // v63 CSS marker: ═══ v63 飛卡 ═══
-      '.ootk-fly-card-v63{position:absolute;width:18px;height:28px;background:linear-gradient(135deg,#5a4220,#2a1d08);border:1px solid rgba(201,168,76,.5);border-radius:2px;transition:all .42s cubic-bezier(.4,.1,.3,1);opacity:.95;z-index:5;pointer-events:none}',
+      '.ootk-fly-card-v63{position:absolute;width:20px;height:30px;background:linear-gradient(135deg,#5a4220,#2a1d08);border:1px solid rgba(201,168,76,.5);border-radius:2px;transition:all .45s cubic-bezier(.4,.1,.3,1);opacity:.95;z-index:5;pointer-events:none;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.5)}',
+      '.ootk-fly-card-v63.with-img{box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 8px rgba(201,168,76,.3)}',
       '.ootk-fly-card-v63.landed{opacity:.7;border-color:rgba(201,168,76,.3)}',
       // v63 CSS marker: ═══ v63 ③ Op1 YHVH 四元素堆 ═══
       '.ootk-op1-scene{position:relative;width:100%;max-width:380px;min-height:260px;margin:0 auto}',
@@ -2790,43 +2791,63 @@ enhanceTarot = function(tarot) {
       '@keyframes ootkV63Pulse{0%,100%{box-shadow:0 0 24px rgba(201,168,76,.4)}50%{box-shadow:0 0 48px rgba(201,168,76,.8)}}',
       // v63 CSS marker: ═══ v63 ③ Op2 12 宮位 ═══
       '.ootk-op2-scene{padding:1rem 0;display:flex;justify-content:center}',
-      '.ootk-op2-wheel{position:relative;width:260px;height:260px;border-radius:50%;border:1px solid rgba(96,165,250,.15);background:radial-gradient(circle at center,rgba(96,165,250,.04) 0%,transparent 70%)}',
-      '.ootk-op2-center{position:absolute;top:50%;left:50%;width:46px;height:46px;margin-left:-23px;margin-top:-23px;border-radius:50%;background:linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.08));border:1px solid rgba(201,168,76,.5);display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.62rem;font-weight:700;letter-spacing:1px}',
-      '.ootk-op2-house{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(96,165,250,.04);border:1px solid rgba(96,165,250,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.55rem;color:rgba(96,165,250,.5);transition:all .4s ease}',
-      '.ootk-op2-house-num{font-size:.68rem;font-weight:700;color:rgba(96,165,250,.8)}',
-      '.ootk-op2-house-desc{font-size:.5rem;opacity:.8;margin-top:1px}',
-      '.ootk-op2-house-count{font-size:.5rem;color:rgba(255,255,255,.5);margin-top:1px;font-weight:600}',
-      '.ootk-op2-house.flash{background:rgba(96,165,250,.18);border-color:rgba(96,165,250,.5)}',
-      '.ootk-op2-house.spotlight{box-shadow:0 0 18px rgba(96,165,250,.5);border-color:rgba(96,165,250,.7);background:rgba(96,165,250,.15);transform:scale(1.12)}',
-      '.ootk-op2-house.found{box-shadow:0 0 32px rgba(201,168,76,.7);border-color:var(--c-gold);background:rgba(201,168,76,.18);transform:scale(1.25);z-index:3;animation:ootkV63Pulse 1.4s ease-in-out 2}',
-      '.ootk-op2-house.found .ootk-op2-house-num,.ootk-op2-house.found .ootk-op2-house-desc{color:var(--c-gold)}',
-      '.ootk-op2-house.dimmed{opacity:.25;transform:scale(.9)}',
+      '.ootk-op2-wheel{position:relative;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at center,rgba(96,165,250,.06) 0%,rgba(96,165,250,.02) 50%,transparent 80%);box-shadow:0 0 40px rgba(96,165,250,.08),inset 0 0 30px rgba(0,0,0,.4)}',
+      '.ootk-op2-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}',
+      '.ootk-op2-ring-outer{fill:none;stroke:rgba(96,165,250,.25);stroke-width:1.5}',
+      '.ootk-op2-ring-inner{fill:rgba(0,0,0,.3);stroke:rgba(201,168,76,.3);stroke-width:1}',
+      '.ootk-op2-spoke{stroke:rgba(96,165,250,.18);stroke-width:1;transition:stroke .6s ease}',
+      '.ootk-op2-spoke.lit{stroke:rgba(201,168,76,.7);stroke-width:1.5}',
+      '.ootk-op2-axis-lbl{fill:rgba(201,168,76,.6);font-size:9px;font-weight:600;letter-spacing:1px;font-family:serif}',
+      '.ootk-op2-center{position:absolute;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(201,168,76,.4),rgba(201,168,76,.1));border:1.5px solid var(--c-gold);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(201,168,76,.4),inset 0 0 12px rgba(0,0,0,.4);z-index:5}',
+      '.ootk-op2-center-inner{font-size:.66rem;font-weight:700;color:var(--c-gold);letter-spacing:2px;text-shadow:0 1px 2px rgba(0,0,0,.6)}',
+      '.ootk-op2-house{position:absolute;border-radius:50%;background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(96,165,250,.6);transition:all .4s ease;z-index:3}',
+      '.ootk-op2-house-num{font-size:.7rem;font-weight:700;color:rgba(96,165,250,.95);line-height:1}',
+      '.ootk-op2-house-desc{font-size:.48rem;opacity:.7;margin-top:1px;letter-spacing:.3px}',
+      '.ootk-op2-house-count{font-size:.5rem;color:rgba(255,255,255,.55);margin-top:1px;font-weight:700}',
+      '.ootk-op2-house.flash{background:rgba(96,165,250,.22);border-color:rgba(96,165,250,.7);box-shadow:0 0 14px rgba(96,165,250,.4)}',
+      '.ootk-op2-house.spotlight{box-shadow:0 0 22px rgba(96,165,250,.55);border-color:rgba(96,165,250,.8);background:rgba(96,165,250,.18);transform:scale(1.15);z-index:4}',
+      '.ootk-op2-house.found{box-shadow:0 0 36px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.25),rgba(201,168,76,.1));transform:scale(1.3);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op2-house.found .ootk-op2-house-num,.ootk-op2-house.found .ootk-op2-house-desc,.ootk-op2-house.found .ootk-op2-house-count{color:var(--c-gold)}',
+      '.ootk-op2-house.dimmed{opacity:.25;transform:scale(.88)}',
+      '.ootk-op2-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:#1a1208}',
+      '.ootk-op2-fly img{width:100%;height:100%;object-fit:cover;display:block}',
       // v63 CSS marker: ═══ v63 ③ Op3 12 星座 ═══
       '.ootk-op3-scene{padding:1rem 0;display:flex;justify-content:center}',
-      '.ootk-op3-zodiac{position:relative;width:260px;height:260px;border-radius:50%;border:1px solid rgba(168,85,247,.12);background:radial-gradient(circle at center,rgba(168,85,247,.04) 0%,transparent 70%)}',
-      '.ootk-op3-trump{position:absolute;top:50%;left:50%;width:120px;margin-left:-60px;margin-top:-30px;text-align:center;opacity:0;transform:scale(.8);transition:all .8s ease}',
+      '.ootk-op3-zodiac{position:relative;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at center,rgba(168,85,247,.06) 0%,rgba(168,85,247,.02) 50%,transparent 80%);box-shadow:0 0 40px rgba(168,85,247,.08),inset 0 0 30px rgba(0,0,0,.4)}',
+      '.ootk-op3-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}',
+      '.ootk-op3-ring-outer{fill:none;stroke:rgba(168,85,247,.25);stroke-width:1.5}',
+      '.ootk-op3-ring-inner{fill:none;stroke:rgba(168,85,247,.18);stroke-width:1}',
+      '.ootk-op3-spoke{stroke:rgba(168,85,247,.15);stroke-width:1;transition:stroke .6s ease}',
+      '.ootk-op3-spoke.lit{stroke:rgba(201,168,76,.7);stroke-width:1.5}',
+      '.ootk-op3-trump{position:absolute;top:50%;left:50%;width:140px;margin-left:-70px;margin-top:-30px;text-align:center;opacity:0;transform:scale(.8);transition:all .8s ease;z-index:5}',
       '.ootk-op3-trump.show{opacity:1;transform:scale(1)}',
-      '.ootk-op3-trump-label{font-size:.6rem;color:var(--c-text-dim);letter-spacing:2px;margin-bottom:.2rem}',
-      '.ootk-op3-trump-name{font-size:.95rem;font-weight:700;color:var(--c-gold);letter-spacing:1px}',
-      '.ootk-op3-sign{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid rgba(168,85,247,.18);background:rgba(168,85,247,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(168,85,247,.5);opacity:0;transform:scale(.5);transition:all .4s cubic-bezier(.34,1.56,.64,1)}',
+      '.ootk-op3-trump-label{font-size:.6rem;color:var(--c-text-dim);letter-spacing:2px;margin-bottom:.3rem}',
+      '.ootk-op3-trump-name{font-size:1rem;font-weight:700;color:var(--c-gold);letter-spacing:1px;text-shadow:0 0 12px rgba(201,168,76,.5)}',
+      '.ootk-op3-sign{position:absolute;border-radius:50%;border:1px solid rgba(168,85,247,.25);background:rgba(168,85,247,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(168,85,247,.6);opacity:0;transform:scale(.5);transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:3}',
       '.ootk-op3-sign.show{opacity:1;transform:scale(1)}',
-      '.ootk-op3-sign-icon{font-size:.92rem;font-weight:700}',
-      '.ootk-op3-sign-name{font-size:.5rem;margin-top:1px}',
-      '.ootk-op3-sign.spotlight{box-shadow:0 0 18px rgba(168,85,247,.5);border-color:rgba(168,85,247,.7);background:rgba(168,85,247,.18);transform:scale(1.18);color:rgba(168,85,247,1)}',
-      '.ootk-op3-sign.found{box-shadow:0 0 32px rgba(201,168,76,.7);border-color:var(--c-gold);background:rgba(201,168,76,.2);transform:scale(1.3);color:var(--c-gold);z-index:3;animation:ootkV63Pulse 1.4s ease-in-out 2}',
-      '.ootk-op3-sign.dimmed{opacity:.25;transform:scale(.9)}',
+      '.ootk-op3-sign-icon{font-size:.95rem;font-weight:700;line-height:1}',
+      '.ootk-op3-sign-name{font-size:.46rem;margin-top:1px;opacity:.85;letter-spacing:.3px}',
+      '.ootk-op3-sign.flash{background:rgba(168,85,247,.22);border-color:rgba(168,85,247,.7);box-shadow:0 0 14px rgba(168,85,247,.4)}',
+      '.ootk-op3-sign.spotlight{box-shadow:0 0 22px rgba(168,85,247,.55);border-color:rgba(168,85,247,.85);background:rgba(168,85,247,.18);transform:scale(1.18);color:rgba(168,85,247,1);z-index:4}',
+      '.ootk-op3-sign.found{box-shadow:0 0 36px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.25),rgba(201,168,76,.1));color:var(--c-gold);transform:scale(1.35);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op3-sign.dimmed{opacity:.25;transform:scale(.88)}',
+      '.ootk-op3-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:#1a1208}',
+      '.ootk-op3-fly img{width:100%;height:100%;object-fit:cover;display:block}',
       // v63 CSS marker: ═══ v63 ③ Op4 Sig 居中 + 36 環繞（最正統 Book T）═══
       '.ootk-op4-scene{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}',
       '.ootk-op4-table{position:relative;width:320px;height:320px;border-radius:50%;background:url(\'/img/ootk/decan-ring-bg.png\') center/cover no-repeat;box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 0 60px rgba(0,0,0,.4)}',
       '.ootk-op4-bg{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at center,transparent 35%,rgba(0,0,0,.5) 100%);pointer-events:none}',
-      '.ootk-op4-sig{position:absolute;top:50%;left:50%;width:78px;height:118px;margin-left:-39px;margin-top:-59px;border-radius:6px;background:linear-gradient(135deg,#3a2a10,#1a1208);border:2px solid var(--c-gold);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .3rem;box-shadow:0 0 32px rgba(201,168,76,.6),0 4px 16px rgba(0,0,0,.6);opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(0deg);transition:all 1s cubic-bezier(.34,1.56,.64,1);left:50%;top:50%;transform-origin:center;z-index:3}',
-      '.ootk-op4-sig.show{opacity:1;transform:translate(0,0) scale(1)}',
-      '.ootk-op4-sig{transform:scale(.5)}',
-      '.ootk-op4-sig.show{transform:scale(1);box-shadow:0 0 36px rgba(201,168,76,.7),0 0 12px rgba(201,168,76,.5)}',
-      '.ootk-op4-sig-name{font-size:.68rem;color:var(--c-gold);font-weight:700;text-align:center;line-height:1.2;letter-spacing:.5px}',
-      '.ootk-op4-sig-label{font-size:.5rem;color:var(--c-text-dim);letter-spacing:2px;margin-top:.3rem}',
-      '.ootk-op4-ring-card{position:absolute;width:14px;height:22px;background:linear-gradient(135deg,#5a4220,#2a1d08);border:1px solid rgba(201,168,76,.4);border-radius:2px;opacity:0;transition:opacity .5s ease,transform .8s cubic-bezier(.34,1.56,.64,1);transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.4);z-index:2}',
-      '.ootk-op4-ring-card.show{opacity:.85}',
+      // ─── Op4 Sig 居中（顯示真實牌照）───
+      '.ootk-op4-sig{position:absolute;top:50%;left:50%;width:78px;height:118px;margin-left:-39px;margin-top:-59px;border-radius:6px;border:2px solid var(--c-gold);overflow:hidden;box-shadow:0 0 32px rgba(201,168,76,.6),0 4px 16px rgba(0,0,0,.6);opacity:0;transform:scale(.5);transition:opacity 1s ease,transform 1s cubic-bezier(.34,1.56,.64,1),box-shadow 1s ease;z-index:5}',
+      '.ootk-op4-sig.show{opacity:1;transform:scale(1);box-shadow:0 0 48px rgba(201,168,76,.85),0 0 16px rgba(201,168,76,.6)}',
+      '.ootk-op4-sig-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:4px;display:block}',
+      '.ootk-op4-sig-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.85) 100%);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:.4rem .2rem;border-radius:4px}',
+      '.ootk-op4-sig-name{font-size:.62rem;color:var(--c-gold);font-weight:700;text-align:center;line-height:1.15;letter-spacing:.3px;text-shadow:0 1px 2px rgba(0,0,0,.9)}',
+      '.ootk-op4-sig-label{font-size:.42rem;color:rgba(255,255,255,.6);letter-spacing:2px;margin-top:.15rem;text-shadow:0 1px 2px rgba(0,0,0,.9)}',
+      // ─── Op4 環繞 36 張牌（顯示真實牌照）───
+      '.ootk-op4-ring-card{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.3);border-radius:2px;overflow:hidden;opacity:0;transition:opacity .5s ease;transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.5);z-index:2;background:linear-gradient(135deg,#3a2a10,#1a1208)}',
+      '.ootk-op4-ring-card.show{opacity:.95}',
+      '.ootk-op4-ring-card img{width:100%;height:100%;object-fit:cover;display:block}',
       '.ootk-op4-decan-info{margin-top:1rem;padding:.6rem 1rem;border-radius:8px;background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.2);text-align:center;opacity:0;transform:translateY(8px);transition:all .6s ease;max-width:280px}',
       '.ootk-op4-decan-info.show{opacity:1;transform:translateY(0)}',
       '.ootk-op4-decan-label{font-size:.62rem;color:var(--c-text-dim);letter-spacing:2px;margin-bottom:.2rem}',
@@ -2838,14 +2859,23 @@ enhanceTarot = function(tarot) {
       '.ootk-op5-tree-bg{position:absolute;inset:0;background:url(\'/img/ootk/tree-of-life.png\') center/contain no-repeat;opacity:.18;pointer-events:none}',
       '.ootk-op5-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}',
       '.ootk-op5-path{stroke:rgba(34,197,94,.12);stroke-width:1.2;fill:none;transition:stroke 1s ease}',
-      '.ootk-op5-path.lit{stroke:rgba(201,168,76,.4)}',
+      '.ootk-op5-path.lit{stroke:rgba(201,168,76,.4);stroke-width:1.4}',
+      '.ootk-op5-path.gold-lit{stroke:rgba(201,168,76,.95);stroke-width:2;filter:drop-shadow(0 0 4px rgba(201,168,76,.6))}',
       '.ootk-op5-node{position:absolute;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at center,rgba(34,197,94,.15) 0%,rgba(34,197,94,.04) 60%,transparent 100%);border:1.5px solid rgba(34,197,94,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(34,197,94,.5);opacity:0;transform:scale(.5);transition:all .5s cubic-bezier(.34,1.56,.64,1);z-index:2}',
       '.ootk-op5-node.show{opacity:1;transform:scale(1)}',
       '.ootk-op5-node-num{font-size:.62rem;font-weight:700}',
       '.ootk-op5-node-name{font-size:.45rem;opacity:.7;margin-top:-1px}',
+      '.ootk-op5-node.flash{background:radial-gradient(circle at center,rgba(34,197,94,.35),rgba(34,197,94,.1));box-shadow:0 0 14px rgba(34,197,94,.5);border-color:rgba(34,197,94,.7)}',
       '.ootk-op5-node.spotlight{box-shadow:0 0 18px rgba(34,197,94,.5);border-color:rgba(34,197,94,.7);transform:scale(1.18)}',
-      '.ootk-op5-node.found{box-shadow:0 0 32px rgba(201,168,76,.8);border-color:var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.3) 0%,rgba(201,168,76,.1) 60%,transparent 100%);color:var(--c-gold);transform:scale(1.4);z-index:3;animation:ootkV63Pulse 1.4s ease-in-out 2}',
-      '.ootk-op5-node.dimmed{opacity:.2;transform:scale(.85)}',
+      '.ootk-op5-node.found{box-shadow:0 0 32px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.3) 0%,rgba(201,168,76,.1) 60%,transparent 100%);color:var(--c-gold);transform:scale(1.4);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op5-node.dimmed{opacity:.25;transform:scale(.85)}',
+      '.ootk-op5-fly{position:absolute;width:18px;height:28px;border:1px solid rgba(201,168,76,.6);border-radius:2px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.5),0 0 8px rgba(201,168,76,.3);z-index:7;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:#1a1208}',
+      '.ootk-op5-fly img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.ootk-op5-sig-card{position:absolute;top:50%;left:50%;width:52px;height:78px;margin-left:-26px;margin-top:-39px;border-radius:5px;border:2px solid var(--c-gold);overflow:hidden;opacity:0;transform:scale(.4);transition:opacity .8s ease,transform .8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 24px rgba(201,168,76,.6),0 4px 12px rgba(0,0,0,.7);z-index:8;background:#1a1208}',
+      '.ootk-op5-sig-card.show{opacity:1;transform:scale(1)}',
+      '.ootk-op5-sig-card img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.ootk-op5-sig-overlay{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.85) 100%);padding:.25rem .15rem;text-align:center}',
+      '.ootk-op5-sig-name{font-size:.5rem;color:var(--c-gold);font-weight:700;letter-spacing:.3px;text-shadow:0 1px 2px #000}',
       // v63 CSS marker: ═══ v63 ⑤ Counting Story 路徑 ═══
       '.ootk-counting-scene{padding:1rem 0;display:flex;flex-direction:column;align-items:center}',
       '.ootk-counting-track{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.3rem;max-width:420px;margin-bottom:1rem}',
@@ -2893,7 +2923,15 @@ enhanceTarot = function(tarot) {
       '.ootk-pairing-note.show{opacity:.85;transform:translateY(0)}',
       // v63 CSS marker: ═══ v63 響應式 ═══
       '@media (max-width:480px){.ootk-invoc-scroll{padding:50px 30px 40px;max-width:90%}.ootk-invoc-en{font-size:.7rem}.ootk-invoc-zh{font-size:.78rem}.ootk-op4-table{width:280px;height:280px}.ootk-op2-wheel,.ootk-op3-zodiac{width:240px;height:240px}}',
-      '@media(prefers-reduced-motion:reduce){.ootk-kc-flip,.ootk-kc-inner{animation:none!important;opacity:1;transform:none}.ootk-hcell,.ootk-znode,.ootk-seph{transition:none;opacity:1;transform:none}}'
+      // ═══ v63 ★ 共用：金光擴散圈 + 洗牌真實牌閃現 ═══
+      '.ootk-burst{position:absolute;width:160px;height:160px;border-radius:50%;border:2px solid rgba(201,168,76,.7);background:radial-gradient(circle,rgba(201,168,76,.2) 0%,transparent 70%);opacity:0;transform:scale(.3);animation:ootkBurstExpand 1.4s ease-out forwards;pointer-events:none;z-index:10}',
+      '.ootk-burst.inner{width:100px;height:100px;border-color:rgba(255,230,180,.9);background:radial-gradient(circle,rgba(255,230,180,.35) 0%,transparent 60%);animation-duration:1.1s}',
+      '@keyframes ootkBurstExpand{0%{opacity:0;transform:scale(.3)}20%{opacity:1}100%{opacity:0;transform:scale(2.4)}}',
+      '.ootk-shuffle-flash{position:absolute;top:50%;left:50%;width:60px;height:90px;margin-left:-30px;margin-top:-45px;border-radius:5px;border:1.5px solid rgba(201,168,76,.7);overflow:hidden;opacity:0;transform:scale(.4);transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.56,.64,1);z-index:7;box-shadow:0 0 20px rgba(201,168,76,.5),0 4px 10px rgba(0,0,0,.6);background:#1a1208}',
+      '.ootk-shuffle-flash img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.ootk-shuffle-flash.show{opacity:1;transform:scale(1)}',
+      '.ootk-shuffle-flash.out{opacity:0;transform:scale(1.4)}',
+      '@media(prefers-reduced-motion:reduce){.ootk-kc-flip,.ootk-kc-inner{animation:none!important;opacity:1;transform:none}.ootk-hcell,.ootk-znode,.ootk-seph{transition:none;opacity:1;transform:none}.ootk-burst{display:none}}'
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -3291,7 +3329,29 @@ enhanceTarot = function(tarot) {
     }
 
     // ════════════════════════════════════════════════════════════════
-    // ② 洗牌儀式 — 78 張螺旋洗牌
+    // ★ 共用：找到 Sig 那刻的金光擴散特效
+    // ════════════════════════════════════════════════════════════════
+    function _emitGoldBurst(parentEl, targetEl) {
+      if (!parentEl || !targetEl) return;
+      var pBox = parentEl.getBoundingClientRect();
+      var tBox = targetEl.getBoundingClientRect();
+      var burst = document.createElement('div');
+      burst.className = 'ootk-burst';
+      burst.style.left = (tBox.left - pBox.left + tBox.width / 2 - 80) + 'px';
+      burst.style.top = (tBox.top - pBox.top + tBox.height / 2 - 80) + 'px';
+      parentEl.appendChild(burst);
+      setTimeout(function() { burst.remove(); }, 1400);
+      // 多一道內圈光暈
+      var burst2 = document.createElement('div');
+      burst2.className = 'ootk-burst inner';
+      burst2.style.left = (tBox.left - pBox.left + tBox.width / 2 - 50) + 'px';
+      burst2.style.top = (tBox.top - pBox.top + tBox.height / 2 - 50) + 'px';
+      parentEl.appendChild(burst2);
+      setTimeout(function() { burst2.remove(); }, 1100);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ② 洗牌儀式 — 78 張螺旋洗牌 + 真實牌照閃現
     // ════════════════════════════════════════════════════════════════
     function ritualShuffle(stage, caption, onDone) {
       caption.textContent = '🃏 洗牌——將 78 張牌徹底打亂，請靜心默念你的問題';
@@ -3299,7 +3359,7 @@ enhanceTarot = function(tarot) {
       box.className = 'ootk-shuffle-box';
       stage.appendChild(box);
 
-      // 生成 24 張視覺卡（不必畫 78 張，過密反而看不清）
+      // 生成 24 張卡背螺旋（純粹視覺）
       for (var i = 0; i < 24; i++) {
         var c = document.createElement('div');
         c.className = 'ootk-shuffle-card';
@@ -3308,14 +3368,43 @@ enhanceTarot = function(tarot) {
         box.appendChild(c);
       }
 
-      // 1.8 秒後淡出
+      // 隨機抽 6 張真實牌從中央閃過、依序放大消失（強化「78 張真實在洗」感）
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+      if (visualDeck.length) {
+        var FLASH_COUNT = 6;
+        var picked = [];
+        for (var p = 0; p < FLASH_COUNT; p++) {
+          var idx = Math.floor(Math.random() * visualDeck.length);
+          picked.push(visualDeck[idx]);
+        }
+        picked.forEach(function(card, fi) {
+          setTimeout(function() {
+            var imgUrl = getImg(card);
+            if (!imgUrl) return;
+            var flash = document.createElement('div');
+            flash.className = 'ootk-shuffle-flash';
+            flash.innerHTML = '<img src="' + imgUrl + '" />';
+            box.appendChild(flash);
+            requestAnimationFrame(function() { flash.classList.add('show'); });
+            setTimeout(function() { flash.classList.add('out'); }, 380);
+            setTimeout(function() { flash.remove(); }, 750);
+          }, 200 + fi * 280);
+        });
+      }
+
+      // 2.4 秒後淡出（延長以容納 6 張閃現）
       setTimeout(function() {
         box.classList.add('done');
         setTimeout(function() {
           box.remove();
           onDone();
         }, 600);
-      }, 1800);
+      }, 2400);
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -3377,6 +3466,12 @@ enhanceTarot = function(tarot) {
       var flown = 0;
       var deckEl = scene.querySelector('#ootk-op1-deck');
       var countEl = scene.querySelector('#ootk-op1-count');
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
 
       function flyOne() {
         if (flown >= dist.length) {
@@ -3392,6 +3487,15 @@ enhanceTarot = function(tarot) {
         // 視覺：飛卡
         var fly = document.createElement('div');
         fly.className = 'ootk-fly-card-v63';
+        // 前 12 張顯示真實牌照（增加儀式感），其後用卡背省效能
+        if (flown <= 12 && visualDeck.length) {
+          var card = visualDeck[(flown * 13) % visualDeck.length];
+          var imgUrl = getImg(card);
+          if (imgUrl) {
+            fly.innerHTML = '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:1px" />';
+            fly.classList.add('with-img');
+          }
+        }
         var dRect = deckEl.getBoundingClientRect();
         var sRect = scene.getBoundingClientRect();
         fly.style.left = (dRect.left - sRect.left + 12) + 'px';
@@ -3404,11 +3508,11 @@ enhanceTarot = function(tarot) {
           fly.style.left = (stRect.left - sRect.left + 8) + 'px';
           fly.style.top = (stRect.top - sRect.top - counts[k] * 1.2) + 'px';
           fly.style.transform = 'rotate(' + (Math.random() * 4 - 2) + 'deg)';
-          fly.style.opacity = '.85';
+          fly.style.opacity = '.9';
         });
         setTimeout(function() { fly.classList.add('landed'); }, 380);
 
-        var delay = flown < 8 ? 90 : flown < 30 ? 50 : flown < 60 ? 25 : 15;
+        var delay = flown < 8 ? 110 : flown < 30 ? 55 : flown < 60 ? 30 : 18;
         setTimeout(flyOne, delay);
       }
 
@@ -3428,6 +3532,11 @@ enhanceTarot = function(tarot) {
                 if (p.dataset.el === activeKey) p.classList.add('found');
                 else p.classList.add('dimmed');
               });
+              // 金光擴散
+              setTimeout(function() {
+                var foundEl = scene.querySelector('.ootk-op1-pile.found');
+                if (foundEl) _emitGoldBurst(scene, foundEl);
+              }, 100);
               caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">' + (PILE_ZH[activeKey] || activeKey) + '</b>';
               setTimeout(onDone, 1400);
             }, 200);
@@ -3455,25 +3564,60 @@ enhanceTarot = function(tarot) {
 
       var op = results.op2;
       var activeH = (op.activeHouse || 1) - 1;
-      var dist = op.houseDistribution || [];
 
       var HOUSE_LBL = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
       var HOUSE_DESC = ['自我','財帛','兄弟','田宅','子女','奴僕','夫妻','疾厄','遷移','官祿','福德','玄秘'];
 
+      // ── 占星天宮圖 12 宮位排列(最正統) ──
+      // 第 1 宮 ASC 在左方下緣(195°),逆時針 +30° 一格
+      // 第 4 宮 IC = 285° = 正下方
+      // 第 7 宮 DSC = 15° = 右方略下
+      // 第 10 宮 MC = 105° = 正上方
+      // CSS 座標 y 軸向下,所以 cy = center - r * sin
+      var WHEEL_SIZE = 280;
+      var CENTER = WHEEL_SIZE / 2;
+      var HOUSE_R = 110;
+      var HOUSE_BOX = 48;
+      var INNER_R = 70;
+      var OUTER_R = 130;
+
+      function angOfHouse(hi) {
+        return 195 + hi * 30;
+      }
+
       var scene = document.createElement('div');
       scene.className = 'ootk-op2-scene';
-      var html = '<div class="ootk-op2-wheel" id="ootk-op2-wheel">';
-      html += '<div class="ootk-op2-center">SIG</div>';
-      // 12 宮放射
+
+      var html = '<div class="ootk-op2-wheel" id="ootk-op2-wheel" style="width:' + WHEEL_SIZE + 'px;height:' + WHEEL_SIZE + 'px">';
+
+      html += '<svg class="ootk-op2-svg" viewBox="0 0 ' + WHEEL_SIZE + ' ' + WHEEL_SIZE + '">';
+      html += '<circle cx="' + CENTER + '" cy="' + CENTER + '" r="' + OUTER_R + '" class="ootk-op2-ring-outer" />';
+      html += '<circle cx="' + CENTER + '" cy="' + CENTER + '" r="' + INNER_R + '" class="ootk-op2-ring-inner" />';
+      for (var li = 0; li < 12; li++) {
+        var aDeg = 180 + li * 30;
+        var aRad = aDeg * Math.PI / 180;
+        var x1 = CENTER + INNER_R * Math.cos(aRad);
+        var y1 = CENTER - INNER_R * Math.sin(aRad);
+        var x2 = CENTER + OUTER_R * Math.cos(aRad);
+        var y2 = CENTER - OUTER_R * Math.sin(aRad);
+        html += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" class="ootk-op2-spoke" data-i="' + li + '" />';
+      }
+      html += '<text x="' + (CENTER - OUTER_R - 6) + '" y="' + (CENTER + 4) + '" class="ootk-op2-axis-lbl" text-anchor="end">ASC</text>';
+      html += '<text x="' + (CENTER + OUTER_R + 6) + '" y="' + (CENTER + 4) + '" class="ootk-op2-axis-lbl">DSC</text>';
+      html += '<text x="' + CENTER + '" y="' + (CENTER - OUTER_R - 4) + '" class="ootk-op2-axis-lbl" text-anchor="middle">MC</text>';
+      html += '<text x="' + CENTER + '" y="' + (CENTER + OUTER_R + 14) + '" class="ootk-op2-axis-lbl" text-anchor="middle">IC</text>';
+      html += '</svg>';
+
+      html += '<div class="ootk-op2-center" id="ootk-op2-center" style="left:' + (CENTER - 30) + 'px;top:' + (CENTER - 30) + 'px">';
+      html += '  <div class="ootk-op2-center-inner">SIG</div>';
+      html += '</div>';
+
       for (var hi = 0; hi < 12; hi++) {
-        var ang = (hi * 30 - 90); // 第 1 宮在 9 點鐘方向（左）
-        // 占星傳統：第 1 宮從上升點開始（東方/左），逆時針排
-        ang = (180 + hi * 30) % 360;
-        var rad = ang * Math.PI / 180;
-        var r = 100;
-        var cx = 130 + r * Math.cos(rad) - 26;
-        var cy = 130 + r * Math.sin(rad) - 26;
-        html += '<div class="ootk-op2-house" data-idx="' + hi + '" style="left:' + cx + 'px;top:' + cy + 'px">';
+        var deg = angOfHouse(hi);
+        var rad = deg * Math.PI / 180;
+        var cx = CENTER + HOUSE_R * Math.cos(rad) - HOUSE_BOX / 2;
+        var cy = CENTER - HOUSE_R * Math.sin(rad) - HOUSE_BOX / 2;
+        html += '<div class="ootk-op2-house" data-idx="' + hi + '" style="left:' + cx + 'px;top:' + cy + 'px;width:' + HOUSE_BOX + 'px;height:' + HOUSE_BOX + 'px">';
         html += '  <div class="ootk-op2-house-num">' + HOUSE_LBL[hi] + '</div>';
         html += '  <div class="ootk-op2-house-desc">' + HOUSE_DESC[hi] + '</div>';
         html += '  <div class="ootk-op2-house-count" id="op2-cnt-' + hi + '">0</div>';
@@ -3483,12 +3627,19 @@ enhanceTarot = function(tarot) {
       scene.innerHTML = html;
       stage.appendChild(scene);
 
-      // 發牌動畫：第1張→第1宮、第2張→第2宮 ... 第13張→第1宮 ... 循環
       var counts = new Array(12).fill(0);
       var dealt = 0;
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+
       function dealNext() {
         if (dealt >= 78) {
-          setTimeout(highlightActive, 300);
+          setTimeout(highlightActive, 400);
           return;
         }
         var targetIdx = dealt % 12;
@@ -3496,14 +3647,40 @@ enhanceTarot = function(tarot) {
         dealt++;
         scene.querySelector('#op2-cnt-' + targetIdx).textContent = String(counts[targetIdx]);
 
-        // 卡飛動畫
         var house = scene.querySelector('.ootk-op2-house[data-idx="' + targetIdx + '"]');
         if (house) {
           house.classList.add('flash');
-          setTimeout(function() { house.classList.remove('flash'); }, 200);
+          setTimeout(function() { house.classList.remove('flash'); }, 220);
         }
 
-        var delay = dealt < 12 ? 130 : dealt < 36 ? 60 : 25;
+        // 持續飛卡(前段密集、後段降頻)
+        var flyTrigger = (dealt < 24 && dealt % 3 === 1) || (dealt >= 24 && dealt < 48 && dealt % 6 === 1) || (dealt >= 48 && dealt % 12 === 1);
+        if (flyTrigger && visualDeck.length) {
+          var card = visualDeck[(dealt * 7) % visualDeck.length];
+          var imgUrl = getImg(card);
+          if (imgUrl && house) {
+            var fly = document.createElement('div');
+            fly.className = 'ootk-op2-fly';
+            fly.innerHTML = '<img src="' + imgUrl + '" />';
+            var wheel = scene.querySelector('.ootk-op2-wheel');
+            var sceneRect = wheel.getBoundingClientRect();
+            fly.style.left = (CENTER - 11) + 'px';
+            fly.style.top = (CENTER - 17) + 'px';
+            wheel.appendChild(fly);
+            var hRect = house.getBoundingClientRect();
+            var targetX = hRect.left - sceneRect.left + (hRect.width / 2) - 11;
+            var targetY = hRect.top - sceneRect.top + (hRect.height / 2) - 17;
+            requestAnimationFrame(function() {
+              fly.style.left = targetX + 'px';
+              fly.style.top = targetY + 'px';
+              fly.style.opacity = '0';
+              fly.style.transform = 'scale(.35)';
+            });
+            setTimeout(function() { fly.remove(); }, 750);
+          }
+        }
+
+        var delay = dealt < 12 ? 140 : dealt < 36 ? 70 : 30;
         setTimeout(dealNext, delay);
       }
 
@@ -3511,7 +3688,7 @@ enhanceTarot = function(tarot) {
         caption.innerHTML = '🔍 尋找代表牌的宮位——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
 
         var houses = scene.querySelectorAll('.ootk-op2-house');
-        // 逐一聚光
+        var spokes = scene.querySelectorAll('.ootk-op2-spoke');
         var idx = 0;
         function spotlight() {
           houses.forEach(function(h) { h.classList.remove('spotlight'); });
@@ -3521,20 +3698,30 @@ enhanceTarot = function(tarot) {
               if (i === activeH) h.classList.add('found');
               else h.classList.add('dimmed');
             });
+            spokes.forEach(function(sp) {
+              var i = parseInt(sp.dataset.i);
+              if (i === activeH || i === (activeH + 1) % 12) sp.classList.add('lit');
+            });
+            // 金光擴散
+            setTimeout(function() {
+              var foundEl = scene.querySelector('.ootk-op2-house.found');
+              var wheel = scene.querySelector('.ootk-op2-wheel');
+              if (foundEl && wheel) _emitGoldBurst(wheel, foundEl);
+            }, 100);
             caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">第 ' + HOUSE_LBL[activeH] + ' 宮 · ' + HOUSE_DESC[activeH] + '</b>';
-            setTimeout(onDone, 1400);
+            setTimeout(onDone, 1600);
             return;
           }
           var h = scene.querySelector('.ootk-op2-house[data-idx="' + idx + '"]');
           if (h) h.classList.add('spotlight');
-          var stay = (idx === activeH) ? 700 : 200;
+          var stay = (idx === activeH) ? 800 : 220;
           idx++;
           setTimeout(spotlight, stay);
         }
-        setTimeout(spotlight, 300);
+        setTimeout(spotlight, 350);
       }
 
-      setTimeout(dealNext, 400);
+      setTimeout(dealNext, 500);
     }
 
     // ─── Op3 發牌：12 星座 ───
@@ -3544,23 +3731,47 @@ enhanceTarot = function(tarot) {
       var op = results.op3;
       var SIGN_NAMES = ['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'];
       var SIGN_ICONS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+      var SIGN_ELEMENTS = ['火','土','風','水','火','土','風','水','火','土','風','水'];
       var activeIdx = -1;
       for (var si = 0; si < 12; si++) {
         if (SIGN_NAMES[si] === op.activeSign) { activeIdx = si; break; }
       }
       if (activeIdx < 0) activeIdx = 0;
 
+      var WHEEL_SIZE = 280;
+      var CENTER = WHEEL_SIZE / 2;
+      var SIGN_R = 110;
+      var SIGN_BOX = 44;
+
       var scene = document.createElement('div');
       scene.className = 'ootk-op3-scene';
-      var html = '<div class="ootk-op3-zodiac" id="ootk-op3-zodiac">';
-      // 黃道圈
+      var html = '<div class="ootk-op3-zodiac" id="ootk-op3-zodiac" style="width:' + WHEEL_SIZE + 'px;height:' + WHEEL_SIZE + 'px">';
+
+      // SVG 黃道環
+      html += '<svg class="ootk-op3-svg" viewBox="0 0 ' + WHEEL_SIZE + ' ' + WHEEL_SIZE + '">';
+      html += '<circle cx="' + CENTER + '" cy="' + CENTER + '" r="130" class="ootk-op3-ring-outer" />';
+      html += '<circle cx="' + CENTER + '" cy="' + CENTER + '" r="86" class="ootk-op3-ring-inner" />';
+      // 12 條輻射線
+      for (var li = 0; li < 12; li++) {
+        var aDeg = -90 + li * 30 - 15; // 線在星座之間
+        var aRad = aDeg * Math.PI / 180;
+        var x1 = CENTER + 86 * Math.cos(aRad);
+        var y1 = CENTER + 86 * Math.sin(aRad);
+        var x2 = CENTER + 130 * Math.cos(aRad);
+        var y2 = CENTER + 130 * Math.sin(aRad);
+        html += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" class="ootk-op3-spoke" data-i="' + li + '" />';
+      }
+      html += '</svg>';
+
+      // 中央星座主牌區（會在最後浮現）
       html += '<div class="ootk-op3-trump" id="ootk-op3-trump"></div>';
+
+      // 12 星座圈（牡羊在頂、順時針排列符合占星傳統）
       for (var zi = 0; zi < 12; zi++) {
-        var ang = (zi * 30 - 90) * Math.PI / 180;
-        var r = 105;
-        var cx = 130 + r * Math.cos(ang) - 22;
-        var cy = 130 + r * Math.sin(ang) - 22;
-        html += '<div class="ootk-op3-sign" data-idx="' + zi + '" style="left:' + cx + 'px;top:' + cy + 'px">';
+        var ang = (-90 + zi * 30) * Math.PI / 180;
+        var cx = CENTER + SIGN_R * Math.cos(ang) - SIGN_BOX / 2;
+        var cy = CENTER + SIGN_R * Math.sin(ang) - SIGN_BOX / 2;
+        html += '<div class="ootk-op3-sign" data-idx="' + zi + '" data-el="' + SIGN_ELEMENTS[zi] + '" style="left:' + cx + 'px;top:' + cy + 'px;width:' + SIGN_BOX + 'px;height:' + SIGN_BOX + 'px">';
         html += '  <div class="ootk-op3-sign-icon">' + SIGN_ICONS[zi] + '</div>';
         html += '  <div class="ootk-op3-sign-name">' + SIGN_NAMES[zi] + '</div>';
         html += '</div>';
@@ -3569,23 +3780,74 @@ enhanceTarot = function(tarot) {
       scene.innerHTML = html;
       stage.appendChild(scene);
 
-      // 各星座漸進閃爍（模擬 GD 分配）
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+
+      // 第一階段：星座圈逐一浮現
       var signs = scene.querySelectorAll('.ootk-op3-sign');
       var idx = 0;
       function lightSign() {
         if (idx >= 12) {
-          setTimeout(highlightActive, 200);
+          setTimeout(dealCardsToSigns, 200);
           return;
         }
         signs[idx].classList.add('show');
         idx++;
-        setTimeout(lightSign, 90);
+        setTimeout(lightSign, 95);
+      }
+
+      // 第二階段：發牌（飛卡到各星座）
+      function dealCardsToSigns() {
+        caption.innerHTML = '♈ 發牌——按 Golden Dawn 對應，將 <b>78 張</b>分入十二星座';
+        var dealCount = 0;
+        var maxDeals = 36; // 視覺示意，不是實際 78 張全發
+        function flyCard() {
+          if (dealCount >= maxDeals) {
+            setTimeout(highlightActive, 400);
+            return;
+          }
+          var targetSignIdx = dealCount % 12;
+          var targetSign = scene.querySelector('.ootk-op3-sign[data-idx="' + targetSignIdx + '"]');
+          if (targetSign && visualDeck.length) {
+            var card = visualDeck[(dealCount * 11) % visualDeck.length];
+            var imgUrl = getImg(card);
+            if (imgUrl) {
+              var fly = document.createElement('div');
+              fly.className = 'ootk-op3-fly';
+              fly.innerHTML = '<img src="' + imgUrl + '" />';
+              var zodiac = scene.querySelector('.ootk-op3-zodiac');
+              fly.style.left = (CENTER - 11) + 'px';
+              fly.style.top = (CENTER - 17) + 'px';
+              zodiac.appendChild(fly);
+              var sRect = targetSign.getBoundingClientRect();
+              var zRect = zodiac.getBoundingClientRect();
+              var tx = sRect.left - zRect.left + sRect.width / 2 - 11;
+              var ty = sRect.top - zRect.top + sRect.height / 2 - 17;
+              requestAnimationFrame(function() {
+                fly.style.left = tx + 'px';
+                fly.style.top = ty + 'px';
+                fly.style.opacity = '0';
+                fly.style.transform = 'scale(.4)';
+              });
+              setTimeout(function() { fly.remove(); }, 700);
+              targetSign.classList.add('flash');
+              setTimeout(function() { targetSign.classList.remove('flash'); }, 250);
+            }
+          }
+          dealCount++;
+          setTimeout(flyCard, dealCount < 12 ? 130 : 70);
+        }
+        flyCard();
       }
 
       function highlightActive() {
         caption.innerHTML = '🔍 尋找代表牌的星座——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
 
-        // 從 0 度開始順時針掃過
+        var spokes = scene.querySelectorAll('.ootk-op3-spoke');
         var pos = 0;
         function sweep() {
           signs.forEach(function(s) { s.classList.remove('spotlight'); });
@@ -3594,24 +3856,35 @@ enhanceTarot = function(tarot) {
               if (i === activeIdx) s.classList.add('found');
               else s.classList.add('dimmed');
             });
-            caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">' + SIGN_ICONS[activeIdx] + ' ' + SIGN_NAMES[activeIdx] + '</b>';
-            // 對應大牌
+            spokes.forEach(function(sp) {
+              var i = parseInt(sp.dataset.i);
+              if (i === activeIdx || i === (activeIdx + 1) % 12) sp.classList.add('lit');
+            });
+            // 金光擴散
+            setTimeout(function() {
+              var foundEl = scene.querySelector('.ootk-op3-sign.found');
+              var zodiac = scene.querySelector('.ootk-op3-zodiac');
+              if (foundEl && zodiac) _emitGoldBurst(zodiac, foundEl);
+            }, 100);
+            // 對應大牌（中央浮現）
             if (op.signTrump) {
               setTimeout(function() {
                 var trumpDiv = scene.querySelector('#ootk-op3-trump');
-                trumpDiv.innerHTML = '<div class="ootk-op3-trump-label">星座主牌</div><div class="ootk-op3-trump-name">' + op.signTrump + '</div>';
+                trumpDiv.innerHTML =
+                  '<div class="ootk-op3-trump-label">星座主牌</div>' +
+                  '<div class="ootk-op3-trump-name">' + op.signTrump + '</div>';
                 trumpDiv.classList.add('show');
               }, 600);
             }
-            setTimeout(onDone, 1800);
+            setTimeout(onDone, 2000);
             return;
           }
           if (signs[pos]) signs[pos].classList.add('spotlight');
-          var stay = (pos === activeIdx) ? 600 : 130;
+          var stay = (pos === activeIdx) ? 700 : 150;
           pos++;
           setTimeout(sweep, stay);
         }
-        setTimeout(sweep, 250);
+        setTimeout(sweep, 300);
       }
 
       setTimeout(lightSign, 250);
@@ -3622,23 +3895,55 @@ enhanceTarot = function(tarot) {
       caption.innerHTML = '🔮 將代表牌取出居中——<b>三十六張緊隨其後形成環</b>（最正統 Book T）';
 
       var op = results.op4;
-      var ringCount = (op.activeCards ? op.activeCards.length - 1 : 36); // 扣掉中心 Sig
+      var activeCards = op.activeCards || [];
+      // activeCards[0] = Sig 居中，activeCards[1..36] = 環繞 36 張
+      var ringCards = activeCards.slice(1);
+      var ringCount = ringCards.length || 36;
+
+      // 取得牌照路徑的 helper
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') {
+          return window.getTarotCardImage(card);
+        }
+        return '';
+      }
+
+      // Sig 牌照
+      var sigCard = activeCards[0] || (results.significator ? { id: results.significator.id, n: results.significator.name } : null);
+      var sigImg = getImg(sigCard);
+      var sigName = (sigCard && (sigCard.n || sigCard.name)) || (results.significator ? results.significator.name : '代表牌');
 
       var scene = document.createElement('div');
       scene.className = 'ootk-op4-scene';
       var html = '<div class="ootk-op4-table" id="ootk-op4-table">';
       html += '  <div class="ootk-op4-bg"></div>';
+      // 中心 Significator（顯示真實牌照）
       html += '  <div class="ootk-op4-sig" id="ootk-op4-sig">';
-      html += '    <div class="ootk-op4-sig-name">' + (results.significator ? results.significator.name : '代表牌') + '</div>';
-      html += '    <div class="ootk-op4-sig-label">SIGNIFICATOR</div>';
+      if (sigImg) {
+        html += '    <img class="ootk-op4-sig-img" src="' + sigImg + '" alt="' + sigName + '" />';
+      }
+      html += '    <div class="ootk-op4-sig-overlay">';
+      html += '      <div class="ootk-op4-sig-name">' + sigName + '</div>';
+      html += '      <div class="ootk-op4-sig-label">SIGNIFICATOR</div>';
+      html += '    </div>';
       html += '  </div>';
-      // 36 張環繞位置（用 SVG 標記點）
-      var R = 130;
+      // 36 張環繞牌（顯示真實牌照）
+      var R = 132;
       for (var ri = 0; ri < ringCount; ri++) {
         var ang = (ri * 360 / ringCount - 90) * Math.PI / 180;
-        var cx = 160 + R * Math.cos(ang) - 8;
-        var cy = 160 + R * Math.sin(ang) - 12;
-        html += '<div class="ootk-op4-ring-card" data-idx="' + ri + '" style="left:' + cx + 'px;top:' + cy + 'px;transform:rotate(' + (ang * 180 / Math.PI + 90) + 'deg)"></div>';
+        var cx = 160 + R * Math.cos(ang) - 11;  // 卡寬 22 → 半 11
+        var cy = 160 + R * Math.sin(ang) - 17;  // 卡高 34 → 半 17
+        var rotateDeg = ang * 180 / Math.PI + 90;
+        var card = ringCards[ri];
+        var cardImg = getImg(card);
+        var isUp = card && card.isUp !== false;
+        var imgRotate = isUp ? 0 : 180;
+        html += '<div class="ootk-op4-ring-card" data-idx="' + ri + '" style="left:' + cx + 'px;top:' + cy + 'px;transform:rotate(' + rotateDeg + 'deg)">';
+        if (cardImg) {
+          html += '<img src="' + cardImg + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;transform:rotate(' + imgRotate + 'deg)" />';
+        }
+        html += '</div>';
       }
       html += '</div>';
 
@@ -3684,7 +3989,7 @@ enhanceTarot = function(tarot) {
       var activeIdx = SEPH_NAMES.indexOf(op.activeSephirah || '');
       if (activeIdx < 0) activeIdx = 9;
 
-      // 生命之樹位置（200x320）
+      // 生命之樹位置 (200x320)
       var SEPH_POS = [
         {x: 84, y: 16},   // 0 Kether (top center)
         {x: 142, y: 64},  // 1 Chokmah (right)
@@ -3697,17 +4002,39 @@ enhanceTarot = function(tarot) {
         {x: 84, y: 240},  // 8 Yesod
         {x: 84, y: 286}   // 9 Malkuth
       ];
+      // 22 條 paths(對應 Tarot 大牌 22 張)
       var TREE_LINES = [
         [0,1],[0,2],[0,5],[1,2],[1,3],[1,5],[2,4],[2,5],
         [3,4],[3,5],[3,6],[4,5],[4,7],[5,6],[5,7],[5,8],
         [6,7],[6,8],[7,8],[8,9]
       ];
+      // active 質點對應的相鄰 path index(從上面 line array)
+      function pathsOfNode(nodeIdx) {
+        var arr = [];
+        TREE_LINES.forEach(function(ln, i) {
+          if (ln[0] === nodeIdx || ln[1] === nodeIdx) arr.push(i);
+        });
+        return arr;
+      }
+
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+      var sigCard = (op.activeCards && op.activeCards.length) ? op.activeCards[0] : null;
+      if (!sigCard && results.significator) {
+        sigCard = (typeof TAROT !== 'undefined') ? TAROT.find(function(c) { return c.id === results.significator.id; }) : null;
+      }
+      var sigName = (sigCard && (sigCard.n || sigCard.name)) || (results.significator ? results.significator.name : '代表牌');
+      var sigImg = getImg(sigCard);
 
       var scene = document.createElement('div');
       scene.className = 'ootk-op5-scene';
       var html = '<div class="ootk-op5-tree" id="ootk-op5-tree">';
       html += '<div class="ootk-op5-tree-bg"></div>';
-      // SVG 路徑
+      // SVG paths
       html += '<svg class="ootk-op5-svg" viewBox="0 0 200 320">';
       TREE_LINES.forEach(function(ln, i) {
         var a = SEPH_POS[ln[0]], b = SEPH_POS[ln[1]];
@@ -3721,26 +4048,79 @@ enhanceTarot = function(tarot) {
         html += '<div class="ootk-op5-node-name">' + SEPH_NAMES[ti].substring(0, 4) + '</div>';
         html += '</div>';
       }
+      // 中央代表牌(Sig)──最後浮現
+      html += '<div class="ootk-op5-sig-card" id="ootk-op5-sig">';
+      if (sigImg) html += '<img src="' + sigImg + '" alt="' + sigName + '" />';
+      html += '<div class="ootk-op5-sig-overlay"><div class="ootk-op5-sig-name">' + sigName + '</div></div>';
+      html += '</div>';
       html += '</div>';
       scene.innerHTML = html;
       stage.appendChild(scene);
 
-      // 節點從上往下逐一亮
+      // 第一階段:節點從上往下逐一浮現
       var nodes = scene.querySelectorAll('.ootk-op5-node');
       var paths = scene.querySelectorAll('.ootk-op5-path');
       var idx = 0;
       function lightNode() {
         if (idx >= 10) {
-          setTimeout(function() { paths.forEach(function(p) { p.classList.add('lit'); }); setTimeout(highlightActive, 400); }, 200);
+          setTimeout(function() {
+            paths.forEach(function(p) { p.classList.add('lit'); });
+            setTimeout(dealCardsToSephirot, 500);
+          }, 200);
           return;
         }
         nodes[idx].classList.add('show');
         idx++;
-        setTimeout(lightNode, 110);
+        setTimeout(lightNode, 130);
+      }
+
+      // 第二階段:從中央發真實牌照到各質點
+      function dealCardsToSephirot() {
+        caption.innerHTML = '🌳 發牌——將 78 張依 Golden Dawn 對應分入十質點';
+        var dealCount = 0;
+        var maxDeals = 30;
+        var tree = scene.querySelector('.ootk-op5-tree');
+        function flyCard() {
+          if (dealCount >= maxDeals) {
+            setTimeout(highlightActive, 400);
+            return;
+          }
+          var nodeIdx = dealCount % 10;
+          var node = scene.querySelector('.ootk-op5-node[data-idx="' + nodeIdx + '"]');
+          if (node && visualDeck.length) {
+            var card = visualDeck[(dealCount * 13) % visualDeck.length];
+            var imgUrl = getImg(card);
+            if (imgUrl) {
+              var fly = document.createElement('div');
+              fly.className = 'ootk-op5-fly';
+              fly.innerHTML = '<img src="' + imgUrl + '" />';
+              // 從 Tiphareth (中央 5 號)出發
+              var startX = SEPH_POS[5].x + 6;
+              var startY = SEPH_POS[5].y + 6;
+              fly.style.left = startX + 'px';
+              fly.style.top = startY + 'px';
+              tree.appendChild(fly);
+              var targetX = SEPH_POS[nodeIdx].x + 6;
+              var targetY = SEPH_POS[nodeIdx].y + 6;
+              requestAnimationFrame(function() {
+                fly.style.left = targetX + 'px';
+                fly.style.top = targetY + 'px';
+                fly.style.opacity = '0';
+                fly.style.transform = 'scale(.4)';
+              });
+              setTimeout(function() { fly.remove(); }, 700);
+              node.classList.add('flash');
+              setTimeout(function() { node.classList.remove('flash'); }, 280);
+            }
+          }
+          dealCount++;
+          setTimeout(flyCard, dealCount < 10 ? 150 : 80);
+        }
+        flyCard();
       }
 
       function highlightActive() {
-        caption.innerHTML = '🔍 尋找代表牌的質點——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
+        caption.innerHTML = '🔍 尋找代表牌的質點——<b style="color:var(--c-gold)">' + sigName + '</b>';
 
         var pos = 0;
         function sweep() {
@@ -3750,19 +4130,35 @@ enhanceTarot = function(tarot) {
               if (i === activeIdx) n.classList.add('found');
               else n.classList.add('dimmed');
             });
+            // active 質點對應的 paths 變金色
+            var activePaths = pathsOfNode(activeIdx);
+            paths.forEach(function(p) {
+              var i = parseInt(p.dataset.i);
+              if (activePaths.indexOf(i) >= 0) p.classList.add('gold-lit');
+            });
+            // 中央 Sig 牌照浮現
+            setTimeout(function() {
+              var sigEl = scene.querySelector('#ootk-op5-sig');
+              if (sigEl) sigEl.classList.add('show');
+            }, 400);
+            // 金光擴散圓（用統一 helper，含內外雙圈）
+            setTimeout(function() {
+              var tree = scene.querySelector('.ootk-op5-tree');
+              if (tree) _emitGoldBurst(tree, nodes[activeIdx]);
+            }, 200);
             caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">' + SEPH_NAMES[activeIdx] + '（' + SEPH_ZH[activeIdx] + '）</b>';
-            setTimeout(onDone, 1400);
+            setTimeout(onDone, 2400);
             return;
           }
           nodes[pos].classList.add('spotlight');
-          var stay = (pos === activeIdx) ? 700 : 130;
+          var stay = (pos === activeIdx) ? 800 : 150;
           pos++;
           setTimeout(sweep, stay);
         }
         setTimeout(sweep, 200);
       }
 
-      setTimeout(lightNode, 250);
+      setTimeout(lightNode, 280);
     }
 
     // ════════════════════════════════════════════════════════════════
