@@ -397,7 +397,7 @@ var SPREAD_DEFS = {
   ootk: {
     id: 'ootk', zh: '開鑰之法', count: 0,
     en: '開鑰之法',
-    desc: '金色黎明最高階占卜・五階段・使用全部 78 張牌・從四元素到生命之樹逐層深入',
+    desc: '金色黎明最高階占卜・五次獨立讀盤・使用全部 78 張牌・依 Mathers Book T 正統流程',
     special: 'ootk',
     positions: []
   }
@@ -2640,12 +2640,15 @@ enhanceTarot = function(tarot) {
 (function() {
   'use strict';
 
+  // ★ v63E 正統 Book T:五個 Operation 是「五次獨立讀盤」(Mathers 原文)
+  //    每次重洗、發牌、找 Sig、Counting、Pairing,各自完整、各自結論
+  //    desc 文案強調「獨立」,避免暗示「五層遞進深入同一個答案」
   var OP_LABELS = [
-    { id: 'op1', zh: '四元素分堆', en: 'Elemental Piles', icon: '🜂', desc: '問題屬於人生的哪個領域？' },
-    { id: 'op2', zh: '十二宮位', en: '12 Houses', icon: '🏠', desc: '問題落在人生的哪個宮位？' },
-    { id: 'op3', zh: '十二星座', en: '12 Signs', icon: '♈', desc: '什麼能量主導這個問題？' },
-    { id: 'op4', zh: '三十六旬', en: '36 Decans', icon: '🔮', desc: '精確到十度的能量聚焦' },
-    { id: 'op5', zh: '生命之樹', en: 'Tree of Life', icon: '🌳', desc: '靈性層面的最終答案' }
+    { id: 'op1', zh: '四元素分堆', en: 'Elemental Piles', icon: '🜂', desc: '第一次讀盤・當下處境(Mathers Book T)' },
+    { id: 'op2', zh: '十二宮位', en: '12 Houses', icon: '🏠', desc: '第二次讀盤・問題的展開(獨立於 Op1)' },
+    { id: 'op3', zh: '十二星座', en: '12 Signs', icon: '♈', desc: '第三次讀盤・進一步展開(獨立於前兩 Op)' },
+    { id: 'op4', zh: '三十六旬', en: '36 Decans', icon: '🔮', desc: '第四次讀盤・倒數階段(時機節奏,獨立)' },
+    { id: 'op5', zh: '生命之樹', en: 'Tree of Life', icon: '🌳', desc: '第五次讀盤・最終結果(靈魂本質,獨立)' }
   ];
 
   var PILE_ZH = { fire: '火堆・意志', water: '水堆・情感', air: '風堆・思維', earth: '土堆・物質' };
@@ -3209,7 +3212,7 @@ enhanceTarot = function(tarot) {
         currentPhase++;
         if (currentPhase >= 5) {
           _advanceLock = false;
-          nextBtn.textContent = '🌙 靜月為你解讀全部五階段';
+          nextBtn.textContent = '🌙 靜月為你解讀(五次獨立讀盤)';
           nextBtn.onclick = function() {
             overlay.remove();
             if (typeof goStep === 'function') goStep('step-tarot');
@@ -3258,7 +3261,7 @@ enhanceTarot = function(tarot) {
       if (currentPhase < 4) {
         nextBtn.textContent = OP_LABELS[currentPhase + 1].zh + ' →';
       } else {
-        nextBtn.textContent = '🌙 靜月為你解讀全部五階段';
+        nextBtn.textContent = '🌙 靜月為你解讀(五次獨立讀盤)';
         nextBtn.onclick = function() { overlay.remove(); if (typeof goStep === 'function') goStep('step-tarot'); _triggerOOTKAI(results); };
         document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
       }
@@ -3275,12 +3278,17 @@ enhanceTarot = function(tarot) {
       requestAnimationFrame(function() { ritualScene.style.opacity = '1'; });
 
       // 階段標題
+      // ★ v63E 正統 Book T:加上「第 N 次獨立讀盤」副標,讓動畫上清楚顯示
+      //    每個 Op 是 Mathers 原文「Shuffle, etc., as before」設計的獨立讀盤
       var stageTitle = document.createElement('div');
       stageTitle.className = 'ootk-stage-title';
       stageTitle.innerHTML =
         '<div class="ootk-stage-num">第 ' + ['一','二','三','四','五'][phaseIdx] + ' 階段 · Operation ' + (phaseIdx + 1) + '</div>' +
         '<div class="ootk-stage-name">' + OP_LABELS[phaseIdx].zh + '</div>' +
-        '<div class="ootk-stage-en">' + OP_LABELS[phaseIdx].en + '</div>';
+        '<div class="ootk-stage-en">' + OP_LABELS[phaseIdx].en + '</div>' +
+        '<div style="font-size:.62rem;color:rgba(212,175,55,.65);margin-top:.4rem;letter-spacing:.05em;font-style:italic">' +
+          '※ 第 ' + (phaseIdx + 1) + ' 次獨立讀盤(重洗、重新切牌)・Book T 原文「Shuffle, etc., as before」' +
+        '</div>';
       ritualScene.appendChild(stageTitle);
 
       // 儀式場
@@ -3338,7 +3346,10 @@ enhanceTarot = function(tarot) {
     // ② 洗牌儀式 — 78 張螺旋洗牌 + 真實牌照閃現
     // ════════════════════════════════════════════════════════════════
     function ritualShuffle(stage, caption, onDone) {
-      caption.textContent = '🃏 洗牌——將 78 張牌徹底打亂，請靜心默念你的問題';
+      // ★ v63E 正統 Book T:每階段都重新洗整副 78 張牌
+      //   Mathers Book T 原文五階段都明寫「Shuffle, etc., as before」
+      //   這不是「續上一階段」,是新的一次完整讀盤
+      caption.textContent = '🃏 重新洗牌(全部 78 張)——這是新的一次獨立讀盤,請靜心默念你的問題';
       var box = document.createElement('div');
       box.className = 'ootk-shuffle-box';
       stage.appendChild(box);
@@ -4615,7 +4626,7 @@ enhanceTarot = function(tarot) {
       var _lb = S.bazi;
       if (_lb && _lb.dm) _ootkSnippets.push('命盤背景：日主' + _lb.dm + '，' + (_lb.strength > 50 ? '能量偏強' : '善於借力使力'));
     } catch(_e) {}
-    if (!_ootkSnippets.length) _ootkSnippets = ['正在解讀你的五階段牌象…'];
+    if (!_ootkSnippets.length) _ootkSnippets = ['正在依 Mathers Book T 解讀五次獨立讀盤…'];
 
     // 🔑 OOTK 專屬 loading（v21：牌象風格 + tag 初始亮燈 + 進度條）
     wrap.innerHTML = '<div style="text-align:center;padding:2rem 1.2rem 2.3rem">' +
@@ -4647,7 +4658,7 @@ enhanceTarot = function(tarot) {
 
     wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-    var phases = ['讀取四元素分堆…','對照十二宮位…','解讀星座能量…','聚焦三十六旬…','攀上生命之樹…','交叉比對五階段…','整理最終答案…'];
+    var phases = ['讀取四元素分堆…','對照十二宮位…','解讀星座能量…','聚焦三十六旬…','攀上生命之樹…','觀察各 Op 獨立結論…','整理最終答案…'];
     var phaseIdx = 0;
     var _ootkSnippetIdx = 0;
     var phaseTimer = setInterval(function() {
@@ -4815,7 +4826,7 @@ enhanceTarot = function(tarot) {
         wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
           '<div style="font-size:2rem;margin-bottom:.5rem">🔑</div>' +
           '<div style="font-size:.9rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">開鑰之法需付費解鎖</div>' +
-          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem">NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 39) + ' · 五階段深度占卜</div>' +
+          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem">NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 39) + ' · 五次獨立讀盤(Book T 正統)</div>' +
           '<button onclick="_jyStartOOTK()" style="padding:.6rem 1.2rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1px solid rgba(255,255,255,.1);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🔑 付費解鎖</button></div>';
       } else {
         wrap.innerHTML = '<div style="text-align:center;padding:1rem"><div style="color:#f87171;font-size:.82rem;margin-bottom:.6rem">連線不順，請再試一次</div>' +
