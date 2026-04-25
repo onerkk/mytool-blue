@@ -24100,6 +24100,61 @@ function _buildOOTKPayload() {
       lines.push('配對：' + pairTexts.join('、'));
     }
 
+    // ── ★ v64 根源修正:該 Op 自己的 PHB 單層觀察(從 results.crossAnalysis 拉入) ──
+    //   原本 unaspectedCards / narrativePairs / directionalFindings 是
+    //   「五個 Op key 並列」放在 crossAnalysis 中,AI 拿到後容易做訊號排名。
+    //   v64 改為「各 Op 自己的觀察跟著 buildOpData 字串走」,徹底切斷跨層比較的結構誘因。
+    var _opKey = ['op1','op2','op3','op4','op5'][idx];
+    var _crossRoot = (results && results.crossAnalysis) || {};
+
+    // PHB Source of the Nile / Unaspected Cards(該層隱藏推力)
+    var _phbUnaspected = _crossRoot.unaspectedCards && _crossRoot.unaspectedCards[_opKey];
+    if (_phbUnaspected && _phbUnaspected.length) {
+      lines.push('');
+      lines.push('【本 Op 隱藏推力 / Source of the Nile (PHB)】');
+      lines.push('  本層活躍堆中沒被 counting 走到、也沒被 pairing 配到的牌——');
+      lines.push('  PHB 命名「尼羅河源頭」,代表本 Op 的隱藏推力、未來、未知。');
+      lines.push('  ⚠️ 這些觀察「只屬於本 Op」,不可跟其他 Op 的 unaspected cards 對照或彙整。');
+      lines.push('  本 Op 的 unaspected:' + _phbUnaspected.map(function(u) {
+        return (u.name || u.cardName || '?') + (u.element ? '(' + u.element + ')' : '');
+      }).join('、'));
+    }
+
+    // PHB Narrative Pairs(該層 pairing 補細節故事的時序敘事)
+    var _phbNarrative = _crossRoot.narrativePairs && _crossRoot.narrativePairs[_opKey];
+    if (_phbNarrative && _phbNarrative.length) {
+      lines.push('');
+      lines.push('【本 Op Narrative Pairs (Mathers 補細節故事)】');
+      lines.push('  Mathers 原文:「Pair...Make another story, which should fill in the details」');
+      lines.push('  各對的 phase 標籤(即時/近期/中期/遠期)只在「本 Op 內」有意義,不跨 Op 比較。');
+      _phbNarrative.slice(0, 6).forEach(function(np) {
+        lines.push('    [' + np.phase + '] ' + np.left + ' ↔ ' + np.right + ' (' + np.impact + ')');
+      });
+    }
+
+    // PHB Directional Dignity(該層宮廷牌面向互動)
+    var _phbDirectional = _crossRoot.directionalFindings && _crossRoot.directionalFindings[_opKey];
+    if (_phbDirectional && _phbDirectional.length) {
+      lines.push('');
+      lines.push('【本 Op 宮廷牌面向互動 (PHB Directional Dignity)】');
+      lines.push('  ⚠️ 這些觀察「只屬於本 Op」,不可跨 Op 彙整或比較。');
+      _phbDirectional.slice(0, 4).forEach(function(df) {
+        if (df && df.interactions) {
+          df.interactions.forEach(function(it) {
+            lines.push('    ' + (it.summary || JSON.stringify(it).slice(0, 80)));
+          });
+        }
+      });
+    }
+
+    // ★ v64 根源修正鐵律提示(每 Op 末尾都附,反覆強化獨立性)
+    lines.push('');
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    lines.push('★ 本 Op 為 Mathers Book T 五次獨立讀盤的「第 ' + (idx+1) + ' 次」');
+    lines.push('  讀完本 Op 立刻給「本 Op 獨立結論」,然後再進入下一 Op,');
+    lines.push('  不可在解讀本 Op 時參照其他 Op 的訊號或拿來做強弱排名。');
+    lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
     return lines.join('\n');
   }
 

@@ -4197,7 +4197,14 @@ enhanceTarot = function(tarot) {
       var op = results['op' + (phaseIdx + 1)];
       var path = op.countingPath || [];
 
-      caption.innerHTML = '📖 <b style="color:var(--c-gold)">Counting Story</b>——從代表牌出發，按計數值跳數，每張走過的牌都是事件的時序';
+      // ★ v63E UI 修正(2026-04-26):清空 stage 內的前一階段(ritualDeal)視覺化
+      //   原本沒清→四堆/十二宮/十二星座/十堆等發牌 DOM 會跟 Counting 牌塊疊加,造成版面偏移
+      //   只保留 caption(由 runStageRitual 的 stage 子元素管理)
+      Array.from(stage.children).forEach(function(child) {
+        if (child !== caption) child.remove();
+      });
+
+      caption.innerHTML = '📖 <b style="color:var(--c-gold)">Counting Story</b>——從代表牌出發,按計數值跳數,每張走過的牌都是事件的時序';
 
       var scene = document.createElement('div');
       scene.className = 'ootk-counting-scene';
@@ -4262,13 +4269,18 @@ enhanceTarot = function(tarot) {
       var op = results['op' + (phaseIdx + 1)];
       var pairs = op.pairs || [];
 
+      // ★ v63E UI 修正:清空前一階段(Counting)視覺化,避免 Pairing 牌塊跟 Counting 牌塊疊加
+      Array.from(stage.children).forEach(function(child) {
+        if (child !== caption) child.remove();
+      });
+
       if (!pairs.length) {
-        caption.innerHTML = '🔗 此層沒有 Pairing 配對（活躍堆過小）';
+        caption.innerHTML = '🔗 此層沒有 Pairing 配對(活躍堆過小)';
         setTimeout(onDone, 1000);
         return;
       }
 
-      caption.innerHTML = '🔗 <b style="color:var(--c-gold)">Pairing Story</b>——從代表牌兩側對稱配對，補充 Counting 的細節';
+      caption.innerHTML = '🔗 <b style="color:var(--c-gold)">Pairing Story</b>——從代表牌兩側對稱配對,補充 Counting 的細節';
 
       var scene = document.createElement('div');
       scene.className = 'ootk-pairing-scene';
