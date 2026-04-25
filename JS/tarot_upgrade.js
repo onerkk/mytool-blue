@@ -2386,226 +2386,75 @@ enhanceTarot = function(tarot) {
 
     results.completedOperations = 5;
 
-    // 跨階段分析
-    var allKeyCardIds = {};
-    ['op1', 'op2', 'op3', 'op4', 'op5'].forEach(function(opKey) {
-      var kc = results[opKey].keyCards || [];
-      kc.forEach(function(k) {
-        var cid = k.card ? k.card.id : -1;
-        if (!allKeyCardIds[cid]) allKeyCardIds[cid] = [];
-        allKeyCardIds[cid].push(opKey);
-      });
-    });
+    // ════════════════════════════════════════════════════════════
+    // ★ v63E 正統 Book T 重寫(2026-04-26)── 嚴格依 OOTK_ORTHODOXY.md
+    //
+    // 核心原則(Mathers Book T / Crowley Book of Thoth Appendix A / PHB):
+    //   ① 五個 Operations 是「五次獨立讀盤」,不是「同一答案的五層穿透」
+    //   ② Mathers/Crowley 原文沒有「跨層綜合」「重複牌偵測」「結論牌」
+    //      「五層元素進程」「五層方向預判」「五層仲裁」這些概念
+    //   ③ Abandon 是逐 Op 內的判斷,沒有跨五層綜合分數
+    //   ④ Counting 走過的整串牌都是「故事」(the story of the affair),
+    //      不是某張單牌作結論——終點只是「故事自然結束於此」
+    //   ⑤ PHB 的 Source of the Nile / Unaspected Cards 是單層內判斷
+    //   ⑥ 代表牌每層必在是演算法機制必然,不是訊號
+    //
+    // 已從前版砍掉的非正統概念(全部不在文獻中):
+    //   ✗ recurringCards(跨層重複牌)
+    //   ✗ crossPairCards(跨層配對統計)
+    //   ✗ elementEnvironment / elementShift(五層元素進程/環境變化)
+    //   ✗ keyCardNames(結論牌)
+    //   ✗ strongUnaspected(跨層彙整 unaspected)
+    //   ✗ triadStrengths / strongCards / weakCards(全盤 Triad scoring)
+    //   ✗ abandonScore / abandonSuggested(跨五層綜合 abandon)
+    //   ✗ keyDirectionalInteractions(跨層彙整 directional)
+    //   ✗ layerAlignment(五層方向預判)
+    //   ✗ dominantCards(多層核心牌)
+    //   ✗ progression(舊「進程」綜合)
+    //   ✗ keyCardThemeConsistency(五層結論牌主題)
+    //
+    // 保留(有 Book T / PHB 正統根據,且皆為單層內或純記錄):
+    //   ✓ 五層 Sig 落點記錄(pileElement / elementFlow / elementProgression)
+    //     —— 純「Sig 在每層落到哪」客觀紀錄,不下綜合判斷
+    //   ✓ 每層 unaspectedCards(PHB Source of the Nile)
+    //   ✓ 每層 narrativePairs(Mathers 原文 pairing 補細節故事)
+    //   ✓ 每層 directionalFindings(PHB 單層內 directional dignity)
+    //   ✓ significatorDirectional(代表牌面向決定 counting 方向)
+    //   ✓ abandonObservations(改為 Mathers 原文的逐 Op 條件)
+    // ════════════════════════════════════════════════════════════
+
     var opZh = { 'op1': '四元素', 'op2': '十二宮', 'op3': '十二星座', 'op4': '三十六旬', 'op5': '生命之樹' };
-    var recurring = [];
-    var recurringIds = {}; // 追蹤已加入的牌 id，避免重複
-    for (var cid in allKeyCardIds) {
-      if (allKeyCardIds[cid].length >= 2) {
-        var cn = TAROT[parseInt(cid)] ? TAROT[parseInt(cid)].n : cid;
-        recurring.push(cn + '（關鍵牌，出現在' + allKeyCardIds[cid].map(function(k) { return opZh[k] || k; }).join('、') + '）');
-        recurringIds[cid] = true;
-      }
-    }
 
-    // ★ activeCards 跨層重複偵測：出現在 3+ 層活躍堆裡的牌也是強信號
-    var allActiveCardIds = {};
-    ['op1', 'op2', 'op3', 'op4', 'op5'].forEach(function(opKey) {
-      var ac = results[opKey].activeCards || [];
-      ac.forEach(function(c) {
-        var cid = c.id != null ? c.id : -1;
-        if (!allActiveCardIds[cid]) allActiveCardIds[cid] = [];
-        if (allActiveCardIds[cid].indexOf(opKey) < 0) allActiveCardIds[cid].push(opKey);
-      });
-    });
-    for (var acid in allActiveCardIds) {
-      if (allActiveCardIds[acid].length >= 3 && !recurringIds[acid]) {
-        var acn = TAROT[parseInt(acid)] ? TAROT[parseInt(acid)].n : acid;
-        recurring.push(acn + '（活躍堆，出現在' + allActiveCardIds[acid].map(function(k) { return opZh[k] || k; }).join('、') + '）');
-      }
-    }
-
-    // ★ v37 B5：跨層配對一致性（同一張牌在不同層 pairs 反覆出現）
-    var _pairCardCounts = {};
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (!op || !op.pairs) return;
-      op.pairs.forEach(function(pr) {
-        var l = pr.left || pr.card1;
-        var r = pr.right || pr.card2;
-        if (l) { var ln = l.n || l.name || ''; if (ln) _pairCardCounts[ln] = (_pairCardCounts[ln] || 0) + 1; }
-        if (r) { var rn = r.n || r.name || ''; if (rn) _pairCardCounts[rn] = (_pairCardCounts[rn] || 0) + 1; }
-      });
-    });
-    var _crossPairCards = [];
-    for (var cpk in _pairCardCounts) {
-      if (_pairCardCounts[cpk] >= 3) _crossPairCards.push(cpk + '（' + _pairCardCounts[cpk] + '層配對出現）');
-    }
-
-    // ★ v37 B5：五層元素環境變化（每層活躍堆的主導元素）
-    var _layerElements = [];
-    var _elNames = { fire: '火', water: '水', air: '風', earth: '土' };
-    ['op1','op2','op3','op4','op5'].forEach(function(k, idx) {
-      var op = results[k];
-      if (!op || !op.activeCards || !op.activeCards.length) { _layerElements.push('?'); return; }
-      var elC = { fire:0, water:0, air:0, earth:0 };
-      op.activeCards.forEach(function(c) {
-        if (!c || !c.el) return;
-        if (/火|牡羊|獅子|射手|火星|太陽/.test(c.el)) elC.fire++;
-        else if (/水|巨蟹|天蠍|雙魚|月亮|海王/.test(c.el)) elC.water++;
-        else if (/風|雙子|天秤|水瓶|水星|天王/.test(c.el)) elC.air++;
-        else if (/土|金牛|處女|摩羯|金星|土星/.test(c.el)) elC.earth++;
-      });
-      var maxEl = 'mixed', maxN = 0;
-      for (var ek in elC) { if (elC[ek] > maxN) { maxN = elC[ek]; maxEl = _elNames[ek] || ek; } }
-      _layerElements.push(maxEl);
-    });
-    var _elementShift = '';
-    if (_layerElements.length >= 5) {
-      if (_layerElements[0] === _layerElements[4]) _elementShift = '表層到核心元素一致（' + _layerElements[0] + '）→能量方向穩定';
-      else _elementShift = '元素從' + _layerElements[0] + '轉向' + _layerElements[4] + '→能量方向在轉變';
-    }
-
-    // ★ v37 B5：五層 key card 名稱收集
-    var _keyCardNames = [];
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (!op) return;
-      if (op.keyCards && op.keyCards.length && op.keyCards[0].card) {
-        _keyCardNames.push(op.keyCards[0].card.n || op.keyCards[0].card.name || '?');
-      } else if (op.countingPath && op.countingPath.length) {
-        var last = op.countingPath[op.countingPath.length - 1];
-        _keyCardNames.push(last.cardName || '?');
-      }
-    });
-
-    // ★ v55：Unaspected Cards 偵測（Source of the Nile）
-    // PHB 理論：活躍堆裡「不被任何 counting 路徑觸及」的牌=隱藏推力
-    // 尼羅河源頭——看不見但推動一切
+    // ── ① Unaspected Cards(PHB Source of the Nile,單層內) ──
+    // 該層活躍堆中沒被 counting/pairing 觸及的牌 = 該層的隱藏推力
+    // ★ 排除代表牌(counting 起點 = Sig,理論一定 touched,加防禦)
     var _unaspectedCards = {};
     ['op1','op2','op3','op4','op5'].forEach(function(k) {
       var op = results[k];
       if (!op || !op.activeCards || !op.activeCards.length) return;
       var touched = {};
-      // 計數路徑上的牌 id 都算「被觸及」
       (op.countingPath || []).forEach(function(p) {
         if (p && p.cardId != null) touched[p.cardId] = true;
       });
-      // 配對上的牌也算「被觸及」
       (op.pairs || []).forEach(function(pr) {
         var l = pr.left || pr.card1;
         var r = pr.right || pr.card2;
         if (l && l.id != null) touched[l.id] = true;
         if (r && r.id != null) touched[r.id] = true;
       });
-      // 找出活躍堆裡沒被觸及的牌
       var ua = [];
       op.activeCards.forEach(function(c) {
-        if (c && c.id != null && !touched[c.id]) {
+        if (c && c.id != null && c.id !== significatorId && !touched[c.id]) {
           ua.push({ id: c.id, name: c.n || c.name, element: getCardElement(c) });
         }
       });
       if (ua.length) _unaspectedCards[k] = ua;
     });
-    // 跨層彙整：同一張牌在多層都是 unaspected = 超級隱藏推力
-    var _crossUnaspected = {};
-    for (var uak in _unaspectedCards) {
-      _unaspectedCards[uak].forEach(function(c) {
-        if (!_crossUnaspected[c.id]) _crossUnaspected[c.id] = { name: c.name, element: c.element, layers: [] };
-        _crossUnaspected[c.id].layers.push(uak);
-      });
-    }
-    var _strongUnaspected = [];
-    for (var cuk in _crossUnaspected) {
-      if (_crossUnaspected[cuk].layers.length >= 2) {
-        _strongUnaspected.push({
-          name: _crossUnaspected[cuk].name,
-          element: _crossUnaspected[cuk].element,
-          layers: _crossUnaspected[cuk].layers,
-          significance: _crossUnaspected[cuk].layers.length >= 3 ? 'critical' : 'notable'
-        });
-      }
-    }
 
-    // ★ v55：Triad 強度打分（每層 key card 的強弱）
-    // 用來讓 AI 只讀強牌，忽略被抵消的弱牌
-    var _triadStrengths = {};
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (!op || !op.keyCards || !op.keyCards.length) return;
-      var layerStrengths = [];
-      for (var i = 0; i < op.keyCards.length; i++) {
-        var thisCard = op.keyCards[i].card;
-        var leftCard = (i > 0) ? op.keyCards[i - 1].card : null;
-        var rightCard = (i < op.keyCards.length - 1) ? op.keyCards[i + 1].card : null;
-        var strength = computeTriadStrength(thisCard, leftCard, rightCard);
-        var label = 'neutral';
-        if (strength >= 2) label = 'strong';
-        else if (strength === 1) label = 'supported';
-        else if (strength === -1) label = 'contested';
-        else if (strength <= -2) label = 'weakened';
-        layerStrengths.push({
-          card: thisCard ? (thisCard.n || thisCard.name) : '',
-          strength: strength,
-          label: label
-        });
-      }
-      _triadStrengths[k] = layerStrengths;
-    });
-    // 全盤最強牌 + 最弱牌（≤-2 可忽略）
-    var _allStrongCards = [];
-    var _allWeakCards = [];
-    for (var tsk in _triadStrengths) {
-      _triadStrengths[tsk].forEach(function(ts) {
-        if (ts.strength >= 2 && _allStrongCards.indexOf(ts.card) < 0) {
-          _allStrongCards.push({ card: ts.card, layer: tsk, strength: ts.strength });
-        }
-        if (ts.strength <= -2 && _allWeakCards.indexOf(ts.card) < 0) {
-          _allWeakCards.push({ card: ts.card, layer: tsk, strength: ts.strength });
-        }
-      });
-    }
-
-    // ★ v55：Abandon Score（誠實退出分數）
-    // 三個條件檢查，每命中一個 +1，≥2 = 建議退出
-    var _abandonScore = 0;
-    var _abandonReasons = [];
-    // 條件 1：代表牌在五層 keyCards 中出現 ≤1 次
-    var _sigInKeyCards = 0;
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (!op || !op.keyCards) return;
-      op.keyCards.forEach(function(kc) {
-        if (kc.card && kc.card.id === significatorId) _sigInKeyCards++;
-      });
-    });
-    if (_sigInKeyCards <= 1) {
-      _abandonScore++;
-      _abandonReasons.push('代表牌在五層關鍵牌中只出現 ' + _sigInKeyCards + ' 次（≤1=用戶不在事件中心）');
-    }
-    // 條件 2：活躍堆平均張數 < 10
-    var _avgActiveSize = 0;
-    var _layerCount = 0;
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (op && op.activeCards) {
-        _avgActiveSize += op.activeCards.length;
-        _layerCount++;
-      }
-    });
-    _avgActiveSize = _layerCount > 0 ? _avgActiveSize / _layerCount : 0;
-    if (_avgActiveSize < 10) {
-      _abandonScore++;
-      _abandonReasons.push('活躍堆平均僅 ' + Math.round(_avgActiveSize) + ' 張（<10=數據稀疏）');
-    }
-    // 條件 3：弱化牌超過強化牌 2 倍（能量全面抵消）
-    if (_allWeakCards.length >= _allStrongCards.length * 2 && _allWeakCards.length >= 3) {
-      _abandonScore++;
-      _abandonReasons.push('弱化牌 (' + _allWeakCards.length + ') 明顯多於強化牌 (' + _allStrongCards.length + ')，整體能量在抵消');
-    }
-    var _abandonSuggested = _abandonScore >= 2;
-
-    // ★ v55：Pair Sequence 敘事化（pairs 加上 dignity 分類）
-    // 讓 AI 看到「推進/阻礙/中性」每對的走向
+    // ── ② Narrative Pairs(Mathers 原文 pairing 補細節故事,單層內) ──
+    // Mathers 原文:「Pair the cards on either side of the Significator,
+    //   then those outside them, and so on. Make another story...
+    //   which should fill in the details omitted in the first.」
     var _narrativePairs = {};
     ['op1','op2','op3','op4','op5'].forEach(function(k) {
       var op = results[k];
@@ -2615,17 +2464,17 @@ enhanceTarot = function(tarot) {
         var l = pr.left, r = pr.right;
         if (!l || !r) return;
         var dig = pr.dignity || elementalDignity(l, r);
-        // 近到遠的序號：idx=0 最內（最接近 Significator 最即時），越外越遠
+        // 單層內近到遠:idx=0 最接近 Sig(最即時),越外越遠
         var phase;
-        if (idx === 0) phase = '即時（最近期）';
+        if (idx === 0) phase = '即時(最近)';
         else if (idx < 3) phase = '近期';
         else if (idx < 6) phase = '中期';
-        else phase = '遠期（最終走向）';
+        else phase = '遠期';
         var impact;
-        if (dig === 'strengthen') impact = '同頻強化——事件在這階段加速';
-        else if (dig === 'friendly') impact = '順勢推進——穩定發展';
-        else if (dig === 'weaken') impact = '對立阻礙——這階段有卡點';
-        else impact = '未定';
+        if (dig === 'strengthen') impact = '同頻強化';
+        else if (dig === 'friendly') impact = '順勢推進';
+        else if (dig === 'weaken') impact = '對立阻礙';
+        else impact = '中性';
         seq.push({
           order: idx + 1,
           phase: phase,
@@ -2638,20 +2487,19 @@ enhanceTarot = function(tarot) {
       _narrativePairs[k] = seq;
     });
 
-    // ★ v55：Directional Dignity（宮廷牌面向互動）
-    // 依 RWS 宮廷牌圖像實測面向 + Book T 正逆位反轉規則
-    // 掃五層所有活躍堆，找出所有宮廷牌之間的對望/背對/分道關係
+    // ── ③ Directional Dignity(PHB 單層內,已排除代表牌) ──
+    // 代表牌面向已單獨在 _sigDirectional 處理,跨層掃會放大成 5 倍偽訊號
     var _directionalFindings = {};
     ['op1','op2','op3','op4','op5'].forEach(function(k) {
       var op = results[k];
       if (!op || !op.activeCards || !op.activeCards.length) return;
       var layerFindings = [];
-      // 掃該層每個宮廷牌位置
       for (var di = 0; di < op.activeCards.length; di++) {
         var curCard = op.activeCards[di];
         if (!curCard) continue;
+        if (curCard.id === significatorId) continue;
         var curFacing = getCourtFacing(curCard);
-        if (!curFacing) continue; // 不是宮廷牌跳過
+        if (!curFacing) continue;
         var dd = computeDirectionalDignity(op.activeCards, di);
         if (dd && dd.interactions && dd.interactions.length) {
           layerFindings.push(dd);
@@ -2659,32 +2507,13 @@ enhanceTarot = function(tarot) {
       }
       if (layerFindings.length) _directionalFindings[k] = layerFindings;
     });
-    // 彙整最關鍵的互動（對望 + 分道優先）
-    var _keyDirectionalInteractions = [];
-    var layerZhDD = { op1: '四元素', op2: '十二宮', op3: '十二星座', op4: '三十六旬', op5: '生命之樹' };
-    for (var dfk in _directionalFindings) {
-      _directionalFindings[dfk].forEach(function(finding) {
-        finding.interactions.forEach(function(inter) {
-          // 只收重要的三類：對望、背對、分道（same_direction 較弱，略過）
-          if (inter.type === 'mutual_gaze' || inter.type === 'back_turned' || inter.type === 'diverging') {
-            _keyDirectionalInteractions.push({
-              layer: layerZhDD[dfk] || dfk,
-              cardA: finding.card,
-              cardB: inter.with === 'left' ? finding.leftNeighbor : finding.rightNeighbor,
-              type: inter.type,
-              label: inter.label,
-              meaning: inter.meaning
-            });
-          }
-        });
-      });
-    }
 
-    // 代表牌的面向（告訴 AI 用戶現在的姿態）
+    // ── ④ Significator Directional(代表牌自身面向——Book T 核心) ──
+    // Book T 原文:「Count the cards from him, in the direction in which he faces.」
+    // 代表牌面向決定 counting 方向,是 Book T 機制核心
     var _sigDirectional = null;
     var sigC = TAROT.find(function(c) { return c.id === significatorId; });
     if (sigC) {
-      // Significator 不在 active pile 直接讀，需要先在某層找到它來判定正逆位
       for (var sdk in results) {
         var _op = results[sdk];
         if (_op && _op.activeCards) {
@@ -2694,10 +2523,10 @@ enhanceTarot = function(tarot) {
               var _sigFacing = getCourtFacing(_sigCopy);
               if (_sigFacing) {
                 var _sigMeaning;
-                if (_sigFacing === 'left') _sigMeaning = '代表牌面左——你的注意力還在過去的事件上，沒完全轉向當下';
-                else if (_sigFacing === 'right') _sigMeaning = '代表牌面右——你的重心在未來/即將到來的階段，已經開始準備';
-                else if (_sigFacing === 'averted') _sigMeaning = '代表牌正面逆位——你正在閃避這件事，不想直面';
-                else _sigMeaning = '代表牌正面——你站在當下，沒有明顯的時間偏移';
+                if (_sigFacing === 'left') _sigMeaning = '代表牌面左——counting 向左走,注意力傾向過去';
+                else if (_sigFacing === 'right') _sigMeaning = '代表牌面右——counting 向右走,重心傾向未來';
+                else if (_sigFacing === 'averted') _sigMeaning = '代表牌正面逆位——閃避狀態';
+                else _sigMeaning = '代表牌正面';
                 _sigDirectional = {
                   facing: _sigFacing,
                   meaning: _sigMeaning
@@ -2711,42 +2540,75 @@ enhanceTarot = function(tarot) {
       }
     }
 
+    // ── ⑤ Abandon 觀察(Mathers 逐層原文,非綜合分數) ──
+    // Book T 原文 abandon 條件僅有三處:
+    //   Op1: 說錯問者要問什麼 → abandon
+    //   Op1: counting story 主軸不準 → abandon
+    //   Op2: Sig 不在預期宮位且 cognate house 也不在 → abandon
+    // Op3/Op4 沒有 abandon 條件;Op5「找錯位不必然」意味失敗
+    //
+    // 演算法只能列出客觀觀察事實,abandon 由解讀者(AI/人)依 Mathers 原則判斷
+    var _abandonObservations = [];
+    if (results.op1 && results.op1.activePile) {
+      var pileTypeZh = {
+        fire: 'Yod 火堆 → 工作/事業',
+        water: 'Heh 水堆 → 愛情/喜悅',
+        air: 'Vau 風堆 → 衝突/損失/scandal',
+        earth: 'Heh-final 土堆 → 金錢/物質'
+      };
+      _abandonObservations.push(
+        'Op1 Sig 落於 ' + (pileTypeZh[results.op1.activePile] || results.op1.activePile) +
+        ' —— 若與用戶問題大類完全不符,依 Mathers 原則應 abandon'
+      );
+    }
+    if (results.op2 && results.op2.activeHouse) {
+      _abandonObservations.push(
+        'Op2 Sig 落於第 ' + results.op2.activeHouse + ' 宮 —— ' +
+        '解讀者依問題性質判斷是否合理;不合理且二度錯位才 abandon(Mathers Book T)'
+      );
+    }
+
+    // ── 純資料記錄:五個 Op 的 Sig 落點(不下綜合判斷) ──
+    // ⚠ 這些只是「Sig 在每層落到哪」的客觀紀錄,AI 須各層獨立讀,不可拼成單一進程故事
     results.crossAnalysis = {
-      elementProgression: [
-        results.op1.activePile,
-        results.op2.activeHouse + '宮',
-        results.op3.activeSign,
-        results.op4.decanSign + ' ' + results.op4.decanRange,
-        results.op5.activeSephirah + '(' + results.op5.sephirahZh + ')'
-      ].join(' → '),
-      recurringCards: recurring,
+      // 落點記錄(純資料)
       pileElement: results.op1.activePile,
       elementFlow: {
         op1: results.op1.activePile || '',
         op2: results.op2.activeHouse ? '第' + results.op2.activeHouse + '宮' : '',
         op3: results.op3.activeSign || '',
-        op4: (results.op4.decanSign || '') + (results.op4.decanPlanet ? '（' + results.op4.decanPlanet + '）' : ''),
-        op5: (results.op5.activeSephirah || '') + (results.op5.sephirahZh ? '（' + results.op5.sephirahZh + '）' : '')
+        op4: (results.op4.decanSign || '') + (results.op4.decanPlanet ? '(' + results.op4.decanPlanet + ')' : ''),
+        op5: (results.op5.activeSephirah || '') + (results.op5.sephirahZh ? '(' + results.op5.sephirahZh + ')' : '')
       },
-      // ★ v37 B5
-      crossPairCards: _crossPairCards,
-      elementEnvironment: _layerElements.join('→'),
-      elementShift: _elementShift,
-      keyCardNames: _keyCardNames,
-      // ★ v55：四項新深度分析
-      unaspectedCards: _unaspectedCards,              // 各層未被觸及的牌（Source of the Nile）
-      strongUnaspected: _strongUnaspected,            // 跨層都是 unaspected=重大隱藏推力
-      triadStrengths: _triadStrengths,                // 每層 key card 的強度打分
-      strongCards: _allStrongCards,                    // 全盤強牌（AI 應重點讀）
-      weakCards: _allWeakCards,                        // 全盤弱牌（AI 可降級或忽略）
-      abandonScore: _abandonScore,                     // 0-3，≥2 建議退出
-      abandonReasons: _abandonReasons,                 // 退出理由清單
-      abandonSuggested: _abandonSuggested,             // true = 建議 AI 誠實退出
-      narrativePairs: _narrativePairs,                 // 配對敘事化（推進/阻礙）
-      // v55+：Directional Dignity（宮廷牌面向互動）
-      directionalFindings: _directionalFindings,       // 各層宮廷牌面向分析
-      keyDirectionalInteractions: _keyDirectionalInteractions, // 彙整：對望/背對/分道
-      significatorDirectional: _sigDirectional         // 代表牌自身面向含義
+      // ⚠ 用 ' / ' 分隔而非 ' → ',避免暗示「進程」
+      elementProgression: [
+        results.op1.activePile,
+        (results.op2.activeHouse || '') + '宮',
+        results.op3.activeSign,
+        (results.op4.decanSign || '') + ' ' + (results.op4.decanRange || ''),
+        (results.op5.activeSephirah || '') + '(' + (results.op5.sephirahZh || '') + ')'
+      ].join(' / '),
+
+      // 三個 PHB / Book T 正統技術觀察(每個都是單層內判斷)
+      unaspectedCards: _unaspectedCards,           // PHB Source of the Nile,各層獨立
+      narrativePairs: _narrativePairs,             // Mathers 補細節故事,各層獨立
+      directionalFindings: _directionalFindings,   // PHB Directional Dignity,各層獨立
+
+      // Book T 核心:代表牌自身面向(決定 counting 方向)
+      significatorDirectional: _sigDirectional,
+
+      // Mathers 逐 Op abandon 觀察(不是綜合分數)
+      abandonObservations: _abandonObservations,
+
+      // 正統性標記
+      _orthodoxy: 'v63E_book_t_orthodox',
+      _doctrine: '五個 Operations 是獨立讀盤,本物件不含跨層綜合判斷',
+      _removed_concepts: [
+        'recurringCards', 'crossPairCards', 'elementEnvironment', 'elementShift',
+        'keyCardNames', 'strongUnaspected', 'triadStrengths', 'strongCards',
+        'weakCards', 'abandonScore', 'abandonSuggested', 'keyDirectionalInteractions',
+        'layerAlignment', 'dominantCards', 'progression', 'keyCardThemeConsistency'
+      ]
     };
 
     return results;
@@ -4490,10 +4352,10 @@ enhanceTarot = function(tarot) {
     h += '<div style="font-size:.68rem;color:var(--c-text-dim);margin-top:.1rem">' + label.desc + '</div></div>';
     h += '</div>';
 
-    if (phaseIdx === 0) h += _renderOp1(opData);
-    else if (phaseIdx === 1) h += _renderOp2(opData);
-    else if (phaseIdx === 2) h += _renderOp3(opData);
-    else if (phaseIdx === 3) h += _renderOp4(opData);
+    if (phaseIdx === 0) h += _renderOp1(opData, allResults);
+    else if (phaseIdx === 1) h += _renderOp2(opData, allResults);
+    else if (phaseIdx === 2) h += _renderOp3(opData, allResults);
+    else if (phaseIdx === 3) h += _renderOp4(opData, allResults);
     else if (phaseIdx === 4) h += _renderOp5(opData, allResults);
 
     h += '</div>';
@@ -4501,7 +4363,7 @@ enhanceTarot = function(tarot) {
   }
 
   // ── Op1 四元素 ──
-  function _renderOp1(op) {
+  function _renderOp1(op, allResults) {
     var h = '';
     // 四堆比例
     var piles = op.piles || {};
@@ -4529,12 +4391,12 @@ enhanceTarot = function(tarot) {
     h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">問題核心：' + (op.meaning || '') + '</div>';
     h += '</div>';
 
-    h += _renderKeyCards(op.keyCards);
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
     return h;
   }
 
   // ── Op2 十二宮 ──
-  function _renderOp2(op) {
+  function _renderOp2(op, allResults) {
     var HOUSE_ZH = ['一宮・自我','二宮・財帛','三宮・兄弟','四宮・田宅','五宮・子女','六宮・奴僕','七宮・夫妻','八宮・疾厄','九宮・遷移','十宮・官祿','十一宮・福德','十二宮・玄秘'];
     var activeH = op.activeHouse || 1;
     var h = '';
@@ -4558,12 +4420,12 @@ enhanceTarot = function(tarot) {
       h += '</div>';
     }
     h += '</div>';
-    h += _renderKeyCards(op.keyCards);
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
     return h;
   }
 
   // ── Op3 十二星座 ──
-  function _renderOp3(op) {
+  function _renderOp3(op, allResults) {
     var h = '';
     h += '<div style="padding:.6rem;border-radius:10px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.12)">';
     h += '<div style="font-size:.88rem;color:rgba(168,85,247,.9);font-weight:700">代表牌落在 ' + (op.activeSign || '?') + '</div>';
@@ -4571,12 +4433,12 @@ enhanceTarot = function(tarot) {
       h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">主牌：' + (op.rulingMajor || '') + '</div>';
     }
     h += '</div>';
-    h += _renderKeyCards(op.keyCards);
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
     return h;
   }
 
   // ── Op4 三十六旬 ──
-  function _renderOp4(op) {
+  function _renderOp4(op, allResults) {
     var h = '';
     h += '<div style="padding:.6rem;border-radius:10px;background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.12)">';
     h += '<div style="font-size:.88rem;color:rgba(234,179,8,.9);font-weight:700">' + (op.decanSign || '') + ' ' + (op.decanRange || '') + '</div>';
@@ -4584,7 +4446,7 @@ enhanceTarot = function(tarot) {
       h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">旬主：' + op.decanRuler + '</div>';
     }
     h += '</div>';
-    h += _renderKeyCards(op.keyCards);
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
     return h;
   }
 
@@ -4597,45 +4459,66 @@ enhanceTarot = function(tarot) {
     h += '<div style="font-size:.88rem;color:rgba(34,197,94,.9);font-weight:700">代表牌落在 ' + sephLabel + '</div>';
     if (op.sephirahMeaning) h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">' + op.sephirahMeaning + '</div>';
     h += '</div>';
-    h += _renderKeyCards(op.keyCards);
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
 
-    // 跨階段分析
+    // ── v63E 正統 Book T:五次操作 Sig 落點記錄(純資料,各 Op 獨立讀盤) ──
     if (allResults && allResults.crossAnalysis) {
       var ca = allResults.crossAnalysis;
       h += '<div style="margin-top:.6rem;padding:.7rem;border-radius:10px;border:1px solid rgba(212,175,55,.15);background:linear-gradient(135deg,rgba(212,175,55,.04),rgba(34,197,94,.03))">';
-      h += '<div style="font-size:.82rem;font-weight:700;color:var(--c-gold);margin-bottom:.35rem">🔗 五階段能量流動</div>';
+      h += '<div style="font-size:.82rem;font-weight:700;color:var(--c-gold);margin-bottom:.35rem">📍 五次操作 Sig 落點</div>';
+      h += '<div style="font-size:.68rem;color:var(--c-text-muted);margin-bottom:.3rem;font-style:italic;line-height:1.5">Book T 正統:五個 Operations 各自獨立讀盤,下方僅為「Sig 在每層落到哪」的客觀位置記錄,不可串成單一進程故事</div>';
       h += '<div style="font-size:.75rem;color:var(--c-text-dim);line-height:1.75">' + (ca.elementProgression || '') + '</div>';
-      if (ca.recurringCards && ca.recurringCards.length) {
-        h += '<div style="margin-top:.35rem;font-size:.75rem;color:var(--c-gold-pale,#f5e6b8)">🔄 重複出現的牌：' + ca.recurringCards.join('、') + '</div>';
-      }
+      // ✗ 已移除「重複出現的牌」(recurringCards)——不符 Book T 正統,
+      //   代表牌每層必在是機制必然,非真訊號
       h += '</div>';
     }
     return h;
   }
 
-  // ── 關鍵牌列表（帶牌面圖）──
-  function _renderKeyCards(keyCards) {
+  // ── Counting 路徑牌列表(帶牌面圖)──
+  // ★ v63E 正統 Book T:
+  //   ① 標出代表牌(counting 起點 = Sig),避免使用者誤把代表牌當訊號牌
+  //   ② 用 PHB elemental dignity 真實判斷上色——不再用死碼 kc.dignity
+  //   ③ 名稱不再叫「關鍵牌」(誤導);改為「Counting 路徑」(Mathers 原文 the story)
+  function _renderKeyCards(keyCards, sigId) {
     if (!keyCards || !keyCards.length) return '';
     var h = '<div class="ootk-keycards-strip">';
     keyCards.slice(0, 8).forEach(function(kc, idx) {
       var c = kc.card || {};
       var name = c.n || c.name || '';
       var imgSrc = (typeof getTarotCardImage === 'function' && c.id != null) ? getTarotCardImage(c) : '';
-      var dignity = kc.dignity || '';
-      var dColor = dignity === 'strengthen' ? 'rgba(34,197,94,.5)' : dignity === 'weaken' ? 'rgba(239,68,68,.5)' : 'rgba(201,168,76,.3)';
+      var isSig = (sigId != null && c.id === sigId);
+      // 代表牌:金色強調;其他牌依與左右鄰的 elemental dignity 上色
+      var dColor = 'rgba(201,168,76,.3)';
+      if (isSig) {
+        dColor = 'rgba(212,175,55,.85)';
+      } else if (typeof elementalDignity === 'function') {
+        var leftN = (idx > 0) ? (keyCards[idx - 1].card) : null;
+        var rightN = (idx < keyCards.length - 1) ? (keyCards[idx + 1].card) : null;
+        var leftEd = leftN ? elementalDignity(c, leftN) : 'none';
+        var rightEd = rightN ? elementalDignity(c, rightN) : 'none';
+        var goodCount = (leftEd === 'strengthen' || leftEd === 'friendly' ? 1 : 0) +
+                        (rightEd === 'strengthen' || rightEd === 'friendly' ? 1 : 0);
+        var badCount = (leftEd === 'weaken' ? 1 : 0) + (rightEd === 'weaken' ? 1 : 0);
+        if (goodCount > badCount) dColor = 'rgba(34,197,94,.5)';
+        else if (badCount > goodCount) dColor = 'rgba(239,68,68,.5)';
+      }
       var delay = idx * 200;
       h += '<div class="ootk-kc-flip" style="animation-delay:' + delay + 'ms">';
       h += '<div class="ootk-kc-inner" style="animation-delay:' + (delay + 100) + 'ms">';
-      // Front (actual card)
       if (imgSrc) {
-        h += '<div class="ootk-kc-front"><img src="' + imgSrc + '" style="width:52px;height:78px;border-radius:5px;object-fit:cover;border:2px solid ' + dColor + ';box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>';
+        h += '<div class="ootk-kc-front" style="position:relative"><img src="' + imgSrc + '" style="width:52px;height:78px;border-radius:5px;object-fit:cover;border:2px solid ' + dColor + ';box-shadow:0 2px 8px rgba(0,0,0,.4)">';
+        if (isSig) h += '<div style="position:absolute;top:-6px;right:-6px;background:rgba(212,175,55,.95);color:#1a1a1a;font-size:.5rem;font-weight:800;padding:1px 4px;border-radius:8px;letter-spacing:.05em">SIG</div>';
+        h += '</div>';
       } else {
-        h += '<div class="ootk-kc-front" style="display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--c-gold);border-radius:5px;border:2px solid ' + dColor + ';background:rgba(201,168,76,.08)">' + name.charAt(0) + '</div>';
+        h += '<div class="ootk-kc-front" style="display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--c-gold);border-radius:5px;border:2px solid ' + dColor + ';background:rgba(201,168,76,.08);position:relative">' + name.charAt(0);
+        if (isSig) h += '<div style="position:absolute;top:-6px;right:-6px;background:rgba(212,175,55,.95);color:#1a1a1a;font-size:.5rem;font-weight:800;padding:1px 4px;border-radius:8px">SIG</div>';
+        h += '</div>';
       }
-      // Back (card back)
       h += '<div class="ootk-kc-back"></div>';
       h += '</div>';
-      h += '<div style="font-size:.52rem;color:var(--c-gold);margin-top:.25rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px">' + name + '</div>';
+      var nameStyle = 'font-size:.52rem;color:var(--c-gold);margin-top:.25rem;font-weight:' + (isSig ? '700' : '600') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px';
+      h += '<div style="' + nameStyle + '">' + name + (isSig ? ' (起點)' : '') + '</div>';
       if (kc.step) h += '<div style="font-size:.45rem;color:var(--c-text-muted)">(' + kc.step + '步)</div>';
       h += '</div>';
     });

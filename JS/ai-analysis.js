@@ -24113,35 +24113,29 @@ function _buildOOTKPayload() {
   // ── 水晶清單（Bug #1 修復）──
   var _cc = _buildCrystalCatalog();
 
-  // ── 跨層重複牌詳情（#8 OOTK 數據補強）──
-  var recurringDetail = '';
-  if (cross.recurringCards && cross.recurringCards.length) {
-    var rcDetails = [];
-    cross.recurringCards.forEach(function(cardName) {
-      // recurringCards 裡的格式是 "牌名（出現在四元素、十二宮）"，要先砍掉括號才能匹配
-      var bareCardName = cardName.replace(/[（(].*$/, '').trim();
-      var layers = [];
-      ['op1','op2','op3','op4','op5'].forEach(function(k, i) {
-        var op = results[k];
-        if (!op || !op.activeCards) return;
-        var found = op.activeCards.some(function(c) { return (c.n || c.name || '') === bareCardName; });
-        if (found) layers.push('Op.' + (i+1));
-      });
-      if (layers.length >= 2) rcDetails.push(bareCardName + '（出現在' + layers.join('、') + '）');
-    });
-    recurringDetail = rcDetails.join('；');
-  }
-
   // ═══════════════════════════════════════════════════════════════════
-  // v63 C-嚴：layerAlignment + keyCardThemeConsistency 已棄用
-  // 原因：① keyCards[0] 永遠是代表牌（Counting 起點），不是「結論牌」
-  //       ② Mathers Book T 沒有「五層收束成單一答案」的概念
-  //       ③ AI 收到「五層結論牌全是金幣國王」會把假訊號當主軸放大
-  // 處理：保留變數但永遠空字串，worker 端的 buildOotkUserMessage 會跳過空值
-  //       完整的「五層獨立讀法」prompt 由 worker.js V63 七模組注入
+  // v63E 正統 Book T:跨層綜合分析全部砍除
+  //
+  // 已棄用(全部不在文獻中,代表牌每層必在是機制必然不是訊號):
+  //   ✗ recurringCards / recurringDetail   ← 跨層重複牌偵測
+  //   ✗ keyCardNames                       ← 「結論牌」概念不存在
+  //   ✗ layerAlignment                     ← 五層方向預判
+  //   ✗ keyCardThemeConsistency            ← 五層結論牌主題
+  //   ✗ crossPairCards                     ← 跨層配對統計
+  //   ✗ elementEnvironment / elementShift  ← 五層元素環境/進程
+  //   ✗ strongUnaspected                   ← 跨層彙整 unaspected
+  //   ✗ triadStrengths/strongCards/weakCards ← 全盤 Triad scoring
+  //   ✗ abandonScore/abandonSuggested      ← 跨五層綜合分數
+  //   ✗ keyDirectionalInteractions         ← 跨層彙整 directional
+  //
+  // 保留(有 Book T / PHB 正統根據,單層內判斷):
+  //   ✓ pileElement / elementFlow / progression(純落點記錄)
+  //   ✓ unaspectedCards (PHB Source of the Nile)
+  //   ✓ narrativePairs (Mathers 補細節故事)
+  //   ✓ directionalFindings (PHB Directional Dignity)
+  //   ✓ significatorDirectional (Sig 自身面向)
+  //   ✓ abandonObservations (Mathers 逐層條件觀察)
   // ═══════════════════════════════════════════════════════════════════
-  var layerAlignment = '';
-  var keyCardThemeConsistency = '';
 
   // ★ v28：OOTK 精準度提升引擎
   var ootk_allCards = [];
@@ -24205,38 +24199,25 @@ function _buildOOTKPayload() {
       significator: results.significator || {},
       operations: ops,
       crossAnalysis: {
+        // ── 純資料記錄(每 Op 獨立讀盤,本物件不含跨層綜合判斷) ──
         progression: cross.elementProgression || '',
-        recurring: (cross.recurringCards || []).join('、'),
-        recurringDetail: recurringDetail,
         pileElement: cross.pileElement || '',
         elementFlow: cross.elementFlow || null,
-        layerAlignment: layerAlignment,
-        // ═══ v52：補送 tarot_upgrade.js 2100-2103 算好但原本漏傳的 4 個進階欄位 ═══
-        // worker 的 buildOotkUserMessage 10764-10775 有讀，但原本前端沒送 → 永遠 undefined
-        crossPairCards: cross.crossPairCards || [],
-        elementEnvironment: cross.elementEnvironment || '',
-        elementShift: cross.elementShift || '',
-        keyCardNames: cross.keyCardNames || [],
-        // ═══ v55：OOTK 正統 Book T 深度運算（Source of Nile/Triad 強度/Narrative Pairs/Abandon）═══
+        // ── 三個 PHB / Book T 正統技術觀察(皆為單層內判斷) ──
         unaspectedCards: cross.unaspectedCards || null,
-        strongUnaspected: cross.strongUnaspected || [],
-        triadStrengths: cross.triadStrengths || null,
-        strongCards: cross.strongCards || [],
-        weakCards: cross.weakCards || [],
-        abandonScore: cross.abandonScore || 0,
-        abandonReasons: cross.abandonReasons || [],
-        abandonSuggested: cross.abandonSuggested === true,
         narrativePairs: cross.narrativePairs || null,
-        // ═══ v55+：Directional Dignity（宮廷牌面向互動，人物關係精度升級）═══
         directionalFindings: cross.directionalFindings || null,
-        keyDirectionalInteractions: cross.keyDirectionalInteractions || [],
-        significatorDirectional: cross.significatorDirectional || null
+        // ── Book T 核心:代表牌自身面向(決定 counting 方向) ──
+        significatorDirectional: cross.significatorDirectional || null,
+        // ── Mathers 逐 Op abandon 觀察(不是綜合分數) ──
+        abandonObservations: cross.abandonObservations || [],
+        // ── 正統性標記 ──
+        _orthodoxy: 'v63E_book_t_orthodox'
       },
       numberPatterns: ootk_numberPatterns,
       majorWeight: ootk_majorWeight,
       courtPeople: ootk_courtPeople,
-      reversedAnalysis: ootk_reversedAnalysis,
-      keyCardThemeConsistency: keyCardThemeConsistency
+      reversedAnalysis: ootk_reversedAnalysis
     }
   };
   if (_cc.catalog.length) {
@@ -24420,11 +24401,7 @@ function _renderOOTKResult(container, r, admin) {
   try {
     var _v55Cross = (window._ootkResults && window._ootkResults.crossAnalysis) ? window._ootkResults.crossAnalysis : null;
     if (_v55Cross) {
-      var hasV55 = (_v55Cross.strongUnaspected && _v55Cross.strongUnaspected.length) ||
-                   (_v55Cross.strongCards && _v55Cross.strongCards.length) ||
-                   (_v55Cross.weakCards && _v55Cross.weakCards.length) ||
-                   (_v55Cross.abandonSuggested === true) ||
-                   (_v55Cross.narrativePairs && Object.keys(_v55Cross.narrativePairs).length);
+      var hasV55 = false; /* v63E 正統:跨層綜合 UI 全部禁用 */
       if (hasV55) {
         html += '<details style="margin-bottom:.8rem;border:1px solid rgba(217,151,56,.18);border-radius:12px;overflow:hidden">';
         html += '<summary style="padding:.7rem .9rem;font-size:.82rem;color:rgba(217,151,56,.9);cursor:pointer;user-select:none;background:linear-gradient(135deg,rgba(217,151,56,.05),rgba(217,151,56,.02));font-weight:600">';
