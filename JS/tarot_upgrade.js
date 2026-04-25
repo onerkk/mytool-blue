@@ -1778,14 +1778,17 @@ enhanceTarot = function(tarot) {
     return 1;
   }
 
-  function ootkOp2(activePile, significatorId) {
-    // ★ 正統 OOTK Op2：把 Op1 的 active pile 按順序發到 12 宮
-    // 第1張→第1宮，第2張→第2宮...第13張→第1宮...循環
-    // 因為洗牌順序每次不同，Sig 落在的宮位每次也不同
+  function ootkOp2(deck, significatorId) {
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 正統 Book T Op2：「Deal cards into twelve stacks, for
+    //   the twelve astrological houses of heaven.」 — Mathers Book T
+    // 全副 78 張獨立洗牌後依序發到 12 宮，第1張→第1宮、第2張→第2宮...
+    // 第13張→第1宮...循環。找 Sig 在哪宮 = 該宮為 active stack
+    // ════════════════════════════════════════════════════════════
     var houses = [];
     for (var h = 0; h < 12; h++) houses.push([]);
 
-    activePile.forEach(function(card, idx) {
+    deck.forEach(function(card, idx) {
       houses[idx % 12].push(card);
     });
 
@@ -1856,12 +1859,16 @@ enhanceTarot = function(tarot) {
     {sign:'摩羯',trump:15},{sign:'水瓶',trump:17},{sign:'雙魚',trump:18}
   ];
 
-  function ootkOp3(activePile, significatorId) {
-    // ★ 正統 OOTK Op3：把 Op1 active pile 按 GD 星座歸屬分到 12 星座
+  function ootkOp3(deck, significatorId) {
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 正統 Book T Op3：「Deal cards into twelve stacks for
+    //   the twelve signs of the Zodiac.」 — Mathers Book T
+    // 依 GD 對應表把全副 78 張各自落入十二星座、找 Sig 在哪星座
+    // ════════════════════════════════════════════════════════════
     var signs = [];
     for (var s = 0; s < 12; s++) signs.push([]);
 
-    activePile.forEach(function(card) {
+    deck.forEach(function(card) {
       var si = getCardSignIdx(card);
       signs[si].push(card);
     });
@@ -1937,32 +1944,60 @@ enhanceTarot = function(tarot) {
     return 0;
   }
 
-  function ootkOp4(activePile, significatorId) {
-    // ★ 正統 OOTK Op4：把 Op1 active pile 按 GD 旬歸屬分到 36 旬
-    var decans = [];
-    for (var d = 0; d < 36; d++) decans.push([]);
-
-    activePile.forEach(function(card) {
-      var di = getCardDecan(card);
-      decans[di].push(card);
-    });
-
-    var activeDecan = -1;
-    for (var di = 0; di < 36; di++) {
-      if (decans[di].some(function(c) { return c.id === significatorId; })) {
-        activeDecan = di;
-        break;
-      }
+  function ootkOp4(deck, significatorId) {
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 正統 Book T Op4：「Find the Significator: set him upon the
+    //   table; let the thirty-six cards following form a ring round him.」
+    //   — Mathers Book T (Liber T)
+    // 不是按 GD decan 分配（那是現代簡化版）
+    // 正統做法：洗牌 → 找 Sig 在牌堆裡的位置 → Sig 取出居中 →
+    //   緊接其後的 36 張按順序圍成環
+    // ════════════════════════════════════════════════════════════
+    var sigDeckIdx = deck.findIndex(function(c) { return c.id === significatorId; });
+    if (sigDeckIdx < 0) {
+      // fallback: Sig 不在牌堆（理論上不該發生）
+      return {
+        activeDecan: 0,
+        decanSign: '',
+        decanRange: '',
+        decanPlanet: '',
+        activeCards: [],
+        keyCards: [],
+        countingPath: [],
+        pairs: [],
+        dignities: []
+      };
     }
 
-    var dm = DECAN_MAP[activeDecan] || {};
-    var activeCards = decans[activeDecan] || [];
-    var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
-    var counted = ootkCounting(activeCards, sigIdx >= 0 ? sigIdx : 0);
-    var paired = ootkPairing(activeCards, sigIdx >= 0 ? sigIdx : 0);
+    // 取 Sig 並居中
+    var sigCard = deck[sigDeckIdx];
+    // 取緊接其後的 36 張（環形：超過末端折回開頭，跳過 Sig 自己）
+    var ring = [];
+    var idx = sigDeckIdx;
+    while (ring.length < 36) {
+      idx = (idx + 1) % deck.length;
+      if (idx === sigDeckIdx) break; // 安全：避免無限迴圈
+      ring.push(deck[idx]);
+    }
+
+    // 正統 Book T：Sig 居中後，活躍牌組 = [Sig, ring...]
+    // counting/pairing 都從 Sig（位置 0）開始
+    var activeCards = [sigCard].concat(ring);
+    var sigIdx = 0; // Sig 永遠在第 0 位（居中）
+    var counted = ootkCounting(activeCards, sigIdx);
+    var paired = ootkPairing(activeCards, sigIdx);
+
+    // 仍保留 GD decan 對應做為「時機線索」參考（不是分配依據）
+    // — Sig 自身的 GD decan 屬性可作為時機本質的線索
+    var sigDecan = getCardDecan(sigCard);
+    var dm = DECAN_MAP[sigDecan] || {};
 
     return {
-      activeDecan: activeDecan,
+      // 正統 Book T 的 Op4 結構
+      ringSize: ring.length,
+      sigPosition: sigDeckIdx,
+      // 仍保留 decan 資訊作為「Sig 自身對應的時機線索」
+      activeDecan: sigDecan,
       decanSign: dm.sign || '',
       decanRange: dm.range || '',
       decanPlanet: dm.planet || '',
@@ -2034,12 +2069,16 @@ enhanceTarot = function(tarot) {
     return 9; // fallback Malkuth
   }
 
-  function ootkOp5(activePile, significatorId) {
-    // ★ 正統 OOTK Op5：把 Op1 active pile 按 GD 質點歸屬分到生命之樹 10 質點
+  function ootkOp5(deck, significatorId) {
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 正統 Book T Op5：「Deal into ten packs in the form of
+    //   the Tree of Life.」 — Mathers Book T
+    // 依 GD 對應表把全副 78 張各自落入生命之樹十質點、找 Sig 在哪質點
+    // ════════════════════════════════════════════════════════════
     var sephirot = [];
     for (var s = 0; s < 10; s++) sephirot.push([]);
 
-    activePile.forEach(function(card) {
+    deck.forEach(function(card) {
       var si = getCardSephirah(card);
       sephirot[si].push(card);
     });
@@ -2171,10 +2210,12 @@ enhanceTarot = function(tarot) {
   // 完整 OOTK 執行（五階段・單一副牌）
   // ════════════════════════════════════════════════
 
-  function runFullOOTK(significatorId) {
-    if (typeof TAROT === 'undefined') return null;
-
-    // 一次洗牌，五階段共用
+  // ════════════════════════════════════════════════════════════
+  // v63 helper：洗一副新牌（含正逆位隨機）
+  // 每階段都重新洗一副 78 張，符合 Book T「Shuffle, etc., as before」
+  // ════════════════════════════════════════════════════════════
+  function shuffleNewDeck() {
+    if (typeof TAROT === 'undefined') return [];
     var deck = TAROT.map(function(c) {
       return Object.assign({}, c, { isUp: Math.random() >= 0.5 });
     });
@@ -2183,6 +2224,18 @@ enhanceTarot = function(tarot) {
       var j = Math.floor(Math.random() * (i + 1));
       var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
     }
+    return deck;
+  }
+
+  function runFullOOTK(significatorId) {
+    if (typeof TAROT === 'undefined') return null;
+
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 最正統 Book T：每階段獨立重新洗牌
+    // Mathers Book T 原文五階段都明寫「Shuffle, etc., as before」
+    // 每階段 78 張全副牌、全新洗牌、全新隨機正逆位
+    // 五個 Operation 是五次獨立的儀式，不是「同一次抽牌的五個切片」
+    // ════════════════════════════════════════════════════════════
 
     var results = {};
     results.significatorId = significatorId;
@@ -2193,13 +2246,22 @@ enhanceTarot = function(tarot) {
       element: getCardElement(sigCard)
     } : null;
 
-    // ★ 正統 OOTK：Op1 用全副牌，Op2-5 用 Op1 篩選出的 active pile
-    results.op1 = ootkOp1(deck, significatorId);
-    var activePile = results.op1.activeCards || deck; // fallback 不該觸發
-    results.op2 = ootkOp2(activePile, significatorId);
-    results.op3 = ootkOp3(activePile, significatorId);
-    results.op4 = ootkOp4(activePile, significatorId);
-    results.op5 = ootkOp5(activePile, significatorId);
+    // 每階段各自洗一副新的 78 張牌
+    var deck1 = shuffleNewDeck();
+    results.op1 = ootkOp1(deck1, significatorId);
+
+    var deck2 = shuffleNewDeck();
+    results.op2 = ootkOp2(deck2, significatorId);
+
+    var deck3 = shuffleNewDeck();
+    results.op3 = ootkOp3(deck3, significatorId);
+
+    var deck4 = shuffleNewDeck();
+    results.op4 = ootkOp4(deck4, significatorId);
+
+    var deck5 = shuffleNewDeck();
+    results.op5 = ootkOp5(deck5, significatorId);
+
     results.completedOperations = 5;
 
     // 跨階段分析
@@ -2670,6 +2732,167 @@ enhanceTarot = function(tarot) {
       '.ootk-seph.active{border-color:rgba(34,197,94,.8);background:rgba(34,197,94,.2);color:rgba(34,197,94,1);box-shadow:0 0 28px rgba(34,197,94,.4);transform:scale(1.3);font-weight:700;z-index:2}',
       '.ootk-tree-line{position:absolute;background:rgba(34,197,94,.06);transition:background .4s}',
       '.ootk-tree-line.lit{background:rgba(34,197,94,.2)}',
+      // ════════════════════════════════════════════════════════════
+      // ★ v63 六儀式 CSS（注入式）— 最正統 Book T 動畫
+      // ════════════════════════════════════════════════════════════
+      // v63 CSS marker: ═══ v63 ① 召喚祝禱層 ═══
+      '.ootk-invocation-layer{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .9s ease}',
+      '.ootk-invocation-layer.fade-out{opacity:0;pointer-events:none}',
+      '.ootk-invoc-bg{position:absolute;inset:0;background:url(\'/img/ootk/invocation-bg.jpg\') center/cover no-repeat;opacity:0;transition:opacity 1.6s ease;filter:brightness(.9)}',
+      '.ootk-invocation-layer.show-bg .ootk-invoc-bg{opacity:.85}',
+      '.ootk-invoc-bg::after{content:\'\';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.7) 100%)}',
+      '.ootk-invoc-angel{position:absolute;top:50%;left:50%;width:280px;height:420px;margin-left:-140px;margin-top:-260px;background:url(\'/img/ootk/hru-angel.png\') center/contain no-repeat;opacity:0;transform:translateY(20px) scale(.92);transition:all 1.8s cubic-bezier(.2,.7,.3,1);z-index:1;pointer-events:none;filter:drop-shadow(0 0 30px rgba(201,168,76,.4))}',
+      '.ootk-invocation-layer.show-angel .ootk-invoc-angel{opacity:.92;transform:translateY(0) scale(1)}',
+      '.ootk-invoc-scroll{position:relative;z-index:2;width:90%;max-width:520px;padding:60px 40px 50px;background:url(\'/img/ootk/scroll-bg.png\') center/100% 100% no-repeat;opacity:0;transform:translateY(40px) scale(.95);transition:all 1.4s cubic-bezier(.2,.7,.3,1);text-align:center;color:#3a2a14;font-family:\'Cormorant Garamond\',\'Noto Serif TC\',serif;min-height:520px;display:flex;flex-direction:column;justify-content:center}',
+      '.ootk-invocation-layer.show-scroll .ootk-invoc-scroll{opacity:.96;transform:translateY(0) scale(1)}',
+      '.ootk-invoc-title{font-size:1.5rem;font-weight:700;color:#7a5a20;letter-spacing:6px;margin-bottom:.3rem}',
+      '.ootk-invoc-subtitle{font-size:.95rem;font-style:italic;color:#8a6a30;letter-spacing:3px;margin-bottom:.6rem}',
+      '.ootk-invoc-divider{font-size:.65rem;color:#9a7a3a;letter-spacing:2px;margin-bottom:1.4rem;font-style:italic}',
+      '.ootk-invoc-prayer{opacity:0;transition:opacity 2s ease;line-height:1.85}',
+      '.ootk-invocation-layer.show-prayer .ootk-invoc-prayer{opacity:1}',
+      '.ootk-invoc-en{font-size:.78rem;font-style:italic;color:#5a3a18;margin-bottom:1.2rem;line-height:1.7;letter-spacing:.5px}',
+      '.ootk-invoc-zh{font-size:.85rem;color:#3a2410;line-height:1.9;letter-spacing:1px}',
+      '.ootk-invoc-btn{margin-top:1.4rem;padding:.7rem 1.8rem;background:linear-gradient(135deg,#7a5a20,#a07530);color:#f5e6c0;border:1px solid #5a3a10;border-radius:4px;font-family:inherit;font-size:.85rem;font-weight:600;letter-spacing:3px;cursor:pointer;opacity:0;transform:translateY(8px);transition:all .8s ease,box-shadow .25s ease;box-shadow:0 2px 12px rgba(0,0,0,.3)}',
+      '.ootk-invocation-layer.show-btn .ootk-invoc-btn{opacity:1;transform:translateY(0)}',
+      '.ootk-invoc-btn:hover{box-shadow:0 4px 24px rgba(201,168,76,.5);transform:translateY(-1px)}',
+      '.ootk-invoc-btn:active{transform:scale(.97)}',
+      // v63 CSS marker: ═══ v63 階段標題與場景容器 ═══
+      '.ootk-ritual-scene{padding:.5rem 0;text-align:center}',
+      '.ootk-stage-title{margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid rgba(201,168,76,.15)}',
+      '.ootk-stage-num{font-size:.7rem;color:var(--c-gold);letter-spacing:3px;margin-bottom:.2rem}',
+      '.ootk-stage-name{font-size:1.2rem;font-weight:700;color:var(--c-gold);letter-spacing:2px;margin-bottom:.15rem}',
+      '.ootk-stage-en{font-size:.62rem;color:var(--c-text-dim);letter-spacing:3px;font-style:italic}',
+      '.ootk-stage-area{position:relative;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:.5rem}',
+      '.ootk-stage-caption{font-size:.78rem;color:var(--c-text-dim);min-height:1.2rem;margin-bottom:.8rem;line-height:1.6;text-align:center;max-width:420px;padding:0 .5rem}',
+      // v63 CSS marker: ═══ v63 ② 洗牌儀式 ═══
+      '.ootk-shuffle-box{position:relative;width:200px;height:200px;margin:0 auto}',
+      '.ootk-shuffle-box.done .ootk-shuffle-card{opacity:0;transition:opacity .5s}',
+      '.ootk-shuffle-card{position:absolute;top:50%;left:50%;width:36px;height:54px;margin-left:-18px;margin-top:-27px;background:linear-gradient(135deg,#3a2a10,#1a1208);border:1px solid rgba(201,168,76,.4);border-radius:3px;animation:ootkShuffleSpin 1.6s ease-in-out;animation-fill-mode:both;box-shadow:0 2px 6px rgba(0,0,0,.5)}',
+      '@keyframes ootkShuffleSpin{0%{transform:translate(0,0) rotate(0deg);opacity:0}10%{opacity:1}50%{transform:translate(calc(cos(calc(var(--i)*15deg))*60px),calc(sin(calc(var(--i)*15deg))*60px)) rotate(calc(var(--i)*15deg))}100%{transform:translate(0,0) rotate(0deg);opacity:.6}}',
+      // v63 CSS marker: ═══ v63 飛卡 ═══
+      '.ootk-fly-card-v63{position:absolute;width:18px;height:28px;background:linear-gradient(135deg,#5a4220,#2a1d08);border:1px solid rgba(201,168,76,.5);border-radius:2px;transition:all .42s cubic-bezier(.4,.1,.3,1);opacity:.95;z-index:5;pointer-events:none}',
+      '.ootk-fly-card-v63.landed{opacity:.7;border-color:rgba(201,168,76,.3)}',
+      // v63 CSS marker: ═══ v63 ③ Op1 YHVH 四元素堆 ═══
+      '.ootk-op1-scene{position:relative;width:100%;max-width:380px;min-height:260px;margin:0 auto}',
+      '.ootk-op1-deck{position:absolute;top:8px;left:50%;width:32px;height:50px;margin-left:-16px;background:linear-gradient(135deg,#3a2a10,#1a1208);border:1px solid rgba(201,168,76,.5);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.62rem;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.5)}',
+      '.ootk-op1-deck-count{font-size:.68rem;font-weight:700}',
+      '.ootk-op1-piles{position:absolute;top:80px;left:0;right:0;display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;padding:0 .5rem}',
+      '.ootk-op1-pile{position:relative;padding:.7rem .5rem;border:1px solid rgba(201,168,76,.12);border-radius:8px;background:rgba(255,255,255,.02);min-height:90px;transition:all .5s ease;text-align:center}',
+      '.ootk-op1-pile-letter{position:absolute;top:.3rem;right:.4rem;font-size:1.1rem;color:var(--c-gold);opacity:.4;font-family:serif;font-weight:600}',
+      '.ootk-op1-pile-stack{height:24px;width:32px;margin:0 auto .25rem;position:relative}',
+      '.ootk-op1-pile-meta{font-size:.7rem}',
+      '.ootk-op1-pile-label{font-weight:700;color:var(--c-text);font-size:.78rem}',
+      '.ootk-op1-pile-meaning{color:var(--c-text-dim);font-size:.62rem;margin-top:.1rem}',
+      '.ootk-op1-pile-count{color:var(--c-gold);font-size:.68rem;margin-top:.2rem;font-weight:600}',
+      '.ootk-op1-pile.spotlight{box-shadow:0 0 24px rgba(201,168,76,.45);border-color:rgba(201,168,76,.6);background:rgba(201,168,76,.08)}',
+      '.ootk-op1-pile.found{box-shadow:0 0 36px rgba(201,168,76,.7);border-color:var(--c-gold);background:rgba(201,168,76,.16);transform:scale(1.06);animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op1-pile.dimmed{opacity:.3;transform:scale(.95)}',
+      '@keyframes ootkV63Pulse{0%,100%{box-shadow:0 0 24px rgba(201,168,76,.4)}50%{box-shadow:0 0 48px rgba(201,168,76,.8)}}',
+      // v63 CSS marker: ═══ v63 ③ Op2 12 宮位 ═══
+      '.ootk-op2-scene{padding:1rem 0;display:flex;justify-content:center}',
+      '.ootk-op2-wheel{position:relative;width:260px;height:260px;border-radius:50%;border:1px solid rgba(96,165,250,.15);background:radial-gradient(circle at center,rgba(96,165,250,.04) 0%,transparent 70%)}',
+      '.ootk-op2-center{position:absolute;top:50%;left:50%;width:46px;height:46px;margin-left:-23px;margin-top:-23px;border-radius:50%;background:linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.08));border:1px solid rgba(201,168,76,.5);display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.62rem;font-weight:700;letter-spacing:1px}',
+      '.ootk-op2-house{position:absolute;width:52px;height:52px;border-radius:50%;background:rgba(96,165,250,.04);border:1px solid rgba(96,165,250,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.55rem;color:rgba(96,165,250,.5);transition:all .4s ease}',
+      '.ootk-op2-house-num{font-size:.68rem;font-weight:700;color:rgba(96,165,250,.8)}',
+      '.ootk-op2-house-desc{font-size:.5rem;opacity:.8;margin-top:1px}',
+      '.ootk-op2-house-count{font-size:.5rem;color:rgba(255,255,255,.5);margin-top:1px;font-weight:600}',
+      '.ootk-op2-house.flash{background:rgba(96,165,250,.18);border-color:rgba(96,165,250,.5)}',
+      '.ootk-op2-house.spotlight{box-shadow:0 0 18px rgba(96,165,250,.5);border-color:rgba(96,165,250,.7);background:rgba(96,165,250,.15);transform:scale(1.12)}',
+      '.ootk-op2-house.found{box-shadow:0 0 32px rgba(201,168,76,.7);border-color:var(--c-gold);background:rgba(201,168,76,.18);transform:scale(1.25);z-index:3;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op2-house.found .ootk-op2-house-num,.ootk-op2-house.found .ootk-op2-house-desc{color:var(--c-gold)}',
+      '.ootk-op2-house.dimmed{opacity:.25;transform:scale(.9)}',
+      // v63 CSS marker: ═══ v63 ③ Op3 12 星座 ═══
+      '.ootk-op3-scene{padding:1rem 0;display:flex;justify-content:center}',
+      '.ootk-op3-zodiac{position:relative;width:260px;height:260px;border-radius:50%;border:1px solid rgba(168,85,247,.12);background:radial-gradient(circle at center,rgba(168,85,247,.04) 0%,transparent 70%)}',
+      '.ootk-op3-trump{position:absolute;top:50%;left:50%;width:120px;margin-left:-60px;margin-top:-30px;text-align:center;opacity:0;transform:scale(.8);transition:all .8s ease}',
+      '.ootk-op3-trump.show{opacity:1;transform:scale(1)}',
+      '.ootk-op3-trump-label{font-size:.6rem;color:var(--c-text-dim);letter-spacing:2px;margin-bottom:.2rem}',
+      '.ootk-op3-trump-name{font-size:.95rem;font-weight:700;color:var(--c-gold);letter-spacing:1px}',
+      '.ootk-op3-sign{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid rgba(168,85,247,.18);background:rgba(168,85,247,.04);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(168,85,247,.5);opacity:0;transform:scale(.5);transition:all .4s cubic-bezier(.34,1.56,.64,1)}',
+      '.ootk-op3-sign.show{opacity:1;transform:scale(1)}',
+      '.ootk-op3-sign-icon{font-size:.92rem;font-weight:700}',
+      '.ootk-op3-sign-name{font-size:.5rem;margin-top:1px}',
+      '.ootk-op3-sign.spotlight{box-shadow:0 0 18px rgba(168,85,247,.5);border-color:rgba(168,85,247,.7);background:rgba(168,85,247,.18);transform:scale(1.18);color:rgba(168,85,247,1)}',
+      '.ootk-op3-sign.found{box-shadow:0 0 32px rgba(201,168,76,.7);border-color:var(--c-gold);background:rgba(201,168,76,.2);transform:scale(1.3);color:var(--c-gold);z-index:3;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op3-sign.dimmed{opacity:.25;transform:scale(.9)}',
+      // v63 CSS marker: ═══ v63 ③ Op4 Sig 居中 + 36 環繞（最正統 Book T）═══
+      '.ootk-op4-scene{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}',
+      '.ootk-op4-table{position:relative;width:320px;height:320px;border-radius:50%;background:url(\'/img/ootk/decan-ring-bg.png\') center/cover no-repeat;box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 0 60px rgba(0,0,0,.4)}',
+      '.ootk-op4-bg{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at center,transparent 35%,rgba(0,0,0,.5) 100%);pointer-events:none}',
+      '.ootk-op4-sig{position:absolute;top:50%;left:50%;width:78px;height:118px;margin-left:-39px;margin-top:-59px;border-radius:6px;background:linear-gradient(135deg,#3a2a10,#1a1208);border:2px solid var(--c-gold);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .3rem;box-shadow:0 0 32px rgba(201,168,76,.6),0 4px 16px rgba(0,0,0,.6);opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(0deg);transition:all 1s cubic-bezier(.34,1.56,.64,1);left:50%;top:50%;transform-origin:center;z-index:3}',
+      '.ootk-op4-sig.show{opacity:1;transform:translate(0,0) scale(1)}',
+      '.ootk-op4-sig{transform:scale(.5)}',
+      '.ootk-op4-sig.show{transform:scale(1);box-shadow:0 0 36px rgba(201,168,76,.7),0 0 12px rgba(201,168,76,.5)}',
+      '.ootk-op4-sig-name{font-size:.68rem;color:var(--c-gold);font-weight:700;text-align:center;line-height:1.2;letter-spacing:.5px}',
+      '.ootk-op4-sig-label{font-size:.5rem;color:var(--c-text-dim);letter-spacing:2px;margin-top:.3rem}',
+      '.ootk-op4-ring-card{position:absolute;width:14px;height:22px;background:linear-gradient(135deg,#5a4220,#2a1d08);border:1px solid rgba(201,168,76,.4);border-radius:2px;opacity:0;transition:opacity .5s ease,transform .8s cubic-bezier(.34,1.56,.64,1);transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.4);z-index:2}',
+      '.ootk-op4-ring-card.show{opacity:.85}',
+      '.ootk-op4-decan-info{margin-top:1rem;padding:.6rem 1rem;border-radius:8px;background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.2);text-align:center;opacity:0;transform:translateY(8px);transition:all .6s ease;max-width:280px}',
+      '.ootk-op4-decan-info.show{opacity:1;transform:translateY(0)}',
+      '.ootk-op4-decan-label{font-size:.62rem;color:var(--c-text-dim);letter-spacing:2px;margin-bottom:.2rem}',
+      '.ootk-op4-decan-sign{font-size:.85rem;color:rgba(234,179,8,.95);font-weight:700;letter-spacing:.5px}',
+      '.ootk-op4-decan-planet{font-size:.68rem;color:var(--c-text-muted);margin-top:.15rem}',
+      // v63 CSS marker: ═══ v63 ③ Op5 生命之樹 ═══
+      '.ootk-op5-scene{padding:.5rem 0;display:flex;justify-content:center}',
+      '.ootk-op5-tree{position:relative;width:232px;height:336px}',
+      '.ootk-op5-tree-bg{position:absolute;inset:0;background:url(\'/img/ootk/tree-of-life.png\') center/contain no-repeat;opacity:.18;pointer-events:none}',
+      '.ootk-op5-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}',
+      '.ootk-op5-path{stroke:rgba(34,197,94,.12);stroke-width:1.2;fill:none;transition:stroke 1s ease}',
+      '.ootk-op5-path.lit{stroke:rgba(201,168,76,.4)}',
+      '.ootk-op5-node{position:absolute;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at center,rgba(34,197,94,.15) 0%,rgba(34,197,94,.04) 60%,transparent 100%);border:1.5px solid rgba(34,197,94,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(34,197,94,.5);opacity:0;transform:scale(.5);transition:all .5s cubic-bezier(.34,1.56,.64,1);z-index:2}',
+      '.ootk-op5-node.show{opacity:1;transform:scale(1)}',
+      '.ootk-op5-node-num{font-size:.62rem;font-weight:700}',
+      '.ootk-op5-node-name{font-size:.45rem;opacity:.7;margin-top:-1px}',
+      '.ootk-op5-node.spotlight{box-shadow:0 0 18px rgba(34,197,94,.5);border-color:rgba(34,197,94,.7);transform:scale(1.18)}',
+      '.ootk-op5-node.found{box-shadow:0 0 32px rgba(201,168,76,.8);border-color:var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.3) 0%,rgba(201,168,76,.1) 60%,transparent 100%);color:var(--c-gold);transform:scale(1.4);z-index:3;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op5-node.dimmed{opacity:.2;transform:scale(.85)}',
+      // v63 CSS marker: ═══ v63 ⑤ Counting Story 路徑 ═══
+      '.ootk-counting-scene{padding:1rem 0;display:flex;flex-direction:column;align-items:center}',
+      '.ootk-counting-track{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.3rem;max-width:420px;margin-bottom:1rem}',
+      '.ootk-counting-card{display:inline-flex;align-items:center;gap:.3rem;opacity:0;transform:translateY(8px) scale(.9);transition:all .5s cubic-bezier(.34,1.56,.64,1)}',
+      '.ootk-counting-card.show{opacity:1;transform:translateY(0) scale(1)}',
+      '.ootk-counting-card-inner{padding:.4rem .55rem;border-radius:6px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));box-shadow:0 2px 8px rgba(0,0,0,.3);min-width:62px;text-align:center}',
+      '.ootk-counting-card-inner.reversed{border-color:rgba(180,80,80,.5);background:linear-gradient(135deg,rgba(180,80,80,.12),rgba(180,80,80,.04))}',
+      '.ootk-counting-card-inner.reversed .ootk-counting-card-name{transform:rotate(180deg);display:inline-block}',
+      '.ootk-counting-card-name{font-size:.7rem;font-weight:700;color:var(--c-gold);line-height:1.2}',
+      '.ootk-counting-card-inner.reversed .ootk-counting-card-name{color:rgba(220,140,140,.95)}',
+      '.ootk-counting-card-val{font-size:.55rem;color:var(--c-text-dim);margin-top:.1rem;letter-spacing:.5px}',
+      '.ootk-counting-arrow{font-size:1rem;color:var(--c-gold);opacity:0;transition:opacity .5s ease;font-weight:700}',
+      '.ootk-counting-arrow.show{opacity:.7}',
+      '.ootk-counting-summary{opacity:0;transform:translateY(6px);transition:all .6s ease;max-width:380px;padding:.6rem .8rem;border-radius:8px;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.15);text-align:center}',
+      '.ootk-counting-summary.show{opacity:1;transform:translateY(0)}',
+      '.ootk-counting-meta{font-size:.72rem;color:var(--c-text);margin-bottom:.3rem}',
+      '.ootk-counting-end{font-size:.68rem;color:var(--c-text-dim);margin-bottom:.3rem;line-height:1.5}',
+      '.ootk-counting-note{font-size:.62rem;color:var(--c-gold);opacity:.85;line-height:1.6;font-style:italic}',
+      // v63 CSS marker: ═══ v63 ⑥ Pairing Story ═══
+      '.ootk-pairing-scene{padding:1rem 0;display:flex;flex-direction:column;align-items:center}',
+      '.ootk-pairing-grid{display:flex;flex-direction:column;gap:.4rem;max-width:380px;width:100%;padding:0 .5rem}',
+      '.ootk-pairing-center{display:flex;justify-content:center;margin-bottom:.4rem}',
+      '.ootk-pairing-sig{padding:.4rem .8rem;border-radius:6px;background:linear-gradient(135deg,rgba(201,168,76,.3),rgba(201,168,76,.12));border:1px solid var(--c-gold);font-size:.72rem;font-weight:700;color:var(--c-gold);letter-spacing:1px;box-shadow:0 0 16px rgba(201,168,76,.3)}',
+      '.ootk-pairing-row{display:grid;grid-template-columns:1fr auto 1fr;gap:.4rem;align-items:center;opacity:0;transform:translateX(-12px);transition:all .5s ease}',
+      '.ootk-pairing-row.show{opacity:1;transform:translateX(0)}',
+      '.ootk-pairing-side{display:flex;justify-content:center}',
+      '.ootk-pairing-side.left{justify-content:flex-end}',
+      '.ootk-pairing-side.right{justify-content:flex-start}',
+      '.ootk-pairing-card{padding:.35rem .5rem;border-radius:5px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);font-size:.66rem;color:var(--c-text);font-weight:600;text-align:center;min-width:72px;line-height:1.2}',
+      '.ootk-pairing-card.reversed{background:rgba(180,80,80,.08);border-color:rgba(180,80,80,.35);color:rgba(220,140,140,.95)}',
+      '.ootk-pairing-card.reversed{transform:rotate(180deg)}',
+      '.ootk-pairing-link{position:relative;display:flex;flex-direction:column;align-items:center;gap:.1rem;min-width:80px}',
+      '.ootk-pairing-link-line{width:100%;height:1.5px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 50%,transparent 100%);position:relative}',
+      '.ootk-pairing-link-num{font-size:.52rem;color:var(--c-gold);font-weight:700;letter-spacing:.5px;margin-top:.1rem}',
+      '.ootk-pairing-link-dig{font-size:.5rem;color:var(--c-text-dim);font-weight:600;letter-spacing:.3px}',
+      '.ootk-pairing-link.dig-strong .ootk-pairing-link-line{background:linear-gradient(90deg,transparent,rgba(201,168,76,.9),transparent);box-shadow:0 0 6px rgba(201,168,76,.6)}',
+      '.ootk-pairing-link.dig-strong .ootk-pairing-link-dig{color:rgba(201,168,76,.9)}',
+      '.ootk-pairing-link.dig-friendly .ootk-pairing-link-line{background:linear-gradient(90deg,transparent,rgba(96,165,250,.7),transparent)}',
+      '.ootk-pairing-link.dig-friendly .ootk-pairing-link-dig{color:rgba(96,165,250,.85)}',
+      '.ootk-pairing-link.dig-neutral .ootk-pairing-link-line{background:linear-gradient(90deg,transparent,rgba(150,150,150,.4),transparent)}',
+      '.ootk-pairing-link.dig-neutral .ootk-pairing-link-dig{color:rgba(180,180,180,.7)}',
+      '.ootk-pairing-link.dig-contrary .ootk-pairing-link-line{background:linear-gradient(90deg,transparent,rgba(180,80,80,.6),transparent);height:1px;opacity:.6}',
+      '.ootk-pairing-link.dig-contrary .ootk-pairing-link-dig{color:rgba(220,140,140,.85)}',
+      '.ootk-pairing-note{margin-top:.8rem;font-size:.62rem;color:var(--c-gold);opacity:0;transform:translateY(4px);transition:all .6s ease;font-style:italic;letter-spacing:.5px}',
+      '.ootk-pairing-note.show{opacity:.85;transform:translateY(0)}',
+      // v63 CSS marker: ═══ v63 響應式 ═══
+      '@media (max-width:480px){.ootk-invoc-scroll{padding:50px 30px 40px;max-width:90%}.ootk-invoc-en{font-size:.7rem}.ootk-invoc-zh{font-size:.78rem}.ootk-op4-table{width:280px;height:280px}.ootk-op2-wheel,.ootk-op3-zodiac{width:240px;height:240px}}',
       '@media(prefers-reduced-motion:reduce){.ootk-kc-flip,.ootk-kc-inner{animation:none!important;opacity:1;transform:none}.ootk-hcell,.ootk-znode,.ootk-seph{transition:none;opacity:1;transform:none}}'
     ].join('\n');
     document.head.appendChild(s);
@@ -2810,17 +3033,37 @@ enhanceTarot = function(tarot) {
   }
 
   // ── 五階段動畫主控台 ──
+  // ════════════════════════════════════════════════════════════════════
+  // ★ v63 五階段動畫主控台 — 最正統 Book T 儀式版
+  //
+  // 六大儀式 (per stage):
+  //   ① Invocation — Mathers IAO/HRU 召喚祝禱（首次）
+  //   ② Shuffle — 78 張螺旋洗牌動畫
+  //   ③ Deal — 各階段獨有的發牌儀式
+  //          Op1: YHVH 切四元素堆
+  //          Op2: 發到 12 宮位
+  //          Op3: 發到 12 星座
+  //          Op4: Sig 取出居中 + 36 張環繞
+  //          Op5: 發到生命之樹 10 質點
+  //   ④ Find Significator — 聚光燈逐堆掃過、Sig 那刻金光乍現
+  //   ⑤ Counting Path — 從 Sig 出發、走過的牌依序高亮 + 連線
+  //   ⑥ Pairing — 兩側對稱往內配對的光線連結
+  //
+  // 依據：Mathers Book T 原始手稿、Regardie《Golden Dawn》、
+  //        Cicero《Magical Tarot》、Mary K. Greer 對 elemental dignities
+  //        的權威解析
+  // ════════════════════════════════════════════════════════════════════
   function _runOOTKSequence(significatorId) {
     _injectOOTKStyles();
 
-    // 跑五階段計算
+    // 跑五階段計算（引擎已改為每階段獨立洗牌）
     var results = null;
     try {
       results = window.ootkRunFull ? window.ootkRunFull(significatorId) : null;
     } catch(e) { console.error('[OOTK] runFull error:', e); alert('OOTK 計算引擎錯誤：' + e.message); return; }
     if (!results) { alert('OOTK 引擎未載入'); return; }
 
-    // ── 欄位別名（新引擎 → 渲染器）──
+    // 欄位別名（新引擎 → 渲染器）
     if (results.op3) results.op3.rulingMajor = results.op3.signTrump || '';
     if (results.op4) results.op4.decanRuler = results.op4.decanPlanet || '';
 
@@ -2830,408 +3073,848 @@ enhanceTarot = function(tarot) {
     S.tarot.spreadType = 'ootk';
     S.tarot.spreadDef = { id: 'ootk', zh: '開鑰之法' };
 
-    // 建立全螢幕展示 overlay
+    // ──────────────────────────────────────────────────────────────
+    // 建立全螢幕展示 overlay（含召喚背景）
+    // ──────────────────────────────────────────────────────────────
     var overlay = document.createElement('div');
     overlay.className = 'ootk-overlay';
     overlay.id = 'ootk-sequence-overlay';
     overlay.style.justifyContent = 'flex-start';
-    overlay.style.paddingTop = '1.2rem';
+    overlay.style.paddingTop = '0';
 
     var html = '';
-    html += '<div style="text-align:center;max-width:480px;width:100%;margin:0 auto">';
+
+    // ① 召喚祝禱層（首次顯示，使用者點擊後消失進入主流程）
+    html += '<div id="ootk-invocation" class="ootk-invocation-layer">';
+    html += '  <div class="ootk-invoc-bg"></div>';
+    html += '  <div class="ootk-invoc-angel"></div>';
+    html += '  <div class="ootk-invoc-scroll">';
+    html += '    <div class="ootk-invoc-title">✦ 開鑰之法 ✦</div>';
+    html += '    <div class="ootk-invoc-subtitle">Opening of the Key</div>';
+    html += '    <div class="ootk-invoc-divider">— Hermetic Order of the Golden Dawn —</div>';
+    html += '    <div class="ootk-invoc-prayer">';
+    html += '      <div class="ootk-invoc-en">';
+    html += '        I invoke thee, I A O,<br>';
+    html += '        that thou wilt send H R U,<br>';
+    html += '        the great Angel that is set over<br>';
+    html += '        the operations of this Secret Wisdom,<br>';
+    html += '        to lay his hand invisibly upon<br>';
+    html += '        these consecrated cards of art,<br>';
+    html += '        that thereby we may obtain<br>';
+    html += '        true knowledge of hidden things,<br>';
+    html += '        to the glory of thine ineffable Name.<br>';
+    html += '        Amen.';
+    html += '      </div>';
+    html += '      <div class="ootk-invoc-zh">';
+    html += '        我以 IAO 之名召喚你，<br>';
+    html += '        HRU——主掌此祕智運作的偉大天使，<br>';
+    html += '        請你以無形之手按於此聖牌之上，<br>';
+    html += '        使我們得見隱秘之真相，<br>';
+    html += '        以彰汝不可名之榮光。<br>';
+    html += '        Amen.';
+    html += '      </div>';
+    html += '    </div>';
+    html += '    <button id="ootk-invoc-begin" class="ootk-invoc-btn">承接 · 開始儀式</button>';
+    html += '  </div>';
+    html += '</div>';
+
+    // ② 主流程容器（召喚後出現）
+    html += '<div id="ootk-main-flow" style="display:none;text-align:center;max-width:520px;width:100%;margin:0 auto">';
 
     // 頂部標題
-    html += '<div style="font-size:.85rem;color:var(--c-gold);font-weight:700;margin-bottom:.2rem">✦ 開鑰之法 ✦</div>';
+    html += '  <div style="font-size:.85rem;color:var(--c-gold);font-weight:700;margin-bottom:.2rem;letter-spacing:2px">✦ 開鑰之法 ✦</div>';
+    html += '  <div style="font-size:.62rem;color:var(--c-text-dim);margin-bottom:.6rem;letter-spacing:3px">OPENING · OF · THE · KEY</div>';
 
     // 進度點
-    html += '<div class="ootk-progress" id="ootk-dots">';
+    html += '  <div class="ootk-progress" id="ootk-dots">';
     for (var d = 0; d < 5; d++) html += '<div class="ootk-dot" data-idx="' + d + '"></div>';
-    html += '</div>';
+    html += '  </div>';
 
     // 五個階段的內容區
-    html += '<div id="ootk-phases"></div>';
+    html += '  <div id="ootk-phases"></div>';
 
     // 底部按鈕
-    html += '<div id="ootk-actions" style="margin-top:1rem;display:flex;gap:.5rem;justify-content:center">';
-    html += '<button id="ootk-next" style="padding:.55rem 1.5rem;border-radius:20px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--c-gold);font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit">開始第一階段 →</button>';
+    html += '  <div id="ootk-actions" style="margin-top:1rem;display:flex;gap:.5rem;justify-content:center">';
+    html += '    <button id="ootk-next" style="padding:.55rem 1.5rem;border-radius:20px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--c-gold);font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit">開始第一階段 →</button>';
+    html += '  </div>';
     html += '</div>';
 
-    html += '</div>';
     overlay.innerHTML = html;
     document.body.appendChild(overlay);
 
-    // 階段展示邏輯
+    // ──────────────────────────────────────────────────────────────
+    // ① 召喚祝禱動畫節奏控制
+    // ──────────────────────────────────────────────────────────────
+    var invocLayer = document.getElementById('ootk-invocation');
+    var mainFlow = document.getElementById('ootk-main-flow');
+    var beginBtn = document.getElementById('ootk-invoc-begin');
+
+    // 漸進式顯現：背景 → 天使 → 卷軸 → 祝禱詞 → 按鈕
+    setTimeout(function() { invocLayer.classList.add('show-bg'); }, 200);
+    setTimeout(function() { invocLayer.classList.add('show-angel'); }, 1200);
+    setTimeout(function() { invocLayer.classList.add('show-scroll'); }, 2400);
+    setTimeout(function() { invocLayer.classList.add('show-prayer'); }, 3600);
+    setTimeout(function() { invocLayer.classList.add('show-btn'); }, 8500);
+
+    beginBtn.onclick = function() {
+      invocLayer.classList.add('fade-out');
+      setTimeout(function() {
+        invocLayer.style.display = 'none';
+        mainFlow.style.display = 'block';
+        // 進入第一階段
+        startStageFlow();
+      }, 900);
+    };
+
+    // ──────────────────────────────────────────────────────────────
+    // 階段展示主控
+    // ──────────────────────────────────────────────────────────────
     var currentPhase = -1;
-    var phasesEl = document.getElementById('ootk-phases');
-    var nextBtn = document.getElementById('ootk-next');
-    var _advanceLock = false; // ★ v27：防重複點擊
+    var phasesEl;
+    var nextBtn;
+    var _advanceLock = false;
+
+    function startStageFlow() {
+      phasesEl = document.getElementById('ootk-phases');
+      nextBtn = document.getElementById('ootk-next');
+      nextBtn.addEventListener('click', advancePhase);
+    }
 
     function advancePhase() {
       if (_advanceLock) return;
       _advanceLock = true;
       try {
-      currentPhase++;
-      if (currentPhase >= 5) {
+        currentPhase++;
+        if (currentPhase >= 5) {
+          _advanceLock = false;
+          nextBtn.textContent = '🌙 靜月為你解讀全部五階段';
+          nextBtn.onclick = function() {
+            overlay.remove();
+            if (typeof goStep === 'function') goStep('step-tarot');
+            _triggerOOTKAI(results);
+          };
+          document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
+          return;
+        }
+
+        // 更新 dots
+        document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot, idx) {
+          if (idx < currentPhase) dot.className = 'ootk-dot done';
+          else if (idx === currentPhase) dot.className = 'ootk-dot current';
+          else dot.className = 'ootk-dot';
+        });
+
+        nextBtn.style.opacity = '0.3';
+        nextBtn.style.pointerEvents = 'none';
+
+        // ════════════════════════════════════════════════
+        // 每階段六儀式流程：洗牌 → 發牌 → 找Sig → Counting → Pairing → 顯示結果
+        // ════════════════════════════════════════════════
+        runStageRitual(currentPhase, function() {
+          // 儀式跑完，顯示文字結果
+          showPhaseContent();
+        });
+      } catch(err) {
         _advanceLock = false;
-        // 所有階段完成 → 顯示 AI 分析按鈕
+        console.error('[OOTK advancePhase] Error:', err);
+        alert('階段載入失敗：' + err.message);
+      }
+    }
+
+    function showPhaseContent() {
+      _advanceLock = false;
+      var opData = results['op' + (currentPhase + 1)];
+      var label = OP_LABELS[currentPhase];
+      var phaseDiv = document.createElement('div');
+      phaseDiv.className = 'ootk-phase';
+      phaseDiv.innerHTML = _renderPhase(currentPhase, label, opData, results);
+      phasesEl.appendChild(phaseDiv);
+      requestAnimationFrame(function() { requestAnimationFrame(function() { phaseDiv.classList.add('visible'); }); });
+      setTimeout(function() { phaseDiv.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+      nextBtn.style.opacity = '1';
+      nextBtn.style.pointerEvents = 'auto';
+      if (currentPhase < 4) {
+        nextBtn.textContent = OP_LABELS[currentPhase + 1].zh + ' →';
+      } else {
         nextBtn.textContent = '🌙 靜月為你解讀全部五階段';
-        nextBtn.onclick = function() {
-          overlay.remove();
-          if (typeof goStep === 'function') goStep('step-tarot');
-          _triggerOOTKAI(results);
-        };
-        // 更新所有 dots
+        nextBtn.onclick = function() { overlay.remove(); if (typeof goStep === 'function') goStep('step-tarot'); _triggerOOTKAI(results); };
         document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
+      }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ★ 階段儀式總控：洗牌 → 發牌 → 找 Sig → Counting → Pairing
+    // ════════════════════════════════════════════════════════════════
+    function runStageRitual(phaseIdx, onComplete) {
+      var ritualScene = document.createElement('div');
+      ritualScene.className = 'ootk-ritual-scene';
+      ritualScene.style.cssText = 'opacity:0;transition:opacity .5s;min-height:340px';
+      phasesEl.appendChild(ritualScene);
+      requestAnimationFrame(function() { ritualScene.style.opacity = '1'; });
+
+      // 階段標題
+      var stageTitle = document.createElement('div');
+      stageTitle.className = 'ootk-stage-title';
+      stageTitle.innerHTML =
+        '<div class="ootk-stage-num">第 ' + ['一','二','三','四','五'][phaseIdx] + ' 階段 · Operation ' + (phaseIdx + 1) + '</div>' +
+        '<div class="ootk-stage-name">' + OP_LABELS[phaseIdx].zh + '</div>' +
+        '<div class="ootk-stage-en">' + OP_LABELS[phaseIdx].en + '</div>';
+      ritualScene.appendChild(stageTitle);
+
+      // 儀式場
+      var stage = document.createElement('div');
+      stage.className = 'ootk-stage-area';
+      ritualScene.appendChild(stage);
+
+      // 階段提示文字
+      var caption = document.createElement('div');
+      caption.className = 'ootk-stage-caption';
+      stage.appendChild(caption);
+
+      // 流程：② 洗牌 → ③ 發牌（含找 Sig） → ⑤ Counting → ⑥ Pairing
+      ritualShuffle(stage, caption, function() {
+        ritualDeal(phaseIdx, stage, caption, function() {
+          ritualCounting(phaseIdx, stage, caption, function() {
+            ritualPairing(phaseIdx, stage, caption, function() {
+              // 全部跑完，淡出 ritualScene
+              setTimeout(function() {
+                ritualScene.style.opacity = '0';
+                setTimeout(function() {
+                  ritualScene.remove();
+                  onComplete();
+                }, 500);
+              }, 800);
+            });
+          });
+        });
+      });
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ② 洗牌儀式 — 78 張螺旋洗牌
+    // ════════════════════════════════════════════════════════════════
+    function ritualShuffle(stage, caption, onDone) {
+      caption.textContent = '🃏 洗牌——將 78 張牌徹底打亂，請靜心默念你的問題';
+      var box = document.createElement('div');
+      box.className = 'ootk-shuffle-box';
+      stage.appendChild(box);
+
+      // 生成 24 張視覺卡（不必畫 78 張，過密反而看不清）
+      for (var i = 0; i < 24; i++) {
+        var c = document.createElement('div');
+        c.className = 'ootk-shuffle-card';
+        c.style.animationDelay = (i * 80) + 'ms';
+        c.style.setProperty('--i', i);
+        box.appendChild(c);
+      }
+
+      // 1.8 秒後淡出
+      setTimeout(function() {
+        box.classList.add('done');
+        setTimeout(function() {
+          box.remove();
+          onDone();
+        }, 600);
+      }, 1800);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ③ 發牌儀式 + ④ 找 Significator — 各階段獨有
+    // ════════════════════════════════════════════════════════════════
+    function ritualDeal(phaseIdx, stage, caption, onDone) {
+      if (phaseIdx === 0) ritualDealOp1(stage, caption, onDone);
+      else if (phaseIdx === 1) ritualDealOp2(stage, caption, onDone);
+      else if (phaseIdx === 2) ritualDealOp3(stage, caption, onDone);
+      else if (phaseIdx === 3) ritualDealOp4(stage, caption, onDone);
+      else if (phaseIdx === 4) ritualDealOp5(stage, caption, onDone);
+      else onDone();
+    }
+
+    // ─── Op1 發牌：YHVH 切四元素堆 ───
+    function ritualDealOp1(stage, caption, onDone) {
+      caption.innerHTML = '🜂 切牌——按 <b>YHVH</b> 四聖名分為四元素堆';
+
+      var op = results.op1;
+      var piles = op.piles || {};
+      var activeKey = op.activePile || 'fire';
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op1-scene';
+      var sceneHTML = '<div class="ootk-op1-deck" id="ootk-op1-deck"><div class="ootk-op1-deck-count" id="ootk-op1-count">78</div></div>';
+      var elSlots = [
+        { el: 'fire',  letter: 'י', letterEn: 'Yod', label: '🜂 火', meaning: '工作・事業' },
+        { el: 'water', letter: 'ה', letterEn: 'Heh', label: '🜄 水', meaning: '愛情・愉悅' },
+        { el: 'air',   letter: 'ו', letterEn: 'Vav', label: '🜁 風', meaning: '衝突・損失' },
+        { el: 'earth', letter: 'ה', letterEn: 'Heh', label: '🜃 土', meaning: '金錢・物質' }
+      ];
+      sceneHTML += '<div class="ootk-op1-piles">';
+      elSlots.forEach(function(s) {
+        sceneHTML +=
+          '<div class="ootk-op1-pile" data-el="' + s.el + '">' +
+          '  <div class="ootk-op1-pile-letter">' + s.letter + '</div>' +
+          '  <div class="ootk-op1-pile-stack" id="op1-stack-' + s.el + '"></div>' +
+          '  <div class="ootk-op1-pile-meta">' +
+          '    <div class="ootk-op1-pile-label">' + s.label + '</div>' +
+          '    <div class="ootk-op1-pile-meaning">' + s.meaning + '</div>' +
+          '    <div class="ootk-op1-pile-count"><span id="op1-count-' + s.el + '">0</span> 張</div>' +
+          '  </div>' +
+          '</div>';
+      });
+      sceneHTML += '</div>';
+      scene.innerHTML = sceneHTML;
+      stage.appendChild(scene);
+
+      var elKeys = ['fire','water','air','earth'];
+      var totalPerPile = { fire: piles.fire || 19, water: piles.water || 19, air: piles.air || 20, earth: piles.earth || 20 };
+      var dist = [];
+      elKeys.forEach(function(k) {
+        for (var i = 0; i < totalPerPile[k]; i++) dist.push(k);
+      });
+      // shuffle
+      for (var sh = dist.length - 1; sh > 0; sh--) { var sj = Math.floor(Math.random() * (sh + 1)); var tmp = dist[sh]; dist[sh] = dist[sj]; dist[sj] = tmp; }
+
+      var counts = { fire: 0, water: 0, air: 0, earth: 0 };
+      var flown = 0;
+      var deckEl = scene.querySelector('#ootk-op1-deck');
+      var countEl = scene.querySelector('#ootk-op1-count');
+
+      function flyOne() {
+        if (flown >= dist.length) {
+          setTimeout(highlightActive, 300);
+          return;
+        }
+        var k = dist[flown];
+        counts[k]++;
+        flown++;
+        countEl.textContent = String(78 - flown);
+        scene.querySelector('#op1-count-' + k).textContent = String(counts[k]);
+
+        // 視覺：飛卡
+        var fly = document.createElement('div');
+        fly.className = 'ootk-fly-card-v63';
+        var dRect = deckEl.getBoundingClientRect();
+        var sRect = scene.getBoundingClientRect();
+        fly.style.left = (dRect.left - sRect.left + 12) + 'px';
+        fly.style.top = (dRect.top - sRect.top + 8) + 'px';
+        scene.appendChild(fly);
+
+        var stackEl = scene.querySelector('#op1-stack-' + k);
+        var stRect = stackEl.getBoundingClientRect();
+        requestAnimationFrame(function() {
+          fly.style.left = (stRect.left - sRect.left + 8) + 'px';
+          fly.style.top = (stRect.top - sRect.top - counts[k] * 1.2) + 'px';
+          fly.style.transform = 'rotate(' + (Math.random() * 4 - 2) + 'deg)';
+          fly.style.opacity = '.85';
+        });
+        setTimeout(function() { fly.classList.add('landed'); }, 380);
+
+        var delay = flown < 8 ? 90 : flown < 30 ? 50 : flown < 60 ? 25 : 15;
+        setTimeout(flyOne, delay);
+      }
+
+      // ④ 找 Significator
+      function highlightActive() {
+        caption.innerHTML = '🔍 尋找代表牌——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
+
+        var pileEls = scene.querySelectorAll('.ootk-op1-pile');
+        var idx = 0;
+        function spotlight() {
+          // 移除所有 spotlight
+          pileEls.forEach(function(p) { p.classList.remove('spotlight'); });
+          if (idx >= 4) {
+            // 結束掃描，亮起 active
+            setTimeout(function() {
+              pileEls.forEach(function(p) {
+                if (p.dataset.el === activeKey) p.classList.add('found');
+                else p.classList.add('dimmed');
+              });
+              caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">' + (PILE_ZH[activeKey] || activeKey) + '</b>';
+              setTimeout(onDone, 1400);
+            }, 200);
+            return;
+          }
+          // 高亮這堆
+          var key = elKeys[idx];
+          var p = scene.querySelector('.ootk-op1-pile[data-el="' + key + '"]');
+          if (p) p.classList.add('spotlight');
+          // 如果這堆是 active，提早停留更久
+          var stayTime = (key === activeKey) ? 800 : 350;
+          idx++;
+          setTimeout(spotlight, stayTime);
+        }
+        // 從第一堆開始掃
+        setTimeout(spotlight, 400);
+      }
+
+      setTimeout(flyOne, 400);
+    }
+
+    // ─── Op2 發牌：12 宮位 ───
+    function ritualDealOp2(stage, caption, onDone) {
+      caption.innerHTML = '🏠 發牌——依序發到 <b>十二宮位</b>（占星天宮圖）';
+
+      var op = results.op2;
+      var activeH = (op.activeHouse || 1) - 1;
+      var dist = op.houseDistribution || [];
+
+      var HOUSE_LBL = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
+      var HOUSE_DESC = ['自我','財帛','兄弟','田宅','子女','奴僕','夫妻','疾厄','遷移','官祿','福德','玄秘'];
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op2-scene';
+      var html = '<div class="ootk-op2-wheel" id="ootk-op2-wheel">';
+      html += '<div class="ootk-op2-center">SIG</div>';
+      // 12 宮放射
+      for (var hi = 0; hi < 12; hi++) {
+        var ang = (hi * 30 - 90); // 第 1 宮在 9 點鐘方向（左）
+        // 占星傳統：第 1 宮從上升點開始（東方/左），逆時針排
+        ang = (180 + hi * 30) % 360;
+        var rad = ang * Math.PI / 180;
+        var r = 100;
+        var cx = 130 + r * Math.cos(rad) - 26;
+        var cy = 130 + r * Math.sin(rad) - 26;
+        html += '<div class="ootk-op2-house" data-idx="' + hi + '" style="left:' + cx + 'px;top:' + cy + 'px">';
+        html += '  <div class="ootk-op2-house-num">' + HOUSE_LBL[hi] + '</div>';
+        html += '  <div class="ootk-op2-house-desc">' + HOUSE_DESC[hi] + '</div>';
+        html += '  <div class="ootk-op2-house-count" id="op2-cnt-' + hi + '">0</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 發牌動畫：第1張→第1宮、第2張→第2宮 ... 第13張→第1宮 ... 循環
+      var counts = new Array(12).fill(0);
+      var dealt = 0;
+      function dealNext() {
+        if (dealt >= 78) {
+          setTimeout(highlightActive, 300);
+          return;
+        }
+        var targetIdx = dealt % 12;
+        counts[targetIdx]++;
+        dealt++;
+        scene.querySelector('#op2-cnt-' + targetIdx).textContent = String(counts[targetIdx]);
+
+        // 卡飛動畫
+        var house = scene.querySelector('.ootk-op2-house[data-idx="' + targetIdx + '"]');
+        if (house) {
+          house.classList.add('flash');
+          setTimeout(function() { house.classList.remove('flash'); }, 200);
+        }
+
+        var delay = dealt < 12 ? 130 : dealt < 36 ? 60 : 25;
+        setTimeout(dealNext, delay);
+      }
+
+      function highlightActive() {
+        caption.innerHTML = '🔍 尋找代表牌的宮位——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
+
+        var houses = scene.querySelectorAll('.ootk-op2-house');
+        // 逐一聚光
+        var idx = 0;
+        function spotlight() {
+          houses.forEach(function(h) { h.classList.remove('spotlight'); });
+          if (idx >= 12) {
+            houses.forEach(function(h) {
+              var i = parseInt(h.dataset.idx);
+              if (i === activeH) h.classList.add('found');
+              else h.classList.add('dimmed');
+            });
+            caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">第 ' + HOUSE_LBL[activeH] + ' 宮 · ' + HOUSE_DESC[activeH] + '</b>';
+            setTimeout(onDone, 1400);
+            return;
+          }
+          var h = scene.querySelector('.ootk-op2-house[data-idx="' + idx + '"]');
+          if (h) h.classList.add('spotlight');
+          var stay = (idx === activeH) ? 700 : 200;
+          idx++;
+          setTimeout(spotlight, stay);
+        }
+        setTimeout(spotlight, 300);
+      }
+
+      setTimeout(dealNext, 400);
+    }
+
+    // ─── Op3 發牌：12 星座 ───
+    function ritualDealOp3(stage, caption, onDone) {
+      caption.innerHTML = '♈ 發牌——依 GD 對應分入 <b>黃道十二星座</b>';
+
+      var op = results.op3;
+      var SIGN_NAMES = ['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'];
+      var SIGN_ICONS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+      var activeIdx = -1;
+      for (var si = 0; si < 12; si++) {
+        if (SIGN_NAMES[si] === op.activeSign) { activeIdx = si; break; }
+      }
+      if (activeIdx < 0) activeIdx = 0;
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op3-scene';
+      var html = '<div class="ootk-op3-zodiac" id="ootk-op3-zodiac">';
+      // 黃道圈
+      html += '<div class="ootk-op3-trump" id="ootk-op3-trump"></div>';
+      for (var zi = 0; zi < 12; zi++) {
+        var ang = (zi * 30 - 90) * Math.PI / 180;
+        var r = 105;
+        var cx = 130 + r * Math.cos(ang) - 22;
+        var cy = 130 + r * Math.sin(ang) - 22;
+        html += '<div class="ootk-op3-sign" data-idx="' + zi + '" style="left:' + cx + 'px;top:' + cy + 'px">';
+        html += '  <div class="ootk-op3-sign-icon">' + SIGN_ICONS[zi] + '</div>';
+        html += '  <div class="ootk-op3-sign-name">' + SIGN_NAMES[zi] + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 各星座漸進閃爍（模擬 GD 分配）
+      var signs = scene.querySelectorAll('.ootk-op3-sign');
+      var idx = 0;
+      function lightSign() {
+        if (idx >= 12) {
+          setTimeout(highlightActive, 200);
+          return;
+        }
+        signs[idx].classList.add('show');
+        idx++;
+        setTimeout(lightSign, 90);
+      }
+
+      function highlightActive() {
+        caption.innerHTML = '🔍 尋找代表牌的星座——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
+
+        // 從 0 度開始順時針掃過
+        var pos = 0;
+        function sweep() {
+          signs.forEach(function(s) { s.classList.remove('spotlight'); });
+          if (pos > activeIdx) {
+            signs.forEach(function(s, i) {
+              if (i === activeIdx) s.classList.add('found');
+              else s.classList.add('dimmed');
+            });
+            caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">' + SIGN_ICONS[activeIdx] + ' ' + SIGN_NAMES[activeIdx] + '</b>';
+            // 對應大牌
+            if (op.signTrump) {
+              setTimeout(function() {
+                var trumpDiv = scene.querySelector('#ootk-op3-trump');
+                trumpDiv.innerHTML = '<div class="ootk-op3-trump-label">星座主牌</div><div class="ootk-op3-trump-name">' + op.signTrump + '</div>';
+                trumpDiv.classList.add('show');
+              }, 600);
+            }
+            setTimeout(onDone, 1800);
+            return;
+          }
+          if (signs[pos]) signs[pos].classList.add('spotlight');
+          var stay = (pos === activeIdx) ? 600 : 130;
+          pos++;
+          setTimeout(sweep, stay);
+        }
+        setTimeout(sweep, 250);
+      }
+
+      setTimeout(lightSign, 250);
+    }
+
+    // ─── Op4 發牌：正統 Book T「Sig 居中、36 張環繞」 ───
+    function ritualDealOp4(stage, caption, onDone) {
+      caption.innerHTML = '🔮 將代表牌取出居中——<b>三十六張緊隨其後形成環</b>（最正統 Book T）';
+
+      var op = results.op4;
+      var ringCount = (op.activeCards ? op.activeCards.length - 1 : 36); // 扣掉中心 Sig
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op4-scene';
+      var html = '<div class="ootk-op4-table" id="ootk-op4-table">';
+      html += '  <div class="ootk-op4-bg"></div>';
+      html += '  <div class="ootk-op4-sig" id="ootk-op4-sig">';
+      html += '    <div class="ootk-op4-sig-name">' + (results.significator ? results.significator.name : '代表牌') + '</div>';
+      html += '    <div class="ootk-op4-sig-label">SIGNIFICATOR</div>';
+      html += '  </div>';
+      // 36 張環繞位置（用 SVG 標記點）
+      var R = 130;
+      for (var ri = 0; ri < ringCount; ri++) {
+        var ang = (ri * 360 / ringCount - 90) * Math.PI / 180;
+        var cx = 160 + R * Math.cos(ang) - 8;
+        var cy = 160 + R * Math.sin(ang) - 12;
+        html += '<div class="ootk-op4-ring-card" data-idx="' + ri + '" style="left:' + cx + 'px;top:' + cy + 'px;transform:rotate(' + (ang * 180 / Math.PI + 90) + 'deg)"></div>';
+      }
+      html += '</div>';
+
+      // 旬資訊
+      if (op.decanSign || op.decanRange) {
+        html += '<div class="ootk-op4-decan-info">';
+        html += '  <div class="ootk-op4-decan-label">代表牌對應的旬</div>';
+        if (op.decanSign) html += '  <div class="ootk-op4-decan-sign">' + op.decanSign + ' · ' + (op.decanRange || '') + '</div>';
+        if (op.decanPlanet) html += '  <div class="ootk-op4-decan-planet">主星：' + op.decanPlanet + '</div>';
+        html += '</div>';
+      }
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 中心 Sig 放大
+      var sigEl = scene.querySelector('#ootk-op4-sig');
+      setTimeout(function() { sigEl.classList.add('show'); }, 300);
+
+      // 環繞牌依序浮現
+      var ringEls = scene.querySelectorAll('.ootk-op4-ring-card');
+      setTimeout(function() {
+        ringEls.forEach(function(c, i) {
+          setTimeout(function() { c.classList.add('show'); }, i * 50);
+        });
+      }, 1100);
+
+      // 旬資訊浮現
+      setTimeout(function() {
+        var info = scene.querySelector('.ootk-op4-decan-info');
+        if (info) info.classList.add('show');
+      }, 1100 + ringCount * 50 + 300);
+
+      setTimeout(onDone, 1400 + ringCount * 50 + 800);
+    }
+
+    // ─── Op5 發牌：生命之樹十質點 ───
+    function ritualDealOp5(stage, caption, onDone) {
+      caption.innerHTML = '🌳 發牌——依 GD 對應分入 <b>生命之樹十質點</b>（Sephirot）';
+
+      var op = results.op5;
+      var SEPH_NAMES = ['Kether','Chokmah','Binah','Chesed','Geburah','Tiphareth','Netzach','Hod','Yesod','Malkuth'];
+      var SEPH_ZH = ['王冠','智慧','理解','慈悲','嚴厲','美','勝利','榮耀','基礎','王國'];
+      var activeIdx = SEPH_NAMES.indexOf(op.activeSephirah || '');
+      if (activeIdx < 0) activeIdx = 9;
+
+      // 生命之樹位置（200x320）
+      var SEPH_POS = [
+        {x: 84, y: 16},   // 0 Kether (top center)
+        {x: 142, y: 64},  // 1 Chokmah (right)
+        {x: 26, y: 64},   // 2 Binah (left)
+        {x: 142, y: 124}, // 3 Chesed
+        {x: 26, y: 124},  // 4 Geburah
+        {x: 84, y: 158},  // 5 Tiphareth (center)
+        {x: 142, y: 196}, // 6 Netzach
+        {x: 26, y: 196},  // 7 Hod
+        {x: 84, y: 240},  // 8 Yesod
+        {x: 84, y: 286}   // 9 Malkuth
+      ];
+      var TREE_LINES = [
+        [0,1],[0,2],[0,5],[1,2],[1,3],[1,5],[2,4],[2,5],
+        [3,4],[3,5],[3,6],[4,5],[4,7],[5,6],[5,7],[5,8],
+        [6,7],[6,8],[7,8],[8,9]
+      ];
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op5-scene';
+      var html = '<div class="ootk-op5-tree" id="ootk-op5-tree">';
+      html += '<div class="ootk-op5-tree-bg"></div>';
+      // SVG 路徑
+      html += '<svg class="ootk-op5-svg" viewBox="0 0 200 320">';
+      TREE_LINES.forEach(function(ln, i) {
+        var a = SEPH_POS[ln[0]], b = SEPH_POS[ln[1]];
+        html += '<line class="ootk-op5-path" data-i="' + i + '" x1="' + (a.x + 16) + '" y1="' + (a.y + 16) + '" x2="' + (b.x + 16) + '" y2="' + (b.y + 16) + '" />';
+      });
+      html += '</svg>';
+      // Sephirot 節點
+      for (var ti = 0; ti < 10; ti++) {
+        html += '<div class="ootk-op5-node" data-idx="' + ti + '" style="left:' + SEPH_POS[ti].x + 'px;top:' + SEPH_POS[ti].y + 'px">';
+        html += '<div class="ootk-op5-node-num">' + (ti + 1) + '</div>';
+        html += '<div class="ootk-op5-node-name">' + SEPH_NAMES[ti].substring(0, 4) + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 節點從上往下逐一亮
+      var nodes = scene.querySelectorAll('.ootk-op5-node');
+      var paths = scene.querySelectorAll('.ootk-op5-path');
+      var idx = 0;
+      function lightNode() {
+        if (idx >= 10) {
+          setTimeout(function() { paths.forEach(function(p) { p.classList.add('lit'); }); setTimeout(highlightActive, 400); }, 200);
+          return;
+        }
+        nodes[idx].classList.add('show');
+        idx++;
+        setTimeout(lightNode, 110);
+      }
+
+      function highlightActive() {
+        caption.innerHTML = '🔍 尋找代表牌的質點——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
+
+        var pos = 0;
+        function sweep() {
+          nodes.forEach(function(n) { n.classList.remove('spotlight'); });
+          if (pos >= 10) {
+            nodes.forEach(function(n, i) {
+              if (i === activeIdx) n.classList.add('found');
+              else n.classList.add('dimmed');
+            });
+            caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">' + SEPH_NAMES[activeIdx] + '（' + SEPH_ZH[activeIdx] + '）</b>';
+            setTimeout(onDone, 1400);
+            return;
+          }
+          nodes[pos].classList.add('spotlight');
+          var stay = (pos === activeIdx) ? 700 : 130;
+          pos++;
+          setTimeout(sweep, stay);
+        }
+        setTimeout(sweep, 200);
+      }
+
+      setTimeout(lightNode, 250);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ⑤ Counting 路徑視覺化 — 從 Sig 出發、走過的牌依序高亮 + 連線
+    // ════════════════════════════════════════════════════════════════
+    function ritualCounting(phaseIdx, stage, caption, onDone) {
+      var op = results['op' + (phaseIdx + 1)];
+      var path = op.countingPath || [];
+
+      caption.innerHTML = '📖 <b style="color:var(--c-gold)">Counting Story</b>——從代表牌出發，按計數值跳數，每張走過的牌都是事件的時序';
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-counting-scene';
+      var html = '<div class="ootk-counting-track" id="ootk-counting-track">';
+      // 顯示走過的牌（最多 8 張，多了截掉）
+      var displayPath = path.slice(0, 8);
+      displayPath.forEach(function(step, i) {
+        var dirArrow = step.direction === 'left' ? '←' : '→';
+        var rev = (step.isUp === false);
+        html += '<div class="ootk-counting-card" data-i="' + i + '">';
+        html += '  <div class="ootk-counting-card-inner' + (rev ? ' reversed' : '') + '">';
+        html += '    <div class="ootk-counting-card-name">' + (step.cardName || '?') + '</div>';
+        html += '    <div class="ootk-counting-card-val">值 ' + (step.countValue || 0) + ' ' + dirArrow + '</div>';
+        html += '  </div>';
+        if (i < displayPath.length - 1) html += '<div class="ootk-counting-arrow">' + dirArrow + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      // 路徑摘要
+      html += '<div class="ootk-counting-summary">';
+      html += '  <div class="ootk-counting-meta">共走過 <b>' + path.length + '</b> 張牌（包含起點代表牌）</div>';
+      var lastStep = path[path.length - 1];
+      if (lastStep) {
+        html += '  <div class="ootk-counting-end">自然終點：' + (lastStep.cardName || '?') + '（落到已訪過的牌，計數結束）</div>';
+        html += '  <div class="ootk-counting-note">★ 正統 Book T：終點不是「結論牌」，整串走過的牌構成一個故事</div>';
+      }
+      html += '</div>';
+
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 牌依序浮現
+      var cards = scene.querySelectorAll('.ootk-counting-card');
+      var arrows = scene.querySelectorAll('.ootk-counting-arrow');
+      var i = 0;
+      function showNext() {
+        if (i >= cards.length) {
+          setTimeout(function() {
+            scene.querySelector('.ootk-counting-summary').classList.add('show');
+          }, 200);
+          setTimeout(onDone, 2000);
+          return;
+        }
+        cards[i].classList.add('show');
+        if (i < arrows.length) {
+          setTimeout(function() {
+            if (arrows[i]) arrows[i].classList.add('show');
+          }, 200);
+        }
+        i++;
+        setTimeout(showNext, 480);
+      }
+
+      setTimeout(showNext, 300);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ⑥ Pairing 視覺化 — 兩側對稱往內配對的光線連結
+    // ════════════════════════════════════════════════════════════════
+    function ritualPairing(phaseIdx, stage, caption, onDone) {
+      var op = results['op' + (phaseIdx + 1)];
+      var pairs = op.pairs || [];
+
+      if (!pairs.length) {
+        caption.innerHTML = '🔗 此層沒有 Pairing 配對（活躍堆過小）';
+        setTimeout(onDone, 1000);
         return;
       }
 
-      // 更新 dots
-      document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot, idx) {
-        if (idx < currentPhase) dot.className = 'ootk-dot done';
-        else if (idx === currentPhase) dot.className = 'ootk-dot current';
-        else dot.className = 'ootk-dot';
+      caption.innerHTML = '🔗 <b style="color:var(--c-gold)">Pairing Story</b>——從代表牌兩側對稱配對，補充 Counting 的細節';
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-pairing-scene';
+      var html = '<div class="ootk-pairing-grid" id="ootk-pairing-grid">';
+
+      // 中心 Sig
+      html += '<div class="ootk-pairing-center">';
+      html += '  <div class="ootk-pairing-sig">' + (results.significator ? results.significator.name : 'SIG') + '</div>';
+      html += '</div>';
+
+      var displayPairs = pairs.slice(0, 5);
+      displayPairs.forEach(function(pr, pi) {
+        var l = pr.left || pr.card1 || {};
+        var r = pr.right || pr.card2 || {};
+        var lName = l.n || l.name || (l.cardName || '?');
+        var rName = r.n || r.name || (r.cardName || '?');
+        var lUp = (l.isUp === true);
+        var rUp = (r.isUp === true);
+        var dignityLabel = '';
+        var dignityClass = '';
+        var dig = pr.dignity || '';
+        var DIG_MAP = {
+          'strengthen':  { label: '同元素・強化', cls: 'dig-strong' },
+          'weaken':      { label: 'Contrary・抵消', cls: 'dig-contrary' },
+          'friendly':    { label: 'Friendly・友善', cls: 'dig-friendly' },
+          'neutral':     { label: 'Neutral・中性', cls: 'dig-neutral' },
+          'hostile':     { label: '對立・衝突', cls: 'dig-contrary' }
+        };
+        if (DIG_MAP[dig]) {
+          dignityLabel = DIG_MAP[dig].label;
+          dignityClass = DIG_MAP[dig].cls;
+        }
+
+        html += '<div class="ootk-pairing-row" data-i="' + pi + '">';
+        html += '  <div class="ootk-pairing-side left">';
+        html += '    <div class="ootk-pairing-card' + (lUp ? '' : ' reversed') + '">' + lName + '</div>';
+        html += '  </div>';
+        html += '  <div class="ootk-pairing-link ' + dignityClass + '">';
+        html += '    <div class="ootk-pairing-link-line"></div>';
+        html += '    <div class="ootk-pairing-link-num">#' + (pi + 1) + '</div>';
+        if (dignityLabel) html += '    <div class="ootk-pairing-link-dig">' + dignityLabel + '</div>';
+        html += '  </div>';
+        html += '  <div class="ootk-pairing-side right">';
+        html += '    <div class="ootk-pairing-card' + (rUp ? '' : ' reversed') + '">' + rName + '</div>';
+        html += '  </div>';
+        html += '</div>';
       });
 
-      // ★ P0-3：分堆動畫（第一階段78牌飛入四堆，其餘用升級過渡）
-      var _ritualMsgs = [
-        '將 78 張牌分入四個元素堆…',
-        '按照你的代表牌，展開十二宮位…',
-        '牌面落入黃道十二星座…',
-        '聚焦到三十六旬的精確位置…',
-        '最後一層——生命之樹…'
-      ];
-      nextBtn.style.opacity = '0.3';
-      nextBtn.style.pointerEvents = 'none';
+      html += '</div>';
+      html += '<div class="ootk-pairing-note">★ 從代表牌兩側對稱往外配對：左側 ↔ 右側 = 一體兩面的細節</div>';
 
-      function _showPhaseContent() {
-        _advanceLock = false; // ★ 動畫完成才解鎖
-        var opData = results['op' + (currentPhase + 1)];
-        var label = OP_LABELS[currentPhase];
-        var phaseDiv = document.createElement('div');
-        phaseDiv.className = 'ootk-phase';
-        phaseDiv.innerHTML = _renderPhase(currentPhase, label, opData, results);
-        phasesEl.appendChild(phaseDiv);
-        requestAnimationFrame(function() { requestAnimationFrame(function() { phaseDiv.classList.add('visible'); }); });
-        setTimeout(function() { phaseDiv.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
-        nextBtn.style.opacity = '1';
-        nextBtn.style.pointerEvents = 'auto';
-        if (currentPhase < 4) { nextBtn.textContent = OP_LABELS[currentPhase + 1].zh + ' →'; }
-        else {
-          nextBtn.textContent = '🌙 靜月為你解讀全部五階段';
-          nextBtn.onclick = function() { overlay.remove(); if (typeof goStep === 'function') goStep('step-tarot'); _triggerOOTKAI(results); };
-          document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 對依序浮現
+      var rows = scene.querySelectorAll('.ootk-pairing-row');
+      var i = 0;
+      function showNext() {
+        if (i >= rows.length) {
+          setTimeout(function() {
+            scene.querySelector('.ootk-pairing-note').classList.add('show');
+          }, 200);
+          setTimeout(onDone, 1600);
+          return;
         }
+        rows[i].classList.add('show');
+        i++;
+        setTimeout(showNext, 480);
       }
-
-      if (currentPhase === 0) {
-        // ── 第一階段：78牌飛入四堆動畫 ──
-        var pileScene = document.createElement('div');
-        pileScene.style.cssText = 'opacity:0;transition:opacity .4s';
-        var sceneHTML = '<div class="ootk-pile-scene">';
-        sceneHTML += '<div class="ootk-pile-deck" id="ootk-deck">';
-        for (var dc = 0; dc < 6; dc++) sceneHTML += '<div class="ootk-pile-deck-card" style="top:' + (dc * -1.5) + 'px;left:' + (dc * 0.5) + 'px"></div>';
-        sceneHTML += '<div class="ootk-pile-count" id="ootk-deck-count">78</div></div>';
-        var elSlots = [{el:'fire',label:'🜂 火'},{el:'water',label:'🜄 水'},{el:'air',label:'🜁 風'},{el:'earth',label:'🜃 土'}];
-        elSlots.forEach(function(s) {
-          sceneHTML += '<div class="ootk-pile-slot" data-el="' + s.el + '"><div class="ootk-pile-slot-stack" id="pile-stack-' + s.el + '"></div><div class="ootk-pile-slot-label">' + s.label + ' <span id="pile-count-' + s.el + '">0</span></div></div>';
-        });
-        sceneHTML += '</div><div style="text-align:center;font-size:.82rem;color:var(--c-gold);font-weight:600;margin-top:.6rem">' + _ritualMsgs[0] + '</div>';
-        pileScene.innerHTML = sceneHTML;
-        phasesEl.appendChild(pileScene);
-        requestAnimationFrame(function() { pileScene.style.opacity = '1'; });
-
-        var _pileCounts = {fire:0,water:0,air:0,earth:0}, _totalFlown = 0;
-        var _elKeys = ['fire','water','air','earth'];
-        var _realDist = [];
-        for (var _rd = 0; _rd < 22; _rd++) _realDist.push('fire');
-        for (var _rd2 = 0; _rd2 < 14; _rd2++) { _realDist.push('fire'); _realDist.push('water'); _realDist.push('air'); _realDist.push('earth'); }
-        for (var _sh = _realDist.length - 1; _sh > 0; _sh--) { var _sj = Math.floor(Math.random() * (_sh + 1)); var _tmp = _realDist[_sh]; _realDist[_sh] = _realDist[_sj]; _realDist[_sj] = _tmp; }
-        var _scene = pileScene.querySelector('.ootk-pile-scene');
-        var _deck = pileScene.querySelector('#ootk-deck');
-
-        function _flyOne() {
-          if (_totalFlown >= 78) {
-            setTimeout(function() { pileScene.style.opacity = '0'; setTimeout(function() { pileScene.remove(); _showPhaseContent(); }, 400); }, 600);
-            return;
-          }
-          var targetEl = _realDist[_totalFlown] || _elKeys[_totalFlown % 4];
-          _pileCounts[targetEl]++; _totalFlown++;
-          var deckCount = pileScene.querySelector('#ootk-deck-count');
-          if (deckCount) deckCount.textContent = String(78 - _totalFlown);
-          var pileCount = pileScene.querySelector('#pile-count-' + targetEl);
-          if (pileCount) pileCount.textContent = String(_pileCounts[targetEl]);
-          var flyCard = document.createElement('div');
-          flyCard.className = 'ootk-fly-card';
-          var deckRect = _deck ? _deck.getBoundingClientRect() : {left:0,top:0};
-          var sceneRect = _scene ? _scene.getBoundingClientRect() : {left:0,top:0};
-          flyCard.style.left = (deckRect.left - sceneRect.left + 10) + 'px';
-          flyCard.style.top = (deckRect.top - sceneRect.top) + 'px';
-          _scene.appendChild(flyCard);
-          var targetSlot = pileScene.querySelector('.ootk-pile-slot[data-el="' + targetEl + '"]');
-          if (targetSlot) {
-            var slotRect = targetSlot.getBoundingClientRect();
-            var stackH = Math.min(_pileCounts[targetEl] * 1.5, 30);
-            requestAnimationFrame(function() {
-              flyCard.style.left = (slotRect.left - sceneRect.left + 12) + 'px';
-              flyCard.style.top = (slotRect.top - sceneRect.top + 40 - stackH) + 'px';
-              flyCard.style.transform = 'rotate(' + (Math.random() * 6 - 3) + 'deg)';
-            });
-          }
-          setTimeout(function() { flyCard.classList.add('landed'); }, 500);
-          var delay = _totalFlown < 10 ? 80 : _totalFlown < 30 ? 45 : _totalFlown < 60 ? 25 : 15;
-          setTimeout(_flyOne, delay);
-        }
-        setTimeout(_flyOne, 500);
-
-      } else {
-      // ── Op2-5：各自的儀式場景動畫 ──
-      if (currentPhase === 1) {
-        // ═══ Op2：十二宮位 網格逐一亮起 ═══
-        var houseScene = document.createElement('div');
-        houseScene.style.cssText = 'opacity:0;transition:opacity .4s;text-align:center;padding:1rem';
-        var hDist = results.op2.houseDistribution || [];
-        var hActive = (results.op2.activeHouse || 1) - 1;
-        var hHtml = '<div style="font-size:.82rem;color:rgba(96,165,250,.8);font-weight:600;margin-bottom:.7rem">' + _ritualMsgs[1] + '</div>';
-        hHtml += '<div class="ootk-house-grid">';
-        var HOUSE_SHORT = ['一宮','二宮','三宮','四宮','五宮','六宮','七宮','八宮','九宮','十宮','十一','十二'];
-        for (var _hi = 0; _hi < 12; _hi++) {
-          hHtml += '<div class="ootk-hcell" data-idx="' + _hi + '" style="animation-delay:' + (_hi * 80) + 'ms">';
-          hHtml += '<div style="font-size:.65rem;font-weight:600">' + HOUSE_SHORT[_hi] + '</div>';
-          hHtml += '<div style="font-size:.55rem;margin-top:2px;opacity:.5">' + (hDist[_hi] || 0) + '牌</div>';
-          hHtml += '</div>';
-        }
-        hHtml += '</div>';
-        houseScene.innerHTML = hHtml;
-        phasesEl.appendChild(houseScene);
-        requestAnimationFrame(function() { houseScene.style.opacity = '1'; });
-
-        // 逐格亮起
-        var hCells = houseScene.querySelectorAll('.ootk-hcell');
-        var _hIdx = 0;
-        function _lightHouse() {
-          if (_hIdx >= 12) {
-            // 全亮後，活躍宮位脈衝
-            setTimeout(function() {
-              hCells.forEach(function(c) { if (parseInt(c.dataset.idx) !== hActive) { c.style.opacity = '.35'; c.style.transform = 'scale(.9)'; } });
-              hCells[hActive].classList.add('active');
-              hCells[hActive].style.animation = 'ootkHousePulse 1.2s ease-in-out 2';
-              setTimeout(function() {
-                houseScene.style.opacity = '0';
-                setTimeout(function() { houseScene.remove(); _showPhaseContent(); }, 400);
-              }, 1800);
-            }, 300);
-            return;
-          }
-          hCells[_hIdx].classList.add('show');
-          _hIdx++;
-          setTimeout(_lightHouse, 80);
-        }
-        setTimeout(_lightHouse, 300);
-
-      } else if (currentPhase === 2) {
-        // ═══ Op3：十二星座 環形排列 + 光掃 ═══
-        var SIGN_ICONS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
-        var activeSignIdx = -1;
-        var SIGNS_ORD = ['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'];
-        for (var _si = 0; _si < 12; _si++) { if (SIGNS_ORD[_si] === results.op3.activeSign) { activeSignIdx = _si; break; } }
-
-        var zodScene = document.createElement('div');
-        zodScene.style.cssText = 'opacity:0;transition:opacity .4s;text-align:center;padding:.5rem 1rem';
-        var zHtml = '<div style="font-size:.82rem;color:rgba(168,85,247,.8);font-weight:600;margin-bottom:.5rem">' + _ritualMsgs[2] + '</div>';
-        zHtml += '<div class="ootk-zodiac-ring">';
-        // 12 nodes on a circle
-        var _ringR = 90;
-        for (var _zi = 0; _zi < 12; _zi++) {
-          var _angle = (_zi * 30 - 90) * Math.PI / 180;
-          var _cx = 110 + _ringR * Math.cos(_angle) - 18;
-          var _cy = 110 + _ringR * Math.sin(_angle) - 18;
-          zHtml += '<div class="ootk-znode" data-idx="' + _zi + '" style="left:' + _cx + 'px;top:' + _cy + 'px">' + SIGN_ICONS[_zi] + '</div>';
-        }
-        // Sweep dot
-        zHtml += '<div class="ootk-zsweep" id="ootk-zsweep"></div>';
-        zHtml += '</div>';
-        zodScene.innerHTML = zHtml;
-        phasesEl.appendChild(zodScene);
-        requestAnimationFrame(function() { zodScene.style.opacity = '1'; });
-
-        // 逐個出現
-        var zNodes = zodScene.querySelectorAll('.ootk-znode');
-        var _zIdx = 0;
-        function _showSign() {
-          if (_zIdx >= 12) {
-            // 光點掃過
-            var sweep = zodScene.querySelector('#ootk-zsweep');
-            if (sweep) sweep.style.opacity = '1';
-            var _sweepIdx = 0;
-            function _sweep() {
-              if (_sweepIdx > activeSignIdx) {
-                if (sweep) sweep.style.opacity = '0';
-                zNodes[activeSignIdx].classList.add('active');
-                // 其他淡出
-                zNodes.forEach(function(n, i) { if (i !== activeSignIdx) { n.style.opacity = '.3'; } });
-                setTimeout(function() {
-                  zodScene.style.opacity = '0';
-                  setTimeout(function() { zodScene.remove(); _showPhaseContent(); }, 400);
-                }, 1600);
-                return;
-              }
-              var _sAngle = (_sweepIdx * 30 - 90) * Math.PI / 180;
-              var _sx = 110 + _ringR * Math.cos(_sAngle) - 4;
-              var _sy = 110 + _ringR * Math.sin(_sAngle) - 4;
-              sweep.style.left = _sx + 'px';
-              sweep.style.top = _sy + 'px';
-              zNodes[_sweepIdx].style.borderColor = 'rgba(168,85,247,.4)';
-              zNodes[_sweepIdx].style.color = 'rgba(168,85,247,.8)';
-              _sweepIdx++;
-              setTimeout(_sweep, 120);
-            }
-            setTimeout(_sweep, 200);
-            return;
-          }
-          zNodes[_zIdx].classList.add('show');
-          _zIdx++;
-          setTimeout(_showSign, 60);
-        }
-        setTimeout(_showSign, 300);
-
-      } else if (currentPhase === 3) {
-        // ═══ Op4：三十六旬 三層聚焦 ═══
-        var focusScene = document.createElement('div');
-        focusScene.style.cssText = 'opacity:0;transition:opacity .4s;text-align:center;padding:1rem';
-        var fHtml = '<div style="font-size:.82rem;color:rgba(234,179,8,.8);font-weight:600;margin-bottom:.7rem">' + _ritualMsgs[3] + '</div>';
-        fHtml += '<div class="ootk-focus-ring" id="ootk-focus">';
-        fHtml += '<div class="ootk-focus-text" id="ootk-focus-txt" style="font-size:.75rem">78 張牌</div>';
-        fHtml += '</div>';
-        focusScene.innerHTML = fHtml;
-        phasesEl.appendChild(focusScene);
-        requestAnimationFrame(function() { focusScene.style.opacity = '1'; });
-
-        var _focusRing = focusScene.querySelector('#ootk-focus');
-        var _focusTxt = focusScene.querySelector('#ootk-focus-txt');
-        // Phase 1: narrow → sign
-        setTimeout(function() {
-          _focusRing.classList.add('narrow');
-          _focusTxt.innerHTML = '<div style="font-size:1.1rem;margin-bottom:.2rem">🔮</div>' + (results.op4.decanSign || '?');
-          _focusTxt.style.fontSize = '.85rem';
-          _focusTxt.style.fontWeight = '600';
-        }, 600);
-        // Phase 2: tight → decan range
-        setTimeout(function() {
-          _focusRing.classList.remove('narrow');
-          _focusRing.classList.add('tight');
-          _focusTxt.innerHTML = '<div style="font-size:.65rem;opacity:.6">' + (results.op4.decanSign || '') + '</div>' +
-            '<div style="font-size:.72rem;font-weight:700;color:rgba(234,179,8,1)">' + (results.op4.decanRange || '') + '</div>' +
-            (results.op4.decanPlanet ? '<div style="font-size:.6rem;margin-top:2px;opacity:.7">' + results.op4.decanPlanet + '</div>' : '');
-        }, 1500);
-        // Fade out → content
-        setTimeout(function() {
-          focusScene.style.opacity = '0';
-          setTimeout(function() { focusScene.remove(); _showPhaseContent(); }, 400);
-        }, 2800);
-
-      } else if (currentPhase === 4) {
-        // ═══ Op5：生命之樹 能量上升 ═══
-        var treeScene = document.createElement('div');
-        treeScene.style.cssText = 'opacity:0;transition:opacity .4s;text-align:center;padding:.5rem 1rem';
-        var tHtml = '<div style="font-size:.82rem;color:rgba(34,197,94,.8);font-weight:600;margin-bottom:.5rem">' + _ritualMsgs[4] + '</div>';
-        tHtml += '<div class="ootk-tree">';
-        // Sephirot positions (relative to 200×280 container)
-        var SEPH_POS = [
-          {x:84,y:8},    // 0 Kether
-          {x:140,y:52},  // 1 Chokmah
-          {x:28,y:52},   // 2 Binah
-          {x:140,y:110}, // 3 Chesed
-          {x:28,y:110},  // 4 Geburah
-          {x:84,y:140},  // 5 Tiphereth
-          {x:140,y:180}, // 6 Netzach
-          {x:28,y:180},  // 7 Hod
-          {x:84,y:218},  // 8 Yesod
-          {x:84,y:256}   // 9 Malkuth
-        ];
-        var SEPH_SHORT = ['K','Ch','Bi','Cs','Gb','Ti','Nz','Hd','Ys','Mk'];
-        // Lines (paths between sephirot)
-        var TREE_LINES = [[0,1],[0,2],[0,5],[1,2],[1,3],[1,5],[2,4],[2,5],[3,4],[3,5],[3,6],[4,5],[4,7],[5,6],[5,7],[5,8],[6,7],[6,8],[7,8],[8,9]];
-        TREE_LINES.forEach(function(ln) {
-          var a = SEPH_POS[ln[0]], b = SEPH_POS[ln[1]];
-          var dx = b.x - a.x, dy = b.y - a.y;
-          var len = Math.sqrt(dx*dx + dy*dy);
-          var angle = Math.atan2(dy, dx) * 180 / Math.PI;
-          tHtml += '<div class="ootk-tree-line" data-from="' + ln[0] + '" data-to="' + ln[1] + '" style="left:' + (a.x + 16) + 'px;top:' + (a.y + 16) + 'px;width:' + len + 'px;height:1.5px;transform-origin:0 50%;transform:rotate(' + angle + 'deg)"></div>';
-        });
-        // Sephirot nodes
-        for (var _ti = 0; _ti < 10; _ti++) {
-          tHtml += '<div class="ootk-seph" data-idx="' + _ti + '" style="left:' + SEPH_POS[_ti].x + 'px;top:' + SEPH_POS[_ti].y + 'px">' + SEPH_SHORT[_ti] + '</div>';
-        }
-        tHtml += '</div>';
-        treeScene.innerHTML = tHtml;
-        phasesEl.appendChild(treeScene);
-        requestAnimationFrame(function() { treeScene.style.opacity = '1'; });
-
-        // Find active sephirah index
-        var SEPH_NAMES = ['Kether','Chokmah','Binah','Chesed','Geburah','Tiphereth','Netzach','Hod','Yesod','Malkuth'];
-        var _activeSIdx = SEPH_NAMES.indexOf(results.op5.activeSephirah);
-        if (_activeSIdx < 0) _activeSIdx = 9;
-
-        // Light path from Malkuth (9) up to active sephirah
-        // Simple: light from bottom to top
-        var _lightOrder = [9,8,7,6,5,4,3,2,1,0];
-        var tSephs = treeScene.querySelectorAll('.ootk-seph');
-        var tLines = treeScene.querySelectorAll('.ootk-tree-line');
-        var _lIdx = 0;
-        function _lightSeph() {
-          if (_lIdx >= _lightOrder.length) {
-            // All lit, highlight active
-            setTimeout(function() {
-              tSephs.forEach(function(s) {
-                var si = parseInt(s.dataset.idx);
-                if (si !== _activeSIdx) { s.style.opacity = '.3'; s.classList.remove('lit'); }
-              });
-              tLines.forEach(function(l) { l.style.opacity = '.3'; });
-              tSephs[_activeSIdx].classList.add('active');
-              setTimeout(function() {
-                treeScene.style.opacity = '0';
-                setTimeout(function() { treeScene.remove(); _showPhaseContent(); }, 400);
-              }, 1600);
-            }, 300);
-            return;
-          }
-          var sIdx = _lightOrder[_lIdx];
-          tSephs[sIdx].classList.add('lit');
-          // Light connected lines
-          tLines.forEach(function(l) {
-            var f = parseInt(l.dataset.from), t = parseInt(l.dataset.to);
-            if (f === sIdx || t === sIdx) l.classList.add('lit');
-          });
-          _lIdx++;
-          // Stop early if we've passed the active
-          if (_lightOrder[_lIdx - 1] === _activeSIdx && _lIdx > 1) {
-            tSephs[_activeSIdx].classList.remove('lit');
-            tSephs[_activeSIdx].classList.add('active');
-            tSephs.forEach(function(s) {
-              var si = parseInt(s.dataset.idx);
-              if (si !== _activeSIdx && !s.classList.contains('lit')) s.style.opacity = '.15';
-            });
-            setTimeout(function() {
-              treeScene.style.opacity = '0';
-              setTimeout(function() { treeScene.remove(); _showPhaseContent(); }, 400);
-            }, 1600);
-            return;
-          }
-          setTimeout(_lightSeph, 160);
-        }
-        setTimeout(_lightSeph, 400);
-
-      } else {
-        // fallback（不應該到這）
-        _showPhaseContent();
-      }
-
-      } // end else (non-Op1)
-
-      } catch(err) { _advanceLock = false; console.error('[OOTK advancePhase] Error:', err); alert('階段載入失敗：' + err.message); }
+      setTimeout(showNext, 300);
     }
-
-    nextBtn.addEventListener('click', advancePhase);
   }
 
   // ── 渲染單個階段 ──

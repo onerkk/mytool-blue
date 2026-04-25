@@ -24003,7 +24003,7 @@ function _buildOOTKPayload() {
 
     // ── 計數路徑（Counting）：AI 需要知道「怎麼走到這個結論」──
     if (op.countingPath && op.countingPath.length) {
-      lines.push('（計數是從代表牌開始逐張跳步走，最後停在哪張牌就是這一層的結論牌——走的路徑反映事情發展的過程，每一步經過的牌都是過程中會遭遇的能量）');
+      lines.push('（v63 正統 Book T：Counting 從代表牌（Significator）開始逐張跳步走，走過的整串牌串起來說一個故事——這是 the story of the affair。代表牌是「故事的起點」，不是「結論」。終點純粹是計數遇到已訪牌時的自然結束，不要把終點牌特別當作「結論牌」）');
       lines.push('計數路徑：' + op.countingPath.map(function(step) {
         var stepIsUp = (step.isUp === true);
         return cardStr({n:step.cardName, isUp:stepIsUp}) + '(值' + step.countValue + ',往' + (step.direction||'右') + ')';
@@ -24021,7 +24021,7 @@ function _buildOOTKPayload() {
 
     // ── 關鍵牌（Key Cards）+ 元素尊嚴 ──
     if (op.keyCards && op.keyCards.length) {
-      lines.push('關鍵牌（計數終點——這一層最終指向的答案）：');
+      lines.push('關鍵牌（Counting 走過的牌——按發現順序對應事件展開的時序）：');
       op.keyCards.forEach(function(kc, ki) {
         var c = kc.card;
         if (!c) return;
@@ -24092,85 +24092,16 @@ function _buildOOTKPayload() {
     recurringDetail = rcDetails.join('；');
   }
 
-  // ★ v21：五層同向/矛盾預判——前端先算好，AI不會漏掉
+  // ═══════════════════════════════════════════════════════════════════
+  // v63 C-嚴：layerAlignment + keyCardThemeConsistency 已棄用
+  // 原因：① keyCards[0] 永遠是代表牌（Counting 起點），不是「結論牌」
+  //       ② Mathers Book T 沒有「五層收束成單一答案」的概念
+  //       ③ AI 收到「五層結論牌全是金幣國王」會把假訊號當主軸放大
+  // 處理：保留變數但永遠空字串，worker 端的 buildOotkUserMessage 會跳過空值
+  //       完整的「五層獨立讀法」prompt 由 worker.js V63 七模組注入
+  // ═══════════════════════════════════════════════════════════════════
   var layerAlignment = '';
-  try {
-    var _layerPolarity = [];
-    ['op1','op2','op3','op4','op5'].forEach(function(k, i) {
-      var op = results[k];
-      if (!op) return;
-      // 取計數終點牌的正逆作為該層結論方向
-      var pol = 'neutral';
-      if (op.countingPath && op.countingPath.length) {
-        var last = op.countingPath[op.countingPath.length - 1];
-        pol = (last.isUp === true) ? 'positive' : 'negative';
-      } else if (op.keyCards && op.keyCards.length) {
-        var kc = op.keyCards[0].card;
-        if (kc) pol = (kc.isUp === true) ? 'positive' : 'negative';
-      }
-      _layerPolarity.push({ op: 'Op.' + (i+1), pol: pol });
-    });
-    var posCount = _layerPolarity.filter(function(lp) { return lp.pol === 'positive'; }).length;
-    var negCount = _layerPolarity.filter(function(lp) { return lp.pol === 'negative'; }).length;
-    var parts = [];
-    if (posCount >= 4) parts.push('五層高度同向（' + posCount + '層正面）——結論可信度高');
-    else if (negCount >= 4) parts.push('五層高度同向（' + negCount + '層阻力）——壓力明確');
-    else if (posCount >= 3 || negCount >= 3) parts.push('多數層同向但有分歧——主線明確但有變數');
-    else parts.push('五層方向分歧——矛盾是這次解讀的核心議題');
-    // 列出哪些層正哪些層逆
-    var posLayers = _layerPolarity.filter(function(lp) { return lp.pol === 'positive'; }).map(function(lp) { return lp.op; });
-    var negLayers = _layerPolarity.filter(function(lp) { return lp.pol === 'negative'; }).map(function(lp) { return lp.op; });
-    if (posLayers.length) parts.push('正面：' + posLayers.join('、'));
-    if (negLayers.length) parts.push('阻力：' + negLayers.join('、'));
-    layerAlignment = parts.join('；');
-  } catch(_e) {}
-
-  // ★ v37 #8：五層結論牌主題一致性（看結論牌本身是什麼，不只看正逆）
   var keyCardThemeConsistency = '';
-  try {
-    var _keyCardNames = [];
-    var _keyCardElements = [];
-    var _keyCardSuits = [];
-    var _keyCardThemes = [];
-    var _kcSuitTheme = { wand:'行動/熱情', cup:'情感/關係', sword:'思維/溝通', pent:'物質/穩定', major:'命運/課題' };
-    var _kcNumTheme = {1:'開始',2:'選擇',3:'成長',4:'穩定',5:'衝突',6:'和諧',7:'內省',8:'力量',9:'放下',10:'結束',11:'年輕能量',12:'行動推進',13:'成熟掌控',14:'權威決策'};
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (!op) return;
-      var kc = null;
-      // 優先取 keyCards
-      if (op.keyCards && op.keyCards.length && op.keyCards[0].card) {
-        kc = op.keyCards[0].card;
-      }
-      // fallback: counting path 終點
-      else if (op.countingPath && op.countingPath.length) {
-        var last = op.countingPath[op.countingPath.length - 1];
-        kc = { n: last.cardName, suit: last.suit, num: last.num };
-      }
-      if (kc) {
-        _keyCardNames.push(kc.n || kc.name || '?');
-        if (kc.suit) { _keyCardSuits.push(kc.suit); _keyCardThemes.push(_kcSuitTheme[kc.suit] || ''); }
-        if (kc.el) _keyCardElements.push(kc.el);
-      }
-    });
-    if (_keyCardNames.length >= 3) {
-      var _themeParts = [];
-      _themeParts.push('五層結論牌：' + _keyCardNames.join('、'));
-      // 花色主題一致性
-      var _suitCount = {};
-      _keyCardSuits.forEach(function(s) { _suitCount[s] = (_suitCount[s] || 0) + 1; });
-      var _dominantSuit = null, _dominantSuitN = 0;
-      for (var sk in _suitCount) { if (_suitCount[sk] > _dominantSuitN) { _dominantSuit = sk; _dominantSuitN = _suitCount[sk]; } }
-      if (_dominantSuitN >= 3) {
-        _themeParts.push('花色集中：' + _dominantSuitN + '張' + (_kcSuitTheme[_dominantSuit] || _dominantSuit) + '——這個方向的訊號極強');
-      } else if (_dominantSuitN >= 2) {
-        _themeParts.push('花色偏向：' + _dominantSuitN + '張' + (_kcSuitTheme[_dominantSuit] || _dominantSuit));
-      } else {
-        _themeParts.push('結論牌花色分散——多面向同時作用');
-      }
-      keyCardThemeConsistency = _themeParts.join('；');
-    }
-  } catch(_e) {}
 
   // ★ v28：OOTK 精準度提升引擎
   var ootk_allCards = [];
