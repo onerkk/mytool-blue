@@ -2123,6 +2123,27 @@ enhanceTarot = function(tarot) {
     var visited = {};
     var idx = startIdx;
     var maxSteps = 12; // 最多 12 步防止無限迴圈
+
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 正統 Book T 修正（最重要的引擎修正）
+    //
+    // Mathers Book T 原文：
+    //   "Count the cards from him, in the direction in which he faces.
+    //    The counting should include the card from which you count."
+    //
+    // 正統規則：方向只由起點（代表牌 Significator）的「面向」決定。
+    //   - 代表牌正位 → 整串 Counting 一律向右走
+    //   - 代表牌逆位 → 整串 Counting 一律向左走
+    //
+    // 走進其他牌時，那張牌的正/逆位「不會」改變方向——
+    // 這是 Jack Chanek 的個人發想（"a thought for you"），不是 Book T 正統。
+    //
+    // 此修正確保 Counting 走的牌串符合 Mathers Book T 原始手稿規範。
+    // ════════════════════════════════════════════════════════════
+    var startCard = cards[startIdx];
+    var startIsUp = (startCard && startCard.isUp === true);
+    var direction = startIsUp ? 1 : -1; // 整串永遠用這個方向
+
     // ★ v55：偵測 Ace 卡在同一循環的次數——若≥2次則切換 Crowley count=11 試第二讀法
     var aceLoopDetect = 0;
     var useCrowleyAce = false;
@@ -2130,14 +2151,13 @@ enhanceTarot = function(tarot) {
     for (var step = 0; step < maxSteps; step++) {
       var card = cards[idx];
       if (!card || visited[idx]) {
-        // ★ v55：若因 Ace 循環卡住，切到 Crowley 11 試一次
+        // ★ v55：若因 Ace 循環卡住，切到 Crowley 11 試一次（仍用起點方向）
         if (card && String(card.rank || '') === 'ace' && !useCrowleyAce && aceLoopDetect === 0) {
           aceLoopDetect++;
           useCrowleyAce = true;
-          // 從該 Ace 位置用 11 跳
-          var dirA = (card.isUp === true) ? 1 : -1;
+          // 用起點方向跳 11
           for (var ca = 0; ca < 11; ca++) {
-            idx = (idx + dirA + cards.length) % cards.length;
+            idx = (idx + direction + cards.length) % cards.length;
           }
           continue;
         }
@@ -2149,20 +2169,21 @@ enhanceTarot = function(tarot) {
       // ★ v55：若啟動 Crowley 模式且為 Ace，改用 11
       if (useCrowleyAce && String(card.rank || '') === 'ace') count = 11;
       var cardIsUp = (card.isUp === true);
-      var direction = cardIsUp ? 1 : -1;
       path.push({
         cardId: card.id,
         cardName: card.n || card.name,
         position: idx,
         countValue: count,
         isUp: cardIsUp,
-        direction: direction > 0 ? 'right' : 'left'
+        // ★ v63：每張牌記錄它自己的 isUp 給 dignity 用，但 direction 整串都是起點方向
+        direction: direction > 0 ? 'right' : 'left',
+        startDirection: direction > 0 ? 'right' : 'left'
       });
       for (var c = 0; c < count; c++) {
         idx = (idx + direction + cards.length) % cards.length;
       }
     }
-    return { keyCards: keyCards, path: path, usedCrowleyAce: useCrowleyAce };
+    return { keyCards: keyCards, path: path, usedCrowleyAce: useCrowleyAce, startDirection: direction > 0 ? 'right' : 'left' };
   }
 
   // ════════════════════════════════════════════════

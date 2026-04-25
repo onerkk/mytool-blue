@@ -24003,10 +24003,14 @@ function _buildOOTKPayload() {
 
     // ── 計數路徑（Counting）：AI 需要知道「怎麼走到這個結論」──
     if (op.countingPath && op.countingPath.length) {
-      lines.push('（v63 正統 Book T：Counting 從代表牌（Significator）開始逐張跳步走，走過的整串牌串起來說一個故事——這是 the story of the affair。代表牌是「故事的起點」，不是「結論」。終點純粹是計數遇到已訪牌時的自然結束，不要把終點牌特別當作「結論牌」）');
-      lines.push('計數路徑：' + op.countingPath.map(function(step) {
+      // ★ v63 正統 Book T：方向只由起點（代表牌）決定，整串同方向
+      var _startDir = (op.countingPath[0] && op.countingPath[0].startDirection) || op.countingPath[0].direction || 'right';
+      var _startDirZh = (_startDir === 'left') ? '向左（代表牌逆位）' : '向右（代表牌正位）';
+      lines.push('（v63 正統 Book T：Counting 從代表牌（Significator）開始逐張跳步走，走過的整串牌串起來說一個故事——這是 the story of the affair。代表牌是「故事的起點」，不是「結論」。終點純粹是計數遇到已訪牌時的自然結束，不要把終點牌特別當作「結論牌」。）');
+      lines.push('（★ Mathers 原文：「Count the cards from him, in the direction in which he faces.」方向只由起點代表牌的面向決定——整串 Counting 永遠 ' + _startDirZh + ' 走。途中走過的牌正逆位「不會」改變方向，那是 Jack Chanek 的個人變體，不是 Book T 正統。途中牌的正逆位只用來判讀那張牌本身的能量。）');
+      lines.push('計數路徑（整串方向：' + _startDirZh + '）：' + op.countingPath.map(function(step) {
         var stepIsUp = (step.isUp === true);
-        return cardStr({n:step.cardName, isUp:stepIsUp}) + '(值' + step.countValue + ',往' + (step.direction||'右') + ')';
+        return cardStr({n:step.cardName, isUp:stepIsUp}) + '(值' + step.countValue + ')';
       }).join(' → '));
       // ★ #1：計數結構化摘要——讓 AI 快速抓到重點
       var _lastStep = op.countingPath[op.countingPath.length - 1];
@@ -24021,18 +24025,24 @@ function _buildOOTKPayload() {
 
     // ── 關鍵牌（Key Cards）+ 元素尊嚴 ──
     if (op.keyCards && op.keyCards.length) {
+      // ★ v63 正統：Mathers Book T 三類元素尊嚴中文化
+      var _digZhKey = {
+        'strengthen': '同元素強化',
+        'weaken':     '對立元素削弱',
+        'friendly':   '友善元素'
+      };
       lines.push('關鍵牌（Counting 走過的牌——按發現順序對應事件展開的時序）：');
       op.keyCards.forEach(function(kc, ki) {
         var c = kc.card;
         if (!c) return;
         var text = '  ' + cardStrFull(c);
-        // 元素尊嚴
+        // 元素尊嚴（左右相鄰牌的元素互動，依 Mathers Book T 規則）
         if (op.dignities && op.dignities[ki]) {
           var dig = op.dignities[ki];
           var digParts = [];
-          if (dig.leftDignity && dig.leftDignity !== 'none') digParts.push('左' + dig.leftDignity);
-          if (dig.rightDignity && dig.rightDignity !== 'none') digParts.push('右' + dig.rightDignity);
-          if (digParts.length) text += '（元素：' + (dig.cardElement||'') + '，' + digParts.join('、') + '）';
+          if (dig.leftDignity && dig.leftDignity !== 'none') digParts.push('左鄰：' + (_digZhKey[dig.leftDignity] || dig.leftDignity));
+          if (dig.rightDignity && dig.rightDignity !== 'none') digParts.push('右鄰：' + (_digZhKey[dig.rightDignity] || dig.rightDignity));
+          if (digParts.length) text += '（本元素：' + (dig.cardElement||'') + '，' + digParts.join('，') + '）';
         }
         lines.push(text);
       });
@@ -24040,14 +24050,16 @@ function _buildOOTKPayload() {
 
     // ── 配對（Pairing）+ 元素尊嚴 + 距離標籤 ──
     if (op.pairs && op.pairs.length) {
-      // ★ #2+v37 #7：配對加距離標籤+dignity中文翻譯
+      // ★ v63 正統 Book T：Mathers 原文只有三類元素尊嚴
+      //   "Cards of opposite natures on either side weaken it greatly."
+      //   "Swords are inimical to Pentacles. Wands are inimical to Cups."
+      //   其他組合都是 friendly。沒有 "neutral" 也沒有 "hostile"——
+      //   舊版字典含這兩個值是錯的，會讓 AI 看到不該存在的分類。
       var _distLabels = ['#1(核心)', '#2(中層)', '#3(外圍)', '#4(邊緣)', '#5(最外)'];
       var _dignityZh = {
-        'strengthen': '元素互助→互相增強',
-        'weaken': '元素對沖→互相削弱',
-        'neutral': '元素中性→各自獨立',
-        'friendly': '元素友善→溫和互助',
-        'hostile': '元素敵對→明顯衝突'
+        'strengthen': '同元素強化（Mathers：strengthen）',
+        'weaken':     '對立元素削弱（Mathers：weaken—火水/風土相剋）',
+        'friendly':   '友善元素（Mathers：friendly—彼此和諧不沖突）'
       };
       var pairTexts = op.pairs.slice(0, 5).map(function(pr, pi) {
         var l = pr.left || pr.card1;
