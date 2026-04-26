@@ -179,6 +179,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="users">用戶管理</div>
     <div class="tab" data-tab="admins">管理員</div>
     <div class="tab" data-tab="oracle">🎋 靈籤</div>
+    <div class="tab" data-tab="weights">📈 學習權重</div>
     <div class="tab" data-tab="settings">設定</div>
   </div>
 
@@ -432,6 +433,110 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 
         <div id="oracleEmpty" style="display:none;padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px">
           尚無靈籤回饋資料。<br><span style="font-size:11px;opacity:.7">資料需要等用戶實際使用靈籤並按下回饋按鈕後才會累積。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 📈 學習權重(v63 新增)══ -->
+    <div id="sec-weights" class="section">
+      <div class="notify-section">
+        <div class="notify-header">
+          <h3>📈 七維度可學習權重</h3>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button onclick="loadWeightStats()" style="padding:4px 12px;border-radius:6px;background:rgba(108,123,255,.1);border:1px solid rgba(108,123,255,.3);color:var(--accent);font-size:12px;cursor:pointer">🔄 刷新</button>
+            <button onclick="recomputeWeights()" id="btnRecomputeWeights" style="padding:4px 12px;border-radius:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;font-size:12px;cursor:pointer;font-weight:600">🧮 重新學習</button>
+          </div>
+        </div>
+
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
+          系統依據用戶 feedback 學習各維度準度,自動調整七維度權重。
+          分桶策略:<code>focusType × timeScale × model</code>(共 63 桶)。
+          建議每月或樣本量翻倍時,點「🧮 重新學習」觸發 worker 重算。
+        </p>
+
+        <!-- 總覽 -->
+        <div id="weightOverview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(108,123,255,.06);border:1px solid rgba(108,123,255,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">📊 總桶數</div>
+            <div id="wt-buckets" style="font-size:20px;font-weight:700;color:var(--accent)">-</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:2px">最多 63 桶</div>
+          </div>
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">✓ 累計 fb 樣本</div>
+            <div id="wt-samples" style="font-size:20px;font-weight:700;color:#22c55e">-</div>
+          </div>
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">🎯 學習版生效中</div>
+            <div id="wt-version" style="font-size:14px;font-weight:700;color:#fbbf24;line-height:1.3">-</div>
+          </div>
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">📅 上次重算</div>
+            <div id="wt-recompute-at" style="font-size:13px;font-weight:600;color:#ef4444;line-height:1.3">尚未</div>
+          </div>
+        </div>
+
+        <!-- 桶詳情 -->
+        <div style="margin-bottom:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">📦 桶累積狀況(focusType × timeScale × model)</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">每桶至少 30 樣本才會被納入學習,綠色已可學,黃色累積中。</div>
+          <div id="wt-bucket-list" style="display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto;font-family:'Courier New',monospace;font-size:11px"></div>
+        </div>
+
+        <!-- 學習結果矩陣 -->
+        <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🧠 學習權重(已生效)</div>
+          <div id="wt-learned-matrix" style="font-size:11px;color:var(--text-dim);max-height:400px;overflow-y:auto"></div>
+        </div>
+
+        <div id="wt-empty" style="display:none;padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px">
+          尚無學習統計。<br><span style="font-size:11px;opacity:.7">需要用戶送 feedback(七維度/塔羅/開鑰)累積樣本後才會出現。</span>
+        </div>
+      </div>
+
+      <!-- 高精度星曆狀態 -->
+      <div class="notify-section" style="margin-top:16px">
+        <div class="notify-header">
+          <h3>🌌 高精度星曆狀態</h3>
+          <button onclick="testEphemeris()" style="padding:4px 12px;border-radius:6px;background:rgba(108,123,255,.1);border:1px solid rgba(108,123,255,.3);color:var(--accent);font-size:12px;cursor:pointer;margin-left:auto">🔬 即時測試</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
+          西占 / 吠陀星盤改用 worker 端高精度星曆,4-tier provider chain:
+          KV cache → AstrologyAPI → JPL Horizons → Meeus fallback。
+          需在 Cloudflare Worker 環境變數設 <code>USE_JPL_HORIZONS = "true"</code> 才會啟用 JPL。
+        </p>
+        <div id="ephTestResult" style="padding:14px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--card-border);font-family:'Courier New',monospace;font-size:11px;color:var(--text-dim);min-height:60px;white-space:pre-wrap;display:none"></div>
+      </div>
+
+      <!-- 出生時間降權說明 -->
+      <div class="notify-section" style="margin-top:16px">
+        <div class="notify-header">
+          <h3>⏰ 出生時間不確定降權矩陣</h3>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
+          用戶勾選「不確定時辰」時,系統自動降低強依賴時辰的維度信心(已自動運作,無需手動干預)。
+        </p>
+        <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
+          <table style="width:100%;font-size:12px;border-collapse:collapse">
+            <thead>
+              <tr style="border-bottom:1px solid var(--card-border)">
+                <th style="text-align:left;padding:6px;color:var(--text-dim);font-weight:600">維度</th>
+                <th style="text-align:center;padding:6px;color:var(--text-dim);font-weight:600">完整時辰</th>
+                <th style="text-align:center;padding:6px;color:var(--text-dim);font-weight:600">不知時辰</th>
+                <th style="text-align:center;padding:6px;color:var(--text-dim);font-weight:600">無生日</th>
+                <th style="text-align:left;padding:6px;color:var(--text-dim);font-weight:600">說明</th>
+              </tr>
+            </thead>
+            <tbody style="font-family:'Courier New',monospace">
+              <tr><td style="padding:6px">紫微</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#ef4444;font-weight:700">0.40</td><td style="text-align:center;color:var(--text-dim)">0.00</td><td style="font-family:inherit;font-size:11px;color:var(--text-dim)">命宮起法強依賴時支</td></tr>
+              <tr><td style="padding:6px">西占 natal</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#ef4444;font-weight:700">0.30</td><td style="text-align:center;color:var(--text-dim)">0.00</td><td style="font-family:inherit;font-size:11px;color:var(--text-dim)">上升星座每 2 小時換</td></tr>
+              <tr><td style="padding:6px">吠陀 jyotish</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#ef4444;font-weight:700">0.30</td><td style="text-align:center;color:var(--text-dim)">0.00</td><td style="font-family:inherit;font-size:11px;color:var(--text-dim)">同上升 + Dasha 細節</td></tr>
+              <tr><td style="padding:6px">八字 bazi</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#fbbf24">0.75</td><td style="text-align:center;color:var(--text-dim)">0.00</td><td style="font-family:inherit;font-size:11px;color:var(--text-dim)">失時柱 = 失 25% 信號</td></tr>
+              <tr><td style="padding:6px">大運 dayun</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#fbbf24">0.85</td><td style="text-align:center;color:var(--text-dim)">0.00</td><td style="font-family:inherit;font-size:11px;color:var(--text-dim)">起運計算受影響但有限</td></tr>
+              <tr><td style="padding:6px">梅花 meihua</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#22c55e">1.00</td><td style="font-family:inherit;font-size:11px;color:var(--text-dim)">不依賴出生資料</td></tr>
+              <tr><td style="padding:6px">塔羅 tarot</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#22c55e">1.00</td><td style="font-family:inherit;font-size:11px;color:var(--text-dim)">不依賴出生資料</td></tr>
+              <tr><td style="padding:6px">姓名 name</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#22c55e">1.00</td><td style="text-align:center;color:#fbbf24">0.80</td><td style="font-family:inherit;font-size:11px;color:var(--text-dim)">無生日仍可算筆畫,但失生肖</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1885,6 +1990,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
     if (tab.dataset.tab === 'oracle') loadOracleStats();
+    if (tab.dataset.tab === 'weights') loadWeightStats();
     if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
@@ -2445,6 +2551,158 @@ async function loadOracleStats() {
     setHtml('oracleByJiao', '');
     setHtml('oracleByLot', '');
     setHtml('oracleRecent', '');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// 📈 Weight Stats(可學習權重 v63)
+// ═══════════════════════════════════════════════
+async function loadWeightStats() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/weight-stats?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) {
+      document.getElementById('wt-empty').style.display = 'block';
+      return;
+    }
+    const buckets = data.buckets || {};
+    const bucketKeys = Object.keys(buckets);
+    const learned = data.currentLearned;
+
+    // 總覽
+    document.getElementById('wt-buckets').textContent = bucketKeys.length;
+    let totalSamples = 0;
+    bucketKeys.forEach(k => { totalSamples += (buckets[k].samples || 0); });
+    document.getElementById('wt-samples').textContent = totalSamples;
+
+    if (learned && learned.version) {
+      const verDate = new Date(learned.version);
+      document.getElementById('wt-version').textContent = 'v' + learned.version;
+      document.getElementById('wt-recompute-at').textContent = verDate.toLocaleString('zh-TW', { hour12: false });
+    } else {
+      document.getElementById('wt-version').textContent = '使用 fallback';
+      document.getElementById('wt-recompute-at').textContent = '尚未';
+    }
+
+    // 桶詳情列表
+    const listDiv = document.getElementById('wt-bucket-list');
+    if (bucketKeys.length === 0) {
+      listDiv.innerHTML = '<div style="padding:12px;color:var(--text-dim);text-align:center">尚無樣本累積</div>';
+      document.getElementById('wt-empty').style.display = 'block';
+    } else {
+      document.getElementById('wt-empty').style.display = 'none';
+      // 排序:樣本多的在前
+      const sortedKeys = bucketKeys.sort((a, b) => (buckets[b].samples || 0) - (buckets[a].samples || 0));
+      listDiv.innerHTML = sortedKeys.map(k => {
+        const b = buckets[k];
+        const ready = (b.samples || 0) >= 30;
+        const color = ready ? '#22c55e' : '#fbbf24';
+        const bg = ready ? 'rgba(34,197,94,.06)' : 'rgba(251,191,36,.06)';
+        const status = ready ? '✓ 可學' : '⏳ 累積中';
+        const posPct = b.samples ? Math.round((b.pos / b.samples) * 100) : 0;
+        // 解析 bucket key 變人類可讀
+        const parts = k.replace('weight_stats:', '').split(':');
+        const ftZh = { love:'感情', career:'事業', wealth:'財運', health:'健康', relationship:'人際', family:'家庭', general:'綜合' }[parts[0]] || parts[0];
+        const tsZh = { short:'短期', mid:'中期', long:'長期' }[parts[1]] || parts[1];
+        return `<div style="padding:8px 12px;border-radius:6px;background:${bg};border:1px solid ${color}33;display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <span style="color:${color};font-weight:600;min-width:60px">${status}</span>
+          <span style="flex:1;color:var(--text)">${ftZh} / ${tsZh} / ${parts[2]}</span>
+          <span style="color:var(--text-dim);font-size:10px">${b.samples} 樣本</span>
+          <span style="color:${posPct >= 60 ? '#22c55e' : posPct >= 40 ? '#fbbf24' : '#ef4444'};font-weight:600">準度 ${posPct}%</span>
+        </div>`;
+      }).join('');
+    }
+
+    // 學習結果矩陣
+    const mxDiv = document.getElementById('wt-learned-matrix');
+    if (learned && learned.weights && Object.keys(learned.weights).length > 0) {
+      const w = learned.weights;
+      let html = '<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="border-bottom:1px solid var(--card-border)">';
+      html += '<th style="text-align:left;padding:6px;color:var(--text-dim)">場景</th>';
+      const dims = ['bazi','ziwei','meihua','tarot','natal','jyotish','name'];
+      const dimZh = { bazi:'八字', ziwei:'紫微', meihua:'梅花', tarot:'塔羅', natal:'西占', jyotish:'吠陀', name:'姓名' };
+      dims.forEach(d => { html += `<th style="text-align:center;padding:6px;color:var(--text-dim)">${dimZh[d]}</th>`; });
+      html += '</tr></thead><tbody style="font-family:\'Courier New\',monospace">';
+      Object.keys(w).forEach(ft => {
+        const ftZh = { love:'感情', career:'事業', wealth:'財運', health:'健康', relationship:'人際', family:'家庭', general:'綜合' }[ft] || ft;
+        Object.keys(w[ft]).forEach(ts => {
+          const tsZh = { short:'短期', mid:'中期', long:'長期' }[ts] || ts;
+          html += `<tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:6px;color:var(--text);font-family:inherit">${ftZh} / ${tsZh}</td>`;
+          dims.forEach(d => {
+            const v = w[ft][ts][d];
+            const pct = v != null ? Math.round(v * 100) : 0;
+            const color = pct >= 20 ? '#22c55e' : pct >= 10 ? '#fbbf24' : 'var(--text-dim)';
+            html += `<td style="text-align:center;padding:6px;color:${color}">${pct}%</td>`;
+          });
+          html += '</tr>';
+        });
+      });
+      html += '</tbody></table>';
+      mxDiv.innerHTML = html;
+    } else {
+      mxDiv.innerHTML = '<div style="padding:12px;color:var(--text-dim);text-align:center">尚無學習結果(使用硬編 fallback)。<br><span style="font-size:10px;opacity:.7">請等樣本累積到 30+ 後點「🧮 重新學習」。</span></div>';
+    }
+  } catch(e) {
+    document.getElementById('wt-empty').style.display = 'block';
+    document.getElementById('wt-empty').innerHTML = '載入失敗:' + (e.message || '網路錯誤');
+  }
+}
+
+async function recomputeWeights() {
+  if (!confirm('確定要重新計算學習權重嗎?\n會掃所有 weight_stats: 桶並重算 learned_weights。\n建議在樣本量 >100 時才有意義。')) return;
+  const btn = document.getElementById('btnRecomputeWeights');
+  const oldText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ 計算中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/recompute-weights?token=${encodeURIComponent(adminToken)}`, { method: 'POST' });
+    const data = await r.json();
+    if (data.ok) {
+      alert(`✅ 重新計算成功!\n\n總桶數:${data.totalBuckets}\n總樣本:${data.totalSamples}\n版本:v${data.version}\n\n前端下次拉 /weights 會拿到新版。`);
+      loadWeightStats();
+    } else {
+      alert('❌ 失敗:' + (data.error || '未知錯誤'));
+    }
+  } catch(e) {
+    alert('❌ 網路錯誤:' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = oldText;
+  }
+}
+
+async function testEphemeris() {
+  const div = document.getElementById('ephTestResult');
+  div.style.display = 'block';
+  div.textContent = '⏳ 測試中(以 1990-05-15 14:30 為樣本)...';
+  try {
+    const r = await fetch(`${WORKER_URL}/ephemeris`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ year: 1990, month: 5, day: 15, hour: 14, minute: 30, tz: 8 })
+    });
+    const data = await r.json();
+    let report = '✅ 來源:' + (data.source || '未知') + '\n';
+    report += 'JD:' + (data.jd || '-') + '\n\n';
+    if (data.planets) {
+      Object.keys(data.planets).forEach(p => {
+        const pl = data.planets[p];
+        report += `${p.padEnd(10)}  經度=${pl.lon.toFixed(4)}°  緯度=${(pl.lat || 0).toFixed(4)}°\n`;
+      });
+    }
+    if (data.source === 'meeus_fallback') {
+      report += '\n⚠ 走到 Meeus fallback,JPL/AstrologyAPI 都未啟用或失敗。\n';
+      report += '請在 Cloudflare Worker 設 USE_JPL_HORIZONS = "true" 啟用 JPL Horizons(免費)。';
+    } else if (data.source === 'cache') {
+      report += '\n💾 走 KV 快取(24h TTL)。';
+    } else if (data.source === 'jpl_horizons') {
+      report += '\n✓ JPL Horizons 高精度(誤差 <0.001°)。';
+    } else if (data.source === 'astrologyapi') {
+      report += '\n✓ AstrologyAPI 付費精度。';
+    }
+    div.textContent = report;
+  } catch(e) {
+    div.textContent = '❌ 測試失敗:' + e.message;
   }
 }
 
