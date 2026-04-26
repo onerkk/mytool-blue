@@ -2307,14 +2307,15 @@ async function checkWorkerStatus() {
     document.getElementById('workerStatusText').textContent = '離線';
   }
   
-  // restore CF credentials (localStorage = 永久保存)
+  // v62 安全強化：localStorage 不再保存 apiToken（XSS 外洩風險），只保存 accountId / workerName
+  //   apiToken 每次部署需重新貼上——這是必要的安全成本
   const saved = localStorage.getItem('jy_cf_creds');
   if (saved) {
     try {
       const c = JSON.parse(saved);
       if (c.accountId) document.getElementById('cfAccountId').value = c.accountId;
       if (c.workerName) document.getElementById('cfWorkerName').value = c.workerName;
-      if (c.apiToken) document.getElementById('cfApiToken').value = c.apiToken;
+      // apiToken 不再從 localStorage 還原
     } catch(_) {}
   }
 }
@@ -2340,8 +2341,9 @@ async function deployWorker() {
   if (!accountId || !apiToken) { toast('請填入 Cloudflare Account ID 和 API Token'); return; }
   if (!workerFileContent) { toast('請先選擇 worker.js 檔案'); return; }
   
-  // save creds to localStorage (永久保存，下次自動帶入)
-  localStorage.setItem('jy_cf_creds', JSON.stringify({ accountId, workerName, apiToken }));
+  // v62 安全強化：localStorage 只保存 accountId / workerName，apiToken 不入庫
+  //   理由：localStorage 一旦被 XSS 讀取，apiToken 等於 Cloudflare 帳號半把鑰匙
+  localStorage.setItem('jy_cf_creds', JSON.stringify({ accountId, workerName }));
   
   const btn = document.getElementById('btnDeploy');
   btn.disabled = true;
