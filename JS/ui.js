@@ -1017,7 +1017,13 @@ function _checkToolQuota(tool) {
           badge.textContent = '需登入 Google 帳號';
           badge.classList.add('used');
         } else {
-          badge.textContent = '今日已用・會員每日3次';
+          // ★ Bug #13 fix: 之前寫死「會員每日3次」誤導用戶（實際標準會員 1 次/高級 2 次）
+          //   改用 worker 回傳的 limit 值，沒拿到就用通用文案
+          var _limMsg = '今日已用完';
+          if (typeof data.limit === 'number' && data.limit > 0) {
+            _limMsg = '今日已用・會員每日' + data.limit + '次';
+          }
+          badge.textContent = _limMsg;
           badge.classList.add('used');
         }
       }
@@ -1066,11 +1072,10 @@ function submitWithTool() {
     S.tarot = { drawn: [], spread: [] };
 
     // ★ v28：進抽牌頁前先檢查額度
+    // ★ Bug #7 fix: 移除 localStorage 自判會員（_jy_sub_expires 可被用戶改、可能跟 admin 撤銷後不同步）
+    //   永遠走 worker 端 precheck（getUserSubTier 已含過期檢查），讓 worker 是 single source of truth
     if (!S._isAdmin) {
-      var _subExp = parseInt(localStorage.getItem('_jy_sub_expires') || '0');
-      var _isSub = _subExp > Date.now();
-      if (!_isSub) {
-        (async function() {
+      (async function() {
           try {
             var _chkBody = { action: 'check', payload: { mode: 'tarot_only' } };
             if (window._JY_SESSION_TOKEN) _chkBody.session_token = window._JY_SESSION_TOKEN;
@@ -1106,7 +1111,6 @@ function submitWithTool() {
           goStep(2);
         })();
         return;
-      }
     }
     goStep(2); // 直接進塔羅抽牌
     return;
@@ -2950,7 +2954,22 @@ function initReviewCarousel(){
     }, 300);
   }
   show();
-  setInterval(show, 6000);
+  // ★ Bug #15 fix: 之前用裸 setInterval 永久執行無 clearInterval → memory leak
+  //   改成：1) 把 interval id 存起來給 caller 清；2) 頁面隱藏時暫停（節省資源）
+  var _reviewIntervalId = setInterval(show, 6000);
+  // 暴露清理函式給外部（若有路由切換時可呼叫）
+  window._jyClearReviewInterval = function() {
+    if (_reviewIntervalId) { clearInterval(_reviewIntervalId); _reviewIntervalId = null; }
+  };
+  // 頁面隱藏時暫停輪播，避免無謂消耗
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden && _reviewIntervalId) {
+      clearInterval(_reviewIntervalId);
+      _reviewIntervalId = null;
+    } else if (!document.hidden && !_reviewIntervalId) {
+      _reviewIntervalId = setInterval(show, 6000);
+    }
+  });
 }
 
 /* =============================================================

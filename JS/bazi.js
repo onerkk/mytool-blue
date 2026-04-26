@@ -1149,11 +1149,13 @@ function jyLahiriAyanamsa(jd) {
   // Precession: general precession in longitude (Lieske 1979 + IAU 2006 correction)
   var t = T; // centuries from J2000.0
   // General precession in longitude (arcseconds)
+  // ── 進動長度 (arcseconds since J2000) ──
+  // General precession in longitude
   var psi = 5029.0966 * t + 1.11113 * t*t - 0.000006 * t*t*t;
-  // Ayanamsa = base + accumulated precession since reference epoch
-  // Reference epoch: Spica at 180° sidereal on ~285 AD
-  // At J2000.0, ayanamsa ≈ 23.853°
-  var ayan = 23.853 + (psi - 5029.0966 * 0) / 3600; // delta from J2000.0
+  // ★ Bug #18 fix: 之前寫 (psi - 5029.0966 * 0) / 3600，乘 0 是廢碼
+  //   邏輯：J2000 時 ayanamsa = 23.853°（已含 285 CE 到 J2000 的累積歲差），
+  //   J2000 後再加上 psi（J2000 起累積）即可
+  var ayan = 23.853 + psi / 3600;
   // Nutation correction (simplified — largest term only)
   var Om = (125.04452 - 1934.136261 * t) * Math.PI / 180;
   var dpsi = -17.2 * Math.sin(Om) / 3600; // nutation in longitude (degrees)
@@ -2026,6 +2028,8 @@ function computeJyotish(natal, birthYear, birthMonth, birthDay, birthHour, birth
   });
 
   return {
+    jd: jd,                                 // ★ Bug #36 fix: 留下真實 JD 給 enhanceJyotish/Shadbala_v2 使用
+    T: T,                                   // ★ Julian centuries from J2000
     ayanamsa: Math.round(ayanamsa * 1000) / 1000,
     planets: planets,
     lagna: {lon: lagnaLon, rashi: lagnaRashi, nakshatra: lagnaNaks, idx: lagnaIdx},

@@ -2915,13 +2915,23 @@ function initTarotDeck(){
   if(drawnCards.length>=_maxC && S._isAdmin){ drawnCards=[]; console.log('[管理員] 重置塔羅牌'); }
 
   // ═══ 洗牌 ═══
+  // ★ Bug #6 fix: 原本 admin / 缺 form 時用 .sort(()=>Math.random()-0.5)，
+  //   sort 比較函式無傳遞性，洗牌結果分布偏斜。改用標準 Fisher-Yates。
+  function _fyShuffle(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
   if(S._isAdmin){
-    deckShuffled=[...TAROT].sort(function(){return Math.random()-0.5});
+    deckShuffled = _fyShuffle(TAROT);
   } else if(S.form&&S.form.bdate&&S.form.gender&&S.form.type){
     var _rng=makeSeededRng(S.form.bdate,S.form.gender,S.form.type,S.form.question);
     deckShuffled=seededShuffle(TAROT,_rng);
   } else {
-    deckShuffled=[...TAROT].sort(function(){return Math.random()-0.5});
+    deckShuffled = _fyShuffle(TAROT);
   }
   drawnCards=[];
   pickAnimating=false;
@@ -4043,50 +4053,9 @@ function getComboWarningsHtml(drawn) {
 // SHENG/KE 已在 bazi.js 中以 const 宣告，此處不再重複宣告
 // （防呆移除：避免 var 與 const 衝突導致整個腳本無法載入）
 
-// ═══ 體用生剋判定 ═══
-function tiYong(ti,yo){
-  if(ti===yo)return{r:'比和',f:'吉',d:'體用相同，事情順利。'};
-  if(SHENG[yo]===ti)return{r:'用生體',f:'大吉',d:'外力助益，事半功倍。'};
-  if(SHENG[ti]===yo)return{r:'體生用',f:'小凶',d:'耗費精力，付出多回報少。'};
-  if(KE[yo]===ti)return{r:'用克體',f:'凶',d:'外力阻礙，困難重重。'};
-  if(KE[ti]===yo)return{r:'體克用',f:'小吉',d:'可掌控局面，但需費力。'};
-  return{r:'—',f:'平',d:''};
-}
-
-// ═══ 月令旺衰 ═══
-function getMhWangShuai(el, month){
-  if(!el) return {level:'平',score:0};
-  // ── 依節氣近似日判定當前月支所屬季節 ──
-  var now = new Date();
-  var m = typeof month==='number' ? month : (now.getMonth()+1);
-  var d = now.getDate();
-  var JIE_DAY = {1:6,2:4,3:6,4:5,5:6,6:6,7:7,8:8,9:8,10:8,11:7,12:7};
-  var SEASON_AFTER  = {1:'earth',2:'spring',3:'spring',4:'earth',5:'summer',6:'summer',
-                       7:'earth',8:'autumn',9:'autumn',10:'earth',11:'winter',12:'winter'};
-  var SEASON_BEFORE = {1:'winter',2:'earth',3:'spring',4:'spring',5:'earth',6:'summer',
-                       7:'summer',8:'earth',9:'autumn',10:'autumn',11:'earth',12:'winter'};
-  var season = (d >= (JIE_DAY[m]||6)) ? SEASON_AFTER[m] : SEASON_BEFORE[m];
-  var table={
-    spring:{木:'旺',火:'相',土:'死',金:'囚',水:'休'},
-    summer:{火:'旺',土:'相',金:'死',水:'囚',木:'休'},
-    autumn:{金:'旺',水:'相',木:'死',火:'囚',土:'休'},
-    winter:{水:'旺',木:'相',火:'死',土:'囚',金:'休'},
-    earth:{土:'旺',金:'相',水:'死',木:'囚',火:'休'}
-  };
-  var levelScore={旺:3,相:1,休:0,囚:-1,死:-2};
-  var level=table[season][el]||'平';
-  return {level:level, score:levelScore[level]||0, season:season};
-}
-
-// ═══ 五行生剋關係判定 ═══
-function mhRelation(elA, elB){
-  if(elA===elB) return '比和';
-  if(SHENG[elA]===elB) return 'A生B';
-  if(SHENG[elB]===elA) return 'B生A';
-  if(KE[elA]===elB) return 'A剋B';
-  if(KE[elB]===elA) return 'B剋A';
-  return '無';
-}
+// ★ Bug #19 fix: tiYong/getMhWangShuai/mhRelation 三函式在檔案前段（line 109/125/156）已定義，
+//   此處原本是完全重複的定義。雖然 JS 後者覆蓋前者結果不變，
+//   但是 ~80 行重複代碼，未來改一處忘另一處會變真 bug。已移除重複。
 
 // ═══ 起卦計算 ═══
 // ═══════════════════════════════════════════════════════════════

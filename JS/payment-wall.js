@@ -431,7 +431,31 @@
       _jyLog('SET paid_token FAILED', { error: e.message });
     }
     if (pending.type !== 'single' && pending.type !== 'opus_single' && pending.type !== 'followup_single') {
+      // ★ Bug #9 fix: 之前寫死 now+30d，但 worker 端是「舊到期日+30d」累積邏輯
+      //   前端少算實際剩餘天數，造成前端判斷會員狀態跟後端不同步
+      //   修法：先樂觀寫 +30d 作為 fallback，然後立刻向 worker /sub-status 拿真實 expiresAt 同步
+      //   （worker 端配套：新增 /sub-status POST 端點回傳 isActive/tier/expiresAt）
       localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 30));
+      // 同步從 worker 拿真實 expiresAt（背景進行，不阻塞 UI）
+      try {
+        var _sessTok = window._JY_SESSION_TOKEN || '';
+        var _workerUrl = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
+        // /sub-status 是新增端點；舊版 worker 沒有的話會 404，但因為前面已經寫了 fallback，不影響
+        if (_sessTok) {
+          fetch(_workerUrl + '/sub-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_token: _sessTok })
+          }).then(function(r){
+            if (!r.ok) return null;
+            return r.json();
+          }).then(function(d){
+            if (d && d.expiresAt) {
+              try { localStorage.setItem('_jy_sub_expires', String(d.expiresAt)); } catch(_) {}
+            }
+          }).catch(function(){});
+        }
+      } catch(_e) {}
     }
     localStorage.removeItem('_jy_pending_payment');
     var m = document.getElementById('jy-pay-modal'); if (m) m.remove();

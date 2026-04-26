@@ -420,7 +420,10 @@ function detectSpreadType(question, type) {
   if (qMarks >= 3) return 'celtic_cross';
 
   // 1. 二選一 → 二選一牌陣
-  if (/還是|或者|A.*B|選.*哪|二選一|兩個.*選/.test(q)) {
+  // ★ Bug #20 fix: 之前用 /A.*B/ 對英文誤觸發（含「Apple Banana」字樣的問題會被當二選一）
+  //   實際二選一中文表達都用「還是/或者/二選一/兩個...選/A 還是 B」這類連接詞
+  //   移除過於寬鬆的 A.*B（中文場景幾乎用不到，移除無損準確度）
+  if (/還是|或者|二選一|兩個.*選|哪一個|兩者.*選|選.*哪/.test(q)) {
     return 'either_or';
   }
 
@@ -1708,6 +1711,18 @@ enhanceTarot = function(tarot) {
       else if (diff < 0 && sizes[ri] > MIN_PILE) { sizes[ri]--; diff++; }
       safety++;
     }
+    // ★ Bug #33 fix: safety 退出時 sizes 加總可能仍 ≠ 78（極端情況都頂到 MAX/MIN 邊界）
+    //   後面 deck[idx++] 會讀到 undefined 造成 piles[pk][pi].id throw
+    //   修法：強制把 sizes 校正成加總 = 78（直接從第一堆吸收差額）
+    var finalSum = sizes.reduce(function(a, b) { return a + b; }, 0);
+    if (finalSum !== len) {
+      sizes[0] += (len - finalSum); // 把差額塞給第一堆
+      // 萬一第一堆變成負數或太大，做夾擠保險
+      if (sizes[0] < 1) {
+        // 把 sizes 直接 reset 成 [20, 20, 19, 19] 的合理基準
+        sizes = [20, 20, 19, 19];
+      }
+    }
 
     // YHVH 四堆：Yod=火, Heh=水, Vav=風, Heh(final)=土
     var pileKeys = ['fire', 'water', 'air', 'earth'];
@@ -2176,13 +2191,22 @@ enhanceTarot = function(tarot) {
     for (var step = 0; step < maxSteps; step++) {
       var card = cards[idx];
       if (!card || visited[idx]) {
-        // ★ v55：若因 Ace 循環卡住，切到 Crowley 11 試一次（仍用起點方向）
+        // ★ Bug #34 fix: 進入 fallback 時 visited 沒清，跳 11 步後新位置可能也 visited，立刻退出
+        //   修法：若 fallback 後新位置也 visited，再跳一次（最多 retry 兩次）
         if (card && String(card.rank || '') === 'ace' && !useCrowleyAce && aceLoopDetect === 0) {
           aceLoopDetect++;
           useCrowleyAce = true;
           // 用起點方向跳 11
           for (var ca = 0; ca < 11; ca++) {
             idx = (idx + direction + cards.length) % cards.length;
+          }
+          // 若新位置也 visited，再嘗試跳兩次（避開 visited dense 情況）
+          var _retryCnt = 0;
+          while (visited[idx] && _retryCnt < 2) {
+            for (var ca2 = 0; ca2 < 11; ca2++) {
+              idx = (idx + direction + cards.length) % cards.length;
+            }
+            _retryCnt++;
           }
           continue;
         }
@@ -2221,10 +2245,21 @@ enhanceTarot = function(tarot) {
     var pairs = [];
     var left = sigIdx - 1;
     var right = sigIdx + 1;
+    // ★ Bug #35 fix: 若 sigIdx 在最左/右邊（如 0 或 length-1），舊版迴圈一次都不跑，整堆無配對
+    //   修法：若一邊已耗盡，繼續用另一邊與「對側已耗盡的延伸」配對（環狀繞回）
     while (left >= 0 && right < cards.length) {
       var ed = elementalDignity(cards[left], cards[right]);
       pairs.push({ left: cards[left], right: cards[right], dignity: ed });
       left--;
+      right++;
+    }
+    // 補配對：若一邊還有剩，跟剩下的「自己」（單張）也記錄成單牌
+    while (left >= 0) {
+      pairs.push({ left: cards[left], right: null, dignity: null, single: true });
+      left--;
+    }
+    while (right < cards.length) {
+      pairs.push({ left: null, right: cards[right], dignity: null, single: true });
       right++;
     }
     return pairs;

@@ -15,6 +15,9 @@ window._jyPhotos = null;
 var MAX_PX = 1568;
 var QUALITY = 0.85;
 var MAX_SIZE_MB = 8;
+// ★ Bug #14 fix: iPhone 高解析照片常 5-12MB，壓縮前先 reject 會擋掉合理用戶
+//   原始照片放寬到 25MB（手機原圖極少超過這個），壓縮後再用 MAX_SIZE_MB 把關
+var MAX_RAW_SIZE_MB = 25;
 
 // v62：移除 crystal，face 主打氣色面相
 var PHOTO_FIELDS = {
@@ -40,8 +43,10 @@ function getFieldsForTool(tool, privileged) {
 
 function compressImage(file) {
   return new Promise(function(resolve, reject) {
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      reject(new Error('圖片太大，請選擇 ' + MAX_SIZE_MB + 'MB 以內的照片'));
+    // ★ Bug #14 fix: 改成「raw 上限放寬到 25MB（拒絕極端大檔案），壓縮後才用 8MB 檢查」
+    //   舊版 8MB 在壓縮前就擋 → iPhone 高解析照片常 5-12MB 直接被拒
+    if (file.size > MAX_RAW_SIZE_MB * 1024 * 1024) {
+      reject(new Error('圖片太大，請選擇 ' + MAX_RAW_SIZE_MB + 'MB 以內的照片'));
       return;
     }
     var reader = new FileReader();
@@ -60,7 +65,14 @@ function compressImage(file) {
         canvas.height = h;
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', QUALITY));
+        var dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
+        // 壓縮後檢查：base64 字串大小約是實際 byte 的 1.37 倍
+        var approxBytes = dataUrl.length * 0.75;
+        if (approxBytes > MAX_SIZE_MB * 1024 * 1024) {
+          // 二次壓縮：降 quality
+          dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        }
+        resolve(dataUrl);
       };
       img.src = reader.result;
     };

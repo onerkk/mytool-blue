@@ -1039,7 +1039,10 @@ function enhanceJyotish(jy) {
   });
 
   // 2. Enhanced Shadbala
-  try { jy.shadbala_v2 = jyCalcShadbala_v2(planets, lagnaIdx, jy.ayanamsa ? jy.lagna.lon + jy.ayanamsa : 0, jy.ayanamsa); }
+  // ★ Bug #36 fix: 必須傳真實 JD（之前傳 lagna.lon + ayanamsa，是錯的「假 JD」）
+  //   假 JD 會讓 hourFrac/dayOfWeek/planetary hour 全部錯亂 → Kala Bala (varaBala/horaBala/tribhagaBala) 全失效
+  var _realJd = (typeof jy.jd === 'number') ? jy.jd : 2451545.0; // J2000 fallback
+  try { jy.shadbala_v2 = jyCalcShadbala_v2(planets, lagnaIdx, _realJd, jy.ayanamsa); }
   catch(e) { jy.shadbala_v2 = null; }
 
   // 3. Arudha Padas
@@ -2732,8 +2735,10 @@ function enhanceJyotish2(jy, birthDate) {
   try { jy.sudarshanaChakra = jyCalcSudarshanaChakra(planets, lagnaIdx); } catch(e) { jy.sudarshanaChakra = null; }
   if (jy.lagna && jy.lagna.lon !== undefined) {
     try {
-      var jd = jy.ayanamsa ? (jy.lagna.lon + jy.ayanamsa) : 0;
-      jy.preciseAyanaBala = jyPreciseAyanaBala(planets, jd);
+      // ★ Bug #36 fix: 必須傳真實 JD（之前傳 lagna.lon + ayanamsa，是錯的「假 JD」）
+      //   假 JD 會讓 obliquity 計算結果離譜（約 871 度），declination 錯亂
+      var _realJd2 = (typeof jy.jd === 'number') ? jy.jd : 2451545.0;
+      jy.preciseAyanaBala = jyPreciseAyanaBala(planets, _realJd2);
     } catch(e) { jy.preciseAyanaBala = null; }
   }
   if (jy.ashtakavargaReduced) {

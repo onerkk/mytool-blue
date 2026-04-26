@@ -3164,6 +3164,10 @@ function talkBaziFor(bazi, focusType){
   var ep=bazi.ep||{};
   var strong=bazi.strong;
   var texts=[];
+  // ★ Bug #41 fix: 補回 dmEl/yinEl 宣告（之前在三合局/三會局分支用到但函式內未宣告，造成 ReferenceError）
+  var dmEl = bazi.dmEl || '';
+  var _BS_TALK = {木:'水',火:'木',土:'火',金:'土',水:'金'}; // 生我者（印星）
+  var yinEl = dmEl ? (_BS_TALK[dmEl] || '') : '';
   
   // ── 特殊格局（從格/化氣格）優先描述 ──
   if(bazi.specialStructure){
@@ -3241,7 +3245,7 @@ function talkBaziFor(bazi, focusType){
       }
     }
     // 食傷旺 → 個人魅力來源
-    var shiShang=(ep['食']||0)+(ep['傷']||0);
+    // ★ Bug #42 fix: shiShang 已在 line 3225 宣告，這裡是重複宣告（var hoist 不會錯但邏輯混亂）
     if(shiShang>=20) texts.push('食傷旺，你本身就有吸引異性的魅力和表達力');
     else if(shiShang<=5) texts.push('食傷弱，感情表達比較含蓄，需要學習主動釋放信號');
   } else if(focusType==='career'){
@@ -9462,7 +9466,15 @@ function runAnalysisV2(){
   try{ renderNatalChart(); }catch(e){ 
     console.error('renderNatalChart error:', e); 
     const el=document.getElementById('d-natal-summary');
-    if(el) el.innerHTML='<p style="color:#f87171">星盤渲染錯誤：'+e.message+'</p>';
+    // ★ Bug #28 fix: 之前 e.message 直接塞 innerHTML，理論上 prompt injection 可注入 HTML/script
+    //   改用 textContent，並把 wrapping span 用 createElement 組裝
+    if(el) {
+      el.innerHTML = ''; // 清空
+      var _errP = document.createElement('p');
+      _errP.style.color = '#f87171';
+      _errP.textContent = '星盤渲染錯誤：' + (e && e.message ? e.message : '未知錯誤');
+      el.appendChild(_errP);
+    }
   }
   try{ renderJyotish(); }catch(e){ console.error('renderJyotish error:', e); }
   try{ renderName(); }catch(e){ console.error('renderName error:', e); }
@@ -12435,7 +12447,9 @@ function renderActionCard(bazi, type, answer){
   var favData=EL[favEl]||EL['土'];
   var recData=EL[recEl]||EL['土'];
 
-  function pick(arr,n){if(!arr||!arr.length)return[];var s=[].concat(arr);for(var i=s.length-1;i>0;i--){var j=Math.floor(Math.random()*i);var t=s[i];s[i]=s[j];s[j]=t;}return s.slice(0,Math.min(n||1,s.length));}
+  // ★ Bug #47 fix: Fisher-Yates 應該是 Math.random() * (i + 1)，舊版缺 +1 → 範圍 0~i-1，
+  //   最後一個元素永遠不會跟自己 swap，造成洗牌偏斜
+  function pick(arr,n){if(!arr||!arr.length)return[];var s=[].concat(arr);for(var i=s.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=s[i];s[i]=s[j];s[j]=t;}return s.slice(0,Math.min(n||1,s.length));}
 
   var SHENG={'金':'土','木':'水','水':'金','火':'木','土':'火'};
   var motherEl=SHENG[favEl];var motherData=EL[motherEl];
@@ -14470,8 +14484,16 @@ function _buildPayload() {
     var ln = dy && dy.liuNian ? dy.liuNian.find(function(l){return l.year===yr;}) : null;
 
     // 四柱原始干支
-    if (b.pillars && b.pillars.length === 4) {
-      L.push('四柱：' + b.pillars.map(function(p){return _s(p.g)+_s(p.z);}).join(' '));
+    // ★ Bug #48 fix: pillars 是 {year,month,day,hour} 物件不是陣列！
+    //   舊版 b.pillars.length === 4 永遠 false，b.pillars.map 會 throw，
+    //   導致 AI prompt 從未收到四柱原始干支（只有衍生資料）
+    if (b.pillars && b.pillars.year && b.pillars.month && b.pillars.day && b.pillars.hour) {
+      var _pks = ['year','month','day','hour'];
+      var _ps = _pks.map(function(k){
+        var p = b.pillars[k];
+        return _s(p && p.gan) + _s(p && p.zhi);
+      });
+      L.push('四柱：' + _ps.join(' '));
     }
 
     L.push('日主' + _s(b.dm) + '（' + _s(b.dmEl) + '行），' + (b.strong ? '身強' : '身弱'));
@@ -15728,7 +15750,10 @@ function inferTimingFromTags(tags) {
 
 // ── helper 4: normalizeDimResult ──
 function normalizeDimResult(dimName, raw) {
-  var score = (raw && typeof raw.score === 'number' && raw.score > 0) ? raw.score : 50;
+  // ★ Bug #40 fix: 之前 raw.score > 0 會把 0 分（極差）當成 50（中性），失去 0 分訊號
+  //   修法：改用「是不是合法數字」判斷，0 也是合法 score
+  var _hasScore = raw && typeof raw.score === 'number' && !isNaN(raw.score);
+  var score = _hasScore ? raw.score : 50;
   var dir = (raw && raw.dir) ? raw.dir : scoreToDir(score);
   var tags = (raw && raw.tags) ? raw.tags : [];
   return {
@@ -15901,7 +15926,14 @@ function analyzeBaziDimension(bazi, type) {
     var timingTagAdded = false;
     if (curDy) {
       var dyLevel = curDy.level || '';
-      var dyDir = /旺盛|極強|上升|大吉|中吉/.test(dyLevel) ? 'pos' : /低迷|偏弱|大凶|中凶/.test(dyLevel) ? 'neg' : 'mid';
+      // ★ Bug #45 fix: bazi.js 給的 level 是 大吉/中吉/小吉/平穩/小凶/凶/大凶
+      //   舊 regex /旺盛|極強|上升|大吉|中吉/ 漏抓「小吉」
+      //   舊 regex /低迷|偏弱|大凶|中凶/ 漏抓「小凶」「凶」（用戶大運是「凶」結果被當 mid 誤導 AI）
+      var dyDir = /旺盛|極強|上升|大吉|中吉|小吉/.test(dyLevel)
+        ? 'pos'
+        : /低迷|偏弱|大凶|中凶|小凶|^凶$|，凶|、凶|^凶|凶$/.test(dyLevel)
+        ? 'neg'
+        : 'mid';
       tags.push({ sys:'bazi', key:'dayun_now', label:'大運'+dyLevel, direction:dyDir, weight:3, timing:'mid', detail:'目前大運 '+curDy.gz+'（'+dyLevel+'）' });
       timingTagAdded = true;
     }
@@ -23821,6 +23853,13 @@ function _renderTarotCrystal(r) {
   var content = document.getElementById('tarot-crystal-content');
   if (!content) return;
 
+  // ★ Bug #49 fix: AI 回傳的字串可能含 HTML（prompt injection 引導）→ 直接塞 innerHTML 有 XSS 風險
+  //   為這個函式加一個本地 escape helper
+  function _esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   var crystalName = r.crystalRec || '';
   var crystalReason = r.crystalReason || '';
   var energyNote = r.energyNote || '';
@@ -23847,17 +23886,17 @@ function _renderTarotCrystal(r) {
     html += '<div style="display:flex;align-items:center;gap:.8rem;padding:.8rem;border-radius:10px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.12);margin-bottom:.6rem">';
     html += '<div style="width:50px;height:50px;border-radius:50%;background:' + color + ';opacity:.8;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="font-size:1.3rem">💎</span></div>';
     html += '<div>';
-    html += '<div style="font-weight:700;color:var(--c-gold);font-size:.95rem">' + crystalName + '</div>';
-    html += '<div style="font-size:.8rem;color:var(--c-text-dim);line-height:1.6;margin-top:.15rem">' + (crystalReason || energyNote) + '</div>';
+    html += '<div style="font-weight:700;color:var(--c-gold);font-size:.95rem">' + _esc(crystalName) + '</div>';
+    html += '<div style="font-size:.8rem;color:var(--c-text-dim);line-height:1.6;margin-top:.15rem">' + _esc(crystalReason || energyNote) + '</div>';
     html += '</div></div>';
   }
 
   if (energyNote && crystalReason) {
-    html += '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;padding:.3rem 0">' + energyNote + '</div>';
+    html += '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;padding:.3rem 0">' + _esc(energyNote) + '</div>';
   }
 
   if (!html) {
-    html = '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7">' + (energyNote || '根據牌面能量，選一顆跟你共振的水晶帶在身上吧。') + '</div>';
+    html = '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7">' + _esc(energyNote || '根據牌面能量，選一顆跟你共振的水晶帶在身上吧。') + '</div>';
   }
 
   content.innerHTML = html;
@@ -24944,7 +24983,18 @@ function _renderOOTKResult(container, r, admin) {
       if (window._ootkResults) {
         var _oOps2 = window._ootkResults;
         var _oc2 = [];
-        ['op1','op2','op3','op4','op5'].forEach(function(k){ if (_oOps2[k] && _oOps2[k].keyCards) _oc2.push(k.toUpperCase() + ':' + _oOps2[k].keyCards.map(function(c){return c.name||c;}).join(',')); });
+        // ★ Bug #50 fix: keyCards 元素是 {card, position} 物件（見 ootkCounting line 2191）
+        //   舊版 c.name||c → c.name 是 undefined，c 是物件 toString 變 '[object Object]'
+        //   正確要取 c.card.name 或 c.card.n
+        ['op1','op2','op3','op4','op5'].forEach(function(k){
+          if (_oOps2[k] && _oOps2[k].keyCards) {
+            _oc2.push(k.toUpperCase() + ':' + _oOps2[k].keyCards.map(function(c){
+              if (!c) return '';
+              if (c.card) return c.card.name || c.card.n || '';
+              return c.name || c.n || '';
+            }).filter(Boolean).join(','));
+          }
+        });
         window._jyFeedbackSnapshot.cards = _oc2.join(' | ').substring(0, 800);
       }
     } catch(_cc) {}
@@ -25626,6 +25676,11 @@ window._jyStartOOTK = function() {
   // ── 查每日免費額度 ──
   var _ootkCheckBody = { action: 'check', payload: { mode: 'ootk' } };
   if (window._JY_SESSION_TOKEN) _ootkCheckBody.session_token = window._JY_SESSION_TOKEN;
+  // ★ Bug #12 fix: 開鑰 precheck 漏帶 paid_token，已付費用戶被誤擋跳付費牆
+  //   七維度/塔羅都帶了，只有這裡漏。下行補上。
+  var _ootkPt = '';
+  try { _ootkPt = localStorage.getItem('_jy_paid_token') || ''; } catch(_e){}
+  if (_ootkPt) _ootkCheckBody.paid_token = _ootkPt;
   fetch(AI_WORKER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
