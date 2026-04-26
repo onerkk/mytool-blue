@@ -167,7 +167,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 <!-- ══ Main App ══ -->
 <div id="mainApp" style="display:none">
   <div class="header">
-    <h1><span>🌙</span> 靜月之光 管理後台 <a href="https://jingyue.uk#admin=Qq-90109010" target="_blank" style="font-size:12px;background:rgba(255,255,255,.15);padding:4px 12px;border-radius:6px;color:#fff;margin-left:8px;text-decoration:none">前往網站 ↗</a></h1>
+    <h1><span>🌙</span> 靜月之光 管理後台 <a href="https://jingyue.uk" id="adminSiteLink" target="_blank" style="font-size:12px;background:rgba(255,255,255,.15);padding:4px 12px;border-radius:6px;color:#fff;margin-left:8px;text-decoration:none">前往網站 ↗</a></h1>
     <div id="googleAuthBar" style="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:12px"></div>
   </div>
 
@@ -1439,6 +1439,21 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 // ═══════════════════════════════════════════════
 const WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
 let adminToken = '';
+// v62 安全強化：「前往網站」連結原本硬編 #admin=xxx token 在 HTML 原始碼，
+//   公開部署時任何人 view-source 就能拿走 admin token。
+//   改成：頁面登入後（adminToken 已驗證），由 JS 動態組連結。
+//   HTML 原始碼乾淨無 token，DOM 上的 token 只有本人看得到。
+function _updateAdminSiteLink() {
+  try {
+    var a = document.getElementById('adminSiteLink');
+    if (!a) return;
+    if (adminToken) {
+      a.href = 'https://jingyue.uk#admin=' + encodeURIComponent(adminToken);
+    } else {
+      a.href = 'https://jingyue.uk';
+    }
+  } catch(_) {}
+}
 let inventoryData = [];
 let workerFileContent = null;
 
@@ -1611,6 +1626,7 @@ function doLogin() {
           checkWorkerStatus();
           loadPricingConfig();
           _updateGoogleAuthBar();
+          _updateAdminSiteLink();  // v62：登入後動態組「前往網站」連結
         });
     })
     .catch(function(e){
@@ -1748,6 +1764,7 @@ function _updateLoginSteps() {
         checkWorkerStatus();
         loadPricingConfig();
         _updateGoogleAuthBar();
+        _updateAdminSiteLink();  // v62：自動登入後動態組「前往網站」連結
       })
       .catch(function(err){
         // Token 失效 → 清掉，讓用戶重輸
