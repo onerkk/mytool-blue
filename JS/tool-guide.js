@@ -385,6 +385,9 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        // ★ 配合 worker.js Bug #29 fix（feedback 加 rate limit）：帶 session_token 讓登入用戶有獨立 quota
+        //   沒登入時 worker 會 fallback 到 IP-based rate limit（1 分鐘 5 次）
+        session_token: window._JY_SESSION_TOKEN || '',
         rating: rating,
         question: q.substring(0, 200),
         type: type,

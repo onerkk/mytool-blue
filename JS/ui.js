@@ -1791,6 +1791,9 @@ function _sendFeedbackToForms(rating,reasons,comment,actual){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
+        // ★ 配合 worker.js Bug #29 fix：帶 session_token 讓登入用戶有獨立 rate quota
+        //   沒登入時 worker 會 fallback 到 IP-based rate limit（1 分鐘 5 次）
+        session_token: (typeof window !== 'undefined' && window._JY_SESSION_TOKEN) || '',
         rating,question:q,type,reasons:reasonStr,comment,actual:actualStr,name,tool,
         cards,aiClosing,aiDirectAnswer,aiYesNo,aiStory,
         birth,birthTime,gender,birthLocation,

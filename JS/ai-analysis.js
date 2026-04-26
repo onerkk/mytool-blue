@@ -25377,12 +25377,35 @@ function _buildMomentCard(r, mode) {
   html += '</div>';
 
   // 分享按鈕（用既有 canvas 分享圖系統）
+  // ★ Bug #62 fix: 之前用 onclick="...navigator.share({text:'" + quote.replace(/'/g,"\\'") + ...")"
+  //   quote 來自 AI 回傳，含 " 或 \ 會破壞 onclick attribute / 注入 JS（XSS）
+  //   修法：把 quote 存到 button 的 dataset（HTML 屬性會自動 escape），用 addEventListener
+  var _shareTextSafe = (quote || '').substring(0, 50);
+  var _safeQuoteAttr = _shareTextSafe.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   html += '<div style="text-align:center;margin-bottom:.8rem">';
   html += '<button onclick="_shareImageAndDownload(\'' + mode + '\')" style="padding:.4rem 1rem;border-radius:999px;font-size:.72rem;color:rgba(212,175,55,.7);border:1px solid rgba(212,175,55,.15);background:rgba(212,175,55,.04);cursor:pointer;font-family:inherit;transition:all .25s;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-image" style="font-size:.62rem"></i>存分享圖</button>';
-  html += '<button onclick="if(navigator.share){navigator.share({title:\'靜月之光\',text:\'' + quote.replace(/'/g,"\\'").substring(0,50) + ' ✨ jingyue.uk\',url:\'https://jingyue.uk\'}).catch(function(){})}else{navigator.clipboard.writeText(\'' + quote.replace(/'/g,"\\'").substring(0,50) + ' https://jingyue.uk\').then(function(){alert(\'已複製到剪貼簿！\')})}" style="padding:.4rem 1rem;border-radius:999px;font-size:.72rem;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.06);background:transparent;cursor:pointer;font-family:inherit;transition:all .25s;margin-left:.4rem;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-share-alt" style="font-size:.62rem"></i>分享</button>';
+  // 分享按鈕：data-share-text 用 escaped quote，由 _jyDoShare 讀取（避免 onclick 拼字串 XSS）
+  html += '<button class="jy-share-btn" data-share-text="' + _safeQuoteAttr + '" style="padding:.4rem 1rem;border-radius:999px;font-size:.72rem;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.06);background:transparent;cursor:pointer;font-family:inherit;transition:all .25s;margin-left:.4rem;display:inline-flex;align-items:center;gap:6px"><i class="fas fa-share-alt" style="font-size:.62rem"></i>分享</button>';
   html += '</div>';
 
   return html;
+}
+
+// ★ Bug #62 fix 配套：分享 handler，用 dataset 取資料
+if (typeof window !== 'undefined' && !window._jyShareBtnHandlerInstalled) {
+  document.addEventListener('click', function(ev) {
+    var btn = ev.target.closest && ev.target.closest('.jy-share-btn');
+    if (!btn) return;
+    var txt = btn.getAttribute('data-share-text') || '';
+    var fullText = txt + ' ✨ jingyue.uk';
+    var url = 'https://jingyue.uk';
+    if (navigator.share) {
+      navigator.share({ title: '靜月之光', text: fullText, url: url }).catch(function(){});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(txt + ' ' + url).then(function(){ alert('已複製到剪貼簿！'); }).catch(function(){});
+    }
+  });
+  window._jyShareBtnHandlerInstalled = true;
 }
 
 // 截圖分享輔助（震動 + 提示）

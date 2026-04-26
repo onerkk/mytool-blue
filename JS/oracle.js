@@ -282,6 +282,8 @@ function _oracleSendFeedback(rating){
   try{
     var WORKER_URL=(typeof window!=='undefined'&&window._JY_WORKER_URL)||'https://jy-ai-proxy.onerkk.workers.dev';
     var payload={
+      // ★ 配合 worker.js 的 oracle-feedback rate limit (Bug #56)：帶 session_token 讓登入用戶有獨立 quota
+      session_token: (typeof window!=='undefined' && window._JY_SESSION_TOKEN) || '',
       tool:'oracle',
       rating:rating,  // 'accurate' | 'partial' | 'inaccurate'
       lotNo:_poem?_poem.n:0,
