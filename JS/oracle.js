@@ -153,6 +153,97 @@ var D={
 };
 
 var _poem=null,_holy=0,_phase='intro',_throwResult=null,_allowResult=null,_prayTimer=null;
+// v62：問事分類 + 同題鎖籤 + 信心度追蹤
+var _qType=null;          // 問事類型 key (love/wealth/career/...)
+var _qText='';            // 問題文字（簡短，最多 80 字）
+var _redrawCount=0;       // 三聖筊失敗的「重抽」次數
+var _laughDarkCount=0;    // 累計擲到笑筊/陰筊次數（同一支籤）
+var _drawAt=null;         // 此次抽籤的時間戳（用於今日鎖籤判斷）
+// 問事分類定義：每類對應 D 詳解的優先欄位（前 5 個最相關）
+var ORACLE_TYPES = {
+  love:    { label:'感情', fields:['婚姻','凡事','家運','來人','遠信'] },
+  reunion: { label:'復合', fields:['婚姻','凡事','尋人','來人','遠信'] },
+  peach:   { label:'桃花', fields:['婚姻','凡事','來人','歲君','月令'] },
+  career:  { label:'事業', fields:['功名','作事','出外','官事','凡事'] },
+  wealth:  { label:'財運', fields:['求財','經商','出外','月令','凡事'] },
+  health:  { label:'健康', fields:['治病','月令','凡事','歲君'] },
+  lawsuit: { label:'官司', fields:['官事','凡事','歲君'] },
+  lost:    { label:'失物', fields:['失物','尋人','遠信'] },
+  finding: { label:'尋人', fields:['尋人','失物','遠信','來人'] },
+  home:    { label:'家宅', fields:['家事','家運','築室','移居','凡事'] },
+  exam:    { label:'考試', fields:['功名','作事','歲君','凡事'] },
+  trade:   { label:'交易', fields:['經商','求財','行舟','作塭','月令'] },
+  travel:  { label:'出行', fields:['出外','行舟','移居','遠信'] },
+  general: { label:'一般', fields:['凡事','歲君','月令'] }
+};
+// 同題鎖籤工具：用 hash(qType + qText + today) 當 key 存 localStorage
+function _oracleHash(s){var h=0,i,c;if(!s)return '0';for(i=0;i<s.length;i++){c=s.charCodeAt(i);h=((h<<5)-h)+c;h=h&h;}return Math.abs(h).toString(36);}
+function _oracleTodayStr(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function _oracleLockKey(qType,qText){return 'oracle_lock:'+_oracleHash((qType||'')+'|'+(qText||'').trim().toLowerCase()+'|'+_oracleTodayStr());}
+function _oracleCheckLock(qType,qText){
+  try{
+    var k=_oracleLockKey(qType,qText);
+    var raw=localStorage.getItem(k);
+    if(!raw)return null;
+    var obj=JSON.parse(raw);
+    if(obj && obj.poemN)return obj;
+  }catch(e){}
+  return null;
+}
+function _oracleSaveLock(qType,qText,poemN,redrawCount,laughDarkCount){
+  try{
+    var k=_oracleLockKey(qType,qText);
+    localStorage.setItem(k,JSON.stringify({
+      poemN:poemN, qType:qType, qText:qText,
+      redrawCount:redrawCount, laughDarkCount:laughDarkCount,
+      savedAt:Date.now()
+    }));
+  }catch(e){}
+}
+// 信心度判讀（依重抽次數、笑陰筊次數、籤等級）
+function _oracleConfidence(){
+  var rank=(_poem&&_poem.r)||'';
+  var rankPenalty=0;
+  if(rank.indexOf('下下')>=0)rankPenalty=2;
+  else if(rank.indexOf('下')>=0)rankPenalty=1;
+  // 重抽 0、笑陰筊 0~2 = 高
+  // 重抽 1、或笑陰筊 3~4 = 中
+  // 重抽 2+、或笑陰筊 5+ = 低
+  var score=0;
+  if(_redrawCount===0)score+=2;
+  else if(_redrawCount===1)score+=1;
+  if(_laughDarkCount<=2)score+=2;
+  else if(_laughDarkCount<=4)score+=1;
+  score-=rankPenalty;
+  if(score>=3)return {level:'高',color:'#2ecc71',reason:'一次抽到，三聖筊確認順利，籤象訊號穩定。'};
+  if(score>=1)return {level:'中',color:'#f39c12',reason:'求籤過程有些波折，籤象僅供參考，請以核心訊息為主。'};
+  return {level:'低',color:'#e74c3c',reason:'重抽多次或多次笑陰筊，神明訊號不明，建議改日再來，或直接尋求進一步命理諮詢。'};
+}
+// Feedback 上報
+function _oracleSendFeedback(rating){
+  try{
+    var WORKER_URL=(typeof window!=='undefined'&&window._JY_WORKER_URL)||'https://jy-ai-proxy.onerkk.workers.dev';
+    var payload={
+      tool:'oracle',
+      rating:rating,  // 'accurate' | 'partial' | 'inaccurate'
+      lotNo:_poem?_poem.n:0,
+      lotStem:_poem?_poem.g:'',
+      rank:_poem?_poem.r:'',
+      questionType:_qType||'general',
+      qTextLen:(_qText||'').length,
+      jiaoConfirm:'3_holy',
+      redrawCount:_redrawCount,
+      laughDarkCount:_laughDarkCount,
+      ts:Date.now()
+    };
+    fetch(WORKER_URL+'/oracle-feedback',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+      keepalive:true
+    }).catch(function(){});
+  }catch(e){}
+}
 
 function _playThrow(){try{var c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=800;g.gain.setValueAtTime(0.25,c.currentTime);g.gain.exponentialRampToValueAtTime(0.01,c.currentTime+0.25);o.start();o.stop(c.currentTime+0.25)}catch(e){}}
 function _playHoly(){try{var c=new(window.AudioContext||window.webkitAudioContext)();[523,659,784].forEach(function(f,i){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.15,c.currentTime+i*0.12);g.gain.exponentialRampToValueAtTime(0.01,c.currentTime+i*0.12+0.35);o.start(c.currentTime+i*0.12);o.stop(c.currentTime+i*0.12+0.35)})}catch(e){}}
@@ -172,7 +263,32 @@ h+='<div class="orc-topbar"><button class="orc-back" onclick="_oracleClose()"><i
 h+='<div class="orc-body">';
 
 if(_phase==='intro'){
-h+='<div class="orc-fade"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div><p class="orc-desc">心中默念所求之事<br>虔心稟告，靜候神明指引</p><p class="orc-note">求得籤詩後需連擲三聖筊方為確認</p><button class="orc-btn-primary" onclick="_oracleShowGuide()">求 籤</button><p class="orc-free-tag">✦ 免費使用 ・ 不限次數 ✦</p></div>';
+// v62：intro 加「選分類 + 寫問題」表單，求籤前必填
+h+='<div class="orc-fade"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div>';
+h+='<p class="orc-desc">請先選擇問事類別，並寫下您的問題</p>';
+h+='<div class="orc-q-types">';
+var typeKeys=Object.keys(ORACLE_TYPES);
+for(var ti=0;ti<typeKeys.length;ti++){
+  var tk=typeKeys[ti];
+  var sel=(_qType===tk)?' orc-q-type-on':'';
+  h+='<button class="orc-q-type'+sel+'" onclick="_oracleSetType(\''+tk+'\')">'+ORACLE_TYPES[tk].label+'</button>';
+}
+h+='</div>';
+h+='<textarea id="orc-q-text" class="orc-q-input" placeholder="請寫下您的問題（一支籤僅問一件事，例：他這週會不會主動聯繫我？）" maxlength="80" oninput="_oracleSyncQText(this.value)">'+(_qText||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')+'</textarea>';
+h+='<p class="orc-q-hint" id="orc-q-hint">'+((_qText||'').length)+' / 80 字</p>';
+// 檢查今日是否已抽過同題
+var lockHint='';
+if(_qType&&(_qText||'').trim().length>=2){
+  var lock=_oracleCheckLock(_qType,_qText);
+  if(lock){
+    lockHint='<div class="orc-q-lock">⚠️ 此題今日已求得第'+CN[lock.poemN]+'籤，依靈籤紀律不建議重覆求問。<br>'+
+      '<button class="orc-btn-link" onclick="_oracleViewLocked()">查看當日已求得的籤</button></div>';
+  }
+}
+h+=lockHint;
+var canDraw=_qType&&(_qText||'').trim().length>=2;
+h+='<button class="orc-btn-primary" '+(canDraw?'':'disabled style="opacity:.4;cursor:not-allowed"')+' onclick="_oracleShowGuide()">求 籤</button>';
+h+='<p class="orc-free-tag">✦ 同題每日鎖籤 ・ 免費使用 ✦</p></div>';
 }
 else if(_phase==='guide'){
 h+='<div class="orc-fade orc-center-phase"><div class="orc-scroll-wrap">';
@@ -253,8 +369,33 @@ h+='<div class="orc-card8-brand"><span>jingyue.uk</span><span>靜月之光</span
 h+='</div></div>';
 // 分享按鈕
 h+='<div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem"><button class="orc-btn-share" onclick="_oracleShare()"><i class="fas fa-share-alt"></i> 分享籤詩</button><button class="orc-btn-share" onclick="_oracleDownload()"><i class="fas fa-download"></i> 儲存圖片</button></div>';
-// 解說區
-var dd=D[_poem.n];if(dd){
+// v62：分類優先解讀區（依用戶選的問事類型挑出 D 的相關欄位）
+var dd=D[_poem.n];
+if(dd&&_qType&&ORACLE_TYPES[_qType]){
+  var typeInfo=ORACLE_TYPES[_qType];
+  h+='<div class="orc-jh-section orc-jh-priority">';
+  h+='<div class="orc-jh-heading">關於您的「'+typeInfo.label+'」之問</div>';
+  h+='<div class="orc-priority-grid">';
+  for(var pfi=0;pfi<typeInfo.fields.length;pfi++){
+    var fname=typeInfo.fields[pfi];
+    var fval=dd[fname];
+    if(fval){
+      h+='<div class="orc-priority-row"><span class="orc-priority-label">'+fname+'</span><span class="orc-priority-val">'+fval+'</span></div>';
+    }
+  }
+  h+='</div>';
+  h+='<div class="orc-q-recap">您問的是：「'+(_qText||'').replace(/</g,'&lt;')+'」</div>';
+  h+='</div>';
+}
+// v62：判讀信心度
+var conf=_oracleConfidence();
+h+='<div class="orc-confidence" style="border-color:'+conf.color+'33;background:'+conf.color+'11">';
+h+='<div class="orc-conf-head"><span class="orc-conf-label">判讀信心度</span><span class="orc-conf-level" style="color:'+conf.color+'">'+conf.level+'</span></div>';
+h+='<div class="orc-conf-reason">'+conf.reason+'</div>';
+h+='<div class="orc-conf-meta">求籤過程：重抽 '+_redrawCount+' 次，笑/陰筊 '+_laughDarkCount+' 次</div>';
+h+='</div>';
+// 完整解說區
+if(dd){
 h+='<div class="orc-jh-section">';
 h+='<div class="orc-jh-heading">解說</div>';
 var s1txt=dd._s1||'';s1txt=s1txt.replace(/\\n/g,'<br>');
@@ -266,12 +407,51 @@ var s2txt=dd._s2||'';s2txt=s2txt.replace(/\\n/g,'<br>');
 h+='<div class="orc-jh-text">'+s2txt+'</div>';
 h+='</div>';
 }
+// v62：靈籤回饋區
+h+='<div class="orc-fb-section" id="orc-fb-section">';
+h+='<div class="orc-fb-heading">這支籤對您的問題有幫助嗎？</div>';
+h+='<div class="orc-fb-buttons">';
+h+='<button class="orc-fb-btn orc-fb-good" onclick="_oracleFb(\'accurate\')">準</button>';
+h+='<button class="orc-fb-btn orc-fb-mid" onclick="_oracleFb(\'partial\')">部分準</button>';
+h+='<button class="orc-fb-btn orc-fb-bad" onclick="_oracleFb(\'inaccurate\')">不準</button>';
+h+='</div>';
+h+='<div class="orc-fb-hint">您的回饋會幫助我們持續校準</div>';
+h+='</div>';
 h+='<div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem"><button class="orc-btn-outline" onclick="_oracleReset()">重新求籤</button><button class="orc-btn-outline" onclick="_oracleClose()">返回首頁</button></div><div class="orc-footer">靜月之光 ・ jingyue.uk<br>六十甲子靈籤</div></div>';
 }
 h+='</div>';w.innerHTML=h;
 }
 
-window._oracleOpen=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;var w=_getWrap();w.style.display='block';_render();var hk=$('hook-screen');if(hk)hk.style.display='none';document.body.style.overflow='hidden'};
+// v62：問事類型/文字輸入 helper
+window._oracleSetType=function(k){_qType=k;_render();};
+window._oracleSyncQText=function(v){
+  _qText=String(v||'').slice(0,80);
+  // 即時更新字數提示 + 鎖籤提示，不重新 render（保持 textarea 焦點）
+  var hint=document.getElementById('orc-q-hint');
+  if(hint)hint.textContent=_qText.length+' / 80 字';
+  // 求籤鈕狀態
+  var btns=document.querySelectorAll('.orc-btn-primary');
+  for(var bi=0;bi<btns.length;bi++){
+    if(btns[bi].textContent.replace(/\s/g,'')==='求籤'){
+      var canDraw=_qType&&_qText.trim().length>=2;
+      if(canDraw){btns[bi].removeAttribute('disabled');btns[bi].style.opacity='';btns[bi].style.cursor='';}
+      else{btns[bi].setAttribute('disabled','disabled');btns[bi].style.opacity='.4';btns[bi].style.cursor='not-allowed';}
+      break;
+    }
+  }
+};
+// 查看今日已求得的籤（鎖籤提示按鈕）
+window._oracleViewLocked=function(){
+  var lock=_oracleCheckLock(_qType,_qText);
+  if(!lock||!P||!P[lock.poemN-1]){alert('找不到當日紀錄');return;}
+  // 從 P 找出對應籤詩
+  for(var pi=0;pi<P.length;pi++){if(P[pi].n===lock.poemN){_poem=P[pi];break;}}
+  _redrawCount=lock.redrawCount||0;
+  _laughDarkCount=lock.laughDarkCount||0;
+  _phase='poem';
+  _render();
+};
+window._oracleOpen=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;var w=_getWrap();w.style.display='block';_render();var hk=$('hook-screen');if(hk)hk.style.display='none';document.body.style.overflow='hidden'};
 window._oracleClose=function(){var w=_getWrap();w.style.display='none';document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
 // ★ v6c: intro → guide → pray → allowAsk → allowThrow → shake → rise → drawn
 window._oracleShowGuide=function(){_phase='guide';_render()};
@@ -302,12 +482,22 @@ ui.style.opacity='1';}
 },600);
 },1200);
 };
-window._oracleStartShake=function(){_poem=P[Math.floor(Math.random()*60)];_phase='shaking';_render();var sc=0;_prayTimer=setInterval(function(){sc++;var d2=_getWrap().querySelector('.orc-dots');if(d2){var s2='';for(var j=0;j<(sc%4);j++)s2+='．';d2.textContent=s2}if(sc>=5){clearInterval(_prayTimer);_prayTimer=null;_phase='rising';_render();setTimeout(function(){_phase='drawn';_render()},2200)}},400)};
+window._oracleStartShake=function(){
+  // v62：同題同日鎖籤——若已有籤則直接用之前的，不重新隨機
+  var locked=_oracleCheckLock(_qType,_qText);
+  if(locked&&P){
+    for(var pi=0;pi<P.length;pi++){if(P[pi].n===locked.poemN){_poem=P[pi];break;}}
+  }
+  if(!_poem)_poem=P[Math.floor(Math.random()*60)];
+  _drawAt=Date.now();
+  _phase='shaking';_render();
+  var sc=0;_prayTimer=setInterval(function(){sc++;var d2=_getWrap().querySelector('.orc-dots');if(d2){var s2='';for(var j=0;j<(sc%4);j++)s2+='．';d2.textContent=s2}if(sc>=5){clearInterval(_prayTimer);_prayTimer=null;_phase='rising';_render();setTimeout(function(){_phase='drawn';_render()},2200)}},400)
+};
 window._oracleThrow=function(){_phase='throwing';_render();_playThrow();
 setTimeout(function(){
 var r=Math.random();
 if(r<0.5)_throwResult='holy';else if(r<0.75)_throwResult='laugh';else _throwResult='dark';
-if(_throwResult==='holy'){_playHoly();_holy++;} else{_holy=0;}
+if(_throwResult==='holy'){_playHoly();_holy++;} else{_holy=0;_laughDarkCount++;}
 var rJL=_throwResult==='holy'?IMG.jiaoFlat:_throwResult==='laugh'?IMG.jiaoFlat:IMG.jiaoRound;
 var rJR=_throwResult==='holy'?IMG.jiaoRound:_throwResult==='laugh'?IMG.jiaoFlatR:IMG.jiaoRoundR;
 var zone=document.getElementById('orc-jiao-zone');
@@ -327,7 +517,13 @@ ui.style.opacity='1';}
 },600);
 },1200);};
 window._oracleContinue=function(){_throwResult=null;_oracleThrow()};
-window._oracleViewPoem=function(){_phase='poem';_render()};
+window._oracleViewPoem=function(){
+  // v62：存今日鎖籤紀錄（首次三聖筊確認時）
+  if(_poem&&_qType){
+    _oracleSaveLock(_qType,_qText,_poem.n,_redrawCount,_laughDarkCount);
+  }
+  _phase='poem';_render();
+};
 // ★ v9 Canvas API 繪製分享圖 — 長條書籤比例
 function _drawShareCard(callback){
 var p=_poem;if(!p)return;
@@ -429,8 +625,22 @@ var a=document.createElement('a');a.href=cv.toDataURL('image/png');
 a.download='jingyue-oracle-'+_poem.n+'.png';a.click();
 })};
 function _dlBlob(d){var a=document.createElement('a');a.href=typeof d==='string'?d:URL.createObjectURL(d);a.download='jingyue-oracle.png';a.click()}
-window._oracleRedraw=function(){_holy=0;_throwResult=null;_oracleStartShake()};
-window._oracleReset=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_render()};
+window._oracleRedraw=function(){
+  _redrawCount++;_holy=0;_throwResult=null;
+  // v62：再擲一輪三聖筊不重抽不同的籤（同題鎖籤），只重置擲筊計數
+  // 但 _oracleStartShake 因為 _poem 已存且鎖籤命中，不會重抽
+  _oracleStartShake();
+};
+window._oracleReset=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;_render()};
+// v62：feedback 上報
+window._oracleFb=function(rating){
+  _oracleSendFeedback(rating);
+  var sec=document.getElementById('orc-fb-section');
+  if(sec){
+    var msg=rating==='accurate'?'感謝您的回饋 ✦':rating==='partial'?'感謝您的回饋，我們會持續調整 ✦':'感謝您的誠實回饋 ✦';
+    sec.innerHTML='<div class="orc-fb-thanks">'+msg+'</div>';
+  }
+};
 
 var css=document.createElement('style');
 css.textContent='\
@@ -561,6 +771,45 @@ css.textContent='\
 .orc-incense-wrap{display:flex;justify-content:center;margin-bottom:1rem}\
 .orc-incense-img{width:180px;height:auto;animation:orc-incensePulse 3s ease-in-out infinite}\
 @keyframes orc-incensePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}\
+\
+/* v62：問事分類選擇 + 文字輸入 */\
+.orc-q-types{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center;margin:1rem 0;padding:0 1rem}\
+.orc-q-type{padding:.4rem .9rem;font-size:.78rem;background:rgba(255,255,255,0.05);color:#d4c5a0;border:1px solid rgba(201,168,76,0.25);border-radius:18px;cursor:pointer;font-family:inherit;transition:all .2s}\
+.orc-q-type:hover{background:rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.5)}\
+.orc-q-type-on{background:rgba(201,168,76,0.25);color:#ffd700;border-color:#ffd700;font-weight:600}\
+.orc-q-input{display:block;width:calc(100% - 2rem);max-width:480px;margin:.6rem auto;padding:.8rem;font-size:.88rem;background:rgba(0,0,0,0.4);color:#e8dcc8;border:1px solid rgba(201,168,76,0.3);border-radius:8px;resize:none;min-height:60px;font-family:inherit;line-height:1.5}\
+.orc-q-input:focus{outline:none;border-color:#c9a84c;background:rgba(0,0,0,0.55)}\
+.orc-q-hint{text-align:right;font-size:.7rem;color:#8a7a5a;max-width:480px;margin:.2rem auto .8rem;padding-right:1rem}\
+.orc-q-lock{max-width:480px;margin:1rem auto;padding:.8rem 1rem;background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.35);border-radius:8px;font-size:.78rem;color:#fcb6ad;line-height:1.6;text-align:center}\
+.orc-btn-link{background:none;border:none;color:#ffd700;text-decoration:underline;cursor:pointer;font-size:.78rem;margin-top:.4rem;font-family:inherit}\
+\
+/* v62：分類優先解讀區 */\
+.orc-jh-priority{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.25)}\
+.orc-priority-grid{display:flex;flex-direction:column;gap:.5rem;margin:.6rem 0}\
+.orc-priority-row{display:flex;align-items:flex-start;gap:.6rem;padding:.5rem .7rem;background:rgba(0,0,0,0.25);border-radius:6px}\
+.orc-priority-label{flex-shrink:0;min-width:3.5rem;font-weight:700;color:#ffd700;font-size:.82rem}\
+.orc-priority-val{flex:1;font-size:.85rem;color:#e8dcc8;line-height:1.55}\
+.orc-q-recap{margin-top:.8rem;padding:.5rem .7rem;font-size:.75rem;color:#a89878;font-style:italic;border-top:1px dashed rgba(201,168,76,0.2);line-height:1.6}\
+\
+/* v62：判讀信心度 */\
+.orc-confidence{margin:1rem 0;padding:.9rem 1rem;border:1px solid;border-radius:10px}\
+.orc-conf-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}\
+.orc-conf-label{font-size:.82rem;color:#a89878;letter-spacing:1px}\
+.orc-conf-level{font-size:1.1rem;font-weight:700}\
+.orc-conf-reason{font-size:.8rem;color:#d4c5a0;line-height:1.6;margin-bottom:.4rem}\
+.orc-conf-meta{font-size:.7rem;color:#8a7a5a;font-family:monospace}\
+\
+/* v62：feedback 區 */\
+.orc-fb-section{margin:1.5rem 0 .5rem;padding:1rem;background:rgba(0,0,0,0.3);border:1px solid rgba(201,168,76,0.2);border-radius:10px;text-align:center}\
+.orc-fb-heading{font-size:.88rem;color:#d4c5a0;margin-bottom:.7rem}\
+.orc-fb-buttons{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}\
+.orc-fb-btn{padding:.5rem 1.1rem;font-size:.82rem;background:rgba(255,255,255,0.05);color:#d4c5a0;border:1px solid rgba(201,168,76,0.3);border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s}\
+.orc-fb-btn:hover{background:rgba(201,168,76,0.15);transform:translateY(-1px)}\
+.orc-fb-good:hover{border-color:#2ecc71;color:#2ecc71}\
+.orc-fb-mid:hover{border-color:#f39c12;color:#f39c12}\
+.orc-fb-bad:hover{border-color:#e74c3c;color:#e74c3c}\
+.orc-fb-hint{font-size:.7rem;color:#8a7a5a;margin-top:.6rem}\
+.orc-fb-thanks{font-size:.88rem;color:#ffd700;text-align:center;padding:.5rem 0}\
 ';
 document.head.appendChild(css);
 console.log('[Oracle] 靜月靈籤 v6c loaded — 求籤須知捲軸+直書籤詩卡+紅底金字解說+搖筒籤升起動畫+廟宇背景');
