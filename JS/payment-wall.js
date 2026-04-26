@@ -252,12 +252,27 @@
       if (payWin) {
         payWin.document.write(data.html);
         payWin.document.close();
-        var opusDisplayPrice = (mode === 'tarot_only' || mode === 'ootk') ? 49 : PRICE_OPUS;
-        var singleDisplayPrice = mode === 'full' ? 69 : 29;
+        // v62 修補：用動態價格表，不再寫死 49/69/29（避免 worker 改價後前端等待畫面顯示舊價）
+        var _payPrices = P();
+        var _payTier = (typeof window._jyGetUserTier === 'function') ? window._jyGetUserTier() : null;
+        // Opus 顯示價：高級會員走 _MEMBER 加購價，否則走標準單次價
+        var opusDisplayPrice;
+        if (mode === 'tarot_only') {
+          opusDisplayPrice = (_payTier === 'premium') ? _payPrices.OPUS_TAROT_MEMBER : _payPrices.OPUS_TAROT;
+        } else if (mode === 'ootk') {
+          opusDisplayPrice = (_payTier === 'premium') ? _payPrices.OPUS_OOTK_MEMBER : _payPrices.OPUS_OOTK;
+        } else {
+          opusDisplayPrice = (_payTier === 'premium') ? _payPrices.OPUS_7D_MEMBER : _payPrices.OPUS_7D;
+        }
+        // 單次顯示價：依 mode 取對應單次價
+        var singleDisplayPrice =
+          mode === 'tarot_only' ? _payPrices.SINGLE_TAROT :
+          mode === 'ootk'       ? _payPrices.SINGLE_OOTK  :
+                                  _payPrices.SINGLE_7D;
         var labelText = type === 'opus_single' ? '深度解析 NT$' + opusDisplayPrice
-                      : type === 'followup_single' ? '追問單次 NT$' + PRICE_SINGLE_FOLLOWUP
+                      : type === 'followup_single' ? '追問單次 NT$' + _payPrices.FOLLOWUP
                       : type === 'single' ? '單次解讀 NT$' + singleDisplayPrice
-                      : '會員 NT$' + PRICE_SUB;
+                      : '會員 NT$' + _payPrices.SUB_STANDARD;
         // 關閉 Opus 付費 modal（如果存在）
         try { var _om = document.getElementById('jy-opus-pay-modal'); if (_om) _om.remove(); } catch(_) {}
         var waitModal = document.createElement('div');

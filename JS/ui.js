@@ -3,12 +3,13 @@
 // ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
-// 【v52 中央定價表】務必與 worker.js 第 30-52 行常數保持一致
-// 改 worker 常數時這裡也要改，否則會出現「前端顯示 A 實收 B」的
-// 價格欺騙 bug。所有前端 NT$ 文案都從這裡讀，不要寫死數字。
+// 【v52 中央定價表】fallback 機制
+// v62 修補：pricing-loader.js 已在 ui.js 之前載入並設定 window.JY_PRICES。
+//   ui.js 此處只補齊 pricing-loader 沒抓到的欄位，不能無條件覆蓋
+//   （否則會把 worker /pricing 抓到的最新值蓋成 ui.js 寫死的 fallback）
 // ═══════════════════════════════════════════════════════════════
 (function(){
-  window.JY_PRICES = {
+  var _UI_PRICE_FALLBACK = {
     SUB_STANDARD: 999,        // 標準會員 / 月
     SUB_PREMIUM: 1999,        // 高級會員 / 月
     SINGLE_7D: 79,            // 七維度 Sonnet 單次
@@ -22,6 +23,8 @@
     OPUS_TAROT_MEMBER: 49,    // 塔羅 Opus 單次（高級會員加購）
     OPUS_OOTK_MEMBER: 49      // 開鑰 Opus 單次（高級會員加購）
   };
+  // 關鍵：fallback 在前，既有值在後 → 既有值優先（pricing-loader 抓到的最新值勝出）
+  window.JY_PRICES = Object.assign({}, _UI_PRICE_FALLBACK, window.JY_PRICES || {});
   // ── tier helper：前端各處判斷「高級會員 vs 其他」的單一事實源 ──
   //   value: 'premium' | 'standard' | null
   //   premium 才享 Opus 加購優惠價 (99/49)，其他收單次價 (169/79)
