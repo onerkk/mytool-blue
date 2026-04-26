@@ -198,7 +198,65 @@ function _oracleSaveLock(qType,qText,poemN,redrawCount,laughDarkCount){
       redrawCount:redrawCount, laughDarkCount:laughDarkCount,
       savedAt:Date.now()
     }));
+    // 正式 lock 完成 → 清掉 pending（避免殘留）
+    var pk='oracle_pending:'+_oracleHash((qType||'')+'|'+(qText||'').trim().toLowerCase()+'|'+_oracleTodayStr());
+    try{localStorage.removeItem(pk);}catch(_){}
   }catch(e){}
+}
+// v62b：pending lock — 抽籤後立刻存（沒到三聖筊也鎖定該題該日的隨機結果）
+//   防止「同題重開又抽到不同籤」的洗答案漏洞
+function _oraclePendingKey(qType,qText){
+  return 'oracle_pending:'+_oracleHash((qType||'')+'|'+(qText||'').trim().toLowerCase()+'|'+_oracleTodayStr());
+}
+function _oracleCheckPendingLock(qType,qText){
+  try{
+    var raw=localStorage.getItem(_oraclePendingKey(qType,qText));
+    if(!raw)return null;
+    var obj=JSON.parse(raw);
+    if(obj&&obj.poemN)return obj;
+  }catch(e){}
+  return null;
+}
+function _oracleSavePendingLock(qType,qText,poemN){
+  try{
+    localStorage.setItem(_oraclePendingKey(qType,qText),JSON.stringify({
+      poemN:poemN, savedAt:Date.now()
+    }));
+  }catch(e){}
+}
+// v62b：一事一籤偵測——檢查問題是否疑似多事
+//   觸發訊號：① 多個 ?／？ ② 「和」「跟」「以及」連接詞分隔多重問題
+//   ③ 同時出現多個分類關鍵詞（如同句出現「感情」+「工作」）
+//   結果：警告不阻擋（偵測不一定準，最終決定權交用戶）
+function _oracleDetectMultiQuestion(qText){
+  if(!qText)return null;
+  var t=String(qText).trim();
+  // ① 多個問號
+  var qmarks=(t.match(/[?？]/g)||[]).length;
+  if(qmarks>=2)return '看起來您寫了多個問題（'+qmarks+' 個問號）';
+  // ② 多重連接詞分隔
+  if(/[?？].*[\u3001、，,].*[?？]/.test(t))return '此題似乎包含多個問句';
+  // ③ 多個分類關鍵詞同時出現
+  var kw={
+    love:['感情','戀愛','對象','喜歡','曖昧','分手'],
+    career:['工作','職場','上班','離職','換工作','事業'],
+    wealth:['財運','賺錢','投資','理財','收入','收支'],
+    health:['健康','疾病','病','身體'],
+    family:['家庭','家人','父母','婚姻','小孩']
+  };
+  var hits={};
+  for(var k in kw){
+    for(var ki=0;ki<kw[k].length;ki++){
+      if(t.indexOf(kw[k][ki])>=0){hits[k]=true;break;}
+    }
+  }
+  var hitKeys=Object.keys(hits);
+  if(hitKeys.length>=2){
+    var labels={love:'感情',career:'事業',wealth:'財運',health:'健康',family:'家庭'};
+    var hitLabels=hitKeys.map(function(k){return labels[k];}).join('、');
+    return '此題同時提到「'+hitLabels+'」——一支籤僅問一件事，建議拆題';
+  }
+  return null;
 }
 // 信心度判讀（依重抽次數、笑陰筊次數、籤等級）
 function _oracleConfidence(){
@@ -276,6 +334,9 @@ for(var ti=0;ti<typeKeys.length;ti++){
 h+='</div>';
 h+='<textarea id="orc-q-text" class="orc-q-input" placeholder="請寫下您的問題（一支籤僅問一件事，例：他這週會不會主動聯繫我？）" maxlength="80" oninput="_oracleSyncQText(this.value)">'+(_qText||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')+'</textarea>';
 h+='<p class="orc-q-hint" id="orc-q-hint">'+((_qText||'').length)+' / 80 字</p>';
+// v62b：一事一籤偵測警告容器
+var initWarn=_oracleDetectMultiQuestion(_qText);
+h+='<div id="orc-q-multi-warn" class="orc-q-multi-warn" style="display:'+(initWarn?'block':'none')+'">'+(initWarn?('⚠️ '+initWarn):'')+'</div>';
 // 檢查今日是否已抽過同題
 var lockHint='';
 if(_qType&&(_qText||'').trim().length>=2){
@@ -429,6 +490,17 @@ window._oracleSyncQText=function(v){
   // 即時更新字數提示 + 鎖籤提示，不重新 render（保持 textarea 焦點）
   var hint=document.getElementById('orc-q-hint');
   if(hint)hint.textContent=_qText.length+' / 80 字';
+  // v62b：一事一籤偵測警告（警告不阻擋，可堅持送出）
+  var warn=document.getElementById('orc-q-multi-warn');
+  var multiMsg=_oracleDetectMultiQuestion(_qText);
+  if(warn){
+    if(multiMsg){
+      warn.style.display='block';
+      warn.innerHTML='⚠️ '+multiMsg+'。<br><span style="font-size:.7rem;opacity:.85">一事一籤——若您確實只問一件事，可繼續求籤；若是多件事，請拆開分次求。</span>';
+    } else {
+      warn.style.display='none';
+    }
+  }
   // 求籤鈕狀態
   var btns=document.querySelectorAll('.orc-btn-primary');
   for(var bi=0;bi<btns.length;bi++){
@@ -483,12 +555,23 @@ ui.style.opacity='1';}
 },1200);
 };
 window._oracleStartShake=function(){
-  // v62：同題同日鎖籤——若已有籤則直接用之前的，不重新隨機
+  // v62：同題同日鎖籤——若已有正式籤則直接用之前的（覆蓋優先級最高）
   var locked=_oracleCheckLock(_qType,_qText);
   if(locked&&P){
     for(var pi=0;pi<P.length;pi++){if(P[pi].n===locked.poemN){_poem=P[pi];break;}}
   }
-  if(!_poem)_poem=P[Math.floor(Math.random()*60)];
+  // v62b：若無正式 lock 但有 pending（用戶之前抽過但沒走完三聖筊），用 pending 籤
+  if(!_poem){
+    var pending=_oracleCheckPendingLock(_qType,_qText);
+    if(pending&&P){
+      for(var pi2=0;pi2<P.length;pi2++){if(P[pi2].n===pending.poemN){_poem=P[pi2];break;}}
+    }
+  }
+  // 都沒有 → 真隨機抽，並立刻存 pending（防止同題重開抽到不同籤）
+  if(!_poem){
+    _poem=P[Math.floor(Math.random()*60)];
+    _oracleSavePendingLock(_qType,_qText,_poem.n);
+  }
   _drawAt=Date.now();
   _phase='shaking';_render();
   var sc=0;_prayTimer=setInterval(function(){sc++;var d2=_getWrap().querySelector('.orc-dots');if(d2){var s2='';for(var j=0;j<(sc%4);j++)s2+='．';d2.textContent=s2}if(sc>=5){clearInterval(_prayTimer);_prayTimer=null;_phase='rising';_render();setTimeout(function(){_phase='drawn';_render()},2200)}},400)
@@ -511,8 +594,23 @@ var ui=document.getElementById('orc-throw-ui');
 if(ui){
 if(_throwResult==='holy'&&_holy>=3){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleViewPoem()">查 看 籤 詩</button>';}
 else if(_throwResult==='holy'){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleContinue()">繼續擲筊</button>';}
-else{var msg=_throwResult==='laugh'?'神明笑而不答，請重新抽籤':'神明未允，請重新抽籤';
-ui.innerHTML='<p style="font-size:.82rem;color:#fca5a5;margin-bottom:.8rem">'+msg+'</p><button class="orc-btn-outline" style="color:#ffd700;border-color:#ffd700" onclick="_oracleRedraw()">重新抽籤</button>';}
+else{
+  // v62b：(1) 文案貼近行天宮/三鳳宮官方解釋
+  //       (2) 累計 3 次笑陰筊終止本次求籤——民俗紀律「訊號不明則改日再問」
+  var msg=_throwResult==='laugh'
+    ? '笑筊——此問法可能不夠清楚，或您心中已有定見、多此一問'
+    : '陰筊——目前神明不允此籤';
+  if(_laughDarkCount>=3){
+    // 終止本次求籤：訊號明顯不穩，民俗上不宜硬求
+    ui.innerHTML='<p style="font-size:.85rem;color:#fcb6ad;margin-bottom:.6rem;line-height:1.7">已連續擲出 '+_laughDarkCount+' 次笑筊/陰筊。</p>'+
+      '<p style="font-size:.78rem;color:#c9a84c;margin-bottom:.9rem;line-height:1.7">神明訊號不明——民俗紀律建議今日不宜硬求。<br>請改日再問，或重新整理問題後再來。</p>'+
+      '<button class="orc-btn-outline" style="color:#ffd700;border-color:#ffd700" onclick="_oracleReset()">改日再來</button>';
+  } else {
+    ui.innerHTML='<p style="font-size:.82rem;color:#fca5a5;margin-bottom:.4rem;line-height:1.7">'+msg+'</p>'+
+      '<p style="font-size:.7rem;color:#a89878;margin-bottom:.8rem">已擲笑/陰筊 '+_laughDarkCount+'/3 次，達 3 次將終止本次求籤</p>'+
+      '<button class="orc-btn-outline" style="color:#ffd700;border-color:#ffd700" onclick="_oracleRedraw()">重新抽籤</button>';
+  }
+}
 ui.style.opacity='1';}
 },600);
 },1200);};
@@ -782,6 +880,8 @@ css.textContent='\
 .orc-q-hint{text-align:right;font-size:.7rem;color:#8a7a5a;max-width:480px;margin:.2rem auto .8rem;padding-right:1rem}\
 .orc-q-lock{max-width:480px;margin:1rem auto;padding:.8rem 1rem;background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.35);border-radius:8px;font-size:.78rem;color:#fcb6ad;line-height:1.6;text-align:center}\
 .orc-btn-link{background:none;border:none;color:#ffd700;text-decoration:underline;cursor:pointer;font-size:.78rem;margin-top:.4rem;font-family:inherit}\
+/* v62b：一事一籤偵測警告 */\
+.orc-q-multi-warn{max-width:480px;margin:.4rem auto .8rem;padding:.6rem .8rem;background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.4);border-radius:6px;font-size:.78rem;color:#f5b66f;line-height:1.6;text-align:left}\
 \
 /* v62：分類優先解讀區 */\
 .orc-jh-priority{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.25)}\
