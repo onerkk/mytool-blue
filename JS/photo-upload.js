@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════════════════
-// photo-upload.js — v48 面相/手相/水晶照片上傳模組
-// v53 修正：photo-upload.js 規格未跟上 v48 升級（仍停在 v40b 的 768/0.75/4）
-// v48 升級理由（參考 photo-upload.md）：
-// - MAX_PX 768→1568：Claude Vision 建議 1568px；768 過度降低把手相紋路都吃掉了
-// - QUALITY 0.75→0.85：0.75 JPEG 壓縮偽影太明顯，細節失真
-// - MAX_SIZE_MB 4→8：手機直出照片普遍 3–6MB，放寬避免「太大」報錯
-// 其他功能不變
+// photo-upload.js — v62 氣色面相全民開放版
+// 變更（取代 v53）：
+// - 移除 crystal 欄位（塔羅/開鑰唯一選項，但水晶上傳對命理分析價值有限）
+// - 改成「氣色面相」face 欄位三套工具（tarot/ootk/full）全部顯示
+// - 免費用戶在所有模式都可上傳臉部照片（之前是會員專屬）
+// - 手相 palmLeft/palmRight 仍維持七維度+會員專屬（手相需要近距離高解析度且只在七維度有完整命盤合參）
+// 規格延續 v48：MAX_PX 1568、QUALITY 0.85、MAX_SIZE_MB 8
 // ═══════════════════════════════════════════════════════════════
 (function(){
 'use strict';
@@ -16,16 +16,26 @@ var MAX_PX = 1568;
 var QUALITY = 0.85;
 var MAX_SIZE_MB = 8;
 
+// v62：移除 crystal，face 主打氣色面相
 var PHOTO_FIELDS = {
-  face:      { icon: 'fa-portrait',   label: '臉部照片', hint: '正面自拍・光線充足' },
+  face:      { icon: 'fa-portrait',   label: '氣色面相', hint: '正面自拍・光線充足・素顏最佳' },
   palmLeft:  { icon: 'fa-hand-paper', label: '左手掌',   hint: '手心朝上・手指張開' },
-  palmRight: { icon: 'fa-hand-paper', label: '右手掌',   hint: '手心朝上・手指張開' },
-  crystal:   { icon: 'fa-gem',        label: '水晶照片', hint: '拍你正在配戴的水晶' }
+  palmRight: { icon: 'fa-hand-paper', label: '右手掌',   hint: '手心朝上・手指張開' }
 };
 
-function getFieldsForTool(tool) {
-  if (tool === 'tarot' || tool === 'ootk') return ['crystal'];
-  return ['face', 'palmLeft', 'palmRight', 'crystal'];
+// v62：face 三套都可（含免費），手相仍只在七維度（且會員專屬，由 worker gate 把關）
+function getFieldsForTool(tool, privileged) {
+  if (tool === 'tarot' || tool === 'ootk') {
+    // 塔羅/開鑰：所有人都只看到「氣色面相」一個欄位（取代舊版水晶照片位置）
+    return ['face'];
+  }
+  // 七維度（full）
+  if (privileged) {
+    // 會員：臉、左手、右手全開（手相是付費價值之一）
+    return ['face', 'palmLeft', 'palmRight'];
+  }
+  // 七維度免費用戶：只開放臉
+  return ['face'];
 }
 
 function compressImage(file) {
@@ -208,22 +218,14 @@ function _checkMemberStatusOnce() {
 function renderPhotoUpload(tool, forceRefresh) {
   tool = tool || 'full';
   var privileged = _isPrivileged();
-  var fields = getFieldsForTool(tool);
+  var fields = getFieldsForTool(tool, privileged);
 
-  // v60-hotfix7：非會員在七維度(full)模式下完全不顯示照片上傳入口
-  //   （舊版會顯示「僅水晶」+ 升級提示，但用戶要求徹底隱藏）
-  //   塔羅/開鑰模式下水晶照片仍開放給所有人（本來就是公開功能）
-  if (!privileged && tool !== 'tarot' && tool !== 'ootk') {
-    // 清掉可能殘留的舊 wrap
-    var _old = document.getElementById('jy-photo-upload');
-    if (_old) _old.remove();
-    // 清掉可能殘留的 photo state
-    if (window._jyPhotos) window._jyPhotos = null;
-    _currentRenderedState = tool + '|hidden';
-    return;
-  }
+  // v62：氣色面相全民開放——不再針對 full 模式做整段隱藏
+  //   塔羅/開鑰：所有人都看到 face
+  //   七維度免費：只看到 face
+  //   七維度會員：face + palmLeft + palmRight
 
-  var stateKey = tool + '|' + (privileged ? 'all' : 'crystal');
+  var stateKey = tool + '|' + (privileged ? 'all' : 'face');
   if (!forceRefresh && _currentRenderedState === stateKey) return;
   _currentRenderedState = stateKey;
 
@@ -254,9 +256,12 @@ function renderPhotoUpload(tool, forceRefresh) {
   wrap.id = 'jy-photo-upload';
   wrap.className = 'jy-photo-card';
 
+  // v62：標題依欄位數動態切換
+  //   只有 face：「氣色面相（選填）・免費深度解析」
+  //   有手相：「上傳照片（選填）・讓分析更深入」
   var titleText = fields.length > 1
     ? '<i class="fas fa-camera"></i> 上傳照片（選填）・讓分析更深入'
-    : '<i class="fas fa-gem"></i> 上傳水晶照片（選填）';
+    : '<i class="fas fa-portrait"></i> 氣色面相（選填）・免費深度解析';
 
   wrap.innerHTML = '<div class="jy-photo-title">' + titleText + '</div><div class="jy-photo-grid" id="jy-photo-grid"></div><div class="jy-photo-note">照片僅用於本次分析，不會儲存</div>';
   parentCard.parentNode.insertBefore(wrap, parentCard.nextSibling);
@@ -310,7 +315,7 @@ function watchState() {
   setInterval(function() {
     hookToolSwitch();
     var tool = _getSelectedTool();
-    var access = _isPrivileged() ? 'all' : 'crystal';
+    var access = _isPrivileged() ? 'all' : 'face';
     if (tool !== _lastObservedTool || access !== _lastObservedAccess) {
       _lastObservedTool = tool;
       _lastObservedAccess = access;
@@ -324,7 +329,8 @@ function init() {
   function start() {
     hookToolSwitch();
     renderPhotoUpload(_getSelectedTool(), true);
-    if (window._JY_SESSION_TOKEN && !_isPrivileged() && _getSelectedTool() !== 'tarot' && _getSelectedTool() !== 'ootk') {
+    // v62：登入後再 check 一次會員狀態（七維度會員會額外顯示手相欄位）
+    if (window._JY_SESSION_TOKEN && !_isPrivileged()) {
       _checkMemberStatusOnce().then(function(active) {
         if (active || _isAdmin()) renderPhotoUpload(_getSelectedTool(), true);
       });
