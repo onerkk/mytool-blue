@@ -1571,7 +1571,9 @@ function _adminGoogleLogout() {
     localStorage.removeItem('_jy_session');
     localStorage.removeItem('_jy_session_name');
     // v60-hotfix8：登出 Google 時一併登出 admin（雙重驗證邏輯一致性）
+    // ★ Bug #21 fix: 同時清掉 sessionStorage 跟 localStorage 的 admin_token
     localStorage.removeItem('jy_admin_token');
+    try { sessionStorage.removeItem('jy_admin_token'); } catch(_){}
     localStorage.removeItem('jy_admin_google_email');
   } catch(e){}
   // 若已在主畫面 → 退回登入畫面
@@ -1682,7 +1684,15 @@ function doLogin() {
         .then(function(){
           // ── 雙重驗證通過 → 綁定 Token 與 Google email（之後 auto-login 會比對）──
           adminToken = token;
-          localStorage.setItem('jy_admin_token', token);
+          // ★ Bug #21 fix: admin token 改用 sessionStorage（XSS 持久竊取防護）
+          //   localStorage 是持久儲存，任何 XSS / 惡意瀏覽器擴充程式可讀 → 等於完全 admin 權限被偷
+          //   sessionStorage 在 tab 關閉後自動清除，大幅縮短被竊取時間窗
+          try {
+            sessionStorage.setItem('jy_admin_token', token);
+            localStorage.removeItem('jy_admin_token'); // 清掉舊的持久 key
+          } catch(_se) {
+            localStorage.setItem('jy_admin_token', token); // fallback
+          }
           try {
             localStorage.setItem('jy_admin_google_email', (gData.email || '').toLowerCase());
           } catch(_){}
@@ -1783,7 +1793,13 @@ function _updateLoginSteps() {
     setTimeout(_updateLoginSteps, 0);
   }
 
-  const savedToken = localStorage.getItem('jy_admin_token');
+  // ★ Bug #21 fix: 優先讀 sessionStorage，向下相容讀 localStorage
+  //   sessionStorage 在 tab 關閉時自動清掉，是更安全的儲存
+  let savedToken = '';
+  try { savedToken = sessionStorage.getItem('jy_admin_token') || ''; } catch(_){}
+  if (!savedToken) {
+    try { savedToken = localStorage.getItem('jy_admin_token') || ''; } catch(_){}
+  }
   let gs = '';
   try { gs = localStorage.getItem('_jy_session') || ''; } catch(e){}
 
@@ -1807,7 +1823,9 @@ function _updateLoginSteps() {
   }).then(function(r){ return r.json(); }).then(function(gData){
     if (!gData || !gData.ok) {
       // Google 白名單失敗 → 清掉 admin token 強制重新雙重驗證
+      // ★ Bug #21 fix: 兩種 storage 都清
       localStorage.removeItem('jy_admin_token');
+      try { sessionStorage.removeItem('jy_admin_token'); } catch(_){}
       var tInput = document.getElementById('tokenInput');
       if (tInput) tInput.value = '';
       _updateLoginSteps();
@@ -1836,7 +1854,9 @@ function _updateLoginSteps() {
       .catch(function(err){
         // Token 失效 → 清掉，讓用戶重輸
         if (err && err.message === 'TOKEN_INVALID') {
+          // ★ Bug #21 fix: 兩種 storage 都清
           localStorage.removeItem('jy_admin_token');
+          try { sessionStorage.removeItem('jy_admin_token'); } catch(_){}
           var tInput = document.getElementById('tokenInput');
           if (tInput) tInput.value = '';
         }
