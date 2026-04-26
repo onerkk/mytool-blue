@@ -374,11 +374,12 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <h3>⚙️ AI 模型設定</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">依「用戶類型」分開配置，每類用戶可獨立選標準/深度模型。4 模型任選。</p>
 
-        <!-- 用戶類型切換 -->
-        <div style="display:flex;gap:6px;margin-bottom:14px;padding:4px;background:#0d0f14;border-radius:10px;border:1px solid var(--card-border)">
-          <button type="button" id="mc-ut-free"   onclick="_mcSwitchUserType('free')"   style="flex:1;padding:8px;border:none;border-radius:7px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;cursor:pointer">🆓 免費用戶</button>
-          <button type="button" id="mc-ut-member" onclick="_mcSwitchUserType('member')" style="flex:1;padding:8px;border:none;border-radius:7px;background:transparent;color:var(--text-dim);font-size:12px;font-weight:600;cursor:pointer">👑 會員</button>
-          <button type="button" id="mc-ut-paid"   onclick="_mcSwitchUserType('paid')"   style="flex:1;padding:8px;border:none;border-radius:7px;background:transparent;color:var(--text-dim);font-size:12px;font-weight:600;cursor:pointer">💳 單次付費</button>
+        <!-- 用戶類型切換（v62：四級分流，含高級會員）-->
+        <div style="display:flex;gap:4px;margin-bottom:14px;padding:4px;background:#0d0f14;border-radius:10px;border:1px solid var(--card-border);flex-wrap:wrap">
+          <button type="button" id="mc-ut-free"    onclick="_mcSwitchUserType('free')"    style="flex:1;min-width:90px;padding:8px 4px;border:none;border-radius:7px;background:var(--accent);color:#fff;font-size:11px;font-weight:600;cursor:pointer">🆓 免費</button>
+          <button type="button" id="mc-ut-member"  onclick="_mcSwitchUserType('member')"  style="flex:1;min-width:90px;padding:8px 4px;border:none;border-radius:7px;background:transparent;color:var(--text-dim);font-size:11px;font-weight:600;cursor:pointer">👑 會員</button>
+          <button type="button" id="mc-ut-premium" onclick="_mcSwitchUserType('premium')" style="flex:1;min-width:90px;padding:8px 4px;border:none;border-radius:7px;background:transparent;color:var(--text-dim);font-size:11px;font-weight:600;cursor:pointer">💎 高級會員</button>
+          <button type="button" id="mc-ut-paid"    onclick="_mcSwitchUserType('paid')"    style="flex:1;min-width:90px;padding:8px 4px;border:none;border-radius:7px;background:transparent;color:var(--text-dim);font-size:11px;font-weight:600;cursor:pointer">💳 單次付費</button>
         </div>
         <div id="mc-ut-hint" style="padding:8px 10px;border-radius:6px;margin-bottom:12px;font-size:11px;line-height:1.55;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.12);color:var(--text-dim)">
           <strong style="color:var(--accent)">免費用戶</strong>：首次體驗與免費額度用戶。建議用 Haiku 降低成本，但保留 8.5/10 品質。
@@ -2875,18 +2876,20 @@ async function clearUserMemory() {
 // 當前在編輯哪個用戶類型
 let _mcCurrentUserType = 'free';
 
-// 三個用戶類型的完整 cache（初始都是 Sonnet/Opus 4.6，追問預設 Sonnet 避免切 tab 丟失）
-// v47：每類加 fu 欄位（追問獨立 slot）
+// 四個用戶類型的完整 cache（初始都是 Sonnet/Opus 4.6，追問預設 Sonnet 避免切 tab 丟失）
+// v62：加 premium（高級會員）slot；fallback 規則：premium 缺→member；member 缺→free
+const _mcDefaultSlot = { std:'claude-sonnet-4-6', deep:'claude-opus-4-6', fu:'claude-sonnet-4-6' };
 let _mcConfigCache = {
-  '7d':    { free:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'}, member:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'}, paid:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'} },
-  tarot:   { free:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'}, member:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'}, paid:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'} },
-  ootk:    { free:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'}, member:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'}, paid:{std:'claude-sonnet-4-6',deep:'claude-opus-4-6',fu:'claude-sonnet-4-6'} }
+  '7d':    { free:Object.assign({},_mcDefaultSlot), member:Object.assign({},_mcDefaultSlot), premium:Object.assign({},_mcDefaultSlot), paid:Object.assign({},_mcDefaultSlot) },
+  tarot:   { free:Object.assign({},_mcDefaultSlot), member:Object.assign({},_mcDefaultSlot), premium:Object.assign({},_mcDefaultSlot), paid:Object.assign({},_mcDefaultSlot) },
+  ootk:    { free:Object.assign({},_mcDefaultSlot), member:Object.assign({},_mcDefaultSlot), premium:Object.assign({},_mcDefaultSlot), paid:Object.assign({},_mcDefaultSlot) }
 };
 
 const _mcUserTypeHints = {
-  free:   { label: '🆓 免費用戶', desc: '首次體驗與免費額度用戶。建議用 Haiku 降低成本，仍保留 8.5/10 品質。' },
-  member: { label: '👑 會員', desc: '月費會員。用 Sonnet 保住深度穩定度；深度可用 Opus 4.7 差異化。' },
-  paid:   { label: '💳 單次付費', desc: '單次購買用戶。付錢直接購買，給 Sonnet 4.6 / Opus 最合理。' }
+  free:    { label: '🆓 免費用戶',   desc: '首次體驗與免費額度用戶。建議用 Haiku 降低成本，仍保留 8.5/10 品質。' },
+  member:  { label: '👑 一般會員',   desc: '月費會員（standard）。用 Sonnet 保住深度穩定度；深度可用 Opus 4.7 差異化。' },
+  premium: { label: '💎 高級會員',   desc: '高級會員（premium）。可全用 Opus 4.7 或更深 thinking 配置；缺省時 fallback 一般會員設定。' },
+  paid:    { label: '💳 單次付費',   desc: '單次購買用戶（首輪 single token）。付錢直接購買，給 Sonnet 4.6 / Opus 最合理。' }
 };
 
 function _mcSetSelect(id, val, fallback) {
@@ -2929,9 +2932,16 @@ function _mcCaptureCurrentFormToCache() {
 }
 
 // 把 cache 的某用戶類型配置載入到表單
+// v62：加上 fallback 鏈——premium 缺 → member；member/paid 缺 → free
 function _mcLoadCacheToForm(userType) {
   ['7d','tarot','ootk'].forEach(function(tool) {
-    var c = (_mcConfigCache[tool] && _mcConfigCache[tool][userType]) || { std:'claude-sonnet-4-6', deep:'claude-opus-4-6', fu:'claude-sonnet-4-6' };
+    var pool = _mcConfigCache[tool] || {};
+    var c = pool[userType];
+    if (!c) {
+      if (userType === 'premium') c = pool.member || pool.free;
+      else if (userType === 'member' || userType === 'paid') c = pool.free;
+    }
+    if (!c) c = { std:'claude-sonnet-4-6', deep:'claude-opus-4-6', fu:'claude-sonnet-4-6' };
     _mcSetSelect('mc-' + tool + '-std',  c.std,  'claude-sonnet-4-6');
     _mcSetSelect('mc-' + tool + '-deep', c.deep, 'claude-opus-4-6');
     _mcSetSelect('mc-' + tool + '-fu',   c.fu || c.std || 'claude-sonnet-4-6', 'claude-sonnet-4-6');
@@ -2943,8 +2953,8 @@ function _mcSwitchUserType(ut) {
   // 先把當前表單 capture 到 cache
   _mcCaptureCurrentFormToCache();
   _mcCurrentUserType = ut;
-  // 切 tab 樣式
-  ['free','member','paid'].forEach(function(t) {
+  // v62：tab 樣式陣列含 premium
+  ['free','member','premium','paid'].forEach(function(t) {
     var btn = document.getElementById('mc-ut-' + t);
     if (!btn) return;
     if (t === ut) {
@@ -2983,26 +2993,26 @@ async function loadModelConfig() {
       ['7d','tarot','ootk'].forEach(function(tool) {
         var t = c[tool];
         var _def = { std:'claude-sonnet-4-6', deep:'claude-opus-4-6', fu:'claude-sonnet-4-6' };
-        if (t && typeof t === 'object' && (t.free || t.member || t.paid)) {
-          // 新格式：分用戶類型
-          _mcConfigCache[tool] = {
-            free:   _pickSlot(t.free,   _def),
-            member: _pickSlot(t.member, _def),
-            paid:   _pickSlot(t.paid,   _def)
-          };
+        if (t && typeof t === 'object' && (t.free || t.member || t.premium || t.paid)) {
+          // v62 新格式：分四級用戶類型；premium 缺省時 fallback 到 member
+          var _free   = _pickSlot(t.free,    _def);
+          var _member = _pickSlot(t.member,  _def);
+          var _premium = t.premium ? _pickSlot(t.premium, _def) : _member;
+          var _paid   = _pickSlot(t.paid,    _def);
+          _mcConfigCache[tool] = { free: _free, member: _member, premium: _premium, paid: _paid };
         } else if (t && typeof t === 'object' && t.std) {
-          // 舊 v44b 格式：{std, deep} → 三類共用，fu fallback std
+          // 舊 v44b 格式：{std, deep} → 四類共用，fu fallback std
           var shared = { std: t.std, deep: t.deep || 'claude-opus-4-6', fu: t.fu || t.std };
-          _mcConfigCache[tool] = { free: shared, member: shared, paid: shared };
+          _mcConfigCache[tool] = { free: shared, member: shared, premium: shared, paid: shared };
         } else if (typeof t === 'string') {
           // 最舊格式：單字串
           var legacy = { std: t, deep: (c.opus || 'claude-opus-4-6'), fu: t };
-          _mcConfigCache[tool] = { free: legacy, member: legacy, paid: legacy };
+          _mcConfigCache[tool] = { free: legacy, member: legacy, premium: legacy, paid: legacy };
         }
       });
       // 載入目前用戶類型到表單
       _mcLoadCacheToForm(_mcCurrentUserType);
-      document.getElementById('mcStatus').textContent = '已載入目前設定（三個用戶類型）';
+      document.getElementById('mcStatus').textContent = '已載入目前設定（四個用戶類型）';
     }
   } catch(e) {
     document.getElementById('mcStatus').textContent = '載入失敗: ' + e.message;
@@ -3013,7 +3023,8 @@ async function saveModelConfig() {
   try {
     // 先把當前表單 capture 到 cache
     _mcCaptureCurrentFormToCache();
-    // 送出三個工具 × 三個用戶類型的完整配置
+    // v62：送出三個工具 × 四個用戶類型（free/member/premium/paid）的完整配置
+    //   _mcConfigCache 直接包含所有用戶類型，後端 _normalizeToolCfgByUserType 會自動處理
     const cfg = {
       '7d':  _mcConfigCache['7d'],
       tarot: _mcConfigCache.tarot,
@@ -3026,7 +3037,7 @@ async function saveModelConfig() {
     });
     const data = await r.json();
     if (data.ok) {
-      toast('✓ 已儲存三個用戶類型的設定');
+      toast('✓ 已儲存四個用戶類型的設定');
       const labels = { 'claude-sonnet-4-6': 'Sonnet', 'claude-haiku-4-5': 'Haiku', 'claude-opus-4-6': 'Opus 4.6', 'claude-opus-4-7': 'Opus 4.7' };
       var ut = _mcCurrentUserType;
       var utLabel = _mcUserTypeHints[ut] ? _mcUserTypeHints[ut].label : ut;
