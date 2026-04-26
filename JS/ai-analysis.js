@@ -4530,10 +4530,13 @@ function chartVerdict(bazi, mh, tarot, focusType){
   var dyLv=curDy?curDy.level:'';
 
   // 讀命盤事實
+  // ★ code-smell fix: 之前 dyUp 寫 `includes('吉')||includes('大吉')||includes('吉')`
+  //   '大吉'.includes('吉') 必為 true，後兩個是冗餘判斷；'吉' 又寫兩次
+  //   實際 bazi.js 給的值只有 大吉/中吉/小吉/平穩/小凶/中凶/大凶，用單一 includes 即可
   var r={
     // 大運
-    dyUp: dyLv.includes('吉')||dyLv.includes('大吉')||dyLv.includes('吉'),
-    dyDn: dyLv.includes('凶')||dyLv.includes('凶')||dyLv.includes('下降'),
+    dyUp: dyLv.includes('吉'),  // 大吉/中吉/小吉
+    dyDn: dyLv.includes('凶'),  // 小凶/中凶/大凶
     dyGz: curDy?curDy.gz:'',
     dyLv: dyLv,
     // 紫微宮位
@@ -15689,6 +15692,18 @@ function _buildPayload() {
     });
   } catch(e) {}
 
+  // ★ 升級：可學習權重 + 信心降權注入
+  //   依 form / model 動態取得權重與信心矩陣，加入 payload
+  //   AI 收到 payload.weights / payload.confidence 後可以「降權引用」可信度低的維度
+  //   （沒精確時辰時，紫微/natal/jyotish 信心會降到 0.3-0.4）
+  try {
+    if (typeof window !== 'undefined' && window._JY_CONFIDENCE && typeof window._JY_CONFIDENCE.enrichPayload === 'function') {
+      // 從 S 推測當前用的 model（沒有就 sonnet 預設）
+      var _curModel = (S && S._lastModel) || (window._jyV62ConfigSnapshot && window._jyV62ConfigSnapshot.model) || 'sonnet';
+      window._JY_CONFIDENCE.enrichPayload(p, S.form || {}, _curModel);
+    }
+  } catch(_we) { /* 不影響主流程 */ }
+
   return p;
 }
 
@@ -18121,6 +18136,44 @@ renderTarot = function(){
   }
 
   function _7dWeights(meta){
+    // ★ 升級：優先使用 weight-engine.js 學習過的權重；fallback 到硬編 baseline
+    //   學習權重來自 worker /weights，會員 feedback 累積後 admin 觸發 /admin/recompute-weights 計算
+    //   信心降權：若沒精確時辰，紫微/natal/jyotish 權重會自動降低（_JY_WEIGHTS.getAdjusted 處理）
+    try {
+      if (typeof window !== 'undefined' && window._JY_WEIGHTS && typeof window._JY_WEIGHTS.getAdjusted === 'function') {
+        var _curMd = (typeof S !== 'undefined' && S && S._lastModel) || 'sonnet';
+        var _curBs = window._JY_WEIGHTS.inferBirthState(typeof S !== 'undefined' && S ? S.form : null);
+        var _learnedW = window._JY_WEIGHTS.getAdjusted(meta.type, meta.horizon, _curMd, _curBs);
+        // _learnedW 結構 { bazi, ziwei, meihua, tarot, natal, jyotish, name, dayun }
+        // 但七維度合成只用前 7 個（dayun 不在這個維度系統內）
+        if (_learnedW && Object.keys(_learnedW).length >= 6) {
+          var _w7 = {
+            bazi: _learnedW.bazi || 0,
+            ziwei: _learnedW.ziwei || 0,
+            meihua: _learnedW.meihua || 0,
+            tarot: _learnedW.tarot || 0,
+            natal: _learnedW.natal || 0,
+            jyotish: _learnedW.jyotish || 0,
+            name: _learnedW.name || 0
+          };
+          // intent 微調仍套用（學習權重 + 場景微調）
+          var _intentAdjL = {
+            prediction:{ meihua:1.04, tarot:1.04 },
+            decision:{ bazi:1.05, ziwei:1.05, jyotish:1.03 },
+            cause:{ bazi:1.06, ziwei:1.05, natal:1.05, jyotish:1.04 },
+            strategy:{ bazi:1.05, ziwei:1.05, jyotish:1.04, natal:1.04 },
+            timing:{ meihua:1.10, tarot:1.08, ziwei:1.03, jyotish:1.02 }
+          }[meta.intent] || {};
+          Object.keys(_intentAdjL).forEach(function(k){ if(typeof _w7[k]==='number') _w7[k] *= _intentAdjL[k]; });
+          // 重新 normalize
+          var _totL = 0; Object.keys(_w7).forEach(function(k){ _totL += _w7[k]; });
+          if (_totL > 0) Object.keys(_w7).forEach(function(k){ _w7[k] = _w7[k] / _totL; });
+          return _w7;
+        }
+      }
+    } catch(_we) { /* 學習權重不可用就 fallback */ }
+
+    // Fallback: 硬編 baseline
     var baseByHorizon = {
       short: {
         love:{ meihua:0.23, tarot:0.22, ziwei:0.18, jyotish:0.13, natal:0.11, bazi:0.09, name:0.04 },

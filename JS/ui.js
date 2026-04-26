@@ -1171,6 +1171,21 @@ function submitWithTool() {
       try { S.jyotish = S.natal ? computeJyotish(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM) : null; } catch(e) { S.jyotish = null; }
       try { if (S.jyotish && typeof enhanceJyotish === 'function') enhanceJyotish(S.jyotish); } catch(e) {}
       try { if (S.jyotish && typeof enhanceJyotish2 === 'function') enhanceJyotish2(S.jyotish, new Date(c.clockY, c.clockM-1, c.clockD)); } catch(e) {}
+
+      // ★ 升級：選擇性呼叫 worker 拿高精度星曆覆寫 natal/jyotish.planets
+      //   非阻塞：失敗或慢時保持原本 Meeus 結果
+      //   只有在沒設 btimeUnknown 時才升級（時辰未知時 Meeus 跟 JPL 差異不大）
+      try {
+        if (typeof window._JY_EPHEMERIS !== 'undefined' && !birth.btimeUnknown) {
+          // 背景升級,不阻塞 UI
+          (async function() {
+            try {
+              if (S.natal) await window._JY_EPHEMERIS.upgradeNatal(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, 8);
+              if (S.jyotish) await window._JY_EPHEMERIS.upgradeJyotish(S.jyotish, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, 8);
+            } catch(_eu) { /* 升級失敗保持原本結果 */ }
+          })();
+        }
+      } catch(_eu2) {}
     } catch(e) { console.error('OOTK pre-calc:', e); }
 
     // 啟動 OOTK（_jyStartOOTK 已含限流檢查+出生資料檢查）
@@ -1218,6 +1233,20 @@ function submitStep0(){
     try { S.jyotish = S.natal ? computeJyotish(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM) : null; } catch(e) { console.error('Jyotish:', e); S.jyotish=null; window._jyJyotishError=e.message; }
     try { if(S.jyotish && typeof enhanceJyotish==='function') enhanceJyotish(S.jyotish); } catch(e) { console.error('enhanceJy1:', e); window._jyJyotishError=(window._jyJyotishError||'')+' | enhanceJy1:'+e.message; }
     try { if(S.jyotish && typeof enhanceJyotish2==='function') enhanceJyotish2(S.jyotish, new Date(c.clockY, c.clockM-1, c.clockD)); } catch(e) { console.error('enhanceJy2:', e); window._jyJyotishError=(window._jyJyotishError||'')+' | enhanceJy2:'+e.message; }
+
+    // ★ 升級：選擇性呼叫 worker 拿高精度星曆
+    //   背景進行（非阻塞），有結果就覆寫 natal/jyotish 的 lon
+    //   只在有精確時辰時升級（btimeUnknown 時 Meeus 與 JPL 差異不大）
+    try {
+      if (typeof window._JY_EPHEMERIS !== 'undefined' && !birth.btimeUnknown) {
+        (async function() {
+          try {
+            if (S.natal) await window._JY_EPHEMERIS.upgradeNatal(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, 8);
+            if (S.jyotish) await window._JY_EPHEMERIS.upgradeJyotish(S.jyotish, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, 8);
+          } catch(_eu) {}
+        })();
+      }
+    } catch(_eu2) {}
     if (typeof renderDailyFortune==='function') renderDailyFortune();
     if (typeof generateLuckyInfo==='function') generateLuckyInfo();
     if (typeof renderJyotishFunZone==='function') try{renderJyotishFunZone();}catch(e){}
