@@ -178,6 +178,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="worker">Worker管理</div>
     <div class="tab" data-tab="users">用戶管理</div>
     <div class="tab" data-tab="admins">管理員</div>
+    <div class="tab" data-tab="oracle">🎋 靈籤</div>
     <div class="tab" data-tab="settings">設定</div>
   </div>
 
@@ -369,6 +370,72 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     </div>
 
     <!-- ══ Settings ══ -->
+    <!-- ══ 靈籤統計（v62b）══ -->
+    <div id="sec-oracle" class="section">
+      <div class="notify-section">
+        <div class="notify-header">
+          <h3>🎋 六十甲子靈籤統計</h3>
+          <button onclick="loadOracleStats()" style="padding:4px 12px;border-radius:6px;background:rgba(108,123,255,.1);border:1px solid rgba(108,123,255,.3);color:var(--accent);font-size:12px;cursor:pointer;float:right;margin-top:-28px">🔄 重新整理</button>
+        </div>
+
+        <!-- 總覽卡 -->
+        <div id="oracleOverview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(108,123,255,.06);border:1px solid rgba(108,123,255,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">📊 總回饋數</div>
+            <div id="oracle-total" style="font-size:20px;font-weight:700;color:var(--accent)">-</div>
+          </div>
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">✓ 準確率</div>
+            <div id="oracle-acc-rate" style="font-size:20px;font-weight:700;color:#22c55e">-</div>
+            <div id="oracle-acc-detail" style="font-size:10px;color:var(--text-dim);margin-top:2px">-</div>
+          </div>
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">~ 部分準</div>
+            <div id="oracle-partial-rate" style="font-size:20px;font-weight:700;color:#fbbf24">-</div>
+          </div>
+          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2)">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">✗ 不準率</div>
+            <div id="oracle-bad-rate" style="font-size:20px;font-weight:700;color:#ef4444">-</div>
+          </div>
+        </div>
+
+        <!-- 按問事類型 -->
+        <div style="margin-bottom:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">📋 各問事類型準確率</div>
+          <div id="oracleByType" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+
+        <!-- 重抽 / 笑陰筊 與準度關係 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+          <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🔄 重抽次數 vs 準度</div>
+            <div id="oracleByRedraw" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+          <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🪙 笑陰筊累計 vs 準度</div>
+            <div id="oracleByJiao" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+        </div>
+
+        <!-- 各籤 Top 不準 / Top 準 -->
+        <div style="margin-bottom:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🎯 各籤回饋分布（依回饋數排序）</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">至少 3 筆回饋才有意義；不足 3 筆的標記「樣本少」</div>
+          <div id="oracleByLot" style="display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto"></div>
+        </div>
+
+        <!-- 最近回饋 -->
+        <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">📜 最近 50 筆回饋</div>
+          <div id="oracleRecent" style="display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto"></div>
+        </div>
+
+        <div id="oracleEmpty" style="display:none;padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px">
+          尚無靈籤回饋資料。<br><span style="font-size:11px;opacity:.7">資料需要等用戶實際使用靈籤並按下回饋按鈕後才會累積。</span>
+        </div>
+      </div>
+    </div>
+
     <div id="sec-settings" class="section">
       <div class="worker-card" style="margin-bottom:16px">
         <h3>⚙️ AI 模型設定</h3>
@@ -1797,6 +1864,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
+    if (tab.dataset.tab === 'oracle') loadOracleStats();
     if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
@@ -2187,6 +2255,177 @@ function exportFeedbackCSV() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('✓ 已匯出 ' + list.length + ' 筆');
+}
+
+// ═══════════════════════════════════════════════
+// 🎋 Oracle Stats（v62b）— 靈籤統計
+// ═══════════════════════════════════════════════
+const ORACLE_TYPE_LABELS = {
+  love:'感情', reunion:'復合', peach:'桃花',
+  career:'事業', wealth:'財運', health:'健康',
+  lawsuit:'官司', lost:'失物', finding:'尋人',
+  home:'家宅', exam:'考試', trade:'交易',
+  travel:'出行', general:'一般'
+};
+const ORACLE_CN_NUM = ['','一','二','三','四','五','六','七','八','九','十',
+  '十一','十二','十三','十四','十五','十六','十七','十八','十九','二十',
+  '廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十',
+  '卅一','卅二','卅三','卅四','卅五','卅六','卅七','卅八','卅九','四十',
+  '四十一','四十二','四十三','四十四','四十五','四十六','四十七','四十八','四十九','五十',
+  '五十一','五十二','五十三','五十四','五十五','五十六','五十七','五十八','五十九','六十'];
+
+function _ostPct(num, total) {
+  if (!total) return '-';
+  return ((num / total) * 100).toFixed(1) + '%';
+}
+function _ostBar(g, m, b) {
+  const total = g + m + b;
+  if (!total) return '<span style="color:var(--text-dim);font-size:11px">無資料</span>';
+  const gp = (g / total * 100).toFixed(0);
+  const mp = (m / total * 100).toFixed(0);
+  const bp = (b / total * 100).toFixed(0);
+  return '<div style="display:flex;height:18px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.04)">' +
+    (g ? '<div style="width:' + gp + '%;background:#22c55e;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:600">' + (gp >= 8 ? gp + '%' : '') + '</div>' : '') +
+    (m ? '<div style="width:' + mp + '%;background:#fbbf24;display:flex;align-items:center;justify-content:center;font-size:10px;color:#000;font-weight:600">' + (mp >= 8 ? mp + '%' : '') + '</div>' : '') +
+    (b ? '<div style="width:' + bp + '%;background:#ef4444;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:600">' + (bp >= 8 ? bp + '%' : '') + '</div>' : '') +
+    '</div>';
+}
+
+async function loadOracleStats() {
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+  // 顯示載入中
+  setText('oracle-total', '...');
+  setHtml('oracleByType', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
+  setHtml('oracleByRedraw', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
+  setHtml('oracleByJiao', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
+  setHtml('oracleByLot', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
+  setHtml('oracleRecent', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
+
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/oracle-stats?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error || '取得失敗');
+
+    const total = data.total || 0;
+    setText('oracle-total', total);
+
+    // 統計準確率
+    let totalAcc = 0, totalPart = 0, totalBad = 0;
+    Object.values(data.byLot || {}).forEach(v => {
+      totalAcc += v.accurate || 0;
+      totalPart += v.partial || 0;
+      totalBad += v.inaccurate || 0;
+    });
+    setText('oracle-acc-rate', _ostPct(totalAcc, total));
+    setText('oracle-acc-detail', totalAcc + ' / ' + total);
+    setText('oracle-partial-rate', _ostPct(totalPart, total));
+    setText('oracle-bad-rate', _ostPct(totalBad, total));
+
+    // 空資料處理
+    const emptyEl = document.getElementById('oracleEmpty');
+    if (total === 0) {
+      if (emptyEl) emptyEl.style.display = 'block';
+      setHtml('oracleByType', '');
+      setHtml('oracleByRedraw', '');
+      setHtml('oracleByJiao', '');
+      setHtml('oracleByLot', '');
+      setHtml('oracleRecent', '');
+      return;
+    } else {
+      if (emptyEl) emptyEl.style.display = 'none';
+    }
+
+    // 各問事類型
+    const byTypeRows = Object.entries(data.byType || {})
+      .map(([k, v]) => ({ key: k, ...v, total: (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0) }))
+      .sort((a, b) => b.total - a.total);
+    setHtml('oracleByType', byTypeRows.map(row => {
+      const label = ORACLE_TYPE_LABELS[row.key] || row.key;
+      const accRate = row.total ? ((row.accurate / row.total) * 100).toFixed(0) : 0;
+      return '<div style="display:grid;grid-template-columns:80px 60px 1fr 60px;gap:10px;align-items:center;font-size:12px">' +
+        '<span style="color:var(--text)">' + label + '</span>' +
+        '<span style="color:var(--text-dim);font-size:11px">' + row.total + ' 筆</span>' +
+        _ostBar(row.accurate || 0, row.partial || 0, row.inaccurate || 0) +
+        '<span style="color:#22c55e;font-weight:600;text-align:right">' + accRate + '%</span>' +
+        '</div>';
+    }).join('') || '<div style="color:var(--text-dim);font-size:12px">尚無資料</div>');
+
+    // 重抽次數
+    const redrawLabels = { '0': '0 次（一次過）', '1': '1 次', '2+': '2+ 次' };
+    setHtml('oracleByRedraw', Object.entries(data.byRedraw || {}).map(([k, v]) => {
+      const t = (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0);
+      const accRate = t ? ((v.accurate / t) * 100).toFixed(0) : 0;
+      return '<div style="display:grid;grid-template-columns:90px 50px 1fr 45px;gap:8px;align-items:center;font-size:11px">' +
+        '<span style="color:var(--text)">' + (redrawLabels[k] || k) + '</span>' +
+        '<span style="color:var(--text-dim)">' + t + ' 筆</span>' +
+        _ostBar(v.accurate || 0, v.partial || 0, v.inaccurate || 0) +
+        '<span style="color:#22c55e;font-weight:600;text-align:right">' + accRate + '%</span>' +
+        '</div>';
+    }).join(''));
+
+    // 笑陰筊
+    const jiaoLabels = { '0': '0 次', '1-2': '1-2 次', '3+': '3+ 次（信號弱）' };
+    setHtml('oracleByJiao', Object.entries(data.byJiao || {}).map(([k, v]) => {
+      const t = (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0);
+      const accRate = t ? ((v.accurate / t) * 100).toFixed(0) : 0;
+      return '<div style="display:grid;grid-template-columns:120px 50px 1fr 45px;gap:8px;align-items:center;font-size:11px">' +
+        '<span style="color:var(--text)">' + (jiaoLabels[k] || k) + '</span>' +
+        '<span style="color:var(--text-dim)">' + t + ' 筆</span>' +
+        _ostBar(v.accurate || 0, v.partial || 0, v.inaccurate || 0) +
+        '<span style="color:#22c55e;font-weight:600;text-align:right">' + accRate + '%</span>' +
+        '</div>';
+    }).join(''));
+
+    // 各籤排序（依總回饋數降序）
+    const byLotRows = Object.entries(data.byLot || {})
+      .map(([k, v]) => ({
+        lotNo: parseInt(k),
+        ...v,
+        total: (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0)
+      }))
+      .filter(r => r.lotNo > 0)
+      .sort((a, b) => b.total - a.total);
+    setHtml('oracleByLot', byLotRows.map(row => {
+      const lotLabel = '第 ' + (ORACLE_CN_NUM[row.lotNo] || row.lotNo) + ' 籤';
+      const accRate = row.total ? ((row.accurate / row.total) * 100).toFixed(0) : 0;
+      const lowSample = row.total < 3;
+      const sampleTag = lowSample ? '<span style="color:#fbbf24;font-size:10px;background:rgba(251,191,36,.15);padding:1px 5px;border-radius:3px;margin-left:4px">樣本少</span>' : '';
+      return '<div style="display:grid;grid-template-columns:90px 60px 50px 1fr 45px;gap:8px;align-items:center;font-size:11px;padding:4px 6px;border-radius:4px;' + (lowSample ? 'opacity:.65' : '') + '">' +
+        '<span style="color:var(--text)">' + lotLabel + sampleTag + '</span>' +
+        '<span style="color:var(--text-dim);font-size:10px">' + (row.lotStem || '-') + ' ' + (row.rank || '') + '</span>' +
+        '<span style="color:var(--text-dim)">' + row.total + ' 筆</span>' +
+        _ostBar(row.accurate || 0, row.partial || 0, row.inaccurate || 0) +
+        '<span style="color:#22c55e;font-weight:600;text-align:right">' + accRate + '%</span>' +
+        '</div>';
+    }).join(''));
+
+    // 最近回饋
+    const recentRows = (data.recent || []).map(r => {
+      const lotLabel = '第 ' + (ORACLE_CN_NUM[r.lotNo] || r.lotNo) + ' 籤 ' + (r.lotStem || '');
+      const ratingColor = r.rating === 'accurate' ? '#22c55e' : r.rating === 'partial' ? '#fbbf24' : '#ef4444';
+      const ratingText = r.rating === 'accurate' ? '✓ 準' : r.rating === 'partial' ? '~ 部分' : '✗ 不準';
+      const typeLabel = ORACLE_TYPE_LABELS[r.questionType] || r.questionType || '-';
+      const time = (r.time || '').substring(5, 16).replace('T', ' ');
+      return '<div style="display:grid;grid-template-columns:140px 60px 60px 60px 1fr;gap:8px;align-items:center;font-size:11px;padding:6px;border-radius:4px;background:rgba(255,255,255,.02)">' +
+        '<span style="color:var(--text);font-size:10px">' + lotLabel + '</span>' +
+        '<span style="color:' + ratingColor + ';font-weight:600">' + ratingText + '</span>' +
+        '<span style="color:var(--text-dim);font-size:10px">' + typeLabel + '</span>' +
+        '<span style="color:var(--text-dim);font-size:10px">重抽 ' + (r.redrawCount || 0) + ' / 笑 ' + (r.laughDarkCount || 0) + '</span>' +
+        '<span style="color:var(--text-dim);font-size:10px;font-family:monospace;text-align:right">' + time + '</span>' +
+        '</div>';
+    }).join('');
+    setHtml('oracleRecent', recentRows || '<div style="color:var(--text-dim);font-size:12px">尚無資料</div>');
+
+  } catch (e) {
+    setText('oracle-total', '!');
+    setHtml('oracleByType', '<div style="color:#ef4444;font-size:12px">載入失敗：' + (e.message || e) + '</div>');
+    setHtml('oracleByRedraw', '');
+    setHtml('oracleByJiao', '');
+    setHtml('oracleByLot', '');
+    setHtml('oracleRecent', '');
+  }
 }
 
 // ═══════════════════════════════════════════════
