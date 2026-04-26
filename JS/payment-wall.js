@@ -12,12 +12,20 @@
   // ═══ 定價：優先從 window.JY_PRICES（由 pricing-loader.js 從 worker /pricing 動態載入）讀取 ═══
   // 斷網或 pricing-loader 未載入時使用硬編保底值（與 worker.js v52 同步）
   function P() {
+    // v62 修補：fallback 補齊額度欄位（向下對齊 worker /pricing 完整回應結構）
+    //   原本只有定價，額度欄位散在 _buildPaywallHTML 各處用 || N 補，維護混亂
+    //   pricing-loader 失敗時這裡是最後保命
     return (window.JY_PRICES && typeof window.JY_PRICES === 'object') ? window.JY_PRICES : {
       SUB_STANDARD: 999, SUB_PREMIUM: 1999,
       SINGLE_7D: 79, SINGLE_TAROT: 39, SINGLE_OOTK: 39,
       FOLLOWUP: 29,
       OPUS_7D: 169, OPUS_TAROT: 79, OPUS_OOTK: 79,
-      OPUS_7D_MEMBER: 99, OPUS_TAROT_MEMBER: 49, OPUS_OOTK_MEMBER: 49
+      OPUS_7D_MEMBER: 99, OPUS_TAROT_MEMBER: 49, OPUS_OOTK_MEMBER: 49,
+      // 額度欄位（與 worker.js 第 44-52 行常數同步）
+      TAROT_DAILY_STANDARD: 1, TAROT_DAILY_PREMIUM: 2,
+      D7_MONTHLY_STANDARD: 2, D7_MONTHLY_PREMIUM: 5,
+      OPUS_MONTHLY_PREMIUM: 1, OPUS_MONTHLY_STANDARD: 0,
+      FREE_TRIAL_PER_TOOL: 1
     };
   }
   // 舊常數名保留給下面檔案後半段（付款流程、輪詢等）向下相容
@@ -269,10 +277,14 @@
           mode === 'tarot_only' ? _payPrices.SINGLE_TAROT :
           mode === 'ootk'       ? _payPrices.SINGLE_OOTK  :
                                   _payPrices.SINGLE_7D;
+        // v62 修補：訂閱型分標準/高級顯示，避免高級會員看到 NT$999
+        var _subLabel = (type === 'subscription_premium')
+          ? '高級會員 NT$' + _payPrices.SUB_PREMIUM
+          : '標準會員 NT$' + _payPrices.SUB_STANDARD;
         var labelText = type === 'opus_single' ? '深度解析 NT$' + opusDisplayPrice
                       : type === 'followup_single' ? '追問單次 NT$' + _payPrices.FOLLOWUP
                       : type === 'single' ? '單次解讀 NT$' + singleDisplayPrice
-                      : '會員 NT$' + _payPrices.SUB_STANDARD;
+                      : _subLabel;
         // 關閉 Opus 付費 modal（如果存在）
         try { var _om = document.getElementById('jy-opus-pay-modal'); if (_om) _om.remove(); } catch(_) {}
         var waitModal = document.createElement('div');
