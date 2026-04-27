@@ -3042,163 +3042,70 @@ function initTarotDeck(){
     var sfBtn = document.createElement('button');
     sfBtn.className = 'jy-shuffle-btn';
     sfBtn.id = 'jy-shuffle-btn';
-    sfBtn.innerHTML = '🌀 洗牌・開始選牌';
+    sfBtn.innerHTML = '🌙 靜月為你洗牌';
     shuffleWrap.insertBefore(sfBtn, shuffleWrap.firstChild);
 
     sfBtn.addEventListener('click', function() {
       if (window._deckIsShuffled) return;
       sfBtn.style.pointerEvents = 'none';
-      sfBtn.innerHTML = '✦ 洗牌中⋯';
-
-      var topRow = document.getElementById('t-row-top');
-      var botRow = document.getElementById('t-row-bot');
-      var cardW = 76;
-      var half = Math.ceil(deckShuffled.length / 2);
-      var _botLoopW = (deckShuffled.length - half) * cardW;
-      var allCards = deckEl.querySelectorAll('.tarot-deck-card');
-
-      // ═══ Phase 1：波浪翻面（face → back）═══
-      var flipDelay = 0;
-      allCards.forEach(function(card) {
-        setTimeout(function() {
-          card.classList.add('shuffling');
-          setTimeout(function() {
+      sfBtn.style.opacity = '0';
+      // ═══════════════════════════════════════════════════════════
+      // v64.B 改用華麗三幕式儀式動畫(取代舊波浪翻面+riffle 洗牌)
+      //   tarot_upgrade.js 提供 _v64bTarotShuffleRitual 函式
+      //   完整 2.8s / compact 0.8s / 跳過按鈕全程可點
+      // ═══════════════════════════════════════════════════════════
+      if (typeof window._v64bTarotShuffleRitual === 'function') {
+        window._v64bTarotShuffleRitual(deckEl, function() {
+          // 儀式結束後:把所有牌翻成牌背狀態(資料層),啟用選牌
+          var allCards = deckEl.querySelectorAll('.tarot-deck-card');
+          allCards.forEach(function(card) {
             var face = card.querySelector('.tdc-face');
             var back = card.querySelector('.tdc-back');
             if (face) face.style.display = 'none';
             if (back) back.style.transform = 'none';
-          }, 230);
-        }, flipDelay);
-        flipDelay += 18;
-      });
-
-      var t1 = flipDelay + 500;
-
-      // ═══ Phase 2：聚攏（兩排滑向中央重疊）═══
-      setTimeout(function() {
-        // 停掉 RAF 漂移引擎
-        if (_deck3dRAF) { cancelAnimationFrame(_deck3dRAF); _deck3dRAF = null; }
-
-        // 金色光暈
-        deckEl.classList.add('shuffling-glow');
-
-        // 清個別牌 3D 效果
-        allCards.forEach(function(card) {
-          card.style.transform = '';
-          card.style.visibility = '';
-          card.classList.remove('shuffling', 'deck-center');
-          var inner = card.firstElementChild;
-          if (inner) { inner.style.filter = ''; inner.style.animation = 'none'; }
-        });
-
-        // 兩排向中心聚攏 + 攤平
-        topRow.style.transition = 'transform .5s cubic-bezier(.4,0,.2,1)';
-        botRow.style.transition = 'transform .5s cubic-bezier(.4,0,.2,1)';
-        topRow.style.transform = 'translateX(' + _deck3dTopOff.toFixed(1) + 'px) translateY(52px) rotateX(0deg)';
-        botRow.style.transform = 'translateX(' + (_deck3dBotOff - _botLoopW).toFixed(1) + 'px) translateY(-52px) rotateX(0deg)';
-      }, t1);
-
-      var t2 = t1 + 550;
-
-      // ═══ Phase 3：Riffle 洗牌（交替跳動 ×3 輪）═══
-      setTimeout(function() {
-        topRow.style.transition = 'none';
-        botRow.style.transition = 'none';
-
-        var topCards = topRow.querySelectorAll('.tarot-deck-card');
-        var botCards = botRow.querySelectorAll('.tarot-deck-card');
-
-        for (var round = 0; round < 3; round++) {
-          var rDelay = round * 300;
-          [topCards, botCards].forEach(function(cards, rowIdx) {
-            for (var i = 0; i < cards.length; i++) {
-              (function(card, idx, rd) {
-                setTimeout(function() {
-                  // 交替上下跳 + 輕微隨機旋轉
-                  var jitter = (idx % 2 === 0) ? -14 : 14;
-                  var rot = (Math.random() - 0.5) * 6;
-                  card.style.transition = 'transform .12s ease-out';
-                  card.style.transform = 'translateY(' + jitter + 'px) rotate(' + rot.toFixed(1) + 'deg)';
-                  setTimeout(function() {
-                    card.style.transform = 'translateY(0) rotate(0deg)';
-                  }, 120);
-                }, rd + idx * 6);
-              })(cards[i], i, rDelay);
-            }
-          });
-        }
-
-        // 中心粒子爆發
-        var stageRect = deckEl.getBoundingClientRect();
-        var cx = stageRect.left + stageRect.width / 2;
-        var cy = stageRect.top + stageRect.height / 2;
-        _spawnParticles(cx, cy, 18);
-        setTimeout(function() { _spawnParticles(cx + 30, cy - 10, 12); }, 300);
-        setTimeout(function() { _spawnParticles(cx - 25, cy + 15, 12); }, 600);
-      }, t2);
-
-      var t3 = t2 + 1000;
-
-      // ═══ Phase 4：切牌（上排右移、下排左移再回）═══
-      setTimeout(function() {
-        var curTopX = _deck3dTopOff;
-        var curBotX = _deck3dBotOff - _botLoopW;
-
-        topRow.style.transition = 'transform .25s ease-in-out';
-        botRow.style.transition = 'transform .25s ease-in-out';
-        topRow.style.transform = 'translateX(' + (curTopX + 60).toFixed(1) + 'px) translateY(52px) rotateX(0deg)';
-        botRow.style.transform = 'translateX(' + (curBotX - 60).toFixed(1) + 'px) translateY(-52px) rotateX(0deg)';
-
-        setTimeout(function() {
-          topRow.style.transform = 'translateX(' + curTopX.toFixed(1) + 'px) translateY(52px) rotateX(0deg)';
-          botRow.style.transform = 'translateX(' + curBotX.toFixed(1) + 'px) translateY(-52px) rotateX(0deg)';
-        }, 280);
-      }, t3);
-
-      var t4 = t3 + 600;
-
-      // ═══ Phase 5：展開回位 ═══
-      setTimeout(function() {
-        // 移除金色光暈
-        deckEl.classList.remove('shuffling-glow');
-        // 清個別牌 transition
-        allCards.forEach(function(card) {
-          card.style.transition = '';
-          card.style.transform = '';
-        });
-
-        // 排回原位（帶彈簧）
-        topRow.style.transition = 'transform .5s cubic-bezier(.34,1.56,.64,1)';
-        botRow.style.transition = 'transform .5s cubic-bezier(.34,1.56,.64,1)';
-        topRow.style.transform = 'translateX(' + _deck3dTopOff.toFixed(1) + 'px) rotateX(8deg)';
-        botRow.style.transform = 'translateX(' + (_deck3dBotOff - _botLoopW).toFixed(1) + 'px) rotateX(-6deg)';
-
-        // 中央一次最終粒子
-        var stageRect = deckEl.getBoundingClientRect();
-        _spawnParticles(stageRect.left + stageRect.width / 2, stageRect.top + stageRect.height / 2, 24);
-
-        setTimeout(function() {
-          // 清 transition，恢復浮動動畫
-          topRow.style.transition = '';
-          botRow.style.transition = '';
-          allCards.forEach(function(card) {
+            card.style.transform = '';
+            card.style.visibility = '';
+            card.classList.remove('shuffling', 'deck-center');
             var inner = card.firstElementChild;
-            if (inner) inner.style.animation = '';
+            if (inner) { inner.style.filter = ''; inner.style.animation = ''; }
           });
-
           // 重啟 RAF 漂移引擎
-          _startDeck3D(half, deckShuffled.length - half);
-
-          // 啟用選牌
+          if (typeof _startDeck3D === 'function') {
+            var halfNum = Math.ceil(deckShuffled.length / 2);
+            _startDeck3D(halfNum, deckShuffled.length - halfNum);
+          }
           window._deckIsShuffled = true;
           sfBtn.remove();
           if (autoDrawBtn) autoDrawBtn.style.display = '';
           if (pickHint) {
             var count = (S.tarot && S.tarot.spreadDef && S.tarot.spreadDef.count) || 10;
-            pickHint.innerHTML = '觸碰任一張你有感覺的牌，選出 <span id="t-target-count">' + count + '</span> 張';
+            pickHint.innerHTML = '觸碰任一張你有感覺的牌,選出 <span id="t-target-count">' + count + '</span> 張';
           }
-        }, 600);
-      }, t4);
+        });
+        return;
+      }
+      // fallback:如果 v64.B 函式沒載入,跑原版簡化邏輯
+      sfBtn.innerHTML = '✦ 洗牌中⋯';
+      var allCards = deckEl.querySelectorAll('.tarot-deck-card');
+      var fbDelay = 0;
+      allCards.forEach(function(card) {
+        setTimeout(function() {
+          var face = card.querySelector('.tdc-face');
+          var back = card.querySelector('.tdc-back');
+          if (face) face.style.display = 'none';
+          if (back) back.style.transform = 'none';
+        }, fbDelay);
+        fbDelay += 12;
+      });
+      setTimeout(function() {
+        window._deckIsShuffled = true;
+        sfBtn.remove();
+        if (autoDrawBtn) autoDrawBtn.style.display = '';
+        if (pickHint) {
+          var count = (S.tarot && S.tarot.spreadDef && S.tarot.spreadDef.count) || 10;
+          pickHint.innerHTML = '觸碰任一張你有感覺的牌,選出 <span id="t-target-count">' + count + '</span> 張';
+        }
+      }, fbDelay + 400);
     });
   }
 }
