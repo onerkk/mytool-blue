@@ -210,6 +210,7 @@
     '.jy-fb-btn:active{transform:scale(.96)}',
     '.jy-fb-btn.good:hover,.jy-fb-btn.good.picked{border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.08);color:rgba(74,222,128,.9)}',
     '.jy-fb-btn.bad:hover,.jy-fb-btn.bad.picked{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08);color:rgba(239,68,68,.9)}',
+    '.jy-fb-btn.vague:hover,.jy-fb-btn.vague.picked{border-color:rgba(251,191,36,.45)!important;background:rgba(251,191,36,.1)!important;color:rgba(251,191,36,1)!important}',
     '.jy-fb-detail{display:none;margin-top:.8rem;padding-top:.7rem;border-top:1px solid rgba(255,255,255,.06)}',
     '.jy-fb-detail.open{display:block;animation:jyFbSlide .3s ease}',
     '@keyframes jyFbSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}',
@@ -264,18 +265,29 @@
     var toolLabel = tool === 'tarot' ? '塔羅快讀' : tool === 'ootk' ? '開鑰之法' : '七維度分析';
 
     fb.innerHTML =
-      // 主問題
-      '<div class="jy-fb-q">☽ 這次的<span style="color:rgba(212,175,55,.8)">' + toolLabel + '</span>對你有幫助嗎？</div>' +
-
-      // 兩個按鈕
-      '<div class="jy-fb-btns">' +
-        '<button class="jy-fb-btn good" data-rating="good">☽ 有感覺</button>' +
-        '<button class="jy-fb-btn bad" data-rating="bad">☾ 沒感覺</button>' +
+      // ★ 改造:從「客套調查」轉成「教學訊號」說明
+      //   核心訊息:你的反饋會直接調整系統權重,且每次回訪會越來越懂你
+      '<div class="jy-fb-q" style="text-align:left;line-height:1.65">' +
+        '<div style="font-size:.95rem;font-weight:600;color:var(--c-gold,#d4af37);margin-bottom:.5rem">☽ 你的反饋會直接調整我</div>' +
+        '<div style="font-size:.78rem;color:var(--c-text-dim,#a09880);line-height:1.7">' +
+          '點「對得上」 → 我下次更信任這次用上的命盤訊號<br>' +
+          '點「對不上」 → 我下次降低該訊號的權重<br>' +
+          '<span style="opacity:.7">這不是客套調查,你的回饋真的會影響後續所有解讀。</span><br>' +
+          '<span style="font-size:.74rem;color:rgba(212,175,55,.65);margin-top:.3rem;display:inline-block">☽ 越誠實的回饋,你下次回訪時的解讀會越貼合你</span>' +
+        '</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text,#e8e0d0);margin-top:.7rem;font-weight:500">這次的<span style="color:rgba(212,175,55,.85)">' + toolLabel + '</span>,你直覺上呢?</div>' +
       '</div>' +
 
-      // 展開的詳細原因區（點「沒感覺」後顯示）
+      // 三個按鈕（加入「太籠統」,讓不確定的人也能誠實表態而非亂按一邊）
+      '<div class="jy-fb-btns" style="flex-wrap:wrap;gap:.6rem">' +
+        '<button class="jy-fb-btn good" data-rating="good">⊙ 對得上</button>' +
+        '<button class="jy-fb-btn vague" data-rating="vague" style="border-color:rgba(251,191,36,.25);color:rgba(251,191,36,.85)">◐ 太籠統</button>' +
+        '<button class="jy-fb-btn bad" data-rating="bad">● 對不上</button>' +
+      '</div>' +
+
+      // 展開的詳細原因區（點「對不上」或「太籠統」後顯示）
       '<div class="jy-fb-detail" id="jy-fb-detail">' +
-        '<div style="font-size:.78rem;color:var(--c-text-dim,#a09880);margin-bottom:.4rem">哪裡可以更好？</div>' +
+        '<div style="font-size:.78rem;color:var(--c-text-dim,#a09880);margin-bottom:.4rem">哪裡可以更好？(選填,但寫了我能改更快)</div>' +
         '<div class="jy-fb-tags" id="jy-fb-tags">' +
           '<button class="jy-fb-tag" data-r="太籠統">解讀太籠統</button>' +
           '<button class="jy-fb-tag" data-r="答非所問">沒回答我的問題</button>' +
@@ -286,14 +298,15 @@
           '<button class="jy-fb-tag" data-r="水晶不對">水晶建議不對</button>' +
           '<button class="jy-fb-tag" data-r="風格">不喜歡語氣風格</button>' +
         '</div>' +
-        '<textarea class="jy-fb-text" id="jy-fb-text" placeholder="具體哪裡不對？你期望的答案是什麼？（選填，寫越具體我們改越快）"></textarea>' +
+        '<textarea class="jy-fb-text" id="jy-fb-text" placeholder="具體哪裡不對？你期望的答案是什麼？（選填）"></textarea>' +
         '<button class="jy-fb-send" id="jy-fb-send">送出回饋</button>' +
       '</div>' +
 
-      // 感謝畫面
+      // 感謝畫面（樸實無誇大）
       '<div class="jy-fb-done" id="jy-fb-done" style="display:none">' +
         '<div class="moon">☽</div>' +
-        '<div class="msg">謝謝你，這會讓靜月更準</div>' +
+        '<div class="msg">收到了,你的反饋已寫入學習資料庫。</div>' +
+        '<div style="font-size:.74rem;color:var(--c-text-dim,#a09880);margin-top:.4rem;line-height:1.6">下次你回訪時,我會記得這次的對話脈絡,解讀會更貼近你。</div>' +
       '</div>';
 
     if (target) {
@@ -319,6 +332,15 @@
           fb.querySelector('.jy-fb-q').style.display = 'none';
           document.getElementById('jy-fb-done').style.display = 'block';
         } else {
+          // 'bad' 或 'vague' 都展開讓用戶填細節
+          // 'vague' 預先勾選「太籠統」tag,引導用戶
+          if (selectedRating === 'vague') {
+            var vagueTag = fb.querySelector('.jy-fb-tag[data-r="太籠統"]');
+            if (vagueTag && !vagueTag.classList.contains('on')) {
+              vagueTag.classList.add('on');
+              if (selectedReasons.indexOf('太籠統') < 0) selectedReasons.push('太籠統');
+            }
+          }
           document.getElementById('jy-fb-detail').classList.add('open');
         }
       });
@@ -336,18 +358,24 @@
 
     document.getElementById('jy-fb-send').addEventListener('click', function() {
       var comment = (document.getElementById('jy-fb-text').value || '').trim();
-      if (selectedReasons.length === 0 && !comment) {
-        // 至少選一個原因或寫一句話
+      // ★ vague(太籠統)由於進入時已自動勾「太籠統」tag,不會卡這層
+      //   bad(對不上)仍要求至少選一個原因或寫一句話,確保有訓練訊號
+      if (selectedRating === 'bad' && selectedReasons.length === 0 && !comment) {
         document.getElementById('jy-fb-tags').style.outline = '1px solid rgba(239,68,68,.5)';
         setTimeout(function(){ document.getElementById('jy-fb-tags').style.outline = 'none'; }, 1500);
         return;
       }
-      sendFeedback('bad', selectedReasons, comment);
+      sendFeedback(selectedRating, selectedReasons, comment);
       document.getElementById('jy-fb-detail').style.display = 'none';
       fb.querySelector('.jy-fb-btns').style.display = 'none';
       fb.querySelector('.jy-fb-q').style.display = 'none';
       var done = document.getElementById('jy-fb-done');
-      done.querySelector('.msg').textContent = '收到了，我們會針對「' + selectedReasons.join('、') + '」改進';
+      var msgText = selectedRating === 'vague'
+        ? '收到了,你的反饋已寫入學習資料庫。'
+        : (selectedReasons.length > 0
+            ? '收到了,我會針對「' + selectedReasons.join('、') + '」改進'
+            : '收到了,你的反饋已寫入學習資料庫。');
+      done.querySelector('.msg').textContent = msgText;
       done.style.display = 'block';
     });
   };
