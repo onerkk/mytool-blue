@@ -1125,40 +1125,69 @@
   </div>
 
   <!-- ═══ 回饋區：評分 + 診斷包 ═══ -->
-  <div id="feedback-section" class="card" style="margin:1rem;border:1px solid rgba(201,168,76,0.2);display:none">
-    <div style="text-align:center;margin-bottom:0.8rem">
-      <p style="font-size:0.95rem;color:var(--c-text,#e8e0d0);margin-bottom:0.5rem">這次的分析對你有幫助嗎？</p>
-      <div style="display:flex;justify-content:center;gap:1.2rem">
-        <button id="fb-good" onclick="submitFeedback('good')" style="font-size:1.8rem;background:none;border:2px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.5rem 1.2rem;cursor:pointer;transition:all .2s">👍</button>
-        <button id="fb-bad" onclick="submitFeedback('bad')" style="font-size:1.8rem;background:none;border:2px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.5rem 1.2rem;cursor:pointer;transition:all .2s">👎</button>
+  <div id="feedback-section" class="card" style="margin:1.2rem 1rem;padding:1.2rem;border:2px solid rgba(212,175,55,0.45);border-radius:14px;background:linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(147,51,234,0.05) 100%);box-shadow:0 4px 20px rgba(212,175,55,0.12);display:none;position:relative;overflow:hidden">
+    <!-- 左上角強調標籤 -->
+    <div style="position:absolute;top:-1px;left:-1px;background:linear-gradient(135deg, #c9a84c, #b8923c);color:#1a1a2e;font-size:0.72rem;font-weight:800;padding:0.25rem 0.7rem;border-radius:0 0 10px 0;letter-spacing:0.05em">⚡ 你的回饋會直接讓系統變更準</div>
+
+    <!-- 主標 + 副說明 -->
+    <div style="text-align:center;margin-top:1.6rem;margin-bottom:1rem">
+      <div style="font-size:1.15rem;color:var(--c-gold,#c9a84c);font-weight:700;margin-bottom:0.4rem;letter-spacing:0.02em">這次解讀,準嗎?</div>
+      <div style="font-size:0.78rem;color:var(--c-text-dim,#a09880);line-height:1.5;padding:0 0.5rem">
+        系統會根據你的回饋調整七維度權重,<br>
+        <strong style="color:#c9a84c">回訪時解讀會越來越貼合你</strong>
       </div>
     </div>
-    <!-- 不準原因（點👎後才顯示）-->
-    <div id="fb-reason-box" style="display:none;margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid rgba(255,255,255,0.08)">
-      <p style="font-size:0.85rem;color:var(--c-text-dim,#a09880);margin-bottom:0.5rem">哪裡不準？（可多選）</p>
+
+    <!-- 三按鈕大區(對得上 / 太籠統 / 對不上) -->
+    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:0.6rem;margin-bottom:0.5rem">
+      <button id="fb-good" onclick="submitFeedback(\'good\')" style="padding:0.85rem 0.4rem;background:rgba(34,197,94,0.08);border:2px solid rgba(34,197,94,0.4);border-radius:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:0.3rem;font-family:inherit">
+        <span style="font-size:1.6rem">✅</span>
+        <span style="font-size:0.85rem;color:#22c55e;font-weight:700">對得上</span>
+      </button>
+      <button id="fb-vague" onclick="submitFeedback(\'vague\')" style="padding:0.85rem 0.4rem;background:rgba(251,191,36,0.08);border:2px solid rgba(251,191,36,0.4);border-radius:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:0.3rem;font-family:inherit">
+        <span style="font-size:1.6rem">🌫️</span>
+        <span style="font-size:0.85rem;color:#fbbf24;font-weight:700">太籠統</span>
+      </button>
+      <button id="fb-bad" onclick="submitFeedback(\'bad\')" style="padding:0.85rem 0.4rem;background:rgba(239,68,68,0.08);border:2px solid rgba(239,68,68,0.4);border-radius:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:0.3rem;font-family:inherit">
+        <span style="font-size:1.6rem">❌</span>
+        <span style="font-size:0.85rem;color:#ef4444;font-weight:700">對不上</span>
+      </button>
+    </div>
+    <div style="text-align:center;font-size:0.7rem;color:var(--c-text-dim,#a09880);opacity:0.7;margin-top:0.3rem">點一下就好,3 秒鐘的事</div>
+
+    <!-- 不準/籠統原因(點 👎 或 🌫️ 後才顯示) -->
+    <div id="fb-reason-box" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1)">
+      <p style="font-size:0.9rem;color:var(--c-text,#e8e0d0);margin-bottom:0.6rem;font-weight:600">哪裡不對?(可多選,選填)</p>
       <div style="display:flex;flex-wrap:wrap;gap:0.4rem" id="fb-reasons">
-        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:4px">
+        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.4rem 0.7rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,0.08)">
           <input type="checkbox" value="太籠統" style="width:14px;height:14px"> 建議太籠統
         </label>
-        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:4px">
+        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.4rem 0.7rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,0.08)">
           <input type="checkbox" value="答非所問" style="width:14px;height:14px"> 答非所問
         </label>
-        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:4px">
+        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.4rem 0.7rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,0.08)">
           <input type="checkbox" value="方向錯" style="width:14px;height:14px"> 判斷方向錯
         </label>
-        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:4px">
+        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.4rem 0.7rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,0.08)">
           <input type="checkbox" value="水晶不對" style="width:14px;height:14px"> 水晶建議不對
         </label>
+        <label style="font-size:0.8rem;background:rgba(255,255,255,0.06);padding:0.4rem 0.7rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,0.08)">
+          <input type="checkbox" value="預測沒應驗" style="width:14px;height:14px"> 預測沒應驗
+        </label>
       </div>
-      <textarea id="fb-comment" placeholder="其他想說的...（選填）" style="width:100%;margin-top:0.5rem;padding:0.4rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--c-text,#e8e0d0);font-size:0.8rem;resize:vertical;min-height:40px"></textarea>
-      <textarea id="fb-actual" placeholder="實際上是什麼狀況？（選填，越具體越能幫我們改進）&#10;例：時間已過但沒發生／對方早已有伴侶／方向剛好相反..." style="width:100%;margin-top:0.5rem;padding:0.4rem;background:rgba(212,175,55,0.04);border:1px solid rgba(212,175,55,0.15);border-radius:6px;color:var(--c-text,#e8e0d0);font-size:0.8rem;resize:vertical;min-height:50px"></textarea>
-      <button onclick="submitFeedbackDetail()" style="margin-top:0.5rem;width:100%;padding:0.5rem;background:var(--c-gold,#c9a84c);color:#1a1a2e;border:none;border-radius:8px;font-weight:600;font-size:0.85rem;cursor:pointer">送出回饋</button>
+      <textarea id="fb-comment" placeholder="其他想說的...(選填)" style="width:100%;margin-top:0.6rem;padding:0.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--c-text,#e8e0d0);font-size:0.85rem;resize:vertical;min-height:45px;font-family:inherit"></textarea>
+      <textarea id="fb-actual" placeholder="實際上是什麼狀況?(選填,越具體越能幫我們改進)&#10;例:時間已過但沒發生／對方早已有伴侶／方向剛好相反..." style="width:100%;margin-top:0.5rem;padding:0.5rem;background:rgba(212,175,55,0.04);border:1px solid rgba(212,175,55,0.2);border-radius:8px;color:var(--c-text,#e8e0d0);font-size:0.85rem;resize:vertical;min-height:55px;font-family:inherit"></textarea>
+      <button onclick="submitFeedbackDetail()" style="margin-top:0.6rem;width:100%;padding:0.7rem;background:linear-gradient(135deg,#c9a84c,#b8923c);color:#1a1a2e;border:none;border-radius:10px;font-weight:700;font-size:0.95rem;cursor:pointer;letter-spacing:0.02em;font-family:inherit">送出回饋,讓系統下次更準</button>
     </div>
+
     <!-- 送出後的感謝 -->
-    <div id="fb-thanks" style="display:none;text-align:center;padding:0.5rem">
-      <p style="color:var(--c-gold,#c9a84c);font-size:0.9rem">✨ 謝謝你的回饋！</p>
+    <div id="fb-thanks" style="display:none;text-align:center;padding:0.8rem">
+      <div style="font-size:2rem;margin-bottom:0.3rem">✨</div>
+      <p style="color:var(--c-gold,#c9a84c);font-size:1rem;font-weight:700;margin-bottom:0.3rem">收到了,謝謝你!</p>
+      <p style="color:var(--c-text-dim,#a09880);font-size:0.78rem;line-height:1.5">下次你回訪時,我會記得這次的對話脈絡,<br>解讀會更貼近你。</p>
     </div>
-    <!-- 診斷包複製（隱藏，連點感謝文字3次才顯示）-->
+
+    <!-- 診斷包複製(隱藏,連點感謝文字3次才顯示) -->
     <div id="fb-diag-wrap" style="display:none;margin-top:0.6rem;text-align:center;border-top:1px solid rgba(255,255,255,0.06);padding-top:0.6rem">
       <button onclick="copyDiagnosticPack()" style="font-size:0.75rem;color:var(--c-text-dim,#a09880);background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:0.3rem 0.8rem;cursor:pointer">
         📋 複製診斷包
@@ -1320,7 +1349,7 @@
       🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 5 次</strong><br>
       📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>
       🔮 深度解析 <strong style="color:#c084fc">每月 1 次免費</strong><br>
-      ⚡ 深度解析加購優惠 <strong style="color:#c084fc">七維 NT$99／塔羅開鑰 NT$49</strong>
+      ⚡ 深度解析(會員加購) <strong style="color:#c084fc">七維 NT$140 ／ 塔羅 NT$60 ／ 開鑰 NT$120</strong>
     </div>
   </div>
 
@@ -1331,9 +1360,9 @@
       <span style="font-size:.7rem;color:var(--c-text-muted,#8a7d6b)">僅限信用卡</span>
     </div>
     <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.8">
-      七維度 NT$79 ・ 塔羅 NT$39 ・ 開鑰 NT$39<br>
-      <span style="color:#c084fc">深度解析</span>：七維度 NT$169 ・ 塔羅/開鑰 NT$79<br>
-      <span style="color:var(--c-gold)">追問單次</span>：NT$29（含一次免費）
+      <span style="color:var(--c-gold)">標準解讀</span>:塔羅 NT$30 ・ 開鑰 NT$60 ・ 七維度 NT$70<br>
+      <span style="color:#c084fc">深度解析(Opus)</span>:塔羅 NT$60 ・ 開鑰 NT$120 ・ 七維度 NT$140<br>
+      <span style="color:var(--c-gold)">追問單次</span>：NT$15(每次解讀含 1 次免費)
     </div>
   </div>
 </section>
@@ -1400,23 +1429,17 @@
       <summary style="cursor:pointer;text-align:center;font-size:.7rem;color:rgba(212,175,55,.3);padding:.4rem 0;user-select:none;letter-spacing:.08em">▸ 服務與收費說明</summary>
       <div style="margin-top:.6rem;padding:.8rem;border-radius:10px;border:1px solid rgba(212,175,55,.06);background:rgba(212,175,55,.02);font-size:.72rem;color:rgba(200,190,170,.55);line-height:1.8">
         <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">免費體驗</p>
-        <p style="margin-bottom:.8rem">三套工具（塔羅快讀・開鑰之法・七維度）共 3 次免費體驗（含追問）。需 Google 登入。不含照片分析。用完後可開通會員或單次購買。</p>
+        <p style="margin-bottom:.8rem">三套工具(塔羅快讀・開鑰之法・七維度)各 1 次終身免費體驗(共 3 次,僅限標準解讀,含追問)。需 Google 登入。不含照片分析。用完後可單次購買繼續使用。</p>
 
-        <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">標準會員 NT$999/月</p>
-        <p style="margin-bottom:.8rem">塔羅每日 1 次・開鑰每日 1 次・七維度每月 2 次・面相＋手相＋水晶照片分析（會員專屬）・每次解讀含 1 次免費追問。不含深度解析（需單次加購）。30 天有效。</p>
-
-        <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">高級會員 NT$1,999/月</p>
-        <p style="margin-bottom:.8rem">塔羅每日 2 次・開鑰每日 2 次・七維度每月 5 次・面相＋手相＋水晶照片分析（會員專屬）・深度解析每月 1 次免費・每次解讀含 1 次免費追問。深度解析加購享優惠價（七維度 NT$99／塔羅・開鑰 NT$49）。30 天有效。</p>
-
-        <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">單次購買（非會員）</p>
-        <p style="margin-bottom:.3rem">標準解讀：七維度 NT$79 ／ 塔羅 NT$39 ／ 開鑰 NT$39（每次含 1 次免費追問）</p>
-        <p style="margin-bottom:.8rem">深度解析：七維度 NT$169 ／ 塔羅 NT$79 ／ 開鑰 NT$79（每次含 1 次免費追問）</p>
+        <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">單次購買</p>
+        <p style="margin-bottom:.3rem">標準解讀:塔羅 NT$30 ／ 開鑰 NT$60 ／ 七維度 NT$70(每次含 1 次免費追問)</p>
+        <p style="margin-bottom:.8rem">深度解析:塔羅 NT$60 ／ 開鑰 NT$120 ／ 七維度 NT$140(每次含 1 次免費追問)</p>
 
         <p style="margin-bottom:.6rem;color:rgba(147,51,234,.5);font-weight:600">深度解析</p>
-        <p style="margin-bottom:.8rem">使用最頂級推理引擎（Opus 4.7 深度思考模式），因果鏈深挖到底，系統間矛盾正面裁決。高級會員加購享優惠：七維度 NT$99 ／ 塔羅・開鑰 NT$49。</p>
+        <p style="margin-bottom:.8rem">使用最頂級推理引擎(Opus 4.7 深度思考模式),因果鏈深挖到底,系統間矛盾正面裁決。深度解析:塔羅 NT$60 ／ 開鑰 NT$120 ／ 七維度 NT$140。</p>
 
-        <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">追問單次 NT$29</p>
-        <p style="margin-bottom:.8rem">每次解讀（不論會員或單次購買）皆含 1 次免費追問。之後每次追問 NT$29，僅使用標準推理引擎。如需深度解析的追問，請重新購買一次深度解析。</p>
+        <p style="margin-bottom:.6rem;color:rgba(212,175,55,.5);font-weight:600">追問單次 NT$15</p>
+        <p style="margin-bottom:.8rem">每次解讀皆含 1 次免費追問。之後每次追問 NT$15,僅使用標準推理引擎。如需深度解析的追問,請重新購買一次深度解析。</p>
 
         <p style="margin-bottom:.6rem;color:rgba(200,190,170,.5);font-weight:600">付款方式</p>
         <p style="margin-bottom:.5rem">透過綠界科技（ECPay）第三方支付。會員方案支援信用卡、ATM 轉帳、超商代碼繳費；單次購買與深度解析僅限信用卡。</p>
