@@ -490,6 +490,26 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div id="wt-learned-matrix" style="font-size:11px;color:var(--text-dim);max-height:400px;overflow-y:auto"></div>
         </div>
 
+        <!-- ★ v63 新增:不準原因分布 -->
+        <div style="margin-top:14px;padding:14px;border-radius:10px;background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.2)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">📋 不準原因分布(v63)</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+            用戶按「不準」時自動分類:答非所問 / 太籠統 / 跟認知不合 / 預測沒應驗 / 其他。
+            <strong style="color:#ef4444">「答非所問」如果占多數 → 表示 prompt 路由錯誤,需調整危機題雙軌或七維度字面指令。</strong>
+          </div>
+          <div id="wt-reason-counts" style="font-size:12px;color:var(--text-dim)">尚無不準資料</div>
+        </div>
+
+        <!-- ★ v63 新增:七維度吃滿率(從 aiStory 推測) -->
+        <div style="margin-top:14px;padding:14px;border-radius:10px;background:rgba(108,123,255,.04);border:1px solid rgba(108,123,255,.2)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🎯 七維度實際吃滿率(從 feedback aiStory 文字檢測)</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+            掃描最近 fb 的 aiStory,用關鍵詞偵測 AI 是否真的提到該系統。
+            <strong style="color:#fbbf24">理想情況七個系統都 ≥ 80% 出現。某系統長期 < 30% → 表示 prompt 沒有逼 AI 寫該系統,需強化 V63_SEVEN_LITERAL。</strong>
+          </div>
+          <div id="wt-coverage" style="font-size:12px;color:var(--text-dim)">點「🔄 刷新」載入</div>
+        </div>
+
         <div id="wt-empty" style="display:none;padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px">
           尚無學習統計。<br><span style="font-size:11px;opacity:.7">需要用戶送 feedback(七維度/塔羅/開鑰)累積樣本後才會出現。</span>
         </div>
@@ -1500,6 +1520,54 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <span style="flex:1">
               <span style="font-size:13px;font-weight:600">📅 七維度行動層（全新）</span><br>
               <span style="font-size:11px;color:var(--text-dim)">七維度之前沒有第三層模組。新增「時運窗口 + 窗口前/中動作 + 驗證信號」四段結構，讓七維度讀完也能給用戶下一步動作。解決七維度結尾空話問題</span>
+            </span>
+          </label>
+
+          <!-- ═══════════════════════════════════════════════════════════ -->
+          <!-- ★ Group H (v63):七維度深度修正(2026-04-27 實測修正) -->
+          <!-- ═══════════════════════════════════════════════════════════ -->
+          <div style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--card-border);">
+            <div style="font-size:11px;color:#a78bfa;font-weight:600;margin-bottom:6px;letter-spacing:0.5px">── Group H (v63):七維度深度修正(2026-04-27 站長實測)──</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;line-height:1.7;padding:10px;background:rgba(167,139,250,0.05);border-radius:6px;border:1px solid rgba(167,139,250,0.15)">
+              <strong style="color:#a78bfa">📜 v63 修正背景:</strong><br>
+              站長 2026-04-27 實測 Opus 4.7 七維度模式時發現:
+              ① 紫微只當裝飾詞用,沒進到飛星派/四化/宮位
+              ② 西占/吠陀/姓名常常完全跳過,但盤面其實有送
+              ③ 危機題(憂鬱/停藥/想放棄)會把命理深度讓位給健康建議,變成「兩維度+建議」
+              ④ Opus 把「七維度」解讀成「整體交叉」,寫八字+塔羅就收尾。<br><br>
+              <strong style="color:#a78bfa">v63 解法:</strong>四個短而強的字面指令,放在 prompt 末端 recency 位置,跟 V62B 同手法。
+            </div>
+          </div>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-seven-literal" style="margin-top:2px;width:16px;height:16px;accent-color:#a78bfa;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📐 v63-1:七維度字面遵循</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">「七維度」= 字面意思的七個系統,每個都要單獨出現。每系統最少一段(2-3 句)斷語,每系統必出現該系統技術詞(紫微必出四化/飛星/自化、梅花必出體用/動爻、塔羅必明確指出鑰匙牌+位置)。降權跳過要明寫「○○系統本次受限」不能默默不寫</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-crisis-dual" style="margin-top:2px;width:16px;height:16px;accent-color:#a78bfa;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🚑 v63-2:危機題雙軌處理</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">當 question 含「停藥/憂鬱/想放棄/撐不下去/絕望/想死/沒興趣」等危機關鍵詞時,Opus 會本能切到健康建議模式而省略命理。新增雙軌指令:軌道 A 七維度命理(每維度一段不能省)+ 軌道 B 危機處理動作(放結尾不取代命理)。用戶花錢買的是命理視角不是醫療回覆</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-photo-cross" style="margin-top:2px;width:16px;height:16px;accent-color:#a78bfa;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">📷 v63-3:照片資訊定位</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">照片描述/相貌特徵只能 ≤ story 15%,不能擠掉七維度空間。順序:先寫完七維度斷語 → 再用照片做 cross-check「八字日主乙木身弱+照片眼下偏暗 → 兩個訊號重複」。照片是補充訊號不是主訊號</span>
+            </span>
+          </label>
+
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="v63-layer3" style="margin-top:2px;width:16px;height:16px;accent-color:#a78bfa;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:600">🔚 v63-4:第三層四檢核點</span><br>
+              <span style="font-size:11px;color:var(--text-dim)">交稿前最終檢核:① 七系統各 80-200 字 ② 時運窗口段(具體月份/季度) ③ 窗口前動作(身體/關係/時間/資訊四維度至少一個) ④ 驗證信號(用戶可自行驗證的具體訊號)。任一答 No → 補完再交稿。明確列出禁用語:「保持正念」「相信過程」「順其自然」「這是宇宙安排」</span>
             </span>
           </label>
 
@@ -2655,13 +2723,130 @@ async function loadWeightStats() {
         });
       });
       html += '</tbody></table>';
+      // ★ v63:顯示演算法資訊
+      if (learned.algorithm) {
+        html += `<div style="margin-top:10px;padding:8px;border-radius:6px;background:rgba(108,123,255,.04);font-size:10px;color:var(--text-dim);line-height:1.5">
+          🔬 演算法:<code>${learned.algorithm}</code><br>
+          學習率:<code>${learned.learningRate || 'unknown'}</code>
+          (樣本越多越偏向實測,30 筆學 6%、200+ 筆學 40%。)
+        </div>`;
+      }
       mxDiv.innerHTML = html;
     } else {
       mxDiv.innerHTML = '<div style="padding:12px;color:var(--text-dim);text-align:center">尚無學習結果(使用硬編 fallback)。<br><span style="font-size:10px;opacity:.7">請等樣本累積到 30+ 後點「🧮 重新學習」。</span></div>';
     }
+
+    // ★ v63 新增:渲染不準原因分布(從各桶 reasonCounts 加總)
+    try {
+      const reasonAgg = { answer_off: 0, too_vague: 0, conflict: 0, prediction_failed: 0, other: 0 };
+      let totalNeg = 0;
+      Object.values(buckets).forEach(b => {
+        if (b.reasonCounts && typeof b.reasonCounts === 'object') {
+          Object.keys(reasonAgg).forEach(k => {
+            reasonAgg[k] += (b.reasonCounts[k] || 0);
+            totalNeg += (b.reasonCounts[k] || 0);
+          });
+        }
+      });
+      const reasonDiv = document.getElementById('wt-reason-counts');
+      if (totalNeg === 0) {
+        reasonDiv.innerHTML = '<span style="color:var(--text-dim)">尚無「不準」回饋資料</span>';
+      } else {
+        const labels = {
+          answer_off: { zh: '答非所問', icon: '🎯', color: '#ef4444', hint: '危機題或字面指令未生效' },
+          too_vague: { zh: '太籠統', icon: '☁️', color: '#fbbf24', hint: '需強化第三層收束(V62B/V63 Layer3)' },
+          conflict: { zh: '跟認知不合', icon: '⚡', color: '#f87171', hint: '盤面解讀錯誤,需檢查 dim 資料' },
+          prediction_failed: { zh: '預測沒應驗', icon: '⏰', color: '#a78bfa', hint: '時間判斷錯誤,需強化梅花應期/Dasha' },
+          other: { zh: '其他', icon: '❓', color: 'var(--text-dim)', hint: '未分類,看 admin/feedback 原文' }
+        };
+        let html = '<div style="display:flex;flex-direction:column;gap:6px">';
+        Object.keys(labels).forEach(k => {
+          const cnt = reasonAgg[k];
+          const pct = totalNeg > 0 ? Math.round((cnt / totalNeg) * 100) : 0;
+          const lbl = labels[k];
+          html += `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.02)">
+            <span style="min-width:24px">${lbl.icon}</span>
+            <span style="min-width:90px;color:${lbl.color};font-weight:600">${lbl.zh}</span>
+            <div style="flex:1;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${lbl.color};transition:width .3s"></div>
+            </div>
+            <span style="min-width:60px;text-align:right;color:${lbl.color};font-weight:600">${cnt} 筆 (${pct}%)</span>
+          </div>
+          <div style="margin-left:34px;font-size:10px;color:var(--text-dim);opacity:.7;margin-top:-2px">→ ${lbl.hint}</div>`;
+        });
+        html += `</div><div style="margin-top:10px;font-size:11px;color:var(--text-dim)">共 ${totalNeg} 筆不準回饋</div>`;
+        reasonDiv.innerHTML = html;
+      }
+    } catch(_e) {
+      console.warn('[reason render]', _e);
+    }
+
+    // ★ v63 新增:七維度實際吃滿率(從 admin/feedback 拉所有 fb 掃 aiStory)
+    try {
+      loadCoverageStats();
+    } catch(_e) {}
   } catch(e) {
     document.getElementById('wt-empty').style.display = 'block';
     document.getElementById('wt-empty').innerHTML = '載入失敗:' + (e.message || '網路錯誤');
+  }
+}
+
+// ★ v63 新增:七維度吃滿率檢測(掃 fb.aiStory 用關鍵詞)
+async function loadCoverageStats() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/feedback?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    const fbs = data.feedbacks || [];
+    // 只看七維度模式 + 有 aiStory 的
+    const sevenFbs = fbs.filter(f => (f.tool === 'full' || f.tool === 'direct' || !f.tool) && f.aiStory);
+    const div = document.getElementById('wt-coverage');
+    if (sevenFbs.length === 0) {
+      div.innerHTML = '<span style="color:var(--text-dim)">尚無七維度 feedback 樣本(等用戶送 fb 後再看)</span>';
+      return;
+    }
+    // 七系統檢測關鍵詞(只要任一命中就算「有寫到」)
+    const detectors = {
+      bazi:    { zh: '八字', kw: ['八字', '日主', '十神', '正官', '七殺', '正財', '偏財', '食神', '傷官', '比肩', '劫財', '正印', '偏印', '日支', '日柱', '時柱', '月柱', '年柱', '身強', '身弱', '喜用神'] },
+      ziwei:   { zh: '紫微', kw: ['紫微', '命宮', '夫妻宮', '財帛宮', '官祿宮', '田宅宮', '化祿', '化權', '化科', '化忌', '四化', '飛星', '自化', '來因宮', '紫微星', '天府', '太陽', '太陰', '大限', '紫府'] },
+      meihua:  { zh: '梅花', kw: ['梅花', '體用', '本卦', '互卦', '變卦', '動爻', '卦氣', '應期', '生剋', '比和', '體卦', '用卦'] },
+      tarot:   { zh: '塔羅', kw: ['塔羅', '聖杯', '寶劍', '權杖', '錢幣', '金幣', '星幣', '愚人', '魔術師', '女祭司', '皇帝', '戀人', '戰車', '正義', '隱者', '命運', '力量', '吊人', '死神', '節制', '惡魔', '高塔', '星星', '月亮', '太陽', '審判', '世界', '逆位', '正位', '凱爾特', 'Kether', 'Tiphereth', 'Yesod', 'Geburah', 'Malkuth', 'Chesed', 'Netzach', 'Hod'] },
+      natal:   { zh: '西占', kw: ['西占', '西洋占星', '上升', '太陽星座', '月亮星座', '相位', '合相', '對分', '三分相', '四分相', '宮位', '一宮', '二宮', '三宮', '四宮', '五宮', '六宮', '七宮', '八宮', '九宮', '十宮', '十一宮', '十二宮', 'transit', 'Transit', '流運', '土星', '木星', '冥王', '海王', '天王', '凱龍', 'Saturn', 'Pluto', 'Jupiter'] },
+      jyotish: { zh: '吠陀', kw: ['吠陀', 'Dasha', 'dasha', '月宿', 'Nakshatra', 'nakshatra', 'Yoga', 'yoga', 'Lagna', 'lagna', 'Rahu', 'Ketu', 'Mahadasha', 'Antardasha', '行運', 'Parashara'] },
+      name:    { zh: '姓名', kw: ['姓名學', '三才', '五格', '天格', '人格', '地格', '外格', '總格', '生肖派', '筆畫', '康熙', '熊崎', '名字'] }
+    };
+    const dimCount = {};
+    Object.keys(detectors).forEach(d => { dimCount[d] = 0; });
+    // 掃每筆 fb 的 aiStory
+    sevenFbs.forEach(fb => {
+      const story = String(fb.aiStory || '');
+      Object.keys(detectors).forEach(d => {
+        const hit = detectors[d].kw.some(kw => story.indexOf(kw) >= 0);
+        if (hit) dimCount[d]++;
+      });
+    });
+    // 渲染
+    let html = '<div style="display:flex;flex-direction:column;gap:6px">';
+    Object.keys(detectors).forEach(d => {
+      const cnt = dimCount[d];
+      const pct = sevenFbs.length > 0 ? Math.round((cnt / sevenFbs.length) * 100) : 0;
+      const color = pct >= 80 ? '#22c55e' : pct >= 50 ? '#fbbf24' : '#ef4444';
+      const flag = pct >= 80 ? '✓' : pct >= 50 ? '⚠️' : '🚨';
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.02)">
+        <span style="min-width:24px">${flag}</span>
+        <span style="min-width:60px;color:${color};font-weight:600">${detectors[d].zh}</span>
+        <div style="flex:1;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${color};transition:width .3s"></div>
+        </div>
+        <span style="min-width:80px;text-align:right;color:${color};font-weight:600">${cnt}/${sevenFbs.length} (${pct}%)</span>
+      </div>`;
+    });
+    html += `</div><div style="margin-top:10px;font-size:11px;color:var(--text-dim)">
+      共掃描 ${sevenFbs.length} 筆七維度 feedback。
+      <strong style="color:#ef4444">紅色 (< 50%) 的系統 → V63_SEVEN_LITERAL 沒有強制夠力,Opus 在偷懶。</strong>
+    </div>`;
+    document.getElementById('wt-coverage').innerHTML = html;
+  } catch(e) {
+    document.getElementById('wt-coverage').innerHTML = '<span style="color:#ef4444">載入失敗:' + (e.message || '網路錯誤') + '</span>';
   }
 }
 
@@ -4534,7 +4719,12 @@ let _v62Defaults = {
   // Group F (v62b)
   tarotForceKey: true,
   ootkForceEntry: true,
-  sevenActionLayer: true
+  sevenActionLayer: true,
+  // ★ Group H (v63):七維度深度修正
+  v63SevenLiteral: true,
+  v63CrisisDualTrack: true,
+  v63PhotoAsCrosscheck: true,
+  v63Layer3Recency: true
   // v63E 升級:7 個 OOTK config key (ootkOrthodoxBookT / ootkCountingStory /
   //   ootkPairingStory / ootkDignitiesMathers / ootkFiveIndependent /
   //   ootkAbandonRule / ootkPileElementSemantic) 已從前端設定移除——
@@ -4558,7 +4748,12 @@ const _V62_KEY_MAP = {
   // v62b 第三層強制收束
   'v62b-tarot-force': 'tarotForceKey',
   'v62b-ootk-force': 'ootkForceEntry',
-  'v62b-seven-action': 'sevenActionLayer'
+  'v62b-seven-action': 'sevenActionLayer',
+  // ★ v63 七維度深度修正
+  'v63-seven-literal': 'v63SevenLiteral',
+  'v63-crisis-dual': 'v63CrisisDualTrack',
+  'v63-photo-cross': 'v63PhotoAsCrosscheck',
+  'v63-layer3': 'v63Layer3Recency'
   // v63E 升級:7 個 v63 OOTK 開關全部移除——
   // 正統化已寫死於程式(資料層 + Prompt 層 + 動畫 + 前端整合),
   // 不再經由 admin checkbox 控制。後台僅顯示「v63E 永遠正統」鎖定標示。
@@ -4615,7 +4810,11 @@ function _v62BuildShortStatus() {
     'v62-tarot-key': '塔鑰',
     'v62b-tarot-force': '塔強',
     'v62b-ootk-force': '鑰強',
-    'v62b-seven-action': '七動'
+    'v62b-seven-action': '七動',
+    'v63-seven-literal': '七字面',
+    'v63-crisis-dual': '危機雙軌',
+    'v63-photo-cross': '照片限',
+    'v63-layer3': '層三檢'
     // v63E:7 個 OOTK 開關已寫死於程式,從短代碼中移除
   };
   const on = [];
