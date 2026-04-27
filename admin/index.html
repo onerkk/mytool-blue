@@ -1584,6 +1584,21 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </span>
           </label>
 
+          <!-- ★ v63.2:Sonnet/Haiku 七維度服從度強化 -->
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-radius:8px;border:2px solid #ef4444;background:rgba(239,68,68,0.05);cursor:pointer;margin-top:6px">
+            <input type="checkbox" id="v63-checklist" style="margin-top:2px;width:16px;height:16px;accent-color:#ef4444;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:700;color:#ef4444">🚨 v63.2:七維度逐項打勾檢核(Sonnet/Haiku 必開)</span><br>
+              <span style="font-size:11px;color:var(--text-dim);line-height:1.6">
+                <strong style="color:#ef4444">2026-04-27 實測發現:</strong>v63 對 Opus 4.7 有效但 Sonnet 4.6 服從度不足,仍會默默跳過西占/吠陀/姓名 4 個系統。
+                v63.2 用「逐項打勾」格式 + 末端 recency 位置(prompt 最後一道把關)強迫 AI 自我檢核七系統都寫到。
+                短而強,跟 V62B_TAROT_FORCE_KEY 同手法。
+                <strong style="color:#ef4444">三個模型(Opus/Sonnet/Haiku)都建議開啟。</strong>
+                信心過低要跳過的系統也要明寫「為什麼跳過」,不能默默消失。
+              </span>
+            </span>
+          </label>
+
           <!-- ═══════════════════════════════════════════════════════════ -->
           <!-- Group G (v63E)：OOTK 正統 Book T 模式 — 永遠開啟,寫死於程式 -->
           <!-- ═══════════════════════════════════════════════════════════ -->
@@ -2808,14 +2823,22 @@ async function loadWeightStats() {
   }
 }
 
-// ★ v63 新增:七維度吃滿率檢測(掃 fb.aiStory 用關鍵詞)
+// ★ v63 新增:七維度吃滿率檢測(掃 fb 所有 AI 文字欄位用關鍵詞)
+// v63.2 修正:之前只掃 aiStory,但七維度回傳分散在 story / closing / directAnswer / cards / layers
+//   會造成偽陰性(系統明明有寫,但因內容在 directAnswer 裡而判沒寫)
 async function loadCoverageStats() {
   try {
     const r = await fetch(`${WORKER_URL}/admin/feedback?token=${encodeURIComponent(adminToken)}`);
     const data = await r.json();
     const fbs = data.feedbacks || [];
-    // 只看七維度模式 + 有 aiStory 的
-    const sevenFbs = fbs.filter(f => (f.tool === 'full' || f.tool === 'direct' || !f.tool) && f.aiStory);
+    // ★ v63.2:過濾條件改成「七維度模式 + 任一 AI 文字欄位有內容」
+    //   不再強制 aiStory 必填,因為 sonnet/opus 在不同情境會把主要內容塞到 directAnswer
+    const sevenFbs = fbs.filter(f => {
+      const isSeven = (f.tool === 'full' || f.tool === 'direct' || !f.tool);
+      if (!isSeven) return false;
+      const hasAnyText = f.aiStory || f.aiDirectAnswer || f.aiClosing || f.cards;
+      return !!hasAnyText;
+    });
     const div = document.getElementById('wt-coverage');
     if (sevenFbs.length === 0) {
       div.innerHTML = '<span style="color:var(--text-dim)">尚無七維度 feedback 樣本(等用戶送 fb 後再看)</span>';
@@ -2833,11 +2856,18 @@ async function loadCoverageStats() {
     };
     const dimCount = {};
     Object.keys(detectors).forEach(d => { dimCount[d] = 0; });
-    // 掃每筆 fb 的 aiStory
+    // ★ v63.2:把 fb 所有 AI 文字欄位串起來掃,避免偽陰性
     sevenFbs.forEach(fb => {
-      const story = String(fb.aiStory || '');
+      // 串起所有可能的 AI 文字位置
+      const fullText = [
+        fb.aiStory || '',
+        fb.aiDirectAnswer || '',
+        fb.aiClosing || '',
+        fb.aiYesNo || '',
+        fb.cards || ''  // layers 內容會被攤平存到 cards 欄位
+      ].join(' \n ');
       Object.keys(detectors).forEach(d => {
-        const hit = detectors[d].kw.some(kw => story.indexOf(kw) >= 0);
+        const hit = detectors[d].kw.some(kw => fullText.indexOf(kw) >= 0);
         if (hit) dimCount[d]++;
       });
     });
@@ -4801,7 +4831,9 @@ let _v62Defaults = {
   v63SevenLiteral: true,
   v63CrisisDualTrack: true,
   v63PhotoAsCrosscheck: true,
-  v63Layer3Recency: true
+  v63Layer3Recency: true,
+  // v63.2 Sonnet/Haiku 強化
+  v63SevenChecklist: true
   // v63E 升級:7 個 OOTK config key (ootkOrthodoxBookT / ootkCountingStory /
   //   ootkPairingStory / ootkDignitiesMathers / ootkFiveIndependent /
   //   ootkAbandonRule / ootkPileElementSemantic) 已從前端設定移除——
@@ -4830,7 +4862,9 @@ const _V62_KEY_MAP = {
   'v63-seven-literal': 'v63SevenLiteral',
   'v63-crisis-dual': 'v63CrisisDualTrack',
   'v63-photo-cross': 'v63PhotoAsCrosscheck',
-  'v63-layer3': 'v63Layer3Recency'
+  'v63-layer3': 'v63Layer3Recency',
+  // v63.2 Sonnet/Haiku 強化
+  'v63-checklist': 'v63SevenChecklist'
   // v63E 升級:7 個 v63 OOTK 開關全部移除——
   // 正統化已寫死於程式(資料層 + Prompt 層 + 動畫 + 前端整合),
   // 不再經由 admin checkbox 控制。後台僅顯示「v63E 永遠正統」鎖定標示。
@@ -4891,7 +4925,8 @@ function _v62BuildShortStatus() {
     'v63-seven-literal': '七字面',
     'v63-crisis-dual': '危機雙軌',
     'v63-photo-cross': '照片限',
-    'v63-layer3': '層三檢'
+    'v63-layer3': '層三檢',
+    'v63-checklist': '七檢核'  // v63.2 Sonnet/Haiku 強化
     // v63E:7 個 OOTK 開關已寫死於程式,從短代碼中移除
   };
   const on = [];
