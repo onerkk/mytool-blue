@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 // 💰 靜月之光 — 綠界付費牆 v3 (payment-wall.js)
-// v60-hotfix7：定價對齊 worker.js v52（雙層會員 999/1999，單次 79/39，深度 169/79，會員加購 99/49）
+// v64.B:定價對齊 worker.js v64.B(雙層會員 999/1999;單次標準 30/60/70 塔羅/開鑰/七維;深度 60/120/140;會員加購無折扣同訪客價)
 // 載入位置：在 index.html 最底部（所有 JS 之後）
 // ═══════════════════════════════════════════════════════════════
 
@@ -17,10 +17,10 @@
     //   pricing-loader 失敗時這裡是最後保命
     return (window.JY_PRICES && typeof window.JY_PRICES === 'object') ? window.JY_PRICES : {
       SUB_STANDARD: 999, SUB_PREMIUM: 1999,
-      SINGLE_7D: 79, SINGLE_TAROT: 39, SINGLE_OOTK: 39,
-      FOLLOWUP: 29,
-      OPUS_7D: 169, OPUS_TAROT: 79, OPUS_OOTK: 79,
-      OPUS_7D_MEMBER: 99, OPUS_TAROT_MEMBER: 49, OPUS_OOTK_MEMBER: 49,
+      SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 60,
+      FOLLOWUP: 15,
+      OPUS_7D: 140, OPUS_TAROT: 60, OPUS_OOTK: 120,
+      OPUS_7D_MEMBER: 140, OPUS_TAROT_MEMBER: 60, OPUS_OOTK_MEMBER: 120,
       // 額度欄位（與 worker.js 第 44-52 行常數同步）
       TAROT_DAILY_STANDARD: 1, TAROT_DAILY_PREMIUM: 2,
       D7_MONTHLY_STANDARD: 2, D7_MONTHLY_PREMIUM: 5,
@@ -39,8 +39,8 @@
   // 舊程式碼用到的常數名重導向（保留給第 48 行後的付款流程邏輯讀）
   var PRICE_SUB = 999;                    // 初始值，下方事件觸發後更新
   var PRICE_SINGLE = 79;
-  var PRICE_OPUS = 169;
-  var PRICE_SINGLE_FOLLOWUP = 29;
+  var PRICE_OPUS = 140;  // v64.B 169→140
+  var PRICE_SINGLE_FOLLOWUP = 15;  // v64.B 29→15
   function _syncLegacyConsts() {
     var p = P();
     PRICE_SUB = p.SUB_STANDARD;
@@ -96,46 +96,11 @@
       '<div style="font-size:2.4rem;margin-bottom:.5rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
       '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.05rem;margin-bottom:.8rem;font-family:var(--f-display,serif)">靜月會員</h3>' +
 
-      // ─── 方案 A：標準會員 NT$999 ───
-      '<div style="border:1px solid rgba(212,175,55,.3);border-radius:12px;padding:.9rem .8rem;margin-bottom:.7rem;background:rgba(212,175,55,.04)">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">' +
-          '<span style="color:var(--c-gold-pale,#f5e6b8);font-weight:700;font-size:1rem">標準會員</span>' +
-          '<span style="color:var(--c-gold-pale,#f5e6b8);font-weight:700;font-size:1.1rem">NT$' + PRICE_SUB_STANDARD + '<span style="font-size:.65rem;opacity:.7">/月</span></span>' +
-        '</div>' +
-        '<div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.7;text-align:left">' +
-          '🃏 塔羅＋開鑰 <strong style="color:var(--c-gold)">各每日 ' + tarotDailyStandard + ' 次</strong><br>' +
-          '🌙 七維度交叉分析 <strong style="color:var(--c-gold)">每月 ' + d7MonthlyStandard + ' 次</strong><br>' +
-          '📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>' +
-          '💬 每次解讀含 <strong style="color:var(--c-gold)">1 次免費追問</strong><br>' +
-          '🔮 深度解析需另加購 <strong style="color:#a09880">（無會員優惠）</strong>' +
-        '</div>' +
-        '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription\')" style="margin-top:.6rem;width:100%;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#c9a84c);font-size:.85rem;font-weight:700;border:1px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">開通標準會員 NT$' + PRICE_SUB_STANDARD + '/月</button>' +
-      '</div>' +
-
-      // ─── 方案 B：高級會員 NT$1999（推薦）───
-      '<div style="border:1.5px solid rgba(192,132,252,.5);border-radius:12px;padding:.9rem .8rem;margin-bottom:.7rem;background:rgba(192,132,252,.06);position:relative">' +
-        '<span style="position:absolute;top:-.5rem;right:.6rem;background:#c084fc;color:#1a0a0a;font-size:.58rem;font-weight:700;padding:.1rem .45rem;border-radius:4px">推薦</span>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">' +
-          '<span style="color:#e9d5ff;font-weight:700;font-size:1rem">高級會員</span>' +
-          '<span style="color:#e9d5ff;font-weight:700;font-size:1.1rem">NT$' + PRICE_SUB_PREMIUM + '<span style="font-size:.65rem;opacity:.7">/月</span></span>' +
-        '</div>' +
-        '<div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.7;text-align:left">' +
-          '🃏 塔羅＋開鑰 <strong style="color:#c084fc">各每日 ' + tarotDailyPremium + ' 次</strong><br>' +
-          '🌙 七維度交叉分析 <strong style="color:#c084fc">每月 ' + d7MonthlyPremium + ' 次</strong><br>' +
-          '📷 面相＋手相＋水晶照片分析 <strong style="color:#c084fc">會員專屬</strong><br>' +
-          '💬 每次解讀含 <strong style="color:#c084fc">1 次免費追問</strong><br>' +
-          '🔮 深度解析 <strong style="color:#c084fc">每月 ' + opusMonthlyPremium + ' 次免費</strong><br>' +
-          '⚡ 額外深度加購享 <strong style="color:#c084fc">會員價 ' + opusPriceMember + '</strong>' +
-            '<span style="opacity:.6">（原 ' + opusPriceNonMember + '）</span>' +
-        '</div>' +
-        '<button onclick="_jyStartPayment(\'' + mode + '\',\'subscription_premium\')" style="margin-top:.6rem;width:100%;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(192,132,252,.22),rgba(192,132,252,.08));color:#e9d5ff;font-size:.85rem;font-weight:700;border:1px solid rgba(192,132,252,.5);cursor:pointer;font-family:inherit">開通高級會員 NT$' + PRICE_SUB_PREMIUM + '/月</button>' +
-      '</div>' +
-
-      // ─── 分隔線 ───
-      '<div style="display:flex;align-items:center;gap:.5rem;margin:.7rem 0 .5rem 0">' +
-        '<div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div>' +
-        '<span style="font-size:.65rem;color:var(--c-text-muted,#7a7060)">或單次購買</span>' +
-        '<div style="flex:1;height:1px;background:rgba(255,255,255,.1)"></div>' +
+      // ─── v64.B:會員制下架,只剩單次購買 ───
+      //   舊會員仍能用(後端邏輯保留),但前端不再顯示開通入口
+      //   訪客/到期會員看到的就是直接的單次購買區
+      '<div style="font-size:.74rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.6rem;padding:.6rem .8rem;border-radius:8px;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.12)">' +
+        '一份解讀,一杯咖啡的價格。' +
       '</div>' +
 
       // ─── 單次購買按鈕 ───
@@ -216,7 +181,7 @@
     var _detected = _normalizeMode(_detectCurrentTool());
     var _fromArg   = _normalizeMode(mode);
     mode = _detected || _fromArg || 'full';
-    type = type || 'subscription';
+    type = type || 'single';  // v64.B:會員制下架,預設改 single(訪客只能買單次)
     // v60-hotfix6：防連點
     if (_jyPaymentInFlight) {
       console.warn('[Payment] 已有付款建立中，忽略重複請求');
@@ -260,7 +225,7 @@
       if (payWin) {
         payWin.document.write(data.html);
         payWin.document.close();
-        // v62 修補：用動態價格表，不再寫死 49/69/29（避免 worker 改價後前端等待畫面顯示舊價）
+        // v64.B:用動態價格表(避免 worker 改價後前端等待畫面顯示舊價)
         var _payPrices = P();
         var _payTier = (typeof window._jyGetUserTier === 'function') ? window._jyGetUserTier() : null;
         // Opus 顯示價：高級會員走 _MEMBER 加購價，否則走標準單次價
@@ -948,7 +913,7 @@
       //   - 塔羅用 pickTool('tarot')，按鈕 id 仍是 btn-go（只有罕見的純塔羅 flow 才會改成 btn-tarot-go）
       //   - 開鑰用 pickTool('ootk')，按鈕 id 也是 btn-go
       //   - 第 583 行 btn.id === 'btn-go' 就把塔羅/開鑰全部誤判為 full
-      //   → 付費牆顯示「七維度單次 NT$79」而非「塔羅單次 NT$39」
+      //   → 付費牆顯示「七維度單次 NT$70」而非「塔羅單次 NT$30」(v64.B 改價)
       //   修法：先讀 ui.js 的 window._selectedTool（真理來源），再 fallback 到原判斷
       //   _selectedTool 值: 'tarot' | 'ootk' | 'full'（pickTool 時寫入）
 

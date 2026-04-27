@@ -12,22 +12,22 @@
   var _UI_PRICE_FALLBACK = {
     SUB_STANDARD: 999,        // 標準會員 / 月
     SUB_PREMIUM: 1999,        // 高級會員 / 月
-    SINGLE_7D: 79,            // 七維度 Sonnet 單次
-    SINGLE_TAROT: 39,         // 塔羅 Sonnet 單次
-    SINGLE_OOTK: 39,          // 開鑰 Sonnet 單次
-    FOLLOWUP: 29,             // 追問單次（Sonnet）
-    OPUS_7D: 169,             // 七維度 Opus 單次（非會員／標準會員）
-    OPUS_TAROT: 79,           // 塔羅 Opus 單次（非會員／標準會員）
-    OPUS_OOTK: 79,            // 開鑰 Opus 單次（非會員／標準會員）
-    OPUS_7D_MEMBER: 99,       // 七維度 Opus 單次（高級會員加購）
-    OPUS_TAROT_MEMBER: 49,    // 塔羅 Opus 單次（高級會員加購）
-    OPUS_OOTK_MEMBER: 49      // 開鑰 Opus 單次（高級會員加購）
+    SINGLE_7D: 70,            // 七維度 Sonnet 單次(標準) v64.B 79→70
+    SINGLE_TAROT: 30,         // 塔羅 Sonnet 單次(標準) v64.B 39→30
+    SINGLE_OOTK: 60,          // 開鑰 Sonnet 單次(標準) v64.B 39→60
+    FOLLOWUP: 15,             // 追問單次（Sonnet）v64.B 29→15
+    OPUS_7D: 140,             // 七維度 Opus 單次(深度) v64.B 169→140
+    OPUS_TAROT: 60,           // 塔羅 Opus 單次(深度) v64.B 79→60
+    OPUS_OOTK: 120,           // 開鑰 Opus 單次(深度) v64.B 79→120
+    OPUS_7D_MEMBER: 140,      // v64.B 會員加購無折扣同訪客價
+    OPUS_TAROT_MEMBER: 60,    // v64.B 會員加購無折扣同訪客價
+    OPUS_OOTK_MEMBER: 120     // v64.B 會員加購無折扣同訪客價
   };
   // 關鍵：fallback 在前，既有值在後 → 既有值優先（pricing-loader 抓到的最新值勝出）
   window.JY_PRICES = Object.assign({}, _UI_PRICE_FALLBACK, window.JY_PRICES || {});
   // ── tier helper：前端各處判斷「高級會員 vs 其他」的單一事實源 ──
   //   value: 'premium' | 'standard' | null
-  //   premium 才享 Opus 加購優惠價 (99/49)，其他收單次價 (169/79)
+  //   premium 才享 Opus 加購優惠價(v64.B 起會員加購無折扣統一新價)
   window._jyGetUserTier = function(){
     try {
       if (window._jyUserTier === 'premium' || window._jyUserTier === 'standard') return window._jyUserTier;
@@ -1100,7 +1100,7 @@ function submitWithTool() {
                 _pm.innerHTML = (typeof _buildPaywallHTML === 'function') ? _buildPaywallHTML('tarot_only') :
                   '<div style="background:#1a0a0a;border:1px solid rgba(201,168,76,.25);border-radius:16px;padding:2rem;text-align:center;max-width:320px">' +
                   '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">免費次數已用完</div>' +
-                  '<button onclick="_jyStartPayment(\'tarot_only\')" style="padding:.6rem 1.5rem;border-radius:10px;background:rgba(212,175,55,.1);color:var(--c-gold);border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit;font-weight:700">🌙 開通會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + ' 起</button>' +
+                  '<button onclick="_jyStartPayment(\'tarot_only\',\'single\')" style="padding:.6rem 1.5rem;border-radius:10px;background:rgba(212,175,55,.1);color:var(--c-gold);border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit;font-weight:700">🃏 塔羅單次 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + '</button>' +
                   '<br><button onclick="this.parentElement.parentElement.remove()" style="margin-top:.5rem;padding:.4rem 1rem;background:none;border:none;color:var(--c-text-muted);cursor:pointer;font-size:.75rem">明天再來</button></div>';
                 _pm.addEventListener('click', function(ev) { if (ev.target === _pm) _pm.remove(); });
                 document.body.appendChild(_pm);
@@ -2481,7 +2481,7 @@ function showFortuneResult(f){
           <a href="${prod?prod.shopee:'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.05));color:var(--c-gold);text-decoration:none;font-size:.8rem;font-weight:600;border:1px solid rgba(212,175,55,.25)"><i class="fas fa-gem"></i> 去蝦皮看看</a>
         </div>
       </div>
-      <p class="text-xs text-muted mt-md">免費體驗次數有限 ✨ 開通會員高頻使用</p>
+      <p class="text-xs text-muted mt-md">免費體驗次數有限 ✨ 用完可單次購買繼續</p>
     </div>`;
 
   // ── 【升級F】在結果後追加新維度資訊 ──
@@ -5415,9 +5415,9 @@ showAuraResult = function(){
         '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
         '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">免費次數已用完</h3>' +
         '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:.3rem">感謝你的體驗</p>' +
-        '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.2rem">此工具免費體驗已用完，開通會員即可大量使用所有功能</p>' +
+        '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.2rem">此工具免費體驗已用完,單次購買繼續使用</p>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-          '<button onclick="document.getElementById(\'jy-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🔮 開通會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + ' 起</button>' +
+          '<button onclick="document.getElementById(\'jy-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'single\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🌙 七維度單次 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + '</button>' +
           '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);text-decoration:none;font-size:.82rem;border:1px solid rgba(255,255,255,.08)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
           '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用了</button>' +
         '</div>' +
@@ -5515,7 +5515,7 @@ showAuraResult = function(){
         '<div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
         (isAdmin ?
           '<div class="jy-home-quota">👑 管理員・無限次</div>' :
-          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅・開鑰 各免費體驗 1 次・ <strong style="color:var(--c-gold)">標準會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + '／高級會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_PREMIUM) || 1999) + '</strong></div>'
+          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅・開鑰 各免費體驗 1 次・ <strong style="color:var(--c-gold)">塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 60) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + '</strong></div>'
         ) +
       '</div>' +
 
@@ -5582,7 +5582,7 @@ showAuraResult = function(){
       } else {
         // 免費用戶
         var _P = window.JY_PRICES || { SUB_STANDARD: 999 };
-        var _upsellText = '開通會員 NT$' + _P.SUB_STANDARD + ' 起';
+        var _upsellText = '單次購買 NT$' + _P.SINGLE_TAROT + ' 起';
         var fs = data.freeStatus;
         if (fs) {
           var parts = [];
@@ -5964,9 +5964,9 @@ async function submitTarotQuick() {
           modal.innerHTML = '<div style="background:var(--c-bg-card,#1a1208);border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:2rem 1.5rem;max-width:320px;text-align:center">' +
             '<div style="font-size:2rem;margin-bottom:.6rem">🃏</div>' +
             '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">此工具免費體驗已用完</div>' +
-            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">三套工具各可免費體驗 1 次<br>開通會員可大量使用（標準 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + '／高級 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_PREMIUM) || 1999) + '）</div>' +
+            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">三套工具各可免費體驗 1 次<br>用完可單次購買繼續(塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 60) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + ')</div>' +
             '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 開通會員 NT$' + ((window.JY_PRICES && window.JY_PRICES.SUB_STANDARD) || 999) + ' 起</button>' +
+              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 塔羅單次 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + '</button>' +
               '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">明天再來</button>' +
             '</div>' +
           '</div>';
