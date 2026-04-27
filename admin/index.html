@@ -191,6 +191,8 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <div class="stat-card"><div class="stat-num" id="s-total">-</div><div class="stat-label">📊 總使用次數</div></div>
         <div class="stat-card"><div class="stat-num" id="s-today">-</div><div class="stat-label">📅 今日使用</div></div>
         <div class="stat-card"><div class="stat-num" id="s-paid">-</div><div class="stat-label">💰 付費次數</div></div>
+        <div class="stat-card" style="background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.2)"><div class="stat-num" id="s-premium" style="color:#c084fc">-</div><div class="stat-label">💎 高級會員</div></div>
+        <div class="stat-card" style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2)"><div class="stat-num" id="s-standard" style="color:#60a5fa">-</div><div class="stat-label">⊙ 標準會員</div></div>
         <div class="stat-card"><div class="stat-num" id="s-full">-</div><div class="stat-label">🔮 七維度</div></div>
         <div class="stat-card"><div class="stat-num" id="s-tarot">-</div><div class="stat-label">🃏 塔羅快讀</div></div>
         <div class="stat-card"><div class="stat-num" id="s-ootk">-</div><div class="stat-label">🗝️ 開鑰之法</div></div>
@@ -2014,6 +2016,9 @@ async function loadDashboard() {
     document.getElementById('s-total').textContent = list.length;
     document.getElementById('s-today').textContent = todayItems.length;
     document.getElementById('s-paid').textContent = list.filter(n => n.paid).length;
+    // ★ 新增:高級會員/標準會員分項統計
+    document.getElementById('s-premium').textContent = list.filter(n => n.tier === 'premium').length;
+    document.getElementById('s-standard').textContent = list.filter(n => n.tier === 'standard').length;
     document.getElementById('s-full').textContent = list.filter(n => n.mode === 'full').length;
     document.getElementById('s-tarot').textContent = list.filter(n => n.mode === 'tarot').length;
     document.getElementById('s-ootk').textContent = list.filter(n => n.mode === 'ootk').length;
@@ -2057,7 +2062,19 @@ function renderNotifications(list) {
       ${n.result && n.result.story ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">💬 完整 story（${n.result.story.length}字）</summary><div style="margin-top:4px;font-size:11px;color:var(--text);border-left:2px solid var(--accent);padding-left:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(n.result.story)}</div></details>` : (n.story ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">💬 story（舊格式）</summary><div style="margin-top:4px;font-size:11px;color:var(--text);border-left:2px solid var(--accent);padding-left:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(n.story)}</div></details>` : '')}
       ${n.result && n.result.layers ? `<div style="margin-top:4px;font-size:10px;color:var(--text-dim)">${Object.entries(n.result.layers).map(([k,v]) => k + '：' + esc(v)).join(' ｜ ')}</div>` : ''}
       <div class="notify-badges">
-        ${n.paid ? '<span class="badge badge-paid">💰 付費</span>' : '<span class="badge">免費</span>'}
+        ${(function(){
+          // ★ tier 顯示:展開「💰 付費」變成更精細的等級標記
+          //   premium = 高級會員(紫色) / standard = 標準會員(藍色) / single = 單次付費(金色) / free = 免費(灰)
+          var tier = n.tier || (n.paid ? 'single' : 'free');
+          var tierLabels = {
+            premium:  '<span class="badge" style="background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3)">💎 高級會員</span>',
+            standard: '<span class="badge" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3)">⊙ 標準會員</span>',
+            single:   '<span class="badge badge-paid">💰 單次付費</span>',
+            admin:    '<span class="badge" style="background:rgba(239,68,68,.1);color:#f87171">⚡ Admin</span>',
+            free:     '<span class="badge">免費</span>'
+          };
+          return tierLabels[tier] || tierLabels.free;
+        })()}
         ${n.followUp ? '<span class="badge">追問</span>' : ''}
         ${n.result && n.result.crystalRec ? '<span class="badge" style="background:rgba(147,51,234,.1);color:#c084fc">💎 ' + esc(n.result.crystalRec) + '</span>' : ''}
         ${n.usage ? (function(){
