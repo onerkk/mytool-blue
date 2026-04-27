@@ -1085,7 +1085,7 @@ enhanceTarot = function(tarot) {
             var sfBtn2 = document.createElement('button');
             sfBtn2.className = 'jy-shuffle-btn';
             sfBtn2.id = 'jy-shuffle-btn';
-            sfBtn2.innerHTML = '🌀 洗牌・開始選牌';
+            sfBtn2.innerHTML = '🌙 靜月為你洗牌';
             shuffleWrap2.insertBefore(sfBtn2, shuffleWrap2.firstChild);
             var autoDrawBtn2 = document.querySelector('#step-2 .btn-outline');
             if (autoDrawBtn2) autoDrawBtn2.style.display = 'none';
@@ -1094,29 +1094,21 @@ enhanceTarot = function(tarot) {
             sfBtn2.addEventListener('click', function() {
               if (window._deckIsShuffled) return;
               sfBtn2.style.pointerEvents = 'none';
-              sfBtn2.innerHTML = '🌀 洗牌中⋯';
-              var allCards2 = deckWrap.querySelectorAll('.tarot-deck-card');
-              var delay2 = 0;
-              allCards2.forEach(function(card) {
-                setTimeout(function() {
-                  card.classList.add('shuffling');
-                  setTimeout(function() {
-                    var face = card.querySelector('.tdc-face');
-                    var back = card.querySelector('.tdc-back');
-                    if (face) face.style.display = 'none';
-                    if (back) back.style.transform = 'none';
-                  }, 230);
-                }, delay2);
-                delay2 += 18;
-              });
-              setTimeout(function() {
+              sfBtn2.style.opacity = '0';
+              // ═══════════════════════════════════════════════════════════
+              // v64.B 華麗三幕式洗牌動畫(對齊七維儀式設計)
+              //   第 1-2 次:完整 2.8 秒(收攏 0.8 + 洗牌 1.2 + 散開 0.8)
+              //   第 3 次起:compact 模式 0.8 秒(只播散開)
+              //   全程「跳過 →」按鈕可隨時略過
+              // ═══════════════════════════════════════════════════════════
+              _v64bTarotShuffleRitual(deckWrap, function() {
                 window._deckIsShuffled = true;
                 sfBtn2.remove();
                 if (autoDrawBtn2) autoDrawBtn2.style.display = '';
                 if (pickHint2) {
-                  pickHint2.innerHTML = '觸碰任一張你有感覺的牌，選出 <span id="t-target-count">' + targetCount + '</span> 張';
+                  pickHint2.innerHTML = '觸碰任一張你有感覺的牌,選出 <span id="t-target-count">' + targetCount + '</span> 張';
                 }
-              }, delay2 + 600);
+              });
             });
           }
         }
@@ -2554,26 +2546,14 @@ enhanceTarot = function(tarot) {
       op1Retry.expectedPiles = expectedPiles;
 
       if (expectedPiles.indexOf(op1Retry.activePile) < 0) {
-        // ★ v64.B:不觸發 abandon,改為「能量場域訊號」(揭示真實場域,非拒答)
-        op1Retry.abandonTriggered = false; // v64.B 永遠 false,不再嚇用戶
-        op1Retry.fieldSignal = true;       // 新旗標:能量場域訊號
+        // 二次仍錯堆 → abandon 警示(Mathers 原則)
+        op1Retry.abandonTriggered = true;
         var pileZh = { fire: 'Yod 火堆', water: 'Heh 水堆', air: 'Vau 風堆', earth: 'Heh-final 土堆' };
-        var pileMeaningZh = {
-          fire: '工作/事業/行動場域',
-          water: '感情/愉悅/情感連結場域',
-          air: '溝通/思考/衝突場域',
-          earth: '物質/金錢/實務場域'
-        };
         var expectedZh = expectedPiles.map(function(p) { return pileZh[p] || p; }).join(' / ');
-        op1Retry.fieldSignalReason =
-          'Op1 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
-          ')落於 ' + (pileZh[op1Retry.activePile] || op1Retry.activePile) +
-          '(' + (pileMeaningZh[op1Retry.activePile] || '?') +
-          '),非問題「' + getQTypeZh(qType) + '」的典型場域(' + expectedZh +
-          ')。這是「能量場域訊號」——揭示這件事真正的場域可能在 ' +
-          (pileMeaningZh[op1Retry.activePile] || '?') + ',AI 會把這個觀察融入解讀,給你具體答案。';
-        // 保留舊欄位讓 AI 還能看到原始訊號(但 UI 不再以紅框呈現)
-        op1Retry.abandonReason = op1Retry.fieldSignalReason;
+        op1Retry.abandonReason =
+          '依 Mathers Book T,Op1 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
+          ')仍落於 ' + (pileZh[op1Retry.activePile] || op1Retry.activePile) +
+          '(非問題「' + getQTypeZh(qType) + '」的合適元素堆 ' + expectedZh + ')→ 此次盤面在告訴你:你心裡真正關心的議題,可能不是你問的這件事。應 abandon 或重新檢視問題。';
         op1Retry.firstAttemptPile = results.op1.activePile;
       } else {
         op1Retry.abandonTriggered = false;
@@ -2602,18 +2582,12 @@ enhanceTarot = function(tarot) {
       op2Retry.expectedHouses = expectedHouses;
 
       if (!isSigInExpectedPosition(op2Retry.activeHouse, expectedHouses)) {
-        // ★ v64.B:不觸發 abandon,改為「能量場域訊號」(揭示真實生活領域,非拒答)
-        op2Retry.abandonTriggered = false; // v64.B 永遠 false
-        op2Retry.fieldSignal = true;
-        var houseZhMap = ['','自我','財帛','兄弟/溝通','田宅/家庭','子女/戀愛','奴僕/工作','夫妻/合夥','疾厄/性','遷移/學問','官祿/事業','福德/朋友','玄秘/隱藏'];
-        var houseMeaning = houseZhMap[op2Retry.activeHouse] || '?';
-        op2Retry.fieldSignalReason =
-          'Op2 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
-          ')落第 ' + op2Retry.activeHouse + ' 宮(' + houseMeaning +
-          '),非問題「' + getQTypeZh(qType) + '」的典型宮位(' + expectedHouses.join('/') +
-          ' 宮)。這是「真實生活領域揭示」——這件事真正在你生命中的場域是「' +
-          houseMeaning + '」。AI 會用該宮位的傳統意義回答你的問題,給你具體答案,不會拒答。';
-        op2Retry.abandonReason = op2Retry.fieldSignalReason;
+        // Mathers 原文:「if it again fails, the divination should be abandoned」
+        op2Retry.abandonTriggered = true;
+        op2Retry.abandonReason =
+          '依 Mathers Book T 原文,Op2 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
+          ')仍落於第 ' + op2Retry.activeHouse + ' 宮(非問題「' +
+          getQTypeZh(qType) + '」的合適宮位 ' + expectedHouses.join('/') + ' 宮)→ 此次 Op2 應 abandon。';
         op2Retry.firstAttemptHouse = results.op2.activeHouse;
       } else {
         op2Retry.abandonTriggered = false;
@@ -2876,13 +2850,13 @@ enhanceTarot = function(tarot) {
       };
       _abandonObservations.push(
         'Op1 Sig 落於 ' + (pileTypeZh[results.op1.activePile] || results.op1.activePile) +
-        ' —— v64.B:若與用戶問題大類不對應,用該堆的傳統意義揭示真實場域(不可寫 abandon/重抽)'
+        ' —— 若與用戶問題大類完全不符,依 Mathers 原則應 abandon'
       );
     }
     if (results.op2 && results.op2.activeHouse) {
       _abandonObservations.push(
         'Op2 Sig 落於第 ' + results.op2.activeHouse + ' 宮 —— ' +
-        'v64.B:用宮位傳統意義揭示真實生活領域,給用戶具體答案(不可寫 abandon/重抽)'
+        '解讀者依問題性質判斷是否合理;不合理且二度錯位才 abandon(Mathers Book T)'
       );
     }
 
@@ -3587,24 +3561,26 @@ enhanceTarot = function(tarot) {
       // 資料層觸發的 abandon/弱訊號警示必須讓用戶看見並做選擇
       var abandonBanner = '';
       if (opData) {
-        // v64.B:fieldSignal 旗標(取代 abandonTriggered)→ 藍色「能量場域訊號」卡
-        // 同時相容 abandonTriggered 舊資料(若還有舊資料殘留)→ 也走場域訊號顯示
-        if ((opData.fieldSignal || opData.abandonTriggered) && (opData.fieldSignalReason || opData.abandonReason)) {
-          // 藍色「能量場域訊號」卡(揭示真實場域,非警示拒答)
-          var signalText = opData.fieldSignalReason || opData.abandonReason;
+        if (opData.abandonTriggered && opData.abandonReason) {
+          // Op1 / Op2 abandon — 醒目紅色警示卡
           abandonBanner =
-            '<div style="margin:1rem 0;padding:1.1rem;border-radius:12px;' +
-            'border:1.5px solid rgba(96,165,250,.55);background:linear-gradient(135deg,rgba(96,165,250,.10),rgba(96,165,250,.03));' +
-            'box-shadow:0 0 16px rgba(96,165,250,.18),inset 0 0 8px rgba(96,165,250,.06);">' +
-            '<div style="font-size:.92rem;font-weight:700;color:#93c5fd;margin-bottom:.55rem;letter-spacing:.04em">' +
-              '🔮 能量場域訊號' +
+            '<div style="margin:1rem 0;padding:1.2rem;border-radius:12px;' +
+            'border:2px solid #ef4444;background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(239,68,68,.06));' +
+            'box-shadow:0 0 24px rgba(239,68,68,.3),inset 0 0 12px rgba(239,68,68,.1);">' +
+            '<div style="font-size:.95rem;font-weight:700;color:#fca5a5;margin-bottom:.6rem;letter-spacing:.05em">' +
+              '🚨 Mathers Book T ABANDON 警示' +
             '</div>' +
-            '<div style="font-size:.78rem;color:#bfdbfe;line-height:1.7;margin-bottom:.7rem">' +
-              _esc(signalText) +
+            '<div style="font-size:.78rem;color:#fecaca;line-height:1.7;margin-bottom:.8rem">' +
+              _esc(opData.abandonReason) +
             '</div>' +
-            '<div style="font-size:.7rem;color:rgba(191,219,254,.78);line-height:1.65;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.22);border-left:2px solid rgba(212,175,55,.6)">' +
-              '★ 這是 v64.B 場域揭示機制:Sig 落點不對應典型位置 = 揭示「真實場域」,不是拒答。' +
-              'AI 會用該位置的傳統意義具體回答你的問題,給每個子題明確答案 + 信心度標籤。' +
+            '<div style="font-size:.7rem;color:rgba(254,202,202,.8);line-height:1.7;margin-bottom:.9rem;font-style:italic">' +
+              '依 Mathers Book T 原文,此 Op 經二次重洗 Sig 仍非合適位置——盤面在告訴你:' +
+              '你心裡真正關心的議題,可能不是你問的這件事。<br>' +
+              'Counting/Pairing 解讀仍可繼續(作為弱訊號參考),但 AI 會在解讀中標明此警示。' +
+            '</div>' +
+            '<div style="font-size:.7rem;color:rgba(255,200,150,.85);line-height:1.6;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.25);border-left:2px solid #fbbf24">' +
+              '★ Mathers 規範:你可以選擇「繼續讀(承認盤面更深訊息)」或「重抽整盤」。' +
+              '想重抽請關閉此頁回首頁重新開鑰,本次解讀預設為「繼續讀」。' +
             '</div>' +
             '</div>';
         } else if (opData.weakSignalWarning && opData.weakSignalReason) {
@@ -5002,15 +4978,14 @@ enhanceTarot = function(tarot) {
               var _isMember = parseInt(localStorage.getItem('_jy_sub_expires')||'0') > Date.now();
               var _P = window.JY_PRICES || {};
               var _single = _P.OPUS_OOTK || 79;
-              var _memberAddon = _P.OPUS_OOTK_MEMBER || 120;
+              var _memberAddon = _P.OPUS_OOTK_MEMBER || 49;
               if (_isPrem) {
                 return '💎 高級會員・每月免費 1 次 ・ 加購單次 NT$' + _memberAddon;
               }
               if (_isMember) {
-                return '👑 標準會員・單次加購 NT$' + _single;
+                return '👑 標準會員・單次 NT$' + _single + '（升級高級享每月免費 1 次）';
               }
-              // v64.B:非會員只顯示單次價(會員入口下架)
-              return '單次 NT$' + _single + ' ・ 深度解析 NT$' + (_P.OPUS_OOTK || 120);
+              return '單次 NT$' + _single + ' ・ 會員 NT$' + (_P.SUB_STANDARD||999) + '／NT$' + (_P.SUB_PREMIUM||1999);
             })()) +
           '</div>' +
         '</div>';
@@ -5260,4 +5235,212 @@ enhanceTarot = function(tarot) {
   window._ootkTriggerAI = _triggerOOTKAI;
 
   console.log('[OOTK-UI] Opening of the Key 前端 UI 已載入');
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// v64.B 塔羅華麗洗牌動畫 — 三幕式儀式(對齊七維儀式設計)
+// 設計:
+//   第 1-2 次:完整 2.8 秒(收攏 0.8 + 洗牌 1.2 + 散開 0.8)
+//   第 3 次起:compact 模式 0.8 秒(只播散開)
+//   全程「跳過 →」按鈕可隨時略過
+//   localStorage key:_jy_tarot_shuffle_count
+// ═══════════════════════════════════════════════════════════════
+(function(){
+'use strict';
+
+function _ensureV64bShuffleStyles() {
+  if (document.getElementById('jy-v64b-shuffle-fx')) return;
+  var s = document.createElement('style');
+  s.id = 'jy-v64b-shuffle-fx';
+  s.textContent =
+    // 全屏儀式 overlay
+    '.jy-tshuffle-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000;opacity:0;transition:opacity .5s ease;font-family:inherit}' +
+    '.jy-tshuffle-overlay.show{opacity:1}' +
+    '.jy-tshuffle-overlay.fade-out{opacity:0;pointer-events:none}' +
+    // 背景圖
+    '.jy-tshuffle-bg{position:absolute;inset:0;background:url("/img/tarot-shuffle-bg.jpg") center/cover no-repeat,radial-gradient(ellipse at center,#0a0d18 0%,#000 70%);opacity:0;transition:opacity 1.2s ease}' +
+    '.jy-tshuffle-overlay.show-bg .jy-tshuffle-bg{opacity:.92}' +
+    // 月光符號(focal point)
+    '.jy-tshuffle-glyph{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);width:min(280px,72vw);height:auto;opacity:0;transition:opacity 1s ease,transform 1s cubic-bezier(.4,.1,.3,1);pointer-events:none;filter:drop-shadow(0 0 32px rgba(253,230,138,.5))}' +
+    '.jy-tshuffle-overlay.show-glyph .jy-tshuffle-glyph{opacity:.95;transform:translate(-50%,-50%) scale(1)}' +
+    '.jy-tshuffle-overlay.show-glyph .jy-tshuffle-glyph img{width:100%;height:auto;animation:jyTshuffleGlyphPulse 2.4s ease-in-out infinite}' +
+    '@keyframes jyTshuffleGlyphPulse{0%,100%{filter:brightness(1) drop-shadow(0 0 16px rgba(253,230,138,.5));transform:scale(1) rotate(0deg)}50%{filter:brightness(1.2) drop-shadow(0 0 32px rgba(253,230,138,.85));transform:scale(1.05) rotate(180deg)}}' +
+    // 牌堆中央(模擬 78 張疊起來)
+    '.jy-tshuffle-deck{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:180px;opacity:0;transition:opacity .5s ease;pointer-events:none}' +
+    '.jy-tshuffle-overlay.show-deck .jy-tshuffle-deck{opacity:1}' +
+    '.jy-tshuffle-deck-card{position:absolute;inset:0;background:url("/tarot_img/card-back.jpg") center/cover #0a0d18;border:1px solid rgba(212,175,55,.5);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.7),0 0 16px rgba(212,175,55,.3);will-change:transform;backface-visibility:hidden}' +
+    // 收攏階段:牌從散開飛回中央(stagger 入場)
+    '@keyframes jyTshuffleConverge{0%{transform:translate(var(--start-x),var(--start-y)) rotate(var(--start-rot)) scale(.8);opacity:0}50%{opacity:.9}100%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}}' +
+    '.jy-tshuffle-deck-card.converging{animation:jyTshuffleConverge .8s cubic-bezier(.6,0,.4,1) forwards}' +
+    // 洗牌階段:切牌 → 交錯 → 旋轉
+    '@keyframes jyTshuffleSplit{0%{transform:translate(0,0) rotate(0deg)}30%{transform:translate(var(--split-x),var(--split-y)) rotate(var(--split-rot))}70%{transform:translate(calc(var(--split-x)*.3),calc(var(--split-y)*.3)) rotate(calc(var(--split-rot)*.4))}100%{transform:translate(0,0) rotate(0deg)}}' +
+    '.jy-tshuffle-deck-card.shuffling{animation:jyTshuffleSplit 1.2s cubic-bezier(.4,.1,.3,1) forwards}' +
+    // 旋轉光環(洗牌期間出現)
+    '.jy-tshuffle-aura{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:280px;height:280px;border-radius:50%;border:1px solid rgba(212,175,55,.3);opacity:0;transition:opacity .5s ease;pointer-events:none}' +
+    '.jy-tshuffle-overlay.show-aura .jy-tshuffle-aura{opacity:1;animation:jyTshuffleAuraSpin 4s linear infinite}' +
+    '@keyframes jyTshuffleAuraSpin{0%{transform:translate(-50%,-50%) rotate(0deg);box-shadow:0 0 24px rgba(212,175,55,.3),inset 0 0 24px rgba(212,175,55,.15)}50%{box-shadow:0 0 48px rgba(212,175,55,.5),inset 0 0 36px rgba(212,175,55,.25)}100%{transform:translate(-50%,-50%) rotate(360deg);box-shadow:0 0 24px rgba(212,175,55,.3),inset 0 0 24px rgba(212,175,55,.15)}}' +
+    // 文字提示
+    '.jy-tshuffle-text{position:absolute;bottom:18%;left:50%;transform:translateX(-50%);color:#fde68a;font-size:1.05rem;letter-spacing:.18em;font-weight:600;text-shadow:0 0 16px rgba(253,230,138,.6);opacity:0;transition:opacity .5s ease;text-align:center;white-space:nowrap}' +
+    '.jy-tshuffle-text.show{opacity:1}' +
+    // 跳過按鈕(對齊七維設計)
+    '.jy-tshuffle-skip{position:absolute;bottom:1.5rem;right:1.5rem;padding:.5rem 1rem;background:rgba(0,0,0,.5);color:rgba(212,175,55,.7);border:1px solid rgba(212,175,55,.3);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:.05em;backdrop-filter:blur(4px);transition:all .3s ease;z-index:10}' +
+    '.jy-tshuffle-skip:hover,.jy-tshuffle-skip:active{background:rgba(212,175,55,.15);color:#fde68a;border-color:rgba(212,175,55,.6)}' +
+    // 散開階段:從中央爆炸式回到扇形位置
+    '@keyframes jyTshuffleDisperse{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}30%{transform:translate(calc(var(--end-x)*.3),calc(var(--end-y)*.3)) rotate(calc(var(--end-rot)*.5)) scale(1.1);opacity:1}100%{transform:translate(var(--end-x),var(--end-y)) rotate(var(--end-rot)) scale(0);opacity:0}}' +
+    '.jy-tshuffle-deck-card.dispersing{animation:jyTshuffleDisperse .8s cubic-bezier(.5,-.2,.5,1) forwards}' +
+    // reduced motion 支援(無障礙)
+    '@media (prefers-reduced-motion: reduce){.jy-tshuffle-overlay{transition:opacity .2s ease}.jy-tshuffle-deck-card.converging,.jy-tshuffle-deck-card.shuffling,.jy-tshuffle-deck-card.dispersing{animation-duration:.3s !important}}' +
+    // 行動裝置最佳化
+    '@media (max-width:480px){.jy-tshuffle-glyph{width:min(220px,68vw)}.jy-tshuffle-text{font-size:.92rem;bottom:14%}.jy-tshuffle-aura{width:220px;height:220px}}';
+  document.head.appendChild(s);
+}
+
+// 主洗牌儀式函式
+window._v64bTarotShuffleRitual = function(deckWrap, onComplete) {
+  _ensureV64bShuffleStyles();
+
+  // 累計觀看次數,第 3 次起 compact 模式
+  var seenCount = 0;
+  try { seenCount = parseInt(localStorage.getItem('_jy_tarot_shuffle_count') || '0') || 0; } catch(_) {}
+  var compact = seenCount >= 2;
+
+  // 偵測 reduced motion(無障礙)
+  var reducedMotion = false;
+  try {
+    reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch(_) {}
+
+  // 建立 overlay
+  var overlay = document.createElement('div');
+  overlay.className = 'jy-tshuffle-overlay';
+  overlay.innerHTML =
+    '<div class="jy-tshuffle-bg"></div>' +
+    '<div class="jy-tshuffle-aura"></div>' +
+    '<div class="jy-tshuffle-glyph"><img src="/img/tarot-moon-glyph.png" alt="" onerror="this.style.display=\'none\'"></div>' +
+    '<div class="jy-tshuffle-deck" id="jy-tshuffle-deck"></div>' +
+    '<div class="jy-tshuffle-text" id="jy-tshuffle-text"></div>' +
+    '<button class="jy-tshuffle-skip" id="jy-tshuffle-skip">跳過洗牌 →</button>';
+  document.body.appendChild(overlay);
+
+  // 建立 12 張視覺牌堆(視覺效果用,不是真的 78 張)
+  var deckEl = overlay.querySelector('#jy-tshuffle-deck');
+  var visualCards = [];
+  var CARD_COUNT = compact ? 8 : 12;
+  for (var i = 0; i < CARD_COUNT; i++) {
+    var card = document.createElement('div');
+    card.className = 'jy-tshuffle-deck-card';
+    // 給每張隨機起始位置(模擬從散開飛回)
+    var angle = (i / CARD_COUNT) * Math.PI * 2;
+    var radius = 200 + Math.random() * 80;
+    var startX = Math.cos(angle) * radius;
+    var startY = Math.sin(angle) * radius;
+    var startRot = (Math.random() - 0.5) * 60;
+    card.style.setProperty('--start-x', startX + 'px');
+    card.style.setProperty('--start-y', startY + 'px');
+    card.style.setProperty('--start-rot', startRot + 'deg');
+    // 切牌時的偏移
+    var splitDir = i % 2 === 0 ? 1 : -1;
+    card.style.setProperty('--split-x', (splitDir * 30 + (Math.random() - 0.5) * 20) + 'px');
+    card.style.setProperty('--split-y', ((Math.random() - 0.5) * 40) + 'px');
+    card.style.setProperty('--split-rot', (splitDir * (8 + Math.random() * 8)) + 'deg');
+    // 散開時的目標位置
+    card.style.setProperty('--end-x', (Math.cos(angle + Math.PI / 4) * 220) + 'px');
+    card.style.setProperty('--end-y', (Math.sin(angle + Math.PI / 4) * 220) + 'px');
+    card.style.setProperty('--end-rot', ((Math.random() - 0.5) * 90) + 'deg');
+    deckEl.appendChild(card);
+    visualCards.push(card);
+  }
+
+  // ═══ 動畫節奏 ═══
+  var timers = [];
+  function _t(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function _abortTimers() { timers.forEach(function(t){ clearTimeout(t); }); timers = []; }
+
+  function _setText(text) {
+    var txtEl = overlay.querySelector('#jy-tshuffle-text');
+    if (!txtEl) return;
+    txtEl.classList.remove('show');
+    setTimeout(function() {
+      txtEl.textContent = text;
+      txtEl.classList.add('show');
+    }, 200);
+  }
+
+  function _finish() {
+    _abortTimers();
+    overlay.classList.add('fade-out');
+    setTimeout(function() {
+      try { overlay.remove(); } catch(_e){}
+      try { localStorage.setItem('_jy_tarot_shuffle_count', String(seenCount + 1)); } catch(_e){}
+      if (typeof onComplete === 'function') onComplete();
+    }, 500);
+  }
+
+  // 跳過按鈕(立即執行)
+  _t(function() {
+    var skipBtn = overlay.querySelector('#jy-tshuffle-skip');
+    if (skipBtn) skipBtn.addEventListener('click', _finish);
+  }, 50);
+
+  // reduced motion → 直接秒結束
+  if (reducedMotion) {
+    _t(_finish, 300);
+    overlay.classList.add('show');
+    return;
+  }
+
+  // ═══ COMPACT 模式(第 3 次起):0.8 秒精簡版 ═══
+  if (compact) {
+    overlay.classList.add('show');
+    _t(function() { overlay.classList.add('show-bg', 'show-deck'); }, 100);
+    _t(function() {
+      _setText('🌙 洗牌完成');
+      visualCards.forEach(function(c, i) {
+        _t(function() { c.classList.add('dispersing'); }, i * 30);
+      });
+    }, 300);
+    _t(_finish, 1100);
+    return;
+  }
+
+  // ═══ 完整三幕式動畫(2.8 秒) ═══
+  overlay.classList.add('show');
+
+  // 幕 1:背景淡入 + 牌堆收攏(0-0.8s)
+  _t(function() {
+    overlay.classList.add('show-bg', 'show-deck');
+    _setText('凝神冥想 ⋯');
+    visualCards.forEach(function(c, i) {
+      _t(function() { c.classList.add('converging'); }, i * 30);
+    });
+  }, 100);
+
+  // 幕 2:洗牌(0.8-2.0s)
+  _t(function() {
+    overlay.classList.add('show-glyph', 'show-aura');
+    _setText('靜月為你洗牌 ⋯');
+    visualCards.forEach(function(c, i) {
+      _t(function() {
+        c.classList.remove('converging');
+        c.classList.add('shuffling');
+      }, i * 25);
+    });
+  }, 900);
+
+  // 幕 3:散開 + 完成提示(2.0-2.8s)
+  _t(function() {
+    _setText('🌙 牌已就緒 · 觸碰你有感覺的牌');
+    overlay.classList.remove('show-glyph');
+    visualCards.forEach(function(c, i) {
+      _t(function() {
+        c.classList.remove('shuffling');
+        c.classList.add('dispersing');
+      }, i * 20);
+    });
+  }, 2100);
+
+  // 結束
+  _t(_finish, 2900);
+};
+
 })();
