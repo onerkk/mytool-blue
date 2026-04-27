@@ -477,7 +477,113 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </div>
         </div>
 
-        <!-- ★ v63 自動學習:Cron 執行歷史 -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ★ v63.10 Prompt 改進系統 — 從用戶 fb 找 prompt 系統性盲點 -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div style="margin-bottom:16px;padding:16px;border-radius:10px;background:linear-gradient(155deg,rgba(212,175,55,.04) 0%,rgba(168,85,247,.04) 100%);border:2px solid rgba(212,175,55,.25)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+            <div style="font-size:14px;font-weight:700;color:#d4af37">🎯 v63.10 Prompt 改進系統(站長校準)</div>
+            <span id="v63-10-status" style="font-size:11px;padding:3px 10px;border-radius:10px;background:rgba(160,160,160,.15);color:#a0a0a0;font-weight:600">— 未載入 —</span>
+          </div>
+
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.65">
+            <strong style="color:#d4af37">這是什麼?</strong>從用戶反饋找出 prompt 系統性盲點(例:「年齡判斷偏差」「時間範圍模糊」),產生改進建議。<strong>站長 review 後採納,規則自動注入到 system prompt</strong>,不需重新部署。<br>
+            <strong style="color:#d4af37">跟自動學習不一樣:</strong>下面那個是「維度權重微調」,這個是「找 prompt 真正的盲點」。
+          </div>
+
+          <!-- 設定區 -->
+          <div style="padding:12px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.15);margin-bottom:12px">
+            <div style="font-size:12px;font-weight:600;color:#d4af37;margin-bottom:10px">⚙ 設定</div>
+
+            <!-- 總開關 -->
+            <label style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:6px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.2);cursor:pointer;margin-bottom:8px">
+              <input type="checkbox" id="v63-10-enabled" style="width:18px;height:18px;accent-color:#d4af37;cursor:pointer">
+              <span style="flex:1;font-size:12px;font-weight:600;color:var(--text)">啟用 Prompt 自動分析</span>
+              <span style="font-size:10px;color:var(--text-dim)">總開關·預設關</span>
+            </label>
+
+            <!-- 規則注入開關 -->
+            <label style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:6px;background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.2);cursor:pointer;margin-bottom:12px">
+              <input type="checkbox" id="v63-10-injection" style="width:18px;height:18px;accent-color:#a855f7;cursor:pointer" checked>
+              <span style="flex:1;font-size:12px;font-weight:600;color:var(--text)">已採納規則注入到 prompt</span>
+              <span style="font-size:10px;color:var(--text-dim)">關掉 = 暫停所有規則</span>
+            </label>
+
+            <!-- 三欄設定 -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+              <div>
+                <label style="display:block;font-size:11px;color:var(--text-dim);margin-bottom:4px">分析模型</label>
+                <select id="v63-10-model" style="width:100%;padding:6px 8px;font-size:12px;border-radius:6px;border:1px solid var(--card-border);background:var(--bg);color:var(--text)">
+                  <option value="claude-haiku-4-5">Haiku 4.5(便宜·建議)</option>
+                  <option value="claude-sonnet-4-6">Sonnet 4.6(中等)</option>
+                  <option value="claude-opus-4-7">Opus 4.7(最深)</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;color:var(--text-dim);margin-bottom:4px">頻率</label>
+                <select id="v63-10-schedule" style="width:100%;padding:6px 8px;font-size:12px;border-radius:6px;border:1px solid var(--card-border);background:var(--bg);color:var(--text)">
+                  <option value="manual">手動觸發</option>
+                  <option value="daily">每天</option>
+                  <option value="weekly">每週</option>
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;color:var(--text-dim);margin-bottom:4px">最少樣本數</label>
+                <input type="number" id="v63-10-threshold" min="1" max="50" value="5" style="width:100%;padding:6px 8px;font-size:12px;border-radius:6px;border:1px solid var(--card-border);background:var(--bg);color:var(--text)">
+              </div>
+              <div>
+                <label style="display:block;font-size:11px;color:var(--text-dim);margin-bottom:4px">回溯天數</label>
+                <input type="number" id="v63-10-days" min="1" max="365" value="30" style="width:100%;padding:6px 8px;font-size:12px;border-radius:6px;border:1px solid var(--card-border);background:var(--bg);color:var(--text)">
+              </div>
+            </div>
+
+            <!-- 資料來源 -->
+            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+                <input type="checkbox" id="v63-10-bad" checked style="accent-color:#ef4444">
+                <span>納入 bad fb</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+                <input type="checkbox" id="v63-10-vague" checked style="accent-color:#eab308">
+                <span>納入 vague fb</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+                <input type="checkbox" id="v63-10-good" style="accent-color:#22c55e">
+                <span>納入 good fb(對照組)</span>
+              </label>
+            </div>
+
+            <!-- 按鈕 -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button onclick="v6310SaveConfig()" style="padding:8px 16px;font-size:12px;border-radius:6px;border:1px solid #d4af37;background:rgba(212,175,55,.15);color:#d4af37;cursor:pointer;font-weight:600">💾 儲存設定</button>
+              <button onclick="v6310RunAnalysis()" style="padding:8px 16px;font-size:12px;border-radius:6px;border:1px solid #a855f7;background:rgba(168,85,247,.15);color:#c084fc;cursor:pointer;font-weight:600">🚀 立即分析(force)</button>
+              <button onclick="v6310LoadSuggestions()" style="padding:8px 16px;font-size:12px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:var(--text);cursor:pointer">🔄 刷新建議</button>
+            </div>
+          </div>
+
+          <!-- 上次執行資訊 -->
+          <div id="v63-10-lastrun" style="padding:10px 12px;border-radius:6px;background:rgba(255,255,255,.02);border:1px dashed var(--card-border);font-size:11px;color:var(--text-dim);margin-bottom:12px;line-height:1.6">
+            上次執行:點「🔄 刷新建議」載入
+          </div>
+
+          <!-- 待 review 建議列表 -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:12px;font-weight:600;color:#d4af37;margin-bottom:8px">📋 待 review 建議</div>
+            <div id="v63-10-pending-suggestions" style="max-height:600px;overflow-y:auto">
+              <div style="padding:14px;text-align:center;color:var(--text-dim);font-size:11px">點「🔄 刷新建議」載入,或先點「🚀 立即分析」</div>
+            </div>
+          </div>
+
+          <!-- 已採納規則列表 -->
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#22c55e;margin-bottom:8px">✓ 已採納的校準規則(注入到 prompt)</div>
+            <div id="v63-10-active-rules" style="max-height:400px;overflow-y:auto">
+              <div style="padding:14px;text-align:center;color:var(--text-dim);font-size:11px">尚未載入</div>
+            </div>
+          </div>
+        </div>
+        <!-- ═══ v63.10 區塊結束 ═══ -->
+
         <div style="margin-bottom:16px;padding:14px;border-radius:10px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.2)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:13px;font-weight:600;color:var(--text)">🤖 v63 自動學習 Cron 執行歷史</div>
@@ -2908,6 +3014,10 @@ async function loadWeightStats() {
     try {
       loadCronHistory();
     } catch(_e) {}
+    // ★ v63.10 Prompt 改進系統:載入設定 + 建議
+    try {
+      v6310LoadAll();
+    } catch(_e) {}
   } catch(e) {
     document.getElementById('wt-empty').style.display = 'block';
     document.getElementById('wt-empty').innerHTML = '載入失敗:' + (e.message || '網路錯誤');
@@ -3127,6 +3237,281 @@ async function loadDepthStats() {
   } catch(e) {
     div.innerHTML = '<span style="color:#ef4444">載入失敗:' + (e.message || '網路錯誤') + '</span>';
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ★ v63.10 Prompt 改進系統 — 前端函式群
+// ═══════════════════════════════════════════════════════════════
+
+// 載入設定 + 上次執行 + 待 review 建議 + 已採納規則
+async function v6310LoadAll() {
+  await v6310LoadConfig();
+  await v6310LoadSuggestions();
+}
+
+// 載入設定
+async function v6310LoadConfig() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/prompt-config?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) {
+      const status = document.getElementById('v63-10-status');
+      if (status) { status.textContent = '— 載入失敗 —'; status.style.color = '#ef4444'; }
+      return;
+    }
+    const cfg = data.config || {};
+    // 填入 UI
+    document.getElementById('v63-10-enabled').checked = !!cfg.enabled;
+    document.getElementById('v63-10-injection').checked = cfg.injectionEnabled !== false;
+    document.getElementById('v63-10-model').value = cfg.analysisModel || 'claude-haiku-4-5';
+    document.getElementById('v63-10-schedule').value = cfg.schedule || 'manual';
+    document.getElementById('v63-10-threshold').value = cfg.minSampleThreshold || 5;
+    document.getElementById('v63-10-days').value = cfg.daysLookback || 30;
+    document.getElementById('v63-10-bad').checked = cfg.includeBad !== false;
+    document.getElementById('v63-10-vague').checked = cfg.includeVague !== false;
+    document.getElementById('v63-10-good').checked = !!cfg.includeGood;
+
+    // 狀態徽章
+    const status = document.getElementById('v63-10-status');
+    if (status) {
+      if (cfg.enabled) {
+        status.textContent = '✓ 已啟用·' + (cfg.schedule === 'manual' ? '手動' : cfg.schedule === 'daily' ? '每天' : '每週');
+        status.style.background = 'rgba(34,197,94,.18)';
+        status.style.color = '#22c55e';
+      } else {
+        status.textContent = '— 未啟用 —';
+        status.style.background = 'rgba(160,160,160,.15)';
+        status.style.color = '#a0a0a0';
+      }
+    }
+
+    // 上次執行
+    const lastrun = data.lastrun;
+    const lr = document.getElementById('v63-10-lastrun');
+    if (lr) {
+      if (lastrun && lastrun.ts) {
+        const dt = new Date(lastrun.ts);
+        const ago = Math.floor((Date.now() - lastrun.ts) / 60000);
+        const agoStr = ago < 60 ? ago + ' 分鐘前' : ago < 1440 ? Math.floor(ago/60) + ' 小時前' : Math.floor(ago/1440) + ' 天前';
+        const usage = lastrun.usage ? ` | tokens: ${lastrun.usage.input_tokens || 0} in / ${lastrun.usage.output_tokens || 0} out` : '';
+        lr.innerHTML = `<strong style="color:#d4af37">上次執行:</strong>${dt.toLocaleString('zh-TW')}(${agoStr})<br>分析了 <strong>${lastrun.sampleSize || 0}</strong> 筆 fb,產出 <strong>${lastrun.suggestionsGenerated || 0}</strong> 條建議,模型:${lastrun.model || '-'}${usage}`;
+      } else {
+        lr.innerHTML = '<span style="color:var(--text-dim)">尚未執行過。設定後點「🚀 立即分析」開始。</span>';
+      }
+    }
+  } catch(e) {
+    console.error('v6310LoadConfig error:', e);
+  }
+}
+
+// 儲存設定
+async function v6310SaveConfig() {
+  const body = {
+    enabled: document.getElementById('v63-10-enabled').checked,
+    injectionEnabled: document.getElementById('v63-10-injection').checked,
+    analysisModel: document.getElementById('v63-10-model').value,
+    schedule: document.getElementById('v63-10-schedule').value,
+    minSampleThreshold: parseInt(document.getElementById('v63-10-threshold').value) || 5,
+    daysLookback: parseInt(document.getElementById('v63-10-days').value) || 30,
+    includeBad: document.getElementById('v63-10-bad').checked,
+    includeVague: document.getElementById('v63-10-vague').checked,
+    includeGood: document.getElementById('v63-10-good').checked
+  };
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/prompt-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      alert('✓ 設定已儲存');
+      await v6310LoadConfig();
+    } else {
+      alert('儲存失敗:' + (data.error || '未知錯誤'));
+    }
+  } catch(e) {
+    alert('儲存失敗:' + e.message);
+  }
+}
+
+// 立即執行分析(force=true)
+async function v6310RunAnalysis() {
+  if (!confirm('確認要立即跑一次 Prompt 分析?\n\n這會消耗一次 AI 呼叫成本(~NT$ 1-30,看模型選擇)。\n\n建議分析模型用 Haiku 4.5(便宜)。')) return;
+  const btn = event.target;
+  const oldText = btn.textContent;
+  btn.textContent = '⏳ 分析中(可能 1-3 分鐘)...';
+  btn.disabled = true;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/prompt-analysis/run?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ force: true })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      alert(`✓ 分析完成\n\n樣本數:${data.sampleSize}\n產出建議:${data.suggestionsGenerated} 條\n模型:${data.model}\n\n刷新建議列表查看。`);
+      await v6310LoadAll();
+    } else {
+      const msgMap = {
+        'no_feedback_data': '沒有任何 fb 資料',
+        'insufficient_samples': '樣本不足:' + (data.msg || ''),
+        'prompt_analysis_disabled': '功能未啟用(force 已強制觸發但仍失敗,可能是 KV 異常)',
+        'ai_call_failed': 'AI 呼叫失敗:' + (data.msg || ''),
+        'parse_failed': 'AI 回傳格式異常'
+      };
+      alert('分析失敗:' + (msgMap[data.error] || data.error));
+    }
+  } catch(e) {
+    alert('分析失敗:' + e.message);
+  } finally {
+    btn.textContent = oldText;
+    btn.disabled = false;
+  }
+}
+
+// 載入待 review 建議 + 已採納規則
+async function v6310LoadSuggestions() {
+  const pendingDiv = document.getElementById('v63-10-pending-suggestions');
+  const activeDiv = document.getElementById('v63-10-active-rules');
+  pendingDiv.innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-dim);font-size:11px">⏳ 載入中...</div>';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/prompt-suggestions?token=${encodeURIComponent(adminToken)}&status=pending`);
+    const data = await r.json();
+    if (!data.ok) {
+      pendingDiv.innerHTML = '<div style="padding:14px;text-align:center;color:#ef4444;font-size:11px">載入失敗:' + (data.error || '') + '</div>';
+      return;
+    }
+    // 待 review
+    const sList = data.suggestions || [];
+    if (sList.length === 0) {
+      pendingDiv.innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-dim);font-size:11px">尚無待 review 建議。先點「🚀 立即分析」產生建議。</div>';
+    } else {
+      pendingDiv.innerHTML = sList.map(v6310RenderSuggestion).join('');
+    }
+    // 已採納規則
+    const aList = data.activeRules || [];
+    if (aList.length === 0) {
+      activeDiv.innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-dim);font-size:11px">尚無已採納規則。從上方建議中採納。</div>';
+    } else {
+      activeDiv.innerHTML = aList.map(v6310RenderActiveRule).join('');
+    }
+  } catch(e) {
+    pendingDiv.innerHTML = '<div style="padding:14px;text-align:center;color:#ef4444;font-size:11px">載入失敗:' + e.message + '</div>';
+  }
+}
+
+// 渲染一條待 review 建議
+function v6310RenderSuggestion(s) {
+  const confColor = s.confidence === '高' ? '#22c55e' : s.confidence === '中' ? '#eab308' : '#a0a0a0';
+  const appliesLabel = s.appliesTo === 'all' ? '全部模式' : s.appliesTo === 'tarot_only' ? '塔羅' : s.appliesTo === 'ootk' ? '開鑰' : s.appliesTo === 'direct' ? '七維度' : s.appliesTo;
+  const escHtml = function(t) { return String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  return `
+    <div style="margin-bottom:10px;padding:12px;border-radius:8px;background:rgba(0,0,0,.3);border:1px solid rgba(212,175,55,.15)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;color:#d4af37">🎯 ${escHtml(s.errorType)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(160,160,160,.15);color:var(--text-dim)">${escHtml(appliesLabel)}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(160,160,160,.15);color:${confColor}">信心:${escHtml(s.confidence)}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(160,160,160,.15);color:var(--text-dim)">證據:${s.evidenceCount} 筆</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:8px"><strong>模式:</strong>${escHtml(s.pattern)}</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.7;padding:10px;border-radius:6px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.15);margin-bottom:8px">
+        <strong style="color:#d4af37">建議規則:</strong><br>${escHtml(s.suggestedRule)}
+      </div>
+      ${s.reason ? `<div style="font-size:11px;color:var(--text-dim);line-height:1.5;margin-bottom:6px"><strong>理由:</strong>${escHtml(s.reason)}</div>` : ''}
+      ${s.example ? `<div style="font-size:11px;color:var(--text-dim);line-height:1.5;margin-bottom:8px"><strong>範例:</strong>${escHtml(s.example)}</div>` : ''}
+      ${s.affectedModules && s.affectedModules.length ? `<div style="font-size:10px;color:var(--text-dim);margin-bottom:8px"><strong>可能影響模組:</strong> ${s.affectedModules.map(escHtml).join(', ')}</div>` : ''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        <button onclick="v6310Accept('${escHtml(s.id)}')" style="flex:1;min-width:80px;padding:6px 10px;font-size:11px;border-radius:6px;border:1px solid #22c55e;background:rgba(34,197,94,.15);color:#22c55e;cursor:pointer;font-weight:600">✓ 採納</button>
+        <button onclick="v6310Modify('${escHtml(s.id)}')" style="flex:1;min-width:80px;padding:6px 10px;font-size:11px;border-radius:6px;border:1px solid #d4af37;background:rgba(212,175,55,.15);color:#d4af37;cursor:pointer;font-weight:600">✎ 修改採納</button>
+        <button onclick="v6310Reject('${escHtml(s.id)}')" style="flex:1;min-width:80px;padding:6px 10px;font-size:11px;border-radius:6px;border:1px solid #ef4444;background:rgba(239,68,68,.10);color:#ef4444;cursor:pointer;font-weight:600">✗ 拒絕</button>
+      </div>
+    </div>
+  `;
+}
+
+// 渲染一條已採納規則
+function v6310RenderActiveRule(r) {
+  const escHtml = function(t) { return String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  const appliesLabel = r.appliesTo === 'all' ? '全部模式' : r.appliesTo === 'tarot_only' ? '塔羅' : r.appliesTo === 'ootk' ? '開鑰' : r.appliesTo === 'direct' ? '七維度' : r.appliesTo;
+  const dt = r.createdAt ? new Date(r.createdAt).toLocaleDateString('zh-TW') : '';
+  return `
+    <div style="margin-bottom:8px;padding:10px 12px;border-radius:6px;background:${r.active ? 'rgba(34,197,94,.05)' : 'rgba(160,160,160,.05)'};border:1px solid ${r.active ? 'rgba(34,197,94,.25)' : 'rgba(160,160,160,.2)'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
+        <div style="flex:1;font-size:12px;color:var(--text);line-height:1.6">${escHtml(r.rule)}</div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          ${r.active
+            ? `<button onclick="v6310ToggleRule('${escHtml(r.id)}','deactivate')" title="暫停" style="padding:4px 8px;font-size:10px;border-radius:4px;border:1px solid #eab308;background:transparent;color:#eab308;cursor:pointer">⏸</button>`
+            : `<button onclick="v6310ToggleRule('${escHtml(r.id)}','activate')" title="啟用" style="padding:4px 8px;font-size:10px;border-radius:4px;border:1px solid #22c55e;background:transparent;color:#22c55e;cursor:pointer">▶</button>`
+          }
+          <button onclick="v6310ToggleRule('${escHtml(r.id)}','delete')" title="刪除" style="padding:4px 8px;font-size:10px;border-radius:4px;border:1px solid #ef4444;background:transparent;color:#ef4444;cursor:pointer">🗑</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:10px;color:var(--text-dim)">
+        <span>${escHtml(appliesLabel)}</span>
+        <span>·</span>
+        <span>${escHtml(r.errorType || '無分類')}</span>
+        <span>·</span>
+        <span>${dt}</span>
+        <span>·</span>
+        <span style="color:${r.active ? '#22c55e' : '#a0a0a0'};font-weight:600">${r.active ? '✓ 生效中' : '⏸ 已暫停'}</span>
+      </div>
+    </div>
+  `;
+}
+
+// 採納
+async function v6310Accept(sid) {
+  if (!confirm('確認採納這條建議?\n\n採納後規則會立刻注入到 system prompt(下次解讀就生效)。')) return;
+  await v6310SuggestionAction(sid, { action: 'accept' });
+}
+
+// 修改採納
+async function v6310Modify(sid) {
+  // 找到原始 suggestion 的 rule
+  const r = await fetch(`${WORKER_URL}/admin/prompt-suggestions?token=${encodeURIComponent(adminToken)}&status=pending`);
+  const data = await r.json();
+  const s = (data.suggestions || []).find(function(x) { return x.id === sid; });
+  if (!s) { alert('找不到建議'); return; }
+  const newRule = prompt('修改規則內容(原文已帶入,可直接編輯):', s.suggestedRule);
+  if (newRule === null) return; // 取消
+  if (!newRule.trim()) { alert('規則不能空'); return; }
+  await v6310SuggestionAction(sid, { action: 'modify', editedRule: newRule.trim() });
+}
+
+// 拒絕
+async function v6310Reject(sid) {
+  const reason = prompt('拒絕原因(選填,幫助下次分析改進):');
+  if (reason === null) return; // 取消
+  await v6310SuggestionAction(sid, { action: 'reject', rejectReason: reason || '' });
+}
+
+// 通用 action 呼叫
+async function v6310SuggestionAction(sid, body) {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/prompt-suggestions/${encodeURIComponent(sid)}?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      await v6310LoadSuggestions();
+    } else {
+      alert('操作失敗:' + (data.error || '未知'));
+    }
+  } catch(e) {
+    alert('操作失敗:' + e.message);
+  }
+}
+
+// 已採納規則的 啟用/暫停/刪除
+async function v6310ToggleRule(rid, action) {
+  const msg = action === 'delete' ? '確認永久刪除這條規則?' : action === 'deactivate' ? '暫停這條規則?(可隨時啟用回來)' : '啟用這條規則?';
+  if (!confirm(msg)) return;
+  await v6310SuggestionAction(rid, { action: action });
 }
 
 // ★ v63 自動學習:載入 cron 執行歷史
