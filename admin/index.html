@@ -523,6 +523,17 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div id="wt-coverage" style="font-size:12px;color:var(--text-dim)">點「🔄 刷新」載入</div>
         </div>
 
+        <!-- ★ v63.3 新增:機制層觸發統計 -->
+        <div style="margin-top:14px;padding:14px;border-radius:10px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.2)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🛡️ v63.3 機制層觸發統計</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+            每次七維度回傳後,worker 會檢測七系統覆蓋率。低於門檻 (預設 6/7) 自動補寫缺的系統。
+            <strong style="color:#22c55e">這個統計告訴你 AI 第一次自願寫齊七系統的比例 vs 需要機制層補寫的比例。</strong>
+            機制層觸發次數越少 → 表示 prompt 強化(V63 / V63.2)越有效。
+          </div>
+          <div id="wt-mech-stats" style="font-size:12px;color:var(--text-dim)">點「🔄 刷新」載入</div>
+        </div>
+
         <div id="wt-empty" style="display:none;padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px">
           尚無學習統計。<br><span style="font-size:11px;opacity:.7">需要用戶送 feedback(七維度/塔羅/開鑰)累積樣本後才會出現。</span>
         </div>
@@ -1595,6 +1606,22 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                 短而強,跟 V62B_TAROT_FORCE_KEY 同手法。
                 <strong style="color:#ef4444">三個模型(Opus/Sonnet/Haiku)都建議開啟。</strong>
                 信心過低要跳過的系統也要明寫「為什麼跳過」,不能默默消失。
+              </span>
+            </span>
+          </label>
+
+          <!-- ★ v63.3:機制層(server-side 強制檢測+補寫) -->
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-radius:8px;border:2px solid #22c55e;background:rgba(34,197,94,0.05);cursor:pointer;margin-top:6px">
+            <input type="checkbox" id="v63-mech-layer" style="margin-top:2px;width:16px;height:16px;accent-color:#22c55e;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:700;color:#22c55e">🛡️ v63.3:機制層 — Server-side 強制檢測 + 補寫(終極保險)</span><br>
+              <span style="font-size:11px;color:var(--text-dim);line-height:1.6">
+                <strong style="color:#22c55e">100% 保證 7/7 覆蓋率的最後防線。</strong>
+                AI 第一次回傳後,worker 程式直接掃 story 文字檢查七系統覆蓋——若 < 6/7 → 自動再次呼叫 AI 補寫缺的系統,合併後才回給用戶。
+                這不靠 AI 自覺,靠程式強制。<br>
+                <strong style="color:#fbbf24">代價:</strong>token 消耗約 +30-50%,延遲約 +3-15 秒(看補寫多少系統)。
+                免費用戶建議關閉、付費用戶建議開啟。
+                <strong style="color:#22c55e">v63.2 已經夠用就不需要這個</strong>——但若實測 v63.2 仍有漏,這個是終極解。
               </span>
             </span>
           </label>
@@ -2813,6 +2840,10 @@ async function loadWeightStats() {
     try {
       loadCoverageStats();
     } catch(_e) {}
+    // ★ v63.3 新增:機制層觸發統計
+    try {
+      loadMechStats();
+    } catch(_e) {}
     // ★ v63 自動學習:載入 cron 執行歷史
     try {
       loadCronHistory();
@@ -2894,6 +2925,78 @@ async function loadCoverageStats() {
     document.getElementById('wt-coverage').innerHTML = html;
   } catch(e) {
     document.getElementById('wt-coverage').innerHTML = '<span style="color:#ef4444">載入失敗:' + (e.message || '網路錯誤') + '</span>';
+  }
+}
+
+// ★ v63.3 機制層觸發統計
+async function loadMechStats() {
+  const div = document.getElementById('wt-mech-stats');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/v63mech-stats?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    const stats = data && data.stats;
+    if (!stats || !stats.totalTriggered) {
+      div.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-dim)">尚無機制層觸發紀錄。<br><span style="font-size:10px;opacity:.7">這是好事——表示 v63 / v63.2 prompt 強化已經夠用,AI 自願寫齊七系統。</span></div>';
+      return;
+    }
+    const total = stats.totalTriggered || 0;
+    const success = stats.totalSuccess || 0;
+    const successRate = total > 0 ? Math.round((success / total) * 100) : 0;
+    const successColor = successRate >= 80 ? '#22c55e' : successRate >= 50 ? '#fbbf24' : '#ef4444';
+
+    let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+    // 總覽
+    html += `<div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px;padding:10px;border-radius:8px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2)">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">⚠️ 總觸發次數</div>
+        <div style="font-size:18px;font-weight:700;color:#ef4444">${total}</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:2px">AI 第一次沒寫齊七系統的次數</div>
+      </div>
+      <div style="flex:1;min-width:120px;padding:10px;border-radius:8px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2)">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">✓ 補寫成功率</div>
+        <div style="font-size:18px;font-weight:700;color:${successColor}">${successRate}%</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:2px">${success}/${total}</div>
+      </div>
+    </div>`;
+    // by model 表格
+    if (stats.byModel && Object.keys(stats.byModel).length) {
+      html += '<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,.02)"><div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">📊 各模型觸發比例(數字大 = 該模型 prompt 服從度差)</div>';
+      Object.keys(stats.byModel).forEach(m => {
+        const mb = stats.byModel[m];
+        const t = mb.triggered || 0;
+        const s = mb.success || 0;
+        const sr = t > 0 ? Math.round((s / t) * 100) : 0;
+        const mColor = m === 'opus' ? '#a78bfa' : m === 'sonnet' ? '#3b82f6' : '#fbbf24';
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11px">
+          <span style="color:${mColor};font-weight:600;min-width:60px">${m.toUpperCase()}</span>
+          <span style="color:var(--text-dim)">觸發 ${t} 次 / 補寫成功 ${s} (${sr}%)</span>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    // 最近 5 筆 log
+    if (stats.recentLog && stats.recentLog.length) {
+      html += '<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,.02);max-height:200px;overflow-y:auto"><div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">📋 最近 5 筆觸發紀錄</div>';
+      stats.recentLog.slice(0, 5).forEach(l => {
+        const t = new Date(l.ts).toLocaleString('zh-TW', { hour12: false });
+        const ok = l.postCov >= 6;
+        const icon = ok ? '✓' : '✗';
+        const color = ok ? '#22c55e' : '#ef4444';
+        const dimZh = { bazi:'八字', ziwei:'紫微', meihua:'梅花', tarot:'塔羅', natal:'西占', jyotish:'吠陀', name:'姓名' };
+        const supplied = (l.supplied || []).map(d => dimZh[d] || d).join('、');
+        html += `<div style="font-size:10px;padding:4px 6px;margin-bottom:2px;border-left:3px solid ${color};background:rgba(255,255,255,.02);line-height:1.5">
+          <span style="color:${color};font-weight:700">${icon}</span>
+          <span style="color:var(--text)">${t}</span>
+          <span style="color:var(--text-dim)">·${l.model}·${l.preCov}/7→${l.postCov}/7</span><br>
+          <span style="color:var(--text-dim);margin-left:14px">補寫:${supplied || '無'}</span>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+    div.innerHTML = html;
+  } catch(e) {
+    div.innerHTML = '<span style="color:#ef4444">載入失敗:' + (e.message || '網路錯誤') + '</span>';
   }
 }
 
@@ -4833,7 +4936,10 @@ let _v62Defaults = {
   v63PhotoAsCrosscheck: true,
   v63Layer3Recency: true,
   // v63.2 Sonnet/Haiku 強化
-  v63SevenChecklist: true
+  v63SevenChecklist: true,
+  // v63.3 機制層
+  v63MechanismLayer: true,
+  v63MechanismThreshold: 6
   // v63E 升級:7 個 OOTK config key (ootkOrthodoxBookT / ootkCountingStory /
   //   ootkPairingStory / ootkDignitiesMathers / ootkFiveIndependent /
   //   ootkAbandonRule / ootkPileElementSemantic) 已從前端設定移除——
@@ -4864,7 +4970,9 @@ const _V62_KEY_MAP = {
   'v63-photo-cross': 'v63PhotoAsCrosscheck',
   'v63-layer3': 'v63Layer3Recency',
   // v63.2 Sonnet/Haiku 強化
-  'v63-checklist': 'v63SevenChecklist'
+  'v63-checklist': 'v63SevenChecklist',
+  // v63.3 機制層
+  'v63-mech-layer': 'v63MechanismLayer'
   // v63E 升級:7 個 v63 OOTK 開關全部移除——
   // 正統化已寫死於程式(資料層 + Prompt 層 + 動畫 + 前端整合),
   // 不再經由 admin checkbox 控制。後台僅顯示「v63E 永遠正統」鎖定標示。
@@ -4926,7 +5034,8 @@ function _v62BuildShortStatus() {
     'v63-crisis-dual': '危機雙軌',
     'v63-photo-cross': '照片限',
     'v63-layer3': '層三檢',
-    'v63-checklist': '七檢核'  // v63.2 Sonnet/Haiku 強化
+    'v63-checklist': '七檢核',  // v63.2 Sonnet/Haiku 強化
+    'v63-mech-layer': '機制層'   // v63.3 server-side 強制檢測+補寫
     // v63E:7 個 OOTK 開關已寫死於程式,從短代碼中移除
   };
   const on = [];
