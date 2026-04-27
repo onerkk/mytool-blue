@@ -1772,6 +1772,11 @@ function _sendFeedbackToForms(rating,reasons,comment,actual){
   var dims = snap.dims || null;           // 完整 dims（object）
   var cardData = snap.cardData || null;   // 塔羅完整牌局（object）
   var ootk = snap.ootk || null;           // 開鑰五階段（object）
+  // ★ v63:學習迴路需要的當次權重快照
+  var weights_used = snap.weights_used || null;
+  var confidence_used = snap.confidence_used || null;
+  var timeScale = snap.timeScale || null;
+  var birthState = snap.birthState || null;
 
   // fallback：快照沒有時嘗試從 _jyPrevFullResult 讀（向後相容）
   if (!aiClosing && !aiDirectAnswer) {
@@ -1831,6 +1836,12 @@ function _sendFeedbackToForms(rating,reasons,comment,actual){
         dims: dims,
         cardData: cardData,
         ootk: ootk,
+        // ★ v63 學習迴路修補:當次實際送給 AI 的權重 + 信心矩陣 + 時間尺度 + 出生資料完整度
+        // 沒這些欄位 worker 就無法做歸因學習(只能 pos/neg 計數,無法調權重)
+        weights_used: weights_used,
+        confidence_used: confidence_used,
+        timeScale: timeScale,
+        birthState: birthState,
         // ★ v62f-fix-3：feedback 閉環——記錄當次 config 與 audit 結果
         //   這樣以後可以做 A/B 統計：
         //   「開 toneCalibration 的 Opus 七維度感情題」平均準度 vs 關的版本

@@ -41,6 +41,52 @@ if (!window._jyOpusPriceFor) {
   };
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ★ v63 學習迴路修補:收集當次實際送給 AI 的權重(讓 feedback 能學)
+// 之前 _jyFeedbackSnapshot 沒帶 weights_used,導致用戶按「不準」後
+// 後台收到資料但不知道「當時哪些維度權重高」→ 學不了
+// ═══════════════════════════════════════════════════════════════
+window._jyCollectWeightsForFb = window._jyCollectWeightsForFb || function() {
+  try {
+    var snap = {
+      // 當次實際送給 AI 的權重(從 confidence-bridge 注入過的)
+      weights: null,
+      // 信心矩陣(時辰未填會降紫微/西占/吠陀)
+      confidence: null,
+      // 推斷出的時間尺度(short/mid/long)
+      timeScale: null,
+      // 出生資料完整度(full/btime_unknown/no_birth)
+      birthState: null
+    };
+    // 優先從 _jyFullPayloadCache(_buildPayload 完成後存的)
+    if (window._jyFullPayloadCache) {
+      var p = window._jyFullPayloadCache;
+      if (p.weights) snap.weights = p.weights;
+      if (p.confidence) snap.confidence = p.confidence;
+      if (p.timeScale) snap.timeScale = p.timeScale;
+      if (p.birthState) snap.birthState = p.birthState;
+    }
+    // 後備:直接從 _JY_WEIGHTS 即時算一次(若 payloadCache 沒帶)
+    if (!snap.weights && window._JY_WEIGHTS && window._JY_CONFIDENCE) {
+      try {
+        var form = (typeof S !== 'undefined' && S.form) ? S.form : {};
+        var ctx = window._JY_CONFIDENCE.getContextualWeights
+          ? window._JY_CONFIDENCE.getContextualWeights(form, window._jyLastUsage && window._jyLastUsage.modelId)
+          : null;
+        if (ctx) {
+          snap.weights = ctx.adjustedWeights;
+          snap.confidence = ctx.confidence;
+          snap.timeScale = ctx.timeScale;
+          snap.birthState = ctx.birthState;
+        }
+      } catch(_e) {}
+    }
+    return snap;
+  } catch(_e) {
+    return { weights: null, confidence: null, timeScale: null, birthState: null };
+  }
+};
+
 window.__plainReplace = window.__plainReplace || function(input){
   var s = input==null ? '' : String(input);
   var rules = [
@@ -20817,6 +20863,14 @@ renderTarot = function(){
             cardData: null,
             ootk: null
           };
+          // ★ v63:補上學習迴路需要的 weights/confidence(沒這些桶內無法歸因)
+          try {
+            var _wInfo = window._jyCollectWeightsForFb();
+            window._jyFeedbackSnapshot.weights_used = _wInfo.weights;
+            window._jyFeedbackSnapshot.confidence_used = _wInfo.confidence;
+            window._jyFeedbackSnapshot.timeScale = _wInfo.timeScale;
+            window._jyFeedbackSnapshot.birthState = _wInfo.birthState;
+          } catch(_we) {}
           try {
             if (S.form && S.form.birthLocation) window._jyFeedbackSnapshot.birthLocation = S.form.birthLocation.city || S.form.birthLocation.name || '';
             else if (window._jyFullPayloadCache && window._jyFullPayloadCache.birthLocation) window._jyFeedbackSnapshot.birthLocation = window._jyFullPayloadCache.birthLocation.city || '';
@@ -23328,6 +23382,14 @@ async function _triggerTarotAI() {
         cardData: _fbCardData,
         ootk: _fbOotk
       };
+      // ★ v63:補上學習迴路需要的 weights/confidence
+      try {
+        var _wInfo2 = window._jyCollectWeightsForFb();
+        window._jyFeedbackSnapshot.weights_used = _wInfo2.weights;
+        window._jyFeedbackSnapshot.confidence_used = _wInfo2.confidence;
+        window._jyFeedbackSnapshot.timeScale = _wInfo2.timeScale;
+        window._jyFeedbackSnapshot.birthState = _wInfo2.birthState;
+      } catch(_we) {}
       try {
         if (S.form && S.form.birthLocation) window._jyFeedbackSnapshot.birthLocation = S.form.birthLocation.city || '';
         else if (window._jyFullPayloadCache && window._jyFullPayloadCache.birthLocation) window._jyFeedbackSnapshot.birthLocation = window._jyFullPayloadCache.birthLocation.city || '';
@@ -25028,6 +25090,14 @@ function _renderOOTKResult(container, r, admin) {
       cardData: null,
       ootk: _fbOotk3
     };
+    // ★ v63:補上學習迴路需要的 weights/confidence
+    try {
+      var _wInfo3 = window._jyCollectWeightsForFb();
+      window._jyFeedbackSnapshot.weights_used = _wInfo3.weights;
+      window._jyFeedbackSnapshot.confidence_used = _wInfo3.confidence;
+      window._jyFeedbackSnapshot.timeScale = _wInfo3.timeScale;
+      window._jyFeedbackSnapshot.birthState = _wInfo3.birthState;
+    } catch(_we) {}
     try {
       if (S.form && S.form.birthLocation) window._jyFeedbackSnapshot.birthLocation = S.form.birthLocation.city || '';
       else if (window._jyFullPayloadCache && window._jyFullPayloadCache.birthLocation) window._jyFeedbackSnapshot.birthLocation = window._jyFullPayloadCache.birthLocation.city || '';
