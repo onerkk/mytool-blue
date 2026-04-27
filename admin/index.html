@@ -477,6 +477,19 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </div>
         </div>
 
+        <!-- ★ v63 自動學習:Cron 執行歷史 -->
+        <div style="margin-bottom:16px;padding:14px;border-radius:10px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.2)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:13px;font-weight:600;color:var(--text)">🤖 v63 自動學習 Cron 執行歷史</div>
+            <span id="wt-cron-status" style="font-size:11px;padding:3px 10px;border-radius:10px;background:rgba(34,197,94,.15);color:#22c55e;font-weight:600">— 載入中 —</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+            設定:<code>每週日凌晨 0:00(台灣時間)自動觸發</code>。需在 <code>wrangler.toml</code> 加 <code>[triggers] crons = ["0 16 * * 0"]</code>。
+            執行成功 = 綠色 / 失敗 = 紅色 / 還沒跑 = 灰色。
+          </div>
+          <div id="wt-cron-history" style="font-size:11px;color:var(--text-dim);max-height:200px;overflow-y:auto">點「🔄 刷新」載入</div>
+        </div>
+
         <!-- 桶詳情 -->
         <div style="margin-bottom:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
           <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">📦 桶累積狀況(focusType × timeScale × model)</div>
@@ -2785,6 +2798,10 @@ async function loadWeightStats() {
     try {
       loadCoverageStats();
     } catch(_e) {}
+    // ★ v63 自動學習:載入 cron 執行歷史
+    try {
+      loadCronHistory();
+    } catch(_e) {}
   } catch(e) {
     document.getElementById('wt-empty').style.display = 'block';
     document.getElementById('wt-empty').innerHTML = '載入失敗:' + (e.message || '網路錯誤');
@@ -2847,6 +2864,66 @@ async function loadCoverageStats() {
     document.getElementById('wt-coverage').innerHTML = html;
   } catch(e) {
     document.getElementById('wt-coverage').innerHTML = '<span style="color:#ef4444">載入失敗:' + (e.message || '網路錯誤') + '</span>';
+  }
+}
+
+// ★ v63 自動學習:載入 cron 執行歷史
+async function loadCronHistory() {
+  const div = document.getElementById('wt-cron-history');
+  const status = document.getElementById('wt-cron-status');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/cron-history?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    const history = (data && data.history) || [];
+
+    if (history.length === 0) {
+      div.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-dim)">尚無 cron 執行紀錄。<br><span style="font-size:10px;opacity:.7">確認 wrangler.toml 已加 [triggers] crons,且 worker 已 redeploy。</span></div>';
+      status.textContent = '尚未啟動';
+      status.style.background = 'rgba(156,163,175,.15)';
+      status.style.color = '#9ca3af';
+      return;
+    }
+
+    // 最近一次的狀態
+    const last = history[0];
+    const lastOk = last.result && last.result.ok;
+    if (lastOk) {
+      status.textContent = '✓ 自動運作中';
+      status.style.background = 'rgba(34,197,94,.15)';
+      status.style.color = '#22c55e';
+    } else {
+      status.textContent = '⚠️ 上次失敗';
+      status.style.background = 'rgba(239,68,68,.15)';
+      status.style.color = '#ef4444';
+    }
+
+    // 渲染歷史列表
+    let html = '';
+    history.forEach(function(h, idx) {
+      const ok = h.result && h.result.ok;
+      const color = ok ? '#22c55e' : '#ef4444';
+      const bg = ok ? 'rgba(34,197,94,.04)' : 'rgba(239,68,68,.04)';
+      const icon = ok ? '✓' : '✗';
+      const t = h.triggeredAt ? new Date(h.triggeredAt).toLocaleString('zh-TW', { hour12: false }) : '?';
+      const dur = h.durationMs != null ? h.durationMs + 'ms' : '?';
+      const summary = ok
+        ? `合格桶 ${h.result.qualifyingBuckets || 0}/${h.result.totalBuckets || 0} · 樣本 ${h.result.totalSamples || 0}`
+        : `失敗:${(h.result && h.result.error) || '未知'}`;
+      html += `<div style="padding:8px 10px;margin-bottom:4px;border-radius:6px;background:${bg};border-left:3px solid ${color};display:flex;align-items:center;gap:10px">
+        <span style="color:${color};font-weight:700;min-width:20px">${icon}</span>
+        <div style="flex:1;line-height:1.5">
+          <div style="color:var(--text);font-size:11px;font-weight:600">${t} <span style="opacity:.5;font-weight:400">(${dur})</span></div>
+          <div style="color:var(--text-dim);font-size:10px;margin-top:2px">${summary}</div>
+        </div>
+        ${idx === 0 ? '<span style="font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(108,123,255,.15);color:var(--accent)">最新</span>' : ''}
+      </div>`;
+    });
+    div.innerHTML = html;
+  } catch(e) {
+    div.innerHTML = '<span style="color:#ef4444">載入失敗:' + (e.message || '網路錯誤') + '</span>';
+    status.textContent = '— 無法連線 —';
+    status.style.background = 'rgba(156,163,175,.15)';
+    status.style.color = '#9ca3af';
   }
 }
 
