@@ -3350,7 +3350,10 @@ async function v6310RunAnalysis() {
     });
     const data = await r.json();
     if (data.ok) {
-      alert(`✓ 分析完成\n\n樣本數:${data.sampleSize}\n產出建議:${data.suggestionsGenerated} 條\n模型:${data.model}\n\n刷新建議列表查看。`);
+      let msg = `✓ 分析完成\n\n樣本數:${data.sampleSize}\n產出建議:${data.suggestionsGenerated} 條\n模型:${data.model}`;
+      if (data.note) msg += '\n\n⚠️ ' + data.note;
+      else msg += '\n\n刷新建議列表查看。';
+      alert(msg);
       await v6310LoadAll();
     } else {
       const msgMap = {
@@ -3358,7 +3361,7 @@ async function v6310RunAnalysis() {
         'insufficient_samples': '樣本不足:' + (data.msg || ''),
         'prompt_analysis_disabled': '功能未啟用(force 已強制觸發但仍失敗,可能是 KV 異常)',
         'ai_call_failed': 'AI 呼叫失敗:' + (data.msg || ''),
-        'parse_failed': 'AI 回傳格式異常'
+        'parse_failed': 'AI 回傳格式異常\n\nraw 預覽:\n' + (data.raw || '(空)').substring(0, 200) + '\n\nparseErr: ' + (data.parseErr || '(無)')
       };
       alert('分析失敗:' + (msgMap[data.error] || data.error));
     }
