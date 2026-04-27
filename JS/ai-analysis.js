@@ -13951,6 +13951,53 @@ function generateAIConclusion(type, prob, bazi, mh, tarot){
 // ═══════════════════════════════════════════════════════════════════
 
 const AI_WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
+
+// ★ v63.8:前端 payload 出送前的污染偵測
+// 觸發背景:2026-04-28 用戶實測 Opus 4.7 塔羅快讀 AI 回「[object Object]」,
+// 表示某個欄位被誤序列化(物件被 toString)。
+// worker 端已加防線,但要找出真正的源頭,前端也要偵測 + 上報。
+// 偵測到時:console.error + 把問題欄位路徑記在 window._jyLastPayloadAnomaly
+function _v638CheckPayloadAnomaly(body, source) {
+  try {
+    var serialized = JSON.stringify(body);
+    if (serialized && serialized.indexOf('[object Object]') >= 0) {
+      // 深度掃描找出哪個欄位有問題
+      var found = [];
+      var scan = function(obj, path) {
+        if (!obj) return;
+        if (typeof obj === 'string') {
+          if (obj.indexOf('[object Object]') >= 0) {
+            found.push(path + ' = "' + obj.substring(0, 80) + '"');
+          }
+          return;
+        }
+        if (Array.isArray(obj)) {
+          for (var i = 0; i < obj.length && i < 50; i++) scan(obj[i], path + '[' + i + ']');
+          return;
+        }
+        if (typeof obj === 'object') {
+          var keys = Object.keys(obj);
+          for (var k = 0; k < keys.length && k < 50; k++) scan(obj[keys[k]], path + '.' + keys[k]);
+        }
+      };
+      scan(body, source || 'payload');
+      console.error('[v63.8 前端偵測到 [object Object]] 來源:' + source, found.slice(0, 10));
+      window._jyLastPayloadAnomaly = {
+        time: new Date().toISOString(),
+        source: source,
+        found: found.slice(0, 10),
+        bodyPreview: serialized.substring(0, 500)
+      };
+      // 給用戶看的警告(只在開發環境或特殊狀態顯示)
+      if (window._JY_ADMIN_TOKEN) {
+        // admin 才顯示警告,一般用戶不打擾
+        console.warn('Admin: payload 有 [object Object] 污染,詳見 window._jyLastPayloadAnomaly');
+      }
+      return true;
+    }
+  } catch(_e) {}
+  return false;
+}
 // Admin 身份只透過 admin token 判定，前後端必須一致
 const AI_USED_KEY = 'jy_ai_used';
 
@@ -20858,6 +20905,8 @@ renderTarot = function(){
       // v52：300s → 600s（10 分鐘），max effort + 1M context + 大 system prompt 偶爾會跑到 6-8 分鐘
       var _abortCtrl = new AbortController();
       var _abortTimer = setTimeout(function() { _abortCtrl.abort(); }, 600000);
+      // ★ v63.8 偵測:出送前掃 [object Object]
+      _v638CheckPayloadAnomaly(body, 'main_fetch');
       var resp = await fetch(AI_WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23361,7 +23410,9 @@ async function _triggerTarotAI() {
     var _tarotAbortCtrl = new AbortController();
     var _tarotAbortTimer = setTimeout(function() { _tarotAbortCtrl.abort(); }, 600000);
 
-    // ── SSE streaming（跟七維度一樣的 SSE 讀取） ──
+    // ── SSE streaming(跟七維度一樣的 SSE 讀取)──
+    // ★ v63.8 偵測:塔羅出送前掃 [object Object]
+    _v638CheckPayloadAnomaly(body, 'tarot_fetch');
     var resp = await fetch(AI_WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -24576,6 +24627,8 @@ async function _triggerTarotFollowUp() {
     if (paidToken) body.paid_token = paidToken;
     if (window._JY_SESSION_TOKEN) body.session_token = window._JY_SESSION_TOKEN;
 
+    // ★ v63.8 偵測:追問出送前掃 [object Object]
+    _v638CheckPayloadAnomaly(body, 'followup_fetch');
     var resp = await fetch(AI_URL, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
