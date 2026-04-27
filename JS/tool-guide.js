@@ -88,14 +88,14 @@
     })
       .then(function(r){ return r.json(); })
       .then(function(data){
-        // v60-hotfix7：fallback 擴充到完整欄位，與 worker v52 /pricing 對齊
+        // v64.B:fallback 定價同步單次新價(會員已下架但保留 SUB_* 給舊會員 badge)
         var _p = (typeof window!=='undefined' && window._JY_PRICING) || {
           SUB_STANDARD: 999, SUB_PREMIUM: 1999,
-          SINGLE_7D: 79, SINGLE_TAROT: 39, SINGLE_OOTK: 39
+          SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 60
         };
-        var _p7d = _p.SINGLE_7D || 79;
-        var _pTarot = _p.SINGLE_TAROT || 39;
-        var _pOotk = _p.SINGLE_OOTK || 39;
+        var _p7d = _p.SINGLE_7D || 70;
+        var _pTarot = _p.SINGLE_TAROT || 30;
+        var _pOotk = _p.SINGLE_OOTK || 60;
 
         // 會員（有 active 訂閱）
         if (data.active) {

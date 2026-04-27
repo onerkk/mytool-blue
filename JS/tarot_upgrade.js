@@ -5002,14 +5002,15 @@ enhanceTarot = function(tarot) {
               var _isMember = parseInt(localStorage.getItem('_jy_sub_expires')||'0') > Date.now();
               var _P = window.JY_PRICES || {};
               var _single = _P.OPUS_OOTK || 79;
-              var _memberAddon = _P.OPUS_OOTK_MEMBER || 49;
+              var _memberAddon = _P.OPUS_OOTK_MEMBER || 120;
               if (_isPrem) {
                 return '💎 高級會員・每月免費 1 次 ・ 加購單次 NT$' + _memberAddon;
               }
               if (_isMember) {
-                return '👑 標準會員・單次 NT$' + _single + '（升級高級享每月免費 1 次）';
+                return '👑 標準會員・單次加購 NT$' + _single;
               }
-              return '單次 NT$' + _single + ' ・ 會員 NT$' + (_P.SUB_STANDARD||999) + '／NT$' + (_P.SUB_PREMIUM||1999);
+              // v64.B:非會員只顯示單次價(會員入口下架)
+              return '單次 NT$' + _single + ' ・ 深度解析 NT$' + (_P.OPUS_OOTK || 120);
             })()) +
           '</div>' +
         '</div>';

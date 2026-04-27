@@ -259,20 +259,22 @@ h+='</div></div>';
 h+='<div class="jy-arr" style="right:34%;top:215px"></div>';
 h+='<div class="jy-fgr" style="right:28%;top:232px">👆</div>';
 h+='</div>';
-// v52：動態讀 _JY_PRICING（pricing-loader.js 先載入，此處已可用；fallback 保底）
-// v60-hotfix7：額度數字也動態化，worker 調整額度後前端自動跟上
+// v64.B:會員制下架,教學頁顯示單次價(對齊全站定價結構)
+//   pricing-loader.js 會把 SINGLE_TAROT/SINGLE_OOTK/SINGLE_7D 注入到 _JY_PRICING
+//   fallback 用 v64.B 新價(30/60/70)
 var _gP = (typeof window !== 'undefined' && window._JY_PRICING) || {
-  SUB_STANDARD: 999, SUB_PREMIUM: 1999,
-  TAROT_DAILY_STANDARD: 1, TAROT_DAILY_PREMIUM: 2,
-  D7_MONTHLY_STANDARD: 2, D7_MONTHLY_PREMIUM: 5,
-  OPUS_MONTHLY_PREMIUM: 1
+  SINGLE_TAROT: 30, SINGLE_OOTK: 60, SINGLE_7D: 70,
+  OPUS_TAROT: 60, OPUS_OOTK: 120, OPUS_7D: 140,
+  FOLLOWUP: 15
 };
-var _gTdStd = _gP.TAROT_DAILY_STANDARD || 1;
-var _gTdPrm = _gP.TAROT_DAILY_PREMIUM  || 2;
-var _gD7Std = _gP.D7_MONTHLY_STANDARD  || 2;
-var _gD7Prm = _gP.D7_MONTHLY_PREMIUM   || 5;
-var _gOpPrm = (typeof _gP.OPUS_MONTHLY_PREMIUM === 'number') ? _gP.OPUS_MONTHLY_PREMIUM : 1;
-h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問，點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>三套工具各免費體驗 1 次（含追問）<br>標準會員 NT$' + _gP.SUB_STANDARD + '/月 塔羅＋開鑰每日各 ' + _gTdStd + ' 次、七維度每月 ' + _gD7Std + ' 次<br>高級會員 NT$' + (_gP.SUB_PREMIUM||1999).toLocaleString() + '/月 塔羅＋開鑰每日各 ' + _gTdPrm + ' 次、七維度每月 ' + _gD7Prm + ' 次＋深度解析每月 ' + _gOpPrm + ' 次免費</small></div></div>';
+var _gSt = _gP.SINGLE_TAROT  || 30;
+var _gSo = _gP.SINGLE_OOTK   || 60;
+var _gS7 = _gP.SINGLE_7D     || 70;
+var _gOt = _gP.OPUS_TAROT    || 60;
+var _gOo = _gP.OPUS_OOTK     || 120;
+var _gO7 = _gP.OPUS_7D       || 140;
+var _gFu = _gP.FOLLOWUP      || 15;
+h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問,點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>三套工具各免費體驗 1 次(含追問,僅限標準解讀)<br><br>用完可單次購買繼續使用:<br>標準解讀:塔羅 NT$' + _gSt + ' / 開鑰 NT$' + _gSo + ' / 七維度 NT$' + _gS7 + '<br>深度解析:塔羅 NT$' + _gOt + ' / 開鑰 NT$' + _gOo + ' / 七維度 NT$' + _gO7 + '<br>每次解讀含 1 次免費追問,之後追問 NT$' + _gFu + '</small></div></div>';
 h+='</div>';
 
 // Step 8: 靜月靈籤（獨立功能）
