@@ -14384,6 +14384,220 @@ function _jyEnrichReasons(picks, bazi) {
 }
 
 // ── 從動態庫存或 REAL_PRODUCTS 按三角色挑石 ──
+// ═══════════════════════════════════════════════════════════════
+// ★ v63.9:塔羅/開鑰也走三角色推薦(從元素分布反推用神)
+// ═══════════════════════════════════════════════════════════════
+// 設計:
+//   - 沒八字也能推三角色,從牌陣元素統計反推
+//   - 塔羅四元素 → 五行對應(權杖=火/聖杯=水/寶劍=金/金幣=土,沒木 → 用大牌補)
+//   - 過旺的元素 → 需要被「剋」(過旺者主石的反五行)
+//   - 弱勢的元素 → 加強石補
+//   - 護身石 = 主石所生(自然延伸)
+// ═══════════════════════════════════════════════════════════════
+
+// 塔羅花色 → 五行對應
+var _JY_SUIT_TO_EL = {
+  '權杖': '火', 'Wands': '火', 'wand': '火',
+  '聖杯': '水', 'Cups':  '水', 'cup': '水',
+  '寶劍': '金', 'Swords': '金', 'sword': '金',
+  '金幣': '土', 'Pentacles': '土', 'penta': '土', 'coin': '土'
+};
+
+// 從塔羅 drawn 統計五行分布(回傳:{木:0, 火:n, 土:n, 金:n, 水:n})
+function _jyTarotElementCounts(drawn) {
+  var counts = { 木: 0, 火: 0, 土: 0, 金: 0, 水: 0 };
+  if (!drawn || !drawn.length) return counts;
+
+  for (var i = 0; i < drawn.length; i++) {
+    var c = drawn[i];
+    if (!c) continue;
+
+    // 優先用 c.el(前端已標記)
+    var el = null;
+    if (c.el && counts.hasOwnProperty(c.el)) {
+      el = c.el;
+    } else {
+      // fallback:從牌名抓花色
+      var nm = String(c.n || c.name || '');
+      var keys = Object.keys(_JY_SUIT_TO_EL);
+      for (var k = 0; k < keys.length; k++) {
+        if (nm.indexOf(keys[k]) >= 0) { el = _JY_SUIT_TO_EL[keys[k]]; break; }
+      }
+    }
+    if (el && counts.hasOwnProperty(el)) counts[el]++;
+  }
+  return counts;
+}
+
+// 從元素分布反推三角色用神
+function _jyTarotPickElements(counts) {
+  var total = counts.木 + counts.火 + counts.土 + counts.金 + counts.水;
+  if (total === 0) return null;
+
+  // 排序:從多到少
+  var elPairs = Object.keys(counts).map(function(k) { return { el: k, n: counts[k] }; });
+  elPairs.sort(function(a, b) { return b.n - a.n; });
+
+  var dominant = elPairs[0]; // 最多
+  var weakest = elPairs[elPairs.length - 1]; // 最少
+
+  // ── 主石邏輯 ──
+  // 如果有元素過旺(>=40%),主石選「剋它的五行」(壓制過旺)
+  // 否則主石選「最缺的五行」(補位)
+  var KE = { 木: '金', 火: '水', 土: '木', 金: '火', 水: '土' }; // 被剋
+  var SHENG = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' }; // 所生
+
+  var primaryEl;
+  var amplifierEl;
+  var guardianEl;
+  var dominantRatio = dominant.n / total;
+
+  if (dominantRatio >= 0.4) {
+    // 過旺壓制
+    primaryEl = KE[dominant.el]; // 例:寶劍多(金過旺)→ 主石補火(剋金)
+    amplifierEl = weakest.el;    // 加強石補最弱
+    if (amplifierEl === primaryEl) amplifierEl = SHENG[primaryEl];
+    guardianEl = SHENG[primaryEl]; // 護身石 = 主石所生
+  } else {
+    // 平衡型,直接補弱
+    primaryEl = weakest.el;
+    // 加強石:第二弱
+    amplifierEl = elPairs[elPairs.length - 2] ? elPairs[elPairs.length - 2].el : SHENG[primaryEl];
+    if (amplifierEl === primaryEl) amplifierEl = SHENG[primaryEl];
+    guardianEl = SHENG[primaryEl];
+    if (guardianEl === primaryEl || guardianEl === amplifierEl) {
+      guardianEl = elPairs[elPairs.length - 3] ? elPairs[elPairs.length - 3].el : '土';
+    }
+  }
+
+  return {
+    primary: primaryEl,
+    amplifier: amplifierEl,
+    guardian: guardianEl,
+    dominant: dominant,
+    weakest: weakest,
+    total: total,
+    dominantRatio: dominantRatio,
+    counts: counts
+  };
+}
+
+// 拼塔羅版的對應句(沒八字,改用元素訊號 + memoryNotes)
+function _jyComposeTarotReason(el, role, tarotElInfo, prod) {
+  var focus = _jyGetUserFocus();
+  var openings = [];
+  if (focus) {
+    openings.push('你過去常問' + focus.topic + '(' + focus.count + ' 次),這次牌面');
+  }
+
+  var tarot_phrase = '';
+  if (tarotElInfo && tarotElInfo.dominant) {
+    var d = tarotElInfo.dominant;
+    var w = tarotElInfo.weakest;
+    if (tarotElInfo.dominantRatio >= 0.4) {
+      tarot_phrase = d.el + '元素過旺(' + d.n + ' 張)、' + w.el + '只 ' + w.n + ' 張';
+    } else {
+      tarot_phrase = w.el + '行偏弱(只 ' + w.n + ' 張)';
+    }
+  }
+
+  var role_phrase = '';
+  if (role === 'primary') {
+    role_phrase = '這顆是' + el + '行核心,正好補在你最缺的位置';
+  } else if (role === 'amplifier') {
+    role_phrase = '這顆是' + el + '行延伸,撐住主石不空轉';
+  } else if (role === 'guardian') {
+    role_phrase = '這顆穩在' + el + '行外圍,擋掉牌面失衡的干擾';
+  }
+
+  if (openings.length) {
+    return openings[0] + tarot_phrase + ' — ' + role_phrase + '。';
+  }
+  return '這次牌面' + tarot_phrase + ' — ' + role_phrase + '。';
+}
+
+// ── 從塔羅資料反推三角色 + 挑石 ──
+function _jyPickStonesFromTarot() {
+  // 取得抽牌資料(塔羅快讀 / OOTK 都用 S.tarot.drawn)
+  var drawn = (typeof S !== 'undefined' && S.tarot && S.tarot.drawn) ? S.tarot.drawn : null;
+  if (!drawn || !drawn.length) return [];
+
+  var counts = _jyTarotElementCounts(drawn);
+  var info = _jyTarotPickElements(counts);
+  if (!info) return [];
+
+  var dynamicProds = window._jyCrystalProducts;
+  var useDynamic = !!(dynamicProds && dynamicProds.length);
+  if (!useDynamic && typeof REAL_PRODUCTS === 'undefined') return [];
+
+  function getByEl(el) {
+    if (useDynamic) {
+      return dynamicProds.filter(function(p) { return p.el === el || p.el === '全'; });
+    }
+    return REAL_PRODUCTS[el] || [];
+  }
+  function parsePrice(s) {
+    if (!s) return 0;
+    var m = String(s).replace(/[$,NT\s]/g, '').match(/\d+/);
+    return m ? parseInt(m[0]) : 0;
+  }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  var picks = [];
+  var seen = new Set();
+
+  // 主石
+  var pProds = getByEl(info.primary);
+  pProds.sort(function(a, b) { return parsePrice(a.price) - parsePrice(b.price); });
+  if (pProds.length) {
+    var aff = shuffle(pProds.slice(0, Math.max(1, Math.ceil(pProds.length * 0.5))));
+    if (aff.length) {
+      picks.push({
+        prod: aff[0],
+        role: 'primary',
+        el: info.primary,
+        reason: _jyComposeTarotReason(info.primary, 'primary', info, aff[0])
+      });
+      seen.add(aff[0].n);
+    }
+  }
+  // 加強石
+  if (info.amplifier && info.amplifier !== info.primary) {
+    var aProds = shuffle(getByEl(info.amplifier).filter(function(p) { return !seen.has(p.n); }));
+    if (aProds.length) {
+      picks.push({
+        prod: aProds[0],
+        role: 'amplifier',
+        el: info.amplifier,
+        reason: _jyComposeTarotReason(info.amplifier, 'amplifier', info, aProds[0])
+      });
+      seen.add(aProds[0].n);
+    }
+  }
+  // 護身石
+  if (info.guardian && info.guardian !== info.primary && info.guardian !== info.amplifier) {
+    var gProds = shuffle(getByEl(info.guardian).filter(function(p) { return !seen.has(p.n); }));
+    if (gProds.length) {
+      picks.push({
+        prod: gProds[0],
+        role: 'guardian',
+        el: info.guardian,
+        reason: _jyComposeTarotReason(info.guardian, 'guardian', info, gProds[0])
+      });
+    }
+  }
+
+  return picks.slice(0, 3);
+}
+
+// ── 從動態庫存或 REAL_PRODUCTS 按三角色挑石 ──
 function _jyPickStones(bazi) {
   if (!bazi || !bazi.fav || !bazi.fav.length) return [];
 
@@ -14497,13 +14711,21 @@ function _jyPickStones(bazi) {
 function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
   var esc = escapeFn || function(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
   var picks = [];
+  var sourceMode = 'bazi'; // 'bazi' | 'tarot' | 'ai'
 
-  // 路線 A:有八字 → 自動挑三角色
+  // ── 路線 A:有八字 → 自動挑三角色(七維度路徑)──
   if (typeof S !== 'undefined' && S.bazi && S.bazi.fav && S.bazi.fav.length) {
     picks = _jyPickStones(S.bazi);
+    sourceMode = 'bazi';
   }
 
-  // 路線 B:沒八字(塔羅快讀)→ AI 推薦,當主石用
+  // ── 路線 B(v63.9 新增):沒八字但有塔羅 → 從元素分布反推三角色(塔羅/開鑰路徑)──
+  if (picks.length === 0 && typeof S !== 'undefined' && S.tarot && S.tarot.drawn && S.tarot.drawn.length >= 3) {
+    picks = _jyPickStonesFromTarot();
+    if (picks.length) sourceMode = 'tarot';
+  }
+
+  // ── 路線 C:都沒有 → AI 推薦單顆當主石(極少數情境,例如連塔羅都沒有)──
   if (picks.length === 0 && crystalName && crystalName.length >= 2) {
     var aiProd = _findCrystalProduct(crystalName);
     if (aiProd) {
@@ -14511,20 +14733,30 @@ function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
     } else {
       picks.push({ prod: { n: crystalName, d: crystalWhy || '', price: '', shopee: 'https://tw.shp.ee/2n5Mo2w' }, role: 'primary', el: '全', reason: crystalWhy || '' });
     }
+    sourceMode = 'ai';
   }
 
   if (picks.length === 0) return '';
 
   var hasBazi = (typeof S !== 'undefined' && S.bazi && S.bazi.fav && S.bazi.fav.length);
+  var hasTarot = (sourceMode === 'tarot');
   var favEl = hasBazi ? S.bazi.fav[0] : '';
   var focus = _jyGetUserFocus();
 
   // ── 開場(導讀) ──
   var subtext = '';
   if (focus && focus.topic && focus.count >= 2) {
-    subtext = '結合你過去常問的「' + focus.topic + '」,加上這次盤面結構,我幫你按角色排好順序——';
+    if (hasBazi) {
+      subtext = '結合你過去常問的「' + focus.topic + '」,加上這次盤面結構,我幫你按角色排好順序——';
+    } else if (hasTarot) {
+      subtext = '結合你過去常問的「' + focus.topic + '」,加上這次牌面元素分布,我幫你按角色排好順序——';
+    } else {
+      subtext = '根據牌面的能量方向,這顆石頭適合你現在的狀況。';
+    }
   } else if (hasBazi) {
     subtext = '看完你的盤,這三顆按角色幫你排好順序——主石補最缺,加強石撐住,護身石擋忌神。';
+  } else if (hasTarot) {
+    subtext = '從這次牌面元素分布看出能量結構——下面三顆按角色排好,主石補最缺,加強石撐住,護身石擋失衡。';
   } else {
     subtext = '根據牌面的能量方向,這顆石頭適合你現在的狀況。';
   }
@@ -14540,6 +14772,9 @@ function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
   h += '<span class="jy-stone-title">☽ 靜月為你挑的石頭</span>';
   if (hasBazi && favEl) {
     h += '<span class="jy-stone-tag">補' + esc(favEl) + '行</span>';
+  } else if (hasTarot && picks[0] && picks[0].el) {
+    // ★ v63.9:塔羅/開鑰路徑也標示主石用神(從牌面元素反推)
+    h += '<span class="jy-stone-tag">補' + esc(picks[0].el) + '行</span>';
   }
   h += '</div>';
   h += '<div class="jy-stone-sub">' + esc(subtext) + '</div>';
