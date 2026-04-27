@@ -2682,17 +2682,38 @@ async function testEphemeris() {
       body: JSON.stringify({ year: 1990, month: 5, day: 15, hour: 14, minute: 30, tz: 8 })
     });
     const data = await r.json();
+    if (data.error) {
+      div.textContent = '❌ Worker 回錯誤:' + data.error + (data.source ? '\n來源:' + data.source : '');
+      return;
+    }
     let report = '✅ 來源:' + (data.source || '未知') + '\n';
-    report += 'JD:' + (data.jd || '-') + '\n\n';
-    if (data.planets) {
-      Object.keys(data.planets).forEach(p => {
-        const pl = data.planets[p];
-        report += `${p.padEnd(10)}  經度=${pl.lon.toFixed(4)}°  緯度=${(pl.lat || 0).toFixed(4)}°\n`;
-      });
+    report += 'JD:' + (data.jd != null ? data.jd : '-') + '\n';
+    report += 'Mode:' + (data.mode || '-') + '\n\n';
+    if (data.planets && typeof data.planets === 'object') {
+      const planetKeys = Object.keys(data.planets).filter(k => !k.startsWith('_'));
+      if (planetKeys.length === 0) {
+        report += '(行星資料為空)\n';
+      } else {
+        planetKeys.forEach(p => {
+          const pl = data.planets[p];
+          if (!pl || typeof pl !== 'object') {
+            report += `${p.padEnd(10)}  (資料缺失)\n`;
+            return;
+          }
+          // ★ 防呆:lon/lat 可能是 undefined,要先檢查
+          const lon = (typeof pl.lon === 'number') ? pl.lon.toFixed(4) : '-';
+          const lat = (typeof pl.lat === 'number') ? pl.lat.toFixed(4) : '0.0000';
+          const speed = (typeof pl.speed === 'number') ? `  速度=${pl.speed.toFixed(4)}` : '';
+          report += `${p.padEnd(10)}  經度=${lon}°  緯度=${lat}°${speed}\n`;
+        });
+      }
+    } else {
+      report += '(沒有 planets 欄位)\n';
     }
     if (data.source === 'meeus_fallback') {
       report += '\n⚠ 走到 Meeus fallback,JPL/AstrologyAPI 都未啟用或失敗。\n';
-      report += '請在 Cloudflare Worker 設 USE_JPL_HORIZONS = "true" 啟用 JPL Horizons(免費)。';
+      report += '請在 Cloudflare Worker 設 USE_JPL_HORIZONS = "true" 啟用 JPL Horizons(免費)。\n';
+      report += '\n備註:Meeus fallback 只回 Sun/Moon/Rahu/Ketu 四顆,正常。';
     } else if (data.source === 'cache') {
       report += '\n💾 走 KV 快取(24h TTL)。';
     } else if (data.source === 'jpl_horizons') {
@@ -2702,7 +2723,7 @@ async function testEphemeris() {
     }
     div.textContent = report;
   } catch(e) {
-    div.textContent = '❌ 測試失敗:' + e.message;
+    div.textContent = '❌ 測試失敗:' + (e && e.message ? e.message : String(e));
   }
 }
 
