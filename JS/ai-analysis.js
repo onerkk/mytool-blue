@@ -14222,55 +14222,124 @@ function _findCrystalProduct(name) {
 // 有八字 → 喜用神自動挑 2-3 顆；無八字 → 退回 AI 單顆推薦
 // ═══════════════════════════════════════════════════════════════
 
-// ── 靜月語氣的推薦理由 ──
-function _jyStoneReason(el, role, bazi) {
-  var strong = bazi && bazi.strong;
-  var tiaohou = bazi && bazi.tiaohou && bazi.tiaohou.need && bazi.tiaohou.need.indexOf(el) >= 0;
-  var reasons = {
-    木: {
-      pw: '你的木氣不夠，行動力和決斷容易卡住。這顆能幫你把想法推出去。',
-      ps: '你能量旺，需要木來疏導，把力氣引到該去的方向。',
-      pt: '你的盤偏寒偏燥，木能調節生長的節奏，讓事情活起來。',
-      s: '第二層保護，幫你的根基多一個支撐點。'
-    },
-    火: {
-      pw: '你的火氣偏弱，熱情和行動力容易熄滅。這顆能幫你重新點燃。',
-      ps: '能量太旺需要火來引導方向，不然力氣四處亂竄。',
-      pt: '你的盤偏冷，火能暖局，把凍住的東西化開。',
-      s: '補一點溫度，讓你不會在關鍵時刻手軟。'
-    },
-    土: {
-      pw: '你的土氣不足，根基不穩容易飄。這顆能幫你站穩腳步。',
-      ps: '旺的能量需要土來承接和穩固，不然成果留不住。',
-      pt: '你的盤需要穩定的基底，土能築起地基。',
-      s: '多一層穩定感，讓你做決定時不慌。'
-    },
-    金: {
-      pw: '你的金氣偏弱，判斷力和果斷容易猶豫。這顆能幫你想清楚。',
-      ps: '能量旺需要金來收斂聚焦，把散掉的注意力拉回來。',
-      pt: '你的盤需要金來調節，收束過度發散的能量。',
-      s: '增強你的決斷力，關鍵時候不拖泥帶水。'
-    },
-    水: {
-      pw: '你的水氣不足，智慧和靈活度容易僵住。這顆能幫你找回彈性。',
-      ps: '旺的能量需要水來流通疏導，不然堵在那裡更難受。',
-      pt: '你的盤偏燥偏熱，水能降溫潤澤，讓你冷靜下來。',
-      s: '多一點流動感，讓你遇到變化時能順勢轉彎。'
-    }
-  };
-  var er = reasons[el];
-  if (!er) return '';
-  if (role === 'secondary') return er.s;
-  if (tiaohou) return er.pt;
-  if (strong) return er.ps;
-  return er.pw;
+// ═══════════════════════════════════════════════════════════════
+// ★ v63.7:水晶推薦三角色架構 + 結合使用者過往 memoryNotes 在乎的議題
+// 主石 (primary) :最缺、最直接補位
+// 加強石 (amplifier):跟主石相生互補,深一層撐住主石
+// 護身石 (guardian) :第二層保護,擋掉忌神干擾
+// 對應句結合 window._jyMemoryTopicStats(worker 回傳的過往最高頻 topic)
+// ═══════════════════════════════════════════════════════════════
+
+// ── 角色徽章與標題對應 ──
+var _JY_ROLE_META = {
+  primary  : { label: '主石',  desc: '你最缺的那一塊', icon: '/img/fb-role-primary.png',   star: '★★★' },
+  amplifier: { label: '加強石', desc: '撐住主石的第二支點', icon: '/img/fb-role-amplifier.png', star: '★★'  },
+  guardian : { label: '護身石', desc: '擋掉忌神的後盾',   icon: '/img/fb-role-guardian.png',  star: '★'   }
+};
+
+// ── 五行 → 在乎議題的常見對應(用於補話術) ──
+var _JY_EL_TO_TOPIC_HINT = {
+  木: ['行動', '創造', '事業'],
+  火: ['熱情', '感情', '人氣'],
+  土: ['穩定', '財運', '家庭'],
+  金: ['判斷', '事業', '人際'],
+  水: ['智慧', '溝通', '健康']
+};
+
+// ── 取得使用者過往最高頻 topic(從 window._jyMemoryTopicStats)──
+function _jyGetUserFocus() {
+  try {
+    var stats = window._jyMemoryTopicStats;
+    if (!stats || !stats.topTopic || stats.topCount < 2) return null;
+    return {
+      topic: stats.topTopic,
+      count: stats.topCount,
+      total: stats.total
+    };
+  } catch(_) { return null; }
 }
 
-// ── 從 REAL_PRODUCTS 按喜用神自動挑 2-3 顆 ──
+// ── 拼出對應命盤的具體一句話(免費,純 JS 拼字串)──
+// 結構:[使用者在乎的議題開頭] + [當下盤面具體位置] + [這顆水晶為什麼補位]
+function _jyComposeReason(el, role, bazi, prod) {
+  var focus = _jyGetUserFocus();
+  var openings = [];
+
+  // ── 開頭:結合使用者過往最在乎的議題(優先) ──
+  if (focus) {
+    openings.push('你過去常問' + focus.topic + '(' + focus.count + ' 次),這次盤面');
+  }
+
+  // ── 當下盤面的具體點 ──
+  var bazi_phrase = '';
+  if (bazi) {
+    var elScores = bazi.elementScores || bazi.scores || null;
+    var thNeed = bazi.tiaohou && bazi.tiaohou.need;
+    var dayMaster = bazi.dayMaster || bazi.dm || '';
+    var strong = bazi.strong;
+
+    // 五行分數(若有)
+    if (elScores && typeof elScores[el] === 'number') {
+      bazi_phrase = el + '只 ' + elScores[el] + ' 分';
+    } else if (thNeed && thNeed.indexOf(el) >= 0) {
+      bazi_phrase = '盤面偏' + (el === '火' ? '冷' : el === '水' ? '燥' : '失衡') + ',需要' + el;
+    } else if (strong === false || strong === 'weak') {
+      bazi_phrase = '日主偏弱,需要' + el + '來扶持';
+    } else if (strong === true || strong === 'strong') {
+      bazi_phrase = '日主偏旺,需要' + el + '來疏導';
+    } else {
+      bazi_phrase = '需要' + el + '行的補位';
+    }
+
+    // 大運/流年加碼(若強訊號)
+    var dayun = bazi.dayun || bazi.dy || '';
+    var liunian = bazi.liunian || bazi.ly || '';
+    if (dayun && dayun.indexOf(el) >= 0) {
+      bazi_phrase += '、大運走' + el;
+    } else if (liunian && liunian.indexOf(el) >= 0) {
+      bazi_phrase += '、流年帶' + el;
+    }
+  }
+
+  // ── 這顆水晶為什麼補位 ──
+  var role_phrase = '';
+  if (role === 'primary') {
+    role_phrase = '這顆是' + el + '行核心,正好補在你最缺的位置';
+  } else if (role === 'amplifier') {
+    role_phrase = '這顆是' + el + '行延伸,撐住主石不空轉';
+  } else if (role === 'guardian') {
+    role_phrase = '這顆穩在' + el + '行外圍,擋掉忌神干擾';
+  } else {
+    role_phrase = '這顆對應你的' + el + '行能量需求';
+  }
+
+  // ── 組合 ──
+  var pieces = [];
+  if (openings.length) pieces.push(openings[0]);
+  if (bazi_phrase) pieces.push(bazi_phrase);
+  pieces.push(role_phrase);
+
+  // 如果沒有焦點開頭,改用「你的盤」起頭
+  if (!openings.length) {
+    return '你的盤' + bazi_phrase + ' — ' + role_phrase + '。';
+  }
+  return pieces[0] + bazi_phrase + ' — ' + role_phrase + '。';
+}
+
+// ── 為 picks 補上對應句(覆寫舊的 reason) ──
+function _jyEnrichReasons(picks, bazi) {
+  for (var i = 0; i < picks.length; i++) {
+    var pk = picks[i];
+    if (!pk.role || !pk.prod) continue;
+    pk.reason = _jyComposeReason(pk.prod.el || '全', pk.role, bazi, pk.prod);
+  }
+  return picks;
+}
+
+// ── 從動態庫存或 REAL_PRODUCTS 按三角色挑石 ──
 function _jyPickStones(bazi) {
   if (!bazi || !bazi.fav || !bazi.fav.length) return [];
 
-  // ★ v33: 動態庫存優先，REAL_PRODUCTS 備援
   var dynamicProds = window._jyCrystalProducts;
   var useDynamic = !!(dynamicProds && dynamicProds.length);
   if (!useDynamic && typeof REAL_PRODUCTS === 'undefined') return [];
@@ -14280,7 +14349,7 @@ function _jyPickStones(bazi) {
   var primaryEl = fav[0];
   var secondaryEl = fav.length > 1 ? fav[1] : null;
 
-  // 調候覆寫
+  // 調候優先覆寫主用神
   if (bazi.tiaohou && bazi.tiaohou.need && bazi.tiaohou.need.length) {
     var thNeed = bazi.tiaohou.need[0];
     if (!unfav.has(thNeed)) primaryEl = thNeed;
@@ -14293,6 +14362,32 @@ function _jyPickStones(bazi) {
     }
   }
 
+  // ── 三角色用神決定邏輯 ──
+  // 主石 = primaryEl (最缺)
+  // 加強石 = secondaryEl 或 「主石所生子五行」(火生土...)
+  // 護身石 = 緩衝忌神的五行(若有忌神)or 主石所生
+  var SHENG = { 木:'火', 火:'土', 土:'金', 金:'水', 水:'木' };
+  var amplifierEl = secondaryEl;
+  if (!amplifierEl || amplifierEl === primaryEl || unfav.has(amplifierEl)) {
+    // fallback 用主石生的五行
+    amplifierEl = SHENG[primaryEl];
+    if (unfav.has(amplifierEl)) amplifierEl = primaryEl; // 還不行就同主石另選
+  }
+  var guardianEl = SHENG[primaryEl]; // 主石所生 = 第二層保護
+  if (unfav.has(guardianEl)) {
+    // 換主石所生的下一輪
+    guardianEl = SHENG[guardianEl];
+  }
+  if (unfav.has(guardianEl) || guardianEl === primaryEl || guardianEl === amplifierEl) {
+    // 還是不行,從 fav 找一個沒用過的
+    for (var gi = 0; gi < fav.length; gi++) {
+      if (fav[gi] !== primaryEl && fav[gi] !== amplifierEl && !unfav.has(fav[gi])) {
+        guardianEl = fav[gi];
+        break;
+      }
+    }
+  }
+
   function getByEl(el) {
     if (useDynamic) {
       return dynamicProds.filter(function(p) {
@@ -14301,13 +14396,11 @@ function _jyPickStones(bazi) {
     }
     return (REAL_PRODUCTS[el] || []).filter(function(p) { return !unfav.has(p.el); });
   }
-
   function parsePrice(s) {
     if (!s) return 0;
     var m = String(s).replace(/[$,NT\s]/g, '').match(/\d+/);
     return m ? parseInt(m[0]) : 0;
   }
-
   function shuffle(arr) {
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
@@ -14320,54 +14413,56 @@ function _jyPickStones(bazi) {
   var picks = [];
   var seen = new Set();
 
-  // 主五行：親民 + 中階各一（隨機）
+  // 主石:選親民價 + 主用神
   var pProds = getByEl(primaryEl);
   pProds.sort(function(a, b) { return parsePrice(a.price) - parsePrice(b.price); });
-
   if (pProds.length) {
-    var cutoff = Math.max(1, Math.ceil(pProds.length * 0.4));
+    var cutoff = Math.max(1, Math.ceil(pProds.length * 0.5));
     var affordable = shuffle(pProds.slice(0, cutoff));
-    var mid = shuffle(pProds.slice(cutoff));
-
     if (affordable.length) {
-      picks.push({ prod: affordable[0], reason: _jyStoneReason(primaryEl, 'primary', bazi) });
+      picks.push({ prod: affordable[0], role: 'primary', el: primaryEl });
       seen.add(affordable[0].n);
     }
-    var midFiltered = mid.filter(function(p) { return !seen.has(p.n); });
-    if (midFiltered.length) {
-      picks.push({ prod: midFiltered[0], reason: '跟上面同個方向，但能量更深一層。覺得最近真的卡比較緊的話，選這顆。' });
-      seen.add(midFiltered[0].n);
+  }
+
+  // 加強石
+  if (amplifierEl && !unfav.has(amplifierEl)) {
+    var aProds = shuffle(getByEl(amplifierEl).filter(function(p) { return !seen.has(p.n); }));
+    if (aProds.length) {
+      picks.push({ prod: aProds[0], role: 'amplifier', el: amplifierEl });
+      seen.add(aProds[0].n);
     }
   }
 
-  // 第二用神：補一顆（隨機）
-  if (secondaryEl && secondaryEl !== primaryEl && !unfav.has(secondaryEl)) {
-    var sProds = shuffle(getByEl(secondaryEl).filter(function(p) { return !seen.has(p.n); }));
-    if (sProds.length) {
-      picks.push({ prod: sProds[0], reason: _jyStoneReason(secondaryEl, 'secondary', bazi) });
+  // 護身石
+  if (guardianEl && !unfav.has(guardianEl)) {
+    var gProds = shuffle(getByEl(guardianEl).filter(function(p) { return !seen.has(p.n); }));
+    if (gProds.length) {
+      picks.push({ prod: gProds[0], role: 'guardian', el: guardianEl });
     }
   }
 
-  return picks.slice(0, 3);
+  // 結合對應句
+  return _jyEnrichReasons(picks.slice(0, 3), bazi);
 }
 
-// ── 處方式水晶 CTA 渲染 v2（三模式共用，簽名不變）──
+// ── 處方式水晶 CTA 渲染 v3(三角色 + 實品圖 + 三按鈕 + 印章 trust badge)──
 function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
   var esc = escapeFn || function(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
   var picks = [];
 
-  // 路線 A：有八字 → 自動挑
+  // 路線 A:有八字 → 自動挑三角色
   if (typeof S !== 'undefined' && S.bazi && S.bazi.fav && S.bazi.fav.length) {
     picks = _jyPickStones(S.bazi);
   }
 
-  // 路線 B：沒八字（塔羅快讀）→ AI 推薦
+  // 路線 B:沒八字(塔羅快讀)→ AI 推薦,當主石用
   if (picks.length === 0 && crystalName && crystalName.length >= 2) {
     var aiProd = _findCrystalProduct(crystalName);
     if (aiProd) {
-      picks.push({ prod: aiProd, reason: crystalWhy || aiProd.d || '' });
+      picks.push({ prod: aiProd, role: 'primary', el: aiProd.el || '全', reason: crystalWhy || aiProd.d || '' });
     } else {
-      picks.push({ prod: { n: crystalName, d: crystalWhy || '', price: '', shopee: 'https://tw.shp.ee/2n5Mo2w' }, reason: crystalWhy || '' });
+      picks.push({ prod: { n: crystalName, d: crystalWhy || '', price: '', shopee: 'https://tw.shp.ee/2n5Mo2w' }, role: 'primary', el: '全', reason: crystalWhy || '' });
     }
   }
 
@@ -14375,54 +14470,173 @@ function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
 
   var hasBazi = (typeof S !== 'undefined' && S.bazi && S.bazi.fav && S.bazi.fav.length);
   var favEl = hasBazi ? S.bazi.fav[0] : '';
-  var subtext = hasBazi
-    ? '看完你的盤，這幾顆石頭跟你現在的狀態最合拍。'
-    : '根據牌面的能量方向，這顆石頭可能適合你現在的狀況。';
+  var focus = _jyGetUserFocus();
+
+  // ── 開場(導讀) ──
+  var subtext = '';
+  if (focus && focus.topic && focus.count >= 2) {
+    subtext = '結合你過去常問的「' + focus.topic + '」,加上這次盤面結構,我幫你按角色排好順序——';
+  } else if (hasBazi) {
+    subtext = '看完你的盤,這三顆按角色幫你排好順序——主石補最缺,加強石撐住,護身石擋忌神。';
+  } else {
+    subtext = '根據牌面的能量方向,這顆石頭適合你現在的狀況。';
+  }
 
   var h = '';
-  h += '<div style="margin-top:1.2rem;padding:1.1rem 1rem;border-radius:14px;background:linear-gradient(155deg,rgba(212,175,55,.03) 0%,rgba(139,92,246,.02) 100%);border:1px solid rgba(212,175,55,.1)">';
 
-  // 標題
-  h += '<div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.5rem">';
-  h += '<span style="font-size:1rem">💎</span>';
-  h += '<span style="font-size:.85rem;font-weight:700;color:var(--c-gold,#d4af37)">靜月為你挑的石頭</span>';
+  // ── 容器(深空底 + 七芒星浮水印 + 金描邊)──
+  h += '<div class="jy-stone-rec">';
+
+  // 標題區
+  h += '<div class="jy-stone-header">';
+  h += '<div class="jy-stone-title-row">';
+  h += '<span class="jy-stone-title">☽ 靜月為你挑的石頭</span>';
   if (hasBazi && favEl) {
-    h += '<span style="font-size:.62rem;padding:1px 8px;border-radius:20px;border:1px solid rgba(212,175,55,.2);color:var(--c-text-muted,#8a7d6b)">補' + esc(favEl) + '行</span>';
+    h += '<span class="jy-stone-tag">補' + esc(favEl) + '行</span>';
   }
   h += '</div>';
-  h += '<div style="font-size:.76rem;color:var(--c-text-dim,#b0a48e);line-height:1.65;margin-bottom:.75rem">' + esc(subtext) + '</div>';
+  h += '<div class="jy-stone-sub">' + esc(subtext) + '</div>';
+  h += '</div>';
 
-  // 每顆石頭
+  // ── 每顆石頭(三角色卡片)──
   for (var pi = 0; pi < picks.length; pi++) {
     var pick = picks[pi];
     var p = pick.prod;
+    var role = pick.role || 'primary';
+    var meta = _JY_ROLE_META[role] || _JY_ROLE_META.primary;
     var shopUrl = (p.shopee && p.shopee.length > 10) ? p.shopee : 'https://tw.shp.ee/2n5Mo2w';
-    var isFirst = (pi === 0);
+    var imageUrl = p.imageUrl || '';
 
-    h += '<div style="padding:.65rem .85rem;margin-bottom:.4rem;border-radius:10px;';
-    h += 'background:rgba(212,175,55,' + (isFirst ? '.05' : '.025') + ');';
-    h += 'border:1px solid rgba(212,175,55,' + (isFirst ? '.15' : '.08') + ');';
-    h += 'transition:border-color .2s">';
+    h += '<div class="jy-stone-card jy-role-' + role + '">';
 
-    h += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.2rem">';
-    h += '<span style="font-size:.88rem;font-weight:700;color:var(--c-text,#e0d8c8)">' + esc(p.n) + '</span>';
-    if (p.price) h += '<span style="font-size:.65rem;color:var(--c-text-muted,#8a7d6b)">' + esc(p.price) + '</span>';
+    // 卡片頂部:角色徽章 + 角色標籤
+    h += '<div class="jy-stone-card-top">';
+    h += '<img class="jy-role-icon" src="' + meta.icon + '" alt="' + meta.label + '">';
+    h += '<div class="jy-role-text">';
+    h += '<span class="jy-role-stars">' + meta.star + '</span>';
+    h += '<span class="jy-role-label">' + meta.label + '</span>';
+    h += '<span class="jy-role-desc">' + esc(meta.desc) + '</span>';
+    h += '</div>';
     h += '</div>';
 
-    if (pick.reason) {
-      h += '<div style="font-size:.78rem;color:var(--c-text-dim,#b0a48e);line-height:1.7;margin-bottom:.35rem">' + esc(pick.reason) + '</div>';
+    // 主體:左實品圖 + 右文字
+    h += '<div class="jy-stone-body">';
+    if (imageUrl) {
+      h += '<div class="jy-stone-photo" style="background-image:url(\'' + esc(imageUrl) + '\')"></div>';
+    } else {
+      // 沒抓到圖 fallback 用角色徽章半透明放大
+      h += '<div class="jy-stone-photo jy-stone-photo-fallback" style="background-image:url(\'' + meta.icon + '\')"></div>';
     }
-
-    h += '<a href="' + shopUrl + '" target="_blank" rel="noopener" ';
-    h += 'style="display:inline-block;font-size:.7rem;color:var(--c-gold,#d4af37);text-decoration:none;opacity:.55;transition:opacity .2s" ';
-    h += 'onmouseenter="this.style.opacity=\'1\'" onmouseleave="this.style.opacity=\'.55\'">';
-    h += '了解這顆 →</a>';
+    h += '<div class="jy-stone-info">';
+    h += '<div class="jy-stone-name-row">';
+    h += '<span class="jy-stone-name">' + esc(p.n) + '</span>';
+    if (p.el && p.el !== '全') {
+      h += '<span class="jy-stone-el">' + esc(p.el) + '行</span>';
+    }
     h += '</div>';
+    if (pick.reason) {
+      h += '<div class="jy-stone-reason">' + esc(pick.reason) + '</div>';
+    }
+    h += '</div>';
+    h += '</div>';
+
+    // 三按鈕區
+    h += '<div class="jy-stone-actions">';
+    h += '<a class="jy-btn jy-btn-buy" href="' + esc(shopUrl) + '" target="_blank" rel="noopener">';
+    if (p.price) {
+      h += '<span class="jy-btn-price">NT$ ' + esc(p.price) + '</span>';
+    }
+    h += '<span class="jy-btn-label">蝦皮直接買</span>';
+    h += '</a>';
+    h += '<a class="jy-btn jy-btn-custom" href="https://tw.shp.ee/c1VpkoKd" target="_blank" rel="noopener">';
+    h += '<span class="jy-btn-label">✏️ 客製訂做</span>';
+    h += '</a>';
+    h += '<button class="jy-btn jy-btn-save" type="button" onclick="this.classList.toggle(\'saved\')">';
+    h += '<span class="jy-btn-label">☆ 收藏</span>';
+    h += '</button>';
+    h += '</div>';
+
+    h += '</div>'; // /jy-stone-card
   }
 
-  h += '<div style="font-size:.62rem;color:var(--c-text-muted,#8a7d6b);margin-top:.45rem;opacity:.5;line-height:1.5">';
-  h += '水晶是輔助，不是解藥。你自己的選擇，永遠比石頭更重要。</div>';
+  // ── 結尾 trust badge:為什麼選靜月之光 ──
+  h += '<div class="jy-stone-trust">';
+  h += '<img class="jy-trust-seal" src="/img/fb-signature-seal.png" alt="">';
+  h += '<div class="jy-trust-content">';
+  h += '<div class="jy-trust-title">為什麼選靜月之光</div>';
+  h += '<ul class="jy-trust-list">';
+  h += '<li>每顆都靈擺實測,確認能量乾淨</li>';
+  h += '<li>命盤對應推薦,不是亂推</li>';
+  h += '<li>三百峰龍宮舍利、馬達加斯加摩根石等正貨產地直購</li>';
+  h += '</ul>';
   h += '</div>';
+  h += '</div>';
+
+  // 結尾語
+  h += '<div class="jy-stone-disclaimer">水晶是輔助,不是解藥。你自己的選擇,永遠比石頭更重要。</div>';
+
+  h += '</div>'; // /jy-stone-rec
+
+  // ── 注入 CSS(只注入一次) ──
+  if (!window._jyStoneStyleInjected) {
+    window._jyStoneStyleInjected = true;
+    var style = document.createElement('style');
+    style.textContent = [
+      '.jy-stone-rec{margin-top:1.4rem;padding:1.4rem 1rem;border-radius:18px;border:1px solid rgba(212,175,55,.18);background:rgba(8,9,15,.85);position:relative;overflow:hidden}',
+      '.jy-stone-rec::before{content:"";position:absolute;top:50%;right:-100px;width:380px;height:380px;background-image:url(/img/fb-bg-heptagram.png);background-size:contain;background-repeat:no-repeat;background-position:center;opacity:.04;transform:translateY(-50%);pointer-events:none;z-index:0}',
+      '.jy-stone-rec > *{position:relative;z-index:1}',
+      // 標題區
+      '.jy-stone-header{margin-bottom:1.1rem;padding-bottom:.9rem;border-bottom:1px solid rgba(212,175,55,.1)}',
+      '.jy-stone-title-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}',
+      '.jy-stone-title{font-size:1rem;font-weight:600;color:var(--c-gold,#c9a84c);letter-spacing:.06em}',
+      '.jy-stone-tag{font-size:.65rem;padding:2px 9px;border-radius:20px;border:1px solid rgba(212,175,55,.3);color:rgba(212,175,55,.85);letter-spacing:.05em}',
+      '.jy-stone-sub{font-size:.78rem;color:rgba(176,164,142,.85);line-height:1.75;letter-spacing:.02em}',
+      // 卡片
+      '.jy-stone-card{margin-bottom:1rem;padding:1rem;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.12);position:relative;overflow:hidden;transition:border-color .3s}',
+      '.jy-stone-card:hover{border-color:rgba(212,175,55,.28)}',
+      // 主石高亮
+      '.jy-stone-card.jy-role-primary{border-color:rgba(212,175,55,.28);background:rgba(212,175,55,.025)}',
+      '.jy-stone-card.jy-role-primary:hover{border-color:rgba(212,175,55,.42)}',
+      // 卡片頂部:徽章+角色
+      '.jy-stone-card-top{display:flex;align-items:center;gap:.7rem;margin-bottom:.85rem;padding-bottom:.75rem;border-bottom:1px solid rgba(212,175,55,.08)}',
+      '.jy-role-icon{width:42px;height:42px;opacity:.85;flex-shrink:0}',
+      '.jy-role-text{display:flex;flex-direction:column;gap:.18rem;flex:1;min-width:0}',
+      '.jy-role-stars{font-size:.7rem;color:rgba(212,175,55,.85);letter-spacing:.1em}',
+      '.jy-role-label{font-size:.92rem;font-weight:600;color:var(--c-gold,#c9a84c);letter-spacing:.08em}',
+      '.jy-role-desc{font-size:.7rem;color:rgba(160,152,128,.7);letter-spacing:.04em}',
+      // 主體:圖+文
+      '.jy-stone-body{display:flex;gap:.85rem;margin-bottom:.85rem}',
+      '.jy-stone-photo{width:90px;height:90px;border-radius:12px;background-size:cover;background-position:center;background-color:rgba(212,175,55,.04);flex-shrink:0;border:1px solid rgba(212,175,55,.15)}',
+      '.jy-stone-photo-fallback{background-size:60% 60%;background-repeat:no-repeat;opacity:.55}',
+      '.jy-stone-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}',
+      '.jy-stone-name-row{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.4rem;flex-wrap:wrap}',
+      '.jy-stone-name{font-size:1.02rem;font-weight:600;color:var(--c-text,#e8e0d0);letter-spacing:.04em}',
+      '.jy-stone-el{font-size:.65rem;padding:1px 7px;border-radius:14px;border:1px solid rgba(212,175,55,.22);color:rgba(212,175,55,.75)}',
+      '.jy-stone-reason{font-size:.78rem;color:rgba(176,164,142,.85);line-height:1.75;letter-spacing:.02em}',
+      // 三按鈕區
+      '.jy-stone-actions{display:grid;grid-template-columns:1fr auto auto;gap:.45rem}',
+      '.jy-btn{padding:.7rem .65rem;border-radius:10px;border:1px solid rgba(212,175,55,.22);background:rgba(0,0,0,.3);text-decoration:none;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;transition:all .25s;color:rgba(212,175,55,.85)}',
+      '.jy-btn:hover{border-color:rgba(212,175,55,.45);background:rgba(212,175,55,.06)}',
+      '.jy-btn-price{font-size:.7rem;color:rgba(160,152,128,.85);font-weight:400}',
+      '.jy-btn-label{font-size:.78rem;font-weight:500;letter-spacing:.06em;color:rgba(212,175,55,.95)}',
+      '.jy-btn-buy{background:rgba(212,175,55,.08);border-color:rgba(212,175,55,.35)}',
+      '.jy-btn-buy:hover{background:rgba(212,175,55,.16);border-color:rgba(212,175,55,.55)}',
+      '.jy-btn-save.saved{background:rgba(212,175,55,.12)}',
+      '.jy-btn-save.saved .jy-btn-label{color:#c9a84c}',
+      '.jy-btn-save.saved .jy-btn-label::before{content:"★ "}',
+      // Trust badge
+      '.jy-stone-trust{margin-top:1rem;padding:1rem;border-radius:14px;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.15);display:flex;align-items:center;gap:.85rem}',
+      '.jy-trust-seal{width:62px;height:62px;opacity:.85;flex-shrink:0}',
+      '.jy-trust-content{flex:1;min-width:0}',
+      '.jy-trust-title{font-size:.85rem;font-weight:600;color:var(--c-gold,#c9a84c);margin-bottom:.4rem;letter-spacing:.08em}',
+      '.jy-trust-list{margin:0;padding:0 0 0 1rem;font-size:.72rem;color:rgba(176,164,142,.85);line-height:1.85;letter-spacing:.02em}',
+      '.jy-trust-list li{margin-bottom:.15rem}',
+      // 結尾
+      '.jy-stone-disclaimer{margin-top:.9rem;font-size:.66rem;color:rgba(160,152,128,.5);text-align:center;letter-spacing:.04em;line-height:1.6}'
+    ].join('\n');
+    document.head.appendChild(style);
+  }
+
   return h;
 }
 
@@ -20706,6 +20920,7 @@ renderTarot = function(){
       if (!admin && !window._jyOpusDepth) { var __subE = parseInt(localStorage.getItem('_jy_sub_expires')||'0'); if (__subE <= Date.now()) _aiMarkUsed(); }
       // ★ v33: 動態庫存存全域
       if (data.crystalProducts) window._jyCrystalProducts = data.crystalProducts;
+              if (data.memoryTopicStats) window._jyMemoryTopicStats = data.memoryTopicStats;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
       // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照讓 feedback 能帶回 worker
@@ -23193,6 +23408,7 @@ async function _triggerTarotAI() {
               r = parsed.result || parsed;
               // ★ v33: 動態庫存
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
+              if (parsed.memoryTopicStats) window._jyMemoryTopicStats = parsed.memoryTopicStats;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
               // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照
@@ -23249,6 +23465,7 @@ async function _triggerTarotAI() {
       // JSON fallback
       var data = await resp.json();
       if (data.crystalProducts) window._jyCrystalProducts = data.crystalProducts;
+              if (data.memoryTopicStats) window._jyMemoryTopicStats = data.memoryTopicStats;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
       r = data.result || data;
@@ -24421,6 +24638,7 @@ async function _triggerTarotFollowUp() {
               var parsed = JSON.parse(evtData);
               r = parsed.result || parsed;
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
+              if (parsed.memoryTopicStats) window._jyMemoryTopicStats = parsed.memoryTopicStats;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
               // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照
