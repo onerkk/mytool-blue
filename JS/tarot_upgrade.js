@@ -1078,8 +1078,12 @@ enhanceTarot = function(tarot) {
 
         // ★ v28：重新渲染後重置洗牌狀態
         window._deckIsShuffled = false;
+        // v64.B:強制移除舊按鈕,確保新版動畫綁定
+        //   (舊版本可能留下沒綁新動畫的按鈕)
         var sfExist = document.getElementById('jy-shuffle-btn');
-        if (!sfExist) {
+        if (sfExist) sfExist.remove();
+        // 用 v64.B 標記避免重複綁定
+        if (true) {
           var shuffleWrap2 = document.querySelector('#step-2 .text-center');
           if (shuffleWrap2) {
             var sfBtn2 = document.createElement('button');
