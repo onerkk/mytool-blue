@@ -525,13 +525,25 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 
         <!-- ★ v63.3 新增:機制層觸發統計 -->
         <div style="margin-top:14px;padding:14px;border-radius:10px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.2)">
-          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🛡️ v63.3 機制層觸發統計</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🛡️ v63.3 機制層觸發統計(覆蓋率)</div>
           <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
             每次七維度回傳後,worker 會檢測七系統覆蓋率。低於門檻 (預設 6/7) 自動補寫缺的系統。
             <strong style="color:#22c55e">這個統計告訴你 AI 第一次自願寫齊七系統的比例 vs 需要機制層補寫的比例。</strong>
             機制層觸發次數越少 → 表示 prompt 強化(V63 / V63.2)越有效。
           </div>
           <div id="wt-mech-stats" style="font-size:12px;color:var(--text-dim)">點「🔄 刷新」載入</div>
+        </div>
+
+        <!-- ★ v63.6 新增:深度檢查統計 -->
+        <div style="margin-top:14px;padding:14px;border-radius:10px;background:rgba(6,182,212,.04);border:1px solid rgba(6,182,212,.25)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🔬 v63.6 深度檢查觸發統計(紫微深度+共振段)</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+            v63.3 保覆蓋率,v63.6 保深度。
+            檢查紫微段有沒有寫四化/飛星 + 整篇有沒有「共同指向/印證/矛盾」連結詞。
+            <strong style="color:#22d3ee">觸發次數越少 → V63.4 跨共振模組 + V63.5 紫微深度模組越有效。</strong>
+            觸發次數高 = AI 還在偷懶,要靠機制層強制補。
+          </div>
+          <div id="wt-depth-stats" style="font-size:12px;color:var(--text-dim)">點「🔄 刷新」載入</div>
         </div>
 
         <div id="wt-empty" style="display:none;padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px">
@@ -1622,6 +1634,50 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                 <strong style="color:#fbbf24">代價:</strong>token 消耗約 +30-50%,延遲約 +3-15 秒(看補寫多少系統)。
                 免費用戶建議關閉、付費用戶建議開啟。
                 <strong style="color:#22c55e">v63.2 已經夠用就不需要這個</strong>——但若實測 v63.2 仍有漏,這個是終極解。
+              </span>
+            </span>
+          </label>
+
+          <!-- ★ v63.4:七系統交叉共振(Layer 4 補完) -->
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-radius:8px;border:2px solid #a855f7;background:rgba(168,85,247,0.05);cursor:pointer;margin-top:6px">
+            <input type="checkbox" id="v63-resonance" style="margin-top:2px;width:16px;height:16px;accent-color:#a855f7;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:700;color:#c084fc">💎 v63.4:七系統交叉共振(Layer 4 補完)</span><br>
+              <span style="font-size:11px;color:var(--text-dim);line-height:1.6">
+                <strong style="color:#c084fc">2026-04-27 實測發現:</strong>Sonnet 七系統覆蓋 7/7 但缺少跨系統共振——把七維度當七個獨立佔卜在跑,失去交叉驗證的核心價值。
+                v63.4 強迫 AI 寫【共振判讀段】:至少 2 處「○○系統 + ××系統 → 共同指向 C」+ 1 處矛盾解讀 + 整體信心度。
+                <strong style="color:#c084fc">三個模型(Opus/Sonnet/Haiku)都建議開啟。</strong>
+              </span>
+            </span>
+          </label>
+
+          <!-- ★ v63.5:紫微深度強化(Sonnet/Haiku) -->
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-radius:8px;border:2px solid #f97316;background:rgba(249,115,22,0.05);cursor:pointer;margin-top:6px">
+            <input type="checkbox" id="v63-ziwei-depth" style="margin-top:2px;width:16px;height:16px;accent-color:#f97316;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:700;color:#fb923c">⚡ v63.5:紫微深度強化(只給 Sonnet/Haiku 注入)</span><br>
+              <span style="font-size:11px;color:var(--text-dim);line-height:1.6">
+                <strong style="color:#fb923c">2026-04-27 實測發現:</strong>Sonnet 4.6 紫微只貼標籤(「武曲破軍配置」),不會主動進入飛星派四化判讀。
+                Opus 4.7 自己會寫飛星,所以這個模組<strong style="color:#fb923c">只給 Sonnet/Haiku 注入</strong>(Opus 不需要、不會干擾)。
+                強迫紫微段必須出現:生年四化、大限四化、具體宮位、星曜+化象。
+                沒填時辰時(confidence < 0.4)允許明寫跳過原因。
+              </span>
+            </span>
+          </label>
+
+          <!-- ★ v63.6:機制層深度檢查 -->
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-radius:8px;border:2px solid #06b6d4;background:rgba(6,182,212,0.05);cursor:pointer;margin-top:6px">
+            <input type="checkbox" id="v63-mech-deep" style="margin-top:2px;width:16px;height:16px;accent-color:#06b6d4;cursor:pointer">
+            <span style="flex:1">
+              <span style="font-size:13px;font-weight:700;color:#22d3ee">🔬 v63.6:機制層深度檢查 — Server-side 強制深度</span><br>
+              <span style="font-size:11px;color:var(--text-dim);line-height:1.6">
+                <strong style="color:#22d3ee">不只看覆蓋率(v63.3)、還看深度。</strong>
+                worker 拿到 AI 回傳後,額外檢查兩件事:
+                ① 紫微段有沒有出現四化/飛星/具體宮位
+                ② 整篇有沒有「共同指向/印證/矛盾」這類交叉判讀連結詞。
+                缺一個 → 自動 AI 補寫。<br>
+                <strong style="color:#fbbf24">代價:</strong>token +15-30%,延遲 +3-8 秒(視缺多少而定,缺一項就只補一項)。
+                建議搭配 v63.3 一起開,形成「覆蓋率 + 深度」雙重保險。
               </span>
             </span>
           </label>
@@ -2844,6 +2900,10 @@ async function loadWeightStats() {
     try {
       loadMechStats();
     } catch(_e) {}
+    // ★ v63.6 新增:深度檢查統計
+    try {
+      loadDepthStats();
+    } catch(_e) {}
     // ★ v63 自動學習:載入 cron 執行歷史
     try {
       loadCronHistory();
@@ -2989,6 +3049,75 @@ async function loadMechStats() {
           <span style="color:var(--text)">${t}</span>
           <span style="color:var(--text-dim)">·${l.model}·${l.preCov}/7→${l.postCov}/7</span><br>
           <span style="color:var(--text-dim);margin-left:14px">補寫:${supplied || '無'}</span>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+    div.innerHTML = html;
+  } catch(e) {
+    div.innerHTML = '<span style="color:#ef4444">載入失敗:' + (e.message || '網路錯誤') + '</span>';
+  }
+}
+
+// ★ v63.6 深度檢查統計
+async function loadDepthStats() {
+  const div = document.getElementById('wt-depth-stats');
+  if (!div) return;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/v636-depth-stats?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    const stats = data && data.stats;
+    if (!stats || !stats.totalTriggered) {
+      div.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-dim)">尚無深度檢查觸發紀錄。<br><span style="font-size:10px;opacity:.7">這是好事——表示 v63.4 跨共振 + v63.5 紫微深度 prompt 已經夠用,AI 自願寫齊深度。</span></div>';
+      return;
+    }
+    const total = stats.totalTriggered || 0;
+    const success = stats.totalSuccess || 0;
+    const successRate = total > 0 ? Math.round((success / total) * 100) : 0;
+    const successColor = successRate >= 80 ? '#22c55e' : successRate >= 50 ? '#fbbf24' : '#ef4444';
+
+    let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+    html += `<div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:120px;padding:10px;border-radius:8px;background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2)">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">⚠️ 總觸發次數</div>
+        <div style="font-size:18px;font-weight:700;color:#22d3ee">${total}</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:2px">紫微淺薄或缺共振段的次數</div>
+      </div>
+      <div style="flex:1;min-width:120px;padding:10px;border-radius:8px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2)">
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">✓ 補寫成功率</div>
+        <div style="font-size:18px;font-weight:700;color:${successColor}">${successRate}%</div>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:2px">${success}/${total}</div>
+      </div>
+    </div>`;
+    if (stats.byModel && Object.keys(stats.byModel).length) {
+      html += '<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,.02)"><div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">📊 各模型深度問題比例</div>';
+      Object.keys(stats.byModel).forEach(m => {
+        const mb = stats.byModel[m];
+        const t = mb.triggered || 0;
+        const s = mb.success || 0;
+        const sr = t > 0 ? Math.round((s / t) * 100) : 0;
+        const mColor = m === 'opus' ? '#a78bfa' : m === 'sonnet' ? '#3b82f6' : '#fbbf24';
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11px">
+          <span style="color:${mColor};font-weight:600;min-width:60px">${m.toUpperCase()}</span>
+          <span style="color:var(--text-dim)">深度問題 ${t} 次 / 補寫成功 ${s} (${sr}%)</span>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    if (stats.recentLog && stats.recentLog.length) {
+      html += '<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,.02);max-height:240px;overflow-y:auto"><div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">📋 最近 5 筆深度補寫</div>';
+      stats.recentLog.slice(0, 5).forEach(l => {
+        const t = new Date(l.ts).toLocaleString('zh-TW', { hour12: false });
+        const ok = l.postScore >= 1.0;
+        const icon = ok ? '✓' : '⚠';
+        const color = ok ? '#22c55e' : '#fbbf24';
+        const issuesShort = (l.preIssues || []).slice(0, 2).join(' · ');
+        html += `<div style="font-size:10px;padding:5px 7px;margin-bottom:3px;border-left:3px solid ${color};background:rgba(255,255,255,.02);line-height:1.5">
+          <span style="color:${color};font-weight:700">${icon}</span>
+          <span style="color:var(--text)">${t}</span>
+          <span style="color:var(--text-dim)">·${l.model}·分數 ${l.preScore.toFixed(1)}→${l.postScore.toFixed(1)}</span><br>
+          <span style="color:var(--text-dim);margin-left:14px">問題:${issuesShort || '無'}</span>
         </div>`;
       });
       html += '</div>';
@@ -4939,7 +5068,13 @@ let _v62Defaults = {
   v63SevenChecklist: true,
   // v63.3 機制層
   v63MechanismLayer: true,
-  v63MechanismThreshold: 6
+  v63MechanismThreshold: 6,
+  // v63.4 七系統交叉共振 (Layer 4 補完)
+  v63SevenResonance: true,
+  // v63.5 紫微深度強化 (Sonnet/Haiku 注入)
+  v63ZiweiDepth: true,
+  // v63.6 機制層深度檢查 (server-side 紫微+共振檢測)
+  v63MechanismDeepCheck: true
   // v63E 升級:7 個 OOTK config key (ootkOrthodoxBookT / ootkCountingStory /
   //   ootkPairingStory / ootkDignitiesMathers / ootkFiveIndependent /
   //   ootkAbandonRule / ootkPileElementSemantic) 已從前端設定移除——
@@ -4972,7 +5107,13 @@ const _V62_KEY_MAP = {
   // v63.2 Sonnet/Haiku 強化
   'v63-checklist': 'v63SevenChecklist',
   // v63.3 機制層
-  'v63-mech-layer': 'v63MechanismLayer'
+  'v63-mech-layer': 'v63MechanismLayer',
+  // v63.4 跨系統共振
+  'v63-resonance': 'v63SevenResonance',
+  // v63.5 紫微深度
+  'v63-ziwei-depth': 'v63ZiweiDepth',
+  // v63.6 機制層深度檢查
+  'v63-mech-deep': 'v63MechanismDeepCheck'
   // v63E 升級:7 個 v63 OOTK 開關全部移除——
   // 正統化已寫死於程式(資料層 + Prompt 層 + 動畫 + 前端整合),
   // 不再經由 admin checkbox 控制。後台僅顯示「v63E 永遠正統」鎖定標示。
@@ -5035,7 +5176,10 @@ function _v62BuildShortStatus() {
     'v63-photo-cross': '照片限',
     'v63-layer3': '層三檢',
     'v63-checklist': '七檢核',  // v63.2 Sonnet/Haiku 強化
-    'v63-mech-layer': '機制層'   // v63.3 server-side 強制檢測+補寫
+    'v63-mech-layer': '機制層',   // v63.3 server-side 強制檢測+補寫
+    'v63-resonance': '跨共振',    // v63.4 七系統交叉共振
+    'v63-ziwei-depth': '紫深度',  // v63.5 紫微深度(Sonnet/Haiku)
+    'v63-mech-deep': '深度檢'    // v63.6 機制層深度檢查
     // v63E:7 個 OOTK 開關已寫死於程式,從短代碼中移除
   };
   const on = [];
