@@ -203,27 +203,77 @@
   // 注入回饋面板樣式
   var fbStyle = document.createElement('style');
   fbStyle.textContent = [
-    '.jy-fb{margin:1rem;border-radius:14px;border:1px solid rgba(212,175,55,.15);background:rgba(8,9,15,.95);padding:1rem;overflow:hidden}',
-    '.jy-fb-q{text-align:center;font-size:.88rem;color:var(--c-text,#e8e0d0);margin-bottom:.7rem}',
-    '.jy-fb-btns{display:flex;justify-content:center;gap:1rem}',
-    '.jy-fb-btn{font-size:.82rem;font-weight:600;padding:.5rem 1.5rem;border-radius:10px;border:1.5px solid rgba(255,255,255,.1);background:none;color:var(--c-text-dim,#a09880);cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;gap:.4rem}',
-    '.jy-fb-btn:active{transform:scale(.96)}',
-    '.jy-fb-btn.good:hover,.jy-fb-btn.good.picked{border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.08);color:rgba(74,222,128,.9)}',
-    '.jy-fb-btn.bad:hover,.jy-fb-btn.bad.picked{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08);color:rgba(239,68,68,.9)}',
-    '.jy-fb-btn.vague:hover,.jy-fb-btn.vague.picked{border-color:rgba(251,191,36,.45)!important;background:rgba(251,191,36,.1)!important;color:rgba(251,191,36,1)!important}',
-    '.jy-fb-detail{display:none;margin-top:.8rem;padding-top:.7rem;border-top:1px solid rgba(255,255,255,.06)}',
-    '.jy-fb-detail.open{display:block;animation:jyFbSlide .3s ease}',
-    '@keyframes jyFbSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}',
-    '.jy-fb-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.5rem}',
-    '.jy-fb-tag{font-size:.72rem;padding:.3rem .6rem;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--c-text-dim,#a09880);cursor:pointer;transition:all .2s;font-family:inherit}',
-    '.jy-fb-tag.on{border-color:rgba(212,175,55,.35);background:rgba(212,175,55,.08);color:rgba(212,175,55,.9)}',
-    '.jy-fb-text{width:100%;padding:.45rem .6rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:var(--c-text,#e8e0d0);font-size:.78rem;resize:vertical;min-height:50px;font-family:inherit}',
-    '.jy-fb-text::placeholder{color:rgba(255,255,255,.25)}',
-    '.jy-fb-send{margin-top:.5rem;width:100%;padding:.5rem;background:linear-gradient(135deg,rgba(212,175,55,.9),rgba(201,168,76,.8));color:#1a1a2e;border:none;border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit;transition:opacity .2s}',
+    // ─────── 容器:深沉,微微浮起,七芒星淡背景 ───────
+    '.jy-fb{margin:1.4rem 1rem;padding:1.4rem 1.2rem 1.2rem;border-radius:18px;border:1px solid rgba(212,175,55,.18);background:rgba(8,9,15,.85);position:relative;overflow:hidden}',
+    '.jy-fb::before{content:"";position:absolute;top:50%;right:-80px;width:340px;height:340px;background-image:url(/img/fb-bg-heptagram.png);background-size:contain;background-repeat:no-repeat;background-position:center;opacity:.045;transform:translateY(-50%);pointer-events:none;z-index:0}',
+    '.jy-fb > *{position:relative;z-index:1}',
+
+    // ─────── 頂部:符令小裝飾 + 一行靜月口吻 ───────
+    '.jy-fb-header{display:flex;flex-direction:column;align-items:center;margin-bottom:.9rem}',
+    '.jy-fb-talisman{width:32px;height:auto;opacity:.62;margin-bottom:.55rem}',
+    '.jy-fb-greeting{font-size:.78rem;color:rgba(212,175,55,.7);letter-spacing:.18em;font-weight:300}',
+
+    // ─────── 主標題 ───────
+    '.jy-fb-q{text-align:center;margin-bottom:.2rem}',
+    '.jy-fb-title{font-size:1.05rem;color:var(--c-gold,#c9a84c);font-weight:500;letter-spacing:.05em;line-height:1.55;margin-bottom:.5rem}',
+    '.jy-fb-sub{font-size:.74rem;color:rgba(160,152,128,.75);line-height:1.7;letter-spacing:.04em}',
+
+    // ─────── 分隔線(用圖) ───────
+    '.jy-fb-divider{width:100%;height:24px;background-image:url(/img/fb-divider.png);background-size:contain;background-repeat:no-repeat;background-position:center;margin:.85rem 0 1rem;opacity:.7}',
+
+    // ─────── 三按鈕區 ───────
+    '.jy-fb-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem}',
+    '.jy-fb-btn{position:relative;padding:1.1rem .35rem .85rem;border-radius:14px;border:1px solid rgba(212,175,55,.14);background:rgba(0,0,0,.25);cursor:pointer;transition:all .35s cubic-bezier(.2,.8,.2,1);font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.55rem;min-height:120px;overflow:hidden}',
+    '.jy-fb-btn::after{content:"";position:absolute;inset:0;border-radius:14px;background:radial-gradient(circle at center, rgba(212,175,55,.08), transparent 70%);opacity:0;transition:opacity .4s}',
+    '.jy-fb-btn:hover::after{opacity:1}',
+    '.jy-fb-btn:active{transform:scale(.97)}',
+    '.jy-fb-btn-icon{width:46px;height:46px;background-repeat:no-repeat;background-position:center;background-size:contain;opacity:.78;transition:all .35s}',
+    '.jy-fb-btn:hover .jy-fb-btn-icon{opacity:1;transform:scale(1.06)}',
+    '.jy-fb-btn-label{font-size:.82rem;font-weight:500;color:rgba(232,224,208,.8);letter-spacing:.08em;transition:color .3s}',
+    // 按鈕圖示對應(各自的圖)
+    '.jy-fb-btn.good .jy-fb-btn-icon{background-image:url(/img/fb-icon-good.png)}',
+    '.jy-fb-btn.vague .jy-fb-btn-icon{background-image:url(/img/fb-icon-vague.png)}',
+    '.jy-fb-btn.bad .jy-fb-btn-icon{background-image:url(/img/fb-icon-bad.png)}',
+    // hover / picked 各自顏色
+    '.jy-fb-btn.good:hover,.jy-fb-btn.good.picked{border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.04)}',
+    '.jy-fb-btn.good.picked .jy-fb-btn-label{color:#c9a84c}',
+    '.jy-fb-btn.vague:hover,.jy-fb-btn.vague.picked{border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.04)}',
+    '.jy-fb-btn.vague.picked .jy-fb-btn-label{color:#c9a84c}',
+    '.jy-fb-btn.bad:hover,.jy-fb-btn.bad.picked{border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.04)}',
+    '.jy-fb-btn.bad.picked .jy-fb-btn-label{color:#c9a84c}',
+    // 選中後右上角顯示月相
+    '.jy-fb-btn.picked::before{content:"";position:absolute;top:8px;right:8px;width:18px;height:18px;background-repeat:no-repeat;background-position:center;background-size:contain;opacity:.85;animation:jyMoonRise .5s ease}',
+    '.jy-fb-btn.good.picked::before{background-image:url(/img/fb-moon-4.png)}',  // 滿月=圓滿對得上
+    '.jy-fb-btn.vague.picked::before{background-image:url(/img/fb-moon-2.png)}', // 半月=半明半暗
+    '.jy-fb-btn.bad.picked::before{background-image:url(/img/fb-moon-1.png)}',   // 殘月=失落
+    '@keyframes jyMoonRise{from{opacity:0;transform:translateY(-4px)}to{opacity:.85;transform:translateY(0)}}',
+
+    // ─────── 底部小提示 ───────
+    '.jy-fb-hint{text-align:center;font-size:.7rem;color:rgba(212,175,55,.42);margin-top:.9rem;letter-spacing:.1em}',
+
+    // ─────── 詳細原因區 ───────
+    '.jy-fb-detail{display:none;margin-top:1.1rem;padding-top:.9rem;border-top:1px solid rgba(212,175,55,.1)}',
+    '.jy-fb-detail.open{display:block;animation:jyFbSlide .4s ease}',
+    '@keyframes jyFbSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}',
+    '.jy-fb-detail-q{font-size:.82rem;color:rgba(232,224,208,.85);margin-bottom:.55rem;letter-spacing:.04em}',
+    '.jy-fb-detail-q small{color:rgba(160,152,128,.65);font-size:.72rem;font-weight:400;margin-left:.35rem}',
+    '.jy-fb-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.7rem}',
+    '.jy-fb-tag{font-size:.74rem;padding:.4rem .7rem;border-radius:18px;border:1px solid rgba(212,175,55,.12);background:rgba(0,0,0,.2);color:rgba(160,152,128,.85);cursor:pointer;transition:all .25s;font-family:inherit;letter-spacing:.04em}',
+    '.jy-fb-tag:hover{border-color:rgba(212,175,55,.3);color:rgba(212,175,55,.85)}',
+    '.jy-fb-tag.on{border-color:rgba(212,175,55,.45);background:rgba(212,175,55,.08);color:rgba(212,175,55,.95)}',
+    '.jy-fb-text{width:100%;padding:.6rem .8rem;background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.12);border-radius:10px;color:var(--c-text,#e8e0d0);font-size:.82rem;resize:vertical;min-height:55px;font-family:inherit;line-height:1.6;letter-spacing:.02em}',
+    '.jy-fb-text:focus{outline:none;border-color:rgba(212,175,55,.3)}',
+    '.jy-fb-text::placeholder{color:rgba(160,152,128,.4)}',
+    '.jy-fb-send{margin-top:.7rem;width:100%;padding:.85rem;background:rgba(212,175,55,.08);color:rgba(212,175,55,.95);border:1px solid rgba(212,175,55,.35);border-radius:12px;font-weight:500;font-size:.88rem;cursor:pointer;font-family:inherit;transition:all .3s;letter-spacing:.1em}',
+    '.jy-fb-send:hover{background:rgba(212,175,55,.15);border-color:rgba(212,175,55,.55)}',
     '.jy-fb-send:disabled{opacity:.4;cursor:not-allowed}',
-    '.jy-fb-done{text-align:center;padding:.6rem 0;animation:jyFbSlide .4s ease}',
-    '.jy-fb-done .moon{font-size:1.5rem;margin-bottom:.3rem}',
-    '.jy-fb-done .msg{font-size:.85rem;color:rgba(212,175,55,.8)}'
+
+    // ─────── 感謝區 ───────
+    '.jy-fb-done{text-align:center;padding:1.4rem .5rem;animation:jyFbSlide .5s ease}',
+    '.jy-fb-done .moon{width:48px;height:48px;background-image:url(/img/fb-moon-4.png);background-repeat:no-repeat;background-position:center;background-size:contain;margin:0 auto .7rem;opacity:.9;animation:jyMoonBreath 3s ease-in-out infinite}',
+    '@keyframes jyMoonBreath{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}',
+    '.jy-fb-done .msg{font-size:1rem;color:var(--c-gold,#c9a84c);font-weight:500;letter-spacing:.08em;margin-bottom:.45rem}',
+    '.jy-fb-done .sub{font-size:.76rem;color:rgba(160,152,128,.75);line-height:1.75;letter-spacing:.03em}'
   ].join('\n');
   document.head.appendChild(fbStyle);
 
@@ -265,29 +315,42 @@
     var toolLabel = tool === 'tarot' ? '塔羅快讀' : tool === 'ootk' ? '開鑰之法' : '七維度分析';
 
     fb.innerHTML =
-      // ★ 改造:從「客套調查」轉成「教學訊號」說明
-      //   核心訊息:你的反饋會直接調整系統權重,且每次回訪會越來越懂你
-      '<div class="jy-fb-q" style="text-align:left;line-height:1.65">' +
-        '<div style="font-size:.95rem;font-weight:600;color:var(--c-gold,#d4af37);margin-bottom:.5rem">☽ 你的反饋會直接調整我</div>' +
-        '<div style="font-size:.78rem;color:var(--c-text-dim,#a09880);line-height:1.7">' +
-          '點「對得上」 → 我下次更信任這次用上的命盤訊號<br>' +
-          '點「對不上」 → 我下次降低該訊號的權重<br>' +
-          '<span style="opacity:.7">這不是客套調查,你的回饋真的會影響後續所有解讀。</span><br>' +
-          '<span style="font-size:.74rem;color:rgba(212,175,55,.65);margin-top:.3rem;display:inline-block">☽ 越誠實的回饋,你下次回訪時的解讀會越貼合你</span>' +
-        '</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text,#e8e0d0);margin-top:.7rem;font-weight:500">這次的<span style="color:rgba(212,175,55,.85)">' + toolLabel + '</span>,你直覺上呢?</div>' +
+      // ★ v63.4 質感重設計:用訂製圖騰 + 靜月口吻,捨棄 emoji 跟壓迫式設計
+      // 頂部:符令裝飾 + 一行靜月口吻
+      '<div class="jy-fb-header">' +
+        '<img class="jy-fb-talisman" src="/img/fb-header-talisman.png" alt="">' +
+        '<div class="jy-fb-greeting">☽ 靜 月 想 聽 你 說</div>' +
       '</div>' +
 
-      // 三個按鈕（加入「太籠統」,讓不確定的人也能誠實表態而非亂按一邊）
-      '<div class="jy-fb-btns" style="flex-wrap:wrap;gap:.6rem">' +
-        '<button class="jy-fb-btn good" data-rating="good">⊙ 對得上</button>' +
-        '<button class="jy-fb-btn vague" data-rating="vague" style="border-color:rgba(251,191,36,.25);color:rgba(251,191,36,.85)">◐ 太籠統</button>' +
-        '<button class="jy-fb-btn bad" data-rating="bad">● 對不上</button>' +
+      // 主標題
+      '<div class="jy-fb-q">' +
+        '<div class="jy-fb-title">這次的<span style="opacity:.95">' + toolLabel + '</span>,接得上你嗎?</div>' +
+        '<div class="jy-fb-sub">你回的那一聲,會直接調整我下次解讀的權重——<br>回訪時的字句,會更貼近你。</div>' +
       '</div>' +
 
-      // 展開的詳細原因區（點「對不上」或「太籠統」後顯示）
+      // 詩意分隔線(用圖)
+      '<div class="jy-fb-divider"></div>' +
+
+      // 三按鈕(訂製圖騰,不用 emoji)
+      '<div class="jy-fb-btns">' +
+        '<button class="jy-fb-btn good" data-rating="good">' +
+          '<div class="jy-fb-btn-icon"></div>' +
+          '<div class="jy-fb-btn-label">對 得 上</div>' +
+        '</button>' +
+        '<button class="jy-fb-btn vague" data-rating="vague">' +
+          '<div class="jy-fb-btn-icon"></div>' +
+          '<div class="jy-fb-btn-label">太 籠 統</div>' +
+        '</button>' +
+        '<button class="jy-fb-btn bad" data-rating="bad">' +
+          '<div class="jy-fb-btn-icon"></div>' +
+          '<div class="jy-fb-btn-label">對 不 上</div>' +
+        '</button>' +
+      '</div>' +
+      '<div class="jy-fb-hint">點 一 下 · 靜 月 會 記 得</div>' +
+
+      // 詳細原因區(點「對不上」或「太籠統」後展開)
       '<div class="jy-fb-detail" id="jy-fb-detail">' +
-        '<div style="font-size:.78rem;color:var(--c-text-dim,#a09880);margin-bottom:.4rem">哪裡可以更好？(選填,但寫了我能改更快)</div>' +
+        '<div class="jy-fb-detail-q">哪裡可以更好?<small>選填,但寫了我能改更快</small></div>' +
         '<div class="jy-fb-tags" id="jy-fb-tags">' +
           '<button class="jy-fb-tag" data-r="太籠統">解讀太籠統</button>' +
           '<button class="jy-fb-tag" data-r="答非所問">沒回答我的問題</button>' +
@@ -298,15 +361,15 @@
           '<button class="jy-fb-tag" data-r="水晶不對">水晶建議不對</button>' +
           '<button class="jy-fb-tag" data-r="風格">不喜歡語氣風格</button>' +
         '</div>' +
-        '<textarea class="jy-fb-text" id="jy-fb-text" placeholder="具體哪裡不對？你期望的答案是什麼？（選填）"></textarea>' +
-        '<button class="jy-fb-send" id="jy-fb-send">送出回饋</button>' +
+        '<textarea class="jy-fb-text" id="jy-fb-text" placeholder="具體哪裡不對?你期望的答案是什麼?(選填)"></textarea>' +
+        '<button class="jy-fb-send" id="jy-fb-send">送 出 回 饋</button>' +
       '</div>' +
 
-      // 感謝畫面（樸實無誇大）
+      // 感謝畫面(滿月圖示 + 呼吸動畫)
       '<div class="jy-fb-done" id="jy-fb-done" style="display:none">' +
-        '<div class="moon">☽</div>' +
-        '<div class="msg">收到了,你的反饋已寫入學習資料庫。</div>' +
-        '<div style="font-size:.74rem;color:var(--c-text-dim,#a09880);margin-top:.4rem;line-height:1.6">下次你回訪時,我會記得這次的對話脈絡,解讀會更貼近你。</div>' +
+        '<div class="moon"></div>' +
+        '<div class="msg">收 到 了</div>' +
+        '<div class="sub">下次你回訪時,我會記得這次的對話脈絡,<br>解讀會更貼近你。</div>' +
       '</div>';
 
     if (target) {
