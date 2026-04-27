@@ -2554,14 +2554,26 @@ enhanceTarot = function(tarot) {
       op1Retry.expectedPiles = expectedPiles;
 
       if (expectedPiles.indexOf(op1Retry.activePile) < 0) {
-        // 二次仍錯堆 → abandon 警示(Mathers 原則)
-        op1Retry.abandonTriggered = true;
+        // ★ v64.B:不觸發 abandon,改為「能量場域訊號」(揭示真實場域,非拒答)
+        op1Retry.abandonTriggered = false; // v64.B 永遠 false,不再嚇用戶
+        op1Retry.fieldSignal = true;       // 新旗標:能量場域訊號
         var pileZh = { fire: 'Yod 火堆', water: 'Heh 水堆', air: 'Vau 風堆', earth: 'Heh-final 土堆' };
+        var pileMeaningZh = {
+          fire: '工作/事業/行動場域',
+          water: '感情/愉悅/情感連結場域',
+          air: '溝通/思考/衝突場域',
+          earth: '物質/金錢/實務場域'
+        };
         var expectedZh = expectedPiles.map(function(p) { return pileZh[p] || p; }).join(' / ');
-        op1Retry.abandonReason =
-          '依 Mathers Book T,Op1 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
-          ')仍落於 ' + (pileZh[op1Retry.activePile] || op1Retry.activePile) +
-          '(非問題「' + getQTypeZh(qType) + '」的合適元素堆 ' + expectedZh + ')→ 此次盤面在告訴你:你心裡真正關心的議題,可能不是你問的這件事。應 abandon 或重新檢視問題。';
+        op1Retry.fieldSignalReason =
+          'Op1 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
+          ')落於 ' + (pileZh[op1Retry.activePile] || op1Retry.activePile) +
+          '(' + (pileMeaningZh[op1Retry.activePile] || '?') +
+          '),非問題「' + getQTypeZh(qType) + '」的典型場域(' + expectedZh +
+          ')。這是「能量場域訊號」——揭示這件事真正的場域可能在 ' +
+          (pileMeaningZh[op1Retry.activePile] || '?') + ',AI 會把這個觀察融入解讀,給你具體答案。';
+        // 保留舊欄位讓 AI 還能看到原始訊號(但 UI 不再以紅框呈現)
+        op1Retry.abandonReason = op1Retry.fieldSignalReason;
         op1Retry.firstAttemptPile = results.op1.activePile;
       } else {
         op1Retry.abandonTriggered = false;
@@ -2590,12 +2602,18 @@ enhanceTarot = function(tarot) {
       op2Retry.expectedHouses = expectedHouses;
 
       if (!isSigInExpectedPosition(op2Retry.activeHouse, expectedHouses)) {
-        // Mathers 原文:「if it again fails, the divination should be abandoned」
-        op2Retry.abandonTriggered = true;
-        op2Retry.abandonReason =
-          '依 Mathers Book T 原文,Op2 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
-          ')仍落於第 ' + op2Retry.activeHouse + ' 宮(非問題「' +
-          getQTypeZh(qType) + '」的合適宮位 ' + expectedHouses.join('/') + ' 宮)→ 此次 Op2 應 abandon。';
+        // ★ v64.B:不觸發 abandon,改為「能量場域訊號」(揭示真實生活領域,非拒答)
+        op2Retry.abandonTriggered = false; // v64.B 永遠 false
+        op2Retry.fieldSignal = true;
+        var houseZhMap = ['','自我','財帛','兄弟/溝通','田宅/家庭','子女/戀愛','奴僕/工作','夫妻/合夥','疾厄/性','遷移/學問','官祿/事業','福德/朋友','玄秘/隱藏'];
+        var houseMeaning = houseZhMap[op2Retry.activeHouse] || '?';
+        op2Retry.fieldSignalReason =
+          'Op2 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
+          ')落第 ' + op2Retry.activeHouse + ' 宮(' + houseMeaning +
+          '),非問題「' + getQTypeZh(qType) + '」的典型宮位(' + expectedHouses.join('/') +
+          ' 宮)。這是「真實生活領域揭示」——這件事真正在你生命中的場域是「' +
+          houseMeaning + '」。AI 會用該宮位的傳統意義回答你的問題,給你具體答案,不會拒答。';
+        op2Retry.abandonReason = op2Retry.fieldSignalReason;
         op2Retry.firstAttemptHouse = results.op2.activeHouse;
       } else {
         op2Retry.abandonTriggered = false;
@@ -2858,13 +2876,13 @@ enhanceTarot = function(tarot) {
       };
       _abandonObservations.push(
         'Op1 Sig 落於 ' + (pileTypeZh[results.op1.activePile] || results.op1.activePile) +
-        ' —— 若與用戶問題大類完全不符,依 Mathers 原則應 abandon'
+        ' —— v64.B:若與用戶問題大類不對應,用該堆的傳統意義揭示真實場域(不可寫 abandon/重抽)'
       );
     }
     if (results.op2 && results.op2.activeHouse) {
       _abandonObservations.push(
         'Op2 Sig 落於第 ' + results.op2.activeHouse + ' 宮 —— ' +
-        '解讀者依問題性質判斷是否合理;不合理且二度錯位才 abandon(Mathers Book T)'
+        'v64.B:用宮位傳統意義揭示真實生活領域,給用戶具體答案(不可寫 abandon/重抽)'
       );
     }
 
@@ -3569,26 +3587,24 @@ enhanceTarot = function(tarot) {
       // 資料層觸發的 abandon/弱訊號警示必須讓用戶看見並做選擇
       var abandonBanner = '';
       if (opData) {
-        if (opData.abandonTriggered && opData.abandonReason) {
-          // Op1 / Op2 abandon — 醒目紅色警示卡
+        // v64.B:fieldSignal 旗標(取代 abandonTriggered)→ 藍色「能量場域訊號」卡
+        // 同時相容 abandonTriggered 舊資料(若還有舊資料殘留)→ 也走場域訊號顯示
+        if ((opData.fieldSignal || opData.abandonTriggered) && (opData.fieldSignalReason || opData.abandonReason)) {
+          // 藍色「能量場域訊號」卡(揭示真實場域,非警示拒答)
+          var signalText = opData.fieldSignalReason || opData.abandonReason;
           abandonBanner =
-            '<div style="margin:1rem 0;padding:1.2rem;border-radius:12px;' +
-            'border:2px solid #ef4444;background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(239,68,68,.06));' +
-            'box-shadow:0 0 24px rgba(239,68,68,.3),inset 0 0 12px rgba(239,68,68,.1);">' +
-            '<div style="font-size:.95rem;font-weight:700;color:#fca5a5;margin-bottom:.6rem;letter-spacing:.05em">' +
-              '🚨 Mathers Book T ABANDON 警示' +
+            '<div style="margin:1rem 0;padding:1.1rem;border-radius:12px;' +
+            'border:1.5px solid rgba(96,165,250,.55);background:linear-gradient(135deg,rgba(96,165,250,.10),rgba(96,165,250,.03));' +
+            'box-shadow:0 0 16px rgba(96,165,250,.18),inset 0 0 8px rgba(96,165,250,.06);">' +
+            '<div style="font-size:.92rem;font-weight:700;color:#93c5fd;margin-bottom:.55rem;letter-spacing:.04em">' +
+              '🔮 能量場域訊號' +
             '</div>' +
-            '<div style="font-size:.78rem;color:#fecaca;line-height:1.7;margin-bottom:.8rem">' +
-              _esc(opData.abandonReason) +
+            '<div style="font-size:.78rem;color:#bfdbfe;line-height:1.7;margin-bottom:.7rem">' +
+              _esc(signalText) +
             '</div>' +
-            '<div style="font-size:.7rem;color:rgba(254,202,202,.8);line-height:1.7;margin-bottom:.9rem;font-style:italic">' +
-              '依 Mathers Book T 原文,此 Op 經二次重洗 Sig 仍非合適位置——盤面在告訴你:' +
-              '你心裡真正關心的議題,可能不是你問的這件事。<br>' +
-              'Counting/Pairing 解讀仍可繼續(作為弱訊號參考),但 AI 會在解讀中標明此警示。' +
-            '</div>' +
-            '<div style="font-size:.7rem;color:rgba(255,200,150,.85);line-height:1.6;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.25);border-left:2px solid #fbbf24">' +
-              '★ Mathers 規範:你可以選擇「繼續讀(承認盤面更深訊息)」或「重抽整盤」。' +
-              '想重抽請關閉此頁回首頁重新開鑰,本次解讀預設為「繼續讀」。' +
+            '<div style="font-size:.7rem;color:rgba(191,219,254,.78);line-height:1.65;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.22);border-left:2px solid rgba(212,175,55,.6)">' +
+              '★ 這是 v64.B 場域揭示機制:Sig 落點不對應典型位置 = 揭示「真實場域」,不是拒答。' +
+              'AI 會用該位置的傳統意義具體回答你的問題,給每個子題明確答案 + 信心度標籤。' +
             '</div>' +
             '</div>';
         } else if (opData.weakSignalWarning && opData.weakSignalReason) {
