@@ -487,8 +487,9 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </div>
 
           <div style="font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.65">
-            <strong style="color:#d4af37">這是什麼?</strong>從用戶反饋找出 prompt 系統性盲點(例:「年齡判斷偏差」「時間範圍模糊」),產生改進建議。<strong>站長 review 後採納,規則自動注入到 system prompt</strong>,不需重新部署。<br>
-            <strong style="color:#d4af37">跟自動學習不一樣:</strong>下面那個是「維度權重微調」,這個是「找 prompt 真正的盲點」。
+            <strong style="color:#d4af37">這是什麼?</strong>從用戶反饋找出 AI 在判讀時可能漏看的命理證據,產生「自查清單」規則,讓 AI 下次判讀時主動檢查更多證據。<strong>站長 review 後採納,規則自動注入到 system prompt</strong>,不需重新部署。<br>
+            <strong style="color:#d4af37">v63.10.B 核心原則:</strong>用戶反饋【不是答案】,而是「提醒 AI 漏看了什麼證據」。產出的規則應該是「自查清單」(讓 AI 列證據+交叉驗證),不是「直接告訴 AI 答案」(那會讓 AI 順從用戶,失去命理客觀性)。<br>
+            <strong style="color:#d4af37">跟自動學習不一樣:</strong>下面那個是「維度權重微調」,這個是「找 AI 漏看的證據類型」。
           </div>
 
           <!-- 設定區 -->
@@ -3443,8 +3444,9 @@ function v6310RenderActiveRule(r) {
   return `
     <div style="margin-bottom:8px;padding:10px 12px;border-radius:6px;background:${r.active ? 'rgba(34,197,94,.05)' : 'rgba(160,160,160,.05)'};border:1px solid ${r.active ? 'rgba(34,197,94,.25)' : 'rgba(160,160,160,.2)'}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">
-        <div style="flex:1;font-size:12px;color:var(--text);line-height:1.6">${escHtml(r.rule)}</div>
+        <div style="flex:1;font-size:12px;color:var(--text);line-height:1.6;white-space:pre-wrap">${escHtml(r.rule)}</div>
         <div style="display:flex;gap:4px;flex-shrink:0">
+          <button onclick="v6310EditRule('${escHtml(r.id)}')" title="編輯規則內容" style="padding:4px 8px;font-size:10px;border-radius:4px;border:1px solid #d4af37;background:transparent;color:#d4af37;cursor:pointer">✎</button>
           ${r.active
             ? `<button onclick="v6310ToggleRule('${escHtml(r.id)}','deactivate')" title="暫停" style="padding:4px 8px;font-size:10px;border-radius:4px;border:1px solid #eab308;background:transparent;color:#eab308;cursor:pointer">⏸</button>`
             : `<button onclick="v6310ToggleRule('${escHtml(r.id)}','activate')" title="啟用" style="padding:4px 8px;font-size:10px;border-radius:4px;border:1px solid #22c55e;background:transparent;color:#22c55e;cursor:pointer">▶</button>`
@@ -3465,9 +3467,49 @@ function v6310RenderActiveRule(r) {
   `;
 }
 
+// 編輯已採納規則(v63.10.B 新增 — 讓站長把舊規則改寫成自查清單格式)
+async function v6310EditRule(rid) {
+  // 撈規則
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/prompt-suggestions?token=${encodeURIComponent(adminToken)}&status=all`);
+    const data = await r.json();
+    const rule = (data.activeRules || []).find(function(x) { return x.id === rid; });
+    if (!rule) { alert('找不到規則'); return; }
+
+    const newRule = prompt(
+      '★ v63.10.B 編輯規則 — 改寫成自查清單格式\n\n' +
+      '建議格式範例:\n' +
+      '「年齡判斷必做:① 列出至少 3 條牌面證據 ② 每條證據明確指向幾歲 ③ 證據衝突時解釋為什麼選某方 ④ 不能用固有印象代替證據查驗」\n\n' +
+      '不建議格式(會讓 AI 順從用戶):\n' +
+      '「年齡判斷優先取 25-32 歲區間」\n\n' +
+      '原規則(可直接編輯):',
+      rule.rule
+    );
+    if (newRule === null) return; // 取消
+    if (!newRule.trim()) { alert('規則不能空'); return; }
+    if (newRule === rule.rule) { alert('沒改動,跳過'); return; }
+
+    // 用 edit-rule action(我們需要在 worker 加這個端點)
+    const r2 = await fetch(`${WORKER_URL}/admin/prompt-suggestions/${encodeURIComponent(rid)}?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'edit_rule', editedRule: newRule.trim() })
+    });
+    const data2 = await r2.json();
+    if (data2.ok) {
+      alert('✓ 規則已更新');
+      await v6310LoadSuggestions();
+    } else {
+      alert('更新失敗:' + (data2.error || '未知'));
+    }
+  } catch(e) {
+    alert('編輯失敗:' + e.message);
+  }
+}
+
 // 採納
 async function v6310Accept(sid) {
-  if (!confirm('確認採納這條建議?\n\n採納後規則會立刻注入到 system prompt(下次解讀就生效)。')) return;
+  if (!confirm('確認採納這條建議?\n\n★ v63.10.B 提醒:\n• 採納前請確認規則是「自查清單」格式(叫 AI 列證據+交叉驗證)\n• 不要採納「直接給答案範圍」的規則(那會讓 AI 順從用戶,失去命理客觀性)\n• 不確定可以用「修改採納」改寫成清單格式\n\n採納後規則會立刻注入到 system prompt(下次解讀就生效)。')) return;
   await v6310SuggestionAction(sid, { action: 'accept' });
 }
 
