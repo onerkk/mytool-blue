@@ -446,12 +446,44 @@
           <span class="jy-time-sep">:</span>
           <select class="jy-select" id="f-bminute" aria-label="出生分"></select>
         </div>
-        <label class="jy-checkbox-label" style="margin-top:.4rem">
-          <input type="checkbox" id="f-btime-unsure" onchange="var hS=document.getElementById('f-bhour'),mS=document.getElementById('f-bminute');if(this.checked){hS.value='';mS.value='';hS.disabled=true;mS.disabled=true}else{hS.disabled=false;mS.disabled=false}">
-          <span>我不知道確切出生時間</span>
-        </label>
-        <div style="background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:8px;padding:7px 10px;margin-top:.4rem">
-          <p style="font-size:.72rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-exclamation-triangle" style="margin-right:4px"></i> <strong>沒填時間＝八字少一柱、紫微命宮可能排錯</strong>，準確度大幅下降。</p>
+        <!-- v64.F：時辰精度三模式 -->
+        <div style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem">
+          <label class="jy-checkbox-label" style="font-size:.78rem;cursor:pointer">
+            <input type="radio" name="f-time-precision" value="precise" checked style="margin-right:.4rem;cursor:pointer">
+            <span><strong style="color:var(--c-text)">精準時辰</strong>—我知道幾點幾分</span>
+          </label>
+          <label class="jy-checkbox-label" style="font-size:.78rem;cursor:pointer">
+            <input type="radio" name="f-time-precision" value="approximate" style="margin-right:.4rem;cursor:pointer">
+            <span><strong style="color:var(--c-text)">約略時辰</strong>—只知大概（如：上午 / 下午 / 晚上）</span>
+          </label>
+          <label class="jy-checkbox-label" style="font-size:.78rem;cursor:pointer">
+            <input type="radio" name="f-time-precision" value="unknown" id="f-btime-unsure-radio" style="margin-right:.4rem;cursor:pointer">
+            <span><strong style="color:var(--c-text-muted)">完全不知道</strong>—跳過時辰相關判讀</span>
+          </label>
+        </div>
+        <!-- 保留舊 checkbox 給 ui.js 相容(隱藏),由 radio 同步控制 -->
+        <input type="checkbox" id="f-btime-unsure" style="display:none">
+        <script>
+          (function(){
+            var radios = document.getElementsByName('f-time-precision');
+            var hS = document.getElementById('f-bhour'), mS = document.getElementById('f-bminute');
+            var unsureCb = document.getElementById('f-btime-unsure');
+            for (var i=0; i<radios.length; i++) {
+              radios[i].addEventListener('change', function(e){
+                var v = e.target.value;
+                if (v === 'unknown') {
+                  hS.value=''; mS.value=''; hS.disabled=true; mS.disabled=true;
+                  unsureCb.checked = true;
+                } else {
+                  hS.disabled=false; mS.disabled=false;
+                  unsureCb.checked = false;
+                }
+              });
+            }
+          })();
+        </script>
+        <div id="f-time-precision-hint" style="background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:8px;padding:7px 10px;margin-top:.4rem">
+          <p style="font-size:.72rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-info-circle" style="margin-right:4px"></i> <strong>選「約略」時</strong>,系統會降低紫微命宮、西占上升、吠陀宮位的權重——避免從不確定的時辰硬推結論。</p>
         </div>
       </div>
 
@@ -651,12 +683,43 @@
             <span class="jy-time-sep">:</span>
             <select class="jy-select" id="f2-bminute" aria-label="出生分"></select>
           </div>
-          <label class="jy-checkbox-label" style="margin-top:.4rem">
-            <input type="checkbox" id="f2-btime-unsure" onchange="var hS=document.getElementById('f2-bhour'),mS=document.getElementById('f2-bminute');if(this.checked){hS.value='';mS.value='';hS.disabled=true;mS.disabled=true}else{hS.disabled=false;mS.disabled=false}">
-            <span>我不知道確切出生時間</span>
-          </label>
+          <!-- v64.F:時辰精度三模式 -->
+          <div style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem">
+            <label class="jy-checkbox-label" style="font-size:.78rem;cursor:pointer">
+              <input type="radio" name="f2-time-precision" value="precise" checked style="margin-right:.4rem;cursor:pointer">
+              <span><strong style="color:var(--c-text)">精準時辰</strong>—我知道幾點幾分</span>
+            </label>
+            <label class="jy-checkbox-label" style="font-size:.78rem;cursor:pointer">
+              <input type="radio" name="f2-time-precision" value="approximate" style="margin-right:.4rem;cursor:pointer">
+              <span><strong style="color:var(--c-text)">約略時辰</strong>—只知大概(如:上午/下午/晚上)</span>
+            </label>
+            <label class="jy-checkbox-label" style="font-size:.78rem;cursor:pointer">
+              <input type="radio" name="f2-time-precision" value="unknown" style="margin-right:.4rem;cursor:pointer">
+              <span><strong style="color:var(--c-text-muted)">完全不知道</strong>—跳過時辰相關判讀</span>
+            </label>
+          </div>
+          <input type="checkbox" id="f2-btime-unsure" style="display:none">
+          <script>
+            (function(){
+              var radios = document.getElementsByName('f2-time-precision');
+              var hS = document.getElementById('f2-bhour'), mS = document.getElementById('f2-bminute');
+              var unsureCb = document.getElementById('f2-btime-unsure');
+              for (var i=0; i<radios.length; i++) {
+                radios[i].addEventListener('change', function(e){
+                  var v = e.target.value;
+                  if (v === 'unknown') {
+                    hS.value=''; mS.value=''; hS.disabled=true; mS.disabled=true;
+                    unsureCb.checked = true;
+                  } else {
+                    hS.disabled=false; mS.disabled=false;
+                    unsureCb.checked = false;
+                  }
+                });
+              }
+            })();
+          </script>
           <div style="background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:8px;padding:7px 10px;margin-top:.4rem">
-            <p style="font-size:.72rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-exclamation-triangle" style="margin-right:4px"></i> <strong>沒填時間＝八字少一柱、紫微命宮可能排錯</strong>，準確度大幅下降。</p>
+            <p style="font-size:.72rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-info-circle" style="margin-right:4px"></i> 選「約略/不知道」時,系統會自動降低紫微、西占、吠陀的時辰相關判讀權重。</p>
           </div>
         </div>
 
