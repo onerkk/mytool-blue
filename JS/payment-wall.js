@@ -391,7 +391,8 @@
     try {
       localStorage.setItem('_jy_paid_token', pending.tradeNo);
       localStorage.setItem('_jy_paid_token_type', pending.type || 'single');
-      _jyLog('SET paid_token', { token: pending.tradeNo, type: pending.type });
+      localStorage.setItem('_jy_paid_token_at', String(Date.now()));  // v64.B-bugfix:寫入時間戳供除錯/驗證
+      _jyLog('SET paid_token', { token: pending.tradeNo, type: pending.type, ts: Date.now() });
     } catch(e){
       _jyLog('SET paid_token FAILED', { error: e.message });
     }
@@ -665,115 +666,143 @@
   }
 
   // ═══ 4. 付費 token 注入到 AI fetch ═══
+  //   v64.B-final:全面重寫 — 不再依賴 DOM 文字偵測
+  //   架構:
+  //     - fetch hook 動態讀 token + 注入 body
+  //     - 「AI fetch 200 OK」是清 token 的權威信號(不再用 MutationObserver 偵測 DOM)
+  //     - opus/fu/single 三種 token 各自只在對應 fetch 成功時清除
+  //     - 60 秒安全網 fallback(極罕見 fetch 沒抓到的邊界)
 
   function _injectPaidToken() {
-    var token = localStorage.getItem('_jy_paid_token');
-    if (!token) return;
+    // 重複呼叫保護 — fetch 不可被多層包裝
+    if (window._jyFetchHijacked) return;
+    window._jyFetchHijacked = true;
 
     var _realFetch = window.fetch;
+    var _aiFetchSuccessSeen = false;
+
     window.fetch = function(url, opts) {
+      // ── 注入 token 到 AI fetch ──
+      var _curToken = '';
+      var _isAiFetch = false;
+      var _isFollowUp = false;
+      var _isOpusFetch = false;
+
       if (typeof url === 'string' && url.indexOf('jy-ai-proxy') >= 0 && opts && opts.body && typeof opts.body === 'string') {
+        try { _curToken = localStorage.getItem('_jy_paid_token') || ''; } catch(_) {}
+        if (_curToken) {
+          try {
+            var bodyObj = JSON.parse(opts.body);
+            if (bodyObj.payload || bodyObj.action === 'check') {
+              bodyObj.paid_token = _curToken;
+              opts.body = JSON.stringify(bodyObj);
+            }
+          } catch(_) {}
+        }
+        // 識別 fetch 類型(用於後續清 token 判斷)
         try {
-          var bodyObj = JSON.parse(opts.body);
-          if (bodyObj.payload || bodyObj.action === 'check') {
-            bodyObj.paid_token = token;
-            opts.body = JSON.stringify(bodyObj);
+          var _b2 = JSON.parse(opts.body);
+          _isAiFetch = !!(_b2.payload && !_b2.action);
+          if (_isAiFetch && _b2.payload) {
+            _isFollowUp = !!(_b2.payload.followUp || _b2.payload.mode === 'followup' || (_b2.payload.followup_index !== undefined && _b2.payload.followup_index >= 0));
+            _isOpusFetch = !!(_b2.payload.depth === 'opus' || _b2.payload.useOpus || window._jyOpusDepth);
           }
         } catch(_) {}
       }
-      // v60-hotfix7-h：若是真實 AI fetch（有 payload）且被 worker 拒絕，console 印錯誤資訊（生產環境不彈 alert）
-      var _isAiFetch = false;
-      try {
-        if (opts && opts.body && typeof opts.body === 'string') {
-          var _b = JSON.parse(opts.body);
-          _isAiFetch = !!(_b.payload && !_b.action);
-        }
-      } catch(_){}
+
       var _respPromise = _realFetch.call(window, url, opts);
+
+      // 只追蹤 AI fetch 的結果
       if (_isAiFetch) {
         _respPromise.then(function(resp) {
           if (!resp.ok) {
+            // ── AI fetch 被 worker 拒絕 ──
+            // 不清 token!保留給用戶重試
             resp.clone().json().then(function(errData) {
               _jyLog('AI REJECTED by worker', {
                 status: resp.status,
                 error: errData.error,
                 code: errData.code,
-                hadPaidToken: !!JSON.parse(opts.body).paid_token,
-                paidTokenValue: JSON.parse(opts.body).paid_token,
-                hadSessionToken: !!JSON.parse(opts.body).session_token
+                hadPaidToken: !!_curToken,
+                paidTokenValue: _curToken,
+                isFollowUp: _isFollowUp,
+                isOpusFetch: _isOpusFetch
               });
             }).catch(function(){});
-          } else {
-            _jyLog('AI request OK', { status: resp.status });
+            return;
           }
-        }).catch(function(){});
+          // ── AI fetch 200 OK = 權威「AI 真的跑完」信號 ──
+          //   這是新邏輯的核心:用 fetch 結果取代 DOM 偵測
+          //   - 不會被 banner/loading/水晶處方/錯誤頁誤觸發
+          //   - 不會被未來改文字打破
+          //   - 失敗時自動保留 token 給用戶重試
+          _aiFetchSuccessSeen = true;
+          _jyLog('AI request OK', {
+            status: resp.status,
+            isFollowUp: _isFollowUp,
+            isOpusFetch: _isOpusFetch
+          });
+
+          // ── 清 token 邏輯(精準對應 token 類型) ──
+          var _ptType = localStorage.getItem('_jy_paid_token_type');
+          if (!_ptType) return;  // 沒 token 不用清
+
+          var _shouldClear = false;
+
+          if (_ptType === 'followup_single') {
+            // 追問 token 只在追問 fetch 成功時清
+            if (_isFollowUp) _shouldClear = true;
+          } else if (_ptType === 'opus_single') {
+            // Opus token 只在深度 fetch 成功時清
+            if (_isOpusFetch) _shouldClear = true;
+          } else if (_ptType === 'single') {
+            // 單次標準 token,首輪 fetch 成功就清(不能用於追問)
+            if (!_isFollowUp) _shouldClear = true;
+          } else {
+            // 訂閱類型(subscription/subscription_premium)— 不清 single token
+            // 訂閱靠 worker sub:{userKey} 認證,paid_token 用過即丟
+            _shouldClear = true;
+          }
+
+          if (_shouldClear) {
+            _jyLog('CLEAR paid_token (fetch-based)', {
+              token: localStorage.getItem('_jy_paid_token'),
+              type: _ptType,
+              reason: 'AI fetch 200 OK',
+              isFollowUp: _isFollowUp,
+              isOpusFetch: _isOpusFetch
+            });
+            try {
+              localStorage.removeItem('_jy_paid_token');
+              localStorage.removeItem('_jy_paid_token_type');
+              localStorage.removeItem('_jy_paid_token_at');
+            } catch(_){}
+          }
+        }).catch(function(err){
+          // 網路錯誤等(fetch 本身失敗,不是 worker 拒絕)— 不清 token
+          _jyLog('AI fetch network error', { error: String(err).slice(0, 200) });
+        });
       }
       return _respPromise;
     };
 
-    // AI 結果出來後清 token（單次＋訂閱都清，訂閱靠 sub:{userKey} 繼續放行）
-    //   v60-hotfix7-i：嚴格判斷什麼叫「AI 解讀完成」，不再光看 innerHTML.length
-    //     先前 bug：_triggerTarotAI 第一次呼叫會先顯示「選擇解讀深度」選單（HTML 長度 1375），
-    //       長度超過 300 + 不含「正在」→ 被誤判為 AI 完成 → 燒掉 token → 使用者按「標準解讀」時 token 已沒了
-    //     修法：加排除條件——如果內容含「選擇解讀深度」「⚡ 標準解讀」「🔮 深度解析」等關鍵字，
-    //       代表是選擇選單不是真的結果，跳過不清 token。只有真的 AI 解讀長文才燒。
-    var done = false;
-    function _isRealAiResult(el) {
-      if (!el) return false;
-      var html = el.innerHTML || '';
-      var text = el.textContent || '';
-      if (html.length <= 300) return false;
-      // 排除「正在」loading 狀態
-      if (text.indexOf('正在') >= 0) return false;
-      // v60-hotfix7-i：排除「選擇解讀深度」選單（不是結果，是入口選擇）
-      if (text.indexOf('選擇解讀深度') >= 0) return false;
-      // 排除深度選擇的兩個按鈕文字
-      if (text.indexOf('標準解讀') >= 0 && text.indexOf('深度解析') >= 0 && text.indexOf('每日免費') >= 0) return false;
-      // 排除塔羅錯誤頁（「已用完」「開通會員」這些是錯誤顯示不是結果）
-      if (text.indexOf('免費體驗已用完') >= 0 || text.indexOf('今日塔羅') >= 0) return false;
-      // 排除付費牆
-      if (text.indexOf('單次 NT$') >= 0 && text.indexOf('或單次購買') >= 0) return false;
-      return true;
-    }
-    var clearObs = new MutationObserver(function() {
-      if (done) return;
-      var rd = document.getElementById('ai-deep-result');
-      var tw = document.getElementById('tarot-ai-wrap');
-      var ow = document.getElementById('ootk-ai-wrap');
-      // ★ 追問結果容器（tarot-followup-result-N），追問單次付費跑完後也要清 token
-      var fuResults = document.querySelectorAll('[id^="tarot-followup-result-"]');
-      var hasFuResult = false;
-      for (var _i = 0; _i < fuResults.length; _i++) {
-        if (_isRealAiResult(fuResults[_i])) { hasFuResult = true; break; }
-      }
-      var hasResult = _isRealAiResult(rd) || _isRealAiResult(tw) || _isRealAiResult(ow) || hasFuResult;
-      if (hasResult) {
-        done = true;
-        // ★ Opus token 只在 Opus 分析完成時清除，不被標準分析誤刪
-        // ★ followup_single token 只在追問結果完成時才清除
-        var _ptType = localStorage.getItem('_jy_paid_token_type');
-        var _shouldClear = true;
-        if (_ptType === 'opus_single' && !window._jyOpusDepth) _shouldClear = false;
-        if (_ptType === 'followup_single' && !hasFuResult) _shouldClear = false;
-        if (_shouldClear) {
-          // v60-hotfix7-j：記錄清除事件
-          _jyLog('CLEAR paid_token', {
-            token: localStorage.getItem('_jy_paid_token'),
-            type: _ptType,
-            reason: 'clearObs detected AI result',
-            tw_len: tw ? tw.innerHTML.length : null,
-            tw_preview: tw ? (tw.textContent || '').slice(0, 100) : null,
-            rd_len: rd ? rd.innerHTML.length : null,
-            ow_len: ow ? ow.innerHTML.length : null
-          });
+    // ── 60 秒安全網(極罕見邊界) ──
+    //   如果 60 秒內有 AI fetch 成功但 token 沒清(理論上不該發生),強清
+    //   60 秒內沒成功的 → 保留 token 給用戶重試(這正是新架構的優勢)
+    setTimeout(function() {
+      if (_aiFetchSuccessSeen && localStorage.getItem('_jy_paid_token')) {
+        _jyLog('CLEAR paid_token (60s safety net)', {
+          token: localStorage.getItem('_jy_paid_token'),
+          type: localStorage.getItem('_jy_paid_token_type'),
+          reason: 'fetch ok seen but token still here'
+        });
+        try {
           localStorage.removeItem('_jy_paid_token');
           localStorage.removeItem('_jy_paid_token_type');
-        }
-        window.fetch = _realFetch;
-        clearObs.disconnect();
+          localStorage.removeItem('_jy_paid_token_at');
+        } catch(_){}
       }
-    });
-    setTimeout(function() { clearObs.observe(document.body, { childList: true, subtree: true }); }, 500);
+    }, 60000);
   }
 
   // ═══ 5. 水晶處方：接 AI energyNote + 自動展開 ═══
@@ -878,9 +907,18 @@
       console.log('[Payment] pending 不匹配 / 已消化，走備援寫入 token');
       // 但 token 還是要確保寫入（防止輪詢沒跑到但綠界回跳成功的極罕見狀況）
       if (!localStorage.getItem('_jy_paid_token')) {
+        // ★ v64.B-bugfix:備援寫入時優先用 pending 的真實 type(opus/fu/single)
+        //   舊版寫死 'single' → 用戶買 opus 時,worker 會拒絕(因 KV 那邊存 'opus' 但前端 type 寫 single)
+        //   雖然 pending 可能已被清,但保留 last_paid 還在
+        var _bkType = 'single';
+        try {
+          var _lp = JSON.parse(localStorage.getItem('_jy_last_paid') || 'null');
+          if (_lp && _lp.tradeNo === paidTradeNo && _lp.type) _bkType = _lp.type;
+        } catch(_) {}
         localStorage.setItem('_jy_paid_token', paidTradeNo);
-        localStorage.setItem('_jy_paid_token_type', 'single');
-        console.log('[Payment] token 已備援寫入: ' + paidTradeNo);
+        localStorage.setItem('_jy_paid_token_type', _bkType);
+        localStorage.setItem('_jy_paid_token_at', String(Date.now()));
+        console.log('[Payment] token 已備援寫入: ' + paidTradeNo + ' type=' + _bkType);
       } else {
         console.log('[Payment] _jy_paid_token 已存在，不覆寫: ' + localStorage.getItem('_jy_paid_token'));
       }
