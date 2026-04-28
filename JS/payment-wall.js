@@ -360,7 +360,182 @@
     }, 3000);
   }
 
-  // v60-hotfix5：實際執行「寫 token → 觸發 AI」的核心邏輯（自動輪詢和手動按按鈕共用）
+  // ═══════════════════════════════════════════════════════════════
+  // v64.C:統一的付款結果 UI(回跳必顯,絕不靜默)
+  // ═══════════════════════════════════════════════════════════════
+  // 三種使用情境:
+  //   1. 已確認付款 + 能 auto-trigger AI (_jyUnlockAndTrigger 主流程):pending 有效 → 走原邏輯
+  //   2. 已確認付款 + 無法 auto-trigger:顯示綠卡(購買項目+剩餘次數+繼續按鈕)
+  //   3. 用戶手動回來但未付款(ClientBackURL 點返回但沒付):顯示橘卡(等待確認+重新驗證按鈕)
+  //
+  // 用法:
+  //   _jyShowPaymentResultCard(tradeNo, { paid: true, mode, type })   // 場景 2
+  //   _jyShowPaymentResultCard(tradeNo, { paid: false })              // 場景 3
+  // ───────────────────────────────────────────────────────────────
+  async function _jyShowPaymentResultCard(tradeNo, opts) {
+    opts = opts || {};
+
+    // 移除舊卡(避免重複)
+    var existing = document.getElementById('jy-paid-retry-card');
+    if (existing) existing.remove();
+
+    // ── 場景 3:未付款 / 不確定 → 橘卡讓用戶重新驗證 ──
+    if (!opts.paid) {
+      var pendingCard = document.createElement('div');
+      pendingCard.id = 'jy-paid-retry-card';
+      pendingCard.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:99998;max-width:90%;width:340px;background:linear-gradient(145deg,#3a2818,#2a1810);border:1.5px solid rgba(251,191,36,.45);border-radius:14px;padding:1.1rem 1rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+      pendingCard.innerHTML =
+        '<div style="font-size:1.6rem;margin-bottom:.4rem">⏳</div>' +
+        '<div style="font-size:1rem;color:#fbbf24;font-weight:700;margin-bottom:.4rem">等待付款確認</div>' +
+        '<div style="font-size:.78rem;color:#fde68a;line-height:1.6;margin-bottom:.9rem">系統還沒收到綠界的付款通知。如果你剛完成付款,請等幾秒後按下方按鈕重新驗證。</div>' +
+        '<button onclick="window._jyManualVerifyPayment(\'' + tradeNo + '\')" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(251,191,36,.8),rgba(217,151,56,.9));color:#1a0a0a;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">🔄 重新驗證付款</button>' +
+        '<button onclick="document.getElementById(\'jy-paid-retry-card\').remove()" style="width:100%;padding:8px;margin-top:.5rem;border-radius:10px;background:transparent;color:#fde68a;font-size:.78rem;border:none;cursor:pointer;font-family:inherit;opacity:.7">關閉</button>';
+      document.body.appendChild(pendingCard);
+
+      // 提供手動驗證函式
+      window._jyManualVerifyPayment = async function(tNo) {
+        var btn = document.querySelector('#jy-paid-retry-card button');
+        if (btn) { btn.disabled = true; btn.textContent = '驗證中...'; }
+        try {
+          var r = await fetch(WORKER_URL + '/check-payment', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tradeNo: tNo })
+          });
+          var d = await r.json();
+          if (d.paid) {
+            // 付款已成立 → 走完整解鎖
+            var card = document.getElementById('jy-paid-retry-card');
+            if (card) card.remove();
+            // 從 _jy_last_paid 還原 mode/type 進去 pending
+            try {
+              var _lp = JSON.parse(localStorage.getItem('_jy_last_paid') || 'null');
+              if (_lp && _lp.tradeNo === tNo) {
+                localStorage.setItem('_jy_pending_payment', JSON.stringify({
+                  tradeNo: tNo, mode: _lp.mode, type: _lp.type, ts: Date.now()
+                }));
+              } else {
+                // 沒備份就用 tradeNo 當 single 處理
+                localStorage.setItem('_jy_pending_payment', JSON.stringify({
+                  tradeNo: tNo, mode: 'full', type: 'single', ts: Date.now()
+                }));
+              }
+            } catch(_){}
+            await _jyUnlockAndTrigger();
+          } else {
+            if (btn) { btn.disabled = false; btn.textContent = '🔄 重新驗證付款'; }
+            alert('系統仍未收到付款通知,請再等 30 秒後重試。\n如果已從綠界完成付款卻一直無法驗證,請聯繫客服。');
+          }
+        } catch(e) {
+          if (btn) { btn.disabled = false; btn.textContent = '🔄 重新驗證付款'; }
+          alert('驗證失敗:' + (e.message || '請稍後再試'));
+        }
+      };
+      return;
+    }
+
+    // ── 場景 2:已確認付款 → 綠卡顯示購買項目 + 剩餘次數 + 繼續按鈕 ──
+    var mode = opts.mode || 'full';
+    var type = opts.type || 'single';
+
+    // 購買項目文字
+    var _P = (typeof P === 'function') ? P() : (window.JY_PRICES || {});
+    var purchaseText = '解讀服務';
+    if (type === 'opus_single') {
+      var opusPriceMap = { tarot_only: _P.OPUS_TAROT, ootk: _P.OPUS_OOTK, full: _P.OPUS_7D };
+      var opusName = mode === 'tarot_only' ? '塔羅深度解析' : mode === 'ootk' ? '開鑰深度解析' : '七維度深度解析';
+      purchaseText = '🔮 ' + opusName + ' NT$' + (opusPriceMap[mode] || '-');
+    } else if (type === 'single') {
+      var singlePriceMap = { tarot_only: _P.SINGLE_TAROT, ootk: _P.SINGLE_OOTK, full: _P.SINGLE_7D };
+      var singleName = mode === 'tarot_only' ? '塔羅單次' : mode === 'ootk' ? '開鑰單次' : '七維度單次';
+      purchaseText = '✨ ' + singleName + ' NT$' + (singlePriceMap[mode] || '-');
+    } else if (type === 'followup_single') {
+      purchaseText = '💬 追問單次 NT$' + (_P.FOLLOWUP || 15);
+    } else if (type === 'subscription' || type === 'subscription_standard') {
+      purchaseText = '👑 標準會員 30 天 NT$' + (_P.SUB_STANDARD || 999);
+    } else if (type === 'subscription_premium') {
+      purchaseText = '💎 高級會員 30 天 NT$' + (_P.SUB_PREMIUM || 1999);
+    }
+
+    // 繼續按鈕文字
+    var continueLabel = '🌙 繼續七維度解讀 →';
+    if (mode === 'tarot_only') continueLabel = '🃏 繼續塔羅解讀 →';
+    else if (mode === 'ootk') continueLabel = '🔑 繼續開鑰解讀 →';
+
+    // 先建卡(配額位置先顯示「載入中」,稍後填入)
+    var retryCard = document.createElement('div');
+    retryCard.id = 'jy-paid-retry-card';
+    retryCard.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:99998;max-width:90%;width:340px;background:linear-gradient(145deg,#1a3020,#0f2015);border:1.5px solid rgba(34,197,94,.45);border-radius:14px;padding:1.1rem 1rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+    retryCard.innerHTML =
+      '<div style="font-size:1.6rem;margin-bottom:.4rem">✅</div>' +
+      '<div style="font-size:1rem;color:#86efac;font-weight:700;margin-bottom:.3rem">付款成功</div>' +
+      '<div style="font-size:.85rem;color:#d1fae5;font-weight:600;margin-bottom:.4rem">' + purchaseText + '</div>' +
+      '<div id="jy-paid-card-quota" style="font-size:.72rem;color:#a7f3d0;line-height:1.5;margin-bottom:.9rem;padding:.5rem;background:rgba(34,197,94,.08);border-radius:8px">載入剩餘次數中…</div>' +
+      '<button onclick="window._jyContinueAfterPay && window._jyContinueAfterPay()" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(34,197,94,.8),rgba(22,163,74,.9));color:#fff;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">' + continueLabel + '</button>' +
+      '<button onclick="document.getElementById(\'jy-paid-retry-card\').remove()" style="width:100%;padding:8px;margin-top:.5rem;border-radius:10px;background:transparent;color:#6ee7b7;font-size:.78rem;border:none;cursor:pointer;font-family:inherit;opacity:.7">稍後手動繼續</button>';
+    document.body.appendChild(retryCard);
+
+    // 註冊「繼續」函式(每次都覆寫,避免上一次付款的 mode 殘留)
+    window._jyContinueAfterPay = function() {
+      var el = document.getElementById('jy-paid-retry-card');
+      if (el) el.remove();
+      var toolKey = mode === 'tarot_only' ? 'tarot' : mode === 'ootk' ? 'ootk' : 'full';
+      try {
+        if (typeof window.pickTool === 'function') window.pickTool(toolKey);
+        else if (typeof pickTool === 'function') pickTool(toolKey);
+        else {
+          var toolId = mode === 'tarot_only' ? 'tool-tarot' : mode === 'ootk' ? 'tool-ootk' : 'tool-full';
+          var tile = document.getElementById(toolId);
+          if (tile && typeof tile.click === 'function') tile.click();
+        }
+        setTimeout(function() {
+          var q = document.getElementById('q-text') || document.getElementById('input-question') || document.getElementById('tool-cta');
+          if (q && q.scrollIntoView) q.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 400);
+      } catch(err) {
+        try { alert('付款成功!請手動點上方的工具圖示繼續。'); } catch(_){}
+      }
+    };
+
+    // 背景拉剩餘次數
+    try {
+      var _st = window._JY_SESSION_TOKEN || '';
+      var _body = _st ? { session_token: _st } : {};
+      var r = await fetch(WORKER_URL + '/check-subscription', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(_body)
+      });
+      var d = await r.json();
+      var quotaEl = document.getElementById('jy-paid-card-quota');
+      if (!quotaEl) return;
+
+      if (d.active) {
+        // 會員身份顯示
+        var tierName = d.tier === 'premium' ? '💎 高級會員' : '👑 標準會員';
+        var daysLeft = Math.max(0, Math.ceil((d.expiresAt - Date.now()) / 86400000));
+        var lines = [];
+        lines.push('<div style="font-weight:700;color:#86efac;margin-bottom:.3rem">' + tierName + ' · ' + daysLeft + ' 天到期</div>');
+        var tarotLeft = Math.max(0, (d.dailyLimit || 0) - (d.dailyUsed || 0));
+        var d7Left = Math.max(0, (d.d7Limit || 0) - (d.d7Used || 0));
+        lines.push('塔羅/開鑰今日剩 <strong>' + tarotLeft + '</strong> · 七維度本月剩 <strong>' + d7Left + '</strong>');
+        if (typeof d.opusLimit === 'number' && d.opusLimit > 0) {
+          var opusLeft = Math.max(0, d.opusLimit - (d.opusUsed || 0));
+          lines.push('深度解析本月剩 <strong>' + opusLeft + '</strong>');
+        }
+        quotaEl.innerHTML = lines.join('<br>');
+      } else if (type === 'single' || type === 'opus_single' || type === 'followup_single') {
+        // 單次購買:憑證已寫入,點繼續即可使用
+        var typeLabel = (type === 'opus_single') ? '深度解析' : (type === 'followup_single') ? '追問' : '解讀';
+        quotaEl.innerHTML = '✓ ' + typeLabel + '憑證已寫入,點下方按鈕即可繼續使用';
+      } else {
+        quotaEl.innerHTML = '✓ 已解鎖,點下方按鈕繼續';
+      }
+    } catch(e) {
+      var quotaEl2 = document.getElementById('jy-paid-card-quota');
+      if (quotaEl2) quotaEl2.innerHTML = '✓ 付款憑證已寫入,點下方按鈕繼續使用';
+    }
+  }
+
+  // v60-hotfix5:實際執行「寫 token → 觸發 AI」的核心邏輯(自動輪詢和手動按按鈕共用)
   async function _jyUnlockAndTrigger() {
     var pending = null;
     try { pending = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null'); } catch(_) {}
@@ -475,60 +650,11 @@
     // ★ 核心：自動觸發對應的 AI 分析函式
     var triggered = _jyAutoTriggerAfterPayment(pending);
     if (!triggered) {
-      // v60-hotfix7-i：不自動 reload 也不要求使用者手動重按
-      //   改用綠卡 + 一鍵繼續按鈕，按下去直接 click 塔羅／開鑰／七維度的 CTA
-      //   這樣 paid_token 已在 localStorage，按下去後後續 fetch 會自動帶上
-      console.warn('[Payment] auto trigger returned false, 顯示一鍵繼續卡');
-      var _continueBtn = '';
-      var _mode = pending.mode || 'full';
-      if (_mode === 'tarot_only') {
-        _continueBtn = '<button onclick="window._jyContinueAfterPay()" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(34,197,94,.8),rgba(22,163,74,.9));color:#fff;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">🃏 繼續塔羅解讀 →</button>';
-      } else if (_mode === 'ootk') {
-        _continueBtn = '<button onclick="window._jyContinueAfterPay()" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(217,151,56,.8),rgba(180,120,40,.9));color:#fff;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">🔑 繼續開鑰解讀 →</button>';
-      } else {
-        _continueBtn = '<button onclick="window._jyContinueAfterPay()" style="width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.8),rgba(180,140,40,.9));color:#000;font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit">🌙 繼續七維度解讀 →</button>';
-      }
-
-      // 一鍵繼續：直接呼叫 pickTool 函式（最直接），不靠 click 事件
-      window._jyContinueAfterPay = function() {
-        var el = document.getElementById('jy-paid-retry-card');
-        if (el) el.remove();
-        var _m = pending.mode || 'full';
-        var toolKey = _m === 'tarot_only' ? 'tarot' : _m === 'ootk' ? 'ootk' : 'full';
-        try {
-          // 1. 優先：直接呼叫全域 pickTool（index.html 的 onclick 也是呼叫這個）
-          if (typeof window.pickTool === 'function') {
-            window.pickTool(toolKey);
-          } else if (typeof pickTool === 'function') {
-            pickTool(toolKey);
-          } else {
-            // 2. fallback：模擬點擊
-            var toolId = _m === 'tarot_only' ? 'tool-tarot' : _m === 'ootk' ? 'tool-ootk' : 'tool-full';
-            var tile = document.getElementById(toolId);
-            if (tile && typeof tile.click === 'function') tile.click();
-          }
-          // 捲動到問題輸入區（讓使用者看到下一步要做什麼）
-          setTimeout(function() {
-            var q = document.getElementById('q-text') || document.getElementById('input-question') || document.getElementById('tool-cta');
-            if (q && q.scrollIntoView) q.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }, 400);
-        } catch(err) {
-          console.warn('[Payment] _jyContinueAfterPay failed:', err);
-          // 最終 fallback：直接 alert 指引
-          try { alert('付款成功！請手動點上方的「塔羅快讀」或「七維度」圖示，填入問題後按「開始解讀」即可繼續。'); } catch(_){}
-        }
-      };
-
-      var retryCard = document.createElement('div');
-      retryCard.id = 'jy-paid-retry-card';
-      retryCard.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:99998;max-width:90%;width:340px;background:linear-gradient(145deg,#1a3020,#0f2015);border:1.5px solid rgba(34,197,94,.45);border-radius:14px;padding:1.1rem 1rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.5)';
-      retryCard.innerHTML =
-        '<div style="font-size:1.6rem;margin-bottom:.4rem">✅</div>' +
-        '<div style="font-size:1rem;color:#86efac;font-weight:700;margin-bottom:.4rem">付款成功</div>' +
-        '<div style="font-size:.78rem;color:#d1fae5;line-height:1.6;margin-bottom:.9rem">付費憑證已寫入，按下方按鈕直接繼續</div>' +
-        _continueBtn +
-        '<button onclick="document.getElementById(\'jy-paid-retry-card\').remove()" style="width:100%;padding:8px;margin-top:.5rem;border-radius:10px;background:transparent;color:#6ee7b7;font-size:.78rem;border:none;cursor:pointer;font-family:inherit;opacity:.7">稍後手動繼續</button>';
-      document.body.appendChild(retryCard);
+      // v64.C:auto-trigger 失敗 → 走統一的成功 UI(顯示購買項目+剩餘次數+繼續按鈕)
+      console.warn('[Payment] auto trigger returned false, 顯示統一成功卡');
+      _jyShowPaymentResultCard(pending.tradeNo, {
+        paid: true, mode: pending.mode || 'full', type: pending.type || 'single'
+      });
     }
     return true;
   }
@@ -886,7 +1012,7 @@
   //                統一走 _jyUnlockAndTrigger 流程（寫 token + 自動觸發 AI）
   //                舊版只寫 token + 顯示 banner 就結束 = 用戶看不到答案 = 付款流失主因
 
-  function _checkPaymentReturn() {
+  async function _checkPaymentReturn() {
     var params = new URLSearchParams(window.location.search);
     var paidTradeNo = params.get('paid');
     if (!paidTradeNo) return;
@@ -902,25 +1028,48 @@
     try { pending = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null'); } catch(_) {}
     console.log('[Payment] pending:', pending);
 
-    // 若 pending 已被主視窗輪詢處理掉 → 不重複觸發（避免連按兩次）
+    // ── pending 不匹配:可能是輪詢已處理 / 多分頁 / ClientBackURL 手動回來 / 跨裝置 ──
+    // v64.C:不再靜默 — 必定顯示 UI 給用戶看到「付款成功還是失敗」
     if (!pending || !pending.tradeNo || pending.tradeNo !== paidTradeNo) {
-      console.log('[Payment] pending 不匹配 / 已消化，走備援寫入 token');
-      // 但 token 還是要確保寫入（防止輪詢沒跑到但綠界回跳成功的極罕見狀況）
-      if (!localStorage.getItem('_jy_paid_token')) {
-        // ★ v64.B-bugfix:備援寫入時優先用 pending 的真實 type(opus/fu/single)
-        //   舊版寫死 'single' → 用戶買 opus 時,worker 會拒絕(因 KV 那邊存 'opus' 但前端 type 寫 single)
-        //   雖然 pending 可能已被清,但保留 last_paid 還在
-        var _bkType = 'single';
-        try {
-          var _lp = JSON.parse(localStorage.getItem('_jy_last_paid') || 'null');
-          if (_lp && _lp.tradeNo === paidTradeNo && _lp.type) _bkType = _lp.type;
-        } catch(_) {}
-        localStorage.setItem('_jy_paid_token', paidTradeNo);
-        localStorage.setItem('_jy_paid_token_type', _bkType);
-        localStorage.setItem('_jy_paid_token_at', String(Date.now()));
-        console.log('[Payment] token 已備援寫入: ' + paidTradeNo + ' type=' + _bkType);
+      console.log('[Payment] pending 不匹配,走查證 + 顯示 UI 流程');
+
+      // 先查 worker 確認這個 tradeNo 到底有沒有付款成立
+      var _verifiedPaid = false;
+      try {
+        var vr = await fetch(WORKER_URL + '/check-payment', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tradeNo: paidTradeNo })
+        });
+        var vd = await vr.json();
+        _verifiedPaid = !!vd.paid;
+      } catch(e) {
+        console.warn('[Payment] check-payment 失敗:', e);
+      }
+
+      // 從 _jy_last_paid 還原 mode/type(備援,可能沒有)
+      var _restoredMode = 'full', _restoredType = 'single';
+      try {
+        var _lp = JSON.parse(localStorage.getItem('_jy_last_paid') || 'null');
+        if (_lp && _lp.tradeNo === paidTradeNo) {
+          if (_lp.mode) _restoredMode = _lp.mode;
+          if (_lp.type) _restoredType = _lp.type;
+        }
+      } catch(_){}
+
+      if (_verifiedPaid) {
+        // ── 已付款:寫 token 並顯示成功 UI(含購買項目+剩餘次數) ──
+        if (!localStorage.getItem('_jy_paid_token')) {
+          localStorage.setItem('_jy_paid_token', paidTradeNo);
+          localStorage.setItem('_jy_paid_token_type', _restoredType);
+          localStorage.setItem('_jy_paid_token_at', String(Date.now()));
+          console.log('[Payment] token 已備援寫入: ' + paidTradeNo + ' type=' + _restoredType);
+        }
+        await _jyShowPaymentResultCard(paidTradeNo, {
+          paid: true, mode: _restoredMode, type: _restoredType
+        });
       } else {
-        console.log('[Payment] _jy_paid_token 已存在，不覆寫: ' + localStorage.getItem('_jy_paid_token'));
+        // ── 未付款 / 不確定:顯示等待確認 UI(用戶可重新驗證) ──
+        await _jyShowPaymentResultCard(paidTradeNo, { paid: false });
       }
       return;
     }
