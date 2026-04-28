@@ -4974,7 +4974,7 @@ enhanceTarot = function(tarot) {
           '</div>' +
           '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5">' +
             (admin ? '🔧 管理員・無限使用' : (function(){
-              // v54：讀 tier（標準/高級）+ JY_PRICES 動態取價，與 _showOpusPayModal 真實付款邏輯一致
+              // v64.C:會員制下架,只顯示身份/單次價,不勸誘升級
               var _tier = localStorage.getItem('_jy_user_tier') || '';
               var _isPrem = (_tier === 'premium');
               var _isMember = parseInt(localStorage.getItem('_jy_sub_expires')||'0') > Date.now();
@@ -4985,9 +4985,9 @@ enhanceTarot = function(tarot) {
                 return '💎 高級會員・每月免費 1 次 ・ 加購單次 NT$' + _memberAddon;
               }
               if (_isMember) {
-                return '👑 標準會員・單次 NT$' + _single + '（升級高級享每月免費 1 次）';
+                return '👑 標準會員・單次 NT$' + _single;
               }
-              return '單次 NT$' + _single + ' ・ 會員 NT$' + (_P.SUB_STANDARD||999) + '／NT$' + (_P.SUB_PREMIUM||1999);
+              return '單次 NT$' + _single;
             })()) +
           '</div>' +
         '</div>';

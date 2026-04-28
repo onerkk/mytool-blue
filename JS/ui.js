@@ -5581,8 +5581,8 @@ showAuraResult = function(){
         localStorage.setItem('_jy_sub_expires', String(data.expiresAt));
       } else {
         // 免費用戶
-        var _P = window.JY_PRICES || { SUB_STANDARD: 999 };
-        var _upsellText = '單次購買 NT$' + _P.SINGLE_TAROT + ' 起';
+        var _P = window.JY_PRICES || {};
+        var _upsellText = '單次購買 NT$' + (_P.SINGLE_TAROT || 30) + ' 起';
         var fs = data.freeStatus;
         if (fs) {
           var parts = [];
@@ -5594,17 +5594,17 @@ showAuraResult = function(){
           if (usedOotk < 1) parts.push('開鑰');
           if (parts.length > 0) {
             el.innerHTML = '✨ 免費體驗剩餘：<strong style="color:var(--c-gold)">' + parts.join('、') + '</strong> ・ ' +
-              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</span>';
+              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\')">' + _upsellText + '</span>';
           } else {
-            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</strong>';
+            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\')">' + _upsellText + '</strong>';
           }
         } else {
           var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 3;
           if (freeLeft > 0) {
             el.innerHTML = '✨ 免費體驗剩餘 <strong style="color:var(--c-gold)">' + freeLeft + '</strong> 次 ・ ' +
-              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</span>';
+              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\')">' + _upsellText + '</span>';
           } else {
-            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</strong>';
+            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\')">' + _upsellText + '</strong>';
           }
         }
         localStorage.removeItem('_jy_sub_expires');
