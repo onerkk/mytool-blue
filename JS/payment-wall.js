@@ -406,19 +406,23 @@
             // 付款已成立 → 走完整解鎖
             var card = document.getElementById('jy-paid-retry-card');
             if (card) card.remove();
-            // 從 _jy_last_paid 還原 mode/type 進去 pending
+            // v64.F BUG #4 修補:優先用 server 回的真實 type/toolMode,localStorage 為 fallback
+            //   清快取場景下 _jy_last_paid 不見,server 回的才是真實資料
+            var _finalMode = 'full', _finalType = 'single';
             try {
               var _lp = JSON.parse(localStorage.getItem('_jy_last_paid') || 'null');
               if (_lp && _lp.tradeNo === tNo) {
-                localStorage.setItem('_jy_pending_payment', JSON.stringify({
-                  tradeNo: tNo, mode: _lp.mode, type: _lp.type, ts: Date.now()
-                }));
-              } else {
-                // 沒備份就用 tradeNo 當 single 處理
-                localStorage.setItem('_jy_pending_payment', JSON.stringify({
-                  tradeNo: tNo, mode: 'full', type: 'single', ts: Date.now()
-                }));
+                if (_lp.mode) _finalMode = _lp.mode;
+                if (_lp.type) _finalType = _lp.type;
               }
+            } catch(_){}
+            // server 覆蓋(權威來源)
+            if (d.type) _finalType = d.type;
+            if (d.toolMode) _finalMode = d.toolMode;
+            try {
+              localStorage.setItem('_jy_pending_payment', JSON.stringify({
+                tradeNo: tNo, mode: _finalMode, type: _finalType, ts: Date.now()
+              }));
             } catch(_){}
             await _jyUnlockAndTrigger();
           } else {
@@ -631,15 +635,43 @@
         setTimeout(function() { banner.remove(); }, 500);
       }, 3500);
       try {
-        var _fuA = document.getElementById('tarot-followup-area');
-        if (_fuA && typeof _appendFollowUpUI === 'function') {
-          var _srcMode = _fuA.getAttribute('data-source') || 'tarot';
-          var _parent = _fuA.parentNode;
-          _fuA.remove();
-          _appendFollowUpUI(_parent, _srcMode);
-          var _newFuA = document.getElementById('tarot-followup-area');
-          if (_newFuA) _newFuA.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        // v64.F BUG #6 修補:followup UI 還原 retry 機制
+        //   原本只試一次,若 tarot-followup-area 元素還沒出現(極罕見:用戶付款返回時頁面尚在 loading)
+        //   → followup UI 沒重建 → 用戶要手動點按鈕才能繼續
+        //   修法:retry 3 次,每次 500ms,涵蓋頁面 loading / DOM 慢產生等場景
+        var _fuRetryCount = 0;
+        var _fuMaxRetries = 3;
+        var _restoreFollowupUI = function() {
+          try {
+            var _fuA = document.getElementById('tarot-followup-area');
+            if (_fuA && typeof _appendFollowUpUI === 'function') {
+              var _srcMode = _fuA.getAttribute('data-source') || 'tarot';
+              var _parent = _fuA.parentNode;
+              _fuA.remove();
+              _appendFollowUpUI(_parent, _srcMode);
+              var _newFuA = document.getElementById('tarot-followup-area');
+              if (_newFuA) _newFuA.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              console.log('[Payment] followup UI 還原成功 (retry=' + _fuRetryCount + ')');
+              return true;
+            } else {
+              // 元素不存在或函式還沒 ready → retry
+              _fuRetryCount++;
+              if (_fuRetryCount < _fuMaxRetries) {
+                console.log('[Payment] followup UI 還原延後重試 (retry=' + _fuRetryCount + '/' + _fuMaxRetries + ')');
+                setTimeout(_restoreFollowupUI, 500);
+              } else {
+                console.warn('[Payment] followup UI 還原失敗:重試已達上限,用戶需手動點抽補充牌');
+              }
+              return false;
+            }
+          } catch(_e) {
+            console.warn('[Payment] fu UI restore failed:', _e);
+            _fuRetryCount++;
+            if (_fuRetryCount < _fuMaxRetries) setTimeout(_restoreFollowupUI, 500);
+            return false;
+          }
+        };
+        _restoreFollowupUI();
       } catch(_e) { console.warn('[Payment] fu UI restore failed:', _e); }
       return true;
     }
@@ -922,6 +954,16 @@
               localStorage.removeItem('_jy_paid_token_type');
               localStorage.removeItem('_jy_paid_token_at');
             } catch(_){}
+            // v64.F BUG #5 修補:Opus 單次解讀完成 → reset window._jyOpusDepth
+            //   原本 _jyAutoTriggerAfterPayment 設 _jyOpusDepth=true 後從不重設
+            //   邊界 case:用戶買 Opus 七維 → 解讀完 5 分鐘後再次免費跑七維
+            //              → fetch 攔截器看到 _jyOpusDepth=true 誤判為 Opus
+            //              → 60 秒安全網誤清 token(若有的話)
+            //   修法:Opus token 清掉時(代表 Opus 解讀已完成)同步 reset depth flag
+            if (_ptType === 'opus_single' && _isOpusFetch) {
+              try { window._jyOpusDepth = false; } catch(_) {}
+              _jyLog('RESET _jyOpusDepth', { reason: 'opus single fetch completed' });
+            }
           }
         }).catch(function(err){
           // 網路錯誤等(fetch 本身失敗,不是 worker 拒絕)— 不清 token
@@ -1052,8 +1094,10 @@
     if (!pending || !pending.tradeNo || pending.tradeNo !== paidTradeNo) {
       console.log('[Payment] pending 不匹配,走查證 + 顯示 UI 流程');
 
-      // 先查 worker 確認這個 tradeNo 到底有沒有付款成立
+      // 先查 worker 確認這個 tradeNo 到底有沒有付款成立 + 拿真實 mode/type/toolMode
       var _verifiedPaid = false;
+      var _serverType = null;
+      var _serverToolMode = null;
       try {
         var vr = await fetch(WORKER_URL + '/check-payment', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1061,12 +1105,18 @@
         });
         var vd = await vr.json();
         _verifiedPaid = !!vd.paid;
+        _serverType = vd.type || null;          // v64.F BUG #4:server 回的真實 type
+        _serverToolMode = vd.toolMode || null;  // v64.F BUG #4:server 回的真實 toolMode
       } catch(e) {
         console.warn('[Payment] check-payment 失敗:', e);
       }
 
-      // 從 _jy_last_paid 還原 mode/type(備援,可能沒有)
+      // v64.F BUG #4 修補:優先順序為 server > localStorage > hard-coded
+      //   原本只看 _jy_last_paid,清快取後就回 hard-coded 'full'/'single'(NT$80)
+      //   邊界 case:用戶買 Opus 七維 NT$140 後清快取返回 → 顯示卡片寫成 NT$80(配額是對的,只是顯示錯)
+      //   修法:先用 server 回的真實資料,server 沒給才退 localStorage,再沒才用 hard-coded
       var _restoredMode = 'full', _restoredType = 'single';
+      // 第一順位:_jy_last_paid(因為這是用戶實際下單的記錄)
       try {
         var _lp = JSON.parse(localStorage.getItem('_jy_last_paid') || 'null');
         if (_lp && _lp.tradeNo === paidTradeNo) {
@@ -1074,6 +1124,9 @@
           if (_lp.type) _restoredType = _lp.type;
         }
       } catch(_){}
+      // 第二順位(覆蓋):server 回的真實資料(清快取場景下這是唯一來源)
+      if (_serverType) _restoredType = _serverType;
+      if (_serverToolMode) _restoredMode = _serverToolMode;
 
       if (_verifiedPaid) {
         // ── 已付款:寫 token 並顯示成功 UI(含購買項目+剩餘次數) ──
@@ -1081,7 +1134,7 @@
           localStorage.setItem('_jy_paid_token', paidTradeNo);
           localStorage.setItem('_jy_paid_token_type', _restoredType);
           localStorage.setItem('_jy_paid_token_at', String(Date.now()));
-          console.log('[Payment] token 已備援寫入: ' + paidTradeNo + ' type=' + _restoredType);
+          console.log('[Payment] token 已備援寫入: ' + paidTradeNo + ' type=' + _restoredType + ' mode=' + _restoredMode + ' (server-verified)');
         }
         await _jyShowPaymentResultCard(paidTradeNo, {
           paid: true, mode: _restoredMode, type: _restoredType
