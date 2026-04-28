@@ -14113,19 +14113,20 @@ function _injectAIButton() {
           '• 語氣像坐在你對面的人跟你說話' +
         '</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' +
-          (admin ? '🔧 管理員・無限使用' : '單次 NT$' + window.JY_PRICES.OPUS_7D) +
+          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$' + window.JY_PRICES.OPUS_7D_MEMBER + '｜非會員 NT$' + window.JY_PRICES.OPUS_7D) +
         '</div>' +
       '</div>' +
     '</div>' +
     '<div id="ai-deep-result"></div>';
 }
 
-// ★ Opus 免費用完後的付費入口
+// ★ Opus 免費用完後的付費入口（價格依 tier 動態）
 function _buildOpusUpsellHTML() {
   var _opusPrice = (typeof window._jyOpusPriceFor === 'function')
     ? window._jyOpusPriceFor('full')
-    : window.JY_PRICES.OPUS_7D;
-  var _subText = '最強推理引擎';
+    : window.JY_PRICES.OPUS_7D; // fallback 非會員價
+  var _isPrem = (typeof window._jyIsPremium === 'function') ? window._jyIsPremium() : false;
+  var _subText = _isPrem ? '最強推理引擎・會員加購優惠' : '最強推理引擎';
   return '<div style="text-align:center;padding:.8rem 1rem 1rem;border-top:1px solid rgba(147,51,234,.1);margin-top:.5rem">' +
     '<button onclick="_handleOpusClick()" style="padding:.55rem 1.3rem;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.12),rgba(147,51,234,.04));color:#c084fc;font-size:.82rem;font-weight:600;border:1px solid rgba(147,51,234,.3);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + _opusPrice + '</button>' +
     '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' + _subText + '</div>' +
@@ -14180,12 +14181,21 @@ function _showOpusPayModal(code, mode) {
   if (existing) existing.remove();
   
   var payMode = (mode === 'tarot') ? 'tarot_only' : mode;
-  // ★ v64.C:會員制全面下架,只保留單次購買
+  // ★ v64.B:依用戶 tier 動態取價(v64.B 起會員加購無折扣統一新價)
+  //   會員/非會員都走單次價 (7D=140, 塔羅=60, 開鑰=120)
   var _opusPrice = (typeof window._jyOpusPriceFor === 'function')
     ? window._jyOpusPriceFor(mode)
     : ((mode === 'full') ? window.JY_PRICES.OPUS_7D
        : (mode === 'ootk') ? window.JY_PRICES.OPUS_OOTK : window.JY_PRICES.OPUS_TAROT);
+  var _isPrem = (typeof window._jyIsPremium === 'function') ? window._jyIsPremium() : false;
   var price = 'NT$' + _opusPrice;
+  // v64.B:會員制下架,所有用戶單次價統一(會員加購無折扣)
+  var _opusHintMsg = '';
+  if (!_isPrem) {
+    var _memPrice = (mode === 'full') ? window.JY_PRICES.OPUS_7D_MEMBER
+                 : (mode === 'ootk') ? window.JY_PRICES.OPUS_OOTK_MEMBER : window.JY_PRICES.OPUS_TAROT_MEMBER;
+    _opusHintMsg = '<div style="font-size:.66rem;color:#a78bfa;margin-bottom:.6rem;line-height:1.5">💡 高級會員加購優惠 NT$' + _memPrice + '（每月還送 1 次免費）</div>';
+  }
   
   var monthlyMsg = (code === 'OPUS_MONTHLY_USED')
     ? '<div style="font-size:.72rem;color:#fbbf24;margin-bottom:.6rem">本月免費深度解析額度已用完</div>'
@@ -14197,8 +14207,9 @@ function _showOpusPayModal(code, mode) {
   modal.innerHTML =
     '<div style="max-width:340px;width:90%;background:linear-gradient(145deg,#1a0a1e,#2a1028);border:1.5px solid rgba(147,51,234,.35);border-radius:18px;padding:2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
       '<div style="font-size:2.5rem;margin-bottom:.6rem">🔮</div>' +
-      '<h3 style="color:#c084fc;font-size:1.1rem;margin-bottom:.8rem;font-family:var(--f-display,serif)">深度解析</h3>' +
+      '<h3 style="color:#c084fc;font-size:1.1rem;margin-bottom:.2rem;font-family:var(--f-display,serif)">深度解析</h3>' +
       monthlyMsg +
+      _opusHintMsg +
       '<div style="text-align:left;padding:.6rem .7rem;border-radius:10px;background:rgba(147,51,234,.06);border:1px solid rgba(147,51,234,.12);margin-bottom:1rem">' +
         '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.7">' +
           '✦ 最強推理引擎，因果鏈深挖到底<br>' +
@@ -14209,6 +14220,7 @@ function _showOpusPayModal(code, mode) {
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="_jyStartPayment(\'' + payMode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.18),rgba(147,51,234,.06));color:#c084fc;font-size:.9rem;font-weight:700;border:1.5px solid rgba(147,51,234,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(147,51,234,.12)">🔮 單次深度解析 ' + price + '</button>' +
+        '<button onclick="_jyStartPayment(\'' + payMode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(212,175,55,.25);cursor:pointer;font-family:inherit">🌙 查看會員方案（NT$' + window.JY_PRICES.SUB_STANDARD + '／NT$' + window.JY_PRICES.SUB_PREMIUM + '）</button>' +
         '<button onclick="document.getElementById(\'jy-opus-pay-modal\').remove()" style="width:200px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.1rem">返回</button>' +
       '</div>' +
     '</div>';
@@ -14980,6 +14992,11 @@ function _buildPayload() {
   p.birth = f.bdate || '';
   p.birthTime = f.btime || '';
   p.btimeUnknown = !!f.btimeUnknown;
+  // v64.F:時辰精度三模式(precise/approximate/unknown)
+  //   - precise:精準時辰,所有系統正常運作
+  //   - approximate:約略時辰,降權紫微/西占/吠陀的時辰相關判讀(命宮/上升/分盤)
+  //   - unknown:不知道時辰,跳過時辰相關判讀,八字保留年月日(時柱降權)
+  p.timePrecision = f.timePrecision || (f.btimeUnknown ? 'unknown' : 'precise');
   // ★ v38：用戶狀況快選（提升 AI 開場命中率）
   if (window._jySelectedContext) p.userContext = window._jySelectedContext;
   // ★ v17：真太陽時 + 出生地
@@ -20874,6 +20891,40 @@ renderTarot = function(){
         html += '</div></details>';
       }
 
+      // ── v64.F:驗證信號卡片(可被用戶在那個時間點驗證的具體徵兆)──
+      //   設計理念:命理不是漂亮廢話,要給用戶可回頭打勾的具體預測
+      //   這個卡片會記錄到 localStorage,以後可以做「上次預測準不準」的回顧
+      try {
+        var _vs = r.verificationSignals;
+        if (Array.isArray(_vs) && _vs.length > 0) {
+          var _vsValid = _vs.filter(function(x){ return x && x.signal && x.period; });
+          if (_vsValid.length > 0) {
+            html += '<details open style="margin-bottom:.6rem;border:1px solid rgba(96,165,250,.18);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(96,165,250,.04),transparent)">';
+            html += '<summary style="padding:.65rem .85rem;font-size:.82rem;color:#93c5fd;cursor:pointer;user-select:none;background:rgba(96,165,250,.06);font-weight:600;display:flex;align-items:center;gap:.4rem">';
+            html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(到時候回來打勾,看準不準)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
+            html += '<div style="padding:.6rem .8rem;display:flex;flex-direction:column;gap:.55rem">';
+            _vsValid.forEach(function(v, idx) {
+              var conf = v.confidence || 'medium';
+              var confColor = conf === 'high' ? '#22c55e' : (conf === 'low' ? '#94a3b8' : '#fbbf24');
+              var confLabel = conf === 'high' ? '強' : (conf === 'low' ? '弱' : '中');
+              var sources = Array.isArray(v.sources) ? v.sources.join('・') : '';
+              html += '<div style="padding:.6rem .75rem;background:rgba(255,255,255,.02);border-radius:9px;border-left:3px solid ' + confColor + '">';
+              html += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem;flex-wrap:wrap">';
+              html += '<span style="font-size:.75rem;color:#93c5fd;font-weight:700">' + _safeHtml(v.period) + '</span>';
+              html += '<span style="font-size:.62rem;padding:.1rem .4rem;border-radius:4px;background:' + confColor + '22;color:' + confColor + ';font-weight:600">信號' + confLabel + '</span>';
+              if (sources) html += '<span style="font-size:.62rem;color:var(--c-text-muted);margin-left:auto">來源:' + _safeHtml(sources) + '</span>';
+              html += '</div>';
+              html += '<div style="font-size:.85rem;color:var(--c-text);line-height:1.6">' + _safeHtml(v.signal) + '</div>';
+              html += '</div>';
+            });
+            html += '<div style="margin-top:.4rem;padding:.4rem .55rem;font-size:.68rem;color:var(--c-text-muted);background:rgba(255,255,255,.015);border-radius:6px;line-height:1.65">';
+            html += '💡 這些是「可以驗證」的具體預測。到了那個時間點,你可以回來看「準/不準」——這是命理跟漂亮廢話的差別。';
+            html += '</div>';
+            html += '</div></details>';
+          }
+        }
+      } catch(_vsErr) {}
+
       // ═══ v36: story 下方金色收尾（跟頂部同樣的 closing，讓用戶讀完有結束感）═══
       var _closingBottom = _cleanAITerms((r.closing || '').replace(/\*\*/g,'').trim());
       if (_closingBottom && _closingBottom.length >= 5) {
@@ -23516,7 +23567,7 @@ async function _triggerTarotAI() {
           '</button>' +
         '</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5">' +
-          (admin ? '🔧 管理員・無限使用' : '單次 NT$' + window.JY_PRICES.OPUS_TAROT) +
+          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$' + window.JY_PRICES.OPUS_TAROT_MEMBER + '｜非會員 NT$' + window.JY_PRICES.OPUS_TAROT) +
         '</div>' +
       '</div>';
     return;
@@ -24136,6 +24187,38 @@ function _renderTarotAIResult(container, r, admin) {
     if (r.story) {
       html += _renderStoryChat(r.story);
     }
+
+    // ── v64.F:驗證信號卡片(塔羅版)──
+    try {
+      var _vsT = r.verificationSignals;
+      if (Array.isArray(_vsT) && _vsT.length > 0) {
+        var _vsTValid = _vsT.filter(function(x){ return x && x.signal && x.period; });
+        if (_vsTValid.length > 0) {
+          html += '<details open style="margin-bottom:.6rem;border:1px solid rgba(96,165,250,.18);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(96,165,250,.04),transparent)">';
+          html += '<summary style="padding:.65rem .85rem;font-size:.82rem;color:#93c5fd;cursor:pointer;user-select:none;background:rgba(96,165,250,.06);font-weight:600;display:flex;align-items:center;gap:.4rem">';
+          html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(到時候回來打勾,看準不準)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
+          html += '<div style="padding:.6rem .8rem;display:flex;flex-direction:column;gap:.55rem">';
+          _vsTValid.forEach(function(v) {
+            var conf = v.confidence || 'medium';
+            var confColor = conf === 'high' ? '#22c55e' : (conf === 'low' ? '#94a3b8' : '#fbbf24');
+            var confLabel = conf === 'high' ? '強' : (conf === 'low' ? '弱' : '中');
+            var sources = Array.isArray(v.sources) ? v.sources.join('・') : '';
+            html += '<div style="padding:.6rem .75rem;background:rgba(255,255,255,.02);border-radius:9px;border-left:3px solid ' + confColor + '">';
+            html += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem;flex-wrap:wrap">';
+            html += '<span style="font-size:.75rem;color:#93c5fd;font-weight:700">' + _esc(v.period) + '</span>';
+            html += '<span style="font-size:.62rem;padding:.1rem .4rem;border-radius:4px;background:' + confColor + '22;color:' + confColor + ';font-weight:600">信號' + confLabel + '</span>';
+            if (sources) html += '<span style="font-size:.62rem;color:var(--c-text-muted);margin-left:auto">來源:' + _esc(sources) + '</span>';
+            html += '</div>';
+            html += '<div style="font-size:.85rem;color:var(--c-text);line-height:1.6">' + _esc(v.signal) + '</div>';
+            html += '</div>';
+          });
+          html += '<div style="margin-top:.4rem;padding:.4rem .55rem;font-size:.68rem;color:var(--c-text-muted);background:rgba(255,255,255,.015);border-radius:6px;line-height:1.65">';
+          html += '💡 這些是「可以驗證」的具體預測。到了那個時間點,你可以回來看「準/不準」——這是命理跟漂亮廢話的差別。';
+          html += '</div>';
+          html += '</div></details>';
+        }
+      }
+    } catch(_vsTE) {}
 
     // ── 牌面橫向展示條 ──
     if (drawn.length) {
@@ -25672,6 +25755,38 @@ function _renderOOTKResult(container, r, admin) {
     html += _renderStoryChat(r.story);
   }
 
+  // ── v64.F:驗證信號卡片(開鑰版)──
+  try {
+    var _vsO = r.verificationSignals;
+    if (Array.isArray(_vsO) && _vsO.length > 0) {
+      var _vsOValid = _vsO.filter(function(x){ return x && x.signal && x.period; });
+      if (_vsOValid.length > 0) {
+        html += '<details open style="margin-bottom:.6rem;border:1px solid rgba(96,165,250,.18);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(96,165,250,.04),transparent)">';
+        html += '<summary style="padding:.65rem .85rem;font-size:.82rem;color:#93c5fd;cursor:pointer;user-select:none;background:rgba(96,165,250,.06);font-weight:600;display:flex;align-items:center;gap:.4rem">';
+        html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(到時候回來打勾,看準不準)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
+        html += '<div style="padding:.6rem .8rem;display:flex;flex-direction:column;gap:.55rem">';
+        _vsOValid.forEach(function(v) {
+          var conf = v.confidence || 'medium';
+          var confColor = conf === 'high' ? '#22c55e' : (conf === 'low' ? '#94a3b8' : '#fbbf24');
+          var confLabel = conf === 'high' ? '強' : (conf === 'low' ? '弱' : '中');
+          var sources = Array.isArray(v.sources) ? v.sources.join('・') : '';
+          html += '<div style="padding:.6rem .75rem;background:rgba(255,255,255,.02);border-radius:9px;border-left:3px solid ' + confColor + '">';
+          html += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem;flex-wrap:wrap">';
+          html += '<span style="font-size:.75rem;color:#93c5fd;font-weight:700">' + _esc(v.period) + '</span>';
+          html += '<span style="font-size:.62rem;padding:.1rem .4rem;border-radius:4px;background:' + confColor + '22;color:' + confColor + ';font-weight:600">信號' + confLabel + '</span>';
+          if (sources) html += '<span style="font-size:.62rem;color:var(--c-text-muted);margin-left:auto">來源:' + _esc(sources) + '</span>';
+          html += '</div>';
+          html += '<div style="font-size:.85rem;color:var(--c-text);line-height:1.6">' + _esc(v.signal) + '</div>';
+          html += '</div>';
+        });
+        html += '<div style="margin-top:.4rem;padding:.4rem .55rem;font-size:.68rem;color:var(--c-text-muted);background:rgba(255,255,255,.015);border-radius:6px;line-height:1.65">';
+        html += '💡 這些是「可以驗證」的具體預測。到了那個時間點,你可以回來看「準/不準」——這是命理跟漂亮廢話的差別。';
+        html += '</div>';
+        html += '</div></details>';
+      }
+    }
+  } catch(_vsOE) {}
+
   // summary
   if (r.summary) {
     html += _renderSectionDivider();
@@ -25688,6 +25803,46 @@ function _renderOOTKResult(container, r, admin) {
   ];
   var ops = r.operations || {};
   var hasOps = Object.keys(ops).length > 0;
+
+  // ── v64.F:開鑰問題拆層卡片(差異化核心)──
+  //   開鑰之法跟塔羅快讀的真正差別:不只是技術讀盤,更是「拆問題層次」
+  //   表層問題 → 深層問題 → 情緒鎖點 → 重複模式 → 鑰匙行動
+  //   這是用戶花 NT$120 的核心理由(塔羅快讀只到表層)
+  try {
+    var _ql = r.questionLayers;
+    if (_ql && typeof _ql === 'object' && (_ql.surface || _ql.hidden || _ql.emotionalLock)) {
+      var _qlLayers = [
+        { key: 'surface',          icon: '🌊', label: '表層問題',   color: '#94a3b8', desc: '你問的那個問題' },
+        { key: 'hidden',           icon: '🔍', label: '深層問題',   color: '#a78bfa', desc: '問題背後的真正問題' },
+        { key: 'emotionalLock',    icon: '🔒', label: '情緒鎖點',   color: '#f472b6', desc: '你當下卡住的核心感受' },
+        { key: 'repeatingPattern', icon: '🔁', label: '重複模式',   color: '#fb923c', desc: '這在你人生中重複出現的模樣' },
+        { key: 'keyAction',        icon: '🗝️', label: '鑰匙行動',   color: '#fbbf24', desc: '你現在能做的具體一個動作' }
+      ];
+      html += '<details open style="margin-bottom:.8rem;border:1px solid rgba(212,175,55,.25);border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(212,175,55,.04),transparent)">';
+      html += '<summary style="padding:.75rem .95rem;font-size:.88rem;color:var(--c-gold);cursor:pointer;user-select:none;background:rgba(212,175,55,.05);font-weight:700;display:flex;align-items:center;gap:.4rem">';
+      html += '🗝️ 開鑰之法・問題五層拆解<span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400;margin-left:.3rem">這是開鑰最核心的部分</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto;font-weight:400">點擊收合</span>';
+      html += '</summary>';
+      html += '<div style="padding:.55rem .65rem">';
+      _qlLayers.forEach(function(layer, lidx) {
+        var content = _ql[layer.key];
+        if (!content || typeof content !== 'string' || content.length < 8) return;
+        // 過濾 _comment 那種佔位內容
+        if (content.indexOf('用戶問的') === 0 || content.indexOf('問題背後') === 0) return;
+        html += '<div style="padding:.65rem .75rem;margin-bottom:.45rem;border-radius:10px;background:rgba(255,255,255,.02);border-left:3px solid ' + layer.color + '">';
+        html += '<div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.3rem">';
+        html += '<span style="font-size:1rem">' + layer.icon + '</span>';
+        html += '<span style="font-size:.78rem;font-weight:700;color:' + layer.color + '">' + layer.label + '</span>';
+        html += '<span style="font-size:.66rem;color:var(--c-text-muted);margin-left:.3rem">' + layer.desc + '</span>';
+        html += '</div>';
+        html += '<div style="font-size:.86rem;line-height:1.75;color:var(--c-text);padding-left:.2rem">' + _esc(content) + '</div>';
+        html += '</div>';
+      });
+      html += '<div style="margin-top:.4rem;padding:.45rem .6rem;font-size:.68rem;color:var(--c-text-muted);background:rgba(255,255,255,.015);border-radius:6px;line-height:1.7">';
+      html += '💡 <strong style="color:var(--c-gold-pale,#e8d39f)">開鑰之法</strong>不只解牌,更解開「你為什麼一直卡在這」的情緒鎖。鑰匙行動才是真正的 takeaway。';
+      html += '</div>';
+      html += '</div></details>';
+    }
+  } catch(_qlErr) {}
 
   if (hasOps) {
     html += _renderSectionDivider('🔑');

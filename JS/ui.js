@@ -880,6 +880,15 @@ function _readBirthForm() {
   var loc = (typeof getSelectedBirthLocation === 'function') ? getSelectedBirthLocation('f-country', 'f-city') : null;
   var btimeUnsure = document.getElementById('f-btime-unsure')?.checked;
 
+  // v64.F:讀時辰精度 radio
+  var timePrecision = 'precise';
+  var precisionRadios = document.getElementsByName('f-time-precision');
+  for (var pi=0; pi<precisionRadios.length; pi++) {
+    if (precisionRadios[pi].checked) { timePrecision = precisionRadios[pi].value; break; }
+  }
+  // 兼容老 checkbox(沒 radio 時)
+  if (btimeUnsure && timePrecision === 'precise') timePrecision = 'unknown';
+
   var hh = (h !== '' && h != null && !isNaN(parseInt(h))) ? parseInt(h) : null;
   var mm = (mi !== '' && mi != null && !isNaN(parseInt(mi))) ? parseInt(mi) : 0;
   if (btimeUnsure || hh === null) { hh = 12; mm = 0; }
@@ -893,7 +902,7 @@ function _readBirthForm() {
   if (bdateEl) bdateEl.value = bdate;
   if (btimeEl) btimeEl.value = btimeUnsure ? '' : btime;
 
-  return { y: y, m: m, d: d, hh: hh, mm: mm, name: name, loc: loc, bdate: bdate, btime: btimeUnsure ? '' : btime, btimeUnknown: btimeUnsure || (h === '' || h == null) };
+  return { y: y, m: m, d: d, hh: hh, mm: mm, name: name, loc: loc, bdate: bdate, btime: btimeUnsure ? '' : btime, btimeUnknown: btimeUnsure || (h === '' || h == null), timePrecision: timePrecision };
 }
 
 function _calcSolarAndCompute(birth, genderValue) {
@@ -6282,6 +6291,14 @@ function enterOOTKFromTarot() {
   var btimeUnsure2 = document.getElementById('f2-btime-unsure')?.checked;
   var loc2 = (typeof getSelectedBirthLocation === 'function') ? getSelectedBirthLocation('f2-country', 'f2-city') : null;
 
+  // v64.F:讀 form 2 時辰精度 radio
+  var timePrecision2 = 'precise';
+  var precRadios2 = document.getElementsByName('f2-time-precision');
+  for (var pi2=0; pi2<precRadios2.length; pi2++) {
+    if (precRadios2[pi2].checked) { timePrecision2 = precRadios2[pi2].value; break; }
+  }
+  if (btimeUnsure2 && timePrecision2 === 'precise') timePrecision2 = 'unknown';
+
   var hh2 = (h2 !== '' && h2 != null && !isNaN(parseInt(h2))) ? parseInt(h2) : 12;
   var mm2 = (mi2 !== '' && mi2 != null && !isNaN(parseInt(mi2))) ? parseInt(mi2) : 0;
   if (btimeUnsure2) { hh2 = 12; mm2 = 0; }
@@ -6290,7 +6307,7 @@ function enterOOTKFromTarot() {
 
   // 寫 S.form
   var type = S.form?.type || 'general';
-  S.form = { type: type, question: question, gender: gender.value, bdate: bdate, btime: btime, name: name, btimeUnknown: btimeUnsure2 || (h2 === '' || h2 == null) };
+  S.form = { type: type, question: question, gender: gender.value, bdate: bdate, btime: btime, name: name, btimeUnknown: btimeUnsure2 || (h2 === '' || h2 == null), timePrecision: timePrecision2 };
 
   // 真太陽時
   var solarInfo = null;
