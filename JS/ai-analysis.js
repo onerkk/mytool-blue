@@ -14997,6 +14997,81 @@ function _buildPayload() {
   //   - approximate:約略時辰,降權紫微/西占/吠陀的時辰相關判讀(命宮/上升/分盤)
   //   - unknown:不知道時辰,跳過時辰相關判讀,八字保留年月日(時柱降權)
   p.timePrecision = f.timePrecision || (f.btimeUnknown ? 'unknown' : 'precise');
+
+  // v64.F 中期:節氣切換警告 — 出生在節氣交接前後 < 3 小時 → AI 月柱判讀降權
+  //   背景:八字月柱以「節氣」劃分(立春後=寅月,驚蟄後=卯月)。
+  //   若用戶出生時間離節氣交接 < 3 小時,月柱可能落隔月,後端排盤雖會用近似演算法,
+  //   但仍有不確定性。這條讓 AI 判讀月柱相關時主動標明降權。
+  //
+  //   實作:用近似節氣表(節氣每月約 5-7 號 + 20-22 號),計算與生日的時間差。
+  //   精準節氣計算需天文曆,本地簡化版抓 ±3 小時內視為「節氣交接區」。
+  try {
+    if (f.bdate && f.btime && !f.btimeUnknown) {
+      // 解析生日時間
+      var _bDateParts = f.bdate.split('-');
+      var _bTimeParts = f.btime.split(':');
+      var _bY = parseInt(_bDateParts[0]);
+      var _bM = parseInt(_bDateParts[1]);
+      var _bD = parseInt(_bDateParts[2]);
+      var _bH = parseInt(_bTimeParts[0]) || 12;
+      var _bMin = parseInt(_bTimeParts[1]) || 0;
+
+      // 節氣近似表(月份 → [節氣 1 日期, 節氣 2 日期],時間統一抓中午)
+      // 立春2/4 雨水2/19 驚蟄3/6 春分3/21 清明4/5 穀雨4/20 立夏5/6 小滿5/21
+      // 芒種6/6 夏至6/21 小暑7/7 大暑7/23 立秋8/8 處暑8/23 白露9/8 秋分9/23
+      // 寒露10/8 霜降10/23 立冬11/7 小雪11/22 大雪12/7 冬至12/22
+      // 小寒1/6 大寒1/20
+      var _solarTermDays = {
+        1: [6, 20],    // 小寒、大寒
+        2: [4, 19],    // 立春、雨水
+        3: [6, 21],    // 驚蟄、春分
+        4: [5, 20],    // 清明、穀雨
+        5: [6, 21],    // 立夏、小滿
+        6: [6, 21],    // 芒種、夏至
+        7: [7, 23],    // 小暑、大暑
+        8: [8, 23],    // 立秋、處暑
+        9: [8, 23],    // 白露、秋分
+        10: [8, 23],   // 寒露、霜降
+        11: [7, 22],   // 立冬、小雪
+        12: [7, 22]    // 大雪、冬至
+      };
+      var _termNames = {
+        1: ['小寒', '大寒'], 2: ['立春', '雨水'], 3: ['驚蟄', '春分'],
+        4: ['清明', '穀雨'], 5: ['立夏', '小滿'], 6: ['芒種', '夏至'],
+        7: ['小暑', '大暑'], 8: ['立秋', '處暑'], 9: ['白露', '秋分'],
+        10: ['寒露', '霜降'], 11: ['立冬', '小雪'], 12: ['大雪', '冬至']
+      };
+      // 換月節氣(每月第一個節氣)— 立春/驚蟄/清明/立夏/芒種/小暑/立秋/白露/寒露/立冬/大雪/小寒
+      // 這幾個是「換月柱」的關鍵節氣,差幾小時就跨月柱
+      var _monthChangingTerms = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // 全部都會換月柱
+      var _termsForMonth = _solarTermDays[_bM] || [];
+      var _firstTermDay = _termsForMonth[0];   // 換月節氣
+      var _secondTermDay = _termsForMonth[1];  // 中氣
+      var _firstTermName = _termNames[_bM] ? _termNames[_bM][0] : '';
+
+      // 計算離換月節氣的時間差(以小時計,假設節氣在中午 12:00)
+      if (_firstTermDay) {
+        var _bTotalMin = _bD * 24 * 60 + _bH * 60 + _bMin;
+        var _termTotalMin = _firstTermDay * 24 * 60 + 12 * 60; // 節氣抓中午
+        var _diffMin = Math.abs(_bTotalMin - _termTotalMin);
+        var _diffHours = Math.round(_diffMin / 60 * 10) / 10;
+
+        // 3 小時(180 分鐘)內視為交接區
+        if (_diffMin <= 180) {
+          var _direction = _bTotalMin < _termTotalMin ? 'before' : 'after';
+          p.monthTransitionWarning = {
+            term: _firstTermName,
+            termDay: _firstTermDay,
+            diffHours: _diffHours,
+            direction: _direction,  // before=節氣前(可能屬上月柱)/ after=節氣後(可能屬本月柱)
+            severity: _diffMin <= 60 ? 'high' : (_diffMin <= 120 ? 'medium' : 'low')
+          };
+        }
+      }
+    }
+  } catch(_mtwErr) {
+    // 節氣警告計算失敗不影響主流程
+  }
   // ★ v38：用戶狀況快選（提升 AI 開場命中率）
   if (window._jySelectedContext) p.userContext = window._jySelectedContext;
   // ★ v17：真太陽時 + 出生地
