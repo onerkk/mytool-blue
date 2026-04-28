@@ -94,7 +94,7 @@
 
     return '<div style="max-width:360px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2rem 1.3rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6);max-height:92vh;overflow-y:auto">' +
       '<div style="font-size:2.4rem;margin-bottom:.5rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🌙</div>' +
-      '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.05rem;margin-bottom:.8rem;font-family:var(--f-display,serif)">靜月會員</h3>' +
+      '<h3 style="color:var(--c-gold,#c9a84c);font-size:1.05rem;margin-bottom:.8rem;font-family:var(--f-display,serif)">靜月之光</h3>' +
 
       // ─── v64.B:會員制下架,只剩單次購買 ───
       //   舊會員仍能用(後端邏輯保留),但前端不再顯示開通入口

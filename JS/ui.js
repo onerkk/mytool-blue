@@ -1092,7 +1092,24 @@ function submitWithTool() {
             });
             var _chkData = await _chkResp.json();
             if (!_chkData.allowed) {
-              // 彈付費牆
+              // v64.C:標準路徑擋了,但用戶可能有「塔羅深度」配額——再查一次 opus 路徑
+              //   有深度配額就放他進入,他會在解讀深度選單看到「深度解析」可選
+              try {
+                var _opusChkBody = { action: 'check', payload: { mode: 'tarot_only', depth: 'opus' } };
+                if (window._JY_SESSION_TOKEN) _opusChkBody.session_token = window._JY_SESSION_TOKEN;
+                var _opusResp = await fetch('https://jy-ai-proxy.onerkk.workers.dev', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(_opusChkBody)
+                });
+                var _opusData = await _opusResp.json();
+                if (_opusData.allowed) {
+                  // 深度配額有餘量 → 放行,讓用戶進去看到「深度解析」按鈕
+                  window._jyForceOpusOnly = true; // 標記:這次只能選深度
+                  goStep(2);
+                  return;
+                }
+              } catch(_oe) { /* 查不到就走原邏輯 */ }
+              // 標準也沒、深度也沒 → 彈付費牆
               if (typeof _jyStartPayment === 'function') {
                 var _pm = document.createElement('div');
                 _pm.id = 'jy-pay-modal';
@@ -1101,7 +1118,7 @@ function submitWithTool() {
                   '<div style="background:#1a0a0a;border:1px solid rgba(201,168,76,.25);border-radius:16px;padding:2rem;text-align:center;max-width:320px">' +
                   '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">免費次數已用完</div>' +
                   '<button onclick="_jyStartPayment(\'tarot_only\',\'single\')" style="padding:.6rem 1.5rem;border-radius:10px;background:rgba(212,175,55,.1);color:var(--c-gold);border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit;font-weight:700">🃏 塔羅單次 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + '</button>' +
-                  '<br><button onclick="this.parentElement.parentElement.remove()" style="margin-top:.5rem;padding:.4rem 1rem;background:none;border:none;color:var(--c-text-muted);cursor:pointer;font-size:.75rem">明天再來</button></div>';
+                  '<br><button onclick="this.parentElement.parentElement.remove()" style="margin-top:.5rem;padding:.4rem 1rem;background:none;border:none;color:var(--c-text-muted);cursor:pointer;font-size:.75rem">先不用了</button></div>';
                 _pm.addEventListener('click', function(ev) { if (ev.target === _pm) _pm.remove(); });
                 document.body.appendChild(_pm);
               }
@@ -5581,8 +5598,8 @@ showAuraResult = function(){
         localStorage.setItem('_jy_sub_expires', String(data.expiresAt));
       } else {
         // 免費用戶
-        var _P = window.JY_PRICES || {};
-        var _upsellText = '單次購買 NT$' + (_P.SINGLE_TAROT || 30) + ' 起';
+        var _P = window.JY_PRICES || { SUB_STANDARD: 999 };
+        var _upsellText = '單次購買 NT$' + _P.SINGLE_TAROT + ' 起';
         var fs = data.freeStatus;
         if (fs) {
           var parts = [];
@@ -5594,17 +5611,17 @@ showAuraResult = function(){
           if (usedOotk < 1) parts.push('開鑰');
           if (parts.length > 0) {
             el.innerHTML = '✨ 免費體驗剩餘：<strong style="color:var(--c-gold)">' + parts.join('、') + '</strong> ・ ' +
-              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\')">' + _upsellText + '</span>';
+              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</span>';
           } else {
-            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\')">' + _upsellText + '</strong>';
+            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</strong>';
           }
         } else {
           var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 3;
           if (freeLeft > 0) {
             el.innerHTML = '✨ 免費體驗剩餘 <strong style="color:var(--c-gold)">' + freeLeft + '</strong> 次 ・ ' +
-              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\')">' + _upsellText + '</span>';
+              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</span>';
           } else {
-            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\')">' + _upsellText + '</strong>';
+            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</strong>';
           }
         }
         localStorage.removeItem('_jy_sub_expires');
@@ -5953,7 +5970,31 @@ async function submitTarotQuick() {
       });
       var checkData = await checkResp.json();
       if (!checkData.allowed) {
-        // 顯示已用完提示
+        // v64.C:標準擋了,先查深度配額
+        try {
+          var _opusChk2 = { action: 'check', payload: { mode: 'tarot_only', depth: 'opus' } };
+          if (window._JY_SESSION_TOKEN) _opusChk2.session_token = window._JY_SESSION_TOKEN;
+          var _opusResp2 = await fetch('https://jy-ai-proxy.onerkk.workers.dev', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(_opusChk2)
+          });
+          var _opusData2 = await _opusResp2.json();
+          if (_opusData2.allowed) {
+            // 深度配額有,放行讓用戶進去用深度
+            window._jyForceOpusOnly = true;
+            // 不擋,讓 submit 繼續往下走
+          } else {
+            // 標準也沒、深度也沒 → 顯示已用完
+            _showTarotUsedModal();
+            return;
+          }
+        } catch(_oe2) {
+          _showTarotUsedModal();
+          return;
+        }
+      }
+
+      function _showTarotUsedModal() {
         var inputScreen = document.getElementById('input-screen');
         if (inputScreen) {
           var existingModal = document.getElementById('tarot-used-modal');
@@ -5967,13 +6008,12 @@ async function submitTarotQuick() {
             '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">三套工具各可免費體驗 1 次<br>用完可單次購買繼續(塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 60) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + ')</div>' +
             '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
               '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 塔羅單次 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + '</button>' +
-              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">明天再來</button>' +
+              '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用了</button>' +
             '</div>' +
           '</div>';
           modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
           document.body.appendChild(modal);
         }
-        return;
       }
     } catch(e) {
       console.warn('[TarotQuick] precheck failed, proceeding:', e);

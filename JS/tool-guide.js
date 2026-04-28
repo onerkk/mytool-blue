@@ -68,15 +68,13 @@
     updateToolBadges();
   }
 
-  // v60-hotfix10：根據用戶狀態動態更新三個工具徽章文字
-  //   原本 index.html 寫死「前 3 次免費體驗」，是 v39 遺留的錯誤文字。
-  //   真實規則：免費試用每工具 1 次（不重置），會員有配額，付費 token 當次放行。
-  //   狀態矩陣：
-  //     未登入 → 「登入享免費 1 次」
-  //     免費・未用過 → 「免費體驗 1 次」
-  //     免費・已用完 → 「單次 NT$XX」
-  //     標準會員 → 「會員・每日 1 次」(塔羅/開鑰) 或 「會員・每月 2 次」(七維)
-  //     高級會員 → 「高級・每日 2 次」或 「高級・每月 5 次」
+  // v60-hotfix10:根據用戶狀態動態更新三個工具徽章文字
+  //   v64.C 全面改寫:加入 paid_quota 判斷
+  //   狀態優先級(從高到低):
+  //     1. 會員(有 active 訂閱) → 顯示會員配額
+  //     2. 有單次購買配額(標準/深度任一) → 顯示「✓ N 次可用」
+  //     3. 免費未用過 → 「免費體驗 1 次」
+  //     4. 免費已用完 → 「單次 NT$XX」
   function updateToolBadges() {
     var url = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
     var body = {};
@@ -88,16 +86,25 @@
     })
       .then(function(r){ return r.json(); })
       .then(function(data){
-        // v64.B:fallback 定價同步單次新價(會員已下架但保留 SUB_* 給舊會員 badge)
+        // v64.C:會員下架,只保留單次定價
         var _p = (typeof window!=='undefined' && window._JY_PRICING) || {
-          SUB_STANDARD: 999, SUB_PREMIUM: 1999,
           SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 60
         };
         var _p7d = _p.SINGLE_7D || 70;
         var _pTarot = _p.SINGLE_TAROT || 30;
         var _pOotk = _p.SINGLE_OOTK || 60;
 
-        // 會員（有 active 訂閱）
+        // v64.C:讀單次購買配額(7 池)
+        var pq = data.paidQuota || {};
+        function _pqRemain(key) {
+          var q = pq[key];
+          if (!q) return 0;
+          var u = parseInt(q.u || 0);
+          var l = parseInt(q.l || 0);
+          return Math.max(0, l - u);
+        }
+
+        // 會員(有 active 訂閱)
         if (data.active) {
           var isPremium = data.tier === 'premium';
           var dailyLim = data.dailyLimit || 1;
@@ -112,20 +119,41 @@
           return;
         }
 
-        // 非會員：依 freeStatus 決定
+        // 非會員:三工具各算「配額 + 免費」狀態
         var fs = data.freeStatus || { '7d': 0, tarot: 0, ootk: 0 };
-        // 塔羅
-        if (fs.tarot >= 1) setBadge('tool-tarot-badge', '單次 NT$' + _pTarot, 'rgba(212,175,55,.5)');
-        else setBadge('tool-tarot-badge', '免費體驗 1 次', '');
-        // 開鑰
-        if (fs.ootk >= 1) setBadge('tool-ootk-badge', '單次 NT$' + _pOotk, 'rgba(212,175,55,.5)');
-        else setBadge('tool-ootk-badge', '免費體驗 1 次', '');
-        // 七維
-        if (fs['7d'] >= 1) setBadge('tool-full-badge', '單次 NT$' + _p7d, 'rgba(212,175,55,.5)');
-        else setBadge('tool-full-badge', '免費體驗 1 次', '');
+
+        // 通用組裝:依「配額」+「免費」+ 預設定價
+        function _compose(stdQ, opusQ, freeUsed, singlePrice) {
+          var stdR = _pqRemain(stdQ);
+          var opusR = _pqRemain(opusQ);
+          // 1. 兩種配額都有
+          if (stdR > 0 && opusR > 0) {
+            return { txt: '✓ 標準 ' + stdR + ' + 深度 ' + opusR + ' 次', color: '#22c55e' };
+          }
+          // 2. 只有標準配額
+          if (stdR > 0) {
+            return { txt: '✓ 標準 ' + stdR + ' 次可用', color: '#22c55e' };
+          }
+          // 3. 只有深度配額
+          if (opusR > 0) {
+            return { txt: '✓ 深度 ' + opusR + ' 次可用', color: '#a855f7' };
+          }
+          // 4. 沒配額,看免費
+          if (freeUsed >= 1) {
+            return { txt: '單次 NT$' + singlePrice, color: 'rgba(212,175,55,.5)' };
+          }
+          return { txt: '免費體驗 1 次', color: '' };
+        }
+
+        var t = _compose('tarot_std', 'tarot_opus', fs.tarot, _pTarot);
+        var o = _compose('ootk_std', 'ootk_opus', fs.ootk, _pOotk);
+        var f = _compose('7d_std', '7d_opus', fs['7d'], _p7d);
+        setBadge('tool-tarot-badge', t.txt, t.color);
+        setBadge('tool-ootk-badge', o.txt, o.color);
+        setBadge('tool-full-badge', f.txt, f.color);
       })
       .catch(function(){
-        // 失敗就維持 HTML 預設文字「免費體驗 1 次」，不動
+        // 失敗就維持 HTML 預設文字「免費體驗 1 次」,不動
       });
   }
   function setBadge(id, text, colorHint) {
@@ -145,12 +173,14 @@
       .then(function(data){
         var line = document.getElementById('jy-trial-line');
         if(!line) return;
-        // v52：動態讀 _JY_PRICING
-        var _tgP = (typeof window!=='undefined' && window._JY_PRICING) || { SUB_STANDARD: 999, SUB_PREMIUM: 1999 };
-        var _subLine = '標準 NT$' + _tgP.SUB_STANDARD + '／高級 NT$' + (_tgP.SUB_PREMIUM||1999).toLocaleString() + '/月';
+        // v64.C:會員下架,改用配額制提示
         if(data.subscription && data.quotaType){
           var qt = data.quotaType === '7d_monthly' ? '七維度每月' : '塔羅每日';
-          line.innerHTML = '☽ 會員・' + qt + ' ' + data.limit + ' 次（已用 ' + (data.used||0) + ' 次）';
+          line.innerHTML = '☽ 會員・' + qt + ' ' + data.limit + ' 次(已用 ' + (data.used||0) + ' 次)';
+          return;
+        }
+        if(data.paidQuota && data.paidQuota.remaining > 0){
+          line.innerHTML = '☽ <span style="color:rgba(34,197,94,.85);font-weight:700">已購買 ' + data.paidQuota.remaining + ' 次</span>・本次可用';
           return;
         }
         if(data.paid){ line.innerHTML = '☽ 已付費・本次可用'; return; }
@@ -160,11 +190,11 @@
           var color = fl <= 1 ? 'rgba(239,68,68,.8)' : 'rgba(212,175,55,.7)';
           line.innerHTML = fl > 0
             ? '☽ 免費體驗・還剩 <span style="color:'+color+';font-weight:700">'+fl+'</span> 次'
-            : '☽ <span style="color:rgba(239,68,68,.8);font-weight:700">免費已用完</span>・會員 ' + _subLine;
+            : '☽ <span style="color:rgba(239,68,68,.8);font-weight:700">免費已用完</span>・單次購買繼續使用';
           return;
         }
         if(data.code === 'LOGIN_REQUIRED'){ line.innerHTML = '☽ 登入 Google 即享免費體驗'; return; }
-        line.innerHTML = '☽ 三套工具各免費 1 次・會員 ' + _subLine;
+        line.innerHTML = '☽ 三套工具各免費 1 次・單次購買繼續';
       })
       .catch(function(){ var l=document.getElementById('jy-trial-line'); if(l) l.innerHTML='☽ 免費體驗 1 次'; });
   }
