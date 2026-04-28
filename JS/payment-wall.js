@@ -508,30 +508,49 @@
       var quotaEl = document.getElementById('jy-paid-card-quota');
       if (!quotaEl) return;
 
+      // v64.C:從 paidQuota(7 池配額)算當前購買對應的剩餘次數
+      var lines = [];
       if (d.active) {
         // 會員身份顯示
         var tierName = d.tier === 'premium' ? '💎 高級會員' : '👑 標準會員';
         var daysLeft = Math.max(0, Math.ceil((d.expiresAt - Date.now()) / 86400000));
-        var lines = [];
         lines.push('<div style="font-weight:700;color:#86efac;margin-bottom:.3rem">' + tierName + ' · ' + daysLeft + ' 天到期</div>');
         var tarotLeft = Math.max(0, (d.dailyLimit || 0) - (d.dailyUsed || 0));
         var d7Left = Math.max(0, (d.d7Limit || 0) - (d.d7Used || 0));
         lines.push('塔羅/開鑰今日剩 <strong>' + tarotLeft + '</strong> · 七維度本月剩 <strong>' + d7Left + '</strong>');
-        if (typeof d.opusLimit === 'number' && d.opusLimit > 0) {
-          var opusLeft = Math.max(0, d.opusLimit - (d.opusUsed || 0));
-          lines.push('深度解析本月剩 <strong>' + opusLeft + '</strong>');
-        }
-        quotaEl.innerHTML = lines.join('<br>');
-      } else if (type === 'single' || type === 'opus_single' || type === 'followup_single') {
-        // 單次購買:憑證已寫入,點繼續即可使用
-        var typeLabel = (type === 'opus_single') ? '深度解析' : (type === 'followup_single') ? '追問' : '解讀';
-        quotaEl.innerHTML = '✓ ' + typeLabel + '憑證已寫入,點下方按鈕即可繼續使用';
-      } else {
-        quotaEl.innerHTML = '✓ 已解鎖,點下方按鈕繼續';
       }
+      // v64.C:單次購買配額(會員/非會員都看)
+      var pq = d.paidQuota || {};
+      // 算這次購買對應的 quota key
+      var _qkey = '';
+      if (type === 'opus_single') {
+        _qkey = (mode === 'tarot_only') ? 'tarot_opus' : (mode === 'ootk') ? 'ootk_opus' : '7d_opus';
+      } else if (type === 'single') {
+        _qkey = (mode === 'tarot_only') ? 'tarot_std' : (mode === 'ootk') ? 'ootk_std' : '7d_std';
+      } else if (type === 'followup_single') {
+        _qkey = 'fu';
+      }
+      if (_qkey && pq[_qkey]) {
+        var q = pq[_qkey];
+        var used = parseInt(q.u || 0);
+        var lim = parseInt(q.l || 0);
+        var remain = Math.max(0, lim - used);
+        var qLabel = {
+          '7d_std': '七維標準', '7d_opus': '七維深度',
+          'tarot_std': '塔羅標準', 'tarot_opus': '塔羅深度',
+          'ootk_std': '開鑰標準', 'ootk_opus': '開鑰深度',
+          'fu': '追問加購'
+        }[_qkey] || _qkey;
+        lines.push('<div style="font-weight:700;color:#86efac;margin-top:' + (lines.length ? '.3rem' : '0') + '">✓ ' + qLabel + ' 已開通</div>');
+        lines.push('剩餘 <strong>' + remain + '</strong> 次(已用 ' + used + ' / 上限 ' + lim + ')');
+      } else if (lines.length === 0) {
+        // 沒抓到對應配額(可能 webhook 還沒處理完),fallback
+        lines.push('✓ 付款已收到,點下方按鈕繼續即可使用');
+      }
+      quotaEl.innerHTML = lines.join('<br>');
     } catch(e) {
       var quotaEl2 = document.getElementById('jy-paid-card-quota');
-      if (quotaEl2) quotaEl2.innerHTML = '✓ 付款憑證已寫入,點下方按鈕繼續使用';
+      if (quotaEl2) quotaEl2.innerHTML = '✓ 付款已收到,點下方按鈕繼續即可使用';
     }
   }
 
