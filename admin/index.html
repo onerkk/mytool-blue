@@ -264,7 +264,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <button id="fbFilterAll" onclick="filterFeedback('all')" style="padding:6px 14px;border-radius:999px;background:var(--accent);color:#fff;border:none;font-size:12px;cursor:pointer;font-weight:600">全部</button>
           <button id="fbFilterBad" onclick="filterFeedback('bad')" style="padding:6px 14px;border-radius:999px;background:transparent;color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:12px;cursor:pointer;font-weight:600">👎 只看不準</button>
           <button id="fbFilterGood" onclick="filterFeedback('good')" style="padding:6px 14px;border-radius:999px;background:transparent;color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:12px;cursor:pointer;font-weight:600">👍 只看準</button>
-          <button id="fbFilterHallucinated" onclick="filterFeedback('hallucinated')" style="padding:6px 14px;border-radius:999px;background:transparent;color:#ef4444;border:1px solid rgba(239,68,68,.3);font-size:12px;cursor:pointer;font-weight:600" title="AI 引用了不在牌堆裡的牌">🚨 幻覺</button>
           <button onclick="exportFeedbackCSV()" style="padding:6px 14px;border-radius:999px;background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3);font-size:12px;cursor:pointer;font-weight:600;margin-left:auto">📥 匯出 CSV</button>
         </div>
 
@@ -1791,6 +1790,117 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </label>
 
           <!-- ═══════════════════════════════════════════════════════════ -->
+          <!-- ★★★ v64.D 真實命理重構(2026-04-30)★★★ -->
+          <!-- 取代規則疊加層,改用 5 條正面鐵律 + JSON Schema enum + 機械審計 -->
+          <!-- ═══════════════════════════════════════════════════════════ -->
+          <div style="margin-top:18px;padding:12px;border:2px solid #ef4444;border-radius:10px;background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(168,85,247,0.06))">
+            <div style="font-size:13px;font-weight:700;color:#fca5a5;margin-bottom:6px;letter-spacing:0.5px">★★★ v64.D 真實命理重構(2026-04-30)★★★</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-bottom:10px;line-height:1.7;padding:10px;background:rgba(239,68,68,0.04);border-radius:6px;border:1px solid rgba(239,68,68,0.15)">
+              <strong style="color:#fca5a5">觸發事件:</strong>2026-04-29 施小姐反饋 ootk「太籠統重複」。AI 編幻覺牌「寶劍七逆」(payload 沒這張) + 從記憶複製「兩次獨立讀盤指向同一窗口」(confirmation bias loop)。<br><br>
+              <strong style="color:#fca5a5">三大病因:</strong>
+              ① AI 編幻覺牌(無 token-level 強制)
+              ② 記憶污染 confirmation bias loop(8天7次同一男人,記憶把過去結論輸入給 AI)
+              ③ prompt 39 條負面指令造成 cognitive overload(Anthropic 官方:Telling Claude too forcefully what NOT to do can backfire)<br><br>
+              <strong style="color:#fca5a5">v64.D 三大修法:</strong>
+              ① 記憶從「敘事輸入」改「禁區清單」(過濾過去結論/時間錨/Sephirah 判定)
+              ② prompt 從 39 條負面指令壓成 5 條正面鐵律
+              ③ AI 自審改 worker 機械審計 + JSON Schema enum 強制(學術論文證實 self-audit 無效)<br><br>
+              <strong style="color:#a78bfa">技術依據:</strong>
+              Anthropic 官方反幻覺三招(Allow IDK / Quote / Verify)、Opus 4.7 prompt 最佳實踐、Cognitive Overload Attack(arXiv 2410.11272)、Structured Outputs(2025-11-13 beta)。
+            </div>
+
+            <!-- ① 真實命理鐵律 5 條 -->
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid #ef4444;background:rgba(239,68,68,0.03);cursor:pointer;margin-top:6px">
+              <input type="checkbox" id="v64d-real-rules" style="margin-top:2px;width:16px;height:16px;accent-color:#ef4444;cursor:pointer">
+              <span style="flex:1">
+                <span style="font-size:12px;font-weight:700;color:#fca5a5">① 真實命理鐵律 5 條(最高優先級)</span><br>
+                <span style="font-size:10.5px;color:var(--text-dim);line-height:1.65">
+                  把 39 條負面指令(「不可」「禁止」「絕對不能」)壓成 5 條正面鐵律:
+                  <strong>① 牌就是牌</strong>(只引用 payload 真有的牌)
+                  <strong>② 訊號弱就說弱</strong>(不硬解但要看完五項才能標弱)
+                  <strong>③ 答用戶的問題</strong>(N 個子題 N 個答案)
+                  <strong>④ 引用要具體到位</strong>(每結論附哪張牌哪個 Op)
+                  <strong>⑤ 這次讀這次的盤</strong>(禁「上次提過」「再次確認」)。
+                  注入在 selectModules 最前面,優先級高於所有其他模組。
+                </span>
+              </span>
+            </label>
+
+            <!-- ② 嚴格不確定判準 -->
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid #ef4444;background:rgba(239,68,68,0.03);cursor:pointer;margin-top:6px">
+              <input type="checkbox" id="v64d-uncertainty-strict" style="margin-top:2px;width:16px;height:16px;accent-color:#ef4444;cursor:pointer">
+              <span style="flex:1">
+                <span style="font-size:12px;font-weight:700;color:#fca5a5">② 嚴格不確定判準(防鐵律 ② 變偷懶藉口)</span><br>
+                <span style="font-size:10.5px;color:var(--text-dim);line-height:1.65">
+                  鐵律 ② 給 AI 說「訊號弱」的許可,但這個許可不是讓它偷懶用的。
+                  <strong>塔羅:</strong>四項都看了才能標弱(位置意義/元素尊嚴/牌組分布/對沖牌組)
+                  <strong>開鑰:</strong>五項都看了才能標弱(Sig/counting/pairing/dignities/unaspected)
+                  <strong>七維度:</strong>七套都讀完才能說弱(八字/紫微/梅花/塔羅/西占/吠陀/姓名)。
+                  AI 必須在 yesNo.a 裡明說「哪幾項看了沒給」,不是只寫「不確定」三個字交差。
+                </span>
+              </span>
+            </label>
+
+            <!-- ③ Structured Outputs JSON Schema -->
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid #a855f7;background:rgba(168,85,247,0.03);cursor:pointer;margin-top:6px">
+              <input type="checkbox" id="v64d-structured-outputs" style="margin-top:2px;width:16px;height:16px;accent-color:#a855f7;cursor:pointer">
+              <span style="flex:1">
+                <span style="font-size:12px;font-weight:700;color:#c084fc">③ Structured Outputs(JSON Schema enum 強制)</span><br>
+                <span style="font-size:10.5px;color:var(--text-dim);line-height:1.65">
+                  beta:structured-outputs-2025-11-13(Anthropic 官方,2025-11)。
+                  把 OOTK/塔羅 payload 裡的 activeCards/keyCards/pairs 全部抽成 enum,
+                  傳給 API 的 output_format。constrained decoding 在 token-level 強制
+                  evidenceCard 必須是 enum 內的牌——
+                  <strong style="color:#c084fc">AI 連寫不存在的牌都不可能</strong>。
+                  防幻覺最硬的一道防線(prompt 規則是軟性,enum 是硬性)。
+                </span>
+              </span>
+            </label>
+
+            <!-- ④ 記憶過濾 -->
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid #f59e0b;background:rgba(245,158,11,0.03);cursor:pointer;margin-top:6px">
+              <input type="checkbox" id="v64d-memory-filter" style="margin-top:2px;width:16px;height:16px;accent-color:#f59e0b;cursor:pointer">
+              <span style="flex:1">
+                <span style="font-size:12px;font-weight:700;color:#fbbf24">④ 記憶過濾(防 confirmation bias loop)</span><br>
+                <span style="font-size:10.5px;color:var(--text-dim);line-height:1.65">
+                  塔羅/開鑰模式啟動。記憶從「敘事輸入」改「禁區清單」:
+                  <strong>過濾掉</strong>過去結論(「Op4 寶劍 X 落 Y」)、時間錨(「六月底」「轉折窗口」)、
+                  Sephirah 判定(「Tiphareth/Yesod」)、confirmation 字眼(「跟上次一致」)。
+                  <strong>保留</strong>命主背景(年齡、性別、近況、人際處境)。
+                  七維度模式不啟動過濾(那邊的記憶是事件層,不是盤面層)。
+                </span>
+              </span>
+            </label>
+
+            <!-- ⑤ Worker 機械審計 -->
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid #10b981;background:rgba(16,185,129,0.03);cursor:pointer;margin-top:6px">
+              <input type="checkbox" id="v64d-audit-resample" style="margin-top:2px;width:16px;height:16px;accent-color:#10b981;cursor:pointer">
+              <span style="flex:1">
+                <span style="font-size:12px;font-weight:700;color:#34d399">⑤ Worker 機械審計(取代 AI self-audit)</span><br>
+                <span style="font-size:10.5px;color:var(--text-dim);line-height:1.65">
+                  學術論文證實 AI self-audit 無效(看自己作答跟看別人作答用同一套權重)。
+                  改在 worker 端機械審計四項:
+                  ① 每張 evidenceCard 必須在 cardEnum 內(雙保險,Schema 已強制過)
+                  ② story 裡的牌名引用 regex 比對
+                  ③ 用戶子問題覆蓋率
+                  ④ confidence='不確定' 必須在 a 欄位有具體說明(防偷懶)。
+                  <strong style="color:#34d399">v64.D beta 階段:</strong>
+                  failures 只 log 到 analysisNotes(「v64d_audit=PASS/FAIL」),
+                  不阻擋 streaming 也不 fresh sample 重抽——先觀察實際 fail 率,
+                  下階段再決定是否啟用 retry。
+                </span>
+              </span>
+            </label>
+
+            <div style="margin-top:10px;padding:8px;background:rgba(168,85,247,0.05);border-radius:6px;font-size:10px;color:var(--text-dim);line-height:1.6">
+              <strong style="color:#c084fc">部署順序:</strong>worker.js → ai-analysis.js → admin_index.html。
+              預設五個全開。如要 A/B 測試,可逐個關閉觀察差異。
+              audit 結果會出現在 admin 主頁的 analysisNotes 欄位(查看「v64d_audit=PASS/FAIL」字串)。
+            </div>
+          </div>
+          <!-- ═══════════════════════════════════════════════════════════ -->
+
+          <!-- ═══════════════════════════════════════════════════════════ -->
           <!-- Group G (v63E)：OOTK 正統 Book T 模式 — 永遠開啟,寫死於程式 -->
           <!-- ═══════════════════════════════════════════════════════════ -->
           <div style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--card-border);">
@@ -2536,11 +2646,6 @@ function _renderFeedbackList() {
   let list = _fbAllList;
   if (_fbFilterMode === 'good') list = list.filter(function(fb){ return fb.rating === 'good'; });
   else if (_fbFilterMode === 'bad') list = list.filter(function(fb){ return fb.rating === 'bad'; });
-  // ★ v64.C 新篩選:幻覺(AI 引用了不存在的牌)
-  else if (_fbFilterMode === 'hallucinated') list = list.filter(function(fb){
-    var ca = _safeParseAudit(fb.cardAudit);
-    return ca && ca.hasHallucination === true;
-  });
   if (!list.length) { el.innerHTML = '<div class="empty">' + (_fbFilterMode === 'all' ? '暫無回饋' : '此篩選下無資料') + '</div>'; return; }
   el.innerHTML = list.map(function(fb, idx) {
     const time = fb.time ? new Date(fb.time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
@@ -2551,32 +2656,22 @@ function _renderFeedbackList() {
     const modelLabels = { 'claude-sonnet-4-6': 'Sonnet', 'claude-haiku-4-5': 'Haiku', 'claude-opus-4-6': 'Opus4.6', 'claude-opus-4-7': 'Opus4.7' };
     const modelBadge = fb.model ? `<span class="notify-mode" style="background:rgba(167,139,250,.12);color:#a78bfa;font-size:10px">${modelLabels[fb.model] || fb.model}</span>` : '';
     // v52: 有 dims/cardData/ootk 才顯示 🔍 payload 按鈕
-    const hasPayload = !!(fb.dims || fb.cardData || fb.ootk || fb.aiRawJson);
+    const hasPayload = !!(fb.dims || fb.cardData || fb.ootk);
     const payloadBtn = hasPayload ? `<button onclick="openFbPayloadModal(${idx})" style="margin-left:auto;padding:3px 10px;border-radius:4px;background:rgba(108,123,255,.1);border:1px solid rgba(108,123,255,.25);color:var(--accent);font-size:10px;cursor:pointer;font-weight:600">🔍 payload</button>` : '';
-    // ★ v64.C: 審計徽章
-    const auditBadge = _renderAuditBadge(fb);
-    // ★ v64.C: schema 標識
-    const schemaBadge = fb.schemaVersion === 'v64.C'
-      ? `<span class="notify-mode" style="background:rgba(34,197,94,.1);color:#22c55e;font-size:9px">完整v64.C</span>`
-      : `<span class="notify-mode" style="background:rgba(245,158,11,.1);color:#f59e0b;font-size:9px">舊版資料</span>`;
-    // ★ v64.C: 出生資料完整化(支援 birthLocation 物件、btimeUnknown、trueSolar)
-    const birthLine = _renderBirthLine(fb);
     return `<div class="notify-item">
       <div class="notify-meta" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <span class="notify-mode ${ratingClass}">${ratingIcon}</span>
         ${toolBadge}
         ${modelBadge}
-        ${schemaBadge}
         <span class="notify-time">${time}</span>
         ${payloadBtn}
       </div>
       <div class="notify-name">${esc(fb.name || '匿名')}</div>
-      ${birthLine}
+      ${(fb.birth || fb.gender || fb.birthLocation) ? `<div class="notify-q" style="font-size:11px;color:var(--text-dim)">👤 ${[fb.gender === 'male' ? '男' : fb.gender === 'female' ? '女' : fb.gender, fb.birth, fb.birthTime, fb.birthLocation].filter(Boolean).map(esc).join(' ・ ')}</div>` : ''}
       ${fb.question ? `<div class="notify-q">❓ ${esc(fb.question)}</div>` : ''}
       ${fb.reasons ? `<div class="notify-q" style="margin-top:4px;color:var(--danger)">原因：${esc(fb.reasons)}</div>` : ''}
       ${fb.actual ? `<div class="notify-q" style="margin-top:6px;padding:6px 10px;border-radius:6px;background:rgba(212,175,55,.08);border-left:3px solid var(--gold);color:var(--gold);font-size:12px">💡 實際狀況：${esc(fb.actual)}</div>` : ''}
       ${fb.comment ? `<div class="notify-q" style="margin-top:4px;color:var(--text-dim)">💬 ${esc(fb.comment)}</div>` : ''}
-      ${auditBadge}
       ${fb.cards ? `<div class="notify-q" style="margin-top:6px;font-size:11px;color:var(--text-dim);border-top:1px solid rgba(255,255,255,.06);padding-top:6px">🃏 ${esc(fb.cards)}</div>` : ''}
       ${fb.aiClosing ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--gold)">🔮 Closing: ${esc(fb.aiClosing)}</div>` : ''}
       ${fb.aiDirectAnswer ? `<div class="notify-q" style="margin-top:4px;font-size:11px;color:var(--text-dim)">📋 ${esc(fb.aiDirectAnswer.substring(0,150))}${fb.aiDirectAnswer.length > 150 ? '…' : ''}</div>` : ''}
@@ -2586,92 +2681,20 @@ function _renderFeedbackList() {
   }).join('');
 }
 
-// ★ v64.C 工具:安全 parse cardAudit(可能是 string 或 object)
-function _safeParseAudit(audit) {
-  if (!audit) return null;
-  if (typeof audit === 'object') return audit;
-  try { return JSON.parse(audit); } catch(_) { return null; }
-}
-
-// ★ v64.C 工具:渲染審計徽章(AI 引用幻覺牌警示)
-function _renderAuditBadge(fb) {
-  var ca = _safeParseAudit(fb.cardAudit);
-  if (!ca) return '';
-  // 沒做審計或資料不足
-  if (ca.note === 'insufficient_data' || ca.note === 'audit_error') return '';
-  // 沒有引用任何牌
-  if (!ca.cardsCitedByAI || !ca.cardsCitedByAI.length) return '';
-  // 有幻覺(硬幻覺)→ 紅色警示
-  if (ca.hasHallucination && ca.hallucinated && ca.hallucinated.length) {
-    return `<div class="notify-q" style="margin-top:6px;padding:8px 10px;border-radius:6px;background:rgba(239,68,68,.10);border-left:3px solid var(--danger);font-size:11px;color:var(--danger)">
-      🚨 <b>幻覺牌警示</b>(信心 ${(ca.confidence != null ? Math.round(ca.confidence * 100) : '?')}%)<br>
-      AI 引用了 ${ca.hallucinated.length} 張不在牌堆裡的牌:<b>${esc(ca.hallucinated.join('、'))}</b>
-      ${ca.hallucinatedAmbiguous && ca.hallucinatedAmbiguous.length ? `<br><span style="opacity:.7">大牌單字(可能誤判):${esc(ca.hallucinatedAmbiguous.join('、'))}</span>` : ''}
-      <br><span style="opacity:.7">引用 ${ca.cardsCitedByAI.length} 張 / 牌堆 ${ca.cardsInPayload ? ca.cardsInPayload.length : '?'} 張</span>
-    </div>`;
-  }
-  // 全部對得上 → 綠色 OK 徽章(僅在 conf 高時顯示)
-  if (ca.confidence != null && ca.confidence >= 0.95 && ca.cardsCitedByAI.length >= 3) {
-    return `<div class="notify-q" style="margin-top:6px;padding:5px 10px;border-radius:6px;background:rgba(34,197,94,.06);border-left:3px solid #22c55e;font-size:11px;color:#22c55e">
-      ✓ 引用審計通過(${ca.cardsCitedByAI.length}/${ca.cardsCitedByAI.length} 張對得上牌堆)
-    </div>`;
-  }
-  return '';
-}
-
-// ★ v64.C 工具:出生資料完整化展示(支援新舊格式)
-function _renderBirthLine(fb) {
-  var parts = [];
-  if (fb.gender) {
-    parts.push(fb.gender === 'male' ? '男' : (fb.gender === 'female' || fb.gender === 'femal') ? '女' : fb.gender);
-  }
-  if (fb.birth) parts.push(fb.birth);
-  if (fb.birthTime) {
-    var bt = fb.birthTime;
-    if (fb.birthTimeUnknown) bt += '(時辰未確定)';
-    if (fb.trueSolar) bt += ' / 真太陽:' + fb.trueSolar;
-    parts.push(bt);
-  }
-  // birthLocation 可能是 string 或 object string
-  if (fb.birthLocation) {
-    var loc = fb.birthLocation;
-    if (typeof loc === 'string') {
-      // 試 parse
-      try {
-        var parsed = JSON.parse(loc);
-        if (parsed && typeof parsed === 'object') {
-          var ls = parsed.name || parsed.city || '';
-          if (parsed.lat != null && parsed.lng != null) ls += '(' + parsed.lat.toFixed(2) + ',' + parsed.lng.toFixed(2) + ')';
-          if (ls) parts.push(ls);
-        } else {
-          if (loc) parts.push(loc);
-        }
-      } catch(_) { if (loc) parts.push(loc); }
-    } else if (typeof loc === 'object') {
-      var ls2 = loc.name || loc.city || '';
-      if (loc.lat != null && loc.lng != null) ls2 += '(' + loc.lat.toFixed(2) + ',' + loc.lng.toFixed(2) + ')';
-      if (ls2) parts.push(ls2);
-    }
-  }
-  if (!parts.length) return '';
-  return `<div class="notify-q" style="font-size:11px;color:var(--text-dim)">👤 ${parts.map(esc).join(' ・ ')}</div>`;
-}
-
 // v52: filter 切換
 function filterFeedback(mode) {
   _fbFilterMode = mode;
-  // ★ v64.C:加 hallucinated 篩選
-  ['all','good','bad','hallucinated'].forEach(function(m){
+  ['all','good','bad'].forEach(function(m){
     const btn = document.getElementById('fbFilter' + m.charAt(0).toUpperCase() + m.slice(1));
     if (!btn) return;
     if (m === mode) {
-      btn.style.background = (m === 'bad' || m === 'hallucinated') ? '#ef4444' : (m === 'good' ? '#22c55e' : 'var(--accent)');
+      btn.style.background = m === 'bad' ? '#ef4444' : (m === 'good' ? '#22c55e' : 'var(--accent)');
       btn.style.color = '#fff';
       btn.style.border = 'none';
     } else {
       btn.style.background = 'transparent';
-      btn.style.color = (m === 'bad' || m === 'hallucinated') ? '#ef4444' : (m === 'good' ? '#22c55e' : 'var(--accent)');
-      btn.style.border = '1px solid ' + ((m === 'bad' || m === 'hallucinated') ? 'rgba(239,68,68,.3)' : (m === 'good' ? 'rgba(34,197,94,.3)' : 'rgba(108,123,255,.3)'));
+      btn.style.color = m === 'bad' ? '#ef4444' : (m === 'good' ? '#22c55e' : 'var(--accent)');
+      btn.style.border = '1px solid ' + (m === 'bad' ? 'rgba(239,68,68,.3)' : (m === 'good' ? 'rgba(34,197,94,.3)' : 'rgba(108,123,255,.3)'));
     }
   });
   _renderFeedbackList();
@@ -2696,19 +2719,12 @@ function openFbPayloadModal(idx) {
       rating: fb.rating,
       tool: fb.tool,
       model: fb.model || '(unknown)',
-      schemaVersion: fb.schemaVersion || '(legacy)',
       name: fb.name,
       birth: fb.birth,
       birthTime: fb.birthTime,
-      birthTimeUnknown: !!fb.birthTimeUnknown,
-      trueSolar: fb.trueSolar || null,
       gender: fb.gender,
-      birthLocation: _tryParse(fb.birthLocation)
+      birthLocation: fb.birthLocation
     },
-    // ★ v64.C:AI 收到的 payload meta(版本/hash/size,證明 AI 看到完整資料)
-    payloadMeta: _tryParse(fb.payloadMeta),
-    // ★ v64.C:牌名引用審計(AI 引用了哪些牌、哪些是幻覺)
-    cardAudit: _tryParse(fb.cardAudit),
     userInput: {
       question: fb.question,
       type: fb.type,
@@ -2722,18 +2738,6 @@ function openFbPayloadModal(idx) {
       yesNo: fb.aiYesNo,
       story: fb.aiStory,
       layersOrOps: fb.cards
-    },
-    // ★ v64.C:原始 result JSON(完整保留 layers/operations 等所有結構化欄位)
-    aiRawJson: _tryParse(fb.aiRawJson),
-    weights: {
-      weights_used: _tryParse(fb.weights_used),
-      confidence_used: _tryParse(fb.confidence_used),
-      timeScale: fb.timeScale,
-      birthState: fb.birthState
-    },
-    config: {
-      v62Config: _tryParse(fb.v62Config),
-      auditResult: _tryParse(fb.auditResult)
     },
     dims: _tryParse(fb.dims),
     cardData: _tryParse(fb.cardData),
@@ -2769,47 +2773,17 @@ function exportFeedbackCSV() {
   let list = _fbAllList;
   if (_fbFilterMode === 'good') list = list.filter(function(fb){ return fb.rating === 'good'; });
   else if (_fbFilterMode === 'bad') list = list.filter(function(fb){ return fb.rating === 'bad'; });
-  // ★ v64.C:加幻覺篩選
-  else if (_fbFilterMode === 'hallucinated') list = list.filter(function(fb){
-    var ca = _safeParseAudit(fb.cardAudit);
-    return ca && ca.hasHallucination === true;
-  });
   if (!list.length) { toast('此篩選下無資料可匯出'); return; }
-  // ★ v64.C:CSV 欄位擴張(加 schema/birthTimeUnknown/trueSolar/payloadMeta/cardAudit/hallucinated)
-  const headers = ['time','rating','tool','model','schemaVersion','name','gender','birth','birthTime','birthTimeUnknown','trueSolar','birthLocation','question','type','reasons','actual','comment','cards','aiClosing','aiDirectAnswer','aiYesNo','aiStory','promptVersion','payloadHash','hallucinatedCards','auditConfidence'];
+  // CSV 欄位：時間、評分、模式、模型、姓名、性別、生日、時辰、出生地、問題、類型、原因、實際、留言、牌面摘要、Closing、DirectAnswer、YesNo
+  const headers = ['time','rating','tool','model','name','gender','birth','birthTime','birthLocation','question','type','reasons','actual','comment','cards','aiClosing','aiDirectAnswer','aiYesNo','aiStory'];
   function _cell(v) {
     if (v === null || v === undefined) return '';
     const s = String(v).replace(/"/g, '""').replace(/\r?\n/g, ' ');
     return '"' + s + '"';
   }
-  // 擷取派生欄位的工具
-  function _getDerived(fb, h) {
-    if (h === 'promptVersion') {
-      var pm = _safeParseAudit(fb.payloadMeta); // 結構也是 JSON,reuse parser
-      return pm && pm.promptVersion ? pm.promptVersion : '';
-    }
-    if (h === 'payloadHash') {
-      var pm = _safeParseAudit(fb.payloadMeta);
-      return pm && pm.userPayloadHash ? pm.userPayloadHash : '';
-    }
-    if (h === 'hallucinatedCards') {
-      var ca = _safeParseAudit(fb.cardAudit);
-      return ca && ca.hallucinated ? ca.hallucinated.join('|') : '';
-    }
-    if (h === 'auditConfidence') {
-      var ca = _safeParseAudit(fb.cardAudit);
-      return (ca && ca.confidence != null) ? ca.confidence : '';
-    }
-    if (h === 'birthLocation') {
-      var bl = _safeParseAudit(fb.birthLocation);
-      if (bl && typeof bl === 'object') return (bl.name || bl.city || '') + (bl.lat != null ? '(' + bl.lat + ',' + bl.lng + ')' : '');
-      return fb.birthLocation || '';
-    }
-    return fb[h] || '';
-  }
   const rows = [headers.map(function(h){return '"'+h+'"';}).join(',')];
   list.forEach(function(fb) {
-    rows.push(headers.map(function(h){ return _cell(_getDerived(fb, h)); }).join(','));
+    rows.push(headers.map(function(h){ return _cell(fb[h] || ''); }).join(','));
   });
   // BOM 讓 Excel 正確識別 UTF-8
   const csv = '\ufeff' + rows.join('\r\n');
@@ -5697,7 +5671,13 @@ let _v62Defaults = {
   // v63.5 紫微深度強化 (Sonnet/Haiku 注入)
   v63ZiweiDepth: true,
   // v63.6 機制層深度檢查 (server-side 紫微+共振檢測)
-  v63MechanismDeepCheck: true
+  v63MechanismDeepCheck: true,
+  // ═══ v64.D 真實命理重構(2026-04-30)═══
+  v64dRealDivinationRules: true,    // 真實命理鐵律 5 條(最高優先級)
+  v64dUncertaintyStrict: true,      // 嚴格不確定判準
+  v64dStructuredOutputs: true,      // JSON Schema output_format(beta)
+  v64dMemoryFilter: true,           // 記憶過濾(只留命主背景)
+  v64dAuditAndResample: true        // worker 機械審計
   // v63E 升級:7 個 OOTK config key (ootkOrthodoxBookT / ootkCountingStory /
   //   ootkPairingStory / ootkDignitiesMathers / ootkFiveIndependent /
   //   ootkAbandonRule / ootkPileElementSemantic) 已從前端設定移除——
@@ -5736,7 +5716,13 @@ const _V62_KEY_MAP = {
   // v63.5 紫微深度
   'v63-ziwei-depth': 'v63ZiweiDepth',
   // v63.6 機制層深度檢查
-  'v63-mech-deep': 'v63MechanismDeepCheck'
+  'v63-mech-deep': 'v63MechanismDeepCheck',
+  // ═══ v64.D 真實命理重構 ═══
+  'v64d-real-rules': 'v64dRealDivinationRules',
+  'v64d-uncertainty-strict': 'v64dUncertaintyStrict',
+  'v64d-structured-outputs': 'v64dStructuredOutputs',
+  'v64d-memory-filter': 'v64dMemoryFilter',
+  'v64d-audit-resample': 'v64dAuditAndResample'
   // v63E 升級:7 個 v63 OOTK 開關全部移除——
   // 正統化已寫死於程式(資料層 + Prompt 層 + 動畫 + 前端整合),
   // 不再經由 admin checkbox 控制。後台僅顯示「v63E 永遠正統」鎖定標示。
@@ -5771,7 +5757,7 @@ async function loadV62Config() {
           const el = document.getElementById(elId);
           if (el && el.checked) on++;
         });
-        statusEl.textContent = '啟用(' + on + '/13) + v63E 鑰正(寫死): ' + _v62BuildShortStatus();
+        statusEl.textContent = '啟用(' + on + '/18) + v63E 鑰正(寫死): ' + _v62BuildShortStatus();
       }
     }
   } catch(e) {
@@ -5802,7 +5788,13 @@ function _v62BuildShortStatus() {
     'v63-mech-layer': '機制層',   // v63.3 server-side 強制檢測+補寫
     'v63-resonance': '跨共振',    // v63.4 七系統交叉共振
     'v63-ziwei-depth': '紫深度',  // v63.5 紫微深度(Sonnet/Haiku)
-    'v63-mech-deep': '深度檢'    // v63.6 機制層深度檢查
+    'v63-mech-deep': '深度檢',   // v63.6 機制層深度檢查
+    // v64.D 真實命理重構
+    'v64d-real-rules': '真鐵律',
+    'v64d-uncertainty-strict': '弱嚴判',
+    'v64d-structured-outputs': 'Schema',
+    'v64d-memory-filter': '憶過濾',
+    'v64d-audit-resample': '機審'
     // v63E:7 個 OOTK 開關已寫死於程式,從短代碼中移除
   };
   const on = [];
