@@ -1,15 +1,31 @@
 // Step 3: RC4 ✓ + 防護盾（ui.js 關掉 selfDefending）
+// ★ 2026/4/29 更新：新增 8 個檔案到混淆清單
+//   新增:confidence-bridge / ephemeris-client / guide / payment-wall
+//        photo-upload / pricing-loader / tool-guide / weight-engine
+//   不混淆:worker.js(Cloudflare Workers 後端,混淆會炸)
+//          admin-sw.js(已有獨立邏輯處理,見下方)
+//          sw.js(Service Worker / PWA,混淆可能影響離線快取)
 const JavaScriptObfuscator = require('javascript-obfuscator');
 const fs = require('fs');
 const path = require('path');
 
 const JS_FILES = [
+  // === 七套命理核心 ===
   'JS/bazi.js','JS/ziwei.js','JS/tarot.js','JS/ai-analysis.js',
   'JS/meihua_output_layer.js','JS/meihua_upgrade.js','JS/renderMeihua_upgrade.js',
   'JS/bazi_upgrade.js','JS/jyotish_full_upgrade.js','JS/meihua_upgrade2.js',
   'JS/name_upgrade.js','JS/render_upgrade.js','JS/tarot_upgrade.js',
   'JS/western_upgrade.js','JS/api_upgrade.js','JS/oracle.js',
   'JS/solar-location.js','JS/ui.js',
+  // === 新增:商業邏輯模組(2026/4/29)===
+  'JS/confidence-bridge.js',  // 七套交叉信心度核心(商業機密)
+  'JS/weight-engine.js',      // 信心權重引擎(商業機密)
+  'JS/ephemeris-client.js',   // 西占/吠陀星曆計算
+  'JS/payment-wall.js',       // 付費牆邏輯
+  'JS/pricing-loader.js',     // 價格載入
+  'JS/photo-upload.js',       // 圖片上傳
+  'JS/guide.js',              // 引導邏輯
+  'JS/tool-guide.js',         // 工具說明
 ];
 const SHIELD_TARGET = 'JS/ui.js';
 const JS_BACKUP_DIR = 'JS_backup';
@@ -63,8 +79,10 @@ const OBF_OPTS = {
 };
 
 console.log('');
-console.log('🔒 Step 3: RC4 + 防護盾');
+console.log('🔒 Step 3: RC4 + 防護盾(2026/4/29 擴充版)');
 console.log('════════════════════════════════');
+console.log('混淆檔案總數:' + JS_FILES.length + ' 個');
+console.log('');
 
 if (!fs.existsSync(JS_BACKUP_DIR)) fs.mkdirSync(JS_BACKUP_DIR, { recursive: true });
 let success = 0, failed = 0;
@@ -76,10 +94,17 @@ for (const filePath of JS_FILES) {
   fs.copyFileSync(fullPath, path.join(JS_BACKUP_DIR, fileName));
   let code = fs.readFileSync(fullPath, 'utf-8');
   let opts = { ...OBF_OPTS };
+  // ai-analysis.js 是大檔(1.5MB),降低混淆強度避免卡死
   if (fileName === 'ai-analysis.js') {
     opts.controlFlowFlatteningThreshold = 0.5;
     opts.deadCodeInjectionThreshold = 0.2;
     opts.splitStringsChunkLength = 12;
+    opts.stringArrayWrappersCount = 2;
+  }
+  // payment-wall.js 是金流核心,降強度避免破壞既有 fetch hook 邏輯
+  if (fileName === 'payment-wall.js') {
+    opts.controlFlowFlatteningThreshold = 0.5;
+    opts.deadCodeInjectionThreshold = 0.2;
     opts.stringArrayWrappersCount = 2;
   }
   if (filePath === SHIELD_TARGET) {
@@ -120,4 +145,9 @@ if (fs.existsSync(ASW)) {
 console.log('');
 console.log('完成: ' + success + ' 成功, ' + failed + ' 失敗');
 console.log('還原: copy JS_backup\\*.js JS\\');
+console.log('');
+console.log('⚠️  以下檔案【不會】被混淆,這是故意的:');
+console.log('   • worker.js          → Cloudflare Workers 後端,混淆會炸');
+console.log('   • sw.js              → Service Worker / PWA,影響離線快取');
+console.log('   • admin-sw.js        → 已有獨立混淆邏輯(見上方)');
 console.log('');
