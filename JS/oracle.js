@@ -732,6 +732,52 @@ window._oracleViewLocked=function(){
   _phase='poem';
   _render();
 };
+// v65v: 強制更新機制 —— 第一次載入新版時,清掉所有舊 SW、舊 lock、舊快取
+//        用 localStorage flag 標記,確保只跑一次,不影響後續使用
+(function _v65vForceUpgrade(){
+  try{
+    var FLAG_KEY='jy_oracle_v65v_upgraded';
+    if(localStorage.getItem(FLAG_KEY)==='1')return;  // 已升級過,跳過
+    
+    // 1. 殺掉所有 Service Worker(舊版 oracle.js 可能被 SW 鎖住)
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        for(var i=0;i<regs.length;i++){
+          regs[i].unregister();
+        }
+      }).catch(function(){});
+    }
+    
+    // 2. 清掉所有 Cache Storage(SW 用的離線快取)
+    if('caches' in window){
+      caches.keys().then(function(names){
+        for(var i=0;i<names.length;i++){
+          caches.delete(names[i]);
+        }
+      }).catch(function(){});
+    }
+    
+    // 3. 清掉所有 oracle 相關的 localStorage(舊 lock + pending)
+    var keys=Object.keys(localStorage);
+    for(var i=0;i<keys.length;i++){
+      if(keys[i].indexOf('oracle_lock')===0||
+         keys[i].indexOf('oracle_pending')===0||
+         keys[i].indexOf('jy_oracle_pending')===0||  // 舊版錯誤前綴
+         keys[i].indexOf('jy_oracle_lock')===0){
+        localStorage.removeItem(keys[i]);
+      }
+    }
+    
+    // 4. 標記已升級
+    localStorage.setItem(FLAG_KEY,'1');
+    
+    // 5. 在 console 留紀錄(方便 debug)
+    if(window.console&&console.log)console.log('[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock');
+  }catch(e){
+    if(window.console&&console.warn)console.warn('[靜月靈籤 v65v] 升級時發生錯誤:',e);
+  }
+})();
+
 window._oracleOpen=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;_rejectedLots=[];var w=_getWrap();w.style.display='block';_render();var hk=$('hook-screen');if(hk)hk.style.display='none';document.body.style.overflow='hidden'};
 window._oracleClose=function(){var w=_getWrap();w.style.display='none';document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
 // ★ v6c: intro → guide → pray → allowAsk → allowThrow → shake → rise → drawn
