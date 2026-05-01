@@ -8,7 +8,7 @@
 'use strict';
 
 // v65d: 圖片版本號 — 部署新圖時改這裡,所有圖會自動帶 cache-bust 參數
-var IMG_V = '?v=65v20260501';
+var IMG_V = '?v=65w20260501';
 var IMG = {
   deity:   'img/oracle/oracle-deity.png'+IMG_V,
   pray:    'img/oracle/oracle-pray.png'+IMG_V,
@@ -21,7 +21,7 @@ var IMG = {
   jiaoRound:'img/oracle/oracle-jiao-round.png'+IMG_V,
   jiaoRoundR:'img/oracle/oracle-jiao-round-r.png'+IMG_V,
   dragonBg:'img/oracle/oracle-dragon-bg.jpg'+IMG_V,
-  cardWm:'img/oracle/oracle-card-wm.jpg'+IMG_V,
+  cardWm:'img/oracle/oracle-deity.png'+IMG_V,  // v65w: 統一用 deity 同一張銀色月光女神,避免前後不一致
   templeBg:'img/oracle/oracle-temple-bg.jpg'+IMG_V,
   ritualBg:'img/oracle/oracle-ritual-bg.jpg'+IMG_V,  // v63: 抽籤儀式過場背景
   // v65: 新增資產(全圖視覺升級)
@@ -736,7 +736,7 @@ window._oracleViewLocked=function(){
 //        用 localStorage flag 標記,確保只跑一次,不影響後續使用
 (function _v65vForceUpgrade(){
   try{
-    var FLAG_KEY='jy_oracle_v65v_upgraded';
+    var FLAG_KEY='jy_oracle_v65w_upgraded';
     if(localStorage.getItem(FLAG_KEY)==='1')return;  // 已升級過,跳過
     
     // 1. 殺掉所有 Service Worker(舊版 oracle.js 可能被 SW 鎖住)
@@ -1154,14 +1154,14 @@ css.textContent='\
 @keyframes orc-stickRise{0%{height:20px;opacity:0;bottom:40%}30%{opacity:1}100%{height:180px;bottom:60%}}\
 .orc-qiantong-wrap{width:140px;margin:0 auto 1rem}\
 .orc-qiantong-img{width:100%;height:auto;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4)}\
-.orc-card-info{background:url("img/oracle/oracle-scroll-bg.jpg?v=65v20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;border:2px solid #8b1a1a;border-radius:4px;padding:1.5rem 1.2rem;margin-bottom:1rem;position:relative;box-shadow:0 6px 20px rgba(0,0,0,0.4),inset 0 0 0 1px rgba(212,175,55,0.5)}\
+.orc-card-info{background:url("img/oracle/oracle-scroll-bg.jpg?v=65w20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;border:2px solid #8b1a1a;border-radius:4px;padding:1.5rem 1.2rem;margin-bottom:1rem;position:relative;box-shadow:0 6px 20px rgba(0,0,0,0.4),inset 0 0 0 1px rgba(212,175,55,0.5)}\
 .orc-card-info::before{content:"";position:absolute;inset:6px;border:1px solid rgba(139,26,26,0.25);pointer-events:none;border-radius:2px}\
 /* v65c: 紅金橫式匾額(籤號用) */\
 .orc-banner-row{display:flex;align-items:center;justify-content:center;gap:.7rem;margin:.5rem auto .6rem}\
 .orc-banner-row-mini{margin:.6rem auto .8rem;gap:.55rem}\
 .orc-banner-gz{font-size:1.1rem;color:#d4af37;letter-spacing:5px;font-weight:800;font-family:"DFKai-SB","BiauKai","KaiTi","STKaiti",serif;text-shadow:0 1px 2px rgba(0,0,0,0.6),0 0 6px rgba(212,175,55,0.25);writing-mode:horizontal-tb;text-orientation:mixed;white-space:nowrap;flex-shrink:0}\
 .orc-banner-gz-mini{font-size:.88rem;letter-spacing:3px}\
-.orc-card-banner{position:relative;width:100%;max-width:280px;aspect-ratio:1536/418;background:url("img/oracle/oracle-card-poemnum.png?v=65v20260501") center/contain no-repeat;display:flex;align-items:center;justify-content:center;padding:0 14%;filter:drop-shadow(0 6px 16px rgba(0,0,0,0.5));font-family:"DFKai-SB","BiauKai","KaiTi","STKaiti",serif;flex-shrink:0}\
+.orc-card-banner{position:relative;width:100%;max-width:280px;aspect-ratio:1536/418;background:url("img/oracle/oracle-card-poemnum.png?v=65w20260501") center/contain no-repeat;display:flex;align-items:center;justify-content:center;padding:0 14%;filter:drop-shadow(0 6px 16px rgba(0,0,0,0.5));font-family:"DFKai-SB","BiauKai","KaiTi","STKaiti",serif;flex-shrink:0}\
 .orc-card-banner-mini{max-width:200px}\
 .orc-card-banner-num{font-size:1.05rem;font-weight:900;letter-spacing:5px;color:#f5e6c8;text-shadow:0 1px 0 rgba(0,0,0,0.5),0 0 8px rgba(212,175,55,0.4);font-family:"DFKai-SB","BiauKai","KaiTi","STKaiti",serif;white-space:nowrap}\
 .orc-banner-label-top{text-align:center;font-size:.78rem;color:#d4af37;letter-spacing:8px;font-weight:600;margin:.4rem 0 .2rem;font-family:"DFKai-SB","BiauKai","KaiTi","STKaiti",serif;opacity:.9}\
@@ -1215,7 +1215,7 @@ css.textContent='\
 .orc-card8-wm::before{content:"";position:absolute;top:0;left:0;right:0;height:60px;background:linear-gradient(180deg,rgba(245,236,213,0.95),rgba(245,236,213,0.5),transparent);z-index:1;pointer-events:none}\
 .orc-card8-brand{display:flex;justify-content:space-between;align-items:center;padding:.55rem 1.2rem;background:linear-gradient(90deg,rgba(43,16,8,0.92) 0%,rgba(60,25,15,0.95) 50%,rgba(43,16,8,0.92) 100%);font-size:.7rem;color:#d4af37;letter-spacing:5px;font-weight:700;border-top:1px solid rgba(212,175,55,0.4);font-family:"DFKai-SB","BiauKai","KaiTi","STKaiti",serif}\
 /* v65: 解籤頁視覺全面重設 — 對齊鎮海宮:米色信箋紙 + 紅金邊框 + 毛筆字 */\
-.orc-jh-section{position:relative;margin-top:1.2rem;background:url("img/oracle/oracle-scroll-bg.jpg?v=65v20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;border-radius:6px;padding:1.4rem 1.2rem 1.5rem;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,0.35),inset 0 0 0 1px rgba(139,26,26,0.15);overflow:hidden}\
+.orc-jh-section{position:relative;margin-top:1.2rem;background:url("img/oracle/oracle-scroll-bg.jpg?v=65w20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;border-radius:6px;padding:1.4rem 1.2rem 1.5rem;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,0.35),inset 0 0 0 1px rgba(139,26,26,0.15);overflow:hidden}\
 .orc-jh-section::before{content:"";position:absolute;inset:0;border:2px solid #8b1a1a;border-radius:6px;pointer-events:none;opacity:.85}\
 .orc-jh-section::after{content:"";position:absolute;inset:6px;border:1px solid rgba(201,168,76,0.55);border-radius:3px;pointer-events:none}\
 .orc-jh-scroll{background:linear-gradient(180deg,#f5ecd5 0%,#ede4cc 50%,#f0e8d5 100%);padding:1.6rem 1.3rem 1.7rem}\
@@ -1232,7 +1232,7 @@ css.textContent='\
 .orc-jh-grid-k::after{content:"：";color:#8b1a1a}\
 .orc-jh-grid-v{flex:1;color:#3a1f12;font-size:.78rem;line-height:1.55}\
 @media (max-width:380px){.orc-jh-grid{grid-template-columns:1fr}.orc-jh-grid-row:nth-last-child(-n+2){border-bottom:1px dashed rgba(139,26,26,0.25)}.orc-jh-grid-row:last-child{border-bottom:none}}\
-.orc-jh-cloud-top,.orc-jh-cloud-bot{height:30px;background:url("img/oracle/oracle-cloud-divider.png?v=65v20260501") center/contain no-repeat;margin:-.4rem auto .8rem;opacity:.85;position:relative;z-index:2}\
+.orc-jh-cloud-top,.orc-jh-cloud-bot{height:30px;background:url("img/oracle/oracle-cloud-divider.png?v=65w20260501") center/contain no-repeat;margin:-.4rem auto .8rem;opacity:.85;position:relative;z-index:2}\
 .orc-jh-cloud-bot{margin:.8rem auto -.4rem;transform:scaleY(-1)}\
 .orc-jh-seal-row{display:flex;align-items:center;justify-content:center;gap:1.4rem;margin:1.8rem 0 1rem;padding:1.2rem 1rem;background:linear-gradient(180deg,rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.45) 100%);border-radius:8px;border:1px solid rgba(212,175,55,0.2)}\
 .orc-jh-seal{width:88px;height:auto;filter:drop-shadow(0 4px 10px rgba(139,26,26,0.5));transform:rotate(-4deg)}\
@@ -1270,7 +1270,7 @@ css.textContent='\
 @keyframes orc-pulse{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.06);opacity:1}}\
 .orc-scroll-wrap{width:88%;max-width:320px;margin:0 auto}\
 .orc-scroll-top,.orc-scroll-bot{display:none}\
-.orc-scroll-body{background:url("img/oracle/oracle-scroll-bg.jpg?v=65v20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;padding:2rem 1.5rem;margin:0;border:2px solid #8b1a1a;border-radius:4px;position:relative;box-shadow:0 8px 28px rgba(0,0,0,0.55),inset 0 0 0 4px #f5ecd5,inset 0 0 0 5px rgba(212,175,55,0.6)}\
+.orc-scroll-body{background:url("img/oracle/oracle-scroll-bg.jpg?v=65w20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;padding:2rem 1.5rem;margin:0;border:2px solid #8b1a1a;border-radius:4px;position:relative;box-shadow:0 8px 28px rgba(0,0,0,0.55),inset 0 0 0 4px #f5ecd5,inset 0 0 0 5px rgba(212,175,55,0.6)}\
 .orc-scroll-body::before{content:"";position:absolute;inset:8px;border:1px solid rgba(139,26,26,0.25);pointer-events:none;border-radius:2px}\
 .orc-scroll-title{font-size:1.2rem;font-weight:900;color:#2c1810;text-align:center;letter-spacing:6px;margin-bottom:1.2rem;padding-bottom:.6rem;border-bottom:1px solid rgba(139,26,26,0.2)}\
 .orc-scroll-rule{font-size:.92rem;color:#2c1810;line-height:1.9;margin-bottom:.8rem;text-indent:0;letter-spacing:1px}\
@@ -1310,7 +1310,7 @@ css.textContent='\
 .orc-q-multi-warn{max-width:480px;margin:.4rem auto .8rem;padding:.6rem .8rem;background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.4);border-radius:6px;font-size:.78rem;color:#f5b66f;line-height:1.6;text-align:left}\
 \
 /* v62：分類優先解讀區 */\
-.orc-jh-priority{background:url("img/oracle/oracle-scroll-bg.jpg?v=65v20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%) !important;background-color:#f5ecd5 !important}\
+.orc-jh-priority{background:url("img/oracle/oracle-scroll-bg.jpg?v=65w20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%) !important;background-color:#f5ecd5 !important}\
 .orc-jh-priority .orc-jh-heading{color:#8b1a1a;background:rgba(201,168,76,0.15);border-left:4px solid #d4af37}\
 .orc-priority-grid{display:flex;flex-direction:column;gap:.45rem;margin:.6rem 0;position:relative;z-index:2}\
 .orc-priority-row{display:flex;align-items:flex-start;gap:.7rem;padding:.6rem .8rem;background:rgba(255,251,235,0.7);border:1px solid rgba(139,26,26,0.18);border-left:3px solid #8b1a1a;border-radius:4px;font-family:"DFKai-SB","BiauKai","KaiTi","STKaiti",serif}\
