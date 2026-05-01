@@ -178,7 +178,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="worker">Worker管理</div>
     <div class="tab" data-tab="users">用戶管理</div>
     <div class="tab" data-tab="admins">管理員</div>
-    <div class="tab" data-tab="oracle">🎋 靈籤</div>
     <div class="tab" data-tab="weights">📈 學習權重</div>
     <div class="tab" data-tab="settings">設定</div>
   </div>
@@ -373,71 +372,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     </div>
 
     <!-- ══ Settings ══ -->
-    <!-- ══ 靈籤統計（v62b）══ -->
-    <div id="sec-oracle" class="section">
-      <div class="notify-section">
-        <div class="notify-header">
-          <h3>🎋 六十甲子靈籤統計</h3>
-          <button onclick="loadOracleStats()" style="padding:4px 12px;border-radius:6px;background:rgba(108,123,255,.1);border:1px solid rgba(108,123,255,.3);color:var(--accent);font-size:12px;cursor:pointer;float:right;margin-top:-28px">🔄 重新整理</button>
-        </div>
-
-        <!-- 總覽卡 -->
-        <div id="oracleOverview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
-          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(108,123,255,.06);border:1px solid rgba(108,123,255,.2)">
-            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">📊 總回饋數</div>
-            <div id="oracle-total" style="font-size:20px;font-weight:700;color:var(--accent)">-</div>
-          </div>
-          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2)">
-            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">✓ 準確率</div>
-            <div id="oracle-acc-rate" style="font-size:20px;font-weight:700;color:#22c55e">-</div>
-            <div id="oracle-acc-detail" style="font-size:10px;color:var(--text-dim);margin-top:2px">-</div>
-          </div>
-          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2)">
-            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">~ 部分準</div>
-            <div id="oracle-partial-rate" style="font-size:20px;font-weight:700;color:#fbbf24">-</div>
-          </div>
-          <div class="stat-card" style="padding:14px;border-radius:10px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2)">
-            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">✗ 不準率</div>
-            <div id="oracle-bad-rate" style="font-size:20px;font-weight:700;color:#ef4444">-</div>
-          </div>
-        </div>
-
-        <!-- 按問事類型 -->
-        <div style="margin-bottom:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
-          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">📋 各問事類型準確率</div>
-          <div id="oracleByType" style="display:flex;flex-direction:column;gap:6px"></div>
-        </div>
-
-        <!-- 重抽 / 笑陰筊 與準度關係 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-          <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
-            <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🔄 重抽次數 vs 準度</div>
-            <div id="oracleByRedraw" style="display:flex;flex-direction:column;gap:6px"></div>
-          </div>
-          <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
-            <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🪙 笑陰筊累計 vs 準度</div>
-            <div id="oracleByJiao" style="display:flex;flex-direction:column;gap:6px"></div>
-          </div>
-        </div>
-
-        <!-- 各籤 Top 不準 / Top 準 -->
-        <div style="margin-bottom:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
-          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">🎯 各籤回饋分布（依回饋數排序）</div>
-          <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">至少 3 筆回饋才有意義；不足 3 筆的標記「樣本少」</div>
-          <div id="oracleByLot" style="display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto"></div>
-        </div>
-
-        <!-- 最近回饋 -->
-        <div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--card-border)">
-          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)">📜 最近 50 筆回饋</div>
-          <div id="oracleRecent" style="display:flex;flex-direction:column;gap:4px;max-height:400px;overflow-y:auto"></div>
-        </div>
-
-        <div id="oracleEmpty" style="display:none;padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px">
-          尚無靈籤回饋資料。<br><span style="font-size:11px;opacity:.7">資料需要等用戶實際使用靈籤並按下回饋按鈕後才會累積。</span>
-        </div>
-      </div>
-    </div>
 
     <!-- ══ 📈 學習權重(v63 新增)══ -->
     <div id="sec-weights" class="section">
@@ -1021,6 +955,107 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button onclick="saveAdvisorToolConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#6ee7b7;color:#1a1a1a;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Advisor 設定</button>
           <span id="advisorToolStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
+      <!-- ═══ v65：多資料 Grounding 卡片 ═══════════════════════════════════ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid rgba(168,85,247,0.4)">
+        <h3>📚 v65 多資料 Grounding <span style="font-size:11px;padding:2px 8px;background:rgba(168,85,247,0.2);color:#c4b5fd;border-radius:10px;margin-left:6px">2026-04-30</span></h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.7">
+          把七套系統各自包成獨立 <code style="color:#c4b5fd">search_result</code> block + 開啟 <code style="color:#c4b5fd">citations</code>。<br>
+          <strong style="color:#c4b5fd">效果</strong>:每套系統 AI 視為獨立 document,attention 不再混為一坨;回應自動帶來源(紫微夫妻宮/八字配偶宮)。<br>
+          <strong style="color:#c4b5fd">官方實測(Endex 公司)</strong>:幻覺 10% → 0%、引用密度 +20%、recall +15%。<br>
+          <strong style="color:#fbbf24">⚠️ 衝突</strong>:啟用後會自動跳過 Structured Outputs(Citations API 與 SO 不相容)。<br>
+          <strong style="color:#fbbf24">⚠️ 副作用</strong>:cache_control 改放在最後 block,prompt cache 命中行為微變(影響極小)。<br>
+          <a href="https://platform.claude.com/docs/en/build-with-claude/search-results" target="_blank" style="color:#60a5fa;font-size:11px">Search Result Block →</a> &nbsp;
+          <a href="https://platform.claude.com/docs/en/build-with-claude/citations" target="_blank" style="color:#60a5fa;font-size:11px">Citations API →</a>
+        </p>
+
+        <!-- v65 Search Result Grounding 開關 -->
+        <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:#c4b5fd">🎯 七套系統 Search Result Grounding</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0a0c10;cursor:pointer">
+              <input type="radio" name="v65-grounding-enabled" value="true" style="width:16px;height:16px;accent-color:#c4b5fd;cursor:pointer">
+              <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#c4b5fd">啟用</span><br><span style="font-size:11px;color:var(--text-dim)">七套系統獨立 block + citations</span></span>
+            </label>
+            <label style="flex:1;min-width:180px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0a0c10;cursor:pointer">
+              <input type="radio" name="v65-grounding-enabled" value="false" checked style="width:16px;height:16px;accent-color:#7a7f8e;cursor:pointer">
+              <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#7a7f8e">關閉(預設)</span><br><span style="font-size:11px;color:var(--text-dim)">純字串混合,沿用舊行為</span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Advisor 觸發引導開關 -->
+        <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:#6ee7b7">🧙‍♂️ Advisor 觸發引導(讓 advisor 真的被呼叫)</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+            單純啟用 Advisor Tool 不夠 — Sonnet 不會自己叫 advisor。<br>
+            這個開關在 system prompt 加 Anthropic 官方建議的觸發指令(「動筆前呼叫一次,收尾前再一次」)。<br>
+            <strong style="color:#fbbf24">必須搭配上方 Advisor Tool 啟用才有效</strong>。
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);cursor:pointer">
+              <input type="radio" name="v65-advisor-trigger-style" value="standard" checked style="width:14px;height:14px;accent-color:#6ee7b7">
+              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#6ee7b7">Standard(建議)</span><br><span style="font-size:10px;color:var(--text-dim)">命理場景完整版</span></span>
+            </label>
+            <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);cursor:pointer">
+              <input type="radio" name="v65-advisor-trigger-style" value="aggressive" style="width:14px;height:14px;accent-color:#fbbf24">
+              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#fbbf24">Aggressive</span><br><span style="font-size:10px;color:var(--text-dim)">強制至少 1 次</span></span>
+            </label>
+            <label style="flex:1;min-width:120px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);cursor:pointer">
+              <input type="radio" name="v65-advisor-trigger-style" value="minimal" style="width:14px;height:14px;accent-color:#7a7f8e">
+              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#7a7f8e">Minimal</span><br><span style="font-size:10px;color:var(--text-dim)">只簡短提示</span></span>
+            </label>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c10;cursor:pointer">
+              <input type="checkbox" id="v65-advisor-trigger-enabled" style="width:14px;height:14px;accent-color:#6ee7b7">
+              <span style="font-size:12px;color:#6ee7b7;font-weight:600">啟用 Advisor 觸發引導</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 模式 × 身份矩陣配置 -->
+        <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:#c4b5fd">📊 模式 × 身份 細粒度矩陣</div>
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;line-height:1.6">
+            上方開關是「全域預設」。下方矩陣讓你針對每個模式(七維度標準/深度/追問、塔羅、開鑰)× 每種身份(免費/會員/高級/單次)<br>
+            獨立決定要不要啟用 v65 grounding + advisor 觸發。<strong style="color:#c4b5fd">空白 = 沿用全域</strong>;打勾 = 強制開;打叉 = 強制關。
+          </div>
+          <div style="overflow-x:auto;margin-bottom:10px">
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead>
+                <tr style="background:#0a0c10">
+                  <th style="padding:8px;text-align:left;border:1px solid var(--card-border);color:#c4b5fd">模式</th>
+                  <th style="padding:8px;border:1px solid var(--card-border);color:#7a7f8e">免費</th>
+                  <th style="padding:8px;border:1px solid var(--card-border);color:#60a5fa">會員</th>
+                  <th style="padding:8px;border:1px solid var(--card-border);color:#fbbf24">高級會員</th>
+                  <th style="padding:8px;border:1px solid var(--card-border);color:#a3e635">單次付費</th>
+                </tr>
+              </thead>
+              <tbody id="v65-matrix-tbody">
+                <!-- JS 動態生成 -->
+              </tbody>
+            </table>
+          </div>
+          <div style="font-size:10px;color:var(--text-dim);line-height:1.5">
+            每格 3 個圖示:<strong style="color:#c4b5fd">G</strong>=Grounding、<strong style="color:#6ee7b7">A</strong>=Advisor 觸發、<strong style="color:#fbbf24">C</strong>=Citations<br>
+            點一下切換:空白(沿用全域)→ ✓ (強制開)→ ✗(強制關)→ 空白
+          </div>
+        </div>
+
+        <div style="padding:10px;border-radius:8px;background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:14px">
+          <strong style="color:#c4b5fd">💡 命理場景建議測試流程</strong>:<br>
+          1. 先開「全域 Grounding 啟用」+「Advisor 觸發引導」=Standard<br>
+          2. 跑 1 次施小姐那筆塔羅讀盤,看 admin /admin/last-call 看 <code>v65_grounding=on, advisor_called=N</code><br>
+          3. 親自比對:跟舊版 story 對比,有沒有「明顯感受到對方畫像更立體」?<br>
+          4. 如果有效 → 用矩陣把高級會員/單次付費全開,免費線維持關以省成本
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveV65Config()" style="padding:10px 24px;border-radius:8px;border:none;background:#c4b5fd;color:#1a1a1a;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 v65 設定</button>
+          <span id="v65Status" style="font-size:12px;color:var(--text-dim)"></span>
         </div>
       </div>
 
@@ -1842,17 +1877,15 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </label>
 
             <!-- ③ Structured Outputs JSON Schema -->
-            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid #a855f7;background:rgba(168,85,247,0.03);cursor:pointer;margin-top:6px">
-              <input type="checkbox" id="v64d-structured-outputs" style="margin-top:2px;width:16px;height:16px;accent-color:#a855f7;cursor:pointer">
+            <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;border:1px solid #ef4444;background:rgba(239,68,68,0.05);cursor:pointer;margin-top:6px;opacity:0.7">
+              <input type="checkbox" id="v64d-structured-outputs" style="margin-top:2px;width:16px;height:16px;accent-color:#ef4444;cursor:pointer">
               <span style="flex:1">
-                <span style="font-size:12px;font-weight:700;color:#c084fc">③ Structured Outputs(JSON Schema enum 強制)</span><br>
+                <span style="font-size:12px;font-weight:700;color:#fca5a5">③ Structured Outputs(JSON Schema)<span style="margin-left:6px;padding:2px 8px;background:#ef4444;color:#fff;border-radius:8px;font-size:10px">⛔ 已停用</span></span><br>
                 <span style="font-size:10.5px;color:var(--text-dim);line-height:1.65">
-                  beta:structured-outputs-2025-11-13(Anthropic 官方,2025-11)。
-                  把 OOTK/塔羅 payload 裡的 activeCards/keyCards/pairs 全部抽成 enum,
-                  傳給 API 的 output_format。constrained decoding 在 token-level 強制
-                  evidenceCard 必須是 enum 內的牌——
-                  <strong style="color:#c084fc">AI 連寫不存在的牌都不可能</strong>。
-                  防幻覺最硬的一道防線(prompt 規則是軟性,enum 是硬性)。
+                  <strong style="color:#fca5a5">⚠️ 2026-04-30 經實測確認:跟我們命理場景結構性不相容。</strong><br>
+                  Anthropic strict mode 鐵律:所有 object 必須 additionalProperties:false、所有 properties 必須在 required 陣列。我們的 layers/cardReadings/operations/atmosphere/memoryNotes 等欄位刻意設計為「AI 自由創作空間」,完全無法符合 strict 規範,啟用會導致每次請求 400 error。<br>
+                  <strong>勾了會壞</strong>。卡片保留作為歷史紀錄,Anthropic 之後若放寬規範可重新評估。<br>
+                  <span style="color:var(--text-dim);font-size:10px">註:v64.D 的其他四項規則(鐵律/嚴格 uncertainty/記憶過濾/audit)正常運作,不受此項影響。</span>
                 </span>
               </span>
             </label>
@@ -2388,9 +2421,8 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'admins') loadAdminUsers();
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
-    if (tab.dataset.tab === 'oracle') loadOracleStats();
     if (tab.dataset.tab === 'weights') loadWeightStats();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
 
@@ -2797,176 +2829,6 @@ function exportFeedbackCSV() {
   toast('✓ 已匯出 ' + list.length + ' 筆');
 }
 
-// ═══════════════════════════════════════════════
-// 🎋 Oracle Stats（v62b）— 靈籤統計
-// ═══════════════════════════════════════════════
-const ORACLE_TYPE_LABELS = {
-  love:'感情', reunion:'復合', peach:'桃花',
-  career:'事業', wealth:'財運', health:'健康',
-  lawsuit:'官司', lost:'失物', finding:'尋人',
-  home:'家宅', exam:'考試', trade:'交易',
-  travel:'出行', general:'一般'
-};
-const ORACLE_CN_NUM = ['','一','二','三','四','五','六','七','八','九','十',
-  '十一','十二','十三','十四','十五','十六','十七','十八','十九','二十',
-  '廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十',
-  '卅一','卅二','卅三','卅四','卅五','卅六','卅七','卅八','卅九','四十',
-  '四十一','四十二','四十三','四十四','四十五','四十六','四十七','四十八','四十九','五十',
-  '五十一','五十二','五十三','五十四','五十五','五十六','五十七','五十八','五十九','六十'];
-
-function _ostPct(num, total) {
-  if (!total) return '-';
-  return ((num / total) * 100).toFixed(1) + '%';
-}
-function _ostBar(g, m, b) {
-  const total = g + m + b;
-  if (!total) return '<span style="color:var(--text-dim);font-size:11px">無資料</span>';
-  const gp = (g / total * 100).toFixed(0);
-  const mp = (m / total * 100).toFixed(0);
-  const bp = (b / total * 100).toFixed(0);
-  return '<div style="display:flex;height:18px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.04)">' +
-    (g ? '<div style="width:' + gp + '%;background:#22c55e;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:600">' + (gp >= 8 ? gp + '%' : '') + '</div>' : '') +
-    (m ? '<div style="width:' + mp + '%;background:#fbbf24;display:flex;align-items:center;justify-content:center;font-size:10px;color:#000;font-weight:600">' + (mp >= 8 ? mp + '%' : '') + '</div>' : '') +
-    (b ? '<div style="width:' + bp + '%;background:#ef4444;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:600">' + (bp >= 8 ? bp + '%' : '') + '</div>' : '') +
-    '</div>';
-}
-
-async function loadOracleStats() {
-  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
-  // 顯示載入中
-  setText('oracle-total', '...');
-  setHtml('oracleByType', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
-  setHtml('oracleByRedraw', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
-  setHtml('oracleByJiao', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
-  setHtml('oracleByLot', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
-  setHtml('oracleRecent', '<div style="color:var(--text-dim);font-size:12px">載入中...</div>');
-
-  try {
-    const r = await fetch(`${WORKER_URL}/admin/oracle-stats?token=${encodeURIComponent(adminToken)}`);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    if (!data.ok) throw new Error(data.error || '取得失敗');
-
-    const total = data.total || 0;
-    setText('oracle-total', total);
-
-    // 統計準確率
-    let totalAcc = 0, totalPart = 0, totalBad = 0;
-    Object.values(data.byLot || {}).forEach(v => {
-      totalAcc += v.accurate || 0;
-      totalPart += v.partial || 0;
-      totalBad += v.inaccurate || 0;
-    });
-    setText('oracle-acc-rate', _ostPct(totalAcc, total));
-    setText('oracle-acc-detail', totalAcc + ' / ' + total);
-    setText('oracle-partial-rate', _ostPct(totalPart, total));
-    setText('oracle-bad-rate', _ostPct(totalBad, total));
-
-    // 空資料處理
-    const emptyEl = document.getElementById('oracleEmpty');
-    if (total === 0) {
-      if (emptyEl) emptyEl.style.display = 'block';
-      setHtml('oracleByType', '');
-      setHtml('oracleByRedraw', '');
-      setHtml('oracleByJiao', '');
-      setHtml('oracleByLot', '');
-      setHtml('oracleRecent', '');
-      return;
-    } else {
-      if (emptyEl) emptyEl.style.display = 'none';
-    }
-
-    // 各問事類型
-    const byTypeRows = Object.entries(data.byType || {})
-      .map(([k, v]) => ({ key: k, ...v, total: (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0) }))
-      .sort((a, b) => b.total - a.total);
-    setHtml('oracleByType', byTypeRows.map(row => {
-      const label = ORACLE_TYPE_LABELS[row.key] || row.key;
-      const accRate = row.total ? ((row.accurate / row.total) * 100).toFixed(0) : 0;
-      return '<div style="display:grid;grid-template-columns:80px 60px 1fr 60px;gap:10px;align-items:center;font-size:12px">' +
-        '<span style="color:var(--text)">' + label + '</span>' +
-        '<span style="color:var(--text-dim);font-size:11px">' + row.total + ' 筆</span>' +
-        _ostBar(row.accurate || 0, row.partial || 0, row.inaccurate || 0) +
-        '<span style="color:#22c55e;font-weight:600;text-align:right">' + accRate + '%</span>' +
-        '</div>';
-    }).join('') || '<div style="color:var(--text-dim);font-size:12px">尚無資料</div>');
-
-    // 重抽次數
-    const redrawLabels = { '0': '0 次（一次過）', '1': '1 次', '2+': '2+ 次' };
-    setHtml('oracleByRedraw', Object.entries(data.byRedraw || {}).map(([k, v]) => {
-      const t = (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0);
-      const accRate = t ? ((v.accurate / t) * 100).toFixed(0) : 0;
-      return '<div style="display:grid;grid-template-columns:90px 50px 1fr 45px;gap:8px;align-items:center;font-size:11px">' +
-        '<span style="color:var(--text)">' + (redrawLabels[k] || k) + '</span>' +
-        '<span style="color:var(--text-dim)">' + t + ' 筆</span>' +
-        _ostBar(v.accurate || 0, v.partial || 0, v.inaccurate || 0) +
-        '<span style="color:#22c55e;font-weight:600;text-align:right">' + accRate + '%</span>' +
-        '</div>';
-    }).join(''));
-
-    // 笑陰筊
-    const jiaoLabels = { '0': '0 次', '1-2': '1-2 次', '3+': '3+ 次（信號弱）' };
-    setHtml('oracleByJiao', Object.entries(data.byJiao || {}).map(([k, v]) => {
-      const t = (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0);
-      const accRate = t ? ((v.accurate / t) * 100).toFixed(0) : 0;
-      return '<div style="display:grid;grid-template-columns:120px 50px 1fr 45px;gap:8px;align-items:center;font-size:11px">' +
-        '<span style="color:var(--text)">' + (jiaoLabels[k] || k) + '</span>' +
-        '<span style="color:var(--text-dim)">' + t + ' 筆</span>' +
-        _ostBar(v.accurate || 0, v.partial || 0, v.inaccurate || 0) +
-        '<span style="color:#22c55e;font-weight:600;text-align:right">' + accRate + '%</span>' +
-        '</div>';
-    }).join(''));
-
-    // 各籤排序（依總回饋數降序）
-    const byLotRows = Object.entries(data.byLot || {})
-      .map(([k, v]) => ({
-        lotNo: parseInt(k),
-        ...v,
-        total: (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0)
-      }))
-      .filter(r => r.lotNo > 0)
-      .sort((a, b) => b.total - a.total);
-    setHtml('oracleByLot', byLotRows.map(row => {
-      const lotLabel = '第 ' + (ORACLE_CN_NUM[row.lotNo] || row.lotNo) + ' 籤';
-      const accRate = row.total ? ((row.accurate / row.total) * 100).toFixed(0) : 0;
-      const lowSample = row.total < 3;
-      const sampleTag = lowSample ? '<span style="color:#fbbf24;font-size:10px;background:rgba(251,191,36,.15);padding:1px 5px;border-radius:3px;margin-left:4px">樣本少</span>' : '';
-      return '<div style="display:grid;grid-template-columns:90px 60px 50px 1fr 45px;gap:8px;align-items:center;font-size:11px;padding:4px 6px;border-radius:4px;' + (lowSample ? 'opacity:.65' : '') + '">' +
-        '<span style="color:var(--text)">' + lotLabel + sampleTag + '</span>' +
-        '<span style="color:var(--text-dim);font-size:10px">' + (row.lotStem || '-') + ' ' + (row.rank || '') + '</span>' +
-        '<span style="color:var(--text-dim)">' + row.total + ' 筆</span>' +
-        _ostBar(row.accurate || 0, row.partial || 0, row.inaccurate || 0) +
-        '<span style="color:#22c55e;font-weight:600;text-align:right">' + accRate + '%</span>' +
-        '</div>';
-    }).join(''));
-
-    // 最近回饋
-    const recentRows = (data.recent || []).map(r => {
-      const lotLabel = '第 ' + (ORACLE_CN_NUM[r.lotNo] || r.lotNo) + ' 籤 ' + (r.lotStem || '');
-      const ratingColor = r.rating === 'accurate' ? '#22c55e' : r.rating === 'partial' ? '#fbbf24' : '#ef4444';
-      const ratingText = r.rating === 'accurate' ? '✓ 準' : r.rating === 'partial' ? '~ 部分' : '✗ 不準';
-      const typeLabel = ORACLE_TYPE_LABELS[r.questionType] || r.questionType || '-';
-      const time = (r.time || '').substring(5, 16).replace('T', ' ');
-      return '<div style="display:grid;grid-template-columns:140px 60px 60px 60px 1fr;gap:8px;align-items:center;font-size:11px;padding:6px;border-radius:4px;background:rgba(255,255,255,.02)">' +
-        '<span style="color:var(--text);font-size:10px">' + lotLabel + '</span>' +
-        '<span style="color:' + ratingColor + ';font-weight:600">' + ratingText + '</span>' +
-        '<span style="color:var(--text-dim);font-size:10px">' + typeLabel + '</span>' +
-        '<span style="color:var(--text-dim);font-size:10px">重抽 ' + (r.redrawCount || 0) + ' / 笑 ' + (r.laughDarkCount || 0) + '</span>' +
-        '<span style="color:var(--text-dim);font-size:10px;font-family:monospace;text-align:right">' + time + '</span>' +
-        '</div>';
-    }).join('');
-    setHtml('oracleRecent', recentRows || '<div style="color:var(--text-dim);font-size:12px">尚無資料</div>');
-
-  } catch (e) {
-    setText('oracle-total', '!');
-    setHtml('oracleByType', '<div style="color:#ef4444;font-size:12px">載入失敗：' + (e.message || e) + '</div>');
-    setHtml('oracleByRedraw', '');
-    setHtml('oracleByJiao', '');
-    setHtml('oracleByLot', '');
-    setHtml('oracleRecent', '');
-  }
-}
 
 // ═══════════════════════════════════════════════
 // 📈 Weight Stats(可學習權重 v63)
@@ -5015,6 +4877,150 @@ async function saveAdvisorToolConfig() {
 }
 
 // ═══════════════════════════════════════════════
+// v65: 多資料 Grounding + Advisor 觸發引導 + 矩陣配置
+// ═══════════════════════════════════════════════
+const V65_MODES = [
+  { key: 'sevenDim_std',     label: '七維度標準' },
+  { key: 'sevenDim_deep',    label: '七維度深度' },
+  { key: 'sevenDim_followup',label: '七維度追問' },
+  { key: 'tarot_std',        label: '塔羅標準' },
+  { key: 'tarot_deep',       label: '塔羅深度' },
+  { key: 'tarot_followup',   label: '塔羅追問' },
+  { key: 'ootk_std',         label: '開鑰標準' },
+  { key: 'ootk_deep',        label: '開鑰深度' },
+  { key: 'ootk_followup',    label: '開鑰追問' }
+];
+const V65_USER_TYPES = ['free', 'member', 'premium', 'paid'];
+
+// 矩陣狀態 — { 'mode_userType': { g: 'on'|'off'|'inherit', a: ..., c: ... } }
+let v65MatrixState = {};
+
+function _v65CycleState(curr) {
+  // 三態循環:inherit → on → off → inherit
+  if (curr === 'inherit' || !curr) return 'on';
+  if (curr === 'on') return 'off';
+  return 'inherit';
+}
+function _v65StateIcon(state) {
+  if (state === 'on') return '<span style="color:#6ee7b7;font-weight:700">✓</span>';
+  if (state === 'off') return '<span style="color:#ef4444;font-weight:700">✗</span>';
+  return '<span style="color:#7a7f8e;font-weight:400">·</span>';
+}
+
+function _v65RenderMatrix() {
+  const tbody = document.getElementById('v65-matrix-tbody');
+  if (!tbody) return;
+  let html = '';
+  V65_MODES.forEach(mode => {
+    html += '<tr>';
+    html += '<td style="padding:6px 8px;border:1px solid var(--card-border);font-weight:600">' + mode.label + '</td>';
+    V65_USER_TYPES.forEach(ut => {
+      const cellKey = mode.key + '__' + ut;
+      const cellState = v65MatrixState[cellKey] || { g: 'inherit', a: 'inherit', c: 'inherit' };
+      html += '<td style="padding:4px;border:1px solid var(--card-border);text-align:center">';
+      ['g', 'a', 'c'].forEach(k => {
+        const label = (k === 'g') ? 'G' : (k === 'a') ? 'A' : 'C';
+        const color = (k === 'g') ? '#c4b5fd' : (k === 'a') ? '#6ee7b7' : '#fbbf24';
+        html += '<span onclick="_v65ToggleCell(\'' + mode.key + '\',\'' + ut + '\',\'' + k + '\')" style="display:inline-block;width:24px;height:24px;line-height:24px;margin:1px;border:1px solid var(--card-border);border-radius:4px;cursor:pointer;background:#0a0c10">';
+        html += '<span style="font-size:9px;color:' + color + ';font-weight:600">' + label + '</span> ';
+        html += _v65StateIcon(cellState[k]);
+        html += '</span>';
+      });
+      html += '</td>';
+    });
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function _v65ToggleCell(modeKey, userType, field) {
+  const cellKey = modeKey + '__' + userType;
+  if (!v65MatrixState[cellKey]) {
+    v65MatrixState[cellKey] = { g: 'inherit', a: 'inherit', c: 'inherit' };
+  }
+  v65MatrixState[cellKey][field] = _v65CycleState(v65MatrixState[cellKey][field]);
+  _v65RenderMatrix();
+}
+
+async function loadV65Config() {
+  const statusEl = document.getElementById('v65Status');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/v65-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) {
+      // 後端尚未部署也允許繼續(矩陣可初始化空白)
+      v65MatrixState = {};
+      _v65RenderMatrix();
+      return;
+    }
+    const data = await r.json();
+    if (!data.ok) return;
+    const cfg = data.config || {};
+    // 全域 grounding 開關
+    const grRadios = document.getElementsByName('v65-grounding-enabled');
+    const grEnabled = !!(cfg.searchResultGrounding && cfg.searchResultGrounding.enabled);
+    for (let i = 0; i < grRadios.length; i++) {
+      grRadios[i].checked = (grRadios[i].value === (grEnabled ? 'true' : 'false'));
+    }
+    // advisor 觸發風格
+    const stRadios = document.getElementsByName('v65-advisor-trigger-style');
+    const style = (cfg.advisorTrigger && cfg.advisorTrigger.style) || 'standard';
+    for (let i = 0; i < stRadios.length; i++) {
+      stRadios[i].checked = (stRadios[i].value === style);
+    }
+    // advisor 觸發開關
+    const cbAt = document.getElementById('v65-advisor-trigger-enabled');
+    if (cbAt) cbAt.checked = !!(cfg.advisorTrigger && cfg.advisorTrigger.enabled);
+    // 矩陣
+    v65MatrixState = cfg.matrix || {};
+    _v65RenderMatrix();
+    if (statusEl) statusEl.textContent = '已載入';
+  } catch(e) {
+    // 失敗也要先渲染空白矩陣
+    v65MatrixState = {};
+    _v65RenderMatrix();
+  }
+}
+
+async function saveV65Config() {
+  const statusEl = document.getElementById('v65Status');
+  try {
+    const grRadios = document.getElementsByName('v65-grounding-enabled');
+    let grEnabled = false;
+    for (let i = 0; i < grRadios.length; i++) {
+      if (grRadios[i].checked) { grEnabled = (grRadios[i].value === 'true'); break; }
+    }
+    const stRadios = document.getElementsByName('v65-advisor-trigger-style');
+    let style = 'standard';
+    for (let i = 0; i < stRadios.length; i++) {
+      if (stRadios[i].checked) { style = stRadios[i].value; break; }
+    }
+    const cbAt = document.getElementById('v65-advisor-trigger-enabled');
+    const atEnabled = cbAt ? cbAt.checked : false;
+
+    const cfg = {
+      searchResultGrounding: { enabled: grEnabled, citationsEnabled: true },
+      advisorTrigger: { enabled: atEnabled, style: style },
+      advisorProgress: { enabled: true },
+      matrix: v65MatrixState
+    };
+    const r = await fetch(`${WORKER_URL}/admin/v65-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 v65 設定');
+      if (statusEl) statusEl.textContent = '已儲存:Grounding=' + (grEnabled ? 'on' : 'off') + ' / Trigger=' + (atEnabled ? style : 'off');
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
 // v62e：Prefill Config
 // 官方：Anthropic Prompt Engineering - prefill technique
 // ═══════════════════════════════════════════════
@@ -5675,7 +5681,7 @@ let _v62Defaults = {
   // ═══ v64.D 真實命理重構(2026-04-30)═══
   v64dRealDivinationRules: true,    // 真實命理鐵律 5 條(最高優先級)
   v64dUncertaintyStrict: true,      // 嚴格不確定判準
-  v64dStructuredOutputs: true,      // JSON Schema output_format(beta)
+  v64dStructuredOutputs: false,     // ⚠️ 已停用 — Anthropic strict mode 不允許 additionalProperties:true,我們的 layers/cardReadings 等自由欄位無法符合,持續 400 error。保留卡片但預設關閉。
   v64dMemoryFilter: true,           // 記憶過濾(只留命主背景)
   v64dAuditAndResample: true        // worker 機械審計
   // v63E 升級:7 個 OOTK config key (ootkOrthodoxBookT / ootkCountingStory /
