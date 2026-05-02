@@ -890,15 +890,19 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font-size:13px;font-weight:600">Task Budget Tokens</span>
-            <span id="taskBudgetTokensDisplay" style="font-size:14px;font-weight:600;color:#c4b5fd">48000</span>
+            <span id="taskBudgetTokensDisplay" style="font-size:14px;font-weight:600;color:#c4b5fd">36000</span>
           </div>
-          <input type="range" id="taskBudgetTokensSlider" min="20000" max="96000" step="4000" value="48000"
+          <input type="range" id="taskBudgetTokensSlider" min="20000" max="96000" step="4000" value="36000"
                  style="width:100%;accent-color:#c4b5fd;cursor:pointer"
                  oninput="document.getElementById('taskBudgetTokensDisplay').textContent = this.value">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dim);margin-top:6px">
-            <span>20K（緊，可能裁切）</span>
-            <span>48K（建議，命理場景）</span>
-            <span>96K（鬆，接近無效）</span>
+            <span>20K(下限,緊)</span>
+            <span>36K ★ v67.3 建議</span>
+            <span>96K(鬆,接近無效)</span>
+          </div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:6px;line-height:1.5">
+            原則:task_budget 應該略小於 max_tokens(避免 AI 看到倒數時誤以為要裁切)。<br>
+            v67.3 對齊 direct_opus_depth=40000 的 90%
           </div>
         </div>
 
@@ -1293,10 +1297,10 @@ textarea.worker-editor:focus{border-color:var(--accent)}
       <div class="worker-card" style="margin-bottom:16px">
         <h3>🎚️ Max Tokens 設定</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.6">
-          各模式的 max_tokens 上限（AI 單次輸出最大 token 數）。<br>
-          <b style="color:#f59e0b">Opus 深度付費</b>路徑的值必須比較大——adaptive thinking 會吃掉一半 tokens，要留足空間給最終 JSON 輸出，否則會被截斷（畫面空白）。<br>
-          <b style="color:#6c7bff">非付費主路徑</b>不啟用 thinking，值可以小一點。<br>
-          範圍：1000-64000。改完按「儲存」即時生效，不用重部署 worker。
+          各模式的 max_tokens 上限(AI 單次輸出最大 token 數)。<br>
+          <b style="color:#f59e0b">Opus 深度付費</b>路徑的值必須比較大——adaptive thinking 會吃掉 5K-15K tokens,要留足空間給最終文字輸出。<br>
+          <b style="color:#6c7bff">非付費主路徑</b>不啟用 thinking,但仍要留充足空間給七套系統判讀。<br>
+          範圍:1000-128000(v67.3 拉到 128K = Opus 4.7 上限)。改完按「儲存」即時生效,不用重部署 worker。
         </p>
 
         <!-- 七維度 -->
@@ -1304,11 +1308,11 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div style="font-size:14px;font-weight:700;color:#6c7bff;margin-bottom:10px">🔮 七維度（direct）</div>
           <div style="display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center;font-size:12px">
             <div>Sonnet/Haiku 主路徑 <span style="color:var(--text-dim)">（免費+標準會員）</span></div>
-            <input type="number" id="mt-direct_sonnet_haiku" min="1000" max="64000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-direct_sonnet_haiku" min="1000" max="128000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>Opus 4.7 付費深度 <span style="color:#f59e0b">（含 thinking 預留）</span></div>
-            <input type="number" id="mt-direct_opus_depth" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-direct_opus_depth" min="1000" max="128000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>追問 <span style="color:var(--text-dim)">（無 thinking）</span></div>
-            <input type="number" id="mt-direct_followup" min="1000" max="64000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-direct_followup" min="1000" max="128000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
           </div>
         </div>
 
@@ -1317,11 +1321,11 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div style="font-size:14px;font-weight:700;color:#6c7bff;margin-bottom:10px">🔑 開鑰之法（ootk）</div>
           <div style="display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center;font-size:12px">
             <div>Sonnet/Haiku 主路徑</div>
-            <input type="number" id="mt-ootk_sonnet_haiku" min="1000" max="64000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-ootk_sonnet_haiku" min="1000" max="128000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>Opus 4.7 付費深度 <span style="color:#f59e0b">（含 thinking 預留）</span></div>
-            <input type="number" id="mt-ootk_opus_depth" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-ootk_opus_depth" min="1000" max="128000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>追問</div>
-            <input type="number" id="mt-ootk_followup" min="1000" max="64000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-ootk_followup" min="1000" max="128000" step="500" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
           </div>
         </div>
 
@@ -1330,30 +1334,33 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div style="font-size:14px;font-weight:700;color:#6c7bff;margin-bottom:10px">🃏 塔羅快讀（tarot）</div>
           <div style="display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center;font-size:12px">
             <div>Sonnet/Haiku 主 <span style="color:var(--text-dim)">（&lt;6 張牌）</span></div>
-            <input type="number" id="mt-tarot_sonnet_haiku_default" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-tarot_sonnet_haiku_default" min="1000" max="128000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>Sonnet/Haiku 主 <span style="color:var(--text-dim)">（6-9 張牌）</span></div>
-            <input type="number" id="mt-tarot_sonnet_haiku_6plus" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-tarot_sonnet_haiku_6plus" min="1000" max="128000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>Sonnet/Haiku 主 <span style="color:var(--text-dim)">（10+ 張牌）</span></div>
-            <input type="number" id="mt-tarot_sonnet_haiku_10plus" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-tarot_sonnet_haiku_10plus" min="1000" max="128000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>Opus 4.7 深度 <span style="color:#f59e0b">（&lt;6 張牌）</span></div>
-            <input type="number" id="mt-tarot_opus_depth_default" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-tarot_opus_depth_default" min="1000" max="128000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>Opus 4.7 深度 <span style="color:#f59e0b">（6-9 張牌）</span></div>
-            <input type="number" id="mt-tarot_opus_depth_6plus" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-tarot_opus_depth_6plus" min="1000" max="128000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>Opus 4.7 深度 <span style="color:#f59e0b">（10+ 張牌）</span></div>
-            <input type="number" id="mt-tarot_opus_depth_10plus" min="1000" max="64000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-tarot_opus_depth_10plus" min="1000" max="128000" step="1000" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
             <div>追問 <span style="color:var(--text-dim)">（抽補充牌）</span></div>
-            <input type="number" id="mt-tarot_followup" min="1000" max="64000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
+            <input type="number" id="mt-tarot_followup" min="1000" max="128000" step="250" style="width:100px;padding:6px 10px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px;text-align:right">
           </div>
         </div>
 
-        <div style="padding:10px 12px;background:rgba(245,158,11,.08);border-radius:8px;border-left:3px solid #f59e0b;font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
-          <b style="color:#f59e0b">⚠️ 調整建議</b>（v55 已升級 Opus 4.7 tokenizer 35% 緩衝）：<br>
-          • Opus 深度路徑的 thinking 會吃 6000-14000 tokens，值要設到 thinking 預算 + 想要的 text 長度 + 10% buffer<br>
-          • 七維度 Opus 深度建議 <b>28000-36000</b>（effort=max 需要較大，Opus 4.7 tokenizer 比 4.6 多 1-1.35x）<br>
-          • 開鑰 Opus 深度建議 <b>20000-28000</b><br>
-          • 塔羅 Opus 深度：&lt;6 張 <b>12000-16000</b> / 6-9 張 <b>16000-20000</b> / 10+ 張 <b>20000-26000</b>（黃道十二宮 13 張一定要 20000+）<br>
-          • 值太小會導致 Out tokens 剛好打滿上限 = JSON 被截斷 = story 空白<br>
-          • 值太大會增加成本，但 adaptive 會按需停止，不會每次打滿
+        <div style="padding:10px 12px;background:rgba(245,158,11,.08);border-radius:8px;border-left:3px solid #f59e0b;font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+          <b style="color:#f59e0b">⚠️ v67.3 建議值</b>(2026-05-02 全面重評,依 Opus 4.7 新 tokenizer + 實測):<br>
+          <b style="color:#6c7bff">七維度(direct)</b>:Sonnet/Haiku 主 <b>14000</b>(實測 Out 5,493 接近 8192 上限會裁切) / Opus 深度 <b>40000</b>(thinking 5-15K + 文字 7-10K + tokenizer 1.35x + 緩衝) / 追問 <b>6000</b><br>
+          <b style="color:#6c7bff">開鑰(ootk)</b>:Sonnet/Haiku 主 <b>10000</b> / Opus 深度 <b>28000</b> / 追問 <b>5000</b><br>
+          <b style="color:#6c7bff">塔羅(tarot)</b> Sonnet/Haiku:&lt;6 張 <b>5000</b> / 6-9 張 <b>6500</b> / 10+ 張 <b>8000</b><br>
+          <b style="color:#6c7bff">塔羅(tarot)</b> Opus 深度:&lt;6 張 <b>18000</b> / 6-9 張 <b>24000</b> / 10+ 張 <b>32000</b>(13 張黃道十二宮要 28K+) / 追問 <b>4000</b><br>
+          <br>
+          <b style="color:#fbbf24">新 tokenizer 警告</b>:Opus 4.7 比 4.6 多 1.0-1.35x token,所有 Opus 路徑值都已校準 ×1.35。<br>
+          <b style="color:#fbbf24">值太小</b>:文字被截斷 → JSON parse 失敗 → 畫面空白。<br>
+          <b style="color:#fbbf24">值太大</b>:不會多花錢(adaptive 按需停止),但 task_budget 失去引導意義。<br>
+          建議按「↺ 重設為預設值」一鍵套用 v67.3 全套最佳值。
         </div>
 
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -3908,15 +3915,35 @@ async function loadLastCallDebug() {
     txt += '\n\n';
     txt += '═══ 後台設定(adminConfig — 從 KV 讀進來的)═══\n';
     txt += JSON.stringify(snap.adminConfig, null, 2) + '\n\n';
+
+    // v67.2:對接結果說明
+    if (snap.adminConfigVsActualExplanation) {
+      txt += '═══ 對接結果說明(v67.2 新加 — 解釋為什麼某些 admin 設定沒進 actualBody)═══\n';
+      const exp = snap.adminConfigVsActualExplanation;
+      txt += '【effort】' + (exp.effortInjected ? '✅ 注入' : '❌ 未注入') + '\n';
+      txt += '  原因:' + (exp.effortReason || '?') + '\n';
+      txt += '【task_budget】' + (exp.taskBudgetInjected ? '✅ 注入' : '❌ 未注入') + '\n';
+      txt += '  原因:' + (exp.taskBudgetReason || '?') + '\n';
+      txt += '【thinking】' + (exp.thinkingInjected ? '✅ 注入' : '❌ 未注入') + '\n';
+      txt += '  原因:' + (exp.thinkingReason || '?') + '\n';
+      txt += '【v65 grounding】' + (exp.v65GroundingApplied ? '✅ 套用' : '❌ 未套用') + '\n';
+      txt += '  原因:' + (exp.v65Reason || '?') + '\n\n';
+    }
+
     txt += '═══ 實際送 API 的 body(actualBody — 真的進了 Anthropic API 的)═══\n';
     txt += JSON.stringify(snap.actualBody, null, 2) + '\n\n';
     txt += '═══ Headers(已脫敏)═══\n';
     txt += JSON.stringify(snap.headers, null, 2) + '\n\n';
-    txt += '═══ v65 Search Result Block 套用狀態 ═══\n';
-    txt += 'v65Applied: ' + (snap.v65Applied ? '✅ 是(七套系統有切成 search_result block)' : '❌ 否(走純文字 message)') + '\n\n';
     txt += '═══ Token 統計 ═══\n';
     if (snap.tokenCount) {
-      txt += 'Anthropic 官方 count_tokens API:' + (snap.tokenCount.official_count_tokens !== null ? snap.tokenCount.official_count_tokens + ' tokens' : '失敗或未呼叫') + '\n';
+      if (snap.tokenCount.official_count_tokens !== null) {
+        txt += 'Anthropic 官方 count_tokens:' + snap.tokenCount.official_count_tokens + ' tokens ✅\n';
+      } else {
+        txt += 'Anthropic 官方 count_tokens:失敗\n';
+        if (snap.tokenCount.official_error) {
+          txt += '  失敗原因:' + snap.tokenCount.official_error + '\n';
+        }
+      }
       txt += 'Fallback 字元估算:' + snap.tokenCount.fallback_estimate + ' tokens\n';
       txt += 'System 字元數:' + snap.tokenCount.system_chars + '\n';
       txt += 'User message 字元數:' + snap.tokenCount.user_msg_chars + '\n';
