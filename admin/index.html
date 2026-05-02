@@ -305,6 +305,23 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <a href="https://console.anthropic.com/settings/billing" target="_blank" style="display:inline-block;margin-top:12px;padding:8px 16px;border-radius:8px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:#a78bfa;font-size:13px;font-weight:600;text-decoration:none">💰 查看 API 餘額</a>
         </div>
 
+        <!-- ═══ v67:Last Call Debug — 真實生效驗證層 ═══ -->
+        <div class="worker-card" style="border:1px solid rgba(168,85,247,0.3)">
+          <h3>🔬 最近一次 callAI 真實參數
+            <span style="font-size:11px;padding:2px 8px;background:rgba(168,85,247,0.2);color:#c084fc;border-radius:10px;margin-left:6px">v67 稽核工具</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            <b style="color:#c084fc">用途</b>:驗證後台「儲存成功」的設定<b>是否真的被 callAI 用到</b>。<br>
+            每次 AI 呼叫(第一次嘗試)都會把實際送出去的 model / output_config / thinking / cache_ttl / v65 / advisor / task_budget / token 數寫進 KV,這裡可以一鍵讀出來看。<br>
+            <b style="color:#fbbf24">操作流程</b>:① 在前端跑一次 AI 分析 → ② 回後台按下「重新讀取」→ ③ 比對「adminConfig」(後台設的)跟「actualBody」(實際送出去的)。
+          </p>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+            <button onclick="loadLastCallDebug()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 重新讀取最近一次 callAI</button>
+            <span id="lastCallDebugStatus" style="font-size:12px;color:var(--text-dim)"></span>
+          </div>
+          <pre id="lastCallDebugOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:14px;font-size:11px;color:#a5b4fc;line-height:1.6;max-height:600px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">點上方按鈕讀取最近一次 callAI 的真實參數</pre>
+        </div>
+
         <div class="worker-card">
           <h3>🚀 部署 Worker</h3>
           <p>上傳新的 worker.js 部署到 Cloudflare。需要 Cloudflare API 憑證。</p>
@@ -1477,6 +1494,11 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           只對 Sonnet 4.6 標準路徑生效（Opus 4.7 / Haiku 4.5 / 深度模式不受影響）。<br>
           每個工具可獨立挑 effort，「<b>繼承全局</b>」= 用上方 v56 全局 sonnetEffort。<br>
           <b style="color:#fbbf24">建議配置（依官方+實戰）：</b>七維度 / 開鑰 = high；塔羅 / 追問 = medium（省 30% 成本與延遲）。
+        </div>
+        <div style="font-size:11px;color:#fcd34d;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);padding:10px 12px;border-radius:8px;margin-bottom:14px;line-height:1.7">
+          <b>⚠️ OOTK 主路徑特例(v67 註明)</b>:OOTK 標準路徑 Sonnet 4.6 因 JSON Schema 結構穩定性問題,<b>thinking 已在 worker 層被關閉</b>(避免 JSON parse 失敗影響用戶體驗)。<br>
+          這代表這裡設定的「開鑰之法 effort」<b>實際上不會作用於 OOTK 主路徑</b>(只影響七維度跟塔羅 thinking 路徑)。<br>
+          這是設計取捨,不是 bug — 想啟用 OOTK 深度判讀,請改用付費深度(Opus 4.7)。
         </div>
 
         <div style="display:grid;grid-template-columns:1fr;gap:10px">
@@ -3849,6 +3871,65 @@ async function checkWorkerStatus() {
 // v67:給 header 「重新檢查」按鈕用的別名
 function loadWorkerVersion(force) {
   return checkWorkerStatus();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// v67:Last Call Debug — 讀取最近一次 callAI 的真實參數
+// 解決問題:後台「儲存成功」≠「callAI 真的吃到」的稽核盲點
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadLastCallDebug() {
+  const statusEl = document.getElementById('lastCallDebugStatus');
+  const outEl = document.getElementById('lastCallDebugOutput');
+  if (statusEl) statusEl.textContent = '⏳ 讀取中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/last-call-debug?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (outEl) outEl.textContent = '錯誤: ' + (data.error || '未知錯誤');
+      if (statusEl) statusEl.textContent = '❌ 讀取失敗';
+      return;
+    }
+    if (data.empty) {
+      if (outEl) outEl.textContent = data.message || '尚無紀錄';
+      if (statusEl) statusEl.textContent = '⚠️ 尚無紀錄';
+      return;
+    }
+    const snap = data.snapshot;
+    // 格式化輸出:把 adminConfig 跟 actualBody 並排比對
+    let txt = '';
+    txt += '═══ 時間 ═══\n';
+    txt += snap.timestamp + '\n\n';
+    txt += '═══ 模型 ═══\n';
+    txt += snap.model + ' ';
+    if (snap.isOpus47) txt += '(Opus 4.7) ';
+    if (snap.isOpus46) txt += '(Opus 4.6) ';
+    if (snap.isSonnet46) txt += '(Sonnet 4.6) ';
+    if (snap.isHaiku45) txt += '(Haiku 4.5)';
+    txt += '\n\n';
+    txt += '═══ 後台設定(adminConfig — 從 KV 讀進來的)═══\n';
+    txt += JSON.stringify(snap.adminConfig, null, 2) + '\n\n';
+    txt += '═══ 實際送 API 的 body(actualBody — 真的進了 Anthropic API 的)═══\n';
+    txt += JSON.stringify(snap.actualBody, null, 2) + '\n\n';
+    txt += '═══ Headers(已脫敏)═══\n';
+    txt += JSON.stringify(snap.headers, null, 2) + '\n\n';
+    txt += '═══ v65 Search Result Block 套用狀態 ═══\n';
+    txt += 'v65Applied: ' + (snap.v65Applied ? '✅ 是(七套系統有切成 search_result block)' : '❌ 否(走純文字 message)') + '\n\n';
+    txt += '═══ Token 統計 ═══\n';
+    if (snap.tokenCount) {
+      txt += 'Anthropic 官方 count_tokens API:' + (snap.tokenCount.official_count_tokens !== null ? snap.tokenCount.official_count_tokens + ' tokens' : '失敗或未呼叫') + '\n';
+      txt += 'Fallback 字元估算:' + snap.tokenCount.fallback_estimate + ' tokens\n';
+      txt += 'System 字元數:' + snap.tokenCount.system_chars + '\n';
+      txt += 'User message 字元數:' + snap.tokenCount.user_msg_chars + '\n';
+    }
+    txt += '\n═══ Worker 版本 ═══\n';
+    txt += data.workerVersion + '\n';
+
+    if (outEl) outEl.textContent = txt;
+    if (statusEl) statusEl.textContent = '✅ 載入成功 · ' + new Date().toLocaleTimeString('zh-TW');
+  } catch(e) {
+    if (outEl) outEl.textContent = '錯誤: ' + e.message;
+    if (statusEl) statusEl.textContent = '❌ 連線失敗';
+  }
 }
 
 function handleWorkerFile(e) {
