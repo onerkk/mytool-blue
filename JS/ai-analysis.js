@@ -18,7 +18,7 @@
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260502v68_7';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260502v68_9';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
     var WORKER_URL = window.WORKER_URL || 'https://jingyue-worker.zsl9.workers.dev';
