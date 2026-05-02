@@ -326,9 +326,9 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <!-- 熔斷設定 -->
           <div style="margin-top:14px;padding:12px;border-radius:8px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.05)">
             <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#fca5a5">🛑 單次成本熔斷門檻</div>
-            <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">當系統估算單次 API 成本超過此值,直接拒絕請求並警告 admin。預設 $1 美金(對應 NT$32)。</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">當系統估算單次 API 成本超過此值,直接拒絕請求並警告 admin。預設 $1.2 美金(對應 NT$38)。<br>v68.2 採平均估算法(50% cache hit + output 60% 跑滿假設),比舊版寬鬆,真實失控才擋。</div>
             <div style="display:flex;gap:8px;align-items:center">
-              <input type="number" id="costCircuitMaxUsd" min="0.1" max="10" step="0.1" value="1.0" style="padding:8px;border:1px solid var(--card-border);background:#0d0f14;color:#fff;border-radius:6px;width:100px">
+              <input type="number" id="costCircuitMaxUsd" min="0.1" max="10" step="0.1" value="1.2" style="padding:8px;border:1px solid var(--card-border);background:#0d0f14;color:#fff;border-radius:6px;width:100px">
               <span style="font-size:11px;color:var(--text-dim)">USD</span>
               <button onclick="saveCostCircuit()" style="padding:8px 14px;border-radius:6px;border:none;background:#ef4444;color:#fff;font-size:12px;font-weight:600;cursor:pointer">儲存</button>
               <button onclick="loadCostCircuit()" style="padding:8px 14px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:#fff;font-size:12px;cursor:pointer">讀取</button>
@@ -364,7 +364,9 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </p>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
             <button onclick="loadLastCallDebug()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 重新讀取最近一次 callAI</button>
+            <button onclick="copyLastCallDebug()" style="padding:10px 20px;border-radius:8px;border:none;background:#10b981;color:#fff;font-size:13px;font-weight:600;cursor:pointer">📋 一鍵複製</button>
             <span id="lastCallDebugStatus" style="font-size:12px;color:var(--text-dim)"></span>
+            <span id="copyStatus" style="font-size:12px;color:#10b981"></span>
           </div>
           <pre id="lastCallDebugOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:14px;font-size:11px;color:#a5b4fc;line-height:1.6;max-height:600px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">點上方按鈕讀取最近一次 callAI 的真實參數</pre>
         </div>
@@ -4080,6 +4082,36 @@ async function applyV68Defaults() {
 // v67 / v68:Last Call Debug
 // 解決問題:後台「儲存成功」≠「callAI 真的吃到」的稽核盲點
 // ═══════════════════════════════════════════════════════════════════════════
+async function copyLastCallDebug() {
+  const outEl = document.getElementById('lastCallDebugOutput');
+  const statusEl = document.getElementById('copyStatus');
+  if (!outEl || !outEl.textContent) {
+    if (statusEl) statusEl.textContent = '⚠️ 沒內容可複製';
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(outEl.textContent);
+    if (statusEl) statusEl.textContent = '✅ 已複製到剪貼簿';
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+  } catch(e) {
+    // 退路 — 用舊版 execCommand
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = outEl.textContent;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (statusEl) statusEl.textContent = '✅ 已複製(備用方法)';
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+    } catch(e2) {
+      if (statusEl) statusEl.textContent = '❌ 複製失敗:' + e.message;
+    }
+  }
+}
+
 async function loadLastCallDebug() {
   const statusEl = document.getElementById('lastCallDebugStatus');
   const outEl = document.getElementById('lastCallDebugOutput');
@@ -4175,14 +4207,21 @@ async function loadLastCallDebug() {
     // v68 新加:估算成本
     if (snap.estimatedCost) {
       const ec = snap.estimatedCost;
-      txt += '\n═══ 💸 預估成本(v68) ═══\n';
-      txt += '【最壞情況】(第一次跑/cache miss):$' + ec.worst_case_usd.toFixed(3) + ' = NT$' + ec.worst_case_twd.toFixed(1) + '\n';
-      txt += '【最佳情況】(cache hit):     $' + ec.if_cache_hit_usd.toFixed(3) + ' = NT$' + ec.if_cache_hit_twd.toFixed(1) + '\n';
-      txt += '【拆解】input(cache write 假設):$' + ec.breakdown.input_worst.toFixed(3) + ' / output max:$' + ec.breakdown.output_worst.toFixed(3) + '\n';
+      txt += '\n═══ 💸 預估成本(v68.2) ═══\n';
+      if (typeof ec.average_usd === 'number') {
+        txt += '【平均估算】(熔斷依據):     $' + ec.average_usd.toFixed(3) + ' = NT$' + ec.average_twd.toFixed(1) + '\n';
+      }
+      txt += '【最壞情況】(第一次跑/cache miss + output 跑滿):$' + ec.worst_case_usd.toFixed(3) + ' = NT$' + ec.worst_case_twd.toFixed(1) + '\n';
+      txt += '【最佳情況】(cache hit + output 60%):         $' + ec.if_cache_hit_usd.toFixed(3) + ' = NT$' + ec.if_cache_hit_twd.toFixed(1) + '\n';
+      if (ec.breakdown) {
+        txt += '【拆解】input_avg:$' + ec.breakdown.input_avg.toFixed(3) + ' / output_60%:$' + ec.breakdown.output_60pct.toFixed(3) + '\n';
+      }
       txt += '說明:' + ec.note + '\n';
       // 警告
-      if (ec.worst_case_usd > 1.0) {
-        txt += '⚠️ 警告:最壞情況超過 $1 美金門檻!考慮降低 max_tokens 或檢查 cache 結構\n';
+      if (typeof ec.average_usd === 'number' && ec.average_usd > 1.0) {
+        txt += '⚠️ 警告:平均估算超過 $1 美金,可能觸發熔斷($1.2 預設)\n';
+      } else if (ec.worst_case_usd > 2.0) {
+        txt += '⚠️ 警告:最壞情況 > $2,雖然平均沒事,要關注\n';
       }
     }
     txt += '\n═══ Worker 版本 ═══\n';
@@ -5706,7 +5745,7 @@ async function saveMaxTokensConfig() {
       const el = document.getElementById('mt-' + k);
       if (!el) continue;
       const v = parseInt(el.value);
-      if (isNaN(v) || v < 1000 || v > 64000) {
+      if (isNaN(v) || v < 1000 || v > 128000) {
         invalid.push(k + '=' + el.value);
       } else {
         payload[k] = v;
