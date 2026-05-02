@@ -18,7 +18,7 @@
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260502v68_13';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260502v68_14';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
     var WORKER_URL = window.WORKER_URL || 'https://jingyue-worker.zsl9.workers.dev';
@@ -14145,7 +14145,7 @@ function _injectAIButton() {
       '<div style="text-align:center;padding:1.5rem 1rem .5rem">' +
       '<div style="font-size:1.2rem;margin-bottom:.5rem">🔒</div>' +
       '<div style="font-size:.9rem;color:var(--c-gold);font-weight:600;margin-bottom:.3rem">今日免費額度已用盡</div>' +
-      '<div style="font-size:.72rem;color:var(--c-text-dim);opacity:.6;margin-bottom:1rem">三套工具各免費體驗 1 次</div>' +
+      '<div style="font-size:.72rem;color:var(--c-text-dim);opacity:.6;margin-bottom:1rem">塔羅 / 七維度 各免費體驗 1 次</div>' +
       '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'single\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 七維度單次 NT$' + window.JY_PRICES.SINGLE_7D + '</button>' +
       '</div>' +
       // ★ 即使免費用完，仍顯示 Opus 付費入口
@@ -24183,8 +24183,8 @@ async function _triggerTarotAI() {
           'color:var(--c-gold);font-weight:700;font-size:.88rem;' +
           'cursor:pointer;font-family:inherit;transition:all .3s;' +
           'box-shadow:0 0 12px rgba(212,175,55,.06);line-height:1.6' +
-        '">🔑 開鑰之法・五階段深度占卜<br><span style=\"font-size:.72rem;font-weight:600;opacity:.8\">免費體驗 1 次</span></button>' +
-        '<div style="font-size:.65rem;color:var(--c-text-muted);margin-top:.4rem;opacity:.7">金色黎明最高階儀式・78 張牌全部使用</div>';
+        '">🔑 開鑰之法・五階段深度占卜<br><span style=\"font-size:.72rem;font-weight:600;opacity:.8;color:#c084fc\">💎 NT$' + window.JY_PRICES.SINGLE_OOTK + ' 解鎖深度分析</span></button>' +
+        '<div style="font-size:.65rem;color:var(--c-text-muted);margin-top:.4rem;opacity:.7">金色黎明最高階・5 段獨立讀盤 × 7 套命盤交叉</div>';
       resultDiv.appendChild(ootkEntry);
     }
 
@@ -26715,7 +26715,7 @@ window._jyStartOOTK = function() {
       md.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
         '<div style="font-size:1.8rem;margin-bottom:.6rem">🔐</div>' +
         '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">請先登入</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">開鑰之法需要登入 Google 帳號<br>三套工具各免費體驗 1 次</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">開鑰之法為深度分析產品<br><span style="color:#c084fc">需登入並付費解鎖</span></div>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="document.getElementById(\'ootk-login-modal\').remove();if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin();" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Google 登入</button>' +
         '<button onclick="document.getElementById(\'ootk-login-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先看看塔羅</button>' +
@@ -26734,8 +26734,12 @@ window._jyStartOOTK = function() {
       md.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);padding:1rem';
       md.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
         '<div style="font-size:1.8rem;margin-bottom:.6rem">' + (_ootkFreeUp ? '⏰' : '🔑') + '</div>' +
-        '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">' + (_ootkIpUsed ? '此網路已使用過' : (_ootkFreeUp ? '開鑰免費體驗已用完' : '免費次數已用完')) + '</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">單次購買繼續使用<br>標準 NT$' + window.JY_PRICES.SINGLE_OOTK + ' / 深度 NT$' + window.JY_PRICES.OPUS_OOTK + '</div>' +
+        '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">' + (_ootkIpUsed ? '此網路已使用過' : '🔑 解鎖開鑰之法') + '</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">' +
+          '<span style="color:#c084fc;font-weight:600">⚡ 資料量最大・分析最深</span><br>' +
+          '7 套命盤資料 × 5 段獨立讀盤 × 跨系統交叉<br>' +
+          '<span style="font-size:.72rem;opacity:.85">標準 NT$' + window.JY_PRICES.SINGLE_OOTK + ' ・ 深度 NT$' + window.JY_PRICES.OPUS_OOTK + '</span>' +
+        '</div>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'opus_single\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.15),rgba(147,51,234,.06));color:#c084fc;font-size:.88rem;font-weight:700;border:1.5px solid rgba(147,51,234,.4);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + window.JY_PRICES.OPUS_OOTK + '</button>' +
         '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'single\');" style="width:220px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text,#e8dcc8);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit">⚡ 開鑰單次 NT$' + window.JY_PRICES.SINGLE_OOTK + '</button>' +
