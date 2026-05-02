@@ -169,6 +169,13 @@ textarea.worker-editor:focus{border-color:var(--accent)}
   <div class="header">
     <h1><span>🌙</span> 靜月之光 管理後台 <a href="https://jingyue.uk" id="adminSiteLink" target="_blank" style="font-size:12px;background:rgba(255,255,255,.15);padding:4px 12px;border-radius:6px;color:#fff;margin-left:8px;text-decoration:none">前往網站 ↗</a></h1>
     <div id="googleAuthBar" style="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:12px"></div>
+    <!-- v67:worker 版本顯示(部署後在這看到 = 部署成功) -->
+    <div id="adminWorkerVersionBar" style="margin-top:6px;display:flex;align-items:center;gap:10px;font-size:11px;color:rgba(255,255,255,.7);flex-wrap:wrap">
+      <span id="adminWorkerVersion" style="background:rgba(255,255,255,.1);padding:3px 10px;border-radius:6px;font-family:monospace">⏳ 載入中...</span>
+      <span id="adminWorkerNotes" style="font-size:11px;opacity:.8"></span>
+      <span id="adminWorkerDeployed" style="font-size:11px;opacity:.7"></span>
+      <button onclick="loadWorkerVersion(true)" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer">🔄 重新檢查</button>
+    </div>
   </div>
 
   <div class="tabs">
@@ -801,27 +808,37 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
-      <!-- ═══ v49+：Opus 4.7 Effort Level 卡片 ═══ -->
+      <!-- ═══ v49+ / v67：Opus 4.7 Effort Level 卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
-        <h3>🎯 Opus 4.7 Effort Level</h3>
+        <h3>🎯 Opus 4.7 Effort Level <span style="font-size:11px;padding:2px 8px;background:rgba(96,165,250,0.2);color:#60a5fa;border-radius:10px;margin-left:6px">v67 升級到官方 5 級</span></h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
-          只對付費深度（Opus 4.7）生效。即時切換，不需重新部署。<br>
-          <span style="color:#fbbf24">max</span>：官方最高等級，單次 3-5 分鐘，判讀最深。
-          <span style="color:#60a5fa">xhigh</span>：深度推理，1.5-3 分鐘。
-          <span style="color:#34d399">high</span>：快速模式，30-90 秒。
+          只對付費深度（Opus 4.7）生效。即時切換,不需重新部署。<br>
+          <span style="color:#fbbf24">max</span>：官方最高等級,單次 3-5 分鐘,判讀最深(注意:容易過度思考)。
+          <span style="color:#60a5fa">xhigh</span>：深度推理,1.5-3 分鐘 ★ <strong>官方建議起點</strong>。
+          <span style="color:#34d399">high</span>：快速模式,30-90 秒。
+          <span style="color:#a78bfa">medium</span>：平衡,15-30 秒(簡單追問用)。
+          <span style="color:#9ca3af">low</span>：極快,10 秒內(分類/格式化用)。
         </p>
-        <div id="opus47EffortGrid" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-          <label style="flex:1;min-width:140px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+        <div id="opus47EffortGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
             <input type="radio" name="opus47-effort" value="max" style="width:16px;height:16px;accent-color:#fbbf24;cursor:pointer">
             <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#fbbf24">max</span><br><span style="font-size:11px;color:var(--text-dim)">最高等級・3-5 分鐘</span></span>
           </label>
-          <label style="flex:1;min-width:140px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+          <label style="display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
             <input type="radio" name="opus47-effort" value="xhigh" style="width:16px;height:16px;accent-color:#60a5fa;cursor:pointer">
-            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">xhigh</span><br><span style="font-size:11px;color:var(--text-dim)">深度・1.5-3 分鐘</span></span>
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#60a5fa">xhigh ★</span><br><span style="font-size:11px;color:var(--text-dim)">官方建議・1.5-3 分鐘</span></span>
           </label>
-          <label style="flex:1;min-width:140px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+          <label style="display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
             <input type="radio" name="opus47-effort" value="high" style="width:16px;height:16px;accent-color:#34d399;cursor:pointer">
             <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#34d399">high</span><br><span style="font-size:11px;color:var(--text-dim)">快速・30-90 秒</span></span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="opus47-effort" value="medium" style="width:16px;height:16px;accent-color:#a78bfa;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#a78bfa">medium</span><br><span style="font-size:11px;color:var(--text-dim)">平衡・15-30 秒</span></span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="radio" name="opus47-effort" value="low" style="width:16px;height:16px;accent-color:#9ca3af;cursor:pointer">
+            <span style="flex:1"><span style="font-size:13px;font-weight:600;color:#9ca3af">low</span><br><span style="font-size:11px;color:var(--text-dim)">極快・10 秒內</span></span>
           </label>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -3801,12 +3818,22 @@ async function checkWorkerStatus() {
     document.getElementById('workerDot').className = 'status-dot';
     document.getElementById('workerStatusText').textContent = '運行中';
     document.getElementById('workerVersion').textContent = `版本: ${data.version || 'unknown'} | 部署: ${data.deployed ? new Date(data.deployed).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}) : '-'}`;
+
+    // v67:同步更新 header 的版本顯示
+    var hv = document.getElementById('adminWorkerVersion');
+    var hn = document.getElementById('adminWorkerNotes');
+    var hd = document.getElementById('adminWorkerDeployed');
+    if (hv) hv.innerHTML = '<strong style="color:#a78bfa">v67</strong> · ' + (data.version || 'unknown');
+    if (hn && data.notes) hn.textContent = '· ' + data.notes;
+    if (hd && data.deployed) hd.textContent = '· 部署於 ' + new Date(data.deployed).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});
   } catch(e) {
     document.getElementById('workerDot').className = 'status-dot offline';
     document.getElementById('workerStatusText').textContent = '離線';
+    var hv = document.getElementById('adminWorkerVersion');
+    if (hv) hv.innerHTML = '<span style="color:#f87171">⚠ Worker 離線</span>';
   }
-  
-  // v62 安全強化：localStorage 不再保存 apiToken（XSS 外洩風險），只保存 accountId / workerName
+
+  // v62 安全強化:localStorage 不再保存 apiToken(XSS 外洩風險),只保存 accountId / workerName
   //   apiToken 每次部署需重新貼上——這是必要的安全成本
   const saved = localStorage.getItem('jy_cf_creds');
   if (saved) {
@@ -3817,6 +3844,11 @@ async function checkWorkerStatus() {
       // apiToken 不再從 localStorage 還原
     } catch(_) {}
   }
+}
+
+// v67:給 header 「重新檢查」按鈕用的別名
+function loadWorkerVersion(force) {
+  return checkWorkerStatus();
 }
 
 function handleWorkerFile(e) {
@@ -4692,7 +4724,8 @@ async function saveFollowupConfig() {
 }
 
 // ═══════════════════════════════════════════════
-// Opus 4.7 Effort Level Config (v49+)
+// Opus 4.7 Effort Level Config (v49+ / v67)
+// v67:預設改 xhigh(對齊官方 Claude Code 預設)
 // ═══════════════════════════════════════════════
 async function loadOpus47EffortConfig() {
   const statusEl = document.getElementById('opus47EffortStatus');
@@ -4700,7 +4733,7 @@ async function loadOpus47EffortConfig() {
     const r = await fetch(`${WORKER_URL}/admin/opus47-effort-config?token=${encodeURIComponent(adminToken)}`);
     const data = await r.json();
     if (data.ok && data.config) {
-      const level = data.config.level || 'max';
+      const level = data.config.level || 'xhigh';  // v67:從 'max' 改 'xhigh'
       const radios = document.getElementsByName('opus47-effort');
       for (let i = 0; i < radios.length; i++) {
         radios[i].checked = (radios[i].value === level);
