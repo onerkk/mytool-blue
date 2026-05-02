@@ -365,6 +365,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
             <button onclick="loadLastCallDebug()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 重新讀取最近一次 callAI</button>
             <button onclick="copyLastCallDebug()" style="padding:10px 20px;border-radius:8px;border:none;background:#10b981;color:#fff;font-size:13px;font-weight:600;cursor:pointer">📋 一鍵複製</button>
+            <button onclick="loadLastCallError()" style="padding:10px 20px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔴 看最近錯誤</button>
             <span id="lastCallDebugStatus" style="font-size:12px;color:var(--text-dim)"></span>
             <span id="copyStatus" style="font-size:12px;color:#10b981"></span>
           </div>
@@ -798,11 +799,14 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <!-- 開鑰 -->
           <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02)">
             <div style="font-size:13px;font-weight:600;color:#fbbf24;margin-bottom:10px">🗝️ 開鑰</div>
+            <div style="font-size:11px;color:#fca5a5;margin-bottom:10px;line-height:1.6;padding:8px 10px;border-radius:6px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3)">
+              ⚠️ <b>Haiku 4.5 跑不了開鑰</b>:OOTK 系統 prompt 約 217K tokens(七套訓練 + 五階段規範 + 反幻覺),超過 Haiku 200K context 上限。Sonnet/Opus 4.6/4.7 都是 1M context 沒問題。
+            </div>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
               <span style="min-width:52px;font-size:12px;color:var(--text-dim)">標準</span>
               <select id="mc-ootk-std" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
                 <option value="claude-sonnet-4-6">Sonnet 4.6</option>
-                <option value="claude-haiku-4-5">Haiku 4.5</option>
+                <option value="claude-haiku-4-5" disabled style="color:#666">⚠️ Haiku 4.5(context 不足)</option>
                 <option value="claude-opus-4-6">Opus 4.6</option>
                 <option value="claude-opus-4-7">Opus 4.7</option>
               </select>
@@ -811,7 +815,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <span style="min-width:52px;font-size:12px;color:var(--text-dim)">深度</span>
               <select id="mc-ootk-deep" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
                 <option value="claude-sonnet-4-6">Sonnet 4.6</option>
-                <option value="claude-haiku-4-5">Haiku 4.5</option>
+                <option value="claude-haiku-4-5" disabled style="color:#666">⚠️ Haiku 4.5(context 不足)</option>
                 <option value="claude-opus-4-6">Opus 4.6</option>
                 <option value="claude-opus-4-7">Opus 4.7</option>
               </select>
@@ -820,7 +824,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <span style="min-width:52px;font-size:12px;color:#fbbf24" title="追問獨立配置；不設定時 fallback 標準">追問</span>
               <select id="mc-ootk-fu" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
                 <option value="claude-sonnet-4-6">Sonnet 4.6</option>
-                <option value="claude-haiku-4-5">Haiku 4.5</option>
+                <option value="claude-haiku-4-5" disabled style="color:#666">⚠️ Haiku 4.5(context 不足)</option>
                 <option value="claude-opus-4-6">Opus 4.6</option>
                 <option value="claude-opus-4-7">Opus 4.7</option>
               </select>
@@ -4092,6 +4096,62 @@ async function applyV68Defaults() {
 // v67 / v68:Last Call Debug
 // 解決問題:後台「儲存成功」≠「callAI 真的吃到」的稽核盲點
 // ═══════════════════════════════════════════════════════════════════════════
+async function loadLastCallError() {
+  const outEl = document.getElementById('lastCallDebugOutput');
+  const statusEl = document.getElementById('lastCallDebugStatus');
+  if (statusEl) statusEl.textContent = '⏳ 讀取錯誤...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/last-call-error?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (outEl) outEl.textContent = '錯誤:' + (data.error || '?');
+      if (statusEl) statusEl.textContent = '❌ 失敗';
+      return;
+    }
+    if (data.empty) {
+      if (outEl) outEl.textContent = '✅ ' + (data.message || '沒有錯誤紀錄');
+      if (statusEl) statusEl.textContent = '✅ 沒錯誤';
+      return;
+    }
+    const snap = data.snapshot;
+    let txt = '';
+    txt += '🔴🔴🔴 最近一次 callAI 失敗 🔴🔴🔴\n\n';
+    txt += '═══ 時間 ═══\n' + (snap.time || '?') + '\n\n';
+    txt += '═══ 模型 ═══\n' + (snap.model || '?') + '\n\n';
+    txt += '═══ 錯誤訊息 ═══\n' + (snap.error_message || '?') + '\n\n';
+    if (data.interpretation && data.interpretation.error_message_explained) {
+      txt += '═══ 🎯 錯誤解釋 ═══\n' + data.interpretation.error_message_explained + '\n\n';
+    }
+    if (data.interpretation && Array.isArray(data.interpretation.recommended_action)) {
+      txt += '═══ 💡 修復建議 ═══\n';
+      data.interpretation.recommended_action.forEach(a => { txt += a + '\n'; });
+      txt += '\n';
+    }
+    if (snap.input_token_count) {
+      txt += '═══ Input tokens ═══\n' + snap.input_token_count.toLocaleString() + '\n\n';
+    }
+    if (snap.request_body_summary) {
+      txt += '═══ 請求摘要 ═══\n';
+      Object.entries(snap.request_body_summary).forEach(([k, v]) => { txt += '  ' + k + ': ' + v + '\n'; });
+      txt += '\n';
+    }
+    if (snap.options) {
+      txt += '═══ 選項 ═══\n';
+      Object.entries(snap.options).forEach(([k, v]) => { txt += '  ' + k + ': ' + v + '\n'; });
+      txt += '\n';
+    }
+    if (snap.error_stack) {
+      txt += '═══ Stack(前 500 字)═══\n' + snap.error_stack + '\n\n';
+    }
+    txt += '═══ 注意 ═══\n' + (data.notes || '');
+    if (outEl) outEl.textContent = txt;
+    if (statusEl) statusEl.textContent = '🔴 顯示最近一筆錯誤';
+  } catch(e) {
+    if (outEl) outEl.textContent = '例外:' + e.message;
+    if (statusEl) statusEl.textContent = '❌ ' + e.message;
+  }
+}
+
 async function copyLastCallDebug() {
   const outEl = document.getElementById('lastCallDebugOutput');
   const statusEl = document.getElementById('copyStatus');
