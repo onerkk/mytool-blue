@@ -305,6 +305,38 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <a href="https://console.anthropic.com/settings/billing" target="_blank" style="display:inline-block;margin-top:12px;padding:8px 16px;border-radius:8px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);color:#a78bfa;font-size:13px;font-weight:600;text-decoration:none">💰 查看 API 餘額</a>
         </div>
 
+        <!-- ═══ v68:成本分析卡片 — 救命工具 ═══ -->
+        <div class="worker-card" style="border:1px solid rgba(239,68,68,0.4);background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(0,0,0,0))">
+          <h3>💸 API 成本分析(v68 救命工具)
+            <span style="font-size:11px;padding:2px 8px;background:rgba(239,68,68,0.2);color:#fca5a5;border-radius:10px;margin-left:6px">v68 NEW</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            <b style="color:#fca5a5">用途</b>:從 KV notify:* 撈所有歷史請求,用 Anthropic 官方 PRICING 算每筆美金成本,<b>排序找出燒錢兇手</b>。<br>
+            <b style="color:#fbbf24">背景</b>:2026-05-02 用戶 1 天內燒掉 NT$10,000 才發現。從此提供主動成本可視化,避免重複災難。<br>
+            <b>計算依據</b>:Sonnet 4.6 $3/$15、Opus 4.7 $5/$25、Cache write 5m=1.25x、Cache read=0.1x(對齊官方 platform.claude.com/docs/en/about-claude/pricing 2026-05)。
+          </p>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+            <button onclick="loadCostAnalysis(1)" style="padding:8px 16px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-size:12px;font-weight:600;cursor:pointer">📊 今天</button>
+            <button onclick="loadCostAnalysis(7)" style="padding:8px 16px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:12px;font-weight:600;cursor:pointer">📊 7 天</button>
+            <button onclick="loadCostAnalysis(30)" style="padding:8px 16px;border-radius:8px;border:none;background:#991b1b;color:#fff;font-size:12px;font-weight:600;cursor:pointer">📊 30 天</button>
+            <span id="costAnalysisStatus" style="font-size:12px;color:var(--text-dim)"></span>
+          </div>
+          <pre id="costAnalysisOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:14px;font-size:11px;color:#fde68a;line-height:1.6;max-height:600px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">點上方按鈕載入成本分析</pre>
+
+          <!-- 熔斷設定 -->
+          <div style="margin-top:14px;padding:12px;border-radius:8px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.05)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#fca5a5">🛑 單次成本熔斷門檻</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">當系統估算單次 API 成本超過此值,直接拒絕請求並警告 admin。預設 $1 美金(對應 NT$32)。</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="number" id="costCircuitMaxUsd" min="0.1" max="10" step="0.1" value="1.0" style="padding:8px;border:1px solid var(--card-border);background:#0d0f14;color:#fff;border-radius:6px;width:100px">
+              <span style="font-size:11px;color:var(--text-dim)">USD</span>
+              <button onclick="saveCostCircuit()" style="padding:8px 14px;border-radius:6px;border:none;background:#ef4444;color:#fff;font-size:12px;font-weight:600;cursor:pointer">儲存</button>
+              <button onclick="loadCostCircuit()" style="padding:8px 14px;border-radius:6px;border:1px solid var(--card-border);background:transparent;color:#fff;font-size:12px;cursor:pointer">讀取</button>
+              <span id="costCircuitStatus" style="font-size:11px;color:var(--text-dim)"></span>
+            </div>
+          </div>
+        </div>
+
         <!-- ═══ v67:Last Call Debug — 真實生效驗證層 ═══ -->
         <div class="worker-card" style="border:1px solid rgba(168,85,247,0.3)">
           <h3>🔬 最近一次 callAI 真實參數
@@ -3885,6 +3917,116 @@ function loadWorkerVersion(force) {
 
 // ═══════════════════════════════════════════════════════════════════════════
 // v67:Last Call Debug — 讀取最近一次 callAI 的真實參數
+// ═══════════════════════════════════════════════════════════════════════════
+// v68 救命:成本分析函式
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadCostAnalysis(days) {
+  const statusEl = document.getElementById('costAnalysisStatus');
+  const outEl = document.getElementById('costAnalysisOutput');
+  if (statusEl) statusEl.textContent = '⏳ 載入中(掃 KV 可能要 5-15 秒)...';
+  if (outEl) outEl.textContent = '掃描中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/cost-analysis?token=${encodeURIComponent(adminToken)}&days=${days}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (outEl) outEl.textContent = '錯誤: ' + (data.error || '未知錯誤');
+      if (statusEl) statusEl.textContent = '❌ 失敗';
+      return;
+    }
+
+    let txt = '';
+    txt += '═══ 📊 過去 ' + data.summary.days_back + ' 天總計 ═══\n';
+    txt += '掃描紀錄數:' + data.summary.total_records + ' 筆(scanned ' + data.summary.scanned + ')\n';
+    txt += '💸 總花費 USD:$' + data.summary.total_usd.toFixed(2) + '\n';
+    txt += '💸 總花費 NTD:NT$' + data.summary.total_twd.toFixed(0) + '\n';
+    txt += '⚠️ 異常請求數(>$1):' + data.summary.anomaly_count + ' 筆\n\n';
+
+    txt += '═══ 📊 按模型分布 ═══\n';
+    Object.entries(data.summary.by_model).sort((a,b) => b[1]-a[1]).forEach(([model, usd]) => {
+      const pct = (usd / data.summary.total_usd * 100).toFixed(1);
+      txt += '  ' + model + ': $' + usd.toFixed(2) + ' (' + pct + '%)\n';
+    });
+    txt += '\n';
+
+    txt += '═══ 📊 按模式分布 ═══\n';
+    Object.entries(data.summary.by_mode).sort((a,b) => b[1]-a[1]).forEach(([mode, usd]) => {
+      const pct = (usd / data.summary.total_usd * 100).toFixed(1);
+      txt += '  ' + mode + ': $' + usd.toFixed(2) + ' (' + pct + '%)\n';
+    });
+    txt += '\n';
+
+    if (data.anomalies && data.anomalies.length > 0) {
+      txt += '═══ 🔴 異常請求(>$1 美金,需要關注)═══\n';
+      data.anomalies.slice(0, 10).forEach((r, i) => {
+        txt += (i+1) + '. ' + r.time + '\n';
+        txt += '    模型: ' + r.model + ' / 模式: ' + r.mode + '\n';
+        txt += '    💸 成本: $' + r.cost_usd.toFixed(3) + ' USD = NT$' + (r.cost_usd*32).toFixed(0) + '\n';
+        txt += '    📊 拆解: input=' + r.tokens.in.toLocaleString() + ' / output=' + r.tokens.out.toLocaleString();
+        if (r.tokens.cache_w) txt += ' / cache_w=' + r.tokens.cache_w.toLocaleString();
+        if (r.tokens.cache_r) txt += ' / cache_r=' + r.tokens.cache_r.toLocaleString();
+        txt += '\n';
+        // 找最大成本來源
+        const cb = r.cost_breakdown;
+        const maxKey = Object.entries(cb).sort((a,b)=>b[1]-a[1])[0];
+        txt += '    🎯 主因: ' + maxKey[0] + ' = $' + maxKey[1].toFixed(3) + '\n\n';
+      });
+    }
+
+    txt += '═══ 🏆 最貴 TOP 10 ═══\n';
+    data.top10_expensive.forEach((r, i) => {
+      txt += (i+1) + '. $' + r.cost_usd.toFixed(3) + ' / ' + r.time + ' / ' + r.model + ' / ' + r.mode + '\n';
+    });
+
+    if (outEl) outEl.textContent = txt;
+    if (statusEl) statusEl.textContent = '✅ 載入成功 · ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    if (outEl) outEl.textContent = '例外: ' + e.message;
+    if (statusEl) statusEl.textContent = '❌ 失敗';
+  }
+}
+
+async function loadCostCircuit() {
+  const statusEl = document.getElementById('costCircuitStatus');
+  const inputEl = document.getElementById('costCircuitMaxUsd');
+  if (statusEl) statusEl.textContent = '⏳ 讀取...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/cost-circuit?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (data.ok && inputEl) inputEl.value = data.config.maxUsd;
+    if (statusEl) statusEl.textContent = '✅ 已讀取';
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '❌ ' + e.message;
+  }
+}
+
+async function saveCostCircuit() {
+  const statusEl = document.getElementById('costCircuitStatus');
+  const inputEl = document.getElementById('costCircuitMaxUsd');
+  const maxUsd = parseFloat(inputEl.value);
+  if (!maxUsd || maxUsd < 0.1 || maxUsd > 10) {
+    if (statusEl) statusEl.textContent = '❌ 必須是 0.1-10 之間';
+    return;
+  }
+  if (statusEl) statusEl.textContent = '⏳ 儲存...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/cost-circuit?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({maxUsd: maxUsd})
+    });
+    const data = await r.json();
+    if (data.ok) {
+      if (statusEl) statusEl.textContent = '✅ 已儲存 $' + maxUsd;
+    } else {
+      if (statusEl) statusEl.textContent = '❌ ' + (data.error || '失敗');
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '❌ ' + e.message;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// v67 / v68:Last Call Debug
 // 解決問題:後台「儲存成功」≠「callAI 真的吃到」的稽核盲點
 // ═══════════════════════════════════════════════════════════════════════════
 async function loadLastCallDebug() {
@@ -3978,6 +4120,19 @@ async function loadLastCallDebug() {
       txt += 'Fallback 字元估算:' + snap.tokenCount.fallback_estimate + ' tokens(純字元數除 3,僅供參考)\n';
       txt += 'System 字元數:' + snap.tokenCount.system_chars + '\n';
       txt += 'User message 字元數:' + snap.tokenCount.user_msg_chars + '\n';
+    }
+    // v68 新加:估算成本
+    if (snap.estimatedCost) {
+      const ec = snap.estimatedCost;
+      txt += '\n═══ 💸 預估成本(v68) ═══\n';
+      txt += '【最壞情況】(第一次跑/cache miss):$' + ec.worst_case_usd.toFixed(3) + ' = NT$' + ec.worst_case_twd.toFixed(1) + '\n';
+      txt += '【最佳情況】(cache hit):     $' + ec.if_cache_hit_usd.toFixed(3) + ' = NT$' + ec.if_cache_hit_twd.toFixed(1) + '\n';
+      txt += '【拆解】input(cache write 假設):$' + ec.breakdown.input_worst.toFixed(3) + ' / output max:$' + ec.breakdown.output_worst.toFixed(3) + '\n';
+      txt += '說明:' + ec.note + '\n';
+      // 警告
+      if (ec.worst_case_usd > 1.0) {
+        txt += '⚠️ 警告:最壞情況超過 $1 美金門檻!考慮降低 max_tokens 或檢查 cache 結構\n';
+      }
     }
     txt += '\n═══ Worker 版本 ═══\n';
     txt += data.workerVersion + '\n';
