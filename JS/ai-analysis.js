@@ -18,7 +18,7 @@
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260502v68_12';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260502v68_13';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
     var WORKER_URL = window.WORKER_URL || 'https://jingyue-worker.zsl9.workers.dev';
@@ -79,10 +79,10 @@ if (typeof window !== 'undefined') {
 if (!window.JY_PRICES) {
   window.JY_PRICES = {
     SUB_STANDARD: 999, SUB_PREMIUM: 1999,
-    SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 60,
+    SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 70,
     FOLLOWUP: 15,
-    OPUS_7D: 140, OPUS_TAROT: 60, OPUS_OOTK: 120,
-    OPUS_7D_MEMBER: 140, OPUS_TAROT_MEMBER: 60, OPUS_OOTK_MEMBER: 120
+    OPUS_7D: 140, OPUS_TAROT: 60, OPUS_OOTK: 140,
+    OPUS_7D_MEMBER: 140, OPUS_TAROT_MEMBER: 60, OPUS_OOTK_MEMBER: 140
   };
 }
 if (!window._jyGetUserTier) {
