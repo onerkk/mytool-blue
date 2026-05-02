@@ -4084,12 +4084,76 @@ async function applyV68Defaults() {
       if (outEl) outEl.textContent = '錯誤:' + (data.error || '?');
       return;
     }
+    // v68.17:endpoint 結構改了,以新的 keys 顯示;支援舊 keys(向後相容)
     let txt = '✅ ' + data.message + '\n\n';
-    txt += '═══ 套用內容 ═══\n';
-    Object.entries(data.details).forEach(([k, v]) => { txt += '• ' + k + ': ' + v + '\n'; });
-    txt += '\n═══ KV 操作結果 ═══\n';
-    data.keys_processed.forEach(r => { txt += '• ' + r.key + ': ' + r.status + '\n'; });
-    txt += '\n👉 ' + data.next_step;
+
+    // 商業條件
+    if (data.商業條件) {
+      txt += '═══ 商業條件 ═══\n';
+      Object.entries(data.商業條件).forEach(([k, v]) => { txt += '• ' + k + ':' + v + '\n'; });
+      txt += '\n';
+    }
+
+    // 預估利潤率
+    if (data.利潤率達標) {
+      txt += '═══ 預估利潤率 ═══\n';
+      Object.entries(data.利潤率達標).forEach(([k, v]) => { txt += '• ' + k + ':' + v + '\n'; });
+      txt += '\n';
+    }
+
+    // 預估首次成本
+    if (data.預估首次成本_TWD) {
+      txt += '═══ 預估首次成本(NT$) ═══\n';
+      Object.entries(data.預估首次成本_TWD).forEach(([k, v]) => {
+        if (k.startsWith('_')) return;
+        txt += '• ' + k + ':' + v + '\n';
+      });
+      txt += '\n';
+    }
+
+    // 應開應關
+    if (data.後台應該開啟的功能) {
+      txt += '═══ 應開啟功能(品質)═══\n';
+      const openList = data.後台應該開啟的功能['✅ 應開啟'] || [];
+      openList.forEach(f => { txt += '  ✓ ' + f + '\n'; });
+      txt += '\n═══ 應關閉功能(成本災難)═══\n';
+      const closeList = data.後台應該開啟的功能['❌ 應關閉(成本災難)'] || [];
+      closeList.forEach(f => { txt += '  ✗ ' + f + '\n'; });
+      txt += '\n';
+    }
+
+    // max_tokens 配置
+    if (data.max_tokens_配置) {
+      txt += '═══ max_tokens 配置 ═══\n';
+      Object.entries(data.max_tokens_配置).forEach(([k, v]) => { txt += '• ' + k + ':' + v + '\n'; });
+      txt += '\n';
+    }
+
+    // 向後相容:舊版 details
+    if (data.details && !data.商業條件) {
+      txt += '═══ 套用內容 ═══\n';
+      Object.entries(data.details).forEach(([k, v]) => { txt += '• ' + k + ':' + v + '\n'; });
+      txt += '\n';
+    }
+
+    // KV 操作結果(支援新舊兩種 key 名)
+    const kvResults = data.keys_written || data.keys_processed || [];
+    if (kvResults.length) {
+      txt += '═══ KV 操作結果 ═══\n';
+      kvResults.forEach(r => {
+        txt += '• ' + r.key + ':' + r.status + (r.desc ? ' — ' + r.desc : '') + '\n';
+      });
+      txt += '\n';
+    }
+
+    // 錯誤(若有)
+    if (data.keys_errors && data.keys_errors.length) {
+      txt += '═══ KV 錯誤 ═══\n';
+      data.keys_errors.forEach(e => { txt += '• ' + e.key + ':' + e.error + '\n'; });
+      txt += '\n';
+    }
+
+    if (data.next_step) txt += '👉 ' + data.next_step;
     if (outEl) outEl.textContent = txt;
     if (statusEl) statusEl.textContent = '✅ 套用完成 — 請重新整理頁面';
 
