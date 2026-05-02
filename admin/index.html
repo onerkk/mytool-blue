@@ -946,15 +946,18 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 
         <!-- Advisor 模型選擇 -->
         <div style="padding:14px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;margin-bottom:14px">
-          <div style="font-size:13px;font-weight:600;margin-bottom:10px">Advisor 模型</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px">Advisor 模型 <span style="font-size:10px;padding:2px 6px;background:rgba(96,165,250,0.15);color:#60a5fa;border-radius:8px;margin-left:4px">v67.5 官方支援</span></div>
+          <div style="font-size:11px;color:#a5b4fc;background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.18);padding:8px 10px;border-radius:6px;margin-bottom:10px;line-height:1.6">
+            ✅ Anthropic 官方 Model compatibility 表(2026-05)明確支援 Opus 4.7 跟 Opus 4.6 都可當 advisor。建議 Opus 4.7(最強,跟 4.6 同價)。
+          </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <label style="flex:1;min-width:140px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);cursor:pointer">
-              <input type="radio" name="advisor-model" value="claude-opus-4-7" style="width:14px;height:14px;accent-color:#fbbf24">
-              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#fbbf24">Opus 4.7</span><br><span style="font-size:10px;color:var(--text-dim)">最強，建議</span></span>
+            <label style="flex:1;min-width:140px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);cursor:pointer;background:rgba(251,191,36,0.06)">
+              <input type="radio" name="advisor-model" value="claude-opus-4-7" checked style="width:14px;height:14px;accent-color:#fbbf24">
+              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#fbbf24">Opus 4.7 ★</span><br><span style="font-size:10px;color:var(--text-dim)">官方建議,最強</span></span>
             </label>
             <label style="flex:1;min-width:140px;display:flex;align-items:center;gap:8px;padding:10px;border-radius:6px;border:1px solid var(--card-border);cursor:pointer">
               <input type="radio" name="advisor-model" value="claude-opus-4-6" style="width:14px;height:14px;accent-color:#60a5fa">
-              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#60a5fa">Opus 4.6</span><br><span style="font-size:10px;color:var(--text-dim)">穩定，較便宜</span></span>
+              <span style="flex:1"><span style="font-size:12px;font-weight:600;color:#60a5fa">Opus 4.6</span><br><span style="font-size:10px;color:var(--text-dim)">穩定備援</span></span>
             </label>
           </div>
         </div>
@@ -3916,9 +3919,9 @@ async function loadLastCallDebug() {
     txt += '═══ 後台設定(adminConfig — 從 KV 讀進來的)═══\n';
     txt += JSON.stringify(snap.adminConfig, null, 2) + '\n\n';
 
-    // v67.2:對接結果說明
+    // v67.2 / v67.6:對接結果說明
     if (snap.adminConfigVsActualExplanation) {
-      txt += '═══ 對接結果說明(v67.2 新加 — 解釋為什麼某些 admin 設定沒進 actualBody)═══\n';
+      txt += '═══ 對接結果說明(v67.6 校準 — 解釋為什麼某些 admin 設定沒進 actualBody)═══\n';
       const exp = snap.adminConfigVsActualExplanation;
       txt += '【effort】' + (exp.effortInjected ? '✅ 注入' : '❌ 未注入') + '\n';
       txt += '  原因:' + (exp.effortReason || '?') + '\n';
@@ -3927,7 +3930,13 @@ async function loadLastCallDebug() {
       txt += '【thinking】' + (exp.thinkingInjected ? '✅ 注入' : '❌ 未注入') + '\n';
       txt += '  原因:' + (exp.thinkingReason || '?') + '\n';
       txt += '【v65 grounding】' + (exp.v65GroundingApplied ? '✅ 套用' : '❌ 未套用') + '\n';
-      txt += '  原因:' + (exp.v65Reason || '?') + '\n\n';
+      txt += '  原因:' + (exp.v65Reason || '?') + '\n';
+      // v67.6 新加 advisor
+      if (typeof exp.advisorInjected !== 'undefined') {
+        txt += '【advisor】' + (exp.advisorInjected ? '✅ 注入' : '❌ 未注入') + '\n';
+        txt += '  原因:' + (exp.advisorReason || '?') + '\n';
+      }
+      txt += '\n';
     }
 
     txt += '═══ 實際送 API 的 body(actualBody — 真的進了 Anthropic API 的)═══\n';
@@ -4950,7 +4959,7 @@ async function loadAdvisorToolConfig() {
     const data = await r.json();
     if (data.ok && data.config) {
       const enabled = !!data.config.enabled;
-      const model = data.config.advisorModel || 'claude-opus-4-7';
+      const model = data.config.advisorModel || 'claude-opus-4-7';  // v67.5:default 改回 4-7(官方建議)
       const maxUses = data.config.maxUses || 2;
       const caching = !!data.config.enableCaching;
       // 開關
@@ -4989,7 +4998,7 @@ async function saveAdvisorToolConfig() {
     }
     // 讀模型
     const mdRadios = document.getElementsByName('advisor-model');
-    let advisorModel = 'claude-opus-4-7';
+    let advisorModel = 'claude-opus-4-7';  // v67.5:default 改回 4-7
     for (let i = 0; i < mdRadios.length; i++) {
       if (mdRadios[i].checked) { advisorModel = mdRadios[i].value; break; }
     }
