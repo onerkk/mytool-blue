@@ -3568,6 +3568,7 @@ enhanceTarot = function(tarot) {
       if (opData) {
         if (opData.abandonTriggered && opData.abandonReason) {
           // Op1 / Op2 abandon — 醒目紅色警示卡
+          // v68.12:加「重抽整盤」按鈕,不再只顯示文字叫用戶手動關頁
           abandonBanner =
             '<div style="margin:1rem 0;padding:1.2rem;border-radius:12px;' +
             'border:2px solid #ef4444;background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(239,68,68,.06));' +
@@ -3583,9 +3584,24 @@ enhanceTarot = function(tarot) {
               '你心裡真正關心的議題,可能不是你問的這件事。<br>' +
               'Counting/Pairing 解讀仍可繼續(作為弱訊號參考),但 AI 會在解讀中標明此警示。' +
             '</div>' +
-            '<div style="font-size:.7rem;color:rgba(255,200,150,.85);line-height:1.6;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.25);border-left:2px solid #fbbf24">' +
-              '★ Mathers 規範:你可以選擇「繼續讀(承認盤面更深訊息)」或「重抽整盤」。' +
-              '想重抽請關閉此頁回首頁重新開鑰,本次解讀預設為「繼續讀」。' +
+            '<div style="font-size:.7rem;color:rgba(255,200,150,.85);line-height:1.6;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.25);border-left:2px solid #fbbf24;margin-bottom:.8rem">' +
+              '★ Mathers 規範:你可以選擇「繼續讀(承認盤面更深訊息)」或「重抽整盤」。本次解讀預設為「繼續讀」。' +
+            '</div>' +
+            // ─── v68.12:重抽整盤實作按鈕 ───
+            '<div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center">' +
+              '<button onclick="if(confirm(\'確定要重抽整盤嗎?\\n\\n會回到首頁重新開始開鑰之法儀式,當前的盤面將不保留。\\n\\n(若你想保留當前解讀,請選 [取消],閉視此警示繼續讀。)\')){window.scrollTo(0,0);location.href=\'/\';}" ' +
+                'style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid rgba(239,68,68,.6);' +
+                'background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;' +
+                'font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.05em;' +
+                'box-shadow:0 2px 8px rgba(239,68,68,.4)">' +
+                '🔄 重抽整盤' +
+              '</button>' +
+              '<button onclick="this.closest(\'div[style*=ef4444]\').style.opacity=\'0.4\';this.closest(\'div[style*=ef4444]\').style.pointerEvents=\'none\';" ' +
+                'style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid rgba(251,191,36,.5);' +
+                'background:rgba(0,0,0,.3);color:#fbbf24;' +
+                'font-size:.78rem;font-weight:600;cursor:pointer">' +
+                '✓ 繼續讀(承認盤面更深訊息)' +
+              '</button>' +
             '</div>' +
             '</div>';
         } else if (opData.weakSignalWarning && opData.weakSignalReason) {
