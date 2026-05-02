@@ -3916,6 +3916,19 @@ async function loadLastCallDebug() {
     if (snap.isSonnet46) txt += '(Sonnet 4.6) ';
     if (snap.isHaiku45) txt += '(Haiku 4.5)';
     txt += '\n\n';
+
+    // v67.7 新加:一行摘要 — 讓用戶一眼看到對接全貌
+    if (snap.adminConfigVsActualExplanation) {
+      const exp = snap.adminConfigVsActualExplanation;
+      txt += '═══ ⚡ 一行摘要 ═══\n';
+      txt += '  effort: ' + (exp.effortInjected ? '✅' : '❌') + ' / ';
+      txt += 'thinking: ' + (exp.thinkingInjected ? '✅' : '❌') + ' / ';
+      txt += 'task_budget: ' + (exp.taskBudgetInjected ? '✅' : '❌') + ' / ';
+      txt += 'v65 grounding: ' + (exp.v65GroundingApplied ? '✅' : '❌') + ' / ';
+      txt += 'advisor: ' + (typeof exp.advisorInjected !== 'undefined' ? (exp.advisorInjected ? '✅' : '❌') : '?') + '\n';
+      txt += '  (✅ = 真的進了 API / ❌ = 沒進去 — 看下方對接結果說明知道為什麼)\n\n';
+    }
+
     txt += '═══ 後台設定(adminConfig — 從 KV 讀進來的)═══\n';
     txt += JSON.stringify(snap.adminConfig, null, 2) + '\n\n';
 
@@ -3947,13 +3960,22 @@ async function loadLastCallDebug() {
     if (snap.tokenCount) {
       if (snap.tokenCount.official_count_tokens !== null) {
         txt += 'Anthropic 官方 count_tokens:' + snap.tokenCount.official_count_tokens + ' tokens ✅\n';
+        // v67.7 警示:advisor 會放大數字
+        var officialNum = snap.tokenCount.official_count_tokens;
+        var fallbackNum = snap.tokenCount.fallback_estimate || 0;
+        if (officialNum > fallbackNum * 2 && fallbackNum > 0) {
+          txt += '  ⚠️ 注意:官方數字比字元估算大 ' + (officialNum / fallbackNum).toFixed(1) + ' 倍\n';
+          txt += '         可能是因為 advisor tool 啟用 → Anthropic 把 advisor 預估的 transcript 也算進去\n';
+          txt += '         實際 input 純文字 token 接近 fallback 估算的 ' + fallbackNum + ' tokens\n';
+          txt += '         advisor 沒被觸發時實際只算 executor 那部分(~80K),被觸發才會接近官方數字\n';
+        }
       } else {
         txt += 'Anthropic 官方 count_tokens:失敗\n';
         if (snap.tokenCount.official_error) {
           txt += '  失敗原因:' + snap.tokenCount.official_error + '\n';
         }
       }
-      txt += 'Fallback 字元估算:' + snap.tokenCount.fallback_estimate + ' tokens\n';
+      txt += 'Fallback 字元估算:' + snap.tokenCount.fallback_estimate + ' tokens(純字元數除 3,僅供參考)\n';
       txt += 'System 字元數:' + snap.tokenCount.system_chars + '\n';
       txt += 'User message 字元數:' + snap.tokenCount.user_msg_chars + '\n';
     }
