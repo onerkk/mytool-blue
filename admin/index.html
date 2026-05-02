@@ -335,6 +335,21 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <span id="costCircuitStatus" style="font-size:11px;color:var(--text-dim)"></span>
             </div>
           </div>
+
+          <!-- v68 一鍵套用救命預設 -->
+          <div style="margin-top:14px;padding:14px;border-radius:8px;border:2px solid rgba(251,191,36,0.5);background:rgba(251,191,36,0.08)">
+            <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#fbbf24">⚡ 一鍵套用 v68.0 救命預設</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+              <b style="color:#fbbf24">用途</b>:你的後台目前可能讀的是 v67 時代存的 KV 設定(advisor 開、Task Budget 48000、effort xhigh 等),會繼續燒錢。<br>
+              <b style="color:#fca5a5">這個按鈕會清掉所有 KV 舊值</b>,讓所有設定回到 v68.0 救命預設:<br>
+              <b style="color:#10b981">advisor 關 / Best-of-N 關 / Sonnet effort medium / Opus 4.7 effort high / Task Budget 24K / max_tokens 全砍 30-40% / 熔斷 $1</b>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <button onclick="applyV68Defaults()" style="padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 12px rgba(239,68,68,0.4)">⚡ 套用 v68.0 救命預設</button>
+              <span id="v68ApplyStatus" style="font-size:11px;color:var(--text-dim)"></span>
+            </div>
+            <pre id="v68ApplyOutput" style="margin-top:10px;background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.6;max-height:300px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace;display:none"></pre>
+          </div>
         </div>
 
         <!-- ═══ v67:Last Call Debug — 真實生效驗證層 ═══ -->
@@ -4022,6 +4037,42 @@ async function saveCostCircuit() {
     }
   } catch(e) {
     if (statusEl) statusEl.textContent = '❌ ' + e.message;
+  }
+}
+
+// v68 救命:一鍵套用救命預設
+async function applyV68Defaults() {
+  const statusEl = document.getElementById('v68ApplyStatus');
+  const outEl = document.getElementById('v68ApplyOutput');
+  if (!confirm('確定要清除所有 KV 舊設定,套用 v68.0 救命預設嗎?\n\n這會把:\n• advisor 關\n• Best-of-N 關\n• Sonnet effort 全降 medium\n• Opus 4.7 effort 從 xhigh 降 high\n• Task Budget 從 48000 降 24000\n• max_tokens 全砍 30-40%\n• 熔斷門檻 $1\n\n如要恢復需要逐張卡片重新調整。')) return;
+
+  if (statusEl) statusEl.textContent = '⏳ 套用中...';
+  if (outEl) { outEl.style.display = 'block'; outEl.textContent = '處理中...'; }
+
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/v68-apply-defaults?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST'
+    });
+    const data = await r.json();
+    if (!data.ok) {
+      if (statusEl) statusEl.textContent = '❌ 失敗';
+      if (outEl) outEl.textContent = '錯誤:' + (data.error || '?');
+      return;
+    }
+    let txt = '✅ ' + data.message + '\n\n';
+    txt += '═══ 套用內容 ═══\n';
+    Object.entries(data.details).forEach(([k, v]) => { txt += '• ' + k + ': ' + v + '\n'; });
+    txt += '\n═══ KV 操作結果 ═══\n';
+    data.keys_processed.forEach(r => { txt += '• ' + r.key + ': ' + r.status + '\n'; });
+    txt += '\n👉 ' + data.next_step;
+    if (outEl) outEl.textContent = txt;
+    if (statusEl) statusEl.textContent = '✅ 套用完成 — 請重新整理頁面';
+
+    // 3 秒後自動重新整理
+    setTimeout(() => { if (confirm('套用完成,重新整理後台?')) location.reload(); }, 3000);
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '❌ ' + e.message;
+    if (outEl) outEl.textContent = '例外:' + e.message;
   }
 }
 
