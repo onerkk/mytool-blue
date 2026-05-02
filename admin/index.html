@@ -311,8 +311,8 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <span style="font-size:11px;padding:2px 8px;background:rgba(239,68,68,0.2);color:#fca5a5;border-radius:10px;margin-left:6px">v68 NEW</span>
           </h3>
           <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
-            <b style="color:#fca5a5">用途</b>:從 KV notify:* 撈所有歷史請求,用 Anthropic 官方 PRICING 算每筆美金成本,<b>排序找出燒錢兇手</b>。<br>
-            <b style="color:#fbbf24">背景</b>:2026-05-02 用戶 1 天內燒掉 NT$10,000 才發現。從此提供主動成本可視化,避免重複災難。<br>
+            <b style="color:#fca5a5">用途</b>:從 KV <code>notify:*</code>(業務用戶)+ <code>cost_log:*</code>(全部含 admin 測試)撈所有歷史請求,用 Anthropic 官方 PRICING 算每筆美金成本,<b>排序找出燒錢兇手</b>。<br>
+            <b style="color:#fbbf24">v68.10 修正</b>:之前 admin 測試完全沒記錄(notify 只寫非 admin),現在 cost_log 全部寫,admin 跑七維度 Opus 也會出現。<br>
             <b>計算依據</b>:Sonnet 4.6 $3/$15、Opus 4.7 $5/$25、Cache write 5m=1.25x、Cache read=0.1x(對齊官方 platform.claude.com/docs/en/about-claude/pricing 2026-05)。
           </p>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
@@ -3970,6 +3970,16 @@ async function loadCostAnalysis(days) {
       const pct = (usd / data.summary.total_usd * 100).toFixed(1);
       txt += '  ' + mode + ': $' + usd.toFixed(2) + ' (' + pct + '%)\n';
     });
+    txt += '\n';
+
+    // v68.10:by_source(notify=業務 / cost_log=全部含 admin 測試)
+    if (data.summary.by_source) {
+      txt += '═══ 📊 按來源分布(v68.10)═══\n';
+      txt += '  notify(業務用戶實際請求):$' + (data.summary.by_source.notify || 0).toFixed(2) + '\n';
+      txt += '  cost_log(全部 callAI 含 admin 測試):$' + (data.summary.by_source.cost_log || 0).toFixed(2) + '\n';
+      txt += '  ※ cost_log 包含 admin 測試,可能跟 notify 重複(同一筆請求兩邊都記)\n';
+      txt += '  ※ 業務真實成本看 notify,系統總消耗看 cost_log\n';
+    }
     txt += '\n';
 
     if (data.anomalies && data.anomalies.length > 0) {
