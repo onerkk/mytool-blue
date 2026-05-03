@@ -1,10 +1,19 @@
 // Step 3: RC4 ✓ + 防護盾（ui.js 關掉 selfDefending）
-// ★ 2026/4/29 更新：新增 8 個檔案到混淆清單
-//   新增:confidence-bridge / ephemeris-client / guide / payment-wall
-//        photo-upload / pricing-loader / tool-guide / weight-engine
-//   不混淆:worker.js(Cloudflare Workers 後端,混淆會炸)
-//          admin-sw.js(已有獨立邏輯處理,見下方)
-//          sw.js(Service Worker / PWA,混淆可能影響離線快取)
+// ★ 2026/5/3 更新（接續 2026/4/29）：
+//   - 比對 D:\JS_backup 實際檔案後，清單已涵蓋全部該混的檔案，無需新增
+//   - 新增大檔降強度名單：>200KB 的命理運算檔案統一降混淆強度，避免處理時間爆炸
+//     ai-analysis.js / ui.js / tarot.js / tarot_upgrade.js / bazi.js / oracle.js / ziwei.js
+//   - 新增「跨模組共享物件」名單：這些檔案的物件 key 會跟外部其他模組對應，
+//     必須關閉 transformObjectKeys 否則會踩雷：
+//     pricing-loader.js / weight-engine.js / confidence-bridge.js / ephemeris-client.js
+//     photo-upload.js / payment-wall.js
+//   - oracle.js 含 crypto.subtle.digest('SHA-256') 神聖隨機數邏輯，降強度避免影響
+//   - solar-location.js 用 ?. optional chaining，降一點強度保險
+//
+//   不混淆:
+//     worker.js     → Cloudflare Workers 後端，混淆會炸
+//     admin-sw.js   → 已有獨立邏輯處理（見下方）
+//     sw.js         → Service Worker / PWA，混淆可能影響離線快取
 const JavaScriptObfuscator = require('javascript-obfuscator');
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +26,7 @@ const JS_FILES = [
   'JS/name_upgrade.js','JS/render_upgrade.js','JS/tarot_upgrade.js',
   'JS/western_upgrade.js','JS/api_upgrade.js','JS/oracle.js',
   'JS/solar-location.js','JS/ui.js',
-  // === 新增:商業邏輯模組(2026/4/29)===
+  // === 商業邏輯模組(2026/4/29)===
   'JS/confidence-bridge.js',  // 七套交叉信心度核心(商業機密)
   'JS/weight-engine.js',      // 信心權重引擎(商業機密)
   'JS/ephemeris-client.js',   // 西占/吠陀星曆計算
@@ -29,6 +38,38 @@ const JS_FILES = [
 ];
 const SHIELD_TARGET = 'JS/ui.js';
 const JS_BACKUP_DIR = 'JS_backup';
+
+// ── 大檔降強度名單（>200KB 的檔案，避免混淆時間 / 解析爆炸）──
+const LARGE_FILES = [
+  'ai-analysis.js',     // 1.5 MB
+  'ui.js',              // 358 KB
+  'tarot.js',           // 358 KB
+  'tarot_upgrade.js',   // 327 KB
+  'bazi.js',            // 306 KB
+  'oracle.js',          // 281 KB（同時也是神聖隨機數，降強度雙重保險）
+  'ziwei.js',           // 240 KB
+];
+
+// ── 跨模組共享物件名單（key 對外可見，不能 transformObjectKeys）──
+//   理由：
+//     - pricing-loader.js: HARDCODED_FALLBACK 的 key（SUB_STANDARD 等）
+//       要跟 ui.js 的 .SINGLE_TAROT 字面存取對應
+//     - weight-engine.js: FALLBACK_WEIGHTS / MODEL_MULTIPLIER 的 key
+//       (sonnet/opus/love/career/short/mid/long...) 對應 ai-analysis.js
+//       傳進來的 string
+//     - confidence-bridge.js: 與 weight-engine 同樣的維度 key 流通
+//     - ephemeris-client.js: EN_TO_ZH 對應 worker 回傳的 planets[en]
+//     - photo-upload.js: PHOTO_FIELDS 的 face/palmLeft/palmRight 與
+//       getFieldsForTool 回傳值字串對應
+//     - payment-wall.js: 與 worker 回傳 JSON 對接，已有獨立降強度
+const SHARED_KEY_FILES = [
+  'pricing-loader.js',
+  'weight-engine.js',
+  'confidence-bridge.js',
+  'ephemeris-client.js',
+  'photo-upload.js',
+  'payment-wall.js',
+];
 
 const SHIELD_CODE = `try{(function(){
 var _ok=true;
@@ -79,9 +120,11 @@ const OBF_OPTS = {
 };
 
 console.log('');
-console.log('🔒 Step 3: RC4 + 防護盾(2026/4/29 擴充版)');
+console.log('🔒 Step 3: RC4 + 防護盾(2026/5/3 完整版)');
 console.log('════════════════════════════════');
 console.log('混淆檔案總數:' + JS_FILES.length + ' 個');
+console.log('  • 大檔降強度:' + LARGE_FILES.length + ' 個 (>200KB)');
+console.log('  • 共享 key 保留:' + SHARED_KEY_FILES.length + ' 個 (跨模組對接)');
 console.log('');
 
 if (!fs.existsSync(JS_BACKUP_DIR)) fs.mkdirSync(JS_BACKUP_DIR, { recursive: true });
@@ -94,26 +137,47 @@ for (const filePath of JS_FILES) {
   fs.copyFileSync(fullPath, path.join(JS_BACKUP_DIR, fileName));
   let code = fs.readFileSync(fullPath, 'utf-8');
   let opts = { ...OBF_OPTS };
-  // ai-analysis.js 是大檔(1.5MB),降低混淆強度避免卡死
-  if (fileName === 'ai-analysis.js') {
+  let strengthNote = '';
+
+  // ─── 大檔降強度（避免處理 / 解析爆炸）───
+  if (LARGE_FILES.indexOf(fileName) !== -1) {
     opts.controlFlowFlatteningThreshold = 0.5;
     opts.deadCodeInjectionThreshold = 0.2;
     opts.splitStringsChunkLength = 12;
     opts.stringArrayWrappersCount = 2;
+    strengthNote += '[大檔降強度]';
   }
-  // payment-wall.js 是金流核心,降強度避免破壞既有 fetch hook 邏輯
+
+  // ─── 跨模組共享物件保留 key（防 ui.js / ai-analysis.js 對接斷裂）───
+  if (SHARED_KEY_FILES.indexOf(fileName) !== -1) {
+    opts.transformObjectKeys = false;
+    strengthNote += '[保留 key]';
+  }
+
+  // ─── payment-wall.js 額外降強度（金流核心，保護既有 fetch hook）───
   if (fileName === 'payment-wall.js') {
     opts.controlFlowFlatteningThreshold = 0.5;
     opts.deadCodeInjectionThreshold = 0.2;
     opts.stringArrayWrappersCount = 2;
+    strengthNote += '[金流降強度]';
   }
+
+  // ─── solar-location.js 用 ?. optional chaining，保險降一點強度 ───
+  if (fileName === 'solar-location.js') {
+    opts.controlFlowFlatteningThreshold = 0.5;
+    opts.deadCodeInjectionThreshold = 0.2;
+    strengthNote += '[ES2020 保護]';
+  }
+
+  // ─── 防護盾注入（只 ui.js）───
   if (filePath === SHIELD_TARGET) {
     console.log('🛡️  注入防護盾 → ' + filePath);
     code = SHIELD_CODE + code;
     opts.selfDefending = false; // 注入後結構變了，selfDefending 會衝突
   }
+
   const origKB = (Buffer.byteLength(code) / 1024).toFixed(0);
-  console.log('🔄 ' + filePath + ' (' + origKB + ' KB)...');
+  console.log('🔄 ' + filePath + ' (' + origKB + ' KB) ' + strengthNote);
   try {
     const t0 = Date.now();
     const res = JavaScriptObfuscator.obfuscate(code, opts);
