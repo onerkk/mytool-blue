@@ -8,11 +8,11 @@
 'use strict';
 
 // v65d: 圖片版本號 — 部署新圖時改這裡,所有圖會自動帶 cache-bust 參數
-var IMG_V = '?v=67g_20260503';
+var IMG_V = '?v=67i_20260503';
 var IMG = {
   deity:   'img/oracle/oracle-deity.png'+IMG_V,
   pray:    'img/oracle/oracle-pray.png'+IMG_V,
-  qiantong:'img/oracle/oracle-qiantong-v67.png'+IMG_V,  // v67f: 全新 3D 寫實籤桶(深褐木+金龍雕)
+  qiantong:'img/oracle/oracle-qiantong-filled.png'+IMG_V,  // v67i: 裝滿籤的籤桶(深褐木+金龍雕+30+根籤頭叢)
   qianStick:'img/oracle/oracle-qian-stick.png'+IMG_V,   // v67f: 全新 3D 寫實籤(深褐竹+金箔頭,搭配 CSS overlay 籤號)
   cardBg:  'img/oracle/oracle-card-bg.png'+IMG_V,
   smoke:   'img/oracle/oracle-smoke.png'+IMG_V,
@@ -1374,15 +1374,17 @@ css.textContent='\
 .orc-tube-shake{animation:orc-tubeShake 0.15s linear infinite}\
 @keyframes orc-tubeShake{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(-4px,2px) rotate(-3deg)}40%{transform:translate(3px,-2px) rotate(2.5deg)}60%{transform:translate(-2px,-3px) rotate(-1.5deg)}80%{transform:translate(4px,1px) rotate(3deg)}100%{transform:translate(0,0) rotate(0)}}\
 \
-/* v67h 籤桶縮小 + 籤放大,讓兩者比例接近真實 */\
+/* v67i 配合「裝滿籤的桶」— 升起的籤從桶口籤頭叢中浮現,不是從桶底 */\
 .orc-rise-wrap{position:relative;width:200px;height:540px;margin:0 auto}\
-.orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:120px;z-index:3}\
+.orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:130px;z-index:3}\
 .orc-rise-tube .orc-qiantong-img{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5))}\
-.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:42%;width:36px;height:380px;z-index:1}\
-.orc-rise-stick{position:absolute;left:0;top:0;width:36px;height:380px;transform:translateY(80%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
-.orc-rise-stick-img{display:block;width:36px;height:380px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.55))}\
-.orc-stick-label{position:absolute;top:1.2%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.85rem;color:#3a1f08;letter-spacing:3px;font-weight:700;white-space:nowrap;z-index:2;text-shadow:0 1px 0 rgba(255,235,180,0.4);max-height:11%;line-height:1.05}\
-@keyframes orc-stickRiseV2{0%{transform:translateY(80%);opacity:0}20%{opacity:1}100%{transform:translateY(-15%);opacity:1}}\
+/* frame 位置在桶口偏上(配合裝滿籤的桶,桶口已有籤叢突出) */\
+/* z-index:4 比桶高,讓升起的籤從籤頭叢前面冒出來,不被桶體蓋住 */\
+.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:55%;width:32px;height:300px;z-index:4}\
+.orc-rise-stick{position:absolute;left:0;top:0;width:32px;height:300px;transform:translateY(70%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
+.orc-rise-stick-img{display:block;width:32px;height:300px;filter:drop-shadow(0 4px 14px rgba(0,0,0,0.6)) drop-shadow(0 0 12px rgba(255,200,120,0.3))}\
+.orc-stick-label{position:absolute;top:1.2%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.75rem;color:#3a1f08;letter-spacing:2px;font-weight:700;white-space:nowrap;z-index:5;text-shadow:0 1px 0 rgba(255,235,180,0.4);max-height:11%;line-height:1.05}\
+@keyframes orc-stickRiseV2{0%{transform:translateY(70%);opacity:0}20%{opacity:1}100%{transform:translateY(-25%);opacity:1}}\
 .orc-qiantong-wrap{width:100px;margin:0 auto 1rem}\
 .orc-qiantong-img{width:100%;height:auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,0.45))}\
 .orc-card-info{background:url("img/oracle/oracle-scroll-bg.jpg?v=65w20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;border:2px solid #8b1a1a;border-radius:4px;padding:1.5rem 1.2rem;margin-bottom:1rem;position:relative;box-shadow:0 6px 20px rgba(0,0,0,0.4),inset 0 0 0 1px rgba(212,175,55,0.5)}\
