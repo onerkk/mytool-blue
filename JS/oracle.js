@@ -8,7 +8,7 @@
 'use strict';
 
 // v65d: 圖片版本號 — 部署新圖時改這裡,所有圖會自動帶 cache-bust 參數
-var IMG_V = '?v=67f_20260503';
+var IMG_V = '?v=67g_20260503';
 var IMG = {
   deity:   'img/oracle/oracle-deity.png'+IMG_V,
   pray:    'img/oracle/oracle-pray.png'+IMG_V,
@@ -1374,20 +1374,14 @@ css.textContent='\
 .orc-tube-shake{animation:orc-tubeShake 0.15s linear infinite}\
 @keyframes orc-tubeShake{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(-4px,2px) rotate(-3deg)}40%{transform:translate(3px,-2px) rotate(2.5deg)}60%{transform:translate(-2px,-3px) rotate(-1.5deg)}80%{transform:translate(4px,1px) rotate(3deg)}100%{transform:translate(0,0) rotate(0)}}\
 \
-/* v67f 真實 3D 寫實圖版本 — 籤桶+籤都用 PNG,籤號 CSS overlay */\
-/*   尺寸計算:                                            */\
-/*   - 籤桶圖比例 1.42:1(高:寬),所以 width:160px → height:227px */\
-/*   - 籤圖比例 1:10(寬:高),所以 width:18px → height:180px       */\
-/*   - 籤頭金箔佔籤總高 15%(用 stick-label top:2% 對齊金箔中心)  */\
-/*   - frame 底部 bottom:30% 讓籤底端進入桶內                    */\
-.orc-rise-wrap{position:relative;width:200px;height:340px;margin:0 auto}\
-.orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:160px;z-index:3}\
+/* v67g 裁切版圖比例:籤桶 1:2.63、籤 1:13.75 */\
+.orc-rise-wrap{position:relative;width:220px;height:560px;margin:0 auto}\
+.orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:170px;z-index:3}\
 .orc-rise-tube .orc-qiantong-img{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5))}\
-.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:30%;width:18px;height:180px;z-index:1}\
-.orc-rise-stick{position:absolute;left:0;right:0;bottom:0;width:100%;height:100%;transform:translateY(100%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
-.orc-rise-stick-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.55))}\
-/* 籤號文字 — 絕對定位疊在籤的金箔頭區(top:2%,佔金箔範圍) */\
-.orc-stick-label{position:absolute;top:2%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.55rem;color:#3a1f08;letter-spacing:1px;font-weight:700;white-space:nowrap;z-index:2;text-shadow:0 1px 0 rgba(255,235,180,0.4);max-height:14%;line-height:1.05}\
+.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:35%;width:22px;height:300px;z-index:1}\
+.orc-rise-stick{position:absolute;left:0;top:0;width:22px;height:300px;transform:translateY(100%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
+.orc-rise-stick-img{display:block;width:22px;height:300px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.55))}\
+.orc-stick-label{position:absolute;top:1.2%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.6rem;color:#3a1f08;letter-spacing:1.5px;font-weight:700;white-space:nowrap;z-index:2;text-shadow:0 1px 0 rgba(255,235,180,0.4);max-height:11%;line-height:1.05}\
 @keyframes orc-stickRiseV2{0%{transform:translateY(100%);opacity:0}20%{opacity:1}100%{transform:translateY(0);opacity:1}}\
 .orc-qiantong-wrap{width:140px;margin:0 auto 1rem}\
 .orc-qiantong-img{width:100%;height:auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,0.45))}\
