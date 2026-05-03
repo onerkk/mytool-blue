@@ -1372,10 +1372,13 @@ css.textContent='\
 .orc-rise-wrap{position:relative;width:200px;height:340px;margin:0 auto}\
 .orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:160px;z-index:3}\
 .orc-rise-tube .orc-qiantong-img{width:100%;border-radius:8px;display:block}\
-.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:42%;width:30px;height:115px;z-index:1}\
-.orc-rise-stick{position:absolute;left:50%;bottom:0;width:30px;height:115px;background:linear-gradient(180deg,#fff5db 0%,#f5dc94 18%,#d4a847 45%,#b8862a 75%,#7a5510 100%);border-radius:5px 5px 2px 2px;box-shadow:0 0 16px rgba(255,210,120,0.55),0 4px 12px rgba(0,0,0,0.55),inset 1.5px 0 0 rgba(255,240,200,0.5),inset -1.5px 0 0 rgba(120,80,20,0.4),inset 0 -3px 8px rgba(80,50,10,0.3);transform:translateX(-50%) translateY(100%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
-.orc-rise-stick::before{content:" ";position:absolute;top:8%;left:0;right:0;height:1px;background:rgba(120,80,20,0.4);box-shadow:0 18px 0 rgba(120,80,20,0.25)}\
-.orc-stick-label{position:absolute;top:10%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.7rem;color:#3a1f08;letter-spacing:3px;font-weight:700;white-space:nowrap;text-shadow:0 1px 0 rgba(255,235,180,0.4)}\
+.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:30%;width:14px;height:170px;z-index:1}\
+/* 籤身=深褐色竹木(跟桶裡其他籤一樣),只有頂端一小段是金色貼籤(寫籤號) */\
+.orc-rise-stick{position:absolute;left:50%;bottom:0;width:14px;height:170px;background:linear-gradient(180deg,#a87942 0%,#8b5e2f 35%,#6b4520 70%,#4a2e10 100%);border-radius:2px 2px 1px 1px;box-shadow:0 3px 10px rgba(0,0,0,0.6),inset 1px 0 0 rgba(220,180,120,0.35),inset -1px 0 0 rgba(60,30,5,0.5);transform:translateX(-50%) translateY(100%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
+/* 籤頭=金色貼籤(籤號區),只佔頂端 28% 高度 */\
+.orc-rise-stick::after{content:" ";position:absolute;top:0;left:-3px;right:-3px;height:28%;background:linear-gradient(180deg,#fff0c8 0%,#f0d680 50%,#d4a847 100%);border-radius:2px 2px 0 0;box-shadow:0 0 8px rgba(255,210,120,0.5),inset 0 -1px 0 rgba(180,130,50,0.4);z-index:1}\
+.orc-rise-stick::before{content:" ";position:absolute;top:30%;left:0;right:0;height:1px;background:rgba(40,20,5,0.5)}\
+.orc-stick-label{position:absolute;top:3%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.55rem;color:#3a1f08;letter-spacing:1px;font-weight:700;white-space:nowrap;z-index:2;text-shadow:0 1px 0 rgba(255,235,180,0.5);max-height:24%}\
 @keyframes orc-stickRiseV2{0%{transform:translateX(-50%) translateY(100%);opacity:0}20%{opacity:1}100%{transform:translateX(-50%) translateY(0);opacity:1}}\
 .orc-qiantong-wrap{width:140px;margin:0 auto 1rem}\
 .orc-qiantong-img{width:100%;height:auto;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4)}\
