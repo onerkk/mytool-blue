@@ -176,6 +176,26 @@ var _redrawCount=0;       // 三聖筊失敗的「重抽」次數
 var _laughDarkCount=0;    // 累計擲到笑筊/陰筊次數（同一支籤）
 var _rejectedLots=[];     // v65s: 已被神明否決的籤(出現任一笑陰筊就放進這裡,後續抽籤排除)
 var _drawAt=null;         // 此次抽籤的時間戳（用於今日鎖籤判斷）
+
+// ═══ v66:請示階段連續無聖筊計數(廟宇正統規矩)═══
+//   依正統:擲筊請示「是否賜籤」,連三次無聖筊 = 神明示意今日不適合再問
+//   參考來源:維基百科擲筊 / 行天宮 / 王崇禮老師 / 道教問神
+//   實作邏輯:
+//     - allowResult 為非 holy(笑筊/陰筊)→ _allowNoShengCount++
+//     - allowResult 為 holy → _allowNoShengCount = 0(重置)
+//     - _allowNoShengCount >= 3 → 顯示「今日靜心」鎖定畫面
+//     - 鎖定狀態存 localStorage,以日期為 key,隔日自動失效
+var _allowNoShengCount=0;
+function _oracleTodayLockKey(){
+  var d=new Date();
+  return 'oracle_today_lock_'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function _oracleIsTodayLocked(){
+  try{ return localStorage.getItem(_oracleTodayLockKey())==='1'; }catch(_){ return false; }
+}
+function _oracleLockToday(){
+  try{ localStorage.setItem(_oracleTodayLockKey(),'1'); }catch(_){}
+}
 // v63：用戶動作熵收集器(把觸碰/陀螺儀混進隨機)
 var _userEntropy = new Uint8Array(32);
 var _entropyReady = false;
@@ -472,6 +492,36 @@ if(todayDrawn&&todayDrawn.poemN){
 }
 h+='<button class="orc-btn-primary" style="margin-top:1.4rem" onclick="_oracleShowGuide()">求 籤</button>';
 h+='<p class="orc-free-tag">✦ 免費使用 ・ 心誠則靈 ✦</p></div>';
+}
+// ═══ v66:今日靜心畫面(連三無聖筊鎖定)═══
+else if(_phase==='todayClosed'){
+h+='<div class="orc-fade orc-today-closed" style="background-image:url(img/oracle/oracle-tc-bg.png?v='+IMG_V.slice(2)+')">';
+h+='<div class="orc-tc-bg-overlay"></div>';
+h+='<div class="orc-tc-content">';
+h+='<h2 class="orc-tc-title">神明示意・今日靜心</h2>';
+h+='<div class="orc-tc-divider"><span>✦</span></div>';
+h+='<div class="orc-tc-section">';
+h+='<p class="orc-tc-line">連擲三筊，未得允杯，</p>';
+h+='<p class="orc-tc-line">此乃神明示意：<strong>今日不宜再請</strong>。</p>';
+h+='</div>';
+h+='<div class="orc-tc-classical">';
+h+='<p class="orc-tc-quote">《擲筊禮節》古例 ——<br>「連無聖筊，短期不宜再問同事。」</p>';
+h+='</div>';
+h+='<div class="orc-tc-section">';
+h+='<p class="orc-tc-explain-title">或為以下三因：</p>';
+h+='<ul class="orc-tc-reasons">';
+h+='<li>心緒未定，問題尚未明朗</li>';
+h+='<li>時機未到，需待時日沉澱</li>';
+h+='<li>此事神明暫無明確指引</li>';
+h+='</ul>';
+h+='</div>';
+h+='<p class="orc-tc-final">請沉心淨念，改日再來。</p>';
+h+='<div class="orc-tc-actions">';
+h+='<button class="orc-btn-primary orc-tc-btn" onclick="_oracleClose()">🌙 今日到此・謝過神恩</button>';
+h+='</div>';
+h+='<p class="orc-tc-footnote">此鎖定僅限今日 · 明日重新誠心請示即可</p>';
+h+='</div>';  // /content
+h+='</div>';
 }
 else if(_phase==='guide'){
 h+='<div class="orc-fade orc-center-phase"><div class="orc-scroll-wrap">';
@@ -778,7 +828,19 @@ window._oracleViewLocked=function(){
   }
 })();
 
-window._oracleOpen=function(){_phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;_rejectedLots=[];var w=_getWrap();w.style.display='block';_render();var hk=$('hook-screen');if(hk)hk.style.display='none';document.body.style.overflow='hidden'};
+window._oracleOpen=function(){
+  // v66:今日已鎖(連三無聖筊過)→ 直接進「今日靜心」畫面
+  if(_oracleIsTodayLocked()){
+    _phase='todayClosed';
+    _allowNoShengCount=3;  // 顯示用
+    var w0=_getWrap();w0.style.display='block';
+    _render();
+    var hk0=$('hook-screen');if(hk0)hk0.style.display='none';
+    document.body.style.overflow='hidden';
+    return;
+  }
+  _phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;_allowNoShengCount=0;_rejectedLots=[];var w=_getWrap();w.style.display='block';_render();var hk=$('hook-screen');if(hk)hk.style.display='none';document.body.style.overflow='hidden';
+};
 window._oracleClose=function(){var w=_getWrap();w.style.display='none';document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
 // ★ v6c: intro → guide → pray → allowAsk → allowThrow → shake → rise → drawn
 window._oracleShowGuide=function(){_phase='guide';_render()};
@@ -820,7 +882,12 @@ _phase='allowThrowing';_render();_playThrow();
 // v63: 用加密級隨機 + 真實筊杯機率(平55%凸45%) 計算結果
 setTimeout(async function(){
 _allowResult=await _v63ThrowJiao();
-if(_allowResult==='holy')_playHoly();
+if(_allowResult==='holy'){
+  _playHoly();
+  _allowNoShengCount=0;  // v66:聖筊重置計數
+}else{
+  _allowNoShengCount++;  // v66:笑筊/陰筊累加
+}
 var aJL=_allowResult==='holy'?IMG.jiaoFlat:_allowResult==='laugh'?IMG.jiaoFlat:IMG.jiaoRound;
 var aJR=_allowResult==='holy'?IMG.jiaoRound:_allowResult==='laugh'?IMG.jiaoFlatR:IMG.jiaoRoundR;
 var zone=document.getElementById('orc-jiao-zone');
@@ -837,12 +904,25 @@ if(lb){
     '<span class="orc-jiao-count">'+albSub+'</span>';
   lb.style.color=aco;
 }
-// Step 3: at 1.8s, fade in button
+// Step 3: at 1.8s, fade in button(或進入今日靜心畫面)
 setTimeout(function(){
+// ═══ v66:連三次無聖筊 → 進入「今日靜心」鎖定畫面 ═══
+if(_allowNoShengCount>=3){
+  _oracleLockToday();
+  _phase='todayClosed';
+  _render();
+  return;
+}
 var ui=document.getElementById('orc-throw-ui');
 if(ui){
 if(_allowResult==='holy'){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleStartShake()">搖 籤</button>';}
-else{ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleAllowThrow()">再 擲 杯</button>';}
+else{
+  // v66:顯示剩餘次數提示
+  var remain=3-_allowNoShengCount;
+  var hint=remain===1?'<div class="orc-toss-hint">再無聖筊則今日不宜再請示</div>':
+           remain===2?'<div class="orc-toss-hint">心需靜,意需誠</div>':'';
+  ui.innerHTML=hint+'<button class="orc-btn-primary" onclick="_oracleAllowThrow()">再 擲 杯</button>';
+}
 ui.style.opacity='1';}
 },600);
 },1200);
@@ -1337,7 +1417,35 @@ css.textContent='\
 .orc-jiao-msg-tally{font-size:.66rem;color:rgba(201,168,76,0.45);letter-spacing:2.5px;margin-top:.7rem;font-weight:300}\
 .orc-jiao-btn-end{color:#ffd97a;border-color:rgba(255,217,122,0.4);letter-spacing:5px;text-indent:5px;padding:.7rem 2rem}\
 .orc-jiao-btn-retry{color:#ffd97a;border-color:rgba(255,217,122,0.35);letter-spacing:5px;text-indent:5px;padding:.65rem 1.8rem}\
+\
+/* v66:擲筊提示(連續無聖筊倒數提醒)*/\
+.orc-toss-hint{font-family:"Noto Serif TC","STKaiti",serif;font-size:.82rem;color:rgba(255,170,100,0.78);letter-spacing:2px;margin:.6rem 0 1rem;line-height:1.7;font-weight:300}\
+\
+/* v66.1:今日靜心畫面(全屏廟宇背景圖版)*/\
+.orc-today-closed{position:fixed;inset:0;width:100%;min-height:100vh;background-size:cover;background-position:center;background-repeat:no-repeat;display:flex;align-items:center;justify-content:center;animation:orc-tc-fadein 1.6s ease-out;z-index:1}\
+@keyframes orc-tc-fadein{from{opacity:0}to{opacity:1}}\
+.orc-tc-bg-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,8,4,0.72) 0%,rgba(20,10,5,0.55) 35%,rgba(15,8,4,0.78) 100%);z-index:2;pointer-events:none}\
+.orc-tc-content{position:relative;z-index:3;max-width:520px;margin:0 auto;padding:2rem 1.4rem;text-align:center;color:#e8c992;width:100%}\
+.orc-tc-title{font-family:"Noto Serif TC","STKaiti","Kaiti TC",serif;font-size:1.42rem;color:#ffe0a3;margin:1rem 0 .6rem;letter-spacing:8px;font-weight:500;text-shadow:0 0 18px rgba(255,180,80,0.5),0 2px 6px rgba(0,0,0,0.8)}\
+.orc-tc-divider{font-size:.9rem;color:rgba(255,200,120,0.55);letter-spacing:6px;margin:1rem 0 1.4rem;text-shadow:0 0 8px rgba(255,180,80,0.4)}\
+.orc-tc-divider span{display:inline-block;padding:0 .8rem}\
+.orc-tc-section{background:rgba(20,10,5,0.55);border:1px solid rgba(232,201,146,0.28);border-radius:8px;padding:1rem 1.2rem;margin:.8rem .4rem;text-align:center;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}\
+.orc-tc-line{font-family:"Noto Serif TC","STKaiti",serif;font-size:.96rem;line-height:2;color:#f0d499;margin:.3rem 0;letter-spacing:1.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8)}\
+.orc-tc-line strong{color:#ffd97a;font-weight:500}\
+.orc-tc-classical{background:linear-gradient(135deg,rgba(74,47,17,0.65) 0%,rgba(40,22,8,0.68) 100%);border:1px solid rgba(255,200,120,0.4);border-radius:8px;padding:1.1rem 1.2rem;margin:1rem .4rem;text-align:center;position:relative;box-shadow:0 0 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,200,120,0.15);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}\
+.orc-tc-classical::before,.orc-tc-classical::after{content:" ";position:absolute;width:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,200,120,0.7),transparent);top:50%}\
+.orc-tc-classical::before{left:-12px}\
+.orc-tc-classical::after{right:-12px}\
+.orc-tc-quote{font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:1rem;color:#ffe0a3;margin:.4rem 0;line-height:2;letter-spacing:1.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8)}\
+.orc-tc-explain-title{font-family:"Noto Serif TC",serif;font-size:.86rem;color:#d4be8e;margin:.4rem 0 .6rem;letter-spacing:2px;text-shadow:0 1px 3px rgba(0,0,0,0.8)}\
+.orc-tc-reasons{list-style:none;padding:0;margin:.4rem 0;text-align:center}\
+.orc-tc-reasons li{font-size:.88rem;line-height:2.1;color:#c9a777;letter-spacing:1px;font-family:"Noto Serif TC",serif;text-shadow:0 1px 3px rgba(0,0,0,0.7)}\
+.orc-tc-reasons li::before{content:"· ";color:#ffd97a;font-weight:600}\
+.orc-tc-final{font-family:"Noto Serif TC","STKaiti",serif;font-size:1.12rem;color:#ffe0a3;margin:1.4rem 0 1.2rem;letter-spacing:5px;font-weight:500;text-shadow:0 0 12px rgba(255,180,80,0.4),0 2px 6px rgba(0,0,0,0.8)}\
+.orc-tc-actions{margin:1.4rem 0 .8rem;display:flex;flex-direction:column;gap:.7rem;padding:0 .8rem}\
+.orc-tc-btn{font-family:"Noto Serif TC",serif;background:linear-gradient(135deg,rgba(94,40,20,0.85),rgba(58,31,8,0.88));border:1px solid rgba(255,200,120,0.5);color:#ffe0a3;letter-spacing:3px;text-shadow:0 1px 3px rgba(0,0,0,0.8);box-shadow:0 4px 16px rgba(0,0,0,0.4)}\
+.orc-tc-footnote{margin-top:1.4rem;font-size:.74rem;color:rgba(212,167,106,0.65);letter-spacing:1.5px;font-style:italic;font-family:"Noto Serif TC",serif;text-shadow:0 1px 2px rgba(0,0,0,0.7)}\
 ';
 document.head.appendChild(css);
-console.log('[Oracle] 靜月靈籤 v63b loaded — 心中默念儀式 + 加密級隨機 + 用戶熵注入 + 擲筊文案質感重塑');
+console.log('[Oracle] 靜月靈籤 v66.1 loaded — 廟宇正統規矩:連三無聖筊→今日靜心(全屏背景圖版)+ localStorage 隔日鎖');
 })();
