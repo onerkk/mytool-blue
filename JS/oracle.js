@@ -8,7 +8,7 @@
 'use strict';
 
 // v65d: 圖片版本號 — 部署新圖時改這裡,所有圖會自動帶 cache-bust 參數
-var IMG_V = '?v=66_1_20260503';
+var IMG_V = '?v=67_20260503';
 var IMG = {
   deity:   'img/oracle/oracle-deity.png'+IMG_V,
   pray:    'img/oracle/oracle-pray.png'+IMG_V,
@@ -36,6 +36,70 @@ var IMG = {
   // v65c: 新增資產(對齊真實廟宇質感)
   cardPoemnum: 'img/oracle/oracle-card-poemnum.png'+IMG_V,  // 紅金橫式匾額(籤號)
   shengjiaMain:'img/oracle/oracle-shengjia-main.png'+IMG_V  // 紅金雙龍直立牌位(聖笈)
+};
+
+// v67 靜月註(碧仙註傳承,雙面結構,廟祝口吻) — 60 首寫死,0 額外成本
+var SHRINE_NOTES = {
+  1: { title: "雲開見月明", body: "你問的事,\n眼下確實卡。\n但烏雲不會永遠遮日,\n神明已經在你身後。\n別急,該過會過,\n你只管做你該做的。" },
+  2: { title: "春寒待開", body: "你以為冬天還很長?\n其實春芽已在地下動了。\n忍這一陣,\n別在最後一哩路放手——\n熬過去就是花開。" },
+  3: { title: "萬三聚寶", body: "心定不下來?\n那是因為你已經在意太久了。\n該是你的會在,\n不該是你的留也留不住。\n專心走、別東張西望,\n盆滿的那天會自己來。" },
+  4: { title: "中秋月圓", body: "你想太多了。\n事情其實順順的,\n是你自己在嚇自己。\n放下心,\n等中秋月圓那天再回頭看,\n你會笑自己今天的擔心。" },
+  5: { title: "王翦慎進", body: "別衝。\n這時候你越急越錯。\n你心裡其實知道哪裡不對,\n只是不甘心就此打住。\n退一步、看清楚,\n時機沒到,衝過去只會撞牆。" },
+  6: { title: "命中無時", body: "這件事,你越用力越遠。\n不是不夠努力,\n是命裡本來就沒有這條路。\n也不要找人合夥硬撐——\n轉身,還有別的路在等你。" },
+  7: { title: "白袍真身", body: "你已經看到問題在哪了,\n就別再裝看不見。\n是緣分的,做什麼都成;\n不是緣分的,塗脂抹粉也是空。\n依道理走,\n天定的會自己現。" },
+  8: { title: "薛仁貴歸", body: "答案早就在你心裡了,\n你只是想再確認一次。\n別翻來覆去問——\n拿起來、走下去,\n家裡的人在等你回去團圓。" },
+  9: { title: "龍虎異質", body: "本來就不是同一路人。\n眼下看似和氣,\n時間一久必生嫌隙。\n不要勉強磨合,\n也不要相信「會慢慢變好」——\n合不來就是合不來。" },
+  10: { title: "夕陽西下", body: "這事就像太陽要下山了,\n再點蠟燭也照不亮。\n不要再硬撐了,\n也不要再求改變——\n收手、放下、等明天。" },
+  11: { title: "三藏遇救", body: "眼前是黑的,\n但天快亮了。\n子丑寅時(深夜到清晨)會見光,\n你要做的只是別自己先放棄——\n觀音不會早到也不會晚到。" },
+  12: { title: "桃園義氣", body: "這個關不是你一個人能過的,\n但貴人會在。\n忍住、等住、別亂動,\n該幫你的人快到了。\n你越穩,他來得越快。" },
+  13: { title: "姜尚避紂", body: "這事是命裡的關,\n求神求人都過不去。\n注意是不是太歲年——\n不要硬推。\n退一步、繞一條路,\n過了這關,前面是大局。" },
+  14: { title: "地府醒悟", body: "答案要等十五月圓那天才見分曉。\n過程中要小心錢財——\n別亂借、別亂投、別作保。\n忍住衝動,結果會比你想的好。" },
+  15: { title: "莊子試妻", body: "你嫌時運不順,\n其實是時候未到。\n守住現在,別嫌棄、別亂跳——\n這時候動就是錯。\n等。" },
+  16: { title: "秦叔寶救駕", body: "願望沒成,\n不是你不努力,\n是因果還沒清。\n別怨天、別怨人——\n心存善念、做正事,\n善因積夠,結果自己會來。" },
+  17: { title: "紅孩兒鎖", body: "舊帳沒清,新關難過。\n龍蛇交會時(三、四月)會有結果,\n但你要先回頭看看自己——\n過去做錯的、傷過的人,\n該道歉的去道歉,\n該補的去補。" },
+  18: { title: "悟空脫困", body: "你這關過得辛苦,\n但貴人在路上了。\n五月,或者屬馬的人——\n留意身邊出現的他/她。\n你要做的只是撐住、別放棄。" },
+  19: { title: "福薄守舊", body: "這時候不要創新、不要冒險。\n你福報還沒夠,\n強推只會反噬。\n守舊就是上策,\n小利留得住、大利貪不來。" },
+  20: { title: "文王迎賢", body: "這關過不去。\n神明指你一個字——「退」。\n不是叫你認輸,\n是叫你暫時收手、養精蓄銳。\n退是為了下一次更好的進。" },
+  21: { title: "姜公護徒", body: "誠心問、誠心做,\n神明真的會幫你。\n連貴人都會出現——\n但成事之後別忘了還願,\n這是規矩。" },
+  22: { title: "姜公八十", body: "你急什麼?\n姜太公到八十才遇文王。\n你的好不在現在,\n是大器晚成。\n眼下不順,\n但你正在累積一個別人沒有的厚度。" },
+  23: { title: "鳳嬌防奸", body: "這時候不是你發揮的時候,\n靜下來。\n要小心身邊有人在算計你——\n看似親近的那個尤其要防。\n感情這條路也別在這時候推。" },
+  24: { title: "秦叔寶忠義", body: "看似險,\n但神明保佑不會出事。\n先過個驚嚇,\n然後就平安了。\n不要因為一時害怕做錯決定。" },
+  25: { title: "問籤待時", body: "雞犬日(酉戌)之後分曉。\n農曆八月、九月,或雞狗年——\n時候到自然清楚。\n現在不要再問了。" },
+  26: { title: "范丹遇妻", body: "時機到了!\n這支籤叫你別猶豫。\n財也好、緣也好、機會也好——\n看到要伸手抓,\n不抓就飛走。\n婚姻天賜,事業可成。" },
+  27: { title: "劉備入蜀", body: "順其自然就好。\n你不必特別求,\n家裡平安、事業穩當,\n財自己會來。\n急,反而失。" },
+  28: { title: "吳漢殺妻", body: "這時候像虎落平陽,\n什麼都做不順。\n忍住、不要衝動——\n這時候做的決定多半會後悔。" },
+  29: { title: "蘇武牧羊", body: "眼下像枯木,\n但根還活著。\n熬過這個冬,風霜過了,\n你會比從前更強。\n蘇武熬了十九年,你急什麼?" },
+  30: { title: "曹操招安", body: "看似平,實則藏變。\n這時候改變方向,\n會比現在更辛苦。\n不要被表面騙了——\n靜觀其變,別急著做大決定。" },
+  31: { title: "京娘獲送", body: "這時候是好時機,\n放手去做。\n花會結果、福會跟到——\n你越動,收成越好。" },
+  32: { title: "西川多變", body: "看似好的,會突然壞掉。\n黃金變鐵——\n這時候不要合夥,\n也不要對人做大承諾。\n保守為先。" },
+  33: { title: "呂布戲蟬", body: "表面相愛,暗藏危機。\n你看到的好,可能不是真的。\n做好份內的事,別衝出去——\n時機自己會把對的人帶來。" },
+  34: { title: "曹操脫險", body: "你正在被追殺。\n但長蛇會變龍——\n撐過這段最低谷,\n翻身的力道會比想像中大。\n不要在這時候放棄。" },
+  35: { title: "走路遇鬼", body: "別費心機。\n事情會自己明朗,\n鬼也好、人也好,\n最後都會散。\n你只要不亂動,太平自至。" },
+  36: { title: "薛仁貴救駕", body: "這支籤是大吉。\n你命裡逢凶會化吉,\n有貴人保你平安。\n福壽雙全——\n但好事要記得感恩,\n別把好運當理所當然。" },
+  37: { title: "蔡君謨意", body: "運正好。\n你想做什麼都會順,\n這時候大膽一點。\n但記住——\n得意的時候最容易摔,\n不要狂。" },
+  38: { title: "孔明施才", body: "功名已經有了,\n你不用再求了。\n早晚的事,\n別自己嚇自己。\n等。" },
+  39: { title: "範蠡身退", body: "這時候要退,不要進。\n寬心、緩著、看著——\n貴人就在後面,\n但你太急他來不了。" },
+  40: { title: "韓信登台", body: "一生富貴的籤。\n門戶光輝、夫妻和諧、\n萬事大吉。\n但記住:\n富貴不是僥倖,\n是你過去做對了什麼。" },
+  41: { title: "孟姜哭城", body: "進退兩難?\n但消息已經很近了。\n婚姻是前世定的緣——\n該來的會千里來會,\n不該來的攔也攔不住。\n酉戌日(雞狗日)會有訊息。" },
+  42: { title: "伯夷叔齊", body: "不管怎麼改怎麼換,\n這條路就是堵的。\n不是路不對,\n是時候不對。\n退、守、等——\n不要用堅持去撞牆。" },
+  43: { title: "劉智投軍", body: "著急也沒用。\n貴人在遠方,\n月中(每月十五左右)會有消息。\n這段時間不要勉強推進,\n等。" },
+  44: { title: "關羽尋兄", body: "前途其實有利,\n不要疑慮。\n中間會有點波折,\n但月圓之時就會撥雲見日。\n就像關公千里尋兄,\n最終會找到你要找的。" },
+  45: { title: "柳毅成姻", body: "花開結果——\n你問的事已經圓滿了。\n富貴長久、萬事清吉,\n不必再煩惱。\n這支籤抽到要記得感恩。" },
+  46: { title: "二郎擔山", body: "功名富貴都已具備,\n前途光明。\n月圓那天就是圓滿之日。\n但二郎神擔山靠的是力量,\n你也要持續用功——\n天時有了,人事不可廢。" },
+  47: { title: "煮酒論英雄", body: "別再問神明了——\n你心裡早有答案了,\n只是不敢承認。\n凶事會自己化解,\n你需要的是相信你自己。" },
+  48: { title: "出師未捷", body: "這時候做事不順,\n像雲遮月看不清。\n不要硬推——\n壯志未酬不是錯,\n是時候未到。\n退守等待。" },
+  49: { title: "司馬昭心", body: "不要聽太多人講話。\n身邊有人在暗中算計——\n你越靜,你越清楚。\n好消息會在沉默中傳來。" },
+  50: { title: "鐵杵磨針", body: "誠心不變,鐵都能磨成針。\n你現在差的不是運,\n是堅持。\n撐住——\n好消息已經在路上。" },
+  51: { title: "荊軻刺秦", body: "四方皆不宜出。\n這時候不要遠行、不要冒進。\n但家裡是安的,\n守住本分、留在熟悉的地方——\n別動。" },
+  52: { title: "鐵拐成仙", body: "功名是天定的,\n你不必掛心。\n風雲際會的機會就在眼前——\n但鐵拐李得道前也是個跛子,\n看似不利的條件,可能正是你的福氣。" },
+  53: { title: "孟母三遷", body: "積善之家必有餘慶。\n財、子、喜氣——\n都會雙雙到來。\n這是你過去積德換來的。\n繼續做好事,福氣會更厚。" },
+  54: { title: "呂祖修真", body: "眼下如孤燈,寂寂無人。\n但只要行善積德、誠心敬神,\n萬事清吉。\n寂寞不是壞事——\n呂洞賓也是在孤寂中得道的。" },
+  55: { title: "蘇軾遭貶", body: "進退都是虛話,\n前途並不光明。\n你以為珠玉在懷,\n其實還沒被看見——\n這時候別費心思,\n靜養才是正事。" },
+  56: { title: "司馬遷史", body: "辛苦了這麼久,\n結果不如預期。\n去了就不要回頭,\n放下這件事——\n人生不是只有這一條路。\n轉身,還有別的事在等你做。" },
+  57: { title: "八仙過海", body: "把心定下來,別虛浮。\n前途清吉、好運到來。\n中間沒有大事,\n安心居家、各顯神通——\n你有你的本事,別跟人比錯地方。" },
+  58: { title: "包公疑案", body: "你想翻身,\n但運勢未到。\n久病要靜養,\n別聽太多人講話——\n事情需要時間,\n不是你不夠努力。" },
+  59: { title: "狄仁傑案", body: "有心做好事不要遲疑,\n求名求利正當其時。\n事情必成、財自然來——\n但好事要做得正,\n狄仁傑清廉才有福報,\n你也要守住底線。" },
+  60: { title: "趙匡胤登", body: "月亮本來是光明的,\n只是被浮雲遮了一下。\n用心行善、按理辦事,\n就會撥雲見日。\n別因一時不順就懷疑自己——\n你的光本來就在。" },
 };
 
 var P = [
@@ -320,6 +384,27 @@ function _oracleHasDrawnToday(){
   }catch(_){}
   return null;
 }
+// v67:檢查 24h 內是否抽過同支籤(用於「何必問祂」警告)
+//   設計動機:七王爺爆紅的金句「何必問祂」就是同題重複問觸發
+//   實作:掃 localStorage 所有 oracle_lock,若有同 poemN 且 dateStr 是今天 → 觸發
+function _oracleSameDrawnToday(poemN){
+  try{
+    var keys=Object.keys(localStorage), today=_oracleTodayStr();
+    var count=0;
+    for(var i=0;i<keys.length;i++){
+      if(keys[i].indexOf('oracle_lock:')===0||keys[i].indexOf('oracle_pending:')===0){
+        var raw=localStorage.getItem(keys[i]);
+        if(raw){
+          try{
+            var v=JSON.parse(raw);
+            if(v && v.dateStr===today && v.poemN===poemN) count++;
+          }catch(_){}
+        }
+      }
+    }
+    return count;  // 回傳次數
+  }catch(_){return 0;}
+}
 // 同題鎖籤工具：用 hash(qType + qText + today) 當 key 存 localStorage
 function _oracleHash(s){var h=0,i,c;if(!s)return '0';for(i=0;i<s.length;i++){c=s.charCodeAt(i);h=((h<<5)-h)+c;h=h&h;}return Math.abs(h).toString(36);}
 function _oracleTodayStr(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
@@ -480,7 +565,7 @@ if(_phase==='intro'){
 //         無一強制打字,「心中默念」就是傳統儀式
 //   24h 智慧鎖: 當日已抽過 → 溫和提示,但仍允許繼續(權力交還用戶)
 h+='<div class="orc-fade"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div>';
-h+='<p class="orc-desc">心中默念您的姓名、住址<br>以及所求之事<br>虔心稟告，靜候神明指引</p>';
+h+='<p class="orc-desc">心中默念您的姓名、住址<br>以及所求之事<br>靜月之神 派遣神將聆聽</p>';
 h+='<p class="orc-note" style="margin-top:.6rem">求得籤詩後需連擲三聖筊方為確認</p>';
 // v63: 24h 智慧鎖——僅當日已抽過任何題才提示,不阻擋
 var todayDrawn=_oracleHasDrawnToday();
@@ -634,6 +719,58 @@ h+='<div class="orc-card8-brand"><span>jingyue.uk</span><span>靜月之光</span
 h+='</div></div>';
 // 分享按鈕
 h+='<div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem"><button class="orc-btn-share" onclick="_oracleShare()"><i class="fas fa-share-alt"></i> 分享籤詩</button><button class="orc-btn-share" onclick="_oracleDownload()"><i class="fas fa-download"></i> 儲存圖片</button></div>';
+
+// ═══ v67:靜月註(碧仙註傳承) — 最頂端,模仿廟祝口吻雙面結構 ═══
+//   設計參考:
+//   - 廟祝碧仙註傳統(《關帝百籤》):長者警語、五言四句
+//   - 冷讀術三大原理:具體化 / 補充 / 主觀
+//   - 七王爺爆紅金句:同題重複問觸發「何必問祂」
+//   - 巴納姆效應:模糊敘述 + 留白讓用戶投射
+var _v67Note=(typeof SHRINE_NOTES!=='undefined')?SHRINE_NOTES[_poem.n]:null;
+if(_v67Note){
+  // v67:24h 內抽到同支籤 → 觸發「何必問祂」警告口吻
+  var _v67SameCount=_oracleSameDrawnToday(_poem.n);
+  if(_v67SameCount>=1){
+    h+='<div class="orc-shrine-warn">';
+    h+='<div class="orc-shrine-warn-glyph">⚠</div>';
+    h+='<div class="orc-shrine-warn-title">神明示意・何必再問</div>';
+    h+='<div class="orc-shrine-warn-body">'+
+       '同件事情,<br>'+
+       '我已經給過你答案了。<br><br>'+
+       '是聽不進去?<br>'+
+       '還是不甘心?<br><br>'+
+       '沉一下再來——<br>'+
+       '心定了,你才看得見原本就在的東西。'+
+       '</div>';
+    h+='</div>';
+  }
+  // 靜月註(雙面結構廟祝口吻)
+  h+='<div class="orc-shrine-note">';
+  h+='<div class="orc-shrine-note-header">';
+  h+='<span class="orc-shrine-glyph">☽</span>';
+  h+='<span class="orc-shrine-label">靜月註</span>';
+  h+='<span class="orc-shrine-title">'+_v67Note.title+'</span>';
+  h+='</div>';
+  h+='<div class="orc-shrine-body">'+_v67Note.body.replace(/\n/g,'<br>')+'</div>';
+  h+='<div class="orc-shrine-footer">— 仿《碧仙註》長者叮嚀體</div>';
+  h+='</div>';
+}
+
+// ═══ v67:籤頭典故 — 從末位拉到靜月註之後(顯眼處) ═══
+//   設計動機:七王爺沒有典故,我們有 60 個《史記》《封神榜》《西遊記》故事
+//   這是我們的差異化資產,要讓用戶看見
+var _v67dd=D[_poem.n];
+if(_v67dd && _v67dd._gs){
+  h+='<div class="orc-shrine-story">';
+  h+='<div class="orc-shrine-story-header">';
+  h+='<span class="orc-shrine-glyph-small">⌘</span>';
+  h+='<span class="orc-shrine-story-label">籤頭典故</span>';
+  h+='</div>';
+  h+='<div class="orc-shrine-story-body">'+_v67dd._gs+'</div>';
+  h+='<div class="orc-shrine-story-footer">— 神明常藉古人故事為求籤者借鏡</div>';
+  h+='</div>';
+}
+
 // v62：分類優先解讀區（依用戶選的問事類型挑出 D 的相關欄位）
 // v63: 用戶不選分類時,改顯示「常見五項精選」(凡事/家運/婚姻/求財/官事)
 //      讓行動版用戶也能在第一屏看到核心解讀,不用滑到底
@@ -722,13 +859,7 @@ if(dd){
     }
   }
   // (4) 典故卦頭 — _gs
-  if(dd._gs){
-    h+='<div class="orc-jh-section orc-jh-scroll">';
-    h+='<div class="orc-jh-label-tag">古人典故</div>';
-    h+='<div class="orc-jh-text orc-jh-brush">'+dd._gs+'</div>';
-    h+='<div class="orc-jh-cloud-bot"></div>';
-    h+='</div>';
-  }
+  // v67:已拉到靜月註後面顯眼處,這裡不再重複
   // (5) 廟宇識別:紅印 + 夕陽廟照
   h+='<div class="orc-jh-seal-row">';
   h+='<img src="'+IMG.stampJingyue+'" alt="靜月之光" class="orc-jh-seal">';
@@ -894,10 +1025,13 @@ var zone=document.getElementById('orc-jiao-zone');
 if(zone){zone.innerHTML='<div class="orc-land-jiao orc-land-drop-L"><img src="'+aJL+'" alt="" class="orc-land-img"></div><div class="orc-land-jiao orc-land-drop-R"><img src="'+aJR+'" alt="" class="orc-land-img"></div>';}
 var lb=document.getElementById('orc-throw-label');
 // v63b: 視覺分層 — 主筊筊狀態大字 + 神諭副文小字
+// v67:笑筊/陰筊文案神格化(模仿七王爺「為什麼」+「神明個性」)
 var albMain=_allowResult==='holy'?'聖筊':_allowResult==='laugh'?'笑筊':'陰筊';
+var _laughReasons=['陳述不清,神明聽不明','機緣未到,何必多此一問','所求之事早有定數','心未誠,意未專'];
+var _yinReasons=['神明否決所求,慎思','時機未至,且退','問題本身有問題,先想清楚','此事神明不應'];
 var albSub=_allowResult==='holy'?'神明應允此求'
-  :_allowResult==='laugh'?'神意未明・再請示一次'
-  :'神意暫止・再請示一次';
+  :_allowResult==='laugh'?('笑而不答 — '+_laughReasons[Math.floor(Math.random()*_laughReasons.length)])
+  :('神不應許 — '+_yinReasons[Math.floor(Math.random()*_yinReasons.length)]);
 var aco=_allowResult==='holy'?'#ffd700':'#e67e22';
 if(lb){
   lb.innerHTML='<span class="orc-jiao-status">'+albMain+'</span>'+
@@ -1445,7 +1579,33 @@ css.textContent='\
 .orc-tc-actions{margin:1.4rem 0 .8rem;display:flex;flex-direction:column;gap:.7rem;padding:0 .8rem}\
 .orc-tc-btn{font-family:"Noto Serif TC",serif;background:linear-gradient(135deg,rgba(94,40,20,0.85),rgba(58,31,8,0.88));border:1px solid rgba(255,200,120,0.5);color:#ffe0a3;letter-spacing:3px;text-shadow:0 1px 3px rgba(0,0,0,0.8);box-shadow:0 4px 16px rgba(0,0,0,0.4)}\
 .orc-tc-footnote{margin-top:1.4rem;font-size:.74rem;color:rgba(212,167,106,0.65);letter-spacing:1.5px;font-style:italic;font-family:"Noto Serif TC",serif;text-shadow:0 1px 2px rgba(0,0,0,0.7)}\
+\
+/* ═══ v67:靜月註(碧仙註傳承) — 主視覺卡片 ═══ */\
+.orc-shrine-note{max-width:520px;margin:1.6rem auto;padding:1.6rem 1.4rem;background:linear-gradient(180deg,rgba(40,20,8,0.92) 0%,rgba(26,12,4,0.95) 100%);border:1px solid rgba(255,200,120,0.4);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,200,120,0.15);position:relative;overflow:hidden;animation:orc-shrine-fadein 1.2s ease-out}\
+@keyframes orc-shrine-fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}\
+.orc-shrine-note::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#ffd97a 20%,#ffe0a3 50%,#ffd97a 80%,transparent)}\
+.orc-shrine-note-header{display:flex;align-items:center;justify-content:center;gap:.8rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid rgba(255,200,120,0.18)}\
+.orc-shrine-glyph{font-size:1.4rem;color:#ffd97a;text-shadow:0 0 12px rgba(255,180,80,0.6)}\
+.orc-shrine-label{font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:1.4rem;color:#ffe0a3;letter-spacing:8px;font-weight:500;text-shadow:0 0 10px rgba(255,180,80,0.4)}\
+.orc-shrine-title{font-family:"Noto Serif TC",serif;font-size:.85rem;color:#c9a777;letter-spacing:2px;padding:.2rem .8rem;background:rgba(255,200,120,0.08);border:1px solid rgba(255,200,120,0.2);border-radius:4px}\
+.orc-shrine-body{font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:1.18rem;line-height:2.2;color:#f0d499;text-align:center;letter-spacing:2px;padding:.6rem 0;text-shadow:0 1px 3px rgba(0,0,0,0.6)}\
+.orc-shrine-footer{margin-top:1rem;padding-top:.7rem;border-top:1px dashed rgba(255,200,120,0.18);text-align:center;font-size:.7rem;color:rgba(201,167,119,0.55);font-style:italic;letter-spacing:1.5px}\
+\
+/* v67:警告籤(同題重複問 — 何必問祂)*/\
+.orc-shrine-warn{max-width:520px;margin:1.4rem auto .4rem;padding:1.2rem 1.2rem;background:linear-gradient(180deg,rgba(60,20,10,0.92) 0%,rgba(40,12,6,0.95) 100%);border:1px solid rgba(255,140,80,0.5);border-radius:10px;box-shadow:0 6px 20px rgba(80,20,10,0.4),inset 0 1px 0 rgba(255,160,100,0.15);text-align:center;animation:orc-shrine-warn-pulse 2.6s ease-in-out infinite alternate}\
+@keyframes orc-shrine-warn-pulse{from{box-shadow:0 6px 20px rgba(80,20,10,0.4)}to{box-shadow:0 6px 28px rgba(255,120,60,0.35)}}\
+.orc-shrine-warn-glyph{font-size:1.8rem;color:#ff9866;margin-bottom:.4rem;text-shadow:0 0 14px rgba(255,140,80,0.6)}\
+.orc-shrine-warn-title{font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:1.15rem;color:#ffaa70;letter-spacing:6px;margin-bottom:.8rem;font-weight:500;text-shadow:0 0 8px rgba(255,140,80,0.45)}\
+.orc-shrine-warn-body{font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:1.05rem;line-height:1.95;color:#f5c8a0;letter-spacing:1.5px;text-shadow:0 1px 3px rgba(0,0,0,0.6)}\
+\
+/* v67:籤頭典故卡 */\
+.orc-shrine-story{max-width:520px;margin:1rem auto;padding:1.2rem 1.3rem;background:linear-gradient(180deg,rgba(35,18,8,0.78) 0%,rgba(22,10,4,0.85) 100%);border:1px solid rgba(212,167,106,0.28);border-radius:8px;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}\
+.orc-shrine-story-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;padding-bottom:.5rem;border-bottom:1px solid rgba(212,167,106,0.18)}\
+.orc-shrine-glyph-small{font-size:1rem;color:#d4a76a}\
+.orc-shrine-story-label{font-family:"Noto Serif TC",serif;font-size:.95rem;color:#d4be8e;letter-spacing:4px;font-weight:500}\
+.orc-shrine-story-body{font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:1rem;line-height:1.95;color:#e0c89a;letter-spacing:1.2px;text-shadow:0 1px 2px rgba(0,0,0,0.5)}\
+.orc-shrine-story-footer{margin-top:.7rem;padding-top:.5rem;border-top:1px dashed rgba(212,167,106,0.18);font-size:.68rem;color:rgba(201,167,119,0.5);font-style:italic;letter-spacing:1px;text-align:right}\
 ';
 document.head.appendChild(css);
-console.log('[Oracle] 靜月靈籤 v66.1 loaded — 廟宇正統規矩:連三無聖筊→今日靜心(全屏背景圖版)+ localStorage 隔日鎖');
+console.log('[Oracle] 靜月靈籤 v67 loaded — 神諭強化:60首靜月註(碧仙註傳承+雙面結構廟祝口吻)+ 同題警告籤(何必問祂)+ 典故顯眼處 + 笑陰筊神格化文案 + 入口神話化');
 })();
