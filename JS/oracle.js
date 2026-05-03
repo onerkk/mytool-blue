@@ -8,7 +8,7 @@
 'use strict';
 
 // v65d: 圖片版本號 — 部署新圖時改這裡,所有圖會自動帶 cache-bust 參數
-var IMG_V = '?v=67i_20260503';
+var IMG_V = '?v=67k_20260503';
 var IMG = {
   deity:   'img/oracle/oracle-deity.png'+IMG_V,
   pray:    'img/oracle/oracle-pray.png'+IMG_V,
@@ -807,19 +807,29 @@ if(dd&&_qType&&ORACLE_TYPES[_qType]){
   }
   h+='</div>';
 } else if(dd){
-  // v63: 沒有 _qType 時 → 顯示常見五項精選(凡事/婚姻/求財/家運/官事)
-  var v63Common=['凡事','婚姻','求財','家運','官事'];
-  var v63HasAny=false;
-  for(var v63i=0;v63i<v63Common.length;v63i++){if(dd[v63Common[v63i]]){v63HasAny=true;break;}}
-  if(v63HasAny){
+  // v67k: 沒有 _qType 時 → 顯示常見八項精選
+  // 之前只有 5 項(凡事/婚姻/求財/家運/官事),用戶反映「沒看到事業」
+  // 加入:功名(現代=升遷/應徵)、作事(現代=做事順不順)、治病(健康)、出外(對外發展)
+  // 順序按現代用戶關心度排:整體 → 事業相關 → 感情 → 財運 → 家運 → 健康 → 出外 → 訴訟
+  var v67Common=['凡事','功名','作事','婚姻','求財','家運','治病','出外','官事'];
+  var v67HasAny=false;
+  for(var v67i=0;v67i<v67Common.length;v67i++){if(dd[v67Common[v67i]]){v67HasAny=true;break;}}
+  if(v67HasAny){
     h+='<div class="orc-jh-section orc-jh-priority">';
     h+='<div class="orc-jh-heading">常見問事精解</div>';
     h+='<div class="orc-priority-grid">';
-    for(var v63j=0;v63j<v63Common.length;v63j++){
-      var v63Fname=v63Common[v63j];
-      var v63Fval=dd[v63Fname];
-      if(v63Fval){
-        h+='<div class="orc-priority-row"><span class="orc-priority-label">'+v63Fname+'</span><span class="orc-priority-val">'+v63Fval+'</span></div>';
+    for(var v67j=0;v67j<v67Common.length;v67j++){
+      var v67Fname=v67Common[v67j];
+      var v67Fval=dd[v67Fname];
+      if(v67Fval){
+        // v67k: 欄位旁加現代化提示(舊詞 → 新詞對照)
+        var v67Hint='';
+        if(v67Fname==='功名') v67Hint='<span class="orc-priority-hint">(事業·升遷·考試)</span>';
+        else if(v67Fname==='作事') v67Hint='<span class="orc-priority-hint">(做事·工作)</span>';
+        else if(v67Fname==='治病') v67Hint='<span class="orc-priority-hint">(健康)</span>';
+        else if(v67Fname==='出外') v67Hint='<span class="orc-priority-hint">(對外發展·搬遷)</span>';
+        else if(v67Fname==='官事') v67Hint='<span class="orc-priority-hint">(訴訟·糾紛)</span>';
+        h+='<div class="orc-priority-row"><span class="orc-priority-label">'+v67Fname+v67Hint+'</span><span class="orc-priority-val">'+v67Fval+'</span></div>';
       }
     }
     h+='</div></div>';
@@ -1548,6 +1558,7 @@ css.textContent='\
 .orc-priority-grid{display:flex;flex-direction:column;gap:.45rem;margin:.6rem 0;position:relative;z-index:2}\
 .orc-priority-row{display:flex;align-items:flex-start;gap:.7rem;padding:.6rem .8rem;background:rgba(255,251,235,0.7);border:1px solid rgba(139,26,26,0.18);border-left:3px solid #8b1a1a;border-radius:4px;font-family:"DFKai-SB","BiauKai","KaiTi","STKaiti",serif}\
 .orc-priority-label{flex-shrink:0;min-width:3.5rem;font-weight:900;color:#8b1a1a;font-size:.88rem;letter-spacing:2px}\
+.orc-priority-hint{display:block;font-size:.62rem;color:#a06464;font-weight:400;letter-spacing:0;margin-top:1px;font-style:italic;opacity:0.85}\
 .orc-priority-val{flex:1;font-size:.88rem;color:#2c1810;line-height:1.6}\
 .orc-q-recap{margin-top:.8rem;padding:.5rem .7rem;font-size:.78rem;color:#6b4226;font-style:italic;border-top:1px dashed rgba(139,26,26,0.3);line-height:1.6;position:relative;z-index:2}\
 \
