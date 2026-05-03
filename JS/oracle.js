@@ -1374,16 +1374,16 @@ css.textContent='\
 .orc-tube-shake{animation:orc-tubeShake 0.15s linear infinite}\
 @keyframes orc-tubeShake{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(-4px,2px) rotate(-3deg)}40%{transform:translate(3px,-2px) rotate(2.5deg)}60%{transform:translate(-2px,-3px) rotate(-1.5deg)}80%{transform:translate(4px,1px) rotate(3deg)}100%{transform:translate(0,0) rotate(0)}}\
 \
-/* v67g 裁切版圖比例:籤桶 1:2.63、籤 1:13.75 */\
-.orc-rise-wrap{position:relative;width:220px;height:560px;margin:0 auto}\
-.orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:170px;z-index:3}\
+/* v67h 籤桶縮小 + 籤放大,讓兩者比例接近真實 */\
+.orc-rise-wrap{position:relative;width:200px;height:540px;margin:0 auto}\
+.orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:120px;z-index:3}\
 .orc-rise-tube .orc-qiantong-img{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5))}\
-.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:35%;width:22px;height:300px;z-index:1}\
-.orc-rise-stick{position:absolute;left:0;top:0;width:22px;height:300px;transform:translateY(100%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
-.orc-rise-stick-img{display:block;width:22px;height:300px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.55))}\
-.orc-stick-label{position:absolute;top:1.2%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.6rem;color:#3a1f08;letter-spacing:1.5px;font-weight:700;white-space:nowrap;z-index:2;text-shadow:0 1px 0 rgba(255,235,180,0.4);max-height:11%;line-height:1.05}\
-@keyframes orc-stickRiseV2{0%{transform:translateY(100%);opacity:0}20%{opacity:1}100%{transform:translateY(0);opacity:1}}\
-.orc-qiantong-wrap{width:140px;margin:0 auto 1rem}\
+.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:42%;width:36px;height:380px;z-index:1}\
+.orc-rise-stick{position:absolute;left:0;top:0;width:36px;height:380px;transform:translateY(80%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
+.orc-rise-stick-img{display:block;width:36px;height:380px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.55))}\
+.orc-stick-label{position:absolute;top:1.2%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.85rem;color:#3a1f08;letter-spacing:3px;font-weight:700;white-space:nowrap;z-index:2;text-shadow:0 1px 0 rgba(255,235,180,0.4);max-height:11%;line-height:1.05}\
+@keyframes orc-stickRiseV2{0%{transform:translateY(80%);opacity:0}20%{opacity:1}100%{transform:translateY(-15%);opacity:1}}\
+.orc-qiantong-wrap{width:100px;margin:0 auto 1rem}\
 .orc-qiantong-img{width:100%;height:auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,0.45))}\
 .orc-card-info{background:url("img/oracle/oracle-scroll-bg.jpg?v=65w20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;border:2px solid #8b1a1a;border-radius:4px;padding:1.5rem 1.2rem;margin-bottom:1rem;position:relative;box-shadow:0 6px 20px rgba(0,0,0,0.4),inset 0 0 0 1px rgba(212,175,55,0.5)}\
 .orc-card-info::before{content:"";position:absolute;inset:6px;border:1px solid rgba(139,26,26,0.25);pointer-events:none;border-radius:2px}\
