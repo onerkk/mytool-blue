@@ -652,7 +652,13 @@ else if(_phase==='shaking'){
 h+='<div class="orc-fade orc-center-phase"><div class="orc-qiantong-shake-wrap"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img orc-tube-shake"></div><p class="orc-pray-text">搖籤筒中<span class="orc-dots"></span></p><p class="orc-note">靜候神明賜籤</p></div>';
 }
 else if(_phase==='rising'){
-h+='<div class="orc-fade orc-center-phase"><div class="orc-rise-wrap"><div class="orc-rise-tube"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img"></div><div class="orc-rise-stick"><div class="orc-stick-label">第'+CN[_poem.n]+'籤</div></div></div><p class="orc-pray-text" style="margin-top:1.5rem">神明賜籤</p></div>';
+// v67 修正:籤從籤桶內部由下往上浮現(配合新 CSS .orc-rise-stick-frame + translateY 動畫)
+//   結構:wrap → tube(z-index:2 在前) + stick-frame(z-index:1 在後,框出籤的區域)
+//        stick 在 frame 內,初始 translateY(100%) 藏在桶內,動畫往上推到 0
+h+='<div class="orc-fade orc-center-phase"><div class="orc-rise-wrap">'+
+   '<div class="orc-rise-tube"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img"></div>'+
+   '<div class="orc-rise-stick-frame"><div class="orc-rise-stick"><div class="orc-stick-label">第'+CN[_poem.n]+'籤</div></div></div>'+
+   '</div><p class="orc-pray-text" style="margin-top:1.5rem">神明賜籤</p></div>';
 }
 else if(_phase==='drawn'){
 h+='<div class="orc-fade"><div class="orc-qiantong-wrap"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img"></div>';
@@ -1360,12 +1366,17 @@ css.textContent='\
 .orc-qiantong-shake-wrap{width:160px;margin:0 auto 1.5rem}\
 .orc-tube-shake{animation:orc-tubeShake 0.15s linear infinite}\
 @keyframes orc-tubeShake{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(-4px,2px) rotate(-3deg)}40%{transform:translate(3px,-2px) rotate(2.5deg)}60%{transform:translate(-2px,-3px) rotate(-1.5deg)}80%{transform:translate(4px,1px) rotate(3deg)}100%{transform:translate(0,0) rotate(0)}}\
-.orc-rise-wrap{position:relative;width:160px;height:320px}\
-.orc-rise-tube{position:absolute;bottom:0;width:100%}\
-.orc-rise-tube .orc-qiantong-img{width:100%;border-radius:8px}\
-.orc-rise-stick{position:absolute;left:50%;transform:translateX(-50%);bottom:60%;width:16px;height:180px;background:linear-gradient(180deg,#f5e6c8 0%,#c9a84c 40%,#8b6914 100%);border-radius:3px 3px 1px 1px;box-shadow:0 0 12px rgba(201,168,76,0.5),0 0 30px rgba(201,168,76,0.2);animation:orc-stickRise 2s cubic-bezier(0.22,0.61,0.36,1) forwards}\
-.orc-stick-label{position:absolute;top:8px;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;font-size:.55rem;color:#4a2810;letter-spacing:2px;font-weight:700;white-space:nowrap}\
-@keyframes orc-stickRise{0%{height:20px;opacity:0;bottom:40%}30%{opacity:1}100%{height:180px;bottom:60%}}\
+\
+/* v67 修正:籤從籤桶內部由下往上浮現,不是平倒掀起 */\
+/*   要點:籤本身長度固定(不再 height 動畫變形)、整支身體初始藏在桶內、translateY 往上推 */\
+.orc-rise-wrap{position:relative;width:200px;height:340px;margin:0 auto}\
+.orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:160px;z-index:3}\
+.orc-rise-tube .orc-qiantong-img{width:100%;border-radius:8px;display:block}\
+.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:42%;width:30px;height:115px;z-index:1}\
+.orc-rise-stick{position:absolute;left:50%;bottom:0;width:30px;height:115px;background:linear-gradient(180deg,#fff5db 0%,#f5dc94 18%,#d4a847 45%,#b8862a 75%,#7a5510 100%);border-radius:5px 5px 2px 2px;box-shadow:0 0 16px rgba(255,210,120,0.55),0 4px 12px rgba(0,0,0,0.55),inset 1.5px 0 0 rgba(255,240,200,0.5),inset -1.5px 0 0 rgba(120,80,20,0.4),inset 0 -3px 8px rgba(80,50,10,0.3);transform:translateX(-50%) translateY(100%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
+.orc-rise-stick::before{content:" ";position:absolute;top:8%;left:0;right:0;height:1px;background:rgba(120,80,20,0.4);box-shadow:0 18px 0 rgba(120,80,20,0.25)}\
+.orc-stick-label{position:absolute;top:10%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.7rem;color:#3a1f08;letter-spacing:3px;font-weight:700;white-space:nowrap;text-shadow:0 1px 0 rgba(255,235,180,0.4)}\
+@keyframes orc-stickRiseV2{0%{transform:translateX(-50%) translateY(100%);opacity:0}20%{opacity:1}100%{transform:translateX(-50%) translateY(0);opacity:1}}\
 .orc-qiantong-wrap{width:140px;margin:0 auto 1rem}\
 .orc-qiantong-img{width:100%;height:auto;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4)}\
 .orc-card-info{background:url("img/oracle/oracle-scroll-bg.jpg?v=65w20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;border:2px solid #8b1a1a;border-radius:4px;padding:1.5rem 1.2rem;margin-bottom:1rem;position:relative;box-shadow:0 6px 20px rgba(0,0,0,0.4),inset 0 0 0 1px rgba(212,175,55,0.5)}\
