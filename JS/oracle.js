@@ -8,11 +8,12 @@
 'use strict';
 
 // v65d: 圖片版本號 — 部署新圖時改這裡,所有圖會自動帶 cache-bust 參數
-var IMG_V = '?v=67_20260503';
+var IMG_V = '?v=67f_20260503';
 var IMG = {
   deity:   'img/oracle/oracle-deity.png'+IMG_V,
   pray:    'img/oracle/oracle-pray.png'+IMG_V,
-  qiantong:'img/oracle/oracle-qiantong.png'+IMG_V,
+  qiantong:'img/oracle/oracle-qiantong-v67.png'+IMG_V,  // v67f: 全新 3D 寫實籤桶(深褐木+金龍雕)
+  qianStick:'img/oracle/oracle-qian-stick.png'+IMG_V,   // v67f: 全新 3D 寫實籤(深褐竹+金箔頭,搭配 CSS overlay 籤號)
   cardBg:  'img/oracle/oracle-card-bg.png'+IMG_V,
   smoke:   'img/oracle/oracle-smoke.png'+IMG_V,
   incense: 'img/oracle/oracle-incense.png'+IMG_V,
@@ -652,12 +653,18 @@ else if(_phase==='shaking'){
 h+='<div class="orc-fade orc-center-phase"><div class="orc-qiantong-shake-wrap"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img orc-tube-shake"></div><p class="orc-pray-text">搖籤筒中<span class="orc-dots"></span></p><p class="orc-note">靜候神明賜籤</p></div>';
 }
 else if(_phase==='rising'){
-// v67 修正:籤從籤桶內部由下往上浮現(配合新 CSS .orc-rise-stick-frame + translateY 動畫)
-//   結構:wrap → tube(z-index:2 在前) + stick-frame(z-index:1 在後,框出籤的區域)
-//        stick 在 frame 內,初始 translateY(100%) 藏在桶內,動畫往上推到 0
+// v67f:全新真實 3D 寫實圖 — 籤桶 + 籤都是 PNG,籤號用 CSS overlay 在金箔處
+//   結構:wrap → tube-img(z-index:3 在前蓋住籤底) + stick-frame(z-index:1 框籤可見區)
+//        stick-img 在 frame 內,初始 translateY(100%) 藏在桶內,動畫往上推到 0
+//        stick-label(籤號)絕對定位在籤的金箔頭區
 h+='<div class="orc-fade orc-center-phase"><div class="orc-rise-wrap">'+
    '<div class="orc-rise-tube"><img src="'+IMG.qiantong+'" alt="" class="orc-qiantong-img"></div>'+
-   '<div class="orc-rise-stick-frame"><div class="orc-rise-stick"><div class="orc-stick-label">第'+CN[_poem.n]+'籤</div></div></div>'+
+   '<div class="orc-rise-stick-frame">'+
+     '<div class="orc-rise-stick">'+
+       '<img src="'+IMG.qianStick+'" alt="" class="orc-rise-stick-img">'+
+       '<div class="orc-stick-label">第'+CN[_poem.n]+'籤</div>'+
+     '</div>'+
+   '</div>'+
    '</div><p class="orc-pray-text" style="margin-top:1.5rem">神明賜籤</p></div>';
 }
 else if(_phase==='drawn'){
@@ -1367,21 +1374,23 @@ css.textContent='\
 .orc-tube-shake{animation:orc-tubeShake 0.15s linear infinite}\
 @keyframes orc-tubeShake{0%{transform:translate(0,0) rotate(0)}20%{transform:translate(-4px,2px) rotate(-3deg)}40%{transform:translate(3px,-2px) rotate(2.5deg)}60%{transform:translate(-2px,-3px) rotate(-1.5deg)}80%{transform:translate(4px,1px) rotate(3deg)}100%{transform:translate(0,0) rotate(0)}}\
 \
-/* v67 修正:籤從籤桶內部由下往上浮現,不是平倒掀起 */\
-/*   要點:籤本身長度固定(不再 height 動畫變形)、整支身體初始藏在桶內、translateY 往上推 */\
+/* v67f 真實 3D 寫實圖版本 — 籤桶+籤都用 PNG,籤號 CSS overlay */\
+/*   尺寸計算:                                            */\
+/*   - 籤桶圖比例 1.42:1(高:寬),所以 width:160px → height:227px */\
+/*   - 籤圖比例 1:10(寬:高),所以 width:18px → height:180px       */\
+/*   - 籤頭金箔佔籤總高 15%(用 stick-label top:2% 對齊金箔中心)  */\
+/*   - frame 底部 bottom:30% 讓籤底端進入桶內                    */\
 .orc-rise-wrap{position:relative;width:200px;height:340px;margin:0 auto}\
 .orc-rise-tube{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:160px;z-index:3}\
-.orc-rise-tube .orc-qiantong-img{width:100%;border-radius:8px;display:block}\
-.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:30%;width:14px;height:170px;z-index:1}\
-/* 籤身=深褐色竹木(跟桶裡其他籤一樣),只有頂端一小段是金色貼籤(寫籤號) */\
-.orc-rise-stick{position:absolute;left:50%;bottom:0;width:14px;height:170px;background:linear-gradient(180deg,#a87942 0%,#8b5e2f 35%,#6b4520 70%,#4a2e10 100%);border-radius:2px 2px 1px 1px;box-shadow:0 3px 10px rgba(0,0,0,0.6),inset 1px 0 0 rgba(220,180,120,0.35),inset -1px 0 0 rgba(60,30,5,0.5);transform:translateX(-50%) translateY(100%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
-/* 籤頭=金色貼籤(籤號區),只佔頂端 28% 高度 */\
-.orc-rise-stick::after{content:" ";position:absolute;top:0;left:-3px;right:-3px;height:28%;background:linear-gradient(180deg,#fff0c8 0%,#f0d680 50%,#d4a847 100%);border-radius:2px 2px 0 0;box-shadow:0 0 8px rgba(255,210,120,0.5),inset 0 -1px 0 rgba(180,130,50,0.4);z-index:1}\
-.orc-rise-stick::before{content:" ";position:absolute;top:30%;left:0;right:0;height:1px;background:rgba(40,20,5,0.5)}\
-.orc-stick-label{position:absolute;top:3%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.55rem;color:#3a1f08;letter-spacing:1px;font-weight:700;white-space:nowrap;z-index:2;text-shadow:0 1px 0 rgba(255,235,180,0.5);max-height:24%}\
-@keyframes orc-stickRiseV2{0%{transform:translateX(-50%) translateY(100%);opacity:0}20%{opacity:1}100%{transform:translateX(-50%) translateY(0);opacity:1}}\
+.orc-rise-tube .orc-qiantong-img{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.5))}\
+.orc-rise-stick-frame{position:absolute;left:50%;transform:translateX(-50%);bottom:30%;width:18px;height:180px;z-index:1}\
+.orc-rise-stick{position:absolute;left:0;right:0;bottom:0;width:100%;height:100%;transform:translateY(100%);animation:orc-stickRiseV2 2.0s cubic-bezier(0.25,0.55,0.3,1) forwards;opacity:0}\
+.orc-rise-stick-img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.55))}\
+/* 籤號文字 — 絕對定位疊在籤的金箔頭區(top:2%,佔金箔範圍) */\
+.orc-stick-label{position:absolute;top:2%;left:50%;transform:translateX(-50%);writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;font-family:"DFKai-SB","BiauKai","KaiTi",serif;font-size:.55rem;color:#3a1f08;letter-spacing:1px;font-weight:700;white-space:nowrap;z-index:2;text-shadow:0 1px 0 rgba(255,235,180,0.4);max-height:14%;line-height:1.05}\
+@keyframes orc-stickRiseV2{0%{transform:translateY(100%);opacity:0}20%{opacity:1}100%{transform:translateY(0);opacity:1}}\
 .orc-qiantong-wrap{width:140px;margin:0 auto 1rem}\
-.orc-qiantong-img{width:100%;height:auto;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4)}\
+.orc-qiantong-img{width:100%;height:auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,0.45))}\
 .orc-card-info{background:url("img/oracle/oracle-scroll-bg.jpg?v=65w20260501") center/cover,linear-gradient(180deg,#f7eeda 0%,#efe4c8 50%,#f4ead0 100%);background-color:#f5ecd5;border:2px solid #8b1a1a;border-radius:4px;padding:1.5rem 1.2rem;margin-bottom:1rem;position:relative;box-shadow:0 6px 20px rgba(0,0,0,0.4),inset 0 0 0 1px rgba(212,175,55,0.5)}\
 .orc-card-info::before{content:"";position:absolute;inset:6px;border:1px solid rgba(139,26,26,0.25);pointer-events:none;border-radius:2px}\
 /* v65c: 紅金橫式匾額(籤號用) */\
@@ -1621,5 +1630,5 @@ css.textContent='\
 .orc-shrine-story-footer{margin-top:.7rem;padding-top:.5rem;border-top:1px dashed rgba(212,167,106,0.18);font-size:.68rem;color:rgba(201,167,119,0.5);font-style:italic;letter-spacing:1px;text-align:right}\
 ';
 document.head.appendChild(css);
-console.log('[Oracle] 靜月靈籤 v67 loaded — 神諭強化:60首靜月註(碧仙註傳承+雙面結構廟祝口吻)+ 同題警告籤(何必問祂)+ 典故顯眼處 + 笑陰筊神格化文案 + 入口神話化');
+console.log('[Oracle] 靜月靈籤 v67f loaded — 真實 3D 寫實籤桶+籤(PNG)+ 60首靜月註 + 同題警告籤(何必問祂)+ 典故顯眼處 + 笑陰筊神格化文案 + 入口神話化');
 })();
