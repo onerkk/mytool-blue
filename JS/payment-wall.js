@@ -1111,6 +1111,18 @@
     var paidTradeNo = params.get('paid');
     if (!paidTradeNo) return;
 
+    // v68.20.1 Bug #75 修:tradeNo 嚴格格式驗證,避免攻擊者用惡意 URL 注入 onclick / DOM
+    //   合法綠界 tradeNo 只含英數字 + 底線 + 連字號,長度 5-32 chars
+    //   攻擊路徑:用戶被誘導點 jingyue.uk/?paid=<script>... → 進入 _jyShowPaymentResultCard
+    //     → tradeNo 拼進 onclick 屬性 → 雖然 onclick 內是字串但 innerHTML 解析時 < 會破壞屬性
+    //   修法:驗格式不符直接忽略(視為 URL 異常)
+    if (!/^[a-zA-Z0-9_-]{5,32}$/.test(paidTradeNo)) {
+      console.warn('[Payment] 偵測到非法格式 tradeNo,忽略:', paidTradeNo);
+      // 清掉誤導性 URL
+      try { history.replaceState(null, '', window.location.pathname + window.location.hash); } catch(_) {}
+      return;
+    }
+
     // v60-hotfix7-g：診斷 log（生產環境也留著，只在付款回跳時印，頻率低）
     console.log('[Payment] 偵測到 ?paid=' + paidTradeNo + ' 回跳');
 
