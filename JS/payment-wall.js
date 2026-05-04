@@ -347,10 +347,13 @@
         return;
       }
       try {
+        // v68.20 Bug #25 配套:check-payment 加 session_token 讓 worker 驗 owner
+        var _pollSt = '';
+        try { _pollSt = window._JY_SESSION_TOKEN || localStorage.getItem('_jy_session') || ''; } catch(_) {}
         var resp = await fetch(WORKER_URL + '/check-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tradeNo: tradeNo })
+          body: JSON.stringify({ tradeNo: tradeNo, session_token: _pollSt })
         });
         var data = await resp.json();
         if (data.paid) {
@@ -398,9 +401,12 @@
         var btn = document.querySelector('#jy-paid-retry-card button');
         if (btn) { btn.disabled = true; btn.textContent = '驗證中...'; }
         try {
+          // v68.20 Bug #25 配套:check-payment 加 session_token 讓 worker 驗 owner
+          var _vfSt = '';
+          try { _vfSt = window._JY_SESSION_TOKEN || localStorage.getItem('_jy_session') || ''; } catch(_) {}
           var r = await fetch(WORKER_URL + '/check-payment', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tradeNo: tNo })
+            body: JSON.stringify({ tradeNo: tNo, session_token: _vfSt })
           });
           var d = await r.json();
           if (d.paid) {
@@ -717,10 +723,13 @@
     if (!pending || !pending.tradeNo) { alert('找不到付款紀錄'); return; }
 
     try {
+      // v68.20 Bug #25 配套:check-payment 加 session_token 讓 worker 驗 owner
+      var _cpuSt = '';
+      try { _cpuSt = window._JY_SESSION_TOKEN || localStorage.getItem('_jy_session') || ''; } catch(_) {}
       var resp = await fetch(WORKER_URL + '/check-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tradeNo: pending.tradeNo })
+        body: JSON.stringify({ tradeNo: pending.tradeNo, session_token: _cpuSt })
       });
       var data = await resp.json();
       if (data.paid) {
@@ -1100,9 +1109,12 @@
       var _serverType = null;
       var _serverToolMode = null;
       try {
+        // v68.20 Bug #25 配套:check-payment 加 session_token 讓 worker 驗 owner
+        var _vrSt = '';
+        try { _vrSt = window._JY_SESSION_TOKEN || localStorage.getItem('_jy_session') || ''; } catch(_) {}
         var vr = await fetch(WORKER_URL + '/check-payment', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tradeNo: paidTradeNo })
+          body: JSON.stringify({ tradeNo: paidTradeNo, session_token: _vrSt })
         });
         var vd = await vr.json();
         _verifiedPaid = !!vd.paid;

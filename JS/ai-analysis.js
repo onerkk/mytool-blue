@@ -14191,7 +14191,8 @@ function _injectAIButton() {
           '• 語氣像坐在你對面的人跟你說話' +
         '</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' +
-          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$' + window.JY_PRICES.OPUS_7D_MEMBER + '｜非會員 NT$' + window.JY_PRICES.OPUS_7D) +
+          // v68.20 Bug #31 修:會員制下架,只顯示單次價(後台會員仍可享優惠但前台不勸誘升級)
+          (admin ? '🔧 管理員・無限使用' : '單次 NT$' + window.JY_PRICES.OPUS_7D) +
         '</div>' +
       '</div>' +
     '</div>' +
@@ -14203,8 +14204,8 @@ function _buildOpusUpsellHTML() {
   var _opusPrice = (typeof window._jyOpusPriceFor === 'function')
     ? window._jyOpusPriceFor('full')
     : window.JY_PRICES.OPUS_7D; // fallback 非會員價
-  var _isPrem = (typeof window._jyIsPremium === 'function') ? window._jyIsPremium() : false;
-  var _subText = _isPrem ? '最強推理引擎・會員加購優惠' : '最強推理引擎';
+  // v68.20 Bug #31 修:會員制下架,移除「會員加購優惠」差異化文案
+  var _subText = '最強推理引擎';
   return '<div style="text-align:center;padding:.8rem 1rem 1rem;border-top:1px solid rgba(147,51,234,.1);margin-top:.5rem">' +
     '<button onclick="_handleOpusClick()" style="padding:.55rem 1.3rem;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.12),rgba(147,51,234,.04));color:#c084fc;font-size:.82rem;font-weight:600;border:1px solid rgba(147,51,234,.3);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + _opusPrice + '</button>' +
     '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' + _subText + '</div>' +
@@ -14272,7 +14273,7 @@ function _showOpusPayModal(code, mode) {
   if (!_isPrem) {
     var _memPrice = (mode === 'full') ? window.JY_PRICES.OPUS_7D_MEMBER
                  : (mode === 'ootk') ? window.JY_PRICES.OPUS_OOTK_MEMBER : window.JY_PRICES.OPUS_TAROT_MEMBER;
-    _opusHintMsg = '<div style="font-size:.66rem;color:#a78bfa;margin-bottom:.6rem;line-height:1.5">💡 高級會員加購優惠 NT$' + _memPrice + '（每月還送 1 次免費）</div>';
+    _opusHintMsg = '';
   }
   
   var monthlyMsg = (code === 'OPUS_MONTHLY_USED')
@@ -14296,9 +14297,9 @@ function _showOpusPayModal(code, mode) {
           '✦ 像坐在你對面的人跟你說話' +
         '</div>' +
       '</div>' +
+      // v68.20 Bug #31 修:會員制下架(前台不再有購買會員入口),只保留單次深度解析按鈕
       '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="_jyStartPayment(\'' + payMode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.18),rgba(147,51,234,.06));color:#c084fc;font-size:.9rem;font-weight:700;border:1.5px solid rgba(147,51,234,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(147,51,234,.12)">🔮 單次深度解析 ' + price + '</button>' +
-        '<button onclick="_jyStartPayment(\'' + payMode + '\',\'subscription\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:11px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.04));color:var(--c-gold);font-size:.82rem;font-weight:600;border:1px solid rgba(212,175,55,.25);cursor:pointer;font-family:inherit">🌙 查看會員方案（NT$' + window.JY_PRICES.SUB_STANDARD + '／NT$' + window.JY_PRICES.SUB_PREMIUM + '）</button>' +
         '<button onclick="document.getElementById(\'jy-opus-pay-modal\').remove()" style="width:200px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.1rem">返回</button>' +
       '</div>' +
     '</div>';
@@ -21718,7 +21719,7 @@ renderTarot = function(){
         var _errIcon = '🌙', _errTitle = '七維度免費體驗已用完', _errDesc = '單次購買繼續使用<br>標準 NT$' + window.JY_PRICES.SINGLE_7D + ' / 深度 NT$' + window.JY_PRICES.OPUS_7D + '';
         if (_errCode === '7D_MONTHLY_USED') { _errIcon = '📊'; _errTitle = '本月七維度配額已用完'; _errDesc = '單次購買繼續使用 NT$' + window.JY_PRICES.SINGLE_7D + '<br><a href="https://tw.shp.ee/c1VpkoKd" target="_blank" rel="noopener" style="color:rgba(212,175,55,.85);text-decoration:underline">或前往蝦皮選購水晶</a>'; }
         else if (_errCode === 'SUB_DAILY_USED') { _errIcon = '⏰'; _errTitle = '今日配額已用完'; _errDesc = '明天再來，或單次購買 NT$' + window.JY_PRICES.SINGLE_7D; }
-        else if (_errCode === 'PHOTO_MEMBER_ONLY') { _errIcon = '📷'; _errTitle = '手相分析是會員專屬'; _errDesc = '面相+水晶照片可以正常使用<br>手相功能保留給會員'; }
+        else if (_errCode === 'PHOTO_MEMBER_ONLY') { _errIcon = '📷'; _errTitle = '手相分析需付費解讀'; _errDesc = '面相+水晶照片可免費使用<br>手相分析請購買單次七維度 NT$' + window.JY_PRICES.SINGLE_7D; }
         resultDiv.innerHTML = '<div style="text-align:center;padding:1.2rem">' +
           '<div style="font-size:1.4rem;margin-bottom:.5rem">' + _errIcon + '</div>' +
           '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">' + _errTitle + '</div>' +
@@ -23753,7 +23754,8 @@ async function _triggerTarotAI() {
           '</button>' +
         '</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5">' +
-          (admin ? '🔧 管理員・無限使用' : '高級會員每月 1 次免費・加購優惠 NT$' + window.JY_PRICES.OPUS_TAROT_MEMBER + '｜非會員 NT$' + window.JY_PRICES.OPUS_TAROT) +
+          // v68.20 Bug #31 修:會員制下架,只顯示單次價(後台會員仍可享優惠但前台不勸誘升級)
+          (admin ? '🔧 管理員・無限使用' : '單次 NT$' + window.JY_PRICES.OPUS_TAROT) +
         '</div>' +
       '</div>';
     return;

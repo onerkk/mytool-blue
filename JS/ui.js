@@ -5624,8 +5624,13 @@ showAuraResult = function(){
         localStorage.setItem('_jy_sub_expires', String(data.expiresAt));
       } else {
         // 免費用戶
+        // v68.20 Bug #31 修:會員制下架,onclick 改觸發單次購買付費牆
+        //   原本送 _jyStartPayment('full','subscription') 會建立會員訂單(NT$999)
+        //   但前台已下架會員入口,點擊應該開啟付費牆讓用戶看到所有單次購買選項
+        //   用 _buildPaywallHTML 開 modal(包含三種工具的單次/Opus 按鈕)
         var _P = window.JY_PRICES || { SUB_STANDARD: 999 };
         var _upsellText = '單次購買 NT$' + _P.SINGLE_TAROT + ' 起';
+        var _openPaywall = "if(typeof _buildPaywallHTML==='function'){var _m=document.createElement('div');_m.id='jy-pay-modal';_m.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)';_m.innerHTML=_buildPaywallHTML('full');_m.addEventListener('click',function(e){if(e.target===_m)_m.remove();});document.body.appendChild(_m);}";
         var fs = data.freeStatus;
         if (fs) {
           var parts = [];
@@ -5637,17 +5642,17 @@ showAuraResult = function(){
           if (usedOotk < 1) parts.push('開鑰');
           if (parts.length > 0) {
             el.innerHTML = '✨ 免費體驗剩餘：<strong style="color:var(--c-gold)">' + parts.join('、') + '</strong> ・ ' +
-              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</span>';
+              '<span style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</span>';
           } else {
-            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</strong>';
+            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</strong>';
           }
         } else {
           var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 3;
           if (freeLeft > 0) {
             el.innerHTML = '✨ 免費體驗剩餘 <strong style="color:var(--c-gold)">' + freeLeft + '</strong> 次 ・ ' +
-              '<span style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</span>';
+              '<span style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</span>';
           } else {
-            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'subscription\')">' + _upsellText + '</strong>';
+            el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</strong>';
           }
         }
         localStorage.removeItem('_jy_sub_expires');
