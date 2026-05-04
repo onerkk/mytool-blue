@@ -2608,7 +2608,7 @@ function renderNotifications(list) {
       ${n.result && n.result.yesNo && n.result.yesNo.length ? `<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${n.result.yesNo.map(y => '<span style="font-size:10px;padding:1px 6px;border-radius:10px;border:1px solid rgba(212,175,55,.2);color:var(--text-dim)">' + esc(y.q||'') + '：' + esc(y.a||'') + '</span>').join('')}</div>` : ''}
       ${n.result && n.result.directAnswer ? `<div class="notify-q" style="margin-top:4px">📌 ${esc(n.result.directAnswer.substring(0, 300))}</div>` : ''}
       ${n.result && n.result.story ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">💬 完整 story（${n.result.story.length}字）</summary><div style="margin-top:4px;font-size:11px;color:var(--text);border-left:2px solid var(--accent);padding-left:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(n.result.story)}</div></details>` : (n.story ? `<details style="margin-top:6px"><summary style="font-size:11px;color:var(--text-dim);cursor:pointer">💬 story（舊格式）</summary><div style="margin-top:4px;font-size:11px;color:var(--text);border-left:2px solid var(--accent);padding-left:8px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${esc(n.story)}</div></details>` : '')}
-      ${n.result && n.result.layers ? `<div style="margin-top:4px;font-size:10px;color:var(--text-dim)">${Object.entries(n.result.layers).map(([k,v]) => k + '：' + esc(v)).join(' ｜ ')}</div>` : ''}
+      ${n.result && n.result.layers ? `<div style="margin-top:4px;font-size:10px;color:var(--text-dim)">${Object.entries(n.result.layers).map(([k,v]) => esc(k) + '：' + esc(v)).join(' ｜ ')}</div>` : ''}
       <div class="notify-badges">
         ${(function(){
           // ★ tier 顯示:展開「💰 付費」變成更精細的等級標記
@@ -3916,7 +3916,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v68.20.1-2026-05-04';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v68.20.2-2026-05-04';
 
 async function checkWorkerStatus() {
   try {
@@ -4547,12 +4547,16 @@ async function loadAdminUsers() {
     const data = await r.json();
     const users = data.users || [];
     if (!users.length) { el.innerHTML = '<div class="empty">尚未新增管理員帳號</div>'; return; }
-    el.innerHTML = users.map(email =>
-      `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px">
+    el.innerHTML = users.map(email => {
+      // v68.20.1 Bug #73 配套:email 完整 escape
+      const _e = email.replace(/[\\'"<>&`]/g, function(c){
+        return { "'":"\\'", '"':'&quot;', '<':'&lt;', '>':'&gt;', '&':'&amp;', '`':'&#96;', '\\\\':'\\\\\\\\' }[c] || c;
+      });
+      return `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--card-border);border-radius:10px;padding:12px 14px">
         <span style="font-size:13px">${esc(email)}</span>
-        <button onclick="removeAdminUser('${email.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;padding:2px 6px">✕</button>
-      </div>`
-    ).join('');
+        <button onclick="removeAdminUser('${_e}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:18px;padding:2px 6px">✕</button>
+      </div>`;
+    }).join('');
   } catch(e) { el.innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>'; }
 }
 
@@ -4770,7 +4774,11 @@ function renderUsersList(users) {
     //   高級會員 → [⬇️ 降為標準] [撤銷會員]
     //   標準會員 → [⬆️ 升為高級] [撤銷會員]
     //   免費      → [授予標準]   [授予高級]
-    const _emEsc = u.email.replace(/'/g,"\\'");
+    // v68.20.1 Bug #73 修:_emEsc 加完整 escape(避免特殊字元 email 破壞 onclick 屬性)
+    //   原本只 escape 單引號,若 email 含 < > " 等會破壞 HTML 結構或被當作 attribute 結束
+    const _emEsc = u.email.replace(/[\\'"<>&`]/g, function(c){
+      return { "'":"\\'", '"':'&quot;', '<':'&lt;', '>':'&gt;', '&':'&amp;', '`':'&#96;', '\\\\':'\\\\\\\\' }[c] || c;
+    });
     let subAction;
     if (isPremium) {
       subAction =
@@ -4787,7 +4795,10 @@ function renderUsersList(users) {
     }
 
     // v51：靜月記事本按鈕（卡片底部獨立一行）
-    const _emailEsc = u.email.replace(/'/g, "\\'");
+    // v68.20.1 Bug #73 修:_emailEsc 對齊 _emEsc 完整 escape
+    const _emailEsc = u.email.replace(/[\\'"<>&`]/g, function(c){
+      return { "'":"\\'", '"':'&quot;', '<':'&lt;', '>':'&gt;', '&':'&amp;', '`':'&#96;', '\\\\':'\\\\\\\\' }[c] || c;
+    });
     const memoryBtn = `<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(108,123,255,.15)"><button onclick="openMemoryModal('${_emailEsc}','${esc(u.name || '')}')" style="padding:5px 12px;border-radius:6px;background:rgba(108,123,255,.08);color:var(--accent);border:1px solid rgba(108,123,255,.25);font-size:11px;cursor:pointer;font-weight:600">📖 記事本</button></div>`;
 
     // v64.C:單次購買「配額」顯示 + 編輯(7 池,各別已用/上限)
