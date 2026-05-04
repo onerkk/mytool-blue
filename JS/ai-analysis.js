@@ -22849,7 +22849,7 @@ function _buildShareBarHTML(mode) {
       'border:1.5px solid rgba(' + ac + ',.3);color:rgba(' + ac + ',.95);' +
       'font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s' +
     '"><i class="fas fa-image" style="font-size:.78rem"></i>存分享圖</button>' +
-    '<button onclick="if(navigator.share){navigator.share({title:\'靜月之光\',text:(window._jyClosingText||\'命理解讀\')+\' ✨ 免費體驗 👉 https://jingyue.uk\',url:\'https://jingyue.uk\'}).then(function(){if(typeof unlockExtraFeatures===\'function\')unlockExtraFeatures()}).catch(function(){})}else{navigator.clipboard.writeText((window._jyClosingText||\'\')+\' https://jingyue.uk\').then(function(){alert(\'已複製！可貼到 LINE 分享給朋友\');if(typeof unlockExtraFeatures===\'function\')unlockExtraFeatures()})}" style="' +
+    '<button onclick="(function(){var _ct=String(window._jyClosingText||\'命理解讀\').replace(/https?:\\/\\/[^\\s]+/gi,\'\').replace(/[\\x00-\\x1F]+/g,\' \').replace(/\\s{2,}/g,\' \').trim().slice(0,200);if(navigator.share){navigator.share({title:\'靜月之光\',text:_ct+\' ✨ 免費體驗 👉 https://jingyue.uk\',url:\'https://jingyue.uk\'}).then(function(){if(typeof unlockExtraFeatures===\'function\')unlockExtraFeatures()}).catch(function(){})}else{navigator.clipboard.writeText(_ct+\' https://jingyue.uk\').then(function(){alert(\'已複製！可貼到 LINE 分享給朋友\');if(typeof unlockExtraFeatures===\'function\')unlockExtraFeatures()})}})()" style="' +
       'display:flex;align-items:center;gap:6px;padding:.6rem 1.1rem;border-radius:12px;' +
       'background:transparent;border:1px solid rgba(255,255,255,.1);' +
       'color:var(--c-text-dim);font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .2s' +
