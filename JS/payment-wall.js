@@ -891,7 +891,15 @@
           var _b2 = JSON.parse(opts.body);
           _isAiFetch = !!(_b2.payload && !_b2.action);
           if (_isAiFetch && _b2.payload) {
-            _isFollowUp = !!(_b2.payload.followUp || _b2.payload.mode === 'followup' || (_b2.payload.followup_index !== undefined && _b2.payload.followup_index >= 0));
+            // v68.20 Bug #40 修:正確識別追問
+            //   原本: _b2.payload.followUp(永遠 undefined,實際在 tarotData.followUp)
+            //         _b2.payload.mode === 'followup'(實際是 tarot_followup / full_followup)
+            //         _b2.payload.followup_index(前端從未設定)
+            //   修法:看 payload.mode 是否為任何 followup 類型 + tarotData.followUp 是否存在
+            var _pm = _b2.payload.mode || '';
+            _isFollowUp = (_pm === 'tarot_followup' || _pm === 'full_followup' || _pm === 'followup' ||
+              !!(_b2.payload.tarotData && _b2.payload.tarotData.followUp) ||
+              !!_b2.payload.followUp);
             _isOpusFetch = !!(_b2.payload.depth === 'opus' || _b2.payload.useOpus || window._jyOpusDepth);
           }
         } catch(_) {}
@@ -986,8 +994,23 @@
     // ── 60 秒安全網(極罕見邊界) ──
     //   如果 60 秒內有 AI fetch 成功但 token 沒清(理論上不該發生),強清
     //   60 秒內沒成功的 → 保留 token 給用戶重試(這正是新架構的優勢)
+    // v68.20 Bug #41 修:檢查 token 寫入時間,避免清掉「fetch hook 安裝後才買的新 token」
+    //   攻擊情境:用戶 0 秒打開頁面 → fetch hook 安裝 + 60s timer 啟動 → 10 秒做完一次 AI(_aiFetchSuccessSeen=true)
+    //     → 30 秒從付款導回寫新 token → 60s timer 觸發 → 看到「有 token 但 _aiFetchSuccessSeen=true」 → 誤清!
+    //   修法:再驗 _jy_paid_token_at 時間戳,只清「安全網啟動前就存在的 token」
+    var _hookInstallTime = Date.now();
     setTimeout(function() {
       if (_aiFetchSuccessSeen && localStorage.getItem('_jy_paid_token')) {
+        // 檢查 token 是否在 hook 安裝後才寫入(代表是新買的,不該清)
+        var _tokenAt = parseInt(localStorage.getItem('_jy_paid_token_at') || '0');
+        if (_tokenAt && _tokenAt > _hookInstallTime) {
+          _jyLog('SAFETY NET SKIP', {
+            reason: 'token written after hook install',
+            tokenAt: _tokenAt,
+            hookAt: _hookInstallTime
+          });
+          return;
+        }
         _jyLog('CLEAR paid_token (60s safety net)', {
           token: localStorage.getItem('_jy_paid_token'),
           type: localStorage.getItem('_jy_paid_token_type'),
@@ -1108,6 +1131,7 @@
       var _verifiedPaid = false;
       var _serverType = null;
       var _serverToolMode = null;
+      var _ownerMismatch = false;
       try {
         // v68.20 Bug #25 配套:check-payment 加 session_token 讓 worker 驗 owner
         var _vrSt = '';
@@ -1120,8 +1144,27 @@
         _verifiedPaid = !!vd.paid;
         _serverType = vd.type || null;          // v64.F BUG #4:server 回的真實 type
         _serverToolMode = vd.toolMode || null;  // v64.F BUG #4:server 回的真實 toolMode
+        // v68.20 Bug #39 修:owner 不符時明確標記,避免用戶看到「等待付款確認」誤以為自己沒付完
+        //   情境:用戶 A 付完分享網址給 B,B 點開 → ?paid=ABC123 → check-payment 回 OWNER_MISMATCH
+        //   原本 _verifiedPaid=false → 顯示「等待付款確認」橘卡 → B 困惑(我又沒付為什麼要我等)
+        if (vd.code === 'OWNER_MISMATCH') _ownerMismatch = true;
       } catch(e) {
         console.warn('[Payment] check-payment 失敗:', e);
+      }
+
+      // v68.20 Bug #39 修:owner 不符 → 顯示明確錯誤,清掉誤導性 URL,不顯示「等待付款」UI
+      if (_ownerMismatch) {
+        console.warn('[Payment] tradeNo 不屬於當前帳號,可能是分享連結被別人開啟');
+        var _omCard = document.createElement('div');
+        _omCard.id = 'jy-paid-retry-card';
+        _omCard.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:99998;max-width:90%;width:340px;background:linear-gradient(145deg,#3a1818,#2a1010);border:1.5px solid rgba(248,113,113,.45);border-radius:14px;padding:1.1rem 1rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.5)';
+        _omCard.innerHTML =
+          '<div style="font-size:1.6rem;margin-bottom:.4rem">⚠️</div>' +
+          '<div style="font-size:1rem;color:#fca5a5;font-weight:700;margin-bottom:.4rem">此付款連結不屬於當前帳號</div>' +
+          '<div style="font-size:.78rem;color:#fecaca;line-height:1.6;margin-bottom:.9rem">這個訂單是其他帳號的付款。如果你要購買解讀,請從下方付費按鈕重新建立訂單。</div>' +
+          '<button onclick="document.getElementById(\'jy-paid-retry-card\').remove()" style="width:100%;padding:10px;border-radius:10px;background:rgba(248,113,113,.15);color:#fca5a5;font-size:.86rem;font-weight:600;border:1px solid rgba(248,113,113,.3);cursor:pointer;font-family:inherit">關閉</button>';
+        document.body.appendChild(_omCard);
+        return;
       }
 
       // v64.F BUG #4 修補:優先順序為 server > localStorage > hard-coded
