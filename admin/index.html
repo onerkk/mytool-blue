@@ -169,12 +169,20 @@ textarea.worker-editor:focus{border-color:var(--accent)}
   <div class="header">
     <h1><span>🌙</span> 靜月之光 管理後台 <a href="https://jingyue.uk" id="adminSiteLink" target="_blank" style="font-size:12px;background:rgba(255,255,255,.15);padding:4px 12px;border-radius:6px;color:#fff;margin-left:8px;text-decoration:none">前往網站 ↗</a></h1>
     <div id="googleAuthBar" style="margin-top:8px;display:flex;align-items:center;gap:8px;font-size:12px"></div>
-    <!-- v67:worker 版本顯示(部署後在這看到 = 部署成功) -->
-    <div id="adminWorkerVersionBar" style="margin-top:6px;display:flex;align-items:center;gap:10px;font-size:11px;color:rgba(255,255,255,.7);flex-wrap:wrap">
-      <span id="adminWorkerVersion" style="background:rgba(255,255,255,.1);padding:3px 10px;border-radius:6px;font-family:monospace">⏳ 載入中...</span>
-      <span id="adminWorkerNotes" style="font-size:11px;opacity:.8"></span>
-      <span id="adminWorkerDeployed" style="font-size:11px;opacity:.7"></span>
-      <button onclick="loadWorkerVersion(true)" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer">🔄 重新檢查</button>
+    <!-- v68.20 改善:版本顯示 UI(原本 NOTES 直接塞 header 一行,手機上會擠 14 行佔半個畫面) -->
+    <div id="adminWorkerVersionBar" style="margin-top:6px;font-size:11px;color:rgba(255,255,255,.7)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span id="adminWorkerVersion" style="background:rgba(255,255,255,.1);padding:3px 10px;border-radius:6px;font-family:monospace">⏳ 載入中...</span>
+        <span id="adminWorkerDeployed" style="font-size:11px;opacity:.7"></span>
+        <button id="adminNotesToggle" onclick="document.getElementById('adminWorkerNotesPanel').style.display=document.getElementById('adminWorkerNotesPanel').style.display==='none'?'block':'none';this.textContent=this.textContent==='📋 詳情 ▼'?'📋 詳情 ▲':'📋 詳情 ▼';" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer;display:none">📋 詳情 ▼</button>
+        <button onclick="loadWorkerVersion(true)" style="background:rgba(255,255,255,.1);border:none;color:#fff;padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer">🔄 重新檢查</button>
+      </div>
+      <!-- 警示:本地預期版本 vs worker 回傳版本不一致 -->
+      <div id="adminWorkerVersionWarn" style="display:none;margin-top:6px;padding:6px 10px;border-radius:6px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);color:#fde68a;font-size:11px;line-height:1.5"></div>
+      <!-- 折疊式 NOTES 詳情(預設隱藏,避免擠爆畫面) -->
+      <div id="adminWorkerNotesPanel" style="display:none;margin-top:8px;padding:10px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);font-size:11px;line-height:1.7;color:rgba(255,255,255,.8);max-height:240px;overflow-y:auto;word-break:break-word">
+        <span id="adminWorkerNotes"></span>
+      </div>
     </div>
   </div>
 
@@ -3905,6 +3913,11 @@ function downloadInventoryJSON() {
 // ═══════════════════════════════════════════════
 // Worker Management
 // ═══════════════════════════════════════════════
+// v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
+//   部署 worker.js 後 /version 回傳的版本應該等於這個值
+//   不一致 → 黃色警告提醒重新部署
+const ADMIN_EXPECTED_WORKER_VERSION = 'v68.20.1-2026-05-04';
+
 async function checkWorkerStatus() {
   try {
     const r = await fetch(`${WORKER_URL}/version`);
@@ -3913,13 +3926,46 @@ async function checkWorkerStatus() {
     document.getElementById('workerStatusText').textContent = '運行中';
     document.getElementById('workerVersion').textContent = `版本: ${data.version || 'unknown'} | 部署: ${data.deployed ? new Date(data.deployed).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}) : '-'}`;
 
-    // v67:同步更新 header 的版本顯示
+    // v68.20 改善:header 版本顯示 — 動態抽主版本號(避免寫死 v67)
     var hv = document.getElementById('adminWorkerVersion');
     var hn = document.getElementById('adminWorkerNotes');
     var hd = document.getElementById('adminWorkerDeployed');
-    if (hv) hv.innerHTML = '<strong style="color:#a78bfa">v67</strong> · ' + (data.version || 'unknown');
-    if (hn && data.notes) hn.textContent = '· ' + data.notes;
-    if (hd && data.deployed) hd.textContent = '· 部署於 ' + new Date(data.deployed).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'});
+    var hwarn = document.getElementById('adminWorkerVersionWarn');
+    var hToggle = document.getElementById('adminNotesToggle');
+
+    var rawVer = data.version || 'unknown';
+    // 從 'v68.20-2026-05-04' 抽出 'v68'
+    var majorVer = (rawVer.match(/^v\d+/) || ['?'])[0];
+
+    if (hv) {
+      hv.innerHTML = '<strong style="color:#a78bfa">' + majorVer + '</strong> · ' + rawVer;
+    }
+    if (hn && data.notes) {
+      hn.textContent = data.notes;
+      // notes 有內容才顯示「詳情」按鈕
+      if (hToggle) hToggle.style.display = 'inline-block';
+    } else if (hToggle) {
+      hToggle.style.display = 'none';
+    }
+    if (hd && data.deployed) {
+      // 部署時間用較短格式(僅顯示 MM/DD HH:mm)節省空間
+      var _depDate = new Date(data.deployed);
+      hd.textContent = '· ' + (_depDate.getMonth()+1) + '/' + _depDate.getDate() + ' ' +
+        String(_depDate.getHours()).padStart(2,'0') + ':' + String(_depDate.getMinutes()).padStart(2,'0');
+    }
+
+    // v68.20 改善:版本不一致警告
+    if (hwarn) {
+      if (rawVer !== ADMIN_EXPECTED_WORKER_VERSION && rawVer !== 'unknown') {
+        hwarn.style.display = 'block';
+        hwarn.innerHTML = '⚠️ <strong>偵測到 worker 版本與本後台預期不符</strong><br>' +
+          '<span style="opacity:.85">後台預期: <code style="color:#fde68a">' + ADMIN_EXPECTED_WORKER_VERSION + '</code></span><br>' +
+          '<span style="opacity:.85">Worker 回傳: <code style="color:#fde68a">' + rawVer + '</code></span><br>' +
+          '<span style="opacity:.7">→ 請使用下方 Worker 管理區塊重新部署 worker.js</span>';
+      } else {
+        hwarn.style.display = 'none';
+      }
+    }
   } catch(e) {
     document.getElementById('workerDot').className = 'status-dot offline';
     document.getElementById('workerStatusText').textContent = '離線';
@@ -4386,7 +4432,22 @@ function handleWorkerFile(e) {
   const reader = new FileReader();
   reader.onload = function(ev) {
     workerFileContent = ev.target.result;
-    document.getElementById('workerFileName').textContent = `✓ ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+    // v68.20 改善:從檔案內容抽 WORKER_VERSION 字串,讓 admin 部署前就知道將部署什麼版本
+    //   避免「上傳錯檔案還按部署」的悲劇
+    let _fileVer = null;
+    try {
+      const _m = workerFileContent.match(/const\s+WORKER_VERSION\s*=\s*['"]([^'"]+)['"]/);
+      if (_m) _fileVer = _m[1];
+    } catch(_) {}
+    let _label = `✓ ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+    if (_fileVer) {
+      // 比對檔案版本 vs 後台期望版本,給顏色標示
+      const _match = (_fileVer === ADMIN_EXPECTED_WORKER_VERSION);
+      _label += ` <span style="color:${_match ? '#4ade80' : '#fbbf24'};font-weight:600">| 版本: ${_fileVer}${_match ? ' ✓' : ' ⚠ 與後台預期不符'}</span>`;
+    } else {
+      _label += ` <span style="color:#f87171">| ⚠ 偵測不到 WORKER_VERSION 字串(可能不是 worker.js)</span>`;
+    }
+    document.getElementById('workerFileName').innerHTML = _label;
     document.getElementById('btnDeploy').disabled = false;
   };
   reader.readAsText(file);
@@ -4423,8 +4484,46 @@ async function deployWorker() {
     const result = await r.json();
     
     if (result.success) {
-      toast('✓ Worker 部署成功！');
-      checkWorkerStatus();
+      // v68.20 改善:部署後完整驗證流程
+      //   1. 等 3 秒讓 Cloudflare CDN 真的同步新版本
+      //   2. 抓 /version 比對是否 = 期望版本
+      //   3. 若一致 → 提示「是否套用 v68 最佳預設」
+      //   4. 若不一致 → 警告(可能 CDN 沒同步完,3 秒不夠 → 再等)
+      toast('⏳ 部署成功,驗證新版本中...');
+      btn.textContent = '⏳ 驗證新版本中...';
+
+      // 第 1 階段:等 3 秒
+      await new Promise(r => setTimeout(r, 3000));
+
+      // 第 2 階段:檢查版本
+      let _verifiedVer = null;
+      try {
+        const _vr = await fetch(`${WORKER_URL}/version?_t=${Date.now()}`, { cache: 'no-store' });
+        const _vd = await _vr.json();
+        _verifiedVer = _vd.version || null;
+      } catch(_) {}
+
+      // 第 3 階段:更新 header 顯示
+      await checkWorkerStatus();
+
+      // 第 4 階段:給用戶明確反饋
+      if (_verifiedVer === ADMIN_EXPECTED_WORKER_VERSION) {
+        // 部署成功且版本對得上 → 詢問是否套用最佳預設
+        toast('✅ 部署成功!版本: ' + _verifiedVer);
+        setTimeout(() => {
+          if (confirm('✅ Worker 部署成功(' + _verifiedVer + ')\n\n是否立即套用 v68.17 最佳預設?\n\n這會把所有後台開關設成「賺一半」最佳值(advisor 關 / Best-of-N 關 / 1h cache 關 / Opus effort=high / Sonnet effort=medium / 熔斷 $2.5)。\n\n建議每次部署後都執行一次,確保 KV 沒殘留舊值。')) {
+            // 觸發既有的 applyV68Defaults 函式
+            if (typeof applyV68Defaults === 'function') applyV68Defaults();
+          }
+        }, 800);
+      } else if (_verifiedVer) {
+        // 版本回傳但不等於期望 → CDN 還沒同步,或檔案版本字串本身不是最新
+        toast('⚠️ 部署成功但版本驗證未通過');
+        alert('⚠️ Cloudflare 回報部署成功,但 /version 偵測到的版本是「' + _verifiedVer + '」,跟後台預期的「' + ADMIN_EXPECTED_WORKER_VERSION + '」不同。\n\n可能原因:\n① CDN 還沒同步(等 30-60 秒後按 🔄 重新檢查)\n② 上傳的 worker.js 檔案不是最新版(WORKER_VERSION 字串對不上)\n③ Cloudflare 後台啟用了多版本路由(舊版仍在跑一部分流量)');
+      } else {
+        // /version 連不上
+        toast('⚠️ 部署完成但 /version 無回應');
+      }
     } else {
       const errMsg = result.errors?.map(e => e.message).join(', ') || result.error || '部署失敗';
       toast('✗ ' + errMsg);
