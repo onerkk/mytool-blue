@@ -20943,6 +20943,11 @@ renderTarot = function(){
     if(isV3){
 
       function _safeHtml(s){
+        // v68.20.8 Bug #119:加 null/undefined/non-string 防呆
+        //   原本若 s 為 undefined/null/number,.replace 會拋 TypeError
+        //   實務上 AI 回傳偶爾缺欄位,造成整個 render fail
+        if (s === null || s === undefined) return '';
+        if (typeof s !== 'string') s = String(s);
         return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
       }
 
@@ -24411,7 +24416,12 @@ function _renderTarotAIResult(container, r, admin) {
 
   // ═══ v23e 新結構：directAnswer → story → crossReading → closing → cardReadings(收合) ═══
   if (r.atmosphere || r.cardReadings || r.story) {
-    var _esc = function(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>'); };
+    // v68.20.8 Bug #120 配套:加 null/non-string 防呆
+    var _esc = function(s) {
+      if (s === null || s === undefined) return '';
+      if (typeof s !== 'string') s = String(s);
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    };
     var drawn = (S.tarot && S.tarot.drawn) ? S.tarot.drawn : drawnCards || [];
 
     // ── story：完整故事（對話氣泡＋金句高亮）──
@@ -25286,7 +25296,8 @@ async function _triggerTarotFollowUp() {
         _unlockFuBtn();
         return;
       }
-      if (data.error && (data.code === 'FOLLOWUP_RATE_LIMITED' || data.code === 'FREE_RATE_LIMITED' || data.code === 'FREE_USED_UP')) {
+      if (data.error && (data.code === 'FOLLOWUP_RATE_LIMITED' || data.code === 'FREE_RATE_LIMITED' || data.code === 'FREE_USED_UP' || data.code === 'FREE_USED_UP_RACE')) {
+        // v68.20.9 Bug #131:加 FREE_USED_UP_RACE(worker Bug #99 race 拒絕的 code)
         try { clearInterval(_fuBarTimer); } catch(_) {}
         try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
         // 一律路由到追問付費牆
@@ -26343,7 +26354,13 @@ function _cleanAITerms(s) {
   return s;
 }
 
-function _esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// v68.20.8 Bug #120:加 null/non-string 防呆
+//   原本 (s || '').replace 在 s=0/false 時會丟失資料,在 s=number 時直接拋錯(.replace 不存在於 number)
+function _esc(s) {
+  if (s === null || s === undefined) return '';
+  if (typeof s !== 'string') s = String(s);
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 // ═══════════════════════════════════════════════════════════════
 // P0：靜月對話氣泡渲染器
@@ -26762,7 +26779,8 @@ window._jyStartOOTK = function() {
       document.body.appendChild(md);
     } else {
       // v60-hotfix11：FREE_IP_USED 當作 FREE_USED_UP 的變體處理（用「此網路已用過」文案）
-      var _ootkFreeUp = (data.code === 'FREE_USED_UP' || data.code === 'FREE_IP_USED');
+      // v68.20.9 Bug #131:加 FREE_USED_UP_RACE(worker race 拒絕的 code)
+      var _ootkFreeUp = (data.code === 'FREE_USED_UP' || data.code === 'FREE_IP_USED' || data.code === 'FREE_USED_UP_RACE');
       var _ootkIpUsed = (data.code === 'FREE_IP_USED');
       var em = document.getElementById('ootk-used-modal');
       if (em) em.remove();
