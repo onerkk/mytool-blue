@@ -549,6 +549,17 @@ function detectSpreadType(question, type) {
   var q = (question || '').trim();
   var qMarks = (q.match(/[？?]/g) || []).length;
 
+  // ★ GD-6,7 修復:加 fifteen_card 與 mathers_21 觸發詞
+  //   前端用戶用關鍵字觸發 GD/Crowley 標準塔羅 spread 與 Mathers 1888 古法
+  // 0.1 GD/Crowley Fifteen-Card Method (15 張英式牌陣)
+  if (/金色黎明.*牌陣|GD.*牌陣|英式.*牌陣|fifteen.?card|十五.?張|Crowley.*牌陣/i.test(q)) {
+    return 'fifteen_card';
+  }
+  // 0.2 Mathers 1888 三排七古法
+  if (/Mathers.*牌陣|1888.*牌陣|三排七|三排.*七|二十一.?張|21.?張.*牌陣|過去現在未來.*牌陣/i.test(q)) {
+    return 'mathers_21';
+  }
+
   // 0. 多子問題（3個以上問號）→ 凱爾特十字
   if (qMarks >= 3) return 'celtic_cross';
 

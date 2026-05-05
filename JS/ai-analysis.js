@@ -25628,6 +25628,18 @@ function _buildOOTKPayload() {
 
   // ★ v28：關鍵牌帶牌義（根據問題類型匹配）
   var _ootkFocus = (S.form && S.form.type) ? S.form.type : 'general';
+
+  // ★ GD 修復:取得 GD 補充資料(Mathers 1888 + Court dignity)
+  //   主塔羅模式在 buildTarotData 已預先在每張 card 上掛這些欄位
+  //   OOTK 路徑用獨立 shuffleNewDeck,牌物件沒掛,所以這裡即時計算
+  function _ootkGetMathersMeaning(c, isUp) {
+    if (!c || !window.ootkMathers1888Meanings) return '';
+    var rawName = c.n || c.name || '';
+    var m = window.ootkMathers1888Meanings[rawName];
+    if (!m) return '';
+    return isUp ? (m.up || '') : (m.rv || '');
+  }
+
   function cardStrFull(c) {
     if (!c) return '?';
     var s = cardStr(c);
@@ -25649,6 +25661,9 @@ function _buildOOTKPayload() {
     var kw = isUp ? (c.kwUp || '') : (c.kwRv || '');
     if (kw) s += '〔' + kw + '〕';
     if (meaning) s += '→' + meaning;
+    // ★ GD-8 套入 OOTK:Mathers 1888 原書牌義(雙路線判讀的另一條)
+    var mathersM = _ootkGetMathersMeaning(c, isUp);
+    if (mathersM) s += '【Mathers 1888:' + mathersM + '】';
     return s;
   }
 
@@ -25787,6 +25802,25 @@ function _buildOOTKPayload() {
 
     // ── 活躍堆完整牌面（所有階段都送，帶 focusType 牌義）── ★ v37 #6
     if (idx > 0 && op.activeCards && op.activeCards.length) {
+      // ★ GD-10 套入 OOTK:活躍堆花色多寡 Mathers 原始讀法
+      //   主塔羅 mode 在 preStats 預先算好,OOTK 路徑沒 preStats,即時算
+      var _suitCountActive = { wand: 0, cup: 0, sword: 0, pent: 0, major: 0 };
+      op.activeCards.forEach(function(_c) {
+        if (_c && _suitCountActive.hasOwnProperty(_c.suit)) _suitCountActive[_c.suit]++;
+      });
+      var _domSuit = null, _domCount = 0;
+      ['wand', 'cup', 'sword', 'pent'].forEach(function(_s) {
+        if (_suitCountActive[_s] > _domCount) { _domSuit = _s; _domCount = _suitCountActive[_s]; }
+      });
+      if (_domSuit && op.activeCards.length >= 4 && _domCount / op.activeCards.length >= 0.4) {
+        var _domSuitMathers = {
+          wand:  '權杖密集 → Mathers 讀「feasting 宴飲、慶祝、社交聚會、活力四射」',
+          cup:   '聖杯密集 → Mathers 讀「lovemaking 愛戀、感情糾葛、親密關係主題」',
+          sword: '寶劍密集 → Mathers 讀「quarrelling and trouble 爭吵、糾紛、麻煩、思緒紛亂」',
+          pent:  '金幣密集 → Mathers 讀「money 金錢、財務、物質事務」'
+        };
+        lines.push('★ GD-10 花色觀察:' + _domSuitMathers[_domSuit] + '(' + _domCount + '/' + op.activeCards.length + '張)');
+      }
       lines.push('活躍堆共 ' + op.activeCards.length + ' 張：\n  ' + op.activeCards.map(function(c){ return cardStrFull(c); }).join('\n  '));
     }
 
@@ -25832,6 +25866,25 @@ function _buildOOTKPayload() {
           if (dig.leftDignity && dig.leftDignity !== 'none') digParts.push('左鄰：' + (_digZhKey[dig.leftDignity] || dig.leftDignity));
           if (dig.rightDignity && dig.rightDignity !== 'none') digParts.push('右鄰：' + (_digZhKey[dig.rightDignity] || dig.rightDignity));
           if (digParts.length) text += '（本元素：' + (dig.cardElement||'') + '，' + digParts.join('，') + '）';
+        }
+        // ★ GD-3,4 套入 OOTK:Court Card 三層讀法 + well/ill-dignified
+        //   主塔羅 mode 在 buildTarotData 已預先注入 c.gdCourtAnalysis,但 OOTK 路徑沒有
+        //   這裡即時計算:用 keyCards 的左右鄰 (依 activeCards 序列) 算 dignity
+        if (typeof window.ootkAnalyzeCourtCard === 'function' && (c.rank === 'king' || c.rank === 'queen' || c.rank === 'knight' || c.rank === 'page')) {
+          // 從 activeCards 找這張的位置
+          var pos = (op.activeCards && typeof kc.position === 'number') ? kc.position : -1;
+          if (pos >= 0 && op.activeCards) {
+            var leftN = pos > 0 ? op.activeCards[pos - 1] : null;
+            var rightN = pos < op.activeCards.length - 1 ? op.activeCards[pos + 1] : null;
+            try {
+              var courtA = window.ootkAnalyzeCourtCard(c, leftN, rightN);
+              if (courtA) {
+                if (courtA.dignityState) text += '【GD:' + courtA.dignityState + '】';
+                if (courtA.illMeaning && courtA.dignityState === 'ill') text += '【ill 含義:' + courtA.illMeaning.substring(0, 25) + '】';
+                if (courtA.wellMeaning && courtA.dignityState === 'well') text += '【well 含義:' + courtA.wellMeaning.substring(0, 25) + '】';
+              }
+            } catch(_e) { /* silent */ }
+          }
         }
         lines.push(text);
       });
