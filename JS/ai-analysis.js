@@ -23411,14 +23411,24 @@ function _buildTarotOnlyPayload() {
 
   // ── 1. Elemental Dignity（元素尊貴）──
   // 金色黎明核心：相鄰牌的元素互動決定牌的強度
-  // 火+風=互助 水+土=互助 火+水=削弱 風+土=削弱 火+土=中性 水+風=中性
+  // ⚠️ Bug TR-3 修(2026-05):GD 原始系統沒有 neutral
+  //   權威來源(Anthony Louis 引用 Book T、Mary K. Greer、Tarosophy):
+  //     「The Golden Dawn had only 3 categories: greatly strengthening,
+  //      greatly weakening, and friendly. Neutrality is a modern misconception.」
+  //   原本「火+土=neutral, 水+風=neutral」是錯誤
+  //   正確規則:
+  //     同元素 (火+火/水+水...) = strengthen (極強)
+  //     對立 (火+水, 風+土) = weaken (極弱)
+  //     同 active (火+風) = friendly_strong (主動友好,加強)
+  //     同 passive (水+土) = friendly_strong (被動友好,加強)
+  //     active+passive (火+土, 風+水) = friendly_mild (溫和友好,小幅加強)
   var _edMap = {
-    '火+風':'strengthen','風+火':'strengthen',
-    '水+土':'strengthen','土+水':'strengthen',
-    '火+水':'weaken','水+火':'weaken',
-    '風+土':'weaken','土+風':'weaken',
-    '火+土':'neutral','土+火':'neutral',
-    '水+風':'neutral','風+水':'neutral'
+    '火+風':'friendly_strong','風+火':'friendly_strong',  // active+active
+    '水+土':'friendly_strong','土+水':'friendly_strong',  // passive+passive
+    '火+水':'weaken','水+火':'weaken',                    // 對立
+    '風+土':'weaken','土+風':'weaken',                    // 對立
+    '火+土':'friendly_mild','土+火':'friendly_mild',      // active+passive(舊版誤標 neutral)
+    '水+風':'friendly_mild','風+水':'friendly_mild'       // passive+active(舊版誤標 neutral)
   };
   // 把大阿卡那的行星/星座元素歸到四元素
   function _toBaseEl(el) {
@@ -23447,6 +23457,21 @@ function _buildTarotOnlyPayload() {
     9: [0, 1, 5, 8]    // outcome ↔ core, obstacle, future, hopes_fears
   };
   var _isCeltic = /celtic/i.test(_spreadId);
+  // Bug TR-3 修配套:轉換 _edMap 標籤為數值分數
+  //   friendly_strong: +1.0(原 strengthen)
+  //   friendly_mild:   +0.5(原 neutral 重新定義)
+  //   weaken:          -1.0(原本就是 -1)
+  //   同元素(火+火等):  +1.5(極強增益,Book T 強調 same-suit cards strengthen greatly)
+  function _edDelta(thisEl, otherEl) {
+    if (!thisEl || !otherEl) return 0;
+    if (thisEl === otherEl) return 1.5; // 同元素極強
+    var k = thisEl + '+' + otherEl;
+    var label = _edMap[k];
+    if (label === 'friendly_strong') return 1.0;
+    if (label === 'friendly_mild')   return 0.5;
+    if (label === 'weaken')          return -1.0;
+    return 0;
+  }
   for (var ei = 0; ei < cards.length; ei++) {
     var thisEl = _toBaseEl(drawn[ei] ? drawn[ei].el : '');
     var edScore = 0;
@@ -23455,34 +23480,46 @@ function _buildTarotOnlyPayload() {
       _celticSemanticNeighbors[ei].forEach(function(ni) {
         if (ni >= cards.length) return;
         var nEl = _toBaseEl(drawn[ni] ? drawn[ni].el : '');
-        if (thisEl && nEl) {
-          var k = thisEl + '+' + nEl;
-          if (_edMap[k] === 'strengthen') edScore++;
-          else if (_edMap[k] === 'weaken') edScore--;
-        }
+        edScore += _edDelta(thisEl, nEl);
       });
-      // 正規化到 -2~+2 區間
-      if (edScore > 2) edScore = 2;
-      if (edScore < -2) edScore = -2;
+      // 正規化到 -3~+3 區間(更細,因含同元素 +1.5)
+      if (edScore > 3) edScore = 3;
+      if (edScore < -3) edScore = -3;
     } else {
       // 非 Celtic Cross：保持原本的線性相鄰
       var prevEl = ei > 0 ? _toBaseEl(drawn[ei-1] ? drawn[ei-1].el : '') : '';
       var nextEl = ei < cards.length - 1 ? _toBaseEl(drawn[ei+1] ? drawn[ei+1].el : '') : '';
-      if (prevEl && thisEl) {
-        var k1 = thisEl + '+' + prevEl;
-        if (_edMap[k1] === 'strengthen') edScore++;
-        else if (_edMap[k1] === 'weaken') edScore--;
-      }
-      if (nextEl && thisEl) {
-        var k2 = thisEl + '+' + nextEl;
-        if (_edMap[k2] === 'strengthen') edScore++;
-        else if (_edMap[k2] === 'weaken') edScore--;
-      }
+      edScore += _edDelta(thisEl, prevEl);
+      edScore += _edDelta(thisEl, nextEl);
     }
     edResults.push(edScore);
     cards[ei].edScore = edScore;
-    cards[ei].edLabel = edScore >= 2 ? '極強' : edScore === 1 ? '增強' : edScore === 0 ? '正常' : edScore === -1 ? '削弱' : '極弱';
+    // Bug TR-3 修:edLabel 重新定義對應新分數
+    if (edScore >= 2.5)      cards[ei].edLabel = '極強';
+    else if (edScore >= 1.0) cards[ei].edLabel = '增強';
+    else if (edScore >= -0.5) cards[ei].edLabel = '中性'; // 顯示用語仍可叫中性,但實際意義是「弱友好」
+    else if (edScore >= -2)  cards[ei].edLabel = '削弱';
+    else                     cards[ei].edLabel = '極弱';
     cards[ei].baseElement = thisEl;
+    // Bug TR-4 補:GD Book T「夾在對立中」規則
+    //   原文:「If a card fall between two other which are mutually contrary,
+    //         it is not much affected by either.」
+    //   情境:中央牌左右是「火」和「水」(互為對立) → 中央牌幾乎不受影響
+    //         同樣「風」和「土」也是互為對立
+    //   這時不論中央牌是什麼元素,influence 都被抵消 → edLabel='孤立'
+    if (!_isCeltic && ei > 0 && ei < cards.length - 1) {
+      var leftEl = _toBaseEl(drawn[ei-1] ? drawn[ei-1].el : '');
+      var rightEl = _toBaseEl(drawn[ei+1] ? drawn[ei+1].el : '');
+      var isOpposite = (leftEl === '火' && rightEl === '水') ||
+                       (leftEl === '水' && rightEl === '火') ||
+                       (leftEl === '風' && rightEl === '土') ||
+                       (leftEl === '土' && rightEl === '風');
+      if (isOpposite) {
+        cards[ei].edScore = 0;
+        cards[ei].edLabel = '孤立(夾對立)';
+        edResults[ei] = 0;
+      }
+    }
   }
 
   // ── 2. 牌位關係預判（Card Relationships）──
