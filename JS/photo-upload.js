@@ -92,12 +92,21 @@ function removePhoto(key) {
   if (!Object.keys(window._jyPhotos).length) window._jyPhotos = null;
 }
 
-function createUploadSlot(key, field) {
+function createUploadSlot(key, field, privileged) {
   var slot = document.createElement('div');
   slot.className = 'jy-photo-slot';
   slot.id = 'photo-slot-' + key;
+  // v68.21 Bug #9 修:手相欄位若非付費身份(會員/admin/單次配額),顯示「付費解鎖」徽章
+  //   讓用戶在點擊前就知道這是付費功能,避免上傳後才被 worker PHOTO_MEMBER_ONLY 擋下
+  //   注意:配額制下「privileged」目前只看會員+admin,單次購買的 paid_quota 用戶仍會看到徽章
+  //         但 worker 端 gate 會放行(已付費)。徽章只是「警示」非「阻擋」。
+  var _isPalm = (key === 'palmLeft' || key === 'palmRight');
+  var _lockBadge = (_isPalm && !privileged)
+    ? '<span style="position:absolute;top:4px;right:4px;font-size:.55rem;padding:2px 6px;border-radius:6px;background:rgba(192,132,252,.18);color:#c084fc;border:1px solid rgba(192,132,252,.4);font-weight:600;letter-spacing:.02em;z-index:1">💎 付費解鎖</span>'
+    : '';
   slot.innerHTML =
-    '<div class="jy-photo-btn" id="photo-btn-' + key + '">' +
+    '<div class="jy-photo-btn" id="photo-btn-' + key + '" style="position:relative">' +
+      _lockBadge +
       '<i class="fas ' + field.icon + '"></i>' +
       '<span class="jy-photo-label">' + field.label + '</span>' +
       '<span class="jy-photo-hint">' + field.hint + '</span>' +
@@ -281,7 +290,8 @@ function renderPhotoUpload(tool, forceRefresh) {
 
   var grid = document.getElementById('jy-photo-grid');
   fields.forEach(function(key) {
-    var slot = createUploadSlot(key, PHOTO_FIELDS[key]);
+    // v68.21 Bug #9:傳 privileged 旗標給 createUploadSlot,讓手相欄位顯示「付費解鎖」徽章
+    var slot = createUploadSlot(key, PHOTO_FIELDS[key], privileged);
     grid.appendChild(slot);
     if (window._jyPhotos && window._jyPhotos[key]) {
       var btn = slot.querySelector('.jy-photo-btn');

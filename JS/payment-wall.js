@@ -16,9 +16,11 @@
     //   原本只有定價，額度欄位散在 _buildPaywallHTML 各處用 || N 補，維護混亂
     //   pricing-loader 失敗時這裡是最後保命
     // v68.20 Bug #19 修:OPUS_OOTK / OPUS_OOTK_MEMBER 從 120 改 140(對齊 worker.js PRICE_OPUS_OOTK)
+    // v68.20 Bug #19 修:OPUS_OOTK / OPUS_OOTK_MEMBER 從 120 改 140(對齊 worker.js PRICE_OPUS_OOTK)
+    // v68.21 Bug #1 修:SINGLE_OOTK 60→70 對齊 worker v68.13 升價
     return (window.JY_PRICES && typeof window.JY_PRICES === 'object') ? window.JY_PRICES : {
       SUB_STANDARD: 999, SUB_PREMIUM: 1999,
-      SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 60,
+      SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 70,
       FOLLOWUP: 15,
       OPUS_7D: 140, OPUS_TAROT: 60, OPUS_OOTK: 140,
       OPUS_7D_MEMBER: 140, OPUS_TAROT_MEMBER: 60, OPUS_OOTK_MEMBER: 140,
@@ -110,12 +112,10 @@
         '<button onclick="_jyStartPayment(\'' + mode + '\',\'opus_single\')" style="width:100%;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.1),rgba(147,51,234,.04));color:#c084fc;font-size:.82rem;font-weight:600;border:1px solid rgba(147,51,234,.25);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + opusPriceNonMember + '</button>' +
         '<div style="font-size:.58rem;color:var(--c-text-muted,#7a7060);opacity:.75;line-height:1.5;margin-top:.1rem">單次僅限信用卡・含一次追問 NT$' + PRICE_SINGLE_FOLLOWUP + '</div>' +
 
+        // v68.21 Bug #6 修:會員制下架後 ATM/超商沒對應商品,移除誤導 icons
         '<div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;margin-top:.35rem">' +
           '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">💳信用卡</span>' +
-          '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">🏧ATM</span>' +
-          '<span style="font-size:.6rem;padding:.15rem .4rem;border-radius:5px;background:rgba(255,255,255,.05);color:var(--c-text-muted)">🏪超商</span>' +
         '</div>' +
-        '<div style="font-size:.58rem;color:var(--c-text-muted);margin-top:.15rem;opacity:.5">ATM／超商僅限會員訂閱</div>' +
         '<div style="font-size:.58rem;color:var(--c-text-muted);margin-top:.1rem;opacity:.5">付款由綠界科技安全處理</div>' +
 
         '<button onclick="var m=document.getElementById(\'jy-pay-modal\');if(m){m.remove();return;} var p=this.closest(\'[style*=text-align]\');if(p)p.innerHTML=\'<div style=padding:1rem;text-align:center;color:var(--c-text-muted);font-size:.8rem>需要時隨時回來 🌙</div>\';" style="width:100%;padding:9px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);font-size:.75rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.3rem">先不用，謝謝</button>' +

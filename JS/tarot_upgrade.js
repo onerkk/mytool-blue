@@ -4984,7 +4984,8 @@ enhanceTarot = function(tarot) {
           '<div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:.6rem">' +
             '<button onclick="window._jyOpusDepth=false;if(window._ootkTriggerAI&&window._ootkResults)window._ootkTriggerAI(window._ootkResults)" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:rgba(212,175,55,.06);border:1.5px solid rgba(212,175,55,.25);color:var(--c-gold);cursor:pointer;font-family:inherit;text-align:left">' +
               '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">⚡ 標準解讀</div>' +
-              '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">每日免費 1 次<br>五層深潛解讀<br>速度快・適合日常</div>' +
+              // v68.21 Bug #2 修:OOTK 沒免費,文案改「需付費解鎖」(後端 FREE_OOTK_LIMIT=0)
+              '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">需付費解鎖<br>五層深潛解讀<br>速度快・適合日常</div>' +
             '</button>' +
             '<button onclick="if(typeof _handleOpusClickForMode===\'function\')_handleOpusClickForMode(\'ootk\')" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.08),rgba(212,175,55,.04));border:1.5px solid rgba(147,51,234,.3);color:#c084fc;cursor:pointer;font-family:inherit;text-align:left">' +
               '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">🔮 深度解析</div>' +
@@ -4993,20 +4994,11 @@ enhanceTarot = function(tarot) {
           '</div>' +
           '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5">' +
             (admin ? '🔧 管理員・無限使用' : (function(){
-              // v64.C:會員制下架,只顯示身份/單次價,不勸誘升級
-              var _tier = localStorage.getItem('_jy_user_tier') || '';
-              var _isPrem = (_tier === 'premium');
-              var _isMember = parseInt(localStorage.getItem('_jy_sub_expires')||'0') > Date.now();
+              // v64.C:會員制下架,只顯示單次價
+              // v68.21 Bug #8 修:會員下架後不再顯示「高級會員每月免費」分支(此資訊不該對前台一般用戶顯示)
               var _P = window.JY_PRICES || {};
               // v68.20 Bug #19/#31 修:fallback 對齊 worker.js PRICE_OPUS_OOTK = 140
               var _single = _P.OPUS_OOTK || 140;
-              var _memberAddon = _P.OPUS_OOTK_MEMBER || 140;
-              if (_isPrem) {
-                return '💎 高級會員・每月免費 1 次 ・ 加購單次 NT$' + _memberAddon;
-              }
-              if (_isMember) {
-                return '👑 標準會員・單次 NT$' + _single;
-              }
               return '單次 NT$' + _single;
             })()) +
           '</div>' +
@@ -5236,7 +5228,7 @@ enhanceTarot = function(tarot) {
         wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
           '<div style="font-size:2rem;margin-bottom:.5rem">🔑</div>' +
           '<div style="font-size:.9rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">開鑰之法需付費解鎖</div>' +
-          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem">NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 39) + ' · 五次獨立讀盤(Book T 正統)</div>' +
+          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem">NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70) + ' · 五次獨立讀盤(Book T 正統)</div>' +
           '<button onclick="_jyStartOOTK()" style="padding:.6rem 1.2rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1px solid rgba(255,255,255,.1);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🔑 付費解鎖</button></div>';
       } else {
         wrap.innerHTML = '<div style="text-align:center;padding:1rem"><div style="color:#f87171;font-size:.82rem;margin-bottom:.6rem">連線不順，請再試一次</div>' +

@@ -14,7 +14,7 @@
     SUB_PREMIUM: 1999,        // 高級會員 / 月
     SINGLE_7D: 70,            // 七維度 Sonnet 單次(標準) v64.B 79→70
     SINGLE_TAROT: 30,         // 塔羅 Sonnet 單次(標準) v64.B 39→30
-    SINGLE_OOTK: 60,          // 開鑰 Sonnet 單次(標準) v64.B 39→60
+    SINGLE_OOTK: 70,          // v68.21 Bug #1 修:60→70 對齊 worker v68.13 PRICE_SINGLE_OOTK
     FOLLOWUP: 15,             // 追問單次（Sonnet）v64.B 29→15
     OPUS_7D: 140,             // 七維度 Opus 單次(深度) v64.B 169→140
     OPUS_TAROT: 60,           // 塔羅 Opus 單次(深度) v64.B 79→60
@@ -179,7 +179,7 @@ function _jyShowLoginGate() {
     '<div style="max-width:340px;width:88%;text-align:center">' +
       '<div style="font-size:2.4rem;margin-bottom:1rem">🌙</div>' +
       '<div style="font-size:1.2rem;color:#d4af37;font-weight:700;margin-bottom:.4rem">靜月之光</div>' +
-      '<div style="font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.8rem">使用前請先登入 Google 帳號<br>每個帳號每天享有免費額度</div>' +
+      '<div style="font-size:.85rem;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:1.8rem">使用前請先登入 Google 帳號<br>七維度・塔羅 各享 1 次免費體驗</div>' +
       '<button onclick="if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin();" style="width:240px;padding:14px;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.08));color:#d4af37;font-size:.92rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto">' +
         '<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>' +
         'Google 登入' +
@@ -5366,7 +5366,7 @@ showAuraResult = function(){
 })();;
 
 // ═══════════════════════════════════════════════════════════════
-// 首頁重設計 + 每日免費額度管控
+// 首頁重設計 + 配額管控(v68.21:總量制免費+單次購買配額,不再每日)
 // 拿掉六宮格，改為神秘感單一入口
 // ═══════════════════════════════════════════════════════════════
 (function() {
@@ -5478,7 +5478,7 @@ showAuraResult = function(){
       '<div style="max-width:320px;width:88%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2.2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
         '<div style="font-size:2.8rem;margin-bottom:1rem;filter:drop-shadow(0 0 12px rgba(212,175,55,.3))">🔐</div>' +
         '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.6rem;font-family:var(--f-display,serif)">請先登入</h3>' +
-        '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:1.2rem">深度命理解讀需要登入 Google 帳號<br>每個帳號每天享有免費額度</p>' +
+        '<p style="font-size:.85rem;color:var(--c-text-dim,#a09880);line-height:1.7;margin-bottom:1.2rem">深度命理解讀需要登入 Google 帳號<br>七維度・塔羅 各享 1 次免費體驗</p>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
           '<button onclick="document.getElementById(\'jy-login-modal\').remove();if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin();" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Google 登入</button>' +
           '<button onclick="document.getElementById(\'jy-login-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">稍後再說</button>' +
@@ -5493,7 +5493,7 @@ showAuraResult = function(){
     if (!hookScreen) return;
 
     var isAdmin = !!(window._JY_ADMIN_TOKEN);
-    var used = _checkUsedToday();
+    // v68.21:_checkUsedToday() 移除(v40 起改總量制,函數仍保留供舊邏輯參考但不再呼叫)
 
     // 保留粒子背景
     var particles = hookScreen.querySelector('.particles');
@@ -5558,7 +5558,7 @@ showAuraResult = function(){
         '<div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
         (isAdmin ?
           '<div class="jy-home-quota">👑 管理員・無限次</div>' :
-          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅・開鑰 各免費體驗 1 次・ <strong style="color:var(--c-gold)">塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 60) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + '</strong></div>'
+          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅 各免費體驗 1 次・開鑰需付費解鎖 ・ <strong style="color:var(--c-gold)">塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + '</strong></div>'
         ) +
       '</div>' +
 
@@ -5580,13 +5580,16 @@ showAuraResult = function(){
 
   // ★ v40：首頁載入時即時查詢剩餘次數（打 Worker KV）
   (function _checkSubStatus() {
-    // 先用本地快取快速顯示
+    // v68.21 Bug #10 修:不再用 localStorage 直接顯示「會員啟用中」
+    //   原本 _jy_sub_expires > now → 直接秀「🌙 會員啟用中」
+    //   但用戶被 admin 撤銷會員時 localStorage 沒清,會閃出假會員顯示
+    //     直到 worker 真實查詢覆蓋(200-1000ms)
+    //   修法:本地快取只用來顯示「驗證中」,不再宣告會員身份;真實狀態由下方 fetch 決定
     var subExpires = parseInt(localStorage.getItem('_jy_sub_expires') || '0');
     if (subExpires > Date.now()) {
       var el = document.getElementById('jy-home-quota-text');
       if (el) {
-        var daysLeft = Math.ceil((subExpires - Date.now()) / 86400000);
-        el.innerHTML = '🌙 <strong style="color:var(--c-gold)">會員啟用中</strong> ・ 剩餘 ' + daysLeft + ' 天';
+        el.innerHTML = '<span style="opacity:.6">驗證會員狀態中…</span>';
       }
     }
     // 有登入才打 Worker 查即時數據
@@ -5632,14 +5635,19 @@ showAuraResult = function(){
         var _upsellText = '單次購買 NT$' + _P.SINGLE_TAROT + ' 起';
         var _openPaywall = "if(typeof _buildPaywallHTML==='function'){var _m=document.createElement('div');_m.id='jy-pay-modal';_m.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)';_m.innerHTML=_buildPaywallHTML('full');_m.addEventListener('click',function(e){if(e.target===_m)_m.remove();});document.body.appendChild(_m);}";
         var fs = data.freeStatus;
+        // v68.21 Bug #2 修:讀真實 freeLimits(後端 v68.19 已回傳),OOTK 預設 0 不再進 avail
+        var fl = data.freeLimits || { '7d': 1, tarot: 1, ootk: 0 };
         if (fs) {
           var parts = [];
           var used7d = parseInt(fs['7d'] || 0);
           var usedTarot = parseInt(fs['tarot'] || 0);
           var usedOotk = parseInt(fs['ootk'] || 0);
-          if (used7d < 1) parts.push('七維度');
-          if (usedTarot < 1) parts.push('塔羅');
-          if (usedOotk < 1) parts.push('開鑰');
+          var lim7d = parseInt(fl['7d'] || 1);
+          var limTarot = parseInt(fl.tarot || 1);
+          var limOotk = parseInt(fl.ootk || 0);
+          if (lim7d > 0 && used7d < lim7d) parts.push('七維度');
+          if (limTarot > 0 && usedTarot < limTarot) parts.push('塔羅');
+          if (limOotk > 0 && usedOotk < limOotk) parts.push('開鑰');
           if (parts.length > 0) {
             el.innerHTML = '✨ 免費體驗剩餘：<strong style="color:var(--c-gold)">' + parts.join('、') + '</strong> ・ ' +
               '<span style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</span>';
@@ -5647,7 +5655,8 @@ showAuraResult = function(){
             el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</strong>';
           }
         } else {
-          var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 3;
+          // v68.21:fallback 從 3 改 2(七維度+塔羅 各 1,OOTK 沒免費)
+          var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 2;
           if (freeLeft > 0) {
             el.innerHTML = '✨ 免費體驗剩餘 <strong style="color:var(--c-gold)">' + freeLeft + '</strong> 次 ・ ' +
               '<span style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</span>';
@@ -6036,7 +6045,7 @@ async function submitTarotQuick() {
           modal.innerHTML = '<div style="background:var(--c-bg-card,#1a1208);border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:2rem 1.5rem;max-width:320px;text-align:center">' +
             '<div style="font-size:2rem;margin-bottom:.6rem">🃏</div>' +
             '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">此工具免費體驗已用完</div>' +
-            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">三套工具各可免費體驗 1 次<br>用完可單次購買繼續(塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 60) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + ')</div>' +
+            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">七維度・塔羅 各可免費體驗 1 次・開鑰需付費解鎖<br>用完可單次購買繼續(塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + ')</div>' +
             '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
               '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 塔羅單次 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + '</button>' +
               '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用了</button>' +

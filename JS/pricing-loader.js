@@ -17,12 +17,14 @@
   var PRICING_CACHE_KEY = '_jy_pricing_cache';
   var PRICING_CACHE_TTL = 5 * 60 * 1000; // 5 分鐘本地快取
 
-  // ── 硬編保底值(v68.20 與 worker 同步,worker 掛掉時用)──
+  // ── 硬編保底值(v68.21 與 worker 同步,worker 掛掉時用)──
   // v68.20 Bug #19 修:OPUS_OOTK / OPUS_OOTK_MEMBER 從 120 改 140(對齊 worker.js 144/148 行 PRICE_OPUS_OOTK = 140)
   //   原本 fetch /pricing 失敗時前端顯示 NT$120,但用戶按下付款 worker 寫入 NT$140 → 顯示與實付不一致
+  // v68.21 Bug #1 修:SINGLE_OOTK 從 60 改 70(對齊 worker.js 140 行 PRICE_SINGLE_OOTK = 70, v68.13 升價漏改)
+  //   後果同上:前端顯示 60 用戶按付款卻是 70 → 投訴
   var HARDCODED_FALLBACK = {
     SUB_STANDARD: 999, SUB_PREMIUM: 1999,
-    SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 60,
+    SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 70,
     FOLLOWUP: 15,
     OPUS_7D: 140, OPUS_TAROT: 60, OPUS_OOTK: 140,
     OPUS_7D_MEMBER: 140, OPUS_TAROT_MEMBER: 60, OPUS_OOTK_MEMBER: 140,

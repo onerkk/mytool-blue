@@ -10179,7 +10179,7 @@ function runAnalysisV2(){
   // r-answer / r-factors / r-suggest 清空，只保留 AI 按鈕
   document.getElementById('r-answer').innerHTML = '';
   
-  // ═══ AI 深度解析按鈕（每日一次免費）═══
+  // ═══ AI 深度解析按鈕（v68.21:總量制免費,不再「每日」）═══
   try{ _injectAIButton(); }catch(e){ console.error('[AI] button inject error:', e); }
   
   // 隱藏舊的「完整問答分析」卡（已併入主區）
@@ -14015,7 +14015,7 @@ function generateAIConclusion(type, prob, bazi, mh, tarot){
 
 // ── AI Worker: _buildPayload + _requestAI + inject (lines 38749-38967) ──
 // ═══════════════════════════════════════════════════════════════════
-// AI 多維命理深度解讀（按鈕觸發・每日一次免費・管理員無限）
+// AI 多維命理深度解讀（按鈕觸發・終身免費 1 次・管理員無限）v68.21:總量制不再每日
 // ═══════════════════════════════════════════════════════════════════
 
 const AI_WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
@@ -14101,18 +14101,16 @@ function _aiPersonKey(){
     return 'p_'+Math.abs(hash);
   }catch(e){ return 'p_anon'; }
 }
+// v68.21 Bug #3 修:_aiUsedToday 強制回 false
+//   v40 起後端改總量制(free_total + paid_quota),前端不該再用 localStorage 判斷「今日用過」
+//   會誤擋有 paid_quota 的用戶(用戶今天用免費後又買單次,本函數仍回 true 擋住付費路徑)
+//   修法:函數保留供舊呼叫不爆,但永遠回 false,讓 worker 端真實 quota 把關
+//   _aiMarkUsed 保留(寫 localStorage 不影響其他邏輯,可作 admin debug 軌跡)
 function _aiUsedToday() {
-  try {
-    var d=JSON.parse(localStorage.getItem(AI_USED_KEY)||'{}');
-    var today=_aiLocalDate();
-    var person=_aiPersonKey();
-    if(d.date!==today) return false;
-    if(d.person===person && d.used) return true;
-    if(d.people && d.people[person] && d.people[person].used) return true;
-    return false;
-  } catch(e){ return false; }
+  return false;
 }
 function _aiMarkUsed() {
+  // v68.21:保留寫入(供 admin debug),但 _aiUsedToday 不再讀
   try{
     var today=_aiLocalDate();
     var person=_aiPersonKey();
@@ -14144,8 +14142,8 @@ function _injectAIButton() {
     wrap.innerHTML = 
       '<div style="text-align:center;padding:1.5rem 1rem .5rem">' +
       '<div style="font-size:1.2rem;margin-bottom:.5rem">🔒</div>' +
-      '<div style="font-size:.9rem;color:var(--c-gold);font-weight:600;margin-bottom:.3rem">今日免費額度已用盡</div>' +
-      '<div style="font-size:.72rem;color:var(--c-text-dim);opacity:.6;margin-bottom:1rem">塔羅 / 七維度 各免費體驗 1 次</div>' +
+      '<div style="font-size:.9rem;color:var(--c-gold);font-weight:600;margin-bottom:.3rem">免費額度已用盡</div>' +
+      '<div style="font-size:.72rem;color:var(--c-text-dim);opacity:.6;margin-bottom:1rem">塔羅 / 七維度 各享 1 次免費體驗</div>' +
       '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'single\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 七維度單次 NT$' + window.JY_PRICES.SINGLE_7D + '</button>' +
       '</div>' +
       // ★ 即使免費用完，仍顯示 Opus 付費入口
@@ -14173,7 +14171,7 @@ function _injectAIButton() {
         // 標準 Sonnet
         '<button id="btn-depth-standard" onclick="window._jyOpusDepth=false;_triggerAIDeep()" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:rgba(212,175,55,.06);border:1.5px solid rgba(212,175,55,.25);color:var(--c-gold);cursor:pointer;font-family:inherit;text-align:left">' +
           '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">⚡ 標準解讀</div>' +
-          '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">每日免費 1 次<br>七系統交叉驗證<br>給答案給時間給方向</div>' +
+          '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">免費 1 次<br>七系統交叉驗證<br>給答案給時間給方向</div>' +
         '</button>' +
         // Opus 深度
         '<button id="btn-depth-opus" onclick="_handleOpusClick()" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.08),rgba(212,175,55,.04));border:1.5px solid rgba(147,51,234,.3);color:#c084fc;cursor:pointer;font-family:inherit;text-align:left;position:relative">' +
@@ -14281,15 +14279,8 @@ function _showOpusPayModal(code, mode) {
     ? window._jyOpusPriceFor(mode)
     : ((mode === 'full') ? window.JY_PRICES.OPUS_7D
        : (mode === 'ootk') ? window.JY_PRICES.OPUS_OOTK : window.JY_PRICES.OPUS_TAROT);
-  var _isPrem = (typeof window._jyIsPremium === 'function') ? window._jyIsPremium() : false;
   var price = 'NT$' + _opusPrice;
-  // v64.B:會員制下架,所有用戶單次價統一(會員加購無折扣)
-  var _opusHintMsg = '';
-  if (!_isPrem) {
-    var _memPrice = (mode === 'full') ? window.JY_PRICES.OPUS_7D_MEMBER
-                 : (mode === 'ootk') ? window.JY_PRICES.OPUS_OOTK_MEMBER : window.JY_PRICES.OPUS_TAROT_MEMBER;
-    _opusHintMsg = '';
-  }
+  // v68.21:_opusHintMsg dead code 移除(會員加購無折扣後此變數永遠空字串)
   
   var monthlyMsg = (code === 'OPUS_MONTHLY_USED')
     ? '<div style="font-size:.72rem;color:#fbbf24;margin-bottom:.6rem">本月免費深度解析額度已用完</div>'
@@ -14303,7 +14294,6 @@ function _showOpusPayModal(code, mode) {
       '<div style="font-size:2.5rem;margin-bottom:.6rem">🔮</div>' +
       '<h3 style="color:#c084fc;font-size:1.1rem;margin-bottom:.2rem;font-family:var(--f-display,serif)">深度解析</h3>' +
       monthlyMsg +
-      _opusHintMsg +
       '<div style="text-align:left;padding:.6rem .7rem;border-radius:10px;background:rgba(147,51,234,.06);border:1px solid rgba(147,51,234,.12);margin-bottom:1rem">' +
         '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.7">' +
           '✦ 最強推理引擎，因果鏈深挖到底<br>' +
@@ -23766,7 +23756,7 @@ async function _triggerTarotAI() {
         '<div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:.6rem">' +
           '<button onclick="window._jyOpusDepth=false;_triggerTarotAI()" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:rgba(212,175,55,.06);border:1.5px solid rgba(212,175,55,.25);color:var(--c-gold);cursor:pointer;font-family:inherit;text-align:left">' +
             '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">⚡ 標準解讀</div>' +
-            '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">每日免費 1 次<br>牌面故事弧線解讀<br>給答案給時間給方向</div>' +
+            '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">免費 1 次<br>牌面故事弧線解讀<br>給答案給時間給方向</div>' +
           '</button>' +
           '<button onclick="window._jyOpusDepth=true;_handleOpusClickForMode(\'tarot\')" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.08),rgba(139,92,246,.04));border:1.5px solid rgba(147,51,234,.3);color:#c084fc;cursor:pointer;font-family:inherit;text-align:left">' +
             '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">🔮 深度解析</div>' +
@@ -24703,6 +24693,7 @@ function _showTrialBanner() {
     if (document.getElementById('jy-trial-banner')) return;
     
     var fs = window._jyFreeStatus;
+    var fl = window._jyFreeLimits || { '7d': 1, tarot: 1, ootk: 0 };
     var usesLeft = window._jyFreeUsesLeft;
     if (usesLeft == null && !fs) return;
     
@@ -24713,9 +24704,13 @@ function _showTrialBanner() {
     var usesText = '';
     if (fs) {
       var avail = [];
-      if (!fs['7d'] || fs['7d'] < 1) avail.push('七維度');
-      if (!fs.tarot || fs.tarot < 1) avail.push('塔羅');
-      if (!fs.ootk || fs.ootk < 1) avail.push('開鑰');
+      // v68.21 Bug #2 修:讀真實 limit,OOTK(=0)不再列為「免費可用」
+      var _l7d = parseInt(fl['7d'] || 1);
+      var _lTarot = parseInt(fl.tarot || 1);
+      var _lOotk = parseInt(fl.ootk || 0);
+      if (_l7d > 0 && (!fs['7d'] || fs['7d'] < _l7d)) avail.push('七維度');
+      if (_lTarot > 0 && (!fs.tarot || fs.tarot < _lTarot)) avail.push('塔羅');
+      if (_lOotk > 0 && (!fs.ootk || fs.ootk < _lOotk)) avail.push('開鑰');
       usesText = avail.length > 0 ? '免費體驗剩餘：<strong style="color:rgba(212,175,55,.8)">' + avail.join('、') + '</strong>' : '免費體驗已全部用完';
     } else {
       usesText = usesLeft > 0 ? '還剩 <strong style="color:rgba(212,175,55,.8)">' + usesLeft + '</strong> 次免費' : '免費體驗已全部用完';
@@ -26740,7 +26735,7 @@ window._jyStartOOTK = function() {
     return;
   }
 
-  // ── 查每日免費額度 ──
+  // ── 查 OOTK 配額(v68.21:總量制+配額制,不再每日) ──
   var _ootkCheckBody = { action: 'check', payload: { mode: 'ootk' } };
   if (window._JY_SESSION_TOKEN) _ootkCheckBody.session_token = window._JY_SESSION_TOKEN;
   // ★ Bug #12 fix: 開鑰 precheck 漏帶 paid_token，已付費用戶被誤擋跳付費牆
@@ -26756,7 +26751,7 @@ window._jyStartOOTK = function() {
   .then(function(r) { return r.json(); })
   .then(function(data) {
     if (data.allowed) {
-      // 每日免費額度還在 → 直接開始
+      // 配額充足(會員/單次/admin) → 直接開始
       if (typeof startOOTK === 'function') startOOTK();
       else if (typeof startOOTKFlow === 'function') startOOTKFlow();
     } else if (data.code === 'LOGIN_REQUIRED') {
@@ -26805,9 +26800,23 @@ window._jyStartOOTK = function() {
       document.body.appendChild(md);
     }
   })
-  .catch(function() {
-    // fetch 失敗 → 寬容放行
-    if (typeof startOOTK === 'function') startOOTK();
-    else if (typeof startOOTKFlow === 'function') startOOTKFlow();
+  .catch(function(_e) {
+    // v68.21 Bug #4 修:OOTK precheck fetch 失敗,不再寬容放行
+    //   原本失敗→ startOOTK(),用戶完成抽牌洗牌後才被 streaming 端擋下,體驗極差
+    //   OOTK 是純付費商品(FREE_OOTK_LIMIT=0),寬容放行毫無收益且增加投訴
+    //   修法:顯示「網路連線不順,請重試」提示
+    var em2 = document.getElementById('ootk-used-modal');
+    if (em2) em2.remove();
+    var md2 = document.createElement('div');
+    md2.id = 'ootk-used-modal';
+    md2.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);padding:1rem';
+    md2.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
+      '<div style="font-size:1.8rem;margin-bottom:.6rem">⚠️</div>' +
+      '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">網路連線不順</div>' +
+      '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">無法驗證配額狀態<br>請稍候片刻再試一次</div>' +
+      '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartOOTK===\'function\')_jyStartOOTK();" style="width:200px;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🔄 重試</button>' +
+      '</div>';
+    md2.addEventListener('click', function(e) { if (e.target === md2) md2.remove(); });
+    document.body.appendChild(md2);
   });
 };

@@ -159,7 +159,7 @@ h+='</div></div>';
 h+='<div class="jy-arr" style="left:28%;top:300px"></div>';
 h+='<div class="jy-fgr" style="left:24%;top:317px">👆</div>';
 h+='</div>';
-h+='<div class="jy-tip"><div class="ic">💡</div><div class="tx">照片是加分，不是必填<small>塔羅快讀完全不用填資料<br>上傳照片讓分析多一層參考，會員專屬</small></div></div>';
+h+='<div class="jy-tip"><div class="ic">💡</div><div class="tx">照片是加分，不是必填<small>塔羅快讀完全不用填資料<br>氣色面相免費・手相需付費解鎖</small></div></div>';
 h+='</div>';
 
 // Step 3: 填寫資料
@@ -261,10 +261,11 @@ h+='<div class="jy-fgr" style="right:28%;top:232px">👆</div>';
 h+='</div>';
 // v64.B:會員制下架,教學頁顯示單次價(對齊全站定價結構)
 //   pricing-loader.js 會把 SINGLE_TAROT/SINGLE_OOTK/SINGLE_7D 注入到 _JY_PRICING
-//   fallback 用 v68.20 新價(30/60/70 / Opus 60/140/140)
+//   fallback 用 v68.21 新價(30/70/70 / Opus 60/140/140)
 // v68.20 Bug #19 修:OPUS_OOTK 從 120 改 140(對齊 worker PRICE_OPUS_OOTK)
+// v68.21 Bug #1 修:SINGLE_OOTK 60→70 對齊 worker v68.13 PRICE_SINGLE_OOTK
 var _gP = (typeof window !== 'undefined' && window._JY_PRICING) || {
-  SINGLE_TAROT: 30, SINGLE_OOTK: 60, SINGLE_7D: 70,
+  SINGLE_TAROT: 30, SINGLE_OOTK: 70, SINGLE_7D: 70,
   OPUS_TAROT: 60, OPUS_OOTK: 140, OPUS_7D: 140,
   FOLLOWUP: 15
 };
