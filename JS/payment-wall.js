@@ -1275,11 +1275,15 @@
 
       if (!mode) return;
 
-      // ── Admin / 確認訂閱中 → 放行（單次購買不放行，走 server check）──
+      // ── Admin → 放行（單次購買不放行，走 server check）──
+      // v68.21 Bug #38 修:移除 isSubscriber localStorage 自判
+      //   原邏輯:subExpires = parseInt(localStorage.getItem('_jy_sub_expires')) > Date.now() 直接放行
+      //   問題:用戶被 admin 撤銷會員但 localStorage 沒清(或被人偽造) → 繞過付費牆攔截
+      //         雖然 worker streaming 仍會擋,但用戶能進入工具流程造成困惑
+      //   修法:只信任 admin token,會員身份永遠走 worker check
+      //         worker /check-subscription 會回 data.allowed,真實會員自然放行
       var isAdmin = !!(window._JY_ADMIN_TOKEN);
-      var subExpires = parseInt(localStorage.getItem('_jy_sub_expires') || '0');
-      var isSubscriber = subExpires > Date.now();
-      if (isAdmin || isSubscriber) return;
+      if (isAdmin) return;
 
       // ── 阻止原始 handler ──
       e.preventDefault();

@@ -139,7 +139,7 @@
   
   window._JY_SESSION_TOKEN = sessionToken;
   window._JY_SESSION_NAME = userName;
-  if (sessionToken) console.log('[Auth] Session loaded:', userName);
+  if (sessionToken) console.log('[Auth] Session loaded');
   
   // 驗證 session 是否有效（異步，不阻塞頁面）
   if (sessionToken) {
@@ -2521,7 +2521,16 @@ function showFortuneResult(f){
         <p style="font-size:.88rem;font-weight:700;color:var(--c-gold);margin:.2rem 0">💎 ${typeof f.crystal==='object'?(f.crystal.n||f.crystal):f.crystal}</p>
         <p class="text-xs text-dim" style="margin:.2rem 0">${f.crystalReason||(typeof f.crystal==='object'?f.crystal.reason:'')||'補充喜用神能量'}</p>
         <div class="fortune-buy-btns mt-sm">
-          <a href="${prod?prod.shopee:'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.05));color:var(--c-gold);text-decoration:none;font-size:.8rem;font-weight:600;border:1px solid rgba(212,175,55,.25)"><i class="fas fa-gem"></i> 去蝦皮看看</a>
+          <a href="${(function(){
+            // v68.21 Bug #66:URL 驗證,只允許 http(s),擋 javascript: / data: 注入
+            var _u = (prod && prod.shopee) ? prod.shopee : '';
+            if (!_u || typeof _u !== 'string') return 'https://tw.shp.ee/2n5Mo2w';
+            try {
+              var _pu = new URL(_u);
+              if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://tw.shp.ee/2n5Mo2w';
+              return _u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
+          })()}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.05));color:var(--c-gold);text-decoration:none;font-size:.8rem;font-weight:600;border:1px solid rgba(212,175,55,.25)"><i class="fas fa-gem"></i> 去蝦皮看看</a>
         </div>
       </div>
       <p class="text-xs text-muted mt-md">免費體驗次數有限 ✨ 用完可單次購買繼續</p>
@@ -2738,7 +2747,16 @@ function showCrystalDetail(name){
         <div class="cdm-row"><i class="fas fa-hand-holding-heart"></i> 佩戴方式：${crystal.wear}</div>
       </div>
       <div class="cdm-actions">
-        <a href="${crystal.shopee}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 蝦皮購買</a>
+        <a href="${(function(){
+          // v68.21 Bug #66:同上,雖然 REAL_PRODUCTS 是 hardcoded,但保險驗證
+          var _u = crystal.shopee || '';
+          if (!_u || typeof _u !== 'string') return 'https://tw.shp.ee/2n5Mo2w';
+          try {
+            var _pu = new URL(_u);
+            if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://tw.shp.ee/2n5Mo2w';
+            return _u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+          } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
+        })()}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 蝦皮購買</a>
       </div>
     </div>`;
   modal.classList.remove('hidden');
@@ -2955,7 +2973,16 @@ function showQuizResult(){
       <p class="quiz-result-traits text-sm text-dim">你的特質：${traits.join(' · ')}</p>
       ${!hasBazi ? '<p class="text-xs text-muted mt-sm"><i class="fas fa-lightbulb"></i> 提示：先完成「八字占卜」再做測驗，結果會更精準！</p>' : ''}
       <div class="quiz-result-actions mt-md">
-        <a href="${pick.shopee}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 去蝦皮擁有它</a>
+        <a href="${(function(){
+          // v68.21 Bug #66:URL 驗證
+          var _u = pick.shopee || '';
+          if (!_u || typeof _u !== 'string') return 'https://tw.shp.ee/2n5Mo2w';
+          try {
+            var _pu = new URL(_u);
+            if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://tw.shp.ee/2n5Mo2w';
+            return _u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+          } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
+        })()}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 去蝦皮擁有它</a>
         <button class="btn btn-outline" onclick="startCrystalQuiz()"><i class="fas fa-redo"></i> 再測一次</button>
       </div>
       <button class="btn btn-outline btn-sm mt-md" onclick="shareQuizResult('${pick.n}','${traits.join('·')}')">

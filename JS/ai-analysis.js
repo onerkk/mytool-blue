@@ -12805,7 +12805,17 @@ function renderActionCard(bazi, type, answer){
     const recs = inlinePicks.slice(0,2);
     if(recs.length > 0){
       const p = recs[0];
-      const shopUrl = p.shopee || 'https://tw.shp.ee/2n5Mo2w';
+      // v68.21 Bug #66 修:p.shopee 可能被 admin 改成 javascript: URL,加 https 驗證 + HTML escape
+      function _safeUrlInline(u) {
+        if (!u || typeof u !== 'string') return 'https://tw.shp.ee/2n5Mo2w';
+        try {
+          var _pu = new URL(u);
+          if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://tw.shp.ee/2n5Mo2w';
+          return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
+      }
+      const shopUrl = _safeUrlInline(p.shopee);
+      const shopUrl2 = recs.length > 1 ? _safeUrlInline(recs[1].shopee) : shopUrl;
       crystalEl.innerHTML = `
         <div style="border-top:1px solid rgba(212,175,55,0.15);padding-top:var(--sp-md);margin-top:var(--sp-sm)">
           <p class="text-xs text-dim" style="margin-bottom:8px"><i class="fas fa-gem"></i> 依你的八字體質，最適合的水晶：</p>
@@ -12818,7 +12828,7 @@ function renderActionCard(bazi, type, answer){
             <span class="inline-crystal-price">${p.price||''}</span>
             <i class="fas fa-chevron-right inline-crystal-arrow"></i>
           </a>
-          ${recs.length > 1 ? `<a href="${recs[1].shopee || shopUrl}" target="_blank" rel="noopener" class="inline-crystal" style="margin-top:6px">
+          ${recs.length > 1 ? `<a href="${shopUrl2}" target="_blank" rel="noopener" class="inline-crystal" style="margin-top:6px">
             <span class="inline-crystal-icon">${getProductSVG(recs[1].cat||'手鍊',recs[1].n)}</span>
             <div class="inline-crystal-info">
               <div class="inline-crystal-name">${recs[1].n}</div>
@@ -13092,15 +13102,28 @@ function renderActionCard(bazi, type, answer){
           if(p.el === '全') return '全方位平衡';
           return '補'+p.el+'行能量' + handHint;
         };
-        qs.innerHTML = picks.slice(0,5).map(p => `
-          <a href="${p.shopee||'https://tw.shp.ee/2n5Mo2w'}" target="_blank" rel="noopener" class="qs-item">
+        qs.innerHTML = picks.slice(0,5).map(p => {
+          // v68.21 Bug #66:同 12808 邏輯,p.shopee 加 https 驗證 + escape
+          var _ps = '';
+          try {
+            if (p.shopee && typeof p.shopee === 'string') {
+              var _pu = new URL(p.shopee);
+              if (_pu.protocol === 'https:' || _pu.protocol === 'http:') {
+                _ps = p.shopee.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+              }
+            }
+          } catch(_) {}
+          if (!_ps) _ps = 'https://tw.shp.ee/2n5Mo2w';
+          return `
+          <a href="${_ps}" target="_blank" rel="noopener" class="qs-item">
             <div class="qs-item-icon">${getProductSVG(p.cat||'手鍊',p.n)}</div>
             <div class="qs-item-name">${p.n}</div>
             <div class="qs-item-el"><span class="el-tag el-${p.el}" style="font-size:.6rem">${p.el}行</span></div>
             <div class="qs-item-reason" style="font-size:.55rem;color:var(--c-gold);margin-top:2px">★ ${getPickReason(p)}</div>
             <div class="qs-item-price">${p.price||''}</div>
           </a>
-        `).join('');
+        `;
+        }).join('');
       }
     }
   }catch(e){ console.error('quick shop:', e); }
@@ -13133,12 +13156,23 @@ function renderProductCrystal(bazi,type){
   });
   var midIdx = Math.min(Math.floor(sorted.length * 0.4), sorted.length - 1);
   var pick = sorted[midIdx] || sorted[0];
-  var shopeeUrl = (pick && pick.shopee) ? pick.shopee : 'https://tw.shp.ee/2n5Mo2w';
+  // v68.21 Bug #66:URL 驗證 helper(同上邏輯)
+  function _safeShopeeUrlReco(u) {
+    if (!u || typeof u !== 'string') return 'https://tw.shp.ee/2n5Mo2w';
+    try {
+      var _pu = new URL(u);
+      if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://tw.shp.ee/2n5Mo2w';
+      return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
+  }
+  var shopeeUrl = _safeShopeeUrlReco(pick && pick.shopee);
 
   // 額外推薦 2 條（不同價位帶）
   var others = sorted.filter(function(p){ return p.n !== pick.n; });
   var lowPick = others[0] || null;
   var highPick = others.length > 2 ? others[others.length - 1] : (others[1] || null);
+  var _lowUrl = lowPick ? _safeShopeeUrlReco(lowPick.shopee) : '';
+  var _highUrl = highPick ? _safeShopeeUrlReco(highPick.shopee) : '';
 
   var _EM = {'金':'決斷力與原則','木':'成長力與行動','水':'智慧與靈活','火':'熱情與正向','土':'穩定與安全感'};
 
@@ -13160,8 +13194,8 @@ function renderProductCrystal(bazi,type){
     (lowPick || highPick ?
       '<div style="font-size:.75rem;color:var(--c-text-muted);margin-bottom:.4rem">其他同五行選擇：</div>' +
       '<div style="display:flex;gap:.5rem;flex-wrap:wrap">' +
-        (lowPick ? '<a href="' + (lowPick.shopee||'https://tw.shp.ee/2n5Mo2w') + '" target="_blank" rel="noopener" style="flex:1;min-width:140px;padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);text-decoration:none;color:var(--c-text-dim);font-size:.78rem;line-height:1.5">' + lowPick.n + '<br><span style="color:var(--c-text-muted);font-size:.7rem">' + (lowPick.price||'') + '</span></a>' : '') +
-        (highPick ? '<a href="' + (highPick.shopee||'https://tw.shp.ee/2n5Mo2w') + '" target="_blank" rel="noopener" style="flex:1;min-width:140px;padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);text-decoration:none;color:var(--c-text-dim);font-size:.78rem;line-height:1.5">' + highPick.n + '<br><span style="color:var(--c-text-muted);font-size:.7rem">' + (highPick.price||'') + '</span></a>' : '') +
+        (lowPick ? '<a href="' + _lowUrl + '" target="_blank" rel="noopener" style="flex:1;min-width:140px;padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);text-decoration:none;color:var(--c-text-dim);font-size:.78rem;line-height:1.5">' + lowPick.n + '<br><span style="color:var(--c-text-muted);font-size:.7rem">' + (lowPick.price||'') + '</span></a>' : '') +
+        (highPick ? '<a href="' + _highUrl + '" target="_blank" rel="noopener" style="flex:1;min-width:140px;padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);text-decoration:none;color:var(--c-text-dim);font-size:.78rem;line-height:1.5">' + highPick.n + '<br><span style="color:var(--c-text-muted);font-size:.7rem">' + (highPick.price||'') + '</span></a>' : '') +
       '</div>'
     : '') +
     '<div style="margin-top:.8rem">' +
@@ -13649,7 +13683,19 @@ renderProductCrystal = function(bazi, type){
     <div class="crystal-rec-header">
       <p>依你的八字體質（喜用 <span class="tag tag-gold">${needLabel}行</span>），針對你的<span class="tag tag-blue">${getTypeLabel(type)}</span>問題，從賣場精選：</p>
     </div>
-    <div class="product-grid">${products.map(p=>`
+    <div class="product-grid">${products.map(p=>{
+      // v68.21 Bug #66:p.shopee 加 https 驗證 + escape
+      var _ps = '';
+      try {
+        if (p.shopee && typeof p.shopee === 'string') {
+          var _pu = new URL(p.shopee);
+          if (_pu.protocol === 'https:' || _pu.protocol === 'http:') {
+            _ps = p.shopee.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+          }
+        }
+      } catch(_) {}
+      if (!_ps) _ps = 'https://tw.shp.ee/2n5Mo2w';
+      return `
       <div class="product-card">
         <div class="product-icon">${getProductSVG(p.cat,p.n)}</div>
         <div class="product-body">
@@ -13662,10 +13708,11 @@ renderProductCrystal = function(bazi, type){
           <p class="product-price">${p.price}</p>
           ${p.wear ? `<p class="product-wear"><i class="fas fa-hand-holding-heart"></i> ${p.wear}</p>` : ""}
           <div class="product-actions">
-            <a href="${p.shopee}" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮</a>
+            <a href="${_ps}" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮</a>
           </div>
         </div>
-      </div>`).join('')}
+      </div>`;
+    }).join('')}
     </div>
     <div class="custom-cta mt-lg">
       <button class="btn btn-gold btn-full" onclick="openCustomModal()">
@@ -14869,8 +14916,20 @@ function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
     var p = pick.prod;
     var role = pick.role || 'primary';
     var meta = _JY_ROLE_META[role] || _JY_ROLE_META.primary;
-    var shopUrl = (p.shopee && p.shopee.length > 10) ? p.shopee : 'https://tw.shp.ee/2n5Mo2w';
-    var imageUrl = p.imageUrl || '';
+    // v68.21 Bug #65 修:URL 驗證 — 只允許 https,擋 javascript:/data:/CSS injection
+    //   imageUrl 來自 worker 的 _fetchCrystalImage,雖然 worker 已加 shopee.tw 白名單(Bug #61)
+    //   但 imageUrl 是從 og:image 抓的(任何網域),仍要驗證才能放心拼進 background-image:url()
+    function _safeHttpsUrl(u) {
+      if (!u || typeof u !== 'string') return '';
+      try {
+        var _pu = new URL(u);
+        if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return '';
+        return u;
+      } catch(_) { return ''; }
+    }
+    var shopUrl = (p.shopee && p.shopee.length > 10) ? _safeHttpsUrl(p.shopee) : '';
+    if (!shopUrl) shopUrl = 'https://tw.shp.ee/2n5Mo2w';
+    var imageUrl = _safeHttpsUrl(p.imageUrl || '');
 
     h += '<div class="jy-stone-card jy-role-' + role + '">';
 
@@ -21436,6 +21495,7 @@ renderTarot = function(){
               if (data.memoryTopicStats) window._jyMemoryTopicStats = data.memoryTopicStats;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
+      if (data.freeLimits) window._jyFreeLimits = data.freeLimits; // v68.21 Bug #50:供 _showTrialBanner 反映真實上限
       // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照讓 feedback 能帶回 worker
       if (data.v62Config) window._jyV62ConfigSnapshot = data.v62Config;
       var r = data.result;
@@ -23934,6 +23994,7 @@ async function _triggerTarotAI() {
               if (parsed.memoryTopicStats) window._jyMemoryTopicStats = parsed.memoryTopicStats;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
+              if (parsed.freeLimits) window._jyFreeLimits = parsed.freeLimits; // v68.21 Bug #50
               // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照
               if (parsed.v62Config) window._jyV62ConfigSnapshot = parsed.v62Config;
               // v52：無論 admin 與否都存 usage（給回饋按模型分組統計用）
@@ -23991,6 +24052,7 @@ async function _triggerTarotAI() {
               if (data.memoryTopicStats) window._jyMemoryTopicStats = data.memoryTopicStats;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
+      if (data.freeLimits) window._jyFreeLimits = data.freeLimits; // v68.21 Bug #50
       r = data.result || data;
     }
 
@@ -25235,6 +25297,7 @@ async function _triggerTarotFollowUp() {
               if (parsed.memoryTopicStats) window._jyMemoryTopicStats = parsed.memoryTopicStats;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
+              if (parsed.freeLimits) window._jyFreeLimits = parsed.freeLimits; // v68.21 Bug #50
               // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照
               if (parsed.v62Config) window._jyV62ConfigSnapshot = parsed.v62Config;
             } catch(_) {}
