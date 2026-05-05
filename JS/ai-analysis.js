@@ -25736,6 +25736,40 @@ function _buildOOTKPayload() {
     } else if (idx === 3) {
       lines.push('聚焦旬：' + (op.decanSign||'') + ' ' + (op.decanRange||''));
       if (op.decanPlanet) lines.push('旬主星：' + op.decanPlanet);
+      // ★ v68.21.7 補:dominantSuit 雙版本意義(Crowley Liber 78 vs Mathers 1888)
+      if (op.dominantSuit) {
+        var _suitDualMeaning = {
+          wand: 'Mathers 1888:feasting 宴飲、慶祝 / Crowley Liber 78:Energy, opposition, quarrel(能量、對立、爭執)',
+          cup:  'Mathers 1888:lovemaking 愛戀、感情糾葛 / Crowley Liber 78:Pleasure, merriment(愉悅、歡樂)',
+          sword:'Mathers/Crowley 一致:Trouble, sadness, sickness, death(麻煩、憂愁、疾病、死亡)',
+          pent: 'Mathers/Crowley 一致:Business, money, possessions(商業、金錢、財產)'
+        };
+        lines.push('');
+        lines.push('★ 主導花色 ' + op.dominantSuit.name + ' x' + op.dominantSuit.count + ' 雙版本含義:');
+        lines.push('  ' + (_suitDualMeaning[op.dominantSuit.suit] || ''));
+      }
+      // ★ v68.21.7 補:rankOfASort 雙版本對照(Waite 1910 vs Crowley Liber 78)
+      if (op.rankOfASort && op.rankOfASort.length) {
+        lines.push('');
+        lines.push('★ 同數字組(Waite 1910 vs Crowley Liber 78 雙版本):');
+        op.rankOfASort.forEach(function(r) {
+          lines.push('  ' + r.rank + ' x' + r.count + ':');
+          lines.push('    [Waite 1910] ' + (r.meaning_waite || ''));
+          lines.push('    [Crowley Liber 78] ' + (r.meaning_crowley || ''));
+        });
+        lines.push('  ★ AI 提示:Waite 與 Crowley 是兩條完全不同的傳統,挑跟用戶問題語境最合的版本讀,或兩條並列。');
+      }
+      // ★ v68.21.7 補:Crowley Liber 78 三條 Majority(Keys/Court/Aces)
+      if (op.crowleyMajorities) {
+        var cm = op.crowleyMajorities;
+        if (cm.keysMajority || cm.courtMajority || cm.acesMajority) {
+          lines.push('');
+          lines.push('★ Crowley Liber 78 三條 Majority 規則:');
+          if (cm.keysMajority) lines.push('  ✦ ' + cm.keysMajority.meaning + '(' + cm.keysMajority.count + '張,占比 ' + cm.keysMajority.ratio + ')');
+          if (cm.courtMajority) lines.push('  ✦ ' + cm.courtMajority.meaning + '(' + cm.courtMajority.count + '張,占比 ' + cm.courtMajority.ratio + ')');
+          if (cm.acesMajority) lines.push('  ✦ ' + cm.acesMajority.meaning + '(' + cm.acesMajority.count + '張)');
+        }
+      }
       // ★ v63 Manuscript Q 正統做法（Mathers 原始手稿）
       if (op.mq_countingPath && op.mq_countingPath.length) {
         lines.push('');

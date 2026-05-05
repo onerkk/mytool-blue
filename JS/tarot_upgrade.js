@@ -2381,10 +2381,10 @@ enhanceTarot = function(tarot) {
       if (k === 'major') return; // 大牌不算花色
       if (suitTally[k] > dominantCount) { dominantSuit = k; dominantCount = suitTally[k]; }
     });
-    // 找出同數字 3 張或 4 張(GD/Waite 對照)
-    var rankOfASort = []; // [{rank, count, cards, meaning_upright, meaning_reversed}]
+    // 找出同數字 3 張或 4 張(GD/Waite/Crowley 雙版本對照)
+    var rankOfASort = []; // [{rank, count, cards, meaning_waite, meaning_crowley}]
     var WAITE_SORT_MEANINGS = {
-      // Waite《Pictorial Key to the Tarot》Section 5 The Recurrence of Cards
+      // Waite《Pictorial Key to the Tarot》1910 Section 5 The Recurrence of Cards
       'king':   { 4: '極大榮譽 / 重要會議', 3: '會商 / 商議重要事項', 2: '微會議' },
       'queen':  { 4: '激烈爭辯 / 社交聚會', 3: '友善訪視 / 女性間誤會', 2: '真心朋友' },
       'knight': { 4: '嚴重事項 / 結盟', 3: '激烈辯論 / 決鬥', 2: '親密' },
@@ -2400,13 +2400,67 @@ enhanceTarot = function(tarot) {
       '2':      { 4: '爭執 / 和解', 3: '安全 / 憂慮', 2: '一致 / 不信任' },
       'ace':    { 4: '有利契機 / 失榮譽', 3: '小成功 / 放縱', 2: '欺騙 / 敵人' }
     };
+    // ★ v68.21.7 補:Crowley Liber 78 官方 28 條 n-of-a-sort 對照表
+    //   來源:bibliotecapleyades.net/crowley/liber/lib78.htm 原文
+    //   跟 Waite 1910 完全是兩條不同的傳統,提供雙版本給 AI 選擇
+    var CROWLEY_SORT_MEANINGS = {
+      'king':   { 4: 'Swiftness, rapidity 迅捷',                3: 'Unexpected meetings 意外的相遇 / Knights 通常代表消息' },
+      'queen':  { 4: 'Authority, influence 權威、影響力',         3: 'Powerful friends 有力的朋友' },
+      'knight': { 4: 'Meetings with the great 與大人物的會面',   3: 'Rank and honour 地位與榮耀' },
+      'page':   { 4: 'New ideas or plans 新想法或計畫',           3: 'Society of the young 年輕人的社交圈' },
+      '10':     { 4: 'Anxiety, responsibility 焦慮、責任',       3: 'Buying and selling, commerce 買賣、商業交易' },
+      '9':      { 4: 'Added responsibilities 增添的責任',         3: 'Much correspondence 大量通訊' },
+      '8':      { 4: 'Much news 大量消息',                       3: 'Much journeying 大量旅行' },
+      '7':      { 4: 'Disappointments 失望',                     3: 'Treaties and compacts 協定與盟約' },
+      '6':      { 4: 'Pleasure 愉悅',                            3: 'Gain, success 收獲、成功' },
+      '5':      { 4: 'Order, regularity 秩序、規律',             3: 'Quarrels, fights 爭吵、衝突' },
+      '4':      { 4: 'Rest, peace 休息、平靜',                   3: 'Industry 勤奮工作' },
+      '3':      { 4: 'Resolution, determination 決心、決斷',     3: 'Deceit 欺騙' },
+      '2':      { 4: 'Conferences, conversations 會議、對話',    3: 'Reorganization, recommendation 重組、推薦' },
+      'ace':    { 4: 'Great power and force 強大力量',           3: 'Riches, success 財富、成功' }
+    };
     Object.keys(rankTally).forEach(function(rk) {
       var n = rankTally[rk].length;
       if (n >= 3) {
-        var meaning = (WAITE_SORT_MEANINGS[rk] && WAITE_SORT_MEANINGS[rk][n]) || '';
-        rankOfASort.push({ rank: rk, count: n, cards: rankTally[rk], meaning: meaning });
+        var meaningWaite = (WAITE_SORT_MEANINGS[rk] && WAITE_SORT_MEANINGS[rk][n]) || '';
+        var meaningCrowley = (CROWLEY_SORT_MEANINGS[rk] && CROWLEY_SORT_MEANINGS[rk][n]) || '';
+        rankOfASort.push({
+          rank: rk, count: n, cards: rankTally[rk],
+          meaning: meaningWaite, // 保留舊欄位向下相容
+          meaning_waite: meaningWaite,
+          meaning_crowley: meaningCrowley
+        });
       }
     });
+
+    // ★ v68.21.7 補:Crowley Liber 78 三條 Majority 規則(Keys/Court Cards/Aces)
+    //   原文:bibliotecapleyades.net/crowley/liber/lib78.htm
+    //   - Majority of Keys = Strong forces beyond the Querent's control
+    //   - Majority of Court Cards = Society, meetings of many persons
+    //   - Majority of Aces = Strength generally
+    var keysCount = 0, courtCount = 0, acesCount = 0;
+    activeCards.forEach(function(c) {
+      if (!c) return;
+      if (c.suit === 'major') keysCount++;
+      var r = String(c.rank || '');
+      if (r === 'king' || r === 'queen' || r === 'knight' || r === 'page') courtCount++;
+      if (r === 'ace') acesCount++;
+    });
+    var totalCards = activeCards.length || 1;
+    var crowleyMajorities = {
+      keysMajority: (keysCount / totalCards >= 0.4 && keysCount >= 3) ? {
+        count: keysCount, ratio: (keysCount / totalCards).toFixed(2),
+        meaning: 'Crowley Liber 78:大牌(Keys)多數 = Strong forces beyond the Querent\'s control(命主無法掌控的強大力量在運作)'
+      } : null,
+      courtMajority: (courtCount / totalCards >= 0.35 && courtCount >= 3) ? {
+        count: courtCount, ratio: (courtCount / totalCards).toFixed(2),
+        meaning: 'Crowley Liber 78:宮廷牌多數 = Society, meetings of many persons(社群、多人聚會、人際密集場合)'
+      } : null,
+      acesMajority: (acesCount >= 2) ? {
+        count: acesCount,
+        meaning: 'Crowley Liber 78:Aces 多數 = Strength generally(整體強力,Aces are always strong cards). 4 Aces 特別強 / 3 Aces 富足成功'
+      } : null
+    };
 
     return {
       // 正統 Book T 的 Op4 結構
@@ -2430,7 +2484,9 @@ enhanceTarot = function(tarot) {
       // ★ GD-1 補:Mathers Manuscript Q 明文規定的「suit majority」與「3/4-of-a-sort」
       suitTally: suitTally,
       dominantSuit: dominantSuit ? { suit: dominantSuit, name: suitNames[dominantSuit], count: dominantCount } : null,
-      rankOfASort: rankOfASort // 同數字 3 張或 4 張的特殊組合(Waite 對照表)
+      rankOfASort: rankOfASort, // 同數字 3 張或 4 張的特殊組合(Waite + Crowley 雙版本對照)
+      // ★ v68.21.7 補:Crowley Liber 78 三條 Majority(Keys/Court/Aces)
+      crowleyMajorities: crowleyMajorities
     };
   }
 
