@@ -394,13 +394,6 @@ var SPREAD_DEFS = {
       { name: '結果', zh: '如果照建議走的最可能結果' }
     ]
   },
-  ootk: {
-    id: 'ootk', zh: '開鑰之法', count: 0,
-    en: '開鑰之法',
-    desc: '金色黎明最高階占卜・五次獨立讀盤・使用全部 78 張牌・依 Mathers Book T 正統流程',
-    special: 'ootk',
-    positions: []
-  },
 
   // ★ GD-6 (G1) 補:Fifteen-Card Method (英式牌陣 / GD 標準塔羅 spread)
   //   依據:Wang《Introduction to GD Tarot》Appendix III + Crowley Thoth LWB
@@ -471,6 +464,66 @@ var SPREAD_DEFS = {
       { name: '19.未來-5', zh: '未來・第五層發展' },
       { name: '20.未來-6', zh: '未來・第六層發展' },
       { name: '21.未來-7', zh: '未來・最終遠景' }
+    ]
+  },
+
+  // ★ GD-11 補:Mathers First Method (26 張古法 horseshoe)
+  //   依據:Mathers《The Tarot》1888 原書 FIRST METHOD
+  //   特性:全 78 張分發為 A=26 / C=17 / E=11(F=24 棄掉)三組
+  //   每組擺成 horseshoe(右下→左下),從右到左讀,再首尾配對讀
+  //   GD 命名為「very ancient mode of reading the Tarot」
+  //   為簡化使用,我們只用最大組 A=26 張的 horseshoe 作為核心牌陣
+  mathers_horseshoe: {
+    id: 'mathers_horseshoe', zh: 'Mathers First Method (1888 古法 horseshoe)', count: 26,
+    en: 'Mathers First Method (Ancient Horseshoe)',
+    desc: 'Mathers 1888 最古老牌陣・26 張排成 horseshoe・從右到左 + 首尾配對 13 對讀法',
+    positions: [
+      // 從右下開始,沿著 horseshoe 弧形到左下
+      { name: '1.右下起點', zh: '事件起點(右下)・第一層訊號' },
+      { name: '2.', zh: '右側上升・第二層' },
+      { name: '3.', zh: '右側上升・第三層' },
+      { name: '4.', zh: '右側上升・第四層' },
+      { name: '5.', zh: '右側上升・第五層' },
+      { name: '6.', zh: '右側上升・第六層' },
+      { name: '7.', zh: '右側上升・第七層' },
+      { name: '8.', zh: '右側上升・第八層' },
+      { name: '9.', zh: '右側上升・第九層' },
+      { name: '10.', zh: '右側上升・第十層' },
+      { name: '11.', zh: '右側上升・第十一層' },
+      { name: '12.', zh: '右側上升・第十二層' },
+      { name: '13.弧頂中央', zh: '弧頂・轉折點(關鍵)' },
+      { name: '14.弧頂中央', zh: '弧頂・轉折點(配對 13)' },
+      { name: '15.', zh: '左側下降・第十二層' },
+      { name: '16.', zh: '左側下降・第十一層' },
+      { name: '17.', zh: '左側下降・第十層' },
+      { name: '18.', zh: '左側下降・第九層' },
+      { name: '19.', zh: '左側下降・第八層' },
+      { name: '20.', zh: '左側下降・第七層' },
+      { name: '21.', zh: '左側下降・第六層' },
+      { name: '22.', zh: '左側下降・第五層' },
+      { name: '23.', zh: '左側下降・第四層' },
+      { name: '24.', zh: '左側下降・第三層' },
+      { name: '25.', zh: '左側下降・第二層' },
+      { name: '26.左下終點', zh: '事件終點(左下)・最終結局' }
+    ]
+  },
+
+  // ★ GD-11 補:7-card Horseshoe (現代簡化版)
+  //   依據:Cicero《Golden Dawn Magical Tarot》提到的常見 GD 衍生牌陣
+  //   特性:7 張弧形・past / present / hidden / advice / external / obstacle / outcome
+  //   是 Celtic Cross 之外最普及的 GD 風格牌陣
+  horseshoe: {
+    id: 'horseshoe', zh: 'Horseshoe Spread（七張馬蹄形）', count: 7,
+    en: 'Seven-Card Horseshoe',
+    desc: '中等複雜・看過去現在未來+建議+他人態度+阻礙+結果',
+    positions: [
+      { name: '1.過去', zh: '過去影響' },
+      { name: '2.現在', zh: '現在處境' },
+      { name: '3.隱藏影響', zh: '隱藏的影響或未來短期將發生' },
+      { name: '4.建議', zh: '弧頂中央・採取的最佳行動' },
+      { name: '5.他人態度', zh: '其他人對此事的態度與影響' },
+      { name: '6.阻礙', zh: '面臨的障礙或挑戰' },
+      { name: '7.最終結果', zh: '最終走向' }
     ]
   },
 
@@ -2391,6 +2444,53 @@ enhanceTarot = function(tarot) {
     {name:'Malkuth',  zh:'王國', meaning:'物質現實、具體結果、身體'}
   ];
 
+  // ★ GD-11 補:Op5 Mathers Manuscript Q 明文規定的「SIG 落在 X Sephirah → Y 預兆」
+  //   依據:Mathers Manuscript Q「The packet containing the Significator falls under
+  //        [X]. This is an argument of [Y]」+ Cicero《Magical Tarot》
+  //   每個 Sephirah 在 OOTK Op5 都有特定的「占卜性意涵」(不只是基本屬性)
+  var SEPHIRAH_OMEN = [
+    // 0 Kether 王冠
+    { mood:'極其有利',
+      omen:'這事關乎「源頭與啟示」— Significator 落在 Kether 是 OOTK 中最高層的指示,代表事情正在最純粹的能量源頭被啟動。神性指引、創造力的源頭、與更高自我的連結。重大時刻,人生新階段的開始,可能是命定性的轉折。',
+      action:'相信當下的直覺與靈感,這是難得的「神性接收」狀態。靜下心,聽見內在更高層的聲音。' },
+    // 1 Chokmah 智慧
+    { mood:'有利',
+      omen:'這事關乎「智慧的應用與動能的啟動」— Chokmah 是純粹的陽性力量、智慧的初始爆發。事情處於「動能正在啟動」的階段,有遠見、有方向。智慧、洞察、原始驅動力。',
+      action:'用你已經擁有的智慧與經驗,以慈悲與和諧的方式應用於當下情境。' },
+    // 2 Binah 理解
+    { mood:'凶兆/試煉',
+      omen:'⚠ 這事關乎「悲傷與試煉」— Mathers Q 原文:Binah 對 OOTK 是「sadness and trial 的主張」。Binah 是限制與形式的力量,意味事情正面臨架構性的挑戰、人生的形變期、母性原型的考驗。可能涉及失去、嚴肅的責任、深層的理解過程。',
+      action:'這不是失敗,而是被迫成熟。把這次試煉當作獲得真正智慧的代價,接受限制、學習耐心。' },
+    // 3 Chesed 慈悲
+    { mood:'非常有利',
+      omen:'這事關乎「擴展與恩典」— Chesed 是仁慈、繁榮、好運的力量。事情正進入豐盛、機會、寬厚的階段,有貴人相助、財富累積、人脈擴展的機會。木星能量,是 OOTK 中最吉利的位置之一。',
+      action:'大方接受機會與好運,但勿揮霍。慷慨會帶來更多繁榮。' },
+    // 4 Geburah 力量
+    { mood:'凶兆/衝突',
+      omen:'⚠ 這事關乎「割捨與必要的破壞」— Geburah 是收縮、嚴厲、火星的力量。事情正面臨衝突、競爭、必須切除什麼東西的時刻。可能涉及訴訟、爭執、強烈的情感反彈、必要的結束。',
+      action:'這是「該斷的時刻」。果斷處理,該結束的就結束,不要拖延。痛苦但必要。' },
+    // 5 Tiphereth 美
+    { mood:'有利/平衡',
+      omen:'這事關乎「核心自我與平衡」— Tiphereth 是 Tree of Life 的中心,代表和諧、覺醒、太陽能量、犧牲帶來的整合。事情處於「真實的自我與外在世界協調」的位置,可能是覺醒時刻、藝術靈感、領導力的展現。',
+      action:'回到中心,做真實的自己。整合內外的衝突,你的核心已具備所有需要的東西。' },
+    // 6 Netzach 勝利
+    { mood:'有利(感情/藝術)',
+      omen:'這事關乎「情感、慾望、藝術、愛情」— Netzach 是金星的力量,代表情感的勝利、創作的衝動、愛戀、自然之美。事情有感性面、人際吸引力、藝術或情感創作的元素。',
+      action:'用你的情感與創造力推進。但勿被情緒淹沒,平衡感性與理性。' },
+    // 7 Hod 榮耀
+    { mood:'有利(思維/溝通)',
+      omen:'這事關乎「思維、溝通、學術、儀式」— Hod 是水星的力量,代表理性、智慧的具體應用、書寫、教學、商業談判。事情需要清晰的思維與精準的表達。',
+      action:'用語言、文字、邏輯處理。寫下計畫,清楚溝通,精準表達。' },
+    // 8 Yesod 基礎
+    { mood:'中性/隱藏',
+      omen:'這事關乎「潛意識、夢境、隱藏的影響」— Yesod 是月亮的力量,代表潛意識、星光體、未顯化的能量、想像的世界。事情可能涉及夢境訊息、潛意識的牽引、尚未浮上檯面的影響。',
+      action:'重視夢境與直覺。事情背後有你還沒看見的力量在作用,先觀察再行動。' },
+    // 9 Malkuth 王國
+    { mood:'中性/實際',
+      omen:'這事關乎「物質現實、具體結果、身體層面」— Malkuth 是物質世界的最終呈現。事情已經落地到日常實際層面,涉及金錢、健康、實際工作、家庭、身體狀況。',
+      action:'用實際行動處理。這不是抽象的事,是具體的、需要動手做的。回歸基本面,腳踏實地。' }
+  ];
+
   var SEPH_INDEX = {};
   SEPHIROTH.forEach(function(s, i) { SEPH_INDEX[s.name] = i; });
 
@@ -2453,6 +2553,7 @@ enhanceTarot = function(tarot) {
     }
 
     var sp = SEPHIROTH[activeSeph] || {};
+    var omen = SEPHIRAH_OMEN[activeSeph] || {};
     var activeCards = sephirot[activeSeph] || [];
     var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
     var counted = ootkCounting(activeCards, sigIdx >= 0 ? sigIdx : 0);
@@ -2463,6 +2564,12 @@ enhanceTarot = function(tarot) {
       activeSephirah: sp.name || '',
       sephirahZh: sp.zh || '',
       sephirahMeaning: sp.meaning || '',
+      // ★ GD-11 新增:Mathers Q 明文規定的占卜性預兆
+      sephirahOmen: {
+        mood: omen.mood || '',     // 整體吉凶判斷
+        omen: omen.omen || '',     // 詳細預兆 (Mathers Q 原始規則)
+        action: omen.action || ''  // 對應的行動建議
+      },
       activeCards: activeCards,
       keyCards: counted.keyCards,
       countingPath: counted.path,

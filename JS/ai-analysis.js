@@ -25766,6 +25766,18 @@ function _buildOOTKPayload() {
         }
       }
       if (op.sephirahMeaning) lines.push('意義：' + op.sephirahMeaning);
+      // ★ GD-11:Mathers Manuscript Q 明文規定的「SIG 落在 X Sephirah」占卜預兆
+      if (op.sephirahOmen) {
+        if (op.sephirahOmen.mood) {
+          lines.push('🔮 Op5 整體吉凶判斷：' + op.sephirahOmen.mood);
+        }
+        if (op.sephirahOmen.omen) {
+          lines.push('Mathers Q 預兆：' + op.sephirahOmen.omen);
+        }
+        if (op.sephirahOmen.action) {
+          lines.push('對應行動建議：' + op.sephirahOmen.action);
+        }
+      }
       if (op.sephirahDistribution) {
         var SEPH = ['Kether王冠','Chokmah智慧','Binah理解','Chesed慈悲','Geburah嚴厲','Tiphereth美','Netzach勝利','Hod榮耀','Yesod基礎','Malkuth王國'];
         var notableP = op.sephirahDistribution.map(function(n,i){return n>0?SEPH[i]+n+'張':null;}).filter(Boolean);
