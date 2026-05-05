@@ -1820,7 +1820,10 @@ enhanceTarot = function(tarot) {
         type: 'ace',
         sign: null,
         element: aceEl,
-        count: 5,
+        // ★ v68.21.8 修正:Mathers Book T 1888 + Crowley Liber 78 官方明文 Aces=11
+        //   舊版預設 5 是錯的(可能是早期誤把 Ace 當小牌按 pip),官方兩個源頭都是 11
+        //   For Aces, count 11. — Book T pg.50 / Liber 78 First Operation step 6
+        count: 11,
         decan: null,
         sephirah: 'Kether' // Ace = Kether
       };
@@ -2679,39 +2682,15 @@ enhanceTarot = function(tarot) {
     var startIsUp = (startCard && startCard.isUp === true);
     var direction = startIsUp ? 1 : -1; // 整串永遠用這個方向
 
-    // ★ v55：偵測 Ace 卡在同一循環的次數——若≥2次則切換 Crowley count=11 試第二讀法
-    var aceLoopDetect = 0;
-    var useCrowleyAce = false;
+    // ★ v68.21.8 對齊 Book T 1888 + Liber 78:Aces 已預設 count=11
+    //   舊邏輯(useCrowleyAce 死循環時切換)在預設 5 時用,現在不需要
 
     for (var step = 0; step < maxSteps; step++) {
       var card = cards[idx];
-      if (!card || visited[idx]) {
-        // ★ Bug #34 fix: 進入 fallback 時 visited 沒清，跳 11 步後新位置可能也 visited，立刻退出
-        //   修法：若 fallback 後新位置也 visited，再跳一次（最多 retry 兩次）
-        if (card && String(card.rank || '') === 'ace' && !useCrowleyAce && aceLoopDetect === 0) {
-          aceLoopDetect++;
-          useCrowleyAce = true;
-          // 用起點方向跳 11
-          for (var ca = 0; ca < 11; ca++) {
-            idx = (idx + direction + cards.length) % cards.length;
-          }
-          // 若新位置也 visited，再嘗試跳兩次（避開 visited dense 情況）
-          var _retryCnt = 0;
-          while (visited[idx] && _retryCnt < 2) {
-            for (var ca2 = 0; ca2 < 11; ca2++) {
-              idx = (idx + direction + cards.length) % cards.length;
-            }
-            _retryCnt++;
-          }
-          continue;
-        }
-        break;
-      }
+      if (!card || visited[idx]) break;
       keyCards.push({ card: card, position: idx });
       visited[idx] = true;
       var count = getCountValue(card);
-      // ★ v55：若啟動 Crowley 模式且為 Ace，改用 11
-      if (useCrowleyAce && String(card.rank || '') === 'ace') count = 11;
       var cardIsUp = (card.isUp === true);
       path.push({
         cardId: card.id,
@@ -2719,7 +2698,7 @@ enhanceTarot = function(tarot) {
         position: idx,
         countValue: count,
         isUp: cardIsUp,
-        // ★ v63：每張牌記錄它自己的 isUp 給 dignity 用，但 direction 整串都是起點方向
+        // ★ v63:每張牌記錄它自己的 isUp 給 dignity 用,但 direction 整串都是起點方向
         direction: direction > 0 ? 'right' : 'left',
         startDirection: direction > 0 ? 'right' : 'left'
       });
@@ -2727,7 +2706,7 @@ enhanceTarot = function(tarot) {
         idx = (idx + direction + cards.length) % cards.length;
       }
     }
-    return { keyCards: keyCards, path: path, usedCrowleyAce: useCrowleyAce, startDirection: direction > 0 ? 'right' : 'left' };
+    return { keyCards: keyCards, path: path, startDirection: direction > 0 ? 'right' : 'left' };
   }
 
   // ════════════════════════════════════════════════
@@ -2781,26 +2760,16 @@ enhanceTarot = function(tarot) {
     var idx = 0; // ★ Manuscript Q：從第 1 張環繞牌起，不是從 Sig
     var maxSteps = 12;
     var direction = 1; // ★ Manuscript Q:永遠按 dealing 方向(against direction of the Sun = 逆太陽方向)固定
-    var aceLoopDetect = 0;
-    var useCrowleyAce = false;
+
+    // ★ v68.21.8:Aces 已修正預設 count=11(對齊 Book T 官方),不再需要 useCrowleyAce 切換
+    //   舊邏輯保留為註解:當 Aces=5 預設時遇到死循環自動切 11,現在預設就是 11 不會死循環
 
     for (var step = 0; step < maxSteps; step++) {
       var card = ring[idx];
-      if (!card || visited[idx]) {
-        if (card && String(card.rank || '') === 'ace' && !useCrowleyAce && aceLoopDetect === 0) {
-          aceLoopDetect++;
-          useCrowleyAce = true;
-          for (var ca = 0; ca < 11; ca++) {
-            idx = (idx + direction + ring.length) % ring.length;
-          }
-          continue;
-        }
-        break;
-      }
+      if (!card || visited[idx]) break;
       keyCards.push({ card: card, position: idx });
       visited[idx] = true;
       var count = getCountValue(card);
-      if (useCrowleyAce && String(card.rank || '') === 'ace') count = 11;
       var cardIsUp = (card.isUp === true);
       path.push({
         cardId: card.id,
@@ -2815,7 +2784,7 @@ enhanceTarot = function(tarot) {
         idx = (idx + direction + ring.length) % ring.length;
       }
     }
-    return { keyCards: keyCards, path: path, usedCrowleyAce: useCrowleyAce, startDirection: 'dealing' };
+    return { keyCards: keyCards, path: path, startDirection: 'dealing' };
   }
 
   // Op4 環形 pairing：1↔36, 2↔35, 3↔34, ...
@@ -5694,7 +5663,37 @@ enhanceTarot = function(tarot) {
               if (lines[li].indexOf('event: ') === 0) evtType = lines[li].slice(7).trim();
               else if (lines[li].indexOf('data: ') === 0) evtData += lines[li].slice(6);
             }
-            if (evtType === 'result' && evtData) { try { var parsed = JSON.parse(evtData); r = parsed.result || parsed; if (parsed.usage) window._jyLastUsage = parsed.usage; if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts; if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft; } catch(_){} }
+            if (evtType === 'result' && evtData) { try { var parsed = JSON.parse(evtData); r = parsed.result || parsed; if (parsed.usage) window._jyLastUsage = parsed.usage; if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts; if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft; if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus; if (parsed.freeLimits) window._jyFreeLimits = parsed.freeLimits; if (parsed.v62Config) window._jyV62ConfigSnapshot = parsed.v62Config; } catch(_){} }
+            // ★ v68.21.19 Bug #15:OOTK SSE 處理之前只有 result+error,缺 audit/thinking/progress
+            //   觸發場景:isOpusDepth(OOTK 用 Opus 4.7) + admin opus47_bestofn_config.enabled = true
+            //   原本沒處理 → audit badge 完全不顯示給用戶
+            else if (evtType === 'audit_start' && evtData) {
+              try {
+                var _ootkAuStart = JSON.parse(evtData);
+                window._jyAuditStart = _ootkAuStart && _ootkAuStart.message;
+                if (typeof window._jyRenderAuditBadge === 'function') {
+                  window._jyRenderAuditBadge({ loading: true, message: _ootkAuStart.message });
+                }
+              } catch(_){}
+            }
+            else if (evtType === 'audit' && evtData) {
+              try {
+                var _ootkAud = JSON.parse(evtData);
+                if (_ootkAud && _ootkAud.audit) window._jyAuditResultSnapshot = _ootkAud.audit;
+                window._jyAuditResult = _ootkAud;
+                if (typeof window._jyRenderAuditBadge === 'function') {
+                  window._jyRenderAuditBadge(_ootkAud);
+                }
+              } catch(_){}
+            }
+            else if (evtType === 'progress' && evtData) {
+              // 不覆蓋 ootk-ai-phase——client-side phase timer 負責輪播
+              try { var _ootkProg = JSON.parse(evtData); } catch(_){}
+            }
+            else if (evtType === 'thinking' && evtData) {
+              // v51 一致決策:不覆寫 UI(thinking_delta 切片不穩,輪播 phase timer 視覺更穩)
+              try { if (window._JY_DEBUG) console.log('[OOTK thinking]', evtData); } catch(_){}
+            }
             else if (evtType === 'error' && evtData) { try { var err = JSON.parse(evtData); throw new Error(err.error || '伺服器錯誤'); } catch(e){ throw e; } }
           }
         }

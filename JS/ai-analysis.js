@@ -21,7 +21,13 @@
 window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260502v68_14';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
-    var WORKER_URL = window.WORKER_URL || 'https://jingyue-worker.zsl9.workers.dev';
+    // ★ v68.21.19 Bug #23 修:版本檢查 URL 寫錯
+    //   舊值 'https://jingyue-worker.zsl9.workers.dev' 是已廢棄的舊 worker(可能不存在或未部署)
+    //   全站(ui.js / payment-wall.js / oracle.js / photo-upload.js / pricing-loader.js)都用
+    //   'jy-ai-proxy.onerkk.workers.dev',只有這裡 line 24 寫錯
+    //   後果:每次 _jyVersionCheck 都靜默失敗(if !resp.ok return null) → 版本變動偵測失效
+    //   用戶部署新版後,前端不會自動 reload,得手動清 cache 或 hard refresh
+    var WORKER_URL = window.WORKER_URL || 'https://jy-ai-proxy.onerkk.workers.dev';
     var resp = await fetch(WORKER_URL + '/version', { cache: 'no-store' });
     if (!resp.ok) return null;
     var data = await resp.json();
@@ -21473,9 +21479,27 @@ renderTarot = function(){
               try { if (window._JY_DEBUG) console.log('[thinking]', _sseData); } catch(_tke2){}
             } else if (_sseEvt === 'error' && _sseData) {
               try { var _sseErr = JSON.parse(_sseData); throw new Error(_sseErr.error || '伺服器錯誤'); } catch(_e3){ if (_e3.message) throw _e3; }
+            } else if (_sseEvt === 'audit_start' && _sseData) {
+              // ★ v68.21.19 Bug #12 修:七維度/OOTK 路徑也要處理 audit_start
+              //   原本只有塔羅(line 24127)有處理,七維度跟 OOTK 走這條 SSE 路徑 audit badge 不會渲染
+              //   觸發條件:isOpusDepth + admin opus47_bestofn_config.enabled = true
+              try {
+                var _auStartV3 = JSON.parse(_sseData);
+                window._jyAuditStart = _auStartV3 && _auStartV3.message;
+                if (typeof window._jyRenderAuditBadge === 'function') {
+                  window._jyRenderAuditBadge({ loading: true, message: _auStartV3.message });
+                }
+              } catch(_auStartErr){}
             } else if (_sseEvt === 'audit' && _sseData) {
               // ★ v62f-fix-3：feedback 閉環——存 audit 結果快照
-              try { var _aud3 = JSON.parse(_sseData); if (_aud3 && _aud3.audit) window._jyAuditResultSnapshot = _aud3.audit; } catch(_){}
+              // ★ v68.21.19:加 audit badge 渲染(原本只存 snapshot 沒 render)
+              try {
+                var _aud3 = JSON.parse(_sseData);
+                if (_aud3 && _aud3.audit) window._jyAuditResultSnapshot = _aud3.audit;
+                if (typeof window._jyRenderAuditBadge === 'function') {
+                  window._jyRenderAuditBadge(_aud3);
+                }
+              } catch(_){}
             }
           }
         }
@@ -24102,9 +24126,6 @@ async function _triggerTarotAI() {
                 if (admin) console.log('[TarotAI] Usage:', parsed.usage);
               }
             } catch(_){}
-          } else if (evtType === 'audit' && evtData) {
-            // ★ v62f-fix-3：feedback 閉環——存 audit 結果快照
-            try { var _aud = JSON.parse(evtData); if (_aud && _aud.audit) window._jyAuditResultSnapshot = _aud.audit; } catch(_){}
           } else if (evtType === 'progress' && evtData) {
             // ★ v20：不覆蓋 tarot-ai-phase——client-side phase timer 負責輪播
             // SSE progress 只用於 debug logging
@@ -24132,11 +24153,17 @@ async function _triggerTarotAI() {
               try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge({ loading: true, message: _auStart.message }); } catch(_){}
             } catch(_){}
           } else if (evtType === 'audit' && evtData) {
-            // v54：Best-of-N 核查結果
+            // ★ v68.21.19 Bug #13:合併原本兩個重複的 audit handler
+            //   原本 line 24123 的版本只存 snapshot 不渲染 badge,
+            //   line 24152 的 v54 版本會渲染但永遠 unreachable(被前一個 match 攔截)
+            //   現在合併:同時存 snapshot + 渲染 badge + 設 v54 result
             try {
-              var _auRes = JSON.parse(evtData);
-              window._jyAuditResult = _auRes;
-              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge(_auRes); } catch(_){}
+              var _aud = JSON.parse(evtData);
+              if (_aud && _aud.audit) window._jyAuditResultSnapshot = _aud.audit;
+              window._jyAuditResult = _aud;
+              if (typeof window._jyRenderAuditBadge === 'function') {
+                window._jyRenderAuditBadge(_aud);
+              }
             } catch(_){}
           } else if (evtType === 'error' && evtData) {
             try { var err = JSON.parse(evtData); throw new Error(err.error || '伺服器錯誤'); } catch(e){ throw e; }
@@ -25411,9 +25438,6 @@ async function _triggerTarotFollowUp() {
               // ★ v62f-fix-3：feedback 閉環——存 v62Config 快照
               if (parsed.v62Config) window._jyV62ConfigSnapshot = parsed.v62Config;
             } catch(_) {}
-          } else if (evtType === 'audit' && evtData) {
-            // ★ v62f-fix-3：feedback 閉環——存 audit 結果快照
-            try { var _aud2 = JSON.parse(evtData); if (_aud2 && _aud2.audit) window._jyAuditResultSnapshot = _aud2.audit; } catch(_){}
           } else if (evtType === 'thinking' && evtData) {
             // ★ v47d：Opus 4.7 adaptive thinking 摘要，即時顯示給用戶看
             try {
@@ -25435,11 +25459,16 @@ async function _triggerTarotFollowUp() {
               try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge({ loading: true, message: _auStart2.message }); } catch(_){}
             } catch(_){}
           } else if (evtType === 'audit' && evtData) {
-            // v54：Best-of-N 核查結果
+            // ★ v68.21.19 Bug #14:合併原本兩個重複的 audit handler
+            //   原本 line 25435 的 snapshot 版本攔截了 line 25458 的 v54 badge 渲染版本
+            //   現在合併:同時存 snapshot + 渲染 badge
             try {
-              var _auRes2 = JSON.parse(evtData);
-              window._jyAuditResult = _auRes2;
-              try { if (typeof window._jyRenderAuditBadge === 'function') window._jyRenderAuditBadge(_auRes2); } catch(_){}
+              var _aud2 = JSON.parse(evtData);
+              if (_aud2 && _aud2.audit) window._jyAuditResultSnapshot = _aud2.audit;
+              window._jyAuditResult = _aud2;
+              if (typeof window._jyRenderAuditBadge === 'function') {
+                window._jyRenderAuditBadge(_aud2);
+              }
             } catch(_){}
           } else if (evtType === 'error' && evtData) {
             // ★ v51：捕 Worker 端真實錯誤（對齊塔羅首輪 22207-22209）
