@@ -2699,7 +2699,7 @@ async function clearNotifications() {
   if (!confirm('確定清除所有使用紀錄？')) return;
   try {
     const r = await fetch(`${WORKER_URL}/admin/notifications?token=${encodeURIComponent(adminToken)}`, { method: 'DELETE' });
-    // ★ v68.21.22 Bug #47 修:檢查 r.ok 才顯示「已清除」,避免 401/500 也顯示成功
+    // ★ v68.21.23 Bug #47 修:檢查 r.ok 才顯示「已清除」,避免 401/500 也顯示成功
     if (!r.ok) {
       toast('清除失敗: HTTP ' + r.status);
       return;
@@ -3921,7 +3921,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v68.21.22-2026-05-05';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v68.21.23-2026-05-05';
 
 async function checkWorkerStatus() {
   try {
