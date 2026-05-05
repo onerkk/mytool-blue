@@ -6123,7 +6123,10 @@ async function submitTarotQuick() {
       var card = shuffled[i];
       var _r2 = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, String(card.id)) : Math.random;
       if (typeof _r2 === 'function') { for (var _k = 0; _k <= card.id; _k++) _r2(); }
-      var isUp = (typeof _r2 === 'function') ? (_r2() > 0.48) : (Math.random() > 0.48);
+      // v68.21.2 塔羅 Bug A 修:正逆位機率對齊 0.5(原 0.48 偏向正位 52%,與 tarot.js pickCard 第 3303 行 >=0.5 不一致)
+      //   原因:歷史殘留,可能曾為「讓 AI 解讀更正面」而設,但造成同一抽牌邏輯兩處實作不一致
+      //   修正:統一為 _r2() >= 0.5,與標準凱爾特十字抽牌一致
+      var isUp = (typeof _r2 === 'function') ? (_r2() >= 0.5) : (Math.random() >= 0.5);
       var posName = (spreadDef && spreadDef.positions && spreadDef.positions[i]) ? spreadDef.positions[i].name : '';
       autoDrawn.push(Object.assign({}, card, { isUp: isUp, pos: posName }));
     }

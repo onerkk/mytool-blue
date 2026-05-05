@@ -2021,6 +2021,55 @@ enhanceTarot = function(tarot) {
     var sigDecan = getCardDecan(sigCard);
     var dm = DECAN_MAP[sigDecan] || {};
 
+    // ★ GD-1 補:Mathers Manuscript Q 明文規定的 Op4 統計觀察點
+    //   原文:"The suit which is in the majority and the circumstances of either
+    //         3 or 4 cards of a sort being found in the 36 Decanates are also noted."
+    //   ① suit majority — 哪個花色多數=主要關注領域
+    //   ② 3-of-a-sort / 4-of-a-sort — 同數字 3 或 4 張的特殊意義(Waite Pictorial Key 1910 對照表)
+    var suitTally = { wand: 0, cup: 0, sword: 0, pent: 0, major: 0 };
+    var rankTally = {}; // {ace:[..], '2':[..], ..., '10':[..], page:[..], knight:[..], queen:[..], king:[..]}
+    activeCards.forEach(function(c) {
+      if (!c) return;
+      var s = c.suit || '';
+      if (suitTally.hasOwnProperty(s)) suitTally[s]++;
+      var r = String(c.rank || '');
+      if (!rankTally[r]) rankTally[r] = [];
+      rankTally[r].push(c.n || c.name || ('id-' + c.id));
+    });
+    // 找出 suit 多數
+    var suitNames = { wand: '權杖(火/行動)', cup: '聖杯(水/情感)', sword: '寶劍(風/思維)', pent: '金幣(土/物質)', major: '大牌(命運)' };
+    var dominantSuit = null, dominantCount = 0;
+    Object.keys(suitTally).forEach(function(k) {
+      if (k === 'major') return; // 大牌不算花色
+      if (suitTally[k] > dominantCount) { dominantSuit = k; dominantCount = suitTally[k]; }
+    });
+    // 找出同數字 3 張或 4 張(GD/Waite 對照)
+    var rankOfASort = []; // [{rank, count, cards, meaning_upright, meaning_reversed}]
+    var WAITE_SORT_MEANINGS = {
+      // Waite《Pictorial Key to the Tarot》Section 5 The Recurrence of Cards
+      'king':   { 4: '極大榮譽 / 重要會議', 3: '會商 / 商議重要事項', 2: '微會議' },
+      'queen':  { 4: '激烈爭辯 / 社交聚會', 3: '友善訪視 / 女性間誤會', 2: '真心朋友' },
+      'knight': { 4: '嚴重事項 / 結盟', 3: '激烈辯論 / 決鬥', 2: '親密' },
+      'page':   { 4: '危險疾病 / 匱乏', 3: '爭吵 / 怠惰', 2: '不安 / 社交' },
+      '10':     { 4: '譴責 / 事件發生', 3: '新處境 / 失望', 2: '改變 / 期待實現' },
+      '9':      { 4: '好友 / 高利貸', 3: '成功 / 不謹慎', 2: '收受 / 小盈利' },
+      '8':      { 4: '反轉 / 錯誤', 3: '婚姻 / 場面', 2: '新知識 / 不幸' },
+      '7':      { 4: '陰謀 / 爭吵者', 3: '虛弱 / 喜悅', 2: '消息 / 名譽不佳' },
+      '6':      { 4: '豐盛 / 憂慮', 3: '成功 / 滿足', 2: '易怒 / 沒落' },
+      '5':      { 4: '規律 / 秩序', 3: '決心 / 猶豫', 2: '守夜 / 反轉' },
+      '4':      { 4: '近距離旅行 / 外出', 3: '反思主題 / 不安', 2: '失眠 / 爭執' },
+      '3':      { 4: '進展 / 大成功', 3: '團結 / 平靜', 2: '平靜 / 安全' },
+      '2':      { 4: '爭執 / 和解', 3: '安全 / 憂慮', 2: '一致 / 不信任' },
+      'ace':    { 4: '有利契機 / 失榮譽', 3: '小成功 / 放縱', 2: '欺騙 / 敵人' }
+    };
+    Object.keys(rankTally).forEach(function(rk) {
+      var n = rankTally[rk].length;
+      if (n >= 3) {
+        var meaning = (WAITE_SORT_MEANINGS[rk] && WAITE_SORT_MEANINGS[rk][n]) || '';
+        rankOfASort.push({ rank: rk, count: n, cards: rankTally[rk], meaning: meaning });
+      }
+    });
+
     return {
       // 正統 Book T 的 Op4 結構
       ringSize: ring.length,
@@ -2039,7 +2088,11 @@ enhanceTarot = function(tarot) {
       mq_keyCards: countedMQ.keyCards,
       mq_countingPath: countedMQ.path,
       mq_pairs: pairedMQ,
-      mq_startCard: ring[0] ? (ring[0].n || ring[0].name) : ''
+      mq_startCard: ring[0] ? (ring[0].n || ring[0].name) : '',
+      // ★ GD-1 補:Mathers Manuscript Q 明文規定的「suit majority」與「3/4-of-a-sort」
+      suitTally: suitTally,
+      dominantSuit: dominantSuit ? { suit: dominantSuit, name: suitNames[dominantSuit], count: dominantCount } : null,
+      rankOfASort: rankOfASort // 同數字 3 張或 4 張的特殊組合(Waite 對照表)
     };
   }
 
@@ -5220,6 +5273,18 @@ enhanceTarot = function(tarot) {
         // 未登入 → 彈登入視窗
         wrap.innerHTML = '';
         if (typeof _jyGoogleLogin === 'function') _jyGoogleLogin();
+      } else if (err.status === 403 && err.code === 'OPUS_PAYMENT_REQUIRED' && !window._JY_ADMIN_TOKEN) {
+        // v68.21.1 Bug #86 修:OOTK 深度需付費,顯示明確付費牆
+        //   原本只查 'OOTK_PAYMENT_REQUIRED',但 worker 從沒回過這個 code(實際是 OPUS_PAYMENT_REQUIRED)
+        //   結果:用戶配額用完點深度 → 看到「連線不順」誤導訊息,完全找不到付費按鈕
+        var _ootkOpusPrice = (window.JY_PRICES && window.JY_PRICES.OPUS_OOTK) || 120;
+        wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
+          '<div style="font-size:2rem;margin-bottom:.5rem">🔮</div>' +
+          '<div style="font-size:.9rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">開鑰深度解析需單次購買</div>' +
+          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem;line-height:1.6">深度解析使用最高階模型<br>單次 NT$' + _ootkOpusPrice + '</div>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'opus_single\')" style="padding:.7rem 1.4rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.08));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.45);cursor:pointer;font-family:inherit;margin-right:.5rem">🔮 開鑰深度 NT$' + _ootkOpusPrice + '</button>' +
+          '<button onclick="window._jyOpusDepth=false;if(window._ootkTriggerAI && window._ootkResults) window._ootkTriggerAI(window._ootkResults)" style="padding:.7rem 1rem;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.15);cursor:pointer;font-family:inherit">改用標準</button>' +
+          '</div>';
       } else if (err.code === 'OOTK_PAYMENT_REQUIRED' || (err.status === 429 && !window._JY_ADMIN_TOKEN)) {
         // 需要付費 → 彈付費牆
         if (typeof _jyStartPayment === 'function') {

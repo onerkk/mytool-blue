@@ -3790,17 +3790,22 @@ function renderBazi(){
 
 // ── 補丁1：CELTIC_POSITIONS 別名（spec 要求的名稱，指向現有 TAROT_POS_META）──
 // 現有系統用 TAROT_POS_META，這裡建立同義別名供外部引用
+// v68.21.2 塔羅 Bug C 修:原本從 pos 5 起與 TAROT_POS_META / CELTIC_POS / pickCard 順序錯位
+//   原:5=nearFuture, 6=self, 7=environment, 8=hopeFear, 9=outlook (4=past 之後跳號錯位)
+//   正:5=crown(顯性目標), 6=nearFuture(近期走向), 7=self, 8=environment, 9=hopeFear, 10=outcome
+//   依據:Waite《Pictorial Key to the Tarot》1910 標準凱爾特十字十位順序
+//   影響:若有外部程式讀 CELTIC_POSITIONS[i].name 會解錯位置,造成 AI 解讀錯位
 var CELTIC_POSITIONS = [
-  {id:1,key:'present',    name:'現況',    meaning:'事情目前的核心狀態'},
-  {id:2,key:'challenge',  name:'阻礙',    meaning:'目前最大的阻力、卡點或對沖力量'},
-  {id:3,key:'subconscious',name:'潛意識', meaning:'內在真正驅動這件事的深層因素'},
-  {id:4,key:'past',       name:'過去',    meaning:'已經發生且仍在影響現在的背景'},
-  {id:5,key:'nearFuture', name:'近期',    meaning:'短期內最可能出現的發展'},
-  {id:6,key:'self',       name:'自身',    meaning:'提問者目前的主觀狀態與行動模式'},
-  {id:7,key:'environment',name:'環境',    meaning:'外部局勢、對方、社會環境或他人因素'},
-  {id:8,key:'hopeFear',   name:'希望恐懼',meaning:'內心期待與焦慮交織的區域'},
-  {id:9,key:'outlook',    name:'未來',    meaning:'中期趨勢與走向'},
-  {id:10,key:'outcome',   name:'結果',    meaning:'若照目前路徑延續，最可能的結局'}
+  {id:1, key:'present',     name:'現況',    meaning:'事情目前的核心狀態'},
+  {id:2, key:'challenge',   name:'阻礙',    meaning:'目前最大的阻力、卡點或對沖力量'},
+  {id:3, key:'subconscious',name:'潛意識', meaning:'內在真正驅動這件事的深層因素'},
+  {id:4, key:'past',        name:'過去',    meaning:'已經發生且仍在影響現在的背景'},
+  {id:5, key:'crown',       name:'顯性目標',meaning:'你意識層面認為自己想要的'},
+  {id:6, key:'nearFuture',  name:'近期',    meaning:'短期內最可能出現的發展'},
+  {id:7, key:'self',        name:'自身',    meaning:'提問者目前的主觀狀態與行動模式'},
+  {id:8, key:'environment', name:'環境',    meaning:'外部局勢、對方、社會環境或他人因素'},
+  {id:9, key:'hopeFear',    name:'希望恐懼',meaning:'內心期待與焦慮交織的區域'},
+  {id:10,key:'outcome',     name:'結果',    meaning:'若照目前路徑延續，最可能的結局'}
 ];
 
 // ── 補丁2：detectTarotCombos — 高價值牌組組合偵測 ──

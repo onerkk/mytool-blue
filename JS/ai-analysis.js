@@ -23796,6 +23796,17 @@ function _buildTarotOnlyPayload() {
   // ── 水晶清單（Bug #1 修復）──
   var _cc = _buildCrystalCatalog();
 
+  // ★ GD-2 補:塔羅統計訊號預先算好,Sonnet/Haiku 不用自己數
+  //   依據:Mathers Manuscript Q「The suit which is in the majority and the
+  //         circumstances of either 3 or 4 cards of a sort being found ... are also noted」
+  //   實作:呼叫 buildTarotStats(若可用) 把 dominantSuit / numCluster / courtCount 等送進 payload
+  var _tarotStats = null;
+  try {
+    if (typeof buildTarotStats === 'function') {
+      _tarotStats = buildTarotStats(drawn);
+    }
+  } catch (e) { _tarotStats = null; }
+
   var result = {
     mode: 'tarot_only',
     question: (S.form && S.form.question) ? S.form.question : '',
@@ -23827,7 +23838,21 @@ function _buildTarotOnlyPayload() {
       courtPeople: courtPeople,
       opposingPairs: opposingPairs,
       storyArc: storyArc,
-      signifier: _signifier
+      signifier: _signifier,
+      // ★ GD-2 補:Mathers Manuscript Q 規定的 majority + n-of-a-sort 訊號
+      preStats: _tarotStats ? {
+        suitCounts: _tarotStats.suitCounts,
+        dominantSuit: _tarotStats.dominantSuit,
+        dominantSuitName: _tarotStats.dominantSuitName,
+        numCluster: _tarotStats.numCluster, // 同數字 2 張以上群聚
+        majorCount: _tarotStats.majorCount,
+        majorRatio: _tarotStats.majorRatio,
+        courtCount: _tarotStats.courtCount,
+        upRatio: _tarotStats.upRatio,
+        rvRatio: _tarotStats.rvRatio,
+        coreOutcomeRel: _tarotStats.coreOutcomeRel,
+        insights: _tarotStats.insights
+      } : null
     }
   };
   if (_cc.catalog.length) {
