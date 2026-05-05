@@ -400,6 +400,86 @@ var SPREAD_DEFS = {
     desc: '金色黎明最高階占卜・五次獨立讀盤・使用全部 78 張牌・依 Mathers Book T 正統流程',
     special: 'ootk',
     positions: []
+  },
+
+  // ★ GD-6 (G1) 補:Fifteen-Card Method (英式牌陣 / GD 標準塔羅 spread)
+  //   依據:Wang《Introduction to GD Tarot》Appendix III + Crowley Thoth LWB
+  //   特性:GD/Crowley 標準塔羅 spread,完全不用反位,純靠 elemental dignity
+  //   版面:
+  //     13  9  5     (上排:13/9/5 = 替代行動  4/8/12 = 自然趨勢)
+  //      2  1  3     (中排:1=querent  2/3=核心狀態)
+  //     14 10  6     (中下:6/10/14 = 心理層面與決策依據)
+  //      4  8 12
+  //      7 11 15     (下排:7/11/15 = 命運/業力 不可控)
+  fifteen_card: {
+    id: 'fifteen_card', zh: 'Fifteen-Card Method（金色黎明 15 張牌陣）', count: 15,
+    en: 'Fifteen-Card Method (English Spread)',
+    desc: 'GD/Crowley 標準塔羅 spread・不用反位・純靠 elemental dignity・5 個 triad 分析',
+    positions: [
+      // Card 1 = querent / 問題本質
+      { name: '1.Querent 核心', zh: '提問者 + 問題本質 + 主要影響(中心)' },
+      // Card 2, 3 = 與 1 合讀,描述局面性質與 querent 性格
+      { name: '2.核心左', zh: '與 1 合讀的左翼:描述局面性質與 querent 性格(細節 1)' },
+      { name: '3.核心右', zh: '與 1 合讀的右翼:描述局面性質與 querent 性格(細節 2)' },
+      // Card 4, 8, 12 = 自然會走的路 (右上 triad)
+      { name: '4.自然路徑近', zh: '若不採取行動,自然會走的路(近期)' },
+      { name: '5.替代路徑遠', zh: '若採取替代行動,可能達到的方向(遠景)' },
+      { name: '6.決策層上', zh: '心理層面與決策依據(意識層上方)' },
+      { name: '7.命運上', zh: '命運/業力,不可控、需適應的力量(上)' },
+      { name: '8.自然路徑中', zh: '若不採取行動,自然會走的路(中段)' },
+      { name: '9.替代路徑中', zh: '若採取替代行動,可能達到的方向(中段)' },
+      { name: '10.決策層中', zh: '心理層面與決策依據(中)' },
+      { name: '11.命運中', zh: '命運/業力,不可控、需適應的力量(中)' },
+      { name: '12.自然路徑遠', zh: '若不採取行動,自然會走的路(遠期)' },
+      { name: '13.替代路徑近', zh: '若採取替代行動,可能達到的方向(近期)' },
+      { name: '14.決策層下', zh: '心理層面與決策依據(深層)' },
+      { name: '15.命運下', zh: '命運/業力,不可控、需適應的力量(下)' }
+    ]
+  },
+
+  // ★ GD-7 補:Mathers 1888《The Tarot》Second Method of Divination (21 張)
+  //   全名:Mathers Second Method (Three rows of seven, Significator centred)
+  //   依據:Mathers 1888 原書 METHODS OF DIVINATION 章節
+  //   特性:Significator 抽出後,從 78 張中每隔 7 張抽 1,共 21 張,3 列 7 行
+  //   讀法:每列從右到左讀,然後配對 1↔21、2↔20...讀
+  mathers_21: {
+    id: 'mathers_21', zh: 'Mathers Second Method (1888 三排七)', count: 21,
+    en: 'Mathers Second Method',
+    desc: 'Mathers 1888 原書古法・Significator 三排七・每排七張(過去/現在/未來)',
+    positions: [
+      // 第一排(過去)— 從右到左
+      { name: '1.過去-1', zh: '過去・離 querent 最近的影響' },
+      { name: '2.過去-2', zh: '過去・第二層影響' },
+      { name: '3.過去-3', zh: '過去・第三層影響' },
+      { name: '4.過去-4', zh: '過去・第四層影響' },
+      { name: '5.過去-5', zh: '過去・第五層影響' },
+      { name: '6.過去-6', zh: '過去・第六層影響' },
+      { name: '7.過去-7', zh: '過去・最遠源頭' },
+      // 第二排(現在)
+      { name: '8.現在-1', zh: '現在・離 querent 最近的狀態' },
+      { name: '9.現在-2', zh: '現在・第二層狀態' },
+      { name: '10.現在-3', zh: '現在・第三層狀態' },
+      { name: '11.現在-4', zh: '現在・第四層狀態' },
+      { name: '12.現在-5', zh: '現在・第五層狀態' },
+      { name: '13.現在-6', zh: '現在・第六層狀態' },
+      { name: '14.現在-7', zh: '現在・整體場景的最外圍' },
+      // 第三排(未來)
+      { name: '15.未來-1', zh: '未來・最近的下一步' },
+      { name: '16.未來-2', zh: '未來・第二層發展' },
+      { name: '17.未來-3', zh: '未來・第三層發展' },
+      { name: '18.未來-4', zh: '未來・第四層發展' },
+      { name: '19.未來-5', zh: '未來・第五層發展' },
+      { name: '20.未來-6', zh: '未來・第六層發展' },
+      { name: '21.未來-7', zh: '未來・最終遠景' }
+    ]
+  },
+
+  ootk: {
+    id: 'ootk', zh: '開鑰之法', count: 0,
+    en: '開鑰之法',
+    desc: '金色黎明最高階占卜・五次獨立讀盤・使用全部 78 張牌・依 Mathers Book T 正統流程',
+    special: 'ootk',
+    positions: []
   }
 };
 
@@ -1231,6 +1311,200 @@ enhanceTarot = function(tarot) {
     19: {type:'planet',  planet:'太陽',    count:9,  sign:null,   path:'Hod-Yesod'},          // 太陽=太陽
     20: {type:'element', element:'火',     count:3,  sign:null,   path:'Hod-Malkuth'},        // 審判=火
     21: {type:'planet',  planet:'土星',    count:9,  sign:null,   path:'Yesod-Malkuth'}       // 世界=土星
+  };
+
+  // ════════════════════════════════════════════════
+  // ★ GD-3 (J1) 補:16 Court Cards 的 well-dignified / ill-dignified 變體含義
+  // 依據:Mathers《Book T》1888 原始手稿
+  // 用法:GD 系統用「鄰牌元素」決定 well/ill,而非正逆位
+  //   - 雙鄰同元素或友好元素 = well-dignified → 顯示 well_meaning
+  //   - 雙鄰對立元素 = ill-dignified → 顯示 ill_meaning
+  //   - 一鄰友好一鄰對立 = neutral → 兩者皆需考慮
+  // ════════════════════════════════════════════════
+  var COURT_DIGNITY_MEANINGS = {
+    // 權杖宮廷
+    'wand-king':   { // Knight of Wands (Lord of Flame and Lightning)
+      well: '活躍、慷慨、驕傲、迅速、衝動 — 火之火,意志最純粹的表達',
+      ill:  '邪惡、殘忍、偏見、暴戾 — 衝動失控變成霸凌、蠻橫'
+    },
+    'wand-queen':  { // Queen of Thrones of Flame
+      well: '適應力強、持續能量、平靜權威、有吸引力、慷慨但不容忍 — 穩定的火',
+      ill:  '頑固、復仇心、支配慾、暴政、會無故反目'
+    },
+    'wand-knight': { // Prince of Chariot of Fire
+      well: '快速強壯、衝動但正義、慷慨幽默 — 行動派貴族',
+      ill:  '驕傲、不容忍、殘忍、懦弱、偏見 — 表面強硬內心脆弱'
+    },
+    'wand-page':   { // Princess of Shining Flame
+      well: '個人主義、聰穎大膽、表達力強、熱情 — 火的種子',
+      ill:  '膚淺、戲劇化、殘忍、不穩定、不可靠 — 火花一閃即逝'
+    },
+    // 聖杯宮廷
+    'cup-king':    { // Knight of Waves (Lord of Waters)
+      well: '優雅、詩意、金星特質、慵懶但被激發後熱情 — 水中的火',
+      ill:  '感官沉溺、懶惰、不誠實 — 情感被慾望腐蝕'
+    },
+    'cup-queen':   { // Queen of Thrones of Waters
+      well: '富想像力、詩意、善良、深愛但不願為他人勞累 — 水的精華',
+      ill:  '善變、易受影響、懶散、想像強過真實感受 — 沉溺幻夢'
+    },
+    'cup-knight':  { // Prince of Chariot of Water
+      well: '微妙、暴力但隱藏、強烈但秘密的力量 — 水中的風',
+      ill:  '極端邪惡、無情、隱藏的危險 — 水底暗流變成毒'
+    },
+    'cup-page':    { // Princess of Waters
+      well: '甜美、詩意、溫柔、富想像、夢幻、善良 — 水的本質',
+      ill:  '自私、奢華、沉溺感官 — 溫柔變成黏膩控制'
+    },
+    // 寶劍宮廷
+    'sword-king':  { // Knight of Wind and Breezes
+      well: '主動、機敏、靈巧、勇敢、熟練 — 風之火,思維的劍',
+      ill:  '欺騙、暴政、狡詐、不謹慎、分裂 — 機敏變陰險'
+    },
+    'sword-queen': { // Queen of Thrones of Air
+      well: '極度敏銳、憎恨虛偽、敏感、機智、自信 — 風中的水',
+      ill:  '殘忍、欺騙、不可靠、頑固、狹隘 — 銳利變成刻薄'
+    },
+    'sword-knight':{ // Prince of Chariot of Winds
+      well: '充滿想法、思想細膩、敏捷、富表現力 — 風的純粹',
+      ill:  '無能、完全沒有想法、缺乏判斷 — 思想變成空轉'
+    },
+    'sword-page':  { // Princess of Rushing Winds
+      well: '智慧、力量、機智、熟練 — 風的種子',
+      ill:  '欺騙、低能、無情 — 機智變成刻薄與小聰明'
+    },
+    // 金幣宮廷
+    'pent-king':   { // Knight of Wide and Fertile Land
+      well: '勤勞、耐心、有條不紊、值得信賴、緩慢但確實 — 土之火',
+      ill:  '愚鈍、唯物、嫉妒、遲緩 — 穩定變成停滯'
+    },
+    'pent-queen':  { // Queen of Thrones of Earth
+      well: '慷慨、聰明、富有、寬厚、慈悲、誠實 — 土的精華',
+      ill:  '懶惰、奴性、無聊、漠不關心 — 富足變成怠惰'
+    },
+    'pent-knight': { // Prince of Chariot of Earth
+      well: '可信賴、能勞動、有實際技能、很少野心過度 — 土中的風',
+      ill:  '愚鈍、唯物主義、緩慢、怨恨 — 實際變成短視'
+    },
+    'pent-page':   { // Princess of Echoing Hills
+      well: '慷慨、善良、勤勉、慈悲、有耐心、深思 — 土的種子',
+      ill:  '浪費、揮霍、揮霍 — 慷慨變成不負責'
+    }
+  };
+
+  // ════════════════════════════════════════════════
+  // ★ GD-4 (I1+I2) 補:Court Cards 三層讀法 (Mathers Book T 明文)
+  // 原文:「the Knights and Queens almost invariably represent actual men and women
+  //       connected with the subject in hand. But the Kings sometimes represent
+  //       either the coming on or going off of a matter, arrival, or departure,
+  //       according to the way in which they face. While the Knaves show opinions,
+  //       thoughts, or ideas, either in harmony with or opposed to the subject.」
+  // 用法:依花色 + 階級給 AI 三種讀法選項
+  // ════════════════════════════════════════════════
+  var COURT_PERSON_ROLE = {
+    'queen': '近乎一定是實際相關的女性人物 (成熟、有影響力、年齡 30+)',
+    'knight':'(RWS King) 近乎一定是實際相關的男性人物,有時也代表「事情的接近或離開」(看面向方向)',
+    'king':  '(RWS King) 近乎一定是實際相關的男性人物,有時也代表「事情的接近或離開」(看面向方向)',
+    'page':  '(GD Knave/Princess) 通常代表「想法、意見、訊息」而非具體人物;若代表人物則為年輕女性或孩童'
+  };
+
+  // ════════════════════════════════════════════════
+  // ★ GD-8 補:Mathers《The Tarot》1888 原書 56 張小牌完整原始牌義 + Major
+  // 依據:Mathers, S.L. MacGregor (1888) "The Tarot, Its Occult Signification..."
+  // 用法:作為 Book T(Mathers/Felkin 1888 後期版)的「另一條傳統解讀」參考
+  //   - Mathers 1888 = 早期義大利傳統 + Etteilla 修飾
+  //   - Book T = 後期 GD 內部 Adeptus Minor 用的進階版
+  //   - 兩者牌義有時不同(如 Six of Cups, Three of Pentacles),提供 AI 多角度判讀
+  // 透過 ai-analysis.js 注入 cards[i].mathersUp / mathersRv
+  // ════════════════════════════════════════════════
+  var MATHERS_1888_MEANINGS = {
+    // ── 22 大牌 (Mathers 1888 簡明牌義) ──
+    '愚者':       { up:'愚行、贖罪、搖擺',                    rv:'猶豫、不穩、由此產生的麻煩' },
+    '魔術師':     { up:'意志、意志力、靈巧',                  rv:'意志用於邪惡、意志薄弱、狡詐、欺騙' },
+    '女祭司':     { up:'科學、智慧、知識、教育',              rv:'自負、無知、笨拙、淺薄知識' },
+    '皇后':       { up:'行動、計畫、行動力、主動',            rv:'惰性、力量浪費、缺乏專注、猶豫' },
+    '皇帝':       { up:'實現、結果、發展',                    rv:'停滯、阻礙、不成熟、未成熟' },
+    '教皇':       { up:'仁慈、恩澤、善良',                    rv:'過度仁慈、軟弱、愚蠢的慷慨' },
+    '戀人':       { up:'明智的安排、考驗、克服試煉',          rv:'不智的計畫、考驗中失敗' },
+    '戰車':       { up:'勝利、戰勝障礙',                      rv:'被推翻、最後關頭被障礙征服' },
+    '正義':       { up:'平衡、公正、公道',                    rv:'偏執、失衡、濫用正義、過度嚴苛、偏見' },
+    '隱者':       { up:'謹慎、小心、深思熟慮',                rv:'過度謹慎、膽怯、恐懼' },
+    '命運之輪':   { up:'好運、成功、意外的幸運',              rv:'厄運、失敗、意外的不幸' },
+    '力量':       { up:'力量、強壯、能力、堅毅',              rv:'濫用權力、傲慢、缺乏勇氣' },
+    '吊人':       { up:'自我犧牲、奉獻、被束縛',              rv:'自私、解開束縛、不完全的犧牲' },
+    '死神':       { up:'死亡、改變、轉化、惡化',              rv:'死亡僥倖逃過、部分改變、向好的轉變' },
+    '節制':       { up:'結合、整合、聯合',                    rv:'不智的結合、分裂、利益衝突' },
+    '惡魔':       { up:'好的命定',                            rv:'壞的命定' },
+    '塔':         { up:'毀滅、崩潰、破產、損失',              rv:'以上各點程度較輕' },
+    '星星':       { up:'希望、期待、光明的承諾',              rv:'希望未實現、期待落空或僅小幅實現' },
+    '月亮':       { up:'黃昏、欺騙、錯誤',                    rv:'波動、輕微的欺騙、小錯誤' },
+    '太陽':       { up:'幸福、滿足、喜悅',                    rv:'以上各點程度較輕' },
+    '審判':       { up:'更新、結果、事情的決定',              rv:'結果延遲、拖延、事情之後重啟' },
+    '世界':       { up:'完成、好的回報',                      rv:'壞的回報、報應' },
+    // ── 權杖 Wands (王牌→十) ──
+    '權杖王牌':   { up:'誕生、開始、起源、源頭',              rv:'迫害、追擊、暴力、煩惱、殘酷、暴政' },
+    '權杖二':     { up:'財富、運氣、富足、宏偉、輝煌',        rv:'驚訝、震驚、突發事件、不尋常事件' },
+    '權杖三':     { up:'進取、事業、商業、貿易、談判',        rv:'希望、慾望、嘗試、願望' },
+    '權杖四':     { up:'社會、結合、結社、和諧',              rv:'繁榮、成功、幸福、優勢' },
+    '權杖五':     { up:'金、財富、利益、繼承、財運、金錢',    rv:'法律訴訟、判決、官司、律師、法庭' },
+    '權杖六':     { up:'嘗試、希望、慾望、心願、期待',        rv:'不忠、背叛、不忠誠、欺騙' },
+    '權杖七':     { up:'成功、收益、優勢、利潤、勝利',        rv:'猶豫、懷疑、躊躇、困窘、焦慮' },
+    '權杖八':     { up:'理解、觀察、方向',                    rv:'爭吵、內部紛爭、不和' },
+    '權杖九':     { up:'秩序、紀律、好的安排、布局',          rv:'障礙、麻煩、延遲、不悅' },
+    '權杖十':     { up:'信任、安全、榮譽、誠信',              rv:'背叛、藉口、欺騙、阻礙' },
+    // ── 權杖宮廷 ──
+    '權杖侍者':   { up:'好的陌生人、好消息、樂趣、滿足',      rv:'壞消息、不悅、煩躁、憂慮' },
+    '權杖騎士':   { up:'離別、分離、不和',                    rv:'破裂、不和、爭吵' },
+    '權杖皇后':   { up:'鄉間婦人、莊園女主人、愛財、貪婪、放高利',rv:'好且貞潔的婦人,但嚴格節儉、障礙、阻力、反對' },
+    '權杖國王':   { up:'住在鄉間的男人、鄉紳、知識、教養',    rv:'天性善良但嚴厲的男人、忠告、建議、深思熟慮' },
+    // ── 聖杯 Cups (王牌→十) ──
+    '聖杯王牌':   { up:'宴飲、宴會、好心情',                  rv:'改變、新奇、變化、無常' },
+    '聖杯二':     { up:'愛、依戀、友誼、真誠、感情',          rv:'慾望受阻、障礙、反對、阻撓' },
+    '聖杯三':     { up:'成功、勝利、勝出、有利結果',          rv:'業務迅速進展、敏捷、機警' },
+    '聖杯四':     { up:'倦怠、不悅、不滿、不滿意',            rv:'新交、推測、徵兆、預感' },
+    '聖杯五':     { up:'結合、聯姻、繼承',                    rv:'到來、回歸、消息、驚訝、虛偽計畫' },
+    '聖杯六':     { up:'過去、已過去、消逝、消失',            rv:'未來、即將到來、不久、很快' },
+    '聖杯七':     { up:'想法、感觸、反思、計畫',              rv:'設計、決議、決定' },
+    '聖杯八':     { up:'金髮少女、友誼、依附、溫柔',          rv:'歡樂、宴飲、喜悅、樂趣' },
+    '聖杯九':     { up:'勝利、優勢、成功、凱旋、克服困難',    rv:'過錯、錯誤、失誤、缺陷' },
+    '聖杯十':     { up:'居住的城鎮、榮譽、尊重、聲望、美德',  rv:'戰鬥、衝突、反對、分歧、爭執' },
+    // ── 聖杯宮廷 ──
+    '聖杯侍者':   { up:'金髮青年、信心、誠實、謹慎、正直',    rv:'阿諛奉承者、欺騙、詭計' },
+    '聖杯騎士':   { up:'到來、接近、推進',                    rv:'雙重性、濫用信任、欺詐、狡猾' },
+    '聖杯皇后':   { up:'金髮女子、成功、幸福、優勢、樂趣',    rv:'地位好但好管閒事、不可信任的女人' },
+    '聖杯國王':   { up:'金髮男子、善良、慷慨、寬厚',          rv:'地位好但行為不一的男人、不信任、懷疑、疑慮' },
+    // ── 寶劍 Swords (王牌→十) ──
+    '寶劍王牌':   { up:'凱旋、豐饒、富裕、繁榮',              rv:'困窘、愚蠢無望的愛、障礙、阻撓' },
+    '寶劍二':     { up:'友誼、勇敢、堅定、勇氣',              rv:'虛偽朋友、背叛、謊言' },
+    '寶劍三':     { up:'修女、分離、移除、決裂、爭吵',        rv:'(可能僅意味某物丟失或暫時錯位)' },
+    '寶劍四':     { up:'孤獨、隱退、被遺棄、隱士',            rv:'節省、預防、開支管理' },
+    '寶劍五':     { up:'哀悼、悲傷、苦難',                    rv:'損失、麻煩(正逆位含義相同)' },
+    '寶劍六':     { up:'特使、信使、航行、旅行',              rv:'宣告、求愛、揭示、驚訝' },
+    '寶劍七':     { up:'希望、信心、慾望、嘗試、心願',        rv:'明智的建議、好的勸告、智慧、謹慎' },
+    '寶劍八':     { up:'疾病、誹謗、批評、責備',              rv:'過去的背叛、事件、意外、值得注意的事件' },
+    '寶劍九':     { up:'神職人員、牧師、良知、誠實、誠信',    rv:'明智的不信任、懷疑、恐懼、可疑人物' },
+    '寶劍十':     { up:'眼淚、苦難、悲傷、憂愁',              rv:'短暫的成功、暫時的優勢' },
+    // ── 寶劍宮廷 ──
+    '寶劍侍者':   { up:'間諜、監視、權威',                    rv:'未預見的事、警覺、支援(也可能=意外的禮物或意外的悲傷)' },
+    '寶劍騎士':   { up:'軍人、職業武人、技巧、能力、敏捷',    rv:'自負的傻瓜、天真、簡單' },
+    '寶劍皇后':   { up:'寡婦、損失、剝奪、缺席、分離',        rv:'壞女人、易怒偏執、富裕但有不和、富足卻憂慮' },
+    '寶劍國王':   { up:'律師、法律人、權力、命令、優越、權威',rv:'惡人、煩惱、憂慮、悲傷、恐懼、不安' },
+    // ── 金幣 Pentacles (王牌→十) ──
+    '金幣王牌':   { up:'完美的滿足、福樂、繁榮、凱旋',        rv:'金幣袋、金錢、收益、幫助、利潤、財富' },
+    '金幣二':     { up:'尷尬、煩惱、困難',                    rv:'信件、訊息、書信、消息' },
+    '金幣三':     { up:'高貴、提升、尊嚴、地位、權力',        rv:'子女、兒女、年輕人、開始' },
+    '金幣四':     { up:'樂趣、歡愉、享受、滿足',              rv:'障礙、阻礙' },
+    '金幣五':     { up:'戀人或情人、愛、甜蜜、感情、純潔的愛',rv:'丟臉的愛、輕率、放縱、放蕩' },
+    '金幣六':     { up:'禮物、贈與、喜悅',                    rv:'野心、慾望、激情、目標、渴望' },
+    '金幣七':     { up:'金錢、財務、寶藏、收益、利潤',        rv:'紛擾、煩惱、焦慮、憂鬱' },
+    '金幣八':     { up:'深色頭髮少女、美麗、坦白、貞潔、純真',rv:'阿諛、放高利、虛偽、不可靠' },
+    '金幣九':     { up:'謹慎、慎重、明智、辨別力',            rv:'欺騙、不誠信、詭計、欺瞞' },
+    '金幣十':     { up:'家、住所、居處、家庭',                rv:'賭博、揮霍、搶劫、損失' },
+    // ── 金幣宮廷 ──
+    '金幣侍者':   { up:'深色頭髮青年、節省、有條理、規則、管理',rv:'揮霍、浪費、糟蹋、放縱(下一張牌會說明在哪方面揮霍)' },
+    '金幣騎士':   { up:'有用的人、可信任、智慧、節省、秩序',  rv:'勇敢但失業、懶散、不工作、疏忽' },
+    '金幣皇后':   { up:'深色頭髮婦人、慷慨女性、寬厚、靈魂偉大、慷慨大方',rv:'必然的邪惡、可疑的女人、應被懷疑的女人' },
+    '金幣國王':   { up:'深色頭髮男人、勝利、勇敢、勇氣、成功',rv:'年老有惡習的男人、危險的人、懷疑、恐懼、危險' }
   };
 
   // ════════════════════════════════════════════════
@@ -2962,6 +3236,51 @@ enhanceTarot = function(tarot) {
   }
 
   // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════════
+  // ★ GD-3,4 (J1+I1+I2) 補:Court Card 完整 GD 讀法計算
+  //   1. 依鄰牌元素決定 well-dignified / ill-dignified / neutral
+  //   2. 給出對應的 Book T 含義
+  //   3. 給出三層讀法 (人物/想法/事件接近離開)
+  // ════════════════════════════════════════════════
+  function analyzeCourtCard(card, leftNeighbor, rightNeighbor) {
+    if (!card || card.suit === 'major') return null;
+    var rank = String(card.rank || '');
+    if (rank !== 'king' && rank !== 'queen' && rank !== 'knight' && rank !== 'page') return null;
+
+    var courtKey = card.suit + '-' + rank;
+    var meanings = COURT_DIGNITY_MEANINGS[courtKey] || null;
+    var personRole = COURT_PERSON_ROLE[rank] || '';
+
+    // 計算 well/ill dignified
+    var leftEd = leftNeighbor ? elementalDignity(card, leftNeighbor) : null;
+    var rightEd = rightNeighbor ? elementalDignity(card, rightNeighbor) : null;
+    var dignityState; // 'well' | 'ill' | 'neutral'
+    if (leftEd === 'strengthen' || rightEd === 'strengthen') {
+      // 至少一鄰同元素 = 強化(極端化)
+      dignityState = (leftEd === 'weaken' || rightEd === 'weaken') ? 'neutral' : 'well';
+    } else if (leftEd === 'weaken' && rightEd === 'weaken') {
+      // 雙鄰皆對立元素 = 極弱(背景化)
+      dignityState = 'ill';
+    } else if (leftEd === 'weaken' || rightEd === 'weaken') {
+      dignityState = 'neutral'; // 一鄰對立一鄰友好 = 抵消
+    } else if (leftEd === 'friendly' && rightEd === 'friendly') {
+      dignityState = 'well'; // 雙鄰友好 = well-dignified
+    } else {
+      dignityState = 'neutral';
+    }
+
+    return {
+      courtKey: courtKey,
+      dignityState: dignityState, // 'well' | 'ill' | 'neutral'
+      meaning: meanings ? (dignityState === 'ill' ? meanings.ill : meanings.well) : '',
+      wellMeaning: meanings ? meanings.well : '',
+      illMeaning: meanings ? meanings.ill : '',
+      personRole: personRole, // 三層讀法:人物/想法/事件接近離開
+      leftDignity: leftEd,
+      rightDignity: rightEd
+    };
+  }
+
   // 全域輸出
   // ════════════════════════════════════════════════
 
@@ -2975,6 +3294,12 @@ enhanceTarot = function(tarot) {
   window.ootkGetCountValue = getCountValue;
   window.ootkGetCardGD = getCardGD;
   window.ootkElementalDignity = elementalDignity;
+  // GD-3,4 新增 export
+  window.ootkAnalyzeCourtCard = analyzeCourtCard;
+  window.ootkCourtDignityMeanings = COURT_DIGNITY_MEANINGS;
+  window.ootkCourtPersonRole = COURT_PERSON_ROLE;
+  // GD-8 新增 export
+  window.ootkMathers1888Meanings = MATHERS_1888_MEANINGS;
 
   console.log('[OOTK v2] Opening of the Key 正統引擎已載入');
 })();

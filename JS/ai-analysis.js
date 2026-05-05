@@ -23301,6 +23301,29 @@ function _buildTarotOnlyPayload() {
     }
     card.advice = isUp ? (c.adviceUp || '') : (c.adviceRv || '');
     card.keywords = isUp ? (c.kwUp || '') : (c.kwRv || '');
+
+    // ★ GD-3,4 套入:Court Card 完整 GD 讀法 (Mathers Book T 1888)
+    //   - well-dignified / ill-dignified / neutral 由鄰牌元素決定
+    //   - 三層讀法 (人物 / 想法 / 事件接近離開)
+    if (typeof window.ootkAnalyzeCourtCard === 'function') {
+      var leftN = i > 0 ? drawn[i-1] : null;
+      var rightN = i < drawn.length - 1 ? drawn[i+1] : null;
+      var courtAnalysis = window.ootkAnalyzeCourtCard(c, leftN, rightN);
+      if (courtAnalysis) {
+        card.gdCourtAnalysis = courtAnalysis;
+      }
+    }
+
+    // ★ GD-8 套入:Mathers《The Tarot》1888 原書原始牌義 (作為 Book T 之外的傳統參考)
+    //   給 AI 多角度判讀來源,Book T 與 Mathers 1888 兩條路線同時提供
+    if (window.ootkMathers1888Meanings) {
+      var _mathersM = window.ootkMathers1888Meanings[rawName];
+      if (_mathersM) {
+        card.mathersUp = _mathersM.up || '';
+        card.mathersRv = _mathersM.rv || '';
+      }
+    }
+
     return card;
   });
 
