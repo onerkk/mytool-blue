@@ -53,24 +53,34 @@ function compressImage(file) {
       var img = new Image();
       img.onerror = function() { reject(new Error('圖片格式不支援')); };
       img.onload = function() {
-        var w = img.width, h = img.height;
-        if (w > MAX_PX || h > MAX_PX) {
-          if (w > h) { h = Math.round(h * MAX_PX / w); w = MAX_PX; }
-          else { w = Math.round(w * MAX_PX / h); h = MAX_PX; }
+        // ★ v68.21.22 Bug #42 修:canvas.toDataURL 失敗(罕見 cross-origin/SecurityError)
+        //   原本同步 throw 會跳脫 promise 沒人接 → UI 卡在「處理中…」
+        try {
+          var w = img.width, h = img.height;
+          if (w > MAX_PX || h > MAX_PX) {
+            if (w > h) { h = Math.round(h * MAX_PX / w); w = MAX_PX; }
+            else { w = Math.round(w * MAX_PX / h); h = MAX_PX; }
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('瀏覽器不支援 canvas'));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, w, h);
+          var dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
+          // 壓縮後檢查：base64 字串大小約是實際 byte 的 1.37 倍
+          var approxBytes = dataUrl.length * 0.75;
+          if (approxBytes > MAX_SIZE_MB * 1024 * 1024) {
+            // 二次壓縮：降 quality
+            dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          }
+          resolve(dataUrl);
+        } catch(e) {
+          reject(new Error('圖片壓縮失敗: ' + (e && e.message ? e.message : '未知錯誤')));
         }
-        var canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        var dataUrl = canvas.toDataURL('image/jpeg', QUALITY);
-        // 壓縮後檢查：base64 字串大小約是實際 byte 的 1.37 倍
-        var approxBytes = dataUrl.length * 0.75;
-        if (approxBytes > MAX_SIZE_MB * 1024 * 1024) {
-          // 二次壓縮：降 quality
-          dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        }
-        resolve(dataUrl);
       };
       img.src = reader.result;
     };

@@ -1116,6 +1116,11 @@ function submitWithTool() {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(_chkBody)
             });
+            // ★ v68.21.22 Bug #49 修:5xx 時 throw 走外層 catch(precheck 失敗不擋)
+            //   原本沒檢查,_chkData.allowed undefined → 進 paywall 路徑
+            if (!_chkResp.ok && _chkResp.status >= 500) {
+              throw new Error('worker 5xx');
+            }
             var _chkData = await _chkResp.json();
             if (!_chkData.allowed) {
               // v64.C:標準路徑擋了,但用戶可能有「塔羅深度」配額——再查一次 opus 路徑
@@ -1878,6 +1883,11 @@ function _sendFeedbackToForms(rating,reasons,comment,actual){
     fetch(WORKER_URL+'/feedback',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
+      // ★ v68.21.22 Bug #43 修:加 keepalive
+      //   原本沒加,用戶送完 fb 馬上關頁面 → fetch 被取消 → fb 沒送到
+      //   keepalive:true 讓 fetch 即使頁面關閉也能完成(瀏覽器 background)
+      //   對齊 oracle.js line 537 的設計
+      keepalive:true,
       body:JSON.stringify({
         // ★ 配合 worker.js Bug #29 fix：帶 session_token 讓登入用戶有獨立 rate quota
         //   沒登入時 worker 會 fallback 到 IP-based rate limit（1 分鐘 5 次）
@@ -5652,7 +5662,16 @@ showAuraResult = function(){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_token: sessionToken })
-    }).then(function(r){ return r.json(); }).then(function(data){
+    }).then(function(r){
+      // ★ v68.21.22 Bug #50 修:5xx 時 throw,讓 catch 維持原 localStorage 訂閱狀態
+      //   原本沒檢查 r.ok,5xx 時 data.active undefined → 進 else 分支顯示「免費」
+      //   且 line 5729 localStorage.removeItem('_jy_sub_expires') 誤清會員資料
+      //   修法:5xx 視為暫時故障,catch 不動 localStorage(維持現狀讓用戶下次再試)
+      if (!r.ok && r.status >= 500) {
+        throw new Error('worker 5xx');
+      }
+      return r.json();
+    }).then(function(data){
       // ★ v52：存 tier 到 window + localStorage，給 Opus 付費 modal 及其他地方讀取
       try {
         if (data.active && (data.tier === 'premium' || data.tier === 'standard')) {
@@ -6060,6 +6079,10 @@ async function submitTarotQuick() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(checkBody)
       });
+      // ★ v68.21.22 Bug #51 修:5xx throw 走外層 catch(precheck 失敗不擋)
+      if (!checkResp.ok && checkResp.status >= 500) {
+        throw new Error('worker 5xx');
+      }
       var checkData = await checkResp.json();
       if (!checkData.allowed) {
         // v64.C:標準擋了,先查深度配額
@@ -6183,7 +6206,12 @@ function showTarotResult() {
 
   // 顯示問題
   var hero = document.getElementById('tarot-question-hero');
-  if (hero) hero.innerHTML = '「' + (S.form.question || '') + '」';
+  if (hero) {
+    // ★ v68.21.22 Bug #58 修:用戶輸入沒 escape XSS 風險
+    //   原本 hero.innerHTML = '「' + S.form.question + '」' → 用戶輸入 <script> 會執行
+    //   修法:用 textContent(自動 escape)
+    hero.textContent = '「' + (S.form.question || '') + '」';
+  }
 
   // 沿用問題到七維度表單
   var f2q = document.getElementById('f2-question');

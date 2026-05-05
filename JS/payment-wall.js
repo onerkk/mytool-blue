@@ -533,6 +533,12 @@
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(_body)
       });
+      // ★ v68.21.22 Bug #48 修:5xx 時走 catch fallback(顯示「付款已收到」)
+      //   原本沒檢查,r.json() 可能 parse {error:...} 導致後續 d.loggedIn / d.subscription 都 undefined
+      //   → quotaEl 顯示空白或錯誤訊息
+      if (!r.ok && r.status >= 500) {
+        throw new Error('worker 5xx');
+      }
       var d = await r.json();
       var quotaEl = document.getElementById('jy-paid-card-quota');
       if (!quotaEl) return;
@@ -1403,7 +1409,14 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(checkPayload)
       })
-      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        // ★ v68.21.22 Bug #46 修:5xx 時 data.allowed undefined → 誤入付費牆
+        //   修法:5xx throw 讓下方 .catch 接住放行(對齊網路錯邏輯)
+        if (!r.ok && r.status >= 500) {
+          throw new Error('worker 5xx');
+        }
+        return r.json();
+      })
       .then(function(data) {
         if (!data.allowed) {
           var existing = document.getElementById('jy-pay-modal');

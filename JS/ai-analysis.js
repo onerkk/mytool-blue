@@ -14377,11 +14377,16 @@ function _findCrystalProduct(name) {
   // ★ v33: 動態庫存優先
   var dynamicProds = window._jyCrystalProducts;
   if (dynamicProds && dynamicProds.length) {
+    // ★ v68.21.22 Bug #52 修:加 typeof 防呆
+    //   若 worker 動態庫存資料壞掉(prod.n 是 undefined/null/object),原本 .indexOf 會 throw
     for (var di = 0; di < dynamicProds.length; di++) {
-      if (dynamicProds[di].n === n) return dynamicProds[di];
+      if (dynamicProds[di] && typeof dynamicProds[di].n === 'string' && dynamicProds[di].n === n) return dynamicProds[di];
     }
     for (var di2 = 0; di2 < dynamicProds.length; di2++) {
-      if (dynamicProds[di2].n.indexOf(n) >= 0 || n.indexOf(dynamicProds[di2].n) >= 0) return dynamicProds[di2];
+      if (dynamicProds[di2] && typeof dynamicProds[di2].n === 'string' &&
+          (dynamicProds[di2].n.indexOf(n) >= 0 || n.indexOf(dynamicProds[di2].n) >= 0)) {
+        return dynamicProds[di2];
+      }
     }
   }
 
@@ -20906,6 +20911,12 @@ renderTarot = function(){
   }
 
   function _renderAIResultObject(r){
+    // ★ v68.21.22 Bug #41 修:r 是 null/undefined 防呆
+    //   原本沒檢查,若 r=null 會在 line 20999 r.directAnswer 拋 TypeError 整個 render 中斷
+    //   實務上極少觸發(主流程不會傳 null),但加防呆讓錯誤訊息更清楚
+    if (r === null || r === undefined) {
+      return '<div class="card" style="margin-top:.5rem;padding:1rem;color:#f87171">⚠️ 解析結果為空,請重試或聯繫管理員</div>';
+    }
     // ═══ v22 安全網：r 是字串 → 核彈 parse ═══
     if (typeof r === 'string' && (r.indexOf('"directAnswer"') >= 0 || r.indexOf('"layers"') >= 0)) {
       try {
@@ -22946,7 +22957,7 @@ function _buildShareBarHTML(mode) {
       'border:1.5px solid rgba(' + ac + ',.3);color:rgba(' + ac + ',.95);' +
       'font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s' +
     '"><i class="fas fa-image" style="font-size:.78rem"></i>存分享圖</button>' +
-    '<button onclick="(function(){var _ct=String(window._jyClosingText||\'命理解讀\').replace(/https?:\\/\\/[^\\s]+/gi,\'\').replace(/[\\x00-\\x1F]+/g,\' \').replace(/\\s{2,}/g,\' \').trim().slice(0,200);if(navigator.share){navigator.share({title:\'靜月之光\',text:_ct+\' ✨ 免費體驗 👉 https://jingyue.uk\',url:\'https://jingyue.uk\'}).then(function(){if(typeof unlockExtraFeatures===\'function\')unlockExtraFeatures()}).catch(function(){})}else{navigator.clipboard.writeText(_ct+\' https://jingyue.uk\').then(function(){alert(\'已複製！可貼到 LINE 分享給朋友\');if(typeof unlockExtraFeatures===\'function\')unlockExtraFeatures()})}})()" style="' +
+    '<button onclick="(function(){var _ct=String(window._jyClosingText||\'命理解讀\').replace(/https?:\\/\\/[^\\s]+/gi,\'\').replace(/[\\x00-\\x1F]+/g,\' \').replace(/\\s{2,}/g,\' \').trim().slice(0,200);if(navigator.share){navigator.share({title:\'靜月之光\',text:_ct+\' ✨ 免費體驗 👉 https://jingyue.uk\',url:\'https://jingyue.uk\'}).then(function(){if(typeof unlockExtraFeatures===\'function\')unlockExtraFeatures()}).catch(function(){})}else if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(_ct+\' https://jingyue.uk\').then(function(){alert(\'已複製！可貼到 LINE 分享給朋友\');if(typeof unlockExtraFeatures===\'function\')unlockExtraFeatures()}).catch(function(){alert(\'複製失敗,請長按文字手動複製\')})}else{alert(\'此瀏覽器不支援自動分享,請手動複製網址 https://jingyue.uk\')}})()" style="' +
       'display:flex;align-items:center;gap:6px;padding:.6rem 1.1rem;border-radius:12px;' +
       'background:transparent;border:1px solid rgba(255,255,255,.1);' +
       'color:var(--c-text-dim);font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .2s' +

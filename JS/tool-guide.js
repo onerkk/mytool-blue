@@ -513,6 +513,8 @@
     fetch(url + '/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      // ★ v68.21.22 Bug #44 修:加 keepalive 對齊 oracle.js 跟 ui.js
+      keepalive: true,
       body: JSON.stringify({
         // ★ 配合 worker.js Bug #29 fix（feedback 加 rate limit）：帶 session_token 讓登入用戶有獨立 quota
         //   沒登入時 worker 會 fallback 到 IP-based rate limit（1 分鐘 5 次）
