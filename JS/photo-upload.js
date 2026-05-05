@@ -27,18 +27,15 @@ var PHOTO_FIELDS = {
 };
 
 // v62：face 三套都可（含免費），手相仍只在七維度
-// v68.20 Bug #57 修:會員制下架後手相改為「付費解鎖」(由 worker 28991 行 gate)
-//   原本 privileged = 會員 → 才看到手相欄位
-//   但會員下架,單次付費用戶也應能用手相
-//   修法:七維度全部用戶都看到 3 欄位,但手相欄位若非付費身份標示「付費解鎖」
-//        實際上傳由 worker 端 PHOTO_MEMBER_ONLY gate 控管(免費送手相 → 429 → 付費才放行)
+// v68.21.10:業務變更 — 手相全工具(七維/塔羅/開鑰)免費開放
+//   塔羅/開鑰只給 face(避免介面複雜)/七維度給 face+palmLeft+palmRight
+//   實際 AI 分析:三工具有照片就一律納入交叉分析,Haiku/Sonnet/Opus 都會
 function getFieldsForTool(tool, privileged) {
   if (tool === 'tarot' || tool === 'ootk') {
     // 塔羅/開鑰:所有人都只看到「氣色面相」一個欄位
     return ['face'];
   }
-  // 七維度(full):全部人都顯示三欄位,讓用戶看到「手相分析」存在(商業:看得到才會付費)
-  //   實際 gate 在 worker 端;免費用戶送手相會被擋
+  // 七維度(full):全部人都顯示三欄位(face+palmLeft+palmRight),全免費
   return ['face', 'palmLeft', 'palmRight'];
 }
 
@@ -96,14 +93,15 @@ function createUploadSlot(key, field, privileged) {
   var slot = document.createElement('div');
   slot.className = 'jy-photo-slot';
   slot.id = 'photo-slot-' + key;
-  // v68.21 Bug #9 修:手相欄位若非付費身份(會員/admin/單次配額),顯示「付費解鎖」徽章
-  //   讓用戶在點擊前就知道這是付費功能,避免上傳後才被 worker PHOTO_MEMBER_ONLY 擋下
-  //   注意:配額制下「privileged」目前只看會員+admin,單次購買的 paid_quota 用戶仍會看到徽章
-  //         但 worker 端 gate 會放行(已付費)。徽章只是「警示」非「阻擋」。
-  var _isPalm = (key === 'palmLeft' || key === 'palmRight');
-  var _lockBadge = (_isPalm && !privileged)
-    ? '<span style="position:absolute;top:4px;right:4px;font-size:.55rem;padding:2px 6px;border-radius:6px;background:rgba(192,132,252,.18);color:#c084fc;border:1px solid rgba(192,132,252,.4);font-weight:600;letter-spacing:.02em;z-index:1">💎 付費解鎖</span>'
-    : '';
+  // ★ v68.21.10:手相全民開放 — 業務決策變更,免費用戶也可上傳手相,AI 一律納入交叉
+  //   舊版(已停用):手相欄位 (!privileged) 時顯示「💎 付費解鎖」徽章
+  //   新版:不顯示徽章,跟氣色面相一樣免費
+  //   舊邏輯保留為註解供日後參考:
+  //   var _isPalm = (key === 'palmLeft' || key === 'palmRight');
+  //   var _lockBadge = (_isPalm && !privileged)
+  //     ? '<span style="position:absolute;top:4px;right:4px;font-size:.55rem;padding:2px 6px;border-radius:6px;background:rgba(192,132,252,.18);color:#c084fc;border:1px solid rgba(192,132,252,.4);font-weight:600;letter-spacing:.02em;z-index:1">💎 付費解鎖</span>'
+  //     : '';
+  var _lockBadge = '';
   slot.innerHTML =
     '<div class="jy-photo-btn" id="photo-btn-' + key + '" style="position:relative">' +
       _lockBadge +
@@ -290,7 +288,7 @@ function renderPhotoUpload(tool, forceRefresh) {
 
   var grid = document.getElementById('jy-photo-grid');
   fields.forEach(function(key) {
-    // v68.21 Bug #9:傳 privileged 旗標給 createUploadSlot,讓手相欄位顯示「付費解鎖」徽章
+    // v68.21.10:手相已全民開放 — privileged 旗標保留(備用),不再用於顯示徽章
     var slot = createUploadSlot(key, PHOTO_FIELDS[key], privileged);
     grid.appendChild(slot);
     if (window._jyPhotos && window._jyPhotos[key]) {
