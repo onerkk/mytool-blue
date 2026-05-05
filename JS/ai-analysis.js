@@ -14288,6 +14288,11 @@ async function _handleOpusClickForMode(mode) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(checkBody)
     });
+    // ★ v68.21.21 Bug #31 修:5xx 時 data.allowed 是 undefined → 誤入付費牆
+    //   修法:5xx throw 讓 catch 顯示「稍後再試」(對齊 Bug #18 修法)
+    if (!resp.ok && resp.status >= 500) {
+      throw new Error('worker 暫時故障 (' + resp.status + ')');
+    }
     var data = await resp.json();
     if (data.allowed) {
       window._jyOpusDepth = true;
@@ -25168,6 +25173,11 @@ async function _triggerTarotFollowUp() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(checkBody)
       });
+      // ★ v68.21.21 Bug #32 修:5xx 時 checkData.allowed undefined → 誤入付費牆
+      //   修法:5xx 跳出 catch(已包在 try-catch 內,catch 只 console.warn 不擋)
+      if (!checkResp.ok && checkResp.status >= 500) {
+        throw new Error('worker 5xx');
+      }
       var checkData = await checkResp.json();
       if (!checkData.allowed) {
         // ★ v46 bug 修:未登入的 case 要引導登入,不能叫使用者付錢
@@ -27055,7 +27065,14 @@ window._jyStartOOTK = function() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(_ootkCheckBody)
   })
-  .then(function(r) { return r.json(); })
+  .then(function(r) {
+    // ★ v68.21.21 Bug #33 修:5xx 時 data.allowed undefined → 誤入付費牆
+    //   修法:5xx throw 讓下方 .catch 接住放行(預設可用)
+    if (!r.ok && r.status >= 500) {
+      throw new Error('worker 5xx');
+    }
+    return r.json();
+  })
   .then(function(data) {
     if (data.allowed) {
       // 配額充足(會員/單次/admin) → 直接開始

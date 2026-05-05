@@ -147,23 +147,40 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_token: sessionToken })
-    }).then(function(r){ return r.json(); }).then(function(data){
-      if (data.loggedIn) {
-        window._JY_SESSION_NAME = data.name || data.email || '';
-        try { localStorage.setItem('_jy_session_name', window._JY_SESSION_NAME); } catch(e){}
-        window._jyUpdateAuthUI && window._jyUpdateAuthUI();
-        // 確保閘門已移除
-        if (typeof _jyRemoveLoginGate === 'function') _jyRemoveLoginGate();
-      } else {
-        // session 過期 → 清除
+    }).then(function(r){
+      // ★ v68.21.20 Bug #27 修:worker 暫時 5xx 時 r.json() 可能也能 parse 出 {error:...}
+      //   data.loggedIn 是 undefined → 進入 else 清 session → 誤把登入用戶踢出
+      //   修法:r.ok 為 false 或 status 5xx 時,維持原 session 不動(只在明確 200 才更新)
+      if (!r.ok) {
+        // 4xx (401/403) 才清 session,5xx 維持現狀讓用戶 retry
+        if (r.status >= 400 && r.status < 500) {
+          return { _shouldClear: true };
+        }
+        // 5xx / 網路錯 → 不動 session
+        return { _skipUpdate: true };
+      }
+      return r.json();
+    }).then(function(data){
+      if (data._skipUpdate) return; // worker 暫時掛點,維持現狀
+      if (data._shouldClear || !data.loggedIn) {
+        // session 過期 / 401 → 清除
         window._JY_SESSION_TOKEN = '';
         window._JY_SESSION_NAME = '';
         try { localStorage.removeItem('_jy_session'); localStorage.removeItem('_jy_session_name'); } catch(e){}
         window._jyUpdateAuthUI && window._jyUpdateAuthUI();
         // 顯示登入閘門
         if (!window._JY_ADMIN_TOKEN) _jyShowLoginGate();
+      } else {
+        // 登入成功
+        window._JY_SESSION_NAME = data.name || data.email || '';
+        try { localStorage.setItem('_jy_session_name', window._JY_SESSION_NAME); } catch(e){}
+        window._jyUpdateAuthUI && window._jyUpdateAuthUI();
+        // 確保閘門已移除
+        if (typeof _jyRemoveLoginGate === 'function') _jyRemoveLoginGate();
       }
-    }).catch(function(){});
+    }).catch(function(){
+      // 網路錯誤 → 不動 session,讓用戶下次再試
+    });
   }
 })();
 
@@ -5466,6 +5483,14 @@ showAuraResult = function(){
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
+      // ★ v68.21.20 Bug #18 修:5xx 時放行(避免 worker 暫掛把用戶誤推付費牆)
+      //   原本 resp 5xx 但 body 是 JSON {error:...} → data.allowed 是 undefined → 後續當 false 處理
+      //   修法:5xx 視為 worker 暫時故障,放行讓用戶繼續(跟 catch 網路錯邏輯一致)
+      //   4xx (401/429) 才照 worker 回應處理
+      if (!resp.ok && resp.status >= 500) {
+        console.warn('[PreCheck] worker 5xx, allowing:', resp.status);
+        return { allowed: true };
+      }
       var data = await resp.json();
       return data;
     } catch(e) {
