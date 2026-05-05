@@ -21789,7 +21789,7 @@ renderTarot = function(){
         var _errIcon = '🌙', _errTitle = '七維度免費體驗已用完', _errDesc = '單次購買繼續使用<br>標準 NT$' + window.JY_PRICES.SINGLE_7D + ' / 深度 NT$' + window.JY_PRICES.OPUS_7D + '';
         if (_errCode === '7D_MONTHLY_USED') { _errIcon = '📊'; _errTitle = '本月七維度配額已用完'; _errDesc = '單次購買繼續使用 NT$' + window.JY_PRICES.SINGLE_7D + '<br><a href="https://tw.shp.ee/c1VpkoKd" target="_blank" rel="noopener" style="color:rgba(212,175,55,.85);text-decoration:underline">或前往蝦皮選購水晶</a>'; }
         else if (_errCode === 'SUB_DAILY_USED') { _errIcon = '⏰'; _errTitle = '今日配額已用完'; _errDesc = '明天再來，或單次購買 NT$' + window.JY_PRICES.SINGLE_7D; }
-        else if (_errCode === 'PHOTO_MEMBER_ONLY') { _errIcon = '📷'; _errTitle = '手相分析需付費解讀'; _errDesc = '面相+水晶照片可免費使用<br>手相分析請購買單次七維度 NT$' + window.JY_PRICES.SINGLE_7D; }
+        else if (_errCode === 'PHOTO_MEMBER_ONLY') { _errIcon = '📷'; _errTitle = '照片分析功能異常'; _errDesc = '免費版本已開放面相+手相+水晶,如出現此訊息請更新頁面重試'; }
         resultDiv.innerHTML = '<div style="text-align:center;padding:1.2rem">' +
           '<div style="font-size:1.4rem;margin-bottom:.5rem">' + _errIcon + '</div>' +
           '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">' + _errTitle + '</div>' +
