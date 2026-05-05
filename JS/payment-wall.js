@@ -299,6 +299,20 @@
     if (type === 'opus_single') {
       try { window._jyOpusDepth = true; } catch(_) {}
     }
+    // v68.21.1 Bug #79 修:DOM 預檢,避免 _triggerXXX 找到但 div 不存在時靜默失敗
+    //   情境:用戶從綠界回來但頁面已被 reload / state 已 reset
+    //         → _triggerAIDeep 存在但 ai-deep-result div 不存在 → 21296 行 return undefined
+    //         → 呼叫端誤判 return true → 用戶看到 banner 但什麼都沒發生
+    //   修法:呼叫前先確認對應的結果 div 存在,不存在直接 return false 走綠卡 fallback
+    //   注意:塔羅是 r-content,OOTK 是 ootk-result-area,七維是 ai-deep-result
+    var _resultDivId = mode === 'tarot_only' ? 'r-content'
+                     : mode === 'ootk' ? 'ootk-result-area'
+                     : 'ai-deep-result';
+    var _resultDiv = document.getElementById(_resultDivId);
+    if (!_resultDiv) {
+      console.warn('[Payment] auto-trigger: ' + _resultDivId + ' not in DOM, falling back to result card');
+      return false;
+    }
     try {
       // followup_single 維持原邏輯（_jyCheckPaymentAndUnlock 內已處理）
       if (type === 'followup_single') { console.log('[Payment] auto-trigger: followup_single, skip'); return false; }
@@ -468,9 +482,13 @@
     }
 
     // 繼續按鈕文字
-    var continueLabel = '🌙 繼續七維度解讀 →';
-    if (mode === 'tarot_only') continueLabel = '🃏 繼續塔羅解讀 →';
-    else if (mode === 'ootk') continueLabel = '🔑 繼續開鑰解讀 →';
+    // v68.21.1 Bug #74 (UX):明確告知接下來要填出生資料
+    //   原本只寫「繼續七維度解讀 →」,新訪客付完款回來看到會以為點下去就直接出結果
+    //   實際 _jyContinueAfterPay 只是 pickTool(),用戶必須填表 + 點開始解讀才真的觸發 AI
+    //   導致用戶誤會「付完沒反應」,以為買完無法使用
+    var continueLabel = '🌙 繼續填寫出生資料 →';
+    if (mode === 'tarot_only') continueLabel = '🃏 繼續抽牌解讀 →';
+    else if (mode === 'ootk') continueLabel = '🔑 繼續填寫出生資料 →';
 
     // 先建卡(配額位置先顯示「載入中」,稍後填入)
     var retryCard = document.createElement('div');
@@ -519,6 +537,27 @@
       var quotaEl = document.getElementById('jy-paid-card-quota');
       if (!quotaEl) return;
 
+      // v68.21.1 Bug #87 配套:check-subscription 回 loggedIn=false 時明確提示用戶重新登入
+      //   情境:用戶剛從綠界回來,但 session token 過期或被清除
+      //         → worker 找不到 sessionUser,paid_quota 用 IP 查當然空
+      //         → 用戶看到「找不到配額」會以為買的東西不見了
+      //   修法:loggedIn=false 時直接導用戶重新登入,不顯示空配額誤導
+      if (d.loggedIn === false) {
+        quotaEl.innerHTML = '<div style="font-weight:700;color:#fbbf24;margin-bottom:.3rem">⚠️ 需重新登入</div>' +
+          '<div style="font-size:.7rem;color:#fde68a;line-height:1.5">您的登入已過期。請點下方按鈕重新登入,登入後就能看到剛才購買的配額。</div>';
+        // 覆寫繼續按鈕 → 改成「重新登入」
+        var _btn = document.querySelector('#jy-paid-retry-card button');
+        if (_btn) {
+          _btn.textContent = '🔑 重新登入 Google';
+          _btn.onclick = function() {
+            if (typeof window._jyGoogleLogin === 'function') window._jyGoogleLogin();
+            else if (typeof _jyGoogleLogin === 'function') _jyGoogleLogin();
+            else alert('請點頁面右上角 Google 登入按鈕重新登入');
+          };
+        }
+        return;
+      }
+
       // v64.C:從 paidQuota(7 池配額)算當前購買對應的剩餘次數
       var lines = [];
       if (d.active) {
@@ -555,8 +594,18 @@
         lines.push('<div style="font-weight:700;color:#86efac;margin-top:' + (lines.length ? '.3rem' : '0') + '">✓ ' + qLabel + ' 已開通</div>');
         lines.push('剩餘 <strong>' + remain + '</strong> 次(已用 ' + used + ' / 上限 ' + lim + ')');
       } else if (lines.length === 0) {
-        // 沒抓到對應配額(可能 webhook 還沒處理完),fallback
-        lines.push('✓ 付款已收到,點下方按鈕繼續即可使用');
+        // v68.21.1 Bug #85 修:沒抓到配額時顯示明確警告,不再用「已收到」假訊息誤導用戶
+        //   原本:fallback 顯示「✓ 付款已收到,點下方按鈕繼續即可使用」
+        //         但用戶點繼續一定撞 FREE_USED_UP/OPUS_PAYMENT_REQUIRED → 困惑
+        //   情境:1) webhook 還沒處理完(極短時間,正常)
+        //         2) webhook 處理失敗(mac mismatch 等,需要 admin 介入)
+        //         3) 用戶用不同 email 登入(不是付款時的帳號)
+        //   修法:明確標示「處理中,如 30 秒後仍無剩餘次數請聯繫客服」
+        lines.push('<div style="font-weight:700;color:#fbbf24;margin-bottom:.3rem">⏳ 配額處理中</div>');
+        lines.push('<div style="font-size:.7rem;color:#fde68a;line-height:1.5">系統正在綁定您的購買。如 30 秒後刷新仍無剩餘次數,可能原因:</div>');
+        lines.push('<div style="font-size:.65rem;color:#fde68a;line-height:1.5;text-align:left;padding-left:.5rem">• 確認登入的 Google 帳號與付款時相同</div>');
+        lines.push('<div style="font-size:.65rem;color:#fde68a;line-height:1.5;text-align:left;padding-left:.5rem">• 重新整理頁面後再試一次</div>');
+        lines.push('<div style="font-size:.65rem;color:#fde68a;line-height:1.5;text-align:left;padding-left:.5rem">• 仍無法解決請聯繫客服:訂單 ' + (tradeNo || '') + '</div>');
       }
       quotaEl.innerHTML = lines.join('<br>');
     } catch(e) {
@@ -1109,7 +1158,41 @@
   async function _checkPaymentReturn() {
     var params = new URLSearchParams(window.location.search);
     var paidTradeNo = params.get('paid');
-    if (!paidTradeNo) return;
+
+    // v68.21.1 Bug #76 修:沒帶 ?paid 時的 ClientBackURL fallback
+    //   情境:用戶在綠界付完款後不是被自動 redirect(OrderResultURL),而是手動點「回商店」(ClientBackURL)
+    //         → 回到 https://jingyue.uk 沒任何 query string
+    //         → 原本直接 return,完全跳過解鎖邏輯
+    //   localStorage._jy_pending_payment 仍在(建單時寫入,_jyUnlockAndTrigger 才會清)
+    //   修法:沒帶 ?paid 但有 pending → 主動查 check-payment,有付款成立就走解鎖流程
+    if (!paidTradeNo) {
+      try {
+        var _pendingFallback = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null');
+        // 5 分鐘內的 pending 才嘗試 fallback(避免拿到很舊的)
+        if (_pendingFallback && _pendingFallback.tradeNo && _pendingFallback.ts &&
+            (Date.now() - _pendingFallback.ts < 300000)) {
+          console.log('[Payment] 沒帶 ?paid 但有 pending,主動查證:', _pendingFallback.tradeNo);
+          var _fbSt = '';
+          try { _fbSt = window._JY_SESSION_TOKEN || localStorage.getItem('_jy_session') || ''; } catch(_) {}
+          try {
+            var _fbResp = await fetch(WORKER_URL + '/check-payment', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ tradeNo: _pendingFallback.tradeNo, session_token: _fbSt })
+            });
+            var _fbData = await _fbResp.json();
+            if (_fbData.paid) {
+              console.log('[Payment] ClientBackURL fallback 偵測到付款已成立');
+              paidTradeNo = _pendingFallback.tradeNo;
+              // 繼續往下走原本的解鎖流程
+            } else {
+              return;
+            }
+          } catch(_) { return; }
+        } else {
+          return;
+        }
+      } catch(_) { return; }
+    }
 
     // v68.20.1 Bug #75 修:tradeNo 嚴格格式驗證,避免攻擊者用惡意 URL 注入 onclick / DOM
     //   合法綠界 tradeNo 只含英數字 + 底線 + 連字號,長度 5-32 chars
@@ -1198,12 +1281,24 @@
 
       if (_verifiedPaid) {
         // ── 已付款:寫 token 並顯示成功 UI(含購買項目+剩餘次數) ──
-        if (!localStorage.getItem('_jy_paid_token')) {
-          localStorage.setItem('_jy_paid_token', paidTradeNo);
-          localStorage.setItem('_jy_paid_token_type', _restoredType);
-          localStorage.setItem('_jy_paid_token_at', String(Date.now()));
-          console.log('[Payment] token 已備援寫入: ' + paidTradeNo + ' type=' + _restoredType + ' mode=' + _restoredMode + ' (server-verified)');
-        }
+        // v68.21.1 Bug #73 修:必須無條件覆寫 token
+        //   原本 if (!localStorage.getItem('_jy_paid_token')) 才寫 → 舊 token 殘留時新付款會被擋
+        //   情境:用戶上次買後 AI fetch 失敗(網路斷/500) → token 沒清乾淨
+        //         本次再買 → check-payment 已驗證新付款成立 → 但這裡因舊 token 在不寫新值
+        //         → 用戶送請求時帶舊 tradeNo(KV 可能已過期/owner 不符)
+        //         雖然配額仍按 userKey 累加實際能用,但 _jy_paid_token_type 也是舊的
+        //         會導致清 token 邏輯誤判,連帶 _jy_last_paid 也對不上,顯示卡片價格 / 繼續按鈕 mode 錯
+        //   修法:已驗證付款 → 直接覆寫,讓新 token 永遠是最新的(舊 token 反正配額已扣完 / 已被燒)
+        localStorage.setItem('_jy_paid_token', paidTradeNo);
+        localStorage.setItem('_jy_paid_token_type', _restoredType);
+        localStorage.setItem('_jy_paid_token_at', String(Date.now()));
+        // 同步更新 _jy_last_paid 備份(_jyUnlockAndTrigger 失敗 fallback 用)
+        try {
+          localStorage.setItem('_jy_last_paid', JSON.stringify({
+            tradeNo: paidTradeNo, mode: _restoredMode, type: _restoredType, ts: Date.now()
+          }));
+        } catch(_){}
+        console.log('[Payment] token 已覆寫: ' + paidTradeNo + ' type=' + _restoredType + ' mode=' + _restoredMode + ' (server-verified)');
         await _jyShowPaymentResultCard(paidTradeNo, {
           paid: true, mode: _restoredMode, type: _restoredType
         });

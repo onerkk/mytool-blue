@@ -21796,6 +21796,19 @@ renderTarot = function(){
           '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">' + _errDesc + '</div>' +
           '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'single\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 七維度單次 NT$' + window.JY_PRICES.SINGLE_7D + '</button>' +
           '</div>';
+      } else if (err.status === 403 && err.code === 'OPUS_PAYMENT_REQUIRED' && !admin) {
+        // v68.21.1 Bug #84:Opus 深度需付費,顯示對應付費牆而非通用錯誤
+        //   情境:用戶買標準 NT$70 → 不小心點到「深度解析」(window._jyOpusDepth=true 殘留) → worker 擋
+        //         或用戶配額用完仍按深度按鈕
+        //   原本:err 落到 21808 行 default 分支 → 顯示「暫時連線不順,請再試一次」誤導
+        //   修法:走完整付費牆引導用戶買 Opus
+        resultDiv.innerHTML = '<div style="text-align:center;padding:1.2rem">' +
+          '<div style="font-size:1.4rem;margin-bottom:.5rem">🔮</div>' +
+          '<div style="font-size:.92rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">深度解析需單次購買</div>' +
+          '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">深度解析使用最高階模型,單次 NT$' + window.JY_PRICES.OPUS_7D + '</div>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'opus_single\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.08));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.45);cursor:pointer;font-family:inherit;margin-right:.5rem">🔮 七維度深度 NT$' + window.JY_PRICES.OPUS_7D + '</button>' +
+          '<button onclick="window._jyOpusDepth=false;_triggerAIDeep()" style="padding:.6rem 1rem;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.15);cursor:pointer;font-family:inherit">改用標準</button>' +
+          '</div>';
       } else {
         // ★ v51：區分 SSE 真實錯誤訊息（非 admin 用戶也要看到具體原因）
         var _aiErrMsg = admin && err.status === 429 ? 'Worker 429 但你是管理員，可重試' : '暫時連線不順，請再試一次';
@@ -24286,7 +24299,19 @@ async function _triggerTarotAI() {
     clearInterval(phaseTimer);
     try { clearTimeout(_tarotAbortTimer); } catch(_) {} // v51
     console.error('[TarotAI]', err);
-    if (err.status === 429 || (err.code && (err.code.indexOf('RATE') >= 0 || err.code.indexOf('FREE') >= 0 || err.code.indexOf('DAILY') >= 0 || err.code.indexOf('USED') >= 0))) {
+    if (err.status === 403 && err.code === 'OPUS_PAYMENT_REQUIRED') {
+      // v68.21.1 Bug #84b:塔羅深度需付費,顯示對應付費牆
+      var _tOpusMode = (window._jyActiveResultMode === 'ootk') ? 'ootk' : 'tarot_only';
+      var _tOpusPrice = (_tOpusMode === 'ootk') ? window.JY_PRICES.OPUS_OOTK : window.JY_PRICES.OPUS_TAROT;
+      var _tOpusName = (_tOpusMode === 'ootk') ? '開鑰深度' : '塔羅深度';
+      resultDiv.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
+        '<div style="font-size:2rem;margin-bottom:.6rem">🔮</div>' +
+        '<div style="font-size:.95rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">' + _tOpusName + '需單次購買</div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">深度解析使用最高階模型,單次 NT$' + _tOpusPrice + '</div>' +
+        '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'' + _tOpusMode + '\',\'opus_single\')" style="padding:.7rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.08));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.45);cursor:pointer;font-family:inherit;margin-right:.5rem">🔮 ' + _tOpusName + ' NT$' + _tOpusPrice + '</button>' +
+        '<button onclick="window._jyOpusDepth=false;_triggerTarotAI()" style="padding:.7rem 1rem;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.15);cursor:pointer;font-family:inherit">改用標準</button>' +
+        '</div>';
+    } else if (err.status === 429 || (err.code && (err.code.indexOf('RATE') >= 0 || err.code.indexOf('FREE') >= 0 || err.code.indexOf('DAILY') >= 0 || err.code.indexOf('USED') >= 0))) {
       var _tErrCode = err.code || '';
       var _tIcon = '🃏', _tTitle = '塔羅免費體驗已用完', _tDesc = '單次購買繼續使用<br>標準 NT$' + window.JY_PRICES.SINGLE_TAROT + ' / 深度 NT$' + window.JY_PRICES.OPUS_TAROT + '';
       if (_tErrCode === 'SUB_DAILY_USED') {
@@ -26799,7 +26824,13 @@ window._jyStartOOTK = function() {
   }
 
   // ── 查 OOTK 配額(v68.21:總量制+配額制,不再每日) ──
-  var _ootkCheckBody = { action: 'check', payload: { mode: 'ootk' } };
+  // v68.21.1 Bug #89 修:precheck 帶上 depth 對應 Opus 用戶
+  //   原本 payload: { mode: 'ootk' } 沒帶 depth → worker 走標準分支查 ootk_std
+  //   買 Opus OOTK NT$120 用戶的 paid_quota 是 ootk_opus → 找不到被擋
+  //   修法:讀 window._jyOpusDepth 對齊主流程
+  var _ootkCheckPayload = { mode: 'ootk' };
+  if (window._jyOpusDepth || window._jyForceOpusOnly) _ootkCheckPayload.depth = 'opus';
+  var _ootkCheckBody = { action: 'check', payload: _ootkCheckPayload };
   if (window._JY_SESSION_TOKEN) _ootkCheckBody.session_token = window._JY_SESSION_TOKEN;
   // ★ Bug #12 fix: 開鑰 precheck 漏帶 paid_token，已付費用戶被誤擋跳付費牆
   //   七維度/塔羅都帶了，只有這裡漏。下行補上。
