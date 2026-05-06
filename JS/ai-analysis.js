@@ -24358,8 +24358,9 @@ async function _triggerTarotAI() {
     }
     if (r.subAnswers && r.subAnswers.length) {
       r.subAnswers.forEach(function(sa) {
-        if (sa.conclusion) _summaryParts.push(sa.conclusion);
-        if (sa.reading) _summaryParts.push(sa.reading.substring(0, 150));
+        // ★ v68.21.29 Bug #89 修:typeof string 防呆,避免 [object Object] 污染 _summaryParts
+        if (sa && typeof sa.conclusion === 'string') _summaryParts.push(sa.conclusion);
+        if (sa && typeof sa.reading === 'string') _summaryParts.push(sa.reading.substring(0, 150));
       });
     }
     if (r.crossReading && r.crossReading.reading) _summaryParts.push(r.crossReading.reading.substring(0, 200));
