@@ -21213,7 +21213,7 @@ renderTarot = function(){
         var _sysNames = {bazi:'八字命盤',ziwei:'紫微斗數',meihua:'梅花易數',tarot:'塔羅牌',natal:'西洋占星',vedic:'吠陀占星',name:'姓名學'};
         var _sysEmojis = {bazi:'🏮',ziwei:'⭐',meihua:'🌸',tarot:'🃏',natal:'🌍',vedic:'🕉️',name:'📝'};
         var _sysOrder = ['bazi','ziwei','meihua','tarot','natal','vedic','name'];
-        var _hasSys = _sysOrder.filter(function(k){ return r.systemStories[k] && r.systemStories[k].length > 10; });
+        var _hasSys = _sysOrder.filter(function(k){ return r.systemStories[k] && typeof r.systemStories[k] === 'string' && r.systemStories[k].length > 10; });
         if (_hasSys.length >= 2) {
           html += '<details style="margin-bottom:.6rem;border:1px solid rgba(212,175,55,.1);border-radius:10px;overflow:hidden">';
           html += '<summary style="padding:.55rem .8rem;font-size:.78rem;color:var(--c-text-muted);cursor:pointer;user-select:none;background:rgba(212,175,55,.02)">📋 各系統分別判讀</summary>';
