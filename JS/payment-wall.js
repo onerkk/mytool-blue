@@ -422,6 +422,13 @@
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tradeNo: tNo, session_token: _vfSt })
           });
+          // ★ v68.21.28 Bug #84 修:5xx 時不要假定「未收到付款」(誤導用戶)
+          //   原本 r.json() parse {error: '...'} 後 d.paid undefined → 走 line 449 顯示「系統仍未收到付款通知」
+          //   實際上 5xx 是 worker 暫時故障,用戶付款可能已成立
+          //   修法:5xx throw 走 catch 顯示「驗證失敗,請稍後再試」(較不誤導)
+          if (!r.ok && r.status >= 500) {
+            throw new Error('worker 暫時故障 (' + r.status + ')');
+          }
           var d = await r.json();
           if (d.paid) {
             // 付款已成立 → 走完整解鎖
@@ -786,6 +793,13 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tradeNo: pending.tradeNo, session_token: _cpuSt })
       });
+      // ★ v68.21.28 Bug #85 修:5xx 時不要假定「尚未收到付款」(誤導用戶)
+      //   原本 r.json() parse {error: '...'} 後 data.paid undefined → 顯示「尚未收到付款通知」
+      //   實際上 5xx 是 worker 暫時故障,用戶付款可能已成立
+      //   修法:5xx throw 走 catch 顯示「驗證失敗,請稍後再試」
+      if (!resp.ok && resp.status >= 500) {
+        throw new Error('worker 暫時故障 (' + resp.status + ')');
+      }
       var data = await resp.json();
       if (data.paid) {
         // v60-hotfix5：改走共用 _jyUnlockAndTrigger
@@ -1185,6 +1199,14 @@
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ tradeNo: _pendingFallback.tradeNo, session_token: _fbSt })
             });
+            // ★ v68.21.28 Bug #86 修:5xx 時 throw,讓外層 catch 走 fallback(不直接放棄)
+            //   原本 5xx 時 _fbData.paid undefined → 走 line 1208 return → 用戶從綠界回來但本次無法解鎖
+            //   修法:5xx throw 走 catch,但因為 catch 也是 return,效果相同
+            //         比較好的是 5xx 時保留 pending 不刪,讓下次刷新有機會重試
+            if (!_fbResp.ok && _fbResp.status >= 500) {
+              console.warn('[Payment] ClientBackURL fallback 5xx,保留 pending 等下次刷新');
+              return;  // 維持原行為(不刪 pending,下次刷新自動重試)
+            }
             var _fbData = await _fbResp.json();
             if (_fbData.paid) {
               console.log('[Payment] ClientBackURL fallback 偵測到付款已成立');
@@ -1241,6 +1263,11 @@
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tradeNo: paidTradeNo, session_token: _vrSt })
         });
+        // ★ v68.21.28 Bug #87 修:5xx 時 throw 讓 catch 處理,不要假定「未付款」
+        //   原本 _verifiedPaid=false → 顯示「等待付款確認」橘卡 → 誤導用戶
+        if (!vr.ok && vr.status >= 500) {
+          throw new Error('worker 暫時故障 (' + vr.status + ')');
+        }
         var vd = await vr.json();
         _verifiedPaid = !!vd.paid;
         _serverType = vd.type || null;          // v64.F BUG #4:server 回的真實 type

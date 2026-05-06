@@ -1036,7 +1036,11 @@ function _checkToolQuota(tool) {
   if (window._JY_SESSION_TOKEN) checkBody.session_token = window._JY_SESSION_TOKEN;
 
   fetch(AI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(checkBody) })
-    .then(function(r) { return r.json(); })
+    .then(function(r) {
+      // ★ v68.21.28 Bug #83 修:5xx 時 throw,catch 不動 badge(顯示原 badge)
+      if (!r.ok && r.status >= 500) throw new Error('worker 5xx');
+      return r.json();
+    })
     .then(function(data) {
       if (!data.allowed && badge) {
         if (data.code === 'LOGIN_REQUIRED') {

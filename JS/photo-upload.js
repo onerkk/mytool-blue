@@ -228,6 +228,13 @@ function _checkMemberStatusOnce() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ session_token: window._JY_SESSION_TOKEN })
   }).then(function(r) {
+    // ★ v68.21.28 Bug #80 修:5xx throw 走 catch,維持原 localStorage 訂閱狀態
+    //   原本沒檢查 r.ok,5xx 時 data.active undefined → !!data.active = false
+    //   → line 237 removeItem('_jy_sub_expires') 誤清會員資料
+    //   修法:5xx 視為暫時故障,catch 維持 _hasActiveMemberCache() 的狀態
+    if (!r.ok && r.status >= 500) {
+      throw new Error('worker 5xx');
+    }
     return r.json();
   }).then(function(data) {
     var active = !!(data && data.active);

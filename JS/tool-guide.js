@@ -84,7 +84,13 @@
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(body)
     })
-      .then(function(r){ return r.json(); })
+      .then(function(r){
+        // ★ v68.21.28 Bug #81 修:5xx 時 throw 走 catch(維持 HTML 預設文字)
+        //   原本 r.json() parse {error: '...'} 後 data.paidQuota undefined
+        //   → 進 then 但所有欄位都缺 → 顯示誤導 badge
+        if (!r.ok && r.status >= 500) throw new Error('worker 5xx');
+        return r.json();
+      })
       .then(function(data){
         // v64.C:會員下架,只保留單次定價
         // v68.21 Bug #1 修:SINGLE_OOTK 60→70 對齊 worker
@@ -176,7 +182,11 @@
     if (pt) body.paid_token = pt;
     if (window._JY_SESSION_TOKEN) body.session_token = window._JY_SESSION_TOKEN;
     fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) })
-      .then(function(r){ return r.json(); })
+      .then(function(r){
+        // ★ v68.21.28 Bug #82 修:5xx 時 throw 走 catch(顯示安全的預設文字)
+        if (!r.ok && r.status >= 500) throw new Error('worker 5xx');
+        return r.json();
+      })
       .then(function(data){
         var line = document.getElementById('jy-trial-line');
         if(!line) return;
