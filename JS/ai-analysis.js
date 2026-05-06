@@ -26692,10 +26692,12 @@ var JINGYUE_AVATAR = '/img/jingyue-avatar.png';
 function _buildMomentCard(r, mode) {
   // 取最有衝擊力的一句話：closing > directAnswer 第一句
   var quote = '';
-  if (r.closing && r.closing.length >= 8 && r.closing.length <= 80) {
+  if (r.closing && typeof r.closing === 'string' && r.closing.length >= 8 && r.closing.length <= 80) {
     quote = r.closing.replace(/\*\*/g,'').trim();
-  } else if (r.directAnswer) {
+  } else if (r.directAnswer && typeof r.directAnswer === 'string') {
     // 取第一句（到句號或逗號斷）
+    // ★ v68.21.25 Bug #66 修:加 typeof string 防呆
+    //   原本只看 truthy,若 AI 回 number/object 會在 .replace 拋 TypeError
     var da = r.directAnswer.replace(/\*\*/g,'').trim();
     var firstSentence = da.split(/(?<=[。！？])/)[0] || da.substring(0, 60);
     if (firstSentence.length > 60) firstSentence = firstSentence.substring(0, 58) + '…';
