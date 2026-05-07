@@ -717,8 +717,9 @@ function skipToResult(){goStep(3)}
 /* — Char counter — */
 document.getElementById('f-question').addEventListener('input',function(){document.getElementById('f-char').textContent=this.value.length});
 // 動態 placeholder：根據問題類型切換範例
-const PLACEHOLDER_MAP={love:'例：他是不是真的喜歡我？為什麼突然冷淡了？',career:'例：我該接這個 offer 嗎？留在現在的公司會比較好嗎？',wealth:'例：這筆投資值得做嗎？下半年有沒有賺錢的機會？',health:'例：我最近睡不好是什麼原因？身體哪裡要特別注意？',relationship:'例：跟他的關係還有救嗎？我該先開口還是等他？',family:'例：爸媽反對我的選擇，我該聽他們的嗎？'};
-document.getElementById('f-type').addEventListener('change',function(){const ph=PLACEHOLDER_MAP[this.value]||'例：我今年適合轉職嗎？';document.getElementById('f-question').placeholder=ph;});
+// ★ v69 死碼清除：PLACEHOLDER_MAP + change listener 已移除
+//   原本 user 在 <select> 切換 focusType 時更新 placeholder，現在 select 已改為 hidden input
+//   _enterFromHome() 內已直接設定統一 placeholder「問越具體越準」
 
 // ═══ v38：用戶狀況快選（提升 AI 開場命中率）═══
 var _JY_CONTEXT_MAP = {
@@ -798,93 +799,27 @@ document.getElementById('f-question').addEventListener('input', function() {
 });
 
 
-// ── UI constants + form events + submit + cache + loading (lines 714-1049) ──
-const Q_PRESETS = {
-  love: ['今年有桃花嗎？','他/她喜歡我嗎？','適合復合嗎？','什麼時候能脫單？','我的感情會順利嗎？'],
-  career: ['今年適合轉職嗎？','該不該跳槽？','我適合創業嗎？','工作會有升遷機會嗎？','怎麼找到適合的方向？'],
-  wealth: ['今年財運如何？','適合投資嗎？','什麼時候財運會好轉？','偏財運好不好？','怎麼改善財務狀況？'],
-  health: ['今年健康要注意什麼？','我的體質適合什麼養生？','壓力大怎麼調適？','家人健康會好嗎？','我需要做什麼健康檢查？'],
-  relationship: ['人際關係會改善嗎？','適合跟對方合作嗎？','怎麼改善職場人際？','朋友靠得住嗎？','該怎麼拓展人脈？'],
-  family: ['跟家人關係會好轉嗎？','親子溝通怎麼改善？','家庭運勢如何？','搬家或換環境適合嗎？','家裡的問題會解決嗎？']
-};
-const TYPE_LABELS_SHORT = {love:'💕 感情桃花',career:'💼 事業方向',wealth:'💰 財運投資',health:'🏥 健康身心',relationship:'🤝 人際合作',family:'🏠 家庭親子'};
-const TYPE_LABEL_TO_TYPE = (function(){const o={};for(const[k,v]of Object.entries(TYPE_LABELS_SHORT))o[v]=k;return o;})();
-let selectedPresetQ = '';
+// ── UI constants + form events + submit + cache + loading ──
+//
+// ★ v69 死碼大清除（2026-05-07）★
+// 以下函數/常量已完全移除，因為都依賴「6 種 focusType 手動選擇」這個已廢棄的 UX：
+//   - Q_PRESETS：6 種預設問題清單（依賴 pickType）
+//   - TYPE_LABELS_SHORT：13 種標籤對照（已不再顯示在 UI）
+//   - TYPE_LABEL_TO_TYPE：標籤反查（依賴 trust-preview breadcrumb）
+//   - pickType：點 6 卡片進入信任預覽（卡片已從 HTML 移除）
+//   - showInputAfterTrust / backToHook：trust-preview 流程（已從 HTML 移除）
+//   - selectPreset / showCustomQ：q-presets 預設問題格（_enterFromHome 已強制隱藏）
+//
+// 現在的真實流程：
+//   1. _redesignHomepage() 動態產生首頁（含 4 個 _quickAsk 按鈕）
+//   2. 用戶點 _quickAsk → f-type='general' + question 文字 → submitTarotQuick
+//   3. 後端 worker.js 的 refineFocusType() 從 question 文字自動分類成 13 種 focusType 之一
+//   4. 後端用 V69_SYMBOL_ROUTING 根據真正的 focusType 路由到對應象徵組合
+//
+// 所以「focusType 是 AI 從問題文字自動判斷」是唯一的正解。
+// 前端 f-type 元素永遠送 'general'，後端才是真正的分類器。
 
-function pickType(type){
-  document.getElementById('f-type').value = type;
-  document.getElementById('hook-screen').style.display = 'none';
-  document.getElementById('input-screen').style.display = 'none';
-  
-  // ── 信任預覽：先給免費價值 ──
-  const trustEl = document.getElementById('trust-preview');
-  if(trustEl){
-    trustEl.style.display = 'block';
-    document.getElementById('trust-type-tag').textContent = TYPE_LABELS_SHORT[type] || type;
-    
-    // 2026丙午年共相 × 問題類型
-    const yearInsight = {
-      love:'2026 是丙午年，火氣旺盛，感情上容易「一見鍾情」也容易「一觸即發」。如果你最近覺得感情忽冷忽熱、容易吵架、或者遇到讓你心動但拿不準的人——這都是丙午火旺的典型表現。你不是運不好，是能量太躁需要導引。',
-      career:'2026 丙午年，火土並旺。很多人會在今年感覺「做很多但看不到成果」、「想跳槽但又不敢」。如果你最近覺得工作壓力大、方向不明、或者有個機會但猶豫不決——這些都是今年的共同考題，不是只有你這樣。',
-      wealth:'2026 丙午年，火旺剋金。今年財運的特徵是「進得快、出得也快」——容易有收入但也容易衝動消費或投資失利。如果你最近覺得錢怎麼存都存不住，或者有個投資想出手但不確定——這是年運造成的，不是你能力問題。',
-      health:'2026 丙午年，火旺傷金水。今年很多人會出現呼吸系統、皮膚、睡眠方面的問題。如果你最近覺得容易累、睡不好、情緒起伏大——這跟流年火氣太旺有直接關係，需要有意識地補水、補金行能量。',
-      relationship:'2026 丙午年，火旺帶煞。今年人際關係的考題是「分辨真心與場面」——火旺容易讓人際互動表面熱絡但缺乏深度。如果你最近覺得朋友多但知心少、或者跟某個人關係突然變僵——不用太擔心，這是流年氣場造成的。',
-      family:'2026 丙午年，午火沖子水。今年家庭關係容易出現「表面和平、暗流湧動」的狀況。如果你最近跟家人溝通有障礙、或者為了某件事意見不合——這是年運帶來的考驗，處理得好反而能讓關係更進一步。'
-    };
-    document.getElementById('trust-text').innerHTML = `
-      <p style="color:var(--c-gold);font-weight:600;margin-bottom:.5rem">🔮 今年大環境給你的訊號：</p>
-      <p>${yearInsight[type]||yearInsight.career}</p>
-      <p style="margin-top:.5rem;color:var(--c-text-dim);font-size:.9rem">以上是所有人的「共相」。但每個人的八字不同，受的影響也不同——有人是吉、有人是凶。<strong style="color:var(--c-gold)">只有結合你的出生時間，才能算出你的「個相」。</strong></p>
-    `;
-  } else {
-    // fallback: 沒有trust-preview就直接進input
-    showInputAfterTrust();
-  }
-
-  // 預渲染問題選擇
-  const presets = Q_PRESETS[type] || [];
-  const grid = document.getElementById('q-presets');
-  selectedPresetQ = '';
-  grid.innerHTML = presets.map(q => `<button class="q-preset-btn" onclick="selectPreset(this,'${q.replace(/'/g,"\\'")}')">${q}</button>`).join('') +
-    `<button class="q-preset-btn" onclick="showCustomQ(this)" style="color:var(--c-text-muted)"><i class="fas fa-pen" style="margin-right:4px"></i> 我想自己寫問題</button>`;
-  document.getElementById('q-custom-wrap').style.display = 'none';
-  window._jySelectedContext = '';
-  var _ccw = document.getElementById('jy-context-chips'); if (_ccw) _ccw.style.display = 'none';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function showInputAfterTrust(){
-  var tp=document.getElementById('trust-preview');
-  if(tp) tp.style.display='none';
-  document.getElementById('input-screen').style.display = 'block';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function backToHook(){
-  document.getElementById('input-screen').style.display = 'none';
-  var tp=document.getElementById('trust-preview');
-  if(tp) tp.style.display='none';
-  document.getElementById('hook-screen').style.display = 'block';
-  document.getElementById('f-type').value = 'general';
-}
-
-function selectPreset(btn, q){
-  document.querySelectorAll('.q-preset-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedPresetQ = q;
-  document.getElementById('f-question').value = q;
-  document.getElementById('q-custom-wrap').style.display = 'none';
-  _updateContextChips();
-}
-
-function showCustomQ(btn){
-  document.querySelectorAll('.q-preset-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedPresetQ = '';
-  document.getElementById('q-custom-wrap').style.display = 'block';
-  document.getElementById('f-question').value = '';
-  document.getElementById('f-question').focus();
-}
+let selectedPresetQ = ''; // 保留，少數舊邏輯仍引用此變數，永遠是空字串
 
 // ═══ v17：讀取新版出生表單 + 真太陽時計算 ═══
 function _readBirthForm() {
@@ -1256,15 +1191,9 @@ function submitWithTool() {
 }
 
 function submitStep0(){
+  // ★ v69：focusType 永遠送 'general'，後端 refineFocusType 從 question 文字自動分類
   let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
-  if (!type || type === '') {
-    var tagEl = document.getElementById('chosen-type-tag');
-    if (tagEl && tagEl.textContent && TYPE_LABEL_TO_TYPE[tagEl.textContent.trim()]) {
-      type = TYPE_LABEL_TO_TYPE[tagEl.textContent.trim()];
-    }
-    if (!type) type = 'general';
-    if (document.getElementById('f-type')) document.getElementById('f-type').value = type;
-  }
+  if (!type) type = 'general';
   var question = (document.getElementById('f-question') && document.getElementById('f-question').value) ? document.getElementById('f-question').value.trim() : '';
   if (!question && typeof selectedPresetQ === 'string') question = selectedPresetQ.trim();
   const gender=document.querySelector('input[name="gender"]:checked');
@@ -4911,8 +4840,9 @@ function resetAF(){
 })();
 
 // ── 按鈕漣漪效果 ──
+// ★ v69 死碼清除：原 selector '.btn,.hook-card-v2'，hook-card-v2 已從 HTML 移除
 document.addEventListener('click',function(e){
-  const btn=e.target.closest('.btn,.hook-card-v2');
+  const btn=e.target.closest('.btn');
   if(!btn)return;
   const rect=btn.getBoundingClientRect();
   const wave=document.createElement('span');
@@ -5822,6 +5752,8 @@ showAuraResult = function(){
   // ══ 從首頁進入 — 顯示 input-screen 帶類型選擇 ══
   window._enterFromHome = function() {
     document.getElementById('hook-screen').style.display = 'none';
+    // ★ v69：trust-preview 已從 HTML 移除，此 getElementById 會 return null，保留 if 是為了
+    //   防止舊版快取的 index.html 仍有 trust-preview 元素時誤殘留
     var tp = document.getElementById('trust-preview');
     if (tp) tp.style.display = 'none';
 
@@ -6753,6 +6685,7 @@ function resetToHome() {
       if(hs) hs.style.display = 'block';
       var is = document.getElementById('input-screen');
       if(is) is.style.display = 'none';
+      // ★ v69：trust-preview 已從 HTML 移除，此 getElementById 會 return null（保留容錯）
       var tp = document.getElementById('trust-preview');
       if(tp) tp.style.display = 'none';
       window.scrollTo({top:0,behavior:'smooth'});
@@ -6888,34 +6821,8 @@ function resetToHome() {
     };
   }
 
-  // ── #12: Trust preview 動態年份 ──
-  var _origPickType = window.pickType;
-  if (typeof _origPickType === 'function') {
-    window.pickType = function(type){
-      var result = _origPickType.call(this, type);
-      // 動態更新年份內容（防過期）
-      var yr = new Date().getFullYear();
-      var trustText = document.getElementById('trust-text');
-      if (trustText && yr > 2026) {
-        trustText.innerHTML = '<p style="color:var(--c-gold);font-weight:600;margin-bottom:.5rem">🔮 你的命盤藏著答案</p>' +
-          '<p>每個人的八字不同，同樣的流年對每個人的影響完全不一樣。有人是吉、有人是凶，有人遇到的是機會、有人碰到的是考驗。</p>' +
-          '<p style="margin-top:.5rem;color:var(--c-text-dim);font-size:.9rem">以上是所有人的共相。<strong style="color:var(--c-gold)">只有結合你的出生時間，才能算出屬於你的答案。</strong></p>';
-      }
-      return result;
-    };
-  }
-
-  // ── #16: 問題字數計數器——選預設問題也更新 ──
-  var _origSelectPreset = window.selectPreset;
-  if (typeof _origSelectPreset === 'function') {
-    window.selectPreset = function(btn, q){
-      var result = _origSelectPreset.call(this, btn, q);
-      var counter = document.getElementById('f-char');
-      var input = document.getElementById('f-question');
-      if(counter && input) counter.textContent = input.value.length;
-      return result;
-    };
-  }
+  // ★ v69 死碼清除：原 #12 Trust preview 動態年份覆寫 + #16 selectPreset 字數計數覆寫 已移除
+  //   原因：window.pickType / window.selectPreset 都已是死碼，整段 if(typeof === 'function') 永遠 false
 
   // ── #18: 回到頂部浮動按鈕 ──
   var _bttBtn = document.createElement('button');

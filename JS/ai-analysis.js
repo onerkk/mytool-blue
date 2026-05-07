@@ -3414,6 +3414,71 @@ function talkBaziFor(bazi, focusType){
       else if(yinXingF<=8) texts.push('印星弱，從小獨立性強，跟家裡的羈絆較淡');
       if(caiXingF>=25) texts.push('財星旺（代表父親），父親對你的人生影響大');
     }
+  } else if(focusType==='lifelesson'){
+    // ★ v69：今生課題 — 看日主五行（靈魂底色）+ 月令格局（使命方向）+ 用神（此生需補的）+ 華蓋/偏印（修行印記）
+    var dayMaster = bazi.day && bazi.day[0] ? bazi.day[0] : '';
+    var dayMasterEl = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'}[dayMaster] || '';
+    var soulColor = {'木':'成長型靈魂—這輩子的核心是「持續向上、突破限制」','火':'熱情型靈魂—這輩子要學的是「點燃別人也照亮自己」','土':'承載型靈魂—這輩子的功課是「穩定中創造、扎根中收穫」','金':'銳利型靈魂—這輩子要學的是「斷捨離、做純粹的決定」','水':'流動型靈魂—這輩子的功課是「智慧的流動、深入而不執著」'}[dayMasterEl];
+    if(soulColor) texts.push('日主五行＝'+dayMasterEl+'，'+soulColor);
+    // 偏印或華蓋 → 修行體質
+    var pianYin = (ep['梟']||0);
+    if(pianYin>=15) texts.push('偏印偏旺，前世帶著修行/學者印記，這輩子對玄學/哲學/獨處特別有共鳴');
+    if(bazi.shensha && bazi.shensha.includes('華蓋')) texts.push('命帶華蓋星，與宗教/藝術/玄學/獨處有特殊緣分，這是修行型體質');
+    // 用神方向 → 此生要補的能量
+    if(bazi.favEls && bazi.favEls.length){
+      var favTalk = {'木':'仁與成長','火':'熱情與表達','土':'務實與穩定','金':'紀律與決斷','水':'智慧與流動'};
+      texts.push('喜用＝'+bazi.favEls.join('/')+'，這輩子要補足的能量是「'+bazi.favEls.map(function(e){return favTalk[e]||e}).join('、')+'」—往這個方向走，會感覺對');
+    }
+    // 七殺 + 偏印 → 業力鍛造型
+    var qiShaCount = (ep['殺']||0);
+    if(qiShaCount>=15 && pianYin>=10) texts.push('殺印相生格局浮現—這輩子靈魂選擇了用壓力來鍛造特質，痛苦不是懲罰，是設計');
+  } else if(focusType==='karmic'){
+    // ★ v69：業力前世 — 看偏印（前世印記）+ 七殺（前世業力壓力）+ 比劫（手足業力）+ 神煞（華蓋孤辰）
+    var pianYinK = (ep['梟']||0);
+    var qiShaK = (ep['殺']||0);
+    var biJieK = (ep['比']||0)+(ep['劫']||0);
+    if(pianYinK>=15) texts.push('偏印旺—前世修行人/學者轉世，今世帶著舊有的內省習慣');
+    if(qiShaK>=20) texts.push('七殺重—前世可能是軍人/競爭者/領袖，今生繼續扛壓力是熟悉模式');
+    if(biJieK>=25) texts.push('比劫重—與手足/同儕有強業力連結，這輩子人際課題重');
+    if(bazi.shensha){
+      if(bazi.shensha.includes('華蓋')) texts.push('華蓋星—靈魂層的孤獨者，前世與信仰/藝術深度連結');
+      if(bazi.shensha.includes('孤辰')||bazi.shensha.includes('寡宿')) texts.push('帶孤寡星—靈魂選擇單獨修行的設定，配偶緣需更多用心經營');
+    }
+    // 雙忌 / 沖剋日支 → 業力引爆點
+    if(bazi.cangGan && bazi.cangGan.day && bazi.cangGan.day.length){
+      texts.push('日支藏干＝'+bazi.cangGan.day.join('、')+'，這是業力連結最深的位置（婚姻/夥伴/前世債主常從這裡來）');
+    }
+  } else if(focusType==='spiritual'){
+    // ★ v69：靈性題（當下修行/能量狀態）— 看食神（才華能量）+ 偏印（直覺）+ 用神方向（能量補益）
+    var shiShenS = (ep['食']||0);
+    var pianYinS = (ep['梟']||0);
+    if(shiShenS>=15) texts.push('食神旺—才華能量充沛，靈性修行透過創造力會最快進步');
+    if(pianYinS>=15) texts.push('偏印旺—直覺與第六感強，適合冥想/塔羅/靈性學習');
+    if(bazi.shensha && bazi.shensha.includes('華蓋')) texts.push('華蓋星—天生的修行體質，獨處時能量最高');
+    if(bazi.favEls && bazi.favEls.length){
+      texts.push('現階段能量補益方向＝'+bazi.favEls.join('/')+'，往這方向的修行/活動會明顯提升頻率');
+    }
+  } else if(focusType==='reconcile' || focusType==='thirdparty'){
+    // ★ v69：復合 / 第三者 — 走愛情邏輯（與 love 相同），但補充流年觸動位
+    var caiXingR = (ep['財']||0)+(ep['才']||0);
+    var guanXingR = (ep['官']||0)+(ep['殺']||0);
+    if(focusType==='reconcile'){
+      if(bazi.gender==='male' && caiXingR>=20) texts.push('財星仍旺—配偶緣分能量未斷，復合機率有');
+      if(bazi.gender==='female' && guanXingR>=20) texts.push('官星仍旺—配偶緣分能量未斷，復合機率有');
+      if(bazi.shensha && bazi.shensha.includes('紅鸞')) texts.push('命帶紅鸞—感情星仍亮，但要看當前流年是否觸動');
+    } else { // thirdparty
+      if(bazi.gender==='male'){
+        var pianCai = (ep['才']||0);
+        var zhengCai = (ep['財']||0);
+        if(pianCai>=15 && zhengCai>=15) texts.push('正偏財同時透出—容易出現多角關係或情感選擇困難');
+      } else {
+        if(guanXingR>=25) texts.push('官殺混雜偏旺—感情上容易有多個對象同時出現的狀況');
+      }
+    }
+    // 日支沖剋 = 婚姻宮被觸動
+    if(bazi.cangGan && bazi.cangGan.day && bazi.cangGan.day.length){
+      texts.push('婚姻宮藏干＝'+bazi.cangGan.day.join('、')+'，是觀察感情變動的核心位置');
+    }
   }
   
   return texts.map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+(texts.length?'。':'');
@@ -3516,6 +3581,46 @@ function talkMeihua(mh, focusType){
     else if(rel==='體生用') texts.push('你為家庭付出較多，注意平衡自己的需求');
     else if(rel==='用克體') texts.push('家庭有些壓力或矛盾需要處理');
     else if(rel==='體克用') texts.push('你在家中有話語權，但要留意家人感受');
+  } else if(focusType==='lifelesson'){
+    // ★ v69：今生課題 — 體用對應「我要成為什麼樣的人」這個提問本身的能量
+    if(rel==='用生體') texts.push('用生體：靈魂訊息正在主動湧入，現在是領受功課、接收使命的階段');
+    else if(rel==='體生用') texts.push('體生用：你正在外放、貢獻所學，但要留意是否過度消耗自己的內在資源');
+    else if(rel==='用克體') texts.push('用克體：外在環境正在逼你看見自己的功課，痛苦是來告訴你方向不對');
+    else if(rel==='體克用') texts.push('體克用：你已經掌握了部分方向，但離真正的整合還有距離，繼續深挖');
+    else if(rel==='比和') texts.push('比和：當下能量對等，靈魂課題還在醞釀期，先不要急著給自己定位');
+  } else if(focusType==='karmic'){
+    // ★ v69：業力前世 — 體用揭示業力流動方向
+    if(rel==='用生體') texts.push('用生體：前世種下的善業正在這輩子開花結果');
+    else if(rel==='體生用') texts.push('體生用：你正在還業/付出前世的債，這輩子辛苦但是必要的');
+    else if(rel==='用克體') texts.push('用克體：業力反撲期，前世某些事正在向你索回，承擔但不要恐懼');
+    else if(rel==='體克用') texts.push('體克用：你已經有能力處理舊業，課題正在被你逐步轉化');
+  } else if(focusType==='spiritual'){
+    // ★ v69：靈性題 — 體用看當下能量狀態
+    if(rel==='用生體') texts.push('用生體：當下能量充盈，適合冥想/接收/靜心修行');
+    else if(rel==='體生用') texts.push('體生用：你的能量在外溢，先休息再修行才有效');
+    else if(rel==='用克體') texts.push('用克體：外在能量在干擾你，需要做能量保護或淨化');
+    else if(rel==='體克用') texts.push('體克用：你正在主動轉化能量，這是進階修行的階段');
+  } else if(focusType==='timing'){
+    // ★ v69：時間題 — 梅花體用應期是核心
+    texts.push('梅花是時間題的第一梯隊，請看 mh.응期/應期/timing 欄位給出的具體月份區間');
+  } else if(focusType==='decision'){
+    // ★ v69：決策題 — 梅花體用直接給裁決
+    if(rel==='用生體') texts.push('用生體：選項對你有利，可以動');
+    else if(rel==='體生用') texts.push('體生用：選項會消耗你，謹慎');
+    else if(rel==='用克體') texts.push('用克體：選項會壓制你，不建議');
+    else if(rel==='體克用') texts.push('體克用：你能掌控結果，可以做');
+    else if(rel==='比和') texts.push('比和：選項好壞不明顯，看其他系統決定');
+  } else if(focusType==='reconcile' || focusType==='thirdparty'){
+    // ★ v69：復合 / 第三者 — 體用走愛情邏輯
+    if(focusType==='reconcile'){
+      if(rel==='用生體') texts.push('用生體：對方仍對你有意，復合機率較高');
+      else if(rel==='體生用') texts.push('體生用：你比對方更想復合，要留意這段關係的平衡');
+      else if(rel==='用克體') texts.push('用克體：對方狀態已不同了，強求只會傷自己');
+      else if(rel==='比和') texts.push('比和：雙方都還有感覺但都不主動，看誰先邁出第一步');
+    } else { // thirdparty
+      if(rel==='用克體') texts.push('用克體：第三方力量正在壓制你的主場');
+      else if(rel==='體生用') texts.push('體生用：你在這段關係中付出多但回報少');
+    }
   }
   
   return texts.slice(0,6).map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+'。';
@@ -3528,7 +3633,18 @@ function talkTarot(tarot, focusType){
   if(!tarot||!tarot.drawn||tarot.drawn.length<10) return '';
   var d=tarot.drawn;
   var t=focusType||'general';
-  var tf=t==='love'?'love':t==='career'?'career':t==='wealth'?'wealth':t==='health'?'health':t==='relationship'?'love':t==='family'?'love':'core';
+  // ★ v69 升級：tf 變數路由完整對應 13 種 focusType
+  // love/relationship/reconcile/thirdparty → love（感情類牌義庫）
+  // career → career, wealth → wealth, health → health
+  // family → love（家庭關係仍走情感類解讀）
+  // lifelesson/karmic/spiritual → core（用核心通用解讀，由 prompt 層用 V69_SYMBOL_ROUTING 提供靈魂層讀法）
+  // timing/decision/general → core
+  var tf;
+  if(t==='love' || t==='relationship' || t==='reconcile' || t==='thirdparty' || t==='family') tf='love';
+  else if(t==='career') tf='career';
+  else if(t==='wealth') tf='wealth';
+  else if(t==='health') tf='health';
+  else tf='core'; // lifelesson / karmic / spiritual / timing / decision / general
 
   var inter=analyzeTarotInteractions(d, t);
   if(!inter) return '';
@@ -3765,6 +3881,66 @@ function talkNatal(focusType){
     var jupiter5=np['木星'];
     if(jupiter5&&jupiter5.house===4) texts.push('木星在家庭宮，家庭運好，住家環境舒適');
   }
+  else if(focusType==='lifelesson'){
+    // ★ v69：今生課題 — 西占看北交點+南交點+冥王星+凱龍
+    if(n.northNode){
+      var nnSign = n.northNode.sign || '';
+      var nnHouse = n.northNode.house || '';
+      var nnMap = {'白羊':'學習主動、為自己挺身','金牛':'學習穩定、放慢腳步建立物質根基','雙子':'學習多元學習、放下單一答案','巨蟹':'學習接納情感、回到家的感覺','獅子':'學習表達自我、站到光下','處女':'學習實作、把理想落地','天秤':'學習合作、放下單打獨鬥','天蠍':'學習深入、不再停留在表面','射手':'學習擴展視野、放下狹隘信念','摩羯':'學習扛責任、建立結構','水瓶':'學習群體與創新','雙魚':'學習臣服、放下控制'};
+      if(nnMap[nnSign]) texts.push('北交點在'+nnSign+'（'+nnHouse+'宮）：此生靈魂方向是「'+nnMap[nnSign]+'」');
+    }
+    if(n.southNode){
+      var snSign = n.southNode.sign || '';
+      var snMap = {'白羊':'前世已擅長獨立行動，這輩子不需要再強化「我」','金牛':'前世已擅長物質累積，這輩子要學的不是「擁有更多」','雙子':'前世已擅長收集資訊，這輩子要從淺學跳進深度','巨蟹':'前世已擅長照顧他人，這輩子要學會照顧自己','獅子':'前世已擅長被注目，這輩子要學會服務群體','處女':'前世已擅長分析批判，這輩子要學會接納全貌','天秤':'前世已擅長配合他人，這輩子要找回自己','天蠍':'前世已熟悉黑暗深處，這輩子要走進光明','射手':'前世已熟悉信念探索，這輩子要落實到日常','摩羯':'前世已熟悉責任結構，這輩子要學會放鬆','水瓶':'前世已熟悉抽離觀察，這輩子要回到情感','雙魚':'前世已熟悉融合一切，這輩子要建立邊界'};
+      if(snMap[snSign]) texts.push('南交點在'+snSign+'：'+snMap[snSign]);
+    }
+    var pluto = np['冥王星'];
+    if(pluto && pluto.house){
+      var plutoMap = {1:'最深的轉化在「自我認同」上發生',4:'最深的轉化在「家族與根源」上發生',7:'最深的轉化透過「親密關係」發生',8:'最深的轉化透過「死亡/性/共有資源」發生',10:'最深的轉化在「事業公眾形象」上發生',12:'最深的轉化在「靈性/潛意識」層面發生'};
+      if(plutoMap[pluto.house]) texts.push('冥王星在第'+pluto.house+'宮：'+plutoMap[pluto.house]);
+    }
+    var chiron = np['凱龍'];
+    if(chiron && chiron.house){
+      texts.push('凱龍在第'+chiron.house+'宮：這個領域是你的「療癒師原型」—你受過傷，但也因此能幫助同樣的人');
+    }
+  }
+  else if(focusType==='karmic'){
+    // ★ v69：業力前世 — 西占看南交點（前世帶來）+ 土星（業報主）+ 12宮（潛伏業力）
+    if(n.southNode){
+      texts.push('南交點'+n.southNode.sign+'（'+n.southNode.house+'宮）：是你前世帶來的舒適區，也可能是這輩子要還的業');
+    }
+    var saturnK = np['土星'];
+    if(saturnK && saturnK.house){
+      texts.push('土星在第'+saturnK.house+'宮：這個領域是業報集中地，要慢慢扛、不能逃');
+    }
+    // 12宮有行星 = 潛伏業力
+    var planets12 = Object.keys(np).filter(function(p){return np[p] && np[p].house===12;});
+    if(planets12.length) texts.push('12宮有'+planets12.join('/')+'：潛意識/前世印記強烈，常有「莫名熟悉」「莫名抗拒」感');
+  }
+  else if(focusType==='spiritual'){
+    // ★ v69：靈性題 — 西占看海王星+月亮+12宮+魚雙
+    var neptune = np['海王星'];
+    if(neptune && neptune.house){
+      var nepMap = {1:'外在氣質帶神秘感',4:'家庭/根源帶靈性',7:'容易吸引靈性伴侶或被欺騙',9:'信仰系統是靈性核心',12:'天生靈性敏感、容易接收靈界訊息'};
+      if(nepMap[neptune.house]) texts.push('海王星在第'+neptune.house+'宮：'+nepMap[neptune.house]);
+    }
+    var moonS = np['月亮'];
+    if(moonS && moonS.sign && (moonS.sign==='巨蟹' || moonS.sign==='雙魚' || moonS.sign==='天蠍')) {
+      texts.push('月亮在水象星座（'+moonS.sign+'）：直覺與情感敏感度高，靈性修行透過「感受」會最快進步');
+    }
+  }
+  else if(focusType==='reconcile' || focusType==='thirdparty'){
+    // ★ v69：復合 / 第三者 — 走愛情邏輯
+    var venus5 = np['金星'];
+    if(venus5){
+      if(venus5.retrograde) texts.push('金星逆行—感情上對舊情有執著，復合念頭可能比真實機會更強');
+      if(venus5.house===7) texts.push('金星在合作宮—感情緣分仍在，但要看對方是否願意');
+    }
+    if(focusType==='thirdparty'){
+      var mars5 = np['火星'];
+      if(mars5 && mars5.house===7) texts.push('火星在合作宮—感情關係中容易有衝突、誘惑、競爭');
+    }
+  }
   
   // 通用：上升星座
   if(n.ascSign){
@@ -3967,19 +4143,83 @@ function talkJyotish(focusType){
   
   // 3. 與問題類型相關的宮位主星分析
   if(jy.planets && jy.lagna){
-    var _bhavaMap = {love:7, career:10, wealth:2, health:6, relationship:11, family:4};
+    // ★ v69 升級：加入 lifelesson(9 Dharma主)/karmic(Ketu所在)/spiritual(12解脫)/reconcile(7)/thirdparty(7)
+    var _bhavaMap = {
+      love:7, career:10, wealth:2, health:6, relationship:11, family:4,
+      lifelesson:9,    // 9宮 = Dharma 三角的主宮 = 此生使命主宮
+      karmic:8,        // 8宮 = 業力轉化、前世債務之宮
+      spiritual:12,    // 12宮 = Moksha 解脫之宮
+      reconcile:7,     // 復合走 7宮（合作/婚姻）
+      thirdparty:7,    // 第三者也走 7宮，但會看其他染汙
+      timing:1,        // 時間題以 Lagna 為起點
+      decision:1       // 決策題以 Lagna 為起點
+    };
     var _targetBhava = _bhavaMap[focusType];
     if(_targetBhava){
       var _bhavaIdx = (jy.lagna.idx + _targetBhava - 1) % 12;
       var _bhavaLord = JY_RASHI ? JY_RASHI[_bhavaIdx].lord : null;
       if(_bhavaLord && jy.planets[_bhavaLord]){
         var _blDig = jy.planets[_bhavaLord].dignity || 'neutral';
-        var _bhavaName = {love:'感情宮（第7宮）',career:'事業宮（第10宮）',wealth:'財富宮（第2宮）',health:'疾病宮（第6宮）',relationship:'人脈宮（第11宮）',family:'家庭宮（第4宮）'}[focusType];
+        var _bhavaName = {
+          love:'感情宮（第7宮）', career:'事業宮（第10宮）', wealth:'財富宮（第2宮）',
+          health:'疾病宮（第6宮）', relationship:'人脈宮（第11宮）', family:'家庭宮（第4宮）',
+          lifelesson:'使命宮 Dharma Bhava（第9宮）',
+          karmic:'業力宮（第8宮，前世債務轉化之位）',
+          spiritual:'解脫宮 Moksha Bhava（第12宮）',
+          reconcile:'合作/婚姻宮（第7宮）',
+          thirdparty:'婚姻宮（第7宮，三角關係場）',
+          timing:'命宮 Lagna', decision:'命宮 Lagna'
+        }[focusType];
         if(_blDig === 'exalted' || _blDig === 'own'){
           texts.push(_bhavaName+'主星強旺，這方面的天賦和運勢都不錯');
         } else if(_blDig === 'debilitated'){
           texts.push(_bhavaName+'主星落陷，這方面需要花更多心力經營');
         }
+      }
+    }
+    // ★ v69：lifelesson / karmic 額外深挖 Atmakaraka 和 Rahu/Ketu
+    if(focusType === 'lifelesson' || focusType === 'karmic'){
+      // Atmakaraka = 度數最高的行星（除 Ketu）
+      var _planetList = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu'];
+      var _ak = null, _akDeg = -1;
+      _planetList.forEach(function(p){
+        if(jy.planets[p] && typeof jy.planets[p].degInSign === 'number' && jy.planets[p].degInSign > _akDeg){
+          _akDeg = jy.planets[p].degInSign;
+          _ak = p;
+        }
+      });
+      if(_ak){
+        var _akName = {Sun:'太陽',Moon:'月亮',Mars:'火星',Mercury:'水星',Jupiter:'木星',Venus:'金星',Saturn:'土星',Rahu:'羅睺'}[_ak];
+        var _akMission = {
+          Sun:'學會領導但不失真我',
+          Moon:'學會在情感中保持根基',
+          Mars:'學會有力量而不傷害',
+          Mercury:'學會真誠溝通不只是聰明',
+          Jupiter:'學會真正的智慧而不只是知識',
+          Venus:'學會愛的深度而不只是享受',
+          Saturn:'學會承擔而不被壓垮',
+          Rahu:'學會在混亂中保持方向'
+        }[_ak];
+        texts.push('Atmakaraka（靈魂因子）＝'+_akName+'：這輩子靈魂最深的渴望是'+_akMission);
+      }
+      // Ketu 宮位 = 前世領域
+      if(jy.planets.Ketu){
+        var _ketuHouse = ((jy.planets.Ketu.signIdx - jy.lagna.idx + 12) % 12) + 1;
+        var _ketuMap = {
+          1:'前世過度執著於自我認同，這輩子要學「我是誰不重要，如何服務更重要」',
+          4:'前世家庭業力未了，這輩子跟母親/家庭關係是核心功課',
+          7:'前世感情有未完成的課題，容易遇到業力伴侶',
+          8:'前世深度介入過生死/秘密/他人資源，這輩子要學放下控制',
+          9:'前世已是法的探索者，這輩子要落實智慧到日常',
+          10:'前世在事業/公眾形象上有遺憾，這輩子容易對世俗成就感到空虛',
+          12:'★最高靈性配置之一★ — 這輩子靈魂很大程度是「回家」而非「出征」'
+        };
+        if(_ketuMap[_ketuHouse]) texts.push('Ketu 在第'+_ketuHouse+'宮：'+_ketuMap[_ketuHouse]);
+      }
+      // Rahu 宮位 = 此生開拓方向
+      if(jy.planets.Rahu){
+        var _rahuHouse = ((jy.planets.Rahu.signIdx - jy.lagna.idx + 12) % 12) + 1;
+        texts.push('Rahu 在第'+_rahuHouse+'宮：這輩子被派來開荒的領域，一開始不熟悉但這就是成長方向');
       }
     }
   }
@@ -4049,6 +4289,21 @@ function talkZiweiFor(focusType){
     'health':['疾厄','命宮','父母'],
     'relationship':['僕役','遷移','福德'],
     'family':['田宅','父母','子女'],
+    // ★ v69 新增類別：
+    // lifelesson 今生課題 = 命宮（靈魂原型）+ 福德宮（精神高度）+ 父母宮（前世印記/化忌宮對應）+ 田宅宮（家族業力）
+    'lifelesson':['命宮','福德','父母','田宅'],
+    // karmic 業力前世 = 福德宮（前世福報源）+ 父母宮（祖德/宿債）+ 子女宮（前世債主轉世）+ 命宮（業力底色）
+    'karmic':['福德','父母','子女','命宮'],
+    // spiritual 靈性題 = 福德宮（精神核心）+ 命宮（靈魂主星）+ 遷移宮（外在氣場）
+    'spiritual':['福德','命宮','遷移'],
+    // timing 時間題 = 命宮 + 遷移 + 流年觸動的宮位（這要在動態階段判讀）
+    'timing':['命宮','遷移','福德'],
+    // decision 決策題 = 命宮（你的傾向）+ 遷移宮（環境機會）+ 福德宮（內心真實渴望）
+    'decision':['命宮','遷移','福德'],
+    // reconcile 復合 = 夫妻宮 + 官祿宮（夫妻對宮）+ 福德宮（內心執念）+ 命宮（你已改變多少）
+    'reconcile':['夫妻','官祿','福德','命宮'],
+    // thirdparty 第三者 = 夫妻宮 + 福德宮（不滿足）+ 子女宮（情慾位）+ 僕役宮（外在誘惑）
+    'thirdparty':['夫妻','福德','子女','僕役'],
     'general':['命宮','遷移','福德']
   };
   var palaces=GONG_MAP[focusType]||GONG_MAP['general'];
@@ -4644,7 +4899,15 @@ function verdictFromProb(prob, focusType){
 }
 
 function chartVerdict(bazi, mh, tarot, focusType){
-  var palaceName=focusType==='love'?'夫妻':focusType==='career'?'官祿':focusType==='wealth'?'財帛':focusType==='health'?'疾厄':focusType==='relationship'?'僕役':focusType==='family'?'田宅':'命宮';
+  // ★ v69：palaceName 對應 13 種 focusType 的主宮位
+  var _palaceMap = {
+    love:'夫妻', career:'官祿', wealth:'財帛', health:'疾厄',
+    relationship:'僕役', family:'田宅',
+    lifelesson:'命宮', karmic:'福德', spiritual:'福德',
+    reconcile:'夫妻', thirdparty:'夫妻',
+    timing:'命宮', decision:'命宮'
+  };
+  var palaceName = _palaceMap[focusType] || '命宮';
   var pal=readPalace(palaceName);
   var curDy=bazi&&bazi.dayun?bazi.dayun.find(function(d){return d.isCurrent;}):null;
   var dyLv=curDy?curDy.level:'';
@@ -23326,7 +23589,11 @@ function _buildTarotOnlyPayload() {
     if (c.gdCourt) card.gdCourt = c.gdCourt.combo;
 
     // ★ v28：根據問題類型送對應的牌義（AI 不再需要自己猜牌義）
+    // ★ v69 升級：新增 lifelesson / karmic / reconcile / thirdparty 的牌義路由
     if (_focusType === 'love' || _focusType === 'relationship') {
+      card.meaning = isUp ? (c.loveUp || c.up || '') : (c.loveRv || c.rv || '');
+    } else if (_focusType === 'reconcile' || _focusType === 'thirdparty') {
+      // 復合 / 第三者 = 仍走愛情牌義（最契合的牌義庫），AI 在 prompt 層用 V69_SYMBOL_ROUTING 區分讀法
       card.meaning = isUp ? (c.loveUp || c.up || '') : (c.loveRv || c.rv || '');
     } else if (_focusType === 'career') {
       card.meaning = isUp ? (c.careerUp || c.up || '') : (c.careerRv || c.rv || '');
@@ -23334,9 +23601,12 @@ function _buildTarotOnlyPayload() {
       card.meaning = isUp ? (c.wealthUp || c.up || '') : (c.wealthRv || c.rv || '');
     } else if (_focusType === 'health') {
       card.meaning = isUp ? (c.healthUp || c.up || '') : (c.healthRv || c.rv || '');
-    } else if (_focusType === 'spiritual') {
+    } else if (_focusType === 'spiritual' || _focusType === 'lifelesson' || _focusType === 'karmic') {
+      // 靈性/今生課題/業力 = 共用 spiritual 牌義（spiritualUp/Rv），這是靈魂層讀法
+      // AI 會根據 V69_SYMBOL_ROUTING 區分這三者的視角差異
       card.meaning = isUp ? (c.spiritualUp || c.up || '') : (c.spiritualRv || c.rv || '');
     } else {
+      // general / timing / decision / family / 其他 = 通用牌義
       card.meaning = isUp ? (c.up || '') : (c.rv || '');
     }
     card.advice = isUp ? (c.adviceUp || '') : (c.adviceRv || '');
@@ -25696,7 +25966,11 @@ function _buildOOTKPayload() {
     var s = cardStr(c);
     var isUp = c.isUp === true;
     var meaning = '';
+    // ★ v69 升級：新增 lifelesson / karmic / reconcile / thirdparty 路由
     if (_ootkFocus === 'love' || _ootkFocus === 'relationship') {
+      meaning = isUp ? (c.loveUp || c.up || '') : (c.loveRv || c.rv || '');
+    } else if (_ootkFocus === 'reconcile' || _ootkFocus === 'thirdparty') {
+      // 復合 / 第三者 = 走愛情牌義
       meaning = isUp ? (c.loveUp || c.up || '') : (c.loveRv || c.rv || '');
     } else if (_ootkFocus === 'career') {
       meaning = isUp ? (c.careerUp || c.up || '') : (c.careerRv || c.rv || '');
@@ -25704,7 +25978,8 @@ function _buildOOTKPayload() {
       meaning = isUp ? (c.wealthUp || c.up || '') : (c.wealthRv || c.rv || '');
     } else if (_ootkFocus === 'health') {
       meaning = isUp ? (c.healthUp || c.up || '') : (c.healthRv || c.rv || '');
-    } else if (_ootkFocus === 'spiritual') {
+    } else if (_ootkFocus === 'spiritual' || _ootkFocus === 'lifelesson' || _ootkFocus === 'karmic') {
+      // 靈性/今生課題/業力 = 共用 spiritual 牌義
       meaning = isUp ? (c.spiritualUp || c.up || '') : (c.spiritualRv || c.rv || '');
     } else {
       meaning = isUp ? (c.up || '') : (c.rv || '');
