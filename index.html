@@ -283,7 +283,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="stylesheet" href="CSS/style.css?v=20260505v68_21_37">
+<link rel="stylesheet" href="CSS/style.css?v=20260507v69_0_1">
 </head>
 <body>
 <noscript>
@@ -326,68 +326,11 @@
   <div id="hook-screen">
     <!-- 浮動粒子 -->
     <div class="particles" id="particles"></div>
-
-    <!-- ★ 舊六宮格已由 JS _redesignHomepage() 完全取代，這裡預設隱藏避免閃爍 -->
-    <div class="hero" style="position:relative;z-index:1;display:none">
-      <div class="hero-moon" id="hero-moon" onclick="_moonTap()"><div class="hero-moon-crescent"></div></div>
-      <div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>
-      <h2 style="font-size:clamp(1.4rem,4.5vw,1.9rem);letter-spacing:0.03em">你的命盤，藏著答案</h2>
-      <p style="font-size:.85rem;line-height:1.7;max-width:420px;margin:0 auto 4px;color:var(--c-text-dim)">把不同命理角度收斂成你真正看得懂的答案</p>
-
-    </div>
-
-    <!-- 六宮格 -->
-    <div class="hook-grid-6" style="position:relative;z-index:1;display:none">
-      <button class="hook-card-v2" onclick="pickType('love')">
-        <span class="hook-emoji">💕</span>
-        <span class="hook-title">感情桃花</span>
-        <span class="hook-sub">今年有桃花嗎？</span>
-      </button>
-      <button class="hook-card-v2" onclick="pickType('career')">
-        <span class="hook-emoji">💼</span>
-        <span class="hook-title">事業方向</span>
-        <span class="hook-sub">該不該換工作？</span>
-      </button>
-      <button class="hook-card-v2" onclick="pickType('wealth')">
-        <span class="hook-emoji">💰</span>
-        <span class="hook-title">財運投資</span>
-        <span class="hook-sub">今年財運如何？</span>
-      </button>
-      <button class="hook-card-v2" onclick="pickType('health')">
-        <span class="hook-emoji">🏥</span>
-        <span class="hook-title">健康身心</span>
-        <span class="hook-sub">該注意什麼？</span>
-      </button>
-      <button class="hook-card-v2" onclick="pickType('relationship')">
-        <span class="hook-emoji">🤝</span>
-        <span class="hook-title">人際合作</span>
-        <span class="hook-sub">小人還是貴人？</span>
-      </button>
-      <button class="hook-card-v2" onclick="pickType('family')">
-        <span class="hook-emoji">🏠</span>
-        <span class="hook-title">家庭親子</span>
-        <span class="hook-sub">家庭和諧嗎？</span>
-      </button>
-    </div>
-    <div style="display:none;justify-content:center;gap:var(--sp-md);margin-top:var(--sp-lg);font-size:.75rem;color:var(--c-text-muted);position:relative;z-index:1">
-      <span>⚡ 免費 · 10 秒出結果</span>
-    </div>
+    <!-- ★ v69：完整由 JS _redesignHomepage() 動態產生內容 -->
+    <!-- ★ v69 死碼清除：原 hero/hook-grid-6 已完全移除（以前曾用 6 種 focusType 手選，現在 AI 從問題文字自動分類） -->
   </div>
 
-  <!-- ═══ PHASE A.5: 信任預覽（先給價值再要資料） ═══ -->
-  <div id="trust-preview" style="display:none">
-    <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
-      <button class="btn btn-outline btn-sm" onclick="backToHook()" style="padding:.3rem .6rem"><i class="fas fa-arrow-left"></i></button>
-      <span class="tag tag-gold" id="trust-type-tag" style="font-size:.85rem;padding:.4rem .8rem"></span>
-    </div>
-    <div class="card" style="border-left:3px solid var(--c-gold)">
-      <div id="trust-text" class="serif" style="font-size:1rem;line-height:1.8"></div>
-    </div>
-    <div style="text-align:center;margin-top:var(--sp-md)">
-      <p class="text-gold serif" style="font-size:1rem;margin-bottom:var(--sp-sm)">想看更精準的？</p>
-      <button class="btn btn-primary btn-lg btn-cta-pulse" onclick="showInputAfterTrust()"><i class="fas fa-bolt"></i> 輸入生日，看你的專屬分析</button>
-    </div>
-  </div>
+  <!-- ═══ v69 死碼清除：trust-preview 區塊已完全移除（依賴 pickType，已不再使用） ═══ -->
 
   <!-- ═══ PHASE B: Quick Input (hidden until type picked) ═══ -->
   <div id="input-screen" style="display:none">
@@ -546,16 +489,10 @@
     </div>
   </div>
 
-  <!-- hidden select for backward compat -->
-  <select class="form-select" id="f-type" style="display:none">
-    <option value="">請選擇方向</option>
-    <option value="love">💕 感情</option>
-    <option value="career">💼 事業</option>
-    <option value="wealth">💰 財運</option>
-    <option value="health">🏥 健康</option>
-    <option value="relationship">🤝 人際</option>
-    <option value="family">🏠 家庭</option>
-  </select>
+  <!-- ★ v69 死碼清除：原 <select id="f-type"> 13 個 option 已全部移除 -->
+  <!--   原因：實際介面已不再讓用戶手選 focusType；後端 refineFocusType 從問題文字自動分類 -->
+  <!--   保留 element 是因為很多地方讀 value（payload.focusType），永遠送 'general' 給後端再分類 -->
+  <input type="hidden" id="f-type" value="general">
 
 </section>
 
@@ -1317,29 +1254,29 @@
     <button class="fab fab-custom" onclick="openCustomModal()" title="客製"><i class="fas fa-magic"></i><span>客製</span></button>
   </div>
 </div>
-<script src="JS/pricing-loader.js?v=20260505v68_21_37" defer></script>
-<script src="JS/weight-engine.js?v=20260505v68_21_37" defer></script>
-<script src="JS/confidence-bridge.js?v=20260505v68_21_37" defer></script>
-<script src="JS/ephemeris-client.js?v=20260505v68_21_37" defer></script>
-<script src="JS/bazi.js?v=20260505v68_21_37" defer></script>
-<script src="JS/solar-location.js?v=20260505v68_21_37" defer></script>
-<script src="JS/ziwei.js?v=20260505v68_21_37" defer></script>
-<script src="JS/tarot.js?v=20260505v68_21_37" defer></script>
-<script src="JS/bazi_upgrade.js?v=20260505v68_21_37" defer></script>
-<script src="JS/western_upgrade.js?v=20260505v68_21_37" defer></script>
-<script src="JS/jyotish_full_upgrade.js?v=20260505v68_21_37" defer></script>
-<script src="JS/meihua_upgrade2.js?v=20260505v68_21_37" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260505v68_21_37" defer></script>
-<script src="JS/name_upgrade.js?v=20260505v68_21_37" defer></script>
-<script src="JS/payment-wall.js?v=20260505v68_21_37" defer></script>
-<script src="JS/ai-analysis.js?v=20260505v68_21_37" defer></script>
-<script src="JS/photo-upload.js?v=20260505v68_21_37" defer></script>
-<script src="JS/api_upgrade.js?v=20260505v68_21_37" defer></script>
-<script src="JS/oracle.js?v=20260505v68_21_37" defer></script>
-<script src="JS/ui.js?v=20260505v68_21_37" defer></script>
-<script src="JS/tool-guide.js?v=20260505v68_21_37" defer></script>
-<script src="JS/guide.js?v=20260505v68_21_37" defer></script>
-<script src="JS/render_upgrade.js?v=20260505v68_21_37" defer></script>
+<script src="JS/pricing-loader.js?v=20260507v69_0_1" defer></script>
+<script src="JS/weight-engine.js?v=20260507v69_0_1" defer></script>
+<script src="JS/confidence-bridge.js?v=20260507v69_0_1" defer></script>
+<script src="JS/ephemeris-client.js?v=20260507v69_0_1" defer></script>
+<script src="JS/bazi.js?v=20260507v69_0_1" defer></script>
+<script src="JS/solar-location.js?v=20260507v69_0_1" defer></script>
+<script src="JS/ziwei.js?v=20260507v69_0_1" defer></script>
+<script src="JS/tarot.js?v=20260507v69_0_1" defer></script>
+<script src="JS/bazi_upgrade.js?v=20260507v69_0_1" defer></script>
+<script src="JS/western_upgrade.js?v=20260507v69_0_1" defer></script>
+<script src="JS/jyotish_full_upgrade.js?v=20260507v69_0_1" defer></script>
+<script src="JS/meihua_upgrade2.js?v=20260507v69_0_1" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260507v69_0_1" defer></script>
+<script src="JS/name_upgrade.js?v=20260507v69_0_1" defer></script>
+<script src="JS/payment-wall.js?v=20260507v69_0_1" defer></script>
+<script src="JS/ai-analysis.js?v=20260507v69_0_1" defer></script>
+<script src="JS/photo-upload.js?v=20260507v69_0_1" defer></script>
+<script src="JS/api_upgrade.js?v=20260507v69_0_1" defer></script>
+<script src="JS/oracle.js?v=20260507v69_0_1" defer></script>
+<script src="JS/ui.js?v=20260507v69_0_1" defer></script>
+<script src="JS/tool-guide.js?v=20260507v69_0_1" defer></script>
+<script src="JS/guide.js?v=20260507v69_0_1" defer></script>
+<script src="JS/render_upgrade.js?v=20260507v69_0_1" defer></script>
 <!-- Sticky Bottom CTA for Result Page -->
 <div class="sticky-cta" id="sticky-cta">
   <div class="sticky-cta-inner">
