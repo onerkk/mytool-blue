@@ -15408,6 +15408,20 @@ function _buildPayload() {
   var ft = S.form ? S.form.type : 'general';
   var b = S.bazi, zw = S.ziwei, mh = S.meihua, ta = S.tarot;
   var p = { question:q, focusType:ft, readings:{} };
+
+  // ★ v69.2.0：前端規則分類（同步） — 先用正則命中，命中就塞 qType
+  //   未命中（unmatched）的話，呼叫端會 await JyClassifier.classify() 再塞 haiku 結果
+  //   這裡先放規則結果，外層收到 unmatched 才需要 await haiku
+  try {
+    if (typeof window !== 'undefined' && window.JyClassifier && typeof window.JyClassifier.classifyFocusType === 'function') {
+      var _cls = window.JyClassifier.classifyFocusType(q, ft);
+      if (_cls && _cls.qType) {
+        p.qType = _cls.qType;
+        p.qTypeSource = _cls.qTypeSource; // 'regex' | 'unmatched' | 'fallback'
+      }
+    }
+  } catch(_) {}
+
   var f = S.form || {};
   p.name = f.name || '';
   p.gender = f.gender === 'male' ? '男' : (f.gender === 'female' ? '女' : '');
@@ -21693,6 +21707,31 @@ renderTarot = function(){
     }, 4000);
     try {
       var payload = _buildPayload();
+
+      // ★ v69.2.0：規則未命中時，await Haiku 智能分類
+      //   - 規則命中（regex）：直接走，零成本
+      //   - 規則未命中（unmatched）：呼叫 worker /classify，Haiku 4.5 智能分類
+      //   - Haiku 分類失敗：fallback 'general'
+      //   觸發率設計目標：< 20%（規則涵蓋 80%+ 主流問題）
+      if (payload.qTypeSource === 'unmatched') {
+        try {
+          if (typeof window !== 'undefined' && window.JyClassifier && typeof window.JyClassifier.classifyWithHaiku === 'function') {
+            var _haikuRes = await window.JyClassifier.classifyWithHaiku(payload.question, window._JY_SESSION_TOKEN);
+            if (_haikuRes && _haikuRes.qType) {
+              payload.qType = _haikuRes.qType;
+              payload.qTypeSource = _haikuRes.qTypeSource || 'haiku';
+              payload.qTypeModel = _haikuRes.model || null;
+            }
+          }
+        } catch(_haikuErr) {
+          console.warn('[v69.2] Haiku classify failed:', _haikuErr);
+          if (!payload.qType) payload.qType = 'general';
+          payload.qTypeSource = 'fallback';
+        }
+      }
+      // 確保有 qType（防呆）
+      if (!payload.qType) { payload.qType = 'general'; payload.qTypeSource = 'fallback'; }
+
       // v68.19 Bug #3 修:加 _jyForceOpusOnly 讀取
       //   ui.js 1116 / 6010 在「標準配額用完但 Opus 配額有餘」時設此旗標,
       //   原本沒人讀,用戶付費的 Opus 權益拿不到。
