@@ -546,7 +546,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <summary style="cursor:pointer;font-size:13px;color:#86efac;font-weight:600">① 為 chunks 加 contextual context（用 Haiku，~NT$13）</summary>
             <div style="margin-top:12px">
               <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-                <input type="url" id="ragChunksUrl" placeholder="https://onerkk.github.io/chunks.ndjson" value="https://onerkk.github.io/chunks.ndjson" style="flex:1;min-width:220px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+                <input type="url" id="ragChunksUrl" placeholder="https://jingyue.uk/chunks.ndjson" value="https://jingyue.uk/chunks.ndjson" style="flex:1;min-width:220px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
                 <button onclick="ragBuildContextRun()" id="ragBuildBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#22c55e;color:#fff;font-size:13px;font-weight:600;cursor:pointer">▶️ 開始（自動跑完）</button>
                 <button onclick="ragBuildContextStop()" id="ragBuildStopBtn" disabled style="padding:10px 16px;border-radius:8px;border:none;background:#6b7280;color:#fff;font-size:13px;font-weight:600;cursor:pointer">⏸ 暫停</button>
                 <button onclick="ragBuildContextProgress()" style="padding:10px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 看進度</button>
@@ -4141,7 +4141,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.3-2026-05-08';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.4-2026-05-08';
 
 async function checkWorkerStatus() {
   try {
@@ -4861,19 +4861,31 @@ async function ragBuildContextRun() {
   document.getElementById('ragBuildBtn').disabled = true;
   document.getElementById('ragBuildStopBtn').disabled = false;
 
+  // 立即給用戶反饋（避免感覺沒反應）
+  const logEl = document.getElementById('ragBuildLog');
+  if (logEl) logEl.textContent = '⏳ 連線中...先讀取既有進度';
+
   // 先看現有進度（從 0 起跑或續跑）
+  // v69.3.4：用 KV 實際筆數作為起跑點(progress 紀錄不可靠,可能因之前 fetch 失敗而沒更新)
   let start = 0;
   try {
     const r = await fetch(`${WORKER_URL}/admin/rag-build-progress?token=${encodeURIComponent(adminToken)}`);
     const d = await r.json();
-    if (d.ok && d.progress && d.progress.totalDone) start = d.progress.totalDone;
+    if (d.ok && d.progress) {
+      // 取 totalDone 跟 actualKVCount 較大者(以 KV 實際為準)
+      const tDone = d.progress.totalDone || 0;
+      const kvCount = d.progress.actualKVCount || 0;
+      start = Math.max(tDone, kvCount);
+    }
   } catch(_) {}
 
-  document.getElementById('ragBuildLog').textContent = '開始 build context（從第 ' + start + ' 個 chunk 起跑）';
+  if (logEl) logEl.textContent = '✅ 開始 build context（從第 ' + start + ' 個 chunk 起跑）';
   let total = 0;
+  let consecutiveErrors = 0;
 
   while (!_ragBuildAbort) {
     try {
+      _ragLogAppend('ragBuildLog', '⏳ 送出批次 ' + start + '...');
       const resp = await fetch(`${WORKER_URL}/admin/rag-build-context`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4882,8 +4894,15 @@ async function ragBuildContextRun() {
       const data = await resp.json();
       if (!data.ok) {
         _ragLogAppend('ragBuildLog', '❌ ' + (data.error || JSON.stringify(data)));
-        break;
+        consecutiveErrors++;
+        if (consecutiveErrors >= 3) {
+          _ragLogAppend('ragBuildLog', '❌ 連續 3 次失敗，停止');
+          break;
+        }
+        await new Promise(r => setTimeout(r, 3000));
+        continue;
       }
+      consecutiveErrors = 0;
       total = data.totalChunks || total;
       const completed = data.batchStart + data.batchSize;
       _ragLogAppend('ragBuildLog', `✓ 批次 ${start} → ${completed} | 成功 ${data.done}, 失敗 ${data.failed}` + (data.failed > 0 ? ' ' + JSON.stringify(data.failedDetails) : ''));
@@ -4896,7 +4915,9 @@ async function ragBuildContextRun() {
       start = data.nextBatchStart;
     } catch (e) {
       _ragLogAppend('ragBuildLog', '❌ 異常: ' + (e && e.message || e));
-      break;
+      consecutiveErrors++;
+      if (consecutiveErrors >= 3) break;
+      await new Promise(r => setTimeout(r, 3000));
     }
   }
   if (_ragBuildAbort) _ragLogAppend('ragBuildLog', '⏸ 已暫停');
