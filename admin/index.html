@@ -438,6 +438,160 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div id="classifierModelInfo" style="font-size:11px;color:var(--text-dim)"></div>
         </div>
 
+        <!-- ═══ v69.3:RAG 三階段 pipeline 控制台 ═══ -->
+        <div class="worker-card" style="border:1px solid rgba(168,85,247,0.4)">
+          <h3>🧬 RAG 三階段 Pipeline
+            <span style="font-size:11px;padding:2px 8px;background:rgba(168,85,247,0.2);color:#c4b5fd;border-radius:10px;margin-left:6px">v69.3 新增·實驗中</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            <b style="color:#c4b5fd">用途</b>:用 Cloudflare Vectorize 向量檢索精選命理鐵律,讓 Opus 看到的 prompt 從 168K 降到 ~13K,理論上分析更深。<br>
+            <b style="color:#fbbf24">前提</b>:必須先建好 Vectorize index 並上傳 chunks(看部署文件)。binding 缺失會自動 fallback 單階段。<br>
+            <b style="color:#f87171">重要</b>:這是實驗功能,建議只先開 OOTK 測試,跑 5-10 題對照後再推廣。
+          </p>
+
+          <div id="ragBindingStatus" style="margin-bottom:12px;padding:10px;background:#0a0c11;border-radius:6px;font-size:11px;color:var(--text-dim);font-family:ui-monospace,monospace"></div>
+
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center;margin-bottom:14px">
+            <span style="font-size:13px">總開關:</span>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="ragEnabled" style="width:18px;height:18px;cursor:pointer">
+              <span style="font-size:13px">啟用 RAG Pipeline(關閉時走原 v69.2 路徑)</span>
+            </label>
+
+            <span style="font-size:13px">分模式啟用:</span>
+            <div style="display:flex;gap:14px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="ragModeDirect" style="width:16px;height:16px"> <span style="font-size:13px">七維度 (direct)</span></label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="ragModeTarot" style="width:16px;height:16px"> <span style="font-size:13px">塔羅 (tarot)</span></label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="ragModeOotk" style="width:16px;height:16px"> <span style="font-size:13px">開鑰 (ootk)</span></label>
+            </div>
+
+            <span style="font-size:13px">失敗 fallback:</span>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="ragFallback" style="width:18px;height:18px;cursor:pointer" checked>
+              <span style="font-size:13px;color:var(--text-dim)">RAG 失敗時降級走 v69.2 單階段(建議勾選)</span>
+            </label>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <button onclick="loadRAGConfig()" style="padding:10px 20px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取目前設定</button>
+            <button onclick="saveRAGConfig()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存設定</button>
+            <span id="ragConfigStatus" style="font-size:12px;color:var(--text-dim);align-self:center"></span>
+          </div>
+
+          <details style="margin-top:18px;border-top:1px solid var(--card-border);padding-top:14px">
+            <summary style="cursor:pointer;font-size:13px;color:#c4b5fd;font-weight:600">🔍 RAG 撈取測試(看某題會撈到哪些 chunks)</summary>
+            <div style="margin-top:12px">
+              <input type="text" id="ragTestQuery" placeholder="輸入測試問題,例如:今年事業會升遷嗎" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:13px;margin-bottom:8px">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                <select id="ragTestQType" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+                  <option value="general">general</option>
+                  <option value="love">love</option>
+                  <option value="career">career</option>
+                  <option value="wealth">wealth</option>
+                  <option value="health">health</option>
+                  <option value="family">family</option>
+                  <option value="relationship">relationship</option>
+                  <option value="lifelesson">lifelesson</option>
+                  <option value="timing">timing</option>
+                  <option value="decision">decision</option>
+                  <option value="spiritual">spiritual</option>
+                  <option value="karmic">karmic</option>
+                  <option value="reconcile">reconcile</option>
+                  <option value="thirdparty">thirdparty</option>
+                </select>
+                <select id="ragTestMode" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+                  <option value="direct">direct(七維度)</option>
+                  <option value="tarot">tarot(塔羅)</option>
+                  <option value="ootk">ootk(開鑰)</option>
+                </select>
+                <button onclick="runRAGTest()" style="padding:8px 16px;border-radius:6px;border:none;background:#22c55e;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🧪 執行測試</button>
+              </div>
+              <pre id="ragTestOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:12px;font-size:11px;color:#a5b4fc;line-height:1.6;max-height:400px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,monospace">點按鈕測試 RAG 檢索結果</pre>
+            </div>
+          </details>
+        </div>
+
+        <!-- ═══ v69.3:RAG 索引建構（手機可操作）═══ -->
+        <div class="worker-card" style="border:1px solid rgba(34,197,94,0.4)">
+          <h3>🔧 RAG 索引建構（手機操作）
+            <span style="font-size:11px;padding:2px 8px;background:rgba(34,197,94,0.2);color:#86efac;border-radius:10px;margin-left:6px">v69.3 新增</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            <b style="color:#86efac">用途</b>：在手機上完成 RAG 索引建構，不需要電腦。<br>
+            <b style="color:#fbbf24">前置</b>：① 先在 Cloudflare Dashboard 建好 Vectorize index「jingyue-rules」<br>
+            ② 把 chunks.ndjson 上傳到 GitHub Pages（onerkk.github.io/chunks.ndjson）<br>
+            ③ wrangler.toml 加好 VECTORIZE + AI binding 並重新部署 worker<br>
+            <b style="color:#f87171">流程</b>：先跑 ① 加 contextual context（5-10 分鐘）→ 再跑 ② 上傳到 Vectorize（5-10 分鐘）
+          </p>
+
+          <!-- 階段 1: Build Context -->
+          <details style="margin-top:10px;border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:10px" open>
+            <summary style="cursor:pointer;font-size:13px;color:#86efac;font-weight:600">① 為 chunks 加 contextual context（用 Haiku，~NT$13）</summary>
+            <div style="margin-top:12px">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                <input type="url" id="ragChunksUrl" placeholder="https://onerkk.github.io/chunks.ndjson" value="https://onerkk.github.io/chunks.ndjson" style="flex:1;min-width:220px;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+                <button onclick="ragBuildContextRun()" id="ragBuildBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#22c55e;color:#fff;font-size:13px;font-weight:600;cursor:pointer">▶️ 開始（自動跑完）</button>
+                <button onclick="ragBuildContextStop()" id="ragBuildStopBtn" disabled style="padding:10px 16px;border-radius:8px;border:none;background:#6b7280;color:#fff;font-size:13px;font-weight:600;cursor:pointer">⏸ 暫停</button>
+                <button onclick="ragBuildContextProgress()" style="padding:10px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 看進度</button>
+              </div>
+              <div id="ragBuildProgressBar" style="height:24px;background:#0a0c11;border:1px solid var(--card-border);border-radius:12px;overflow:hidden;margin-bottom:8px;position:relative">
+                <div id="ragBuildProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#86efac);transition:width 0.3s"></div>
+                <span id="ragBuildProgressText" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5)">未開始</span>
+              </div>
+              <pre id="ragBuildLog" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:200px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點「開始」按鈕，會自動分批跑完所有 chunks</pre>
+            </div>
+          </details>
+
+          <!-- 階段 2: Upload to Vectorize -->
+          <details style="margin-top:10px;border:1px solid rgba(168,85,247,0.2);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#c4b5fd;font-weight:600">② 上傳 chunks 到 Vectorize（用 Workers AI 免費 embedding）</summary>
+            <div style="margin-top:12px">
+              <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px">
+                ⚠️ 必須先完成階段 ① 才能跑階段 ②
+              </p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                <button onclick="ragUploadVectorizeRun()" id="ragUploadBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">▶️ 開始上傳</button>
+                <button onclick="ragUploadVectorizeStop()" id="ragUploadStopBtn" disabled style="padding:10px 16px;border-radius:8px;border:none;background:#6b7280;color:#fff;font-size:13px;font-weight:600;cursor:pointer">⏸ 暫停</button>
+                <button onclick="ragUploadVectorizeProgress()" style="padding:10px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 看進度</button>
+              </div>
+              <div id="ragUploadProgressBar" style="height:24px;background:#0a0c11;border:1px solid var(--card-border);border-radius:12px;overflow:hidden;margin-bottom:8px;position:relative">
+                <div id="ragUploadProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,#a855f7,#c4b5fd);transition:width 0.3s"></div>
+                <span id="ragUploadProgressText" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5)">未開始</span>
+              </div>
+              <pre id="ragUploadLog" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:200px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點「開始上傳」按鈕，會自動分批上傳到 Vectorize</pre>
+            </div>
+          </details>
+
+          <!-- 危險區：清掉重來 -->
+          <details style="margin-top:10px;border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#f87171;font-weight:600">⚠️ 清空索引重來（只在出錯時用）</summary>
+            <div style="margin-top:12px">
+              <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px">
+                清掉 KV 裡所有 rag_chunk:* 紀錄。<strong style="color:#f87171">這只清 KV 暫存，Vectorize 內的 vectors 要去 Cloudflare Dashboard 手動刪 index 重建。</strong>
+              </p>
+              <button onclick="ragClearAll()" style="padding:10px 20px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🗑 清空 KV 暫存</button>
+              <span id="ragClearStatus" style="margin-left:10px;font-size:12px;color:var(--text-dim)"></span>
+            </div>
+          </details>
+        </div>
+
+        <!-- ═══ v69.3:RAG 撈取稽核 ═══ -->
+        <div class="worker-card" style="border:1px solid rgba(168,85,247,0.3)">
+          <h3>🔬 RAG 撈取稽核
+            <span style="font-size:11px;padding:2px 8px;background:rgba(168,85,247,0.2);color:#c4b5fd;border-radius:10px;margin-left:6px">v69.3 新增</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            看每次真實 AI 呼叫時,RAG 撈了哪些 chunks。<br>
+            如果發現某類問題撈不到對的 chunks → 該 chunk 的 metadata 沒標準確 → 回頭調 split-chunks.js 規則重跑。
+          </p>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+            <button onclick="loadRAGAudit()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 20 筆</button>
+            <button onclick="loadRAGAudit(50)" style="padding:10px 20px;border-radius:8px;border:none;background:#9333ea;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 50 筆</button>
+            <span id="ragAuditStatus" style="font-size:12px;color:var(--text-dim)"></span>
+          </div>
+          <div id="ragAuditOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:12px;max-height:500px;overflow:auto;font-size:11px;color:#a5b4fc;line-height:1.5;font-family:ui-monospace,monospace">點按鈕讀取 RAG 撈取紀錄</div>
+        </div>
+
         <div class="worker-card">
           <h3>🚀 部署 Worker</h3>
           <p>上傳新的 worker.js 部署到 Cloudflare。需要 Cloudflare API 憑證。</p>
@@ -3970,7 +4124,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.2.0-2026-05-07';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.0-2026-05-07';
 
 async function checkWorkerStatus() {
   try {
@@ -4485,6 +4639,316 @@ async function saveClassifierModel() {
     setTimeout(() => loadClassifierModel(), 500);
   } catch (e) {
     if (statusEl) statusEl.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// v69.3.0：RAG 三階段 pipeline 控制
+// ═══════════════════════════════════════════════════════════════
+
+async function loadRAGConfig() {
+  const statusEl = document.getElementById('ragConfigStatus');
+  const bindingEl = document.getElementById('ragBindingStatus');
+  if (statusEl) statusEl.textContent = '⏳ 讀取中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-config?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (statusEl) statusEl.textContent = '❌ ' + (data.error || '讀取失敗');
+      return;
+    }
+    const cfg = data.config;
+    document.getElementById('ragEnabled').checked = !!cfg.enabled;
+    document.getElementById('ragModeDirect').checked = !!(cfg.modes && cfg.modes.direct);
+    document.getElementById('ragModeTarot').checked = !!(cfg.modes && cfg.modes.tarot);
+    document.getElementById('ragModeOotk').checked = !!(cfg.modes && cfg.modes.ootk);
+    document.getElementById('ragFallback').checked = cfg.fallbackToSingle !== false;
+    if (statusEl) statusEl.textContent = '✅ ' + (cfg.updatedAt ? cfg.updatedAt.replace('T',' ').slice(0,19) : '讀取成功');
+    if (bindingEl) {
+      const b = cfg.bindings || {};
+      bindingEl.innerHTML =
+        '<b style="color:#fcd34d">Cloudflare Bindings 狀態</b><br>' +
+        '&nbsp;&nbsp;VECTORIZE: <span style="color:' + (b.VECTORIZE ? '#86efac' : '#f87171') + '">' + (b.VECTORIZE ? '✅ 已連接' : '❌ 未連接') + '</span><br>' +
+        '&nbsp;&nbsp;Workers AI: <span style="color:' + (b.AI ? '#86efac' : '#f87171') + '">' + (b.AI ? '✅ 已連接' : '❌ 未連接') + '</span><br>' +
+        '&nbsp;&nbsp;RATE_KV: <span style="color:' + (b.RATE_KV ? '#86efac' : '#f87171') + '">' + (b.RATE_KV ? '✅ 已連接' : '❌ 未連接') + '</span>' +
+        ((!b.VECTORIZE || !b.AI) ? '<br><span style="color:#f87171">⚠️ 缺少 binding,RAG 無法運作。請更新 wrangler.toml 並重新部署 worker。</span>' : '');
+    }
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function saveRAGConfig() {
+  const statusEl = document.getElementById('ragConfigStatus');
+  const cfg = {
+    token: adminToken,
+    enabled: document.getElementById('ragEnabled').checked,
+    modes: {
+      direct: document.getElementById('ragModeDirect').checked,
+      tarot: document.getElementById('ragModeTarot').checked,
+      ootk: document.getElementById('ragModeOotk').checked
+    },
+    fallbackToSingle: document.getElementById('ragFallback').checked,
+    haikuStage: { enabled: false, model: 'claude-haiku-4-5-20251001' }
+  };
+  if (cfg.enabled && !cfg.modes.direct && !cfg.modes.tarot && !cfg.modes.ootk) {
+    if (!confirm('總開關開啟但沒有任何模式啟用,RAG 不會運作。確定要儲存嗎?')) return;
+  }
+  if (statusEl) statusEl.textContent = '⏳ 儲存中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg)
+    });
+    const data = await r.json();
+    if (!data.ok) {
+      if (statusEl) statusEl.textContent = '❌ ' + (data.error || '儲存失敗');
+      return;
+    }
+    if (statusEl) statusEl.textContent = '✅ 已儲存';
+    setTimeout(loadRAGConfig, 500);
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function runRAGTest() {
+  const out = document.getElementById('ragTestOutput');
+  const q = document.getElementById('ragTestQuery').value.trim();
+  const qType = document.getElementById('ragTestQType').value;
+  const mode = document.getElementById('ragTestMode').value;
+  if (!q) { if (out) out.textContent = '請輸入測試問題'; return; }
+  if (out) out.textContent = '⏳ 執行檢索中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-test?token=${encodeURIComponent(adminToken)}&q=${encodeURIComponent(q)}&qType=${qType}&mode=${mode}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (out) out.textContent = '❌ ' + JSON.stringify(data, null, 2);
+      return;
+    }
+    let txt = `Query: ${data.query}\nqType: ${data.qType}, mode: ${data.mode}\nRetrieved: ${data.retrievedCount} chunks\n\n`;
+    (data.retrieved || []).forEach((r, i) => {
+      txt += `─── #${i+1} [${r.source}] score=${(r.score||0).toFixed(3)} ───\n`;
+      txt += `id: ${r.id}\n`;
+      txt += `var: ${r.var}, qTypes: ${r.qTypes}, systems: ${r.systems}\n`;
+      txt += `text: ${r.textPreview}\n\n`;
+    });
+    if (out) out.textContent = txt;
+  } catch (e) {
+    if (out) out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// v69.3.0：RAG 索引建構（手機可操作的批次處理 + 進度條 + 暫停）
+// ═══════════════════════════════════════════════════════════════
+
+let _ragBuildAbort = false;
+let _ragUploadAbort = false;
+
+function _ragLogAppend(elId, msg) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const ts = new Date().toLocaleTimeString('zh-TW', { hour12: false });
+  el.textContent += `\n[${ts}] ${msg}`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function _ragSetProgress(prefix, pct, text) {
+  const fill = document.getElementById(prefix + 'ProgressFill');
+  const txt = document.getElementById(prefix + 'ProgressText');
+  if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+  if (txt) txt.textContent = text;
+}
+
+// ── ① Build context（自動分批，每批 50 chunks）──
+async function ragBuildContextRun() {
+  _ragBuildAbort = false;
+  const url = document.getElementById('ragChunksUrl').value.trim();
+  if (!url) { alert('請輸入 chunks.ndjson URL'); return; }
+  document.getElementById('ragBuildBtn').disabled = true;
+  document.getElementById('ragBuildStopBtn').disabled = false;
+
+  // 先看現有進度（從 0 起跑或續跑）
+  let start = 0;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-build-progress?token=${encodeURIComponent(adminToken)}`);
+    const d = await r.json();
+    if (d.ok && d.progress && d.progress.totalDone) start = d.progress.totalDone;
+  } catch(_) {}
+
+  document.getElementById('ragBuildLog').textContent = '開始 build context（從第 ' + start + ' 個 chunk 起跑）';
+  let total = 0;
+
+  while (!_ragBuildAbort) {
+    try {
+      const resp = await fetch(`${WORKER_URL}/admin/rag-build-context`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: adminToken, chunksUrl: url, batchStart: start, batchSize: 50 })
+      });
+      const data = await resp.json();
+      if (!data.ok) {
+        _ragLogAppend('ragBuildLog', '❌ ' + (data.error || JSON.stringify(data)));
+        break;
+      }
+      total = data.totalChunks || total;
+      const completed = data.batchStart + data.batchSize;
+      _ragLogAppend('ragBuildLog', `✓ 批次 ${start} → ${completed} | 成功 ${data.done}, 失敗 ${data.failed}` + (data.failed > 0 ? ' ' + JSON.stringify(data.failedDetails) : ''));
+      _ragSetProgress('ragBuild', total ? (completed * 100 / total) : 0, completed + ' / ' + total);
+
+      if (data.allDone) {
+        _ragLogAppend('ragBuildLog', '🎉 全部完成！');
+        break;
+      }
+      start = data.nextBatchStart;
+    } catch (e) {
+      _ragLogAppend('ragBuildLog', '❌ 異常: ' + (e && e.message || e));
+      break;
+    }
+  }
+  if (_ragBuildAbort) _ragLogAppend('ragBuildLog', '⏸ 已暫停');
+  document.getElementById('ragBuildBtn').disabled = false;
+  document.getElementById('ragBuildStopBtn').disabled = true;
+}
+
+function ragBuildContextStop() {
+  _ragBuildAbort = true;
+}
+
+async function ragBuildContextProgress() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-build-progress?token=${encodeURIComponent(adminToken)}`);
+    const d = await r.json();
+    if (!d.ok) { _ragLogAppend('ragBuildLog', '❌ ' + d.error); return; }
+    const p = d.progress || {};
+    _ragLogAppend('ragBuildLog', `進度查詢: ${p.totalDone || 0} / ${p.totalChunks || 0} | KV 實際筆數 ${p.actualKVCount}`);
+    _ragSetProgress('ragBuild', p.totalChunks ? ((p.totalDone || 0) * 100 / p.totalChunks) : 0, (p.totalDone || 0) + ' / ' + (p.totalChunks || 0));
+  } catch (e) {
+    _ragLogAppend('ragBuildLog', '❌ ' + e);
+  }
+}
+
+// ── ② Upload to Vectorize（自動分批，每批 30 chunks）──
+async function ragUploadVectorizeRun() {
+  _ragUploadAbort = false;
+  document.getElementById('ragUploadBtn').disabled = true;
+  document.getElementById('ragUploadStopBtn').disabled = false;
+  document.getElementById('ragUploadLog').textContent = '開始上傳到 Vectorize';
+
+  let cursor = null;
+  let uploaded = 0;
+  let total = 0;
+  // 先看 KV 有多少 chunks 可上
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-build-progress?token=${encodeURIComponent(adminToken)}`);
+    const d = await r.json();
+    if (d.ok && d.progress) total = d.progress.actualKVCount || 0;
+    _ragLogAppend('ragUploadLog', `KV 內共 ${total} 個 chunks 可上傳`);
+  } catch(_) {}
+
+  while (!_ragUploadAbort) {
+    try {
+      const resp = await fetch(`${WORKER_URL}/admin/rag-upload-vectorize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: adminToken, batchSize: 30, cursor: cursor })
+      });
+      const data = await resp.json();
+      if (!data.ok) {
+        _ragLogAppend('ragUploadLog', '❌ ' + (data.error || JSON.stringify(data)));
+        break;
+      }
+      uploaded += (data.uploadedThisBatch || 0);
+      _ragLogAppend('ragUploadLog', `✓ 本批上傳 ${data.uploadedThisBatch} | 累計 ${uploaded}`);
+      _ragSetProgress('ragUpload', total ? (uploaded * 100 / total) : 0, uploaded + ' / ' + total);
+
+      if (data.allDone || data.done) {
+        _ragLogAppend('ragUploadLog', '🎉 全部上傳完成！');
+        break;
+      }
+      cursor = data.nextCursor;
+      if (!cursor) {
+        _ragLogAppend('ragUploadLog', '🎉 全部上傳完成（cursor 結束）');
+        break;
+      }
+    } catch (e) {
+      _ragLogAppend('ragUploadLog', '❌ 異常: ' + (e && e.message || e));
+      break;
+    }
+  }
+  if (_ragUploadAbort) _ragLogAppend('ragUploadLog', '⏸ 已暫停');
+  document.getElementById('ragUploadBtn').disabled = false;
+  document.getElementById('ragUploadStopBtn').disabled = true;
+}
+
+function ragUploadVectorizeStop() {
+  _ragUploadAbort = true;
+}
+
+async function ragUploadVectorizeProgress() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-upload-progress?token=${encodeURIComponent(adminToken)}`);
+    const d = await r.json();
+    if (!d.ok) { _ragLogAppend('ragUploadLog', '❌ ' + d.error); return; }
+    const p = d.progress || {};
+    _ragLogAppend('ragUploadLog', `進度查詢: 已上傳 ${p.totalUploaded || 0}` + (p.vectorizeStats ? ' | Vectorize: ' + JSON.stringify(p.vectorizeStats) : ''));
+  } catch (e) {
+    _ragLogAppend('ragUploadLog', '❌ ' + e);
+  }
+}
+
+async function ragClearAll() {
+  if (!confirm('確定要清空 KV 內所有 rag_chunk:* 紀錄嗎？這只清 KV 暫存，不會刪 Vectorize 內的 vectors。')) return;
+  const statusEl = document.getElementById('ragClearStatus');
+  if (statusEl) statusEl.textContent = '⏳ 清除中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-clear`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, type: 'all' })
+    });
+    const d = await r.json();
+    if (statusEl) statusEl.textContent = d.ok ? ('✅ 已刪 ' + d.deleted + ' 筆') : ('❌ ' + d.error);
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '❌ ' + e;
+  }
+}
+
+async function loadRAGAudit(limit) {
+  if (!limit) limit = 20;
+  const statusEl = document.getElementById('ragAuditStatus');
+  const out = document.getElementById('ragAuditOutput');
+  if (statusEl) statusEl.textContent = '⏳ 讀取中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-audit?token=${encodeURIComponent(adminToken)}&limit=${limit}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (out) out.textContent = '❌ ' + (data.error || '讀取失敗');
+      if (statusEl) statusEl.textContent = '❌';
+      return;
+    }
+    if (statusEl) statusEl.textContent = '✅ ' + data.count + ' 筆';
+    if (!data.entries || !data.entries.length) {
+      if (out) out.textContent = '尚無 RAG 撈取紀錄(可能 RAG 未啟用,或還沒 AI 呼叫)';
+      return;
+    }
+    let txt = '';
+    data.entries.forEach((e, i) => {
+      txt += `═══ #${i+1} ═══\n`;
+      txt += `${e.ts ? e.ts.replace('T',' ').slice(0,19) : ''}  mode=${e.mode}  qType=${e.qType}\n`;
+      txt += `qTypeList: ${(e.qTypeList || []).join(', ')}\n`;
+      txt += `Question: ${e.question}\n`;
+      txt += `Retrieved (${e.retrievedCount} chunks):\n`;
+      (e.retrievedSources || []).slice(0, 10).forEach(s => {
+        txt += `  • [${s.source}] score=${(s.score||0).toFixed(3)} ${s.id} (${s.var})\n`;
+      });
+      txt += '\n';
+    });
+    if (out) out.textContent = txt;
+  } catch (e) {
+    if (out) out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
 }
 
