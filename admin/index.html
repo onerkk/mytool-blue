@@ -1586,6 +1586,32 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v69.3.16：Haiku 七維度完整 base 實驗開關 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid #f59e0b">
+        <h3>🧪 Haiku 七維度 完整 base 實驗</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.6">
+          <b style="color:#f59e0b">⚠️ 實驗性開關 — 預設關閉</b><br>
+          預設情況下 Haiku 4.5 跑七維度走 <b>LITE 3K 精簡版</b>(避免 200K context 撞牆)。<br>
+          開啟後 Haiku 走<b>完整 DIRECT_PROMPT 主體 + RAG chunks + 模組</b>,實際 base ≈ 30-50K。<br>
+          • <b style="color:#10b981">優點</b>:Haiku 看到的命理規則更完整,judgement 可能更精準<br>
+          • <b style="color:#ef4444">風險</b>:Haiku attention 在 50K+ 可能散掉,品質不一定比 LITE 好<br>
+          • <b style="color:#6c7bff">建議</b>:先驗證 LITE + RAG 品質,再開實驗 A/B 對比<br>
+          <br>
+          <b style="color:#f59e0b">注意</b>:OOTK 不開放 Haiku(完整 217K 砍了會失去深度,撞 Haiku 仍 fallback Sonnet 4.6)
+        </p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="he-fullbase" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1;font-size:13px;font-weight:600">Haiku 七維度走完整 base(實驗)</span>
+            <span style="font-size:11px;color:var(--text-dim)">關閉=LITE預設</span>
+          </label>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveHaikuExperimentConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#f59e0b;color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存實驗開關</button>
+          <span id="haikuExpStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v59.3：Max Tokens 設定卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>🎚️ Max Tokens 設定</h3>
@@ -2761,7 +2787,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
     if (tab.dataset.tab === 'weights') loadWeightStats();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
 
@@ -4141,7 +4167,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.15-2026-05-08';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.16-2026-05-08';
 
 async function checkWorkerStatus() {
   try {
@@ -6715,6 +6741,47 @@ async function saveHaikuThinkingConfig() {
     if (data.ok) {
       toast('✓ 已儲存 Haiku Thinking');
       if (statusEl) statusEl.textContent = (enabled ? '啟用' : '關閉') + '｜' + budget + ' tokens' + (includeFollowup ? '｜追問也開' : '｜追問關');
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v69.3.16: Haiku 七維度完整 base 實驗開關
+// ═══════════════════════════════════════════════
+async function loadHaikuExperimentConfig() {
+  const statusEl = document.getElementById('haikuExpStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/haiku-experiment-config?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const c = data.config;
+      const eEl = document.getElementById('he-fullbase');
+      if (eEl) eEl.checked = !!c.sevenDimFullBase;
+      if (statusEl) statusEl.textContent = c.sevenDimFullBase ? '✅ 完整 base 實驗模式（Haiku 七維度走完整 DIRECT_PROMPT）' : '⚙️ LITE 模式（預設，3K 精簡）';
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveHaikuExperimentConfig() {
+  const statusEl = document.getElementById('haikuExpStatus');
+  try {
+    const eEl = document.getElementById('he-fullbase');
+    const sevenDimFullBase = eEl ? !!eEl.checked : false;
+    const r = await fetch(`${WORKER_URL}/admin/haiku-experiment-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sevenDimFullBase: sevenDimFullBase })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Haiku 實驗開關');
+      if (statusEl) statusEl.textContent = sevenDimFullBase ? '✅ 完整 base 實驗模式' : '⚙️ LITE 模式';
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
