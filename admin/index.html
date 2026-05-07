@@ -389,6 +389,55 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <pre id="lastCallDebugOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:14px;font-size:11px;color:#a5b4fc;line-height:1.6;max-height:600px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">點上方按鈕讀取最近一次 callAI 的真實參數</pre>
         </div>
 
+        <!-- ═══ v69.2:路由稽核 — 看 AI 怎麼分類用戶問題 ═══ -->
+        <div class="worker-card" style="border:1px solid rgba(34,197,94,0.3)">
+          <h3>🧭 路由稽核
+            <span style="font-size:11px;padding:2px 8px;background:rgba(34,197,94,0.2);color:#86efac;border-radius:10px;margin-left:6px">v69.2 新增</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            <b style="color:#86efac">用途</b>:檢查 AI 把每個用戶問題分類到哪個 qType,確認分類是否正確。<br>
+            分類來源(qTypeSource):<br>
+            • <code style="color:#86efac">regex</code> = 前端規則命中(零成本,佔目標 80%+)<br>
+            • <code style="color:#fbbf24">haiku</code> = 規則沒命中,呼叫 Haiku 智能分類(每次 ~$0.0001)<br>
+            • <code style="color:#f87171">fallback</code> = 全部失敗,降級為 general<br>
+            • <code style="color:#a5b4fc">backend_regex</code> = 前端沒帶 qType(舊版),後端跑了 refineFocusType<br>
+            <b style="color:#fbbf24">用法</b>:看「分類錯」的紀錄,改 frontend-classifier.js 的 regex 規則。
+          </p>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+            <button onclick="loadRouteAudit()" style="padding:10px 20px;border-radius:8px;border:none;background:#22c55e;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 50 筆</button>
+            <button onclick="loadRouteAudit(200)" style="padding:10px 20px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 200 筆</button>
+            <span id="routeAuditStatus" style="font-size:12px;color:var(--text-dim)"></span>
+          </div>
+          <div id="routeAuditStats" style="margin-bottom:10px;font-size:12px;color:var(--text-dim)"></div>
+          <div id="routeAuditTable" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:12px;max-height:500px;overflow:auto;font-size:11px;color:#a5b4fc;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">點上方按鈕讀取路由稽核紀錄</div>
+        </div>
+
+        <!-- ═══ v69.2:前端分類器模型設定 ═══ -->
+        <div class="worker-card" style="border:1px solid rgba(245,158,11,0.3)">
+          <h3>🤖 前端 AI 分類器模型
+            <span style="font-size:11px;padding:2px 8px;background:rgba(245,158,11,0.2);color:#fcd34d;border-radius:10px;margin-left:6px">v69.2 新增</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            <b style="color:#fcd34d">用途</b>:當前端規則分類沒命中時,用哪個 AI 模型做智能分類。<br>
+            預設 <code style="color:#86efac">Haiku 4.5</code>(最快、最便宜,每次 ~$0.0001)。<br>
+            <b style="color:#f87171">注意</b>:這個模型只用在「規則沒命中」的少數問題上,不是主分析模型。<br>
+            • Haiku 4.5 = 速度最快,適合 13 類分類任務<br>
+            • Sonnet 4.6 = 中等,複雜跨類問題或許更準<br>
+            • Opus 4.7 = 最準但成本高 50 倍,通常不需要
+          </p>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+            <select id="classifierModelSelect" style="padding:10px 14px;border-radius:8px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:13px;min-width:280px">
+              <option value="claude-haiku-4-5-20251001">Haiku 4.5(預設、最快、最便宜)</option>
+              <option value="claude-sonnet-4-6-20250929">Sonnet 4.6(中等準確)</option>
+              <option value="claude-opus-4-7-20260131">Opus 4.7(最準但成本高)</option>
+            </select>
+            <button onclick="loadClassifierModel()" style="padding:10px 20px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取目前設定</button>
+            <button onclick="saveClassifierModel()" style="padding:10px 20px;border-radius:8px;border:none;background:#f59e0b;color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存</button>
+            <span id="classifierModelStatus" style="font-size:12px;color:var(--text-dim)"></span>
+          </div>
+          <div id="classifierModelInfo" style="font-size:11px;color:var(--text-dim)"></div>
+        </div>
+
         <div class="worker-card">
           <h3>🚀 部署 Worker</h3>
           <p>上傳新的 worker.js 部署到 Cloudflare。需要 Cloudflare API 憑證。</p>
@@ -3921,7 +3970,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.1.0-2026-05-07';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.2.0-2026-05-07';
 
 async function checkWorkerStatus() {
   try {
@@ -4303,6 +4352,139 @@ async function copyLastCallDebug() {
     } catch(e2) {
       if (statusEl) statusEl.textContent = '❌ 複製失敗:' + e.message;
     }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// v69.2.0：路由稽核 + 前端分類器模型設定
+// ═══════════════════════════════════════════════════════════════
+
+async function loadRouteAudit(limit) {
+  if (!limit) limit = 50;
+  const statusEl = document.getElementById('routeAuditStatus');
+  const tableEl = document.getElementById('routeAuditTable');
+  const statsEl = document.getElementById('routeAuditStats');
+  if (statusEl) statusEl.textContent = '⏳ 讀取中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/route-audit?token=${encodeURIComponent(adminToken)}&limit=${limit}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (tableEl) tableEl.textContent = '錯誤: ' + (data.error || '未知錯誤');
+      if (statusEl) statusEl.textContent = '❌ 讀取失敗';
+      return;
+    }
+    const entries = data.entries || [];
+    if (statusEl) statusEl.textContent = '✅ 讀到 ' + entries.length + ' 筆';
+
+    // 統計各 qType / qTypeSource 比例
+    const qTypeCount = {};
+    const sourceCount = {};
+    entries.forEach(e => {
+      qTypeCount[e.qType] = (qTypeCount[e.qType] || 0) + 1;
+      sourceCount[e.qTypeSource] = (sourceCount[e.qTypeSource] || 0) + 1;
+    });
+    let stats = '<b style="color:#86efac">分類統計</b>(' + entries.length + ' 筆):<br>';
+    stats += '&nbsp;&nbsp;qType: ';
+    Object.keys(qTypeCount).sort((a,b) => qTypeCount[b]-qTypeCount[a]).forEach(k => {
+      stats += '<span style="margin-right:8px"><code style="color:#a5b4fc">' + k + '</code> ' + qTypeCount[k] + '</span>';
+    });
+    stats += '<br>&nbsp;&nbsp;來源: ';
+    Object.keys(sourceCount).sort((a,b) => sourceCount[b]-sourceCount[a]).forEach(k => {
+      let color = '#a5b4fc';
+      if (k === 'regex') color = '#86efac';
+      else if (k === 'haiku') color = '#fcd34d';
+      else if (k === 'fallback') color = '#f87171';
+      else if (k === 'backend_regex') color = '#a5b4fc';
+      stats += '<span style="margin-right:8px"><code style="color:' + color + '">' + k + '</code> ' + sourceCount[k] + '</span>';
+    });
+    if (statsEl) statsEl.innerHTML = stats;
+
+    // 表格輸出
+    if (!entries.length) {
+      if (tableEl) tableEl.textContent = '尚無紀錄';
+      return;
+    }
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:11px">';
+    html += '<thead><tr style="border-bottom:1px solid #374151;color:#fcd34d">';
+    html += '<th style="padding:6px 4px;text-align:left;width:140px">時間</th>';
+    html += '<th style="padding:6px 4px;text-align:left;width:90px">qType</th>';
+    html += '<th style="padding:6px 4px;text-align:left;width:110px">來源</th>';
+    html += '<th style="padding:6px 4px;text-align:left;width:60px">mode</th>';
+    html += '<th style="padding:6px 4px;text-align:left">問題(前 100 字)</th>';
+    html += '</tr></thead><tbody>';
+    entries.forEach(e => {
+      let srcColor = '#a5b4fc';
+      if (e.qTypeSource === 'regex') srcColor = '#86efac';
+      else if (e.qTypeSource === 'haiku') srcColor = '#fcd34d';
+      else if (e.qTypeSource === 'fallback') srcColor = '#f87171';
+      const ts = e.ts ? e.ts.replace('T', ' ').slice(0, 19) : '';
+      const q = (e.question || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])).slice(0, 100);
+      html += '<tr style="border-bottom:1px solid rgba(75,85,99,0.3)">';
+      html += '<td style="padding:6px 4px;color:#9ca3af">' + ts + '</td>';
+      html += '<td style="padding:6px 4px"><code style="color:#a5b4fc">' + (e.qType || '') + '</code></td>';
+      html += '<td style="padding:6px 4px"><code style="color:' + srcColor + '">' + (e.qTypeSource || '') + '</code></td>';
+      html += '<td style="padding:6px 4px;color:#9ca3af">' + (e.mode || '') + '</td>';
+      html += '<td style="padding:6px 4px;color:#e5e7eb">' + q + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    if (tableEl) tableEl.innerHTML = html;
+  } catch (e) {
+    if (tableEl) tableEl.textContent = '異常: ' + (e && e.message || e);
+    if (statusEl) statusEl.textContent = '❌ 讀取失敗';
+  }
+}
+
+async function loadClassifierModel() {
+  const statusEl = document.getElementById('classifierModelStatus');
+  const infoEl = document.getElementById('classifierModelInfo');
+  const selectEl = document.getElementById('classifierModelSelect');
+  if (statusEl) statusEl.textContent = '⏳ 讀取中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/classifier-model?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (statusEl) statusEl.textContent = '❌ ' + (data.error || '讀取失敗');
+      return;
+    }
+    if (selectEl) selectEl.value = data.model || 'claude-haiku-4-5-20251001';
+    if (statusEl) statusEl.textContent = '✅ 目前: ' + data.model;
+    if (infoEl) {
+      let info = '<b style="color:#fcd34d">目前模型</b>: <code>' + data.model + '</code>';
+      if (data.updatedAt) info += '<br><b style="color:#9ca3af">最後更新</b>: ' + data.updatedAt.replace('T', ' ').slice(0, 19);
+      infoEl.innerHTML = info;
+    }
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function saveClassifierModel() {
+  const statusEl = document.getElementById('classifierModelStatus');
+  const selectEl = document.getElementById('classifierModelSelect');
+  if (!selectEl) return;
+  const model = selectEl.value;
+  if (!model || !/^claude-/.test(model)) {
+    if (statusEl) statusEl.textContent = '❌ 模型 ID 格式錯誤';
+    return;
+  }
+  if (!confirm('確定要把前端分類器模型改為「' + selectEl.options[selectEl.selectedIndex].text + '」嗎?')) return;
+  if (statusEl) statusEl.textContent = '⏳ 儲存中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/classifier-model`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, model: model })
+    });
+    const data = await r.json();
+    if (!data.ok) {
+      if (statusEl) statusEl.textContent = '❌ ' + (data.error || '儲存失敗');
+      return;
+    }
+    if (statusEl) statusEl.textContent = '✅ 已儲存: ' + data.model;
+    setTimeout(() => loadClassifierModel(), 500);
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '❌ 異常: ' + (e && e.message || e);
   }
 }
 
