@@ -518,11 +518,28 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           </h3>
           <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
             <b style="color:#86efac">用途</b>：在手機上完成 RAG 索引建構，不需要電腦。<br>
-            <b style="color:#fbbf24">前置</b>：① 先在 Cloudflare Dashboard 建好 Vectorize index「jingyue-rules」<br>
-            ② 把 chunks.ndjson 上傳到 GitHub Pages（onerkk.github.io/chunks.ndjson）<br>
-            ③ wrangler.toml 加好 VECTORIZE + AI binding 並重新部署 worker<br>
-            <b style="color:#f87171">流程</b>：先跑 ① 加 contextual context（5-10 分鐘）→ 再跑 ② 上傳到 Vectorize（5-10 分鐘）
+            <b style="color:#fbbf24">流程</b>：① 一鍵建立 Vectorize Index → ② 加 contextual context（5-10 分鐘）→ ③ 上傳到 Vectorize（5-10 分鐘）
           </p>
+
+          <!-- 階段 0: 一鍵建立 Vectorize Index -->
+          <details style="margin-top:10px;border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px" open>
+            <summary style="cursor:pointer;font-size:13px;color:#fbbf24;font-weight:600">⓪ 一鍵建立 Vectorize Index（首次必做）</summary>
+            <div style="margin-top:12px">
+              <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+                自動呼叫 Cloudflare API 建好 index 和 metadata 索引,不用碰 Cloudflare Dashboard。<br>
+                需要你的 Cloudflare Account ID + API Token(跟「部署 Worker」用的同一組)。
+              </p>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+                <input type="text" id="vidxAccountId" placeholder="Cloudflare Account ID(可用部署 Worker 那個)" style="padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+                <input type="password" id="vidxApiToken" placeholder="Cloudflare API Token(需要 Vectorize:Edit 權限)" style="padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                <button onclick="createVectorizeIndex()" id="vidxBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#f59e0b;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🏗 建立 Index</button>
+                <span id="vidxStatus" style="font-size:12px;color:var(--text-dim)"></span>
+              </div>
+              <pre id="vidxOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:200px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace;margin-top:10px;display:none">點建立後顯示結果</pre>
+            </div>
+          </details>
 
           <!-- 階段 1: Build Context -->
           <details style="margin-top:10px;border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:10px" open>
@@ -4124,7 +4141,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.0-2026-05-07';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.3-2026-05-08';
 
 async function checkWorkerStatus() {
   try {
@@ -4739,6 +4756,80 @@ async function runRAGTest() {
     if (out) out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// v69.3.3：一鍵建立 Vectorize Index
+// ═══════════════════════════════════════════════════════════════
+
+async function createVectorizeIndex() {
+  const statusEl = document.getElementById('vidxStatus');
+  const outEl = document.getElementById('vidxOutput');
+  const accountId = document.getElementById('vidxAccountId').value.trim();
+  const apiToken = document.getElementById('vidxApiToken').value.trim();
+  
+  if (!accountId || !apiToken) { 
+    if (statusEl) statusEl.textContent = '❌ 請填 Account ID 和 API Token';
+    return; 
+  }
+  
+  if (statusEl) statusEl.textContent = '⏳ 建立中...';
+  if (outEl) { outEl.style.display = 'block'; outEl.textContent = '正在呼叫 Cloudflare API...'; }
+  
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/create-vectorize-index?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        accountId: accountId,
+        apiToken: apiToken,
+        indexName: 'jingyue-rules',
+        dimensions: 768,
+        metric: 'cosine'
+      })
+    });
+    const data = await r.json();
+    if (!data.ok) {
+      if (statusEl) statusEl.textContent = '❌ 建立失敗';
+      if (outEl) outEl.textContent = JSON.stringify(data, null, 2);
+      return;
+    }
+    if (statusEl) statusEl.textContent = data.alreadyExisted ? '✅ Index 已存在(metadata index 已重新嘗試建立)' : '✅ Index 建立成功!';
+    if (outEl) {
+      let txt = `Index: ${data.indexName}\nDimensions: ${data.dimensions}\nMetric: ${data.metric}\n${data.alreadyExisted ? '(已存在)' : '(新建立)'}\n\nMetadata indexes:\n`;
+      (data.metadataIndexes || []).forEach(md => {
+        txt += `  • ${md.property}: ${md.ok ? '✅' : (md.alreadyExists ? '⏭ 已存在' : ('❌ ' + (md.error || '失敗')))}\n`;
+      });
+      txt += '\n下一步：① 加 contextual context';
+      outEl.textContent = txt;
+    }
+    // 自動把 accountId 存到 localStorage 給後續用
+    try { localStorage.setItem('jy_cf_creds', JSON.stringify({ accountId, workerName: 'jy-ai-proxy' })); } catch(_) {}
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '❌ 異常';
+    if (outEl) outEl.textContent = String(e && e.message || e);
+  }
+}
+
+// 自動帶入既有的 Cloudflare Account ID
+(function autoFillVidx() {
+  try {
+    const creds = JSON.parse(localStorage.getItem('jy_cf_creds') || '{}');
+    if (creds.accountId) {
+      const el = document.getElementById('vidxAccountId');
+      if (el && !el.value) el.value = creds.accountId;
+    }
+  } catch(_) {}
+  // 等 DOM ready 後再試一次（部分情況 input 還沒渲染）
+  setTimeout(() => {
+    try {
+      const creds = JSON.parse(localStorage.getItem('jy_cf_creds') || '{}');
+      if (creds.accountId) {
+        const el = document.getElementById('vidxAccountId');
+        if (el && !el.value) el.value = creds.accountId;
+      }
+    } catch(_) {}
+  }, 1000);
+})();
 
 // ═══════════════════════════════════════════════════════════════
 // v69.3.0：RAG 索引建構（手機可操作的批次處理 + 進度條 + 暫停）
