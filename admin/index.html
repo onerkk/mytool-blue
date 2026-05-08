@@ -609,6 +609,24 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div id="ragAuditOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:12px;max-height:500px;overflow:auto;font-size:11px;color:#a5b4fc;line-height:1.5;font-family:ui-monospace,monospace">點按鈕讀取 RAG 撈取紀錄</div>
         </div>
 
+        <!-- ═══ v69.3.22:七維度 callAI 診斷(查 birth 有沒有送到) ═══ -->
+        <div class="worker-card" style="border:1px solid rgba(34,197,94,0.3)">
+          <h3>🩺 七維度 payload 診斷
+            <span style="font-size:11px;padding:2px 8px;background:rgba(34,197,94,0.2);color:#86efac;border-radius:10px;margin-left:6px">v69.3.22 新增</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            看每次七維度 callAI 真正收到的 payload 關鍵欄位。<br>
+            <strong style="color:#86efac">用途:回答「這次 AI 到底有沒有收到生辰?」這類疑問,直接看真相,不靠估算。</strong><br>
+            欄位:hasBirth=有無生日 / birthValue=實際生日(前 30 字)/ hasBirthTime=有無時辰 / hasGender=有無性別 / dimsBazi/Ziwei/...=各系統 dims 有無資料 / question=用戶問題前 100 字。
+          </p>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+            <button onclick="loadRagDiag7d(10)" style="padding:10px 20px;border-radius:8px;border:none;background:#22c55e;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 10 筆</button>
+            <button onclick="loadRagDiag7d(30)" style="padding:10px 20px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 30 筆</button>
+            <span id="ragDiag7dStatus" style="font-size:12px;color:var(--text-dim)"></span>
+          </div>
+          <div id="ragDiag7dOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:12px;max-height:500px;overflow:auto;font-size:11px;color:#a5b4fc;line-height:1.5;font-family:ui-monospace,monospace">點按鈕讀取七維度診斷紀錄</div>
+        </div>
+
         <div class="worker-card">
           <h3>🚀 部署 Worker</h3>
           <p>上傳新的 worker.js 部署到 Cloudflare。需要 Cloudflare API 憑證。</p>
@@ -4169,7 +4187,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.21-2026-05-08';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.22-2026-05-08';
 
 async function checkWorkerStatus() {
   try {
@@ -5135,7 +5153,93 @@ async function loadRAGAudit(limit) {
   }
 }
 
-async function loadLastCallDebug() {
+// v69.3.22:七維度 callAI 診斷(查 birth/dims 有沒有送到 worker)
+async function loadRagDiag7d(limit) {
+  if (!limit) limit = 10;
+  const statusEl = document.getElementById('ragDiag7dStatus');
+  const out = document.getElementById('ragDiag7dOutput');
+  if (statusEl) statusEl.textContent = '⏳ 讀取中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/rag-diag-7d-list?token=${encodeURIComponent(adminToken)}&limit=${limit}`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (out) out.textContent = '❌ ' + (data.error || '讀取失敗');
+      if (statusEl) statusEl.textContent = '❌';
+      return;
+    }
+    if (statusEl) statusEl.textContent = '✅ ' + data.count + ' 筆 (KV 共 ' + data.totalKVKeys + ')';
+    if (!data.entries || !data.entries.length) {
+      if (out) out.textContent = '尚無七維度 callAI 紀錄';
+      return;
+    }
+
+    let txt = '';
+
+    // 先列錯誤(如果有)
+    if (data.recentErrors && data.recentErrors.length) {
+      txt += '⚠️ 最近 callAI 錯誤(' + data.errorCount + ' 筆):\n';
+      data.recentErrors.forEach(function(e, i) {
+        txt += '  #' + (i+1) + ' [' + (e.ts ? e.ts.slice(0,19).replace('T',' ') : '') + '] ' +
+               (e.error || JSON.stringify(e).slice(0, 200)) + '\n';
+      });
+      txt += '\n';
+    }
+
+    txt += '═══ 七維度 callAI 紀錄(最近 ' + data.entries.length + ' 筆,新→舊) ═══\n\n';
+
+    data.entries.forEach(function(e, i) {
+      const tsShort = e.ts ? e.ts.replace('T',' ').slice(0,19) : '?';
+      txt += '─── #' + (i+1) + ' [' + tsShort + '] ───\n';
+      txt += '問題: ' + (e.question || '?') + '\n';
+      txt += '模型: ' + (e.modelId || '?') + '  (actualMode=' + (e.actualMode || '?') + ')\n';
+      txt += '\n';
+
+      // ★ 出生資料(這是查的核心)
+      txt += '【出生資料】\n';
+      txt += '  hasBirth     : ' + (e.hasBirth ? '✅ true' : '❌ false') + '\n';
+      txt += '  birthValue   : "' + (e.birthValue || '') + '"' + (e.birthValue ? '' : ' (空)') + '\n';
+      txt += '  hasBirthTime : ' + (e.hasBirthTime ? '✅ true' : '❌ false') + '\n';
+      txt += '  hasGender    : ' + (e.hasGender ? '✅ true' : '❌ false') + '\n';
+      txt += '  hasName      : ' + (e.hasName ? '✅ true' : '❌ false') + '\n';
+
+      // dims 命盤資料
+      txt += '\n【七維度 dims 物件】\n';
+      txt += '  hasDimsObj : ' + (e.hasDimsObj ? '✅' : '❌') + '\n';
+      txt += '  ├ 八字 : ' + (e.dimsBazi ? '✅' : '❌') +
+             '   紫微 : ' + (e.dimsZiwei ? '✅' : '❌') +
+             '   西占 : ' + (e.dimsNatal ? '✅' : '❌') +
+             '   吠陀 : ' + (e.dimsVedic ? '✅' : '❌') + '\n';
+      txt += '  └ 梅花 : ' + (e.dimsMeihua ? '✅' : '❌') +
+             '   塔羅 : ' + (e.dimsTarot ? '✅' : '❌') +
+             '   姓名 : ' + (e.dimsName ? '✅' : '❌') + '\n';
+
+      // 舊欄位若是 true 表示資料結構出問題
+      if (e.dimsWestern_DEPRECATED) txt += '  ⚠️ dims.western 還是 true(欄位名沒改成 natal?)\n';
+      if (e.dimsNaming_DEPRECATED) txt += '  ⚠️ dims.naming 還是 true(欄位名沒改成 name?)\n';
+
+      txt += '\n  hasPhotos    : ' + (e.hasPhotos ? '✅' : '❌') + '\n';
+      txt += '  payloadKeys  : [' + (e.payloadKeys || []).join(', ') + ']\n';
+      txt += '  dimsKeys     : [' + (e.dimsKeys || []).join(', ') + ']\n';
+
+      // 診斷判讀
+      txt += '\n【判讀】';
+      if (!e.hasBirth) {
+        txt += ' ⚠️ payload.birth 是空 — 前端 _buildPayload 沒帶到 / 或 S.form.bdate 沒填';
+      } else if (!e.hasBirthTime) {
+        txt += ' ⚠️ 有 birth 但沒 birthTime — 用戶勾了「不確定時辰」';
+      } else if (!e.dimsBazi || !e.dimsZiwei) {
+        txt += ' ⚠️ 有生辰但 dims 缺八字/紫微 — 前端排盤失敗?';
+      } else {
+        txt += ' ✅ 出生資料齊全,dims 正常';
+      }
+      txt += '\n\n';
+    });
+
+    if (out) out.textContent = txt;
+  } catch (e) {
+    if (out) out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
   const statusEl = document.getElementById('lastCallDebugStatus');
   const outEl = document.getElementById('lastCallDebugOutput');
   if (statusEl) statusEl.textContent = '⏳ 讀取中...';
