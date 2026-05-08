@@ -3748,19 +3748,36 @@ enhanceTarot = function(tarot) {
     overlay.className = 'ootk-overlay';
     overlay.id = 'ootk-sig-overlay';
 
-    // 自動推薦
+    // ─────────────────────────────────────────────────────────
+    // v69.9.4 修正:沒填生辰時不該顯示假的「系統推薦」
+    // 舊邏輯:沒填 bdate 時 fallback 用「1990-01-15」(誤判為摩羯) → 假推薦
+    // 正統做法(Mathers Manuscript Q 1888):
+    //   ① 看外貌(髮色 + 性別) — 風 wand 火紅髮 / 杯 cup 中等 / 劍 sword 深 / 幣 pent 極深
+    //   ② Crowley 派:看性格直覺
+    //   ③ PHB 簡化派(2004):用 sun sign 對應 court card(只有有生日才能用)
+    // 修法:沒填生辰 → 不顯示自動推薦,改顯「依直覺/外貌挑一張」+ 16 張宮廷牌
+    //       有填生辰 → 維持 PHB 派自動推薦,但加註「PHB 簡化派,亦可憑直覺改選」
+    // ─────────────────────────────────────────────────────────
     var form = S.form || {};
     var bdate = form.bdate || '';
-    var parts = bdate.split('-');
-    var bMonth = parts[1] ? parseInt(parts[1]) : 1;
-    var bDay = parts[2] ? parseInt(parts[2]) : 15;
-    var gender = form.gender || '';
-    var birthYear = parts[0] ? parseInt(parts[0]) : 1990;
-    var age = new Date().getFullYear() - birthYear;
+    var hasBirth = !!(bdate && bdate.length >= 8);  // YYYY-MM-DD 至少 8 字元
 
-    var auto = window.ootkAutoSignificator ? window.ootkAutoSignificator(bMonth, bDay, gender, age) : null;
-    var autoCard = auto ? auto.card : null;
-    var autoId = autoCard ? autoCard.id : -1;
+    var auto = null;
+    var autoCard = null;
+    var autoId = -1;
+
+    if (hasBirth) {
+      // 只在真的有填生辰時才算自動推薦
+      var parts = bdate.split('-');
+      var bMonth = parts[1] ? parseInt(parts[1]) : 1;
+      var bDay = parts[2] ? parseInt(parts[2]) : 15;
+      var gender = form.gender || '';
+      var birthYear = parts[0] ? parseInt(parts[0]) : 1990;
+      var age = new Date().getFullYear() - birthYear;
+      auto = window.ootkAutoSignificator ? window.ootkAutoSignificator(bMonth, bDay, gender, age) : null;
+      autoCard = auto ? auto.card : null;
+      autoId = autoCard ? autoCard.id : -1;
+    }
 
     // 取所有宮廷牌
     var courtCards = [];
@@ -3779,11 +3796,11 @@ enhanceTarot = function(tarot) {
     html += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-bottom:.6rem">金色黎明最高階占卜・五個階段</div>';
     html += '<div style="font-size:.82rem;color:var(--c-text,#e0d8c8);line-height:1.7;margin-bottom:1rem;padding:0 .5rem">從四元素到生命之樹，逐層深入你的問題核心。<br>首先，選擇代表你的「代表牌」。</div>';
 
-    // 自動推薦
-    if (autoCard) {
+    // 自動推薦(只在有生辰時才顯示)
+    if (hasBirth && autoCard) {
       var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(autoCard) : '';
       html += '<div style="padding:.8rem;border-radius:12px;border:1px solid rgba(201,168,76,.25);background:rgba(201,168,76,.05);margin-bottom:1rem">';
-      html += '<div style="font-size:.75rem;color:var(--c-gold);margin-bottom:.5rem">根據你的星座（' + (auto.sign || '') + '・' + (auto.element || '') + '元素），系統推薦：</div>';
+      html += '<div style="font-size:.75rem;color:var(--c-gold);margin-bottom:.5rem">PHB 派依太陽星座推薦(' + (auto.sign || '') + '・' + (auto.element || '') + '元素):</div>';
       html += '<div style="display:flex;align-items:center;justify-content:center;gap:.8rem">';
       if (imgSrc) html += '<img id="ootk-selected-img" src="' + imgSrc + '" style="width:64px;height:102px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,.1)">';
       html += '<div style="text-align:left">';
@@ -3791,11 +3808,32 @@ enhanceTarot = function(tarot) {
       html += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.2rem">' + (auto.element || '') + '元素宮廷牌</div>';
       html += '</div></div>';
       html += '<button id="ootk-use-auto" style="margin-top:.6rem;padding:.5rem 1.5rem;border-radius:20px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--c-gold);font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit">用這張，開始占卜</button>';
+      html += '<div style="font-size:.65rem;color:var(--c-text-muted);margin-top:.4rem;line-height:1.5;font-style:italic">※ Mathers/Crowley 正統建議憑直覺或外貌選,可改選下方</div>';
+      html += '</div>';
+    } else {
+      // 沒填生辰 → 顯示 Mathers 原典指引(取代假推薦)
+      html += '<div style="padding:.9rem 1rem;border-radius:12px;border:1px solid rgba(201,168,76,.2);background:rgba(201,168,76,.04);margin-bottom:1rem;text-align:left">';
+      html += '<div style="font-size:.78rem;color:var(--c-gold);font-weight:600;margin-bottom:.5rem;text-align:center">✦ Mathers 正統選法 ✦</div>';
+      html += '<div style="font-size:.72rem;color:var(--c-text,#e0d8c8);line-height:1.85">';
+      html += '<div style="margin-bottom:.4rem"><b style="color:var(--c-gold-pale,#f5e6b8)">花色 — 看外貌或直覺</b></div>';
+      html += '<div style="padding-left:.5rem;color:var(--c-text-dim)">';
+      html += '・<b>權杖</b>:金髮/紅髮、膚色白皙<br>';
+      html += '・<b>聖杯</b>:中等膚色、溫和氣質<br>';
+      html += '・<b>寶劍</b>:深色頭髮、銳利氣質<br>';
+      html += '・<b>錢幣</b>:極深色髮、沉穩務實<br>';
+      html += '</div>';
+      html += '<div style="margin-top:.5rem;margin-bottom:.4rem"><b style="color:var(--c-gold-pale,#f5e6b8)">階級 — 看性別與成熟度</b></div>';
+      html += '<div style="padding-left:.5rem;color:var(--c-text-dim)">';
+      html += '・<b>國王</b>:成年男性／<b>皇后</b>:成年女性<br>';
+      html += '・<b>騎士</b>:年輕男性／<b>侍者</b>:年輕女性<br>';
+      html += '</div>';
+      html += '<div style="margin-top:.6rem;color:var(--c-text-muted);font-size:.66rem;font-style:italic;text-align:center">憑直覺挑一張你最有感覺的</div>';
+      html += '</div>';
       html += '</div>';
     }
 
     // 手動選擇
-    html += '<div style="font-size:.75rem;color:var(--c-text-muted);margin-bottom:.6rem">或直接選擇代表你的宮廷牌：</div>';
+    html += '<div style="font-size:.75rem;color:var(--c-text-muted);margin-bottom:.6rem">' + (hasBirth ? '或直接選擇代表你的宮廷牌:' : '從 16 張宮廷牌挑一張:') + '</div>';
     html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;max-height:320px;overflow-y:auto;padding:.4rem;-webkit-overflow-scrolling:touch">';
     courtCards.forEach(function(cc) {
       var img = (typeof getTarotCardImage === 'function') ? getTarotCardImage(cc) : '';

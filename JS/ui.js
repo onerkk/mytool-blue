@@ -937,12 +937,14 @@ function pickTool(tool) {
     }
   }
 
-  // 滾動：塔羅→CTA，七維度/開鑰→出生資料表單
+  // 滾動：塔羅/OOTK→CTA(出生資料卡已隱藏),七維度→出生資料表單
+  // v69.9.4 修正:OOTK v69.7 起把出生資料卡 hide,但這裡仍嘗試滾到隱藏的卡片,
+  //              導致用戶看不到「開始五層深潛」按鈕在哪。改成跟塔羅一樣滾到 CTA。
   setTimeout(function() {
-    if (tool === 'tarot') {
+    if (tool === 'tarot' || tool === 'ootk') {
       if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
-      // 滾到出生資料卡片
+      // 七維度:滾到出生資料卡片
       var birthCard = null;
       if (inputScreen) {
         var cards = inputScreen.querySelectorAll('.card');
