@@ -5240,6 +5240,8 @@ async function loadRagDiag7d(limit) {
     if (out) out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
 }
+
+async function loadLastCallDebug() {
   const statusEl = document.getElementById('lastCallDebugStatus');
   const outEl = document.getElementById('lastCallDebugOutput');
   if (statusEl) statusEl.textContent = '⏳ 讀取中...';
