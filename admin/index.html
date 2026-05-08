@@ -479,11 +479,11 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <span style="font-size:11px;padding:2px 8px;background:rgba(34,197,94,0.2);color:#86efac;border-radius:10px;margin-left:6px">v69.8 新增</span>
             </div>
             <p style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:10px">
-              <b style="color:#fcd34d">原理</b>:純向量檢索(embeddinggemma 768 維)會把語意接近但不對題的 chunks 排前面(例如「升遷」query 撈到「轉職」chunk)。<br>
+              <b style="color:#fcd34d">原理</b>:純向量檢索(embeddinggemma 768 維)會把語意接近但不對題的 chunks 排前面。<br>
               Reranker(<code>@cf/baai/bge-reranker-base</code>)是 cross-encoder,query×chunk 一起進模型直接出相關性分,精度遠高於純向量距離。<br>
               <b style="color:#fcd34d">流程</b>:Vectorize 先撈 50 個候選 → reranker 精排 → 取 top 12 給 AI(allPurpose 5 個強制保留不參與 rerank)。<br>
               <b style="color:#fcd34d">成本</b>:$0.0031/M tokens,一次 RAG ~50K tokens ≈ <b style="color:#86efac">$0.000155 美</b>(一天 1000 次 ~$0.155 美,可視為近免費)。<br>
-              <b style="color:#f87171">建議</b>:先開 reranker 跑 5-10 題對照,看 /admin/rag-test 結果是否更精準。失敗會自動退回原排序,不影響服務。
+              <b style="color:#f87171">建議</b>:先開 reranker 跑 5-10 題對照,失敗會自動退回原排序,不影響服務。
             </p>
             <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center">
               <span style="font-size:13px">Reranker 開關:</span>
@@ -495,7 +495,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <span style="font-size:13px">候選池大小:</span>
               <div style="display:flex;align-items:center;gap:8px">
                 <input type="number" id="ragRerankerCandidatePoolTopK" min="20" max="100" value="50" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:13px">
-                <span style="font-size:11px;color:var(--text-dim)">Vectorize 撈幾個候選給 reranker(20-100,預設 50,越大精度越高但延遲略增)</span>
+                <span style="font-size:11px;color:var(--text-dim)">Vectorize 撈幾個候選給 reranker(20-100,預設 50)</span>
               </div>
 
               <span style="font-size:13px">最終取幾個:</span>
@@ -4223,7 +4223,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.8-2026-05-09';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.9-2026-05-09';
 
 async function checkWorkerStatus() {
   try {
