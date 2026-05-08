@@ -153,13 +153,13 @@ h+='<div style="font-size:.36rem;color:rgba(228,228,231,.35);margin-top:3px;text
 h+='</div>';
 h+='<div style="padding:2px 8px"><div style="font-size:.48rem;color:#c9a84c;margin-bottom:2px">\uD83D\uDD2E 選擇分析方式</div></div>';
 h+='<div class="mn-tl hi"><div class="ico">⭐</div><div><div class="nm">塔羅快讀</div><div class="ds">一個問題，抽牌就有答案<br>不需任何資料・只要問題和選牌</div><div class="bg">免費體驗 1 次</div></div></div>';
-h+='<div class="mn-tl"><div class="ico">🔑</div><div><div class="nm">開鑰之法</div><div class="ds">五段獨立讀盤 × 七套命盤交叉<br>78 張牌深度推算・需出生資料<br><span style="color:#c084fc;font-weight:600">⚡ 資料量最大・分析最深</span></div><div class="bg" style="background:linear-gradient(135deg,rgba(192,132,252,.18),rgba(192,132,252,.08));color:#c084fc;border:1px solid rgba(192,132,252,.3)">💎 付費解鎖・無免費體驗</div></div></div>';
+h+='<div class="mn-tl"><div class="ico">🔑</div><div><div class="nm">開鑰之法</div><div class="ds">五段獨立讀盤 × 七套命盤交叉<br>78 張牌深度推算・需出生資料<br><span style="color:#c084fc;font-weight:600">⚡ 資料量最大・分析最深</span></div><div class="bg" style="background:linear-gradient(135deg,rgba(192,132,252,.18),rgba(192,132,252,.08));color:#c084fc;border:1px solid rgba(192,132,252,.3)">✨ 免費體驗 1 次</div></div></div>';
 h+='<div class="mn-tl"><div class="ico">🌙</div><div><div class="nm">七維度交叉分析</div><div class="ds">七套命理系統交叉比對<br>需出生資料・八字 紫微 梅花 塔羅 星盤 吠陀 姓名</div><div class="bg">免費體驗 1 次</div></div></div>';
 h+='</div></div>';
 h+='<div class="jy-arr" style="left:28%;top:300px"></div>';
 h+='<div class="jy-fgr" style="left:24%;top:317px">👆</div>';
 h+='</div>';
-h+='<div class="jy-tip"><div class="ic">💡</div><div class="tx">照片是加分，不是必填<small>塔羅快讀完全不用填資料<br>氣色面相免費・手相需付費解鎖</small></div></div>';
+h+='<div class="jy-tip"><div class="ic">💡</div><div class="tx">照片是加分,不是必填<small>塔羅快讀完全不用填資料<br>氣色面相+手相 全工具免費</small></div></div>';
 h+='</div>';
 
 // Step 3: 填寫資料
@@ -276,7 +276,7 @@ var _gOt = _gP.OPUS_TAROT    || 60;
 var _gOo = _gP.OPUS_OOTK     || 140;
 var _gO7 = _gP.OPUS_7D       || 140;
 var _gFu = _gP.FOLLOWUP      || 15;
-h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問,點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>塔羅 / 七維度 各免費體驗 1 次(含 1 次免費追問,僅限標準解讀)<br><span style="color:#c084fc">開鑰之法為深度分析產品,需付費解鎖</span><br><br>單次購買價格:<br>標準解讀:塔羅 NT$' + _gSt + ' / 七維度 NT$' + _gS7 + ' / 開鑰 NT$' + _gSo + '<br>深度解析:塔羅 NT$' + _gOt + ' / 七維度 NT$' + _gO7 + ' / 開鑰 NT$' + _gOo + '<br>每次解讀含 1 次免費追問,之後追問 NT$' + _gFu + '</small></div></div>';
+h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問,點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>塔羅・七維度・開鑰 各免費體驗 1 次(含 1 次免費追問,僅限標準解讀)<br><br>單次購買價格:<br>標準解讀:塔羅 NT$' + _gSt + ' / 七維度 NT$' + _gS7 + ' / 開鑰 NT$' + _gSo + '<br>深度解析:塔羅 NT$' + _gOt + ' / 七維度 NT$' + _gO7 + ' / 開鑰 NT$' + _gOo + '<br>每次解讀含 1 次免費追問,之後追問 NT$' + _gFu + '</small></div></div>';
 h+='</div>';
 
 // Step 8: 靜月靈籤（獨立功能）

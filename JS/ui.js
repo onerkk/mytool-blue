@@ -5554,7 +5554,7 @@ showAuraResult = function(){
         '<div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
         (isAdmin ?
           '<div class="jy-home-quota">👑 管理員・無限次</div>' :
-          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅 各免費體驗 1 次・開鑰需付費解鎖 ・ <strong style="color:var(--c-gold)">塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + '</strong></div>'
+          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅・開鑰 各免費體驗 1 次 ・ <strong style="color:var(--c-gold)">塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + '</strong></div>'
         ) +
       '</div>' +
 
@@ -5640,8 +5640,9 @@ showAuraResult = function(){
         var _upsellText = '單次購買 NT$' + _P.SINGLE_TAROT + ' 起';
         var _openPaywall = "if(typeof _buildPaywallHTML==='function'){var _m=document.createElement('div');_m.id='jy-pay-modal';_m.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px)';_m.innerHTML=_buildPaywallHTML('full');_m.addEventListener('click',function(e){if(e.target===_m)_m.remove();});document.body.appendChild(_m);}";
         var fs = data.freeStatus;
-        // v68.21 Bug #2 修:讀真實 freeLimits(後端 v68.19 已回傳),OOTK 預設 0 不再進 avail
-        var fl = data.freeLimits || { '7d': 1, tarot: 1, ootk: 0 };
+        // v68.21 Bug #2 修:讀真實 freeLimits(後端 v68.19 已回傳)
+        // v69.5:OOTK 預設改 1(系統獨立性重構後 Haiku 4.5 完整版可跑)
+        var fl = data.freeLimits || { '7d': 1, tarot: 1, ootk: 1 };
         if (fs) {
           var parts = [];
           var used7d = parseInt(fs['7d'] || 0);
@@ -5649,7 +5650,7 @@ showAuraResult = function(){
           var usedOotk = parseInt(fs['ootk'] || 0);
           var lim7d = parseInt(fl['7d'] || 1);
           var limTarot = parseInt(fl.tarot || 1);
-          var limOotk = parseInt(fl.ootk || 0);
+          var limOotk = parseInt(fl.ootk || 1);
           if (lim7d > 0 && used7d < lim7d) parts.push('七維度');
           if (limTarot > 0 && usedTarot < limTarot) parts.push('塔羅');
           if (limOotk > 0 && usedOotk < limOotk) parts.push('開鑰');
@@ -5660,8 +5661,8 @@ showAuraResult = function(){
             el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</strong>';
           }
         } else {
-          // v68.21:fallback 從 3 改 2(七維度+塔羅 各 1,OOTK 沒免費)
-          var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 2;
+          // v69.5:fallback 從 2 改 3(七維度+塔羅+開鑰 各 1)
+          var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 3;
           if (freeLeft > 0) {
             el.innerHTML = '✨ 免費體驗剩餘 <strong style="color:var(--c-gold)">' + freeLeft + '</strong> 次 ・ ' +
               '<span style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</span>';
@@ -6056,7 +6057,7 @@ async function submitTarotQuick() {
           modal.innerHTML = '<div style="background:var(--c-bg-card,#1a1208);border:1px solid rgba(212,175,55,.25);border-radius:16px;padding:2rem 1.5rem;max-width:320px;text-align:center">' +
             '<div style="font-size:2rem;margin-bottom:.6rem">🃏</div>' +
             '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.4rem">此工具免費體驗已用完</div>' +
-            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">七維度・塔羅 各可免費體驗 1 次・開鑰需付費解鎖<br>用完可單次購買繼續(塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + ')</div>' +
+            '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1rem">七維度・塔羅・開鑰 各可免費體驗 1 次<br>用完可單次購買繼續(塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 70) + ')</div>' +
             '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
               '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'tarot_only\',\'single\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(139,92,246,.06));color:rgba(139,92,246,.95);font-size:.88rem;font-weight:700;border:1.5px solid rgba(139,92,246,.35);cursor:pointer;font-family:inherit">🃏 塔羅單次 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 30) + '</button>' +
               '<button onclick="var m=document.getElementById(\'tarot-used-modal\');if(m)m.remove();" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用了</button>' +

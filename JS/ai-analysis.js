@@ -25218,7 +25218,8 @@ function _showTrialBanner() {
     if (document.getElementById('jy-trial-banner')) return;
     
     var fs = window._jyFreeStatus;
-    var fl = window._jyFreeLimits || { '7d': 1, tarot: 1, ootk: 0 };
+    // v69.5:OOTK 預設改 1(系統獨立性重構後 Haiku 4.5 完整版可跑)
+    var fl = window._jyFreeLimits || { '7d': 1, tarot: 1, ootk: 1 };
     var usesLeft = window._jyFreeUsesLeft;
     if (usesLeft == null && !fs) return;
     
@@ -25229,10 +25230,10 @@ function _showTrialBanner() {
     var usesText = '';
     if (fs) {
       var avail = [];
-      // v68.21 Bug #2 修:讀真實 limit,OOTK(=0)不再列為「免費可用」
+      // v69.5:讀真實 limit,OOTK 預設改 1(同其他兩工具)
       var _l7d = parseInt(fl['7d'] || 1);
       var _lTarot = parseInt(fl.tarot || 1);
-      var _lOotk = parseInt(fl.ootk || 0);
+      var _lOotk = parseInt(fl.ootk || 1);
       if (_l7d > 0 && (!fs['7d'] || fs['7d'] < _l7d)) avail.push('七維度');
       if (_lTarot > 0 && (!fs.tarot || fs.tarot < _lTarot)) avail.push('塔羅');
       if (_lOotk > 0 && (!fs.ootk || fs.ootk < _lOotk)) avail.push('開鑰');
@@ -27416,7 +27417,7 @@ window._jyStartOOTK = function() {
       md.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
         '<div style="font-size:1.8rem;margin-bottom:.6rem">🔐</div>' +
         '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">請先登入</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">開鑰之法為深度分析產品<br><span style="color:#c084fc">需登入並付費解鎖</span></div>' +
+        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">開鑰之法<br><span style="color:#c084fc">登入後可免費體驗 1 次</span></div>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
         '<button onclick="document.getElementById(\'ootk-login-modal\').remove();if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin();" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Google 登入</button>' +
         '<button onclick="document.getElementById(\'ootk-login-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先看看塔羅</button>' +
@@ -27455,7 +27456,8 @@ window._jyStartOOTK = function() {
   .catch(function(_e) {
     // v68.21 Bug #4 修:OOTK precheck fetch 失敗,不再寬容放行
     //   原本失敗→ startOOTK(),用戶完成抽牌洗牌後才被 streaming 端擋下,體驗極差
-    //   OOTK 是純付費商品(FREE_OOTK_LIMIT=0),寬容放行毫無收益且增加投訴
+    //   v69.5 後 OOTK 雖開放免費 1 次,但 precheck 失敗仍要顯示「網路不順」讓用戶重試,
+    //   避免免費試用之後 streaming 拒絕,白浪費抽牌時間
     //   修法:顯示「網路連線不順,請重試」提示
     var em2 = document.getElementById('ootk-used-modal');
     if (em2) em2.remove();
