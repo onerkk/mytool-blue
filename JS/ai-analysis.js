@@ -27347,27 +27347,13 @@ window._jyRenderAuditBadge = function(audit) {
 };
 
 // ── OOTK 付費入口 ──
+// v69.9.3 修正:刪掉 v69.7 之前殘留的「需要生辰」攔截。
+//   原本 line 27351-27369 強制檢查 S.form.bdate,沒填就跳「請先填寫出生資料」攔截畫面,
+//   但 v69.7 已將 OOTK 改為 Mathers Manuscript Q + Crowley Book T 正統定位:
+//   「只看牌,不需任何用戶資料」(worker.js OOTK_PROMPT v69.7 條件式守門條款已對齊)。
+//   ui.js 跟 worker.js 都改了,但這段 _jyStartOOTK 內部的舊攔截被漏掉,造成入口矛盾。
+//   修法:整段刪除,讓 OOTK 跟塔羅一樣不需出生資料,worker 端會用 dims 判斷走哪個路徑。
 window._jyStartOOTK = function() {
-  // ── 檢查主表單是否有生辰資料（跟七維度共用同一個表單）──
-  var hasBirth = !!(S.form && S.form.bdate && S.form.bdate.length >= 8);
-  if (!hasBirth) {
-    // 沒填 → 提示並滾到主表單
-    var existingModal = document.getElementById('ootk-need-form-modal');
-    if (existingModal) existingModal.remove();
-    var m = document.createElement('div');
-    m.id = 'ootk-need-form-modal';
-    m.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);padding:1rem';
-    m.innerHTML = '<div style="max-width:320px;width:88%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
-      '<div style="font-size:1.8rem;margin-bottom:.6rem">🔑</div>' +
-      '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">請先填寫出生資料</div>' +
-      '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">開鑰之法需要你的生辰才能精準選定代表牌<br>請在上方表單填好出生日期後再來</div>' +
-      '<button onclick="document.getElementById(\'ootk-need-form-modal\').remove();var fc=document.getElementById(\'f2-byear\');if(!fc||fc.offsetParent===null)fc=document.getElementById(\'f-byear\');if(fc){var card=fc.closest(\'.card\');if(card){card.scrollIntoView({behavior:\'smooth\',block:\'center\'});setTimeout(function(){card.style.boxShadow=\'0 0 20px rgba(212,175,55,.4)\';setTimeout(function(){card.style.boxShadow=\'\'},2000)},500)}}" style="width:200px;padding:.65rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));border:1.5px solid rgba(212,175,55,.4);color:var(--c-gold);font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit">前往填寫</button>' +
-    '</div>';
-    m.addEventListener('click', function(e) { if (e.target === m) m.remove(); });
-    document.body.appendChild(m);
-    return;
-  }
-
   // Admin 直接放行
   if (window._JY_ADMIN_TOKEN) {
     if (typeof startOOTK === 'function') startOOTK();
