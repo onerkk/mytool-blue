@@ -138,18 +138,17 @@ h+='</div>';
 
 // Step 2: 輸入問題+選工具
 h+='<div class="jy-ss" data-s>';
-h+='<div class="jy-sh"><div class="jy-sn">2</div><div class="jy-si"><h3>輸入問題，選填照片，選工具</h3><p>問題越具體越準，可上傳照片讓分析更深</p></div></div>';
+h+='<div class="jy-sh"><div class="jy-sn">2</div><div class="jy-si"><h3>輸入問題,選工具</h3><p>問題越具體越準・七維度可選填照片讓分析更深</p></div></div>';
 h+='<div class="jy-pw"><div class="jy-ph"><div class="jy-pn"></div><div class="jy-scr">';
 h+='<div class="mn-nav"><div class="b">\uD83C\uDF19 靜月之光</div><div class="s">\uD83D\uDED2 蝦皮</div></div>';
 h+='<div class="mn-cd"><div class="mn-ct">❓ 你想問什麼？</div><div class="mn-inp" style="border-color:rgba(201,168,76,.18)">他為什麼最近不主動找我了？</div></div>';
-h+='<div class="mn-cd" style="border-color:rgba(201,168,76,.15)"><div class="mn-ct">\uD83D\uDCF7 上傳照片（選填）・讓分析更深入</div>';
-h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:3px">';
-h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\uD83E\uDDD1</div><div style="font-size:.44rem;color:#c9a84c">臉部照片</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">正面自拍・光線足</div></div>';
+h+='<div class="mn-cd" style="border-color:rgba(201,168,76,.15)"><div class="mn-ct">\uD83D\uDCF7 上傳照片(七維度專用・選填)</div>';
+h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-top:3px">';
+h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\uD83E\uDDD1</div><div style="font-size:.44rem;color:#c9a84c">氣色面相</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">正面自拍・光線足</div></div>';
 h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\u270B</div><div style="font-size:.44rem;color:#c9a84c">左手掌</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">手心朝上・張開</div></div>';
 h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\u270B</div><div style="font-size:.44rem;color:#c9a84c">右手掌</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">手心朝上・張開</div></div>';
-h+='<div style="border:1px dashed rgba(201,168,76,.25);border-radius:6px;padding:5px;text-align:center"><div style="font-size:.7rem">\uD83D\uDC8E</div><div style="font-size:.44rem;color:#c9a84c">水晶照片</div><div style="font-size:.36rem;color:rgba(228,228,231,.35)">拍你配戴的</div></div>';
 h+='</div>';
-h+='<div style="font-size:.36rem;color:rgba(228,228,231,.35);margin-top:3px;text-align:center">照片僅用於本次分析，不會儲存</div>';
+h+='<div style="font-size:.36rem;color:rgba(228,228,231,.35);margin-top:3px;text-align:center">照片僅用於本次分析,不會儲存・塔羅與開鑰不需照片</div>';
 h+='</div>';
 h+='<div style="padding:2px 8px"><div style="font-size:.48rem;color:#c9a84c;margin-bottom:2px">\uD83D\uDD2E 選擇分析方式</div></div>';
 h+='<div class="mn-tl hi"><div class="ico">⭐</div><div><div class="nm">塔羅快讀</div><div class="ds">一個問題，抽牌就有答案<br>不需任何資料・只要問題和選牌</div><div class="bg">免費體驗 1 次</div></div></div>';
@@ -159,7 +158,7 @@ h+='</div></div>';
 h+='<div class="jy-arr" style="left:28%;top:300px"></div>';
 h+='<div class="jy-fgr" style="left:24%;top:317px">👆</div>';
 h+='</div>';
-h+='<div class="jy-tip"><div class="ic">💡</div><div class="tx">照片是加分,不是必填<small>塔羅快讀完全不用填資料<br>氣色面相+手相 全工具免費</small></div></div>';
+h+='<div class="jy-tip"><div class="ic">💡</div><div class="tx">塔羅・開鑰不需任何資料<small>七維度可選填氣色面相+手相照片<br>三種工具的照片分析全免費</small></div></div>';
 h+='</div>';
 
 // Step 3: 填寫資料
