@@ -4169,7 +4169,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.20-2026-05-08';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.3.21-2026-05-08';
 
 async function checkWorkerStatus() {
   try {
@@ -4971,6 +4971,7 @@ async function ragBuildContextProgress() {
 }
 
 // ── ② Upload to Vectorize（自動分批，每批 30 chunks）──
+// v69.3.21:不再自己 += 累加,改用 worker 回傳的 totalUploaded/totalChunks 權威值
 async function ragUploadVectorizeRun() {
   _ragUploadAbort = false;
   document.getElementById('ragUploadBtn').disabled = true;
@@ -4978,15 +4979,11 @@ async function ragUploadVectorizeRun() {
   document.getElementById('ragUploadLog').textContent = '開始上傳到 Vectorize';
 
   let cursor = null;
-  let uploaded = 0;
-  let total = 0;
-  // 先看 KV 有多少 chunks 可上
-  try {
-    const r = await fetch(`${WORKER_URL}/admin/rag-build-progress?token=${encodeURIComponent(adminToken)}`);
-    const d = await r.json();
-    if (d.ok && d.progress) total = d.progress.actualKVCount || 0;
-    _ragLogAppend('ragUploadLog', `KV 內共 ${total} 個 chunks 可上傳`);
-  } catch(_) {}
+  let uploaded = 0;     // 從 worker 後端拿,不自己累加
+  let total = 0;        // 從 worker 後端拿,不靠初始查一次
+  let firstBatch = true;
+  let consecutiveErrors = 0;
+  let consecutiveZeroProgress = 0;  // 連續多批都沒進度時跳出,避免無窮迴圈
 
   while (!_ragUploadAbort) {
     try {
@@ -4998,24 +4995,61 @@ async function ragUploadVectorizeRun() {
       const data = await resp.json();
       if (!data.ok) {
         _ragLogAppend('ragUploadLog', '❌ ' + (data.error || JSON.stringify(data)));
-        break;
+        consecutiveErrors++;
+        if (consecutiveErrors >= 3) {
+          _ragLogAppend('ragUploadLog', '❌ 連續 3 次失敗,停止');
+          break;
+        }
+        await new Promise(r => setTimeout(r, 2000));
+        continue;
       }
-      uploaded += (data.uploadedThisBatch || 0);
-      _ragLogAppend('ragUploadLog', `✓ 本批上傳 ${data.uploadedThisBatch} | 累計 ${uploaded}`);
-      _ragSetProgress('ragUpload', total ? (uploaded * 100 / total) : 0, uploaded + ' / ' + total);
+      consecutiveErrors = 0;
+
+      // ★ 用 worker 後端的權威值,不自己 +=
+      const prevUploaded = uploaded;
+      uploaded = (typeof data.totalUploaded === 'number') ? data.totalUploaded : (uploaded + (data.uploadedThisBatch || 0));
+      total = (typeof data.totalChunks === 'number' && data.totalChunks > 0) ? data.totalChunks : total;
+
+      // 防呆:uploaded 不會超過 total
+      if (total > 0 && uploaded > total) uploaded = total;
+
+      const skippedTxt = (data.skippedThisBatch && data.skippedThisBatch > 0) ? ` (跳過 ${data.skippedThisBatch} 個已上傳)` : '';
+      _ragLogAppend('ragUploadLog', `✓ 本批上傳 ${data.uploadedThisBatch}${skippedTxt} | 累計 ${uploaded} / ${total || '?'}`);
+      _ragSetProgress('ragUpload', total ? Math.min(100, uploaded * 100 / total) : 0, uploaded + ' / ' + (total || '?'));
+
+      // 如果這一批 uploaded 沒有前進(本批全 skip 或 uploadedThisBatch=0),檢查是否該停
+      if (uploaded === prevUploaded) {
+        consecutiveZeroProgress++;
+        if (consecutiveZeroProgress >= 5) {
+          _ragLogAppend('ragUploadLog', '⚠ 連續 5 批沒進度,停止(可能 cursor 異常或全部已上傳完)');
+          break;
+        }
+      } else {
+        consecutiveZeroProgress = 0;
+      }
 
       if (data.allDone || data.done) {
-        _ragLogAppend('ragUploadLog', '🎉 全部上傳完成！');
+        _ragLogAppend('ragUploadLog', `🎉 全部上傳完成! 總計 ${uploaded} / ${total}`);
         break;
       }
       cursor = data.nextCursor;
       if (!cursor) {
-        _ragLogAppend('ragUploadLog', '🎉 全部上傳完成（cursor 結束）');
+        _ragLogAppend('ragUploadLog', `🎉 全部上傳完成(cursor 結束)! 總計 ${uploaded} / ${total}`);
         break;
       }
+
+      // 已達總數也直接結束(防 worker 那邊 list_complete 沒設正確)
+      if (total > 0 && uploaded >= total) {
+        _ragLogAppend('ragUploadLog', `🎉 已達總數 ${uploaded} / ${total},結束`);
+        break;
+      }
+
+      firstBatch = false;
     } catch (e) {
       _ragLogAppend('ragUploadLog', '❌ 異常: ' + (e && e.message || e));
-      break;
+      consecutiveErrors++;
+      if (consecutiveErrors >= 3) break;
+      await new Promise(r => setTimeout(r, 2000));
     }
   }
   if (_ragUploadAbort) _ragLogAppend('ragUploadLog', '⏸ 已暫停');
@@ -5033,7 +5067,16 @@ async function ragUploadVectorizeProgress() {
     const d = await r.json();
     if (!d.ok) { _ragLogAppend('ragUploadLog', '❌ ' + d.error); return; }
     const p = d.progress || {};
-    _ragLogAppend('ragUploadLog', `進度查詢: 已上傳 ${p.totalUploaded || 0}` + (p.vectorizeStats ? ' | Vectorize: ' + JSON.stringify(p.vectorizeStats) : ''));
+    // v69.3.21:同步顯示「已上傳/KV 總數」並更新進度條
+    const up = p.totalUploaded || 0;
+    const tot = p.totalChunks || 0;
+    const vstats = p.vectorizeStats ? ' | Vectorize: ' + JSON.stringify(p.vectorizeStats) : '';
+    _ragLogAppend('ragUploadLog', `進度查詢: 已上傳 ${up} / ${tot}${vstats}`);
+    if (tot > 0) {
+      _ragSetProgress('ragUpload', Math.min(100, up * 100 / tot), up + ' / ' + tot);
+    } else {
+      _ragSetProgress('ragUpload', 0, up + ' / ?');
+    }
   } catch (e) {
     _ragLogAppend('ragUploadLog', '❌ ' + e);
   }
