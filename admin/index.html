@@ -1137,6 +1137,44 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ═══ v69.9.1:智能升級開關(Auto-Upgrade Router)═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border-color:rgba(251,146,60,0.3)">
+        <h3>🤖 智能模型升級(Auto-Upgrade Router)
+          <span style="font-size:11px;padding:2px 8px;background:rgba(251,146,60,0.2);color:#fdba74;border-radius:10px;margin-left:6px;vertical-align:middle">v69.9.1</span>
+        </h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+          <b style="color:#fcd34d">這是什麼</b>:七維度遇到「復合/第三者/對方畫像」這類複雜推理題時,程式會自動把 Haiku 4.5 升級成 Sonnet 4.6 跑(避免 Haiku 寫退場句)。<br>
+          <b style="color:#fcd34d">為什麼預設關</b>:歐那要求「後台設什麼跑什麼,不要程式自己切」。預設 OFF=尊重模型配置,你設 Haiku 就跑 Haiku,設 Sonnet 就跑 Sonnet。<br>
+          <b style="color:#fcd34d">什麼時候開</b>:如果你發現 Haiku 在情境題寫得太淺,可以打開試試。打開後 Haiku 跑七維度遇到這類題會自動切 Sonnet。
+        </p>
+        <div style="padding:14px;background:linear-gradient(135deg,rgba(251,146,60,0.08),rgba(168,85,247,0.08));border:1px solid rgba(251,146,60,0.3);border-radius:8px">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px">
+            <input type="checkbox" id="autoUpgradeEnabled" style="width:20px;height:20px;cursor:pointer">
+            <span style="font-size:14px;font-weight:600;color:#fdba74">啟用智能升級(關閉=尊重後台模型配置)</span>
+          </label>
+          <div style="font-size:11px;color:var(--text-dim);line-height:1.8;padding-left:30px">
+            <b style="color:#a78bfa">影響範圍</b>:只影響七維度(direct/full)。OOTK 跟塔羅完全不受影響。<br>
+            <b style="color:#a78bfa">觸發條件</b>(七題 regex 任一命中 + 當前是 Haiku 4.5):<br>
+            &nbsp;&nbsp;① 對方年齡:「他/她幾歲」「對方歲數/年紀/年齡/多大」<br>
+            &nbsp;&nbsp;② 性契合:「性契合/性合/床合/肉體合」<br>
+            &nbsp;&nbsp;③ 對方畫像:「對方職業/工作/家世/背景/個性/長相/外貌」<br>
+            &nbsp;&nbsp;④ 復合題:「復合/挽回/回到我身邊/還會回來嗎」<br>
+            &nbsp;&nbsp;⑤ 第三者:「第三者/小三/外遇/出軌/劈腿/備胎/曖昧對象」<br>
+            &nbsp;&nbsp;⑥ 對方心思:「他/對方心裡怎麼想」<br>
+            &nbsp;&nbsp;⑦ qType=thirdparty 或 reconcile<br>
+            <b style="color:#a78bfa">升級方向</b>:Haiku 4.5 → Sonnet 4.6(其他模型不影響)<br>
+            <b style="color:#a78bfa">如何驗證</b>:跑題後看 <code>/admin/last-call-debug</code> 的 <code>analysisNotes</code>:<br>
+            &nbsp;&nbsp;・關閉時:<code>auto_upgrade=disabled_by_admin</code><br>
+            &nbsp;&nbsp;・打開且觸發:<code>auto_upgrade[haiku→sonnet:cross_dim_reasoning_required]</code><br>
+            &nbsp;&nbsp;・打開但沒觸發:無 auto_upgrade 字樣
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveAutoUpgradeConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#fb923c;color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存智能升級設定</button>
+          <span id="autoUpgradeStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
       <!-- ═══ v47：追問設定卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
         <h3>💬 追問設定</h3>
@@ -2843,7 +2881,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
     if (tab.dataset.tab === 'weights') loadWeightStats();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
 });
 
@@ -4223,7 +4261,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.9-2026-05-09';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.9.1-2026-05-09';
 
 async function checkWorkerStatus() {
   try {
@@ -6283,6 +6321,65 @@ async function saveModelConfig() {
     }
   } catch(e) {
     toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v69.9.1:Auto-Upgrade Router 開關(智能模型升級)
+// ═══════════════════════════════════════════════
+async function loadAutoUpgradeConfig() {
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/auto-upgrade-config?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    const el = document.getElementById('autoUpgradeEnabled');
+    const statusEl = document.getElementById('autoUpgradeStatus');
+    if (!el) return;
+    if (data.ok && data.config) {
+      el.checked = !!data.config.enabled;
+      if (statusEl) {
+        if (data.config.enabled) {
+          statusEl.innerHTML = '✅ 已啟用 ・ <span style="color:#fdba74">遇到複雜推理題會自動 Haiku→Sonnet</span>';
+          statusEl.style.color = '#86efac';
+        } else {
+          statusEl.innerHTML = '🔵 已關閉 ・ 後台設定優先,程式不會自己切模型';
+          statusEl.style.color = 'var(--text-dim)';
+        }
+        if (data.config.lastUpdated) {
+          statusEl.innerHTML += '<br><span style="font-size:10px;color:var(--text-dim)">最後更新: ' + data.config.lastUpdated + '</span>';
+        }
+      }
+    } else {
+      el.checked = false;
+      if (statusEl) statusEl.textContent = '⚠️ 讀取失敗,顯示預設(關閉)';
+    }
+  } catch(e) {
+    const statusEl = document.getElementById('autoUpgradeStatus');
+    if (statusEl) statusEl.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function saveAutoUpgradeConfig() {
+  const el = document.getElementById('autoUpgradeEnabled');
+  const statusEl = document.getElementById('autoUpgradeStatus');
+  if (!el) return;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/auto-upgrade-config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, enabled: !!el.checked })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 智能升級設定已儲存(' + (data.config.enabled ? '啟用' : '關閉') + ')');
+      // 重新載入顯示
+      await loadAutoUpgradeConfig();
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+      if (statusEl) statusEl.textContent = '❌ ' + (data.error || '儲存失敗');
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+    if (statusEl) statusEl.textContent = '❌ 異常: ' + (e && e.message || e);
   }
 }
 
