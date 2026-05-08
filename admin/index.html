@@ -1090,14 +1090,14 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <!-- 開鑰 -->
           <div style="padding:12px;border-radius:10px;border:1px solid var(--card-border);background:rgba(255,255,255,.02)">
             <div style="font-size:13px;font-weight:600;color:#fbbf24;margin-bottom:10px">🗝️ 開鑰</div>
-            <div style="font-size:11px;color:#fca5a5;margin-bottom:10px;line-height:1.6;padding:8px 10px;border-radius:6px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3)">
-              ⚠️ <b>Haiku 4.5 跑不了開鑰</b>:OOTK 系統 prompt 約 217K tokens(七套訓練 + 五階段規範 + 反幻覺),超過 Haiku 200K context 上限。Sonnet/Opus 4.6/4.7 都是 1M context 沒問題。
+            <div style="font-size:11px;color:#86efac;margin-bottom:10px;line-height:1.6;padding:8px 10px;border-radius:6px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.3)">
+              ✅ <b>v69.5 起 Haiku 4.5 完整版可跑開鑰</b>:v69.4 系統獨立性重構後 OOTK system prompt 從 ~217K 降到 ~150K,加上 user message ~35K,total ~185K 在 Haiku 200K context 內。免費試用建議用 Haiku 4.5 省成本。
             </div>
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
               <span style="min-width:52px;font-size:12px;color:var(--text-dim)">標準</span>
               <select id="mc-ootk-std" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
                 <option value="claude-sonnet-4-6">Sonnet 4.6</option>
-                <option value="claude-haiku-4-5" disabled style="color:#666">⚠️ Haiku 4.5(context 不足)</option>
+                <option value="claude-haiku-4-5">Haiku 4.5(免費試用建議,省成本)</option>
                 <option value="claude-opus-4-6">Opus 4.6</option>
                 <option value="claude-opus-4-7">Opus 4.7</option>
               </select>
@@ -1106,7 +1106,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <span style="min-width:52px;font-size:12px;color:var(--text-dim)">深度</span>
               <select id="mc-ootk-deep" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
                 <option value="claude-sonnet-4-6">Sonnet 4.6</option>
-                <option value="claude-haiku-4-5" disabled style="color:#666">⚠️ Haiku 4.5(context 不足)</option>
+                <option value="claude-haiku-4-5">Haiku 4.5(免費試用建議,省成本)</option>
                 <option value="claude-opus-4-6">Opus 4.6</option>
                 <option value="claude-opus-4-7">Opus 4.7</option>
               </select>
@@ -1115,7 +1115,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <span style="min-width:52px;font-size:12px;color:#fbbf24" title="追問獨立配置；不設定時 fallback 標準">追問</span>
               <select id="mc-ootk-fu" style="flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:var(--text);font-size:13px">
                 <option value="claude-sonnet-4-6">Sonnet 4.6</option>
-                <option value="claude-haiku-4-5" disabled style="color:#666">⚠️ Haiku 4.5(context 不足)</option>
+                <option value="claude-haiku-4-5">Haiku 4.5(免費試用建議,省成本)</option>
                 <option value="claude-opus-4-6">Opus 4.6</option>
                 <option value="claude-opus-4-7">Opus 4.7</option>
               </select>
@@ -1691,7 +1691,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <br>
           <b style="color:#6c7bff">建議</b>:預設完整版,品質不滿意再切 LITE A/B 對比<br>
           <br>
-          <b style="color:#f59e0b">注意</b>:OOTK 不開放 Haiku(完整 217K 砍了會失去深度,撞 Haiku 仍 fallback Sonnet 4.6)
+          <b style="color:#86efac">v69.5 更新</b>:OOTK 已解禁 Haiku 4.5(prompt 從 217K 降到 ~150K,Haiku 200K 內可跑完整版)
         </p>
         <div style="display:flex;flex-direction:column;gap:12px">
           <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
@@ -4261,7 +4261,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.9.2-2026-05-09';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.9.5-2026-05-09';
 
 async function checkWorkerStatus() {
   try {
