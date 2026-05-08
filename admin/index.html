@@ -4261,7 +4261,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.9.1-2026-05-09';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.9.2-2026-05-09';
 
 async function checkWorkerStatus() {
   try {
@@ -5134,12 +5134,29 @@ async function ragUploadVectorizeRun() {
       _ragLogAppend('ragUploadLog', `✓ 本批上傳 ${data.uploadedThisBatch}${skippedTxt} | 累計 ${uploaded} / ${total || '?'}`);
       _ragSetProgress('ragUpload', total ? Math.min(100, uploaded * 100 / total) : 0, uploaded + ' / ' + (total || '?'));
 
-      // 如果這一批 uploaded 沒有前進(本批全 skip 或 uploadedThisBatch=0),檢查是否該停
+      // v69.9.2:zeroProgress 邏輯改成「只在 nextCursor 也沒了 + 連續 5 批沒進度才停」
+      // 舊邏輯:本批 uploaded 沒前進 → consecutiveZeroProgress++,連續 5 批就停
+      // 問題:後端「自動跳頁」時可能本批 uploaded=0 但 nextCursor 還在(還有頁要翻)
+      //       前端誤判停止,但實際 KV 字典序後段可能還有未上傳的 chunks(例如 V72_*)
+      // 新邏輯:ⓐ uploaded=0 + 沒 nextCursor → 真的沒了,停止
+      //         ⓑ uploaded=0 + 有 nextCursor → 後端還在掃,繼續
+      //         ⓒ 安全網:連續 30 批都沒進度才停止(防 cursor 真壞)
       if (uploaded === prevUploaded) {
         consecutiveZeroProgress++;
-        if (consecutiveZeroProgress >= 5) {
-          _ragLogAppend('ragUploadLog', '⚠ 連續 5 批沒進度,停止(可能 cursor 異常或全部已上傳完)');
+        const skipPages = data.skipPagesScanned || 0;
+        const skipNote = skipPages > 0 ? `(後端跳過 ${skipPages} 頁全 skip)` : '';
+        // 沒 nextCursor + 沒進度 → 真的沒東西了,直接結束
+        if (!data.nextCursor) {
+          _ragLogAppend('ragUploadLog', `🎉 全部上傳完成! 總計 ${uploaded} / ${total} ${skipNote}`);
           break;
+        }
+        // 有 nextCursor + 沒進度 → 後端還在掃,繼續(只在連續 30 批才停止當保險)
+        if (consecutiveZeroProgress >= 30) {
+          _ragLogAppend('ragUploadLog', `⚠ 連續 30 批沒進度,停止(可能 cursor 異常,實際已掃 ${30 * 50} 頁)`);
+          break;
+        }
+        if (skipPages > 0) {
+          _ragLogAppend('ragUploadLog', `⏩ 後端跳過 ${skipPages} 頁全 skip,繼續找未上傳的 chunks...`);
         }
       } else {
         consecutiveZeroProgress = 0;
