@@ -897,28 +897,31 @@ function pickTool(tool) {
   var btn = document.getElementById('btn-tool-go');
   var sub = document.getElementById('btn-tool-sub');
 
-  // ★ 關鍵：找到被 _enterFromHome 隱藏的出生資料卡片，根據工具決定顯示
+  // ★ 關鍵:找到被 _enterFromHome 隱藏的出生資料卡片,根據工具決定顯示
+  // v69.7:OOTK 跟塔羅一樣不需要出生資料(正統 Mathers Manuscript Q 不需要)
   var inputScreen = document.getElementById('input-screen');
   if (inputScreen) {
     var allCards = inputScreen.querySelectorAll('.card');
     allCards.forEach(function(card) {
       var title = card.querySelector('.card-title');
       if (title && title.textContent.indexOf('出生資料') >= 0) {
-        card.style.display = (tool === 'tarot') ? 'none' : '';
+        // v69.7:OOTK 也加入「不顯示出生資料」清單
+        card.style.display = (tool === 'tarot' || tool === 'ootk') ? 'none' : '';
       }
     });
   }
 
   if (tool === 'tarot') {
-    if (birthHint) birthHint.textContent = '塔羅快讀不需出生資料，以下可跳過';
+    if (birthHint) birthHint.textContent = '塔羅快讀不需出生資料,以下可跳過';
     if (btn) { btn.innerHTML = '<i class="fas fa-magic"></i> 抽牌解讀'; btn.onclick = function(){ submitWithTool(); }; }
     if (sub) sub.textContent = '此刻的牌面能量・不需出生資料';
   } else if (tool === 'ootk') {
-    if (birthHint) birthHint.textContent = '開鑰之法需要出生資料，請填寫以下欄位';
+    // v69.7:開鑰之法回歸 Mathers Manuscript Q 正統,不需要出生資料
+    if (birthHint) birthHint.textContent = '開鑰之法不需出生資料,專注問題即可';
     if (btn) { btn.innerHTML = '<i class="fas fa-key"></i> 開始五層深潛'; btn.onclick = function(){ submitWithTool(); }; }
-    if (sub) sub.textContent = '金色黎明最高階儀式・78張牌全部使用';
+    if (sub) sub.textContent = '金色黎明最高階儀式・78 張牌全部使用・不需任何資料';
   } else {
-    if (birthHint) birthHint.textContent = '七維度需要出生資料，精度越高結果越準';
+    if (birthHint) birthHint.textContent = '七維度需要出生資料,精度越高結果越準';
     if (btn) { btn.innerHTML = '<i class="fas fa-bolt"></i> 七維命盤深度分析'; btn.onclick = function(){ submitWithTool(); }; }
     if (sub) sub.textContent = '八字・紫微・梅花・塔羅・星盤・吠陀・姓名';
   }
@@ -1103,9 +1106,18 @@ function submitWithTool() {
     return;
   }
 
-  // OOTK 和七維度需要出生資料
+  // v69.7:OOTK 也跟塔羅一樣不需必填(正統 Mathers Manuscript Q 不需要出生資料)
+  //   只有七維度(full)才需要出生資料(因為要七套交叉)
+  if (tool === 'ootk') {
+    // OOTK 跟塔羅一樣直接進入流程,不檢查 gender/birth
+    // 用戶若有填生日,後端可選擇性使用 decan 法選 significator;沒填就走切牌憑直覺
+    goStep(2);
+    return;
+  }
+
+  // 只有七維度(full)需要出生資料
   if (!gender) {
-    // ★ v29：先確保表單可見
+    // ★ v29:先確保表單可見
     pickTool(tool);
     alert('請選擇性別');
     var _genderEl = document.querySelector('.radio-pills');
@@ -6317,24 +6329,26 @@ function enterFullAnalysis() {
   }
 }
 
-// ── enterOOTKFromTarot：從塔羅結果進開鑰之法 ──
+// ── enterOOTKFromTarot:從塔羅結果進開鑰之法 ──
+// v69.7:OOTK 不再需要出生資料(正統 Mathers Manuscript Q 不需要)
+//        只檢查問題是否填了;出生資料若有填會帶過去當 decan 法線索,沒填也能跑
 function enterOOTKFromTarot() {
   var question = document.getElementById('f2-question').value.trim();
   var gender = document.querySelector('input[name="gender2"]:checked');
   var y2 = parseInt(document.getElementById('f2-byear')?.value);
   var m2 = parseInt(document.getElementById('f2-bmonth')?.value);
   var d2 = parseInt(document.getElementById('f2-bday')?.value);
-  if (!question || !gender || !y2 || !m2 || !d2) {
-    // ★ v20：提示後自動滾到表單
-    var _missing2 = [];
-    if (!question) _missing2.push('問題');
-    if (!gender) _missing2.push('性別');
-    if (!y2 || !m2 || !d2) _missing2.push('出生日期');
-    alert('請填寫：' + _missing2.join('、'));
-    var _scrollTarget2 = !question ? document.getElementById('f2-question') : document.getElementById('tarot-full-form');
+  // v69.7:只檢查問題,出生資料全選填
+  if (!question) {
+    alert('請填寫:問題');
+    var _scrollTarget2 = document.getElementById('f2-question');
     if (_scrollTarget2) _scrollTarget2.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
+
+  // v69.7:OOTK 不需要出生資料,但若用戶有填,仍會帶過去當 decan 法線索
+  var hasBirth = !!(y2 && m2 && d2);
+  var hasGender = !!gender;
 
   var h2 = document.getElementById('f2-bhour')?.value;
   var mi2 = document.getElementById('f2-bminute')?.value;
@@ -6353,16 +6367,26 @@ function enterOOTKFromTarot() {
   var hh2 = (h2 !== '' && h2 != null && !isNaN(parseInt(h2))) ? parseInt(h2) : 12;
   var mm2 = (mi2 !== '' && mi2 != null && !isNaN(parseInt(mi2))) ? parseInt(mi2) : 0;
   if (btimeUnsure2) { hh2 = 12; mm2 = 0; }
-  var bdate = y2 + '-' + (m2 < 10 ? '0' : '') + m2 + '-' + (d2 < 10 ? '0' : '') + d2;
-  var btime = btimeUnsure2 ? '' : ((hh2 < 10 ? '0' : '') + hh2 + ':' + (mm2 < 10 ? '0' : '') + mm2);
+  // v69.7:沒填生日就 bdate/btime 留空
+  var bdate = hasBirth ? (y2 + '-' + (m2 < 10 ? '0' : '') + m2 + '-' + (d2 < 10 ? '0' : '') + d2) : '';
+  var btime = (hasBirth && !btimeUnsure2) ? ((hh2 < 10 ? '0' : '') + hh2 + ':' + (mm2 < 10 ? '0' : '') + mm2) : '';
 
   // 寫 S.form
   var type = S.form?.type || 'general';
-  S.form = { type: type, question: question, gender: gender.value, bdate: bdate, btime: btime, name: name, btimeUnknown: btimeUnsure2 || (h2 === '' || h2 == null), timePrecision: timePrecision2 };
+  S.form = {
+    type: type,
+    question: question,
+    gender: hasGender ? gender.value : '',
+    bdate: bdate,
+    btime: btime,
+    name: name,
+    btimeUnknown: btimeUnsure2 || !hasBirth || (h2 === '' || h2 == null),
+    timePrecision: timePrecision2
+  };
 
-  // 真太陽時
+  // v69.7:只有 hasBirth 時才算真太陽時
   var solarInfo = null;
-  if (loc2 && typeof calcTrueSolarTime === 'function' && !S.form.btimeUnknown) {
+  if (hasBirth && loc2 && typeof calcTrueSolarTime === 'function' && !S.form.btimeUnknown) {
     solarInfo = calcTrueSolarTime(y2, m2, d2, hh2, mm2, loc2.longitude, loc2.timezone);
   }
   S.form.trueSolar = solarInfo;
@@ -6392,25 +6416,30 @@ function enterOOTKFromTarot() {
     }
   } catch(e) {}
 
-  // 同步性別
-  document.querySelectorAll('input[name="gender"]').forEach(function(r) { r.checked = (r.value === gender.value); });
+  // 同步性別(若有填)
+  if (hasGender) {
+    document.querySelectorAll('input[name="gender"]').forEach(function(r) { r.checked = (r.value === gender.value); });
+  }
 
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
   S._tarotOnlyMode = false;
 
-  // 預算八字等基礎盤
-  var sY = solarInfo ? solarInfo.year : y2, sM = solarInfo ? solarInfo.month : m2, sD = solarInfo ? solarInfo.day : d2;
-  var sHH = solarInfo ? solarInfo.hour : hh2, sMM = solarInfo ? solarInfo.minute : mm2;
-  var geoLon = loc2 ? loc2.longitude : 121.56, geoLat = loc2 ? loc2.latitude : 25.04;
-  try {
-    S.bazi = computeBazi(sY, sM, sD, sHH, sMM, gender.value);
-    try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
-    S.ziwei = computeZiwei(sY, sM, sD, sHH, gender.value);
-    try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
-    try { S.natal = computeNatalChart(y2, m2, d2, hh2, mm2, geoLon, geoLat); } catch(e) { S.natal = null; }
-    try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, y2, m2, d2, hh2, mm2); } catch(e) {}
-    try { S.jyotish = S.natal ? computeJyotish(S.natal, y2, m2, d2, hh2, mm2) : null; } catch(e) { S.jyotish = null; }
-  } catch(e) { console.error('enterOOTKFromTarot calc:', e); }
+  // v69.7:有完整出生資料才預算八字等基礎盤(OOTK 本身不需要)
+  if (hasBirth && hasGender) {
+    var sY = solarInfo ? solarInfo.year : y2, sM = solarInfo ? solarInfo.month : m2, sD = solarInfo ? solarInfo.day : d2;
+    var sHH = solarInfo ? solarInfo.hour : hh2, sMM = solarInfo ? solarInfo.minute : mm2;
+    var geoLon = loc2 ? loc2.longitude : 121.56, geoLat = loc2 ? loc2.latitude : 25.04;
+    try {
+      S.bazi = computeBazi(sY, sM, sD, sHH, sMM, gender.value);
+      try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
+      S.ziwei = computeZiwei(sY, sM, sD, sHH, gender.value);
+      try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
+      try { S.natal = computeNatalChart(y2, m2, d2, hh2, mm2, geoLon, geoLat); } catch(e) { S.natal = null; }
+      try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, y2, m2, d2, hh2, mm2); } catch(e) {}
+      try { S.jyotish = S.natal ? computeJyotish(S.natal, y2, m2, d2, hh2, mm2) : null; } catch(e) { S.jyotish = null; }
+    } catch(e) { console.error('enterOOTKFromTarot calc:', e); }
+  }
+  // 若沒填出生資料,S.bazi/ziwei/natal/jyotish 保持 undefined,worker.js OOTK 路徑容錯處理
 
   // 啟動 OOTK（含限流+付費檢查）
   if (typeof window._jyStartOOTK === 'function') {
