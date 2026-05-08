@@ -1106,12 +1106,51 @@ function submitWithTool() {
     return;
   }
 
-  // v69.7:OOTK 也跟塔羅一樣不需必填(正統 Mathers Manuscript Q 不需要出生資料)
-  //   只有七維度(full)才需要出生資料(因為要七套交叉)
+  // v69.7 / v69.9.3 修正:OOTK 不需出生資料,但要直接啟動 OOTK 流程
+  //
+  // v69.7 原本寫 goStep(2),但 step-2 是【塔羅抽牌頁面】(預設五牌陣 Five-Card Spread),
+  // 這導致用戶從首頁點「開始五層深潛」會跳到塔羅五牌陣頁面 — 完全錯誤入口。
+  // v69.9.3 修正:跟 enterOOTKFromTarot(line 6444+)同樣的做法,直接呼叫 _jyStartOOTK / startOOTKFlow,
+  // 不經過 step-2 塔羅介面。
+  // 用戶若有填生日,後端可選擇性使用 decan 法選 significator;沒填就走切牌憑直覺(Mathers 正統)。
   if (tool === 'ootk') {
-    // OOTK 跟塔羅一樣直接進入流程,不檢查 gender/birth
-    // 用戶若有填生日,後端可選擇性使用 decan 法選 significator;沒填就走切牌憑直覺
-    goStep(2);
+    S._tarotOnlyMode = false;
+    S._autoMode = false;
+
+    // v69.9.3:若用戶在出生資料卡上有填,順便預算基礎盤(同 enterOOTKFromTarot 邏輯)
+    // 沒填就保持 S.bazi/ziwei/natal/jyotish = undefined,worker.js OOTK 路徑容錯處理
+    var _ootkGender = document.querySelector('input[name="gender"]:checked');
+    var _ootkBirth = (typeof _readBirthForm === 'function') ? _readBirthForm() : null;
+    var _ootkHasBirth = !!(_ootkBirth && _ootkBirth.y && _ootkBirth.m && _ootkBirth.d);
+    var _ootkHasGender = !!_ootkGender;
+
+    if (_ootkHasBirth && _ootkHasGender) {
+      try {
+        var _ootkType = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
+        S.form = { type: _ootkType, question: question, gender: _ootkGender.value, bdate: _ootkBirth.bdate, btime: _ootkBirth.btime, name: _ootkBirth.name, btimeUnknown: _ootkBirth.btimeUnknown };
+        var _ootkC = _calcSolarAndCompute(_ootkBirth, _ootkGender.value);
+        S.bazi = computeBazi(_ootkC.solarY, _ootkC.solarM, _ootkC.solarD, _ootkC.solarHH, _ootkC.solarMM, _ootkGender.value);
+        try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
+        S.ziwei = computeZiwei(_ootkC.solarY, _ootkC.solarM, _ootkC.solarD, _ootkC.solarHH, _ootkGender.value);
+        try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
+        try { S.natal = computeNatalChart(_ootkC.clockY, _ootkC.clockM, _ootkC.clockD, _ootkC.clockHH, _ootkC.clockMM, _ootkC.geoLon, _ootkC.geoLat); } catch(e) { S.natal = null; }
+        try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, _ootkC.clockY, _ootkC.clockM, _ootkC.clockD, _ootkC.clockHH, _ootkC.clockMM); } catch(e) {}
+        try { S.jyotish = S.natal ? computeJyotish(S.natal, _ootkC.clockY, _ootkC.clockM, _ootkC.clockD, _ootkC.clockHH, _ootkC.clockMM) : null; } catch(e) { S.jyotish = null; }
+      } catch(e) { console.error('[OOTK] pre-calc:', e); }
+    } else {
+      // 沒填出生資料,只記錄問題到 S.form
+      S.form = { type: 'general', question: question, gender: '', bdate: '', btime: '', name: '', btimeUnknown: true };
+    }
+
+    // 啟動 OOTK(含限流檢查;不需出生資料,worker 端容錯處理)
+    if (typeof window._jyStartOOTK === 'function') {
+      window._jyStartOOTK();
+    } else if (typeof startOOTKFlow === 'function') {
+      startOOTKFlow();
+    } else {
+      console.error('[OOTK] _jyStartOOTK / startOOTKFlow 未定義,無法啟動');
+      alert('開鑰之法啟動失敗,請重新整理頁面再試');
+    }
     return;
   }
 
