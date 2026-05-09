@@ -215,6 +215,26 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <div class="stat-card"><div class="stat-num" id="s-uptime">-</div><div class="stat-label">⏱ Worker</div></div>
       </div>
 
+      <!-- ★ Bug J 修:付款診斷面板 -->
+      <!--    過去問題:worker 寫了 ecpay_webhook_error / ecpay_quota_failure 兩個診斷 KV -->
+      <!--    但 admin UI 完全沒呼叫對應端點 → 用戶投訴「付了錢沒生效」歐那看不到根因 -->
+      <!--    本面板對應:GET /admin/ecpay-webhook-errors + /admin/ecpay-quota-failures -->
+      <div class="notify-section" style="border:1px solid rgba(251,191,36,.25);background:rgba(251,191,36,.03)">
+        <div class="notify-header">
+          <h3 style="color:#fbbf24">💳 付款診斷</h3>
+          <button onclick="loadPaymentDiagnostics()" style="padding:4px 12px;border-radius:6px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24;font-size:12px;cursor:pointer">🔄 重新檢查</button>
+        </div>
+        <div id="paymentDiagSummary" style="padding:12px;border-radius:8px;background:rgba(255,255,255,.02);margin-bottom:12px">
+          <div class="loading"></div>
+        </div>
+        <div id="paymentDiagDetails" style="display:none">
+          <!-- webhook errors -->
+          <div id="webhookErrorsBlock" style="margin-bottom:12px"></div>
+          <!-- quota failures -->
+          <div id="quotaFailuresBlock"></div>
+        </div>
+      </div>
+
       <div class="notify-section">
         <div class="notify-header">
           <h3>📋 最近使用紀錄</h3>
@@ -2985,6 +3005,10 @@ async function loadDashboard() {
     document.getElementById('s-uptime').textContent = '✓';
     
     renderNotifications(list);
+
+    // ★ Bug J 修補:Dashboard 載入時自動跑付款診斷
+    //   讓歐那一進 admin 就能立刻看到付款是否正常,不必特意切到 Worker 管理 tab
+    try { loadPaymentDiagnostics(); } catch(_) {}
   } catch(e) {
     document.getElementById('notifyList').innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>';
   }
@@ -4409,6 +4433,132 @@ function loadWorkerVersion(force) {
 
 // ═══════════════════════════════════════════════════════════════════════════
 // v67:Last Call Debug — 讀取最近一次 callAI 的真實參數
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ★ Bug J 修補:付款診斷面板
+// 過去問題:worker 寫了 ecpay_webhook_error / ecpay_quota_failure 兩個診斷 KV
+//   但 admin UI 完全沒呼叫 → 用戶投訴「付了錢沒生效」歐那看不到根因
+// 本函式查兩個端點 + 顯示在 dashboard 卡片
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadPaymentDiagnostics() {
+  const summaryEl = document.getElementById('paymentDiagSummary');
+  const detailsEl = document.getElementById('paymentDiagDetails');
+  const webhookBlock = document.getElementById('webhookErrorsBlock');
+  const quotaBlock = document.getElementById('quotaFailuresBlock');
+  if (!summaryEl || !detailsEl) return;
+
+  summaryEl.innerHTML = '<div class="loading"></div>';
+  detailsEl.style.display = 'none';
+
+  try {
+    // 並行查兩個診斷端點
+    const [webhookResp, quotaResp] = await Promise.all([
+      fetch(`${WORKER_URL}/admin/ecpay-webhook-errors?token=${encodeURIComponent(adminToken)}`),
+      fetch(`${WORKER_URL}/admin/ecpay-quota-failures?token=${encodeURIComponent(adminToken)}`)
+    ]);
+
+    let webhookData = null, quotaData = null;
+    try { webhookData = await webhookResp.json(); } catch(_) {}
+    try { quotaData = await quotaResp.json(); } catch(_) {}
+
+    // ── 整體狀態判斷 ──
+    const _envProblem = webhookData && webhookData.envStatus &&
+      (!webhookData.envStatus.hashKey_set || !webhookData.envStatus.hashIV_set);
+    const _webhookErrCount = (webhookData && webhookData.errorCount) || 0;
+    const _quotaFailCount = (quotaData && quotaData.count) || 0;
+    const _hasIssue = _envProblem || _webhookErrCount > 0 || _quotaFailCount > 0;
+
+    // ── 摘要區塊 ──
+    let summaryHtml = '';
+    if (!webhookData || webhookData.error) {
+      summaryHtml = '<div style="color:#ef4444;font-weight:600">❌ 無法查詢 webhook 錯誤紀錄: ' +
+        (webhookData?.error || 'API 失敗') + '</div>';
+    } else if (_envProblem) {
+      summaryHtml = '<div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:6px">❌ 嚴重:ECPay 環境變數設定不完整</div>' +
+        '<div style="font-size:12px;color:var(--text);line-height:1.6">' + (webhookData.diagnosis || '') + '</div>';
+    } else if (_webhookErrCount > 0 || _quotaFailCount > 0) {
+      summaryHtml = '<div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:6px">⚠️ 有付款問題待處理</div>' +
+        '<div style="font-size:12px;color:var(--text);line-height:1.6">' +
+          (_webhookErrCount > 0 ? '・webhook mac mismatch:<strong>' + _webhookErrCount + '</strong> 筆<br>' : '') +
+          (_quotaFailCount > 0 ? '・付款已收但配額沒落:<strong>' + _quotaFailCount + '</strong> 筆<br>' : '') +
+        '</div>';
+    } else {
+      summaryHtml = '<div style="color:#22c55e;font-weight:700;font-size:14px;margin-bottom:4px">✅ 付款流程正常</div>' +
+        '<div style="font-size:11px;color:var(--text-dim)">' +
+          'merchantId: <code>' + (webhookData.envStatus?.merchantId || '?') + '</code>' +
+          (webhookData.envStatus?.merchantId_is_default_test ? ' <span style="color:#fbbf24">(測試帳號)</span>' : '') +
+          ' · hashKey/IV 已設定' +
+        '</div>';
+    }
+    summaryEl.innerHTML = summaryHtml;
+
+    // ── 詳細區塊(只在有問題時展開) ──
+    if (_hasIssue) {
+      detailsEl.style.display = 'block';
+
+      // webhook 錯誤列表
+      if (_webhookErrCount > 0 && webhookBlock) {
+        let html = '<div style="font-size:12px;color:#ef4444;font-weight:700;margin-bottom:6px">webhook mac mismatch (最近 ' + Math.min(_webhookErrCount, 20) + ' 筆)</div>';
+        html += '<div style="max-height:240px;overflow-y:auto;border:1px solid rgba(239,68,68,.2);border-radius:6px">';
+        for (const err of (webhookData.errors || []).slice(0, 20)) {
+          const _t = err.ts ? new Date(err.ts).toISOString().slice(0, 19).replace('T', ' ') : '?';
+          html += '<div style="padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px">' +
+            '<div style="color:#fca5a5;font-weight:600">' + _t + ' · tradeNo=' + (err.tradeNo || '?') + '</div>' +
+            '<div style="color:var(--text-dim);margin-top:2px">' + (err.hint || '') + '</div>' +
+          '</div>';
+        }
+        html += '</div>';
+        webhookBlock.innerHTML = html;
+      } else if (webhookBlock) {
+        webhookBlock.innerHTML = '';
+      }
+
+      // quota 失敗列表(可標記已處理)
+      if (_quotaFailCount > 0 && quotaBlock) {
+        let html = '<div style="font-size:12px;color:#fbbf24;font-weight:700;margin-bottom:6px">付款已收但配額沒落 (' + _quotaFailCount + ' 筆)</div>';
+        html += '<div style="max-height:300px;overflow-y:auto;border:1px solid rgba(251,191,36,.2);border-radius:6px">';
+        for (const f of (quotaData.failures || [])) {
+          const _t = f.ts ? new Date(f.ts).toISOString().slice(0, 19).replace('T', ' ') : '?';
+          const _tradeNoEsc = String(f.tradeNo || '').replace(/[^a-zA-Z0-9_-]/g, '');
+          html += '<div style="padding:10px;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px">' +
+            '<div style="color:#fde68a;font-weight:600;margin-bottom:3px">' + _t + ' · tradeNo=<code>' + _tradeNoEsc + '</code></div>' +
+            '<div style="color:var(--text-dim);margin-bottom:4px">email: <code>' + (f.userKey || '?').replace(/</g,'&lt;') + '</code> · qkey: <code>' + (f.qkey || '?') + '</code> · 金額: NT$' + (f.amount || '?') + '</div>' +
+            '<div style="color:#fde68a;font-size:10px;line-height:1.5;margin-bottom:6px">' + (f.hint || '').replace(/</g,'&lt;') + '</div>' +
+            '<button onclick="_markQuotaFailureResolved(\'' + _tradeNoEsc + '\')" style="padding:3px 10px;border-radius:5px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac;font-size:10px;cursor:pointer">✓ 標記已處理</button>' +
+          '</div>';
+        }
+        html += '</div>';
+        quotaBlock.innerHTML = html;
+      } else if (quotaBlock) {
+        quotaBlock.innerHTML = '';
+      }
+    }
+  } catch(e) {
+    summaryEl.innerHTML = '<div style="color:#ef4444">❌ 查詢失敗:' + (e.message || '網路錯誤') + '</div>';
+  }
+}
+
+// 標記某筆 quota_failure 已處理(管理員手動補完配額後呼叫)
+async function _markQuotaFailureResolved(tradeNo) {
+  if (!tradeNo) return;
+  if (!confirm('確定已用「用戶管理」手動補配額完成,要清除這筆未處理標記?\n\ntradeNo: ' + tradeNo)) return;
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/ecpay-quota-failure?token=${encodeURIComponent(adminToken)}&tradeNo=${encodeURIComponent(tradeNo)}`, {
+      method: 'DELETE'
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已標記處理完成');
+      loadPaymentDiagnostics();
+    } else {
+      toast('失敗:' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤:' + (e.message || '網路錯誤'));
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // v68 救命:成本分析函式
 // ═══════════════════════════════════════════════════════════════════════════
