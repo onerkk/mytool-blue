@@ -25213,7 +25213,20 @@ function _adminCostHTML(u) {
 // ═══ v43：免費體驗提示（每種工具各1次）═══
 function _showTrialBanner() {
   try {
-    if (localStorage.getItem('_jy_paid_token')) return;
+    // ★ Bug C 修:過去 if (localStorage.getItem('_jy_paid_token')) return; 太絕對
+    //   情境:用戶剛付完款 → AI 跑成功 → token 應該被清(payment-wall fetch hook 處理)
+    //         但極短時間窗(~60秒安全網之間)token 仍在 → trial banner 完全不顯示
+    //         即便 banner 顯示「免費剩 X 次」對已付費用戶也不算錯資訊(配額和免費並存)
+    //   修法:檢查 token 寫入時間戳,若 > 5 分鐘就視為殘留(payment-wall hook 該清沒清的孤兒)
+    //         不再無條件 return,讓 banner 仍能顯示免費剩餘次數
+    //   注意:Bug #1 _jyLog 修補後,正常清 token 路徑會生效,本邏輯只處理邊界 case
+    var _pt = localStorage.getItem('_jy_paid_token');
+    if (_pt) {
+      var _ptAt = parseInt(localStorage.getItem('_jy_paid_token_at') || '0', 10);
+      // token 在 5 分鐘內 → 認為剛付款,不顯示免費 banner(避免混淆)
+      // token 超過 5 分鐘 → 認為是殘留,banner 仍可顯示
+      if (_ptAt && (Date.now() - _ptAt) < 300000) return;
+    }
     if (window._JY_ADMIN_TOKEN) return;
     if (document.getElementById('jy-trial-banner')) return;
     

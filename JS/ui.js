@@ -244,7 +244,38 @@ function _jyLogout() {
   }
   window._JY_SESSION_TOKEN = '';
   window._JY_SESSION_NAME = '';
-  try { localStorage.removeItem('_jy_session'); localStorage.removeItem('_jy_session_name'); } catch(e){}
+  // ★ Bug H 修:登出時清所有付款相關 localStorage
+  //   過去問題:用戶 A 在共用瀏覽器付了款 → token 殘留 → 登出 → 用戶 B 登入 → fetch hook
+  //     自動帶 A 的 paid_token 到 B 的請求 → worker OWNER_MISMATCH 擋住但 UI 仍混亂
+  //   清的範圍:
+  //     _jy_session/_name           - 登入態(原本就有清)
+  //     _jy_paid_token/type/at      - 單次付費 token + 類型 + 時間戳
+  //     _jy_pending_payment         - 建單後等付款的暫存
+  //     _jy_last_paid               - 最近一次付款的備份(_jyUnlockAndTrigger fallback 用)
+  //     _jy_sub_expires             - 會員到期時間
+  //     _jy_user_tier               - 會員等級
+  //     _jy_log                     - 付款事件 log(防舊用戶 log 留給新用戶)
+  //   不清的範圍:
+  //     _jy_pricing_cache           - 定價快取(全用戶共用,清了浪費 5 分鐘載入時間)
+  try {
+    localStorage.removeItem('_jy_session');
+    localStorage.removeItem('_jy_session_name');
+    localStorage.removeItem('_jy_paid_token');
+    localStorage.removeItem('_jy_paid_token_type');
+    localStorage.removeItem('_jy_paid_token_at');
+    localStorage.removeItem('_jy_pending_payment');
+    localStorage.removeItem('_jy_last_paid');
+    localStorage.removeItem('_jy_sub_expires');
+    localStorage.removeItem('_jy_user_tier');
+    localStorage.removeItem('_jy_log');
+  } catch(e){}
+  // 同步清記憶體 flag(避免下個用戶誤觸 Opus 強制路徑)
+  try {
+    window._jyOpusDepth = false;
+    window._jyForceOpusOnly = false;
+    window._jyUserTier = null;
+    window._JY_IS_MEMBER = false;
+  } catch(e){}
   window._jyUpdateAuthUI && window._jyUpdateAuthUI();
 }
 

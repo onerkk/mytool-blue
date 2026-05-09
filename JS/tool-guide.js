@@ -211,8 +211,10 @@
           return;
         }
         if(data.code === 'LOGIN_REQUIRED'){ line.innerHTML = '☽ 登入 Google 即享免費體驗'; return; }
-        // v68.21 Bug #2 修:OOTK 沒免費,不再寫「三套各 1 次」
-        line.innerHTML = '☽ 七維度・塔羅 各免費 1 次 ・ 開鑰需付費解鎖';
+      // ★ Bug G 修:OOTK 已於 v69.5 開放免費 1 次(FREE_OOTK_LIMIT=1)
+      //   原文「☽ 七維度・塔羅 各免費 1 次 ・ 開鑰需付費解鎖」過時
+      //   未登入用戶看到會誤以為 OOTK 永遠付費,實際登入後三工具各享 1 次免費
+      line.innerHTML = '☽ 七維度・塔羅・開鑰 登入後各享 1 次免費';
       })
       .catch(function(){ var l=document.getElementById('jy-trial-line'); if(l) l.innerHTML='☽ 免費體驗 1 次'; });
   }

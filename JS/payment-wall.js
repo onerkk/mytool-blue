@@ -213,11 +213,47 @@
     var _fromArg   = _normalizeMode(mode);
     mode = _detected || _fromArg || 'full';
     type = type || 'single';  // v64.B:會員制下架,預設改 single(訪客只能買單次)
-    // v60-hotfix6：防連點
+    // v60-hotfix6:防連點
     if (_jyPaymentInFlight) {
       console.warn('[Payment] 已有付款建立中，忽略重複請求');
       return;
     }
+
+    // ★ Bug F 修:前端先檢查登入狀態,未登入直接顯示引導 modal,不打 worker
+    //   過去問題:未登入用戶點付費 → 打 worker /create-payment → 401 LOGIN_REQUIRED
+    //     → catch 走到 alert('付款建立失敗:請先登入...') → 用戶看 alert 不知道哪裡可登入
+    //   修法:跟 ai-analysis.js _handleOpusClickForMode (line 14572) LOGIN_REQUIRED 處理對齊
+    //     用美麗 modal + Google 登入按鈕,提升 UX
+    var _hasSession = false;
+    try {
+      _hasSession = !!(window._JY_SESSION_TOKEN || localStorage.getItem('_jy_session'));
+    } catch(_) {}
+    var _isAdminMode = !!window._JY_ADMIN_TOKEN;
+    if (!_hasSession && !_isAdminMode) {
+      _jyLog('PAYMENT BLOCKED no_session', { mode: mode, type: type });
+      // 移除可能殘留的付費 modal,避免疊加
+      ['jy-pay-modal','jy-used-modal','tarot-used-modal','ootk-used-modal'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.remove();
+      });
+      var _loginModal = document.createElement('div');
+      _loginModal.id = 'jy-pay-login-modal';
+      _loginModal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);padding:1rem';
+      _loginModal.innerHTML =
+        '<div style="max-width:340px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
+          '<div style="font-size:2.5rem;margin-bottom:.6rem">🔐</div>' +
+          '<h3 style="color:var(--c-gold,#d4af37);font-size:1.05rem;margin-bottom:.4rem;font-family:var(--f-display,serif)">付款前需要登入</h3>' +
+          '<div style="font-size:.78rem;color:var(--c-text-dim,#a09880);line-height:1.75;margin-bottom:1rem">登入 Google 帳號後即可購買<br>登入也方便您查看歷史紀錄與配額</div>' +
+          '<button onclick="document.getElementById(\'jy-pay-login-modal\').remove();if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin();" style="padding:.6rem 1.3rem;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));border:1.5px solid rgba(212,175,55,.4);color:var(--c-gold,#d4af37);font-size:.86rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;margin-bottom:.4rem">' +
+            '<svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>' +
+            'Google 登入' +
+          '</button>' +
+          '<br><button onclick="document.getElementById(\'jy-pay-login-modal\').remove()" style="padding:.5rem 1rem;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--c-text-dim,#a09880);font-size:.78rem;cursor:pointer;font-family:inherit">取消</button>' +
+        '</div>';
+      _loginModal.addEventListener('click', function(e) { if (e.target === _loginModal) _loginModal.remove(); });
+      document.body.appendChild(_loginModal);
+      return; // 不打 worker,直接結束
+    }
+
     _jyPaymentInFlight = true;
     // 清除所有相關 modal
     ['jy-pay-modal','jy-used-modal','tarot-used-modal'].forEach(function(id) {
@@ -1037,6 +1073,17 @@
             isOpusFetch: _isOpusFetch
           });
 
+          // ★ Bug I 修:fetch 成功就 reset depth flags(不等清 token 邏輯)
+          //   原本 _jyOpusDepth / _jyForceOpusOnly 只在 token 清除分支內 reset,
+          //   但免費路徑(沒 paid_token)走 line 1085 if(!_ptType)return 提前出去 → flag 漂浮 true
+          //   後果:用戶免費跑完 Opus 月度 → 下次免費再跑會誤帶 depth='opus' → 配額被多扣
+          //   修法:不論免費/付費,只要不是 followup,fetch 成功就 reset
+          //   (followup 不影響首輪 depth 判斷,且 followup 強制 Sonnet 不走 Opus)
+          if (!_isFollowUp) {
+            try { window._jyOpusDepth = false; } catch(_) {}
+            try { window._jyForceOpusOnly = false; } catch(_) {}
+          }
+
           // ── 清 token 邏輯(精準對應 token 類型) ──
           var _ptType = localStorage.getItem('_jy_paid_token_type');
           if (!_ptType) return;  // 沒 token 不用清
@@ -1071,15 +1118,11 @@
               localStorage.removeItem('_jy_paid_token_type');
               localStorage.removeItem('_jy_paid_token_at');
             } catch(_){}
-            // v64.F BUG #5 修補:Opus 單次解讀完成 → reset window._jyOpusDepth
-            //   原本 _jyAutoTriggerAfterPayment 設 _jyOpusDepth=true 後從不重設
-            //   邊界 case:用戶買 Opus 七維 → 解讀完 5 分鐘後再次免費跑七維
-            //              → fetch 攔截器看到 _jyOpusDepth=true 誤判為 Opus
-            //              → 60 秒安全網誤清 token(若有的話)
-            //   修法:Opus token 清掉時(代表 Opus 解讀已完成)同步 reset depth flag
+            // v64.F BUG #5 修補 + Bug I 修:_jyOpusDepth / _jyForceOpusOnly 已於上方
+            //   _aiFetchSuccessSeen=true 後統一 reset(不論免費/付費),此處不再重複
+            // 留 _jyLog 標記方便診斷哪個 token 在哪個 fetch 被清
             if (_ptType === 'opus_single' && _isOpusFetch) {
-              try { window._jyOpusDepth = false; } catch(_) {}
-              _jyLog('RESET _jyOpusDepth', { reason: 'opus single fetch completed' });
+              _jyLog('OPUS token cleared', { reason: 'opus single fetch completed' });
             }
           }
         }).catch(function(err){

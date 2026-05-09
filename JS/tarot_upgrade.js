@@ -5813,7 +5813,11 @@ enhanceTarot = function(tarot) {
         // v68.21.1 Bug #86 修:OOTK 深度需付費,顯示明確付費牆
         //   原本只查 'OOTK_PAYMENT_REQUIRED',但 worker 從沒回過這個 code(實際是 OPUS_PAYMENT_REQUIRED)
         //   結果:用戶配額用完點深度 → 看到「連線不順」誤導訊息,完全找不到付費按鈕
-        var _ootkOpusPrice = (window.JY_PRICES && window.JY_PRICES.OPUS_OOTK) || 120;
+        // ★ Bug A 修:fallback 從 120 改 140(對齊 worker.js PRICE_OPUS_OOTK=140)
+        //   過去寫死 120 是 v68.13 升價前的舊值,升價後沒同步改 → 用戶看 NT$120 但點付款是 140
+        //   雖然 pricing-loader 載入後 window.JY_PRICES.OPUS_OOTK 會是 140 蓋過 fallback,
+        //   但若 pricing-loader 抓 /pricing 失敗 + 沒有快取 → fallback 顯示 120 → 投訴
+        var _ootkOpusPrice = (window.JY_PRICES && window.JY_PRICES.OPUS_OOTK) || 140;
         wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
           '<div style="font-size:2rem;margin-bottom:.5rem">🔮</div>' +
           '<div style="font-size:.9rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">開鑰深度解析需單次購買</div>' +
@@ -5823,14 +5827,19 @@ enhanceTarot = function(tarot) {
           '</div>';
       } else if (err.code === 'OOTK_PAYMENT_REQUIRED' || (err.status === 429 && !window._JY_ADMIN_TOKEN)) {
         // 需要付費 → 彈付費牆
-        if (typeof _jyStartPayment === 'function') {
-          _jyStartPayment('ootk');
-        }
+        // ★ Bug B 修:過去同時做兩件事(_jyStartPayment + wrap.innerHTML 付費按鈕),
+        //   結果用戶關掉 modal 後仍看到一個重複的「需付費解鎖」按鈕,UI 凌亂。
+        //   修法:只渲染 wrap 內的「需付費解鎖」+「重試」按鈕(不主動彈 modal)
+        //         讓用戶自主點按鈕觸發 _jyStartOOTK(該函式內會走付費攔截器)
+        //   注意:err.code === 'OOTK_PAYMENT_REQUIRED' worker 從未回過,實際只有 status===429,
+        //         (worker 對 OOTK FREE_USED_UP 回 status=429 走進這裡)
+        //         保留 err.code 比對是 backward compat
+        var _ootkSinglePrice = (window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70;
         wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
           '<div style="font-size:2rem;margin-bottom:.5rem">🔑</div>' +
           '<div style="font-size:.9rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">開鑰之法需付費解鎖</div>' +
-          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem">NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70) + ' · 五次獨立讀盤(Book T 正統)</div>' +
-          '<button onclick="_jyStartOOTK()" style="padding:.6rem 1.2rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1px solid rgba(255,255,255,.1);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🔑 付費解鎖</button></div>';
+          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem">NT$' + _ootkSinglePrice + ' · 五次獨立讀盤(Book T 正統)</div>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'single\')" style="padding:.6rem 1.2rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1px solid rgba(255,255,255,.1);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🔑 付費解鎖</button></div>';
       } else {
         wrap.innerHTML = '<div style="text-align:center;padding:1rem"><div style="color:#f87171;font-size:.82rem;margin-bottom:.6rem">連線不順，請再試一次</div>' +
           '<button onclick="if(window._ootkTriggerAI && window._ootkResults) window._ootkTriggerAI(window._ootkResults)" style="padding:.6rem 1.2rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1px solid rgba(255,255,255,.1);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🔑 重試</button></div>';
