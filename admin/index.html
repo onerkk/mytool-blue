@@ -235,6 +235,24 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- ★ Bug L 修:收入統計面板 -->
+      <!--    過去問題:歐那只能看 cost-analysis(燒了多少美金成本)
+                       完全沒有「賺多少錢」的儀表板 -->
+      <!--    本面板對應:GET /admin/revenue-stats?days=7 -->
+      <div class="notify-section" style="border:1px solid rgba(34,197,94,.25);background:rgba(34,197,94,.03)">
+        <div class="notify-header">
+          <h3 style="color:#22c55e">💰 付款收入</h3>
+          <div style="display:flex;gap:6px">
+            <button onclick="loadRevenueStats(1)" style="padding:4px 10px;border-radius:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac;font-size:11px;cursor:pointer">今天</button>
+            <button onclick="loadRevenueStats(7)" style="padding:4px 10px;border-radius:6px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#86efac;font-size:11px;cursor:pointer;font-weight:600">7 天</button>
+            <button onclick="loadRevenueStats(30)" style="padding:4px 10px;border-radius:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac;font-size:11px;cursor:pointer">30 天(KV TTL 上限 7)</button>
+          </div>
+        </div>
+        <div id="revenueStatsBody" style="padding:12px;border-radius:8px;background:rgba(255,255,255,.02)">
+          <div style="font-size:11px;color:var(--text-dim);text-align:center">點上方按鈕載入</div>
+        </div>
+      </div>
+
       <div class="notify-section">
         <div class="notify-header">
           <h3>📋 最近使用紀錄</h3>
@@ -3009,6 +3027,8 @@ async function loadDashboard() {
     // ★ Bug J 修補:Dashboard 載入時自動跑付款診斷
     //   讓歐那一進 admin 就能立刻看到付款是否正常,不必特意切到 Worker 管理 tab
     try { loadPaymentDiagnostics(); } catch(_) {}
+    // ★ Bug L 修補:Dashboard 載入時自動跑付款收入(預設 7 天)
+    try { loadRevenueStats(7); } catch(_) {}
   } catch(e) {
     document.getElementById('notifyList').innerHTML = '<div class="empty">載入失敗: ' + e.message + '</div>';
   }
@@ -4556,6 +4576,118 @@ async function _markQuotaFailureResolved(tradeNo) {
     }
   } catch(e) {
     toast('錯誤:' + (e.message || '網路錯誤'));
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ★ Bug L 修補:付款收入統計
+// 對應 /admin/revenue-stats 端點
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadRevenueStats(days) {
+  const el = document.getElementById('revenueStatsBody');
+  if (!el) return;
+  days = days || 7;
+  el.innerHTML = '<div class="loading"></div>';
+
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/revenue-stats?token=${encodeURIComponent(adminToken)}&days=${days}`);
+    const data = await r.json();
+    if (!data.ok) {
+      el.innerHTML = '<div style="color:#ef4444;font-size:12px">查詢失敗:' + (data.error || '') + '</div>';
+      return;
+    }
+
+    const s = data.summary || {};
+    let html = '';
+
+    // ── 主要數字卡 ──
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">';
+    html += '<div style="padding:10px;border-radius:8px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);text-align:center">' +
+      '<div style="font-size:10px;color:var(--text-dim);margin-bottom:3px">過去 ' + s.days_back + ' 天進帳</div>' +
+      '<div style="font-size:20px;font-weight:700;color:#86efac">NT$ ' + (s.total_revenue_ntd || 0).toLocaleString() + '</div>' +
+    '</div>';
+    html += '<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--card-border);text-align:center">' +
+      '<div style="font-size:10px;color:var(--text-dim);margin-bottom:3px">付款筆數</div>' +
+      '<div style="font-size:20px;font-weight:700;color:var(--text)">' + (s.paid_orders || 0) + '</div>' +
+    '</div>';
+    html += '<div style="padding:10px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--card-border);text-align:center">' +
+      '<div style="font-size:10px;color:var(--text-dim);margin-bottom:3px">每筆平均</div>' +
+      '<div style="font-size:20px;font-weight:700;color:var(--text)">NT$ ' + (s.avg_amount_ntd || 0) + '</div>' +
+    '</div>';
+    html += '</div>';
+
+    // ── 按工具分組 ──
+    if (data.by_tool && Object.keys(data.by_tool).length > 0) {
+      const toolLabel = { 'full': '🔮 七維度', 'tarot_only': '🃏 塔羅', 'ootk': '🗝️ 開鑰', 'unknown': '❓ 未知' };
+      html += '<div style="margin-bottom:10px">';
+      html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">按工具分布</div>';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+      for (const [k, v] of Object.entries(data.by_tool)) {
+        html += '<div style="padding:6px 10px;border-radius:6px;background:rgba(108,123,255,.06);border:1px solid rgba(108,123,255,.2);font-size:11px">' +
+          (toolLabel[k] || k) + ' ' +
+          '<span style="font-weight:700;color:#86efac">NT$' + (v.revenue || 0).toLocaleString() + '</span>' +
+          ' <span style="color:var(--text-dim)">(' + (v.count || 0) + ' 筆)</span>' +
+        '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    // ── 按付款類型分組 ──
+    if (data.by_mode && Object.keys(data.by_mode).length > 0) {
+      const modeLabel = {
+        'single': '⚡ 標準單次',
+        'opus_single': '🔮 深度單次',
+        'followup_single': '💬 追問加購',
+        'subscription': '👑 標準會員',
+        'subscription_standard': '👑 標準會員',
+        'subscription_premium': '💎 高級會員',
+        'unknown': '❓ 未知'
+      };
+      html += '<div style="margin-bottom:10px">';
+      html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">按付款類型分布</div>';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+      for (const [k, v] of Object.entries(data.by_mode)) {
+        html += '<div style="padding:6px 10px;border-radius:6px;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);font-size:11px">' +
+          (modeLabel[k] || k) + ' ' +
+          '<span style="font-weight:700;color:#86efac">NT$' + (v.revenue || 0).toLocaleString() + '</span>' +
+          ' <span style="color:var(--text-dim)">(' + (v.count || 0) + ' 筆)</span>' +
+        '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    // ── 每日趨勢 ──
+    if (data.daily && data.daily.length > 0) {
+      html += '<div style="margin-bottom:10px">';
+      html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">每日進帳</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto">';
+      // 由新到舊
+      const sorted = [...data.daily].reverse();
+      for (const d of sorted) {
+        const _bar = Math.min(100, (d.revenue / Math.max(1, s.total_revenue_ntd)) * 200);
+        html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:5px;background:rgba(255,255,255,.02);font-size:11px">' +
+          '<div style="min-width:80px;color:var(--text-dim)">' + d.date + '</div>' +
+          '<div style="flex:1;height:8px;background:rgba(34,197,94,.06);border-radius:4px;overflow:hidden">' +
+            '<div style="height:100%;width:' + _bar + '%;background:linear-gradient(90deg,rgba(34,197,94,.6),rgba(34,197,94,.3))"></div>' +
+          '</div>' +
+          '<div style="min-width:90px;text-align:right;color:#86efac;font-weight:600">NT$' + d.revenue.toLocaleString() + '</div>' +
+          '<div style="min-width:35px;text-align:right;color:var(--text-dim);font-size:10px">' + d.count + ' 筆</div>' +
+        '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    // ── 註解 ──
+    if (s.paid_orders === 0) {
+      html += '<div style="font-size:11px;color:var(--text-dim);text-align:center;padding:8px">過去 ' + s.days_back + ' 天無付款紀錄</div>';
+    } else {
+      html += '<div style="font-size:10px;color:var(--text-dim);margin-top:8px;padding:6px;background:rgba(255,255,255,.02);border-radius:5px">' +
+        '⚠️ ' + (data.notes || '') + '</div>';
+    }
+
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = '<div style="color:#ef4444;font-size:12px">載入失敗:' + (e.message || '網路錯誤') + '</div>';
   }
 }
 
