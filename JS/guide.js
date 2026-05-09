@@ -6,6 +6,14 @@
 (function(){
 'use strict';
 
+// ★ Bug AN 修補:重複載入保護
+//   guide.js 不小心被載入兩次(SPA 行為 / import 衝突)會導致:
+//     - wrap('submitWithTool') 跑兩次 → window.submitWithTool 被多層 wrap
+//     - help button 跑兩次(已被 Bug AM 擋掉,但 CSS / 教學 timer 仍會重複)
+//   修法:檢查 window._jyGuideLoaded flag,已載入就 return
+if(window._jyGuideLoaded)return;
+window._jyGuideLoaded=true;
+
 // ── CSS ──
 var css=document.createElement('style');
 css.textContent='\
@@ -313,6 +321,7 @@ return h;
 }
 
 // ═══ Show / Close ═══
+var _guideObserver=null; // ★ Bug AD 修補:把 observer 提到外層,讓 closeGuide 能 disconnect
 function showGuide(){
   var el=document.getElementById('jy-gov');
   if(!el){
@@ -322,8 +331,10 @@ function showGuide(){
     el=document.getElementById('jy-gov');
     // Scroll reveal inside overlay
     var secs=el.querySelectorAll('[data-s]');
-    var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('vis')})},{root:el,threshold:0.12});
-    secs.forEach(function(s){obs.observe(s)});
+    // ★ Bug AD 修補:先清舊 observer(防止重複 showGuide 累積)
+    if(_guideObserver){try{_guideObserver.disconnect()}catch(_){}}
+    _guideObserver=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('vis')})},{root:el,threshold:0.12});
+    secs.forEach(function(s){_guideObserver.observe(s)});
   }
   document.body.style.overflow='hidden';
   requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('v')})});
@@ -336,7 +347,17 @@ function closeGuide(){
   //   修法:flag 移到 closeGuide 內,且只在 el 存在時設
   if(el){
     el.classList.remove('v');document.body.style.overflow='';
-    setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},400);
+    // ★ Bug AB 修補:setTimeout 內再驗證 modal 是否被重新顯示
+    //   情境:用戶 400ms 內又呼叫 showGuide() → el 仍在 → 跳過建立區塊 → 加回 .v
+    //         但 setTimeout 仍會跑 → 砍掉整個 modal(用戶看到突然消失)
+    //   修法:移除前檢查 .v class 是否回來,有則放棄移除
+    setTimeout(function(){
+      if(el.parentNode && !el.classList.contains('v')){
+        el.parentNode.removeChild(el);
+        // ★ Bug AD 修補:el 真被砍才 disconnect observer
+        if(_guideObserver){try{_guideObserver.disconnect()}catch(_){}_guideObserver=null}
+      }
+    },400);
     try{localStorage.setItem('_jy_guide_seen','1')}catch(_){}
   }
 }
@@ -351,11 +372,13 @@ if(!localStorage.getItem('_jy_guide_seen')){
 
 // Help button
 // ★ Bug WW 修補:body 可能還沒 ready(若 guide.js 放 <head>),加防呆
+// ★ Bug AM 修補:檢查 .jy-hb 是否已存在,避免重複呼叫產生兩個按鈕
 function _addHelpButton(){
   if(!document.body){
     document.addEventListener('DOMContentLoaded',_addHelpButton);
     return;
   }
+  if(document.querySelector('.jy-hb')) return; // 已存在不重複建
   var hb=document.createElement('button');
   hb.className='jy-hb';hb.textContent='?';hb.title='使用說明';hb.onclick=showGuide;
   document.body.appendChild(hb);
@@ -386,6 +409,11 @@ function showQH(msg){
 }
 window._qA=function(go){
   var el=document.getElementById('jy-qov');if(el){el.classList.remove('v');setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},300)}
+  // ★ Bug AH 修補:flag 在用戶真的回應(按按鈕)時才設
+  //   原邏輯 line 428:flag 在 showQH 顯示前就設 → 用戶顯示後立刻刷新頁面(沒看到內容)
+  //         → flag 已殘留 sessionStorage → 同分頁再提交差問題不會再提示
+  //   修法:flag 移到 _qA(用戶按按鈕代表已看過提示)
+  try{sessionStorage.setItem('_jy_q_hint_shown','1')}catch(_){}
   if(_qR){_qR(go);_qR=null}
 };
 
@@ -406,13 +434,13 @@ function wrap(fn){
       var q=(qEl&&qEl.value)?qEl.value.trim():'';
       if(!q&&typeof window.selectedPresetQ==='string')q=window.selectedPresetQ.trim();
       if(!q){orig.apply(this,arguments);return}
-      // ★ Bug II 修補:只有真的 hint 命中時才設 _jy_q_hint_shown
-      //   原邏輯:不論有無 hint 都在 line 379 無條件設 flag → 第二次品質差的問題永遠不會被攔截
-      //   修法:flag 只在「用戶看過提示」時設,沒命中 hint 就不設(下次品質差仍會攔截)
+      // ★ Bug II + AH 修補:flag 設在用戶按按鈕時(_qA 內),非顯示前
+      //   Bug II 原邏輯:wrap 末尾無條件設 flag → 第二次品質差永遠不再攔截
+      //   Bug AH 變體:flag 在 showQH 前就設 → 用戶顯示後刷新就錯失提示
+      //   修法:wrap 不設 flag,只在 _qA 真實回應時設
       if(typeof _checkQuestionQuality==='function'&&!sessionStorage.getItem('_jy_q_hint_shown')){
         var hint=_checkQuestionQuality(q);
         if(hint){
-          sessionStorage.setItem('_jy_q_hint_shown','1');
           var go=await showQH(hint);
           if(!go){if(qEl){qEl.focus();qEl.select()}return}
         }
