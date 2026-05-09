@@ -349,6 +349,16 @@ document.body.appendChild(hb);
 var _qR=null;
 function showQH(msg){
   return new Promise(function(resolve){
+    // ★ Bug LL 修補:連點防護
+    //   原本:_qR 是模組級變數,連續呼叫 showQH 會覆寫,第一次的 promise 永遠不 resolve
+    //   情境:用戶連點兩次「直接送出」按鈕(第一次 modal 還在跑 await showQH)
+    //         → 第二次 wrap 又呼叫 showQH → _qR 被覆寫 → 第一次的 promise 卡住
+    //         → 導致 await 永遠不結束、後續 orig.apply 永遠不執行(用戶看 modal 關了卻無反應)
+    //   修法:看到舊 _qR 還在,先 resolve(false)放掉舊 promise(視為「修改問題」放棄)
+    if(_qR){
+      try{_qR(false)}catch(_){}
+      _qR=null;
+    }
     _qR=resolve;
     var old=document.getElementById('jy-qov');if(old)old.parentNode.removeChild(old);
     var d=document.createElement('div');d.id='jy-qov';d.className='jy-qov';
@@ -363,20 +373,33 @@ window._qA=function(go){
 };
 
 // ═══ Wrap submits ═══
+// ★ Bug JJ 修補:setInterval 加最大重試次數,避免找不到函式時永遠不釋放
+//   雖然 ui.js 一定會有這兩個函式,但保險起見最多試 50 次(10 秒)後放棄
 function wrap(fn){
+  var attempts=0;
   var t=setInterval(function(){
-    if(typeof window[fn]!=='function')return;clearInterval(t);
+    if(typeof window[fn]!=='function'){
+      if(++attempts>=50){clearInterval(t);console.warn('[guide] wrap '+fn+' giveup after 10s')}
+      return;
+    }
+    clearInterval(t);
     var orig=window[fn];
     window[fn]=async function(){
       var qEl=document.getElementById('f-question');
       var q=(qEl&&qEl.value)?qEl.value.trim():'';
       if(!q&&typeof window.selectedPresetQ==='string')q=window.selectedPresetQ.trim();
       if(!q){orig.apply(this,arguments);return}
+      // ★ Bug II 修補:只有真的 hint 命中時才設 _jy_q_hint_shown
+      //   原邏輯:不論有無 hint 都在 line 379 無條件設 flag → 第二次品質差的問題永遠不會被攔截
+      //   修法:flag 只在「用戶看過提示」時設,沒命中 hint 就不設(下次品質差仍會攔截)
       if(typeof _checkQuestionQuality==='function'&&!sessionStorage.getItem('_jy_q_hint_shown')){
         var hint=_checkQuestionQuality(q);
-        if(hint){sessionStorage.setItem('_jy_q_hint_shown','1');var go=await showQH(hint);if(!go){if(qEl){qEl.focus();qEl.select()}return}}
+        if(hint){
+          sessionStorage.setItem('_jy_q_hint_shown','1');
+          var go=await showQH(hint);
+          if(!go){if(qEl){qEl.focus();qEl.select()}return}
+        }
       }
-      sessionStorage.setItem('_jy_q_hint_shown','1');
       orig.apply(this,arguments);
     };
   },200);
