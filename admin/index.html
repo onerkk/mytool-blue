@@ -5330,7 +5330,9 @@ async function loadRAGAudit(limit) {
       txt += `Question: ${e.question}\n`;
       txt += `Retrieved (${e.retrievedCount} chunks):\n`;
       (e.retrievedSources || []).slice(0, 10).forEach(s => {
-        txt += `  • [${s.source}] score=${(s.score||0).toFixed(3)} ${s.id} (${s.var})\n`;
+        var _sys = s.systems ? ' systems=[' + s.systems + ']' : '';
+        var _qts = s.qTypes ? ' qTypes=[' + s.qTypes + ']' : '';
+        txt += `  • [${s.source}] score=${(s.score||0).toFixed(3)} ${s.id} (${s.var})${_sys}${_qts}\n`;
       });
       txt += '\n';
     });
