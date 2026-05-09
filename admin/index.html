@@ -4483,11 +4483,18 @@ async function loadPaymentDiagnostics() {
     try { quotaData = await quotaResp.json(); } catch(_) {}
 
     // ── 整體狀態判斷 ──
+    // ★ Bug HH 修補:區分 mac_mismatch(嚴重)vs rtn_code_not_1(正常 — 用戶付款失敗)
     const _envProblem = webhookData && webhookData.envStatus &&
       (!webhookData.envStatus.hashKey_set || !webhookData.envStatus.hashIV_set);
+    const _kindCounts = (webhookData && webhookData.kindCounts) || {};
+    const _macMismatchCount = _kindCounts.mac_mismatch || 0;
+    const _rtnCodeFailCount = _kindCounts.rtn_code_not_1 || 0;
     const _webhookErrCount = (webhookData && webhookData.errorCount) || 0;
     const _quotaFailCount = (quotaData && quotaData.count) || 0;
-    const _hasIssue = _envProblem || _webhookErrCount > 0 || _quotaFailCount > 0;
+    // 判斷「有問題」:env 問題 / mac mismatch / quota 失敗(rtn_code 不算「問題」,只是用戶失敗)
+    const _hasIssue = _envProblem || _macMismatchCount > 0 || _quotaFailCount > 0;
+    // 但仍要顯示 rtn_code 紀錄(放詳細區塊),所以 _hasDisplay 比 _hasIssue 寬鬆
+    const _hasDisplay = _hasIssue || _rtnCodeFailCount > 0;
 
     // ── 摘要區塊 ──
     let summaryHtml = '';
@@ -4497,11 +4504,20 @@ async function loadPaymentDiagnostics() {
     } else if (_envProblem) {
       summaryHtml = '<div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:6px">❌ 嚴重:ECPay 環境變數設定不完整</div>' +
         '<div style="font-size:12px;color:var(--text);line-height:1.6">' + (webhookData.diagnosis || '') + '</div>';
-    } else if (_webhookErrCount > 0 || _quotaFailCount > 0) {
+    } else if (_macMismatchCount > 0 || _quotaFailCount > 0) {
       summaryHtml = '<div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:6px">⚠️ 有付款問題待處理</div>' +
         '<div style="font-size:12px;color:var(--text);line-height:1.6">' +
-          (_webhookErrCount > 0 ? '・webhook mac mismatch:<strong>' + _webhookErrCount + '</strong> 筆<br>' : '') +
+          (_macMismatchCount > 0 ? '・webhook mac mismatch:<strong>' + _macMismatchCount + '</strong> 筆(嚴重)<br>' : '') +
           (_quotaFailCount > 0 ? '・付款已收但配額沒落:<strong>' + _quotaFailCount + '</strong> 筆<br>' : '') +
+          (_rtnCodeFailCount > 0 ? '・<span style="color:#fde68a">用戶付款失敗(信用卡被拒等):<strong>' + _rtnCodeFailCount + '</strong> 筆(正常範圍)</span><br>' : '') +
+        '</div>';
+    } else if (_rtnCodeFailCount > 0) {
+      // 只有 rtn_code_not_1,不算 issue 但要顯示
+      summaryHtml = '<div style="color:#22c55e;font-weight:700;font-size:14px;margin-bottom:4px">✅ 系統正常 · 有用戶付款失敗紀錄</div>' +
+        '<div style="font-size:11px;color:var(--text-dim)">' +
+          'merchantId: <code>' + (webhookData.envStatus?.merchantId || '?') + '</code>' +
+          (webhookData.envStatus?.merchantId_is_default_test ? ' <span style="color:#fbbf24">(測試帳號)</span>' : '') +
+          ' · hashKey/IV 已設定 · 用戶付款失敗 ' + _rtnCodeFailCount + ' 筆(正常範圍,信用卡被拒等)' +
         '</div>';
     } else {
       summaryHtml = '<div style="color:#22c55e;font-weight:700;font-size:14px;margin-bottom:4px">✅ 付款流程正常</div>' +
@@ -4513,22 +4529,47 @@ async function loadPaymentDiagnostics() {
     }
     summaryEl.innerHTML = summaryHtml;
 
-    // ── 詳細區塊(只在有問題時展開) ──
-    if (_hasIssue) {
+    // ── 詳細區塊(有任何展開條件就顯示) ──
+    if (_hasDisplay) {
       detailsEl.style.display = 'block';
 
       // webhook 錯誤列表
+      // ★ Bug HH 修補:按 kind 區分顯示(mac_mismatch 紅色 vs rtn_code_not_1 黃色)
       if (_webhookErrCount > 0 && webhookBlock) {
-        let html = '<div style="font-size:12px;color:#ef4444;font-weight:700;margin-bottom:6px">webhook mac mismatch (最近 ' + Math.min(_webhookErrCount, 20) + ' 筆)</div>';
-        html += '<div style="max-height:240px;overflow-y:auto;border:1px solid rgba(239,68,68,.2);border-radius:6px">';
-        for (const err of (webhookData.errors || []).slice(0, 20)) {
-          const _t = err.ts ? new Date(err.ts).toISOString().slice(0, 19).replace('T', ' ') : '?';
-          html += '<div style="padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px">' +
-            '<div style="color:#fca5a5;font-weight:600">' + _t + ' · tradeNo=' + (err.tradeNo || '?') + '</div>' +
-            '<div style="color:var(--text-dim);margin-top:2px">' + (err.hint || '') + '</div>' +
-          '</div>';
+        const _kc = (webhookData.kindCounts) || {};
+        const _macList = (webhookData.errors || []).filter(function(e) { return !e.kind || e.kind === 'mac_mismatch'; });
+        const _rtnList = (webhookData.errors || []).filter(function(e) { return e.kind === 'rtn_code_not_1'; });
+        let html = '';
+
+        // mac mismatch 區塊(紅色,嚴重)
+        if (_macList.length > 0) {
+          html += '<div style="font-size:12px;color:#ef4444;font-weight:700;margin-bottom:6px">❌ webhook mac mismatch (' + _macList.length + ' 筆,嚴重 — hashKey/IV 設錯)</div>';
+          html += '<div style="max-height:200px;overflow-y:auto;border:1px solid rgba(239,68,68,.2);border-radius:6px;margin-bottom:10px">';
+          for (const err of _macList.slice(0, 20)) {
+            const _t = err.ts ? new Date(err.ts).toISOString().slice(0, 19).replace('T', ' ') : '?';
+            html += '<div style="padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px">' +
+              '<div style="color:#fca5a5;font-weight:600">' + _t + ' · tradeNo=' + (err.tradeNo || '?') + '</div>' +
+              '<div style="color:var(--text-dim);margin-top:2px">' + (err.hint || '') + '</div>' +
+            '</div>';
+          }
+          html += '</div>';
         }
-        html += '</div>';
+
+        // rtn_code_not_1 區塊(黃色,正常範圍 — 用戶付款失敗)
+        if (_rtnList.length > 0) {
+          html += '<div style="font-size:12px;color:#fbbf24;font-weight:700;margin-bottom:6px">🟡 用戶付款失敗 (' + _rtnList.length + ' 筆,信用卡被拒/餘額不足等,非系統問題)</div>';
+          html += '<div style="max-height:200px;overflow-y:auto;border:1px solid rgba(251,191,36,.2);border-radius:6px">';
+          for (const err of _rtnList.slice(0, 20)) {
+            const _t = err.ts ? new Date(err.ts).toISOString().slice(0, 19).replace('T', ' ') : '?';
+            html += '<div style="padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05);font-size:11px">' +
+              '<div style="color:#fde68a;font-weight:600">' + _t + ' · tradeNo=' + (err.tradeNo || '?') + ' · RtnCode=' + (err.rtnCode || '?') + '</div>' +
+              '<div style="color:var(--text-dim);margin-top:2px">RtnMsg: ' + ((err.rtnMsg || '').replace(/</g,'&lt;')) + '</div>' +
+              '<div style="color:var(--text-dim);margin-top:2px;font-size:10px;opacity:.8">' + (err.hint || '').replace(/</g,'&lt;') + '</div>' +
+            '</div>';
+          }
+          html += '</div>';
+        }
+
         webhookBlock.innerHTML = html;
       } else if (webhookBlock) {
         webhookBlock.innerHTML = '';
