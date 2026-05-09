@@ -25492,6 +25492,24 @@ async function _triggerTarotFollowUp() {
       '</div>';
   }
 
+  // ★ Bug W 修補:fu_free owner 不符的專屬 UI(不能跟「免費已用完」混淆)
+  //   情境:用戶 A 跑完解讀拿到 resultId=R → 分享連結給 B
+  //         B 點開後想直接追問 → worker 看到 fu_free_owner:R !== B 的 userKey
+  //         → 回 FU_FREE_OWNER_MISMATCH(precheck)或 status=403 + 同 code(streaming)
+  //   原問題:前端把這個 code 當 FOLLOWUP_NEED_PAYMENT 處理 → 顯示「免費追問已用完,加購 NT$15」
+  //          → B 付了錢但 worker 仍會擋(owner 不符 → 配額也不會給 B 用)
+  //          → B 白付一次 NT$15 + 看不到追問結果
+  //   修法:顯示專屬訊息「此追問權不屬於當前帳號,請用解讀的原帳號登入」
+  //         不要顯示付費按鈕(付了也沒用)
+  function _showOwnerMismatchUI() {
+    fuArea.innerHTML =
+      '<div style="text-align:center;padding:1.2rem 1rem">' +
+        '<div style="font-size:1.6rem;margin-bottom:.4rem">🔒</div>' +
+        '<div style="font-size:.92rem;color:#f87171;font-weight:700;margin-bottom:.35rem">此追問權不屬於當前帳號</div>' +
+        '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:.9rem">這份解讀是別的帳號完成的,免費追問權只能由原帳號使用<br>請登入做這份解讀的原本帳號,或重新做一次解讀</div>' +
+      '</div>';
+  }
+
   // ── 預檢追問額度（非 admin）──
   // ★ v46：追問獨立於所有配額池，走 resultId + fu token 路線
   //   成功條件只有兩個：(1) fu token 有效 (2) fu_free:{resultId} 存在
@@ -25518,6 +25536,9 @@ async function _triggerTarotFollowUp() {
         // ★ v46 bug 修:未登入的 case 要引導登入,不能叫使用者付錢
         if (checkData.code === 'LOGIN_REQUIRED') {
           _showLoginRequired();
+        } else if (checkData.code === 'FU_FREE_OWNER_MISMATCH') {
+          // ★ Bug W 修補:owner 不符顯示專屬 UI(不要叫用戶付錢,付了也沒用)
+          _showOwnerMismatchUI();
         } else {
           // FOLLOWUP_NEED_PAYMENT 或其他:統一路由到付費牆
           _showFollowUpPaywall();
@@ -25834,6 +25855,15 @@ async function _triggerTarotFollowUp() {
         try { clearInterval(_fuBarTimer); } catch(_) {}
         try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
         _showFollowUpPaywall();
+        window._jyTarotFollowUps--;
+        _unlockFuBtn();
+        return;
+      }
+      if (data.error && data.code === 'FU_FREE_OWNER_MISMATCH') {
+        // ★ Bug W 修補:owner 不符顯示專屬 UI(不要叫用戶付錢)
+        try { clearInterval(_fuBarTimer); } catch(_) {}
+        try { clearTimeout(_fuAbortTimer); } catch(_) {}
+        _showOwnerMismatchUI();
         window._jyTarotFollowUps--;
         _unlockFuBtn();
         return;

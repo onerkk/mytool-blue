@@ -232,7 +232,8 @@
     if (!_hasSession && !_isAdminMode) {
       _jyLog('PAYMENT BLOCKED no_session', { mode: mode, type: type });
       // 移除可能殘留的付費 modal,避免疊加
-      ['jy-pay-modal','jy-used-modal','tarot-used-modal','ootk-used-modal'].forEach(function(id) {
+      // ★ Bug Z 修補:清單加 jy-pay-login-modal 自己,避免用戶連點時 modal 疊加
+      ['jy-pay-modal','jy-used-modal','tarot-used-modal','ootk-used-modal','jy-pay-login-modal'].forEach(function(id) {
         var el = document.getElementById(id); if (el) el.remove();
       });
       var _loginModal = document.createElement('div');
@@ -452,6 +453,24 @@
           body: JSON.stringify({ tradeNo: tradeNo, session_token: _pollSt })
         });
         var data = await resp.json();
+        // ★ Bug V 修補:owner 不符立即停止輪詢
+        //   情境:用戶 A 付款拿到 tradeNo → 誤分享連結給 B → B polling A 的訂單
+        //         worker 回 paid:false + code:'OWNER_MISMATCH' → polling 浪費 200 次 KV 配額
+        //   修法:看到 OWNER_MISMATCH 立即停止 + 提示用戶
+        if (data.code === 'OWNER_MISMATCH') {
+          clearInterval(_jyPayPollTimer); _jyPayPollTimer = null;
+          var hintMismatch = document.getElementById('jy-pay-autodetect');
+          if (hintMismatch) hintMismatch.innerHTML = '<span style="color:#f87171">⚠️ 此訂單不屬於當前帳號,請確認登入的帳號正確</span>';
+          // 順手清掉誤匹配的 pending(此 tradeNo 不屬於當前用戶)
+          try {
+            var _pendingNow = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null');
+            if (_pendingNow && _pendingNow.tradeNo === tradeNo) {
+              localStorage.removeItem('_jy_pending_payment');
+              _jyLog('CLEAR pending OWNER_MISMATCH', { tradeNo: tradeNo });
+            }
+          } catch(_) {}
+          return;
+        }
         if (data.paid) {
           clearInterval(_jyPayPollTimer); _jyPayPollTimer = null;
           _jyUnlockAndTrigger(); // 走跟手動按鈕同樣的解鎖 + 觸發邏輯
@@ -512,6 +531,24 @@
             throw new Error('worker 暫時故障 (' + r.status + ')');
           }
           var d = await r.json();
+          // ★ Bug Y 修補:owner 不符顯示專屬訊息(對齊 Bug V 在 polling 的處理)
+          //   情境:用戶 A 付款 → 連結誤分享給 B → B 看到等待卡按重新驗證
+          //         worker 回 paid:false + code:'OWNER_MISMATCH'
+          //   原本顯示「系統仍未收到付款通知」誤導 B → B 以為自己付款失敗
+          //   修法:看到 OWNER_MISMATCH 顯示專屬訊息 + 清掉誤匹配的 pending
+          if (d.code === 'OWNER_MISMATCH') {
+            var cardOM = document.getElementById('jy-paid-retry-card');
+            if (cardOM) cardOM.remove();
+            try {
+              var _pendingNowOM = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null');
+              if (_pendingNowOM && _pendingNowOM.tradeNo === tNo) {
+                localStorage.removeItem('_jy_pending_payment');
+                _jyLog('CLEAR pending OWNER_MISMATCH (manual)', { tradeNo: tNo });
+              }
+            } catch(_) {}
+            alert('此訂單不屬於當前帳號\n\n如果你剛換登入帳號或這個連結是別人分享的,請用原本付款的帳號登入再重新驗證。');
+            return;
+          }
           if (d.paid) {
             // 付款已成立 → 走完整解鎖
             var card = document.getElementById('jy-paid-retry-card');
