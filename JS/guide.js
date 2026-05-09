@@ -330,20 +330,37 @@ function showGuide(){
 }
 function closeGuide(){
   var el=document.getElementById('jy-gov');
-  if(el){el.classList.remove('v');document.body.style.overflow='';setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},400)}
+  // ★ Bug UU + YY 修補:flag 只在「modal 真存在且被關閉」時設
+  //   Bug UU 原邏輯:showGuide() 跟 setItem 同行 → 用戶 600ms 內關瀏覽器就永遠看不到教學
+  //   Bug YY 變體:外部腳本誤呼叫 _closeGuide() → modal 不存在但仍設 flag → 用戶錯失自動教學
+  //   修法:flag 移到 closeGuide 內,且只在 el 存在時設
+  if(el){
+    el.classList.remove('v');document.body.style.overflow='';
+    setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},400);
+    try{localStorage.setItem('_jy_guide_seen','1')}catch(_){}
+  }
 }
 window._showGuide=showGuide;
 window._closeGuide=closeGuide;
 
 // First visit
+// ★ Bug UU 修補配套:這裡只觸發顯示,不設 flag(flag 在 closeGuide 設)
 if(!localStorage.getItem('_jy_guide_seen')){
-  setTimeout(function(){showGuide();localStorage.setItem('_jy_guide_seen','1')},600);
+  setTimeout(function(){showGuide()},600);
 }
 
 // Help button
-var hb=document.createElement('button');
-hb.className='jy-hb';hb.textContent='?';hb.title='使用說明';hb.onclick=showGuide;
-document.body.appendChild(hb);
+// ★ Bug WW 修補:body 可能還沒 ready(若 guide.js 放 <head>),加防呆
+function _addHelpButton(){
+  if(!document.body){
+    document.addEventListener('DOMContentLoaded',_addHelpButton);
+    return;
+  }
+  var hb=document.createElement('button');
+  hb.className='jy-hb';hb.textContent='?';hb.title='使用說明';hb.onclick=showGuide;
+  document.body.appendChild(hb);
+}
+_addHelpButton();
 
 // ═══ Question Quality Modal ═══
 var _qR=null;
