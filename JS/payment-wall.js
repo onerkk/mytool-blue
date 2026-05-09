@@ -371,9 +371,14 @@
     //         → _triggerAIDeep 存在但 ai-deep-result div 不存在 → 21296 行 return undefined
     //         → 呼叫端誤判 return true → 用戶看到 banner 但什麼都沒發生
     //   修法:呼叫前先確認對應的結果 div 存在,不存在直接 return false 走綠卡 fallback
-    //   注意:塔羅是 r-content,OOTK 是 ootk-result-area,七維是 ai-deep-result
+    //   注意:塔羅是 r-content,OOTK 是 tarot-ai-wrap(共用塔羅 wrapper),七維是 ai-deep-result
+    //   ★ Bug BB 修補:OOTK 從 'ootk-result-area' 修正為 'tarot-ai-wrap'(對齊 tarot_upgrade.js 5518 實際 ID)
+    //     原本誤註解 ootk-result-area 全 codebase 從不存在,getElementById 永遠 null
+    //     → OOTK 永遠 return false 走綠卡 fallback(這個結果其實是正確的,但邏輯名實不符)
+    //     OOTK 流程需要先選 significator + 抽 35 張牌,直接 auto-trigger 沒抽牌會失敗
+    //     所以仍 return false 走綠卡 fallback 讓用戶手動進 OOTK 流程,只是改成「正確的偵測」
     var _resultDivId = mode === 'tarot_only' ? 'r-content'
-                     : mode === 'ootk' ? 'ootk-result-area'
+                     : mode === 'ootk' ? 'tarot-ai-wrap'
                      : 'ai-deep-result';
     var _resultDiv = document.getElementById(_resultDivId);
     if (!_resultDiv) {
@@ -1025,13 +1030,19 @@
           }
 
           // ★ OOTK 429
+          // ★ Bug BB 修補:選擇器從 .ootk-result / #ootk-result-wrap 改為 #tarot-ai-wrap
+          //   (對齊 tarot_upgrade.js 5518 實際 ID,前述兩個全 codebase 從不存在)
+          //   情境縮窄:只在當前是 OOTK 工具時觸發(用 _detectCurrentTool 確認),避免誤攔截塔羅
           if (txt.indexOf('免費') >= 0 && txt.indexOf('已用完') >= 0) {
-            var ootkWrap = node.closest('.ootk-result') || node.closest('#ootk-result-wrap');
-            if (ootkWrap) {
-              setTimeout(function() {
-                ootkWrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' + _buildPaywallHTML('ootk') + '</div>';
-              }, 30);
-              return;
+            var _curTool = (typeof _detectCurrentTool === 'function') ? _detectCurrentTool() : null;
+            if (_curTool === 'ootk') {
+              var ootkWrap = node.closest('#tarot-ai-wrap') || document.getElementById('tarot-ai-wrap');
+              if (ootkWrap) {
+                setTimeout(function() {
+                  ootkWrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' + _buildPaywallHTML('ootk') + '</div>';
+                }, 30);
+                return;
+              }
             }
           }
         }
@@ -1448,9 +1459,21 @@
         //         雖然配額仍按 userKey 累加實際能用,但 _jy_paid_token_type 也是舊的
         //         會導致清 token 邏輯誤判,連帶 _jy_last_paid 也對不上,顯示卡片價格 / 繼續按鈕 mode 錯
         //   修法:已驗證付款 → 直接覆寫,讓新 token 永遠是最新的(舊 token 反正配額已扣完 / 已被燒)
-        localStorage.setItem('_jy_paid_token', paidTradeNo);
-        localStorage.setItem('_jy_paid_token_type', _restoredType);
-        localStorage.setItem('_jy_paid_token_at', String(Date.now()));
+        // ★ Bug EE 修補:setItem 加 try-catch + _jyLog
+        //   原本 line 1462-1464 三個 setItem 沒 try-catch
+        //   localStorage.setItem 在 quota 滿時會 throw → token 寫入後 type/at 沒寫
+        //   → 後續走 fetch hook 時 _ptType 為 null → 清 token 邏輯誤判
+        try {
+          localStorage.setItem('_jy_paid_token', paidTradeNo);
+          localStorage.setItem('_jy_paid_token_type', _restoredType);
+          localStorage.setItem('_jy_paid_token_at', String(Date.now()));
+          _jyLog('SET paid_token (verified)', { token: paidTradeNo, type: _restoredType, ts: Date.now() });
+        } catch(e) {
+          _jyLog('SET paid_token FAILED (verified)', { error: e.message });
+          // 失敗時不繼續往下(沒 token 寫成功,顯示成功 UI 會誤導)
+          alert('儲存付款資訊失敗(可能瀏覽器存儲空間已滿),請清理瀏覽器資料後重試');
+          return;
+        }
         // 同步更新 _jy_last_paid 備份(_jyUnlockAndTrigger 失敗 fallback 用)
         try {
           localStorage.setItem('_jy_last_paid', JSON.stringify({
@@ -1581,10 +1604,12 @@
           m.addEventListener('click', function(ev) { if (ev.target === m) m.remove(); });
           document.body.appendChild(m);
         } else {
-          // ★ v43：Worker 確認是會員 → 更新 localStorage（修復 _jy_sub_expires 未寫入的 race condition）
-          if (data.subscription) {
-            try { localStorage.setItem('_jy_sub_expires', String(Date.now() + 86400000 * 7)); } catch(_e){}
-          }
+          // ★ Bug AA 修補:移除「寫死 7 天 _jy_sub_expires」的誤導邏輯
+          //   原邏輯:if (data.subscription) { localStorage.setItem('_jy_sub_expires', Date.now() + 7 days) }
+          //   問題:worker check 回 subscription:true 時實際 expiresAt 可能是 28 天後 / 30 天後 / 1 天後
+          //         寫死 7 天會讓 _jy_sub_expires 短暫不準(雖然 ui.js loadSubStatus 後續會覆蓋)
+          //   權威來源:ui.js loadSubStatus 從 worker /check-subscription 拿真實 expiresAt 寫入
+          //   修法:移除這段寫死邏輯,讓 ui.js 主導 _jy_sub_expires 的維護
           var newEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
           newEvent._jyPayChecked = true;
           btn.dispatchEvent(newEvent);
