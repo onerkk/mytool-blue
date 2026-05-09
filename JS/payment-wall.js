@@ -9,6 +9,36 @@
 
   var WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
 
+  // ═══════════════════════════════════════════════════════════════
+  // v68.21.x Bug #1 修:_jyLog 函式定義(過去缺失,造成 9 處呼叫拋 ReferenceError)
+  // ───────────────────────────────────────────────────────────────
+  // 過去問題:此檔內 _jyLog('SET paid_token', ...) / _jyLog('CLEAR paid_token', ...) 等
+  //   9 處呼叫但函式沒定義,strict mode 下直接 ReferenceError 拋出,
+  //   導致最關鍵的 line 1031 if(_shouldClear){ _jyLog(...); localStorage.removeItem(...); }
+  //   _jyLog 拋例外 → 後面的 removeItem 永遠不執行 → paid_token 殘留
+  // 後果:用戶付款 → AI 跑成功 → token 該清沒清 → 後續免費路徑被誤判為付費
+  //   → 用戶看到「免費已用完」假錯誤,投訴「付了錢系統壞了」
+  // 修法:補上函式,內部全 try/catch 包覆,絕不向外拋例外影響呼叫端
+  //   1. console.log 方便開發者 F12 看
+  //   2. 寫入 localStorage._jy_log(環形緩衝,最多 200 筆),供 jingyue.uk/log.html 讀取
+  // ═══════════════════════════════════════════════════════════════
+  function _jyLog(tag, data) {
+    try { console.log('[JY/' + tag + ']', data == null ? '' : data); } catch(_) {}
+    try {
+      var raw = localStorage.getItem('_jy_log');
+      var arr = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(arr)) arr = [];
+      arr.push({ ts: Date.now(), tag: String(tag || ''), data: data || null });
+      // 環形緩衝:超過 200 筆只保留最近 200(避免 localStorage 5MB 上限被吃光)
+      if (arr.length > 200) arr = arr.slice(-200);
+      localStorage.setItem('_jy_log', JSON.stringify(arr));
+    } catch(_) {
+      // localStorage 寫入失敗(quota / disabled / SecurityError)不影響流程
+    }
+  }
+  // 暴露給其他檔案使用(例如 ui.js 也想記錄 token 事件)
+  try { window._jyLog = _jyLog; } catch(_) {}
+
   // ═══ 定價：優先從 window.JY_PRICES（由 pricing-loader.js 從 worker /pricing 動態載入）讀取 ═══
   // 斷網或 pricing-loader 未載入時使用硬編保底值（與 worker.js v52 同步）
   function P() {
