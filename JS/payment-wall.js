@@ -393,9 +393,25 @@
         if (typeof _triggerTarotAI === 'function') { console.log('[Payment] auto-trigger: calling _triggerTarotAI'); _triggerTarotAI(); return true; }
         console.warn('[Payment] auto-trigger: _triggerTarotAI not found');
       } else if (mode === 'ootk') {
-        if (typeof window._triggerOOTKAI === 'function') { console.log('[Payment] auto-trigger: calling window._triggerOOTKAI'); window._triggerOOTKAI(); return true; }
-        if (typeof window._ootkTriggerAI === 'function') { console.log('[Payment] auto-trigger: calling window._ootkTriggerAI'); window._ootkTriggerAI(); return true; }
-        console.warn('[Payment] auto-trigger: ootk trigger not found');
+        // ★ Bug U 修補:OOTK trigger 必須帶 results 參數
+        //   原本:window._triggerOOTKAI() / window._ootkTriggerAI() 兩個都沒帶參數
+        //         _triggerOOTKAI(results) 函式會執行 `window._ootkResults = results`
+        //         results=undefined 時等於把已抽好的 OOTK 五階段結果清空 → 解讀失敗
+        //   修法:從 window._ootkResults 取已抽好的 results,沒有就回 false 走綠卡 fallback
+        //   注意:window._triggerOOTKAI 從未存在(只有 window._ootkTriggerAI 是 alias),
+        //         line 5859 `window._ootkTriggerAI = _triggerOOTKAI`,
+        //         保留 _triggerOOTKAI 名稱檢查只是因為以前可能存在,實質是死碼,清掉
+        var _ootkRes = window._ootkResults;
+        if (!_ootkRes) {
+          console.warn('[Payment] auto-trigger: window._ootkResults missing, fall back to result card');
+          return false;
+        }
+        if (typeof window._ootkTriggerAI === 'function') {
+          console.log('[Payment] auto-trigger: calling window._ootkTriggerAI(results)');
+          window._ootkTriggerAI(_ootkRes);
+          return true;
+        }
+        console.warn('[Payment] auto-trigger: window._ootkTriggerAI not found');
       } else {
         // mode === 'full' 或其他 → 七維度
         if (typeof window._triggerAIDeep === 'function') { console.log('[Payment] auto-trigger: calling window._triggerAIDeep'); window._triggerAIDeep(); return true; }
@@ -1549,7 +1565,27 @@
 
   // ═══ 初始化 ═══
 
+  // ★ Bug P 修補:清過期 pending 付款狀態
+  //   情境:用戶按「立即購買」→ 跳綠界 → 點取消/關掉視窗
+  //         → ClientBackURL 導回但無 query 標記(綠界規格不帶付款結果)
+  //         → _jy_pending_payment 永久殘留 localStorage
+  //         → 5 分鐘窗(_checkPaymentReturn fallback line 1266)過後,pending 成死資料
+  //   修法:啟動時檢查 pending.ts,15 分鐘以上的視為失效自動清理
+  //         15 分鐘是 ECPay 信用卡付款最長合理時間(含 3D 驗證 + 用戶猶豫期)
+  //         若用戶真的拖很久,Bug #76 的 fallback 仍會在 5 分鐘窗內主動查證
+  //   注意:不清 _jy_last_paid(那是 1 小時備份,給多分頁 race 用,不影響此問題)
+  function _cleanExpiredPending() {
+    try {
+      var pending = JSON.parse(localStorage.getItem('_jy_pending_payment') || 'null');
+      if (pending && pending.ts && (Date.now() - pending.ts > 15 * 60 * 1000)) {
+        _jyLog('CLEAN expired pending', { tradeNo: pending.tradeNo, age_min: Math.round((Date.now() - pending.ts) / 60000) });
+        localStorage.removeItem('_jy_pending_payment');
+      }
+    } catch(_) {}
+  }
+
   function _init() {
+    _cleanExpiredPending();  // ★ Bug P:清過期 pending 必須最先,避免 _checkPaymentReturn 用到死資料
     _checkPaymentReturn();
     _injectPaidToken();
     _hijackUsedModals();
