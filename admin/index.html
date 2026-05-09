@@ -328,6 +328,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <button onclick="loadCostAnalysis(7)" style="padding:8px 16px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:12px;font-weight:600;cursor:pointer">📊 7 天</button>
             <button onclick="loadCostAnalysis(30)" style="padding:8px 16px;border-radius:8px;border:none;background:#991b1b;color:#fff;font-size:12px;font-weight:600;cursor:pointer">📊 30 天</button>
             <span id="costAnalysisStatus" style="font-size:12px;color:var(--text-dim)"></span>
+            <button onclick="copyDiagBlock('costAnalysisOutput', this)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
           </div>
           <pre id="costAnalysisOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:14px;font-size:11px;color:#fde68a;line-height:1.6;max-height:600px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">點上方按鈕載入成本分析</pre>
 
@@ -364,6 +365,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <button onclick="applyV68Defaults()" style="padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 12px rgba(16,185,129,0.4)">🎯 套用 v68.17 最佳預設</button>
               <span id="v68ApplyStatus" style="font-size:11px;color:var(--text-dim)"></span>
+              <button onclick="copyDiagBlock('v68ApplyOutput', this)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
             </div>
             <pre id="v68ApplyOutput" style="margin-top:10px;background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.6;max-height:400px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace;display:none"></pre>
           </div>
@@ -407,6 +409,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <button onclick="loadRouteAudit()" style="padding:10px 20px;border-radius:8px;border:none;background:#22c55e;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 50 筆</button>
             <button onclick="loadRouteAudit(200)" style="padding:10px 20px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 200 筆</button>
             <span id="routeAuditStatus" style="font-size:12px;color:var(--text-dim)"></span>
+            <button onclick="copyDiagBlock('routeAuditTable', this)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
           </div>
           <div id="routeAuditStats" style="margin-bottom:10px;font-size:12px;color:var(--text-dim)"></div>
           <div id="routeAuditTable" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:12px;max-height:500px;overflow:auto;font-size:11px;color:#a5b4fc;line-height:1.5;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">點上方按鈕讀取路由稽核紀錄</div>
@@ -541,6 +544,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                 <button onclick="runRAGTest()" style="padding:8px 16px;border-radius:6px;border:none;background:#22c55e;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🧪 執行測試(用後台設定)</button>
                 <button onclick="runRAGTest('0')" style="padding:8px 12px;border-radius:6px;border:1px solid #3b82f6;background:transparent;color:#93c5fd;font-size:11px;font-weight:600;cursor:pointer" title="強制不用 reranker(對照組)">純向量</button>
                 <button onclick="runRAGTest('1')" style="padding:8px 12px;border-radius:6px;border:1px solid #a855f7;background:transparent;color:#c4b5fd;font-size:11px;font-weight:600;cursor:pointer" title="強制開 reranker">+Reranker</button>
+                <button onclick="copyDiagBlock('ragTestOutput', this)" style="padding:8px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
               </div>
               <pre id="ragTestOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:12px;font-size:11px;color:#a5b4fc;line-height:1.6;max-height:400px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,monospace">點按鈕測試 RAG 檢索結果</pre>
             </div>
@@ -572,6 +576,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
                 <button onclick="createVectorizeIndex()" id="vidxBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#f59e0b;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🏗 建立 Index</button>
                 <span id="vidxStatus" style="font-size:12px;color:var(--text-dim)"></span>
+                <button onclick="copyDiagBlock('vidxOutput', this)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
               </div>
               <pre id="vidxOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:200px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace;margin-top:10px;display:none">點建立後顯示結果</pre>
             </div>
@@ -586,6 +591,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                 <button onclick="ragBuildContextRun()" id="ragBuildBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#22c55e;color:#fff;font-size:13px;font-weight:600;cursor:pointer">▶️ 開始（自動跑完）</button>
                 <button onclick="ragBuildContextStop()" id="ragBuildStopBtn" disabled style="padding:10px 16px;border-radius:8px;border:none;background:#6b7280;color:#fff;font-size:13px;font-weight:600;cursor:pointer">⏸ 暫停</button>
                 <button onclick="ragBuildContextProgress()" style="padding:10px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 看進度</button>
+                <button onclick="copyDiagBlock('ragBuildLog', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製 log</button>
               </div>
               <div id="ragBuildProgressBar" style="height:24px;background:#0a0c11;border:1px solid var(--card-border);border-radius:12px;overflow:hidden;margin-bottom:8px;position:relative">
                 <div id="ragBuildProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#86efac);transition:width 0.3s"></div>
@@ -606,6 +612,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                 <button onclick="ragUploadVectorizeRun()" id="ragUploadBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">▶️ 開始上傳</button>
                 <button onclick="ragUploadVectorizeStop()" id="ragUploadStopBtn" disabled style="padding:10px 16px;border-radius:8px;border:none;background:#6b7280;color:#fff;font-size:13px;font-weight:600;cursor:pointer">⏸ 暫停</button>
                 <button onclick="ragUploadVectorizeProgress()" style="padding:10px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 看進度</button>
+                <button onclick="copyDiagBlock('ragUploadLog', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製 log</button>
               </div>
               <div id="ragUploadProgressBar" style="height:24px;background:#0a0c11;border:1px solid var(--card-border);border-radius:12px;overflow:hidden;margin-bottom:8px;position:relative">
                 <div id="ragUploadProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,#a855f7,#c4b5fd);transition:width 0.3s"></div>
@@ -641,6 +648,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <button onclick="loadRAGAudit()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 20 筆</button>
             <button onclick="loadRAGAudit(50)" style="padding:10px 20px;border-radius:8px;border:none;background:#9333ea;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 50 筆</button>
             <span id="ragAuditStatus" style="font-size:12px;color:var(--text-dim)"></span>
+            <button onclick="copyDiagBlock('ragAuditOutput', this)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
           </div>
           <div id="ragAuditOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:12px;max-height:500px;overflow:auto;font-size:11px;color:#a5b4fc;line-height:1.5;font-family:ui-monospace,monospace">點按鈕讀取 RAG 撈取紀錄</div>
         </div>
@@ -659,6 +667,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             <button onclick="loadRagDiag7d(10)" style="padding:10px 20px;border-radius:8px;border:none;background:#22c55e;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 10 筆</button>
             <button onclick="loadRagDiag7d(30)" style="padding:10px 20px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取最近 30 筆</button>
             <span id="ragDiag7dStatus" style="font-size:12px;color:var(--text-dim)"></span>
+            <button onclick="copyDiagBlock('ragDiag7dOutput', this)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
           </div>
           <div id="ragDiag7dOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:12px;max-height:500px;overflow:auto;font-size:11px;color:#a5b4fc;line-height:1.5;font-family:ui-monospace,monospace">點按鈕讀取七維度診斷紀錄</div>
         </div>
@@ -962,6 +971,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <div class="notify-header">
           <h3>🌌 高精度星曆狀態</h3>
           <button onclick="testEphemeris()" style="padding:4px 12px;border-radius:6px;background:rgba(108,123,255,.1);border:1px solid rgba(108,123,255,.3);color:var(--accent);font-size:12px;cursor:pointer;margin-left:auto">🔬 即時測試</button>
+          <button onclick="copyDiagBlock('ephTestResult', this)" style="padding:4px 10px;border-radius:6px;background:#0d0f14;border:1px solid var(--card-border);color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:6px">📋 複製</button>
         </div>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">
           西占 / 吠陀星盤改用 worker 端高精度星曆,4-tier provider chain:
@@ -2502,6 +2512,67 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 // ═══════════════════════════════════════════════
 const WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
 let adminToken = '';
+
+// ═══════════════════════════════════════════════
+// v69.9.8 通用診斷區塊「一鍵複製」
+//   用法:<button onclick="copyDiagBlock('lastCallDebugOutput', this)">📋 複製</button>
+//   會把目標 element 的 textContent 複製到剪貼簿,並把按鈕文字暫時改成「✅ 已複製」2 秒
+// ═══════════════════════════════════════════════
+function copyDiagBlock(targetId, btnEl) {
+  try {
+    var el = document.getElementById(targetId);
+    if (!el) {
+      if (btnEl) { btnEl.textContent = '⚠️ 找不到區塊'; setTimeout(function(){ btnEl.textContent = '📋 複製'; }, 2000); }
+      return;
+    }
+    var text = el.textContent || el.innerText || '';
+    if (!text || text.trim().length < 5) {
+      if (btnEl) { btnEl.textContent = '⚠️ 區塊空的'; setTimeout(function(){ btnEl.textContent = '📋 複製'; }, 2000); }
+      return;
+    }
+    // 優先用 navigator.clipboard(HTTPS only),fallback 用 textarea+execCommand
+    var done = function() {
+      if (btnEl) {
+        var origText = btnEl.dataset.origText || btnEl.textContent;
+        if (!btnEl.dataset.origText) btnEl.dataset.origText = origText;
+        btnEl.textContent = '✅ 已複製 ' + text.length + ' 字';
+        setTimeout(function(){ btnEl.textContent = btnEl.dataset.origText || '📋 複製'; }, 2500);
+      }
+    };
+    var fail = function(err) {
+      if (btnEl) { btnEl.textContent = '❌ 複製失敗'; setTimeout(function(){ btnEl.textContent = '📋 複製'; }, 2000); }
+      console.error('[copyDiagBlock]', err);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function(err) {
+        // HTTPS-only fallback
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed'; ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          var ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (ok) done(); else fail(err);
+        } catch(e2) { fail(e2); }
+      });
+    } else {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed'; ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) done(); else fail(new Error('execCommand returned false'));
+      } catch(e) { fail(e); }
+    }
+  } catch(err) { if (btnEl) { btnEl.textContent = '❌ 錯誤'; setTimeout(function(){ btnEl.textContent = '📋 複製'; }, 2000); } console.error('[copyDiagBlock]', err); }
+}
+window.copyDiagBlock = copyDiagBlock;
+
 // v62 安全強化：「前往網站」連結原本硬編 #admin=xxx token 在 HTML 原始碼，
 //   公開部署時任何人 view-source 就能拿走 admin token。
 //   改成：頁面登入後（adminToken 已驗證），由 JS 動態組連結。
