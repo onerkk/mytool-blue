@@ -194,6 +194,8 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="users">用戶管理</div>
     <div class="tab" data-tab="admins">管理員</div>
     <div class="tab" data-tab="weights">📈 學習權重</div>
+    <div class="tab" data-tab="payment">💳 付款診斷</div>
+    <div class="tab" data-tab="revenue">💰 收入儀表板</div>
     <div class="tab" data-tab="audit">🔍 解讀稽核</div>
     <div class="tab" data-tab="settings">設定</div>
   </div>
@@ -1016,7 +1018,38 @@ textarea.worker-editor:focus{border-color:var(--accent)}
       </div>
     </div>
 
-    <!-- ══ 解讀稽核 v69.13 ══ -->
+    <!-- ══ 💳 付款診斷 (Bug J) ══ -->
+    <div id="sec-payment" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+          <h3 style="margin:0">💳 ECPay 綠界付款診斷</h3>
+          <button onclick="loadPaymentDiag()" style="padding:6px 12px;border-radius:8px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-size:12px;cursor:pointer">🔄 重新檢查</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin:0;line-height:1.65">追查 webhook 簽章驗證、ECPay 環境變數、付款後配額未寫入等三大付款故障源。</p>
+      </div>
+      <div id="paymentDiagResult"><div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px">點上方按鈕開始檢查</div></div>
+    </div>
+
+    <!-- ══ 💰 收入儀表板 (Bug L) ══ -->
+    <div id="sec-revenue" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+          <h3 style="margin:0">💰 付款收入儀表板</h3>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="revenueDays" onchange="loadRevenueStats()" style="padding:6px 10px;border-radius:8px;background:#0d0f14;border:1px solid var(--card-border);color:var(--text);font-size:12px">
+              <option value="1">過去 1 天</option>
+              <option value="3">過去 3 天</option>
+              <option value="7" selected>過去 7 天</option>
+            </select>
+            <button onclick="loadRevenueStats()" style="padding:6px 12px;border-radius:8px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#86efac;font-size:12px;cursor:pointer">🔄 重新載入</button>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin:0;line-height:1.65">從 pay:* KV 撈 status=paid 的訂單,以工具(七維/塔羅/開鑰)+ 類型(單次/Opus/追問/訂閱)+ 每日進帳交叉統計。pay:{tradeNo} 的 KV TTL 是 7 天,只能看近一週。</p>
+      </div>
+      <div id="revenueResult"><div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px">載入中...</div></div>
+    </div>
+
+    <!-- ══ 🔍 解讀稽核 ══ -->
     <div id="sec-audit" class="section">
       <div class="worker-card" style="margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
@@ -1034,7 +1067,6 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <p style="font-size:12px;color:var(--text-dim);margin:0 0 6px 0;line-height:1.65">驗證 AI 是否解讀錯誤:左 = 用戶實際抽到的牌 / 命盤;右 = AI 真正回了什麼。中間自動比對「AI 提到的牌名」vs「實際送進去的牌」,不一致會標紅。</p>
         <p style="font-size:11px;color:var(--text-dim);margin:0;opacity:.65">資料保留 7 天,僅最近 50 筆顯示。</p>
       </div>
-
       <div id="auditList" style="display:flex;flex-direction:column;gap:14px">
         <div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px">載入中...</div>
       </div>
@@ -2977,6 +3009,8 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'users') loadUsersData();
     if (tab.dataset.tab === 'worker') checkWorkerStatus();
     if (tab.dataset.tab === 'weights') loadWeightStats();
+    if (tab.dataset.tab === 'payment') loadPaymentDiag();
+    if (tab.dataset.tab === 'revenue') loadRevenueStats();
     if (tab.dataset.tab === 'audit') loadAuditList();
     if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
   });
@@ -7920,23 +7954,244 @@ function toast(msg) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// 💳 付款診斷(Bug J)
+// ═══════════════════════════════════════════════════════════
+async function loadPaymentDiag() {
+  const el = document.getElementById('paymentDiagResult');
+  if (!el) return;
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) { el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#fbbf24">請先在「Worker管理」頁登入</div>'; return; }
+  el.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--text-dim)">檢查中...</div>';
+  try {
+    const [whResp, qfResp] = await Promise.all([
+      fetch(WORKER_URL + '/admin/ecpay-webhook-errors?token=' + encodeURIComponent(token)).then(r => r.json()),
+      fetch(WORKER_URL + '/admin/ecpay-quota-failures?token=' + encodeURIComponent(token)).then(r => r.json())
+    ]);
+    el.innerHTML = renderPaymentDiag(whResp, qfResp);
+  } catch (e) {
+    el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#ef4444">查詢失敗:' + (e.message || 'network') + '</div>';
+  }
+}
+
+function _esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function renderPaymentDiag(wh, qf) {
+  let html = '';
+
+  // ── ECPay 環境變數狀態 ──
+  if (wh && wh.envStatus) {
+    const env = wh.envStatus;
+    const isProdReady = env.hashKey_set && env.hashIV_set && !env.merchantId_is_default_test;
+    const bg = isProdReady ? 'rgba(34,197,94,.06)' : 'rgba(251,191,36,.06)';
+    const border = isProdReady ? 'rgba(34,197,94,.3)' : 'rgba(251,191,36,.3)';
+    html += '<div class="worker-card" style="margin-bottom:14px;background:' + bg + ';border-color:' + border + '">';
+    html += '<h3 style="margin-top:0">🔧 ECPay 環境變數</h3>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">';
+    html += '<div>MerchantID: <code style="color:#fde68a">' + _esc(env.merchantId) + '</code>' + (env.merchantId_is_default_test ? ' <span style="color:#fbbf24">(測試帳號)</span>' : ' <span style="color:#86efac">(自有帳號)</span>') + '</div>';
+    html += '<div>HashKey: ' + (env.hashKey_set ? '<span style="color:#86efac">✓ 已設(' + env.hashKey_length + ' 字元)</span>' : '<span style="color:#ef4444">✗ 未設</span>') + '</div>';
+    html += '<div>HashIV: ' + (env.hashIV_set ? '<span style="color:#86efac">✓ 已設(' + env.hashIV_length + ' 字元)</span>' : '<span style="color:#ef4444">✗ 未設</span>') + '</div>';
+    html += '</div>';
+    if (wh.diagnosis) html += '<div style="margin-top:10px;padding:8px 10px;border-radius:6px;background:rgba(0,0,0,.2);font-size:12px;color:var(--text);line-height:1.6">' + _esc(wh.diagnosis) + '</div>';
+    html += '</div>';
+  }
+
+  // ── webhook 錯誤統計 ──
+  if (wh && wh.kindCounts) {
+    const k = wh.kindCounts;
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0">📊 Webhook 錯誤分類(近 30 天)</h3>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">';
+    html += '<div style="padding:10px;border-radius:8px;background:' + (k.mac_mismatch > 0 ? 'rgba(239,68,68,.08)' : 'rgba(34,197,94,.05)') + ';border:1px solid ' + (k.mac_mismatch > 0 ? 'rgba(239,68,68,.3)' : 'rgba(34,197,94,.2)') + '">';
+    html += '<div style="font-size:22px;font-weight:700;color:' + (k.mac_mismatch > 0 ? '#ef4444' : '#86efac') + '">' + k.mac_mismatch + '</div>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">CheckMacValue 簽章錯誤<br><span style="opacity:.7">(hashKey/IV 設錯)</span></div>';
+    html += '</div>';
+    html += '<div style="padding:10px;border-radius:8px;background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.2)">';
+    html += '<div style="font-size:22px;font-weight:700;color:#fbbf24">' + k.rtn_code_not_1 + '</div>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">付款被拒<br><span style="opacity:.7">(信用卡問題,非系統錯誤)</span></div>';
+    html += '</div>';
+    html += '<div style="padding:10px;border-radius:8px;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.2)">';
+    html += '<div style="font-size:22px;font-weight:700;color:#a5b4fc">' + k.other + '</div>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">其他錯誤</div>';
+    html += '</div>';
+    html += '</div>';
+    if (wh.errors && wh.errors.length) {
+      html += '<details><summary style="cursor:pointer;font-size:12px;color:var(--text-dim);padding:6px 0">📋 最近 20 筆 webhook 錯誤詳情</summary>';
+      html += '<div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">';
+      for (const er of wh.errors) {
+        const t = er.ts ? new Date(er.ts).toISOString().slice(0, 19).replace('T', ' ') : '?';
+        const kindColor = er.kind === 'mac_mismatch' ? '#ef4444' : (er.kind === 'rtn_code_not_1' ? '#fbbf24' : '#a5b4fc');
+        html += '<div style="padding:6px 10px;border-radius:6px;background:rgba(0,0,0,.25);font-size:11px;font-family:monospace;color:var(--text-dim)">';
+        html += '<span style="color:' + kindColor + ';font-weight:700">[' + _esc(er.kind || 'mac_mismatch') + ']</span> ';
+        html += t + ' tradeNo=' + _esc(er.tradeNo || er.MerchantTradeNo || '?');
+        if (er.RtnCode) html += ' RtnCode=' + _esc(er.RtnCode);
+        if (er.RtnMsg) html += ' / ' + _esc(er.RtnMsg);
+        html += '</div>';
+      }
+      html += '</div></details>';
+    }
+    html += '</div>';
+  }
+
+  // ── 配額寫入失敗 ──
+  if (qf && Array.isArray(qf.failures)) {
+    const hasFailure = qf.count > 0;
+    html += '<div class="worker-card" style="margin-bottom:14px;background:' + (hasFailure ? 'rgba(239,68,68,.06)' : 'rgba(34,197,94,.05)') + ';border-color:' + (hasFailure ? 'rgba(239,68,68,.3)' : 'rgba(34,197,94,.2)') + '">';
+    html += '<h3 style="margin-top:0">⚠️ 付了錢但配額沒寫入</h3>';
+    html += '<div style="font-size:13px;color:var(--text);margin-bottom:10px">' + _esc(qf.notes || '') + '</div>';
+    if (hasFailure) {
+      html += '<div style="display:flex;flex-direction:column;gap:8px">';
+      for (const f of qf.failures) {
+        const t = f.ts ? new Date(f.ts).toISOString().slice(0, 19).replace('T', ' ') : '?';
+        html += '<div style="padding:10px;border-radius:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);font-size:12px">';
+        html += '<div style="font-family:monospace;color:#fca5a5;margin-bottom:4px">tradeNo: ' + _esc(f.tradeNo || '?') + ' · ' + t + '</div>';
+        if (f.userKey) html += '<div style="color:var(--text-dim);margin-bottom:2px">userKey: <code>' + _esc(f.userKey) + '</code></div>';
+        if (f.amount) html += '<div style="color:var(--text-dim);margin-bottom:2px">金額: NT$' + _esc(f.amount) + '</div>';
+        if (f.mode) html += '<div style="color:var(--text-dim);margin-bottom:2px">類型: ' + _esc(f.mode) + ' / ' + _esc(f.toolMode || '?') + '</div>';
+        if (f.hint) html += '<div style="color:#fde68a;margin-top:4px;line-height:1.6">💡 ' + _esc(f.hint) + '</div>';
+        if (f.error) html += '<div style="color:#fca5a5;margin-top:4px;font-size:11px">錯誤: ' + _esc(f.error) + '</div>';
+        html += '<button onclick="dismissQuotaFailure(\'' + _esc(f.tradeNo) + '\')" style="margin-top:8px;padding:4px 10px;border-radius:6px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);color:#a5b4fc;font-size:11px;cursor:pointer">標記為已處理</button>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  return html;
+}
+
+async function dismissQuotaFailure(tradeNo) {
+  if (!confirm('確定已手動補了配額,要清掉這筆紀錄嗎?\n(不會影響用戶配額,只是把標記移除)')) return;
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/ecpay-quota-failure?token=' + encodeURIComponent(token) + '&tradeNo=' + encodeURIComponent(tradeNo), { method: 'DELETE' });
+    const data = await r.json();
+    if (data.ok) { alert('已清除'); loadPaymentDiag(); }
+    else alert('清除失敗:' + (data.error || 'unknown'));
+  } catch (e) { alert('清除失敗:' + e.message); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 💰 收入儀表板(Bug L)
+// ═══════════════════════════════════════════════════════════
+async function loadRevenueStats() {
+  const el = document.getElementById('revenueResult');
+  if (!el) return;
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) { el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#fbbf24">請先在「Worker管理」頁登入</div>'; return; }
+  const days = (document.getElementById('revenueDays') || {}).value || '7';
+  el.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--text-dim)">載入中...</div>';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/revenue-stats?token=' + encodeURIComponent(token) + '&days=' + days);
+    const data = await r.json();
+    if (!data.ok) {
+      el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#ef4444">載入失敗:' + (data.error || 'unknown') + '</div>';
+      return;
+    }
+    el.innerHTML = renderRevenueStats(data);
+  } catch (e) {
+    el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#ef4444">查詢失敗:' + (e.message || 'network') + '</div>';
+  }
+}
+
+function renderRevenueStats(data) {
+  const s = data.summary || {};
+  let html = '';
+
+  // ── 總覽卡 ──
+  html += '<div class="stats-grid" style="margin-bottom:16px">';
+  html += '<div class="stat-card" style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.25)"><div class="stat-num" style="color:#86efac">NT$' + (s.total_revenue_ntd || 0).toLocaleString() + '</div><div class="stat-label">💰 總進帳(' + s.days_back + ' 天)</div></div>';
+  html += '<div class="stat-card"><div class="stat-num">' + (s.paid_orders || 0) + '</div><div class="stat-label">📊 付款筆數</div></div>';
+  html += '<div class="stat-card"><div class="stat-num">NT$' + (s.avg_amount_ntd || 0).toLocaleString() + '</div><div class="stat-label">📈 每筆平均</div></div>';
+  html += '<div class="stat-card"><div class="stat-num" style="font-size:14px">' + (s.scanned || 0) + '</div><div class="stat-label">🗂 掃描訂單</div></div>';
+  html += '</div>';
+
+  // ── 工具類型分布 ──
+  if (data.by_tool && Object.keys(data.by_tool).length) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0">🔮 各工具進帳</h3>';
+    const tools = data.by_tool;
+    const totalRev = s.total_revenue_ntd || 1;
+    const toolNames = { full: '🌙 七維度', tarot_only: '🃏 塔羅快讀', ootk: '🗝️ 開鑰之法', unknown: '❓ 未知' };
+    const sortedTools = Object.keys(tools).sort((a, b) => tools[b].revenue - tools[a].revenue);
+    html += '<div style="display:flex;flex-direction:column;gap:8px">';
+    for (const k of sortedTools) {
+      const t = tools[k];
+      const pct = (t.revenue / totalRev * 100).toFixed(1);
+      html += '<div style="padding:10px;border-radius:8px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.2)">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">';
+      html += '<div style="font-weight:700;color:var(--text)">' + (toolNames[k] || _esc(k)) + '</div>';
+      html += '<div><span style="color:#86efac;font-weight:700">NT$' + t.revenue.toLocaleString() + '</span> <span style="color:var(--text-dim);font-size:11px">(' + t.count + ' 筆 · ' + pct + '%)</span></div>';
+      html += '</div>';
+      html += '<div style="height:4px;border-radius:2px;background:rgba(0,0,0,.3);overflow:hidden"><div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#fbbf24,#86efac)"></div></div>';
+      html += '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  // ── 付款類型分布 ──
+  if (data.by_mode && Object.keys(data.by_mode).length) {
+    const modes = data.by_mode;
+    const modeNames = {
+      single: '🔸 單次標準', opus_single: '💎 單次 Opus 深度', followup_single: '💬 追問單次',
+      subscription_standard: '📦 訂閱(標準)', subscription_premium: '👑 訂閱(高級)', unknown: '❓ 未知'
+    };
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0">💳 各類型進帳</h3>';
+    const totalRev = s.total_revenue_ntd || 1;
+    const sortedModes = Object.keys(modes).sort((a, b) => modes[b].revenue - modes[a].revenue);
+    html += '<div style="display:flex;flex-direction:column;gap:6px">';
+    for (const k of sortedModes) {
+      const m = modes[k];
+      const pct = (m.revenue / totalRev * 100).toFixed(1);
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;background:rgba(99,102,241,.04);border:1px solid rgba(99,102,241,.15);font-size:12px">';
+      html += '<div style="color:var(--text)">' + (modeNames[k] || _esc(k)) + '</div>';
+      html += '<div><span style="color:#86efac;font-weight:600">NT$' + m.revenue.toLocaleString() + '</span> <span style="color:var(--text-dim);margin-left:6px">(' + m.count + ' 筆 · ' + pct + '%)</span></div>';
+      html += '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  // ── 每日進帳 ──
+  if (data.daily && data.daily.length) {
+    const maxRev = Math.max.apply(null, data.daily.map(d => d.revenue));
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0">📅 每日進帳趨勢</h3>';
+    html += '<div style="display:flex;flex-direction:column;gap:5px">';
+    for (const d of data.daily) {
+      const pct = maxRev > 0 ? (d.revenue / maxRev * 100).toFixed(1) : 0;
+      html += '<div style="display:flex;align-items:center;gap:10px;font-size:12px">';
+      html += '<div style="min-width:80px;color:var(--text-dim);font-family:monospace">' + _esc(d.date) + '</div>';
+      html += '<div style="flex:1;height:18px;border-radius:4px;background:rgba(0,0,0,.25);overflow:hidden;position:relative">';
+      html += '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,rgba(34,197,94,.3),rgba(34,197,94,.7))"></div>';
+      html += '<div style="position:absolute;left:6px;top:0;line-height:18px;font-size:11px;color:var(--text);text-shadow:0 0 4px rgba(0,0,0,.8)">NT$' + d.revenue.toLocaleString() + '</div>';
+      html += '<div style="position:absolute;right:6px;top:0;line-height:18px;font-size:10px;color:var(--text-dim)">' + d.count + ' 筆</div>';
+      html += '</div>';
+      html += '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  if (data.notes) {
+    html += '<div style="font-size:11px;color:var(--text-dim);text-align:center;padding:8px;line-height:1.6">' + _esc(data.notes) + '</div>';
+  }
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════
 // 🔍 解讀稽核 v69.13
 // ═══════════════════════════════════════════════════════════
-const TAROT_NAME_KEYWORDS = [
-  '愚者','魔術師','女祭司','皇后','皇帝','教皇','戀人','戰車','力量','隱者','命運之輪','正義','吊人','死神','節制','惡魔','塔','星星','月亮','太陽','審判','世界',
-  '聖杯','寶劍','權杖','金幣','錢幣','錢',
-  '侍者','騎士','國王','王后'
-];
-
 async function loadAuditList() {
   const listEl = document.getElementById('auditList');
   if (!listEl) return;
   const mode = (document.getElementById('auditModeFilter') || {}).value || 'all';
   const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
-  if (!token) {
-    listEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:#fbbf24">請先在「Worker管理」頁登入 admin token</div>';
-    return;
-  }
+  if (!token) { listEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:#fbbf24">請先在「Worker管理」頁登入</div>'; return; }
   listEl.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--text-dim)">載入中...</div>';
   try {
     const r = await fetch(WORKER_URL + '/admin/audit-list?token=' + encodeURIComponent(token) + '&mode=' + mode + '&limit=20');
@@ -7955,48 +8210,25 @@ async function loadAuditList() {
   }
 }
 
-function _esc(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-// 從 AI 回應文字裡抽出「提到的牌名」
 function _extractMentionedCards(text) {
   if (!text) return [];
   const found = new Set();
-  // 匹配「<花色><數字/位階>(正/逆位)?」
-  // 例:「聖杯國王逆位」「寶劍二」「金幣十正位」
   const courts = ['侍者','騎士','國王','王后','皇后'];
   const suits = ['聖杯','寶劍','權杖','金幣','錢幣'];
   const numbers = ['一','二','三','四','五','六','七','八','九','十','1','2','3','4','5','6','7','8','9','10'];
-  // 大牌
   const majors = ['愚者','魔術師','女祭司','皇后','皇帝','教皇','戀人','戰車','力量','隱者','命運之輪','正義','吊人','死神','節制','惡魔','星星','月亮','太陽','審判','世界'];
-  for (const m of majors) {
-    if (text.indexOf(m) >= 0) found.add(m);
-  }
-  // 「塔」單獨檢測(避免誤抓「塔羅」)
+  for (const m of majors) { if (text.indexOf(m) >= 0) found.add(m); }
   if (/[^羅]塔[^羅]|^塔[^羅]/.test(text)) found.add('塔');
-  // 小牌
   for (const s of suits) {
-    for (const c of courts) {
-      if (text.indexOf(s + c) >= 0) found.add(s + c);
-    }
-    for (const n of numbers) {
-      if (text.indexOf(s + n) >= 0) found.add(s + n);
-    }
+    for (const c of courts) { if (text.indexOf(s + c) >= 0) found.add(s + c); }
+    for (const n of numbers) { if (text.indexOf(s + n) >= 0) found.add(s + n); }
   }
   return Array.from(found);
 }
 
-// 把實際送進 AI 的牌名 normalize(去除「正位/逆位」尾巴,去掉「金幣」=「錢幣」這種別名)
 function _normCard(name) {
   if (!name) return '';
-  return String(name)
-    .replace(/正位|逆位|正$|逆$/g, '')
-    .replace(/錢幣/g, '金幣')
-    .replace(/^▲|^▼/, '')
-    .trim();
+  return String(name).replace(/正位|逆位|正$|逆$/g, '').replace(/錢幣/g, '金幣').replace(/^▲|^▼/, '').trim();
 }
 
 function renderAuditCard(item) {
@@ -8009,11 +8241,8 @@ function renderAuditCard(item) {
   const model = a.modelId || '?';
   const fu = a.isFollowUp ? '<span style="margin-left:6px;padding:1px 6px;border-radius:4px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.35);color:#c084fc;font-size:10px">追問</span>' : '';
   const q = a.question || (d.question || '?');
-
-  // 抽 AI 回應提到的牌
   const mentioned = _extractMentionedCards(a.fullText || '');
 
-  // 抽實際送進去的牌(三模式各自處理)
   let actCards = [];
   let actCardsHtml = '';
   if (mode === 'tarot') {
@@ -8029,7 +8258,6 @@ function renderAuditCard(item) {
           '</div>';
       }
       actCardsHtml += '</div>';
-      // 補充牌
       if (d.act_followUpCards && d.act_followUpCards.length) {
         actCardsHtml += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(168,85,247,.25)">' +
           '<div style="font-size:11px;color:#c084fc;margin-bottom:4px">補充牌(追問):' + d.act_followUpCards.length + ' 張</div>' +
@@ -8063,7 +8291,6 @@ function renderAuditCard(item) {
       actCardsHtml = '<div style="color:#ef4444;font-size:12px">⚠️ diag 沒記錄到 OOTK 五階段資料</div>';
     }
   } else if (mode === 'full') {
-    // 七維度:列出各 act_*
     const sections = [];
     if (d.act_bazi) {
       let bz = '<div style="margin-bottom:6px"><div style="font-size:11px;color:#fbbf24;font-weight:700;margin-bottom:2px">八字</div>';
@@ -8096,7 +8323,6 @@ function renderAuditCard(item) {
       vd += '</div>';
       sections.push(vd);
     }
-    // 七維度若有抽塔羅,也顯示
     if (d.act_tarot && d.act_tarot.cards && d.act_tarot.cards.length) {
       let t7 = '<div style="margin-bottom:6px"><div style="font-size:11px;color:#fde68a;font-weight:700;margin-bottom:2px">塔羅(七維交叉)</div>';
       for (const c of d.act_tarot.cards) {
@@ -8111,7 +8337,6 @@ function renderAuditCard(item) {
     actCardsHtml = '<div style="color:var(--text-dim);font-size:12px">無 diag 資料(配對失敗,可能 callAI 太快或 KV 還沒落)</div>';
   }
 
-  // AI 回應的「提到的牌」對照「實際送進去的牌」
   let alertHtml = '';
   if ((mode === 'tarot' || mode === 'ootk') && actCards.length && mentioned.length) {
     const actNames = new Set(actCards.map(c => _normCard(typeof c === 'string' ? c : (c.name || c.n || ''))));
@@ -8129,7 +8354,6 @@ function renderAuditCard(item) {
     }
   }
 
-  // AI 回應(截 1500 字預覽,完整可展開)
   const fullText = a.fullText || '';
   const previewText = fullText.slice(0, 1500);
   const hasMore = fullText.length > 1500;
