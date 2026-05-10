@@ -198,6 +198,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="revenue">💰 收入儀表板</div>
     <div class="tab" data-tab="audit">🔍 解讀稽核</div>
     <div class="tab" data-tab="crystal">💎 水晶推薦</div>
+    <div class="tab" data-tab="ragquality">🧬 RAG 品質</div>
     <div class="tab" data-tab="batch">📦 批次處理</div>
     <div class="tab" data-tab="settings">設定</div>
   </div>
@@ -1085,6 +1086,19 @@ textarea.worker-editor:focus{border-color:var(--accent)}
         <p style="font-size:11px;color:var(--text-dim);margin:4px 0 0;opacity:.7">資料來源:audit:* 反推 + crystal_cat_audit:* 統計</p>
       </div>
       <div id="crystalStatsResult"><div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px">載入中...</div></div>
+    </div>
+
+    <!-- ══ 🧬 RAG 召回品質 v69.14-A ══ -->
+    <div id="sec-ragquality" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+          <h3 style="margin:0">🧬 RAG 召回品質診斷</h3>
+          <button onclick="loadRagQualityAudit()" style="padding:6px 12px;border-radius:8px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.4);color:#c084fc;font-size:12px;cursor:pointer">🔄 重新載入</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin:0;line-height:1.65">過去 7 天 RAG 召回統計:reranker 啟用率、score 變動、qType 分布、熱門 chunks、樣本檢視。零風險,純讀資料。</p>
+        <p style="font-size:11px;color:var(--text-dim);margin:4px 0 0;opacity:.7">資料來源:rag_audit:* + rag_reranker_last_error</p>
+      </div>
+      <div id="ragQualityResult"><div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px">載入中...</div></div>
     </div>
 
     <!-- ══ 📦 批次處理 v69.13(B1)══ -->
@@ -3104,6 +3118,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'revenue') loadRevenueStats();
     if (tab.dataset.tab === 'audit') loadAuditList();
     if (tab.dataset.tab === 'crystal') loadCrystalStats();
+    if (tab.dataset.tab === 'ragquality') loadRagQualityAudit();
     if (tab.dataset.tab === 'batch') loadBatchList();
     if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); }
   });
@@ -8922,6 +8937,198 @@ async function saveCrystalToneConfig() {
   } catch(e) {
     if (status) status.textContent = '錯誤:' + e.message;
   }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 🧬 RAG 召回品質診斷 v69.14-A
+// ═══════════════════════════════════════════════════════════
+async function loadRagQualityAudit() {
+  const el = document.getElementById('ragQualityResult');
+  if (!el) return;
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) { el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#fbbf24">請先登入 admin</div>'; return; }
+  el.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--text-dim)">分析中...(掃 KV 可能要 5-10 秒)</div>';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/rag-quality-audit?token=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (!data.ok) {
+      el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#ef4444">載入失敗:' + _esc(data.error || 'unknown') + '</div>';
+      return;
+    }
+    el.innerHTML = renderRagQuality(data);
+  } catch (e) {
+    el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#ef4444">查詢失敗:' + _esc(e.message) + '</div>';
+  }
+}
+
+function renderRagQuality(data) {
+  const s = data.summary || {};
+  let html = '';
+
+  // ── 總覽 5 卡 ──
+  html += '<div class="stats-grid" style="margin-bottom:16px">';
+  html += '<div class="stat-card"><div class="stat-num">' + (s.audits_24h || 0) + '</div><div class="stat-label">📊 24h 召回</div></div>';
+  html += '<div class="stat-card"><div class="stat-num">' + (s.audits_7d || 0) + '</div><div class="stat-label">📈 7天召回</div></div>';
+  const _renColor = s.reranker_enabled ? '#86efac' : '#fbbf24';
+  html += '<div class="stat-card" style="border-color:' + _renColor + '"><div class="stat-num" style="color:' + _renColor + '">' + (s.reranker_enabled ? 'ON' : 'OFF') + '</div><div class="stat-label">🔁 Reranker</div></div>';
+  html += '<div class="stat-card" style="background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.25)"><div class="stat-num" style="color:#c084fc">' + (s.reranked_chunk_ratio_pct || 0) + '%</div><div class="stat-label">✓ +reranked 命中率</div></div>';
+  html += '<div class="stat-card" style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.25)"><div class="stat-num" style="color:#86efac">' + (s.unique_chunks_hit_7d || 0) + '</div><div class="stat-label">🧩 唯一 chunks 被召回</div></div>';
+  html += '</div>';
+
+  // ── reranker 分數對照 ──
+  if (s.reranker_avg_score !== null && s.reranker_avg_score !== undefined) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">🔬 Reranker 分數變動</h3>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">原 score = Vectorize 向量相似度 / reranker score = bge-reranker-base 重排分數(0-1 sigmoid)</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:12px">';
+    html += '<div style="padding:10px;border-radius:6px;background:rgba(0,0,0,.2)"><div style="color:var(--text-dim);font-size:10px">原 score 平均</div><div style="font-size:18px;color:#a5b4fc;font-weight:700">' + s.orig_avg_score + '</div></div>';
+    html += '<div style="padding:10px;border-radius:6px;background:rgba(0,0,0,.2)"><div style="color:var(--text-dim);font-size:10px">Reranker score 平均</div><div style="font-size:18px;color:#c084fc;font-weight:700">' + s.reranker_avg_score + '</div></div>';
+    const _deltaColor = s.reranker_score_delta > 0 ? '#86efac' : (s.reranker_score_delta < 0 ? '#fca5a5' : '#fde68a');
+    html += '<div style="padding:10px;border-radius:6px;background:rgba(0,0,0,.2)"><div style="color:var(--text-dim);font-size:10px">差距(reranker - 原)</div><div style="font-size:18px;color:' + _deltaColor + ';font-weight:700">' + (s.reranker_score_delta > 0 ? '+' : '') + s.reranker_score_delta + '</div></div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  // ── mode + qType 分布 ──
+  if (data.mode_dist || data.qtype_dist) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">📊 7 天召回分布</h3>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">';
+
+    // Mode
+    html += '<div>';
+    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">Mode</div>';
+    const _md = data.mode_dist || {};
+    const _modeTotal = Object.values(_md).reduce((a,b) => a+b, 0);
+    for (const m of ['full', 'ootk', 'tarot', 'other']) {
+      const _c = _md[m] || 0;
+      const _pct = _modeTotal > 0 ? Math.round((_c / _modeTotal) * 100) : 0;
+      html += '<div style="display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:4px">';
+      html += '<div style="min-width:50px">' + m + '</div>';
+      html += '<div style="flex:1;height:8px;border-radius:3px;background:rgba(0,0,0,.25);overflow:hidden"><div style="width:' + _pct + '%;height:100%;background:rgba(168,85,247,.5)"></div></div>';
+      html += '<div style="min-width:50px;text-align:right">' + _c + ' (' + _pct + '%)</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // qType
+    html += '<div>';
+    html += '<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">qType(前 10)</div>';
+    const _qd = data.qtype_dist || {};
+    const _qtSorted = Object.entries(_qd).sort((a,b) => b[1] - a[1]).slice(0, 10);
+    const _qtMax = _qtSorted.length > 0 ? _qtSorted[0][1] : 1;
+    for (const [qt, c] of _qtSorted) {
+      const _pct = Math.round((c / _qtMax) * 100);
+      html += '<div style="display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:4px">';
+      html += '<div style="min-width:80px">' + _esc(qt) + '</div>';
+      html += '<div style="flex:1;height:8px;border-radius:3px;background:rgba(0,0,0,.25);overflow:hidden"><div style="width:' + _pct + '%;height:100%;background:rgba(34,197,94,.5)"></div></div>';
+      html += '<div style="min-width:30px;text-align:right">' + c + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '</div>';
+    html += '</div>';
+  }
+
+  // ── 熱門 chunks ──
+  if (data.hot_chunks && data.hot_chunks.length > 0) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">🔥 熱門 Chunks(前 30)</h3>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">過去 7 天被召回最多次的 chunks。「次數高 + avgScore 低」可能表示 chunk 被誤召;「次數低 + avgScore 高」可能是冷門但精準</div>';
+    html += '<div style="overflow-x:auto"><table style="width:100%;font-size:11px;border-collapse:collapse">';
+    html += '<thead><tr style="background:rgba(168,85,247,.08)"><th style="text-align:left;padding:6px">#</th><th style="text-align:left;padding:6px">Chunk ID</th><th style="text-align:right;padding:6px">召回次</th><th style="text-align:right;padding:6px">avg Score</th><th style="text-align:left;padding:6px">var</th><th style="text-align:left;padding:6px">systems</th><th style="text-align:left;padding:6px">sources</th></tr></thead>';
+    html += '<tbody>';
+    for (let i = 0; i < data.hot_chunks.length; i++) {
+      const c = data.hot_chunks[i];
+      html += '<tr style="border-bottom:1px solid rgba(255,255,255,.05)">';
+      html += '<td style="padding:5px;color:var(--text-dim)">#' + (i+1) + '</td>';
+      html += '<td style="padding:5px;color:var(--text)"><code style="font-size:10px">' + _esc(String(c.id).slice(0, 30)) + '</code></td>';
+      html += '<td style="padding:5px;text-align:right;color:#fbbf24;font-weight:600">' + c.count + '</td>';
+      html += '<td style="padding:5px;text-align:right;color:#a5b4fc">' + (typeof c.avgScore === 'number' ? c.avgScore.toFixed(3) : '-') + '</td>';
+      html += '<td style="padding:5px;color:#86efac">' + _esc((c.vars || '').slice(0, 30)) + '</td>';
+      html += '<td style="padding:5px;color:var(--text-dim)">' + _esc((c.systems || '').slice(0, 20)) + '</td>';
+      html += '<td style="padding:5px;color:var(--text-dim);font-size:10px">' + _esc((c.sources || '').slice(0, 25)) + '</td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    html += '</div>';
+  }
+
+  // ── 死庫存提示 ──
+  if (data.cold_chunks_note) {
+    html += '<div class="worker-card" style="margin-bottom:14px;background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.25)">';
+    html += '<h3 style="margin-top:0;font-size:14px;color:#a5b4fc">❄️ 死庫存推測</h3>';
+    html += '<div style="font-size:12px;color:var(--text);line-height:1.65">' + _esc(data.cold_chunks_note) + '</div>';
+    html += '</div>';
+  }
+
+  // ── 最近樣本 ──
+  if (data.recent_samples && data.recent_samples.length > 0) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">🕐 最近 5 筆召回樣本</h3>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">看實際 query → 召回了什麼 chunks(看出召回是否合理)</div>';
+    for (const sa of data.recent_samples) {
+      html += '<div style="margin-bottom:10px;padding:10px;border-radius:6px;background:rgba(0,0,0,.2);border-left:3px solid #c084fc">';
+      html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">' + _esc(sa.ts || '') + ' · <span style="color:#a5b4fc">' + _esc(sa.mode || '?') + '</span> · qType:<code style="color:#fde68a">' + _esc(sa.qType || '?') + '</code> · 撈了 <strong style="color:#86efac">' + sa.retrievedCount + '</strong> 個</div>';
+      html += '<div style="font-size:12px;color:var(--text);margin-bottom:6px;line-height:1.5">Q: ' + _esc(sa.question || '(無)') + '</div>';
+      if (Array.isArray(sa.topSources) && sa.topSources.length > 0) {
+        html += '<div style="font-size:10px;color:var(--text-dim);margin-top:4px">Top 5 chunks:</div>';
+        for (const r of sa.topSources) {
+          const _isReranked = r.source && String(r.source).indexOf('reranked') >= 0;
+          html += '<div style="font-size:10px;color:var(--text-dim);padding:2px 0">';
+          html += '<code>' + _esc(String(r.id).slice(0, 25)) + '</code>';
+          html += ' · score=<span style="color:#a5b4fc">' + (r.score !== null ? r.score : '-') + '</span>';
+          if (r.var) html += ' · var=<span style="color:#86efac">' + _esc(String(r.var).slice(0, 15)) + '</span>';
+          html += ' · <span style="color:' + (_isReranked ? '#c084fc' : '#fbbf24') + '">' + _esc(r.source || '?') + '</span>';
+          html += '</div>';
+        }
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  // ── reranker 錯誤 ──
+  if (data.reranker_last_error) {
+    html += '<div class="worker-card" style="margin-bottom:14px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25)">';
+    html += '<h3 style="margin-top:0;font-size:14px;color:#fca5a5">⚠️ Reranker 最近錯誤(1h 內)</h3>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">' + _esc(data.reranker_last_error.ts || '') + '</div>';
+    html += '<div style="font-size:12px;color:var(--text);font-family:monospace;background:rgba(0,0,0,.3);padding:8px;border-radius:4px">' + _esc(data.reranker_last_error.error || '(無詳情)') + '</div>';
+    html += '</div>';
+  }
+
+  // ── 分布:retrievedCount ──
+  if (data.retrieved_count_dist && Object.keys(data.retrieved_count_dist).length > 0) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">📐 召回 chunks 數分布</h3>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">每次 RAG 回了 N 個 chunks 給 AI。預期應該集中在 8-12(reranker 上限 10 + fallback 補到 12-15)</div>';
+    const _cd = data.retrieved_count_dist;
+    const _cdMax = Math.max.apply(null, Object.values(_cd));
+    const _cdSorted = Object.keys(_cd).map(Number).sort((a,b) => a-b);
+    for (const n of _cdSorted) {
+      const _c = _cd[n];
+      const _pct = Math.round((_c / _cdMax) * 100);
+      html += '<div style="display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:3px">';
+      html += '<div style="min-width:30px">N=' + n + '</div>';
+      html += '<div style="flex:1;height:8px;border-radius:3px;background:rgba(0,0,0,.25);overflow:hidden"><div style="width:' + _pct + '%;height:100%;background:rgba(251,191,36,.5)"></div></div>';
+      html += '<div style="min-width:40px;text-align:right">' + _c + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  // ── 註解 ──
+  if (Array.isArray(data.notes)) {
+    html += '<div style="font-size:11px;color:var(--text-dim);padding:12px;border-radius:8px;background:rgba(0,0,0,.15);line-height:1.7">';
+    html += '<div style="font-weight:700;color:var(--text);margin-bottom:6px">📖 解讀說明</div>';
+    for (const n of data.notes) {
+      html += '<div style="margin-bottom:4px">• ' + _esc(n) + '</div>';
+    }
+    html += '</div>';
+  }
+
+  return html;
 }
 
 // PWA Service Worker 註冊
