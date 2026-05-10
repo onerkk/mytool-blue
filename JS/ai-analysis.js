@@ -13083,8 +13083,24 @@ function renderActionCard(bazi, type, answer){
           return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
       }
-      const shopUrl = _safeUrlInline(p.shopee);
-      const shopUrl2 = recs.length > 1 ? _safeUrlInline(recs[1].shopee) : shopUrl;
+      // ★ v69.13 D 點擊追蹤:把蝦皮 URL 包一層 worker 中介
+      //   失敗 fallback 直接回原 URL(不擋購買)
+      function _buildTrackUrl(shopeeUrl, crystalName, mode) {
+        try {
+          var _safe = _safeUrlInline(shopeeUrl);
+          // worker 端點(同源,因為這份 ai-analysis.js 由 worker 服務)
+          // ★ v69.13 C 話術 A/B:帶 tone 參數讓點擊歸因到對應版本
+          var _tone = (typeof window !== 'undefined' && window._jyCurrentTone === 'B') ? 'B' : 'A';
+          var _track = '/track-click?to=' + encodeURIComponent(_safe.replace(/&amp;/g, '&')) +
+                       '&crystal=' + encodeURIComponent(String(crystalName || '').slice(0, 50)) +
+                       '&mode=' + encodeURIComponent(mode || 'full') +
+                       '&tone=' + _tone;
+          // 再 escape 給 HTML attribute 用
+          return _track.replace(/&/g,'&amp;');
+        } catch(_) { return _safeUrlInline(shopeeUrl); }
+      }
+      const shopUrl = _buildTrackUrl(p.shopee, p.n, 'full');
+      const shopUrl2 = recs.length > 1 ? _buildTrackUrl(recs[1].shopee, recs[1].n, 'full') : shopUrl;
       crystalEl.innerHTML = `
         <div style="border-top:1px solid rgba(212,175,55,0.15);padding-top:var(--sp-md);margin-top:var(--sp-sm)">
           <p class="text-xs text-dim" style="margin-bottom:8px"><i class="fas fa-gem"></i> 依你的八字體質，最適合的水晶：</p>
@@ -13373,12 +13389,18 @@ function renderActionCard(bazi, type, answer){
         };
         qs.innerHTML = picks.slice(0,5).map(p => {
           // v68.21 Bug #66:同 12808 邏輯,p.shopee 加 https 驗證 + escape
+          // v69.13 D 點擊追蹤:把 _ps 改成 worker 中介 URL
           var _ps = '';
           try {
             if (p.shopee && typeof p.shopee === 'string') {
               var _pu = new URL(p.shopee);
               if (_pu.protocol === 'https:' || _pu.protocol === 'http:') {
-                _ps = p.shopee.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+                var _toneA = (typeof window !== 'undefined' && window._jyCurrentTone === 'B') ? 'B' : 'A';
+                _ps = '/track-click?to=' + encodeURIComponent(p.shopee) +
+                      '&crystal=' + encodeURIComponent(String(p.n || '').slice(0, 50)) +
+                      '&mode=full' +
+                      '&tone=' + _toneA;
+                _ps = _ps.replace(/&/g,'&amp;');
               }
             }
           } catch(_) {}
@@ -13954,12 +13976,18 @@ renderProductCrystal = function(bazi, type){
     </div>
     <div class="product-grid">${products.map(p=>{
       // v68.21 Bug #66:p.shopee 加 https 驗證 + escape
+      // v69.13 D 點擊追蹤:包 worker 中介 URL
       var _ps = '';
       try {
         if (p.shopee && typeof p.shopee === 'string') {
           var _pu = new URL(p.shopee);
           if (_pu.protocol === 'https:' || _pu.protocol === 'http:') {
-            _ps = p.shopee.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            var _toneB = (typeof window !== 'undefined' && window._jyCurrentTone === 'B') ? 'B' : 'A';
+            _ps = '/track-click?to=' + encodeURIComponent(p.shopee) +
+                  '&crystal=' + encodeURIComponent(String(p.n || '').slice(0, 50)) +
+                  '&mode=full' +
+                  '&tone=' + _toneB;
+            _ps = _ps.replace(/&/g,'&amp;');
           }
         }
       } catch(_) {}
@@ -15206,7 +15234,21 @@ function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
         return u;
       } catch(_) { return ''; }
     }
-    var shopUrl = (p.shopee && p.shopee.length > 10) ? _safeHttpsUrl(p.shopee) : '';
+    // ★ v69.13 D 點擊追蹤
+    function _buildTrackUrlS(shopeeUrl, crystalName, modeStr) {
+      try {
+        var _safe = _safeHttpsUrl(shopeeUrl);
+        if (!_safe) return 'https://tw.shp.ee/2n5Mo2w';
+        // ★ v69.13 C:帶 tone 參數
+        var _toneC = (typeof window !== 'undefined' && window._jyCurrentTone === 'B') ? 'B' : 'A';
+        return '/track-click?to=' + encodeURIComponent(_safe) +
+               '&crystal=' + encodeURIComponent(String(crystalName || '').slice(0, 50)) +
+               '&mode=' + encodeURIComponent(modeStr || 'full') +
+               '&tone=' + _toneC;
+      } catch(_) { return _safeHttpsUrl(shopeeUrl) || 'https://tw.shp.ee/2n5Mo2w'; }
+    }
+    var _modeForTrack = (sourceMode === 'tarot') ? 'tarot' : 'full';
+    var shopUrl = (p.shopee && p.shopee.length > 10) ? _buildTrackUrlS(p.shopee, p.n, _modeForTrack) : '';
     if (!shopUrl) shopUrl = 'https://tw.shp.ee/2n5Mo2w';
     var imageUrl = _safeHttpsUrl(p.imageUrl || '');
 
@@ -21834,6 +21876,7 @@ renderTarot = function(){
       if (!admin && !window._jyOpusDepth) { var __subE = parseInt(localStorage.getItem('_jy_sub_expires')||'0'); if (__subE <= Date.now()) _aiMarkUsed(); }
       // ★ v33: 動態庫存存全域
       if (data.crystalProducts) window._jyCrystalProducts = data.crystalProducts;
+      if (data.crystalTone) window._jyCurrentTone = data.crystalTone;
               if (data.memoryTopicStats) window._jyMemoryTopicStats = data.memoryTopicStats;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
@@ -22193,24 +22236,7 @@ function _ensureAiLoadingFx(){
     '@keyframes jyMeteor{0%{top:-8%;opacity:0}8%{opacity:.9}100%{top:105%;opacity:0}}'+
     '@keyframes jyBarFast{0%{width:6%}20%{width:22%}50%{width:45%}80%{width:62%}100%{width:78%}}'+
     '@keyframes jyBarSlow{0%{width:6%}10%{width:12%}30%{width:25%}50%{width:38%}70%{width:50%}85%{width:60%}95%{width:68%}100%{width:75%}}'+
-    '@keyframes jy7dFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}'+
-    /* ★ 追問儀式專用 keyframes(v69.12) */
-    /* 牌從牌堆飛出 → 翻面 → 入位 */
-    '@keyframes jyFuCardFly{0%{transform:translate(-50%,-50%) translateY(60px) rotateY(180deg) scale(.6);opacity:0}30%{opacity:1}55%{transform:translate(-50%,-50%) translateY(-4px) rotateY(180deg) scale(1.06)}70%{transform:translate(-50%,-50%) translateY(0) rotateY(0deg) scale(1)}100%{transform:translate(-50%,-50%) translateY(0) rotateY(0deg) scale(1);opacity:1}}'+
-    /* 牌入位後緩慢呼吸 */
-    '@keyframes jyFuCardBreath{0%,100%{transform:translate(-50%,-50%) scale(1);box-shadow:0 0 12px rgba(212,175,55,.35),0 0 0 1px rgba(212,175,55,.4) inset}50%{transform:translate(-50%,-50%) scale(1.04);box-shadow:0 0 22px rgba(212,175,55,.6),0 0 0 1px rgba(212,175,55,.7) inset}}'+
-    /* 牌底部光暈漣漪向外擴散 */
-    '@keyframes jyFuRipple{0%{transform:translate(-50%,-50%) scale(.4);opacity:.7}100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}}'+
-    /* 中央光暈緩慢旋轉 */
-    '@keyframes jyFuRotate{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}'+
-    /* 連結線從中心指向各張牌(脈動) */
-    '@keyframes jyFuConnect{0%,100%{opacity:.15;transform:scaleX(.85)}50%{opacity:.65;transform:scaleX(1)}}'+
-    /* 階段文字進場 */
-    '@keyframes jyFuPhaseIn{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}'+
-    /* 階段文字退場 */
-    '@keyframes jyFuPhaseOut{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-6px)}}'+
-    /* runic / 符號掃光 */
-    '@keyframes jyFuRune{0%,100%{opacity:.25}50%{opacity:.85}}';
+    '@keyframes jy7dFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}';
   document.head.appendChild(s);
 }
 
@@ -24455,6 +24481,7 @@ async function _triggerTarotAI() {
               r = parsed.result || parsed;
               // ★ v33: 動態庫存
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
+              if (parsed.crystalTone) window._jyCurrentTone = parsed.crystalTone;
               if (parsed.memoryTopicStats) window._jyMemoryTopicStats = parsed.memoryTopicStats;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
@@ -24516,6 +24543,7 @@ async function _triggerTarotAI() {
       // JSON fallback
       var data = await resp.json();
       if (data.crystalProducts) window._jyCrystalProducts = data.crystalProducts;
+      if (data.crystalTone) window._jyCurrentTone = data.crystalTone;
               if (data.memoryTopicStats) window._jyMemoryTopicStats = data.memoryTopicStats;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
@@ -25562,156 +25590,36 @@ async function _triggerTarotFollowUp() {
   }
 
   // ── sourceMode/isOOTKFollowUp/isFullFollowUp 已在函式開頭宣告 ──
-  // ★ v69.12 追問動畫升級:三模式專屬色系 + 牌飛入 + 連結線 + 階段儀式
-  var _modePalette = isFullFollowUp
-    ? { main: '212,175,55', sub: '247,208,98', accent: '#fde68a', icon: '🌙', label: '七系統命盤', ritual: '召喚補充牌' }
-    : (isOOTKFollowUp
-        ? { main: '139,92,246', sub: '167,139,250', accent: '#c4b5fd', icon: '🔑', label: '五階段', ritual: '開鑰補充' }
-        : { main: '218,165,32', sub: '241,194,80', accent: '#fde68a', icon: '🃏', label: '原本牌陣', ritual: '補充塔羅' });
-  var accentR = _modePalette.main;
-  var accentR2 = _modePalette.sub;
-  var modeIcon = _modePalette.icon;
+  var accentR = '212,175,55';
+  var modeIcon = isFullFollowUp ? '🌙' : (isOOTKFollowUp ? '🔑' : '🃏');
 
   // ── 計數 ──
   window._jyTarotFollowUps = (window._jyTarotFollowUps || 0) + 1;
 
-  // ── Loading 動畫(v69.12 升級版)──
+  // ── Loading 動畫 ──
   try { _ensureAiLoadingFx(); } catch(_e) {}
   var cardNames = newCards.map(function(c) { return (c.n || c.name || '') + (c.isUp ? '正位' : '逆位'); }).join('、');
-
-  // 預先計算每張牌的飛入位置(扇形排列,1-3 張各有 layout)
-  // 容器 200x180,中心點(100,120),牌大小 44x66
-  var _layouts = {
-    1: [{ x: 100, y: 90, rot: 0 }],
-    2: [{ x: 70, y: 95, rot: -8 }, { x: 130, y: 95, rot: 8 }],
-    3: [{ x: 50, y: 100, rot: -14 }, { x: 100, y: 80, rot: 0 }, { x: 150, y: 100, rot: 14 }]
-  };
-  var _layout = _layouts[cardCount] || _layouts[2];
-  var _cardsHtml = '';
-  var _connectorsHtml = '';
-  for (var _ci = 0; _ci < cardCount; _ci++) {
-    var _pos = _layout[_ci] || _layout[_layout.length - 1];
-    var _card = newCards[_ci];
-    var _cardName = (_card.n || _card.name || '?');
-    var _isUpCard = (_card.isUp === true);
-    var _delay = (0.15 + _ci * 0.35).toFixed(2);
-    var _breathDelay = (1.6 + _ci * 0.25).toFixed(2);
-    // 連結線:從中心 (100,120) 指向牌中心 (_pos.x, _pos.y)
-    var _dx = _pos.x - 100, _dy = _pos.y - 120;
-    var _len = Math.sqrt(_dx*_dx + _dy*_dy);
-    var _angle = Math.atan2(_dy, _dx) * 180 / Math.PI;
-    _connectorsHtml +=
-      '<div style="position:absolute;left:100px;top:120px;width:' + Math.max(_len, 1) + 'px;height:1px;' +
-        'background:linear-gradient(90deg,rgba(' + accentR + ',.85) 0%,rgba(' + accentR + ',.15) 100%);' +
-        'transform-origin:left center;transform:rotate(' + _angle.toFixed(2) + 'deg);' +
-        'animation:jyFuConnect 1.6s ease-in-out ' + (1.2 + _ci * 0.3).toFixed(2) + 's infinite;' +
-        'opacity:0;animation-fill-mode:forwards;pointer-events:none;z-index:1"></div>';
-    // 牌底部漣漪
-    _cardsHtml +=
-      '<div style="position:absolute;left:' + _pos.x + 'px;top:' + (_pos.y + 24) + 'px;width:50px;height:50px;' +
-        'border-radius:50%;background:radial-gradient(circle,rgba(' + accentR + ',.5) 0%,transparent 70%);' +
-        'transform:translate(-50%,-50%);opacity:0;' +
-        'animation:jyFuRipple 1.8s ease-out ' + (parseFloat(_delay) + 0.6).toFixed(2) + 's infinite;' +
-        'pointer-events:none;z-index:2"></div>';
-    // 牌本體(用 CSS 模擬塔羅牌正面)
-    _cardsHtml +=
-      '<div style="position:absolute;left:' + _pos.x + 'px;top:' + _pos.y + 'px;width:44px;height:66px;' +
-        'transform:translate(-50%,-50%) rotate(' + _pos.rot + 'deg);transform-style:preserve-3d;' +
-        'border-radius:5px;' +
-        'background:linear-gradient(145deg,rgba(' + accentR + ',.18) 0%,rgba(' + accentR2 + ',.08) 50%,rgba(' + accentR + ',.22) 100%),' +
-                  'linear-gradient(180deg,#1a1a2e 0%,#0f0f1e 100%);' +
-        'border:1px solid rgba(' + accentR + ',.55);' +
-        'box-shadow:0 4px 18px rgba(0,0,0,.45),0 0 12px rgba(' + accentR + ',.35),inset 0 0 0 1px rgba(' + accentR + ',.25);' +
-        'opacity:0;' +
-        'animation:jyFuCardFly .9s cubic-bezier(.34,1.56,.64,1) ' + _delay + 's forwards,' +
-                  'jyFuCardBreath 3s ease-in-out ' + _breathDelay + 's infinite;' +
-        'display:flex;flex-direction:column;align-items:center;justify-content:center;' +
-        'text-align:center;font-family:inherit;z-index:3">' +
-        // 牌頂裝飾
-        '<div style="position:absolute;top:3px;left:3px;right:3px;height:1px;background:linear-gradient(90deg,transparent,rgba(' + accentR + ',.8),transparent)"></div>' +
-        // 牌中央符號
-        '<div style="font-size:1.1rem;color:rgba(' + accentR + ',.95);text-shadow:0 0 8px rgba(' + accentR + ',.7);margin-bottom:2px">' + (_isUpCard ? '▲' : '▼') + '</div>' +
-        // 牌名(直書感:取前 2 字 + 換行 + 後 2 字)
-        '<div style="font-size:.46rem;color:' + _modePalette.accent + ';line-height:1.15;letter-spacing:.04em;font-weight:700;padding:0 2px;word-break:break-all">' + _cardName.slice(0, 4) + (_cardName.length > 4 ? '…' : '') + '</div>' +
-        // 牌底裝飾
-        '<div style="position:absolute;bottom:3px;left:3px;right:3px;height:1px;background:linear-gradient(90deg,transparent,rgba(' + accentR + ',.8),transparent)"></div>' +
-      '</div>';
-  }
-
   fuArea.innerHTML =
-    '<div style="text-align:center;padding:1.2rem 1rem .4rem">' +
-      // ── 上方標題 ──
-      '<div style="font-size:.72rem;color:rgba(' + accentR + ',.6);letter-spacing:.18em;margin-bottom:.5rem">∗ ' + _modePalette.ritual.toUpperCase() + ' ∗</div>' +
-      '<div style="font-size:1.2rem;margin-bottom:.2rem">' + modeIcon + '</div>' +
-      // ── 主舞台 ──
-      '<div style="position:relative;width:200px;height:180px;margin:.4rem auto .6rem">' +
-        // 中央光暈(深層,旋轉)
-        '<div style="position:absolute;left:50%;top:120px;width:140px;height:140px;' +
-          'border-radius:50%;background:conic-gradient(from 0deg,rgba(' + accentR + ',.0),rgba(' + accentR + ',.18),rgba(' + accentR + ',.0));' +
-          'transform:translate(-50%,-50%);animation:jyFuRotate 6s linear infinite;pointer-events:none;z-index:0"></div>' +
-        // 中央光暈(呼吸)
-        '<div style="position:absolute;left:50%;top:120px;width:90px;height:90px;' +
-          'border-radius:50%;background:radial-gradient(circle,rgba(' + accentR + ',.3) 0%,rgba(' + accentR + ',.05) 50%,transparent 75%);' +
-          'transform:translate(-50%,-50%);animation:jyPulseGlow 3s ease-in-out infinite;pointer-events:none;z-index:0"></div>' +
-        // 中央七芒/五芒符號(對應模式)
-        '<div style="position:absolute;left:50%;top:120px;font-size:1.4rem;color:rgba(' + accentR + ',.85);' +
-          'transform:translate(-50%,-50%);text-shadow:0 0 12px rgba(' + accentR + ',.7);' +
-          'animation:jyFuRune 2.4s ease-in-out infinite;z-index:1">' +
-          (isFullFollowUp ? '✦' : (isOOTKFollowUp ? '✧' : '✶')) +
-        '</div>' +
-        // 連結線(從中心指向各張牌)
-        _connectorsHtml +
-        // 牌(從牌堆飛出)
-        _cardsHtml +
-        // 上方掃光線
-        '<div style="position:absolute;top:0;left:0;right:0;height:2px;overflow:hidden;pointer-events:none">' +
-          '<div style="position:absolute;top:0;left:-30%;width:30%;height:100%;' +
-            'background:linear-gradient(90deg,transparent,rgba(' + accentR + ',.8),transparent);' +
-            'animation:jyScan 3.2s linear infinite"></div>' +
-        '</div>' +
+    '<div style="text-align:center;padding:1.5rem 1rem">' +
+      '<div style="position:relative;width:100px;height:100px;margin:0 auto .7rem">' +
+        '<div style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(' + accentR + ',.16) 0%,rgba(' + accentR + ',.04) 30%,transparent 70%);animation:jyPulseGlow 3.4s ease-in-out infinite"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:80px;height:80px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(' + accentR + ',.10)"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:68px;height:68px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid transparent;border-top-color:rgba(' + accentR + ',.7);border-right-color:rgba(' + accentR + ',.3);animation:jySpinGold 2s linear infinite"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:50px;height:50px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid transparent;border-bottom-color:rgba(' + accentR + ',.5);animation:jySpinPurple 3.1s linear infinite reverse"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:radial-gradient(circle,rgba(' + accentR + ',.95) 0%,rgba(' + accentR + ',.2) 60%,transparent 100%);animation:jyBreath 2.4s ease-in-out infinite"></div>' +
+        '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:1.1rem">' + modeIcon + '</div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:2px;height:34px;transform-origin:center bottom;transform:translate(-50%,-100%) rotate(0deg);animation:jyOrbitA 3.6s linear infinite"><div style="width:6px;height:6px;border-radius:50%;background:rgba(' + accentR + ',.8);box-shadow:0 0 8px rgba(' + accentR + ',.35)"></div></div>' +
+        '<div style="position:absolute;left:50%;top:50%;width:2px;height:26px;transform-origin:center bottom;transform:translate(-50%,-100%) rotate(180deg);animation:jyOrbitB 2.8s linear infinite reverse"><div style="width:5px;height:5px;border-radius:50%;background:rgba(212,175,55,.8);box-shadow:0 0 6px rgba(212,175,55,.3)"></div></div>' +
       '</div>' +
-      // ── 牌名顯示 ──
-      '<div style="font-size:.84rem;color:rgba(' + accentR + ',.95);font-weight:700;margin-bottom:.15rem">抽到 ' + cardCount + ' 張</div>' +
-      '<div style="font-size:.7rem;color:' + _modePalette.accent + ';opacity:.85;line-height:1.5;padding:0 1rem;letter-spacing:.02em">' + cardNames + '</div>' +
-      // ── 階段文字 ──
-      '<div style="margin:.7rem auto 0;max-width:280px;padding:.5rem .9rem;border-radius:14px;' +
-          'border:1px solid rgba(' + accentR + ',.18);background:rgba(' + accentR + ',.04);' +
-          'box-shadow:0 0 18px rgba(' + accentR + ',.06) inset">' +
-        '<div id="fu-ai-phase" style="font-size:.74rem;color:rgba(' + accentR + ',.92);letter-spacing:.06em;' +
-          'transition:opacity .35s;min-height:1.1rem;font-weight:600;animation:jyFuPhaseIn .5s ease-out">' +
-          '⊙ 補充牌已抽出,正在結合' + _modePalette.label + '…' +
-        '</div>' +
+      '<div style="font-size:.88rem;color:rgba(' + accentR + ',.9);font-weight:700">抽到 ' + cardCount + ' 張：' + cardNames + '</div>' +
+      '<div style="font-size:.75rem;color:var(--c-text-dim);margin-top:.2rem">正在結合' + (isFullFollowUp ? '七系統命盤' : (isOOTKFollowUp ? '五階段' : '原本牌陣')) + '回答…</div>' +
+      '<div style="max-width:280px;margin:.6rem auto 0;padding:.5rem .7rem;border-radius:12px;border:1px solid rgba(' + accentR + ',.12);background:rgba(' + accentR + ',.03)">' +
+        '<div id="fu-ai-phase" style="font-size:.68rem;color:rgba(' + accentR + ',.7);letter-spacing:.06em;transition:opacity .35s;min-height:1rem">補充牌已抽出，正在結合分析…</div>' +
       '</div>' +
-      // ── 進度條 ──
-      '<div style="width:min(260px,82%);height:3px;border-radius:999px;background:rgba(' + accentR + ',.08);overflow:hidden;margin:.55rem auto 0;position:relative">' +
-        '<div id="fu-loading-bar" style="width:6%;height:100%;border-radius:999px;' +
-          'background:linear-gradient(90deg,rgba(' + accentR + ',.5),rgba(' + accentR + ',1),rgba(' + accentR2 + ',.95));' +
-          'box-shadow:0 0 8px rgba(' + accentR + ',.6);' +
-          'transition:width .8s ease-out"></div>' +
+      '<div style="width:min(240px,78%);height:3px;border-radius:999px;background:rgba(' + accentR + ',.08);overflow:hidden;margin:.5rem auto 0">' +
+        '<div id="fu-loading-bar" style="width:6%;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(' + accentR + ',.6),rgba(' + accentR + ',.95),rgba(212,175,55,.9));transition:width .8s ease-out"></div>' +
       '</div>' +
     '</div>';
-
-  // ★ v69.12:階段文字輪換(每 3.5 秒換一句,讓用戶感覺有進度)
-  var _fuPhases = isFullFollowUp
-    ? ['⊙ 補充牌已抽出,正在校準七系統能量…', '⊙ 八字 × 紫微 × 塔羅 交叉論斷中…', '⊙ 整合大運流年訊息…', '⊙ 靜月正在書寫…']
-    : (isOOTKFollowUp
-        ? ['⊙ 補充牌已抽出,接入五階段結構…', '⊙ Counting story 重新校驗…', '⊙ Active pile 對話中…', '⊙ 靜月正在書寫…']
-        : ['⊙ 補充牌已抽出,接入原牌陣脈絡…', '⊙ 牌與牌之間的對話展開…', '⊙ 元素能量流向確認…', '⊙ 靜月正在書寫…']);
-  var _fuPhaseIdx = 0;
-  var _fuPhaseTimer = setInterval(function() {
-    try {
-      var _pe = document.getElementById('fu-ai-phase');
-      if (!_pe) return;
-      _fuPhaseIdx = (_fuPhaseIdx + 1) % _fuPhases.length;
-      _pe.style.animation = 'jyFuPhaseOut .35s ease-in forwards';
-      setTimeout(function() {
-        try {
-          _pe.textContent = _fuPhases[_fuPhaseIdx];
-          _pe.style.animation = 'jyFuPhaseIn .45s ease-out forwards';
-        } catch(_) {}
-      }, 360);
-    } catch(_) {}
-  }, 3500);
 
   // ★ v30b：追問 bar 用 interval 驅動（每2秒+8%，最高88%）
   var _fuBarPct = 6;
@@ -25847,7 +25755,6 @@ async function _triggerTarotFollowUp() {
     // ★ v46：401 LOGIN_REQUIRED — 未登入使用者的攔截
     if (resp.status === 401) {
       try { clearInterval(_fuBarTimer); } catch(_) {}
-      try { clearInterval(_fuPhaseTimer); } catch(_) {}
       try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
       _showLoginRequired();
       window._jyTarotFollowUps--;
@@ -25859,7 +25766,6 @@ async function _triggerTarotFollowUp() {
     //        這裡是最後一道攔截（Worker 可能回 SSE 前就 402 中斷）
     if (resp.status === 402) {
       try { clearInterval(_fuBarTimer); } catch(_) {}
-      try { clearInterval(_fuPhaseTimer); } catch(_) {}
       try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
       try {
         var _402 = await resp.json();
@@ -25902,6 +25808,7 @@ async function _triggerTarotFollowUp() {
               var parsed = JSON.parse(evtData);
               r = parsed.result || parsed;
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
+              if (parsed.crystalTone) window._jyCurrentTone = parsed.crystalTone;
               if (parsed.memoryTopicStats) window._jyMemoryTopicStats = parsed.memoryTopicStats;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
@@ -25958,7 +25865,6 @@ async function _triggerTarotFollowUp() {
       // ★ v46：JSON fallback 的 402 路由
       if (data && data.code === 'FOLLOWUP_NEED_PAYMENT') {
         try { clearInterval(_fuBarTimer); } catch(_) {}
-      try { clearInterval(_fuPhaseTimer); } catch(_) {}
         try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
         _showFollowUpPaywall();
         window._jyTarotFollowUps--;
@@ -25968,7 +25874,6 @@ async function _triggerTarotFollowUp() {
       if (data.error && (data.code === 'FOLLOWUP_RATE_LIMITED' || data.code === 'FREE_RATE_LIMITED' || data.code === 'FREE_USED_UP' || data.code === 'FREE_USED_UP_RACE')) {
         // v68.20.9 Bug #131:加 FREE_USED_UP_RACE(worker Bug #99 race 拒絕的 code)
         try { clearInterval(_fuBarTimer); } catch(_) {}
-      try { clearInterval(_fuPhaseTimer); } catch(_) {}
         try { clearTimeout(_fuAbortTimer); } catch(_) {} // v51
         // 一律路由到追問付費牆
         _showFollowUpPaywall();
@@ -26038,12 +25943,10 @@ async function _triggerTarotFollowUp() {
 
     // ★ v30b：追問完成 bar→100%
     try { clearInterval(_fuBarTimer); } catch(_) {}
-      try { clearInterval(_fuPhaseTimer); } catch(_) {}
     try { var _fbd = document.getElementById('fu-loading-bar'); if (_fbd) { _fbd.style.width = '100%'; } } catch(_) {}
 
     // ★ v30b：追問 bar 完成→100%
     try { clearInterval(_fuBarTimer); } catch(_) {}
-      try { clearInterval(_fuPhaseTimer); } catch(_) {}
     try { var _fbb = document.getElementById('fu-loading-bar'); if (_fbb) { _fbb.style.width = '100%'; } } catch(_) {}
 
     fuArea.innerHTML = fuHtml;
@@ -26081,7 +25984,6 @@ async function _triggerTarotFollowUp() {
 
   } catch(err) {
     try { clearInterval(_fuBarTimer); } catch(_) {}
-      try { clearInterval(_fuPhaseTimer); } catch(_) {}
     // ★ v51：catch 區也保險 clearTimeout，避免後續 abort 誤觸
     try { clearTimeout(_fuAbortTimer); } catch(_) {}
     console.error('[TarotFollowUp]', err);
