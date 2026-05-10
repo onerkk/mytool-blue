@@ -8078,13 +8078,19 @@ function renderPaymentDiag(wh, qf) {
   // ── ECPay 環境變數狀態 ──
   if (wh && wh.envStatus) {
     const env = wh.envStatus;
-    const isProdReady = env.hashKey_set && env.hashIV_set && !env.merchantId_is_default_test;
+    // v69.13 修:綠界官方測試帳號是 2000132,不是 3493341
+    const isProdReady = env.hashKey_set && env.hashIV_set && env.merchantId_set && !env.merchantId_is_official_test;
     const bg = isProdReady ? 'rgba(34,197,94,.06)' : 'rgba(251,191,36,.06)';
     const border = isProdReady ? 'rgba(34,197,94,.3)' : 'rgba(251,191,36,.3)';
     html += '<div class="worker-card" style="margin-bottom:14px;background:' + bg + ';border-color:' + border + '">';
     html += '<h3 style="margin-top:0">🔧 ECPay 環境變數</h3>';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">';
-    html += '<div>MerchantID: <code style="color:#fde68a">' + _esc(env.merchantId) + '</code>' + (env.merchantId_is_default_test ? ' <span style="color:#fbbf24">(測試帳號)</span>' : ' <span style="color:#86efac">(自有帳號)</span>') + '</div>';
+    const _midBadge = !env.merchantId_set
+      ? ' <span style="color:#ef4444">(未設定)</span>'
+      : env.merchantId_is_official_test
+        ? ' <span style="color:#fbbf24">(綠界官方測試 2000132)</span>'
+        : ' <span style="color:#86efac">(自有正式帳號)</span>';
+    html += '<div>MerchantID: <code style="color:#fde68a">' + _esc(env.merchantId || '(空)') + '</code>' + _midBadge + '</div>';
     html += '<div>HashKey: ' + (env.hashKey_set ? '<span style="color:#86efac">✓ 已設(' + env.hashKey_length + ' 字元)</span>' : '<span style="color:#ef4444">✗ 未設</span>') + '</div>';
     html += '<div>HashIV: ' + (env.hashIV_set ? '<span style="color:#86efac">✓ 已設(' + env.hashIV_length + ' 字元)</span>' : '<span style="color:#ef4444">✗ 未設</span>') + '</div>';
     html += '</div>';
