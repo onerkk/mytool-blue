@@ -197,6 +197,8 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="payment">💳 付款診斷</div>
     <div class="tab" data-tab="revenue">💰 收入儀表板</div>
     <div class="tab" data-tab="audit">🔍 解讀稽核</div>
+    <div class="tab" data-tab="crystal">💎 水晶推薦</div>
+    <div class="tab" data-tab="batch">📦 批次處理</div>
     <div class="tab" data-tab="settings">設定</div>
   </div>
 
@@ -1072,7 +1074,96 @@ textarea.worker-editor:focus{border-color:var(--accent)}
       </div>
     </div>
 
+    <!-- ══ 💎 水晶推薦稽核 v69.13(C 第二批)══ -->
+    <div id="sec-crystal" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+          <h3 style="margin:0">💎 水晶推薦稽核</h3>
+          <button onclick="loadCrystalStats()" style="padding:6px 12px;border-radius:8px;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.4);color:#d4af37;font-size:12px;cursor:pointer">🔄 重新載入</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-dim);margin:0;line-height:1.65">分析過去 7 天的水晶推薦行為:哪些被推過、哪些從沒推、AI 看到的 catalog 多大、用神/忌神判定分布。</p>
+        <p style="font-size:11px;color:var(--text-dim);margin:4px 0 0;opacity:.7">資料來源:audit:* 反推 + crystal_cat_audit:* 統計</p>
+      </div>
+      <div id="crystalStatsResult"><div style="text-align:center;padding:30px 0;color:var(--text-dim);font-size:13px">載入中...</div></div>
+    </div>
+
+    <!-- ══ 📦 批次處理 v69.13(B1)══ -->
+    <div id="sec-batch" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3 style="margin-top:0">📦 Anthropic Message Batches — 50% 折扣的離線批次處理</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin:0 0 6px 0;line-height:1.65">用於 Threads 文案大量產生、後台分析、文本批次重寫等「不需即時」的任務。Anthropic 24 小時內處理完,**比 sync API 便宜 50%**。</p>
+        <p style="font-size:11px;color:#fbbf24;margin:0 0 0 0;opacity:.85">⚠️ 不要用在用戶即時流(用戶等不了 24 小時)。單批最多 10000 筆。</p>
+      </div>
+
+      <!-- 提交新 batch -->
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3 style="margin-top:0">➕ 提交新 batch</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">標籤(自己看的,例:5月Threads文案)</label>
+            <input id="batchLabel" type="text" placeholder="批次標籤" style="width:100%;padding:7px 10px;border-radius:6px;background:#0d0f14;border:1px solid var(--card-border);color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">模型</label>
+            <select id="batchModel" style="width:100%;padding:7px 10px;border-radius:6px;background:#0d0f14;border:1px solid var(--card-border);color:var(--text);font-size:12px">
+              <option value="claude-haiku-4-5">Haiku 4.5(最便宜)</option>
+              <option value="claude-sonnet-4-6" selected>Sonnet 4.6(平衡)</option>
+              <option value="claude-opus-4-7">Opus 4.7(最強)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">max_tokens</label>
+            <input id="batchMaxTokens" type="number" value="4096" min="100" max="64000" style="width:100%;padding:7px 10px;border-radius:6px;background:#0d0f14;border:1px solid var(--card-border);color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">temperature(0~1)</label>
+            <input id="batchTemp" type="number" value="0.7" step="0.1" min="0" max="1" style="width:100%;padding:7px 10px;border-radius:6px;background:#0d0f14;border:1px solid var(--card-border);color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">System prompt(可選 — 所有 prompt 共用)</label>
+          <textarea id="batchSystem" rows="3" placeholder="例:你是靜月之光的文案師,擅長療癒系晶礦推薦文..." style="width:100%;padding:8px 10px;border-radius:6px;background:#0d0f14;border:1px solid var(--card-border);color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;resize:vertical"></textarea>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">Prompts(每行一個 prompt,系統會自動編號 req-1, req-2 ...)</label>
+          <textarea id="batchPrompts" rows="10" placeholder="幫我寫一則 Threads 推黑曜石護身的文案,150 字以內,療癒系語氣&#10;幫我寫一則 Threads 推粉晶招桃花的文案,150 字以內,溫暖語氣&#10;幫我寫一則 Threads 推綠幽靈招財的文案,150 字以內,沉穩語氣" style="width:100%;padding:8px 10px;border-radius:6px;background:#0d0f14;border:1px solid var(--card-border);color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;resize:vertical;line-height:1.6"></textarea>
+          <div id="batchPromptsCount" style="font-size:11px;color:var(--text-dim);margin-top:4px">0 筆</div>
+        </div>
+        <button onclick="submitBatch()" id="batchSubmitBtn" style="padding:8px 18px;border-radius:8px;background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.45);color:#86efac;font-size:13px;font-weight:600;cursor:pointer">🚀 提交 batch</button>
+        <div id="batchSubmitMsg" style="margin-top:10px;font-size:12px"></div>
+      </div>
+
+      <!-- 歷史 batches -->
+      <div class="worker-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h3 style="margin:0">📋 歷史 batches</h3>
+          <button onclick="loadBatchList()" style="padding:5px 12px;border-radius:6px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35);color:#a5b4fc;font-size:11px;cursor:pointer">🔄 重新載入</button>
+        </div>
+        <div id="batchList"><div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:12px">載入中...</div></div>
+      </div>
+    </div>
+
     <div id="sec-settings" class="section">
+      <div class="worker-card" style="margin-bottom:16px">
+        <h3>💎 水晶話術 A/B 測試</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">A 版 = 溫柔顧問風(現有);B 版 = 命理師專業診斷風(新)。同一用戶隨機分到 A 或 B,看哪版點擊率高。</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px">
+            <input type="checkbox" id="cfgCrystalToneEnabled" style="width:18px;height:18px">
+            <span>啟用 A/B 測試</span>
+          </label>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+            <span style="min-width:90px">B 版佔比</span>
+            <input type="range" id="cfgCrystalToneRatio" min="0" max="100" value="50" step="5" style="flex:1" oninput="document.getElementById('cfgCrystalToneRatioVal').textContent=this.value+'%'">
+            <span id="cfgCrystalToneRatioVal" style="min-width:42px;text-align:right;color:var(--accent);font-weight:700">50%</span>
+          </div>
+          <button type="button" onclick="saveCrystalToneConfig()" style="padding:8px 14px;border-radius:8px;background:var(--accent);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer">儲存設定</button>
+          <div id="cfgCrystalToneStatus" style="font-size:11px;color:var(--text-dim);min-height:14px"></div>
+        </div>
+      </div>
+
       <div class="worker-card" style="margin-bottom:16px">
         <h3>⚙️ AI 模型設定</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">依「用戶類型」分開配置，每類用戶可獨立選標準/深度模型。4 模型任選。</p>
@@ -3012,7 +3103,9 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'payment') loadPaymentDiag();
     if (tab.dataset.tab === 'revenue') loadRevenueStats();
     if (tab.dataset.tab === 'audit') loadAuditList();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); }
+    if (tab.dataset.tab === 'crystal') loadCrystalStats();
+    if (tab.dataset.tab === 'batch') loadBatchList();
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); }
   });
 });
 
@@ -8382,6 +8475,447 @@ function renderAuditCard(item) {
     '</div>' +
     alertHtml +
   '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// 📦 Message Batches v69.13 (B1)
+// ═══════════════════════════════════════════════════════════
+
+// 即時更新「N 筆」counter
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 'batchPrompts') {
+    const lines = e.target.value.split('\n').filter(l => l.trim()).length;
+    const cnt = document.getElementById('batchPromptsCount');
+    if (cnt) cnt.textContent = lines + ' 筆' + (lines > 10000 ? ' ⚠️ 超過 10000 上限' : '');
+  }
+});
+
+async function submitBatch() {
+  const btn = document.getElementById('batchSubmitBtn');
+  const msg = document.getElementById('batchSubmitMsg');
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) { msg.innerHTML = '<span style="color:#fbbf24">請先登入 admin</span>'; return; }
+
+  const label = document.getElementById('batchLabel').value.trim();
+  const model = document.getElementById('batchModel').value;
+  const maxTokens = parseInt(document.getElementById('batchMaxTokens').value, 10) || 4096;
+  const temperature = parseFloat(document.getElementById('batchTemp').value);
+  const system = document.getElementById('batchSystem').value.trim();
+  const promptsText = document.getElementById('batchPrompts').value;
+  const lines = promptsText.split('\n').map(l => l.trim()).filter(l => l);
+
+  if (!lines.length) { msg.innerHTML = '<span style="color:#fbbf24">至少填一個 prompt</span>'; return; }
+  if (lines.length > 10000) { msg.innerHTML = '<span style="color:#ef4444">超過 10000 筆上限</span>'; return; }
+
+  // 預估成本(粗估,讓使用者有概念)
+  const avgInputTokens = Math.round((system ? system.length : 0) / 3 + lines.reduce((s,l) => s + l.length, 0) / lines.length / 3);
+  const totalInputTokens = avgInputTokens * lines.length;
+  const totalOutputTokens = lines.length * maxTokens * 0.3; // 估 30% 用滿
+  let inputPrice = 1, outputPrice = 5;
+  if (model === 'claude-sonnet-4-6') { inputPrice = 3; outputPrice = 15; }
+  else if (model === 'claude-opus-4-7') { inputPrice = 5; outputPrice = 25; }
+  // batch 50% off
+  const usdCost = ((totalInputTokens * inputPrice + totalOutputTokens * outputPrice) / 1000000) * 0.5;
+  const ntdCost = Math.round(usdCost * 32);
+
+  if (!confirm('準備提交 ' + lines.length + ' 筆 ' + model + '\n\n粗估成本:約 NT$' + ntdCost + '(已含 batch 50% 折扣)\n\nAnthropic 24 小時內處理。確認?')) return;
+
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  msg.innerHTML = '<span style="color:var(--text-dim)">提交中...</span>';
+
+  const requests = lines.map((line, i) => ({
+    custom_id: 'req-' + (i + 1),
+    prompt: line,
+    system: system || undefined,
+    model: model,
+    max_tokens: maxTokens,
+    temperature: temperature
+  }));
+
+  try {
+    const r = await fetch(WORKER_URL + '/admin/batch-submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token, label: label, requests: requests })
+    });
+    const data = await r.json();
+    btn.disabled = false;
+    btn.style.opacity = '';
+    if (!data.ok) {
+      msg.innerHTML = '<span style="color:#ef4444">提交失敗:' + _esc(data.error || 'unknown') + '</span>';
+      return;
+    }
+    msg.innerHTML = '<span style="color:#86efac">✓ 已提交 batch:' + _esc(data.batch.id) + '(' + lines.length + ' 筆)。Anthropic 處理中,完成後在下方點「查看結果」。</span>';
+    // 清空 textarea
+    document.getElementById('batchPrompts').value = '';
+    document.getElementById('batchPromptsCount').textContent = '0 筆';
+    // 重載歷史
+    setTimeout(loadBatchList, 500);
+  } catch (e) {
+    btn.disabled = false;
+    btn.style.opacity = '';
+    msg.innerHTML = '<span style="color:#ef4444">提交失敗:' + _esc(e.message || 'network') + '</span>';
+  }
+}
+
+async function loadBatchList() {
+  const el = document.getElementById('batchList');
+  if (!el) return;
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) { el.innerHTML = '<div style="text-align:center;padding:20px 0;color:#fbbf24">請先登入 admin</div>'; return; }
+  el.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:12px">載入中...</div>';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/batch-list?token=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (!data.ok) { el.innerHTML = '<div style="color:#ef4444">' + _esc(data.error || 'unknown') + '</div>'; return; }
+    if (!data.items || !data.items.length) {
+      el.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--text-dim);font-size:12px">沒有 batch 紀錄</div>';
+      return;
+    }
+    el.innerHTML = data.items.map(renderBatchItem).join('');
+  } catch (e) {
+    el.innerHTML = '<div style="color:#ef4444">查詢失敗:' + _esc(e.message) + '</div>';
+  }
+}
+
+function renderBatchItem(b) {
+  const status = b.status || 'unknown';
+  const statusColor = status === 'ended' ? '#86efac' : (status === 'in_progress' ? '#fbbf24' : (status === 'canceling' || status === 'canceled' ? '#ef4444' : '#a5b4fc'));
+  const statusLabel = status === 'ended' ? '✓ 已完成' : (status === 'in_progress' ? '⏳ 處理中' : status);
+  const created = b.createdAt ? new Date(b.createdAt).toISOString().slice(0,19).replace('T',' ') + ' UTC' : '?';
+  const counts = b.request_counts || {};
+  const total = b.request_count || (counts.processing||0) + (counts.succeeded||0) + (counts.errored||0) + (counts.canceled||0) + (counts.expired||0);
+  const succeeded = counts.succeeded || 0;
+  const errored = counts.errored || 0;
+  const processing = counts.processing || 0;
+  const progressPct = total > 0 ? Math.round((succeeded + errored) / total * 100) : 0;
+
+  return '<div style="padding:12px;margin-bottom:10px;border-radius:8px;background:rgba(99,102,241,.04);border:1px solid var(--card-border)">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:6px">' +
+      '<div>' +
+        '<div style="font-size:13px;font-weight:600;color:var(--text)">' + _esc(b.label || '(無標籤)') + ' <span style="color:' + statusColor + ';font-size:11px;margin-left:8px">' + _esc(statusLabel) + '</span></div>' +
+        '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;font-family:monospace">' + _esc(b.id || '?') + ' · ' + _esc(b.model_used || '?') + ' · ' + _esc(created) + '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px">' +
+        '<button onclick="viewBatchResults(\'' + _esc(b.id) + '\')" style="padding:5px 12px;border-radius:6px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.35);color:#c084fc;font-size:11px;cursor:pointer">' + (status === 'ended' ? '查看結果' : '查狀態') + '</button>' +
+      '</div>' +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--text-dim);margin-bottom:5px">' +
+      '總 ' + total + ' · ' +
+      '<span style="color:#86efac">✓' + succeeded + '</span>' +
+      (errored > 0 ? ' · <span style="color:#ef4444">✗' + errored + '</span>' : '') +
+      (processing > 0 ? ' · <span style="color:#fbbf24">⏳' + processing + '</span>' : '') +
+    '</div>' +
+    (total > 0 ? '<div style="height:4px;border-radius:2px;background:rgba(0,0,0,.3);overflow:hidden"><div style="width:' + progressPct + '%;height:100%;background:linear-gradient(90deg,#fbbf24,#86efac)"></div></div>' : '') +
+    '<div id="batchResults_' + _esc(b.id) + '" style="margin-top:10px"></div>' +
+  '</div>';
+}
+
+async function viewBatchResults(batchId) {
+  const containerEl = document.getElementById('batchResults_' + batchId);
+  if (!containerEl) return;
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  containerEl.innerHTML = '<div style="font-size:11px;color:var(--text-dim);padding:8px 0">查詢中...</div>';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/batch-results?token=' + encodeURIComponent(token) + '&id=' + encodeURIComponent(batchId));
+    const data = await r.json();
+    if (!data.ok) {
+      containerEl.innerHTML = '<div style="color:#ef4444;font-size:11px">查詢失敗:' + _esc(data.error || 'unknown') + '</div>';
+      return;
+    }
+    if (data.status !== 'ended') {
+      const c = data.request_counts || {};
+      containerEl.innerHTML =
+        '<div style="font-size:11px;color:#fbbf24;padding:8px 10px;border-radius:6px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25)">' +
+        '⏳ 還在跑(processing=' + (c.processing||0) + ' · succeeded=' + (c.succeeded||0) + ' · errored=' + (c.errored||0) + ')<br>' +
+        '<span style="opacity:.7">' + _esc(data.note || '') + '</span>' +
+        '</div>';
+      // 重新整理上方總列表的進度條
+      setTimeout(loadBatchList, 100);
+      return;
+    }
+
+    // 已完成
+    const results = data.results || [];
+    let html = '<div style="margin-top:8px;padding:8px 10px;border-radius:6px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.2)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+    html += '<div style="font-size:12px;color:#86efac;font-weight:600">✓ 完成 — ' + results.length + ' 筆結果</div>';
+    html += '<button onclick="downloadBatchCSV(\'' + _esc(batchId) + '\')" style="padding:4px 10px;border-radius:5px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#86efac;font-size:11px;cursor:pointer">⬇ 下載 CSV</button>';
+    html += '</div>';
+    html += '<div style="max-height:500px;overflow-y:auto">';
+    for (const res of results) {
+      const ok = res.result_type === 'succeeded';
+      html += '<div style="padding:6px 8px;margin-bottom:4px;border-radius:5px;background:' + (ok ? 'rgba(0,0,0,.2)' : 'rgba(239,68,68,.08)') + ';border:1px solid ' + (ok ? 'rgba(255,255,255,.05)' : 'rgba(239,68,68,.25)') + '">';
+      html += '<div style="font-size:11px;color:#a5b4fc;font-family:monospace;margin-bottom:3px">' + _esc(res.custom_id) + '</div>';
+      if (ok) {
+        html += '<div style="font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.6">' + _esc(res.text || '') + '</div>';
+        if (res.usage) html += '<div style="font-size:10px;color:var(--text-dim);margin-top:3px;opacity:.7">in:' + (res.usage.input_tokens||0) + ' / out:' + (res.usage.output_tokens||0) + '</div>';
+      } else {
+        html += '<div style="font-size:11px;color:#fca5a5">✗ ' + _esc(JSON.stringify(res.error || res.result_type || 'unknown')) + '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div></div>';
+
+    // 暫存 results 給 CSV 下載用
+    window._batchResultsCache = window._batchResultsCache || {};
+    window._batchResultsCache[batchId] = results;
+
+    containerEl.innerHTML = html;
+  } catch (e) {
+    containerEl.innerHTML = '<div style="color:#ef4444;font-size:11px">查詢失敗:' + _esc(e.message) + '</div>';
+  }
+}
+
+function downloadBatchCSV(batchId) {
+  const results = (window._batchResultsCache || {})[batchId];
+  if (!results) { alert('結果未載入'); return; }
+  const csvRows = ['custom_id,result_type,text,error,input_tokens,output_tokens'];
+  for (const r of results) {
+    const text = (r.text || '').replace(/"/g, '""').replace(/\r?\n/g, '\\n');
+    const err = r.error ? JSON.stringify(r.error).replace(/"/g, '""') : '';
+    csvRows.push([
+      r.custom_id,
+      r.result_type || '',
+      '"' + text + '"',
+      '"' + err + '"',
+      (r.usage && r.usage.input_tokens) || 0,
+      (r.usage && r.usage.output_tokens) || 0
+    ].join(','));
+  }
+  const blob = new Blob(['\uFEFF' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'batch_' + batchId + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════════
+// 💎 水晶推薦稽核 v69.13 (C 第二批)
+// ═══════════════════════════════════════════════════════════
+async function loadCrystalStats() {
+  const el = document.getElementById('crystalStatsResult');
+  if (!el) return;
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) { el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#fbbf24">請先登入 admin</div>'; return; }
+  el.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--text-dim)">分析中...</div>';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/crystal-stats?token=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (!data.ok) {
+      el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#ef4444">載入失敗:' + _esc(data.error || 'unknown') + '</div>';
+      return;
+    }
+    el.innerHTML = renderCrystalStats(data);
+  } catch (e) {
+    el.innerHTML = '<div style="text-align:center;padding:30px 0;color:#ef4444">查詢失敗:' + _esc(e.message) + '</div>';
+  }
+}
+
+function renderCrystalStats(data) {
+  const s = data.summary || {};
+  let html = '';
+
+  // ── 總覽 ──
+  html += '<div class="stats-grid" style="margin-bottom:16px">';
+  html += '<div class="stat-card"><div class="stat-num">' + (s.total_crystals || 0) + '</div><div class="stat-label">💎 總商品數</div></div>';
+  html += '<div class="stat-card" style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.25)"><div class="stat-num" style="color:#86efac">' + (s.in_stock_crystals || 0) + '</div><div class="stat-label">📦 有貨</div></div>';
+  html += '<div class="stat-card" style="background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.25)"><div class="stat-num" style="color:#d4af37">' + (s.pushed_at_least_once || 0) + '</div><div class="stat-label">🔥 被推過</div></div>';
+  html += '<div class="stat-card" style="background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.25)"><div class="stat-num" style="color:#a5b4fc">' + (s.never_pushed_in_stock || 0) + '</div><div class="stat-label">❄️ 從沒推 ' + (s.never_pushed_pct || 0) + '%</div></div>';
+  html += '<div class="stat-card" style="background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.25)"><div class="stat-num" style="color:#c084fc">' + (s.total_clicks || 0) + '</div><div class="stat-label">👆 蝦皮點擊</div></div>';
+  html += '</div>';
+
+  // ── audit 掃描概況 ──
+  html += '<div class="worker-card" style="margin-bottom:14px">';
+  html += '<h3 style="margin-top:0;font-size:14px">🔍 過去 7 天稽核概況</h3>';
+  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;font-size:12px;color:var(--text)">';
+  html += '<div>• 七維/開鑰解讀數: <strong>' + (s.audit_scanned || 0) + '</strong></div>';
+  html += '<div>• 解讀含水晶: <strong>' + (s.audit_with_crystal || 0) + '</strong> ' + (s.audit_scanned > 0 ? '(' + Math.round((s.audit_with_crystal / s.audit_scanned) * 100) + '%)' : '') + '</div>';
+  html += '<div>• catalog 送 AI 平均量: <strong>' + (s.avg_sent_to_ai || 0) + '</strong> 顆</div>';
+  html += '<div>• 平均冷門佔比: <strong>' + (s.avg_cold_ratio_pct || 0) + '%</strong></div>';
+  html += '</div>';
+  html += '</div>';
+
+  // ── A/B 話術對照(C)──
+  if ((s.tone_a_audits || 0) + (s.tone_b_audits || 0) > 0) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">🎭 A/B 話術點擊率對照</h3>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:10px">A=溫柔顧問風(現有);B=命理師專業診斷風。樣本數小於 30 時數據參考性低</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    // A 卡
+    html += '<div style="padding:12px;border-radius:8px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25)">';
+    html += '<div style="font-size:13px;color:#a5b4fc;font-weight:700;margin-bottom:6px">A 版(顧問風)</div>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">' + (s.tone_a_audits || 0) + ' 次解讀 · ' + (s.tone_a_clicks || 0) + ' 次點擊</div>';
+    html += '<div style="font-size:24px;color:#a5b4fc;font-weight:700">' + (s.tone_a_click_rate || 0) + '%</div>';
+    html += '<div style="font-size:10px;color:var(--text-dim)">點擊率</div>';
+    html += '</div>';
+    // B 卡
+    const _bWin = (s.tone_b_click_rate || 0) > (s.tone_a_click_rate || 0);
+    html += '<div style="padding:12px;border-radius:8px;background:rgba(' + (_bWin ? '34,197,94' : '212,175,55') + ',.08);border:1px solid rgba(' + (_bWin ? '34,197,94' : '212,175,55') + ',.25)">';
+    html += '<div style="font-size:13px;color:' + (_bWin ? '#86efac' : '#d4af37') + ';font-weight:700;margin-bottom:6px">B 版(命理師風) ' + (_bWin ? '🏆' : '') + '</div>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">' + (s.tone_b_audits || 0) + ' 次解讀 · ' + (s.tone_b_clicks || 0) + ' 次點擊</div>';
+    html += '<div style="font-size:24px;color:' + (_bWin ? '#86efac' : '#d4af37') + ';font-weight:700">' + (s.tone_b_click_rate || 0) + '%</div>';
+    html += '<div style="font-size:10px;color:var(--text-dim)">點擊率</div>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  // ── 用神/忌神分布 ──
+  if (data.fav_el_dist) {
+    const _favTotal = Object.values(data.fav_el_dist).reduce((a,b) => a+b, 0);
+    const _unfavTotal = Object.values(data.unfav_el_dist || {}).reduce((a,b) => a+b, 0);
+    if (_favTotal > 0 || _unfavTotal > 0) {
+      html += '<div class="worker-card" style="margin-bottom:14px">';
+      html += '<h3 style="margin-top:0;font-size:14px">🌿 五行判定分布(用神 vs 忌神)</h3>';
+      html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">用神 = AI 判定該補的;忌神 = AI 判定該避的。看分布是否平均、或某個五行偏多</div>';
+      const _wxColors = { '火': '#f87171', '土': '#fbbf24', '金': '#fde68a', '水': '#60a5fa', '木': '#86efac' };
+      for (const wx of ['火','土','金','水','木']) {
+        const _f = data.fav_el_dist[wx] || 0;
+        const _u = (data.unfav_el_dist || {})[wx] || 0;
+        const _fPct = _favTotal > 0 ? (_f / _favTotal * 100) : 0;
+        const _uPct = _unfavTotal > 0 ? (_u / _unfavTotal * 100) : 0;
+        html += '<div style="display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:6px">';
+        html += '<div style="min-width:30px;color:' + _wxColors[wx] + ';font-weight:700;font-size:14px">' + wx + '</div>';
+        html += '<div style="flex:1;display:flex;flex-direction:column;gap:3px">';
+        // 用神 bar(綠)
+        html += '<div style="display:flex;align-items:center;gap:6px">';
+        html += '<div style="min-width:36px;font-size:10px;color:#86efac">用 ' + _f + '</div>';
+        html += '<div style="flex:1;height:8px;border-radius:3px;background:rgba(0,0,0,.25);overflow:hidden"><div style="width:' + _fPct + '%;height:100%;background:rgba(34,197,94,.55)"></div></div>';
+        html += '</div>';
+        // 忌神 bar(紅)
+        html += '<div style="display:flex;align-items:center;gap:6px">';
+        html += '<div style="min-width:36px;font-size:10px;color:#fca5a5">忌 ' + _u + '</div>';
+        html += '<div style="flex:1;height:8px;border-radius:3px;background:rgba(0,0,0,.25);overflow:hidden"><div style="width:' + _uPct + '%;height:100%;background:rgba(239,68,68,.45)"></div></div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+  }
+
+  // ── 熱門排行 ──
+  if (data.hot_list && data.hot_list.length) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">🔥 熱門推薦排行(前 ' + Math.min(50, data.hot_list.length) + ' 顆)</h3>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">推 = AI 解讀文中提到次數;👆 = 用戶實際點蝦皮連結;率 = 點擊率(👆/推)</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:5px">';
+    const _maxCount = Math.max.apply(null, data.hot_list.map(h => h.count));
+    for (let i = 0; i < Math.min(50, data.hot_list.length); i++) {
+      const h = data.hot_list[i];
+      const pct = _maxCount > 0 ? (h.count / _maxCount * 100) : 0;
+      const stockBadge = h.stock > 0 ? '<span style="color:#86efac;font-size:10px;margin-left:4px">' + h.stock + '個</span>' : '<span style="color:#ef4444;font-size:10px;margin-left:4px">缺貨</span>';
+      const _clicks = h.clicks || 0;
+      const _crate = h.click_rate_pct || 0;
+      const _crateColor = _crate >= 30 ? '#86efac' : (_crate >= 10 ? '#fbbf24' : '#a5b4fc');
+      html += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 8px;border-radius:5px;background:rgba(212,175,55,.04)">';
+      html += '<div style="min-width:24px;color:var(--text-dim);font-size:10px">#' + (i + 1) + '</div>';
+      html += '<div style="min-width:130px;color:var(--text);font-weight:600">' + _esc(h.name) + '</div>';
+      html += '<div style="min-width:50px;color:#a5b4fc;font-size:11px">' + _esc(h.wuxing || '?') + '行</div>';
+      html += '<div style="flex:1;height:14px;border-radius:3px;background:rgba(0,0,0,.25);overflow:hidden;position:relative">';
+      html += '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#fbbf24,#f59e0b)"></div>';
+      html += '<div style="position:absolute;left:6px;top:0;line-height:14px;font-size:10px;color:#fff;font-weight:600">推 ' + h.count + '</div>';
+      html += '</div>';
+      // 點擊欄
+      html += '<div style="min-width:60px;text-align:right;font-size:10px"><span style="color:#c084fc;font-weight:600">👆 ' + _clicks + '</span></div>';
+      html += '<div style="min-width:42px;text-align:right;font-size:10px;color:' + _crateColor + ';font-weight:700">' + _crate + '%</div>';
+      html += '<div>' + stockBadge + '</div>';
+      html += '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  // ── 冷凍清單 ──
+  if (data.cold_list && data.cold_list.length) {
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">❄️ 從沒被推的有貨商品(' + data.cold_list.length + ' 顆)</h3>';
+    html += '<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">過去 7 天 AI 沒在解讀中提過這些商品。已開啟「冷門加權」機制,這份清單會逐漸縮小</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px">';
+    for (const c of data.cold_list.slice(0, 100)) {
+      html += '<div style="padding:6px 10px;border-radius:5px;background:rgba(99,102,241,.04);border:1px solid rgba(99,102,241,.15);font-size:12px">';
+      html += '<div style="color:var(--text);font-weight:600">' + _esc(c.name) + '</div>';
+      html += '<div style="color:var(--text-dim);font-size:10px;margin-top:2px">' + _esc(c.wuxing || '?') + '行 · ' + c.stock + '個</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+    if (data.cold_list.length > 100) {
+      html += '<div style="font-size:11px;color:var(--text-dim);text-align:center;margin-top:8px">... 還有 ' + (data.cold_list.length - 100) + ' 顆未顯示</div>';
+    }
+    html += '</div>';
+  }
+
+  // ── cache 狀態 ──
+  if (data.cache_status) {
+    const c = data.cache_status;
+    html += '<div class="worker-card" style="margin-bottom:14px">';
+    html += '<h3 style="margin-top:0;font-size:14px">⚙️ Cache 狀態</h3>';
+    html += '<div style="font-size:12px;color:var(--text);line-height:1.7">';
+    html += '<div>• 計算時間: <code>' + _esc(c.computed_at || '?') + '</code></div>';
+    html += '<div>• 過期倒數: <strong>' + Math.floor(c.expires_in_seconds / 60) + ' 分</strong></div>';
+    html += '<div>• 已收錄被推水晶: <strong>' + (c.names_count || 0) + '</strong> 個</div>';
+    html += '<div>• 上次掃描 audit 數: <strong>' + (c.audit_scanned || 0) + '</strong></div>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  // ── 提示 ──
+  html += '<div style="font-size:11px;color:var(--text-dim);text-align:center;padding:8px;line-height:1.6">' + _esc(data.notes || '') + '</div>';
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 💎 水晶話術 A/B 測試設定
+// ═══════════════════════════════════════════════════════════
+async function loadCrystalToneConfig() {
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) return;
+  try {
+    const r = await fetch(WORKER_URL + '/admin/crystal-tone-config?token=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const en = document.getElementById('cfgCrystalToneEnabled');
+      const ra = document.getElementById('cfgCrystalToneRatio');
+      const rv = document.getElementById('cfgCrystalToneRatioVal');
+      if (en) en.checked = !!data.config.enabled;
+      if (ra) ra.value = Math.round((data.config.ratio_b || 0.5) * 100);
+      if (rv) rv.textContent = (Math.round((data.config.ratio_b || 0.5) * 100)) + '%';
+    }
+  } catch(_) {}
+}
+async function saveCrystalToneConfig() {
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  const status = document.getElementById('cfgCrystalToneStatus');
+  if (!token) { if (status) status.textContent = '請先登入 admin'; return; }
+  const en = document.getElementById('cfgCrystalToneEnabled');
+  const ra = document.getElementById('cfgCrystalToneRatio');
+  const cfg = {
+    enabled: en ? en.checked : false,
+    ratio_b: ra ? (parseInt(ra.value) / 100) : 0.5
+  };
+  if (status) status.textContent = '儲存中...';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/crystal-tone-config?token=' + encodeURIComponent(token), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      if (status) status.textContent = '✓ 已儲存(立即生效,新解讀將分配 A/B)';
+      setTimeout(() => { if (status) status.textContent = ''; }, 3000);
+    } else {
+      if (status) status.textContent = '失敗:' + (data.error || 'unknown');
+    }
+  } catch(e) {
+    if (status) status.textContent = '錯誤:' + e.message;
+  }
 }
 
 // PWA Service Worker 註冊
