@@ -4533,7 +4533,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.3-2026-05-11';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.4-2026-05-11';
 
 async function checkWorkerStatus() {
   try {
@@ -8516,22 +8516,59 @@ async function loadAuditList() {
 function _extractMentionedCards(text) {
   if (!text) return [];
   const found = new Set();
-  const courts = ['侍者','騎士','國王','王后','皇后'];
+  // v69.16.4 P0 修:courts 涵蓋常見翻譯,避免漏抓
+  //   注意:不能加 '王' 太短(會搶吃「聖杯王牌」變「聖杯王」)
+  //   不能加 '后' 太短(會搶吃「皇后」)
+  const courts = ['侍者','騎士','國王','王后','皇后','女王','聖騎士','少年'];
   const suits = ['聖杯','寶劍','權杖','金幣','錢幣'];
-  const numbers = ['一','二','三','四','五','六','七','八','九','十','1','2','3','4','5','6','7','8','9','10'];
-  const majors = ['愚者','魔術師','女祭司','皇后','皇帝','教皇','戀人','戰車','力量','隱者','命運之輪','正義','吊人','死神','節制','惡魔','星星','月亮','太陽','審判','世界'];
-  for (const m of majors) { if (text.indexOf(m) >= 0) found.add(m); }
-  if (/[^羅]塔[^羅]|^塔[^羅]/.test(text)) found.add('塔');
+  // v69.16.4 P0 修:numbers 涵蓋 Ace 的常見翻譯(王牌/Ace/A)
+  //   塔羅小牌 1 號牌有多種翻譯:「聖杯一」「聖杯王牌」「聖杯 Ace」「聖杯 A」
+  const numbers = ['一','二','三','四','五','六','七','八','九','十','王牌','Ace','ace','A',
+                   '1','2','3','4','5','6','7','8','9','10'];
+  // v69.16.4 P0 修:大牌列表移除「皇后」「皇帝」等容易跟小牌 court 混淆的翻譯
+  //   塔羅大牌正式中文翻譯:
+  //     III. The Empress → 「女皇」(也有人叫皇后,但這跟 Queen of X 衝突)
+  //     IV. The Emperor → 「皇帝」(不要單列,因為跟 King of X 可能混)
+  //   為了避免誤判,優先用「女皇」/「皇帝」明確不衝突的詞,容忍「皇后」漏抓
+  //     反正 The Empress 在中文塔羅實務也常被叫「女皇」
+  const majors = ['愚者','魔術師','女祭司','女皇','皇帝','教皇','戀人','戰車','力量','隱者','命運之輪','正義','吊人','死神','節制','惡魔','星星','月亮','太陽','審判','世界'];
+  // v69.16.4 P0 修:先抓小牌(suit+court / suit+number),再抓大牌
+  //   理由:「寶劍皇后」這種詞如果先用大牌抓會誤匹配到「皇后」
+  //   先抓小牌,把已匹配的位置「挖掉」,剩下的才用大牌規則
+  let _scratch = String(text);
   for (const s of suits) {
-    for (const c of courts) { if (text.indexOf(s + c) >= 0) found.add(s + c); }
-    for (const n of numbers) { if (text.indexOf(s + n) >= 0) found.add(s + n); }
+    for (const c of courts) {
+      const _phrase = s + c;
+      if (_scratch.indexOf(_phrase) >= 0) {
+        found.add(_phrase);
+        // 把已匹配的詞置換掉,避免後續大牌規則誤判
+        _scratch = _scratch.split(_phrase).join('░');
+      }
+    }
+    for (const n of numbers) {
+      const _phrase = s + n;
+      if (_scratch.indexOf(_phrase) >= 0) {
+        found.add(_phrase);
+        _scratch = _scratch.split(_phrase).join('░');
+      }
+    }
   }
+  for (const m of majors) { if (_scratch.indexOf(m) >= 0) found.add(m); }
+  // 「塔」這張大牌特殊處理:不能跟「塔羅」混淆
+  if (/[^羅]塔[^羅]|^塔[^羅]/.test(_scratch)) found.add('塔');
   return Array.from(found);
 }
 
 function _normCard(name) {
   if (!name) return '';
-  return String(name).replace(/正位|逆位|正$|逆$/g, '').replace(/錢幣/g, '金幣').replace(/^▲|^▼/, '').trim();
+  return String(name)
+    .replace(/正位|逆位|正$|逆$/g, '')
+    .replace(/錢幣/g, '金幣')
+    // v69.16.4 P0 修:小牌 court 中文翻譯等價化(王后/皇后/女王 統一,國王/王 統一)
+    .replace(/王后|女王/g, '皇后')
+    .replace(/聖騎士|少年/g, '騎士')
+    .replace(/^▲|^▼/, '')
+    .trim();
 }
 
 function renderAuditCard(item) {
