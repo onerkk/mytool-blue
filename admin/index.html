@@ -8353,7 +8353,21 @@ function renderAuditCard(item) {
   const modeName = mode === 'full' ? '七維度' : (mode === 'tarot' ? '塔羅' : (mode === 'ootk' ? '開鑰' : mode));
   const time = a.time || (item.auditTs ? new Date(item.auditTs + 8 * 3600000).toISOString().slice(0,19).replace('T',' ') + '+08' : '?');
   const model = a.modelId || '?';
-  const fu = a.isFollowUp ? '<span style="margin-left:6px;padding:1px 6px;border-radius:4px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.35);color:#c084fc;font-size:10px">追問</span>' : '';
+  // v69.14.1:audit badge 根據 auditTag 區分(避免「沒按追問卻多一筆」誤判)
+  //   followup            紫色「追問」  = 用戶手動追問
+  //   emergency_rewrite   橘色「補寫」  = v68.5 主解讀骨架太空,系統自動重跑(用戶不知道)
+  //   supplement_dim      藍色「補維」  = v63.3 七維覆蓋率不足,系統自動補缺維度
+  //   supplement_depth    青色「補深」  = v63.6 主解讀深度不夠,系統自動補寫
+  let fu = '';
+  if (a.auditTag === 'emergency_rewrite') {
+    fu = '<span style="margin-left:6px;padding:1px 6px;border-radius:4px;background:rgba(251,146,60,.15);border:1px solid rgba(251,146,60,.4);color:#fdba74;font-size:10px" title="v68.5 主解讀骨架太空,系統自動再跑一次,非用戶追問">補寫</span>';
+  } else if (a.auditTag === 'supplement_dim') {
+    fu = '<span style="margin-left:6px;padding:1px 6px;border-radius:4px;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.4);color:#93c5fd;font-size:10px" title="v63.3 七維覆蓋率不足,系統自動補寫缺維度,非用戶追問">補維</span>';
+  } else if (a.auditTag === 'supplement_depth') {
+    fu = '<span style="margin-left:6px;padding:1px 6px;border-radius:4px;background:rgba(20,184,166,.15);border:1px solid rgba(20,184,166,.4);color:#5eead4;font-size:10px" title="v63.6 主解讀深度不夠,系統自動補深,非用戶追問">補深</span>';
+  } else if (a.isFollowUp || a.auditTag === 'followup') {
+    fu = '<span style="margin-left:6px;padding:1px 6px;border-radius:4px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.35);color:#c084fc;font-size:10px" title="用戶手動追問">追問</span>';
+  }
   const q = a.question || (d.question || '?');
   const mentioned = _extractMentionedCards(a.fullText || '');
 
