@@ -13083,24 +13083,8 @@ function renderActionCard(bazi, type, answer){
           return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
       }
-      // ★ v69.13 D 點擊追蹤:把蝦皮 URL 包一層 worker 中介
-      //   失敗 fallback 直接回原 URL(不擋購買)
-      function _buildTrackUrl(shopeeUrl, crystalName, mode) {
-        try {
-          var _safe = _safeUrlInline(shopeeUrl);
-          // worker 端點(同源,因為這份 ai-analysis.js 由 worker 服務)
-          // ★ v69.13 C 話術 A/B:帶 tone 參數讓點擊歸因到對應版本
-          var _tone = (typeof window !== 'undefined' && window._jyCurrentTone === 'B') ? 'B' : 'A';
-          var _track = '/track-click?to=' + encodeURIComponent(_safe.replace(/&amp;/g, '&')) +
-                       '&crystal=' + encodeURIComponent(String(crystalName || '').slice(0, 50)) +
-                       '&mode=' + encodeURIComponent(mode || 'full') +
-                       '&tone=' + _tone;
-          // 再 escape 給 HTML attribute 用
-          return _track.replace(/&/g,'&amp;');
-        } catch(_) { return _safeUrlInline(shopeeUrl); }
-      }
-      const shopUrl = _buildTrackUrl(p.shopee, p.n, 'full');
-      const shopUrl2 = recs.length > 1 ? _buildTrackUrl(recs[1].shopee, recs[1].n, 'full') : shopUrl;
+      const shopUrl = _safeUrlInline(p.shopee);
+      const shopUrl2 = recs.length > 1 ? _safeUrlInline(recs[1].shopee) : shopUrl;
       crystalEl.innerHTML = `
         <div style="border-top:1px solid rgba(212,175,55,0.15);padding-top:var(--sp-md);margin-top:var(--sp-sm)">
           <p class="text-xs text-dim" style="margin-bottom:8px"><i class="fas fa-gem"></i> 依你的八字體質，最適合的水晶：</p>
@@ -13389,18 +13373,12 @@ function renderActionCard(bazi, type, answer){
         };
         qs.innerHTML = picks.slice(0,5).map(p => {
           // v68.21 Bug #66:同 12808 邏輯,p.shopee 加 https 驗證 + escape
-          // v69.13 D 點擊追蹤:把 _ps 改成 worker 中介 URL
           var _ps = '';
           try {
             if (p.shopee && typeof p.shopee === 'string') {
               var _pu = new URL(p.shopee);
               if (_pu.protocol === 'https:' || _pu.protocol === 'http:') {
-                var _toneA = (typeof window !== 'undefined' && window._jyCurrentTone === 'B') ? 'B' : 'A';
-                _ps = '/track-click?to=' + encodeURIComponent(p.shopee) +
-                      '&crystal=' + encodeURIComponent(String(p.n || '').slice(0, 50)) +
-                      '&mode=full' +
-                      '&tone=' + _toneA;
-                _ps = _ps.replace(/&/g,'&amp;');
+                _ps = p.shopee.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
               }
             }
           } catch(_) {}
@@ -13976,18 +13954,12 @@ renderProductCrystal = function(bazi, type){
     </div>
     <div class="product-grid">${products.map(p=>{
       // v68.21 Bug #66:p.shopee 加 https 驗證 + escape
-      // v69.13 D 點擊追蹤:包 worker 中介 URL
       var _ps = '';
       try {
         if (p.shopee && typeof p.shopee === 'string') {
           var _pu = new URL(p.shopee);
           if (_pu.protocol === 'https:' || _pu.protocol === 'http:') {
-            var _toneB = (typeof window !== 'undefined' && window._jyCurrentTone === 'B') ? 'B' : 'A';
-            _ps = '/track-click?to=' + encodeURIComponent(p.shopee) +
-                  '&crystal=' + encodeURIComponent(String(p.n || '').slice(0, 50)) +
-                  '&mode=full' +
-                  '&tone=' + _toneB;
-            _ps = _ps.replace(/&/g,'&amp;');
+            _ps = p.shopee.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
           }
         }
       } catch(_) {}
@@ -15234,21 +15206,7 @@ function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
         return u;
       } catch(_) { return ''; }
     }
-    // ★ v69.13 D 點擊追蹤
-    function _buildTrackUrlS(shopeeUrl, crystalName, modeStr) {
-      try {
-        var _safe = _safeHttpsUrl(shopeeUrl);
-        if (!_safe) return 'https://tw.shp.ee/2n5Mo2w';
-        // ★ v69.13 C:帶 tone 參數
-        var _toneC = (typeof window !== 'undefined' && window._jyCurrentTone === 'B') ? 'B' : 'A';
-        return '/track-click?to=' + encodeURIComponent(_safe) +
-               '&crystal=' + encodeURIComponent(String(crystalName || '').slice(0, 50)) +
-               '&mode=' + encodeURIComponent(modeStr || 'full') +
-               '&tone=' + _toneC;
-      } catch(_) { return _safeHttpsUrl(shopeeUrl) || 'https://tw.shp.ee/2n5Mo2w'; }
-    }
-    var _modeForTrack = (sourceMode === 'tarot') ? 'tarot' : 'full';
-    var shopUrl = (p.shopee && p.shopee.length > 10) ? _buildTrackUrlS(p.shopee, p.n, _modeForTrack) : '';
+    var shopUrl = (p.shopee && p.shopee.length > 10) ? _safeHttpsUrl(p.shopee) : '';
     if (!shopUrl) shopUrl = 'https://tw.shp.ee/2n5Mo2w';
     var imageUrl = _safeHttpsUrl(p.imageUrl || '');
 
@@ -21534,7 +21492,7 @@ renderTarot = function(){
         var _sysOrder = ['bazi','ziwei','meihua','tarot','natal','vedic','name'];
         var _hasSys = _sysOrder.filter(function(k){ return r.systemStories[k] && typeof r.systemStories[k] === 'string' && r.systemStories[k].length > 10; });
         if (_hasSys.length >= 2) {
-          html += '<details style="margin-bottom:.6rem;border:1px solid rgba(212,175,55,.1);border-radius:10px;overflow:hidden">';
+          html += '<details open style="margin-bottom:.6rem;border:1px solid rgba(212,175,55,.1);border-radius:10px;overflow:hidden">';
           html += '<summary style="padding:.55rem .8rem;font-size:.78rem;color:var(--c-text-muted);cursor:pointer;user-select:none;background:rgba(212,175,55,.02)">📋 各系統分別判讀</summary>';
           html += '<div style="padding:.4rem .6rem">';
           _hasSys.forEach(function(k) {
@@ -21578,7 +21536,7 @@ renderTarot = function(){
           }
         }
         if (paragraphs.length) {
-          html += '<details style="margin-bottom:.6rem;border:1px solid rgba(212,175,55,.1);border-radius:10px;overflow:hidden">';
+          html += '<details open style="margin-bottom:.6rem;border:1px solid rgba(212,175,55,.1);border-radius:10px;overflow:hidden">';
           html += '<summary style="padding:.55rem .8rem;font-size:.78rem;color:var(--c-text-muted);cursor:pointer;user-select:none">💬 完整解讀文字</summary>';
           html += '<div style="padding:.5rem .8rem">';
           for(var pi = 0; pi < paragraphs.length; pi++){
@@ -21876,7 +21834,6 @@ renderTarot = function(){
       if (!admin && !window._jyOpusDepth) { var __subE = parseInt(localStorage.getItem('_jy_sub_expires')||'0'); if (__subE <= Date.now()) _aiMarkUsed(); }
       // ★ v33: 動態庫存存全域
       if (data.crystalProducts) window._jyCrystalProducts = data.crystalProducts;
-      if (data.crystalTone) window._jyCurrentTone = data.crystalTone;
               if (data.memoryTopicStats) window._jyMemoryTopicStats = data.memoryTopicStats;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
@@ -24481,7 +24438,6 @@ async function _triggerTarotAI() {
               r = parsed.result || parsed;
               // ★ v33: 動態庫存
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
-              if (parsed.crystalTone) window._jyCurrentTone = parsed.crystalTone;
               if (parsed.memoryTopicStats) window._jyMemoryTopicStats = parsed.memoryTopicStats;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
@@ -24543,7 +24499,6 @@ async function _triggerTarotAI() {
       // JSON fallback
       var data = await resp.json();
       if (data.crystalProducts) window._jyCrystalProducts = data.crystalProducts;
-      if (data.crystalTone) window._jyCurrentTone = data.crystalTone;
               if (data.memoryTopicStats) window._jyMemoryTopicStats = data.memoryTopicStats;
       if (data.freeUsesLeft != null) window._jyFreeUsesLeft = data.freeUsesLeft;
       if (data.freeStatus) window._jyFreeStatus = data.freeStatus;
@@ -25808,7 +25763,6 @@ async function _triggerTarotFollowUp() {
               var parsed = JSON.parse(evtData);
               r = parsed.result || parsed;
               if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts;
-              if (parsed.crystalTone) window._jyCurrentTone = parsed.crystalTone;
               if (parsed.memoryTopicStats) window._jyMemoryTopicStats = parsed.memoryTopicStats;
               if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft;
               if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus;
