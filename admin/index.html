@@ -1160,6 +1160,21 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     </div>
 
     <div id="sec-settings" class="section">
+      <!-- v69.14.4 v68.5 緊急補寫開關 -->
+      <div class="worker-card" style="margin-bottom:16px;background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.25)">
+        <h3 style="color:#fca5a5">🚨 v68.5 緊急補寫機制</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:6px;line-height:1.65">主解讀 JSON 太空 / 被截時,系統會用 Sonnet 4.6 補寫覆蓋。<strong style="color:#fca5a5">過去常誤觸發,把好的主解讀蓋掉</strong>。歐那要求預設關閉。</p>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;opacity:.8">關閉後:就算 AI 第一次寫得不夠完整,直接給用戶,不再二次覆蓋。建議搭配 v62Config 確認 max_tokens 足夠,主解讀就會穩定。</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px">
+            <input type="checkbox" id="cfgEmergencyRewriteEnabled" style="width:18px;height:18px">
+            <span>啟用 v68.5 緊急補寫(預設關閉)</span>
+          </label>
+          <button type="button" onclick="saveEmergencyRewriteConfig()" style="padding:8px 14px;border-radius:8px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#fca5a5;font-size:13px;font-weight:600;cursor:pointer;align-self:flex-start">儲存</button>
+          <div id="cfgEmergencyRewriteStatus" style="font-size:11px;color:var(--text-dim);min-height:14px"></div>
+        </div>
+      </div>
+
       <div class="worker-card" style="margin-bottom:16px">
         <h3>💎 水晶話術 A/B 測試</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">A 版 = 溫柔顧問風(現有);B 版 = 命理師專業診斷風(新)。同一用戶隨機分到 A 或 B,看哪版點擊率高。</p>
@@ -3120,7 +3135,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'crystal') loadCrystalStats();
     if (tab.dataset.tab === 'ragquality') loadRagQualityAudit();
     if (tab.dataset.tab === 'batch') loadBatchList();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); loadEmergencyRewriteConfig(); }
   });
 });
 
@@ -4500,7 +4515,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.14.3-2026-05-11';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.14.4-2026-05-11';
 
 async function checkWorkerStatus() {
   try {
@@ -8945,6 +8960,46 @@ async function saveCrystalToneConfig() {
     if (data.ok) {
       if (status) status.textContent = '✓ 已儲存(立即生效,新解讀將分配 A/B)';
       setTimeout(() => { if (status) status.textContent = ''; }, 3000);
+    } else {
+      if (status) status.textContent = '失敗:' + (data.error || 'unknown');
+    }
+  } catch(e) {
+    if (status) status.textContent = '錯誤:' + e.message;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// v69.14.4 v68.5 緊急補寫開關
+// ═══════════════════════════════════════════════════════════
+async function loadEmergencyRewriteConfig() {
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) return;
+  try {
+    const r = await fetch(WORKER_URL + '/admin/emergency-rewrite-config?token=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (data.ok) {
+      const en = document.getElementById('cfgEmergencyRewriteEnabled');
+      if (en) en.checked = !!data.enabled;
+    }
+  } catch(_) {}
+}
+async function saveEmergencyRewriteConfig() {
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  const status = document.getElementById('cfgEmergencyRewriteStatus');
+  if (!token) { if (status) status.textContent = '請先登入 admin'; return; }
+  const en = document.getElementById('cfgEmergencyRewriteEnabled');
+  const cfg = { enabled: en ? en.checked : false };
+  if (status) status.textContent = '儲存中...';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/emergency-rewrite-config?token=' + encodeURIComponent(token), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      if (status) status.textContent = cfg.enabled ? '✓ 已啟用(立即生效)' : '✓ 已關閉(立即生效,主解讀不再被覆蓋)';
+      setTimeout(() => { if (status) status.textContent = ''; }, 4000);
     } else {
       if (status) status.textContent = '失敗:' + (data.error || 'unknown');
     }
