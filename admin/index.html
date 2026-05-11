@@ -4533,7 +4533,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.1-2026-05-11';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.2-2026-05-11';
 
 async function checkWorkerStatus() {
   try {
@@ -8430,17 +8430,60 @@ function renderAuditCard(item) {
     }
   } else if (mode === 'ootk') {
     const ops = d.act_operations || {};
-    if (Object.keys(ops).length) {
-      actCardsHtml = '<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">significator:' + _esc(d.act_significator || '?') + '</div>';
+    if (Object.keys(ops).length || d.act_significator) {
+      // v69.16.2 OOTK 命盤面板擴充 — 讓 admin 能驗證 AI 解讀正確性
+      //   核心欄位:significator(代表牌)+ 5 階段各自落點 + 抽到的牌
+      const _sig = d.act_significator || '?';
+      const _qType = d.act_question_type || '';
+      actCardsHtml = '<div style="margin-bottom:8px;padding:8px;border-radius:6px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.3)">' +
+        '<div style="font-size:11px;color:#c084fc;font-weight:700;margin-bottom:4px">🔑 代表牌 (significator)</div>' +
+        '<div style="font-size:13px;color:var(--text);font-weight:600">' + _esc(_sig) + '</div>' +
+        (_qType ? '<div style="font-size:10px;color:var(--text-dim);margin-top:3px">問題類型: ' + _esc(_qType) + '</div>' : '') +
+        '</div>';
+      // 5 階段 — 每階段顯示完整(落點 + 牌)
+      const _opLabels = {
+        op1: 'Op1 · 元素堆(火/水/風/土)',
+        op2: 'Op2 · 第七宮對方位 + court 牌(看年齡核心)',
+        op3: 'Op3 · 行星週期(看應期)',
+        op4: 'Op4 · 星座 packet(看對方星座)',
+        op5: 'Op5 · 生命之樹 Sephirah(終局結論)'
+      };
       for (const k of ['op1','op2','op3','op4','op5']) {
-        if (!ops[k]) continue;
+        if (!ops[k]) {
+          actCardsHtml += '<div style="margin-bottom:6px;padding:6px 8px;border-radius:6px;background:rgba(139,92,246,.03);border:1px dashed rgba(139,92,246,.15);font-size:11px;color:var(--text-dim);opacity:.5">' +
+            _opLabels[k] + ' · <em>無資料</em></div>';
+          continue;
+        }
         const o = ops[k];
-        actCardsHtml += '<div style="margin-bottom:6px;padding:6px 8px;border-radius:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2)">' +
-          '<div style="font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:3px">' + k.toUpperCase() + (o.dominantSuit ? ' · 主導' + _esc(o.dominantSuit) : '') + (o.activePile ? ' · active=' + _esc(o.activePile) : '') + '</div>' +
-          '<div style="font-size:11px;color:var(--text);line-height:1.5">' + (o.cards || []).map(_esc).join(' / ') + '</div>' +
-          (o.sephirahOmen ? '<div style="font-size:10px;color:var(--text-dim);margin-top:3px">' + _esc(o.sephirahOmen) + '</div>' : '') +
-          '</div>';
-        actCards = actCards.concat(o.cards || []);
+        let _opHtml = '<div style="margin-bottom:6px;padding:6px 8px;border-radius:6px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2)">';
+        // 階段標題
+        _opHtml += '<div style="font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:4px">' + _opLabels[k] + '</div>';
+        // 階段關鍵落點(驗證 AI 必看)
+        const _landingParts = [];
+        if (o.significatorLanding) _landingParts.push('代表牌落點: <strong style="color:#fde68a">' + _esc(o.significatorLanding) + '</strong>');
+        if (o.dominantElement)     _landingParts.push('主導元素: ' + _esc(o.dominantElement));
+        if (o.dominantSuit)        _landingParts.push('主導花色: ' + _esc(o.dominantSuit));
+        if (o.activePile)          _landingParts.push('active堆: ' + _esc(o.activePile));
+        if (o.courtAtSeventh)      _landingParts.push('第七宮court: <strong style="color:#fde68a">' + _esc(o.courtAtSeventh) + '</strong>');
+        if (o.applyingAspect)      _landingParts.push('行星相位: ' + _esc(o.applyingAspect));
+        if (o.signLanding)         _landingParts.push('落星座: <strong style="color:#fde68a">' + _esc(o.signLanding) + '</strong>');
+        if (o.sephirahLanding)     _landingParts.push('落 Sephirah: <strong style="color:#fde68a">' + _esc(o.sephirahLanding) + '</strong>');
+        if (o.sephirahOmen)        _landingParts.push('Sephirah兆: ' + _esc(o.sephirahOmen));
+        if (_landingParts.length) {
+          _opHtml += '<div style="font-size:11px;color:var(--text);line-height:1.6;margin-bottom:4px">' + _landingParts.join(' · ') + '</div>';
+        }
+        // 抽到的所有牌
+        if (Array.isArray(o.cards) && o.cards.length) {
+          _opHtml += '<div style="font-size:10px;color:var(--text-dim);margin-bottom:2px">抽牌(' + (o.cardCount || o.cards.length) + ' 張):</div>' +
+            '<div style="font-size:11px;color:var(--text);line-height:1.5;word-break:break-all">' + o.cards.map(_esc).join(' / ') + '</div>';
+          actCards = actCards.concat(o.cards);
+        }
+        // 階段 summary
+        if (o.summary) {
+          _opHtml += '<div style="font-size:10px;color:var(--text-dim);margin-top:4px;font-style:italic">摘要: ' + _esc(o.summary) + '</div>';
+        }
+        _opHtml += '</div>';
+        actCardsHtml += _opHtml;
       }
       if (d.act_followUpCards && d.act_followUpCards.length) {
         actCardsHtml += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(168,85,247,.25)">' +
