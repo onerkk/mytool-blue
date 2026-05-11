@@ -4533,7 +4533,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.2-2026-05-11';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.3-2026-05-11';
 
 async function checkWorkerStatus() {
   try {
@@ -8120,6 +8120,162 @@ function _esc(s) {
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+// ═══════════════════════════════════════════════════════════
+// v69.16.3 一鍵複製工具(讓歐那把稽核資料給 Claude)
+//   優先 navigator.clipboard,降級 document.execCommand
+// ═══════════════════════════════════════════════════════════
+async function _jyCopyToClipboard(text, btnEl) {
+  let ok = false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    } else {
+      // 降級:textarea + execCommand
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.setAttribute('readonly', '');
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      try { ok = document.execCommand('copy'); } catch(_) { ok = false; }
+      document.body.removeChild(ta);
+    }
+  } catch(_) { ok = false; }
+  if (btnEl) {
+    const _orig = btnEl.textContent;
+    btnEl.textContent = ok ? '✓ 已複製' : '✗ 失敗,長按手選';
+    btnEl.style.background = ok ? 'rgba(34,197,94,.25)' : 'rgba(239,68,68,.25)';
+    setTimeout(() => {
+      btnEl.textContent = _orig;
+      btnEl.style.background = '';
+    }, 2500);
+  }
+  return ok;
+}
+
+// 全域 cache,儲存每張卡片要複製的文字(避免存進 DOM data-attr 太大會破)
+window._jyCardCopyCache = window._jyCardCopyCache || {};
+async function _jyCopyByKey(key, mode, btnEl) {
+  const data = window._jyCardCopyCache[key];
+  if (!data) {
+    if (btnEl) {
+      btnEl.textContent = '✗ 資料遺失,刷新';
+      setTimeout(() => { btnEl.textContent = '📋 複製'; }, 2000);
+    }
+    return;
+  }
+  const text = mode === 'ai' ? data.aiText : data.bundle;
+  await _jyCopyToClipboard(text, btnEl);
+}
+
+// 把 Claude 驗證需要的所有東西打包成一段純文字
+function _jyBuildClaudeBundle(item) {
+  const a = item.audit || {};
+  const d = item.diag || {};
+  const mode = item.mode || 'unknown';
+  const modeName = mode === 'full' ? '七維度' : (mode === 'tarot' ? '塔羅' : (mode === 'ootk' ? '開鑰' : mode));
+  const lines = [];
+  lines.push('═══ 靜月之光稽核包 ═══');
+  lines.push('時間: ' + (a.time || '?'));
+  lines.push('模式: ' + modeName + ' (' + mode + ')');
+  lines.push('模型: ' + (a.modelId || '?'));
+  lines.push('輸入 tokens: ' + (a.usage && a.usage.input_tokens || 0));
+  lines.push('輸出 tokens: ' + (a.usage && a.usage.output_tokens || 0));
+  if (item.diagDelayMs) lines.push('callAI 耗時: ' + (item.diagDelayMs / 1000).toFixed(1) + 's');
+  if (a.auditTag) lines.push('稽核 tag: ' + a.auditTag);
+  lines.push('');
+  lines.push('━━━ 問題 ━━━');
+  lines.push(d.question || a.question || '?');
+  lines.push('');
+  lines.push('━━━ 送進 AI 的命盤資料 ━━━');
+  if (mode === 'ootk') {
+    lines.push('代表牌 (significator): ' + (d.act_significator || '?'));
+    if (d.act_question_type) lines.push('問題類型: ' + d.act_question_type);
+    const ops = d.act_operations || {};
+    ['op1','op2','op3','op4','op5'].forEach(function(k) {
+      if (!ops[k]) { lines.push(k.toUpperCase() + ': (無資料)'); return; }
+      const o = ops[k];
+      const parts = [];
+      if (o.significatorLanding) parts.push('代表牌落點=' + o.significatorLanding);
+      if (o.dominantElement)     parts.push('主導元素=' + o.dominantElement);
+      if (o.dominantSuit)        parts.push('主導花色=' + o.dominantSuit);
+      if (o.activePile)          parts.push('active=' + o.activePile);
+      if (o.courtAtSeventh)      parts.push('第七宮court=' + o.courtAtSeventh);
+      if (o.applyingAspect)      parts.push('行星相位=' + o.applyingAspect);
+      if (o.signLanding)         parts.push('落星座=' + o.signLanding);
+      if (o.sephirahLanding)     parts.push('落Sephirah=' + o.sephirahLanding);
+      if (o.sephirahOmen)        parts.push('Sephirah兆=' + o.sephirahOmen);
+      lines.push(k.toUpperCase() + ': ' + parts.join(' / '));
+      if (Array.isArray(o.cards) && o.cards.length) {
+        lines.push('  抽牌 (' + (o.cardCount || o.cards.length) + ' 張): ' + o.cards.join(' / '));
+      }
+      if (o.summary) lines.push('  摘要: ' + o.summary);
+    });
+    if (d.act_followUpCards && d.act_followUpCards.length) {
+      lines.push('追問補充牌: ' + d.act_followUpCards.join(' / '));
+    }
+  } else if (mode === 'tarot') {
+    if (d.act_significator) lines.push('代表牌 (significator): ' + d.act_significator);
+    if (d.act_spread)       lines.push('牌陣: ' + d.act_spread);
+    if (Array.isArray(d.act_cards) && d.act_cards.length) {
+      lines.push('抽牌 (' + d.act_cards.length + ' 張):');
+      d.act_cards.forEach(function(c, i) {
+        const _n = typeof c === 'string' ? c : (c.name || c.n || '');
+        const _p = typeof c === 'object' ? (c.pos || c.position || '?') : '?';
+        const _d = typeof c === 'object' ? (c.dir || (c.isUp === false ? '逆' : '正')) : '';
+        lines.push('  ' + (i+1) + '. [' + _p + '] ' + _n + ' ' + _d);
+      });
+    }
+    if (d.act_followUpCards && d.act_followUpCards.length) {
+      lines.push('追問補充牌: ' + d.act_followUpCards.join(' / '));
+    }
+  } else if (mode === 'full') {
+    if (d.act_bazi) {
+      lines.push('八字:');
+      if (d.act_bazi.fourPillars) lines.push('  四柱: ' + d.act_bazi.fourPillars);
+      if (d.act_bazi.dayMaster)   lines.push('  日主: ' + d.act_bazi.dayMaster);
+      if (d.act_bazi.favEls)      lines.push('  用神/喜: ' + d.act_bazi.favEls);
+      if (d.act_bazi.dayun)       lines.push('  大運: ' + d.act_bazi.dayun);
+    }
+    if (d.act_ziwei) {
+      lines.push('紫微:');
+      if (d.act_ziwei.mingStars)     lines.push('  命主星: ' + d.act_ziwei.mingStars);
+      if (d.act_ziwei.spouseCompact) lines.push('  夫妻宮: ' + d.act_ziwei.spouseCompact);
+    }
+    if (d.act_natal) {
+      lines.push('西占:');
+      if (d.act_natal.asc)     lines.push('  上升: ' + d.act_natal.asc);
+      if (d.act_natal.planets) lines.push('  行星: ' + d.act_natal.planets);
+    }
+    if (d.act_vedic) {
+      lines.push('吠陀:');
+      if (d.act_vedic.lagna) lines.push('  Lagna: ' + d.act_vedic.lagna);
+      if (d.act_vedic.dasha) lines.push('  Dasha: ' + d.act_vedic.dasha);
+    }
+    if (d.act_tarot && d.act_tarot.cards && d.act_tarot.cards.length) {
+      lines.push('塔羅(七維交叉):');
+      d.act_tarot.cards.forEach(function(c) {
+        lines.push('  [' + (c.pos || '?') + '] ' + (c.dir || '') + ' ' + (c.name || ''));
+      });
+    }
+  }
+  lines.push('');
+  lines.push('━━━ AI 真實回應 (' + (a.fullTextLength || (a.fullText || '').length) + ' 字) ━━━');
+  lines.push(a.fullText || '(空)');
+  lines.push('');
+  if (a.analysisNotes) {
+    lines.push('━━━ analysisNotes (Claude 看這個能判斷流程走哪條路) ━━━');
+    lines.push(a.analysisNotes);
+    lines.push('');
+  }
+  lines.push('═══ 包結束 ═══');
+  return lines.join('\n');
+}
+// ═══════════════════════════════════════════════════════════
+
 function renderPaymentDiag(wh, qf) {
   let html = '';
 
@@ -8563,11 +8719,28 @@ function renderAuditCard(item) {
   const hasMore = fullText.length > 1500;
   const id = 'audit_' + (item.auditTs || Math.random().toString(36).substring(2,8));
 
+  // v69.16.3 把複製資料存進全域 cache(避免塞 HTML data-attr 太大破壞)
+  try {
+    window._jyCardCopyCache[id] = {
+      aiText: fullText,
+      bundle: _jyBuildClaudeBundle(item)
+    };
+  } catch(_) {}
+
   return '<div class="worker-card" style="padding:14px">' +
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px">' +
       '<div>' +
         '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">' + modeIcon + ' ' + modeName + ' · ' + _esc(model) + fu + '</div>' +
         '<div style="font-size:11px;color:var(--text-dim)">' + _esc(time) + ' · in:' + (a.usage && a.usage.input_tokens || 0) + ' / out:' + (a.usage && a.usage.output_tokens || 0) + (item.diagDelayMs ? ' · callAI 耗時 ' + (item.diagDelayMs / 1000).toFixed(1) + 's' : '') + '</div>' +
+      '</div>' +
+      // v69.16.3 一鍵複製按鈕 — 給歐那把資料給 Claude
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+        '<button type="button" onclick="_jyCopyByKey(\'' + id + '\', \'ai\', this)" ' +
+          'style="padding:5px 10px;border-radius:6px;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.35);color:#c084fc;font-size:11px;cursor:pointer;white-space:nowrap" ' +
+          'title="複製 AI 真實回應全文(' + (a.fullTextLength || fullText.length) + ' 字)">📋 複製 AI 回應</button>' +
+        '<button type="button" onclick="_jyCopyByKey(\'' + id + '\', \'bundle\', this)" ' +
+          'style="padding:5px 10px;border-radius:6px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#86efac;font-size:11px;cursor:pointer;white-space:nowrap" ' +
+          'title="複製給 Claude 用的完整稽核包(問題+命盤+AI回應+analysisNotes)">📋 複製 Claude 包</button>' +
       '</div>' +
     '</div>' +
     '<div style="font-size:12px;color:#fde68a;background:rgba(212,175,55,.04);padding:6px 10px;border-radius:6px;border-left:3px solid rgba(212,175,55,.5);margin-bottom:10px;line-height:1.55">' +
