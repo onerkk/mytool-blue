@@ -1160,6 +1160,27 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     </div>
 
     <div id="sec-settings" class="section">
+      <!-- v69.14.8 Structured Outputs 七維治本開關 -->
+      <div class="worker-card" style="margin-bottom:16px;background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.3)">
+        <h3 style="color:#93c5fd">⚙️ 七維 Structured Outputs(治本)</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:6px;line-height:1.65">Anthropic 官方 constrained decoding 技術,<strong style="color:#93c5fd">保證 AI 100% 輸出合法 JSON</strong>。杜絕 markdown 輸出 / parse 失敗 / 補寫覆蓋 / 記憶寫不入。</p>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:6px;opacity:.85">⚠️ <strong>啟用時 v65 citations 自動關閉</strong>(跟 SO 不相容 API 會 400)。<strong>search_result 資料源仍注入</strong>,只是不要求 AI 引用 — grounding 強度可能略降。</p>
+        <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;opacity:.85">📖 官方文件:<a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs" target="_blank" style="color:#93c5fd">platform.claude.com/docs/structured-outputs</a></p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px">
+            <input type="checkbox" id="cfgSOSevendimEnabled" style="width:18px;height:18px">
+            <span>啟用七維 Structured Outputs(預設關閉)</span>
+          </label>
+          <button type="button" onclick="saveStructuredOutputsConfig()" style="padding:8px 14px;border-radius:8px;background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.4);color:#93c5fd;font-size:13px;font-weight:600;cursor:pointer;align-self:flex-start">儲存</button>
+          <div id="cfgSOStatus" style="font-size:11px;color:var(--text-dim);min-height:14px"></div>
+          <div style="font-size:11px;color:var(--text-dim);opacity:.75;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06)">
+            <strong>影響範圍:</strong>僅七維主路徑。OOTK / 塔羅 / 追問尚未啟用 SO。<br>
+            <strong>驗證方法:</strong>啟用後跑一筆七維,後台稽核 analysisNotes 應出現「so_7d=ENABLED」。<br>
+            <strong>有問題:</strong>取消勾選 → 儲存 → 立即回 prompt-only 行為。
+          </div>
+        </div>
+      </div>
+
       <div class="worker-card" style="margin-bottom:16px">
         <h3>💎 水晶話術 A/B 測試</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">A 版 = 溫柔顧問風(現有);B 版 = 命理師專業診斷風(新)。同一用戶隨機分到 A 或 B,看哪版點擊率高。</p>
@@ -3120,7 +3141,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'crystal') loadCrystalStats();
     if (tab.dataset.tab === 'ragquality') loadRagQualityAudit();
     if (tab.dataset.tab === 'batch') loadBatchList();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); loadStructuredOutputsConfig(); }
   });
 });
 
@@ -4500,7 +4521,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.14.7-2026-05-11';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.14.8-2026-05-11';
 
 async function checkWorkerStatus() {
   try {
@@ -8954,7 +8975,47 @@ async function saveCrystalToneConfig() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 🧬 RAG 召回品質診斷 v69.14-A
+// v69.14.8 Structured Outputs 七維開關
+// ═══════════════════════════════════════════════════════════
+async function loadStructuredOutputsConfig() {
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  if (!token) return;
+  try {
+    const r = await fetch(WORKER_URL + '/admin/structured-outputs-config?token=' + encodeURIComponent(token));
+    const data = await r.json();
+    if (data.ok) {
+      const en = document.getElementById('cfgSOSevendimEnabled');
+      if (en) en.checked = !!data.sevendim_enabled;
+    }
+  } catch(_) {}
+}
+async function saveStructuredOutputsConfig() {
+  const token = adminToken || localStorage.getItem('jy_admin_token') || sessionStorage.getItem('jy_admin_token') || '';
+  const status = document.getElementById('cfgSOStatus');
+  if (!token) { if (status) status.textContent = '請先登入 admin'; return; }
+  const en = document.getElementById('cfgSOSevendimEnabled');
+  const cfg = { sevendim_enabled: en ? en.checked : false };
+  if (status) status.textContent = '儲存中...';
+  try {
+    const r = await fetch(WORKER_URL + '/admin/structured-outputs-config?token=' + encodeURIComponent(token), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg)
+    });
+    const data = await r.json();
+    if (data.ok) {
+      if (status) status.textContent = cfg.sevendim_enabled
+        ? '✓ 已啟用(立即生效,citations 自動關)'
+        : '✓ 已關閉(回 prompt-only 行為)';
+      setTimeout(() => { if (status) status.textContent = ''; }, 5000);
+    } else {
+      if (status) status.textContent = '失敗:' + (data.error || 'unknown');
+    }
+  } catch(e) {
+    if (status) status.textContent = '錯誤:' + e.message;
+  }
+}
+
 // ═══════════════════════════════════════════════════════════
 async function loadRagQualityAudit() {
   const el = document.getElementById('ragQualityResult');
