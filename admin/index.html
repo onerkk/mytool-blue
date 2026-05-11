@@ -4533,7 +4533,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.4-2026-05-11';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.5-2026-05-11';
 
 async function checkWorkerStatus() {
   try {
@@ -5712,10 +5712,17 @@ async function loadLastCallDebug() {
         var officialNum = snap.tokenCount.official_count_tokens;
         var fallbackNum = snap.tokenCount.fallback_estimate || 0;
         if (officialNum > fallbackNum * 2 && fallbackNum > 0) {
-          txt += '  ⚠️ 注意:官方數字比字元估算大 ' + (officialNum / fallbackNum).toFixed(1) + ' 倍\n';
-          txt += '         可能是因為 advisor tool 啟用 → Anthropic 把 advisor 預估的 transcript 也算進去\n';
-          txt += '         實際 input 純文字 token 接近 fallback 估算的 ' + fallbackNum + ' tokens\n';
-          txt += '         advisor 沒被觸發時實際只算 executor 那部分(~80K),被觸發才會接近官方數字\n';
+          txt += '  ⚠️ 注意:官方數字比 fallback 字元估算大 ' + (officialNum / fallbackNum).toFixed(1) + ' 倍\n';
+          // v69.16.5 修:之前寫死「advisor」誤導歐那 — 真實原因有 2 個,要判斷
+          if (snap.adminConfig && snap.adminConfig.advisorEnabled) {
+            txt += '         可能原因 1:advisor tool 啟用 → Anthropic 把 advisor 預估的 transcript 也算進去\n';
+            txt += '         advisor 沒被觸發時實際只算 executor 那部分(~80K),被觸發才會接近官方數字\n';
+          } else {
+            txt += '         主因:中文 tokenizer 比 fallback「字元÷3」精確得多\n';
+            txt += '         中文每字 ≈ 2-3 tokens(取決於漢字罕見度),官方數字才是 API 真實計費依據\n';
+            txt += '         fallback 數字只是粗估,別當真,看官方那個\n';
+          }
+          txt += '         實際 input 純文字 token = 官方 count_tokens(' + officialNum + ' tokens)\n';
         }
       } else {
         txt += 'Anthropic 官方 count_tokens:失敗\n';
