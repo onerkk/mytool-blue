@@ -598,8 +598,9 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                   <option value="ootk">ootk(開鑰)</option>
                 </select>
                 <button onclick="runRAGTest()" style="padding:8px 16px;border-radius:6px;border:none;background:#22c55e;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🧪 執行測試(用後台設定)</button>
-                <button onclick="runRAGTest('0')" style="padding:8px 12px;border-radius:6px;border:1px solid #3b82f6;background:transparent;color:#93c5fd;font-size:11px;font-weight:600;cursor:pointer" title="強制不用 reranker(對照組)">純向量</button>
-                <button onclick="runRAGTest('1')" style="padding:8px 12px;border-radius:6px;border:1px solid #a855f7;background:transparent;color:#c4b5fd;font-size:11px;font-weight:600;cursor:pointer" title="強制開 reranker">+Reranker</button>
+                <button onclick="runRAGTest('vector')" style="padding:8px 12px;border-radius:6px;border:1px solid #3b82f6;background:transparent;color:#93c5fd;font-size:11px;font-weight:600;cursor:pointer" title="強制 rerank=0+bm25=0,等於 v69.16 純向量基準">純向量</button>
+                <button onclick="runRAGTest('reranker')" style="padding:8px 12px;border-radius:6px;border:1px solid #a855f7;background:transparent;color:#c4b5fd;font-size:11px;font-weight:600;cursor:pointer" title="強制 rerank=1+bm25=0,等於 v69.17.1 對照組">+Reranker</button>
+                <button onclick="runRAGTest('hybrid')" style="padding:8px 12px;border-radius:6px;border:1px solid #fbbf24;background:transparent;color:#fcd34d;font-size:11px;font-weight:600;cursor:pointer" title="強制 rerank=1+bm25=1,等於 v69.18.0 全開">+BM25 全開</button>
                 <button onclick="copyDiagBlock('ragTestOutput', this)" style="padding:8px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
               </div>
               <pre id="ragTestOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:12px;font-size:11px;color:#a5b4fc;line-height:1.6;max-height:400px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,monospace">點按鈕測試 RAG 檢索結果</pre>
@@ -700,6 +701,23 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                 <span id="bm25MigrateProgressText" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5)">未開始</span>
               </div>
               <pre id="bm25MigrateLog" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:200px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點「開始遷移」會自動分批把 KV chunks 灌到 D1</pre>
+            </div>
+          </details>
+
+          <!-- v69.18.1:KV chunks 診斷 -->
+          <details style="margin-top:10px;border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#93c5fd;font-weight:600">🔎 KV chunks 診斷(看 KV 內有什麼,純讀)</summary>
+            <div style="margin-top:12px">
+              <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+                <b style="color:#fcd34d">用途</b>:列出 KV 內所有 <code>rag_chunk:*</code> 的數量、按 var 分組統計、按 era(v60_62/v63/.../v72)分組。<br>
+                <b style="color:#fcd34d">為什麼有這個</b>:歐那 D1 遷移完是 3168 筆,可能有舊版殘留。看完再決定要不要手動清。<br>
+                <b style="color:#f87171">本工具只讀不寫</b>,點下去不會清資料。
+              </p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+                <button onclick="loadKVChunksAudit()" style="padding:10px 20px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔍 跑診斷</button>
+                <button onclick="copyDiagBlock('kvChunksAuditOutput', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
+              </div>
+              <pre id="kvChunksAuditOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:400px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點按鈕跑診斷</pre>
             </div>
           </details>
 
@@ -4608,7 +4626,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.18.0-2026-05-12';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.18.1-2026-05-12';
 
 async function checkWorkerStatus() {
   try {
@@ -5233,8 +5251,13 @@ async function saveRAGConfig() {
   }
 }
 
-async function runRAGTest(rerankOverride) {
-  // v69.8:rerankOverride 可以是 undefined(用後台目前設定)/ '1' 強制開 / '0' 強制關
+async function runRAGTest(overrideMode) {
+  // v69.18.1 改:overrideMode 可以是:
+  //   undefined / null → 用後台目前設定(等於 v69.18.0 全開)
+  //   'vector'         → rerank=0 + bm25=0(純向量,v69.16 基準)
+  //   'reranker'       → rerank=1 + bm25=0(v69.17.1 對照)
+  //   'hybrid'         → rerank=1 + bm25=1(v69.18.0 全開)
+  //   舊版 '0'/'1' 字串仍相容(只控制 rerank)
   const out = document.getElementById('ragTestOutput');
   const q = document.getElementById('ragTestQuery').value.trim();
   const qType = document.getElementById('ragTestQType').value;
@@ -5243,20 +5266,42 @@ async function runRAGTest(rerankOverride) {
   if (out) out.textContent = '⏳ 執行檢索中...';
   try {
     let urlStr = `${WORKER_URL}/admin/rag-test?token=${encodeURIComponent(adminToken)}&q=${encodeURIComponent(q)}&qType=${qType}&mode=${mode}`;
-    if (rerankOverride === '1' || rerankOverride === '0') urlStr += `&rerank=${rerankOverride}`;
+    // v69.18.1:新版 override
+    let _label = '使用後台設定';
+    if (overrideMode === 'vector') {
+      urlStr += '&rerank=0&bm25=0';
+      _label = '🔵 純向量(reranker off, bm25 off)';
+    } else if (overrideMode === 'reranker') {
+      urlStr += '&rerank=1&bm25=0';
+      _label = '🎯 +Reranker(bm25 off)';
+    } else if (overrideMode === 'hybrid') {
+      urlStr += '&rerank=1&bm25=1';
+      _label = '🔤 +Reranker +BM25(全開)';
+    }
+    // 舊版字串相容
+    else if (overrideMode === '0') { urlStr += '&rerank=0'; _label = '🔵 純向量(舊版)'; }
+    else if (overrideMode === '1') { urlStr += '&rerank=1'; _label = '🎯 +Reranker(舊版)'; }
+
     const r = await fetch(urlStr);
     const data = await r.json();
     if (!data.ok) {
       if (out) out.textContent = '❌ ' + JSON.stringify(data, null, 2);
       return;
     }
-    const rrTag = data.rerankerUsed ? '🎯 Reranker ON' : (data.rerankerEnabled ? '⚠️ Reranker 開啟但未生效' : '🔵 純向量(reranker off)');
-    const rrErr = data.rerankerError ? `\n⚠️ Reranker 錯誤: ${data.rerankerError}` : '';
-    let txt = `Query: ${data.query}\nqType: ${data.qType}, mode: ${data.mode}\n[${rrTag}]${rrErr}\nRetrieved: ${data.retrievedCount} chunks\n\n`;
+    // v69.18.1:顯示 override 實際生效狀態
+    const _ov = data.override || {};
+    const _ovLine = (_ov.rerankerOverride !== null || _ov.bm25Override !== null)
+      ? `\nOverride: rerank=${_ov.rerankerOverride}, bm25=${_ov.bm25Override}`
+      : '';
+    let txt = `Query: ${data.query}\nqType: ${data.qType}, mode: ${data.mode}\n[${_label}]${_ovLine}\nRetrieved: ${data.retrievedCount} chunks\n\n`;
     (data.retrieved || []).forEach((rec, i) => {
       const vecScore = (rec.score || 0).toFixed(3);
-      const rrScore = (typeof rec.rrScore === 'number') ? ` rrScore=${rec.rrScore.toFixed(3)}` : '';
-      txt += `─── #${i+1} [${rec.source}] vec=${vecScore}${rrScore} ───\n`;
+      const rrScore = (typeof rec.rerankerScore === 'number') ? ` rerank=${rec.rerankerScore.toFixed(3)}` : '';
+      const rrfScore = (typeof rec.rrfScore === 'number') ? ` rrf=${rec.rrfScore.toFixed(4)}` : '';
+      const ranks = (rec.vRank || rec.bRank)
+        ? ` [vR=${rec.vRank || '-'}, bR=${rec.bRank || '-'}]`
+        : '';
+      txt += `─── #${i+1} [${rec.source}] vec=${vecScore}${rrScore}${rrfScore}${ranks} ───\n`;
       txt += `id: ${rec.id}\n`;
       txt += `var: ${rec.var}, qTypes: ${rec.qTypes}, systems: ${rec.systems}\n`;
       txt += `text: ${rec.textPreview}\n\n`;
@@ -5723,6 +5768,41 @@ async function runBM25Test() {
     if (out) out.textContent = txt;
   } catch (e) {
     if (out) out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function loadKVChunksAudit() {
+  // v69.18.1:診斷 KV 內 rag_chunk:* 分布
+  const out = document.getElementById('kvChunksAuditOutput');
+  if (!out) return;
+  out.textContent = '⏳ 跑診斷中(列 1000 筆/批,可能要 5-10 秒)...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/kv-chunks-audit?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) {
+      out.textContent = '❌ ' + (data.error || '失敗');
+      return;
+    }
+    let txt = `═══ KV chunks 診斷結果 ═══\n\n`;
+    txt += `總筆數:${data.totalChunks}\n`;
+    txt += `不重複 var 數:${data.uniqueVars}\n\n`;
+    txt += `─── 按 era 分布 ───\n`;
+    const eras = data.eraDistribution || {};
+    Object.keys(eras).forEach(k => {
+      if (eras[k] > 0) txt += `  ${k}: ${eras[k]} 筆\n`;
+    });
+    txt += `\n─── Top 10 最大 var(可能是重複/累積)───\n`;
+    (data.top10ByCount || []).forEach((v, i) => {
+      txt += `  #${i+1}  ${v.var}: ${v.count} 筆\n`;
+    });
+    txt += `\n─── 前 20 個 key 樣本 ───\n`;
+    (data.chunkSamples || []).forEach(k => {
+      txt += `  ${k}\n`;
+    });
+    if (data.note) txt += `\n💡 ${data.note}\n`;
+    out.textContent = txt;
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
 }
 
