@@ -565,6 +565,67 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </details>
           </div>
 
+          <!-- ═══ v69.19.0:Vectorize Metadata Filter(精準 qType 篩選)═══ -->
+          <div style="margin-top:18px;padding:14px;border:1px solid rgba(236,72,153,0.4);border-radius:10px;background:rgba(236,72,153,0.05)">
+            <h4 style="margin:0 0 8px 0;font-size:14px;color:#f9a8d4;font-weight:700">
+              🎯 Vectorize Metadata Filter(精準 qType 篩選)
+              <span style="font-size:10px;padding:2px 6px;background:rgba(236,72,153,0.2);color:#f9a8d4;border-radius:8px;margin-left:6px">v69.19.0 新增</span>
+            </h4>
+            <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px;line-height:1.7">
+              <b style="color:#fbbf24">原理</b>:Vectorize 撈 50 個候選時就先 filter qType,不再撈一堆無關 chunks 在 worker 內過濾。<br>
+              <b style="color:#fbbf24">流程</b>:① 用 Cloudflare API 建 10 個 metadata index(qt_love/qt_career/.../sys_bazi/allPurpose)→ ② 重新 upsert 936 vectors 帶新 metadata → ③ 啟用 filter<br>
+              <b style="color:#fbbf24">前置條件</b>:① 需要 Cloudflare Account ID + API Token(跟部署 Worker 用的同一組,有 Vectorize:Edit 權限)<br>
+              <b style="color:#f87171">退場</b>:取消勾「啟用 Filter」→ 退回 v69.18.0 不加 filter 純向量+BM25+Reranker。
+            </p>
+
+            <!-- 步驟 ① 建 metadata index -->
+            <details style="margin-bottom:10px;border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:10px">
+              <summary style="cursor:pointer;font-size:12px;color:#fbbf24;font-weight:600">① 建 10 個 Vectorize metadata index(Cloudflare API)</summary>
+              <div style="margin-top:10px">
+                <p style="font-size:10px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+                  會建:qt_love / qt_career / qt_wealth / qt_health / qt_timing / qt_family / qt_lifelesson / qt_general / sys_bazi / allPurpose<br>
+                  全部是 number 型(0|1 boolean 用)。如果 property 已存在會回 error 但不影響其他。
+                </p>
+                <input id="vcmiAccountId" type="text" placeholder="Account ID" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:11px;margin-bottom:6px;font-family:ui-monospace,monospace">
+                <input id="vcmiApiToken" type="password" placeholder="API Token(Vectorize:Edit 權限)" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:11px;margin-bottom:6px;font-family:ui-monospace,monospace">
+                <input id="vcmiIndexName" type="text" placeholder="Index name(預設 jingyue-rules)" value="jingyue-rules" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:11px;margin-bottom:8px;font-family:ui-monospace,monospace">
+                <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+                  <button onclick="createMetadataIndexes()" style="padding:10px 20px;border-radius:8px;border:none;background:#ec4899;color:#fff;font-size:12px;font-weight:600;cursor:pointer">🏗 建立 10 個 metadata index</button>
+                  <button onclick="listMetadataIndexes()" style="padding:10px 20px;border-radius:8px;border:1px solid #ec4899;background:transparent;color:#f9a8d4;font-size:12px;font-weight:600;cursor:pointer">📋 看目前有什麼</button>
+                  <button onclick="copyDiagBlock('vcmiOutput', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
+                </div>
+                <pre id="vcmiOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#f9a8d4;line-height:1.5;max-height:300px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">填 Account ID + API Token 後按建立</pre>
+              </div>
+            </details>
+
+            <!-- 步驟 ② 重 upsert(重用既有遷移按鈕)-->
+            <details style="margin-bottom:10px;border:1px solid rgba(168,85,247,0.3);border-radius:8px;padding:10px">
+              <summary style="cursor:pointer;font-size:12px;color:#c4b5fd;font-weight:600">② 重新 upsert 936 vectors(帶新 metadata 結構)</summary>
+              <div style="margin-top:10px">
+                <p style="font-size:11px;color:var(--text-dim);line-height:1.7">
+                  ✅ <b style="color:#86efac">好消息:不用做新按鈕</b>。<br>
+                  往上滑到 <b style="color:#fbbf24">🔧 RAG 索引建構</b> → <b style="color:#fbbf24">「④ Vectorize 上傳」</b>(原本就有)→ 點「重新上傳全部」<br>
+                  因為 v69.19.0 我已經改了 upsert 邏輯,跑既有按鈕就會自動帶上 qt_* / sys_* boolean 展開。<br>
+                  時間預估:936 chunks × 0.5 秒 ≈ <b>8-10 分鐘</b>(免費,Workers AI 內部 embed)。
+                </p>
+              </div>
+            </details>
+
+            <!-- 步驟 ③ 啟用 filter -->
+            <div style="margin-top:10px">
+              <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin-bottom:8px">
+                <label style="font-size:13px;color:var(--text-bright)">Filter 開關:</label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                  <input type="checkbox" id="metadataFilterEnabled" style="width:18px;height:18px;cursor:pointer">
+                  <span style="font-size:13px">啟用 Vectorize Metadata Filter(關閉 = 退回 v69.18.0 不加 filter)</span>
+                </label>
+              </div>
+              <p id="metadataFilterStatus" style="font-size:11px;color:var(--text-dim);line-height:1.6;margin:8px 0">
+                狀態:讀取中...
+              </p>
+            </div>
+          </div>
+
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;margin-bottom:14px">
             <button onclick="loadRAGConfig()" style="padding:10px 20px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取目前設定</button>
             <button onclick="saveRAGConfig()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存設定</button>
@@ -4735,7 +4796,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.18.2-2026-05-12';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.19.0-2026-05-12';
 
 async function checkWorkerStatus() {
   try {
@@ -5290,6 +5351,21 @@ async function loadRAGConfig() {
     if (bmEnEl) bmEnEl.checked = !!bm.enabled;
     if (bmTopKEl) bmTopKEl.value = bm.topK || 50;
     if (bmRrfKEl) bmRrfKEl.value = bm.rrfK || 60;
+    // v69.19.0:metadataFilter 欄位
+    const mf = cfg.metadataFilter || {};
+    const mfEnEl = document.getElementById('metadataFilterEnabled');
+    const mfStatusEl = document.getElementById('metadataFilterStatus');
+    if (mfEnEl) mfEnEl.checked = !!mf.enabled;
+    if (mfStatusEl) {
+      let _mfStatusTxt = '';
+      if (mf.indexesReady) {
+        _mfStatusTxt = '<span style="color:#86efac">✅ Metadata indexes 已建好</span>';
+        if (mf.indexesCreatedAt) _mfStatusTxt += ' (建立時間 ' + mf.indexesCreatedAt.replace('T',' ').slice(0,19) + ')';
+      } else {
+        _mfStatusTxt = '<span style="color:#fbbf24">⚠️ Metadata indexes 尚未建立</span>(請先做步驟 ①)';
+      }
+      mfStatusEl.innerHTML = '狀態:' + _mfStatusTxt + '<br>啟用前必須先完成 ① 建 index → ② 重 upsert,否則 Vectorize query 會報錯。';
+    }
     if (statusEl) statusEl.textContent = '✅ ' + (cfg.updatedAt ? cfg.updatedAt.replace('T',' ').slice(0,19) : '讀取成功');
     if (bindingEl) {
       const b = cfg.bindings || {};
@@ -5336,6 +5412,13 @@ async function saveRAGConfig() {
       enabled: bmEnEl ? !!bmEnEl.checked : false,
       topK: bmTopKEl ? parseInt(bmTopKEl.value, 10) || 50 : 50,
       rrfK: bmRrfKEl ? parseInt(bmRrfKEl.value, 10) || 60 : 60
+    },
+    // v69.19.0:metadataFilter(indexesReady 由 build endpoint 寫,前端不送)
+    metadataFilter: {
+      enabled: (function(){
+        const el = document.getElementById('metadataFilterEnabled');
+        return el ? !!el.checked : false;
+      })()
     }
   };
   if (cfg.enabled && !cfg.modes.direct && !cfg.modes.tarot && !cfg.modes.ootk) {
@@ -5974,6 +6057,75 @@ async function runKVChunksDelete(dryRun) {
       setTimeout(loadBM25Stats, 500);
       setTimeout(loadKVChunksAudit, 1000);
     }
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// v69.19.0:Vectorize Metadata Filter handlers
+// ═══════════════════════════════════════════════════════════════
+
+async function createMetadataIndexes() {
+  const out = document.getElementById('vcmiOutput');
+  const acc = (document.getElementById('vcmiAccountId') || {}).value || '';
+  const tok = (document.getElementById('vcmiApiToken') || {}).value || '';
+  const idx = (document.getElementById('vcmiIndexName') || {}).value || 'jingyue-rules';
+  if (!out) return;
+  if (!acc || !tok) { out.textContent = '❌ 請填 Account ID 和 API Token'; return; }
+  if (!confirm('要建立 10 個 metadata index 嗎?\n\n注意:Cloudflare 限 10 個 index/Vectorize index。\n本動作會用 Cloudflare REST API,需要 API Token 有 Vectorize:Edit 權限。')) {
+    out.textContent = '已取消';
+    return;
+  }
+  out.textContent = '⏳ 建立中(10 個 index,約 10-30 秒)...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/vectorize-create-metadata-indexes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, accountId: acc, apiToken: tok, indexName: idx })
+    });
+    const data = await r.json();
+    if (!data.ok) { out.textContent = '❌ ' + (data.error || '失敗'); return; }
+    let txt = `═══ 建立結果 ═══\nindex: ${data.indexName}\n成功:${data.successCount} / ${data.targetCount}\n\n`;
+    (data.results || []).forEach((r, i) => {
+      const mark = r.success ? '✅' : '❌';
+      txt += `${mark} #${i+1} ${r.property} (${r.type})\n`;
+      if (r.mutationId) txt += `   mutationId: ${r.mutationId}\n`;
+      if (r.errors && r.errors.length > 0) {
+        r.errors.forEach(e => { txt += `   error: ${e.message || JSON.stringify(e).slice(0, 200)}\n`; });
+      } else if (r.error) {
+        txt += `   error: ${r.error}\n`;
+      }
+    });
+    if (data.note) txt += `\n💡 ${data.note}\n`;
+    out.textContent = txt;
+    // 自動重讀 cfg 看 indexesReady 是否更新
+    setTimeout(loadRAGConfig, 1000);
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function listMetadataIndexes() {
+  const out = document.getElementById('vcmiOutput');
+  const acc = (document.getElementById('vcmiAccountId') || {}).value || '';
+  const tok = (document.getElementById('vcmiApiToken') || {}).value || '';
+  const idx = (document.getElementById('vcmiIndexName') || {}).value || 'jingyue-rules';
+  if (!out) return;
+  if (!acc || !tok) { out.textContent = '❌ 請填 Account ID 和 API Token'; return; }
+  out.textContent = '⏳ 查詢中...';
+  try {
+    const params = new URLSearchParams({ token: adminToken, accountId: acc, apiToken: tok, indexName: idx });
+    const r = await fetch(`${WORKER_URL}/admin/vectorize-list-metadata-indexes?${params.toString()}`);
+    const data = await r.json();
+    if (!data.ok) { out.textContent = '❌ ' + JSON.stringify(data.errors || data.error || data, null, 2); return; }
+    let txt = `═══ 目前 metadata indexes ═══\nindex: ${data.indexName}\n`;
+    const arr = data.metadataIndexes || [];
+    txt += `共 ${arr.length} 個:\n\n`;
+    arr.forEach((m, i) => {
+      txt += `#${i+1}  ${m.propertyName} (${m.indexType})\n`;
+    });
+    out.textContent = txt;
   } catch (e) {
     out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
