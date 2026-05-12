@@ -773,6 +773,94 @@ textarea.worker-editor:focus{border-color:var(--accent)}
           <div id="ragAuditOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:8px;padding:12px;max-height:500px;overflow:auto;font-size:11px;color:#a5b4fc;line-height:1.5;font-family:ui-monospace,monospace">點按鈕讀取 RAG 撈取紀錄</div>
         </div>
 
+        <!-- ═══ v69.18.1:維運診斷(4 個 endpoint 接通)═══ -->
+        <div class="worker-card" style="border:1px solid rgba(251,191,36,0.4)">
+          <h3>🛠 維運診斷(救火 + 用戶查 + 統計 + Prompt debug)
+            <span style="font-size:11px;padding:2px 8px;background:rgba(251,191,36,0.2);color:#fcd34d;border-radius:10px;margin-left:6px">v69.18.1 接通</span>
+          </h3>
+          <p style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.7">
+            4 個 worker 內已存在的維運 endpoint,本版接通前端 UI。<br>
+            <b style="color:#fcd34d">①</b> 最近 outer-error:用戶看「連線不順」但 last-call-debug 空白時用,讀外層 catch 寫的真實 throw 訊息<br>
+            <b style="color:#fcd34d">②</b> 用戶狀態查詢:輸入 email 看該用戶所有額度 KV 實際值<br>
+            <b style="color:#fcd34d">③</b> 靈籤統計:聚合各籤、各問事類型的準確率回饋<br>
+            <b style="color:#fcd34d">④</b> Modules debug:看某個 mode + model 開關下,prompt 實際載入哪些 modules
+          </p>
+
+          <!-- ① last-outer-error -->
+          <details style="margin-bottom:10px;border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#fca5a5;font-weight:600">🚨 ① 最近 10 筆 outer-error(救火)</summary>
+            <div style="margin-top:10px">
+              <div style="display:flex;gap:10px;margin-bottom:10px">
+                <button onclick="loadLastOuterError()" style="padding:10px 20px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔍 讀取最近 10 筆</button>
+                <button onclick="copyDiagBlock('lastOuterErrorOutput', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
+              </div>
+              <pre id="lastOuterErrorOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#fca5a5;line-height:1.5;max-height:400px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點按鈕讀取</pre>
+            </div>
+          </details>
+
+          <!-- ② user-status -->
+          <details style="margin-bottom:10px;border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#93c5fd;font-weight:600">👤 ② 用戶狀態查詢(額度 KV 全顯示)</summary>
+            <div style="margin-top:10px">
+              <input id="userStatusEmail" type="email" placeholder="user@example.com" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:13px;margin-bottom:8px">
+              <div style="display:flex;gap:10px;margin-bottom:10px">
+                <button onclick="loadUserStatus()" style="padding:10px 20px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔍 查詢</button>
+                <button onclick="copyDiagBlock('userStatusOutput', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
+              </div>
+              <pre id="userStatusOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#93c5fd;line-height:1.5;max-height:400px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">輸入 email 後按查詢</pre>
+            </div>
+          </details>
+
+          <!-- ③ oracle-stats -->
+          <details style="margin-bottom:10px;border:1px solid rgba(168,85,247,0.3);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#c4b5fd;font-weight:600">🎴 ③ 靈籤統計(準確率回饋聚合)</summary>
+            <div style="margin-top:10px">
+              <div style="display:flex;gap:10px;margin-bottom:10px">
+                <button onclick="loadOracleStats()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">📊 載入統計</button>
+                <button onclick="copyDiagBlock('oracleStatsOutput', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
+              </div>
+              <pre id="oracleStatsOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#c4b5fd;line-height:1.5;max-height:500px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點按鈕載入</pre>
+            </div>
+          </details>
+
+          <!-- ④ debug-modules -->
+          <details style="border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#86efac;font-weight:600">🧪 ④ Modules debug(看 prompt 載入哪些模組)</summary>
+            <div style="margin-top:10px">
+              <p style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.5">
+                用途:確認 toneCalibration 等開關真的影響 prompt 模組組合。輸入測試條件後按查詢,看 selectModules() 實際載入哪些 var。
+              </p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <select id="debugModulesMode" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+                  <option value="direct">direct(七維度)</option>
+                  <option value="tarot">tarot(塔羅)</option>
+                  <option value="ootk">ootk(開鑰)</option>
+                </select>
+                <select id="debugModulesModel" style="padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+                  <option value="opus47">Opus 4.7</option>
+                  <option value="opus">Opus(其他)</option>
+                  <option value="haiku">Haiku</option>
+                  <option value="sonnet">Sonnet</option>
+                </select>
+              </div>
+              <input id="debugModulesQuestion" type="text" placeholder="測試問題(預設:我今年感情運勢如何)" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px;margin-bottom:8px">
+              <select id="debugModulesFocusType" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px;margin-bottom:8px">
+                <option value="love">love(感情)</option>
+                <option value="career">career(事業)</option>
+                <option value="wealth">wealth(財運)</option>
+                <option value="health">health(健康)</option>
+                <option value="general">general(一般)</option>
+                <option value="thirdparty">thirdparty(第三者)</option>
+              </select>
+              <div style="display:flex;gap:10px;margin-bottom:10px">
+                <button onclick="loadDebugModules()" style="padding:10px 20px;border-radius:8px;border:none;background:#22c55e;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🧪 看模組組合</button>
+                <button onclick="copyDiagBlock('debugModulesOutput', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
+              </div>
+              <pre id="debugModulesOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#86efac;line-height:1.5;max-height:500px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">設定條件後按按鈕</pre>
+            </div>
+          </details>
+        </div>
+
         <!-- ═══ v69.3.22:七維度 callAI 診斷(查 birth 有沒有送到) ═══ -->
         <div class="worker-card" style="border:1px solid rgba(34,197,94,0.3)">
           <h3>🩺 七維度 payload 診斷
@@ -4647,7 +4735,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.18.1-2026-05-12';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.18.2-2026-05-12';
 
 async function checkWorkerStatus() {
   try {
@@ -5886,6 +5974,164 @@ async function runKVChunksDelete(dryRun) {
       setTimeout(loadBM25Stats, 500);
       setTimeout(loadKVChunksAudit, 1000);
     }
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// v69.18.1:4 個維運 endpoint 前端接通
+// ═══════════════════════════════════════════════════════════════
+
+async function loadLastOuterError() {
+  const out = document.getElementById('lastOuterErrorOutput');
+  if (!out) return;
+  out.textContent = '⏳ 讀取中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/last-outer-error?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) { out.textContent = '❌ ' + (data.error || '失敗'); return; }
+    if (!data.errors || data.errors.length === 0) {
+      out.textContent = '✅ 沒有最近的 outer-error(系統健康)';
+      return;
+    }
+    let txt = `═══ 最近 ${data.count} 筆 outer-error ═══\n💡 ${data.notes || ''}\n\n`;
+    data.errors.forEach((e, i) => {
+      txt += `─── #${i+1} ${e.ts || ''} ───\n`;
+      if (e.errMessage) txt += `errMessage: ${e.errMessage}\n`;
+      if (e.errStack) txt += `errStack: ${String(e.errStack).slice(0, 500)}\n`;
+      if (e.context) txt += `context: ${JSON.stringify(e.context).slice(0, 300)}\n`;
+      txt += '\n';
+    });
+    out.textContent = txt;
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function loadUserStatus() {
+  const out = document.getElementById('userStatusOutput');
+  const emailEl = document.getElementById('userStatusEmail');
+  if (!out || !emailEl) return;
+  const email = (emailEl.value || '').trim();
+  if (!email) { out.textContent = '請輸入 email'; return; }
+  out.textContent = '⏳ 查詢中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/user-status?token=${encodeURIComponent(adminToken)}&email=${encodeURIComponent(email)}`);
+    const data = await r.json();
+    if (!data.ok) { out.textContent = '❌ ' + (data.error || '失敗'); return; }
+    // 整個 JSON 顯示給歐那看(因為欄位很多,維持原始 JSON 較不會漏)
+    out.textContent = JSON.stringify(data, null, 2);
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function loadOracleStats() {
+  const out = document.getElementById('oracleStatsOutput');
+  if (!out) return;
+  out.textContent = '⏳ 載入中(可能要 5-10 秒掃 KV)...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/oracle-stats?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) { out.textContent = '❌ ' + (data.error || '失敗'); return; }
+    let txt = `═══ 靈籤回饋統計 ═══\n總筆數:${data.total || 0}\n\n`;
+    // 各籤
+    if (data.byLot) {
+      txt += `─── 各籤回饋(top 10)───\n`;
+      const lotEntries = Object.entries(data.byLot).map(([k, v]) => ({
+        lot: k,
+        total: (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0),
+        ...v
+      })).sort((a, b) => b.total - a.total).slice(0, 10);
+      lotEntries.forEach(e => {
+        txt += `  籤 ${e.lot}: 準=${e.accurate} 部分準=${e.partial} 不準=${e.inaccurate}(共 ${e.total})\n`;
+      });
+    }
+    // 各問事類型
+    if (data.byType) {
+      txt += `\n─── 各問事類型 ───\n`;
+      Object.entries(data.byType).forEach(([k, v]) => {
+        const total = (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0);
+        if (total > 0) {
+          const acc = ((v.accurate || 0) * 100 / total).toFixed(1);
+          txt += `  ${k}: 準=${v.accurate} 部分=${v.partial} 不準=${v.inaccurate}(共 ${total},準確率 ${acc}%)\n`;
+        }
+      });
+    }
+    // 重抽次數
+    if (data.byRedraw) {
+      txt += `\n─── 重抽次數對應準確率 ───\n`;
+      Object.entries(data.byRedraw).forEach(([k, v]) => {
+        const total = (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0);
+        if (total > 0) {
+          const acc = ((v.accurate || 0) * 100 / total).toFixed(1);
+          txt += `  重抽 ${k}: 準=${v.accurate} 部分=${v.partial} 不準=${v.inaccurate}(共 ${total},準確率 ${acc}%)\n`;
+        }
+      });
+    }
+    // 笑陰筊
+    if (data.byJiao) {
+      txt += `\n─── 笑陰筊累計對應準確率 ───\n`;
+      Object.entries(data.byJiao).forEach(([k, v]) => {
+        const total = (v.accurate || 0) + (v.partial || 0) + (v.inaccurate || 0);
+        if (total > 0) {
+          const acc = ((v.accurate || 0) * 100 / total).toFixed(1);
+          txt += `  ${k} 筊: 準=${v.accurate} 部分=${v.partial} 不準=${v.inaccurate}(共 ${total},準確率 ${acc}%)\n`;
+        }
+      });
+    }
+    if (data.recent && data.recent.length > 0) {
+      txt += `\n─── 最近 5 筆原始 ───\n`;
+      data.recent.slice(0, 5).forEach(r => {
+        txt += `  ${JSON.stringify(r).slice(0, 200)}\n`;
+      });
+    }
+    out.textContent = txt;
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function loadDebugModules() {
+  const out = document.getElementById('debugModulesOutput');
+  if (!out) return;
+  const mode = (document.getElementById('debugModulesMode') || {}).value || 'direct';
+  const model = (document.getElementById('debugModulesModel') || {}).value || 'opus47';
+  const question = (document.getElementById('debugModulesQuestion') || {}).value || '我今年感情運勢如何';
+  const focusType = (document.getElementById('debugModulesFocusType') || {}).value || 'love';
+  const isOpus47 = model === 'opus47';
+  const isOpus = model === 'opus' || isOpus47;
+  const isHaiku = model === 'haiku';
+  out.textContent = '⏳ 查詢中...';
+  try {
+    const params = new URLSearchParams({
+      token: adminToken,
+      mode: mode,
+      isOpus47: String(isOpus47),
+      isOpus: String(isOpus),
+      isHaiku: String(isHaiku),
+      question: question,
+      focusType: focusType
+    });
+    const r = await fetch(`${WORKER_URL}/admin/debug-modules?${params.toString()}`);
+    const data = await r.json();
+    if (data.error) { out.textContent = '❌ ' + data.error; return; }
+    // worker 回的格式可能是 { modules: [...] } 或直接 array
+    let mods = data.modules || data.parts || (Array.isArray(data) ? data : []);
+    let txt = `═══ Modules debug ═══\nmode=${mode} model=${model}\nquestion=${question}\nfocusType=${focusType}\n\n`;
+    txt += `共載入 ${mods.length} 個模組:\n\n`;
+    mods.forEach((m, i) => {
+      if (typeof m === 'string') {
+        txt += `#${i+1}  ${m}\n`;
+      } else if (m && typeof m === 'object') {
+        txt += `#${i+1}  ${m.name || m.var || JSON.stringify(m).slice(0, 100)}\n`;
+      }
+    });
+    if (data.tokens || data.estimatedTokens) {
+      txt += `\n預估 tokens: ${data.tokens || data.estimatedTokens}\n`;
+    }
+    out.textContent = txt;
   } catch (e) {
     out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
