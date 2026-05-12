@@ -744,6 +744,7 @@ textarea.worker-editor:focus{border-color:var(--accent)}
               </p>
               <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
                 <button onclick="ragUploadVectorizeRun()" id="ragUploadBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">▶️ 開始上傳</button>
+                <button onclick="ragUploadVectorizeRun({forceReset:true})" id="ragUploadResetBtn" style="padding:10px 20px;border-radius:8px;border:1px solid #ec4899;background:transparent;color:#f9a8d4;font-size:13px;font-weight:600;cursor:pointer" title="v69.19.2:Vectorize metadata 結構變動時用(例如新增 qt_*/sys_* 欄位)。會清掉 uploadedIds 從頭跑全部 936 個 chunks。">🔄 強制重上傳全部(metadata 變更時用)</button>
                 <button onclick="ragUploadVectorizeStop()" id="ragUploadStopBtn" disabled style="padding:10px 16px;border-radius:8px;border:none;background:#6b7280;color:#fff;font-size:13px;font-weight:600;cursor:pointer">⏸ 暫停</button>
                 <button onclick="ragUploadVectorizeProgress()" style="padding:10px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 看進度</button>
                 <button onclick="copyDiagBlock('ragUploadLog', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製 log</button>
@@ -4812,7 +4813,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.19.1-2026-05-12';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.19.2-2026-05-12';
 
 async function checkWorkerStatus() {
   try {
@@ -5707,11 +5708,24 @@ async function ragBuildContextProgress() {
 
 // ── ② Upload to Vectorize（自動分批，每批 30 chunks）──
 // v69.3.21:不再自己 += 累加,改用 worker 回傳的 totalUploaded/totalChunks 權威值
-async function ragUploadVectorizeRun() {
+async function ragUploadVectorizeRun(opts) {
+  // v69.19.2:加 forceReset 參數
+  //   true → 第一批 POST 帶 reset:true,後端清掉 uploadedIds Set + totalUploaded 歸零
+  //   用途:metadata 結構變動時(例如 v69.19.0 加 qt_*/sys_*)需要重 upsert 所有 vectors
+  //   不傳就走原邏輯(跳過已上傳的,只補新增 chunks)
+  opts = opts || {};
+  var _forceReset = opts.forceReset === true;
+  if (_forceReset) {
+    if (!confirm('⚠️ 強制重新上傳全部 936 個 chunks?\n\n用途:Vectorize metadata 結構變動(例如新增 qt_*/sys_* 欄位)需要重 upsert 才能讓 filter 生效。\n\n影響:\n• 既有 vectors 會被 overwrite(metadata 換新版,values 重新 embed)\n• 約 8-10 分鐘\n• Workers AI embed 免費,Vectorize upsert 免費\n\n要繼續嗎?')) {
+      return;
+    }
+  }
   _ragUploadAbort = false;
   document.getElementById('ragUploadBtn').disabled = true;
   document.getElementById('ragUploadStopBtn').disabled = false;
-  document.getElementById('ragUploadLog').textContent = '開始上傳到 Vectorize';
+  document.getElementById('ragUploadLog').textContent = _forceReset
+    ? '🔄 強制重新上傳模式:清空 uploadedIds,從頭跑全部 936 個 chunks'
+    : '開始上傳到 Vectorize';
 
   let cursor = null;
   let uploaded = 0;     // 從 worker 後端拿,不自己累加
@@ -5722,10 +5736,13 @@ async function ragUploadVectorizeRun() {
 
   while (!_ragUploadAbort) {
     try {
+      // v69.19.2:第一批時若 forceReset=true,傳 reset:true 給後端清掉 uploadedIds
+      const _body = { token: adminToken, batchSize: 30, cursor: cursor };
+      if (firstBatch && _forceReset) _body.reset = true;
       const resp = await fetch(`${WORKER_URL}/admin/rag-upload-vectorize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: adminToken, batchSize: 30, cursor: cursor })
+        body: JSON.stringify(_body)
       });
       const data = await resp.json();
       if (!data.ok) {
