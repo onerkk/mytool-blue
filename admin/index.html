@@ -509,8 +509,8 @@ textarea.worker-editor:focus{border-color:var(--accent)}
 
               <span style="font-size:13px">最終取幾個:</span>
               <div style="display:flex;align-items:center;gap:8px">
-                <input type="number" id="ragRerankerTopN" min="4" max="20" value="12" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:13px">
-                <span style="font-size:11px;color:var(--text-dim)">reranker 後送給 AI 的 chunks 數量(4-20,預設 12,含 allPurpose 5 個)</span>
+                <input type="number" id="ragRerankerTopN" min="4" max="20" value="20" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:13px">
+                <span style="font-size:11px;color:var(--text-dim)">reranker 後送給 AI 的 chunks 數量(4-20,v69.17 預設 20,Anthropic 官方 top-20 失敗率最低 1.9%)</span>
               </div>
             </div>
           </div>
@@ -4533,7 +4533,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.16.5-2026-05-11';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.17.1-2026-05-12';
 
 async function checkWorkerStatus() {
   try {
@@ -5079,7 +5079,7 @@ async function loadRAGConfig() {
     const rrTopNEl = document.getElementById('ragRerankerTopN');
     if (rrEl) rrEl.checked = !!rr.enabled;
     if (rrPoolEl) rrPoolEl.value = rr.candidatePoolTopK || 50;
-    if (rrTopNEl) rrTopNEl.value = rr.topN || 12;
+    if (rrTopNEl) rrTopNEl.value = rr.topN || 20;  // v69.17.1:預設 12 → 20
     if (statusEl) statusEl.textContent = '✅ ' + (cfg.updatedAt ? cfg.updatedAt.replace('T',' ').slice(0,19) : '讀取成功');
     if (bindingEl) {
       const b = cfg.bindings || {};
@@ -8221,14 +8221,23 @@ function _jyBuildClaudeBundle(item) {
       }
       if (o.summary) lines.push('  摘要: ' + o.summary);
     });
+    // v69.17.0 補:OOTK 追問問題本身(後端有寫 act_followUpQuestion 但前端從來沒讀)
+    if (d.act_followUpQuestion) {
+      lines.push('追問問題: ' + d.act_followUpQuestion);
+    }
     if (d.act_followUpCards && d.act_followUpCards.length) {
       lines.push('追問補充牌: ' + d.act_followUpCards.join(' / '));
     }
   } else if (mode === 'tarot') {
+    // v69.17.0 補完:後端寫了但前端沒讀的所有欄位(elementSummary/outcomeCard/cardCount/followUpQuestion)
+    //   + 修 act_spread → act_spreadType(後端實際 key)
     if (d.act_significator) lines.push('代表牌 (significator): ' + d.act_significator);
-    if (d.act_spread)       lines.push('牌陣: ' + d.act_spread);
+    if (d.act_spreadType)   lines.push('牌陣類型: ' + d.act_spreadType);
+    if (d.act_uprightRatio) lines.push('正逆比: ' + d.act_uprightRatio);
+    if (d.act_elementSummary) lines.push('元素分布: ' + d.act_elementSummary);
+    if (d.act_outcomeCard)  lines.push('結果牌: ' + d.act_outcomeCard);
     if (Array.isArray(d.act_cards) && d.act_cards.length) {
-      lines.push('抽牌 (' + d.act_cards.length + ' 張):');
+      lines.push('抽牌 (' + (d.act_cardCount || d.act_cards.length) + ' 張):');
       d.act_cards.forEach(function(c, i) {
         const _n = typeof c === 'string' ? c : (c.name || c.n || '');
         const _p = typeof c === 'object' ? (c.pos || c.position || '?') : '?';
@@ -8236,37 +8245,104 @@ function _jyBuildClaudeBundle(item) {
         lines.push('  ' + (i+1) + '. [' + _p + '] ' + _n + ' ' + _d);
       });
     }
+    if (d.act_followUpQuestion) {
+      lines.push('追問: ' + d.act_followUpQuestion);
+    }
     if (d.act_followUpCards && d.act_followUpCards.length) {
       lines.push('追問補充牌: ' + d.act_followUpCards.join(' / '));
     }
   } else if (mode === 'full') {
+    // v69.17.0:七維度稽核完整顯示 7 套命盤(歐那 2026-05-12 要求)
+    //   原本只顯示八字/紫微/西占/吠陀/塔羅 5 套摘要,缺梅花、姓名,且各套欄位不齊
+    //   現在顯示送進 AI 的所有 dim 真實資料,讓稽核能驗證 AI 有沒有編造
+    // ── 八字 ──
     if (d.act_bazi) {
-      lines.push('八字:');
+      lines.push('━ 八字 ━');
       if (d.act_bazi.fourPillars) lines.push('  四柱: ' + d.act_bazi.fourPillars);
       if (d.act_bazi.dayMaster)   lines.push('  日主: ' + d.act_bazi.dayMaster);
+      if (d.act_bazi.strength)    lines.push('  日主強弱: ' + d.act_bazi.strength);
       if (d.act_bazi.favEls)      lines.push('  用神/喜: ' + d.act_bazi.favEls);
+      if (d.act_bazi.elementScores) lines.push('  五行分數: ' + d.act_bazi.elementScores);
+      if (d.act_bazi.tenGods)     lines.push('  十神: ' + d.act_bazi.tenGods);
       if (d.act_bazi.dayun)       lines.push('  大運: ' + d.act_bazi.dayun);
+      if (d.act_bazi.currentDayun) lines.push('  當前大運: ' + d.act_bazi.currentDayun);
+      if (d.act_bazi.shensha)     lines.push('  神煞: ' + d.act_bazi.shensha);
     }
+    // ── 紫微 ──
     if (d.act_ziwei) {
-      lines.push('紫微:');
-      if (d.act_ziwei.mingStars)     lines.push('  命主星: ' + d.act_ziwei.mingStars);
-      if (d.act_ziwei.spouseCompact) lines.push('  夫妻宮: ' + d.act_ziwei.spouseCompact);
+      lines.push('━ 紫微 ━');
+      if (d.act_ziwei.mingGongPosition) lines.push('  命宮位置: ' + d.act_ziwei.mingGongPosition);
+      if (d.act_ziwei.mingStars)        lines.push('  命主星: ' + d.act_ziwei.mingStars);
+      if (d.act_ziwei.shenGong)         lines.push('  身宮: ' + d.act_ziwei.shenGong);
+      if (d.act_ziwei.spouseCompact)    lines.push('  夫妻宮: ' + d.act_ziwei.spouseCompact);
+      if (d.act_ziwei.careerCompact)    lines.push('  官祿宮: ' + d.act_ziwei.careerCompact);
+      if (d.act_ziwei.wealthCompact)    lines.push('  財帛宮: ' + d.act_ziwei.wealthCompact);
+      if (d.act_ziwei.fudeCompact)      lines.push('  福德宮: ' + d.act_ziwei.fudeCompact);
+      if (d.act_ziwei.huaJi)            lines.push('  化忌: ' + d.act_ziwei.huaJi);
+      if (d.act_ziwei.huaLu)            lines.push('  化祿: ' + d.act_ziwei.huaLu);
+      if (d.act_ziwei.huaQuan)          lines.push('  化權: ' + d.act_ziwei.huaQuan);
+      if (d.act_ziwei.huaKe)            lines.push('  化科: ' + d.act_ziwei.huaKe);
+      if (d.act_ziwei.daxian)           lines.push('  大限: ' + d.act_ziwei.daxian);
     }
-    if (d.act_natal) {
-      lines.push('西占:');
-      if (d.act_natal.asc)     lines.push('  上升: ' + d.act_natal.asc);
-      if (d.act_natal.planets) lines.push('  行星: ' + d.act_natal.planets);
+    // ── 梅花 ──
+    if (d.act_meihua) {
+      lines.push('━ 梅花 ━');
+      if (d.act_meihua.benGua)    lines.push('  本卦: ' + d.act_meihua.benGua);
+      if (d.act_meihua.bianGua)   lines.push('  變卦: ' + d.act_meihua.bianGua);
+      if (d.act_meihua.huGua)     lines.push('  互卦: ' + d.act_meihua.huGua);
+      if (d.act_meihua.tiGua)     lines.push('  體卦: ' + d.act_meihua.tiGua);
+      if (d.act_meihua.yongGua)   lines.push('  用卦: ' + d.act_meihua.yongGua);
+      if (d.act_meihua.dongYao)   lines.push('  動爻: ' + d.act_meihua.dongYao);
+      if (d.act_meihua.tiYongRelation) lines.push('  體用關係: ' + d.act_meihua.tiYongRelation);
+      if (d.act_meihua.yingQi)    lines.push('  應期: ' + d.act_meihua.yingQi);
     }
-    if (d.act_vedic) {
-      lines.push('吠陀:');
-      if (d.act_vedic.lagna) lines.push('  Lagna: ' + d.act_vedic.lagna);
-      if (d.act_vedic.dasha) lines.push('  Dasha: ' + d.act_vedic.dasha);
-    }
+    // ── 塔羅(七維交叉)──
     if (d.act_tarot && d.act_tarot.cards && d.act_tarot.cards.length) {
-      lines.push('塔羅(七維交叉):');
-      d.act_tarot.cards.forEach(function(c) {
-        lines.push('  [' + (c.pos || '?') + '] ' + (c.dir || '') + ' ' + (c.name || ''));
+      lines.push('━ 塔羅(七維交叉)━');
+      if (d.act_tarot.spread) lines.push('  牌陣: ' + d.act_tarot.spread);
+      d.act_tarot.cards.forEach(function(c, i) {
+        lines.push('  ' + (i+1) + '. [' + (c.pos || '?') + '] ' + (c.dir || '') + ' ' + (c.name || ''));
       });
+    }
+    // ── 西占 ──
+    if (d.act_natal) {
+      lines.push('━ 西占 ━');
+      if (d.act_natal.asc)        lines.push('  上升: ' + d.act_natal.asc);
+      if (d.act_natal.mc)         lines.push('  天頂(MC): ' + d.act_natal.mc);
+      if (d.act_natal.planets)    lines.push('  行星: ' + d.act_natal.planets);
+      if (d.act_natal.aspects)    lines.push('  主要相位: ' + d.act_natal.aspects);
+      if (d.act_natal.profection) lines.push('  Profections 年宮: ' + d.act_natal.profection);
+      if (d.act_natal.transits)   lines.push('  當前 transits: ' + d.act_natal.transits);
+    }
+    // ── 吠陀 ──
+    if (d.act_vedic) {
+      lines.push('━ 吠陀 ━');
+      if (d.act_vedic.lagna)       lines.push('  Lagna 上升: ' + d.act_vedic.lagna);
+      if (d.act_vedic.nakshatra)   lines.push('  月宿 Nakshatra: ' + d.act_vedic.nakshatra);
+      if (d.act_vedic.dasha)       lines.push('  Mahadasha: ' + d.act_vedic.dasha);
+      if (d.act_vedic.antardasha)  lines.push('  Antardasha: ' + d.act_vedic.antardasha);
+      if (d.act_vedic.karaka)      lines.push('  Karakas: ' + d.act_vedic.karaka);
+      if (d.act_vedic.yogas)       lines.push('  Yogas 格局: ' + d.act_vedic.yogas);
+      if (d.act_vedic.d9)          lines.push('  D9 Navamsa: ' + d.act_vedic.d9);
+    }
+    // ── 姓名 ──
+    if (d.act_name) {
+      lines.push('━ 姓名 ━');
+      if (d.act_name.fullName)   lines.push('  姓名: ' + d.act_name.fullName);
+      if (d.act_name.strokes)    lines.push('  筆畫: ' + d.act_name.strokes);
+      if (d.act_name.sanCai)     lines.push('  三才: ' + d.act_name.sanCai);
+      if (d.act_name.wuGe)       lines.push('  五格: ' + d.act_name.wuGe);
+      if (d.act_name.tianGe)     lines.push('  天格: ' + d.act_name.tianGe);
+      if (d.act_name.renGe)      lines.push('  人格: ' + d.act_name.renGe);
+      if (d.act_name.diGe)       lines.push('  地格: ' + d.act_name.diGe);
+      if (d.act_name.waiGe)      lines.push('  外格: ' + d.act_name.waiGe);
+      if (d.act_name.zongGe)     lines.push('  總格: ' + d.act_name.zongGe);
+      if (d.act_name.elementMap) lines.push('  五行映射: ' + d.act_name.elementMap);
+    }
+    // ── fallback:如果連 act_* 物件都沒有,看 d.dims 原始 keys 提示哪些 dim 真的有送 ──
+    if (!d.act_bazi && !d.act_ziwei && !d.act_meihua && !d.act_natal && !d.act_vedic && !d.act_tarot && !d.act_name) {
+      lines.push('(d.act_* 全空,從 dim 物件 keys 看送了什麼)');
+      if (d.dimsKeys) lines.push('  dimsKeys: ' + (Array.isArray(d.dimsKeys) ? d.dimsKeys.join(', ') : String(d.dimsKeys)));
     }
   }
   lines.push('');
@@ -8609,7 +8685,16 @@ function renderAuditCard(item) {
   if (mode === 'tarot') {
     actCards = (d.act_cards || []);
     if (actCards.length) {
-      actCardsHtml = '<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">牌陣:' + _esc(d.act_spreadType || '?') + ' · 正逆比 ' + _esc(d.act_uprightRatio || '?') + ' · ' + actCards.length + ' 張</div>';
+      // v69.17.0 補完:後端寫了 elementSummary/outcomeCard 但前端沒顯示
+      actCardsHtml = '<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">牌陣:' + _esc(d.act_spreadType || '?') + ' · 正逆比 ' + _esc(d.act_uprightRatio || '?') + ' · ' + (d.act_cardCount || actCards.length) + ' 張</div>';
+      // v69.17.0 新增:元素分布摘要(整副牌氣場判讀關鍵)
+      if (d.act_elementSummary) {
+        actCardsHtml += '<div style="font-size:11px;color:#fde68a;margin-bottom:6px;padding:4px 8px;border-radius:6px;background:rgba(212,175,55,.08);border-left:2px solid rgba(212,175,55,.5)">元素分布:' + _esc(d.act_elementSummary) + '</div>';
+      }
+      // v69.17.0 新增:結果牌(收束位,判讀核心)
+      if (d.act_outcomeCard) {
+        actCardsHtml += '<div style="font-size:11px;color:#bbf7d0;margin-bottom:6px;padding:4px 8px;border-radius:6px;background:rgba(34,197,94,.06);border-left:2px solid rgba(34,197,94,.5)">結果牌:<strong>' + _esc(d.act_outcomeCard) + '</strong></div>';
+      }
       actCardsHtml += '<div style="display:flex;flex-direction:column;gap:4px">';
       for (const c of actCards) {
         actCardsHtml += '<div style="display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:6px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.15);font-size:12px">' +
@@ -8619,8 +8704,15 @@ function renderAuditCard(item) {
           '</div>';
       }
       actCardsHtml += '</div>';
+      // v69.17.0 新增:追問問題本身(讓 admin 看到用戶追問了什麼)
+      if (d.act_followUpQuestion) {
+        actCardsHtml += '<div style="margin-top:8px;padding:6px 8px;border-radius:6px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.25)">' +
+          '<div style="font-size:10px;color:#c084fc;margin-bottom:3px">追問問題</div>' +
+          '<div style="font-size:12px;color:var(--text);line-height:1.5">' + _esc(d.act_followUpQuestion) + '</div>' +
+          '</div>';
+      }
       if (d.act_followUpCards && d.act_followUpCards.length) {
-        actCardsHtml += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(168,85,247,.25)">' +
+        actCardsHtml += '<div style="margin-top:6px;padding-top:6px;border-top:1px dashed rgba(168,85,247,.25)">' +
           '<div style="font-size:11px;color:#c084fc;margin-bottom:4px">補充牌(追問):' + d.act_followUpCards.length + ' 張</div>' +
           '<div style="font-size:12px;color:var(--text-dim);line-height:1.6">' + d.act_followUpCards.map(_esc).join(' · ') + '</div>' +
           '</div>';
@@ -8685,6 +8777,13 @@ function renderAuditCard(item) {
         _opHtml += '</div>';
         actCardsHtml += _opHtml;
       }
+      // v69.17.0 新增:OOTK 追問問題本身(後端有寫但前端從沒顯示)
+      if (d.act_followUpQuestion) {
+        actCardsHtml += '<div style="margin-top:8px;padding:6px 8px;border-radius:6px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.25)">' +
+          '<div style="font-size:10px;color:#c084fc;margin-bottom:3px">追問問題</div>' +
+          '<div style="font-size:12px;color:var(--text);line-height:1.5">' + _esc(d.act_followUpQuestion) + '</div>' +
+          '</div>';
+      }
       if (d.act_followUpCards && d.act_followUpCards.length) {
         actCardsHtml += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(168,85,247,.25)">' +
           '<div style="font-size:11px;color:#c084fc;margin-bottom:4px">補充牌(追問)</div>' +
@@ -8695,46 +8794,117 @@ function renderAuditCard(item) {
       actCardsHtml = '<div style="color:#ef4444;font-size:12px">⚠️ diag 沒記錄到 OOTK 五階段資料</div>';
     }
   } else if (mode === 'full') {
+    // v69.17.0:七維度 admin 視覺卡片補完整 7 套(原本只 4 套+塔羅,缺梅花+姓名)
+    //   歐那 2026-05-12 反饋「後台看不到梅花那些」— 之前只改了複製文字版沒改視覺 HTML,這次補完
     const sections = [];
+    // ── 八字 ──
     if (d.act_bazi) {
-      let bz = '<div style="margin-bottom:6px"><div style="font-size:11px;color:#fbbf24;font-weight:700;margin-bottom:2px">八字</div>';
-      if (d.act_bazi.fourPillars) bz += '<div style="font-size:11px;color:var(--text);line-height:1.5">四柱:' + _esc(d.act_bazi.fourPillars) + '</div>';
-      if (d.act_bazi.dayMaster) bz += '<div style="font-size:11px;color:var(--text);line-height:1.5">日主:' + _esc(d.act_bazi.dayMaster) + '</div>';
-      if (d.act_bazi.favEls) bz += '<div style="font-size:11px;color:var(--text);line-height:1.5">用神/喜:' + _esc(d.act_bazi.favEls) + '</div>';
-      if (d.act_bazi.dayun) bz += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5">大運:' + _esc(d.act_bazi.dayun) + '</div>';
+      let bz = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(251,191,36,.04);border-left:3px solid #fbbf24">' +
+        '<div style="font-size:11px;color:#fbbf24;font-weight:700;margin-bottom:3px">⚊ 八字</div>';
+      if (d.act_bazi.fourPillars)   bz += '<div style="font-size:11px;color:var(--text);line-height:1.6">四柱:' + _esc(d.act_bazi.fourPillars) + '</div>';
+      if (d.act_bazi.dayMaster)     bz += '<div style="font-size:11px;color:var(--text);line-height:1.6">日主:' + _esc(d.act_bazi.dayMaster) + '</div>';
+      if (d.act_bazi.strength)      bz += '<div style="font-size:11px;color:var(--text);line-height:1.6">日主強弱:<strong style="color:#fde68a">' + _esc(d.act_bazi.strength) + '</strong></div>';
+      if (d.act_bazi.favEls)        bz += '<div style="font-size:11px;color:var(--text);line-height:1.6">用神/喜:<strong style="color:#fde68a">' + _esc(d.act_bazi.favEls) + '</strong></div>';
+      if (d.act_bazi.elementScores) bz += '<div style="font-size:11px;color:var(--text);line-height:1.6">五行分數:' + _esc(d.act_bazi.elementScores) + '</div>';
+      if (d.act_bazi.tenGods)       bz += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">十神:' + _esc(d.act_bazi.tenGods) + '</div>';
+      if (d.act_bazi.dayun)         bz += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">大運:' + _esc(d.act_bazi.dayun) + '</div>';
+      if (d.act_bazi.currentDayun)  bz += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">當前大運:' + _esc(d.act_bazi.currentDayun) + '</div>';
+      if (d.act_bazi.shensha)       bz += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">神煞:' + _esc(d.act_bazi.shensha) + '</div>';
       bz += '</div>';
       sections.push(bz);
     }
+    // ── 紫微 ──
     if (d.act_ziwei) {
-      let zw = '<div style="margin-bottom:6px"><div style="font-size:11px;color:#a5b4fc;font-weight:700;margin-bottom:2px">紫微</div>';
-      if (d.act_ziwei.mingStars) zw += '<div style="font-size:11px;color:var(--text)">命主星:' + _esc(d.act_ziwei.mingStars) + '</div>';
-      if (d.act_ziwei.spouseCompact) zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5">夫妻宮:' + _esc(d.act_ziwei.spouseCompact) + '</div>';
-      if (d.act_ziwei.palaceKeys) zw += '<div style="font-size:10px;color:var(--text-dim);opacity:.7">十二宮:' + _esc((d.act_ziwei.palaceKeys || []).join(',')) + '</div>';
+      let zw = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(165,180,252,.04);border-left:3px solid #a5b4fc">' +
+        '<div style="font-size:11px;color:#a5b4fc;font-weight:700;margin-bottom:3px">⚊ 紫微</div>';
+      if (d.act_ziwei.mingGongPosition) zw += '<div style="font-size:11px;color:var(--text);line-height:1.6">命宮位置:' + _esc(d.act_ziwei.mingGongPosition) + '</div>';
+      if (d.act_ziwei.mingStars)        zw += '<div style="font-size:11px;color:var(--text);line-height:1.6">命主星:<strong style="color:#c7d2fe">' + _esc(d.act_ziwei.mingStars) + '</strong></div>';
+      if (d.act_ziwei.shenGong)         zw += '<div style="font-size:11px;color:var(--text);line-height:1.6">身宮:' + _esc(d.act_ziwei.shenGong) + '</div>';
+      if (d.act_ziwei.spouseCompact)    zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">夫妻宮:' + _esc(d.act_ziwei.spouseCompact) + '</div>';
+      if (d.act_ziwei.careerCompact)    zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">官祿宮:' + _esc(d.act_ziwei.careerCompact) + '</div>';
+      if (d.act_ziwei.wealthCompact)    zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">財帛宮:' + _esc(d.act_ziwei.wealthCompact) + '</div>';
+      if (d.act_ziwei.fudeCompact)      zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">福德宮:' + _esc(d.act_ziwei.fudeCompact) + '</div>';
+      if (d.act_ziwei.huaJi)            zw += '<div style="font-size:11px;color:#fca5a5;line-height:1.6">化忌:' + _esc(d.act_ziwei.huaJi) + '</div>';
+      if (d.act_ziwei.huaLu)            zw += '<div style="font-size:11px;color:#86efac;line-height:1.6">化祿:' + _esc(d.act_ziwei.huaLu) + '</div>';
+      if (d.act_ziwei.huaQuan)          zw += '<div style="font-size:11px;color:#fde68a;line-height:1.6">化權:' + _esc(d.act_ziwei.huaQuan) + '</div>';
+      if (d.act_ziwei.huaKe)            zw += '<div style="font-size:11px;color:#c4b5fd;line-height:1.6">化科:' + _esc(d.act_ziwei.huaKe) + '</div>';
+      if (d.act_ziwei.daxian)           zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">大限:' + _esc(d.act_ziwei.daxian) + '</div>';
+      if (d.act_ziwei.palaceKeys)       zw += '<div style="font-size:10px;color:var(--text-dim);opacity:.6;line-height:1.5">十二宮 keys:' + _esc((d.act_ziwei.palaceKeys || []).join(',')) + '</div>';
       zw += '</div>';
       sections.push(zw);
     }
-    if (d.act_natal) {
-      let nt = '<div style="margin-bottom:6px"><div style="font-size:11px;color:#86efac;font-weight:700;margin-bottom:2px">西占</div>';
-      if (d.act_natal.asc) nt += '<div style="font-size:11px;color:var(--text)">上升:' + _esc(d.act_natal.asc) + '</div>';
-      if (d.act_natal.planets) nt += '<div style="font-size:11px;color:var(--text-dim);line-height:1.5">行星:' + _esc(d.act_natal.planets) + '</div>';
-      nt += '</div>';
-      sections.push(nt);
+    // ── 梅花(v69.17.0 新增)──
+    if (d.act_meihua) {
+      let mh = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(74,222,128,.04);border-left:3px solid #4ade80">' +
+        '<div style="font-size:11px;color:#4ade80;font-weight:700;margin-bottom:3px">⚊ 梅花</div>';
+      if (d.act_meihua.benGua)         mh += '<div style="font-size:11px;color:var(--text);line-height:1.6">本卦:' + _esc(d.act_meihua.benGua) + '</div>';
+      if (d.act_meihua.bianGua)        mh += '<div style="font-size:11px;color:var(--text);line-height:1.6">變卦:' + _esc(d.act_meihua.bianGua) + '</div>';
+      if (d.act_meihua.huGua)          mh += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">互卦:' + _esc(d.act_meihua.huGua) + '</div>';
+      if (d.act_meihua.tiGua)          mh += '<div style="font-size:11px;color:var(--text);line-height:1.6">體卦:<strong style="color:#bbf7d0">' + _esc(d.act_meihua.tiGua) + '</strong></div>';
+      if (d.act_meihua.yongGua)        mh += '<div style="font-size:11px;color:var(--text);line-height:1.6">用卦:<strong style="color:#bbf7d0">' + _esc(d.act_meihua.yongGua) + '</strong></div>';
+      if (d.act_meihua.dongYao)        mh += '<div style="font-size:11px;color:var(--text);line-height:1.6">動爻:' + _esc(d.act_meihua.dongYao) + '</div>';
+      if (d.act_meihua.tiYongRelation) mh += '<div style="font-size:11px;color:#fde68a;line-height:1.6">體用關係:' + _esc(d.act_meihua.tiYongRelation) + '</div>';
+      if (d.act_meihua.yingQi)         mh += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">應期:' + _esc(d.act_meihua.yingQi) + '</div>';
+      if (d.act_meihua.narrative)      mh += '<div style="font-size:10px;color:var(--text-dim);line-height:1.5;font-style:italic">敘述:' + _esc(d.act_meihua.narrative) + '</div>';
+      mh += '</div>';
+      sections.push(mh);
     }
-    if (d.act_vedic) {
-      let vd = '<div style="margin-bottom:6px"><div style="font-size:11px;color:#fda4af;font-weight:700;margin-bottom:2px">吠陀</div>';
-      if (d.act_vedic.lagna) vd += '<div style="font-size:11px;color:var(--text)">Lagna:' + _esc(d.act_vedic.lagna) + '</div>';
-      if (d.act_vedic.dasha) vd += '<div style="font-size:11px;color:var(--text-dim)">Dasha:' + _esc(d.act_vedic.dasha) + '</div>';
-      vd += '</div>';
-      sections.push(vd);
-    }
+    // ── 塔羅(七維交叉)──
     if (d.act_tarot && d.act_tarot.cards && d.act_tarot.cards.length) {
-      let t7 = '<div style="margin-bottom:6px"><div style="font-size:11px;color:#fde68a;font-weight:700;margin-bottom:2px">塔羅(七維交叉)</div>';
+      let t7 = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(253,230,138,.04);border-left:3px solid #fde68a">' +
+        '<div style="font-size:11px;color:#fde68a;font-weight:700;margin-bottom:3px">⚊ 塔羅(七維交叉)</div>';
+      if (d.act_tarot.spread) t7 += '<div style="font-size:10px;color:var(--text-dim);margin-bottom:3px">牌陣:' + _esc(d.act_tarot.spread) + '</div>';
       for (const c of d.act_tarot.cards) {
-        t7 += '<div style="font-size:11px;color:var(--text);line-height:1.5">' + _esc(c.pos || '?') + ' · <span style="color:' + (c.dir === '逆' ? '#f87171' : '#86efac') + '">' + _esc(c.dir) + '</span> ' + _esc(c.name) + '</div>';
+        t7 += '<div style="font-size:11px;color:var(--text);line-height:1.5">' + _esc(c.pos || '?') + ' · <span style="color:' + (c.dir === '逆' ? '#f87171' : '#86efac') + ';font-weight:700">' + _esc(c.dir) + '</span> ' + _esc(c.name) + '</div>';
       }
       t7 += '</div>';
       sections.push(t7);
       actCards = d.act_tarot.cards;
+    }
+    // ── 西占 ──
+    if (d.act_natal) {
+      let nt = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(134,239,172,.04);border-left:3px solid #86efac">' +
+        '<div style="font-size:11px;color:#86efac;font-weight:700;margin-bottom:3px">⚊ 西占</div>';
+      if (d.act_natal.asc)        nt += '<div style="font-size:11px;color:var(--text);line-height:1.6">上升:<strong style="color:#bbf7d0">' + _esc(d.act_natal.asc) + '</strong></div>';
+      if (d.act_natal.mc)         nt += '<div style="font-size:11px;color:var(--text);line-height:1.6">天頂(MC):' + _esc(d.act_natal.mc) + '</div>';
+      if (d.act_natal.planets)    nt += '<div style="font-size:11px;color:var(--text);line-height:1.6">行星:' + _esc(d.act_natal.planets) + '</div>';
+      if (d.act_natal.aspects)    nt += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">主要相位:' + _esc(d.act_natal.aspects) + '</div>';
+      if (d.act_natal.profection) nt += '<div style="font-size:11px;color:#fde68a;line-height:1.6">Profections 年宮:' + _esc(d.act_natal.profection) + '</div>';
+      if (d.act_natal.transits)   nt += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">當前 transits:' + _esc(d.act_natal.transits) + '</div>';
+      nt += '</div>';
+      sections.push(nt);
+    }
+    // ── 吠陀 ──
+    if (d.act_vedic) {
+      let vd = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(253,164,175,.04);border-left:3px solid #fda4af">' +
+        '<div style="font-size:11px;color:#fda4af;font-weight:700;margin-bottom:3px">⚊ 吠陀</div>';
+      if (d.act_vedic.lagna)      vd += '<div style="font-size:11px;color:var(--text);line-height:1.6">Lagna:<strong style="color:#fecdd3">' + _esc(d.act_vedic.lagna) + '</strong></div>';
+      if (d.act_vedic.nakshatra)  vd += '<div style="font-size:11px;color:var(--text);line-height:1.6">月宿 Nakshatra:' + _esc(d.act_vedic.nakshatra) + '</div>';
+      if (d.act_vedic.dasha)      vd += '<div style="font-size:11px;color:var(--text);line-height:1.6">Mahadasha:<strong style="color:#fecdd3">' + _esc(d.act_vedic.dasha) + '</strong></div>';
+      if (d.act_vedic.antardasha) vd += '<div style="font-size:11px;color:var(--text);line-height:1.6">Antardasha:' + _esc(d.act_vedic.antardasha) + '</div>';
+      if (d.act_vedic.planets)    vd += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">行星:' + _esc(d.act_vedic.planets) + '</div>';
+      if (d.act_vedic.karaka)     vd += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">Karakas:' + _esc(d.act_vedic.karaka) + '</div>';
+      if (d.act_vedic.yogas)      vd += '<div style="font-size:11px;color:#fde68a;line-height:1.6">Yogas 格局:' + _esc(d.act_vedic.yogas) + '</div>';
+      if (d.act_vedic.d9)         vd += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">D9 Navamsa:' + _esc(d.act_vedic.d9) + '</div>';
+      vd += '</div>';
+      sections.push(vd);
+    }
+    // ── 姓名(v69.17.0 新增)──
+    if (d.act_name) {
+      let nm = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(196,181,253,.04);border-left:3px solid #c4b5fd">' +
+        '<div style="font-size:11px;color:#c4b5fd;font-weight:700;margin-bottom:3px">⚊ 姓名</div>';
+      if (d.act_name.fullName)   nm += '<div style="font-size:11px;color:var(--text);line-height:1.6">姓名:<strong style="color:#ddd6fe">' + _esc(d.act_name.fullName) + '</strong></div>';
+      if (d.act_name.strokes)    nm += '<div style="font-size:11px;color:var(--text);line-height:1.6">筆畫:' + _esc(d.act_name.strokes) + '</div>';
+      if (d.act_name.sanCai)     nm += '<div style="font-size:11px;color:var(--text);line-height:1.6">三才:<strong style="color:#ddd6fe">' + _esc(d.act_name.sanCai) + '</strong></div>';
+      if (d.act_name.wuGe)       nm += '<div style="font-size:11px;color:var(--text);line-height:1.6">五格:' + _esc(d.act_name.wuGe) + '</div>';
+      if (d.act_name.tianGe)     nm += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">天格:' + _esc(d.act_name.tianGe) + '</div>';
+      if (d.act_name.renGe)      nm += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">人格:' + _esc(d.act_name.renGe) + '</div>';
+      if (d.act_name.diGe)       nm += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">地格:' + _esc(d.act_name.diGe) + '</div>';
+      if (d.act_name.waiGe)      nm += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">外格:' + _esc(d.act_name.waiGe) + '</div>';
+      if (d.act_name.zongGe)     nm += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">總格:' + _esc(d.act_name.zongGe) + '</div>';
+      if (d.act_name.elementMap) nm += '<div style="font-size:10px;color:var(--text-dim);line-height:1.5">五行映射:' + _esc(d.act_name.elementMap) + '</div>';
+      nm += '</div>';
+      sections.push(nm);
     }
     actCardsHtml = sections.length ? sections.join('') : '<div style="color:#ef4444;font-size:12px">⚠️ diag 沒記錄到任何 act_* 命盤資料</div>';
   } else {
