@@ -642,6 +642,28 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </div>
           </div>
 
+          <!-- ═══ v69.20.0:Citations API Grounding(Anthropic 官方反幻覺機制)═══ -->
+          <div style="margin-top:18px;padding:14px;border:1px solid rgba(34,197,94,0.4);border-radius:10px;background:rgba(34,197,94,0.05)">
+            <h4 style="margin:0 0 8px 0;font-size:14px;color:#86efac;font-weight:700">
+              📌 Citations API Grounding(治本反幻覺)
+              <span style="font-size:10px;padding:2px 6px;background:rgba(34,197,94,0.2);color:#86efac;border-radius:8px;margin-left:6px">v69.20.0 新增</span>
+            </h4>
+            <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px;line-height:1.7">
+              <b style="color:#fbbf24">原理</b>:RAG chunks 改用 Anthropic <code>search_result block</code> + <code>citations:enabled</code> 塞進 user message。<br>
+              <b style="color:#fbbf24">為什麼治本</b>:⑤h/⑤i/⑤j prompt 守門條款只是「叫 AI 不要做某事」,Citations API 是「API 層級強制 AI 引用必須綁 source」。AI 物理上無法引用 block 外的內容(編造會 fail citations check)。<br>
+              <b style="color:#86efac">官方數據</b>:Endex 實測 hallucination 從 10% → 0%、Anthropic 內測 recall +15%。<br>
+              <b style="color:#fbbf24">前置</b>:無(Citations API 所有 Claude 4.x 模型都支援)。<br>
+              <b style="color:#f87171">退場</b>:取消勾「啟用」→ 退回 v69.19.x RAG chunks 字串拼接版。
+            </p>
+            <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center">
+              <label style="font-size:13px;color:var(--text-bright)">Citations 開關:</label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="checkbox" id="ragCitationsGroundingEnabled" style="width:18px;height:18px;cursor:pointer">
+                <span style="font-size:13px">啟用 Citations Grounding(關閉 = v69.19.x RAG 字串版)</span>
+              </label>
+            </div>
+          </div>
+
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;margin-bottom:14px">
             <button onclick="loadRAGConfig()" style="padding:10px 20px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取目前設定</button>
             <button onclick="saveRAGConfig()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存設定</button>
@@ -4813,7 +4835,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.19.2-2026-05-12';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.20.0-2026-05-12';
 
 async function checkWorkerStatus() {
   try {
@@ -5383,6 +5405,10 @@ async function loadRAGConfig() {
       }
       mfStatusEl.innerHTML = '狀態:' + _mfStatusTxt + '<br>啟用前必須先完成 ① 建 index → ② 重 upsert,否則 Vectorize query 會報錯。';
     }
+    // v69.20.0:citationsGrounding 欄位
+    const cg = cfg.citationsGrounding || {};
+    const cgEnEl = document.getElementById('ragCitationsGroundingEnabled');
+    if (cgEnEl) cgEnEl.checked = !!cg.enabled;
     if (statusEl) statusEl.textContent = '✅ ' + (cfg.updatedAt ? cfg.updatedAt.replace('T',' ').slice(0,19) : '讀取成功');
     if (bindingEl) {
       const b = cfg.bindings || {};
@@ -5434,6 +5460,13 @@ async function saveRAGConfig() {
     metadataFilter: {
       enabled: (function(){
         const el = document.getElementById('metadataFilterEnabled');
+        return el ? !!el.checked : false;
+      })()
+    },
+    // v69.20.0:citationsGrounding 開關
+    citationsGrounding: {
+      enabled: (function(){
+        const el = document.getElementById('ragCitationsGroundingEnabled');
         return el ? !!el.checked : false;
       })()
     }
