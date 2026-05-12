@@ -515,6 +515,56 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </div>
           </div>
 
+          <!-- ═══ v69.18.0:BM25 Hybrid Search(Contextual Retrieval 第二支柱)═══ -->
+          <div style="margin-top:16px;padding:14px;background:linear-gradient(135deg,rgba(251,191,36,0.08),rgba(168,85,247,0.08));border:1px solid rgba(251,191,36,0.3);border-radius:8px">
+            <div style="font-size:13px;font-weight:600;color:#fbbf24;margin-bottom:8px">
+              🔤 BM25 Hybrid Search(關鍵字 + 向量並行)
+              <span style="font-size:11px;padding:2px 8px;background:rgba(34,197,94,0.2);color:#86efac;border-radius:10px;margin-left:6px">v69.18.0 新增</span>
+            </div>
+            <p style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:10px">
+              <b style="color:#fcd34d">原理</b>:純向量找「意思相近」,但找不到「字面精準」(例:八字術語「正官」「七殺」「桃花」)。BM25 補這塊。<br>
+              <b style="color:#fcd34d">流程</b>:Vectorize + D1 BM25(FTS5 trigram)並行 → <b style="color:#86efac">RRF 融合 k=60</b>(Anthropic/Microsoft/Elastic/Qdrant 業界標準)→ reranker 精排 → top-20。<br>
+              <b style="color:#fcd34d">官方數據</b>:Anthropic Contextual Retrieval 失敗率 5.7% → <b style="color:#86efac">1.9%(-67%)</b>。<br>
+              <b style="color:#f87171">前置條件</b>:① wrangler.toml 加 D1 binding(RAG_BM25_DB) ② 跑下方「階段③ BM25 遷移」把 779 chunks 從 KV 灌到 D1<br>
+              <b style="color:#f87171">退場</b>:取消勾「啟用 BM25」→ 完全跳過 D1,走純向量+reranker 路徑(等於 v69.17.1)。
+            </p>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center">
+              <span style="font-size:13px">BM25 開關:</span>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="ragBm25Enabled" style="width:18px;height:18px;cursor:pointer">
+                <span style="font-size:13px">啟用 BM25 Hybrid Search(關閉=v69.17.1 純向量+reranker)</span>
+              </label>
+
+              <span style="font-size:13px">BM25 候選池:</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="number" id="ragBm25TopK" min="20" max="100" value="50" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:13px">
+                <span style="font-size:11px;color:var(--text-dim)">BM25 撈幾個候選(20-100,預設 50 對齊 Vectorize 候選池)</span>
+              </div>
+
+              <span style="font-size:13px">RRF 常數 k:</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="number" id="ragBm25RrfK" min="10" max="200" value="60" style="width:80px;padding:6px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:13px">
+                <span style="font-size:11px;color:var(--text-dim)">RRF 平滑常數(10-200,預設 60 業界標準,k 越大頂端排名差距越小)</span>
+              </div>
+
+              <span style="font-size:13px">D1 狀態:</span>
+              <div id="bm25StatsDisplay" style="font-size:11px;color:var(--text-dim);font-family:ui-monospace,monospace">
+                <button onclick="loadBM25Stats()" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer">🔄 看 D1 內 chunks 狀態</button>
+              </div>
+            </div>
+
+            <details style="margin-top:14px;border-top:1px solid rgba(251,191,36,0.2);padding-top:12px">
+              <summary style="cursor:pointer;font-size:12px;color:#fbbf24;font-weight:600">🔬 BM25 單獨測試(看純關鍵字搜尋會撈到誰)</summary>
+              <div style="margin-top:10px">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                  <input type="text" id="bm25TestQuery" placeholder="輸入 3 字以上查詢(trigram 限制),例:正官桃花" style="flex:1;min-width:200px;padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px">
+                  <button onclick="runBM25Test()" style="padding:8px 16px;border-radius:6px;border:none;background:#fbbf24;color:#000;font-size:12px;font-weight:600;cursor:pointer">🔍 BM25 搜尋</button>
+                </div>
+                <pre id="bm25TestOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:300px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點按鈕測試 BM25 結果</pre>
+              </div>
+            </details>
+          </div>
+
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;margin-bottom:14px">
             <button onclick="loadRAGConfig()" style="padding:10px 20px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 讀取目前設定</button>
             <button onclick="saveRAGConfig()" style="padding:10px 20px;border-radius:8px;border:none;background:#a855f7;color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存設定</button>
@@ -625,6 +675,31 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                 <span id="ragUploadProgressText" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5)">未開始</span>
               </div>
               <pre id="ragUploadLog" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:200px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點「開始上傳」按鈕，會自動分批上傳到 Vectorize</pre>
+            </div>
+          </details>
+
+          <!-- 階段 3: BM25 遷移到 D1(v69.18.0 新增)-->
+          <details style="margin-top:10px;border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#fbbf24;font-weight:600">③ BM25 遷移:KV → D1(v69.18.0,Contextual BM25 索引)</summary>
+            <div style="margin-top:12px">
+              <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+                <b style="color:#fcd34d">用途</b>:把 KV 內 chunks(含 Haiku 加的 context)灌到 D1 <code>rag_chunks</code>,FTS5 trigger 自動同步到 <code>rag_chunks_fts</code> 全文索引。<br>
+                <b style="color:#fcd34d">前置</b>:必須先完成 wrangler.toml 加 D1 binding <code>RAG_BM25_DB</code> 並部署 worker(否則會回 binding not configured)。<br>
+                <b style="color:#fcd34d">關鍵設計</b>:D1 內 text = <code>context + originalText</code>(Anthropic 官方 Contextual BM25 做法,失敗率 -49%)。<br>
+                <b style="color:#fcd34d">分批</b>:100 筆/次自動跑完,失敗只丟單筆不影響全局。<br>
+                <b style="color:#fcd34d">可重跑</b>:用 <code>INSERT OR REPLACE</code>,重跑會更新內容,不會重複。
+              </p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                <button onclick="bm25MigrateRun()" id="bm25MigrateBtn" style="padding:10px 20px;border-radius:8px;border:none;background:#fbbf24;color:#000;font-size:13px;font-weight:600;cursor:pointer">▶️ 開始遷移(自動跑完)</button>
+                <button onclick="bm25MigrateStop()" id="bm25MigrateStopBtn" disabled style="padding:10px 16px;border-radius:8px;border:none;background:#6b7280;color:#fff;font-size:13px;font-weight:600;cursor:pointer">⏸ 暫停</button>
+                <button onclick="loadBM25Stats()" style="padding:10px 16px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🔄 看狀態</button>
+                <button onclick="copyDiagBlock('bm25MigrateLog', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製 log</button>
+              </div>
+              <div id="bm25MigrateProgressBar" style="height:24px;background:#0a0c11;border:1px solid var(--card-border);border-radius:12px;overflow:hidden;margin-bottom:8px;position:relative">
+                <div id="bm25MigrateProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,#fbbf24,#fde68a);transition:width 0.3s"></div>
+                <span id="bm25MigrateProgressText" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.5)">未開始</span>
+              </div>
+              <pre id="bm25MigrateLog" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:200px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">點「開始遷移」會自動分批把 KV chunks 灌到 D1</pre>
             </div>
           </details>
 
@@ -4533,7 +4608,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.17.1-2026-05-12';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.18.0-2026-05-12';
 
 async function checkWorkerStatus() {
   try {
@@ -5080,6 +5155,14 @@ async function loadRAGConfig() {
     if (rrEl) rrEl.checked = !!rr.enabled;
     if (rrPoolEl) rrPoolEl.value = rr.candidatePoolTopK || 50;
     if (rrTopNEl) rrTopNEl.value = rr.topN || 20;  // v69.17.1:預設 12 → 20
+    // v69.18.0:bm25 欄位
+    const bm = cfg.bm25 || {};
+    const bmEnEl = document.getElementById('ragBm25Enabled');
+    const bmTopKEl = document.getElementById('ragBm25TopK');
+    const bmRrfKEl = document.getElementById('ragBm25RrfK');
+    if (bmEnEl) bmEnEl.checked = !!bm.enabled;
+    if (bmTopKEl) bmTopKEl.value = bm.topK || 50;
+    if (bmRrfKEl) bmRrfKEl.value = bm.rrfK || 60;
     if (statusEl) statusEl.textContent = '✅ ' + (cfg.updatedAt ? cfg.updatedAt.replace('T',' ').slice(0,19) : '讀取成功');
     if (bindingEl) {
       const b = cfg.bindings || {};
@@ -5087,7 +5170,8 @@ async function loadRAGConfig() {
         '<b style="color:#fcd34d">Cloudflare Bindings 狀態</b><br>' +
         '&nbsp;&nbsp;VECTORIZE: <span style="color:' + (b.VECTORIZE ? '#86efac' : '#f87171') + '">' + (b.VECTORIZE ? '✅ 已連接' : '❌ 未連接') + '</span><br>' +
         '&nbsp;&nbsp;Workers AI: <span style="color:' + (b.AI ? '#86efac' : '#f87171') + '">' + (b.AI ? '✅ 已連接' : '❌ 未連接') + '</span><br>' +
-        '&nbsp;&nbsp;RATE_KV: <span style="color:' + (b.RATE_KV ? '#86efac' : '#f87171') + '">' + (b.RATE_KV ? '✅ 已連接' : '❌ 未連接') + '</span>' +
+        '&nbsp;&nbsp;RATE_KV: <span style="color:' + (b.RATE_KV ? '#86efac' : '#f87171') + '">' + (b.RATE_KV ? '✅ 已連接' : '❌ 未連接') + '</span><br>' +
+        '&nbsp;&nbsp;RAG_BM25_DB: <span style="color:' + (b.RAG_BM25_DB ? '#86efac' : '#fbbf24') + '">' + (b.RAG_BM25_DB ? '✅ 已連接' : '⚠️ 未連接(BM25 會自動跳過)') + '</span>' +
         ((!b.VECTORIZE || !b.AI) ? '<br><span style="color:#f87171">⚠️ 缺少 binding,RAG 無法運作。請更新 wrangler.toml 並重新部署 worker。</span>' : '');
     }
   } catch (e) {
@@ -5101,6 +5185,10 @@ async function saveRAGConfig() {
   const rrEl = document.getElementById('ragRerankerEnabled');
   const rrPoolEl = document.getElementById('ragRerankerCandidatePoolTopK');
   const rrTopNEl = document.getElementById('ragRerankerTopN');
+  // v69.18.0:bm25 設定
+  const bmEnEl = document.getElementById('ragBm25Enabled');
+  const bmTopKEl = document.getElementById('ragBm25TopK');
+  const bmRrfKEl = document.getElementById('ragBm25RrfK');
   const cfg = {
     token: adminToken,
     enabled: document.getElementById('ragEnabled').checked,
@@ -5114,8 +5202,13 @@ async function saveRAGConfig() {
     reranker: {
       enabled: rrEl ? !!rrEl.checked : false,
       candidatePoolTopK: rrPoolEl ? parseInt(rrPoolEl.value, 10) || 50 : 50,
-      topN: rrTopNEl ? parseInt(rrTopNEl.value, 10) || 12 : 12,
+      topN: rrTopNEl ? parseInt(rrTopNEl.value, 10) || 20 : 20,
       model: '@cf/baai/bge-reranker-base'
+    },
+    bm25: {
+      enabled: bmEnEl ? !!bmEnEl.checked : false,
+      topK: bmTopKEl ? parseInt(bmTopKEl.value, 10) || 50 : 50,
+      rrfK: bmRrfKEl ? parseInt(bmRrfKEl.value, 10) || 60 : 60
     }
   };
   if (cfg.enabled && !cfg.modes.direct && !cfg.modes.tarot && !cfg.modes.ootk) {
@@ -5502,6 +5595,134 @@ async function ragClearAll() {
     if (statusEl) statusEl.textContent = d.ok ? ('✅ 已刪 ' + d.deleted + ' 筆') : ('❌ ' + d.error);
   } catch (e) {
     if (statusEl) statusEl.textContent = '❌ ' + e;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// v69.18.0:BM25 遷移 + 狀態 + 測試
+// ═══════════════════════════════════════════════════════════════
+
+let _bm25MigrateRunning = false;
+let _bm25MigrateAbort = false;
+
+async function bm25MigrateRun() {
+  const logEl = document.getElementById('bm25MigrateLog');
+  const fillEl = document.getElementById('bm25MigrateProgressFill');
+  const textEl = document.getElementById('bm25MigrateProgressText');
+  const btnEl = document.getElementById('bm25MigrateBtn');
+  const stopEl = document.getElementById('bm25MigrateStopBtn');
+  if (_bm25MigrateRunning) { alert('已經在跑了'); return; }
+  _bm25MigrateRunning = true;
+  _bm25MigrateAbort = false;
+  if (btnEl) { btnEl.disabled = true; btnEl.style.opacity = '0.5'; }
+  if (stopEl) { stopEl.disabled = false; stopEl.style.background = '#ef4444'; }
+  if (logEl) logEl.textContent = '⏳ 開始遷移...\n';
+
+  let batchStart = 0;
+  let totalProcessed = 0;
+  let totalInserted = 0;
+  let totalSkipped = 0;
+  const startTime = Date.now();
+
+  while (!_bm25MigrateAbort) {
+    try {
+      const r = await fetch(`${WORKER_URL}/admin/bm25-migrate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: adminToken, batchStart: batchStart, batchSize: 100 })
+      });
+      const data = await r.json();
+      if (!data.ok) {
+        if (logEl) logEl.textContent += '❌ ' + (data.error || '失敗') + '\n';
+        break;
+      }
+      totalProcessed = data.processed || 0;
+      totalInserted += data.batchInserted || 0;
+      totalSkipped += data.batchSkipped || 0;
+      const pct = data.totalChunks > 0 ? Math.floor((totalProcessed / data.totalChunks) * 100) : 0;
+      if (fillEl) fillEl.style.width = pct + '%';
+      if (textEl) textEl.textContent = `${totalProcessed} / ${data.totalChunks} (${pct}%)`;
+      if (logEl) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        logEl.textContent += `批次 ${batchStart}-${totalProcessed}:新增 ${data.batchInserted || 0},跳過 ${data.batchSkipped || 0}${(data.errors || []).length > 0 ? ',錯誤 ' + data.errors.length : ''}(累計 ${elapsed}s)\n`;
+        if ((data.errors || []).length > 0) {
+          logEl.textContent += '  錯誤樣本:' + JSON.stringify(data.errors[0]).slice(0, 200) + '\n';
+        }
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+      if (data.done || data.nextBatchStart === null) {
+        if (logEl) logEl.textContent += `\n✅ 全部完成!累計新增 ${totalInserted},跳過 ${totalSkipped}\n`;
+        if (fillEl) fillEl.style.width = '100%';
+        if (textEl) textEl.textContent = `完成 ${totalProcessed} / ${data.totalChunks}`;
+        break;
+      }
+      batchStart = data.nextBatchStart;
+      // 小停一下避免 D1 限流
+      await new Promise(r => setTimeout(r, 300));
+    } catch (e) {
+      if (logEl) logEl.textContent += '❌ 異常: ' + (e && e.message || e) + '\n';
+      break;
+    }
+  }
+  if (_bm25MigrateAbort && logEl) logEl.textContent += '⏸ 已暫停\n';
+  _bm25MigrateRunning = false;
+  if (btnEl) { btnEl.disabled = false; btnEl.style.opacity = '1'; }
+  if (stopEl) { stopEl.disabled = true; stopEl.style.background = '#6b7280'; }
+  // 自動 refresh stats
+  setTimeout(loadBM25Stats, 500);
+}
+
+function bm25MigrateStop() {
+  _bm25MigrateAbort = true;
+}
+
+async function loadBM25Stats() {
+  const el = document.getElementById('bm25StatsDisplay');
+  if (!el) return;
+  el.innerHTML = '⏳ 讀取中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/bm25-stats?token=${encodeURIComponent(adminToken)}`);
+    const data = await r.json();
+    if (!data.ok) {
+      el.innerHTML = '<span style="color:#f87171">❌ ' + (data.error || '失敗') + '</span>';
+      return;
+    }
+    const errMsg = data.lastError ? `<br>⚠️ 最近錯誤:${(data.lastError.error || '').slice(0,100)}` : '';
+    const progMsg = data.progress ? `<br>上次遷移:${data.progress.processed}/${data.progress.totalChunks}${data.progress.done ? ' ✅' : ''}` : '';
+    el.innerHTML =
+      `Binding: <span style="color:${data.hasBinding ? '#86efac' : '#f87171'}">${data.hasBinding ? '✅' : '❌ 未綁定'}</span> | ` +
+      `D1: <span style="color:#86efac">${data.d1Count}</span> chunks | ` +
+      `FTS: <span style="color:#86efac">${data.ftsCount}</span>` +
+      (data.d1Count !== data.ftsCount ? ' <span style="color:#fbbf24">⚠️ 不一致</span>' : '') +
+      progMsg + errMsg;
+  } catch (e) {
+    el.innerHTML = '<span style="color:#f87171">❌ ' + (e && e.message || e) + '</span>';
+  }
+}
+
+async function runBM25Test() {
+  const out = document.getElementById('bm25TestOutput');
+  const q = document.getElementById('bm25TestQuery').value.trim();
+  if (!q) { if (out) out.textContent = '請輸入查詢'; return; }
+  if (q.length < 3) { if (out) out.textContent = '⚠️ FTS5 trigram 限制:query 必須 >=3 字'; return; }
+  if (out) out.textContent = '⏳ 搜尋中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/bm25-search?token=${encodeURIComponent(adminToken)}&q=${encodeURIComponent(q)}&limit=20`);
+    const data = await r.json();
+    if (!data.ok) {
+      if (out) out.textContent = '❌ ' + (data.error || '失敗');
+      return;
+    }
+    let txt = `Query: ${data.query}\nCleaned: ${data.cleaned}\nHits: ${(data.hits || []).length}\n\n`;
+    (data.hits || []).forEach((h, i) => {
+      txt += `─── #${i+1} bm25=${(h.rank || 0).toFixed(3)} ───\n`;
+      txt += `id: ${h.chunk_id}\n`;
+      txt += `var: ${h.var_name}, qTypes: ${h.q_types}, systems: ${h.systems}, allPurpose: ${h.all_purpose}\n`;
+      txt += `text: ${h.text_preview}\n\n`;
+    });
+    if (out) out.textContent = txt;
+  } catch (e) {
+    if (out) out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
 }
 
