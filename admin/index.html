@@ -721,6 +721,27 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </div>
           </details>
 
+          <!-- v69.18.1:按 var 前綴批次刪 chunks(KV + D1 同步)-->
+          <details style="margin-top:10px;border:1px solid rgba(245,158,11,0.4);border-radius:8px;padding:10px">
+            <summary style="cursor:pointer;font-size:13px;color:#fbbf24;font-weight:600">🗑 按 var 批次刪 chunks(KV + D1 同步,有 dry-run)</summary>
+            <div style="margin-top:12px">
+              <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+                <b style="color:#fcd34d">用途</b>:清掉某個 var 的所有 chunks(KV + D1 + FTS 一起刪)。<br>
+                <b style="color:#fcd34d">用法</b>:每行一個完整 var 前綴(如 <code>V89_BAZI_LIUREN_TRIGGER</code>),不接受模糊比對如 <code>V89</code>。<br>
+                <b style="color:#fcd34d">流程</b>:① 先「Dry Run」看會刪幾筆 → ② 確認後按「真的刪」<br>
+                <b style="color:#f87171">保護機制</b>:刪除前自動寫一份 undo log 到 KV(<code>rag_chunk_deleted_log_*</code>,7 天 TTL)。<br>
+                <b style="color:#f87171">不會碰</b>:Vectorize 內的 vectors 不會刪(要去 Cloudflare Dashboard 手動);但 D1 + FTS 會同步刪。
+              </p>
+              <textarea id="kvChunksDeleteVarPrefixes" rows="4" placeholder="每行一個完整 var 前綴,例:&#10;V89_BAZI_LIUREN_TRIGGER&#10;V89_ZIWEI_PALACE_STAR_TIME&#10;V89_ZIWEI_FOURHUA_SOURCE" style="width:100%;padding:10px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:12px;font-family:ui-monospace,monospace;margin-bottom:8px"></textarea>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+                <button onclick="runKVChunksDelete(true)" style="padding:10px 20px;border-radius:8px;border:none;background:#3b82f6;color:#fff;font-size:13px;font-weight:600;cursor:pointer">🧪 Dry Run(看會刪幾筆)</button>
+                <button onclick="runKVChunksDelete(false)" style="padding:10px 20px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-size:13px;font-weight:600;cursor:pointer">⚠️ 真的刪</button>
+                <button onclick="copyDiagBlock('kvChunksDeleteOutput', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
+              </div>
+              <pre id="kvChunksDeleteOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#a5b4fc;line-height:1.5;max-height:400px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">輸入 var 前綴後,先按「Dry Run」確認</pre>
+            </div>
+          </details>
+
           <!-- 危險區：清掉重來 -->
           <details style="margin-top:10px;border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px">
             <summary style="cursor:pointer;font-size:13px;color:#f87171;font-weight:600">⚠️ 清空索引重來（只在出錯時用）</summary>
@@ -5801,6 +5822,70 @@ async function loadKVChunksAudit() {
     });
     if (data.note) txt += `\n💡 ${data.note}\n`;
     out.textContent = txt;
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function runKVChunksDelete(dryRun) {
+  // v69.18.1:按 var 前綴批次刪 KV chunks(同步刪 D1)
+  const out = document.getElementById('kvChunksDeleteOutput');
+  const txtEl = document.getElementById('kvChunksDeleteVarPrefixes');
+  if (!out || !txtEl) return;
+  const raw = txtEl.value.trim();
+  if (!raw) { out.textContent = '請輸入至少一個 var 前綴'; return; }
+  const prefixes = raw.split('\n').map(s => s.trim()).filter(Boolean);
+  if (prefixes.length === 0) { out.textContent = '請輸入至少一個 var 前綴'; return; }
+
+  // 真刪要二次確認
+  if (!dryRun) {
+    const ok = confirm(`⚠️ 真的要刪除以下 ${prefixes.length} 個 var 的所有 chunks 嗎?\n\n${prefixes.join('\n')}\n\nKV + D1 + FTS 都會刪除(undo log 7 天 TTL)。`);
+    if (!ok) { out.textContent = '已取消'; return; }
+  }
+
+  out.textContent = (dryRun ? '⏳ Dry Run 中...' : '⏳ 真的刪除中...');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/kv-chunk-delete-by-var`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, varPrefixes: prefixes, dryRun: !!dryRun })
+    });
+    const data = await r.json();
+    if (!data.ok) { out.textContent = '❌ ' + (data.error || '失敗'); return; }
+
+    let txt = `═══ ${dryRun ? 'Dry Run 結果' : '真實刪除結果'} ═══\n\n`;
+    txt += `總掃描:${data.totalScanned} 筆\n`;
+    if (dryRun) {
+      txt += `會刪除:${data.wouldDeleteCount} 筆\n\n`;
+    } else {
+      txt += `KV 已刪:${data.deletedCount} 筆\n`;
+      txt += `D1 已刪:${data.d1DeletedCount} 筆\n\n`;
+    }
+    txt += `─── 按 prefix 分布 ───\n`;
+    const byPrefix = data.matchedByPrefix || {};
+    Object.keys(byPrefix).forEach(p => {
+      txt += `  ${p}: ${byPrefix[p]} 筆\n`;
+    });
+    if ((data.samples || []).length > 0) {
+      txt += `\n─── 樣本 keys ───\n`;
+      data.samples.forEach(k => { txt += `  ${k}\n`; });
+    }
+    if ((data.kvErrors || []).length > 0) {
+      txt += `\n─── KV 刪除錯誤(前 5)───\n`;
+      data.kvErrors.forEach(e => { txt += `  ${e.key}: ${e.error}\n`; });
+    }
+    if ((data.d1Errors || []).length > 0) {
+      txt += `\n─── D1 刪除錯誤 ───\n`;
+      data.d1Errors.forEach(e => { txt += `  ${e.prefix}: ${e.error}\n`; });
+    }
+    if (data.note) txt += `\n💡 ${data.note}\n`;
+    out.textContent = txt;
+
+    // 真刪完自動 refresh stats
+    if (!dryRun) {
+      setTimeout(loadBM25Stats, 500);
+      setTimeout(loadKVChunksAudit, 1000);
+    }
   } catch (e) {
     out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
