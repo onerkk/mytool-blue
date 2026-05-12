@@ -594,7 +594,23 @@ textarea.worker-editor:focus{border-color:var(--accent)}
                   <button onclick="listMetadataIndexes()" style="padding:10px 20px;border-radius:8px;border:1px solid #ec4899;background:transparent;color:#f9a8d4;font-size:12px;font-weight:600;cursor:pointer">📋 看目前有什麼</button>
                   <button onclick="copyDiagBlock('vcmiOutput', this)" style="padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
                 </div>
-                <pre id="vcmiOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#f9a8d4;line-height:1.5;max-height:300px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace">填 Account ID + API Token 後按建立</pre>
+
+                <!-- v69.19.1:刪除舊 metadata index(配額用完救援)-->
+                <details style="margin-top:8px;border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:8px">
+                  <summary style="cursor:pointer;font-size:11px;color:#fca5a5;font-weight:600">🗑 刪除舊 metadata index(配額滿才用)</summary>
+                  <div style="margin-top:8px">
+                    <p style="font-size:10px;color:var(--text-dim);margin-bottom:6px;line-height:1.5">
+                      <b style="color:#fbbf24">時機</b>:看到「max number reached」時,刪 v69.19.0 不再需要的舊 index 釋出額度。<br>
+                      <b style="color:#fbbf24">建議刪除</b>:<code>qTypes</code>、<code>systems</code>、<code>era</code>(舊版 string 欄位,新版改用 qt_*/sys_* boolean 取代)<br>
+                      <b style="color:#f87171">保護</b>:預設拒絕刪 qt_*/sys_*/allPurpose,即使你在輸入框打了也擋下來。<br>
+                      <b style="color:#f87171">注意</b>:刪 index 不會清 metadata,只是「不再 indexed」(不能 filter,但 chunk 內仍有此欄位)。
+                    </p>
+                    <textarea id="vdmiPropertyNames" rows="3" placeholder="每行一個 property 名,例:&#10;qTypes&#10;systems&#10;era" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--card-border);background:#0a0c11;color:#fff;font-size:11px;font-family:ui-monospace,monospace;margin-bottom:6px"></textarea>
+                    <button onclick="deleteMetadataIndexes()" style="padding:8px 16px;border-radius:6px;border:none;background:#ef4444;color:#fff;font-size:11px;font-weight:600;cursor:pointer">🗑 刪除這幾個 index</button>
+                  </div>
+                </details>
+
+                <pre id="vcmiOutput" style="background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#f9a8d4;line-height:1.5;max-height:300px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace;margin-top:8px">填 Account ID + API Token 後按建立</pre>
               </div>
             </details>
 
@@ -4796,7 +4812,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.19.0-2026-05-12';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.19.1-2026-05-12';
 
 async function checkWorkerStatus() {
   try {
@@ -6101,6 +6117,48 @@ async function createMetadataIndexes() {
     out.textContent = txt;
     // 自動重讀 cfg 看 indexesReady 是否更新
     setTimeout(loadRAGConfig, 1000);
+  } catch (e) {
+    out.textContent = '❌ 異常: ' + (e && e.message || e);
+  }
+}
+
+async function deleteMetadataIndexes() {
+  const out = document.getElementById('vcmiOutput');
+  const acc = (document.getElementById('vcmiAccountId') || {}).value || '';
+  const tok = (document.getElementById('vcmiApiToken') || {}).value || '';
+  const idx = (document.getElementById('vcmiIndexName') || {}).value || 'jingyue-rules';
+  const txtEl = document.getElementById('vdmiPropertyNames');
+  if (!out || !txtEl) return;
+  if (!acc || !tok) { out.textContent = '❌ 請填 Account ID 和 API Token'; return; }
+  const raw = txtEl.value.trim();
+  if (!raw) { out.textContent = '請輸入至少一個 property 名'; return; }
+  const names = raw.split('\n').map(s => s.trim()).filter(Boolean);
+  if (names.length === 0) { out.textContent = '請輸入至少一個 property 名'; return; }
+  if (!confirm(`⚠️ 真的要刪除以下 ${names.length} 個 metadata index 嗎?\n\n${names.join('\n')}\n\n刪除後該 property 不能再用來 filter。Vectorize 內既有 metadata 不會被清,只是「不再 indexed」。`)) {
+    out.textContent = '已取消'; return;
+  }
+  out.textContent = '⏳ 刪除中...';
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/vectorize-delete-metadata-indexes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: adminToken, accountId: acc, apiToken: tok, indexName: idx, propertyNames: names })
+    });
+    const data = await r.json();
+    if (!data.ok) { out.textContent = '❌ ' + (data.error || '失敗'); return; }
+    let txt = `═══ 刪除結果 ═══\nindex: ${data.indexName}\n成功:${data.successCount} / ${data.targetCount}\n\n`;
+    (data.results || []).forEach((r, i) => {
+      const mark = r.success ? '✅' : '❌';
+      txt += `${mark} #${i+1} ${r.property}\n`;
+      if (r.mutationId) txt += `   mutationId: ${r.mutationId}\n`;
+      if (r.errors && r.errors.length > 0) {
+        r.errors.forEach(e => { txt += `   error: ${e.message || JSON.stringify(e).slice(0, 200)}\n`; });
+      } else if (r.error) {
+        txt += `   error: ${r.error}\n`;
+      }
+    });
+    if (data.note) txt += `\n💡 ${data.note}\n`;
+    out.textContent = txt;
   } catch (e) {
     out.textContent = '❌ 異常: ' + (e && e.message || e);
   }
