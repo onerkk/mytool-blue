@@ -2717,24 +2717,44 @@ enhanceTarot = function(tarot) {
   function ootkPairing(cards, sigIdx) {
     if (!cards.length || sigIdx < 0) return [];
     var pairs = [];
+    var n = cards.length;
+    // ★ v69.21.6 治本(2026-05-14):環狀繞回配對(Crowley + Regardie 方法)
+    //   根因:舊版 left=-1 或 right>=n 時直接停止,Sig 在邊界就 0 對配對
+    //   實機發現:
+    //     Op4 sigIdx=0(Sig 居中,在最左) → 0 對 → narrativePairs.op4=[]
+    //     Op3 sigIdx=n-1(Sig 在最右)   → 0 對 → narrativePairs.op3=[]
+    //   官方依據:Parsifal's Wheel 2017「bend the line into a circle」
+    //   = Israel Regardie Complete GD System「continue at the other end」
+    //   治本:改用環狀 mod 繞回,讓 Sig 在任何位置都能配對
+    //   ★ 環狀配對最多 Math.floor(n/2) 對,Sig 自己不配對(total n-1 個位置,各取一個)
     var left = sigIdx - 1;
     var right = sigIdx + 1;
-    // ★ Bug #35 fix: 若 sigIdx 在最左/右邊（如 0 或 length-1），舊版迴圈一次都不跑，整堆無配對
-    //   修法：若一邊已耗盡，繼續用另一邊與「對側已耗盡的延伸」配對（環狀繞回）
-    while (left >= 0 && right < cards.length) {
-      var ed = elementalDignity(cards[left], cards[right]);
-      pairs.push({ left: cards[left], right: cards[right], dignity: ed });
+    // 最多配 floor(n/2) 對(防止重複繞回)
+    var maxPairs = Math.floor((n - 1) / 2);
+    var pairCount = 0;
+    while (pairCount < maxPairs) {
+      // 環狀繞回:左邊超出就從右端繞,右邊超出就從左端繞
+      var leftIdx = ((left % n) + n) % n;
+      var rightIdx = right % n;
+      // 防止左右撞到 Sig 或相撞
+      if (leftIdx === sigIdx || rightIdx === sigIdx || leftIdx === rightIdx) break;
+      var ed = elementalDignity(cards[leftIdx], cards[rightIdx]);
+      pairs.push({ left: cards[leftIdx], right: cards[rightIdx], dignity: ed });
       left--;
       right++;
+      pairCount++;
     }
-    // 補配對：若一邊還有剩，跟剩下的「自己」（單張）也記錄成單牌
-    while (left >= 0) {
-      pairs.push({ left: cards[left], right: null, dignity: null, single: true });
-      left--;
-    }
-    while (right < cards.length) {
-      pairs.push({ left: null, right: cards[right], dignity: null, single: true });
-      right++;
+    // ★ 剩餘未配對牌(奇數總牌數時 Sig 對面那張)→ 標記為 single(free agent)
+    // Parsifal's Wheel:「read as a 'partial outcome'」
+    // 如果有 single 牌且 n 是奇數,加入最後
+    if ((n - 1) % 2 === 0 && pairCount > 0) {
+      // 偶數非 Sig 牌,正好配完,無 single
+    } else if ((n - 1) % 2 !== 0) {
+      // 奇數非 Sig 牌,最後一張沒有配對(Sig 正對面)
+      var singleIdx = (sigIdx + Math.floor(n / 2)) % n;
+      if (singleIdx !== sigIdx) {
+        pairs.push({ left: cards[singleIdx], right: null, dignity: null, single: true, freeAgent: true });
+      }
     }
     return pairs;
   }
