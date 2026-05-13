@@ -9714,9 +9714,20 @@ function renderAuditCard(item) {
       //   現在直接 dump 完整 JSON,admin 能驗證 AI 有沒有編造
       const hasRaw = d.act_operations_raw || d.act_countingPath_raw || d.act_pairings_raw || d.act_crossAnalysis_raw || (d.act_ootkData_keys && d.act_ootkData_keys.length);
       if (hasRaw) {
+        const _rawId = 'raw_' + Math.random().toString(36).slice(2);
         actCardsHtml += '<details style="margin-top:8px;padding:6px 8px;border-radius:6px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.3)">' +
           '<summary style="cursor:pointer;font-size:11px;color:#86efac;font-weight:700">🔬 Raw 資料(v69.20.2 治本:AI 真實拿到的完整 JSON)</summary>' +
           '<div style="margin-top:8px;font-size:10px;color:var(--text-dim);line-height:1.6">';
+        // v69.21.6:一鍵複製 Raw 按鈕(抓 data-raw 屬性的文字)
+        actCardsHtml += '<button onclick="var el=document.getElementById(\'' + _rawId + '\');if(el){navigator.clipboard.writeText(el.innerText).then(function(){var b=document.getElementById(\'btn_' + _rawId + '\');b.textContent=\'✅ 已複製\';setTimeout(function(){b.textContent=\'📋 複製 Raw\';},2000);});}" id="btn_' + _rawId + '" style="padding:4px 12px;border-radius:6px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#86efac;font-size:11px;font-weight:600;cursor:pointer;margin-bottom:8px;display:block">📋 複製 Raw</button>';
+        // 隱藏容器放完整 raw 文字供複製
+        let _rawText = '';
+        if (d.act_ootkData_keys && d.act_ootkData_keys.length) _rawText += 'ootkData 頂層 key: ' + d.act_ootkData_keys.join(', ') + '\n\n';
+        if (d.act_operations_raw) _rawText += 'operations (完整 JSON):\n' + d.act_operations_raw + '\n\n';
+        if (d.act_countingPath_raw) _rawText += 'countingPath:\n' + d.act_countingPath_raw + '\n\n';
+        if (d.act_pairings_raw) _rawText += 'pairings(配對牌組):\n' + d.act_pairings_raw + '\n\n';
+        if (d.act_crossAnalysis_raw) _rawText += 'crossAnalysis (跨層分析):\n' + d.act_crossAnalysis_raw;
+        actCardsHtml += '<div id="' + _rawId + '" style="display:none">' + _esc(_rawText) + '</div>';
         if (d.act_ootkData_keys && d.act_ootkData_keys.length) {
           actCardsHtml += '<div style="margin-bottom:6px">' +
             '<span style="color:#86efac;font-weight:600">ootkData 頂層 key:</span> <code style="color:#fbbf24">' + _esc(d.act_ootkData_keys.join(', ')) + '</code>' +
