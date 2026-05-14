@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// frontend-classifier.js  v69.2.0  (2026-05-07)
+// frontend-classifier.js  v69.28.0  (2026-05-14)
 // ═══════════════════════════════════════════════════════════════
 // 目的：把問題分類從 worker 後端搬到前端
 //
@@ -7,7 +7,7 @@
 //   ① 規則式正則分類（classifyFocusType）— 0 成本、< 1ms
 //   ② 規則未命中 → Haiku 智能分類（classifyWithHaiku）— 走 worker 的 /classify endpoint
 //
-// 輸出：{ qType, qTypeSource, qTypeRaw }
+// 輸出：{ qType, qTypes, qTypeSource, qTypeRaw }
 //   qType        : 13 種分類之一 + 'general'
 //   qTypeSource  : 'regex' | 'haiku' | 'fallback'
 //   qTypeRaw     : Haiku 原始回傳（debug 用，regex 路徑為 null）
@@ -22,6 +22,39 @@
   'use strict';
 
   var WORKER_URL = global.AI_WORKER_URL || 'https://jy-ai-proxy.onerkk.workers.dev';
+
+  var VALID_QTYPES = ['lifelesson','reconcile','thirdparty','karmic','spiritual','timing','decision','love','career','wealth','health','relationship','family','general'];
+  function normalizeQTypes(primary, list) {
+    var out = [];
+    function add(t) {
+      t = String(t || '').trim();
+      if (VALID_QTYPES.indexOf(t) >= 0 && out.indexOf(t) < 0) out.push(t);
+    }
+    add(primary);
+    (list || []).forEach(add);
+    if (!out.length) out.push('general');
+    if (out.indexOf('general') >= 0 && out.length > 1) out = out.filter(function(t){ return t !== 'general'; });
+    return out;
+  }
+  function attachQTypes(result, extras) {
+    result.qTypes = normalizeQTypes(result.qType, extras || []);
+    return result;
+  }
+  function detectSecondaryQTypes(q) {
+    var out = [];
+    q = String(q || '');
+    if (/什麼時候|幾月.*會|多久.*才|何時才|等多久|時機到了嗎|快了嗎|還要等多久|大概什麼時候|哪個月|哪一年|哪天|多快/.test(q)) out.push('timing');
+    if (/該選|要選|選A還是|二選一|還是.*還是|兩難|抉擇|取捨|猶豫不決|選哪個|該不該|要不要|可以主動|不主動|主動找/.test(q)) out.push('decision');
+    if (/感情|桃花|對象|伴侶|婚姻|戀愛|喜歡|愛情|另一半|正緣|分手|曖昧|他.*想|她.*想|對方.*想|主動|復合|挽回/.test(q)) out.push('love');
+    if (/工作|事業|職場|升遷|換工作|創業|面試|轉職|副業|翻身/.test(q)) out.push('career');
+    if (/財運|投資|賺錢|收入|理財|股票|買房|副業|翻身|接案|生意/.test(q)) out.push('wealth');
+    if (/健康|身體|生病|手術|養生|胃|頭髮|掉髮|疼|痛/.test(q)) out.push('health');
+    if (/朋友|貴人|小人|人際|合夥|同事|社交/.test(q)) out.push('relationship');
+    if (/家人|父母|子女|手足|兄弟|姊妹|家庭|親子|家裡|爸媽|爸爸|媽媽/.test(q)) out.push('family');
+    if (/復合|破鏡重圓|和好|挽回|再.*一次|回到我身邊|還會回來嗎|前任.*回來/.test(q)) out.push('reconcile');
+    if (/第三者|小三|外遇|出軌|劈腿|偷吃|介入|插足|曖昧對象|備胎/.test(q)) out.push('thirdparty');
+    return out;
+  }
 
   // ─────────────────────────────────────────────────────────
   // ① 規則式分類（與 worker.js line 14489 refineFocusType 1:1 對齊）
@@ -118,14 +151,14 @@
   async function classify(question, originalType, sessionToken) {
     var rule = classifyFocusType(question, originalType);
     // 規則命中（regex / 用戶手動選的非 general）→ 直接回
-    if (rule.qTypeSource === 'regex') return rule;
+    if (rule.qTypeSource === 'regex') return attachQTypes(rule, detectSecondaryQTypes(question));
     // 規則未命中 → 觸發 Haiku 智能分類
     if (rule.qTypeSource === 'unmatched') {
       var ai = await classifyWithHaiku(question, sessionToken);
-      return ai;
+      return attachQTypes(ai, detectSecondaryQTypes(question));
     }
     // fallback
-    return rule;
+    return attachQTypes(rule, detectSecondaryQTypes(question));
   }
 
   // 匯出
@@ -133,7 +166,9 @@
     classify: classify,                     // 統一入口（async）
     classifyFocusType: classifyFocusType,   // 純規則（sync）
     classifyWithHaiku: classifyWithHaiku,   // 純 AI（async）
-    VERSION: 'v69.2.0-2026-05-07'
+    VERSION: 'v69.28.0-2026-05-14',
+    normalizeQTypes: normalizeQTypes,
+    detectSecondaryQTypes: detectSecondaryQTypes
   };
 
 })(typeof window !== 'undefined' ? window : this);
