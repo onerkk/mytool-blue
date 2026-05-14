@@ -4835,7 +4835,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.26.1-2026-05-14';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.28.0-2026-05-14';
 
 async function checkWorkerStatus() {
   try {
@@ -9077,18 +9077,6 @@ function _jyBuildClaudeBundle(item) {
   const mode = item.mode || 'unknown';
   const modeName = mode === 'full' ? '七維度' : (mode === 'tarot' ? '塔羅' : (mode === 'ootk' ? '開鑰' : mode));
   const lines = [];
-  function _jyJsonForAudit(v, limit) {
-    try {
-      const s = JSON.stringify(v, null, 2);
-      return s.length > limit ? s.slice(0, limit) + '\n...[truncated]' : s;
-    } catch(_) { return '[serialize_failed]'; }
-  }
-  function _jyPushRaw(label, v, limit) {
-    if (v == null || v === '') return;
-    lines.push('━━━ ' + label + ' Raw JSON ━━━');
-    lines.push(typeof v === 'string' ? v : _jyJsonForAudit(v, limit || 40000));
-    lines.push('');
-  }
   lines.push('═══ 靜月之光稽核包 ═══');
   lines.push('時間: ' + (a.time || '?'));
   lines.push('模式: ' + modeName + ' (' + mode + ')');
@@ -9227,20 +9215,12 @@ function _jyBuildClaudeBundle(item) {
       if (d.act_meihua.yingQi)    lines.push('  應期: ' + d.act_meihua.yingQi);
     }
     // ── 塔羅(七維交叉)──
-    if (d.act_tarot) {
+    if (d.act_tarot && d.act_tarot.cards && d.act_tarot.cards.length) {
       lines.push('━ 塔羅(七維交叉)━');
-      lines.push('  資料來源欄位: ' + (d.act_tarot.cardSource || 'unknown'));
-      lines.push('  cards/drawn/spread: cards=' + (!!d.act_tarot.hasCardsField) + ' drawn=' + (!!d.act_tarot.hasDrawnField) + ' spread=' + (!!d.act_tarot.hasSpreadField));
       if (d.act_tarot.spread) lines.push('  牌陣: ' + d.act_tarot.spread);
-      lines.push('  實際牌數: ' + (d.act_tarot.cardCount != null ? d.act_tarot.cardCount : ((d.act_tarot.cards || []).length || 0)));
-      if (d.act_tarot.cards && d.act_tarot.cards.length) {
-        d.act_tarot.cards.forEach(function(c, i) {
-          lines.push('  ' + (i+1) + '. [' + (c.pos || '?') + '] ' + (c.dir || '') + ' ' + (c.name || '') + (c.el ? '｜' + c.el : '') + (c.id ? '｜id=' + c.id : ''));
-        });
-      } else {
-        lines.push('  ⚠ 沒有標準化出 cards；請看下方 act_tarot Raw JSON 判斷是沒送牌，還是欄位格式未支援。');
-      }
-      if (d.act_tarot.rawKeys) lines.push('  rawKeys: ' + (Array.isArray(d.act_tarot.rawKeys) ? d.act_tarot.rawKeys.join(', ') : String(d.act_tarot.rawKeys)));
+      d.act_tarot.cards.forEach(function(c, i) {
+        lines.push('  ' + (i+1) + '. [' + (c.pos || '?') + '] ' + (c.dir || '') + ' ' + (c.name || ''));
+      });
     }
     // ── 西占 ──
     if (d.act_natal) {
@@ -9284,14 +9264,6 @@ function _jyBuildClaudeBundle(item) {
     }
   }
   lines.push('');
-  lines.push('━━━ 後台 diag 完整 JSON（用來查 AI 是否引用不存在證據）━━━');
-  lines.push(_jyJsonForAudit(d, 160000));
-  lines.push('');
-  if (d.act_tarot) _jyPushRaw('act_tarot', d.act_tarot, 60000);
-  if (d.act_evidenceLedger) _jyPushRaw('Evidence Ledger / Claim Policy', d.act_evidenceLedger, 100000);
-  if (d.act_operations_raw) _jyPushRaw('OOTK operations', d.act_operations_raw, 100000);
-  if (d.act_crossAnalysis_raw) _jyPushRaw('OOTK crossAnalysis', d.act_crossAnalysis_raw, 60000);
-  if (d.act_ootkData_raw) _jyPushRaw('OOTK full data', d.act_ootkData_raw, 140000);
   lines.push('━━━ AI 真實回應 (' + (a.fullTextLength || (a.fullText || '').length) + ' 字) ━━━');
   lines.push(a.fullText || '(空)');
   lines.push('');
@@ -9847,22 +9819,16 @@ function renderAuditCard(item) {
       sections.push(mh);
     }
     // ── 塔羅(七維交叉)──
-    if (d.act_tarot) {
+    if (d.act_tarot && d.act_tarot.cards && d.act_tarot.cards.length) {
       let t7 = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(253,230,138,.04);border-left:3px solid #fde68a">' +
         '<div style="font-size:11px;color:#fde68a;font-weight:700;margin-bottom:3px">⚊ 塔羅(七維交叉)</div>';
-      t7 += '<div style="font-size:10px;color:var(--text-dim);margin-bottom:3px">來源:' + _esc(d.act_tarot.cardSource || 'unknown') + '｜牌數:' + _esc(d.act_tarot.cardCount != null ? d.act_tarot.cardCount : ((d.act_tarot.cards||[]).length || 0)) + '</div>';
       if (d.act_tarot.spread) t7 += '<div style="font-size:10px;color:var(--text-dim);margin-bottom:3px">牌陣:' + _esc(d.act_tarot.spread) + '</div>';
-      if (d.act_tarot.cards && d.act_tarot.cards.length) {
-        for (const c of d.act_tarot.cards) {
-          t7 += '<div style="font-size:11px;color:var(--text);line-height:1.5">' + _esc(c.pos || '?') + ' · <span style="color:' + (c.dir === '逆' ? '#f87171' : '#86efac') + ';font-weight:700">' + _esc(c.dir) + '</span> ' + _esc(c.name) + (c.el ? ' <span style="color:var(--text-dim)">｜' + _esc(c.el) + '</span>' : '') + '</div>';
-        }
-        actCards = d.act_tarot.cards;
-      } else {
-        t7 += '<div style="font-size:11px;color:#fca5a5;line-height:1.5">⚠ 未標準化出牌面；複製稽核包會附 act_tarot Raw JSON。</div>';
+      for (const c of d.act_tarot.cards) {
+        t7 += '<div style="font-size:11px;color:var(--text);line-height:1.5">' + _esc(c.pos || '?') + ' · <span style="color:' + (c.dir === '逆' ? '#f87171' : '#86efac') + ';font-weight:700">' + _esc(c.dir) + '</span> ' + _esc(c.name) + '</div>';
       }
-      if (d.act_tarot.rawKeys) t7 += '<div style="font-size:10px;color:var(--text-dim);opacity:.7;line-height:1.4">rawKeys:' + _esc((d.act_tarot.rawKeys||[]).join ? d.act_tarot.rawKeys.join(',') : String(d.act_tarot.rawKeys)) + '</div>';
       t7 += '</div>';
       sections.push(t7);
+      actCards = d.act_tarot.cards;
     }
     // ── 西占 ──
     if (d.act_natal) {
@@ -9915,7 +9881,7 @@ function renderAuditCard(item) {
   }
 
   let alertHtml = '';
-  if ((mode === 'tarot' || mode === 'ootk' || mode === 'full') && actCards.length && mentioned.length) {
+  if ((mode === 'tarot' || mode === 'ootk') && actCards.length && mentioned.length) {
     const actNames = new Set(actCards.map(c => _normCard(typeof c === 'string' ? c : (c.name || c.n || ''))));
     const mismatches = mentioned.filter(m => !actNames.has(_normCard(m)));
     if (mismatches.length) {
