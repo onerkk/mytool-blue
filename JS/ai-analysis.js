@@ -18,7 +18,7 @@
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260514v69_28_4';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_29_0';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
     // ★ v68.21.19 Bug #23 修:版本檢查 URL 寫錯
@@ -26500,13 +26500,17 @@ function _buildOOTKPayload() {
         significatorDirectional: cross.significatorDirectional || null,
         // ── Mathers 逐 Op abandon 觀察(不是綜合分數) ──
         abandonObservations: cross.abandonObservations || [],
+        // ── v69.29.0 通用可解度閘門：任何題型都要看，不只感情題 ──
+        divinationValidity: (cross.divinationValidity || results.divinationValidity || null),
         // ── 正統性標記 ──
-        _orthodoxy: 'v63E_book_t_orthodox'
+        _orthodoxy: 'v69.29.0_book_t_universal_validity_gate'
       },
       numberPatterns: ootk_numberPatterns,
       majorWeight: ootk_majorWeight,
       courtPeople: ootk_courtPeople,
-      reversedAnalysis: ootk_reversedAnalysis
+      reversedAnalysis: ootk_reversedAnalysis,
+      // 頂層鏡像，避免後端只讀 ootkData.divinationValidity 時漏抓
+      divinationValidity: (results.divinationValidity || (cross && cross.divinationValidity) || null)
     }
   };
   if (_cc.catalog.length) {
