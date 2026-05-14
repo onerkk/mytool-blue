@@ -9093,15 +9093,11 @@ function _jyExtractLandingFromOotkText(txt) {
 function _jyExtractOotkCourtHints(txt) {
   txt = String(txt || '');
   var hits = [];
-  var re = /(第7宮|夫妻|活躍堆|計數路徑|關鍵牌|配對|Op[1-5])[^
-]*(國王|皇后|騎士|侍者|King|Queen|Knight|Page|Prince|Princess)[^
-]*/gi;
+  var re = /(第7宮|夫妻|活躍堆|計數路徑|關鍵牌|配對|Op[1-5])[^\n]*(國王|皇后|騎士|侍者|King|Queen|Knight|Page|Prince|Princess)[^\n]*/gi;
   var m, guard = 0;
   while ((m = re.exec(txt)) && guard++ < 6) hits.push(m[0].trim());
   if (!hits.length) {
-    var re2 = /[^
-]*(國王|皇后|騎士|侍者|King|Queen|Knight|Page|Prince|Princess)[^
-]*/gi;
+    var re2 = /[^\n]*(國王|皇后|騎士|侍者|King|Queen|Knight|Page|Prince|Princess)[^\n]*/gi;
     while ((m = re2.exec(txt)) && guard++ < 6) hits.push(m[0].trim());
   }
   return hits.slice(0, 4).join(' ｜ ');
