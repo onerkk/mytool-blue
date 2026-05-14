@@ -4835,7 +4835,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.22.0-2026-05-14';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.25.0-2026-05-14';
 
 async function checkWorkerStatus() {
   try {
@@ -9288,6 +9288,7 @@ function _jyBuildClaudeBundle(item) {
   lines.push(_jyJsonForAudit(d, 160000));
   lines.push('');
   if (d.act_tarot) _jyPushRaw('act_tarot', d.act_tarot, 60000);
+  if (d.act_evidenceLedger) _jyPushRaw('Evidence Ledger / Claim Policy', d.act_evidenceLedger, 100000);
   if (d.act_operations_raw) _jyPushRaw('OOTK operations', d.act_operations_raw, 100000);
   if (d.act_crossAnalysis_raw) _jyPushRaw('OOTK crossAnalysis', d.act_crossAnalysis_raw, 60000);
   if (d.act_ootkData_raw) _jyPushRaw('OOTK full data', d.act_ootkData_raw, 140000);
