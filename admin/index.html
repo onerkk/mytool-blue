@@ -4835,7 +4835,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.28.1-2026-05-14';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.28.2-2026-05-14';
 
 async function checkWorkerStatus() {
   try {
@@ -9187,20 +9187,37 @@ function _jyBuildClaudeBundle(item) {
       if (d.act_bazi.shensha)     lines.push('  神煞: ' + d.act_bazi.shensha);
     }
     // ── 紫微 ──
+    if (d.sourceCoverage) {
+      lines.push('━ 稽核來源完整性 ━');
+      lines.push('  塔羅牌清單: ' + (d.sourceCoverage.tarotCards ? '有' : '缺'));
+      lines.push('  紫微大限: ' + (d.sourceCoverage.ziweiDaxian ? '有' : '缺'));
+      lines.push('  紫微流年: ' + (d.sourceCoverage.ziweiLiuNian ? '有' : '缺'));
+      lines.push('  紫微關鍵宮位: ' + (d.sourceCoverage.ziweiKeyPalaces ? '有' : '缺'));
+      lines.push('  八字神煞清理: ' + (d.sourceCoverage.baziShenshaClean ? '乾淨' : '含 undefined/null'));
+    }
     if (d.act_ziwei) {
       lines.push('━ 紫微 ━');
       if (d.act_ziwei.mingGongPosition) lines.push('  命宮位置: ' + d.act_ziwei.mingGongPosition);
       if (d.act_ziwei.mingStars)        lines.push('  命主星: ' + d.act_ziwei.mingStars);
       if (d.act_ziwei.shenGong)         lines.push('  身宮: ' + d.act_ziwei.shenGong);
       if (d.act_ziwei.spouseCompact)    lines.push('  夫妻宮: ' + d.act_ziwei.spouseCompact);
+      if (d.act_ziwei.childrenCompact)  lines.push('  子女宮: ' + d.act_ziwei.childrenCompact);
+      if (d.act_ziwei.friendsCompact)   lines.push('  交友宮: ' + d.act_ziwei.friendsCompact);
       if (d.act_ziwei.careerCompact)    lines.push('  官祿宮: ' + d.act_ziwei.careerCompact);
       if (d.act_ziwei.wealthCompact)    lines.push('  財帛宮: ' + d.act_ziwei.wealthCompact);
       if (d.act_ziwei.fudeCompact)      lines.push('  福德宮: ' + d.act_ziwei.fudeCompact);
+      if (d.act_ziwei.keyPalaces)       lines.push('  關鍵宮位: ' + d.act_ziwei.keyPalaces);
       if (d.act_ziwei.huaJi)            lines.push('  化忌: ' + d.act_ziwei.huaJi);
       if (d.act_ziwei.huaLu)            lines.push('  化祿: ' + d.act_ziwei.huaLu);
       if (d.act_ziwei.huaQuan)          lines.push('  化權: ' + d.act_ziwei.huaQuan);
       if (d.act_ziwei.huaKe)            lines.push('  化科: ' + d.act_ziwei.huaKe);
       if (d.act_ziwei.daxian)           lines.push('  大限: ' + d.act_ziwei.daxian);
+      if (d.act_ziwei.dxStars)          lines.push('  大限星曜: ' + d.act_ziwei.dxStars);
+      if (d.act_ziwei.dxHua)            lines.push('  大限四化: ' + d.act_ziwei.dxHua);
+      if (d.act_ziwei.liunian)          lines.push('  流年: ' + d.act_ziwei.liunian);
+      if (d.act_ziwei.lnHua)            lines.push('  流年四化: ' + d.act_ziwei.lnHua);
+      if (d.act_ziwei.xiaoXian)         lines.push('  小限: ' + d.act_ziwei.xiaoXian);
+      if (d.act_ziwei.gongHua)          lines.push('  宮干自化/飛化: ' + d.act_ziwei.gongHua);
     }
     // ── 梅花 ──
     if (d.act_meihua) {
@@ -9766,6 +9783,13 @@ function renderAuditCard(item) {
     // v69.17.0:七維度 admin 視覺卡片補完整 7 套(原本只 4 套+塔羅,缺梅花+姓名)
     //   歐那 2026-05-12 反饋「後台看不到梅花那些」— 之前只改了複製文字版沒改視覺 HTML,這次補完
     const sections = [];
+    if (d.sourceCoverage) {
+      sections.push('<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(14,165,233,.05);border-left:3px solid #38bdf8">' +
+        '<div style="font-size:11px;color:#7dd3fc;font-weight:700;margin-bottom:3px">⚊ 稽核來源完整性</div>' +
+        '<div style="font-size:11px;color:var(--text);line-height:1.6">塔羅牌清單:' + (d.sourceCoverage.tarotCards ? '有' : '<span style="color:#ef4444">缺</span>') + '｜紫微大限:' + (d.sourceCoverage.ziweiDaxian ? '有' : '<span style="color:#ef4444">缺</span>') + '｜流年:' + (d.sourceCoverage.ziweiLiuNian ? '有' : '<span style="color:#ef4444">缺</span>') + '</div>' +
+        '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">關鍵宮位:' + (d.sourceCoverage.ziweiKeyPalaces ? '有' : '<span style="color:#ef4444">缺</span>') + '｜神煞:' + (d.sourceCoverage.baziShenshaClean ? '乾淨' : '<span style="color:#ef4444">含 undefined/null</span>') + '</div>' +
+        '</div>');
+    }
     // ── 八字 ──
     if (d.act_bazi) {
       let bz = '<div style="margin-bottom:8px;padding:6px 8px;border-radius:6px;background:rgba(251,191,36,.04);border-left:3px solid #fbbf24">' +
@@ -9790,14 +9814,23 @@ function renderAuditCard(item) {
       if (d.act_ziwei.mingStars)        zw += '<div style="font-size:11px;color:var(--text);line-height:1.6">命主星:<strong style="color:#c7d2fe">' + _esc(d.act_ziwei.mingStars) + '</strong></div>';
       if (d.act_ziwei.shenGong)         zw += '<div style="font-size:11px;color:var(--text);line-height:1.6">身宮:' + _esc(d.act_ziwei.shenGong) + '</div>';
       if (d.act_ziwei.spouseCompact)    zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">夫妻宮:' + _esc(d.act_ziwei.spouseCompact) + '</div>';
+      if (d.act_ziwei.childrenCompact)  zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">子女宮:' + _esc(d.act_ziwei.childrenCompact) + '</div>';
+      if (d.act_ziwei.friendsCompact)   zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">交友宮:' + _esc(d.act_ziwei.friendsCompact) + '</div>';
       if (d.act_ziwei.careerCompact)    zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">官祿宮:' + _esc(d.act_ziwei.careerCompact) + '</div>';
       if (d.act_ziwei.wealthCompact)    zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">財帛宮:' + _esc(d.act_ziwei.wealthCompact) + '</div>';
       if (d.act_ziwei.fudeCompact)      zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">福德宮:' + _esc(d.act_ziwei.fudeCompact) + '</div>';
+      if (d.act_ziwei.keyPalaces)       zw += '<div style="font-size:10px;color:var(--text-dim);line-height:1.5">關鍵宮位:' + _esc(d.act_ziwei.keyPalaces) + '</div>';
       if (d.act_ziwei.huaJi)            zw += '<div style="font-size:11px;color:#fca5a5;line-height:1.6">化忌:' + _esc(d.act_ziwei.huaJi) + '</div>';
       if (d.act_ziwei.huaLu)            zw += '<div style="font-size:11px;color:#86efac;line-height:1.6">化祿:' + _esc(d.act_ziwei.huaLu) + '</div>';
       if (d.act_ziwei.huaQuan)          zw += '<div style="font-size:11px;color:#fde68a;line-height:1.6">化權:' + _esc(d.act_ziwei.huaQuan) + '</div>';
       if (d.act_ziwei.huaKe)            zw += '<div style="font-size:11px;color:#c4b5fd;line-height:1.6">化科:' + _esc(d.act_ziwei.huaKe) + '</div>';
       if (d.act_ziwei.daxian)           zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">大限:' + _esc(d.act_ziwei.daxian) + '</div>';
+      if (d.act_ziwei.dxStars)          zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">大限星曜:' + _esc(d.act_ziwei.dxStars) + '</div>';
+      if (d.act_ziwei.dxHua)            zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">大限四化:' + _esc(d.act_ziwei.dxHua) + '</div>';
+      if (d.act_ziwei.liunian)          zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">流年:' + _esc(d.act_ziwei.liunian) + '</div>';
+      if (d.act_ziwei.lnHua)            zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">流年四化:' + _esc(d.act_ziwei.lnHua) + '</div>';
+      if (d.act_ziwei.xiaoXian)         zw += '<div style="font-size:11px;color:var(--text-dim);line-height:1.6">小限:' + _esc(d.act_ziwei.xiaoXian) + '</div>';
+      if (d.act_ziwei.gongHua)          zw += '<div style="font-size:10px;color:var(--text-dim);line-height:1.5">宮干自化/飛化:' + _esc(d.act_ziwei.gongHua) + '</div>';
       if (d.act_ziwei.palaceKeys)       zw += '<div style="font-size:10px;color:var(--text-dim);opacity:.6;line-height:1.5">十二宮 keys:' + _esc((d.act_ziwei.palaceKeys || []).join(',')) + '</div>';
       zw += '</div>';
       sections.push(zw);
