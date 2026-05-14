@@ -2147,13 +2147,41 @@ textarea.worker-editor:focus{border-color:var(--accent)}
       </div>
 
 
-      <!-- v60-hotfix4：Sonnet 4.6 Effort Level 卡片已移除。
-           原因：Anthropic API 2026/04 要求 adaptive thinking 啟用時 temperature 強制為 1,
-           而命理 AI 的 JSON schema 嚴格（layers 巢狀/cardReadings 陣列/memoryNotes 陣列）,
-           temp=1 會讓 Sonnet 自由發揮破壞 JSON 結構 → 前端 r 物件空 → 畫面空白。
-           實測 low/medium/high 都會壞,不是 effort 調整能解決的。
-           後端 callAI 的 Sonnet 4.6 thinking 分支保留（未來 API 規則放寬可重啟）,
-           三個主路徑的 enableThinking 都不啟用 Sonnet,admin UI 移除避免誤操作。 -->
+      <!-- ═══ v69.29.1：Sonnet 4.6 Adaptive Thinking 卡片 ═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid #60a5fa">
+        <h3>🧠 Sonnet 4.6 Adaptive Thinking</h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.65">
+          官方文件已建議 Sonnet 4.6 使用 <b>adaptive thinking + effort</b>，manual budget_tokens 已 deprecated。<br>
+          本站預設：<b style="color:#34d399">開啟</b>，但只在 Structured Outputs 路徑啟用，避免舊 prompt-only JSON 因 temperature=1 造成解析空白。<br>
+          若要全關，可在這裡關閉；不需重新部署。
+        </p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="s46t-enabled" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1;font-size:13px;font-weight:600">啟用 Sonnet 4.6 Adaptive Thinking</span>
+            <span style="font-size:11px;color:var(--text-dim)">預設開</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="s46t-structured-only" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1;font-size:13px;font-weight:600">只在 Structured Outputs 路徑啟用</span>
+            <span style="font-size:11px;color:var(--text-dim)">建議保持開</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="s46t-followup" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="flex:1;font-size:13px;font-weight:600">追問也開 Thinking</span>
+            <span style="font-size:11px;color:var(--text-dim)">預設關，省成本</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="s46t-summarized" style="width:16px;height:16px;accent-color:#fbbf24;cursor:pointer">
+            <span style="flex:1;font-size:13px;font-weight:600">回傳 summarized thinking</span>
+            <span style="font-size:11px;color:var(--text-dim)">預設 omitted，省 token/延遲</span>
+          </label>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveSonnet46ThinkingConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Sonnet Thinking</button>
+          <span id="sonnet46ThinkingStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
 
       <!-- ═══ v49：Haiku 4.5 Thinking 卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px">
@@ -3455,7 +3483,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'crystal') loadCrystalStats();
     if (tab.dataset.tab === 'ragquality') loadRagQualityAudit();
     if (tab.dataset.tab === 'batch') loadBatchList();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); loadStructuredOutputsConfig(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadSonnet46ThinkingConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); loadStructuredOutputsConfig(); }
   });
 });
 
@@ -4835,7 +4863,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.29.0-2026-05-15';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.29.1-2026-05-15';
 
 async function checkWorkerStatus() {
   try {
@@ -8196,9 +8224,59 @@ async function saveOpus46EffortConfig() {
   }
 }
 
-// v60-hotfix4：Sonnet 4.6 Effort Level Config 函式已移除
-//   原因：API 規則導致 thinking+temp=1 破 JSON，相關 UI 已拿掉。
-//   後端 /admin/sonnet46-effort-config endpoint 保留（向後相容，若再開 UI 可用）。
+// ═══════════════════════════════════════════════
+// Sonnet 4.6 Adaptive Thinking Config (v69.29.1)
+// ═══════════════════════════════════════════════
+async function loadSonnet46ThinkingConfig() {
+  const statusEl = document.getElementById('sonnet46ThinkingStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/sonnet46-thinking-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const c = data.config;
+      const eEl = document.getElementById('s46t-enabled');
+      const soEl = document.getElementById('s46t-structured-only');
+      const fuEl = document.getElementById('s46t-followup');
+      const sumEl = document.getElementById('s46t-summarized');
+      if (eEl) eEl.checked = c.enabled !== false;
+      if (soEl) soEl.checked = c.structuredOnly !== false;
+      if (fuEl) fuEl.checked = c.followup === true;
+      if (sumEl) sumEl.checked = c.display === 'summarized';
+      if (statusEl) statusEl.textContent = (c.enabled !== false ? '啟用' : '關閉') + '｜' + (c.structuredOnly !== false ? 'SO only' : '全路徑') + '｜' + (c.followup ? '追問開' : '追問關') + '｜display=' + (c.display || 'omitted');
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveSonnet46ThinkingConfig() {
+  const statusEl = document.getElementById('sonnet46ThinkingStatus');
+  try {
+    const eEl = document.getElementById('s46t-enabled');
+    const soEl = document.getElementById('s46t-structured-only');
+    const fuEl = document.getElementById('s46t-followup');
+    const sumEl = document.getElementById('s46t-summarized');
+    const enabled = eEl ? !!eEl.checked : true;
+    const structuredOnly = soEl ? !!soEl.checked : true;
+    const followup = fuEl ? !!fuEl.checked : false;
+    const display = (sumEl && sumEl.checked) ? 'summarized' : 'omitted';
+    const r = await fetch(`${WORKER_URL}/admin/sonnet46-thinking-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: enabled, structuredOnly: structuredOnly, followup: followup, display: display })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Sonnet 4.6 Thinking');
+      if (statusEl) statusEl.textContent = (enabled ? '啟用' : '關閉') + '｜' + (structuredOnly ? 'SO only' : '全路徑') + '｜' + (followup ? '追問開' : '追問關') + '｜display=' + display;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
 
 
 // ═══════════════════════════════════════════════
@@ -9166,7 +9244,7 @@ function _jyBuildClaudeBundle(item) {
       else if (rawText) lines.push('  摘要(raw前段): ' + _jyFirstNonEmptyLines(rawText, 2));
     });
     if (_ootkUsedRawFallback) {
-      lines.push('  ⚠️ 稽核格式備註:v69.29.0 已用 act_operations_raw 反推 OP 摘要；若這裡有 raw有資料,代表 AI 實際有收到該 Op,不是缺資料。');
+      lines.push('  ⚠️ 稽核格式備註:v69.28.4 已用 act_operations_raw 反推 OP 摘要；若這裡有 raw有資料,代表 AI 實際有收到該 Op,不是缺資料。');
     }
     // v69.17.0 補:OOTK 追問問題本身(後端有寫 act_followUpQuestion 但前端從來沒讀)
     if (d.act_followUpQuestion) {
@@ -9178,7 +9256,7 @@ function _jyBuildClaudeBundle(item) {
     // v69.20.2 治本:稽核包加 raw JSON(讓你發給 Claude 時能看 AI 拿到的真實牌資料)
     if (d.act_ootkData_keys && d.act_ootkData_keys.length) {
       lines.push('');
-      lines.push('━━━ Raw 資料(v69.29.0:AI 真實拿到的完整 JSON)━━━');
+      lines.push('━━━ Raw 資料(v69.28.4:AI 真實拿到的完整 JSON)━━━');
       lines.push('ootkData 頂層 key: ' + d.act_ootkData_keys.join(', '));
       if (d.act_operations_raw) {
         lines.push('');
@@ -9788,7 +9866,7 @@ function renderAuditCard(item) {
       if (hasRaw) {
         const _rawId = 'raw_' + Math.random().toString(36).slice(2);
         actCardsHtml += '<details style="margin-top:8px;padding:6px 8px;border-radius:6px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.3)">' +
-          '<summary style="cursor:pointer;font-size:11px;color:#86efac;font-weight:700">🔬 Raw 資料(v69.29.0:AI 真實拿到的完整 JSON)</summary>' +
+          '<summary style="cursor:pointer;font-size:11px;color:#86efac;font-weight:700">🔬 Raw 資料(v69.28.4:AI 真實拿到的完整 JSON)</summary>' +
           '<div style="margin-top:8px;font-size:10px;color:var(--text-dim);line-height:1.6">';
         // v69.21.6:一鍵複製 Raw 按鈕(抓 data-raw 屬性的文字)
         actCardsHtml += '<button onclick="var el=document.getElementById(\'' + _rawId + '\');if(el){navigator.clipboard.writeText(el.innerText).then(function(){var b=document.getElementById(\'btn_' + _rawId + '\');b.textContent=\'✅ 已複製\';setTimeout(function(){b.textContent=\'📋 複製 Raw\';},2000);});}" id="btn_' + _rawId + '" style="padding:4px 12px;border-radius:6px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#86efac;font-size:11px;font-weight:600;cursor:pointer;margin-bottom:8px;display:block">📋 複製 Raw</button>';
