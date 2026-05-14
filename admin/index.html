@@ -4835,7 +4835,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.28.3-2026-05-14';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.28.4-2026-05-14';
 
 async function checkWorkerStatus() {
   try {
@@ -9089,6 +9089,23 @@ function _jyExtractLandingFromOotkText(txt) {
        || txt.match(/Malkuth|Kether|Chokmah|Binah|Chesed|Geburah|Tiphareth|Netzach|Hod|Yesod/i);
   return m ? (m[1] || m[0]).trim() : '';
 }
+
+function _jyExtractOotkCourtHints(txt) {
+  txt = String(txt || '');
+  var hits = [];
+  var re = /(第7宮|夫妻|活躍堆|計數路徑|關鍵牌|配對|Op[1-5])[^
+]*(國王|皇后|騎士|侍者|King|Queen|Knight|Page|Prince|Princess)[^
+]*/gi;
+  var m, guard = 0;
+  while ((m = re.exec(txt)) && guard++ < 6) hits.push(m[0].trim());
+  if (!hits.length) {
+    var re2 = /[^
+]*(國王|皇后|騎士|侍者|King|Queen|Knight|Page|Prince|Princess)[^
+]*/gi;
+    while ((m = re2.exec(txt)) && guard++ < 6) hits.push(m[0].trim());
+  }
+  return hits.slice(0, 4).join(' ｜ ');
+}
 function _jyExtractOotkOpRaw(d, k) {
   var rawObj = _jyTryParseJsonLoose(d && d.act_operations_raw);
   if (rawObj && rawObj[k]) return String(rawObj[k]);
@@ -9139,8 +9156,10 @@ function _jyBuildClaudeBundle(item) {
       if (!parts.length && rawText) {
         _ootkUsedRawFallback = true;
         const landing = _jyExtractLandingFromOotkText(rawText);
+        const courts = _jyExtractOotkCourtHints(rawText);
         parts.push('raw有資料=' + rawText.length + '字');
         if (landing) parts.push('落點=' + landing);
+        if (courts) parts.push('宮廷/人物線索=' + courts);
       }
       if (!parts.length) { lines.push(k.toUpperCase() + ': (無資料)'); return; }
       lines.push(k.toUpperCase() + ': ' + parts.join(' / '));
@@ -9151,7 +9170,7 @@ function _jyBuildClaudeBundle(item) {
       else if (rawText) lines.push('  摘要(raw前段): ' + _jyFirstNonEmptyLines(rawText, 2));
     });
     if (_ootkUsedRawFallback) {
-      lines.push('  ⚠️ 稽核格式備註:v69.28.3 已用 act_operations_raw 反推 OP 摘要；若這裡有 raw有資料,代表 AI 實際有收到該 Op,不是缺資料。');
+      lines.push('  ⚠️ 稽核格式備註:v69.28.4 已用 act_operations_raw 反推 OP 摘要；若這裡有 raw有資料,代表 AI 實際有收到該 Op,不是缺資料。');
     }
     // v69.17.0 補:OOTK 追問問題本身(後端有寫 act_followUpQuestion 但前端從來沒讀)
     if (d.act_followUpQuestion) {
@@ -9163,7 +9182,7 @@ function _jyBuildClaudeBundle(item) {
     // v69.20.2 治本:稽核包加 raw JSON(讓你發給 Claude 時能看 AI 拿到的真實牌資料)
     if (d.act_ootkData_keys && d.act_ootkData_keys.length) {
       lines.push('');
-      lines.push('━━━ Raw 資料(v69.28.3:AI 真實拿到的完整 JSON)━━━');
+      lines.push('━━━ Raw 資料(v69.28.4:AI 真實拿到的完整 JSON)━━━');
       lines.push('ootkData 頂層 key: ' + d.act_ootkData_keys.join(', '));
       if (d.act_operations_raw) {
         lines.push('');
@@ -9773,7 +9792,7 @@ function renderAuditCard(item) {
       if (hasRaw) {
         const _rawId = 'raw_' + Math.random().toString(36).slice(2);
         actCardsHtml += '<details style="margin-top:8px;padding:6px 8px;border-radius:6px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.3)">' +
-          '<summary style="cursor:pointer;font-size:11px;color:#86efac;font-weight:700">🔬 Raw 資料(v69.28.3:AI 真實拿到的完整 JSON)</summary>' +
+          '<summary style="cursor:pointer;font-size:11px;color:#86efac;font-weight:700">🔬 Raw 資料(v69.28.4:AI 真實拿到的完整 JSON)</summary>' +
           '<div style="margin-top:8px;font-size:10px;color:var(--text-dim);line-height:1.6">';
         // v69.21.6:一鍵複製 Raw 按鈕(抓 data-raw 屬性的文字)
         actCardsHtml += '<button onclick="var el=document.getElementById(\'' + _rawId + '\');if(el){navigator.clipboard.writeText(el.innerText).then(function(){var b=document.getElementById(\'btn_' + _rawId + '\');b.textContent=\'✅ 已複製\';setTimeout(function(){b.textContent=\'📋 複製 Raw\';},2000);});}" id="btn_' + _rawId + '" style="padding:4px 12px;border-radius:6px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#86efac;font-size:11px;font-weight:600;cursor:pointer;margin-bottom:8px;display:block">📋 複製 Raw</button>';
