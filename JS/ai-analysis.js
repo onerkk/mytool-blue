@@ -4,6 +4,130 @@
 // ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
+// 【v69.34.0 智能等待通知系統】(歐那 2026/5/15)
+//
+// 解決問題:
+//   1. 精準優先配置開啟後,深度解析實測 5-15 分鐘
+//   2. 舊 phase 寫死秒數,5 分鐘後文字不再變化 → 用戶以為當機
+//   3. 沒有「預估等待時間」「已等多久」「為什麼這麼久」的回饋
+//
+// 設計原則:
+//   ① 一開始就告知預估時間範圍(標準 2-5 分鐘 / 深度 5-15 分鐘)
+//   ② 顯示已等多久(計時器,讓用戶有「系統運作中」的感受)
+//   ③ 階段文字按真實時間分配,5 分鐘後也有新訊息
+//   ④ 超過 5 分鐘 → 主動安撫「深度解析正常範圍」+ 解釋為什麼
+//   ⑤ 不嚇人:不要寫「可能會失敗」「請稍候很久」這類嚇人話
+//
+// 用法:
+//   window._jyStartSmartTimer(mode, isOpus, startTime)
+//   會自動更新 #ai-loading-phase / #tarot-ai-phase
+//   結束時呼叫 window._jyStopSmartTimer() 清理
+// ═══════════════════════════════════════════════════════════════
+window._jySmartTimerHandle = null;
+window._jyStartSmartTimer = function(mode, isOpus, phaseElId) {
+  // 清掉舊的計時器
+  if (window._jySmartTimerHandle) {
+    try { clearInterval(window._jySmartTimerHandle); } catch(_) {}
+    window._jySmartTimerHandle = null;
+  }
+
+  var startTime = Date.now();
+  var modeLabel = ({ tarot: '塔羅', ootk: '開鑰之法', full: '七維度' })[mode] || mode;
+  var depthLabel = isOpus ? '深度解析' : '標準解讀';
+  var estimatedRange = isOpus ? '5-10 分鐘' : '2-5 分鐘';
+
+  // 立刻寫第一行(讓用戶馬上看到時間預告)
+  function _setPhaseText(text) {
+    var el = document.getElementById(phaseElId);
+    if (!el) return;
+    el.style.opacity = '0';
+    setTimeout(function() {
+      if (el) { el.textContent = text; el.style.opacity = '1'; }
+    }, 250);
+  }
+
+  function _formatElapsed(sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    if (m === 0) return s + ' 秒';
+    return m + ' 分 ' + (s < 10 ? '0' + s : s) + ' 秒';
+  }
+
+  function _getCurrentPhaseText(elapsedSec) {
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 階段文字按真實時間分配(深度版時間軸更長)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    var elapsedStr = _formatElapsed(elapsedSec);
+
+    if (isOpus) {
+      // 深度解析(Opus 4.7 xhigh + thinking + advisor + Best-of-N)
+      // 真實秒數 5-15 分鐘
+      if (elapsedSec < 30) {
+        return '🔮 ' + depthLabel + '需要 ' + estimatedRange + ',正在初始化…';
+      } else if (elapsedSec < 90) {
+        return '🔮 深度推理中(已等 ' + elapsedStr + ')— 預估 ' + estimatedRange;
+      } else if (elapsedSec < 180) {
+        return '⚡ 正在交叉比對(已等 ' + elapsedStr + ')— 深度模式較久請放心';
+      } else if (elapsedSec < 300) {
+        return '🧠 Opus 4.7 思考中(已等 ' + elapsedStr + ')— 正在多層判讀';
+      } else if (elapsedSec < 480) {
+        return '✨ 顧問模型複核中(已等 ' + elapsedStr + ')— 深度解析正常範圍';
+      } else if (elapsedSec < 720) {
+        return '⏳ 正在組織最終結論(已等 ' + elapsedStr + ')— 快好了';
+      } else if (elapsedSec < 900) {
+        return '🌙 已等 ' + elapsedStr + ' — 系統運作正常,請保持頁面開啟';
+      } else {
+        return '⏰ 已等 ' + elapsedStr + ' — 深度解析罕見偏長,正在收尾';
+      }
+    } else {
+      // 標準解讀(Sonnet 4.6 + thinking)
+      // 真實秒數 2-5 分鐘
+      if (elapsedSec < 30) {
+        return '✨ ' + depthLabel + '需要 ' + estimatedRange + ',正在分析中…';
+      } else if (elapsedSec < 60) {
+        return '✨ 正在分析(已 ' + elapsedStr + ')— 預估 ' + estimatedRange;
+      } else if (elapsedSec < 120) {
+        return '⚡ 交叉判讀中(已 ' + elapsedStr + ')— 系統運作中';
+      } else if (elapsedSec < 240) {
+        return '🧠 正在組織解讀(已 ' + elapsedStr + ')— 快好了';
+      } else if (elapsedSec < 360) {
+        return '⏳ 已等 ' + elapsedStr + ' — 標準解讀正常範圍,正在收尾';
+      } else {
+        return '🌙 已等 ' + elapsedStr + ' — 系統運作正常,請保持頁面開啟';
+      }
+    }
+  }
+
+  // 立刻寫第一條訊息
+  _setPhaseText(_getCurrentPhaseText(0));
+
+  // 每 5 秒更新一次(夠頻繁讓用戶有感,又不消耗效能)
+  window._jySmartTimerHandle = setInterval(function() {
+    var elapsedSec = Math.floor((Date.now() - startTime) / 1000);
+    _setPhaseText(_getCurrentPhaseText(elapsedSec));
+
+    // 進度條按預估時間映射(深度 600 秒滿格、標準 240 秒滿格)
+    var maxBarSec = isOpus ? 600 : 240;
+    var pct = Math.min(92, 6 + Math.round(elapsedSec / maxBarSec * 86));
+    try {
+      var barEl = document.getElementById('ai-loading-bar') || document.getElementById('tarot-loading-bar');
+      if (barEl) barEl.style.width = pct + '%';
+    } catch(_) {}
+  }, 5000);
+
+  return window._jySmartTimerHandle;
+};
+
+window._jyStopSmartTimer = function() {
+  if (window._jySmartTimerHandle) {
+    try { clearInterval(window._jySmartTimerHandle); } catch(_) {}
+    window._jySmartTimerHandle = null;
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
 // 【v67 版本對接機制】jingyue.uk 前後端版本同步
 // 設計:
 //   1. 此檔頂部宣告 FRONTEND_VERSION,跟 index.html ?v= query string 同步
@@ -18,7 +142,7 @@
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_31_0';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_34_0';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
     // ★ v68.21.19 Bug #23 修:版本檢查 URL 寫錯
@@ -21662,7 +21786,7 @@ renderTarot = function(){
           '<div style="font-size:1.05rem;color:var(--c-gold);font-weight:700;letter-spacing:.03em;text-shadow:0 2px 12px rgba(0,0,0,.7)">' + (window._jyOpusDepth ? '🔮 深度解析中…' : '靜月正在為你翻閱命盤…') + '</div>' +
         '</div>' +
       '</div>' +
-      '<div id="ai-loading-phase" style="font-size:.8rem;color:var(--c-text-dim);transition:opacity .35s;min-height:1.25rem">交叉比對七套系統中</div>' +
+      '<div id="ai-loading-phase" style="font-size:.85rem;color:var(--c-gold);font-weight:600;transition:opacity .35s;min-height:1.25rem">正在初始化…</div>' +
       // 個人化命盤 snippet
       '<div id="ai-loading-snippet" style="max-width:320px;margin:.6rem auto 0;padding:.6rem .85rem;border-radius:12px;border:1px solid rgba(212,175,55,.12);background:rgba(212,175,55,.04);min-height:2.5rem">' +
         '<div style="font-size:.72rem;color:rgba(212,175,55,.6);margin-bottom:.2rem">你的命盤</div>' +
@@ -21684,12 +21808,18 @@ renderTarot = function(){
     var _aiLoadPhases = ['交叉比對七套系統中', '閱讀八字命盤…', '排列紫微斗數宮位…', '解讀梅花易數卦象…', '翻閱塔羅牌面…', '計算西洋星盤相位…', '對照吠陀大運…', '解析姓名學五格…', '比對各系統的矛盾點…', '找出多系統交集…', '整合交叉訊號…', '從七個角度收斂結論…', '組織你的專屬解讀…', '最後確認…'];
     var _aiPhaseIdx = 0;
     var _snippetIdx = 0;
+
+    // ★ v69.34.0 升級:啟動 smart timer 接管 ai-loading-phase
+    //   舊版 phase interval 4 秒 × 14 條 = 56 秒後文字凍結,深度 5-15 分鐘場景不友善
+    //   新版按真實 elapsed 顯示「已等 X 分鐘 / 預估範圍 / 系統運作中」
+    var _d7IsOpus = !!(window._jyOpusDepth || window._jyForceOpusOnly);
+    window._jyStartSmartTimer('full', _d7IsOpus, 'ai-loading-phase');
+
     var _aiPhaseTimer = setInterval(function(){
       _aiPhaseIdx++;
       if(_aiPhaseIdx >= _aiLoadPhases.length) _aiPhaseIdx = _aiLoadPhases.length - 1;
-      var el = document.getElementById('ai-loading-phase');
-      if(el){ el.style.opacity = '0'; setTimeout(function(){ if(el){ el.textContent = _aiLoadPhases[_aiPhaseIdx]; el.style.opacity = '1'; }}, 300); }
-      // tag 逐一亮燈（14 phases 分配給 7 tags）
+      // ★ v69.34:ai-loading-phase 由 smart timer 接管,這裡只更新 tag 與 snippet
+      // tag 逐一亮燈(14 phases 分配給 7 tags)
       var tagWrap = document.getElementById('ai-loading-tags');
       if (tagWrap) {
         var tags = tagWrap.querySelectorAll('span');
@@ -21702,8 +21832,8 @@ renderTarot = function(){
           }
         }
       }
-      // ★ v30b：bar 跟 phase 同步（最高到 88%，完成時跳 100%）
-      try { var _bar = document.getElementById('ai-loading-bar'); if (_bar) _bar.style.width = Math.min(88, 6 + Math.round(_aiPhaseIdx / _aiLoadPhases.length * 82)) + '%'; } catch(_) {}
+      // ★ v69.34:bar 由 smart timer 統一管理(按真實 elapsed 計算)
+      //   舊算法用 _aiPhaseIdx 14 條,4 秒一格 = 56 秒 bar 滿,深度場景失準
       // snippet 輪播
       if (_loadSnippets.length > 1) {
         _snippetIdx = (_snippetIdx + 1) % _loadSnippets.length;
@@ -21846,6 +21976,7 @@ renderTarot = function(){
         data = await resp.json();
       }
       clearInterval(_aiPhaseTimer);
+      try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
       clearTimeout(_abortTimer);
       // ★ v29c：bar 跳 100% + 全亮 tags
       try { var _lb = document.getElementById('ai-loading-bar'); if (_lb) { _lb.style.animation='none'; _lb.style.width='100%'; _lb.style.transition='width .4s'; } } catch(_) {}
@@ -22135,6 +22266,7 @@ renderTarot = function(){
       }
     } catch(err) {
       clearInterval(_aiPhaseTimer);
+      try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
       clearTimeout(_abortTimer);
       console.error('[AI]', err);
       // ★ v36：SSE timeout → 顯示友善錯誤
@@ -24345,7 +24477,7 @@ async function _triggerTarotAI() {
           '<div style="font-size:1.05rem;color:var(--c-gold);font-weight:700;letter-spacing:.03em;text-shadow:0 2px 12px rgba(0,0,0,.7)">靜月正在感應你的牌面…</div>' +
         '</div>' +
       '</div>' +
-      '<div id="tarot-ai-phase" style="font-size:.8rem;color:var(--c-text-dim);transition:opacity .35s;min-height:1.25rem">感應牌面之間的訊號</div>' +
+      '<div id="tarot-ai-phase" style="font-size:.85rem;color:var(--c-gold);font-weight:600;transition:opacity .35s;min-height:1.25rem">正在初始化…</div>' +
     '<div id="tarot-loading-snippet" style="max-width:320px;margin:.6rem auto 0;padding:.6rem .85rem;border-radius:12px;border:1px solid rgba(212,175,55,.12);background:rgba(212,175,55,.04);min-height:2.5rem">' +
       '<div style="font-size:.72rem;color:rgba(212,175,55,.6);margin-bottom:.2rem">你的牌面</div>' +
       '<div id="tarot-loading-snippet-text" style="font-size:.82rem;color:var(--c-text);line-height:1.6;transition:opacity .4s">' + (_tarotSnippets[0] || '') + '</div>' +
@@ -24363,17 +24495,23 @@ async function _triggerTarotAI() {
     '</div>';
 
   // 階段文字輪播
-  // ★ v20：phase interval 動態——根據牌數和預估秒數分配
+  // ★ v69.34.0 升級:接 smart timer(取代舊的固定 phases)
+  //   舊版 phases 只有 10 條 × _tarotEstSec(25-40s)= 4 分鐘後文字凍結
+  //   新版按真實 elapsed 分配,5/10/15 分鐘都有對應訊息
+  var _tarotIsOpus = !!(window._jyOpusDepth || window._jyForceOpusOnly);
   var phases = ['感應牌面之間的訊號', '解讀每張牌的位置意義…', '讀取元素能量流向…', '分析位置之間的對讀…', '找出牌面之間的象徵交集…', '判斷整體故事弧線…', '對照牌組共振與衝突…', '拼湊出你問題的答案…', '整合變數與條件…', '組織完整解讀…'];
   var _tarotPhaseMs = Math.round(_tarotEstSec * 1000 / phases.length);
   var phaseIdx = 0;
   var _tSnipIdx = 0;
+
+  // ★ 啟動 smart timer:取代 phase 文字更新(由 helper 全權管理 tarot-ai-phase)
+  window._jyStartSmartTimer('tarot', _tarotIsOpus, 'tarot-ai-phase');
+
   var phaseTimer = setInterval(function() {
     phaseIdx++;
     if (phaseIdx >= phases.length) phaseIdx = phases.length - 1;
-    var el = document.getElementById('tarot-ai-phase');
-    if (el) { el.style.opacity = '0'; setTimeout(function(){ if(el){ el.textContent = phases[phaseIdx]; el.style.opacity = '1'; }}, 250); }
-    // tag 亮燈（10 phases 分配給 5 tags）
+    // ★ v69.34:tarot-ai-phase 由 smart timer 接管,這裡只更新 tag 與 snippet
+    // tag 亮燈(10 phases 分配給 5 tags)
     var tagWrap = document.getElementById('tarot-loading-tags');
     if (tagWrap) {
       var tags = tagWrap.querySelectorAll('span');
@@ -24388,8 +24526,7 @@ async function _triggerTarotAI() {
       var snipEl = document.getElementById('tarot-loading-snippet-text');
       if (snipEl) { snipEl.style.opacity = '0'; setTimeout(function(){ if(snipEl){ snipEl.textContent = _tarotSnippets[_tSnipIdx]; snipEl.style.opacity = '1'; }}, 350); }
     }
-    // ★ v30b：bar 跟 phase 同步
-    try { var _tbar = document.getElementById('tarot-loading-bar'); if (_tbar) _tbar.style.width = Math.min(88, 6 + Math.round(phaseIdx / phases.length * 82)) + '%'; } catch(_) {}
+    // ★ v69.34:bar 由 smart timer 統一管理,這裡不再重複設
   }, _tarotPhaseMs);
 
   try {
@@ -24424,6 +24561,7 @@ async function _triggerTarotAI() {
 
     if (!resp.ok) {
       clearInterval(phaseTimer);
+      try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
       try { clearTimeout(_tarotAbortTimer); } catch(_) {} // v51
       var errData = {};
       try { errData = await resp.json(); } catch(_){}
@@ -24482,6 +24620,7 @@ async function _triggerTarotAI() {
               if (_tkTxt2 && _tkTxt2.length > 0) {
                 // 停掉輪播 timer（如果還在跑），把 phase 改成即時思考摘要
                 try { clearInterval(phaseTimer); } catch(_tke3){}
+                  try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
                 var _tkEl2 = document.getElementById('tarot-ai-phase');
                 if (_tkEl2) {
                   var _tkShow2 = _tkTxt2.length > 80 ? _tkTxt2.slice(-80) : _tkTxt2;
@@ -24530,6 +24669,7 @@ async function _triggerTarotAI() {
 
     // ★ v20：SSE 讀完才清除 timer
     clearInterval(phaseTimer);
+    try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
     try { clearTimeout(_tarotAbortTimer); } catch(_) {} // v51
     // ★ v29c：bar 跳 100%
     try { var _tb = document.getElementById('tarot-loading-bar'); if (_tb) { _tb.style.animation='none'; _tb.style.width='100%'; _tb.style.transition='width .4s'; } } catch(_) {}
@@ -24755,6 +24895,7 @@ async function _triggerTarotAI() {
 
   } catch(err) {
     clearInterval(phaseTimer);
+    try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
     try { clearTimeout(_tarotAbortTimer); } catch(_) {} // v51
     console.error('[TarotAI]', err);
     if (err.status === 403 && err.code === 'OPUS_PAYMENT_REQUIRED') {

@@ -5655,7 +5655,7 @@ enhanceTarot = function(tarot) {
           '<div style="font-size:1.05rem;color:var(--c-gold);font-weight:700;letter-spacing:.03em;text-shadow:0 2px 12px rgba(0,0,0,.7)">靜月正在為你開鑰…</div>' +
         '</div>' +
       '</div>' +
-      '<div id="ootk-ai-phase" style="font-size:.8rem;color:var(--c-text-dim);transition:opacity .35s;min-height:1.25rem">讀取四元素分堆…</div>' +
+      '<div id="ootk-ai-phase" style="font-size:.85rem;color:var(--c-gold);font-weight:600;transition:opacity .35s;min-height:1.25rem">正在初始化…</div>' +
       // 牌象 snippet
       '<div id="ootk-loading-snippet" style="max-width:320px;margin:.6rem auto 0;padding:.6rem .85rem;border-radius:12px;border:1px solid rgba(201,168,76,.12);background:rgba(201,168,76,.04);min-height:2.5rem">' +
         '<div style="font-size:.72rem;color:rgba(201,168,76,.6);margin-bottom:.2rem">你的占卜</div>' +
@@ -5678,13 +5678,20 @@ enhanceTarot = function(tarot) {
     var phases = ['讀取四元素分堆…','對照十二宮位…','解讀星座能量…','聚焦三十六旬…','攀上生命之樹…','觀察各 Op 獨立結論…','整理最終答案…'];
     var phaseIdx = 0;
     var _ootkSnippetIdx = 0;
+
+    // ★ v69.34.0 升級:啟動 smart timer 接管 ootk-ai-phase
+    //   OOTK 深度 = Opus 4.7 xhigh + thinking + advisor + Best-of-N + 五階段獨立讀盤
+    //   實測 5-15 分鐘,舊 phase 1 秒一條 × 7 條 = 7 秒就跑完不再變化
+    var _ootkIsOpus = !!window._jyOpusDepth;
+    if (typeof window._jyStartSmartTimer === 'function') {
+      window._jyStartSmartTimer('ootk', _ootkIsOpus, 'ootk-ai-phase');
+    }
+
     var phaseTimer = setInterval(function() {
       try {
       phaseIdx++;
       if (phaseIdx >= phases.length) phaseIdx = phases.length - 1;
-      var el = document.getElementById('ootk-ai-phase');
-      if (el) { el.style.opacity = '0'; setTimeout(function(){ if(el){ el.textContent = phases[phaseIdx]; el.style.opacity = '1'; }}, 200); }
-      // ★ v29c：tag 逐一亮燈（timer 現在跑到 SSE 結束，所有 tag 都會亮）
+      // ★ v69.34:ootk-ai-phase 由 smart timer 接管,這裡只更新 tag 與 snippet
       var tagWrap = document.getElementById('ootk-loading-tags');
       if (tagWrap) {
         var tags = tagWrap.querySelectorAll('span');
@@ -5703,8 +5710,7 @@ enhanceTarot = function(tarot) {
         var snipEl = document.getElementById('ootk-loading-snippet-text');
         if (snipEl) { snipEl.style.opacity = '0'; setTimeout(function(){ if(snipEl){ snipEl.textContent = _ootkSnippets[_ootkSnippetIdx]; snipEl.style.opacity = '1'; }}, 350); }
       }
-      // ★ v30b：bar 跟 phase 同步
-      try { var _obar = document.getElementById('ootk-loading-bar'); if (_obar) _obar.style.width = Math.min(88, 6 + Math.round(phaseIdx / phases.length * 82)) + '%'; } catch(_) {}
+      // ★ v69.34:bar 由 smart timer 統一管理
       } catch(_te) { console.warn('[OOTK phase]', _te); }
     }, 1000);
 
@@ -5727,6 +5733,7 @@ enhanceTarot = function(tarot) {
       // ★ v29c：不在這裡 clearInterval——SSE streaming 時 timer 要繼續跑
       if (resp.status === 429) {
         clearInterval(phaseTimer);
+        try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
         var errBody = {}; try { errBody = await resp.json(); } catch(_){}
         var e = new Error(errBody.error || 'rate limit');
         e.status = 429;
@@ -5735,6 +5742,7 @@ enhanceTarot = function(tarot) {
       }
       if (!resp.ok) {
         clearInterval(phaseTimer);
+        try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
         var _errBody2 = {}; try { _errBody2 = await resp.json(); } catch(_){}
         var e2 = new Error(_errBody2.error || 'HTTP ' + resp.status);
         e2.status = resp.status;
@@ -5800,6 +5808,7 @@ enhanceTarot = function(tarot) {
 
       // ★ v29c：SSE 讀完才停 timer + bar 跳 100% + tags 全亮
       clearInterval(phaseTimer);
+      try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
       try { var _ob = document.getElementById('ootk-loading-bar'); if (_ob) { _ob.style.animation='none'; _ob.style.width='100%'; _ob.style.transition='width .4s'; } } catch(_) {}
       try { var _otw = document.getElementById('ootk-loading-tags'); if (_otw) { var _ots = _otw.querySelectorAll('span'); for (var _oti=0;_oti<_ots.length;_oti++) { _ots[_oti].style.color='rgba(201,168,76,.88)'; _ots[_oti].style.borderColor='rgba(201,168,76,.3)'; _ots[_oti].style.background='rgba(201,168,76,.08)'; } } } catch(_) {}
 
@@ -5860,6 +5869,7 @@ enhanceTarot = function(tarot) {
 
     } catch(err) {
       clearInterval(phaseTimer);
+      try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
       console.error('[OOTK-AI]', err);
       if (err.code === 'LOGIN_REQUIRED') {
         // 未登入 → 彈登入視窗
