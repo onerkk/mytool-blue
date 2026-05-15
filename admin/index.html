@@ -1526,21 +1526,17 @@ textarea.worker-editor:focus{border-color:var(--accent)}
       </div>
 
       <div class="worker-card" style="margin-bottom:16px">
-        <h3>💎 水晶話術 A/B 測試</h3>
-        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px">A 版 = 溫柔顧問風(現有);B 版 = 命理師專業診斷風(新)。同一用戶隨機分到 A 或 B,看哪版點擊率高。</p>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <label style="display:flex;align-items:center;gap:10px;font-size:13px">
-            <input type="checkbox" id="cfgCrystalToneEnabled" style="width:18px;height:18px">
-            <span>啟用 A/B 測試</span>
-          </label>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px">
-            <span style="min-width:90px">B 版佔比</span>
-            <input type="range" id="cfgCrystalToneRatio" min="0" max="100" value="50" step="5" style="flex:1" oninput="document.getElementById('cfgCrystalToneRatioVal').textContent=this.value+'%'">
-            <span id="cfgCrystalToneRatioVal" style="min-width:42px;text-align:right;color:var(--accent);font-weight:700">50%</span>
-          </div>
-          <button type="button" onclick="saveCrystalToneConfig()" style="padding:8px 14px;border-radius:8px;background:var(--accent);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer">儲存設定</button>
-          <div id="cfgCrystalToneStatus" style="font-size:11px;color:var(--text-dim);min-height:14px"></div>
-        </div>
+        <h3>💎 水晶個人化推薦狀態 <span style="font-size:10px;font-weight:600;padding:2px 8px;background:rgba(168,85,247,0.2);color:#c084fc;border-radius:8px;margin-left:6px">v69.33 治本</span></h3>
+        <p style="font-size:12px;color:var(--text-dim);line-height:1.7;margin:0 0 10px">
+          <b style="color:#c084fc">v69.33.0 真治本</b>(廢掉沒用的 A/B):<br>
+          ① <b>個人化排除</b>:伺服端按 userKey 撈過去推過的水晶,從 catalog 完全排除<br>
+          ② <b>喜用神過濾</b>:剩下池子按用戶喜用神/忌神過濾<br>
+          ③ <b>真隨機洗牌</b>:Fisher-Yates 洗牌,避免 AI 挑熟面孔<br>
+          ④ <b>命理師處方風永遠開</b>:強制「依你的盤,X 是首選」結構,廢掉「可以考慮 X」溫柔顧問風<br>
+          ⑤ <b>保底重置</b>:推過 > 75% 全 catalog → 自動重置記錄,確保不會走入死路<br><br>
+          <span style="color:#86efac">用戶體感</span>:每次推薦都會看到新水晶,且內容是「格局診斷 + 主石/副石/避戴」三段式處方,而不是「可以考慮 X」這種模糊建議。
+        </p>
+        <button type="button" onclick="loadCrystalStats()" style="padding:8px 14px;border-radius:8px;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#c084fc;font-size:12px;font-weight:600;cursor:pointer">📊 查看推薦稽核統計</button>
       </div>
 
       <div class="worker-card" style="margin-bottom:16px">
@@ -4893,7 +4889,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.32.0-2026-05-15';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.33.0-2026-05-15';
 
 async function checkWorkerStatus() {
   try {
