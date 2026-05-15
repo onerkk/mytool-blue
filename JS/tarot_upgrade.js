@@ -5725,10 +5725,21 @@ enhanceTarot = function(tarot) {
       var _pt = localStorage.getItem('_jy_paid_token');
       if (_pt) body.paid_token = _pt;
 
+      // ★ v69.36.0(歐那 2026/5/15):OOTK 補 AbortController 30 分鐘 timeout
+      //   舊版完全沒 AbortController,瀏覽器/CDN 端 SSE 默認超時(通常 5-10 分鐘)會切斷連線
+      //   實測:Opus 深度 + advisor + Best-of-N + 五階段獨立讀盤 = 12-15 分鐘
+      //   30 分鐘 = 1800000 ms 是合理上限(超過此時間幾乎肯定是真的失敗)
+      var _ootkAbortCtrl = new AbortController();
+      var _ootkAbortTimer = setTimeout(function() { _ootkAbortCtrl.abort(); }, 1800000);
+
       var resp = await fetch(window.AI_WORKER_URL || 'https://jy-ai-proxy.onerkk.workers.dev', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: _ootkAbortCtrl.signal
       });
+
+      // 收到 response 後就可以清 abort timer(後續 stream 由 reader 控制)
+      clearTimeout(_ootkAbortTimer);
 
       // ★ v29c：不在這裡 clearInterval——SSE streaming 時 timer 要繼續跑
       if (resp.status === 429) {

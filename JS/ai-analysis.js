@@ -142,7 +142,7 @@ window._jyStopSmartTimer = function() {
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_35_0';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_36_0';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
     // ★ v68.21.19 Bug #23 修:版本檢查 URL 寫錯
@@ -21901,7 +21901,8 @@ renderTarot = function(){
       // v49+：120s → 300s（5 分鐘），支援 Opus 4.7 max effort + 深度七維度判讀
       // v52：300s → 600s（10 分鐘），max effort + 1M context + 大 system prompt 偶爾會跑到 6-8 分鐘
       var _abortCtrl = new AbortController();
-      var _abortTimer = setTimeout(function() { _abortCtrl.abort(); }, 600000);
+      // v69.36.0:600000(10 分)→ 1800000(30 分)— Opus 深度 + advisor + BoN 可達 15+ 分鐘
+      var _abortTimer = setTimeout(function() { _abortCtrl.abort(); }, 1800000);
       // ★ v63.8 偵測:出送前掃 [object Object]
       _v638CheckPayloadAnomaly(body, 'main_fetch');
       var resp = await fetch(AI_WORKER_URL, {
@@ -24540,11 +24541,11 @@ async function _triggerTarotAI() {
     var _pt = localStorage.getItem('_jy_paid_token');
     if (_pt) body.paid_token = _pt;
 
-    // ★ v51：塔羅首輪 timeout + AbortController（對齊七維度首輪 20321-20322）
-    //   塔羅 Opus 深度 + 大牌陣（celtic_cross 等）也可能 30-60s，手機弱訊號下同樣會卡
-    // v52：300s → 600s（10 分鐘），對齊七維度
+    // ★ v51:塔羅首輪 timeout + AbortController
+    //   v52:300s → 600s(10 分鐘)
+    //   v69.36.0:600s → 1800s(30 分鐘)— Opus 深度 + advisor + BoN 實測 12-15 分鐘
     var _tarotAbortCtrl = new AbortController();
-    var _tarotAbortTimer = setTimeout(function() { _tarotAbortCtrl.abort(); }, 600000);
+    var _tarotAbortTimer = setTimeout(function() { _tarotAbortCtrl.abort(); }, 1800000);
 
     // ── SSE streaming(跟七維度一樣的 SSE 讀取)──
     // ★ v63.8 偵測:塔羅出送前掃 [object Object]
@@ -25844,12 +25845,13 @@ async function _triggerTarotFollowUp() {
 
   // ── 呼叫 Worker ──
   var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
-  // ★ v51：追問 fetch timeout + AbortController（對齊七維度首輪 20321-20322）
+  // ★ v51:追問 fetch timeout + AbortController
+  // v69.36.0:600s → 1800s(30 分鐘)— 追問也加 thinking,可能拉長
   //   為什麼：手機弱訊號下，若 Worker stream 中途出錯 / Opus 4.7 thinking 過長 / 網路 idle 斷流，
   //   原本 fetch 會一直卡住。用 600s timeout + abort 強制結束，走 catch 顯示具體錯誤。
   // v52：300s → 600s（10 分鐘），對齊首輪三模式
   var _fuAbortCtrl = new AbortController();
-  var _fuAbortTimer = setTimeout(function() { _fuAbortCtrl.abort(); }, 600000);
+  var _fuAbortTimer = setTimeout(function() { _fuAbortCtrl.abort(); }, 1800000);
   // ★ v51：SSE reader 補抓「event: error」的真實錯誤訊息（對齊塔羅首輪 22207-22209）
   //   原本只處理 result/thinking，Worker 端任何例外 sendSSE('error') 後前端只剩「回傳為空」通用訊息
   var _fuSSEError = null;
