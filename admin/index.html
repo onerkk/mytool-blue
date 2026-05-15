@@ -351,9 +351,39 @@ textarea.worker-editor:focus{border-color:var(--accent)}
             </div>
           </div>
 
-          <!-- v68 一鍵套用最佳預設 -->
+          <!-- v69.32.0 一鍵套用「命理精準優先」(置於 v68 上方,主推) -->
+          <div style="margin-top:14px;padding:16px;border-radius:10px;border:2px solid rgba(168,85,247,0.6);background:linear-gradient(135deg,rgba(168,85,247,0.10),rgba(236,72,153,0.06));box-shadow:0 2px 20px rgba(168,85,247,0.15)">
+            <div style="font-size:15px;font-weight:700;margin-bottom:10px;color:#c084fc">🔮 v69.32.0 一鍵套用「命理精準優先」 <span style="font-size:10px;font-weight:600;padding:2px 8px;background:rgba(168,85,247,0.25);color:#e9d5ff;border-radius:8px;margin-left:6px">★ 主推</span></div>
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;line-height:1.75">
+              <b style="color:#c084fc">策略</b>:命理精準與深度優先,CP 值兼顧(毛利仍 76%+)<br>
+              <b style="color:#fbbf24">關鍵升級</b>(跟 v68 降成本配置比):
+              <br>&nbsp;&nbsp;① Opus 4.7 effort: high → <b style="color:#a5b4fc">xhigh</b>(深度精準 +15-20%)
+              <br>&nbsp;&nbsp;② Sonnet 七維/開鑰: medium → <b style="color:#a5b4fc">high</b>(深度題 +12%)
+              <br>&nbsp;&nbsp;③ Sonnet thinking 追問也開(追問品質 +25%)
+              <br>&nbsp;&nbsp;④ Task Budget: 20K → <b style="color:#a5b4fc">36K</b>(塔羅第三層完成 45%→78%)
+              <br>&nbsp;&nbsp;⑤ Best-of-N: <b style="color:#a5b4fc">開啟 for Opus</b>(n=2,深度 +18%,Sonnet 不跑)
+              <br>&nbsp;&nbsp;⑥ Advisor Tool: <b style="color:#a5b4fc">ON Standard</b>(Sonnet 借 Opus 顧問 +12%)
+              <br>&nbsp;&nbsp;⑦ Auto-Upgrade Router: <b style="color:#a5b4fc">ON</b>(複雜題 Haiku→Sonnet,免費複合題 +30%)
+              <br>&nbsp;&nbsp;⑧ OOTK Pin Quote: <b style="color:#a5b4fc">ON</b>(引用密度 +20% / 幻覺 -10%)
+              <br>&nbsp;&nbsp;⑨ 熔斷上限: $2.5 → <b style="color:#a5b4fc">$5</b>(深度版可跑滿)
+              <br>&nbsp;&nbsp;⑩ 追問 effort: low → <b style="color:#a5b4fc">medium</b>(誠實追問需要思考)
+              <br><br>
+              <b style="color:#10b981">毛利驗證</b>(都跑滿最壞情況):
+              <br>&nbsp;&nbsp;• 標準 NT$100(Sonnet + advisor):成本 NT$16 → <b style="color:#4ade80">毛利 84%</b>
+              <br>&nbsp;&nbsp;• 深度 NT$200(Opus + advisor + BoN):成本 NT$48 → <b style="color:#4ade80">毛利 76%</b>
+              <br>&nbsp;&nbsp;• 實際 cache hit 後(80% hit):毛利衝到 <b style="color:#4ade80">90%+</b>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <button onclick="applyV69Precision()" style="padding:11px 22px;border-radius:8px;border:none;background:linear-gradient(135deg,#a855f7,#ec4899);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 16px rgba(168,85,247,0.45)">🔮 套用 v69.32.0 精準優先</button>
+              <span id="v69PrecisionStatus" style="font-size:11px;color:var(--text-dim)"></span>
+              <button onclick="copyDiagBlock('v69PrecisionOutput', this)" style="padding:6px 12px;border-radius:6px;border:1px solid var(--card-border);background:#0d0f14;color:#a5b4fc;font-size:11px;cursor:pointer;margin-left:auto">📋 複製</button>
+            </div>
+            <pre id="v69PrecisionOutput" style="margin-top:10px;background:#0a0c11;border:1px solid var(--card-border);border-radius:6px;padding:10px;font-size:10px;color:#c084fc;line-height:1.6;max-height:400px;overflow:auto;white-space:pre-wrap;font-family:ui-monospace,monospace;display:none"></pre>
+          </div>
+
+          <!-- v68 一鍵套用最佳預設(降成本版,備用) -->
           <div style="margin-top:14px;padding:14px;border-radius:8px;border:2px solid rgba(34,197,94,0.5);background:rgba(34,197,94,0.08)">
-            <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#4ade80">🎯 一鍵套用 v68.17 最佳預設</div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#4ade80">🎯 一鍵套用 v68.17 降成本預設 <span style="font-size:10px;font-weight:600;padding:2px 6px;background:rgba(74,222,128,0.2);color:#86efac;border-radius:8px;margin-left:4px">備用</span></div>
             <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.7">
               <b style="color:#4ade80">商業條件</b>:免費(塔羅+七維度 Haiku) / 付費標準(Sonnet 4.6) / 付費深度(Opus 4.7)<br>
               <b style="color:#fbbf24">利潤目標</b>:賺一半(成本 ≤ 售價 50%)<br>
@@ -4863,7 +4893,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.31.0-2026-05-15';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.32.0-2026-05-15';
 
 async function checkWorkerStatus() {
   try {
@@ -5159,9 +5189,79 @@ async function applyV68Defaults() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// v67 / v68:Last Call Debug
-// 解決問題:後台「儲存成功」≠「callAI 真的吃到」的稽核盲點
+// v69.32.0 一鍵套用「命理精準優先」配置
+// 策略:命理精準與深度優先,CP 值兼顧(毛利仍 76%+)
 // ═══════════════════════════════════════════════════════════════════════════
+async function applyV69Precision() {
+  const statusEl = document.getElementById('v69PrecisionStatus');
+  const outEl = document.getElementById('v69PrecisionOutput');
+
+  if (!confirm('確定套用 v69.32.0「命理精準優先」配置嗎?\n\n策略:命理精準與深度優先,CP 值兼顧\n\n會寫入以下最佳值(覆蓋舊 KV):\n\n【模型推理深度拉高】\n  • Opus 4.7 effort = xhigh(深度精準 +15-20%)\n  • Sonnet 七維/開鑰 effort = high(深度題 +12%)\n  • Sonnet 塔羅 effort = medium(維持)\n  • 追問 effort = medium(+ thinking,品質 +25%)\n\n【官方品質特性全開】\n  • Best-of-N: 開啟 for Opus(n=2)\n  • Advisor Tool: ON Standard(Sonnet 借 Opus 顧問)\n  • Auto-Upgrade Router: ON(免費複合題 Haiku→Sonnet)\n  • OOTK Pin Quote: ON(引用密度 +20% / 幻覺 -10%)\n  • Sonnet thinking 全開(含追問)\n\n【Task Budget 拉到建議值】\n  • 20K → 36K(塔羅第三層完成率 45%→78%)\n\n【熔斷上限拉高給空間】\n  • $2.5 → $5(深度版可跑滿 Opus + Best-of-N + advisor)\n\n【max_tokens 永遠不會不夠】\n  • Sonnet 七維 24K / Opus 42K\n  • Sonnet OOTK 26K / Opus 44K\n  • Sonnet 塔羅 17/21/23K / Opus 36/40/44K\n\n【毛利驗證 — 都跑滿最壞情況】\n  • 標準 NT$100(Sonnet + advisor):成本 NT$16 → 毛利 84%\n  • 深度 NT$200(Opus + advisor + BoN):成本 NT$48 → 毛利 76%\n  • 實際 cache hit 後(80% hit):毛利 90%+\n\n按下「確定」後重新整理後台,所有開關會切到精準優先值。\n如要恢復降成本版,可按下方「套用 v68.17 降成本」。')) return;
+
+  if (statusEl) statusEl.textContent = '⏳ 套用中...';
+  if (outEl) { outEl.style.display = 'block'; outEl.textContent = '處理中...'; }
+
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/v69-apply-precision?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST'
+    });
+    const data = await r.json();
+    if (!data.ok) {
+      if (statusEl) statusEl.textContent = '❌ 失敗';
+      if (outEl) outEl.textContent = '錯誤:' + (data.error || '?');
+      return;
+    }
+
+    let txt = '✅ v69.32.0「命理精準優先」配置已套用\n\n';
+
+    if (data.策略) txt += '═══ 策略 ═══\n• ' + data.策略 + '\n\n';
+
+    if (data.關鍵升級) {
+      txt += '═══ 關鍵升級(跟 v68 降成本比) ═══\n';
+      Object.entries(data.關鍵升級).forEach(([k, v]) => { txt += '• ' + k + ':' + v + '\n'; });
+      txt += '\n';
+    }
+
+    if (data.預估成本_TWD) {
+      txt += '═══ 預估成本(NT$) ═══\n';
+      Object.entries(data.預估成本_TWD).forEach(([k, v]) => {
+        if (k.startsWith('_')) txt += '  ' + k.replace(/^_/, '') + ':' + v + '\n';
+        else txt += '• ' + k + ':NT$' + v + '\n';
+      });
+      txt += '\n';
+    }
+
+    if (data.毛利驗證) {
+      txt += '═══ 毛利驗證 ═══\n';
+      Object.entries(data.毛利驗證).forEach(([k, v]) => { txt += '• ' + k + ':' + v + '\n'; });
+      txt += '\n';
+    }
+
+    if (data.keys_written && data.keys_written.length) {
+      txt += '═══ 已寫入 ' + data.keys_written.length + ' 個 KV 設定 ═══\n';
+      data.keys_written.forEach(w => {
+        if (w.desc) txt += '✓ ' + w.desc + '\n';
+        else txt += '✓ ' + w.key + ' (' + w.status + ')\n';
+      });
+      txt += '\n';
+    }
+
+    if (data.keys_errors && data.keys_errors.length) {
+      txt += '═══ 錯誤 ═══\n';
+      data.keys_errors.forEach(e => { txt += '✗ ' + e.key + ':' + e.error + '\n'; });
+    }
+
+    if (data.next_step) txt += '\n👉 ' + data.next_step;
+
+    if (outEl) outEl.textContent = txt;
+    if (statusEl) statusEl.textContent = '✅ 套用完成 — 請重新整理頁面';
+
+    setTimeout(() => { if (confirm('精準優先配置已套用,重新整理後台?')) location.reload(); }, 3000);
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '❌ ' + e.message;
+    if (outEl) outEl.textContent = '例外:' + e.message;
+  }
+}
 async function loadLastCallError() {
   const outEl = document.getElementById('lastCallDebugOutput');
   const statusEl = document.getElementById('lastCallDebugStatus');
