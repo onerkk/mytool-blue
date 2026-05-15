@@ -272,7 +272,7 @@ h+='</div>';
 var _gP = (typeof window !== 'undefined' && window._JY_PRICING) || {
   SINGLE_TAROT: 100, SINGLE_OOTK: 100, SINGLE_7D: 100,
   OPUS_TAROT: 200, OPUS_OOTK: 200, OPUS_7D: 200,
-  FOLLOWUP: 15
+  FOLLOWUP: 50  // v69.35.0:15 → 50
 };
 var _gSt = _gP.SINGLE_TAROT  || 100;
 var _gSo = _gP.SINGLE_OOTK   || 100;
@@ -280,7 +280,7 @@ var _gS7 = _gP.SINGLE_7D     || 100;
 var _gOt = _gP.OPUS_TAROT    || 200;
 var _gOo = _gP.OPUS_OOTK     || 200;
 var _gO7 = _gP.OPUS_7D       || 200;
-var _gFu = _gP.FOLLOWUP      || 15;
+var _gFu = _gP.FOLLOWUP      || 50;
 h+='<div class="jy-tip"><div class="ic">⚠️</div><div class="tx">輸入追問,點「抽補充牌」<small>靜月會結合原本分析 + 新的補充牌一起回答<br>塔羅・七維度・開鑰 各免費體驗 1 次(含 1 次免費追問,僅限標準解讀)<br><br>單次購買價格:<br>標準解讀:塔羅・七維度・開鑰 統一 NT$' + _gSt + '<br>深度解析:塔羅・七維度・開鑰 統一 NT$' + _gOt + '<br>每次解讀含 1 次免費追問,之後追問 NT$' + _gFu + '</small></div></div>';
 h+='</div>';
 

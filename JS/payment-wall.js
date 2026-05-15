@@ -51,7 +51,7 @@
     return (window.JY_PRICES && typeof window.JY_PRICES === 'object') ? window.JY_PRICES : {
       SUB_STANDARD: 999, SUB_PREMIUM: 1999,
       SINGLE_7D: 100, SINGLE_TAROT: 100, SINGLE_OOTK: 100,
-      FOLLOWUP: 15,
+      FOLLOWUP: 50,  // v69.35.0:15 → 50
       OPUS_7D: 140, OPUS_TAROT: 60, OPUS_OOTK: 140,
       OPUS_7D_MEMBER: 140, OPUS_TAROT_MEMBER: 60, OPUS_OOTK_MEMBER: 140,
       // 額度欄位（與 worker.js 第 44-52 行常數同步）
@@ -73,7 +73,7 @@
   var PRICE_SUB = 999;                    // 初始值，下方事件觸發後更新
   var PRICE_SINGLE = 79;
   var PRICE_OPUS = 140;  // v64.B 169→140
-  var PRICE_SINGLE_FOLLOWUP = 15;  // v64.B 29→15
+  var PRICE_SINGLE_FOLLOWUP = 50;  // v69.35.0:15→50
   function _syncLegacyConsts() {
     var p = P();
     PRICE_SUB = p.SUB_STANDARD;
@@ -605,7 +605,7 @@
       var singleName = mode === 'tarot_only' ? '塔羅單次' : mode === 'ootk' ? '開鑰單次' : '七維度單次';
       purchaseText = '✨ ' + singleName + ' NT$' + (singlePriceMap[mode] || '-');
     } else if (type === 'followup_single') {
-      purchaseText = '💬 追問單次 NT$' + (_P.FOLLOWUP || 15);
+      purchaseText = '💬 追問單次 NT$' + (_P.FOLLOWUP || 50);
     } else if (type === 'subscription' || type === 'subscription_standard') {
       purchaseText = '👑 標準會員 30 天 NT$' + (_P.SUB_STANDARD || 999);
     } else if (type === 'subscription_premium') {
