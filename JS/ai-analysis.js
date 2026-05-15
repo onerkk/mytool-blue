@@ -18,7 +18,7 @@
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_30_1';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_31_0';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
     // ★ v68.21.19 Bug #23 修:版本檢查 URL 寫錯
@@ -85,7 +85,7 @@ if (typeof window !== 'undefined') {
 if (!window.JY_PRICES) {
   window.JY_PRICES = {
     SUB_STANDARD: 999, SUB_PREMIUM: 1999,
-    SINGLE_7D: 70, SINGLE_TAROT: 30, SINGLE_OOTK: 70,
+    SINGLE_7D: 100, SINGLE_TAROT: 100, SINGLE_OOTK: 100,
     FOLLOWUP: 15,
     OPUS_7D: 140, OPUS_TAROT: 60, OPUS_OOTK: 140,
     OPUS_7D_MEMBER: 140, OPUS_TAROT_MEMBER: 60, OPUS_OOTK_MEMBER: 140
