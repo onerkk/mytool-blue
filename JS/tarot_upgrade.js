@@ -4202,9 +4202,14 @@ enhanceTarot = function(tarot) {
             '<div style="font-size:.7rem;color:rgba(255,200,150,.85);line-height:1.6;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.25);border-left:2px solid #fbbf24;margin-bottom:.8rem">' +
               '★ Mathers 規範:你可以選擇「繼續讀(承認盤面更深訊息)」或「重抽整盤」。本次解讀預設為「繼續讀」。' +
             '</div>' +
-            // ─── v68.12:重抽整盤實作按鈕 ───
+            // ─── v69.39.0 治本(歐那 2026/5/15):重抽整盤不回首頁 ───
+            //   舊版:location.href='/' 直接回首頁 → 用戶必須重填問題重填生辰
+            //   問題:用戶花時間填的問題沒了,要從零開始(超失敗體驗)
+            //   治本:呼叫 window._jyOOTKRedraw() 重啟 OOTK 流程,form 資料 (S.form) 完全保留
+            //         → 直接跳回 Significator 選擇 → 重抽四元素 → 重新解讀
+            //         全程不用打字,問題/生辰/性別/姓名都不變
             '<div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center">' +
-              '<button onclick="if(confirm(\'確定要重抽整盤嗎?\\n\\n會回到首頁重新開始開鑰之法儀式,當前的盤面將不保留。\\n\\n(若你想保留當前解讀,請選 [取消],閉視此警示繼續讀。)\')){window.scrollTo(0,0);location.href=\'/\';}" ' +
+              '<button onclick="window._jyOOTKRedraw && window._jyOOTKRedraw()" ' +
                 'style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid rgba(239,68,68,.6);' +
                 'background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;' +
                 'font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.05em;' +
@@ -5934,6 +5939,46 @@ enhanceTarot = function(tarot) {
   // ── 全域輸出 ──
   window.startOOTK = startOOTK;
   window._ootkTriggerAI = _triggerOOTKAI;
+
+  // ═══ v69.39.0 治本(歐那 2026/5/15):重抽整盤函式 ═══
+  //   舊版重抽按鈕 onclick 直接 location.href='/' 回首頁 → 用戶要重填問題
+  //   新版:確認 + 清結果 + 重啟 OOTK 流程,form 資料保留(S.form 在 window 上不會丟)
+  //   重抽會再消耗一次配額/付費,因為這是新的占卜
+  window._jyOOTKRedraw = function() {
+    var msg = '確定要重抽整盤嗎?\n\n' +
+              '會重新進入開鑰之法儀式抽新牌,當前盤面不保留。\n' +
+              '你填的問題和生辰會保留,不用重新輸入。\n\n' +
+              '⚠️ 注意:重抽會再消耗一次解讀次數(免費額度或付費)。\n\n' +
+              '(若你想保留當前解讀,請選 [取消],閉視此警示繼續讀。)';
+    if (!confirm(msg)) return;
+
+    try {
+      // 清掉當前 OOTK 結果(避免下次入口誤觸發舊資料)
+      window._ootkResults = null;
+
+      // 清掉解讀結果容器(讓 startOOTK 從乾淨狀態開始渲染 Sig 選擇)
+      var rd = document.getElementById('result') ||
+               document.querySelector('#jy-result') ||
+               document.querySelector('.jy-result');
+      if (rd) rd.innerHTML = '';
+
+      // 滾到頂端讓用戶看到新的 Sig 選擇畫面
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // 重啟 OOTK 流程(window.S.form 內的問題/生辰/性別/姓名都會保留)
+      if (typeof window.startOOTK === 'function') {
+        window.startOOTK();
+      } else {
+        // fallback:極端情況 startOOTK 沒掛載,回首頁
+        console.warn('[v69.39 重抽] startOOTK not mounted, fallback to home');
+        location.href = '/';
+      }
+    } catch (_e) {
+      console.error('[v69.39 重抽]', _e);
+      // 任何錯誤都 fallback 到首頁,確保用戶不會卡住
+      location.href = '/';
+    }
+  };
 
   console.log('[OOTK-UI] Opening of the Key 前端 UI 已載入');
 })();
