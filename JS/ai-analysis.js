@@ -34,7 +34,17 @@ window._jyStartSmartTimer = function(mode, isOpus, phaseElId) {
   var startTime = Date.now();
   var modeLabel = ({ tarot: '塔羅', ootk: '開鑰之法', full: '七維度' })[mode] || mode;
   var depthLabel = isOpus ? '深度解析' : '標準解讀';
-  var estimatedRange = isOpus ? '5-10 分鐘' : '2-5 分鐘';
+
+  // ★ v69.37.0 校準(歐那 2026/5/15 實測 OOTK 10 分鐘起跳):
+  //   舊預估「5-10 分鐘」嚴重低估,實測 Opus 4.7 xhigh + thinking + advisor + BoN 要 12-20 分鐘
+  //   OOTK 五階段更久(因 prompt 較複雜),給 15-25 分鐘
+  //   Sonnet 標準也有 thinking,從 2-5 分鐘 拉成 3-7 分鐘
+  var estimatedRange;
+  if (isOpus) {
+    estimatedRange = (mode === 'ootk') ? '15-25 分鐘' : '12-20 分鐘';
+  } else {
+    estimatedRange = '3-7 分鐘';
+  }
 
   // 立刻寫第一行(讓用戶馬上看到時間預告)
   function _setPhaseText(text) {
@@ -55,45 +65,50 @@ window._jyStartSmartTimer = function(mode, isOpus, phaseElId) {
 
   function _getCurrentPhaseText(elapsedSec) {
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 階段文字按真實時間分配(深度版時間軸更長)
+    // v69.37.0 真實時間軸(歐那實測校準):
+    //   深度(Opus 4.7 xhigh + thinking + advisor + BoN):12-20 分鐘
+    //   OOTK 深度(五階段):15-25 分鐘
+    //   標準(Sonnet 4.6 + thinking):3-7 分鐘
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     var elapsedStr = _formatElapsed(elapsedSec);
 
     if (isOpus) {
-      // 深度解析(Opus 4.7 xhigh + thinking + advisor + Best-of-N)
-      // 真實秒數 5-15 分鐘
+      // 深度解析(Opus 4.7 開啟 adaptive thinking + advisor + Best-of-N)
+      // 真實秒數:七維/塔羅 12-20 分鐘,OOTK 15-25 分鐘
       if (elapsedSec < 30) {
         return '🔮 ' + depthLabel + '需要 ' + estimatedRange + ',正在初始化…';
-      } else if (elapsedSec < 90) {
-        return '🔮 深度推理中(已等 ' + elapsedStr + ')— 預估 ' + estimatedRange;
-      } else if (elapsedSec < 180) {
-        return '⚡ 正在交叉比對(已等 ' + elapsedStr + ')— 深度模式較久請放心';
+      } else if (elapsedSec < 120) {
+        return '🔮 Opus 4.7 深度推理中(已等 ' + elapsedStr + ')— 預估 ' + estimatedRange;
       } else if (elapsedSec < 300) {
-        return '🧠 Opus 4.7 思考中(已等 ' + elapsedStr + ')— 正在多層判讀';
-      } else if (elapsedSec < 480) {
-        return '✨ 顧問模型複核中(已等 ' + elapsedStr + ')— 深度解析正常範圍';
-      } else if (elapsedSec < 720) {
-        return '⏳ 正在組織最終結論(已等 ' + elapsedStr + ')— 快好了';
+        return '🧠 Adaptive Thinking 多層判讀中(已等 ' + elapsedStr + ')';
+      } else if (elapsedSec < 600) {
+        return '⚡ 顧問模型複核中(已等 ' + elapsedStr + ')— 深度解析正常範圍';
       } else if (elapsedSec < 900) {
+        return '✨ 正在交叉裁決(已等 ' + elapsedStr + ')— 深度模式較久請放心';
+      } else if (elapsedSec < 1200) {
+        return '⏳ 正在組織最終結論(已等 ' + elapsedStr + ')— 快好了';
+      } else if (elapsedSec < 1500) {
         return '🌙 已等 ' + elapsedStr + ' — 系統運作正常,請保持頁面開啟';
       } else {
-        return '⏰ 已等 ' + elapsedStr + ' — 深度解析罕見偏長,正在收尾';
+        return '⏰ 已等 ' + elapsedStr + ' — 深度解析偏長,正在最後收尾';
       }
     } else {
-      // 標準解讀(Sonnet 4.6 + thinking)
-      // 真實秒數 2-5 分鐘
+      // 標準解讀(Sonnet 4.6 + thinking + advisor 可選)
+      // 真實秒數 3-7 分鐘
       if (elapsedSec < 30) {
         return '✨ ' + depthLabel + '需要 ' + estimatedRange + ',正在分析中…';
-      } else if (elapsedSec < 60) {
-        return '✨ 正在分析(已 ' + elapsedStr + ')— 預估 ' + estimatedRange;
-      } else if (elapsedSec < 120) {
-        return '⚡ 交叉判讀中(已 ' + elapsedStr + ')— 系統運作中';
-      } else if (elapsedSec < 240) {
-        return '🧠 正在組織解讀(已 ' + elapsedStr + ')— 快好了';
-      } else if (elapsedSec < 360) {
-        return '⏳ 已等 ' + elapsedStr + ' — 標準解讀正常範圍,正在收尾';
-      } else {
+      } else if (elapsedSec < 90) {
+        return '✨ Sonnet 4.6 分析中(已 ' + elapsedStr + ')— 預估 ' + estimatedRange;
+      } else if (elapsedSec < 180) {
+        return '🧠 Adaptive Thinking 中(已 ' + elapsedStr + ')— 系統運作中';
+      } else if (elapsedSec < 300) {
+        return '⚡ 交叉判讀中(已 ' + elapsedStr + ')— 快好了';
+      } else if (elapsedSec < 480) {
+        return '⏳ 正在組織解讀(已 ' + elapsedStr + ')— 標準範圍內';
+      } else if (elapsedSec < 720) {
         return '🌙 已等 ' + elapsedStr + ' — 系統運作正常,請保持頁面開啟';
+      } else {
+        return '⏰ 已等 ' + elapsedStr + ' — 偏長中,正在最後收尾';
       }
     }
   }
@@ -106,11 +121,19 @@ window._jyStartSmartTimer = function(mode, isOpus, phaseElId) {
     var elapsedSec = Math.floor((Date.now() - startTime) / 1000);
     _setPhaseText(_getCurrentPhaseText(elapsedSec));
 
-    // 進度條按預估時間映射(深度 600 秒滿格、標準 240 秒滿格)
-    var maxBarSec = isOpus ? 600 : 240;
+    // ★ v69.37.0:進度條按真實時間軸映射
+    //   深度 1200 秒(20 分)滿格、OOTK 1500 秒(25 分)滿格、標準 420 秒(7 分)滿格
+    var maxBarSec;
+    if (isOpus) {
+      maxBarSec = (mode === 'ootk') ? 1500 : 1200;
+    } else {
+      maxBarSec = 420;
+    }
     var pct = Math.min(92, 6 + Math.round(elapsedSec / maxBarSec * 86));
     try {
-      var barEl = document.getElementById('ai-loading-bar') || document.getElementById('tarot-loading-bar');
+      var barEl = document.getElementById('ai-loading-bar')
+               || document.getElementById('tarot-loading-bar')
+               || document.getElementById('ootk-loading-bar');
       if (barEl) barEl.style.width = pct + '%';
     } catch(_) {}
   }, 5000);
@@ -142,7 +165,7 @@ window._jyStopSmartTimer = function() {
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_36_0';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_37_0';
 window._jyVersionCheck = window._jyVersionCheck || async function() {
   try {
     // ★ v68.21.19 Bug #23 修:版本檢查 URL 寫錯
