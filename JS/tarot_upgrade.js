@@ -5,6 +5,19 @@
 // 載入順序：tarot.js 之後
 // enhanceTarot(S.tarot) 在塔羅抽牌後呼叫
 
+
+// ── OOTK Op5 Sephiroth constants (global-safe) ──
+// v69.29.5: 修正 OOTK 計算流程中 SEPH_NAMES_5 可能因區塊/函式作用域或快取差異而未定義。
+// 使用 var 掛在檔案頂層，避免前端抽牌引擎在 Op5 生命之樹階段 ReferenceError 中斷。
+var SEPH_NAMES_5 = ['Kether','Chokmah','Binah','Chesed','Geburah','Tiphereth','Netzach','Hod','Yesod','Malkuth'];
+var SEPH_ZH_5 = ['王冠','智慧','理解','慈悲','嚴厲','美','勝利','榮耀','基礎','王國'];
+function normalizeOotkSephirahName(name) {
+  if (!name) return '';
+  // 常見拼法差異：Tiphereth / Tiphareth 都指第六質點。
+  if (name === 'Tiphareth') return 'Tiphereth';
+  return String(name);
+}
+
 // ── 1. 牌號數字學 (Numerology) ──
 // 大阿爾克那 0-21 每張的數字意義
 // 小阿爾克那 Ace-10 + 宮廷牌的數字意義
@@ -2997,105 +3010,6 @@ enhanceTarot = function(tarot) {
     return expectedPositions.indexOf(activePosition) >= 0;
   }
 
-  // ════════════════════════════════════════════════════════════
-  // v69.29.0 OOTK 通用正統可解度閘門
-  // 依據 Book T / Manuscript Q 的「先判斷 Significator 是否落在與問題相符的位置」
-  // 做成通用機制：不是只修感情題，而是所有問題都經過
-  // intent → expected placement → actual placement → fit → confidence cap。
-  // 注意：使用者前置警告後選擇繼續時，不阻擋 API、不退費爭議；
-  // 但 AI 必須低信心續解，不得把錯位硬講成高信心。
-  // ════════════════════════════════════════════════════════════
-  function buildOotkValidity(results, qType) {
-    var pileZh = { fire:'Yod 火堆(工作/生意)', water:'Heh 水堆(愛情/婚姻/喜悅)', air:'Vau 風堆(麻煩/損失/爭吵)', earth:'Heh-final 土堆(金錢/物質)' };
-    var sephZh = ['Kether王冠','Chokmah智慧','Binah理解','Chesed慈悲','Geburah嚴厲','Tiphereth美','Netzach勝利','Hod榮耀','Yesod基礎','Malkuth王國'];
-    var expectedPiles = QUESTION_PILES[qType] || null;
-    var expectedHouses = QUESTION_HOUSES[qType] || null;
-    var expectedSigns = QUESTION_SIGNS[qType] || null;
-    var expectedSeph = QUESTION_SEPHIROTH[qType] || null;
-    var fit = {};
-    var hardWarnings = [];
-    var weakOps = [];
-    var abandonedOps = [];
-
-    function addFit(k, label, actual, expected, matched, severity, reason) {
-      fit[k] = { label: label, actual: actual || '', expected: expected || null, matched: !!matched, severity: severity || 'usable', reason: reason || '' };
-      if (severity === 'abandon') abandonedOps.push(k);
-      else if (severity === 'weak') weakOps.push(k);
-      if (reason) hardWarnings.push(label + ': ' + reason);
-    }
-
-    // Op1：Book T 第一操作「Tell the Querent what he has come for; if wrong, abandon」
-    if (results.op1) {
-      var op1Matched = !expectedPiles || expectedPiles.indexOf(results.op1.activePile) >= 0;
-      var op1Severity = results.op1.abandonTriggered ? 'abandon' : (op1Matched ? 'usable' : 'weak');
-      addFit('op1', 'Op1 四元素堆', pileZh[results.op1.activePile] || results.op1.activePile, expectedPiles ? expectedPiles.map(function(x){return pileZh[x]||x;}) : null, op1Matched, op1Severity, results.op1.abandonReason || results.op1.retryNote || '');
-    }
-
-    // Op2：Manuscript Q 明確說第二次仍錯位 divination should be abandoned
-    if (results.op2) {
-      var op2Matched = !expectedHouses || expectedHouses.indexOf(results.op2.activeHouse) >= 0;
-      var op2Severity = results.op2.abandonTriggered ? 'abandon' : (op2Matched ? 'usable' : 'weak');
-      addFit('op2', 'Op2 十二宮', results.op2.activeHouse ? ('第' + results.op2.activeHouse + '宮') : '', expectedHouses ? expectedHouses.map(function(x){return '第' + x + '宮';}) : null, op2Matched, op2Severity, results.op2.abandonReason || results.op2.retryNote || '');
-    }
-
-    // Op3：沒有明文硬 abandon，只能降權
-    if (results.op3) {
-      var signIdx = SIGNS_ORDER.indexOf(results.op3.activeSign);
-      var op3Matched = !expectedSigns || expectedSigns.indexOf(signIdx) >= 0;
-      var op3Severity = results.op3.weakSignalWarning ? 'weak' : (op3Matched ? 'usable' : 'weak');
-      addFit('op3', 'Op3 十二星座', results.op3.activeSign || '', expectedSigns ? expectedSigns.map(function(i){return SIGNS_ORDER[i];}) : null, op3Matched, op3Severity, results.op3.weakSignalReason || results.op3.retryNote || '');
-    }
-
-    // Op4：Mathers 原文無預期錯位 abandon；只供 timing，不參與錯位判定
-    if (results.op4) {
-      addFit('op4', 'Op4 三十六旬', (results.op4.decanSign || '') + (results.op4.decanRange ? ' ' + results.op4.decanRange : ''), null, true, 'usable', 'Op4 無預期錯位規則，只作時機節奏。');
-    }
-
-    // Op5：Crowley 明說 failure does not necessarily imply astray/abandon，僅觀察
-    if (results.op5) {
-      var actualSephIdx = SEPH_NAMES_5.indexOf(results.op5.activeSephirah);
-      var op5Matched = !expectedSeph || expectedSeph.indexOf(actualSephIdx) >= 0;
-      addFit('op5', 'Op5 生命之樹', results.op5.activeSephirah ? (results.op5.activeSephirah + '(' + (results.op5.sephirahZh || '') + ')') : '', expectedSeph ? expectedSeph.map(function(i){return sephZh[i] || String(i);}) : null, op5Matched, op5Matched ? 'usable' : 'weak', results.op5.sephExpectationNote || '');
-    }
-
-    var status = 'valid';
-    var confidenceCap = 'high';
-    var allowedInterpretation = 'full';
-    if (abandonedOps.length) {
-      // API 已經被呼叫，代表使用者接受前置警告後仍要續解；不能擋，但必須降權
-      status = 'user_forced_continue';
-      confidenceCap = abandonedOps.length >= 2 ? 'very_low' : 'low';
-      allowedInterpretation = 'limited_low_confidence';
-    } else if (weakOps.length >= 2) {
-      status = 'weak';
-      confidenceCap = 'medium_low';
-      allowedInterpretation = 'limited';
-    } else if (weakOps.length === 1) {
-      status = 'valid_with_caution';
-      confidenceCap = 'medium';
-      allowedInterpretation = 'full_with_caution';
-    }
-
-    return {
-      version: 'v69.29.0_ootk_universal_validity_gate',
-      questionType: qType,
-      questionTypeZh: getQTypeZh(qType),
-      status: status,
-      confidenceCap: confidenceCap,
-      allowedInterpretation: allowedInterpretation,
-      fit: fit,
-      hardWarnings: hardWarnings,
-      weakOps: weakOps,
-      abandonedOps: abandonedOps,
-      rules: [
-        '任何問題皆先分類問題本質，再比對 Sig 是否落在相符元素堆/宮位/星座/質點。',
-        'Op1/Op2 二次仍錯位時，不阻擋已付費 API，但輸出只能低信心續解。',
-        '錯位不得被硬解成高信心答案；只能說明限制後，依 counting/pairing 給有限答案。',
-        'memoryNotes 不得把低信心續解寫成確定預言。'
-      ]
-    };
-  }
-
   function runFullOOTK(significatorId, questionText) {
     if (typeof TAROT === 'undefined') return null;
 
@@ -3241,11 +3155,10 @@ enhanceTarot = function(tarot) {
     results.op5.expectedSephiroth = expectedSephiroth;
 
     // 找 Sig 落的 Sephirah index(0-indexed)
-    var SEPH_NAMES_5 = ['Kether','Chokmah','Binah','Chesed','Geburah','Tiphereth','Netzach','Hod','Yesod','Malkuth'];
-    var actualSephIdx = SEPH_NAMES_5.indexOf(results.op5.activeSephirah);
+    var actualSephIdx = SEPH_NAMES_5.indexOf(normalizeOotkSephirahName(results.op5.activeSephirah));
 
     if (expectedSephiroth && actualSephIdx >= 0) {
-      var sephZh = ['王冠','智慧','理解','慈悲','嚴厲','美','勝利','榮耀','基礎','王國'];
+      var sephZh = SEPH_ZH_5;
       if (expectedSephiroth.indexOf(actualSephIdx) >= 0) {
         // Sig 落合適 Sephirah
         results.op5.sephExpectationMet = true;
@@ -3266,9 +3179,6 @@ enhanceTarot = function(tarot) {
           'Op5 找錯位不必然意味讀盤失敗,而是揭示「你靈魂深處真正在處理的功課,跟你表面問的議題不在同一層」。';
       }
     }
-
-    // ★ v69.29.0 通用可解度閘門：供前端稽核包與 Worker prompt 同步使用
-    results.divinationValidity = buildOotkValidity(results, qType);
 
     results.completedOperations = 5;
 
@@ -3509,9 +3419,6 @@ enhanceTarot = function(tarot) {
 
       // Mathers 逐 Op abandon 觀察(不是綜合分數)
       abandonObservations: _abandonObservations,
-
-      // v69.29.0 通用可解度閘門(不是跨層占斷,只是正統流程守門)
-      divinationValidity: results.divinationValidity || null,
 
       // 正統性標記
       _orthodoxy: 'v63E_book_t_orthodox',
@@ -5098,9 +5005,9 @@ enhanceTarot = function(tarot) {
       caption.innerHTML = '🌳 發牌——依 GD 對應分入 <b>生命之樹十質點</b>（Sephirot）';
 
       var op = results.op5;
-      var SEPH_NAMES = ['Kether','Chokmah','Binah','Chesed','Geburah','Tiphareth','Netzach','Hod','Yesod','Malkuth'];
-      var SEPH_ZH = ['王冠','智慧','理解','慈悲','嚴厲','美','勝利','榮耀','基礎','王國'];
-      var activeIdx = SEPH_NAMES.indexOf(op.activeSephirah || '');
+      var SEPH_NAMES = SEPH_NAMES_5;
+      var SEPH_ZH = SEPH_ZH_5;
+      var activeIdx = SEPH_NAMES.indexOf(normalizeOotkSephirahName(op.activeSephirah || ''));
       if (activeIdx < 0) activeIdx = 9;
 
       // 統一座標系:容器 240×360, 內部繪圖區 200×320 + 20px padding 四週
