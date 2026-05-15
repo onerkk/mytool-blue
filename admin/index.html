@@ -2173,7 +2173,30 @@ textarea.worker-editor:focus{border-color:var(--accent)}
       </div>
 
 
-      <!-- ═══ v69.29.1：Sonnet 4.6 Adaptive Thinking 卡片 ═══ -->
+            <!-- ═══ v69.45.0:Opus 4.7 Thinking 卡片(歐那 2026/5/15 要求加開關)═══ -->
+      <div class="worker-card" style="margin-bottom:16px;border:1px solid #a78bfa;background:rgba(167,139,250,.04)">
+        <h3>💎 Opus 4.7 Thinking <span style="font-size:10px;font-weight:600;padding:2px 8px;background:#a78bfa;color:#fff;border-radius:8px;margin-left:6px">深度版本必開</span></h3>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.65">
+          <b style="color:#a78bfa">預設:✅ 開啟</b>(Opus 4.7 深度版本必開,沒 thinking 不是 Opus 該有的表現)<br>
+          影響範圍:七維度深度 / 塔羅深度 / OOTK 深度(售價 NT$200 路徑)<br>
+          不影響:標準 Sonnet 4.6 / 免費 Haiku 4.5 / 追問<br>
+          <b style="color:#fbbf24">⚠️ 用途:若未來 Anthropic 對 Opus 4.7 也出現類似 Sonnet 4.6 的 stream stall bug,可從這裡 1 鍵關掉,不需重新部署 worker。</b><br>
+          注意:Opus 4.7 thinking 關掉後深度版本品質會降約 15-20%,售價 NT$200 變不合理。除非有 bug,否則建議保持開啟。
+        </p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--card-border);background:#0d0f14;cursor:pointer">
+            <input type="checkbox" id="o47t-enabled" style="width:16px;height:16px;accent-color:#a78bfa;cursor:pointer" checked>
+            <span style="flex:1;font-size:13px;font-weight:600">啟用 Opus 4.7 Adaptive Thinking</span>
+            <span style="font-size:11px;color:#a78bfa">預設開(深度版本必開)</span>
+          </label>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="saveOpus47ThinkingConfig()" style="padding:10px 24px;border-radius:8px;border:none;background:#a78bfa;color:#fff;font-size:13px;font-weight:600;cursor:pointer">💾 儲存 Opus Thinking</button>
+          <span id="opus47ThinkingStatus" style="font-size:12px;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
+<!-- ═══ v69.29.1：Sonnet 4.6 Adaptive Thinking 卡片 ═══ -->
       <div class="worker-card" style="margin-bottom:16px;border:1px solid #60a5fa">
         <h3>🧠 Sonnet 4.6 Adaptive Thinking</h3>
         <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px;line-height:1.65">
@@ -3509,7 +3532,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'crystal') loadCrystalStats();
     if (tab.dataset.tab === 'ragquality') loadRagQualityAudit();
     if (tab.dataset.tab === 'batch') loadBatchList();
-    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadSonnet46ThinkingConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); loadStructuredOutputsConfig(); }
+    if (tab.dataset.tab === 'settings') { loadModelConfig(); loadAutoUpgradeConfig(); loadPricingConfig(); loadFollowupConfig(); loadOpus47EffortConfig(); loadTaskBudgetConfig(); loadAdvisorToolConfig(); loadV65Config(); loadPrefillConfig(); loadCacheTTLConfig(); loadBestofnConfig(); loadOpus46EffortConfig(); loadSonnet46ThinkingConfig(); loadOpus47ThinkingConfig(); loadHaikuThinkingConfig(); loadHaikuExperimentConfig(); loadMaxTokensConfig(); loadV56Config(); loadV62Config(); loadCrystalToneConfig(); loadStructuredOutputsConfig(); }
   });
 });
 
@@ -4889,7 +4912,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.41.0-2026-05-15';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.45.0-2026-05-15';
 
 async function checkWorkerStatus() {
   try {
@@ -8312,6 +8335,47 @@ async function saveOpus46EffortConfig() {
     if (data.ok) {
       toast('✓ 已儲存 Opus 4.6 Effort');
       if (statusEl) statusEl.textContent = '已儲存：' + level;
+    } else {
+      toast('儲存失敗: ' + (data.error || ''));
+    }
+  } catch(e) {
+    toast('錯誤: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// v69.45.0:Opus 4.7 Thinking Config(歐那 2026/5/15 要求加開關)
+// ═══════════════════════════════════════════════
+async function loadOpus47ThinkingConfig() {
+  const statusEl = document.getElementById('opus47ThinkingStatus');
+  try {
+    const r = await fetch(`${WORKER_URL}/admin/opus47-thinking-config?token=${encodeURIComponent(adminToken)}`);
+    if (!r.ok) { if (statusEl) statusEl.textContent = '載入失敗 HTTP ' + r.status; return; }
+    const data = await r.json();
+    if (data.ok && data.config) {
+      const eEl = document.getElementById('o47t-enabled');
+      if (eEl) eEl.checked = data.config.enabled !== false;
+      if (statusEl) statusEl.textContent = '目前:' + (data.config.enabled !== false ? '✅ 啟用(深度版本開 thinking)' : '❌ 關閉(深度版本無 thinking)');
+    }
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '載入失敗: ' + e.message;
+  }
+}
+
+async function saveOpus47ThinkingConfig() {
+  const statusEl = document.getElementById('opus47ThinkingStatus');
+  try {
+    const eEl = document.getElementById('o47t-enabled');
+    const enabled = eEl ? !!eEl.checked : true;
+    const r = await fetch(`${WORKER_URL}/admin/opus47-thinking-config?token=${encodeURIComponent(adminToken)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: enabled })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      toast('✓ 已儲存 Opus 4.7 Thinking');
+      if (statusEl) statusEl.textContent = '已儲存:' + (enabled ? '✅ 啟用' : '❌ 關閉');
     } else {
       toast('儲存失敗: ' + (data.error || ''));
     }
