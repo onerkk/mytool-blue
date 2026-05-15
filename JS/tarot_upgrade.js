@@ -5956,25 +5956,44 @@ enhanceTarot = function(tarot) {
       // 清掉當前 OOTK 結果(避免下次入口誤觸發舊資料)
       window._ootkResults = null;
 
-      // 清掉解讀結果容器(讓 startOOTK 從乾淨狀態開始渲染 Sig 選擇)
+      // ★ v69.41.0 治本(歐那 2026/5/15 黑畫面 bug):
+      //   清掉所有殘留的 ootk-overlay / ootk-sig-overlay
+      //   舊版只清 result innerHTML,沒清 body 上的 fixed overlay
+      //   →    解讀流程結束時若沒走 overlay.remove() 路徑(例 abandon),
+      //        DOM 裡會留一個透明 ootk-overlay(z-index:9998,半透黑 88% 不透明)
+      //        重抽 startOOTK() 再 append 一個新 overlay → 兩層黑屏疊加 → 全黑
+      //   治本:暴力清光所有 .ootk-overlay 元素,確保乾淨環境再開新 overlay
+      var _existingOverlays = document.querySelectorAll('.ootk-overlay, #ootk-sig-overlay');
+      for (var _i = 0; _i < _existingOverlays.length; _i++) {
+        try { _existingOverlays[_i].remove(); } catch(_e) {}
+      }
+
+      // 清掉解讀結果容器(讓 startOOTK 從乾淨狀態開始)
       var rd = document.getElementById('result') ||
                document.querySelector('#jy-result') ||
                document.querySelector('.jy-result');
       if (rd) rd.innerHTML = '';
 
-      // 滾到頂端讓用戶看到新的 Sig 選擇畫面
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // 滾到頂端(用 instant 而非 smooth — smooth 跟 fixed overlay 渲染衝突可能讓 transform 失效)
+      try { window.scrollTo(0, 0); } catch(_) {}
 
-      // 重啟 OOTK 流程(window.S.form 內的問題/生辰/性別/姓名都會保留)
-      if (typeof window.startOOTK === 'function') {
-        window.startOOTK();
-      } else {
-        // fallback:極端情況 startOOTK 沒掛載,回首頁
-        console.warn('[v69.39 重抽] startOOTK not mounted, fallback to home');
-        location.href = '/';
-      }
+      // ★ v69.41.0:給瀏覽器一個 tick 讓 DOM remove 完成,再 startOOTK
+      //   不延遲的話 startOOTK 立即 append 新 overlay,可能跟舊 overlay remove 的 paint 衝突
+      setTimeout(function() {
+        try {
+          if (typeof window.startOOTK === 'function') {
+            window.startOOTK();
+          } else {
+            console.warn('[v69.41 重抽] startOOTK not mounted, fallback to home');
+            location.href = '/';
+          }
+        } catch(_se) {
+          console.error('[v69.41 重抽 startOOTK]', _se);
+          location.href = '/';
+        }
+      }, 50);  // 50ms 給瀏覽器 paint 一輪
     } catch (_e) {
-      console.error('[v69.39 重抽]', _e);
+      console.error('[v69.41 重抽]', _e);
       // 任何錯誤都 fallback 到首頁,確保用戶不會卡住
       location.href = '/';
     }
