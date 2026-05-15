@@ -193,13 +193,13 @@ textarea.worker-editor:focus{border-color:var(--accent)}
     <div class="tab" data-tab="worker">Worker管理</div>
     <div class="tab" data-tab="users">用戶管理</div>
     <div class="tab" data-tab="admins">管理員</div>
-    <div class="tab" data-tab="weights">📈 學習權重</div>
-    <div class="tab" data-tab="payment">💳 付款診斷</div>
-    <div class="tab" data-tab="revenue">💰 收入儀表板</div>
+    <div class="tab" data-tab="weights" style="display:none">📈 學習權重</div>
+    <div class="tab" data-tab="payment" style="display:none">💳 付款診斷</div>
+    <div class="tab" data-tab="revenue" style="display:none">💰 收入儀表板</div>
     <div class="tab" data-tab="audit">🔍 解讀稽核</div>
-    <div class="tab" data-tab="crystal">💎 水晶推薦</div>
-    <div class="tab" data-tab="ragquality">🧬 RAG 品質</div>
-    <div class="tab" data-tab="batch">📦 批次處理</div>
+    <div class="tab" data-tab="crystal" style="display:none">💎 水晶推薦</div>
+    <div class="tab" data-tab="ragquality" style="display:none">🧬 RAG 品質</div>
+    <div class="tab" data-tab="batch" style="display:none">📦 批次處理</div>
     <div class="tab" data-tab="settings">設定</div>
   </div>
 
@@ -4863,7 +4863,7 @@ function downloadInventoryJSON() {
 // v68.20 改善:期望版本(對應目前 outputs/worker.js 的 WORKER_VERSION)
 //   部署 worker.js 後 /version 回傳的版本應該等於這個值
 //   不一致 → 黃色警告提醒重新部署
-const ADMIN_EXPECTED_WORKER_VERSION = 'v69.30.1-2026-05-15';
+const ADMIN_EXPECTED_WORKER_VERSION = 'v69.31.0-2026-05-15';
 
 async function checkWorkerStatus() {
   try {
