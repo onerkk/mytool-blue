@@ -12,16 +12,16 @@
   var _UI_PRICE_FALLBACK = {
     SUB_STANDARD: 999,        // 標準會員 / 月
     SUB_PREMIUM: 1999,        // 高級會員 / 月
-    SINGLE_7D: 70,            // 七維度 Sonnet 單次(標準) v64.B 79→70
-    SINGLE_TAROT: 30,         // 塔羅 Sonnet 單次(標準) v64.B 39→30
-    SINGLE_OOTK: 70,          // v68.21 Bug #1 修:60→70 對齊 worker v68.13 PRICE_SINGLE_OOTK
-    FOLLOWUP: 15,             // 追問單次（Sonnet）v64.B 29→15
-    OPUS_7D: 140,             // 七維度 Opus 單次(深度) v64.B 169→140
-    OPUS_TAROT: 60,           // 塔羅 Opus 單次(深度) v64.B 79→60
-    OPUS_OOTK: 140,           // v68.20 Bug #19 修:120→140 對齊 worker PRICE_OPUS_OOTK
-    OPUS_7D_MEMBER: 140,      // v64.B 會員加購無折扣同訪客價
-    OPUS_TAROT_MEMBER: 60,    // v64.B 會員加購無折扣同訪客價
-    OPUS_OOTK_MEMBER: 140     // v68.20 Bug #19 修:120→140 對齊 worker PRICE_OPUS_OOTK_MEMBER
+    SINGLE_7D: 100,           // v69.31.0:70 → 100 統一標準價
+    SINGLE_TAROT: 100,        // v69.31.0:30 → 100 統一標準價
+    SINGLE_OOTK: 100,         // v69.31.0:70 → 100 統一標準價
+    FOLLOWUP: 15,             // 追問單次(維持不變)
+    OPUS_7D: 200,             // v69.31.0:140 → 200 統一深度價
+    OPUS_TAROT: 200,          // v69.31.0:60 → 200 統一深度價
+    OPUS_OOTK: 200,           // v69.31.0:140 → 200 統一深度價
+    OPUS_7D_MEMBER: 200,      // v69.31.0:140 → 200 統一深度價(會員加購無折扣)
+    OPUS_TAROT_MEMBER: 200,   // v69.31.0:60 → 200 統一深度價(會員加購無折扣)
+    OPUS_OOTK_MEMBER: 200     // v69.31.0:140 → 200 統一深度價(會員加購無折扣)
   };
   // 關鍵：fallback 在前，既有值在後 → 既有值優先（pricing-loader 抓到的最新值勝出）
   window.JY_PRICES = Object.assign({}, _UI_PRICE_FALLBACK, window.JY_PRICES || {});
