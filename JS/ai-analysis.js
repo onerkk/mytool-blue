@@ -24190,7 +24190,8 @@ function _buildTarotOnlyPayload() {
   var suitCounts = { wand:0, cup:0, sword:0, pent:0, major:0 };
   drawn.forEach(function(d) {
     if (!d) return;
-    if (d.num !== undefined) numCounts[d.num] = (numCounts[d.num] || 0) + 1;
+    // ★ v70.4：數字主題只統計小牌 A-10，排除宮廷牌(num 11-14)與大牌(suit major)，否則冒出「14張14主題極強」雜訊
+    if (d.num !== undefined && d.suit && d.suit !== 'major' && d.num >= 1 && d.num <= 10) numCounts[d.num] = (numCounts[d.num] || 0) + 1;
     if (d.suit) suitCounts[d.suit] = (suitCounts[d.suit] || 0) + 1;
   });
   var numberPatterns = [];
@@ -26612,7 +26613,8 @@ function _buildOOTKPayload() {
   var ootk_numCounts = {};
   var ootk_suitCounts = { wand:0, cup:0, sword:0, pent:0, major:0 };
   ootk_unique.forEach(function(c) {
-    if (c.num !== undefined) ootk_numCounts[c.num] = (ootk_numCounts[c.num] || 0) + 1;
+    // ★ v70.4：數字主題只統計小牌 A-10，排除宮廷牌(num 11-14)與大牌(suit major)
+    if (c.num !== undefined && c.suit && c.suit !== 'major' && c.num >= 1 && c.num <= 10) ootk_numCounts[c.num] = (ootk_numCounts[c.num] || 0) + 1;
     if (c.suit) ootk_suitCounts[c.suit] = (ootk_suitCounts[c.suit] || 0) + 1;
   });
   var _onThemes = {1:'新開始',2:'選擇',3:'成長',4:'穩定',5:'衝突',6:'和諧',7:'內省',8:'力量',9:'放下',10:'轉化'};

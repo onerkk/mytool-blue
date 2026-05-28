@@ -83,13 +83,39 @@
   };
 
   // ── 組裝「本次問題鎖定」區塊（放在提示詞最前面，primacy 最強）──
-  function buildFocusLock(q) {
+  //    ★ v70.4(歐那 2026/5/29)：分工具。塔羅快讀＝yes/no 直答導向；
+  //      開鑰之法＝深度拆解導向（絕不能用塔羅的「給是非、禁止擴寫」框架，那會直接掐死開鑰的五層拆解本質）。
+  function buildFocusLock(q, tool) {
     var f = detectFocus(q);
     var L = [];
     L.push(BAR);
     L.push('◆ 本次問題鎖定（最高優先，先讀這段再讀下面的技法）');
     L.push(BAR);
 
+    // ── 開鑰之法：深度拆解導向（不走塔羅的 yes/no 框架）──
+    if (tool === 'ootk') {
+      if (f.noQ) {
+        L.push('問卜者沒有填寫明確問題。');
+        L.push('→ 依五次操作的落點與 counting／pairing，從牌面反推這次最該被回答的核心議題，做完整的五層拆解；不要七個領域亂掃。');
+        return L.join('\n') + '\n';
+      }
+      L.push('問卜者問的是：' + f.raw);
+      var domZh = f.domains.length ? ({ love: '感情／情慾', career: '事業／工作', wealth: '財運', health: '健康', spiritual: '靈性' })[f.domains[0]] : '';
+      if (domZh) {
+        var fieldNote = (f.domains.indexOf('love') >= 0 && /同事|公司|主管|老闆|職場/.test(f.raw))
+          ? '（對象來自工作場域——場域只是「在哪認識」，不改變這是情慾／感情題的本質）' : '';
+        L.push('問題領域：' + domZh + fieldNote + '。');
+      }
+      L.push('這是開鑰之法，不是塔羅快讀——不要停在表層「會／不會」就結束。開鑰的價值是拆穿問題背後真正在問什麼、卡在哪、重複過幾次、現在能做什麼：');
+      L.push('・開頭可用一兩句點出表層傾向，但重點往下拆，務必完成第十節「問題五層拆解」（表層／深層／情緒鎖點／重複模式／鑰匙行動）。深層問題要從牌面推這題背後真正在問的——例如問「對方想不想」常是在問「我在這段關係裡的位置」「我是否渴望被這個人慾望」，不要套通則。');
+      L.push('・Sig 落在任何元素堆／宮位／星座／質點，都讀成「揭示真實場域」、對準問題給洞察，不是失敗、不是 abandon。例：落水堆＝這件事對你是情感投射；落第 1 宮＝核心其實在你自己（你的吸引力、你的慾望、你怎麼看自己），不只在對方。');
+      if (f.portrait || f.domains.indexOf('love') >= 0) {
+        L.push('・問的是對方意圖／狀態→用第十一節五次操作內部交叉推「對方目前狀態＋兩人能量距離」，給得出畫像就給，不要只丟一個是非。');
+      }
+      return L.join('\n') + '\n';
+    }
+
+    // ── 塔羅快讀：yes/no 直答導向 ──
     if (f.noQ) {
       L.push('問卜者沒有填寫明確問題。');
       L.push('→ 不要七個領域都掃一遍。先看花色集中：聖杯多＝感情、權杖多＝事業/行動、金幣多＝財務、寶劍多＝思考/衝突；以最集中的花色鎖定「一個」最可能的領域，針對它給通盤，其餘略過。');
@@ -270,7 +296,7 @@
     if (!t) return '';
     var question = getQuestion();
     var payload = getPayload(tool);
-    var focusLock = buildFocusLock(question); // ★ v70.1：問題鎖定放最前面，讓 AI 先聚焦再讀知識庫
+    var focusLock = buildFocusLock(question, tool); // ★ v70.4：分工具——開鑰走深度拆解、塔羅走 yes/no 直答
     return [
       focusLock,
       t.head,
