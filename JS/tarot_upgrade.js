@@ -2991,11 +2991,16 @@ enhanceTarot = function(tarot) {
   }
 
   // 自動偵測問題類型(從用戶問題文字)
+  // ★ v70.2 根治(歐那 2026/5/29)：依 Mathers Book T，問題本質由「情感/情慾信號」決定，
+  //   場域詞(同事/公司)只是「對象來自哪」，不該蓋過情慾本質。
+  //   例「問公司同事是否想跟我做愛」＝love(情慾)，不是 work。故 love 補情慾/親密詞，
+  //   且 love 在 work 之前判斷 → 只要命中情慾詞就先 return 'love'。
+  //   情慾詞用精準詞(做愛/上床/發生關係…)避開「個性/理性/可能性」誤判。
   function detectQuestionType(question) {
     var q = String(question || '').toLowerCase();
-    if (/愛情|戀愛|感情|交往|曖昧|男友|女友|喜歡|愛情|桃花|對象|分手|復合|婚姻|結婚|配偶|另一半|老公|老婆|love|relationship|marriage/.test(q)) return 'love';
+    if (/愛情|戀愛|感情|交往|曖昧|男友|女友|喜歡|桃花|對象|分手|復合|挽回|婚姻|結婚|配偶|另一半|老公|老婆|做愛|上床|嘿咻|啪啪|發生關係|肉體|想跟我|跟我做|想睡|對我有意思|對我有感覺|喜歡我|愛我|想我|追我|暗戀|love|relationship|marriage|sex/.test(q)) return 'love';
     if (/錢|財|錢財|收入|薪水|財務|存錢|理財|投資|money|finance|income|salary/.test(q)) return 'money';
-    if (/工作|事業|職場|升遷|轉職|跳槽|老闆|主管|同事|公司|career|job|work|business/.test(q)) return 'work';
+    if (/工作|事業|職場|升遷|升職|轉職|跳槽|創業|開店|生意|接案|老闆|主管|同事|公司|career|job|work|business/.test(q)) return 'work';
     if (/家庭|家人|父母|爸媽|搬家|住|家裡|住處|居住|home|family|house/.test(q)) return 'family';
     if (/健康|身體|生病|病|看醫生|醫療|health|illness|disease/.test(q)) return 'health';
     if (/朋友|社交|同學|聚會|友情|friend|social/.test(q)) return 'friend';
@@ -3051,14 +3056,15 @@ enhanceTarot = function(tarot) {
       op1Retry.expectedPiles = expectedPiles;
 
       if (expectedPiles.indexOf(op1Retry.activePile) < 0) {
-        // 二次仍錯堆 → abandon 警示(Mathers 原則)
+        // ★ v70.2 根治：依 Crowley「failure does not necessarily imply abandon」+ PHB，
+        //   Sig 落非預期堆 ≠ 放棄，而是「揭示真實場域」。改中性洞察，不再恐嚇 abandon。
         op1Retry.abandonTriggered = true;
         var pileZh = { fire: 'Yod 火堆', water: 'Heh 水堆', air: 'Vau 風堆', earth: 'Heh-final 土堆' };
+        var pileField = { fire: '主動行動／工作場域', water: '情感／關係', air: '思考／溝通／衝突', earth: '物質／實際事務' };
         var expectedZh = expectedPiles.map(function(p) { return pileZh[p] || p; }).join(' / ');
         op1Retry.abandonReason =
-          '依 Mathers Book T,Op1 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
-          ')仍落於 ' + (pileZh[op1Retry.activePile] || op1Retry.activePile) +
-          '(非問題「' + getQTypeZh(qType) + '」的合適元素堆 ' + expectedZh + ')→ 此次盤面在告訴你:你心裡真正關心的議題,可能不是你問的這件事。應 abandon 或重新檢視問題。';
+          'Sig(' + (sigCard ? sigCard.n : '代表牌') + ')兩次都落於 ' + (pileZh[op1Retry.activePile] || op1Retry.activePile) +
+          '，不是問題「' + getQTypeZh(qType) + '」典型的元素堆（' + expectedZh + '）。依黃金黎明會正統（Crowley 原文：failure does not necessarily imply abandon），這不是要你放棄，而是盤面在揭示真實場域——這件事的能量底色落在「' + (pileField[op1Retry.activePile] || '') + '」。例如問感情卻落火堆，常代表對方來自工作／行動場域，或這件事其實由行動慾驅動。解讀會把答案對準這個真實場域，照常進行。';
         op1Retry.firstAttemptPile = results.op1.activePile;
       } else {
         op1Retry.abandonTriggered = false;
@@ -3087,12 +3093,13 @@ enhanceTarot = function(tarot) {
       op2Retry.expectedHouses = expectedHouses;
 
       if (!isSigInExpectedPosition(op2Retry.activeHouse, expectedHouses)) {
-        // Mathers 原文:「if it again fails, the divination should be abandoned」
+        // ★ v70.2 根治：Mathers Op2 雖提二次失敗可 abandon，但 Crowley/PHB 主張「揭示真實領域」。
         op2Retry.abandonTriggered = true;
         op2Retry.abandonReason =
-          '依 Mathers Book T 原文,Op2 二次重洗後 Sig(' + (sigCard ? sigCard.n : '代表牌') +
-          ')仍落於第 ' + op2Retry.activeHouse + ' 宮(非問題「' +
-          getQTypeZh(qType) + '」的合適宮位 ' + expectedHouses.join('/') + ' 宮)→ 此次 Op2 應 abandon。';
+          'Sig(' + (sigCard ? sigCard.n : '代表牌') + ')兩次都落於第 ' + op2Retry.activeHouse +
+          ' 宮，不是問題「' + getQTypeZh(qType) + '」典型的宮位（' + expectedHouses.join('/') +
+          ' 宮）。依黃金黎明會正統，這不是要你放棄占卜，而是盤面揭示：你問的事，真正聚焦在第 ' + op2Retry.activeHouse +
+          ' 宮所代表的人生領域。解讀會把答案對準這個宮位，照常進行。';
         op2Retry.firstAttemptHouse = results.op2.activeHouse;
       } else {
         op2Retry.abandonTriggered = false;
@@ -3378,13 +3385,13 @@ enhanceTarot = function(tarot) {
       };
       _abandonObservations.push(
         'Op1 Sig 落於 ' + (pileTypeZh[results.op1.activePile] || results.op1.activePile) +
-        ' —— 若與用戶問題大類完全不符,依 Mathers 原則應 abandon'
+        ' —— 若與用戶問題大類不符，依 Crowley/PHB 正統不是 abandon，而是揭示真實場域：把答案對準這個元素堆的場域，照常解讀'
       );
     }
     if (results.op2 && results.op2.activeHouse) {
       _abandonObservations.push(
         'Op2 Sig 落於第 ' + results.op2.activeHouse + ' 宮 —— ' +
-        '解讀者依問題性質判斷是否合理;不合理且二度錯位才 abandon(Mathers Book T)'
+        '若與問題性質不符，視為「問題真正聚焦的人生領域」揭示，對準此宮位解讀，不要拒答或 abandon'
       );
     }
 
@@ -4182,45 +4189,24 @@ enhanceTarot = function(tarot) {
       var abandonBanner = '';
       if (opData) {
         if (opData.abandonTriggered && opData.abandonReason) {
-          // Op1 / Op2 abandon — 醒目紅色警示卡
-          // v68.12:加「重抽整盤」按鈕,不再只顯示文字叫用戶手動關頁
+          // ★ v70.2 根治：Sig 落非預期＝揭示真實場域(Crowley/PHB 正統)，非 abandon。
+          //   金色中性資訊卡，移除紅色恐嚇與「應 abandon」。重抽低調、標明免費(全免費)。
           abandonBanner =
-            '<div style="margin:1rem 0;padding:1.2rem;border-radius:12px;' +
-            'border:2px solid #ef4444;background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(239,68,68,.06));' +
-            'box-shadow:0 0 24px rgba(239,68,68,.3),inset 0 0 12px rgba(239,68,68,.1);">' +
-            '<div style="font-size:.95rem;font-weight:700;color:#fca5a5;margin-bottom:.6rem;letter-spacing:.05em">' +
-              '🚨 Mathers Book T ABANDON 警示' +
+            '<div style="margin:1rem 0;padding:1.1rem;border-radius:12px;' +
+            'border:1px solid rgba(212,175,55,.35);background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.03));' +
+            'box-shadow:inset 0 0 12px rgba(212,175,55,.06);">' +
+            '<div style="font-size:.92rem;font-weight:700;color:#e9cf6e;margin-bottom:.6rem;letter-spacing:.05em">' +
+              '🔍 盤面揭示・真實場域' +
             '</div>' +
-            '<div style="font-size:.78rem;color:#fecaca;line-height:1.7;margin-bottom:.8rem">' +
+            '<div style="font-size:.78rem;color:rgba(232,220,200,.9);line-height:1.7;margin-bottom:.85rem">' +
               _esc(opData.abandonReason) +
             '</div>' +
-            '<div style="font-size:.7rem;color:rgba(254,202,202,.8);line-height:1.7;margin-bottom:.9rem;font-style:italic">' +
-              '依 Mathers Book T 原文,此 Op 經二次重洗 Sig 仍非合適位置——盤面在告訴你:' +
-              '你心裡真正關心的議題,可能不是你問的這件事。<br>' +
-              'Counting/Pairing 解讀仍可繼續(作為弱訊號參考),但 AI 會在解讀中標明此警示。' +
-            '</div>' +
-            '<div style="font-size:.7rem;color:rgba(255,200,150,.85);line-height:1.6;padding:.5rem .7rem;border-radius:6px;background:rgba(0,0,0,.25);border-left:2px solid #fbbf24;margin-bottom:.8rem">' +
-              '★ Mathers 規範:你可以選擇「繼續讀(承認盤面更深訊息)」或「重抽整盤」。本次解讀預設為「繼續讀」。' +
-            '</div>' +
-            // ─── v69.39.0 治本(歐那 2026/5/15):重抽整盤不回首頁 ───
-            //   舊版:location.href='/' 直接回首頁 → 用戶必須重填問題重填生辰
-            //   問題:用戶花時間填的問題沒了,要從零開始(超失敗體驗)
-            //   治本:呼叫 window._jyOOTKRedraw() 重啟 OOTK 流程,form 資料 (S.form) 完全保留
-            //         → 直接跳回 Significator 選擇 → 重抽四元素 → 重新解讀
-            //         全程不用打字,問題/生辰/性別/姓名都不變
             '<div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center">' +
               '<button onclick="window._jyOOTKRedraw && window._jyOOTKRedraw()" ' +
-                'style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid rgba(239,68,68,.6);' +
-                'background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;' +
-                'font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.05em;' +
-                'box-shadow:0 2px 8px rgba(239,68,68,.4)">' +
-                '🔄 重抽整盤' +
-              '</button>' +
-              '<button onclick="this.closest(\'div[style*=ef4444]\').style.opacity=\'0.4\';this.closest(\'div[style*=ef4444]\').style.pointerEvents=\'none\';" ' +
-                'style="padding:.55rem 1.1rem;border-radius:8px;border:1px solid rgba(251,191,36,.5);' +
-                'background:rgba(0,0,0,.3);color:#fbbf24;' +
-                'font-size:.78rem;font-weight:600;cursor:pointer">' +
-                '✓ 繼續讀(承認盤面更深訊息)' +
+                'style="padding:.5rem 1rem;border-radius:8px;border:1px solid rgba(212,175,55,.4);' +
+                'background:rgba(212,175,55,.08);color:#e9cf6e;' +
+                'font-size:.76rem;font-weight:600;cursor:pointer;letter-spacing:.04em">' +
+                '🔄 想換一盤就重抽（免費）' +
               '</button>' +
             '</div>' +
             '</div>';
@@ -5962,13 +5948,12 @@ enhanceTarot = function(tarot) {
   // ═══ v69.39.0 治本(歐那 2026/5/15):重抽整盤函式 ═══
   //   舊版重抽按鈕 onclick 直接 location.href='/' 回首頁 → 用戶要重填問題
   //   新版:確認 + 清結果 + 重啟 OOTK 流程,form 資料保留(S.form 在 window 上不會丟)
-  //   重抽會再消耗一次配額/付費,因為這是新的占卜
+  //   ★ v70.2(歐那 2026/5/29):全免費，重抽不再消耗次數，移除恐嚇文字
   window._jyOOTKRedraw = function() {
     var msg = '確定要重抽整盤嗎?\n\n' +
               '會重新進入開鑰之法儀式抽新牌,當前盤面不保留。\n' +
               '你填的問題和生辰會保留,不用重新輸入。\n\n' +
-              '⚠️ 注意:重抽會再消耗一次解讀次數(免費額度或付費)。\n\n' +
-              '(若你想保留當前解讀,請選 [取消],閉視此警示繼續讀。)';
+              '(完全免費，重抽不限次數。若想保留當前解讀,請選 [取消]。)';
     if (!confirm(msg)) return;
 
     try {

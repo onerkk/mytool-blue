@@ -5603,7 +5603,7 @@ showAuraResult = function(){
       '<div class="jy-home-divider"><span>✦</span></div>' +
 
       // 說明（極短）
-      '<p class="jy-home-desc">七套命理系統 × AI 深度交叉解讀</p>' +
+      '<p class="jy-home-desc">塔羅快讀 × 開鑰之法 ・ AI 深度解牌</p>' +
 
       // CTA
       '<button id="home-cta-btn" class="jy-home-cta" onclick="_enterFromHome()">' +
@@ -5640,7 +5640,7 @@ showAuraResult = function(){
         '<div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
         (isAdmin ?
           '<div class="jy-home-quota">👑 管理員・無限次</div>' :
-          '<div class="jy-home-quota" id="jy-home-quota-text">七維度・塔羅・開鑰 各免費體驗 1 次 ・ <strong style="color:var(--c-gold)">塔羅 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_TAROT) || 100) + ' / 開鑰 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 100) + ' / 七維度 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 100) + '</strong></div>'
+          '<div class="jy-home-quota" id="jy-home-quota-text">塔羅快讀 ・ 開鑰之法 ・ <strong style="color:var(--c-gold)">完全免費</strong></div>'
         ) +
       '</div>' +
 
@@ -5662,11 +5662,9 @@ showAuraResult = function(){
 
   // ★ v40：首頁載入時即時查詢剩餘次數（打 Worker KV）
   (function _checkSubStatus() {
-    // v68.21 Bug #10 修:不再用 localStorage 直接顯示「會員啟用中」
-    //   原本 _jy_sub_expires > now → 直接秀「🌙 會員啟用中」
-    //   但用戶被 admin 撤銷會員時 localStorage 沒清,會閃出假會員顯示
-    //     直到 worker 真實查詢覆蓋(200-1000ms)
-    //   修法:本地快取只用來顯示「驗證中」,不再宣告會員身份;真實狀態由下方 fetch 決定
+    // ★ v70.2(歐那 2026/5/29)：全免費、無收費、無需登入 → 不查訂閱、不打 worker、
+    //   不顯示任何配額/付費文字。footer 永遠維持初始 HTML 的「完全免費」。以下為舊付費邏輯死碼。
+    return;
     var subExpires = parseInt(localStorage.getItem('_jy_sub_expires') || '0');
     if (subExpires > Date.now()) {
       var el = document.getElementById('jy-home-quota-text');
@@ -5713,7 +5711,6 @@ showAuraResult = function(){
         var d7Left = Math.max(0, (data.d7Limit || 0) - (data.d7Used || 0));
         el.innerHTML = '🌙 <strong style="color:var(--c-gold)">' + _tierLabel + '</strong> ・ ' +
           '塔羅今日剩 <strong style="color:var(--c-gold)">' + tarotLeft + '</strong> 次 ・ ' +
-          '七維度本月剩 <strong style="color:var(--c-gold)">' + d7Left + '</strong> 次 ・ ' +
           '<span style="opacity:.6">' + daysLeft + '天到期</span>';
         localStorage.setItem('_jy_sub_expires', String(data.expiresAt));
       } else {
@@ -5737,7 +5734,7 @@ showAuraResult = function(){
           var lim7d = parseInt(fl['7d'] || 1);
           var limTarot = parseInt(fl.tarot || 1);
           var limOotk = parseInt(fl.ootk || 1);
-          if (lim7d > 0 && used7d < lim7d) parts.push('七維度');
+          if (lim7d > 0 && used7d < lim7d) { /* ★ v70.1 七維度已下架，不再列入免費體驗 */ }
           if (limTarot > 0 && usedTarot < limTarot) parts.push('塔羅');
           if (limOotk > 0 && usedOotk < limOotk) parts.push('開鑰');
           if (parts.length > 0) {
@@ -5747,8 +5744,8 @@ showAuraResult = function(){
             el.innerHTML = '免費體驗已全部用完 ・ <strong style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</strong>';
           }
         } else {
-          // v69.5:fallback 從 2 改 3(七維度+塔羅+開鑰 各 1)
-          var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 3;
+          // ★ v70.1:七維度下架，fallback 從 3 改 2(塔羅+開鑰 各 1)
+          var freeLeft = (typeof data.freeLeft === 'number') ? data.freeLeft : 2;
           if (freeLeft > 0) {
             el.innerHTML = '✨ 免費體驗剩餘 <strong style="color:var(--c-gold)">' + freeLeft + '</strong> 次 ・ ' +
               '<span style="color:var(--c-gold);cursor:pointer" onclick="' + _openPaywall + '">' + _upsellText + '</span>';
