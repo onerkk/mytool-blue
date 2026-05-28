@@ -26,7 +26,10 @@
   // ── 取問卜者問題（多來源防呆）──
   function getQuestion() {
     try {
-      var S = window.S || {};
+      var S = (typeof window!=='undefined' && window.S) ? window.S : (typeof self!=='undefined' && self.S) ? self.S : null;
+      // ★ 修：S 是 bazi.js 的頂層 const，不掛 window。用 Function 取全域裸 S。
+      if (!S || !S.form) { try { S = (0, eval)('typeof S !== "undefined" ? S : null'); } catch(e){} }
+      S = S || {};
       var f = S.form || {};
       var q = f.q || f.question || f.text || S.q || S.question || '';
       if (q && String(q).trim()) return String(q).trim();
@@ -160,11 +163,17 @@
   // ── 取排盤資料塊（沿用現有 builder，已含全部 GD/Mathers/Crowley/PHB 運算）──
   function getPayload(tool) {
     try {
-      var obj;
+      var obj = null;
+      // ★ 修：builder 是頂層 function 宣告，裸名優先、window 後備、最後 eval 取全域
+      function _callBuilder(name) {
+        try { var fn = (0, eval)('typeof ' + name + ' === "function" ? ' + name + ' : null'); if (fn) return fn(); } catch (e) {}
+        try { if (typeof window !== 'undefined' && typeof window[name] === 'function') return window[name](); } catch (e) {}
+        return null;
+      }
       if (tool === 'ootk') {
-        obj = (typeof window._buildOOTKPayload === 'function') ? window._buildOOTKPayload() : null;
+        obj = _callBuilder('_buildOOTKPayload');
       } else {
-        obj = (typeof window._buildTarotOnlyPayload === 'function') ? window._buildTarotOnlyPayload() : null;
+        obj = _callBuilder('_buildTarotOnlyPayload');
       }
       if (!obj) return '（找不到排盤資料，請先完成抽牌／排盤）';
       if (typeof obj === 'string') return obj; // 防呆：萬一回傳字串

@@ -306,7 +306,7 @@ window._jyUpdateAuthUI = function() {
 // 注入登入 UI 到頁面
 (function(){
   function _injectAuthUI() {
-    // 如果 admin 模式不顯示登入
+    return; // ★ v70 無登入：不注入右上登入按鈕
     if (window._JY_ADMIN_TOKEN) return;
     // 找 nav 或 header 插入
     var nav = document.querySelector('nav, .jy-nav, .jy-header, header');
@@ -1063,7 +1063,7 @@ function submitWithTool() {
     }
   }
 
-  var tool = _selectedTool || 'full'; // 預設七維度
+  var tool = _selectedTool || 'tarot'; // ★ v70 七維度下架，預設塔羅
   var gender = document.querySelector('input[name="gender"]:checked');
 
   if (tool === 'tarot') {
@@ -5632,14 +5632,8 @@ showAuraResult = function(){
         '</button>' +
       '</div>' +
 
-      // 每日一牌
-      '<div class="jy-home-daily" id="daily-card-wrap">' +
-        '<div onclick="_toggleDailyCard()" class="jy-home-daily-toggle">' +
-          '<span>✦ 今日一牌</span>' +
-          '<i id="daily-card-arrow" class="fas fa-chevron-down jy-home-daily-arr"></i>' +
-        '</div>' +
-        '<div id="daily-card-body" style="display:none"></div>' +
-      '</div>' +
+      // ★ v70 今日一牌已移除
+      '' +
 
       // 計數 + 底部
       '<div class="jy-home-footer">' +
