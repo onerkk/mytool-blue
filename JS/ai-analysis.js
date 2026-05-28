@@ -26238,11 +26238,11 @@ function _buildOOTKPayload() {
       // ★ v64.1 正統 Mathers Book T:Op1 abandon 警示
       if (op.abandonTriggered) {
         lines.push('');
-        lines.push('🚨 ⚠️ Op1 ABANDON 警示(Mathers Book T 原文觸發)⚠️ 🚨');
+        lines.push('🔍 Op1 盤面揭示・真實場域（Sig 落非預期元素堆，依 Crowley/PHB 不 abandon）');
         lines.push(op.abandonReason);
-        lines.push('AI 必讀:本 Op1 為二次重洗後仍錯堆,依正統 Mathers 原則應 abandon。');
-        lines.push('解讀時必須誠實告訴用戶:盤面在告訴你「你心裡真正關心的議題,不是你問的這件事」。');
-        lines.push('禁止把錯堆硬解為合理(例:感情題 Sig 落火堆,絕不可解為「你的感情需要工作般的努力」)。');
+        lines.push('AI 必讀:依 Crowley/PHB 正統「failure does not necessarily imply abandon」，Sig 落非預期堆不是 abandon、不是失敗，而是揭示真實場域。');
+        lines.push('把這個落堆讀成對問題有意義的洞察(例:問感情卻落火堆＝對方可能來自工作/行動場域，或這件事由行動慾驅動)，對準問題照常給答案。');
+        lines.push('不要寫「應該放棄」「重新問」，也不要把它當讀盤失敗。');
         lines.push('');
       } else if (op.attempt === 2 && op.retryNote) {
         lines.push('⚠️ Op1 經 Mathers 二次重洗:' + op.retryNote);
@@ -26258,12 +26258,11 @@ function _buildOOTKPayload() {
       // ★ v64.1 正統 Mathers Book T:Op2 abandon 警示
       if (op.abandonTriggered) {
         lines.push('');
-        lines.push('🚨 ⚠️ Op2 ABANDON 警示(Mathers Book T 原文觸發)⚠️ 🚨');
+        lines.push('🔍 Op2 盤面揭示・真實場域（Sig 落非預期宮位，依 Crowley/PHB 不 abandon）');
         lines.push(op.abandonReason);
-        lines.push('AI 必讀:本 Op2 為二次重洗後仍錯位,依正統 Mathers 原則應 abandon。');
-        lines.push('解讀時必須給用戶 abandon 警示,禁止自圓其說把宮位硬解為符合問題。');
-        lines.push('例如:感情題 Sig 落第 2 宮(財帛),絕不可解為「社交資源圈」——這是非正統。');
-        lines.push('正確寫法:「依 Mathers Book T,你問的是感情(主 7 宮、cognate 5/8 宮),但 Sig 二次重洗仍落第 ' + op.activeHouse + ' 宮。Book T 規範此時應 abandon 這個 Op2,或重新檢視問題本質。」');
+        lines.push('AI 必讀:依 Crowley/PHB 正統「failure does not necessarily imply abandon」，Sig 落非預期宮位不是 abandon、不是失敗，而是揭示「問題真正聚焦的人生領域」。');
+        lines.push('把 Sig 落的宮位讀成對問題有意義的場域洞察(例:問感情卻落第10宮官祿＝這段關係跟你的事業/社會形象/自我價值綁定;落第1宮＝核心其實在你自己)，對準這個宮位照常給答案。');
+        lines.push('不要寫「應 abandon」「重新檢視問題」，不要把它當讀盤失敗。');
         lines.push('');
       } else if (op.attempt === 2 && op.retryNote) {
         lines.push('⚠️ Op2 經 Mathers 二次重洗:' + op.retryNote);
