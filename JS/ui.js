@@ -66,6 +66,8 @@
 // 用 hash fragment 最可靠（伺服器重導向不會吃掉 # 後面的內容）
 (function(){
   var token = '';
+  // ★ v70 全免費/無後台：admin hash 偵測停用
+  return;
   
   // 優先：hash fragment（#admin=xxx）— 不會被伺服器重導向吃掉
   var hash = window.location.hash || '';
@@ -188,6 +190,8 @@
 // 進站強制 Google 登入閘門
 // ═══════════════════════════════════════════════════════════════
 function _jyShowLoginGate() {
+  // ★ v70 全免費/無登入：進站登入閘門停用
+  return;
   if (document.getElementById('jy-login-gate')) return;
   var gate = document.createElement('div');
   gate.id = 'jy-login-gate';
@@ -1072,6 +1076,9 @@ function submitWithTool() {
     drawnCards = [];
     S.tarot = { drawn: [], spread: [] };
 
+    // ★ v70 全免費/無登入：塔羅直接進抽牌，跳過 worker precheck 與付費牆（以下為死碼）
+    goStep(2);
+    return;
     // ★ v28：進抽牌頁前先檢查額度
     // ★ Bug #7 fix: 移除 localStorage 自判會員（_jy_sub_expires 可被用戶改、可能跟 admin 撤銷後不同步）
     //   永遠走 worker 端 precheck（getUserSubTier 已含過期檢查），讓 worker 是 single source of truth
@@ -5483,6 +5490,7 @@ showAuraResult = function(){
 
   // ══ Worker 預檢（查 KV，不跑 AI，不花錢）══
   async function _preCheckRateLimit() {
+    return { allowed: true }; // ★ v70 全免費：直接放行（以下死碼）
     if (window._JY_ADMIN_TOKEN) return { allowed: true };
     try {
       var bdateEl = document.getElementById('f-bdate');
@@ -6084,9 +6092,9 @@ async function submitTarotQuick() {
     if (!confirm(qHint2 + '\n\n按「確定」繼續，或按「取消」回去修改。')) return;
   }
 
-  // ── 預檢塔羅每日額度 ──
+  // ── 預檢塔羅每日額度 ──（★ v70 全免費：停用）
   var isAdmin = !!(window._JY_ADMIN_TOKEN);
-  if (!isAdmin) {
+  if (false && !isAdmin) {
     try {
       var checkBody = { action: 'check', payload: { mode: 'tarot_only' } };
       if (window._JY_SESSION_TOKEN) checkBody.session_token = window._JY_SESSION_TOKEN;

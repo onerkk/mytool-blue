@@ -76,6 +76,13 @@
   //     3. 免費未用過 → 「免費體驗 1 次」
   //     4. 免費已用完 → 「單次 NT$XX」
   function updateToolBadges() {
+    // ★ v70 全免費/無登入：徽章直接顯示免費，不打 worker（以下舊付費邏輯為死碼）
+    try {
+      setBadge('tool-tarot-badge', '免費', '');
+      setBadge('tool-ootk-badge', '免費', '');
+      setBadge('tool-full-badge', '免費', '');
+    } catch (e) {}
+    return;
     var url = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
     var body = {};
     if (window._JY_SESSION_TOKEN) body.session_token = window._JY_SESSION_TOKEN;
@@ -176,6 +183,9 @@
     if (colorHint) el.style.color = colorHint;
   }
   function fetchTrialDays() {
+    // ★ v70 全免費/無登入：試用提示固定文字，不打 worker（以下舊付費邏輯為死碼）
+    try { var _l70 = document.getElementById('jy-trial-line'); if (_l70) _l70.innerHTML = '☽ 完全免費・無需登入'; } catch (e) {}
+    return;
     var url = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
     var body = { action: 'check', payload: { mode: 'full' } };
     var pt = localStorage.getItem('_jy_paid_token');

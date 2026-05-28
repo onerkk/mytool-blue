@@ -14680,6 +14680,9 @@ async function _handleOpusClick() {
 
 // ★ 通用 Opus 預檢（支援 full / tarot / ootk）
 async function _handleOpusClickForMode(mode) {
+  // ★ v70 複製模式：tarot/ootk 全免費，直接走複製模式，跳過所有付費/登入檢查
+  if (mode === 'tarot' && window._jyTarotCopyMode) { window._jyTarotCopyMode(); return; }
+  if (mode === 'ootk' && window._ootkTriggerAI) { window._ootkTriggerAI(window._ootkResults); return; }
   var admin = _aiIsAdmin();
   if (admin) {
     window._jyOpusDepth = true;
@@ -24415,6 +24418,9 @@ async function _triggerTarotAI() {
   var resultDiv = document.getElementById('tarot-ai-wrap');
   if (!resultDiv) return;
 
+  // ★ v70 複製模式：無 worker / 無 API / 無付費，直接產生可複製提示詞
+  if (window._jyTarotCopyMode) { window._jyTarotCopyMode(); return; }
+
   // ★ v29b：切換顯示——確保塔羅容器可見、OOTK 容器隱藏
   resultDiv.style.display = '';
   try { var _ow = document.getElementById('ootk-ai-wrap'); if (_ow) _ow.style.display = 'none'; } catch(_) {}
@@ -27550,6 +27556,10 @@ window._jyStartOOTK = function() {
     else if (typeof startOOTKFlow === 'function') startOOTKFlow();
     return;
   }
+
+  // ★ v70 全免費/無登入：開鑰直接開始抽牌，跳過 worker 配額檢查與付費牆（以下為死碼）
+  if (typeof startOOTK === 'function') { startOOTK(); return; }
+  if (typeof startOOTKFlow === 'function') { startOOTKFlow(); return; }
 
   // ── 查 OOTK 配額(v68.21:總量制+配額制,不再每日) ──
   // v68.21.1 Bug #89 修:precheck 帶上 depth 對應 Opus 用戶

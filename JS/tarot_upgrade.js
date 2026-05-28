@@ -5573,6 +5573,25 @@ enhanceTarot = function(tarot) {
     S.tarot.ootkResults = results;
     S.tarot.spreadType = 'ootk';
 
+    // ★ v70 複製模式：開鑰抽完牌 → 直接產生可複製提示詞，跳過深度選單/worker/付費（以下為死碼）
+    if (window.JY_renderExportPrompt) {
+      var _w70 = document.getElementById('tarot-ai-wrap');
+      if (!_w70) {
+        _w70 = document.createElement('div'); _w70.id = 'tarot-ai-wrap';
+        var _sp70 = document.getElementById('t-spread-sec');
+        if (_sp70) { _sp70.classList.remove('hidden'); _sp70.after(_w70); } else document.body.appendChild(_w70);
+      }
+      try { if (typeof goStep === 'function') goStep('step-tarot'); } catch (e) {}
+      try {
+        var _ts70 = document.getElementById('tarot-spread-card'); if (_ts70) _ts70.style.display = 'none';
+        var _tc70 = document.getElementById('tarot-crystal-rec'); if (_tc70) _tc70.style.display = 'none';
+        var _tf70 = document.getElementById('tarot-to-full'); if (_tf70) _tf70.style.display = 'none';
+      } catch (e) {}
+      _w70.style.display = '';
+      window.JY_renderExportPrompt('ootk', _w70);
+      return;
+    }
+
     // 確保結果頁可見
     if (typeof goStep === 'function') goStep('step-tarot');
 
