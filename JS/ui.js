@@ -6610,10 +6610,8 @@ function switchResultView(mode) {
       goStep('step-3');
       _refreshAllNavs('full');
     } else {
-      // 沒跑過七維度 → 帶到表單
-      var tf = document.getElementById('tarot-to-full');
-      if (tf) { tf.style.display = ''; tf.scrollIntoView({behavior:'smooth',block:'center'}); }
-      else { goStep(0); }
+      // ★ v70.5：七維度已下架，沒有七維表單可帶 → 直接回首頁
+      goStep(0);
     }
   } else if (mode === 'tarot') {
     if (modes.tarot) {
@@ -6624,7 +6622,7 @@ function switchResultView(mode) {
       var tf2 = document.getElementById('tarot-to-full');
       if (tw) tw.style.display = '';
       if (ow) ow.style.display = 'none';
-      if (tf2) tf2.style.display = '';
+      if (tf2) tf2.style.display = 'none'; // ★ v70.5：七維度下架，塔羅讀完不再彈七維入口
       if (S._tarotQuickResult && tw) tw.innerHTML = S._tarotQuickResult.aiHtml || '';
       _refreshAllNavs('tarot');
     } else {
@@ -6673,7 +6671,7 @@ function resetToHome() {
     ['jy-result-nav-tarot','jy-result-nav-full'].forEach(function(id){ var e=document.getElementById(id); if(e){e.style.display='none';e.innerHTML='';} });
     var _tw=document.getElementById('tarot-ai-wrap'); if(_tw){_tw.style.display='';_tw.innerHTML='';}
     var _ow=document.getElementById('ootk-ai-wrap'); if(_ow){_ow.style.display='none';_ow.innerHTML='';}
-    var _tf=document.getElementById('tarot-to-full'); if(_tf) _tf.style.display='';
+    var _tf=document.getElementById('tarot-to-full'); if(_tf) _tf.style.display='none'; // ★ v70.5：七維度下架，不再顯示七維入口
     var _efgt=document.getElementById('jy-fun-zone-tarot'); if(_efgt) _efgt.remove();
   } catch(_){}
   goStep(0);
