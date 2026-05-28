@@ -58,8 +58,8 @@
       '<div style="font-size:.7rem;color:rgba(212,175,55,.6);font-weight:600;margin-bottom:.35rem">☽ 哪套適合你的問題？</div>' +
       '<div style="font-size:.66rem;line-height:1.7;color:#a09880">' +
         '<span style="color:rgba(139,92,246,.7);font-weight:600">塔羅快讀</span> → 問此刻「他怎麼想？」<br>' +
-        '<span style="color:rgba(217,151,56,.7);font-weight:600">開鑰之法</span> → 問根源「為什麼卡住？」<br>' +
-        '<span style="color:rgba(212,175,55,.7);font-weight:600">七維度</span> → 問全局「今年運勢？轉機？」' +
+        '<span style="color:rgba(217,151,56,.7);font-weight:600">開鑰之法</span> → 問根源「為什麼卡住？」' +
+        // ★ v70.1 七維度已下架，移除「七維度 → 問全局」指引行
       '</div>' +
       '<div id="jy-trial-line" style="margin-top:.3rem;padding-top:.25rem;border-top:1px solid rgba(212,175,55,.06);font-size:.6rem;color:#8a7a6a;text-align:center">⏳</div>';
     cta.parentNode.insertBefore(p, cta);

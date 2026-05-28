@@ -6549,8 +6549,8 @@ function _buildResultNav(activePage) {
   var modes = window._jyResultModes || {};
   var items = [
     { id: 'tarot', icon: 'fas fa-star', label: '塔羅快讀', done: !!modes.tarot },
-    { id: 'ootk',  icon: 'fas fa-key',  label: '開鑰之法', done: !!modes.ootk },
-    { id: 'full',  icon: 'fas fa-chart-bar', label: '七維深度', done: !!modes.full }
+    { id: 'ootk',  icon: 'fas fa-key',  label: '開鑰之法', done: !!modes.ootk }
+    // ★ v70.1 七維度已下架，移除七維深度 tab
   ];
   var html = '';
   items.forEach(function(it) {
@@ -6567,8 +6567,8 @@ function _buildResultNav(activePage) {
     html += '<div style="margin-top:.5rem;padding:.45rem .6rem;border-radius:8px;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.08);font-size:.64rem;line-height:1.6;color:var(--c-text-dim,#a09880)">';
     html += '<span style="color:rgba(212,175,55,.6)">☽</span> ';
     html += '<span style="color:rgba(139,92,246,.7)">塔羅</span>=此刻 ';
-    html += '<span style="color:rgba(217,151,56,.7)">開鑰</span>=根源 ';
-    html += '<span style="color:rgba(212,175,55,.7)">七維</span>=全局';
+    html += '<span style="color:rgba(217,151,56,.7)">開鑰</span>=根源';
+    // ★ v70.1 七維度已下架，移除「七維=全局」
     html += ' <span style="opacity:.5;cursor:pointer" onclick="this.parentNode.style.display=\'none\';sessionStorage.setItem(\'jy_guide_shown\',\'1\')">✕</span>';
     html += '</div>';
   }

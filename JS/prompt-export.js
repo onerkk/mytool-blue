@@ -1,7 +1,12 @@
-/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎
+/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v70.1]
+ *  v70.1 改動（治本，零 API / 零 worker）：
+ *    1. 新增 detectFocus() 問題分類 + buildFocusLock()，把「本次問題鎖定」注入提示詞最前面，
+ *       補回 v70 改純前端複製模式時掉的 focusType 分類（原本在後端 refineFocusType）。
+ *    2. 修 getQuestion() DOM 後備 id（補 f-question / f2-question，原組 id 不存在）。
+ *  ⚠ 若日後跑 build_export.js 重新產生本檔，上述 1./2. 會被覆蓋——請把改動同步進 build 來源。
  *  將前端排盤資料 + 內嵌命理提示詞模板，組成一段可複製、可貼給任何 AI 的完整提示詞。
  *  無 worker / 無 API / 無付費。模板文字一字不差來自 塔羅快讀_提示詞.txt / 開鑰之法_提示詞.txt。
- *  由 build_export.js 自動產生，請勿手改模板字串；要改提示詞請改 .txt 後重新 build。
+ *  由 build_export.js 自動產生，模板長字串（TPL.head/tail）請勿手改；要改模板請改 .txt 後重新 build。
  */
 (function () {
   'use strict';
@@ -34,13 +39,88 @@
       var q = f.q || f.question || f.text || S.q || S.question || '';
       if (q && String(q).trim()) return String(q).trim();
     } catch (e) {}
-    // DOM 後備
-    var ids = ['tarot-question', 'ootk-question', 'question-input', 'q-input', 'userQuestion'];
+    // DOM 後備（★ v70.1 修：補上實際存在的 f-question / f2-question，原本那組 id 都不存在於現行 DOM）
+    var ids = ['f-question', 'f2-question', 'tarot-question', 'ootk-question', 'question-input', 'q-input', 'userQuestion'];
     for (var i = 0; i < ids.length; i++) {
       var el = document.getElementById(ids[i]);
       if (el && el.value && el.value.trim()) return el.value.trim();
     }
     return '（問卜者未填寫明確問題，請依牌面給通盤解讀）';
+  }
+
+  // ── 問題分類引擎（v70.1 治本：補回 v70 改純前端複製後掉的 focusType 分類）──
+  //    純前端、零 API、零 worker。只做「這次問的是什麼性質的問題」，
+  //    結果用來在提示詞最前面注入「本次問題鎖定」——讓 AI 聚焦，不再把單一問題擴寫成通盤運勢。
+  function detectFocus(q) {
+    var s = String(q || '');
+    var noQ = !s || /未填寫明確問題/.test(s);
+    var has = function (re) { return re.test(s); };
+
+    // 領域（可多選，但只取最強的一兩個）
+    var domains = [];
+    if (has(/喜歡|愛|戀|曖昧|追(求|他|她)|表白|告白|復合|挽回|分手|前任|現任|男友|女友|老公|老婆|配偶|伴侶|外遇|劈腿|出軌|做愛|親密|上床|約會|結婚|嫁|娶|這段(感情|關係)|桃花|姻緣|單身|脫單|曖不曖昧|有沒有別人|想念|還(想|愛)|想我|愛我|喜歡我|忘不了|放不下|回心轉意|挽留|想不想我|愛不愛我|對(他|她)有沒有|對我有沒有/)) domains.push('love');
+    if (has(/工作|事業|職場|升遷|升職|跳槽|轉職|離職|辭職|創業|開店|老闆|主管|同事|面試|錄取|offer|合夥|生意|公司|職位|資遣|裁員|被開除|接案/)) domains.push('career');
+    if (has(/錢|財運|財務|投資|股票|股市|加密|幣|理財|收入|薪水|薪資|賺|虧|買賣|債|貸款|報酬|破財|偏財|正財|樂透|彩券|簽帳|這筆/)) domains.push('wealth');
+    if (has(/身體|健康|生病|疾病|手術|開刀|懷孕|受孕|備孕|失眠|住院|檢查|報告.*出來|這個病/)) domains.push('health');
+    if (has(/頻率|脈輪|靈魂|業力|因果|雙生火焰|靈魂伴侶|前世|今生|靈性|能量場|靈魂課題|靈魂暗夜|高我|指導靈|使命|天命|修行/)) domains.push('spiritual');
+
+    // 形態
+    var isTiming   = has(/什麼時候|何時|幾月|幾號|幾點|多久|多快|近期|這(週|個禮拜)|這個月|下個月|今年|明年|今晚|今天|明天|後天|這幾天|最近(會|能)|還要多久/);
+    var isUrgent   = has(/今晚|今天|等等|待會|這幾(個)?小時|24小時|馬上|立刻|這一兩天|此刻/);
+    var isYesNo    = has(/嗎[？?]?\s*$|會不會|是不是|有沒有|能不能|可不可以|是否|對不對|對嗎|好不好|行不行/);
+    var isDecision = has(/該不該|要不要|該(選|留|走|分|放棄|繼續)|選.{0,6}還是|.{1,6}還是.{1,6}[好嗎？?]|哪個(好|對|適合)|哪一個|值不值得|值得嗎|適合嗎|留還是走|分還是不分/);
+    var isPortrait = has(/對方是(誰|什麼)|他是(誰|什麼樣)|她是(誰|什麼樣)|(他|她|對方).{0,4}(在想|怎麼想|想我|想念|想不想我|愛不愛我|還想|還愛|過得|好不好)|什麼樣的人|對方(的)?(個性|長相|職業)|他喜(不喜)?歡我|她喜(不喜)?歡我/);
+
+    return { noQ: noQ, raw: s, domains: domains, timing: isTiming, urgent: isUrgent, yesno: isYesNo, decision: isDecision, portrait: isPortrait };
+  }
+
+  var DOMAIN_HINT = {
+    love:    '感情/關係——核心看聖杯（情感連結）與權杖（行動慾）。缺聖杯＝可能是「想要」不是「愛」；缺權杖＝對方沒主動能量。涉及第三人先查有沒有宮廷牌再推畫像。',
+    career:  '事業/工作——核心看權杖（熱情驅動）與金幣（落不落地）。缺權杖＝缺動力；多金幣＝跟錢/實務綁定。',
+    wealth:  '財運/財務——核心看金幣。缺金幣＝想法不踏實。是非題要給「會不會進帳/虧損」的明確方向。',
+    health:  '健康——牌面只給「狀態與節奏」的象徵訊號，不做醫療診斷。誠實說塔羅看不到具體病灶。',
+    spiritual:'靈性/課題——靈性層的話必須有牌面出處（如「審判正＝這段業力正在結」），不可用靈性詞解釋靈性詞，不造神。'
+  };
+
+  // ── 組裝「本次問題鎖定」區塊（放在提示詞最前面，primacy 最強）──
+  function buildFocusLock(q) {
+    var f = detectFocus(q);
+    var L = [];
+    L.push(BAR);
+    L.push('◆ 本次問題鎖定（最高優先，先讀這段再讀下面的技法）');
+    L.push(BAR);
+
+    if (f.noQ) {
+      L.push('問卜者沒有填寫明確問題。');
+      L.push('→ 不要七個領域都掃一遍。先看花色集中：聖杯多＝感情、權杖多＝事業/行動、金幣多＝財務、寶劍多＝思考/衝突；以最集中的花色鎖定「一個」最可能的領域，針對它給通盤，其餘略過。');
+      return L.join('\n') + '\n';
+    }
+
+    L.push('問卜者問的是：' + f.raw);
+
+    // 形態（決定回答骨架）
+    var shape = [];
+    if (f.yesno)    shape.push('是非題');
+    if (f.decision) shape.push('決策題');
+    if (f.timing)   shape.push('時間題');
+    if (f.portrait) shape.push('對方畫像題');
+    if (f.domains.length) shape.push(({love:'感情',career:'事業',wealth:'財運',health:'健康',spiritual:'靈性'})[f.domains[0]] + '題');
+    if (shape.length) L.push('問題性質：' + shape.join('＋') + (f.urgent ? '＋極短時間窗' : '') + '。');
+
+    L.push('回答要求：');
+    L.push('・第一句就直接回答「' + f.raw + '」這個問題本身，不要鋪墊、不要先講方法。只圍繞這個問題答，禁止擴寫成「你們長期走向」「你的人生課題」這類通盤論述。');
+
+    if (f.yesno)    L.push('・是非題：第一句給「會／不會／是／不是／不一定（但傾向X）」。逆位/凶牌不要硬讀成正面。');
+    if (f.decision) L.push('・決策題：兩個選項各給支持證據，比完之後明確推一個，不要兩邊都好。');
+    if (f.timing) {
+      L.push('・時間題：必須給「為什麼是這個時間」。用花色速度收斂——權杖（火）最快、寶劍（風）次快但偏衝突、聖杯（水）中等、金幣（土）最慢；或用小牌 Decan 日期、大牌時間含義。要說出從哪張牌推。禁止「近期/快了/順其自然」這種沒錨點的話。');
+      if (f.urgent) L.push('・這是「' + (/今晚/.test(f.raw) ? '今晚' : /今天/.test(f.raw) ? '今天' : '這一兩天') + '」的極短窗：直接收斂到當下能不能成。土系牌多＝慢/今晚不太可能；火系牌多＝當下就有動能。據此給明確傾向。');
+    }
+    if (f.portrait) L.push('・對方畫像題：先檢查牌陣有沒有宮廷牌——有才推年齡/外型，沒有就誠實說「牌面沒有人物牌，無法推年齡」，不要憑空編「她35歲/姓黃/金融業」。');
+
+    f.domains.slice(0, 2).forEach(function (d) { if (DOMAIN_HINT[d]) L.push('・' + DOMAIN_HINT[d]); });
+
+    return L.join('\n') + '\n';
   }
 
   // ── 取排盤資料塊（沿用現有 builder，已含全部 GD/Mathers/Crowley/PHB 運算）──
@@ -190,7 +270,9 @@
     if (!t) return '';
     var question = getQuestion();
     var payload = getPayload(tool);
+    var focusLock = buildFocusLock(question); // ★ v70.1：問題鎖定放最前面，讓 AI 先聚焦再讀知識庫
     return [
+      focusLock,
       t.head,
       '',
       BAR,
