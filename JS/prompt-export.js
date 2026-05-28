@@ -56,13 +56,12 @@
     var noQ = !s || /未填寫明確問題/.test(s);
     var has = function (re) { return re.test(s); };
 
-    // 領域（可多選，但只取最強的一兩個）
+    // 領域：★ v70.7 根治——改讀單一權威分類器 window.JY_classifyDomains（與開鑰 detectQuestionType 同源，
+    //   不再各自維護詞庫、不再各說各話）。統一 enum → 鎖定區 5 類映射(secret 併入 love，family/study/friend 鎖定區不細分故略)。
+    var _map5 = { love: 'love', secret: 'love', money: 'wealth', work: 'career', health: 'health', spiritual: 'spiritual' };
+    var _rawHits = (typeof window !== 'undefined' && window.JY_classifyDomains) ? window.JY_classifyDomains(s) : [];
     var domains = [];
-    if (has(/喜歡|愛|戀|曖昧|追(求|他|她)|表白|告白|復合|挽回|分手|前任|現任|男友|女友|老公|老婆|配偶|伴侶|外遇|劈腿|出軌|做愛|親密|上床|交往|在一起|心動|動心|喜不喜歡|曖不曖昧|有沒有機會|當.{0,3}(男|女)朋友|約會|結婚|嫁|娶|這段(感情|關係)|桃花|姻緣|單身|脫單|有沒有別人|想念|還(想|愛)|想我|愛我|喜歡我|忘不了|放不下|回心轉意|挽留|想不想我|愛不愛我|對(他|她)有沒有|對我有沒有/)) domains.push('love');
-    if (has(/工作|事業|職場|升遷|升職|跳槽|轉職|離職|辭職|創業|開店|老闆|主管|同事|面試|錄取|offer|合夥|生意|公司|職位|資遣|裁員|被開除|接案/)) domains.push('career');
-    if (has(/錢|財運|財務|投資|股票|股市|加密|幣|理財|收入|薪水|薪資|賺|虧|買賣|債|貸款|報酬|破財|偏財|正財|樂透|彩券|簽帳|這筆/)) domains.push('wealth');
-    if (has(/身體|健康|生病|疾病|手術|開刀|懷孕|受孕|備孕|失眠|住院|檢查|報告.*出來|這個病/)) domains.push('health');
-    if (has(/頻率|脈輪|靈魂|業力|因果|雙生火焰|靈魂伴侶|前世|今生|靈性|能量場|靈魂課題|靈魂暗夜|高我|指導靈|使命|天命|修行/)) domains.push('spiritual');
+    _rawHits.forEach(function (h) { var m = _map5[h]; if (m && domains.indexOf(m) < 0) domains.push(m); });
 
     // 形態
     var isTiming   = has(/什麼時候|何時|幾月|幾號|幾點|多久|多快|近期|這(週|個禮拜)|這個月|下個月|今年|明年|今晚|今天|明天|後天|這幾天|最近(會|能)|還要多久/);

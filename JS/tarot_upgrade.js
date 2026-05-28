@@ -2990,23 +2990,40 @@ enhanceTarot = function(tarot) {
     return map[qType] || qType;
   }
 
-  // 自動偵測問題類型(從用戶問題文字)
-  // ★ v70.2 根治(歐那 2026/5/29)：依 Mathers Book T，問題本質由「情感/情慾信號」決定，
-  //   場域詞(同事/公司)只是「對象來自哪」，不該蓋過情慾本質。
-  //   例「問公司同事是否想跟我做愛」＝love(情慾)，不是 work。故 love 補情慾/親密詞，
-  //   且 love 在 work 之前判斷 → 只要命中情慾詞就先 return 'love'。
-  //   情慾詞用精準詞(做愛/上床/發生關係…)避開「個性/理性/可能性」誤判。
+  // ══════════════════════════════════════════════════════════════
+  // ★ v70.7 根治(歐那 2026/5/29)：單一權威問題分類器（唯一真相來源）
+  //   過去 detectQuestionType(本檔，開鑰 abandon 用) 與 detectFocus(prompt-export，鎖定區用)
+  //   是兩份獨立詞庫，靠關鍵字各自列舉、永遠不同步 → 同一句「會想跟我交往」一邊判感情一邊判事業。
+  //   現在合併為唯一來源 window.JY_classifyDomains：一份詞庫，兩處都讀它，永不再各說各話。
+  //   回傳「按優先序的領域陣列(多選)」。優先序：感情/情慾/秘密 > 場域(同事/公司只是「在哪認識」)。
+  //   本檔(tarot_upgrade.js)先於 prompt-export.js 載入，故定義在此掛 window。
+  window.JY_classifyDomains = (function () {
+    var RULES = [
+      ['love',     /愛情|戀愛|感情|交往|在一起|曖昧|曖不曖昧|男友|女友|喜歡|喜不喜歡|桃花|姻緣|對象|分手|復合|挽回|婚姻|結婚|嫁|娶|配偶|另一半|老公|老婆|伴侶|單身|脫單|做愛|上床|嘿咻|啪啪|發生關係|肉體|親密|想跟我|跟我做|想睡|心動|動心|對我有意思|對我有感覺|喜歡我|愛我|想我|想念|追我|暗戀|表白|告白|約會|有沒有別人|回心轉意|挽留|想不想我|愛不愛我|有沒有機會|當.{0,3}(男|女)朋友|love|relationship|marriage|sex/],
+      ['secret',   /外遇|劈腿|出軌|小三|偷吃|背叛|隱情|秘密|affair/],
+      ['money',    /錢|財運|財務|錢財|收入|薪水|薪資|存錢|理財|投資|股票|股市|加密|幣|賺|虧|買賣|債|貸款|報酬|破財|偏財|正財|樂透|彩券|money|finance|income|salary/],
+      ['work',     /工作|事業|職場|升遷|升職|跳槽|轉職|離職|辭職|創業|開店|老闆|主管|同事|面試|錄取|offer|合夥|生意|公司|職位|資遣|裁員|被開除|接案|career|job|work|business/],
+      ['family',   /家庭|家人|父母|爸媽|搬家|住處|居住|家裡|home|family|house/],
+      ['health',   /健康|身體|生病|疾病|手術|開刀|懷孕|受孕|備孕|失眠|住院|看醫生|醫療|health|illness|disease/],
+      ['study',    /讀書|考試|留學|出國|遊學|搬到|study|exam|travel/],
+      ['friend',   /朋友|社交|同學|聚會|友情|friend|social/],
+      ['spiritual',/頻率|脈輪|靈魂|業力|因果|雙生火焰|靈魂伴侶|前世|今生|靈性|能量場|靈魂課題|高我|指導靈|使命|天命|修行/]
+    ];
+    return function (q) {
+      var s = String(q || '').toLowerCase();
+      var hits = [];
+      for (var i = 0; i < RULES.length; i++) { if (RULES[i][1].test(s)) hits.push(RULES[i][0]); }
+      return hits; // 陣列順序即優先序
+    };
+  })();
+
+  // 自動偵測問題類型(開鑰 abandon 用，回傳單一領域)——改讀單一權威分類器
+  //   統一 enum → 開鑰 8 類映射：study→travel、spiritual→general(QUESTION_PILES 無此類不檢查)
   function detectQuestionType(question) {
-    var q = String(question || '').toLowerCase();
-    if (/愛情|戀愛|感情|交往|曖昧|男友|女友|喜歡|桃花|對象|分手|復合|挽回|婚姻|結婚|配偶|另一半|老公|老婆|做愛|上床|嘿咻|啪啪|發生關係|肉體|想跟我|跟我做|想睡|對我有意思|對我有感覺|喜歡我|愛我|想我|追我|暗戀|love|relationship|marriage|sex/.test(q)) return 'love';
-    if (/錢|財|錢財|收入|薪水|財務|存錢|理財|投資|money|finance|income|salary/.test(q)) return 'money';
-    if (/工作|事業|職場|升遷|升職|轉職|跳槽|創業|開店|生意|接案|老闆|主管|同事|公司|career|job|work|business/.test(q)) return 'work';
-    if (/家庭|家人|父母|爸媽|搬家|住|家裡|住處|居住|home|family|house/.test(q)) return 'family';
-    if (/健康|身體|生病|病|看醫生|醫療|health|illness|disease/.test(q)) return 'health';
-    if (/朋友|社交|同學|聚會|友情|friend|social/.test(q)) return 'friend';
-    if (/讀書|考試|留學|出國|遊學|搬到|study|exam|travel/.test(q)) return 'travel';
-    if (/秘密|隱情|背叛|出軌|外遇|secret|affair/.test(q)) return 'secret';
-    return 'general';
+    var hits = (typeof window !== 'undefined' && window.JY_classifyDomains) ? window.JY_classifyDomains(question) : [];
+    if (!hits.length) return 'general';
+    var MAP = { love:'love', secret:'secret', money:'money', work:'work', family:'family', health:'health', study:'travel', friend:'friend', spiritual:'general' };
+    return MAP[hits[0]] || 'general';
   }
 
   // 檢查 Sig 是否落在合適宮位/星座
