@@ -458,7 +458,7 @@
     <div class="card" style="padding:.8rem">
       <div style="font-size:.82rem;font-weight:700;color:var(--c-text);margin-bottom:.6rem"><i class="fas fa-compass" style="color:var(--c-gold);margin-right:.3rem"></i>選擇分析方式</div>
       <div class="jy-tool-grid">
-        <div class="jy-tool-card jy-tool-tarot" id="tool-tarot" onclick="pickTool('tarot')">
+        <div class="jy-tool-card jy-tool-tarot selected" id="tool-tarot" onclick="pickTool('tarot')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
             <div><div class="jy-tool-name">塔羅快讀</div><div class="jy-tool-desc">一個問題，抽牌就有答案<br><span style="opacity:.6">不需出生資料・30 秒出結果</span></div></div>
@@ -472,20 +472,14 @@
             <div class="jy-tool-free" id="tool-ootk-badge">免費體驗 1 次</div>
           </div>
         </div>
-        <div class="jy-tool-card jy-tool-full selected" id="tool-full" onclick="pickTool('full')" style="display:none">
-          <div class="jy-tool-head">
-            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(234,179,8,.06));border-color:rgba(212,175,55,.3)"><i class="fas fa-moon" style="color:var(--c-gold)"></i></div>
-            <div><div class="jy-tool-name">七維度交叉分析</div><div class="jy-tool-desc">七套命理系統交叉比對，看最完整的你<br><span style="opacity:.6">需出生資料・八字 紫微 梅花 塔羅 星盤 吠陀 姓名</span></div></div>
-            <div class="jy-tool-free" id="tool-full-badge">免費體驗 1 次</div>
-          </div>
-        </div>
+        <!-- ★ v70 七維度交叉分析工具卡已移除 -->
       </div>
     </div>
 
     <!-- CTA -->
     <div id="tool-cta" class="actions actions-center" style="flex-direction:column;gap:6px;padding:0 var(--sp-md)">
-      <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-tool-go" onclick="submitWithTool()" style="width:100%"><i class="fas fa-bolt"></i> 七維命盤深度分析</button>
-      <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:0;text-align:center">八字・紫微・梅花・塔羅・星盤・吠陀・姓名</p>
+      <button class="btn btn-primary btn-lg btn-cta-pulse" id="btn-tool-go" onclick="submitWithTool()" style="width:100%"><i class="fas fa-magic"></i> 抽牌解讀</button>
+      <p id="btn-tool-sub" style="font-size:.7rem;opacity:.45;margin:0;text-align:center">此刻的牌面能量・不需出生資料</p>
     </div>
   </div>
 
@@ -1279,7 +1273,7 @@
 <script src="JS/tool-guide.js?v=20260507v69_3_0" defer></script>
 <script src="JS/guide.js?v=20260507v69_3_0" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
-<!-- ★ v70 複製模式引擎：必須最後載入，覆寫 _ootkTriggerAI / 提供 _jyTarotCopyMode。不進混淆。 -->
+<!-- ★ v70 複製模式引擎：必須最後載入。不進混淆。 -->
 <script src="JS/prompt-export.js?v=20260528v70" defer></script>
 <!-- Sticky Bottom CTA for Result Page -->
 <div class="sticky-cta" id="sticky-cta">
