@@ -1,10 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
 // ui.js — 靜月之光模組化拆分
-// v73.2（歐那 2026/5/29）：submitWithTool 進抽牌頁前先 detectSpreadType+setCurrentSpread，修「牌陣固定凱爾特」（原依賴 initTarotDeck 覆寫鏈，會退回預設）。
-//   ⚠ 部署：ui.js + index.html 把 ui.js ?v= bump 成 v73_2。
-// v73.1（歐那 2026/5/29）：移除 submitWithTool 的登入閘門——塔羅/開鑰全免費、不再需 Google 登入
-//   （與 _preCheckRateLimit 早已全免費放行一致；5883/5892 的 _showLoginModal 已是死碼，precheck 永回 allowed）。
-//   ⚠ 部署：ui.js + index.html 把 ui.js ?v= 由 v73_0 bump 成 v73_1。
 // ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
@@ -1079,18 +1074,8 @@ function submitWithTool() {
     S._autoMode = false;
     S._isAdmin = !!(window._JY_ADMIN_TOKEN);
     drawnCards = [];
+    deckShuffled = []; // v73.1：每次送出都清牌堆，保證 goStep(2) 重跑 initTarotDeck 並依問題重新偵測牌陣
     S.tarot = { drawn: [], spread: [] };
-
-    // ★ v73.2（歐那）：進抽牌頁前就依問題定牌陣，不依賴 initTarotDeck 覆寫鏈／deckShuffled 殘留
-    //   （修「牌陣固定凱爾特十字」——submitWithTool 是唯一沒先偵測的入口，會退回 _currentSpreadId 預設）
-    try {
-      if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
-        deckShuffled = [];               // 重置洗牌：確保 goStep→initTarotDeck 依新牌陣重抽、張數正確
-        var _sid = detectSpreadType(question, type);
-        setCurrentSpread(_sid);
-        console.log('[Tarot] submitWithTool 依問題定牌陣:', _sid);
-      }
-    } catch(_e) { console.warn('[Tarot spread]', _e); }
 
     // ★ v70 全免費/無登入：塔羅直接進抽牌，跳過 worker precheck 與付費牆（以下為死碼）
     goStep(2);
@@ -5914,8 +5899,10 @@ showAuraResult = function(){
   // ★ v21：攔截 submitWithTool — 塔羅也需要登入
   var _origSubmitWithTool = window.submitWithTool;
   window.submitWithTool = async function() {
-    // ★ v73.1（歐那）：全免費——塔羅/開鑰不再需要登入，與 _preCheckRateLimit 全免費放行一致；
-    // 複製模式已在 _triggerTarotAI / 開鑰 trigger 早退跳過 worker，無需 session。舊登入閘門移除。
+    if (!window._JY_ADMIN_TOKEN && !window._JY_SESSION_TOKEN) {
+      _showLoginModal();
+      return;
+    }
     if (_origSubmitWithTool) _origSubmitWithTool.apply(this, arguments);
   };
 
