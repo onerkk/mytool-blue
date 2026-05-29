@@ -576,9 +576,12 @@ function detectSpreadType(question, type) {
   var q = (question || '').trim();
   type = type || 'general';
 
-  // 0. 明確點名 GD/Crowley 15 張 與 Mathers 1888 21 張（依名稱，最優先）
-  if (/金色黎明.*牌陣|GD.*牌陣|英式.*牌陣|fifteen.?card|十五.?張|Crowley.*牌陣/i.test(q)) return 'fifteen_card';
-  if (/Mathers.*牌陣|1888.*牌陣|三排七|三排.*七|二十一.?張|21.?張.*牌陣/i.test(q)) return 'mathers_21';
+  // 0. 明確「點名」這兩個古法時最優先觸發——依官方名稱（一般問題不會誤觸）
+  // 0.1 金色黎明「十五張占卜法」Fifteen Card Method of Tarot Divination（Robert Wang《Introduction to the Golden Dawn Tarot》/ Thoth LWB）
+  //     「金色黎明」是牌組/牌面名稱（到處都有），故僅在同時出現「十五/15/fifteen」時才視為點名此法，避免誤判
+  if (/fifteen[\s-]?card|十五張|15[\s-]?張|英式牌陣|金色黎明.*(十五|15|fifteen)|Crowley.*(十五|15|牌陣)/i.test(q)) return 'fifteen_card';
+  // 0.2 Mathers「第二占卜法」Second Method（S.L. MacGregor Mathers《The Tarot》1888；三排七、由右至左、配對 1↔21）
+  if (/mathers|second[\s-]?method|第二占卜法|第二種占卜法|三排七|三排.*七張?|二十一張|21[\s-]?張|1888/i.test(q)) return 'mathers_21';
 
   // 1. 抉擇 / 二選一（兩條明確的路）→ 二選一牌陣
   if (/還是|或者|二選一|兩個.*選|兩者.*選|選.*哪|哪一個|該不該|要不要|留還是走|去還是留|分還是不分/.test(q)) return 'either_or';
