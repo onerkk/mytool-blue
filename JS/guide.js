@@ -363,10 +363,13 @@ window._showGuide=showGuide;
 window._closeGuide=closeGuide;
 
 // First visit
-// ★ Bug UU 修補配套:這裡只觸發顯示,不設 flag(flag 在 closeGuide 設)
-if(!localStorage.getItem('_jy_guide_seen')){
-  setTimeout(function(){showGuide()},600);
-}
+// ★ v73(歐那 2026/5/29)：關閉「首次進入自動彈出操作教學」。
+//   原本首次無 _jy_guide_seen 就 600ms 後自動 showGuide()，現停用自動彈出。
+//   教學本身保留——左下角 ? 按鈕仍可隨時手動開啟（見 _addHelpButton）。
+//   （注意：此教學內容尚有「七套命理系統 / 七維度照片」等已下架字樣，待之後一併更新。）
+// if(!localStorage.getItem('_jy_guide_seen')){
+//   setTimeout(function(){showGuide()},600);
+// }
 
 // Help button
 // ★ Bug WW 修補:body 可能還沒 ready(若 guide.js 放 <head>),加防呆
