@@ -7454,23 +7454,6 @@ function resetToHome() {
     var sid = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : (def ? def.id : null);
     var hasJBS = typeof window.jyBuildSlot === 'function';
     var nDrawn = (typeof drawnCards !== 'undefined' && drawnCards) ? drawnCards.length : -1;
-    // ── 診斷：把 #t-chosen 真實狀態印到左下角 ──
-    try {
-      var dd = 'v10 ' + (sid || '?');
-      if (chosen) {
-        dd += ' wrap' + (chosen.querySelector('.jy-wrap') ? 'Y' : 'N');
-        dd += ' cel' + (chosen.querySelector('.jy-celtic') ? 'Y' : 'N');
-        var _sl = chosen.querySelectorAll('.tarot-chosen-slot');
-        dd += ' slot' + _sl.length;
-        if (_sl[0]) { try { dd += ' w' + Math.round(parseFloat(getComputedStyle(_sl[0]).width)); } catch(e){} }
-        dd += ' len' + (chosen.innerHTML ? chosen.innerHTML.length : 0);
-      } else { dd += ' NOtc'; }
-      dd += ' css' + (document.getElementById('jy-slot-css') ? 'Y' : 'N');
-      dd += ' rt' + (document.getElementById('jy-slot-css-rt') ? 'Y' : 'N');
-      dd += ' jbs' + (hasJBS ? 'Y' : 'N') + ' dr' + nDrawn;
-      var _bdg = document.getElementById('jy-ver-badge');
-      if (_bdg) _bdg.textContent = dd;
-    } catch(e){}
     // ── 渲染 ──
     if (!chosen) return;
     if (step2 && step2.classList.contains('hidden')) return;
@@ -7509,18 +7492,3 @@ function resetToHome() {
 })();
 
 
-// ── 螢幕可見版本標記（確認部署是否生效）──
-(function(){
-  var VER = 'v73_10 diag';
-  function stamp(){
-    var ex = document.getElementById('jy-ver-badge');
-    if (ex) { ex.textContent = VER; return; }
-    var b = document.createElement('div');
-    b.id = 'jy-ver-badge';
-    b.textContent = VER;
-    b.style.cssText = 'position:fixed;left:3px;bottom:3px;z-index:99999;font-size:9px;line-height:1.25;color:rgba(255,210,100,.9);background:rgba(0,0,0,.7);padding:2px 6px;border-radius:6px;pointer-events:none;font-family:monospace;max-width:97vw;white-space:normal;word-break:break-all';
-    (document.body || document.documentElement).appendChild(b);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stamp);
-  else stamp();
-})();
