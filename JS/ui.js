@@ -1,5 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // ui.js — 靜月之光模組化拆分
+// v73.2（歐那 2026/5/29）：submitWithTool 進抽牌頁前先 detectSpreadType+setCurrentSpread，修「牌陣固定凱爾特」（原依賴 initTarotDeck 覆寫鏈，會退回預設）。
+//   ⚠ 部署：ui.js + index.html 把 ui.js ?v= bump 成 v73_2。
 // v73.1（歐那 2026/5/29）：移除 submitWithTool 的登入閘門——塔羅/開鑰全免費、不再需 Google 登入
 //   （與 _preCheckRateLimit 早已全免費放行一致；5883/5892 的 _showLoginModal 已是死碼，precheck 永回 allowed）。
 //   ⚠ 部署：ui.js + index.html 把 ui.js ?v= 由 v73_0 bump 成 v73_1。
@@ -1078,6 +1080,17 @@ function submitWithTool() {
     S._isAdmin = !!(window._JY_ADMIN_TOKEN);
     drawnCards = [];
     S.tarot = { drawn: [], spread: [] };
+
+    // ★ v73.2（歐那）：進抽牌頁前就依問題定牌陣，不依賴 initTarotDeck 覆寫鏈／deckShuffled 殘留
+    //   （修「牌陣固定凱爾特十字」——submitWithTool 是唯一沒先偵測的入口，會退回 _currentSpreadId 預設）
+    try {
+      if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+        deckShuffled = [];               // 重置洗牌：確保 goStep→initTarotDeck 依新牌陣重抽、張數正確
+        var _sid = detectSpreadType(question, type);
+        setCurrentSpread(_sid);
+        console.log('[Tarot] submitWithTool 依問題定牌陣:', _sid);
+      }
+    } catch(_e) { console.warn('[Tarot spread]', _e); }
 
     // ★ v70 全免費/無登入：塔羅直接進抽牌，跳過 worker precheck 與付費牆（以下為死碼）
     goStep(2);
