@@ -1243,17 +1243,11 @@
 <script src="JS/pricing-loader.js?v=20260507v69_3_0" defer></script>
 <script src="JS/weight-engine.js?v=20260507v69_3_0" defer></script>
 <script src="JS/confidence-bridge.js?v=20260507v69_3_0" defer></script>
-<script src="JS/ephemeris-client.js?v=20260507v69_3_0" defer></script>
-<script src="JS/bazi.js?v=20260507v69_3_0" defer></script>
-<script src="JS/solar-location.js?v=20260507v69_3_0" defer></script>
-<script src="JS/ziwei.js?v=20260507v69_3_0" defer></script>
-<script src="JS/tarot.js?v=20260507v69_3_0" defer></script>
-<script src="JS/bazi_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/western_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/jyotish_full_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/meihua_upgrade2.js?v=20260507v69_3_0" defer></script>
+<!-- ★ v70.9(歐那 2026/5/29)：以下命理引擎(八字/紫微/吠陀/西占/梅花/姓名/星曆/真太陽時/舊塔羅資料)
+     v70 兩工具(塔羅快讀/開鑰之法)均不需要，呼叫點皆有 try/typeof 守門。
+     改為「進站 idle 後背景延後載入」→ 首屏少 parse 約 1.5MB，一進站不再卡。
+     注意：仍會載入(只是晚幾秒)，故即使某分支用到也不會缺、不會崩。 -->
 <script src="JS/tarot_upgrade.js?v=20260529v70_7" defer></script>
-<script src="JS/name_upgrade.js?v=20260507v69_3_0" defer></script>
 <!-- ★ v70 全免費：payment-wall.js 已移除 -->
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
@@ -1267,6 +1261,36 @@
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
 <!-- ★ v70 複製模式引擎：必須最後載入。不進混淆。 -->
 <script src="JS/prompt-export.js?v=20260529v70_8" defer></script>
+<!-- ★ v70.9 命理引擎延後載入器 -->
+<script>
+(function(){
+  var DEFERRED = [
+    'JS/ephemeris-client.js?v=20260507v69_3_0',
+    'JS/solar-location.js?v=20260507v69_3_0',
+    'JS/bazi.js?v=20260507v69_3_0',
+    'JS/ziwei.js?v=20260507v69_3_0',
+    'JS/tarot.js?v=20260507v69_3_0',
+    'JS/bazi_upgrade.js?v=20260507v69_3_0',
+    'JS/western_upgrade.js?v=20260507v69_3_0',
+    'JS/jyotish_full_upgrade.js?v=20260507v69_3_0',
+    'JS/meihua_upgrade2.js?v=20260507v69_3_0',
+    'JS/name_upgrade.js?v=20260507v69_3_0'
+  ];
+  function loadAll(){
+    DEFERRED.forEach(function(src){
+      var s = document.createElement('script');
+      s.src = src; s.async = false; // 保持彼此相對順序
+      document.body.appendChild(s);
+    });
+  }
+  // 進站後等瀏覽器閒置再背景載入；不支援 idle 的退回 3 秒後載
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadAll, { timeout: 4000 });
+  } else {
+    setTimeout(loadAll, 3000);
+  }
+})();
+</script>
 <!-- Sticky Bottom CTA for Result Page -->
 <div class="sticky-cta" id="sticky-cta">
   <div class="sticky-cta-inner">
