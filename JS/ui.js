@@ -2121,12 +2121,7 @@ if (typeof generateConclusion === 'function') {
    Init on DOMContentLoaded
    ============================================================= */
 document.addEventListener('DOMContentLoaded', function(){
-  // Show PWA banner after 5 seconds for iOS
-  setTimeout(function(){
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    if(!isStandalone) showPWABanner();
-  }, 5000);
+  // ★ v70.8(歐那 2026/5/29)：移除首次進入彈出的「加到主畫面」安裝教學橫幅，不再自動彈出。
 });
 /* =============================================================
    FEATURE 1: 每日運勢籤（依命主八字 × 當日天干地支）
