@@ -1038,13 +1038,6 @@ enhanceTarot = function(tarot) {
       // 中：4(近期過去) - 1+2(核心+阻礙疊放) - 6(近期走向)
       // 下：3(根因)
       // 右柱（Staff）從下到上：7 8 9 10
-      h += '<style>#t-chosen .jy-celtic{display:grid;grid-template-columns:70px 70px 70px 16px 70px;grid-template-rows:auto auto auto;gap:8px 6px;align-items:center;justify-content:center}';
-      h += '#t-chosen .jy-celtic .gc-top{grid-column:2;grid-row:1;justify-self:center}';
-      h += '#t-chosen .jy-celtic .gc-left{grid-column:1;grid-row:2;justify-self:center}';
-      h += '#t-chosen .jy-celtic .gc-center{grid-column:2;grid-row:2;justify-self:center;position:relative}';
-      h += '#t-chosen .jy-celtic .gc-right{grid-column:3;grid-row:2;justify-self:center}';
-      h += '#t-chosen .jy-celtic .gc-bottom{grid-column:2;grid-row:3;justify-self:center}';
-      h += '#t-chosen .jy-celtic .gc-staff{grid-column:5;grid-row:1/4;display:flex;flex-direction:column-reverse;align-items:center;gap:6px}</style>';
       h += '<div class="jy-celtic">';
       h += '<div class="gc-top">' + S(4,5,pn(4)) + '</div>';
       h += '<div class="gc-left">' + S(3,4,pn(3)) + '</div>';
@@ -1063,8 +1056,6 @@ enhanceTarot = function(tarot) {
       //    7(Netzach)  8(Hod)
       //        9(Yesod)
       //       10(Malkuth)
-      h += '<style>#t-chosen .jy-tol{display:flex;flex-direction:column;align-items:center;gap:8px}';
-      h += '#t-chosen .jy-tol .tol-pair{display:flex;gap:24px;justify-content:center}</style>';
       h += '<div class="jy-tol">';
       h += S(0,1,pn(0));
       h += '<div class="tol-pair">' + S(1,2,pn(1)) + S(2,3,pn(2)) + '</div>';
@@ -1077,10 +1068,6 @@ enhanceTarot = function(tarot) {
     }
     else if (spreadId === 'zodiac') {
       // ── 黃道十二宮：圓形 12 宮 + 中心總結牌 ──
-      h += '<style>#t-chosen .jy-zodiac{position:relative;width:320px;height:320px;margin:0 auto}';
-      h += '#t-chosen .jy-zodiac .zod-slot{position:absolute;transform:translate(-50%,-50%)}';
-      h += '#t-chosen .jy-zodiac .zod-slot .tarot-chosen-slot{width:46px!important;height:68px!important}';
-      h += '#t-chosen .jy-zodiac .zod-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}</style>';
       h += '<div class="jy-zodiac">';
       // 12 宮按圓形排列（從 270° 即頂部開始，逆時針對應占星宮位）
       for (var zi = 0; zi < 12; zi++) {
@@ -1136,8 +1123,6 @@ enhanceTarot = function(tarot) {
       // ── 金色黎明 15 張 Fifteen-Card Method（Wang / Crowley LWB）──
       // 五個 triad（每組 3 張，中欄＝該組主牌），用 elemental dignity 解讀、不用逆位
       // 正統：核心(querent)三張在中央；上下為替代路徑/決策/自然路徑/命運
-      h += '<style>#t-chosen .jy-gd15{display:flex;flex-direction:column;align-items:center;gap:14px}';
-      h += '#t-chosen .jy-gd15 .gd-triad{display:flex;gap:8px;justify-content:center}</style>';
       h += '<div class="jy-gd15">';
       var gd15 = [[12,8,4],[13,9,5],[1,0,2],[3,7,11],[6,10,14]];
       for (var gi = 0; gi < gd15.length; gi++) {
@@ -1149,12 +1134,6 @@ enhanceTarot = function(tarot) {
     else if (spreadId === 'mathers_21') {
       // ── Mathers 1888 第二法：3 排 × 7，問者(Significator)在最右 ──
       // 原典：21 張排在問者左側，每排「由右至左」讀（card 1 最靠右）；過去/現在/未來 三排
-      h += '<style>#t-chosen .jy-m21{display:flex;align-items:center;justify-content:center;gap:8px;overflow-x:auto;padding:4px 2px}';
-      h += '#t-chosen .jy-m21 .m21-grid{display:flex;flex-direction:column;gap:6px}';
-      h += '#t-chosen .jy-m21 .m21-row{display:flex;gap:5px;flex-direction:row-reverse}';
-      h += '#t-chosen .jy-m21 .tarot-chosen-slot{width:40px!important;height:58px!important}';
-      h += '#t-chosen .jy-m21 .m21-sig{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px}';
-      h += '#t-chosen .jy-m21 .m21-sig .sig-card{width:44px;height:62px;border:1px dashed rgba(212,175,55,.5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:rgba(212,175,55,.7);text-align:center;line-height:1.25}</style>';
       h += '<div class="jy-m21"><div class="m21-grid">';
       for (var mr = 0; mr < 3; mr++) {
         h += '<div class="m21-row">';
@@ -5972,12 +5951,7 @@ enhanceTarot = function(tarot) {
   //   新版:確認 + 清結果 + 重啟 OOTK 流程,form 資料保留(S.form 在 window 上不會丟)
   //   ★ v70.2(歐那 2026/5/29):全免費，重抽不再消耗次數，移除恐嚇文字
   window._jyOOTKRedraw = function() {
-    var msg = '確定要重抽整盤嗎?\n\n' +
-              '會重新進入開鑰之法儀式抽新牌,當前盤面不保留。\n' +
-              '你填的問題和生辰會保留,不用重新輸入。\n\n' +
-              '(完全免費，重抽不限次數。若想保留當前解讀,請選 [取消]。)';
-    if (!confirm(msg)) return;
-
+    // 直接重抽，不跳 confirm（歐那 2026/5/30）——免費不限次，提示框徒增一步
     try {
       // 清掉當前 OOTK 結果(避免下次入口誤觸發舊資料)
       window._ootkResults = null;
