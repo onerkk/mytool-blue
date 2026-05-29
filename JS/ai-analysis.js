@@ -165,53 +165,39 @@ window._jyStopSmartTimer = function() {
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260515v69_51_0';
-window._jyVersionCheck = window._jyVersionCheck || async function() {
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260529v73_0';
+// ★ v73(歐那 2026/5/29)：純前端複製模式已無 worker，舊版打 worker /version 的偵測永遠失敗、
+//   強制更新形同虛設。改為「純前端版本常數比對」——零後端依賴：
+//   每次載入比對 FRONTEND_VERSION 與 localStorage 記錄，變了就破快取強制 reload 一次。
+//   部署新版時，只要 (a) 改 index.html 各檔 ?v= (b) 把 FRONTEND_VERSION 跳號，使用者下次開站即自動更新。
+window._jyVersionCheck = window._jyVersionCheck || function() {
   try {
-    // ★ v68.21.19 Bug #23 修:版本檢查 URL 寫錯
-    //   舊值 'https://jingyue-worker.zsl9.workers.dev' 是已廢棄的舊 worker(可能不存在或未部署)
-    //   全站(ui.js / payment-wall.js / oracle.js / photo-upload.js / pricing-loader.js)都用
-    //   'jy-ai-proxy.onerkk.workers.dev',只有這裡 line 24 寫錯
-    //   後果:每次 _jyVersionCheck 都靜默失敗(if !resp.ok return null) → 版本變動偵測失效
-    //   用戶部署新版後,前端不會自動 reload,得手動清 cache 或 hard refresh
-    var WORKER_URL = window.WORKER_URL || 'https://jy-ai-proxy.onerkk.workers.dev';
-    var resp = await fetch(WORKER_URL + '/version', { cache: 'no-store' });
-    if (!resp.ok) return null;
-    var data = await resp.json();
-    var workerVersion = data && data.version;
-    if (!workerVersion) return null;
-
-    // 跟 localStorage 比對
+    var cur = window.FRONTEND_VERSION;
     var lastSeen = null;
-    try { lastSeen = localStorage.getItem('_jy_worker_version'); } catch(_) {}
+    try { lastSeen = localStorage.getItem('_jy_fe_version'); } catch(_) {}
 
-    if (lastSeen && lastSeen !== workerVersion) {
-      // 版本不一致 → 強制 reload
-      console.log('[版本檢測] worker 版本從 ' + lastSeen + ' 升級到 ' + workerVersion + ',強制刷新');
-      try { localStorage.setItem('_jy_worker_version', workerVersion); } catch(_) {}
-      // 顯示 toast 提示用戶,然後 reload
+    if (lastSeen && lastSeen !== cur) {
+      // 版本變了 → 記錄新版、破快取強制 reload 一次（_r 旗標防止無限迴圈）
+      try { localStorage.setItem('_jy_fe_version', cur); } catch(_) {}
       try {
-        var toast = document.createElement('div');
-        toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
-        toast.textContent = '🌙 靜月之光已更新到 ' + workerVersion + ',載入新版中...';
-        document.body.appendChild(toast);
+        var u = new URL(window.location.href);
+        if (u.searchParams.get('_r') !== cur) {       // 同一版只重整一次
+          var toast = document.createElement('div');
+          toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#7c3aed;color:#fff;padding:12px 24px;border-radius:8px;z-index:99999;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.3)';
+          toast.textContent = '🌙 靜月之光已更新，載入新版中…';
+          document.body.appendChild(toast);
+          setTimeout(function() {
+            u.searchParams.set('_r', cur);
+            u.searchParams.set('_t', Date.now());
+            window.location.replace(u.toString());
+          }, 700);
+        }
       } catch(_) {}
-      // 給 toast 一點時間顯示,然後強制 reload(略過 cache)
-      setTimeout(function() {
-        // location.reload(true) 在新版瀏覽器已棄用,但仍可用 location.href = location.href + '?_t=' 強制
-        var url = new URL(window.location.href);
-        url.searchParams.set('_v', workerVersion);
-        url.searchParams.set('_t', Date.now());
-        window.location.replace(url.toString());
-      }, 800);
-      return workerVersion;
+      return cur;
     }
-
-    // 第一次載入或版本一致 → 只記錄,不打擾
-    if (!lastSeen) {
-      try { localStorage.setItem('_jy_worker_version', workerVersion); } catch(_) {}
-    }
-    return workerVersion;
+    // 第一次載入 → 只記錄，不打擾
+    if (!lastSeen) { try { localStorage.setItem('_jy_fe_version', cur); } catch(_) {} }
+    return cur;
   } catch(e) {
     console.warn('[版本檢測] 失敗:', e && e.message);
     return null;
