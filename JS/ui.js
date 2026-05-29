@@ -7447,30 +7447,47 @@ function resetToHome() {
   // 不論是誰渲染了 #t-chosen，一律改成「當前牌陣」的真實牌位版面
   function jyFixChosen() {
     var chosen = document.getElementById('t-chosen');
-    if (!chosen) return;
     var step2 = document.getElementById('step-2');
-    if (step2 && step2.classList.contains('hidden')) return;
-    if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length > 0) return; // 已抽牌不動
     var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
     var sid = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : (def ? def.id : null);
-    if (!def || !sid || typeof jyBuildSlot !== 'function') return;
-    // 標題校正（已正確則跳過，避免閃爍）
+    var hasJBS = typeof jyBuildSlot === 'function';
+    var nDrawn = (typeof drawnCards !== 'undefined' && drawnCards) ? drawnCards.length : -1;
+    // ── 診斷：把 #t-chosen 真實狀態印到左下角 ──
+    try {
+      var dd = 'v9 ' + (sid || '?');
+      if (chosen) {
+        dd += ' wrap' + (chosen.querySelector('.jy-wrap') ? 'Y' : 'N');
+        dd += ' cel' + (chosen.querySelector('.jy-celtic') ? 'Y' : 'N');
+        var _sl = chosen.querySelectorAll('.tarot-chosen-slot');
+        dd += ' slot' + _sl.length;
+        if (_sl[0]) { try { dd += ' w' + Math.round(parseFloat(getComputedStyle(_sl[0]).width)); } catch(e){} }
+        dd += ' len' + (chosen.innerHTML ? chosen.innerHTML.length : 0);
+      } else { dd += ' NOtc'; }
+      dd += ' css' + (document.getElementById('jy-slot-css') ? 'Y' : 'N');
+      dd += ' rt' + (document.getElementById('jy-slot-css-rt') ? 'Y' : 'N');
+      dd += ' jbs' + (hasJBS ? 'Y' : 'N') + ' dr' + nDrawn;
+      var _bdg = document.getElementById('jy-ver-badge');
+      if (_bdg) _bdg.textContent = dd;
+    } catch(e){}
+    // ── 渲染 ──
+    if (!chosen) return;
+    if (step2 && step2.classList.contains('hidden')) return;
+    if (nDrawn > 0) return;
+    if (!def || !sid || !hasJBS) return;
     try {
       var te = document.querySelector('#step-2 .card-title');
       if (te && (te.textContent || '').indexOf(def.zh) < 0) te.innerHTML = '<i class="fas fa-star"></i> ' + def.zh;
     } catch(e){}
-    // 版面已是此牌陣就不重畫（避免迴圈）
-    if (chosen.getAttribute('data-jy-spread') === sid && chosen.querySelector('.jy-wrap')) return;
+    if (chosen.querySelector('[data-jyfix="' + sid + '"]')) return; // 已是我畫的此牌陣
     try {
       if (typeof jyEnsureSlotCSS === 'function') jyEnsureSlotCSS();
       var hh = jyBuildSlot(sid, def);
-      if (hh) { chosen.innerHTML = hh; chosen.setAttribute('data-jy-spread', sid); }
+      if (hh) { chosen.innerHTML = hh; var fc = chosen.firstElementChild; if (fc) fc.setAttribute('data-jyfix', sid); }
       if (typeof jySetIntro === 'function') jySetIntro(def.count, !!(def.deckFilter === 'minor_only'));
       var rt = document.getElementById('t-remain-text');
       if (rt) rt.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + def.count + ' 張';
       var tc = document.getElementById('t-target-count');
       if (tc) tc.textContent = String(def.count);
-      console.log('[Tarot] 強制校正版面 →', sid, def.count + '張');
     } catch(e){}
   }
   if ('MutationObserver' in window) {
@@ -7492,14 +7509,14 @@ function resetToHome() {
 
 // ── 螢幕可見版本標記（確認部署是否生效）──
 (function(){
-  var VER = 'ui v73_8';
+  var VER = 'v73_9 diag';
   function stamp(){
     var ex = document.getElementById('jy-ver-badge');
     if (ex) { ex.textContent = VER; return; }
     var b = document.createElement('div');
     b.id = 'jy-ver-badge';
     b.textContent = VER;
-    b.style.cssText = 'position:fixed;left:5px;bottom:5px;z-index:99999;font-size:9px;line-height:1;color:rgba(201,168,76,.6);background:rgba(0,0,0,.45);padding:2px 6px;border-radius:6px;pointer-events:none;font-family:monospace;letter-spacing:.03em';
+    b.style.cssText = 'position:fixed;left:3px;bottom:3px;z-index:99999;font-size:9px;line-height:1.25;color:rgba(255,210,100,.9);background:rgba(0,0,0,.7);padding:2px 6px;border-radius:6px;pointer-events:none;font-family:monospace;max-width:97vw;white-space:normal;word-break:break-all';
     (document.body || document.documentElement).appendChild(b);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stamp);
