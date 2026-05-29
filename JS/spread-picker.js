@@ -31,15 +31,8 @@
 
   function defOf(id) { return (typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[id]) ? SPREAD_DEFS[id] : null; }
 
-  // ── 包裝 detectSpreadType：手動選定時直接回傳，否則走原本的問題偵測 ──
-  if (typeof detectSpreadType === 'function' && !window._detectWrappedForPicker) {
-    window._detectWrappedForPicker = true;
-    var _baseDetect = detectSpreadType;
-    window.detectSpreadType = function (q, t) {
-      if (window._forcedSpread && defOf(window._forcedSpread)) return window._forcedSpread;
-      return _baseDetect(q, t);
-    };
-  }
+  // detectSpreadType 不再包裝（跨檔重新指派在實機不可靠）。
+  // 手動選定的牌陣改由 ui.js 各偵測點直接讀 window._forcedSpread 強制套用。
 
   function injectCSS() {
     if (document.getElementById('jy-spread-pick-css')) return;

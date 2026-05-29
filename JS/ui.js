@@ -1497,7 +1497,9 @@ function submitStep0Fast(){
       try {
         // 偵測牌陣
         var _spreadId = 'celtic_cross';
-        if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+        if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
+          _spreadId = window._forcedSpread; setCurrentSpread(_spreadId);
+        } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
           _spreadId = detectSpreadType(S.form.question || '', S.form.type || 'general');
           setCurrentSpread(_spreadId);
         }
@@ -5923,7 +5925,10 @@ showAuraResult = function(){
     // 偵測問題類型 → 選牌陣
     var q = (S.form && S.form.question) ? S.form.question : '';
     var t = (S.form && S.form.type) ? S.form.type : 'general';
-    if (typeof detectSpreadType === 'function') {
+    if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
+      setCurrentSpread(window._forcedSpread);
+      console.log('[Tarot] 手動指定牌陣 →', window._forcedSpread);
+    } else if (typeof detectSpreadType === 'function') {
       var spreadId = detectSpreadType(q, t);
       if (typeof setCurrentSpread === 'function') setCurrentSpread(spreadId);
       console.log('[Tarot] 問題偵測 → 牌陣:', spreadId);
@@ -6049,7 +6054,9 @@ showAuraResult = function(){
     var tEl = document.getElementById('f-type');
     var q = qEl ? qEl.value.trim() : '';
     var t = tEl ? tEl.value : 'general';
-    if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+    if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread]) {
+      setCurrentSpread(window._forcedSpread);
+    } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
       setCurrentSpread(detectSpreadType(q, t));
       console.log('[AutoMode] 牌陣偵測:', getCurrentSpread());
     }
@@ -6162,7 +6169,9 @@ async function submitTarotQuick() {
 
   // ── 偵測牌陣 ──
   var spreadId = 'celtic_cross';
-  if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+  if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
+    spreadId = window._forcedSpread; setCurrentSpread(spreadId);
+  } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
     spreadId = detectSpreadType(question, type);
     var qMarkCount = (question.match(/[？?]/g) || []).length;
     if (qMarkCount >= 2 && (spreadId === 'three_card' || spreadId === 'timeline')) {
@@ -6726,7 +6735,9 @@ function resetToHome() {
             drawnCards = [];
             S.tarot = { drawn: [], spread: [] };
             // 偵測牌陣
-            if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
+            if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
+              setCurrentSpread(window._forcedSpread);
+            } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
               var sid = detectSpreadType(q, t);
               var qm = (q.match(/[？?]/g) || []).length;
               if (qm >= 2 && (sid === 'three_card' || sid === 'timeline')) sid = (t === 'love' || t === 'relationship' || t === 'family') ? 'relationship' : 'five_card';
