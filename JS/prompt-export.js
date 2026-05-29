@@ -328,6 +328,10 @@
         .replace(/（配對是從代表牌兩側對稱展開[\s\S]*?）/g, '')
         .replace(/【Op4 雙版本對照】[\s\S]*?鏡像細節」。/g, '')
         .replace(/（Mathers：[^（）]*）/g, '')
+        // ── v74.1 清理：截斷的方向尊嚴 JSON、孤兒 📍、與 Thoth 鎖矛盾的 Waite 挑版本提示 ──
+        .replace(/【本 Op 宮廷牌面向互動[\s\S]*$/g, '')
+        .replace(/\n[ \t]*\u{1F4CD}[ \t]*(?=\n)/gu, '')
+        .replace(/★ AI 提示:Waite 與 Crowley[\s\S]*?並列。/g, '')
         .replace(/（v63 正統 Book T：[\s\S]*?結論牌」。）/g, '')
         .replace(/（★ Mathers 原文：[\s\S]*?本身的能量。）/g, '')
         .replace(/★ 本 Op 為[\s\S]*?排名。/g, '')
