@@ -348,6 +348,32 @@
       </div>
     </div>
 
+    <!-- ═══ 牌陣選擇（塔羅快讀）═══ -->
+    <div class="card" id="jy-spread-card">
+      <div class="card-title"><i class="fas fa-clone"></i> 選擇牌陣</div>
+      <button class="jy-spread-trigger" type="button" onclick="openSpreadPicker()">
+        <span class="jy-spread-trigger-icon"><i class="fas fa-wand-magic-sparkles" id="jy-spread-cur-icon"></i></span>
+        <span class="jy-spread-trigger-body">
+          <span class="jy-spread-trigger-name" id="jy-spread-cur-name">自動判斷</span>
+          <span class="jy-spread-trigger-sub" id="jy-spread-cur-sub">依你的問題智慧選擇最適合的牌陣</span>
+        </span>
+        <i class="fas fa-chevron-right jy-spread-trigger-chevron"></i>
+      </button>
+    </div>
+
+    <!-- 牌陣選擇彈窗 -->
+    <div class="jym-overlay" id="jy-spread-modal" style="display:none" onclick="if(event.target===this)closeSpreadPicker()">
+      <div class="jym-sheet">
+        <div class="jym-grip"></div>
+        <div class="jym-head">
+          <div class="jym-title"><i class="fas fa-clone"></i> 選擇牌陣</div>
+          <button class="jym-close" type="button" onclick="closeSpreadPicker()" aria-label="關閉">&times;</button>
+        </div>
+        <div class="jym-sub">不同問題適合不同牌陣 ・ 選「自動」我會依你的問題判斷最合適的</div>
+        <div class="jym-list" id="jy-spread-list"></div>
+      </div>
+    </div>
+
     <!-- 基本資料（v17 升級版） -->
     <div class="card">
       <div class="card-title"><i class="fas fa-user"></i> 出生資料</div>
@@ -1247,7 +1273,7 @@
      v70 兩工具(塔羅快讀/開鑰之法)均不需要，呼叫點皆有 try/typeof 守門。
      改為「進站 idle 後背景延後載入」→ 首屏少 parse 約 1.5MB，一進站不再卡。
      注意：仍會載入(只是晚幾秒)，故即使某分支用到也不會缺、不會崩。 -->
-<script src="JS/tarot_upgrade.js?v=20260529v70_7" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260529v70_9" defer></script>
 <!-- ★ v70 全免費：payment-wall.js 已移除 -->
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
@@ -1255,7 +1281,7 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260507v69_3_0" defer></script>
-<script src="JS/ui.js?v=20260529v73_0" defer></script>
+<script src="JS/ui.js?v=20260529v73_1" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260529v73_0" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
