@@ -1129,6 +1129,38 @@ enhanceTarot = function(tarot) {
       h += '</div>';
       h += '<div class="jy-arrow">← 過去 ─── 轉折 ─── 結果 →</div>';
     }
+    else if (spreadId === 'fifteen_card') {
+      // ── 金色黎明 15 張 Fifteen-Card Method（Wang / Crowley LWB）──
+      // 五個 triad（每組 3 張，中欄＝該組主牌），用 elemental dignity 解讀、不用逆位
+      // 正統：核心(querent)三張在中央；上下為替代路徑/決策/自然路徑/命運
+      h += '<style>#t-chosen .jy-gd15{display:flex;flex-direction:column;align-items:center;gap:14px}';
+      h += '#t-chosen .jy-gd15 .gd-triad{display:flex;gap:8px;justify-content:center}</style>';
+      h += '<div class="jy-gd15">';
+      var gd15 = [[12,8,4],[13,9,5],[1,0,2],[3,7,11],[6,10,14]];
+      for (var gi = 0; gi < gd15.length; gi++) {
+        var tr = gd15[gi];
+        h += '<div class="gd-triad">' + S(tr[0],tr[0]+1,pn(tr[0])) + S(tr[1],tr[1]+1,pn(tr[1])) + S(tr[2],tr[2]+1,pn(tr[2])) + '</div>';
+      }
+      h += '</div>';
+    }
+    else if (spreadId === 'mathers_21') {
+      // ── Mathers 1888 第二法：3 排 × 7，問者(Significator)在最右 ──
+      // 原典：21 張排在問者左側，每排「由右至左」讀（card 1 最靠右）；過去/現在/未來 三排
+      h += '<style>#t-chosen .jy-m21{display:flex;align-items:center;justify-content:center;gap:8px;overflow-x:auto;padding:4px 2px}';
+      h += '#t-chosen .jy-m21 .m21-grid{display:flex;flex-direction:column;gap:6px}';
+      h += '#t-chosen .jy-m21 .m21-row{display:flex;gap:5px;flex-direction:row-reverse}';
+      h += '#t-chosen .jy-m21 .tarot-chosen-slot{width:40px!important;height:58px!important}';
+      h += '#t-chosen .jy-m21 .m21-sig{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px}';
+      h += '#t-chosen .jy-m21 .m21-sig .sig-card{width:44px;height:62px;border:1px dashed rgba(212,175,55,.5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:rgba(212,175,55,.7);text-align:center;line-height:1.25}</style>';
+      h += '<div class="jy-m21"><div class="m21-grid">';
+      for (var mr = 0; mr < 3; mr++) {
+        h += '<div class="m21-row">';
+        for (var mc = 0; mc < 7; mc++) { var mi = mr * 7 + mc; h += S(mi, mi+1, ''); }
+        h += '</div>';
+      }
+      h += '</div><div class="m21-sig"><div class="sig-card">問者<br>Sig</div></div></div>';
+      h += '<div class="jy-arrow">每排由右至左讀（1→7）・過去／現在／未來 三排・配對 1↔21 解</div>';
+    }
     else {
       h += '<div class="jy-row">';
       for (var i = 0; i < def.count; i++) h += S(i,i+1,pn(i));
