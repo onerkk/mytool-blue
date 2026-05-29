@@ -7445,12 +7445,56 @@ function resetToHome() {
     _mhObs.observe(document.body, {childList: true, subtree: true});
   }
 
+  // ── 牌位版面強制校正（不依賴 initTarotDeck 覆寫是否生效）──
+  // 不論是誰渲染了 #t-chosen，一律改成「當前牌陣」的真實牌位版面
+  function jyFixChosen() {
+    var chosen = document.getElementById('t-chosen');
+    if (!chosen) return;
+    var step2 = document.getElementById('step-2');
+    if (step2 && step2.classList.contains('hidden')) return;
+    if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length > 0) return; // 已抽牌不動
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var sid = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : (def ? def.id : null);
+    if (!def || !sid || typeof jyBuildSlot !== 'function') return;
+    // 標題校正（已正確則跳過，避免閃爍）
+    try {
+      var te = document.querySelector('#step-2 .card-title');
+      if (te && (te.textContent || '').indexOf(def.zh) < 0) te.innerHTML = '<i class="fas fa-star"></i> ' + def.zh;
+    } catch(e){}
+    // 版面已是此牌陣就不重畫（避免迴圈）
+    if (chosen.getAttribute('data-jy-spread') === sid && chosen.querySelector('.jy-wrap')) return;
+    try {
+      if (typeof jyEnsureSlotCSS === 'function') jyEnsureSlotCSS();
+      var hh = jyBuildSlot(sid, def);
+      if (hh) { chosen.innerHTML = hh; chosen.setAttribute('data-jy-spread', sid); }
+      if (typeof jySetIntro === 'function') jySetIntro(def.count, !!(def.deckFilter === 'minor_only'));
+      var rt = document.getElementById('t-remain-text');
+      if (rt) rt.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + def.count + ' 張';
+      var tc = document.getElementById('t-target-count');
+      if (tc) tc.textContent = String(def.count);
+      console.log('[Tarot] 強制校正版面 →', sid, def.count + '張');
+    } catch(e){}
+  }
+  if ('MutationObserver' in window) {
+    var _tcObs = new MutationObserver(function(){ jyFixChosen(); });
+    var _startTcObs = function(){
+      var c = document.getElementById('t-chosen');
+      if (c) _tcObs.observe(c, {childList: true});
+      var s2 = document.getElementById('step-2');
+      if (s2) _tcObs.observe(s2, {attributes: true, attributeFilter: ['class', 'style']});
+      jyFixChosen();
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _startTcObs);
+    else _startTcObs();
+  }
+  setInterval(jyFixChosen, 600); // 後備：定期校正
+
 })();
 
 
 // ── 螢幕可見版本標記（確認部署是否生效）──
 (function(){
-  var VER = 'ui v73_6';
+  var VER = 'ui v73_7';
   function stamp(){
     var ex = document.getElementById('jy-ver-badge');
     if (ex) { ex.textContent = VER; return; }
