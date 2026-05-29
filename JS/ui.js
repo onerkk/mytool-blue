@@ -6180,6 +6180,20 @@ showAuraResult = function(){
       if (titleEl2 && _def2) titleEl2.innerHTML = '<i class="fas fa-star"></i> ' + _def2.zh;
       var titleText = document.getElementById('t-spread-title-text');
       if (titleText && _def2) titleText.textContent = _def2.zh;
+      // 延遲補強：擋掉任何晚一步覆蓋 #t-chosen 的舊渲染（尚未抽牌時才重畫）
+      setTimeout(function(){
+        try {
+          if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length > 0) return;
+          var _d3 = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+          var _s3 = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : (_d3 ? _d3.id : null);
+          if (typeof jyEnsureSlotCSS === 'function') jyEnsureSlotCSS();
+          var ch3 = document.getElementById('t-chosen');
+          if (ch3 && _d3 && _s3 && typeof jyBuildSlot === 'function') { var hh = jyBuildSlot(_s3, _d3); if (hh) ch3.innerHTML = hh; }
+          var te3 = document.querySelector('#step-2 .card-title');
+          if (te3 && _d3) te3.innerHTML = '<i class="fas fa-star"></i> ' + _d3.zh;
+          if (_d3) jySetIntro(_d3.count, !!(_d3.deckFilter === 'minor_only'));
+        } catch(e) {}
+      }, 300);
     } catch(e) { console.warn('[Tarot Layout]', e); }
   };
 
@@ -7431,4 +7445,21 @@ function resetToHome() {
     _mhObs.observe(document.body, {childList: true, subtree: true});
   }
 
+})();
+
+
+// ── 螢幕可見版本標記（確認部署是否生效）──
+(function(){
+  var VER = 'ui v73_6';
+  function stamp(){
+    var ex = document.getElementById('jy-ver-badge');
+    if (ex) { ex.textContent = VER; return; }
+    var b = document.createElement('div');
+    b.id = 'jy-ver-badge';
+    b.textContent = VER;
+    b.style.cssText = 'position:fixed;left:5px;bottom:5px;z-index:99999;font-size:9px;line-height:1;color:rgba(201,168,76,.6);background:rgba(0,0,0,.45);padding:2px 6px;border-radius:6px;pointer-events:none;font-family:monospace;letter-spacing:.03em';
+    (document.body || document.documentElement).appendChild(b);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stamp);
+  else stamp();
 })();
