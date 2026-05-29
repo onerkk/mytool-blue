@@ -559,96 +559,66 @@ var SPREAD_DEFS = {
 // Relationship: 兩人關係
 // Either-Or: 二選一
 function detectSpreadType(question, type) {
+  // ════════════════════════════════════════════════════════════
+  //  v70.8 選牌陣＝依「問題的性質與結構」，不看長度、不數問號
+  //  正統依據：問題類型對應牌陣
+  //    單一是非/聚焦  → 三牌陣
+  //    兩個人的關係    → 關係牌陣
+  //    抉擇兩條路      → 二選一牌陣
+  //    時機「何時/多久」→ 時間線
+  //    衝突/卡關/怎麼解→ 十字牌陣
+  //    靈性/人生課題  → 生命之樹
+  //    年度/全方位    → 黃道十二宮
+  //    整體開放局勢    → 凱爾特十字（唯一該動用凱爾特的情況）
+  //    純具體生活問題  → 小阿卡那
+  //  ※ 關鍵字清單可依實占經驗自行增刪，順序＝由最specific到最一般
+  // ════════════════════════════════════════════════════════════
   var q = (question || '').trim();
-  var qMarks = (q.match(/[？?]/g) || []).length;
+  type = type || 'general';
 
-  // ★ GD-6,7 修復:加 fifteen_card 與 mathers_21 觸發詞
-  //   前端用戶用關鍵字觸發 GD/Crowley 標準塔羅 spread 與 Mathers 1888 古法
-  // 0.1 GD/Crowley Fifteen-Card Method (15 張英式牌陣)
-  if (/金色黎明.*牌陣|GD.*牌陣|英式.*牌陣|fifteen.?card|十五.?張|Crowley.*牌陣/i.test(q)) {
-    return 'fifteen_card';
-  }
-  // 0.2 Mathers 1888 三排七古法
-  if (/Mathers.*牌陣|1888.*牌陣|三排七|三排.*七|二十一.?張|21.?張.*牌陣|過去現在未來.*牌陣/i.test(q)) {
-    return 'mathers_21';
-  }
+  // 0. 明確點名 GD/Crowley 15 張 與 Mathers 1888 21 張（依名稱，最優先）
+  if (/金色黎明.*牌陣|GD.*牌陣|英式.*牌陣|fifteen.?card|十五.?張|Crowley.*牌陣/i.test(q)) return 'fifteen_card';
+  if (/Mathers.*牌陣|1888.*牌陣|三排七|三排.*七|二十一.?張|21.?張.*牌陣/i.test(q)) return 'mathers_21';
 
-  // 0. 多子問題（3個以上問號）→ 凱爾特十字
-  if (qMarks >= 3) return 'celtic_cross';
+  // 1. 抉擇 / 二選一（兩條明確的路）→ 二選一牌陣
+  if (/還是|或者|二選一|兩個.*選|兩者.*選|選.*哪|哪一個|該不該|要不要|留還是走|去還是留|分還是不分/.test(q)) return 'either_or';
 
-  // 1. 二選一 → 二選一牌陣
-  // ★ Bug #20 fix: 之前用 /A.*B/ 對英文誤觸發（含「Apple Banana」字樣的問題會被當二選一）
-  //   實際二選一中文表達都用「還是/或者/二選一/兩個...選/A 還是 B」這類連接詞
-  //   移除過於寬鬆的 A.*B（中文場景幾乎用不到，移除無損準確度）
-  if (/還是|或者|二選一|兩個.*選|哪一個|兩者.*選|選.*哪/.test(q)) {
-    return 'either_or';
-  }
+  // 2. 時機（什麼時候、要多久）→ 時間線
+  if (/什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|時間點|來得及|還要等|何年何月/.test(q)) return 'timeline';
 
-  // 2. 時機題 → 時間線牌陣
-  if (/什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|時間點|來得及/.test(q)) {
-    return 'timeline';
-  }
+  // 3. 靈性 / 人生課題 / 重複模式 → 生命之樹
+  if (/人生方向|靈性|修行|為什麼一直|為什麼總是|總是重複|一直重複|重複的模式|重複模式|藍圖|使命|功課|課題|業力|前世|靈魂|命運/.test(q)) return 'tree_of_life';
 
-  // 3. 靈性 / 人生方向 / 深層自我 → 生命之樹
-  if (/人生方向|靈性|修行|為什麼一直|總是重複|模式|藍圖|命運|使命|課題|業力|前世|靈魂/.test(q)) {
-    return 'tree_of_life';
+  // 4. 年度 / 流年 / 全方位掃描 → 黃道十二宮
+  if (/年度|明年|今年|流年|這一年|未來一年|12個月|十二個月|12宮|十二宮|黃道|每個面向|各個面向|各方面|全方位/.test(q)) return 'zodiac';
+
+  // 5. 明確要小阿卡那 / 純具體生活瑣事 → 小阿卡那
+  if (/小阿卡那|小牌|minor|只看具體|純具體|生活瑣事|日常細節/.test(q)) return 'minor_arcana';
+
+  // 6. 兩個人的關係 → 關係牌陣
+  //    強關係詞不論 type 都算；弱代名詞(他/她)只在感情類 type 才算，避免誤判
+  if (/前任|現任|復合|分手|曖昧|另一半|男友|女友|老公|老婆|伴侶|喜歡的人|心上人|追求|告白|喜歡我嗎|愛我嗎|喜不喜歡我|愛不愛我|對我有沒有|不理我|不回我|不主動|忽冷忽熱|這段感情|這段關係/.test(q) ||
+      ((type === 'love' || type === 'relationship' || type === 'family') &&
+       /他|她|對方|之間|怎麼想|真心|感情|關係/.test(q))) {
+    return 'relationship';
   }
 
-  // 3.5. 年度/全面/12宮 → 黃道十二宮
-  if (/年度|明年|今年|一年|12個月|12宮|十二宮|黃道|全面掃描|每個面向|各方面/.test(q)) {
-    return 'zodiac';
+  // 7. 衝突 / 卡關 / 「為什麼不順、怎麼解」→ 十字牌陣（核心 vs 阻礙）
+  if (/拉扯|糾結|矛盾|卡住|卡關|進退兩難|衝突|為什麼不順|為什麼卡|為什麼會這樣|怎麼解|怎麼辦|到底是好是壞|該如何化解/.test(q)) return 'cross';
+
+  // 8. 整體開放局勢 / 通盤了解 → 凱爾特十字
+  //    放在所有「有特定結構」的判斷之後：只有問題本身是整體處境、沒有更specific的結構時才用
+  if (/整體|全面|通盤|全盤|完整的局勢|完整局勢|整個狀況|整個情況|整個局面|整個局勢|綜觀|大方向|大局|到底發生什麼|到底發生何事|目前的處境|現在的處境|完整分析/.test(q)) return 'celtic_cross';
+
+  // 9. 單一聚焦的是非 / 會不會（最小結構）→ 三牌陣
+  if (/^(會不會|有沒有|可不可以|能不能|是不是|適不適合|好不好|值不值|行不行)/.test(q) || /嗎[？?]?\s*$/.test(q)) {
+    return 'three_card';
   }
 
-  // 3.6. 明確要求小阿卡那 or 非常具體的生活問題
-  if (/小阿卡那|小牌|minor|具體.*問題|實際.*怎麼做|執行.*步驟/.test(q)) {
-    return 'minor_arcana';
-  }
-
-  // 3.7. 開鑰之法 — 付費功能，不由問題文字觸發，只能從按鈕或選擇器進入
-
-  // 4. 衝突拉扯類 → Cross Spread（十字牌陣）
-  if (/拉扯|糾結|矛盾|卡住|進退兩難|壓力|衝突|阻礙|為什麼不順|為什麼卡|怎麼解|到底是好是壞|目的/.test(q)) {
-    return 'cross';
-  }
-
-  // 5. 關係題（感情類 + 涉及對方）→ 關係牌陣
-  if (type === 'love' || type === 'relationship' || type === 'family') {
-    if (/他|她|對方|另一半|前任|現任|老公|老婆|男友|女友|伴侶|喜歡的人|曖昧|之間|怎麼想|心裡|真心|復合|分手/.test(q)) {
-      // 多問號的關係題 → 升級到凱爾特十字
-      if (qMarks >= 2) return 'celtic_cross';
-      return 'relationship';
-    }
-  }
-
-  // 6. 短的是非題（單一問號、<25字）→ 三牌陣
-  if (qMarks <= 1 && q.length < 25) {
-    if (/^(會不會|有沒有|該不該|可不可以|能不能|是不是|適不適合|好不好|值不值)/.test(q)) {
-      return 'three_card';
-    }
-    if (/嗎[？?]?\s*$/.test(q)) {
-      return 'three_card';
-    }
-  }
-
-  // 7. 中等複雜（2個問號，或問句25-40字）→ 五牌陣
-  if (qMarks === 2 || (q.length >= 25 && q.length <= 40)) {
-    return 'five_card';
-  }
-
-  // 8. 長問句（>40字）→ 凱爾特十字
-  if (q.length > 40 || /整體|全面|深入|詳細|大方向/.test(q)) {
-    return 'celtic_cross';
-  }
-
-  // 9. 預設：根據問題類型
+  // 10. 其餘一般問題：依類型給穩定預設（中等結構＝五牌陣）
   var typeDefault = {
-    love: 'five_card',
-    career: 'five_card',
-    wealth: 'five_card',
-    health: 'five_card',
-    relationship: 'relationship',
-    family: 'relationship',
-    general: 'five_card'
+    love: 'relationship', relationship: 'relationship', family: 'relationship',
+    career: 'five_card', wealth: 'five_card', health: 'five_card', general: 'five_card'
   };
   return typeDefault[type] || 'five_card';
 }
