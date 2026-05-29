@@ -314,6 +314,46 @@
 .jym-item-on{border-color:rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.02));box-shadow:0 0 22px rgba(201,168,76,.06),inset 0 1px 0 rgba(201,168,76,.08)}
 .jym-item-on .jym-check{opacity:1;transform:scale(1)}
 </style>
+<style id="jy-slot-css">
+#t-chosen .jy-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0;width:100%}
+#t-chosen .jy-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+#t-chosen .jy-col{display:flex;flex-direction:column;align-items:center;gap:8px}
+#t-chosen .jy-lbl{font-size:.65rem;color:var(--c-gold,#c9a84c);font-weight:600}
+#t-chosen .jy-arrow{font-size:.62rem;color:var(--c-text-dim,#888);text-align:center;opacity:.6;margin-top:8px}
+#t-chosen .jy-wrap .tarot-chosen-slot{position:relative!important;width:62px!important;height:92px!important;border:1px solid rgba(212,175,55,.18)!important;border-radius:8px!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;flex-shrink:0!important;background:rgba(212,175,55,.03)!important;box-shadow:0 0 8px rgba(212,175,55,.04)!important}
+#t-chosen .jy-wrap .tarot-chosen-slot .slot-label{position:absolute;bottom:-15px;font-size:.46rem;color:rgba(212,175,55,.5);white-space:nowrap;text-align:center;width:84px;left:50%;transform:translateX(-50%)}
+#t-chosen .jy-wrap .tarot-chosen-slot .slot-num{font-size:.6rem;opacity:.45;color:rgba(212,175,55,.5);font-weight:600}
+/* 凱爾特十字：十字 + 右側權杖 */
+#t-chosen .jy-celtic{display:grid;grid-template-columns:64px 64px 64px 14px 64px;grid-template-rows:auto auto auto;gap:20px 6px;align-items:center;justify-content:center;padding:6px 0}
+#t-chosen .jy-celtic .gc-top{grid-column:2;grid-row:1;justify-self:center}
+#t-chosen .jy-celtic .gc-left{grid-column:1;grid-row:2;justify-self:center}
+#t-chosen .jy-celtic .gc-center{grid-column:2;grid-row:2;justify-self:center;position:relative}
+#t-chosen .jy-celtic .gc-right{grid-column:3;grid-row:2;justify-self:center}
+#t-chosen .jy-celtic .gc-bottom{grid-column:2;grid-row:3;justify-self:center}
+#t-chosen .jy-celtic .gc-staff{grid-column:5;grid-row:1/4;display:flex;flex-direction:column-reverse;align-items:center;gap:16px}
+#t-chosen .jy-celtic .tarot-chosen-slot{width:58px!important;height:84px!important}
+/* 生命之樹 */
+#t-chosen .jy-tol{display:flex;flex-direction:column;align-items:center;gap:18px}
+#t-chosen .jy-tol .tol-pair{display:flex;gap:28px;justify-content:center}
+/* 黃道十二宮：圓形 */
+#t-chosen .jy-zodiac{position:relative;width:300px;height:300px;margin:0 auto}
+#t-chosen .jy-zodiac .zod-slot{position:absolute;transform:translate(-50%,-50%)}
+#t-chosen .jy-zodiac .zod-slot .tarot-chosen-slot{width:44px!important;height:64px!important}
+#t-chosen .jy-zodiac .zod-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+/* 金色黎明 15 張：五個三角組 */
+#t-chosen .jy-gd15{display:flex;flex-direction:column;align-items:center;gap:18px}
+#t-chosen .jy-gd15 .gd-triad{display:flex;gap:8px;justify-content:center}
+#t-chosen .jy-gd15 .tarot-chosen-slot{width:52px!important;height:76px!important}
+/* Mathers 21：三排七 + 問者 */
+#t-chosen .jy-m21{display:flex;align-items:center;justify-content:center;gap:8px;overflow-x:auto;padding:4px 2px}
+#t-chosen .jy-m21 .m21-grid{display:flex;flex-direction:column;gap:14px}
+#t-chosen .jy-m21 .m21-row{display:flex;gap:5px;flex-direction:row-reverse;align-items:flex-start}
+#t-chosen .jy-m21 .m21-rowlbl{font-size:.55rem;color:var(--c-gold);writing-mode:vertical-rl;display:flex;align-items:center;padding-left:4px;opacity:.7}
+#t-chosen .jy-m21 .tarot-chosen-slot{width:38px!important;height:54px!important}
+#t-chosen .jy-m21 .tarot-chosen-slot .slot-label{display:none}
+#t-chosen .jy-m21 .m21-sig{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+#t-chosen .jy-m21 .m21-sig .sig-card{width:42px;height:60px;border:1px dashed rgba(212,175,55,.5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:rgba(212,175,55,.75);text-align:center;line-height:1.25}
+</style>
 </head>
 <body>
 <noscript>
@@ -592,7 +632,7 @@
 <section class="step" id="step-2">
   <div class="card">
     <div class="card-title"><i class="fas fa-star"></i> 金色黎明塔羅牌</div>
-    <p class="text-dim text-sm mb-sm" style="text-align:center">感受牌陣意象，從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張與你共鳴的牌</p>
+    <p class="text-dim text-sm mb-sm" id="t-deck-intro" style="text-align:center">感受牌陣意象，從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張與你共鳴的牌</p>
     <p class="tarot-pick-hint" id="pick-hint" style="text-align:center;font-size:.82rem;color:var(--c-gold);margin:.4rem 0;animation:jyBreath 2.5s ease-in-out infinite">觸碰任一張你有感覺的牌，選出 <span id="t-target-count">10</span> 張</p>
     <p class="text-dim text-xs" style="text-align:center;font-size:.68rem;color:var(--c-text-muted);margin:-.1rem 0 .3rem">左右滑動瀏覽牌面 ・ 點擊選牌 ・ 或按「快速全抽」</p>
     <style>@keyframes jyBreath{0%,100%{opacity:.55}50%{opacity:1}}</style>
@@ -1311,7 +1351,7 @@
      v70 兩工具(塔羅快讀/開鑰之法)均不需要，呼叫點皆有 try/typeof 守門。
      改為「進站 idle 後背景延後載入」→ 首屏少 parse 約 1.5MB，一進站不再卡。
      注意：仍會載入(只是晚幾秒)，故即使某分支用到也不會缺、不會崩。 -->
-<script src="JS/tarot_upgrade.js?v=20260529v70_9" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260529v70_10" defer></script>
 <!-- ★ v70 全免費：payment-wall.js 已移除 -->
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
@@ -1319,7 +1359,7 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260507v69_3_0" defer></script>
-<script src="JS/ui.js?v=20260529v73_2" defer></script>
+<script src="JS/ui.js?v=20260529v73_5" defer></script>
 <script src="JS/spread-picker.js?v=20260529b" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260529v73_0" defer></script>
