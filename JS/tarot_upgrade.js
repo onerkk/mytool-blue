@@ -559,69 +559,96 @@ var SPREAD_DEFS = {
 // Relationship: 兩人關係
 // Either-Or: 二選一
 function detectSpreadType(question, type) {
-  // ════════════════════════════════════════════════════════════
-  //  v70.8 選牌陣＝依「問題的性質與結構」，不看長度、不數問號
-  //  正統依據：問題類型對應牌陣
-  //    單一是非/聚焦  → 三牌陣
-  //    兩個人的關係    → 關係牌陣
-  //    抉擇兩條路      → 二選一牌陣
-  //    時機「何時/多久」→ 時間線
-  //    衝突/卡關/怎麼解→ 十字牌陣
-  //    靈性/人生課題  → 生命之樹
-  //    年度/全方位    → 黃道十二宮
-  //    整體開放局勢    → 凱爾特十字（唯一該動用凱爾特的情況）
-  //    純具體生活問題  → 小阿卡那
-  //  ※ 關鍵字清單可依實占經驗自行增刪，順序＝由最specific到最一般
-  // ════════════════════════════════════════════════════════════
   var q = (question || '').trim();
-  type = type || 'general';
+  var qMarks = (q.match(/[？?]/g) || []).length;
 
-  // 0. 明確「點名」這兩個古法時最優先觸發——依官方名稱（一般問題不會誤觸）
-  // 0.1 金色黎明「十五張占卜法」Fifteen Card Method of Tarot Divination（Robert Wang《Introduction to the Golden Dawn Tarot》/ Thoth LWB）
-  //     「金色黎明」是牌組/牌面名稱（到處都有），故僅在同時出現「十五/15/fifteen」時才視為點名此法，避免誤判
-  if (/fifteen[\s-]?card|十五張|15[\s-]?張|英式牌陣|金色黎明.*(十五|15|fifteen)|Crowley.*(十五|15|牌陣)/i.test(q)) return 'fifteen_card';
-  // 0.2 Mathers「第二占卜法」Second Method（S.L. MacGregor Mathers《The Tarot》1888；三排七、由右至左、配對 1↔21）
-  if (/mathers|second[\s-]?method|第二占卜法|第二種占卜法|三排七|三排.*七張?|二十一張|21[\s-]?張|1888/i.test(q)) return 'mathers_21';
-
-  // 1. 抉擇 / 二選一（兩條明確的路）→ 二選一牌陣
-  if (/還是|或者|二選一|兩個.*選|兩者.*選|選.*哪|哪一個|該不該|要不要|留還是走|去還是留|分還是不分/.test(q)) return 'either_or';
-
-  // 2. 時機（什麼時候、要多久）→ 時間線
-  if (/什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|時間點|來得及|還要等|何年何月/.test(q)) return 'timeline';
-
-  // 3. 靈性 / 人生課題 / 重複模式 → 生命之樹
-  if (/人生方向|靈性|修行|為什麼一直|為什麼總是|總是重複|一直重複|重複的模式|重複模式|藍圖|使命|功課|課題|業力|前世|靈魂|命運/.test(q)) return 'tree_of_life';
-
-  // 4. 年度 / 流年 / 全方位掃描 → 黃道十二宮
-  if (/年度|明年|今年|流年|這一年|未來一年|12個月|十二個月|12宮|十二宮|黃道|每個面向|各個面向|各方面|全方位/.test(q)) return 'zodiac';
-
-  // 5. 明確要小阿卡那 / 純具體生活瑣事 → 小阿卡那
-  if (/小阿卡那|小牌|minor|只看具體|純具體|生活瑣事|日常細節/.test(q)) return 'minor_arcana';
-
-  // 6. 兩個人的關係 → 關係牌陣
-  //    強關係詞不論 type 都算；弱代名詞(他/她)只在感情類 type 才算，避免誤判
-  if (/前任|現任|復合|分手|曖昧|另一半|男友|女友|老公|老婆|伴侶|喜歡的人|心上人|追求|告白|喜歡我嗎|愛我嗎|喜不喜歡我|愛不愛我|對我有沒有|不理我|不回我|不主動|忽冷忽熱|這段感情|這段關係/.test(q) ||
-      ((type === 'love' || type === 'relationship' || type === 'family') &&
-       /他|她|對方|之間|怎麼想|真心|感情|關係/.test(q))) {
-    return 'relationship';
+  // ★ GD-6,7 修復:加 fifteen_card 與 mathers_21 觸發詞
+  //   前端用戶用關鍵字觸發 GD/Crowley 標準塔羅 spread 與 Mathers 1888 古法
+  // 0.1 GD/Crowley Fifteen-Card Method (15 張英式牌陣)
+  if (/金色黎明.*牌陣|GD.*牌陣|英式.*牌陣|fifteen.?card|十五.?張|Crowley.*牌陣/i.test(q)) {
+    return 'fifteen_card';
+  }
+  // 0.2 Mathers 1888 三排七古法
+  if (/Mathers.*牌陣|1888.*牌陣|三排七|三排.*七|二十一.?張|21.?張.*牌陣|過去現在未來.*牌陣/i.test(q)) {
+    return 'mathers_21';
   }
 
-  // 7. 衝突 / 卡關 / 「為什麼不順、怎麼解」→ 十字牌陣（核心 vs 阻礙）
-  if (/拉扯|糾結|矛盾|卡住|卡關|進退兩難|衝突|為什麼不順|為什麼卡|為什麼會這樣|怎麼解|怎麼辦|到底是好是壞|該如何化解/.test(q)) return 'cross';
+  // 0. 多子問題（3個以上問號）→ 凱爾特十字
+  if (qMarks >= 3) return 'celtic_cross';
 
-  // 8. 整體開放局勢 / 通盤了解 → 凱爾特十字
-  //    放在所有「有特定結構」的判斷之後：只有問題本身是整體處境、沒有更specific的結構時才用
-  if (/整體|全面|通盤|全盤|完整的局勢|完整局勢|整個狀況|整個情況|整個局面|整個局勢|綜觀|大方向|大局|到底發生什麼|到底發生何事|目前的處境|現在的處境|完整分析/.test(q)) return 'celtic_cross';
-
-  // 9. 單一聚焦的是非 / 會不會（最小結構）→ 三牌陣
-  if (/^(會不會|有沒有|可不可以|能不能|是不是|適不適合|好不好|值不值|行不行)/.test(q) || /嗎[？?]?\s*$/.test(q)) {
-    return 'three_card';
+  // 1. 二選一 → 二選一牌陣
+  // ★ Bug #20 fix: 之前用 /A.*B/ 對英文誤觸發（含「Apple Banana」字樣的問題會被當二選一）
+  //   實際二選一中文表達都用「還是/或者/二選一/兩個...選/A 還是 B」這類連接詞
+  //   移除過於寬鬆的 A.*B（中文場景幾乎用不到，移除無損準確度）
+  if (/還是|或者|二選一|兩個.*選|哪一個|兩者.*選|選.*哪/.test(q)) {
+    return 'either_or';
   }
 
-  // 10. 其餘一般問題：依類型給穩定預設（中等結構＝五牌陣）
+  // 2. 時機題 → 時間線牌陣
+  if (/什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|時間點|來得及/.test(q)) {
+    return 'timeline';
+  }
+
+  // 3. 靈性 / 人生方向 / 深層自我 → 生命之樹
+  if (/人生方向|靈性|修行|為什麼一直|總是重複|模式|藍圖|命運|使命|課題|業力|前世|靈魂/.test(q)) {
+    return 'tree_of_life';
+  }
+
+  // 3.5. 年度/全面/12宮 → 黃道十二宮
+  if (/年度|明年|今年|一年|12個月|12宮|十二宮|黃道|全面掃描|每個面向|各方面/.test(q)) {
+    return 'zodiac';
+  }
+
+  // 3.6. 明確要求小阿卡那 or 非常具體的生活問題
+  if (/小阿卡那|小牌|minor|具體.*問題|實際.*怎麼做|執行.*步驟/.test(q)) {
+    return 'minor_arcana';
+  }
+
+  // 3.7. 開鑰之法 — 付費功能，不由問題文字觸發，只能從按鈕或選擇器進入
+
+  // 4. 衝突拉扯類 → Cross Spread（十字牌陣）
+  if (/拉扯|糾結|矛盾|卡住|進退兩難|壓力|衝突|阻礙|為什麼不順|為什麼卡|怎麼解|到底是好是壞|目的/.test(q)) {
+    return 'cross';
+  }
+
+  // 5. 關係題（感情類 + 涉及對方）→ 關係牌陣
+  if (type === 'love' || type === 'relationship' || type === 'family') {
+    if (/他|她|對方|另一半|前任|現任|老公|老婆|男友|女友|伴侶|喜歡的人|曖昧|之間|怎麼想|心裡|真心|復合|分手/.test(q)) {
+      // 多問號的關係題 → 升級到凱爾特十字
+      if (qMarks >= 2) return 'celtic_cross';
+      return 'relationship';
+    }
+  }
+
+  // 6. 短的是非題（單一問號、<25字）→ 三牌陣
+  if (qMarks <= 1 && q.length < 25) {
+    if (/^(會不會|有沒有|該不該|可不可以|能不能|是不是|適不適合|好不好|值不值)/.test(q)) {
+      return 'three_card';
+    }
+    if (/嗎[？?]?\s*$/.test(q)) {
+      return 'three_card';
+    }
+  }
+
+  // 7. 中等複雜（2個問號，或問句25-40字）→ 五牌陣
+  if (qMarks === 2 || (q.length >= 25 && q.length <= 40)) {
+    return 'five_card';
+  }
+
+  // 8. 長問句（>40字）→ 凱爾特十字
+  if (q.length > 40 || /整體|全面|深入|詳細|大方向/.test(q)) {
+    return 'celtic_cross';
+  }
+
+  // 9. 預設：根據問題類型
   var typeDefault = {
-    love: 'relationship', relationship: 'relationship', family: 'relationship',
-    career: 'five_card', wealth: 'five_card', health: 'five_card', general: 'five_card'
+    love: 'five_card',
+    career: 'five_card',
+    wealth: 'five_card',
+    health: 'five_card',
+    relationship: 'relationship',
+    family: 'relationship',
+    general: 'five_card'
   };
   return typeDefault[type] || 'five_card';
 }
@@ -1038,6 +1065,13 @@ enhanceTarot = function(tarot) {
       // 中：4(近期過去) - 1+2(核心+阻礙疊放) - 6(近期走向)
       // 下：3(根因)
       // 右柱（Staff）從下到上：7 8 9 10
+      h += '<style>#t-chosen .jy-celtic{display:grid;grid-template-columns:70px 70px 70px 16px 70px;grid-template-rows:auto auto auto;gap:8px 6px;align-items:center;justify-content:center}';
+      h += '#t-chosen .jy-celtic .gc-top{grid-column:2;grid-row:1;justify-self:center}';
+      h += '#t-chosen .jy-celtic .gc-left{grid-column:1;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-celtic .gc-center{grid-column:2;grid-row:2;justify-self:center;position:relative}';
+      h += '#t-chosen .jy-celtic .gc-right{grid-column:3;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-celtic .gc-bottom{grid-column:2;grid-row:3;justify-self:center}';
+      h += '#t-chosen .jy-celtic .gc-staff{grid-column:5;grid-row:1/4;display:flex;flex-direction:column-reverse;align-items:center;gap:6px}</style>';
       h += '<div class="jy-celtic">';
       h += '<div class="gc-top">' + S(4,5,pn(4)) + '</div>';
       h += '<div class="gc-left">' + S(3,4,pn(3)) + '</div>';
@@ -1056,6 +1090,8 @@ enhanceTarot = function(tarot) {
       //    7(Netzach)  8(Hod)
       //        9(Yesod)
       //       10(Malkuth)
+      h += '<style>#t-chosen .jy-tol{display:flex;flex-direction:column;align-items:center;gap:8px}';
+      h += '#t-chosen .jy-tol .tol-pair{display:flex;gap:24px;justify-content:center}</style>';
       h += '<div class="jy-tol">';
       h += S(0,1,pn(0));
       h += '<div class="tol-pair">' + S(1,2,pn(1)) + S(2,3,pn(2)) + '</div>';
@@ -1068,6 +1104,10 @@ enhanceTarot = function(tarot) {
     }
     else if (spreadId === 'zodiac') {
       // ── 黃道十二宮：圓形 12 宮 + 中心總結牌 ──
+      h += '<style>#t-chosen .jy-zodiac{position:relative;width:320px;height:320px;margin:0 auto}';
+      h += '#t-chosen .jy-zodiac .zod-slot{position:absolute;transform:translate(-50%,-50%)}';
+      h += '#t-chosen .jy-zodiac .zod-slot .tarot-chosen-slot{width:46px!important;height:68px!important}';
+      h += '#t-chosen .jy-zodiac .zod-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}</style>';
       h += '<div class="jy-zodiac">';
       // 12 宮按圓形排列（從 270° 即頂部開始，逆時針對應占星宮位）
       for (var zi = 0; zi < 12; zi++) {
@@ -1118,30 +1158,6 @@ enhanceTarot = function(tarot) {
       for (var i = 0; i < 5; i++) h += S(i,i+1,pn(i));
       h += '</div>';
       h += '<div class="jy-arrow">← 過去 ─── 轉折 ─── 結果 →</div>';
-    }
-    else if (spreadId === 'fifteen_card') {
-      // ── 金色黎明 15 張 Fifteen-Card Method（Wang / Crowley LWB）──
-      // 五個 triad（每組 3 張，中欄＝該組主牌），用 elemental dignity 解讀、不用逆位
-      // 正統：核心(querent)三張在中央；上下為替代路徑/決策/自然路徑/命運
-      h += '<div class="jy-gd15">';
-      var gd15 = [[12,8,4],[13,9,5],[1,0,2],[3,7,11],[6,10,14]];
-      for (var gi = 0; gi < gd15.length; gi++) {
-        var tr = gd15[gi];
-        h += '<div class="gd-triad">' + S(tr[0],tr[0]+1,pn(tr[0])) + S(tr[1],tr[1]+1,pn(tr[1])) + S(tr[2],tr[2]+1,pn(tr[2])) + '</div>';
-      }
-      h += '</div>';
-    }
-    else if (spreadId === 'mathers_21') {
-      // ── Mathers 1888 第二法：3 排 × 7，問者(Significator)在最右 ──
-      // 原典：21 張排在問者左側，每排「由右至左」讀（card 1 最靠右）；過去/現在/未來 三排
-      h += '<div class="jy-m21"><div class="m21-grid">';
-      for (var mr = 0; mr < 3; mr++) {
-        h += '<div class="m21-row">';
-        for (var mc = 0; mc < 7; mc++) { var mi = mr * 7 + mc; h += S(mi, mi+1, ''); }
-        h += '</div>';
-      }
-      h += '</div><div class="m21-sig"><div class="sig-card">問者<br>Sig</div></div></div>';
-      h += '<div class="jy-arrow">每排由右至左讀（1→7）・過去／現在／未來 三排・配對 1↔21 解</div>';
     }
     else {
       h += '<div class="jy-row">';
@@ -4106,6 +4122,8 @@ enhanceTarot = function(tarot) {
     setTimeout(function() { invocLayer.classList.add('show-scroll'); }, 2400);
     setTimeout(function() { invocLayer.classList.add('show-prayer'); }, 3600);
     setTimeout(function() { invocLayer.classList.add('show-btn'); }, 8500);
+    // 自動承接：祝禱呈現後自動進主流程（使用者仍可在這之前手動點）
+    if (_ootkAuto) setTimeout(function(){ try{ if(beginBtn && invocLayer && invocLayer.style.display!=='none') beginBtn.click(); }catch(_e){} }, 9200);
 
     beginBtn.onclick = function() {
       invocLayer.classList.add('fade-out');
@@ -4124,11 +4142,14 @@ enhanceTarot = function(tarot) {
     var phasesEl;
     var nextBtn;
     var _advanceLock = false;
+    var _ootkAuto = true;            // 開鑰自動推進總開關（歐那 2026/5/30）
+    var _lastPhaseHadBanner = false; // 本階段是否出現警示/揭示卡 → 有則停下等使用者
 
     function startStageFlow() {
       phasesEl = document.getElementById('ootk-phases');
       nextBtn = document.getElementById('ootk-next');
       nextBtn.addEventListener('click', advancePhase);
+      if (_ootkAuto) setTimeout(function(){ try{ advancePhase(); }catch(_e){} }, 600);
     }
 
     function advancePhase() {
@@ -4256,6 +4277,7 @@ enhanceTarot = function(tarot) {
         }
       }
 
+      _lastPhaseHadBanner = !!abandonBanner; // 有揭示/警示卡 → 自動模式下停在此階段等使用者
       phaseDiv.innerHTML = abandonBanner + _renderPhase(currentPhase, label, opData, results);
       phasesEl.appendChild(phaseDiv);
       requestAnimationFrame(function() { requestAnimationFrame(function() { phaseDiv.classList.add('visible'); }); });
@@ -4268,6 +4290,15 @@ enhanceTarot = function(tarot) {
         nextBtn.textContent = '🌙 靜月為你解讀(五次獨立讀盤)';
         nextBtn.onclick = function() { overlay.remove(); if (typeof goStep === 'function') goStep('step-tarot'); _triggerOOTKAI(results); };
         document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
+      }
+      // ── 自動推進：本階段無警示卡才自動往下；有卡則停在此處等使用者（重抽鈕已在卡內）──
+      if (_ootkAuto && !_lastPhaseHadBanner) {
+        if (currentPhase < 4) {
+          setTimeout(function(){ try{ advancePhase(); }catch(_e){} }, 2600);
+        } else {
+          // 第五階段完成 → 自動進入解讀
+          setTimeout(function(){ try{ if(nextBtn) nextBtn.click(); }catch(_e){} }, 2600);
+        }
       }
     }
 
@@ -5951,7 +5982,12 @@ enhanceTarot = function(tarot) {
   //   新版:確認 + 清結果 + 重啟 OOTK 流程,form 資料保留(S.form 在 window 上不會丟)
   //   ★ v70.2(歐那 2026/5/29):全免費，重抽不再消耗次數，移除恐嚇文字
   window._jyOOTKRedraw = function() {
-    // 直接重抽，不跳 confirm（歐那 2026/5/30）——免費不限次，提示框徒增一步
+    var msg = '確定要重抽整盤嗎?\n\n' +
+              '會重新進入開鑰之法儀式抽新牌,當前盤面不保留。\n' +
+              '你填的問題和生辰會保留,不用重新輸入。\n\n' +
+              '(完全免費，重抽不限次數。若想保留當前解讀,請選 [取消]。)';
+    if (!confirm(msg)) return;
+
     try {
       // 清掉當前 OOTK 結果(避免下次入口誤觸發舊資料)
       window._ootkResults = null;
