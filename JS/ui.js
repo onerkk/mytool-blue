@@ -6270,6 +6270,8 @@ showAuraResult = function(){
     if (_prevSubmitFast) _prevSubmitFast.apply(this, arguments);
   };
 
+  // ── 把牌陣渲染函式換出給另一個 IIFE 的 jyFixChosen 使用 ──
+  try { window.jyBuildSlot = jyBuildSlot; window.jyEnsureSlotCSS = jyEnsureSlotCSS; window.jySetIntro = jySetIntro; } catch(e){}
   console.log('[Home] 首頁重設計 + 額度管控 + 塔羅牌陣已啟用');
 })();
 
@@ -7450,11 +7452,11 @@ function resetToHome() {
     var step2 = document.getElementById('step-2');
     var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
     var sid = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : (def ? def.id : null);
-    var hasJBS = typeof jyBuildSlot === 'function';
+    var hasJBS = typeof window.jyBuildSlot === 'function';
     var nDrawn = (typeof drawnCards !== 'undefined' && drawnCards) ? drawnCards.length : -1;
     // ── 診斷：把 #t-chosen 真實狀態印到左下角 ──
     try {
-      var dd = 'v9 ' + (sid || '?');
+      var dd = 'v10 ' + (sid || '?');
       if (chosen) {
         dd += ' wrap' + (chosen.querySelector('.jy-wrap') ? 'Y' : 'N');
         dd += ' cel' + (chosen.querySelector('.jy-celtic') ? 'Y' : 'N');
@@ -7480,10 +7482,10 @@ function resetToHome() {
     } catch(e){}
     if (chosen.querySelector('[data-jyfix="' + sid + '"]')) return; // 已是我畫的此牌陣
     try {
-      if (typeof jyEnsureSlotCSS === 'function') jyEnsureSlotCSS();
-      var hh = jyBuildSlot(sid, def);
+      if (typeof window.jyEnsureSlotCSS === 'function') window.jyEnsureSlotCSS();
+      var hh = window.jyBuildSlot(sid, def);
       if (hh) { chosen.innerHTML = hh; var fc = chosen.firstElementChild; if (fc) fc.setAttribute('data-jyfix', sid); }
-      if (typeof jySetIntro === 'function') jySetIntro(def.count, !!(def.deckFilter === 'minor_only'));
+      if (typeof window.jySetIntro === 'function') window.jySetIntro(def.count, !!(def.deckFilter === 'minor_only'));
       var rt = document.getElementById('t-remain-text');
       if (rt) rt.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + def.count + ' 張';
       var tc = document.getElementById('t-target-count');
@@ -7509,7 +7511,7 @@ function resetToHome() {
 
 // ── 螢幕可見版本標記（確認部署是否生效）──
 (function(){
-  var VER = 'v73_9 diag';
+  var VER = 'v73_10 diag';
   function stamp(){
     var ex = document.getElementById('jy-ver-badge');
     if (ex) { ex.textContent = VER; return; }
