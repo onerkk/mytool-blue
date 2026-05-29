@@ -5609,10 +5609,9 @@ showAuraResult = function(){
       // 快問按鈕（v28：更具體的問題 → 更準的解讀）
       '<div class="jy-home-quick">' +
         '<div style="width:100%;text-align:center;font-size:.68rem;color:var(--c-text-muted,#6b6355);margin-bottom:.2rem;letter-spacing:.04em">不用想，點了就問 ↓</div>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'他心裡到底怎麼看我？是認真的還是在觀望？\')"><span class="jy-qk-icon">💕</span>他怎麼看我</button>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'我現在這份工作該留還是走？留下來會怎樣、走了會怎樣？\')"><span class="jy-qk-icon">💼</span>工作該留嗎</button>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'下半年感情會有新的發展嗎？我需要主動還是等？\')"><span class="jy-qk-icon">🌸</span>感情有機會嗎</button>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'我最近做的這個決定是對的嗎？會帶我去哪裡？\')"><span class="jy-qk-icon">⚖️</span>決定對嗎</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'我今天的整體運勢走向如何？今天需要特別注意或把握什麼？\')"><span class="jy-qk-icon">🌙</span>今天運勢如何</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'我今天的財運如何？今天適不適合進貨、談錢、做生意上的決定？\')"><span class="jy-qk-icon">💰</span>今天財運如何</button>' +
+        '<button class="jy-qk" onclick="_quickAsk(\'我今天的桃花與感情運如何？今天在感情上會有什麼互動或機會？\')"><span class="jy-qk-icon">🌸</span>今天桃花運如何</button>' +
       '</div>' +
 
       // 靜月靈籤入口
