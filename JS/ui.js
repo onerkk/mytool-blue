@@ -5556,6 +5556,7 @@ showAuraResult = function(){
 
   // ══ 需要登入彈窗 ══
   function _showLoginModal() {
+    return; // ★ 全免費/無登入：登入彈窗已停用
     if (document.getElementById('jy-login-modal')) return;
     var modal = document.createElement('div');
     modal.id = 'jy-login-modal';
@@ -5901,10 +5902,7 @@ showAuraResult = function(){
   // ★ v21：攔截 submitWithTool — 塔羅也需要登入
   var _origSubmitWithTool = window.submitWithTool;
   window.submitWithTool = async function() {
-    if (!window._JY_ADMIN_TOKEN && !window._JY_SESSION_TOKEN) {
-      _showLoginModal();
-      return;
-    }
+    // ★ 全免費/無登入：塔羅不需登入（移除登入闘門）
     if (_origSubmitWithTool) _origSubmitWithTool.apply(this, arguments);
   };
 
@@ -7494,7 +7492,7 @@ function resetToHome() {
 
 // ── 螢幕可見版本標記（確認部署是否生效）──
 (function(){
-  var VER = 'ui v73_7';
+  var VER = 'ui v73_8';
   function stamp(){
     var ex = document.getElementById('jy-ver-badge');
     if (ex) { ex.textContent = VER; return; }
