@@ -587,6 +587,16 @@ function goStep(n){
       }
     }
     if(targetId==='step-3'){
+      // ★ 張數守門：塔羅模式下，drawnCards 未達牌陣要求 → 擋回 step-2
+      if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length > 0) {
+        var _gDef3 = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+        var _gNeed = _gDef3 ? _gDef3.count : 10;
+        if (drawnCards.length < _gNeed) {
+          alert('尚需抽滿 ' + _gNeed + ' 張牌（目前 ' + drawnCards.length + ' 張）');
+          goStep(2);
+          return;
+        }
+      }
       runAnalysis();
       // ★ v28：sticky-cta 和回饋區都不在這裡顯示——等 AI 分析完成後由 ai-analysis.js 觸發
       // 如果有多種結果，刷新導航

@@ -1305,24 +1305,9 @@ enhanceTarot = function(tarot) {
     var targetCount = def ? def.count : 10;
     if (drawnCards.length >= targetCount) return;
 
-    // ★ Bug1 根治 (2026-05-30)：
-    //   tarot.js 原始 pickCard 在第 10 張時硬觸發 showSpread()，提早結束流程。
-    //   fifteen_card(15張)/mathers_21(21張) 因此被截斷在第10張。
-    //   解法：呼叫原始鏈之前，暫時將 showSpread 換成「必須達到 targetCount 才放行」
-    //   的守門版本；呼叫完成後立刻還原，不影響其他路徑。
-    var _ssBackup = null;
-    if (targetCount !== 10 && typeof showSpread === 'function') {
-      _ssBackup = showSpread;
-      showSpread = function() {
-        if (drawnCards.length >= targetCount) { _ssBackup && _ssBackup(); }
-        // 張數未達標時靜默攔截，不執行任何動作
-      };
-    }
-
+    // ★ Bug1 根治 v2：temp-gate 模式已移除（原始 pickCard 若異步呼叫 showSpread，
+    //   同步還原會導致 gate 失效）。改由 showSpread 自身永久守門（見下方覆寫）。
     _origPickCard2(deckIdx, deckEl);
-
-    // 呼叫完成後立刻還原（同步路徑）
-    if (_ssBackup !== null) { showSpread = _ssBackup; }
 
     // ★ 修正(歐那 2026/5/30)：原本 `targetCount < 10` 只處理少於10張的牌陣，
     //   導致 15/21 張牌陣 fallback 到原版凱爾特(10張)完成判定 → 抽10張就結束、用錯位置名。
@@ -1350,9 +1335,18 @@ enhanceTarot = function(tarot) {
     }
   };
 
-  // ── 覆寫 showSpread 的標題更新 ──
+  // ── 覆寫 showSpread 的標題更新 + 永久張數守門 ──
   var _origShowSpread2 = showSpread;
   showSpread = function() {
+    // ★ 永久守門：張數未達牌陣要求時，靜默攔截，不執行任何動作
+    //   根治原始 tarot.js pickCard 在第 10 張硬呼叫 showSpread 的問題
+    //   影響牌陣：zodiac(13), fifteen_card(15), mathers_21(21), mathers_horseshoe(26)
+    var _gDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var _gTarget = _gDef ? _gDef.count : 10;
+    if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length < _gTarget) {
+      console.log('[showSpread] 攔截：已抽', drawnCards.length, '張，需要', _gTarget, '張');
+      return;
+    }
     // 更新 t-spread-sec 的硬編碼標題
     var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
     var titleText = document.getElementById('t-spread-title-text');
