@@ -1368,14 +1368,15 @@ enhanceTarot = function(tarot) {
 // ══════════════════════════════════════════════════════════════════════
 // 9. 開鑰之法 (Opening of the Key) — 正統金色黎明核心計算引擎
 // ══════════════════════════════════════════════════════════════════════
-// 修正版 v2.0：
-// - 單一副牌跑全五階段（不重新洗牌）
-// - Op1：模擬切四堆（YHVH），堆大小不均等
-// - Op2/Op3：按牌的 GD 星座歸屬分配到 12 宮/12 星座
-// - Op4：按牌的 GD 旬(decan)歸屬分配到 36 旬
-// - Op5：按牌的 GD 生命之樹歸屬分配到 10 Sephiroth
-// - 計數值修正：宮廷牌 Knight=4,Queen=4,King=4,Page/Princess=7
-// - Ace 計數值 = 5（GD 標準，與 Crowley 一致）
+// 修正版 v3.0（正統 Book T 對齊）：
+// - 每階段獨立重新洗牌（Book T「Shuffle, etc., as before」）
+// - Op1：模擬切四堆（YHVH），堆大小 nearly equal（Mathers 原文）
+// - Op2：順序輪發到 12 宮（Book T「Deal cards into twelve stacks」）
+// - Op3：順序輪發到 12 星座（Book T「Deal cards into twelve stacks...as before」）
+// - Op4：Sig 居中 + 後續 36 張環繞（Book T 原文）
+// - Op5：順序輪發到 10 質點（Book T「Deal into ten packs」）
+// - 計數值：宮廷 Knight=4,Queen=4,King=4,Page/Princess=7
+// - Ace 計數值 = 11（Crowley Liber 78 / Book T）
 // - 花色名稱修正：匹配 tarot.js 的 'wand'/'cup'/'sword'/'pent'
 // ══════════════════════════════════════════════════════════════════════
 
@@ -2132,6 +2133,7 @@ enhanceTarot = function(tarot) {
     var counted = ootkCounting(activeCards, sigIdx);
     var paired = ootkPairing(activeCards, sigIdx);
     var dignities = ootkDignities(counted.keyCards);
+    var unaspected = ootkUnaspected(activeCards, sigIdx, counted.keyCards, paired);
 
     return {
       piles: { fire: piles.fire.length, water: piles.water.length, air: piles.air.length, earth: piles.earth.length },
@@ -2142,7 +2144,8 @@ enhanceTarot = function(tarot) {
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: dignities
+      dignities: dignities,
+      unaspected: unaspected
     };
   }
 
@@ -2213,6 +2216,13 @@ enhanceTarot = function(tarot) {
     var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
     var counted = ootkCounting(activeCards, sigIdx);
     var paired = ootkPairing(activeCards, sigIdx);
+    var unaspected = ootkUnaspected(activeCards, sigIdx, counted.keyCards, paired);
+
+    // ★ v70.3:附上關鍵宮位牌面（第5/7宮），供對方畫像與感情分析用
+    var keyHouses = {};
+    [0, 4, 6, 7, 9, 11].forEach(function(hi) { // 1宮/5宮/7宮/8宮/10宮/12宮
+      keyHouses[hi + 1] = houses[hi] || [];
+    });
 
     return {
       houseDistribution: houses.map(function(h) { return h.length; }),
@@ -2222,7 +2232,9 @@ enhanceTarot = function(tarot) {
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards)
+      dignities: ootkDignities(counted.keyCards),
+      unaspected: unaspected,
+      keyHouses: keyHouses
     };
   }
 
@@ -2253,16 +2265,18 @@ enhanceTarot = function(tarot) {
 
   function ootkOp3(deck, significatorId) {
     // ════════════════════════════════════════════════════════════
-    // ★ v63 正統 Book T Op3：「Deal cards into twelve stacks for
-    //   the twelve signs of the Zodiac.」 — Mathers Book T
-    // 依 GD 對應表把全副 78 張各自落入十二星座、找 Sig 在哪星座
+    // ★ v70.3 正統 Book T Op3：「Shuffle, etc., as before.
+    //   Deal cards into twelve stacks for the twelve signs of the Zodiac.」
+    // 「as before」= 跟 Op2 一樣順序輪發（idx % 12），不是按 GD 歸屬分配。
+    // Book T / Crowley Book of Thoth / Equinox Vol. I No. 8 三處文字一致。
+    // Op2 vs Op3 的差別在解讀（宮位 vs 星座能量），不在發牌方式。
     // ════════════════════════════════════════════════════════════
     var signs = [];
     for (var s = 0; s < 12; s++) signs.push([]);
 
-    deck.forEach(function(card) {
-      var si = getCardSignIdx(card);
-      signs[si].push(card);
+    // 正統：順序輪發，第1張→牡羊、第2張→金牛...第13張→牡羊...
+    deck.forEach(function(card, idx) {
+      signs[idx % 12].push(card);
     });
 
     var activeSign = -1;
@@ -2277,6 +2291,7 @@ enhanceTarot = function(tarot) {
     var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
     var counted = ootkCounting(activeCards, sigIdx);
     var paired = ootkPairing(activeCards, sigIdx);
+    var unaspected = ootkUnaspected(activeCards, sigIdx, counted.keyCards, paired);
 
     var st = SIGN_TRUMPS[activeSign] || {};
     var trumpName = '';
@@ -2294,7 +2309,8 @@ enhanceTarot = function(tarot) {
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards)
+      dignities: ootkDignities(counted.keyCards),
+      unaspected: unaspected
     };
   }
 
@@ -2518,6 +2534,7 @@ enhanceTarot = function(tarot) {
       countingPath: counted.path,
       pairs: paired,
       dignities: ootkDignities(counted.keyCards),
+      unaspected: ootkUnaspected(activeCards, sigIdx, counted.keyCards, paired),
       // ★ v63 額外提供 Manuscript Q 正統版本（最原始 Mathers 手稿做法）
       mq_keyCards: countedMQ.keyCards,
       mq_countingPath: countedMQ.path,
@@ -2641,16 +2658,17 @@ enhanceTarot = function(tarot) {
 
   function ootkOp5(deck, significatorId) {
     // ════════════════════════════════════════════════════════════
-    // ★ v63 正統 Book T Op5：「Deal into ten packs in the form of
-    //   the Tree of Life.」 — Mathers Book T
-    // 依 GD 對應表把全副 78 張各自落入生命之樹十質點、找 Sig 在哪質點
+    // ★ v70.3 正統 Book T Op5：「Deal into ten packs in the form of
+    //   the Tree of Life.」 — Mathers Book T / Crowley Book of Thoth
+    // 「Deal into ten packs」= 順序輪發（idx % 10），不是按 GD 歸屬分配。
+    // 質點意義由堆序號決定：堆0=Kether、堆1=Chokmah...堆9=Malkuth。
     // ════════════════════════════════════════════════════════════
     var sephirot = [];
     for (var s = 0; s < 10; s++) sephirot.push([]);
 
-    deck.forEach(function(card) {
-      var si = getCardSephirah(card);
-      sephirot[si].push(card);
+    // 正統：順序輪發，第1張→Kether、第2張→Chokmah...第11張→Kether...
+    deck.forEach(function(card, idx) {
+      sephirot[idx % 10].push(card);
     });
 
     var activeSeph = -1;
@@ -2667,6 +2685,8 @@ enhanceTarot = function(tarot) {
     var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
     var counted = ootkCounting(activeCards, sigIdx >= 0 ? sigIdx : 0);
     var paired = ootkPairing(activeCards, sigIdx >= 0 ? sigIdx : 0);
+    var effectiveSigIdx = sigIdx >= 0 ? sigIdx : 0;
+    var unaspected = ootkUnaspected(activeCards, effectiveSigIdx, counted.keyCards, paired);
 
     return {
       sephirahDistribution: sephirot.map(function(s) { return s.length; }),
@@ -2683,7 +2703,8 @@ enhanceTarot = function(tarot) {
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards)
+      dignities: ootkDignities(counted.keyCards),
+      unaspected: unaspected
     };
   }
 
@@ -2890,7 +2911,43 @@ enhanceTarot = function(tarot) {
   }
 
   // ════════════════════════════════════════════════
-  // 完整 OOTK 執行（五階段・單一副牌）
+  // Unaspected 牌計算（PHB「尼羅河源頭」）
+  // 該層既沒被 counting 走到、也沒被 pairing 配到的牌
+  // ════════════════════════════════════════════════
+
+  function ootkUnaspected(activeCards, sigIdx, countedKeyCards, pairs) {
+    if (!activeCards || !activeCards.length) return [];
+    // 收集所有被 counting 或 pairing 觸及的牌 index
+    var touchedIds = {};
+    // Sig 自己算被觸及
+    if (sigIdx >= 0 && activeCards[sigIdx]) {
+      touchedIds[activeCards[sigIdx].id] = true;
+    }
+    // Counting 路徑上的牌
+    if (countedKeyCards) {
+      countedKeyCards.forEach(function(kc) {
+        if (kc && kc.card) touchedIds[kc.card.id] = true;
+      });
+    }
+    // Pairing 配到的牌
+    if (pairs) {
+      pairs.forEach(function(p) {
+        if (p.left) touchedIds[p.left.id] = true;
+        if (p.right) touchedIds[p.right.id] = true;
+      });
+    }
+    // 沒被觸及的 = unaspected
+    var unaspected = [];
+    for (var i = 0; i < activeCards.length; i++) {
+      if (!touchedIds[activeCards[i].id]) {
+        unaspected.push(activeCards[i]);
+      }
+    }
+    return unaspected;
+  }
+
+  // ════════════════════════════════════════════════
+  // 完整 OOTK 執行（五階段・每階段獨立重新洗牌）
   // ════════════════════════════════════════════════
 
   // ════════════════════════════════════════════════════════════
