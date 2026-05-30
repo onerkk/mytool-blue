@@ -51,7 +51,7 @@
       '.jy-spread-trigger:hover .jy-spread-trigger-chevron{transform:translateX(2px);color:var(--c-gold)}',
       // 彈窗（手機由下滑入、桌機置中）
       '.jym-overlay{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center}',
-      '.jym-sheet{background:var(--c-bg-card,#161618);border:1px solid rgba(201,168,76,.2);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:86vh;overflow-y:auto;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 48px rgba(0,0,0,.5);animation:jymUp .32s cubic-bezier(.16,1,.3,1);-webkit-overflow-scrolling:touch}',
+      '.jym-sheet{background:var(--c-bg-card,#161618);border:1px solid rgba(201,168,76,.2);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:86vh;overflow-y:auto;padding:18px 16px calc(96px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 48px rgba(0,0,0,.5);animation:jymUp .32s cubic-bezier(.16,1,.3,1);-webkit-overflow-scrolling:touch}',
       '@media(min-width:640px){.jym-overlay{align-items:center}.jym-sheet{border-radius:20px;animation:jymPop .28s cubic-bezier(.16,1,.3,1)}}',
       '@keyframes jymUp{from{transform:translateY(100%)}to{transform:translateY(0)}}',
       '@keyframes jymPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}',

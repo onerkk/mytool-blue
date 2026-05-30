@@ -847,110 +847,6 @@ function injectSpreadSelector() {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// 7b. 牌陣選擇彈窗 — openSpreadPicker / closeSpreadPicker
-// ══════════════════════════════════════════════════════════════════════
-// 根治 Bug2：HTML 的 openSpreadPicker() 呼叫沒有任何 JS 定義，點按鈕無反應。
-// 這裡完整實作：開啟 modal、填入所有牌陣選項（含 fifteen_card/mathers_21）、
-// 選擇後寫入 window._forcedSpread 並更新按鈕文字。
-(function() {
-  var SPREAD_META = [
-    { id: 'auto',          icon: '✨', name: '自動判斷',           sub: '依你的問題智慧選擇最適合的牌陣',        cards: null },
-    { id: 'three_card',    icon: '🃏', name: '三牌陣',             sub: '過去・現在・未來 / 3 張',               cards: 3 },
-    { id: 'five_card',     icon: '⭐', name: '五牌陣',             sub: '核心 + 四方位 / 5 張',                  cards: 5 },
-    { id: 'cross',         icon: '✚', name: '十字牌陣',           sub: '問題核心 + 四方壓力 / 5 張',             cards: 5 },
-    { id: 'either_or',     icon: '⚖️', name: '二選一牌陣',         sub: '兩個選項各自前景 / 7 張',               cards: 7 },
-    { id: 'timeline',      icon: '📅', name: '時間線牌陣',         sub: '過去 → 轉折 → 未來 / 5 張',             cards: 5 },
-    { id: 'relationship',  icon: '💞', name: '關係牌陣',           sub: '你・對方・關係能量 / 6 張',              cards: 6 },
-    { id: 'celtic_cross',  icon: '☘️', name: '凱爾特十字',         sub: '最全面的單題牌陣 / 10 張',               cards: 10 },
-    { id: 'tree_of_life',  icon: '🌳', name: '生命之樹',           sub: '靈性十個面向深度解讀 / 10 張',           cards: 10 },
-    { id: 'zodiac',        icon: '♈', name: '黃道十二宮',         sub: '年度各宮位掃描 / 12 張',                 cards: 12 },
-    { id: 'minor_arcana',  icon: '🎴', name: '小牌陣',             sub: '日常具體事件 / 56 張小牌',               cards: null },
-    { id: 'fifteen_card',  icon: '🌟', name: '金色黎明 15 張',     sub: 'GD 正統五組三牌 Elemental Dignity / 15 張', cards: 15 },
-    { id: 'mathers_21',    icon: '📜', name: 'Mathers 1888 古法', sub: '三排七・過去現在未來 / 21 張',            cards: 21 },
-    { id: 'ootk',          icon: '🔑', name: '開鑰之法',           sub: '金色黎明最高儀式占卜五階段',             cards: null }
-  ];
-
-  window.openSpreadPicker = function() {
-    var modal = document.getElementById('jy-spread-modal');
-    if (!modal) return;
-    // 填入選項（只填一次）
-    var list = document.getElementById('jy-spread-list');
-    if (list && !list.dataset.built) {
-      list.dataset.built = '1';
-      var currentId = (window._forcedSpread) || 'auto';
-      var html = '';
-      SPREAD_META.forEach(function(s) {
-        var isActive = (s.id === currentId) || (s.id === 'auto' && !window._forcedSpread);
-        html += '<button class="jym-item' + (isActive ? ' jym-item-active' : '') + '" '
-          + 'type="button" data-spread-id="' + s.id + '" '
-          + 'style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;'
-          + 'border-radius:12px;border:1px solid rgba(201,168,76,' + (isActive ? '.35' : '.12') + ');'
-          + 'background:rgba(201,168,76,' + (isActive ? '.08' : '.02') + ');'
-          + 'cursor:pointer;font-family:inherit;margin-bottom:6px;transition:all .2s">'
-          + '<span style="font-size:1.2rem;flex-shrink:0">' + s.icon + '</span>'
-          + '<span style="flex:1;min-width:0">'
-          + '<span style="display:block;font-size:.88rem;font-weight:700;color:' + (isActive ? 'var(--c-gold,#c9a84c)' : 'var(--c-text,#fff)') + '">'
-          + s.name + (s.cards ? ' <span style="font-weight:400;font-size:.75rem;opacity:.6">(' + s.cards + ' 張)</span>' : '') + '</span>'
-          + '<span style="display:block;font-size:.7rem;color:var(--c-text-dim,rgba(255,255,255,.4));margin-top:2px">' + s.sub + '</span>'
-          + '</span>'
-          + (isActive ? '<span style="color:var(--c-gold,#c9a84c);font-size:.8rem">✓</span>' : '')
-          + '</button>';
-      });
-      list.innerHTML = html;
-      list.addEventListener('click', function(e) {
-        var btn = e.target.closest('[data-spread-id]');
-        if (!btn) return;
-        var id = btn.dataset.spreadId;
-        // 更新選中狀態
-        list.querySelectorAll('[data-spread-id]').forEach(function(b) {
-          var active = (b.dataset.spreadId === id);
-          b.style.borderColor = active ? 'rgba(201,168,76,.35)' : 'rgba(201,168,76,.12)';
-          b.style.background = active ? 'rgba(201,168,76,.08)' : 'rgba(201,168,76,.02)';
-          var nameEl = b.querySelector('span > span:first-child');
-          if (nameEl) nameEl.style.color = active ? 'var(--c-gold,#c9a84c)' : 'var(--c-text,#fff)';
-        });
-        // 設定牌陣
-        if (id === 'auto') {
-          window._forcedSpread = null;
-          var curName = document.getElementById('jy-spread-cur-name');
-          var curSub  = document.getElementById('jy-spread-cur-sub');
-          if (curName) curName.textContent = '自動判斷';
-          if (curSub)  curSub.textContent  = '依你的問題智慧選擇最適合的牌陣';
-        } else {
-          window._forcedSpread = id;
-          if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
-          var meta = SPREAD_META.filter(function(m){ return m.id === id; })[0];
-          if (meta) {
-            var curName = document.getElementById('jy-spread-cur-name');
-            var curSub  = document.getElementById('jy-spread-cur-sub');
-            if (curName) curName.textContent = meta.icon + ' ' + meta.name;
-            if (curSub)  curSub.textContent  = meta.sub;
-          }
-        }
-        // 延遲關閉讓用戶看到選中效果
-        setTimeout(function() { window.closeSpreadPicker(); }, 250);
-      });
-    } else if (list) {
-      // 每次開啟重設 active 狀態
-      var currentId = window._forcedSpread || 'auto';
-      list.querySelectorAll('[data-spread-id]').forEach(function(b) {
-        var active = (b.dataset.spreadId === currentId);
-        b.style.borderColor = active ? 'rgba(201,168,76,.35)' : 'rgba(201,168,76,.12)';
-        b.style.background = active ? 'rgba(201,168,76,.08)' : 'rgba(201,168,76,.02)';
-      });
-    }
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  };
-
-  window.closeSpreadPicker = function() {
-    var modal = document.getElementById('jy-spread-modal');
-    if (modal) modal.style.display = 'none';
-    document.body.style.overflow = '';
-  };
-})();
-
-// ══════════════════════════════════════════════════════════════════════
 // 8. 金色黎明宮廷牌元素對應
 // ══════════════════════════════════════════════════════════════════════
 var GD_COURT_ELEMENTS = {
@@ -1404,28 +1300,23 @@ enhanceTarot = function(tarot) {
     if (drawnCards.length >= targetCount) return;
 
     // ★ Bug1 根治 (2026-05-30)：
-    //   tarot.js 原始 pickCard 在第 10 張時硬觸發 showSpread()，結束流程。
-    //   targetCount > 10 的牌陣（15/21 張）被提早結束，後面的完成判定根本輪不到。
-    //   解法：呼叫原始鏈之前，暫時將 showSpread 替換成「張數達標才放行」的守門版。
-    //   原始 showSpread 保存在 _ssBackup，呼叫後立刻還原，不影響其他路徑。
+    //   tarot.js 原始 pickCard 在第 10 張時硬觸發 showSpread()，提早結束流程。
+    //   fifteen_card(15張)/mathers_21(21張) 因此被截斷在第10張。
+    //   解法：呼叫原始鏈之前，暫時將 showSpread 換成「必須達到 targetCount 才放行」
+    //   的守門版本；呼叫完成後立刻還原，不影響其他路徑。
     var _ssBackup = null;
     if (targetCount !== 10 && typeof showSpread === 'function') {
       _ssBackup = showSpread;
       showSpread = function() {
-        // 只有真的到達 targetCount 才呼叫真正的 showSpread
-        if (drawnCards.length >= targetCount) {
-          _ssBackup && _ssBackup();
-        }
-        // 否則靜默攔截，不做任何事
+        if (drawnCards.length >= targetCount) { _ssBackup && _ssBackup(); }
+        // 張數未達標時靜默攔截，不執行任何動作
       };
     }
 
     _origPickCard2(deckIdx, deckEl);
 
-    // 還原 showSpread（同步路徑已跑完）
-    if (_ssBackup !== null) {
-      showSpread = _ssBackup;
-    }
+    // 呼叫完成後立刻還原（同步路徑）
+    if (_ssBackup !== null) { showSpread = _ssBackup; }
 
     // ★ 修正(歐那 2026/5/30)：原本 `targetCount < 10` 只處理少於10張的牌陣，
     //   導致 15/21 張牌陣 fallback 到原版凱爾特(10張)完成判定 → 抽10張就結束、用錯位置名。
