@@ -6008,12 +6008,6 @@ enhanceTarot = function(tarot) {
   //   新版:確認 + 清結果 + 重啟 OOTK 流程,form 資料保留(S.form 在 window 上不會丟)
   //   ★ v70.2(歐那 2026/5/29):全免費，重抽不再消耗次數，移除恐嚇文字
   window._jyOOTKRedraw = function() {
-    var msg = '確定要重抽整盤嗎?\n\n' +
-              '會重新進入開鑰之法儀式抽新牌,當前盤面不保留。\n' +
-              '你填的問題和生辰會保留,不用重新輸入。\n\n' +
-              '(完全免費，重抽不限次數。若想保留當前解讀,請選 [取消]。)';
-    if (!confirm(msg)) return;
-
     try {
       // 清掉當前 OOTK 結果(避免下次入口誤觸發舊資料)
       window._ootkResults = null;
