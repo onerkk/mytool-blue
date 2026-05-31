@@ -404,8 +404,10 @@
       if (o.mq_countingPath && o.mq_countingPath.length) L.push('Op4 環形 Counting（順發牌方向，1↔36 時序）：' + o.mq_countingPath.map(function (p) { return (p.cardName || '?') + '〔走' + p.countValue + '〕'; }).join(' → '));
       if (o.pairs && o.pairs.length) L.push('Pairing 配對（Sig 兩側往外，#1 最直接）：' + o.pairs.map(function (pr, i) { if (!pr || pr.single || !pr.right) return '#' + (i + 1) + ' 單張殘餘:' + cn(pr && pr.left); return '#' + (i + 1) + ' ' + cn(pr.left) + '↔' + cn(pr.right) + (pr.dignity ? '〔' + safeText(pr.dignity) + '〕' : ''); }).join('；'));
       if (o.dignities) { var _dg = safeText(o.dignities); if (_dg) L.push('元素尊嚴：' + _dg); }
+      // ★ v75.2：Op4 預算公曆日期，明確顯示，AI 不需再自己換算
+      if (o.decanDateRange) L.push('聚焦旬：' + (o.decanSign||'') + ' ' + (o.decanRange||'') + ' → 公曆約 ' + o.decanDateRange + '（旬主星：' + (o.decanPlanet||'') + '）');
       // op-specific 落點與其餘欄位（宮位/星座/旬/質點及其含義，名稱不一，safeText 保底）
-      var _rest = {}, _skip = { piles: 1, activePile: 1, meaning: 1, activeCards: 1, sigIndex: 1, keyCards: 1, countingPath: 1, mq_countingPath: 1, pairs: 1, dignities: 1 };
+      var _rest = {}, _skip = { piles: 1, activePile: 1, meaning: 1, activeCards: 1, sigIndex: 1, keyCards: 1, countingPath: 1, mq_countingPath: 1, pairs: 1, dignities: 1, decanSign: 1, decanRange: 1, decanPlanet: 1, decanDateRange: 1 };
       Object.keys(o).forEach(function (kk) { if (!_skip[kk]) _rest[kk] = o[kk]; });
       var _rs = safeText(_rest); if (_rs) L.push('本層落點與其他：' + _rs);
       L.push('');
@@ -492,6 +494,8 @@
       '問卜者的問題：',
       question,
       '',
+      // ★ v75.2：注入今天日期，讓 AI 能正確錨定 Op4 時機
+      (tool === 'ootk' ? '占卜日期：' + new Date().toISOString().slice(0, 10) + '\n' : ''),
       payload,
       '',
       t.tail,

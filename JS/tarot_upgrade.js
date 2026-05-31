@@ -2345,6 +2345,30 @@ enhanceTarot = function(tarot) {
     return 0;
   }
 
+  // ★ v75.2：旬→公曆日期範圍（前端預算，不讓 AI 自己查表）
+  var _SIGN_START = {
+    '牡羊':[3,21],'金牛':[4,20],'雙子':[5,21],'巨蟹':[6,21],
+    '獅子':[7,23],'處女':[8,23],'天秤':[9,23],'天蠍':[10,23],
+    '射手':[11,22],'摩羯':[12,22],'水瓶':[1,20],'雙魚':[2,19]
+  };
+  function _decanToDate(sign, range) {
+    if (!sign || !range || !_SIGN_START[sign]) return '';
+    var sd = _SIGN_START[sign];
+    var m = sd[0], d = sd[1];
+    var offset = 0;
+    if (/10.*20/.test(range)) offset = 10;
+    else if (/20.*30/.test(range)) offset = 20;
+    // 簡單加日（不精確處理跨月，但足夠給 AI 一個明確錨點）
+    var daysInMonth = [0,31,28,31,30,31,30,31,31,30,31,30,31];
+    var startDay = d + offset;
+    var startMonth = m;
+    if (startDay > daysInMonth[startMonth]) { startDay -= daysInMonth[startMonth]; startMonth = (startMonth % 12) + 1; }
+    var endDay = startDay + 9;
+    var endMonth = startMonth;
+    if (endDay > daysInMonth[endMonth]) { endDay -= daysInMonth[endMonth]; endMonth = (endMonth % 12) + 1; }
+    return startMonth + '/' + startDay + '~' + endMonth + '/' + endDay;
+  }
+
   function ootkOp4(deck, significatorId) {
     // ════════════════════════════════════════════════════════════
     // ★ v63 正統 Book T Op4：「Find the Significator: set him upon the
@@ -2522,6 +2546,8 @@ enhanceTarot = function(tarot) {
       decanSign: dm.sign || '',
       decanRange: dm.range || '',
       decanPlanet: dm.planet || '',
+      // ★ v75.2：前端預算公曆日期範圍，AI 不需再查對照表
+      decanDateRange: _decanToDate(dm.sign, dm.range),
       activeCards: activeCards,
       keyCards: counted.keyCards,
       countingPath: counted.path,
