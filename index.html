@@ -286,13 +286,13 @@
 .jy-spread-trigger-sub{display:block;font-size:.7rem;color:var(--c-text-dim);line-height:1.4;margin-top:2px}
 .jy-spread-trigger-chevron{color:var(--c-text-muted);font-size:.8rem;flex-shrink:0;transition:transform .2s,color .2s}
 .jy-spread-trigger:hover .jy-spread-trigger-chevron{transform:translateX(2px);color:var(--c-gold)}
-.jym-overlay{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center}
-.jym-sheet{background:var(--c-bg-card,#161618);border:1px solid rgba(201,168,76,.2);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:86vh;overflow-y:auto;padding:18px 16px calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 48px rgba(0,0,0,.5);animation:jymUp .32s cubic-bezier(.16,1,.3,1);-webkit-overflow-scrolling:touch}
-@media(min-width:640px){.jym-overlay{align-items:center}.jym-sheet{border-radius:20px;animation:jymPop .28s cubic-bezier(.16,1,.3,1)}}
-@keyframes jymUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.jym-overlay{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-start;justify-content:center}
+.jym-sheet{background:var(--c-bg-card,#161618);border:1px solid rgba(201,168,76,.2);border-radius:0 0 20px 20px;width:100%;max-width:520px;max-height:100vh;overflow-y:auto;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 12px 48px rgba(0,0,0,.5);animation:jymDown .32s cubic-bezier(.16,1,.3,1);-webkit-overflow-scrolling:touch}
+@media(min-width:640px){.jym-overlay{align-items:center}.jym-sheet{border-radius:20px;max-height:86vh;animation:jymPop .28s cubic-bezier(.16,1,.3,1)}}
+@keyframes jymDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 @keyframes jymPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
-.jym-grip{width:38px;height:4px;border-radius:999px;background:rgba(255,255,255,.16);margin:-4px auto 12px}
-@media(min-width:640px){.jym-grip{display:none}}
+.jym-grip{width:38px;height:4px;border-radius:999px;background:rgba(255,255,255,.16);margin:12px auto -4px}
+.jym-grip{display:none}
 .jym-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .jym-title{font-family:var(--f-display,"Noto Serif TC",serif);font-size:1.12rem;font-weight:700;color:var(--c-gold);display:flex;align-items:center;gap:8px}
 .jym-title i{font-size:.95rem;opacity:.8}
@@ -1364,7 +1364,7 @@
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260507v69_3_0" defer></script>
 <script src="JS/ui.js?v=20260601v75_1" defer></script>
-<script src="JS/spread-picker.js?v=20260530a" defer></script>
+<script src="JS/spread-picker.js?v=20260601v75_1" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
