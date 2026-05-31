@@ -24367,7 +24367,7 @@ function _buildTarotOnlyPayload() {
       spreadZh: (def && def.zh) ? def.zh : '',
       uprightCount: cards.filter(function(c){ return c.isUp; }).length,
       reversedCount: cards.filter(function(c){ return !c.isUp; }).length,
-      summary: cards.filter(function(c){ return c.isUp; }).length + '正' + cards.filter(function(c){ return !c.isUp; }).length + '逆（' + (cards.filter(function(c){ return c.isUp; }).length > cards.filter(function(c){ return !c.isUp; }).length ? '正位多數→整體不能偏負面' : cards.filter(function(c){ return c.isUp; }).length < cards.filter(function(c){ return !c.isUp; }).length ? '逆位多數→整體偏負面' : '正逆各半→拉鋸') + '）',
+      summary: cards.filter(function(c){ return c.isUp; }).length + '正' + cards.filter(function(c){ return !c.isUp; }).length + '逆',
       cards: cards,
       numerology: numerologyText,
       elementInteraction: elementInteraction,
