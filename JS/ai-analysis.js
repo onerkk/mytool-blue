@@ -24217,7 +24217,7 @@ function _buildTarotOnlyPayload() {
       role: cards[i].role || '',
       isUp: cards[i].isUp
     };
-    if (cards[i].role === 'obstacle') person.hint = cards[i].isUp ? '橫跨現況的助力' : '橫跨現況的阻力';
+    if (cards[i].role === 'obstacle') person.hint = '橫跨現況的力量';
     else if (cards[i].role === 'external') person.hint = '外在環境中的人';
     else if (cards[i].role === 'self') person.hint = '問卜者自己的狀態';
     else if (cards[i].role === 'outcome') person.hint = '最終出現的人';
