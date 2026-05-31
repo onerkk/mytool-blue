@@ -6132,12 +6132,30 @@ showAuraResult = function(){
     var t = (S.form && S.form.type) ? S.form.type : 'general';
     if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
       setCurrentSpread(window._forcedSpread);
+      window._autoDetectedSpread = null; // 手動模式
       console.log('[Tarot] 手動指定牌陣 →', window._forcedSpread);
     } else if (typeof detectSpreadType === 'function') {
       var spreadId = detectSpreadType(q, t);
       if (typeof setCurrentSpread === 'function') setCurrentSpread(spreadId);
-      console.log('[Tarot] 問題偵測 → 牌陣:', spreadId);
+      window._autoDetectedSpread = spreadId; // ★ v75：記錄自動偵測結果
+      console.log('[Tarot] 問題偵測 → 牌陣:', spreadId, '(問題類型:', t, ')');
     }
+
+    // ★ v75：更新牌陣選擇器顯示，讓使用者看到偵測結果
+    try {
+      var _curId = window._forcedSpread || window._autoDetectedSpread || '';
+      var _curDef = (typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[_curId]) ? SPREAD_DEFS[_curId] : null;
+      var _trigName = document.getElementById('jy-spread-cur-name');
+      var _trigSub = document.getElementById('jy-spread-cur-sub');
+      if (_trigName && _curDef) {
+        if (window._forcedSpread) {
+          _trigName.textContent = _curDef.zh + '（' + _curDef.count + ' 張）';
+        } else {
+          _trigName.textContent = '自動 → ' + _curDef.zh + '（' + _curDef.count + ' 張）';
+          if (_trigSub) _trigSub.textContent = '依你的問題自動選擇';
+        }
+      }
+    } catch(e) {}
 
     // 取當前牌陣定義
     var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
