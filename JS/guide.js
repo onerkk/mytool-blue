@@ -374,17 +374,9 @@ window._closeGuide=closeGuide;
 // Help button
 // ★ Bug WW 修補:body 可能還沒 ready(若 guide.js 放 <head>),加防呆
 // ★ Bug AM 修補:檢查 .jy-hb 是否已存在,避免重複呼叫產生兩個按鈕
-function _addHelpButton(){
-  if(!document.body){
-    document.addEventListener('DOMContentLoaded',_addHelpButton);
-    return;
-  }
-  if(document.querySelector('.jy-hb')) return; // 已存在不重複建
-  var hb=document.createElement('button');
-  hb.className='jy-hb';hb.textContent='?';hb.title='使用說明';hb.onclick=showGuide;
-  document.body.appendChild(hb);
-}
-_addHelpButton();
+// ★ v74.1(歐那 2026/5/31)：左下角 ? 說明按鈕已移除，不再需要。
+// function _addHelpButton(){ ... }
+// _addHelpButton();
 
 // ═══ Question Quality Modal ═══
 var _qR=null;
