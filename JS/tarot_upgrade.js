@@ -612,8 +612,9 @@ function detectSpreadType(question, type) {
   }
 
   // 5. 關係題（感情類 + 涉及對方）→ 關係牌陣
-  if (type === 'love' || type === 'relationship' || type === 'family') {
-    if (/他|她|對方|另一半|前任|現任|老公|老婆|男友|女友|伴侶|喜歡的人|曖昧|之間|怎麼想|心裡|真心|復合|分手/.test(q)) {
+  // ★ v75：加 'secret' type、擴充關鍵字（異性、喜歡上我、追我、暗戀等）
+  if (type === 'love' || type === 'secret' || type === 'relationship' || type === 'family') {
+    if (/他|她|對方|另一半|前任|現任|老公|老婆|男友|女友|伴侶|喜歡的人|喜歡上|喜歡我|喜不喜歡|愛不愛|想不想我|暗戀|告白|追我|追求|異性|曖昧|之間|怎麼想|心裡|真心|復合|分手/.test(q)) {
       // 多問號的關係題 → 升級到凱爾特十字
       if (qMarks >= 2) return 'celtic_cross';
       return 'relationship';

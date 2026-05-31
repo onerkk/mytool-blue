@@ -1078,7 +1078,15 @@ function submitWithTool() {
 
   if (tool === 'tarot') {
     // 塔羅只需問題 + 性別（可選）
-    var type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
+    // ★ v75 修正：自動偵測問題類型（原本 f-type 永遠是 'general'，導致感情題無法觸發 relationship 牌陣）
+    var type = 'general';
+    try {
+      if (typeof window.JY_classifyDomains === 'function') {
+        var _hits = window.JY_classifyDomains(question);
+        if (_hits && _hits.length) type = _hits[0]; // 取第一個匹配（love/career/wealth/health/spiritual）
+      }
+    } catch(e){}
+    if (!type || type === 'undefined') type = 'general';
     S.form = { type: type, question: question, gender: gender ? gender.value : 'other', bdate: '', btime: '', name: '', btimeUnknown: true };
     S._tarotOnlyMode = true;
     S._autoMode = false;
