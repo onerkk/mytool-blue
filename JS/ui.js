@@ -570,7 +570,7 @@ function goStep(n){
     S.step = (numIdx >= 0) ? numIdx : targetId;
     // ★ v14：pushState 讓瀏覽器返回鍵回到上一步
     try { window.history.pushState({step: targetId}, '', ''); } catch(e){}
-    window.scrollTo({top:0,behavior:'smooth'});
+    window.scrollTo({top:0,behavior:'instant'});
     if(targetId==='step-2'){
       var _uiMax=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10; if(drawnCards.length>=_uiMax && !S._isAdmin) showTarotLocked();
       else if(drawnCards.length>=_uiMax && S._isAdmin){ drawnCards=[]; deckShuffled=[]; initTarotDeck(); }

@@ -604,7 +604,7 @@
 
     el.innerHTML = '';
     el.appendChild(card);
-    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+    try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) {}
   }
   window.JY_renderExportPrompt = render;
 
