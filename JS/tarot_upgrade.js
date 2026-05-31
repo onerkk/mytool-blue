@@ -4238,8 +4238,10 @@ enhanceTarot = function(tarot) {
           nextBtn.textContent = '🌙 靜月為你解讀(五次獨立讀盤)';
           nextBtn.onclick = function() {
             overlay.remove();
-            if (typeof goStep === 'function') goStep('step-tarot');
-            _triggerOOTKAI(results);
+            setTimeout(function() {
+              if (typeof goStep === 'function') goStep('step-tarot');
+              _triggerOOTKAI(results);
+            }, 50);
           };
           document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
           return;
@@ -4357,14 +4359,27 @@ enhanceTarot = function(tarot) {
       phaseDiv.innerHTML = abandonBanner + _renderPhase(currentPhase, label, opData, results);
       phasesEl.appendChild(phaseDiv);
       requestAnimationFrame(function() { requestAnimationFrame(function() { phaseDiv.classList.add('visible'); }); });
-      setTimeout(function() { phaseDiv.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+      // ★ v75.1 修正：scrollIntoView 在手機 fixed overlay 內不可靠，改用 overlay.scrollTop
+      setTimeout(function() {
+        try {
+          var _ov = document.getElementById('ootk-sequence-overlay');
+          if (_ov) _ov.scrollTop = _ov.scrollHeight;
+        } catch(e) {}
+      }, 300);
       nextBtn.style.opacity = '1';
       nextBtn.style.pointerEvents = 'auto';
       if (currentPhase < 4) {
         nextBtn.textContent = OP_LABELS[currentPhase + 1].zh + ' →';
       } else {
         nextBtn.textContent = '🌙 靜月為你解讀(五次獨立讀盤)';
-        nextBtn.onclick = function() { overlay.remove(); if (typeof goStep === 'function') goStep('step-tarot'); _triggerOOTKAI(results); };
+        nextBtn.onclick = function() {
+          overlay.remove();
+          // ★ v75.1：先讓瀏覽器完成 overlay 移除，再切頁＋渲染結果
+          setTimeout(function() {
+            if (typeof goStep === 'function') goStep('step-tarot');
+            _triggerOOTKAI(results);
+          }, 50);
+        };
         document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
       }
       // ── 自動推進：本階段無警示卡才自動往下；有卡則停在此處等使用者（重抽鈕已在卡內）──
@@ -5683,6 +5698,8 @@ enhanceTarot = function(tarot) {
       } catch (e) {}
       _w70.style.display = '';
       window.JY_renderExportPrompt('ootk', _w70);
+      // ★ v75.1：overlay 移除後確保結果頁滾到最上方
+      setTimeout(function() { try { window.scrollTo({top:0,behavior:'instant'}); } catch(e){} }, 100);
       return;
     }
 
