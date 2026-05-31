@@ -23893,7 +23893,13 @@ function _buildTarotOnlyPayload() {
     } else if (startUp > startCards.length / 2 && endUp > endCards.length / 2) {
       arcParts.push('全程偏順：整體方向是好的，但要注意阻礙位指出的盲點');
     } else {
-      arcParts.push('全程偏逆：整件事需要根本性的重新思考，不是修修補補能解決的');
+      // ★ v75 修正：整體正位過半時不說「全程偏逆」，避免與 summary 矛盾
+      var _totalUp = cards.filter(function(c){ return c.isUp; }).length;
+      if (_totalUp > cards.length / 2) {
+        arcParts.push('前後段各有阻力但整體正位過半：不是全面負面，核心方向仍有支撐，但需要留意局部卡點');
+      } else {
+        arcParts.push('全程偏逆：整件事需要根本性的重新思考，不是修修補補能解決的');
+      }
     }
     storyArc = arcParts.join('；');
   }
@@ -24211,7 +24217,7 @@ function _buildTarotOnlyPayload() {
       role: cards[i].role || '',
       isUp: cards[i].isUp
     };
-    if (cards[i].role === 'obstacle') person.hint = '阻礙你的人';
+    if (cards[i].role === 'obstacle') person.hint = cards[i].isUp ? '橫跨現況的助力' : '橫跨現況的阻力';
     else if (cards[i].role === 'external') person.hint = '外在環境中的人';
     else if (cards[i].role === 'self') person.hint = '問卜者自己的狀態';
     else if (cards[i].role === 'outcome') person.hint = '最終出現的人';
