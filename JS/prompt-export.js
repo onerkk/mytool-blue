@@ -357,10 +357,10 @@
     L.push('── 以下五次操作資料（含 counting／pairing／dignities 計算）已由排盤系統精算完成，請【直接採用】。計數路徑、配對、元素尊嚴都已算好——不要自己重數、重排或重算位置（Book T counting 自己算極易出錯）；你的工作是依這些既定結果做解讀。【計數值】本引擎 Aces 採 count 11（Crowley·Liber 78）；如 Paul Hughes-Barlow 慣例，你可另提 count 5（GD：四元素＋乙太）的分支作對照，但上述路徑是 11 版，不要拿 5 去否定它 ──');
     L.push('');
     var sigName = sig.n || sig.name || (typeof sig === 'string' ? sig : '');
-    var sigPrefix = (sig.isUp === true) ? '▲正位 ' : (sig.isUp === false ? '▼逆位 ' : '');
-    var sigFacing = (sig.isUp === true) ? '（正位→面向右，counting 向右走）' : (sig.isUp === false ? '（逆位→面向左，counting 向左走）' : '');
-    L.push('代表牌（Significator）：' + (sigName ? (sigPrefix + sigName + sigFacing) : (safeText(sig) || '（未提供）')));
-    if (ca.significatorDirectional && ca.significatorDirectional.meaning) L.push('面向解讀：' + ca.significatorDirectional.meaning);
+    var sigPrefix = '';  // ★ v76：OOTK 不標正逆位
+    var sigFacing = (sig.isUp === true) ? '面向解讀：代表牌面右——counting 向右走,重心傾向未來' : (sig.isUp === false ? '面向解讀：代表牌面左——counting 向左走,注意力傾向過去' : '');
+    L.push('代表牌（Significator）：' + (sigName || safeText(sig) || '（未提供）'));
+    if (sigFacing) L.push(sigFacing);
     L.push('');
     var opLabels = {
       op1: 'Op1 四元素堆（YHVH）——當下處境',
@@ -371,7 +371,7 @@
     };
     // ★ 把每層真正結構化（鏡像 head 要的 Sig落點/Counting/Pairing/Dignities），
     //   op-specific 欄位（宮/星座/旬/質點，名稱不一）用 safeText 保底，絕不漏資料。
-    function cn(c) { return c ? ((c.n || c.name || '?') + (c.isUp === false ? '逆' : '')) : '?'; }
+    function cn(c) { return c ? (c.n || c.name || '?') : '?'; } // ★ v76：OOTK 不標逆位
     var PILE = { fire: '火堆 Yod（工作/事業）', water: '水堆 Heh（感情/快樂）', air: '風堆 Vau（衝突/損失/思維）', earth: '土堆 Heh-final（金錢/物質）' };
     // ── 精簡：引擎把整個 Op 分析當長字串傳來；剝掉每層重複 5 次的方法論講稿＋Mathers 1888 字典＋裝飾線，只留實際牌面/路徑/配對/落點 ──
     function _slimOp(s) {
@@ -417,7 +417,7 @@
       if (typeof o === 'string') { var _s = _slimOp(o); if (_s) L.push(_s); L.push(''); return; }
       if (o.activePile) L.push('Sig 落點/活躍堆：' + (PILE[o.activePile] || o.activePile) + (o.meaning ? '（' + o.meaning + '）' : ''));
       if (o.activeCards && o.activeCards.length) L.push('本層活躍牌：' + o.activeCards.map(cn).join('、'));
-      if (o.countingPath && o.countingPath.length) L.push('Counting 走過（依序，方向已定，勿重數）：' + o.countingPath.map(function (p) { return (p.cardName || '?') + (p.isUp === false ? '逆' : '') + '〔走' + p.countValue + '〕'; }).join(' → '));
+      if (o.countingPath && o.countingPath.length) L.push('Counting 走過（依序，方向已定，勿重數）：' + o.countingPath.map(function (p) { return (p.cardName || '?') + '〔走' + p.countValue + '〕'; }).join(' → '));
       if (o.mq_countingPath && o.mq_countingPath.length) L.push('Op4 環形 Counting（順發牌方向，1↔36 時序）：' + o.mq_countingPath.map(function (p) { return (p.cardName || '?') + '〔走' + p.countValue + '〕'; }).join(' → '));
       if (o.pairs && o.pairs.length) L.push('Pairing 配對（Sig 兩側往外，#1 最直接）：' + o.pairs.map(function (pr, i) { if (!pr || pr.single || !pr.right) return '#' + (i + 1) + ' 單張殘餘:' + cn(pr && pr.left); return '#' + (i + 1) + ' ' + cn(pr.left) + '↔' + cn(pr.right) + (pr.dignity ? '〔' + safeText(pr.dignity) + '〕' : ''); }).join('；'));
       if (o.dignities) { var _dg = safeText(o.dignities); if (_dg) L.push('元素尊嚴：' + _dg); }

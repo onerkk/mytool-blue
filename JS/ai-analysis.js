@@ -26167,9 +26167,32 @@ function _buildOOTKPayload() {
   var results = window._ootkResults;
   if (!results) return null;
 
+  // ★ v76：OOTK 正統牌面輸出（不用逆位含義，只給 Thoth 標題 + 元素）
+  // 正統 GD 的 well/ill-dignified 由元素尊嚴決定，不由正逆位決定
+  function cardStrOOTK(c) {
+    if (!c) return '?';
+    var name = c.n || c.name || '?';
+    // Thoth 標題（如 Prudence、Happiness、Ruin）
+    var thothTitle = c.thothTitle || c.title || '';
+    // 元素
+    var el = c.el || '';
+    var s = name;
+    // 只顯示正面關鍵字（Thoth 標題 + 核心語意），不分正逆
+    var kw = c.kwUp || '';
+    if (kw) s += '〔' + kw + '〕';
+    // 只顯示正位含義作為牌的本質（逆位含義由元素尊嚴決定）
+    var meaning = c.up || '';
+    if (meaning) s += '→' + meaning;
+    // 宮廷牌附元素屬性（用於元素尊嚴判斷）
+    if (c.courtDesc) s += '｜宮廷牌：' + c.courtDesc;
+    return s;
+  }
+
+  // ★ v76：OOTK 正統，cardStr 不標正逆位（GD 不用逆位）
+  // 只保留面向資訊用於 counting 方向判斷
   function cardStr(c) {
     if (!c) return '?';
-    return (c.isUp === true ? '▲正位 ' : '▼逆位 ') + (c.n || c.name || '?');
+    return (c.n || c.name || '?');
   }
 
   // ★ v28：關鍵牌帶牌義（根據問題類型匹配）
@@ -26242,7 +26265,7 @@ function _buildOOTKPayload() {
       }
       // ★ v37 #6：送完整活躍堆牌列表（帶 focusType 牌義，AI 需要知道每張牌的含義）
       if (op.activeCards && op.activeCards.length) {
-        lines.push('活躍堆牌面：' + op.activeCards.map(function(c){ return cardStrFull(c); }).join('\n  '));
+        lines.push('活躍堆牌面：' + op.activeCards.map(function(c){ return cardStrOOTK(c); }).join('\n  '));
       }
     } else if (idx === 1) {
       var HZH = ['自我','財帛','兄弟','田宅','子女','奴僕','夫妻','疾厄','遷移','官祿','福德','玄秘'];
@@ -26341,7 +26364,7 @@ function _buildOOTKPayload() {
           };
           var mqPairTexts = op.mq_pairs.slice(0, 6).map(function(pr) {
             var text = '#' + pr.leftPos + '↔#' + pr.rightPos + ' ' +
-                       cardStrFull(pr.left) + ' ↔ ' + cardStrFull(pr.right);
+                       cardStrOOTK(pr.left) + ' ↔ ' + cardStrOOTK(pr.right);
             if (pr.dignity) text += '（' + (_digMq[pr.dignity] || pr.dignity) + '）';
             return text;
           });
@@ -26405,7 +26428,7 @@ function _buildOOTKPayload() {
         };
         lines.push('★ GD-10 花色觀察:' + _domSuitMathers[_domSuit] + '(' + _domCount + '/' + op.activeCards.length + '張)');
       }
-      lines.push('活躍堆共 ' + op.activeCards.length + ' 張：\n  ' + op.activeCards.map(function(c){ return cardStrFull(c); }).join('\n  '));
+      lines.push('活躍堆共 ' + op.activeCards.length + ' 張：\n  ' + op.activeCards.map(function(c){ return cardStrOOTK(c); }).join('\n  '));
     }
 
     // ── 計數路徑（Counting）：AI 需要知道「怎麼走到這個結論」──
@@ -26424,8 +26447,8 @@ function _buildOOTKPayload() {
       var _reversedSteps = op.countingPath.filter(function(s) { return s.isUp === false; });
       var _majorSteps = op.countingPath.filter(function(s) { var id = parseInt(s.cardId); return !isNaN(id) && id <= 21; });
       var summaryParts = [];
-      if (_lastStep) summaryParts.push('終點：' + (_lastStep.cardName || '?') + (_lastStep.isUp === false ? '（逆）' : '（順）'));
-      summaryParts.push('途中倒放：' + _reversedSteps.length + '/' + op.countingPath.length);
+      if (_lastStep) summaryParts.push('終點：' + (_lastStep.cardName || '?'));
+      // ★ v76：正統 GD 不計「途中倒放」，改為途中大牌數（命運節點）
       if (_majorSteps.length) summaryParts.push('途中大牌：' + _majorSteps.map(function(s){return s.cardName;}).join('、'));
       lines.push('計數摘要：' + summaryParts.join(' | '));
     }
@@ -26442,7 +26465,7 @@ function _buildOOTKPayload() {
       op.keyCards.forEach(function(kc, ki) {
         var c = kc.card;
         if (!c) return;
-        var text = '  ' + cardStrFull(c);
+        var text = '  ' + cardStrOOTK(c);
         // 元素尊嚴（左右相鄰牌的元素互動，依 Mathers Book T 規則）
         if (op.dignities && op.dignities[ki]) {
           var dig = op.dignities[ki];
@@ -26490,7 +26513,7 @@ function _buildOOTKPayload() {
       var pairTexts = op.pairs.slice(0, 5).map(function(pr, pi) {
         var l = pr.left || pr.card1;
         var r = pr.right || pr.card2;
-        var text = (_distLabels[pi] || '#'+(pi+1)) + ' ' + cardStrFull(l) + ' ↔ ' + cardStrFull(r);
+        var text = (_distLabels[pi] || '#'+(pi+1)) + ' ' + cardStrOOTK(l) + ' ↔ ' + cardStrOOTK(r);
         if (pr.dignity) text += '（' + (_dignityZh[pr.dignity] || pr.dignity) + '）';
         return text;
       });
