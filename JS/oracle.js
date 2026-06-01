@@ -912,11 +912,9 @@ h+='</div>';w.innerHTML=h;
 // v62：問事類型/文字輸入 helper
 window._oracleSetType=function(k){_qType=k;_render();};
 window._oracleSyncQText=function(v){
-  _qText=String(v||'').slice(0,80);
-  // 即時更新字數提示 + 鎖籤提示，不重新 render（保持 textarea 焦點）
+  _qText=String(v||'').slice(0,120);
   var hint=document.getElementById('orc-q-hint');
-  if(hint)hint.textContent=_qText.length+' / 80 字';
-  // v62b：一事一籤偵測警告（警告不阻擋，可堅持送出）
+  if(hint)hint.textContent=_qText.length+' / 120 字';
   var warn=document.getElementById('orc-q-multi-warn');
   var multiMsg=_oracleDetectMultiQuestion(_qText);
   if(warn){
@@ -927,16 +925,7 @@ window._oracleSyncQText=function(v){
       warn.style.display='none';
     }
   }
-  // 求籤鈕狀態
-  var btns=document.querySelectorAll('.orc-btn-primary');
-  for(var bi=0;bi<btns.length;bi++){
-    if(btns[bi].textContent.replace(/\s/g,'')==='求籤'){
-      var canDraw=_qType&&_qText.trim().length>=2;
-      if(canDraw){btns[bi].removeAttribute('disabled');btns[bi].style.opacity='';btns[bi].style.cursor='';}
-      else{btns[bi].setAttribute('disabled','disabled');btns[bi].style.opacity='.4';btns[bi].style.cursor='not-allowed';}
-      break;
-    }
-  }
+  // ★ v75：問題為選填，不再控制按鈕 disabled（v63 移除 _qType 後此邏輯已失效）
 };
 // 查看今日已求得的籤（鎖籤提示按鈕）
 window._oracleViewLocked=function(){
