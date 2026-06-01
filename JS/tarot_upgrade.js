@@ -835,6 +835,7 @@ function injectSpreadSelector() {
     btn.textContent = labels[id] || id;
     btn.style.cssText = 'padding:.3rem .6rem;border-radius:8px;font-size:.7rem;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--c-text-dim);cursor:pointer;font-family:inherit;transition:all .2s';
     btn.onclick = function() {
+      window._forcedSpread = id; // ★ v75.6：讓 initTarotDeck 知道是手動選擇
       if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
       container.querySelectorAll('.jy-spread-btn').forEach(function(b) {
         b.style.borderColor = 'rgba(255,255,255,.1)'; b.style.background = 'rgba(255,255,255,.03)'; b.style.color = 'var(--c-text-dim)';

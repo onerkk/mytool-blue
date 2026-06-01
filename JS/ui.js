@@ -731,6 +731,22 @@ function resetAll(){
   S.form={};
   // 清空快取
   S._usedCache=false;
+  // ★ v75.6：重置牌陣狀態（根治「重新問一題」後牌陣殘留問題）
+  window._forcedSpread = null;
+  window._autoDetectedSpread = null;
+  try {
+    if (typeof setCurrentSpread === 'function') setCurrentSpread('three_card'); // 預設回三牌
+    // 重置牌陣選擇器觸發按鈕文字
+    var _tn = document.getElementById('jy-spread-cur-name');
+    var _ts = document.getElementById('jy-spread-cur-sub');
+    if (_tn) _tn.textContent = '自動判斷';
+    if (_ts) _ts.textContent = '依你的問題智慧選出最適合的牌陣';
+    // 重置 step-2 底部快速牌陣按鈕高亮
+    var _sel = document.getElementById('jy-spread-selector');
+    if (_sel) _sel.querySelectorAll('.jy-spread-btn').forEach(function(b) {
+      b.style.borderColor = 'rgba(255,255,255,.1)'; b.style.background = 'rgba(255,255,255,.03)'; b.style.color = 'var(--c-text-dim)';
+    });
+  } catch(e){}
   // 恢復管理員狀態（或重新偵測）
   var _nameEl=document.getElementById('f-name');
   var _bdateEl=document.getElementById('f-bdate');
@@ -6154,6 +6170,17 @@ showAuraResult = function(){
           _trigName.textContent = '自動 → ' + _curDef.zh + '（' + _curDef.count + ' 張）';
           if (_trigSub) _trigSub.textContent = '依你的問題自動選擇';
         }
+      }
+      // ★ v75.6：同步更新 step-2 底部快速牌陣按鈕高亮
+      var _qSel = document.getElementById('jy-spread-selector');
+      if (_qSel && _curId) {
+        _qSel.querySelectorAll('.jy-spread-btn').forEach(function(b) {
+          if (b.dataset.spread === _curId) {
+            b.style.borderColor = 'rgba(201,168,76,.5)'; b.style.background = 'rgba(201,168,76,.08)'; b.style.color = 'var(--c-gold,#c9a84c)';
+          } else {
+            b.style.borderColor = 'rgba(255,255,255,.1)'; b.style.background = 'rgba(255,255,255,.03)'; b.style.color = 'var(--c-text-dim)';
+          }
+        });
       }
     } catch(e) {}
 
