@@ -139,6 +139,9 @@
     }
   }
 
+  // ★ v75.6：暴露給 resetAll 使用，保證同一函數管同一個按鈕
+  window._jyUpdateSpreadTrigger = updateTrigger;
+
   window.openSpreadPicker = function () {
     var o = document.getElementById('jy-spread-modal');
     if (!o) return;

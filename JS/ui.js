@@ -735,12 +735,9 @@ function resetAll(){
   window._forcedSpread = null;
   window._autoDetectedSpread = null;
   try {
-    if (typeof setCurrentSpread === 'function') setCurrentSpread('three_card'); // 預設回三牌
-    // 重置牌陣選擇器觸發按鈕文字
-    var _tn = document.getElementById('jy-spread-cur-name');
-    var _ts = document.getElementById('jy-spread-cur-sub');
-    if (_tn) _tn.textContent = '自動判斷';
-    if (_ts) _ts.textContent = '依你的問題智慧選出最適合的牌陣';
+    if (typeof setCurrentSpread === 'function') setCurrentSpread('three_card');
+    // 用 spread-picker 自己的函數更新觸發按鈕（single source of truth）
+    if (typeof window._jyUpdateSpreadTrigger === 'function') window._jyUpdateSpreadTrigger();
     // 重置 step-2 底部快速牌陣按鈕高亮
     var _sel = document.getElementById('jy-spread-selector');
     if (_sel) _sel.querySelectorAll('.jy-spread-btn').forEach(function(b) {
