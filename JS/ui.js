@@ -5663,14 +5663,14 @@ showAuraResult = function(){
 
       // ★ v76：雷諾曼入口
       '<div class="jy-home-oracle">' +
-        '<a href="lenormand.html" class="jy-oracle-btn" style="text-decoration:none">' +
+        '<button onclick="_lenormandOpen()" class="jy-oracle-btn">' +
           '<span class="jy-oracle-icon">🃏</span>' +
           '<span class="jy-oracle-text">' +
             '<strong>雷諾曼牌</strong>' +
             '<small>Lenormand 36 張 ・ 組合義占卜 ・ 免費</small>' +
           '</span>' +
           '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
-        '</a>' +
+        '</button>' +
       '</div>' +
 
       // ★ v70 今日一牌已移除

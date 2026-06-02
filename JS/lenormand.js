@@ -302,22 +302,193 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
 }
 
 // ════════════════════════════════════
-// 五、全域暴露
+// 五、Overlay UI（整合進 index.html）
 // ════════════════════════════════════
-window._LN = {
-  CARDS: CARDS,
-  SPREADS: SPREADS,
-  IMG_MAP: IMG_MAP,
-  shuffleDeck: shuffleDeck,
-  drawCards: drawCards,
-  buildPrompt: buildPrompt,
-  getQuestion: function() { return _lnQuestion; },
-  setQuestion: function(q) { _lnQuestion = q; },
-  getSpread: function() { return _lnSpread; },
-  setSpread: function(s) { _lnSpread = s; },
-  getDrawn: function() { return _lnDrawn; },
-  getSigGender: function() { return _lnSigGender; },
-  setSigGender: function(g) { _lnSigGender = g; }
+var _lnWrap = null;
+var _lnPhase = 'input'; // input | result
+var _lastPrompt = '';
+
+function _getWrap() {
+  if (!_lnWrap) {
+    _lnWrap = document.createElement('div');
+    _lnWrap.id = 'ln-screen';
+    _lnWrap.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:99999;overflow-y:auto;overflow-x:hidden;background:#0a0a0f;-webkit-overflow-scrolling:touch;';
+    document.body.appendChild(_lnWrap);
+    // Inject CSS
+    var css = document.createElement('style');
+    css.textContent = [
+      '#ln-screen *{box-sizing:border-box}',
+      '.ln-container{max-width:480px;margin:0 auto;padding:1rem .8rem 3rem;font-family:"Noto Serif TC",Georgia,serif;color:#e8e0d0}',
+      '.ln-header{text-align:center;padding:1.5rem 0 1rem}',
+      '.ln-header h1{font-size:1.5rem;color:#c9a84c;letter-spacing:8px;margin-bottom:.3rem}',
+      '.ln-header p{font-size:.75rem;color:rgba(232,224,208,.5);letter-spacing:2px}',
+      '.ln-back{color:rgba(232,224,208,.5);text-decoration:none;font-size:.82rem;display:inline-block;margin-bottom:.5rem}',
+      '.ln-section{background:#13131a;border:1px solid rgba(201,168,76,.15);border-radius:14px;padding:1.1rem;margin-bottom:.8rem}',
+      '.ln-section-title{font-size:.82rem;color:#c9a84c;margin-bottom:.7rem}',
+      '.ln-q-input{width:100%;padding:.65rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:rgba(255,255,255,.03);color:#e8e0d0;font-family:inherit;font-size:.85rem;resize:none;outline:none;line-height:1.6}',
+      '.ln-q-input::placeholder{color:rgba(232,224,208,.4)}',
+      '.ln-q-input:focus{border-color:rgba(201,168,76,.5);box-shadow:0 0 12px rgba(201,168,76,.1)}',
+      '.ln-spread-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}',
+      '.ln-spread-btn{padding:.6rem .4rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(232,224,208,.5);cursor:pointer;transition:all .2s;text-align:center;font-family:inherit;font-size:.8rem}',
+      '.ln-spread-btn.active{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.08);color:#c9a84c}',
+      '.ln-draw-btn{display:block;width:100%;padding:.85rem;border-radius:12px;border:1.5px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:#c9a84c;font-family:inherit;font-size:.95rem;font-weight:600;letter-spacing:4px;cursor:pointer;transition:all .3s;margin-top:.8rem}',
+      '.ln-draw-btn:active{transform:scale(.97)}',
+      '.ln-cards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;margin:.6rem 0}',
+      '.ln-card{width:68px;padding:.25rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(145deg,rgba(30,25,15,.9),rgba(20,15,10,.95));text-align:center;animation:lnIn .4s ease-out both;overflow:hidden}',
+      '@keyframes lnIn{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:none}}',
+      '.ln-card-img{width:100%;border-radius:6px;display:block}',
+      '.ln-card-name{font-size:.65rem;color:#e8e0d0;font-weight:600;margin-top:.2rem}',
+      '.ln-card-en{font-size:.5rem;color:rgba(232,224,208,.4)}',
+      '.ln-grid-3x3{display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;max-width:260px;margin:0 auto}',
+      '.ln-ai-card{background:linear-gradient(135deg,rgba(30,25,15,.95),rgba(20,15,8,.98));border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:1rem;margin-top:1rem;text-align:center;animation:lnIn .6s ease-out}',
+      '.ln-ai-title{font-size:.95rem;color:#c9a84c;letter-spacing:3px;margin-bottom:.5rem}',
+      '.ln-ai-desc{font-size:.72rem;color:rgba(232,224,208,.5);line-height:1.6;margin-bottom:.7rem}',
+      '.ln-ai-copy-btn{display:block;width:100%;padding:.75rem;border-radius:12px;border:1.5px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:#c9a84c;font-family:inherit;font-size:.88rem;font-weight:600;letter-spacing:3px;cursor:pointer;transition:all .3s;margin-bottom:.5rem}',
+      '.ln-ai-copy-btn:active{transform:scale(.97)}',
+      '.ln-ai-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.3rem;margin:.5rem 0}',
+      '.ln-ai-sc{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.35rem .1rem;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;font-family:inherit}',
+      '.ln-ai-sc:active{transform:scale(.91)}',
+      '.ln-ai-sc img{width:30px;height:30px;border-radius:8px}',
+      '.ln-ai-sc span{font-size:.55rem;color:rgba(232,224,208,.5);font-weight:600}',
+      '.ln-ai-foot{font-size:.6rem;color:rgba(232,224,208,.4);margin-top:.3rem;font-style:italic}',
+      '.ln-reset-btn{display:inline-block;padding:.45rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(232,224,208,.5);cursor:pointer;font-family:inherit;font-size:.78rem;margin-top:.8rem}',
+      '.ln-footer{text-align:center;font-size:.6rem;color:rgba(232,224,208,.4);margin-top:1.5rem;letter-spacing:1px;line-height:1.8}',
+    ].join('\n');
+    document.head.appendChild(css);
+  }
+  return _lnWrap;
+}
+
+var AI_LIST = [
+  {id:'chatgpt',name:'ChatGPT',url:'https://chatgpt.com/'},
+  {id:'claude',name:'Claude',url:'https://claude.ai/new'},
+  {id:'gemini',name:'Gemini',url:'https://gemini.google.com/app'},
+  {id:'grok',name:'Grok',url:'https://grok.x.ai/'},
+  {id:'deepseek',name:'DeepSeek',url:'https://chat.deepseek.com/'},
+  {id:'kimi',name:'Kimi',url:'https://kimi.moonshot.cn/'},
+  {id:'doubao',name:'豆包',url:'https://www.doubao.com/'},
+  {id:'metaai',name:'Meta AI',url:'https://www.meta.ai/'},
+  {id:'copilot',name:'Copilot',url:'https://copilot.microsoft.com/'},
+  {id:'perplexity',name:'Perplexity',url:'https://www.perplexity.ai/'}
+];
+
+function _render() {
+  var w = _getWrap();
+  var h = '<div class="ln-container">';
+  h += '<a href="javascript:void(0)" class="ln-back" onclick="_lenormandClose()">← 返回靜月之光</a>';
+  h += '<div class="ln-header"><h1>雷 諾 曼</h1><p>Petit Lenormand ・ 36 張</p></div>';
+
+  if (_lnPhase === 'input') {
+    // Question
+    h += '<div class="ln-section"><div class="ln-section-title">✦ 你想問什麼？</div>';
+    h += '<textarea class="ln-q-input" id="ln-q" rows="2" maxlength="200" placeholder="問越具體越準——例如：這份工作值得繼續嗎？">' + (_lnQuestion||'') + '</textarea></div>';
+    // Spread
+    h += '<div class="ln-section"><div class="ln-section-title">✦ 選擇牌陣</div><div class="ln-spread-grid">';
+    var sps = [{id:'three',n:'三張線',d:'快速是非題'},{id:'five',n:'五張線',d:'因果時間線'},{id:'nine',n:'九宮格',d:'3×3 深度分析'},{id:'grand',n:'大牌陣',d:'全36張最高階'}];
+    for (var i=0;i<sps.length;i++) {
+      h += '<button class="ln-spread-btn' + (sps[i].id===_lnSpread?' active':'') + '" onclick="_lnSetSpread(\''+sps[i].id+'\')">' + sps[i].n + '<br><span style="font-size:.6rem;opacity:.6">' + sps[i].d + '</span></button>';
+    }
+    h += '</div></div>';
+    h += '<button class="ln-draw-btn" onclick="_lnDoDraw()">✦ 抽 牌 ✦</button>';
+  } else {
+    // Results
+    var sp = SPREADS[_lnSpread];
+    h += '<div class="ln-section"><div class="ln-section-title">✦ ' + sp.name + '（' + sp.count + ' 張）</div>';
+    if (_lnSpread === 'nine') {
+      h += '<div class="ln-grid-3x3">';
+    } else {
+      h += '<div class="ln-cards-row">';
+    }
+    for (var j=0;j<_lnDrawn.length;j++) {
+      var c = _lnDrawn[j];
+      var imgSrc = IMG_MAP[c.id] || '';
+      h += '<div class="ln-card" style="animation-delay:'+j*0.05+'s">';
+      if (imgSrc) h += '<img class="ln-card-img" src="'+imgSrc+'" alt="'+c.name+'">';
+      h += '<div class="ln-card-name">' + c.id + '. ' + c.name + '</div>';
+      h += '<div class="ln-card-en">' + c.en + '</div></div>';
+    }
+    h += '</div></div>';
+
+    // AI card
+    h += '<div class="ln-ai-card"><div class="ln-ai-title">🌙 AI 深度解讀</div>';
+    h += '<div class="ln-ai-desc">輕觸按鈕複製，貼到 AI 對話送出即可。</div>';
+    h += '<button class="ln-ai-copy-btn" onclick="_lnCopy()">✦ 一鍵複製占卜提示詞 ✦</button>';
+    h += '<div class="ln-ai-grid">';
+    for (var a=0;a<AI_LIST.length;a++) {
+      var ai = AI_LIST[a];
+      h += '<button class="ln-ai-sc" onclick="_lnOpenAI(\''+ai.id+'\',\''+ai.url+'\',this)">';
+      h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'">';
+      h += '<span>'+ai.name+'</span></button>';
+    }
+    h += '</div><div class="ln-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
+    h += '<div style="text-align:center"><button class="ln-reset-btn" onclick="_lnReset()">↺ 重新抽牌</button></div>';
+  }
+  h += '<div class="ln-footer">靜月之光 ・ jingyue.uk<br>Petit Lenormand 雷諾曼牌</div></div>';
+  w.innerHTML = h;
+}
+
+// ════ Public API ════
+window._lenormandOpen = function() {
+  _lnPhase = 'input';
+  _lnQuestion = '';
+  _lnSpread = 'three';
+  _lnDrawn = [];
+  _lastPrompt = '';
+  var w = _getWrap();
+  w.style.display = 'block';
+  _render();
+  w.scrollTop = 0;
+};
+
+window._lenormandClose = function() {
+  var w = _getWrap();
+  w.style.display = 'none';
+};
+
+window._lnSetSpread = function(id) {
+  _lnSpread = id;
+  _render();
+};
+
+window._lnDoDraw = function() {
+  var qEl = document.getElementById('ln-q');
+  _lnQuestion = qEl ? qEl.value.trim() : '';
+  var sp = SPREADS[_lnSpread];
+  drawCards(sp.count);
+  _lastPrompt = buildPrompt(_lnQuestion, _lnDrawn, _lnSpread, _lnSigGender);
+  _lnPhase = 'result';
+  _render();
+  _getWrap().scrollTop = 0;
+};
+
+window._lnCopy = function() {
+  if (!_lastPrompt) return;
+  try {
+    navigator.clipboard.writeText(_lastPrompt).then(function(){
+      var btn = document.querySelector('.ln-ai-copy-btn');
+      if(btn){var o=btn.innerHTML;btn.innerHTML='✓ 已複製！貼到 AI 送出即可';btn.style.borderColor='rgba(52,211,153,.5)';setTimeout(function(){btn.innerHTML=o;btn.style.borderColor='';},2500);}
+    });
+  } catch(e) {
+    var ta=document.createElement('textarea');ta.value=_lastPrompt;ta.style.cssText='position:fixed;left:-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  }
+};
+
+window._lnOpenAI = function(id, url, btn) {
+  if (!_lastPrompt) return;
+  try {
+    navigator.clipboard.writeText(_lastPrompt).then(function(){
+      var s=btn.querySelector('span');if(s)s.textContent='已複製！';
+      setTimeout(function(){window.open(url,'_blank');},300);
+      var names={chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
+      setTimeout(function(){if(s)s.textContent=names[id]||id;},2000);
+    });
+  } catch(e){window.open(url,'_blank');}
+};
+
+window._lnReset = function() {
+  _lnPhase = 'input';
+  _render();
+  _getWrap().scrollTop = 0;
 };
 
 })();
