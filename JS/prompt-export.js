@@ -582,7 +582,13 @@
       '.jy-ex-btn:hover{transform:translateY(-2px);box-shadow:0 14px 38px rgba(201,162,63,.55),inset 0 1px 0 rgba(255,255,255,.6)}',
       '.jy-ex-btn:active{transform:translateY(0)}',
       '.jy-ex-btn::after{content:"";position:absolute;top:0;left:0;width:55%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:translateX(-130%);animation:jyExSheen 3.6s ease-in-out infinite}',
-      '.jy-ex-foot{position:relative;z-index:1;text-align:center;font-size:.7rem;color:rgba(212,175,55,.5);margin-top:.95rem;letter-spacing:.03em}'
+      '.jy-ex-foot{position:relative;z-index:1;text-align:center;font-size:.7rem;color:rgba(212,175,55,.5);margin-top:.95rem;letter-spacing:.03em}',
+      /* v76: AI shortcut buttons */
+      '.jy-ex-ai-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;max-width:420px;margin:.9rem auto 0}',
+      '.jy-ai-shortcut{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.45rem .15rem;border-radius:12px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;font-family:inherit}',
+      '.jy-ai-shortcut:active{transform:scale(.91);background:rgba(255,255,255,.07)}',
+      '.jy-ai-icon{width:36px;height:36px;border-radius:10px;object-fit:cover}',
+      '.jy-ai-name{font-size:.62rem;font-weight:600;color:rgba(240,230,210,.65);letter-spacing:.01em;white-space:nowrap}'
     ].join('');
     document.head.appendChild(st);
   }
@@ -617,10 +623,60 @@
       '<div class="jy-ex-sub">輕觸下方按鈕複製，貼到任何 AI 對話（<b>ChatGPT・Claude・Gemini・Grok</b>）送出，' +
         '即可得到一份完整深入的命理解讀。<br>提示詞已封入全套占卜技法與你此刻的牌面，無需再多做說明。</div>' +
       '<button type="button" class="jy-ex-btn">✦ 一鍵複製占卜提示詞 ✦</button>' +
-      '<div class="jy-ex-foot">複製後貼上送出即可 ・ 完全免費</div>';
+      '<div class="jy-ex-ai-grid">' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="chatgpt"><img class="jy-ai-icon" src="ai-icons/ai-chatgpt.png" alt="ChatGPT"><span class="jy-ai-name">ChatGPT</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="claude"><img class="jy-ai-icon" src="ai-icons/ai-claude.png" alt="Claude"><span class="jy-ai-name">Claude</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="gemini"><img class="jy-ai-icon" src="ai-icons/ai-gemini.png" alt="Gemini"><span class="jy-ai-name">Gemini</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="grok"><img class="jy-ai-icon" src="ai-icons/ai-grok.png" alt="Grok"><span class="jy-ai-name">Grok</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="deepseek"><img class="jy-ai-icon" src="ai-icons/ai-deepseek.png" alt="DeepSeek"><span class="jy-ai-name">DeepSeek</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="kimi"><img class="jy-ai-icon" src="ai-icons/ai-kimi.png" alt="Kimi"><span class="jy-ai-name">Kimi</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="doubao"><img class="jy-ai-icon" src="ai-icons/ai-doubao.png" alt="豆包"><span class="jy-ai-name">豆包</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="metaai"><img class="jy-ai-icon" src="ai-icons/ai-metaai.png" alt="Meta AI"><span class="jy-ai-name">Meta AI</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="copilot"><img class="jy-ai-icon" src="ai-icons/ai-copilot.png" alt="Copilot"><span class="jy-ai-name">Copilot</span></button>' +
+        '<button type="button" class="jy-ai-shortcut" data-ai="perplexity"><img class="jy-ai-icon" src="ai-icons/ai-perplexity.png" alt="Perplexity"><span class="jy-ai-name">Perplexity</span></button>' +
+      '</div>' +
+      '<div class="jy-ex-foot">點擊 AI 按鈕 → 自動複製＋開啟對話 → 貼上送出</div>';
 
     var btn = card.querySelector('.jy-ex-btn');
     btn.addEventListener('click', function () { copyText(prompt, btn); });
+
+    // ★ v76：AI 快捷鍵 — 複製＋開啟對應 AI
+    var aiUrls = {
+      chatgpt: 'https://chatgpt.com/',
+      claude: 'https://claude.ai/new',
+      gemini: 'https://gemini.google.com/app',
+      grok: 'https://grok.x.ai/',
+      deepseek: 'https://chat.deepseek.com/',
+      kimi: 'https://kimi.moonshot.cn/',
+      doubao: 'https://www.doubao.com/',
+      metaai: 'https://www.meta.ai/',
+      copilot: 'https://copilot.microsoft.com/',
+      perplexity: 'https://www.perplexity.ai/'
+    };
+    var aiNames = {chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
+    var shortcuts = card.querySelectorAll('.jy-ai-shortcut');
+    for (var si = 0; si < shortcuts.length; si++) {
+      (function(sbtn) {
+        sbtn.addEventListener('click', function() {
+          var ai = sbtn.getAttribute('data-ai');
+          try {
+            navigator.clipboard.writeText(prompt).then(function() {
+              sbtn.querySelector('.jy-ai-name').textContent = '已複製！';
+              setTimeout(function() { window.open(aiUrls[ai], '_blank'); }, 300);
+              setTimeout(function() {
+                sbtn.querySelector('.jy-ai-name').textContent = aiNames[ai] || ai;
+              }, 2000);
+            });
+          } catch(e) {
+            var ta = document.createElement('textarea'); ta.value = prompt;
+            ta.style.cssText = 'position:fixed;left:-9999px';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+            document.body.removeChild(ta);
+            window.open(aiUrls[ai], '_blank');
+          }
+        });
+      })(shortcuts[si]);
+    }
 
     el.innerHTML = '';
     el.appendChild(card);

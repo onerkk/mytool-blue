@@ -900,7 +900,19 @@ h+='<div class="orc-ai-prompt-card">';
 h+='<div class="orc-ai-prompt-header"><span class="orc-ai-glyph">🌙</span><span class="orc-ai-title">AI 深度解籤</span></div>';
 h+='<p class="orc-ai-desc">輕觸下方按鈕複製，貼到任何 AI 對話送出，即可得到一份針對您問題的深度籤詩解讀。</p>';
 h+='<button class="orc-ai-copy-btn" onclick="_oracleCopyPrompt()"><span class="orc-ai-copy-icon">✦</span> 一鍵複製解籤提示詞 <span class="orc-ai-copy-icon">✦</span></button>';
-h+='<p class="orc-ai-copy-hint">複製後貼上送出即可 ・ 完全免費</p>';
+h+='<div class="orc-ai-grid">';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'chatgpt\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-chatgpt.png" alt="ChatGPT"><span class="orc-ai-sc-name">ChatGPT</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'claude\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-claude.png" alt="Claude"><span class="orc-ai-sc-name">Claude</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'gemini\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-gemini.png" alt="Gemini"><span class="orc-ai-sc-name">Gemini</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'grok\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-grok.png" alt="Grok"><span class="orc-ai-sc-name">Grok</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'deepseek\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-deepseek.png" alt="DeepSeek"><span class="orc-ai-sc-name">DeepSeek</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'kimi\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-kimi.png" alt="Kimi"><span class="orc-ai-sc-name">Kimi</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'doubao\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-doubao.png" alt="豆包"><span class="orc-ai-sc-name">豆包</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'metaai\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-metaai.png" alt="Meta AI"><span class="orc-ai-sc-name">Meta AI</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'copilot\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-copilot.png" alt="Copilot"><span class="orc-ai-sc-name">Copilot</span></button>';
+h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'perplexity\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-perplexity.png" alt="Perplexity"><span class="orc-ai-sc-name">Perplexity</span></button>';
+h+='</div>';
+h+='<p class="orc-ai-copy-hint">點擊 AI 按鈕 → 自動複製＋開啟對話 → 貼上送出</p>';
 h+='</div>';
 }
 
@@ -1439,6 +1451,40 @@ window._oracleCopyPrompt = function() {
   }
 };
 
+// ★ v76：AI 快捷鍵 — 複製＋開啟對應 AI
+window._oracleOpenAI = function(ai) {
+  if (!_lastOraclePrompt) return;
+  var urls = {
+    chatgpt: 'https://chatgpt.com/',
+    claude: 'https://claude.ai/new',
+    gemini: 'https://gemini.google.com/app',
+    grok: 'https://grok.x.ai/',
+    deepseek: 'https://chat.deepseek.com/',
+    kimi: 'https://kimi.moonshot.cn/',
+    doubao: 'https://www.doubao.com/',
+    metaai: 'https://www.meta.ai/',
+    copilot: 'https://copilot.microsoft.com/',
+    perplexity: 'https://www.perplexity.ai/'
+  };
+  var aiNames = {chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
+  try {
+    navigator.clipboard.writeText(_lastOraclePrompt).then(function() {
+      var nameEl = document.querySelector('.orc-ai-shortcut[onclick*="' + ai + '"] .orc-ai-sc-name');
+      if (nameEl) { nameEl.textContent = '已複製！'; }
+      setTimeout(function() { window.open(urls[ai], '_blank'); }, 300);
+      setTimeout(function() {
+        if (nameEl) nameEl.textContent = aiNames[ai] || ai;
+      }, 2000);
+    });
+  } catch(e) {
+    var ta = document.createElement('textarea'); ta.value = _lastOraclePrompt;
+    ta.style.cssText = 'position:fixed;left:-9999px';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    window.open(urls[ai], '_blank');
+  }
+};
+
 var css=document.createElement('style');
 css.textContent='\
 #oracle-screen{font-family:var(--f-display,"Noto Serif TC",serif)}\
@@ -1737,6 +1783,13 @@ css.textContent='\
 .orc-ai-copy-btn:active{transform:scale(.97);box-shadow:0 2px 8px rgba(0,0,0,.4)}\
 .orc-ai-copy-icon{font-size:.75rem;opacity:.7}\
 .orc-ai-copy-hint{padding:.3rem 1.2rem .9rem;font-size:.68rem;color:rgba(201,167,119,.5);text-align:center;letter-spacing:1.5px;font-style:italic;background:linear-gradient(180deg,rgba(30,14,5,.9),rgba(26,10,5,.95))}\
+\
+/* v76：AI 快捷按鈕 */\
+.orc-ai-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.35rem;padding:0 .6rem .5rem;background:linear-gradient(180deg,rgba(30,14,5,.9),rgba(30,14,5,.92))}\
+.orc-ai-shortcut{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.4rem .1rem;border-radius:10px;border:1px solid rgba(255,200,120,.08);background:rgba(255,200,120,.02);cursor:pointer;transition:all .2s;font-family:inherit}\
+.orc-ai-shortcut:active{transform:scale(.91);background:rgba(255,200,120,.08)}\
+.orc-ai-sc-icon{width:32px;height:32px;border-radius:8px;object-fit:cover}\
+.orc-ai-sc-name{font-size:.58rem;font-weight:600;color:rgba(240,220,180,.6);letter-spacing:.3px;white-space:nowrap}\
 \
 /* v67:籤頭典故卡 */\
 .orc-shrine-story{max-width:520px;margin:1rem auto;padding:1.2rem 1.3rem;background:linear-gradient(180deg,rgba(35,18,8,0.78) 0%,rgba(22,10,4,0.85) 100%);border:1px solid rgba(212,167,106,0.28);border-radius:8px;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}\
