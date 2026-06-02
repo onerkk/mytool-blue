@@ -5681,7 +5681,7 @@ showAuraResult = function(){
         '<div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
         (isAdmin ?
           '<div class="jy-home-quota">👑 管理員・無限次</div>' :
-          '<div class="jy-home-quota" id="jy-home-quota-text">塔羅快讀 ・ 開鑰之法 ・ <strong style="color:var(--c-gold)">完全免費</strong></div>'
+          '<div class="jy-home-quota" id="jy-home-quota-text">塔羅快讀 ・ 開鑰之法 ・ 雷諾曼 ・ <strong style="color:var(--c-gold)">完全免費</strong></div>'
         ) +
       '</div>' +
 
