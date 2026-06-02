@@ -48,6 +48,45 @@ var CARDS = [
   {id:36, name:'十字架', en:'Cross',    key:'負擔・命運・考驗',        pos:'宗教、精神信仰、命運',         neg:'痛苦、負擔、沉重責任',          topic:'負擔',   suit:'♣6',  element:'earth'}
 ];
 
+var IMG_MAP = {
+  1: 'ln-cards/ln-01-rider.png',
+  2: 'ln-cards/ln-02-clover.png',
+  3: 'ln-cards/ln-03-ship.png',
+  4: 'ln-cards/ln-04-house.png',
+  5: 'ln-cards/ln-05-tree.png',
+  6: 'ln-cards/ln-06-clouds.png',
+  7: 'ln-cards/ln-07-snake.png',
+  8: 'ln-cards/ln-08-coffin.png',
+  9: 'ln-cards/ln-09-bouquet.png',
+  10: 'ln-cards/ln-10-scythe.png',
+  11: 'ln-cards/ln-11-whip.png',
+  12: 'ln-cards/ln-12-birds.png',
+  13: 'ln-cards/ln-13-child.png',
+  14: 'ln-cards/ln-14-fox.png',
+  15: 'ln-cards/ln-15-bear.png',
+  16: 'ln-cards/ln-16-stars.png',
+  17: 'ln-cards/ln-17-stork.png',
+  18: 'ln-cards/ln-18-dog.png',
+  19: 'ln-cards/ln-19-tower.png',
+  20: 'ln-cards/ln-20-garden.png',
+  21: 'ln-cards/ln-21-mountain.png',
+  22: 'ln-cards/ln-22-crossroads.png',
+  23: 'ln-cards/ln-23-mice.png',
+  24: 'ln-cards/ln-24-heart.png',
+  25: 'ln-cards/ln-25-ring.png',
+  26: 'ln-cards/ln-26-book.png',
+  27: 'ln-cards/ln-27-letter.png',
+  28: 'ln-cards/ln-28-man.png',
+  29: 'ln-cards/ln-29-woman.png',
+  30: 'ln-cards/ln-30-lily.png',
+  31: 'ln-cards/ln-31-sun.png',
+  32: 'ln-cards/ln-32-moon.png',
+  33: 'ln-cards/ln-33-key.png',
+  34: 'ln-cards/ln-34-fish.png',
+  35: 'ln-cards/ln-35-anchor.png',
+  36: 'ln-cards/ln-36-cross.png',
+};
+
 // ════════════════════════════════════
 // 二、牌陣定義
 // ════════════════════════════════════
@@ -268,6 +307,7 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
 window._LN = {
   CARDS: CARDS,
   SPREADS: SPREADS,
+  IMG_MAP: IMG_MAP,
   shuffleDeck: shuffleDeck,
   drawCards: drawCards,
   buildPrompt: buildPrompt,
