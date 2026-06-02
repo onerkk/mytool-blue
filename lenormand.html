@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>雷諾曼牌占卜｜靜月之光</title>
+<meta name="description" content="免費雷諾曼牌 Lenormand 線上占卜。正統 36 張 Petit Lenormand，三張線、五張線、九宮格、大牌陣。一鍵複製提示詞貼到 AI 即出深度解讀。">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--card:#13131a;--gold:#c9a84c;--gold-dim:rgba(201,168,76,.5);--text:#e8e0d0;--text-dim:rgba(232,224,208,.5);--accent:#d4af37}
+body{background:var(--bg);color:var(--text);font-family:'Noto Serif TC','Georgia',serif;min-height:100vh;overflow-x:hidden}
+.container{max-width:480px;margin:0 auto;padding:1rem .8rem 3rem}
+
+/* Header */
+.ln-header{text-align:center;padding:2rem 0 1.5rem}
+.ln-header h1{font-size:1.6rem;color:var(--gold);letter-spacing:8px;margin-bottom:.4rem}
+.ln-header p{font-size:.78rem;color:var(--text-dim);letter-spacing:2px}
+.ln-back{position:absolute;left:1rem;top:1rem;color:var(--text-dim);text-decoration:none;font-size:.85rem}
+
+/* Sections */
+.ln-section{background:var(--card);border:1px solid rgba(201,168,76,.15);border-radius:14px;padding:1.2rem;margin-bottom:1rem}
+.ln-section-title{font-size:.85rem;color:var(--gold);margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
+
+/* Question input */
+.ln-q-input{width:100%;padding:.7rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:rgba(255,255,255,.03);color:var(--text);font-family:inherit;font-size:.88rem;resize:none;outline:none;line-height:1.6}
+.ln-q-input::placeholder{color:var(--text-dim)}
+.ln-q-input:focus{border-color:var(--gold-dim);box-shadow:0 0 12px rgba(201,168,76,.1)}
+.ln-q-hint{text-align:right;font-size:.65rem;color:var(--text-dim);margin-top:.3rem}
+
+/* Spread selector */
+.ln-spread-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.ln-spread-btn{padding:.7rem .5rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--text-dim);cursor:pointer;transition:all .2s;text-align:center;font-family:inherit}
+.ln-spread-btn.active{border-color:var(--gold-dim);background:rgba(201,168,76,.08);color:var(--gold)}
+.ln-spread-btn:active{transform:scale(.97)}
+.ln-spread-name{font-size:.85rem;font-weight:600;display:block}
+.ln-spread-sub{font-size:.65rem;display:block;margin-top:.2rem;opacity:.6}
+
+/* Draw button */
+.ln-draw-btn{display:block;width:100%;padding:.9rem;border-radius:12px;border:1.5px solid var(--gold-dim);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:var(--gold);font-family:inherit;font-size:1rem;font-weight:600;letter-spacing:4px;cursor:pointer;transition:all .3s;margin-top:1rem}
+.ln-draw-btn:active{transform:scale(.97);background:rgba(201,168,76,.15)}
+
+/* Cards display */
+.ln-cards-area{display:none}
+.ln-cards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;margin:.8rem 0}
+.ln-card{width:70px;padding:.6rem .3rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(145deg,rgba(30,25,15,.9),rgba(20,15,10,.95));text-align:center;cursor:default;transition:all .3s;animation:lnCardIn .4s ease-out both}
+@keyframes lnCardIn{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.ln-card-num{font-size:.6rem;color:var(--gold-dim)}
+.ln-card-icon{font-size:1.3rem;margin:.3rem 0}
+.ln-card-name{font-size:.72rem;color:var(--text);font-weight:600}
+.ln-card-en{font-size:.55rem;color:var(--text-dim)}
+
+/* 九宮格 layout */
+.ln-grid-3x3{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;max-width:280px;margin:0 auto}
+
+/* AI prompt card */
+.ln-ai-card{background:linear-gradient(135deg,rgba(30,25,15,.95),rgba(20,15,8,.98));border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:1.2rem;margin-top:1.2rem;text-align:center;animation:lnCardIn .6s ease-out}
+.ln-ai-title{font-size:1rem;color:var(--gold);letter-spacing:3px;margin-bottom:.6rem}
+.ln-ai-desc{font-size:.75rem;color:var(--text-dim);line-height:1.6;margin-bottom:.8rem}
+.ln-ai-copy-btn{display:block;width:100%;padding:.8rem;border-radius:12px;border:1.5px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:var(--gold);font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:3px;cursor:pointer;transition:all .3s;margin-bottom:.6rem}
+.ln-ai-copy-btn:active{transform:scale(.97)}
+
+/* AI shortcut grid */
+.ln-ai-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.35rem;margin:.6rem 0}
+.ln-ai-sc{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.4rem .1rem;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;font-family:inherit}
+.ln-ai-sc:active{transform:scale(.91)}
+.ln-ai-sc img{width:32px;height:32px;border-radius:8px}
+.ln-ai-sc span{font-size:.58rem;color:var(--text-dim);font-weight:600}
+.ln-ai-foot{font-size:.65rem;color:var(--text-dim);margin-top:.4rem;font-style:italic}
+
+/* Reset */
+.ln-reset-btn{display:inline-block;padding:.5rem 1.2rem;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:.8rem;margin-top:1rem}
+
+/* Footer */
+.ln-footer{text-align:center;font-size:.65rem;color:var(--text-dim);margin-top:2rem;letter-spacing:1px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="/" class="ln-back">← 返回靜月之光</a>
+
+  <div class="ln-header">
+    <h1>雷 諾 曼</h1>
+    <p>Petit Lenormand ・ 36 張</p>
+  </div>
+
+  <!-- Step 1: Question -->
+  <div class="ln-section" id="ln-step-q">
+    <div class="ln-section-title"><i class="fas fa-feather-pointed"></i> 你想問什麼？</div>
+    <textarea class="ln-q-input" id="ln-question" rows="2" maxlength="200" placeholder="問越具體越準——例如：這份工作值得繼續嗎？他對我有意思嗎？" oninput="document.getElementById('ln-q-count').textContent=this.value.length+' / 200'"></textarea>
+    <div class="ln-q-hint" id="ln-q-count">0 / 200</div>
+  </div>
+
+  <!-- Step 2: Spread -->
+  <div class="ln-section" id="ln-step-spread">
+    <div class="ln-section-title"><i class="fas fa-th"></i> 選擇牌陣</div>
+    <div class="ln-spread-grid">
+      <button class="ln-spread-btn active" data-spread="three" onclick="_lnSelectSpread('three',this)">
+        <span class="ln-spread-name">三張線</span>
+        <span class="ln-spread-sub">快速直覺・是非題</span>
+      </button>
+      <button class="ln-spread-btn" data-spread="five" onclick="_lnSelectSpread('five',this)">
+        <span class="ln-spread-name">五張線</span>
+        <span class="ln-spread-sub">因果脈絡・時間線</span>
+      </button>
+      <button class="ln-spread-btn" data-spread="nine" onclick="_lnSelectSpread('nine',this)">
+        <span class="ln-spread-name">九宮格</span>
+        <span class="ln-spread-sub">3×3 深度分析</span>
+      </button>
+      <button class="ln-spread-btn" data-spread="grand" onclick="_lnSelectSpread('grand',this)">
+        <span class="ln-spread-name">大牌陣</span>
+        <span class="ln-spread-sub">全 36 張・最高階</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Draw button -->
+  <button class="ln-draw-btn" id="ln-draw-btn" onclick="_lnDraw()">
+    <i class="fas fa-hand-sparkles"></i> 抽 牌
+  </button>
+
+  <!-- Results -->
+  <div class="ln-cards-area" id="ln-results">
+    <div class="ln-section">
+      <div class="ln-section-title" id="ln-result-title"></div>
+      <div id="ln-cards-display"></div>
+    </div>
+
+    <!-- AI prompt card -->
+    <div class="ln-ai-card">
+      <div class="ln-ai-title">🌙 AI 深度解讀</div>
+      <div class="ln-ai-desc">輕觸下方按鈕複製，貼到任何 AI 對話送出，即可得到正統雷諾曼深度解讀。</div>
+      <button class="ln-ai-copy-btn" onclick="_lnCopyPrompt()">✦ 一鍵複製占卜提示詞 ✦</button>
+      <div class="ln-ai-grid" id="ln-ai-grid"></div>
+      <div class="ln-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟對話 → 貼上送出</div>
+    </div>
+
+    <div style="text-align:center">
+      <button class="ln-reset-btn" onclick="_lnReset()"><i class="fas fa-redo"></i> 重新抽牌</button>
+    </div>
+  </div>
+
+  <div class="ln-footer">靜月之光 ・ jingyue.uk<br>Petit Lenormand 雷諾曼牌<br>完全免費 ・ 正統占卜</div>
+</div>
+
+<script src="lenormand.js"></script>
+<script>
+// ═══ UI Logic ═══
+var _currentSpread = 'three';
+var _lastPrompt = '';
+
+window._lnSelectSpread = function(id, btn) {
+  _currentSpread = id;
+  _LN.setSpread(id);
+  document.querySelectorAll('.ln-spread-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+};
+
+window._lnDraw = function() {
+  var q = document.getElementById('ln-question').value.trim();
+  _LN.setQuestion(q);
+  var sp = _LN.SPREADS[_currentSpread];
+  var drawn = _LN.drawCards(sp.count);
+
+  // Build prompt
+  _lastPrompt = _LN.buildPrompt(q, drawn, _currentSpread, _LN.getSigGender());
+
+  // Show results
+  document.getElementById('ln-step-q').style.display = 'none';
+  document.getElementById('ln-step-spread').style.display = 'none';
+  document.getElementById('ln-draw-btn').style.display = 'none';
+  document.getElementById('ln-results').style.display = 'block';
+
+  // Title
+  document.getElementById('ln-result-title').innerHTML = '<i class="fas fa-cards"></i> ' + sp.name + '（' + sp.count + ' 張）';
+
+  // Card icons (simple emoji mapping)
+  var icons = {1:'🏇',2:'🍀',3:'🚢',4:'🏠',5:'🌳',6:'☁️',7:'🐍',8:'⚰️',9:'💐',10:'🔪',11:'🪢',12:'🐦',13:'👶',14:'🦊',15:'🐻',16:'⭐',17:'🦢',18:'🐕',19:'🏰',20:'🌺',21:'⛰️',22:'🔀',23:'🐭',24:'❤️',25:'💍',26:'📖',27:'✉️',28:'🤵',29:'👩',30:'🌸',31:'☀️',32:'🌙',33:'🔑',34:'🐟',35:'⚓',36:'✝️'};
+
+  var container = document.getElementById('ln-cards-display');
+  var html = '';
+
+  if (_currentSpread === 'nine') {
+    html = '<div class="ln-grid-3x3">';
+    for (var i = 0; i < drawn.length; i++) {
+      html += _cardHtml(drawn[i], icons, i);
+    }
+    html += '</div>';
+  } else {
+    html = '<div class="ln-cards-row">';
+    for (var j = 0; j < drawn.length; j++) {
+      html += _cardHtml(drawn[j], icons, j);
+    }
+    html += '</div>';
+  }
+  container.innerHTML = html;
+
+  // Build AI shortcut grid
+  var aiGrid = document.getElementById('ln-ai-grid');
+  var ais = [
+    {id:'chatgpt',name:'ChatGPT',url:'https://chatgpt.com/'},
+    {id:'claude',name:'Claude',url:'https://claude.ai/new'},
+    {id:'gemini',name:'Gemini',url:'https://gemini.google.com/app'},
+    {id:'grok',name:'Grok',url:'https://grok.x.ai/'},
+    {id:'deepseek',name:'DeepSeek',url:'https://chat.deepseek.com/'},
+    {id:'kimi',name:'Kimi',url:'https://kimi.moonshot.cn/'},
+    {id:'doubao',name:'豆包',url:'https://www.doubao.com/'},
+    {id:'metaai',name:'Meta AI',url:'https://www.meta.ai/'},
+    {id:'copilot',name:'Copilot',url:'https://copilot.microsoft.com/'},
+    {id:'perplexity',name:'Perplexity',url:'https://www.perplexity.ai/'}
+  ];
+  var gh = '';
+  ais.forEach(function(ai){
+    gh += '<button class="ln-ai-sc" onclick="_lnOpenAI(\'' + ai.id + '\',\'' + ai.url + '\',this)">';
+    gh += '<img src="ai-icons/ai-' + ai.id + '.png" alt="' + ai.name + '">';
+    gh += '<span>' + ai.name + '</span></button>';
+  });
+  aiGrid.innerHTML = gh;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+function _cardHtml(c, icons, idx) {
+  return '<div class="ln-card" style="animation-delay:' + (idx*0.06) + 's">' +
+    '<div class="ln-card-num">' + c.id + '</div>' +
+    '<div class="ln-card-icon">' + (icons[c.id]||'🃏') + '</div>' +
+    '<div class="ln-card-name">' + c.name + '</div>' +
+    '<div class="ln-card-en">' + c.en + '</div>' +
+  '</div>';
+}
+
+window._lnCopyPrompt = function() {
+  if (!_lastPrompt) return;
+  try {
+    navigator.clipboard.writeText(_lastPrompt).then(function(){
+      var btn = document.querySelector('.ln-ai-copy-btn');
+      if(btn){var o=btn.innerHTML;btn.innerHTML='✓ 已複製！貼到 AI 對話送出即可';btn.style.borderColor='rgba(52,211,153,.5)';setTimeout(function(){btn.innerHTML=o;btn.style.borderColor='';},2500);}
+    });
+  } catch(e) {
+    var ta=document.createElement('textarea');ta.value=_lastPrompt;ta.style.cssText='position:fixed;left:-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  }
+};
+
+window._lnOpenAI = function(id, url, btn) {
+  if (!_lastPrompt) return;
+  try {
+    navigator.clipboard.writeText(_lastPrompt).then(function(){
+      var s=btn.querySelector('span');if(s){s.textContent='已複製！';}
+      setTimeout(function(){window.open(url,'_blank');},300);
+      setTimeout(function(){var names={chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};if(s)s.textContent=names[id]||id;},2000);
+    });
+  } catch(e){window.open(url,'_blank');}
+};
+
+window._lnReset = function() {
+  document.getElementById('ln-step-q').style.display = '';
+  document.getElementById('ln-step-spread').style.display = '';
+  document.getElementById('ln-draw-btn').style.display = '';
+  document.getElementById('ln-results').style.display = 'none';
+  document.getElementById('ln-question').value = '';
+  document.getElementById('ln-q-count').textContent = '0 / 200';
+  _lastPrompt = '';
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+</script>
+</body>
+</html>
