@@ -448,6 +448,9 @@ window._lenormandClose = function() {
 };
 
 window._lnSetSpread = function(id) {
+  // ★ 根治：切換牌陣前先存問題文字，否則 _render 會銷毀 textarea
+  var qEl = document.getElementById('ln-q');
+  if (qEl) _lnQuestion = qEl.value;
   _lnSpread = id;
   _render();
 };
