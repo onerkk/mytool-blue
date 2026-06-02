@@ -147,11 +147,13 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('');
 
   // 問題
+  lines.push('【問卜者的問題】');
   if (question && question.trim()) {
-    lines.push('【問卜者的問題】');
     lines.push(question.trim());
-    lines.push('');
+  } else {
+    lines.push('（問卜者未指定具體問題，請依牌面做通用解讀，涵蓋目前最需要注意的面向。）');
   }
+  lines.push('');
 
   lines.push('【占卜日期】' + new Date().toISOString().slice(0,10));
   lines.push('');
