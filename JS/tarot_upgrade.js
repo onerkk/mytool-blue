@@ -331,16 +331,16 @@ var SPREAD_DEFS = {
     en: 'Celtic Cross',
     desc: '完整局勢解析・看現況、阻礙、過去、未來、內在、外在、結果',
     positions: [
-      { name: '現況核心', zh: '現在的核心狀態' },
-      { name: '交叉牌', zh: '橫跨現況的力量——正位為助力，逆位為阻力' },
-      { name: '根因', zh: '底層動機或根源' },
-      { name: '近期過去', zh: '最近發生的相關事件' },
-      { name: '顯性目標', zh: '你意識層面的期望' },
-      { name: '近期走向', zh: '短期內的發展方向' },
-      { name: '你的位置', zh: '你在情境中的角色' },
-      { name: '外界環境', zh: '外在人事的影響' },
-      { name: '希望與恐懼', zh: '你最深層的期待和擔心' },
-      { name: '最終結果', zh: '事情的最終走向' }
+      { name: '1.現況核心', zh: 'Waite：covers him／覆蓋此事的核心狀態' },
+      { name: '2.交叉力量', zh: 'Waite：crosses him／橫跨現況的力量；依牌性判助力或阻力，不用正逆硬分' },
+      { name: '3.上方/可能成形', zh: 'Waite：crowns him／上方、理想、可能成形的方向' },
+      { name: '4.腳下/根基', zh: 'Waite：beneath him／事情根基、已在底層形成的力量' },
+      { name: '5.身後/正在離開', zh: 'Waite：behind him／近期過去、正在退場的影響' },
+      { name: '6.身前/即將到來', zh: 'Waite：before him／短期即將出現的走向' },
+      { name: '7.本人', zh: 'Waite：himself／你在情境中的立場與狀態' },
+      { name: '8.環境/家宅', zh: 'Waite：his house／外界環境、他人、家宅或現實條件' },
+      { name: '9.希望或恐懼', zh: 'Waite：hopes or fears／期待與擔憂，不是結果位' },
+      { name: '10.最終將至', zh: 'Waite：what will come／最終收束' }
     ]
   },
   tree_of_life: {
@@ -409,8 +409,8 @@ var SPREAD_DEFS = {
   },
 
   // ★ GD-6 (G1) 補:Fifteen-Card Method (英式牌陣 / GD 標準塔羅 spread)
-  //   依據:Wang《Introduction to GD Tarot》Appendix III + Crowley Thoth LWB
-  //   特性:GD/Crowley 標準塔羅 spread,完全不用反位,純靠 elemental dignity
+  //   依據:Thoth Tarot LWB + Robert Wang lineage（未查到屬 Book T 原始開鑰正文）
+  //   特性:Thoth/GD 風格 15-card spread,完全不用反位,純靠 elemental dignity
   //   版面:
   //     13  9  5     (上排:13/9/5 = 替代行動  4/8/12 = 自然趨勢)
   //      2  1  3     (中排:1=querent  2/3=核心狀態)
@@ -418,9 +418,9 @@ var SPREAD_DEFS = {
   //      4  8 12
   //      7 11 15     (下排:7/11/15 = 命運/業力 不可控)
   fifteen_card: {
-    id: 'fifteen_card', zh: 'Fifteen-Card Method（金色黎明 15 張牌陣）', count: 15,
-    en: 'Fifteen-Card Method (English Spread)',
-    desc: 'GD/Crowley 標準塔羅 spread・不用反位・純靠 elemental dignity・5 個 triad 分析',
+    id: 'fifteen_card', zh: 'Fifteen-Card Method（Thoth/GD 風格15張）', count: 15,
+    en: 'Fifteen-Card Method (Thoth/GD-style)',
+    desc: 'Thoth Tarot LWB / Robert Wang lineage・非 Book T 原始開鑰正文・不用反位・以 elemental dignity 讀5個 triad',
     positions: [
       // Card 1 = querent / 問題本質
       { name: '1.Querent 核心', zh: '提問者 + 問題本質 + 主要影響(中心)' },
@@ -480,44 +480,69 @@ var SPREAD_DEFS = {
     ]
   },
 
-  // ★ GD-11 補:Mathers First Method (26 張古法 horseshoe)
-  //   依據:Mathers《The Tarot》1888 原書 FIRST METHOD
-  //   特性:全 78 張分發為 A=26 / C=17 / E=11(F=24 棄掉)三組
-  //   每組擺成 horseshoe(右下→左下),從右到左讀,再首尾配對讀
-  //   GD 命名為「very ancient mode of reading the Tarot」
-  //   為簡化使用,我們只用最大組 A=26 張的 horseshoe 作為核心牌陣
+  // ★ v80.0 修正:Mathers First Method (1888) 完整 horseshoe
+  //   依據:Mathers《The Tarot》1888 Methods of Divination FIRST METHOD
+  //   原文不是只讀 A=26；而是分出 A=26、C=17、E=11，F=24 棄用。
+  //   A/C/E 各自排成 horseshoe，由右到左先成連貫答案，再首尾配對讀。
   mathers_horseshoe: {
-    id: 'mathers_horseshoe', zh: 'Mathers First Method (1888 古法 horseshoe)', count: 26,
-    en: 'Mathers First Method (Ancient Horseshoe)',
-    desc: 'Mathers 1888 最古老牌陣・26 張排成 horseshoe・從右到左 + 首尾配對 13 對讀法',
+    id: 'mathers_horseshoe', zh: 'Mathers First Method (1888 完整 horseshoe)', count: 54,
+    en: 'Mathers First Method (A=26, C=17, E=11)',
+    desc: 'Mathers 1888 第一法完整讀法・A/C/E 三組 horseshoe・由右到左 + 首尾配對；F=24 棄用不讀',
     positions: [
-      // 從右下開始,沿著 horseshoe 弧形到左下
-      { name: '1.右下起點', zh: '事件起點(右下)・第一層訊號' },
-      { name: '2.', zh: '右側上升・第二層' },
-      { name: '3.', zh: '右側上升・第三層' },
-      { name: '4.', zh: '右側上升・第四層' },
-      { name: '5.', zh: '右側上升・第五層' },
-      { name: '6.', zh: '右側上升・第六層' },
-      { name: '7.', zh: '右側上升・第七層' },
-      { name: '8.', zh: '右側上升・第八層' },
-      { name: '9.', zh: '右側上升・第九層' },
-      { name: '10.', zh: '右側上升・第十層' },
-      { name: '11.', zh: '右側上升・第十一層' },
-      { name: '12.', zh: '右側上升・第十二層' },
-      { name: '13.弧頂中央', zh: '弧頂・轉折點(關鍵)' },
-      { name: '14.弧頂中央', zh: '弧頂・轉折點(配對 13)' },
-      { name: '15.', zh: '左側下降・第十二層' },
-      { name: '16.', zh: '左側下降・第十一層' },
-      { name: '17.', zh: '左側下降・第十層' },
-      { name: '18.', zh: '左側下降・第九層' },
-      { name: '19.', zh: '左側下降・第八層' },
-      { name: '20.', zh: '左側下降・第七層' },
-      { name: '21.', zh: '左側下降・第六層' },
-      { name: '22.', zh: '左側下降・第五層' },
-      { name: '23.', zh: '左側下降・第四層' },
-      { name: '24.', zh: '左側下降・第三層' },
-      { name: '25.', zh: '左側下降・第二層' },
-      { name: '26.左下終點', zh: '事件終點(左下)・最終結局' }
+      { name: 'A組-01', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A1↔A26' },
+      { name: 'A組-02', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A2↔A25' },
+      { name: 'A組-03', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A3↔A24' },
+      { name: 'A組-04', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A4↔A23' },
+      { name: 'A組-05', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A5↔A22' },
+      { name: 'A組-06', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A6↔A21' },
+      { name: 'A組-07', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A7↔A20' },
+      { name: 'A組-08', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A8↔A19' },
+      { name: 'A組-09', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A9↔A18' },
+      { name: 'A組-10', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A10↔A17' },
+      { name: 'A組-11', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A11↔A16' },
+      { name: 'A組-12', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A12↔A15' },
+      { name: 'A組-13', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A13↔A14' },
+      { name: 'A組-14', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A13↔A14' },
+      { name: 'A組-15', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A12↔A15' },
+      { name: 'A組-16', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A11↔A16' },
+      { name: 'A組-17', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A10↔A17' },
+      { name: 'A組-18', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A9↔A18' },
+      { name: 'A組-19', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A8↔A19' },
+      { name: 'A組-20', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A7↔A20' },
+      { name: 'A組-21', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A6↔A21' },
+      { name: 'A組-22', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A5↔A22' },
+      { name: 'A組-23', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A4↔A23' },
+      { name: 'A組-24', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A3↔A24' },
+      { name: 'A組-25', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A2↔A25' },
+      { name: 'A組-26', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A1↔A26' },
+      { name: 'C組-01', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C1↔C17' },
+      { name: 'C組-02', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C2↔C16' },
+      { name: 'C組-03', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C3↔C15' },
+      { name: 'C組-04', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C4↔C14' },
+      { name: 'C組-05', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C5↔C13' },
+      { name: 'C組-06', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C6↔C12' },
+      { name: 'C組-07', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C7↔C11' },
+      { name: 'C組-08', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C8↔C10' },
+      { name: 'C組-09', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；中心單張' },
+      { name: 'C組-10', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C8↔C10' },
+      { name: 'C組-11', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C7↔C11' },
+      { name: 'C組-12', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C6↔C12' },
+      { name: 'C組-13', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C5↔C13' },
+      { name: 'C組-14', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C4↔C14' },
+      { name: 'C組-15', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C3↔C15' },
+      { name: 'C組-16', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C2↔C16' },
+      { name: 'C組-17', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C1↔C17' },
+      { name: 'E組-01', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E1↔E11' },
+      { name: 'E組-02', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E2↔E10' },
+      { name: 'E組-03', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E3↔E9' },
+      { name: 'E組-04', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E4↔E8' },
+      { name: 'E組-05', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E5↔E7' },
+      { name: 'E組-06', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；中心單張' },
+      { name: 'E組-07', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E5↔E7' },
+      { name: 'E組-08', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E4↔E8' },
+      { name: 'E組-09', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E3↔E9' },
+      { name: 'E組-10', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E2↔E10' },
+      { name: 'E組-11', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E1↔E11' }
     ]
   },
 
@@ -543,7 +568,7 @@ var SPREAD_DEFS = {
   ootk: {
     id: 'ootk', zh: '開鑰之法', count: 0,
     en: '開鑰之法',
-    desc: '金色黎明開鑰之法・五次獨立讀盤・使用全部 78 張牌・依 Crowley / Book T 骨架',
+    desc: '金色黎明開鑰之法・五次獨立讀盤・使用全部 78 張牌・依 Golden Dawn Book T 骨架',
     special: 'ootk',
     positions: []
   }
@@ -564,6 +589,7 @@ function detectSpreadType(question, type) {
 
   // ═══ 第 0 層：使用者明確指定牌陣名稱（最高優先）═══
   if (/金色黎明.*牌陣|GD.*牌陣|英式.*牌陣|fifteen.?card|十五.?張|Crowley.*牌陣/i.test(q)) return 'fifteen_card';
+  if (/Mathers.*(第一法|古法|horseshoe|馬蹄|馬蹄形)|1888.*(第一法|古法|horseshoe|馬蹄)|五十四.?張|54.?張/i.test(q)) return 'mathers_horseshoe';
   if (/Mathers.*牌陣|1888.*牌陣|三排七|三排.*七|二十一.?張|21.?張.*牌陣|過去現在未來.*牌陣/i.test(q)) return 'mathers_21';
   if (/小阿卡那|小牌|minor/i.test(q)) return 'minor_arcana';
 
@@ -1854,8 +1880,8 @@ enhanceTarot = function(tarot) {
         type: 'ace',
         sign: null,
         element: aceEl,
-        // ★ v68.21.8 修正:Mathers Book T 1888 + Crowley Liber 78 官方明文 Aces=11
-        //   舊版預設 5 是錯的(可能是早期誤把 Ace 當小牌按 pip),官方兩個源頭都是 11
+        // ★ v68.21.8 修正:Mathers Book T 1888 + Crowley Liber 78 文獻明文 Aces=11
+        //   舊版預設 5 是錯的(可能是早期誤把 Ace 當小牌按 pip),可查兩個源頭都是 11
         //   For Aces, count 11. — Book T pg.50 / Liber 78 First Operation step 6
         count: 11,
         decan: null,
@@ -2417,7 +2443,7 @@ enhanceTarot = function(tarot) {
     // Crowley 版本（Book of Thoth, 1944）：「Count and pair as before」
     //   → 跟 Op1-3 一樣，從 Sig 開始 counting，Sig 兩側往外 pairing
     //
-    // Manuscript Q 版本（Mathers 原始手稿，最正統）：
+    // Manuscript Q 版本（Mathers 原始手稿，嚴格對齊）：
     //   → Counting 從第一張環繞牌起、按 dealing 方向(Manuscript Q「against direction of the Sun」=逆太陽方向)固定
     //   → Pairing 是環形對應：1↔36, 2↔35, 3↔34, ...
     //
@@ -2476,7 +2502,7 @@ enhanceTarot = function(tarot) {
       '2':      { 4: '爭執 / 和解', 3: '安全 / 憂慮', 2: '一致 / 不信任' },
       'ace':    { 4: '有利契機 / 失榮譽', 3: '小成功 / 放縱', 2: '欺騙 / 敵人' }
     };
-    // ★ v68.21.7 補:Crowley Liber 78 官方 28 條 n-of-a-sort 對照表
+    // ★ v68.21.7 補:Crowley Liber 78 文獻 28 條 n-of-a-sort 對照表
     //   來源:bibliotecapleyades.net/crowley/liber/lib78.htm 原文
     //   跟 Waite 1910 完全是兩條不同的傳統,提供雙版本給 AI 選擇
     var CROWLEY_SORT_MEANINGS = {
@@ -2803,7 +2829,7 @@ enhanceTarot = function(tarot) {
     //   實機發現:
     //     Op4 sigIdx=0(Sig 居中,在最左) → 0 對 → narrativePairs.op4=[]
     //     Op3 sigIdx=n-1(Sig 在最右)   → 0 對 → narrativePairs.op3=[]
-    //   官方依據:Parsifal's Wheel 2017「bend the line into a circle」
+    //   參考依據:Parsifal's Wheel 2017「bend the line into a circle」
     //   = Israel Regardie Complete GD System「continue at the other end」
     //   治本:改用環狀 mod 繞回,讓 Sig 在任何位置都能配對
     //   ★ 環狀配對最多 Math.floor(n/2) 對,Sig 自己不配對(total n-1 個位置,各取一個)
@@ -2840,7 +2866,7 @@ enhanceTarot = function(tarot) {
   }
 
   // ════════════════════════════════════════════════════════════
-  // ★ v63 Op4 Manuscript Q 版本（Mathers 原始手稿最正統做法）
+  // ★ v63 Op4 Manuscript Q 版本（Mathers 原始手稿Book T 對齊做法）
   //
   // Mathers 原文（Manuscript Q）：
   //   "instead of counting from the Significator itself, it begins from
@@ -2861,7 +2887,7 @@ enhanceTarot = function(tarot) {
     var maxSteps = 12;
     var direction = 1; // ★ Manuscript Q:永遠按 dealing 方向(against direction of the Sun = 逆太陽方向)固定
 
-    // ★ v68.21.8:Aces 已修正預設 count=11(對齊 Book T 官方),不再需要 useCrowleyAce 切換
+    // ★ v68.21.8:Aces 已修正預設 count=11(對齊 Book T 文獻),不再需要 useCrowleyAce 切換
     //   舊邏輯保留為註解:當 Aces=5 預設時遇到死循環自動切 11,現在預設就是 11 不會死循環
 
     for (var step = 0; step < maxSteps; step++) {
@@ -3094,10 +3120,10 @@ enhanceTarot = function(tarot) {
   }
 
   // ══════════════════════════════════════════════════════════════
-  // ★ v70.7 根治(歐那 2026/5/29)：單一權威問題分類器（唯一真相來源）
+  // ★ v70.7 根治(歐那 2026/5/29)：單一權威問題分類器（單一資料來源）
   //   過去 detectQuestionType(本檔，開鑰 abandon 用) 與 detectFocus(prompt-export，鎖定區用)
   //   是兩份獨立詞庫，靠關鍵字各自列舉、永遠不同步 → 同一句「會想跟我交往」一邊判感情一邊判事業。
-  //   現在合併為唯一來源 window.JY_classifyDomains：一份詞庫，兩處都讀它，永不再各說各話。
+  //   現在合併為單一來源 window.JY_classifyDomains：一份詞庫，兩處都讀它，避免各說各話。
   //   回傳「按優先序的領域陣列(多選)」。優先序：感情/情慾/秘密 > 場域(同事/公司只是「在哪認識」)。
   //   本檔(tarot_upgrade.js)先於 prompt-export.js 載入，故定義在此掛 window。
   window.JY_classifyDomains = (function () {
@@ -3139,7 +3165,7 @@ enhanceTarot = function(tarot) {
     if (typeof TAROT === 'undefined') return null;
 
     // ════════════════════════════════════════════════════════════
-    // ★ v63 最正統 Book T:每階段獨立重新洗牌
+    // ★ v63 Book T 對齊:每階段獨立重新洗牌
     // Mathers Book T 原文五階段都明寫「Shuffle, etc., as before」
     // 每階段 78 張全副牌、全新洗牌、全新隨機正逆位
     // 五個 Operation 是五次獨立的儀式,不是「同一次抽牌的五個切片」
@@ -3718,7 +3744,7 @@ enhanceTarot = function(tarot) {
       '.ootk-tree-line{position:absolute;background:rgba(34,197,94,.06);transition:background .4s}',
       '.ootk-tree-line.lit{background:rgba(34,197,94,.2)}',
       // ════════════════════════════════════════════════════════════
-      // ★ v63 六儀式 CSS（注入式）— 最正統 Book T 動畫
+      // ★ v63 六儀式 CSS（注入式）— Book T 對齊 動畫
       // ════════════════════════════════════════════════════════════
       // v63 CSS marker: ═══ v63 ① 召喚祝禱層 ═══
       '.ootk-invocation-layer{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .9s ease}',
@@ -3821,7 +3847,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op3-sign.dimmed{opacity:.25;transform:scale(.88)}',
       '.ootk-op3-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
       '.ootk-op3-fly img{width:100%;height:100%;object-fit:cover;display:block}',
-      // v63 CSS marker: ═══ v63 ③ Op4 Sig 居中 + 36 環繞（最正統 Book T）═══
+      // v63 CSS marker: ═══ v63 ③ Op4 Sig 居中 + 36 環繞（Book T 對齊）═══
       '.ootk-op4-scene{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}',
       '.ootk-op4-table{position:relative;width:320px;height:320px;border-radius:50%;background:url(\'/img/ootk/decan-ring-bg.png\') center/cover no-repeat;box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 0 60px rgba(0,0,0,.4)}',
       '.ootk-op4-bg{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at center,transparent 35%,rgba(0,0,0,.5) 100%);pointer-events:none}',
@@ -4098,7 +4124,7 @@ enhanceTarot = function(tarot) {
 
   // ── 五階段動畫主控台 ──
   // ════════════════════════════════════════════════════════════════════
-  // ★ v63 五階段動畫主控台 — 最正統 Book T 儀式版
+  // ★ v63 五階段動畫主控台 — Book T 對齊 儀式版
   //
   // 六大儀式 (per stage):
   //   ① Invocation — Mathers IAO/HRU 召喚祝禱（首次）
@@ -4716,7 +4742,7 @@ enhanceTarot = function(tarot) {
       var HOUSE_LBL = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
       var HOUSE_DESC = ['自我','財帛','兄弟','田宅','子女','奴僕','夫妻','疾厄','遷移','官祿','福德','玄秘'];
 
-      // ── 占星天宮圖 12 宮位排列(最正統) ──
+      // ── 占星天宮圖 12 宮位排列(嚴格對齊) ──
       // 第 1 宮 ASC 在左方下緣(195°),逆時針 +30° 一格
       // 第 4 宮 IC = 285° = 正下方
       // 第 7 宮 DSC = 15° = 右方略下
@@ -5054,7 +5080,7 @@ enhanceTarot = function(tarot) {
 
     // ─── Op4 發牌：正統 Book T「Sig 居中、36 張環繞」 ───
     function ritualDealOp4(stage, caption, onDone) {
-      caption.innerHTML = '🔮 將代表牌取出居中——<b>三十六張緊隨其後形成環</b>（最正統 Book T）';
+      caption.innerHTML = '🔮 將代表牌取出居中——<b>三十六張緊隨其後形成環</b>（Book T 對齊）';
 
       var op = results.op4;
       var activeCards = op.activeCards || [];
