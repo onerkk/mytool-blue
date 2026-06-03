@@ -574,7 +574,7 @@ function _getWrap() {
 var AI_LIST = [
   {id:'chatgpt',name:'ChatGPT',url:'https://chatgpt.com/'},
   {id:'claude',name:'Claude',url:'https://claude.ai/new'},
-  {id:'gemini',name:'Gemini',url:'https://gemini.google.com/app'},
+  {id:'gemini',name:'Gemini',url:'https://gemini.google.com/'},
   {id:'grok',name:'Grok',url:'https://grok.x.ai/'},
   {id:'deepseek',name:'DeepSeek',url:'https://chat.deepseek.com/'},
   {id:'kimi',name:'Kimi',url:'https://kimi.moonshot.cn/'},
@@ -688,16 +688,54 @@ window._lnCopy = function() {
   }
 };
 
+function _lnCopyPromptSync(text) {
+  // v80.6：手機瀏覽器開外部 AI 必須保留「使用者點擊手勢」。
+  // navigator.clipboard.writeText 是非同步，若等它完成後才 window.open，Android Chrome 容易擋彈窗，
+  // 表現就是畫面跳一下又回到 jingyue.uk。先用同步 textarea 複製，再立刻開頁。
+  var ok = false;
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', 'readonly');
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+  } catch(e) {}
+  try {
+    // 不等待 Promise；只當成補強。等待它會吃掉開啟新分頁的手勢。
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function(){});
+  } catch(e) {}
+  return ok;
+}
+
 window._lnOpenAI = function(id, url, btn) {
   if (!_lastPrompt) return;
+  var names={chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
+  var s = btn && btn.querySelector ? btn.querySelector('span') : null;
+  if (s) s.textContent = '已複製・開啟中';
+
+  _lnCopyPromptSync(_lastPrompt);
+
+  // v80.6：在同一個 click call stack 內直接開啟。不要 setTimeout，不要等 clipboard promise。
+  var opened = null;
   try {
-    navigator.clipboard.writeText(_lastPrompt).then(function(){
-      var s=btn.querySelector('span');if(s)s.textContent='已複製！';
-      setTimeout(function(){window.open(url,'_blank');},300);
-      var names={chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
-      setTimeout(function(){if(s)s.textContent=names[id]||id;},2000);
-    });
-  } catch(e){window.open(url,'_blank');}
+    opened = window.open('about:blank', '_blank');
+    if (opened) {
+      try { opened.opener = null; } catch(_e) {}
+      opened.location.href = url;
+    }
+  } catch(e) { opened = null; }
+
+  // 若彈窗仍被擋，退而求其次用目前分頁跳轉；至少保證能進 AI，不會跳回原畫面。
+  if (!opened) {
+    try { window.location.href = url; } catch(e2) {}
+  }
+
+  setTimeout(function(){ if(s) s.textContent = names[id] || id; }, 2000);
 };
 
 window._lnReset = function() {
