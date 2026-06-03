@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v2.4
+// 靜月之光 — 雷諾曼牌 Lenormand v2.6
 // Petit Lenormand 36 張・Game of Hope 可查邊界・組合義讀法・反盤外牌名幻覺
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.4 loaded — Game of Hope 正統邊界/現代實務降權/商業轉譯防幻覺修正');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.6 loaded — 大牌陣/九宮格真實鄰近計算/年齡防幻覺/正統邊界一次修正');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -137,8 +137,165 @@ function drawCards(count) {
 }
 
 // ════════════════════════════════════
-// 四、正統提示詞生成
+// 四、提示詞資料層輔助：大牌陣真實 4×8＋4 鄰近計算
 // ════════════════════════════════════
+// Game of Hope 可查排法：前四排每排 8 張，最後 4 張置中。
+// 這裡把最後四張放在第 5 排的第 3~6 欄（0-based: c=2~5），用來計算真正相鄰。
+// 重要：大牌陣不能用抽牌序號前後當相鄰，否則第8→第9、第16→第17、第24→第25、第32→第33 會產生假組合。
+function _gtCoord(idx) {
+  if (idx < 0 || idx > 35) return null;
+  if (idx < 32) return { r: Math.floor(idx / 8), c: idx % 8 };
+  return { r: 4, c: 2 + (idx - 32) };
+}
+
+function _gtIndexAt(r, c) {
+  if (r >= 0 && r < 4 && c >= 0 && c < 8) return r * 8 + c;
+  if (r === 4 && c >= 2 && c <= 5) return 32 + (c - 2);
+  return null;
+}
+
+function _gtDirectNeighborIndexes(idx) {
+  var p = _gtCoord(idx);
+  if (!p) return [];
+  var dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+  var out = [];
+  for (var i=0;i<dirs.length;i++) {
+    var j = _gtIndexAt(p.r + dirs[i][0], p.c + dirs[i][1]);
+    if (j !== null) out.push(j);
+  }
+  return out;
+}
+
+function _gtNearNeighborIndexes(idx) {
+  var p = _gtCoord(idx);
+  if (!p) return [];
+  var out = [];
+  for (var dr=-1; dr<=1; dr++) {
+    for (var dc=-1; dc<=1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      var j = _gtIndexAt(p.r + dr, p.c + dc);
+      if (j !== null) out.push(j);
+    }
+  }
+  return out;
+}
+
+function _gtDistance(aIdx, bIdx) {
+  var a = _gtCoord(aIdx), b = _gtCoord(bIdx);
+  if (!a || !b) return null;
+  return Math.max(Math.abs(a.r - b.r), Math.abs(a.c - b.c));
+}
+
+function _boxIndexAt(r, c, size) {
+  if (r < 0 || c < 0 || r >= size || c >= size) return null;
+  return r * size + c;
+}
+
+function _boxDirectNeighborIndexes(idx, size) {
+  var r = Math.floor(idx / size), c = idx % size;
+  var dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+  var out = [];
+  for (var i=0;i<dirs.length;i++) {
+    var j = _boxIndexAt(r + dirs[i][0], c + dirs[i][1], size);
+    if (j !== null) out.push(j);
+  }
+  return out;
+}
+
+function _boxNearNeighborIndexes(idx, size) {
+  var r = Math.floor(idx / size), c = idx % size;
+  var out = [];
+  for (var dr=-1; dr<=1; dr++) {
+    for (var dc=-1; dc<=1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      var j = _boxIndexAt(r + dr, c + dc, size);
+      if (j !== null) out.push(j);
+    }
+  }
+  return out;
+}
+
+function _lnCardRef(card, idx) {
+  if (!card) return '';
+  return '第' + (idx + 1) + '張 ' + card.id + '.' + card.name;
+}
+
+function _lnNamesFromIndexes(drawn, idxs) {
+  if (!idxs || !idxs.length) return '無';
+  return idxs.map(function(j){ return drawn[j] ? (drawn[j].id + '.' + drawn[j].name) : ''; }).filter(Boolean).join('、') || '無';
+}
+
+function _lnFindCardIndex(drawn, id) {
+  for (var i=0;i<drawn.length;i++) if (drawn[i] && drawn[i].id === id) return i;
+  return -1;
+}
+
+function _lnUnique(arr) {
+  var seen = {}, out = [];
+  for (var i=0;i<arr.length;i++) {
+    var v = arr[i];
+    if (v == null || seen[v]) continue;
+    seen[v] = true; out.push(v);
+  }
+  return out;
+}
+
+function _lnTopicIds(question) {
+  var q = String(question || '');
+  var ids = [];
+  if (/感情|桃花|愛|喜歡|暗戀|告白|現任|非現任|對方|關係|曖昧|復合|分手|肉體|性|上床|性契合|3p/i.test(q)) {
+    ids = ids.concat([24,25]);
+  }
+  if (/肉體|性|上床|性契合|3p|性愛|床/i.test(q)) {
+    // 肉體/性題：百合、鞭子只作現代實務輔助，仍須相鄰互證。
+    ids = ids.concat([30,11]);
+  }
+  if (/她|女生|女孩|女性|女人|女方|異性/i.test(q)) {
+    // 人物/女性畫像輔助，不可單張定年齡。
+    ids = ids.concat([29,7]);
+  }
+  if (/工作|事業|副業|職場|公司|同事|蝦皮|賣場|銷售|庫存|降價|促銷|訂單|營業額|成交|商品|生意|財|錢|收入/i.test(q)) {
+    ids = ids.concat([14,35,34,15,20,27,12,3]);
+  }
+  if (/健康|身體|生病|疲勞|累|病假|休息/i.test(q)) ids = ids.concat([5]);
+  if (/訊息|聯絡|聊天|回覆|溝通|消息|私訊|聊聊/i.test(q)) ids = ids.concat([12,27,1]);
+  return _lnUnique(ids);
+}
+
+function _lnHasAgeAsk(question) {
+  return /幾歲|年齡|多大|歲數|年紀/i.test(String(question || ''));
+}
+
+function _lnBuildGrandSupportBlock(question, drawn, sigGender) {
+  if (!drawn || drawn.length !== 36) return '';
+  var lines = [];
+  var sigId = (sigGender === 'female') ? 29 : 28;
+  var sigIdx = _lnFindCardIndex(drawn, sigId);
+  lines.push('【大牌陣真實版面鄰近資料（已按 4排8張＋最後4張置中計算）】');
+  lines.push('⚠ 這一段是資料層校正：大牌陣不得用抽牌序號的前一張/後一張當相鄰。第8→第9、第16→第17、第24→第25、第32→第33 這類換行或進入最後四張的地方，除非在下列版面鄰近資料中出現，否則不能當主要組合證據。');
+  if (sigIdx >= 0) {
+    lines.push('代表牌：' + _lnCardRef(drawn[sigIdx], sigIdx));
+    lines.push('代表牌直接接觸牌（主證據）：' + _lnNamesFromIndexes(drawn, _gtDirectNeighborIndexes(sigIdx)));
+    lines.push('代表牌近身牌（含斜鄰，輔助）：' + _lnNamesFromIndexes(drawn, _gtNearNeighborIndexes(sigIdx)));
+  }
+  var topicIds = _lnTopicIds(question);
+  if (topicIds.length) {
+    lines.push('');
+    lines.push('本題問事相關牌鄰近資料（只作定位，仍需相鄰組合互證）：');
+    topicIds.forEach(function(id){
+      var idx = _lnFindCardIndex(drawn, id);
+      if (idx < 0) return;
+      var dist = (sigIdx >= 0) ? _gtDistance(sigIdx, idx) : null;
+      lines.push('・' + _lnCardRef(drawn[idx], idx) + '｜直接接觸：' + _lnNamesFromIndexes(drawn, _gtDirectNeighborIndexes(idx)) + '｜近身含斜鄰：' + _lnNamesFromIndexes(drawn, _gtNearNeighborIndexes(idx)) + (dist !== null ? '｜離代表牌版面距離：約' + dist : ''));
+    });
+  }
+  if (_lnHasAgeAsk(question)) {
+    lines.push('');
+    lines.push('年齡防幻覺規則：本題有問年齡，但雷諾曼原始邊界沒有精準歲數公式。除非人物牌、成熟/年輕線索與問事相關牌或代表牌近身互相支撐，否則必須說「本盤無法推出精準年齡」。最多只能說偏年輕、偏成熟、有經驗、或推不出；不得報 25/30/35 這類具體歲數，除非清楚標成很弱的現代實務推測。');
+  }
+  return lines.join('\n');
+}
+
 function buildPrompt(question, drawn, spreadId, sigGender) {
   var sp = SPREADS[spreadId];
   var lines = [];
@@ -148,6 +305,7 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('【人設——你是雷諾曼占卜師，不是占卜教科書】');
   lines.push('你是面對面跟客人說話的雷諾曼占卜師，不是塔羅師。你已經看完相鄰組合、代表牌附近牌、問事相關牌與遠近，現在只告訴客人結果。');
   lines.push('・客人只想知道：答案是什麼、什麼時候、怎麼辦。');
+  lines.push('・大牌陣只准把「實際版面接觸」當主要相鄰證據；抽牌序號前後只代表抽出順序，不等於大牌陣相鄰。');
   lines.push('・你內心優先用相鄰牌與三張成句分析；現代牌陣輔助只能作背景，不可壓過附近牌與問事相關牌。');
   lines.push('・像一個有經驗的占卜師在聊天，不是在寫分析報告。');
   lines.push('');
@@ -189,7 +347,7 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('══════════════════════════════════════════');
   lines.push('');
   lines.push('【正統性邊界——必須誠實，原典與現代實務分開】');
-  lines.push('雷諾曼不是塔羅：不用逆位、不讀 RWS 圖像心理投射、不用元素尊嚴、不用牌陣位置單張定義答案。判斷優先順序是：①本盤相鄰兩張/三張組合 ②大牌陣代表牌附近牌 ③問事相關牌及其相鄰牌 ④遠近作強弱背景 ⑤現代牌陣輔助。');
+  lines.push('雷諾曼不是塔羅：不用逆位、不讀 RWS 圖像心理投射、不用元素尊嚴、不用牌陣位置單張定義答案。判斷優先順序是：①本盤實際相鄰兩張/三張組合 ②大牌陣代表牌實際附近牌 ③問事相關牌及其實際相鄰牌 ④遠近作強弱背景 ⑤現代牌陣輔助。大牌陣的「實際相鄰」以本提示詞下方 4排8張＋最後4張的版面鄰近資料為準，不以抽牌序號前後為準。');
   lines.push('小雷諾曼沒有像 Waite/Crowley 那種單一官方技術文件。可查原始邊界採 Das Spiel der Hofnung / Das Spiel der Hoffnung / Game of Hope：完整 36 張牌；占卜排法為洗牌、切牌、排成 4 排 8 張加最後 4 張，女問卜者從 29、男問卜者從 28 開始，依其附近牌說故事。');
   lines.push('可查資料邊界：British Museum 館藏 1896,0501.495 記錄 Das Spiel der Hofnung 為完整 36 張牌並附 4 頁說明；Horniman Museum 1970.18 記錄 36 張 Lenormand 牌以 Hechtel 約 1799 年 Game of Hope 為模型。');
   lines.push('原始說明沒有完整逐張占卜牌義、沒有固定月份/日期應期公式、沒有要求房屋系統、角落、騎士跳、九宮格或能量石。這些若使用，只能當現代實務輔助，不能冒充原典或正統硬規則。');
@@ -248,8 +406,8 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('');
     lines.push('原始邊界內必做：');
     lines.push('① 先找代表牌；女問卜者從 29 開始，男問卜者從 28 開始。');
-    lines.push('② 先讀代表牌直接相鄰的牌，再由近到遠延伸。近牌優先，遠牌只作背景或較遠影響。');
-    lines.push('③ 問事相關牌必須讀其相鄰牌，並看它離代表牌遠近。');
+    lines.push('② 先讀代表牌在 4×8＋最後4張置中版面裡真正直接接觸的牌，再由近到遠延伸。近牌優先，遠牌只作背景或較遠影響。');
+    lines.push('③ 問事相關牌必須讀其實際版面相鄰牌，並看它離代表牌遠近；不得用抽牌序號前後硬組。');
     lines.push('④ 所有判斷要由相鄰兩張/三張組成短句，不可以單張定論。');
     lines.push('');
     lines.push('現代實務輔助（可看但不可冒充原始說明，且必須降權）：');
@@ -267,7 +425,7 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('2. 讀組合義，不是一張一張單獨解釋。正文只能自然引用本盤實際出現的牌組，不寫公式表，不拿盤外牌舉例。');
   lines.push('3. 像跟朋友講話，不像寫報告。不要粗體標題分類。');
   lines.push('4. 壞消息不包裝；但不能只用單張定論，必須帶相鄰牌組說明。');
-  lines.push('5. 每個重要結論用破折號附本盤相鄰牌組出處；訊號不足時直接說不足，不得用盤外牌名反證。');
+  lines.push('5. 每個重要結論用破折號附本盤相鄰牌組出處；大牌陣只能用下方標示的真實版面直接接觸/近身牌當主要證據，不可用抽牌序號前後製造假相鄰；訊號不足時直接說不足，不得用盤外牌名反證。');
   lines.push('6. 時間規則：原始 Game of Hope 沒有固定應期公式。除非牌面有代表牌近身、遠近、速度、訊息或短機會線索，否則只能給「先觀察的驗證窗口」；即使給窗口，也要明說不是保證日期。');
   lines.push('7. 可驗證信號必須來自牌面可觀察事件，例如訊息、詢問、公開曝光、阻礙解除；不要幻想不可驗證的內心劇情或平台後台數據。');
   lines.push('8. 24 小時行動建議是現代實務轉譯，不是原典。只能從本盤牌組推導，並且要能實際操作；平台規則不確定時，不可說成確定可做。');
@@ -278,6 +436,7 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('・問感情不需要分析財務；問工作不需要分析感情');
   lines.push('・沒有問到的人不需要推年齡畫像');
   lines.push('・有問年齡/對象時，只能根據本盤已出現的牌推；推不到就說推不到，不得搬出未出現牌名');
+  lines.push('・有問年齡時，除非人物牌、成熟/年輕線索與代表牌或問事相關牌近身互證，否則不可報精準歲數；最多說偏年輕、偏成熟、有經驗，或直接說推不出。');
   lines.push('・若問副業、庫存、降價、銷售：可以用本盤已抽到的魚/熊/狐狸/錨/船/花園/信/鳥等牌組轉譯成經營方向，但必須明說「牌面支持的是方向，具體平台操作屬現代實務」。不得把 A/B/C 分層、幾折出清、幾天爆單、能直接聯繫收藏者、平台流量規則等未由牌面或提問者事實支持的內容說成雷諾曼正統。');
   lines.push('');
 
@@ -303,13 +462,30 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('   關鍵字：' + c.key);
     lines.push('   常見順向語境（現代詞庫，不能單張定論）：' + c.pos);
     lines.push('   常見受阻語境（現代詞庫，不能單張定論）：' + c.neg);
-    // 組合提示：跟前一張和後一張
-    if (i > 0) {
-      lines.push('   ← 與前張 ' + drawn[i-1].name + ' 組合讀');
+    // 組合提示
+    if (spreadId === 'grand') {
+      // 大牌陣：只列真實版面相鄰，絕不使用抽牌序號前後製造假組合。
+      lines.push('   實際直接相鄰牌（4×8＋最後4張版面）：' + _lnNamesFromIndexes(drawn, _gtDirectNeighborIndexes(i)));
+      lines.push('   近身牌（含斜鄰，輔助）：' + _lnNamesFromIndexes(drawn, _gtNearNeighborIndexes(i)));
+    } else if (spreadId === 'nine') {
+      // 九宮格：3×3 也必須按實際格位相鄰，不能把第3→第4、第6→第7當線性相鄰。
+      lines.push('   實際直接相鄰牌（3×3版面）：' + _lnNamesFromIndexes(drawn, _boxDirectNeighborIndexes(i, 3)));
+      lines.push('   近身牌（含斜鄰，輔助）：' + _lnNamesFromIndexes(drawn, _boxNearNeighborIndexes(i, 3)));
+    } else {
+      // 三/五張線照線性相鄰。
+      if (i > 0) {
+        lines.push('   ← 與前張 ' + drawn[i-1].name + ' 組合讀');
+      }
+      if (i < drawn.length - 1) {
+        lines.push('   → 與後張 ' + drawn[i+1].name + ' 組合讀');
+      }
     }
-    if (i < drawn.length - 1) {
-      lines.push('   → 與後張 ' + drawn[i+1].name + ' 組合讀');
-    }
+    lines.push('');
+  }
+
+  // 大牌陣額外提示：真實版面鄰近資料（代表牌＋問事相關牌）
+  if (spreadId === 'grand' && drawn.length === 36) {
+    lines.push(_lnBuildGrandSupportBlock(question, drawn, sigGender));
     lines.push('');
   }
 
@@ -525,7 +701,7 @@ window._lnOpenAI = function(id, url, btn) {
 };
 
 window._lnReset = function() {
-  // v2.4：重新抽牌＝重新開始一題，並保留正統提示詞邊界修正。
+  // v2.6：重新抽牌＝重新開始一題，並保留正統提示詞邊界與真實鄰近計算修正。
   // 舊版只把畫面切回 input，沒有清空 _lnQuestion / _lnSpread，
   // 所以問題文字與上次選的大牌陣會被 _render() 再塞回畫面。
   _lnPhase = 'input';
