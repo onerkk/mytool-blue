@@ -30,7 +30,7 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="免費AI塔羅占卜｜開鑰之法・塔羅快讀・雷諾曼・靜月靈籤 — 靜月之光">
-<meta name="twitter:description" content="塔羅快讀＋開鑰之法＋雷諾曼 Lenormand＋六十甲子靈籤。複製提示詞貼到 AI 即出深度解讀。完全免費。">
+<meta name="twitter:description" content="塔羅快讀（古典＋現代牌陣明確標示）＋開鑰之法＋雷諾曼 Lenormand＋六十甲子靈籤。複製提示詞貼到 AI 即出深度解讀。完全免費。">
 <meta name="twitter:image" content="https://jingyue.uk/ogimage.jpg?v=20260321">
 <!-- Structured Data: WebApplication -->
 <script type="application/ld+json">
@@ -48,7 +48,7 @@
     "price": "0",
     "priceCurrency": "TWD"
   },
-  "featureList": ["RWS塔羅快讀","凱爾特十字","生命之樹牌陣","金色黎明開鑰之法","78張五層深潛","雷諾曼Lenormand","三張線五張線九宮格大牌陣","六十甲子靈籤","AI深度解讀提示詞","古典與現代塔羅牌陣","正統元素尊嚴分析","水晶能量推薦","天鐵隕石","龍宮舍利"],
+  "featureList": ["RWS塔羅快讀","凱爾特十字","生命之樹牌陣","金色黎明開鑰之法","78張五層深潛","雷諾曼Lenormand","三張線五張線九宮格大牌陣","六十甲子靈籤","AI深度解讀提示詞","古典與現代塔羅牌陣","Golden Dawn元素強弱分析","水晶能量推薦","天鐵隕石","龍宮舍利"],
   "inLanguage": "zh-TW",
   "isAccessibleForFree": true
 }
@@ -221,7 +221,7 @@
       "@type": "HowToStep",
       "position": 4,
       "name": "一鍵複製 AI 解讀提示詞",
-      "text": "系統自動生成包含正統解讀規則的提示詞，一鍵複製後貼到 ChatGPT、Claude、Gemini 等 AI 對話送出，即可得到深度命理解讀。"
+      "text": "系統自動生成已標示古典來源與現代實務邊界的解讀提示詞，一鍵複製後貼到 ChatGPT、Claude、Gemini 等 AI 對話送出，即可得到深度命理解讀。"
     }
   ]
 }
@@ -327,7 +327,7 @@
 <noscript>
   <div style="text-align:center;padding:40px;font-family:sans-serif">
     <h2>靜月之光 — 免費AI塔羅・開鑰之法・雷諾曼線上解牌</h2>
-    <p>免費線上AI塔羅占卜：塔羅快讀（偉特78張完整牌組、三牌與凱爾特十字牌陣）與開鑰之法（黃金黎明會 Opening of the Key 進階儀式）。AI即時解牌，依問題給收斂答案，並依牌面五行推薦水晶手鍊、天鐵、龍宮舍利能量配戴。</p>
+    <p>免費線上AI塔羅占卜：塔羅快讀（偉特78張完整牌組、三牌與凱爾特十字牌陣）與開鑰之法（黃金黎明會 Opening of the Key 進階儀式）。AI即時解牌，依問題給收斂答案，並依牌面元素與整體壓力推薦水晶手鍊、天鐵、龍宮舍利能量配戴。</p>
     <p>本工具需要啟用 JavaScript 才能使用。請開啟瀏覽器的 JavaScript 功能後重新載入頁面。</p>
   </div>
 </noscript>
@@ -1323,22 +1323,22 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot.js?v=20260507v69_3_0" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260603v78_0" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260603v79_0" defer></script>
 <!-- ★ v70 全免費：payment-wall.js 已移除 -->
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
-<script src="JS/ai-analysis.js?v=20260603v78_0" defer></script>
+<script src="JS/ai-analysis.js?v=20260603v79_0" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/oracle.js?v=20260603v78_0" defer></script>
-<script src="JS/lenormand.js?v=20260603v78_0" defer></script>
+<script src="JS/oracle.js?v=20260603v79_0" defer></script>
+<script src="JS/lenormand.js?v=20260603v79_0" defer></script>
 <script src="JS/ui.js?v=20260603v76_2" defer></script>
 <script src="JS/spread-picker.js?v=20260601v75_2" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
 <!-- ★ v70 複製模式引擎：必須最後載入。不進混淆。 -->
-<script src="JS/prompt-export.js?v=20260603v78_0" defer></script>
+<script src="JS/prompt-export.js?v=20260603v79_0" defer></script>
 <!-- ★ v70.9 命理引擎延後載入器 -->
 <script>
 (function(){
