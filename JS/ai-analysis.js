@@ -165,7 +165,7 @@ window._jyStopSmartTimer = function() {
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260529v73_0';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260603v78_0';
 // ★ v73(歐那 2026/5/29)：純前端複製模式已無 worker，舊版打 worker /version 的偵測永遠失敗、
 //   強制更新形同虛設。改為「純前端版本常數比對」——零後端依賴：
 //   每次載入比對 FRONTEND_VERSION 與 localStorage 記錄，變了就破快取強制 reload 一次。
@@ -340,7 +340,20 @@ window.__plainReplace = window.__plainReplace || function(input){
     [/藏干/g,'藏在地支裡的內在能量'],
     [/神煞/g,'附加吉凶標記'],
     [/節氣/g,'季節能量點'],
-    [/稱骨/g,'傳統骨重評估']
+    [/稱骨/g,'傳統骨重評估'],
+    [/Op1/g,'整體處境'],
+    [/Op2/g,'生活場域'],
+    [/Op3/g,'內在驅力'],
+    [/Op4/g,'時間節奏'],
+    [/Op5/g,'最深層本質'],
+    [/Significator/g,'主牌'],
+    [/Sig/g,'主牌'],
+    [/Counting/g,'計數主線'],
+    [/Pairing/g,'兩側互補'],
+    [/Unaspected/g,'隱藏推力'],
+    [/元素尊嚴/g,'元素強弱'],
+    [/well-dignified/g,'被放大'],
+    [/ill-dignified/g,'被削弱'],
   ];
   rules.forEach(function(rule){ s = s.replace(rule[0], rule[1]); });
   return s;
@@ -24912,7 +24925,7 @@ async function _triggerTarotAI() {
           'cursor:pointer;font-family:inherit;transition:all .3s;' +
           'box-shadow:0 0 12px rgba(212,175,55,.06);line-height:1.6' +
         '">🔑 開鑰之法・五階段深度占卜<br><span style=\"font-size:.72rem;font-weight:600;opacity:.8;color:#c084fc\">💎 NT$' + window.JY_PRICES.SINGLE_OOTK + ' 解鎖深度分析</span></button>' +
-        '<div style="font-size:.65rem;color:var(--c-text-muted);margin-top:.4rem;opacity:.7">金色黎明最高階・5 段獨立讀盤 × 7 套命盤交叉</div>';
+        '<div style="font-size:.65rem;color:var(--c-text-muted);margin-top:.4rem;opacity:.7">金色黎明開鑰・5 段獨立讀盤 × 7 套命盤交叉</div>';
       resultDiv.appendChild(ootkEntry);
     }
 

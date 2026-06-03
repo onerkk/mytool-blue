@@ -292,7 +292,7 @@ var SPREAD_DEFS = {
   either_or: {
     id: 'either_or', zh: '二選一牌陣', count: 5,
     en: 'Either-Or Spread',
-    desc: '面對抉擇時，看清兩條路',
+    desc: '現代決策對比牌陣・5張實際抽牌・看清兩條路',
     positions: [
       { name: '你', zh: '你目前的狀態與核心需求' },
       { name: 'A 選項', zh: '選 A 的能量與發展' },
@@ -316,7 +316,7 @@ var SPREAD_DEFS = {
   relationship: {
     id: 'relationship', zh: '關係牌陣', count: 6,
     en: 'Relationship Spread',
-    desc: '看透兩個人之間的真實狀態',
+    desc: '現代雙人對比牌陣・看兩人狀態、阻力與短期走向',
     positions: [
       { name: '你', zh: '你在這段關係中的狀態' },
       { name: '對方', zh: '對方在這段關係中的狀態' },
@@ -346,7 +346,7 @@ var SPREAD_DEFS = {
   tree_of_life: {
     id: 'tree_of_life', zh: '生命之樹', count: 10,
     en: '生命之樹',
-    desc: '金色黎明核心牌陣・人生架構、靈性課題、深層自我',
+    desc: 'Hermetic Qabalah 生命之樹應用・人生架構、深層自我、落地結果',
     positions: [
       { name: 'Kether 王冠', zh: '靈性最高指引・你的終極方向' },
       { name: 'Chokmah 智慧', zh: '創造的力量・你的原始動力' },
@@ -375,7 +375,7 @@ var SPREAD_DEFS = {
   zodiac: {
     id: 'zodiac', zh: 'Zodiac Spread（黃道十二宮）', count: 13,
     en: 'Zodiac Spread',
-    desc: '金色黎明核心牌陣・12 宮位逐一掃描未來一年或特定事件的 12 個面向',
+    desc: '占星十二宮塔羅應用・12 宮位逐一掃描未來一年或特定事件的 12 個面向',
     positions: [
       { name: '第一宮・自我', zh: '你目前的狀態與身體能量' },
       { name: '第二宮・財務', zh: '金錢、資源、你重視的東西' },
@@ -395,7 +395,7 @@ var SPREAD_DEFS = {
   minor_arcana: {
     id: 'minor_arcana', zh: 'Minor Arcana（小阿卡那占卜）', count: 7,
     en: 'Minor Arcana Divination',
-    desc: '金色黎明核心牌陣・只用 56 張小阿卡那解決具體生活問題',
+    desc: '現代小牌專題牌陣・只用 56 張小阿卡那解決具體生活問題',
     deckFilter: 'minor_only',
     positions: [
       { name: '現狀', zh: '你現在面對的具體處境' },
@@ -543,7 +543,7 @@ var SPREAD_DEFS = {
   ootk: {
     id: 'ootk', zh: '開鑰之法', count: 0,
     en: '開鑰之法',
-    desc: '金色黎明最高階占卜・五次獨立讀盤・使用全部 78 張牌・依 Mathers Book T 正統流程',
+    desc: '金色黎明開鑰之法・五次獨立讀盤・使用全部 78 張牌・依 Crowley / Book T 骨架',
     special: 'ootk',
     positions: []
   }
@@ -3976,7 +3976,7 @@ enhanceTarot = function(tarot) {
     var html = '';
     html += '<div style="text-align:center;max-width:420px;width:100%;margin:0 auto">';
     html += '<div style="font-size:1.1rem;font-weight:700;color:var(--c-gold);margin-bottom:.3rem">✦ 開鑰之法 ✦</div>';
-    html += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-bottom:.6rem">金色黎明最高階占卜・五個階段</div>';
+    html += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-bottom:.6rem">金色黎明開鑰之法・五個階段</div>';
     html += '<div style="font-size:.82rem;color:var(--c-text,#e0d8c8);line-height:1.7;margin-bottom:1rem;padding:0 .5rem">從四元素到生命之樹，逐層深入你的問題核心。<br>首先，選擇代表你的「代表牌」。</div>';
 
     // 自動推薦(只在有生辰時才顯示)
