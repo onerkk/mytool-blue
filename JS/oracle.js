@@ -1367,7 +1367,7 @@ function _buildOraclePrompt(poem, qText) {
   var dd = D[poem.n] || {};
   var sn = SHRINE_NOTES[poem.n] || {};
   var lines = [];
-  lines.push('你是精通六十甲子靈籤的廟祝解籤師。以下是求籤者抽到的籤詩、籤等、典故與各項判讀，請依廟祝解籤口吻解讀。');
+  lines.push('你是精通六十甲子靈籤的廟祝解籤師。以下是求籤者抽到的籤詩、籤等、典故與各項判讀，請依廟祝解籤口吻解讀；只依本籤資料，不引八字、紫微、塔羅或其他命盤。');
   lines.push('');
   if (qText && qText.trim().length > 0) {
     lines.push('【求籤者的問題】');
@@ -1405,12 +1405,12 @@ function _buildOraclePrompt(poem, qText) {
   lines.push('────────────────');
   lines.push('【解籤規則】');
   lines.push('1. 第一句直接回答求籤者的問題，給明確方向（吉/凶/宜/忌/等待/行動），不鋪墊。');
-  lines.push('2. 解讀緊扣籤詩原文四句、籤等與典故；逐句對應求籤者的處境，不能脫離詩文空談。');
+  lines.push('2. 解讀緊扣籤詩原文四句、籤等與典故；逐句對應求籤者的處境，不能脫離詩文空談，也不能引入本籤資料外的命盤或牌面。');
   lines.push('3. 典故是神明藉古人故事為求籤者借鏡，須說明典故與求籤者處境的對應。');
   lines.push('4. 依籤等定基調：上籤不硬找壞處，下籤不包裝成好事。');
-  lines.push('5. 各項判讀中若有與問題直接相關的欄位，必須引用並解釋。');
+  lines.push('5. 各項判讀中若有與問題直接相關的欄位，必須引用並解釋；無關欄位不要硬扯。');
   lines.push('6. 屬性（五行、利季節、方位）只能作時間與方位輔助，不可壓過籤詩與籤等。');
-  lines.push('7. 結尾給具體可做的行動建議，以及一個可驗證的時間訊號。');
+  lines.push('7. 結尾給具體可做的行動建議，以及一個可驗證的時間訊號；若籤詩沒有時間線索，明說不能硬定日期。');
   lines.push('8. 語氣像廟裡解籤師父對信眾說話——溫和但直接，壞消息也講清楚。');
   lines.push('9. 不用粗體標題。像跟人說話，不像寫報告。');
   if (qText && qText.trim().length > 0) {
@@ -1418,7 +1418,7 @@ function _buildOraclePrompt(poem, qText) {
   }
   lines.push('');
   lines.push('【收尾・能量石】');
-  lines.push('解讀最後，依籤詩判斷求籤者最需要的一種能量石，用一句話自然帶出。');
+  lines.push('解讀最後，依籤詩判斷求籤者最需要的一種能量石，用一句話自然帶出；能量石是品牌實務輔助，不屬六十甲子靈籤原典。');
   lines.push('結尾自然帶入：「靜月之光蝦皮有挑過的 → https://tw.shp.ee/9UHEJTp4」；不可用優惠、限時、下單、搶購等推銷語。');
 
   _lastOraclePrompt = lines.join('\n');
@@ -1800,5 +1800,5 @@ css.textContent='\
 .orc-shrine-story-footer{margin-top:.7rem;padding-top:.5rem;border-top:1px dashed rgba(212,167,106,0.18);font-size:.68rem;color:rgba(201,167,119,0.5);font-style:italic;letter-spacing:1px;text-align:right}\
 ';
 document.head.appendChild(css);
-console.log('[Oracle] 靜月靈籤 v67f loaded — 真實 3D 寫實籤桶+籤(PNG)+ 60首靜月註 + 同題警告籤(何必問祂)+ 典故顯眼處 + 笑陰筊神格化文案 + 入口神話化 + v75 AI解籤');
+console.log('[Oracle] 靜月靈籤 v79 loaded — 解籤提示詞鎖定本籤資料，不混入八字/塔羅/外部命盤');
 })();
