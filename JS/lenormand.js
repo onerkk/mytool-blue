@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v2.2
+// 靜月之光 — 雷諾曼牌 Lenormand v2.3
 // Petit Lenormand 36 張・傳統組合義讀法・反盤外牌名幻覺
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.2 loaded — 原典邊界/本盤合法牌名/反盤外反證修正');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.3 loaded — 重新抽牌清空問題/牌陣狀態修正');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -522,7 +522,16 @@ window._lnOpenAI = function(id, url, btn) {
 };
 
 window._lnReset = function() {
+  // v2.3：重新抽牌＝重新開始一題。
+  // 舊版只把畫面切回 input，沒有清空 _lnQuestion / _lnSpread，
+  // 所以問題文字與上次選的大牌陣會被 _render() 再塞回畫面。
   _lnPhase = 'input';
+  _lnQuestion = '';
+  _lnSpread = 'three';
+  _lnDrawn = [];
+  _lnDeck = [];
+  _lastPrompt = '';
+  _lnSigGender = 'male';
   _render();
   _getWrap().scrollTop = 0;
 };
