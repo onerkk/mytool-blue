@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v2.6
-// Petit Lenormand 36 張・Game of Hope 可查邊界・組合義讀法・反盤外牌名幻覺
+// 靜月之光 — 雷諾曼牌 Lenormand v80.8
+// Petit Lenormand 36 張・傳統組合義讀法・反盤外牌名幻覺
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.6 loaded — 大牌陣/九宮格真實鄰近計算/年齡防幻覺/正統邊界一次修正');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v80.8 loaded — 官方邊界分級/真實相鄰/防冒充原典');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -92,20 +92,20 @@ var IMG_MAP = {
 // ════════════════════════════════════
 var SPREADS = {
   three: { id:'three', name:'三張線', en:'Three-Card Line', count:3,
-    desc:'三張線屬現代短線牌陣。核心是相鄰組合義與三張成句，不是塔羅式固定位置。',
-    positions:['第1張','第2張','第3張']
+    desc:'三張線讀。現代實務牌陣，非 Game of Hope 原始排法；中間牌是焦點，左右相鄰牌修飾，核心仍是組合義。',
+    positions:['左側修飾/前因','焦點','右側修飾/發展']
   },
   five: { id:'five', name:'五張線', en:'Five-Card Line', count:5,
-    desc:'五張線屬現代短線牌陣。優先讀相鄰兩張與三張故事，可輔助看順序推進，但不能逐張單獨定論。',
-    positions:['第1張','第2張','第3張','第4張','第5張']
+    desc:'五張線讀。現代實務牌陣，非 Game of Hope 原始排法；第3張是焦點，2-3-4 是近身故事，不能逐張單獨解。',
+    positions:['左外修飾','左近修飾','焦點','右近修飾','右外修飾']
   },
   nine: { id:'nine', name:'九宮格', en:'Nine-Card Box (3×3)', count:9,
-    desc:'3×3 九張方陣屬現代實務牌陣，不是 Game of Hope 原始占卜說明。使用時只作相鄰組合與整體故事框架。',
+    desc:'3×3 現代實務牌陣，非 Game of Hope 原始排法。只按3×3實際相鄰與三張成句輔助解讀。',
     positions:['第1張','第2張','第3張','第4張','第5張','第6張','第7張','第8張','第9張'],
     layout:'3x3'
   },
   grand: { id:'grand', name:'大牌陣', en:'Grand Tableau', count:36,
-    desc:'全部36張排出。本站採 Game of Hope 可查占卜排法：4排8張＋最後一排4張置中。以紳士28/淑女29附近牌與問事相關牌相鄰組合為主；房屋等現代技法只作弱輔助。',
+    desc:'全部36張排出。本站採 Game of Hope 可查核心：4排8張＋最後4張置中；以紳士28/淑女29與其附近牌、遠近為優先。房屋等僅作現代弱輔助。',
     positions:null, // special layout
     layout:'8-8-8-8-4'
   }
@@ -118,7 +118,7 @@ var _lnDeck = [];
 var _lnDrawn = [];
 var _lnSpread = 'three';
 var _lnQuestion = '';
-var _lnSigGender = 'male'; // 大牌陣代表牌：male=紳士28, female=淑女29
+var _lnSigGender = 'male'; // for Grand Tableau
 
 function shuffleDeck() {
   _lnDeck = CARDS.map(function(c){ return JSON.parse(JSON.stringify(c)); });
@@ -137,175 +137,117 @@ function drawCards(count) {
 }
 
 // ════════════════════════════════════
-// 四、提示詞資料層輔助：大牌陣真實 4×8＋4 鄰近計算
+// 四、正統提示詞生成
 // ════════════════════════════════════
-// Game of Hope 可查排法：前四排每排 8 張，最後 4 張置中。
-// 這裡把最後四張放在第 5 排的第 3~6 欄（0-based: c=2~5），用來計算真正相鄰。
-// 重要：大牌陣不能用抽牌序號前後當相鄰，否則第8→第9、第16→第17、第24→第25、第32→第33 會產生假組合。
-function _gtCoord(idx) {
-  if (idx < 0 || idx > 35) return null;
-  if (idx < 32) return { r: Math.floor(idx / 8), c: idx % 8 };
-  return { r: 4, c: 2 + (idx - 32) };
-}
-
-function _gtIndexAt(r, c) {
-  if (r >= 0 && r < 4 && c >= 0 && c < 8) return r * 8 + c;
-  if (r === 4 && c >= 2 && c <= 5) return 32 + (c - 2);
-  return null;
-}
-
-function _gtDirectNeighborIndexes(idx) {
-  var p = _gtCoord(idx);
-  if (!p) return [];
-  var dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-  var out = [];
-  for (var i=0;i<dirs.length;i++) {
-    var j = _gtIndexAt(p.r + dirs[i][0], p.c + dirs[i][1]);
-    if (j !== null) out.push(j);
-  }
-  return out;
-}
-
-function _gtNearNeighborIndexes(idx) {
-  var p = _gtCoord(idx);
-  if (!p) return [];
-  var out = [];
-  for (var dr=-1; dr<=1; dr++) {
-    for (var dc=-1; dc<=1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      var j = _gtIndexAt(p.r + dr, p.c + dc);
-      if (j !== null) out.push(j);
-    }
-  }
-  return out;
-}
-
-function _gtDistance(aIdx, bIdx) {
-  var a = _gtCoord(aIdx), b = _gtCoord(bIdx);
-  if (!a || !b) return null;
-  return Math.max(Math.abs(a.r - b.r), Math.abs(a.c - b.c));
-}
-
-function _boxIndexAt(r, c, size) {
-  if (r < 0 || c < 0 || r >= size || c >= size) return null;
-  return r * size + c;
-}
-
-function _boxDirectNeighborIndexes(idx, size) {
-  var r = Math.floor(idx / size), c = idx % size;
-  var dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-  var out = [];
-  for (var i=0;i<dirs.length;i++) {
-    var j = _boxIndexAt(r + dirs[i][0], c + dirs[i][1], size);
-    if (j !== null) out.push(j);
-  }
-  return out;
-}
-
-function _boxNearNeighborIndexes(idx, size) {
-  var r = Math.floor(idx / size), c = idx % size;
-  var out = [];
-  for (var dr=-1; dr<=1; dr++) {
-    for (var dc=-1; dc<=1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      var j = _boxIndexAt(r + dr, c + dc, size);
-      if (j !== null) out.push(j);
-    }
-  }
-  return out;
-}
-
-function _lnCardRef(card, idx) {
-  if (!card) return '';
-  return '第' + (idx + 1) + '張 ' + card.id + '.' + card.name;
-}
-
-function _lnNamesFromIndexes(drawn, idxs) {
-  if (!idxs || !idxs.length) return '無';
-  return idxs.map(function(j){ return drawn[j] ? (drawn[j].id + '.' + drawn[j].name) : ''; }).filter(Boolean).join('、') || '無';
-}
-
-function _lnFindCardIndex(drawn, id) {
-  for (var i=0;i<drawn.length;i++) if (drawn[i] && drawn[i].id === id) return i;
-  return -1;
-}
-
-function _lnUnique(arr) {
-  var seen = {}, out = [];
-  for (var i=0;i<arr.length;i++) {
-    var v = arr[i];
-    if (v == null || seen[v]) continue;
-    seen[v] = true; out.push(v);
-  }
-  return out;
-}
-
-function _lnTopicIds(question) {
-  var q = String(question || '');
-  var ids = [];
-  if (/感情|桃花|愛|喜歡|暗戀|告白|現任|非現任|對方|關係|曖昧|復合|分手|肉體|性|上床|性契合|3p/i.test(q)) {
-    ids = ids.concat([24,25]);
-  }
-  if (/肉體|性|上床|性契合|3p|性愛|床/i.test(q)) {
-    // 肉體/性題：百合、鞭子只作現代實務輔助，仍須相鄰互證。
-    ids = ids.concat([30,11]);
-  }
-  if (/她|女生|女孩|女性|女人|女方|異性/i.test(q)) {
-    // 人物/女性畫像輔助，不可單張定年齡。
-    ids = ids.concat([29,7]);
-  }
-  if (/工作|事業|副業|職場|公司|同事|蝦皮|賣場|銷售|庫存|降價|促銷|訂單|營業額|成交|商品|生意|財|錢|收入/i.test(q)) {
-    ids = ids.concat([14,35,34,15,20,27,12,3]);
-  }
-  if (/健康|身體|生病|疲勞|累|病假|休息/i.test(q)) ids = ids.concat([5]);
-  if (/訊息|聯絡|聊天|回覆|溝通|消息|私訊|聊聊/i.test(q)) ids = ids.concat([12,27,1]);
-  return _lnUnique(ids);
-}
-
-function _lnHasAgeAsk(question) {
-  return /幾歲|年齡|多大|歲數|年紀/i.test(String(question || ''));
-}
-
-function _lnBuildGrandSupportBlock(question, drawn, sigGender) {
-  if (!drawn || drawn.length !== 36) return '';
-  var lines = [];
-  var sigId = (sigGender === 'female') ? 29 : 28;
-  var sigIdx = _lnFindCardIndex(drawn, sigId);
-  lines.push('【大牌陣真實版面鄰近資料（已按 4排8張＋最後4張置中計算）】');
-  lines.push('⚠ 這一段是資料層校正：大牌陣不得用抽牌序號的前一張/後一張當相鄰。第8→第9、第16→第17、第24→第25、第32→第33 這類換行或進入最後四張的地方，除非在下列版面鄰近資料中出現，否則不能當主要組合證據。');
-  if (sigIdx >= 0) {
-    lines.push('代表牌：' + _lnCardRef(drawn[sigIdx], sigIdx));
-    lines.push('代表牌直接接觸牌（主證據）：' + _lnNamesFromIndexes(drawn, _gtDirectNeighborIndexes(sigIdx)));
-    lines.push('代表牌近身牌（含斜鄰，輔助）：' + _lnNamesFromIndexes(drawn, _gtNearNeighborIndexes(sigIdx)));
-  }
-  var topicIds = _lnTopicIds(question);
-  if (topicIds.length) {
-    lines.push('');
-    lines.push('本題問事相關牌鄰近資料（只作定位，仍需相鄰組合互證）：');
-    topicIds.forEach(function(id){
-      var idx = _lnFindCardIndex(drawn, id);
-      if (idx < 0) return;
-      var dist = (sigIdx >= 0) ? _gtDistance(sigIdx, idx) : null;
-      lines.push('・' + _lnCardRef(drawn[idx], idx) + '｜直接接觸：' + _lnNamesFromIndexes(drawn, _gtDirectNeighborIndexes(idx)) + '｜近身含斜鄰：' + _lnNamesFromIndexes(drawn, _gtNearNeighborIndexes(idx)) + (dist !== null ? '｜離代表牌版面距離：約' + dist : ''));
-    });
-  }
-  if (_lnHasAgeAsk(question)) {
-    lines.push('');
-    lines.push('年齡防幻覺規則：本題有問年齡，但雷諾曼原始邊界沒有精準歲數公式。除非人物牌、成熟/年輕線索與問事相關牌或代表牌近身互相支撐，否則必須說「本盤無法推出精準年齡」。最多只能說偏年輕、偏成熟、有經驗、或推不出；不得報 25/30/35 這類具體歲數，除非清楚標成很弱的現代實務推測。');
-  }
-  return lines.join('\n');
-}
-
 function buildPrompt(question, drawn, spreadId, sigGender) {
-  var sp = SPREADS[spreadId];
+  var sp = SPREADS[spreadId] || SPREADS.three;
   var lines = [];
+  var q = (question || '').trim();
+  var isAgeQuestion = /幾歲|年齡|多大|歲數/.test(q);
 
-  lines.push('你是精通 Petit Lenormand（小雷諾曼）的雷諾曼占卜師。以下是問卜者抽到的牌面與完整資料，請優先依相鄰組合義解讀；若為大牌陣，優先依 Game of Hope 可查核心：36 張、4排8張＋最後4張、紳士28/淑女29、附近牌與遠近。三張線、五張線、九宮格、房屋等只屬現代實務補充，必須降權使用。');
+  function cardName(c){ return c ? (c.id + '.' + c.name) : ''; }
+  function simpleName(c){ return c ? c.name : ''; }
+  function uniqCards(arr){
+    var seen = {}, out = [];
+    (arr || []).forEach(function(c){ if(c && !seen[c.id]){ seen[c.id]=1; out.push(c); } });
+    return out;
+  }
+  function joinCards(arr){
+    arr = uniqCards(arr);
+    return arr.length ? arr.map(cardName).join('、') : '無';
+  }
+  function getGridCoord(i, sid){
+    if (sid === 'nine') return {r: Math.floor(i/3), c: i%3};
+    if (sid === 'grand') {
+      if (i < 32) return {r: Math.floor(i/8), c: i%8};
+      return {r: 4, c: 2 + (i - 32)}; // 4×8＋最後4張置中（欄2-5）
+    }
+    return {r:0, c:i};
+  }
+  function findIndexByCoord(coord, sid){
+    var i;
+    if (sid === 'nine') {
+      if (coord.r < 0 || coord.r > 2 || coord.c < 0 || coord.c > 2) return -1;
+      return coord.r * 3 + coord.c;
+    }
+    if (sid === 'grand') {
+      if (coord.r >= 0 && coord.r <= 3 && coord.c >= 0 && coord.c <= 7) return coord.r * 8 + coord.c;
+      if (coord.r === 4 && coord.c >= 2 && coord.c <= 5) return 32 + (coord.c - 2);
+      return -1;
+    }
+    i = coord.c;
+    return (i >= 0 && i < drawn.length) ? i : -1;
+  }
+  function neighboursOf(i, sid, diagonal){
+    var coord = getGridCoord(i, sid);
+    var steps = diagonal
+      ? [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
+      : [[-1,0],[0,-1],[0,1],[1,0]];
+    var out = [];
+    steps.forEach(function(st){
+      var idx = findIndexByCoord({r: coord.r + st[0], c: coord.c + st[1]}, sid);
+      if (idx >= 0 && idx < drawn.length) out.push(drawn[idx]);
+    });
+    return uniqCards(out);
+  }
+  function realAdjacent(i){
+    if (spreadId === 'three' || spreadId === 'five') {
+      return uniqCards([drawn[i-1], drawn[i+1]]);
+    }
+    if (spreadId === 'nine' || spreadId === 'grand') return neighboursOf(i, spreadId, false);
+    return uniqCards([drawn[i-1], drawn[i+1]]);
+  }
+  function nearCards(i){
+    if (spreadId === 'nine' || spreadId === 'grand') return neighboursOf(i, spreadId, true);
+    return realAdjacent(i);
+  }
+  function topicIdsForQuestion(text){
+    var ids = [];
+    function add(a){ a.forEach(function(x){ if(ids.indexOf(x)<0) ids.push(x); }); }
+    if (/感情|愛|喜歡|暗戀|交往|復合|分手|桃花|肉體|性|曖昧|對象|現任|前任|女友|男友|告白/.test(text)) add([24,25]);
+    if (/公司|同事|工程師|工作|上班|職場|副業|蝦皮|賣場|銷售|事業|職涯/.test(text)) add([14,35]);
+    if (/財|錢|收入|業績|營業額|庫存|降價|促銷|訂單|生意|破萬|破十萬/.test(text)) add([34,15]);
+    if (/健康|身體|病|累|疲勞|精神|睡眠/.test(text)) add([5]);
+    if (/訊息|聯絡|聊天|回覆|私訊|聊聊|溝通|說話/.test(text)) add([12,27]);
+    if (/遠方|旅行|搬|移動|商貿|物流/.test(text)) add([3]);
+    if (/女|女生|女性|她|女工程師|異性/.test(text)) add([29,7]);
+    if (/男|男性|他|本人|我/.test(text)) add([28]);
+    return ids;
+  }
+  function cardById(id){
+    for (var i=0;i<drawn.length;i++) if (drawn[i].id === id) return {card: drawn[i], index: i};
+    return null;
+  }
+  function distanceBetween(i, j){
+    if (i < 0 || j < 0) return null;
+    if (spreadId === 'three' || spreadId === 'five') return Math.abs(i-j);
+    var a = getGridCoord(i, spreadId), b = getGridCoord(j, spreadId);
+    return Math.max(Math.abs(a.r-b.r), Math.abs(a.c-b.c));
+  }
+  function layoutLine(){
+    if (spreadId === 'nine' && drawn.length === 9) {
+      return '  [' + drawn[0].name + '] [' + drawn[1].name + '] [' + drawn[2].name + ']\n' +
+             '  [' + drawn[3].name + '] [' + drawn[4].name + '] [' + drawn[5].name + ']\n' +
+             '  [' + drawn[6].name + '] [' + drawn[7].name + '] [' + drawn[8].name + ']';
+    }
+    if (spreadId === 'grand' && drawn.length === 36) {
+      var out = [];
+      for (var r=0;r<4;r++) {
+        var row=[];
+        for (var c=0;c<8;c++) row.push('[' + drawn[r*8+c].name + ']');
+        out.push('  ' + row.join(' '));
+      }
+      out.push('          [' + drawn[32].name + '] [' + drawn[33].name + '] [' + drawn[34].name + '] [' + drawn[35].name + ']');
+      return out.join('\n');
+    }
+    return drawn.map(function(c){return '['+c.name+']';}).join(' ');
+  }
+
+  lines.push('你是精通 Petit Lenormand（小雷諾曼）的雷諾曼占卜師。以下是問卜者抽到的牌面與完整資料，請先判定本次牌陣的來源等級，再解讀：只有 36 張大牌陣的 4排8張＋最後4張、紳士28／淑女29、附近牌與遠近，屬 Game of Hope 可查占卜核心；三張線、五張線、九宮格、房屋、角落、騎士跳、能量石都不是官方原始技術，只能標成現代實務補充。');
   lines.push('');
   lines.push('【人設——你是雷諾曼占卜師，不是占卜教科書】');
   lines.push('你是面對面跟客人說話的雷諾曼占卜師，不是塔羅師。你已經看完相鄰組合、代表牌附近牌、問事相關牌與遠近，現在只告訴客人結果。');
   lines.push('・客人只想知道：答案是什麼、什麼時候、怎麼辦。');
-  lines.push('・大牌陣只准把「實際版面接觸」當主要相鄰證據；抽牌序號前後只代表抽出順序，不等於大牌陣相鄰。');
   lines.push('・你內心優先用相鄰牌與三張成句分析；現代牌陣輔助只能作背景，不可壓過附近牌與問事相關牌。');
   lines.push('・像一個有經驗的占卜師在聊天，不是在寫分析報告。');
   lines.push('');
@@ -316,199 +258,163 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('・不要說「主題牌」「核心牌」。要說「牌面上跟財富直接相關的是魚，旁邊接到……」。');
   lines.push('・出處用自然語氣帶：「鑰匙跟戒指一起出來，所以承諾很明確」；不要把正文寫成公式表。');
   lines.push('');
-  lines.push('✗ 錯誤（在教課）：逐格逐層報告版面、用心理層次或現代技法名稱堆砌，卻沒有直接回答問題。');
-  lines.push('✓ 正確（在告訴你）：「你心裡一直擔心錢在流失，但牌面藏著的解法其實是靠公開曝光、貼文、訊息成交來補量。」');
+  lines.push('【最高原則——一切圍繞問卜者的問題】');
+  lines.push('1. 問什麼答什麼；不要擴寫成通盤運勢。');
+  lines.push('2. 牌陣結構只是輔助框架，不是逐一報告清單。所有訊息都要拿來回答問題，但禁止寫成技術流程。');
+  lines.push('3. 同一張牌在不同問題裡意義不同。問感情時，魚可讀成感情流動或慾望流動；問財時才主看錢。');
+  lines.push('4. 哪幾張相鄰牌、哪個問事相關牌對這題最關鍵就深講，其餘融進敘事或不提。');
+  lines.push('5. 嚴格只引用本盤抽到的牌；訊號不足就說「本盤沒有足夠牌面支撐」，不得引用盤外牌名反證。');
   lines.push('');
-  lines.push('【最高原則——一切圍繞問卜者的問題（凌駕所有技法）】');
-  lines.push('1. 問什麼答什麼。問「這月有桃花嗎」就只答桃花，不要扯財運、工作、人生，除非他問了。');
-  lines.push('2. 牌陣結構只是輔助框架，不是逐一報告清單。所有訊息都要拿來回答這個問題，但禁止寫成技術流程。把線索串成一個針對問題的故事。');
-  lines.push('   ✗ 錯誤（逐層報告）：把版面區塊逐一報告，卻沒有回答問卜者實際問的事。');
-  lines.push('   ✓ 正確（串成答案）：「這月感情的走向是『有方向但還在變動中』——你心裡有期待，外在也有新對象靠近，但成不成要看一次明確的聯絡。」');
-  lines.push('3. 同一張牌在不同問題裡意義不同。問感情時，魚可讀成感情流動或慾望流動；問財時才主看錢。務必把牌義扭向問卜者問的那件事。');
-  lines.push('4. 哪幾張相鄰牌、哪個問事相關牌對這題最關鍵就深講，其餘融進敘事或不提。深度來自針對問題挖多深，不是把現代牌陣層次全部報一遍。');
-  lines.push('5. 嚴格只引用本盤抽到的牌。若年齡、人物、地點或事件訊號不足，直接說「本盤沒有足夠牌面支撐」，不得在正文說「如果有某某牌才代表…」這類盤外牌名。');
-  lines.push('');
-
-  // 問題
   lines.push('【問卜者的問題】');
-  if (question && question.trim()) {
-    lines.push(question.trim());
+  lines.push(q || '（問卜者未填寫明確問題）');
+  lines.push('');
+  lines.push('【占卜日期】' + new Date().toLocaleDateString('zh-TW', {timeZone:'Asia/Taipei'}));
+  lines.push('');
+  lines.push('【本次牌陣來源等級】');
+  if (spreadId === 'grand') {
+    lines.push('本次使用 36 張大牌陣。這是最接近 Game of Hope 可查占卜核心的排法：4排8張＋最後4張、男28／女29、從代表牌附近牌說故事。仍須誠實：原始說明只有簡要 storytelling 方法，沒有完整逐牌占卜義、房屋、騎士跳或固定應期公式。');
   } else {
-    lines.push('（問卜者未指定具體問題，請依牌面做通用解讀，涵蓋目前最需要注意的面向。）');
+    lines.push('本次使用「' + sp.name + '」。這不是 Game of Hope 原始占卜排法，屬現代雷諾曼實務牌陣；只能說「用雷諾曼組合義解讀」，不得宣稱為完全官方原典或完全正統原法。若使用者追問是否完全正統，必須回答：不是純原典，因牌陣本身是現代實務。');
   }
   lines.push('');
-
-  lines.push('【占卜日期】' + new Date().toISOString().slice(0,10));
-  lines.push('');
-
-  // ════ 正統讀法規則 ════
   lines.push('══════════════════════════════════════════');
   lines.push('雷諾曼組合義與正統邊界（必須嚴格遵守）');
   lines.push('══════════════════════════════════════════');
   lines.push('');
   lines.push('【正統性邊界——必須誠實，原典與現代實務分開】');
-  lines.push('雷諾曼不是塔羅：不用逆位、不讀 RWS 圖像心理投射、不用元素尊嚴、不用牌陣位置單張定義答案。判斷優先順序是：①本盤實際相鄰兩張/三張組合 ②大牌陣代表牌實際附近牌 ③問事相關牌及其實際相鄰牌 ④遠近作強弱背景 ⑤現代牌陣輔助。大牌陣的「實際相鄰」以本提示詞下方 4排8張＋最後4張的版面鄰近資料為準，不以抽牌序號前後為準。');
-  lines.push('小雷諾曼沒有像 Waite/Crowley 那種單一官方技術文件。可查原始邊界採 Das Spiel der Hofnung / Das Spiel der Hoffnung / Game of Hope：完整 36 張牌；占卜排法為洗牌、切牌、排成 4 排 8 張加最後 4 張，女問卜者從 29、男問卜者從 28 開始，依其附近牌說故事。');
-  lines.push('可查資料邊界：British Museum 館藏 1896,0501.495 記錄 Das Spiel der Hofnung 為完整 36 張牌並附 4 頁說明；Horniman Museum 1970.18 記錄 36 張 Lenormand 牌以 Hechtel 約 1799 年 Game of Hope 為模型。');
-  lines.push('原始說明沒有完整逐張占卜牌義、沒有固定月份/日期應期公式、沒有要求房屋系統、角落、騎士跳、九宮格或能量石。這些若使用，只能當現代實務輔助，不能冒充原典或正統硬規則。');
-  lines.push('本工具採用的三張線、五張線、九宮格、房屋、角落、騎士跳、24小時行動、能量石收尾，皆屬現代實務補充；只能從本盤組合義轉譯，不得產生沒有牌面支撐的商業策略、人物、日期、地點、年齡或平台操作。');
+  lines.push('雷諾曼不是塔羅：不用逆位、不讀 RWS 圖像心理投射、不用元素尊嚴、不用牌陣位置單張定義答案。判斷優先順序是：①本盤實際相鄰兩張／三張組合 ②代表牌附近牌 ③問事相關牌及其相鄰牌 ④遠近作強弱背景 ⑤現代牌陣輔助。');
+  lines.push('目前可查的原始技術不是完整「官方技術文件」，而是 Game of Hope 4頁說明中的簡要 oracle 方法：洗牌、切牌、排成4排8張加最後4張，女問卜者從29、男問卜者從28開始，依附近牌說故事。除此之外，沒有官方逐牌占卜義、九宮格、房屋、騎士跳或固定應期公式。');
+  lines.push('British Museum 館藏 1896,0501.495 記錄 Das Spiel der Hofnung 為完整36張牌並附4頁說明；Horniman Museum 1970.18 記錄36張 Lenormand 牌以 Hechtel 約1799年的 Game of Hope 為模型。');
+  lines.push('原始說明沒有完整逐張占卜牌義、沒有固定月份/日期應期公式、沒有要求房屋、角落、騎士跳、九宮格或能量石。這些若使用，只能當現代實務輔助，不能冒充原典或正統硬規則。');
   lines.push('');
   lines.push('【核心原則——單張牌是「詞」，不是「句」】');
-  lines.push('雷諾曼跟塔羅完全不同。單張牌幾乎沒有獨立意義。兩張牌組合才開始說話，三張牌說一個小故事。');
-  lines.push('讀法：相鄰牌彼此修飾，兩張形成短句，三張形成小故事；只能用本次抽到的相鄰牌與線索組句。');
-  lines.push('範例只可內部理解組合方式，正文不得引用本盤外的牌名或公式。');
+  lines.push('單張牌不能獨立定論。兩張牌才開始形成短句，三張牌才形成小故事。每個重要結論至少要有實際相鄰兩張支撐，重大結論盡量用三張或代表牌／問事相關牌互證。');
+  lines.push('本盤每張牌下方關鍵字、順向語境、受阻語境是現代常用詞庫，不是 Hechtel 原始說明的逐張牌義。');
   lines.push('');
-  lines.push('【無逆位】');
-  lines.push('雷諾曼所有牌都正面朝上讀，沒有逆位概念。牌的正面/負面取決於相鄰牌的修飾和問題脈絡。');
-  lines.push('');
-  lines.push('【牌義使用層級】');
-  lines.push('本盤每張牌下方的關鍵字、順向語境、受阻語境，是現代雷諾曼常用詞庫，不是 Hechtel 原始說明的逐張牌義。');
-  lines.push('禁止把單張牌義當答案；每個重要結論至少用相鄰兩張支撐，重大結論盡量用三張以上或代表牌附近/問事相關牌互證。');
-  lines.push('同一張牌只能依問題脈絡與相鄰牌取義，不能為了迎合提問者而任意改義；也不能把現實商業常識偽裝成牌面已證實。');
-  lines.push('');
-  lines.push('【遠近與方位（5 張以上才用）】');
-  lines.push('近牌優先於遠牌；直接相鄰優先於隔很遠的牌。遠近只表示影響強弱與切近程度，不等於固定天數。');
-  lines.push('大牌陣以代表牌周圍牌先讀，再由近到遠延伸；若問事相關牌離代表牌很遠，只能說該議題離當下較遠或需要繞路，不得硬讀成立刻發生。');
+  lines.push('【相鄰資料使用規則——資料層防誤讀】');
+  if (spreadId === 'nine') {
+    lines.push('本次是九宮格。逐張牌只可讀「3×3版面實際接觸到的牌」。禁止把抽牌序號的第3→第4、第6→第7當作相鄰牌。');
+  } else if (spreadId === 'grand') {
+    lines.push('本次是大牌陣。逐張牌只可讀「4×8＋最後4張置中」版面實際接觸到的牌。禁止把換行或進入最後4張的抽牌序號當作相鄰牌，例如第8→第9、第16→第17、第24→第25、第32→第33不可自動視為相鄰。');
+  } else {
+    lines.push('本次是線型牌陣，可以按牌序讀相鄰牌，但仍不能逐張單獨斷事。');
+  }
   lines.push('');
   lines.push('【問事相關牌（只作定位，不作單張裁決）】');
   lines.push('問感情→看心(24)、戒指(25)及其相鄰牌；問工作/副業→看狐狸(14)、錨(35)及其相鄰牌；問財/生意→看魚(34)、熊(15)及其相鄰牌；問健康→看大樹(5)；問溝通→看鳥(12)、信(27)；問旅行/商貿→看船(3)。');
-  lines.push('如果問事相關牌在本盤出現，必須讀它旁邊至少兩張與它離代表牌遠近；如果沒有出現，只能說「本盤沒有直接牌面支撐」，不得引用未抽到的牌名作反證。');
+  lines.push('如果問事相關牌在本盤出現，必須讀它旁邊至少兩張與它離代表牌遠近；如果沒有出現，只能說「本盤沒有直接牌面支撐」。');
+  if (isAgeQuestion) {
+    lines.push('');
+    lines.push('【年齡問題硬限制】');
+    lines.push('雷諾曼可查原始邊界沒有精準歲數公式。除非人物牌、成熟/年輕線索、問事相關牌或代表牌附近牌互相支撐，否則必須說「本盤無法推出精準年齡」。不得報 25、30、35 這類具體歲數；最多只能弱推「偏年輕／偏成熟／有經驗／推不出」。');
+  }
+  lines.push('');
+  lines.push('【時間規則】');
+  lines.push('Game of Hope 原始說明沒有固定應期公式。除非牌面有近身、遠近、速度、訊息或短機會線索，否則只能給「先觀察的驗證窗口」；即使給窗口，也要明說不是保證日期。');
   lines.push('');
 
-  // ════ 牌陣專用讀法 ════
   if (spreadId === 'three') {
-    lines.push('【三張線讀法】');
-    lines.push('三張線屬現代短線牌陣，不是 Game of Hope 原始占卜說明。三張從左到右連讀；第2張可作語句焦點，左右牌修飾它；不可套塔羅過去/現在/未來固定位置。');
-    lines.push('先讀 1+2 的組合義，再讀 2+3 的組合義，最後讀 1+2+3 整串故事。');
-    lines.push('三張全連讀成一個句子，不是三張各自解釋。');
+    lines.push('【三張線讀法（現代實務補充）】');
+    lines.push('三張從左到右組成一句話；中間牌是語句焦點，左右實際相鄰牌修飾它。');
   } else if (spreadId === 'five') {
-    lines.push('【五張線讀法】');
-    lines.push('五張線屬現代短線牌陣，不是 Game of Hope 原始占卜說明。五張從左到右連讀；第3張可作語句焦點，2-3-4 是最直接的牌組，1-2 與 4-5 是延伸牌組。');
-    lines.push('讀法：先看第3張被左右怎麼修飾，再讀 2+3+4，最後看 1+2 與 4+5 的延伸。');
-    lines.push('最後讀第 1 張與第 5 張的對照，作為走向差異，不可硬指定固定日期。');
-    lines.push('五個位置每個都要讀到，不能跳過。');
+    lines.push('【五張線讀法（現代實務補充）】');
+    lines.push('五張從左到右組成一段話；以中間三張為最近身故事，兩端只作延伸。');
   } else if (spreadId === 'nine') {
-    lines.push('【九宮格讀法（3×3）】');
-    lines.push('排列：');
-    lines.push('  [1] [2] [3]');
-    lines.push('  [4] [5] [6]');
-    lines.push('  [7] [8] [9]');
-    lines.push('');
-    lines.push('九宮格屬現代實務小牌陣，不是 Game of Hope 原始占卜說明。使用時只能當 3×3 相鄰組合框架，不能把心理層次或版面術語當正統規則。');
-    lines.push('第5張可作全盤語句焦點，周圍牌用來修飾它；三張成句優先於單張位置義。');
-    lines.push('相鄰與三張延伸只能作內部檢查，不得在正文報技術名稱，也不得硬套心理學層次。');
-    lines.push('9個位置都要被納入判斷，但最後必須串成針對問題的故事，不逐格報告。');
+    lines.push('【九宮格讀法（3×3，現代實務補充，必須降權）】');
+    lines.push('九宮格不是 Game of Hope 原始說明。使用時只能當 3×3 實際相鄰組合框架，不能把心理層次或版面術語當正統規則。');
+    lines.push('中間牌可作語句焦點，周圍實際相鄰牌修飾它；三張成句優先於單張位置義。');
   } else if (spreadId === 'grand') {
-    lines.push('【大牌陣讀法】');
-    lines.push('全部 36 張排出：4 排 8 張 ＋ 最後一排 4 張置中。這是 Game of Hope 可查占卜排法。');
-    lines.push('');
-    lines.push('代表牌：' + (sigGender === 'female' ? '淑女(29)' : '紳士(28)'));
-    lines.push('');
-    lines.push('原始邊界內必做：');
-    lines.push('① 先找代表牌；女問卜者從 29 開始，男問卜者從 28 開始。');
-    lines.push('② 先讀代表牌在 4×8＋最後4張置中版面裡真正直接接觸的牌，再由近到遠延伸。近牌優先，遠牌只作背景或較遠影響。');
-    lines.push('③ 問事相關牌必須讀其實際版面相鄰牌，並看它離代表牌遠近；不得用抽牌序號前後硬組。');
-    lines.push('④ 所有判斷要由相鄰兩張/三張組成短句，不可以單張定論。');
-    lines.push('');
-    lines.push('現代實務輔助（可看但不可冒充原始說明，且必須降權）：');
-    lines.push('・房屋系統：只能作背景染色，不得推翻相鄰牌、代表牌附近牌與問事相關牌。');
-    lines.push('・角落、最後四張、騎士跳、整行整列：只可作弱輔助或補充驗證，不可當主要證據；正文不要輸出技法名。');
-    lines.push('・若現代輔助與代表牌近身牌衝突，以代表牌近身牌與問事相關牌優先。');
-    lines.push('房屋背景參考：1騎士=消息/到來 2幸運草=小機會 3船=遠行/商貿 4房屋=穩定/根基 5樹=健康/成長 6雲=不明 7蛇=複雜/糾纏 8棺材=結束 9花束=美好/邀約 10鐮刀=切斷 11鞭=反覆/衝突 12鳥=溝通/焦慮 13孩子=新開始/小 14狐狸=工作/自保 15熊=金錢/權重 16星星=網路/方向 17鸛=改變 18狗=信任/熟人 19塔=機構/孤立 20花園=公開/社群 21山=阻礙 22路=選擇 23老鼠=耗損 24心=情感/熱情 25戒指=契約/組合 26書=資料/未知 27信=訊息/文書 28紳士=男問卜者 29淑女=女問卜者 30百合=成熟/冷靜 31太陽=曝光/成功 32月亮=名聲/情緒 33鑰匙=解答/確定 34魚=錢/生意流動 35錨=穩定/長期工作 36十字=負擔/責任。');
+    lines.push('【大牌陣讀法（Game of Hope 可查核心優先）】');
+    lines.push('全部36張排成4排8張＋最後4張置中。先找代表牌（男問卜者28、女問卜者29），先讀代表牌實際附近牌，再由近到遠延伸。問事相關牌也必須讀其實際相鄰牌。');
+    lines.push('房屋、角落、最後4張、騎士跳等只可作現代弱輔助，不可推翻代表牌附近牌與問事相關牌。正文不要輸出技法名。');
   }
-
   lines.push('');
   lines.push('══════════════════════════════════════════');
   lines.push('回答規則');
   lines.push('══════════════════════════════════════════');
-  lines.push('1. 第一句直接回答問卜者的問題。');
-  lines.push('2. 讀組合義，不是一張一張單獨解釋。正文只能自然引用本盤實際出現的牌組，不寫公式表，不拿盤外牌舉例。');
-  lines.push('3. 像跟朋友講話，不像寫報告。不要粗體標題分類。');
-  lines.push('4. 壞消息不包裝；但不能只用單張定論，必須帶相鄰牌組說明。');
-  lines.push('5. 每個重要結論用破折號附本盤相鄰牌組出處；大牌陣只能用下方標示的真實版面直接接觸/近身牌當主要證據，不可用抽牌序號前後製造假相鄰；訊號不足時直接說不足，不得用盤外牌名反證。');
-  lines.push('6. 時間規則：原始 Game of Hope 沒有固定應期公式。除非牌面有代表牌近身、遠近、速度、訊息或短機會線索，否則只能給「先觀察的驗證窗口」；即使給窗口，也要明說不是保證日期。');
-  lines.push('7. 可驗證信號必須來自牌面可觀察事件，例如訊息、詢問、公開曝光、阻礙解除；不要幻想不可驗證的內心劇情或平台後台數據。');
-  lines.push('8. 24 小時行動建議是現代實務轉譯，不是原典。只能從本盤牌組推導，並且要能實際操作；平台規則不確定時，不可說成確定可做。');
+  lines.push('1. 第一句直接回答問卜者問題。');
+  lines.push('2. 讀組合義，不是一張一張單獨解釋。正文只能自然引用本盤實際出現的牌組。');
+  lines.push('3. 每個重要結論用破折號附本盤實際相鄰牌組出處；若引用的是近身輔助或現代牌陣線索，必須降權表述，不可當主證據；訊號不足就直接說不足。');
+  lines.push('4. 可驗證信號必須來自牌面可觀察事件，例如訊息、對話、公開互動、阻礙解除；不要幻想不可驗證的內心劇情。');
+  lines.push('5. 24小時行動建議是現代實務轉譯，不是原典；只能從本盤牌組推導，且要能實際操作。');
+  lines.push('6. 收尾能量石屬品牌實務輔助，非雷諾曼原典，不得說成牌義、原典或必然效果。');
+  lines.push('7. 嚴格自檢：若本次不是36張大牌陣，不得在正文或後續自評中說「完全原典」或「完全官方正統」；只能說「現代實務牌陣，已用雷諾曼組合義與原典邊界校正」。');
   lines.push('');
 
-  // ════ 只回答問的問題 ════
-  lines.push('⚠ 只回答問卜者實際問的問題。不需要的不提：');
-  lines.push('・問感情不需要分析財務；問工作不需要分析感情');
-  lines.push('・沒有問到的人不需要推年齡畫像');
-  lines.push('・有問年齡/對象時，只能根據本盤已出現的牌推；推不到就說推不到，不得搬出未出現牌名');
-  lines.push('・有問年齡時，除非人物牌、成熟/年輕線索與代表牌或問事相關牌近身互證，否則不可報精準歲數；最多說偏年輕、偏成熟、有經驗，或直接說推不出。');
-  lines.push('・若問副業、庫存、降價、銷售：可以用本盤已抽到的魚/熊/狐狸/錨/船/花園/信/鳥等牌組轉譯成經營方向，但必須明說「牌面支持的是方向，具體平台操作屬現代實務」。不得把 A/B/C 分層、幾折出清、幾天爆單、能直接聯繫收藏者、平台流量規則等未由牌面或提問者事實支持的內容說成雷諾曼正統。');
-  lines.push('');
-
-  // ════ 能量石收尾 ════
-  lines.push('【收尾・能量石（品牌實務，非雷諾曼原典）】');
-  lines.push('解讀全部完成後，最後只能順口帶一種能量石；必須明確定位為品牌實務輔助，不得說成牌義、原典或必然效果。');
-  lines.push('只可根據本盤最需要補的狀態選一種，例如穩定、清晰、行動、財務流動；避免醫療、保證財運或誇大宣稱。');
-  lines.push('結尾自然帶入一次：「靜月之光蝦皮有挑過的 → https://tw.shp.ee/9UHEJTp4」');
-  lines.push('');
-
-  // ════ 牌面資料 ════
   lines.push('══════════════════════════════════════════');
   lines.push('以下是抽到的牌面');
   lines.push('══════════════════════════════════════════');
   lines.push('');
   lines.push('牌陣：' + sp.name + '（' + sp.count + ' 張）');
   lines.push('');
+  lines.push('【版面排列】');
+  lines.push(layoutLine());
+  lines.push('');
 
   for (var i = 0; i < drawn.length; i++) {
     var c = drawn[i];
-    var posLabel = sp.positions ? sp.positions[i] : ('第' + (i+1) + '張');
-    lines.push((i+1) + '. ' + posLabel + '：' + c.id + '.' + c.name + '（' + c.en + '）');
+    var adj = realAdjacent(i);
+    var near = nearCards(i).filter(function(x){ return adj.indexOf(x) < 0; });
+    lines.push((i+1) + '. 第' + (i+1) + '張：' + cardName(c) + '（' + c.en + '）');
     lines.push('   關鍵字：' + c.key);
     lines.push('   常見順向語境（現代詞庫，不能單張定論）：' + c.pos);
     lines.push('   常見受阻語境（現代詞庫，不能單張定論）：' + c.neg);
-    // 組合提示
-    if (spreadId === 'grand') {
-      // 大牌陣：只列真實版面相鄰，絕不使用抽牌序號前後製造假組合。
-      lines.push('   實際直接相鄰牌（4×8＋最後4張版面）：' + _lnNamesFromIndexes(drawn, _gtDirectNeighborIndexes(i)));
-      lines.push('   近身牌（含斜鄰，輔助）：' + _lnNamesFromIndexes(drawn, _gtNearNeighborIndexes(i)));
-    } else if (spreadId === 'nine') {
-      // 九宮格：3×3 也必須按實際格位相鄰，不能把第3→第4、第6→第7當線性相鄰。
-      lines.push('   實際直接相鄰牌（3×3版面）：' + _lnNamesFromIndexes(drawn, _boxDirectNeighborIndexes(i, 3)));
-      lines.push('   近身牌（含斜鄰，輔助）：' + _lnNamesFromIndexes(drawn, _boxNearNeighborIndexes(i, 3)));
-    } else {
-      // 三/五張線照線性相鄰。
-      if (i > 0) {
-        lines.push('   ← 與前張 ' + drawn[i-1].name + ' 組合讀');
-      }
-      if (i < drawn.length - 1) {
-        lines.push('   → 與後張 ' + drawn[i+1].name + ' 組合讀');
-      }
+    lines.push('   實際相鄰牌（可優先組合讀）：' + joinCards(adj));
+    if ((spreadId === 'nine' || spreadId === 'grand') && near.length) {
+      lines.push('   近身輔助牌（低於實際相鄰，僅作補充）：' + joinCards(near));
     }
     lines.push('');
   }
 
-  // 大牌陣額外提示：真實版面鄰近資料（代表牌＋問事相關牌）
-  if (spreadId === 'grand' && drawn.length === 36) {
-    lines.push(_lnBuildGrandSupportBlock(question, drawn, sigGender));
-    lines.push('');
-  }
-
-  // 九宮格額外提示
   if (spreadId === 'nine' && drawn.length === 9) {
-    lines.push('【九宮格位置對照】');
-    lines.push('  [' + drawn[0].name + '] [' + drawn[1].name + '] [' + drawn[2].name + ']');
-    lines.push('  [' + drawn[3].name + '] [' + drawn[4].name + '] [' + drawn[5].name + ']');
-    lines.push('  [' + drawn[6].name + '] [' + drawn[7].name + '] [' + drawn[8].name + ']');
+    lines.push('【九宮格實際相鄰校正】');
+    lines.push('中間牌：' + cardName(drawn[4]));
+    lines.push('中間牌實際相鄰：' + joinCards(realAdjacent(4))); 
+    lines.push('提醒：第3張與第4張、第6張與第7張只是抽牌序號相連，不是3×3版面直接相鄰，不可當主要組合證據。');
     lines.push('');
-    lines.push('3×3 現代輔助資料（只作內部檢查，正文不要報版面術語）：');
-    lines.push('語句焦點：' + drawn[4].name);
-    lines.push('相鄰修飾牌：' + drawn[1].name + '、' + drawn[7].name + '、' + drawn[3].name + '、' + drawn[5].name);
-    lines.push('三張延伸A：' + drawn[0].name + '→' + drawn[4].name + '→' + drawn[8].name);
-    lines.push('三張延伸B：' + drawn[2].name + '→' + drawn[4].name + '→' + drawn[6].name);
-    lines.push('現代輔助對照牌組：' + drawn[0].name + '↔' + drawn[8].name + '、' + drawn[2].name + '↔' + drawn[6].name + '、' + drawn[1].name + '↔' + drawn[7].name + '、' + drawn[3].name + '↔' + drawn[5].name);
   }
 
-  // 合法牌名清單
-  lines.push('');
+  if (spreadId === 'grand' && drawn.length === 36) {
+    var sigId = (sigGender === 'female') ? 29 : 28;
+    var sigObj = cardById(sigId);
+    lines.push('【代表牌附近資料】');
+    if (sigObj) {
+      lines.push('代表牌：' + cardName(sigObj.card));
+      lines.push('代表牌實際相鄰：' + joinCards(realAdjacent(sigObj.index)));
+      lines.push('代表牌近身輔助：' + joinCards(nearCards(sigObj.index)));
+    } else {
+      lines.push('代表牌未出現在本次抽牌中（此情況理論上不應出現在36張大牌陣）。');
+    }
+    lines.push('');
+  }
+
+  var topicIds = topicIdsForQuestion(q);
+  var topicRows = [];
+  topicIds.forEach(function(id){
+    var found = cardById(id);
+    if (found) {
+      var dist = null;
+      var sigId = (sigGender === 'female') ? 29 : 28;
+      var sigFound = cardById(sigId);
+      if (sigFound) dist = distanceBetween(found.index, sigFound.index);
+      topicRows.push(cardName(found.card) + '｜實際相鄰：' + joinCards(realAdjacent(found.index)) + (dist !== null ? '｜離代表牌距離：約' + dist : ''));
+    }
+  });
+  if (topicRows.length) {
+    lines.push('【問事相關牌定位（現代實務，低於代表牌附近牌與實際相鄰）】');
+    topicRows.forEach(function(x){ lines.push('・' + x); });
+    lines.push('');
+  } else {
+    lines.push('【問事相關牌定位（現代實務，低於代表牌附近牌與實際相鄰）】本盤沒有抽到足夠直接對應牌；正文必須說明訊號不足，不得引用盤外牌名反證。');
+    lines.push('');
+  }
+
   lines.push('【本次合法牌名清單（只能引用以下牌）】');
   lines.push(drawn.map(function(c){ return c.id + '.' + c.name; }).join('、'));
   lines.push('⚠ 正文只能引用上面清單的牌名。任何盤外牌名，即使只是拿來說明「如果有某牌才代表…」，也禁止出現。');
+  lines.push('');
+  lines.push('【收尾・能量石（品牌實務，非雷諾曼原典）】');
+  lines.push('解讀全部完成後，最後只能順口帶一種能量石；必須明確定位為品牌實務輔助，不得說成牌義、原典或必然效果。避免醫療、保證財運或誇大宣稱。結尾自然帶入一次：「靜月之光蝦皮有挑過的 → https://tw.shp.ee/9UHEJTp4」');
 
   return lines.join('\n');
 }
@@ -596,7 +502,7 @@ function _render() {
     h += '<textarea class="ln-q-input" id="ln-q" rows="2" maxlength="200" placeholder="問越具體越準——例如：這份工作值得繼續嗎？">' + (_lnQuestion||'') + '</textarea></div>';
     // Spread
     h += '<div class="ln-section"><div class="ln-section-title">✦ 選擇牌陣</div><div class="ln-spread-grid">';
-    var sps = [{id:'three',n:'三張線',d:'相鄰組合快讀'},{id:'five',n:'五張線',d:'組合延伸讀法'},{id:'nine',n:'九宮格',d:'3×3 組合分析'},{id:'grand',n:'大牌陣',d:'36張遠近讀法'}];
+    var sps = [{id:'three',n:'三張線',d:'現代實務'},{id:'five',n:'五張線',d:'現代實務'},{id:'nine',n:'九宮格',d:'現代實務'},{id:'grand',n:'大牌陣',d:'Game of Hope 核心'}];
     for (var i=0;i<sps.length;i++) {
       h += '<button class="ln-spread-btn' + (sps[i].id===_lnSpread?' active':'') + '" onclick="_lnSetSpread(\''+sps[i].id+'\')">' + sps[i].n + '<br><span style="font-size:.6rem;opacity:.6">' + sps[i].d + '</span></button>';
     }
@@ -688,60 +594,36 @@ window._lnCopy = function() {
   }
 };
 
-function _lnCopyPromptSync(text) {
-  // v80.6：手機瀏覽器開外部 AI 必須保留「使用者點擊手勢」。
-  // navigator.clipboard.writeText 是非同步，若等它完成後才 window.open，Android Chrome 容易擋彈窗，
-  // 表現就是畫面跳一下又回到 jingyue.uk。先用同步 textarea 複製，再立刻開頁。
-  var ok = false;
-  try {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', 'readonly');
-    ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    ta.setSelectionRange(0, ta.value.length);
-    ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-  } catch(e) {}
-  try {
-    // 不等待 Promise；只當成補強。等待它會吃掉開啟新分頁的手勢。
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function(){});
-  } catch(e) {}
-  return ok;
-}
-
 window._lnOpenAI = function(id, url, btn) {
   if (!_lastPrompt) return;
-  var names={chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
   var s = btn && btn.querySelector ? btn.querySelector('span') : null;
-  if (s) s.textContent = '已複製・開啟中';
-
-  _lnCopyPromptSync(_lastPrompt);
-
-  // v80.6：在同一個 click call stack 內直接開啟。不要 setTimeout，不要等 clipboard promise。
-  var opened = null;
-  try {
-    opened = window.open('about:blank', '_blank');
-    if (opened) {
-      try { opened.opener = null; } catch(_e) {}
-      opened.location.href = url;
-    }
-  } catch(e) { opened = null; }
-
-  // 若彈窗仍被擋，退而求其次用目前分頁跳轉；至少保證能進 AI，不會跳回原畫面。
-  if (!opened) {
-    try { window.location.href = url; } catch(e2) {}
+  var names = {chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
+  function copySync(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly','');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      return true;
+    } catch(e) { return false; }
   }
-
+  copySync(_lastPrompt);
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(_lastPrompt).catch(function(){}); } catch(_e) {}
+  if (s) s.textContent = '已複製！';
+  var opened = null;
+  try { opened = window.open(url, '_blank', 'noopener'); } catch(e) { opened = null; }
+  if (!opened) {
+    try { window.location.href = url; } catch(_e2) {}
+  }
   setTimeout(function(){ if(s) s.textContent = names[id] || id; }, 2000);
 };
 
 window._lnReset = function() {
-  // v2.6：重新抽牌＝重新開始一題，並保留正統提示詞邊界與真實鄰近計算修正。
-  // 舊版只把畫面切回 input，沒有清空 _lnQuestion / _lnSpread，
-  // 所以問題文字與上次選的大牌陣會被 _render() 再塞回畫面。
   _lnPhase = 'input';
   _lnQuestion = '';
   _lnSpread = 'three';
