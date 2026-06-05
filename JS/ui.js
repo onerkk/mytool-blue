@@ -5225,7 +5225,7 @@ document.addEventListener('click',function(e){
  * - action=reset：歸零總人次、今日人次與匿名訪客紀錄
  */
 // ★★★ 把這裡換成你的 Apps Script 部署網址 ★★★
-const CTR_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxCvM09XbFUyl0BC2im-H6DU_t2Ipjq9p-dZDGAuiildcxmBGC-CGngvvqWmaiPxW8wNQ/exec';
+const CTR_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxfosQDF_ZXRS1niB0NmdDdy1VTfVIfjX_gaQ7g1Hhd0teiReTJiPonCjbGQ0Dnx_P8bg/exec';
 
 // ── 呼叫 Apps Script（fetch 優先，失敗時 visit 用 Image 補送）──
 function _gasCall(action, params){
