@@ -602,9 +602,13 @@
     <div class="card-title"><i class="fas fa-star"></i> 金色黎明塔羅牌</div>
     <p class="text-dim text-sm mb-sm" id="t-deck-intro" style="text-align:center">感受牌陣意象，從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張與你共鳴的牌</p>
     <p class="tarot-pick-hint" id="pick-hint" style="text-align:center;font-size:.82rem;color:var(--c-gold);margin:.4rem 0;animation:jyBreath 2.5s ease-in-out infinite">觸碰任一張你有感覺的牌，選出 <span id="t-target-count">10</span> 張</p>
-    <p class="text-dim text-xs" style="text-align:center;font-size:.68rem;color:var(--c-text-muted);margin:-.1rem 0 .3rem">左右滑動瀏覽牌面 ・ 點擊選牌 ・ 或按「快速全抽」</p>
+    <p class="text-dim text-xs" style="text-align:center;font-size:.68rem;color:var(--c-text-muted);margin:-.1rem 0 .3rem">左右滑動瀏覽牌面 ・ 點擊選牌 ・ 或按上方「快速全抽」</p>
     <style>@keyframes jyBreath{0%,100%{opacity:.55}50%{opacity:1}}</style>
     <p class="text-dim text-xs" style="text-align:center" id="t-remain-text">已選 <strong id="t-remain-picked" class="text-gold">0</strong> / 10 張</p>
+
+    <div class="text-center jy-autodraw-top" style="margin:8px 0 10px">
+      <button class="btn btn-outline btn-sm" onclick="autoDraw()" style="opacity:.6"><i class="fas fa-bolt"></i> 快速全抽</button>
+    </div>
 
     <!-- 已選牌位（10個凱爾特十字位） -->
     <div class="tarot-chosen-area" id="t-chosen"></div>
@@ -614,9 +618,6 @@
       <div class="tarot-deck-scroll" id="t-deck"></div>
     </div>
 
-    <div class="text-center" style="margin-top:var(--sp-sm)">
-      <button class="btn btn-outline btn-sm" onclick="autoDraw()" style="opacity:.6"><i class="fas fa-bolt"></i> 快速全抽</button>
-    </div>
   </div>
   <div id="t-spread-sec" class="hidden"><div class="card"><div class="card-title" id="t-spread-title"><i class="fas fa-cross"></i> <span id="t-spread-title-text">塔羅牌陣解讀</span></div><div id="t-spread"></div></div></div>
   <div class="actions">
@@ -1323,7 +1324,7 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot.js?v=20260507v69_3_0" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260605v80_3" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260605v80_5" defer></script>
 <!-- ★ v70 全免費：payment-wall.js 已移除 -->
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
