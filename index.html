@@ -322,6 +322,19 @@
 #t-chosen .jy-m21 .m21-sig{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px}
 #t-chosen .jy-m21 .m21-sig .sig-card{width:42px;height:60px;border:1px dashed rgba(212,175,55,.5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:rgba(212,175,55,.75);text-align:center;line-height:1.25}
 </style>
+
+<style id="jy-admin-counter-css">
+/* v80.7：解讀人次統計置中彈窗 */
+.admin-overlay{position:fixed;inset:0;z-index:99980;background:rgba(3,4,9,.68);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .24s ease}
+.admin-overlay.visible{opacity:1;pointer-events:auto}
+.admin-panel{position:fixed;left:50%;top:50%;z-index:99981;width:min(92vw,390px);max-height:calc(100dvh - 32px);overflow:auto;transform:translate(-50%,-50%) scale(.94);opacity:0;pointer-events:none;padding:22px 18px 18px;border-radius:24px;background:radial-gradient(circle at 18% 0%,rgba(212,175,55,.16),transparent 36%),linear-gradient(180deg,rgba(20,21,30,.98),rgba(10,11,18,.96));border:1px solid rgba(212,175,55,.28);box-shadow:0 28px 90px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.06);transition:opacity .24s ease,transform .24s cubic-bezier(.16,1,.3,1);font-family:var(--f-body,"Noto Sans TC",sans-serif)}
+.admin-panel.visible{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.admin-close{position:absolute;right:14px;top:12px;width:32px;height:32px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(255,255,255,.58);font-size:1.15rem;line-height:1;cursor:pointer;transition:all .18s ease}.admin-close:hover{color:var(--c-gold,#d4af37);border-color:rgba(212,175,55,.28);background:rgba(212,175,55,.08)}
+.admin-head{display:flex;gap:12px;align-items:center;margin-bottom:16px;padding-right:32px}.admin-orb{width:46px;height:46px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;background:linear-gradient(135deg,rgba(212,175,55,.20),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.30);box-shadow:0 0 24px rgba(212,175,55,.08)}.admin-title{font-family:var(--f-display,"Noto Serif TC",serif);font-weight:800;font-size:1.08rem;color:var(--c-gold,#d4af37);letter-spacing:.04em}.admin-sub{font-size:.72rem;color:rgba(230,220,200,.52);line-height:1.45;margin-top:3px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.admin-stat{padding:13px 12px;border-radius:17px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.075)}.admin-stat label{display:block;font-size:.68rem;color:rgba(230,220,200,.55);margin-bottom:7px}.admin-val{display:block;font-size:1.35rem;line-height:1;color:var(--c-gold,#d4af37);font-weight:800;letter-spacing:.02em}.admin-note{padding:10px 12px;border-radius:15px;background:rgba(212,175,55,.045);border:1px solid rgba(212,175,55,.12);font-size:.72rem;line-height:1.7;color:rgba(230,220,200,.62);text-align:left}.admin-actions{display:flex;gap:9px;margin-top:15px}.admin-btn{flex:1;min-height:42px;border-radius:14px;border:1px solid rgba(212,175,55,.25);background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.045));color:var(--c-gold,#d4af37);font-weight:800;font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .18s ease}.admin-btn:hover{border-color:rgba(212,175,55,.45);background:linear-gradient(135deg,rgba(212,175,55,.25),rgba(212,175,55,.07));transform:translateY(-1px)}.admin-btn:disabled{opacity:.5;cursor:wait;transform:none}.admin-btn-muted{border-color:rgba(255,255,255,.10);background:rgba(255,255,255,.035);color:rgba(230,220,200,.68)}.admin-btn-danger{border-color:rgba(248,113,113,.28);background:linear-gradient(135deg,rgba(248,113,113,.13),rgba(248,113,113,.035));color:#fca5a5}
+@media(max-width:380px){.admin-grid{grid-template-columns:1fr}.admin-actions{flex-direction:column}.admin-panel{padding:20px 15px 16px}}
+</style>
+
 </head>
 <body>
 <noscript>
@@ -1333,7 +1346,7 @@
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260603v79_0" defer></script>
 <script src="JS/lenormand.js?v=20260603v80_0" defer></script>
-<script src="JS/ui.js?v=20260603v76_2" defer></script>
+<script src="JS/ui.js?v=20260605v80_7" defer></script>
 <script src="JS/spread-picker.js?v=20260601v75_2" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
@@ -1384,14 +1397,27 @@
 </div>
 <!-- 後台管理面板 -->
 <div class="admin-overlay" id="admin-overlay" onclick="closeAdmin()"></div>
-<div class="admin-panel" id="admin-panel">
-  <button class="admin-close" onclick="closeAdmin()">&times;</button>
-  <h3>📊 解讀人次統計</h3>
-  <div class="admin-row"><label>累計總人次</label><span class="admin-val" id="admin-count">0</span></div>
-  <div class="admin-row"><label>今日人次</label><span class="admin-val" id="admin-today">0</span></div>
-  <button class="admin-btn" onclick="closeAdmin()">關閉</button>
-  <div style="margin-top:var(--sp-sm);font-size:.68rem;color:var(--c-text-muted);text-align:center">
-    每次操作到結果頁 = 1 人次<br>連點月亮 5 下開啟 · 重整後隱藏
+<div class="admin-panel" id="admin-panel" role="dialog" aria-modal="true" aria-labelledby="admin-counter-title">
+  <button class="admin-close" onclick="closeAdmin()" aria-label="關閉">&times;</button>
+  <div class="admin-head">
+    <div class="admin-orb">📊</div>
+    <div>
+      <div class="admin-title" id="admin-counter-title">解讀人次統計</div>
+      <div class="admin-sub">免 Google 登入；進站後同一裝置每日只計 1 次。</div>
+    </div>
+  </div>
+  <div class="admin-grid">
+    <div class="admin-stat"><label>累計總人次</label><span class="admin-val" id="admin-count">0</span></div>
+    <div class="admin-stat"><label>今日人次</label><span class="admin-val" id="admin-today">0</span></div>
+  </div>
+  <div class="admin-note">
+    觸發方式：連點首頁月亮 5 下開啟。<br>
+    計算規則：進站 = 1 人次；同一瀏覽器同一天不重複灌水。
+  </div>
+  <div class="admin-actions">
+    <button class="admin-btn admin-btn-muted" onclick="openAdmin()"><i class="fas fa-rotate"></i> 同步</button>
+    <button class="admin-btn admin-btn-danger" id="admin-reset-btn" onclick="resetAdminCounter()"><i class="fas fa-rotate-left"></i> 歸零</button>
+    <button class="admin-btn" onclick="closeAdmin()">關閉</button>
   </div>
 </div>
 
@@ -1410,7 +1436,7 @@
       <span style="font-size:.82rem;color:var(--c-gold,#c9a84c);font-weight:700">NT$0</span>
     </div>
     <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.7">
-      七維度・塔羅・開鑰 各 1 次(共 3 次)・需 Google 登入<br>含追問・氣色面相+手相分析(七維度專用,免費)
+      七維度・塔羅・開鑰 各 1 次(共 3 次)・免 Google 登入<br>含追問・氣色面相+手相分析(七維度專用,免費)
     </div>
   </div>
 
