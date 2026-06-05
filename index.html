@@ -1434,11 +1434,18 @@
 <!-- SEO: 語義化內容（對用戶可見、對爬蟲可見） -->
 <section id="seo-content" style="max-width:640px;margin:0 auto;padding:2rem 1.2rem 1rem;font-size:.78rem;color:rgba(200,190,170,.55);line-height:2">
 
-  <h1 style="font-size:1.05rem;color:rgba(212,175,55,.7);font-weight:700;text-align:center;margin-bottom:1rem">免費AI塔羅占卜・開鑰之法・雷諾曼線上解牌 — 靜月之光</h1>
+  <!-- ★ v80.2：原本 h1+兩段介紹永遠展開，抽完牌往下捲會撞到這面大字牆、被誤認成操作流程。
+       改為預設收合(可點開)：文字仍在 DOM(對爬蟲可見、SEO 不變)，h1 標籤保留，
+       但畫面只剩一行小標題，不再誤導使用者。 -->
+  <details id="seo-about" style="margin-bottom:.6rem">
+    <summary style="cursor:pointer;user-select:none;padding:.2rem 0"><h1 style="display:inline;margin:0;font-size:.8rem;font-weight:600;color:rgba(212,175,55,.45);letter-spacing:.03em">免費AI塔羅占卜・開鑰之法・雷諾曼線上解牌 — 靜月之光</h1></summary>
+    <div style="margin-top:.8rem">
 
   <p>靜月之光是免費線上AI占卜平台，提供三種解牌系統：<strong style="color:rgba(212,175,55,.6)">塔羅快讀</strong>——偉特78張完整牌組，古典牌陣＋現代實務牌陣，AI即時解牌，結合正逆位、牌與牌互動、宮廷牌人物指向，給出具體答案；<strong style="color:rgba(212,175,55,.6)">開鑰之法</strong>——黃金黎明會 Opening of the Key，78張牌五層深潛，以計數、配對、元素強弱問到問題根源；<strong style="color:rgba(212,175,55,.6)">雷諾曼牌</strong>——Petit Lenormand 36張，組合義讀法，三張線、五張線、九宮格、大牌陣，擅長具體事件預測。不需出生資料，點了就問。</p>
 
   <p style="margin-top:.8rem">可分析的面向包含：感情桃花（正緣、復合、曖昧、對方想法）、事業方向（升遷、轉職、留或走）、財運時機、決策兩難、人際關係。AI 即時解牌，給你一個收斂、可執行的答案。</p>
+    </div>
+  </details>
 
   <details style="margin-top:1rem">
     <summary style="cursor:pointer;color:rgba(212,175,55,.5);font-size:.75rem;letter-spacing:.05em;user-select:none">▸ 塔羅快讀・開鑰之法・雷諾曼說明</summary>
