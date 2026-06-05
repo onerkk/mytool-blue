@@ -1322,6 +1322,11 @@ enhanceTarot = function(tarot) {
       var pickHint = document.getElementById('pick-hint');
       if (pickHint) pickHint.textContent = '觸碰任一張你有感覺的牌，選出 ' + targetCount + ' 張';
     } catch(e) {}
+
+    // ★ v80.1：洗牌鈕原本被 tarot.js 放在牌堆「下方」，手機進入抽牌頁時在視窗外看不到，
+    //   使用者不知要先洗牌。這裡進頁時把洗牌鈕移到牌堆上方、改成明確「先洗牌」指引、
+    //   並把按鈕捲入視野中央。洗牌完成(按鈕被移除)後自動還原「觸碰選牌」指引。
+    try { if (typeof window._jyShuffleUX === 'function') window._jyShuffleUX(targetCount); } catch(e) {}
   };
 
   // ── 覆寫 pickCard — 非凱爾特牌陣的完成判定 ──
@@ -6382,6 +6387,81 @@ window._v64bTarotShuffleRitual = function(deckWrap, onComplete) {
 
   // 結束
   _t(_finish, 2900);
+};
+
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v80.1 洗牌鈕可見性修正 (歐那 2026/6/5)
+// ──────────────────────────────────────────────────────────────────────
+// 問題：tarot.js 把「🌙 靜月為你洗牌」鈕放在牌堆下方，牌堆很高，
+//       手機進入抽牌頁時按鈕在第一屏之外，使用者不知道要先洗牌，
+//       且畫面沒有任何「先洗牌」的指引。
+// 治本：進入抽牌頁(initTarotDeck)後，
+//   ① 把洗牌鈕從牌堆下方移到「已選 N/N」這行的正下方、牌堆上方(第一屏內)；
+//   ② pick-hint 改成明確的「第一步：先洗牌」；
+//   ③ 把按鈕 scrollIntoView 到視野中央(滿足「畫面移動到看得到洗牌鈕」)；
+//   ④ 洗牌完成→tarot.js 會移除按鈕→偵測到後自動還原「觸碰選牌」指引並清掉空容器。
+// 不依賴 tarot.js 內部：用重試抓按鈕(應對同步/異步建立)，全程 idempotent。
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+'use strict';
+
+window._jyShuffleUX = function(targetCount) {
+  targetCount = targetCount || 10;
+  // tarot.js 可能同步或異步建立按鈕，多次重試直到抓到(抓到後 idempotent 跳過)
+  [0, 60, 160, 320, 600].forEach(function(ms){ setTimeout(_place, ms); });
+
+  function _place() {
+    var btn = document.getElementById('jy-shuffle-btn');
+    if (!btn) return;                          // 沒按鈕 = 已洗牌 / fallback 路徑，不動作
+    if (btn.dataset.jyPlaced === '1') return;  // 這顆按鈕已處理過
+    btn.dataset.jyPlaced = '1';
+
+    // ① 把按鈕移到「已選張數」這行正下方、牌堆上方
+    var card   = document.querySelector('#step-2 .card');
+    var anchor = document.getElementById('t-remain-text');
+    if (card && anchor && anchor.parentNode === card) {
+      // 清掉來回切頁時可能殘留的舊空容器，避免多一段空白
+      document.querySelectorAll('#step-2 .jy-shuffle-top').forEach(function(s){
+        if (s.children.length === 0) s.remove();
+      });
+      var wrap = document.createElement('div');
+      wrap.className = 'text-center jy-shuffle-top';
+      wrap.style.margin = '10px 0 4px';
+      anchor.parentNode.insertBefore(wrap, anchor.nextSibling);
+      wrap.appendChild(btn);                    // 移動節點會保留 class、樣式、事件
+      btn.style.display = 'inline-block';
+    }
+
+    // ② 明確指引：第一步先洗牌
+    var hint = document.getElementById('pick-hint');
+    if (hint) hint.innerHTML = '🌙 第一步：點「靜月為你洗牌」，洗牌後即可選牌';
+
+    // ③ 把按鈕捲進視野中央(step-2 是一般頁面區塊，scrollIntoView 在此可靠)
+    setTimeout(function(){
+      try { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
+    }, 90);
+
+    // ④ 洗牌完成(tarot.js 移除按鈕)後，還原「觸碰選牌」指引、清掉空容器
+    var poll = 0;
+    var iv = setInterval(function(){
+      poll++;
+      if (!document.getElementById('jy-shuffle-btn')) {
+        clearInterval(iv);
+        var h2 = document.getElementById('pick-hint');
+        // 只在指引還停在「先洗牌」字樣時才還原，避免覆蓋 tarot.js 已設好的文字
+        if (h2 && /第一步|請先|洗牌/.test(h2.textContent)) {
+          h2.innerHTML = '觸碰任一張你有感覺的牌，選出 <span id="t-target-count">' + targetCount + '</span> 張';
+        }
+        var w = document.querySelector('#step-2 .jy-shuffle-top');
+        if (w && w.children.length === 0) w.remove();
+      } else if (poll > 80) {     // ~8 秒保險，避免無限輪詢
+        clearInterval(iv);
+      }
+    }, 100);
+  }
 };
 
 })();
