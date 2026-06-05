@@ -5205,7 +5205,7 @@ document.addEventListener('click',function(e){
 
 /* ═══ 真實人次計數器（Google Sheets 雲端版）═══ */
 /*
- * 【v80.8 設定步驟】
+ * 【v80.9 設定步驟】
  * 1. 開 Google Sheets → 建新試算表
  * 2. 第一個工作表命名為 counter，在 A1 輸入 total，B1 輸入 0
  * 3. 點「擴充功能」→「Apps Script」
@@ -5215,7 +5215,7 @@ document.addEventListener('click',function(e){
  *    - 誰可以存取：「所有人」
  * 6. 複製部署網址，貼到下面 CTR_ENDPOINT
  *
- * v80.8 規則：
+ * v80.9 規則：
  * - 不需要 Google 登入
  * - 使用 localStorage 產生匿名 visitorId
  * - 同一瀏覽器 / 同一裝置 / 同一天只計 1 次，避免刷新灌水
@@ -5312,27 +5312,23 @@ function _jyUpdateCounterUI(data){
   if(aToday) aToday.textContent = Number(today || 0).toLocaleString();
 }
 
-// v80.8：免 Google 登入，進站後同一裝置每日只計 1 次。
+// v80.9：免 Google 登入，進站就送 visit 給後端；真正去重由 Apps Script 的 visit_users 判斷。
+// 重要：不再用 localStorage 擋掉 visit，避免前端曾經誤標「已計數」但雲端今日仍為 0。
 window._jyCountVisitOnce = async function(){
   if(!CTR_ENDPOINT) return;
   var today = _jyTodayKey();
-  var localKey = '_jy_visit_counted_' + today;
-  try {
-    if(localStorage.getItem(localKey) === '1'){
-      var current = await _gasCall('get');
-      if(current) _jyUpdateCounterUI(current);
-      return;
-    }
-  } catch(_e){}
-
   var visitorId = _jyGetVisitorId();
+
+  // 每次進站都打 visit；後端同 uid + 同日期會回 alreadyCounted:true，不會灌水。
   var data = await _gasCall('visit', { uid: visitorId, day: today, source: 'pageview' });
+
+  // 若網路、CORS、Apps Script 暫時異常，至少再讀一次現有數字。
   if(!data || (data.total === undefined && data.today === undefined)){
     data = await _gasCall('get');
   }
   if(data){
     _jyUpdateCounterUI(data);
-    try { localStorage.setItem(localKey, '1'); } catch(_e){}
+    try { localStorage.setItem('_jy_visit_last_seen_' + today, String(Date.now())); } catch(_e){}
   }
 };
 
@@ -5354,7 +5350,7 @@ window._jyCountLoginOnce = function(){ return; };
 })();
 
 
-// v80.8：強制統計面板固定在「真正視窗正中央」。
+// v80.9：強制統計面板固定在「真正視窗正中央」。
 // 目的：避免手機瀏覽器快取舊 CSS、舊版 right/bottom 抽屜樣式，或其他 transform 祖層干擾 fixed 定位。
 function _jyForceAdminCenter(isOpen){
   var overlay = document.getElementById('admin-overlay');
@@ -5448,7 +5444,7 @@ async function resetAdminCounter(){
     _jyUpdateCounterUI({ total: data.total || 0, today: data.today || 0 });
     try {
       Object.keys(localStorage).forEach(function(k){
-        if(k.indexOf('_jy_visit_counted_') === 0 || k === '_jy_visitor_id_v807') localStorage.removeItem(k);
+        if(k.indexOf('_jy_visit_counted_') === 0 || k.indexOf('_jy_visit_last_seen_') === 0 || k === '_jy_visitor_id_v807') localStorage.removeItem(k);
       });
     } catch(_e){}
   }else{
