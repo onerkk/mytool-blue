@@ -5205,7 +5205,7 @@ document.addEventListener('click',function(e){
 
 /* ═══ 真實人次計數器（Google Sheets 雲端版）═══ */
 /*
- * 【v80.7 設定步驟】
+ * 【v80.8 設定步驟】
  * 1. 開 Google Sheets → 建新試算表
  * 2. 第一個工作表命名為 counter，在 A1 輸入 total，B1 輸入 0
  * 3. 點「擴充功能」→「Apps Script」
@@ -5215,7 +5215,7 @@ document.addEventListener('click',function(e){
  *    - 誰可以存取：「所有人」
  * 6. 複製部署網址，貼到下面 CTR_ENDPOINT
  *
- * v80.7 規則：
+ * v80.8 規則：
  * - 不需要 Google 登入
  * - 使用 localStorage 產生匿名 visitorId
  * - 同一瀏覽器 / 同一裝置 / 同一天只計 1 次，避免刷新灌水
@@ -5312,7 +5312,7 @@ function _jyUpdateCounterUI(data){
   if(aToday) aToday.textContent = Number(today || 0).toLocaleString();
 }
 
-// v80.7：免 Google 登入，進站後同一裝置每日只計 1 次。
+// v80.8：免 Google 登入，進站後同一裝置每日只計 1 次。
 window._jyCountVisitOnce = async function(){
   if(!CTR_ENDPOINT) return;
   var today = _jyTodayKey();
@@ -5353,6 +5353,49 @@ window._jyCountLoginOnce = function(){ return; };
   else setTimeout(run, 0);
 })();
 
+
+// v80.8：強制統計面板固定在「真正視窗正中央」。
+// 目的：避免手機瀏覽器快取舊 CSS、舊版 right/bottom 抽屜樣式，或其他 transform 祖層干擾 fixed 定位。
+function _jyForceAdminCenter(isOpen){
+  var overlay = document.getElementById('admin-overlay');
+  var panel = document.getElementById('admin-panel');
+
+  function imp(el, prop, val){
+    if(el && el.style && el.style.setProperty) el.style.setProperty(prop, val, 'important');
+  }
+
+  if(overlay){
+    if(overlay.parentElement !== document.body) document.body.appendChild(overlay);
+    imp(overlay,'position','fixed');
+    imp(overlay,'inset','0');
+    imp(overlay,'z-index','2147483600');
+    imp(overlay,'background','rgba(3,4,9,.68)');
+    imp(overlay,'backdrop-filter','blur(10px)');
+    imp(overlay,'-webkit-backdrop-filter','blur(10px)');
+    imp(overlay,'opacity',isOpen ? '1' : '0');
+    imp(overlay,'pointer-events',isOpen ? 'auto' : 'none');
+  }
+
+  if(panel){
+    if(panel.parentElement !== document.body) document.body.appendChild(panel);
+    imp(panel,'position','fixed');
+    imp(panel,'left','50%');
+    imp(panel,'top','50%');
+    imp(panel,'right','auto');
+    imp(panel,'bottom','auto');
+    imp(panel,'margin','0');
+    imp(panel,'z-index','2147483601');
+    imp(panel,'width','min(92vw,390px)');
+    imp(panel,'max-width','calc(100vw - 28px)');
+    imp(panel,'max-height','calc(100dvh - 32px)');
+    imp(panel,'overflow','auto');
+    imp(panel,'box-sizing','border-box');
+    imp(panel,'transform',isOpen ? 'translate(-50%,-50%) scale(1)' : 'translate(-50%,-50%) scale(.94)');
+    imp(panel,'opacity',isOpen ? '1' : '0');
+    imp(panel,'pointer-events',isOpen ? 'auto' : 'none');
+  }
+}
+
 // ── 月亮連點 5 下：只打開統計視窗，不增加人次 ──
 let _moonTapCount=0, _moonTapTimer=null;
 function _moonTap(){
@@ -5374,8 +5417,10 @@ async function openAdmin(){
   var aToday = document.getElementById('admin-today');
   if(aCount) aCount.textContent='…';
   if(aToday) aToday.textContent='…';
+  _jyForceAdminCenter(true);
   if(overlay) overlay.classList.add('visible');
   if(panel) panel.classList.add('visible');
+  _jyForceAdminCenter(true);
 
   if(!CTR_ENDPOINT){
     if(aCount) aCount.textContent='未設定';
@@ -5418,6 +5463,7 @@ function closeAdmin(){
   var panel = document.getElementById('admin-panel');
   if(overlay) overlay.classList.remove('visible');
   if(panel) panel.classList.remove('visible');
+  _jyForceAdminCenter(false);
 }
 
 
