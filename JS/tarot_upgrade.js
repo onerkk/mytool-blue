@@ -6393,97 +6393,151 @@ window._v64bTarotShuffleRitual = function(deckWrap, onComplete) {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// v80.3 洗牌鈕可見性修正 (歐那 2026/6/5)  ── 取代 v80.1
+// v80.5 洗牌後卡死修正 + 快速全抽上移 (歐那 2026/6/5)
 // ──────────────────────────────────────────────────────────────────────
-// v80.1 失敗原因：用 getElementById('jy-shuffle-btn') 抓按鈕，但那個 id 只存在於
-//   本檔 fallback 程式碼，tarot.js 真正建立的洗牌鈕只有 class、沒有那個 id，
-//   所以一直抓到 null、整段沒作用(按鈕沒移動、指引沒變)。
-// v80.3 改法：
-//   ① 定位不靠 id：先用 class .jy-shuffle-btn，其次 id，最後掃 #step-2 內
-//      文字含「洗牌」且不含「全抽」的 button(把 autoDraw 排除)。
-//   ② 不靠抓按鈕的時機：裝 MutationObserver 監看 #step-2，按鈕何時被
-//      建立/移除都能即時處理(initTarotDeck 也會主動觸發一次)。
-//   ③ 找到→移到「已選 N/N」這行正下方、牌堆上方→改指引「第一步：先洗牌」
-//      →scrollIntoView 進視野。洗牌完成(按鈕被移除)→還原「觸碰選牌」指引、清空容器。
-// 全程 idempotent(已處理的按鈕標 data-jy-placed，不重複動作)。
+// v80.3 卡死原因：MutationObserver 監看 #step-2 後，_findShuffleBtn() 使用
+//   step2.querySelector('[class*="shuffle"]')，洗牌完成按鈕被移除後，會誤把
+//   .jy-shuffle-top 容器當成「洗牌按鈕」再搬移，形成「容器包容器」的連續 DOM mutation，
+//   手機主執行緒會被 observer 反覆觸發卡住。
+// v80.4/v80.5 改法：
+//   ① 只接受 button / a / [role="button"]，不再把 div 容器當按鈕。
+//   ② MutationObserver 加 debounce，避免同步連續 mutation 造成迴圈。
+//   ③ 還原指引時清掉沒有真正按鈕的 .jy-shuffle-top 容器。
+//   ④ 保留原本「洗牌鈕移到已選張數下方」與「洗牌後還原選牌提示」。
+//   ⑤ 快速全抽按鈕已由 index.html 上移到已選張數下方、牌堆上方。
 // ══════════════════════════════════════════════════════════════════════
 (function(){
 'use strict';
 
 var _jyTargetCount = 10;
+var _jyPlacing = false;
 
-// 多重定位：class → id → 文字含「洗牌」(排除「全抽」)，全部限定在 #step-2 內
+function _isRealButton(el) {
+  if (!el || !el.matches) return false;
+  return el.matches('button, a, [role="button"]');
+}
+
+function _isShuffleButton(el) {
+  if (!_isRealButton(el)) return false;
+  var step2 = document.getElementById('step-2');
+  if (!step2 || !step2.contains(el)) return false;
+
+  var text = (el.textContent || '').replace(/\s+/g, '');
+  var cls = String(el.className || '');
+  var id = String(el.id || '');
+
+  // 排除快速全抽 / 分析 / 上一步等非洗牌操作
+  if (/全抽|快速全抽|分析|上一步|跳過/.test(text)) return false;
+
+  // 優先接受明確洗牌 class/id，其次接受文字含洗牌或靜月為你洗牌
+  if (/\bjy-shuffle-btn\b/.test(cls) || id === 'jy-shuffle-btn') return true;
+  if (/shuffle/i.test(cls) && /洗牌|靜月/.test(text)) return true;
+  if (/洗牌|靜月為你洗牌/.test(text)) return true;
+
+  return false;
+}
+
+// 僅回傳真正的可點擊洗牌按鈕；不可回傳 .jy-shuffle-top 這類容器
 function _findShuffleBtn() {
   var step2 = document.getElementById('step-2');
   if (!step2) return null;
-  var b = step2.querySelector('.jy-shuffle-btn');
-  if (b) return b;
-  b = document.getElementById('jy-shuffle-btn');
-  if (b && step2.contains(b)) return b;
-  b = step2.querySelector('[class*="shuffle"]');
-  if (b) return b;
+
   var btns = step2.querySelectorAll('button, a, [role="button"]');
   for (var i = 0; i < btns.length; i++) {
-    var t = btns[i].textContent || '';
-    if (t.indexOf('洗牌') >= 0 && t.indexOf('全抽') < 0) return btns[i];
+    if (_isShuffleButton(btns[i])) return btns[i];
   }
   return null;
 }
 
 function _placeShuffleBtn() {
-  var btn = _findShuffleBtn();
-  if (!btn) { _maybeRestoreHint(); return; }   // 沒按鈕 = 已洗牌/尚未建立 → 嘗試還原指引
-  if (btn.dataset.jyPlaced === '1') return;    // 這顆按鈕已處理過(idempotent)
-  btn.dataset.jyPlaced = '1';
+  if (_jyPlacing) return;
+  _jyPlacing = true;
 
-  // 移到「已選 N/N」這行正下方、牌堆上方(第一屏內)
-  var anchor = document.getElementById('t-remain-text');
-  if (anchor && anchor.parentNode) {
-    document.querySelectorAll('#step-2 .jy-shuffle-top').forEach(function(s){
-      if (s.children.length === 0) s.remove();   // 清掉切頁殘留的空容器
-    });
-    var wrap = document.createElement('div');
-    wrap.className = 'text-center jy-shuffle-top';
-    wrap.style.margin = '10px 0 4px';
-    anchor.parentNode.insertBefore(wrap, anchor.nextSibling);
-    wrap.appendChild(btn);                        // 移動節點保留 class、樣式、事件
-    btn.style.display = 'inline-block';
+  try {
+    var btn = _findShuffleBtn();
+
+    // 沒有真正洗牌按鈕：代表尚未建立或已洗完被移除，只還原提示與清空容器
+    if (!btn) {
+      _maybeRestoreHint();
+      return;
+    }
+
+    var anchor = document.getElementById('t-remain-text');
+    if (anchor && anchor.parentNode) {
+      // 清掉沒有真正按鈕的殘留容器；保留目前按鈕所在容器
+      document.querySelectorAll('#step-2 .jy-shuffle-top').forEach(function(s){
+        if (!s.contains(btn) && !s.querySelector('button, a, [role="button"]')) s.remove();
+      });
+
+      var currentWrap = btn.closest ? btn.closest('.jy-shuffle-top') : null;
+      if (!currentWrap) {
+        var wrap = document.createElement('div');
+        wrap.className = 'text-center jy-shuffle-top';
+        wrap.style.margin = '10px 0 4px';
+        anchor.parentNode.insertBefore(wrap, anchor.nextSibling);
+        wrap.appendChild(btn); // 移動節點，保留 tarot.js 原本 click 事件
+      } else if (currentWrap.previousElementSibling !== anchor) {
+        // 已在容器內，但位置不對時只移動容器，不重建巢狀容器
+        anchor.parentNode.insertBefore(currentWrap, anchor.nextSibling);
+      }
+
+      btn.dataset.jyPlaced = '1';
+      btn.style.display = 'inline-block';
+    }
+
+    var hint = document.getElementById('pick-hint');
+    if (hint) hint.innerHTML = '🌙 第一步：點「靜月為你洗牌」，洗牌後即可選牌';
+
+    if (!btn.dataset.jyScrolled) {
+      btn.dataset.jyScrolled = '1';
+      setTimeout(function(){
+        try { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
+      }, 90);
+    }
+  } finally {
+    _jyPlacing = false;
   }
-
-  var hint = document.getElementById('pick-hint');
-  if (hint) hint.innerHTML = '🌙 第一步：點「靜月為你洗牌」，洗牌後即可選牌';
-
-  setTimeout(function(){
-    try { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
-  }, 90);
 }
 
-// 洗牌完成(按鈕被 tarot.js 移除)後：若指引還停在「先洗牌」，還原成「觸碰選牌」、清空容器
+// 洗牌完成：若按鈕已被 tarot.js 移除，就還原選牌提示，並清掉空容器
 function _maybeRestoreHint() {
   var hint = document.getElementById('pick-hint');
-  if (hint && /第一步|請先點|靜月為你洗牌/.test(hint.textContent)) {
+  if (hint && /第一步|請先點|靜月為你洗牌/.test(hint.textContent || '')) {
     hint.innerHTML = '觸碰任一張你有感覺的牌，選出 <span id="t-target-count">' + _jyTargetCount + '</span> 張';
   }
+
   document.querySelectorAll('#step-2 .jy-shuffle-top').forEach(function(s){
-    if (s.children.length === 0) s.remove();
+    if (!s.querySelector('button, a, [role="button"]')) s.remove();
   });
 }
 
-// 對外：initTarotDeck override 進抽牌頁時呼叫(帶入該牌陣張數)
+// 對外：initTarotDeck override 進抽牌頁時呼叫
 window._jyShuffleUX = function(targetCount) {
   _jyTargetCount = targetCount || 10;
-  [0, 50, 150, 300, 600, 1000].forEach(function(ms){ setTimeout(_placeShuffleBtn, ms); });
+  [0, 50, 150, 300, 600, 1000].forEach(function(ms){
+    setTimeout(_placeShuffleBtn, ms);
+  });
 };
 
-// MutationObserver：按鈕何時被建立/移除都能處理(時機無關，最關鍵的保險)
+var _jyShuffleUXTimer = null;
+function _schedulePlaceShuffleBtn() {
+  if (_jyShuffleUXTimer) clearTimeout(_jyShuffleUXTimer);
+  _jyShuffleUXTimer = setTimeout(function(){
+    _jyShuffleUXTimer = null;
+    _placeShuffleBtn();
+  }, 60);
+}
+
 function _installObserver() {
   var step2 = document.getElementById('step-2');
   if (!step2) { setTimeout(_installObserver, 300); return; }
-  if (step2._jyObserved) return;
-  step2._jyObserved = true;
-  var mo = new MutationObserver(function(){ _placeShuffleBtn(); });
+  if (step2._jyObservedV804) return;
+  step2._jyObservedV804 = true;
+
+  var mo = new MutationObserver(_schedulePlaceShuffleBtn);
   mo.observe(step2, { childList: true, subtree: true });
-  _placeShuffleBtn();  // 安裝時先跑一次(若按鈕已存在)
+
+  _placeShuffleBtn();
 }
 
 if (document.readyState === 'loading') {
