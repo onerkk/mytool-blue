@@ -352,19 +352,52 @@
     '坤':'地、母、眾人、順從、腹、方、柔弱吝嗇、布帛田土、西南'
   };
 
+  function _mhTrig(g){ return g ? ((g.name||'') + (g.nat?('('+g.nat+')'):'') + (g.el?('·'+g.el):'')) : '？'; }
   function buildMeihuaPrompt(question, mh) {
+    var tiName = (mh.tiG && mh.tiG.name) || '', yoName = (mh.yoG && mh.yoG.name) || '';
     var tiEl = mh.tiG && mh.tiG.el, yoEl = mh.yoG && mh.yoG.el;
     var timing = WX_TIMING[yoEl] || '依用卦五行對應的季節月份';
     var luck = mh.ty ? mh.ty.f : '';
     var verdictHint =
-      (luck === '大吉' || luck === '吉') ? '卦象偏向「可行／有利」' :
-      (luck === '凶' || luck === '小凶') ? '卦象偏向「不利／受阻」——這是壞消息，要直說，不可包裝成轉機' :
-      (luck === '平' || luck === '比和') ? '卦象偏向「平穩／拉鋸，無突破」' : '依體用生剋據實判斷';
-    var mon = new Date().getMonth() + 1, season, wangEl;
-    if (mon>=2 && mon<=4) { season='春'; wangEl='木'; }
-    else if (mon>=5 && mon<=7) { season='夏'; wangEl='火'; }
-    else if (mon>=8 && mon<=10) { season='秋'; wangEl='金'; }
-    else { season='冬'; wangEl='水'; }
+      luck==='大吉' ? '卦象偏向「有利、有外助」' :
+      luck==='吉'   ? '卦象偏向「順、可行」' :
+      luck==='小吉' ? '卦象偏向「可成，但要主動費力」' :
+      luck==='小凶' ? '卦象偏向「不利、在耗你」——壞消息要直說' :
+      luck==='凶'   ? '卦象偏向「受阻、不利」——壞消息要直說' :
+      '依體用生剋據實判斷';
+
+    // 體卦旺衰：優先用既有引擎 getMhWangShuai（旺相休囚死，含節氣判月），失敗才退簡表
+    var wsLevel = '';
+    try { if (typeof getMhWangShuai === 'function' && tiEl) { var _ws = getMhWangShuai(tiEl); wsLevel = _ws && _ws.level; } } catch (e) {}
+    if (!wsLevel && tiEl) {
+      var _m = new Date().getMonth() + 1, _sea;
+      if (_m>=2 && _m<=4) _sea='spring'; else if (_m>=5 && _m<=7) _sea='summer';
+      else if (_m>=8 && _m<=10) _sea='autumn'; else _sea='winter';
+      var _T = { spring:{木:'旺',火:'相',水:'休',金:'囚',土:'死'}, summer:{火:'旺',土:'相',木:'休',水:'囚',金:'死'}, autumn:{金:'旺',水:'相',土:'休',火:'囚',木:'死'}, winter:{水:'旺',木:'相',金:'休',土:'囚',火:'死'} };
+      wsLevel = (_T[_sea] && _T[_sea][tiEl]) || '平';
+    }
+    var wsNote = {
+      '旺':'體當令最旺、力足——吉更實，逢凶也扛得住。',
+      '相':'體受令神所生、次旺，偏有力。',
+      '休':'體生令神而洩氣、力退——吉要打折，別高估後勁。',
+      '囚':'體克令神反被牽制、力弱——推得吃力。',
+      '死':'體被當令之氣所克、最弱——凶上加凶，吉也難落實。',
+      '平':'體不逢令，力道持平。'
+    }[wsLevel] || '';
+
+    // 變卦體用（結局對體）：動爻必在「用卦」，故體不變、用變；翻動爻所在爻得變後用卦
+    var bianTy = null, yoBianName = '', yoBianEl = '';
+    try {
+      if (mh.yoG && mh.yoG.li && typeof gByL === 'function' && typeof tiYong === 'function') {
+        var _yl = mh.yoG.li.slice();
+        var _idx = (mh.dong <= 3) ? (mh.dong - 1) : (mh.dong - 4); // 動爻在用卦內的爻位
+        if (_idx >= 0 && _idx <= 2) {
+          _yl[_idx] = _yl[_idx] ? 0 : 1;
+          var _yb = gByL(_yl[0], _yl[1], _yl[2]);
+          if (_yb) { yoBianName = _yb.name || ''; yoBianEl = _yb.el || ''; bianTy = tiYong(tiEl, _yb.el); }
+        }
+      }
+    } catch (e) {}
 
     var L = [];
     L.push('你是一位用了二十年梅花易數、講話直接不繞圈的占者。有人剛為一件事起了卦，要你把卦讀成他能用的判斷，而不是把卦辭翻譯一遍。');
@@ -372,20 +405,24 @@
     L.push('問題：' + (question || '（未填，請依卦象給出最可能的主題與通則判斷）'));
     L.push('');
     L.push('【卦象資料】');
-    L.push('本卦：' + (mh.ben && mh.ben.n) + '（上卦' + (mh.up&&mh.up.n) + '·' + (mh.up&&mh.up.el) + '，下卦' + (mh.lo&&mh.lo.n) + '·' + (mh.lo&&mh.lo.el) + '）—— 事情的當前定性。');
+    L.push('本卦：' + (mh.ben && mh.ben.n) + '（上卦' + _mhTrig(mh.up) + '，下卦' + _mhTrig(mh.lo) + '）—— 事情的當前定性。');
     L.push('互卦：' + (mh.hu && mh.hu.n) + ' —— 發展過程、當事人沒看到的隱情與中間變數。');
     L.push('變卦：' + (mh.bian && mh.bian.n) + ' —— 若照目前走向，事情最後的結局。');
-    L.push('體卦：' + (mh.tiG && mh.tiG.n) + '（' + tiEl + '）—— 問卜者自身／所問之主體。體宜旺、宜被生。');
-    L.push('用卦：' + (mh.yoG && mh.yoG.n) + '（' + yoEl + '）—— 所問之事／外在環境／對方。');
-    L.push('體用關係：' + (mh.ty && mh.ty.r) + '（' + luck + '）。' + (mh.ty && mh.ty.d));
+    L.push('體卦：' + _mhTrig(mh.tiG) + ' —— 問卜者自身／所問之主體。體宜旺、宜被生。');
+    L.push('用卦：' + _mhTrig(mh.yoG) + ' —— 所問之事／外在環境／對方。');
+    L.push('本卦體用關係：' + (mh.ty && mh.ty.r) + '（' + luck + '）。' + (mh.ty && mh.ty.d));
+    if (bianTy) {
+      L.push('變卦體用關係（結局）：體仍為' + tiName + '（' + tiEl + '），用變為' + yoBianName + '（' + yoBianEl + '）→ ' + bianTy.r + '（' + bianTy.f + '）。拿它跟本卦體用比：同向＝維持，轉壞＝越走越不利，轉好＝漸入佳境。');
+    }
     L.push('動爻：第 ' + mh.dong + ' 爻動（變卦由此而生，是事情變化的關鍵點）。');
-    L.push('占卦時節：現在是' + season + '季、' + wangEl + '當令最旺。體卦五行為' + tiEl + '——逢令則力足、被當令五行所剋則弱；用來定吉凶的「力度」。');
+    L.push('體卦旺衰：' + tiName + '（' + tiEl + '）當下時令為「' + wsLevel + '」——' + wsNote);
     L.push('應期參考：用卦五行為「' + yoEl + '」，' + timing + '。');
     L.push('');
     L.push('【八卦類象（推具體人事物，只取與問題相關的，不要全列）】');
-    L.push('體卦 ' + (mh.tiG&&mh.tiG.n) + '：' + (GUA_XIANG[mh.tiG&&mh.tiG.n] || ''));
-    L.push('用卦 ' + (mh.yoG&&mh.yoG.n) + '：' + (GUA_XIANG[mh.yoG&&mh.yoG.n] || ''));
-    L.push('（互卦、變卦可同樣借類象推過程與結局牽涉的人事物方位。）');
+    L.push('體卦 ' + tiName + '：' + (GUA_XIANG[tiName] || ''));
+    L.push('用卦 ' + yoName + '：' + (GUA_XIANG[yoName] || ''));
+    L.push('其餘速查（推互卦、變卦的人事物用）：乾＝' + GUA_XIANG['乾'] + '；兌＝' + GUA_XIANG['兌'] + '；離＝' + GUA_XIANG['離'] + '；震＝' + GUA_XIANG['震'] + '；巽＝' + GUA_XIANG['巽'] + '；坎＝' + GUA_XIANG['坎'] + '；艮＝' + GUA_XIANG['艮'] + '；坤＝' + GUA_XIANG['坤'] + '。');
+    L.push('（類象只用來推「象」；不可從某一卦直接斷定當事人的婚姻、生死、有無對象等卦上未明示的事實。）');
     L.push('');
     L.push('【斷卦鐵律（違反就是失敗）】');
     L.push('①結論先行：第一句就正面回答他問的事（能不能／會不會／往哪走／何時）。本卦定基調，' + verdictHint + '。');
