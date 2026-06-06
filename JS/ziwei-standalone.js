@@ -633,6 +633,8 @@
     try { if (typeof S !== 'undefined') { S.form = form; S._tarotOnlyMode = false; S._autoMode = false; } } catch (e) {}
 
     // 紫微以時辰定盤：直接以時辰代表時排盤（無出生地經度校正，符合斗數慣例）
+    // 保險：approxLunar 用 Lunar.Solar，而 lunar.js 把它掛在 window.Solar，故補上橋接。
+    try { if (window.Solar && (!window.Lunar || !window.Lunar.Solar)) { if (!window.Lunar) window.Lunar = {}; window.Lunar.Solar = window.Solar; } } catch(e){}
     var zw = null;
     try {
       zw = computeZiwei(y, mo, d, hh, _zwGender);
@@ -642,7 +644,11 @@
       alert('排盤失敗：' + (e && e.message ? e.message : '請確認農曆轉換庫已載入後再試'));
       return;
     }
-    if (!zw || !zw.palaces) { alert('排盤資料不完整，請重試'); return; }
+    if (!zw || !zw.palaces) {
+      var _er = (typeof window !== 'undefined' && window._jyZiweiError) ? window._jyZiweiError : '';
+      alert('排盤資料不完整，請重試' + (_er ? '（原因：' + _er + '）' : ''));
+      return;
+    }
 
     var inp = document.getElementById('zw-input'); if (inp) inp.style.display = 'none';
     showLoading(function () { showResult(zw, form); });

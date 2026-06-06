@@ -250,14 +250,15 @@
       var up = u % 8 || 8, lo = l % 8 || 8, dong = (u + l + sc) % 6 || 6;
       return { up: up, lo: lo, dong: dong };
     }
-    // 時間起卦：需 Lunar.Solar（不以西曆代替農曆）
-    if (typeof Lunar === 'undefined' || !Lunar.Solar) {
+    // 時間起卦：需農曆換算。lunar-javascript 把 Solar 掛在 window.Solar（非 Lunar.Solar），兩者皆接受。
+    var SolarLib = (window.Lunar && window.Lunar.Solar) || window.Solar;
+    if (!SolarLib || typeof SolarLib.fromYmd !== 'function') {
       alert('時間起卦需要精準農曆換算尚未就緒，請改用「數字起卦」。');
       return null;
     }
     try {
       var now = new Date();
-      var solar = Lunar.Solar.fromYmd(now.getFullYear(), now.getMonth()+1, now.getDate());
+      var solar = SolarLib.fromYmd(now.getFullYear(), now.getMonth()+1, now.getDate());
       var lunar = solar.getLunar();
       var lY = lunar.getYear(), lM = lunar.getMonth(), lD = lunar.getDay();
       var yzhi = ((lY - 4) % 12 + 12) % 12 + 1;
