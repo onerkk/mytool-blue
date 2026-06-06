@@ -8222,3 +8222,533 @@ function resetToHome() {
     window._jyApplyZiweiStandaloneUI._jy_v80_20 = true;
   }
 })();
+
+
+/* ═══════════════════════════════════════════════════════════════
+   v80.22 — 四工具獨立乾淨模式
+   目的：塔羅、開鑰、梅花、紫微進入各自入口後，畫面像雷諾曼一樣只保留本工具流程。
+   - 不顯示其他入口
+   - 紫微不顯示姓名/姓名學/七維/塔羅/開鑰文字
+   - 梅花不再出現下一步塔羅或七維說明
+   - 工具頁隱藏 SEO/footer 說明，避免被誤認成流程
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  function qs(id){ return document.getElementById(id); }
+  function txt(el){ return (el && (el.textContent || el.innerText) || '').trim(); }
+  function show(el, yes){ if(el) el.style.display = yes ? '' : 'none'; }
+
+  function ensureCleanCSS(){
+    if (qs('jy-v80-21-clean-css')) return;
+    var st=document.createElement('style');
+    st.id='jy-v80-21-clean-css';
+    st.textContent = [
+      'body.jy-mode-tarot #birth-data-card, body.jy-mode-tarot #tool-selection-card, body.jy-mode-tarot #tarot-to-full, body.jy-mode-tarot #seo-content, body.jy-mode-tarot footer{display:none!important}',
+      'body.jy-mode-tarot .jy-cross-tool, body.jy-mode-tarot .jy-standalone-note{display:none!important}',
+      'body.jy-mode-ootk #birth-data-card, body.jy-mode-ootk #tool-selection-card, body.jy-mode-ootk #jy-spread-card, body.jy-mode-ootk #tarot-to-full, body.jy-mode-ootk #seo-content, body.jy-mode-ootk footer{display:none!important}',
+      'body.jy-mode-ootk .jy-cross-tool, body.jy-mode-ootk .jy-standalone-note{display:none!important}',
+      'body.jy-mode-ziwei #f-name-group, body.jy-mode-ziwei #tool-selection-card, body.jy-mode-ziwei #jy-spread-card, body.jy-mode-ziwei #tarot-to-full, body.jy-mode-ziwei #seo-content, body.jy-mode-ziwei footer{display:none!important}',
+      'body.jy-mode-ziwei #birth-data-card details, body.jy-mode-ziwei #birth-form-hint{display:none!important}',
+      'body.jy-mode-meihua #input-screen, body.jy-mode-meihua #birth-data-card, body.jy-mode-meihua #tool-selection-card, body.jy-mode-meihua #jy-spread-card, body.jy-mode-meihua #tarot-to-full, body.jy-mode-meihua #seo-content, body.jy-mode-meihua footer{display:none!important}',
+      'body.jy-mode-meihua #btn-meihua-next, body.jy-mode-meihua #btn-meihua-skip, body.jy-mode-meihua #btn-skip-tarot, body.jy-mode-meihua #btn-back-meihua, body.jy-mode-meihua #meihua-help-text{display:none!important}',
+      '.jy-clean-title{max-width:640px;margin:1.2rem auto 1rem;padding:0 1.2rem;text-align:center}',
+      '.jy-clean-title h1{font-family:var(--f-display,serif);color:var(--c-gold,#d4af37);font-size:2rem;letter-spacing:.28em;margin:.4rem 0 .15rem}',
+      '.jy-clean-title p{color:rgba(232,224,208,.52);font-size:.82rem;letter-spacing:.08em;margin:0}',
+      '.jy-clean-question-card{max-width:640px;margin:0 auto 1rem;padding:1rem;border:1px solid rgba(212,175,55,.16);border-radius:18px;background:rgba(16,18,28,.86)}',
+      '.jy-clean-question-card label{display:block;color:var(--c-gold,#d4af37);font-weight:700;margin-bottom:.55rem}',
+      '.jy-clean-question-card textarea{width:100%;min-height:94px;border-radius:14px;border:1px solid rgba(212,175,55,.18);background:rgba(0,0,0,.16);color:var(--c-text,#eee);padding:.85rem;font-family:inherit;font-size:.95rem;line-height:1.7;resize:vertical}',
+      '.jy-clean-home-card{margin-top:.8rem}',
+      '.jy-clean-hidden{display:none!important}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function setMode(mode){
+    ensureCleanCSS();
+    document.body.classList.remove('jy-mode-tarot','jy-mode-ootk','jy-mode-ziwei','jy-mode-meihua');
+    if (mode) document.body.classList.add('jy-mode-'+mode);
+  }
+
+  function hideCardsByWords(root, words){
+    root = root || document;
+    var cards = root.querySelectorAll('.card, details, section, footer');
+    Array.prototype.forEach.call(cards, function(card){
+      var t = txt(card);
+      for (var i=0;i<words.length;i++){
+        if (t.indexOf(words[i]) >= 0){ card.style.display='none'; return; }
+      }
+    });
+  }
+
+  function prepareInputBase(mode){
+    setMode(mode);
+    var hook=qs('hook-screen'), input=qs('input-screen');
+    show(hook,false); show(input,true);
+    if (!input) return;
+    var breadcrumb=input.querySelector('.tag.tag-gold');
+    if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display='none';
+    show(qs('q-presets'),false);
+    show(qs('q-custom-wrap'),true);
+    show(qs('jy-context-chips'),false);
+    var q=qs('f-question');
+    if (q) q.focus();
+  }
+
+  function prepareTarotClean(){
+    prepareInputBase('tarot');
+    try { if (window.S) { S._tarotOnlyMode=true; S._ootkOnlyMode=false; S._ziweiOnlyMode=false; S._meihuaOnlyMode=false; S._autoMode=false; } } catch(_){ }
+    try { window._selectedTool='tarot'; } catch(_){ }
+    var input=qs('input-screen');
+    show(qs('birth-data-card'),false);
+    show(qs('tool-selection-card'),false);
+    show(qs('jy-spread-card'),true);
+    hideCardsByWords(input, ['選擇分析方式','七維命盤深度分析','開鑰之法','出生資料','姓名學','哪套適合你的問題']);
+    var title=input && input.querySelector('.card-title');
+    if (title && txt(title).indexOf('你想問什麼')>=0) title.innerHTML='<i class="fas fa-question-circle"></i> 你想問什麼？';
+    var q=qs('f-question');
+    if (q) q.placeholder='問越具體越準——例如：他為什麼最近不主動找我？我該先開口嗎？';
+    var btn=qs('btn-tool-go');
+    if (btn){ btn.innerHTML='<i class="fas fa-magic"></i> 抽牌解讀'; btn.onclick=function(){ submitWithTool(); }; }
+    var sub=qs('btn-tool-sub'); if (sub) sub.textContent='塔羅快讀・只依本次問題與牌面解讀';
+    show(qs('tool-cta'),true);
+    setTimeout(function(){ window.scrollTo({top:0,behavior:'smooth'}); },30);
+  }
+
+  function prepareOotkClean(){
+    prepareInputBase('ootk');
+    try { if (window.S) { S._tarotOnlyMode=false; S._ootkOnlyMode=true; S._ziweiOnlyMode=false; S._meihuaOnlyMode=false; S._autoMode=false; } } catch(_){ }
+    try { window._selectedTool='ootk'; } catch(_){ }
+    var input=qs('input-screen');
+    show(qs('birth-data-card'),false);
+    show(qs('tool-selection-card'),false);
+    show(qs('jy-spread-card'),false);
+    hideCardsByWords(input, ['選擇分析方式','七維命盤深度分析','塔羅快讀','出生資料','姓名學','哪套適合你的問題']);
+    var title=input && input.querySelector('.card-title');
+    if (title && txt(title).indexOf('你想問什麼')>=0) title.innerHTML='<i class="fas fa-key"></i> 你想問什麼？';
+    var q=qs('f-question');
+    if (q) q.placeholder='問根源最準——例如：為什麼我一直卡在這段關係？這個循環真正問題在哪？';
+    var btn=qs('btn-tool-go');
+    if (btn){ btn.innerHTML='<i class="fas fa-key"></i> 開始開鑰之法'; btn.onclick=function(){ submitWithTool(); }; }
+    var sub=qs('btn-tool-sub'); if (sub) sub.textContent='開鑰之法・只依 78 張牌五層操作輸出提示詞';
+    show(qs('tool-cta'),true);
+    setTimeout(function(){ window.scrollTo({top:0,behavior:'smooth'}); },30);
+  }
+
+  function cleanZiweiBirthCopy(){
+    var input=qs('input-screen');
+    var q=qs('f-question');
+    if (q){
+      q.placeholder='例如：請以紫微斗數分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
+      if (!q.value || /塔羅|開鑰|七維|姓名學/.test(q.value)) q.value='請以紫微斗數分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
+    }
+    var hint=qs('f-time-precision-hint');
+    if (hint) hint.innerHTML='<p style="font-size:.72rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-info-circle" style="margin-right:4px"></i>若只知道約略時辰，系統會降低命宮、身宮與時辰敏感宮位的判讀權重。</p>';
+    var locDetails=input && input.querySelector('#birth-data-card details');
+    if (locDetails) locDetails.style.display='none';
+  }
+
+  var oldZi = window._jyApplyZiweiStandaloneUI;
+  window._jyApplyZiweiStandaloneUI = function(){
+    setMode('ziwei');
+    var r = oldZi ? oldZi.apply(this, arguments) : null;
+    try { if (window.S) { S._ziweiOnlyMode=true; S._meihuaOnlyMode=false; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._autoMode=true; } } catch(_){ }
+    prepareInputBase('ziwei');
+    show(qs('birth-data-card'),true);
+    show(qs('f-name-group'),false);
+    show(qs('tool-selection-card'),false);
+    show(qs('jy-spread-card'),false);
+    hideCardsByWords(qs('input-screen'), ['選擇分析方式','塔羅快讀','開鑰之法','七維命盤深度分析','姓名學','哪套適合你的問題']);
+    cleanZiweiBirthCopy();
+    var btn=qs('btn-tool-go');
+    if (btn){ btn.innerHTML='<i class="fas fa-globe-asia"></i> 產生紫微斗數提示詞'; btn.onclick=function(){ submitWithTool(); }; }
+    var sub=qs('btn-tool-sub'); if (sub) sub.textContent='紫微斗數・只使用性別、出生日期、出生時間、出生地點';
+    show(qs('tool-cta'),true);
+    try { window._selectedTool='full'; } catch(_){ }
+    if (typeof window._setBirthFormMode === 'function') window._setBirthFormMode('ziwei');
+    return r;
+  };
+
+  function ensureMeihuaQuestion(){
+    var step=qs('step-1');
+    if (!step) return;
+    if (!qs('jy-meihua-clean-title')){
+      var title=document.createElement('div');
+      title.id='jy-meihua-clean-title';
+      title.className='jy-clean-title';
+      title.innerHTML='<h1>梅花易數</h1><p>時間・數字・漢字・隨機起卦</p>';
+      step.insertBefore(title, step.firstChild);
+    }
+    if (!qs('jy-meihua-question-card')){
+      var card=document.createElement('div');
+      card.id='jy-meihua-question-card';
+      card.className='jy-clean-question-card';
+      card.innerHTML='<label>你想問什麼？</label><textarea id="jy-meihua-question" maxlength="500" placeholder="問越具體越準——例如：這份工作值得繼續嗎？我和他的關係接下來會怎樣？"></textarea>';
+      var firstCard=step.querySelector('.card');
+      step.insertBefore(card, firstCard || step.firstChild);
+    }
+  }
+
+  var oldMh = window._jyApplyMeihuaStandaloneUI;
+  window._jyApplyMeihuaStandaloneUI = function(){
+    setMode('meihua');
+    var r = oldMh ? oldMh.apply(this, arguments) : null;
+    try { if (window.S) { S._meihuaOnlyMode=true; S._ziweiOnlyMode=false; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._autoMode=false; } } catch(_){ }
+    ensureMeihuaQuestion();
+    hideCardsByWords(qs('step-1'), ['下一步：塔羅','多起卦','避雷方向','抽牌','七維','塔羅','開鑰']);
+    var title=document.querySelector('#step-1 .card-title');
+    if (title) title.innerHTML='<i class="fas fa-yin-yang"></i> 梅花易數起卦';
+    var help=qs('meihua-help-text'); if (help) help.style.display='none';
+    var skip=qs('btn-meihua-skip'); if (skip) skip.style.display='none';
+    var next=qs('btn-meihua-next'); if (next) next.style.display='none';
+    var back=qs('btn-meihua-back'); if (back) back.innerHTML='<i class="fas fa-arrow-left"></i> 回首頁';
+    return r;
+  };
+
+  var oldMHPrompt = window._jyMeihuaToPrompt;
+  window._jyMeihuaToPrompt = function(){
+    try{
+      var q=qs('jy-meihua-question');
+      if (q && q.value && window.S) {
+        S.form = S.form || {};
+        S.form.question = q.value.trim();
+        if (!S.form.type) S.form.type='general';
+      }
+    }catch(_){ }
+    if (oldMHPrompt) return oldMHPrompt.apply(this, arguments);
+  };
+
+  // 乾淨首頁入口：主 CTA 固定進塔羅；另補開鑰入口，四工具各自獨立。
+  function patchHome(){
+    var hook=qs('hook-screen'); if(!hook) return;
+    var cta=qs('home-cta-btn');
+    if (cta){ cta.onclick=function(e){ if(e) e.preventDefault(); prepareTarotClean(); }; }
+    var home=hook.querySelector('.jy-home');
+    if (home && !qs('jy-home-ootk-clean')){
+      var qk=home.querySelector('.jy-home-quick');
+      var wrap=document.createElement('div');
+      wrap.id='jy-home-ootk-clean';
+      wrap.className='jy-home-oracle jy-clean-home-card';
+      wrap.innerHTML='<button onclick="_ootkOpen()" class="jy-oracle-btn"><span class="jy-oracle-icon">🔑</span><span class="jy-oracle-text"><strong>開鑰之法</strong><small>Opening of the Key・78 張五層深潛・免費</small></span><span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span></button>';
+      if (qk && qk.nextSibling) home.insertBefore(wrap, qk.nextSibling); else home.appendChild(wrap);
+    }
+  }
+
+  window._tarotOpen = prepareTarotClean;
+  window._ootkOpen = prepareOotkClean;
+  window._enterFromHome = prepareTarotClean;
+
+  // 保留舊函式名稱但加強淨化。
+  var oldPick = window.pickTool;
+  if (typeof oldPick === 'function' && !oldPick._jy_v80_22){
+    window.pickTool = function(tool){
+      var r = oldPick.apply(this, arguments);
+      if (tool === 'tarot') setTimeout(prepareTarotClean,0);
+      if (tool === 'ootk') setTimeout(prepareOotkClean,0);
+      return r;
+    };
+    window.pickTool._jy_v80_22 = true;
+  }
+
+  function reclean(){
+    ensureCleanCSS();
+    patchHome();
+    if (document.body.classList.contains('jy-mode-tarot')) {
+      show(qs('birth-data-card'),false); show(qs('tool-selection-card'),false); show(qs('jy-spread-card'),true); show(qs('tarot-to-full'),false);
+      hideCardsByWords(qs('input-screen'), ['選擇分析方式','七維命盤深度分析','開鑰之法','出生資料','姓名學','哪套適合你的問題']);
+    }
+    if (document.body.classList.contains('jy-mode-ootk')) {
+      show(qs('birth-data-card'),false); show(qs('tool-selection-card'),false); show(qs('jy-spread-card'),false); show(qs('tarot-to-full'),false);
+      hideCardsByWords(qs('input-screen'), ['選擇分析方式','七維命盤深度分析','塔羅快讀','出生資料','姓名學','哪套適合你的問題']);
+    }
+    if (document.body.classList.contains('jy-mode-ziwei') && typeof window._jyApplyZiweiStandaloneUI === 'function') {
+      // 避免遞迴，只做輕量 DOM 清理
+      show(qs('f-name-group'),false); show(qs('tool-selection-card'),false); show(qs('jy-spread-card'),false); cleanZiweiBirthCopy();
+      hideCardsByWords(qs('input-screen'), ['選擇分析方式','塔羅快讀','開鑰之法','七維命盤深度分析','姓名學','哪套適合你的問題']);
+    }
+    if (document.body.classList.contains('jy-mode-meihua')) {
+      ensureMeihuaQuestion(); hideCardsByWords(qs('step-1'), ['下一步：塔羅','多起卦','避雷方向','抽牌','七維','塔羅','開鑰']);
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reclean); else reclean();
+  setTimeout(reclean,300); setTimeout(reclean,1200); setTimeout(reclean,3000);
+  if ('MutationObserver' in window){
+    var obs=new MutationObserver(function(){ if (!window._jyCleanTicking){ window._jyCleanTicking=true; setTimeout(function(){ window._jyCleanTicking=false; reclean(); },50); } });
+    if (document.documentElement) obs.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});
+  }
+})();
+
+/* =============================================================
+   v80.22 — Ziwei/Meihua/Tarot/OOTK standalone hard clean + Ziwei prompt-only submit
+   Fixes:
+   1) 紫微獨立頁不得殘留「哪套適合你的問題」或塔羅/開鑰/七維提示。
+   2) 紫微按鈕不得走七維 submitStep0Fast / goStep(3)，改成前端排盤後直接輸出提示詞。
+   3) 紫微不需要姓名，不混入姓名學；梅花/塔羅/開鑰也只保留自己的流程。
+   ============================================================= */
+(function(){
+  'use strict';
+
+  function qs(id){ return document.getElementById(id); }
+  function text(el){ return (el && el.textContent ? el.textContent : '').replace(/\s+/g,' ').trim(); }
+  function show(el, yes){ if(el) el.style.display = yes ? '' : 'none'; }
+
+  function ensureV8022CSS(){
+    if (qs('jy-v80-22-clean-css')) return;
+    var st=document.createElement('style');
+    st.id='jy-v80-22-clean-css';
+    st.textContent = [
+      'body.jy-mode-ziwei #f-name-group,body.jy-mode-ziwei #tool-selection-card,body.jy-mode-ziwei #jy-spread-card,body.jy-mode-ziwei #tarot-to-full{display:none!important}',
+      'body.jy-mode-tarot #birth-data-card,body.jy-mode-tarot #tool-selection-card,body.jy-mode-tarot #tarot-to-full{display:none!important}',
+      'body.jy-mode-ootk #birth-data-card,body.jy-mode-ootk #tool-selection-card,body.jy-mode-ootk #jy-spread-card,body.jy-mode-ootk #tarot-to-full{display:none!important}',
+      'body.jy-mode-meihua #btn-meihua-next,body.jy-mode-meihua #btn-meihua-skip,body.jy-mode-meihua #meihua-help-text{display:none!important}',
+      '.jy-v8022-hidden{display:none!important}',
+      '#ziwei-export-wrap{margin:1rem 0 1.5rem}',
+      '.jy-standalone-tool-title{margin:0 0 .8rem;text-align:center;color:var(--c-gold);font-family:var(--f-display,"Noto Serif TC",serif);letter-spacing:.12em}',
+      '.jy-standalone-tool-title small{display:block;margin-top:.3rem;color:rgba(232,224,208,.58);font-size:.72rem;letter-spacing:.08em;font-family:inherit}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function setMode(mode){
+    ensureV8022CSS();
+    document.body.classList.remove('jy-mode-tarot','jy-mode-ootk','jy-mode-ziwei','jy-mode-meihua');
+    if (mode) document.body.classList.add('jy-mode-' + mode);
+  }
+
+  function hideForeignBlocks(root, mode){
+    root = root || document;
+    var wordsByMode = {
+      ziwei: ['哪套適合你的問題','塔羅快讀','開鑰之法','七維命盤深度分析','姓名學','選擇分析方式','現實7維度','七維度'],
+      meihua: ['下一步：塔羅','避雷方向','多起卦','塔羅','開鑰之法','七維命盤深度分析','姓名學','現實7維度','七維度'],
+      tarot: ['出生資料','姓名學','七維命盤深度分析','開鑰之法','現實7維度','七維度'],
+      ootk: ['出生資料','姓名學','七維命盤深度分析','塔羅快讀','選擇牌陣','現實7維度','七維度']
+    };
+    var keepByMode = {
+      ziwei: ['性別','出生日期','出生時間','出生地點','真太陽時','產生紫微斗數提示詞'],
+      meihua: ['梅花易數起卦','時間起卦','數字','漢字','隨機','產生梅花易數提示詞'],
+      tarot: ['你想問什麼','選擇牌陣','抽牌解讀'],
+      ootk: ['你想問什麼','開始開鑰之法','開始五層深潛']
+    };
+    var words = wordsByMode[mode] || [];
+    var keep = keepByMode[mode] || [];
+    var nodes = root.querySelectorAll('.card,.jy-card,.jy-info-card,.jy-help-card,.jy-panel,.jy-clean-card,.jy-tool-card,.jy-home-oracle,details,aside,section,div,p');
+    Array.prototype.forEach.call(nodes, function(el){
+      if (!el || el === root || el.id === 'input-screen' || el.id === 'birth-data-card' || el.id === 'q-custom-wrap' || el.id === 'tool-cta') return;
+      if (mode === 'tarot' && el.id === 'jy-spread-card') return;
+      var t = text(el);
+      if (!t) return;
+      var hit = false;
+      for (var i=0;i<words.length;i++){ if (t.indexOf(words[i]) >= 0) { hit = true; break; } }
+      if (!hit) return;
+      var shouldKeep = false;
+      for (var k=0;k<keep.length;k++){ if (t.indexOf(keep[k]) >= 0) { shouldKeep = true; break; } }
+      if (shouldKeep) return;
+      // 避免隱藏包住整頁的大容器；只隱藏小型說明卡/段落。
+      var hasForm = !!el.querySelector('input,select,textarea');
+      var btnCount = el.querySelectorAll ? el.querySelectorAll('button').length : 0;
+      if (hasForm && el.id !== 'tool-selection-card' && mode !== 'meihua') return;
+      if (t.length > 520 && btnCount > 2) return;
+      el.classList.add('jy-v8022-hidden');
+      el.style.display = 'none';
+    });
+  }
+
+  function prepareCommonInput(mode){
+    setMode(mode);
+    var hook=qs('hook-screen'), input=qs('input-screen');
+    show(hook,false); show(input,true);
+    if (!input) return input;
+    var breadcrumb = input.querySelector('.tag.tag-gold');
+    if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display='none';
+    show(qs('q-presets'),false);
+    show(qs('q-custom-wrap'), mode === 'tarot' || mode === 'ootk' || mode === 'ziwei');
+    var chips=qs('jy-context-chips'); if (chips) chips.style.display='none';
+    return input;
+  }
+
+  function prepareZiweiCleanHard(){
+    var input = prepareCommonInput('ziwei');
+    try { if (window.S) { S._ziweiOnlyMode=true; S._meihuaOnlyMode=false; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._autoMode=false; } } catch(_){ }
+    window._selectedTool = 'ziwei';
+
+    var birth=qs('birth-data-card'); show(birth,true);
+    show(qs('f-name-group'),false);
+    var nm=qs('f-name'); if (nm) nm.value='';
+    show(qs('tool-selection-card'),false);
+    show(qs('jy-spread-card'),false);
+    show(qs('tarot-to-full'),false);
+
+    var q=qs('f-question');
+    if (q) {
+      q.placeholder='可不填；預設分析命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
+      if (!q.value || /塔羅|開鑰|七維|姓名學/.test(q.value)) q.value='請以紫微斗數分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
+    }
+    if (typeof window._setBirthFormMode === 'function') {
+      try { window._setBirthFormMode('ziwei'); } catch(_){ }
+    }
+    var hint=qs('birth-form-hint');
+    if (hint) hint.innerHTML='<i class="fas fa-circle-info"></i> 紫微斗數只使用性別、出生日期、出生時間與出生地點；不需要姓名，不混入塔羅、開鑰、姓名學或七維分析。';
+    var timeHint=qs('f-time-precision-hint');
+    if (timeHint) timeHint.innerHTML='<p style="font-size:.72rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-info-circle" style="margin-right:4px"></i>若只知道約略時辰，提示詞會明確降低命宮、身宮與時辰敏感宮位的權重。</p>';
+    if (input) hideForeignBlocks(input,'ziwei');
+
+    var btn=qs('btn-tool-go');
+    if (btn){
+      btn.innerHTML='<i class="fas fa-globe-asia"></i> 產生紫微斗數提示詞';
+      btn.onclick=function(e){ if(e) e.preventDefault(); window._jySubmitZiweiOnly(); };
+    }
+    var sub=qs('btn-tool-sub');
+    if (sub) sub.textContent='紫微斗數・前端排盤後直接輸出提示詞，不呼叫 worker，不跑七維。';
+    show(qs('tool-cta'),true);
+    var exportWrap=qs('ziwei-export-wrap'); if (exportWrap) exportWrap.remove();
+  }
+
+  function ensureZiweiEngine(cb, fail){
+    if (typeof window.computeZiwei === 'function') { cb(); return; }
+    var started = Date.now();
+    var triedLoad = false;
+    var timer = setInterval(function(){
+      if (typeof window.computeZiwei === 'function') { clearInterval(timer); cb(); return; }
+      if (!triedLoad && Date.now() - started > 500) {
+        triedLoad = true;
+        try {
+          var s=document.createElement('script');
+          s.src='JS/ziwei.js?v=20260606v80_22_fallback';
+          s.async=false;
+          document.body.appendChild(s);
+        } catch(_){ }
+      }
+      if (Date.now() - started > 7000) { clearInterval(timer); if (fail) fail(); }
+    },120);
+  }
+
+  window._jySubmitZiweiOnly = function(){
+    prepareZiweiCleanHard();
+    var gender=document.querySelector('input[name="gender"]:checked');
+    if (!gender) { alert('請選擇性別'); return; }
+    if (typeof window._readBirthForm !== 'function') { alert('出生資料讀取模組尚未載入，請重新整理後再試。'); return; }
+    var birth = window._readBirthForm();
+    if (!birth || !birth.y || !birth.m || !birth.d) { alert('請填寫出生日期'); return; }
+    if (birth.hh == null || isNaN(birth.hh)) { birth.hh = 12; birth.mm = 0; birth.btimeUnknown = true; }
+    var question = (qs('f-question') && qs('f-question').value ? qs('f-question').value.trim() : '') || '請以紫微斗數分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
+
+    ensureZiweiEngine(function(){
+      try {
+        var c;
+        try { c = (typeof window._calcSolarAndCompute === 'function') ? window._calcSolarAndCompute(birth, gender.value) : null; } catch(_c){ c = null; }
+        if (!c) {
+          c = { solarY:birth.y, solarM:birth.m, solarD:birth.d, solarHH:birth.hh, solarMM:birth.mm||0, clockY:birth.y, clockM:birth.m, clockD:birth.d, clockHH:birth.hh, clockMM:birth.mm||0, geoLon:(birth.loc&&birth.loc.longitude)||120.2, geoLat:(birth.loc&&birth.loc.latitude)||23.0, solarInfo:null };
+        }
+        window.S = window.S || {};
+        S.form = {
+          type:'ziwei', question:question, gender:gender.value,
+          bdate:birth.bdate, btime:birth.btime, name:'', btimeUnknown:!!birth.btimeUnknown,
+          birthLocation: birth.loc || null, trueSolar: c.solarInfo || null,
+          clockTime: { year:c.clockY, month:c.clockM, day:c.clockD, hour:c.clockHH, minute:c.clockMM },
+          solarTime: { year:c.solarY, month:c.solarM, day:c.solarD, hour:c.solarHH, minute:c.solarMM }
+        };
+        S._ziweiOnlyMode=true; S._meihuaOnlyMode=false; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._autoMode=false;
+        // 紫微主資料：只要求 computeZiwei。八字僅作四柱輔助，有就算，沒有不阻斷。
+        S.ziwei = window.computeZiwei(c.solarY, c.solarM, c.solarD, c.solarHH, gender.value);
+        try { if (typeof window.computeBazi === 'function') S.bazi = window.computeBazi(c.solarY,c.solarM,c.solarD,c.solarHH,c.solarMM,gender.value); } catch(_b){ }
+        try { if (S.bazi && typeof window.enhanceBazi === 'function') window.enhanceBazi(S.bazi); } catch(_e1){ }
+        try { if (typeof window.mergeZiweiIntoBazi === 'function') window.mergeZiweiIntoBazi(); } catch(_e2){ }
+        try { if (typeof window.analyzeZiweiTags === 'function') S.ziweiTags = window.analyzeZiweiTags(S.ziwei, 'general'); } catch(_e3){ }
+
+        var host=qs('ziwei-export-wrap');
+        if (!host) {
+          host=document.createElement('div');
+          host.id='ziwei-export-wrap';
+          var cta=qs('tool-cta');
+          if (cta && cta.parentNode) cta.parentNode.insertBefore(host, cta.nextSibling);
+          else (qs('input-screen') || document.body).appendChild(host);
+        }
+        if (typeof window.JY_renderExportPrompt === 'function') {
+          window.JY_renderExportPrompt('ziwei', host);
+          setTimeout(function(){ if (host.scrollIntoView) host.scrollIntoView({behavior:'smooth',block:'start'}); },60);
+        } else {
+          alert('提示詞模組尚未載入，請重新整理後再試。');
+        }
+      } catch(e) {
+        console.error('[Ziwei v80.22] submit error:', e);
+        alert('紫微排盤失敗：' + (e && e.message ? e.message : '未知錯誤'));
+      }
+    }, function(){
+      alert('紫微核心引擎 JS/ziwei.js 尚未載入。請確認 ziwei.js 已上傳到 JS 資料夾，並重新整理。');
+    });
+  };
+
+  function prepareTarotCleanHard(){
+    var input=prepareCommonInput('tarot');
+    try { if (window.S) { S._tarotOnlyMode=true; S._ootkOnlyMode=false; S._ziweiOnlyMode=false; S._meihuaOnlyMode=false; S._autoMode=false; } } catch(_){ }
+    window._selectedTool='tarot';
+    show(qs('birth-data-card'),false); show(qs('tool-selection-card'),false); show(qs('jy-spread-card'),true); show(qs('tarot-to-full'),false);
+    if (input) hideForeignBlocks(input,'tarot');
+    var btn=qs('btn-tool-go'); if(btn){ btn.innerHTML='<i class="fas fa-magic"></i> 抽牌解讀'; btn.onclick=function(){ submitWithTool(); }; }
+    var sub=qs('btn-tool-sub'); if(sub) sub.textContent='塔羅快讀・只依本次問題與牌面解讀';
+  }
+  function prepareOotkCleanHard(){
+    var input=prepareCommonInput('ootk');
+    try { if (window.S) { S._tarotOnlyMode=false; S._ootkOnlyMode=true; S._ziweiOnlyMode=false; S._meihuaOnlyMode=false; S._autoMode=false; } } catch(_){ }
+    window._selectedTool='ootk';
+    show(qs('birth-data-card'),false); show(qs('tool-selection-card'),false); show(qs('jy-spread-card'),false); show(qs('tarot-to-full'),false);
+    if (input) hideForeignBlocks(input,'ootk');
+    var btn=qs('btn-tool-go'); if(btn){ btn.innerHTML='<i class="fas fa-key"></i> 開始開鑰之法'; btn.onclick=function(){ submitWithTool(); }; }
+    var sub=qs('btn-tool-sub'); if(sub) sub.textContent='開鑰之法・只依 78 張牌五層操作輸出提示詞';
+  }
+  function prepareMeihuaCleanHard(){
+    setMode('meihua');
+    try { if (window.S) { S._meihuaOnlyMode=true; S._ziweiOnlyMode=false; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._autoMode=false; } } catch(_){ }
+    var hook=qs('hook-screen'), input=qs('input-screen'); show(hook,false); show(input,false);
+    if (typeof window.goStep === 'function') { try { window.goStep(1); } catch(_){ } }
+    var step=qs('step-1'); if (step) hideForeignBlocks(step,'meihua');
+  }
+
+  // 覆寫四個入口，避免舊流程把錯誤區塊帶回來。
+  window._tarotOpen = prepareTarotCleanHard;
+  window._ootkOpen = prepareOotkCleanHard;
+  window._ziweiOpen = prepareZiweiCleanHard;
+  window._meihuaOpen = function(){
+    if (typeof window._jyApplyMeihuaStandaloneUI === 'function') { try { window._jyApplyMeihuaStandaloneUI(); } catch(_){ } }
+    prepareMeihuaCleanHard();
+  };
+  window._enterFromHome = prepareTarotCleanHard;
+
+  var oldZi=window._jyApplyZiweiStandaloneUI;
+  window._jyApplyZiweiStandaloneUI=function(){
+    var r=null; try { if (oldZi && oldZi !== window._jyApplyZiweiStandaloneUI) r=oldZi.apply(this,arguments); } catch(_){ }
+    prepareZiweiCleanHard();
+    return r;
+  };
+
+  var oldTarotPick = window.pickTool;
+  if (typeof oldTarotPick === 'function' && !oldTarotPick._jy_v80_22) {
+    window.pickTool=function(tool){
+      var r=oldTarotPick.apply(this,arguments);
+      setTimeout(function(){
+        if (tool==='tarot') prepareTarotCleanHard();
+        else if (tool==='ootk') prepareOotkCleanHard();
+        else if (tool==='ziwei' || (tool==='full' && window.S && S._ziweiOnlyMode)) prepareZiweiCleanHard();
+      },0);
+      return r;
+    };
+    window.pickTool._jy_v80_22=true;
+  }
+
+  function reclean(){
+    ensureV8022CSS();
+    if (document.body.classList.contains('jy-mode-ziwei')) prepareZiweiCleanHard();
+    else if (document.body.classList.contains('jy-mode-tarot')) prepareTarotCleanHard();
+    else if (document.body.classList.contains('jy-mode-ootk')) prepareOotkCleanHard();
+    else if (document.body.classList.contains('jy-mode-meihua')) prepareMeihuaCleanHard();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(reclean,60); });
+  else setTimeout(reclean,60);
+  setTimeout(reclean,500); setTimeout(reclean,1500); setTimeout(reclean,3200);
+  if ('MutationObserver' in window){
+    var lock=false;
+    var ob=new MutationObserver(function(){ if(lock) return; lock=true; setTimeout(function(){ lock=false; reclean(); },80); });
+    try { ob.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']}); } catch(_){ }
+  }
+})();
