@@ -421,7 +421,7 @@
     </div>
 
     <!-- 基本資料（v17 升級版） -->
-    <div class="card">
+    <div class="card" id="birth-data-card">
       <div class="card-title"><i class="fas fa-user"></i> 出生資料</div>
 
       <!-- 性別 -->
@@ -519,7 +519,7 @@
     </div>
 
     <!-- ═══ 工具選擇 ═══ -->
-    <div class="card" style="padding:.8rem">
+    <div class="card" id="tool-selection-card" style="padding:.8rem">
       <div style="font-size:.82rem;font-weight:700;color:var(--c-text);margin-bottom:.6rem"><i class="fas fa-compass" style="color:var(--c-gold);margin-right:.3rem"></i>選擇分析方式</div>
       <div class="jy-tool-grid">
         <div class="jy-tool-card jy-tool-tarot selected" id="tool-tarot" onclick="pickTool('tarot')">
@@ -588,12 +588,13 @@
       <div id="mh-detail" class="text-sm"></div>
     </div>
   </div>
-  <div class="actions">
-    <button class="btn btn-outline" onclick="goStep(0)"><i class="fas fa-arrow-left"></i> 上一步</button>
-    <button class="btn btn-outline" onclick="goStep(2)"><i class="fas fa-forward"></i> 跳過</button>
-    <button class="btn btn-primary" onclick="goStep(2)"><i class="fas fa-arrow-right"></i> 下一步：塔羅牌</button>
+  <div class="actions" id="meihua-actions">
+    <button class="btn btn-outline" id="btn-meihua-back" onclick="goStep(0)"><i class="fas fa-arrow-left"></i> 上一步</button>
+    <button class="btn btn-outline" id="btn-meihua-skip" onclick="goStep(2)"><i class="fas fa-forward"></i> 跳過</button>
+    <button class="btn btn-primary" id="btn-meihua-next" onclick="goStep(2)"><i class="fas fa-arrow-right"></i> 下一步：塔羅牌</button>
+    <button class="btn btn-primary hidden" id="btn-meihua-copy" onclick="window._jyMeihuaToPrompt&&window._jyMeihuaToPrompt()"><i class="fas fa-yin-yang"></i> 產生梅花易數提示詞</button>
   </div>
-  <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 多起卦 → 多得「風險提醒＋避雷方向」，跳過僅影響交叉驗證深度</p>
+  <p class="text-xs text-muted mt-xs" id="meihua-help-text" style="text-align:center"><i class="fas fa-info-circle"></i> 多起卦 → 多得「風險提醒＋避雷方向」，跳過僅影響交叉驗證深度</p>
 </section>
 
 <!-- ========== STEP 2: TAROT ========== -->
@@ -1323,27 +1324,27 @@
 <!-- ★ v75 修正：tarot.js 必須在 tarot_upgrade.js 之前載入，
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
-<script src="JS/tarot.js?v=20260606v80_16" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260606v80_16" defer></script>
-<!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
-<script src="JS/meihua_upgrade.js?v=20260606v80_16" defer></script>
-<script src="JS/meihua_output_layer.js?v=20260606v80_16" defer></script>
-<script src="JS/meihua_upgrade2.js?v=20260606v80_16" defer></script>
+<script src="JS/tarot.js?v=20260606v80_18" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260606v80_18" defer></script>
+<!-- v80.18：紫微/梅花獨立入口淨化；移除舊七維/塔羅/開鑰殘留；塔羅 Mathers 21/54 正統位置 + 梅花提示詞輸出；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
+<script src="JS/meihua_upgrade.js?v=20260606v80_18" defer></script>
+<script src="JS/meihua_output_layer.js?v=20260606v80_18" defer></script>
+<script src="JS/meihua_upgrade2.js?v=20260606v80_18" defer></script>
 <!-- ★ v70 全免費：payment-wall.js 已移除 -->
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
-<script src="JS/ai-analysis.js?v=20260606v80_16" defer></script>
+<script src="JS/ai-analysis.js?v=20260606v80_18" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260603v79_0" defer></script>
 <script src="JS/lenormand.js?v=20260603v80_0" defer></script>
-<script src="JS/ui.js?v=20260606v80_16" defer></script>
-<script src="JS/spread-picker.js?v=20260606v80_16" defer></script>
+<script src="JS/ui.js?v=20260606v80_18" defer></script>
+<script src="JS/spread-picker.js?v=20260606v80_18" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
 <!-- ★ v70 複製模式引擎：必須最後載入。不進混淆。 -->
-<script src="JS/prompt-export.js?v=20260606v80_16" defer></script>
+<script src="JS/prompt-export.js?v=20260606v80_18" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
 <script>
@@ -1351,9 +1352,9 @@
   var DEFERRED = [
     'JS/ephemeris-client.js?v=20260507v69_3_0',
     'JS/solar-location.js?v=20260507v69_3_0',
-    'JS/bazi.js?v=20260606v80_16',
+    'JS/bazi.js?v=20260606v80_18',
     // 紫微核心引擎：需上傳/保留 JS/ziwei.js，否則 computeZiwei 不會存在
-    'JS/ziwei.js?v=20260606v80_16',
+    'JS/ziwei.js?v=20260606v80_18',
     'JS/bazi_upgrade.js?v=20260507v69_3_0',
     'JS/western_upgrade.js?v=20260507v69_3_0',
     'JS/jyotish_full_upgrade.js?v=20260507v69_3_0',
