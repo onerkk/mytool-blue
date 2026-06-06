@@ -518,6 +518,13 @@
         '<div class="zw-in-foot">靜月之光 ・ jingyue.uk<br>紫微斗數 ・ 命盤僅供參考</div>' +
       '</div>';
     document.body.appendChild(w);
+    try { document.body.style.overflow = 'hidden'; } catch(e){} // 鎖背景捲動，避免抖動
+    // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
+    try {
+      if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
+        window._jyLazyScript('JS/ziwei.js', null);
+      }
+    } catch(e){}
     w.scrollTop = 0;
   }
 
@@ -677,6 +684,7 @@
   window._zwClose = function () {
     var r = document.getElementById('zw-result'); if (r) r.remove();
     var inp = document.getElementById('zw-input'); if (inp) inp.remove();
+    try { document.body.style.overflow = ''; } catch(e){}
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e){ window.scrollTo(0,0); }
   };
 

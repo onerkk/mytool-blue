@@ -598,15 +598,6 @@ function goStep(n){
         }
       }
       runAnalysis();
-      // ★ v80.17：紫微斗數跟塔羅一樣走前端提示詞輸出；不打 worker、不送後端組 prompt。
-      if (S._ziweiOnlyMode) {
-        setTimeout(function(){
-          if (window.JY_renderExportPrompt) {
-            var zwHost = document.getElementById('d-ziwei-reading') || document.getElementById('ai-deep-result') || document.getElementById('step-3');
-            if (zwHost) window.JY_renderExportPrompt('ziwei', zwHost);
-          }
-        }, 350);
-      }
       // ★ v28：sticky-cta 和回饋區都不在這裡顯示——等 AI 分析完成後由 ai-analysis.js 觸發
       // 如果有多種結果，刷新導航
       if (S._fromTarot || (window._jyResultModes && window._jyResultModes.tarot)) {
@@ -756,6 +747,11 @@ function resetAll(){
   // 恢復管理員狀態（或重新偵測）
   var _nameEl=document.getElementById('f-name');
   var _bdateEl=document.getElementById('f-bdate');
+  // ★ v80.16：離開紫微入口後還原姓名欄顯示，並清除紫微模式旗標（其他系統仍需姓名／姓名學）
+  try {
+    if (_nameEl) { var _nmg = _nameEl.closest('.form-group'); if (_nmg) _nmg.style.display = ''; }
+    if (typeof S !== 'undefined') S._ziweiMode = false;
+  } catch(_zwR) {}
   S._isAdmin = wasAdmin || !!(window._JY_ADMIN_TOKEN);
   // 重置問題和類型欄位（但保留姓名、生日、時辰、性別）
   try{
@@ -924,46 +920,6 @@ function _readBirthForm() {
   return { y: y, m: m, d: d, hh: hh, mm: mm, name: name, loc: loc, bdate: bdate, btime: btimeUnsure ? '' : btime, btimeUnknown: btimeUnsure || (h === '' || h == null), timePrecision: timePrecision };
 }
 
-
-window._setBirthFormMode = function(mode) {
-  mode = mode || 'default';
-  var nameInput = document.getElementById('f-name');
-  var nameGroup = document.getElementById('f-name-group') || (nameInput ? nameInput.closest('.form-group') : null);
-  var hint = document.getElementById('birth-form-hint');
-  var preview = document.getElementById('solar-time-preview');
-  var timeHint = document.getElementById('f-time-precision-hint');
-  var questionEl = document.getElementById('f-question');
-
-  if (nameGroup) {
-    nameGroup.style.display = (mode === 'ziwei') ? 'none' : '';
-  }
-  if (nameInput && mode === 'ziwei') nameInput.value = '';
-
-  if (hint) {
-    if (mode === 'ziwei') {
-      hint.innerHTML = '<i class="fas fa-stars"></i> 紫微斗數版：只需性別、出生日期、時辰與出生地即可排盤，不需要姓名。';
-    } else {
-      hint.innerHTML = '<i class="fas fa-circle-info"></i> 選擇工具後，系統會自動顯示所需資料。';
-    }
-  }
-
-  if (timeHint) {
-    if (mode === 'ziwei') {
-      timeHint.style.borderColor = 'rgba(212,175,55,.22)';
-      timeHint.style.background = 'rgba(212,175,55,.08)';
-    } else {
-      timeHint.style.borderColor = 'rgba(212,175,55,.15)';
-      timeHint.style.background = 'rgba(212,175,55,.06)';
-    }
-  }
-
-  if (preview && mode !== 'ziwei' && !preview.innerHTML) preview.style.display = 'none';
-
-  if (questionEl && mode === 'ziwei' && !questionEl.value.trim()) {
-    questionEl.placeholder = '例如：我今年事業走勢如何？我的感情婚姻格局如何？目前大限最該注意什麼？';
-  }
-};
-
 function _calcSolarAndCompute(birth, genderValue) {
   var y = birth.y, m = birth.m, d = birth.d, hh = birth.hh, mm = birth.mm, loc = birth.loc;
   // ★ 真太陽時校正（八字 + 紫微用）
@@ -997,11 +953,6 @@ function pickTool(tool) {
   });
   var sel = document.getElementById('tool-' + tool);
   if (sel) sel.classList.add('selected');
-
-  if (typeof window._setBirthFormMode === 'function') {
-    if (tool === 'full' && S && S._ziweiOnlyMode) window._setBirthFormMode('ziwei');
-    else window._setBirthFormMode('default');
-  }
 
   // 顯示/隱藏表單
   var birthHint = document.getElementById('birth-form-hint');
@@ -1157,6 +1108,7 @@ function submitWithTool() {
     S.form = { type: type, question: question, gender: gender ? gender.value : 'other', bdate: '', btime: '', name: '', btimeUnknown: true };
     S._tarotOnlyMode = true;
     S._autoMode = false;
+    S._ziweiMode = false; // ★ v80.16：塔羅入口確保非紫微模式（避免跨工具殘留旗標）
     S._isAdmin = !!(window._JY_ADMIN_TOKEN);
     drawnCards = [];
     deckShuffled = []; // v73.1：每次送出都清牌堆，保證 goStep(2) 重跑 initTarotDeck 並依問題重新偵測牌陣
@@ -1316,7 +1268,6 @@ function submitWithTool() {
 
   var type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
   S.form = { type: type, question: question, gender: gender.value, bdate: birth.bdate, btime: birth.btime, name: birth.name, btimeUnknown: birth.btimeUnknown };
-  if (typeof S !== 'undefined' && !S._ziweiOnlyMode) S._ziweiOnlyMode = false;
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
 
   // 真太陽時
@@ -1480,66 +1431,103 @@ function saveDivineCache(bdate, gender, type, meihua, tarotDrawn, question) {
   } catch(e) { console.error('[Cache] 儲存錯誤:',e); }
 }
 
-
-function _jyBuildZiweiOverlay() {
-  if (!document.getElementById('jy-ziwei-overlay-css')) {
+/* ★ v80.16：紫微斗數專屬「命盤起盤」過場動畫
+ * 由 submitStep0Fast 在 S._ziweiMode 時呼叫，覆寫既有 #loading-overlay 內容。
+ * 純 CSS/SVG，不依賴 style.css、不需圖檔；命名空間 jzw-* 避免與既有 .ld-* / .zw-* 衝突。
+ * 設計：金色暗底（沿用全站風格）+ 紫微帝星落命宮的紫光點睛（紫微＝北極紫微垣，故用紫光）。
+ * 為相容 submitStep0Fast 後續未保護的 #ld-center 參照，內含隱藏 stub，不去動原時間軸/移除邏輯。
+ */
+window._jyBuildZiweiOverlay = function(overlay){
+  if (!overlay) return;
+  // ── 1) 注入一次性 CSS ──
+  if (!document.getElementById('jy-zw-fx-css')) {
+    var GD = '#c9a84c', GD2 = '#d4af37', VI = '#b98cff';
     var st = document.createElement('style');
-    st.id = 'jy-ziwei-overlay-css';
-    st.textContent = `
-      .zwld-overlay{position:fixed;inset:0;z-index:100000;overflow:hidden;background:radial-gradient(circle at 50% 42%,rgba(201,168,76,.13),rgba(8,10,20,.96) 42%,rgba(4,6,12,.985) 100%);backdrop-filter:blur(8px)}
-      .zwld-overlay:before,.zwld-overlay:after{content:'';position:absolute;inset:-20%;background:conic-gradient(from 0deg,transparent 0 22%,rgba(201,168,76,.06) 28%,transparent 34% 56%,rgba(120,140,255,.05) 63%,transparent 70% 100%);animation:zwldSpin 22s linear infinite}
-      .zwld-overlay:after{animation-direction:reverse;animation-duration:30s;opacity:.55;filter:blur(10px)}
-      .zwld-shell{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px}
-      .zwld-stage{position:relative;width:290px;height:290px;max-width:84vw;max-height:84vw}
-      .zwld-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:108px;height:108px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 35%,rgba(255,241,196,.95),rgba(212,175,55,.52) 40%,rgba(21,27,55,.96) 74%);box-shadow:0 0 0 1px rgba(212,175,55,.2),0 0 36px rgba(212,175,55,.22),0 0 72px rgba(115,131,255,.14);font-size:1.9rem;color:#f8e8b8;letter-spacing:.12em}
-      .zwld-core:before{content:'';position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(212,175,55,.18);box-shadow:0 0 26px rgba(212,175,55,.08);animation:zwldPulse 3s ease-in-out infinite}
-      .zwld-core:after{content:'';position:absolute;inset:-40px;border-radius:50%;border:1px dashed rgba(212,175,55,.12);animation:zwldSpin 18s linear infinite}
-      .zwld-ring{position:absolute;left:50%;top:50%;border-radius:50%;border:1px solid rgba(212,175,55,.11);transform:translate(-50%,-50%)}
-      .zwld-ring.r1{width:158px;height:158px}.zwld-ring.r2{width:220px;height:220px}.zwld-ring.r3{width:278px;height:278px;border-style:dashed;opacity:.55}
-      .zwld-node{position:absolute;width:54px;height:54px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(18,24,48,.9),rgba(10,13,26,.96));border:1px solid rgba(212,175,55,.12);box-shadow:0 8px 24px rgba(0,0,0,.24), inset 0 0 18px rgba(212,175,55,.04);transition:all .45s ease;color:rgba(226,214,185,.88)}
-      .zwld-node .zwld-idx{font-size:.62rem;opacity:.55;line-height:1}.zwld-node .zwld-lbl{font-size:.64rem;margin-top:2px}
-      .zwld-node.active{transform:scale(1.14);border-color:rgba(212,175,55,.52);box-shadow:0 0 0 1px rgba(212,175,55,.22),0 0 24px rgba(212,175,55,.18), inset 0 0 18px rgba(212,175,55,.09);color:#f5df9a}
-      .zwld-node.done{border-color:rgba(115,131,255,.32);box-shadow:0 0 0 1px rgba(115,131,255,.14),0 0 18px rgba(115,131,255,.12), inset 0 0 14px rgba(115,131,255,.05);color:#e9ecff}
-      .zwld-particles i{position:absolute;display:block;width:2px;height:2px;border-radius:50%;background:rgba(212,175,55,.85);box-shadow:0 0 8px rgba(212,175,55,.55);animation:zwldFloat var(--dur) linear infinite;animation-delay:var(--delay)}
-      .zwld-status{margin-top:34px;font-size:1.02rem;font-weight:700;letter-spacing:.08em;color:#f3e0a5;text-align:center;text-shadow:0 0 18px rgba(212,175,55,.16)}
-      .zwld-sub{margin-top:10px;max-width:340px;font-size:.82rem;line-height:1.8;color:rgba(233,225,205,.78);text-align:center}
-      .zwld-progress{width:min(320px,78vw);height:5px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:18px;border:1px solid rgba(212,175,55,.09)}
-      .zwld-bar{height:100%;width:0%;background:linear-gradient(90deg,rgba(115,131,255,.75),rgba(212,175,55,.95),rgba(247,235,182,.95));box-shadow:0 0 16px rgba(212,175,55,.22);transition:width .55s ease}
-      @keyframes zwldSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-      @keyframes zwldPulse{0%,100%{transform:scale(.96);opacity:.55}50%{transform:scale(1.04);opacity:1}}
-      @keyframes zwldFloat{0%{transform:translateY(0) scale(.8);opacity:0}10%{opacity:.7}90%{opacity:.3}100%{transform:translateY(-110vh) scale(1.6);opacity:0}}
-    `;
-    document.head.appendChild(st);
+    st.id = 'jy-zw-fx-css';
+    st.textContent = [
+      '.jzw-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}',
+      '.jzw-stars i{position:absolute;bottom:-6%;width:2px;height:2px;border-radius:50%;background:rgba(212,175,55,.7);box-shadow:0 0 6px rgba(212,175,55,.6);animation:jzwRise var(--d,5s) linear var(--dl,0s) infinite;opacity:0}',
+      '@keyframes jzwRise{0%{transform:translateY(0) scale(.6);opacity:0}12%{opacity:.9}88%{opacity:.7}100%{transform:translateY(-108vh) scale(1);opacity:0}}',
+      '.jzw-board{position:relative;width:min(340px,84vw);aspect-ratio:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:6px;padding:10px;border-radius:16px;border:1px solid rgba(212,175,55,.32);background:linear-gradient(150deg,rgba(212,175,55,.05),rgba(212,175,55,.012));box-shadow:0 0 50px rgba(212,175,55,.10),inset 0 0 26px rgba(0,0,0,.4);opacity:0;transform:scale(.92);animation:jzwBoardIn .7s cubic-bezier(.16,1,.3,1) forwards}',
+      '@keyframes jzwBoardIn{to{opacity:1;transform:scale(1)}}',
+      '.jzw-cell{position:relative;border:1px solid rgba(212,175,55,.14);border-radius:8px;background:rgba(212,175,55,.018);display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;font-size:.66rem;color:rgba(212,175,55,.45);letter-spacing:.04em;opacity:0;transform:scale(.7);animation:jzwCellIn .5s cubic-bezier(.16,1,.3,1) forwards;animation-delay:var(--cd,0s)}',
+      '@keyframes jzwCellIn{0%{opacity:0;transform:scale(.7)}60%{opacity:1}100%{opacity:1;transform:scale(1)}}',
+      '.jzw-cell.ming{color:rgba(255,236,184,.95);border-color:rgba(185,140,255,.6);background:rgba(185,140,255,.10);box-shadow:0 0 16px rgba(185,140,255,.35)}',
+      '.jzw-cell.ming::after{content:"";position:absolute;inset:-1px;border-radius:8px;border:1px solid rgba(185,140,255,.55);animation:jzwMingPulse 1.8s ease-in-out infinite}',
+      '@keyframes jzwMingPulse{0%,100%{opacity:.25}50%{opacity:.9}}',
+      '.jzw-center{grid-column:2/4;grid-row:2/4;border-radius:10px;border:1px solid rgba(212,175,55,.22);background:radial-gradient(circle at 50% 45%,rgba(185,140,255,.10),rgba(212,175,55,.02));display:flex;align-items:center;justify-content:center;position:relative;overflow:visible}',
+      '.jzw-svg{position:absolute;inset:10px;width:calc(100% - 20px);height:calc(100% - 20px);pointer-events:none;overflow:visible}',
+      '.jzw-svg line{stroke:rgba(212,175,55,.55);stroke-width:1;stroke-dasharray:240;stroke-dashoffset:240;animation:jzwDraw 1s ease forwards}',
+      '@keyframes jzwDraw{to{stroke-dashoffset:0}}',
+      '.jzw-star{position:absolute;left:50%;top:-58%;transform:translate(-50%,0) scale(.5);font-size:2rem;color:#fff;text-shadow:0 0 10px rgba(255,255,255,.9),0 0 22px rgba(185,140,255,.95),0 0 34px rgba(185,140,255,.6);opacity:0;animation:jzwDrop 1.1s cubic-bezier(.5,0,.2,1) forwards}',
+      '@keyframes jzwDrop{0%{top:-58%;opacity:0;transform:translate(-50%,0) scale(.5)}60%{opacity:1}100%{top:50%;opacity:1;transform:translate(-50%,-50%) scale(1)}}',
+      '.jzw-burst{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(235,220,255,.95),rgba(185,140,255,0));opacity:0}',
+      '.jzw-burst.go{animation:jzwBurst .6s ease-out forwards}',
+      '@keyframes jzwBurst{0%{opacity:.95;width:10px;height:10px}100%{opacity:0;width:340px;height:340px}}',
+      '.jzw-status{margin-top:1.5rem;font-family:"Noto Serif TC",serif;font-size:1.05rem;font-weight:700;color:'+GD+';letter-spacing:.12em;text-shadow:0 2px 14px rgba(0,0,0,.6);transition:opacity .3s;min-height:1.4rem;text-align:center}',
+      '.jzw-sub{margin-top:.4rem;font-size:.74rem;color:rgba(212,175,55,.55);letter-spacing:.08em;transition:opacity .3s;min-height:1.1rem;text-align:center}'
+    ].join('');
+    (document.head || document.documentElement).appendChild(st);
   }
-  var overlay = document.createElement('div');
-  overlay.className = 'zwld-overlay';
-  overlay.id = 'loading-overlay';
-  var palaces = ['命','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'];
-  var radius = 126;
-  var nodes = palaces.map(function(label, idx){
-    var ang = (-90 + idx * 30) * Math.PI / 180;
-    var x = 145 + radius * Math.cos(ang) - 27;
-    var y = 145 + radius * Math.sin(ang) - 27;
-    return '<div class="zwld-node" id="zw-pal-'+idx+'" style="left:'+x+'px;top:'+y+'px"><div class="zwld-idx">'+(idx+1)+'</div><div class="zwld-lbl">'+label+'</div></div>';
-  }).join('');
-  var particles = '';
-  for (var i=0;i<34;i++) {
-    particles += '<i style="left:'+(Math.random()*100).toFixed(2)+'%;bottom:'+(Math.random()*20-10).toFixed(2)+'%;--dur:'+(6+Math.random()*6).toFixed(2)+'s;--delay:'+(Math.random()*5).toFixed(2)+'s"></i>';
+
+  // ── 2) overlay 容器樣式（強制覆寫，確保滿版/置中/暗底紫光，不受 style.css 影響）──
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;'
+    + 'background:radial-gradient(120% 90% at 50% 28%,rgba(40,28,46,.55),rgba(11,8,13,.97) 62%,#080509 100%);overflow:hidden';
+
+  // ── 3) 內容（12 宮環繞方陣 + 中央三方四正 + 紫微帝星落命宮）──
+  var RING = [
+    {r:1,c:1},{r:1,c:2},{r:1,c:3},{r:1,c:4},
+    {r:2,c:4},{r:3,c:4},
+    {r:4,c:4},{r:4,c:3},{r:4,c:2},{r:4,c:1},
+    {r:3,c:1},{r:2,c:1}
+  ];
+  var RNAMES = ['命','財','官','遷','福','田','子','夫','兄','疾','友','父'];
+  var stars = '';
+  for (var i = 0; i < 26; i++) {
+    stars += '<i style="left:' + (Math.random()*100).toFixed(1) + '%;--d:' + (3.5+Math.random()*4).toFixed(1) + 's;--dl:' + (Math.random()*5).toFixed(1) + 's;' + (Math.random()>.7 ? 'width:3px;height:3px;' : '') + '"></i>';
   }
-  overlay.innerHTML = '<div class="zwld-shell">'
-    + '<div class="zwld-stage">'
-    + '<div class="zwld-particles">'+particles+'</div>'
-    + '<div class="zwld-ring r3"></div><div class="zwld-ring r2"></div><div class="zwld-ring r1"></div>'
-    + nodes
-    + '<div class="zwld-core">紫微</div>'
-    + '</div>'
-    + '<div class="zwld-status" id="ld-status">正在展開紫微斗數命盤…</div>'
-    + '<div class="zwld-sub" id="ld-sub">安命宮、定身宮、排十二宮、推四化與大限流年，整理成更接近老師級判盤邏輯。</div>'
-    + '<div class="zwld-progress"><div class="zwld-bar" id="zwld-bar"></div></div>'
-    + '</div>';
-  document.body.appendChild(overlay);
-  return overlay;
-}
+  var cells = '';
+  for (var k = 0; k < 12; k++) {
+    var p = RING[k], ming = (k === 0);
+    cells += '<div class="jzw-cell' + (ming ? ' ming' : '') + '" style="grid-row:' + p.r + ';grid-column:' + p.c + ';--cd:' + (0.5 + k*0.09).toFixed(2) + 's">' + RNAMES[k] + '</div>';
+  }
+  overlay.innerHTML =
+    '<div class="jzw-stars">' + stars + '</div>' +
+    '<div class="jzw-board">' + cells +
+      '<div class="jzw-center">' +
+        '<svg class="jzw-svg" viewBox="0 0 100 100" preserveAspectRatio="none">' +
+          '<line x1="50" y1="50" x2="50" y2="-46" style="animation-delay:1.5s"/>' +
+          '<line x1="50" y1="50" x2="-46" y2="96" style="animation-delay:1.7s"/>' +
+          '<line x1="50" y1="50" x2="146" y2="96" style="animation-delay:1.9s"/>' +
+        '</svg>' +
+        '<div class="jzw-star" style="animation-delay:1.7s">✦</div>' +
+        '<div class="jzw-burst" id="jzw-burst"></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="jzw-status" id="jzw-status">定命宮・安身宮</div>' +
+    '<div class="jzw-sub" id="jzw-sub">十二宮天成</div>' +
+    '<div id="ld-center" style="display:none"></div>'; // stub：相容 submitStep0Fast 未保護的參照
+
+  // ── 4) 起盤步驟字幕時間軸（與 submitStep0Fast 的 TOTAL_MS≈3600 對齊；移除/跳轉仍由 submitStep0Fast 負責）──
+  var steps = [
+    ['定命宮・安身宮', '由生時逆推命宮'],
+    ['起五行局', '納音定局數'],
+    ['安紫微星系', '帝星領五曜入宮'],
+    ['布天府星系', '府相同梁殺破狼歸位'],
+    ['點生年四化', '祿權科忌定動線'],
+    ['推大限流年', '體用相參定應期'],
+    ['命盤天成', '三方四正照命']
+  ];
+  var TOTAL = 3400, per = TOTAL / steps.length;
+  steps.forEach(function (s, idx) {
+    setTimeout(function () {
+      var a = overlay.querySelector('#jzw-status'), b = overlay.querySelector('#jzw-sub');
+      if (a) { a.style.opacity = '0'; setTimeout(function(){ a.textContent = s[0]; a.style.opacity = '1'; }, 160); }
+      if (b) { b.style.opacity = '0'; setTimeout(function(){ b.textContent = s[1]; b.style.opacity = '1'; }, 160); }
+    }, idx * per);
+  });
+  setTimeout(function () { var bu = overlay.querySelector('#jzw-burst'); if (bu) bu.classList.add('go'); }, 2700);
+};
 
 function submitStep0Fast(){
   drawnCards=[];
@@ -1550,14 +1538,13 @@ function submitStep0Fast(){
   const birth = _readBirthForm();
   if(!question||!gender||!birth.y||!birth.m||!birth.d){alert('請填寫：問題、性別、出生日期');return}
   S.form={type,question,gender:gender.value,bdate:birth.bdate,btime:birth.btime,name:birth.name};
+  // ★ v80.16：紫微入口不做姓名學——確保送進分析的姓名為空，避免 runAnalysisV2 觸發姓名學維度
+  if (S._ziweiMode) S.form.name = '';
   S.form.btimeUnknown = birth.btimeUnknown;
   S._autoMode = true; // ★ 自動模式標記：梅花時間起卦 + 塔羅種子抽牌
-  const _ziweiMode = !!(S && S._ziweiOnlyMode);
-  const overlay = _ziweiMode ? _jyBuildZiweiOverlay() : document.createElement('div');
-  if (!_ziweiMode) {
-    overlay.className = 'loading-overlay';
-    overlay.id = 'loading-overlay';
-  }
+  const overlay = document.createElement('div');
+  overlay.className = 'loading-overlay';
+  overlay.id = 'loading-overlay';
   // 六維度節點位置（六芒星分佈）
   const dims = [
     {id:'ld-bazi',  sym:'☰', label:'八字',   angle:-90},
@@ -1585,20 +1572,22 @@ function submitStep0Fast(){
     const x=Math.random()*100, dur=3+Math.random()*4, delay=Math.random()*5;
     particleHTML+=`<div class="ld-particle" style="left:${x}%;bottom:-5%;--dur:${dur}s;--delay:${delay}s"></div>`;
   }
-  if (!_ziweiMode) {
-    overlay.innerHTML=`
-      <div class="ld-particles">${particleHTML}</div>
-      <div class="ld-pentagram">
-        <div class="ld-ring"></div><div class="ld-ring"></div><div class="ld-ring"></div>
-        <svg class="ld-lines" viewBox="0 0 220 220">${lineHTML.join('')}</svg>
-        ${nodeHTML}
-        <div class="ld-center" id="ld-center">☽</div>
-        <div class="ld-burst" id="ld-burst"></div>
-      </div>
-      <div class="ld-status" id="ld-status">正在為你深度解讀命盤…</div>
-      <div class="ld-sub" id="ld-sub"></div>`;
-    document.body.appendChild(overlay);
+  overlay.innerHTML=`
+    <div class="ld-particles">${particleHTML}</div>
+    <div class="ld-pentagram">
+      <div class="ld-ring"></div><div class="ld-ring"></div><div class="ld-ring"></div>
+      <svg class="ld-lines" viewBox="0 0 220 220">${lineHTML.join('')}</svg>
+      ${nodeHTML}
+      <div class="ld-center" id="ld-center">☽</div>
+      <div class="ld-burst" id="ld-burst"></div>
+    </div>
+    <div class="ld-status" id="ld-status">正在為你深度解讀命盤…</div>
+    <div class="ld-sub" id="ld-sub"></div>`;
+  // ★ v80.16：紫微入口改用專屬命盤起盤過場（覆寫 overlay 內容；overlay 仍為 #loading-overlay，沿用原移除/跳轉）
+  if (typeof S !== 'undefined' && S._ziweiMode && typeof window._jyBuildZiweiOverlay === 'function') {
+    try { window._jyBuildZiweiOverlay(overlay); } catch(_zwOv) { console.error('[ziwei overlay]', _zwOv); }
   }
+  document.body.appendChild(overlay);
 
   // ★ v17：真太陽時計算
   var c = _calcSolarAndCompute(birth, gender.value);
@@ -1729,15 +1718,10 @@ function submitStep0Fast(){
     }
   ];
 
-  const statusTexts = _ziweiMode
-    ? ['安命身十二宮…','推主星與三方四正…','校對生年四化…','展開十年大限…','展開今年流年…','整理近月節奏…','交叉融合最終判盤…']
-    : ['排八字四柱命盤…','排紫微斗數命盤…','梅花易數時間起卦…','塔羅牌自動抽牌…','西洋占星星盤…','吠陀占星計算…','七維融合分析…'];
-  const subTexts = _ziweiMode
-    ? ['命宮、身宮、五行局同步定位','焦點宮位 × 對宮 × 三合宮一起比對','化祿化權化科化忌落宮整理','十年主題與人生結構同步讀','今年事件重心與體感放大點','把流月波動做成節奏感判讀','以紫微為主軸，保留交叉驗證但不要求姓名']
-    : ['出生資料 × 個性與事件力量','人生12個領域 × 4種關鍵能量','當下時間 × 卦象捕捉問題本質','種子洗牌 × 凱爾特十字牌陣','行星 × 生活領域 × 彼此互動','八字 × 紫微 × 梅花 × 塔羅 × 星盤 × 吠陀 × 姓名'];
+  const statusTexts=['排八字四柱命盤…','排紫微斗數命盤…','梅花易數時間起卦…','塔羅牌自動抽牌…','西洋占星星盤…','吠陀占星計算…','七維融合分析…'];
+  const subTexts=['出生資料 × 個性與事件力量','人生12個領域 × 4種關鍵能量','當下時間 × 卦象捕捉問題本質','種子洗牌 × 凱爾特十字牌陣','行星 × 生活領域 × 彼此互動','八字 × 紫微 × 梅花 × 塔羅 × 星盤 × 吠陀 × 姓名'];
   const dimIds=['ld-bazi','ld-ziwei','ld-meihua','ld-tarot','ld-natal','ld-name'];
-  const ziweiNodeMap = [['zw-pal-0','zw-pal-11'],['zw-pal-2','zw-pal-8','zw-pal-6'],['zw-pal-4','zw-pal-10'],['zw-pal-1','zw-pal-7'],['zw-pal-5','zw-pal-9'],['zw-pal-3'],['zw-pal-0','zw-pal-2','zw-pal-4','zw-pal-8']];
-  const TOTAL_MS=3900;
+  const TOTAL_MS=3600;
 
   // 依序啟動每個維度
   const stagger=TOTAL_MS/6.5;
@@ -1745,8 +1729,7 @@ function submitStep0Fast(){
     // 開始運算
     setTimeout(()=>{
       const el=document.getElementById(id);
-      if(!_ziweiMode && el) el.classList.add('computing');
-      if(_ziweiMode){ (ziweiNodeMap[i]||[]).forEach(function(nid){ var n=document.getElementById(nid); if(n) n.classList.add('active'); }); var bar=document.getElementById('zwld-bar'); if(bar) bar.style.width = Math.min(92, Math.round((i/6)*100)+8) + '%'; }
+      if(el) el.classList.add('computing');
       const st=document.getElementById('ld-status');
       const sb=document.getElementById('ld-sub');
       if(st){st.style.opacity='0';setTimeout(()=>{st.textContent=statusTexts[i];st.style.opacity='1';},200);}
@@ -1756,38 +1739,32 @@ function submitStep0Fast(){
     setTimeout(()=>{
       try { fns[i](); } catch(e) { console.error('fn['+i+'] error:', e); }
       const el=document.getElementById(id);
-      if(!_ziweiMode && el){el.classList.remove('computing');el.classList.add('done');}
-      if(_ziweiMode){
-        (ziweiNodeMap[i]||[]).forEach(function(nid){ var n=document.getElementById(nid); if(n){ n.classList.remove('active'); n.classList.add('done'); } });
-        var bar=document.getElementById('zwld-bar'); if(bar) bar.style.width = Math.min(100, Math.round(((i+1)/7)*100)) + '%';
-      }
+      if(el){el.classList.remove('computing');el.classList.add('done');}
       // 點亮連到此節點的線
-      if(!_ziweiMode){
-        for(let j=0;j<5;j++){
-          if(j===i) continue;
-          const a=Math.min(i,j),b=Math.max(i,j);
-          const ln=document.getElementById('ld-ln-'+a+'-'+b);
-          const otherNode=document.getElementById(dimIds[j]);
-          if(ln&&otherNode&&otherNode.classList.contains('done')) ln.classList.add('lit');
-        }
+      for(let j=0;j<5;j++){
+        if(j===i) continue;
+        const a=Math.min(i,j),b=Math.max(i,j);
+        const ln=document.getElementById('ld-ln-'+a+'-'+b);
+        const otherNode=document.getElementById(dimIds[j]);
+        if(ln&&otherNode&&otherNode.classList.contains('done')) ln.classList.add('lit');
       }
     }, i*stagger+stagger*0.7);
   });
 
   // 全部完成 → 爆發 → 跳轉
   setTimeout(()=>{
-    if(!_ziweiMode){ var _c=document.getElementById('ld-center'); if(_c) _c.classList.add('active'); }
-    if(_ziweiMode){ var _b=document.getElementById('zwld-bar'); if(_b) _b.style.width='100%'; }
+    document.getElementById('ld-center').classList.add('active');
     const st=document.getElementById('ld-status');
     if(st){st.style.opacity='0';setTimeout(()=>{st.textContent='解讀完成';st.style.opacity='1';},200);}
     const sb=document.getElementById('ld-sub');
     if(sb) sb.textContent='';
     // 所有線全亮
-    if(!_ziweiMode){ document.querySelectorAll('.ld-line').forEach(l=>l.classList.add('lit')); }
+    document.querySelectorAll('.ld-line').forEach(l=>l.classList.add('lit'));
   }, TOTAL_MS-400);
 
   setTimeout(()=>{
-    if(!_ziweiMode){ const burst=document.getElementById('ld-burst'); if(burst){burst.classList.add('go');setTimeout(()=>burst.classList.add('fade'),400);} }
+    const burst=document.getElementById('ld-burst');
+    if(burst){burst.classList.add('go');setTimeout(()=>burst.classList.add('fade'),400);}
   }, TOTAL_MS-100);
 
   setTimeout(()=>{
@@ -5877,8 +5854,33 @@ showAuraResult = function(){
   // ★ v80.15：首頁紫微斗數入口
   // 目的：讓紫微斗數像雷諾曼一樣從首頁直接進入，不再藏在結果頁的七維分頁裡。
   // 注意：現有前端的紫微排盤依賴出生資料與七維 payload，所以入口會導到出生資料表單，並以 full 模式送出。
+  // ★ v80.18：即時補載小工具——當獨立頁模組尚未在 window 上時，直接從主機抓最新檔（帶時間戳避快取）。
+  //   這樣即使 index.html 的 <script> 標籤被瀏覽器快取成舊版，點按鈕仍會載入到最新的獨立頁，絕不掉回舊流程。
+  window._jyLazyScript = function(src, cb){
+    try {
+      var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now();
+      var s = document.createElement('script');
+      s.src = bust; s.async = false;
+      s.onload = function(){ if (cb) cb(true); };
+      s.onerror = function(){ if (cb) cb(false); };
+      document.body.appendChild(s);
+    } catch(e){ if (cb) cb(false); }
+  };
+
   window._ziweiOpen = function() {
-    try { if (typeof S !== 'undefined') { S._tarotOnlyMode = false; S._autoMode = true; S._ziweiOnlyMode = true; } } catch(_) {}
+    // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
+    if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
+    if (typeof window._jyLazyScript === 'function') {
+      window._jyLazyScript('JS/ziwei-standalone.js', function(ok){
+        if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
+        else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
+      });
+    } else {
+      alert('紫微獨立頁尚未載入，請確認 JS/ziwei-standalone.js 已上傳並強制重新整理。');
+    }
+    return;
+    // ── 以下為舊 step-0 後備路徑，v80.18 起已停用、保留不影響 ──
+    try { if (typeof S !== 'undefined') { S._tarotOnlyMode = false; S._autoMode = true; } } catch(_) {}
 
     var hook = document.getElementById('hook-screen');
     var input = document.getElementById('input-screen');
@@ -5896,6 +5898,13 @@ showAuraResult = function(){
     var spreadCard = document.getElementById('jy-spread-card');
     if (spreadCard) spreadCard.style.display = 'none';
 
+    // ★ v80.16：紫微斗數只需 年月日時 + 性別，不需姓名（姓名只供姓名學）。
+    //   從紫微入口進來時隱藏姓名欄；resetAll 會還原顯示。
+    try {
+      var _nm = document.getElementById('f-name');
+      if (_nm) { var _nmg = _nm.closest('.form-group'); if (_nmg) _nmg.style.display = 'none'; _nm.value = ''; }
+    } catch(_nmE) {}
+
     var q = document.getElementById('f-question');
     if (q) {
       q.placeholder = '例如：請以紫微斗數為主，分析我的事業、財運、感情與近年大限流年。';
@@ -5904,7 +5913,6 @@ showAuraResult = function(){
 
     // 讓 full 模式生效；現有 pickTool 會把出生資料卡打開。
     if (typeof pickTool === 'function') pickTool('full');
-    if (typeof window._setBirthFormMode === 'function') window._setBirthFormMode('ziwei');
     try { _selectedTool = 'full'; } catch(_) {}
 
     // 隱藏塔羅/開鑰工具卡，避免用戶誤以為還在塔羅入口。
@@ -5916,9 +5924,9 @@ showAuraResult = function(){
     });
 
     var btn = document.getElementById('btn-tool-go');
-    if (btn) { btn.innerHTML = '<i class="fas fa-globe-asia"></i> 產生紫微斗數提示詞'; btn.onclick = function(){ submitWithTool(); }; }
+    if (btn) { btn.innerHTML = '<i class="fas fa-globe-asia"></i> 開始紫微斗數命盤分析'; btn.onclick = function(){ submitWithTool(); }; }
     var sub = document.getElementById('btn-tool-sub');
-    if (sub) sub.textContent = '需出生日期、出生時間與出生地；系統會排出紫微斗數命盤，並像塔羅一樣產生可複製提示詞。';
+    if (sub) sub.textContent = '需出生日期、出生時間與出生地；系統會以紫微斗數為主，並保留七維交叉驗證。';
     var cta = document.getElementById('tool-cta');
     if (cta) cta.style.display = 'block';
 
@@ -5930,13 +5938,16 @@ showAuraResult = function(){
 
   // ★ v80.15：首頁梅花易數入口
   window._meihuaOpen = function() {
-    try { if (typeof S !== 'undefined') { S._tarotOnlyMode = false; S._autoMode = false; S._ziweiOnlyMode = false; } } catch(_) {}
-    if (typeof window._setBirthFormMode === 'function') window._setBirthFormMode('default');
-    if (typeof goStep === 'function') goStep(1);
-    setTimeout(function(){
-      var mh = document.getElementById('step-1');
-      if (mh && mh.scrollIntoView) mh.scrollIntoView({ behavior:'smooth', block:'start' });
-    }, 80);
+    // ★ v80.18：梅花獨立頁。模組未載入則即時補載 JS/meihua-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-1。
+    if (typeof window._meihuaStandaloneOpen === 'function') { window._meihuaStandaloneOpen(); return; }
+    if (typeof window._jyLazyScript === 'function') {
+      window._jyLazyScript('JS/meihua-standalone.js', function(ok){
+        if (ok && typeof window._meihuaStandaloneOpen === 'function') window._meihuaStandaloneOpen();
+        else alert('梅花獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 meihua-standalone.js，並強制重新整理一次。');
+      });
+    } else {
+      alert('梅花獨立頁尚未載入，請確認 JS/meihua-standalone.js 已上傳並強制重新整理。');
+    }
   };
 
   // ★ v40：首頁載入時即時查詢剩餘次數（打 Worker KV）
@@ -6114,8 +6125,6 @@ showAuraResult = function(){
 
   // ══ 從首頁進入 — 顯示 input-screen 帶類型選擇 ══
   window._enterFromHome = function() {
-    if (typeof window._setBirthFormMode === 'function') window._setBirthFormMode('default');
-    if (typeof S !== 'undefined') S._ziweiOnlyMode = false;
     document.getElementById('hook-screen').style.display = 'none';
     // ★ v69：trust-preview 已從 HTML 移除，此 getElementById 會 return null，保留 if 是為了
     //   防止舊版快取的 index.html 仍有 trust-preview 元素時誤殘留
@@ -7238,8 +7247,6 @@ function resetToHome() {
   window._enterFromHome = function() {
     // 先標記為塔羅快速模式
     S._tarotOnlyMode = true;
-    S._ziweiOnlyMode = false;
-    if (typeof window._setBirthFormMode === 'function') window._setBirthFormMode('default');
     // 執行原始進入邏輯
     if (_prevEnterFromHome) _prevEnterFromHome();
     // 隱藏生辰相關的卡片
@@ -7832,921 +7839,3 @@ function resetToHome() {
 })();
 
 
-
-/* =============================================================
-   v80.19 — 紫微斗數 / 梅花易數獨立入口淨化
-   目的：首頁獨立工具不可再套用舊七維、塔羅、開鑰視窗。
-   ============================================================= */
-(function(){
-  'use strict';
-
-  function _jyEnsureModeCSS(){
-    if (document.getElementById('jy-v80-18-mode-css')) return;
-    var st=document.createElement('style');
-    st.id='jy-v80-18-mode-css';
-    st.textContent = [
-      'body.jy-mode-ziwei #f-name-group{display:none!important}',
-      'body.jy-mode-ziwei #tool-selection-card{display:none!important}',
-      'body.jy-mode-ziwei #jy-spread-card{display:none!important}',
-      'body.jy-mode-ziwei #seo-content{display:none!important}',
-      'body.jy-mode-meihua #seo-content{display:none!important}',
-      'body.jy-mode-meihua #btn-meihua-skip, body.jy-mode-meihua #btn-meihua-next{display:none!important}',
-      'body.jy-mode-meihua #meihua-help-text{display:none!important}',
-      'body.jy-mode-meihua #step-1 .actions{justify-content:center}',
-      '.jy-standalone-note{margin:.5rem 0 0;padding:.55rem .7rem;border:1px solid rgba(212,175,55,.16);border-radius:10px;background:rgba(212,175,55,.055);color:rgba(232,224,208,.78);font-size:.74rem;line-height:1.7}',
-      '.jy-tool-clean-note{font-size:.72rem;color:rgba(232,224,208,.62);line-height:1.7;margin-top:.45rem}',
-      '.jy-meihua-copy-host{margin-top:1rem}'
-    ].join('\n');
-    document.head.appendChild(st);
-  }
-
-  function _jySetBodyMode(mode){
-    _jyEnsureModeCSS();
-    document.body.classList.remove('jy-mode-ziwei','jy-mode-meihua','jy-mode-tarot');
-    if (mode) document.body.classList.add('jy-mode-'+mode);
-  }
-
-  function _jyFindCardByText(root, text){
-    root = root || document;
-    var cards = root.querySelectorAll('.card');
-    for (var i=0;i<cards.length;i++){
-      if ((cards[i].textContent || '').indexOf(text) >= 0) return cards[i];
-    }
-    return null;
-  }
-
-  function _jyHideCardsContaining(root, words){
-    root = root || document;
-    var cards = root.querySelectorAll('.card');
-    for (var i=0;i<cards.length;i++){
-      var txt = cards[i].textContent || '';
-      for (var j=0;j<words.length;j++){
-        if (txt.indexOf(words[j]) >= 0) { cards[i].style.display='none'; break; }
-      }
-    }
-  }
-
-  window._jyApplyZiweiStandaloneUI = function(){
-    _jySetBodyMode('ziwei');
-    try { if (S) { S._ziweiOnlyMode=true; S._meihuaOnlyMode=false; S._tarotOnlyMode=false; S._autoMode=true; } } catch(_){ }
-
-    var hook=document.getElementById('hook-screen');
-    var input=document.getElementById('input-screen');
-    if (hook) hook.style.display='none';
-    if (input) input.style.display='block';
-
-    var breadcrumb = input ? input.querySelector('.tag.tag-gold') : null;
-    if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display='none';
-    var presets=document.getElementById('q-presets'); if (presets) presets.style.display='none';
-    var custom=document.getElementById('q-custom-wrap'); if (custom) custom.style.display='block';
-    var spread=document.getElementById('jy-spread-card'); if (spread) spread.style.display='none';
-
-    var birth=document.getElementById('birth-data-card') || _jyFindCardByText(input, '出生資料');
-    if (birth){ birth.id='birth-data-card'; birth.style.display=''; }
-
-    var nameGroup=document.getElementById('f-name-group');
-    if (nameGroup) nameGroup.style.display='none';
-    var nameInput=document.getElementById('f-name');
-    if (nameInput) nameInput.value='';
-
-    var toolCard=document.getElementById('tool-selection-card') || _jyFindCardByText(input, '選擇分析方式');
-    if (toolCard){ toolCard.id='tool-selection-card'; toolCard.style.display='none'; }
-    _jyHideCardsContaining(input, ['哪套適合你的問題？','七維命盤深度分析','塔羅快讀','開鑰之法']);
-
-    var q=document.getElementById('f-question');
-    if (q){
-      q.placeholder='例如：請以紫微斗數分析我目前大限、今年事業財運、感情婚姻與健康風險。';
-      if (!q.value || /塔羅|開鑰|七維/.test(q.value)) q.value='請以紫微斗數為主，分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
-    }
-
-    if (typeof window._setBirthFormMode === 'function') window._setBirthFormMode('ziwei');
-    try { _selectedTool='full'; } catch(_){ }
-
-    var btn=document.getElementById('btn-tool-go');
-    if (btn){
-      btn.innerHTML='<i class="fas fa-globe-asia"></i> 產生紫微斗數提示詞';
-      btn.onclick=function(){ submitWithTool(); };
-    }
-    var sub=document.getElementById('btn-tool-sub');
-    if (sub) sub.textContent='紫微斗數只需性別、出生日期、出生時間與出生地；不需要姓名，不混入塔羅、開鑰或七維分析。';
-    var cta=document.getElementById('tool-cta'); if (cta) cta.style.display='block';
-
-    var hint=document.getElementById('birth-form-hint');
-    if (!hint && birth){
-      hint=document.createElement('div');
-      hint.id='birth-form-hint';
-      hint.className='jy-standalone-note';
-      var title=birth.querySelector('.card-title');
-      if (title && title.nextSibling) title.parentNode.insertBefore(hint, title.nextSibling); else birth.insertBefore(hint,birth.firstChild);
-    }
-    if (hint) hint.innerHTML='<i class="fas fa-circle-info"></i> 紫微斗數版：不用姓名、不跑姓名學；不顯示塔羅/開鑰選項；排盤後只輸出紫微斗數提示詞。';
-
-    setTimeout(function(){
-      var by=document.getElementById('f-byear');
-      if (by && by.scrollIntoView) by.scrollIntoView({behavior:'smooth',block:'center'});
-    },120);
-  };
-
-  window._jyApplyMeihuaStandaloneUI = function(){
-    if (window._jyApplyingMeihuaMode) return;
-    window._jyApplyingMeihuaMode = true;
-    _jySetBodyMode('meihua');
-    try { if (S) { S._meihuaOnlyMode=true; S._ziweiOnlyMode=false; S._tarotOnlyMode=false; S._autoMode=false; } } catch(_){ }
-    var hook=document.getElementById('hook-screen');
-    var input=document.getElementById('input-screen');
-    if (hook) hook.style.display='none';
-    if (input) input.style.display='none';
-    var step1=document.getElementById('step-1');
-    if (typeof goStep === 'function' && (!step1 || !step1.classList.contains('active'))) goStep(1);
-
-    var title=document.querySelector('#step-1 .card-title');
-    if (title) title.innerHTML='<i class="fas fa-yin-yang"></i> 梅花易數起卦';
-    var actions=document.getElementById('meihua-actions') || document.querySelector('#step-1 .actions');
-    if (actions){
-      var back=document.getElementById('btn-meihua-back'); if (back) back.innerHTML='<i class="fas fa-arrow-left"></i> 回首頁';
-      var skip=document.getElementById('btn-meihua-skip'); if (skip) skip.style.display='none';
-      var next=document.getElementById('btn-meihua-next'); if (next) next.style.display='none';
-      var copy=document.getElementById('btn-meihua-copy');
-      if (!copy){
-        copy=document.createElement('button');
-        copy.className='btn btn-primary';
-        copy.id='btn-meihua-copy';
-        copy.innerHTML='<i class="fas fa-yin-yang"></i> 產生梅花易數提示詞';
-        copy.onclick=function(){ window._jyMeihuaToPrompt&&window._jyMeihuaToPrompt(); };
-        actions.appendChild(copy);
-      }
-      if (copy) {
-        if (window.S && S.meihua) { copy.classList.remove('hidden'); copy.style.display='inline-flex'; }
-        else { copy.classList.add('hidden'); copy.style.display='none'; }
-      }
-    }
-    var help=document.getElementById('meihua-help-text');
-    if (help) help.innerHTML='<i class="fas fa-info-circle"></i> 梅花易數獨立模式：只取本卦、互卦、變卦、動爻、體用與外應資料，不再接塔羅或七維。';
-    setTimeout(function(){ var mh=document.getElementById('step-1'); if(mh&&mh.scrollIntoView) mh.scrollIntoView({behavior:'smooth',block:'start'}); window._jyApplyingMeihuaMode=false; },80);
-  };
-
-  window._jyMeihuaToPrompt = function(){
-    if (!window.S || !S.meihua){ alert('請先完成梅花易數起卦，再產生提示詞。'); return; }
-    var host=document.getElementById('mh-export-wrap');
-    if (!host){
-      host=document.createElement('div');
-      host.id='mh-export-wrap';
-      host.className='jy-meihua-copy-host';
-      var result=document.getElementById('mh-result') || document.getElementById('step-1');
-      if (result) result.appendChild(host);
-    }
-    if (window.JY_renderExportPrompt) {
-      try { window._jyActiveResultMode='meihua'; } catch(_){ }
-      window.JY_renderExportPrompt('meihua', host);
-    } else {
-      alert('提示詞模組尚未載入，請重新整理後再試。');
-    }
-  };
-
-  // 覆寫首頁入口：不再借用舊七維表單視窗。
-  var _oldZiweiOpen = window._ziweiOpen;
-  window._ziweiOpen = function(){ window._jyApplyZiweiStandaloneUI(); };
-  var _oldMeihuaOpen = window._meihuaOpen;
-  window._meihuaOpen = function(){ window._jyApplyMeihuaStandaloneUI(); };
-
-  // 梅花起卦完成後，不再捲到「下一步塔羅」，改顯示提示詞按鈕。
-  var _tryWrapShowMH = function(){
-    if (typeof window.showMH !== 'function' || window.showMH._jy_v80_20) return;
-    var prev=window.showMH;
-    window.showMH=function(r){
-      var out=prev.apply(this, arguments);
-      try {
-        if (S && S._meihuaOnlyMode) {
-          window._jyApplyMeihuaStandaloneUI();
-          var copy=document.getElementById('btn-meihua-copy');
-          if (copy) { copy.classList.remove('hidden'); copy.style.display='inline-flex'; }
-          if (copy && copy.scrollIntoView) setTimeout(function(){ copy.scrollIntoView({behavior:'smooth',block:'center'}); },180);
-        }
-      } catch(_){ }
-      return out;
-    };
-    window.showMH._jy_v80_20 = true;
-  };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _tryWrapShowMH); else _tryWrapShowMH();
-  setTimeout(_tryWrapShowMH, 500);
-
-  // step 切換後再次淨化，避免舊覆寫鏈把卡片復原。
-  var _oldGoStep = window.goStep;
-  if (typeof _oldGoStep === 'function' && !_oldGoStep._jy_v80_20) {
-    window.goStep = function(n){
-      var r=_oldGoStep.apply(this, arguments);
-      try {
-        if (S && S._ziweiOnlyMode && (n===0 || n==='step-0')) setTimeout(window._jyApplyZiweiStandaloneUI, 0);
-        if (S && S._meihuaOnlyMode && (n===1 || n==='step-1')) setTimeout(window._jyApplyMeihuaStandaloneUI, 0);
-      } catch(_){ }
-      return r;
-    };
-    window.goStep._jy_v80_20 = true;
-  }
-})();
-
-/* ════════════════════════════════════════════════════════════════
-   v80.20 — Birth select hardening
-   Fix: 紫微斗數獨立入口開得太早時，年/月/日/時/分/國家/城市下拉選單尚未被其他延後腳本填入，點開會是空白。
-   This patch is self-contained and safe: it only fills empty selects and restores cached values after options exist.
-   ════════════════════════════════════════════════════════════════ */
-(function(){
-  'use strict';
-
-  function _opt(v, t){
-    var o = document.createElement('option');
-    o.value = v == null ? '' : String(v);
-    o.textContent = t == null ? '' : String(t);
-    return o;
-  }
-  function _isBlankSelect(sel){
-    if (!sel) return false;
-    if (sel.options.length === 0) return true;
-    // v80.20: Android/Chrome 原生 select 若只有一個 placeholder（如「選擇城市」），
-    // 點開會只顯示這一列；這也必須視為尚未初始化，而不是已完成初始化。
-    if (sel.options.length === 1 && !sel.options[0].value) return true;
-    var nonBlank = 0;
-    for (var i=0;i<sel.options.length;i++){
-      if ((sel.options[i].textContent || sel.options[i].innerText || '').trim()) nonBlank++;
-    }
-    return nonBlank === 0;
-  }
-  function _fillSelect(sel, items){
-    if (!sel || !_isBlankSelect(sel)) return;
-    var old = sel.value;
-    sel.innerHTML = '';
-    for (var i=0;i<items.length;i++) sel.appendChild(_opt(items[i][0], items[i][1]));
-    if (old) sel.value = old;
-  }
-  function _daysInMonth(y,m){
-    y = parseInt(y,10); m = parseInt(m,10);
-    if (!y || !m) return 31;
-    return new Date(y, m, 0).getDate();
-  }
-  function _fillDays(daySel, ySel, mSel){
-    if (!daySel) return;
-    var old = daySel.value;
-    var max = _daysInMonth(ySel && ySel.value, mSel && mSel.value);
-    var need = _isBlankSelect(daySel) || daySel.options.length < max;
-    if (!need) return;
-    daySel.innerHTML = '';
-    daySel.appendChild(_opt('', '日'));
-    for (var d=1; d<=max; d++) daySel.appendChild(_opt(d, d + '日'));
-    if (old && parseInt(old,10) <= max) daySel.value = old;
-  }
-  function _restoreCachedBirth(){
-    try{
-      var raw = sessionStorage.getItem('_jy_form');
-      if (!raw) return;
-      var data = JSON.parse(raw) || {};
-      var pairs = [
-        ['byear','f-byear','f2-byear'], ['bmonth','f-bmonth','f2-bmonth'], ['bday','f-bday','f2-bday'],
-        ['bhour','f-bhour','f2-bhour'], ['bminute','f-bminute','f2-bminute'], ['country','f-country','f2-country']
-      ];
-      for (var i=0;i<pairs.length;i++){
-        var k=pairs[i][0], a=pairs[i][1], b=pairs[i][2];
-        if (data[k] !== undefined && data[k] !== null && data[k] !== ''){
-          var e1=document.getElementById(a); if (e1) e1.value=String(data[k]);
-          var e2=document.getElementById(b); if (e2) e2.value=String(data[k]);
-        }
-      }
-      if (data.city){
-        var c1=document.getElementById('f-city'); if (c1) c1.value=String(data.city);
-        var c2=document.getElementById('f2-city'); if (c2) c2.value=String(data.city);
-      }
-    }catch(_e){}
-  }
-
-  var _JY_TW_CITY_COORDS = {
-    '台北市': [121.5654,25.0330], '新北市': [121.4657,25.0120], '基隆市': [121.7392,25.1276],
-    '桃園市': [121.3010,24.9936], '新竹市': [120.9675,24.8138], '新竹縣': [121.0129,24.8387],
-    '苗栗縣': [120.8200,24.5602], '台中市': [120.6736,24.1477], '彰化縣': [120.5161,24.0518],
-    '南投縣': [120.9876,23.8388], '雲林縣': [120.3897,23.7559], '嘉義市': [120.4491,23.4801],
-    '嘉義縣': [120.2555,23.4518], '台南市': [120.2000,23.0000], '高雄市': [120.3014,22.6273],
-    '屏東縣': [120.5488,22.5519], '宜蘭縣': [121.7530,24.7021], '花蓮縣': [121.6015,23.9872],
-    '台東縣': [121.1438,22.7613], '澎湖縣': [119.5664,23.5690], '金門縣': [118.3186,24.4368], '連江縣': [119.9517,26.1605]
-  };
-
-  // v80.20: solar-location.js 若未載入，仍要讓紫微 prompt 取得出生地經緯度。
-  if (typeof window.getSelectedBirthLocation !== 'function') {
-    window.getSelectedBirthLocation = function(countryId, cityId){
-      var countryEl = document.getElementById(countryId);
-      var cityEl = document.getElementById(cityId);
-      var country = countryEl ? countryEl.value : '';
-      var city = cityEl ? cityEl.value : '';
-      if (!city) return null;
-      var pair = _JY_TW_CITY_COORDS[city] || null;
-      if (pair) return { country: country || '台灣', city: city, name: city, label: (country || '台灣') + '・' + city, longitude: pair[0], latitude: pair[1], timezone: 8 };
-      return { country: country || '', city: city, name: city, label: ((country||'') ? country+'・' : '') + city, longitude: 121.56, latitude: 25.04, timezone: 8 };
-    };
-  }
-
-  if (typeof window.calcTrueSolarTime !== 'function') {
-    window.calcTrueSolarTime = function(y,m,d,hh,mm,longitude,timezone){
-      // 簡化真太陽時保底：用經度相對時區中央經線修正。精準版仍以 solar-location.js 為準。
-      var central = (timezone || 8) * 15;
-      var offsetMin = Math.round(((longitude || central) - central) * 4);
-      var dt = new Date(y, (m||1)-1, d||1, hh||0, mm||0);
-      dt.setMinutes(dt.getMinutes() + offsetMin);
-      return { year: dt.getFullYear(), month: dt.getMonth()+1, day: dt.getDate(), hour: dt.getHours(), minute: dt.getMinutes(), offsetMinutes: offsetMin, note: 'v80.20 fallback true-solar correction' };
-    };
-  }
-
-  window._jyEnsureBirthSelects = function(){
-    try{
-      var nowY = new Date().getFullYear();
-      var years = [['','年']];
-      for (var y=nowY; y>=1900; y--) years.push([y, y + '年']);
-      var months = [['','月']];
-      for (var m=1; m<=12; m++) months.push([m, m + '月']);
-      var hours = [['','時']];
-      for (var h=0; h<=23; h++) hours.push([h, (h<10?'0':'') + h + '時']);
-      var mins = [['','分']];
-      for (var mi=0; mi<=59; mi++) mins.push([mi, (mi<10?'0':'') + mi + '分']);
-
-      ['','2'].forEach(function(suf){
-        var ySel=document.getElementById('f'+suf+'-byear');
-        var mSel=document.getElementById('f'+suf+'-bmonth');
-        var dSel=document.getElementById('f'+suf+'-bday');
-        var hSel=document.getElementById('f'+suf+'-bhour');
-        var miSel=document.getElementById('f'+suf+'-bminute');
-        _fillSelect(ySel, years);
-        _fillSelect(mSel, months);
-        _fillDays(dSel, ySel, mSel);
-        _fillSelect(hSel, hours);
-        _fillSelect(miSel, mins);
-        if (ySel && !ySel._jyBirthDayBind){ ySel.addEventListener('change', function(){ _fillDays(dSel, ySel, mSel); }); ySel._jyBirthDayBind=true; }
-        if (mSel && !mSel._jyBirthDayBind){ mSel.addEventListener('change', function(){ _fillDays(dSel, ySel, mSel); }); mSel._jyBirthDayBind=true; }
-      });
-
-      var countries = [['','選擇國家'], ['台灣','台灣'], ['中國','中國'], ['香港','香港'], ['澳門','澳門'], ['日本','日本'], ['韓國','韓國'], ['新加坡','新加坡'], ['馬來西亞','馬來西亞'], ['美國','美國'], ['加拿大','加拿大'], ['澳洲','澳洲'], ['英國','英國']];
-      var taiwanCities = [['','選擇城市'], ['台北市','台北市'], ['新北市','新北市'], ['基隆市','基隆市'], ['桃園市','桃園市'], ['新竹市','新竹市'], ['新竹縣','新竹縣'], ['苗栗縣','苗栗縣'], ['台中市','台中市'], ['彰化縣','彰化縣'], ['南投縣','南投縣'], ['雲林縣','雲林縣'], ['嘉義市','嘉義市'], ['嘉義縣','嘉義縣'], ['台南市','台南市'], ['高雄市','高雄市'], ['屏東縣','屏東縣'], ['宜蘭縣','宜蘭縣'], ['花蓮縣','花蓮縣'], ['台東縣','台東縣'], ['澎湖縣','澎湖縣'], ['金門縣','金門縣'], ['連江縣','連江縣']];
-      ['','2'].forEach(function(suf){
-        var ctry=document.getElementById('f'+suf+'-country');
-        var city=document.getElementById('f'+suf+'-city');
-        _fillSelect(ctry, countries);
-        _fillSelect(city, taiwanCities);
-        if (ctry && !ctry._jyBirthCountryBind){
-          ctry.addEventListener('change', function(){
-            if (typeof populateCitySelect === 'function') {
-              try { populateCitySelect('f'+suf+'-city', ctry.value); } catch(_e) {}
-            }
-            // v80.20: 若外部 solar-location 沒載入或回填失敗，保底補台灣縣市，避免只剩「選擇城市」。
-            if (_isBlankSelect(city) || (city && city.options && city.options.length <= 1)) {
-              city.innerHTML='';
-              for (var j=0;j<taiwanCities.length;j++) city.appendChild(_opt(taiwanCities[j][0], taiwanCities[j][1]));
-            }
-          });
-          ctry._jyBirthCountryBind=true;
-        }
-      });
-      _restoreCachedBirth();
-    }catch(e){ console.warn('[v80.20] birth select init failed', e); }
-  };
-
-  function _boot(){
-    window._jyEnsureBirthSelects();
-    setTimeout(window._jyEnsureBirthSelects, 300);
-    setTimeout(window._jyEnsureBirthSelects, 1200);
-    setTimeout(window._jyEnsureBirthSelects, 3000);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot); else _boot();
-
-  if (typeof window._jyApplyZiweiStandaloneUI === 'function' && !window._jyApplyZiweiStandaloneUI._jy_v80_20) {
-    var _oldZw = window._jyApplyZiweiStandaloneUI;
-    window._jyApplyZiweiStandaloneUI = function(){
-      var r = _oldZw.apply(this, arguments);
-      try { window._jyEnsureBirthSelects(); setTimeout(window._jyEnsureBirthSelects, 80); } catch(_e){}
-      return r;
-    };
-    window._jyApplyZiweiStandaloneUI._jy_v80_20 = true;
-  }
-})();
-
-
-/* ═══════════════════════════════════════════════════════════════
-   v80.23 — 四工具獨立乾淨模式
-   目的：塔羅、開鑰、梅花、紫微進入各自入口後，畫面像雷諾曼一樣只保留本工具流程。
-   - 不顯示其他入口
-   - 紫微不顯示姓名/姓名學/七維/塔羅/開鑰文字
-   - 梅花不再出現下一步塔羅或七維說明
-   - 工具頁隱藏 SEO/footer 說明，避免被誤認成流程
-   ═══════════════════════════════════════════════════════════════ */
-(function(){
-  'use strict';
-
-  function qs(id){ return document.getElementById(id); }
-  function txt(el){ return (el && (el.textContent || el.innerText) || '').trim(); }
-  function show(el, yes){ if(el) el.style.display = yes ? '' : 'none'; }
-
-  function ensureCleanCSS(){
-    if (qs('jy-v80-21-clean-css')) return;
-    var st=document.createElement('style');
-    st.id='jy-v80-21-clean-css';
-    st.textContent = [
-      'body.jy-mode-tarot #birth-data-card, body.jy-mode-tarot #tool-selection-card, body.jy-mode-tarot #tarot-to-full, body.jy-mode-tarot #seo-content, body.jy-mode-tarot footer{display:none!important}',
-      'body.jy-mode-tarot .jy-cross-tool, body.jy-mode-tarot .jy-standalone-note{display:none!important}',
-      'body.jy-mode-ootk #birth-data-card, body.jy-mode-ootk #tool-selection-card, body.jy-mode-ootk #jy-spread-card, body.jy-mode-ootk #tarot-to-full, body.jy-mode-ootk #seo-content, body.jy-mode-ootk footer{display:none!important}',
-      'body.jy-mode-ootk .jy-cross-tool, body.jy-mode-ootk .jy-standalone-note{display:none!important}',
-      'body.jy-mode-ziwei #f-name-group, body.jy-mode-ziwei #tool-selection-card, body.jy-mode-ziwei #jy-spread-card, body.jy-mode-ziwei #tarot-to-full, body.jy-mode-ziwei #seo-content, body.jy-mode-ziwei footer{display:none!important}',
-      'body.jy-mode-ziwei #birth-data-card details, body.jy-mode-ziwei #birth-form-hint{display:none!important}',
-      'body.jy-mode-meihua #input-screen, body.jy-mode-meihua #birth-data-card, body.jy-mode-meihua #tool-selection-card, body.jy-mode-meihua #jy-spread-card, body.jy-mode-meihua #tarot-to-full, body.jy-mode-meihua #seo-content, body.jy-mode-meihua footer{display:none!important}',
-      'body.jy-mode-meihua #btn-meihua-next, body.jy-mode-meihua #btn-meihua-skip, body.jy-mode-meihua #btn-skip-tarot, body.jy-mode-meihua #btn-back-meihua, body.jy-mode-meihua #meihua-help-text{display:none!important}',
-      '.jy-clean-title{max-width:640px;margin:1.2rem auto 1rem;padding:0 1.2rem;text-align:center}',
-      '.jy-clean-title h1{font-family:var(--f-display,serif);color:var(--c-gold,#d4af37);font-size:2rem;letter-spacing:.28em;margin:.4rem 0 .15rem}',
-      '.jy-clean-title p{color:rgba(232,224,208,.52);font-size:.82rem;letter-spacing:.08em;margin:0}',
-      '.jy-clean-question-card{max-width:640px;margin:0 auto 1rem;padding:1rem;border:1px solid rgba(212,175,55,.16);border-radius:18px;background:rgba(16,18,28,.86)}',
-      '.jy-clean-question-card label{display:block;color:var(--c-gold,#d4af37);font-weight:700;margin-bottom:.55rem}',
-      '.jy-clean-question-card textarea{width:100%;min-height:94px;border-radius:14px;border:1px solid rgba(212,175,55,.18);background:rgba(0,0,0,.16);color:var(--c-text,#eee);padding:.85rem;font-family:inherit;font-size:.95rem;line-height:1.7;resize:vertical}',
-      '.jy-clean-home-card{margin-top:.8rem}',
-      '.jy-clean-hidden{display:none!important}'
-    ].join('\n');
-    document.head.appendChild(st);
-  }
-
-  function setMode(mode){
-    ensureCleanCSS();
-    document.body.classList.remove('jy-mode-tarot','jy-mode-ootk','jy-mode-ziwei','jy-mode-meihua');
-    if (mode) document.body.classList.add('jy-mode-'+mode);
-  }
-
-  function hideCardsByWords(root, words){
-    root = root || document;
-    var cards = root.querySelectorAll('.card, details, section, footer');
-    Array.prototype.forEach.call(cards, function(card){
-      var t = txt(card);
-      for (var i=0;i<words.length;i++){
-        if (t.indexOf(words[i]) >= 0){ card.style.display='none'; return; }
-      }
-    });
-  }
-
-  function prepareInputBase(mode){
-    setMode(mode);
-    var hook=qs('hook-screen'), input=qs('input-screen');
-    show(hook,false); show(input,true);
-    if (!input) return;
-    var breadcrumb=input.querySelector('.tag.tag-gold');
-    if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display='none';
-    show(qs('q-presets'),false);
-    show(qs('q-custom-wrap'),true);
-    show(qs('jy-context-chips'),false);
-    var q=qs('f-question');
-    if (q) q.focus();
-  }
-
-  function prepareTarotClean(){
-    prepareInputBase('tarot');
-    try { if (window.S) { S._tarotOnlyMode=true; S._ootkOnlyMode=false; S._ziweiOnlyMode=false; S._meihuaOnlyMode=false; S._autoMode=false; } } catch(_){ }
-    try { window._selectedTool='tarot'; } catch(_){ }
-    var input=qs('input-screen');
-    show(qs('birth-data-card'),false);
-    show(qs('tool-selection-card'),false);
-    show(qs('jy-spread-card'),true);
-    hideCardsByWords(input, ['選擇分析方式','七維命盤深度分析','開鑰之法','出生資料','姓名學','哪套適合你的問題']);
-    var title=input && input.querySelector('.card-title');
-    if (title && txt(title).indexOf('你想問什麼')>=0) title.innerHTML='<i class="fas fa-question-circle"></i> 你想問什麼？';
-    var q=qs('f-question');
-    if (q) q.placeholder='問越具體越準——例如：他為什麼最近不主動找我？我該先開口嗎？';
-    var btn=qs('btn-tool-go');
-    if (btn){ btn.innerHTML='<i class="fas fa-magic"></i> 抽牌解讀'; btn.onclick=function(){ submitWithTool(); }; }
-    var sub=qs('btn-tool-sub'); if (sub) sub.textContent='塔羅快讀・只依本次問題與牌面解讀';
-    show(qs('tool-cta'),true);
-    setTimeout(function(){ window.scrollTo({top:0,behavior:'smooth'}); },30);
-  }
-
-  function prepareOotkClean(){
-    prepareInputBase('ootk');
-    try { if (window.S) { S._tarotOnlyMode=false; S._ootkOnlyMode=true; S._ziweiOnlyMode=false; S._meihuaOnlyMode=false; S._autoMode=false; } } catch(_){ }
-    try { window._selectedTool='ootk'; } catch(_){ }
-    var input=qs('input-screen');
-    show(qs('birth-data-card'),false);
-    show(qs('tool-selection-card'),false);
-    show(qs('jy-spread-card'),false);
-    hideCardsByWords(input, ['選擇分析方式','七維命盤深度分析','塔羅快讀','出生資料','姓名學','哪套適合你的問題']);
-    var title=input && input.querySelector('.card-title');
-    if (title && txt(title).indexOf('你想問什麼')>=0) title.innerHTML='<i class="fas fa-key"></i> 你想問什麼？';
-    var q=qs('f-question');
-    if (q) q.placeholder='問根源最準——例如：為什麼我一直卡在這段關係？這個循環真正問題在哪？';
-    var btn=qs('btn-tool-go');
-    if (btn){ btn.innerHTML='<i class="fas fa-key"></i> 開始開鑰之法'; btn.onclick=function(){ submitWithTool(); }; }
-    var sub=qs('btn-tool-sub'); if (sub) sub.textContent='開鑰之法・只依 78 張牌五層操作輸出提示詞';
-    show(qs('tool-cta'),true);
-    setTimeout(function(){ window.scrollTo({top:0,behavior:'smooth'}); },30);
-  }
-
-  function cleanZiweiBirthCopy(){
-    var input=qs('input-screen');
-    var q=qs('f-question');
-    if (q){
-      q.placeholder='例如：請以紫微斗數分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
-      if (!q.value || /塔羅|開鑰|七維|姓名學/.test(q.value)) q.value='請以紫微斗數分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
-    }
-    var hint=qs('f-time-precision-hint');
-    if (hint) hint.innerHTML='<p style="font-size:.72rem;color:var(--c-gold);margin:0;line-height:1.6"><i class="fas fa-info-circle" style="margin-right:4px"></i>若只知道約略時辰，系統會降低命宮、身宮與時辰敏感宮位的判讀權重。</p>';
-    var locDetails=input && input.querySelector('#birth-data-card details');
-    if (locDetails) locDetails.style.display='none';
-  }
-
-  var oldZi = window._jyApplyZiweiStandaloneUI;
-  window._jyApplyZiweiStandaloneUI = function(){
-    setMode('ziwei');
-    var r = oldZi ? oldZi.apply(this, arguments) : null;
-    try { if (window.S) { S._ziweiOnlyMode=true; S._meihuaOnlyMode=false; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._autoMode=true; } } catch(_){ }
-    prepareInputBase('ziwei');
-    show(qs('birth-data-card'),true);
-    show(qs('f-name-group'),false);
-    show(qs('tool-selection-card'),false);
-    show(qs('jy-spread-card'),false);
-    hideCardsByWords(qs('input-screen'), ['選擇分析方式','塔羅快讀','開鑰之法','七維命盤深度分析','姓名學','哪套適合你的問題']);
-    cleanZiweiBirthCopy();
-    var btn=qs('btn-tool-go');
-    if (btn){ btn.innerHTML='<i class="fas fa-globe-asia"></i> 產生紫微斗數提示詞'; btn.onclick=function(){ submitWithTool(); }; }
-    var sub=qs('btn-tool-sub'); if (sub) sub.textContent='紫微斗數・只使用性別、出生日期、出生時間、出生地點';
-    show(qs('tool-cta'),true);
-    try { window._selectedTool='full'; } catch(_){ }
-    if (typeof window._setBirthFormMode === 'function') window._setBirthFormMode('ziwei');
-    return r;
-  };
-
-  function ensureMeihuaQuestion(){
-    var step=qs('step-1');
-    if (!step) return;
-    if (!qs('jy-meihua-clean-title')){
-      var title=document.createElement('div');
-      title.id='jy-meihua-clean-title';
-      title.className='jy-clean-title';
-      title.innerHTML='<h1>梅花易數</h1><p>時間・數字・漢字・隨機起卦</p>';
-      step.insertBefore(title, step.firstChild);
-    }
-    if (!qs('jy-meihua-question-card')){
-      var card=document.createElement('div');
-      card.id='jy-meihua-question-card';
-      card.className='jy-clean-question-card';
-      card.innerHTML='<label>你想問什麼？</label><textarea id="jy-meihua-question" maxlength="500" placeholder="問越具體越準——例如：這份工作值得繼續嗎？我和他的關係接下來會怎樣？"></textarea>';
-      var firstCard=step.querySelector('.card');
-      step.insertBefore(card, firstCard || step.firstChild);
-    }
-  }
-
-  var oldMh = window._jyApplyMeihuaStandaloneUI;
-  window._jyApplyMeihuaStandaloneUI = function(){
-    setMode('meihua');
-    var r = oldMh ? oldMh.apply(this, arguments) : null;
-    try { if (window.S) { S._meihuaOnlyMode=true; S._ziweiOnlyMode=false; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._autoMode=false; } } catch(_){ }
-    ensureMeihuaQuestion();
-    hideCardsByWords(qs('step-1'), ['下一步：塔羅','多起卦','避雷方向','抽牌','七維','塔羅','開鑰']);
-    var title=document.querySelector('#step-1 .card-title');
-    if (title) title.innerHTML='<i class="fas fa-yin-yang"></i> 梅花易數起卦';
-    var help=qs('meihua-help-text'); if (help) help.style.display='none';
-    var skip=qs('btn-meihua-skip'); if (skip) skip.style.display='none';
-    var next=qs('btn-meihua-next'); if (next) next.style.display='none';
-    var back=qs('btn-meihua-back'); if (back) back.innerHTML='<i class="fas fa-arrow-left"></i> 回首頁';
-    return r;
-  };
-
-  var oldMHPrompt = window._jyMeihuaToPrompt;
-  window._jyMeihuaToPrompt = function(){
-    try{
-      var q=qs('jy-meihua-question');
-      if (q && q.value && window.S) {
-        S.form = S.form || {};
-        S.form.question = q.value.trim();
-        if (!S.form.type) S.form.type='general';
-      }
-    }catch(_){ }
-    if (oldMHPrompt) return oldMHPrompt.apply(this, arguments);
-  };
-
-  // 乾淨首頁入口：主 CTA 固定進塔羅；另補開鑰入口，四工具各自獨立。
-  function patchHome(){
-    var hook=qs('hook-screen'); if(!hook) return;
-    var cta=qs('home-cta-btn');
-    if (cta){ cta.onclick=function(e){ if(e) e.preventDefault(); prepareTarotClean(); }; }
-    var home=hook.querySelector('.jy-home');
-    if (home && !qs('jy-home-ootk-clean')){
-      var qk=home.querySelector('.jy-home-quick');
-      var wrap=document.createElement('div');
-      wrap.id='jy-home-ootk-clean';
-      wrap.className='jy-home-oracle jy-clean-home-card';
-      wrap.innerHTML='<button onclick="_ootkOpen()" class="jy-oracle-btn"><span class="jy-oracle-icon">🔑</span><span class="jy-oracle-text"><strong>開鑰之法</strong><small>Opening of the Key・78 張五層深潛・免費</small></span><span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span></button>';
-      if (qk && qk.nextSibling) home.insertBefore(wrap, qk.nextSibling); else home.appendChild(wrap);
-    }
-  }
-
-  window._tarotOpen = prepareTarotClean;
-  window._ootkOpen = prepareOotkClean;
-  window._enterFromHome = prepareTarotClean;
-
-  // 保留舊函式名稱但加強淨化。
-  var oldPick = window.pickTool;
-  if (typeof oldPick === 'function' && !oldPick._jy_v80_23){
-    window.pickTool = function(tool){
-      var r = oldPick.apply(this, arguments);
-      if (tool === 'tarot') setTimeout(prepareTarotClean,0);
-      if (tool === 'ootk') setTimeout(prepareOotkClean,0);
-      return r;
-    };
-    window.pickTool._jy_v80_23 = true;
-  }
-
-  function reclean(){
-    ensureCleanCSS();
-    patchHome();
-    if (document.body.classList.contains('jy-mode-tarot')) {
-      show(qs('birth-data-card'),false); show(qs('tool-selection-card'),false); show(qs('jy-spread-card'),true); show(qs('tarot-to-full'),false);
-      hideCardsByWords(qs('input-screen'), ['選擇分析方式','七維命盤深度分析','開鑰之法','出生資料','姓名學','哪套適合你的問題']);
-    }
-    if (document.body.classList.contains('jy-mode-ootk')) {
-      show(qs('birth-data-card'),false); show(qs('tool-selection-card'),false); show(qs('jy-spread-card'),false); show(qs('tarot-to-full'),false);
-      hideCardsByWords(qs('input-screen'), ['選擇分析方式','七維命盤深度分析','塔羅快讀','出生資料','姓名學','哪套適合你的問題']);
-    }
-    if (document.body.classList.contains('jy-mode-ziwei') && typeof window._jyApplyZiweiStandaloneUI === 'function') {
-      // 避免遞迴，只做輕量 DOM 清理
-      show(qs('f-name-group'),false); show(qs('tool-selection-card'),false); show(qs('jy-spread-card'),false); cleanZiweiBirthCopy();
-      hideCardsByWords(qs('input-screen'), ['選擇分析方式','塔羅快讀','開鑰之法','七維命盤深度分析','姓名學','哪套適合你的問題']);
-    }
-    if (document.body.classList.contains('jy-mode-meihua')) {
-      ensureMeihuaQuestion(); hideCardsByWords(qs('step-1'), ['下一步：塔羅','多起卦','避雷方向','抽牌','七維','塔羅','開鑰']);
-    }
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', reclean); else reclean();
-  setTimeout(reclean,300); setTimeout(reclean,1200); setTimeout(reclean,3000);
-  if ('MutationObserver' in window){
-    var obs=new MutationObserver(function(){ if (!window._jyCleanTicking){ window._jyCleanTicking=true; setTimeout(function(){ window._jyCleanTicking=false; reclean(); },50); } });
-    if (document.documentElement) obs.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});
-  }
-})();
-
-
-/* =============================================================
-   v80.23 — Standalone Tool Pages Rebuild
-   核心修正：不再用「隱藏舊 DOM」拼裝紫微/梅花頁；改成乾淨獨立頁面。
-   目的：避免舊七維、姓名學、塔羅/開鑰區塊殘留造成頁面變黑、按鈕走錯流程。
-   ============================================================= */
-(function(){
-  'use strict';
-  var VERSION='20260606v80_23';
-  function $(id){ return document.getElementById(id); }
-  function val(id){ var e=$(id); return e ? e.value : ''; }
-  function setVal(id,v){ var e=$(id); if(e) e.value = v == null ? '' : String(v); }
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-  function pad(n){ n=parseInt(n,10)||0; return (n<10?'0':'')+n; }
-  function show(el, yes){ if(el) el.style.display = yes ? '' : 'none'; }
-
-  var CITY = {
-    '台灣': {
-      '台北': [121.5654,25.0330], '新北': [121.4657,25.0120], '基隆': [121.7392,25.1276],
-      '桃園': [121.3010,24.9937], '新竹': [120.9686,24.8039], '苗栗': [120.8214,24.5602],
-      '台中': [120.6736,24.1477], '彰化': [120.5440,24.0518], '南投': [120.9876,23.9609],
-      '雲林': [120.4313,23.7092], '嘉義': [120.4491,23.4801], '台南': [120.2000,23.0000],
-      '高雄': [120.3014,22.6273], '屏東': [120.5488,22.5519], '宜蘭': [121.7530,24.7021],
-      '花蓮': [121.6015,23.9872], '台東': [121.1438,22.7613], '澎湖': [119.5664,23.5711],
-      '金門': [118.3186,24.4368], '連江': [119.9517,26.1600]
-    },
-    '中國': {'北京':[116.4074,39.9042], '上海':[121.4737,31.2304], '廣州':[113.2644,23.1291], '深圳':[114.0579,22.5431], '廈門':[118.0894,24.4798], '福州':[119.2965,26.0745], '杭州':[120.1551,30.2741], '南京':[118.7969,32.0603], '成都':[104.0665,30.5728], '重慶':[106.5516,29.5630]},
-    '香港': {'香港':[114.1694,22.3193]},
-    '澳門': {'澳門':[113.5439,22.1987]},
-    '新加坡': {'新加坡':[103.8198,1.3521]},
-    '馬來西亞': {'吉隆坡':[101.6869,3.1390]}
-  };
-  function timezoneOf(country){ return (country==='香港'||country==='澳門'||country==='新加坡'||country==='馬來西亞'||country==='中國'||country==='台灣') ? 8 : 8; }
-  function locObj(country, city){
-    country = country || '台灣'; city = city || '台南';
-    var p = CITY[country] && CITY[country][city] ? CITY[country][city] : [120.2,23.0];
-    return {country:country, city:city, name:city, label:country+'・'+city, longitude:p[0], latitude:p[1], timezone:timezoneOf(country)};
-  }
-
-  function ensureCSS(){
-    if($('jy-v80-23-clean-css')) return;
-    var st=document.createElement('style'); st.id='jy-v80-23-clean-css';
-    st.textContent = [
-      'body.jy-tool-clean-open #hook-screen,body.jy-tool-clean-open #input-screen,body.jy-tool-clean-open .step,body.jy-tool-clean-open #seo-content,body.jy-tool-clean-open footer{display:none!important}',
-      '#jy-clean-root{max-width:720px;margin:0 auto;padding:5.3rem 1.15rem 4rem;color:var(--c-text,#e8e0d0);min-height:calc(100vh - 70px)}',
-      '.jy-clean-back{display:inline-flex;align-items:center;gap:.35rem;margin:0 0 1.2rem;color:rgba(232,224,208,.62);background:none;border:none;font:inherit;font-size:.88rem;cursor:pointer}',
-      '.jy-clean-title{text-align:center;margin:.3rem 0 1.5rem}',
-      '.jy-clean-title h1{font-family:var(--f-display,"Noto Serif TC",serif);font-size:2.05rem;letter-spacing:.34em;color:var(--c-gold,#d4af37);margin:.25rem 0 .25rem;text-indent:.34em}',
-      '.jy-clean-title small{display:block;color:rgba(232,224,208,.55);letter-spacing:.11em;font-size:.78rem}',
-      '.jy-clean-card{border:1px solid rgba(212,175,55,.16);border-radius:20px;background:linear-gradient(180deg,rgba(18,21,34,.94),rgba(10,12,20,.94));padding:1.05rem;margin:0 0 1rem;box-shadow:0 18px 45px rgba(0,0,0,.28)}',
-      '.jy-clean-label{display:block;color:rgba(212,175,55,.92);font-weight:800;margin:0 0 .65rem;letter-spacing:.04em}',
-      '.jy-clean-note{color:rgba(232,224,208,.55);font-size:.78rem;line-height:1.7;margin:.35rem 0 0}',
-      '.jy-clean-textarea{width:100%;min-height:106px;border-radius:16px;border:1px solid rgba(212,175,55,.18);background:rgba(0,0,0,.18);color:var(--c-text,#e8e0d0);padding:.9rem;font-family:inherit;font-size:.95rem;line-height:1.75;resize:vertical;box-sizing:border-box}',
-      '.jy-clean-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}',
-      '.jy-clean-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem}',
-      '@media(max-width:520px){.jy-clean-grid,.jy-clean-grid-3{grid-template-columns:1fr 1fr}.jy-clean-title h1{font-size:1.8rem}}',
-      '.jy-clean-select,.jy-clean-input{width:100%;height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.18);background:rgba(0,0,0,.18);color:var(--c-text,#e8e0d0);padding:0 .85rem;font-family:inherit;font-size:.95rem;box-sizing:border-box}',
-      '.jy-clean-pill-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem}',
-      '.jy-clean-pill{height:54px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);color:rgba(232,224,208,.72);font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer}',
-      '.jy-clean-pill.active{border-color:rgba(212,175,55,.55);background:rgba(212,175,55,.12);color:var(--c-gold,#d4af37)}',
-      '.jy-clean-primary{width:100%;min-height:58px;border-radius:18px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(135deg,rgba(212,175,55,.22),rgba(212,175,55,.08));color:var(--c-gold,#d4af37);font-family:inherit;font-weight:900;font-size:1.03rem;letter-spacing:.05em;cursor:pointer}',
-      '.jy-clean-secondary{width:100%;min-height:48px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.035);color:rgba(232,224,208,.72);font-family:inherit;font-weight:800;cursor:pointer}',
-      '.jy-clean-output{margin-top:1rem}',
-      '.jy-clean-mini{font-size:.76rem;color:rgba(232,224,208,.48);line-height:1.7;text-align:center;margin-top:.7rem}',
-      '.jy-clean-tab-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:.8rem}',
-      '.jy-clean-tab{height:48px;border-radius:14px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);color:rgba(232,224,208,.70);font-family:inherit;font-weight:800;cursor:pointer}',
-      '.jy-clean-tab.active{border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.12);color:var(--c-gold,#d4af37)}',
-      '.jy-clean-tiny-list{font-size:.78rem;color:rgba(232,224,208,.58);line-height:1.75;margin-top:.65rem}',
-      '.jy-clean-error{padding:.75rem .9rem;border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.10);border-radius:14px;color:#fecaca;font-size:.86rem;line-height:1.7;margin:.8rem 0}',
-      '.jy-clean-success{padding:.75rem .9rem;border:1px solid rgba(34,197,94,.30);background:rgba(34,197,94,.08);border-radius:14px;color:#bbf7d0;font-size:.86rem;line-height:1.7;margin:.8rem 0}'
-    ].join('\n');
-    document.head.appendChild(st);
-  }
-  function hideOld(){
-    document.body.classList.remove('jy-mode-tarot','jy-mode-ootk','jy-mode-ziwei','jy-mode-meihua');
-    document.body.classList.add('jy-tool-clean-open');
-    show($('hook-screen'), false); show($('input-screen'), false);
-    Array.prototype.forEach.call(document.querySelectorAll('.step'), function(s){ s.style.display='none'; s.classList.remove('active'); });
-    show($('seo-content'), false);
-  }
-  function root(){
-    ensureCSS(); hideOld();
-    var r=$('jy-clean-root');
-    if(!r){ r=document.createElement('main'); r.id='jy-clean-root'; document.body.appendChild(r); }
-    r.style.display='block'; r.innerHTML='';
-    setTimeout(function(){ window.scrollTo({top:0,behavior:'smooth'}); },20);
-    return r;
-  }
-  function home(){
-    document.body.classList.remove('jy-tool-clean-open','jy-mode-tarot','jy-mode-ootk','jy-mode-ziwei','jy-mode-meihua');
-    var r=$('jy-clean-root'); if(r) r.remove();
-    Array.prototype.forEach.call(document.querySelectorAll('.step'), function(s){ s.style.display=''; s.classList.remove('active'); });
-    show($('input-screen'), false); show($('seo-content'), true);
-    var h=$('hook-screen'); show(h, true);
-    try { if(typeof window._redesignHomepage==='function') window._redesignHomepage(); } catch(_){ }
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-  function pageHead(title, sub){
-    return '<button class="jy-clean-back" onclick="window._jyCleanHome()">← 返回靜月之光</button><div class="jy-clean-title"><h1>'+esc(title)+'</h1><small>'+esc(sub||'')+'</small></div>';
-  }
-  function buildOptions(list, selected){
-    return list.map(function(x){ var v=Array.isArray(x)?x[0]:x, t=Array.isArray(x)?x[1]:x; return '<option value="'+esc(v)+'"'+(String(v)===String(selected)?' selected':'')+'>'+esc(t)+'</option>'; }).join('');
-  }
-  function years(){ var a=[['','年']]; var now=(new Date()).getFullYear(); for(var y=now;y>=1900;y--) a.push([y,y+'年']); return a; }
-  function nums(max,label,zero){ var a=[['',label]]; for(var i=zero?0:1;i<=max;i++) a.push([i,(zero?pad(i):i)+label]); return a; }
-  function daysFor(y,m){ var max=31; y=parseInt(y,10); m=parseInt(m,10); if(y&&m) max=new Date(y,m,0).getDate(); return nums(max,'日',false); }
-  function readOld(id, def){ var e=$(id); return e && e.value ? e.value : def; }
-  function refreshCity(prefix){
-    var c=$(prefix+'country'), city=$(prefix+'city'); if(!c||!city) return;
-    var current=city.value || readOld('f-city','台南');
-    var names=Object.keys(CITY[c.value]||CITY['台灣']);
-    city.innerHTML=buildOptions(names.map(function(n){return [n,n];}), names.indexOf(current)>=0?current:names[0]);
-  }
-  function updateDay(prefix){
-    var y=$(prefix+'year'), m=$(prefix+'month'), d=$(prefix+'day'); if(!y||!m||!d) return;
-    var cur=d.value; d.innerHTML=buildOptions(daysFor(y.value,m.value), cur); if(!d.value && cur) d.value=cur;
-  }
-
-  window._jyCleanHome=home;
-
-  window._ziweiOpen=function(){
-    var r=root();
-    var oldY=readOld('f-byear',''), oldM=readOld('f-bmonth',''), oldD=readOld('f-bday',''), oldH=readOld('f-bhour',''), oldMin=readOld('f-bminute','');
-    var oldCountry=readOld('f-country','台灣'), oldCity=readOld('f-city','台南');
-    r.innerHTML = pageHead('紫微斗數','Zi Wei Dou Shu ・ 十二宮命盤')+
-      '<section class="jy-clean-card"><label class="jy-clean-label">想分析什麼？</label><textarea id="jy-z-q" class="jy-clean-textarea" maxlength="500" placeholder="可不填；預設分析命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。">請以紫微斗數分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。</textarea><div class="jy-clean-note">紫微斗數只用性別、出生日期、出生時間、出生地點；不需要姓名，不混入塔羅、開鑰、姓名學或七維分析。</div></section>'+ 
-      '<section class="jy-clean-card"><label class="jy-clean-label">性別</label><div class="jy-clean-pill-row"><button class="jy-clean-pill active" data-gender="male">♂ 男</button><button class="jy-clean-pill" data-gender="female">♀ 女</button><button class="jy-clean-pill" data-gender="other">不透露</button></div></section>'+ 
-      '<section class="jy-clean-card"><label class="jy-clean-label">出生日期（國曆）</label><div class="jy-clean-grid-3"><select id="jy-z-year" class="jy-clean-select">'+buildOptions(years(),oldY)+'</select><select id="jy-z-month" class="jy-clean-select">'+buildOptions(nums(12,'月',false),oldM)+'</select><select id="jy-z-day" class="jy-clean-select">'+buildOptions(daysFor(oldY,oldM),oldD)+'</select></div></section>'+ 
-      '<section class="jy-clean-card"><label class="jy-clean-label">出生時間</label><div class="jy-clean-grid"><select id="jy-z-hour" class="jy-clean-select">'+buildOptions(nums(23,'時',true),oldH)+'</select><select id="jy-z-minute" class="jy-clean-select">'+buildOptions(nums(59,'分',true),oldMin)+'</select></div><div class="jy-clean-grid-3" style="margin-top:.7rem"><button class="jy-clean-pill active" data-precision="precise">精準時辰</button><button class="jy-clean-pill" data-precision="rough">約略時辰</button><button class="jy-clean-pill" data-precision="unknown">完全不知道</button></div><div class="jy-clean-note">若選約略或不知道，提示詞會明確降低命宮、身宮與時辰敏感宮位的判斷權重。</div></section>'+ 
-      '<section class="jy-clean-card"><label class="jy-clean-label">出生地點（真太陽時校正）</label><div class="jy-clean-grid"><select id="jy-z-country" class="jy-clean-select">'+buildOptions(Object.keys(CITY).map(function(n){return [n,n];}),oldCountry)+'</select><select id="jy-z-city" class="jy-clean-select"></select></div><div id="jy-z-solar" class="jy-clean-note"></div></section>'+ 
-      '<button class="jy-clean-primary" onclick="window._jySubmitZiweiClean()">產生紫微斗數提示詞</button><div id="jy-z-msg"></div><div id="jy-z-out" class="jy-clean-output"></div>';
-    refreshCity('jy-z-'); if($('jy-z-city')) $('jy-z-city').value=oldCity || '台南';
-    ['jy-z-year','jy-z-month'].forEach(function(id){ var e=$(id); if(e) e.onchange=function(){updateDay('jy-z-');}; });
-    var country=$('jy-z-country'); if(country) country.onchange=function(){refreshCity('jy-z-'); updateSolarPreview();};
-    ['jy-z-hour','jy-z-minute','jy-z-city'].forEach(function(id){ var e=$(id); if(e) e.onchange=updateSolarPreview; });
-    Array.prototype.forEach.call(r.querySelectorAll('[data-gender]'), function(b){ b.onclick=function(){ Array.prototype.forEach.call(r.querySelectorAll('[data-gender]'),function(x){x.classList.remove('active')}); b.classList.add('active'); }; });
-    Array.prototype.forEach.call(r.querySelectorAll('[data-precision]'), function(b){ b.onclick=function(){ Array.prototype.forEach.call(r.querySelectorAll('[data-precision]'),function(x){x.classList.remove('active')}); b.classList.add('active'); updateSolarPreview(); }; });
-    function updateSolarPreview(){
-      var y=parseInt(val('jy-z-year'),10), m=parseInt(val('jy-z-month'),10), d=parseInt(val('jy-z-day'),10), h=parseInt(val('jy-z-hour'),10), mi=parseInt(val('jy-z-minute'),10)||0;
-      var box=$('jy-z-solar'); if(!box) return;
-      if(!y||!m||!d||isNaN(h)){ box.textContent='選好出生時間與地點後，系統會用真太陽時校正。'; return; }
-      var lo=locObj(val('jy-z-country'),val('jy-z-city'));
-      var info=calcSolarSafe(y,m,d,h,mi,lo,false);
-      box.innerHTML='☀ 真太陽時：<b>'+pad(info.hour)+':'+pad(info.minute)+'</b>（修正 '+(info.offsetMinutes>=0?'+':'')+info.offsetMinutes+' 分鐘）';
-    }
-    updateSolarPreview();
-  };
-
-  function calcSolarSafe(y,m,d,h,mi,lo,unknown){
-    if(unknown) return {year:y,month:m,day:d,hour:12,minute:0,offsetMinutes:0,note:'unknown time'};
-    if(typeof window.calcTrueSolarTime==='function'){
-      try { return window.calcTrueSolarTime(y,m,d,h,mi,lo.longitude,lo.timezone); } catch(_){ }
-    }
-    var central=(lo.timezone||8)*15;
-    var off=Math.round(((lo.longitude||central)-central)*4);
-    var dt=new Date(y,m-1,d,h,mi); dt.setMinutes(dt.getMinutes()+off);
-    return {year:dt.getFullYear(),month:dt.getMonth()+1,day:dt.getDate(),hour:dt.getHours(),minute:dt.getMinutes(),offsetMinutes:off,note:'fallback'};
-  }
-  function ensureScript(src, test, cb, fail){
-    var start=Date.now(), loaded=false;
-    function tick(){ if(test()){ cb(); return; } if(Date.now()-start>8000){ if(fail) fail(); return; } setTimeout(tick,120); }
-    if(!test() && src && !document.querySelector('script[src*="'+src.split('?')[0]+'"]')){ var s=document.createElement('script'); s.src=src; s.async=false; document.body.appendChild(s); loaded=true; }
-    tick();
-  }
-  function waitPrompt(cb){ ensureScript(null,function(){return typeof window.JY_renderExportPrompt==='function';},cb,function(){ msg('jy-z-msg','提示詞模組尚未載入，請重新整理後再試。',true); }); }
-  function msg(id,t,err){ var e=$(id); if(e) e.innerHTML='<div class="'+(err?'jy-clean-error':'jy-clean-success')+'">'+esc(t)+'</div>'; }
-
-  window._jySubmitZiweiClean=function(){
-    var genderBtn=document.querySelector('#jy-clean-root [data-gender].active');
-    var precBtn=document.querySelector('#jy-clean-root [data-precision].active');
-    var y=parseInt(val('jy-z-year'),10), m=parseInt(val('jy-z-month'),10), d=parseInt(val('jy-z-day'),10), h=parseInt(val('jy-z-hour'),10), mi=parseInt(val('jy-z-minute'),10)||0;
-    if(!genderBtn){ msg('jy-z-msg','請選擇性別。',true); return; }
-    if(!y||!m||!d){ msg('jy-z-msg','請填寫出生日期。',true); return; }
-    var precision=precBtn?precBtn.dataset.precision:'precise';
-    var unknown=(precision==='unknown'||isNaN(h));
-    if(unknown){ h=12; mi=0; }
-    var lo=locObj(val('jy-z-country'),val('jy-z-city'));
-    var solar=calcSolarSafe(y,m,d,h,mi,lo,unknown);
-    var q=(val('jy-z-q')||'').trim() || '請以紫微斗數分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
-    msg('jy-z-msg','正在排紫微斗數命盤，請稍候…',false);
-    ensureScript('JS/ziwei.js?v='+VERSION,function(){return typeof window.computeZiwei==='function';},function(){
-      try{
-        window.S = window.S || {};
-        S.form = {type:'ziwei',question:q,gender:genderBtn.dataset.gender,bdate:y+'-'+pad(m)+'-'+pad(d),btime:unknown?'':pad(h)+':'+pad(mi),name:'',btimeUnknown:unknown,timePrecision:precision,birthLocation:lo,trueSolar:solar,clockTime:{year:y,month:m,day:d,hour:h,minute:mi},solarTime:{year:solar.year,month:solar.month,day:solar.day,hour:solar.hour,minute:solar.minute}};
-        S._ziweiOnlyMode=true; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._meihuaOnlyMode=false; S._autoMode=false;
-        S.ziwei = window.computeZiwei(solar.year,solar.month,solar.day,solar.hour,genderBtn.dataset.gender);
-        try{ if(typeof window.computeBazi==='function') S.bazi=window.computeBazi(solar.year,solar.month,solar.day,solar.hour,solar.minute,genderBtn.dataset.gender); }catch(_b){}
-        try{ if(typeof window.analyzeZiweiTags==='function') S.ziweiTags=window.analyzeZiweiTags(S.ziwei,'general'); }catch(_t){}
-        waitPrompt(function(){ window._jyActiveResultMode='ziwei'; window.JY_renderExportPrompt('ziwei',$('jy-z-out')); msg('jy-z-msg','已完成紫微斗數排盤；下方可複製提示詞。',false); setTimeout(function(){ $('jy-z-out').scrollIntoView({behavior:'smooth',block:'start'}); },80); });
-      }catch(e){ console.error('[Ziwei v80.23]',e); msg('jy-z-msg','紫微排盤失敗：'+(e&&e.message?e.message:'未知錯誤'),true); }
-    },function(){ msg('jy-z-msg','紫微核心引擎 JS/ziwei.js 尚未載入，請確認檔案已上傳。',true); });
-  };
-
-  window._meihuaOpen=function(){
-    var r=root();
-    r.innerHTML = pageHead('梅花易數','Meihua Yi Shu ・ 本卦互卦變卦')+
-      '<section class="jy-clean-card"><label class="jy-clean-label">你想問什麼？</label><textarea id="jy-m-q" class="jy-clean-textarea" maxlength="500" placeholder="問越具體越準——例如：這份工作值得繼續嗎？我和他的關係接下來會怎樣？"></textarea></section>'+ 
-      '<section class="jy-clean-card"><label class="jy-clean-label">起卦方式</label><div class="jy-clean-tab-row"><button class="jy-clean-tab active" data-mh="time">時間</button><button class="jy-clean-tab" data-mh="number">數字</button><button class="jy-clean-tab" data-mh="hanzi">漢字</button><button class="jy-clean-tab" data-mh="random">隨機</button></div><div id="jy-m-extra" class="jy-clean-tiny-list">按下按鈕後，以目前時間起卦。</div></section>'+ 
-      '<button class="jy-clean-primary" onclick="window._jySubmitMeihuaClean()">產生梅花易數提示詞</button><div id="jy-m-msg"></div><div id="jy-m-out" class="jy-clean-output"></div>';
-    function setTab(b){ Array.prototype.forEach.call(r.querySelectorAll('[data-mh]'),function(x){x.classList.remove('active')}); b.classList.add('active'); renderExtra(); }
-    Array.prototype.forEach.call(r.querySelectorAll('[data-mh]'),function(b){ b.onclick=function(){setTab(b)}; });
-    function renderExtra(){ var mode=(r.querySelector('[data-mh].active')||{}).dataset && (r.querySelector('[data-mh].active')).dataset.mh; var ex=$('jy-m-extra'); if(!ex)return; if(mode==='number') ex.innerHTML='<input id="jy-m-num1" class="jy-clean-input" placeholder="上卦數字" inputmode="numeric" style="margin-bottom:.6rem"><input id="jy-m-num2" class="jy-clean-input" placeholder="下卦數字" inputmode="numeric" style="margin-bottom:.6rem"><input id="jy-m-num3" class="jy-clean-input" placeholder="動爻數字（可空白）" inputmode="numeric"><div class="jy-clean-note">數字起卦會把數字換算成八卦與動爻。</div>'; else if(mode==='hanzi') ex.innerHTML='<input id="jy-m-text" class="jy-clean-input" placeholder="輸入一段漢字，例如：事業可成"><div class="jy-clean-note">漢字起卦以字數與筆勢作象數入口，仍以體用、本互變判讀。</div>'; else if(mode==='random') ex.innerHTML='由系統隨機取象起卦。'; else ex.innerHTML='按下按鈕後，以目前時間起卦。'; }
-  };
-  function mhNums(mode){
-    var now=new Date(), base=now.getFullYear()+now.getMonth()+1+now.getDate(), h=Math.floor(((now.getHours()+1)%24)/2)+1;
-    if(mode==='number'){
-      var a=parseInt(val('jy-m-num1'),10), b=parseInt(val('jy-m-num2'),10), c=parseInt(val('jy-m-num3'),10);
-      if(!a||!b){ throw new Error('數字起卦請至少填上卦數字與下卦數字。'); }
-      return [(a%8)||8,(b%8)||8,((c||a+b)%6)||6];
-    }
-    if(mode==='hanzi'){
-      var t=val('jy-m-text').trim(); if(!t) throw new Error('漢字起卦請先輸入文字。');
-      var n=t.replace(/\s+/g,'').length; return [(n%8)||8,((n+base)%8)||8,((n+h)%6)||6];
-    }
-    if(mode==='random') return [1+Math.floor(Math.random()*8),1+Math.floor(Math.random()*8),1+Math.floor(Math.random()*6)];
-    var ly=now.getFullYear(), lm=now.getMonth()+1, ld=now.getDate();
-    try{ if(typeof Lunar!=='undefined'&&Lunar.Solar){ var lunar=Lunar.Solar.fromYmd(ly,lm,ld).getLunar(); ly=lunar.getYear(); lm=lunar.getMonth(); ld=lunar.getDay(); } }catch(_){ }
-    var yz=((ly-4)%12+12)%12+1; return [((yz+lm+ld)%8)||8,((yz+lm+ld+h)%8)||8,((yz+lm+ld+h)%6)||6];
-  }
-  window._jySubmitMeihuaClean=function(){
-    var q=val('jy-m-q').trim(); if(!q){ msg('jy-m-msg','請先輸入問題。',true); return; }
-    var b=document.querySelector('#jy-clean-root [data-mh].active'); var mode=b?b.dataset.mh:'time';
-    try{
-      if(typeof window.calcMH!=='function' && typeof calcMH!=='function') throw new Error('梅花易數核心 calcMH 尚未載入。');
-      var n=mhNums(mode); var fn=window.calcMH||calcMH; var mh=fn(n[0],n[1],n[2]);
-      window.S=window.S||{}; S.form={type:'meihua',question:q,gender:'',bdate:'',btime:'',name:'',btimeUnknown:true,meihuaMethod:mode};
-      S.meihua=mh; S._meihuaOnlyMode=true; S._ziweiOnlyMode=false; S._tarotOnlyMode=false; S._ootkOnlyMode=false; S._autoMode=false;
-      try{ if(typeof window.buildMeihuaOutput==='function') window.buildMeihuaOutput(S.meihua,'general'); }catch(_o){}
-      try{ if(typeof window.enhanceMeihua==='function') window.enhanceMeihua(S.meihua); }catch(_e){}
-      ensureScript(null,function(){return typeof window.JY_renderExportPrompt==='function';},function(){ window._jyActiveResultMode='meihua'; window.JY_renderExportPrompt('meihua',$('jy-m-out')); msg('jy-m-msg','已完成梅花易數起卦；下方可複製提示詞。',false); setTimeout(function(){ $('jy-m-out').scrollIntoView({behavior:'smooth',block:'start'}); },80); },function(){ msg('jy-m-msg','提示詞模組尚未載入，請重新整理後再試。',true); });
-    }catch(e){ console.error('[Meihua v80.23]',e); msg('jy-m-msg',e&&e.message?e.message:'梅花起卦失敗',true); }
-  };
-
-  window._tarotOpen=function(){
-    var r=root();
-    var spreads=[['auto','自動判斷'],['three_card','三牌陣'],['five_card','五牌陣'],['cross','十字牌陣'],['either_or','二選一'],['timeline','時間線'],['relationship','關係牌陣'],['celtic_cross','凱爾特十字'],['tree_of_life','生命之樹'],['zodiac','黃道十二宮'],['minor_arcana','小阿卡那'],['fifteen_card','金色黎明十五張'],['mathers_21','Mathers 二十一張'],['mathers_horseshoe','Mathers First Method 54張']];
-    r.innerHTML=pageHead('塔羅快讀','RWS Tarot ・ 正統牌陣位置')+'<section class="jy-clean-card"><label class="jy-clean-label">你想問什麼？</label><textarea id="jy-t-q" class="jy-clean-textarea" maxlength="500" placeholder="問越具體越準——例如：今年我桃花運勢為何？"></textarea></section><section class="jy-clean-card"><label class="jy-clean-label">牌陣</label><select id="jy-t-spread" class="jy-clean-select">'+buildOptions(spreads,'auto')+'</select><div class="jy-clean-note">自動判斷會依問題類型選合適牌陣；指定牌陣則固定使用該排法。</div></section><button class="jy-clean-primary" onclick="window._jySubmitTarotClean()">抽牌解讀</button><div class="jy-clean-mini">此頁只進塔羅流程，不顯示出生資料、紫微、梅花或七維入口。</div>';
-  };
-  window._jySubmitTarotClean=function(){
-    var q=val('jy-t-q').trim(); if(!q){ alert('請先輸入問題'); return; }
-    setVal('f-question',q); setVal('f-type','general');
-    var sp=val('jy-t-spread'); window._forcedSpread = (sp && sp!=='auto') ? sp : null;
-    document.body.classList.remove('jy-tool-clean-open'); var r=$('jy-clean-root'); if(r) r.remove();
-    try{ window._selectedTool='tarot'; }catch(_){ }
-    if(typeof submitWithTool==='function') submitWithTool(); else alert('塔羅模組尚未載入，請重新整理後再試。');
-  };
-  window._ootkOpen=function(){
-    var r=root();
-    r.innerHTML=pageHead('開鑰之法','Opening of the Key ・ 78張五層深潛')+'<section class="jy-clean-card"><label class="jy-clean-label">你想問什麼？</label><textarea id="jy-o-q" class="jy-clean-textarea" maxlength="500" placeholder="適合問根源、卡住原因、長期牽引力。例如：我為什麼一直卡在這段關係？"></textarea><div class="jy-clean-note">開鑰之法不需要出生資料；此頁只進開鑰流程，不顯示塔羅快讀、紫微、梅花或七維入口。</div></section><button class="jy-clean-primary" onclick="window._jySubmitOotkClean()">開始開鑰之法</button>';
-  };
-  window._jySubmitOotkClean=function(){
-    var q=val('jy-o-q').trim(); if(!q){ alert('請先輸入問題'); return; }
-    setVal('f-question',q); setVal('f-type','general');
-    document.body.classList.remove('jy-tool-clean-open'); var r=$('jy-clean-root'); if(r) r.remove();
-    try{ window._selectedTool='ootk'; }catch(_){ }
-    if(typeof submitWithTool==='function') submitWithTool(); else alert('開鑰模組尚未載入，請重新整理後再試。');
-  };
-  window._enterFromHome=window._tarotOpen;
-
-  // 首頁若已生成，補開鑰入口（不重複）；紫微/梅花在原首頁已存在時仍改走本補丁函式。
-  function patchHome(){
-    var homeBox=document.querySelector('.jy-home-card');
-    if(homeBox && !$('jy-home-ootk-v8023')){
-      var wrap=document.createElement('div'); wrap.className='jy-home-oracle'; wrap.id='jy-home-ootk-v8023';
-      wrap.innerHTML='<button onclick="_ootkOpen()" class="jy-oracle-btn"><span class="jy-oracle-icon">🔑</span><span class="jy-oracle-text"><strong>開鑰之法</strong><small>Opening of the Key ・ 78 張五層深潛 ・ 免費</small></span><span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span></button>';
-      var footer=homeBox.querySelector('.jy-home-footer'); if(footer) homeBox.insertBefore(wrap, footer); else homeBox.appendChild(wrap);
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(patchHome,400);}); else setTimeout(patchHome,400);
-  setTimeout(patchHome,1200);
-})();

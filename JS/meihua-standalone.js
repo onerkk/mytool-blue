@@ -316,12 +316,14 @@
     _mhUpNum = ''; _mhLoNum = ''; _mhResult = null; _lastPrompt = '';
     var w = _getWrap();
     w.style.display = 'block';
+    try { document.body.style.overflow = 'hidden'; } catch(e){} // 鎖背景捲動，避免固定層與底頁互搶造成抖動
     _render();
     w.scrollTop = 0;
   };
   window._meihuaClose = function () {
     var w = _getWrap();
     if (w) w.style.display = 'none';
+    try { document.body.style.overflow = ''; } catch(e){}
   };
   window._mhSetMethod = function (m) {
     var qEl = document.getElementById('mhx-q'); if (qEl) _mhQuestion = qEl.value;
