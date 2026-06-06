@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes,viewport-fit=cover">
-<meta name="description" content="免費AI塔羅占卜・開鑰之法線上解牌｜靜月之光。RWS 塔羅快讀（古典牌陣＋現代實務牌陣＋Waite/Mathers大型原典法）＋金色黎明開鑰之法（78 張五層深潛）＋雷諾曼 Lenormand（36 張組合義占卜）＋六十甲子靈籤。一鍵複製提示詞貼到 AI 即出深度解讀。水晶・天鐵・龍宮舍利。">
+<meta name="description" content="免費AI塔羅占卜・開鑰之法線上解牌｜靜月之光。RWS 塔羅快讀（古典牌陣＋現代實務牌陣）＋金色黎明開鑰之法（78 張五層深潛）＋雷諾曼 Lenormand（36 張組合義占卜）＋六十甲子靈籤。一鍵複製提示詞貼到 AI 即出深度解讀。水晶・天鐵・龍宮舍利。">
 <meta name="theme-color" content="#1a0a0a">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -40,7 +40,7 @@
   "name": "靜月之光 AI 塔羅占卜",
   "alternateName": ["靜月之光","Jingyue Light","免費AI塔羅","開鑰之法線上占卜"],
   "url": "https://jingyue.uk/",
-  "description": "RWS 塔羅快讀（古典牌陣＋現代實務牌陣＋Waite/Mathers大型原典法）＋金色黎明開鑰之法（78 張五層深潛）＋雷諾曼 Lenormand（36 張組合義占卜）＋六十甲子靈籤。一鍵複製提示詞貼到 AI 即出深度解讀。水晶・天鐵・龍宮舍利。",
+  "description": "RWS 塔羅快讀（古典牌陣＋現代實務牌陣）＋金色黎明開鑰之法（78 張五層深潛）＋雷諾曼 Lenormand（36 張組合義占卜）＋六十甲子靈籤。一鍵複製提示詞貼到 AI 即出深度解讀。水晶・天鐵・龍宮舍利。",
   "applicationCategory": "LifestyleApplication",
   "operatingSystem": "Web",
   "offers": {
@@ -48,7 +48,7 @@
     "price": "0",
     "priceCurrency": "TWD"
   },
-  "featureList": ["RWS塔羅快讀","凱爾特十字","生命之樹牌陣","金色黎明開鑰之法","78張五層深潛","雷諾曼Lenormand","三張線五張線九宮格大牌陣","六十甲子靈籤","AI深度解讀提示詞","古典與現代塔羅牌陣","Waite四十二張替代法","Waite三十五張補充法","Mathers六十六張第三法","大阿卡那二十二路徑","Golden Dawn元素強弱分析","水晶能量推薦","天鐵隕石","龍宮舍利"],
+  "featureList": ["RWS塔羅快讀","凱爾特十字","生命之樹牌陣","金色黎明開鑰之法","78張五層深潛","雷諾曼Lenormand","三張線五張線九宮格大牌陣","六十甲子靈籤","AI深度解讀提示詞","古典與現代塔羅牌陣","Golden Dawn元素強弱分析","水晶能量推薦","天鐵隕石","龍宮舍利"],
   "inLanguage": "zh-TW",
   "isAccessibleForFree": true
 }
@@ -64,7 +64,7 @@
       "name": "靜月之光是什麼？怎麼用？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "靜月之光是免費的 AI 塔羅占卜平台，提供RWS 塔羅快讀（古典牌陣＋現代實務牌陣＋Waite/Mathers大型原典法）和金色黎明開鑰之法（78 張牌五層深潛）。輸入問題、選牌陣、抽牌後，一鍵複製提示詞，貼到 ChatGPT、Claude、Gemini 等 AI 對話即可得到深度解讀。完全免費，不需登入。"
+        "text": "靜月之光是免費的 AI 塔羅占卜平台，提供RWS 塔羅快讀（古典牌陣＋現代實務牌陣）和金色黎明開鑰之法（78 張牌五層深潛）。輸入問題、選牌陣、抽牌後，一鍵複製提示詞，貼到 ChatGPT、Claude、Gemini 等 AI 對話即可得到深度解讀。完全免費，不需登入。"
       }
     },
     {
@@ -1324,7 +1324,11 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot.js?v=20260507v69_3_0" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260606v80_11_spread_complete" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260606v80_13" defer></script>
+<!-- v80.13：梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
+<script src="JS/meihua_upgrade.js?v=20260606v80_13" defer></script>
+<script src="JS/meihua_output_layer.js?v=20260606v80_13" defer></script>
+<script src="JS/meihua_upgrade2.js?v=20260606v80_13" defer></script>
 <!-- ★ v70 全免費：payment-wall.js 已移除 -->
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
@@ -1333,13 +1337,13 @@
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260603v79_0" defer></script>
 <script src="JS/lenormand.js?v=20260603v80_0" defer></script>
-<script src="JS/ui.js?v=20260606v80_11_spread_complete" defer></script>
-<script src="JS/spread-picker.js?v=20260606v80_11_spread_complete" defer></script>
+<script src="JS/ui.js?v=20260603v76_2" defer></script>
+<script src="JS/spread-picker.js?v=20260606v80_13" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
 <!-- ★ v70 複製模式引擎：必須最後載入。不進混淆。 -->
-<script src="JS/prompt-export.js?v=20260606v80_11_spread_complete" defer></script>
+<script src="JS/prompt-export.js?v=20260606v80_13" defer></script>
 <!-- ★ v70.9 命理引擎延後載入器 -->
 <script>
 (function(){
@@ -1347,11 +1351,11 @@
     'JS/ephemeris-client.js?v=20260507v69_3_0',
     'JS/solar-location.js?v=20260507v69_3_0',
     'JS/bazi.js?v=20260507v69_3_0',
+    // 紫微核心引擎：需上傳/保留 JS/ziwei.js，否則 computeZiwei 不會存在
     'JS/ziwei.js?v=20260507v69_3_0',
     'JS/bazi_upgrade.js?v=20260507v69_3_0',
     'JS/western_upgrade.js?v=20260507v69_3_0',
     'JS/jyotish_full_upgrade.js?v=20260507v69_3_0',
-    'JS/meihua_upgrade2.js?v=20260507v69_3_0',
     'JS/name_upgrade.js?v=20260507v69_3_0'
   ];
   function loadAll(){
@@ -1442,7 +1446,7 @@
     <summary style="cursor:pointer;user-select:none;padding:.2rem 0"><h1 style="display:inline;margin:0;font-size:.8rem;font-weight:600;color:rgba(212,175,55,.45);letter-spacing:.03em">免費AI塔羅占卜・開鑰之法・雷諾曼線上解牌 — 靜月之光</h1></summary>
     <div style="margin-top:.8rem">
 
-  <p>靜月之光是免費線上AI占卜平台，提供三種解牌系統：<strong style="color:rgba(212,175,55,.6)">塔羅快讀</strong>——偉特78張完整牌組，古典牌陣＋現代實務牌陣＋Waite/Mathers大型原典法，AI即時解牌，結合正逆位、牌與牌互動、宮廷牌人物指向，給出具體答案；<strong style="color:rgba(212,175,55,.6)">開鑰之法</strong>——黃金黎明會 Opening of the Key，78張牌五層深潛，以計數、配對、元素強弱問到問題根源；<strong style="color:rgba(212,175,55,.6)">雷諾曼牌</strong>——Petit Lenormand 36張，組合義讀法，三張線、五張線、九宮格、大牌陣，擅長具體事件預測。不需出生資料，點了就問。</p>
+  <p>靜月之光是免費線上AI占卜平台，提供三種解牌系統：<strong style="color:rgba(212,175,55,.6)">塔羅快讀</strong>——偉特78張完整牌組，古典牌陣＋現代實務牌陣，AI即時解牌，結合正逆位、牌與牌互動、宮廷牌人物指向，給出具體答案；<strong style="color:rgba(212,175,55,.6)">開鑰之法</strong>——黃金黎明會 Opening of the Key，78張牌五層深潛，以計數、配對、元素強弱問到問題根源；<strong style="color:rgba(212,175,55,.6)">雷諾曼牌</strong>——Petit Lenormand 36張，組合義讀法，三張線、五張線、九宮格、大牌陣，擅長具體事件預測。不需出生資料，點了就問。</p>
 
   <p style="margin-top:.8rem">可分析的面向包含：感情桃花（正緣、復合、曖昧、對方想法）、事業方向（升遷、轉職、留或走）、財運時機、決策兩難、人際關係。AI 即時解牌，給你一個收斂、可執行的答案。</p>
     </div>
