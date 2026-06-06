@@ -1,4 +1,4 @@
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.27]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.28]
  *  歐那 2026/6/6：八字自成一頁、乾淨、不出現其他入口、有自己的過場動畫，組好提示詞複製去 AI。
  *  做法：完全比照 meihua-standalone.js / lenormand.js 的「自包覆獨立頁 + 複製提示詞」模式。
  *  引擎：直接呼叫既有全域 calcTrueSolarTime() + computeBazi() + enhanceBazi()，不重造排盤。
@@ -355,7 +355,8 @@
       + '　得地：' + (b.deDi ? '是（日支有根）' : '否')
       + '　得勢：' + (b.deShi ? '是（天干有比劫/印）' : '否') + '。');
     L.push('旺衰判定：' + (b.strongLevel || (b.strong ? '身強' : '身弱')) + (b.selfPts != null ? '（自黨分 ' + Math.round(b.selfPts) + '）' : '') + (b.isNeutral ? '——中和近界，用神宜靈活' : '') + '。');
-    if (b.strengthConflict && b.strengthConflictReason) L.push('※ 旺衰須複核：' + b.strengthConflictReason + '（判吉凶時把這個不確定講出來，別硬定強弱）。');
+    if (b.strengthNote) L.push('※ ' + b.strengthNote);
+    else if (b.strengthConflict && b.strengthConflictReason) L.push('※ 旺衰須複核：' + b.strengthConflictReason + '（判吉凶時把這個不確定講出來，別硬定強弱）。');
     if (b.ep) {
       var epParts = ['木', '火', '土', '金', '水'].map(function (e) { return e + (b.ep[e] != null ? Math.round(b.ep[e]) + '%' : '—'); });
       L.push('五行佔比：' + epParts.join('、') + '。');
@@ -397,6 +398,13 @@
       if (b.tiaohou.priority) L.push('調候優先級：' + b.tiaohou.priority + (/第一|輔助/.test(b.tiaohou.priority) ? '（寒燥命調候優先，用神再強也要先暖／先潤）' : '') + '。');
     } else {
       L.push('調候：本命寒燥不偏，調候五行不缺，以扶抑用神為主即可。');
+    }
+    if (b.wuxingStance) {
+      L.push('五行喜忌全表（' + (b.specialStructure ? '從化格' : (b.strong ? '身強' : '身弱')) + '；判大運、流年都以此為準）：' + b.wuxingStance.summary + '。');
+      if (b.wuxingStance.conflict && b.wuxingStance.role) {
+        var rl = b.wuxingStance.role, byEl = {}; for (var rk in rl) byEl[rl[rk]] = rk;
+        L.push('※ 旺衰在界線：若取身弱，用印（' + byEl['印'] + '）、比劫（' + byEl['比劫'] + '）扶身；若取偏強，則喜食傷（' + byEl['食傷'] + '）、財（' + byEl['財'] + '）、官殺（' + byEl['官殺'] + '）洩耗。兩向都先備著，以大運流年實際應驗校準，別硬定一邊。');
+      }
     }
     L.push('');
 
@@ -442,7 +450,7 @@
       var lines = [];
       b.dayun.forEach(function (d) {
         if (!d || d.gz === '小運') return;
-        var luck = (typeof d.score === 'number') ? (d.score >= 2 ? '吉' : (d.score <= -2 ? '逆' : '平')) : '';
+        var luck = d.luckLabel || '';
         var seg = (d.gz || '') + '（' + (d.ageStart != null ? d.ageStart + '–' + d.ageEnd + '歲' : '') + '）'
           + (d.god ? ' ' + d.god : '') + (luck ? '〔' + luck + '〕' : '') + (d.isCurrent ? ' ★現行' : '');
         lines.push(seg);
@@ -450,9 +458,10 @@
       if (lines.length) L.push('大運序：' + lines.join('　'));
       var cur = _currentDayun(b);
       if (cur) {
-        L.push('現行大運 ' + (cur.gz || '') + '：天干十神 ' + (cur.god || '—') + '、地支十神 ' + (cur.zGod || '—') + '。'
-          + (cur.notes && cur.notes.length ? '走勢：' + _fmt(cur.notes) : ''));
-        L.push('（判斷現運吉凶：拿大運天干（前五年）、地支（後五年）的五行去比對上面的用神／忌神——走用神則順、走忌神則背；再看大運是否沖合原局喜用。）');
+        var curV = cur.luckByStance;
+        L.push('現行大運 ' + (cur.gz || '') + (cur.luckLabel ? '〔' + cur.luckLabel + '〕' : '') + '：天干十神 ' + (cur.god || '—') + '（管前五年）、地支十神 ' + (cur.zGod || '—') + '（管後五年）。'
+          + (curV ? '以喜忌論：前五年走' + curV.ganEl + '（' + curV.gan + '）、後五年走' + curV.zhiEl + '（' + curV.zhi + '）。' : ''));
+        L.push('（判斷現運吉凶：拿大運天干（前五年）、地支（後五年）的五行去比對上面的「五行喜忌全表」——走喜用則順、走忌神則背；再看大運是否沖合原局喜用。）');
       }
     }
     if (b.liuNianGZ) L.push('今年流年：' + _fmt(b.liuNianGZ) + (Array.isArray(b.liuYue) && b.liuYue.length ? '；流月重點：' + _fmt(b.liuYue) : '') + '。');

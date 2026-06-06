@@ -692,11 +692,11 @@ function baziStrengthPattern(bazi) {
     out.push({ type:'殺重身輕', el:guanEl,
       zh:'官殺重身輕：官殺（' + guanEl + '）' + R(p(guanEl)) + '% 剋身過重。最佳解是印（' + yinEl + '）化殺生身（殺印相生），次用比劫（' + bjEl + '）幫身、或食傷（' + siEl + '）制殺；忌財（' + caiEl + '）黨殺。' });
   }
-  if (!strong && p(caiEl) >= 33 && !(yinHeavy && shaHeavy)) {
+  if (!strong && p(caiEl) >= 30 && p(caiEl) >= p(bjEl) && !(yinHeavy && shaHeavy)) {
     out.push({ type:'財多身弱', el:caiEl,
       zh:'財多身弱：財（' + caiEl + '）' + R(p(caiEl)) + '%，身弱擔不起財（富屋貧人，見財起爭）。用比劫（' + bjEl + '）幫身奪財、印（' + yinEl + '）生身固本；忌再行財運。' });
   }
-  if (!strong && p(siEl) >= 33) {
+  if (!strong && p(siEl) >= 28 && p(siEl) >= p(bjEl) && !yinHeavy && !shaHeavy) {
     out.push({ type:'食傷洩秀太過', el:siEl,
       zh:'食傷過旺洩身：食傷（' + siEl + '）' + R(p(siEl)) + '%，身弱而洩太過（才情外露卻耗身）。用印（' + yinEl + '）制食傷護身、比劫（' + bjEl + '）幫身；身弱忌再洩。' });
   }
@@ -729,6 +729,82 @@ function baziGuanShaMix(bazi) {
       zh:'官殺混雜：正官（' + zheng.join('、') + '）與七殺（' + qi.join('、') + '）並見。主壓力來源雜、是非口舌多、行事易進退失據；正統解法為「去官留殺」或「去殺留官」（以合或制去其一，留清純之氣），或以印化官殺。' };
   }
   return { mixed:false };
+}
+
+// ── 12. 完整五行喜忌表（扶抑為底 + 母多/殺印翻轉 + 調候override + 從化 + 引擎 fav/unfav 為最終權威）──
+// 解決「unfav 只列最重一個」導致大運判吉凶與喜忌不完整、不一致的問題；全盤共用此表
+function baziWuxingStance(bazi) {
+  if (!bazi || !bazi.dmEl) return null;
+  var dmEl = bazi.dmEl, els = ['木','火','土','金','水'];
+  var YIN = {木:'水',火:'木',土:'火',金:'土',水:'金'}, SHENG = {木:'火',火:'土',土:'金',金:'水',水:'木'},
+      KE = {木:'土',火:'金',土:'水',金:'木',水:'火'}, KEME = {木:'金',火:'水',土:'木',金:'火',水:'土'};
+  var role = {}; role[YIN[dmEl]] = '印'; role[dmEl] = '比劫'; role[SHENG[dmEl]] = '食傷'; role[KE[dmEl]] = '財'; role[KEME[dmEl]] = '官殺';
+  var strong = !!bazi.strong, st = {};
+  // 1) 扶抑為底
+  els.forEach(function (e) {
+    if (bazi.specialStructure) { st[e] = '平'; }
+    else if (strong) { st[e] = (role[e] === '食傷' || role[e] === '財' || role[e] === '官殺') ? '喜' : '忌'; }
+    else { st[e] = (role[e] === '印' || role[e] === '比劫') ? '喜' : '忌'; }
+  });
+  // 2) 從格/化氣格覆蓋
+  if (bazi.specialStructure) {
+    (bazi.specialStructure.favEls || []).forEach(function (e) { st[e] = '喜'; });
+    (bazi.specialStructure.unfavEls || []).forEach(function (e) { st[e] = '忌'; });
+  }
+  // 3) 病象翻轉（母多滅子／殺印兩旺：印過旺反忌、食傷洩印為喜、比劫幫身為喜）
+  (bazi.strengthPattern || []).forEach(function (s) {
+    if (/母多滅子|殺印兩旺/.test(s.type)) {
+      st[YIN[dmEl]] = '忌'; st[SHENG[dmEl]] = '喜'; st[dmEl] = '喜';
+      if (/殺印兩旺/.test(s.type)) { st[KE[dmEl]] = '忌'; st[KEME[dmEl]] = '忌'; }
+      else { st[KE[dmEl]] = '喜'; }
+    }
+  });
+  // 4) 調候微調（調候所需者不可純當忌，降為平／升喜方向；調候所忌者為忌）
+  if (bazi.tiaohou) {
+    (bazi.tiaohou.need || []).forEach(function (e) { if (st[e] === '忌') st[e] = '平'; });
+    (bazi.tiaohou.avoid || []).forEach(function (e) { st[e] = '忌'; });
+  }
+  // 5) 引擎 fav/unfav 為最終權威（已含調候插隊、特殊格局、病藥的結論）
+  (bazi.fav || []).forEach(function (e) { st[e] = '喜'; });
+  (bazi.unfav || []).forEach(function (e) { st[e] = '忌'; });
+
+  var xi = els.filter(function (e) { return st[e] === '喜'; });
+  var ji = els.filter(function (e) { return st[e] === '忌'; });
+  var ping = els.filter(function (e) { return st[e] === '平'; });
+  return { map: st, role: role, xi: xi, ji: ji, ping: ping, conflict: !!bazi.strengthConflict,
+    summary: '喜：' + (xi.join('、') || '—') + '　忌：' + (ji.join('、') || '—') + (ping.length ? '　平（閒神）：' + ping.join('、') : '') };
+}
+
+// ── 13. 旺衰矛盾說明（得令卻弱／失令卻強…講開，避免 AI 卡在「得令=是卻判身弱」）──
+function baziStrengthNote(bazi) {
+  if (!bazi || !bazi.dm || !bazi.pillars) return null;
+  var dm = bazi.dm, strong = !!bazi.strong, deLing = !!bazi.deLing;
+  var mZhi = bazi.pillars.month ? bazi.pillars.month.zhi : '';
+  var siling = (bazi.renyuan && bazi.renyuan.gan) ? bazi.renyuan.gan : '';
+  var silingGod = siling ? _tenGodOf(dm, siling) : '';
+  var touBiJie = false, touYin = false;
+  ['year','month','hour'].forEach(function (k) {
+    var g = bazi.pillars[k] && bazi.pillars[k].gan; if (!g) return;
+    var god = _tenGodOf(dm, g);
+    if (god === '比肩' || god === '劫財') touBiJie = true;
+    if (god === '正印' || god === '偏印') touYin = true;
+  });
+  var notes = [];
+  if (deLing && !strong) {
+    var why = [];
+    if (silingGod && silingGod !== '比肩' && silingGod !== '劫財') why.push('月令當令之氣是' + siling + '（' + silingGod + '，並非比劫祿刃當令）');
+    if (!touBiJie && !touYin) why.push('比劫、印星均未透天干');
+    else if (!touBiJie) why.push('比劫未透天干');
+    why.push('洩耗之氣（食傷／財／官殺）較重，壓過月令幫身之力');
+    notes.push('得令卻偏弱：雖生於' + mZhi + '月看似當令，但' + why.join('、') + '，故日主實際轉弱——判吉凶仍以扶身（印、比劫）為先；惟因落在強弱界線，務必把這點不確定講出來。');
+  } else if (!deLing && strong) {
+    var by = [];
+    if (touBiJie) by.push('比劫透干');
+    if (touYin) by.push('印星透干');
+    by.push('地支多根、黨眾助身');
+    notes.push('失令卻偏旺：雖不當月令，但' + by.join('、') + '，故仍作旺論——用神取剋洩耗（官殺、財、食傷）。此盤亦在界線，留意複核。');
+  }
+  return notes.length ? notes.join(' ') : null;
 }
 
 function enhanceBazi(bazi) {
@@ -774,6 +850,27 @@ function enhanceBazi(bazi) {
 
   // 11. 官殺混雜
   try { bazi.guanShaMix = baziGuanShaMix(bazi); } catch(e) { bazi.guanShaMix = null; }
+
+  // 12. 完整五行喜忌表（需在 strengthPattern 之後）
+  try { bazi.wuxingStance = baziWuxingStance(bazi); } catch(e) { bazi.wuxingStance = null; }
+
+  // 13. 旺衰矛盾說明（得令卻弱…）
+  try { bazi.strengthNote = baziStrengthNote(bazi); } catch(e) { bazi.strengthNote = null; }
+
+  // 14. 大運吉凶標記（正統：天干管前五年、地支管後五年，各自比對完整喜忌；取代不可靠的 score）
+  try {
+    var _st = bazi.wuxingStance;
+    if (_st && _st.map && Array.isArray(bazi.dayun)) {
+      var _lab = function (e) { var v = _st.map[e]; return v === '喜' ? '順' : (v === '忌' ? '背' : '平'); };
+      bazi.dayun.forEach(function (d) {
+        if (!d || !d.gz || d.gz === '小運' || d.gz.length < 2) return;
+        var ganEl = WX_MAP[d.gz.charAt(0)], zhiEl = WX_MAP[d.gz.charAt(1)];
+        var g = _lab(ganEl), z = _lab(zhiEl);
+        d.luckLabel = (g === z) ? (g === '順' ? '吉' : (g === '背' ? '逆' : '平')) : ('前' + g + '後' + z);
+        d.luckByStance = { gan: g, zhi: z, ganEl: ganEl, zhiEl: zhiEl };
+      });
+    }
+  } catch(e) {}
 
   return bazi;
 }
