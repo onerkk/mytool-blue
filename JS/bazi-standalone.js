@@ -1,4 +1,4 @@
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.26]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.27]
  *  歐那 2026/6/6：八字自成一頁、乾淨、不出現其他入口、有自己的過場動畫，組好提示詞複製去 AI。
  *  做法：完全比照 meihua-standalone.js / lenormand.js 的「自包覆獨立頁 + 複製提示詞」模式。
  *  引擎：直接呼叫既有全域 calcTrueSolarTime() + computeBazi() + enhanceBazi()，不重造排盤。
@@ -363,6 +363,13 @@
     if (b.energyFlow && b.energyFlow.sortedPower) L.push('五行能量流：' + _fmt(b.energyFlow.sortedPower) + (b.energyFlow.breakPoint ? '；阻斷：' + _fmt(b.energyFlow.breakPoint) : '') + '。');
     L.push('');
 
+    // 旺衰病象（母多滅子／殺重身輕…）— 旺衰落點，直接決定用神方向，最該講透
+    if (Array.isArray(b.strengthPattern) && b.strengthPattern.length) {
+      L.push('【旺衰病象（用神方向的關鍵，務必先講透）】');
+      b.strengthPattern.forEach(function (s) { L.push('・' + s.zh); });
+      L.push('');
+    }
+
     // 格局
     L.push('【格局】');
     if (b.specialStructure) {
@@ -377,6 +384,7 @@
     } else {
       L.push('格局不顯（月令無明顯透出），以扶抑用神為主軸論。');
     }
+    if (b.guanShaMix && b.guanShaMix.mixed) L.push(b.guanShaMix.zh);
     L.push('');
 
     // 用神喜忌（斷吉凶的綱）
@@ -392,6 +400,13 @@
     }
     L.push('');
 
+    // 天干五合（含日主之合 → 合官/合財，重要斷語素材）
+    if (Array.isArray(b.tianGanHe) && b.tianGanHe.length) {
+      L.push('【天干五合】');
+      b.tianGanHe.forEach(function (h) { L.push('・' + h.zh); });
+      L.push('');
+    }
+
     // 刑沖合害 + 六親
     var inter = [];
     if (b.branchInteractions) inter.push(_fmt(b.branchInteractions));
@@ -402,12 +417,18 @@
       L.push('');
     }
 
-    // 神煞（鐵律要求只取相關）
-    var ssList = [];
-    if (Array.isArray(b.shensha)) ssList = ssList.concat(b.shensha);
-    if (Array.isArray(b.extraShenSha)) ssList = ssList.concat(b.extraShenSha.map(function (s) { return (s && s.name) ? s.name : _fmt(s); }));
-    ssList = ssList.filter(Boolean).filter(function (v, i, a) { return a.indexOf(v) === i; });
-    if (ssList.length) { L.push('【神煞（輔助，只挑與問題相關且有力者用，不要全列、不要嚇人）】' + ssList.join('、') + '。'); L.push(''); }
+    // 神煞（材料給全；鐵律仍要 AI 只挑相關者寫）
+    var ssNames = [];
+    if (Array.isArray(b.shensha)) ssNames = ssNames.concat(b.shensha);
+    if (Array.isArray(b.extraShenSha)) ssNames = ssNames.concat(b.extraShenSha.map(function (s) { return (s && s.name) ? s.name : _fmt(s); }));
+    ssNames = ssNames.filter(Boolean).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    if (ssNames.length) {
+      L.push('【神煞（輔助；只挑與問題相關且有力者用，不要全列、不要嚇人）】');
+      L.push('全部：' + ssNames.join('、') + '。');
+      var ssDetail = (Array.isArray(b.extraShenSha) ? b.extraShenSha : []).map(function (s) { return (s && s.zh) ? '・' + s.zh : ''; }).filter(Boolean);
+      if (ssDetail.length) L.push(ssDetail.join('\n'));
+      L.push('');
+    }
 
     // 十神組合
     if (Array.isArray(b.tenGodCombos) && b.tenGodCombos.length) {
@@ -421,8 +442,9 @@
       var lines = [];
       b.dayun.forEach(function (d) {
         if (!d || d.gz === '小運') return;
+        var luck = (typeof d.score === 'number') ? (d.score >= 2 ? '吉' : (d.score <= -2 ? '逆' : '平')) : '';
         var seg = (d.gz || '') + '（' + (d.ageStart != null ? d.ageStart + '–' + d.ageEnd + '歲' : '') + '）'
-          + (d.god ? ' ' + d.god : '') + (d.isCurrent ? ' ★現行' : '');
+          + (d.god ? ' ' + d.god : '') + (luck ? '〔' + luck + '〕' : '') + (d.isCurrent ? ' ★現行' : '');
         lines.push(seg);
       });
       if (lines.length) L.push('大運序：' + lines.join('　'));
