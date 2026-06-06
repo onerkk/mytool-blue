@@ -287,28 +287,39 @@
       L.push('【生年四化】(先天動線，最關鍵)');
       zw.sihua.forEach(function(h){ L.push('・' + h.star + '化' + huaShort(h.hua) + '　入「' + h.palace + '」宮'); });
     }
-    // 自化
+    // 自化（離心↓＝本宮宮干自化飛出；向心↑＝對宮飛入本宮）
     try {
       if (zw.selfHua) {
-        var sh = [];
+        var sh = [], _seen = {};
         if (Array.isArray(zw.selfHua)) {
-          zw.selfHua.forEach(function(x){ if (x && x.star) sh.push((x.palace?x.palace+'宮':'') + x.star + '自化' + huaShort(x.hua||x.label||'')); });
+          zw.selfHua.forEach(function(x){
+            if (!x || !x.star) return;
+            var pname = x.palace || '';
+            if (pname && pname.charAt(pname.length-1) !== '宮') pname = pname + '宮';   // 修「命宮宮」重複
+            var ht = huaShort(x.type || x.hua || x.label || '');                         // 引擎欄位是 .type
+            var dir = x.direction === '↑' ? '向心↑（對宮飛入）' : (x.direction === '↓' ? '離心↓（飛出）' : '');
+            var line = pname + x.star + '自化' + ht + (dir ? '，' + dir : '');
+            var key = pname + '|' + x.star + '|' + ht + '|' + (x.direction || '');         // 去重
+            if (_seen[key]) return; _seen[key] = 1;
+            sh.push(line);
+          });
         } else if (typeof zw.selfHua === 'object') {
           Object.keys(zw.selfHua).forEach(function(kk){ var v = zw.selfHua[kk]; if (v) sh.push(kk + '：' + (typeof v==='string'?v:JSON.stringify(v))); });
         }
-        if (sh.length) { L.push(''); L.push('【自化】(主漏失/反復/裡外不一)'); sh.forEach(function(s){ L.push('・' + s); }); }
+        if (sh.length) { L.push(''); L.push('【自化】(主漏失/反復/裡外不一；離心＝心力向外漏、向心＝外緣倒灌進來)'); sh.forEach(function(s){ L.push('・' + s); }); }
       }
     } catch (e) {}
 
     // 十二宮全盤
     L.push('');
-    L.push('【十二宮全盤】(每宮：地支｜主星含廟旺｜輔吉｜煞｜四化)');
+    L.push('【十二宮全盤】(每宮：地支｜主星含廟旺｜輔吉｜煞｜十二長生)');
     palaces.forEach(function(p){
       var pp = palaceStarParts(p);
       var seg = p.name + '宮(' + p.branch + ')：' +
         (pp.majors.length ? pp.majors.join('、') : '空宮') +
         (pp.aux.length ? '｜吉:' + pp.aux.join('、') : '') +
-        (pp.sha.length ? '｜煞:' + pp.sha.join('、') : '');
+        (pp.sha.length ? '｜煞:' + pp.sha.join('、') : '') +
+        (p.changsheng ? '｜長生:' + p.changsheng : '');
       L.push('・' + seg);
     });
 
