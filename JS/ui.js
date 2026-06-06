@@ -5412,8 +5412,8 @@ function _gasCall(action){
       })
       .catch(()=>{
         // fetch 失敗時用 Image beacon（只能送不能收）
-        if(action === 'increment'){
-          new Image().src = CTR_ENDPOINT + '?action=increment&_t=' + Date.now();
+        if(action === 'increment' || action === 'reset'){
+          new Image().src = CTR_ENDPOINT + '?action=' + action + '&_t=' + Date.now();
         }
         clearTimeout(timeout);
         delete window[cbName];
@@ -5487,6 +5487,21 @@ async function openAdmin(){
 function closeAdmin(){
   document.getElementById('admin-overlay').classList.remove('visible');
   document.getElementById('admin-panel').classList.remove('visible');
+}
+
+// ── 人次歸零（後台限定，需 GAS 支援 action=reset）──
+async function resetVisitorCount(){
+  if(!confirm('確定要將人次歸零嗎？此動作無法復原。')) return;
+  if(!CTR_ENDPOINT){ alert('未設定計數端點'); return; }
+  var ac=document.getElementById('admin-count'), at=document.getElementById('admin-today');
+  if(ac) ac.textContent='…'; if(at) at.textContent='…';
+  await _gasCall('reset');
+  var data = await _gasCall('get');
+  var total=(data&&data.total)||0, today=(data&&data.today)||0;
+  if(ac) ac.textContent=total.toLocaleString();
+  if(at) at.textContent=today.toLocaleString();
+  var n=document.getElementById('counter-num'); if(n) n.textContent=total.toLocaleString();
+  var t=document.getElementById('counter-today'); if(t) t.textContent=today.toLocaleString();
 }
 
 
