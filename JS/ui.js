@@ -5422,7 +5422,7 @@ function _gasCall(action){
   });
 }
 
-// ── 計數 +1（每次到結果頁觸發）──
+// ── 計數 +1（連進首頁觸發一次）──
 async function _countVisitor(){
   if(!CTR_ENDPOINT) return;
   const data = await _gasCall('increment');
@@ -5434,6 +5434,12 @@ async function _countVisitor(){
     }
   }
 }
+
+// ── 連進首頁即計數（每次頁面載入只觸發一次）──
+let _visitCounted=false;
+function _maybeCountVisit(){ if(_visitCounted) return; _visitCounted=true; _countVisitor(); }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', _maybeCountVisit);
+else _maybeCountVisit();
 
 // ── 月亮連點 5 下 ──
 let _moonTapCount=0, _moonTapTimer=null;
