@@ -1,4 +1,4 @@
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.28]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.29]
  *  歐那 2026/6/6：八字自成一頁、乾淨、不出現其他入口、有自己的過場動畫，組好提示詞複製去 AI。
  *  做法：完全比照 meihua-standalone.js / lenormand.js 的「自包覆獨立頁 + 複製提示詞」模式。
  *  引擎：直接呼叫既有全域 calcTrueSolarTime() + computeBazi() + enhanceBazi()，不重造排盤。
@@ -461,6 +461,12 @@
         var curV = cur.luckByStance;
         L.push('現行大運 ' + (cur.gz || '') + (cur.luckLabel ? '〔' + cur.luckLabel + '〕' : '') + '：天干十神 ' + (cur.god || '—') + '（管前五年）、地支十神 ' + (cur.zGod || '—') + '（管後五年）。'
           + (curV ? '以喜忌論：前五年走' + curV.ganEl + '（' + curV.gan + '）、後五年走' + curV.zhiEl + '（' + curV.zhi + '）。' : ''));
+        var ph = cur.phaseNow;
+        if (ph) {
+          var _lv = function (x) { return x === '順' ? '順（喜用到位）' : (x === '背' ? '背（忌神當道，不利）' : '平'); };
+          L.push('★ 現在實際走到：【' + ph.half + '：' + ph.gz + '（' + ph.el + '，' + ph.god + '）】，當下運勢＝' + _lv(ph.luck) + '。這才是「現在」的運，不要用整步大運前後平均來判。'
+            + '約至西元 ' + ph.untilYear + ' 年，' + (ph.nextGz ? '走完前半、轉入後五年 ' + ph.nextGz + '（' + ph.nextEl + '，' + _lv(ph.nextLuck) + '）' : '此大運交脫、換下一步') + '。');
+        }
         L.push('（判斷現運吉凶：拿大運天干（前五年）、地支（後五年）的五行去比對上面的「五行喜忌全表」——走喜用則順、走忌神則背；再看大運是否沖合原局喜用。）');
       }
     }

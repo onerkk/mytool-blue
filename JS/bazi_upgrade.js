@@ -868,6 +868,25 @@ function enhanceBazi(bazi) {
         var g = _lab(ganEl), z = _lab(zhiEl);
         d.luckLabel = (g === z) ? (g === '順' ? '吉' : (g === '背' ? '逆' : '平')) : ('前' + g + '後' + z);
         d.luckByStance = { gan: g, zhi: z, ganEl: ganEl, zhiEl: zhiEl };
+        // 現行大運：算出「現在」落在前五年(天干)還是後五年(地支)，當下這半是順是背、何時交脫
+        if (d.isCurrent && d.ageStart != null) {
+          var nowY = (new Date()).getFullYear();
+          var mAdj = (bazi.qiyun && bazi.qiyun.months >= 6) ? 1 : 0;
+          var midY = (bazi._birthYear || 0) + d.ageStart + 5 + mAdj;     // 後五年起始西元年（近似）
+          var endY = (bazi._birthYear || 0) + d.ageEnd + 1 + mAdj;       // 此大運交脫西元年（近似）
+          var inSecond = (bazi._birthYear ? nowY >= midY : false);
+          d.phaseNow = {
+            half: inSecond ? '後五年' : '前五年',
+            gz: inSecond ? d.gz.charAt(1) : d.gz.charAt(0),
+            el: inSecond ? zhiEl : ganEl,
+            luck: inSecond ? z : g,                       // 順／背／平
+            god: inSecond ? (d.zGod || '') : (d.god || ''),
+            untilYear: inSecond ? endY : midY,            // 這一半走到哪年
+            nextGz: inSecond ? null : d.gz.charAt(1),
+            nextEl: inSecond ? null : zhiEl,
+            nextLuck: inSecond ? null : z
+          };
+        }
       });
     }
   } catch(e) {}
