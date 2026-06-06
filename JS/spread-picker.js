@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🎴 牌陣選擇器（v70.9）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+// 🎴 牌陣選擇器（v80.3-20260606-spread-restore）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
 //   機制：手動選定時，包裝 detectSpreadType 使其直接回傳該牌陣，
 //        於是所有自動偵測點（含 initTarotDeck）都會吃到手動選擇，ui.js 不需改動。
 //   風格：沿用站上 token（--c-gold / --c-bg-card / Noto Serif TC）與 jy-tool-card orb 質感。
@@ -7,6 +7,7 @@
 (function () {
   if (window._jySpreadPickerInit) return;
   window._jySpreadPickerInit = true;
+  window._jySpreadPickerVersion = 'v80.3-20260606-spread-restore';
   if (typeof window._forcedSpread === 'undefined') window._forcedSpread = null;
 
   // ── 每個牌陣的圖示 / 點綴色(rgb) / 中文名 / 適合的問題 ──
@@ -21,15 +22,39 @@
     tree_of_life: { icon: 'fa-sitemap',      accent: '52,211,153',  cn: '生命之樹',      suited: '靈性、人生課題、深層自我（卡巴拉）' },
     zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '年度運勢 ・ 十二宮掃描一整年' },
     minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '具體生活問題 ・ 只用 56 張小牌' },
-    fifteen_card: { icon: 'fa-shapes',       accent: '139,92,246',  cn: '金色黎明十五張', suited: '元素尊貴、不用逆位（進階）' },
-    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '1888 古法 ・ 三排七、由右至左（進階）' }
+    fifteen_card:      { icon: 'fa-shapes',      accent: '139,92,246',  cn: '金色黎明十五張',        suited: '元素尊貴、不用逆位（進階）' },
+    mathers_21:        { icon: 'fa-table-cells', accent: '201,168,76',   cn: 'Mathers 二十一張',     suited: '1888 第二法 ・ 三排七、由右至左（進階）' },
+    mathers_horseshoe: { icon: 'fa-route',       accent: '201,168,76',   cn: 'Mathers 第一法馬蹄形', suited: '1888 第一法 ・ A/C/E 三組 horseshoe（進階）' }
   };
   var GROUPS = [
     { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'celtic_cross'] },
-    { label: '進階・專門', ids: ['tree_of_life', 'zodiac', 'minor_arcana', 'fifteen_card', 'mathers_21'] }
+    { label: '進階・專門', ids: ['tree_of_life', 'zodiac', 'minor_arcana', 'fifteen_card', 'mathers_21', 'mathers_horseshoe'] }
   ];
 
-  function defOf(id) { return (typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[id]) ? SPREAD_DEFS[id] : null; }
+  // v80.2-restore：選單不能完全依賴 SPREAD_DEFS。
+  // 原因：手機端若 spread-picker 先於 tarot_upgrade 完成初始化，或快取吃到不同版本，
+  // defOf(id) 回 null 會導致進階牌陣被 itemHTML 靜默隱藏。
+  // 這裡提供 UI 顯示用 fallback；真正抽牌仍交給 tarot_upgrade.js 的 SPREAD_DEFS / setCurrentSpread。
+  var FALLBACK_DEFS = {
+    three_card:        { id: 'three_card',        zh: '三牌陣', count: 3 },
+    five_card:         { id: 'five_card',         zh: '五牌陣', count: 5 },
+    relationship:      { id: 'relationship',      zh: '關係牌陣', count: 6 },
+    either_or:         { id: 'either_or',         zh: '二選一', count: 5 },
+    cross:             { id: 'cross',             zh: '十字牌陣', count: 5 },
+    timeline:          { id: 'timeline',          zh: '時間線', count: 5 },
+    celtic_cross:      { id: 'celtic_cross',      zh: '凱爾特十字', count: 10 },
+    tree_of_life:      { id: 'tree_of_life',      zh: '生命之樹', count: 10 },
+    zodiac:            { id: 'zodiac',            zh: '黃道十二宮', count: 13 },
+    minor_arcana:      { id: 'minor_arcana',      zh: '小阿卡那', count: 7 },
+    fifteen_card:      { id: 'fifteen_card',      zh: '金色黎明十五張', count: 15 },
+    mathers_21:        { id: 'mathers_21',        zh: 'Mathers 二十一張', count: 21 },
+    mathers_horseshoe: { id: 'mathers_horseshoe', zh: 'Mathers First Method (1888 完整 horseshoe)', count: 54 }
+  };
+
+  function defOf(id) {
+    if (typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS && SPREAD_DEFS[id]) return SPREAD_DEFS[id];
+    return FALLBACK_DEFS[id] || null;
+  }
 
   // detectSpreadType 不再包裝（跨檔重新指派在實機不可靠）。
   // 手動選定的牌陣改由 ui.js 各偵測點直接讀 window._forcedSpread 強制套用。
@@ -159,7 +184,17 @@
       window._forcedSpread = null;
     } else {
       window._forcedSpread = id;
-      if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
+
+      // v80.2-restore：避免 setCurrentSpread 尚未載入或版本不同時直接中斷 UI。
+      // 若 SPREAD_DEFS 真的缺該 id，console 會明確提示，不再讓選單「看起來消失」。
+      try {
+        if (typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS && !SPREAD_DEFS[id]) {
+          console.warn('[SpreadPicker] 選單已有此牌陣，但 SPREAD_DEFS 尚未註冊：', id, '請同步 tarot_upgrade.js');
+        }
+        if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
+      } catch (e) {
+        console.warn('[SpreadPicker] setCurrentSpread 失敗：', id, e);
+      }
     }
     // 清牌堆，讓下次抽牌（或返回抽牌頁）依新牌陣重建
     try { if (typeof deckShuffled !== 'undefined') deckShuffled = []; } catch (e) {}
