@@ -534,14 +534,14 @@
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
             <div><div class="jy-tool-name">塔羅快讀</div><div class="jy-tool-desc">一個問題，抽牌就有答案<br><span style="opacity:.6">不需出生資料・30 秒出結果</span></div></div>
-            <div class="jy-tool-free" id="tool-tarot-badge">免費體驗 1 次</div>
+            <div class="jy-tool-free" id="tool-tarot-badge">完全免費</div>
           </div>
         </div>
         <div class="jy-tool-card jy-tool-ootk" id="tool-ootk" onclick="pickTool('ootk')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(217,151,56,.18),rgba(217,151,56,.06));border-color:rgba(217,151,56,.3)"><i class="fas fa-key" style="color:rgba(217,151,56,.9)"></i></div>
             <div><div class="jy-tool-name">開鑰之法</div><div class="jy-tool-desc">78 張牌五層深潛,問到根源<br><span style="opacity:.6">不需任何資料・金色黎明開鑰儀式</span></div></div>
-            <div class="jy-tool-free" id="tool-ootk-badge">免費體驗 1 次</div>
+            <div class="jy-tool-free" id="tool-ootk-badge">完全免費</div>
           </div>
         </div>
         <!-- ★ v70 七維度交叉分析工具卡已移除 -->
@@ -1349,7 +1349,7 @@
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260606v80_25" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260606v80_22" defer></script>
-<script src="JS/ui.js?v=20260606v80_24" defer></script>
+<script src="JS/ui.js?v=20260606v80_25" defer></script>
 <script src="JS/spread-picker.js?v=20260606v80_23" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
@@ -1436,54 +1436,10 @@
 #admin-panel .admin-close{position:absolute!important;top:11px!important;right:13px!important;background:none!important;border:none!important;color:var(--c-text-muted,#8a8270)!important;font-size:1.6rem!important;line-height:1!important;cursor:pointer!important;padding:2px 8px!important;border-radius:8px!important;transition:color .2s}
 #admin-panel .admin-close:hover{color:var(--c-gold,#c9a84c)!important}
 </style>
-<!-- 後台管理面板 -->
-<div class="admin-overlay" id="admin-overlay" onclick="closeAdmin()"></div>
-<div class="admin-panel" id="admin-panel">
-  <button class="admin-close" onclick="closeAdmin()">&times;</button>
-  <h3>📊 解讀人次統計</h3>
-  <div class="admin-row"><label>累計總人次</label><span class="admin-val" id="admin-count">0</span></div>
-  <div class="admin-row"><label>今日人次</label><span class="admin-val" id="admin-today">0</span></div>
-  <button class="admin-btn" onclick="closeAdmin()">關閉</button>
-  <button class="admin-reset" onclick="resetVisitorCount()">歸零計數</button>
-  <div style="margin-top:var(--sp-sm);font-size:.68rem;color:var(--c-text-muted);text-align:center">
-    每次造訪首頁 = 1 人次<br>連點月亮 5 下開啟 · 重整後隱藏
-  </div>
-</div>
+<!-- 後台統計面板改由 ui.js 於後台手勢觸發時動態注入，不放進靜態 DOM（避免爬蟲／AI 讀到內部數據與後台入口） -->
 
 
-<!-- ═══ 定價方案 ═══ -->
-<section id="jy-pricing" style="display:none;max-width:440px;margin:2rem auto;padding:0 1rem">
-  <div style="text-align:center;margin-bottom:1.5rem">
-    <div style="font-size:1.1rem;color:var(--c-gold,#c9a84c);font-weight:700;font-family:var(--f-display,serif)">方案與定價</div>
-    <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);margin-top:.3rem">所有方案都包含追問功能</div>
-  </div>
-
-  <!-- 免費 -->
-  <div style="padding:.8rem 1rem;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:.6rem">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
-      <span style="font-size:.88rem;font-weight:700;color:var(--c-text,#e0d8c8)">免費體驗</span>
-      <span style="font-size:.82rem;color:var(--c-gold,#c9a84c);font-weight:700">NT$0</span>
-    </div>
-    <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.7">
-      七維度・塔羅・開鑰 各 1 次(共 3 次)・需 Google 登入<br>含追問・氣色面相+手相分析(七維度專用,免費)
-    </div>
-  </div>
-
-  <!-- v64.C:會員下架,標準會員 / 高級會員卡片移除,只保留免費 + 單次 -->
-
-  <!-- 單次 -->
-  <div style="padding:.8rem 1rem;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:.6rem">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
-      <span style="font-size:.88rem;font-weight:700;color:var(--c-text,#e0d8c8)">單次購買</span>
-      <span style="font-size:.7rem;color:var(--c-text-muted,#8a7d6b)">僅限信用卡</span>
-    </div>
-    <div style="font-size:.72rem;color:var(--c-text-dim,#a09880);line-height:1.8">
-      <span style="color:var(--c-gold)">標準解讀</span>:塔羅 NT$30 ・ 開鑰 NT$70 ・ 七維度 NT$70<br>
-      <span style="color:#c084fc">深度解析(Opus)</span>:塔羅 NT$60 ・ 開鑰 NT$140 ・ 七維度 NT$140<br>
-      <span style="color:var(--c-gold)">追問單次</span>：NT$15(每次解讀含 1 次免費)
-    </div>
-  </div>
-</section>
+<!-- 定價方案區已移除：v70 起全站免費、免登入。舊付費卡片雖 display:none 仍留在原始碼，會被爬蟲／AI 讀成「要收費」而名實不符，故整段刪除 -->
 
 
 <!-- ═══ Footer ═══ -->
