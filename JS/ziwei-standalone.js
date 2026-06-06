@@ -643,6 +643,14 @@
     var form = { type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown };
     try { if (typeof S !== 'undefined') { S.form = form; S._tarotOnlyMode = false; S._autoMode = false; } } catch (e) {}
 
+    // 廟旺表校正：ai-analysis.js 的 ZW_BRIGHTNESS 有 8 格與正統(文墨)不符，於此就地覆蓋（不動 2.7萬行大檔，且對任何命盤生效）。
+    // 索引：0子1丑2寅3卯4辰5巳6午7未8申9酉10戌11亥
+    try {
+      if (typeof ZW_BRIGHTNESS !== 'undefined' && ZW_BRIGHTNESS) {
+        var _bfix = { '紫微':[[3,'旺']], '天機':[[2,'得地']], '天同':[[10,'平']], '廉貞':[[7,'利']], '天府':[[1,'廟']], '貪狼':[[3,'利']], '七殺':[[7,'廟']], '破軍':[[11,'平']] };
+        for (var _st in _bfix) { if (ZW_BRIGHTNESS[_st]) { _bfix[_st].forEach(function(pair){ ZW_BRIGHTNESS[_st][pair[0]] = pair[1]; }); } }
+      }
+    } catch (e) {}
     // 紫微以時辰定盤：直接以時辰代表時排盤（無出生地經度校正，符合斗數慣例）
     // 保險：approxLunar 用 Lunar.Solar，而 lunar.js 把它掛在 window.Solar，故補上橋接。
     try { if (window.Solar && (!window.Lunar || !window.Lunar.Solar)) { if (!window.Lunar) window.Lunar = {}; window.Lunar.Solar = window.Solar; } } catch(e){}
