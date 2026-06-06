@@ -6547,3 +6547,336 @@ if (document.readyState === 'loading') {
 }
 
 })();
+
+// ══════════════════════════════════════════════════════════════════════
+// v80.11-20260606：塔羅牌陣完整化 + 自動判斷細部路由 + 原典/現代來源分級
+// 目的：
+// 1) 補齊目前站內塔羅快讀缺漏牌陣：一張牌、七張馬蹄、大阿卡那22路徑、Waite 42、Waite 35、Mathers第三法66。
+// 2) 保留現有牌陣，並明確標示：古典原典 / 金色黎明或赫密斯系統應用 / 現代實務。
+// 3) 自動判斷不只回傳牌陣 ID，另保留 flags、reason、routingLog，供提示詞與除錯使用。
+// 注意：世界上沒有「所有塔羅牌陣」的封閉全集；此處的「補齊」是以 Waite、Mathers、GD/Book T 相關骨架 + 站內實務需要建立完整可用清單。
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+  if (window._jyTarotSpreadEngineV8011) return;
+  window._jyTarotSpreadEngineV8011 = true;
+  window.JY_TAROT_SPREAD_ENGINE_VERSION = 'v80.11-20260606-spread-complete';
+
+  if (typeof SPREAD_DEFS === 'undefined' || !SPREAD_DEFS) return;
+
+  function p(name, zh){ return { name: name, zh: zh || name }; }
+  function seq(prefix, n, zhFn){
+    var arr = [];
+    for (var i = 1; i <= n; i++) arr.push(p(prefix + '-' + String(i).padStart(2,'0'), zhFn ? zhFn(i) : (prefix + '第' + i + '張')));
+    return arr;
+  }
+  function concat(){
+    var out=[];
+    for (var i=0;i<arguments.length;i++) out = out.concat(arguments[i]);
+    return out;
+  }
+
+  // ── 現代快問：一張牌 ──
+  SPREAD_DEFS.one_card = {
+    id: 'one_card', zh: 'One-Card Oracle（一張牌）', count: 1,
+    en: 'One-Card Oracle', sourceLevel: 'modern_practical',
+    desc: '現代快問/今日指引・只給一個核心訊號，不適合複雜問題',
+    positions: [ p('核心訊號', '此刻最需要看的單一核心訊號；只回答一件事，不擴寫成通盤') ]
+  };
+
+  // ── 7張馬蹄：若舊版已有，補來源與讀法標示 ──
+  SPREAD_DEFS.horseshoe = SPREAD_DEFS.horseshoe || {
+    id: 'horseshoe', zh: 'Horseshoe Spread（七張馬蹄形）', count: 7,
+    en: 'Seven-Card Horseshoe', sourceLevel: 'modern_gd_lineage',
+    desc: 'GD/RWS 實務常用七張馬蹄・中等複雜、比五牌細、比凱爾特十字短',
+    positions: [
+      p('1.過去','過去影響'), p('2.現在','目前處境'), p('3.隱藏影響','未明說或尚未看見的因素'),
+      p('4.建議','弧頂中央・最佳行動'), p('5.他人態度','外界/他人對此事的態度'),
+      p('6.阻礙','主要障礙'), p('7.結果','最可能結果')
+    ]
+  };
+  SPREAD_DEFS.horseshoe.sourceLevel = SPREAD_DEFS.horseshoe.sourceLevel || 'modern_gd_lineage';
+
+  // ── 大阿卡那 22 路徑：不是 Waite/Mathers 的固定牌陣，屬赫密斯卡巴拉應用 ──
+  SPREAD_DEFS.major_arcana_22 = {
+    id: 'major_arcana_22', zh: '大阿卡那二十二路徑', count: 22,
+    en: 'Major Arcana 22 Paths', sourceLevel: 'hermetic_qabalah_application', deckFilter: 'major_only',
+    desc: '只用22張大阿卡那・依生命之樹22路徑/希伯來字母/行星星座元素做深層掃描；不是 Waite 或 Mathers 原文牌陣',
+    positions: [
+      p('11路徑 Aleph','Kether→Chokmah・風・愚者：原初衝動/開端'),
+      p('12路徑 Beth','Kether→Binah・水星・魔術師：意志/操作/媒介'),
+      p('13路徑 Gimel','Kether→Tiphereth・月亮・女祭司：潛意識通道'),
+      p('14路徑 Daleth','Chokmah→Binah・金星・女皇：接收/孕育/豐盛'),
+      p('15路徑 Heh','Chokmah→Tiphereth・白羊・皇帝：主權/秩序/意志'),
+      p('16路徑 Vav','Chokmah→Chesed・金牛・教皇：傳承/信念/法則'),
+      p('17路徑 Zain','Binah→Tiphereth・雙子・戀人：選擇/結合/分辨'),
+      p('18路徑 Cheth','Binah→Geburah・巨蟹・戰車：意志載具/防禦'),
+      p('19路徑 Teth','Chesed→Geburah・獅子・力量：馴服衝動'),
+      p('20路徑 Yod','Chesed→Tiphereth・處女・隱者：內在光/辨識'),
+      p('21路徑 Kaph','Chesed→Netzach・木星・命運之輪：循環與轉機'),
+      p('22路徑 Lamed','Geburah→Tiphereth・天秤・正義：平衡/因果/裁決'),
+      p('23路徑 Mem','Geburah→Hod・水・倒吊人：犧牲/換視角'),
+      p('24路徑 Nun','Tiphereth→Netzach・天蠍・死神：切斷/轉化'),
+      p('25路徑 Samekh','Tiphereth→Yesod・射手・節制：調和/通道'),
+      p('26路徑 Ayin','Tiphereth→Hod・摩羯・惡魔：束縛/慾望/物質'),
+      p('27路徑 Peh','Netzach→Hod・火星・塔：破壞舊結構'),
+      p('28路徑 Tzaddi','Netzach→Yesod・水瓶・星星：願景/信號'),
+      p('29路徑 Qoph','Netzach→Malkuth・雙魚・月亮：幻象/潛流'),
+      p('30路徑 Resh','Hod→Yesod・太陽・太陽：顯化/清晰'),
+      p('31路徑 Shin','Hod→Malkuth・火/靈・審判：召喚/覺醒'),
+      p('32路徑 Tav','Yesod→Malkuth・土/土星・世界：完成/落地')
+    ]
+  };
+
+  // ── Waite 42 張替代法 ──
+  SPREAD_DEFS.waite_42 = {
+    id: 'waite_42', zh: 'Waite Alternative Method（42張六列七）', count: 42,
+    en: 'Waite Alternative Method', sourceLevel: 'waite_original_1911',
+    desc: 'A.E. Waite《Pictorial Key》Part III §8・無明確單一問題時看人生/命運趨勢・六列七張連讀',
+    positions: concat(
+      seq('第1列',7,function(i){return '第1列第'+i+'張・總體趨勢第一層；每列連讀';}),
+      seq('第2列',7,function(i){return '第2列第'+i+'張・總體趨勢第二層；每列連讀';}),
+      seq('第3列',7,function(i){return '第3列第'+i+'張・總體趨勢第三層；每列連讀';}),
+      seq('第4列',7,function(i){return '第4列第'+i+'張・總體趨勢第四層；每列連讀';}),
+      seq('第5列',7,function(i){return '第5列第'+i+'張・總體趨勢第五層；每列連讀';}),
+      seq('第6列',7,function(i){return '第6列第'+i+'張・總體趨勢第六層；每列連讀';})
+    )
+  };
+
+  // ── Waite 35 張補充法 ──
+  SPREAD_DEFS.waite_35 = {
+    id: 'waite_35', zh: 'Waite Thirty-Five Cards（三十五張補充法）', count: 35,
+    en: 'Waite Thirty-Five Cards', sourceLevel: 'waite_original_1911',
+    desc: 'A.E. Waite《Pictorial Key》Part III §9・用於42張法後仍不明時追問；六列不等長，由左至右讀',
+    positions: concat(
+      seq('第1線-家宅環境',7,function(i){return '第一線第'+i+'張・house/environment：家宅、環境、外部條件';}),
+      seq('第2線-本人主體',6,function(i){return '第二線第'+i+'張・person/subject：問卜者或問題主體';}),
+      seq('第3線-外部事件',5,function(i){return '第三線第'+i+'張・outside events/persons：外界事件與人物';}),
+      seq('第4線-意外',4,function(i){return '第四線第'+i+'張・surprise：意外與突發';}),
+      seq('第5線-慰藉緩和',2,function(i){return '第五線第'+i+'張・consolation：緩和不利因素的力量';}),
+      seq('第6線-解謎線',11,function(i){return '第六線第'+i+'張・elucidation：解釋前五線疑義，本身不單獨成事';})
+    )
+  };
+
+  // ── Mathers 第三法 66 張 ──
+  SPREAD_DEFS.mathers_66 = {
+    id: 'mathers_66', zh: 'Mathers Third Method（1888 六十六張）', count: 66,
+    en: 'Mathers Third Method', sourceLevel: 'mathers_original_1888',
+    desc: 'Mathers 1888 第三法・代表牌居中，66張構成三角/拱形；1-11與34-44為過去，23-33與56-66為現在，12-22與45-55為未來',
+    positions: concat(
+      seq('過去A',11,function(i){return '過去A-'+i+'：原文 1-11，過去線第一組';}),
+      seq('未來A',11,function(i){return '未來A-'+i+'：原文 12-22，未來線第一組';}),
+      seq('現在A',11,function(i){return '現在A-'+i+'：原文 23-33，現在線第一組';}),
+      seq('過去B',11,function(i){return '過去B-'+i+'：原文 34-44，過去線第二組';}),
+      seq('未來B',11,function(i){return '未來B-'+i+'：原文 45-55，未來線第二組';}),
+      seq('現在B',11,function(i){return '現在B-'+i+'：原文 56-66，現在線第二組';})
+    )
+  };
+
+  // ── 自動判斷細部分析 ──
+  function re(q, r){ return r.test(q); }
+  function analyzeTarotSpreadQuestion(question, type){
+    var q = String(question || '').trim();
+    var t = type || 'general';
+    var qMarks = (q.match(/[？?]/g) || []).length;
+    var len = q.length;
+    var flags = {
+      explicitOne: re(q,/一張牌|抽一張|單張|今日指引|每日指引|一句話|快速提醒|當日建議/),
+      explicitMajor22: re(q,/大阿卡那|大牌|22\s*張|二十二\s*張|22路徑|二十二路徑|生命之樹.*路徑|希伯來.*字母/i),
+      explicitMinor: re(q,/小阿卡那|小牌|minor/i),
+      explicitWaite42: re(q,/Waite.*42|偉特.*42|42\s*張|四十二\s*張|Alternative Method|六列七|六排七/i),
+      explicitWaite35: re(q,/Waite.*35|偉特.*35|35\s*張|三十五\s*張|Thirty.?Five|補充法/i),
+      explicitMathers66: re(q,/Mathers.*(第三法|66|六十六)|1888.*(第三法|66|六十六)|三角.*拱形|Third Method/i),
+      explicitMathers54: re(q,/Mathers.*(第一法|古法|horseshoe|馬蹄|馬蹄形)|1888.*(第一法|古法|horseshoe|馬蹄)|54\s*張|五十四\s*張/i),
+      explicitMathers21: re(q,/Mathers.*(第二法|21|二十一|三排七)|1888.*(第二法|21|二十一|三排七)|三排七|21\s*張|二十一\s*張/i),
+      explicitFifteen: re(q,/金色黎明.*十五|GD.*十五|英式.*十五|fifteen.?card|15\s*張|十五\s*張|Crowley.*牌陣|Thoth.*spread/i),
+      explicitHorseshoe: re(q,/七張馬蹄|七牌馬蹄|horseshoe|馬蹄形牌陣|馬蹄牌陣/i),
+      annual: re(q,/年度|明年|今年|一年|12個月|十二個月|12宮|十二宮|黃道|全面掃描|上半年|下半年|每個月|整年/),
+      choose: re(q,/還是|或者|二選一|兩個.*選|哪一個|哪個好|兩者|選.*哪|A.*B.*選|留.*走|分.*不分|接受.*拒絕|買.*不買|做.*不做/),
+      timing: re(q,/什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|幾號|時間點|來得及|等多久|還要等|快了嗎|近期.*嗎|今天|今晚|明天|這週|這個月/),
+      pattern: re(q,/為什麼一直|總是|每次都|重複|反覆|循環|模式|業力|課題|使命|靈魂|前世|修行|本我|指導靈|守護/),
+      blocked: re(q,/拉扯|糾結|矛盾|卡住|進退兩難|衝突|阻礙|不順|瓶頸|困境|解不開|過不去|掙扎|核心.*阻礙/),
+      why: re(q,/為什麼|為何|怎麼會|為啥|什麼原因|原因是|根源|問題出在|到底怎麼了|怎麼回事/),
+      how: re(q,/如何|怎麼做|怎麼辦|怎樣才|方法|建議|策略|怎麼改|怎麼處理|怎麼經營|怎麼提升|要怎麼|改善|優化/),
+      overview: re(q,/整體|全面|深入|詳細|各方面|大局|多面向|完整分析|通盤|幫我看看(?!他|她)/),
+      yesno: re(q,/嗎[？?]?\s*$|^(會不會|有沒有|該不該|可不可以|能不能|是不是|是否|適不適合|好不好|值不值得?|行不行|對不對|要不要)|會嗎|能嗎|好嗎|行嗎|夠嗎|對嗎|有救/),
+      person: re(q,/他|她|對方|另一半|前任|現任|老公|老婆|男友|女友|伴侶|喜歡的人|喜歡上|喜歡我|喜不喜歡|愛不愛|想不想我|暗戀|告白|追我|追求|異性|曖昧|之間|怎麼想|心裡|真心|復合|分手|婚姻|夫妻|配偶|同事|主管|朋友/)
+    };
+    var isLove = (t === 'love' || t === 'secret' || t === 'relationship');
+    var isHealth = (t === 'health');
+    var isSpirit = (t === 'spiritual');
+    var isFamily = (t === 'family');
+    var selected = 'three_card';
+    var reason = '';
+    var routingLog = [];
+    function choose(id, why){ selected = id; reason = why; routingLog.push(id + '：' + why); }
+
+    if (!q) choose('three_card','未填問題，給最小三牌通盤，不擴成全人生');
+    else if (flags.explicitOne) choose('one_card','明確要求單張/今日快速指引');
+    else if (flags.explicitWaite42) choose('waite_42','明確要求 Waite 42 張替代法');
+    else if (flags.explicitWaite35) choose('waite_35','明確要求 Waite 35 張補充法');
+    else if (flags.explicitMathers66) choose('mathers_66','明確要求 Mathers 第三法 66 張');
+    else if (flags.explicitMathers54) choose('mathers_horseshoe','明確要求 Mathers 第一法 54 張 horseshoe');
+    else if (flags.explicitMathers21) choose('mathers_21','明確要求 Mathers 第二法 21 張三排七');
+    else if (flags.explicitFifteen) choose('fifteen_card','明確要求 GD/Thoth 15 張法');
+    else if (flags.explicitMajor22) choose('major_arcana_22','明確要求大阿卡那/22路徑');
+    else if (flags.explicitMinor) choose('minor_arcana','明確要求小阿卡那/小牌');
+    else if (flags.explicitHorseshoe) choose('horseshoe','明確要求七張馬蹄');
+    else if (flags.annual) choose('zodiac','年度/整年/十二宮問題，需逐宮掃描');
+    else if (flags.choose) choose('either_or','選擇題需要 A/B 對照位置');
+    else if (flags.timing) choose('timeline','時間題需要過去→轉折→結果的時間線');
+    else if (flags.pattern || isSpirit) choose(isHealth ? 'cross' : 'tree_of_life','重複模式/靈性課題，用生命之樹看深層結構；健康題則降為十字避免醫療化');
+    else if (flags.blocked || flags.why) choose('cross','卡住/阻礙/原因題，用核心 vs 阻礙最精準');
+    else if ((isLove || isFamily) && flags.person) choose(qMarks >= 3 ? 'celtic_cross' : 'relationship','涉及特定對象/關係，優先雙人關係牌陣；多子題升級凱爾特');
+    else if (qMarks >= 3 || len > 58 || flags.overview) choose('celtic_cross','多子題/長問題/完整局勢，用凱爾特十字避免資訊不足');
+    else if (flags.yesno && len <= 22) choose('three_card','短是非題，用三牌快答即可');
+    else if (flags.yesno) choose('five_card','中等是非題，需要原因/阻礙/結果');
+    else if (isHealth && flags.how) choose('minor_arcana','健康/日常改善題只看可執行生活層，不做醫療診斷');
+    else if (flags.how) choose('five_card','方法/策略題，需要現況原因阻礙建議結果');
+    else if (len <= 12) choose('one_card','極短單句，先給單一核心訊號');
+    else if (qMarks === 2 || len >= 30) choose('five_card','中等複雜度，五牌足夠拆因果');
+    else {
+      var defaults = { love:'five_card', secret:'relationship', work:'five_card', money:'five_card', health:'minor_arcana', family:'relationship', spiritual:'tree_of_life', general:'three_card' };
+      choose(defaults[t] || 'three_card','未命中特殊結構，依領域預設');
+    }
+
+    var def = SPREAD_DEFS[selected] || null;
+    var decision = {
+      version: window.JY_TAROT_SPREAD_ENGINE_VERSION,
+      question: q, type: t, qMarks: qMarks, length: len,
+      selected: selected, selectedZh: def ? def.zh : selected, count: def ? def.count : 0,
+      sourceLevel: def ? (def.sourceLevel || 'unspecified') : 'unknown',
+      reason: reason, flags: flags, routingLog: routingLog,
+      alternatives: buildSpreadAlternatives(selected, flags, t, qMarks, len)
+    };
+    window._lastSpreadDecision = decision;
+    return decision;
+  }
+
+  function buildSpreadAlternatives(selected, flags, type, qMarks, len){
+    var out=[];
+    function add(id, why){ if (id !== selected && SPREAD_DEFS[id]) out.push({id:id, zh:SPREAD_DEFS[id].zh, why:why}); }
+    if (selected !== 'celtic_cross' && (qMarks >= 2 || len > 30)) add('celtic_cross','若要完整局勢與外在環境，可升級凱爾特十字');
+    if (flags.person) add('relationship','若重點是對方/兩人互動，可改關係牌陣');
+    if (flags.timing) add('timeline','若只問時間點，可改時間線');
+    if (flags.how) add('five_card','若重點是可執行策略，可改五牌');
+    if (type === 'spiritual' || flags.pattern) add('tree_of_life','若要看人生模式/靈性課題，可改生命之樹');
+    if (flags.explicitMajor22 || type === 'spiritual') add('major_arcana_22','若只想看大牌命運骨架，可改22路徑');
+    return out.slice(0,3);
+  }
+
+  var _oldDetectSpreadType = (typeof detectSpreadType === 'function') ? detectSpreadType : null;
+  detectSpreadType = function(question, type){
+    try { return analyzeTarotSpreadQuestion(question, type).selected; }
+    catch(e) { console.warn('[SpreadEngine v80.11] detect failed, fallback:', e); return _oldDetectSpreadType ? _oldDetectSpreadType(question, type) : 'three_card'; }
+  };
+  window.detectSpreadType = detectSpreadType;
+  window.analyzeTarotSpreadQuestion = analyzeTarotSpreadQuestion;
+
+  var _oldSetCurrentSpread = (typeof setCurrentSpread === 'function') ? setCurrentSpread : null;
+  setCurrentSpread = function(id){
+    if (!SPREAD_DEFS[id]) return false;
+    if (_oldSetCurrentSpread) _oldSetCurrentSpread(id);
+    try {
+      window._lastSpreadDecision = window._lastSpreadDecision || {};
+      if (window._forcedSpread === id) {
+        window._lastSpreadDecision.manual = true;
+        window._lastSpreadDecision.selected = id;
+        window._lastSpreadDecision.selectedZh = SPREAD_DEFS[id].zh;
+        window._lastSpreadDecision.reason = '使用者手動指定牌陣';
+      }
+    } catch(e) {}
+    return true;
+  };
+  window.setCurrentSpread = setCurrentSpread;
+
+  // ── 正統/特定法抽牌演算法：供自動模式與塔羅快讀呼叫 ──
+  function cloneWithPos(card, pos, i, seed, type, question){
+    if (!card) return null;
+    var rng = (typeof makeSeededRng === 'function') ? makeSeededRng(seed || '', type || '', question || '', String(card.id) + ':' + i) : null;
+    if (typeof rng === 'function') { for (var k=0;k<=((card.id || 0)%31);k++) rng(); }
+    var isUp = (typeof rng === 'function') ? (rng() >= 0.5) : (Math.random() >= 0.5);
+    var o = Object.assign({}, card);
+    o.isUp = isUp;
+    o.pos = pos ? pos.name : '';
+    o.positionMeaning = pos ? pos.zh : '';
+    return o;
+  }
+  function filterDeckFor(def, deck){
+    var d = (deck || []).slice();
+    if (!def) return d;
+    if (def.deckFilter === 'minor_only') d = d.filter(function(c){ return c && c.suit !== 'major' && !(c.id < 22); });
+    if (def.deckFilter === 'major_only') d = d.filter(function(c){ return c && (c.suit === 'major' || c.id < 22); });
+    return d;
+  }
+  function dealMathersFirst(deck){
+    var A=[],B=[],C=[],D=[],E=[],F=[];
+    deck.forEach(function(card,i){ ((i % 3) === 1 ? A : B).push(card); });
+    B.forEach(function(card,i){ ((i % 3) === 1 ? C : D).push(card); });
+    D.forEach(function(card,i){ ((i % 3) === 1 ? E : F).push(card); });
+    return A.concat(C).concat(E);
+  }
+  function takeEveryNth(deck, n, count){
+    var pool = deck.slice(), out=[], idx=0;
+    while (pool.length && out.length < count) {
+      idx = (idx + (out.length === 0 ? 0 : n-1)) % pool.length;
+      out.push(pool.splice(idx,1)[0]);
+    }
+    return out;
+  }
+  function canonicalOrder(deck, spreadId, def){
+    var base = filterDeckFor(def, deck);
+    if (spreadId === 'mathers_horseshoe') return dealMathersFirst(base).slice(0,54);
+    if (spreadId === 'mathers_21') return takeEveryNth(base, 7, 21);
+    if (spreadId === 'mathers_66') return base.slice(0,66);
+    if (spreadId === 'waite_42') return base.slice(0,42);
+    if (spreadId === 'waite_35') return base.slice(0,35);
+    return base.slice(0, def ? def.count : 10);
+  }
+  window.JY_buildCanonicalTarotDraw = function(shuffled, spreadId, spreadDef, seed, type, question){
+    var def = spreadDef || SPREAD_DEFS[spreadId] || SPREAD_DEFS.celtic_cross;
+    var ordered = canonicalOrder(shuffled || [], spreadId, def);
+    var out=[];
+    for (var i=0; i < Math.min(def.count, ordered.length); i++) out.push(cloneWithPos(ordered[i], def.positions && def.positions[i], i, seed, type, question));
+    return out.filter(Boolean);
+  };
+
+  // ── 手動抽牌頁支援 major_only 顯示。原 v80.5 已處理 minor_only，這裡補 major_only 與描述文字。 ──
+  var _oldInitDeckV8011 = window.initTarotDeck;
+  window.initTarotDeck = function(){
+    if (typeof _oldInitDeckV8011 === 'function') _oldInitDeckV8011.apply(this, arguments);
+    try {
+      var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+      if (!def || def.deckFilter !== 'major_only' || typeof deckShuffled === 'undefined') return;
+      deckShuffled = filterDeckFor(def, deckShuffled);
+      var deckWrap = document.getElementById('t-deck');
+      if (deckWrap) {
+        var half = Math.ceil(deckShuffled.length / 2), topHtml='', botHtml='';
+        for (var i=0;i<deckShuffled.length;i++) {
+          var d = ((i < half ? i : i-half) * 0.13).toFixed(2);
+          var imgUrl = (typeof getTarotCardImage === 'function') ? getTarotCardImage(deckShuffled[i]) : '';
+          var faceCss = imgUrl ? 'background-image:url(' + imgUrl + ')' : 'background:#1a1a2e';
+          var html = '<div class="tarot-deck-card" data-idx="' + i + '" style="--float-delay:' + d + 's"><div class="tarot-deck-card-inner"><div class="tdc-face" style="' + faceCss + '"></div><div class="tdc-back"></div></div></div>';
+          if (i < half) topHtml += html; else botHtml += html;
+        }
+        deckWrap.className = 'tarot-3d-stage';
+        deckWrap.innerHTML = '<div class="tarot-stage-bg"><div class="stage-orb"></div><div class="stage-grid"></div></div><div class="tarot-deck-row tarot-deck-row-top">' + topHtml + '</div><div class="tarot-deck-row tarot-deck-row-bottom">' + botHtml + '</div>';
+      }
+      var descEl = document.querySelector('#step-2 .text-dim.text-sm.mb-sm');
+      if (descEl) descEl.innerHTML = '凝神冥想你的問題，然後從 <strong class="text-gold">22</strong> 張大阿卡那中選出 <strong class="text-gold">' + def.count + '</strong> 張牌';
+    } catch(e) { console.warn('[SpreadEngine v80.11] major_only deck render failed:', e); }
+  };
+
+  var _oldEnhanceTarotV8011 = (typeof enhanceTarot === 'function') ? enhanceTarot : null;
+  if (_oldEnhanceTarotV8011) {
+    enhanceTarot = function(tarot){
+      tarot = _oldEnhanceTarotV8011(tarot);
+      try {
+        tarot.spreadDecision = window._lastSpreadDecision || null;
+        tarot.spreadEngineVersion = window.JY_TAROT_SPREAD_ENGINE_VERSION;
+      } catch(e) {}
+      return tarot;
+    };
+    window.enhanceTarot = enhanceTarot;
+  }
+})();
+

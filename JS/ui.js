@@ -177,7 +177,6 @@
         window._JY_SESSION_NAME = data.name || data.email || '';
         try { localStorage.setItem('_jy_session_name', window._JY_SESSION_NAME); } catch(e){}
         window._jyUpdateAuthUI && window._jyUpdateAuthUI();
-        // v80.7：人次統計已改為免登入進站計數，不再依賴 Google session。
         // 確保閘門已移除
         if (typeof _jyRemoveLoginGate === 'function') _jyRemoveLoginGate();
       }
@@ -273,7 +272,6 @@ function _jyLogout() {
     localStorage.removeItem('_jy_sub_expires');
     localStorage.removeItem('_jy_user_tier');
     localStorage.removeItem('_jy_log');
-    localStorage.removeItem('_jy_login_counted_session');
   } catch(e){}
   // 同步清記憶體 flag(避免下個用戶誤觸 Opus 強制路徑)
   try {
@@ -1550,20 +1548,34 @@ function submitStep0Fast(){
 
         const _rng = makeSeededRng(S.form.bdate, S.form.gender, S.form.type, S.form.question);
         const shuffled = seededShuffle(TAROT, _rng);
-        const autoDrawn = [];
-        for(let i=0; i<_count; i++){
-          const card = shuffled[i];
-          // 用同一 seed 決定正逆位（金色黎明傳統：接近 50%）
-          const _r2 = makeSeededRng(S.form.bdate, S.form.gender, S.form.type, S.form.question);
-          for(let _k=0; _k<=card.id; _k++) _r2();
-          const isUp = _r2() > 0.48; // #6 修正：逆位約48%，接近金色黎明傳統
-          var _posName = '';
-          if (_spreadDef && _spreadDef.positions && _spreadDef.positions[i]) {
-            _posName = _spreadDef.positions[i].name;
-          } else if (typeof CELTIC_POS !== 'undefined') {
-            _posName = CELTIC_POS[i] || '';
+        let autoDrawn = [];
+        // v80.11：大型 / 特殊牌陣不能只取前 N 張。統一交給 tarot_upgrade 的正統抽牌建構器處理。
+        if (typeof window !== 'undefined' && typeof window.JY_buildCanonicalTarotDraw === 'function') {
+          autoDrawn = window.JY_buildCanonicalTarotDraw(
+            shuffled,
+            _spreadId,
+            _spreadDef,
+            String(S.form.bdate || '') + String(S.form.gender || ''),
+            S.form.type || 'general',
+            S.form.question || ''
+          );
+        }
+        if (!autoDrawn || !autoDrawn.length) {
+          autoDrawn = [];
+          for(let i=0; i<_count && i<shuffled.length; i++){
+            const card = shuffled[i];
+            // 用同一 seed 決定正逆位（金色黎明傳統：接近 50%）
+            const _r2 = makeSeededRng(S.form.bdate, S.form.gender, S.form.type, S.form.question);
+            for(let _k=0; _k<=card.id; _k++) _r2();
+            const isUp = _r2() > 0.48; // fallback：保留舊邏輯，主路徑由 JY_buildCanonicalTarotDraw 管控
+            var _posName = '';
+            if (_spreadDef && _spreadDef.positions && _spreadDef.positions[i]) {
+              _posName = _spreadDef.positions[i].name;
+            } else if (typeof CELTIC_POS !== 'undefined') {
+              _posName = CELTIC_POS[i] || '';
+            }
+            autoDrawn.push({...card, isUp, pos: _posName});
           }
-          autoDrawn.push({...card, isUp, pos: _posName});
         }
         drawnCards = autoDrawn;
         S.tarot = {drawn: autoDrawn, spread: autoDrawn, spreadType: _spreadId, spreadDef: _spreadDef};
@@ -5205,194 +5217,115 @@ document.addEventListener('click',function(e){
 
 /* ═══ 真實人次計數器（Google Sheets 雲端版）═══ */
 /*
- * 【v80.9 設定步驟】
+ * 【設定步驟】
  * 1. 開 Google Sheets → 建新試算表
- * 2. 第一個工作表命名為 counter，在 A1 輸入 total，B1 輸入 0
- * 3. 點「擴充功能」→「Apps Script」
- * 4. 貼上 /counter-appscript.gs 的完整程式碼
- * 5. 點「部署」→「新增部署作業」→ 類型選「網頁應用程式」
+ * 2. 在 A1 輸入 total，B1 輸入 0
+ * 3. 在 A2 輸入今天日期如 2026-02-19，B2 輸入 0
+ * 4. 點「擴充功能」→「Apps Script」
+ * 5. 貼上以下程式碼（取代原有的）：
+ *
+ *   function doGet(e) {
+ *     var lock = LockService.getScriptLock();
+ *     lock.waitLock(5000);
+ *     var ss = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+ *     var action = e.parameter.action;
+ *     if (action === 'get') {
+ *       var total = ss.getRange('B1').getValue() || 0;
+ *       var today = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
+ *       var dailyRow = findDailyRow(ss, today);
+ *       var todayCount = dailyRow ? ss.getRange('B' + dailyRow).getValue() : 0;
+ *       lock.releaseLock();
+ *       return ContentService.createTextOutput(JSON.stringify({total: total, today: todayCount}))
+ *         .setMimeType(ContentService.MimeType.JSON);
+ *     }
+ *     if (action === 'increment') {
+ *       var total = (ss.getRange('B1').getValue() || 0) + 1;
+ *       ss.getRange('B1').setValue(total);
+ *       var today = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
+ *       var dailyRow = findDailyRow(ss, today);
+ *       if (dailyRow) {
+ *         var c = (ss.getRange('B' + dailyRow).getValue() || 0) + 1;
+ *         ss.getRange('B' + dailyRow).setValue(c);
+ *       } else {
+ *         var lastRow = ss.getLastRow() + 1;
+ *         ss.getRange('A' + lastRow).setValue(today);
+ *         ss.getRange('B' + lastRow).setValue(1);
+ *       }
+ *       lock.releaseLock();
+ *       return ContentService.createTextOutput(JSON.stringify({total: total}))
+ *         .setMimeType(ContentService.MimeType.JSON);
+ *     }
+ *     lock.releaseLock();
+ *     return ContentService.createTextOutput('{}').setMimeType(ContentService.MimeType.JSON);
+ *   }
+ *   function findDailyRow(ss, date) {
+ *     var data = ss.getRange('A2:A' + ss.getLastRow()).getValues();
+ *     for (var i = 0; i < data.length; i++) {
+ *       var cellVal = data[i][0];
+ *       if (cellVal instanceof Date) cellVal = Utilities.formatDate(cellVal, 'Asia/Taipei', 'yyyy-MM-dd');
+ *       if (cellVal === date) return i + 2;
+ *     }
+ *     return null;
+ *   }
+ *
+ * 6. 點「部署」→「新增部署作業」→ 類型選「網頁應用程式」
  *    - 執行身分：你自己
  *    - 誰可以存取：「所有人」
- * 6. 複製部署網址，貼到下面 CTR_ENDPOINT
- *
- * v80.9 規則：
- * - 不需要 Google 登入
- * - 使用 localStorage 產生匿名 visitorId
- * - 同一瀏覽器 / 同一裝置 / 同一天只計 1 次，避免刷新灌水
- * - 清除瀏覽器資料、無痕模式、換裝置會被視為新訪客（免登入下無法完全避免）
- * - action=get：讀取累計與今日人次
- * - action=visit：免登入進站計數
- * - action=reset：歸零總人次、今日人次與匿名訪客紀錄
+ * 7. 複製部署的網址，貼到下面 CTR_ENDPOINT
  */
+
 // ★★★ 把這裡換成你的 Apps Script 部署網址 ★★★
-const CTR_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxfosQDF_ZXRS1niB0NmdDdy1VTfVIfjX_gaQ7g1Hhd0teiReTJiPonCjbGQ0Dnx_P8bg/exec';
+const CTR_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxCvM09XbFUyl0BC2im-H6DU_t2Ipjq9p-dZDGAuiildcxmBGC-CGngvvqWmaiPxW8wNQ/exec';
 
-// ── 呼叫 Apps Script（fetch 優先，失敗時 visit 用 Image 補送）──
-function _gasCall(action, params){
+// ── 呼叫 Apps Script（用 script 注入，最可靠的跨域方式）──
+function _gasCall(action){
   return new Promise((resolve)=>{
-    params = params || {};
-    const qs = new URLSearchParams();
-    qs.set('action', action);
-    qs.set('_t', String(Date.now()));
-    Object.keys(params).forEach(k=>{
-      if(params[k] !== undefined && params[k] !== null) qs.set(k, String(params[k]));
-    });
-
-    let done = false;
-    const timer = setTimeout(()=>{
-      if(done) return;
-      done = true;
+    const cbName = '_gasCb_' + Date.now();
+    const timeout = setTimeout(()=>{
+      delete window[cbName];
       resolve(null);
     }, 8000);
-
-    fetch(CTR_ENDPOINT + '?' + qs.toString(), { redirect:'follow', cache:'no-store' })
+    
+    window[cbName] = function(data){
+      clearTimeout(timeout);
+      delete window[cbName];
+      resolve(data);
+    };
+    
+    // Apps Script 不支援 JSONP，改用 fetch
+    fetch(CTR_ENDPOINT + '?action=' + action, {redirect:'follow'})
       .then(r => r.json())
       .then(data => {
-        if(done) return;
-        done = true;
-        clearTimeout(timer);
+        clearTimeout(timeout);
+        delete window[cbName];
         resolve(data);
       })
       .catch(()=>{
-        if(action === 'visit'){
-          try { new Image().src = CTR_ENDPOINT + '?' + qs.toString(); } catch(_e){}
+        // fetch 失敗時用 Image beacon（只能送不能收）
+        if(action === 'increment'){
+          new Image().src = CTR_ENDPOINT + '?action=increment&_t=' + Date.now();
         }
-        if(done) return;
-        done = true;
-        clearTimeout(timer);
+        clearTimeout(timeout);
+        delete window[cbName];
         resolve(null);
       });
   });
 }
 
-function _jyTodayKey(){
-  var d = new Date();
-  var y = d.getFullYear();
-  var m = String(d.getMonth() + 1).padStart(2, '0');
-  var day = String(d.getDate()).padStart(2, '0');
-  return y + '-' + m + '-' + day;
-}
-
-function _jyMakeVisitorId(){
-  try {
-    if (window.crypto && crypto.getRandomValues) {
-      var arr = new Uint32Array(4);
-      crypto.getRandomValues(arr);
-      return 'v' + Array.from(arr).map(n => n.toString(36)).join('');
-    }
-  } catch(_e){}
-  return 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
-}
-
-function _jyGetVisitorId(){
-  var key = '_jy_visitor_id_v807';
-  try {
-    var id = localStorage.getItem(key);
-    if(!id){
-      id = _jyMakeVisitorId();
-      localStorage.setItem(key, id);
-    }
-    return id;
-  } catch(_e){
-    return _jyMakeVisitorId();
-  }
-}
-
-function _jyUpdateCounterUI(data){
-  if(!data) return;
-  var total = (data.total != null) ? data.total : 0;
-  var today = (data.today != null) ? data.today : 0;
-  var cNum = document.getElementById('counter-num');
-  var cToday = document.getElementById('counter-today');
-  var aCount = document.getElementById('admin-count');
-  var aToday = document.getElementById('admin-today');
-  if(cNum) cNum.textContent = Number(total || 0).toLocaleString();
-  if(cToday) cToday.textContent = Number(today || 0).toLocaleString();
-  if(aCount) aCount.textContent = Number(total || 0).toLocaleString();
-  if(aToday) aToday.textContent = Number(today || 0).toLocaleString();
-}
-
-// v80.9：免 Google 登入，進站就送 visit 給後端；真正去重由 Apps Script 的 visit_users 判斷。
-// 重要：不再用 localStorage 擋掉 visit，避免前端曾經誤標「已計數」但雲端今日仍為 0。
-window._jyCountVisitOnce = async function(){
-  if(!CTR_ENDPOINT) return;
-  var today = _jyTodayKey();
-  var visitorId = _jyGetVisitorId();
-
-  // 每次進站都打 visit；後端同 uid + 同日期會回 alreadyCounted:true，不會灌水。
-  var data = await _gasCall('visit', { uid: visitorId, day: today, source: 'pageview' });
-
-  // 若網路、CORS、Apps Script 暫時異常，至少再讀一次現有數字。
-  if(!data || (data.total === undefined && data.today === undefined)){
-    data = await _gasCall('get');
-  }
-  if(data){
-    _jyUpdateCounterUI(data);
-    try { localStorage.setItem('_jy_visit_last_seen_' + today, String(Date.now())); } catch(_e){}
-  }
-};
-
-// 舊函式保留相容：若舊程式某處還呼叫 _countVisitor，也改走免登入進站計數。
+// ── 計數 +1（每次到結果頁觸發）──
 async function _countVisitor(){
-  if (window._jyCountVisitOnce) return window._jyCountVisitOnce();
-}
-
-// 舊登入函式保留空殼，避免任何殘留呼叫造成錯誤；不再做 Google 計數。
-window._jyCountLoginOnce = function(){ return; };
-
-// DOM ready 後自動計數。
-(function(){
-  function run(){
-    try { window._jyCountVisitOnce && window._jyCountVisitOnce(); } catch(_e){}
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, {once:true});
-  else setTimeout(run, 0);
-})();
-
-
-// v80.9：強制統計面板固定在「真正視窗正中央」。
-// 目的：避免手機瀏覽器快取舊 CSS、舊版 right/bottom 抽屜樣式，或其他 transform 祖層干擾 fixed 定位。
-function _jyForceAdminCenter(isOpen){
-  var overlay = document.getElementById('admin-overlay');
-  var panel = document.getElementById('admin-panel');
-
-  function imp(el, prop, val){
-    if(el && el.style && el.style.setProperty) el.style.setProperty(prop, val, 'important');
-  }
-
-  if(overlay){
-    if(overlay.parentElement !== document.body) document.body.appendChild(overlay);
-    imp(overlay,'position','fixed');
-    imp(overlay,'inset','0');
-    imp(overlay,'z-index','2147483600');
-    imp(overlay,'background','rgba(3,4,9,.68)');
-    imp(overlay,'backdrop-filter','blur(10px)');
-    imp(overlay,'-webkit-backdrop-filter','blur(10px)');
-    imp(overlay,'opacity',isOpen ? '1' : '0');
-    imp(overlay,'pointer-events',isOpen ? 'auto' : 'none');
-  }
-
-  if(panel){
-    if(panel.parentElement !== document.body) document.body.appendChild(panel);
-    imp(panel,'position','fixed');
-    imp(panel,'left','50%');
-    imp(panel,'top','50%');
-    imp(panel,'right','auto');
-    imp(panel,'bottom','auto');
-    imp(panel,'margin','0');
-    imp(panel,'z-index','2147483601');
-    imp(panel,'width','min(92vw,390px)');
-    imp(panel,'max-width','calc(100vw - 28px)');
-    imp(panel,'max-height','calc(100dvh - 32px)');
-    imp(panel,'overflow','auto');
-    imp(panel,'box-sizing','border-box');
-    imp(panel,'transform',isOpen ? 'translate(-50%,-50%) scale(1)' : 'translate(-50%,-50%) scale(.94)');
-    imp(panel,'opacity',isOpen ? '1' : '0');
-    imp(panel,'pointer-events',isOpen ? 'auto' : 'none');
+  if(!CTR_ENDPOINT) return;
+  const data = await _gasCall('increment');
+  if(data){
+    const badge=document.getElementById('counter-badge');
+    if(badge && badge.classList.contains('visible')){
+      document.getElementById('counter-num').textContent=(data.total||0).toLocaleString();
+      if(data.today!==undefined) document.getElementById('counter-today').textContent=(data.today||0).toLocaleString();
+    }
   }
 }
 
-// ── 月亮連點 5 下：只打開統計視窗，不增加人次 ──
+// ── 月亮連點 5 下 ──
 let _moonTapCount=0, _moonTapTimer=null;
 function _moonTap(){
   _moonTapCount++;
@@ -5400,68 +5333,45 @@ function _moonTap(){
   _moonTapTimer=setTimeout(()=>{_moonTapCount=0;},2000);
   if(_moonTapCount>=5){
     _moonTapCount=0;
-    var badge = document.getElementById('counter-badge');
-    if(badge) badge.classList.add('visible');
+    document.getElementById('counter-badge').classList.add('visible');
+    // 立即從雲端拉數字顯示在徽章
+    _gasCall('get').then(data=>{
+      if(data){
+        document.getElementById('counter-num').textContent=(data.total||0).toLocaleString();
+        document.getElementById('counter-today').textContent=(data.today||0).toLocaleString();
+      }
+    });
     openAdmin();
   }
 }
 
 async function openAdmin(){
-  var overlay = document.getElementById('admin-overlay');
-  var panel = document.getElementById('admin-panel');
-  var aCount = document.getElementById('admin-count');
-  var aToday = document.getElementById('admin-today');
-  if(aCount) aCount.textContent='…';
-  if(aToday) aToday.textContent='…';
-  _jyForceAdminCenter(true);
-  if(overlay) overlay.classList.add('visible');
-  if(panel) panel.classList.add('visible');
-  _jyForceAdminCenter(true);
+  document.getElementById('admin-count').textContent='…';
+  document.getElementById('admin-today').textContent='…';
+  document.getElementById('admin-overlay').classList.add('visible');
+  document.getElementById('admin-panel').classList.add('visible');
 
   if(!CTR_ENDPOINT){
-    if(aCount) aCount.textContent='未設定';
-    if(aToday) aToday.textContent='未設定';
+    document.getElementById('admin-count').textContent='未設定';
+    document.getElementById('admin-today').textContent='未設定';
     return;
   }
   const data = await _gasCall('get');
   if(data){
-    _jyUpdateCounterUI(data);
+    document.getElementById('admin-count').textContent=(data.total||0).toLocaleString();
+    document.getElementById('admin-today').textContent=(data.today||0).toLocaleString();
+    document.getElementById('counter-num').textContent=(data.total||0).toLocaleString();
+    document.getElementById('counter-today').textContent=(data.today||0).toLocaleString();
   }else{
-    if(aCount) aCount.textContent='連線失敗';
-    if(aToday) aToday.textContent='-';
+    document.getElementById('admin-count').textContent='連線失敗';
+    document.getElementById('admin-today').textContent='-';
   }
-}
-
-async function resetAdminCounter(){
-  if(!CTR_ENDPOINT){ alert('CTR_ENDPOINT 尚未設定'); return; }
-  if(!confirm('確定要把累計總人次與今日人次全部歸零？\n\n此操作會清除雲端統計與本機匿名進站計數標記。')) return;
-
-  var btn = document.getElementById('admin-reset-btn');
-  if(btn){ btn.disabled = true; btn.textContent = '歸零中…'; }
-
-  const data = await _gasCall('reset');
-  if(data && data.reset === true){
-    _jyUpdateCounterUI({ total: data.total || 0, today: data.today || 0 });
-    try {
-      Object.keys(localStorage).forEach(function(k){
-        if(k.indexOf('_jy_visit_counted_') === 0 || k.indexOf('_jy_visit_last_seen_') === 0 || k === '_jy_visitor_id_v807') localStorage.removeItem(k);
-      });
-    } catch(_e){}
-  }else{
-    alert('歸零失敗：請確認 Apps Script 已更新為 v80.7 版本，且部署網址可公開存取。');
-  }
-
-  if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate-left"></i> 歸零'; }
 }
 
 function closeAdmin(){
-  var overlay = document.getElementById('admin-overlay');
-  var panel = document.getElementById('admin-panel');
-  if(overlay) overlay.classList.remove('visible');
-  if(panel) panel.classList.remove('visible');
-  _jyForceAdminCenter(false);
+  document.getElementById('admin-overlay').classList.remove('visible');
+  document.getElementById('admin-panel').classList.remove('visible');
 }
-
 
 
 /* ==== ZiWei settings (simplified — modal removed) ==== */
@@ -6575,16 +6485,21 @@ async function submitTarotQuick() {
     var shuffled = (typeof seededShuffle === 'function' && typeof TAROT !== 'undefined') ? seededShuffle(TAROT, _rng) : [];
     var autoDrawn = [];
 
-    for (var i = 0; i < targetCount && i < shuffled.length; i++) {
-      var card = shuffled[i];
-      var _r2 = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, String(card.id)) : Math.random;
-      if (typeof _r2 === 'function') { for (var _k = 0; _k <= card.id; _k++) _r2(); }
-      // v68.21.2 塔羅 Bug A 修:正逆位機率對齊 0.5(原 0.48 偏向正位 52%,與 tarot.js pickCard 第 3303 行 >=0.5 不一致)
-      //   原因:歷史殘留,可能曾為「讓 AI 解讀更正面」而設,但造成同一抽牌邏輯兩處實作不一致
-      //   修正:統一為 _r2() >= 0.5,與標準凱爾特十字抽牌一致
-      var isUp = (typeof _r2 === 'function') ? (_r2() >= 0.5) : (Math.random() >= 0.5);
-      var posName = (spreadDef && spreadDef.positions && spreadDef.positions[i]) ? spreadDef.positions[i].name : '';
-      autoDrawn.push(Object.assign({}, card, { isUp: isUp, pos: posName }));
+    // v80.11：大型 / 特殊牌陣不能只取前 N 張。統一交給 tarot_upgrade 的正統抽牌建構器處理。
+    if (typeof window !== 'undefined' && typeof window.JY_buildCanonicalTarotDraw === 'function') {
+      autoDrawn = window.JY_buildCanonicalTarotDraw(shuffled, spreadId, spreadDef, seed, type, question);
+    }
+    if (!autoDrawn || !autoDrawn.length) {
+      autoDrawn = [];
+      for (var i = 0; i < targetCount && i < shuffled.length; i++) {
+        var card = shuffled[i];
+        var _r2 = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, String(card.id)) : Math.random;
+        if (typeof _r2 === 'function') { for (var _k = 0; _k <= card.id; _k++) _r2(); }
+        // fallback：保留舊邏輯，主路徑由 JY_buildCanonicalTarotDraw 管控
+        var isUp = (typeof _r2 === 'function') ? (_r2() >= 0.5) : (Math.random() >= 0.5);
+        var posName = (spreadDef && spreadDef.positions && spreadDef.positions[i]) ? spreadDef.positions[i].name : '';
+        autoDrawn.push(Object.assign({}, card, { isUp: isUp, pos: posName }));
+      }
     }
 
     drawnCards = autoDrawn;

@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🎴 牌陣選擇器（v80.3-20260606-spread-restore）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+// 🎴 牌陣選擇器（v80.11-20260606-spread-complete）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
 //   機制：手動選定時，包裝 detectSpreadType 使其直接回傳該牌陣，
 //        於是所有自動偵測點（含 initTarotDeck）都會吃到手動選擇，ui.js 不需改動。
 //   風格：沿用站上 token（--c-gold / --c-bg-card / Noto Serif TC）與 jy-tool-card orb 質感。
@@ -7,48 +7,61 @@
 (function () {
   if (window._jySpreadPickerInit) return;
   window._jySpreadPickerInit = true;
-  window._jySpreadPickerVersion = 'v80.3-20260606-spread-restore';
+  window._jySpreadPickerVersion = 'v80.11-20260606-spread-complete';
   if (typeof window._forcedSpread === 'undefined') window._forcedSpread = null;
 
   // ── 每個牌陣的圖示 / 點綴色(rgb) / 中文名 / 適合的問題 ──
   var META = {
-    three_card:   { icon: 'fa-grip-lines',   accent: '201,168,76',  cn: '三牌陣',        suited: '單一是非、快速看一件事的走向' },
-    five_card:    { icon: 'fa-border-all',   accent: '223,195,115', cn: '五牌陣',        suited: '一般問題 ・ 現況→原因→阻礙→建議→結果' },
-    relationship: { icon: 'fa-heart',        accent: '251,113,133', cn: '關係牌陣',      suited: '兩個人的關係、感情' },
-    either_or:    { icon: 'fa-code-branch',  accent: '96,165,250',  cn: '二選一',        suited: '抉擇、兩條路 ・ 看清各自的發展與結果' },
-    cross:        { icon: 'fa-plus',         accent: '251,191,36',  cn: '十字牌陣',      suited: '有衝突拉扯、卡關 ・ 核心 vs 阻礙' },
-    timeline:     { icon: 'fa-clock',        accent: '96,165,250',  cn: '時間線',        suited: '時機「什麼時候、要多久」' },
-    celtic_cross: { icon: 'fa-cross',        accent: '139,92,246',  cn: '凱爾特十字',    suited: '整體開放局勢 ・ 十張牌完整深入' },
-    tree_of_life: { icon: 'fa-sitemap',      accent: '52,211,153',  cn: '生命之樹',      suited: '靈性、人生課題、深層自我（卡巴拉）' },
-    zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '年度運勢 ・ 十二宮掃描一整年' },
-    minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '具體生活問題 ・ 只用 56 張小牌' },
-    fifteen_card:      { icon: 'fa-shapes',      accent: '139,92,246',  cn: '金色黎明十五張',        suited: '元素尊貴、不用逆位（進階）' },
-    mathers_21:        { icon: 'fa-table-cells', accent: '201,168,76',   cn: 'Mathers 二十一張',     suited: '1888 第二法 ・ 三排七、由右至左（進階）' },
-    mathers_horseshoe: { icon: 'fa-route',       accent: '201,168,76',   cn: 'Mathers 第一法馬蹄形', suited: '1888 第一法 ・ A/C/E 三組 horseshoe（進階）' }
+    one_card:          { icon: 'fa-circle-dot',        accent: '201,168,76',  cn: '一張牌',              suited: '今日指引、單句快速提醒、極短問句' },
+    three_card:        { icon: 'fa-grip-lines',        accent: '201,168,76',  cn: '三牌陣',              suited: '單一是非、快速看一件事的走向' },
+    five_card:         { icon: 'fa-border-all',        accent: '223,195,115', cn: '五牌陣',              suited: '一般問題 ・ 現況→原因→阻礙→建議→結果' },
+    relationship:      { icon: 'fa-heart',             accent: '251,113,133', cn: '關係牌陣',            suited: '兩個人的關係、感情、對方心態' },
+    either_or:         { icon: 'fa-code-branch',       accent: '96,165,250',  cn: '二選一',              suited: '抉擇、兩條路 ・ 看清各自的發展與結果' },
+    cross:             { icon: 'fa-plus',              accent: '251,191,36',  cn: '十字牌陣',            suited: '有衝突拉扯、卡關 ・ 核心 vs 阻礙' },
+    timeline:          { icon: 'fa-clock',             accent: '96,165,250',  cn: '時間線',              suited: '時機「什麼時候、要多久」' },
+    horseshoe:         { icon: 'fa-route',             accent: '52,211,153',  cn: '七張馬蹄形',          suited: '中等複雜 ・ 過去、現在、隱藏因素、建議、結果' },
+    celtic_cross:      { icon: 'fa-cross',             accent: '139,92,246',  cn: '凱爾特十字',          suited: '整體開放局勢 ・ 十張牌完整深入' },
+    tree_of_life:      { icon: 'fa-sitemap',           accent: '52,211,153',  cn: '生命之樹',            suited: '靈性、人生課題、深層自我（卡巴拉）' },
+    major_arcana_22:   { icon: 'fa-circle-nodes',      accent: '139,92,246',  cn: '大阿卡那二十二路徑',  suited: '只用 22 張大牌 ・ 靈魂/命運骨架' },
+    zodiac:            { icon: 'fa-compass',           accent: '223,195,115', cn: '黃道十二宮',          suited: '年度運勢 ・ 十二宮掃描一整年' },
+    minor_arcana:      { icon: 'fa-list-ul',           accent: '212,168,87',  cn: '小阿卡那',            suited: '具體生活問題 ・ 只用 56 張小牌' },
+    fifteen_card:      { icon: 'fa-shapes',            accent: '139,92,246',  cn: '金色黎明十五張',      suited: '元素尊貴、不用逆位（進階）' },
+    waite_42:          { icon: 'fa-table-cells-large', accent: '223,195,115', cn: 'Waite 四十二張',      suited: '1911 替代法 ・ 無明確問題/人生趨勢' },
+    waite_35:          { icon: 'fa-layer-group',       accent: '223,195,115', cn: 'Waite 三十五張',      suited: '1911 補充法 ・ 先前讀盤仍有疑義時追問' },
+    mathers_21:        { icon: 'fa-table-cells',       accent: '201,168,76',  cn: 'Mathers 二十一張',   suited: '1888 第二法 ・ 三排七、由右至左（進階）' },
+    mathers_horseshoe: { icon: 'fa-route',             accent: '201,168,76',  cn: 'Mathers 第一法馬蹄形', suited: '1888 第一法 ・ A/C/E 三組 horseshoe（進階）' },
+    mathers_66:        { icon: 'fa-diagram-project',   accent: '201,168,76',  cn: 'Mathers 六十六張',   suited: '1888 第三法 ・ 過去/現在/未來大型總盤' }
   };
   var GROUPS = [
-    { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'celtic_cross'] },
-    { label: '進階・專門', ids: ['tree_of_life', 'zodiac', 'minor_arcana', 'fifteen_card', 'mathers_21', 'mathers_horseshoe'] }
+    { label: '快問・常用', ids: ['one_card', 'three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'horseshoe', 'celtic_cross'] },
+    { label: '靈性・系統', ids: ['tree_of_life', 'major_arcana_22', 'zodiac', 'minor_arcana', 'fifteen_card'] },
+    { label: '文獻原法・大型牌陣', ids: ['waite_42', 'waite_35', 'mathers_21', 'mathers_horseshoe', 'mathers_66'] }
   ];
 
-  // v80.2-restore：選單不能完全依賴 SPREAD_DEFS。
+  // v80.11：選單不能完全依賴 SPREAD_DEFS。
   // 原因：手機端若 spread-picker 先於 tarot_upgrade 完成初始化，或快取吃到不同版本，
   // defOf(id) 回 null 會導致進階牌陣被 itemHTML 靜默隱藏。
   // 這裡提供 UI 顯示用 fallback；真正抽牌仍交給 tarot_upgrade.js 的 SPREAD_DEFS / setCurrentSpread。
   var FALLBACK_DEFS = {
+    one_card:          { id: 'one_card',          zh: '一張牌', count: 1 },
     three_card:        { id: 'three_card',        zh: '三牌陣', count: 3 },
     five_card:         { id: 'five_card',         zh: '五牌陣', count: 5 },
     relationship:      { id: 'relationship',      zh: '關係牌陣', count: 6 },
     either_or:         { id: 'either_or',         zh: '二選一', count: 5 },
     cross:             { id: 'cross',             zh: '十字牌陣', count: 5 },
     timeline:          { id: 'timeline',          zh: '時間線', count: 5 },
+    horseshoe:         { id: 'horseshoe',         zh: '七張馬蹄形', count: 7 },
     celtic_cross:      { id: 'celtic_cross',      zh: '凱爾特十字', count: 10 },
     tree_of_life:      { id: 'tree_of_life',      zh: '生命之樹', count: 10 },
+    major_arcana_22:   { id: 'major_arcana_22',   zh: '大阿卡那二十二路徑', count: 22 },
     zodiac:            { id: 'zodiac',            zh: '黃道十二宮', count: 13 },
     minor_arcana:      { id: 'minor_arcana',      zh: '小阿卡那', count: 7 },
     fifteen_card:      { id: 'fifteen_card',      zh: '金色黎明十五張', count: 15 },
+    waite_42:          { id: 'waite_42',          zh: 'Waite 四十二張', count: 42 },
+    waite_35:          { id: 'waite_35',          zh: 'Waite 三十五張', count: 35 },
     mathers_21:        { id: 'mathers_21',        zh: 'Mathers 二十一張', count: 21 },
-    mathers_horseshoe: { id: 'mathers_horseshoe', zh: 'Mathers First Method (1888 完整 horseshoe)', count: 54 }
+    mathers_horseshoe: { id: 'mathers_horseshoe', zh: 'Mathers 第一法馬蹄形', count: 54 },
+    mathers_66:        { id: 'mathers_66',        zh: 'Mathers 六十六張', count: 66 }
   };
 
   function defOf(id) {
