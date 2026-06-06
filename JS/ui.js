@@ -5461,7 +5461,27 @@ function _moonTap(){
   }
 }
 
+// 後台統計面板：不放靜態 HTML（避免爬蟲/AI 讀到人次與密技），連點月亮 5 下時才動態注入一次
+function _ensureAdminPanel(){
+  if(document.getElementById('admin-panel')) return;
+  var ov=document.createElement('div');
+  ov.className='admin-overlay'; ov.id='admin-overlay';
+  ov.addEventListener('click', closeAdmin);
+  var p=document.createElement('div');
+  p.className='admin-panel'; p.id='admin-panel';
+  p.innerHTML='<button class="admin-close" onclick="closeAdmin()">&times;</button>'+
+    '<h3>📊 解讀人次統計</h3>'+
+    '<div class="admin-row"><label>累計總人次</label><span class="admin-val" id="admin-count">…</span></div>'+
+    '<div class="admin-row"><label>今日人次</label><span class="admin-val" id="admin-today">…</span></div>'+
+    '<button class="admin-btn" onclick="closeAdmin()">關閉</button>'+
+    '<button class="admin-reset" onclick="resetVisitorCount()">歸零計數</button>'+
+    '<div style="margin-top:var(--sp-sm);font-size:.68rem;color:var(--c-text-muted);text-align:center">每次造訪首頁 = 1 人次<br>連點月亮 5 下開啟 · 重整後隱藏</div>';
+  document.body.appendChild(ov);
+  document.body.appendChild(p);
+}
+
 async function openAdmin(){
+  _ensureAdminPanel();
   document.getElementById('admin-count').textContent='…';
   document.getElementById('admin-today').textContent='…';
   document.getElementById('admin-overlay').classList.add('visible');
@@ -5476,8 +5496,8 @@ async function openAdmin(){
   if(data){
     document.getElementById('admin-count').textContent=(data.total||0).toLocaleString();
     document.getElementById('admin-today').textContent=(data.today||0).toLocaleString();
-    document.getElementById('counter-num').textContent=(data.total||0).toLocaleString();
-    document.getElementById('counter-today').textContent=(data.today||0).toLocaleString();
+    var cn=document.getElementById('counter-num'); if(cn) cn.textContent=(data.total||0).toLocaleString();
+    var ct=document.getElementById('counter-today'); if(ct) ct.textContent=(data.today||0).toLocaleString();
   }else{
     document.getElementById('admin-count').textContent='連線失敗';
     document.getElementById('admin-today').textContent='-';
@@ -5485,8 +5505,8 @@ async function openAdmin(){
 }
 
 function closeAdmin(){
-  document.getElementById('admin-overlay').classList.remove('visible');
-  document.getElementById('admin-panel').classList.remove('visible');
+  var o=document.getElementById('admin-overlay'); if(o) o.classList.remove('visible');
+  var p=document.getElementById('admin-panel'); if(p) p.classList.remove('visible');
 }
 
 // ── 人次歸零（後台限定，需 GAS 支援 action=reset）──
@@ -5842,6 +5862,18 @@ showAuraResult = function(){
         '</button>' +
       '</div>' +
 
+      // ★ v80.26：八字命理入口（首頁獨立入口，跟雷諾曼同層）
+      '<div class="jy-home-oracle">' +
+        '<button onclick="_baziOpen()" class="jy-oracle-btn">' +
+          '<span class="jy-oracle-icon">📜</span>' +
+          '<span class="jy-oracle-text">' +
+            '<strong>八字命理</strong>' +
+            '<small>子平四柱 ・ 真太陽時 ・ 窮通調候 ・ 免費</small>' +
+          '</span>' +
+          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
+        '</button>' +
+      '</div>' +
+
       // ★ v70 今日一牌已移除
       '' +
 
@@ -5968,6 +6000,20 @@ showAuraResult = function(){
       });
     } else {
       alert('梅花獨立頁尚未載入，請確認 JS/meihua-standalone.js 已上傳並強制重新整理。');
+    }
+  };
+
+  // ★ v80.26：首頁八字命理入口
+  window._baziOpen = function() {
+    // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
+    if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
+    if (typeof window._jyLazyScript === 'function') {
+      window._jyLazyScript('JS/bazi-standalone.js', function(ok){
+        if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
+        else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
+      });
+    } else {
+      alert('八字獨立頁尚未載入，請確認 JS/bazi-standalone.js 已上傳並強制重新整理。');
     }
   };
 
