@@ -7834,7 +7834,7 @@ function resetToHome() {
 
 
 /* =============================================================
-   v80.18 — 紫微斗數 / 梅花易數獨立入口淨化
+   v80.19 — 紫微斗數 / 梅花易數獨立入口淨化
    目的：首頁獨立工具不可再套用舊七維、塔羅、開鑰視窗。
    ============================================================= */
 (function(){
@@ -7851,7 +7851,6 @@ function resetToHome() {
       'body.jy-mode-ziwei #seo-content{display:none!important}',
       'body.jy-mode-meihua #seo-content{display:none!important}',
       'body.jy-mode-meihua #btn-meihua-skip, body.jy-mode-meihua #btn-meihua-next{display:none!important}',
-      'body.jy-mode-meihua #btn-meihua-copy{display:inline-flex!important}',
       'body.jy-mode-meihua #meihua-help-text{display:none!important}',
       'body.jy-mode-meihua #step-1 .actions{justify-content:center}',
       '.jy-standalone-note{margin:.5rem 0 0;padding:.55rem .7rem;border:1px solid rgba(212,175,55,.16);border-radius:10px;background:rgba(212,175,55,.055);color:rgba(232,224,208,.78);font-size:.74rem;line-height:1.7}',
@@ -7976,7 +7975,10 @@ function resetToHome() {
         copy.onclick=function(){ window._jyMeihuaToPrompt&&window._jyMeihuaToPrompt(); };
         actions.appendChild(copy);
       }
-      copy.classList.remove('hidden');
+      if (copy) {
+        if (window.S && S.meihua) { copy.classList.remove('hidden'); copy.style.display='inline-flex'; }
+        else { copy.classList.add('hidden'); copy.style.display='none'; }
+      }
     }
     var help=document.getElementById('meihua-help-text');
     if (help) help.innerHTML='<i class="fas fa-info-circle"></i> 梅花易數獨立模式：只取本卦、互卦、變卦、動爻、體用與外應資料，不再接塔羅或七維。';
@@ -8009,7 +8011,7 @@ function resetToHome() {
 
   // 梅花起卦完成後，不再捲到「下一步塔羅」，改顯示提示詞按鈕。
   var _tryWrapShowMH = function(){
-    if (typeof window.showMH !== 'function' || window.showMH._jy_v80_18) return;
+    if (typeof window.showMH !== 'function' || window.showMH._jy_v80_19) return;
     var prev=window.showMH;
     window.showMH=function(r){
       var out=prev.apply(this, arguments);
@@ -8017,19 +8019,20 @@ function resetToHome() {
         if (S && S._meihuaOnlyMode) {
           window._jyApplyMeihuaStandaloneUI();
           var copy=document.getElementById('btn-meihua-copy');
+          if (copy) { copy.classList.remove('hidden'); copy.style.display='inline-flex'; }
           if (copy && copy.scrollIntoView) setTimeout(function(){ copy.scrollIntoView({behavior:'smooth',block:'center'}); },180);
         }
       } catch(_){ }
       return out;
     };
-    window.showMH._jy_v80_18 = true;
+    window.showMH._jy_v80_19 = true;
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _tryWrapShowMH); else _tryWrapShowMH();
   setTimeout(_tryWrapShowMH, 500);
 
   // step 切換後再次淨化，避免舊覆寫鏈把卡片復原。
   var _oldGoStep = window.goStep;
-  if (typeof _oldGoStep === 'function' && !_oldGoStep._jy_v80_18) {
+  if (typeof _oldGoStep === 'function' && !_oldGoStep._jy_v80_19) {
     window.goStep = function(n){
       var r=_oldGoStep.apply(this, arguments);
       try {
@@ -8038,6 +8041,143 @@ function resetToHome() {
       } catch(_){ }
       return r;
     };
-    window.goStep._jy_v80_18 = true;
+    window.goStep._jy_v80_19 = true;
+  }
+})();
+
+/* ════════════════════════════════════════════════════════════════
+   v80.19 — Birth select hardening
+   Fix: 紫微斗數獨立入口開得太早時，年/月/日/時/分/國家/城市下拉選單尚未被其他延後腳本填入，點開會是空白。
+   This patch is self-contained and safe: it only fills empty selects and restores cached values after options exist.
+   ════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+
+  function _opt(v, t){
+    var o = document.createElement('option');
+    o.value = v == null ? '' : String(v);
+    o.textContent = t == null ? '' : String(t);
+    return o;
+  }
+  function _isBlankSelect(sel){
+    if (!sel) return false;
+    if (sel.options.length === 0) return true;
+    var nonBlank = 0;
+    for (var i=0;i<sel.options.length;i++){
+      if ((sel.options[i].textContent || sel.options[i].innerText || '').trim()) nonBlank++;
+    }
+    return nonBlank === 0 || (sel.options.length === 1 && !sel.options[0].value && !((sel.options[0].textContent||'').trim()));
+  }
+  function _fillSelect(sel, items){
+    if (!sel || !_isBlankSelect(sel)) return;
+    var old = sel.value;
+    sel.innerHTML = '';
+    for (var i=0;i<items.length;i++) sel.appendChild(_opt(items[i][0], items[i][1]));
+    if (old) sel.value = old;
+  }
+  function _daysInMonth(y,m){
+    y = parseInt(y,10); m = parseInt(m,10);
+    if (!y || !m) return 31;
+    return new Date(y, m, 0).getDate();
+  }
+  function _fillDays(daySel, ySel, mSel){
+    if (!daySel) return;
+    var old = daySel.value;
+    var max = _daysInMonth(ySel && ySel.value, mSel && mSel.value);
+    var need = _isBlankSelect(daySel) || daySel.options.length < max;
+    if (!need) return;
+    daySel.innerHTML = '';
+    daySel.appendChild(_opt('', '日'));
+    for (var d=1; d<=max; d++) daySel.appendChild(_opt(d, d + '日'));
+    if (old && parseInt(old,10) <= max) daySel.value = old;
+  }
+  function _restoreCachedBirth(){
+    try{
+      var raw = sessionStorage.getItem('_jy_form');
+      if (!raw) return;
+      var data = JSON.parse(raw) || {};
+      var pairs = [
+        ['byear','f-byear','f2-byear'], ['bmonth','f-bmonth','f2-bmonth'], ['bday','f-bday','f2-bday'],
+        ['bhour','f-bhour','f2-bhour'], ['bminute','f-bminute','f2-bminute'], ['country','f-country','f2-country']
+      ];
+      for (var i=0;i<pairs.length;i++){
+        var k=pairs[i][0], a=pairs[i][1], b=pairs[i][2];
+        if (data[k] !== undefined && data[k] !== null && data[k] !== ''){
+          var e1=document.getElementById(a); if (e1) e1.value=String(data[k]);
+          var e2=document.getElementById(b); if (e2) e2.value=String(data[k]);
+        }
+      }
+      if (data.city){
+        var c1=document.getElementById('f-city'); if (c1) c1.value=String(data.city);
+        var c2=document.getElementById('f2-city'); if (c2) c2.value=String(data.city);
+      }
+    }catch(_e){}
+  }
+
+  window._jyEnsureBirthSelects = function(){
+    try{
+      var nowY = new Date().getFullYear();
+      var years = [['','年']];
+      for (var y=nowY; y>=1900; y--) years.push([y, y + '年']);
+      var months = [['','月']];
+      for (var m=1; m<=12; m++) months.push([m, m + '月']);
+      var hours = [['','時']];
+      for (var h=0; h<=23; h++) hours.push([h, (h<10?'0':'') + h + '時']);
+      var mins = [['','分']];
+      for (var mi=0; mi<=59; mi++) mins.push([mi, (mi<10?'0':'') + mi + '分']);
+
+      ['','2'].forEach(function(suf){
+        var ySel=document.getElementById('f'+suf+'-byear');
+        var mSel=document.getElementById('f'+suf+'-bmonth');
+        var dSel=document.getElementById('f'+suf+'-bday');
+        var hSel=document.getElementById('f'+suf+'-bhour');
+        var miSel=document.getElementById('f'+suf+'-bminute');
+        _fillSelect(ySel, years);
+        _fillSelect(mSel, months);
+        _fillDays(dSel, ySel, mSel);
+        _fillSelect(hSel, hours);
+        _fillSelect(miSel, mins);
+        if (ySel && !ySel._jyBirthDayBind){ ySel.addEventListener('change', function(){ _fillDays(dSel, ySel, mSel); }); ySel._jyBirthDayBind=true; }
+        if (mSel && !mSel._jyBirthDayBind){ mSel.addEventListener('change', function(){ _fillDays(dSel, ySel, mSel); }); mSel._jyBirthDayBind=true; }
+      });
+
+      var countries = [['','選擇國家'], ['台灣','台灣'], ['中國','中國'], ['香港','香港'], ['澳門','澳門'], ['日本','日本'], ['韓國','韓國'], ['新加坡','新加坡'], ['馬來西亞','馬來西亞'], ['美國','美國'], ['加拿大','加拿大'], ['澳洲','澳洲'], ['英國','英國']];
+      var taiwanCities = [['','選擇城市'], ['台北市','台北市'], ['新北市','新北市'], ['基隆市','基隆市'], ['桃園市','桃園市'], ['新竹市','新竹市'], ['新竹縣','新竹縣'], ['苗栗縣','苗栗縣'], ['台中市','台中市'], ['彰化縣','彰化縣'], ['南投縣','南投縣'], ['雲林縣','雲林縣'], ['嘉義市','嘉義市'], ['嘉義縣','嘉義縣'], ['台南市','台南市'], ['高雄市','高雄市'], ['屏東縣','屏東縣'], ['宜蘭縣','宜蘭縣'], ['花蓮縣','花蓮縣'], ['台東縣','台東縣'], ['澎湖縣','澎湖縣'], ['金門縣','金門縣'], ['連江縣','連江縣']];
+      ['','2'].forEach(function(suf){
+        var ctry=document.getElementById('f'+suf+'-country');
+        var city=document.getElementById('f'+suf+'-city');
+        _fillSelect(ctry, countries);
+        _fillSelect(city, taiwanCities);
+        if (ctry && !ctry._jyBirthCountryBind){
+          ctry.addEventListener('change', function(){
+            if (typeof populateCitySelect === 'function') {
+              try { populateCitySelect('f'+suf+'-city', ctry.value); } catch(_e) {}
+            } else {
+              _fillSelect(city, taiwanCities);
+            }
+          });
+          ctry._jyBirthCountryBind=true;
+        }
+      });
+      _restoreCachedBirth();
+    }catch(e){ console.warn('[v80.19] birth select init failed', e); }
+  };
+
+  function _boot(){
+    window._jyEnsureBirthSelects();
+    setTimeout(window._jyEnsureBirthSelects, 300);
+    setTimeout(window._jyEnsureBirthSelects, 1200);
+    setTimeout(window._jyEnsureBirthSelects, 3000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot); else _boot();
+
+  if (typeof window._jyApplyZiweiStandaloneUI === 'function' && !window._jyApplyZiweiStandaloneUI._jy_v80_19) {
+    var _oldZw = window._jyApplyZiweiStandaloneUI;
+    window._jyApplyZiweiStandaloneUI = function(){
+      var r = _oldZw.apply(this, arguments);
+      try { window._jyEnsureBirthSelects(); setTimeout(window._jyEnsureBirthSelects, 80); } catch(_e){}
+      return r;
+    };
+    window._jyApplyZiweiStandaloneUI._jy_v80_19 = true;
   }
 })();
