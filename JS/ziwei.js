@@ -573,7 +573,7 @@ function computeZiwei(year,month,day,hour,gender){
   for(let i=0;i<12;i++){
     const ageStart=dxStartAge+i*10;
     const ageEnd=ageStart+9;
-    const curAge=new Date().getFullYear()-year;
+    const curAge=new Date().getFullYear()-year+1; // 虛歲（紫微大限以虛歲計：出生即1歲，與文墨天機一致）
     const isCur=curAge>=ageStart&&curAge<=ageEnd;
 
     // 大限宮位地支：命宮出發，順/逆行
