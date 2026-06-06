@@ -1506,7 +1506,7 @@ function submitStep0Fast(){
             const lunar=solar.getLunar();
             lunarY=lunar.getYear(); lunarM=lunar.getMonth(); lunarD=lunar.getDay();
           }
-        } catch(e){ console.warn('[AutoMH] 農曆轉換失敗，使用西曆:', e); }
+        } catch(e){ throw new Error('梅花時間起卦需要精準農曆轉換；Lunar.Solar 尚未載入，已停止起卦，避免用西曆代替農曆。'); }
         const yzhi=((lunarY-4)%12+12)%12+1;
         const shichen=Math.floor(((nh+1)%24)/2)+1;
         const upNum=(yzhi+lunarM+lunarD)%8||8;
@@ -5687,6 +5687,30 @@ showAuraResult = function(){
         '</button>' +
       '</div>' +
 
+      // ★ v80.15：紫微斗數入口（首頁獨立入口，跟雷諾曼同層）
+      '<div class="jy-home-oracle">' +
+        '<button onclick="_ziweiOpen()" class="jy-oracle-btn">' +
+          '<span class="jy-oracle-icon">🪐</span>' +
+          '<span class="jy-oracle-text">' +
+            '<strong>紫微斗數</strong>' +
+            '<small>十二宮命盤 ・ 大限流年 ・ 需出生資料</small>' +
+          '</span>' +
+          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
+        '</button>' +
+      '</div>' +
+
+      // ★ v80.15：梅花易數入口（首頁獨立入口，跟雷諾曼同層）
+      '<div class="jy-home-oracle">' +
+        '<button onclick="_meihuaOpen()" class="jy-oracle-btn">' +
+          '<span class="jy-oracle-icon">☯️</span>' +
+          '<span class="jy-oracle-text">' +
+            '<strong>梅花易數</strong>' +
+            '<small>時間・數字・漢字・隨機起卦 ・ 免費</small>' +
+          '</span>' +
+          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
+        '</button>' +
+      '</div>' +
+
       // ★ v70 今日一牌已移除
       '' +
 
@@ -5713,6 +5737,71 @@ showAuraResult = function(){
     } else {
       window._enterFromHome();
     }
+  };
+
+
+
+  // ★ v80.15：首頁紫微斗數入口
+  // 目的：讓紫微斗數像雷諾曼一樣從首頁直接進入，不再藏在結果頁的七維分頁裡。
+  // 注意：現有前端的紫微排盤依賴出生資料與七維 payload，所以入口會導到出生資料表單，並以 full 模式送出。
+  window._ziweiOpen = function() {
+    try { if (typeof S !== 'undefined') { S._tarotOnlyMode = false; S._autoMode = true; } } catch(_) {}
+
+    var hook = document.getElementById('hook-screen');
+    var input = document.getElementById('input-screen');
+    if (hook) hook.style.display = 'none';
+    if (!input) return;
+    input.style.display = 'block';
+
+    // 顯示問題框，隱藏預設問題格與塔羅牌陣選擇。
+    var breadcrumb = input.querySelector('.tag.tag-gold');
+    if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display = 'none';
+    var presets = document.getElementById('q-presets');
+    if (presets) presets.style.display = 'none';
+    var custom = document.getElementById('q-custom-wrap');
+    if (custom) custom.style.display = 'block';
+    var spreadCard = document.getElementById('jy-spread-card');
+    if (spreadCard) spreadCard.style.display = 'none';
+
+    var q = document.getElementById('f-question');
+    if (q) {
+      q.placeholder = '例如：請以紫微斗數為主，分析我的事業、財運、感情與近年大限流年。';
+      if (!q.value) q.value = '請以紫微斗數為主，分析我的命盤、十二宮、大限流年、事業財運、感情婚姻與健康風險。';
+    }
+
+    // 讓 full 模式生效；現有 pickTool 會把出生資料卡打開。
+    if (typeof pickTool === 'function') pickTool('full');
+    try { _selectedTool = 'full'; } catch(_) {}
+
+    // 隱藏塔羅/開鑰工具卡，避免用戶誤以為還在塔羅入口。
+    var cards = input.querySelectorAll('.card');
+    cards.forEach(function(card){
+      var t = card.querySelector('.card-title');
+      if (t && t.textContent.indexOf('選擇分析方式') >= 0) card.style.display = 'none';
+      if (t && t.textContent.indexOf('出生資料') >= 0) { card.style.display = ''; card.id = 'birth-data-card'; }
+    });
+
+    var btn = document.getElementById('btn-tool-go');
+    if (btn) { btn.innerHTML = '<i class="fas fa-globe-asia"></i> 開始紫微斗數命盤分析'; btn.onclick = function(){ submitWithTool(); }; }
+    var sub = document.getElementById('btn-tool-sub');
+    if (sub) sub.textContent = '需出生日期、出生時間與出生地；系統會以紫微斗數為主，並保留七維交叉驗證。';
+    var cta = document.getElementById('tool-cta');
+    if (cta) cta.style.display = 'block';
+
+    setTimeout(function(){
+      var birth = document.getElementById('birth-data-card') || document.getElementById('f-byear');
+      if (birth && birth.scrollIntoView) birth.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 120);
+  };
+
+  // ★ v80.15：首頁梅花易數入口
+  window._meihuaOpen = function() {
+    try { if (typeof S !== 'undefined') { S._tarotOnlyMode = false; S._autoMode = false; } } catch(_) {}
+    if (typeof goStep === 'function') goStep(1);
+    setTimeout(function(){
+      var mh = document.getElementById('step-1');
+      if (mh && mh.scrollIntoView) mh.scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 80);
   };
 
   // ★ v40：首頁載入時即時查詢剩餘次數（打 Worker KV）
@@ -6034,6 +6123,11 @@ showAuraResult = function(){
   }
 
   function jyBuildSlot(spreadId, def) {
+      // v80.14：優先使用 tarot_upgrade.js 的正統版面（含 Waite 凱爾特、Mathers 21、Mathers 54）。
+      if (typeof window.buildSlotLayout === 'function') {
+        var _orthodoxLayout = window.buildSlotLayout(spreadId, def);
+        if (_orthodoxLayout) return _orthodoxLayout;
+      }
       function S(id, num, label) {
         return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
       }
@@ -6289,6 +6383,22 @@ showAuraResult = function(){
 
     if (!deckShuffled.length) initTarotDeck();
     if (drawnCards.length >= targetCount) return;
+
+    // v80.14：Mathers 21 / 54 的自動抽牌必須走正統建構器，不能只從畫面前 N 張一路點。
+    if (typeof window.JY_buildCanonicalTarotDraw === 'function' && (def && (def.id === 'mathers_21' || def.id === 'mathers_horseshoe' || def.id === 'fifteen_card'))) {
+      var _seed = String(Date.now()) + '|' + ((S.form && S.form.question) || '') + '|' + ((S.form && S.form.type) || 'tarot');
+      var _canonical = window.JY_buildCanonicalTarotDraw(deckShuffled.slice(), def.id, def, _seed, (S.form && S.form.type) || 'general', (S.form && S.form.question) || '');
+      if (_canonical && _canonical.length) {
+        drawnCards = _canonical;
+        S.tarot = { drawn: drawnCards, spread: drawnCards, spreadType: def.id, spreadDef: def };
+        var _btn = document.getElementById('btn-analyze'); if (_btn) _btn.disabled = false;
+        var _hint = document.getElementById('pick-hint'); if (_hint) _hint.style.display = 'none';
+        var _countEl = document.getElementById('t-remain-picked'); if (_countEl) _countEl.textContent = String(drawnCards.length);
+        try { if (typeof showSpread === 'function') showSpread(); } catch(_e){}
+        setTimeout(function(){ var act=document.querySelector('#step-2 .actions'); if(act) act.scrollIntoView({behavior:'smooth', block:'center'}); }, 300);
+        return;
+      }
+    }
 
     var deckEl = document.getElementById('t-deck');
     if (!deckEl) return;

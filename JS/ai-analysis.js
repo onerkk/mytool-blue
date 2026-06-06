@@ -165,7 +165,7 @@ window._jyStopSmartTimer = function() {
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260603v79_0';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260606v80_14';
 // ★ v73(歐那 2026/5/29)：純前端複製模式已無 worker，舊版打 worker /version 的偵測永遠失敗、
 //   強制更新形同虛設。改為「純前端版本常數比對」——零後端依賴：
 //   每次載入比對 FRONTEND_VERSION 與 localStorage 記錄，變了就破快取強制 reload 一次。

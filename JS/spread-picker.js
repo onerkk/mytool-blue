@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🎴 牌陣選擇器（v80.13-20260606-orthodox-layout）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+// 🎴 牌陣選擇器（v80.14）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
 //   機制：手動選定時，包裝 detectSpreadType 使其直接回傳該牌陣，
 //        於是所有自動偵測點（含 initTarotDeck）都會吃到手動選擇，ui.js 不需改動。
 //   風格：沿用站上 token（--c-gold / --c-bg-card / Noto Serif TC）與 jy-tool-card orb 質感。
@@ -14,7 +14,6 @@
     three_card:   { icon: 'fa-grip-lines',   accent: '201,168,76',  cn: '三牌陣',        suited: '單一是非、快速看一件事的走向' },
     five_card:    { icon: 'fa-border-all',   accent: '223,195,115', cn: '五牌陣',        suited: '一般問題 ・ 現況→原因→阻礙→建議→結果' },
     relationship: { icon: 'fa-heart',        accent: '251,113,133', cn: '關係牌陣',      suited: '兩個人的關係、感情' },
-    horseshoe:    { icon: 'fa-horse-head',  accent: '223,195,115', cn: '七張馬蹄形',    suited: '現代七張 horseshoe ・ 過去到結果的流程盤' },
     either_or:    { icon: 'fa-code-branch',  accent: '96,165,250',  cn: '二選一',        suited: '抉擇、兩條路 ・ 看清各自的發展與結果' },
     cross:        { icon: 'fa-plus',         accent: '251,191,36',  cn: '十字牌陣',      suited: '有衝突拉扯、卡關 ・ 核心 vs 阻礙' },
     timeline:     { icon: 'fa-clock',        accent: '96,165,250',  cn: '時間線',        suited: '時機「什麼時候、要多久」' },
@@ -23,11 +22,11 @@
     zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '年度運勢 ・ 十二宮掃描一整年' },
     minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '具體生活問題 ・ 只用 56 張小牌' },
     fifteen_card: { icon: 'fa-shapes',       accent: '139,92,246',  cn: '金色黎明十五張', suited: '元素尊貴、不用逆位（進階）' },
-    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '1888 古法 ・ 三排七、由右至左（進階）' },
-    mathers_horseshoe: { icon: 'fa-layer-group', accent: '201,168,76', cn: 'Mathers 五十四張', suited: '1888 第一法完整 horseshoe ・ A/C/E 三組成對讀（進階）' }
+    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '1888 古法 ・ 代表牌在右、三排七、由右至左（進階）' },
+    mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '1888 第一法 ・ A/C/E 三組 horseshoe，F棄用（高階）' }
   };
   var GROUPS = [
-    { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'horseshoe', 'celtic_cross'] },
+    { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'celtic_cross'] },
     { label: '進階・專門', ids: ['tree_of_life', 'zodiac', 'minor_arcana', 'fifteen_card', 'mathers_21', 'mathers_horseshoe'] }
   ];
 
