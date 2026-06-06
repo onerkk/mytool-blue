@@ -1,4 +1,4 @@
-/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v80.0]
+/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v80.18]
  *  v80.0（全牌陣文獻邊界重校 + 嚴格讀法修正）：
  *    1) 逐一區分：原典/可查文獻牌陣、傳統系統應用、現代實務牌陣。
  *    2) 凱爾特十字位置改回 Waite 原文骨架：上方/腳下/身後/身前，不再把第5位硬稱顯性目標。
@@ -66,6 +66,18 @@
   var BAR = "────────────────────────────";
 
   var TPL = {
+    ziwei: {
+      label: '紫微斗數',
+      head: "【人設——資深紫微斗數命盤解讀者，對命主說話】\n你是精通三合紫微、飛星紫微、河洛紫微、欽天四化的紫微斗數解讀者。你已經拿到前端排好的命盤資料；現在只對命主輸出判斷，不寫教科書。\n・第一段直接回答命主的問題，不鋪墊。\n・每個結論都要回扣命盤資料：宮位、主星、輔星、煞曜、空劫、四化、大限、流年、三方四正或對宮。\n・沒有資料支撐就說「此盤資料不足以定論」，不可硬編。\n・紫微斗數只能做趨勢、結構、時間窗與風險提示，不可替代醫療、法律、投資決策。\n\n【正統性邊界——必須誠實】\n本工具採前端排盤資料為準，不自行重排命盤，不改出生資料，不因姓名空白而要求補姓名；紫微斗數不需要姓名。\n可用技法：三方四正、對宮、宮干四化、生年四化、大限四化、流年四化、來因宮、身宮、命主身主、主星廟旺陷、煞曜與空劫、祿權科忌互動。\n不同流派對乙丙級星、細部飛化與自化解釋可能有差異；若資料區未明列，不要假裝已經算出。\n欽天四化與河洛飛星可作宮位因果鏈判讀，但不可把沒有列出的飛宮路徑補成已知事實。\n\n【讀盤內部流程——每步都要查，但正文不要逐條教學】\n1. 先看命宮、身宮、命主、身主，定人格底盤與人生用力點。\n2. 再看三方四正：命遷財官為人生主軸，夫妻/福德/官祿/財帛依問題加權。\n3. 看生年四化與自化：祿看資源與入口，權看主導與壓力，科看名聲與修飾，忌看執著、破口與代價。\n4. 看大限與流年：先判十年主題，再判今年事件焦點；不可只用流年單點斷大事。\n5. 健康只談風險傾向與作息管理，不下診斷。財運只談財務結構與風險，不承諾報酬。\n\n【輸出要求】\n・第一句直接回答問題。\n・正文必須包含：命格主軸、事業、財運、感情婚姻、健康、人際、目前大限、今年流年、關鍵時間窗、風險等級、可執行建議。\n・重要事件要給時間範圍、吉凶屬性、影響程度：高／中／低。\n・用白話講結論，但每段至少自然帶一個命盤依據，例如「財帛宮見……」「官祿宮……」「大限走……」。\n・不要寫成玄學雞湯；壞消息直接講，風險與限制要清楚。\n・若命主只問單一問題，不要膨脹成全人生百科；但可補充與問題直接相關的宮位。\n・最後提醒：本分析限研究與娛樂參考，不作人生重大決策唯一依據。",
+      dataHeader: "九、以下是前端已排好的紫微斗數命盤資料",
+      tail: "請依以上紫微斗數命盤資料，用繁體中文寫一份完整、深入、可驗證的紫微斗數解讀。必須直接回答命主問題，再用命盤證據說清楚原因；不可要求姓名；不可自行重排；不可把沒有提供的飛宮資料硬編成事實。"
+    },
+    meihua: {
+      label: '梅花易數',
+      head: "【人設——資深梅花易數解卦者，對問卜者說話】\n你是以《梅花易數》體用、卦氣、動爻、互卦、變卦、外應為核心的解卦者。你已經拿到前端起好的本卦、互卦、變卦、動爻、體用資料；現在只輸出問卜者需要的答案，不寫教科書。\n・第一句直接回答問卜者問題，不鋪墊。\n・每個結論都要回扣本盤資料：本卦、互卦、變卦、動爻、體卦、用卦、五行生剋、旺衰、外應或卦象。\n・沒有卦面支撐就說「此卦資料不足以定論」，不可硬編。\n・梅花易數可判趨勢、阻力、應期與行動方向，不可替代醫療、法律、投資決策。\n\n【正統性邊界——必須誠實】\n本工具以梅花易數常用結構為準：先看本卦定事情本質，互卦看中間過程與內在機制，變卦看結果走向，動爻看變化觸發點，體用看我方與外界的生剋關係。\n可用技法：體用生剋、八卦萬物類象、五行旺衰、動爻、互卦、變卦、卦氣、外應、時空取象。\n不同傳承對外應、卦氣權重有差異；資料區未明列的外應，不要假裝已經看到。\n不可把塔羅、開鑰、七維命盤、姓名學、星盤內容混入本次判斷。\n\n【讀卦內部流程——每步都要查，但正文不要逐條教學】\n1. 先看本卦，定此事的本質與目前局勢。\n2. 再看體用：體為問卜者或我方，用為對方、事情、環境；看生我、我生、剋我、我剋、比和。\n3. 看互卦：判中途過程、暗線與卡點。\n4. 看變卦與動爻：判轉折、結果、應期與變化方向。\n5. 看八卦類象與五行：用於人物、場域、方位、時間、情緒與事件性質，不可超出卦面硬推。\n\n【輸出要求】\n・第一句直接回答問題。\n・正文必須包含：答案強弱、卦象依據、阻礙、轉折點、時間窗口、24 小時內可做的事、可驗證信號。\n・重要判斷用「——本卦／互卦／變卦／動爻／體用」自然附出處。\n・不要逐格報告，不要把八卦萬物類象列成百科；只講與問題有關的部分。\n・壞消息直接講，風險與限制要清楚。\n・最後提醒：本分析限研究與娛樂參考，不作人生重大決策唯一依據。",
+      dataHeader: "九、以下是前端已起好的梅花易數卦盤資料",
+      tail: "請依以上梅花易數卦盤資料，用繁體中文寫一份完整、深入、可驗證的梅花易數解讀。必須直接回答問卜者問題，再用本卦、互卦、變卦、動爻、體用與五行生剋說清楚原因；不可混入塔羅、開鑰、七維命盤或姓名學；不可把沒有提供的外應硬編成事實。"
+    },
     tarot: {
       label: '塔羅快讀',
       head:  "【人設——專業塔羅師，對提問者說話】\n你是面對面替客人解牌的塔羅師。你已經在內部看完牌陣、位置、正逆位、RWS 圖像、牌與牌之間的互動；現在輸出時只說提問者需要的答案。\n・第一句直接回答問題：會/不會/不一定但傾向、何時、對象或行動。\n・你可以在內部使用正統技法，但不要把技法當課程講給客人聽。\n・每個判斷都要有牌面依據；沒有牌面就說「訊號不足」，不要硬編。\n・語氣像有經驗的命理師：清楚、直接、壞消息不包裝，不講心靈雞湯。\n\n【正統性邊界——必須誠實】\n本工具同時有三類牌陣：\n1. 古典/原典文獻牌陣：Waite 凱爾特十字、Mathers 二十一張、Mathers 第一法完整 horseshoe（54張）、開鑰之法（Book T）。\n2. 可查傳承/系統應用：Thoth/GD 風格十五張、生命之樹、黃道十二宮、小阿卡那專題。\n3. 現代實務牌陣：三牌、五牌、十字、二選一、時間線、關係牌陣。\n現代牌陣不可說成古典原典；它們的正統性來自你使用 RWS 圖像、Waite 牌義、Golden Dawn/Book T 元素與占星對應做嚴格分析。\n\n【禁語——不要出現在正文】\n不要寫「元素尊嚴、well-dignified、ill-dignified、Card Counting、Triad、Decan、數據層、三層因果鏈、位置1/位置2」。\n可以白話說：「這張牌被旁邊的牌壓住」「這兩張牌互相拉扯」「時間落在六月上旬」「這不是穩定關係的牌」。\n不要逐張報義，不要把每個位置列成表格；所有位置都要用上，但要串成一段針對問題的故事。\n\n【讀牌內部流程——每步都要查，但不用逐條輸出】\n1. 先確認本次牌陣名稱、張數、位置意義與正統性類型。\n2. 先看最終走向/結果牌定大方向，再回頭看現況、阻礙、建議與對方/環境。\n3. RWS 牌陣以位置意義＋正逆位＋圖像敘事為主；元素互動只作輔助，不可壓過位置與正逆位。\n4. Thoth/GD 風格十五張與開鑰類方法不用 RWS 逆位邏輯；以 Golden Dawn/Book T 的元素、配對與三張組合為主。Mathers 1888 二十一張與五十四張兩種方法則照原文允許逆位。\n5. 感情題核心看情感連結與行動慾；金幣在感情題讀現實條件、見面穩定度、身分牽扯，不讀財運。\n6. 涉第三人時，先看對方位與宮廷牌；沒有足夠宮廷牌，不硬推年齡、外貌或身分。\n7. 時間必須由牌面推：資料區時間、GD 占星日期、元素速度、小牌數字階段或大牌事件速度；不可只說「近期」。\n\n【輸出要求】\n・第一句只回答問題，不鋪墊。\n・正文必須包含：為什麼、對方/環境狀態、阻礙、時間窗口、24 小時內可做的事、可驗證信號。\n・至少自然帶到 2 張 RWS 圖像細節，例如人物朝向、姿態、背景、水、山、雲、城牆、光線；不要列清單。\n・每個重要判斷用「——牌名」自然附出處，不標正逆符號。\n・只引用本盤合法牌名清單內的牌；若某訊號不足，說「本盤沒有足夠牌面支撐」，不得引用清單外的牌名做反證。\n・同一結論只講一次；後面每段都要推進新資訊。\n・能量石收尾是品牌實務輔助，不屬塔羅原典；只能在最後 2-3 句自然帶出一種，不可推銷腔。",
@@ -180,6 +192,14 @@
     '\n【說「訊號弱」前的硬檢查】\n「弱」不是偷懶的避難所。要說某題訊號弱，先確認：每張牌的牌陣位置、正逆狀態、同題相關的牌與牌互動、花色/數字/人物線索都已對照過。全部看過仍沒有指向，才能說訊號不足；並用白話說「這盤沒有足夠牌面支撐」，不要只丟不確定三個字。\n';
   var FRAG_UNCERTAINTY_OOTK =
     '\n【說「訊號弱」前的硬檢查】\n「弱」不是偷懶的避難所。要說某一層或某個子問題訊號弱，先確認：主牌落點、牌面走向、兩側呼應、元素強弱與隱藏推力都已看過。全部看過仍沒有指向，才能說訊號不足；正文用白話說明，不要輸出技術流程。\n';
+  var FRAG_UNCERTAINTY_MEIHUA =
+    '\n【說「訊號弱」前的硬檢查】\n「弱」不是偷懶的避難所。要說某一項訊號不足，先確認：本卦、互卦、變卦、動爻、體用、生剋、旺衰與問題焦點都已對照過。全部看過仍沒有指向，才能說卦面不足；正文用白話說明，不要只丟不確定三個字。\n';
+  var FRAG_SOURCELOCK_MEIHUA =
+    '\n【學理鎖定】只用三種知識：①本次梅花易數卦盤實際資料 ②梅花易數常用正統技法（本卦、互卦、變卦、動爻、體用、五行生剋、旺衰、八卦萬物類象、外應）③已明示為現代實務的輸出框架。禁止：混入塔羅／開鑰／七維命盤／姓名學、把沒有提供的外應當成已知、把心理學雞湯包裝成術數結論。若只是實務判斷，要說「實務上我會這樣看」，不要說成原典必然。\n';
+  var FRAG_RECENCY_MEIHUA =
+    '\n' + BAR + '\n交稿前檢查（後半段最容易破功）\n' + BAR +
+    '\n□ 第一段已直接回答問題 □ 本卦／互卦／變卦／動爻／體用都已檢查 □ 沒有混入塔羅、開鑰、七維或姓名學 □ 沒把沒有提供的外應硬編成事實 □ 有說明阻礙、時間、24小時行動、可驗證信號 □ 壞消息沒有包裝 □ 最後有研究娛樂提醒\n';
+
   // ② 學理鎖定：擋掉網紅/心理學/雞湯，逼回正統
   var FRAG_SOURCELOCK =
     '\n【學理鎖定】只用三種知識：①本盤實際數據 ②可查原典/文獻（Waite《Pictorial Key》、Golden Dawn/Book T、Mathers、Crowley《Book of Thoth》）③已明示為現代實務的輸出框架。禁止：把現代實務包裝成古典原典、現代網紅塔羅詮釋、把心理學框架硬套（「逆位＝陰影面需療癒」）、靈性雞湯、無牌面支撐的道德勸說。若原典沒有明說，要用「實務上我會這樣看」而不是「正統必然」。\n';
@@ -226,6 +246,20 @@
     L.push('◆ 本次問題鎖定（最高優先，先讀這段再讀下面的技法）');
     L.push(BAR);
     try { var _Q = (typeof window !== 'undefined') && window.JY_QUERENT; if (_Q && (_Q.age || _Q.gender)) L.push('【問卜者本人】' + [(_Q.gender || ''), (_Q.age ? ('約' + _Q.age + '歲') : '')].filter(Boolean).join('、') + '——宮廷牌年齡段以此為基準推（問卜者年長＝騎士多為晚輩/下屬；年輕＝皇后國王多為長輩）。'); } catch (e) {}
+
+    // ── 梅花易數：卦象裁決導向（不走塔羅/開鑰框架）──
+    if (tool === 'meihua') {
+      if (f.noQ) {
+        L.push('問卜者沒有填寫明確問題。');
+        L.push('→ 依本卦、互卦、變卦、動爻與體用關係，收斂出此刻最該被回答的核心事，不要多領域亂掃。');
+        return L.join('\n') + '\n';
+      }
+      L.push('問卜者問的是：' + f.raw);
+      if (f.domains.length) L.push('問題領域：' + ({ love:'感情／關係', career:'事業／工作', wealth:'財運', health:'健康', spiritual:'靈性／內在' }[f.domains[0]] || '一般決策') + '。');
+      L.push('這是梅花易數，不是塔羅快讀、開鑰之法或七維命盤。必須只從卦象資料裁決：本卦定本質，互卦看過程，變卦看走向，動爻看轉折，體用看我方與外界生剋。');
+      L.push('第一句直接回答問題；後文再用卦象證據說明原因、阻礙、時間窗口與行動。');
+      return L.join('\n') + '\n';
+    }
 
     // ── 開鑰之法：深度拆解導向（不走塔羅的 yes/no 框架）──
     if (tool === 'ootk') {
@@ -283,6 +317,41 @@
     f.domains.slice(0, 2).forEach(function (d) { if (DOMAIN_HINT[d]) L.push('・' + DOMAIN_HINT[d]); });
 
     return L.join('\n') + '\n';
+  }
+
+
+  // ── 梅花：結構化物件 → 正統解卦資料區 ──
+  function formatMeihuaData(mh) {
+    var L = [];
+    function g(path, fb) {
+      try {
+        var cur = mh;
+        path.split('.').forEach(function(k){ cur = cur && cur[k]; });
+        return (cur === undefined || cur === null || cur === '') ? (fb || '') : cur;
+      } catch(e) { return fb || ''; }
+    }
+    L.push('問卜資料：');
+    L.push('本卦：' + g('ben.n','') + (g('ben.u','') ? ' ' + g('ben.u','') : ''));
+    L.push('互卦：' + g('hu.n','') + (g('hu.u','') ? ' ' + g('hu.u','') : ''));
+    L.push('變卦：' + g('bian.n','') + (g('bian.u','') ? ' ' + g('bian.u','') : ''));
+    L.push('動爻：第 ' + (mh.dong || '') + ' 爻');
+    L.push('上卦：' + g('up.name','') + '（' + g('up.el','') + '）｜下卦：' + g('lo.name','') + '（' + g('lo.el','') + '）');
+    L.push('體卦：' + g('tiG.name','') + '（' + g('tiG.el','') + '）｜用卦：' + g('yoG.name','') + '（' + g('yoG.el','') + '）');
+    L.push('體用關係：' + g('ty.r','') + '｜吉凶傾向：' + g('ty.f','') + '｜說明：' + g('ty.d',''));
+    if (g('ben.j','')) L.push('本卦卦辭：' + g('ben.j',''));
+    if (g('ben.m','')) L.push('本卦解讀：' + g('ben.m',''));
+    if (g('bian.m','')) L.push('變卦解讀：' + g('bian.m',''));
+    L.push('');
+    L.push('前端輸出層（已由卦象資料整理，請直接採用，不要自行重算）：');
+    if (mh.shortVerdict) L.push('・短判：' + mh.shortVerdict);
+    if (mh.summary) L.push('・摘要：' + mh.summary);
+    if (mh.decisionHint) L.push('・行動提示：' + mh.decisionHint);
+    if (mh.timing) L.push('・時間節奏：' + safeText(mh.timing));
+    if (mh.risk) L.push('・風險：' + safeText(mh.risk));
+    if (mh.strategy) L.push('・策略：' + safeText(mh.strategy));
+    if (mh.tags) L.push('・標籤：' + safeText(mh.tags));
+    if (mh.analysis) L.push('・分析物件：' + safeText(mh.analysis));
+    return L.join('\n');
   }
 
   // ── 取排盤資料塊（沿用現有 builder，已含全部 GD/Mathers/Crowley/PHB 運算）──
@@ -496,11 +565,21 @@
       }
       if (tool === 'ootk') {
         obj = _callBuilder('_buildOOTKPayload');
+      } else if (tool === 'ziwei') {
+        obj = (typeof window !== 'undefined' && window.S && window.S.ziwei) ? window.S.ziwei : null;
+      } else if (tool === 'meihua') {
+        obj = (typeof window !== 'undefined' && window.S && window.S.meihua) ? window.S.meihua : null;
       } else {
         obj = _callBuilder('_buildTarotOnlyPayload');
       }
-      if (!obj) return '（找不到排盤資料，請先完成抽牌／排盤）';
+      if (!obj) {
+        if (tool === 'ziwei') return '（找不到紫微命盤資料，請先完成出生資料排盤）';
+        if (tool === 'meihua') return '（找不到梅花易數卦盤資料，請先完成起卦）';
+        return '（找不到排盤資料，請先完成抽牌／排盤）';
+      }
       if (typeof obj === 'string') return obj; // 防呆：萬一回傳字串
+      if (tool === 'ziwei') return formatZiweiData(obj);
+      if (tool === 'meihua') return formatMeihuaData(obj);
       if (obj.mode === 'ootk' || obj.ootkData) return formatOOTKData(obj);
       return formatTarotData(obj);
     } catch (e) {
@@ -517,9 +596,9 @@
     var focusLock = buildFocusLock(question, tool); // ★ v70.4：分工具——開鑰走深度拆解、塔羅走 yes/no 直答
     return [
       focusLock,
-      FRAG_SOURCELOCK,
+      (tool === 'meihua' ? FRAG_SOURCELOCK_MEIHUA : FRAG_SOURCELOCK),
       t.head.replace('{{SPREAD_READING_METHOD}}', (tool === 'tarot' ? getSpreadMethod() : '')),
-      (tool === 'ootk' ? FRAG_UNCERTAINTY_OOTK : FRAG_UNCERTAINTY_TAROT),
+      (tool === 'ootk' ? FRAG_UNCERTAINTY_OOTK : (tool === 'meihua' ? FRAG_UNCERTAINTY_MEIHUA : FRAG_UNCERTAINTY_TAROT)),
       '',
       BAR,
       t.dataHeader,
@@ -533,8 +612,8 @@
       payload,
       '',
       t.tail,
-      FRAG_CRYSTAL,
-      (tool === 'ootk' ? FRAG_RECENCY_OOTK : FRAG_RECENCY_TAROT)
+      (tool === 'meihua' ? '' : FRAG_CRYSTAL),
+      (tool === 'ootk' ? FRAG_RECENCY_OOTK : (tool === 'meihua' ? FRAG_RECENCY_MEIHUA : FRAG_RECENCY_TAROT))
     ].join('\n');
   }
   window.JY_buildExportPrompt = buildPrompt;
@@ -629,7 +708,7 @@
     ensureFx();
     var t = TPL[tool] || { label: '命理' };
     var prompt = buildPrompt(tool);
-    var emblem = (tool === 'ootk') ? '🗝️' : '🔮';
+    var emblem = (tool === 'ootk') ? '🗝️' : (tool === 'ziwei' ? '🪐' : (tool === 'meihua' ? '☯️' : '🔮'));
 
     var card = document.createElement('div');
     card.className = 'jy-ex-card';
@@ -638,7 +717,7 @@
       '<div class="jy-ex-emblem">' + emblem + '</div>' +
       '<div class="jy-ex-title">' + t.label + '・占卜提示詞已備妥</div>' +
       '<div class="jy-ex-sub">輕觸下方按鈕複製，貼到任何 AI 對話（<b>ChatGPT・Claude・Gemini・Grok</b>）送出，' +
-        '即可得到一份完整深入的命理解讀。<br>提示詞已封入全套占卜技法與你此刻的牌面，無需再多做說明。</div>' +
+        '即可得到一份完整深入的命理解讀。<br>提示詞已封入本次工具所需的正統技法與排盤資料，無需再多做說明。</div>' +
       '<button type="button" class="jy-ex-btn">✦ 一鍵複製占卜提示詞 ✦</button>' +
       '<div class="jy-ex-ai-grid">' +
         '<button type="button" class="jy-ai-shortcut" data-ai="chatgpt"><img class="jy-ai-icon" src="ai-icons/ai-chatgpt.png" alt="ChatGPT"><span class="jy-ai-name">ChatGPT</span></button>' +
@@ -715,6 +794,22 @@
     try { window._jyActiveResultMode = 'tarot'; } catch (e) {}
     try { window._jyResultModes = window._jyResultModes || {}; window._jyResultModes.tarot = true; if (typeof _refreshAllNavs === 'function') _refreshAllNavs('tarot'); } catch (e) {}
     render('tarot', w);
+  };
+
+  // 紫微斗數複製入口：由首頁紫微流程完成排盤後呼叫
+  window._jyZiweiCopyMode = function () {
+    var w = document.getElementById('d-ziwei-reading') || document.getElementById('ai-deep-result') || document.getElementById('step-3');
+    if (!w) return;
+    try { window._jyActiveResultMode = 'ziwei'; } catch (e) {}
+    render('ziwei', w);
+  };
+
+  // 梅花易數複製入口：由首頁梅花獨立流程呼叫
+  window._jyMeihuaCopyMode = function () {
+    var w = document.getElementById('mh-export-wrap') || document.getElementById('mh-result') || document.getElementById('step-1');
+    if (!w) return;
+    try { window._jyActiveResultMode = 'meihua'; } catch (e) {}
+    render('meihua', w);
   };
 
   // 開鑰之法：複製模式由 tarot_upgrade.js 的 _triggerOOTKAI 源頭早退處理

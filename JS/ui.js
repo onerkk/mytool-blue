@@ -598,6 +598,15 @@ function goStep(n){
         }
       }
       runAnalysis();
+      // ★ v80.17：紫微斗數跟塔羅一樣走前端提示詞輸出；不打 worker、不送後端組 prompt。
+      if (S._ziweiOnlyMode) {
+        setTimeout(function(){
+          if (window.JY_renderExportPrompt) {
+            var zwHost = document.getElementById('d-ziwei-reading') || document.getElementById('ai-deep-result') || document.getElementById('step-3');
+            if (zwHost) window.JY_renderExportPrompt('ziwei', zwHost);
+          }
+        }, 350);
+      }
       // ★ v28：sticky-cta 和回饋區都不在這裡顯示——等 AI 分析完成後由 ai-analysis.js 觸發
       // 如果有多種結果，刷新導航
       if (S._fromTarot || (window._jyResultModes && window._jyResultModes.tarot)) {
@@ -5907,9 +5916,9 @@ showAuraResult = function(){
     });
 
     var btn = document.getElementById('btn-tool-go');
-    if (btn) { btn.innerHTML = '<i class="fas fa-globe-asia"></i> 開始紫微斗數命盤分析'; btn.onclick = function(){ submitWithTool(); }; }
+    if (btn) { btn.innerHTML = '<i class="fas fa-globe-asia"></i> 產生紫微斗數提示詞'; btn.onclick = function(){ submitWithTool(); }; }
     var sub = document.getElementById('btn-tool-sub');
-    if (sub) sub.textContent = '需出生日期、出生時間與出生地；系統會以紫微斗數為主，並保留七維交叉驗證。';
+    if (sub) sub.textContent = '需出生日期、出生時間與出生地；系統會排出紫微斗數命盤，並像塔羅一樣產生可複製提示詞。';
     var cta = document.getElementById('tool-cta');
     if (cta) cta.style.display = 'block';
 
@@ -7823,3 +7832,212 @@ function resetToHome() {
 })();
 
 
+
+/* =============================================================
+   v80.18 — 紫微斗數 / 梅花易數獨立入口淨化
+   目的：首頁獨立工具不可再套用舊七維、塔羅、開鑰視窗。
+   ============================================================= */
+(function(){
+  'use strict';
+
+  function _jyEnsureModeCSS(){
+    if (document.getElementById('jy-v80-18-mode-css')) return;
+    var st=document.createElement('style');
+    st.id='jy-v80-18-mode-css';
+    st.textContent = [
+      'body.jy-mode-ziwei #f-name-group{display:none!important}',
+      'body.jy-mode-ziwei #tool-selection-card{display:none!important}',
+      'body.jy-mode-ziwei #jy-spread-card{display:none!important}',
+      'body.jy-mode-ziwei #seo-content{display:none!important}',
+      'body.jy-mode-meihua #seo-content{display:none!important}',
+      'body.jy-mode-meihua #btn-meihua-skip, body.jy-mode-meihua #btn-meihua-next{display:none!important}',
+      'body.jy-mode-meihua #btn-meihua-copy{display:inline-flex!important}',
+      'body.jy-mode-meihua #meihua-help-text{display:none!important}',
+      'body.jy-mode-meihua #step-1 .actions{justify-content:center}',
+      '.jy-standalone-note{margin:.5rem 0 0;padding:.55rem .7rem;border:1px solid rgba(212,175,55,.16);border-radius:10px;background:rgba(212,175,55,.055);color:rgba(232,224,208,.78);font-size:.74rem;line-height:1.7}',
+      '.jy-tool-clean-note{font-size:.72rem;color:rgba(232,224,208,.62);line-height:1.7;margin-top:.45rem}',
+      '.jy-meihua-copy-host{margin-top:1rem}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  function _jySetBodyMode(mode){
+    _jyEnsureModeCSS();
+    document.body.classList.remove('jy-mode-ziwei','jy-mode-meihua','jy-mode-tarot');
+    if (mode) document.body.classList.add('jy-mode-'+mode);
+  }
+
+  function _jyFindCardByText(root, text){
+    root = root || document;
+    var cards = root.querySelectorAll('.card');
+    for (var i=0;i<cards.length;i++){
+      if ((cards[i].textContent || '').indexOf(text) >= 0) return cards[i];
+    }
+    return null;
+  }
+
+  function _jyHideCardsContaining(root, words){
+    root = root || document;
+    var cards = root.querySelectorAll('.card');
+    for (var i=0;i<cards.length;i++){
+      var txt = cards[i].textContent || '';
+      for (var j=0;j<words.length;j++){
+        if (txt.indexOf(words[j]) >= 0) { cards[i].style.display='none'; break; }
+      }
+    }
+  }
+
+  window._jyApplyZiweiStandaloneUI = function(){
+    _jySetBodyMode('ziwei');
+    try { if (S) { S._ziweiOnlyMode=true; S._meihuaOnlyMode=false; S._tarotOnlyMode=false; S._autoMode=true; } } catch(_){ }
+
+    var hook=document.getElementById('hook-screen');
+    var input=document.getElementById('input-screen');
+    if (hook) hook.style.display='none';
+    if (input) input.style.display='block';
+
+    var breadcrumb = input ? input.querySelector('.tag.tag-gold') : null;
+    if (breadcrumb && breadcrumb.parentNode) breadcrumb.parentNode.style.display='none';
+    var presets=document.getElementById('q-presets'); if (presets) presets.style.display='none';
+    var custom=document.getElementById('q-custom-wrap'); if (custom) custom.style.display='block';
+    var spread=document.getElementById('jy-spread-card'); if (spread) spread.style.display='none';
+
+    var birth=document.getElementById('birth-data-card') || _jyFindCardByText(input, '出生資料');
+    if (birth){ birth.id='birth-data-card'; birth.style.display=''; }
+
+    var nameGroup=document.getElementById('f-name-group');
+    if (nameGroup) nameGroup.style.display='none';
+    var nameInput=document.getElementById('f-name');
+    if (nameInput) nameInput.value='';
+
+    var toolCard=document.getElementById('tool-selection-card') || _jyFindCardByText(input, '選擇分析方式');
+    if (toolCard){ toolCard.id='tool-selection-card'; toolCard.style.display='none'; }
+    _jyHideCardsContaining(input, ['哪套適合你的問題？','七維命盤深度分析','塔羅快讀','開鑰之法']);
+
+    var q=document.getElementById('f-question');
+    if (q){
+      q.placeholder='例如：請以紫微斗數分析我目前大限、今年事業財運、感情婚姻與健康風險。';
+      if (!q.value || /塔羅|開鑰|七維/.test(q.value)) q.value='請以紫微斗數為主，分析我的命盤十二宮、目前大限、今年流年、事業財運、感情婚姻與健康風險。';
+    }
+
+    if (typeof window._setBirthFormMode === 'function') window._setBirthFormMode('ziwei');
+    try { _selectedTool='full'; } catch(_){ }
+
+    var btn=document.getElementById('btn-tool-go');
+    if (btn){
+      btn.innerHTML='<i class="fas fa-globe-asia"></i> 產生紫微斗數提示詞';
+      btn.onclick=function(){ submitWithTool(); };
+    }
+    var sub=document.getElementById('btn-tool-sub');
+    if (sub) sub.textContent='紫微斗數只需性別、出生日期、出生時間與出生地；不需要姓名，不混入塔羅、開鑰或七維分析。';
+    var cta=document.getElementById('tool-cta'); if (cta) cta.style.display='block';
+
+    var hint=document.getElementById('birth-form-hint');
+    if (!hint && birth){
+      hint=document.createElement('div');
+      hint.id='birth-form-hint';
+      hint.className='jy-standalone-note';
+      var title=birth.querySelector('.card-title');
+      if (title && title.nextSibling) title.parentNode.insertBefore(hint, title.nextSibling); else birth.insertBefore(hint,birth.firstChild);
+    }
+    if (hint) hint.innerHTML='<i class="fas fa-circle-info"></i> 紫微斗數版：不用姓名、不跑姓名學；不顯示塔羅/開鑰選項；排盤後只輸出紫微斗數提示詞。';
+
+    setTimeout(function(){
+      var by=document.getElementById('f-byear');
+      if (by && by.scrollIntoView) by.scrollIntoView({behavior:'smooth',block:'center'});
+    },120);
+  };
+
+  window._jyApplyMeihuaStandaloneUI = function(){
+    if (window._jyApplyingMeihuaMode) return;
+    window._jyApplyingMeihuaMode = true;
+    _jySetBodyMode('meihua');
+    try { if (S) { S._meihuaOnlyMode=true; S._ziweiOnlyMode=false; S._tarotOnlyMode=false; S._autoMode=false; } } catch(_){ }
+    var hook=document.getElementById('hook-screen');
+    var input=document.getElementById('input-screen');
+    if (hook) hook.style.display='none';
+    if (input) input.style.display='none';
+    var step1=document.getElementById('step-1');
+    if (typeof goStep === 'function' && (!step1 || !step1.classList.contains('active'))) goStep(1);
+
+    var title=document.querySelector('#step-1 .card-title');
+    if (title) title.innerHTML='<i class="fas fa-yin-yang"></i> 梅花易數起卦';
+    var actions=document.getElementById('meihua-actions') || document.querySelector('#step-1 .actions');
+    if (actions){
+      var back=document.getElementById('btn-meihua-back'); if (back) back.innerHTML='<i class="fas fa-arrow-left"></i> 回首頁';
+      var skip=document.getElementById('btn-meihua-skip'); if (skip) skip.style.display='none';
+      var next=document.getElementById('btn-meihua-next'); if (next) next.style.display='none';
+      var copy=document.getElementById('btn-meihua-copy');
+      if (!copy){
+        copy=document.createElement('button');
+        copy.className='btn btn-primary';
+        copy.id='btn-meihua-copy';
+        copy.innerHTML='<i class="fas fa-yin-yang"></i> 產生梅花易數提示詞';
+        copy.onclick=function(){ window._jyMeihuaToPrompt&&window._jyMeihuaToPrompt(); };
+        actions.appendChild(copy);
+      }
+      copy.classList.remove('hidden');
+    }
+    var help=document.getElementById('meihua-help-text');
+    if (help) help.innerHTML='<i class="fas fa-info-circle"></i> 梅花易數獨立模式：只取本卦、互卦、變卦、動爻、體用與外應資料，不再接塔羅或七維。';
+    setTimeout(function(){ var mh=document.getElementById('step-1'); if(mh&&mh.scrollIntoView) mh.scrollIntoView({behavior:'smooth',block:'start'}); window._jyApplyingMeihuaMode=false; },80);
+  };
+
+  window._jyMeihuaToPrompt = function(){
+    if (!window.S || !S.meihua){ alert('請先完成梅花易數起卦，再產生提示詞。'); return; }
+    var host=document.getElementById('mh-export-wrap');
+    if (!host){
+      host=document.createElement('div');
+      host.id='mh-export-wrap';
+      host.className='jy-meihua-copy-host';
+      var result=document.getElementById('mh-result') || document.getElementById('step-1');
+      if (result) result.appendChild(host);
+    }
+    if (window.JY_renderExportPrompt) {
+      try { window._jyActiveResultMode='meihua'; } catch(_){ }
+      window.JY_renderExportPrompt('meihua', host);
+    } else {
+      alert('提示詞模組尚未載入，請重新整理後再試。');
+    }
+  };
+
+  // 覆寫首頁入口：不再借用舊七維表單視窗。
+  var _oldZiweiOpen = window._ziweiOpen;
+  window._ziweiOpen = function(){ window._jyApplyZiweiStandaloneUI(); };
+  var _oldMeihuaOpen = window._meihuaOpen;
+  window._meihuaOpen = function(){ window._jyApplyMeihuaStandaloneUI(); };
+
+  // 梅花起卦完成後，不再捲到「下一步塔羅」，改顯示提示詞按鈕。
+  var _tryWrapShowMH = function(){
+    if (typeof window.showMH !== 'function' || window.showMH._jy_v80_18) return;
+    var prev=window.showMH;
+    window.showMH=function(r){
+      var out=prev.apply(this, arguments);
+      try {
+        if (S && S._meihuaOnlyMode) {
+          window._jyApplyMeihuaStandaloneUI();
+          var copy=document.getElementById('btn-meihua-copy');
+          if (copy && copy.scrollIntoView) setTimeout(function(){ copy.scrollIntoView({behavior:'smooth',block:'center'}); },180);
+        }
+      } catch(_){ }
+      return out;
+    };
+    window.showMH._jy_v80_18 = true;
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _tryWrapShowMH); else _tryWrapShowMH();
+  setTimeout(_tryWrapShowMH, 500);
+
+  // step 切換後再次淨化，避免舊覆寫鏈把卡片復原。
+  var _oldGoStep = window.goStep;
+  if (typeof _oldGoStep === 'function' && !_oldGoStep._jy_v80_18) {
+    window.goStep = function(n){
+      var r=_oldGoStep.apply(this, arguments);
+      try {
+        if (S && S._ziweiOnlyMode && (n===0 || n==='step-0')) setTimeout(window._jyApplyZiweiStandaloneUI, 0);
+        if (S && S._meihuaOnlyMode && (n===1 || n==='step-1')) setTimeout(window._jyApplyMeihuaStandaloneUI, 0);
+      } catch(_){ }
+      return r;
+    };
+    window.goStep._jy_v80_18 = true;
+  }
+})();
