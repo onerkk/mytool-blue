@@ -1338,9 +1338,9 @@
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260603v79_0" defer></script>
 <script src="JS/lenormand.js?v=20260603v80_0" defer></script>
-<!-- v80.18：修正——獨立頁改為「點擊即時補載」(避開 index.html 快取沒更新造成掉回舊頁出錯) + 鎖背景捲動消除抖動。梅花/紫微獨立頁；塔羅、開鑰待後續 -->
-<script src="JS/meihua-standalone.js?v=20260606v80_18" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260606v80_18" defer></script>
+<!-- v80.19：根治農曆橋接（lunar.js 把 Solar 掛 window.Solar，全站誤用 Lunar.Solar→紫微起盤/梅花時間起卦失敗）。橋接已加在 lunar.js 之後；兩支獨立頁加保險。ui.js 維持 v80_18 -->
+<script src="JS/meihua-standalone.js?v=20260606v80_19" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260606v80_19" defer></script>
 <script src="JS/ui.js?v=20260606v80_18" defer></script>
 <script src="JS/spread-picker.js?v=20260606v80_15" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
@@ -1350,6 +1350,26 @@
 <script src="JS/prompt-export.js?v=20260606v80_15" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
+<script>
+/* ★ v80.19 根治：lunar-javascript 1.7.4 的 UMD 會把 Solar / Lunar 各自掛到 window（即 window.Solar、window.Lunar），
+   但全站程式碼（紫微 approxLunar、梅花時間起卦）用的是 Lunar.Solar.fromYmd。Lunar.Solar 其實 undefined → 起盤/起卦丟錯。
+   這裡補一個橋接，讓 Lunar.Solar 指向真正的 Solar 類，所有時間起卦/排盤即可正確取得農曆。lunar.js 為 defer，故輪詢補上。 */
+(function(){
+  function bridge(){
+    try {
+      if (typeof window.Solar !== 'undefined' && window.Solar) {
+        if (typeof window.Lunar === 'undefined' || !window.Lunar) { window.Lunar = {}; }
+        if (!window.Lunar.Solar) { window.Lunar.Solar = window.Solar; }
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  if (!bridge()) {
+    var n = 0, t = setInterval(function(){ n++; if (bridge() || n > 60) clearInterval(t); }, 80);
+  }
+})();
+</script>
 <script>
 (function(){
   var DEFERRED = [
