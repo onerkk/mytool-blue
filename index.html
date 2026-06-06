@@ -1341,7 +1341,7 @@
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260606v80_21" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260606v80_22" defer></script>
-<script src="JS/ui.js?v=20260606v80_23" defer></script>
+<script src="JS/ui.js?v=20260606v80_24" defer></script>
 <script src="JS/spread-picker.js?v=20260606v80_23" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
@@ -1411,20 +1411,22 @@
     <button onclick="document.getElementById('sticky-cta').classList.remove('visible');" style="background:none;border:none;color:var(--c-text-muted);font-size:1.1rem;padding:4px 8px;cursor:pointer;line-height:1;flex:0 0 auto;" aria-label="關閉">✕</button>
   </div>
 </div>
-<!-- 後台人次統計面板樣式（v80.23：置中＋金黑質感，符合站上 token） -->
+<!-- 後台人次統計面板樣式（v80.24：用 #id 選擇器＋!important 蓋過 CSS/style.css 舊規則，置中＋金黑質感） -->
 <style>
-.admin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:99998;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
-.admin-overlay.visible{opacity:1;visibility:visible}
-.admin-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.96);width:min(330px,calc(100vw - 48px));background:linear-gradient(160deg,#1c1c22,#141418);border:1px solid rgba(201,168,76,.28);border-radius:20px;padding:26px 22px 20px;z-index:99999;opacity:0;visibility:hidden;transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1),visibility .28s;box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 42px rgba(201,168,76,.06),inset 0 1px 0 rgba(201,168,76,.1);text-align:center}
-.admin-panel.visible{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
-.admin-panel h3{margin:0 0 16px;font-family:var(--f-display,'Noto Serif TC',serif);font-size:1.12rem;font-weight:700;color:var(--c-gold,#c9a84c);letter-spacing:.04em}
-.admin-row{display:flex;align-items:center;justify-content:space-between;padding:13px 4px;border-bottom:1px solid rgba(201,168,76,.1)}
-.admin-row label{font-size:.85rem;color:var(--c-text-dim,#a09880);font-family:var(--f-body,sans-serif)}
-.admin-val{font-size:1.55rem;font-weight:700;color:#f0e4c0;font-family:var(--f-display,serif);letter-spacing:.02em;font-variant-numeric:tabular-nums}
-.admin-btn{margin-top:18px;width:100%;padding:12px;border-radius:12px;border:1px solid rgba(201,168,76,.35);background:linear-gradient(135deg,rgba(201,168,76,.16),rgba(201,168,76,.05));color:var(--c-gold,#c9a84c);font-size:.95rem;font-weight:700;font-family:var(--f-display,serif);letter-spacing:.08em;cursor:pointer;transition:all .2s}
-.admin-btn:hover{background:linear-gradient(135deg,rgba(201,168,76,.26),rgba(201,168,76,.1));border-color:rgba(201,168,76,.55)}
-.admin-close{position:absolute;top:11px;right:13px;background:none;border:none;color:var(--c-text-muted,#8a8270);font-size:1.6rem;line-height:1;cursor:pointer;padding:2px 8px;border-radius:8px;transition:color .2s}
-.admin-close:hover{color:var(--c-gold,#c9a84c)}
+#admin-overlay{position:fixed!important;inset:0!important;background:rgba(0,0,0,.62)!important;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:99998!important;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
+#admin-overlay.visible{opacity:1;visibility:visible}
+#admin-panel{position:fixed!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;margin:0!important;transform:translate(-50%,-46%) scale(.96)!important;width:min(330px,calc(100vw - 48px))!important;max-width:330px!important;height:auto!important;background:linear-gradient(160deg,#1c1c22,#141418)!important;border:1px solid rgba(201,168,76,.28)!important;border-radius:20px!important;padding:26px 22px 20px!important;z-index:99999!important;opacity:0;visibility:hidden;transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1),visibility .28s;box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 42px rgba(201,168,76,.06),inset 0 1px 0 rgba(201,168,76,.1);text-align:center}
+#admin-panel.visible{opacity:1!important;visibility:visible!important;transform:translate(-50%,-50%) scale(1)!important}
+#admin-panel h3{margin:0 0 16px!important;font-family:var(--f-display,'Noto Serif TC',serif)!important;font-size:1.12rem!important;font-weight:700!important;color:var(--c-gold,#c9a84c)!important;letter-spacing:.04em!important}
+#admin-panel .admin-row{display:flex!important;align-items:center!important;justify-content:space-between!important;padding:13px 4px!important;border-bottom:1px solid rgba(201,168,76,.1)!important}
+#admin-panel .admin-row label{font-size:.85rem!important;color:var(--c-text-dim,#a09880)!important;font-family:var(--f-body,sans-serif)!important}
+#admin-panel .admin-val{font-size:1.55rem!important;font-weight:700!important;color:#f0e4c0!important;font-family:var(--f-display,serif)!important;letter-spacing:.02em!important;font-variant-numeric:tabular-nums}
+#admin-panel .admin-btn{margin-top:18px!important;width:100%!important;padding:12px!important;border-radius:12px!important;border:1px solid rgba(201,168,76,.35)!important;background:linear-gradient(135deg,rgba(201,168,76,.16),rgba(201,168,76,.05))!important;color:var(--c-gold,#c9a84c)!important;font-size:.95rem!important;font-weight:700!important;font-family:var(--f-display,serif)!important;letter-spacing:.08em!important;cursor:pointer!important;transition:all .2s}
+#admin-panel .admin-btn:hover{background:linear-gradient(135deg,rgba(201,168,76,.26),rgba(201,168,76,.1))!important}
+#admin-panel .admin-reset{margin-top:10px!important;width:100%!important;padding:10px!important;border-radius:12px!important;border:1px solid rgba(224,104,104,.4)!important;background:rgba(224,104,104,.08)!important;color:#e88!important;font-size:.85rem!important;font-weight:600!important;font-family:var(--f-body,sans-serif)!important;letter-spacing:.04em!important;cursor:pointer!important;transition:all .2s}
+#admin-panel .admin-reset:hover{background:rgba(224,104,104,.16)!important;border-color:rgba(224,104,104,.6)!important}
+#admin-panel .admin-close{position:absolute!important;top:11px!important;right:13px!important;background:none!important;border:none!important;color:var(--c-text-muted,#8a8270)!important;font-size:1.6rem!important;line-height:1!important;cursor:pointer!important;padding:2px 8px!important;border-radius:8px!important;transition:color .2s}
+#admin-panel .admin-close:hover{color:var(--c-gold,#c9a84c)!important}
 </style>
 <!-- 後台管理面板 -->
 <div class="admin-overlay" id="admin-overlay" onclick="closeAdmin()"></div>
@@ -1434,6 +1436,7 @@
   <div class="admin-row"><label>累計總人次</label><span class="admin-val" id="admin-count">0</span></div>
   <div class="admin-row"><label>今日人次</label><span class="admin-val" id="admin-today">0</span></div>
   <button class="admin-btn" onclick="closeAdmin()">關閉</button>
+  <button class="admin-reset" onclick="resetVisitorCount()">歸零計數</button>
   <div style="margin-top:var(--sp-sm);font-size:.68rem;color:var(--c-text-muted);text-align:center">
     每次造訪首頁 = 1 人次<br>連點月亮 5 下開啟 · 重整後隱藏
   </div>
