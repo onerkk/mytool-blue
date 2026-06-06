@@ -8011,7 +8011,7 @@ function resetToHome() {
 
   // 梅花起卦完成後，不再捲到「下一步塔羅」，改顯示提示詞按鈕。
   var _tryWrapShowMH = function(){
-    if (typeof window.showMH !== 'function' || window.showMH._jy_v80_19) return;
+    if (typeof window.showMH !== 'function' || window.showMH._jy_v80_20) return;
     var prev=window.showMH;
     window.showMH=function(r){
       var out=prev.apply(this, arguments);
@@ -8025,14 +8025,14 @@ function resetToHome() {
       } catch(_){ }
       return out;
     };
-    window.showMH._jy_v80_19 = true;
+    window.showMH._jy_v80_20 = true;
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _tryWrapShowMH); else _tryWrapShowMH();
   setTimeout(_tryWrapShowMH, 500);
 
   // step 切換後再次淨化，避免舊覆寫鏈把卡片復原。
   var _oldGoStep = window.goStep;
-  if (typeof _oldGoStep === 'function' && !_oldGoStep._jy_v80_19) {
+  if (typeof _oldGoStep === 'function' && !_oldGoStep._jy_v80_20) {
     window.goStep = function(n){
       var r=_oldGoStep.apply(this, arguments);
       try {
@@ -8041,12 +8041,12 @@ function resetToHome() {
       } catch(_){ }
       return r;
     };
-    window.goStep._jy_v80_19 = true;
+    window.goStep._jy_v80_20 = true;
   }
 })();
 
 /* ════════════════════════════════════════════════════════════════
-   v80.19 — Birth select hardening
+   v80.20 — Birth select hardening
    Fix: 紫微斗數獨立入口開得太早時，年/月/日/時/分/國家/城市下拉選單尚未被其他延後腳本填入，點開會是空白。
    This patch is self-contained and safe: it only fills empty selects and restores cached values after options exist.
    ════════════════════════════════════════════════════════════════ */
@@ -8062,11 +8062,14 @@ function resetToHome() {
   function _isBlankSelect(sel){
     if (!sel) return false;
     if (sel.options.length === 0) return true;
+    // v80.20: Android/Chrome 原生 select 若只有一個 placeholder（如「選擇城市」），
+    // 點開會只顯示這一列；這也必須視為尚未初始化，而不是已完成初始化。
+    if (sel.options.length === 1 && !sel.options[0].value) return true;
     var nonBlank = 0;
     for (var i=0;i<sel.options.length;i++){
       if ((sel.options[i].textContent || sel.options[i].innerText || '').trim()) nonBlank++;
     }
-    return nonBlank === 0 || (sel.options.length === 1 && !sel.options[0].value && !((sel.options[0].textContent||'').trim()));
+    return nonBlank === 0;
   }
   function _fillSelect(sel, items){
     if (!sel || !_isBlankSelect(sel)) return;
@@ -8114,6 +8117,41 @@ function resetToHome() {
     }catch(_e){}
   }
 
+  var _JY_TW_CITY_COORDS = {
+    '台北市': [121.5654,25.0330], '新北市': [121.4657,25.0120], '基隆市': [121.7392,25.1276],
+    '桃園市': [121.3010,24.9936], '新竹市': [120.9675,24.8138], '新竹縣': [121.0129,24.8387],
+    '苗栗縣': [120.8200,24.5602], '台中市': [120.6736,24.1477], '彰化縣': [120.5161,24.0518],
+    '南投縣': [120.9876,23.8388], '雲林縣': [120.3897,23.7559], '嘉義市': [120.4491,23.4801],
+    '嘉義縣': [120.2555,23.4518], '台南市': [120.2000,23.0000], '高雄市': [120.3014,22.6273],
+    '屏東縣': [120.5488,22.5519], '宜蘭縣': [121.7530,24.7021], '花蓮縣': [121.6015,23.9872],
+    '台東縣': [121.1438,22.7613], '澎湖縣': [119.5664,23.5690], '金門縣': [118.3186,24.4368], '連江縣': [119.9517,26.1605]
+  };
+
+  // v80.20: solar-location.js 若未載入，仍要讓紫微 prompt 取得出生地經緯度。
+  if (typeof window.getSelectedBirthLocation !== 'function') {
+    window.getSelectedBirthLocation = function(countryId, cityId){
+      var countryEl = document.getElementById(countryId);
+      var cityEl = document.getElementById(cityId);
+      var country = countryEl ? countryEl.value : '';
+      var city = cityEl ? cityEl.value : '';
+      if (!city) return null;
+      var pair = _JY_TW_CITY_COORDS[city] || null;
+      if (pair) return { country: country || '台灣', city: city, name: city, label: (country || '台灣') + '・' + city, longitude: pair[0], latitude: pair[1], timezone: 8 };
+      return { country: country || '', city: city, name: city, label: ((country||'') ? country+'・' : '') + city, longitude: 121.56, latitude: 25.04, timezone: 8 };
+    };
+  }
+
+  if (typeof window.calcTrueSolarTime !== 'function') {
+    window.calcTrueSolarTime = function(y,m,d,hh,mm,longitude,timezone){
+      // 簡化真太陽時保底：用經度相對時區中央經線修正。精準版仍以 solar-location.js 為準。
+      var central = (timezone || 8) * 15;
+      var offsetMin = Math.round(((longitude || central) - central) * 4);
+      var dt = new Date(y, (m||1)-1, d||1, hh||0, mm||0);
+      dt.setMinutes(dt.getMinutes() + offsetMin);
+      return { year: dt.getFullYear(), month: dt.getMonth()+1, day: dt.getDate(), hour: dt.getHours(), minute: dt.getMinutes(), offsetMinutes: offsetMin, note: 'v80.20 fallback true-solar correction' };
+    };
+  }
+
   window._jyEnsureBirthSelects = function(){
     try{
       var nowY = new Date().getFullYear();
@@ -8152,15 +8190,18 @@ function resetToHome() {
           ctry.addEventListener('change', function(){
             if (typeof populateCitySelect === 'function') {
               try { populateCitySelect('f'+suf+'-city', ctry.value); } catch(_e) {}
-            } else {
-              _fillSelect(city, taiwanCities);
+            }
+            // v80.20: 若外部 solar-location 沒載入或回填失敗，保底補台灣縣市，避免只剩「選擇城市」。
+            if (_isBlankSelect(city) || (city && city.options && city.options.length <= 1)) {
+              city.innerHTML='';
+              for (var j=0;j<taiwanCities.length;j++) city.appendChild(_opt(taiwanCities[j][0], taiwanCities[j][1]));
             }
           });
           ctry._jyBirthCountryBind=true;
         }
       });
       _restoreCachedBirth();
-    }catch(e){ console.warn('[v80.19] birth select init failed', e); }
+    }catch(e){ console.warn('[v80.20] birth select init failed', e); }
   };
 
   function _boot(){
@@ -8171,13 +8212,13 @@ function resetToHome() {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot); else _boot();
 
-  if (typeof window._jyApplyZiweiStandaloneUI === 'function' && !window._jyApplyZiweiStandaloneUI._jy_v80_19) {
+  if (typeof window._jyApplyZiweiStandaloneUI === 'function' && !window._jyApplyZiweiStandaloneUI._jy_v80_20) {
     var _oldZw = window._jyApplyZiweiStandaloneUI;
     window._jyApplyZiweiStandaloneUI = function(){
       var r = _oldZw.apply(this, arguments);
       try { window._jyEnsureBirthSelects(); setTimeout(window._jyEnsureBirthSelects, 80); } catch(_e){}
       return r;
     };
-    window._jyApplyZiweiStandaloneUI._jy_v80_19 = true;
+    window._jyApplyZiweiStandaloneUI._jy_v80_20 = true;
   }
 })();
