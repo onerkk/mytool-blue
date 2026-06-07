@@ -8009,7 +8009,8 @@ function jyTarotHardfixCSS(){
     '#t-chosen .jy-celtic .gc-center > div[style*="rotate"] .tarot-reveal{transform:none!important}',
     // v80.42：牌名與正逆位本來沒有任何 CSS → 圖片鋪滿整格把牌名蓋掉、正逆位又疊上去。
     //   這裡把牌名放底部色帶（永遠正向、可讀），正逆位放右上角徽章（不再蓋住牌名）。
-    '#t-chosen .tarot-chosen-slot .tarot-reveal-inner,#t-chosen .tarot-chosen-slot .tarot-reveal-front{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:8px;overflow:hidden}',
+    //   注意：不要動 .tarot-reveal-inner/.tarot-reveal-front 的定位，否則正面會顯示不出來（變背面）。
+    //   tc-name/tc-dir 用 absolute 會相對最近的定位祖先 .tarot-reveal 定位，剛好就是整張牌的範圍。
     '#t-chosen .tarot-chosen-slot .tc-name{position:absolute!important;left:0;right:0;bottom:0;z-index:4;transform:none!important;text-align:center;font-size:.42rem;line-height:1.2;padding:3px 2px 2px;color:#f6e8b8;background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.42) 70%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '#t-chosen .tarot-chosen-slot .tc-dir{position:absolute!important;top:3px;right:3px;z-index:5;font-size:.4rem;line-height:1;padding:1px 3px;border-radius:4px;background:rgba(0,0,0,.72);font-weight:700}',
     '#t-chosen .tarot-chosen-slot .tc-dir.rv{color:#ff9c9c}',
