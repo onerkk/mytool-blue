@@ -1380,6 +1380,7 @@ function _buildOraclePrompt(poem, qText) {
   lines.push('籤詩：');
   lines.push(poem.p);
   lines.push('典故：' + poem.s);
+  if (dd._gs) lines.push('典故故事：' + String(dd._gs).replace(/\\n/g, ' '));
   lines.push('屬性：' + poem.t);
   lines.push('');
   if (sn.title || sn.body) {
@@ -1392,13 +1393,18 @@ function _buildOraclePrompt(poem, qText) {
     lines.push(dd._yt);
     lines.push('');
   }
-  var keyFields = ['凡事','功名','作事','婚姻','求財','家運','治病','出外','經商','官事','六甲','求兒','來人','行舟','移居','失物','六畜','耕作'];
-  var fieldLines = [];
-  for (var fi = 0; fi < keyFields.length; fi++) {
-    if (dd[keyFields[fi]]) fieldLines.push(keyFields[fi] + '：' + dd[keyFields[fi]]);
+  if (dd._yi) {
+    lines.push('【籤意（廟方提要，供參考——你要對準問題重講，可補充修正但不可忽略）】');
+    lines.push(dd._yi);
+    lines.push('');
   }
+  // 各項判讀：送全部欄位（傳統順序），材料給滿；無關欄位由 AI 自行略過
+  var _orderHint = ['凡事','作事','家事','家運','婚姻','求兒','六甲','求財','功名','歲君','治病','出外','經商','來人','行舟','移居','失物','求雨','官事','六畜','耕作','築室','墳墓','討海','作塭','魚苗','月令','尋人','遠信'];
+  var fieldLines = [];
+  _orderHint.forEach(function (k) { if (dd[k]) fieldLines.push(k + '：' + dd[k]); });
+  Object.keys(dd).forEach(function (k) { if (k.charAt(0) !== '_' && _orderHint.indexOf(k) < 0 && dd[k]) fieldLines.push(k + '：' + dd[k]); });
   if (fieldLines.length > 0) {
-    lines.push('【各項判讀】');
+    lines.push('【各項判讀（傳統籤解逐項；挑與問題相關的引用，無關的不要硬扯）】');
     lines.push(fieldLines.join('。'));
     lines.push('');
   }
@@ -1406,7 +1412,7 @@ function _buildOraclePrompt(poem, qText) {
   lines.push('【解籤規則】');
   lines.push('1. 第一句直接回答求籤者的問題，給明確方向（吉/凶/宜/忌/等待/行動），不鋪墊。');
   lines.push('2. 解讀緊扣籤詩原文四句、籤等與典故；逐句對應求籤者的處境，不能脫離詩文空談，也不能引入本籤資料外的命盤或牌面。');
-  lines.push('3. 典故是神明藉古人故事為求籤者借鏡，須說明典故與求籤者處境的對應。');
+  lines.push('3. 典故是神明藉古人故事為求籤者借鏡，須說明典故與求籤者處境的對應（典故故事已附在資料中，依它解，不要自行杜撰情節）。');
   lines.push('4. 依籤等定基調：上籤不硬找壞處，下籤不包裝成好事。');
   lines.push('5. 各項判讀中若有與問題直接相關的欄位，必須引用並解釋；無關欄位不要硬扯。');
   lines.push('6. 屬性（五行、利季節、方位）只能作時間與方位輔助，不可壓過籤詩與籤等。');
@@ -1416,6 +1422,11 @@ function _buildOraclePrompt(poem, qText) {
   if (qText && qText.trim().length > 0) {
     lines.push('10. 只回答求籤者問的問題，不擴展成人生課題。');
   }
+  lines.push('');
+  lines.push('');
+  lines.push('【完整性清單（寫完前自我核對，不要為湊字灌水）】');
+  lines.push('□ 第一句直接給了方向（吉/凶/宜/忌/等待/行動）　□ 緊扣籤詩四句逐句對應處境　□ 依籤等定基調（上不硬挑壞、下不包裝）');
+  lines.push('□ 講了典故與處境的對應　□ 引用了與問題相關的判讀欄　□ 屬性（五行利季方位）給了時間／方位輔助　□ 壞處直說＋可做的行動＋可驗證的時間訊號');
   lines.push('');
   lines.push('【收尾・能量石】');
   lines.push('解讀最後，依籤詩判斷求籤者最需要的一種能量石，用一句話自然帶出；能量石是品牌實務輔助，不屬六十甲子靈籤原典。');
@@ -1800,5 +1811,5 @@ css.textContent='\
 .orc-shrine-story-footer{margin-top:.7rem;padding-top:.5rem;border-top:1px dashed rgba(212,167,106,0.18);font-size:.68rem;color:rgba(201,167,119,0.5);font-style:italic;letter-spacing:1px;text-align:right}\
 ';
 document.head.appendChild(css);
-console.log('[Oracle] 靜月靈籤 v79 loaded — 解籤提示詞鎖定本籤資料，不混入八字/塔羅/外部命盤');
+console.log('[Oracle] 靜月靈籤 v80 loaded — 解籤提示詞補：典故故事+全判讀欄+籤意+完整性清單（材料拉滿）');
 })();
