@@ -1,4 +1,4 @@
-/*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v80.31]
+/*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v80.32]
  *  目的（歐那 2026/6/6）：
  *    1) 紫微斗數獨立入口不再借用七維表單與七維流程；只需出生年月日 + 時辰(可選) + 出生地 + 性別，「不需姓名」。
  *    2) 全新紫微專屬過場動畫（十二宮命盤天成），符合網頁金色/暗底風格，純 CSS/SVG，不需圖檔。
@@ -30,6 +30,8 @@
   // v80.30 自訂選擇器狀態（寫回隱藏 zw-bd / zw-hh，_ziweiSubmit 沿用）
   var _zwSelDate = '';
   var _zwSelHH = '';
+  var _zwLastChart = null;
+  var _zwLastForm = null;
 
   // ════════════════════════════════════════════════════════
   //  CSS（命名空間 zw-*，自帶不依賴 style.css）
@@ -614,6 +616,7 @@
 
   function showResult(zw, form) {
     zwEnsureCSS();
+    _zwLastChart = zw; _zwLastForm = form;
     _lastPrompt = buildPrompt(zw, form);
 
     var old = document.getElementById('zw-result');
@@ -675,6 +678,7 @@
           '<div class="zw-ai-foot">點 AI 圖示 → 自動複製＋開啟 → 貼上送出</div>' +
         '</div>' +
         '<div class="zw-actions">' +
+          '<button class="zw-btn" onclick="_ziweiShare()" style="background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));border-color:rgba(201,168,76,.5);color:#c9a84c">📤 生成分享卡</button>' +
           '<button class="zw-btn" onclick="_zwReset()">↺ 重新輸入生辰</button>' +
           '<button class="zw-btn" onclick="_zwClose()">⌂ 回首頁</button>' +
         '</div>' +
@@ -766,6 +770,30 @@
   // ════════════════════════════════════════════════════════
   //  複製 / 開啟 AI / 重設 / 關閉
   // ════════════════════════════════════════════════════════
+  window._ziweiShare = function () {
+    if (!window.JYShareCard) { _zwxErr('分享元件載入中，請稍候再試一次'); return; }
+    var zw = _zwLastChart || {}, form = _zwLastForm || {};
+    var palaces = zw.palaces || [];
+    function byBranch(br) { for (var i = 0; i < palaces.length; i++) { if (palaces[i].branch === br) return palaces[i]; } return { branch: br, name: '', stars: [] }; }
+    function majors(p) { try { return palaceStarParts(p).majors.slice(0, 2).join(''); } catch (e) { return ''; } }
+    var order = ['巳', '午', '未', '申', '辰', '酉', '卯', '戌', '寅', '丑', '子', '亥'];
+    var cardP = order.map(function (br) {
+      var p = byBranch(br), nm = p.name || '';
+      if (nm && nm.charAt(nm.length - 1) !== '宮') nm += '宮';
+      return { branch: br, name: nm, star: majors(p) };
+    });
+    var ming = palaces[0] || {};
+    var juName = ({ 2: '水二局', 3: '木三局', 4: '金四局', 5: '土五局', 6: '火六局' })[zw.wuxingJu] || (zw.wuxingJu || '');
+    var shen = null;
+    for (var i = 0; i < palaces.length; i++) { if (palaces[i].isShen) { shen = palaces[i]; break; } }
+    JYShareCard.open('ziwei', {
+      question: form.question || '',
+      palaces: cardP,
+      ming: '命宮 ・ ' + (majors(ming) || '空宮'),
+      info: juName + (shen ? ' ・ 身宮在' + (shen.name || '') : '')
+    });
+  };
+
   window._zwCopy = function () {
     if (!_lastPrompt) return;
     function ok(){

@@ -1,4 +1,4 @@
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.30]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.31]
  *  歐那 2026/6/6：八字自成一頁、乾淨、不出現其他入口、有自己的過場動畫，組好提示詞複製去 AI。
  *  做法：完全比照 meihua-standalone.js / lenormand.js 的「自包覆獨立頁 + 複製提示詞」模式。
  *  引擎：直接呼叫既有全域 calcTrueSolarTime() + computeBazi() + enhanceBazi()，不重造排盤。
@@ -308,6 +308,7 @@
       h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'"><span>'+ai.name+'</span></button>';
     }
     h += '</div><div class="bzx-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
+    h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_baziShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">📤 生成分享卡（曬命盤）</button></div>';
     h += '<div style="text-align:center"><button class="bzx-reset-btn" onclick="_baziReset()">↺ 重新排盤</button></div>';
     return h;
   }
@@ -651,6 +652,7 @@
         var pad = function (n) { return (n < 10 ? '0' : '') + n; };
         _meta = {
           gender: _gender,
+          question: question,
           birthLine: '國曆 ' + y + '/' + pad(m) + '/' + pad(d) + (unknown ? '（時辰未知，以午時暫排）' : ' ' + pad(hh) + ':' + pad(mm)) + '・' + city.n.replace(/（.*/, ''),
           solarNote: solarNote,
           unknown: unknown
@@ -677,6 +679,21 @@
   // ════════════════════════════════════════════════════════
   //  Public API
   // ════════════════════════════════════════════════════════
+  window._baziShare = function () {
+    if (!window.JYShareCard) { _bzxErr('分享元件載入中，請稍候再試一次'); return; }
+    var b = _bazi || {}, P = b.pillars || {};
+    function pil(k, label) { var p = P[k] || {}; return { label: label, gan: p.gan || '', zhi: p.zhi || '' }; }
+    var cur = _currentDayun(b);
+    var dm = (b.dm || '') + (b.dmEl ? '（' + b.dmEl + '行）' : '') + ' ・ ' + (b.strongLevel || (b.strong ? '身強' : '身弱'));
+    JYShareCard.open('bazi', {
+      question: (_meta && _meta.question) || '',
+      pillars: [pil('year', '年柱'), pil('month', '月柱'), pil('day', '日柱'), pil('hour', '時柱')],
+      dayMaster: dm,
+      yongShen: Array.isArray(b.fav) ? b.fav.join('、') : '',
+      dayun: cur ? ((cur.gz || '') + (cur.ageStart != null ? '（' + cur.ageStart + '～' + cur.ageEnd + '歲）' : '')) : ''
+    });
+  };
+
   window._baziStandaloneOpen = function () {
     _phase = 'input'; _bazi = null; _meta = null; _lastPrompt = '';
     var w = _getWrap();
