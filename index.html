@@ -1345,7 +1345,7 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot.js?v=20260606v80_15" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260607v80_24" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260607v80_25" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
 <script src="JS/meihua_upgrade.js?v=20260606v80_15" defer></script>
 <script src="JS/meihua_output_layer.js?v=20260606v80_15" defer></script>
@@ -1354,7 +1354,7 @@
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
-<script src="JS/ai-analysis.js?v=20260606v80_16" defer></script>
+<script src="JS/ai-analysis.js?v=20260607v80_17" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260607v80_29" defer></script>
@@ -1369,7 +1369,7 @@
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
 <!-- ★ v70 複製模式引擎：必須最後載入。不進混淆。 -->
-<script src="JS/prompt-export.js?v=20260607v80_31" defer></script>
+<script src="JS/prompt-export.js?v=20260607v80_32" defer></script>
 <script src="share-card.js?v=3" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
