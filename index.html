@@ -331,6 +331,47 @@
 #t-chosen .jy-m21 .m21-sig{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px}
 #t-chosen .jy-m21 .m21-sig .sig-card{width:42px;height:60px;border:1px dashed rgba(212,175,55,.5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:rgba(212,175,55,.75);text-align:center;line-height:1.25}
 </style>
+
+<style id="jy-tarot-layout-hardfix-v80-35">
+/* v80.35：塔羅牌位版面硬修正——任何牌陣都必須顯示為牌位卡槽，不可只剩文字 */
+#t-chosen{position:relative;min-height:112px;}
+#t-chosen .tarot-chosen-slot{
+  position:relative!important;
+  width:62px!important;
+  height:92px!important;
+  min-width:62px!important;
+  min-height:92px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(212,175,55,.22)!important;
+  border-radius:9px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex-direction:column!important;
+  flex-shrink:0!important;
+  overflow:visible!important;
+  background:linear-gradient(180deg,rgba(212,175,55,.055),rgba(10,10,18,.22))!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 0 12px rgba(212,175,55,.055)!important;
+  color:rgba(212,175,55,.72)!important;
+}
+#t-chosen .tarot-chosen-slot:not(.filled)::before{
+  content:"";
+  position:absolute;
+  inset:7px;
+  border:1px solid rgba(212,175,55,.12);
+  border-radius:7px;
+  background:radial-gradient(circle at 50% 22%,rgba(212,175,55,.055),transparent 62%);
+  pointer-events:none;
+}
+#t-chosen .tarot-chosen-slot .slot-num{position:relative;z-index:2;font-size:.62rem!important;line-height:1;color:rgba(212,175,55,.42)!important;font-weight:700!important;}
+#t-chosen .tarot-chosen-slot .slot-label{position:absolute!important;z-index:3;left:50%!important;bottom:-17px!important;transform:translateX(-50%)!important;width:86px!important;max-width:86px!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:.48rem!important;line-height:1.15!important;color:rgba(212,175,55,.56)!important;}
+#t-chosen .tarot-chosen-slot.filled{background:rgba(10,10,18,.36)!important;border-color:rgba(212,175,55,.34)!important;}
+#t-chosen .tarot-chosen-slot.filled::before{display:none!important;}
+#t-chosen .tarot-chosen-slot .tarot-reveal{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:2;}
+#t-chosen .tarot-chosen-slot .tc-img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px!important;display:block!important;}
+#t-chosen .jy-celtic .gc-center > div[style*="rotate"] .tarot-chosen-slot .slot-label{display:none!important;}
+#t-chosen .jy-row,#t-chosen .gd-triad,#t-chosen .tol-pair{min-height:96px;}
+</style>
 </head>
 <body>
 <noscript>
@@ -618,12 +659,12 @@
     <div class="card-title"><i class="fas fa-star"></i> 金色黎明塔羅牌</div>
     <p class="text-dim text-sm mb-sm" id="t-deck-intro" style="text-align:center">感受牌陣意象，從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張與你共鳴的牌</p>
     <p class="tarot-pick-hint" id="pick-hint" style="text-align:center;font-size:.82rem;color:var(--c-gold);margin:.4rem 0;animation:jyBreath 2.5s ease-in-out infinite">觸碰任一張你有感覺的牌，選出 <span id="t-target-count">10</span> 張</p>
-    <p class="text-dim text-xs" style="text-align:center;font-size:.68rem;color:var(--c-text-muted);margin:-.1rem 0 .3rem">左右滑動瀏覽牌面 ・ 點擊選牌 ・ 或按上方「快速全抽」</p>
+    <p class="text-dim text-xs" style="text-align:center;font-size:.68rem;color:var(--c-text-muted);margin:-.1rem 0 .3rem">左右滑動瀏覽牌面 ・ 點擊選牌 ・ 或按上方「快速抽牌」</p>
     <style>@keyframes jyBreath{0%,100%{opacity:.55}50%{opacity:1}}</style>
     <p class="text-dim text-xs" style="text-align:center" id="t-remain-text">已選 <strong id="t-remain-picked" class="text-gold">0</strong> / 10 張</p>
 
     <div class="text-center jy-autodraw-top" style="margin:8px 0 10px">
-      <button class="btn btn-outline btn-sm" onclick="autoDraw()" style="opacity:.6"><i class="fas fa-bolt"></i> 快速全抽</button>
+      <button class="btn btn-outline btn-sm" onclick="autoDraw()" style="opacity:.6"><i class="fas fa-bolt"></i> 快速抽牌</button>
     </div>
 
     <!-- 已選牌位（10個凱爾特十字位） -->
@@ -1363,7 +1404,7 @@
 <script src="JS/meihua-standalone.js?v=20260607v80_31" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260607v80_32" defer></script>
 <script src="JS/bazi-standalone.js?v=20260607v80_32" defer></script>
-<script src="JS/ui.js?v=20260607v80_34" defer></script>
+<script src="JS/ui.js?v=20260607v80_35" defer></script>
 <script src="JS/spread-picker.js?v=20260606v80_23" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
