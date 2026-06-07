@@ -575,16 +575,13 @@ function goStep(n){
       var _uiMax=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10; if(drawnCards.length>=_uiMax && !S._isAdmin) showTarotLocked();
       else if(drawnCards.length>=_uiMax && S._isAdmin){ drawnCards=[]; deckShuffled=[]; initTarotDeck(); }
       else if(!deckShuffled.length) initTarotDeck();
-      // 塔羅模式：隱藏「上一步」（梅花）和「跳過塔羅」
+      // v80.37 治本：「上一步（梅花）」與「跳過塔羅」是已下架的「八字→梅花→塔羅」串接流程殘留。
+      //   現在站上是單一塔羅／占卜工具：沒有梅花前置步驟，「跳過塔羅」在塔羅工具裡也沒有意義。
+      //   故一律隱藏，不再依賴散落 13 處、容易設錯的 _tarotOnlyMode 旗標（旗標一旦為 false 就會誤顯示）。
       var btnBackMH = document.getElementById('btn-back-meihua');
       var btnSkipTR = document.getElementById('btn-skip-tarot');
-      if (S._tarotOnlyMode) {
-        if (btnBackMH) btnBackMH.style.display = 'none';
-        if (btnSkipTR) btnSkipTR.style.display = 'none';
-      } else {
-        if (btnBackMH) btnBackMH.style.display = '';
-        if (btnSkipTR) btnSkipTR.style.display = '';
-      }
+      if (btnBackMH) btnBackMH.style.display = 'none';
+      if (btnSkipTR) btnSkipTR.style.display = 'none';
     }
     if(targetId==='step-3'){
       // ★ 張數守門：塔羅模式下，drawnCards 未達牌陣要求 → 擋回 step-2
@@ -614,6 +611,7 @@ function goStep(n){
   
   if(needsTransition){
     // ═══ 五角星陣轉場（與自動模式同款）═══
+    if(window._jyEnsureLoadingFxCss) window._jyEnsureLoadingFxCss(); // v80.44：確保過場 CSS 已注入（.loading-overlay/.ld-*）
     const isFinalStep=(n===3);
     const overlay=document.createElement('div');
     overlay.className='loading-overlay';
@@ -1532,7 +1530,54 @@ window._jyBuildZiweiOverlay = function(overlay){
   setTimeout(function () { var bu = overlay.querySelector('#jzw-burst'); if (bu) bu.classList.add('go'); }, 2700);
 };
 
+// ★ v80.44：補回「五角星陣過場」所需的 CSS（.loading-overlay + .ld-*）。
+//   程式（submitStep0Fast 自動七維、goStep 手動 step 轉場）都會建出帶 .ld-* 的 overlay，
+//   但這組樣式/keyframes 在專案任何檔案都已不存在 → overlay 無樣式 = 動畫消失。
+//   這裡一次性注入（id 防重複），與紫微 .jzw-* 同款金紫配色，治本還原。
+window._jyEnsureLoadingFxCss = function(){
+  if (document.getElementById('jy-ld-fx-css')) return;
+  var st = document.createElement('style');
+  st.id = 'jy-ld-fx-css';
+  st.textContent = [
+    '.loading-overlay{position:fixed;inset:0;z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 32%,rgba(40,28,46,.55),rgba(11,8,13,.97) 62%,#080509 100%);overflow:hidden;animation:ldFadeIn .4s ease}',
+    '@keyframes ldFadeIn{from{opacity:0}to{opacity:1}}',
+    '.ld-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}',
+    '.ld-particle{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(212,175,55,.85);box-shadow:0 0 6px rgba(212,175,55,.7);opacity:0;animation:ldRise var(--dur,4s) linear var(--delay,0s) infinite}',
+    '@keyframes ldRise{0%{transform:translateY(0) scale(.6);opacity:0}12%{opacity:.9}85%{opacity:.6}100%{transform:translateY(-108vh) scale(1);opacity:0}}',
+    '.ld-pentagram{position:relative;width:220px;height:220px;z-index:2}',
+    '.ld-ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid rgba(212,175,55,.18)}',
+    '.ld-ring:nth-child(1){width:210px;height:210px;animation:ldSpin 14s linear infinite}',
+    '.ld-ring:nth-child(2){width:168px;height:168px;border-color:rgba(185,140,255,.16);animation:ldSpinR 10s linear infinite}',
+    '.ld-ring:nth-child(3){width:126px;height:126px;border-style:dashed;border-color:rgba(212,175,55,.22);animation:ldSpin 7s linear infinite}',
+    '@keyframes ldSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}',
+    '@keyframes ldSpinR{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(-360deg)}}',
+    '.ld-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}',
+    '.ld-line{stroke:rgba(212,175,55,.14);stroke-width:1;transition:stroke .5s,filter .5s}',
+    '.ld-line.lit{stroke:rgba(255,236,184,.85);filter:drop-shadow(0 0 4px rgba(212,175,55,.8))}',
+    '.ld-node{position:absolute;width:44px;height:44px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(212,175,55,.28);background:rgba(212,175,55,.04);transition:all .45s;z-index:3}',
+    '.ld-sym{font-family:"Noto Serif TC",serif;font-size:1rem;color:rgba(212,175,55,.55);line-height:1;transition:color .45s,text-shadow .45s}',
+    '.ld-node-label{font-size:.5rem;color:rgba(212,175,55,.4);margin-top:2px;letter-spacing:.05em;transition:color .45s}',
+    '.ld-node.computing{border-color:rgba(185,140,255,.7);background:rgba(185,140,255,.1);animation:ldNodePulse 1s ease-in-out infinite}',
+    '.ld-node.computing .ld-sym{color:#fff;text-shadow:0 0 10px rgba(185,140,255,.9)}',
+    '.ld-node.computing .ld-node-label{color:rgba(235,220,255,.9)}',
+    '@keyframes ldNodePulse{0%,100%{box-shadow:0 0 14px rgba(185,140,255,.35)}50%{box-shadow:0 0 26px rgba(185,140,255,.6)}}',
+    '.ld-node.done{border-color:rgba(212,175,55,.85);background:rgba(212,175,55,.12);box-shadow:0 0 16px rgba(212,175,55,.4)}',
+    '.ld-node.done .ld-sym{color:#ffe7a8;text-shadow:0 0 10px rgba(212,175,55,.8)}',
+    '.ld-node.done .ld-node-label{color:rgba(255,231,168,.85)}',
+    '.ld-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);font-size:2rem;color:rgba(212,175,55,.7);text-shadow:0 0 12px rgba(212,175,55,.6);z-index:4;transition:all .5s}',
+    '.ld-center.active{color:#fff;text-shadow:0 0 14px rgba(255,255,255,.9),0 0 28px rgba(185,140,255,.95),0 0 42px rgba(212,175,55,.6);transform:translate(-50%,-50%) scale(1.25)}',
+    '.ld-burst{position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(235,220,255,.95),rgba(185,140,255,0));opacity:0;z-index:5}',
+    '.ld-burst.go{animation:ldBurst .6s ease-out forwards}',
+    '@keyframes ldBurst{0%{opacity:.95;width:10px;height:10px}100%{opacity:0;width:340px;height:340px}}',
+    '.ld-burst.fade{opacity:0}',
+    '.ld-status{margin-top:1.6rem;font-family:"Noto Serif TC",serif;font-size:1.05rem;font-weight:700;color:#c9a84c;letter-spacing:.12em;text-shadow:0 2px 14px rgba(0,0,0,.6);transition:opacity .3s;min-height:1.4rem;text-align:center;z-index:2;padding:0 1rem}',
+    '.ld-sub{margin-top:.4rem;font-size:.74rem;color:rgba(212,175,55,.55);letter-spacing:.08em;transition:opacity .3s;min-height:1.1rem;text-align:center;z-index:2;padding:0 1rem}'
+  ].join('');
+  (document.head || document.documentElement).appendChild(st);
+};
+
 function submitStep0Fast(){
+  if (window._jyEnsureLoadingFxCss) window._jyEnsureLoadingFxCss(); // v80.44：確保過場 CSS 已注入
   drawnCards=[];
   S.meihua=null;S.tarot={drawn:[],spread:[]};
   const type=(document.getElementById('f-type')&&document.getElementById('f-type').value)||'general';
@@ -6339,10 +6384,16 @@ showAuraResult = function(){
   }
 
   function jyBuildSlot(spreadId, def) {
+      // v80.38 治本：版面以牌陣定義為準，避免傳入的 spreadId 失準導致掉進通用方格。
+      if (def && def.id && def.id !== spreadId) spreadId = def.id;
       // v80.14：優先使用 tarot_upgrade.js 的正統版面（含 Waite 凱爾特、Mathers 21、Mathers 54）。
+      // v80.40：包 try/catch — 萬一 buildSlotLayout 內部丟例外，退回本函式自己的正統分支，
+      //   不讓錯誤往上炸成「通用方格」。
       if (typeof window.buildSlotLayout === 'function') {
-        var _orthodoxLayout = window.buildSlotLayout(spreadId, def);
-        if (_orthodoxLayout) return _orthodoxLayout;
+        try {
+          var _orthodoxLayout = window.buildSlotLayout(spreadId, def);
+          if (_orthodoxLayout) return _orthodoxLayout;
+        } catch (_e) { /* 落到下方本檔內建的正統排版 */ }
       }
       function S(id, num, label) {
         var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
@@ -6366,7 +6417,7 @@ showAuraResult = function(){
         h += '<div class="jy-celtic">';
         h += '<div class="gc-top">' + S(4,5,pn(4)) + '</div>';
         h += '<div class="gc-left">' + S(3,4,pn(3)) + '</div>';
-        h += '<div class="gc-center">' + S(0,1,pn(0)) + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);opacity:.5;pointer-events:none;z-index:1">' + S(1,2,'') + '</div></div>';
+        h += '<div class="gc-center">' + S(0,1,pn(0)) + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);pointer-events:none;z-index:6">' + S(1,2,'') + '</div></div>';
         h += '<div class="gc-right">' + S(5,6,pn(5)) + '</div>';
         h += '<div class="gc-bottom">' + S(2,3,pn(2)) + '</div>';
         h += '<div class="gc-staff">' + S(6,7,pn(6)) + S(7,8,pn(7)) + S(8,9,pn(8)) + S(9,10,pn(9)) + '</div>';
@@ -6383,10 +6434,10 @@ showAuraResult = function(){
         //       10(Malkuth)
         h += '<div class="jy-tol">';
         h += S(0,1,pn(0));
-        h += '<div class="tol-pair">' + S(1,2,pn(1)) + S(2,3,pn(2)) + '</div>';
-        h += '<div class="tol-pair">' + S(3,4,pn(3)) + S(4,5,pn(4)) + '</div>';
+        h += '<div class="tol-pair">' + S(2,3,pn(2)) + S(1,2,pn(1)) + '</div>'; // 左 Binah(3)・右 Chokmah(2)
+        h += '<div class="tol-pair">' + S(4,5,pn(4)) + S(3,4,pn(3)) + '</div>'; // 左 Geburah(5)・右 Chesed(4)
         h += S(5,6,pn(5));
-        h += '<div class="tol-pair">' + S(6,7,pn(6)) + S(7,8,pn(7)) + '</div>';
+        h += '<div class="tol-pair">' + S(7,8,pn(7)) + S(6,7,pn(6)) + '</div>'; // 左 Hod(8)・右 Netzach(7)
         h += S(8,9,pn(8));
         h += S(9,10,pn(9));
         h += '</div>';
@@ -6394,9 +6445,9 @@ showAuraResult = function(){
       else if (spreadId === 'zodiac') {
         // ── 黃道十二宮：圓形 12 宮 + 中心總結牌 ──
         h += '<div class="jy-zodiac">';
-        // 12 宮按圓形排列（從 270° 即頂部開始，逆時針對應占星宮位）
+        // 正統占星盤：第1宮在 9 點鐘(左/東方地平線)，逆時針排列 → 1宮左、4宮下、7宮右、10宮上
         for (var zi = 0; zi < 12; zi++) {
-          var angle = (270 + zi * 30) * Math.PI / 180;
+          var angle = (180 - zi * 30) * Math.PI / 180;
           var cx = 50 + 42 * Math.cos(angle);
           var cy = 50 + 42 * Math.sin(angle);
           h += '<div class="zod-slot" style="left:' + cx.toFixed(1) + '%;top:' + cy.toFixed(1) + '%">' + S(zi, zi+1, (zi+1)+'宮') + '</div>';
@@ -6419,9 +6470,20 @@ showAuraResult = function(){
         h += '<div class="jy-row">' + S(3,4,pn(3)) + S(4,5,pn(4)) + '</div>';
       }
       else if (spreadId === 'cross') {
-        h += '<div class="jy-row">' + S(2,3,pn(2)) + S(0,1,pn(0)) + S(3,4,pn(3)) + '</div>';
-        h += S(1,2,pn(1));
-        h += S(4,5,pn(4));
+        // ── 十字牌陣：正統十字形（中=核心、上=阻礙、左=過去、右=未來、下=建議）──
+        h += '<style>#t-chosen .jy-cross5{display:grid;grid-template-columns:70px 70px 70px;grid-template-rows:auto auto auto;gap:10px 8px;justify-content:center;align-items:center}';
+        h += '#t-chosen .jy-cross5 .cx-top{grid-column:2;grid-row:1;justify-self:center}';
+        h += '#t-chosen .jy-cross5 .cx-left{grid-column:1;grid-row:2;justify-self:center}';
+        h += '#t-chosen .jy-cross5 .cx-mid{grid-column:2;grid-row:2;justify-self:center}';
+        h += '#t-chosen .jy-cross5 .cx-right{grid-column:3;grid-row:2;justify-self:center}';
+        h += '#t-chosen .jy-cross5 .cx-bottom{grid-column:2;grid-row:3;justify-self:center}</style>';
+        h += '<div class="jy-cross5">';
+        h += '<div class="cx-top">' + S(1,2,pn(1)) + '</div>';
+        h += '<div class="cx-left">' + S(2,3,pn(2)) + '</div>';
+        h += '<div class="cx-mid">' + S(0,1,pn(0)) + '</div>';
+        h += '<div class="cx-right">' + S(3,4,pn(3)) + '</div>';
+        h += '<div class="cx-bottom">' + S(4,5,pn(4)) + '</div>';
+        h += '</div>';
       }
       else if (spreadId === 'either_or') {
         h += S(0,1,pn(0));
@@ -6610,6 +6672,16 @@ showAuraResult = function(){
       var _canonical = window.JY_buildCanonicalTarotDraw(deckShuffled.slice(), def.id, def, _seed, (S.form && S.form.type) || 'general', (S.form && S.form.question) || '');
       if (_canonical && _canonical.length) {
         drawnCards = _canonical;
+        // ★ 治本：canonical 全抽跳過了 pickCard，t-slot 不會被填面。
+        //   此時 drawnCards 已滿，主動重畫 #t-chosen → buildSlotLayout 的 S() 會直接畫出每張牌面。
+        //   （jyFixChosen 有 nDrawn>0 的守門，不會把這次結果洗掉。）
+        try {
+          var _ch = document.getElementById('t-chosen');
+          if (_ch && typeof window.buildSlotLayout === 'function') {
+            var _lay = window.buildSlotLayout(def.id, def);
+            if (_lay) _ch.innerHTML = _lay;
+          }
+        } catch(_e){}
         S.tarot = { drawn: drawnCards, spread: drawnCards, spreadType: def.id, spreadDef: def };
         var _btn = document.getElementById('btn-analyze'); if (_btn) _btn.disabled = false;
         var _hint = document.getElementById('pick-hint'); if (_hint) _hint.style.display = 'none';
@@ -7954,3 +8026,253 @@ function resetToHome() {
 })();
 
 
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v80.36 塔羅牌陣版面根修正 + 快速抽牌立即全抽
+// 問題：部分版本 #t-chosen 被晚載入腳本重畫後只剩牌位文字，卡槽視覺消失；快速抽牌在未洗牌狀態下只觸發洗牌，未穩定接續抽牌。
+// 修正：
+// 1) 對 #t-chosen .tarot-chosen-slot 套用全域保底卡槽 CSS，不再只依賴 .jy-wrap。
+// 2) 快速抽牌改為「必要時自動完成洗牌狀態 → 直接依目前牌陣補滿全部牌 → 重畫牌位 → 啟用分析」。
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+'use strict';
+
+function jyTarotHardfixCSS(){
+  if (document.getElementById('jy-tarot-layout-hardfix-v80-35-js')) return;
+  var st = document.createElement('style');
+  st.id = 'jy-tarot-layout-hardfix-v80-35-js';
+  st.textContent = [
+    '#t-chosen{position:relative;min-height:112px}',
+    '#t-chosen .tarot-chosen-slot{position:relative!important;width:62px!important;height:92px!important;min-width:62px!important;min-height:92px!important;box-sizing:border-box!important;border:1px solid rgba(212,175,55,.22)!important;border-radius:9px!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;flex-shrink:0!important;overflow:visible!important;background:linear-gradient(180deg,rgba(212,175,55,.055),rgba(10,10,18,.22))!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 0 12px rgba(212,175,55,.055)!important;color:rgba(212,175,55,.72)!important}',
+    '#t-chosen .tarot-chosen-slot:not(.filled)::before{content:"";position:absolute;inset:7px;border:1px solid rgba(212,175,55,.12);border-radius:7px;background:radial-gradient(circle at 50% 22%,rgba(212,175,55,.055),transparent 62%);pointer-events:none}',
+    '#t-chosen .tarot-chosen-slot .slot-num{position:relative;z-index:2;font-size:.62rem!important;line-height:1;color:rgba(212,175,55,.42)!important;font-weight:700!important}',
+    '#t-chosen .tarot-chosen-slot .slot-label{position:absolute!important;z-index:3;left:50%!important;bottom:-17px!important;transform:translateX(-50%)!important;width:86px!important;max-width:86px!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:.48rem!important;line-height:1.15!important;color:rgba(212,175,55,.56)!important}',
+    '#t-chosen .tarot-chosen-slot.filled{background:rgba(10,10,18,.36)!important;border-color:rgba(212,175,55,.34)!important}',
+    '#t-chosen .tarot-chosen-slot.filled::before{display:none!important}',
+    '#t-chosen .tarot-chosen-slot .tarot-reveal{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:2}',
+    '#t-chosen .tarot-chosen-slot .tc-img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px!important;display:block!important}',
+    '#t-chosen .jy-celtic .gc-center > div[style*="rotate"] .tarot-chosen-slot .slot-label{display:none!important}',
+    // v80.42：跨越牌由外層包裹整張轉 90°，這裡讓內部牌面「不要再反向轉」，否則兩次旋轉互相抵銷＝看不到橫放效果。
+    '#t-chosen .jy-celtic .gc-center > div[style*="rotate"] .tarot-reveal{transform:none!important}',
+    // v80.42：牌名與正逆位本來沒有任何 CSS → 圖片鋪滿整格把牌名蓋掉、正逆位又疊上去。
+    //   這裡把牌名放底部色帶（永遠正向、可讀），正逆位放右上角徽章（不再蓋住牌名）。
+    //   注意：不要動 .tarot-reveal-inner/.tarot-reveal-front 的定位，否則正面會顯示不出來（變背面）。
+    //   tc-name/tc-dir 用 absolute 會相對最近的定位祖先 .tarot-reveal 定位，剛好就是整張牌的範圍。
+    '#t-chosen .tarot-chosen-slot .tc-name{position:absolute!important;left:0;right:0;bottom:0;z-index:4;transform:none!important;text-align:center;font-size:.42rem;line-height:1.2;padding:3px 2px 2px;color:#f6e8b8;background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.42) 70%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '#t-chosen .tarot-chosen-slot .tc-dir{position:absolute!important;top:3px;right:3px;z-index:5;font-size:.4rem;line-height:1;padding:1px 3px;border-radius:4px;background:rgba(0,0,0,.72);font-weight:700}',
+    '#t-chosen .tarot-chosen-slot .tc-dir.rv{color:#ff9c9c}',
+    '#t-chosen .tarot-chosen-slot .tc-dir.up{color:#9fe6a8}',
+    '#t-chosen .jy-row,#t-chosen .gd-triad,#t-chosen .tol-pair{min-height:96px}'
+  ].join('\n');
+  (document.head || document.documentElement).appendChild(st);
+}
+
+function jyTarotShuffleArray(arr){
+  var a = (arr || []).slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function jyTarotGetDef(){
+  try { if (typeof getCurrentSpreadDef === 'function') return getCurrentSpreadDef(); } catch(e){}
+  return null;
+}
+function jyTarotGetSid(def){
+  try { if (typeof getCurrentSpread === 'function') return getCurrentSpread(); } catch(e){}
+  return def && def.id ? def.id : 'celtic_cross';
+}
+
+function jyTarotRenderChosen(sid, def){
+  jyTarotHardfixCSS();
+  var chosen = document.getElementById('t-chosen');
+  if (!chosen || !def) return;
+  var html = '';
+  try {
+    if (typeof window.buildSlotLayout === 'function') html = window.buildSlotLayout(sid, def) || '';
+  } catch(e) {}
+  if (!html) {
+    try { if (typeof window.jyBuildSlot === 'function') html = window.jyBuildSlot(sid, def) || ''; } catch(e) {}
+  }
+  if (html) chosen.innerHTML = html;
+}
+
+// v80.37 治本：快速抽牌沒有走 pickCard，先前只重畫版面、未把牌面填進卡槽，
+//   造成「已選 N/N、畫面卻是空格」。這裡明確地把每張抽到的牌畫進對應 #t-slot-i，
+//   保留卡槽既有的排版 class（凱爾特格位等），只補上 filled 與牌面，結果是確定的。
+function jyTarotFillSlots(drawn, sid, def){
+  if (!drawn || !drawn.length) return;
+  var isCeltic = (sid === 'celtic_cross');
+  for (var i = 0; i < drawn.length; i++){
+    var c = drawn[i];
+    var slotEl = document.getElementById('t-slot-' + i);
+    if (!slotEl || !c) continue;
+    var isCard2 = (i === 1 && isCeltic); // 凱爾特「跨越牌」橫置
+    var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
+    var posName = (def && def.positions && def.positions[i] && def.positions[i].name)
+                  ? def.positions[i].name : (c.pos || ('位置' + (i + 1)));
+    var rot = c.isUp ? '' : 'transform:rotate(180deg)';
+    slotEl.classList.add('filled');
+    slotEl.innerHTML =
+      '<div class="tarot-reveal flipping" style="' + (isCard2 ? 'transform:rotate(-90deg)' : '') + '">' +
+        '<div class="tarot-reveal-inner">' +
+          '<div class="tarot-reveal-back"></div>' +
+          '<div class="tarot-reveal-front">' +
+            (imgSrc ? '<img src="' + imgSrc + '" class="tc-img" style="' + rot + '">' : '') +
+            '<span class="tc-name" style="' + rot + '">' + (c.n || '') + '</span>' +
+            '<span class="tc-dir ' + (c.isUp ? 'up' : 'rv') + '">' + (c.isUp ? '順位' : '逆位') + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      (isCard2 ? '' : '<span class="slot-label">' + posName + '</span>');
+  }
+}
+
+function jyTarotFinishAutodraw(drawn, sid, def){
+  drawnCards = drawn;
+  S.tarot = S.tarot || {};
+  S.tarot.drawn = drawnCards;
+  S.tarot.spread = drawnCards;
+  S.tarot.spreadType = sid;
+  S.tarot.spreadDef = def;
+  try { if (typeof enhanceTarot === 'function') enhanceTarot(S.tarot); } catch(e) { console.warn('[Tarot v80.36] enhanceTarot failed:', e); }
+
+  jyTarotRenderChosen(sid, def);
+  jyTarotFillSlots(drawnCards, sid, def); // v80.37：把抽到的牌確實畫進每個卡槽，不再只剩空格
+
+  var pickedEl = document.getElementById('t-remain-picked');
+  if (pickedEl) pickedEl.textContent = String(drawnCards.length);
+  var remainText = document.getElementById('t-remain-text');
+  if (remainText) remainText.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">' + drawnCards.length + '</strong> / ' + (def ? def.count : drawnCards.length) + ' 張';
+  var targetEl = document.getElementById('t-target-count');
+  if (targetEl && def) targetEl.textContent = String(def.count);
+  var hint = document.getElementById('pick-hint');
+  if (hint) hint.style.display = 'none';
+  var btn = document.getElementById('btn-analyze');
+  if (btn) btn.disabled = false;
+
+  try { if (typeof showSpread === 'function') showSpread(); } catch(e) { console.warn('[Tarot v80.36] showSpread failed:', e); }
+  setTimeout(function(){
+    var act = document.querySelector('#step-2 .actions');
+    try { if (act) act.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e) {}
+  }, 120);
+}
+
+function jyTarotBuildDraw(def, sid){
+  var targetCount = def && def.count ? def.count : 10;
+  var deck = [];
+  try {
+    if (typeof deckShuffled !== 'undefined' && deckShuffled && deckShuffled.length) deck = deckShuffled.slice();
+  } catch(e) {}
+  if (!deck.length && typeof TAROT !== 'undefined' && TAROT && TAROT.length) deck = jyTarotShuffleArray(TAROT);
+  if (def && def.deckFilter === 'minor_only') deck = deck.filter(function(c){ return c && c.suit !== 'major'; });
+
+  var seed = String(Date.now()) + '|' + ((S.form && S.form.question) || '') + '|' + sid + '|v80.36';
+  var drawn = [];
+  try {
+    if (typeof window.JY_buildCanonicalTarotDraw === 'function') {
+      drawn = window.JY_buildCanonicalTarotDraw(deck.slice(), sid, def, seed, (S.form && S.form.type) || 'general', (S.form && S.form.question) || '') || [];
+    }
+  } catch(e) { drawn = []; }
+
+  if (!drawn || !drawn.length) {
+    drawn = [];
+    var rng = null;
+    try { if (typeof makeSeededRng === 'function') rng = makeSeededRng(seed, 'tarot-autodraw', 'v80.36'); } catch(e) {}
+    for (var i = 0; i < targetCount && i < deck.length; i++) {
+      var card = deck[i];
+      var r = Math.random();
+      try { if (typeof rng === 'function') r = rng(); } catch(e) {}
+      var out = Object.assign({}, card || {});
+      out.isUp = r >= 0.5;
+      out.pos = (def && def.positions && def.positions[i]) ? def.positions[i].name : ('第' + (i + 1) + '張');
+      out.seq = i + 1;
+      drawn.push(out);
+    }
+  }
+  return drawn.slice(0, targetCount);
+}
+
+function jyTarotForceShuffledState(){
+  window._deckIsShuffled = true;
+  try {
+    var deckEl = document.getElementById('t-deck');
+    if (deckEl) {
+      deckEl.querySelectorAll('.tarot-deck-card').forEach(function(card){
+        var face = card.querySelector('.tdc-face');
+        var back = card.querySelector('.tdc-back');
+        if (face) face.style.display = 'none';
+        if (back) back.style.transform = 'none';
+        card.classList.remove('shuffling','deck-center','lifting');
+        card.style.visibility = '';
+      });
+    }
+  } catch(e) {}
+  try {
+    var sf = document.getElementById('jy-shuffle-btn');
+    if (sf) sf.remove();
+    document.querySelectorAll('#step-2 .jy-shuffle-top').forEach(function(w){ if (!w.querySelector('#jy-shuffle-btn')) w.remove(); });
+  } catch(e) {}
+}
+
+// 進抽牌頁時先保底重畫一次，避免被舊版函式覆成只有文字。
+window._jyRenderCurrentTarotLayout = function(){
+  var def = jyTarotGetDef();
+  var sid = jyTarotGetSid(def);
+  if (def && (!drawnCards || drawnCards.length === 0)) jyTarotRenderChosen(sid, def);
+};
+
+// v80.36：最後再包一層 initTarotDeck。
+// 目的：無論前面哪個版本的 initTarotDeck 先把 #t-chosen 寫成凱爾特 10 格，
+// 都在同一輪與延遲一輪用目前牌陣重畫，避免「已選 0/3，畫面卻是 10 格」的錯位。
+var _oldInitDeckV8036 = window.initTarotDeck;
+window.initTarotDeck = function(){
+  var ret;
+  if (typeof _oldInitDeckV8036 === 'function') ret = _oldInitDeckV8036.apply(this, arguments);
+  function repaint(){
+    try {
+      if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length > 0) return;
+      if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
+      else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
+    } catch(e) {}
+  }
+  repaint();
+  setTimeout(repaint, 0);
+  setTimeout(repaint, 180);
+  return ret;
+};
+
+var _oldAutoDrawV8035 = window.autoDraw;
+window.autoDraw = function(){
+  jyTarotHardfixCSS();
+  var def = jyTarotGetDef();
+  var sid = jyTarotGetSid(def);
+  var targetCount = def && def.count ? def.count : 10;
+
+  try { if ((!deckShuffled || !deckShuffled.length) && typeof initTarotDeck === 'function') initTarotDeck(); } catch(e) {}
+  if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length >= targetCount) return;
+
+  // v80.35：快速抽牌不再停在洗牌步驟；它本身就完成洗牌狀態並補滿牌陣。
+  jyTarotForceShuffledState();
+
+  var drawn = jyTarotBuildDraw(def, sid);
+  if (!drawn || !drawn.length) {
+    // 極端失敗才退回舊函式，不假裝成功。
+    console.warn('[Tarot v80.36] instant autodraw failed; fallback to previous autoDraw');
+    if (typeof _oldAutoDrawV8035 === 'function') return _oldAutoDrawV8035.apply(this, arguments);
+    return;
+  }
+  jyTarotFinishAutodraw(drawn, sid, def);
+};
+
+jyTarotHardfixCSS();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(window._jyRenderCurrentTarotLayout, 200); });
+} else {
+  setTimeout(window._jyRenderCurrentTarotLayout, 200);
+}
+
+})();
