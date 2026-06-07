@@ -7967,7 +7967,7 @@ function resetToHome() {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// v80.35 塔羅牌陣版面硬修正 + 快速抽牌立即全抽
+// v80.36 塔羅牌陣版面根修正 + 快速抽牌立即全抽
 // 問題：部分版本 #t-chosen 被晚載入腳本重畫後只剩牌位文字，卡槽視覺消失；快速抽牌在未洗牌狀態下只觸發洗牌，未穩定接續抽牌。
 // 修正：
 // 1) 對 #t-chosen .tarot-chosen-slot 套用全域保底卡槽 CSS，不再只依賴 .jy-wrap。
@@ -8035,7 +8035,7 @@ function jyTarotFinishAutodraw(drawn, sid, def){
   S.tarot.spread = drawnCards;
   S.tarot.spreadType = sid;
   S.tarot.spreadDef = def;
-  try { if (typeof enhanceTarot === 'function') enhanceTarot(S.tarot); } catch(e) { console.warn('[Tarot v80.35] enhanceTarot failed:', e); }
+  try { if (typeof enhanceTarot === 'function') enhanceTarot(S.tarot); } catch(e) { console.warn('[Tarot v80.36] enhanceTarot failed:', e); }
 
   jyTarotRenderChosen(sid, def);
 
@@ -8050,7 +8050,7 @@ function jyTarotFinishAutodraw(drawn, sid, def){
   var btn = document.getElementById('btn-analyze');
   if (btn) btn.disabled = false;
 
-  try { if (typeof showSpread === 'function') showSpread(); } catch(e) { console.warn('[Tarot v80.35] showSpread failed:', e); }
+  try { if (typeof showSpread === 'function') showSpread(); } catch(e) { console.warn('[Tarot v80.36] showSpread failed:', e); }
   setTimeout(function(){
     var act = document.querySelector('#step-2 .actions');
     try { if (act) act.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e) {}
@@ -8066,7 +8066,7 @@ function jyTarotBuildDraw(def, sid){
   if (!deck.length && typeof TAROT !== 'undefined' && TAROT && TAROT.length) deck = jyTarotShuffleArray(TAROT);
   if (def && def.deckFilter === 'minor_only') deck = deck.filter(function(c){ return c && c.suit !== 'major'; });
 
-  var seed = String(Date.now()) + '|' + ((S.form && S.form.question) || '') + '|' + sid + '|v80.35';
+  var seed = String(Date.now()) + '|' + ((S.form && S.form.question) || '') + '|' + sid + '|v80.36';
   var drawn = [];
   try {
     if (typeof window.JY_buildCanonicalTarotDraw === 'function') {
@@ -8077,7 +8077,7 @@ function jyTarotBuildDraw(def, sid){
   if (!drawn || !drawn.length) {
     drawn = [];
     var rng = null;
-    try { if (typeof makeSeededRng === 'function') rng = makeSeededRng(seed, 'tarot-autodraw', 'v80.35'); } catch(e) {}
+    try { if (typeof makeSeededRng === 'function') rng = makeSeededRng(seed, 'tarot-autodraw', 'v80.36'); } catch(e) {}
     for (var i = 0; i < targetCount && i < deck.length; i++) {
       var card = deck[i];
       var r = Math.random();
@@ -8121,6 +8121,26 @@ window._jyRenderCurrentTarotLayout = function(){
   if (def && (!drawnCards || drawnCards.length === 0)) jyTarotRenderChosen(sid, def);
 };
 
+// v80.36：最後再包一層 initTarotDeck。
+// 目的：無論前面哪個版本的 initTarotDeck 先把 #t-chosen 寫成凱爾特 10 格，
+// 都在同一輪與延遲一輪用目前牌陣重畫，避免「已選 0/3，畫面卻是 10 格」的錯位。
+var _oldInitDeckV8036 = window.initTarotDeck;
+window.initTarotDeck = function(){
+  var ret;
+  if (typeof _oldInitDeckV8036 === 'function') ret = _oldInitDeckV8036.apply(this, arguments);
+  function repaint(){
+    try {
+      if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length > 0) return;
+      if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
+      else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
+    } catch(e) {}
+  }
+  repaint();
+  setTimeout(repaint, 0);
+  setTimeout(repaint, 180);
+  return ret;
+};
+
 var _oldAutoDrawV8035 = window.autoDraw;
 window.autoDraw = function(){
   jyTarotHardfixCSS();
@@ -8137,7 +8157,7 @@ window.autoDraw = function(){
   var drawn = jyTarotBuildDraw(def, sid);
   if (!drawn || !drawn.length) {
     // 極端失敗才退回舊函式，不假裝成功。
-    console.warn('[Tarot v80.35] instant autodraw failed; fallback to previous autoDraw');
+    console.warn('[Tarot v80.36] instant autodraw failed; fallback to previous autoDraw');
     if (typeof _oldAutoDrawV8035 === 'function') return _oldAutoDrawV8035.apply(this, arguments);
     return;
   }

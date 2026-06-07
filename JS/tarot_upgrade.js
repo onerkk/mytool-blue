@@ -869,6 +869,19 @@ function injectSpreadSelector() {
       btn.style.borderColor = 'rgba(201,168,76,.5)'; btn.style.background = 'rgba(201,168,76,.08)'; btn.style.color = 'var(--c-gold,#c9a84c)';
       drawnCards = []; deckShuffled = [];
       if (typeof initTarotDeck === 'function') initTarotDeck();
+      // v80.36：切換牌陣後，舊 initTarotDeck 可能剛寫入凱爾特 10 格；立即以目前牌陣重畫。
+      setTimeout(function(){
+        try {
+          if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
+          else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
+        } catch(e) {}
+      }, 0);
+      setTimeout(function(){
+        try {
+          if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
+          else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
+        } catch(e) {}
+      }, 160);
     };
     var currentId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
     if (id === currentId) { btn.style.borderColor = 'rgba(201,168,76,.5)'; btn.style.background = 'rgba(201,168,76,.08)'; btn.style.color = 'var(--c-gold,#c9a84c)'; }

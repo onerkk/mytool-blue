@@ -2844,6 +2844,40 @@ let drawnCards=[];
 let deckShuffled=[];
 let pickAnimating=false;
 
+/* v80.36：牌位版面單一渲染入口
+   根因修正：舊版 tarot.js 的 initTarotDeck/showTarotLocked 永遠先寫入凱爾特十字 10 格，
+   導致目前牌陣已是 3 張時，畫面仍殘留 10 格凱爾特。
+   這裡改成依 getCurrentSpread()/getCurrentSpreadDef() 重新渲染當前牌陣。 */
+function renderTarotChosenLayoutForCurrentSpread(){
+  try {
+    var chosen = document.getElementById('t-chosen');
+    if (!chosen) return false;
+    var def = null, sid = '';
+    if (typeof getCurrentSpreadDef === 'function') def = getCurrentSpreadDef();
+    if (typeof getCurrentSpread === 'function') sid = getCurrentSpread();
+    if ((!def || !sid) && S && S.tarot) {
+      def = def || S.tarot.spreadDef || null;
+      sid = sid || S.tarot.spreadType || (def && def.id) || '';
+    }
+    if (!def || !sid) return false;
+    var html = '';
+    if (typeof window !== 'undefined' && typeof window.buildSlotLayout === 'function') {
+      html = window.buildSlotLayout(sid, def) || '';
+    }
+    if (!html && typeof window !== 'undefined' && typeof window.jyBuildSlot === 'function') {
+      html = window.jyBuildSlot(sid, def) || '';
+    }
+    if (!html) return false;
+    chosen.innerHTML = html;
+    chosen.setAttribute('data-current-spread', sid);
+    return true;
+  } catch(e) {
+    console.warn('[Tarot Layout v80.36] render failed:', e);
+    return false;
+  }
+}
+try { window.JY_renderTarotChosenLayoutForCurrentSpread = renderTarotChosenLayoutForCurrentSpread; } catch(_) {}
+
 /* ═══ 塔羅鎖定顯示：同一天同人同問題，牌陣已定 ═══ */
 function showTarotLocked(){
   // 填入凱爾特十字牌位
@@ -2864,6 +2898,8 @@ function showTarotLocked(){
       <div class="tarot-chosen-slot filled" id="t-slot-7"><span class="slot-num">8</span></div>
       <div class="tarot-chosen-slot filled" id="t-slot-6"><span class="slot-num">7</span></div>
     </div>`;
+  // v80.36：鎖定畫面也改用當前牌陣，不再固定凱爾特 10 格。
+  renderTarotChosenLayoutForCurrentSpread();
   // 顯示已抽到的牌面
   drawnCards.forEach((c,i)=>{
     const slotEl=document.getElementById('t-slot-'+i);
@@ -2956,6 +2992,10 @@ function initTarotDeck(){
       '<div class="tarot-chosen-slot" id="t-slot-7"><span class="slot-num">8</span><span class="slot-label">'+posLabels[7]+'</span></div>'+
       '<div class="tarot-chosen-slot" id="t-slot-6"><span class="slot-num">7</span><span class="slot-label">'+posLabels[6]+'</span></div>'+
     '</div>';
+
+  // v80.36：這才是根修正。tarot.js 原本此處固定寫死凱爾特 10 格，
+  // 現在立刻用當前牌陣覆蓋，三牌陣就只會出現 3 格。
+  renderTarotChosenLayoutForCurrentSpread();
 
   // ═══ 3D 雙排牌堆（牌面朝上 + 背景輪播）═══
   var deckEl=document.getElementById('t-deck');
