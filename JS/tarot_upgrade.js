@@ -1177,6 +1177,11 @@ enhanceTarot = function(tarot) {
   }
 
   function S(id, num, label) {
+    // ★ 已抽到該位置的牌時，直接畫牌面（修正「快速全抽 / 重渲染後格子留空」）。
+    //   drawnCards[id] = 該位置的牌（canonical 全抽與逐張選都以位置索引對齊 t-slot-id）。
+    var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
+    var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
+    if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><img src="'+_di+'" alt="'+(_dc.n||'')+'" style="width:100%;display:block;border-radius:7px;aspect-ratio:5/7;object-fit:cover;'+(_dc.isUp?'':'transform:rotate(180deg);')+'"><span class="slot-label">'+label+'</span></div>';
     return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
   }
 
@@ -1259,9 +1264,9 @@ enhanceTarot = function(tarot) {
       h += '</div></div>';
     }
     else if (spreadId === 'fifteen_card') {
-      // ── Fifteen-card Method：13-9-5 / 2-1-3 / 14-10-6 / 4-8-12 / 7-11-15 ──
+      // ── Fifteen-card Method：13-9-5 / 14-10-6 / 2-1-3(核心置中) / 4-8-12 / 7-11-15 ──
       h += '<style>#t-chosen .jy-15{display:grid;grid-template-columns:repeat(3,70px);grid-template-rows:repeat(5,auto);gap:9px 12px;justify-content:center;align-items:center}</style>';
-      var grid15 = [12,8,4, 1,0,2, 13,9,5, 3,7,11, 6,10,14];
+      var grid15 = [12,8,4, 13,9,5, 1,0,2, 3,7,11, 6,10,14];
       h += '<div class="jy-15">';
       for (var g15=0; g15<grid15.length; g15++) { var id15=grid15[g15]; h += S(id15, id15+1, pn(id15)); }
       h += '</div>';

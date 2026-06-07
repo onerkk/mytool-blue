@@ -6345,6 +6345,9 @@ showAuraResult = function(){
         if (_orthodoxLayout) return _orthodoxLayout;
       }
       function S(id, num, label) {
+        var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
+        var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
+        if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><img src="'+_di+'" alt="'+(_dc.n||'')+'" style="width:100%;display:block;border-radius:7px;aspect-ratio:5/7;object-fit:cover;'+(_dc.isUp?'':'transform:rotate(180deg);')+'"><span class="slot-label">'+label+'</span></div>';
         return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
       }
       if (!def) return null;
