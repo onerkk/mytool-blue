@@ -1,4 +1,4 @@
-/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v1.1]
+/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v1.2]
  * 共用畫布：暗金月色 + 品牌 + QR + Web Share / 下載。
  * 4 種卡：invite(邀請) / bazi(八字四柱) / ziwei(紫微命盤) / tarot(塔羅牌陣)。
  * 用法：JYShareCard.open('bazi', {...資料});  之後在各結果頁加一顆按鈕呼叫即可。
@@ -226,6 +226,38 @@
     }
   }
 
+  // ── 卡片：開鑰之法（五層深潛）── d:{question, layers:[{label,cards}]}
+  function renderOOTK(ctx, d) {
+    d = d || {};
+    title(ctx, '我的開鑰', '開鑰之法 ・ Book T 五層深潛');
+    var y = qline(ctx, d.question, 345);
+    var layers = (d.layers && d.layers.length) ? d.layers : [];
+    var n = layers.length || 5;
+    var top = Math.max(y, 420);
+    var footTop = H - 210, gap = 18;
+    var rh = Math.min(150, (footTop - top - (n - 1) * gap) / n);
+    if (rh < 70) rh = 70;
+    for (var i = 0; i < layers.length; i++) {
+      var ry = top + i * (rh + gap), L = layers[i] || {};
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      ctx.strokeStyle = 'rgba(201,168,76,0.28)'; ctx.lineWidth = 1.5;
+      rr(ctx, 80, ry, W - 160, rh, 14); ctx.fill(); ctx.stroke();
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = GOLD; ctx.font = '600 34px "Noto Serif TC", serif'; ctx.textAlign = 'left';
+      ctx.fillText(L.label || '', 116, ry + rh / 2);
+      ctx.strokeStyle = 'rgba(201,168,76,0.18)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(262, ry + 22); ctx.lineTo(262, ry + rh - 22); ctx.stroke();
+      var cards = L.cards || '\u2014';
+      var fs = 36, maxW = (W - 80) - 262 - 50;
+      ctx.font = fs + 'px "Noto Serif TC", serif';
+      while (ctx.measureText(cards).width > maxW && fs > 20) { fs -= 2; ctx.font = fs + 'px "Noto Serif TC", serif'; }
+      ctx.fillStyle = CREAM; ctx.textAlign = 'center';
+      ctx.fillText(cards, 262 + ((W - 80) - 262) / 2, ry + rh / 2);
+      ctx.restore();
+    }
+  }
+
   function drawRows(ctx, rows, y) {
     for (var i = 0; i < rows.length; i++) {
       var ry = y + i * 70;
@@ -239,7 +271,7 @@
     }
   }
 
-  var RENDER = { invite: renderInvite, bazi: renderBazi, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderTarot, meihua: renderTarot };
+  var RENDER = { invite: renderInvite, bazi: renderBazi, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderTarot, meihua: renderTarot, ootk: renderOOTK };
 
   function draw(type, data, canvas) {
     canvas.width = W; canvas.height = H;
