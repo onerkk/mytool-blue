@@ -1026,6 +1026,9 @@ function pickTool(tool) {
 }
 
 function _checkToolQuota(tool) {
+  // ★ v70 全免費/無登入：塔羅與開鑰皆為「複製提示詞」模式，不打 worker、不查配額/登入
+  //   → 保留 index.html 靜態的「完全免費」徽章，不再被 LOGIN_REQUIRED 覆蓋成「需登入 Google 帳號」
+  if (tool === 'tarot' || tool === 'ootk') return;
   var modeMap = { tarot: 'tarot_only', ootk: 'ootk', full: 'full' };
   var badgeId = 'tool-' + tool + '-badge';
   var badge = document.getElementById(badgeId);
@@ -5862,6 +5865,18 @@ showAuraResult = function(){
         '</button>' +
       '</div>' +
 
+      // ★ v80.26：八字命理入口（首頁獨立入口，跟雷諾曼同層）
+      '<div class="jy-home-oracle">' +
+        '<button onclick="_baziOpen()" class="jy-oracle-btn">' +
+          '<span class="jy-oracle-icon">📜</span>' +
+          '<span class="jy-oracle-text">' +
+            '<strong>八字命理</strong>' +
+            '<small>子平四柱 ・ 真太陽時 ・ 窮通調候 ・ 免費</small>' +
+          '</span>' +
+          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
+        '</button>' +
+      '</div>' +
+
       // ★ v70 今日一牌已移除
       '' +
 
@@ -5988,6 +6003,20 @@ showAuraResult = function(){
       });
     } else {
       alert('梅花獨立頁尚未載入，請確認 JS/meihua-standalone.js 已上傳並強制重新整理。');
+    }
+  };
+
+  // ★ v80.26：首頁八字命理入口
+  window._baziOpen = function() {
+    // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
+    if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
+    if (typeof window._jyLazyScript === 'function') {
+      window._jyLazyScript('JS/bazi-standalone.js', function(ok){
+        if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
+        else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
+      });
+    } else {
+      alert('八字獨立頁尚未載入，請確認 JS/bazi-standalone.js 已上傳並強制重新整理。');
     }
   };
 
@@ -6316,6 +6345,10 @@ showAuraResult = function(){
         if (_orthodoxLayout) return _orthodoxLayout;
       }
       function S(id, num, label) {
+        var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
+        var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
+        var _ic = (spreadId === 'celtic_cross' && id === 1);
+        if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><div class="tarot-reveal flipping" style="'+(_ic?'transform:rotate(-90deg)':'')+'"><div class="tarot-reveal-inner"><div class="tarot-reveal-back"></div><div class="tarot-reveal-front"><img src="'+_di+'" class="tc-img" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'"><span class="tc-name" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'">'+(_dc.n||'')+'</span><span class="tc-dir '+(_dc.isUp?'up':'rv')+'">'+(_dc.isUp?'順位':'逆位')+'</span></div></div></div>'+(_ic?'':'<span class="slot-label">'+label+'</span>')+'</div>';
         return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
       }
       if (!def) return null;
@@ -6923,8 +6956,48 @@ function renderTarotSpreadDisplay() {
     h += '</div></div></div>';
   });
 
+  h += '<div style="text-align:center;margin-top:.7rem"><button onclick="_tarotShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:var(--c-gold);font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361\uFF08\u6645\u724C\u9663\uFF09</button></div>';
   el.innerHTML = h;
 }
+
+window._tarotShare = function () {
+  if (!window.JYShareCard) { alert('分享元件載入中，請稍候再試一次'); return; }
+  // OOTK 與塔羅共用 step-tarot 結果頁。實際 OOTK 路徑 _runOOTKSequence 會設
+  //   S.tarot.spreadType='ootk'，並把結果存進 S.tarot.ootkResults
+  //  （注意：不是 window._ootkResults — 那是舊死碼路徑，live 路徑不會設它，這是之前一直空白的主因）
+  var _ootk = (S.tarot && S.tarot.spreadType === 'ootk') ? (S.tarot.ootkResults || window._ootkResults) : null;
+  if (_ootk) {
+    var layers = [];
+    [['op1', '第一層'], ['op2', '第二層'], ['op3', '第三層'], ['op4', '第四層'], ['op5', '第五層']].forEach(function (pr) {
+      var o = _ootk[pr[0]];
+      var names = (o && o.keyCards && o.keyCards.length)
+        ? o.keyCards.slice(0, 3).map(function (kc) {
+            var c = (kc && kc.card) || kc || {};   // keyCards 元素是 {card:{n,name,...}}
+            return c.n || c.name || '';
+          }).filter(Boolean).join('、')
+        : '';
+      layers.push({ label: pr[1], cards: names || '\u2014' });
+    });
+    JYShareCard.open('ootk', {
+      question: (S.form && S.form.question) || '',
+      layers: layers
+    });
+    return;
+  }
+
+  var def = (S.tarot && S.tarot.spreadDef) || {};
+  var cards = (drawnCards || []).map(function (c, i) {
+    var pp = (def.positions && def.positions[i]) ? def.positions[i] : null;
+    var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
+    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: !(c && c.isUp) };
+  });
+  JYShareCard.open('tarot', {
+    cardTitle: '我的塔羅',
+    question: (S.form && S.form.question) || '',
+    spread: def.zh || '塔羅牌陣',
+    cards: cards
+  });
+};
 
 // ── enterFullAnalysis：從塔羅結果進七維度 ──
 function enterFullAnalysis() {
@@ -7173,6 +7246,7 @@ function _buildResultNav(activePage) {
 }
 
 function _refreshAllNavs(activePage) {
+  window._jyActiveResultView = activePage; // 記錄目前檢視（塔羅/開鑰/七維），供分享卡判斷
   ['jy-result-nav-tarot', 'jy-result-nav-full'].forEach(function(nid) {
     var el = _ensureResultNav(nid);
     if (!el) return;
