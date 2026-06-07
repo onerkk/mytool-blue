@@ -1,0 +1,27 @@
+<!doctype html><html lang="zh-Hant"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>分享卡預覽 ・ 靜月之光</title>
+<style>
+  body{margin:0;background:#0a0a10;color:#e8e0d0;font-family:"Noto Serif TC",serif;padding:28px 18px 60px;text-align:center}
+  h1{color:#c9a84c;font-weight:600;letter-spacing:3px;font-size:1.2rem}
+  p{color:rgba(232,224,208,.55);font-size:.82rem;line-height:1.7;max-width:420px;margin:0 auto 1.4rem}
+  .b{display:block;width:100%;max-width:420px;margin:.6rem auto;padding:1rem;border-radius:14px;border:1px solid rgba(201,168,76,.45);
+     background:linear-gradient(135deg,rgba(201,168,76,.16),rgba(201,168,76,.04));color:#c9a84c;font-family:inherit;font-size:1.05rem;font-weight:600;letter-spacing:3px;cursor:pointer}
+  .b:active{transform:scale(.98)}
+</style></head><body>
+<h1>分享卡預覽</h1>
+<p>點下面任一張,看卡片長怎樣,並測「分享到社群 / 下載圖片」在你手機能不能用。<br>(這是測試頁,確認 OK 後我再把按鈕接到各占卜結果頁)</p>
+<button class="b" onclick="P('invite')">通用邀請卡</button>
+<button class="b" onclick="P('bazi')">八字四柱卡</button>
+<button class="b" onclick="P('ziwei')">紫微命盤卡</button>
+<button class="b" onclick="P('tarot')">塔羅牌陣卡</button>
+<script src="share-card.js?v=1"></script>
+<script>
+var D={
+  invite:{},
+  bazi:{question:'今年事業有什麼要注意',pillars:[{label:'年柱',gan:'癸',zhi:'亥'},{label:'月柱',gan:'庚',zhi:'申'},{label:'日柱',gan:'乙',zhi:'酉'},{label:'時柱',gan:'癸',zhi:'未'}],dayMaster:'乙木 ・ 身弱',yongShen:'丁火',dayun:'丙辰（2019–2029）'},
+  ziwei:{question:'今年適合換工作嗎',ming:'命宮 ・ 天府（廟）',info:'金四局 ・ 身宮在福德',palaces:[{branch:'巳',name:'田宅',star:'太陰'},{branch:'午',name:'官祿',star:'貪狼'},{branch:'未',name:'僕役',star:'巨門'},{branch:'申',name:'遷移',star:'天相'},{branch:'辰',name:'福德',star:'廉貞'},{branch:'酉',name:'疾厄',star:'天梁'},{branch:'卯',name:'父母',star:'七殺'},{branch:'戌',name:'財帛',star:''},{branch:'寅',name:'命宮',star:'天府'},{branch:'丑',name:'兄弟',star:''},{branch:'子',name:'夫妻',star:'破軍'},{branch:'亥',name:'子女',star:''}]},
+  tarot:{question:'這段關係的走向',spread:'時間之流',cards:[{name:'月亮',pos:'過去',reversed:true},{name:'星星',pos:'現況'},{name:'太陽',pos:'未來'}],conclusion:'迷霧漸散,方向轉趨明朗,但需先面對內在的不安。'}
+};
+function P(t){ if(window.JYShareCard) JYShareCard.open(t, D[t]); else alert('share-card.js 未載入'); }
+</script></body></html>
