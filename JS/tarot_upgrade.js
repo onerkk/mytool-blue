@@ -3114,21 +3114,24 @@ enhanceTarot = function(tarot) {
   // ════════════════════════════════════════════════
 
   function ootkUnaspected(activeCards, sigIdx, countedKeyCards, pairs) {
-    // ★ PHB「Source of the Nile / Unaspected」正統定義（2026 根治）
-    //   做法：對活躍堆「每一張牌」各數一次——依該牌面向（正位向右 +1、逆位向左 -1，
-    //   Book T:「count in the direction it faces」）、走其 count 值格、環狀折返，記下落點那張。
+    // ★ PHB「Source of the Nile / Unaspected」正統定義（2026 根治 + 一致性修正）
+    //   做法：對活躍堆「每一張牌」各數一次（走其 count 值格、環狀折返），記下落點那張；
     //   全部數完後，從頭到尾「沒被任何一張牌的計數落點碰到」的牌，就是 unaspected。
     //   ⚠ 只看 counting，不看 pairing：pairing 會把幾乎每張非主牌都配到，
     //      把它算進「被碰到」會讓 unaspected 永遠為空（舊版的 bug，等於關閉此功能）。
+    //   ⚠ 方向必須跟引擎的 ootkCounting 一致——整串用「代表牌的面向」（v63 Book T 取向：
+    //      方向只由起點代表牌決定、不隨各牌正逆位改變）。若改用「各牌自己的面向」，會跟
+    //      計數路徑用不同規則，導致「計數終點牌反而被列為 unaspected」的自相矛盾。
     //   依據：Paul Hughes-Barlow《Tarot and the Magus》Ch.6；實務轉述「counted from every
     //         single card to check their counts」——沒被碰到的孤立牌＝尼羅河源頭，指向未知/未來。
     var n = activeCards ? activeCards.length : 0;
     if (!n) return [];
+    var sigCard = (sigIdx >= 0 && sigIdx < n) ? activeCards[sigIdx] : null;
+    var dir = (sigCard && sigCard.isUp === true) ? 1 : -1;   // 整串同方向＝代表牌方向，與 counting 一致
     var targeted = {};
     for (var i = 0; i < n; i++) {
       var card = activeCards[i];
       if (!card) continue;
-      var dir = (card.isUp === true) ? 1 : -1;   // Book T：往牌面朝向的方向數
       var cnt = getCountValue(card);
       var t = i;
       for (var c = 0; c < cnt; c++) { t = (t + dir + n) % n; }
