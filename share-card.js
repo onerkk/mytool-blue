@@ -1,4 +1,4 @@
-/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v1.0]
+/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v1.1]
  * 共用畫布：暗金月色 + 品牌 + QR + Web Share / 下載。
  * 4 種卡：invite(邀請) / bazi(八字四柱) / ziwei(紫微命盤) / tarot(塔羅牌陣)。
  * 用法：JYShareCard.open('bazi', {...資料});  之後在各結果頁加一顆按鈕呼叫即可。
@@ -203,7 +203,7 @@
   // ── 卡片：塔羅牌陣 ── d:{question, spread, cards:[{name,pos,reversed}], conclusion}
   function renderTarot(ctx, d) {
     d = d || {};
-    title(ctx, '我的塔羅', d.spread || 'RWS 塔羅');
+    title(ctx, d.cardTitle || '我的塔羅', d.spread || 'RWS 塔羅');
     var y = qline(ctx, d.question, 345);
     var cards = d.cards || [{ name: '月亮', pos: '過去' }, { name: '星星', pos: '現況' }, { name: '太陽', pos: '未來' }];
     var n = Math.min(cards.length, 3), cw = 230, chh = 360, gap = 36, x0 = (W - (n * cw + (n - 1) * gap)) / 2, ty = Math.max(y, 400);
@@ -239,7 +239,7 @@
     }
   }
 
-  var RENDER = { invite: renderInvite, bazi: renderBazi, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderTarot };
+  var RENDER = { invite: renderInvite, bazi: renderBazi, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderTarot, meihua: renderTarot };
 
   function draw(type, data, canvas) {
     canvas.width = W; canvas.height = H;
