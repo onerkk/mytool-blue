@@ -5269,17 +5269,21 @@ enhanceTarot = function(tarot) {
       html += '    </div>';
       html += '  </div>';
       // 36 張環繞牌（顯示真實牌照）
+      // v80.32 修正：改用「容器真實中心(50%,50%) + 位移向量」定位，不再寫死 160。
+      //   原本寫死中心 160 是假設表格 320px；但手機觸發 @media(max-width:480px) 後表格縮成 280px，
+      //   真實中心其實是 140 → 整個卡環往右下偏 20px，與置中的背景圓對不齊（看起來歪掉）。
+      //   改用 translate 後，無論 280/320 任何尺寸都與背景同心。
       var R = 132;
       for (var ri = 0; ri < ringCount; ri++) {
         var ang = (ri * 360 / ringCount - 90) * Math.PI / 180;
-        var cx = 160 + R * Math.cos(ang) - 11;  // 卡寬 22 → 半 11
-        var cy = 160 + R * Math.sin(ang) - 17;  // 卡高 34 → 半 17
+        var dx = R * Math.cos(ang);   // 距中心水平位移
+        var dy = R * Math.sin(ang);   // 距中心垂直位移
         var rotateDeg = ang * 180 / Math.PI + 90;
         var card = ringCards[ri];
         var cardImg = getImg(card);
         var isUp = card && card.isUp !== false;
         var imgRotate = isUp ? 0 : 180;
-        html += '<div class="ootk-op4-ring-card" data-idx="' + ri + '" style="left:' + cx + 'px;top:' + cy + 'px;transform:rotate(' + rotateDeg + 'deg)">';
+        html += '<div class="ootk-op4-ring-card" data-idx="' + ri + '" style="left:50%;top:50%;transform:translate(-50%,-50%) translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) rotate(' + rotateDeg + 'deg)">';
         if (cardImg) {
           html += '<img src="' + cardImg + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;transform:rotate(' + imgRotate + 'deg)" />';
         }
