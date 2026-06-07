@@ -6336,6 +6336,8 @@ showAuraResult = function(){
   }
 
   function jyBuildSlot(spreadId, def) {
+      // v80.38 治本：版面以牌陣定義為準，避免傳入的 spreadId 失準導致掉進通用方格。
+      if (def && def.id && def.id !== spreadId) spreadId = def.id;
       // v80.14：優先使用 tarot_upgrade.js 的正統版面（含 Waite 凱爾特、Mathers 21、Mathers 54）。
       if (typeof window.buildSlotLayout === 'function') {
         var _orthodoxLayout = window.buildSlotLayout(spreadId, def);

@@ -1202,6 +1202,10 @@ enhanceTarot = function(tarot) {
 
   function buildSlotLayout(spreadId, def) {
     if (!def) return null;
+    // v80.38 治本：版面一律以「牌陣定義」為準。若傳入的 spreadId 與 def.id 不一致
+    //   （例如沿用到前一個牌陣的舊值），會掉進最後的通用方格分支、失去正統排列。
+    //   這裡強制對齊 def.id，正統排版（凱爾特／生命之樹／黃道／Mathers…）才不會被跳過。
+    if (def.id && def.id !== spreadId) spreadId = def.id;
     var P = def.positions || [];
     function pn(i) { return P[i] ? P[i].name : ''; }
     var h = '<div class="jy-wrap">';
