@@ -1181,7 +1181,8 @@ enhanceTarot = function(tarot) {
     //   drawnCards[id] = 該位置的牌（canonical 全抽與逐張選都以位置索引對齊 t-slot-id）。
     var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
     var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
-    if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><img src="'+_di+'" alt="'+(_dc.n||'')+'" style="width:100%;display:block;border-radius:7px;aspect-ratio:5/7;object-fit:cover;'+(_dc.isUp?'':'transform:rotate(180deg);')+'"><span class="slot-label">'+label+'</span></div>';
+    var _ic = (spreadId === 'celtic_cross' && id === 1); // 凱爾特「跨越牌」橫置
+    if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><div class="tarot-reveal flipping" style="'+(_ic?'transform:rotate(-90deg)':'')+'"><div class="tarot-reveal-inner"><div class="tarot-reveal-back"></div><div class="tarot-reveal-front"><img src="'+_di+'" class="tc-img" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'"><span class="tc-name" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'">'+(_dc.n||'')+'</span><span class="tc-dir '+(_dc.isUp?'up':'rv')+'">'+(_dc.isUp?'順位':'逆位')+'</span></div></div></div>'+(_ic?'':'<span class="slot-label">'+label+'</span>')+'</div>';
     return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
   }
 

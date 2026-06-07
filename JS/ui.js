@@ -6347,7 +6347,8 @@ showAuraResult = function(){
       function S(id, num, label) {
         var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
         var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
-        if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><img src="'+_di+'" alt="'+(_dc.n||'')+'" style="width:100%;display:block;border-radius:7px;aspect-ratio:5/7;object-fit:cover;'+(_dc.isUp?'':'transform:rotate(180deg);')+'"><span class="slot-label">'+label+'</span></div>';
+        var _ic = (spreadId === 'celtic_cross' && id === 1);
+        if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><div class="tarot-reveal flipping" style="'+(_ic?'transform:rotate(-90deg)':'')+'"><div class="tarot-reveal-inner"><div class="tarot-reveal-back"></div><div class="tarot-reveal-front"><img src="'+_di+'" class="tc-img" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'"><span class="tc-name" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'">'+(_dc.n||'')+'</span><span class="tc-dir '+(_dc.isUp?'up':'rv')+'">'+(_dc.isUp?'順位':'逆位')+'</span></div></div></div>'+(_ic?'':'<span class="slot-label">'+label+'</span>')+'</div>';
         return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
       }
       if (!def) return null;
@@ -6609,6 +6610,16 @@ showAuraResult = function(){
       var _canonical = window.JY_buildCanonicalTarotDraw(deckShuffled.slice(), def.id, def, _seed, (S.form && S.form.type) || 'general', (S.form && S.form.question) || '');
       if (_canonical && _canonical.length) {
         drawnCards = _canonical;
+        // ★ 治本：canonical 全抽跳過了 pickCard，t-slot 不會被填面。
+        //   此時 drawnCards 已滿，主動重畫 #t-chosen → buildSlotLayout 的 S() 會直接畫出每張牌面。
+        //   （jyFixChosen 有 nDrawn>0 的守門，不會把這次結果洗掉。）
+        try {
+          var _ch = document.getElementById('t-chosen');
+          if (_ch && typeof window.buildSlotLayout === 'function') {
+            var _lay = window.buildSlotLayout(def.id, def);
+            if (_lay) _ch.innerHTML = _lay;
+          }
+        } catch(_e){}
         S.tarot = { drawn: drawnCards, spread: drawnCards, spreadType: def.id, spreadDef: def };
         var _btn = document.getElementById('btn-analyze'); if (_btn) _btn.disabled = false;
         var _hint = document.getElementById('pick-hint'); if (_hint) _hint.style.display = 'none';
