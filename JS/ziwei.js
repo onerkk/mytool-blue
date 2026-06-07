@@ -1113,7 +1113,32 @@ function computeZiwei(year,month,day,hour,gender){
     }
   }
 
-  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'v80.14-strict-ziwei', orthodoxMode:true, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','主星、四化、大限、流年以三合/四化骨架為主；乙丙級星存在派別差異，前端只作輔助標示。']};
+  // ═══ 來因宮（欽天派：宮干 == 生年天干 那一宮 = 此生課題與內在驅力的根源）═══
+  var laiYin = null;
+  try {
+    var _lyP = palaces.find(function (p) { return p.gan === yGan; });
+    if (_lyP) laiYin = { name: _lyP.name, branch: _lyP.branch, gan: _lyP.gan };
+  } catch (_e) {}
+
+  // ═══ 飛宮四化（宮與宮的因果鏈：每宮宮干把祿/權/科/忌飛去哪一宮）═══
+  var feiGongHua = [];
+  try {
+    var _starPalace = {};
+    palaces.forEach(function (p) { (p.stars || []).forEach(function (s) { if (s && s.name) _starPalace[s.name] = p.name; }); });
+    var _km = { '祿': 'lu', '權': 'quan', '科': 'ke', '忌': 'ji' };
+    palaces.forEach(function (p) {
+      var ps = SIHUA_TABLE[p.gan] || SIHUA_TABLE['甲'];
+      var row = { palace: p.name, gan: p.gan };
+      ['祿', '權', '科', '忌'].forEach(function (t) {
+        var star = ps[t];
+        var land = _starPalace[star] || '?';
+        row[_km[t]] = { star: star, to: land, self: (land === p.name) };
+      });
+      feiGongHua.push(row);
+    });
+  } catch (_e) {}
+
+  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'v80.29-ziwei-laiyin-feigong', orthodoxMode:true, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','主星、四化、大限、流年以三合/四化骨架為主；乙丙級星存在派別差異，前端只作輔助標示。']};
   } catch(_zwErr) {
     console.error('[computeZiwei] 排盤失敗:', _zwErr && _zwErr.message ? _zwErr.message : _zwErr, _zwErr && _zwErr.stack ? _zwErr.stack : '');
     window._jyZiweiError = (_zwErr && _zwErr.message) ? _zwErr.message : String(_zwErr);
