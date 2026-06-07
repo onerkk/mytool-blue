@@ -1,4 +1,4 @@
-/*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v80.30]
+/*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v80.31]
  *  目的（歐那 2026/6/6）：
  *    1) 紫微斗數獨立入口不再借用七維表單與七維流程；只需出生年月日 + 時辰(可選) + 出生地 + 性別，「不需姓名」。
  *    2) 全新紫微專屬過場動畫（十二宮命盤天成），符合網頁金色/暗底風格，純 CSS/SVG，不需圖檔。
@@ -149,7 +149,7 @@
       '.zwx-field .chev{color:rgba(201,168,76,.7);font-size:.78rem;flex-shrink:0}',
       '.zwx-err{margin:.5rem 0 0;padding:.55rem .7rem;border-radius:10px;border:1px solid rgba(214,108,92,.55);background:rgba(214,108,92,.12);color:#f0c8be;font-size:.74rem;line-height:1.5;display:none}',
       '.zwx-err.show{display:block}',
-      '.zwx-sheet-bd{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}',
+      '.zwx-sheet-bd{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}',
       '.zwx-sheet-bd.show{opacity:1}',
       '.zwx-sheet{width:100%;max-width:480px;max-height:84vh;overflow-y:auto;background:linear-gradient(180deg,#16161e,#0d0d13);border-radius:20px 20px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:none;box-shadow:0 -10px 50px rgba(0,0,0,.6),0 0 60px rgba(201,168,76,.05);padding:.9rem 1rem 1.4rem;transform:translateY(101%);transition:transform .32s cubic-bezier(.16,1,.3,1);font-family:"Noto Serif TC",serif;-webkit-overflow-scrolling:touch}',
       '.zwx-sheet-bd.show .zwx-sheet{transform:translateY(0)}',
