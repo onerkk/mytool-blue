@@ -1,4 +1,4 @@
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.29]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.30]
  *  歐那 2026/6/6：八字自成一頁、乾淨、不出現其他入口、有自己的過場動畫，組好提示詞複製去 AI。
  *  做法：完全比照 meihua-standalone.js / lenormand.js 的「自包覆獨立頁 + 複製提示詞」模式。
  *  引擎：直接呼叫既有全域 calcTrueSolarTime() + computeBazi() + enhanceBazi()，不重造排盤。
@@ -56,6 +56,11 @@
   var _bazi = null;          // computeBazi + enhanceBazi 結果
   var _meta = null;          // 排盤輸入摘要（真太陽時等）
   var _lastPrompt = '';
+  // v80.30 自訂選擇器選取狀態（寫回同名隱藏欄位供 _doCast 沿用）
+  var _selDate = '';
+  var _selTime = '';
+  var _selCity = '';
+  var _selUnknown = false;
 
   // ════════════════════════════════════════════════════════
   //  容器 + CSS（命名空間 bzx-，自帶不依賴 style.css）
@@ -141,7 +146,72 @@
       '.bzx-taiji span.y{top:16px;background:#1a140a}',
       '.bzx-taiji span.n{bottom:16px;background:#f4ecd6}',
       '.bzx-load-status{margin-top:1.6rem;font-family:"Noto Serif TC",serif;font-size:1.05rem;font-weight:700;color:'+GOLD+';letter-spacing:.12em;text-shadow:0 2px 14px rgba(0,0,0,.6);transition:opacity .3s;min-height:1.4rem;text-align:center}',
-      '.bzx-load-sub{margin-top:.4rem;font-size:.74rem;color:rgba(212,175,55,.55);letter-spacing:.08em;transition:opacity .3s;min-height:1.1rem;text-align:center}'
+      '.bzx-load-sub{margin-top:.4rem;font-size:.74rem;color:rgba(212,175,55,.55);letter-spacing:.08em;transition:opacity .3s;min-height:1.1rem;text-align:center}',
+      // ── v80.30 自訂欄位（取代原生 input/select）──
+      '.bzx-field{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.72rem .8rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:rgba(255,255,255,.03);color:#e8e0d0;font-family:inherit;font-size:.92rem;cursor:pointer;transition:all .2s;text-align:left}',
+      '.bzx-field:active{transform:scale(.985)}',
+      '.bzx-field.dim{opacity:.5}',
+      '.bzx-field .ph{color:rgba(232,224,208,.4)}',
+      '.bzx-field .val{color:#ffeab8}',
+      '.bzx-field .chev{color:rgba(201,168,76,.7);font-size:.78rem;flex-shrink:0}',
+      // 內嵌錯誤（取代 alert）
+      '.bzx-err{margin:.6rem 0 0;padding:.55rem .7rem;border-radius:10px;border:1px solid rgba(214,108,92,.55);background:rgba(214,108,92,.12);color:#f0c8be;font-size:.74rem;line-height:1.5;display:none}',
+      '.bzx-err.show{display:block;animation:bzxIn .3s ease-out}',
+      // 底部選擇器 sheet
+      '.bzx-sheet-bd{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}',
+      '.bzx-sheet-bd.show{opacity:1}',
+      '.bzx-sheet{width:100%;max-width:480px;max-height:84vh;overflow-y:auto;background:linear-gradient(180deg,#16161e,#0d0d13);border-radius:20px 20px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:none;box-shadow:0 -10px 50px rgba(0,0,0,.6),0 0 60px rgba(201,168,76,.05);padding:.9rem 1rem 1.4rem;transform:translateY(101%);transition:transform .32s cubic-bezier(.16,1,.3,1);font-family:"Noto Serif TC",serif;-webkit-overflow-scrolling:touch}',
+      '.bzx-sheet-bd.show .bzx-sheet{transform:translateY(0)}',
+      '.bzx-sheet-grip{width:40px;height:4px;border-radius:2px;background:rgba(201,168,76,.4);margin:0 auto .7rem}',
+      '.bzx-sheet-title{text-align:center;color:'+GOLD+';font-size:1.02rem;letter-spacing:3px;margin-bottom:.2rem}',
+      '.bzx-sheet-sub{text-align:center;color:rgba(232,224,208,.5);font-size:.7rem;margin-bottom:.9rem;min-height:1rem;line-height:1.5}',
+      '.bzx-sheet-foot{display:grid;grid-template-columns:1fr 1.2fr;gap:.5rem;margin-top:1.1rem}',
+      '.bzx-sheet-btn{padding:.72rem;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(232,224,208,.6);font-family:inherit;font-size:.86rem;cursor:pointer;letter-spacing:2px}',
+      '.bzx-sheet-btn.go{border-color:rgba(201,168,76,.55);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:'+GOLD+';font-weight:600}',
+      '.bzx-sheet-btn:active{transform:scale(.97)}',
+      // 日曆
+      '.bzx-cal-nav{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin-bottom:.6rem}',
+      '.bzx-cal-nav button{width:42px;height:42px;flex-shrink:0;border-radius:11px;border:1px solid rgba(201,168,76,.22);background:rgba(255,255,255,.03);color:'+GOLD+';font-size:1.2rem;cursor:pointer}',
+      '.bzx-cal-nav button:active{transform:scale(.92)}',
+      '.bzx-cal-ttl{flex:1;text-align:center;color:#ffeab8;font-size:.96rem;letter-spacing:1px;cursor:pointer;padding:.5rem;border-radius:9px}',
+      '.bzx-cal-ttl:active{background:rgba(201,168,76,.08)}',
+      '.bzx-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.22rem}',
+      '.bzx-cal-wk{text-align:center;color:rgba(201,168,76,.55);font-size:.66rem;padding:.2rem 0}',
+      '.bzx-cal-d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;color:rgba(232,224,208,.82);font-size:.88rem;cursor:pointer}',
+      '.bzx-cal-d:active{background:rgba(201,168,76,.12)}',
+      '.bzx-cal-d.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700;box-shadow:0 0 14px rgba(201,168,76,.4)}',
+      '.bzx-cal-d.empty{cursor:default}',
+      // 年/月快選
+      '.bzx-pick-grid{display:grid;gap:.4rem}',
+      '.bzx-pick-grid.y{grid-template-columns:repeat(4,1fr)}',
+      '.bzx-pick-grid.mo{grid-template-columns:repeat(3,1fr)}',
+      '.bzx-pick-cell{padding:.66rem .2rem;text-align:center;border-radius:10px;border:1px solid rgba(201,168,76,.18);background:rgba(255,255,255,.03);color:rgba(232,224,208,.82);font-size:.84rem;cursor:pointer}',
+      '.bzx-pick-cell.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700}',
+      '.bzx-pick-cell:active{transform:scale(.95)}',
+      '.bzx-yhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}',
+      '.bzx-yhead button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(201,168,76,.22);background:rgba(255,255,255,.03);color:'+GOLD+';font-size:1.1rem;cursor:pointer}',
+      '.bzx-yhead span{color:#ffeab8;font-size:.9rem;letter-spacing:1px}',
+      // 時間
+      '.bzx-time-big{text-align:center;color:#ffeab8;font-size:2.1rem;letter-spacing:3px;margin:.1rem 0 .1rem;font-family:"Noto Serif TC",serif}',
+      '.bzx-time-sc{text-align:center;color:'+GOLD+';font-size:.8rem;letter-spacing:1px;margin-bottom:1rem;min-height:1rem}',
+      '.bzx-hour-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.3rem;margin-bottom:1rem}',
+      '.bzx-hour{padding:.55rem 0;text-align:center;border-radius:9px;border:1px solid rgba(201,168,76,.18);background:rgba(255,255,255,.03);color:rgba(232,224,208,.82);font-size:.84rem;cursor:pointer}',
+      '.bzx-hour.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700;box-shadow:0 0 12px rgba(201,168,76,.35)}',
+      '.bzx-hour:active{transform:scale(.92)}',
+      '.bzx-min-row{display:flex;align-items:center;justify-content:center;gap:.5rem}',
+      '.bzx-min-step{min-width:50px;height:50px;border-radius:12px;border:1px solid rgba(201,168,76,.28);background:rgba(255,255,255,.03);color:'+GOLD+';font-size:1rem;cursor:pointer}',
+      '.bzx-min-step:active{transform:scale(.9)}',
+      '.bzx-min-val{min-width:92px;text-align:center;color:#ffeab8;font-size:1.5rem;letter-spacing:1px}',
+      '.bzx-unknown-row{display:flex;align-items:center;justify-content:center;margin-top:.9rem;padding-top:.8rem;border-top:1px solid rgba(201,168,76,.12)}',
+      '.bzx-unknown-row label{display:flex;align-items:center;gap:.45rem;color:rgba(232,224,208,.65);font-size:.76rem;cursor:pointer}',
+      '.bzx-unknown-row input{accent-color:'+GOLD+';width:16px;height:16px}',
+      // 地點
+      '.bzx-loc-group{margin-bottom:.8rem}',
+      '.bzx-loc-gt{color:rgba(201,168,76,.6);font-size:.68rem;letter-spacing:1.5px;margin-bottom:.4rem}',
+      '.bzx-loc-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem}',
+      '.bzx-loc-chip{padding:.58rem .2rem;text-align:center;border-radius:9px;border:1px solid rgba(201,168,76,.16);background:rgba(255,255,255,.03);color:rgba(232,224,208,.82);font-size:.74rem;cursor:pointer;line-height:1.2}',
+      '.bzx-loc-chip.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700;box-shadow:0 0 12px rgba(201,168,76,.3)}',
+      '.bzx-loc-chip:active{transform:scale(.92)}'
     ].join('\n');
     document.head.appendChild(css);
     return _wrap;
@@ -164,14 +234,17 @@
       h += '<button class="bzx-gbtn' + (_gender==='female'?' active':'') + '" onclick="_baziSetGender(\'female\')">♀ 女</button>';
       h += '</div>';
       h += '<span class="bzx-label" style="margin-top:.8rem">出生日期（國曆）</span>';
-      h += '<input type="date" class="bzx-input" id="bzx-date" min="1920-01-01" max="2050-12-31">';
+      h += '<button type="button" class="bzx-field" id="bzx-fld-date" onclick="_bzxOpenDate()">' + _dateInner() + '</button>';
       h += '<span class="bzx-label" style="margin-top:.8rem">出生時間</span>';
-      h += '<div class="bzx-row2"><input type="time" class="bzx-input" id="bzx-time">';
-      h += '<label class="bzx-chk"><input type="checkbox" id="bzx-unknown" onchange="_baziToggleUnknown()">不知時辰</label></div>';
+      h += '<button type="button" class="bzx-field' + (_selUnknown ? ' dim' : '') + '" id="bzx-fld-time" onclick="_bzxOpenTime()">' + _timeInner() + '</button>';
       h += '<span class="bzx-label" style="margin-top:.8rem">出生地點（真太陽時校正）</span>';
-      h += '<select class="bzx-select" id="bzx-city">';
-      for (var c=0;c<CITY.length;c++) h += '<option value="'+c+'"'+(c===0?' selected':'')+'>'+CITY[c].n+'</option>';
-      h += '</select>';
+      h += '<button type="button" class="bzx-field" id="bzx-fld-city" onclick="_bzxOpenCity()">' + _cityInner() + '</button>';
+      // 隱藏狀態欄位：_doCast 沿用原讀取邏輯，不動引擎
+      h += '<input type="hidden" id="bzx-date" value="' + _selDate + '">';
+      h += '<input type="hidden" id="bzx-time" value="' + _selTime + '">';
+      h += '<input type="checkbox" id="bzx-unknown" style="display:none"' + (_selUnknown ? ' checked' : '') + '>';
+      h += '<input type="hidden" id="bzx-city" value="' + _selCity + '">';
+      h += '<div class="bzx-err" id="bzx-err"></div>';
       h += '<div class="bzx-hint">真太陽時＝鐘錶時間依出生地經度＋均時差校正，子平排盤以真太陽時為準。不知時辰會以午時暫排，時柱與時上判讀僅供參考。</div>';
       h += '</div>';
 
@@ -506,6 +579,7 @@
   //  排盤（呼叫既有引擎，不重造）
   // ════════════════════════════════════════════════════════
   function _doCast() {
+    _bzxClearErr();
     var dateEl = document.getElementById('bzx-date');
     var timeEl = document.getElementById('bzx-time');
     var unknownEl = document.getElementById('bzx-unknown');
@@ -513,30 +587,31 @@
     var qEl = document.getElementById('bzx-q');
 
     var dv = dateEl ? dateEl.value : '';
-    if (!dv) { alert('請選擇出生日期（國曆）。'); return; }
+    if (!dv) { _bzxErr('請選擇出生日期（國曆）'); return; }
     var dp = dv.split('-');
     var y = parseInt(dp[0], 10), m = parseInt(dp[1], 10), d = parseInt(dp[2], 10);
-    if (!y || !m || !d) { alert('出生日期格式不正確。'); return; }
-    if (y < 1920 || y > 2050) { alert('出生年需在 1920–2050 之間（排盤節氣表範圍）。'); return; }
+    if (!y || !m || !d) { _bzxErr('出生日期格式不正確'); return; }
+    if (y < 1920 || y > 2050) { _bzxErr('出生年需在 1920–2050 之間（排盤節氣表範圍）'); return; }
 
     var unknown = unknownEl ? unknownEl.checked : false;
     var hh = 12, mm = 0;
     if (!unknown) {
       var tv = timeEl ? timeEl.value : '';
-      if (!tv) { alert('請選擇出生時間，或勾選「不知時辰」。'); return; }
+      if (!tv) { _bzxErr('請選擇出生時間，或勾選「不知時辰」'); return; }
       var tp = tv.split(':');
       hh = parseInt(tp[0], 10); mm = parseInt(tp[1], 10);
-      if (isNaN(hh) || isNaN(mm)) { alert('出生時間格式不正確。'); return; }
+      if (isNaN(hh) || isNaN(mm)) { _bzxErr('出生時間格式不正確'); return; }
     }
 
-    var ci = cityEl ? parseInt(cityEl.value, 10) : 0;
+    if (!cityEl || cityEl.value === '') { _bzxErr('請選擇出生地點'); return; }
+    var ci = parseInt(cityEl.value, 10);
     var city = CITY[ci] || CITY[CITY.length - 1];
     var question = qEl ? qEl.value.trim() : '';
 
     if (typeof window.computeBazi !== 'function' && typeof computeBazi !== 'function') {
       // 引擎還沒背景載入完 → 即時補載 bazi.js / bazi_upgrade.js / solar-location.js 再排
       _ensureEngine(function (ok) {
-        if (!ok) { alert('八字引擎載入失敗：請確認 JS/bazi.js、bazi_upgrade.js、solar-location.js 已上傳，並強制重新整理。'); return; }
+        if (!ok) { _bzxErr('八字引擎載入失敗：請確認 JS/bazi.js、bazi_upgrade.js、solar-location.js 已上傳並強制重新整理'); return; }
         _castWith(y, m, d, hh, mm, unknown, city, question);
       });
       return;
@@ -570,7 +645,7 @@
           if (si) { sY = si.year; sM = si.month; sD = si.day; sHH = si.hour; sMM = si.minute; solarNote = si.note || ''; }
         }
         var bazi = computeBazi(sY, sM, sD, sHH, sMM, _gender);
-        if (!bazi) { alert('排盤失敗，請確認出生資料後重試。'); return; }
+        if (!bazi) { _bzxErr('排盤失敗，請確認出生資料後重試'); return; }
         try { if (typeof enhanceBazi === 'function') enhanceBazi(bazi); } catch (e) { console.error('[bazi] enhance', e); }
 
         var pad = function (n) { return (n < 10 ? '0' : '') + n; };
@@ -587,7 +662,7 @@
         _getWrap().scrollTop = 0;
       } catch (e) {
         console.error('[bazi] cast error', e);
-        alert('排盤計算發生問題，請重試或更換出生資料。');
+        _bzxErr('排盤計算發生問題，請重試或更換出生資料');
       }
     });
   }
@@ -655,5 +730,178 @@
     _render();
     _getWrap().scrollTop = 0;
   };
+
+
+  // ════════════════════════════════════════════════════════
+  //  v80.30 自訂選擇器（日期 / 時間 / 地點）— 取代手機原生 UI
+  //  全部寫回隱藏欄位 bzx-date / bzx-time / bzx-unknown / bzx-city，
+  //  _doCast 與引擎、buildBaziPrompt 完全沿用、不動。
+  // ════════════════════════════════════════════════════════
+  var WK = ['日','一','二','三','四','五','六'];
+  var SC_N = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  var SC_R = ['23–01','01–03','03–05','05–07','07–09','09–11','11–13','13–15','15–17','17–19','19–21','21–23'];
+  var CITY_GROUPS = [
+    {g:'北部', idx:[0,1,6,2,7,14]},
+    {g:'中部', idx:[3,8,9,10,11]},
+    {g:'南部', idx:[4,5,12,13]},
+    {g:'東部', idx:[15,16]},
+    {g:'離島', idx:[17,18,19]},
+    {g:'港澳・中國・星馬', idx:[20,21,22,23,24,25,26,27]},
+    {g:'日韓', idx:[28,29]},
+    {g:'歐美・澳洲', idx:[30,31,32,33,34,35,36]},
+    {g:'其他', idx:[37]}
+  ];
+
+  function _pad2(n){ return (n<10?'0':'')+n; }
+  function _daysInMonth(y,m){ return new Date(y, m, 0).getDate(); }
+  function _firstDow(y,m){ return new Date(y, m-1, 1).getDay(); }
+  function _scIdx(hh){ return Math.floor(((hh+1)%24)/2); }
+  function _shichen(hh){ var i=_scIdx(hh); return SC_N[i]+'時 ('+SC_R[i]+')'; }
+  function _shichenShort(hh){ return SC_N[_scIdx(hh)]+'時'; }
+  function _cityShort(i){ return (CITY[i]?CITY[i].n:'').replace(/[／（(].*$/,''); }
+
+  // ── 欄位顯示 ──
+  function _dateInner(){
+    if(!_selDate) return '<span class="ph">請選擇出生日期</span><span class="chev">▾</span>';
+    var p=_selDate.split('-'), y=+p[0], m=+p[1], d=+p[2];
+    var wk=WK[new Date(y,m-1,d).getDay()];
+    return '<span class="val">'+y+' 年 '+m+' 月 '+d+' 日（週'+wk+'）</span><span class="chev">▾</span>';
+  }
+  function _timeInner(){
+    if(_selUnknown) return '<span class="val">不知時辰（午時暫排）</span><span class="chev">▾</span>';
+    if(!_selTime) return '<span class="ph">請選擇出生時間</span><span class="chev">▾</span>';
+    var hh=parseInt(_selTime.split(':')[0],10);
+    return '<span class="val">'+_selTime+'　'+_shichenShort(hh)+'</span><span class="chev">▾</span>';
+  }
+  function _cityInner(){
+    if(_selCity===''||_selCity==null) return '<span class="ph">請選擇出生地點</span><span class="chev">▾</span>';
+    return '<span class="val">'+_cityShort(parseInt(_selCity,10))+'</span><span class="chev">▾</span>';
+  }
+  function _bzxSyncFields(){
+    var a=document.getElementById('bzx-fld-date'); if(a) a.innerHTML=_dateInner();
+    var b=document.getElementById('bzx-fld-time'); if(b){ b.innerHTML=_timeInner(); b.classList.toggle('dim',!!_selUnknown); }
+    var c=document.getElementById('bzx-fld-city'); if(c) c.innerHTML=_cityInner();
+    var hd=document.getElementById('bzx-date'); if(hd) hd.value=_selDate;
+    var ht=document.getElementById('bzx-time'); if(ht) ht.value=_selTime;
+    var hu=document.getElementById('bzx-unknown'); if(hu) hu.checked=!!_selUnknown;
+    var hc=document.getElementById('bzx-city'); if(hc) hc.value=_selCity;
+  }
+
+  // ── 內嵌錯誤（取代 alert）──
+  function _bzxErr(msg){ var e=document.getElementById('bzx-err'); if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
+  function _bzxClearErr(){ var e=document.getElementById('bzx-err'); if(e) e.classList.remove('show'); }
+
+  // ── 底部 sheet 基礎 ──
+  var _sheetType='';
+  function _openSheet(title, sub, body, foot){
+    _closeSheet(true);
+    var bd=document.createElement('div'); bd.id='bzx-sheet-bd'; bd.className='bzx-sheet-bd';
+    bd.onclick=function(e){ if(e.target===bd) _closeSheet(); };
+    bd.innerHTML='<div class="bzx-sheet" id="bzx-sheet"><div class="bzx-sheet-grip"></div>'+
+      '<div class="bzx-sheet-title">'+title+'</div>'+
+      '<div class="bzx-sheet-sub" id="bzx-sheet-sub">'+(sub||'')+'</div>'+
+      '<div id="bzx-sheet-body">'+body+'</div>'+
+      (foot?'<div class="bzx-sheet-foot"><button class="bzx-sheet-btn" onclick="_bzxSheetCancel()">取消</button><button class="bzx-sheet-btn go" onclick="_bzxSheetConfirm()">確定</button></div>':'')+
+      '</div>';
+    document.body.appendChild(bd);
+    void bd.offsetWidth; bd.classList.add('show');
+  }
+  function _closeSheet(immediate){
+    var bd=document.getElementById('bzx-sheet-bd'); if(!bd) return;
+    if(immediate){ if(bd.parentNode) bd.parentNode.removeChild(bd); return; }
+    bd.classList.remove('show');
+    setTimeout(function(){ if(bd&&bd.parentNode) bd.parentNode.removeChild(bd); },320);
+  }
+  function _setSub(t){ var s=document.getElementById('bzx-sheet-sub'); if(s) s.innerHTML=t; }
+  function _setBody(h){ var b=document.getElementById('bzx-sheet-body'); if(b) b.innerHTML=h; }
+  window._bzxSheetCancel=function(){ _closeSheet(); };
+  window._bzxSheetConfirm=function(){
+    if(_sheetType==='date'){
+      _selDate=_dpY+'-'+_pad2(_dpM)+'-'+_pad2(_dpD);
+    } else if(_sheetType==='time'){
+      if(_tpUnknown){ _selUnknown=true; _selTime=''; }
+      else { _selUnknown=false; _selTime=_pad2(_tpH)+':'+_pad2(_tpM); }
+    }
+    _bzxClearErr(); _bzxSyncFields(); _closeSheet();
+  };
+
+  // ── 日期選擇器 ──
+  var _dpY=1990,_dpM=1,_dpD=1,_dpMode='day',_dpDec=1988;
+  window._bzxOpenDate=function(){
+    _sheetType='date';
+    if(_selDate){ var p=_selDate.split('-'); _dpY=+p[0]; _dpM=+p[1]; _dpD=+p[2]; }
+    else { _dpY=1990; _dpM=1; _dpD=1; }
+    _dpMode='day';
+    _openSheet('出生日期','國曆，點上方年月可快速跳轉', '', true);
+    _dpRenderDay();
+  };
+  function _dpClampDay(){ var dim=_daysInMonth(_dpY,_dpM); if(_dpD>dim) _dpD=dim; if(_dpD<1) _dpD=1; }
+  function _dpRenderDay(){
+    _dpClampDay();
+    var h='<div class="bzx-cal-nav"><button onclick="_bzxDpNav(-1)">‹</button>'+
+      '<div class="bzx-cal-ttl" onclick="_bzxDpMode(\'year\')">'+_dpY+' 年 '+_dpM+' 月 ▾</div>'+
+      '<button onclick="_bzxDpNav(1)">›</button></div><div class="bzx-cal-grid">';
+    for(var w=0;w<7;w++) h+='<div class="bzx-cal-wk">'+WK[w]+'</div>';
+    var fd=_firstDow(_dpY,_dpM), dim=_daysInMonth(_dpY,_dpM), i;
+    for(i=0;i<fd;i++) h+='<div class="bzx-cal-d empty"></div>';
+    for(i=1;i<=dim;i++) h+='<div class="bzx-cal-d'+(i===_dpD?' sel':'')+'" onclick="_bzxDpPickDay('+i+')">'+i+'</div>';
+    h+='</div>'; _setBody(h); _setSub('點日期，或點上方年月快速跳轉');
+  }
+  function _dpRenderYear(){
+    var h='<div class="bzx-yhead"><button onclick="_bzxDpDec(-1)">‹</button><span>'+_dpDec+' – '+(_dpDec+11)+'</span><button onclick="_bzxDpDec(1)">›</button></div><div class="bzx-pick-grid y">';
+    for(var y=_dpDec;y<_dpDec+12;y++){ var dis=(y<1920||y>2050);
+      h+='<div class="bzx-pick-cell'+(y===_dpY?' sel':'')+'"'+(dis?' style="opacity:.3;pointer-events:none"':' onclick="_bzxDpPickYear('+y+')"')+'>'+y+'</div>'; }
+    h+='</div>'; _setBody(h); _setSub('選擇年份');
+  }
+  function _dpRenderMonth(){
+    var h='<div class="bzx-pick-grid mo">';
+    for(var m=1;m<=12;m++) h+='<div class="bzx-pick-cell'+(m===_dpM?' sel':'')+'" onclick="_bzxDpPickMonth('+m+')">'+m+' 月</div>';
+    h+='</div>'; _setBody(h); _setSub('選擇月份（'+_dpY+' 年）');
+  }
+  window._bzxDpMode=function(mode){ _dpMode=mode; if(mode==='year'){ _dpDec=Math.floor(_dpY/12)*12; if(_dpDec<1920)_dpDec=1920; _dpRenderYear(); } else if(mode==='month'){ _dpRenderMonth(); } else { _dpRenderDay(); } };
+  window._bzxDpNav=function(d){ _dpM+=d; if(_dpM>12){_dpM=1;_dpY++;} if(_dpM<1){_dpM=12;_dpY--;} if(_dpY<1920)_dpY=1920; if(_dpY>2050)_dpY=2050; _dpClampDay(); _dpRenderDay(); };
+  window._bzxDpDec=function(d){ _dpDec+=d*12; if(_dpDec<1920)_dpDec=1920; if(_dpDec>2040)_dpDec=2040; _dpRenderYear(); };
+  window._bzxDpPickDay=function(d){ _dpD=d; _dpRenderDay(); };
+  window._bzxDpPickYear=function(y){ _dpY=y; _dpClampDay(); _dpRenderMonth(); };
+  window._bzxDpPickMonth=function(m){ _dpM=m; _dpClampDay(); _dpRenderDay(); };
+
+  // ── 時間選擇器 ──
+  var _tpH=12,_tpM=0,_tpUnknown=false;
+  window._bzxOpenTime=function(){
+    _sheetType='time';
+    if(_selUnknown){ _tpUnknown=true; _tpH=12; _tpM=0; }
+    else if(_selTime){ var p=_selTime.split(':'); _tpH=+p[0]; _tpM=+p[1]; _tpUnknown=false; }
+    else { _tpH=12; _tpM=0; _tpUnknown=false; }
+    _openSheet('出生時間','真太陽時校正需精確到分', _tpBody(), true);
+  };
+  function _tpBody(){
+    var u=_tpUnknown, dim=u?' style="opacity:.35;pointer-events:none"':'';
+    var h='<div class="bzx-time-big">'+(u?'—— ：——':(_pad2(_tpH)+'：'+_pad2(_tpM)))+'</div>';
+    h+='<div class="bzx-time-sc">'+(u?'時辰未知，將以午時（11–13）暫排，時柱僅供參考':_shichen(_tpH))+'</div>';
+    h+='<div class="bzx-hour-grid"'+dim+'>';
+    for(var x=0;x<24;x++) h+='<div class="bzx-hour'+(x===_tpH?' sel':'')+'" onclick="_bzxTpHour('+x+')">'+_pad2(x)+'</div>';
+    h+='</div>';
+    h+='<div class="bzx-min-row"'+dim+'><button class="bzx-min-step" onclick="_bzxTpMin(-5)">−5</button><button class="bzx-min-step" onclick="_bzxTpMin(-1)">−1</button><span class="bzx-min-val">'+_pad2(_tpM)+' 分</span><button class="bzx-min-step" onclick="_bzxTpMin(1)">＋1</button><button class="bzx-min-step" onclick="_bzxTpMin(5)">＋5</button></div>';
+    h+='<div class="bzx-unknown-row"><label><input type="checkbox" '+(u?'checked':'')+' onchange="_bzxTpUnk()">不知時辰（以午時暫排，時柱僅供參考）</label></div>';
+    return h;
+  }
+  window._bzxTpHour=function(h){ _tpH=h; _setBody(_tpBody()); };
+  window._bzxTpMin=function(d){ _tpM=(_tpM+d+60)%60; _setBody(_tpBody()); };
+  window._bzxTpUnk=function(){ _tpUnknown=!_tpUnknown; _setBody(_tpBody()); };
+
+  // ── 地點選擇器（單點即選＋關閉）──
+  window._bzxOpenCity=function(){
+    _sheetType='city';
+    var h='';
+    for(var gi=0;gi<CITY_GROUPS.length;gi++){ var grp=CITY_GROUPS[gi];
+      h+='<div class="bzx-loc-group"><div class="bzx-loc-gt">'+grp.g+'</div><div class="bzx-loc-chips">';
+      for(var j=0;j<grp.idx.length;j++){ var ix=grp.idx[j];
+        h+='<div class="bzx-loc-chip'+((''+ix)===(''+_selCity)?' sel':'')+'" onclick="_bzxPickCity('+ix+')">'+_cityShort(ix)+'</div>'; }
+      h+='</div></div>';
+    }
+    _openSheet('出生地點','真太陽時校正用，依出生地經度', h, false);
+  };
+  window._bzxPickCity=function(i){ _selCity=''+i; _bzxClearErr(); _bzxSyncFields(); _closeSheet(); };
+
 
 })();
