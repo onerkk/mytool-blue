@@ -983,6 +983,13 @@
     </div>
   </div>
 
+  <!-- ═══ 邀請卡（分享免費占卜）═══ -->
+  <div class="card" style="border:1px solid rgba(201,168,76,.15);padding:var(--sp-md);text-align:center">
+    <div style="font-size:.82rem;color:var(--c-gold);font-weight:600;margin-bottom:var(--sp-xs)">🌙 分享免費占卜</div>
+    <div class="text-xs text-dim" style="margin-bottom:var(--sp-sm);line-height:1.6">生成一張精美邀請卡，貼到 IG / Threads / LINE，朋友掃碼就能免費算</div>
+    <button onclick="if(window.JYShareCard){JYShareCard.open('invite',{});}else{alert('分享元件載入中，請稍候再試');}" style="padding:10px 22px;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:var(--c-gold);font-size:.85rem;font-weight:600;letter-spacing:1px;cursor:pointer;font-family:inherit">📤 生成邀請卡</button>
+  </div>
+
   <!-- 存圖分享（已整合到 AI 結果內的 inline share bar）-->
   <div class="card" style="text-align:center;display:none" id="share-card-section">
     <div class="card-title"><i class="fas fa-share-alt"></i> 分享你的占卜結果</div>
@@ -1351,7 +1358,7 @@
 <script src="JS/meihua-standalone.js?v=20260606v80_29" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260607v80_32" defer></script>
 <script src="JS/bazi-standalone.js?v=20260607v80_31" defer></script>
-<script src="JS/ui.js?v=20260606v80_26" defer></script>
+<script src="JS/ui.js?v=20260607v80_27" defer></script>
 <script src="JS/spread-picker.js?v=20260606v80_23" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
