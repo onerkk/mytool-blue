@@ -575,16 +575,13 @@ function goStep(n){
       var _uiMax=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10; if(drawnCards.length>=_uiMax && !S._isAdmin) showTarotLocked();
       else if(drawnCards.length>=_uiMax && S._isAdmin){ drawnCards=[]; deckShuffled=[]; initTarotDeck(); }
       else if(!deckShuffled.length) initTarotDeck();
-      // 塔羅模式：隱藏「上一步」（梅花）和「跳過塔羅」
+      // v80.37 治本：「上一步（梅花）」與「跳過塔羅」是已下架的「八字→梅花→塔羅」串接流程殘留。
+      //   現在站上是單一塔羅／占卜工具：沒有梅花前置步驟，「跳過塔羅」在塔羅工具裡也沒有意義。
+      //   故一律隱藏，不再依賴散落 13 處、容易設錯的 _tarotOnlyMode 旗標（旗標一旦為 false 就會誤顯示）。
       var btnBackMH = document.getElementById('btn-back-meihua');
       var btnSkipTR = document.getElementById('btn-skip-tarot');
-      if (S._tarotOnlyMode) {
-        if (btnBackMH) btnBackMH.style.display = 'none';
-        if (btnSkipTR) btnSkipTR.style.display = 'none';
-      } else {
-        if (btnBackMH) btnBackMH.style.display = '';
-        if (btnSkipTR) btnSkipTR.style.display = '';
-      }
+      if (btnBackMH) btnBackMH.style.display = 'none';
+      if (btnSkipTR) btnSkipTR.style.display = 'none';
     }
     if(targetId==='step-3'){
       // ★ 張數守門：塔羅模式下，drawnCards 未達牌陣要求 → 擋回 step-2
@@ -8028,6 +8025,37 @@ function jyTarotRenderChosen(sid, def){
   if (html) chosen.innerHTML = html;
 }
 
+// v80.37 治本：快速抽牌沒有走 pickCard，先前只重畫版面、未把牌面填進卡槽，
+//   造成「已選 N/N、畫面卻是空格」。這裡明確地把每張抽到的牌畫進對應 #t-slot-i，
+//   保留卡槽既有的排版 class（凱爾特格位等），只補上 filled 與牌面，結果是確定的。
+function jyTarotFillSlots(drawn, sid, def){
+  if (!drawn || !drawn.length) return;
+  var isCeltic = (sid === 'celtic_cross');
+  for (var i = 0; i < drawn.length; i++){
+    var c = drawn[i];
+    var slotEl = document.getElementById('t-slot-' + i);
+    if (!slotEl || !c) continue;
+    var isCard2 = (i === 1 && isCeltic); // 凱爾特「跨越牌」橫置
+    var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
+    var posName = (def && def.positions && def.positions[i] && def.positions[i].name)
+                  ? def.positions[i].name : (c.pos || ('位置' + (i + 1)));
+    var rot = c.isUp ? '' : 'transform:rotate(180deg)';
+    slotEl.classList.add('filled');
+    slotEl.innerHTML =
+      '<div class="tarot-reveal flipping" style="' + (isCard2 ? 'transform:rotate(-90deg)' : '') + '">' +
+        '<div class="tarot-reveal-inner">' +
+          '<div class="tarot-reveal-back"></div>' +
+          '<div class="tarot-reveal-front">' +
+            (imgSrc ? '<img src="' + imgSrc + '" class="tc-img" style="' + rot + '">' : '') +
+            '<span class="tc-name" style="' + rot + '">' + (c.n || '') + '</span>' +
+            '<span class="tc-dir ' + (c.isUp ? 'up' : 'rv') + '">' + (c.isUp ? '順位' : '逆位') + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      (isCard2 ? '' : '<span class="slot-label">' + posName + '</span>');
+  }
+}
+
 function jyTarotFinishAutodraw(drawn, sid, def){
   drawnCards = drawn;
   S.tarot = S.tarot || {};
@@ -8038,6 +8066,7 @@ function jyTarotFinishAutodraw(drawn, sid, def){
   try { if (typeof enhanceTarot === 'function') enhanceTarot(S.tarot); } catch(e) { console.warn('[Tarot v80.36] enhanceTarot failed:', e); }
 
   jyTarotRenderChosen(sid, def);
+  jyTarotFillSlots(drawnCards, sid, def); // v80.37：把抽到的牌確實畫進每個卡槽，不再只剩空格
 
   var pickedEl = document.getElementById('t-remain-picked');
   if (pickedEl) pickedEl.textContent = String(drawnCards.length);
