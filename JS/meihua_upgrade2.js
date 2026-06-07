@@ -317,7 +317,9 @@ function mhZongGua(mh) {
   var zongUp = reversed.slice(3, 6);
   var zongUpName = GUA_NAMES[zongUp.join('')] || '?';
   var zongLoName = GUA_NAMES[zongLo.join('')] || '?';
-  var isSame = (zongUpName === (mh.up.name||'') && zongLoName === (mh.lo.name||''));
+  var _origUp = GUA_NAMES[mh.up.li.join('')] || (mh.up.name || mh.up.n || '');
+  var _origLo = GUA_NAMES[mh.lo.li.join('')] || (mh.lo.name || mh.lo.n || '');
+  var isSame = (zongUpName === _origUp && zongLoName === _origLo);
   return { up: zongUpName, lo: zongLoName, upEl: GUA_EL[zongUpName]||'', loEl: GUA_EL[zongLoName]||'', isSelf: isSame, meaning: isSame ? '綜卦與本卦相同——代表事情正反看都一樣，沒有迴旋餘地' : '綜卦代表換位思考——站在對方的角度會看到不同的局面' };
 }
 
