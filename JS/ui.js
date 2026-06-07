@@ -6958,15 +6958,19 @@ function renderTarotSpreadDisplay() {
 
 window._tarotShare = function () {
   if (!window.JYShareCard) { alert('分享元件載入中，請稍候再試一次'); return; }
-  // OOTK 與塔羅共用 step-tarot 結果頁；用 _jyActiveResultView 判斷目前在看哪個
-  //（_refreshAllNavs 每次結果渲染／切換都會更新它，比看 DOM display 可靠）
-  if (window._jyActiveResultView === 'ootk' && window._ootkResults) {
-    var ops = window._ootkResults;
+  // OOTK 與塔羅共用 step-tarot 結果頁。實際 OOTK 路徑 _runOOTKSequence 會設
+  //   S.tarot.spreadType='ootk'，並把結果存進 S.tarot.ootkResults
+  //  （注意：不是 window._ootkResults — 那是舊死碼路徑，live 路徑不會設它，這是之前一直空白的主因）
+  var _ootk = (S.tarot && S.tarot.spreadType === 'ootk') ? (S.tarot.ootkResults || window._ootkResults) : null;
+  if (_ootk) {
     var layers = [];
     [['op1', '第一層'], ['op2', '第二層'], ['op3', '第三層'], ['op4', '第四層'], ['op5', '第五層']].forEach(function (pr) {
-      var o = ops[pr[0]];
+      var o = _ootk[pr[0]];
       var names = (o && o.keyCards && o.keyCards.length)
-        ? o.keyCards.slice(0, 3).map(function (c) { return (c && (c.name || c)) || ''; }).filter(Boolean).join('、')
+        ? o.keyCards.slice(0, 3).map(function (kc) {
+            var c = (kc && kc.card) || kc || {};   // keyCards 元素是 {card:{n,name,...}}
+            return c.n || c.name || '';
+          }).filter(Boolean).join('、')
         : '';
       layers.push({ label: pr[1], cards: names || '\u2014' });
     });
@@ -6976,6 +6980,7 @@ window._tarotShare = function () {
     });
     return;
   }
+
   var def = (S.tarot && S.tarot.spreadDef) || {};
   var cards = (drawnCards || []).map(function (c, i) {
     var pp = (def.positions && def.positions[i]) ? def.positions[i] : null;
