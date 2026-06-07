@@ -6955,24 +6955,21 @@ function renderTarotSpreadDisplay() {
 
 window._tarotShare = function () {
   if (!window.JYShareCard) { alert('分享元件載入中，請稍候再試一次'); return; }
-  // OOTK 與塔羅共用 step-tarot，內容分別在 tarot-ai-wrap / ootk-ai-wrap；看哪個在顯示
-  var ow = document.getElementById('ootk-ai-wrap');
-  var isOOTK = !!(ow && ow.style.display !== 'none');
-  if (isOOTK && window._ootkResults) {
+  // OOTK 與塔羅共用 step-tarot 結果頁；用 _jyActiveResultView 判斷目前在看哪個
+  //（_refreshAllNavs 每次結果渲染／切換都會更新它，比看 DOM display 可靠）
+  if (window._jyActiveResultView === 'ootk' && window._ootkResults) {
     var ops = window._ootkResults;
-    var labels = { op1: '第一層', op2: '第二層', op3: '第三層', op4: '第四層', op5: '第五層' };
-    var ocards = [];
-    ['op1', 'op2', 'op3', 'op4', 'op5'].forEach(function (k) {
-      if (ops[k] && ops[k].keyCards && ops[k].keyCards.length) {
-        var c = ops[k].keyCards[0];
-        ocards.push({ name: (c && (c.name || c)) || '', pos: labels[k] });
-      }
+    var layers = [];
+    [['op1', '第一層'], ['op2', '第二層'], ['op3', '第三層'], ['op4', '第四層'], ['op5', '第五層']].forEach(function (pr) {
+      var o = ops[pr[0]];
+      var names = (o && o.keyCards && o.keyCards.length)
+        ? o.keyCards.slice(0, 3).map(function (c) { return (c && (c.name || c)) || ''; }).filter(Boolean).join('、')
+        : '';
+      layers.push({ label: pr[1], cards: names || '\u2014' });
     });
-    JYShareCard.open('tarot', {
-      cardTitle: '我的開鑰',
-      spread: '開鑰之法 ・ Book T 五層深潛',
+    JYShareCard.open('ootk', {
       question: (S.form && S.form.question) || '',
-      cards: ocards
+      layers: layers
     });
     return;
   }
@@ -7237,6 +7234,7 @@ function _buildResultNav(activePage) {
 }
 
 function _refreshAllNavs(activePage) {
+  window._jyActiveResultView = activePage; // 記錄目前檢視（塔羅/開鑰/七維），供分享卡判斷
   ['jy-result-nav-tarot', 'jy-result-nav-full'].forEach(function(nid) {
     var el = _ensureResultNav(nid);
     if (!el) return;
