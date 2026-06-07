@@ -6954,16 +6954,38 @@ function renderTarotSpreadDisplay() {
 }
 
 window._tarotShare = function () {
-  if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66\u4E00\u6B21'); return; }
+  if (!window.JYShareCard) { alert('分享元件載入中，請稍候再試一次'); return; }
+  // OOTK 與塔羅共用 step-tarot，內容分別在 tarot-ai-wrap / ootk-ai-wrap；看哪個在顯示
+  var ow = document.getElementById('ootk-ai-wrap');
+  var isOOTK = !!(ow && ow.style.display !== 'none');
+  if (isOOTK && window._ootkResults) {
+    var ops = window._ootkResults;
+    var labels = { op1: '第一層', op2: '第二層', op3: '第三層', op4: '第四層', op5: '第五層' };
+    var ocards = [];
+    ['op1', 'op2', 'op3', 'op4', 'op5'].forEach(function (k) {
+      if (ops[k] && ops[k].keyCards && ops[k].keyCards.length) {
+        var c = ops[k].keyCards[0];
+        ocards.push({ name: (c && (c.name || c)) || '', pos: labels[k] });
+      }
+    });
+    JYShareCard.open('tarot', {
+      cardTitle: '我的開鑰',
+      spread: '開鑰之法 ・ Book T 五層深潛',
+      question: (S.form && S.form.question) || '',
+      cards: ocards
+    });
+    return;
+  }
   var def = (S.tarot && S.tarot.spreadDef) || {};
   var cards = (drawnCards || []).map(function (c, i) {
-    var p = (def.positions && def.positions[i]) ? def.positions[i] : null;
-    var pos = p ? (p.name || p.zh || '') : ('\u7B2C' + (i + 1) + '\u5F35');
+    var pp = (def.positions && def.positions[i]) ? def.positions[i] : null;
+    var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
     return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: !(c && c.isUp) };
   });
   JYShareCard.open('tarot', {
+    cardTitle: '我的塔羅',
     question: (S.form && S.form.question) || '',
-    spread: def.zh || '\u5854\u7F85\u724C\u9663',
+    spread: def.zh || '塔羅牌陣',
     cards: cards
   });
 };
