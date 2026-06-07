@@ -1,5 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🎴 牌陣選擇器（v80.14）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+// 🎴 牌陣選擇器（v80.37）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+//   v80.37:selectSpread（彈窗選單）切牌陣後補呼叫 JY_renderTarotChosenLayoutForCurrentSpread，
+//          與內嵌選單一致，不再殘留前一個牌陣的牌位（例如三牌陣卻顯示凱爾特 10 格）。
 //   機制：手動選定時，包裝 detectSpreadType 使其直接回傳該牌陣，
 //        於是所有自動偵測點（含 initTarotDeck）都會吃到手動選擇，ui.js 不需改動。
 //   風格：沿用站上 token（--c-gold / --c-bg-card / Noto Serif TC）與 jy-tool-card orb 質感。
@@ -164,6 +166,22 @@
     }
     // 清牌堆，讓下次抽牌（或返回抽牌頁）依新牌陣重建
     try { if (typeof deckShuffled !== 'undefined') deckShuffled = []; } catch (e) {}
+    // v80.37 補:此彈窗原本只更新狀態、沒重畫 #t-chosen，從這裡切牌陣會殘留前一個牌陣
+    //   （例如凱爾特 10 格）。與內嵌選單（tarot_upgrade.js）一致：選定具體牌陣時清已抽牌，
+    //   並立即以當前牌陣呼叫 JY_renderTarotChosenLayoutForCurrentSpread 重畫。
+    if (id !== 'auto') {
+      try { if (typeof drawnCards !== 'undefined') drawnCards = []; } catch (e) {}
+      var _jyRepaintSpread = function () {
+        try {
+          if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length > 0) return;
+          if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
+          else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
+        } catch (e) {}
+      };
+      _jyRepaintSpread();
+      setTimeout(_jyRepaintSpread, 0);
+      setTimeout(_jyRepaintSpread, 180);
+    }
     updateTrigger();
     markSelected();
     setTimeout(window.closeSpreadPicker, 180); // 讓使用者看到勾選動畫
