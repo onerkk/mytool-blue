@@ -2838,7 +2838,41 @@ function generateTarotStory(type,drawn){
 }
 
 
+// ⚠ 僅供凱爾特專屬分析（GD_POS_ROLE 等）與極端後備使用。
+// 牌位「顯示名稱」一律改走 _jyCurrentPosName()，不可再當作通用 10 位清單。
 var CELTIC_POS=['現況核心','阻礙／交叉因素','根因／底層動機','已發生／近期過去','顯性目標／意識層','近期走向','你的位置','外界／環境','希望與恐懼','結果／趨勢'];
+
+/* v80.37 治本：牌位名稱唯一真實來源 = 當前牌陣定義 SPREAD_DEFS.positions。
+   舊 bug：initTarotDeck / showTarotLocked / pickCard 全部寫死 CELTIC_POS，
+   導致三牌陣（3 張）也被貼上凱爾特 10 位的名稱，且永遠先寫死 10 格凱爾特版面。*/
+function _jyCurrentPosName(i){
+  try {
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef()
+            : ((typeof S !== 'undefined' && S.tarot && S.tarot.spreadDef) ? S.tarot.spreadDef : null);
+    if (def && def.positions && def.positions[i] && def.positions[i].name) return def.positions[i].name;
+  } catch(_){}
+  return (CELTIC_POS[i] || ('位置' + (i + 1)));
+}
+// 是否凱爾特（用即時牌陣狀態判斷，不再依賴可能未設定的 S.tarot.spreadType）
+function _jyIsCeltic(){
+  try {
+    if (typeof getCurrentSpread === 'function') return getCurrentSpread() === 'celtic_cross';
+    if (typeof S !== 'undefined' && S.tarot && S.tarot.spreadDef) return S.tarot.spreadDef.id === 'celtic_cross';
+  } catch(_){}
+  return false;
+}
+// 中性後備版面：沒有任何外部佈局函式時，依「當前牌陣張數」畫 N 格 —— 絕不退回凱爾特 10 格。
+function _jyRenderNeutralSlots(def){
+  var n = (def && def.count) ? def.count : 3;
+  var h = '<div class="jy-wrap"><div class="jy-row">';
+  for (var i = 0; i < n; i++){
+    h += '<div class="tarot-chosen-slot" id="t-slot-' + i + '"><span class="slot-num">' + (i + 1) +
+         '</span><span class="slot-label">' + _jyCurrentPosName(i) + '</span></div>';
+  }
+  h += '</div></div>';
+  return h;
+}
+try { window._jyCurrentPosName = _jyCurrentPosName; window._jyRenderNeutralSlots = _jyRenderNeutralSlots; } catch(_){}
 
 let drawnCards=[];
 let deckShuffled=[];
@@ -2859,7 +2893,9 @@ function renderTarotChosenLayoutForCurrentSpread(){
       def = def || S.tarot.spreadDef || null;
       sid = sid || S.tarot.spreadType || (def && def.id) || '';
     }
-    if (!def || !sid) return false;
+    if (!def) { def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null; }
+    if (!def) return false;
+    if (!sid) sid = (def && def.id) ? def.id : '';
     var html = '';
     if (typeof window !== 'undefined' && typeof window.buildSlotLayout === 'function') {
       html = window.buildSlotLayout(sid, def) || '';
@@ -2867,6 +2903,8 @@ function renderTarotChosenLayoutForCurrentSpread(){
     if (!html && typeof window !== 'undefined' && typeof window.jyBuildSlot === 'function') {
       html = window.jyBuildSlot(sid, def) || '';
     }
+    // v80.37：外部佈局都不可用時，畫中性 N 格（依當前牌陣張數），不再退回凱爾特 10 格。
+    if (!html) html = _jyRenderNeutralSlots(def);
     if (!html) return false;
     chosen.innerHTML = html;
     chosen.setAttribute('data-current-spread', sid);
@@ -2880,32 +2918,20 @@ try { window.JY_renderTarotChosenLayoutForCurrentSpread = renderTarotChosenLayou
 
 /* ═══ 塔羅鎖定顯示：同一天同人同問題，牌陣已定 ═══ */
 function showTarotLocked(){
-  // 填入凱爾特十字牌位
+  // v80.37 治本：不再寫死凱爾特 10 格。先依當前牌陣畫對的空格（buildSlotLayout 會用 SPREAD_DEFS 牌位），
+  //   再把已抽到的牌面填回對應 t-slot；三牌陣鎖定就只會出現 3 格。
   const chosen=document.getElementById('t-chosen');
-  const posLabels=CELTIC_POS;
-  chosen.innerHTML=`
-    <div class="celtic-cross">
-      <div class="tarot-chosen-slot cc-5 filled" id="t-slot-4"><span class="slot-num">5</span></div>
-      <div class="tarot-chosen-slot cc-4 filled" id="t-slot-3"><span class="slot-num">4</span></div>
-      <div class="tarot-chosen-slot cc-1 filled" id="t-slot-0"><span class="slot-num">1</span></div>
-      <div class="tarot-chosen-slot cc-2 filled" id="t-slot-1"><span class="slot-num">2</span></div>
-      <div class="tarot-chosen-slot cc-6 filled" id="t-slot-5"><span class="slot-num">6</span></div>
-      <div class="tarot-chosen-slot cc-3 filled" id="t-slot-2"><span class="slot-num">3</span></div>
-    </div>
-    <div class="celtic-staff">
-      <div class="tarot-chosen-slot filled" id="t-slot-9"><span class="slot-num">10</span></div>
-      <div class="tarot-chosen-slot filled" id="t-slot-8"><span class="slot-num">9</span></div>
-      <div class="tarot-chosen-slot filled" id="t-slot-7"><span class="slot-num">8</span></div>
-      <div class="tarot-chosen-slot filled" id="t-slot-6"><span class="slot-num">7</span></div>
-    </div>`;
-  // v80.36：鎖定畫面也改用當前牌陣，不再固定凱爾特 10 格。
-  renderTarotChosenLayoutForCurrentSpread();
+  if (chosen) {
+    if (!renderTarotChosenLayoutForCurrentSpread()) {
+      var _defL = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : (S.tarot && S.tarot.spreadDef) || null;
+      chosen.innerHTML = _jyRenderNeutralSlots(_defL);
+    }
+  }
   // 顯示已抽到的牌面
   drawnCards.forEach((c,i)=>{
     const slotEl=document.getElementById('t-slot-'+i);
     if(!slotEl)return;
-    const isCelticCross = (S.tarot && S.tarot.spreadType === 'celtic_cross');
-    const isCard2 = (i === 1 && isCelticCross);
+    const isCard2 = (i === 1 && _jyIsCeltic());
     const imgSrc=typeof getTarotCardImage==='function'?getTarotCardImage(c):'';
     slotEl.innerHTML=`<div class="tarot-reveal flipping" style="${isCard2?'transform:rotate(-90deg)':''}">
       <div class="tarot-reveal-inner">
@@ -2916,7 +2942,7 @@ function showTarotLocked(){
           <span class="tc-dir ${c.isUp?'up':'rv'}">${c.isUp?'順位':'逆位'}</span>
         </div>
       </div>
-    </div>${!isCard2?'<span class="slot-label">'+(c.pos||posLabels[i])+'</span>':''}`;
+    </div>${!isCard2?'<span class="slot-label">'+(c.pos||_jyCurrentPosName(i))+'</span>':''}`;
   });
   // 隱藏牌堆，顯示鎖定訊息
   const deckEl=document.getElementById('t-deck');
@@ -2974,28 +3000,18 @@ function initTarotDeck(){
   drawnCards=[];
   pickAnimating=false;
 
-  // ═══ 牌位區（凱爾特十字）═══
+  // ═══ 牌位區（依當前牌陣動態渲染）═══
+  // v80.37 治本：舊版此處固定寫死 .celtic-cross/.celtic-staff 10 格（且那些 class 根本沒有 CSS，
+  //   渲染成一坨亂掉的方格），再靠之後的非同步 repaint 去蓋。手機載入時 repaint 常輸掉競賽，
+  //   造成「已選 0/3、畫面卻是 10 格凱爾特」。現在第一手就畫對的牌陣，源頭不再產生錯誤版面。
   var chosen=document.getElementById('t-chosen');
-  var posLabels=CELTIC_POS;
-  chosen.innerHTML=
-    '<div class="celtic-cross">'+
-      '<div class="tarot-chosen-slot cc-5" id="t-slot-4"><span class="slot-num">5</span><span class="slot-label">'+posLabels[4]+'</span></div>'+
-      '<div class="tarot-chosen-slot cc-4" id="t-slot-3"><span class="slot-num">4</span><span class="slot-label">'+posLabels[3]+'</span></div>'+
-      '<div class="tarot-chosen-slot cc-1" id="t-slot-0"><span class="slot-num">1</span><span class="slot-label">'+posLabels[0]+'</span></div>'+
-      '<div class="tarot-chosen-slot cc-2" id="t-slot-1"><span class="slot-num">2</span><span class="slot-label">'+posLabels[1]+'</span></div>'+
-      '<div class="tarot-chosen-slot cc-6" id="t-slot-5"><span class="slot-num">6</span><span class="slot-label">'+posLabels[5]+'</span></div>'+
-      '<div class="tarot-chosen-slot cc-3" id="t-slot-2"><span class="slot-num">3</span><span class="slot-label">'+posLabels[2]+'</span></div>'+
-    '</div>'+
-    '<div class="celtic-staff">'+
-      '<div class="tarot-chosen-slot" id="t-slot-9"><span class="slot-num">10</span><span class="slot-label">'+posLabels[9]+'</span></div>'+
-      '<div class="tarot-chosen-slot" id="t-slot-8"><span class="slot-num">9</span><span class="slot-label">'+posLabels[8]+'</span></div>'+
-      '<div class="tarot-chosen-slot" id="t-slot-7"><span class="slot-num">8</span><span class="slot-label">'+posLabels[7]+'</span></div>'+
-      '<div class="tarot-chosen-slot" id="t-slot-6"><span class="slot-num">7</span><span class="slot-label">'+posLabels[6]+'</span></div>'+
-    '</div>';
-
-  // v80.36：這才是根修正。tarot.js 原本此處固定寫死凱爾特 10 格，
-  // 現在立刻用當前牌陣覆蓋，三牌陣就只會出現 3 格。
-  renderTarotChosenLayoutForCurrentSpread();
+  if (chosen) {
+    if (!renderTarotChosenLayoutForCurrentSpread()) {
+      // 極端後備：連 def 都拿不到時，至少畫中性格子，不可退回凱爾特。
+      var _def0 = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : (S.tarot && S.tarot.spreadDef) || null;
+      chosen.innerHTML = _jyRenderNeutralSlots(_def0);
+    }
+  }
 
   // ═══ 3D 雙排牌堆（牌面朝上 + 背景輪播）═══
   var deckEl=document.getElementById('t-deck');
@@ -3345,7 +3361,7 @@ function pickCard(deckIdx,deckEl){
   } else { isUp=Math.random()>=0.5; }
 
   var slotIdx=drawnCards.length;
-  var pos=CELTIC_POS[slotIdx];
+  var pos=_jyCurrentPosName(slotIdx); // v80.37：牌位名跟著當前牌陣，三牌陣不再貼凱爾特名
 
   // ── Phase 1: 升起 + 粒子 ──
   deckEl.classList.add('lifting');
@@ -3392,7 +3408,7 @@ function pickCard(deckIdx,deckEl){
       for(var k in card){ if(!drawnCard.hasOwnProperty(k)) drawnCard[k]=card[k]; }
 
       var imgSrc=typeof getTarotCardImage==='function'?getTarotCardImage(drawnCard):'';
-      var isCelticCross2=(S.tarot&&S.tarot.spreadType==='celtic_cross');
+      var isCelticCross2=_jyIsCeltic();
       var isCard2=(slotIdx===1&&isCelticCross2);
 
       slotEl.innerHTML='<div class="tarot-reveal" id="t-rev-'+slotIdx+'" style="'+(isCard2?'transform:rotate(-90deg)':'')+'">'+
