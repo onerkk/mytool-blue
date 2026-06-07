@@ -1,4 +1,4 @@
-/*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v80.29]
+/*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v80.30]
  *  目的（歐那 2026/6/6）：
  *    1) 紫微斗數獨立入口不再借用七維表單與七維流程；只需出生年月日 + 時辰(可選) + 出生地 + 性別，「不需姓名」。
  *    2) 全新紫微專屬過場動畫（十二宮命盤天成），符合網頁金色/暗底風格，純 CSS/SVG，不需圖檔。
@@ -27,6 +27,9 @@
 
   var _lastPrompt = '';
   var _zwGender = '';   // 自包覆輸入頁的性別選擇
+  // v80.30 自訂選擇器狀態（寫回隱藏 zw-bd / zw-hh，_ziweiSubmit 沿用）
+  var _zwSelDate = '';
+  var _zwSelHH = '';
 
   // ════════════════════════════════════════════════════════
   //  CSS（命名空間 zw-*，自帶不依賴 style.css）
@@ -138,6 +141,54 @@
       '.zw-in-hint{font-size:.68rem;color:rgba(232,224,208,.4);margin-top:.5rem;line-height:1.6}',
       '.zw-in-go{display:block;width:100%;padding:.85rem;border-radius:12px;border:1.5px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:'+GOLD+';font-family:inherit;font-size:.95rem;font-weight:600;letter-spacing:4px;cursor:pointer;transition:all .3s;margin-top:.4rem}',
       '.zw-in-go:active{transform:scale(.97)}',
+      // ── v80.30 自訂欄位 / 底部選擇器（zwx-）──
+      '.zwx-field{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.72rem .8rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:rgba(255,255,255,.03);color:#e8e0d0;font-family:inherit;font-size:.92rem;cursor:pointer;transition:all .2s;text-align:left}',
+      '.zwx-field:active{transform:scale(.985)}',
+      '.zwx-field .ph{color:rgba(232,224,208,.4)}',
+      '.zwx-field .val{color:#ffeab8}',
+      '.zwx-field .chev{color:rgba(201,168,76,.7);font-size:.78rem;flex-shrink:0}',
+      '.zwx-err{margin:.5rem 0 0;padding:.55rem .7rem;border-radius:10px;border:1px solid rgba(214,108,92,.55);background:rgba(214,108,92,.12);color:#f0c8be;font-size:.74rem;line-height:1.5;display:none}',
+      '.zwx-err.show{display:block}',
+      '.zwx-sheet-bd{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}',
+      '.zwx-sheet-bd.show{opacity:1}',
+      '.zwx-sheet{width:100%;max-width:480px;max-height:84vh;overflow-y:auto;background:linear-gradient(180deg,#16161e,#0d0d13);border-radius:20px 20px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:none;box-shadow:0 -10px 50px rgba(0,0,0,.6),0 0 60px rgba(201,168,76,.05);padding:.9rem 1rem 1.4rem;transform:translateY(101%);transition:transform .32s cubic-bezier(.16,1,.3,1);font-family:"Noto Serif TC",serif;-webkit-overflow-scrolling:touch}',
+      '.zwx-sheet-bd.show .zwx-sheet{transform:translateY(0)}',
+      '.zwx-grip{width:40px;height:4px;border-radius:2px;background:rgba(201,168,76,.4);margin:0 auto .7rem}',
+      '.zwx-stitle{text-align:center;color:'+GOLD+';font-size:1.02rem;letter-spacing:3px;margin-bottom:.2rem}',
+      '.zwx-ssub{text-align:center;color:rgba(232,224,208,.5);font-size:.7rem;margin-bottom:.9rem;min-height:1rem;line-height:1.5}',
+      '.zwx-sfoot{display:grid;grid-template-columns:1fr 1.2fr;gap:.5rem;margin-top:1.1rem}',
+      '.zwx-sbtn{padding:.72rem;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(232,224,208,.6);font-family:inherit;font-size:.86rem;cursor:pointer;letter-spacing:2px}',
+      '.zwx-sbtn.go{border-color:rgba(201,168,76,.55);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:'+GOLD+';font-weight:600}',
+      '.zwx-sbtn:active{transform:scale(.97)}',
+      '.zwx-cal-nav{display:flex;align-items:center;justify-content:space-between;gap:.4rem;margin-bottom:.6rem}',
+      '.zwx-cal-nav button{width:42px;height:42px;flex-shrink:0;border-radius:11px;border:1px solid rgba(201,168,76,.22);background:rgba(255,255,255,.03);color:'+GOLD+';font-size:1.2rem;cursor:pointer}',
+      '.zwx-cal-nav button:active{transform:scale(.92)}',
+      '.zwx-cal-ttl{flex:1;text-align:center;color:#ffeab8;font-size:.96rem;letter-spacing:1px;cursor:pointer;padding:.5rem;border-radius:9px}',
+      '.zwx-cal-ttl:active{background:rgba(201,168,76,.08)}',
+      '.zwx-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.22rem}',
+      '.zwx-cal-wk{text-align:center;color:rgba(201,168,76,.55);font-size:.66rem;padding:.2rem 0}',
+      '.zwx-cal-d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;color:rgba(232,224,208,.82);font-size:.88rem;cursor:pointer}',
+      '.zwx-cal-d:active{background:rgba(201,168,76,.12)}',
+      '.zwx-cal-d.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700;box-shadow:0 0 14px rgba(201,168,76,.4)}',
+      '.zwx-cal-d.empty{cursor:default}',
+      '.zwx-pg{display:grid;gap:.4rem}',
+      '.zwx-pg.y{grid-template-columns:repeat(4,1fr)}',
+      '.zwx-pg.mo{grid-template-columns:repeat(3,1fr)}',
+      '.zwx-cell{padding:.66rem .2rem;text-align:center;border-radius:10px;border:1px solid rgba(201,168,76,.18);background:rgba(255,255,255,.03);color:rgba(232,224,208,.82);font-size:.84rem;cursor:pointer}',
+      '.zwx-cell.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700}',
+      '.zwx-cell:active{transform:scale(.95)}',
+      '.zwx-yhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}',
+      '.zwx-yhead button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(201,168,76,.22);background:rgba(255,255,255,.03);color:'+GOLD+';font-size:1.1rem;cursor:pointer}',
+      '.zwx-yhead span{color:#ffeab8;font-size:.9rem;letter-spacing:1px}',
+      '.zwx-sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}',
+      '.zwx-sc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;padding:.6rem .2rem;border-radius:11px;border:1px solid rgba(201,168,76,.18);background:rgba(255,255,255,.03);cursor:pointer}',
+      '.zwx-sc b{color:#ffeab8;font-size:.92rem;font-weight:600}',
+      '.zwx-sc i{color:rgba(232,224,208,.5);font-size:.64rem;font-style:normal;letter-spacing:.5px}',
+      '.zwx-sc.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);box-shadow:0 0 12px rgba(201,168,76,.35)}',
+      '.zwx-sc.sel b{color:#1a140a}',
+      '.zwx-sc.sel i{color:rgba(26,20,10,.7)}',
+      '.zwx-sc:active{transform:scale(.94)}',
+      '.zwx-sc.wide{grid-column:1/-1;flex-direction:row;gap:.5rem}',
       '.zw-in-foot{text-align:center;font-size:.6rem;color:rgba(232,224,208,.4);margin-top:1.5rem;letter-spacing:1px;line-height:1.8}'
     ].join('');
     (document.head || document.documentElement).appendChild(st);
@@ -522,7 +573,7 @@
     zwEnsureCSS();
     var old = document.getElementById('zw-input'); if (old) old.remove();
     var oldR = document.getElementById('zw-result'); if (oldR) oldR.remove();
-    _zwGender = '';
+    _zwGender = ''; _zwSelDate = ''; _zwSelHH = '';
     var w = document.createElement('div');
     w.className = 'zw-in';
     w.id = 'zw-input';
@@ -536,12 +587,15 @@
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 你想問什麼？</div>' +
           '<textarea class="zw-in-q" id="zw-q" rows="2" maxlength="200" placeholder="問越具體越準——例如：今年適合換工作嗎？（留空＝整體命盤綜論）"></textarea></div>' +
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 出生資料（國曆，不需姓名）</div>' +
-          '<div class="zw-in-field"><label class="zw-in-label">國曆出生日期</label><input type="date" id="zw-bd" min="1900-01-01" max="2100-12-31"></div>' +
-          '<div class="zw-in-field"><label class="zw-in-label">出生時辰</label><select id="zw-hh">' + hhOpts + '</select></div>' +
+          '<div class="zw-in-field"><label class="zw-in-label">國曆出生日期</label><button type="button" class="zwx-field" id="zwx-fld-date" onclick="_zwxOpenDate()">' + _zwDateInner() + '</button></div>' +
+          '<div class="zw-in-field"><label class="zw-in-label">出生時辰</label><button type="button" class="zwx-field" id="zwx-fld-hh" onclick="_zwxOpenHH()">' + _zwHHInner() + '</button></div>' +
+          '<input type="hidden" id="zw-bd" value="' + _zwSelDate + '">' +
+          '<input type="hidden" id="zw-hh" value="' + _zwSelHH + '">' +
           '<div class="zw-in-field"><label class="zw-in-label">性別</label><div class="zw-in-pills">' +
             '<div class="zw-in-pill" id="zw-g-m" onclick="_zwSetGender(\'male\')">男</div>' +
             '<div class="zw-in-pill" id="zw-g-f" onclick="_zwSetGender(\'female\')">女</div>' +
           '</div></div>' +
+          '<div class="zwx-err" id="zwx-err"></div>' +
           '<div class="zw-in-hint">紫微以時辰定盤，故只需到「時辰」即可；時辰不確定可選最後一項，命盤仍可成。</div>' +
         '</div>' +
         '<button class="zw-in-go" onclick="_ziweiSubmit()">✦ 起 盤 ✦</button>' +
@@ -639,15 +693,16 @@
   //  Orchestrator
   // ════════════════════════════════════════════════════════
   window._ziweiSubmit = function () {
+    _zwxClearErr();
     var qEl = document.getElementById('zw-q');
     var question = qEl && qEl.value ? qEl.value.trim() : '';
 
-    if (!_zwGender) { alert('請選擇性別'); return; }
+    if (!_zwGender) { _zwxErr('請選擇性別'); return; }
 
     var bdEl = document.getElementById('zw-bd');
     var bd = bdEl && bdEl.value ? bdEl.value : '';
     var md = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bd);
-    if (!md) { alert('請選擇國曆出生日期'); if (bdEl && bdEl.focus) bdEl.focus(); return; }
+    if (!md) { _zwxErr('請選擇國曆出生日期'); return; }
     var y = +md[1], mo = +md[2], d = +md[3];
 
     var hhEl = document.getElementById('zw-hh');
@@ -655,7 +710,7 @@
     var btimeUnknown = (hhVal === 'unknown' || hhVal === '');
     var hh = btimeUnknown ? 12 : parseInt(hhVal, 10);
 
-    if (typeof computeZiwei !== 'function') { alert('排盤引擎仍在背景載入，請過幾秒再按一次「起盤」。'); return; }
+    if (typeof computeZiwei !== 'function') { _zwxErr('排盤引擎仍在背景載入，請過幾秒再按一次「起盤」'); return; }
 
     var bdate = y + '-' + (mo < 10 ? '0' : '') + mo + '-' + (d < 10 ? '0' : '') + d;
     var btime = btimeUnknown ? '' : ((hh < 10 ? '0' : '') + hh + ':00');
@@ -695,12 +750,12 @@
       if (typeof S !== 'undefined') S.ziwei = zw;
     } catch (e) {
       console.error('[Ziwei] computeZiwei 失敗:', e);
-      alert('排盤失敗：' + (e && e.message ? e.message : '請確認農曆轉換庫已載入後再試'));
+      _zwxErr('排盤失敗：' + (e && e.message ? e.message : '請確認農曆轉換庫已載入後再試'));
       return;
     }
     if (!zw || !zw.palaces) {
       var _er = (typeof window !== 'undefined' && window._jyZiweiError) ? window._jyZiweiError : '';
-      alert('排盤資料不完整，請重試' + (_er ? '（原因：' + _er + '）' : ''));
+      _zwxErr('排盤資料不完整，請重試' + (_er ? '（原因：' + _er + '）' : ''));
       return;
     }
 
@@ -755,5 +810,125 @@
   window._ziweiBuildPrompt = buildPrompt;
   window._ziweiShowResult = showResult;
   window._ziweiShowLoading = showLoading;
+
+
+  // ════════════════════════════════════════════════════════
+  //  v80.30 自訂選擇器（日期 + 時辰）— 取代手機原生 UI
+  //  寫回隱藏 zw-bd / zw-hh，_ziweiSubmit 完全沿用、引擎不動。
+  //  紫微以時辰定盤：日期 1900–2100、時辰 12 格＋不確定，無出生地。
+  // ════════════════════════════════════════════════════════
+  var ZWK = ['日','一','二','三','四','五','六'];
+  function _zwPad(n){ return (n<10?'0':'')+n; }
+  function _zwDim(y,m){ return new Date(y, m, 0).getDate(); }
+  function _zwFdow(y,m){ return new Date(y, m-1, 1).getDay(); }
+
+  // ── 欄位顯示 ──
+  function _zwDateInner(){
+    if(!_zwSelDate) return '<span class="ph">請選擇出生日期</span><span class="chev">▾</span>';
+    var p=_zwSelDate.split('-'), y=+p[0], m=+p[1], d=+p[2];
+    var wk=ZWK[new Date(y,m-1,d).getDay()];
+    return '<span class="val">'+y+' 年 '+m+' 月 '+d+' 日（週'+wk+'）</span><span class="chev">▾</span>';
+  }
+  function _zwHHInner(){
+    if(_zwSelHH===''||_zwSelHH==null) return '<span class="ph">請選擇出生時辰</span><span class="chev">▾</span>';
+    if(_zwSelHH==='unknown') return '<span class="val">不確定（午時推算）</span><span class="chev">▾</span>';
+    var hh=parseInt(_zwSelHH,10), nm='';
+    for(var i=0;i<SHICHEN.length;i++){ if(SHICHEN[i].h===hh){ nm=SHICHEN[i].n; break; } }
+    return '<span class="val">'+(nm||(_zwPad(hh)+':00'))+'</span><span class="chev">▾</span>';
+  }
+  function _zwxSyncFields(){
+    var a=document.getElementById('zwx-fld-date'); if(a) a.innerHTML=_zwDateInner();
+    var b=document.getElementById('zwx-fld-hh'); if(b) b.innerHTML=_zwHHInner();
+    var hb=document.getElementById('zw-bd'); if(hb) hb.value=_zwSelDate;
+    var hh=document.getElementById('zw-hh'); if(hh) hh.value=_zwSelHH;
+  }
+
+  // ── 內嵌錯誤 ──
+  function _zwxErr(msg){ var e=document.getElementById('zwx-err'); if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
+  function _zwxClearErr(){ var e=document.getElementById('zwx-err'); if(e) e.classList.remove('show'); }
+
+  // ── 底部 sheet ──
+  var _zwxSheetType='';
+  function _zwxOpenSheet(title, sub, body, foot){
+    _zwxCloseSheet(true);
+    var bd=document.createElement('div'); bd.id='zwx-sheet-bd'; bd.className='zwx-sheet-bd';
+    bd.onclick=function(e){ if(e.target===bd) _zwxCloseSheet(); };
+    bd.innerHTML='<div class="zwx-sheet"><div class="zwx-grip"></div>'+
+      '<div class="zwx-stitle">'+title+'</div>'+
+      '<div class="zwx-ssub" id="zwx-ssub">'+(sub||'')+'</div>'+
+      '<div id="zwx-sbody">'+body+'</div>'+
+      (foot?'<div class="zwx-sfoot"><button class="zwx-sbtn" onclick="_zwxCancel()">取消</button><button class="zwx-sbtn go" onclick="_zwxConfirm()">確定</button></div>':'')+
+      '</div>';
+    document.body.appendChild(bd);
+    void bd.offsetWidth; bd.classList.add('show');
+  }
+  function _zwxCloseSheet(immediate){
+    var bd=document.getElementById('zwx-sheet-bd'); if(!bd) return;
+    if(immediate){ if(bd.parentNode) bd.parentNode.removeChild(bd); return; }
+    bd.classList.remove('show');
+    setTimeout(function(){ if(bd&&bd.parentNode) bd.parentNode.removeChild(bd); },320);
+  }
+  function _zwxSub(t){ var s=document.getElementById('zwx-ssub'); if(s) s.innerHTML=t; }
+  function _zwxBody(h){ var b=document.getElementById('zwx-sbody'); if(b) b.innerHTML=h; }
+  window._zwxCancel=function(){ _zwxCloseSheet(); };
+  window._zwxConfirm=function(){
+    if(_zwxSheetType==='date'){ _zwSelDate=_zwDpY+'-'+_zwPad(_zwDpM)+'-'+_zwPad(_zwDpD); }
+    _zwxClearErr(); _zwxSyncFields(); _zwxCloseSheet();
+  };
+
+  // ── 日期選擇器（1900–2100）──
+  var _zwDpY=1990,_zwDpM=1,_zwDpD=1,_zwDpDec=1984;
+  window._zwxOpenDate=function(){
+    _zwxSheetType='date';
+    if(_zwSelDate){ var p=_zwSelDate.split('-'); _zwDpY=+p[0]; _zwDpM=+p[1]; _zwDpD=+p[2]; }
+    else { _zwDpY=1990; _zwDpM=1; _zwDpD=1; }
+    _zwxOpenSheet('出生日期','國曆，點上方年月可快速跳轉', '', true);
+    _zwDpDay();
+  };
+  function _zwDpClamp(){ var dim=_zwDim(_zwDpY,_zwDpM); if(_zwDpD>dim) _zwDpD=dim; if(_zwDpD<1) _zwDpD=1; }
+  function _zwDpDay(){
+    _zwDpClamp();
+    var h='<div class="zwx-cal-nav"><button onclick="_zwxDpNav(-1)">‹</button>'+
+      '<div class="zwx-cal-ttl" onclick="_zwxDpMode(\'year\')">'+_zwDpY+' 年 '+_zwDpM+' 月 ▾</div>'+
+      '<button onclick="_zwxDpNav(1)">›</button></div><div class="zwx-cal-grid">';
+    for(var w=0;w<7;w++) h+='<div class="zwx-cal-wk">'+ZWK[w]+'</div>';
+    var fd=_zwFdow(_zwDpY,_zwDpM), dim=_zwDim(_zwDpY,_zwDpM), i;
+    for(i=0;i<fd;i++) h+='<div class="zwx-cal-d empty"></div>';
+    for(i=1;i<=dim;i++) h+='<div class="zwx-cal-d'+(i===_zwDpD?' sel':'')+'" onclick="_zwxDpDay('+i+')">'+i+'</div>';
+    h+='</div>'; _zwxBody(h); _zwxSub('點日期，或點上方年月快速跳轉');
+  }
+  function _zwDpYear(){
+    var h='<div class="zwx-yhead"><button onclick="_zwxDpDec(-1)">‹</button><span>'+_zwDpDec+' – '+(_zwDpDec+11)+'</span><button onclick="_zwxDpDec(1)">›</button></div><div class="zwx-pg y">';
+    for(var y=_zwDpDec;y<_zwDpDec+12;y++){ var dis=(y<1900||y>2100);
+      h+='<div class="zwx-cell'+(y===_zwDpY?' sel':'')+'"'+(dis?' style="opacity:.3;pointer-events:none"':' onclick="_zwxDpYear('+y+')"')+'>'+y+'</div>'; }
+    h+='</div>'; _zwxBody(h); _zwxSub('選擇年份');
+  }
+  function _zwDpMonth(){
+    var h='<div class="zwx-pg mo">';
+    for(var m=1;m<=12;m++) h+='<div class="zwx-cell'+(m===_zwDpM?' sel':'')+'" onclick="_zwxDpMonth('+m+')">'+m+' 月</div>';
+    h+='</div>'; _zwxBody(h); _zwxSub('選擇月份（'+_zwDpY+' 年）');
+  }
+  window._zwxDpMode=function(mode){ if(mode==='year'){ _zwDpDec=Math.floor(_zwDpY/12)*12; if(_zwDpDec<1896)_zwDpDec=1896; _zwDpYear(); } else if(mode==='month'){ _zwDpMonth(); } else { _zwDpDay(); } };
+  window._zwxDpNav=function(d){ _zwDpM+=d; if(_zwDpM>12){_zwDpM=1;_zwDpY++;} if(_zwDpM<1){_zwDpM=12;_zwDpY--;} if(_zwDpY<1900)_zwDpY=1900; if(_zwDpY>2100)_zwDpY=2100; _zwDpClamp(); _zwDpDay(); };
+  window._zwxDpDec=function(d){ _zwDpDec+=d*12; if(_zwDpDec<1896)_zwDpDec=1896; if(_zwDpDec>2088)_zwDpDec=2088; _zwDpYear(); };
+  window._zwxDpDay=function(d){ _zwDpD=d; _zwDpDay(); };
+  window._zwxDpYear=function(y){ _zwDpY=y; _zwDpClamp(); _zwDpMonth(); };
+  window._zwxDpMonth=function(m){ _zwDpM=m; _zwDpClamp(); _zwDpDay(); };
+
+  // ── 時辰選擇器（單點即選；12 時辰＋不確定）──
+  window._zwxOpenHH=function(){
+    _zwxSheetType='hh';
+    var h='<div class="zwx-sc-grid">';
+    for(var i=0;i<SHICHEN.length;i++){
+      var parts=SHICHEN[i].n.split(' ');
+      h+='<div class="zwx-sc'+((''+SHICHEN[i].h)===(''+_zwSelHH)?' sel':'')+'" onclick="_zwxPickHH('+SHICHEN[i].h+')"><b>'+parts[0]+'</b><i>'+(parts[1]||'')+'</i></div>';
+    }
+    h+='<div class="zwx-sc wide'+(_zwSelHH==='unknown'?' sel':'')+'" onclick="_zwxPickHHU()"><b>不確定</b><i>暫以午時推算</i></div>';
+    h+='</div>';
+    _zwxOpenSheet('出生時辰','紫微以時辰定盤，不需到分', h, false);
+  };
+  window._zwxPickHH=function(h){ _zwSelHH=''+h; _zwxClearErr(); _zwxSyncFields(); _zwxCloseSheet(); };
+  window._zwxPickHHU=function(){ _zwSelHH='unknown'; _zwxClearErr(); _zwxSyncFields(); _zwxCloseSheet(); };
+
 
 })();
