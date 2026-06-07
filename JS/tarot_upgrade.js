@@ -1291,15 +1291,19 @@ enhanceTarot = function(tarot) {
       h += '</div>';
     }
     else if (spreadId === 'tree_of_life') {
-      // ── 生命之樹：卡巴拉 Sephiroth 排列 ──
+      // ── 生命之樹：卡巴拉 Sephiroth 正統三柱排列 ──
+      // 右柱(慈悲/陽)：Chokmah(2)・Chesed(4)・Netzach(7)
+      // 左柱(嚴厲/陰)：Binah(3)・Geburah(5)・Hod(8)
+      // 中柱(均衡)：Kether(1)・Tiphereth(6)・Yesod(9)・Malkuth(10)
+      // 故每一對「左=奇數(3/5/8)、右=偶數(2/4/7)」，與傳統樹形圖一致。
       h += '<style>#t-chosen .jy-tol{display:flex;flex-direction:column;align-items:center;gap:8px}';
       h += '#t-chosen .jy-tol .tol-pair{display:flex;gap:24px;justify-content:center}</style>';
       h += '<div class="jy-tol">';
       h += S(0,1,pn(0));
-      h += '<div class="tol-pair">' + S(1,2,pn(1)) + S(2,3,pn(2)) + '</div>';
-      h += '<div class="tol-pair">' + S(3,4,pn(3)) + S(4,5,pn(4)) + '</div>';
+      h += '<div class="tol-pair">' + S(2,3,pn(2)) + S(1,2,pn(1)) + '</div>'; // 左 Binah(3)・右 Chokmah(2)
+      h += '<div class="tol-pair">' + S(4,5,pn(4)) + S(3,4,pn(3)) + '</div>'; // 左 Geburah(5)・右 Chesed(4)
       h += S(5,6,pn(5));
-      h += '<div class="tol-pair">' + S(6,7,pn(6)) + S(7,8,pn(7)) + '</div>';
+      h += '<div class="tol-pair">' + S(7,8,pn(7)) + S(6,7,pn(6)) + '</div>'; // 左 Hod(8)・右 Netzach(7)
       h += S(8,9,pn(8));
       h += S(9,10,pn(9));
       h += '</div>';
@@ -1312,7 +1316,9 @@ enhanceTarot = function(tarot) {
       h += '#t-chosen .jy-zodiac .zod-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}</style>';
       h += '<div class="jy-zodiac">';
       for (var zi = 0; zi < 12; zi++) {
-        var angle = (180 + zi * 30) * Math.PI / 180;
+        // 正統占星盤：第1宮在 9 點鐘(左/東方地平線)，依「逆時針」排列
+        //   → 1宮左、4宮(天底)下、7宮(下降)右、10宮(天頂)上。
+        var angle = (180 - zi * 30) * Math.PI / 180;
         var cx = 50 + 42 * Math.cos(angle);
         var cy = 50 + 42 * Math.sin(angle);
         h += '<div class="zod-slot" style="left:' + cx.toFixed(1) + '%;top:' + cy.toFixed(1) + '%">' + S(zi, zi+1, (zi+1)+'宮') + '</div>';
@@ -1333,9 +1339,21 @@ enhanceTarot = function(tarot) {
       h += '<div class="jy-row">' + S(3,4,pn(3)) + S(4,5,pn(4)) + '</div>';
     }
     else if (spreadId === 'cross') {
-      h += '<div class="jy-row">' + S(2,3,pn(2)) + S(0,1,pn(0)) + S(3,4,pn(3)) + '</div>';
-      h += S(1,2,pn(1));
-      h += S(4,5,pn(4));
+      // ── 十字牌陣：正統十字形（中心＋上下左右四臂）──
+      //   中=核心(0)、上=阻礙(1)、左=過去(2)、右=未來(3)、下=建議(4)
+      h += '<style>#t-chosen .jy-cross5{display:grid;grid-template-columns:70px 70px 70px;grid-template-rows:auto auto auto;gap:10px 8px;justify-content:center;align-items:center}';
+      h += '#t-chosen .jy-cross5 .cx-top{grid-column:2;grid-row:1;justify-self:center}';
+      h += '#t-chosen .jy-cross5 .cx-left{grid-column:1;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-cross5 .cx-mid{grid-column:2;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-cross5 .cx-right{grid-column:3;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-cross5 .cx-bottom{grid-column:2;grid-row:3;justify-self:center}</style>';
+      h += '<div class="jy-cross5">';
+      h += '<div class="cx-top">' + S(1,2,pn(1)) + '</div>';
+      h += '<div class="cx-left">' + S(2,3,pn(2)) + '</div>';
+      h += '<div class="cx-mid">' + S(0,1,pn(0)) + '</div>';
+      h += '<div class="cx-right">' + S(3,4,pn(3)) + '</div>';
+      h += '<div class="cx-bottom">' + S(4,5,pn(4)) + '</div>';
+      h += '</div>';
     }
     else if (spreadId === 'horseshoe') {
       h += '<div class="jy-row">' + S(6,7,pn(6)) + S(5,6,pn(5)) + S(4,5,pn(4)) + '</div>';
