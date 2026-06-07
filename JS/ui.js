@@ -7964,3 +7964,191 @@ function resetToHome() {
 })();
 
 
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v80.35 塔羅牌陣版面硬修正 + 快速抽牌立即全抽
+// 問題：部分版本 #t-chosen 被晚載入腳本重畫後只剩牌位文字，卡槽視覺消失；快速抽牌在未洗牌狀態下只觸發洗牌，未穩定接續抽牌。
+// 修正：
+// 1) 對 #t-chosen .tarot-chosen-slot 套用全域保底卡槽 CSS，不再只依賴 .jy-wrap。
+// 2) 快速抽牌改為「必要時自動完成洗牌狀態 → 直接依目前牌陣補滿全部牌 → 重畫牌位 → 啟用分析」。
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+'use strict';
+
+function jyTarotHardfixCSS(){
+  if (document.getElementById('jy-tarot-layout-hardfix-v80-35-js')) return;
+  var st = document.createElement('style');
+  st.id = 'jy-tarot-layout-hardfix-v80-35-js';
+  st.textContent = [
+    '#t-chosen{position:relative;min-height:112px}',
+    '#t-chosen .tarot-chosen-slot{position:relative!important;width:62px!important;height:92px!important;min-width:62px!important;min-height:92px!important;box-sizing:border-box!important;border:1px solid rgba(212,175,55,.22)!important;border-radius:9px!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;flex-shrink:0!important;overflow:visible!important;background:linear-gradient(180deg,rgba(212,175,55,.055),rgba(10,10,18,.22))!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 0 12px rgba(212,175,55,.055)!important;color:rgba(212,175,55,.72)!important}',
+    '#t-chosen .tarot-chosen-slot:not(.filled)::before{content:"";position:absolute;inset:7px;border:1px solid rgba(212,175,55,.12);border-radius:7px;background:radial-gradient(circle at 50% 22%,rgba(212,175,55,.055),transparent 62%);pointer-events:none}',
+    '#t-chosen .tarot-chosen-slot .slot-num{position:relative;z-index:2;font-size:.62rem!important;line-height:1;color:rgba(212,175,55,.42)!important;font-weight:700!important}',
+    '#t-chosen .tarot-chosen-slot .slot-label{position:absolute!important;z-index:3;left:50%!important;bottom:-17px!important;transform:translateX(-50%)!important;width:86px!important;max-width:86px!important;text-align:center!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:.48rem!important;line-height:1.15!important;color:rgba(212,175,55,.56)!important}',
+    '#t-chosen .tarot-chosen-slot.filled{background:rgba(10,10,18,.36)!important;border-color:rgba(212,175,55,.34)!important}',
+    '#t-chosen .tarot-chosen-slot.filled::before{display:none!important}',
+    '#t-chosen .tarot-chosen-slot .tarot-reveal{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:2}',
+    '#t-chosen .tarot-chosen-slot .tc-img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px!important;display:block!important}',
+    '#t-chosen .jy-celtic .gc-center > div[style*="rotate"] .tarot-chosen-slot .slot-label{display:none!important}',
+    '#t-chosen .jy-row,#t-chosen .gd-triad,#t-chosen .tol-pair{min-height:96px}'
+  ].join('\n');
+  (document.head || document.documentElement).appendChild(st);
+}
+
+function jyTarotShuffleArray(arr){
+  var a = (arr || []).slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function jyTarotGetDef(){
+  try { if (typeof getCurrentSpreadDef === 'function') return getCurrentSpreadDef(); } catch(e){}
+  return null;
+}
+function jyTarotGetSid(def){
+  try { if (typeof getCurrentSpread === 'function') return getCurrentSpread(); } catch(e){}
+  return def && def.id ? def.id : 'celtic_cross';
+}
+
+function jyTarotRenderChosen(sid, def){
+  jyTarotHardfixCSS();
+  var chosen = document.getElementById('t-chosen');
+  if (!chosen || !def) return;
+  var html = '';
+  try {
+    if (typeof window.buildSlotLayout === 'function') html = window.buildSlotLayout(sid, def) || '';
+  } catch(e) {}
+  if (!html) {
+    try { if (typeof window.jyBuildSlot === 'function') html = window.jyBuildSlot(sid, def) || ''; } catch(e) {}
+  }
+  if (html) chosen.innerHTML = html;
+}
+
+function jyTarotFinishAutodraw(drawn, sid, def){
+  drawnCards = drawn;
+  S.tarot = S.tarot || {};
+  S.tarot.drawn = drawnCards;
+  S.tarot.spread = drawnCards;
+  S.tarot.spreadType = sid;
+  S.tarot.spreadDef = def;
+  try { if (typeof enhanceTarot === 'function') enhanceTarot(S.tarot); } catch(e) { console.warn('[Tarot v80.35] enhanceTarot failed:', e); }
+
+  jyTarotRenderChosen(sid, def);
+
+  var pickedEl = document.getElementById('t-remain-picked');
+  if (pickedEl) pickedEl.textContent = String(drawnCards.length);
+  var remainText = document.getElementById('t-remain-text');
+  if (remainText) remainText.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">' + drawnCards.length + '</strong> / ' + (def ? def.count : drawnCards.length) + ' 張';
+  var targetEl = document.getElementById('t-target-count');
+  if (targetEl && def) targetEl.textContent = String(def.count);
+  var hint = document.getElementById('pick-hint');
+  if (hint) hint.style.display = 'none';
+  var btn = document.getElementById('btn-analyze');
+  if (btn) btn.disabled = false;
+
+  try { if (typeof showSpread === 'function') showSpread(); } catch(e) { console.warn('[Tarot v80.35] showSpread failed:', e); }
+  setTimeout(function(){
+    var act = document.querySelector('#step-2 .actions');
+    try { if (act) act.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e) {}
+  }, 120);
+}
+
+function jyTarotBuildDraw(def, sid){
+  var targetCount = def && def.count ? def.count : 10;
+  var deck = [];
+  try {
+    if (typeof deckShuffled !== 'undefined' && deckShuffled && deckShuffled.length) deck = deckShuffled.slice();
+  } catch(e) {}
+  if (!deck.length && typeof TAROT !== 'undefined' && TAROT && TAROT.length) deck = jyTarotShuffleArray(TAROT);
+  if (def && def.deckFilter === 'minor_only') deck = deck.filter(function(c){ return c && c.suit !== 'major'; });
+
+  var seed = String(Date.now()) + '|' + ((S.form && S.form.question) || '') + '|' + sid + '|v80.35';
+  var drawn = [];
+  try {
+    if (typeof window.JY_buildCanonicalTarotDraw === 'function') {
+      drawn = window.JY_buildCanonicalTarotDraw(deck.slice(), sid, def, seed, (S.form && S.form.type) || 'general', (S.form && S.form.question) || '') || [];
+    }
+  } catch(e) { drawn = []; }
+
+  if (!drawn || !drawn.length) {
+    drawn = [];
+    var rng = null;
+    try { if (typeof makeSeededRng === 'function') rng = makeSeededRng(seed, 'tarot-autodraw', 'v80.35'); } catch(e) {}
+    for (var i = 0; i < targetCount && i < deck.length; i++) {
+      var card = deck[i];
+      var r = Math.random();
+      try { if (typeof rng === 'function') r = rng(); } catch(e) {}
+      var out = Object.assign({}, card || {});
+      out.isUp = r >= 0.5;
+      out.pos = (def && def.positions && def.positions[i]) ? def.positions[i].name : ('第' + (i + 1) + '張');
+      out.seq = i + 1;
+      drawn.push(out);
+    }
+  }
+  return drawn.slice(0, targetCount);
+}
+
+function jyTarotForceShuffledState(){
+  window._deckIsShuffled = true;
+  try {
+    var deckEl = document.getElementById('t-deck');
+    if (deckEl) {
+      deckEl.querySelectorAll('.tarot-deck-card').forEach(function(card){
+        var face = card.querySelector('.tdc-face');
+        var back = card.querySelector('.tdc-back');
+        if (face) face.style.display = 'none';
+        if (back) back.style.transform = 'none';
+        card.classList.remove('shuffling','deck-center','lifting');
+        card.style.visibility = '';
+      });
+    }
+  } catch(e) {}
+  try {
+    var sf = document.getElementById('jy-shuffle-btn');
+    if (sf) sf.remove();
+    document.querySelectorAll('#step-2 .jy-shuffle-top').forEach(function(w){ if (!w.querySelector('#jy-shuffle-btn')) w.remove(); });
+  } catch(e) {}
+}
+
+// 進抽牌頁時先保底重畫一次，避免被舊版函式覆成只有文字。
+window._jyRenderCurrentTarotLayout = function(){
+  var def = jyTarotGetDef();
+  var sid = jyTarotGetSid(def);
+  if (def && (!drawnCards || drawnCards.length === 0)) jyTarotRenderChosen(sid, def);
+};
+
+var _oldAutoDrawV8035 = window.autoDraw;
+window.autoDraw = function(){
+  jyTarotHardfixCSS();
+  var def = jyTarotGetDef();
+  var sid = jyTarotGetSid(def);
+  var targetCount = def && def.count ? def.count : 10;
+
+  try { if ((!deckShuffled || !deckShuffled.length) && typeof initTarotDeck === 'function') initTarotDeck(); } catch(e) {}
+  if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length >= targetCount) return;
+
+  // v80.35：快速抽牌不再停在洗牌步驟；它本身就完成洗牌狀態並補滿牌陣。
+  jyTarotForceShuffledState();
+
+  var drawn = jyTarotBuildDraw(def, sid);
+  if (!drawn || !drawn.length) {
+    // 極端失敗才退回舊函式，不假裝成功。
+    console.warn('[Tarot v80.35] instant autodraw failed; fallback to previous autoDraw');
+    if (typeof _oldAutoDrawV8035 === 'function') return _oldAutoDrawV8035.apply(this, arguments);
+    return;
+  }
+  jyTarotFinishAutodraw(drawn, sid, def);
+};
+
+jyTarotHardfixCSS();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(window._jyRenderCurrentTarotLayout, 200); });
+} else {
+  setTimeout(window._jyRenderCurrentTarotLayout, 200);
+}
+
+})();

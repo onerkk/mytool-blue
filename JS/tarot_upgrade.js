@@ -1164,6 +1164,7 @@ enhanceTarot = function(tarot) {
     st.id = 'jy-spread-css';
     st.textContent = [
       '#t-chosen .jy-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0;width:100%}',
+      '#t-chosen .tarot-chosen-slot{position:relative!important;min-width:42px;min-height:58px;border:1px solid rgba(212,175,55,.18)!important;border-radius:8px!important;background:rgba(212,175,55,.035)!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;overflow:visible!important}',
       '#t-chosen .jy-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}',
       '#t-chosen .jy-col{display:flex;flex-direction:column;align-items:center;gap:8px}',
       '#t-chosen .jy-lbl{font-size:.65rem;color:var(--c-gold,#c9a84c);font-weight:600}',
