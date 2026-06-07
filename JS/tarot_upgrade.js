@@ -1190,12 +1190,18 @@ enhanceTarot = function(tarot) {
     document.head.appendChild(st);
   }
 
+  // v80.40 治本：S() 與 buildSlotLayout 是「並列」函式，S() 內卻引用了只存在於
+  //   buildSlotLayout 參數作用域的 spreadId → 每次呼叫 S() 都 ReferenceError，
+  //   導致 buildSlotLayout 整個拋錯、退回通用方格（所有牌陣都畫不出正統排列）。
+  //   改用此 IIFE 作用域變數，由 buildSlotLayout 進入時設定，S() 才讀得到。
+  var _jyCurSpreadId = '';
+
   function S(id, num, label) {
     // ★ 已抽到該位置的牌時，直接畫牌面（修正「快速全抽 / 重渲染後格子留空」）。
     //   drawnCards[id] = 該位置的牌（canonical 全抽與逐張選都以位置索引對齊 t-slot-id）。
     var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
     var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
-    var _ic = (spreadId === 'celtic_cross' && id === 1); // 凱爾特「跨越牌」橫置
+    var _ic = (_jyCurSpreadId === 'celtic_cross' && id === 1); // 凱爾特「跨越牌」橫置
     if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><div class="tarot-reveal flipping" style="'+(_ic?'transform:rotate(-90deg)':'')+'"><div class="tarot-reveal-inner"><div class="tarot-reveal-back"></div><div class="tarot-reveal-front"><img src="'+_di+'" class="tc-img" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'"><span class="tc-name" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'">'+(_dc.n||'')+'</span><span class="tc-dir '+(_dc.isUp?'up':'rv')+'">'+(_dc.isUp?'順位':'逆位')+'</span></div></div></div>'+(_ic?'':'<span class="slot-label">'+label+'</span>')+'</div>';
     return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
   }
@@ -1206,6 +1212,7 @@ enhanceTarot = function(tarot) {
     //   （例如沿用到前一個牌陣的舊值），會掉進最後的通用方格分支、失去正統排列。
     //   這裡強制對齊 def.id，正統排版（凱爾特／生命之樹／黃道／Mathers…）才不會被跳過。
     if (def.id && def.id !== spreadId) spreadId = def.id;
+    _jyCurSpreadId = spreadId; // v80.40：供並列的 S() 判斷凱爾特跨越牌橫置，避免 ReferenceError
     var P = def.positions || [];
     function pn(i) { return P[i] ? P[i].name : ''; }
     var h = '<div class="jy-wrap">';
