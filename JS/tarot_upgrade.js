@@ -3114,32 +3114,30 @@ enhanceTarot = function(tarot) {
   // ════════════════════════════════════════════════
 
   function ootkUnaspected(activeCards, sigIdx, countedKeyCards, pairs) {
-    if (!activeCards || !activeCards.length) return [];
-    // 收集所有被 counting 或 pairing 觸及的牌 index
-    var touchedIds = {};
-    // Sig 自己算被觸及
-    if (sigIdx >= 0 && activeCards[sigIdx]) {
-      touchedIds[activeCards[sigIdx].id] = true;
+    // ★ PHB「Source of the Nile / Unaspected」正統定義（2026 根治）
+    //   做法：對活躍堆「每一張牌」各數一次——依該牌面向（正位向右 +1、逆位向左 -1，
+    //   Book T:「count in the direction it faces」）、走其 count 值格、環狀折返，記下落點那張。
+    //   全部數完後，從頭到尾「沒被任何一張牌的計數落點碰到」的牌，就是 unaspected。
+    //   ⚠ 只看 counting，不看 pairing：pairing 會把幾乎每張非主牌都配到，
+    //      把它算進「被碰到」會讓 unaspected 永遠為空（舊版的 bug，等於關閉此功能）。
+    //   依據：Paul Hughes-Barlow《Tarot and the Magus》Ch.6；實務轉述「counted from every
+    //         single card to check their counts」——沒被碰到的孤立牌＝尼羅河源頭，指向未知/未來。
+    var n = activeCards ? activeCards.length : 0;
+    if (!n) return [];
+    var targeted = {};
+    for (var i = 0; i < n; i++) {
+      var card = activeCards[i];
+      if (!card) continue;
+      var dir = (card.isUp === true) ? 1 : -1;   // Book T：往牌面朝向的方向數
+      var cnt = getCountValue(card);
+      var t = i;
+      for (var c = 0; c < cnt; c++) { t = (t + dir + n) % n; }
+      if (t !== i) targeted[t] = true;            // 落在自己不算（孤立＝沒被「別張」碰到）
     }
-    // Counting 路徑上的牌
-    if (countedKeyCards) {
-      countedKeyCards.forEach(function(kc) {
-        if (kc && kc.card) touchedIds[kc.card.id] = true;
-      });
-    }
-    // Pairing 配到的牌
-    if (pairs) {
-      pairs.forEach(function(p) {
-        if (p.left) touchedIds[p.left.id] = true;
-        if (p.right) touchedIds[p.right.id] = true;
-      });
-    }
-    // 沒被觸及的 = unaspected
     var unaspected = [];
-    for (var i = 0; i < activeCards.length; i++) {
-      if (!touchedIds[activeCards[i].id]) {
-        unaspected.push(activeCards[i]);
-      }
+    for (var j = 0; j < n; j++) {
+      if (j === sigIdx) continue;                 // 代表牌是錨點，永遠不算隱藏牌
+      if (activeCards[j] && !targeted[j]) unaspected.push(activeCards[j]);
     }
     return unaspected;
   }

@@ -165,7 +165,7 @@ window._jyStopSmartTimer = function() {
 //   - 主動偵測版本變動 + 強制 reload 是最可靠的解法
 //   - 只在版本變動時 reload,正常情況零打擾
 // ═══════════════════════════════════════════════════════════════
-window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260606v80_20';
+window.FRONTEND_VERSION = window.FRONTEND_VERSION || '20260606v80_14';
 // ★ v73(歐那 2026/5/29)：純前端複製模式已無 worker，舊版打 worker /version 的偵測永遠失敗、
 //   強制更新形同虛設。改為「純前端版本常數比對」——零後端依賴：
 //   每次載入比對 FRONTEND_VERSION 與 localStorage 記錄，變了就破快取強制 reload 一次。
@@ -4542,7 +4542,45 @@ function talkZiweiFor(focusType){
     if(sfBr2>=2) texts.push(mainPalace+'三方四正多星廟旺，外在支撐力充足。');
     else if(sfDk2>=2) texts.push(mainPalace+'三方四正多星落陷，外在助力不足。');
   }catch(e){}
-  
+
+  // ★ v80.16：補上文墨天機級的「命盤骨架」資料層——五行局/大限起運、命主身主、身宮、格局成破。
+  //   原 talkZiweiFor 只談宮位星曜與四化，缺了格局與全局結構；這些正是深度命理判讀的核心。
+  //   遵循「看數據不看心、壞消息就是壞消息」：凶格直接點為破格，不包裝。
+  try {
+    var ZW = S.ziwei;
+    // 五行局 + 大限起運歲（大限起始歲＝五行局數）
+    var JU = {2:'水二局',3:'木三局',4:'金四局',5:'土五局',6:'火六局'}[ZW.wuxingJu];
+    if (JU) texts.push('命盤為「'+JU+'」，大限自'+ZW.wuxingJu+'歲起運（每步十年，五行局數即第一步大限起始歲）。');
+    // 命主 / 身主
+    if (ZW.mingZhu || ZW.shenZhu) {
+      texts.push('命主星為'+(ZW.mingZhu||'—')+'、身主星為'+(ZW.shenZhu||'—')+'（命主主先天本質，身主主後天際遇與行運走向）。');
+    }
+    // 身宮落點
+    if (ZW.palaces && ZW.palaces.length) {
+      var shenP = null;
+      for (var _si=0; _si<ZW.palaces.length; _si++){ if(ZW.palaces[_si].isShen){ shenP=ZW.palaces[_si]; break; } }
+      if (shenP) {
+        if (shenP.isMing || shenP.name==='命宮') texts.push('身宮與命宮同宮，先天個性與後天作為一致，性格主導命運、較不易受環境牽動。');
+        else texts.push('身宮落在'+shenP.name+'，中年（約三十五歲）後人生重心會明顯偏向'+shenP.name+'所主的領域。');
+      }
+    }
+    // 格局成破（成格／雙面／破格分列；凶格直說不包裝）
+    if (ZW.patterns && ZW.patterns.length) {
+      var _cheng=[], _shuang=[], _po=[];
+      ZW.patterns.forEach(function(pt){
+        if(!pt||!pt.name) return;
+        var lv = pt.level||'';
+        var item = pt.name + (pt.desc ? '（'+pt.desc+'）' : '');
+        if (lv==='凶') _po.push(item);
+        else if (lv==='雙面') _shuang.push(item);
+        else if (lv==='大吉'||lv==='吉') _cheng.push(item);
+      });
+      if (_cheng.length) texts.push('命盤成格：'+_cheng.slice(0,3).join('；')+'。');
+      if (_shuang.length) texts.push('雙面格局（成敗看後天用神與煞忌）：'+_shuang.slice(0,2).join('；')+'。');
+      if (_po.length) texts.push('需正視的破格／警示：'+_po.slice(0,3).join('；')+'。這些是命盤先天弱點，解讀時須誠實點出並給對治方向，不可迴避。');
+    }
+  } catch(_zwDeep){}
+
   return texts.join(' ');
 }
 
@@ -16024,26 +16062,6 @@ function _buildPayload() {
       }
     });
 
-
-    // ★ 焦點宮核心摘要（讓最終 AI 直接抓到問事主軸）
-    try {
-      if (_focusPal[ft] != null && zw.palaces[_focusPal[ft]]) {
-        var fp = zw.palaces[_focusPal[ft]];
-        var fpMaj = (fp.stars||[]).filter(function(s){return s.type==='major';});
-        var fpMin = (fp.stars||[]).filter(function(s){return s.type==='minor';});
-        var fpLuck = (fp.stars||[]).filter(function(s){return s.type==='lucky';});
-        var fpSha = (fp.stars||[]).filter(function(s){return s.type==='sha';});
-        var fpHua = (fp.stars||[]).filter(function(s){return s.hua;});
-        var fpText = fp.name + '焦點宮核心：';
-        fpText += fpMaj.length ? '主星' + fpMaj.map(function(s){return s.name;}).join('+') : '空宮借星';
-        if (fpMin.length) fpText += '，輔星' + fpMin.map(function(s){return s.name;}).join('+');
-        if (fpLuck.length) fpText += '，吉曜' + fpLuck.map(function(s){return s.name;}).join('+');
-        if (fpSha.length) fpText += '，煞曜' + fpSha.map(function(s){return s.name;}).join('+');
-        if (fpHua.length) fpText += '，四化' + fpHua.map(function(s){return s.name + s.hua;}).join('、');
-        L.push(fpText);
-      }
-    } catch(e){}
-
     // ★ #9: 宮位白話意義（讓 AI 理解四化飛入宮位的實際含義）
     var _palMeaning = {
       '命宮':'自我/個性/體質', '兄弟宮':'手足/同儕/合夥', '夫妻宮':'感情/伴侶/合作對象',
@@ -18932,17 +18950,16 @@ function renderNatalFunZone() {
     var majorNames = focus.majors.map(function(s){ return s.name; }).join('、') || '無主星主導';
     var goodNames = focus.goods.slice(0,3).map(function(s){ return s.name || s.hua; }).join('、');
     var riskNames = focus.risks.slice(0,3).map(function(s){ return s.name || s.hua; }).join('、');
-    var why1 = '主題落在「'+focusPalaceName+'」，主星組合為 '+majorNames+'。紫微先看這一宮本質，再回頭比對對宮與三方四正，不能只看單宮好壞。';
-    var why2 = goodNames ? '此宮目前可用的助力是 '+goodNames+'；如果再疊到大限或流年同宮加分，事情會更容易被推動。' : '此宮沒有明顯吉曜加持，所以不能只靠主觀期待，必須回頭看三方四正有沒有外援。';
-    var why3 = riskNames ? '真正的阻力在 '+riskNames+'，這通常代表不是沒有機會，而是卡在時機、關係互動、現實條件或執念，其中至少一項會先出來擋路。' : '煞忌壓力不算重，代表這題主要拼的是節奏與選擇，不是先天完全不給你。';
-    var riskPoint = riskNames ? '最需要提防的是「'+riskNames+'」帶來的拖延、誤判、情緒化或硬碰硬。' : '目前最大風險不是外部，而是你自己過快下判斷，忽略了盤上的結構訊號。';
-    if(ctx.dx && ctx.dx.level) riskPoint += ' 另外，你目前走「'+ctx.dx.palaceName+'」大限（'+ctx.dx.level+'），這題會被十年背景放大，不是只看眼前一件小事。';
-    if(ctx.ln && ctx.ln.mingPalace) riskPoint += ' 今年流年走到「'+ctx.ln.mingPalace+'」，所以短期體感會比平常更明顯。';
+    var why1 = '主題落在「'+focusPalaceName+'」，主星組合為 '+majorNames+'，這是紫微判這題的第一層。';
+    var why2 = goodNames ? '此宮目前可用的助力是 '+goodNames+'。' : '此宮沒有明顯吉曜加持，所以不能只看表面期待。';
+    var why3 = riskNames ? '真正的阻力在 '+riskNames+'，這會讓事情不是不能成，而是會先卡。' : '煞忌壓力不算重，代表這題主要靠你怎麼抓節奏。';
+    var riskPoint = riskNames ? '最需要提防的是「'+riskNames+'」帶來的拖延、誤判或硬碰硬。' : '目前最大風險不是外部，而是你自己判斷過快。';
+    if(ctx.dx && ctx.dx.level) riskPoint += ' 另外，你目前走「'+ctx.dx.palaceName+'」大限（'+ctx.dx.level+'），十年背景也會放大這題的體感。';
     var actions = __zwActionByType(type||'general', dir, focus);
     var strategies = [
-      '判斷順序：先看'+focusPalaceName+'本宮，再看對宮與三方四正，最後才看你當下情緒；紫微重結構，不重一時感覺。',
-      ctx.dx ? '大限主軸在'+ctx.dx.palaceName+'，所以這題不能脫離你這十年的主線；如果大限宮本身帶煞或化忌，先修結構比先衝結果重要。':'這題先看先天結構，再看短期波動，不能只憑一時順逆下結論。',
-      ctx.ln ? (new Date().getFullYear())+'年流年有在推動這題，但成不成要看你有沒有避開忌點、用到祿權科的助力。':'目前更偏結構題，不是單看今年一時起伏。'
+      '判斷順序：先看'+focusPalaceName+'，再看三方四正，最後才看你當下情緒。',
+      ctx.dx ? '大限主軸在'+ctx.dx.palaceName+'，所以這題不能脫離你這十年的主線。':'先天結構比短期情緒更重要。',
+      ctx.ln ? (new Date().getFullYear())+'年流年有在推動這題，但成不成要看你有沒有避開忌點。':'目前更偏結構題，不是單看今年一時起伏。'
     ];
     return {
       yesNoAnswer: __zwAnswerFromScore(score, cfg),
@@ -18972,15 +18989,15 @@ function renderNatalFunZone() {
     var label = (__zwCfg(type||'general').label || '整體');
     var dx = __zwFindCurrentDx(zw);
     var ln = __zwFindCurrentLn(zw);
-    var situation = '這題先看「'+qr.palace+'」。紫微給出的分數是 '+qr.score+'/100，代表'+(qr.direction==='positive'?'局面可以推，但必須順著盤上可用的宮位能量走，不是硬衝。':qr.direction==='negative'?'局面偏逆風，先天結構或時機本身就有壓力，必須先處理卡點。':'局面不是完全沒機會，但也不是直接衝就會成，得靠你精準拿捏節奏。');
+    var situation = '這題先看「'+qr.palace+'」。紫微給出的分數是 '+qr.score+'/100，代表'+(qr.direction==='positive'?'局面是能推的，只是要抓順勢點。':qr.direction==='negative'?'局面偏逆風，先天或時機都有壓力。':'局面不是完全沒機會，但不屬於直接衝就會成的格局。');
     var coreConflict = qr.riskStars && qr.riskStars.length
-      ? '核心矛盾不在你想不想做，而在「'+qr.riskStars.slice(0,2).join('、')+'」代表的壓力。這通常落在現實條件、關係互動、情緒執念或制度限制，其中至少一條先卡住。'
-      : '核心矛盾不算重，真正考驗是你能不能穩住節奏，不要把原本可解的局勢自己推成對撞。';
+      ? '核心矛盾不在你想不想做，而在「'+qr.riskStars.slice(0,2).join('、')+'」代表的壓力。這通常是現實條件、關係互動或情緒執念卡住。'
+      : '核心矛盾不大，真正考驗是你能不能穩住節奏，不要自己把局勢玩壞。';
     var trend = dx
-      ? '十年背景走在「'+dx.palaceName+'」大限，表示這題不是短暫事件，而是你這階段人生主題的一部分。'+(ln&&ln.mingPalace ? ('今年流年又走到「'+ln.mingPalace+'」，所以感受會更明顯，也更容易把盤上的優缺點放大。') : '若今年沒有特別衝到焦點宮，事情會偏向慢慢顯形。')
+      ? '十年背景走在「'+dx.palaceName+'」大限，表示這題不是短暫事件，而是你這階段人生主題的一部分。'+(ln&&ln.mingPalace ? ('今年流年又走到「'+ln.mingPalace+'」，所以感受會更明顯。') : '')
       : '目前看起來這題更像先天結構題，短期起伏不如長期定位重要。';
     var risk = qr.riskPoint || ('這題真正風險在於你只看單一表象，沒看見紫微盤背後的結構。');
-    var advice = [qr.action1, qr.action2].filter(Boolean).join('  ');
+    var advice = [qr.action1, qr.action2].filter(Boolean).join(' ');
     var timing = qr.timingText || '';
     return { situation:situation, coreConflict:coreConflict, trend:trend, risk:risk, advice:advice, timing:timing };
   };
@@ -19064,7 +19081,7 @@ function renderNatalFunZone() {
       if(!qr || !na) return '';
       var html = '';
       html += '<div class="insight-card"><div class="insight-title">🪐 紫微直判：'+qr.yesNoAnswer+'</div>';
-      html += '<div class="insight-sub">分數：'+qr.score+'/100 ｜ 信心度：'+qr.confidence+'% ｜ 主題宮位：'+qr.palace+' ｜ 讀法：本宮 × 對宮 × 三方四正 × 大限流年</div></div>';
+      html += '<div class="insight-sub">分數：'+qr.score+'/100 ｜ 信心度：'+qr.confidence+'% ｜ 主題宮位：'+qr.palace+'</div></div>';
       html += '<div style="margin-top:.7rem">';
       html += '<p style="font-size:.88rem;line-height:1.75"><strong>目前局面：</strong>'+na.situation+'</p>';
       html += '<p style="font-size:.88rem;line-height:1.75"><strong>核心矛盾：</strong>'+na.coreConflict+'</p>';
@@ -26563,15 +26580,18 @@ function _buildOOTKPayload() {
     var _crossRoot = (results && results.crossAnalysis) || {};
 
     // PHB Source of the Nile / Unaspected Cards(該層隱藏推力)
-    var _phbUnaspected = _crossRoot.unaspectedCards && _crossRoot.unaspectedCards[_opKey];
+    // ★ 2026 根治:優先讀「每層直接算好」的 op.unaspected(有資料);舊的 crossAnalysis.unaspectedCards 多為空
+    var _phbUnaspected = (op && op.unaspected && op.unaspected.length)
+      ? op.unaspected
+      : (_crossRoot.unaspectedCards && _crossRoot.unaspectedCards[_opKey]);
     if (_phbUnaspected && _phbUnaspected.length) {
       lines.push('');
       lines.push('【本 Op 隱藏推力 / Source of the Nile (PHB)】');
-      lines.push('  本層活躍堆中沒被 counting 走到、也沒被 pairing 配到的牌——');
-      lines.push('  PHB 命名「尼羅河源頭」,代表本 Op 的隱藏推力、未來、未知。');
+      lines.push('  本層活躍堆中,從每一張牌數過去、從頭到尾都沒被碰到的孤立牌——');
+      lines.push('  PHB 命名「尼羅河源頭」,代表本 Op 的隱藏推力、未來、未知;這是該層最該被特別讀出的牌。');
       lines.push('  ⚠️ 這些觀察「只屬於本 Op」,不可跟其他 Op 的 unaspected cards 對照或彙整。');
       lines.push('  本 Op 的 unaspected:' + _phbUnaspected.map(function(u) {
-        return (u.name || u.cardName || '?') + (u.element ? '(' + u.element + ')' : '');
+        return (u.n || u.name || u.cardName || '?') + (u.element ? '(' + u.element + ')' : '');
       }).join('、'));
     }
 
