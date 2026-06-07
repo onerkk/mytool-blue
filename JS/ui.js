@@ -1026,6 +1026,9 @@ function pickTool(tool) {
 }
 
 function _checkToolQuota(tool) {
+  // ★ v70 全免費/無登入：塔羅與開鑰皆為「複製提示詞」模式，不打 worker、不查配額/登入
+  //   → 保留 index.html 靜態的「完全免費」徽章，不再被 LOGIN_REQUIRED 覆蓋成「需登入 Google 帳號」
+  if (tool === 'tarot' || tool === 'ootk') return;
   var modeMap = { tarot: 'tarot_only', ootk: 'ootk', full: 'full' };
   var badgeId = 'tool-' + tool + '-badge';
   var badge = document.getElementById(badgeId);
