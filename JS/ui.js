@@ -6949,8 +6949,24 @@ function renderTarotSpreadDisplay() {
     h += '</div></div></div>';
   });
 
+  h += '<div style="text-align:center;margin-top:.7rem"><button onclick="_tarotShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:var(--c-gold);font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361\uFF08\u6645\u724C\u9663\uFF09</button></div>';
   el.innerHTML = h;
 }
+
+window._tarotShare = function () {
+  if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66\u4E00\u6B21'); return; }
+  var def = (S.tarot && S.tarot.spreadDef) || {};
+  var cards = (drawnCards || []).map(function (c, i) {
+    var p = (def.positions && def.positions[i]) ? def.positions[i] : null;
+    var pos = p ? (p.name || p.zh || '') : ('\u7B2C' + (i + 1) + '\u5F35');
+    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: !(c && c.isUp) };
+  });
+  JYShareCard.open('tarot', {
+    question: (S.form && S.form.question) || '',
+    spread: def.zh || '\u5854\u7F85\u724C\u9663',
+    cards: cards
+  });
+};
 
 // ── enterFullAnalysis：從塔羅結果進七維度 ──
 function enterFullAnalysis() {
