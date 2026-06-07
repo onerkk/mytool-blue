@@ -6369,7 +6369,7 @@ showAuraResult = function(){
         h += '<div class="jy-celtic">';
         h += '<div class="gc-top">' + S(4,5,pn(4)) + '</div>';
         h += '<div class="gc-left">' + S(3,4,pn(3)) + '</div>';
-        h += '<div class="gc-center">' + S(0,1,pn(0)) + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);opacity:.5;pointer-events:none;z-index:1">' + S(1,2,'') + '</div></div>';
+        h += '<div class="gc-center">' + S(0,1,pn(0)) + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);pointer-events:none;z-index:6">' + S(1,2,'') + '</div></div>';
         h += '<div class="gc-right">' + S(5,6,pn(5)) + '</div>';
         h += '<div class="gc-bottom">' + S(2,3,pn(2)) + '</div>';
         h += '<div class="gc-staff">' + S(6,7,pn(6)) + S(7,8,pn(7)) + S(8,9,pn(8)) + S(9,10,pn(9)) + '</div>';
@@ -8005,6 +8005,15 @@ function jyTarotHardfixCSS(){
     '#t-chosen .tarot-chosen-slot .tarot-reveal{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:2}',
     '#t-chosen .tarot-chosen-slot .tc-img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px!important;display:block!important}',
     '#t-chosen .jy-celtic .gc-center > div[style*="rotate"] .tarot-chosen-slot .slot-label{display:none!important}',
+    // v80.42：跨越牌由外層包裹整張轉 90°，這裡讓內部牌面「不要再反向轉」，否則兩次旋轉互相抵銷＝看不到橫放效果。
+    '#t-chosen .jy-celtic .gc-center > div[style*="rotate"] .tarot-reveal{transform:none!important}',
+    // v80.42：牌名與正逆位本來沒有任何 CSS → 圖片鋪滿整格把牌名蓋掉、正逆位又疊上去。
+    //   這裡把牌名放底部色帶（永遠正向、可讀），正逆位放右上角徽章（不再蓋住牌名）。
+    '#t-chosen .tarot-chosen-slot .tarot-reveal-inner,#t-chosen .tarot-chosen-slot .tarot-reveal-front{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:8px;overflow:hidden}',
+    '#t-chosen .tarot-chosen-slot .tc-name{position:absolute!important;left:0;right:0;bottom:0;z-index:4;transform:none!important;text-align:center;font-size:.42rem;line-height:1.2;padding:3px 2px 2px;color:#f6e8b8;background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.42) 70%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '#t-chosen .tarot-chosen-slot .tc-dir{position:absolute!important;top:3px;right:3px;z-index:5;font-size:.4rem;line-height:1;padding:1px 3px;border-radius:4px;background:rgba(0,0,0,.72);font-weight:700}',
+    '#t-chosen .tarot-chosen-slot .tc-dir.rv{color:#ff9c9c}',
+    '#t-chosen .tarot-chosen-slot .tc-dir.up{color:#9fe6a8}',
     '#t-chosen .jy-row,#t-chosen .gd-triad,#t-chosen .tol-pair{min-height:96px}'
   ].join('\n');
   (document.head || document.documentElement).appendChild(st);

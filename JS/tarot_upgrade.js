@@ -1221,17 +1221,17 @@ enhanceTarot = function(tarot) {
       // ── Waite 凱爾特十字正統排列 ──
       // 上：3 Crowns / 下：4 Beneath / 左：5 Behind / 右：6 Before
       // 右柱由下往上：7 Himself, 8 House, 9 Hopes/Fears, 10 What will come
-      h += '<style>#t-chosen .jy-celtic{display:grid;grid-template-columns:70px 70px 70px 16px 70px;grid-template-rows:auto auto auto;gap:8px 6px;align-items:center;justify-content:center}';
+      h += '<style>#t-chosen .jy-celtic{display:grid;grid-template-columns:70px 70px 70px 18px 70px;grid-template-rows:auto auto auto;gap:24px 8px;align-items:center;justify-content:center}';
       h += '#t-chosen .jy-celtic .gc-top{grid-column:2;grid-row:1;justify-self:center}';
       h += '#t-chosen .jy-celtic .gc-left{grid-column:1;grid-row:2;justify-self:center}';
       h += '#t-chosen .jy-celtic .gc-center{grid-column:2;grid-row:2;justify-self:center;position:relative}';
       h += '#t-chosen .jy-celtic .gc-right{grid-column:3;grid-row:2;justify-self:center}';
       h += '#t-chosen .jy-celtic .gc-bottom{grid-column:2;grid-row:3;justify-self:center}';
-      h += '#t-chosen .jy-celtic .gc-staff{grid-column:5;grid-row:1/4;display:flex;flex-direction:column-reverse;align-items:center;gap:6px}</style>';
+      h += '#t-chosen .jy-celtic .gc-staff{grid-column:5;grid-row:1/4;display:flex;flex-direction:column-reverse;align-items:center;gap:26px}</style>';
       h += '<div class="jy-celtic">';
       h += '<div class="gc-top">' + S(2,3,pn(2)) + '</div>';
       h += '<div class="gc-left">' + S(4,5,pn(4)) + '</div>';
-      h += '<div class="gc-center">' + S(0,1,pn(0)) + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);opacity:.5;pointer-events:none;z-index:1">' + S(1,2,'') + '</div></div>';
+      h += '<div class="gc-center">' + S(0,1,pn(0)) + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);pointer-events:none;z-index:6">' + S(1,2,'') + '</div></div>';
       h += '<div class="gc-right">' + S(5,6,pn(5)) + '</div>';
       h += '<div class="gc-bottom">' + S(3,4,pn(3)) + '</div>';
       h += '<div class="gc-staff">' + S(6,7,pn(6)) + S(7,8,pn(7)) + S(8,9,pn(8)) + S(9,10,pn(9)) + '</div>';
