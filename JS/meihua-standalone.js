@@ -187,6 +187,7 @@
         h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'"><span>'+ai.name+'</span></button>';
       }
       h += '</div><div class="mhx-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
+      h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_meihuaShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361\uFF08\u6645\u5366\u8C61\uFF09</button></div>';
       h += '<div style="text-align:center"><button class="mhx-reset-btn" onclick="_mhReset()">↺ 重新起卦</button></div>';
     }
     h += '<div class="mhx-footer">靜月之光 ・ jingyue.uk<br>梅花易數 ・ 體用占</div></div>';
@@ -504,6 +505,23 @@
   // ════════════════════════════════════════════════════════
   //  Public API
   // ════════════════════════════════════════════════════════
+  window._meihuaShare = function () {
+    if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66'); return; }
+    var mh = _mhResult || {};
+    var concl = (mh.ty ? (mh.ty.r + '\uFF08' + mh.ty.f + '\uFF09\u30FB' + mh.ty.d) : '') + (mh.dong ? ' \u30FB \u52D5\u723B\u7B2C' + mh.dong + '\u723B' : '');
+    JYShareCard.open('meihua', {
+      cardTitle: '\u6211\u7684\u5366\u8C61',
+      spread: '\u6885\u82B1\u6613\u6578 \u30FB \u9AD4\u7528\u5360',
+      question: _mhQuestion || '',
+      cards: [
+        { name: (mh.ben && mh.ben.n) || '', pos: '\u672C\u5366' },
+        { name: (mh.hu && mh.hu.n) || '', pos: '\u4E92\u5366' },
+        { name: (mh.bian && mh.bian.n) || '', pos: '\u8B8A\u5366' }
+      ],
+      conclusion: concl
+    });
+  };
+
   window._meihuaStandaloneOpen = function () {
     _mhPhase = 'input'; _mhQuestion = ''; _mhMethod = 'time';
     _mhUpNum = ''; _mhLoNum = ''; _mhText = ''; _mhResult = null; _lastPrompt = '';

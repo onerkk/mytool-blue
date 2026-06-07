@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v2.3
+// 靜月之光 — 雷諾曼牌 Lenormand v2.4
 // Petit Lenormand 36 張・傳統組合義讀法・反盤外牌名幻覺
 // ═══════════════════════════════════════
 (function () {
@@ -465,6 +465,7 @@ function _render() {
       h += '<span>'+ai.name+'</span></button>';
     }
     h += '</div><div class="ln-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
+    h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_lenormandShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361\uFF08\u6645\u724C\u9663\uFF09</button></div>';
     h += '<div style="text-align:center"><button class="ln-reset-btn" onclick="_lnReset()">↺ 重新抽牌</button></div>';
   }
   h += '<div class="ln-footer">靜月之光 ・ jingyue.uk<br>Petit Lenormand 雷諾曼牌</div></div>';
@@ -482,6 +483,23 @@ window._lenormandOpen = function() {
   w.style.display = 'block';
   _render();
   w.scrollTop = 0;
+};
+
+window._lenormandShare = function() {
+  if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66'); return; }
+  var sp = SPREADS[_lnSpread] || {};
+  var pos = sp.positions || [];
+  var cards = (_lnDrawn || []).map(function(c, i) {
+    var pl = (pos[i] || ('\u7B2C' + (i + 1) + '\u5F35'));
+    pl = String(pl).split('/').pop();
+    return { name: c.name || '', pos: pl };
+  });
+  JYShareCard.open('lenormand', {
+    cardTitle: '\u6211\u7684\u96F7\u8AFE\u66FC',
+    spread: (sp.name || '\u96F7\u8AFE\u66FC') + (sp.count ? '\uFF08' + sp.count + '\u5F35\uFF09' : ''),
+    question: _lnQuestion || '',
+    cards: cards
+  });
 };
 
 window._lenormandClose = function() {
