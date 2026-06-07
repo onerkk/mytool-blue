@@ -2897,13 +2897,16 @@ function renderTarotChosenLayoutForCurrentSpread(){
     if (!def) return false;
     if (!sid) sid = (def && def.id) ? def.id : '';
     var html = '';
-    if (typeof window !== 'undefined' && typeof window.buildSlotLayout === 'function') {
-      html = window.buildSlotLayout(sid, def) || '';
+    // v80.41 治本：優先用 jyBuildSlot —— 它內部會先試 buildSlotLayout（已包 try/catch），
+    //   失敗就用自己內建、且絕不拋錯的正統分支（celtic/tree/zodiac/cross…）。
+    //   並把每個渲染器各自包 try，避免任何一支丟例外就中斷整個函式、退回中性方格。
+    if (typeof window !== 'undefined' && typeof window.jyBuildSlot === 'function') {
+      try { html = window.jyBuildSlot(sid, def) || ''; } catch(_e) {}
     }
-    if (!html && typeof window !== 'undefined' && typeof window.jyBuildSlot === 'function') {
-      html = window.jyBuildSlot(sid, def) || '';
+    if (!html && typeof window !== 'undefined' && typeof window.buildSlotLayout === 'function') {
+      try { html = window.buildSlotLayout(sid, def) || ''; } catch(_e) {}
     }
-    // v80.37：外部佈局都不可用時，畫中性 N 格（依當前牌陣張數），不再退回凱爾特 10 格。
+    // 都不可用時，畫中性 N 格（依當前牌陣張數），不再退回凱爾特 10 格。
     if (!html) html = _jyRenderNeutralSlots(def);
     if (!html) return false;
     chosen.innerHTML = html;
