@@ -611,6 +611,7 @@ function goStep(n){
   
   if(needsTransition){
     // ═══ 五角星陣轉場（與自動模式同款）═══
+    if(window._jyEnsureLoadingFxCss) window._jyEnsureLoadingFxCss(); // v80.44：確保過場 CSS 已注入（.loading-overlay/.ld-*）
     const isFinalStep=(n===3);
     const overlay=document.createElement('div');
     overlay.className='loading-overlay';
@@ -781,82 +782,9 @@ document.getElementById('f-question').addEventListener('input',function(){docume
 //   原本 user 在 <select> 切換 focusType 時更新 placeholder，現在 select 已改為 hidden input
 //   _enterFromHome() 內已直接設定統一 placeholder「問越具體越準」
 
-// ═══ v38：用戶狀況快選（提升 AI 開場命中率）═══
-var _JY_CONTEXT_MAP = {
-  love: [
-    { label: '在等對方消息', val: '我正在等一個人的消息，不確定對方的態度' },
-    { label: '剛分手/冷戰', val: '最近剛分手或正在冷戰中' },
-    { label: '有曖昧對象', val: '目前有一個曖昧中的對象' },
-    { label: '單身很久了', val: '已經單身一段時間，想知道什麼時候有機會' }
-  ],
-  career: [
-    { label: '考慮離職', val: '正在猶豫要不要離開現在的工作' },
-    { label: '剛換新工作', val: '最近剛換了新工作，還在適應' },
-    { label: '被主管/同事為難', val: '職場上跟主管或同事有摩擦' },
-    { label: '想創業', val: '有創業的想法，在評估可行性' }
-  ],
-  wealth: [
-    { label: '最近花了大錢', val: '最近有一筆大支出' },
-    { label: '在看投資標的', val: '正在考慮要不要投資一個項目' },
-    { label: '收入不穩定', val: '目前收入不太穩定，想改善' },
-    { label: '有負債壓力', val: '有負債或財務壓力' }
-  ],
-  health: [
-    { label: '最近很累', val: '最近特別疲累，精神狀態不好' },
-    { label: '睡眠有問題', val: '最近失眠或睡眠品質很差' },
-    { label: '壓力很大', val: '最近壓力非常大，快撐不住' },
-    { label: '有健康疑慮', val: '身體有一些症狀讓我擔心' }
-  ],
-  general: [
-    { label: '最近很迷茫', val: '最近對人生方向感到迷茫' },
-    { label: '面臨重大決定', val: '正在面臨一個重大的人生抉擇' },
-    { label: '想確認方向對不對', val: '已經做了選擇，想確認方向是否正確' },
-    { label: '等一個結果', val: '正在等待某件事的結果' }
-  ]
-};
-window._jySelectedContext = '';
-function _updateContextChips() {
-  var wrap = document.getElementById('jy-context-chips');
-  var grid = document.getElementById('jy-context-grid');
-  if (!wrap || !grid) return;
-  var q = (document.getElementById('f-question') || {}).value || '';
-  if (q.length < 3) { wrap.style.display = 'none'; return; }
-  // use f-type as primary topic, fallback to question text detection
-  var fType = (document.getElementById('f-type') || {}).value || '';
-  var topic = 'general';
-  if (['love','relationship'].indexOf(fType) >= 0) topic = 'love';
-  else if (fType === 'career') topic = 'career';
-  else if (fType === 'wealth') topic = 'wealth';
-  else if (fType === 'health') topic = 'health';
-  else if (/感情|喜歡|桃花|對象|交往|復合|前任|婚姻|暗戀|男友|女友|老公|老婆|他|她|曖昧|分手/.test(q)) topic = 'love';
-  else if (/工作|事業|升遷|轉職|主管|同事|離職|創業|面試/.test(q)) topic = 'career';
-  else if (/財運|投資|賺錢|收入|金錢|副業/.test(q)) topic = 'wealth';
-  else if (/健康|身體|失眠|壓力|疲累|焦慮/.test(q)) topic = 'health';
-  var chips = _JY_CONTEXT_MAP[topic] || _JY_CONTEXT_MAP.general;
-  grid.innerHTML = '';
-  chips.forEach(function(c) {
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = c.label;
-    btn.setAttribute('data-ctx', c.val);
-    var isSelected = (window._jySelectedContext === c.val);
-    btn.style.cssText = 'padding:.3rem .65rem;border-radius:20px;font-size:.7rem;font-family:inherit;cursor:pointer;transition:all .2s;' +
-      (isSelected
-        ? 'background:rgba(212,175,55,.15);color:var(--c-gold,#d4af37);border:1.5px solid rgba(212,175,55,.4)'
-        : 'background:rgba(255,255,255,.04);color:var(--c-text-dim,#a09880);border:1px solid rgba(255,255,255,.08)');
-    btn.onclick = function() {
-      if (window._jySelectedContext === c.val) { window._jySelectedContext = ''; }
-      else { window._jySelectedContext = c.val; }
-      _updateContextChips();
-    };
-    grid.appendChild(btn);
-  });
-  wrap.style.display = 'block';
-}
-document.getElementById('f-question').addEventListener('input', function() {
-  clearTimeout(window._ctxTimer);
-  window._ctxTimer = setTimeout(_updateContextChips, 400);
-});
+// ═══ v38「用戶狀況快選」已整條移除（2026-06-08）：實測對分析準確度無幫助。
+// 連同 _JY_CONTEXT_MAP / window._jySelectedContext / _updateContextChips / f-question 監聽器一併刪除；
+// ai-analysis.js 內 userContext 注入同步移除。字數計數器在第 779 行另一條監聽器，不受影響。 ═══
 
 
 // ── UI constants + form events + submit + cache + loading ──
@@ -1529,7 +1457,54 @@ window._jyBuildZiweiOverlay = function(overlay){
   setTimeout(function () { var bu = overlay.querySelector('#jzw-burst'); if (bu) bu.classList.add('go'); }, 2700);
 };
 
+// ★ v80.44：補回「五角星陣過場」所需的 CSS（.loading-overlay + .ld-*）。
+//   程式（submitStep0Fast 自動七維、goStep 手動 step 轉場）都會建出帶 .ld-* 的 overlay，
+//   但這組樣式/keyframes 在專案任何檔案都已不存在 → overlay 無樣式 = 動畫消失。
+//   這裡一次性注入（id 防重複），與紫微 .jzw-* 同款金紫配色，治本還原。
+window._jyEnsureLoadingFxCss = function(){
+  if (document.getElementById('jy-ld-fx-css')) return;
+  var st = document.createElement('style');
+  st.id = 'jy-ld-fx-css';
+  st.textContent = [
+    '.loading-overlay{position:fixed;inset:0;z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 32%,rgba(40,28,46,.55),rgba(11,8,13,.97) 62%,#080509 100%);overflow:hidden;animation:ldFadeIn .4s ease}',
+    '@keyframes ldFadeIn{from{opacity:0}to{opacity:1}}',
+    '.ld-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}',
+    '.ld-particle{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(212,175,55,.85);box-shadow:0 0 6px rgba(212,175,55,.7);opacity:0;animation:ldRise var(--dur,4s) linear var(--delay,0s) infinite}',
+    '@keyframes ldRise{0%{transform:translateY(0) scale(.6);opacity:0}12%{opacity:.9}85%{opacity:.6}100%{transform:translateY(-108vh) scale(1);opacity:0}}',
+    '.ld-pentagram{position:relative;width:220px;height:220px;z-index:2}',
+    '.ld-ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid rgba(212,175,55,.18)}',
+    '.ld-ring:nth-child(1){width:210px;height:210px;animation:ldSpin 14s linear infinite}',
+    '.ld-ring:nth-child(2){width:168px;height:168px;border-color:rgba(185,140,255,.16);animation:ldSpinR 10s linear infinite}',
+    '.ld-ring:nth-child(3){width:126px;height:126px;border-style:dashed;border-color:rgba(212,175,55,.22);animation:ldSpin 7s linear infinite}',
+    '@keyframes ldSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}',
+    '@keyframes ldSpinR{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(-360deg)}}',
+    '.ld-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}',
+    '.ld-line{stroke:rgba(212,175,55,.14);stroke-width:1;transition:stroke .5s,filter .5s}',
+    '.ld-line.lit{stroke:rgba(255,236,184,.85);filter:drop-shadow(0 0 4px rgba(212,175,55,.8))}',
+    '.ld-node{position:absolute;width:44px;height:44px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(212,175,55,.28);background:rgba(212,175,55,.04);transition:all .45s;z-index:3}',
+    '.ld-sym{font-family:"Noto Serif TC",serif;font-size:1rem;color:rgba(212,175,55,.55);line-height:1;transition:color .45s,text-shadow .45s}',
+    '.ld-node-label{font-size:.5rem;color:rgba(212,175,55,.4);margin-top:2px;letter-spacing:.05em;transition:color .45s}',
+    '.ld-node.computing{border-color:rgba(185,140,255,.7);background:rgba(185,140,255,.1);animation:ldNodePulse 1s ease-in-out infinite}',
+    '.ld-node.computing .ld-sym{color:#fff;text-shadow:0 0 10px rgba(185,140,255,.9)}',
+    '.ld-node.computing .ld-node-label{color:rgba(235,220,255,.9)}',
+    '@keyframes ldNodePulse{0%,100%{box-shadow:0 0 14px rgba(185,140,255,.35)}50%{box-shadow:0 0 26px rgba(185,140,255,.6)}}',
+    '.ld-node.done{border-color:rgba(212,175,55,.85);background:rgba(212,175,55,.12);box-shadow:0 0 16px rgba(212,175,55,.4)}',
+    '.ld-node.done .ld-sym{color:#ffe7a8;text-shadow:0 0 10px rgba(212,175,55,.8)}',
+    '.ld-node.done .ld-node-label{color:rgba(255,231,168,.85)}',
+    '.ld-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);font-size:2rem;color:rgba(212,175,55,.7);text-shadow:0 0 12px rgba(212,175,55,.6);z-index:4;transition:all .5s}',
+    '.ld-center.active{color:#fff;text-shadow:0 0 14px rgba(255,255,255,.9),0 0 28px rgba(185,140,255,.95),0 0 42px rgba(212,175,55,.6);transform:translate(-50%,-50%) scale(1.25)}',
+    '.ld-burst{position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(235,220,255,.95),rgba(185,140,255,0));opacity:0;z-index:5}',
+    '.ld-burst.go{animation:ldBurst .6s ease-out forwards}',
+    '@keyframes ldBurst{0%{opacity:.95;width:10px;height:10px}100%{opacity:0;width:340px;height:340px}}',
+    '.ld-burst.fade{opacity:0}',
+    '.ld-status{margin-top:1.6rem;font-family:"Noto Serif TC",serif;font-size:1.05rem;font-weight:700;color:#c9a84c;letter-spacing:.12em;text-shadow:0 2px 14px rgba(0,0,0,.6);transition:opacity .3s;min-height:1.4rem;text-align:center;z-index:2;padding:0 1rem}',
+    '.ld-sub{margin-top:.4rem;font-size:.74rem;color:rgba(212,175,55,.55);letter-spacing:.08em;transition:opacity .3s;min-height:1.1rem;text-align:center;z-index:2;padding:0 1rem}'
+  ].join('');
+  (document.head || document.documentElement).appendChild(st);
+};
+
 function submitStep0Fast(){
+  if (window._jyEnsureLoadingFxCss) window._jyEnsureLoadingFxCss(); // v80.44：確保過場 CSS 已注入
   drawnCards=[];
   S.meihua=null;S.tarot={drawn:[],spread:[]};
   const type=(document.getElementById('f-type')&&document.getElementById('f-type').value)||'general';

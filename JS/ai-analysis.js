@@ -15701,8 +15701,6 @@ function _buildPayload() {
   } catch(_mtwErr) {
     // 節氣警告計算失敗不影響主流程
   }
-  // ★ v38：用戶狀況快選（提升 AI 開場命中率）
-  if (window._jySelectedContext) p.userContext = window._jySelectedContext;
   // ★ v17：真太陽時 + 出生地
   if (f.trueSolar) p.trueSolar = f.trueSolar;
   if (f.birthLocation) p.birthLocation = f.birthLocation;
@@ -24412,7 +24410,6 @@ function _buildTarotOnlyPayload() {
     birthTime: birthTimeText,
     trueSolar: (f.trueSolar || null),
     birthLocation: (f.birthLocation || null),
-    userContext: window._jySelectedContext || '',
     tarotData: {
       spreadType: ta.spreadType || 'celtic_cross',
       spreadZh: (def && def.zh) ? def.zh : '',
@@ -26725,7 +26722,6 @@ function _buildOOTKPayload() {
     name: (S.form && S.form.name) ? S.form.name : '',
     trueSolar: (S.form && S.form.trueSolar) ? S.form.trueSolar : null,
     birthLocation: (S.form && S.form.birthLocation) ? S.form.birthLocation : null,
-    userContext: window._jySelectedContext || '',
     ootkData: {
       significator: results.significator || {},
       operations: ops,
