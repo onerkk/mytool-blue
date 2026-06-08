@@ -1,4 +1,9 @@
-/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v80.58]
+/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v80.59]
+ *  v80.59（總覽／流年題框架・解矛盾指令）：
+ *    detectFocus 新增 isOverview（整體運勢／流年／運程／運勢如何…）。塔羅路徑：當是總覽題且無特定領域時，
+ *    改推「跨領域通盤、鎖定最強 2-3 領域」框架，取代原本為窄問題設計的「禁止擴寫成通盤論述」——
+ *    那句對「今年整體運勢」這種題目字面自相矛盾（題目本來就要通盤）。仍保留時間範圍邊界（限今年、不擴成人生課題）。
+ *    與既有 noQ 路徑「以最集中花色鎖定領域」同源；標準年運讀法本就跨 love/career/finance/health（來源：tarot.com、horoscope.com 年運讀法）。
  *  v80.58（財運機率題誠實化・搭配 tarot_upgrade money 詞庫補洞）：
  *    1) DOMAIN_HINT.wealth + DOMAIN_HINT_MATHERS.wealth 加「純機率開獎題」框架：統一發票／樂透／刮刮樂／賭
  *       塔羅只給狀態與傾向、非隨機開獎保證；講 forecast 不斷 prediction，禁「必中／必不中／訊號不成立」；
@@ -203,8 +208,9 @@
     var isYesNo    = has(/嗎[？?]?\s*$|會不會|是不是|有沒有|能不能|可不可以|是否|對不對|對嗎|好不好|行不行/);
     var isDecision = has(/該不該|要不要|該(選|留|走|分|放棄|繼續)|選.{0,6}還是|.{1,6}還是.{1,6}[好嗎？?]|哪個(好|對|適合)|哪一個|值不值得|值得嗎|適合嗎|留還是走|分還是不分/);
     var isPortrait = has(/對方是(誰|什麼)|他是(誰|什麼樣)|她是(誰|什麼樣)|(他|她|對方).{0,4}(在想|怎麼想|想我|想念|想不想我|愛不愛我|還想|還愛|過得|好不好)|什麼樣的人|對方(的)?(個性|長相|職業)|他喜(不喜)?歡我|她喜(不喜)?歡我/);
+    var isOverview = has(/整體運勢|流年|運程|綜合運勢|全年運|今年運勢|本年運勢|這個月運勢|運勢(如何|怎樣|好不好|為何|好嗎|是什麼)|今年.{0,3}(整體|大方向)|大方向(如何|為何)/); // v80.59：偵測「整體運勢／流年」總覽題（本來就該跨領域通盤）
 
-    return { noQ: noQ, raw: s, domains: domains, timing: isTiming, urgent: isUrgent, yesno: isYesNo, decision: isDecision, portrait: isPortrait };
+    return { noQ: noQ, raw: s, domains: domains, timing: isTiming, urgent: isUrgent, yesno: isYesNo, decision: isDecision, portrait: isPortrait, overview: isOverview };
   }
 
   var DOMAIN_HINT = {
@@ -355,7 +361,11 @@
     if (shape.length) L.push('問題性質：' + shape.join('＋') + (f.urgent ? '＋極短時間窗' : '') + '。');
 
     L.push('回答要求：');
-    L.push('・第一句就直接回答「' + f.raw + '」這個問題本身，不要鋪墊、不要先講方法。只圍繞這個問題答，禁止擴寫成「你們長期走向」「你的人生課題」這類通盤論述。');
+    if (f.overview && !f.domains.length) {
+      L.push('・這是「整體運勢／流年」題——本來就要跨領域通盤（這是標準年運讀法，不是擴寫離題）。第一句先給今年總基調（順／逆／喜憂參半＋一句為什麼）；再依花色集中與大牌占比，鎖定今年訊號最強的 2-3 個生活領域（事業／財運／感情／健康／人際）展開，弱領域一句帶過。不要七個都蜻蜓點水，也不要硬縮成單一窄答案；但範圍限「今年」，不要擴寫成人生課題或長期命運。');
+    } else {
+      L.push('・第一句就直接回答「' + f.raw + '」這個問題本身，不要鋪墊、不要先講方法。只圍繞這個問題答，禁止擴寫成「你們長期走向」「你的人生課題」這類通盤論述。');
+    }
 
     if (f.yesno)    L.push('・是非題：第一句給「會／不會／是／不是／不一定（但傾向X）」。逆位/凶牌不要硬讀成正面。');
     if (f.decision) L.push('・決策題：兩個選項各給支持證據，比完之後明確推一個，不要兩邊都好。');
