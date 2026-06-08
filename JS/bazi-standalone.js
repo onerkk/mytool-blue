@@ -202,6 +202,15 @@
       '.bzx-min-step{min-width:50px;height:50px;border-radius:12px;border:1px solid rgba(201,168,76,.28);background:rgba(255,255,255,.03);color:'+GOLD+';font-size:1rem;cursor:pointer}',
       '.bzx-min-step:active{transform:scale(.9)}',
       '.bzx-min-val{min-width:92px;text-align:center;color:#ffeab8;font-size:1.5rem;letter-spacing:1px}',
+      // v80.44：分鐘改為「十位＋個位」直接點選（取代 ±1/±5 步進，設任意分 ≤2 下到位；真太陽時/夜子時需要精確到分）
+      '.bzx-min-cap{text-align:center;color:'+GOLD+';font-size:.74rem;letter-spacing:1px;margin:.2rem 0 .5rem;opacity:.9}',
+      '.bzx-min-grid{display:grid;gap:.3rem;margin-bottom:.4rem}',
+      '.bzx-min-grid.tens{grid-template-columns:repeat(6,1fr)}',
+      '.bzx-min-grid.ones{grid-template-columns:repeat(10,1fr)}',
+      '.bzx-min-cell{padding:.5rem 0;text-align:center;border-radius:9px;border:1px solid rgba(201,168,76,.18);background:rgba(255,255,255,.03);color:rgba(232,224,208,.82);font-size:.82rem;cursor:pointer}',
+      '.bzx-min-cell.o{font-size:.78rem;padding:.45rem 0}',
+      '.bzx-min-cell.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700;box-shadow:0 0 12px rgba(201,168,76,.35)}',
+      '.bzx-min-cell:active{transform:scale(.9)}',
       '.bzx-unknown-row{display:flex;align-items:center;justify-content:center;margin-top:.9rem;padding-top:.8rem;border-top:1px solid rgba(201,168,76,.12)}',
       '.bzx-unknown-row label{display:flex;align-items:center;gap:.45rem;color:rgba(232,224,208,.65);font-size:.76rem;cursor:pointer}',
       '.bzx-unknown-row input{accent-color:'+GOLD+';width:16px;height:16px}',
@@ -898,12 +907,21 @@
     h+='<div class="bzx-hour-grid"'+dim+'>';
     for(var x=0;x<24;x++) h+='<div class="bzx-hour'+(x===_tpH?' sel':'')+'" onclick="_bzxTpHour('+x+')">'+_pad2(x)+'</div>';
     h+='</div>';
-    h+='<div class="bzx-min-row"'+dim+'><button class="bzx-min-step" onclick="_bzxTpMin(-5)">−5</button><button class="bzx-min-step" onclick="_bzxTpMin(-1)">−1</button><span class="bzx-min-val">'+_pad2(_tpM)+' 分</span><button class="bzx-min-step" onclick="_bzxTpMin(1)">＋1</button><button class="bzx-min-step" onclick="_bzxTpMin(5)">＋5</button></div>';
+    h+='<div class="bzx-min-cap"'+dim+'>分（先點十位，再點個位）</div>';
+    h+='<div class="bzx-min-grid tens"'+dim+'>';
+    for(var mt=0;mt<6;mt++) h+='<div class="bzx-min-cell'+(Math.floor(_tpM/10)===mt?' sel':'')+'" onclick="_bzxTpMinTens('+mt+')">'+_pad2(mt*10)+'</div>';
+    h+='</div>';
+    h+='<div class="bzx-min-grid ones"'+dim+'>';
+    for(var mo=0;mo<10;mo++) h+='<div class="bzx-min-cell o'+((_tpM%10)===mo?' sel':'')+'" onclick="_bzxTpMinOnes('+mo+')">'+mo+'</div>';
+    h+='</div>';
     h+='<div class="bzx-unknown-row"><label><input type="checkbox" '+(u?'checked':'')+' onchange="_bzxTpUnk()">不知時辰（以午時暫排，時柱僅供參考）</label></div>';
     return h;
   }
   window._bzxTpHour=function(h){ _tpH=h; _setBody(_tpBody()); };
   window._bzxTpMin=function(d){ _tpM=(_tpM+d+60)%60; _setBody(_tpBody()); };
+  // v80.44：十位／個位直接點選分鐘（任意分 ≤2 下到位）
+  window._bzxTpMinTens=function(t){ _tpM=t*10+(_tpM%10); if(_tpM>59)_tpM=59; _setBody(_tpBody()); };
+  window._bzxTpMinOnes=function(o){ _tpM=Math.floor(_tpM/10)*10+o; if(_tpM>59)_tpM=59; _setBody(_tpBody()); };
   window._bzxTpUnk=function(){ _tpUnknown=!_tpUnknown; _setBody(_tpBody()); };
 
   // ── 地點選擇器（單點即選＋關閉）──
