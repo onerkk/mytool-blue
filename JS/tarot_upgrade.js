@@ -3400,33 +3400,18 @@ enhanceTarot = function(tarot) {
     results.op1.expectedPiles = expectedPiles;
 
     if (expectedPiles && expectedPiles.indexOf(results.op1.activePile) < 0) {
-      // 二次重洗
-      var deck1b = shuffleNewDeck();
-      var op1Retry = ootkOp1(deck1b, significatorId);
-      op1Retry.attempt = 2;
-      op1Retry.expectedPiles = expectedPiles;
-
-      if (expectedPiles.indexOf(op1Retry.activePile) < 0) {
-        // ★ v70.2 根治：依 Crowley「failure does not necessarily imply abandon」+ PHB，
-        //   Sig 落非預期堆 ≠ 放棄，而是「揭示真實場域」。改中性洞察，不再恐嚇 abandon。
-        op1Retry.abandonTriggered = true;
-        var pileZh = { fire: 'Yod 火堆', water: 'Heh 水堆', air: 'Vau 風堆', earth: 'Heh-final 土堆' };
-        var pileField = { fire: '主動行動／工作場域', water: '情感／關係', air: '思考／溝通／衝突', earth: '物質／實際事務' };
-        var expectedZh = expectedPiles.map(function(p) { return pileZh[p] || p; }).join(' / ');
-        op1Retry.abandonReason =
-          'Sig(' + (sigCard ? sigCard.n : '代表牌') + ')兩次都落於 ' + (pileZh[op1Retry.activePile] || op1Retry.activePile) +
-          '，不是問題「' + getQTypeZh(qType) + '」典型的元素堆（' + expectedZh + '）。依黃金黎明會正統（Crowley 原文：failure does not necessarily imply abandon），這不是要你放棄，而是盤面在揭示真實場域——這件事的能量底色落在「' + (pileField[op1Retry.activePile] || '') + '」。例如問感情卻落火堆，常代表對方來自工作／行動場域，或這件事其實由行動慾驅動。解讀會把答案對準這個真實場域，照常進行。';
-        op1Retry.firstAttemptPile = results.op1.activePile;
-      } else {
-        op1Retry.abandonTriggered = false;
-        op1Retry.firstAttemptPile = results.op1.activePile;
-        var pileZh2 = { fire: 'Yod 火堆', water: 'Heh 水堆', air: 'Vau 風堆', earth: 'Heh-final 土堆' };
-        op1Retry.retryNote =
-          '第一次 Sig 落 ' + (pileZh2[results.op1.activePile] || results.op1.activePile) +
-          '(非合適),依 Mathers 重洗一次,第二次落 ' +
-          (pileZh2[op1Retry.activePile] || op1Retry.activePile) + '(合適),採用第二次。';
-      }
-      results.op1 = op1Retry;
+      // ★ 正統根治(雙原典)：Crowley《Book of Thoth》與 Mathers《Manuscript Q》皆無「落非預期堆即重洗」。
+      //   Crowley First Operation 明文：Yod堆=工作 / Heh堆=感情 / Vau堆=麻煩損失爭執 / He'final堆=金錢，
+      //   落堆本身即揭示問題真實本質；落點不符的原典處置是 abandon 或試 cognate，從不是重洗。
+      //   線上工具不放棄，改為：落哪讀哪、揭示真實場域，不重洗、不丟棄第一次、不分二次。
+      var pileZh = { fire: 'Yod 火堆', water: 'Heh 水堆', air: 'Vau 風堆', earth: 'Heh-final 土堆' };
+      var pileField = { fire: '主動行動／工作場域', water: '情感／關係投射', air: '困擾／衝突／損失／心緒（Crowley：Vau堆＝trouble, loss, quarrel）', earth: '物質／金錢／實際事務' };
+      var expectedZh = expectedPiles.map(function(p) { return pileZh[p] || p; }).join(' / ');
+      results.op1.abandonTriggered = true;
+      results.op1.abandonReason =
+        'Sig(' + (sigCard ? sigCard.n : '代表牌') + ')落於 ' + (pileZh[results.op1.activePile] || results.op1.activePile) +
+        '，不是問題「' + getQTypeZh(qType) + '」表面預期的元素堆（' + expectedZh + '）。依 Crowley《Book of Thoth》開鑰原文，落堆即揭示問題的真實本質——這題的能量底色落在「' + (pileField[results.op1.activePile] || '') + '」。解讀直接對準此真實場域，不重洗、照常進行。';
+      results.op1.firstAttemptPile = null;
     }
 
     // ── Op2:十二宮位 — 正統 Mathers 二次重洗 abandon 機制 ──
@@ -3437,30 +3422,14 @@ enhanceTarot = function(tarot) {
     results.op2.expectedHouses = expectedHouses;
 
     if (expectedHouses && !isSigInExpectedPosition(results.op2.activeHouse, expectedHouses)) {
-      // Mathers 原文:「shuffle and deal once more」── 重洗一次
-      var deck2b = shuffleNewDeck();
-      var op2Retry = ootkOp2(deck2b, significatorId);
-      op2Retry.attempt = 2;
-      op2Retry.expectedHouses = expectedHouses;
-
-      if (!isSigInExpectedPosition(op2Retry.activeHouse, expectedHouses)) {
-        // ★ v70.2 根治：Mathers Op2 雖提二次失敗可 abandon，但 Crowley/PHB 主張「揭示真實領域」。
-        op2Retry.abandonTriggered = true;
-        op2Retry.abandonReason =
-          'Sig(' + (sigCard ? sigCard.n : '代表牌') + ')兩次都落於第 ' + op2Retry.activeHouse +
-          ' 宮，不是問題「' + getQTypeZh(qType) + '」典型的宮位（' + expectedHouses.join('/') +
-          ' 宮）。依黃金黎明會正統，這不是要你放棄占卜，而是盤面揭示：你問的事，真正聚焦在第 ' + op2Retry.activeHouse +
-          ' 宮所代表的人生領域。解讀會把答案對準這個宮位，照常進行。';
-        op2Retry.firstAttemptHouse = results.op2.activeHouse;
-      } else {
-        op2Retry.abandonTriggered = false;
-        op2Retry.firstAttemptHouse = results.op2.activeHouse;
-        op2Retry.retryNote =
-          '第一次 Sig 落第 ' + results.op2.activeHouse +
-          ' 宮(非合適),依 Mathers 重洗一次,第二次落第 ' +
-          op2Retry.activeHouse + ' 宮(合適),採用第二次。';
-      }
-      results.op2 = op2Retry;
+      // ★ 正統根治：同 Op1，落哪宮讀哪宮、揭示真實領域，不重洗、不丟棄、不分二次。
+      results.op2.abandonTriggered = true;
+      results.op2.abandonReason =
+        'Sig(' + (sigCard ? sigCard.n : '代表牌') + ')落於第 ' + results.op2.activeHouse +
+        ' 宮，不是問題「' + getQTypeZh(qType) + '」表面預期的宮位（' + expectedHouses.join('/') +
+        ' 宮）。依開鑰正統，落宮即揭示：你問的事真正聚焦在第 ' + results.op2.activeHouse +
+        ' 宮所代表的人生領域。解讀對準此宮，不重洗、照常進行。';
+      results.op2.firstAttemptHouse = null;
     }
 
     // ── Op3:十二星座 — 正統 Mathers 二次重洗 abandon 機制 ──
@@ -3475,28 +3444,12 @@ enhanceTarot = function(tarot) {
     if (expectedSigns) {
       var op3SignIdx = SIGNS_ORDER.indexOf(results.op3.activeSign);
       if (!isSigInExpectedPosition(op3SignIdx, expectedSigns)) {
-        var deck3b = shuffleNewDeck();
-        var op3Retry = ootkOp3(deck3b, significatorId);
-        op3Retry.attempt = 2;
-        op3Retry.expectedSigns = expectedSigns;
-        var op3RetrySignIdx = SIGNS_ORDER.indexOf(op3Retry.activeSign);
-
-        if (!isSigInExpectedPosition(op3RetrySignIdx, expectedSigns)) {
-          // Op3 二次仍錯位 → 不像 Op2 那樣硬性 abandon,而是給「弱訊號警示」
-          // (因為 Mathers 原文 Op3 沒明文 abandon)
-          op3Retry.weakSignalWarning = true;
-          op3Retry.weakSignalReason =
-            '依正統 Mathers/PHB,Op3 二次重洗後 Sig 仍落於 ' + op3Retry.activeSign +
-            '(非問題「' + getQTypeZh(qType) + '」的合適星座)→ 此 Op3 訊號偏弱,解讀時應降權。';
-          op3Retry.firstAttemptSign = results.op3.activeSign;
-        } else {
-          op3Retry.weakSignalWarning = false;
-          op3Retry.firstAttemptSign = results.op3.activeSign;
-          op3Retry.retryNote =
-            '第一次 Sig 落 ' + results.op3.activeSign +
-            ',重洗後落 ' + op3Retry.activeSign + ',採用第二次。';
-        }
-        results.op3 = op3Retry;
+        // ★ 正統根治：落哪星座讀哪、揭示真實內在驅力，不重洗；落非預期星座僅作降權提示。
+        results.op3.weakSignalWarning = true;
+        results.op3.weakSignalReason =
+          'Sig 落於 ' + results.op3.activeSign +
+          '(非問題「' + getQTypeZh(qType) + '」表面預期的星座)→ 此 Op3 屬揭示性訊號，解讀時可適度降權，但不重洗、照讀真實驅力。';
+        results.op3.firstAttemptSign = null;
       }
     }
 
