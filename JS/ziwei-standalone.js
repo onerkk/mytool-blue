@@ -411,11 +411,16 @@
     if (zw.daXian && zw.daXian.length) {
       var nowY = new Date().getFullYear();
       var age = null;
-      try { var by = parseInt((form.bdate||'').slice(0,4)); if (by) age = nowY - by; } catch(e){}
+      // v80.48 治本：紫微大限以「虛歲」計（與引擎 isCurrent 同基準），不可用實歲，否則虛歲/實歲兩套
+      //   基準各標一限造成「兩個◀現在」。虛歲 = 今年 - 出生年 + 1。
+      try { var by = parseInt((form.bdate||'').slice(0,4)); if (by) age = nowY - by + 1; } catch(e){}
+      var _hasCur = zw.daXian.some(function(d){ return d.isCurrent; }); // 引擎已標當前大限就以它為唯一準
       L.push('');
       L.push('【大限走勢】(體=命盤，用=大限；現行大限以 ◀現在 標示)');
       zw.daXian.forEach(function(dx){
-        var cur = dx.isCurrent ? ' ◀現在' : ((age != null && age >= dx.ageStart && age <= dx.ageEnd) ? ' ◀現在' : '');
+        // 只標一個：優先信引擎 isCurrent；引擎全沒標時才用虛歲回推（同一基準，不混實歲、不 OR 兩套）
+        var _isNow = _hasCur ? !!dx.isCurrent : (age != null && age >= dx.ageStart && age <= dx.ageEnd);
+        var cur = _isNow ? ' ◀現在' : '';
         var huaTxt = (dx.hua && dx.hua.length) ? '　限內四化:' + dx.hua.map(function(h){return h.star+'化'+huaShort(h.hua)+'入'+h.palace;}).join('、') : '';
         L.push('・' + dx.ageStart + '–' + dx.ageEnd + '歲　走「' + (dx.palaceName||dx.palace||'') + '」宮(' + (dx.branch||'') + ')' +
           (dx.level?'〔'+dx.level+'〕':'') + (dx.theme?'　主題:'+dx.theme:'') + huaTxt + cur);
@@ -608,7 +613,7 @@
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        window._jyLazyScript('JS/ziwei.js', null);
+        window._jyLazyScript('JS/ziwei.js?v=20260607v80_48', null);
       }
     } catch(e){}
     w.scrollTop = 0;
@@ -631,7 +636,7 @@
     try {
       curDx = (zw.daXian||[]).find(function(d){ return d.isCurrent; });
       if (!curDx) {
-        var by = parseInt((form.bdate||'').slice(0,4)); var age = by ? nowY - by : null;
+        var by = parseInt((form.bdate||'').slice(0,4)); var age = by ? nowY - by + 1 : null; // 虛歲（與引擎 isCurrent 同基準）
         if (age != null) curDx = (zw.daXian||[]).find(function(d){ return age>=d.ageStart && age<=d.ageEnd; });
       }
     } catch(e){}

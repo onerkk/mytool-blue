@@ -497,12 +497,17 @@ function computeZiwei(year,month,day,hour,gender){
     });
   });
 
-  // 檢查化入（v35升級：任何宮的宮干四化飛入其他宮 → 向心↑）
-  // 舊版只查對宮，新版查全部12宮的四化落點
+  // 檢查向心自化（正統：對宮宮干四化使本宮星曜四化 → 向心↑）
+  // v80.48 治本：自化(離心/向心)是「本宮↔對宮」的直線力量；全12宮的宮干飛化屬「飛宮四化(飛星)」，
+  //   是拋物線力量，已另存於 feiGongHua，不可混入自化。舊 v35「查全部12宮」把飛宮誤當向心自化，
+  //   造成同一顆星被多宮飛化、自化爆量（已查證：許銓仁/北派四化/紫微學堂——向心自化只取對宮）。
   palaces.forEach((targetP, targetIdx)=>{
-    // 遍歷所有「其他宮」，看它們的宮干四化是否有星落在 targetP
+    // 只取 targetP 的「對宮」當向心自化來源（對宮＝地支相差6）
+    const _tgtBr = DZ.indexOf(targetP.branch);
     palaces.forEach((sourceP, sourceIdx)=>{
-      if(sourceIdx === targetIdx) return; // 自己飛自己=自化，已處理
+      if(sourceIdx === targetIdx) return; // 自己飛自己=自化（離心），已處理
+      const _srcBr = DZ.indexOf(sourceP.branch);
+      if(((_tgtBr + 6) % 12) !== _srcBr) return; // 非對宮 → 屬飛宮四化、非向心自化，略過
       const srcGan = sourceP.gan;
       const srcSihua = SIHUA_TABLE[srcGan] || SIHUA_TABLE['甲'];
       
