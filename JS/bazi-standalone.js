@@ -384,6 +384,24 @@
     return '';
   }
 
+  // v80.47：病藥／通關用神的「藥」也要做飽和／忌神／官殺檢查——
+  //   引擎挑藥時可能挑到「能洩病但本命已飽和」或「是日主官殺」的五行
+  //   （例：殺重身弱，藥取洩＝水，但水已32%、是閒神/印，補水反水多木漂），與用神(火木)打架。
+  //   此函式回傳一句校正註，讓 AI 不把已飽和／忌神／官殺的藥當喜用外補，改走用神那條藥路。
+  function _elxNote(el, b) {
+    if (!el || !b) return '';
+    var ep = b.ep || {}, unfav = Array.isArray(b.unfav) ? b.unfav : [], fav = Array.isArray(b.fav) ? b.fav : [];
+    var keMe = ({ '木': '金', '火': '水', '土': '木', '金': '火', '水': '土' })[b.dmEl];
+    var weak = !b.specialStructure && !b.strong;
+    var pct = (ep[el] != null) ? Math.round(ep[el]) : null;
+    var favTxt = fav.length ? '；命局真正要補的是用神【' + fav.join('、') + '】那一路（同樣能解此病）' : '';
+    if (unfav.indexOf(el) >= 0) return '（注意：' + el + '已列忌神，不宜外補' + favTxt + '）';
+    if (pct != null && pct >= 22) return '（注意：' + el + '命局已自帶約' + pct + '%、近飽和，毋須外補' + favTxt + '）';
+    if (weak && el === keMe) return '（注意：' + el + '對日主是官殺、剋身，身弱補它＝補七殺，只可少量、不可當喜用' + favTxt + '）';
+    if (fav.indexOf(el) >= 0) return '（此藥與用神同向，宜補）';
+    return '';
+  }
+
   function _currentDayun(b) {
     if (!b || !Array.isArray(b.dayun)) return null;
     for (var i=0;i<b.dayun.length;i++) { if (b.dayun[i] && b.dayun[i].isCurrent) return b.dayun[i]; }
@@ -475,8 +493,8 @@
     // 用神喜忌（斷吉凶的綱）
     L.push('【用神喜忌（這是斷吉凶的綱，務必先定後論）】');
     L.push('用神（喜）：' + (Array.isArray(b.fav) ? b.fav.join('、') : '—') + '　忌神：' + (Array.isArray(b.unfav) ? b.unfav.join('、') : '—'));
-    if (b.medicineGod) L.push('病藥用神：' + _fmt(b.medicineGod) + '（命局有病，此為藥）。');
-    if (b.relayGod) L.push('通關用神：' + _fmt(b.relayGod) + '（兩氣相戰，此為和解）。');
+    if (b.medicineGod) L.push('病藥用神：' + _fmt(b.medicineGod) + '（命局有病，此為藥）。' + (b.medicineGod.drug ? _elxNote(b.medicineGod.drug, b) : ''));
+    if (b.relayGod) L.push('通關用神：' + _fmt(b.relayGod) + '（兩氣相戰，此為和解）。' + (b.relayGod.relay ? _elxNote(b.relayGod.relay, b) : ''));
     if (b.tiaohou && b.tiaohou.need && b.tiaohou.need.length) {
       // v80.46：調候五行逐一定性，一次消除三種矛盾——
       //   (a)「需水卻又忌多水/水多木漂」：該五行本命已過旺或已列忌神 → 標「已足，不補」
@@ -593,7 +611,7 @@
     L.push('【完整性清單（寫完前自我核對，但不要為湊字灌水）】');
     L.push('□ 第一句直接回答了問題　□ 先定旺衰格局、以用神為綱下了明確吉凶　□ 調候有疊進判斷');
     L.push('□ 大運流年落地（現在這步幫不幫、何時轉、為什麼）　□ 相關神煞／刑沖落到六親宮位　□ 不利處直說＋可行的補救（補什麼五行、做什麼）');
-    L.push('□ 空亡落到用神／流年流月時有點出虛象、且同組空亡前後一致　□ 官殺混雜等格局病有翻成人事具象、不只報名詞　□ 有定格局、且格局通則與用神方向不衝突（衝突時以用神為準、不閃避格局）　□ 調候標註一致：沒把「已過旺／官殺」的五行當喜用補（不與「調候不缺」自相矛盾）');
+    L.push('□ 空亡落到用神／流年流月時有點出虛象、且同組空亡前後一致　□ 官殺混雜等格局病有翻成人事具象、不只報名詞　□ 有定格局、且格局通則與用神方向不衝突（衝突時以用神為準、不閃避格局）　□ 調候／病藥／通關標註一致：沒把「已飽和／已過旺／官殺／忌神」的五行當喜用補（不與「已足／不缺」自相矛盾）');
     L.push('');
 
     // 輸出格式 + 水晶收尾
