@@ -191,6 +191,14 @@
     spiritual:'靈性/課題——靈性層的話必須有牌面出處（如「審判正＝這段業力正在結」），不可用靈性詞解釋靈性詞，不造神。大牌≥4＝強業力訊號。'
   };
 
+  // ★ Mathers（基於 Marseille，純 Etteilla 牌義）專用領域提示：避開上面那些 RWS 現代具體牌義，
+  //   一律以本盤每張牌「→」後的 Mathers 原典義為準（感情/健康是花色層級、無衝突，沿用 DOMAIN_HINT）。
+  var DOMAIN_HINT_MATHERS = {
+    wealth:  '財運/財務——金幣牌一律用「→」後的 Mathers 原典義讀，不可套「金幣三＝穩步、五＝破財、十＝圓滿」這類 RWS 現代義（本盤金幣五正位在 Mathers 是「戀人／愛」、金幣十正位是「家／家庭」，與現代相反）。缺金幣＝想法不踏實。✗ 別把聖杯多讀成人脈財。是非題給「會不會進帳／虧損」的明確方向；被問具體金額而牌面無對應＝老實說「方向是X，但這個數字牌面沒給」。',
+    career:  '事業/工作——權杖與金幣牌一律用「→」後的 Mathers 原典義讀，不可把寶劍九／十／塔套成 RWS 的「身心扛不住」（寶劍九正位在 Mathers 是「神職／良知」，非焦慮）。缺權杖＝缺動力。✗ 別把聖杯多讀成「同事感情好」。',
+    spiritual:'靈性/課題——靈性判斷必須有牌面出處，但牌義只用「→」後的 Mathers 原典義，不可套「審判＝業力正在結」這類現代靈性詞（Mathers 的審判＝更新／結果／事情的決定）。不造神、不用靈性詞解釋靈性詞。大牌多＝重大主題。'
+  };
+
   // ── 開鑰：問題領域 → Sig 應落堆 / Op2 應落宮 / Op4 旬主星（落點對不對＝對應 vs 揭示真實場域的判準）──
   var OOTK_ROUTING = {
     love:    'Sig 應落水堆（聖杯）＝感情場域對應；Op2 應落 5/7 宮；Op4 旬主星＝金星/月亮＝對應準確。落火/土/風堆＝揭示真實場域（對方來自工作圈/物質圈/紛爭，不是浪漫場合）。',
@@ -339,7 +347,10 @@
     }
     if (f.portrait) L.push('・對方畫像題：先檢查牌陣有沒有宮廷牌——有才推年齡/外型，沒有就誠實說「牌面沒有人物牌，無法推年齡」，不要憑空編「她35歲/姓黃/金融業」。');
 
-    f.domains.slice(0, 2).forEach(function (d) { if (DOMAIN_HINT[d]) L.push('・' + DOMAIN_HINT[d]); });
+    var _spD = '';
+    try { var _SD = (typeof window!=='undefined' && window.S) ? window.S : null; if (!_SD) try { _SD = (0, eval)('typeof S !== "undefined" ? S : null'); } catch(e){} _spD = (_SD && _SD.tarot && _SD.tarot.spreadType) || (typeof getCurrentSpread === 'function' ? getCurrentSpread() : ''); } catch(e){}
+    var _hintMath = (_spD === 'mathers_horseshoe' || _spD === 'mathers_21');
+    f.domains.slice(0, 2).forEach(function (d) { var h = (_hintMath && DOMAIN_HINT_MATHERS[d]) ? DOMAIN_HINT_MATHERS[d] : DOMAIN_HINT[d]; if (h) L.push('・' + h); });
 
     return L.join('\n') + '\n';
   }
