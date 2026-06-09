@@ -611,35 +611,37 @@ function computeZiwei(year,month,day,hour,gender){
 
     // 用analyzePalace做完整宮位分析（含廟旺落陷+吉煞組合+特殊格局）
     const dxAnalysis=analyzePalace(origPalace, dxBranchIdx);
-    let dxScore=dxAnalysis.score;
+    let dxScore=dxAnalysis.score - 50; // 修scale：analyzePalace為0-100基準50，須回正到0中心，否則下面門檻永遠破表→全大吉
     let dxNotes=[...dxAnalysis.notes];
 
-    // 大限四化飛入各宮的影響
+    // 大限四化飛入各宮的影響（權重放大到與0中心尺度相稱）
     dxHua.forEach(h=>{
       // 四化飛入本命盤的對應宮位
       const targetPalace=palaces.find(p=>p.name===h.palace);
       if(h.hua==='化祿'){
-        dxScore+=2;
+        dxScore+=6;
         dxNotes.push('大限'+h.star+'化祿入'+h.palace+'（'+h.star+'帶來'+h.palace+'領域的機會）');
       }
       if(h.hua==='化權'){
-        dxScore+=1;
+        dxScore+=3;
         dxNotes.push('大限'+h.star+'化權入'+h.palace+'（'+h.palace+'領域有掌控力）');
       }
       if(h.hua==='化科'){
-        dxScore+=0.5;
+        dxScore+=2;
         dxNotes.push('大限'+h.star+'化科入'+h.palace+'（'+h.palace+'領域有貴人）');
       }
       if(h.hua==='化忌'){
-        dxScore-=2;
+        dxScore-=8;
         dxNotes.push('大限'+h.star+'化忌入'+h.palace+'（'+h.palace+'領域有困擾）');
         // 四化疊加：大限化忌+原盤化忌=雙忌（大凶）
         if(targetPalace){
           const origJi=targetPalace.stars.find(s=>s.hua==='化忌');
-          if(origJi){dxScore-=2;dxNotes.push('⚠ 大限化忌疊原盤化忌於'+h.palace+'（雙忌疊加，大凶）');}
+          if(origJi){dxScore-=6;dxNotes.push('⚠ 大限化忌疊原盤化忌於'+h.palace+'（雙忌疊加，大凶）');}
         }
       }
     });
+    // 夾制範圍，避免主星廟旺+祿權衝破或雙忌探底失真
+    dxScore=Math.max(-25,Math.min(25,dxScore));
 
     // 大限宮位象徵含義（走到什麼宮=人生主題）
     const DX_THEME={
@@ -650,12 +652,12 @@ function computeZiwei(year,month,day,hour,gender){
     const dxTheme=DX_THEME[dxPalaceName]||'';
 
     let dxLevel='平';
-    if(dxScore>=6) dxLevel='大吉';
-    else if(dxScore>=3) dxLevel='中吉';
-    else if(dxScore>=1) dxLevel='小吉';
-    else if(dxScore>=-1) dxLevel='平';
-    else if(dxScore>=-3) dxLevel='小凶';
-    else if(dxScore>=-6) dxLevel='中凶';
+    if(dxScore>=11) dxLevel='大吉';
+    else if(dxScore>=5) dxLevel='中吉';
+    else if(dxScore>=2) dxLevel='小吉';
+    else if(dxScore>=-2) dxLevel='平';
+    else if(dxScore>=-5) dxLevel='小凶';
+    else if(dxScore>=-11) dxLevel='中凶';
     else dxLevel='大凶';
 
     daXian.push({

@@ -384,7 +384,8 @@
     L.push('【十二宮全盤】(每宮：地支｜主星含廟旺｜輔吉｜煞｜十二長生)');
     palaces.forEach(function(p){
       var pp = palaceStarParts(p);
-      var seg = p.name + '宮(' + p.branch + ')：' +
+      var _pn = (p.name && p.name.charAt(p.name.length-1)==='宮') ? p.name : (p.name + '宮'); // 修「命宮宮」重複
+      var seg = _pn + '(' + p.branch + ')：' +
         (pp.majors.length ? pp.majors.join('、') : '空宮') +
         (pp.aux.length ? '｜吉:' + pp.aux.join('、') : '') +
         (pp.sha.length ? '｜煞:' + pp.sha.join('、') : '') +
@@ -427,17 +428,20 @@
       });
     }
 
-    // 流年（今年）
+    // 流年（今年＋未來3年，供「明年運勢」「未來三年哪一年」類問題比較）
     try {
       if (typeof zw.getLiuNianZw === 'function') {
-        var ly = new Date().getFullYear();
-        var ln = zw.getLiuNianZw(ly);
-        if (ln) {
-          L.push('');
-          L.push('【今年流年 ' + ly + '】(' + (ln.gz||'') + ')　流年命宮落「' + (ln.mingPalace||'') + '」' +
-            (ln.focus?'　主軸:'+ln.focus:'') +
-            ((ln.hua && ln.hua.length) ? '　流年四化:' + ln.hua.map(function(h){return h.star+'化'+huaShort(h.hua)+'入'+h.palace;}).join('、') : ''));
-          if (ln.notes && ln.notes.length) ln.notes.slice(0,4).forEach(function(n){ L.push('  - ' + n); });
+        var ly0 = new Date().getFullYear();
+        L.push('');
+        L.push('【流年走勢 ' + ly0 + '–' + (ly0+3) + '】(每年：干支｜流年命宮落本命哪一宮｜主軸｜流年四化飛入；未來年比較看四化動線)');
+        for (var yy = ly0; yy <= ly0 + 3; yy++) {
+          var lnf = zw.getLiuNianZw(yy);
+          if (!lnf) continue;
+          var tag = (yy === ly0) ? '（今年）' : (yy === ly0 + 1) ? '（明年）' : '';
+          L.push('・' + yy + tag + '　' + (lnf.gz || '') + '　命宮落「' + (lnf.mingPalace || '') + '」' +
+            (lnf.focus ? '·' + lnf.focus : '') +
+            ((lnf.hua && lnf.hua.length) ? '　四化:' + lnf.hua.map(function(h){return h.star+'化'+huaShort(h.hua)+'入'+h.palace;}).join('、') : ''));
+          if (yy === ly0 && lnf.notes && lnf.notes.length) lnf.notes.slice(0,3).forEach(function(n){ L.push('    - ' + n); });
         }
       }
     } catch (e) {}
@@ -617,7 +621,7 @@
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        window._jyLazyScript('JS/ziwei.js?v=20260607v80_48', null);
+        window._jyLazyScript('JS/ziwei.js?v=20260609v80_50', null);
       }
     } catch(e){}
     w.scrollTop = 0;
