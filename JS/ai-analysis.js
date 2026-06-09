@@ -24294,6 +24294,16 @@ function _buildTarotOnlyPayload() {
   var courtPeople = [];
   var _courtAge = { 11:'年輕/新手', 12:'積極行動者', 13:'成熟掌控者', 14:'權威/決策者' };
   var _suitPersonality = { wand:'熱情/衝動/行動力強', cup:'感性/關懷/情感豐富', sword:'理性/直接/言語犀利', pent:'務實/穩重/重視安全' };
+  // ★ 根治：逆位宮廷牌「負面特質」原本只看花色——所有逆位金幣宮廷都被貼「固執/貪婪」（那其實是金幣國王逆的義），
+  //   忽略了位階。改成 位階(num=11侍/12騎/13后/14王)×花色 對照，依各宮廷牌標準逆位義。
+  //   RWS 共識查證：tarotvelvet/teachmetarot/tarottechnique/divine-warrior——逆位侍者＝幼稚走極端、
+  //   逆位騎士＝魯莽或停滯、逆位皇后＝涵容被扭曲、逆位國王＝權威腐化。
+  var _courtShadow = {
+    11: { wand:'三分鐘熱度/半途而廢/壞消息', cup:'情緒不成熟/耽溺幻想/逃避真實感受', sword:'口無遮攔/愛說閒話/用話傷人', pent:'缺方向/不切實際/落不了地' },
+    12: { wand:'衝動魯莽/虎頭蛇尾/或失去動力起不了步', cup:'善變/空談感情/情緒勒索', sword:'莽撞躁進/坐立難安/不顧後果', pent:'停滯/怠惰/固執守舊/沒進展' },
+    13: { wand:'善妒/跋扈/沒安全感/報復心', cup:'情緒淹沒/過度依賴/共依存', sword:'冷酷/尖酸/情感封閉', pent:'只顧物質而疏忽情感/或理財失控/患得患失' },
+    14: { wand:'專斷/自大/霸道/攬功', cup:'情緒操控/喜怒無常/藉物逃避', sword:'濫權/冷酷/操弄/智性霸凌', pent:'固執/貪婪/物質掛帥/控制慾' }
+  };
   drawn.forEach(function(d, i) {
     if (!d || !d.num || d.num < 11 || d.suit === 'major') return;
     var person = {
@@ -24308,7 +24318,7 @@ function _buildTarotOnlyPayload() {
     else if (cards[i].role === 'self') person.hint = '問卜者自己的狀態';
     else if (cards[i].role === 'outcome') person.hint = '最終出現的人';
     else person.hint = '相關人物';
-    if (!d.isUp) person.shadow = '呈現負面特質：' + (d.suit === 'wand' ? '急躁/獨斷' : d.suit === 'cup' ? '情緒化/依賴' : d.suit === 'sword' ? '尖酸/冷漠' : '固執/貪婪');
+    if (!d.isUp) { var _csh = (_courtShadow[d.num] && _courtShadow[d.num][d.suit]) || ''; if (_csh) person.shadow = '呈現負面特質：' + _csh; }
     courtPeople.push(person);
   });
 
