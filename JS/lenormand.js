@@ -313,19 +313,35 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('牌陣：' + sp.name + '（' + sp.count + ' 張）');
   lines.push('');
 
+  var isGT = (spreadId === 'grand');
   for (var i = 0; i < drawn.length; i++) {
     var c = drawn[i];
-    var posLabel = sp.positions ? sp.positions[i] : ('位置 ' + (i+1));
+    var posLabel;
+    if (sp.positions) {
+      posLabel = sp.positions[i];
+    } else if (isGT) {
+      var _r, _cc;
+      if (i < 32) { _r = Math.floor(i/8); _cc = i % 8; } else { _r = 4; _cc = i - 32; }
+      posLabel = '第' + (_r+1) + '排第' + (_cc+1) + '格';
+    } else {
+      posLabel = '位置 ' + (i+1);
+    }
     lines.push((i+1) + '. ' + posLabel + '：' + c.id + '.' + c.name + '（' + c.en + '）');
     lines.push('   關鍵字：' + c.key);
     lines.push('   正面：' + c.pos);
     lines.push('   負面：' + c.neg);
-    // 組合提示：跟前一張和後一張
-    if (i > 0) {
-      lines.push('   ← 與前張 ' + drawn[i-1].name + ' 組合讀');
-    }
-    if (i < drawn.length - 1) {
-      lines.push('   → 與後張 ' + drawn[i+1].name + ' 組合讀');
+    if (isGT) {
+      // 房屋系統：第 (i+1) 格＝第 (i+1) 號牌的「家」，用該牌主題當這格的領域
+      var _hc = CARDS[i];
+      lines.push('   落在第' + (i+1) + '宮（' + _hc.name + '宮·' + _hc.key + '）');
+    } else {
+      // 線/格：相鄰牌組合提示（大牌陣改看 2D 版面，不用線性相鄰）
+      if (i > 0) {
+        lines.push('   ← 與前張 ' + drawn[i-1].name + ' 組合讀');
+      }
+      if (i < drawn.length - 1) {
+        lines.push('   → 與後張 ' + drawn[i+1].name + ' 組合讀');
+      }
     }
     lines.push('');
   }
@@ -342,6 +358,39 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('對角線A：' + drawn[0].name + '→' + drawn[4].name + '→' + drawn[8].name);
     lines.push('對角線B：' + drawn[2].name + '→' + drawn[4].name + '→' + drawn[6].name);
     lines.push('鏡像配對：' + drawn[0].name + '↔' + drawn[8].name + '、' + drawn[2].name + '↔' + drawn[6].name + '、' + drawn[1].name + '↔' + drawn[7].name + '、' + drawn[3].name + '↔' + drawn[5].name);
+  }
+
+  // 大牌陣 2D 版面 + Sig 座標（讓遠近/方位/房屋可被實際計算，而非靠線性編號猜）
+  if (isGT && drawn.length === 36) {
+    lines.push('【大牌陣實際版面（4排8張＋末排4張置中）——務必照此 2D 位置判斷遠近/方位/相鄰/房屋，不可把上面的編號順序當左右相鄰】');
+    var _rowStr = function(s,e){ var a=[]; for (var k=s;k<=e;k++){ a.push('['+(k+1)+']'+drawn[k].name); } return a.join('  '); };
+    lines.push('排1：' + _rowStr(0,7));
+    lines.push('排2：' + _rowStr(8,15));
+    lines.push('排3：' + _rowStr(16,23));
+    lines.push('排4：' + _rowStr(24,31));
+    lines.push('排5(置中)：' + _rowStr(32,35));
+    lines.push('');
+    var _sigId = (sigGender === 'female') ? 29 : 28;
+    var _si = -1; for (var k2=0;k2<drawn.length;k2++){ if (drawn[k2].id===_sigId){ _si=k2; break; } }
+    if (_si >= 0) {
+      if (_si >= 32) {
+        lines.push('Significator ' + (sigGender==='female'?'淑女(29)':'紳士(28)') + ' 落在末排 cartouche（第' + (_si-31) + '張），屬收束/命運性背景區——先說此題落在這區，再回主盤核對，不硬塞回去。');
+      } else {
+        var _sr = Math.floor(_si/8), _sc = _si % 8;
+        lines.push('Significator ' + (sigGender==='female'?'淑女(29)':'紳士(28)') + ' 落在第' + (_sr+1) + '排第' + (_sc+1) + '格。以它為中心讀：');
+        var _row=[]; for (var k3=_sr*8;k3<=_sr*8+7;k3++){ _row.push(drawn[k3].name + (k3<_si?'(左·過去)':k3>_si?'(右·未來)':'(Sig)')); }
+        lines.push('・Sig 同一排（時間軸，左過去→右未來）：' + _row.join('、'));
+        var _col=[]; for (var rr=0;rr<4;rr++){ var _ci=rr*8+_sc; _col.push(drawn[_ci].name + (rr<_sr?'(上·意識/檯面)':rr>_sr?'(下·潛意識/根基)':'(Sig)')); }
+        lines.push('・Sig 同一列（上意識↔下潛意識）：' + _col.join('、'));
+        var _nb=[];
+        if (_sc>0) _nb.push('左=' + drawn[_si-1].name);
+        if (_sc<7) _nb.push('右=' + drawn[_si+1].name);
+        if (_sr>0) _nb.push('上=' + drawn[_si-8].name);
+        if (_sr<3) _nb.push('下=' + drawn[_si+8].name);
+        lines.push('・緊貼 Sig 的牌（最即時、先讀）：' + _nb.join('、'));
+      }
+    }
+    lines.push('');
   }
 
   // 合法牌名清單
