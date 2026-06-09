@@ -1391,7 +1391,7 @@
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
-<script src="JS/ai-analysis.js?v=20260609v84_audit2" defer></script>
+<script src="JS/ai-analysis.js?v=20260610v84_audit5" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260610v80_30" defer></script>
@@ -1399,7 +1399,7 @@
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260610v80_32" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260610v80_51" defer></script>
-<script src="JS/bazi-standalone.js?v=20260610v80_33" defer></script>
+<script src="JS/bazi-standalone.js?v=20260610v80_34" defer></script>
 <script src="JS/ui.js?v=20260609v80_65" defer></script>
 <script src="JS/spread-picker.js?v=20260607v80_37" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
@@ -1435,10 +1435,10 @@
   var DEFERRED = [
     'JS/ephemeris-client.js?v=20260507v69_3_0',
     'JS/solar-location.js?v=20260507v69_3_0',
-    'JS/bazi.js?v=20260608v80_60',
+    'JS/bazi.js?v=20260610v80_61',
     // 紫微核心引擎：需上傳/保留 JS/ziwei.js，否則 computeZiwei 不會存在
     'JS/ziwei.js?v=20260609v80_50',
-    'JS/bazi_upgrade.js?v=20260606v80_29',
+    'JS/bazi_upgrade.js?v=20260610v80_30',
     'JS/western_upgrade.js?v=20260507v69_3_0',
     'JS/jyotish_full_upgrade.js?v=20260507v69_3_0',
     'JS/name_upgrade.js?v=20260507v69_3_0'
