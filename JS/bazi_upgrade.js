@@ -2,6 +2,7 @@
 // 🏯 八字 TOP-TIER UPGRADE
 // 正格十格判定 · 暗合/拱合 · 流月推算 · 格局深化
 // v80.30(2026/6/10)：官殺混雜改透干論(三命通會)・刪自創「暗沖」・流月吉凶改 wuxingStance 全表＋沖合依喜忌定向・新增通根明細・十神組合 gods 索引死碼修復・流月移至喜忌表之後
+// v80.31(2026/6/10)：流月補 note 欄位（沖合喜忌理由）供站內版 ai-analysis 透傳——它自組字串不讀 zh，理由原本會丟失
 // 歲運並臨 · 十神格局完整 · 神煞擴充 · 桃花驛馬
 // ══════════════════════════════════════════════════════════════════════
 // 載入順序：bazi.js 之後
@@ -274,7 +275,7 @@ function baziCalcLiuYue(bazi, liuNianGan, liuNianZhi, stance) {
     var label = score >= 3 ? '大吉' : score >= 1 ? '吉' : score >= 0 ? '平' : score >= -2 ? '凶' : '大凶';
     months.push({
       month: i + 1, monthName: monthNames[i], gan: mGan, zhi: mZhi, gz: mGan + mZhi,
-      ganEl: mEl, zhiEl: mZhiEl, score: score, label: label, isChong: isChong, isHe: isHe,
+      ganEl: mEl, zhiEl: mZhiEl, score: score, label: label, isChong: isChong, isHe: isHe, note: note,
       zh: monthNames[i] + '（' + mGan + mZhi + '）：' + label + (isChong ? '⚡沖日支' : '') + (isHe ? '💛合日支' : '') + note
     });
   }

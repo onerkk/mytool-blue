@@ -15806,7 +15806,9 @@ function _buildPayload() {
     if (allSS.length) L.push('神煞：' + allSS.join('、'));
 
     // 空亡
-    if (b.kongwang && b.kongwang.length) L.push('空亡：' + b.kongwang.join('、'));
+    // v84_audit6 修死碼：b.kongwang 為 {year,day} 物件，原 .length 永遠 undefined → 站內版提示詞從未印過空亡
+    var _kwArr = b.kongwang ? (Array.isArray(b.kongwang) ? b.kongwang : [].concat(b.kongwang.year || [], b.kongwang.day || [])).filter(function(v,i,arr){ return v && arr.indexOf(v) === i; }) : [];
+    if (_kwArr.length) L.push('空亡：' + _kwArr.join('、'));
     // 命宮
     if (b.mingGong) L.push('命宮：' + _s(b.mingGong.gan) + _s(b.mingGong.zhi) + (b.mingGong.nayin ? '（'+b.mingGong.nayin+'）' : ''));
     // 得令得地得勢
@@ -15920,11 +15922,14 @@ function _buildPayload() {
           if (HE_PAIRS[m.gan] === dyGan) extra += '合大運干';
         }
         // ★ v13 修復：一律顯示運勢等級（含「平」），與紫微流月一致
-        return m.monthName + m.gz + (tg ? '(' + tg + ')' : '') + '運勢' + (m.label||'平') + (extra ? '，' + extra : '');
+        return m.monthName + m.gz + (tg ? '(' + tg + ')' : '') + '運勢' + (m.label||'平') + (extra ? '，' + extra : '') + (m.note || '');
       });
       L.push('流月：' + mDetails.join('、'));
     }
-    if (b.liuNianGZ && !_liuNianEmitted) L.push('今年流年干支：' + b.liuNianGZ);
+    if (b.liuNianGZ && !_liuNianEmitted) {
+      var _lnZhi2 = String(b.liuNianGZ).charAt(1);
+      L.push('今年流年干支：' + b.liuNianGZ + (_kwArr.indexOf(_lnZhi2) >= 0 ? '（注意：流年支' + _lnZhi2 + '落空亡——今年屬' + _lnZhi2 + '的機會整年帶虛象）' : ''));
+    }
     if (b.nayin) L.push('納音：' + b.nayin);
 
     // 五行分數
