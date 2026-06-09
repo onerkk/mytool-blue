@@ -23887,6 +23887,15 @@ function _buildTarotOnlyPayload() {
       }
     }
 
+    // ★ 純-Waite 模式套入：Waite《Pictorial Key》原典正/逆義（與 Mathers 並行的另一條原典線，供 RWS 牌陣切純-Waite 用）
+    if (window.jyWaitePKTMeanings) {
+      var _waiteM = window.jyWaitePKTMeanings[rawName];
+      if (_waiteM) {
+        card.waiteUp = _waiteM.up || '';
+        card.waiteRv = _waiteM.rv || '';
+      }
+    }
+
     return card;
   });
 

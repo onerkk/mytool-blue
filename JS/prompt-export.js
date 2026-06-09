@@ -166,6 +166,11 @@
     return '至少自然帶到 2 張 RWS 圖像細節，例如人物朝向、姿態、背景、水、山、雲、城牆、光線；不要列清單。';
   }
 
+  // ★ 純-Waite 模式旗標（由匯出卡「牌義來源」切換鈕設定；預設關＝現代 RWS）。
+  //   只作用在 RWS 牌陣：開啟時牌義改用 Waite《Pictorial Key》原典正/逆義，並關掉 GD 元素尊嚴/旬/卡巴拉疊層。
+  function _isWaitePure() {
+    try { return (typeof window !== 'undefined') && window.JY_WAITE_PURE === true; } catch (e) { return false; }
+  }
 
   // ── 取問卜者問題（多來源防呆）──
   function getQuestion() {
@@ -255,6 +260,12 @@
   // ② 學理鎖定：擋掉網紅/心理學/雞湯，逼回正統
   var FRAG_SOURCELOCK =
     '\n【學理鎖定】只用三種知識：①本盤實際數據 ②可查原典/文獻（Waite《Pictorial Key》、Golden Dawn/Book T、Mathers、Crowley《Book of Thoth》）③已明示為現代實務的輸出框架。禁止：把現代實務包裝成古典原典、現代網紅塔羅詮釋、把心理學框架硬套（「逆位＝陰影面需療癒」）、靈性雞湯、無牌面支撐的道德勸說。若原典沒有明說，要用「實務上我會這樣看」而不是「正統必然」。\n';
+  // ★ 塔羅・現代 RWS（誠實版）：不再假稱逐字 Waite 原典；逆位採現代通行邏輯，並誠實標示
+  var FRAG_SOURCELOCK_TAROT =
+    '\n【學理鎖定】只用三種知識：①本盤實際數據 ②可查文獻作為歷史根據：RWS 採 Waite《Pictorial Key》牌義與 Pamela Colman Smith 圖像、Golden Dawn／Book T 的元素與占星對應；逆位採現代通行的「削弱／受阻／內化」邏輯（業界慣例，與 Waite 1888-式字面逆位義常不同，故不宣稱逐字原典）③已明示為現代實務的輸出框架。禁止：把現代詮釋當古典原典、現代網紅塔羅、把心理學框架硬套（「逆位＝陰影面需療癒」）、靈性雞湯、無牌面支撐的道德勸說。原典沒明說處用「實務上我會這樣看」，不說「正統必然」。\n';
+  // ★ 塔羅・純-Waite 模式：一律只用 Waite 原書正/逆義，逆位照原文（與現代否定式常相反），不疊 GD
+  var FRAG_SOURCELOCK_TAROT_WAITE =
+    '\n【學理鎖定・純-Waite 模式】本次牌義一律只用 A.E. Waite《The Pictorial Key to the Tarot》(1910) 原典占卜義：每張牌「→」後就是 Waite 原書「Divinatory Meanings／Reversed」的忠實中譯，正位用正位義、逆位用逆位義，直接照讀，不可改用現代義。⚠ 逆位照 Waite 原文，常與現代否定式邏輯相反——例：命運之輪逆＝增長／豐盛／過剩（非「衰退停滯」）；聖杯六逆＝未來／更新／即將到來（非「困在過去」）；權杖八逆＝嫉妒／內訌／口角（非單純「延遲」）——一律以 Waite 原文為準。不疊 Golden Dawn 元素尊嚴／旬（Decan）／卡巴拉，那是別的系統、Waite 占卜篇未用。時間只能從牌義本身的時序線索推（Waite 明言塔羅宜判「處於哪個階段」而非精確日期），不可用花色速度或 Decan 硬安月份。RWS 圖像（PCS 場景）可作敘事輔助。禁止：現代網紅詮釋、心理學框架、靈性雞湯、無牌面支撐的道德勸說。\n';
   // ③ 交稿前 recency 檢查：模型最常在後半段破功，放最後一段（recency 最強）
   var FRAG_RECENCY_TAROT =
     '\n' + BAR + '\n交稿前檢查（後半段最容易破功）\n' + BAR +
@@ -372,8 +383,8 @@
     if (f.timing) {
       var _spT = '';
       try { var _ST = (typeof window!=='undefined' && window.S) ? window.S : null; if (!_ST) try { _ST = (0, eval)('typeof S !== "undefined" ? S : null'); } catch(e){} _spT = (_ST && _ST.tarot && _ST.tarot.spreadType) || (typeof getCurrentSpread === 'function' ? getCurrentSpread() : ''); } catch(e){}
-      if (_spT === 'mathers_horseshoe' || _spT === 'mathers_21') {
-        L.push('・時間題：此法（Mathers 1888）沒有占星擇時系統，禁用花色速度與 Decan 日期。只能從牌本身的時序義（如聖杯六正＝過去、聖杯六逆＝不久／很快、聖杯五逆＝消息到來、審判＝事情有結果）與三組牌序，推出「先發生什麼→再發生什麼」的相對順序與快慢，並說出從哪張牌推。禁止硬安月份或上／下半年，也禁止「近期／快了／順其自然」這種沒錨點的話。');
+      if (_spT === 'mathers_horseshoe' || _spT === 'mathers_21' || _isWaitePure()) {
+        L.push('・時間題：此模式不疊占星擇時系統，禁用花色速度與 Decan 日期推月份。只能從牌本身的時序義（如聖杯六逆＝未來／很快、寶劍六＝旅程／離開、審判＝事情有結果）與牌序，推出「先發生什麼→再發生什麼」的相對順序與快慢，並說出從哪張牌推。（Waite 明言塔羅宜判「處於哪個階段」而非精確日期。）禁止硬安月份或上／下半年，也禁止「近期／快了／順其自然」這種沒錨點的話。');
       } else {
         L.push('・時間題：必須給「為什麼是這個時間」。用花色速度收斂——權杖（火）最快、寶劍（風）次快但偏衝突、聖杯（水）中等、金幣（土）最慢；或用小牌 Decan 日期、大牌時間含義。要說出從哪張牌推。禁止「近期/快了/順其自然」這種沒錨點的話。');
       }
@@ -383,7 +394,7 @@
 
     var _spD = '';
     try { var _SD = (typeof window!=='undefined' && window.S) ? window.S : null; if (!_SD) try { _SD = (0, eval)('typeof S !== "undefined" ? S : null'); } catch(e){} _spD = (_SD && _SD.tarot && _SD.tarot.spreadType) || (typeof getCurrentSpread === 'function' ? getCurrentSpread() : ''); } catch(e){}
-    var _hintMath = (_spD === 'mathers_horseshoe' || _spD === 'mathers_21');
+    var _hintMath = (_spD === 'mathers_horseshoe' || _spD === 'mathers_21' || _isWaitePure());
     f.domains.slice(0, 2).forEach(function (d) { var h = (_hintMath && DOMAIN_HINT_MATHERS[d]) ? DOMAIN_HINT_MATHERS[d] : DOMAIN_HINT[d]; if (h) L.push('・' + h); });
 
     return L.join('\n') + '\n';
@@ -470,6 +481,8 @@
     // ★ B（純考據 Mathers）：mathers_21 / mathers_horseshoe 兩法改用 Mathers 1888 原典牌義，
     //   並關掉所有非 Mathers 的 GD/現代分析層（元素尊嚴宮廷、卡巴拉、Decan 時間、對立牌、數字學…）。
     var _isMathers = (td.spreadType === 'mathers_horseshoe' || td.spreadType === 'mathers_21');
+    var _isWaite = !_isMathers && _isWaitePure();   // 純-Waite 模式只作用在 RWS 牌陣（不覆蓋 Mathers）
+    var _pureSrc = _isMathers || _isWaite;           // 任一純原典模式：關掉現代 GD 疊層（元素尊嚴/旬/卡巴拉/對立牌…）
     cards.forEach(function (c, i) {
       var pos = c.positionMeaning || c.position || ('位置' + (i + 1));
       var ln = (i + 1) + '. ' + pos + '：' + (c.name || '');
@@ -477,6 +490,10 @@
         // Mathers 1888 原典義（Etteilla 系）：「→」後面就是該牌正/逆位的原典含義，直接照讀
         var _mm = c.isUp ? (c.mathersUp || '') : (c.mathersRv || '');
         if (_mm) ln += ' → ' + _mm;
+      } else if (_isWaite) {
+        // 純-Waite 模式：「→」後面是 Waite《Pictorial Key》原典正/逆義，直接照讀，不疊 keywords/GD 宮廷
+        var _wm = c.isUp ? (c.waiteUp || '') : (c.waiteRv || '');
+        if (_wm) ln += ' → ' + _wm;
       } else {
         if (c.keywords) ln += '〔' + c.keywords + '〕';
         if (c.meaning) ln += ' → ' + c.meaning;
@@ -506,8 +523,8 @@
     // 正逆統計、大牌比重 為事實計數（花色分布已於上方輸出），與 Mathers 相容，兩類牌陣都送
     add('正逆位參考', td.summary);
     add('大牌比重', td.majorWeight);
-    if (!_isMathers) {
-      // ↓ GD/現代分析層：Mathers 1888 原書並不使用這些，純考據模式一律不送
+    if (!_pureSrc) {
+      // ↓ GD/現代分析層：Mathers 1888 與 Waite 原典占卜篇都不使用這些，純原典模式一律不送
       //   （同時根治 P2：GD 元素尊嚴宮廷與反位制宮廷打架的問題）
       add('元素尊嚴', td.elementalDignity);
       add('元素互動', td.elementInteraction);
@@ -525,7 +542,7 @@
     }
     if (extra.length) {
       L.push('');
-      L.push(_isMathers
+      L.push(_pureSrc
         ? '── 以下為本盤事實統計，請【直接採用】，不要自行重算 ──'
         : '── 以下數據已由排盤系統精算完成，請【直接採用】，不要自行重算。尤其元素尊嚴、Decan 日期、數字模式是機械運算結果，重算只會出錯——你的工作是「解讀」這些既定數據，不是重算 ──');
       extra.forEach(function (e) { L.push('・' + e); });
@@ -696,7 +713,9 @@
     var focusLock = buildFocusLock(question, tool); // ★ v70.4：分工具——開鑰走深度拆解、塔羅走 yes/no 直答
     return [
       focusLock,
-      (tool === 'meihua' ? FRAG_SOURCELOCK_MEIHUA : FRAG_SOURCELOCK),
+      (tool === 'meihua' ? FRAG_SOURCELOCK_MEIHUA
+        : tool === 'tarot' ? (_isWaitePure() ? FRAG_SOURCELOCK_TAROT_WAITE : FRAG_SOURCELOCK_TAROT)
+        : FRAG_SOURCELOCK),
       t.head
         .replace('{{SPREAD_READING_METHOD}}', (tool === 'tarot' ? getSpreadMethod() : ''))
         .replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
@@ -773,6 +792,9 @@
       '.jy-ex-title{position:relative;z-index:1;text-align:center;font-family:var(--f-display,"Noto Serif TC",serif);font-size:1.16rem;font-weight:700;letter-spacing:.04em;color:#f0d98a;margin-bottom:.5rem;text-shadow:0 2px 14px rgba(0,0,0,.6)}',
       '.jy-ex-sub{position:relative;z-index:1;text-align:center;font-size:.82rem;line-height:1.78;color:rgba(232,220,200,.72);max-width:430px;margin:0 auto 1.4rem}',
       '.jy-ex-sub b{color:#e9cf6e;font-weight:600}',
+      '.jy-ex-srcwrap{position:relative;z-index:1;display:flex;gap:.4rem;justify-content:center;align-items:center;flex-wrap:wrap;font-size:.74rem;color:rgba(232,220,200,.66);margin:0 auto 1rem}',
+      '.jy-src-btn{font-family:inherit;font-size:.74rem;padding:.32rem .72rem;border-radius:999px;border:1px solid rgba(212,175,55,.35);background:rgba(255,255,255,.03);color:rgba(240,230,210,.72);cursor:pointer;transition:all .15s}',
+      '.jy-src-btn.on{background:linear-gradient(135deg,#f6e29a,#c9a23f);color:#231406;border-color:transparent;font-weight:700}',
       '.jy-ex-btn{position:relative;z-index:1;display:block;width:100%;max-width:340px;margin:0 auto;padding:1rem 1.2rem;border:none;border-radius:14px;cursor:pointer;',
         'font-family:inherit;font-size:1rem;font-weight:800;letter-spacing:.05em;color:#231406;overflow:hidden;',
         'background:linear-gradient(135deg,#f6e29a 0%,#e3c25e 45%,#c9a23f 100%);',
@@ -812,6 +834,18 @@
     var prompt = buildPrompt(tool);
     var emblem = (tool === 'ootk') ? '🗝️' : (tool === 'ziwei' ? '🪐' : (tool === 'meihua' ? '☯️' : '🔮'));
 
+    // ★ 純-Waite 切換鈕：僅塔羅且非 Mathers 牌陣時顯示（手機可點，預設＝現代 RWS）
+    var _spId = '';
+    try { var _SR = (typeof window!=='undefined' && window.S) ? window.S : null; if (!_SR) try { _SR = (0, eval)('typeof S !== "undefined" ? S : null'); } catch(e){} _spId = (_SR && _SR.tarot && _SR.tarot.spreadType) || ''; } catch(e){}
+    var _showWaiteToggle = (tool === 'tarot') && _spId !== 'mathers_21' && _spId !== 'mathers_horseshoe';
+    var _waiteOn = _isWaitePure();
+    var toggleHTML = _showWaiteToggle
+      ? ('<div class="jy-ex-srcwrap">牌義來源：' +
+         '<button type="button" class="jy-src-btn' + (!_waiteOn ? ' on' : '') + '" data-src="modern">現代 RWS</button>' +
+         '<button type="button" class="jy-src-btn' + (_waiteOn ? ' on' : '') + '" data-src="waite">Waite 原典</button>' +
+         '</div>')
+      : '';
+
     var card = document.createElement('div');
     card.className = 'jy-ex-card';
     card.innerHTML =
@@ -820,6 +854,7 @@
       '<div class="jy-ex-title">' + t.label + '・占卜提示詞已備妥</div>' +
       '<div class="jy-ex-sub">輕觸下方按鈕複製，貼到任何 AI 對話（<b>ChatGPT・Claude・Gemini・Grok</b>）送出，' +
         '即可得到一份完整深入的命理解讀。<br>提示詞已封入本次工具所需的正統技法與排盤資料，無需再多做說明。</div>' +
+      toggleHTML +
       '<button type="button" class="jy-ex-btn">✦ 一鍵複製占卜提示詞 ✦</button>' +
       '<div class="jy-ex-ai-grid">' +
         '<button type="button" class="jy-ai-shortcut" data-ai="chatgpt"><img class="jy-ai-icon" src="ai-icons/ai-chatgpt.png" alt="ChatGPT"><span class="jy-ai-name">ChatGPT</span></button>' +
@@ -837,6 +872,17 @@
 
     var btn = card.querySelector('.jy-ex-btn');
     btn.addEventListener('click', function () { copyText(prompt, btn); });
+
+    // ★ 純-Waite 切換鈕事件：切換旗標後重渲染（卡牌已在抽牌時掛 waiteUp/waiteRv，故只需重建提示詞，不用重抽）
+    var srcBtns = card.querySelectorAll('.jy-src-btn');
+    for (var bi = 0; bi < srcBtns.length; bi++) {
+      (function (sb) {
+        sb.addEventListener('click', function () {
+          try { window.JY_WAITE_PURE = (sb.getAttribute('data-src') === 'waite'); } catch (e) {}
+          render(tool, el);
+        });
+      })(srcBtns[bi]);
+    }
 
     // ★ v76：AI 快捷鍵 — 複製＋開啟對應 AI
     var aiUrls = {
