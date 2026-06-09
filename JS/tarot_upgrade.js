@@ -1704,7 +1704,7 @@ enhanceTarot = function(tarot) {
       ill:  '愚鈍、唯物、嫉妒、遲緩 — 穩定變成停滯'
     },
     'pent-queen':  { // Queen of Thrones of Earth
-      well: '慷慨、聰明、富有、寬厚、慈悲、誠實 — 土的精華',
+      well: '慷慨、聰明、富有、寬厚、慈悲、誠實 — 土中的水（Water of Earth）',
       ill:  '懶惰、奴性、無聊、漠不關心 — 富足變成怠惰'
     },
     'pent-knight': { // Prince of Chariot of Earth
