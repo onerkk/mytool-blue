@@ -6281,8 +6281,10 @@ showAuraResult = function(){
 #t-chosen .jy-zodiac .zod-slot{position:absolute;transform:translate(-50%,-50%)}
 #t-chosen .jy-zodiac .zod-slot .tarot-chosen-slot{width:44px!important;height:64px!important}
 #t-chosen .jy-zodiac .zod-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
-#t-chosen .jy-gd15{display:flex;flex-direction:column;align-items:center;gap:18px}
-#t-chosen .jy-gd15 .gd-triad{display:flex;gap:8px;justify-content:center}
+#t-chosen .jy-gd15{display:flex;flex-direction:column;align-items:center;gap:4px}
+#t-chosen .jy-gd15 .gd15-top,#t-chosen .jy-gd15 .gd15-bot{display:flex;gap:44px;justify-content:center;align-items:flex-start}
+#t-chosen .jy-gd15 .gd15-core{display:flex;gap:8px;justify-content:center;margin:3px 0}
+#t-chosen .jy-gd15 .gd15-arm{display:flex;flex-direction:column;gap:8px}
 #t-chosen .jy-gd15 .tarot-chosen-slot{width:52px!important;height:76px!important}
 #t-chosen .jy-m21{display:flex;align-items:center;justify-content:center;gap:8px;overflow-x:auto;padding:4px 2px}
 #t-chosen .jy-m21 .m21-grid{display:flex;flex-direction:column;gap:14px}
@@ -6434,15 +6436,21 @@ showAuraResult = function(){
         h += '<div class="jy-arrow">← 過去 ─── 轉折 ─── 結果 →</div>';
       }
       else if (spreadId === 'fifteen_card') {
-        // ── 金色黎明 15 張 Fifteen-Card Method（Wang / Crowley LWB）──
-        // 五個 triad（每組 3 張，中欄＝該組主牌），用 elemental dignity 解讀、不用逆位
-        // 正統：核心(querent)三張在中央；上下為替代路徑/決策/自然路徑/命運
+        // ── Thoth/GD 15 張 Fifteen-Card Method（Crowley LWB「開鑰之法簡化版」/ The English Spread）──
+        // 正統布局（Crowley LWB；arnellart「opposing elements in opposing corners」）：
+        //   核心三張 2-1-3 居中＝Spirit；四組三張環繞中心，對立元素置於對角（火↔水、風↔土）。
+        //   每組三張＝同方位的內/中/外三圈，內圈靠核心、外圈最遠，主牌＝中圈(8/9/10/11)。
+        //   左上＝土(自然路徑4,8,12) 右上＝水(替代路徑5,9,13) 左下＝火(命運7,11,15) 右下＝風(心理6,10,14)
         h += '<div class="jy-gd15">';
-        var gd15 = [[12,8,4],[13,9,5],[1,0,2],[3,7,11],[6,10,14]];
-        for (var gi = 0; gi < gd15.length; gi++) {
-          var tr = gd15[gi];
-          h += '<div class="gd-triad">' + S(tr[0],tr[0]+1,pn(tr[0])) + S(tr[1],tr[1]+1,pn(tr[1])) + S(tr[2],tr[2]+1,pn(tr[2])) + '</div>';
-        }
+        h += '<div class="gd15-top">';
+        h += '<div class="gd15-arm">' + S(11,12,pn(11)) + S(7,8,pn(7)) + S(3,4,pn(3)) + '</div>';
+        h += '<div class="gd15-arm">' + S(12,13,pn(12)) + S(8,9,pn(8)) + S(4,5,pn(4)) + '</div>';
+        h += '</div>';
+        h += '<div class="gd15-core">' + S(1,2,pn(1)) + S(0,1,pn(0)) + S(2,3,pn(2)) + '</div>';
+        h += '<div class="gd15-bot">';
+        h += '<div class="gd15-arm">' + S(6,7,pn(6)) + S(10,11,pn(10)) + S(14,15,pn(14)) + '</div>';
+        h += '<div class="gd15-arm">' + S(5,6,pn(5)) + S(9,10,pn(9)) + S(13,14,pn(13)) + '</div>';
+        h += '</div>';
         h += '</div>';
       }
       else if (spreadId === 'mathers_21') {
@@ -7990,7 +7998,7 @@ function jyTarotHardfixCSS(){
     '#t-chosen .tarot-chosen-slot .tc-dir{position:absolute!important;top:3px;right:3px;z-index:5;font-size:.4rem;line-height:1;padding:1px 3px;border-radius:4px;background:rgba(0,0,0,.72);font-weight:700}',
     '#t-chosen .tarot-chosen-slot .tc-dir.rv{color:#ff9c9c}',
     '#t-chosen .tarot-chosen-slot .tc-dir.up{color:#9fe6a8}',
-    '#t-chosen .jy-row,#t-chosen .gd-triad,#t-chosen .tol-pair{min-height:96px}'
+    '#t-chosen .jy-row,#t-chosen .gd15-core,#t-chosen .tol-pair{min-height:96px}'
   ].join('\n');
   (document.head || document.documentElement).appendChild(st);
 }
