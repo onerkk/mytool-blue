@@ -24193,7 +24193,7 @@ function _buildTarotOnlyPayload() {
     var d = drawn[i];
     if (!d) return;
     c.timeHint = _suitTime[d.suit] || '';
-    c.phaseHint = _numTime[d.num] || '';
+    c.phaseHint = (d.suit === 'major') ? '' : (_numTime[d.num] || '');  // ★ 大牌的 num 是阿卡那編號，不是小牌階段，不可套 _numTime
   });
 
   // ★ v37 B7：決策傾向（Decision Lean）——每張牌對「該不該」的態度
@@ -24223,7 +24223,9 @@ function _buildTarotOnlyPayload() {
   var timeConclusion = '';
   if (outcomeIdx >= 0 && drawn[outcomeIdx]) {
     var outD = drawn[outcomeIdx];
-    timeConclusion = (cards[outcomeIdx].name || '') + '→' + (_suitTime[outD.suit] || '轉折') + '，' + (_numTime[outD.num] || '');
+    // ★ 大牌的 num 是阿卡那編號（如 正義＝XI＝11），不是小牌階段；硬套 _numTime 會吐出「新能量進入（Page）」這種錯標。大牌只給花色時間義（關鍵轉折）。
+    var _numPart = (outD.suit === 'major') ? '' : (_numTime[outD.num] || '');
+    timeConclusion = (cards[outcomeIdx].name || '') + '→' + (_suitTime[outD.suit] || '轉折') + (_numPart ? ('，' + _numPart) : '');
   }
 
   // ── 4. 逆位三分法（Reversed Card Interpretation）── ★ v37 #5：大牌逐張細分
