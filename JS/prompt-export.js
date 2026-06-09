@@ -1,4 +1,8 @@
-/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v80.62]
+/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v80.63]
+ *  v80.63（凱爾特十字漏位 + 純-Waite 時間矛盾 + 配石平手 三項根治）：
+ *    1) getReadingProcess 時間步改隨模式切換：純-Waite／Mathers 時只講牌序相對順序、不列花色速度/Decan/GD占星（治 doc86 頂部禁用、第5步卻列出的自相矛盾）。
+ *    2) buildRecencyTarot 仿 mathersClause 加 celticClause：凱爾特十字 10 位逐一點名（最常漏 5身後/9希望恐懼）、三組對照都做（治位置5被整個跳過）。
+ *    3) 配石預算處理花色並列最高：並列過盛時列出全部、由 AI 擇對結論最相關者，不再默默取第一個（治水/風並列40%卻硬選水）。
  *  v80.62（關係盤 4 項根治：建議位讀法／時間誠實／性別中性／領域去衝突）：
  *    1) 關係牌陣讀法＋recency：建議/應對位的牌＝行動指引，凶牌也轉成「怎麼做」，不可讀成阻礙（治『金幣五在應對位被當最不利』）。
  *    2) getReadingProcess 時間步：無時序牌（只剩大牌/月亮）老實說給不出天數＝觀察週期；禁牌號當天數（月亮18≠18天）。比照 Mathers 時間誠實化。
@@ -225,7 +229,8 @@
     if (isFifteen) s.push('Thoth/GD 風格十五張與開鑰類方法不用 RWS 逆位邏輯；以 Golden Dawn/Book T 的元素、配對與三張組合為主。');
     if (isLove || f.noQ) s.push('感情題核心看情感連結與行動慾；金幣在感情題讀現實條件、見面穩定度、身分牽扯，不讀財運。');
     s.push('涉第三人時，先看對方位與宮廷牌；沒有足夠宮廷牌，不硬推年齡、外貌或身分（含性別——無宮廷牌且資料未給問卜者/對方性別時，一律用「對方」中性稱呼，不可預設他或她）。注意：王牌(Ace)不是宮廷牌——錢幣王牌＝新的物質機會，不是錢幣國王＝某個年長務實的人；只有侍者、騎士、皇后、國王四種宮廷牌才能推人物年齡與身分，王牌絕不可拿來推人。');
-    s.push('時間必須由牌面推：資料區時間、GD 占星日期、元素速度、小牌數字階段或大牌事件速度。⚠ 若只剩大牌／月亮這類無明確時序的牌、找不到時間錨，就老實說「給不出明確天數，只能說需要一個觀察週期、不會很快明朗」；禁止把牌的編號當天數（月亮第18張≠18天），也禁「近期／快了／1～2個月」這種無牌面錨點的硬湊。');
+    var _seqOnly = (sp === 'mathers_21' || sp === 'mathers_horseshoe') || (typeof _isWaitePure === 'function' && _isWaitePure());
+    s.push('時間必須由牌面推' + (_seqOnly ? '：本模式不疊占星擇時，只從牌本身的時序義（聖杯六逆＝未來/很快、寶劍六＝旅程/離開、審判＝事情有結果）與牌序，推「先發生什麼→再發生什麼」的相對順序與快慢、並說出從哪張牌推；不用花色速度、Decan 或 GD 占星日期。' : '：資料區時間、GD 占星日期、元素速度、小牌數字階段或大牌事件速度。') + '⚠ 若只剩大牌／月亮這類無明確時序的牌、找不到時間錨，就老實說「給不出明確天數，只能說需要一個觀察週期、不會很快明朗」；禁止把牌的編號當天數（月亮第18張≠18天），也禁「近期／快了／1～2個月」這種無牌面錨點的硬湊。');
     return '【讀牌內部流程——每步都要查，但不用逐條輸出】\n' + s.map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n');
   }
 
@@ -302,18 +307,20 @@
     '\n【學理鎖定・純-Waite 模式】本次牌義一律只用 A.E. Waite《The Pictorial Key to the Tarot》(1910) 原典占卜義：每張牌「→」後就是 Waite 原書「Divinatory Meanings／Reversed」的忠實中譯，正位用正位義、逆位用逆位義，直接照讀，不可改用現代義。⚠ 逆位照 Waite 原文，常與現代否定式邏輯相反——例：命運之輪逆＝增長／豐盛／過剩（非「衰退停滯」）；聖杯六逆＝未來／更新／即將到來（非「困在過去」）；權杖八逆＝嫉妒／內訌／口角（非單純「延遲」）——一律以 Waite 原文為準。不疊 Golden Dawn 元素尊嚴／旬（Decan）／卡巴拉，那是別的系統、Waite 占卜篇未用。時間只能從牌義本身的時序線索推（Waite 明言塔羅宜判「處於哪個階段」而非精確日期），不可用花色速度或 Decan 硬安月份。RWS 圖像（PCS 場景）可作敘事輔助。禁止：現代網紅詮釋、心理學框架、靈性雞湯、無牌面支撐的道德勸說。\n';
   // ③ 交稿前 recency 檢查：模型最常在後半段破功，放最後一段（recency 最強）
   function buildRecencyTarot() {
-    var _isM = false;
+    var _isM = false, _isC = false;
     try {
       var S = (typeof window !== 'undefined' && window.S) ? window.S : null;
       if (!S) try { S = (0, eval)('typeof S !== "undefined" ? S : null'); } catch (e) {}
       var t = (S && S.tarot) || {};
       var id = t.spreadType || (typeof getCurrentSpread === 'function' ? getCurrentSpread() : '');
-      _isM = (id === 'mathers_21' || id === 'mathers_horseshoe');
+      _isM = (id === 'mathers_21' || id === 'mathers_horseshoe'); _isC = (id === 'celtic_cross');
     } catch (e) {}
     var mathersClause = _isM ? ' \u25a1 每排收尾牌與居中牌都已明確讀到並用上（Mathers 21張：第7／14／21張為各排收尾、第11張居中須單獨讀，不可與鄰牌混讀一句帶過；horseshoe 各組居中張同理）' : '';
+    var celticClause = _isC ? ' □ 凱爾特十字 10 張務必逐一點名、無一漏（最常漏的是 5身後與 9希望恐懼）；三組對照 3上方vs4腳下、5身後vs6身前、7本人vs8環境都要做到' : '';
     return '\n' + BAR + '\n交稿前檢查（後半段最容易破功）\n' + BAR +
       '\n□ 牌陣張數與位置讀對 □ 每個位置都已用於回答問題但未逐格報告 □ 只引用本盤合法牌名 □ 壞消息沒有包裝 □ 第一段已直接回答問題 □ 有說明原因、阻礙、時間 □ 人物/年齡/外貌只在牌面足夠時才推 □ 不把現代牌陣說成古典原典 □ 不重複同一結論'
       + mathersClause
+      + celticClause
       + ' □ 正位吉牌與逆位凶牌一視同仁，不可只挑符合你預設結論的牌講、把相反訊號的牌跳過不讀——這不只指滿盤逆位中少數的正位牌，也包括全盤多數正位時、落在「原因／資源／下一步」等位的正位有力牌（例：權杖皇后正位在原因位＝你自身魅力與領導力是現狀成因，不可因結論偏謹慎就略過），與逆位凶牌落在好結果位；建議／應對位的牌讀成「該怎麼做」的行動指引、凶牌也轉成可執行建議，不可把建議位讀成阻礙；位置制牌陣每個位置的牌都要明確點到名、無一遺漏 □ 能量石只作品牌收尾且不冒充原典\n';
   }
   var FRAG_RECENCY_OOTK =
@@ -571,13 +578,18 @@
       var _arr = [{ k: '火', n: _suit.火 }, { k: '水', n: _suit.水 }, { k: '風', n: _suit.風 }, { k: '土', n: _suit.土 }];
       var _mx = _arr[0], _mn = _arr[0];
       _arr.forEach(function (p) { if (p.n > _mx.n) _mx = p; if (p.n < _mn.n) _mn = p; });
+      var _maxN = _mx.n, _tied = _arr.filter(function (p) { return p.n === _maxN && _maxN > 0; });
       var _mxR = _mx.n / _minor, _mnR = _mn.n / _minor;
       var _collapse = (_suit.風 >= 3) || cards.some(function (c) { return /塔|惡魔/.test(c.name || ''); });
       var _rec;
       if (_mxR >= 0.4 && _mx.k === '風' && _suit.風 >= 3) {
         _rec = '風（寶劍）過盛、思緒過載偏崩解（' + _mx.n + '/' + _minor + '，' + Math.round(_mxR * 100) + '%）→ ' + _ST['風'].over + '（穩定心緒）；崩解感重亦可天鐵（辟邪定志）或龍宮舍利（護身安神）。';
       } else if (_mxR >= 0.4) {
-        _rec = _ST[_mx.k].nm + '過盛（' + _mx.n + '/' + _minor + '，約' + Math.round(_mxR * 100) + '%）→ ' + _ST[_mx.k].over + '（衡其僵／躁）。';
+        if (_tied.length > 1) {
+          _rec = '以下花色並列過盛（各' + _maxN + '/' + _minor + '，約' + Math.round(_mxR * 100) + '%），擇「對本次結論最相關」的那個配石：' + _tied.map(function (p) { return _ST[p.k].nm + '→' + _ST[p.k].over; }).join('；') + '。';
+        } else {
+          _rec = _ST[_mx.k].nm + '過盛（' + _mx.n + '/' + _minor + '，約' + Math.round(_mxR * 100) + '%）→ ' + _ST[_mx.k].over + '（衡其僵／躁）。';
+        }
       } else if (_mnR <= 0.1 || (_mn.n <= 1 && cards.length >= 10)) {
         _rec = _ST[_mn.k].nm + '匱乏（' + _mn.n + '/' + _minor + '）→ ' + _ST[_mn.k].under + '（補其不足）。';
       } else {
