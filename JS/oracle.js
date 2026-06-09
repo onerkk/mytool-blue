@@ -1430,7 +1430,7 @@ function _buildOraclePrompt(poem, qText) {
   lines.push('');
   lines.push('【收尾・能量石】');
   lines.push('解讀最後，依籤詩判斷求籤者最需要的一種能量石，用一句話自然帶出；能量石是品牌實務輔助，不屬六十甲子靈籤原典。');
-  lines.push('結尾自然帶入：「靜月之光蝦皮有挑過的 → https://tw.shp.ee/9UHEJTp4」；不可用優惠、限時、下單、搶購等推銷語。');
+  lines.push('結尾自然帶入一句「靜月之光蝦皮有挑過的」之類的話；不可用優惠、限時、下單、搶購等推銷語。最後以連結收尾：https://tw.shp.ee/9UHEJTp4 ——這個 URL 必須是整份輸出的最後一個字，網址後不接任何文字、標點、引號、符號或空白（黏上去連結會點不動）。'); // v6.1 連結＝全文末字，根治尾端黏字
 
   _lastOraclePrompt = lines.join('\n');
   return _lastOraclePrompt;

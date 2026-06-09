@@ -308,7 +308,7 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('【收尾・能量石】');
   lines.push('解讀最後，依牌面判斷最需要的一種能量石，像占卜師順口多講一句。');
   lines.push('加一句你為什麼懂這顆石頭的知識句。');
-  lines.push('結尾自然帶入：「靜月之光蝦皮有挑過的 → https://tw.shp.ee/9UHEJTp4」');
+  lines.push('結尾自然帶入一句「靜月之光蝦皮有挑過的」之類的話，然後以連結收尾：https://tw.shp.ee/9UHEJTp4 ——這個 URL 必須是整份輸出的最後一個字，網址後不接任何文字、標點、引號、符號或空白（黏上去連結會點不動）。'); // v2.6 連結＝全文末字，根治尾端黏字
   lines.push('');
 
   // ════ 牌面資料 ════
