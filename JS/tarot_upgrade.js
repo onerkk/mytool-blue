@@ -1290,11 +1290,24 @@ enhanceTarot = function(tarot) {
       h += '</div></div>';
     }
     else if (spreadId === 'fifteen_card') {
-      // ── Fifteen-card Method：13-9-5 / 14-10-6 / 2-1-3(核心置中) / 4-8-12 / 7-11-15 ──
-      h += '<style>#t-chosen .jy-15{display:grid;grid-template-columns:repeat(3,70px);grid-template-rows:repeat(5,auto);gap:9px 12px;justify-content:center;align-items:center}</style>';
-      var grid15 = [12,8,4, 13,9,5, 1,0,2, 3,7,11, 6,10,14];
+      // ── 正統布局（Crowley LWB；arnellart「opposing elements in opposing corners」）──
+      //   核心三張 2-1-3 居中＝Spirit；四組三張環繞，對立元素置於對角（火↔水、風↔土）。
+      //   每組＝同方位內/中/外三圈，內圈靠核心、外圈最遠，主牌＝中圈(8/9/10/11)。
+      //   左上＝土(自然4,8,12) 右上＝水(替代5,9,13) 左下＝火(命運7,11,15) 右下＝風(心理6,10,14)
+      h += '<style>#t-chosen .jy-15{display:flex;flex-direction:column;align-items:center;gap:4px}'
+        + '#t-chosen .jy-15 .g15-top,#t-chosen .jy-15 .g15-bot{display:flex;gap:40px;justify-content:center;align-items:flex-start}'
+        + '#t-chosen .jy-15 .g15-core{display:flex;gap:10px;justify-content:center;margin:3px 0}'
+        + '#t-chosen .jy-15 .g15-arm{display:flex;flex-direction:column;gap:9px}</style>';
       h += '<div class="jy-15">';
-      for (var g15=0; g15<grid15.length; g15++) { var id15=grid15[g15]; h += S(id15, id15+1, pn(id15)); }
+      h += '<div class="g15-top">';
+      h += '<div class="g15-arm">' + S(11,12,pn(11)) + S(7,8,pn(7)) + S(3,4,pn(3)) + '</div>';
+      h += '<div class="g15-arm">' + S(12,13,pn(12)) + S(8,9,pn(8)) + S(4,5,pn(4)) + '</div>';
+      h += '</div>';
+      h += '<div class="g15-core">' + S(1,2,pn(1)) + S(0,1,pn(0)) + S(2,3,pn(2)) + '</div>';
+      h += '<div class="g15-bot">';
+      h += '<div class="g15-arm">' + S(6,7,pn(6)) + S(10,11,pn(10)) + S(14,15,pn(14)) + '</div>';
+      h += '<div class="g15-arm">' + S(5,6,pn(5)) + S(9,10,pn(9)) + S(13,14,pn(13)) + '</div>';
+      h += '</div>';
       h += '</div>';
     }
     else if (spreadId === 'tree_of_life') {
