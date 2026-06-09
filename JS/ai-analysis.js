@@ -23823,6 +23823,7 @@ function _buildTarotOnlyPayload() {
     minor_arcana: ['core','background','obstacle','external','resource','advice','outcome']
   };
   var _spreadId = (ta.spreadType || 'celtic_cross');
+  var _isTree = (_spreadId === 'tree_of_life');  // 生命之樹：質點＋22路徑結構，非直線陣
   var _roles = _roleMap[_spreadId] || [];
   var _focusType = (S.form && S.form.type) ? S.form.type : 'general';
   var cards = drawn.map(function(c, i) {
@@ -23982,8 +23983,9 @@ function _buildTarotOnlyPayload() {
   }
 
   // ★ 卡巴拉生命之樹（同步七維度）
+  //   ⚠ 生命之樹牌陣本身每個位置就是質點＝已是卡巴拉，再注入單張大牌的「路徑」屬性會冗餘且混淆，故略過
   var kabbalahText = '';
-  if (ta.kabbalah && ta.kabbalah.length) {
+  if (ta.kabbalah && ta.kabbalah.length && !_isTree) {
     kabbalahText = ta.kabbalah.slice(0, 3).map(function(k) {
       return (k.cardName || '') + '→' + (k.sephirotZh || '');
     }).join('；');
@@ -24121,6 +24123,25 @@ function _buildTarotOnlyPayload() {
         edResults[ei] = 0;
       }
     }
+  }
+
+  // ★ 生命之樹三柱統計：取代線性元素尊嚴（成對技法套不上質點＋22路徑結構）。
+  //   正統讀法＝看三柱哪根逆位最多（能量阻塞處）＋中軸 Kether→Malkuth 下行。
+  //   標準質點序：0王冠 1智慧 2理解 3慈悲 4嚴厲 5美 6勝利 7宏偉 8基礎 9王國
+  var treePillarsText = '';
+  if (_isTree && cards.length >= 10) {
+    var _pillarDef = [
+      { name: '慈悲柱(右·擴張/給予)', idx: [1, 3, 6] },        // 智慧·慈悲·勝利
+      { name: '嚴厲柱(左·限制/收斂)', idx: [2, 4, 7] },        // 理解·嚴厲·宏偉
+      { name: '均衡柱(中軸·Kether→Malkuth 下行)', idx: [0, 5, 8, 9] } // 王冠·美·基礎·王國
+    ];
+    var _pillarParts = _pillarDef.map(function(p) {
+      var names = p.idx.map(function(k){ return cards[k] ? cards[k].name : ''; }).filter(Boolean);
+      var up = p.idx.filter(function(k){ return cards[k] && cards[k].isUp; }).length;
+      var rv = p.idx.length - up;
+      return p.name + '：' + names.join('·') + ' → ' + rv + '逆' + up + '正';
+    });
+    treePillarsText = '（看哪柱逆位最多＝能量最阻塞處）' + _pillarParts.join('；');
   }
 
   // ── 2. 牌位關係預判（Card Relationships）──
@@ -24431,7 +24452,8 @@ function _buildTarotOnlyPayload() {
       kabbalah: kabbalahText,
       combos: comboText,
       courtElements: courtElementText,
-      elementalDignity: edResults.join(','),
+      elementalDignity: (_isTree ? '' : edResults.join(',')),
+      treePillars: (_isTree ? treePillarsText : ''),
       tensions: tensions,
       timeConclusion: timeConclusion,
       numberPatterns: numberPatterns,
