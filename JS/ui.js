@@ -6441,15 +6441,19 @@ showAuraResult = function(){
         //   核心三張 2-1-3 居中＝Spirit；四組三張環繞中心，對立元素置於對角（火↔水、風↔土）。
         //   每組三張＝同方位的內/中/外三圈，內圈靠核心、外圈最遠，主牌＝中圈(8/9/10/11)。
         //   左上＝土(自然路徑4,8,12) 右上＝水(替代路徑5,9,13) 左下＝火(命運7,11,15) 右下＝風(心理6,10,14)
-        h += '<div class="jy-gd15">';
-        h += '<div class="gd15-top">';
-        h += '<div class="gd15-arm">' + S(11,12,pn(11)) + S(7,8,pn(7)) + S(3,4,pn(3)) + '</div>';
-        h += '<div class="gd15-arm">' + S(12,13,pn(12)) + S(8,9,pn(8)) + S(4,5,pn(4)) + '</div>';
+        h += '<style>#t-chosen .jy-15{display:flex;flex-direction:column;align-items:center;gap:4px}'
+          + '#t-chosen .jy-15 .g15-top,#t-chosen .jy-15 .g15-bot{display:flex;gap:40px;justify-content:center;align-items:flex-start}'
+          + '#t-chosen .jy-15 .g15-core{display:flex;gap:10px;justify-content:center;margin:3px 0}'
+          + '#t-chosen .jy-15 .g15-arm{display:flex;flex-direction:column;gap:9px}</style>';
+        h += '<div class="jy-15">';
+        h += '<div class="g15-top">';
+        h += '<div class="g15-arm">' + S(11,12,pn(11)) + S(7,8,pn(7)) + S(3,4,pn(3)) + '</div>';
+        h += '<div class="g15-arm">' + S(12,13,pn(12)) + S(8,9,pn(8)) + S(4,5,pn(4)) + '</div>';
         h += '</div>';
-        h += '<div class="gd15-core">' + S(1,2,pn(1)) + S(0,1,pn(0)) + S(2,3,pn(2)) + '</div>';
-        h += '<div class="gd15-bot">';
-        h += '<div class="gd15-arm">' + S(6,7,pn(6)) + S(10,11,pn(10)) + S(14,15,pn(14)) + '</div>';
-        h += '<div class="gd15-arm">' + S(5,6,pn(5)) + S(9,10,pn(9)) + S(13,14,pn(13)) + '</div>';
+        h += '<div class="g15-core">' + S(1,2,pn(1)) + S(0,1,pn(0)) + S(2,3,pn(2)) + '</div>';
+        h += '<div class="g15-bot">';
+        h += '<div class="g15-arm">' + S(6,7,pn(6)) + S(10,11,pn(10)) + S(14,15,pn(14)) + '</div>';
+        h += '<div class="g15-arm">' + S(5,6,pn(5)) + S(9,10,pn(9)) + S(13,14,pn(13)) + '</div>';
         h += '</div>';
         h += '</div>';
       }
