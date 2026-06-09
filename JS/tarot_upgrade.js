@@ -184,24 +184,30 @@ var TAROT_KABBALAH = {
   21: {path:'32', sephirot:'Yesod→Malkuth',       zh:'基礎→王國',   letter:'Tav',    meaning:'世界的完成，宇宙之舞'}
 };
 
+// 大牌正名→路徑索引（Book T：22 路徑只屬 22 張大牌 trump；小牌對應單一質點、無路徑）
+var KABBALAH_MAJOR_IDX = {'愚者':0,'魔術師':1,'女祭司':2,'皇后':3,'皇帝':4,'教皇':5,'戀人':6,'戰車':7,'力量':8,'隱者':9,'命運之輪':10,'正義':11,'吊人':12,'死神':13,'節制':14,'惡魔':15,'塔':16,'星星':17,'月亮':18,'太陽':19,'審判':20,'世界':21};
 function tarotKabbalahAnalysis(drawn) {
   if (!drawn || !drawn.length) return [];
 
   var results = [];
   drawn.forEach(function(card) {
-    if (card.id < 22) {
-      var kb = TAROT_KABBALAH[card.id];
-      if (kb) {
-        results.push({
-          cardId: card.id,
-          cardName: card.name || '',
-          path: kb.path,
-          sephirot: kb.sephirot,
-          sephirotZh: kb.zh,
-          letter: kb.letter,
-          meaning: kb.meaning
-        });
-      }
+    // ★ 根治：嚴格以「大牌正名」判定（牌庫存於 .n；不靠 card.id——小牌的點數 2/5… 會誤撞 0-21 大牌路徑索引）。
+    //   小牌即使點數<22 也不取路徑；名稱不在 22 大牌表內一律跳過。
+    var _nm = String(card.n || card.name || '').replace(/^[▲▼]\s*(正位|逆位)\s*/, '').trim();
+    var _mid = KABBALAH_MAJOR_IDX[_nm];
+    if (_mid === undefined) return;                 // 非大牌（含全部小牌）→ 無路徑
+    if (card.suit && card.suit !== 'major') return; // 雙保險：明標非 major 者排除
+    var kb = TAROT_KABBALAH[_mid];
+    if (kb) {
+      results.push({
+        cardId: _mid,
+        cardName: _nm,
+        path: kb.path,
+        sephirot: kb.sephirot,
+        sephirotZh: kb.zh,
+        letter: kb.letter,
+        meaning: kb.meaning
+      });
     }
   });
 

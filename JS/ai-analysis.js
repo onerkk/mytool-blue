@@ -23979,16 +23979,21 @@ function _buildTarotOnlyPayload() {
   // 數字學
   var numerologyText = '';
   if (ta.numerology) {
-    numerologyText = (ta.numerology.finalNum || '') + '＝' + (ta.numerology.finalMeaning || '');
+    // ★ 自我描述：這是「全盤所有牌號總和化約」的單一數字，不是某張牌；避免被誤讀成牌陣裡有這號牌。
+    numerologyText = '全盤牌號總和化約為' + (ta.numerology.finalNum || '') + '（整體基調參考，非單張牌）：' + (ta.numerology.finalMeaning || '');
   }
 
   // ★ 卡巴拉生命之樹（同步七維度）
   //   ⚠ 生命之樹牌陣本身每個位置就是質點＝已是卡巴拉，再注入單張大牌的「路徑」屬性會冗餘且混淆，故略過
   var kabbalahText = '';
-  if (ta.kabbalah && ta.kabbalah.length && !_isTree) {
-    kabbalahText = ta.kabbalah.slice(0, 3).map(function(k) {
-      return (k.cardName || '') + '→' + (k.sephirotZh || '');
-    }).join('；');
+  if (!_isTree) {
+    // ★ 根治：用「當前 drawn」即時重算，不吃 S.tarot.kabbalah 的上一盤殘留；且只含本盤真正的大牌。
+    var _kbCur = (typeof tarotKabbalahAnalysis === 'function') ? tarotKabbalahAnalysis(drawn) : (ta.kabbalah || []);
+    if (_kbCur && _kbCur.length) {
+      kabbalahText = _kbCur.slice(0, 3).map(function(k) {
+        return (k.cardName || '') + '→' + (k.sephirotZh || '');
+      }).join('；');
+    }
   }
 
   // ★ 牌組共振（同步七維度）
