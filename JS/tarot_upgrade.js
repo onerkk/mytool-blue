@@ -409,7 +409,7 @@ var SPREAD_DEFS = {
   },
 
   // ★ GD-6 (G1) 補:Fifteen-Card Method (英式牌陣 / GD 標準塔羅 spread)
-  //   依據:Thoth Tarot LWB + Robert Wang lineage（未查到屬 Book T 原始開鑰正文）
+  //   依據:Thoth 牌 LWB（自述為開鑰之法簡化版・The English Spread）・非 Book of Thoth 開鑰正文本身
   //   特性:Thoth/GD 風格 15-card spread,完全不用反位,純靠 elemental dignity
   //   版面:
   //     13  9  5     (上排:13/9/5 = 替代行動  4/8/12 = 自然趨勢)
@@ -420,7 +420,7 @@ var SPREAD_DEFS = {
   fifteen_card: {
     id: 'fifteen_card', zh: 'Fifteen-Card Method（Thoth/GD 風格15張）', count: 15,
     en: 'Fifteen-Card Method (Thoth/GD-style)',
-    desc: 'Thoth Tarot LWB / Robert Wang lineage・非 Book T 原始開鑰正文・不用反位・以 elemental dignity 讀5個 triad',
+    desc: 'Thoth 牌 LWB（開鑰之法簡化版/The English Spread）・非開鑰正文・不用反位・以 elemental dignity 讀5個 triad',
     positions: [
       // Card 1 = querent / 問題本質
       { name: '1.Querent 核心', zh: '提問者 + 問題本質 + 主要影響(中心)' },
