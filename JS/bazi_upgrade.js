@@ -1,6 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════
 // 🏯 八字 TOP-TIER UPGRADE
-// 正格十格判定 · 暗合/拱合/暗沖 · 流月推算 · 格局深化
+// 正格十格判定 · 暗合/拱合 · 流月推算 · 格局深化
+// v80.30(2026/6/10)：官殺混雜改透干論(三命通會)・刪自創「暗沖」・流月吉凶改 wuxingStance 全表＋沖合依喜忌定向・新增通根明細・十神組合 gods 索引死碼修復・流月移至喜忌表之後
 // 歲運並臨 · 十神格局完整 · 神煞擴充 · 桃花驛馬
 // ══════════════════════════════════════════════════════════════════════
 // 載入順序：bazi.js 之後
@@ -208,34 +209,8 @@ function baziHiddenInteractions(bazi) {
     }
   }
 
-  // 暗沖：地支藏干之間的天干相剋
-  // 簡化：兩支不在六沖表中但藏干本氣互剋
-  var liuChong = [[0,6],[1,7],[2,8],[3,9],[4,10],[5,11]];
-  for (var i = 0; i < 4; i++) {
-    for (var j = i + 1; j < 4; j++) {
-      // 跳過正沖（已在 branchInteractions 裡）
-      var isZhengChong = liuChong.some(function(lc) {
-        return (zhiIdx[i] === lc[0] && zhiIdx[j] === lc[1]) || (zhiIdx[i] === lc[1] && zhiIdx[j] === lc[0]);
-      });
-      if (isZhengChong) continue;
-
-      var cg1 = CG[allZhi[i]] || [];
-      var cg2 = CG[allZhi[j]] || [];
-      if (cg1.length > 0 && cg2.length > 0) {
-        var el1 = WX_MAP[cg1[0]], el2 = WX_MAP[cg2[0]];
-        var keMap = {木:'土',火:'金',土:'水',金:'木',水:'火'};
-        if (keMap[el1] === el2 || keMap[el2] === el1) {
-          interactions.push({
-            type: '暗沖',
-            from: zhiLabels[i] + allZhi[i],
-            to: zhiLabels[j] + allZhi[j],
-            detail: cg1[0] + '(' + el1 + ')剋' + cg2[0] + '(' + el2 + ')',
-            zh: zhiLabels[i] + allZhi[i] + ' 暗沖 ' + zhiLabels[j] + allZhi[j] + '：藏干本氣互剋，表面無事但暗中有衝突'
-          });
-        }
-      }
-    }
-  }
+  // v80.30 刪除「暗沖」偵測：『兩支非六沖但藏干本氣互剋』為自創術語，古典無此定義
+  //（古典暗沖＝運歲引動原局所無之六沖、或飛天祿馬倒沖格之虛沖），且與同引擎之半合／拱合／暗合判定自相矛盾。
 
   return interactions;
 }
@@ -243,70 +218,64 @@ function baziHiddenInteractions(bazi) {
 
 // ── 3. 流月推算 ──
 // 以流年干支為基礎，推算12個月的天干地支及吉凶
+// v80.30 根治：吉凶改用 wuxingStance 完整喜忌表（喜/忌/閒），與大運判法、提示詞「五行喜忌全表」一致；
+// 沖合依被沖/被合者之喜忌定向——沖到忌神反吉、合絆忌神為吉、六合化神為忌則減（非一律沖−2合+1），zh 帶理由。
 
-function baziCalcLiuYue(bazi, liuNianGan, liuNianZhi) {
+function baziCalcLiuYue(bazi, liuNianGan, liuNianZhi, stance) {
   if (!bazi || !liuNianGan) return [];
 
   // 五虎遁：年干定月干
-  // 甲己年→丙寅月起, 乙庚→戊寅, 丙辛→庚寅, 丁壬→壬寅, 戊癸→甲寅
   var wuHuDun = {甲:2, 己:2, 乙:4, 庚:4, 丙:6, 辛:6, 丁:8, 壬:8, 戊:0, 癸:0};
   var startGanIdx = wuHuDun[liuNianGan];
   if (startGanIdx === undefined) startGanIdx = 0;
 
-  var dm = bazi.dm;
-  var fav = bazi.fav || [];
-  var unfav = bazi.unfav || [];
+  var st = (stance && stance.map) ? stance.map : null;
+  var fav = bazi.fav || [], unfav = bazi.unfav || [];
+  var judge = function (el) {                    // 喜+1／忌-1／閒0（無全表時退回 fav/unfav）
+    if (st) return st[el] === '喜' ? 1 : (st[el] === '忌' ? -1 : 0);
+    if (fav.indexOf(el) >= 0) return 1;
+    if (unfav.indexOf(el) >= 0) return -1;
+    return 0;
+  };
+
+  var HE_HUA = {'子丑':'土','寅亥':'木','卯戌':'火','辰酉':'金','巳申':'水','午未':'火'};
+  var monthZhi = ['寅','卯','辰','巳','午','未','申','酉','戌','亥','子','丑'];
+  var monthNames = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  var dayZhi = _pZhi(bazi, 2), dayZhiIdx = DZ12.indexOf(dayZhi), dayJ = judge(WX_MAP[dayZhi]);
 
   var months = [];
-  // 正月（寅月）到十二月（丑月）
-  var monthZhi = ['寅','卯','辰','巳','午','未','申','酉','戌','亥','子','丑'];
-
   for (var i = 0; i < 12; i++) {
-    var mGanIdx = (startGanIdx + i) % 10;
-    var mGan = TG10[mGanIdx];
-    var mZhi = monthZhi[i];
-    var mEl = WX_MAP[mGan];
-    var mZhiEl = WX_MAP[mZhi];
+    var mGan = TG10[(startGanIdx + i) % 10], mZhi = monthZhi[i];
+    var mEl = WX_MAP[mGan], mZhiEl = WX_MAP[mZhi];
+    var score = judge(mEl) * 2 + judge(mZhiEl);  // 干主氣勢力重、支次之，比例沿用原 2:1
 
-    // 簡易吉凶判定
-    var score = 0;
-    if (fav.includes(mEl)) score += 2;
-    if (fav.includes(mZhiEl)) score += 1;
-    if (unfav.includes(mEl)) score -= 2;
-    if (unfav.includes(mZhiEl)) score -= 1;
-
-    // 沖合檢查（流月支與日支）
-    var dayZhi = _pZhi(bazi, 2);
-    var dayZhiIdx = DZ12.indexOf(dayZhi);
     var mZhiIdx = DZ12.indexOf(mZhi);
     var isChong = Math.abs(dayZhiIdx - mZhiIdx) === 6;
     var isHe = false;
-    var liuHe = [[0,1],[2,11],[3,10],[4,9],[5,8],[6,7]];
-    liuHe.forEach(function(lh) {
+    [[0,1],[2,11],[3,10],[4,9],[5,8],[6,7]].forEach(function (lh) {
       if ((dayZhiIdx === lh[0] && mZhiIdx === lh[1]) || (dayZhiIdx === lh[1] && mZhiIdx === lh[0])) isHe = true;
     });
 
-    if (isChong) score -= 2;
-    if (isHe) score += 1;
+    var note = '';
+    if (isChong) {
+      if (dayJ < 0)      { score += 1; note = '（' + mZhi + '沖去日支' + dayZhi + '忌神，沖忌反吉，惟沖宮仍主變動）'; }
+      else if (dayJ > 0) { score -= 2; note = '（' + mZhi + '沖動日支' + dayZhi + '喜用，沖喜為凶）'; }
+      else               { note = '（沖日支' + dayZhi + '閒神，主動盪變遷）'; }
+    } else if (isHe) {
+      var hk = [dayZhi, mZhi].sort(function (a, c) { return DZ12.indexOf(a) - DZ12.indexOf(c); }).join('');
+      var hua = HE_HUA[hk] || '', huaJ = hua ? judge(hua) : 0;
+      if (hua && huaJ < 0)      { score -= 1; note = '（' + mZhi + '合日支' + dayZhi + '化' + hua + '，化神為忌、增忌氣）'; }
+      else if (hua && huaJ > 0) { score += 1; note = '（' + mZhi + '合日支' + dayZhi + '化' + hua + '，化神為喜）'; }
+      else if (dayJ < 0)        { score += 1; note = '（' + mZhi + '合絆日支' + dayZhi + '忌神，忌神受絆為吉）'; }
+      else if (dayJ > 0)        { score -= 1; note = '（' + mZhi + '合絆日支' + dayZhi + '喜用，喜神被絆減力）'; }
+      else                      { note = '（合日支，主和緩牽絆）'; }
+    }
 
     var label = score >= 3 ? '大吉' : score >= 1 ? '吉' : score >= 0 ? '平' : score >= -2 ? '凶' : '大凶';
-    var monthNum = i + 1;
-    // 農曆月名
-    var monthNames = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
-
     months.push({
-      month: monthNum,
-      monthName: monthNames[i],
-      gan: mGan,
-      zhi: mZhi,
-      gz: mGan + mZhi,
-      ganEl: mEl,
-      zhiEl: mZhiEl,
-      score: score,
-      label: label,
-      isChong: isChong,
-      isHe: isHe,
-      zh: monthNames[i] + '（' + mGan + mZhi + '）：' + label + (isChong ? '⚡沖日支' : '') + (isHe ? '💛合日支' : '')
+      month: i + 1, monthName: monthNames[i], gan: mGan, zhi: mZhi, gz: mGan + mZhi,
+      ganEl: mEl, zhiEl: mZhiEl, score: score, label: label, isChong: isChong, isHe: isHe,
+      zh: monthNames[i] + '（' + mGan + mZhi + '）：' + label + (isChong ? '⚡沖日支' : '') + (isHe ? '💛合日支' : '') + note
     });
   }
 
@@ -475,9 +444,10 @@ function baziTenGodCombinations(bazi) {
 
   // 收集四柱出現的十神
   var godList = [];
+  var _gk = ['year','month','day','hour'];  // v80.30 修死碼：bazi.gods 以柱名為鍵，原 gods[i] 數字索引永遠 undefined → 全部組合從未觸發
   allGan.forEach(function(g, i) {
     if (i === 2) return; // 日干不算
-    var god = gods[i] || '';
+    var god = gods[_gk[i]] || gods[i] || '';
     if (god) godList.push(god);
   });
 
@@ -708,27 +678,57 @@ function baziStrengthPattern(bazi) {
 }
 
 // ── 11. 官殺混雜（正官＋七殺並見）──
+// v80.30 根治：依《三命通會·官煞去留雜論》「明者用之，藏者捨之。明見官則存其官，明見煞則存其煞」——
+// 混雜以「天干並透」為準；一透一藏＝官透殺藏／殺透官藏，以透者論、不作混雜（支藏者僅作貼身根氣論）。
 function baziGuanShaMix(bazi) {
   if (!bazi || !bazi.dm || !bazi.pillars) return { mixed:false };
   var dm = bazi.dm, dmYin = TG10.indexOf(dm) % 2;
   var guanEl = {木:'金',火:'水',土:'木',金:'火',水:'土'}[WX_MAP[dm]];
   var CG = {子:['癸'],丑:['己','癸','辛'],寅:['甲','丙','戊'],卯:['乙'],辰:['戊','乙','癸'],巳:['丙','庚','戊'],午:['丁','己'],未:['己','丁','乙'],申:['庚','壬','戊'],酉:['辛'],戌:['戊','辛','丁'],亥:['壬','甲']};
   var pk = ['year','month','day','hour'], pn = {year:'年',month:'月',day:'日',hour:'時'};
-  var zheng = [], qi = [];
+  var zhengTou = [], qiTou = [], zhengCang = [], qiCang = [];
   pk.forEach(function (k) {
     var pil = bazi.pillars[k]; if (!pil) return;
     if (k !== 'day' && pil.gan && WX_MAP[pil.gan] === guanEl) {
-      (TG10.indexOf(pil.gan) % 2 === dmYin ? qi : zheng).push(pn[k] + '干' + pil.gan);
+      (TG10.indexOf(pil.gan) % 2 === dmYin ? qiTou : zhengTou).push(pn[k] + '干' + pil.gan);
     }
     (CG[pil.zhi] || []).forEach(function (cg) {
-      if (WX_MAP[cg] === guanEl) (TG10.indexOf(cg) % 2 === dmYin ? qi : zheng).push(pn[k] + '支藏' + cg);
+      if (WX_MAP[cg] === guanEl) (TG10.indexOf(cg) % 2 === dmYin ? qiCang : zhengCang).push(pn[k] + '支藏' + cg);
     });
   });
-  if (zheng.length && qi.length) {
-    return { mixed:true, zheng:zheng, qi:qi,
-      zh:'官殺混雜：正官（' + zheng.join('、') + '）與七殺（' + qi.join('、') + '）並見。主壓力來源雜、是非口舌多、行事易進退失據；正統解法為「去官留殺」或「去殺留官」（以合或制去其一，留清純之氣），或以印化官殺。' };
+  if (zhengTou.length && qiTou.length) {
+    return { mixed:true, zheng:zhengTou.concat(zhengCang), qi:qiTou.concat(qiCang),
+      zh:'官殺混雜（天干並透）：正官（' + zhengTou.join('、') + '）與七殺（' + qiTou.join('、') + '）並透。主壓力來源雜、是非口舌多、行事易進退失據；正統解法為「去官留殺」或「去殺留官」（以合或制去其一，留清純之氣），或以印化官殺。' };
+  }
+  if (zhengTou.length && qiCang.length) {
+    return { mixed:false, variant:'guanTouShaCang',
+      zh:'官透殺藏，以官論（不作混雜）：正官透干（' + zhengTou.join('、') + '），七殺僅藏支（' + qiCang.join('、') + '）不透。依《三命通會》「明者用之，藏者捨之；明見官則存其官」——天干並透方為混雜。惟藏支之殺為貼身根氣，主規範底下的隱性壓力與暗中競爭，不在檯面、但日常感受得到。' };
+  }
+  if (qiTou.length && zhengCang.length) {
+    return { mixed:false, variant:'shaTouGuanCang',
+      zh:'殺透官藏，以殺論（不作混雜）：七殺透干（' + qiTou.join('、') + '），正官僅藏支（' + zhengCang.join('、') + '）不透。依《三命通會》「明見煞則存其煞」——以七殺論之，宜食傷制殺或印化殺，不作混雜看。' };
   }
   return { mixed:false };
+}
+
+// ── 11.5 日主通根明細（v80.30）──
+// 「得地」各派定義不一（坐下通根派／二柱通根派…），引擎旺衰判定取「日支坐根」一派；
+// 此處列明全盤比劫根氣供提示詞輸出，避免 AI 把「得地：否」誤讀成全盤無根。
+function baziTongGen(bazi) {
+  if (!bazi || !bazi.dm || !bazi.pillars) return null;
+  var dmEl = WX_MAP[bazi.dm];
+  var CG = {子:['癸'],丑:['己','癸','辛'],寅:['甲','丙','戊'],卯:['乙'],辰:['戊','乙','癸'],巳:['丙','庚','戊'],午:['丁','己'],未:['己','丁','乙'],申:['庚','壬','戊'],酉:['辛'],戌:['戊','辛','丁'],亥:['壬','甲']};
+  var pk = ['year','month','day','hour'], pn = {year:'年',month:'月',day:'日',hour:'時'};
+  var TAG = ['（本氣強根）','（中氣根）','（餘氣弱根）'];
+  var roots = [];
+  pk.forEach(function (k) {
+    var pil = bazi.pillars[k]; if (!pil) return;
+    (CG[pil.zhi] || []).forEach(function (cg, idx) {
+      if (WX_MAP[cg] === dmEl) roots.push(pn[k] + '支' + pil.zhi + '藏' + cg + (TAG[idx] || ''));
+    });
+  });
+  if (!roots.length) return { has:false, zh:'四支均無比劫之根（真無根）' };
+  return { has:true, list:roots, zh: roots.join('、') };
 }
 
 // ── 12. 完整五行喜忌表（扶抑為底 + 母多/殺印翻轉 + 調候override + 從化 + 引擎 fav/unfav 為最終權威）──
@@ -825,16 +825,7 @@ function enhanceBazi(bazi) {
   // 5. 十神組合格局
   try { bazi.tenGodCombos = baziTenGodCombinations(bazi); } catch(e) { bazi.tenGodCombos = []; }
 
-  // 6. 流月（取當前流年）
-  try {
-    var now = new Date();
-    var cy = now.getFullYear();
-    var yearOffset = ((cy - 4) % 60 + 60) % 60;
-    var lnGan = TG10[yearOffset % 10];
-    var lnZhi = DZ12[yearOffset % 12];
-    bazi.liuYue = baziCalcLiuYue(bazi, lnGan, lnZhi);
-    bazi.liuNianGZ = lnGan + lnZhi;
-  } catch(e) { bazi.liuYue = []; }
+  // 6.（流月已移至 12 之後——吉凶須先有 wuxingStance 完整喜忌表，v80.30）
 
   // 7. 日主十二運
   try { bazi.dmChangsheng = baziDmChangsheng(bazi); } catch(e) { bazi.dmChangsheng = null; }
@@ -853,6 +844,17 @@ function enhanceBazi(bazi) {
 
   // 12. 完整五行喜忌表（需在 strengthPattern 之後）
   try { bazi.wuxingStance = baziWuxingStance(bazi); } catch(e) { bazi.wuxingStance = null; }
+
+  // 12.4 日主通根明細（v80.30：得地標籤誠實化的資料面）
+  try { bazi.tongGen = baziTongGen(bazi); } catch(e) { bazi.tongGen = null; }
+
+  // 12.5 流月（取當前流年；v80.30：移到 wuxingStance 之後，吉凶用完整喜忌表＋沖合依喜忌定向）
+  try {
+    var _now = new Date();
+    var _yo = ((_now.getFullYear() - 4) % 60 + 60) % 60;
+    bazi.liuYue = baziCalcLiuYue(bazi, TG10[_yo % 10], DZ12[_yo % 12], bazi.wuxingStance);
+    bazi.liuNianGZ = TG10[_yo % 10] + DZ12[_yo % 12];
+  } catch(e) { bazi.liuYue = []; }
 
   // 13. 旺衰矛盾說明（得令卻弱…）
   try { bazi.strengthNote = baziStrengthNote(bazi); } catch(e) { bazi.strengthNote = null; }
@@ -888,6 +890,15 @@ function enhanceBazi(bazi) {
           };
         }
       });
+      // v80.30：交脫後「下一步大運」順背直接給資料（鐵律④的資料面）
+      for (var _di = 0; _di < bazi.dayun.length; _di++) {
+        var _dc = bazi.dayun[_di];
+        if (_dc && _dc.isCurrent && _dc.phaseNow) {
+          var _dn = bazi.dayun[_di + 1];
+          if (_dn && _dn.gz && _dn.gz !== '小運' && _dn.gz.length >= 2) _dc.phaseNow.nextDaYun = { gz: _dn.gz, luckLabel: _dn.luckLabel || '' };
+          break;
+        }
+      }
     }
   } catch(e) {}
 

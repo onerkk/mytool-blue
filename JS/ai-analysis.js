@@ -15957,7 +15957,6 @@ function _buildPayload() {
     if (b.dmMonthState) L.push('月令：日主' + b.dmMonthState);
     if (b.renyuan && b.renyuan.name) L.push('人元司令：' + b.renyuan.name + (b.renyuan.el ? '（'+b.renyuan.el+'行）' : ''));
     if (b.taiYuan && b.taiYuan.gan) L.push('胎元：' + b.taiYuan.gan + b.taiYuan.zhi + (b.taiYuan.nayin ? '（'+b.taiYuan.nayin+'）' : ''));
-    if (b.shenGong && b.shenGong.gan) L.push('身宮：' + b.shenGong.gan + b.shenGong.zhi + (b.shenGong.nayin ? '（'+b.shenGong.nayin+'）' : ''));
     if (b.qiyun && b.qiyun.startAge) L.push('起運：' + b.qiyun.startAge + '歲');
 
     p.readings.bazi = L.join('\n');
