@@ -2703,12 +2703,12 @@ function showFortuneResult(f){
           <a href="${(function(){
             // v68.21 Bug #66:URL 驗證,只允許 http(s),擋 javascript: / data: 注入
             var _u = (prod && prod.shopee) ? prod.shopee : '';
-            if (!_u || typeof _u !== 'string') return 'https://tw.shp.ee/2n5Mo2w';
+            if (!_u || typeof _u !== 'string') return 'https://shopee.tw/a50h95648d?tab=shop';
             try {
               var _pu = new URL(_u);
-              if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://tw.shp.ee/2n5Mo2w';
+              if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://shopee.tw/a50h95648d?tab=shop';
               return _u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-            } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
+            } catch(_) { return 'https://shopee.tw/a50h95648d?tab=shop'; }
           })()}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.05));color:var(--c-gold);text-decoration:none;font-size:.8rem;font-weight:600;border:1px solid rgba(212,175,55,.25)"><i class="fas fa-gem"></i> 去蝦皮看看</a>
         </div>
       </div>
@@ -2929,12 +2929,12 @@ function showCrystalDetail(name){
         <a href="${(function(){
           // v68.21 Bug #66:同上,雖然 REAL_PRODUCTS 是 hardcoded,但保險驗證
           var _u = crystal.shopee || '';
-          if (!_u || typeof _u !== 'string') return 'https://tw.shp.ee/2n5Mo2w';
+          if (!_u || typeof _u !== 'string') return 'https://shopee.tw/a50h95648d?tab=shop';
           try {
             var _pu = new URL(_u);
-            if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://tw.shp.ee/2n5Mo2w';
+            if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://shopee.tw/a50h95648d?tab=shop';
             return _u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-          } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
+          } catch(_) { return 'https://shopee.tw/a50h95648d?tab=shop'; }
         })()}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 蝦皮購買</a>
       </div>
     </div>`;
@@ -3155,12 +3155,12 @@ function showQuizResult(){
         <a href="${(function(){
           // v68.21 Bug #66:URL 驗證
           var _u = pick.shopee || '';
-          if (!_u || typeof _u !== 'string') return 'https://tw.shp.ee/2n5Mo2w';
+          if (!_u || typeof _u !== 'string') return 'https://shopee.tw/a50h95648d?tab=shop';
           try {
             var _pu = new URL(_u);
-            if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://tw.shp.ee/2n5Mo2w';
+            if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://shopee.tw/a50h95648d?tab=shop';
             return _u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-          } catch(_) { return 'https://tw.shp.ee/2n5Mo2w'; }
+          } catch(_) { return 'https://shopee.tw/a50h95648d?tab=shop'; }
         })()}" target="_blank" rel="noopener" class="btn btn-gold"><i class="fas fa-shopping-cart"></i> 去蝦皮擁有它</a>
         <button class="btn btn-outline" onclick="startCrystalQuiz()"><i class="fas fa-redo"></i> 再測一次</button>
       </div>
@@ -5718,7 +5718,7 @@ showAuraResult = function(){
         '<p style="font-size:.78rem;color:var(--c-text-muted,#6b6355);margin-bottom:1.2rem">此工具免費體驗已用完,單次購買繼續使用</p>' +
         '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
           '<button onclick="document.getElementById(\'jy-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'single\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold,#d4af37);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🌙 七維度單次 NT$' + ((window.JY_PRICES && window.JY_PRICES.SINGLE_7D) || 100) + '</button>' +
-          '<a href="https://tw.shp.ee/2n5Mo2w" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);text-decoration:none;font-size:.82rem;border:1px solid rgba(255,255,255,.08)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
+          '<a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:200px;padding:11px;border-radius:10px;background:transparent;color:var(--c-text-dim,#a09880);text-decoration:none;font-size:.82rem;border:1px solid rgba(255,255,255,.08)"><i class="fas fa-gem"></i> 逛逛能量水晶</a>' +
           '<button onclick="document.getElementById(\'jy-used-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用了</button>' +
         '</div>' +
       '</div>';

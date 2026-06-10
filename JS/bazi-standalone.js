@@ -16,7 +16,7 @@
   'use strict';
 
   var GOLD = '#c9a84c';
-  var SHOPEE = 'https://tw.shp.ee/2n5Mo2w';
+  var SHOPEE = 'https://shopee.tw/a50h95648d?tab=shop';
   // 十天干（過場動畫的環）
   var TIANGAN = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
   // 年支 → 生肖
