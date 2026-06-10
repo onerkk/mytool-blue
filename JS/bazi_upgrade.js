@@ -3,6 +3,7 @@
 // 正格十格判定 · 暗合/拱合 · 流月推算 · 格局深化
 // v80.30(2026/6/10)：官殺混雜改透干論(三命通會)・刪自創「暗沖」・流月吉凶改 wuxingStance 全表＋沖合依喜忌定向・新增通根明細・十神組合 gods 索引死碼修復・流月移至喜忌表之後
 // v80.31(2026/6/10)：流月補 note 欄位（沖合喜忌理由）供站內版 ai-analysis 透傳——它自組字串不讀 zh，理由原本會丟失
+// v80.32(2026/6/10)：①流年重評（bazi.js 流年 Step1 喜忌用窄表 fav/unfav，土年全漏判——與流月同病；於 stance 之後以全表重評基礎分＋沖類修飾並重定等級，合化/三合修飾經逐項驗算在本架構偏差≈0 不動）②nextDaYun 聚合連續同向喜用大運（連走年數），AI 連兩輪只講一步不講二十年窗口，改資料層直給
 // 歲運並臨 · 十神格局完整 · 神煞擴充 · 桃花驛馬
 // ══════════════════════════════════════════════════════════════════════
 // 載入順序：bazi.js 之後
@@ -712,6 +713,42 @@ function baziGuanShaMix(bazi) {
   return { mixed:false };
 }
 
+// ── 11.4 流年全表重評（v80.32）──
+// bazi.js 的流年評分 Step1 用窄表 fav/unfav（本類盤忌僅[金]），土年基礎分漏判，與修正前流月同病。
+// 此處於 wuxingStance 之後以「五行喜忌全表」重評：基礎分（干支各±2）全額重算，沖大運支／沖原局支修飾
+// 改依被沖者全表喜忌定向；合化・三合修飾為 fav 二元判斷、對忌神結果與全表相同（逐項驗算偏差≈0），維持原值。
+function baziRescoreLiuNian(bazi, stance) {
+  if (!bazi || !Array.isArray(bazi.dayun) || !stance || !stance.map) return;
+  var st = stance.map;
+  var fav = bazi.fav || [], unfav = bazi.unfav || [];
+  var nJ = function (el) { return fav.indexOf(el) >= 0 ? 2 : (unfav.indexOf(el) >= 0 ? -2 : 0); };
+  var sJ = function (el) { return st[el] === '喜' ? 2 : (st[el] === '忌' ? -2 : 0); };
+  var CHONG = {}; for (var ci = 0; ci < 12; ci++) CHONG[DZ12[ci]] = DZ12[(ci + 6) % 12];
+  var origZhi = [];
+  ['year','month','day','hour'].forEach(function (k) { if (bazi.pillars && bazi.pillars[k]) origZhi.push(bazi.pillars[k].zhi); });
+  bazi.dayun.forEach(function (dy) {
+    if (!dy || !Array.isArray(dy.liuNian) || !dy.gz || dy.gz.length < 2) return;
+    var dyZ = dy.gz.charAt(1), dyZEl = WX_MAP[dyZ];
+    dy.liuNian.forEach(function (ln) {
+      if (!ln || !ln.gz || ln.gz.length < 2) return;
+      var g = ln.gz.charAt(0), z = ln.gz.charAt(1);
+      var gEl = WX_MAP[g], zEl = WX_MAP[z];
+      var delta = (sJ(gEl) - nJ(gEl)) + (sJ(zEl) - nJ(zEl));
+      if (CHONG[z] === dyZ) delta += (st[dyZEl] === '忌' ? 1 : -1.5) - (unfav.indexOf(dyZEl) >= 0 ? 1 : -1.5);
+      origZhi.forEach(function (oz) {
+        if (CHONG[z] === oz) delta += (st[WX_MAP[oz]] === '忌' ? 1 : -1) - (unfav.indexOf(WX_MAP[oz]) >= 0 ? 1 : -1);
+      });
+      if (delta !== 0) {
+        ln.score += delta;
+        var s = ln.score;
+        ln.level = s >= 5 ? '大吉' : s >= 3 ? '中吉' : s >= 1 ? '小吉' : s >= -1 ? '平穩' : s >= -3 ? '小凶' : s >= -5 ? '凶' : '大凶';
+        if (sJ(gEl) < nJ(gEl) && st[gEl] === '忌') (ln.notes = ln.notes || []).push(g + '干' + gEl + '為忌（全表校正）');
+        if (sJ(zEl) < nJ(zEl) && st[zEl] === '忌') (ln.notes = ln.notes || []).push(z + '支' + zEl + '為忌（全表校正）');
+      }
+    });
+  });
+}
+
 // ── 11.5 日主通根明細（v80.30）──
 // 「得地」各派定義不一（坐下通根派／二柱通根派…），引擎旺衰判定取「日支坐根」一派；
 // 此處列明全盤比劫根氣供提示詞輸出，避免 AI 把「得地：否」誤讀成全盤無根。
@@ -846,6 +883,9 @@ function enhanceBazi(bazi) {
   // 12. 完整五行喜忌表（需在 strengthPattern 之後）
   try { bazi.wuxingStance = baziWuxingStance(bazi); } catch(e) { bazi.wuxingStance = null; }
 
+  // 12.35 流年全表重評（v80.32：必須在 wuxingStance 之後）
+  try { baziRescoreLiuNian(bazi, bazi.wuxingStance); } catch(e) {}
+
   // 12.4 日主通根明細（v80.30：得地標籤誠實化的資料面）
   try { bazi.tongGen = baziTongGen(bazi); } catch(e) { bazi.tongGen = null; }
 
@@ -896,7 +936,20 @@ function enhanceBazi(bazi) {
         var _dc = bazi.dayun[_di];
         if (_dc && _dc.isCurrent && _dc.phaseNow) {
           var _dn = bazi.dayun[_di + 1];
-          if (_dn && _dn.gz && _dn.gz !== '小運' && _dn.gz.length >= 2) _dc.phaseNow.nextDaYun = { gz: _dn.gz, luckLabel: _dn.luckLabel || '' };
+          if (_dn && _dn.gz && _dn.gz !== '小運' && _dn.gz.length >= 2) {
+            _dc.phaseNow.nextDaYun = { gz: _dn.gz, luckLabel: _dn.luckLabel || '' };
+            // v80.32：連續同向喜用大運聚合——下一步若為吉，往後累計連走的吉運步數與年數
+            if ((_dn.luckLabel || '') === '吉') {
+              var _runGz = [_dn.gz], _runYears = (_dn.ageEnd - _dn.ageStart + 1) || 10;
+              for (var _dj = _di + 2; _dj < bazi.dayun.length; _dj++) {
+                var _dx = bazi.dayun[_dj];
+                if (_dx && (_dx.luckLabel || '') === '吉' && _dx.gz && _dx.gz.length >= 2) {
+                  _runGz.push(_dx.gz); _runYears += (_dx.ageEnd - _dx.ageStart + 1) || 10;
+                } else break;
+              }
+              if (_runGz.length >= 2) _dc.phaseNow.nextDaYun.run = { gzList: _runGz, years: _runYears };
+            }
+          }
           break;
         }
       }

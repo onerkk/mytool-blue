@@ -1,4 +1,5 @@
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.35]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.36]
+ *  v80.36(2026/6/10)：①「未來三年流年」資料行（含空亡標記）——問「何時」類題目原本 2027 起為空白，AI 只能說守到交脫；流年分數已經 v80.32 全表重評（土年不再漏判）②下一步大運若連走多步喜用，直接印「連走約N年」（AI 連兩輪不聚合二十年窗口，改資料層直給）
  *  v80.35(2026/6/10)：流年支落空亡直接標記於資料行（AI 連兩輪漏判流年午空亡，鐵律⑪指令層不夠、改資料層給）・完整性清單加「正文無指令字眼」（修 instruction echo「語氣平實不多說」漏進正文）
  *  v80.34(2026/6/10)：身宮移除(非子平概念)・得地標籤誠實化＋通根明細・官透殺藏變體輸出・鐵律④下一步大運／⑩禁盤外資訊・選石單一強化・完整性清單補項・交脫後下一步大運資料化
  *  歐那 2026/6/6：八字自成一頁、乾淨、不出現其他入口、有自己的過場動畫，組好提示詞複製去 AI。
@@ -586,7 +587,7 @@
         if (ph) {
           var _lv = function (x) { return x === '順' ? '順（喜用到位）' : (x === '背' ? '背（忌神當道，不利）' : '平'); };
           L.push('★ 現在實際走到：【' + ph.half + '：' + ph.gz + '（' + ph.el + '，' + ph.god + '）】，當下運勢＝' + _lv(ph.luck) + '。這才是「現在」的運，不要用整步大運前後平均來判。'
-            + '約至西元 ' + ph.untilYear + ' 年，' + (ph.nextGz ? '走完前半、轉入後五年 ' + ph.nextGz + '（' + ph.nextEl + '，' + _lv(ph.nextLuck) + '）' : '此大運交脫、換下一步' + (ph.nextDaYun ? '：' + ph.nextDaYun.gz + '〔' + (ph.nextDaYun.luckLabel || '') + '〕' : '')) + '。');
+            + '約至西元 ' + ph.untilYear + ' 年，' + (ph.nextGz ? '走完前半、轉入後五年 ' + ph.nextGz + '（' + ph.nextEl + '，' + _lv(ph.nextLuck) + '）' : '此大運交脫、換下一步' + (ph.nextDaYun ? '：' + ph.nextDaYun.gz + '〔' + (ph.nextDaYun.luckLabel || '') + '〕' + (ph.nextDaYun.run && ph.nextDaYun.run.gzList ? '——其後' + ph.nextDaYun.run.gzList.slice(1).map(function(g){return g + '〔吉〕';}).join('、') + '同向接續，喜用大運連走約 ' + ph.nextDaYun.run.years + ' 年' : '') : '')) + '。');
         }
         L.push('（判斷現運吉凶：拿大運天干（前五年）、地支（後五年）的五行去比對上面的「五行喜忌全表」——走喜用則順、走忌神則背；再看大運是否沖合原局喜用。）');
       }
@@ -595,6 +596,16 @@
       var _lnZhi = String(b.liuNianGZ).charAt(1);
       var _lnKong = _kw.indexOf(_lnZhi) >= 0 ? '（注意：流年支' + _lnZhi + '正落空亡——今年屬' + _lnZhi + '的機會「整年」帶虛象，不只流月；須與流月空亡同組一致處理）' : '';
       L.push('今年流年：' + _fmt(b.liuNianGZ) + _lnKong + (Array.isArray(b.liuYue) && b.liuYue.length ? '；流月重點：' + _fmt(b.liuYue) : '') + '。');
+      // v80.36：未來三年流年（問「何時」類題的資料面；分數已 v80.32 全表重評）
+      try {
+        var _nowY = new Date().getFullYear(), _fut = [];
+        (b.dayun || []).forEach(function (d) { (d && d.liuNian || []).forEach(function (ln) { if (ln && ln.year > _nowY && ln.year <= _nowY + 3) _fut.push(ln); }); });
+        _fut.sort(function (x, y) { return x.year - y.year; });
+        if (_fut.length) L.push('未來三年流年：' + _fut.map(function (ln) {
+          var _z = String(ln.gz || '').charAt(1);
+          return ln.year + ' ' + ln.gz + '（' + (ln.level || '') + (_kw.indexOf(_z) >= 0 ? '，' + _z + '支落空亡・虛象' : '') + '）';
+        }).join('、') + '。');
+      } catch (e) {}
     }
     if (b.suiYunBingLin) { var sybl = _fmt(b.suiYunBingLin); if (sybl) L.push('歲運併臨提醒：' + sybl + '。'); }
     L.push('');
