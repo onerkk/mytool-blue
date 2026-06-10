@@ -82,6 +82,8 @@
       '.jym-item-on .jym-check{opacity:1;transform:scale(1)}'
     ].join('\n');
     document.head.appendChild(st);
+  // ═══ 鎏金夜祭 v2（2026/6/10）：視圖升級層——第二樣式表 append-only，同表後者勝、整段可刪回退；流光動畫引用 style.css v81.0 全域 keyframes（jyGiltFlow），快取舊版時退化為靜態鎏金，無害 ═══
+  try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','picker');_g2.textContent='.jym-sheet{background:rgba(16,13,10,.93);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid rgba(201,168,76,.3);box-shadow:0 -18px 50px rgba(0,0,0,.6);border-radius:22px 22px 0 0}.jym-grip{background:linear-gradient(90deg,#8a6d2f,#e8d28a,#8a6d2f);opacity:.85;border-radius:99px}.jym-item{border:1px solid rgba(201,168,76,.16);border-radius:14px;background:rgba(201,168,76,.04);transition:all .18s}.jym-item:active{transform:scale(.985)}.jym-item-on{border-color:rgba(232,210,138,.65);background:rgba(201,168,76,.1);box-shadow:0 0 0 1px rgba(201,168,76,.2),0 8px 22px rgba(201,168,76,.14)}.jym-check{color:#e8d28a}.jym-group-label{color:rgba(216,199,154,.6);letter-spacing:.14em}.jym-orb{box-shadow:0 0 16px rgba(201,168,76,.5)}.jym-close:focus-visible,.jym-item:focus-visible{outline:2px solid #e8d28a;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
   }
 
   function autoItemHTML() {

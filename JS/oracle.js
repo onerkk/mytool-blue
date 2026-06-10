@@ -1813,5 +1813,7 @@ css.textContent='\
 .orc-shrine-story-footer{margin-top:.7rem;padding-top:.5rem;border-top:1px dashed rgba(212,167,106,0.18);font-size:.68rem;color:rgba(201,167,119,0.5);font-style:italic;letter-spacing:1px;text-align:right}\
 ';
 document.head.appendChild(css);
+  // ═══ 鎏金夜祭 v2（2026/6/10）：視圖升級層——第二樣式表 append-only，同表後者勝、整段可刪回退；流光動畫引用 style.css v81.0 全域 keyframes（jyGiltFlow），快取舊版時退化為靜態鎏金，無害 ═══
+  try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','oracle');_g2.textContent='.orc-btn-primary{border-radius:12px;box-shadow:0 10px 24px rgba(110,18,18,.5),inset 0 1px 0 rgba(255,235,200,.35)}.orc-btn-primary:active{transform:translateY(1px)}.orc-btn-outline{border-radius:12px}.orc-btn-primary:focus-visible,.orc-btn-outline:focus-visible{outline:2px solid #f0d9a8;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
 console.log('[Oracle] 靜月靈籤 v80 loaded — 解籤提示詞補：典故故事+全判讀欄+籤意+完整性清單（材料拉滿）');
 })();
