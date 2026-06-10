@@ -2992,13 +2992,18 @@ function initTarotDeck(){
     }
     return a;
   }
+  // v80.38(2026/6/10)：小阿卡那牌陣只用56張小牌——洗牌池依牌陣過濾。
+  //   提示詞宣稱「嚴格性來自只用56張小牌」，原引擎全78張入池＝宣稱不實、大牌會混入小牌專題陣。
+  //   洗牌時牌陣已解析（ui.js 進抽牌頁即 detect+setCurrentSpread；手動切陣會清池重洗），自動/手動皆安全。
+  var _deckPool = TAROT;
+  try { if (typeof getCurrentSpread === 'function' && getCurrentSpread() === 'minor_arcana') _deckPool = TAROT.filter(function(c){ return c.id >= 22; }); } catch(e){}
   if(S._isAdmin){
-    deckShuffled = _fyShuffle(TAROT);
+    deckShuffled = _fyShuffle(_deckPool);
   } else if(S.form&&S.form.bdate&&S.form.gender&&S.form.type){
     var _rng=makeSeededRng(S.form.bdate,S.form.gender,S.form.type,S.form.question);
-    deckShuffled=seededShuffle(TAROT,_rng);
+    deckShuffled=seededShuffle(_deckPool,_rng);
   } else {
-    deckShuffled = _fyShuffle(TAROT);
+    deckShuffled = _fyShuffle(_deckPool);
   }
   drawnCards=[];
   pickAnimating=false;

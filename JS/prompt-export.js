@@ -654,7 +654,7 @@
       if (o.countingPath && o.countingPath.length) L.push('Counting 走過（依序，方向已定，勿重數）：' + o.countingPath.map(function (p) { return (p.cardName || '?') + '〔走' + p.countValue + '〕'; }).join(' → '));
       if (o.mq_countingPath && o.mq_countingPath.length) L.push('Op4 環形 Counting（順發牌方向，1↔36 時序）：' + o.mq_countingPath.map(function (p) { return (p.cardName || '?') + '〔走' + p.countValue + '〕'; }).join(' → '));
       if (o.pairs && o.pairs.length) L.push('Pairing 配對（Sig 兩側往外，#1 最直接）：' + o.pairs.map(function (pr, i) { if (!pr || pr.single || !pr.right) return '#' + (i + 1) + ' 單張殘餘:' + cn(pr && pr.left); return '#' + (i + 1) + ' ' + cn(pr.left) + '↔' + cn(pr.right) + (pr.dignity ? '〔' + safeText(pr.dignity) + '〕' : ''); }).join('；'));
-      if (o.dignities) { var _dg = safeText(o.dignities); if (_dg) L.push('元素尊嚴：' + _dg); }
+      if (o.dignities) { var _dg = safeText(o.dignities); if (_dg) L.push('元素尊嚴（逐張受鄰牌元素增減的強度分；正=被鄰牌助旺、負=被鄰牌削弱、0=中性——只作內部輕重判斷，正文禁用此術語）：' + _dg); }
       // ★ v75.2：Op4 預算公曆日期，明確顯示，AI 不需再自己換算
       if (o.decanDateRange) L.push('聚焦旬：' + (o.decanSign||'') + ' ' + (o.decanRange||'') + ' → 公曆約 ' + o.decanDateRange + '（旬主星：' + (o.decanPlanet||'') + '）');
       // op-specific 落點與其餘欄位（宮位/星座/旬/質點及其含義，名稱不一，safeText 保底）
