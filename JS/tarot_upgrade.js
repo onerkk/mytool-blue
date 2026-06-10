@@ -88,7 +88,7 @@ function tarotNumerologyAnalysis(drawn) {
     finalNum: finalNum,
     finalMeaning: finalInfo.meaning || '',
     dominantNums: dominantNums,
-    zh: '牌陣數字學總和化約為' + finalNum + '：' + (finalInfo.meaning || '')
+    zh: '牌陣數字學（逐牌先化約再加總；宮廷牌計侍1騎2后3王4，非各牌面號直加）為' + finalNum + '：' + (finalInfo.meaning || '')
   };
 }
 
@@ -625,7 +625,24 @@ function detectSpreadType(question, type) {
   if (isAnnual) return 'zodiac';
 
   // 3.1 二選一 → either_or（結構最明確）
-  if (isChoose) return 'either_or';
+  // v81_choice(2026/6/10)：「A、B、C 還是 D」多選項題超出 A/B 結構（實測 AI 被迫自己發明 A/B 映射），
+  // 改派五牌陣（現況＋原因＋阻礙＋建議＋結果）診斷主因。啟發式：取含「還是」的子句，
+  // 左側「、」列舉中的名詞式短項（≤8字、不含該要想了我你他她好不等敘事字）≥1 即視為 ≥3 選項。
+  if (isChoose) {
+    try {
+      var _cls = q.split(/[。？?！!；;]/).filter(function(s){ return /還是|或者/.test(s); });
+      var _cl = _cls.length ? _cls[0] : q;
+      var _lhs = _cl.split(/還是|或者/)[0].split(/[、，,]/).filter(function(s){ return s.trim().length > 0; });
+      var _enum = 0;
+      for (var _i = _lhs.length - 1; _i >= 1; _i--) {
+        var _seg = _lhs[_i].trim();
+        if (_seg.length <= 8 && !/[該要想了我你他她它好不嗎呢很]/.test(_seg)) _enum++;
+        else break;
+      }
+      if (_enum >= 1) return 'five_card';
+    } catch (e) {}
+    return 'either_or';
+  }
 
   // 3.2 時機題 → timeline
   if (isWhen) return 'timeline';

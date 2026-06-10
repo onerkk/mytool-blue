@@ -23984,7 +23984,7 @@ function _buildTarotOnlyPayload() {
   var numerologyText = '';
   if (ta.numerology) {
     // ★ 自我描述：這是「全盤所有牌號總和化約」的單一數字，不是某張牌；避免被誤讀成牌陣裡有這號牌。
-    numerologyText = '全盤牌號總和化約為' + (ta.numerology.finalNum || '') + '（整體基調參考，非單張牌）：' + (ta.numerology.finalMeaning || '');
+    numerologyText = '逐牌先化約再加總（宮廷牌計侍1騎2后3王4，非各牌面號直加）得' + (ta.numerology.finalNum || '') + '（整體基調參考，非單張牌）：' + (ta.numerology.finalMeaning || '');
   }
 
   // ★ 卡巴拉生命之樹（同步七維度）
