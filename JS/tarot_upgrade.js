@@ -33,7 +33,19 @@ var TAROT_NUMEROLOGY = {
   7: {zh:'七/戰車數', meaning:'反思、神秘、內在探索、信仰、勝利'},
   8: {zh:'八/力量數', meaning:'力量、掌控、業力、無限、物質'},
   9: {zh:'九/隱者數', meaning:'完成、智慧、獨處、人道、轉化'},
-  10: {zh:'十/命運數', meaning:'循環結束、回歸、重新開始、命運'}
+  10: {zh:'十/命運數', meaning:'循環結束、回歸、重新開始、命運'},
+  // 11-21：總和化約後落在 11-22 區間時對應大牌（quintessence 慣例；22 在程式中映射回 0 愚者）
+  11: {zh:'十一/正義數', meaning:'平衡裁決、因果對帳、誠實面對現實'},
+  12: {zh:'十二/吊人數', meaning:'暫停、換視角、以等待或讓步換取洞見'},
+  13: {zh:'十三/死神數', meaning:'一個階段確定結束、斷捨後才有新局'},
+  14: {zh:'十四/節制數', meaning:'調和比例、節奏管理、過與不及都需修正'},
+  15: {zh:'十五/惡魔數', meaning:'慾望與執著的束縛、被現實條件綁住'},
+  16: {zh:'十六/高塔數', meaning:'結構性突變、舊架構崩解後重建'},
+  17: {zh:'十七/星星數', meaning:'修復與希望、放長線的願景'},
+  18: {zh:'十八/月亮數', meaning:'不明朗、資訊不足、疑慮與潛流'},
+  19: {zh:'十九/太陽數', meaning:'明朗化、活力、成果可見'},
+  20: {zh:'二十/審判數', meaning:'總結算、覺醒、對過往做出回應與了結'},
+  21: {zh:'二十一/世界數', meaning:'整合完成、一個大循環圓滿收束'}
 };
 
 function tarotNumerologyAnalysis(drawn) {
@@ -62,9 +74,10 @@ function tarotNumerologyAnalysis(drawn) {
     totalReduction += reduced;
   });
 
-  // 化約總和
+  // 化約總和（quintessence：化約至 ≤22，22 映射回 0 愚者，使結果必落在 0-21 大牌對應表內）
   var finalNum = totalReduction;
   while (finalNum > 22) finalNum = Math.floor(finalNum / 10) + (finalNum % 10);
+  if (finalNum === 22) finalNum = 0;
 
   // 找重複數字（主題）
   var dominantNums = [];
@@ -88,7 +101,7 @@ function tarotNumerologyAnalysis(drawn) {
     finalNum: finalNum,
     finalMeaning: finalInfo.meaning || '',
     dominantNums: dominantNums,
-    zh: '牌陣數字學（逐牌先化約再加總；宮廷牌計侍1騎2后3王4，非各牌面號直加）為' + finalNum + '：' + (finalInfo.meaning || '')
+    zh: '牌陣數字學（小牌按面號、10保留為命運數；宮廷牌計侍1騎2后3王4；大牌號碼>10先化約至10以內、如節制14→5；加總後化約至0-21對應大牌）為' + finalNum + '：' + (finalInfo.meaning || '')
   };
 }
 

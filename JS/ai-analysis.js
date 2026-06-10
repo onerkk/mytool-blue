@@ -23984,7 +23984,7 @@ function _buildTarotOnlyPayload() {
   var numerologyText = '';
   if (ta.numerology) {
     // ★ 自我描述：這是「全盤所有牌號總和化約」的單一數字，不是某張牌；避免被誤讀成牌陣裡有這號牌。
-    numerologyText = '逐牌先化約再加總（宮廷牌計侍1騎2后3王4，非各牌面號直加）得' + (ta.numerology.finalNum || '') + '（整體基調參考，非單張牌）：' + (ta.numerology.finalMeaning || '');
+    numerologyText = '小牌按面號（10保留為命運數）、宮廷牌計侍1騎2后3王4、大牌號碼>10先化約至10以內（如節制14→5），加總後化約至0-21對應大牌，得' + (ta.numerology.finalNum || '') + '（整體基調參考，非單張牌）：' + (ta.numerology.finalMeaning || '');
   }
 
   // ★ 卡巴拉生命之樹（同步七維度）
@@ -24166,28 +24166,28 @@ function _buildTarotOnlyPayload() {
   // 核心 vs 結果
   if (coreIdx >= 0 && outcomeIdx >= 0) {
     var cUp = cards[coreIdx].isUp, oUp = cards[outcomeIdx].isUp;
-    if (cUp && !oUp) tensions.push('核心牌順但結果牌逆→過程好但結局有變數');
-    else if (!cUp && oUp) tensions.push('核心牌逆但結果牌順→現在卡但最終會通');
-    else if (!cUp && !oUp) tensions.push('核心和結果都逆→這件事本身方向有問題');
+    if (cUp && !oUp) tensions.push('核心牌正位、結果牌逆位——過程與結局位方向相反，是哪一端為準由全盤牌義裁決');
+    else if (!cUp && oUp) tensions.push('核心牌逆位、結果牌正位——當前受阻但結果位未阻，受阻是否會解由牌義裁決');
+    else if (!cUp && !oUp) tensions.push('核心牌與結果牌皆逆位——受阻訊號貫穿主軸；是方向錯誤還是執行失衡，由全盤牌義裁決，不可未讀牌就下定論');
     // 元素衝突
     var cEl = cards[coreIdx].baseElement, oEl = cards[outcomeIdx].baseElement;
-    if (cEl && oEl && _edMap[cEl+'+'+oEl] === 'weaken') tensions.push('核心和結果元素相剋→阻力來自事情本身的性質');
+    if (cEl && oEl && _edMap[cEl+'+'+oEl] === 'weaken') tensions.push('核心牌與結果牌元素相剋——兩端能量互相削弱（事實統計；其含義由牌義定）');
   }
   // 阻礙位分析
   if (obstacleIdx >= 0) {
     var obCard = cards[obstacleIdx];
-    if (obCard.isUp) tensions.push('阻礙位是正位→阻力是「太多」而非「不夠」');
+    if (obCard.isUp) tensions.push('阻礙位為正位——擋路的是一股現存的主動力量而非缺乏（實務常讀作「過多/過早」，是否如此由該牌牌義定）');
     var obSuit = drawn[obstacleIdx] ? drawn[obstacleIdx].suit : '';
-    if (obSuit === 'cup') tensions.push('阻礙來自情感層面');
-    else if (obSuit === 'sword') tensions.push('阻礙來自思維或溝通');
-    else if (obSuit === 'wand') tensions.push('阻礙來自行動力或方向');
-    else if (obSuit === 'pent') tensions.push('阻礙來自現實條件或金錢');
+    if (obSuit === 'cup') tensions.push('阻礙位花色屬水（聖杯）——情感面向');
+    else if (obSuit === 'sword') tensions.push('阻礙位花色屬風（寶劍）——思維/溝通面向');
+    else if (obSuit === 'wand') tensions.push('阻礙位花色屬火（權杖）——行動/方向面向');
+    else if (obSuit === 'pent') tensions.push('阻礙位花色屬土（金幣）——現實條件/金錢面向');
   }
   // 自己 vs 外在
   if (selfIdx >= 0 && extIdx >= 0) {
     var sUp = cards[selfIdx].isUp, eUp = cards[extIdx].isUp;
-    if (sUp && !eUp) tensions.push('自己狀態好但外在環境不配合');
-    else if (!sUp && eUp) tensions.push('外在條件好但自己內在卡住');
+    if (sUp && !eUp) tensions.push('自己位正、外在位逆——內外狀態相反（內順外阻），如何取捨由兩牌牌義定');
+    else if (!sUp && eUp) tensions.push('自己位逆、外在位正——內外狀態相反（外順內阻），如何取捨由兩牌牌義定');
   }
 
   // ── 3. 時間對應（Time Correspondence）──

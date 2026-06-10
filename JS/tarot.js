@@ -1623,7 +1623,7 @@ function buildTarotStats(drawn){
 
   // 小牌比例洞見
   var minorRatio = 1 - majorRatio;
-  if(minorRatio >= 0.8) insights.push('小牌為主（'+Math.round(minorRatio*100)+'%），這是日常生活層面的議題，靠實際行動和選擇就能改變。');
+  if(minorRatio >= 0.8) insights.push('小牌為主（'+Math.round(minorRatio*100)+'%），議題落在日常可操作層面，命運級結構力弱、主導權多在人為選擇（可改變的程度仍由各位置牌義定）。');
 
   // 主導花色
   if(suitCounts[dominantSuit] >= 4 && dominantSuit !== 'major'){
@@ -1639,9 +1639,9 @@ function buildTarotStats(drawn){
 
   // 正逆位比例
   var rvRatio = rvCount / total;
-  if(rvRatio >= 0.7) insights.push('逆位佔 '+Math.round(rvRatio*100)+'%，整體能量受阻，內在阻礙和外在困難同時存在。');
-  else if(rvRatio >= 0.5) insights.push('逆位過半，需要特別留意內在的阻礙和未解決的課題。');
-  else if(rvRatio <= 0.2) insights.push('正位為主，能量流動順暢，整體走向積極。');
+  if(rvRatio >= 0.7) insights.push('逆位佔 '+Math.round(rvRatio*100)+'%，多數位置的能量未順暢展開——受阻在哪一層（內在、外在或時機）由各位置牌義判，不可一句帶過，也不自動等於凶。');
+  else if(rvRatio >= 0.5) insights.push('逆位過半，受阻訊號偏重；具體卡在哪由各位置牌義判。');
+  else if(rvRatio <= 0.2) insights.push('正位為主，全盤受阻訊號少。');
 
   // 數字群聚
   numCluster.forEach(function(nc){
