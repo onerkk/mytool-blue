@@ -1,4 +1,5 @@
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.37]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.38]
+ *  v80.38(2026/6/10)：流年伏吟／轉趾煞資料行（今年＋未來三年）——實測 2029 己酉撞日柱乙酉，AI 只能寫「酉又貼近日支」講不出伏吟；文獻《三命通會》轉趾煞、《命理正宗》反吟伏吟。標記克制：附圖例言明吉凶仍以分數為準
  *  v80.36(2026/6/10)：①「未來三年流年」資料行（含空亡標記）——問「何時」類題目原本 2027 起為空白，AI 只能說守到交脫；流年分數已經 v80.32 全表重評（土年不再漏判）②下一步大運若連走多步喜用，直接印「連走約N年」（AI 連兩輪不聚合二十年窗口，改資料層直給）
  *  v80.35(2026/6/10)：流年支落空亡直接標記於資料行（AI 連兩輪漏判流年午空亡，鐵律⑪指令層不夠、改資料層給）・完整性清單加「正文無指令字眼」（修 instruction echo「語氣平實不多說」漏進正文）
  *  v80.34(2026/6/10)：身宮移除(非子平概念)・得地標籤誠實化＋通根明細・官透殺藏變體輸出・鐵律④下一步大運／⑩禁盤外資訊・選石單一強化・完整性清單補項・交脫後下一步大運資料化
@@ -594,19 +595,40 @@
         L.push('（判斷現運吉凶：拿大運天干（前五年）、地支（後五年）的五行去比對上面的「五行喜忌全表」——走喜用則順、走忌神則背；再看大運是否沖合原局喜用。）');
       }
     }
+    // v80.38：伏吟／轉趾煞標記（文獻：干支相同為伏吟、支同為地支伏吟，查法以年日柱為重——《三命通會》
+    //   「日時干支與流年干支同，為轉趾煞，輕則遠遷重則毀屋破財」。徵象＝重複/反復/舊事重演：伏忌加倍、
+    //   伏喜成雙。流年支撞原局本就常見，標記克制、吉凶仍以分數為準，AI 不得拿伏吟單獨嚇人。）
+    var _fyGong = { year: '祖上根基', month: '父母事業', day: '自己配偶', hour: '子女晚輩晚年' };
+    var _fuyin = function (gz) {
+      try {
+        gz = String(gz || ''); var _z2 = gz.charAt(1); if (!_z2) return '';
+        var _mk = [];
+        ['year', 'month', 'day', 'hour'].forEach(function (k) {
+          var pg = String((b.pillars || {})[k] || ''); if (!pg) return;
+          if (pg === gz) _mk.push('與' + roleName[k] + '干支全同・伏吟並臨' + ((k === 'day' || k === 'hour') ? '（轉趾煞）' : '') + '〔' + _fyGong[k] + '〕');
+          else if (pg.charAt(1) === _z2) _mk.push('與' + roleName[k] + '地支伏吟〔' + _fyGong[k] + '〕');
+        });
+        return _mk.length ? '，' + _mk.join('、') : '';
+      } catch (e) { return ''; }
+    };
     if (b.liuNianGZ) {
       var _lnZhi = String(b.liuNianGZ).charAt(1);
       var _lnKong = _kw.indexOf(_lnZhi) >= 0 ? '（注意：流年支' + _lnZhi + '正落空亡——今年屬' + _lnZhi + '的機會「整年」帶虛象，不只流月；須與流月空亡同組一致處理）' : '';
-      L.push('今年流年：' + _fmt(b.liuNianGZ) + _lnKong + (Array.isArray(b.liuYue) && b.liuYue.length ? '；流月重點：' + _fmt(b.liuYue) : '') + '。');
+      L.push('今年流年：' + _fmt(b.liuNianGZ) + _lnKong + _fuyin(b.liuNianGZ) + (Array.isArray(b.liuYue) && b.liuYue.length ? '；流月重點：' + _fmt(b.liuYue) : '') + '。');
       // v80.36：未來三年流年（問「何時」類題的資料面；分數已 v80.32 全表重評）
       try {
         var _nowY = new Date().getFullYear(), _fut = [];
         (b.dayun || []).forEach(function (d) { (d && d.liuNian || []).forEach(function (ln) { if (ln && ln.year > _nowY && ln.year <= _nowY + 3) _fut.push(ln); }); });
         _fut.sort(function (x, y) { return x.year - y.year; });
-        if (_fut.length) L.push('未來三年流年：' + _fut.map(function (ln) {
-          var _z = String(ln.gz || '').charAt(1);
-          return ln.year + ' ' + ln.gz + '（' + (ln.level || '') + (_kw.indexOf(_z) >= 0 ? '，' + _z + '支落空亡・虛象' : '') + '）';
-        }).join('、') + '。');
+        if (_fut.length) {
+          var _hasFy = false;
+          var _futTxt = _fut.map(function (ln) {
+            var _z = String(ln.gz || '').charAt(1);
+            var _fy = _fuyin(ln.gz); if (_fy) _hasFy = true;
+            return ln.year + ' ' + ln.gz + '（' + (ln.level || '') + (_kw.indexOf(_z) >= 0 ? '，' + _z + '支落空亡・虛象' : '') + _fy + '）';
+          }).join('、');
+          L.push('未來三年流年：' + _futTxt + '。' + (_hasFy ? '（伏吟＝流年干支與原局某柱重逢，主該宮位之事重複、反復、舊事重演——落忌神年壓力加倍、落喜用年喜事成雙；干支全同於日時柱為轉趾煞，主遷動破耗。流年支撞原局本屬常見，伏吟只作宮位與性質的修飾，吉凶仍以前列吉凶等級為準，不可單拿伏吟誇大成災。）' : ''));
+        }
       } catch (e) {}
     }
     if (b.suiYunBingLin) { var sybl = _fmt(b.suiYunBingLin); if (sybl) L.push('歲運併臨提醒：' + sybl + '。'); }
