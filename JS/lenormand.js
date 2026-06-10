@@ -1,5 +1,9 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v2.9
+// 靜月之光 — 雷諾曼牌 Lenormand v3.0
+// v3.0(2026/6/10)：指示牌（Significator）實裝——不使用／男士28／女士29／自選36任一。正統依據：
+//   九宮格＝古法預置中央再抽八張圍繞（tarotquest 文獻明載）；大牌陣＝不預置、36張中定位後讀其圍繞/行列/左過去右未來
+//   （Labyrinthos/Lenormand Reader）；三張五張線＝不預置、僅主題透鏡（正統線讀無預置法，誠實標示）。
+//   自選任一張＝主題指示牌 signifier（Lenormand Reader 教學）。預置時抽牌池先移除該牌；線讀含盤外引用豁免條款。
 // v2.9(2026/6/10)：鎏金夜祭 v2 視圖升級層
 // v2.8(2026/6/10)：防線統一——回答規則補7（盤外資訊禁令）8（指令回聲禁令）、選石補嚴禁並列（六系統同步）
 // v2.7(2026/6/10)：①鏡像配對資料修正——原誤印 1↔9/3↔7（那是四角X技法），改為正統摺鏡 1↔3/4↔6/7↔9（Etteilla 對折法，Stefan's Cards/Cafe Lenormand 可查證），與讀法區定義一致；②對角線B改印 7→5→3 方向（結果線定義）；③回答規則補「全程繁體中文」（實測輸出滲漏「财务」「外间」簡體字）；④應期數字須可溯源（實測「3到5個月」無任何方法可推得）
@@ -125,6 +129,8 @@ var _lnResolved = 'three';   // v2.6：實際抽牌用的牌陣（auto 解析後
 var _lnAutoPick = null;      // v2.6：自動判斷結果 {id, why}，供結果區標示
 var _lnQuestion = '';
 var _lnSigGender = 'male'; // for Grand Tableau
+var _lnSignif = null;        // v3.0：指示牌 card id（1-36）或 null＝不使用。28男士/29女士＝問卜者；任一張可作主題指示牌（signifier）。
+                             //   正統用法（可查文獻）：九宮格＝古法預置中央再抽八張圍繞；大牌陣＝不預置、定位後讀其圍繞與行列；線讀＝僅主題透鏡、不預置。
 
 function shuffleDeck() {
   _lnDeck = CARDS.map(function(c){ return JSON.parse(JSON.stringify(c)); });
@@ -309,11 +315,16 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('④ 兩條對角線：1-5-9（左上→右下）＝原因／影響的來源；7-5-3（左下→右上）＝結果／往哪走。');
     lines.push('【輔助・選用】只在能補出主線沒講到的新訊號時才用，重複了就跳過：四角(1,3,7,9)＝整盤框架/背景定調（可看成 X：1↔9、3↔7）；鏡像配對（中列2-5-8為鏡軸）1↔3、4↔6、7↔9。');
     lines.push('深度來自針對問題把主線挖透，不是把每一層都報一遍；全部串成一個回答問題的故事，不要逐格報告。');
+    if (drawn[4] && drawn[4]._presetSig) {
+      lines.push('');
+      lines.push('【指示牌・圍繞法（本盤適用，最優先）】第5張核心＝問卜者預先選定的指示牌「' + drawn[4].id + '.' + drawn[4].name + '」（古法：置指示牌於中央、再抽八張圍繞成 3×3）。核心即' + ((drawn[4].id === 28 || drawn[4].id === 29) ? '問卜者本人' : '「' + (drawn[4].topic || drawn[4].name) + '」這個主題本身') + '，周圍八張全部讀作對它的修飾與處境；橫排直列對角四角鏡像規則照舊、皆以它為中心。⚠ 指示牌是預置的錨、不是隨機抽出——不可把它當成「抽到了某張牌」的徵兆解讀（例如不可說「人物牌出現代表有對象靠近」），它的意義只在定位。');
+    }
   } else if (spreadId === 'grand') {
     lines.push('【大牌陣 Grand Tableau 讀法】');
     lines.push('全部 36 張排出：4 排 8 張 ＋ 最後一排 4 張置中。');
     lines.push('');
-    lines.push('Significator（代表牌）：' + (sigGender === 'female' ? '淑女(29)' : '紳士(28)'));
+    var _sigLb = _lnSignif ? (_lnSignif + '.' + ((CARDS[_lnSignif - 1] || {}).name || '') + '（你指定）') : (sigGender === 'female' ? '淑女(29)' : '紳士(28)');
+    lines.push('Significator（代表牌）：' + _sigLb + ((_lnSignif && _lnSignif !== 28 && _lnSignif !== 29) ? '——主題指示牌：以它代表「這件事」而非人；方位、距離、圍繞讀法與人物指示牌相同' : ''));
     lines.push('');
     lines.push('※ GT 技術很多（遠近、房屋、knighting、鏡像、角落、連線…）。權威教學一致：挑核心幾項讀透，不要每項都做、也不要每張牌都報——硬做全部會攤薄、彼此重複。深度來自把核心挖透並回答問題。');
     lines.push('');
@@ -383,7 +394,7 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     } else {
       posLabel = '位置 ' + (i+1);
     }
-    lines.push((i+1) + '. ' + posLabel + '：' + c.id + '.' + c.name + '（' + c.en + '）');
+    lines.push((i+1) + '. ' + posLabel + '：' + c.id + '.' + c.name + '（' + c.en + '）' + (c._presetSig ? '　★指示牌（問卜者預先選定・置中，非隨機抽出）' : ''));
     lines.push('   關鍵字：' + c.key);
     lines.push('   正面：' + c.pos);
     lines.push('   負面：' + c.neg);
@@ -428,14 +439,14 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('排4：' + _rowStr(24,31));
     lines.push('排5(置中)：' + _rowStr(32,35));
     lines.push('');
-    var _sigId = (sigGender === 'female') ? 29 : 28;
+    var _sigId = _lnSignif || ((sigGender === 'female') ? 29 : 28);
     var _si = -1; for (var k2=0;k2<drawn.length;k2++){ if (drawn[k2].id===_sigId){ _si=k2; break; } }
     if (_si >= 0) {
       if (_si >= 32) {
-        lines.push('Significator ' + (sigGender==='female'?'淑女(29)':'紳士(28)') + ' 落在末排 cartouche（第' + (_si-31) + '張），屬收束/命運性背景區——先說此題落在這區，再回主盤核對，不硬塞回去。');
+        lines.push('Significator ' + _sigLb + ' 落在末排 cartouche（第' + (_si-31) + '張），屬收束/命運性背景區——先說此題落在這區，再回主盤核對，不硬塞回去。');
       } else {
         var _sr = Math.floor(_si/8), _sc = _si % 8;
-        lines.push('Significator ' + (sigGender==='female'?'淑女(29)':'紳士(28)') + ' 落在第' + (_sr+1) + '排第' + (_sc+1) + '格。以它為中心讀：');
+        lines.push('Significator ' + _sigLb + ' 落在第' + (_sr+1) + '排第' + (_sc+1) + '格。以它為中心讀：');
         var _row=[]; for (var k3=_sr*8;k3<=_sr*8+7;k3++){ _row.push(drawn[k3].name + (k3<_si?'(左·過去)':k3>_si?'(右·未來)':'(Sig)')); }
         lines.push('・Sig 同一排（時間軸，左過去→右未來）：' + _row.join('、'));
         var _col=[]; for (var rr=0;rr<4;rr++){ var _ci=rr*8+_sc; _col.push(drawn[_ci].name + (rr<_sr?'(上·意識/檯面)':rr>_sr?'(下·潛意識/根基)':'(Sig)')); }
@@ -451,6 +462,12 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('');
   }
 
+  // v3.0：指示牌・線讀透鏡（正統線讀不預置；豁免條款處理與盤外牌名禁令的衝突）
+  if (_lnSignif && (spreadId === 'three' || spreadId === 'five')) {
+    var _sgC = CARDS[_lnSignif - 1] || {};
+    lines.push('【指示牌・主題透鏡】問卜者指定「' + _lnSignif + '.' + _sgC.name + '」代表' + ((_lnSignif === 28 || _lnSignif === 29) ? '他本人' : '這件事（' + (_sgC.topic || _sgC.name) + '）') + '。正統線讀不預置指示牌，它只作定位：整條線都讀成關於這個主體的故事；若它恰好被抽出，即為全線錨點。⚠ 指示牌名可用來稱呼主體，但若未被抽出，不得引用它的組合義當牌面證據（它不在本盤合法牌名清單內）。');
+    lines.push('');
+  }
   // 合法牌名清單
   lines.push('');
   lines.push('【本次合法牌名清單（只能引用以下牌）】');
@@ -553,12 +570,23 @@ function _render() {
       h += '<button class="ln-spread-btn' + (sps[i].id===_lnSpread?' active':'') + (sps[i].id==='auto'?' ln-spread-auto':'') + '" onclick="_lnSetSpread(\''+sps[i].id+'\')">' + sps[i].n + '<br><span style="font-size:.6rem;opacity:.6">' + sps[i].d + '</span></button>';
     }
     h += '</div></div>';
+    // v3.0：指示牌（Significator）
+    h += '<div class="ln-section"><div class="ln-section-title">✦ 指示牌（代表你的牌，可選）</div>';
+    h += '<div style="display:flex;flex-wrap:wrap;gap:.45rem">';
+    h += '<button class="ln-spread-btn' + (_lnSignif===null?' active':'') + '" onclick="_lnSetSig(null)">不使用</button>';
+    h += '<button class="ln-spread-btn' + (_lnSignif===28?' active':'') + '" onclick="_lnSetSig(28)">男士(28)</button>';
+    h += '<button class="ln-spread-btn' + (_lnSignif===29?' active':'') + '" onclick="_lnSetSig(29)">女士(29)</button>';
+    var _sigCustom = (_lnSignif!==null && _lnSignif!==28 && _lnSignif!==29);
+    h += '<button class="ln-spread-btn' + (_sigCustom?' active':'') + '" onclick="_lnSigPickOpen()">' + (_sigCustom ? ('自選：' + _lnSignif + '.' + (CARDS[_lnSignif-1]||{}).name) : '自選一張') + '</button>';
+    h += '</div>';
+    h += '<div class="ln-auto-note" style="margin-top:.5rem">男士／女士代表你本人；自選任一張可作主題定位（如問財選魚34、問感情選心24）。九宮格會把指示牌置於中央（古法圍繞法），大牌陣會在 36 張中定位它來讀，三張／五張線僅作主題透鏡。</div></div>';
     h += '<button class="ln-draw-btn" onclick="_lnDoDraw()">✦ 抽 牌 ✦</button>';
   } else {
     // Results
     var sp = SPREADS[_lnResolved];
     h += '<div class="ln-section"><div class="ln-section-title">✦ ' + sp.name + '（' + sp.count + ' 張）</div>';
     if (_lnAutoPick) h += '<div class="ln-auto-note">✦ 自動判斷：' + _lnAutoPick.why + '</div>';
+    if (_lnSignif) h += '<div class="ln-auto-note">✦ 指示牌：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・圍繞法）' : _lnResolved==='grand' ? '（於 36 張中定位讀取）' : '（主題透鏡）') + '</div>';
     if (_lnResolved === 'nine') {
       h += '<div class="ln-grid-3x3">';
     } else {
@@ -567,7 +595,7 @@ function _render() {
     for (var j=0;j<_lnDrawn.length;j++) {
       var c = _lnDrawn[j];
       var imgSrc = IMG_MAP[c.id] || '';
-      h += '<div class="ln-card" style="animation-delay:'+j*0.05+'s">';
+      h += '<div class="ln-card" style="animation-delay:'+j*0.05+'s">' + (c._presetSig ? '<div style="font-size:.6rem;color:#e8d28a;letter-spacing:.12em;margin-bottom:2px">★ 指示牌</div>' : '');
       if (imgSrc) h += '<img class="ln-card-img" src="'+imgSrc+'" alt="'+c.name+'">';
       h += '<div class="ln-card-name">' + c.id + '. ' + c.name + '</div>';
       h += '<div class="ln-card-en">' + c.en + '</div></div>';
@@ -650,11 +678,44 @@ window._lnDoDraw = function() {
     _lnAutoPick = _det;
   }
   var sp = SPREADS[_lnResolved];
-  drawCards(sp.count);
+  // v3.0：九宮格＋指示牌＝古法預置中央（tarotquest 等文獻：置指示牌於中央、再抽八張圍繞成 3×3）；池先移除指示牌避免重複
+  if (_lnResolved === 'nine' && _lnSignif) {
+    shuffleDeck();
+    _lnDeck = _lnDeck.filter(function (c) { return c.id !== _lnSignif; });
+    var _sigCard = JSON.parse(JSON.stringify(CARDS[_lnSignif - 1]));
+    _sigCard._presetSig = true;
+    _lnDrawn = _lnDeck.slice(0, 8);
+    _lnDrawn.splice(4, 0, _sigCard);
+  } else {
+    drawCards(sp.count);
+  }
   _lastPrompt = buildPrompt(_lnQuestion, _lnDrawn, _lnResolved, _lnSigGender);
   _lnPhase = 'result';
   _render();
   _getWrap().scrollTop = 0;
+};
+
+// v3.0：指示牌選擇
+window._lnSetSig = function (id) {
+  _lnSignif = id;
+  if (id === 28) _lnSigGender = 'male';
+  if (id === 29) _lnSigGender = 'female';
+  var ov = document.getElementById('ln-sig-ov'); if (ov) ov.remove();
+  _render();
+};
+window._lnSigPickOpen = function () {
+  var ov = document.createElement('div'); ov.id = 'ln-sig-ov';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(8,7,5,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px';
+  var bx = '<div style="max-width:520px;width:100%;max-height:78vh;overflow:auto;background:rgba(20,17,12,.97);border:1px solid rgba(201,168,76,.35);border-radius:18px;padding:16px;box-shadow:0 24px 60px rgba(0,0,0,.6)">';
+  bx += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="color:#e8d28a;letter-spacing:.1em">選擇指示牌</b><button onclick="document.getElementById(\'ln-sig-ov\').remove()" style="background:none;border:none;color:#cdb87f;font-size:1.2rem;cursor:pointer">✕</button></div>';
+  bx += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">';
+  for (var i = 0; i < CARDS.length; i++) {
+    var c = CARDS[i];
+    bx += '<button onclick="_lnSetSig(' + c.id + ')" style="padding:.5rem .3rem;border-radius:10px;border:1px solid rgba(201,168,76,' + (_lnSignif === c.id ? '.8' : '.25') + ');background:rgba(201,168,76,' + (_lnSignif === c.id ? '.16' : '.05') + ');color:#e9dec0;font-size:.78rem;cursor:pointer">' + c.id + '. ' + c.name + '</button>';
+  }
+  bx += '</div></div>'; ov.innerHTML = bx;
+  ov.onclick = function (e) { if (e.target === ov) ov.remove(); };
+  document.body.appendChild(ov);
 };
 
 window._lnCopy = function() {
