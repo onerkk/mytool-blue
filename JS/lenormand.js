@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.3 loaded（+應期技法：距離/速度牌/牌號） — 原典邊界/本盤合法牌名/反盤外反證修正');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.4 loaded — 對角線B方向修正(7→5→3)/過去列禁未來化/對角線改Labyrinthos口徑/結尾最後提醒(recency)');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -256,8 +256,8 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('【主線・必讀】');
     lines.push('① 核心牌（第5張）＝這題的主題/本質/答案核心，周圍的牌都在修飾它，開頭就要讀進去。若核心牌看似與問題不直接相關（如問工作卻是心），那本身就是訊號——代表這題的重心其實在核心牌指的那塊（如你的渴望／情感投入），要點出來，別略過。');
     lines.push('② 三條橫排：上排(1-2-3)＝想法/意識/期待（檯面上、想追求的）；中排(4-5-6)＝現實/當下實況；下排(7-8-9)＝根基/潛意識/底層（事情的根源、藏著的）。');
-    lines.push('③ 三條直列：左列(1-4-7)＝過去；中列(2-5-8)＝現在；右列(3-6-9)＝未來。');
-    lines.push('④ 兩條對角線：1-5-9（左上→右下）＝原因／影響的來源；7-5-3（左下→右上）＝結果／往哪走。');
+    lines.push('③ 三條直列：左列(1-4-7)＝過去；中列(2-5-8)＝現在；右列(3-6-9)＝未來。⚠ 列位有時間邊界：左列（過去）的牌只能讀成已發生/已成形的事或事情的根源背景，禁止把左列的牌（包括透過鏡像或對角連到的）當成未來事件來預告（例：左列出現訊息類牌＝過去曾有快速接近/消息，不是「接下來幾天你會收到消息」）。預測未來只能以右列與未來方向的牌為主，左列素材只能當背景佐證。');
+    lines.push('④ 兩條對角線：1-5-9 與 7-5-3＝局勢的動向與影響（Labyrinthos 口徑：movement/influences/possibilities）。實務上常以 1-5-9（左上→右下）看帶進局裡的影響、7-5-3（左下→右上）看發展去向——此區分屬現代實務補充、非固定鐵則；若與橫排/直列的訊息矛盾，以橫排/直列為準。對角線的時間方向仍受③的列位邊界約束。');
     lines.push('【輔助・選用】只在能補出主線沒講到的新訊號時才用，重複了就跳過：四角(1,3,7,9)＝整盤框架/背景定調（可看成 X：1↔9、3↔7）；鏡像配對（中列2-5-8為鏡軸）1↔3、4↔6、7↔9。');
     lines.push('深度來自針對問題把主線挖透，不是把每一層都報一遍；全部串成一個回答問題的故事，不要逐格報告。');
   } else if (spreadId === 'grand') {
@@ -361,8 +361,8 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('');
     lines.push('核心牌：' + drawn[4].name);
     lines.push('十字線：上' + drawn[1].name + '、下' + drawn[7].name + '、左' + drawn[3].name + '、右' + drawn[5].name);
-    lines.push('對角線A：' + drawn[0].name + '→' + drawn[4].name + '→' + drawn[8].name);
-    lines.push('對角線B：' + drawn[2].name + '→' + drawn[4].name + '→' + drawn[6].name);
+    lines.push('對角線A（左上→右下）：' + drawn[0].name + '→' + drawn[4].name + '→' + drawn[8].name);
+    lines.push('對角線B（左下→右上）：' + drawn[6].name + '→' + drawn[4].name + '→' + drawn[2].name);
     lines.push('鏡像配對：' + drawn[0].name + '↔' + drawn[8].name + '、' + drawn[2].name + '↔' + drawn[6].name + '、' + drawn[1].name + '↔' + drawn[7].name + '、' + drawn[3].name + '↔' + drawn[5].name);
   }
 
@@ -404,6 +404,17 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('【本次合法牌名清單（只能引用以下牌）】');
   lines.push(drawn.map(function(c){ return c.id + '.' + c.name; }).join('、'));
   lines.push('⚠ 正文只能引用上面清單的牌名。任何盤外牌名，即使只是拿來說明「如果有某牌才代表…」，也禁止出現。');
+
+  // 最後提醒（recency——放在最接近輸出的位置，重述問題與最高違規率規則）
+  lines.push('');
+  lines.push('══════════════════════════════════════════');
+  lines.push('【最後提醒——開始寫之前再看一次】');
+  lines.push('問卜者的問題是：「' + ((question && question.trim()) ? question.trim() : '（未指定，做通用解讀）') + '」');
+  lines.push('① 第一句就直接回答這個問題，問什麼答什麼，不寫開場白。');
+  lines.push('② 正文禁止出現：橫排/直列/對角線/四角/鏡像/位置詞（左上、下中…）/正面牌負面牌/主題牌——這些只在你心裡跑。');
+  lines.push('③ 過去列（左列）的牌不可預告未來事件，只能當已發生的背景；未來預測以右列與未來方向的牌為主。');
+  lines.push('④ 應期給範圍並講出依據（哪張速度牌／離核心多遠），禁止只說「快了」，也不假裝精準到某一天。');
+  lines.push('⑤ 只引用本盤合法牌名；結尾能量石一句帶過，最後一個字必須是蝦皮網址本身，URL 後不接任何字元。');
 
   return lines.join('\n');
 }
