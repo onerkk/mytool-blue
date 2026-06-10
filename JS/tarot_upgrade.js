@@ -598,6 +598,16 @@ function detectSpreadType(question, type) {
   if (/Mathers.*(第一法|古法|horseshoe|馬蹄|馬蹄形)|1888.*(第一法|古法|horseshoe|馬蹄)|五十四.?張|54.?張/i.test(q)) return 'mathers_horseshoe';
   if (/Mathers.*牌陣|1888.*牌陣|三排七|三排.*七|二十一.?張|21.?張.*牌陣|過去現在未來.*牌陣/i.test(q)) return 'mathers_21';
   if (/小阿卡那|小牌|minor/i.test(q)) return 'minor_arcana';
+  // v81_router(2026/6/10)：第0層補齊——常用陣名也可明確指定
+  if (/凱爾特|celtic/i.test(q)) return 'celtic_cross';
+  if (/生命之樹|卡巴拉牌陣|tree of life/i.test(q)) return 'tree_of_life';
+  if (/(黃道|十二宮|星座)牌陣|zodiac/i.test(q)) return 'zodiac';
+  if (/關係牌陣/.test(q)) return 'relationship';
+  if (/時間線牌陣|timeline/i.test(q)) return 'timeline';
+  if (/十字牌陣/.test(q)) return 'cross';
+  if (/(三牌|三張牌)陣/.test(q)) return 'three_card';
+  if (/(五牌|五張牌)陣/.test(q)) return 'five_card';
+  if (/二選一牌陣/.test(q)) return 'either_or';
 
   // ═══ 第 1 層：偵測「互動類型」——問的方式決定牌陣結構 ═══
   var isYesNo    = /嗎[？?]?\s*$|^(會不會|有沒有|該不該|可不可以|能不能|是不是|適不適合|好不好|值不值得?|行不行|對不對|要不要)|會嗎|能嗎|好嗎|行嗎|夠嗎|對嗎|有救/.test(q);
@@ -606,7 +616,9 @@ function detectSpreadType(question, type) {
   var isWhy      = /為什麼|為何|怎麼會|為啥|什麼原因|原因是|根源|問題出在|到底怎麼了|怎麼回事/.test(q);
   var isHow      = /如何|怎麼做|怎麼辦|怎樣才|方法|建議|策略|怎麼改|怎麼處理|怎麼經營|怎麼提升|要怎麼/.test(q) && !/^.{0,3}如何[？?]?\s*$/.test(q); // 排除「這週如何」「今天如何」這種短概覽
   var isOverview = /整體|全面|深入|詳細|各方面|大局|多面向|分析一下|幫我看看(?!他|她)/.test(q);
-  var isAnnual   = /年度|明年|今年|一年|12個月|12宮|十二宮|黃道|全面掃描|下半年|上半年|每個月/.test(q);
+  var isAnnual   = /年度運勢|整年|一整年|全年運|十二宮|黃道|每個月|逐月|月月/.test(q)
+                || (/今年|明年|未來一年/.test(q) && /運勢|整體|大局|怎麼樣|如何|全面/.test(q) && q.replace(/\s/g,'').length <= 22);
+  // v81_router：年度掃描收斂——「今年適合換工作嗎」是具體題不是年掃，舊版只看到「今年」就派13張黃道（過度觸發）
   var isBlocked  = /拉扯|糾結|矛盾|卡住|進退兩難|衝突|阻礙|不順|為什麼卡|怎麼解|僵|瓶頸|困境|動彈不得|解不開|過不去|走不出|掙扎|兩難/.test(q);
   var isPattern  = /為什麼一直|總是|每次都|又.*了|重複|老是|反覆|循環|模式|又來了/.test(q);
   var hasPerson  = /他|她|對方|另一半|前任|現任|老公|老婆|男友|女友|伴侶|喜歡的人|喜歡上|喜歡我|喜不喜歡|愛不愛|想不想我|暗戀|告白|追我|追求|異性|曖昧|之間|怎麼想|心裡|真心|復合|分手|婚姻|夫妻|配偶/.test(q);
@@ -647,9 +659,17 @@ function detectSpreadType(question, type) {
   // 3.2 時機題 → timeline
   if (isWhen) return 'timeline';
 
+  // 3.25 字面兩人關係 → relationship（v81_router：不依賴領域分類；「我跟主管處不來」也屬兩人關係結構）
+  if (/我(跟|和|與).{1,8}(的關係|之間|相處|合不合|處不處|處得來|處不來|關係)/.test(q)) {
+    return (qMarks >= 3) ? 'celtic_cross' : 'relationship';
+  }
+
+  // 3.27 歷程敘事題 → mathers_21（v81_router：三排七＝過去/現在/未來的完整敘事，1888古法的天然用途）
+  if (/來龍去脈|前因後果|從頭到尾|始末|整段(過程|經過|關係|時間)|過去.{0,3}現在.{0,3}未來|這(段|件).{0,8}(怎麼走到|演變|經過)/.test(q)) return 'mathers_21';
+
   // 3.3 重複模式 / 靈性課題 → tree_of_life（但健康重複用 cross）
   if (isPattern) return isHealth ? 'cross' : 'tree_of_life';
-  if (isSpirit) return 'tree_of_life';
+  if (isSpirit || /靈性|業力|課題|天命|使命|潛意識|自我成長|卡巴拉|冥想|靈魂|內在(?!褲)/.test(q)) return 'tree_of_life';
 
   // 3.4 卡住 / 阻礙 / 為什麼不順 → cross（核心 vs 阻礙）
   if (isBlocked) return 'cross';
@@ -662,11 +682,25 @@ function detectSpreadType(question, type) {
   // 3.6 「為什麼」原因題（非感情對象題）→ cross
   if (isWhy) return 'cross';
 
+  // 3.65 重型全局 → mathers_horseshoe（v81_router：54張只在「最完整/全部攤開/人生大局」級需求才派）
+  if (qMarks >= 5 || q.replace(/\s/g,'').length > 90 || /全部攤開|最完整|徹底.{0,4}(解|看|攤)|大解讀|人生大局|通盤.{0,4}(看|解)/.test(q)) return 'mathers_horseshoe';
+
+  // 3.68 多領域並看 → fifteen_card（v81_router：GD15 三元組結構適合一次涵蓋多面向；單一議題深入仍走凱爾特）
+  try {
+    var _dG = [/感情|愛情|婚姻|桃花/, /工作|事業|職場|轉職|升遷/, /財運|金錢|財務|投資|錢/, /健康|身體/, /家庭|家人|父母|小孩/, /學業|考試|進修/];
+    var _dN = 0;
+    for (var _k = 0; _k < _dG.length; _k++) if (_dG[_k].test(q)) _dN++;
+    if (_dN >= 2 && (isOverview || /一起看|都看|同時|跟.{0,6}都|和.{0,6}都/.test(q))) return 'fifteen_card';
+  } catch (e) {}
+
   // 3.7 多子問題（3 個以上問號）→ celtic_cross
   if (qMarks >= 3) return 'celtic_cross';
 
   // 3.8 長問句（>50 字）→ celtic_cross（在 isHow 之前攔，避免長文被 five_card 接走）
   if (q.length > 50) return 'celtic_cross';
+
+  // 3.85 具體日常瑣事 → minor_arcana（v81_router：56張小牌的本職——找東西、文件、行程這類不需大牌的事）
+  if (q.length <= 30 && /(找|遺失|不見|掉了|搞丟).{0,6}(東西|鑰匙|錢包|手機|文件|證件)|(東西|鑰匙|錢包|手機|文件|證件).{0,5}(不見|掉了|搞丟|遺失|找得回|找不到|找得到)|包裹|快遞|訂單|報稅|證件|水電|家電|修(車|機車)|搬家|租屋|行程|日程/.test(q)) return 'minor_arcana';
 
   // 3.9 短的是非題（<30 字 + 只有 1 個問號）→ three_card
   //     多問號的是非題 → 升級到 five_card（多個子問題需要更多牌位）
