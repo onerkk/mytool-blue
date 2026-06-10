@@ -1,10 +1,11 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v2.5
+// 靜月之光 — 雷諾曼牌 Lenormand v2.6
+// v2.6(2026/6/10)：牌陣「自動判斷」（與塔羅同款體驗）——_lnDetectSpread 依問題分層交叉判斷（明確指定＞全局型＞第三者＞抉擇＞時間＞短是非＞感情對方＞原因＞工作財運＞方法），保留手動選陣；結果區標示自動選陣理由；分享卡同步用解析後牌陣
 // Petit Lenormand 36 張・傳統組合義讀法・反盤外牌名幻覺
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.5 loaded — 人物牌歸屬significator正統規則(全牌陣)/性別選擇器UI+localStorage/五張線時間流+合法配對白名單/最後提醒分牌陣/騎士速度校正');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.3 loaded（+應期技法：距離/速度牌/牌號） — 原典邊界/本盤合法牌名/反盤外反證修正');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -116,16 +117,11 @@ var SPREADS = {
 // ════════════════════════════════════
 var _lnDeck = [];
 var _lnDrawn = [];
-var _lnSpread = 'three';
+var _lnSpread = 'auto';      // v2.6：預設自動判斷（使用者仍可手動選）
+var _lnResolved = 'three';   // v2.6：實際抽牌用的牌陣（auto 解析後）
+var _lnAutoPick = null;      // v2.6：自動判斷結果 {id, why}，供結果區標示
 var _lnQuestion = '';
-var _lnSigGender = (function(){ try { var g = localStorage.getItem('ln_sig_gender'); return (g==='female'||g==='male') ? g : 'male'; } catch(e){ return 'male'; } })(); // 人物牌歸屬（所有牌陣）
-
-window._lnSetGender = function(g) {
-  _lnSigGender = (g === 'female') ? 'female' : 'male';
-  try { localStorage.setItem('ln_sig_gender', _lnSigGender); } catch(e){}
-  var q = document.getElementById('ln-q'); if (q) _lnQuestion = q.value;
-  _render();
-};
+var _lnSigGender = 'male'; // for Grand Tableau
 
 function shuffleDeck() {
   _lnDeck = CARDS.map(function(c){ return JSON.parse(JSON.stringify(c)); });
@@ -146,6 +142,49 @@ function drawCards(count) {
 // ════════════════════════════════════
 // 四、正統提示詞生成
 // ════════════════════════════════════
+// ── v2.6 問題→牌陣 自動判斷（分層交叉，鏡照塔羅 detectSpreadType 的細度，映射到雷諾曼四陣） ──
+function _lnDetectSpread(q) {
+  q = (q || '').trim();
+  var qMarks = (q.match(/[？?]/g) || []).length;
+  var len = q.replace(/\s/g, '').length;
+
+  // 第0層：使用者明確指定牌陣（最高優先）
+  if (/大牌陣|Grand\s*Tableau|36\s*張|全牌陣/i.test(q)) return { id: 'grand', why: '你指定了大牌陣' };
+  if (/九宮格|9\s*宮|3\s*[xX×]\s*3/.test(q))           return { id: 'nine',  why: '你指定了九宮格' };
+  if (/五張|5\s*張/.test(q))                            return { id: 'five',  why: '你指定了五張線' };
+  if (/三張|3\s*張/.test(q))                            return { id: 'three', why: '你指定了三張線' };
+
+  // 第1層：互動類型與領域訊號
+  var isYesNo   = /嗎[？?]?\s*$|^(會不會|有沒有|該不該|可不可以|能不能|是不是|適不適合|好不好|值不值得?|行不行|對不對|要不要)|會嗎|能嗎|好嗎|行嗎|夠嗎|對嗎|成嗎|有救/.test(q);
+  var isChoose  = /還是|或者|二選一|兩個.*選|哪一個|哪個好|兩者|選.*哪|留.*走|A.*B.*選/.test(q);
+  var isWhen    = /什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|時間點|來得及|等多久|還要等|快了嗎|應期|多快|近期.*嗎/.test(q);
+  var isWhy     = /為什麼|為何|怎麼會|為啥|什麼原因|原因是|根源|問題出在|到底怎麼了|怎麼回事/.test(q);
+  var isHow     = /如何|怎麼做|怎麼辦|怎樣才|方法|建議|策略|怎麼改|怎麼處理|怎麼經營|怎麼提升|要怎麼/.test(q);
+  var isBig     = /全面|整年|今年.*運勢|年度|未來一年|人生|大方向|完整.*看|全部.*看|所有面向|通盤/.test(q);
+  var isOverview= /整體|運勢|接下來|近況|狀況如何|幫我看看/.test(q);
+  var isComplex = /又.*又|一方面.*一方面|同時.*還|好幾件|很多事|牽涉|複雜|糾纏|連環/.test(q);
+  var hasPerson = /他|她|對方|那個人|另一半|前任|現任|老公|老婆|男友|女友|伴侶|曖昧|喜歡|愛不愛|想不想|復合|分手|挽回|婚姻|感情|桃花|追|告白/.test(q);
+  var isThird   = /第三者|小三|外遇|劈腿|介入|腳踏兩條船/.test(q);
+  var isWorkMoney = /工作|職場|上班|離職|換.*工作|跳槽|轉職|面試|升遷|加薪|薪水|老闆|主管|同事|案子|專案|生意|創業|副業|訂單|客戶|財運|錢|收入|投資|股票|貸款|買房|賣房/.test(q);
+
+  // 第2層：交叉裁決（全局型 ＞ 第三者 ＞ 抉擇 ＞ 時間 ＞ 短是非 ＞ 感情對方 ＞ 原因 ＞ 工作財運 ＞ 一般是非 ＞ 方法 ＞ 整體 ＞ 預設）
+  if (isBig || qMarks >= 3 || len > 60 || (isComplex && len > 30))
+    return { id: 'grand', why: '多面向／全局型問題——36 張大牌陣全景掃描' };
+  if (isThird)  return { id: 'nine',  why: '感情第三者議題——九宮格看檯面下的層次' };
+  if (isChoose) return { id: 'nine',  why: '抉擇題——九宮格對照兩股力量與隱情' };
+  if (isWhen)   return { id: 'five',  why: '時間題——五張線看時間推進與快慢' };
+  if (isYesNo && !hasPerson && len <= 14)
+    return { id: 'three', why: '單一是非題——三張線快狠準' };
+  if (hasPerson) return { id: 'nine', why: '感情／對方心思——九宮格看上中下三層' };
+  if (isWhy)     return { id: 'nine', why: '原因題——九宮格挖檯面下的根源' };
+  if (isWorkMoney) return { id: 'nine', why: '工作／財運——九宮格看現況、助力與阻力' };
+  if (isYesNo)   return { id: 'three', why: '是非題——三張線直接給方向' };
+  if (isHow)     return { id: 'five',  why: '方法題——五張線給路徑與故事' };
+  if (isOverview) return { id: 'nine', why: '整體狀況——九宮格全層掃描' };
+  if (!q) return { id: 'five', why: '未輸入問題——五張線通用故事線' };
+  return { id: 'five', why: '一般問題——五張線看因果走向' };
+}
+
 function buildPrompt(question, drawn, spreadId, sigGender) {
   var sp = SPREADS[spreadId];
   var lines = [];
@@ -191,13 +230,6 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push('【占卜日期】' + new Date().toISOString().slice(0,10));
   lines.push('');
 
-  // 人物牌歸屬（significator 正統規則——所有牌陣適用，不只 GT）
-  lines.push('【人物牌歸屬——Significator 正統規則（所有牌陣適用）】');
-  lines.push('問卜者性別：' + (sigGender === 'female' ? '女性' : '男性') + '。');
-  lines.push('・與問卜者同性別的人物牌＝問卜者本人（紳士28/淑女29 首先是代表牌，這是雷諾曼正統：' + (sigGender === 'female' ? '淑女=女問卜者本人' : '紳士=男問卜者本人') + '）。盤中出現同性人物牌時，代表問卜者自己在這件事裡的位置/狀態，禁止讀成「某個第三者」。');
-  lines.push('・與問卜者異性的人物牌＝對方／問卜者生命中的重要他人（' + (sigGender === 'female' ? '紳士=她問的男性對象或重要男性' : '淑女=他問的女性對象或重要女性') + '）。');
-  lines.push('');
-
   // ════ 正統讀法規則 ════
   lines.push('══════════════════════════════════════════');
   lines.push('傳統雷諾曼組合義讀法（必須嚴格遵守）');
@@ -233,14 +265,14 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   // ════ 特殊題型（二選一/多選一・第三方內心）讀法 ════
   lines.push('【特殊題型讀法（按問題形狀調整，仍以組合義為本）】');
   lines.push('・問「A 還是 B」或「多選一」（價格/功效/外觀、工作壓力/睡眠/情緒…）：本盤是隨機抽牌，牌面沒有替這些選項貼標籤，嚴禁硬把某張牌指定成「A」或某個選項。正確做法：①若主軸牌性質明顯吻合某選項（如核心是雲＝心思混亂→偏「情緒」；核心是太陽＝亮眼曝光→偏「外觀」），就說它偏向那個並附牌；②若沒有任何牌對得上給的選項，就老實說「牌面不是落在這幾個選項，而是指向○○」，給方向不硬挑。A/B 題同理：讀整體基調指出「哪一種性質的選擇」較吻合（如主軸是止損就選風險低、能止血的那邊），不替 A、B 編故事。');
-  lines.push('・問「對方的想法/意圖/是否隱瞞/是否可信/有沒有人暗中…」這類第三方內心：有抽到與問卜者異性的人物牌（紳士28/淑女29），就以它代表對方、讀其相鄰牌與距離；若抽到的是與問卜者同性的人物牌，那是問卜者本人（見【人物牌歸屬】），代表問卜者自己是這件事的主角/當事人，不可硬當成第三方。沒有可代表對方的人物牌時，用情緒/狀態牌呈現對方在這題上的傾向（心＝有感情、雲＝對方自己也不清楚、蛇＝有算計或不老實、鳥＝在談論/猶豫）。只講牌面顯示的傾向與態度，不可編造對方具體的內心獨白、對話或牌面沒有的細節；訊號不足就說不足。');
+  lines.push('・問「對方的想法/意圖/是否隱瞞/是否可信/有沒有人暗中…」這類第三方內心：有抽到人物牌（紳士28/淑女29）就以它代表對方、讀其相鄰牌與距離；沒有人物牌時，用情緒/狀態牌呈現對方在這題上的傾向（心＝有感情、雲＝對方自己也不清楚、蛇＝有算計或不老實、鳥＝在談論/猶豫）。只講牌面顯示的傾向與態度，不可編造對方具體的內心獨白、對話或牌面沒有的細節；訊號不足就說不足。');
   lines.push('');
 
   // ════ 應期（時間）讀法 ════
   lines.push('【應期（時間）——雷諾曼怎麼推時間】');
   lines.push('雷諾曼的時間判斷不像星盤精準，方法是綜合判斷、給一個「範圍」並說出依據，不要假裝精準到某一天：');
   lines.push('・距離法（最原始、最可靠，5 張以上適用）：離核心牌／主題牌／代表牌越近＝越快、越近期；越遠＝越晚（超過 3 格算遠、超過 4 格算很遠）；緊貼＝最即時。');
-  lines.push('・速度牌定節奏：鐮刀(10)＝突然、立刻；騎士(1)＝快（數日～兩週）；鳥(12)＝快（數日內）；船(3)＝即將、在路上；鸛(17)＝改變將到。山(21)、錨(35)＝慢、延遲、長久；雲(6)＝拖延、不明；熊(15)、大樹(5)＝緩慢成長。');
+  lines.push('・速度牌定節奏：鐮刀(10)＝突然、立刻；騎士(1)、鳥(12)＝快（數日內）；船(3)＝即將、在路上；鸛(17)＝改變將到。山(21)、錨(35)＝慢、延遲、長久；雲(6)＝拖延、不明；熊(15)、大樹(5)＝緩慢成長。');
   lines.push('・牌號法（常見教學、非原典，需當輔助、不可冒充原典）：用相關牌的編號對時間——1騎士～12鳥對應一年 12 個月、1～31 對應一個月的日、1～7 對應星期；月亮(32)＝約一個月／一個週期。');
   lines.push('・季節／時辰：太陽(31)＝夏天／白天；月亮(32)＝夜／週期。只在牌面明顯時用，不硬套。');
   lines.push('結論：用上面方法給一個時間範圍（例如「最快這一兩個月、慢則拖到年底」），並說清楚是哪張牌或哪段距離讓你這樣判，禁止只說「快了」。');
@@ -256,9 +288,6 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   } else if (spreadId === 'five') {
     lines.push('【五張線讀法】');
     lines.push('五張從左到右。第3張是焦點，2-3-4 是最直接的故事，1-2 與 4-5 是延伸。');
-    lines.push('時間流（實務口徑）：焦點左側（卡1、卡2）＝背景／已成形的過去影響；右側（卡4、卡5）＝發展與結果。左側牌只能讀成已發生/已成形的根源背景，禁止把左側牌（含經鏡像連到的）當未來事件預告；未來預測與走向以右側牌為主。');
-    lines.push('鏡像對照（雷諾曼五張線核心技法，兩組都要讀）：卡2↔卡4（內層鏡像——緊貼焦點的兩股力量互相補充/對照）、卡1↔卡5（外層鏡像——最遠的起點 vs 終點/背景對照）。');
-    lines.push('⚠ 可引用的牌組僅限：相鄰對（1-2、2-3、3-4、4-5）、近身三張（2-3-4）、鏡像對（2↔4、1↔5）、或全線串成一句話。既不相鄰又非鏡像的跳配（如卡2+卡5、卡1+卡4）沒有技法依據，不可當成一組單獨引用下結論。');
     lines.push('讀法：先看第3張被左右怎麼修飾，再讀 2+3+4，最後看 1+2 與 4+5 的延伸。');
     lines.push('鏡像對照（雷諾曼五張線核心技法，兩組都要讀）：卡2↔卡4（內層鏡像——緊貼焦點的兩股力量互相補充/對照）、卡1↔卡5（外層鏡像——最遠的起點 vs 終點/背景對照）。');
     lines.push('五個位置每個都要讀到，不能跳過。');
@@ -273,8 +302,8 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('【主線・必讀】');
     lines.push('① 核心牌（第5張）＝這題的主題/本質/答案核心，周圍的牌都在修飾它，開頭就要讀進去。若核心牌看似與問題不直接相關（如問工作卻是心），那本身就是訊號——代表這題的重心其實在核心牌指的那塊（如你的渴望／情感投入），要點出來，別略過。');
     lines.push('② 三條橫排：上排(1-2-3)＝想法/意識/期待（檯面上、想追求的）；中排(4-5-6)＝現實/當下實況；下排(7-8-9)＝根基/潛意識/底層（事情的根源、藏著的）。');
-    lines.push('③ 三條直列：左列(1-4-7)＝過去；中列(2-5-8)＝現在；右列(3-6-9)＝未來。⚠ 列位有時間邊界：左列（過去）的牌只能讀成已發生/已成形的事或事情的根源背景，禁止把左列的牌（包括透過鏡像或對角連到的）當成未來事件來預告（例：左列出現訊息類牌＝過去曾有快速接近/消息，不是「接下來幾天你會收到消息」）。預測未來只能以右列與未來方向的牌為主，左列素材只能當背景佐證。');
-    lines.push('④ 兩條對角線：1-5-9 與 7-5-3＝局勢的動向與影響（Labyrinthos 口徑：movement/influences/possibilities）。實務上常以 1-5-9（左上→右下）看帶進局裡的影響、7-5-3（左下→右上）看發展去向——此區分屬現代實務補充、非固定鐵則；若與橫排/直列的訊息矛盾，以橫排/直列為準。對角線的時間方向仍受③的列位邊界約束。');
+    lines.push('③ 三條直列：左列(1-4-7)＝過去；中列(2-5-8)＝現在；右列(3-6-9)＝未來。');
+    lines.push('④ 兩條對角線：1-5-9（左上→右下）＝原因／影響的來源；7-5-3（左下→右上）＝結果／往哪走。');
     lines.push('【輔助・選用】只在能補出主線沒講到的新訊號時才用，重複了就跳過：四角(1,3,7,9)＝整盤框架/背景定調（可看成 X：1↔9、3↔7）；鏡像配對（中列2-5-8為鏡軸）1↔3、4↔6、7↔9。');
     lines.push('深度來自針對問題把主線挖透，不是把每一層都報一遍；全部串成一個回答問題的故事，不要逐格報告。');
   } else if (spreadId === 'grand') {
@@ -378,8 +407,8 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
     lines.push('');
     lines.push('核心牌：' + drawn[4].name);
     lines.push('十字線：上' + drawn[1].name + '、下' + drawn[7].name + '、左' + drawn[3].name + '、右' + drawn[5].name);
-    lines.push('對角線A（左上→右下）：' + drawn[0].name + '→' + drawn[4].name + '→' + drawn[8].name);
-    lines.push('對角線B（左下→右上）：' + drawn[6].name + '→' + drawn[4].name + '→' + drawn[2].name);
+    lines.push('對角線A：' + drawn[0].name + '→' + drawn[4].name + '→' + drawn[8].name);
+    lines.push('對角線B：' + drawn[2].name + '→' + drawn[4].name + '→' + drawn[6].name);
     lines.push('鏡像配對：' + drawn[0].name + '↔' + drawn[8].name + '、' + drawn[2].name + '↔' + drawn[6].name + '、' + drawn[1].name + '↔' + drawn[7].name + '、' + drawn[3].name + '↔' + drawn[5].name);
   }
 
@@ -422,22 +451,6 @@ function buildPrompt(question, drawn, spreadId, sigGender) {
   lines.push(drawn.map(function(c){ return c.id + '.' + c.name; }).join('、'));
   lines.push('⚠ 正文只能引用上面清單的牌名。任何盤外牌名，即使只是拿來說明「如果有某牌才代表…」，也禁止出現。');
 
-  // 最後提醒（recency——放在最接近輸出的位置，重述問題與最高違規率規則）
-  lines.push('');
-  lines.push('══════════════════════════════════════════');
-  lines.push('【最後提醒——開始寫之前再看一次】');
-  lines.push('問卜者的問題是：「' + ((question && question.trim()) ? question.trim() : '（未指定，做通用解讀）') + '」');
-  lines.push('① 第一句就直接回答這個問題，問什麼答什麼，不寫開場白。');
-  lines.push('② 正文禁止出現：橫排/直列/對角線/四角/鏡像/位置詞（左上、下中…）/正面牌負面牌/主題牌——這些只在你心裡跑。');
-  if (spreadId === 'nine' || spreadId === 'grand') {
-    lines.push('③ 過去列（左列）的牌不可預告未來事件，只能當已發生的背景；未來預測以右列與未來方向的牌為主。');
-  } else {
-    lines.push('③ 焦點左側的牌＝已成形的背景，不可預告未來事件；未來預測與走向以右側牌為主。');
-  }
-  lines.push('④ 應期給範圍並講出依據（哪張速度牌／離核心多遠），禁止只說「快了」，也不假裝精準到某一天。');
-  lines.push('⑤ 盤中若有與問卜者同性別的人物牌（' + (sigGender === 'female' ? '淑女' : '紳士') + '）＝問卜者本人，不是第三者。');
-  lines.push('⑥ 只引用本盤合法牌名；結尾能量石一句帶過，最後一個字必須是蝦皮網址本身，URL 後不接任何字元。');
-
   return lines.join('\n');
 }
 
@@ -471,6 +484,9 @@ function _getWrap() {
       '.ln-spread-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}',
       '.ln-spread-btn{padding:.6rem .4rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:rgba(232,224,208,.5);cursor:pointer;transition:all .2s;text-align:center;font-family:inherit;font-size:.8rem}',
       '.ln-spread-btn.active{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.08);color:#c9a84c}',
+      '.ln-spread-auto{grid-column:1/-1;background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));border-color:rgba(201,168,76,.3);color:rgba(232,224,208,.8)}',
+      '.ln-spread-auto.active{border-color:rgba(243,224,160,.6);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.06));color:#f3e0a0;box-shadow:0 0 16px rgba(201,168,76,.15)}',
+      '.ln-auto-note{font-size:.72rem;color:rgba(201,168,76,.85);background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.18);border-radius:10px;padding:.5rem .7rem;margin:-.2rem 0 .7rem;line-height:1.5}',
       '.ln-draw-btn{display:block;width:100%;padding:.85rem;border-radius:12px;border:1.5px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:#c9a84c;font-family:inherit;font-size:.95rem;font-weight:600;letter-spacing:4px;cursor:pointer;transition:all .3s;margin-top:.8rem}',
       '.ln-draw-btn:active{transform:scale(.97)}',
       '.ln-cards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;margin:.6rem 0}',
@@ -522,24 +538,20 @@ function _render() {
     // Question
     h += '<div class="ln-section"><div class="ln-section-title">✦ 你想問什麼？</div>';
     h += '<textarea class="ln-q-input" id="ln-q" rows="2" maxlength="200" placeholder="問越具體越準——例如：這份工作值得繼續嗎？">' + (_lnQuestion||'') + '</textarea></div>';
-    // Gender（人物牌歸屬用——任何牌陣都可能抽到紳士/淑女）
-    h += '<div class="ln-section"><div class="ln-section-title">✦ 你的性別（人物牌歸屬用）</div><div style="display:flex;gap:.5rem">';
-    h += '<button class="ln-spread-btn' + (_lnSigGender==='male'?' active':'') + '" style="flex:1" onclick="_lnSetGender(\'male\')">男</button>';
-    h += '<button class="ln-spread-btn' + (_lnSigGender==='female'?' active':'') + '" style="flex:1" onclick="_lnSetGender(\'female\')">女</button>';
-    h += '</div><div style="font-size:.68rem;opacity:.55;margin-top:.4rem">紳士/淑女牌中與你同性別的那張＝代表你本人，所以需要先選。</div></div>';
     // Spread
     h += '<div class="ln-section"><div class="ln-section-title">✦ 選擇牌陣</div><div class="ln-spread-grid">';
-    var sps = [{id:'three',n:'三張線',d:'快速是非題'},{id:'five',n:'五張線',d:'因果時間線'},{id:'nine',n:'九宮格',d:'3×3 深度分析'},{id:'grand',n:'大牌陣',d:'全36張完整牌陣'}];
+    var sps = [{id:'auto',n:'✦ 自動判斷',d:'依你的問題智慧選擇最適合的牌陣（推薦）'},{id:'three',n:'三張線',d:'快速是非題'},{id:'five',n:'五張線',d:'因果時間線'},{id:'nine',n:'九宮格',d:'3×3 深度分析'},{id:'grand',n:'大牌陣',d:'全36張完整牌陣'}];
     for (var i=0;i<sps.length;i++) {
-      h += '<button class="ln-spread-btn' + (sps[i].id===_lnSpread?' active':'') + '" onclick="_lnSetSpread(\''+sps[i].id+'\')">' + sps[i].n + '<br><span style="font-size:.6rem;opacity:.6">' + sps[i].d + '</span></button>';
+      h += '<button class="ln-spread-btn' + (sps[i].id===_lnSpread?' active':'') + (sps[i].id==='auto'?' ln-spread-auto':'') + '" onclick="_lnSetSpread(\''+sps[i].id+'\')">' + sps[i].n + '<br><span style="font-size:.6rem;opacity:.6">' + sps[i].d + '</span></button>';
     }
     h += '</div></div>';
     h += '<button class="ln-draw-btn" onclick="_lnDoDraw()">✦ 抽 牌 ✦</button>';
   } else {
     // Results
-    var sp = SPREADS[_lnSpread];
+    var sp = SPREADS[_lnResolved];
     h += '<div class="ln-section"><div class="ln-section-title">✦ ' + sp.name + '（' + sp.count + ' 張）</div>';
-    if (_lnSpread === 'nine') {
+    if (_lnAutoPick) h += '<div class="ln-auto-note">✦ 自動判斷：' + _lnAutoPick.why + '</div>';
+    if (_lnResolved === 'nine') {
       h += '<div class="ln-grid-3x3">';
     } else {
       h += '<div class="ln-cards-row">';
@@ -577,7 +589,9 @@ function _render() {
 window._lenormandOpen = function() {
   _lnPhase = 'input';
   _lnQuestion = '';
-  _lnSpread = 'three';
+  _lnSpread = 'auto';
+  _lnResolved = 'three';
+  _lnAutoPick = null;
   _lnDrawn = [];
   _lastPrompt = '';
   var w = _getWrap();
@@ -588,7 +602,7 @@ window._lenormandOpen = function() {
 
 window._lenormandShare = function() {
   if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66'); return; }
-  var sp = SPREADS[_lnSpread] || {};
+  var sp = SPREADS[_lnResolved] || {};
   var pos = sp.positions || [];
   var cards = (_lnDrawn || []).map(function(c, i) {
     var pl = (pos[i] || ('\u7B2C' + (i + 1) + '\u5F35'));
@@ -619,9 +633,17 @@ window._lnSetSpread = function(id) {
 window._lnDoDraw = function() {
   var qEl = document.getElementById('ln-q');
   _lnQuestion = qEl ? qEl.value.trim() : '';
-  var sp = SPREADS[_lnSpread];
+  // v2.6：auto 解析（手動選陣則原樣使用）
+  _lnAutoPick = null;
+  _lnResolved = _lnSpread;
+  if (_lnSpread === 'auto') {
+    var _det = _lnDetectSpread(_lnQuestion);
+    _lnResolved = _det.id;
+    _lnAutoPick = _det;
+  }
+  var sp = SPREADS[_lnResolved];
   drawCards(sp.count);
-  _lastPrompt = buildPrompt(_lnQuestion, _lnDrawn, _lnSpread, _lnSigGender);
+  _lastPrompt = buildPrompt(_lnQuestion, _lnDrawn, _lnResolved, _lnSigGender);
   _lnPhase = 'result';
   _render();
   _getWrap().scrollTop = 0;
