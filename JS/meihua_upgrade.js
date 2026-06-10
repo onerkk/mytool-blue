@@ -20,25 +20,28 @@ function tiYong(ti,yo){
 }
 
 // ═══ 月令旺衰 ═══
+// v80.16(2026/6/10) 根治：原版 month 必填（standalone 只傳一參數→整體回「平」、力道全毀）、國曆月當季節（1月當春）、
+// 土旺誤鍵國曆3/6/9/12（原意為農曆辰未戌丑）。三套同名實作分歧、誰後載入誰贏——統一改採 tarot.js 同款：
+// 節氣近似日判月支＋四季月（辰未戌丑）土旺。《梅花易數·體用總訣》：「盛者…四季之月坤艮是也；衰者…四季之月坎是也」。
 function getMhWangShuai(el, month){
-  if(!el||!month) return {level:'平',score:0};
-  const m=typeof month==='number'?month:(new Date()).getMonth()+1;
-  let season;
-  if([1,2,3].includes(m)) season='spring';
-  else if([4,5,6].includes(m)) season='summer';
-  else if([7,8,9].includes(m)) season='autumn';
-  else season='winter';
-  if([3,6,9,12].includes(m)) season='earth';
-  const table={
+  if(!el) return {level:'平',score:0};
+  var now = new Date();
+  var m = typeof month==='number' ? month : (now.getMonth()+1);
+  var d = now.getDate();
+  var JIE_DAY = {1:6,2:4,3:6,4:5,5:6,6:6,7:7,8:8,9:8,10:8,11:7,12:7};
+  var SEASON_AFTER  = {1:'earth',2:'spring',3:'spring',4:'earth',5:'summer',6:'summer',7:'earth',8:'autumn',9:'autumn',10:'earth',11:'winter',12:'winter'};
+  var SEASON_BEFORE = {1:'winter',2:'earth',3:'spring',4:'spring',5:'earth',6:'summer',7:'summer',8:'earth',9:'autumn',10:'autumn',11:'earth',12:'winter'};
+  var season = (d >= (JIE_DAY[m]||6)) ? SEASON_AFTER[m] : SEASON_BEFORE[m];
+  var table={
     spring:{木:'旺',火:'相',土:'死',金:'囚',水:'休'},
     summer:{火:'旺',土:'相',金:'死',水:'囚',木:'休'},
     autumn:{金:'旺',水:'相',木:'死',火:'囚',土:'休'},
     winter:{水:'旺',木:'相',火:'死',土:'囚',金:'休'},
     earth:{土:'旺',金:'相',水:'死',木:'囚',火:'休'}
   };
-  const levelScore={旺:3,相:1,休:0,囚:-1,死:-2};
-  const level=table[season][el]||'平';
-  return {level, score:levelScore[level]||0, season};
+  var levelScore={旺:3,相:1,休:0,囚:-1,死:-2};
+  var level=table[season][el]||'平';
+  return {level:level, score:levelScore[level]||0, season:season};
 }
 
 // ═══ 五行生剋關係判定 ═══

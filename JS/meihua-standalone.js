@@ -1,4 +1,5 @@
-/*! meihua-standalone.js — 靜月之光 梅花易數獨立流程  [v80.29]
+/*! meihua-standalone.js — 靜月之光 梅花易數獨立流程  [v80.33]
+ *  v80.33(2026/6/10)：①互卦對體生剋資料行（體用總訣「他卦者，謂用互變也」——原本只給互卦名、要 AI 自己算，這次實測就漏了）②最近應期窗（斷占總訣寅卯木…辰戌丑未土，節氣近似換月）③完整性清單加「正文無指令字眼」④fallback 註解誠實化
  *  歐那 2026/6/6：梅花要跟雷諾曼一樣，自成一頁、乾淨、不出現其他入口、無多餘說明，並有自己的過場動畫。
  *  做法：完全比照 lenormand.js 的「自包覆獨立頁 + 組好提示詞複製去 AI」模式。
  *  引擎：直接呼叫既有全域 calcMH()（meihua_upgrade.js 已載入），不重造起卦邏輯。
@@ -368,7 +369,7 @@
       '依體用生剋據實判斷';
 
     // ── 旺衰（旺相休囚死）：體、用、變後用 都要算，生剋力道才準（天花板在材料）──
-    //    優先用既有引擎 getMhWangShuai（含節氣判月），失敗才退節氣簡表；同一函數對任一五行通用。
+    //    優先用既有引擎 getMhWangShuai（v80.16 起含節氣判月＋四季月土旺），失敗才退國曆近似簡表；同一函數對任一五行通用。
     function _wsLevelOf(el) {
       if (!el) return '';
       try { if (typeof getMhWangShuai === 'function') { var r = getMhWangShuai(el); if (r && r.level) return r.level; } } catch (e) {}
@@ -451,6 +452,27 @@
     L.push('【卦象資料】');
     L.push('本卦：' + (mh.ben && mh.ben.n) + '（上卦' + _mhTrig(mh.up) + '，下卦' + _mhTrig(mh.lo) + '）—— 事情的當前定性。');
     L.push('互卦：' + (mh.hu && mh.hu.n) + ' —— 發展過程、當事人沒看到的隱情與中間變數。');
+    // v80.33 互卦對體生剋（《體用總訣》「宜受他卦之生，不宜受他卦之剋。他卦者，謂用互變也」——資料直給，不靠 AI 自己算）
+    try {
+      if (mh.lo && mh.lo.li && mh.up && mh.up.li && typeof gByL === 'function' && tiEl) {
+        var _SH = (typeof SHENG !== 'undefined') ? SHENG : {木:'火',火:'土',土:'金',金:'水',水:'木'};
+        var _KEm = (typeof KE !== 'undefined') ? KE : {木:'土',土:'水',水:'火',火:'金',金:'木'};
+        var _six = [mh.lo.li[0], mh.lo.li[1], mh.lo.li[2], mh.up.li[0], mh.up.li[1], mh.up.li[2]];
+        var _huLo = gByL(_six[1], _six[2], _six[3]);
+        var _huUp = gByL(_six[2], _six[3], _six[4]);
+        var _hrel = function (g) {
+          if (!g || !g.el) return '';
+          if (g.el === tiEl) return (g.name||'') + '（' + g.el + '）與體比和＝過程有同氣相助';
+          if (_SH[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）生體＝過程有暗助推力';
+          if (_SH[tiEl] === g.el) return (g.name||'') + '（' + g.el + '）受體生＝過程在洩耗你';
+          if (_KEm[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）剋體＝過程有人事在擋';
+          if (_KEm[tiEl] === g.el) return (g.name||'') + '（' + g.el + '）受體剋＝過程可控但費力';
+          return '';
+        };
+        var _hl = _hrel(_huLo), _hu2 = _hrel(_huUp);
+        if (_hl || _hu2) L.push('互卦對體生剋（過程在幫你還是扯你）：互上' + (_hu2 || '—') + '；互下' + (_hl || '—') + '。');
+      }
+    } catch (e) {}
     L.push('變卦：' + (mh.bian && mh.bian.n) + ' —— 若照目前走向，事情最後的結局。');
     var _cuo = (typeof mhCuoGua === 'function') ? mhCuoGua(mh) : null;
     var _zong = (typeof mhZongGua === 'function') ? mhZongGua(mh) : null;
@@ -467,6 +489,20 @@
     L.push('體卦旺衰：' + tiName + '（' + tiEl + '）當下時令為「' + wsLevel + '」——' + wsNote);
     L.push('用卦旺衰：' + yoName + '（' + yoEl + '）當下時令為「' + yoWs + '」——用' + (_wsNoteMap[yoWs] || '') + '；用是剋體／受體生剋的一方，它的旺衰直接決定上面「生剋力道」的輕重。');
     L.push('應期參考：用卦五行為「' + yoEl + '」，' + timing + '。');
+    // v80.33 最近應期窗（《斷占總訣》：寅卯木、巳午火、申酉金、亥子水、辰戌丑未土；節氣近似換月、誤差一兩天）
+    try {
+      var _nd = new Date(), _gm = _nd.getMonth() + 1, _gd = _nd.getDate();
+      var _JD = {1:6,2:4,3:6,4:5,5:6,6:6,7:7,8:8,9:8,10:8,11:7,12:7};
+      var _lunAfter = {1:12,2:1,3:2,4:3,5:4,6:5,7:6,8:7,9:8,10:9,11:10,12:11};
+      var _cur = (_gd >= (_JD[_gm]||6)) ? _lunAfter[_gm] : (_lunAfter[_gm] === 1 ? 12 : _lunAfter[_gm] - 1);
+      var _set = ({木:[1,2], 火:[4,5], 土:[3,6,9,12], 金:[7,8], 水:[10,11]})[yoEl];
+      if (_set) {
+        var _k = 0, _hit = _cur;
+        for (; _k < 12; _k++) { var _mm = ((_cur - 1 + _k) % 12) + 1; if (_set.indexOf(_mm) >= 0) { _hit = _mm; break; } }
+        var _zhiName = '寅卯辰巳午未申酉戌亥子丑'.charAt(_hit - 1);
+        L.push('最近一個應期窗：' + (_k === 0 ? '本月（農曆' + _hit + '月・' + _zhiName + '月）即在窗內' : '農曆' + _hit + '月（' + _zhiName + '月），距今約 ' + _k + ' 個月') + '——依節氣換月、前後誤差一兩天。');
+      }
+    } catch (e) {}
     L.push('');
     L.push('【八卦類象（推具體人事物，只取與問題相關的，不要全列）】');
     L.push('體卦 ' + tiName + '：' + (GUA_XIANG[tiName] || ''));
@@ -494,7 +530,7 @@
     L.push('');
     L.push('【完整性清單（寫完前自我核對，但不要為湊字灌水）】');
     L.push('□ 第一句直接回答了問題　□ 體用生剋＋體用雙方旺衰（生剋力道）下了輕重得當的吉凶　□ 本互變三象串成因果與時間軸');
-    L.push('□ 用類象推了可對照的人事物　□ 應期（範圍＋為什麼，有轉折標順逆）　□ 錯綜補看了另一面／對方視角（若有助主線）　□ 不利處直說並給可行的主動方向');
+    L.push('□ 用類象推了可對照的人事物　□ 應期（範圍＋為什麼，有轉折標順逆）　□ 錯綜補看了另一面／對方視角（若有助主線）　□ 不利處直說並給可行的主動方向　□ 正文沒有出現任何指令字眼（「語氣平實」「只講一種」「鐵律」「清單」等）——這些指令是給你的，不是讀給客人聽的');
     L.push('');
     L.push('【輸出格式】');
     L.push('繁體中文，像占者當面講話，不是分析報告。第一句給結論，之後一段段推進，每段帶新資訊、同一結論只講一次。不要列表格、不要粗體小標、不要逐卦報告。');
