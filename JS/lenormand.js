@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v3.0
+// 靜月之光 — 雷諾曼牌 Lenormand v3.0.1
+// v3.0.1(2026/6/10)：指示牌選牌 modal 修正——z-index 9999 被視圖層 99999 蓋住（按了沒反應、退出才出現），改 100000 並掛進視圖容器；選牌格上真實牌面圖
 // v3.0(2026/6/10)：指示牌（Significator）實裝——不使用／男士28／女士29／自選36任一。正統依據：
 //   九宮格＝古法預置中央再抽八張圍繞（tarotquest 文獻明載）；大牌陣＝不預置、36張中定位後讀其圍繞/行列/左過去右未來
 //   （Labyrinthos/Lenormand Reader）；三張五張線＝不預置、僅主題透鏡（正統線讀無預置法，誠實標示）。
@@ -704,18 +705,25 @@ window._lnSetSig = function (id) {
   _render();
 };
 window._lnSigPickOpen = function () {
+  // v3.0.1：①modal 改掛進視圖容器且 z-index 100000——原掛 body z-index 9999 被 ln-screen(99999) 蓋住，
+  //   實測「按了沒反應、退出畫面才跑出來」；②選牌格上真實牌面圖（IMG_MAP），無圖時退回純文字。
+  var _old = document.getElementById('ln-sig-ov'); if (_old) _old.remove();
   var ov = document.createElement('div'); ov.id = 'ln-sig-ov';
-  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(8,7,5,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px';
-  var bx = '<div style="max-width:520px;width:100%;max-height:78vh;overflow:auto;background:rgba(20,17,12,.97);border:1px solid rgba(201,168,76,.35);border-radius:18px;padding:16px;box-shadow:0 24px 60px rgba(0,0,0,.6)">';
-  bx += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="color:#e8d28a;letter-spacing:.1em">選擇指示牌</b><button onclick="document.getElementById(\'ln-sig-ov\').remove()" style="background:none;border:none;color:#cdb87f;font-size:1.2rem;cursor:pointer">✕</button></div>';
-  bx += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(8,7,5,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:14px';
+  var bx = '<div style="max-width:560px;width:100%;max-height:82vh;overflow:auto;background:rgba(20,17,12,.97);border:1px solid rgba(201,168,76,.35);border-radius:18px;padding:14px;box-shadow:0 24px 60px rgba(0,0,0,.6)">';
+  bx += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:sticky;top:-14px;background:rgba(20,17,12,.97);padding:6px 0;z-index:2"><b style="color:#e8d28a;letter-spacing:.1em">選擇指示牌</b><button onclick="document.getElementById(\'ln-sig-ov\').remove()" style="background:none;border:none;color:#cdb87f;font-size:1.25rem;cursor:pointer;padding:4px 8px">✕</button></div>';
+  bx += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">';
   for (var i = 0; i < CARDS.length; i++) {
     var c = CARDS[i];
-    bx += '<button onclick="_lnSetSig(' + c.id + ')" style="padding:.5rem .3rem;border-radius:10px;border:1px solid rgba(201,168,76,' + (_lnSignif === c.id ? '.8' : '.25') + ');background:rgba(201,168,76,' + (_lnSignif === c.id ? '.16' : '.05') + ');color:#e9dec0;font-size:.78rem;cursor:pointer">' + c.id + '. ' + c.name + '</button>';
+    var _on = (_lnSignif === c.id);
+    var _img = (typeof IMG_MAP !== 'undefined' && IMG_MAP[c.id]) ? IMG_MAP[c.id] : '';
+    bx += '<button onclick="_lnSetSig(' + c.id + ')" style="padding:.45rem .3rem .55rem;border-radius:12px;border:1.5px solid rgba(201,168,76,' + (_on ? '.85' : '.25') + ');background:rgba(201,168,76,' + (_on ? '.14' : '.04') + ');color:#e9dec0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px' + (_on ? ';box-shadow:0 0 0 1px rgba(201,168,76,.3),0 6px 16px rgba(201,168,76,.18)' : '') + '">';
+    if (_img) bx += '<img src="' + _img + '" alt="' + c.name + '" loading="lazy" style="width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;display:block">';
+    bx += '<span style="font-size:.78rem;line-height:1.2">' + c.id + '. ' + c.name + '</span></button>';
   }
   bx += '</div></div>'; ov.innerHTML = bx;
   ov.onclick = function (e) { if (e.target === ov) ov.remove(); };
-  document.body.appendChild(ov);
+  (_getWrap() || document.body).appendChild(ov);
 };
 
 window._lnCopy = function() {
