@@ -2160,3 +2160,27 @@ html{scrollbar-color:rgba(217,184,96,.35) rgba(255,255,255,.04)}
   *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
 }
 /* ═══ END v81.0 鎏金夜祭 ═══ */
+
+/* ═══ v81.1 (2026/6/10) 月下款識 footer ═══
+   原五塊裸文字（關於/☽/蝦皮/服務說明/版權）漂在星空上無容器、間距巨大；收進琉璃卡。
+   append-only，可整段刪除回退。 */
+.jy-footer-card{max-width:640px;margin:0 auto;background:linear-gradient(180deg,rgba(22,19,14,.66),rgba(13,11,8,.8));border:1px solid rgba(201,168,76,.16);border-radius:18px;padding:.3rem 1.15rem 1.05rem;box-shadow:0 16px 40px rgba(0,0,0,.4),inset 0 1px 0 rgba(245,231,184,.1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.jy-footer-moon{display:flex;align-items:center;gap:.8rem;padding:.85rem 0 .4rem}
+.jy-footer-moon::before,.jy-footer-moon::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.22),transparent)}
+.jy-footer-moon span{font-size:.8rem;color:rgba(232,210,138,.55);letter-spacing:.15em}
+.jy-footer-item{border-bottom:1px solid rgba(201,168,76,.09)}
+.jy-footer-item>summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:.85rem .1rem;font-size:.8rem;color:rgba(222,200,150,.72);letter-spacing:.1em;user-select:none;list-style:none}
+.jy-footer-item>summary::-webkit-details-marker{display:none}
+.jy-footer-item>summary:hover,.jy-footer-item>summary:focus-visible{color:#e8d28a}
+.jy-footer-item>summary:focus-visible{outline:2px solid #e8d28a;outline-offset:2px;border-radius:8px}
+a.jy-footer-link{display:flex;align-items:center;justify-content:space-between;padding:.85rem .1rem;font-size:.8rem;color:rgba(222,200,150,.72);letter-spacing:.1em;text-decoration:none;transition:color .2s}
+a.jy-footer-link:hover{color:#e8d28a}
+.jy-ext{font-size:.85em;opacity:.6}
+.jy-footer-panel{padding:.15rem .1rem .95rem;font-size:.74rem;color:rgba(200,190,170,.6);line-height:1.95}
+.jy-footer-panel h1{text-align:left!important}
+.jy-footer-colophon{text-align:center;padding-top:.95rem;font-size:.66rem;color:rgba(170,160,135,.42);line-height:1.8}
+.jy-footer-colophon p:first-child{letter-spacing:.08em}
+.jy-chev{display:inline-block;margin-left:.35em;font-size:.7em;opacity:.55;transition:transform .25s}
+details[open]>summary .jy-chev{transform:rotate(180deg)}
+@supports not (backdrop-filter:blur(1px)){.jy-footer-card{background:rgba(15,13,10,.93)}}
+/* ═══ END v81.1 月下款識 ═══ */
