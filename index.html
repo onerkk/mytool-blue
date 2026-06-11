@@ -1381,8 +1381,8 @@
 <!-- ★ v75 修正：tarot.js 必須在 tarot_upgrade.js 之前載入，
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
-<script src="JS/tarot.js?v=20260611v85_root" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260611v85_root" defer></script>
+<script src="JS/tarot.js?v=20260611v85_3" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260611v85_3" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
 <script src="JS/meihua_upgrade.js?v=20260610v80_16" defer></script>
 <script src="JS/meihua_output_layer.js?v=20260606v80_15" defer></script>
@@ -1400,7 +1400,7 @@
 <script src="JS/meihua-standalone.js?v=20260610v80_36" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260610v80_55" defer></script>
 <script src="JS/bazi-standalone.js?v=20260610v80_39" defer></script>
-<script src="JS/ui.js?v=20260610v81_link" defer></script>
+<script src="JS/ui.js?v=20260611v85_3" defer></script>
 <script src="JS/spread-picker.js?v=20260610v81_gilt2" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
@@ -1409,7 +1409,8 @@
 <!-- v85_root(2026/6/11)：根治版——數字學表補齊11-21+22→0、張力/洞察去結論化、學理鎖定補正位聲明、小盤能量石張數判定、URL獨立成行、輸出載體禁容器、紫微專屬能量石。動 tarot.js / tarot_upgrade.js / ai-analysis.js / prompt-export.js 四檔 -->
 <!-- v85_1(2026/6/11)：多領域提示優先序裁決（感情+財運金幣讀法互斥就地解決）、建議位契約強化（牌必須轉成行動並點名）。只動 prompt-export.js -->
 <!-- v85_2(2026/6/11)：能量石礦物事實錨點（根治天鐵被描述成玻璃隕石的幻覺，礦物句只能取自錨點）、崩解判定改以本盤牌義不以牌名（修 Mathers 惡魔=好的命定矛盾）。只動 prompt-export.js -->
-<script src="JS/prompt-export.js?v=20260611v85_2" defer></script>
+<!-- v85_3(2026/6/11)：多領域牌義中性化（「財運桃花健康」整盤被餵感情文案的根因：S.form.domains 守門 getTarotTypeMeaning＋結果頁 ftKey）、領域提示 2→3（健康提示不再被砍）、極小盤(≤3)能量石不判過盛。動 ui.js / tarot.js / tarot_upgrade.js / prompt-export.js -->
+<script src="JS/prompt-export.js?v=20260611v85_3" defer></script>
 <script src="share-card.js?v=3" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
