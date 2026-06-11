@@ -86,10 +86,13 @@
     },
     'ink-flow.js': {
       must: [
-        '墨流 ink-flow v1.0',                                 // v86.9 新檔部署證據
-        'window.JY_INK'                                       // v86.9 API 掛載
+        '墨流 ink-flow v1.1',                                 // v86.10 面板內掛載模式
+        '面板內掛載',                                          // v86.10 模式證據
+        'window.JY_INK'                                       // API 掛載
       ],
-      mustNot: []
+      mustNot: [
+        '墨流 ink-flow v1.0'                                   // 舊版（首頁全域層）未換偵測
+      ]
     },
     'lenormand.js': {
       must: [
