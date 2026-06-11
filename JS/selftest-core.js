@@ -84,6 +84,13 @@
       must: ['錢包找得回來嗎'],                              // v86 決策導向說明（例句）
       mustNot: ['代表牌在右、三排七']                          // 舊技法導向說明
     },
+    'ink-flow.js': {
+      must: [
+        '墨流 ink-flow v1.0',                                 // v86.9 新檔部署證據
+        'window.JY_INK'                                       // v86.9 API 掛載
+      ],
+      mustNot: []
+    },
     'lenormand.js': {
       must: [
         '【礦物事實錨點——礦物知識句只能取自此表改寫】',        // v86.5 錨點移植
