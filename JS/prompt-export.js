@@ -438,7 +438,7 @@
 
     if (f.yesno)    L.push('・是非題：第一句給「會／不會／是／不是／不一定（但傾向X）」。逆位/凶牌不要硬讀成正面。');
     if (f.prob)     L.push('・機率題：塔羅給的是傾向與證據強弱，不是統計機率——嚴禁輸出任何百分比、幾成、小數或區間數字（牌面推不出機率數字，與時間數字同一溯源標準；與是非題規則並用時以本條為準）。第一句用五檔傾向回答：低／偏低／五五波／偏高／高，緊接著給最關鍵的牌面證據；並用一句老實告知「牌面能給傾向強弱，給不出數字機率」（此為現代實務 forecast≠prediction 框架，非古典原典）。');
-    if (f.decision) L.push('・決策題：兩個選項各給支持證據，比完之後明確推一個，不要兩邊都好。');
+    if (f.decision) L.push('・決策題：兩個選項各給支持證據，比完之後明確推一個，不要兩邊都好。多選項排序題（三個以上選項問「最可能是哪個」）：凡是被你排進名次的選項——第一名、第二名都算——每一名都要在正文交代牌面出處；給不出牌面的選項不准排名，老實說「本盤沒有足夠牌面支撐」即可。第一句點了名、後文卻不交代證據＝破功。');
     if (f.timing) {
       var _spT = '';
       try { var _ST = (typeof window!=='undefined' && window.S) ? window.S : null; if (!_ST) try { _ST = (0, eval)('typeof S !== "undefined" ? S : null'); } catch(e){} _spT = (_ST && _ST.tarot && _ST.tarot.spreadType) || (typeof getCurrentSpread === 'function' ? getCurrentSpread() : ''); } catch(e){}

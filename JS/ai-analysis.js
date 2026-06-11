@@ -24320,7 +24320,7 @@ function _buildTarotOnlyPayload() {
     if (cards[i].role === 'obstacle') person.hint = '橫跨現況的力量';
     else if (cards[i].role === 'external') person.hint = '外在環境中的人';
     else if (cards[i].role === 'self') person.hint = '問卜者自己的狀態';
-    else if (cards[i].role === 'outcome') person.hint = '最終出現的人';
+    else if (cards[i].role === 'outcome') person.hint = '落在結果位的人物能量（指誰由牌義與位置定——可能是你或對方最終的狀態，不自動等於有新人物出現）';
     else person.hint = '相關人物';
     if (!d.isUp) { var _csh = (_courtShadow[d.num] && _courtShadow[d.num][d.suit]) || ''; if (_csh) person.shadow = '呈現負面特質：' + _csh; }
     courtPeople.push(person);
