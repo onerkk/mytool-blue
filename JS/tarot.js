@@ -1546,6 +1546,10 @@ function getTarotTypeMeaning(id, isUp, type){
   var card = TAROT[id];
   if(!card) return '';
   var t = type || 'general';
+  // ★ v85.3 根治：問題同時命中多個領域時（S.form.domains 由 ui.js 寫入），
+  //   不可用單一領域文案餵全部牌（「財運 桃花 健康」整盤變感情版的根因）——改用中性 general 牌義，
+  //   領域框架交給提示詞的領域提示＋多領域優先序裁決。手動下拉選類型的路徑不寫 domains，不受影響。
+  try { if (typeof S !== 'undefined' && S.form && S.form.domains && S.form.domains.length > 1) t = 'general'; } catch(e){}
   if(isUp){
     if(t==='love'      && card.loveUp)     return card.loveUp;
     if(t==='career'    && card.careerUp)   return card.careerUp;

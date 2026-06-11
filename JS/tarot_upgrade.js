@@ -834,6 +834,7 @@ function getCurrentSpreadDef() { return SPREAD_DEFS[_currentSpreadId] || SPREAD_
 
       // 問題類型專屬解讀
       var ftKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love'}[(S.form && S.form.type) || ''] || '';
+      if (S.form && S.form.domains && S.form.domains.length > 1) ftKey = ''; // v85.3：多領域問題結果頁也用中性牌義，與 getTarotTypeMeaning 同步
       var typeReading = '';
       if (ftKey) {
         var fullCard = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
@@ -1012,6 +1013,7 @@ enhanceTarot = function(tarot) {
     h += '</div>';
     var count = def ? Math.min(def.count, drawnCards.length) : drawnCards.length;
     var ftKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love'}[(S.form&&S.form.type)||''] || '';
+      if (S.form && S.form.domains && S.form.domains.length > 1) ftKey = ''; // v85.3：多領域問題結果頁也用中性牌義，與 getTarotTypeMeaning 同步
     for (var i = 0; i < count; i++) {
       var c = drawnCards[i]; if (!c) continue;
       var posName = (def&&def.positions&&def.positions[i]) ? def.positions[i].name : (c.pos||'第'+(i+1)+'張');

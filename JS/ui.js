@@ -1026,14 +1026,19 @@ function submitWithTool() {
     // 塔羅只需問題 + 性別（可選）
     // ★ v75 修正：自動偵測問題類型（原本 f-type 永遠是 'general'，導致感情題無法觸發 relationship 牌陣）
     var type = 'general';
+    var _domains = [];
     try {
       if (typeof window.JY_classifyDomains === 'function') {
         var _hits = window.JY_classifyDomains(question);
-        if (_hits && _hits.length) type = _hits[0]; // 取第一個匹配（love/career/wealth/health/spiritual）
+        _domains = _hits || [];
+        if (_hits && _hits.length) type = _hits[0]; // 路由仍取第一個匹配（保留 relationship 等領域牌陣觸發）
       }
     } catch(e){}
     if (!type || type === 'undefined') type = 'general';
-    S.form = { type: type, question: question, gender: gender ? gender.value : 'other', bdate: '', btime: '', name: '', btimeUnknown: true };
+    // ★ v85.3 根治：把完整領域命中存進 S.form.domains——多領域問題（如「財運 桃花 健康」）
+    //   牌義層（getTarotTypeMeaning／結果頁 ftKey）據此改用中性 general 牌義，
+    //   不再整盤被第一個命中領域（通常是感情）的文案綁架；路由與種子不受影響。
+    S.form = { type: type, domains: _domains, question: question, gender: gender ? gender.value : 'other', bdate: '', btime: '', name: '', btimeUnknown: true };
     S._tarotOnlyMode = true;
     S._autoMode = false;
     S._ziweiMode = false; // ★ v80.16：塔羅入口確保非紫微模式（避免跨工具殘留旗標）
