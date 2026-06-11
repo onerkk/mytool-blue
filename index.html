@@ -1398,7 +1398,7 @@
 <script src="JS/lenormand.js?v=20260611v86_8" defer></script>
 <script src="JS/ink-flow.js?v=20260611v1_2" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260612v80_37" defer></script>
+<script src="JS/meihua-standalone.js?v=20260612v80_38" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260610v80_55" defer></script>
 <script src="JS/bazi-standalone.js?v=20260610v80_39" defer></script>
 <script src="JS/ui.js?v=20260611v85_3" defer></script>
@@ -1419,6 +1419,7 @@
 <!-- v86_3(2026/6/11)：大盤側牌覆蓋整類根治——GD15 每張點名（側牌講增削中牌，這正是本法側牌功能；修15張漏點權杖四/權杖五）、M21 三排成句須吃進全部21張；54張horseshoe維持原文成句法不加逐張點名（量級不可行且原法以組成句）。動 prompt-export.js；自檢同步至 82 項 -->
 <!-- v86_4(2026/6/11)：合法牌名清單標頭加去符號註記（▲▼只是資料標記，引用只寫牌名）——根治「規則禁符號 vs 清單示範符號格式」自相矛盾，修正文出現「——▼逆位 寶劍七」。動 prompt-export.js；自檢同步至 83 項 -->
 <!-- v86_5(2026/6/12)：梅花應期正統化整批根治——①應期改《占卦訣》原典法（事應於生體卦氣之日、敗於剋體卦氣之日；吉應/敗應分窗＋用近互中變遠），廢「用卦五行→季節」法；②體用定性對齊《體用總訣》原文（體剋用＝諸事吉）；③meihua_upgrade2 旺衰表改規則生成＋節氣月支＋tiYongDeep rel/verdict 根修；④output_layer 增 buildMeihuaYingQi 掛 mh.yingQi；⑤solar-location 真太陽時分鐘進位修；⑥standalone 生剋力道中性化＋蝦皮連結獨立成行雙保險。動 meihua_upgrade2.js / meihua_output_layer.js / prompt-export.js / meihua-standalone.js / solar-location.js / index.html 六檔 -->
+<!-- v86_6(2026/6/12)：梅花實測第二輪三根治——①蝦皮連結改犧牲行結構（網址倒數第二行＋固定收尾句墊後；兩輪實測末端皆黏不可見Unicode，屬AI管線副產物、指令攔不住，雜訊改黏收尾句）②生剋力道體克用/體生用補用旺衰雙向分支（修「體囚剋用旺」只標體弱）③動爻爻位參考行（繫辭：二多譽/三多凶/四多懼/五多功）＋鐵律⑧納入主線。只動 meihua-standalone.js -->
 <!-- v86_5(2026/6/11)：雷諾曼三修——①礦物事實錨點移植（補上塔羅 v85.2 後唯一無防護的工具）②cartouche 與第4排無上下對位（根治「房屋壓紳士」置中對位幻覺，經文獻核實 cartouche 為獨立收束單元）③Sig 落收束區聲明改硬規格（第一段必講、漏說＝破功）。動 lenormand.js；自檢同步至 88 項 -->
 <!-- v86_6(2026/6/11)：雷諾曼再二修——①五張/三張線鏡像對照改可驗證規格（每組至少一句把兩張放同句對照，讀不出就明說；修內層鏡像狐狸↔淑女整組漏讀）②人物牌歸屬規則（性別未知時抽出淑女/紳士必須先聲明「可能是你本人也可能是他人」，嚴禁未經判斷讀成另一個女人）。動 lenormand.js；自檢同步至 90 項 -->
 <!-- v86_7(2026/6/11)：雷諾曼性別選擇實裝（v3.1）——根治 _lnSigGender 預設寫死 male 的靜默錯誤（女性問卜者大牌陣會被默用紳士28定位）：①性別選擇列（男/女/不指定，localStorage 持久化）②提示詞注入【問卜者性別】三分支③GT 未聲明時揭露「暫定定位」並提醒④選男士/女士指示牌雙向回寫性別。動 lenormand.js；自檢同步至 92 項 -->
