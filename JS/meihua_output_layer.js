@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// 梅花輸出層 v1 — 新增區塊
+// 梅花輸出層 v2 — 新增區塊（v2 2026/6/12：增 buildMeihuaYingQi 正統應期，掛 mh.yingQi）
 // ───────────────────────────────────────────────────────────────
 // 插入位置：tarot.js 內，在 generateMeihuaStory 函式 } 結束之後、
 //           renderYaoLines 函式之前。
@@ -419,6 +419,66 @@ function buildMeihuaStrategy(mh, type, analysis, decisionHint) {
 }
 
 
+
+// ─────────────────────────────────────────────────────────────────
+// 【新增6・v2】buildMeihuaYingQi — 正統應期
+// 《梅花易數·占卦訣》：「看卦中有生體之卦，則事應於生體卦氣之日；
+//   有剋體之卦，則事敗於剋體卦氣之日。」另：用卦主近期、互卦主中期、變卦主遠期。
+// 取代「用卦五行→季節」的非原典斷法。
+// ─────────────────────────────────────────────────────────────────
+function buildMeihuaYingQi(mh) {
+  try {
+    var ti = mh && mh.tiG && mh.tiG.el;
+    if (!ti) return null;
+    var SHENG_ME = {金:'土', 木:'水', 水:'金', 火:'木', 土:'火'}; // 生我者
+    var KE_ME    = {金:'火', 木:'金', 水:'土', 火:'水', 土:'木'}; // 剋我者
+    var EL_ZHIS  = {木:['寅','卯'], 火:['巳','午'], 土:['辰','未','戌','丑'], 金:['申','酉'], 水:['亥','子']};
+    var EL_TXT   = {
+      木:'寅卯月（農曆正、二月）', 火:'巳午月（農曆四、五月）',
+      土:'辰未戌丑月（農曆三、六、九、十二月）',
+      金:'申酉月（農曆七、八月）', 水:'亥子月（農曆十、十一月）'
+    };
+    var ZHI_ORDER = ['寅','卯','辰','巳','午','未','申','酉','戌','亥','子','丑'];
+    var ZHI_LUNAR = {寅:1,卯:2,辰:3,巳:4,午:5,未:6,申:7,酉:8,戌:9,亥:10,子:11,丑:12};
+
+    // 當前節氣月支：優先用 meihua_upgrade2.js v2 的 mhMonthZhiFromDate；無則內建近似（同法）
+    var nowZhi;
+    if (typeof mhMonthZhiFromDate === 'function') {
+      nowZhi = mhMonthZhiFromDate(new Date());
+    } else {
+      var _JIE = {1:6,2:4,3:6,4:5,5:6,6:6,7:7,8:8,9:8,10:8,11:7,12:7};
+      var _GZ  = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+      var _d = new Date(), _m = _d.getMonth() + 1;
+      if (_d.getDate() < _JIE[_m]) _m = (_m === 1) ? 12 : _m - 1;
+      nowZhi = _GZ[_m % 12];
+    }
+
+    function nearestWindow(zhis) {
+      var nowIdx = ZHI_ORDER.indexOf(nowZhi), best = null;
+      zhis.forEach(function (z) {
+        var dd = (ZHI_ORDER.indexOf(z) - nowIdx + 12) % 12;
+        if (dd === 0) dd = 12; // 當月不算，看下一輪
+        if (best === null || dd < best.dist) best = { zhi: z, dist: dd };
+      });
+      return best;
+    }
+
+    var shengEl = SHENG_ME[ti], keEl = KE_ME[ti];
+    var jiWin  = nearestWindow(EL_ZHIS[shengEl].concat(EL_ZHIS[ti]));
+    var baiWin = nearestWindow(EL_ZHIS[keEl]);
+
+    return {
+      tiEl: ti, shengEl: shengEl, keEl: keEl, nowZhi: nowZhi,
+      jiTxt:  '生體之氣為' + shengEl + '，當令於' + EL_TXT[shengEl] +
+              '；體旺之氣（' + ti + '）當令於' + EL_TXT[ti] +
+              '。最近一個吉應窗：農曆' + ZHI_LUNAR[jiWin.zhi] + '月（' + jiWin.zhi + '月），距今約 ' + jiWin.dist + ' 個月',
+      baiTxt: '剋體之氣為' + keEl + '，當令於' + EL_TXT[keEl] +
+              '。最近一個敗應窗：農曆' + ZHI_LUNAR[baiWin.zhi] + '月（' + baiWin.zhi + '月），距今約 ' + baiWin.dist + ' 個月',
+      layerTxt: '用卦主近期之應、互卦主中期之應、變卦主遠期之應'
+    };
+  } catch (e) { return null; }
+}
+
 // ─────────────────────────────────────────────────────────────────
 // 【新增5】buildMeihuaOutput — 主整合入口
 // 呼叫：buildMeihuaOutput(mh, type)
@@ -438,6 +498,7 @@ function buildMeihuaOutput(mh, type) {
   var timing     = buildMeihuaTiming(mh, t, analysis);
   var risk       = buildMeihuaRisk(mh, t, analysis);
   var strategy   = buildMeihuaStrategy(mh, t, analysis, summaryObj.decisionHint);
+  var yingQi     = buildMeihuaYingQi(mh); // v2 正統應期
 
   // 3. 組裝
   var output = {
@@ -449,6 +510,7 @@ function buildMeihuaOutput(mh, type) {
     timing:       timing,
     risk:         risk,
     strategy:     strategy,
+    yingQi:       yingQi,
     score:        analysis.score,
     dir:          analysis.dir,
     phase:        analysis.phase,
@@ -464,6 +526,7 @@ function buildMeihuaOutput(mh, type) {
   mh.timing       = timing;
   mh.risk         = risk;
   mh.strategy     = strategy;
+  mh.yingQi       = yingQi;
 
   return output;
 }

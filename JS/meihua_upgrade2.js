@@ -1,5 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🌸 梅花易數 TOP-TIER UPGRADE
+// 🌸 梅花易數 TOP-TIER UPGRADE v2
+// v2 根治：①旺衰表改由正統規則生成（當令旺/令生相/生令休/剋令囚/令剋死）
+//          ②月支改節氣推算（原版誤用國曆月） ③mhTiYongDeep rel 取 mh.ty.r 並統一剋→克（原版 verdict 恆空） ④verdict 全分支覆蓋
 // 萬物類象完整表 · 外應法 · 多動爻 · 卦氣精細 · 互卦深度
 // ══════════════════════════════════════════════════════════════════════
 // 載入順序：tarot.js 之後（tarot.js 含梅花基礎引擎）
@@ -98,6 +100,7 @@ function mhExternalSigns(mh, environmentClues) {
   if (typeof environmentClues === 'string') {
     Object.keys(envToEl).forEach(function(key) {
       if (environmentClues.includes(key)) {
+        if (envToEl[key].indexOf('(') === -1) return; // 無對應五行（如「依卦象」），跳過
         var envEl = envToEl[key].split('(')[0];
         var matches = envEl === benEl;
         signs.push({
@@ -200,23 +203,56 @@ function mhHuGuaDeep(mh) {
 
 
 // ── 5. 卦氣精細月份旺衰 ──
-// 精確的月份五行旺衰表（12地支月份）
+// 正統規則：當令者旺、令生者相、生令者休、剋令者囚、令剋者死（《三命通會》）
+// v2 根治：表由規則程式生成，杜絕手打錯格；月支改由節氣推得（旺衰由月建定，以節氣為界）
 
-var MH_WANGSHUAI_PRECISE = {
-  // 格式: 五行 → {地支月: 旺衰等級}
-  // 旺=1.5, 相=1.2, 休=0.8, 囚=0.6, 死=0.4
-  木: {寅:1.5, 卯:1.5, 辰:0.8, 巳:0.6, 午:0.4, 未:0.4, 申:0.6, 酉:0.6, 戌:0.8, 亥:1.2, 子:1.2, 丑:0.8},
-  火: {寅:1.2, 卯:1.2, 辰:0.8, 巳:1.5, 午:1.5, 未:0.8, 申:0.4, 酉:0.4, 戌:0.6, 亥:0.6, 子:0.4, 丑:0.6},
-  土: {寅:0.6, 卯:0.6, 辰:1.5, 巳:1.2, 午:1.2, 未:1.5, 申:0.8, 酉:0.8, 戌:1.5, 亥:0.4, 子:0.4, 丑:1.5},
-  金: {寅:0.4, 卯:0.4, 辰:0.6, 巳:0.6, 午:0.6, 未:0.8, 申:1.5, 酉:1.5, 戌:0.8, 亥:0.8, 子:0.6, 丑:1.2},
-  水: {寅:0.6, 卯:0.8, 辰:0.6, 巳:0.4, 午:0.4, 未:0.6, 申:1.2, 酉:1.2, 戌:0.6, 亥:1.5, 子:1.5, 丑:0.8}
-};
+var MH_LING_BY_ZHI = {寅:'木',卯:'木',巳:'火',午:'火',申:'金',酉:'金',亥:'水',子:'水',辰:'土',戌:'土',丑:'土',未:'土'};
+var MH_EL_SHENG = {木:'火',火:'土',土:'金',金:'水',水:'木'}; // 我生
+var MH_EL_KE   = {木:'土',土:'水',水:'火',火:'金',金:'木'}; // 我剋
 
-function mhPreciseWangShuai(el, month) {
-  // month: 1-12 → 對應地支月
-  var monthZhi = ['丑','寅','卯','辰','巳','午','未','申','酉','戌','亥','子'];
-  // 農曆正月=寅, 二月=卯, ... 十一月=子, 十二月=丑
-  var mZhi = monthZhi[((month - 1) + 1) % 12]; // 正月=寅
+// 旺=1.5, 相=1.2, 休=0.8, 囚=0.6, 死=0.4
+var MH_WANGSHUAI_PRECISE = (function () {
+  var t = {木:{},火:{},土:{},金:{},水:{}};
+  Object.keys(MH_LING_BY_ZHI).forEach(function (zhi) {
+    var ling = MH_LING_BY_ZHI[zhi];
+    ['木','火','土','金','水'].forEach(function (el) {
+      var v;
+      if (el === ling)                 v = 1.5; // 當令者旺
+      else if (MH_EL_SHENG[ling] === el) v = 1.2; // 令生者相
+      else if (MH_EL_SHENG[el] === ling) v = 0.8; // 生令者休
+      else if (MH_EL_KE[el] === ling)    v = 0.6; // 剋令者囚
+      else                               v = 0.4; // 令剋者死
+      t[el][zhi] = v;
+    });
+  });
+  return t;
+})();
+
+// 節氣推月支（近似節日：小寒6/立春4/驚蟄6/清明5/立夏6/芒種6/小暑7/立秋8/白露8/寒露8/立冬7/大雪7，誤差±1天）
+var MH_JIE_DAY = {1:6, 2:4, 3:6, 4:5, 5:6, 6:6, 7:7, 8:8, 9:8, 10:8, 11:7, 12:7};
+var MH_GREG_MONTH_ZHI = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']; // index = 過節後的國曆月 % 12
+
+function mhMonthZhiFromDate(d) {
+  d = (d instanceof Date) ? d : new Date();
+  var m = d.getMonth() + 1, day = d.getDate();
+  if (day < MH_JIE_DAY[m]) m = (m === 1) ? 12 : m - 1; // 未過節，仍屬上一個月支
+  return MH_GREG_MONTH_ZHI[m % 12];
+}
+
+// 參數可傳：地支字串（'午'，正統）、Date 物件、或數字（視為農曆月，向下相容舊呼叫）
+function mhPreciseWangShuai(el, monthOrZhi) {
+  var mZhi;
+  if (typeof monthOrZhi === 'string' && MH_LING_BY_ZHI[monthOrZhi]) {
+    mZhi = monthOrZhi;
+  } else if (monthOrZhi instanceof Date) {
+    mZhi = mhMonthZhiFromDate(monthOrZhi);
+  } else if (typeof monthOrZhi === 'number') {
+    // 農曆月：正月=寅 … 十一月=子、十二月=丑
+    var lunarZhi = ['丑','寅','卯','辰','巳','午','未','申','酉','戌','亥','子'];
+    mZhi = lunarZhi[monthOrZhi % 12];
+  } else {
+    mZhi = mhMonthZhiFromDate(new Date());
+  }
 
   var table = MH_WANGSHUAI_PRECISE[el];
   if (!table) return {multiplier: 1.0, label: '平'};
@@ -236,7 +272,7 @@ function mhPreciseWangShuai(el, month) {
 // ── 6. 體用深度分析 ──
 // 精確的體用力量對比
 
-function mhTiYongDeep(mh, month) {
+function mhTiYongDeep(mh, dateOrZhi) {
   if (!mh) return null;
 
   var tiEl = mh.tiG ? mh.tiG.el : '';
@@ -244,30 +280,47 @@ function mhTiYongDeep(mh, month) {
 
   if (!tiEl || !yoEl) return null;
 
-  var m = month || (new Date().getMonth() + 1);
+  // v2 根治：月支改由節氣推得（或直接傳地支）
+  var mZhi = (typeof dateOrZhi === 'string') ? dateOrZhi : mhMonthZhiFromDate(dateOrZhi);
 
-  var tiWS = mhPreciseWangShuai(tiEl, m);
-  var yoWS = mhPreciseWangShuai(yoEl, m);
+  var tiWS = mhPreciseWangShuai(tiEl, mZhi);
+  var yoWS = mhPreciseWangShuai(yoEl, mZhi);
 
   // 體用力量比
   var tiPower = tiWS.multiplier;
   var yoPower = yoWS.multiplier;
   var ratio = tiPower / yoPower;
 
-  // 體用關係
-  var rel = mh.ty || '';
+  // v2 根治：mh.ty 是物件（取 .r），且「剋／克」混用導致原版所有分支永遠不命中
+  var rawRel = (mh.ty && typeof mh.ty === 'object') ? (mh.ty.r || '') : (mh.ty || '');
+  var rel = String(rawRel).replace(/剋/g, '克');
 
-  // 綜合判斷
-  var verdict = '';
-  if (rel === '用生體' && tiPower >= 1.0) verdict = '大吉：用卦生助體卦，且體卦當令有力';
-  else if (rel === '用生體' && tiPower < 0.8) verdict = '小吉：用卦生體但體卦失令，生力有限';
-  else if (rel === '體生用' && tiPower >= 1.2) verdict = '平：體卦生用卦，耗費能量但體卦有力承受';
-  else if (rel === '體生用' && tiPower < 0.8) verdict = '凶：體卦生用卦且體卦衰弱，精力大量消耗';
-  else if (rel === '用剋體' && tiPower >= 1.5) verdict = '平偏凶：用卦剋體但體卦極旺，衝擊可承受';
-  else if (rel === '用剋體') verdict = '大凶：用卦剋制體卦，事情發展不利';
-  else if (rel === '體剋用' && yoPower < 0.8) verdict = '吉：體卦剋用卦且用卦衰弱，可以主導局面';
-  else if (rel === '體剋用' && yoPower >= 1.2) verdict = '平：體卦剋用卦但用卦強旺，需費力才能掌控';
-  else if (rel === '比和') verdict = '平穩：體用同行，事情不會大起大落';
+  // 綜合判斷（v2：全分支覆蓋、無空洞；語彙對齊《梅花易數》原文——
+  // 體克用諸事吉、用克體諸事凶、體生用有耗失之患、用生體有進益之喜、比和百事順遂，旺衰定輕重）
+  var verdict;
+  if (rel === '用生體') {
+    if (tiPower >= 1.2)      verdict = '大吉：用卦生體，體又當令有力，進益之喜可期';
+    else if (tiPower >= 0.8) verdict = '吉：用卦生體，有進益之喜';
+    else                     verdict = '小吉：用卦生體但體卦休囚，生力打折，吉而不大';
+  } else if (rel === '比和') {
+    if (tiPower >= 1.2)      verdict = '吉：體用比和且得令，百事順遂';
+    else if (tiPower < 0.8)  verdict = '平：體用比和但雙方失令，順而無力，突破有限';
+    else                     verdict = '吉：體用比和，謀為順利';
+  } else if (rel === '體克用') {
+    if (yoPower >= 1.2)      verdict = '平偏吉：體克用但用卦強旺，可成而費力';
+    else if (tiPower < 0.8)  verdict = '小吉：體克用但體卦自身衰弱，克出更耗，成得辛苦';
+    else                     verdict = '吉：體克用，諸事可成，主動在我';
+  } else if (rel === '體生用') {
+    if (tiPower >= 1.2)      verdict = '平：體生用有耗，但體卦有力可承受';
+    else if (tiPower >= 0.8) verdict = '小凶：體生用，有耗失之患';
+    else                     verdict = '凶：體卦衰弱又生用，洩上加洩，得不償失';
+  } else if (rel === '用克體') {
+    if (tiPower >= 1.5)      verdict = '平偏凶：用卦克體但體極旺，衝擊可承受';
+    else if (yoPower < 0.8)  verdict = '凶帶緩：用卦克體但用卦休囚，克力有限，凶而可解';
+    else                     verdict = '大凶：用卦克體，諸事不利';
+  } else {
+    verdict = '平：體用關係不明，以本卦象意為主';
+  }
 
   return {
     tiEl: tiEl,
@@ -336,9 +389,8 @@ function enhanceMeihua(mh) {
   // 3. 互卦深度
   try { mh.huGuaDeep = mhHuGuaDeep(mh); } catch(e) { mh.huGuaDeep = null; }
 
-  // 4. 體用深度
-  var month = new Date().getMonth() + 1;
-  try { mh.tiYongDeep = mhTiYongDeep(mh, month); } catch(e) { mh.tiYongDeep = null; }
+  // 4. 體用深度（v2 根治：傳 Date，內部以節氣推月支；原版誤用國曆月當農曆月）
+  try { mh.tiYongDeep = mhTiYongDeep(mh, new Date()); } catch(e) { mh.tiYongDeep = null; }
 
   // 5. 錯卦
   try { mh.cuoGua = mhCuoGua(mh); } catch(e) { mh.cuoGua = null; }
