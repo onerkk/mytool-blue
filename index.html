@@ -1395,7 +1395,7 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260610v80_34" defer></script>
-<script src="JS/lenormand.js?v=20260611v86_6" defer></script>
+<script src="JS/lenormand.js?v=20260611v86_7" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260610v80_36" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260610v80_55" defer></script>
@@ -1419,6 +1419,7 @@
 <!-- v86_4(2026/6/11)：合法牌名清單標頭加去符號註記（▲▼只是資料標記，引用只寫牌名）——根治「規則禁符號 vs 清單示範符號格式」自相矛盾，修正文出現「——▼逆位 寶劍七」。動 prompt-export.js；自檢同步至 83 項 -->
 <!-- v86_5(2026/6/11)：雷諾曼三修——①礦物事實錨點移植（補上塔羅 v85.2 後唯一無防護的工具）②cartouche 與第4排無上下對位（根治「房屋壓紳士」置中對位幻覺，經文獻核實 cartouche 為獨立收束單元）③Sig 落收束區聲明改硬規格（第一段必講、漏說＝破功）。動 lenormand.js；自檢同步至 88 項 -->
 <!-- v86_6(2026/6/11)：雷諾曼再二修——①五張/三張線鏡像對照改可驗證規格（每組至少一句把兩張放同句對照，讀不出就明說；修內層鏡像狐狸↔淑女整組漏讀）②人物牌歸屬規則（性別未知時抽出淑女/紳士必須先聲明「可能是你本人也可能是他人」，嚴禁未經判斷讀成另一個女人）。動 lenormand.js；自檢同步至 90 項 -->
+<!-- v86_7(2026/6/11)：雷諾曼性別選擇實裝（v3.1）——根治 _lnSigGender 預設寫死 male 的靜默錯誤（女性問卜者大牌陣會被默用紳士28定位）：①性別選擇列（男/女/不指定，localStorage 持久化）②提示詞注入【問卜者性別】三分支③GT 未聲明時揭露「暫定定位」並提醒④選男士/女士指示牌雙向回寫性別。動 lenormand.js；自檢同步至 92 項 -->
 <script src="JS/prompt-export.js?v=20260611v86_4" defer></script>
 <script src="share-card.js?v=3" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
