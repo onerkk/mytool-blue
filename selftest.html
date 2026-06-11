@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>靜月之光 · 系統自檢</title>
+<style>
+  :root{--bg:#0f1117;--card:#181b24;--gold:#d4af37;--ok:#34d399;--bad:#f87171;--mut:#8b90a0;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:#e8e9ee;font-family:-apple-system,"Noto Sans TC",sans-serif;padding:1rem;font-size:.92rem;}
+  h1{font-size:1.15rem;color:var(--gold);margin-bottom:.2rem;}
+  .sub{color:var(--mut);font-size:.75rem;margin-bottom:1rem;}
+  .summary{background:var(--card);border-radius:10px;padding:.9rem;margin-bottom:1rem;font-size:1rem;border:1px solid #2a2e3a;}
+  .summary.allok{border-color:var(--ok);} .summary.hasfail{border-color:var(--bad);}
+  details{background:var(--card);border-radius:10px;margin-bottom:.6rem;border:1px solid #2a2e3a;}
+  summary{padding:.7rem .9rem;cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;}
+  .row{padding:.45rem .9rem;border-top:1px solid #232733;font-size:.8rem;display:flex;gap:.5rem;align-items:flex-start;}
+  .row .ic{flex-shrink:0;}
+  .ok{color:var(--ok);} .bad{color:var(--bad);}
+  .detail{color:var(--bad);font-size:.72rem;margin-top:.15rem;}
+  .mut{color:var(--mut);}
+  button{background:var(--gold);color:#111;border:none;border-radius:8px;padding:.55rem 1.1rem;font-size:.9rem;font-weight:700;margin-bottom:1rem;}
+</style>
+</head>
+<body>
+<h1>🔍 靜月之光 · 系統自檢</h1>
+<div class="sub">部署完整性 ＋ 資料表 ＋ 引擎行為不變量（v85.3 基準）。每次上傳檔案後打開本頁；全綠＝部署成功且無已知 bug 復活。</div>
+<button onclick="location.reload()">重新檢測</button>
+<div id="summary" class="summary">檢測中…</div>
+<div id="groups"></div>
+
+<script>
+// 動態載入（帶時間戳繞過 HTTP/SW 快取——檢的是「線上真實檔案」不是快取）
+(function(){
+  var bust = Date.now();
+  var s1 = document.createElement('script');
+  s1.src = 'JS/selftest-core.js?st=' + bust;
+  s1.onload = boot;
+  s1.onerror = function(){ document.getElementById('summary').textContent = '❌ JS/selftest-core.js 載入失敗——請確認已上傳'; };
+  document.head.appendChild(s1);
+
+  function fetchText(f){
+    return fetch('JS/' + f + '?st=' + bust, { cache: 'no-store' }).then(function(r){
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    });
+  }
+
+  var results = {}; // group -> [{name,pass,detail}]
+  function report(g, name, pass, detail){
+    (results[g] = results[g] || []).push({ name: name, pass: pass, detail: detail || '' });
+  }
+
+  function render(){
+    var groupsEl = document.getElementById('groups');
+    groupsEl.innerHTML = '';
+    var total = 0, fails = 0;
+    Object.keys(results).sort().forEach(function(g){
+      var rows = results[g], gFail = rows.filter(function(r){ return !r.pass; }).length;
+      total += rows.length; fails += gFail;
+      var d = document.createElement('details');
+      if (gFail) d.open = true;
+      d.innerHTML = '<summary><span>' + g + '</span><span class="' + (gFail ? 'bad' : 'ok') + '">' +
+        (rows.length - gFail) + '/' + rows.length + (gFail ? ' ❌' : ' ✅') + '</span></summary>' +
+        rows.map(function(r){
+          return '<div class="row"><span class="ic ' + (r.pass ? 'ok' : 'bad') + '">' + (r.pass ? '✅' : '❌') + '</span>' +
+            '<div>' + r.name + (r.pass || !r.detail ? '' : '<div class="detail">' + r.detail + '</div>') + '</div></div>';
+        }).join('');
+      groupsEl.appendChild(d);
+    });
+    var sum = document.getElementById('summary');
+    sum.className = 'summary ' + (fails ? 'hasfail' : 'allok');
+    sum.innerHTML = fails
+      ? '❌ <b>' + fails + ' / ' + total + ' 項失敗</b><div class="mut" style="font-size:.75rem;margin-top:.3rem">最常見原因：該檔案沒上傳成功（仍是舊版）。展開紅色群組看是哪個檔。</div>'
+      : '✅ <b>全部 ' + total + ' 項通過</b><div class="mut" style="font-size:.75rem;margin-top:.3rem">線上檔案皆為最新版，已知 bug 無復活，引擎行為正常。</div>';
+  }
+
+  function boot(){
+    // ── 行為層：從線上檔案文字抽取純函式執行（不依賴 DOM，不受頁面初始化干擾）──
+    var envExtra = { numerology: null, typeMeaning: null, buildPrompt: null };
+    var pre = [];
+
+    pre.push(fetchText('tarot_upgrade.js').then(function(t){
+      try {
+        var a = t.indexOf('var TAROT_NUMEROLOGY');
+        var b = t.indexOf('// ── 2. 多牌陣支持 ──');
+        if (a > -1 && b > a) { (0, eval)(t.slice(a, b)); envExtra.numerology = tarotNumerologyAnalysis; }
+      } catch (e) { report('③數字學', '函式抽取執行', false, String(e).slice(0, 80)); }
+    }));
+
+    pre.push(fetchText('tarot.js').then(function(t){
+      try {
+        var a = t.indexOf('function getTarotTypeMeaning');
+        var b = t.indexOf('// ══════', a);
+        if (a > -1 && b > a) {
+          window.TAROT = { 15: { up: '執念、物欲、束縛，面對自己的陰影。', loveUp: '關係中有強烈的吸引力但伴隨著控制或依賴，需要分清愛和執著。' } };
+          (0, eval)(t.slice(a, b));
+          envExtra.typeMeaning = function(form, id, isUp, type){ window.S = { form: form }; return getTarotTypeMeaning(id, isUp, type); };
+        }
+      } catch (e) { report('④多領域守門', '函式抽取執行', false, String(e).slice(0, 80)); }
+    }));
+
+    // prompt-export 整檔載入（僅掛 window.JY_buildExportPrompt，無 DOM 副作用）
+    pre.push(new Promise(function(res){
+      var s2 = document.createElement('script');
+      s2.src = 'JS/prompt-export.js?st=' + bust;
+      s2.onload = function(){
+        envExtra.buildPrompt = function(tool, spreadId, domains){
+          window.JY_classifyDomains = function(){ return domains || []; };
+          window.S = { form: { type: (domains && domains[0]) || 'general', domains: domains || [], question: '測試問題嗎？' }, tarot: { spreadType: spreadId, spreadDef: { count: 3 } } };
+          window.getCurrentSpread = function(){ return spreadId; };
+          return window.JY_buildExportPrompt(tool);
+        };
+        res();
+      };
+      s2.onerror = function(){ report('⑤提示詞組裝', 'prompt-export.js 載入', false, '上傳失敗或路徑錯'); res(); };
+      document.head.appendChild(s2);
+    }));
+
+    Promise.all(pre).then(function(){
+      var env = { getText: fetchText, report: report,
+                  numerology: envExtra.numerology, typeMeaning: envExtra.typeMeaning, buildPrompt: envExtra.buildPrompt };
+      window.JY_SELFTEST.runStatic(env, function(){
+        window.JY_SELFTEST.runBehavior(env);
+        render();
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
