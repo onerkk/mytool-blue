@@ -1382,7 +1382,7 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot.js?v=20260611v85_3" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260611v85_3" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260611v86_router" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
 <script src="JS/meihua_upgrade.js?v=20260610v80_16" defer></script>
 <script src="JS/meihua_output_layer.js?v=20260606v80_15" defer></script>
@@ -1401,7 +1401,7 @@
 <script src="JS/ziwei-standalone.js?v=20260610v80_55" defer></script>
 <script src="JS/bazi-standalone.js?v=20260610v80_39" defer></script>
 <script src="JS/ui.js?v=20260611v85_3" defer></script>
-<script src="JS/spread-picker.js?v=20260610v81_gilt2" defer></script>
+<script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
@@ -1412,6 +1412,7 @@
 <!-- v85_3(2026/6/11)：多領域牌義中性化（「財運桃花健康」整盤被餵感情文案的根因：S.form.domains 守門 getTarotTypeMeaning＋結果頁 ftKey）、領域提示 2→3（健康提示不再被砍）、極小盤(≤3)能量石不判過盛。動 ui.js / tarot.js / tarot_upgrade.js / prompt-export.js -->
 <!-- v85_4(2026/6/11)：機率題形態規則（「機率多少」嚴禁無出處百分比，改五檔傾向＋牌面證據，forecast≠prediction）。動 prompt-export.js；selftest-core.js 簽名同步至 56 項 -->
 <!-- v85_5(2026/6/11)：通用溯源鐵律（FRAG_TRACE，全工具注入）——終結「無出處具體數字」整類病（時間/機率/金額/年齡/體重/次數…），不再逐題型補條文。動 prompt-export.js；selftest-core.js 簽名同步至 57 項 -->
+<!-- v86_router(2026/6/11)：自動判斷根治——深度全局層改三陣種子池輪替（凱爾特/GD15/M21，同題可重現）、isOverview 補口語（運勢/近況）、年度詞庫修子串誤觸、小阿卡那日常詞擴充；牌陣手選說明 13 個全改決策導向＋例句。動 tarot_upgrade.js / spread-picker.js；自檢擴至 75 項（含 13 陣路由覆蓋） -->
 <script src="JS/prompt-export.js?v=20260611v85_5" defer></script>
 <script src="share-card.js?v=3" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->

@@ -77,7 +77,7 @@
 
   function boot(){
     // ── 行為層：從線上檔案文字抽取純函式執行（不依賴 DOM，不受頁面初始化干擾）──
-    var envExtra = { numerology: null, typeMeaning: null, buildPrompt: null };
+    var envExtra = { numerology: null, typeMeaning: null, buildPrompt: null, route: null };
     var pre = [];
 
     pre.push(fetchText('tarot_upgrade.js').then(function(t){
@@ -86,6 +86,20 @@
         var b = t.indexOf('// ── 2. 多牌陣支持 ──');
         if (a > -1 && b > a) { (0, eval)(t.slice(a, b)); envExtra.numerology = tarotNumerologyAnalysis; }
       } catch (e) { report('③數字學', '函式抽取執行', false, String(e).slice(0, 80)); }
+      try { // v86：抽路由＋分類器做覆蓋測試
+        var ca = t.indexOf('window.JY_classifyDomains = (function () {');
+        var cb = t.indexOf('})();', ca) + 5;
+        var ra = t.indexOf('function detectSpreadType(question, type) {');
+        var rb = t.indexOf('\n}', t.indexOf('return typeDefault[type]', ra)) + 2;
+        if (ca > -1 && ra > -1) {
+          (0, eval)(t.slice(ca, cb) + '\n' + t.slice(ra, rb));
+          envExtra.route = function(q){
+            var h = window.JY_classifyDomains(q);
+            var M = {love:'love',secret:'secret',money:'money',work:'work',family:'family',health:'health',study:'travel',spiritual:'spiritual'};
+            return detectSpreadType(q, h.length ? (M[h[0]] || h[0]) : 'general');
+          };
+        }
+      } catch (e) { report('⑥路由覆蓋', '路由抽取執行', false, String(e).slice(0, 80)); }
     }));
 
     pre.push(fetchText('tarot.js').then(function(t){
@@ -119,7 +133,7 @@
 
     Promise.all(pre).then(function(){
       var env = { getText: fetchText, report: report,
-                  numerology: envExtra.numerology, typeMeaning: envExtra.typeMeaning, buildPrompt: envExtra.buildPrompt };
+                  numerology: envExtra.numerology, typeMeaning: envExtra.typeMeaning, buildPrompt: envExtra.buildPrompt, route: envExtra.route };
       window.JY_SELFTEST.runStatic(env, function(){
         window.JY_SELFTEST.runBehavior(env);
         render();
