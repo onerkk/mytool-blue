@@ -13,19 +13,19 @@
 
   // ── 每個牌陣的圖示 / 點綴色(rgb) / 中文名 / 適合的問題 ──
   var META = {
-    three_card:   { icon: 'fa-grip-lines',   accent: '201,168,76',  cn: '三牌陣',        suited: '單一是非、快速看一件事的走向' },
-    five_card:    { icon: 'fa-border-all',   accent: '223,195,115', cn: '五牌陣',        suited: '一般問題 ・ 現況→原因→阻礙→建議→結果' },
-    relationship: { icon: 'fa-heart',        accent: '251,113,133', cn: '關係牌陣',      suited: '兩個人的關係、感情' },
-    either_or:    { icon: 'fa-code-branch',  accent: '96,165,250',  cn: '二選一',        suited: '抉擇、兩條路 ・ 看清各自的發展與結果' },
-    cross:        { icon: 'fa-plus',         accent: '251,191,36',  cn: '十字牌陣',      suited: '有衝突拉扯、卡關 ・ 核心 vs 阻礙' },
-    timeline:     { icon: 'fa-clock',        accent: '96,165,250',  cn: '時間線',        suited: '時機「什麼時候、要多久」' },
-    celtic_cross: { icon: 'fa-cross',        accent: '139,92,246',  cn: '凱爾特十字',    suited: '整體開放局勢 ・ 十張牌完整深入' },
-    tree_of_life: { icon: 'fa-sitemap',      accent: '52,211,153',  cn: '生命之樹',      suited: '靈性、人生課題、深層自我（卡巴拉）' },
-    zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '年度運勢 ・ 十二宮掃描一整年' },
-    minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '具體生活問題 ・ 只用 56 張小牌' },
-    fifteen_card: { icon: 'fa-shapes',       accent: '139,92,246',  cn: '金色黎明十五張', suited: '元素尊貴、不用逆位（進階）' },
-    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '1888 古法 ・ 代表牌在右、三排七、由右至左（進階）' },
-    mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '1888 第一法 ・ A/C/E 三組 horseshoe，F棄用（高階）' }
+    three_card:   { icon: 'fa-grip-lines',   accent: '201,168,76',  cn: '三牌陣',        suited: '單一明確問題、要快速答案 ・ 例：「他會回我嗎」「這件事成不成」' },
+    five_card:    { icon: 'fa-border-all',   accent: '223,195,115', cn: '五牌陣',        suited: '一般問題、想知道原因與下一步 ・ 例：「生意卡住該怎麼辦」（現況→原因→阻礙→建議→結果）' },
+    relationship: { icon: 'fa-heart',        accent: '251,113,133', cn: '關係牌陣',      suited: '我與某個特定對象 ・ 例：「我跟他會走下去嗎」「主管怎麼看我」' },
+    either_or:    { icon: 'fa-code-branch',  accent: '96,165,250',  cn: '二選一',        suited: '兩條路選一條 ・ 例：「留下還是離職」「A 還是 B」（各看發展再比）' },
+    cross:        { icon: 'fa-plus',         accent: '251,191,36',  cn: '十字牌陣',      suited: '卡關、糾結、想找原因 ・ 例：「為什麼一直談不成」「到底卡在哪」' },
+    timeline:     { icon: 'fa-clock',        accent: '96,165,250',  cn: '時間線',        suited: '問時機 ・ 例：「什麼時候會有結果」「還要等多久」' },
+    celtic_cross: { icon: 'fa-cross',        accent: '139,92,246',  cn: '凱爾特十字',    suited: '重要的事想看完整全局（10張深入）・ 例：「這段感情的整體狀況與走向」' },
+    tree_of_life: { icon: 'fa-sitemap',      accent: '52,211,153',  cn: '生命之樹',      suited: '內在課題、重複模式、靈性方向 ・ 例：「為什麼我總是遇到同一種人」' },
+    zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '一整年逐領域掃描 ・ 例：「我今年的整體運勢」（12宮＋年度主軸）' },
+    minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '日常具體小事（只用56張小牌）・ 例：「錢包找得回來嗎」「包裹會準時到嗎」' },
+    fifteen_card: { icon: 'fa-shapes',       accent: '139,92,246',  cn: '金色黎明十五張', suited: '想一次看 2-3 個面向 ・ 例：「感情和工作一起看」（GD 三元組法、不用逆位）' },
+    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '一件事的來龍去脈：過去→現在→未來 ・ 例：「這段關係怎麼走到今天、之後呢」（1888 古法）' },
+    mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '人生級大盤點、全部攤開（54張最完整，重大問題再用）・ 例：「把我的感情人生徹底攤開看」' }
   };
   var GROUPS = [
     { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'celtic_cross'] },

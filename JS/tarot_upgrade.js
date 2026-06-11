@@ -606,6 +606,15 @@ function detectSpreadType(question, type) {
   var q = (question || '').trim();
   var qMarks = (q.match(/[？?]/g) || []).length;
 
+  // v86_router(2026/6/11)：同一級存在多個「同樣正統」的完整解讀法時，
+  //   以問題字串為種子在池內決定——同一題永遠同一陣（可重現），不同題自然分散整池。
+  //   根治「進階牌陣永遠輪不到、固定那幾個在變化」。
+  function _pickBySeed(pool) {
+    var h = 0;
+    for (var _pi = 0; _pi < q.length; _pi++) h = ((h * 31) + q.charCodeAt(_pi)) >>> 0;
+    return pool[h % pool.length];
+  }
+
   // ═══ 第 0 層：使用者明確指定牌陣名稱（最高優先）═══
   if (/金色黎明.*牌陣|GD.*牌陣|英式.*牌陣|fifteen.?card|十五.?張|Crowley.*牌陣/i.test(q)) return 'fifteen_card';
   if (/Mathers.*(第一法|古法|horseshoe|馬蹄|馬蹄形)|1888.*(第一法|古法|horseshoe|馬蹄)|五十四.?張|54.?張/i.test(q)) return 'mathers_horseshoe';
@@ -628,8 +637,8 @@ function detectSpreadType(question, type) {
   var isWhen     = /什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|時間點|來得及|等多久|還要等|快了嗎|近期.*嗎/.test(q);
   var isWhy      = /為什麼|為何|怎麼會|為啥|什麼原因|原因是|根源|問題出在|到底怎麼了|怎麼回事/.test(q);
   var isHow      = /如何|怎麼做|怎麼辦|怎樣才|方法|建議|策略|怎麼改|怎麼處理|怎麼經營|怎麼提升|要怎麼/.test(q) && !/^.{0,3}如何[？?]?\s*$/.test(q); // 排除「這週如何」「今天如何」這種短概覽
-  var isOverview = /整體|全面|深入|詳細|各方面|大局|多面向|分析一下|幫我看看(?!他|她)/.test(q);
-  var isAnnual   = /年度運勢|整年|一整年|全年運|十二宮|黃道|每個月|逐月|月月/.test(q)
+  var isOverview = /整體|全面|深入|詳細|各方面|大局|多面向|分析一下|運勢|近況|最近狀況|現況如何|幫我看看(?!他|她)/.test(q); // v86_router：補客人口語（運勢/近況）——「最近運勢如何」不再掉到五牌陣
+  var isAnnual   = /年度運勢|整年|一整年|全年運|流年|十二宮|黃道|每個月|逐月|月月|(今年|明年)的?(整體)?運勢/.test(q)
                 || (/今年|明年|未來一年/.test(q) && /運勢|整體|大局|怎麼樣|如何|全面/.test(q) && q.replace(/\s/g,'').length <= 22);
   // v81_router：年度掃描收斂——「今年適合換工作嗎」是具體題不是年掃，舊版只看到「今年」就派13張黃道（過度觸發）
   var isBlocked  = /拉扯|糾結|矛盾|卡住|進退兩難|衝突|阻礙|不順|為什麼卡|怎麼解|僵|瓶頸|困境|動彈不得|解不開|過不去|走不出|掙扎|兩難/.test(q);
@@ -706,14 +715,12 @@ function detectSpreadType(question, type) {
     if (_dN >= 2 && (isOverview || /一起看|都看|同時|跟.{0,6}都|和.{0,6}都/.test(q))) return 'fifteen_card';
   } catch (e) {}
 
-  // 3.7 多子問題（3 個以上問號）→ celtic_cross
-  if (qMarks >= 3) return 'celtic_cross';
-
-  // 3.8 長問句（>50 字）→ celtic_cross（在 isHow 之前攔，避免長文被 five_card 接走）
-  if (q.length > 50) return 'celtic_cross';
+  // 3.7/3.8 深度全局層（v86_router）：凱爾特十字(10)・GD十五張(15)・Mathers 21 皆為可查傳承的
+  //   完整解讀法，對「多子題/長問句/概覽」同樣正統——依問題種子在池內輪替，不再永遠凱爾特。
+  if (qMarks >= 3 || q.length > 50) return _pickBySeed(['celtic_cross','fifteen_card','mathers_21']);
 
   // 3.85 具體日常瑣事 → minor_arcana（v81_router：56張小牌的本職——找東西、文件、行程這類不需大牌的事）
-  if (q.length <= 30 && /(找|遺失|不見|掉了|搞丟).{0,6}(東西|鑰匙|錢包|手機|文件|證件)|(東西|鑰匙|錢包|手機|文件|證件).{0,5}(不見|掉了|搞丟|遺失|找得回|找不到|找得到)|包裹|快遞|訂單|報稅|證件|水電|家電|修(車|機車)|搬家|租屋|行程|日程/.test(q)) return 'minor_arcana';
+  if (q.length <= 30 && /(找|遺失|不見|掉了|搞丟).{0,6}(東西|鑰匙|錢包|手機|文件|證件)|(東西|鑰匙|錢包|手機|文件|證件).{0,5}(不見|掉了|搞丟|遺失|找得回|找不到|找得到)|包裹|快遞|訂單|報稅|證件|水電|家電|修(車|機車)|搬家|租屋|行程|日程|繳費|預約|寄(件|貨)|出貨|退貨|維修|掛號/.test(q)) return 'minor_arcana';
 
   // 3.9 短的是非題（<30 字 + 只有 1 個問號）→ three_card
   //     多問號的是非題 → 升級到 five_card（多個子問題需要更多牌位）
@@ -728,8 +735,8 @@ function detectSpreadType(question, type) {
   // 3.10 感情題（有領域但沒涉及特定對方）→ five_card
   if (isLove && !hasPerson) return 'five_card';
 
-  // 3.11 概覽 / 多面向 → celtic_cross
-  if (isOverview) return 'celtic_cross';
+  // 3.11 概覽 / 多面向 → 深度全局池（v86_router）
+  if (isOverview) return _pickBySeed(['celtic_cross','fifteen_card','mathers_21']);
 
   // 3.12 中等是非（較長但仍是 yes/no）→ five_card
   if (isYesNo) return 'five_card';
