@@ -1396,7 +1396,7 @@
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260610v80_34" defer></script>
 <script src="JS/lenormand.js?v=20260611v86_8" defer></script>
-<script src="JS/ink-flow.js?v=20260611v1_1" defer></script>
+<script src="JS/ink-flow.js?v=20260611v1_2" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260610v80_36" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260610v80_55" defer></script>
@@ -1424,6 +1424,7 @@
 <!-- v86_8(2026/6/11)：雷諾曼 GT 再二修（v3.2）——①同線敘事夾強負面牌不可靜默跳過（修太陽花束[棺材]花園挑牌違規）②主題牌定位精算（依問題比對主題牌、引擎逐張給格位＋八方緊鄰，修「心上面接著書」上下顛倒；AI 不再自行看圖判方向）＋Sig 緊貼補對角。動 lenormand.js；自檢同步至 94 項 -->
 <!-- v86_9(2026/6/11)：墨流 ink-flow v1.0——Suminagashi 風格全站背景墨暈層（canvas 回饋平流＋流場墨點；品牌金/月白/絳紅，pickTool 換工具自動換墨色；0.5x 內部解析度、分頁隱藏即停、reduced-motion 靜態墨暈、低階機自動降檔）。新增 JS/ink-flow.js；自檢同步至 96 項 -->
 <!-- v86_10(2026/6/11)：墨流 v1.1——依回饋改「面板內掛載」：首頁不畫（恢復原樣），偵測八字/紫微/梅花/雷諾曼等全版工具面板打開時把畫布掛進面板內部（z-index:-1 子層＝面板底色上、表單內容下），關閉自動收回；依面板內容自動配色（bzx金硃/zw紫金/mhx翠金/ln靛月白）、半透明載入遮罩不掛。動 ink-flow.js；自檢維持 96 項（簽名改 v1.1、v1.0 入黑名單） -->
+<!-- v86_11(2026/6/11)：墨流 v1.2——v1.1 根因修正：工具頁是 display:none/block 切換的常駐面板，MutationObserver 抓不到 display 切換導致表單頁全空。改已知容器 id 輪詢（bzx-screen/mhx-screen/ln-screen/zw-input/zw-result，700ms 閒置輪詢）＋通用後備門檻降至 z≥2900（涵蓋 zw-result）。動 ink-flow.js；簽名 v1.2、v1.1 入黑名單 -->
 <script src="JS/prompt-export.js?v=20260611v86_4" defer></script>
 <script src="share-card.js?v=3" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
