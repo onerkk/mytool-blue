@@ -258,6 +258,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('雷諾曼跟塔羅完全不同。單張牌幾乎沒有獨立意義。兩張牌組合才開始說話，三張牌說一個小故事。');
   lines.push('讀法：相鄰牌彼此修飾，兩張形成短句，三張形成小故事；只能用本次抽到的相鄰牌與線索組句。');
   lines.push('・把兩張牌當「一組」來讀，前提是：實際相鄰、或落在同一條線（排／列／對角）、或經明確技法（大牌陣的連線追蹤、騎士跳）連起來。不要只因兩張牌牌義相近，就把盤上彼此不相鄰、也沒有線或技法連結的兩張硬湊成一組（例：九宮格裡上中與左下既不相鄰也不同線，不可當組合）。');
+  lines.push('・同一條線串成敘事時，你引用的兩張牌之間若夾著強負面牌（棺材、鐮刀、山、老鼠、十字架、雲、蛇、鞭子），不可靜默跳過——要嘛把它讀進這段敘事，要嘛明說「這條線上夾著○○、這段過程有什麼代價」；默默跳過＝挑牌，違規。');
   lines.push('範例只可內部理解組合方式，正文不得引用本盤外的牌名或公式。');
   lines.push('');
   lines.push('【無逆位】');
@@ -465,9 +466,64 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
         if (_sc<7) _nb.push('右=' + drawn[_si+1].name);
         if (_sr>0) _nb.push('上=' + drawn[_si-8].name);
         if (_sr<3) _nb.push('下=' + drawn[_si+8].name);
-        lines.push('・緊貼 Sig 的牌（最即時、先讀）：' + _nb.join('、'));
+        if (_sr>0 && _sc>0) _nb.push('上左=' + drawn[_si-9].name);
+        if (_sr>0 && _sc<7) _nb.push('上右=' + drawn[_si-7].name);
+        if (_sr<3 && _sc>0) _nb.push('下左=' + drawn[_si+7].name);
+        if (_sr<3 && _sc<7) _nb.push('下右=' + drawn[_si+9].name);
+        lines.push('・緊貼 Sig 的牌（含對角，最即時、先讀）：' + _nb.join('、'));
       }
     }
+    // v3.2：主題牌定位精算——AI 自己看版面圖會講反方向（實測「心上面接著書」上下顛倒），
+    //   機械事實由排盤系統算好：依問題比對主題牌，逐張給格位與八方緊鄰
+    try {
+      var _tThemes = [
+        [/感情|戀|桃花|曖昧|復合|對象|婚/, [24, 25]],
+        [/工作|職務|任務|案子|職涯/, [14, 35]],
+        [/升遷|升職|主管|老闆|位階|職位|權威|體制|重用/, [15, 19]],
+        [/財|錢|收入|薪|營收|生意|進帳/, [34, 15]],
+        [/健康|身體/, [5]],
+        [/溝通|訊息|消息|聯絡/, [12, 27]],
+        [/旅行|出國|搬家|移居/, [3]],
+        [/運勢|運氣/, [2, 16]]
+      ];
+      var _tIds = [], _q2 = String(question || '');
+      for (var _ti = 0; _ti < _tThemes.length; _ti++) {
+        if (_tThemes[_ti][0].test(_q2)) {
+          for (var _tj = 0; _tj < _tThemes[_ti][1].length; _tj++) {
+            if (_tIds.indexOf(_tThemes[_ti][1][_tj]) === -1) _tIds.push(_tThemes[_ti][1][_tj]);
+          }
+        }
+      }
+      if (_tIds.length) {
+        var _tLines = [];
+        for (var _tk = 0; _tk < _tIds.length && _tLines.length < 8; _tk++) {
+          var _pi = -1;
+          for (var _tm = 0; _tm < drawn.length; _tm++) { if (drawn[_tm].id === _tIds[_tk]) { _pi = _tm; break; } }
+          if (_pi < 0) continue;
+          if (_pi >= 32) {
+            var _cb = [];
+            if (_pi > 32) _cb.push('左=' + drawn[_pi-1].name);
+            if (_pi < 35) _cb.push('右=' + drawn[_pi+1].name);
+            _tLines.push('・' + drawn[_pi].name + '：在末排 cartouche（獨立收束區）' + (_cb.length ? '——區內緊鄰：' + _cb.join('、') : ''));
+          } else {
+            var _pr = Math.floor(_pi/8), _pc = _pi % 8, _pn = [];
+            if (_pc>0) _pn.push('左=' + drawn[_pi-1].name);
+            if (_pc<7) _pn.push('右=' + drawn[_pi+1].name);
+            if (_pr>0) _pn.push('上=' + drawn[_pi-8].name);
+            if (_pr<3) _pn.push('下=' + drawn[_pi+8].name);
+            if (_pr>0 && _pc>0) _pn.push('上左=' + drawn[_pi-9].name);
+            if (_pr>0 && _pc<7) _pn.push('上右=' + drawn[_pi-7].name);
+            if (_pr<3 && _pc>0) _pn.push('下左=' + drawn[_pi+7].name);
+            if (_pr<3 && _pc<7) _pn.push('下右=' + drawn[_pi+9].name);
+            _tLines.push('・' + drawn[_pi].name + '：第' + (_pr+1) + '排第' + (_pc+1) + '格——緊鄰：' + _pn.join('、'));
+          }
+        }
+        if (_tLines.length) {
+          lines.push('【主題牌定位（已由排盤系統精算——緊鄰與方向直接採用，不要自行看圖重判）】');
+          for (var _tn = 0; _tn < _tLines.length; _tn++) lines.push(_tLines[_tn]);
+        }
+      }
+    } catch (e) {}
     lines.push('');
   }
 
