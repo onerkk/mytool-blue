@@ -1391,7 +1391,7 @@
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
-<script src="JS/ai-analysis.js?v=20260611v85_root" defer></script>
+<script src="JS/ai-analysis.js?v=20260611v86_1" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260610v80_34" defer></script>
@@ -1413,7 +1413,8 @@
 <!-- v85_4(2026/6/11)：機率題形態規則（「機率多少」嚴禁無出處百分比，改五檔傾向＋牌面證據，forecast≠prediction）。動 prompt-export.js；selftest-core.js 簽名同步至 56 項 -->
 <!-- v85_5(2026/6/11)：通用溯源鐵律（FRAG_TRACE，全工具注入）——終結「無出處具體數字」整類病（時間/機率/金額/年齡/體重/次數…），不再逐題型補條文。動 prompt-export.js；selftest-core.js 簽名同步至 57 項 -->
 <!-- v86_router(2026/6/11)：自動判斷根治——深度全局層改三陣種子池輪替（凱爾特/GD15/M21，同題可重現）、isOverview 補口語（運勢/近況）、年度詞庫修子串誤觸、小阿卡那日常詞擴充；牌陣手選說明 13 個全改決策導向＋例句。動 tarot_upgrade.js / spread-picker.js；自檢擴至 75 項（含 13 陣路由覆蓋） -->
-<script src="JS/prompt-export.js?v=20260611v85_5" defer></script>
+<!-- v86_1(2026/6/11)：決策題補多選項排序逐項溯源契約（排進名次的選項每名都要牌面出處，第一句點名後文不交代＝破功）；宮廷結果位標籤「最終出現的人」改事實化措辭（第三者題不再遞刀）。動 prompt-export.js / ai-analysis.js；自檢同步至 78 項 -->
+<script src="JS/prompt-export.js?v=20260611v86_1" defer></script>
 <script src="share-card.js?v=3" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
