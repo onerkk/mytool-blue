@@ -240,11 +240,12 @@
     var isTiming   = has(/什麼時候|何時|幾月|幾號|幾點|多久|多快|近期|這(週|個禮拜)|這個月|這月|本月|下個月|今年|明年|今晚|今天|明天|後天|這幾天|最近(會|能)|還要多久/);
     var isUrgent   = has(/今晚|今天|等等|待會|這幾(個)?小時|24小時|馬上|立刻|這一兩天|此刻/);
     var isYesNo    = has(/嗎[？?]?\s*$|會不會|是不是|有沒有|能不能|可不可以|是否|對不對|對嗎|好不好|行不行/);
+    var isProb     = has(/機率|百分比|幾成|幾%|多少%|多少趴|可能性(有)?多(大|高|少)|機會(有)?多(大|高)/); // v85.4 機率題形態
     var isDecision = has(/該不該|要不要|該(選|留|走|分|放棄|繼續)|選.{0,6}還是|.{1,6}還是.{1,6}[好嗎？?]|哪個(好|對|適合)|哪一個|值不值得|值得嗎|適合嗎|留還是走|分還是不分/);
     var isPortrait = has(/對方是(誰|什麼)|他是(誰|什麼樣)|她是(誰|什麼樣)|(他|她|對方).{0,4}(在想|怎麼想|想我|想念|想不想我|愛不愛我|還想|還愛|過得|好不好)|什麼樣的人|對方(的)?(個性|長相|職業)|他喜(不喜)?歡我|她喜(不喜)?歡我/);
     var isOverview = has(/整體運勢|流年|運程|綜合運勢|全年運|今年運勢|本年運勢|這個月運勢|運勢(如何|怎樣|好不好|為何|好嗎|是什麼)|今年.{0,3}(整體|大方向)|大方向(如何|為何)/); // v80.59：偵測「整體運勢／流年」總覽題（本來就該跨領域通盤）
 
-    return { noQ: noQ, raw: s, domains: domains, timing: isTiming, urgent: isUrgent, yesno: isYesNo, decision: isDecision, portrait: isPortrait, overview: isOverview };
+    return { noQ: noQ, raw: s, domains: domains, timing: isTiming, urgent: isUrgent, yesno: isYesNo, prob: isProb, decision: isDecision, portrait: isPortrait, overview: isOverview };
   }
 
   var DOMAIN_HINT = {
@@ -415,6 +416,7 @@
     // 形態（決定回答骨架）
     var shape = [];
     if (f.yesno)    shape.push('是非題');
+    if (f.prob)     shape.push('機率題');
     if (f.decision) shape.push('決策題');
     if (f.timing)   shape.push('時間題');
     if (f.portrait) shape.push('對方畫像題');
@@ -429,6 +431,7 @@
     }
 
     if (f.yesno)    L.push('・是非題：第一句給「會／不會／是／不是／不一定（但傾向X）」。逆位/凶牌不要硬讀成正面。');
+    if (f.prob)     L.push('・機率題：塔羅給的是傾向與證據強弱，不是統計機率——嚴禁輸出任何百分比、幾成、小數或區間數字（牌面推不出機率數字，與時間數字同一溯源標準；與是非題規則並用時以本條為準）。第一句用五檔傾向回答：低／偏低／五五波／偏高／高，緊接著給最關鍵的牌面證據；並用一句老實告知「牌面能給傾向強弱，給不出數字機率」（此為現代實務 forecast≠prediction 框架，非古典原典）。');
     if (f.decision) L.push('・決策題：兩個選項各給支持證據，比完之後明確推一個，不要兩邊都好。');
     if (f.timing) {
       var _spT = '';
