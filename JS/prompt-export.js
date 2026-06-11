@@ -584,7 +584,7 @@
     }
     // ★ 合法牌名清單（禁幻覺——複製模式沒有後端機械審計，用清單替代）
     var _legal = cards.map(function (c) { return c.name; }).filter(Boolean);
-    if (_legal.length) { L.push(''); L.push('【本次合法牌名清單（你只能引用這些牌，清單外的牌一律不可出現）】'); L.push('  ' + _legal.join('、')); }
+    if (_legal.length) { L.push(''); L.push('【本次合法牌名清單（你只能引用這些牌，清單外的牌一律不可出現；▲▼正逆符號只是資料標記——正文引用時只寫牌名本身，不得帶「▲」「▼」「正位」「逆位」前綴）】'); L.push('  ' + _legal.join('、')); }
     var extra = [];
     function add(label, val) { if (val !== null && val !== undefined && val !== '' && !(val.length === 0)) { var s = safeText(val); if (s) extra.push(label + '：' + s); } }
     // 正逆統計、大牌比重 為事實計數（花色分布已於上方輸出），與 Mathers 相容，兩類牌陣都送
