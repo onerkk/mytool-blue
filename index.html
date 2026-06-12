@@ -1396,7 +1396,7 @@
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260610v80_34" defer></script>
 <script src="JS/lenormand.js?v=20260612v86_15" defer></script>
-<script src="JS/ink-flow.js?v=20260611v1_2" defer></script>
+<script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260612v80_38" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260610v80_55" defer></script>
@@ -1431,6 +1431,7 @@
 <!-- v86_15(2026/6/12)：分享卡雷諾曼根治（share-card v2.0／lenormand v3.3）——根因：RENDER 表把 lenormand 映射到 renderTarot（寫死 Math.min(cards,3)＋✦佔位、draw 同步無圖載機制），實測五張線/大牌陣都只出3張無牌面。改：①renderLenormand 專屬渲染器照張數排版（3/5單排、9宮3×3、GT 鏡射讀法 8×4＋收束4、指示牌★金框）②引擎 loadImgs 非同步預載（2.5s逾時退✦佔位）③呼叫端補傳 {id,img,sig}。其餘五工具未帶 img、行為零變動。動 share-card.js（?v=3→4）/ lenormand.js -->
 <!-- v86_16(2026/6/12)：share-card.js 搬入 JS/ 資料夾——原在 repo 根目錄、與其他 JS 不同層，實際造成部署時上傳錯位置（v86_15 新檔上了但根目錄舊檔仍被載入）。路徑統一為 JS/share-card.js；根目錄舊檔需在 GitHub 手動刪除。動 index.html（路徑）；share-card.js 內容不變、僅標頭加位置註記 -->
 <!-- v86_17(2026/6/12)：塔羅分享卡同款根治（share-card v2.1／ui.js v85_4）——renderTarot 升級：cards 帶 img 繪真牌面（逆位旋轉180°與結果頁一致）、>3 張改通用網格自適應（逐欄數試算取最大格，凱爾特10/GD15/M21/馬蹄54 全張數入卡，不再截到3張＋✦佔位）；ui.js _tarotShare 補傳 getTarotCardImage。梅花分享卡未帶 img、行為不變。動 JS/share-card.js（?v=4→5）/ JS/ui.js -->
+<!-- v86_18(2026/6/12)：墨流 v2.0——渲染核心改寫 WebGL Stable Fluids（依設計參考影片 THREE.JS·STABLE FLUIDS 同類效果根治 v1.x「大光圈散景感」：速度/染料半浮點場 ping-pong、平流＋渦度補強捲鬚＋壓力Jacobi求解；染料解析度上限768≈v1.x的2.7倍；觸控拖曳沿軌跡注墨＋閒置自動演出）；輪詢清單補收 step-tarot/step-2/step-1/step-0（v1.2 漏收＝塔羅頁無墨流根因），靜態定位 step 掛載時補 isolation:isolate 建堆疊上下文；後備鏈 WebGL不可用→v1.x 2D、reduced-motion→靜態墨暈。全11支shader經glslangValidator ES1.00編譯驗證。動 JS/ink-flow.js -->
 <script src="JS/prompt-export.js?v=20260612v86_12" defer></script>
 <script src="JS/share-card.js?v=5" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
