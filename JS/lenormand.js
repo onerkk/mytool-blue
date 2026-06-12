@@ -2,6 +2,7 @@
 // 靜月之光 — 雷諾曼牌 Lenormand v3.0.3
 // v3.0.3(2026/6/10)：知識句礦物化（實測輸出「我對黃水晶的結晶結構非常熟悉」＝自誇式，非礦物知識）
 // v3.0.2(2026/6/10)：規則3補「同一結論只講一次」（實測船星星戒指同論點重講四次；塔羅已有此條、雷諾曼漏——防線同步）
+// v3.6(2026/6/12・index v86_22)：洗牌改密碼學隨機 crypto.getRandomValues（決定占卜結果的隨機升級真熵池）
 // v3.4(2026/6/12・index v86_20)：AI 提示詞蝦皮連結改犧牲行結構（與梅花/紫微/八字/靈籤全站統一）
 // v3.3(2026/6/12・index v86_15)：分享卡呼叫端補傳 {id,img,sig}——配合 share-card.js v2.0 雷諾曼專屬渲染器
 //   （照牌陣張數排版＋真牌面＋指示牌★金框）；v3.2 以前只傳 {name,pos} 是分享卡無真牌面的呼叫端根因
@@ -141,11 +142,15 @@ var _lnGender = (function(){ try { return localStorage.getItem('jy_ln_gender') |
 var _lnSignif = null;        // v3.0：指示牌 card id（1-36）或 null＝不使用。28男士/29女士＝問卜者；任一張可作主題指示牌（signifier）。
                              //   正統用法（可查文獻）：九宮格＝古法預置中央再抽八張圍繞；大牌陣＝不預置、定位後讀其圍繞與行列；線讀＝僅主題透鏡、不預置。
 
+function _lnSecRand() { // v3.6 密碼學隨機（決定牌序的唯一隨機源；退路 Math.random）
+  try { var _u = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(_u); return _u[0] / 4294967296; }
+  catch (e) { return Math.random(); }
+}
 function shuffleDeck() {
   _lnDeck = CARDS.map(function(c){ return JSON.parse(JSON.stringify(c)); });
   // Fisher-Yates
   for (var i = _lnDeck.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
+    var j = Math.floor(_lnSecRand() * (i + 1)); // v3.6 密碼學隨機洗牌
     var t = _lnDeck[i]; _lnDeck[i] = _lnDeck[j]; _lnDeck[j] = t;
   }
   _lnDrawn = [];

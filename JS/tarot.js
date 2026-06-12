@@ -1,3 +1,10 @@
+
+// vtarot：密碼學隨機源——所有「決定占卜結果」的隨機（洗牌/正逆位/起卦/抽籤）改用
+//   crypto.getRandomValues（真熵池），不可用時退 Math.random；視覺隨機（粒子/星星/音效）不在此列
+function _secRand() {
+  try { var _u = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(_u); return _u[0] / 4294967296; }
+  catch (e) { return Math.random(); }
+}
 // ═══════════════════════════════════════════════════════════════
 // tarot.js — 靜月之光模組化拆分
 // ═══════════════════════════════════════════════════════════════
@@ -360,7 +367,7 @@ function calcMhChar(){
 }
 function calcMhRandom(){
   if(S.meihua){showMhLockedMsg();return;}
-  showMH(calcMH(Math.ceil(Math.random()*8),Math.ceil(Math.random()*8),Math.ceil(Math.random()*6)));
+  showMH(calcMH(Math.ceil(_secRand()*8),Math.ceil(_secRand()*8),Math.ceil(_secRand()*6))); // v86_22 密碼學隨機起卦
 }
 
 // ── Tarot deck + analysis + story + draw UI (lines 5992-6570) ──
@@ -2991,7 +2998,7 @@ function initTarotDeck(){
   function _fyShuffle(arr){
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
+      var j = Math.floor(_secRand() * (i + 1)); // v86_22 密碼學隨機洗牌
       var t = a[i]; a[i] = a[j]; a[j] = t;
     }
     return a;
@@ -3370,7 +3377,7 @@ function pickCard(deckIdx,deckEl){
     var _r=makeSeededRng(S.form.bdate,S.form.gender,S.form.type,S.form.question);
     for(var _k=0;_k<=card.id;_k++) _r();
     isUp=_r()>=0.5;
-  } else { isUp=Math.random()>=0.5; }
+  } else { isUp=_secRand()>=0.5; } // v86_22 密碼學隨機正逆位
 
   var slotIdx=drawnCards.length;
   var pos=_jyCurrentPosName(slotIdx); // v80.37：牌位名跟著當前牌陣，三牌陣不再貼凱爾特名

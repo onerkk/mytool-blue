@@ -337,6 +337,9 @@ function _v63FallbackRandom(maxExclusive){
     window.crypto.getRandomValues(b);
     return b[0]%maxExclusive;
   }
+  // v6.4 密碼學隨機（抽籤/筊杯結果的唯一隨機源；退路 Math.random）
+  try { var _u = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(_u); return Math.floor(_u[0] / 4294967296 * maxExclusive); }
+  catch (e) {}
   return Math.floor(Math.random()*maxExclusive);
 }
 // v63: 擲筊機率非對稱模擬(更貼近真實筊杯)
