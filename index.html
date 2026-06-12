@@ -1381,7 +1381,7 @@
 <!-- ★ v75 修正：tarot.js 必須在 tarot_upgrade.js 之前載入，
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
-<script src="JS/tarot.js?v=20260611v85_3" defer></script>
+<script src="JS/tarot.js?v=20260612v86_22" defer></script>
 <script src="JS/tarot_upgrade.js?v=20260611v86_router" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
 <script src="JS/meihua_upgrade.js?v=20260610v80_16" defer></script>
@@ -1394,8 +1394,8 @@
 <script src="JS/ai-analysis.js?v=20260611v86_1" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/oracle.js?v=20260612v6_3" defer></script>
-<script src="JS/lenormand.js?v=20260612v86_21" defer></script>
+<script src="JS/oracle.js?v=20260612v6_4" defer></script>
+<script src="JS/lenormand.js?v=20260612v86_22" defer></script>
 <script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260612v80_40" defer></script>
@@ -1435,6 +1435,7 @@
 <!-- v86_19(2026/6/12)：梅花分享卡卦象直繪（share-card v2.2／meihua-standalone v80.39）——卦無牌面圖資產，改直繪六爻卦象：陽爻實線/陰爻斷線（由下而上）、動爻紅金高亮＋圓點；payload 補 lines/dong（本卦＝下上卦li、互卦2-4/3-5爻、變卦動爻翻轉，與 calcMH 同式推導）；未帶 lines 退 renderTarot 舊版。動 JS/share-card.js（?v=5→6）/ JS/meihua-standalone.js -->
 <!-- v86_20(2026/6/12)：紫微實測審查三根治＋收束犧牲行全站統一——①ziwei-standalone 空宮借星資料層直給（實測 AI 把財帛酉空宮借成夫妻武破，正統借星安宮只借對宮應借卯紫貪）②鐵律⑦應期精確到年、禁編月份（資料區無流月，實測輸出月份窗口＝硬編）③蝦皮連結犧牲行移植五處：ziwei/bazi/oracle/lenormand 提示詞＋prompt-export FRAG_CRYSTAL×2（末行版多輪實測仍黏不可見字元，網址改倒數第二行＋固定收尾句墊後，與 meihua v80.38 同款）。動 ziwei-standalone(v80_56)/bazi-standalone(v80_40)/oracle(v6_2)/lenormand(v86_20)/prompt-export(v86_20)/index 六檔 -->
 <!-- v86_21(2026/6/12)：①收束連結全站改 Markdown 格式 [靜月之光蝦皮賣場](URL)——八字實測犧牲行下雜訊（U+2060+替換字元）仍直接插在裸長網址旁；文獻證實管線對長URL插零寬字元處理換行、與位置無關，根治＝畫面不再有裸網址（CommonMark [text](url) 全渲染器支援，13 個目標 AI App 皆渲染 Markdown；href 收在括號內不受顯示層插字影響）。六提示詞路徑＋FRAG_CRYSTAL×2 統一。②八字伏吟標記根修：pillars[k] 物件被當字串、String 成 [object Object] 永不匹配＋catch 吞錯＝v80_38 起從未生效（2028戊申/2029己酉伏吟實測全漏）。動 meihua-standalone(v80_40)/ziwei-standalone(v80_57)/bazi-standalone(v80_41)/oracle(v6_3)/lenormand(v86_21)/prompt-export(v86_21)/index 七檔 -->
+<!-- v86_22(2026/6/12)：占卜隨機源升級密碼學等級——所有「決定結果」的隨機點改 crypto.getRandomValues 真熵池（塔羅洗牌/正逆位/梅花隨機起卦＝tarot.js、雷諾曼洗牌＝lenormand.js、靈籤抽籤核心＝oracle.js），不支援時退 Math.random；視覺隨機（粒子/星星/音效/文案抽句）不偽裝、維持原樣。動 tarot.js/lenormand.js/oracle.js/index 四檔 -->
 <script src="JS/prompt-export.js?v=20260612v86_21" defer></script>
 <script src="JS/share-card.js?v=6" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
