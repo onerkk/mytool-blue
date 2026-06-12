@@ -1401,7 +1401,7 @@
 <script src="JS/meihua-standalone.js?v=20260612v80_38" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260610v80_55" defer></script>
 <script src="JS/bazi-standalone.js?v=20260610v80_39" defer></script>
-<script src="JS/ui.js?v=20260611v85_3" defer></script>
+<script src="JS/ui.js?v=20260612v85_4" defer></script>
 <script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
@@ -1430,8 +1430,9 @@
 <!-- v86_14(2026/6/12)：雷諾曼 v3.2 問題文字保存收口根治——實測按指示牌/性別後問題輸入被清空：根因 _render 重繪銷毀 textarea，而 v2.x 僅 _lnSetSpread 個別先存（補丁式）、_lnSetSig/_lnSetGender 漏存。改收口制：_render() 入口統一回存 #ln-q 現值，移除各按鈕重複碼；任何未來新增按鈕自動安全。分享卡「不照牌陣顯示＋無真牌面」屬 share-card.js 版型（六工具呼叫端均僅傳文字），待該檔上傳另批根治。動 lenormand.js -->
 <!-- v86_15(2026/6/12)：分享卡雷諾曼根治（share-card v2.0／lenormand v3.3）——根因：RENDER 表把 lenormand 映射到 renderTarot（寫死 Math.min(cards,3)＋✦佔位、draw 同步無圖載機制），實測五張線/大牌陣都只出3張無牌面。改：①renderLenormand 專屬渲染器照張數排版（3/5單排、9宮3×3、GT 鏡射讀法 8×4＋收束4、指示牌★金框）②引擎 loadImgs 非同步預載（2.5s逾時退✦佔位）③呼叫端補傳 {id,img,sig}。其餘五工具未帶 img、行為零變動。動 share-card.js（?v=3→4）/ lenormand.js -->
 <!-- v86_16(2026/6/12)：share-card.js 搬入 JS/ 資料夾——原在 repo 根目錄、與其他 JS 不同層，實際造成部署時上傳錯位置（v86_15 新檔上了但根目錄舊檔仍被載入）。路徑統一為 JS/share-card.js；根目錄舊檔需在 GitHub 手動刪除。動 index.html（路徑）；share-card.js 內容不變、僅標頭加位置註記 -->
+<!-- v86_17(2026/6/12)：塔羅分享卡同款根治（share-card v2.1／ui.js v85_4）——renderTarot 升級：cards 帶 img 繪真牌面（逆位旋轉180°與結果頁一致）、>3 張改通用網格自適應（逐欄數試算取最大格，凱爾特10/GD15/M21/馬蹄54 全張數入卡，不再截到3張＋✦佔位）；ui.js _tarotShare 補傳 getTarotCardImage。梅花分享卡未帶 img、行為不變。動 JS/share-card.js（?v=4→5）/ JS/ui.js -->
 <script src="JS/prompt-export.js?v=20260612v86_12" defer></script>
-<script src="JS/share-card.js?v=4" defer></script>
+<script src="JS/share-card.js?v=5" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
 <script>
