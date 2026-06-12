@@ -1,12 +1,12 @@
-/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v86.5]
- *  v86.5（梅花應期正統化＋體用原文定性 2026/6/12 歐那）：
+/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v86.12]
+ *  v86.12（梅花應期正統化＋體用原文定性 2026/6/12 歐那）：
  *    1) formatMeihuaData 注入正統應期——《梅花易數·占卦訣》：「事應於生體卦氣之日、敗於剋體卦氣之日」，
  *       輔以「用卦近期、互卦中期、變卦遠期」分層；資料由 meihua_output_layer.js v2 buildMeihuaYingQi 計算（mh.yingQi）。
  *       根治原本只有 mh.timing 天數窗、無原典應期依據的問題；明令禁止 AI 自創「用卦五行→季節」法（非原典斷法）。
  *    2) formatMeihuaData 加「體用原典定性」行——對齊《體用總訣》原文：體克用＝諸事吉（非「小吉」）、
  *       用克體＝諸事凶、體生用＝耗失之患、用生體＝進益之喜、比和＝百事順遂；剋/克字形相容。
  *    3) TPL.meihua 讀卦流程④與輸出要求改吃資料區吉應／敗應；FRAG_RECENCY_MEIHUA 檢查表同步加項。
- *    4) 標頭版號自陳舊的 [v80.60] 對齊 index 變更主線（v86_4）推進為 v86.5。
+ *    4) 標頭版號自陳舊的 [v80.60] 對齊 index 變更主線（至 v86_11）推進為 v86.12。
  *    配套部署：meihua_output_layer.js v2、meihua_upgrade2.js v2（旺衰表規則生成＋節氣月支＋tiYongDeep 根修）。
  *  v80.60（凱爾特十字三組對照等量 + 收尾連結＝全文末字）：
  *    1) celtic_cross 鐵律補「三組對照分量必須對等」——實測輸出「身後vs身前」常比另兩組薄，明定每組都要點名兩張牌、講出張力。
@@ -493,7 +493,7 @@
     L.push('上卦：' + g('up.name','') + '（' + g('up.el','') + '）｜下卦：' + g('lo.name','') + '（' + g('lo.el','') + '）');
     L.push('體卦：' + g('tiG.name','') + '（' + g('tiG.el','') + '）｜用卦：' + g('yoG.name','') + '（' + g('yoG.el','') + '）');
     L.push('體用關係：' + g('ty.r','') + '｜吉凶傾向：' + g('ty.f','') + '｜說明：' + g('ty.d',''));
-    // v86.5 正統定性（《梅花易數·體用總訣》原文語彙：吉凶以此為綱、旺衰定輕重；剋/克皆相容）
+    // v86.12 正統定性（《梅花易數·體用總訣》原文語彙：吉凶以此為綱、旺衰定輕重；剋/克皆相容）
     var _tyOrth = {
       '用生體': '用生體＝有進益之喜（吉）',
       '體生用': '體生用＝有耗失之患（洩耗）',
@@ -512,7 +512,7 @@
     if (mh.summary) L.push('・摘要：' + mh.summary);
     if (mh.decisionHint) L.push('・行動提示：' + mh.decisionHint);
     if (mh.timing) L.push('・時間節奏：' + safeText(mh.timing));
-    // v86.5 正統應期（《占卦訣》：事應於生體卦氣之日、敗於剋體卦氣之日）——由 meihua_output_layer.js v2 buildMeihuaYingQi 提供
+    // v86.12 正統應期（《占卦訣》：事應於生體卦氣之日、敗於剋體卦氣之日）——由 meihua_output_layer.js v2 buildMeihuaYingQi 提供
     if (mh.yingQi && mh.yingQi.jiTxt) {
       L.push('・應期（正統斷法，吉敗分開看，照用、不可自創算法）：');
       L.push('　吉應之期：' + mh.yingQi.jiTxt);

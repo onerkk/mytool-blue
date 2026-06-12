@@ -2,6 +2,8 @@
 // 靜月之光 — 雷諾曼牌 Lenormand v3.0.3
 // v3.0.3(2026/6/10)：知識句礦物化（實測輸出「我對黃水晶的結晶結構非常熟悉」＝自誇式，非礦物知識）
 // v3.0.2(2026/6/10)：規則3補「同一結論只講一次」（實測船星星戒指同論點重講四次；塔羅已有此條、雷諾曼漏——防線同步）
+// v3.2(2026/6/12・index v86_14)：問題文字保存收口根治——_render() 入口統一回存 #ln-q 現值；實測按指示牌/性別後問題被清空，
+//   根因是 _lnSetSig/_lnSetGender 直接重繪、textarea 被銷毀重建（v2.x 只在 _lnSetSpread 個別補過，屬補丁，已改收口制並移除重複碼）
 // v3.0.1(2026/6/10)：指示牌選牌 modal 修正——z-index 9999 被視圖層 99999 蓋住（按了沒反應、退出才出現），改 100000 並掛進視圖容器；選牌格上真實牌面圖
 // v3.0(2026/6/10)：指示牌（Significator）實裝——不使用／男士28／女士29／自選36任一。正統依據：
 //   九宮格＝古法預置中央再抽八張圍繞（tarotquest 文獻明載）；大牌陣＝不預置、36張中定位後讀其圍繞/行列/左過去右未來
@@ -619,6 +621,11 @@ var AI_LIST = [
 ];
 
 function _render() {
+  // v3.2 根治：重繪會銷毀並重建 textarea——任何觸發 _render 的按鈕（牌陣/指示牌/性別/未來新增）
+  //   都曾或將把使用者打到一半的問題刷掉。收口在唯一入口：重建前先把現值回存 _lnQuestion，
+  //   不再要求每個按鈕各自記得先存（v2.x 只有 _lnSetSpread 有存，_lnSetSig/_lnSetGender 漏了＝實測問題被清空的根因）。
+  var _qNow = document.getElementById('ln-q');
+  if (_qNow) _lnQuestion = _qNow.value;
   var w = _getWrap();
   var h = '<div class="ln-container">';
   h += '<a href="javascript:void(0)" class="ln-back" onclick="_lenormandClose()">← 返回靜月之光</a>';
@@ -731,9 +738,7 @@ window._lenormandClose = function() {
 };
 
 window._lnSetSpread = function(id) {
-  // ★ 根治：切換牌陣前先存問題文字，否則 _render 會銷毀 textarea
-  var qEl = document.getElementById('ln-q');
-  if (qEl) _lnQuestion = qEl.value;
+  // v3.2：問題文字回存已收口至 _render() 入口，這裡不再各自處理
   _lnSpread = id;
   _render();
 };
