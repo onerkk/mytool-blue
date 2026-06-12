@@ -1429,8 +1429,9 @@
 <!-- v86_13(2026/6/12)：梅花實測第二輪三根治——①蝦皮連結改犧牲行結構（網址倒數第二行＋固定收尾句墊後；兩輪實測末端皆黏不可見Unicode，屬AI管線副產物、指令攔不住，雜訊改黏收尾句）②生剋力道體克用/體生用補用旺衰雙向分支（修「體囚剋用旺」只標體弱）③動爻爻位參考行（繫辭：二多譽/三多凶/四多懼/五多功）＋鐵律⑧納入主線。只動 meihua-standalone.js -->
 <!-- v86_14(2026/6/12)：雷諾曼 v3.2 問題文字保存收口根治——實測按指示牌/性別後問題輸入被清空：根因 _render 重繪銷毀 textarea，而 v2.x 僅 _lnSetSpread 個別先存（補丁式）、_lnSetSig/_lnSetGender 漏存。改收口制：_render() 入口統一回存 #ln-q 現值，移除各按鈕重複碼；任何未來新增按鈕自動安全。分享卡「不照牌陣顯示＋無真牌面」屬 share-card.js 版型（六工具呼叫端均僅傳文字），待該檔上傳另批根治。動 lenormand.js -->
 <!-- v86_15(2026/6/12)：分享卡雷諾曼根治（share-card v2.0／lenormand v3.3）——根因：RENDER 表把 lenormand 映射到 renderTarot（寫死 Math.min(cards,3)＋✦佔位、draw 同步無圖載機制），實測五張線/大牌陣都只出3張無牌面。改：①renderLenormand 專屬渲染器照張數排版（3/5單排、9宮3×3、GT 鏡射讀法 8×4＋收束4、指示牌★金框）②引擎 loadImgs 非同步預載（2.5s逾時退✦佔位）③呼叫端補傳 {id,img,sig}。其餘五工具未帶 img、行為零變動。動 share-card.js（?v=3→4）/ lenormand.js -->
+<!-- v86_16(2026/6/12)：share-card.js 搬入 JS/ 資料夾——原在 repo 根目錄、與其他 JS 不同層，實際造成部署時上傳錯位置（v86_15 新檔上了但根目錄舊檔仍被載入）。路徑統一為 JS/share-card.js；根目錄舊檔需在 GitHub 手動刪除。動 index.html（路徑）；share-card.js 內容不變、僅標頭加位置註記 -->
 <script src="JS/prompt-export.js?v=20260612v86_12" defer></script>
-<script src="share-card.js?v=4" defer></script>
+<script src="JS/share-card.js?v=4" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
 <script>
