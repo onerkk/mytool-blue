@@ -1394,13 +1394,13 @@
 <script src="JS/ai-analysis.js?v=20260611v86_1" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/oracle.js?v=20260610v80_34" defer></script>
-<script src="JS/lenormand.js?v=20260612v86_15" defer></script>
+<script src="JS/oracle.js?v=20260612v6_2" defer></script>
+<script src="JS/lenormand.js?v=20260612v86_20" defer></script>
 <script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260612v80_39" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260610v80_55" defer></script>
-<script src="JS/bazi-standalone.js?v=20260610v80_39" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260612v80_56" defer></script>
+<script src="JS/bazi-standalone.js?v=20260612v80_40" defer></script>
 <script src="JS/ui.js?v=20260612v85_4" defer></script>
 <script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
@@ -1433,7 +1433,8 @@
 <!-- v86_17(2026/6/12)：塔羅分享卡同款根治（share-card v2.1／ui.js v85_4）——renderTarot 升級：cards 帶 img 繪真牌面（逆位旋轉180°與結果頁一致）、>3 張改通用網格自適應（逐欄數試算取最大格，凱爾特10/GD15/M21/馬蹄54 全張數入卡，不再截到3張＋✦佔位）；ui.js _tarotShare 補傳 getTarotCardImage。梅花分享卡未帶 img、行為不變。動 JS/share-card.js（?v=4→5）/ JS/ui.js -->
 <!-- v86_18(2026/6/12)：墨流 v2.0——渲染核心改寫 WebGL Stable Fluids（依設計參考影片 THREE.JS·STABLE FLUIDS 同類效果根治 v1.x「大光圈散景感」：速度/染料半浮點場 ping-pong、平流＋渦度補強捲鬚＋壓力Jacobi求解；染料解析度上限768≈v1.x的2.7倍；觸控拖曳沿軌跡注墨＋閒置自動演出）；輪詢清單補收 step-tarot/step-2/step-1/step-0（v1.2 漏收＝塔羅頁無墨流根因），靜態定位 step 掛載時補 isolation:isolate 建堆疊上下文；後備鏈 WebGL不可用→v1.x 2D、reduced-motion→靜態墨暈。全11支shader經glslangValidator ES1.00編譯驗證。動 JS/ink-flow.js -->
 <!-- v86_19(2026/6/12)：梅花分享卡卦象直繪（share-card v2.2／meihua-standalone v80.39）——卦無牌面圖資產，改直繪六爻卦象：陽爻實線/陰爻斷線（由下而上）、動爻紅金高亮＋圓點；payload 補 lines/dong（本卦＝下上卦li、互卦2-4/3-5爻、變卦動爻翻轉，與 calcMH 同式推導）；未帶 lines 退 renderTarot 舊版。動 JS/share-card.js（?v=5→6）/ JS/meihua-standalone.js -->
-<script src="JS/prompt-export.js?v=20260612v86_12" defer></script>
+<!-- v86_20(2026/6/12)：紫微實測審查三根治＋收束犧牲行全站統一——①ziwei-standalone 空宮借星資料層直給（實測 AI 把財帛酉空宮借成夫妻武破，正統借星安宮只借對宮應借卯紫貪）②鐵律⑦應期精確到年、禁編月份（資料區無流月，實測輸出月份窗口＝硬編）③蝦皮連結犧牲行移植五處：ziwei/bazi/oracle/lenormand 提示詞＋prompt-export FRAG_CRYSTAL×2（末行版多輪實測仍黏不可見字元，網址改倒數第二行＋固定收尾句墊後，與 meihua v80.38 同款）。動 ziwei-standalone(v80_56)/bazi-standalone(v80_40)/oracle(v6_2)/lenormand(v86_20)/prompt-export(v86_20)/index 六檔 -->
+<script src="JS/prompt-export.js?v=20260612v86_20" defer></script>
 <script src="JS/share-card.js?v=6" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
