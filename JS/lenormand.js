@@ -2,6 +2,8 @@
 // 靜月之光 — 雷諾曼牌 Lenormand v3.0.3
 // v3.0.3(2026/6/10)：知識句礦物化（實測輸出「我對黃水晶的結晶結構非常熟悉」＝自誇式，非礦物知識）
 // v3.0.2(2026/6/10)：規則3補「同一結論只講一次」（實測船星星戒指同論點重講四次；塔羅已有此條、雷諾曼漏——防線同步）
+// v3.3(2026/6/12・index v86_15)：分享卡呼叫端補傳 {id,img,sig}——配合 share-card.js v2.0 雷諾曼專屬渲染器
+//   （照牌陣張數排版＋真牌面＋指示牌★金框）；v3.2 以前只傳 {name,pos} 是分享卡無真牌面的呼叫端根因
 // v3.2(2026/6/12・index v86_14)：問題文字保存收口根治——_render() 入口統一回存 #ln-q 現值；實測按指示牌/性別後問題被清空，
 //   根因是 _lnSetSig/_lnSetGender 直接重繪、textarea 被銷毀重建（v2.x 只在 _lnSetSpread 個別補過，屬補丁，已改收口制並移除重複碼）
 // v3.0.1(2026/6/10)：指示牌選牌 modal 修正——z-index 9999 被視圖層 99999 蓋住（按了沒反應、退出才出現），改 100000 並掛進視圖容器；選牌格上真實牌面圖
@@ -722,7 +724,8 @@ window._lenormandShare = function() {
   var cards = (_lnDrawn || []).map(function(c, i) {
     var pl = (pos[i] || ('\u7B2C' + (i + 1) + '\u5F35'));
     pl = String(pl).split('/').pop();
-    return { name: c.name || '', pos: pl };
+    // v3.3：補傳 id/img/sig——share-card v2.0 起依牌陣張數排版並繪真牌面（img 同源資產、畫布無汙染）
+    return { id: c.id, name: c.name || '', pos: pl, img: (typeof IMG_MAP !== 'undefined' && IMG_MAP[c.id]) || '', sig: !!c._presetSig };
   });
   JYShareCard.open('lenormand', {
     cardTitle: '\u6211\u7684\u96F7\u8AFE\u66FC',
