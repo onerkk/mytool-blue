@@ -1395,7 +1395,7 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260610v80_34" defer></script>
-<script src="JS/lenormand.js?v=20260611v86_8" defer></script>
+<script src="JS/lenormand.js?v=20260612v86_14" defer></script>
 <script src="JS/ink-flow.js?v=20260611v1_2" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260612v80_38" defer></script>
@@ -1418,8 +1418,6 @@
 <!-- v86_2(2026/6/11)：黃道讀法釘死12宮每宮點名（漏點＝破功，修13張盤漏點2張）；能量石均衡條款加防繞行（門檻沒到就是均衡，禁用「偏少/略缺」繞回補元素，修土1/7被當匱乏選虎眼石）。動 prompt-export.js；自檢同步至 80 項 -->
 <!-- v86_3(2026/6/11)：大盤側牌覆蓋整類根治——GD15 每張點名（側牌講增削中牌，這正是本法側牌功能；修15張漏點權杖四/權杖五）、M21 三排成句須吃進全部21張；54張horseshoe維持原文成句法不加逐張點名（量級不可行且原法以組成句）。動 prompt-export.js；自檢同步至 82 項 -->
 <!-- v86_4(2026/6/11)：合法牌名清單標頭加去符號註記（▲▼只是資料標記，引用只寫牌名）——根治「規則禁符號 vs 清單示範符號格式」自相矛盾，修正文出現「——▼逆位 寶劍七」。動 prompt-export.js；自檢同步至 83 項 -->
-<!-- v86_5(2026/6/12)：梅花應期正統化整批根治——①應期改《占卦訣》原典法（事應於生體卦氣之日、敗於剋體卦氣之日；吉應/敗應分窗＋用近互中變遠），廢「用卦五行→季節」法；②體用定性對齊《體用總訣》原文（體剋用＝諸事吉）；③meihua_upgrade2 旺衰表改規則生成＋節氣月支＋tiYongDeep rel/verdict 根修；④output_layer 增 buildMeihuaYingQi 掛 mh.yingQi；⑤solar-location 真太陽時分鐘進位修；⑥standalone 生剋力道中性化＋蝦皮連結獨立成行雙保險。動 meihua_upgrade2.js / meihua_output_layer.js / prompt-export.js / meihua-standalone.js / solar-location.js / index.html 六檔 -->
-<!-- v86_6(2026/6/12)：梅花實測第二輪三根治——①蝦皮連結改犧牲行結構（網址倒數第二行＋固定收尾句墊後；兩輪實測末端皆黏不可見Unicode，屬AI管線副產物、指令攔不住，雜訊改黏收尾句）②生剋力道體克用/體生用補用旺衰雙向分支（修「體囚剋用旺」只標體弱）③動爻爻位參考行（繫辭：二多譽/三多凶/四多懼/五多功）＋鐵律⑧納入主線。只動 meihua-standalone.js -->
 <!-- v86_5(2026/6/11)：雷諾曼三修——①礦物事實錨點移植（補上塔羅 v85.2 後唯一無防護的工具）②cartouche 與第4排無上下對位（根治「房屋壓紳士」置中對位幻覺，經文獻核實 cartouche 為獨立收束單元）③Sig 落收束區聲明改硬規格（第一段必講、漏說＝破功）。動 lenormand.js；自檢同步至 88 項 -->
 <!-- v86_6(2026/6/11)：雷諾曼再二修——①五張/三張線鏡像對照改可驗證規格（每組至少一句把兩張放同句對照，讀不出就明說；修內層鏡像狐狸↔淑女整組漏讀）②人物牌歸屬規則（性別未知時抽出淑女/紳士必須先聲明「可能是你本人也可能是他人」，嚴禁未經判斷讀成另一個女人）。動 lenormand.js；自檢同步至 90 項 -->
 <!-- v86_7(2026/6/11)：雷諾曼性別選擇實裝（v3.1）——根治 _lnSigGender 預設寫死 male 的靜默錯誤（女性問卜者大牌陣會被默用紳士28定位）：①性別選擇列（男/女/不指定，localStorage 持久化）②提示詞注入【問卜者性別】三分支③GT 未聲明時揭露「暫定定位」並提醒④選男士/女士指示牌雙向回寫性別。動 lenormand.js；自檢同步至 92 項 -->
@@ -1427,7 +1425,10 @@
 <!-- v86_9(2026/6/11)：墨流 ink-flow v1.0——Suminagashi 風格全站背景墨暈層（canvas 回饋平流＋流場墨點；品牌金/月白/絳紅，pickTool 換工具自動換墨色；0.5x 內部解析度、分頁隱藏即停、reduced-motion 靜態墨暈、低階機自動降檔）。新增 JS/ink-flow.js；自檢同步至 96 項 -->
 <!-- v86_10(2026/6/11)：墨流 v1.1——依回饋改「面板內掛載」：首頁不畫（恢復原樣），偵測八字/紫微/梅花/雷諾曼等全版工具面板打開時把畫布掛進面板內部（z-index:-1 子層＝面板底色上、表單內容下），關閉自動收回；依面板內容自動配色（bzx金硃/zw紫金/mhx翠金/ln靛月白）、半透明載入遮罩不掛。動 ink-flow.js；自檢維持 96 項（簽名改 v1.1、v1.0 入黑名單） -->
 <!-- v86_11(2026/6/11)：墨流 v1.2——v1.1 根因修正：工具頁是 display:none/block 切換的常駐面板，MutationObserver 抓不到 display 切換導致表單頁全空。改已知容器 id 輪詢（bzx-screen/mhx-screen/ln-screen/zw-input/zw-result，700ms 閒置輪詢）＋通用後備門檻降至 z≥2900（涵蓋 zw-result）。動 ink-flow.js；簽名 v1.2、v1.1 入黑名單 -->
-<script src="JS/prompt-export.js?v=20260612v86_5" defer></script>
+<!-- v86_12(2026/6/12)：梅花應期正統化整批根治——①應期改《占卦訣》原典法（事應於生體卦氣之日、敗於剋體卦氣之日；吉應/敗應分窗＋用近互中變遠），廢「用卦五行→季節」法；②體用定性對齊《體用總訣》原文（體剋用＝諸事吉）；③meihua_upgrade2 旺衰表改規則生成＋節氣月支＋tiYongDeep rel/verdict 根修；④output_layer 增 buildMeihuaYingQi 掛 mh.yingQi；⑤solar-location 真太陽時分鐘進位修；⑥standalone 生剋力道中性化＋蝦皮連結獨立成行雙保險。動 meihua_upgrade2.js / meihua_output_layer.js / prompt-export.js / meihua-standalone.js / solar-location.js / index.html 六檔 -->
+<!-- v86_13(2026/6/12)：梅花實測第二輪三根治——①蝦皮連結改犧牲行結構（網址倒數第二行＋固定收尾句墊後；兩輪實測末端皆黏不可見Unicode，屬AI管線副產物、指令攔不住，雜訊改黏收尾句）②生剋力道體克用/體生用補用旺衰雙向分支（修「體囚剋用旺」只標體弱）③動爻爻位參考行（繫辭：二多譽/三多凶/四多懼/五多功）＋鐵律⑧納入主線。只動 meihua-standalone.js -->
+<!-- v86_14(2026/6/12)：雷諾曼 v3.2 問題文字保存收口根治——實測按指示牌/性別後問題輸入被清空：根因 _render 重繪銷毀 textarea，而 v2.x 僅 _lnSetSpread 個別先存（補丁式）、_lnSetSig/_lnSetGender 漏存。改收口制：_render() 入口統一回存 #ln-q 現值，移除各按鈕重複碼；任何未來新增按鈕自動安全。分享卡「不照牌陣顯示＋無真牌面」屬 share-card.js 版型（六工具呼叫端均僅傳文字），待該檔上傳另批根治。動 lenormand.js -->
+<script src="JS/prompt-export.js?v=20260612v86_12" defer></script>
 <script src="share-card.js?v=3" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
