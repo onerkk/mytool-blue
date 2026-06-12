@@ -1395,7 +1395,7 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260610v80_34" defer></script>
-<script src="JS/lenormand.js?v=20260612v86_14" defer></script>
+<script src="JS/lenormand.js?v=20260612v86_15" defer></script>
 <script src="JS/ink-flow.js?v=20260611v1_2" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260612v80_38" defer></script>
@@ -1428,8 +1428,9 @@
 <!-- v86_12(2026/6/12)：梅花應期正統化整批根治——①應期改《占卦訣》原典法（事應於生體卦氣之日、敗於剋體卦氣之日；吉應/敗應分窗＋用近互中變遠），廢「用卦五行→季節」法；②體用定性對齊《體用總訣》原文（體剋用＝諸事吉）；③meihua_upgrade2 旺衰表改規則生成＋節氣月支＋tiYongDeep rel/verdict 根修；④output_layer 增 buildMeihuaYingQi 掛 mh.yingQi；⑤solar-location 真太陽時分鐘進位修；⑥standalone 生剋力道中性化＋蝦皮連結獨立成行雙保險。動 meihua_upgrade2.js / meihua_output_layer.js / prompt-export.js / meihua-standalone.js / solar-location.js / index.html 六檔 -->
 <!-- v86_13(2026/6/12)：梅花實測第二輪三根治——①蝦皮連結改犧牲行結構（網址倒數第二行＋固定收尾句墊後；兩輪實測末端皆黏不可見Unicode，屬AI管線副產物、指令攔不住，雜訊改黏收尾句）②生剋力道體克用/體生用補用旺衰雙向分支（修「體囚剋用旺」只標體弱）③動爻爻位參考行（繫辭：二多譽/三多凶/四多懼/五多功）＋鐵律⑧納入主線。只動 meihua-standalone.js -->
 <!-- v86_14(2026/6/12)：雷諾曼 v3.2 問題文字保存收口根治——實測按指示牌/性別後問題輸入被清空：根因 _render 重繪銷毀 textarea，而 v2.x 僅 _lnSetSpread 個別先存（補丁式）、_lnSetSig/_lnSetGender 漏存。改收口制：_render() 入口統一回存 #ln-q 現值，移除各按鈕重複碼；任何未來新增按鈕自動安全。分享卡「不照牌陣顯示＋無真牌面」屬 share-card.js 版型（六工具呼叫端均僅傳文字），待該檔上傳另批根治。動 lenormand.js -->
+<!-- v86_15(2026/6/12)：分享卡雷諾曼根治（share-card v2.0／lenormand v3.3）——根因：RENDER 表把 lenormand 映射到 renderTarot（寫死 Math.min(cards,3)＋✦佔位、draw 同步無圖載機制），實測五張線/大牌陣都只出3張無牌面。改：①renderLenormand 專屬渲染器照張數排版（3/5單排、9宮3×3、GT 鏡射讀法 8×4＋收束4、指示牌★金框）②引擎 loadImgs 非同步預載（2.5s逾時退✦佔位）③呼叫端補傳 {id,img,sig}。其餘五工具未帶 img、行為零變動。動 share-card.js（?v=3→4）/ lenormand.js -->
 <script src="JS/prompt-export.js?v=20260612v86_12" defer></script>
-<script src="share-card.js?v=3" defer></script>
+<script src="share-card.js?v=4" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
 <script>
