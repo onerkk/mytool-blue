@@ -1,5 +1,7 @@
-/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.0]
+/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.1]
  * ⚠ 檔案位置：JS/share-card.js（v86_16 起與其他 JS 同層；repo 根目錄如仍有舊檔請刪除，避免再傳錯位置）
+ * v2.1(2026/6/12)：renderTarot 同款根治——cards 帶 img 繪真牌面（逆位旋轉180°、與結果頁一致）、
+ *   >3 張改通用網格自適應（凱爾特10/GD15/M21/馬蹄54 全張數入卡，不再截到3張）；未帶 img 行為不變（梅花等零影響）。
  * v2.0(2026/6/12)：雷諾曼專屬渲染器根治——原 lenormand 借用 renderTarot（寫死最多3格＋✦佔位），
  *   實測五張線只出3張、大牌陣36張只出3張、無真牌面。改：①renderLenormand 照牌陣張數排版
  *   （3/5 單排、9宮 3×3、大牌陣鏡射實際讀法 8×4＋收束4，指示牌金框★標記）②引擎加 loadImgs
@@ -76,7 +78,12 @@
       ctx.save(); rr(ctx, x + pad, y + pad, w - pad * 2, ih, Math.min(9, w * 0.07)); ctx.clip();
       var iw = c._im.width || 1, ihh = c._im.height || 1, bw = w - pad * 2, bh = ih;
       var sc = Math.max(bw / iw, bh / ihh), dw = iw * sc, dh = ihh * sc;
-      ctx.drawImage(c._im, x + pad + (bw - dw) / 2, y + pad + (bh - dh) / 2, dw, dh);
+      if (c.rev) { // v2.1：逆位＝牌面旋轉 180°（與結果頁一致）
+        ctx.translate(x + pad + bw / 2, y + pad + bh / 2); ctx.rotate(Math.PI);
+        ctx.drawImage(c._im, -dw / 2, -dh / 2, dw, dh);
+      } else {
+        ctx.drawImage(c._im, x + pad + (bw - dw) / 2, y + pad + (bh - dh) / 2, dw, dh);
+      }
       ctx.restore();
     } else {
       sparkle(ctx, x + w / 2, y + pad + ih * 0.45, Math.min(30, w * 0.2), 'rgba(201,168,76,0.7)');
@@ -248,27 +255,57 @@
 
   // ── 卡片：塔羅牌陣 ── d:{question, spread, cards:[{name,pos,reversed}], conclusion}
   function renderTarot(ctx, d) {
+    // v2.1：①cards 帶 img/_im 時繪真牌面（逆位旋轉180°）②>3 張改通用網格自適應（凱爾特10/GD15/M21/馬蹄54 皆可入卡）
+    //   未帶 img 時 ≤3 張行為與 v1.2 視覺等價（佔位＋名稱＋位置）。
     d = d || {};
     title(ctx, d.cardTitle || '我的塔羅', d.spread || 'RWS 塔羅');
-    var y = qline(ctx, d.question, 345);
     var cards = d.cards || [{ name: '月亮', pos: '過去' }, { name: '星星', pos: '現況' }, { name: '太陽', pos: '未來' }];
-    var n = Math.min(cards.length, 3), cw = 230, chh = 360, gap = 36, x0 = (W - (n * cw + (n - 1) * gap)) / 2, ty = Math.max(y, 400);
-    for (var i = 0; i < n; i++) {
-      var x = x0 + i * (cw + gap), c = cards[i];
-      ctx.save();
-      ctx.fillStyle = 'rgba(20,20,32,0.9)'; ctx.strokeStyle = 'rgba(201,168,76,0.5)'; ctx.lineWidth = 2;
-      rr(ctx, x, ty, cw, chh, 16); ctx.fill(); ctx.stroke();
-      ctx.strokeStyle = 'rgba(201,168,76,0.25)'; ctx.lineWidth = 1; rr(ctx, x + 12, ty + 12, cw - 24, chh - 24, 10); ctx.stroke();
-      sparkle(ctx, x + cw / 2, ty + chh * 0.4, 34, 'rgba(201,168,76,0.7)');
-      ctext(ctx, c.name + (c.reversed ? '（逆）' : ''), x + cw / 2, ty + chh - 70, '600 ' + (c.name.length > 4 ? 30 : 40) + 'px "Noto Serif TC", serif', CREAM, 0);
-      ctext(ctx, c.pos || '', x + cw / 2, ty + chh - 30, '24px "Noto Serif TC", serif', 'rgba(201,168,76,0.7)', 2);
-      ctx.restore();
+    var n = cards.length, i, x, c;
+    if (n <= 3) {
+      var y = qline(ctx, d.question, 345);
+      var cw = 230, chh = 380, gap = 36, nameH = 86, x0 = (W - (n * cw + (n - 1) * gap)) / 2, ty = Math.max(y, 400);
+      for (i = 0; i < n; i++) {
+        x = x0 + i * (cw + gap); c = cards[i] || {};
+        c.rev = c.rev || c.reversed;
+        cardCell(ctx, x, ty, cw, chh, c, nameH);
+        var nm = (c.name || '') + (c.rev ? '（逆）' : '');
+        ctext(ctx, nm, x + cw / 2, ty + chh - 56, '600 ' + (nm.length > 4 ? 28 : 38) + 'px "Noto Serif TC", serif', CREAM, 0);
+        ctext(ctx, c.pos || '', x + cw / 2, ty + chh - 22, '22px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 1);
+      }
+      if (d.conclusion) {
+        ctx.save(); var ly = ty + chh + 50; ctx.font = '32px "Noto Serif TC", serif';
+        var ls = wrap(ctx, d.conclusion, W - 200);
+        for (var j = 0; j < Math.min(ls.length, 2); j++) ctext(ctx, ls[j], W / 2, ly + j * 44, '32px "Noto Serif TC", serif', 'rgba(232,224,208,0.85)', 0);
+        ctx.restore();
+      }
+      return;
     }
-    if (d.conclusion) {
-      ctx.save(); var ly = ty + chh + 50; ctx.font = '32px "Noto Serif TC", serif';
-      var ls = wrap(ctx, d.conclusion, W - 200);
-      for (var j = 0; j < Math.min(ls.length, 2); j++) ctext(ctx, ls[j], W / 2, ly + j * 44, '32px "Noto Serif TC", serif', 'rgba(232,224,208,0.85)', 0);
-      ctx.restore();
+    // >3 張：通用網格——直式 2:3 牌面，逐欄數試算取最大格
+    var y0 = Math.max(qline(ctx, d.question, 330), 368);
+    var boxW = W - 80, boxH = (H - 210) - y0 - 8, gp = 10;
+    var best = null;
+    for (var cols = 2; cols <= Math.min(n, 9); cols++) {
+      var rows = Math.ceil(n / cols);
+      var cwf = Math.min((boxW - (cols - 1) * gp) / cols, ((boxH - (rows - 1) * gp) / rows) / 1.5);
+      if (!best || cwf > best.cw) best = { cols: cols, rows: rows, cw: cwf };
+    }
+    var cwG = Math.floor(best.cw), chG = Math.floor(cwG * 1.5);
+    var showName = cwG >= 150; // 格夠大才放名稱列
+    if (showName) { chG -= 0; } // 名稱畫在格下方，重新檢核高度
+    var nmH = showName ? 28 : 0;
+    while (showName && best.rows * (chG + nmH) + (best.rows - 1) * gp > boxH && chG > 60) { chG -= 4; cwG = Math.floor(chG / 1.5); }
+    var rowsArr = [];
+    for (i = 0; i < n; i += best.cols) rowsArr.push(cards.slice(i, i + best.cols));
+    for (var r = 0; r < rowsArr.length; r++) {
+      var row = rowsArr[r];
+      var rx0 = (W - (row.length * cwG + (row.length - 1) * gp)) / 2;
+      var ry = y0 + r * (chG + nmH + gp);
+      for (i = 0; i < row.length; i++) {
+        c = row[i] || {}; c.rev = c.rev || c.reversed;
+        x = rx0 + i * (cwG + gp);
+        cardCell(ctx, x, ry, cwG, chG, c, 0);
+        if (showName) ctext(ctx, (c.name || '') + (c.rev ? '（逆）' : ''), x + cwG / 2, ry + chG + 20, '600 22px "Noto Serif TC", serif', CREAM, 0);
+      }
     }
   }
 

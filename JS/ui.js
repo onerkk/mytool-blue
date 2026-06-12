@@ -7005,7 +7005,9 @@ window._tarotShare = function () {
   var cards = (drawnCards || []).map(function (c, i) {
     var pp = (def.positions && def.positions[i]) ? def.positions[i] : null;
     var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
-    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: !(c && c.isUp) };
+    // v85.4：補傳 img——share-card v2.1 起繪真牌面（逆位旋轉180°）、>3張全張數入卡
+    var img = (typeof getTarotCardImage === 'function' && c) ? (getTarotCardImage(c) || '') : '';
+    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: !(c && c.isUp), img: img };
   });
   JYShareCard.open('tarot', {
     cardTitle: '我的塔羅',
