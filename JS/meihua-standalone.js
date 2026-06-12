@@ -1,4 +1,6 @@
-/*! meihua-standalone.js — 靜月之光 梅花易數獨立流程  [v80.38]
+/*! meihua-standalone.js — 靜月之光 梅花易數獨立流程  [v80.39]
+ *  v80.39(2026/6/12)：分享卡補爻線——payload 加 lines（本卦＝下上卦 li 串接、互卦取2-4/3-5爻、
+ *    變卦＝動爻翻轉，與 calcMH 同式）與 dong；配合 share-card v2.2 直繪六爻卦象。
  *  v80.38(2026/6/12 歐那)：實測第二輪回饋三項根治——
  *    ①蝦皮連結改「犧牲行」結構：網址倒數第二行、最後固定一句收尾話墊後。兩輪實測輸出末端都黏不可見
  *      Unicode（U+2060 等），文獻證實為 AI 生成/渲染/剪貼簿管線副產物、提示詞原理上攔不住；雜訊永遠黏在
@@ -599,14 +601,22 @@
     if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66'); return; }
     var mh = _mhResult || {};
     var concl = (mh.ty ? (mh.ty.r + '\uFF08' + mh.ty.f + '\uFF09\u30FB' + mh.ty.d) : '') + (mh.dong ? ' \u30FB \u52D5\u723B\u7B2C' + mh.dong + '\u723B' : '');
+    // v80.39：補爻線資料——share-card v2.2 起直繪六爻卦象（陽實陰斷、動爻高亮）。
+    //   本卦＝下卦.li＋上卦.li（由下而上）；互卦取 2-4/3-5 爻；變卦＝本卦動爻翻轉（與 calcMH 同式推導）
+    var benL = (mh.lo && mh.lo.li && mh.up && mh.up.li) ? mh.lo.li.concat(mh.up.li) : null;
+    var huL = null, biL = null;
+    if (benL) {
+      huL = [benL[1], benL[2], benL[3], benL[2], benL[3], benL[4]];
+      biL = benL.slice(); if (mh.dong) biL[mh.dong - 1] = biL[mh.dong - 1] ? 0 : 1;
+    }
     JYShareCard.open('meihua', {
       cardTitle: '\u6211\u7684\u5366\u8C61',
       spread: '\u6885\u82B1\u6613\u6578 \u30FB \u9AD4\u7528\u5360',
       question: _mhQuestion || '',
       cards: [
-        { name: (mh.ben && mh.ben.n) || '', pos: '\u672C\u5366' },
-        { name: (mh.hu && mh.hu.n) || '', pos: '\u4E92\u5366' },
-        { name: (mh.bian && mh.bian.n) || '', pos: '\u8B8A\u5366' }
+        { name: (mh.ben && mh.ben.n) || '', pos: '\u672C\u5366', lines: benL, dong: mh.dong },
+        { name: (mh.hu && mh.hu.n) || '', pos: '\u4E92\u5366', lines: huL },
+        { name: (mh.bian && mh.bian.n) || '', pos: '\u8B8A\u5366', lines: biL, dong: mh.dong }
       ],
       conclusion: concl
     });

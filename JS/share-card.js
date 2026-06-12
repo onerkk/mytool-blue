@@ -1,5 +1,7 @@
-/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.1]
+/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.2]
  * ⚠ 檔案位置：JS/share-card.js（v86_16 起與其他 JS 同層；repo 根目錄如仍有舊檔請刪除，避免再傳錯位置）
+ * v2.2(2026/6/12)：renderMeihua——卦無牌面圖資產，「真實畫面」＝直繪六爻卦象（陽爻實線/陰爻斷線、
+ *   由下而上、動爻紅金高亮＋圓點標記）；呼叫端補傳 lines/dong，未傳則退 renderTarot 舊版（零風險後備）。
  * v2.1(2026/6/12)：renderTarot 同款根治——cards 帶 img 繪真牌面（逆位旋轉180°、與結果頁一致）、
  *   >3 張改通用網格自適應（凱爾特10/GD15/M21/馬蹄54 全張數入卡，不再截到3張）；未帶 img 行為不變（梅花等零影響）。
  * v2.0(2026/6/12)：雷諾曼專屬渲染器根治——原 lenormand 借用 renderTarot（寫死最多3格＋✦佔位），
@@ -309,6 +311,58 @@
     }
   }
 
+  // ── 卡片：梅花易數（v2.2）── d:{cardTitle, spread, question, conclusion,
+  //   cards:[{name, pos, lines:[6個0/1，由下而上], dong:動爻1-6（本卦/變卦標記用）}]}
+  // 卦無牌面圖資產——「真實畫面」＝直接繪六爻卦象：陽爻實線、陰爻斷線、動爻紅金高亮＋圓點
+  function renderMeihua(ctx, d) {
+    d = d || {};
+    var cards = d.cards || [];
+    if (!cards.length || !cards[0].lines) { renderTarot(ctx, d); return; } // 無爻線資料→退舊版
+    title(ctx, d.cardTitle || '我的卦象', d.spread || '梅花易數');
+    var y = qline(ctx, d.question, 345);
+    var n = Math.min(cards.length, 3);
+    var cw = 230, chh = 380, gap = 36, nameH = 86, x0 = (W - (n * cw + (n - 1) * gap)) / 2, ty = Math.max(y, 400);
+    for (var i = 0; i < n; i++) {
+      var x = x0 + i * (cw + gap), c = cards[i] || {};
+      // 卡框（沿用牌格樣式，無圖模式）
+      ctx.save();
+      ctx.fillStyle = 'rgba(20,20,32,0.9)';
+      ctx.strokeStyle = 'rgba(201,168,76,0.5)';
+      ctx.lineWidth = 2;
+      rr(ctx, x, ty, cw, chh, 14); ctx.fill(); ctx.stroke();
+      // ── 六爻卦象 ──
+      var L = c.lines, gx = x + 38, gw = cw - 76;
+      var gTop = ty + 34, gBot = ty + chh - nameH - 18;
+      var rowH = (gBot - gTop) / 6, barH = Math.min(13, rowH * 0.42);
+      for (var li = 0; li < 6; li++) {
+        // lines[0]=初爻在最下 → 畫面由下而上
+        var yy = gBot - rowH * li - rowH / 2 - barH / 2;
+        var isDong = c.dong && (c.dong - 1) === li;
+        ctx.fillStyle = isDong ? 'rgba(214,118,86,0.95)' : 'rgba(201,168,76,0.88)';
+        if (L[li]) { // 陽爻：實線
+          rr(ctx, gx, yy, gw, barH, barH / 2); ctx.fill();
+        } else {     // 陰爻：兩段
+          var seg = (gw - 18) / 2;
+          rr(ctx, gx, yy, seg, barH, barH / 2); ctx.fill();
+          rr(ctx, gx + seg + 18, yy, seg, barH, barH / 2); ctx.fill();
+        }
+        if (isDong) { // 動爻圓點標記
+          ctx.beginPath(); ctx.arc(gx + gw + 16, yy + barH / 2, 4.5, 0, 6.2832); ctx.fill();
+        }
+      }
+      ctx.restore();
+      var nm = c.name || '';
+      ctext(ctx, nm, x + cw / 2, ty + chh - 52, '600 ' + (nm.length > 4 ? 28 : 34) + 'px "Noto Serif TC", serif', CREAM, 0);
+      ctext(ctx, c.pos || '', x + cw / 2, ty + chh - 20, '22px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 1);
+    }
+    if (d.conclusion) {
+      ctx.save(); var ly = ty + chh + 50; ctx.font = '30px "Noto Serif TC", serif';
+      var ls = wrap(ctx, d.conclusion, W - 180);
+      for (var j = 0; j < Math.min(ls.length, 2); j++) ctext(ctx, ls[j], W / 2, ly + j * 42, '30px "Noto Serif TC", serif', 'rgba(232,224,208,0.85)', 0);
+      ctx.restore();
+    }
+  }
+
   // ── 卡片：雷諾曼（v2.0）── d:{cardTitle, spread, question, cards:[{id,name,pos,img,sig}]}
   // 照牌陣張數排版：≤3 單排大格、5 單排、9 宮 3×3、≥30 大牌陣（鏡射實際讀法 8×4＋收束 4）
   function renderLenormand(ctx, d) {
@@ -399,7 +453,7 @@
     }
   }
 
-  var RENDER = { invite: renderInvite, bazi: renderBazi, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderLenormand, meihua: renderTarot, ootk: renderOOTK }; // v2.0：lenormand 專屬渲染器（原借 renderTarot＝固定3格佔位的根因）
+  var RENDER = { invite: renderInvite, bazi: renderBazi, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderLenormand, meihua: renderMeihua, ootk: renderOOTK }; // v2.0：lenormand 專屬渲染器（原借 renderTarot＝固定3格佔位的根因）
 
   function draw(type, data, canvas) {
     canvas.width = W; canvas.height = H;
