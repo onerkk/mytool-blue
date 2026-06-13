@@ -1381,7 +1381,7 @@
 <!-- ★ v75 修正：tarot.js 必須在 tarot_upgrade.js 之前載入，
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
-<script src="JS/tarot.js?v=20260613v86_28" defer></script>
+<script src="JS/tarot.js?v=20260613v86_29" defer></script>
 <script src="JS/tarot_upgrade.js?v=20260611v86_router" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
 <script src="JS/meihua_upgrade.js?v=20260610v80_16" defer></script>
@@ -1442,6 +1442,7 @@
 <!-- v86_26(2026/6/12)：提示詞路徑全鏈盤點＋死碼陷阱拆除——逐鏈追蹤證實活路徑為：塔羅快讀=ai-analysis→_jyTarotCopyMode→TPL.tarot、開鑰=tarot_upgrade→JY_renderExportPrompt(ootk)、梅花=TPL.meihua+formatMeihuaData（與 meihua-standalone 雙路皆已根治）、紫微/八字/雷諾曼/靈籤=各 standalone；全部活路徑收束已為 MD 連結。拆除 prompt-export TPL.ziwei（零呼叫者＋formatZiweiData 未定義＝接線即當機＋規則過時陷阱）。已知未審：西洋星盤/吠陀占星本地解讀引擎（ai-analysis 內，介面活著）；ai-analysis v64 付費時代鐵律字串=遺留死碼。動 prompt-export/index -->
 <!-- v86_27(2026/6/12)：計算引擎層全面查證＋bazi.js 半合/拱合根治——三引擎(bazi/ziwei/tarot)計算層逐項讀碼核實：星盤 Meeus Ch.25太陽/ELP2000月亮、行星日心Kepler+攝動、吠陀Lahiri ayanamsa+sidereal 全業界標準（本人生日實算太陽處女1.5°/月亮雙魚19.8°落點正確）；紫微命身宮/五行局/紫微天府定位正統；八字半合判定根治：缺中神(子午卯酉)兩支原誤標半合，正統應為拱合（亥未誤標半合木為例），今分生地/墓地半合與拱合三級、拱合score0.5不參與合化。動 bazi.js -->
 <!-- v86_28(2026/6/13)：根治「開始解讀」按鈕無反應——根因：全域狀態 S 原僅以 const 宣告於 bazi.js，而 const/let 頂層不掛 window、不跨 <script> 共享，加上 bazi.js 走 DEFERRED 閒置延遲載入，ui.js 的 _enterFromHome 用到 S 時拋 ReferenceError 致按鈕靜默失效。jsdom 實測重現並驗證修復。改由最早載入的 tarot.js 以 var＋window.S 宣告（var 掛 window、後續檔裸 S 經作用域鏈可取），bazi.js 改複用 window.S（v37）。動 tarot.js(v86_28)/bazi.js(v86_28)/index -->
+<!-- v86_29(2026/6/13)：根治梅花起卦「SHENG is not defined」——與 v86_28 同病根：SHENG/KE/WX_G/WX_Z 原僅以 const 宣告於 bazi.js，const/let 不跨 <script>＋bazi.js 延遲載入，致 tarot.js 的 tiYong/calcMH 用 SHENG[] 時拋錯、梅花起卦計算失敗。jsdom 實測 calcMH 四組起卦全炸→全通過。改由 tarot.js 以 var＋window 宣告四常數、bazi.js 改複用(v38)。系統性掃描全站確認僅 tarot.js 此四處有跨 script const 依賴、無第三處。動 tarot.js(v86_29)/bazi.js(v86_29)/index -->
 <script src="JS/prompt-export.js?v=20260612v86_26" defer></script>
 <script src="JS/share-card.js?v=6" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
@@ -1471,7 +1472,7 @@
   var DEFERRED = [
     'JS/ephemeris-client.js?v=20260507v69_3_0',
     'JS/solar-location.js?v=20260612v17_1',
-    'JS/bazi.js?v=20260613v86_28',
+    'JS/bazi.js?v=20260613v86_29',
     'JS/bazi_upgrade.js?v=20260610v80_32',
     'JS/western_upgrade.js?v=20260507v69_3_0',
     'JS/jyotish_full_upgrade.js?v=20260507v69_3_0',
