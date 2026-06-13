@@ -1,4 +1,7 @@
 /*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.41]
+ *  v80.43(2026/6/12)：原局作用全表系統性補齊（沖/六合/三刑含自刑/相破參考級/三合三會全局，全部上網核實
+ *    後依正統表直給＋宮位落點＋保守去重）；流年對原局補 害/自刑/子卯刑 標記（沖合由流年重評層處理不重列）。
+ *    待 bazi.js 上傳後根治：亥未誤標「半合」（正統：無子午卯酉中神只能稱拱，引擎現重複計算且名詞錯）
  *  v80.42(2026/6/12)：六害補算資料層直給——引擎作用表未含「害」，實測本盤申亥害（年亥月申，《三命通會》
  *    「申亥相害，恃臨官競嫉才能爭進相害」）漏列，競品有列而我們沒有。六害全表：子未丑午寅巳卯辰申亥酉戌；
  *    寅巳標注刑在其中以刑論為主；已含去重防護（引擎日後補害不會重複列）
@@ -573,6 +576,53 @@
         }
       }
       if (_haiOut.length) inter.push(_haiOut.join('、'));
+
+      // v80.43：原局作用全表補齊（沖/合/刑/破/三合三會全局）——系統性盤點發現引擎作用表僅部分覆蓋。
+      //   正統依據（已逐項上網核實）：六沖子午丑未寅申卯酉辰戌巳亥；六合子丑寅亥卯戌辰酉巳申午未；
+      //   三刑＝寅巳申（恃勢）、丑戌未（無恩）、子卯（無禮）、辰午酉亥自刑；相破子酉卯午辰丑戌未寅亥巳申（參考級）；
+      //   三合申子辰/巳酉丑/寅午戌/亥卯未、三會寅卯辰/巳午未/申酉戌/亥子丑（三支全才列，半合拱合由引擎層處理）。
+      //   去重保守原則：引擎文字已含該對地支＋該關係字者跳過。
+      var _zArr = [], _zRole = [];
+      _ks.forEach(function (k) {
+        var _p = (b.pillars || {})[k];
+        var _z = _p ? (typeof _p === 'string' ? _p.charAt(1) : (_p.zhi || '')) : '';
+        if (_z) { _zArr.push(_z); _zRole.push(_hgN[k]); }
+      });
+      function _hasRel(za, zb, word) {
+        // 引擎文字格式不定（「子午沖」「子沖月支午」「年支子 沖 …午」皆可能）——以「支＋關係字」鄰接式比對
+        if (_joined.indexOf(za + zb) >= 0 || _joined.indexOf(zb + za) >= 0) return _joined.indexOf(word) >= 0;
+        var _w = [za + word, word + za, zb + word, word + zb, za + ' ' + word, zb + ' ' + word, word + ' ' + za, word + ' ' + zb];
+        for (var _q = 0; _q < _w.length; _q++) { if (_joined.indexOf(_w[_q]) >= 0) return true; }
+        return false;
+      }
+      var _CHONG = { '子午':1,'午子':1,'丑未':1,'未丑':1,'寅申':1,'申寅':1,'卯酉':1,'酉卯':1,'辰戌':1,'戌辰':1,'巳亥':1,'亥巳':1 };
+      var _LIUHE = { '子丑':1,'丑子':1,'寅亥':1,'亥寅':1,'卯戌':1,'戌卯':1,'辰酉':1,'酉辰':1,'巳申':1,'申巳':1,'午未':1,'未午':1 };
+      var _PO = { '子酉':1,'酉子':1,'卯午':1,'午卯':1,'辰丑':1,'丑辰':1,'戌未':1,'未戌':1,'寅亥':1,'亥寅':1,'巳申':1,'申巳':1 };
+      var _XING2 = { '子卯':'無禮之刑','卯子':'無禮之刑' };
+      var _SELF = { '辰':1,'午':1,'酉':1,'亥':1 };
+      var _addOut = [];
+      var _i2, _j2;
+      for (_i2 = 0; _i2 < _zArr.length; _i2++) for (_j2 = _i2 + 1; _j2 < _zArr.length; _j2++) {
+        var _A = _zArr[_i2], _B = _zArr[_j2], _AB = _A + _B;
+        if (_CHONG[_AB] && !_hasRel(_A, _B, '沖')) _addOut.push(_zRole[_i2] + _A + ' 沖 ' + _zRole[_j2] + _B + '：對立變動，動搖兩柱所主之人事');
+        if (_LIUHE[_AB] && !_hasRel(_A, _B, '合')) _addOut.push(_zRole[_i2] + _A + ' 六合 ' + _zRole[_j2] + _B + '：合絆牽繫（能否合化須化神得月令，未化只論絆）');
+        if (_XING2[_AB] && !_hasRel(_A, _B, '刑')) _addOut.push(_zRole[_i2] + _A + ' 刑 ' + _zRole[_j2] + _B + '：' + _XING2[_AB] + '，禮數情分相傷');
+        if (_A === _B && _SELF[_A] && !_hasRel(_A, _B, '自刑')) _addOut.push(_zRole[_i2] + '與' + _zRole[_j2] + _A + _A + ' 自刑：自我糾結損耗、自己跟自己過不去');
+        if (_PO[_AB] && !_hasRel(_A, _B, '破') && !_LIUHE[_AB]) _addOut.push(_zRole[_i2] + _A + ' 破 ' + _zRole[_j2] + _B + '：相破主損壞耗散（古法參考級、權重低，不可單獨論凶）');
+      }
+      // 三刑組與三合三會全局（看整體四支）
+      var _zSet = {};
+      _zArr.forEach(function (z) { _zSet[z] = (_zSet[z] || 0) + 1; });
+      [['寅','巳','申','恃勢之刑'], ['丑','戌','未','無恩之刑']].forEach(function (g) {
+        if (_zSet[g[0]] && _zSet[g[1]] && _zSet[g[2]] && _joined.indexOf('三刑') < 0) _addOut.push(g[0] + g[1] + g[2] + ' 三刑全（' + g[3] + '）：明爭暗鬥、刑傷波折，落柱看傷及何親');
+      });
+      [['申','子','辰','水'], ['巳','酉','丑','金'], ['寅','午','戌','火'], ['亥','卯','未','木']].forEach(function (g) {
+        if (_zSet[g[0]] && _zSet[g[1]] && _zSet[g[2]] && _joined.indexOf('三合' + g[3]) < 0) _addOut.push(g[0] + g[1] + g[2] + ' 三合' + g[3] + '局全：' + g[3] + '氣凝聚成局，依' + g[3] + '之喜忌定吉凶');
+      });
+      [['寅','卯','辰','木'], ['巳','午','未','火'], ['申','酉','戌','金'], ['亥','子','丑','水']].forEach(function (g) {
+        if (_zSet[g[0]] && _zSet[g[1]] && _zSet[g[2]] && _joined.indexOf('三會' + g[3]) < 0) _addOut.push(g[0] + g[1] + g[2] + ' 三會' + g[3] + '方全：' + g[3] + '氣會方成勢、力大於三合，依' + g[3] + '之喜忌定吉凶');
+      });
+      if (_addOut.length) inter.push(_addOut.join('、'));
     } catch (e) {}
     if (inter.length && inter.join('').trim()) {
       L.push('【刑沖合害・暗合拱沖】' + inter.filter(Boolean).join('；'));
@@ -641,6 +691,12 @@
           if (!pg || pg.length < 2) return;
           if (pg === gz) _mk.push('與' + roleName[k] + '干支全同・伏吟並臨' + ((k === 'day' || k === 'hour') ? '（轉趾煞）' : '') + '〔' + _fyGong[k] + '〕');
           else if (pg.charAt(1) === _z2) _mk.push('與' + roleName[k] + '地支伏吟〔' + _fyGong[k] + '〕');
+          // v80.43：流年對原局 害／自刑／子卯刑 標記（沖合已由流年重評層處理，不重列）
+          var _nz = pg.charAt(1);
+          var _fyHai = { '子未':1,'未子':1,'丑午':1,'午丑':1,'寅巳':1,'巳寅':1,'卯辰':1,'辰卯':1,'申亥':1,'亥申':1,'酉戌':1,'戌酉':1 };
+          if (_nz && _fyHai[_z2 + _nz]) _mk.push('害' + roleName[k] + _nz + '〔' + _fyGong[k] + '〕暗耗牽制');
+          if (_nz && _nz === _z2 && { '辰':1,'午':1,'酉':1,'亥':1 }[_z2]) _mk.push('與' + roleName[k] + _z2 + _z2 + '自刑〔' + _fyGong[k] + '〕自我糾結損耗');
+          if (_nz && ((_z2 === '子' && _nz === '卯') || (_z2 === '卯' && _nz === '子'))) _mk.push('刑' + roleName[k] + _nz + '〔' + _fyGong[k] + '〕無禮之刑');
         });
         return _mk.length ? '，' + _mk.join('、') : '';
       } catch (e) { return ''; }
