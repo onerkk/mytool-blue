@@ -1,4 +1,7 @@
 /*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.41]
+ *  v80.42(2026/6/12)：六害補算資料層直給——引擎作用表未含「害」，實測本盤申亥害（年亥月申，《三命通會》
+ *    「申亥相害，恃臨官競嫉才能爭進相害」）漏列，競品有列而我們沒有。六害全表：子未丑午寅巳卯辰申亥酉戌；
+ *    寅巳標注刑在其中以刑論為主；已含去重防護（引擎日後補害不會重複列）
  *  v80.41(2026/6/12)：①伏吟標記根修——_fuyin 把 pillars[k]（{gan,zhi} 物件）當字串用，String() 成
  *    '[object Object]' 永不匹配＋try/catch 吞錯＝v80.38 起伏吟從未印出（2028戊申撞月柱申、2029己酉撞
  *    日柱酉實測全漏）②收束連結改 Markdown 格式 [靜月之光蝦皮賣場](URL)——犧牲行實測雜訊仍直接插在裸長
@@ -551,6 +554,26 @@
     var inter = [];
     if (b.branchInteractions) inter.push(_fmt(b.branchInteractions));
     if (b.hiddenInteractions && b.hiddenInteractions.length) inter.push(_fmt(b.hiddenInteractions));
+    // v80.42：六害補算（資料層直給）——引擎 branchInteractions 未含「害」，實測本盤申亥害（年亥月申）漏列。
+    //   六害表《三命通會》：子未、丑午、寅巳、卯辰、申亥、酉戌（寅巳刑在其中、以刑論為主）；
+    //   害主暗中相害、暗耗牽制、祸起不經意處、不利六親。
+    try {
+      var _haiTbl = { '子未':1,'未子':1,'丑午':1,'午丑':1,'寅巳':2,'巳寅':2,'卯辰':1,'辰卯':1,'申亥':1,'亥申':1,'酉戌':1,'戌酉':1 };
+      var _hgN = { year:'年支', month:'月支', day:'日支', hour:'時支' };
+      var _ks = ['year','month','day','hour'];
+      var _joined = inter.join('');
+      var _haiOut = [];
+      for (var _a = 0; _a < 4; _a++) for (var _b2 = _a + 1; _b2 < 4; _b2++) {
+        var _pa = (b.pillars || {})[_ks[_a]], _pb = (b.pillars || {})[_ks[_b2]];
+        var _za = _pa ? (typeof _pa === 'string' ? _pa.charAt(1) : (_pa.zhi || '')) : '';
+        var _zb = _pb ? (typeof _pb === 'string' ? _pb.charAt(1) : (_pb.zhi || '')) : '';
+        var _t = _za && _zb ? _haiTbl[_za + _zb] : 0;
+        if (_t && _joined.indexOf(_za + ' 害 ') < 0 && _joined.indexOf(_zb + ' 害 ') < 0) {
+          _haiOut.push(_hgN[_ks[_a]] + _za + ' 害 ' + _hgN[_ks[_b2]] + _zb + '：暗中相害、暗耗牽制、禍起不經意處、不利該兩柱六親' + (_t === 2 ? '（寅巳刑在其中，以刑論為主）' : ''));
+        }
+      }
+      if (_haiOut.length) inter.push(_haiOut.join('、'));
+    } catch (e) {}
     if (inter.length && inter.join('').trim()) {
       L.push('【刑沖合害・暗合拱沖】' + inter.filter(Boolean).join('；'));
       L.push('（沖到喜用為凶、沖到忌神反吉；合化要看化神是否得月令。落到上面的六親宮位看影響的是哪個人事領域。）');
