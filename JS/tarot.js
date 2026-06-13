@@ -11,6 +11,14 @@ function _secRand() {
 //   改由首支 defer 檔 tarot.js 用 var 宣告（var 會掛 window、可被後續所有檔的裸 S 透過作用域鏈取得），
 //   bazi.js 改為複用 window.S（見該檔 v37）。
 var S = (window.S = window.S || { step:0, form:{}, bazi:null, meihua:null, tarot:{drawn:[],spread:[]}, ziwei:null });
+// v86_29 根治：SHENG/KE/WX_G/WX_Z 同 S 一樣原僅以 const 宣告於 bazi.js，const 不跨 <script> 共享，
+//   且 bazi.js 延遲載入——tarot.js 的 tiYong/梅花起卦用到 SHENG[] 時拋「SHENG is not defined」＝梅花起卦計算失敗。
+//   改由首支 defer 檔 tarot.js 以 var＋window 宣告（後續所有檔裸用可經作用域鏈取得），bazi.js 改複用（v38）。
+var SHENG = (window.SHENG = window.SHENG || { 木:'火', 火:'土', 土:'金', 金:'水', 水:'木' });
+var KE = (window.KE = window.KE || { 木:'土', 火:'金', 土:'水', 金:'木', 水:'火' });
+var WX_G = (window.WX_G = window.WX_G || { 甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水' });
+var WX_Z = (window.WX_Z = window.WX_Z || { 子:'水',丑:'土',寅:'木',卯:'木',辰:'土',巳:'火',午:'火',未:'土',申:'金',酉:'金',戌:'土',亥:'水' });
+
 // ═══════════════════════════════════════════════════════════════
 // tarot.js — 靜月之光模組化拆分
 // ═══════════════════════════════════════════════════════════════
