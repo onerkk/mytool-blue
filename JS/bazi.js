@@ -1,3 +1,4 @@
+// v36(2026/6/12)：半合/拱合正統區分根治——原碼凡三合取兩支皆標「半合」，缺中神(子午卯酉)者實為「拱合」、力微僅論象（如亥未無卯誤標半合木）；今分流生地半合(含長生,力大)/墓地半合(含墓庫)/拱合(無中神,score0.5不參與合化)，COEFF 加拱合0.4。
 // ═══════════════════════════════════════════════════════════════
 // bazi.js — 靜月之光模組化拆分
 // v80.61(2026/6/10)：命宮改《三命通會》14/26代支數法＋ZQ中氣表(sxtwl壽星天文曆)過中氣換月；乙木申月調候詳述改正《窮通寶鑑》原文
@@ -4544,23 +4545,37 @@ function computeBazi(year,month,day,hour,minute,gender){
           score: 5
         });
       } else {
-        // ── 半合（三合中有兩個，+2分）──
+        // ── 半合 / 拱合 正統區分（v36 根治）──
+        // 正統：半合必含「中神」（子午卯酉＝四正旺支）；缺中神僅長生＋墓庫兩支＝「拱合」，力量最弱。
+        //   原碼對缺中神者仍標「半合」並給 1.5 分（如亥未無卯被誤標半合木）——名實俱錯，今分流：
+        //   生地半合（中神＋長生，如亥卯）力大、墓地半合（中神＋墓庫，如卯未）次之、拱合（無中神，如亥未）最弱且僅論象。
         var matchCount = he.members.filter(function(m){ return zhi4.includes(m); }).length;
         if(matchCount === 2){
           var matched = he.members.filter(function(m){ return zhi4.includes(m); });
-          // 判斷是哪種半合：帶「局」字的（包含中位）力量較大
-          var midIdx = 1; // 三合中位
+          var midIdx = 1; // 三合中位＝四正旺支（中神）
           var hasMid = zhi4.includes(he.members[midIdx]);
-          var bonus = hasMid ? 2 : 1.5;
-          // ec[he.el] = (ec[he.el]||0) + bonus; // 移除：不修改ec
+          var hasSheng = zhi4.includes(he.members[0]); // 長生位
           var positions = matched.map(function(m){ return zhiLabels[zhi4.indexOf(m)]; }).join('+');
-          branchInteractions.push({
-            type: '半合',
-            el: he.el,
-            desc: positions + '半合' + he.el,
-            effect: he.el + '行有潛在助力',
-            score: bonus
-          });
+          if(hasMid){
+            // 真半合：生地半合（含長生）力大於墓地半合（含墓庫）
+            var isSheng = hasSheng;
+            branchInteractions.push({
+              type: '半合',
+              el: he.el,
+              desc: positions + (isSheng ? '生地' : '墓地') + '半合' + he.el,
+              effect: he.el + '行' + (isSheng ? '凝聚力較強' : '有潛在助力'),
+              score: isSheng ? 2 : 1.5
+            });
+          } else {
+            // 拱合：無中神（無子午卯酉旺支），合力極弱，僅論象、力量不實
+            branchInteractions.push({
+              type: '拱合',
+              el: he.el,
+              desc: positions + '拱' + he.el + '（無中神，虛拱、力微）',
+              effect: he.el + '行虛拱之象，力量不實、僅作傾向參考',
+              score: 0.5
+            });
+          }
         }
       }
     });
@@ -4670,7 +4685,7 @@ function computeBazi(year,month,day,hour,minute,gender){
     var zhi4 = [yZ, mZ, dZ, hZ];
     
     // v35b 係數表（三合三會提高到65-70%，半合保持溫和，六合化加判定）
-    var COEFF = { '三會局': 5, '三合局': 4, '半合': 1.2, '六合化': 1.5, '六沖': -1.2, '六合絆': 0 };
+    var COEFF = { '三會局': 5, '三合局': 4, '半合': 1.2, '拱合': 0.4, '六合化': 1.5, '六沖': -1.2, '六合絆': 0 }; // v36：拱合（無中神）權重遠低於半合
     var ecAdj = {金:0, 木:0, 水:0, 火:0, 土:0};
     var hasAdj = false;
     
