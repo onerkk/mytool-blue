@@ -1440,6 +1440,7 @@
 <!-- v86_24(2026/6/12)：八字六害補算（bazi-standalone v80.42）——競品比對發現本盤申亥害漏列，引擎作用表根本沒做害；《三命通會》六害子未丑午寅巳卯辰申亥酉戌已上網核實，資料層直給＋宮位落點＋去重防護。動 bazi-standalone/index -->
 <!-- v86_25(2026/6/12)：八字作用全表系統性補齊（bazi-standalone v80.43）——沖/六合/三刑（寅巳申恃勢、丑戌未無恩、子卯無禮、辰午酉亥自刑）/相破（參考級）/三合三會全局，正統表逐項上網核實後資料層直給＋宮位落點＋保守去重；流年伏吟行加掛 害/自刑/子卯刑 標記。已知待辦：bazi.js 亥未誤標半合（無中神應為拱）待該檔上傳根治。動 bazi-standalone/index -->
 <!-- v86_26(2026/6/12)：提示詞路徑全鏈盤點＋死碼陷阱拆除——逐鏈追蹤證實活路徑為：塔羅快讀=ai-analysis→_jyTarotCopyMode→TPL.tarot、開鑰=tarot_upgrade→JY_renderExportPrompt(ootk)、梅花=TPL.meihua+formatMeihuaData（與 meihua-standalone 雙路皆已根治）、紫微/八字/雷諾曼/靈籤=各 standalone；全部活路徑收束已為 MD 連結。拆除 prompt-export TPL.ziwei（零呼叫者＋formatZiweiData 未定義＝接線即當機＋規則過時陷阱）。已知未審：西洋星盤/吠陀占星本地解讀引擎（ai-analysis 內，介面活著）；ai-analysis v64 付費時代鐵律字串=遺留死碼。動 prompt-export/index -->
+<!-- v86_27(2026/6/12)：計算引擎層全面查證＋bazi.js 半合/拱合根治——三引擎(bazi/ziwei/tarot)計算層逐項讀碼核實：星盤 Meeus Ch.25太陽/ELP2000月亮、行星日心Kepler+攝動、吠陀Lahiri ayanamsa+sidereal 全業界標準（本人生日實算太陽處女1.5°/月亮雙魚19.8°落點正確）；紫微命身宮/五行局/紫微天府定位正統；八字半合判定根治：缺中神(子午卯酉)兩支原誤標半合，正統應為拱合（亥未誤標半合木為例），今分生地/墓地半合與拱合三級、拱合score0.5不參與合化。動 bazi.js -->
 <script src="JS/prompt-export.js?v=20260612v86_26" defer></script>
 <script src="JS/share-card.js?v=6" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
@@ -1469,31 +1470,7 @@
   var DEFERRED = [
     'JS/ephemeris-client.js?v=20260507v69_3_0',
     'JS/solar-location.js?v=20260612v17_1',
-    'JS/bazi.js?v=20260610v80_61',
-    // 紫微核心引擎：需上傳/保留 JS/ziwei.js，否則 computeZiwei 不會存在
-    'JS/ziwei.js?v=20260609v80_50',
-    'JS/bazi_upgrade.js?v=20260610v80_32',
-    'JS/western_upgrade.js?v=20260507v69_3_0',
-    'JS/jyotish_full_upgrade.js?v=20260507v69_3_0',
-    'JS/name_upgrade.js?v=20260507v69_3_0'
-  ];
-  function loadAll(){
-    DEFERRED.forEach(function(src){
-      var s = document.createElement('script');
-      s.src = src; s.async = false; // 保持彼此相對順序
-      document.body.appendChild(s);
-    });
-  }
-  // 進站後等瀏覽器閒置再背景載入；不支援 idle 的退回 3 秒後載
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadAll, { timeout: 4000 });
-  } else {
-    setTimeout(loadAll, 3000);
-  }
-})();
-</script>
-<!-- Sticky Bottom CTA for Result Page -->
-<div class="sticky-cta" id="sticky-cta">
+    'JS/bazi.js?v=20260612v86_27"sticky-cta" id="sticky-cta">
   <div class="sticky-cta-inner">
     <div class="sticky-cta-text">
       <strong id="sticky-cta-label">💎 看看現在更適合你的能量配戴</strong><br>
