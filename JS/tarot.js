@@ -5,6 +5,12 @@ function _secRand() {
   try { var _u = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(_u); return _u[0] / 4294967296; }
   catch (e) { return Math.random(); }
 }
+// v86_28 根治：全域狀態 S 提前宣告於最早載入的 tarot.js（var＋window 雙掛，跨 script 共享）。
+//   根因：原 S 僅宣告於 bazi.js 的「const S」，而 const/let 頂層不掛 window、不跨 <script> 共享，
+//   且 bazi.js 走 DEFERRED 閒置延遲載入——ui.js 的 _enterFromHome 用到 S 時 S 尚未存在＝「開始解讀」按了沒反應。
+//   改由首支 defer 檔 tarot.js 用 var 宣告（var 會掛 window、可被後續所有檔的裸 S 透過作用域鏈取得），
+//   bazi.js 改為複用 window.S（見該檔 v37）。
+var S = (window.S = window.S || { step:0, form:{}, bazi:null, meihua:null, tarot:{drawn:[],spread:[]}, ziwei:null });
 // ═══════════════════════════════════════════════════════════════
 // tarot.js — 靜月之光模組化拆分
 // ═══════════════════════════════════════════════════════════════
