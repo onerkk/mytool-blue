@@ -1400,7 +1400,7 @@
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260612v80_40" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260612v80_58" defer></script>
-<script src="JS/bazi-standalone.js?v=20260612v80_41" defer></script>
+<script src="JS/bazi-standalone.js?v=20260612v80_42" defer></script>
 <script src="JS/ui.js?v=20260612v85_4" defer></script>
 <script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
@@ -1437,6 +1437,7 @@
 <!-- v86_21(2026/6/12)：①收束連結全站改 Markdown 格式 [靜月之光蝦皮賣場](URL)——八字實測犧牲行下雜訊（U+2060+替換字元）仍直接插在裸長網址旁；文獻證實管線對長URL插零寬字元處理換行、與位置無關，根治＝畫面不再有裸網址（CommonMark [text](url) 全渲染器支援，13 個目標 AI App 皆渲染 Markdown；href 收在括號內不受顯示層插字影響）。六提示詞路徑＋FRAG_CRYSTAL×2 統一。②八字伏吟標記根修：pillars[k] 物件被當字串、String 成 [object Object] 永不匹配＋catch 吞錯＝v80_38 起從未生效（2028戊申/2029己酉伏吟實測全漏）。動 meihua-standalone(v80_40)/ziwei-standalone(v80_57)/bazi-standalone(v80_41)/oracle(v6_3)/lenormand(v86_21)/prompt-export(v86_21)/index 七檔 -->
 <!-- v86_22(2026/6/12)：占卜隨機源升級密碼學等級——所有「決定結果」的隨機點改 crypto.getRandomValues 真熵池（塔羅洗牌/正逆位/梅花隨機起卦＝tarot.js、雷諾曼洗牌＝lenormand.js、靈籤抽籤核心＝oracle.js），不支援時退 Math.random；視覺隨機（粒子/星星/音效/文案抽句）不偽裝、維持原樣。動 tarot.js/lenormand.js/oracle.js/index 四檔 -->
 <!-- v86_23(2026/6/12)：紫微第二輪實測微調（v80.58）——①「天命/人生方向」明列綜合題②人生主軸題必讀身宮（實測身宮坐福德與生年忌同宮這個最強訊號被漏）③修 v80.56 贅語。Markdown 連結收束第一輪實測即過：輸出結尾零雜訊、零裸網址。動 ziwei-standalone/index -->
+<!-- v86_24(2026/6/12)：八字六害補算（bazi-standalone v80.42）——競品比對發現本盤申亥害漏列，引擎作用表根本沒做害；《三命通會》六害子未丑午寅巳卯辰申亥酉戌已上網核實，資料層直給＋宮位落點＋去重防護。動 bazi-standalone/index -->
 <script src="JS/prompt-export.js?v=20260612v86_21" defer></script>
 <script src="JS/share-card.js?v=6" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
