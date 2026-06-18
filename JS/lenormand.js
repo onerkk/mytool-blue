@@ -1,18 +1,17 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v4.0
-// v4.0（2026-06-18）提示詞架構重寫：
-//   1. 歷史基線與現代實務分層：原始《希望之遊戲》只支撐 4×8+4、由紳士／淑女及其周圍起讀；
-//      遠近法、房屋、行列、鏡像、交會與騎士跳不再混稱同一套「官方原典」。
-//   2. 大牌陣固定以人物牌為主要代表牌；自選非人物牌只作次要焦點，不再取代人物牌。
-//   3. 建立證據優先序：直接相鄰＞完整連續線段＞相關房屋＞可選進階連結；禁止散牌硬湊與跳過中間牌。
-//   4. 移除未提供牌面朝向時的「是否面向彼此」、固定遠近格數、牌號換算時間等無可靠輸入或非原典規則。
-//   5. 提示詞由重複長文改為「任務／方法邊界／證據規則／輸出契約／結構化牌面」，降低矛盾與中段稀釋。
-//   6. 品牌能量石段落與讀牌方法隔離，明定不得反向影響結論。
+// 靜月之光 — 雷諾曼牌 Lenormand v4.1
+// v4.1（2026-06-18）正統性與幾何根治：
+//   1. 4×8+4 末排固定置中於第3～6欄，人物牌落末排仍保留真實八方鄰接；不再把主人物牌切離牌陣。
+//   2. 程式一次產生全36張座標、八方相鄰及所有橫／直／45度對角完整線；AI只讀確定性幾何，不自行猜位置。
+//   3. 移除以問題關鍵字決定預算焦點牌的脆弱分支；複合問題由模型先分題，再從同一份完整幾何取證。
+//   4. 加入證據強度門檻，嚴格區分友誼、好感、情緒投入、想交往與穩定承諾。
+//   5. 年齡沒有另附固定換算規則時，禁止輸出精確歲數或數字區間；孩子／百合／大樹只能描述年齡感。
+//   6. 讀牌核心與品牌收尾明確分區；最高優先規則置前，問題與最終驗收置尾，刪除互相矛盾的重複指令。
 // Petit Lenormand 36 張・歷史基線＋明確標示的現代實務
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.0 loaded — 歷史基線／證據優先序／精簡提示詞');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.1 loaded — 置中幾何／完整線索引／證據門檻');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -113,7 +112,7 @@ var SPREADS = {
     layout:'3x3'
   },
   grand: { id:'grand', name:'大牌陣', en:'Grand Tableau', count:36,
-    desc:'全部36張排出。本站採4排8張＋末排4張；人物牌及周圍為歷史基線，房屋與其他進階連結僅作現代輔助。',
+    desc:'全部36張排出。本站採4排8張＋末排4張置中於第3～6欄；人物牌及周圍為歷史基線，房屋與完整線段僅作後期／現代輔助。',
     positions:null, // special layout
     layout:'8-8-8-8-4'
   }
@@ -199,164 +198,192 @@ function _lnDetectSpread(q) {
   return { id: 'five', why: '一般問題——五張線看因果走向' };
 }
 
+function gtCoordinate(index) {
+  if (index < 0 || index > 35) return null;
+  if (index < 32) return { row: Math.floor(index / 8) + 1, col: (index % 8) + 1 };
+  // 4×8+4 的 cartouche 置中於第3～6欄；這是本站唯一幾何模型。
+  return { row: 5, col: (index - 32) + 3 };
+}
+
+function gtIndexAt(row, col) {
+  if (row >= 1 && row <= 4 && col >= 1 && col <= 8) return (row - 1) * 8 + (col - 1);
+  if (row === 5 && col >= 3 && col <= 6) return 32 + (col - 3);
+  return -1;
+}
+
+function buildGrandGeometry(drawn) {
+  var directions = [
+    [-1,-1],[-1,0],[-1,1],
+    [0,-1],          [0,1],
+    [1,-1], [1,0],  [1,1]
+  ];
+  var positions = [];
+  var adjacency = [];
+  var i;
+
+  for (i = 0; i < drawn.length; i++) {
+    var pos = gtCoordinate(i);
+    positions.push({
+      index: i,
+      slot: i + 1,
+      row: pos.row,
+      col: pos.col,
+      house: CARDS[i],
+      card: drawn[i]
+    });
+  }
+
+  for (i = 0; i < positions.length; i++) {
+    var p = positions[i];
+    var near = [];
+    directions.forEach(function(d) {
+      var ni = gtIndexAt(p.row + d[0], p.col + d[1]);
+      if (ni >= 0 && ni < drawn.length) near.push(positions[ni]);
+    });
+    adjacency.push({ position: p, neighbors: near });
+  }
+
+  // 只列「最大完整直線」。引用其中任一段時，端點間所有牌仍必須完整列入。
+  var vectors = [
+    { code:'H', dr:0, dc:1, label:'橫列' },
+    { code:'V', dr:1, dc:0, label:'直欄' },
+    { code:'D', dr:1, dc:1, label:'左上到右下對角線' },
+    { code:'A', dr:1, dc:-1, label:'右上到左下對角線' }
+  ];
+  var lines = [];
+  var counters = { H:0, V:0, D:0, A:0 };
+
+  positions.forEach(function(p) {
+    vectors.forEach(function(v) {
+      // 有前一格代表不是這條最大線的起點。
+      if (gtIndexAt(p.row - v.dr, p.col - v.dc) >= 0) return;
+      var seq = [];
+      var rr = p.row, cc = p.col;
+      while (true) {
+        var idx = gtIndexAt(rr, cc);
+        if (idx < 0 || idx >= drawn.length) break;
+        seq.push(positions[idx]);
+        rr += v.dr; cc += v.dc;
+      }
+      if (seq.length >= 2) {
+        counters[v.code] += 1;
+        lines.push({ id:v.code + counters[v.code], type:v.label, positions:seq });
+      }
+    });
+  });
+
+  return { positions: positions, adjacency: adjacency, lines: lines };
+}
+
 function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   var sp = SPREADS[spreadId];
   var q = String(question || '').trim();
   var lines = [];
-  var isGT = spreadId === 'grand';
-  var isTiming = /什麼時候|幾時|多久|何時|哪一年|哪個月|幾月|時間點|等多久|還要等|應期|多快|多晚|哪天/.test(q);
-  var isRelationship = /感情|愛|喜歡|好感|心動|曖昧|關係|正緣|復合|分手|伴侶|男友|女友|老公|老婆|婚|追求|告白|真心|直播.*(她|他)|她.*我|他.*我/.test(q);
+  var isGT = spreadId === 'grand' && drawn.length === 36;
 
   function cardLabel(c) {
     return c.id + '.' + c.name;
   }
 
-  function cardIndexById(id) {
-    for (var i = 0; i < drawn.length; i++) if (drawn[i].id === id) return i;
-    return -1;
+  function xmlEscape(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
-  function gtContextLine(id, label) {
-    var idx = cardIndexById(id);
-    if (idx < 0) return null;
-    var c = drawn[idx];
-    if (idx >= 32) {
-      return '・' + label + '：' + cardLabel(c) + '在末排收束區第' + (idx - 31) + '張；本站將末排四張當獨立總結，不建立與第四排的上下相鄰。';
-    }
-    var r = Math.floor(idx / 8), col = idx % 8;
-    var house = CARDS[idx];
-    var n = [];
-    function add(rr, cc) {
-      if (rr >= 0 && rr < 4 && cc >= 0 && cc < 8) n.push(cardLabel(drawn[rr * 8 + cc]));
-    }
-    add(r - 1, col - 1); add(r - 1, col); add(r - 1, col + 1);
-    add(r, col - 1);                         add(r, col + 1);
-    add(r + 1, col - 1); add(r + 1, col); add(r + 1, col + 1);
-    return '・' + label + '：' + cardLabel(c) + '，落' + house.name + '宮；直接相鄰＝' + (n.length ? n.join('、') : '無') + '。';
+  function positionLabel(p) {
+    return 'p' + String(p.slot).padStart(2, '0') + '@r' + p.row + 'c' + p.col;
   }
 
-  function gtPersonDistanceLine() {
-    var mi = cardIndexById(28), wi = cardIndexById(29);
-    if (mi < 0 || wi < 0 || mi >= 32 || wi >= 32) return null;
-    var mr = Math.floor(mi / 8), mc = mi % 8, wr = Math.floor(wi / 8), wc = wi % 8;
-    var dr = Math.abs(mr - wr), dc = Math.abs(mc - wc);
-    if (Math.max(dr, dc) === 1) return '・人物關係：28.紳士與29.淑女直接相鄰，中間沒有其他牌。';
-    if (mr === wr) {
-      var a = [], s = Math.min(mc, wc) + 1, e = Math.max(mc, wc);
-      for (var c = s; c < e; c++) a.push(cardLabel(drawn[mr * 8 + c]));
-      return '・人物關係：28.紳士與29.淑女同一排，相隔' + dc + '格；中間＝' + (a.length ? a.join('、') : '無') + '。';
-    }
-    if (mc === wc) {
-      var b = [], sr = Math.min(mr, wr) + 1, er = Math.max(mr, wr);
-      for (var rr = sr; rr < er; rr++) b.push(cardLabel(drawn[rr * 8 + mc]));
-      return '・人物關係：28.紳士與29.淑女同一列，相隔' + dr + '格；中間＝' + (b.length ? b.join('、') : '無') + '。';
-    }
-    return '・人物關係：28.紳士與29.淑女不在同一條直線；最近方格距離為' + Math.max(dr, dc) + '格。';
-  }
-
-  lines.push('# 角色與最高優先任務');
-  lines.push('你是熟悉 Petit Lenormand 的讀牌者。只回答問卜者實際問的問題，第一句先給明確結論；若證據互相衝突，就直接回答「有某種傾向，但不足以斷成另一種更強的結論」。');
-  lines.push('只使用本次牌面、座標與房屋資料。不得引用對話記憶、問卜者背景或盤外牌名。第三方內心屬牌面傾向，不可寫成已被證實的客觀事實。');
-  lines.push('棺材＝結束、鐮刀＝切斷、山＝阻礙、老鼠＝侵蝕、十字架＝負擔、雲＝不明、鞭子＝衝突或反覆；不得把這些意思美化掉。');
-  lines.push('');
-  lines.push('# 問題');
-  lines.push('<question>' + (q || '未指定具體問題，請只讀牌面最明確的主軸。') + '</question>');
-  lines.push('<querent_gender>' + (declaredGender === 'male' ? '男' : declaredGender === 'female' ? '女' : '未聲明') + '</querent_gender>');
-  var now = new Date();
-  var localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-  lines.push('<reading_date>' + localDate + '</reading_date>');
+  lines.push('# 最高優先任務');
+  lines.push('你是使用現代具體式 Petit Lenormand 的讀牌者。第一句依問題順序直接回答每一個子問題；只根據本次牌面與程式提供的幾何資料。');
+  lines.push('先在內部分拆複合問題，每個子問題分開選焦點、取證與下結論；不同子問題的散牌不得互相借用。第三方內心只能寫成牌面傾向，不能當成已證實事實。');
+  lines.push('證據衝突或不足時，明說「有某種傾向，但不足以斷成更強的結論」。不得為了顯得精準而補出牌面沒有的年齡、日期、機率、身分或事件。');
+  lines.push('棺材＝結束／終止；鐮刀＝切斷／突然風險；山＝阻礙／延遲；老鼠＝侵蝕／損失；十字架＝負擔／考驗；雲＝不明／混亂；鞭子＝衝突／反覆。不得美化。');
   lines.push('');
 
   lines.push('# 方法邊界');
-  lines.push('歷史基線：36張牌系承接《希望之遊戲》；其占卜說明採4排8張加末排4張，男性由28.紳士、女性由29.淑女開始，先看人物牌周圍的牌。');
-  lines.push('後來的遠近法，以及現代常用的連續線讀、焦點牌、房屋、交會、鏡像與騎士跳，不是同一份原始說明裡的單一「官方全套」。本次以人物牌、直接相鄰、連續線段與必要的房屋為主；進階技法只有在補出新訊息時才可使用。');
-  lines.push('不用逆位、塔羅原型、元素、心理投射或靈感補故事。每張牌有基本義，但在牌陣裡必須由相鄰牌、連續線段、人物關係或房屋修飾後才下結論。');
+  lines.push('歷史核心採36張、4排8張加末排4張、28.紳士與29.淑女人物牌，先看人物牌附近。房屋、完整行列與對角線屬後期或現代輔助，不得說成同一份原始官方全套。');
+  lines.push('不用逆位、塔羅原型、元素、牌面朝向、心理投射、靈感補故事。未提供distance_rules時禁止自行使用近遠法；騎士跳、鏡像、交會與房屋鏈本次停用。');
   lines.push('');
 
-  lines.push('# 證據優先順序');
-  lines.push('1. 問題本身與人物歸屬。大牌陣以問卜者性別對應的28.紳士或29.淑女為主要人物牌；另一張人物牌是對象。自選的非人物牌只能當次要焦點，不能取代人物牌。');
-  lines.push('2. 人物牌與該題焦點牌的直接相鄰牌。感情題優先看28.紳士、29.淑女、24.心、25.戒指；再看與問題直接相關的溝通、公開、網路、工作或商業牌。');
-  lines.push('3. 經過人物牌或焦點牌的連續線段。引用非相鄰牌時，必須把中間所有牌一起讀進去，不可跳過不利牌，也不可把散落各處的牌硬湊成兩張組合。');
-  lines.push('4. 房屋只修飾人物牌與本題焦點牌；牌是發生什麼，房屋是發生在哪種脈絡。房屋不能單獨推翻直接相鄰的強證據。');
-  lines.push('5. 不使用牌面朝向，除非輸入明確提供每張人物牌的朝向資料。末排四張依本站約定只作獨立總結，不虛構與第四排的上下相鄰。');
-  if (isTiming) {
-    lines.push('6. 本題有問時間：只用相對快慢與遠近回答；沒有明確時間映射就只說快、慢、延遲或逐步發展，不用牌號硬換算幾天、幾週或幾月。');
-  } else {
-    lines.push('6. 本題沒有問時間：不要添加應期、月份或天數。');
-  }
+  lines.push('# 證據規則');
+  lines.push('1. 直接相鄰：只能使用derived_geometry的adjacency。');
+  lines.push('2. 非相鄰連線：兩端必須出現在straight_lines同一條完整橫列、直欄或45度對角線；引用時只取兩端間的連續區段，所有中間牌一張不漏，不得轉彎或跳格。');
+  lines.push('3. 房屋只修飾人物牌與該子題焦點牌；牌說發生什麼，房屋說脈絡。房屋不能單獨推翻直接相鄰或完整線段。');
+  lines.push('4. 一項間接證據只能寫「可能」；一項直接結構加一致旁證可寫「較可能」；至少兩項獨立直接結構且無更強反證，才能下明確肯定或否定。');
+  lines.push('5. 只回答實際問到的內容；未問時間就不加應期。問了時間也只能依牌面給相對快慢，沒有固定映射時不得把牌號換成天、週、月。');
   lines.push('');
 
+  lines.push('# 子題判準');
+  lines.push('・人物歸屬：問卜者已聲明男性時以28.紳士為本人、29.淑女為女性對象；已聲明女性時相反。未聲明時不得擅自指定，兩張人物牌都只稱人物牌。自選非人物牌只是次要焦點。');
+  lines.push('・副業／商業：優先檢查問卜者人物牌、34.魚、35.錨、31.太陽、32.月亮、20.花園、14.狐狸、3.船、33.鑰匙。科技、直播、工作或商業等領域義至少要由兩張相關牌形成合法結構，不能靠單張牌成立。');
+  lines.push('・感情強度必須分級：友善／信任、好感／吸引、情緒投入、想交往、穩定承諾。不得把18.狗的友誼直接升級成愛情，也不得把公開或直播互動直接升級成私人感情。');
+  lines.push('・要判「對方想交往」，至少需對象人物牌與24.心或25.戒指直接相鄰；或有一條完整合法線段且未被更強的結束、切斷或阻礙主導；或有兩組獨立直接結構共同支持。');
+  lines.push('・要判「未來成為伴侶」，優先看兩人物牌、24.心、25.戒指及戒指鄰牌。戒指周圍若由棺材、鐮刀、山、老鼠、蛇、十字架、塔或狐狸主導，不得因單一心、狗、花束或太陽判成穩定承諾。');
+  lines.push('・年齡：除非輸入另附固定且經驗證的age_rules，禁止輸出精確歲數、數字區間或相差幾歲。孩子、百合、大樹只能描述較年輕、成熟或穩重的年齡感。');
+  lines.push('');
+
+  lines.push('# 本牌陣讀法');
   if (spreadId === 'three') {
-    lines.push('# 本牌陣讀法');
-    lines.push('三張線：先讀第1＋第2，再讀第2＋第3，最後把三張連成一個句子。第2張是焦點；第1與第3可作首尾對照，但不能各自獨立講成三段。');
+    lines.push('三張線：先讀1＆2、2＆3，再把1→2→3連成一句。第2張是焦點；不可拆成三篇單張牌義。');
   } else if (spreadId === 'five') {
-    lines.push('# 本牌陣讀法');
-    lines.push('五張線：第3張是焦點；先讀2→3→4，再讀1→2與4→5，最後核對1與5、2與4是否形成有效對照。所有位置都要用到，但不要逐張報告。');
+    lines.push('五張線：第3張是焦點；先讀2→3→4，再讀1→2與4→5，最後核對1＆5、2＆4。五張都要參與，但不要逐張流水帳。');
   } else if (spreadId === 'nine') {
-    lines.push('# 本牌陣讀法');
-    lines.push('九宮格：第5張是中心；優先讀穿過中心的三條連續線與兩條對角線，再看與問題直接相關的相鄰組合。行列的「過去／現在／未來」或「表層／根基」只作現代輔助，不可蓋過實際牌義。');
-    if (drawn[4] && drawn[4]._presetSig) {
-      lines.push('第5張是使用者預置的焦點牌，不是隨機抽中的徵兆；只能用來定位，不能把「它出現」本身當答案。');
-    }
+    lines.push('九宮格：第5張是中心；優先讀穿過中心的橫、直與兩條對角線，再看與問題直接相關的相鄰組合。過去／未來或表層／根基只作現代輔助。');
+    if (drawn[4] && drawn[4]._presetSig) lines.push('第5張是使用者預置焦點，不是隨機徵兆；只能定位，不能把「它出現」當答案。');
   } else if (isGT) {
-    lines.push('# 本牌陣讀法');
-    lines.push('大牌陣：先讀主要人物牌及其八方直接相鄰，再讀另一人物牌、兩人距離與中間牌；接著讀本題焦點牌的相鄰與房屋。只有這些不足時，才讀穿過它們的連續線段。');
-    if (_lnSignif && _lnSignif !== 28 && _lnSignif !== 29) {
-      lines.push('使用者另選了' + cardLabel(CARDS[_lnSignif - 1]) + '作次要焦點；它不能取代問卜者人物牌，也不能讓整盤偏離實際問題。');
-    }
+    lines.push('大牌陣：每個子問題先讀問卜者人物牌、對象人物牌及該題焦點牌的直接相鄰，再讀人物牌與焦點牌之間的完整合法線段，最後才用相關房屋修飾。');
+    lines.push('4×8+4的末排四張固定置中於第3至第6欄，仍與第四排建立真實斜向／縱向相鄰；不得把末排人物牌切成獨立總結。');
+    if (_lnSignif && _lnSignif !== 28 && _lnSignif !== 29) lines.push('使用者另選' + cardLabel(CARDS[_lnSignif - 1]) + '作次要焦點；不可取代人物牌或實際問題。');
   }
-  lines.push('');
-
-  lines.push('# 輸出契約');
-  lines.push('・第一句直接回答，不鋪陳。遇到「A還是B」可回答「不是純A，也不足以斷成B；較接近……」，但必須選出牌面較支持的一邊。');
-  lines.push('・正文用繁體中文、台灣用語，像資深讀牌者當面說話；不講技法名稱、座標、排數、宮位編號或教科書流程。');
-  lines.push('・每一段只推進一個新結論，段末用「——」列出該段真正使用的牌。相鄰組合寫「牌A＋牌B」；連續線段寫完整「牌A→中間牌→牌B」；房屋證據寫「牌A落牌B宮」。');
-  lines.push('・感情題要分清楚：好感／吸引、情緒投入、穩定愛情、承諾是不同強度。牌面同時出現真情與工作／公開／商業訊號時，必須說是混合動機，不可只挑一邊。');
-  lines.push('・不得把沒有結構連結的牌列在同一個出處中；不得聲稱對方一定知道、一定計畫或一定說過牌面沒證明的事。');
-  lines.push('・只回答這一題；未問財務、工作、健康或時間就不展開。');
-  lines.push('・輸出前自行檢查：是否跳過中間牌、是否把房屋當主證據、是否過度確定第三方內心、是否使用未提供的朝向、是否重複同一結論。');
   lines.push('');
 
   lines.push('# 牌面資料');
   lines.push('<spread>' + sp.name + '（' + sp.count + '張）</spread>');
+  lines.push('<querent_gender>' + (declaredGender === 'male' ? '男' : declaredGender === 'female' ? '女' : '未聲明') + '</querent_gender>');
+  var now = new Date();
+  var localDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  lines.push('<reading_date>' + localDate + '</reading_date>');
   lines.push('<card_dictionary>');
   lines.push(drawn.map(function(c){ return cardLabel(c) + '=' + c.key; }).join('；'));
   lines.push('</card_dictionary>');
   lines.push('');
 
-  if (isGT && drawn.length === 36) {
-    lines.push('<layout type="4x8+4">');
-    for (var r = 0; r < 4; r++) {
+  if (isGT) {
+    var geometry = buildGrandGeometry(drawn);
+    lines.push('<layout type="4x8+4-centered">');
+    for (var r = 1; r <= 4; r++) {
       var row = [];
-      for (var c = 0; c < 8; c++) {
-        var idx = r * 8 + c;
-        row.push('[' + (idx + 1) + CARDS[idx].name + '宮:' + cardLabel(drawn[idx]) + ']');
+      for (var c = 1; c <= 8; c++) {
+        var idx = gtIndexAt(r, c);
+        row.push('[' + positionLabel(geometry.positions[idx]) + '|house=' + cardLabel(CARDS[idx]) + '|card=' + cardLabel(drawn[idx]) + ']');
       }
-      lines.push('排' + (r + 1) + ' ' + row.join(' '));
+      lines.push('row' + r + ' ' + row.join(' '));
     }
     var tail = [];
-    for (var t = 32; t < 36; t++) tail.push('[' + (t + 1) + CARDS[t].name + '宮:' + cardLabel(drawn[t]) + ']');
-    lines.push('末排 ' + tail.join(' '));
+    for (var tc = 3; tc <= 6; tc++) {
+      var ti = gtIndexAt(5, tc);
+      tail.push('[' + positionLabel(geometry.positions[ti]) + '|house=' + cardLabel(CARDS[ti]) + '|card=' + cardLabel(drawn[ti]) + ']');
+    }
+    lines.push('row5 ' + tail.join(' '));
     lines.push('</layout>');
     lines.push('');
-    lines.push('<verified_context>');
-    var primaryId = declaredGender === 'female' ? 29 : 28;
-    if (!declaredGender && (_lnSignif === 28 || _lnSignif === 29)) primaryId = _lnSignif;
-    var otherId = primaryId === 28 ? 29 : 28;
-    var ctxLines = [
-      gtContextLine(primaryId, '問卜者人物牌'),
-      gtContextLine(otherId, '對象人物牌'),
-      gtPersonDistanceLine()
-    ];
-    if (isRelationship) {
-      ctxLines.push(gtContextLine(24, '感情焦點'));
-      ctxLines.push(gtContextLine(25, '關係焦點'));
-    }
-    if (_lnSignif && _lnSignif !== 28 && _lnSignif !== 29 && _lnSignif !== 24 && _lnSignif !== 25) {
-      ctxLines.push(gtContextLine(_lnSignif, '使用者次要焦點'));
-    }
-    ctxLines.filter(Boolean).forEach(function(x){ lines.push(x); });
-    lines.push('</verified_context>');
+
+    lines.push('<derived_geometry authoritative="true">');
+    lines.push('<coordinate_rule>row1-4使用col1-8；row5只使用col3-6。所有位置、相鄰與直線均由程式計算，不得自行改排。</coordinate_rule>');
+    lines.push('<adjacency>');
+    geometry.adjacency.forEach(function(a) {
+      lines.push(positionLabel(a.position) + ' ' + cardLabel(a.position.card) + ' => ' + (a.neighbors.length ? a.neighbors.map(function(n){ return positionLabel(n) + ':' + cardLabel(n.card); }).join(', ') : 'none'));
+    });
+    lines.push('</adjacency>');
+    lines.push('<straight_lines>');
+    geometry.lines.forEach(function(line) {
+      lines.push(line.id + '[' + line.type + '] ' + line.positions.map(function(p){ return positionLabel(p) + ':' + cardLabel(p.card); }).join(' > '));
+    });
+    lines.push('</straight_lines>');
+    lines.push('</derived_geometry>');
   } else {
     lines.push('<drawn_cards>');
     for (var i = 0; i < drawn.length; i++) {
@@ -367,13 +394,23 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   }
   lines.push('');
 
-  lines.push('# 品牌收尾（不得反向影響讀牌結論）');
-  lines.push('正文完成後，才依結論挑一種能量石；只寫一種，不用「或」。功效只能寫一般象徵性用途，不作醫療宣稱。再補一句礦物事實，事實只能取自下列資料：');
-  lines.push('白水晶／紫水晶／黃水晶／茶晶／粉晶／草莓晶＝石英家族、二氧化矽、三方晶系、硬度7；紫水晶含鐵經天然輻照致色；黃水晶由鐵致色；茶晶含鋁受天然輻射呈煙色；粉晶多霧狀半透；草莓晶含纖鐵礦或赤鐵礦片狀包體。月光石＝正長石與鈉長石交層產生暈彩。拉長石＝斜長石、三斜晶系。太陽石＝赤鐵礦或銅片包體產生砂金閃光。海藍寶＝綠柱石族、六方晶系、鐵致色。黑曜石＝非晶質火山玻璃、貝殼狀斷口。黑碧璽＝電氣石族、三方晶系、柱面常見縱紋。虎眼石＝石英交代石棉假象、具絲絹貓眼光。綠幽靈＝白水晶含綠泥石包體。葡萄石＝斜方晶系、常呈葡萄狀集合體。天鐵＝鎳鐵隕石，切磨酸蝕後可見魏德曼花紋。龍宮舍利僅能說市場名稱與外觀挑選，不宣稱成因。');
-  lines.push('最後三段依序為：能量石短句；單獨一行的[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)；最後一行「願你諸事順遂。」連結行不可加其他字。');
+  lines.push('# 輸出契約');
+  lines.push('・第一句依序直接回答全部子問題；正文每段只推進一個新結論。');
+  lines.push('・用繁體中文、台灣用語，像資深讀牌者當面說話；正文不講技法名稱、座標、排數或教科書流程。');
+  lines.push('・每段末尾用「——」列真正使用的證據：相鄰寫「牌A＋牌B」；線段寫完整「牌A→中間牌→牌B」；房屋寫「牌A落牌B宮」。');
+  lines.push('・不得把互不相連的牌列在同一出處；不得聲稱對方一定知道、一定計畫或一定說過。正反證據並存時必須一起呈現。');
   lines.push('');
-  lines.push('# 現在作答');
-  lines.push('只根據上面的問題與牌面輸出最終解讀，不輸出分析流程或自我檢查。');
+
+  lines.push('# 第二階段品牌收尾');
+  lines.push('先完成並鎖定讀牌結論，之後才挑一種能量石作象徵性建議；品牌段不得反向修改正文。只能寫一種，不用「或」，不作醫療宣稱。礦物事實只能從下列資料取一句：');
+  lines.push('白水晶／紫水晶／黃水晶／茶晶／粉晶／草莓晶＝石英家族、SiO₂、三方晶系、硬度7；紫水晶含鐵經天然輻照致色；黃水晶由鐵致色；茶晶含鋁受天然輻射呈煙色；粉晶多霧狀半透；草莓晶含纖鐵礦或赤鐵礦片狀包體。月光石＝正長石與鈉長石交層產生暈彩。拉長石＝斜長石、三斜晶系。太陽石＝赤鐵礦或銅片包體產生砂金閃光。海藍寶＝綠柱石族、六方晶系、鐵致色。黑曜石＝非晶質火山玻璃、貝殼狀斷口。黑碧璽＝電氣石族、三方晶系、柱面常見縱紋。虎眼石＝石英交代石棉假象、具絲絹貓眼光。綠幽靈＝白水晶含綠泥石包體。葡萄石＝斜方晶系、常呈葡萄狀集合體。天鐵＝鎳鐵隕石，屬金屬；切磨酸蝕後可見魏德曼花紋。龍宮舍利只能稱市場名稱並描述外觀，不宣稱成因。');
+  lines.push('最後三段固定為：能量石短句；單獨一行[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)；最後一行「願你諸事順遂。」');
+  lines.push('');
+
+  lines.push('# 最終問題與驗收');
+  lines.push('<question>' + xmlEscape(q || '未指定具體問題，請只讀牌面最明確的主軸。') + '</question>');
+  lines.push('輸出前只做內部檢查：是否已分題；是否只用合法相鄰／完整線段；是否漏掉中間負面牌；是否把友誼或公開互動誤判成愛情；是否用房屋推翻主證據；是否對第三方過度確定；是否輸出無年齡規則支撐的數字。');
+  lines.push('只輸出最終解讀，不輸出分析流程或檢查表。');
 
   return lines.join('\n');
 }
