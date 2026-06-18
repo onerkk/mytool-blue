@@ -1395,12 +1395,12 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260612v6_4" defer></script>
-<script src="JS/lenormand.js?v=20260615v86_33" defer></script>
+<script src="JS/lenormand.js?v=20260618v86_34" defer></script>
 <script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260612v80_40" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260612v80_58" defer></script>
-<script src="JS/bazi-standalone.js?v=20260612v80_43" defer></script>
+<script src="JS/meihua-standalone.js?v=20260618v80_41" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260618v80_59" defer></script>
+<script src="JS/bazi-standalone.js?v=20260618v80_44" defer></script>
 <script src="JS/ui.js?v=20260612v85_4" defer></script>
 <script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
@@ -1509,6 +1509,7 @@
     <button onclick="document.getElementById('sticky-cta').classList.remove('visible');" style="background:none;border:none;color:var(--c-text-muted);font-size:1.1rem;padding:4px 8px;cursor:pointer;line-height:1;flex:0 0 auto;" aria-label="關閉">✕</button>
   </div>
 </div>
+<!-- v86_34(2026/6/18)：主操作按鈕閃爍根治——Android/Samsung 合成器對 background-position 漸層動畫會週期性漏畫整個按鈕層；四個工具主 CTA 改為靜態鎏金底＋獨立 ::before transform-only 流光層。保留動效、按鈕本體不再逐幀重繪；同步更新快取版本。動 lenormand.js / bazi-standalone.js / meihua-standalone.js / ziwei-standalone.js / index.html -->
 <!-- 後台人次統計面板樣式（v80.24：用 #id 選擇器＋!important 蓋過 CSS/style.css 舊規則，置中＋金黑質感） -->
 <style>
 #admin-overlay{position:fixed!important;inset:0!important;background:rgba(0,0,0,.62)!important;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:99998!important;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
