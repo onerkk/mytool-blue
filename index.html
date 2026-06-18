@@ -252,7 +252,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="stylesheet" href="CSS/style.css?v=20260610v81_1">
+<link rel="stylesheet" href="CSS/style.css?v=20260618v87_1">
 <style id="jy-spread-pick-css">
 .jy-spread-trigger{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid rgba(201,168,76,.22);background:linear-gradient(135deg,rgba(201,168,76,.05),rgba(201,168,76,.012));cursor:pointer;font-family:var(--f-body);transition:all .3s cubic-bezier(.4,0,.2,1)}
 .jy-spread-trigger:active{transform:scale(.98)}
@@ -1382,7 +1382,7 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot.js?v=20260613v86_29" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260611v86_router" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260618v87_1" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
 <script src="JS/meihua_upgrade.js?v=20260610v80_16" defer></script>
 <script src="JS/meihua_output_layer.js?v=20260612v2_0" defer></script>
@@ -1395,15 +1395,15 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260612v6_4" defer></script>
-<script src="JS/lenormand.js?v=20260618v87_0" defer></script>
-<script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
+<script src="JS/lenormand.js?v=20260618v87_1" defer></script>
+<script src="JS/ink-flow.js?v=20260618v2_1" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260612v80_40" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260612v80_58" defer></script>
-<script src="JS/bazi-standalone.js?v=20260612v80_43" defer></script>
+<script src="JS/meihua-standalone.js?v=20260618v80_41" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260618v80_59" defer></script>
+<script src="JS/bazi-standalone.js?v=20260618v80_44" defer></script>
 <script src="JS/ui.js?v=20260612v85_4" defer></script>
 <script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
-<script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
+<script src="JS/tool-guide.js?v=20260618v70_2" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
 <!-- ★ v70 複製模式引擎：必須最後載入。不進混淆。 -->
@@ -1446,9 +1446,11 @@
 <!-- v86_30(2026/6/15)：雷諾曼提示詞稽核根治四項（官方文獻核實）——①主題偵測正則補「使命/天職/天賦/才華/熱情/發光/該做什麼」→工作主題牌(狐狸14+錨35)；根因：原正則僅認「工作/職務/職涯」，純問「我的天職」漏接→退回問卜者自選的指示牌(牌題不符)，本盤剛好問句含「工作」才沒出事。②自選非人物指示牌明確降為「輔助定位」、主軸一律回該題主題牌(解代表牌vs主題牌兩指令打架)。③問題＋最常被忽略的鐵律複述於 prompt 最末端(query-at-end；Anthropic官方長文指引實測約+30%／Liu 2023 Lost-in-the-Middle，原問題在前段壓規則牆＝最弱中段)。④特殊題型(A還是B/第三方內心)改依問句載入、人物歸屬保留(指令數越多遵循率越低)。沙箱抽 buildPrompt 實測四項全通過。動 lenormand.js(v3.7/v86_30)/index -->
 <!-- v86_31(2026/6/15)：雷諾曼主題偵測全面根治（補 v86_30 只修「工作」一條的不完整）——實測「她對我有好感／是正緣嗎」整句不命中感情正則(原僅 /感情|戀|桃花|曖昧|復合|對象|婚/)→GT 引擎不預算 心24/戒指25/人物牌格位→「雙代表牌連線」(關係題鐵則)缺機械事實、靠 AI 自己抓圖(本盤剛好沒抓錯)。八主題正則全部擴充到自然語言等級：感情補好感/正緣/喜歡/心動/告白/分手/挽回…並注入人物牌28/29(關係題一律備齊couple格位)、工作/升遷/財/健康/溝通/旅行/運勢同步補口語近義詞。正則僅決定「預算哪些主題牌格位」(加性、防AI看錯方向)，過寬無害、漏接才是病。沙箱實測本題＋復合/天職/錄取/財運/近況六句全命中。動 lenormand.js(v3.8/v86_31)/index -->
 <!-- v86_32(2026/6/15)：雷諾曼主題偵測「架構級」根治——拆掉 v3.2~v3.8 的「問題正則挑主題牌」自然語言解讀層（不再 whack-a-mole）。病灶：用關鍵字正則比對問題來決定預算哪些主題牌格位，自然語言無窮、正則永遠補不完（連續漏接 天職→好感/正緣→愛上/發展空間，每次補詞都只是更大的補丁）。改為：上方「實際版面」(無條件產生、全36張2D座標)＝確定性結構化真相，模型自行判主題＋在版面定位（本批多盤正則未中、AI 仍照版面把魚/熊/心/戒指/人物牌位置全讀對＝版面才是真正防呆，正則純屬冗餘脆弱層）。淨移除約50行脆弱碼、提示詞反而變短。文獻佐證：過量/不相關脈絡降低LLM推理且模型難自濾、自然語言解讀層隨條件數指數退化、確定性結構化真相＋模型語意挑選為上策。動 lenormand.js(v3.9/v86_32)/index -->
+
+<!-- v87_1(2026/6/18)：按鈕閃爍架構級根治——影片可見並非單一按鈕樣式，而是 Android Chromium 合成圖塊漏畫：多個工具將 infinite animation 直接掛在 button/偽元素，同頁再疊 fixed WebGL 墨流與 backdrop-filter。① style.css 建立全站互動元件穩定渲染契約，按鈕只保留有限狀態 transition，禁止常駐 animation/will-change；② 雷諾曼、八字、紫微、梅花、塔羅/OOTK、提示詞匯出與導覽按鈕移除各自流光/呼吸/脈衝來源，不再逐頁補丁；③ 墨流 v2.1 在觸控/粗指標裝置改用 2D 動態後備，桌面才跑 WebGL，且修正 WebGL 初始化失敗後同 canvas 無法切回 2D 的黑畫面缺陷；④ 全部版本 query 更新避免舊快取。 -->
 <!-- v87_0(2026/6/18)：雷諾曼提示詞 v4.0 架構重建——依《希望之遊戲》原始說明、1846近遠傳統與現代GT方法分層；人物牌恢復為大牌陣主要代表牌，自選非人物牌降為次要焦點；證據固定按直接相鄰→完整連續線→相關房屋→可選進階連結；移除無朝向資料卻判面向、固定格數遠近、牌號硬換時間、散牌硬湊；提示詞由11977字/370行縮至3400字/64行，保留完整36牌座標與必要上下文。動 lenormand.js/index -->
 <!-- v86_33(2026/6/15)：雷諾曼提示詞「載入一致性＋過長/位置」根治（前次稽核問題3+4，治本非補丁）——①新增單一條件源 _ctx（isTiming/isChoice/isInner/count），特殊題型/應期/距離法全部只讀它，條件不再散在各處（舊狀：特殊題型 inline regex、應期無條件硬載＝補一個漏一個）。②應期四法只在時間題載入、非時間題留防呆一行（根治「我是渣男嗎」這種身分題被逼硬湊時間範圍）。③距離法（自標『適用5張以上』）改 count>=5 才載，短盤不再吃無關大塊。④三條最硬鐵律（第一句直答/只引盤內牌/壞牌照講）複製到提示詞頂端 primacy 位，與末端 recency 複述形成頭尾雙壓（ai-divination skill 頭—中—尾三位一體；Liu 2023 Lost-in-the-Middle U 型頭尾最強）。⑤修正 +30% 引用：Anthropic 該數字限 20K+ token 多文件檢索、本檔約3–4K屬指令密集不假借其數字。文獻：Lost-in-the-Middle(TACL 2024)/ManyIFEval(2509.21051)/RECAST(2505.19030)＝脈絡越雜、指令越多遵循越差。沙箱實跑渣男盤：頂端鐵律在✓、應期四法丟✓、距離法丟✓、時間題版應期回✓。⚠ 礦物錨點表（最大常駐字塊）此版未動＝單次呼叫下載重牆，要拆需走兩段式（讀牌→定石→只取該石事實）屬另案。動 lenormand.js(v3.10/v86_33)/index -->
-<script src="JS/prompt-export.js?v=20260612v86_26" defer></script>
+<script src="JS/prompt-export.js?v=20260618v87_1" defer></script>
 <script src="JS/share-card.js?v=6" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
