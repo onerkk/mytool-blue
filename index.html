@@ -253,10 +253,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="CSS/style.css?v=20260610v81_1">
-<link rel="stylesheet" href="CSS/jy-intro.css?v=20260618v2_0">
-<script>
-(function(){try{var q=new URLSearchParams(location.search);var seen=sessionStorage.getItem('jy-intro-seen-v2')==='1';if(q.get('intro')==='0'||(seen&&q.get('intro')!=='1'))document.documentElement.classList.add('jy-intro-seen');}catch(e){}})();
-</script>
 <style id="jy-spread-pick-css">
 .jy-spread-trigger{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid rgba(201,168,76,.22);background:linear-gradient(135deg,rgba(201,168,76,.05),rgba(201,168,76,.012));cursor:pointer;font-family:var(--f-body);transition:all .3s cubic-bezier(.4,0,.2,1)}
 .jy-spread-trigger:active{transform:scale(.98)}
@@ -378,79 +374,6 @@
 </style>
 </head>
 <body>
-<!-- ═══ 靜月之光・互動式人物開場 v2.0（?intro=1 強制重播，?intro=0 略過） ═══ -->
-<div id="jy-cinematic-intro" role="dialog" aria-modal="true" aria-label="靜月之光互動開場" aria-hidden="false" data-phase="idle" data-intent="moon">
-  <div class="jy2-world" aria-hidden="true">
-    <div class="jy2-sky"></div>
-    <canvas class="jy2-particles"></canvas>
-    <div class="jy2-moon-haze"></div>
-    <div class="jy2-temple-back">
-      <i class="jy2-arch arch-a"></i><i class="jy2-arch arch-b"></i>
-      <i class="jy2-column col-l"></i><i class="jy2-column col-r"></i>
-      <i class="jy2-curtain curtain-l"></i><i class="jy2-curtain curtain-r"></i>
-    </div>
-    <div class="jy2-oracle-stage">
-      <div class="jy2-halo">
-        <i class="ring ring-1"></i><i class="ring ring-2"></i><i class="ring ring-3"></i>
-        <span class="sigil s1">命</span><span class="sigil s2">緣</span><span class="sigil s3">心</span><span class="sigil s4">月</span>
-      </div>
-      <div class="jy2-oracle" data-jy-oracle>
-        <img class="jy2-oracle-img is-rest" src="img/intro/jingyue-oracle-rest.webp" alt="" draggable="false">
-        <img class="jy2-oracle-img is-awake" src="img/intro/jingyue-oracle-awake.webp" alt="" draggable="false">
-        <i class="jy2-face-light"></i>
-        <i class="jy2-breath-light"></i>
-      </div>
-    </div>
-    <div class="jy2-table">
-      <i class="jy2-candle c-l"><b></b></i><i class="jy2-candle c-r"><b></b></i>
-      <button type="button" class="jy2-orb" data-jy-orb aria-label="觸碰月輪進入占卜">
-        <span class="jy2-orb-core">☾</span><span class="jy2-orb-ripple r1"></span><span class="jy2-orb-ripple r2"></span>
-      </button>
-      <div class="jy2-table-edge"></div>
-    </div>
-    <div class="jy2-fog fog-a"></div><div class="jy2-fog fog-b"></div>
-    <div class="jy2-flare"></div>
-    <div class="jy2-vignette"></div><div class="jy2-grain"></div>
-  </div>
-
-  <div class="jy2-topbar">
-    <div class="jy2-brand-mini"><span>☾</span><b>靜月之光</b></div>
-    <div class="jy2-controls">
-      <button type="button" class="jy2-control" data-jy-intro-sound aria-pressed="true"><span class="icon">♪</span><span data-jy-intro-sound-label>音效</span></button>
-      <button type="button" class="jy2-control" data-jy-intro-skip>略過</button>
-    </div>
-  </div>
-
-  <section class="jy2-idle-panel" aria-label="開場入口">
-    <p class="jy2-kicker">AI DIVINATION SANCTUM</p>
-    <h1>靜月之光</h1>
-    <p class="jy2-lead">不是替你決定命運，而是照見你還沒看清的答案。</p>
-    <button type="button" class="jy2-hold" data-jy-intro-enter>
-      <span class="jy2-hold-track"><i></i></span>
-      <span class="jy2-hold-icon">☾</span>
-      <span class="jy2-hold-copy"><b>按住月印，喚醒靜月</b><small>持續約 1 秒</small></span>
-    </button>
-    <p class="jy2-idle-note">人物、場景與對話會依你的選擇回應</p>
-  </section>
-
-  <section class="jy2-dialogue" aria-live="polite" aria-label="靜月對話">
-    <div class="jy2-speaker"><i></i><span>靜月</span></div>
-    <p class="jy2-dialogue-text" data-jy-dialogue></p>
-    <div class="jy2-choices" data-jy-choices>
-      <button type="button" data-jy-choice="love"><span>♡</span><b>感情與關係</b><small>看清對方與你之間的真實距離</small></button>
-      <button type="button" data-jy-choice="career"><span>✦</span><b>工作與方向</b><small>找出阻力、機會與下一步</small></button>
-      <button type="button" data-jy-choice="wealth"><span>◇</span><b>財運與選擇</b><small>辨認風險、流動與可行方案</small></button>
-      <button type="button" data-jy-choice="moon"><span>☾</span><b>讓月光替我選</b><small>直接進入完整命理工具</small></button>
-    </div>
-  </section>
-
-  <section class="jy2-focus" aria-live="polite">
-    <p class="jy2-focus-line" data-jy-focus-line>把你真正想問的那件事，放進月輪裡。</p>
-    <p class="jy2-focus-sub">觸碰中央月輪，正式進入占卜</p>
-  </section>
-
-  <div class="jy2-progress" aria-hidden="true"><i></i></div>
-</div>
 <noscript>
   <div style="text-align:center;padding:40px;font-family:sans-serif">
     <h2>靜月之光 — 免費AI塔羅・開鑰之法・雷諾曼線上解牌</h2>
@@ -1475,10 +1398,9 @@
 <script src="JS/lenormand.js?v=20260618v87_0" defer></script>
 <script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260618v80_41" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260618v80_59" defer></script>
-<script src="JS/bazi-standalone.js?v=20260618v80_44" defer></script>
-<script src="JS/jy-intro.js?v=20260618v2_0" defer></script>
+<script src="JS/meihua-standalone.js?v=20260612v80_40" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260612v80_58" defer></script>
+<script src="JS/bazi-standalone.js?v=20260612v80_43" defer></script>
 <script src="JS/ui.js?v=20260612v85_4" defer></script>
 <script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
