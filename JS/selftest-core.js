@@ -96,24 +96,31 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v4.1',                            // v87.2 版本簽名
-        'function gtCoordinate(index)',                       // v87.2 置中座標單一真相源
-        'row5只使用col3-6',                                   // v87.2 cartouche 置中規則
-        '<derived_geometry authoritative=\"true\">',       // v87.2 權威幾何資料
-        '<adjacency>',                                        // v87.2 全36張八方相鄰
-        '<straight_lines>',                                   // v87.2 最大完整直線索引
-        '不得把18.狗的友誼直接升級成愛情',                    // v87.2 感情強度門檻
-        '禁止輸出精確歲數、數字區間或相差幾歲',              // v87.2 年齡誠實化
-        '末排四張固定置中於第3至第6欄'                       // v87.2 GT 幾何說明
+        '雷諾曼牌 Lenormand v4.2',                            // v87.3 版本簽名
+        'function gtCoordinate(index)',                       // 置中座標單一真相源
+        'function buildEvidencePacket',                       // v87.3 每子題最小證據包
+        'function splitQuestionSegments',                     // v87.3 複合問題分題
+        '<evidence_packet question_id=',                      // v87.3 動態證據包
+        '線段只表示結構關聯，不表示時間先後',            // v87.3 禁止偷加時序
+        '不能單獨證明多名伴侶',                              // v87.3 多人伴侶門檻
+        '缺乏證據偷換成確定不會',                            // v87.3 缺證≠否定
+        '<presentation_footer stage="after_reading_locked">', // v87.3 呈現層分離
+        "key:'結束・終止・封閉'",                           // v87.3 負面牌義去美化
+        "key:'負擔・考驗・難卸壓力'"                        // v87.3 十字架去命定美化
       ],
       mustNot: [
+        '<derived_geometry authoritative="true">',       // v87.2 全量幾何資料牆
+        '<straight_lines>',                                   // v87.2 全31線整包輸出
+        '# 第二階段品牌收尾',                                // 舊版品牌混入核心規則
+        '你是使用現代具體式 Petit Lenormand',                // 未標示本站規約的舊定位
+        "key:'結束・轉化・終止'",                           // 棺材美化詞
+        "key:'負擔・命運・考驗'",                           // 十字架命定化
         '末排四張依本站約定只作獨立總結',                    // v4.0 錯誤隔離規則
         '不建立與第四排的上下相鄰',                           // v4.0 錯誤隔離規則
         '在末排收束區第',                                     // v4.0 切離人物牌
-        'var isRelationship ='                                // v4.0 問題關鍵字選焦點分支
+        'var isRelationship ='                                // 舊問題關鍵字選焦點分支
       ]
-    }
-  };
+    }  };
 
   var SPREAD_IDS = ['three_card','five_card','cross','either_or','timeline','relationship',
                     'celtic_cross','mathers_21','mathers_horseshoe','fifteen_card',
