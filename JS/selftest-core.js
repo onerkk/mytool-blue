@@ -96,7 +96,7 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v4.4',                            // v87.4 版本簽名
+        '雷諾曼牌 Lenormand v4.5',                            // v87.6 深度現代解讀層
         'function gtCoordinate(index)',                       // 置中座標單一真相源
         'function detectAgeQualifier',                        // 數字年齡條件解析
         'function inferQuestionDimensions',                   // 謂詞＋目標範圍＋條件三維路由
@@ -105,6 +105,18 @@
         'age_unverifiable',                                    // 純年齡題不退回一般解讀
         'function buildEvidencePacket',                       // 每子題證據包
         'function buildClaimPlan',                            // 程式產生結論上限
+        'function buildModernContext',                         // 現代脈絡由程式計算
+        'function analysisDimensionsFor',                      // 每題分析覆蓋面
+        '<person_neighborhoods method="3x3_local_field">', // 人物局部場域
+        '<topic_neighborhoods method="3x3_local_field">',  // 焦點局部場域
+        '<modern_context certainty_effect="none">',        // 現代技法不提高確定度
+        '<mirrors method="site_axis_mirror">',             // 本站鏡像
+        '<knight_moves method="chess_knight_geometry">',   // 騎士跳
+        '<segment_intersections>',                              // 線段交會
+        '<tableau_frame>',                                      // 中央／四角框架
+        '<thematic_repetitions scope="approved_local_context">', // 局部主題重複
+        '<analysis_requirements>',                              // 深度輸出契約
+        '同一C只算一組確定度，但要完整分析簇內細節',        // 深度與確定度解耦
         'career_fit',                                         // 工作適配與一般職涯分流
         'career_promotion',                                   // 升遷獨立命題
         '<evidence_clusters>',      // 共享核心牌由程式分簇
@@ -122,7 +134,8 @@
         "key:'負擔・考驗・難卸壓力'"                        // 十字架去命定美化
       ],
       mustNot: [
-        '雷諾曼牌 Lenormand v4.3',                            // 舊版簽名
+        '雷諾曼牌 Lenormand v4.4',                            // 舊版簽名
+        '雷諾曼牌 Lenormand v4.3',                            // 更舊版簽名
         '<derived_geometry authoritative="true">',          // v87.2 全量幾何資料牆
         '<straight_lines>',                                   // v87.2 全31線整包輸出
         'valid_segments列的是最大直線',                       // v87.3 仍交給模型自行切線
@@ -240,7 +253,7 @@
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
     }
 
-    // ⑦雷諾曼 v4.4 命題分流、證據簇與結論上限
+    // ⑦雷諾曼 v4.5 深度現代解讀層、命題分流與結論上限
     var ln = env.lenormandTest || root.__JY_LN_TEST__;
     if (ln && typeof ln.inferQuestionDimensions === 'function') {
       var qAge = ln.inferQuestionDimensions('未來會有25歲上下跟我交往嗎？');
@@ -289,13 +302,27 @@
         var draw = ids.map(function(id){ return ln.cards[id - 1]; });
         var lp = ln.buildPrompt('未來會有25歲上下跟我交往嗎？', draw, 'grand', null, 'male');
         env.report('⑦雷諾曼提示詞', '提示詞含精確區段、年齡隔離與程式結論上限',
-          lp.length < 7000 && lp.indexOf('<valid_segments exact="true">') > -1 && lp.indexOf('requested="25歲上下" assessable="false"') > -1 && lp.indexOf('<claim_plan status="') > -1,
+          lp.length < 12000 && lp.indexOf('<valid_segments exact="true">') > -1 && lp.indexOf('requested="25歲上下" assessable="false"') > -1 && lp.indexOf('<claim_plan status="') > -1,
           'len=' + lp.length);
         env.report('⑦雷諾曼提示詞', '不再輸出最大整線、假既有人物或整份礦物表',
           lp.indexOf('valid_segments列的是最大直線') === -1 && lp.indexOf('current_or_primary_counterpart') === -1 && lp.indexOf('可用礦物事實：') === -1,
           '');
         env.report('⑦雷諾曼提示詞', '未知未來人物為方法占位，且相鄰鏈不得重複計分',
           lp.indexOf('counterpart_significator" status="method_placeholder"') > -1 && lp.indexOf('<evidence_clusters>') > -1,
+          '');
+        env.report('⑦雷諾曼提示詞', '現代深度層齊全且明示不提高確定度',
+          lp.indexOf('<person_neighborhoods method="3x3_local_field">') > -1 &&
+          lp.indexOf('<topic_neighborhoods method="3x3_local_field">') > -1 &&
+          lp.indexOf('<modern_context certainty_effect="none">') > -1 &&
+          lp.indexOf('<mirrors method="site_axis_mirror">') > -1 &&
+          lp.indexOf('<knight_moves method="chess_knight_geometry">') > -1 &&
+          lp.indexOf('<tableau_frame>') > -1 &&
+          lp.indexOf('<thematic_repetitions scope="approved_local_context">') > -1,
+          '');
+        env.report('⑦雷諾曼提示詞', '深度與確定度解耦，不再把同一簇壓成單段摘要',
+          lp.indexOf('同一C只算一組確定度，但要完整分析簇內細節') > -1 &&
+          lp.indexOf('大牌陣證據充足時原則上寫3至8段') > -1 &&
+          lp.indexOf('<analysis_requirements>') > -1,
           '');
         var cp = ln.buildPrompt('正職工作適合我嗎？未來我還會升遷嗎？', draw, 'grand', null, 'male');
         env.report('⑦雷諾曼提示詞', '適配與升遷生成不同命題契約／證據包',

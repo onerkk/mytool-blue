@@ -1,17 +1,17 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v4.4
-// v4.4（2026-06-19）命題分流、證據簇與結論上限根治：
-//   1. 工作題拆成「職涯適配、升遷、職涯變動、一般職涯」；不同命題不再共用同一證據包。
-//   2. 升遷必須同時出現「職位／權責變動」與「權威／成功／正式確認」結構；只有塔、錨、鑰匙不足以斷升遷。
-//   3. 程式將直接牌對與精確線段編成 evidence_clusters；共享核心牌只算同一簇。
-//   4. 每題由程式產生 claim_plan 與 certainty_cap，AI只能降級，不得自行提高確定度。
-//   5. 「適合工作」明確拆成可持續匹配、制度環境匹配與主觀舒適，不再把仍在職／工作穩定偷換成最適合。
-//   6. 提示詞改為 outcome-first；刪除未參與判斷的 support_focus_cards，降低資料牆與重複規則。
+// 靜月之光 — 雷諾曼牌 Lenormand v4.5
+// v4.5（2026-06-19）深度現代解讀層：
+//   1. 保留 v4.4 的分題、精確取證、證據分簇與 claim_plan；分析深度與確定度正式解耦。
+//   2. 同一 evidence cluster 仍只計一次信心，但可完整分析核心、有利、阻礙、矛盾、實際表現與未知邊界。
+//   3. 大牌陣新增人物／焦點 3×3 場域、共享牌、本站鏡像、騎士跳、線段交會、中央／四角框架與局部主題重複。
+//   4. 現代輔助技法只擴充脈絡，不單獨提高確定度，也不得推翻核心直接證據。
+//   5. 提示詞要求大牌陣依證據量作 3–8 段整合解讀，不再因防越權而縮成單段摘要。
+//   6. 健康題保留象徵性深讀，但醫學病因、診斷與治療仍明確標示為牌面不能證實。
 // Petit Lenormand 36 張・歷史基線＋本站可驗證判讀規約
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.4 loaded — 命題分流／證據簇／結論上限');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.5 loaded — 深度現代解讀層／確定度解耦');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -333,7 +333,7 @@ var QUESTION_SCHEMAS = {
   },
   health: {
     label:'健康',
-    match:/健康|身體|病|疾病|手術|恢復|康復|症狀/,
+    match:/健康|身體|病|疾病|手術|恢復|康復|症狀|發炎|痘痘|長痘|皮膚|過敏|疼痛|不舒服/,
     core:[5], support:[8,10,23,36,31]
   },
   travel: {
@@ -354,6 +354,32 @@ var QUESTION_SCHEMAS = {
     label:'一般問題', match:null,
     core:[24,25,34,35,31,33], support:[6,8,10,21,23,36]
   }
+};
+
+// v4.5：現代深度解讀只增加脈絡，不改變 claim_plan 的確定度。
+var MODERN_THEME_GROUPS = [
+  { id:'stability', label:'穩定／持續', cards:[4,5,25,30,35] },
+  { id:'success_opening', label:'機會／成功／解答', cards:[1,2,9,16,31,33] },
+  { id:'movement_change', label:'移動／改變／選擇', cards:[1,3,17,22] },
+  { id:'communication_public', label:'溝通／公開／名聲', cards:[12,20,27,32] },
+  { id:'relationship_bond', label:'情感／信任／承諾', cards:[18,24,25] },
+  { id:'work_money_power', label:'工作／財務／權力', cards:[14,15,19,34,35] },
+  { id:'ending_cut', label:'結束／切斷', cards:[8,10] },
+  { id:'obstacle_burden', label:'阻礙／負擔', cards:[21,36] },
+  { id:'loss_erosion', label:'損耗／侵蝕', cards:[23] },
+  { id:'uncertainty_complexity', label:'不明／複雜／抉擇', cards:[6,7,22] },
+  { id:'conflict_repetition', label:'衝突／反覆／焦慮', cards:[11,12] }
+];
+
+var ANALYSIS_DIMENSIONS = {
+  relationship:['感情強度層級','互動與吸引','承諾與穩定','公開／私人脈絡','阻礙與複雜因素','正反矛盾','未被牌面證明的部分'],
+  business:['商業核心動力','曝光與顧客脈絡','收入與持續性','策略與執行','阻礙與耗損','可利用的有利條件','未知邊界'],
+  career:['工作連結與適配','制度與權責','穩定與成長','變動或升遷條件','人事與環境阻力','正反矛盾','未被證明的職涯事件'],
+  finance:['資源流動','收入／支出結構','穩定性','風險與耗損','外部影響','可利用條件','未知邊界'],
+  health:['先區分醫學原因與象徵狀態','反覆或停滯模式','壓力與耗損意象','有利與緩衝因素','生活脈絡的象徵連結','正反矛盾','牌面不能證明的病因／診斷／治療'],
+  travel:['移動動力','目的與環境','阻礙與延遲','外部消息','穩定性','矛盾','未知邊界'],
+  communication:['溝通意願','訊息品質','公開／私下脈絡','阻礙與誤解','反覆模式','有利條件','未知邊界'],
+  general:['核心動力','有利因素','阻礙風險','重複模式','正反矛盾','可能的實際表現','牌面未證明的部分']
 };
 
 var CLAIM_POLICIES = {
@@ -536,6 +562,142 @@ function uniqueStrings(values) {
   });
 }
 
+function uniquePositions(values) {
+  var seen = {};
+  return (values || []).filter(function(p) {
+    if (!p || seen[p.slot]) return false;
+    seen[p.slot] = true;
+    return true;
+  });
+}
+
+function adjacencyEntryFor(geometry, slot) {
+  for (var i = 0; i < geometry.adjacency.length; i++) {
+    if (geometry.adjacency[i].position.slot === slot) return geometry.adjacency[i];
+  }
+  return null;
+}
+
+function neighborhoodFor(geometry, center) {
+  var entry = adjacencyEntryFor(geometry, center.slot);
+  return {
+    center:center,
+    positions:uniquePositions([center].concat(entry ? entry.neighbors : []))
+  };
+}
+
+function mirrorTargetsFor(geometry, center) {
+  var out = [];
+  var hIdx = gtIndexAt(center.row, 9 - center.col);
+  if (hIdx >= 0 && geometry.positions[hIdx] && geometry.positions[hIdx].slot !== center.slot) {
+    out.push({ axis:'horizontal', source:center, target:geometry.positions[hIdx] });
+  }
+  if (center.row <= 4) {
+    var vIdx = gtIndexAt(5 - center.row, center.col);
+    if (vIdx >= 0 && geometry.positions[vIdx] && geometry.positions[vIdx].slot !== center.slot) {
+      out.push({ axis:'vertical', source:center, target:geometry.positions[vIdx] });
+    }
+  }
+  return out;
+}
+
+function knightTargetsFor(geometry, center) {
+  var offsets = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+  var out = [];
+  offsets.forEach(function(d) {
+    var idx = gtIndexAt(center.row + d[0], center.col + d[1]);
+    if (idx >= 0 && geometry.positions[idx]) out.push({ source:center, target:geometry.positions[idx] });
+  });
+  return out;
+}
+
+function analysisDimensionsFor(questionItem) {
+  var types = questionItem.types || [questionItem.type];
+  var dims = [];
+  types.forEach(function(type) {
+    var domain = questionTypeDomain(type);
+    var key = domain === 'work_money' ? (/^career_/.test(type) ? 'career' : type === 'finance' ? 'finance' : 'business') : domain;
+    dims = dims.concat(ANALYSIS_DIMENSIONS[key] || ANALYSIS_DIMENSIONS.general);
+  });
+  return uniqueStrings(dims.length ? dims : ANALYSIS_DIMENSIONS.general);
+}
+
+function buildModernContext(geometry, profile, anchorPositions, directPairs, relevantSegments, declaredGender) {
+  var roles = getPersonRoleIds(declaredGender);
+  var personIds = uniqueNumbers([roles.querent, roles.counterpart]);
+  var personCenters = anchorPositions.filter(function(p){ return personIds.indexOf(p.card.id) > -1; });
+  var topicCenters = anchorPositions.filter(function(p){ return personIds.indexOf(p.card.id) === -1; });
+  var personNeighborhoods = personCenters.map(function(p){ return neighborhoodFor(geometry, p); });
+  var topicNeighborhoods = topicCenters.map(function(p){ return neighborhoodFor(geometry, p); });
+
+  var personSlots = {}, topicSlots = {};
+  personNeighborhoods.forEach(function(n){ n.positions.forEach(function(p){ personSlots[p.slot] = p; }); });
+  topicNeighborhoods.forEach(function(n){ n.positions.forEach(function(p){ topicSlots[p.slot] = p; }); });
+  var sharedCards = Object.keys(personSlots).filter(function(slot){ return !!topicSlots[slot]; }).map(function(slot){ return personSlots[slot]; });
+
+  var mirrors = [], mirrorSeen = {};
+  anchorPositions.forEach(function(p) {
+    mirrorTargetsFor(geometry, p).forEach(function(m) {
+      var key = m.axis + ':' + m.source.slot + ':' + m.target.slot;
+      if (!mirrorSeen[key]) { mirrorSeen[key] = true; mirrors.push(m); }
+    });
+  });
+
+  var knightMoves = [], knightSeen = {};
+  anchorPositions.forEach(function(p) {
+    knightTargetsFor(geometry, p).forEach(function(k) {
+      var key = k.source.slot + ':' + k.target.slot;
+      if (!knightSeen[key]) { knightSeen[key] = true; knightMoves.push(k); }
+    });
+  });
+
+  var anchorSlotMap = {};
+  anchorPositions.forEach(function(p){ anchorSlotMap[p.slot] = true; });
+  var intersections = [];
+  for (var i = 0; i < relevantSegments.length; i++) {
+    for (var j = i + 1; j < relevantSegments.length; j++) {
+      var slotsA = {};
+      relevantSegments[i].positions.forEach(function(p){ slotsA[p.slot] = p; });
+      var shared = relevantSegments[j].positions.filter(function(p){ return slotsA[p.slot] && !anchorSlotMap[p.slot]; });
+      shared = uniquePositions(shared);
+      if (shared.length) intersections.push({ a:'S' + (i + 1), b:'S' + (j + 1), positions:shared });
+    }
+  }
+
+  var cornerCoords = [[1,1],[1,8],[4,1],[4,8]];
+  var centerCoords = [[2,4],[2,5],[3,4],[3,5]];
+  var corners = cornerCoords.map(function(rc){ var idx=gtIndexAt(rc[0],rc[1]); return idx>=0 ? geometry.positions[idx] : null; }).filter(Boolean);
+  var centers = centerCoords.map(function(rc){ var idx=gtIndexAt(rc[0],rc[1]); return idx>=0 ? geometry.positions[idx] : null; }).filter(Boolean);
+
+  var contextPositions = [];
+  personNeighborhoods.concat(topicNeighborhoods).forEach(function(n){ contextPositions = contextPositions.concat(n.positions); });
+  directPairs.forEach(function(p){ contextPositions = contextPositions.concat(p.positions); });
+  relevantSegments.forEach(function(seg){ contextPositions = contextPositions.concat(seg.positions); });
+  mirrors.forEach(function(m){ contextPositions.push(m.source,m.target); });
+  knightMoves.forEach(function(k){ contextPositions.push(k.source,k.target); });
+  contextPositions = uniquePositions(contextPositions);
+
+  var contextIds = contextPositions.map(function(p){ return p.card.id; });
+  var thematicRepetitions = MODERN_THEME_GROUPS.map(function(group) {
+    var cards = contextPositions.filter(function(p){ return group.cards.indexOf(p.card.id) > -1; });
+    return { id:group.id, label:group.label, positions:cards };
+  }).filter(function(group){ return group.positions.length >= 2; }).sort(function(a,b){ return b.positions.length - a.positions.length; });
+
+  return {
+    personNeighborhoods:personNeighborhoods,
+    topicNeighborhoods:topicNeighborhoods,
+    sharedCards:sharedCards,
+    mirrors:mirrors,
+    knightMoves:knightMoves,
+    intersections:intersections,
+    corners:corners,
+    centers:centers,
+    thematicRepetitions:thematicRepetitions,
+    contextPositions:contextPositions,
+    contextIds:contextIds
+  };
+}
+
 function buildQuestionFocusProfile(questionItem, declaredGender) {
   var roles = getPersonRoleIds(declaredGender);
   var types = questionItem.types || [questionItem.type];
@@ -654,10 +816,12 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
     var c = clusterMap[k]; c.id = 'C' + (idx + 1); return c;
   });
 
+  var modernContext = buildModernContext(geometry, profile, anchorPositions, directPairs, relevantSegments, declaredGender);
   var usedCards = {};
   anchorPositions.forEach(function(p){ usedCards[p.card.id] = p.card; });
   directPairs.forEach(function(pair){ pair.positions.forEach(function(p){ usedCards[p.card.id] = p.card; }); });
   relevantSegments.forEach(function(seg){ seg.positions.forEach(function(p){ usedCards[p.card.id] = p.card; }); });
+  modernContext.contextPositions.concat(modernContext.corners, modernContext.centers).forEach(function(p){ usedCards[p.card.id] = p.card; });
 
   var packet = {
     question:questionItem,
@@ -668,6 +832,8 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
     segments:relevantSegments,
     clusters:clusters,
     structures:structures,
+    modernContext:modernContext,
+    analysisDimensions:analysisDimensionsFor(questionItem),
     usedCards:usedCards
   };
   packet.claimPlan = buildClaimPlan(packet, declaredGender);
@@ -796,11 +962,12 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   var hasAgeQualifier = questions.some(function(item){ return item.qualifiers && item.qualifiers.length; });
 
   lines.push('# 任務');
-  lines.push('你是本站 Petit Lenormand v5 的讀牌文字產生器。程式已完成分題、取證、證據分簇與結論上限；只用各題 evidence_packet，且不得提高 claim_plan 的確定度。');
+  lines.push('你是本站 Petit Lenormand v6 深度讀牌文字產生器。程式已完成分題、核心取證、現代脈絡取證、證據分簇與結論上限；只用各題 evidence_packet，且不得提高 claim_plan 的確定度。');
   lines.push('第一句依題目順序回答。第三方內心、年齡、日期、機率、身分或事件缺證時直接說不足。');
+  lines.push('限制的是越權結論，不是分析深度：同一C只算一組信心證據，但必須完整分析其核心動力、有利因素、阻礙、反覆模式、內部矛盾、實際表現與未知邊界。');
   lines.push('棺材＝結束；鐮刀＝切斷；山＝阻礙；老鼠＝損耗；十字架＝負擔；雲＝不明；鞭子＝衝突／反覆。不得美化。');
-  lines.push('歷史基線僅為36張、4×8+4與人物牌附近閱讀；座標、相鄰、線段、房屋與結論門檻均為本站規約。');
-  lines.push('D=精確相鄰牌對；S=精確完整線段；C=共享核心牌後合併的證據簇。同一C只算一組；D/S不表示時間、因果或發展方向；房屋只作背景。');
+  lines.push('歷史基線僅為36張、4×8+4與人物牌附近閱讀；座標、相鄰、線段、房屋、3×3場域、本站鏡像、騎士跳、交會、中央／四角與結論門檻均為本站現代規約。');
+  lines.push('D=精確相鄰；S=精確完整線段；C=共享核心牌後合併的信心簇。N／M／K／I／F／T為脈絡層，只增加分析廣度，不單獨提高 certainty_cap；所有結構都不表示時間、因果或發展方向。');
   lines.push('');
 
   if (typeSet.relationship_intent || typeSet.relationship_future || typeSet.relationship_longevity || typeSet.multi_partner_commitment) {
@@ -818,8 +985,11 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   if (typeSet.career_fit || typeSet.career_promotion || typeSet.career_change || typeSet.career_general) {
     lines.push('工作題：適合＝可持續匹配；升遷＝職位／權責向上。仍在職、穩定、身處機構或被重視均不能互相替代。');
   }
+  if (typeSet.health) {
+    lines.push('健康題可深入分析反覆、阻礙、耗損、壓力、生活脈絡與改善阻力等象徵；但不得把象徵寫成已證實的醫學病因、診斷、藥效或治療。');
+  }
 
-  lines.push('<reading_request method_profile="site_petit_lenormand_v5">');
+  lines.push('<reading_request method_profile="site_petit_lenormand_v6_deep">');
   lines.push('<question_original>' + xmlEscape(q || '未指定具體問題') + '</question_original>');
   lines.push('<normalized_questions>');
   questions.forEach(function(item) {
@@ -883,6 +1053,52 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
         lines.push(cardLabel(p.card) + '落' + cardLabel(p.house) + '宮');
       });
       lines.push('</relevant_houses>');
+
+      lines.push('<person_neighborhoods method="3x3_local_field">');
+      packet.modernContext.personNeighborhoods.forEach(function(n, idx) {
+        lines.push('N-P' + (idx + 1) + ' center=' + cardLabel(n.center.card) + ' cards=' + n.positions.map(function(p){ return cardLabel(p.card); }).join(', '));
+      });
+      lines.push('</person_neighborhoods>');
+      lines.push('<topic_neighborhoods method="3x3_local_field">');
+      packet.modernContext.topicNeighborhoods.forEach(function(n, idx) {
+        lines.push('N-T' + (idx + 1) + ' center=' + cardLabel(n.center.card) + ' cards=' + n.positions.map(function(p){ return cardLabel(p.card); }).join(', '));
+      });
+      lines.push('</topic_neighborhoods>');
+      lines.push('<shared_cards>');
+      if (packet.modernContext.sharedCards.length) lines.push(packet.modernContext.sharedCards.map(function(p){ return cardLabel(p.card); }).join(', '));
+      lines.push('</shared_cards>');
+
+      lines.push('<modern_context certainty_effect="none">');
+      lines.push('<mirrors method="site_axis_mirror">');
+      packet.modernContext.mirrors.forEach(function(m, idx) {
+        lines.push('M' + (idx + 1) + ' ' + m.axis + ' ' + cardLabel(m.source.card) + ' <-> ' + cardLabel(m.target.card));
+      });
+      lines.push('</mirrors>');
+      lines.push('<knight_moves method="chess_knight_geometry">');
+      packet.modernContext.knightMoves.forEach(function(k, idx) {
+        lines.push('K' + (idx + 1) + ' ' + cardLabel(k.source.card) + ' ~ ' + cardLabel(k.target.card));
+      });
+      lines.push('</knight_moves>');
+      lines.push('<segment_intersections>');
+      packet.modernContext.intersections.forEach(function(it, idx) {
+        lines.push('I' + (idx + 1) + ' ' + it.a + ' x ' + it.b + ' shared=' + it.positions.map(function(p){ return cardLabel(p.card); }).join(', '));
+      });
+      lines.push('</segment_intersections>');
+      lines.push('<tableau_frame>');
+      lines.push('F-corners=' + packet.modernContext.corners.map(function(p){ return cardLabel(p.card); }).join(', '));
+      lines.push('F-center=' + packet.modernContext.centers.map(function(p){ return cardLabel(p.card); }).join(', '));
+      lines.push('</tableau_frame>');
+      lines.push('<thematic_repetitions scope="approved_local_context">');
+      packet.modernContext.thematicRepetitions.forEach(function(t, idx) {
+        lines.push('T' + (idx + 1) + ' ' + t.label + ' (' + t.positions.length + ')=' + t.positions.map(function(p){ return cardLabel(p.card); }).join(', '));
+      });
+      lines.push('</thematic_repetitions>');
+      lines.push('</modern_context>');
+
+      lines.push('<analysis_requirements>');
+      lines.push(packet.analysisDimensions.join('；'));
+      lines.push('大牌陣證據充足時原則上寫3至8段；同一C可從不同面向深讀，但不得當成多組獨立驗證，也不得重複同一句結論灌水。');
+      lines.push('</analysis_requirements>');
       lines.push('</evidence_packet>');
     });
     lines.push('<card_dictionary scope="all_evidence_packets">');
@@ -901,9 +1117,10 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('');
 
   lines.push('# 輸出');
-  lines.push('第一句依題目順序回答。每個實際判斷各自成段；數字年齡條件若不可驗證，必須明確單獨說明。');
+  lines.push('第一句依題目順序回答。每個子題依證據量深入呈現核心判斷、有利面、阻礙面、矛盾整合、可能的實際表現與未知邊界；大牌陣有足夠資料時不得只寫一小段。');
+  lines.push('同一C可以拆成多個分析面向，但全文不得用列舉數量暗示它是多組獨立證據；數字年齡條件若不可驗證，必須明確單獨說明。');
   lines.push('正文使用繁體中文與台灣用語，不寫座標、排數或教科書流程。');
-  lines.push('每段末尾列真正使用的證據：相鄰寫「牌A＋牌B」；線段寫完整「牌A→中間牌→牌B」；房屋寫「牌A落牌B宮」。');
+  lines.push('每段末尾列真正使用的證據：相鄰「牌A＋牌B」；線段「牌A→中間牌→牌B」；房屋「牌A落牌B宮」；區域「核心牌周圍〔…〕」；鏡像「牌A⇄牌B」；騎士跳「牌A↝牌B」；交會「Sx×Sy〔共享牌〕」；框架／主題標示F或T。');
   lines.push('');
 
   lines.push('<presentation_footer mode="verbatim_after_reading">');
@@ -913,7 +1130,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('</presentation_footer>');
   lines.push('');
 
-  lines.push('最後：只用 evidence_packet；服從 claim_plan；同一C只算一組；不得補時間／因果／數字年齡。正文後逐字附上 footer 三行。只輸出最終解讀。');
+  lines.push('最後：只用 evidence_packet；服從 claim_plan；同一C只算一組確定度，但要完整分析簇內細節；現代脈絡不得單獨升級結論；不得補時間／因果／數字年齡。正文後逐字附上 footer 三行。只輸出最終解讀。');
 
   return lines.join('\n');
 }
@@ -1223,6 +1440,8 @@ window.__JY_LN_TEST__ = {
   buildGrandGeometry: buildGrandGeometry,
   buildEvidencePacket: buildEvidencePacket,
   buildClaimPlan: buildClaimPlan,
+  buildModernContext: buildModernContext,
+  analysisDimensionsFor: analysisDimensionsFor,
   buildPrompt: buildPrompt,
   cards: CARDS,
   spreads: SPREADS
