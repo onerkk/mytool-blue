@@ -1,17 +1,17 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v4.3
-// v4.3（2026-06-18）語意路由、精確區段與數字條件根治：
-//   1. 問題改採「謂詞＋目標範圍＋條件」三維解析；未來交往不再誤判成特定對象當下意圖。
-//   2. 數字年齡（如25歲上下）成為不可驗證條件；未提供 age_rules 時不再用孩子／百合／大樹側面證實。
-//   3. valid_segments 由程式直接裁成精確端點區段，不再把最大整線交給模型自行切割。
-//   4. 多個共享核心牌的相鄰牌對只算一個關係簇，禁止串成「由感情走向交往」的時序或因果流程。
-//   5. 未知未來對象的人物牌標為方法占位，不得寫成已出現、已知身分或已有交往意圖。
-//   6. 品牌收尾改為程式預選的固定三行，移除整份礦物資料表，降低提示詞干擾。
+// 靜月之光 — 雷諾曼牌 Lenormand v4.4
+// v4.4（2026-06-19）命題分流、證據簇與結論上限根治：
+//   1. 工作題拆成「職涯適配、升遷、職涯變動、一般職涯」；不同命題不再共用同一證據包。
+//   2. 升遷必須同時出現「職位／權責變動」與「權威／成功／正式確認」結構；只有塔、錨、鑰匙不足以斷升遷。
+//   3. 程式將直接牌對與精確線段編成 evidence_clusters；共享核心牌只算同一簇。
+//   4. 每題由程式產生 claim_plan 與 certainty_cap，AI只能降級，不得自行提高確定度。
+//   5. 「適合工作」明確拆成可持續匹配、制度環境匹配與主觀舒適，不再把仍在職／工作穩定偷換成最適合。
+//   6. 提示詞改為 outcome-first；刪除未參與判斷的 support_focus_cards，降低資料牆與重複規則。
 // Petit Lenormand 36 張・歷史基線＋本站可驗證判讀規約
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.3 loaded — 三維路由／精確區段／數字條件隔離');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.4 loaded — 命題分流／證據簇／結論上限');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -301,10 +301,25 @@ var QUESTION_SCHEMAS = {
     match:/副業|創業|生意|賣場|訂單|客戶|營收|業績|直播帶貨|商業|能成功|做得起來|賺錢/,
     core:[34,35,31], support:[32,20,14,3,33]
   },
-  career: {
-    label:'工作／職涯',
-    match:/工作|職場|升遷|加薪|轉職|離職|主管|同事|錄取|面試|天職|職涯/,
-    core:[35,14], support:[19,15,31,33,27]
+  career_fit: {
+    label:'職涯適配／是否適合',
+    match:/適不適合.{0,8}(?:工作|職場|正職)|(?:工作|職場|正職|這份工作).{0,8}(?:適合|合適)|天職|適合我做|適合做下去/,
+    core:[35,14], support:[4,5,30,24,33,19,21,36,8,7,22,23,11]
+  },
+  career_promotion: {
+    label:'升遷／職位向上變動',
+    match:/升遷|升職|晉升|被提拔|升主管|職位.{0,5}(?:提升|上升)|加官|被重用/,
+    core:[17,19,15], support:[31,33,27,1,32,35,14,21,36,8,22,7]
+  },
+  career_change: {
+    label:'轉職／離職／錄取',
+    match:/轉職|離職|換工作|跳槽|錄取|面試|新工作|換.{0,4}職場/,
+    core:[17,35,14], support:[1,27,33,31,21,22,8]
+  },
+  career_general: {
+    label:'一般工作／職涯',
+    match:/工作|職場|正職|主管|同事|職涯|上班/,
+    core:[35,14], support:[19,15,31,33,27,17]
   },
   finance: {
     label:'財務',
@@ -338,6 +353,33 @@ var QUESTION_SCHEMAS = {
   general: {
     label:'一般問題', match:null,
     core:[24,25,34,35,31,33], support:[6,8,10,21,23,36]
+  }
+};
+
+var CLAIM_POLICIES = {
+  career_fit: {
+    questionMeaning:'判斷此工作與問卜者是否具備可持續匹配；「目前仍在職、工作穩定、與機構連結」不等於最適合，也不等於做得舒適。',
+    positiveRule:'至少需要問卜者與工作／職業結構相連，並有穩定、成長、認同或成熟處理的同簇支持。',
+    negativeRule:'工作結構若同簇連到棺材、山、老鼠、十字架、蛇、鞭子或十字路口，必須呈現消耗、阻礙、複雜或去留衝突。',
+    forbidden:'不得只因紳士／淑女連到狐狸、錨、塔或鑰匙，就直接寫成「這份工作適合你」。'
+  },
+  career_promotion: {
+    questionMeaning:'判斷未來是否有職位、權責或層級向上變動；工作穩定、身處機構、被認為重要，不等於升遷。',
+    positiveRule:'至少需要一組連到鸛的職位／權責變動結構，並另有塔或熊的權威層級，或太陽、鑰匙、信、騎士、月亮的成功／正式確認支持。',
+    negativeRule:'山、棺材、十字架、蛇、老鼠或十字路口若與升遷核心同簇，必須降低確定度並說明延遲、終止、壓力、複雜或選擇。',
+    forbidden:'只有塔、錨、狐狸、鑰匙或問卜者與機構相連時，只能說在組織內有連結或重要性，不得直接斷成升遷。'
+  },
+  career_change: {
+    questionMeaning:'判斷是否出現工作狀態或職場位置變動，不把單純不滿、穩定或壓力偷換成已離職／已錄取。',
+    positiveRule:'至少需要鸛、騎士、船、十字路口或信與工作核心形成合法結構。',
+    negativeRule:'棺材、山、雲或十字架與變動核心同簇時，必須保留終止、延遲、不明或壓力。',
+    forbidden:'不得只因狐狸或錨出現就判定轉職、離職或錄取。'
+  },
+  career_general: {
+    questionMeaning:'只回答題目實際詢問的工作狀況；不得把一般工作連結擴張成適合、升遷、加薪或離職。',
+    positiveRule:'以問卜者、狐狸、錨及題目明確焦點的合法結構為主。',
+    negativeRule:'負面核心牌與工作結構同簇時必須保留其原義。',
+    forbidden:'不得補出題目沒有問的職涯事件。'
   }
 };
 
@@ -382,10 +424,17 @@ function inferQuestionDimensions(text) {
   if (futureRelationship) types.push('relationship_future');
   if (QUESTION_SCHEMAS.relationship_intent.match.test(t) && targetScope !== 'unknown_future_counterpart') types.push('relationship_intent');
 
-  ['business_success','career','finance','timing','health','travel','communication'].forEach(function(key) {
+  ['business_success','finance','timing','health','travel','communication'].forEach(function(key) {
     var def = QUESTION_SCHEMAS[key];
     if (def.match && def.match.test(t)) types.push(key);
   });
+
+  var careerSpecific = ['career_fit','career_promotion','career_change'].filter(function(key) {
+    var def = QUESTION_SCHEMAS[key];
+    return !!(def.match && def.match.test(t));
+  });
+  types = types.concat(careerSpecific);
+  if (!careerSpecific.length && QUESTION_SCHEMAS.career_general.match.test(t)) types.push('career_general');
 
   types = uniqueStrings(types);
   if (!types.length && ageQualifier) types = ['age_unverifiable'];
@@ -397,9 +446,17 @@ function inferQuestionDimensions(text) {
   };
 }
 
+function primaryDecisionType(types) {
+  var list = Array.isArray(types) ? types : [types];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i] !== 'timing' && list[i] !== 'age_unverifiable' && list[i] !== 'general') return list[i];
+  }
+  return list[0] || 'general';
+}
+
 function questionTypeDomain(type) {
   if (/^relationship_|^multi_partner_/.test(type)) return 'relationship';
-  if (/^business_|^career$|^finance$/.test(type)) return 'work_money';
+  if (/^business_|^career_|^finance$/.test(type)) return 'work_money';
   if (type === 'health') return 'health';
   if (type === 'travel') return 'travel';
   if (type === 'communication') return 'communication';
@@ -510,18 +567,27 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
   var focusPositions = profile.all.map(function(id){ return byCardId[id]; }).filter(Boolean);
   var anchorPositions = profile.anchors.map(function(id){ return byCardId[id]; }).filter(Boolean);
   var housePositions = anchorPositions.slice();
-  var focusSlots = {};
   var anchorSlots = {};
   var supportSlots = {};
-  focusPositions.forEach(function(p){ focusSlots[p.slot] = true; });
   anchorPositions.forEach(function(p){ anchorSlots[p.slot] = true; });
   profile.supports.forEach(function(id){ var p = byCardId[id]; if (p) supportSlots[p.slot] = true; });
 
-  // 直接相鄰只輸出人物牌與核心焦點牌；輔助牌改由精確線段提供，避免資料牆。
-  var direct = geometry.adjacency.filter(function(a){ return !!anchorSlots[a.position.slot]; });
+  // 直接證據改成去重後的精確牌對，不再把一個核心牌的全部鄰牌壓成一行。
+  var pairMap = {};
+  var directPairs = [];
+  geometry.adjacency.forEach(function(a) {
+    if (!anchorSlots[a.position.slot]) return;
+    a.neighbors.forEach(function(n) {
+      var lo = Math.min(a.position.slot, n.slot), hi = Math.max(a.position.slot, n.slot);
+      var key = lo + '-' + hi;
+      if (pairMap[key]) return;
+      pairMap[key] = true;
+      directPairs.push({ positions:[a.position, n] });
+    });
+  });
+
   var segmentMap = {};
   var relevantSegments = [];
-
   function addSegment(seq) {
     if (!seq || seq.length < 3) return;
     var key = seq.map(function(p){ return p.slot; }).join('-');
@@ -538,15 +604,11 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
       if (anchorSlots[p.slot]) anchorIndexes.push(idx);
       else if (supportSlots[p.slot]) supportIndexes.push(idx);
     });
-
-    // 人物牌與核心焦點牌之間的精確區段：不把整條最大線丟給模型。
     for (var i = 0; i < anchorIndexes.length; i++) {
       for (var j = i + 1; j < anchorIndexes.length; j++) {
         addSegment(line.positions.slice(anchorIndexes[i], anchorIndexes[j] + 1));
       }
     }
-
-    // 核心端點至輔助牌：中間若另有核心端點，改由核心—核心區段表達，避免重疊資料牆。
     anchorIndexes.forEach(function(ai) {
       supportIndexes.forEach(function(si) {
         var lo = Math.min(ai, si), hi = Math.max(ai, si);
@@ -555,26 +617,143 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
       });
     });
   });
-
   relevantSegments.sort(function(a,b){ return a.positions.length - b.positions.length; });
 
-  var usedCards = {};
-  focusPositions.forEach(function(p){ usedCards[p.card.id] = p.card; });
-  direct.forEach(function(a){
-    usedCards[a.position.card.id] = a.position.card;
-    a.neighbors.forEach(function(n){ usedCards[n.card.id] = n.card; });
+  // 把共享任何核心牌的直接牌對／線段合併成同一 evidence cluster。
+  var structures = [];
+  directPairs.forEach(function(pair, idx) {
+    structures.push({ id:'D' + (idx + 1), kind:'adjacency', positions:pair.positions });
   });
+  relevantSegments.forEach(function(seg, idx) {
+    structures.push({ id:'S' + (idx + 1), kind:'segment', positions:seg.positions });
+  });
+  structures.forEach(function(st) {
+    st.anchorSlots = st.positions.filter(function(p){ return !!anchorSlots[p.slot]; }).map(function(p){ return p.slot; });
+    st.cardIds = uniqueNumbers(st.positions.map(function(p){ return p.card.id; }));
+  });
+
+  var parent = structures.map(function(_, i){ return i; });
+  function find(x){ while(parent[x] !== x){ parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
+  function unite(a,b){ a=find(a); b=find(b); if(a!==b) parent[b]=a; }
+  for (var si = 0; si < structures.length; si++) {
+    for (var sj = si + 1; sj < structures.length; sj++) {
+      var sharedCore = structures[si].anchorSlots.some(function(slot){ return structures[sj].anchorSlots.indexOf(slot) > -1; });
+      if (sharedCore) unite(si,sj);
+    }
+  }
+  var clusterMap = {};
+  structures.forEach(function(st, idx) {
+    var root = find(idx);
+    if (!clusterMap[root]) clusterMap[root] = { refs:[], cardIds:[], anchorIds:[] };
+    clusterMap[root].refs.push(st.id);
+    clusterMap[root].cardIds = uniqueNumbers(clusterMap[root].cardIds.concat(st.cardIds));
+    st.positions.forEach(function(p){ if (anchorSlots[p.slot]) clusterMap[root].anchorIds.push(p.card.id); });
+    clusterMap[root].anchorIds = uniqueNumbers(clusterMap[root].anchorIds);
+  });
+  var clusters = Object.keys(clusterMap).map(function(k, idx) {
+    var c = clusterMap[k]; c.id = 'C' + (idx + 1); return c;
+  });
+
+  var usedCards = {};
+  anchorPositions.forEach(function(p){ usedCards[p.card.id] = p.card; });
+  directPairs.forEach(function(pair){ pair.positions.forEach(function(p){ usedCards[p.card.id] = p.card; }); });
   relevantSegments.forEach(function(seg){ seg.positions.forEach(function(p){ usedCards[p.card.id] = p.card; }); });
 
-  return {
+  var packet = {
     question:questionItem,
     focusPositions:focusPositions,
     anchorPositions:anchorPositions,
     housePositions:housePositions,
-    direct:direct,
+    directPairs:directPairs,
     segments:relevantSegments,
+    clusters:clusters,
+    structures:structures,
     usedCards:usedCards
   };
+  packet.claimPlan = buildClaimPlan(packet, declaredGender);
+  return packet;
+}
+
+function clusterHasAny(cluster, ids) {
+  return ids.some(function(id){ return cluster.cardIds.indexOf(id) > -1; });
+}
+function clusterHasBoth(cluster, idsA, idsB) {
+  return clusterHasAny(cluster, idsA) && clusterHasAny(cluster, idsB);
+}
+function anyCluster(packet, idsA, idsB) {
+  return packet.clusters.some(function(c){ return clusterHasBoth(c, idsA, idsB); });
+}
+
+function buildClaimPlan(packet, declaredGender) {
+  var types = packet.question.types || [packet.question.type];
+  var type = primaryDecisionType(types);
+  var roles = getPersonRoleIds(declaredGender);
+  var querent = roles.querent ? [roles.querent] : [28,29];
+  var plan = {
+    status:'model_evaluate',
+    certaintyCap:'較有傾向',
+    requiredConclusion:'依合法結構呈現正反證據；不得超過 certainty_cap。',
+    forbiddenInference:'不得把同一 evidence cluster 拆成多項獨立證據。'
+  };
+
+  if (type === 'career_fit') {
+    var work = [14,35,19];
+    var fitSupport = [4,5,30,24,33];
+    var strain = [8,21,23,36,7,11,22];
+    var hasWorkLink = anyCluster(packet, querent, work);
+    var hasFitSupport = anyCluster(packet, work, fitSupport);
+    var hasStrain = anyCluster(packet, work.concat(querent), strain);
+    if (!hasWorkLink) {
+      plan.status = 'insufficient_fit';
+      plan.certaintyCap = '牌面不足以明確判定';
+      plan.requiredConclusion = '不能只因工作牌出現就說適合；本題最多描述工作環境訊號。';
+    } else if (hasFitSupport && hasStrain) {
+      plan.status = 'mixed_fit';
+      plan.certaintyCap = '有適配傾向，但反證明顯';
+      plan.requiredConclusion = '區分「能在制度內做、可持續」與「主觀舒服、最適合」；不得直接寫成整體適合。';
+    } else if (hasFitSupport) {
+      plan.status = 'supported_fit';
+      plan.certaintyCap = '較有適合傾向';
+      plan.requiredConclusion = '可說較適合此類工作結構，但不可宣稱唯一最適合。';
+    } else if (hasStrain) {
+      plan.status = 'work_link_with_strain';
+      plan.certaintyCap = '工作連結明確，但適配性不足';
+      plan.requiredConclusion = '只能說與工作／機構連結明確，且伴隨消耗或阻礙；不足以肯定適合。';
+    } else {
+      plan.status = 'work_link_only';
+      plan.certaintyCap = '有工作連結，適配性未定';
+      plan.requiredConclusion = '工作連結不等於適合；明說適配性證據不足。';
+    }
+    plan.forbiddenInference = '不得把仍在職、穩定、機構連結或重要性直接等同於適合。';
+  }
+
+  if (type === 'career_promotion') {
+    var careerBase = querent.concat([14,35,19,15]);
+    var changeLink = anyCluster(packet, [17], careerBase);
+    var authorityLink = anyCluster(packet, [19,15], querent.concat([14,35,17]));
+    var confirmationLink = anyCluster(packet, [31,33,27,1,32], querent.concat([14,35,17,19,15]));
+    var promotionRisk = anyCluster(packet, [17,19,15,14,35].concat(querent), [8,21,23,36,7,22]);
+    if (!changeLink) {
+      plan.status = 'insufficient_promotion_change';
+      plan.certaintyCap = '牌面不足以判定會升遷';
+      plan.requiredConclusion = '可描述在組織內的連結、責任或重要性，但缺少職位／權責向上變動結構，不得寫成有升遷機會。';
+    } else if (authorityLink && confirmationLink && !promotionRisk) {
+      plan.status = 'promotion_supported';
+      plan.certaintyCap = '升遷傾向較明確';
+      plan.requiredConclusion = '可說升遷傾向較明確，但沒有 time_rules 不得給時間。';
+    } else if (authorityLink || confirmationLink) {
+      plan.status = promotionRisk ? 'promotion_possible_with_risk' : 'promotion_possible';
+      plan.certaintyCap = '有升遷機會';
+      plan.requiredConclusion = promotionRisk ? '可說有機會，但必須同時說明阻礙／終止／壓力／複雜等同簇反證。' : '可說有機會，但證據未達明確必然。';
+    } else {
+      plan.status = 'change_without_promotion_confirmation';
+      plan.certaintyCap = '有職場變動訊號，不能確定是升遷';
+      plan.requiredConclusion = '變動不等於向上升遷；不得把工作變化寫成升職。';
+    }
+    plan.forbiddenInference = '只有塔、錨、狐狸、鑰匙或被重視的訊號，不足以證明職位向上變動。';
+  }
+
+  return plan;
 }
 
 var PRESENTATION_FOOTERS = {
@@ -590,7 +769,7 @@ function selectPresentationFooter(questions) {
   questions.forEach(function(q){ (q.types || [q.type]).forEach(function(t){ all[t] = true; }); });
   if (all.relationship_intent || all.relationship_future || all.relationship_longevity || all.multi_partner_commitment) return PRESENTATION_FOOTERS.relationship;
   if (all.business_success || all.finance) return PRESENTATION_FOOTERS.business;
-  if (all.career) return PRESENTATION_FOOTERS.career;
+  if (all.career_fit || all.career_promotion || all.career_change || all.career_general) return PRESENTATION_FOOTERS.career;
   if (all.health) return PRESENTATION_FOOTERS.health;
   return PRESENTATION_FOOTERS.general;
 }
@@ -617,27 +796,15 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   var hasAgeQualifier = questions.some(function(item){ return item.qualifiers && item.qualifiers.length; });
 
   lines.push('# 任務');
-  lines.push('你是依「本站 Petit Lenormand 判讀規約 v4」工作的讀牌者。第一句依題目順序直接回答；只使用各題 evidence_packet。');
-  lines.push('每題獨立取證。第三方內心只能寫成牌面傾向；缺證就說不足，不補年齡、日期、機率、身分或事件。');
-  lines.push('棺材＝結束／終止／封閉；鐮刀＝切斷／突然中止；山＝阻礙／延遲；老鼠＝侵蝕／損耗；十字架＝負擔／壓力；雲＝不明／混亂；鞭子＝衝突／反覆。不得美化。');
-  lines.push('歷史基線為36張、4排8張加末排4張及人物牌附近閱讀；置中座標、八方相鄰、直線與房屋均屬本站現代規約。');
-  lines.push('');
-
-  lines.push('# 證據契約');
-  lines.push('1. direct_adjacency 是直接相鄰；valid_segments 已是程式裁好的精確區段，引用時必須一張不漏，不得自行延長、縮短、轉彎或補線。');
-  lines.push('2. 相鄰牌對或線段只表示同一結構，不表示時間、因果或發展方向。未啟用 direction_rules，禁止「先、之後、最後、由A走向B」。');
-  lines.push('3. 多個共享核心牌的相鄰牌對只算一個關係簇，不得拆成多項獨立證據來提高確定度。');
-  lines.push('4. 房屋只修飾人物牌與核心焦點牌，不能推翻直接證據。完全沒有相關結構時回答「牌面不足以判定」；正反證據並存時說明哪方較重。');
-  lines.push('5. 一個關係簇加一致旁證只能寫「有機會／較有傾向」；至少兩組彼此獨立、且無同級反證的直接結構，才可寫明確傾向。');
-  lines.push('例：心＆戒指、戒指＆人物牌是同一關係簇；可說「支持交往可能」，不可寫成從感情逐步發展為交往，也不可把它算成兩項獨立證據。');
+  lines.push('你是本站 Petit Lenormand v5 的讀牌文字產生器。程式已完成分題、取證、證據分簇與結論上限；只用各題 evidence_packet，且不得提高 claim_plan 的確定度。');
+  lines.push('第一句依題目順序回答。第三方內心、年齡、日期、機率、身分或事件缺證時直接說不足。');
+  lines.push('棺材＝結束；鐮刀＝切斷；山＝阻礙；老鼠＝損耗；十字架＝負擔；雲＝不明；鞭子＝衝突／反覆。不得美化。');
+  lines.push('歷史基線僅為36張、4×8+4與人物牌附近閱讀；座標、相鄰、線段、房屋與結論門檻均為本站規約。');
+  lines.push('D=精確相鄰牌對；S=精確完整線段；C=共享核心牌後合併的證據簇。同一C只算一組；D/S不表示時間、因果或發展方向；房屋只作背景。');
   lines.push('');
 
   if (typeSet.relationship_intent || typeSet.relationship_future || typeSet.relationship_longevity || typeSet.multi_partner_commitment) {
-    lines.push('# 感情判準');
-    lines.push('區分友善、好感、情緒投入、想交往、形成交往、穩定承諾。狗不等於愛情；公開互動不等於私人感情。');
-    lines.push('relationship_intent 才能回答某位特定對象當下想不想；relationship_future 問的是未來是否形成關係，不得改寫成「她現在想交往」。');
-    lines.push('人物牌若標為 counterpart_significator，只是本題結構定位，不證明其真實身分、年齡或已經出現。');
-    lines.push('');
+    lines.push('感情題須區分友善、好感、意圖、形成交往與承諾；狗／公開互動不等於愛情，方法占位人物不代表真人已出現。');
   }
   if (typeSet.relationship_longevity) {
     lines.push('「正緣」只指相互感情、持續性、共同生活與承諾是否受支持，不判唯一命定。');
@@ -646,14 +813,13 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
     lines.push('沒有兩名以上被明確指定的人物角色及各自獨立的心／戒指結構，不得判成多人伴侶或一夫多妻。');
   }
   if (hasAgeQualifier) {
-    lines.push('# 數字年齡條件');
-    lines.push('題目中的歲數是使用者提出的篩選條件，不是牌面證據。本次沒有 age_rules，因此必須把「是否形成交往」與「是否符合該歲數」分開回答；歲數是否吻合只能說無法驗證。');
-    lines.push('不得用孩子、百合、大樹或房屋把數字年齡換算、近似或側面證實；也不得因人物牌出現就假定該年齡的人已出現。');
-    lines.push('合格答法示例：「牌面支持出現交往機會，但無法確認對方是否符合題目所述歲數。」');
-    lines.push('');
+    lines.push('無 age_rules：數字年齡只能回答無法驗證，不得用孩子／百合／大樹／房屋側證。');
+  }
+  if (typeSet.career_fit || typeSet.career_promotion || typeSet.career_change || typeSet.career_general) {
+    lines.push('工作題：適合＝可持續匹配；升遷＝職位／權責向上。仍在職、穩定、身處機構或被重視均不能互相替代。');
   }
 
-  lines.push('<reading_request method_profile="site_petit_lenormand_v4">');
+  lines.push('<reading_request method_profile="site_petit_lenormand_v5">');
   lines.push('<question_original>' + xmlEscape(q || '未指定具體問題') + '</question_original>');
   lines.push('<normalized_questions>');
   questions.forEach(function(item) {
@@ -692,19 +858,14 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
       if (roles.counterpart && ((item.types || [item.type]).some(function(type){ return /^relationship_|^multi_partner_/.test(type); }) || item.targetScope !== 'unspecified')) {
         lines.push('<role name="counterpart_significator" status="method_placeholder">' + cardLabel(CARDS[roles.counterpart - 1]) + '</role>');
       }
-      lines.push('<core_focus_cards>');
-      packet.anchorPositions.forEach(function(p) {
-        lines.push(positionLabel(p) + '|' + cardLabel(p.card) + '|house=' + cardLabel(p.house));
-      });
-      lines.push('</core_focus_cards>');
-      lines.push('<support_focus_cards>');
-      packet.focusPositions.filter(function(p){ return packet.anchorPositions.indexOf(p) === -1; }).forEach(function(p) {
-        lines.push(positionLabel(p) + '|' + cardLabel(p.card));
-      });
-      lines.push('</support_focus_cards>');
-      lines.push('<direct_adjacency>');
-      packet.direct.forEach(function(a) {
-        lines.push(cardLabel(a.position.card) + ' => ' + (a.neighbors.length ? a.neighbors.map(function(n){ return cardLabel(n.card); }).join(', ') : 'none'));
+      var primaryType = primaryDecisionType(item.types || [item.type]);
+      var policy = CLAIM_POLICIES[primaryType];
+      if (policy) lines.push('<decision_rule>' + xmlEscape(policy.questionMeaning + ' ' + policy.forbidden) + '</decision_rule>');
+      lines.push('<claim_plan status="' + packet.claimPlan.status + '" certainty_cap="' + xmlEscape(packet.claimPlan.certaintyCap) + '">' + xmlEscape(packet.claimPlan.requiredConclusion) + '</claim_plan>');
+      lines.push('<core_focus>' + packet.anchorPositions.map(function(p){ return cardLabel(p.card); }).join(', ') + '</core_focus>');
+      lines.push('<direct_adjacency exact_pairs="true">');
+      packet.directPairs.forEach(function(pair, idx) {
+        lines.push('D' + (idx + 1) + ' ' + pair.positions.map(function(p){ return cardLabel(p.card); }).join(' & '));
       });
       lines.push('</direct_adjacency>');
       lines.push('<valid_segments exact="true">');
@@ -712,6 +873,11 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
         lines.push('S' + (idx + 1) + ' ' + seg.positions.map(function(p){ return cardLabel(p.card); }).join(' > '));
       });
       lines.push('</valid_segments>');
+      lines.push('<evidence_clusters>');
+      packet.clusters.forEach(function(cluster) {
+        lines.push(cluster.id + '=' + cluster.refs.join(','));
+      });
+      lines.push('</evidence_clusters>');
       lines.push('<relevant_houses>');
       packet.housePositions.forEach(function(p) {
         lines.push(cardLabel(p.card) + '落' + cardLabel(p.house) + '宮');
@@ -747,9 +913,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('</presentation_footer>');
   lines.push('');
 
-  lines.push('# 最後檢查');
-  lines.push('只用 evidence_packet；共享核心牌的相鄰鏈不得冒充多項獨立證據；不得把關係簇寫成發展流程；未知未來對象不得寫成已出現或已有意圖；無 age_rules 不得驗證任何數字歲數。');
-  lines.push('完成正文後，再逐字附上 presentation_footer 的三行內容。只輸出最終解讀。');
+  lines.push('最後：只用 evidence_packet；服從 claim_plan；同一C只算一組；不得補時間／因果／數字年齡。正文後逐字附上 footer 三行。只輸出最終解讀。');
 
   return lines.join('\n');
 }
@@ -1054,9 +1218,11 @@ window._lnReset = function() {
 // 僅供自動測試使用；不參與正式 UI 與讀牌結果。
 window.__JY_LN_TEST__ = {
   inferQuestionDimensions: inferQuestionDimensions,
+  primaryDecisionType: primaryDecisionType,
   splitQuestionSegments: splitQuestionSegments,
   buildGrandGeometry: buildGrandGeometry,
   buildEvidencePacket: buildEvidencePacket,
+  buildClaimPlan: buildClaimPlan,
   buildPrompt: buildPrompt,
   cards: CARDS,
   spreads: SPREADS
