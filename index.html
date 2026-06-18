@@ -253,6 +253,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="CSS/style.css?v=20260610v81_1">
+<link rel="stylesheet" href="CSS/jy-intro.css?v=20260618v1_0">
+<script>
+(function(){try{var q=new URLSearchParams(location.search);var seen=sessionStorage.getItem('jy-intro-seen')==='1';if(q.get('intro')==='0'||(seen&&q.get('intro')!=='1'))document.documentElement.classList.add('jy-intro-seen');}catch(e){}})();
+</script>
 <style id="jy-spread-pick-css">
 .jy-spread-trigger{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid rgba(201,168,76,.22);background:linear-gradient(135deg,rgba(201,168,76,.05),rgba(201,168,76,.012));cursor:pointer;font-family:var(--f-body);transition:all .3s cubic-bezier(.4,0,.2,1)}
 .jy-spread-trigger:active{transform:scale(.98)}
@@ -374,6 +378,66 @@
 </style>
 </head>
 <body>
+<!-- ═══ 靜月之光・月門開場 v1.0（原創；?intro=1 可強制重播，?intro=0 可略過） ═══ -->
+<div id="jy-cinematic-intro" role="dialog" aria-modal="true" aria-label="靜月之光開場" aria-hidden="false">
+  <div class="jy-intro-night" aria-hidden="true"></div>
+  <canvas class="jy-intro-canvas" aria-hidden="true"></canvas>
+  <div class="jy-intro-aurora" aria-hidden="true"></div>
+  <div class="jy-intro-mist" aria-hidden="true"></div>
+
+  <div class="jy-intro-scene" aria-hidden="true">
+    <div class="jy-intro-sanctum">
+      <div class="jy-intro-gate">
+        <div class="jy-intro-gate-shadow"></div>
+        <div class="jy-intro-arch"></div>
+        <div class="jy-intro-inner">
+          <div class="jy-intro-floor"></div>
+          <div class="jy-intro-columns"><i class="jy-intro-column c1"></i><i class="jy-intro-column c2"></i></div>
+          <div class="jy-intro-astrolabe">
+            <i class="jy-intro-ring r1"></i>
+            <i class="jy-intro-ring r2"></i>
+            <i class="jy-intro-ring r3"></i>
+            <div class="jy-intro-orbit-word"><span>命</span><span>緣</span><span>心</span><span>月</span></div>
+            <div class="jy-intro-core"><img src="img/moon-emblem.png" alt=""></div>
+          </div>
+          <div class="jy-intro-doors"><i class="jy-intro-door left"></i><i class="jy-intro-door right"></i></div>
+          <div class="jy-intro-seal">光</div>
+        </div>
+      </div>
+      <div class="jy-intro-lamps"><i class="jy-intro-lamp l1"></i><i class="jy-intro-lamp l2"></i></div>
+    </div>
+  </div>
+
+  <div class="jy-intro-copy">
+    <div class="jy-intro-eyebrow">AI 命理占卜</div>
+    <h1 class="jy-intro-title">靜月之光</h1>
+    <p class="jy-intro-subtitle">你心裡尚未說出口的事，讓月光替你照見</p>
+  </div>
+
+  <div class="jy-intro-stage-copy" aria-hidden="true">
+    <div class="jy-intro-stage-kicker">THE MOON GATE IS OPEN</div>
+    <p class="jy-intro-stage-title">答案不在遠方<br>它正在你心裡成形</p>
+    <p class="jy-intro-stage-sub">塔羅・雷諾曼・八字・紫微・梅花易數</p>
+  </div>
+
+  <div class="jy-intro-actions">
+    <button type="button" class="jy-intro-enter" data-jy-intro-enter>
+      <span class="jy-intro-enter-icon">☾</span><span>開啟命運之門</span>
+    </button>
+    <div class="jy-intro-hint"><i class="jy-intro-hint-dot"></i><span>輕觸後播放約 4 秒原創動畫</span></div>
+  </div>
+
+  <div class="jy-intro-controls">
+    <button type="button" class="jy-intro-control" data-jy-intro-sound aria-pressed="true"><span class="icon">♪</span><span data-jy-intro-sound-label>音效 開</span></button>
+    <button type="button" class="jy-intro-control" data-jy-intro-skip><span>略過</span><span aria-hidden="true">→</span></button>
+  </div>
+
+  <div class="jy-intro-flare" aria-hidden="true"></div>
+  <div class="jy-intro-vignette" aria-hidden="true"></div>
+  <div class="jy-intro-grain" aria-hidden="true"></div>
+  <div class="jy-intro-progress" aria-hidden="true"></div>
+</div>
+
 <noscript>
   <div style="text-align:center;padding:40px;font-family:sans-serif">
     <h2>靜月之光 — 免費AI塔羅・開鑰之法・雷諾曼線上解牌</h2>
@@ -1398,9 +1462,10 @@
 <script src="JS/lenormand.js?v=20260618v87_0" defer></script>
 <script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260612v80_40" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260612v80_58" defer></script>
-<script src="JS/bazi-standalone.js?v=20260612v80_43" defer></script>
+<script src="JS/meihua-standalone.js?v=20260618v80_41" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260618v80_59" defer></script>
+<script src="JS/bazi-standalone.js?v=20260618v80_44" defer></script>
+<script src="JS/jy-intro.js?v=20260618v1_0" defer></script>
 <script src="JS/ui.js?v=20260612v85_4" defer></script>
 <script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
