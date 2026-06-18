@@ -302,7 +302,7 @@
     '.jy-fb-btn.bad:hover,.jy-fb-btn.bad.picked{border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.04)}',
     '.jy-fb-btn.bad.picked .jy-fb-btn-label{color:#c9a84c}',
     // 選中後右上角顯示月相
-    '.jy-fb-btn.picked::before{content:"";position:absolute;top:8px;right:8px;width:18px;height:18px;background-repeat:no-repeat;background-position:center;background-size:contain;opacity:.85;animation:jyMoonRise .5s ease}',
+    '.jy-fb-btn.picked::before{content:"";position:absolute;top:8px;right:8px;width:18px;height:18px;background-repeat:no-repeat;background-position:center;background-size:contain;opacity:.85}',
     '.jy-fb-btn.good.picked::before{background-image:url(/img/fb-moon-4.png)}',  // 滿月=圓滿對得上
     '.jy-fb-btn.vague.picked::before{background-image:url(/img/fb-moon-2.png)}', // 半月=半明半暗
     '.jy-fb-btn.bad.picked::before{background-image:url(/img/fb-moon-1.png)}',   // 殘月=失落

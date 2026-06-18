@@ -4049,8 +4049,8 @@ enhanceTarot = function(tarot) {
       '@keyframes ootkGlow{0%,100%{box-shadow:0 0 15px rgba(201,168,76,.1)}50%{box-shadow:0 0 30px rgba(201,168,76,.25)}}',
       '.ootk-glow{animation:ootkGlow 2.5s ease-in-out infinite}',
       '@keyframes ootkBtnPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.3)}50%{box-shadow:0 0 0 8px rgba(201,168,76,0)}}',
-      '#ootk-next{animation:ootkBtnPulse 2s ease-in-out infinite}',
-      '#ootk-next:active{transform:scale(.95);animation:none}',
+      '#ootk-next{animation:none}',
+      '#ootk-next:active{transform:scale(.95)}',
       '.ootk-dot{transition:all .5s cubic-bezier(.4,0,.2,1)}',
       '.ootk-dot.current{width:48px}',
 

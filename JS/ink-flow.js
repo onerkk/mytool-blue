@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// 靜月之光 墨流 ink-flow v2.0 (2026/6/12)
+// 靜月之光 墨流 ink-flow v2.1 (2026/6/18)
 // Suminagashi（墨流し）墨暈層——v2.0 渲染核心改寫：WebGL Stable Fluids
 //   依設計參考影片（THREE.JS·STABLE FLUIDS 同類效果）根治 v1.x「大光圈散景感」：
 //   v1.x 是 2D canvas 徑向漸層墨點＋回饋平流近似，0.5x 解析度，墨無湍流捲鬚；
@@ -10,7 +10,10 @@
 // 掛載架構沿用 v1.2 並擴充：已知容器 id 輪詢（700ms）＋通用後備；
 //   v2.0 補收塔羅主流程 step-tarot/step-2/step-1/step-0（v1.2 漏收＝塔羅頁無墨流根因）；
 //   靜態定位的 step 容器掛載時補 isolation:isolate 建立堆疊上下文，z:-1 子層才不會沉到頁面背景之下。
-// 後備鏈：WebGL 半浮點不可用→v1.x 2D 渲染；prefers-reduced-motion→靜態墨暈。
+// 後備鏈：觸控／粗指標裝置固定走 2D 動態墨流，桌面才啟用 WebGL；
+//   避免 Android Chromium 在「固定 WebGL canvas＋backdrop-filter＋互動元件」組合下發生合成圖塊黑屏。
+//   WebGL 初始化失敗時會換一張乾淨 canvas 再進 2D，避免同一 canvas 取過 WebGL context 後無法再取 2D。
+//   prefers-reduced-motion→靜態墨暈。
 // 效能：分頁隱藏即停、幀時 EMA>30ms 自動降檔（染料 768→448、Jacobi 18→11）。
 // API：window.JY_INK = { burst(x,y), setPalette(name), pause(), resume() }（不變）
 // ═══════════════════════════════════════════════════════════════════
@@ -35,11 +38,27 @@
   var reduced = false;
   try { reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
-  var cv = document.createElement('canvas');
-  cv.id = 'jy-ink';
-  cv.setAttribute('aria-hidden', 'true');
-  cv.setAttribute('data-no-ink', '1');
-  cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;';
+  function makeCanvas() {
+    var el = document.createElement('canvas');
+    el.id = 'jy-ink';
+    el.setAttribute('aria-hidden', 'true');
+    el.setAttribute('data-no-ink', '1');
+    el.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;';
+    return el;
+  }
+  var cv = makeCanvas();
+
+  function prefersStable2D() {
+    var coarse = false;
+    try { coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) {}
+    return coarse || ((navigator.maxTouchPoints || 0) > 0);
+  }
+
+  function replaceCanvasFor2D() {
+    var next = makeCanvas();
+    if (cv.parentNode) cv.parentNode.replaceChild(next, cv);
+    cv = next;
+  }
 
   var running = false, rafId = 0, t = 0, lastTs = 0, emaDt = 16, degraded = false;
   var lastSpawn = 0, nextAmbient = 900, lastPointer = 0;
@@ -466,7 +485,16 @@
       if (cs.position === 'static') panel.style.isolation = 'isolate';
       panel.insertBefore(cv, panel.firstChild);
     } catch (e) { host = null; return; }
-    if (MODE === null) MODE = (!reduced && GL.init(cv)) ? 'gl' : '2d';
+    if (MODE === null) {
+      var tryGL = !reduced && !prefersStable2D();
+      if (tryGL && GL.init(cv)) MODE = 'gl';
+      else {
+        // GL.init 可能已在原 canvas 建立過 WebGL context；context 類型不可切換，
+        // 因此失敗時必須換新 canvas，2D 後備才是真正可用而不是黑畫面。
+        if (tryGL) replaceCanvasFor2D();
+        MODE = '2d';
+      }
+    }
     sizeUp();
     if (MODE === 'gl') GL.clear(); else D2.reset();
     t = 0; lastSpawn = 0; nextAmbient = 700;
@@ -578,7 +606,7 @@
   }
 
   window.JY_INK = {
-    version: '2.0',
+    version: '2.1',
     burst: function (x, y) {
       if (!host) return;
       var bx = (x == null ? window.innerWidth / 2 : x), by = (y == null ? window.innerHeight / 2 : y);
