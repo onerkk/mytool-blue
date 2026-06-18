@@ -117,7 +117,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .card-title i{font-size:0.9rem;opacity:.7}
 
 /* — Buttons — */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-sm);padding:.7rem 1.2rem;border-radius:var(--r-md);font-weight:600;font-size:.9rem;cursor:pointer;border:1px solid var(--c-border-hi);transition:all var(--t-fast);white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-sm);padding:.7rem 1.2rem;border-radius:var(--r-md);font-weight:600;font-size:.9rem;cursor:pointer;border:1px solid var(--c-border-hi);transition:color var(--t-fast),background-color var(--t-fast),border-color var(--t-fast),box-shadow var(--t-fast),opacity var(--t-fast),transform var(--t-fast);white-space:nowrap}
 .btn-primary{
   background:transparent;
   color:var(--c-gold);border-color:rgba(201,168,76,0.25);
@@ -524,7 +524,7 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 
 /* — Nav Shop — */
 .nav-shop{display:flex;gap:var(--sp-xs);align-items:center}
-.nav-shop a{font-size:.72rem;padding:.3rem .55rem;border-radius:var(--r-pill);border:1px solid rgba(201,168,76,.2);color:var(--c-text-dim);transition:all var(--t-fast);white-space:nowrap}
+.nav-shop a{font-size:.72rem;padding:.3rem .55rem;border-radius:var(--r-pill);border:1px solid rgba(201,168,76,.2);color:var(--c-text-dim);transition:color var(--t-fast),background-color var(--t-fast),border-color var(--t-fast),box-shadow var(--t-fast),opacity var(--t-fast),transform var(--t-fast);white-space:nowrap}
 .nav-shop a:first-child,.nav-shop a:last-child{color:var(--c-gold);border-color:rgba(201,168,76,.25)}
 .nav-shop a:hover{border-color:var(--c-gold);color:var(--c-gold)}
 
@@ -1533,7 +1533,7 @@ details[open] > summary > .fa-chevron-right {
   background: linear-gradient(135deg, rgba(201,168,76,.08), rgba(201,168,76,.02));
   border: 1.5px solid rgba(201,168,76,.35);
   box-shadow: 0 2px 16px rgba(201,168,76,.08);
-  animation: jy-cta-breathe 3s ease-in-out infinite;
+  animation: none;
   letter-spacing: .03em;
 }
 #btn-tool-go:active {
@@ -1825,16 +1825,17 @@ details[open] > summary > .fa-chevron-right {
   letter-spacing:.1em;
   border:none;
   cursor:pointer;
-  transition:all .4s cubic-bezier(.25,.8,.25,1);
+  transition:color .22s ease,background-color .22s ease,border-color .22s ease,box-shadow .22s ease,opacity .22s ease,transform .22s ease;
   box-shadow:0 4px 20px rgba(212,175,55,.15),0 0 40px rgba(212,175,55,.06);
-  animation:jy-cta-glow 4s ease-in-out infinite;
+  animation:none;
   position:relative;overflow:hidden;
 }
 .jy-home-cta::before{
   content:'';position:absolute;inset:0;border-radius:999px;
   background:linear-gradient(135deg,transparent 30%,rgba(255,255,255,.12) 50%,transparent 70%);
   transform:translateX(-100%);
-  animation:jy-cta-shine 5s ease-in-out infinite;
+  animation:none;
+  display:none;
 }
 .jy-home-cta:active{
   transform:scale(.96);
@@ -1977,7 +1978,7 @@ details[open] > summary > .fa-chevron-right {
   color:var(--c-gold,#c9a84c);font-size:.9rem;font-weight:700;
   border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit;
   box-shadow:0 4px 16px rgba(212,175,55,.1);
-  animation:jyBreath 2s ease-in-out infinite;
+  animation:none;
   transition:transform .2s,box-shadow .2s;
 }
 .jy-shuffle-btn:active{transform:scale(.95)}
@@ -2149,7 +2150,6 @@ html{scrollbar-color:rgba(217,184,96,.35) rgba(255,255,255,.04)}
 @media (prefers-reduced-motion:no-preference){
   .hero::before{animation:jyHaloBreath 7s ease-in-out infinite}
   .hero h1{animation:jyGiltFlow 9s linear infinite}
-  .jy-home-cta::after{animation:jyGiltSheen 5.5s cubic-bezier(.4,0,.2,1) infinite}
   .card{animation:jyRise .55s cubic-bezier(.16,1,.3,1) both}
 }
 @keyframes jyHaloBreath{0%,100%{opacity:.75;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.07)}}
@@ -2184,3 +2184,29 @@ a.jy-footer-link:hover{color:#e8d28a}
 details[open]>summary .jy-chev{transform:rotate(180deg)}
 @supports not (backdrop-filter:blur(1px)){.jy-footer-card{background:rgba(15,13,10,.93)}}
 /* ═══ END v81.1 月下款識 ═══ */
+
+
+/* ═══ v87.1 互動元件穩定渲染契約（2026/6/18）════════════════════
+   根因：各工具把無限動畫直接掛在 button／偽元素上，並同時疊加
+   backdrop-filter 與全螢幕 canvas。Android Chromium/Samsung GPU 在此組合下
+   會發生合成圖塊漏畫，表面看起來像按鈕或按鈕以下區域反覆黑掉。
+   架構規則：互動元件只允許短暫狀態 transition，不允許常駐 animation；
+   裝飾動畫必須放在非互動的獨立圖層。此規則涵蓋目前與未來新增工具。 */
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]){
+  animation:none!important;
+  transition-property:color,background-color,border-color,box-shadow,opacity,transform!important;
+  transition-duration:.18s!important;
+  transition-timing-function:ease!important;
+  -webkit-tap-highlight-color:transparent;
+}
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"])::before,
+:where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"])::after{
+  animation:none!important;
+  will-change:auto!important;
+}
+@media (hover:none),(pointer:coarse){
+  :where(button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]):hover{
+    transform:none;
+  }
+}
+/* ═══ END v87.1 互動元件穩定渲染契約 ═══ */
