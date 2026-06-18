@@ -96,29 +96,40 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v4.2',                            // v87.3 版本簽名
+        '雷諾曼牌 Lenormand v4.3',                            // v87.4 版本簽名
         'function gtCoordinate(index)',                       // 置中座標單一真相源
-        'function buildEvidencePacket',                       // v87.3 每子題最小證據包
-        'function splitQuestionSegments',                     // v87.3 複合問題分題
-        '<evidence_packet question_id=',                      // v87.3 動態證據包
-        '線段只表示結構關聯，不表示時間先後',            // v87.3 禁止偷加時序
-        '不能單獨證明多名伴侶',                              // v87.3 多人伴侶門檻
-        '缺乏證據偷換成確定不會',                            // v87.3 缺證≠否定
-        '<presentation_footer stage="after_reading_locked">', // v87.3 呈現層分離
-        "key:'結束・終止・封閉'",                           // v87.3 負面牌義去美化
-        "key:'負擔・考驗・難卸壓力'"                        // v87.3 十字架去命定美化
+        'function detectAgeQualifier',                        // 數字年齡條件解析
+        'function inferQuestionDimensions',                   // 謂詞＋目標範圍＋條件三維路由
+        'function shouldSplitCommaClauses',                    // 逗號跨領域複合題拆分
+        'age_unverifiable',                                    // 純年齡題不退回一般解讀
+        'function buildEvidencePacket',                       // 每子題證據包
+        'unknown_future_counterpart',                         // 未知未來對象不冒充既有人物
+        '<age_rules enabled="false">',                       // 無年齡規則時禁止數字判定
+        '<valid_segments exact="true">',                    // 程式已裁好精確區段
+        '共享核心牌的相鄰牌對只算一個關係簇',                // 相鄰鏈不重複計分
+        '不得用孩子、百合、大樹或房屋把數字年齡換算',        // 25歲案例根治
+        'counterpart_significator" status="method_placeholder"', // 人物牌僅為方法占位
+        '<card_dictionary scope="all_evidence_packets">',      // 跨子題共用一份牌義表
+        '<presentation_footer mode="verbatim_after_reading">',   // 固定呈現層
+        'function selectPresentationFooter',                 // 程式預選短收尾
+        "key:'結束・終止・封閉'",                           // 負面牌義去美化
+        "key:'負擔・考驗・難卸壓力'"                        // 十字架去命定美化
       ],
       mustNot: [
-        '<derived_geometry authoritative="true">',       // v87.2 全量幾何資料牆
+        '雷諾曼牌 Lenormand v4.2',                            // 舊版簽名
+        '<derived_geometry authoritative="true">',          // v87.2 全量幾何資料牆
         '<straight_lines>',                                   // v87.2 全31線整包輸出
-        '# 第二階段品牌收尾',                                // 舊版品牌混入核心規則
-        '你是使用現代具體式 Petit Lenormand',                // 未標示本站規約的舊定位
+        'valid_segments列的是最大直線',                       // v87.3 仍交給模型自行切線
+        'current_or_primary_counterpart',                     // 未知未來對象被冒充既有人物
+        '<presentation_footer stage="after_reading_locked">', // 假兩階段
+        '可用礦物事實：',                                    // 整份礦物表造成提示詞膨脹
+        'var QUESTION_TYPES = {',                             // 舊平面路由
         "key:'結束・轉化・終止'",                           // 棺材美化詞
         "key:'負擔・命運・考驗'",                           // 十字架命定化
-        '末排四張依本站約定只作獨立總結',                    // v4.0 錯誤隔離規則
-        '不建立與第四排的上下相鄰',                           // v4.0 錯誤隔離規則
-        '在末排收束區第',                                     // v4.0 切離人物牌
-        'var isRelationship ='                                // 舊問題關鍵字選焦點分支
+        '末排四張依本站約定只作獨立總結',                    // 舊錯誤隔離規則
+        '不建立與第四排的上下相鄰',                           // 舊錯誤隔離規則
+        '在末排收束區第',                                     // 舊切離人物牌
+        'var isRelationship ='                                // 舊單一關鍵字分支
       ]
     }  };
 
@@ -221,6 +232,62 @@
       var p1 = env.route('最近運勢如何？'), p2 = env.route('最近運勢如何？');
       env.report('⑥路由覆蓋', '深度池：口語概覽落在池內', POOL.indexOf(p1) > -1, '實得 ' + p1);
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
+    }
+
+    // ⑦雷諾曼 v4.3 語意路由與提示詞不變量
+    var ln = env.lenormandTest || root.__JY_LN_TEST__;
+    if (ln && typeof ln.inferQuestionDimensions === 'function') {
+      var qAge = ln.inferQuestionDimensions('未來會有25歲上下跟我交往嗎？');
+      env.report('⑦雷諾曼路由', '未來＋數字年齡→relationship_future＋未知未來對象',
+        qAge.types.indexOf('relationship_future') > -1 && qAge.types.indexOf('relationship_intent') === -1 && qAge.targetScope === 'unknown_future_counterpart',
+        JSON.stringify(qAge));
+      env.report('⑦雷諾曼路由', '25歲上下被辨識為不可驗證條件',
+        !!(qAge.qualifiers && qAge.qualifiers[0] && qAge.qualifiers[0].raw === '25歲上下' && qAge.qualifiers[0].assessable === false),
+        JSON.stringify(qAge.qualifiers || []));
+
+      var qIntent = ln.inferQuestionDimensions('凌會想跟我交往嗎？');
+      env.report('⑦雷諾曼路由', '特定人物想交往→intent，不誤判已形成未來關係',
+        qIntent.types.indexOf('relationship_intent') > -1 && qIntent.types.indexOf('relationship_future') === -1 && qIntent.targetScope === 'specific_counterpart',
+        JSON.stringify(qIntent));
+
+      var qCareer = ln.inferQuestionDimensions('我何時會升遷？');
+      env.report('⑦雷諾曼路由', '複合語意→職涯＋時間雙標籤',
+        qCareer.types.indexOf('career') > -1 && qCareer.types.indexOf('timing') > -1,
+        JSON.stringify(qCareer));
+
+      var qAgeOnly = ln.inferQuestionDimensions('她幾歲？');
+      env.report('⑦雷諾曼路由', '純年齡題→不可驗證，不退回一般牌義',
+        qAgeOnly.types[0] === 'age_unverifiable' && qAgeOnly.targetScope === 'specific_counterpart',
+        JSON.stringify(qAgeOnly));
+
+      if (typeof ln.splitQuestionSegments === 'function') {
+        var split = ln.splitQuestionSegments('副業能成功嗎，凌會想跟我交往嗎？');
+        env.report('⑦雷諾曼路由', '逗號內跨領域複合題可拆成獨立證據包',
+          split.length === 2 && split[0].types.indexOf('business_success') > -1 && split[1].types.indexOf('relationship_intent') > -1,
+          JSON.stringify(split));
+        var samePerson = ln.splitQuestionSegments('凌會想跟我交往嗎？未來我們會走在一起嗎？');
+        env.report('⑦雷諾曼路由', '「我們」保留特定對象，不誤判未知新人',
+          samePerson.length === 2 && samePerson[1].targetScope === 'specific_counterpart',
+          JSON.stringify(samePerson));
+      }
+
+      if (typeof ln.buildPrompt === 'function' && ln.cards) {
+        var ids = [30,27,34,26,28,17,36,22,33,3,9,18,24,4,8,7,23,19,21,11,14,25,29,5,6,20,10,35,13,1,15,16,2,12,32,31];
+        var draw = ids.map(function(id){ return ln.cards[id - 1]; });
+        var lp = ln.buildPrompt('未來會有25歲上下跟我交往嗎？', draw, 'grand', null, 'male');
+        env.report('⑦雷諾曼提示詞', '提示詞精簡且含精確區段／年齡隔離',
+          lp.length < 5000 && lp.indexOf('<valid_segments exact="true">') > -1 && lp.indexOf('requested="25歲上下" assessable="false"') > -1,
+          'len=' + lp.length);
+        env.report('⑦雷諾曼提示詞', '不再輸出最大整線、假既有人物或整份礦物表',
+          lp.indexOf('valid_segments列的是最大直線') === -1 && lp.indexOf('current_or_primary_counterpart') === -1 && lp.indexOf('可用礦物事實：') === -1,
+          '');
+        env.report('⑦雷諾曼提示詞', '未知未來人物為方法占位，且相鄰鏈不得重複計分',
+          lp.indexOf('counterpart_significator" status="method_placeholder"') > -1 && lp.indexOf('共享核心牌的相鄰牌對只算一個關係簇') > -1,
+          '');
+        env.report('⑦雷諾曼提示詞', '牌義表跨子題只輸出一次',
+          (lp.match(/<card_dictionary/g) || []).length === 1 && lp.indexOf('<card_dictionary scope="all_evidence_packets">') > -1,
+          'count=' + (lp.match(/<card_dictionary/g) || []).length);
+      }
     }
 
     // ⑤提示詞組裝：13 牌陣 × tarot ＋ ootk/ziwei/meihua

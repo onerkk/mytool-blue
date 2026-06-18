@@ -1,17 +1,17 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v4.2
-// v4.2（2026-06-18）證據包與概念定義根治：
-//   1. 4×8+4 仍由程式計算完整幾何，但不再把全36張相鄰與31條直線全部塞給模型。
-//   2. 複合問題先拆成子問題並標準化類型；每題只輸出相關人物牌、焦點牌、直接相鄰、合法線段與房屋。
-//   3. 新增「正緣」與「多人伴侶／一夫多妻」操作性定義，禁止把選擇、社交或蛇牌自行升級成多人婚姻。
-//   4. 完整線段預設只表示結構關聯，不代表時間先後；未提供 direction_rules 禁止使用先／之後／最後。
-//   5. 明確區分缺乏證據與負面證據；沒有結構只能說不足，不能偷換成確定不會。
-//   6. 品牌收尾改為獨立呈現層，放在讀牌請求之後，不再混入證據規則與牌義資料。
+// 靜月之光 — 雷諾曼牌 Lenormand v4.3
+// v4.3（2026-06-18）語意路由、精確區段與數字條件根治：
+//   1. 問題改採「謂詞＋目標範圍＋條件」三維解析；未來交往不再誤判成特定對象當下意圖。
+//   2. 數字年齡（如25歲上下）成為不可驗證條件；未提供 age_rules 時不再用孩子／百合／大樹側面證實。
+//   3. valid_segments 由程式直接裁成精確端點區段，不再把最大整線交給模型自行切割。
+//   4. 多個共享核心牌的相鄰牌對只算一個關係簇，禁止串成「由感情走向交往」的時序或因果流程。
+//   5. 未知未來對象的人物牌標為方法占位，不得寫成已出現、已知身分或已有交往意圖。
+//   6. 品牌收尾改為程式預選的固定三行，移除整份礦物資料表，降低提示詞干擾。
 // Petit Lenormand 36 張・歷史基線＋本站可驗證判讀規約
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.2 loaded — 子題證據包／概念定義／非時序線段');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.3 loaded — 三維路由／精確區段／數字條件隔離');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -275,96 +275,180 @@ function buildGrandGeometry(drawn) {
   return { positions: positions, adjacency: adjacency, lines: lines };
 }
 
-var QUESTION_TYPES = {
+var QUESTION_SCHEMAS = {
   relationship_longevity: {
     label:'關係穩定／正緣',
     match:/正緣|命定|適合長久|走到最後|走一輩子|長久|穩定交往|穩定伴侶|結婚對象|婚姻能否長久/,
-    focus:[24,25,4,35,5,33,31]
+    core:[24,25], support:[4,35,5,33,31]
   },
   multi_partner_commitment: {
     label:'多人伴侶／一夫多妻',
     match:/一夫多妻|多妻|多重伴侶|多人伴侶|開放式關係|非排他|同時交往|兩個老婆|多個老婆|多個伴侶/,
-    focus:[24,25,7,22,20]
+    core:[24,25], support:[7,22,20]
   },
   relationship_intent: {
-    label:'對方感情意圖',
-    match:/喜歡我|愛我|好感|心動|想.*交往|跟我交往|與我交往|想跟我在一起|想復合|會告白|對我有感覺|她怎麼想|他怎麼想|真心/,
-    focus:[24,25,18,12,27,20]
+    label:'特定對象的感情意圖',
+    match:/喜歡我|愛我|好感|心動|真心|想(?:要)?(?:跟|與)?我(?:交往|在一起|復合)|會告白|對我有感覺|她怎麼想|他怎麼想|對方怎麼想/,
+    core:[24,25], support:[18,12,27,20]
   },
   relationship_future: {
-    label:'感情未來',
-    match:/感情.*未來|未來.*在一起|會在一起|能不能走在一起|關係發展|會不會復合|會不會結婚|成為伴侶/,
-    focus:[24,25,4,35,5,31,33]
+    label:'未來感情／是否形成交往',
+    match:null,
+    core:[24,25], support:[4,35,5,31,33,1,17]
   },
   business_success: {
     label:'副業／商業成功',
     match:/副業|創業|生意|賣場|訂單|客戶|營收|業績|直播帶貨|商業|能成功|做得起來|賺錢/,
-    focus:[34,35,31,32,20,14,3,33]
+    core:[34,35,31], support:[32,20,14,3,33]
   },
   career: {
     label:'工作／職涯',
     match:/工作|職場|升遷|加薪|轉職|離職|主管|同事|錄取|面試|天職|職涯/,
-    focus:[35,14,19,15,31,33,27]
+    core:[35,14], support:[19,15,31,33,27]
   },
   finance: {
     label:'財務',
     match:/財運|收入|存款|負債|投資|股票|貸款|金錢|錢|資金|還債/,
-    focus:[34,15,35,23,31,33]
-  },
-  age: {
-    label:'年齡感',
-    match:/幾歲|年齡|多大|歲數|年紀/,
-    focus:[13,30,5]
+    core:[34,15], support:[35,23,31,33]
   },
   timing: {
     label:'時間快慢',
     match:/什麼時候|何時|多久|幾時|哪一年|哪個月|幾月|時間點|應期|多快/,
-    focus:[1,2,3,21,35,17]
+    core:[1,2,3], support:[21,35,17]
   },
   health: {
     label:'健康',
     match:/健康|身體|病|疾病|手術|恢復|康復|症狀/,
-    focus:[5,8,10,23,36,31]
+    core:[5], support:[8,10,23,36,31]
   },
   travel: {
     label:'旅行／移動',
     match:/旅行|旅遊|出國|搬家|遷移|遠方|移居|出差/,
-    focus:[3,17,1,21,4]
+    core:[3,17], support:[1,21,4]
   },
   communication: {
     label:'消息／溝通',
     match:/聯絡|訊息|回覆|聊天|溝通|傳訊|來找我|聯繫/,
-    focus:[27,12,1,20,6]
+    core:[27,12], support:[1,20,6]
+  },
+  age_unverifiable: {
+    label:'數字年齡（無規則不可判）', match:null,
+    core:[], support:[]
   },
   general: {
-    label:'一般問題',
-    match:null,
-    focus:[24,25,34,35,31,33,6,8,10,21,23,36]
+    label:'一般問題', match:null,
+    core:[24,25,34,35,31,33], support:[6,8,10,21,23,36]
   }
 };
 
+function detectAgeQualifier(text) {
+  var t = String(text || '');
+  var numeral = '(?:\\d{1,2}|[零一二三四五六七八九十兩]{1,3})';
+  var range = new RegExp(numeral + '\\s*(?:到|至|～|~|－|-)\\s*' + numeral + '\\s*歲');
+  var approx = new RegExp(numeral + '\\s*歲\\s*(?:上下|左右|前後|附近)?');
+  var m = t.match(range) || t.match(approx);
+  if (m) return { kind:'numeric_age', raw:m[0].replace(/\s+/g, ''), assessable:false };
+  if (/比我(?:大|小)|年長|年輕|同齡|差幾歲|年紀|年齡|歲數|幾歲|多大/.test(t)) {
+    return { kind:'relative_or_unknown_age', raw:'年齡條件', assessable:false };
+  }
+  return null;
+}
+
+function inferTargetScope(text) {
+  var t = String(text || '');
+  if (/現任|另一半|伴侶|男友|女友|老公|老婆/.test(t)) return 'current_partner';
+  if (/前任|前男友|前女友|前夫|前妻/.test(t)) return 'former_partner';
+  // 已有明確人稱或「我們」時，未來語氣仍是在問同一特定對象，不得改判成未知新人。
+  if (/我們|他|她|對方|某人|這個人|那個人/.test(t) || /喜歡我|愛我|對我有感覺|想(?:要)?(?:跟|與)?我/.test(t)) return 'specific_counterpart';
+  if (/(?:未來|將來|以後|之後|往後|接下來|會有|會遇到|遇見|出現).{0,18}(?:人|對象|伴侶|男生|女生|男人|女人|交往|在一起|戀愛)/.test(t) || /會有.{0,18}(?:跟|與)我(?:交往|在一起)/.test(t)) {
+    return 'unknown_future_counterpart';
+  }
+  return 'unspecified';
+}
+
+function inferQuestionDimensions(text) {
+  var t = String(text || '').trim();
+  var types = [];
+  var targetScope = inferTargetScope(t);
+  var ageQualifier = detectAgeQualifier(t);
+  var hasRelationshipWords = /感情|戀愛|交往|在一起|伴侶|對象|桃花|復合|結婚|婚姻|喜歡|愛我|好感|心動|正緣|告白|一夫多妻|多人伴侶|多重伴侶/.test(t);
+  var explicitFutureContext = /未來|將來|以後|之後|往後|接下來|會有|會遇到|遇見|出現/.test(t);
+  var formationQuestion = /(?:會不會|是否會|能否|能不能|有沒有機會|會).{0,12}(?:交往|在一起|復合|結婚|成為伴侶)/.test(t) &&
+    !/(?:會不會|是否會|會|是否)?想.{0,12}(?:交往|在一起|復合)/.test(t);
+  var futureRelationship = hasRelationshipWords && (explicitFutureContext || targetScope === 'unknown_future_counterpart' || formationQuestion);
+
+  if (QUESTION_SCHEMAS.multi_partner_commitment.match.test(t)) types.push('multi_partner_commitment');
+  if (QUESTION_SCHEMAS.relationship_longevity.match.test(t)) types.push('relationship_longevity');
+  if (futureRelationship) types.push('relationship_future');
+  if (QUESTION_SCHEMAS.relationship_intent.match.test(t) && targetScope !== 'unknown_future_counterpart') types.push('relationship_intent');
+
+  ['business_success','career','finance','timing','health','travel','communication'].forEach(function(key) {
+    var def = QUESTION_SCHEMAS[key];
+    if (def.match && def.match.test(t)) types.push(key);
+  });
+
+  types = uniqueStrings(types);
+  if (!types.length && ageQualifier) types = ['age_unverifiable'];
+  if (!types.length) types = ['general'];
+  return {
+    types:types,
+    targetScope:targetScope,
+    qualifiers:ageQualifier ? [ageQualifier] : []
+  };
+}
+
+function questionTypeDomain(type) {
+  if (/^relationship_|^multi_partner_/.test(type)) return 'relationship';
+  if (/^business_|^career$|^finance$/.test(type)) return 'work_money';
+  if (type === 'health') return 'health';
+  if (type === 'travel') return 'travel';
+  if (type === 'communication') return 'communication';
+  if (type === 'timing') return 'timing';
+  if (type === 'age_unverifiable') return 'age_only';
+  return 'general';
+}
+
+function shouldSplitCommaClauses(left, right) {
+  var a = inferQuestionDimensions(left);
+  var b = inferQuestionDimensions(right);
+  var da = uniqueStrings(a.types.map(questionTypeDomain).filter(function(x){ return x !== 'timing' && x !== 'general'; }));
+  var db = uniqueStrings(b.types.map(questionTypeDomain).filter(function(x){ return x !== 'timing' && x !== 'general'; }));
+  if (!da.length || !db.length || da.indexOf('age_only') > -1 || db.indexOf('age_only') > -1) return false;
+  return !da.some(function(x){ return db.indexOf(x) > -1; });
+}
+
 function splitQuestionSegments(question) {
   var raw = String(question || '').replace(/\r/g, '\n').trim();
-  if (!raw) return [{ id:'q1', text:'未指定具體問題', type:'general', types:['general'] }];
-  var parts = raw.split(/[？?；;\n]+/).map(function(x){ return x.trim(); }).filter(Boolean);
-  if (!parts.length) parts = [raw];
+  if (!raw) return [{ id:'q1', text:'未指定具體問題', type:'general', types:['general'], targetScope:'unspecified', qualifiers:[] }];
+  var hardParts = raw.split(/[？?；;\n]+/).map(function(x){ return x.trim(); }).filter(Boolean);
+  if (!hardParts.length) hardParts = [raw];
+  var parts = [];
+  hardParts.forEach(function(part) {
+    var clauses = part.split(/[，,]+/).map(function(x){ return x.trim(); }).filter(Boolean);
+    if (clauses.length < 2) { parts.push(part); return; }
+    var current = clauses[0];
+    for (var i = 1; i < clauses.length; i++) {
+      if (shouldSplitCommaClauses(current, clauses[i])) {
+        parts.push(current);
+        current = clauses[i];
+      } else {
+        current += '，' + clauses[i];
+      }
+    }
+    parts.push(current);
+  });
   return parts.map(function(text, index) {
-    var types = inferQuestionTypes(text);
-    return { id:'q' + (index + 1), text:text, type:types[0], types:types };
+    var dims = inferQuestionDimensions(text);
+    return {
+      id:'q' + (index + 1), text:text,
+      type:dims.types[0], types:dims.types,
+      targetScope:dims.targetScope, qualifiers:dims.qualifiers
+    };
   });
 }
 
 function inferQuestionTypes(text) {
-  var keys = [
-    'multi_partner_commitment','relationship_longevity','relationship_intent','relationship_future',
-    'business_success','career','finance','age','timing','health','travel','communication'
-  ];
-  var matched = [];
-  for (var i = 0; i < keys.length; i++) {
-    var def = QUESTION_TYPES[keys[i]];
-    if (def.match && def.match.test(text)) matched.push(keys[i]);
-  }
-  return matched.length ? matched : ['general'];
+  return inferQuestionDimensions(text).types;
 }
 
 function inferQuestionType(text) {
@@ -386,38 +470,93 @@ function uniqueNumbers(values) {
   });
 }
 
-function buildQuestionFocusIds(types, declaredGender) {
+function uniqueStrings(values) {
+  var seen = {};
+  return values.filter(function(v) {
+    if (!v || seen[v]) return false;
+    seen[v] = true;
+    return true;
+  });
+}
+
+function buildQuestionFocusProfile(questionItem, declaredGender) {
   var roles = getPersonRoleIds(declaredGender);
-  var ids = [];
-  var list = Array.isArray(types) ? types : [types];
-  if (roles.querent) ids.push(roles.querent);
-  if (list.some(function(type){ return /^relationship_|^multi_partner_/.test(type); }) && roles.counterpart) ids.push(roles.counterpart);
-  list.forEach(function(type){ ids = ids.concat((QUESTION_TYPES[type] || QUESTION_TYPES.general).focus); });
-  if (_lnSignif) ids.push(_lnSignif);
-  return uniqueNumbers(ids);
+  var types = questionItem.types || [questionItem.type];
+  var anchors = [];
+  var supports = [];
+  if (roles.querent) anchors.push(roles.querent);
+  if ((types.some(function(type){ return /^relationship_|^multi_partner_/.test(type); }) || questionItem.targetScope === 'specific_counterpart' || questionItem.targetScope === 'current_partner' || questionItem.targetScope === 'former_partner' || questionItem.targetScope === 'unknown_future_counterpart') && roles.counterpart) anchors.push(roles.counterpart);
+
+  types.forEach(function(type) {
+    var def = QUESTION_SCHEMAS[type] || QUESTION_SCHEMAS.general;
+    anchors = anchors.concat(def.core || []);
+    supports = supports.concat(def.support || []);
+  });
+  if (_lnSignif) supports.push(_lnSignif);
+
+  anchors = uniqueNumbers(anchors);
+  supports = uniqueNumbers(supports).filter(function(id){ return anchors.indexOf(id) === -1; });
+  return { anchors:anchors, supports:supports, all:uniqueNumbers(anchors.concat(supports)) };
+}
+
+function buildQuestionFocusIds(types, declaredGender) {
+  return buildQuestionFocusProfile({ types:Array.isArray(types) ? types : [types] }, declaredGender).all;
 }
 
 function buildEvidencePacket(geometry, questionItem, declaredGender) {
-  var focusIds = buildQuestionFocusIds(questionItem.types || [questionItem.type], declaredGender);
+  var profile = buildQuestionFocusProfile(questionItem, declaredGender);
   var byCardId = {};
   geometry.positions.forEach(function(p){ byCardId[p.card.id] = p; });
-  var focusPositions = focusIds.map(function(id){ return byCardId[id]; }).filter(Boolean);
+  var focusPositions = profile.all.map(function(id){ return byCardId[id]; }).filter(Boolean);
+  var anchorPositions = profile.anchors.map(function(id){ return byCardId[id]; }).filter(Boolean);
+  var housePositions = anchorPositions.slice();
   var focusSlots = {};
+  var anchorSlots = {};
+  var supportSlots = {};
   focusPositions.forEach(function(p){ focusSlots[p.slot] = true; });
+  anchorPositions.forEach(function(p){ anchorSlots[p.slot] = true; });
+  profile.supports.forEach(function(id){ var p = byCardId[id]; if (p) supportSlots[p.slot] = true; });
 
-  var direct = geometry.adjacency.filter(function(a){ return !!focusSlots[a.position.slot]; });
-  var lineMap = {};
-  var relevantLines = [];
+  // 直接相鄰只輸出人物牌與核心焦點牌；輔助牌改由精確線段提供，避免資料牆。
+  var direct = geometry.adjacency.filter(function(a){ return !!anchorSlots[a.position.slot]; });
+  var segmentMap = {};
+  var relevantSegments = [];
+
+  function addSegment(seq) {
+    if (!seq || seq.length < 3) return;
+    var key = seq.map(function(p){ return p.slot; }).join('-');
+    var rev = seq.slice().reverse().map(function(p){ return p.slot; }).join('-');
+    if (segmentMap[key] || segmentMap[rev]) return;
+    segmentMap[key] = true;
+    relevantSegments.push({ positions:seq.slice() });
+  }
+
   geometry.lines.forEach(function(line) {
-    var focusCount = line.positions.reduce(function(total, p){ return total + (focusSlots[p.slot] ? 1 : 0); }, 0);
-    // 只保留同一條線上至少有兩張本題焦點牌的結構；單焦點線的強訊號已由 direct_adjacency 提供，避免資料牆。
-    if (focusCount < 2) return;
-    var key = line.positions.map(function(p){ return p.slot; }).join('-');
-    if (!lineMap[key]) {
-      lineMap[key] = true;
-      relevantLines.push(line);
+    var anchorIndexes = [];
+    var supportIndexes = [];
+    line.positions.forEach(function(p, idx) {
+      if (anchorSlots[p.slot]) anchorIndexes.push(idx);
+      else if (supportSlots[p.slot]) supportIndexes.push(idx);
+    });
+
+    // 人物牌與核心焦點牌之間的精確區段：不把整條最大線丟給模型。
+    for (var i = 0; i < anchorIndexes.length; i++) {
+      for (var j = i + 1; j < anchorIndexes.length; j++) {
+        addSegment(line.positions.slice(anchorIndexes[i], anchorIndexes[j] + 1));
+      }
     }
+
+    // 核心端點至輔助牌：中間若另有核心端點，改由核心—核心區段表達，避免重疊資料牆。
+    anchorIndexes.forEach(function(ai) {
+      supportIndexes.forEach(function(si) {
+        var lo = Math.min(ai, si), hi = Math.max(ai, si);
+        var hasOtherAnchor = anchorIndexes.some(function(other){ return other !== ai && other > lo && other < hi; });
+        if (!hasOtherAnchor) addSegment(line.positions.slice(lo, hi + 1));
+      });
+    });
   });
+
+  relevantSegments.sort(function(a,b){ return a.positions.length - b.positions.length; });
 
   var usedCards = {};
   focusPositions.forEach(function(p){ usedCards[p.card.id] = p.card; });
@@ -425,17 +564,35 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
     usedCards[a.position.card.id] = a.position.card;
     a.neighbors.forEach(function(n){ usedCards[n.card.id] = n.card; });
   });
-  relevantLines.forEach(function(line){
-    line.positions.forEach(function(p){ usedCards[p.card.id] = p.card; });
-  });
+  relevantSegments.forEach(function(seg){ seg.positions.forEach(function(p){ usedCards[p.card.id] = p.card; }); });
 
   return {
-    question: questionItem,
-    focusPositions: focusPositions,
-    direct: direct,
-    lines: relevantLines,
-    usedCards: usedCards
+    question:questionItem,
+    focusPositions:focusPositions,
+    anchorPositions:anchorPositions,
+    housePositions:housePositions,
+    direct:direct,
+    segments:relevantSegments,
+    usedCards:usedCards
   };
+}
+
+var PRESENTATION_FOOTERS = {
+  relationship:'粉晶象徵溫和的情感交流與自我接納；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。',
+  business:'黃水晶象徵行動力與財務目標的專注；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。',
+  career:'虎眼石象徵判斷力與行動界線；礦物上屬石英交代石棉假象，常見絲絹般貓眼光。',
+  health:'白水晶象徵整理思緒與維持日常秩序；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。',
+  general:'白水晶象徵釐清重點與穩定專注；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。'
+};
+
+function selectPresentationFooter(questions) {
+  var all = {};
+  questions.forEach(function(q){ (q.types || [q.type]).forEach(function(t){ all[t] = true; }); });
+  if (all.relationship_intent || all.relationship_future || all.relationship_longevity || all.multi_partner_commitment) return PRESENTATION_FOOTERS.relationship;
+  if (all.business_success || all.finance) return PRESENTATION_FOOTERS.business;
+  if (all.career) return PRESENTATION_FOOTERS.career;
+  if (all.health) return PRESENTATION_FOOTERS.health;
+  return PRESENTATION_FOOTERS.general;
 }
 
 function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
@@ -455,101 +612,116 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
 
   var questions = splitQuestionSegments(q);
   var roles = getPersonRoleIds(declaredGender);
+  var typeSet = {};
+  questions.forEach(function(item){ (item.types || [item.type]).forEach(function(type){ typeSet[type] = true; }); });
+  var hasAgeQualifier = questions.some(function(item){ return item.qualifiers && item.qualifiers.length; });
 
-  lines.push('# 最高優先任務');
-  lines.push('你是依「本站 Petit Lenormand 判讀規約 v3」工作的讀牌者。第一句依子問題順序直接給結論；只使用本次 evidence_packet 內由程式驗證的證據。');
-  lines.push('先在內部分題，每題獨立取證。不同子問題的散牌不得互借；第三方內心只能寫成牌面傾向。沒有證據時說不足，不得為了顯得精準補出年齡、日期、機率、身分或事件。');
+  lines.push('# 任務');
+  lines.push('你是依「本站 Petit Lenormand 判讀規約 v4」工作的讀牌者。第一句依題目順序直接回答；只使用各題 evidence_packet。');
+  lines.push('每題獨立取證。第三方內心只能寫成牌面傾向；缺證就說不足，不補年齡、日期、機率、身分或事件。');
   lines.push('棺材＝結束／終止／封閉；鐮刀＝切斷／突然中止；山＝阻礙／延遲；老鼠＝侵蝕／損耗；十字架＝負擔／壓力；雲＝不明／混亂；鞭子＝衝突／反覆。不得美化。');
+  lines.push('歷史基線為36張、4排8張加末排4張及人物牌附近閱讀；置中座標、八方相鄰、直線與房屋均屬本站現代規約。');
   lines.push('');
 
-  lines.push('# 方法定位');
-  lines.push('歷史原始基線只有36張、4排8張加末排4張、男性28紳士／女性29淑女，以及先看人物牌附近。末排置中、八方相鄰、完整直線與房屋是本站採用的現代規約，不得稱為原始官方全套。');
-  lines.push('不用逆位、塔羅原型、元素、牌面朝向、心理投射或靈感補故事。未提供distance_rules時不得使用近遠法；騎士跳、鏡像、交會與房屋鏈停用。');
+  lines.push('# 證據契約');
+  lines.push('1. direct_adjacency 是直接相鄰；valid_segments 已是程式裁好的精確區段，引用時必須一張不漏，不得自行延長、縮短、轉彎或補線。');
+  lines.push('2. 相鄰牌對或線段只表示同一結構，不表示時間、因果或發展方向。未啟用 direction_rules，禁止「先、之後、最後、由A走向B」。');
+  lines.push('3. 多個共享核心牌的相鄰牌對只算一個關係簇，不得拆成多項獨立證據來提高確定度。');
+  lines.push('4. 房屋只修飾人物牌與核心焦點牌，不能推翻直接證據。完全沒有相關結構時回答「牌面不足以判定」；正反證據並存時說明哪方較重。');
+  lines.push('5. 一個關係簇加一致旁證只能寫「有機會／較有傾向」；至少兩組彼此獨立、且無同級反證的直接結構，才可寫明確傾向。');
+  lines.push('例：心＆戒指、戒指＆人物牌是同一關係簇；可說「支持交往可能」，不可寫成從感情逐步發展為交往，也不可把它算成兩項獨立證據。');
   lines.push('');
 
-  lines.push('# 證據與結論規則');
-  lines.push('1. 只能使用各題 evidence_packet 中的 direct_adjacency、valid_segments、relevant_houses。不得自行重排、補線、轉彎或跳格。');
-  lines.push('2. valid_segments列的是最大直線；引用時只取兩個實際端點之間的連續區段，區段內全部牌一張不漏，區段外的牌不要帶入。線段只表示結構關聯，不表示時間先後；direction_rules 未啟用時，禁止使用「先、之後、最後、最終會」。');
-  lines.push('3. 房屋只提供脈絡，不能單獨推翻直接相鄰或完整線段。');
-  lines.push('4. 一項間接證據只能寫「可能」；一項直接結構加一致旁證可寫「較有此傾向」；兩項以上獨立直接結構一致且無同級反證，才可給明確傾向。');
-  lines.push('5. 完全缺少相關結構時，回答「牌面不足以判定」；不得把缺乏證據偷換成確定不會。正反直接證據並存時，說明哪一方主導。');
-  lines.push('6. 未問時間不加應期；即使問時間，也只能依另附 time_rules 判相對快慢，禁止把牌號換算成天、週、月。');
-  lines.push('');
-
-  var types = {};
-  questions.forEach(function(item){ (item.types || [item.type]).forEach(function(type){ types[type] = true; }); });
-  if (types.relationship_longevity) {
-    lines.push('# 本題概念：正緣');
-    lines.push('「正緣」不判唯一命定，只判目前對象是否同時具備相互感情、關係持續性、穩定共同生活與承諾發展。若有感情但結束、切斷、侵蝕、阻礙或負擔的直接結構明顯主導，可回答「有感情牽引，但以穩定長久的定義看，偏不是正緣」。');
+  if (typeSet.relationship_intent || typeSet.relationship_future || typeSet.relationship_longevity || typeSet.multi_partner_commitment) {
+    lines.push('# 感情判準');
+    lines.push('區分友善、好感、情緒投入、想交往、形成交往、穩定承諾。狗不等於愛情；公開互動不等於私人感情。');
+    lines.push('relationship_intent 才能回答某位特定對象當下想不想；relationship_future 問的是未來是否形成關係，不得改寫成「她現在想交往」。');
+    lines.push('人物牌若標為 counterpart_significator，只是本題結構定位，不證明其真實身分、年齡或已經出現。');
     lines.push('');
   }
-  if (types.multi_partner_commitment) {
-    lines.push('# 本題概念：多人伴侶／一夫多妻');
-    lines.push('先區分感情選擇、多個曖昧、非排他關係、多人知情同意的穩定承諾，以及法律制度。十字路口或花園只能支持選擇、公開或社交脈絡，不能單獨證明多名伴侶。');
-    lines.push('只有 person_roles 明確提供兩名以上對象，且每名對象各自與心或戒指形成獨立直接結構，才能判斷穩定多人伴侶。蛇牌未被 person_roles 指定為人物時，只讀複雜、迂迴或欺瞞，不得自行當第二位女性。');
-    lines.push('');
+  if (typeSet.relationship_longevity) {
+    lines.push('「正緣」只指相互感情、持續性、共同生活與承諾是否受支持，不判唯一命定。');
   }
-  if (types.relationship_intent || types.relationship_future || types.relationship_longevity) {
-    lines.push('# 感情強度');
-    lines.push('必須區分友善／信任、好感／吸引、情緒投入、想交往、穩定承諾。18狗不能直接升級成愛情；公開或直播互動不能直接升級成私人感情。');
-    lines.push('');
+  if (typeSet.multi_partner_commitment) {
+    lines.push('沒有兩名以上被明確指定的人物角色及各自獨立的心／戒指結構，不得判成多人伴侶或一夫多妻。');
   }
-  if (types.age) {
-    lines.push('# 年齡限制');
-    lines.push('未提供age_rules時，禁止輸出精確歲數、數字區間或相差幾歲。孩子、百合、大樹只能描述較年輕、成熟或穩重的年齡感。');
+  if (hasAgeQualifier) {
+    lines.push('# 數字年齡條件');
+    lines.push('題目中的歲數是使用者提出的篩選條件，不是牌面證據。本次沒有 age_rules，因此必須把「是否形成交往」與「是否符合該歲數」分開回答；歲數是否吻合只能說無法驗證。');
+    lines.push('不得用孩子、百合、大樹或房屋把數字年齡換算、近似或側面證實；也不得因人物牌出現就假定該年齡的人已出現。');
+    lines.push('合格答法示例：「牌面支持出現交往機會，但無法確認對方是否符合題目所述歲數。」');
     lines.push('');
   }
 
-  lines.push('<reading_request method_profile="site_petit_lenormand_v3">');
+  lines.push('<reading_request method_profile="site_petit_lenormand_v4">');
   lines.push('<question_original>' + xmlEscape(q || '未指定具體問題') + '</question_original>');
-  lines.push('<routing_note>types只用來選取證據，不是答案或預設結論；若同一題有多個types，必須分別處理其實際問法。</routing_note>');
   lines.push('<normalized_questions>');
   questions.forEach(function(item) {
-    lines.push('<question id="' + item.id + '" types="' + (item.types || [item.type]).join(',') + '">' + xmlEscape(item.text) + '</question>');
+    lines.push('<question id="' + item.id + '" types="' + (item.types || [item.type]).join(',') + '" target_scope="' + item.targetScope + '">' + xmlEscape(item.text) + '</question>');
+    if (item.qualifiers && item.qualifiers.length) {
+      lines.push('<qualifiers question_id="' + item.id + '">');
+      item.qualifiers.forEach(function(qf){
+        lines.push('<age kind="' + qf.kind + '" requested="' + xmlEscape(qf.raw) + '" assessable="false" reason="age_rules_not_provided"></age>');
+      });
+      lines.push('</qualifiers>');
+    }
   });
   lines.push('</normalized_questions>');
   lines.push('<querent_gender>' + (declaredGender === 'male' ? '男' : declaredGender === 'female' ? '女' : '未聲明') + '</querent_gender>');
   lines.push('<person_roles>');
   if (roles.querent) lines.push('<role name="querent">' + cardLabel(CARDS[roles.querent - 1]) + '</role>');
-  if (roles.counterpart && questions.some(function(item){ return (item.types || [item.type]).some(function(type){ return /^relationship_|^multi_partner_/.test(type); }); })) {
-    lines.push('<role name="current_or_primary_counterpart">' + cardLabel(CARDS[roles.counterpart - 1]) + '</role>');
-  }
   if (!roles.querent) lines.push('<role name="unassigned">28.紳士與29.淑女皆未指定</role>');
   lines.push('</person_roles>');
   lines.push('<direction_rules enabled="false"></direction_rules>');
   lines.push('<distance_rules enabled="false"></distance_rules>');
+  lines.push('<age_rules enabled="false"></age_rules>');
 
   if (isGT) {
     var geometry = buildGrandGeometry(drawn);
-    questions.forEach(function(item) {
+    var globalUsedCards = {};
+    var packetItems = questions.map(function(item) {
       var packet = buildEvidencePacket(geometry, item, declaredGender);
-      lines.push('<evidence_packet question_id="' + item.id + '" types="' + (item.types || [item.type]).join(',') + '">');
+      Object.keys(packet.usedCards).forEach(function(id){ globalUsedCards[id] = packet.usedCards[id]; });
+      return { item:item, packet:packet };
+    });
+    packetItems.forEach(function(entry) {
+      var item = entry.item;
+      var packet = entry.packet;
+      lines.push('<evidence_packet question_id="' + item.id + '" types="' + (item.types || [item.type]).join(',') + '" target_scope="' + item.targetScope + '">');
       lines.push('<question>' + xmlEscape(item.text) + '</question>');
-      lines.push('<focus_cards>');
-      packet.focusPositions.forEach(function(p) {
+      if (roles.counterpart && ((item.types || [item.type]).some(function(type){ return /^relationship_|^multi_partner_/.test(type); }) || item.targetScope !== 'unspecified')) {
+        lines.push('<role name="counterpart_significator" status="method_placeholder">' + cardLabel(CARDS[roles.counterpart - 1]) + '</role>');
+      }
+      lines.push('<core_focus_cards>');
+      packet.anchorPositions.forEach(function(p) {
         lines.push(positionLabel(p) + '|' + cardLabel(p.card) + '|house=' + cardLabel(p.house));
       });
-      lines.push('</focus_cards>');
+      lines.push('</core_focus_cards>');
+      lines.push('<support_focus_cards>');
+      packet.focusPositions.filter(function(p){ return packet.anchorPositions.indexOf(p) === -1; }).forEach(function(p) {
+        lines.push(positionLabel(p) + '|' + cardLabel(p.card));
+      });
+      lines.push('</support_focus_cards>');
       lines.push('<direct_adjacency>');
       packet.direct.forEach(function(a) {
         lines.push(cardLabel(a.position.card) + ' => ' + (a.neighbors.length ? a.neighbors.map(function(n){ return cardLabel(n.card); }).join(', ') : 'none'));
       });
       lines.push('</direct_adjacency>');
-      lines.push('<valid_segments>');
-      packet.lines.forEach(function(line) {
-        lines.push(line.id + '[' + line.type + '] ' + line.positions.map(function(p){ return cardLabel(p.card); }).join(' > '));
+      lines.push('<valid_segments exact="true">');
+      packet.segments.forEach(function(seg, idx) {
+        lines.push('S' + (idx + 1) + ' ' + seg.positions.map(function(p){ return cardLabel(p.card); }).join(' > '));
       });
       lines.push('</valid_segments>');
       lines.push('<relevant_houses>');
-      packet.focusPositions.forEach(function(p) {
+      packet.housePositions.forEach(function(p) {
         lines.push(cardLabel(p.card) + '落' + cardLabel(p.house) + '宮');
       });
       lines.push('</relevant_houses>');
-      lines.push('<card_dictionary>');
-      lines.push(Object.keys(packet.usedCards).map(function(id){ var c = packet.usedCards[id]; return cardLabel(c) + '=' + c.key; }).join('；'));
-      lines.push('</card_dictionary>');
       lines.push('</evidence_packet>');
     });
+    lines.push('<card_dictionary scope="all_evidence_packets">');
+    lines.push(Object.keys(globalUsedCards).map(function(id){ var c = globalUsedCards[id]; return cardLabel(c) + '=' + c.key; }).join('；'));
+    lines.push('</card_dictionary>');
   } else {
     lines.push('<spread>' + sp.name + '（' + sp.count + '張）</spread>');
     lines.push('<drawn_cards>');
@@ -562,25 +734,26 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('</reading_request>');
   lines.push('');
 
-  lines.push('# 輸出契約');
-  lines.push('第一句依序回答全部子問題；之後每個子問題獨立成段，每段只推進一項結論。');
-  lines.push('使用繁體中文與台灣用語；正文不寫座標、排數、技法名稱或教科書流程。');
-  lines.push('每段末尾列真正使用的證據：相鄰寫「牌A＋牌B」；線段寫完整「牌A→中間牌→牌B」；房屋寫「牌A落牌B宮」。不得列入未使用的牌。');
+  lines.push('# 輸出');
+  lines.push('第一句依題目順序回答。每個實際判斷各自成段；數字年齡條件若不可驗證，必須明確單獨說明。');
+  lines.push('正文使用繁體中文與台灣用語，不寫座標、排數或教科書流程。');
+  lines.push('每段末尾列真正使用的證據：相鄰寫「牌A＋牌B」；線段寫完整「牌A→中間牌→牌B」；房屋寫「牌A落牌B宮」。');
   lines.push('');
 
-  lines.push('<presentation_footer stage="after_reading_locked">');
-  lines.push('正文完成並鎖定後，才選一種能量石作象徵性建議；不得反向修改正文，不作醫療宣稱。');
-  lines.push('可用礦物事實：白水晶／紫水晶／黃水晶／茶晶／粉晶／草莓晶＝石英家族、SiO₂、三方晶系、硬度7；月光石＝正長石與鈉長石交層產生暈彩；拉長石＝斜長石、三斜晶系；太陽石＝赤鐵礦或銅片包體產生砂金閃光；海藍寶＝綠柱石族、六方晶系、鐵致色；黑曜石＝非晶質火山玻璃、貝殼狀斷口；黑碧璽＝電氣石族、三方晶系、柱面常見縱紋；虎眼石＝石英交代石棉假象、具絲絹貓眼光；綠幽靈＝白水晶含綠泥石包體；葡萄石＝斜方晶系、常呈葡萄狀集合體；天鐵＝鎳鐵隕石，切磨酸蝕後可見魏德曼花紋；龍宮舍利只能稱市場名稱並描述外觀，不宣稱成因。');
-  lines.push('最後三段固定為：能量石短句；單獨一行[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)；最後一行「願你諸事順遂。」');
+  lines.push('<presentation_footer mode="verbatim_after_reading">');
+  lines.push('<stone_text>' + selectPresentationFooter(questions) + '</stone_text>');
+  lines.push('<shop_link>[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)</shop_link>');
+  lines.push('<closing>願你諸事順遂。</closing>');
   lines.push('</presentation_footer>');
   lines.push('');
 
-  lines.push('# 最終驗收');
-  lines.push('確認：已分題；只用各題evidence_packet；沒有把選擇或社交判成多人伴侶；沒有把線段讀成時間流程；沒有跳過負面牌；沒有把缺證寫成確定不會；沒有對第三方過度確定。');
-  lines.push('只輸出最終解讀，不輸出分析流程或檢查表。');
+  lines.push('# 最後檢查');
+  lines.push('只用 evidence_packet；共享核心牌的相鄰鏈不得冒充多項獨立證據；不得把關係簇寫成發展流程；未知未來對象不得寫成已出現或已有意圖；無 age_rules 不得驗證任何數字歲數。');
+  lines.push('完成正文後，再逐字附上 presentation_footer 的三行內容。只輸出最終解讀。');
 
   return lines.join('\n');
 }
+
 
 // ════════════════════════════════════
 // 五、Overlay UI（整合進 index.html）
@@ -876,6 +1049,17 @@ window._lnReset = function() {
   _lnPhase = 'input';
   _render();
   _getWrap().scrollTop = 0;
+};
+
+// 僅供自動測試使用；不參與正式 UI 與讀牌結果。
+window.__JY_LN_TEST__ = {
+  inferQuestionDimensions: inferQuestionDimensions,
+  splitQuestionSegments: splitQuestionSegments,
+  buildGrandGeometry: buildGrandGeometry,
+  buildEvidencePacket: buildEvidencePacket,
+  buildPrompt: buildPrompt,
+  cards: CARDS,
+  spreads: SPREADS
 };
 
 })();
