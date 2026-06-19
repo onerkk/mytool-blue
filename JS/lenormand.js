@@ -1,14 +1,29 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v3.15
-// v3.15(2026/6/19・index v86_38)：Gemini Android／PWA 導覽根治，實體檔名固定 JS/lenormand.js。
-//   ①Gemini 不再使用 navigator.clipboard、Promise、preventDefault、location.assign 或 window.open。
-//     點擊事件內只做同步 document.execCommand('copy')，隨後由真實 <a href> 的瀏覽器預設行為導覽。
-//     因此不再跳出剪貼簿權限詢問，也不會因非同步回呼失去使用者手勢。
-//   ②Android 依瀏覽器／Samsung 裝置產生 intent://，明確指定實體瀏覽器套件載入 gemini.google.com，
-//     避免 Gemini App Link 接管後白畫面閃退；Samsung Internet 使用官方套件 com.sec.android.app.sbrowser，
-//     Chrome 使用 com.android.chrome，並保留 HTTPS browser_fallback_url。
-//   ③五張線維持固定六軌網格：上排 3 張、下排 2 張，兩排共用同一幾何中心。
-//   ④部署檔名固定為 JS/lenormand.js；更新時直接覆蓋即可。
+// 靜月之光 — 雷諾曼牌 Lenormand v3.14
+// v3.14(2026/6/19)：Gemini 複製提示詞「閃一下其他頁面又跳回」問題——誠實記錄，非假裝已根治。
+//   背景：v3.11 把 Gemini 由 _blank 改 _self（理由：懷疑新分頁/外部導覽是病根）；
+//         v3.13 又改回「同頁原生開啟＋全新檔名破快取」，理由是「白畫面後返回源自新視窗」。
+//         兩次都已實機回報仍會閃退——代表「改 target」這條路已驗證走不通，不能再猜第三次。
+//   查證後判斷：本站程式碼本身沒有任何 history.back()／location.href 改寫（已逐行排查），
+//     不是本站邏輯把畫面切回去的。最可能的根因在 Android／Chrome 對 gemini.google.com 這個
+//     已驗證 App Link 網域的攔截行為（嘗試交給原生 Gemini App 或以 Custom Tab／離域列開啟），
+//     這層發生在瀏覽器原生導覽機制，target="_self"/"_blank" 都管不到、且非網頁端 JS 可控制。
+//   這版做兩件誠實的事，不是又猜一次「改 target」：
+//     ①把 Gemini 改回與其它 9 個 AI 完全一致的 target="_blank"——拿掉先前兩次都已證實無效的
+//       特例處理，至少不再用一個已知失敗的猜測蓋住問題；其餘 9 家用同樣寫法皆無回報問題。
+//     ②新增可選診斷（網址列加 ?lndebug=1 才會啟動，預設不擾動正常使用）：點 AI 圖示時記下時間戳，
+//       返回本頁觸發 pageshow 時跳出 alert 顯示「是否真的離開過此頁（bfcache還原與否）」與經過時間。
+//       下次歐那實機重現時，把這個結果回報回來，才能真正定位是「本頁code可控的問題」還是
+//       「Android 對該網域的攔截，需到手機設定關閉 Gemini App 的『預設開啟連結』才能驗證並繞過」。
+//   檔名：自本版起永久固定為 lenormand.js，不再把版本號塞進實體檔名；之後改版只動 index.html
+//     的 ?v= 快取破壞參數（本專案無 Service Worker 攔截 search，?v= 正常有效，與 MyShift 的
+//     SW 吃掉 search 的情況不同，無需再靠改檔名繞快取）。
+// v3.11(2026/6/19・index v86_34)：根治兩個前端病根。
+//   ①五張線不再交給 flex 自動換行；改為固定六軌網格，上排 3 張、下排 2 張，兩排共用同一幾何中心，
+//     從結構上消除不同螢幕寬度造成的 4+1、3+2 歪斜與底排偏位。
+//   ②AI 捷徑不再等待 Clipboard Promise 後才 window.open（會失去使用者手勢、遭手機瀏覽器攔截）。
+//     改用真實 <a href target="_blank"> 原生導覽；點擊當下啟動複製，瀏覽器同一手勢直接開啟 Gemini 網頁版。
+//     全程不重繪、不切換本站 phase、不延遲開窗，因此不會再瞬間切掉又跳回來。
 // v3.10(2026/6/15・index v86_33)：根治「載入一致性」與「提示詞過長/位置」兩病根（前次稽核問題3+4），治本非補丁。
 //   ①新增單一條件源 _ctx（isTiming/isChoice/isInner/count）——特殊題型、應期、距離法全部只讀它，
 //     條件不再散在各處（舊狀：特殊題型 inline regex、應期無條件硬載＝補一個漏一個）。增刪題型只動 _ctx。
@@ -679,35 +694,6 @@ var AI_LIST = [
   {id:'perplexity',name:'Perplexity',url:'https://www.perplexity.ai/'}
 ];
 
-
-// v3.15：Gemini 必須進「網頁版瀏覽器」，不能被 Android 的 Gemini App Link 接管。
-// 真實 anchor 直接使用此 URL；不靠 Promise 回呼或程式化開窗。
-function _lnGeminiLaunchUrl() {
-  var web = 'https://gemini.google.com/app?hl=zh-TW';
-  var ua = String((navigator && navigator.userAgent) || '');
-  if (!/Android/i.test(ua)) return web;
-
-  var pkg = '';
-  // Samsung Internet 官方套件；standalone/PWA UA 可能只保留 Samsung 裝置型號，因此兩者都判斷。
-  if (/SamsungBrowser/i.test(ua) || /SM-[A-Z0-9-]+/i.test(ua)) {
-    pkg = 'com.sec.android.app.sbrowser';
-  } else if (/EdgA/i.test(ua)) {
-    pkg = 'com.microsoft.emmx';
-  } else if (/Chrome|Chromium|CriOS/i.test(ua)) {
-    pkg = 'com.android.chrome';
-  }
-
-  // 未能可靠辨識實體瀏覽器時維持標準 HTTPS，避免猜錯套件造成無法開啟。
-  if (!pkg) return web;
-
-  return 'intent://gemini.google.com/app?hl=zh-TW' +
-    '#Intent;scheme=https;' +
-    'action=android.intent.action.VIEW;' +
-    'category=android.intent.category.BROWSABLE;' +
-    'package=' + pkg + ';' +
-    'S.browser_fallback_url=' + encodeURIComponent(web) + ';end';
-}
-
 function _render() {
   // v3.2 根治：重繪會銷毀並重建 textarea——任何觸發 _render 的按鈕（牌陣/指示牌/性別/未來新增）
   //   都曾或將把使用者打到一半的問題刷掉。收口在唯一入口：重建前先把現值回存 _lnQuestion，
@@ -779,16 +765,13 @@ function _render() {
     h += '<div class="ln-ai-grid">';
     for (var a=0;a<AI_LIST.length;a++) {
       var ai = AI_LIST[a];
-      if (ai.id === 'gemini') {
-        // v3.15：真實 intent/HTTPS anchor。onclick 只同步複製，不阻止瀏覽器預設導覽。
-        h += '<a class="ln-ai-sc" href="'+_lnGeminiLaunchUrl()+'" rel="noopener noreferrer" onclick="_lnCopyGeminiSync(this)" aria-label="複製提示詞並以瀏覽器開啟 Gemini 網頁版">';
-      } else {
-        h += '<a class="ln-ai-sc" href="'+ai.url+'" target="_blank" rel="external noopener noreferrer" onpointerdown="_lnPrimeAICopy(event,this)" onclick="_lnPrimeAICopy(event,this)" aria-label="複製提示詞並開啟 '+ai.name+' 網頁版">';
-      }
+      // v3.14：Gemini 改回與其它 9 個 AI 一致的 target="_blank"——v3.11/v3.13 兩次的特例（_self、
+      // 同頁開啟）都已實機驗證無法解決閃退問題，繼續猜 target 不是根治，先回到唯一沒人回報過問題的寫法。
+      h += '<a class="ln-ai-sc" href="'+ai.url+'" target="_blank" rel="external noopener noreferrer" onpointerdown="_lnPrimeAICopy(event,this)" onclick="_lnPrimeAICopy(event,this)" aria-label="複製提示詞並開啟 '+ai.name+' 網頁版">';
       h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'">';
       h += '<span>'+ai.name+'</span></a>';
     }
-    h += '</div><div class="ln-ai-foot">點 Gemini：同步複製後，由實體瀏覽器直接開啟官方網頁版</div></div>';
+    h += '</div></div>';
     h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_lenormandShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361</button></div>';
     h += '<div style="text-align:center"><button class="ln-reset-btn" onclick="_lnReset()">↺ 重新抽牌</button></div>';
   }
@@ -906,8 +889,29 @@ window._lnSigPickOpen = function () {
   (_getWrap() || document.body).appendChild(ov);
 };
 
-// 一鍵複製與非 Gemini AI 捷徑共用入口。Gemini 走 _lnCopyGeminiSync 同步複製＋真實 anchor 導覽。
-// 非 Gemini AI 維持原生連結導覽；本段不執行 window.open、location.href 或 _render。
+// v3.14：可選診斷——預設完全不啟動，不影響任何正常使用者。網址列加上 ?lndebug=1 才會生效。
+// 用途：下次歐那實機重現「點 Gemini 閃一下其他頁面又跳回」時，回到本頁會跳出 alert，
+//   標示 (a) pageshow.persisted（true＝瀏覽器真的離開過、靠 bfcache 瞬間還原，屬本頁可診斷範圍）
+//   (b) 距離點擊的毫秒數。若 persisted 為 false 或事件根本沒觸發，代表文件其實沒被瀏覽器卸載過，
+//   就更指向 Android 對 gemini.google.com 的 App Link/Intent 攔截（非本頁 JS 可控，需在手機
+//   設定關閉 Gemini App 的「預設開啟連結」來驗證並繞過）。看到結果後判斷下一步，不在這裡先猜答案。
+var _lnDebug = false;
+try { _lnDebug = /(^|[?&])lndebug=1(&|$)/.test(location.search || ''); } catch (e) {}
+if (_lnDebug) {
+  try {
+    window.addEventListener('pageshow', function (ev) {
+      var lastClick = Number(sessionStorage.getItem('jy_ln_dbg_click') || 0);
+      var delta = lastClick ? (Date.now() - lastClick) : null;
+      if (delta !== null && delta >= 0 && delta < 20000) {
+        alert('[lndebug] 返回本頁\nbfcache 還原(persisted)：' + ev.persisted +
+          '\n距上次點 AI 圖示：' + delta + 'ms\ndocument.referrer：' + (document.referrer || '(無)'));
+      }
+    });
+  } catch (e) {}
+}
+
+// v3.11：剪貼簿唯一入口。Clipboard API 在安全來源優先；舊瀏覽器才使用同步 textarea 後備。
+// 注意：AI 網頁導覽由真實 <a href> 的預設行為負責，這裡絕不 window.open、location.href 或 _render。
 function _lnLegacyCopy(text) {
   var ta = null;
   try {
@@ -956,22 +960,11 @@ window._lnCopy = function() {
   return false;
 };
 
-// v3.15：Gemini 專用同步路徑。
-// 不呼叫 Clipboard API、不等待 Promise、不 preventDefault；同步複製完成後，anchor 立即依 href 導覽。
-window._lnCopyGeminiSync = function(link) {
-  if (!_lastPrompt || !link) return true;
-
-  var copied = _lnLegacyCopy(_lastPrompt);
-  var label = link.querySelector('span');
-  if (label && copied) label.textContent = '已複製';
-
-  // 每次點擊重新產生，避免 UA／安裝模式改變後仍沿用舊網址。
-  link.href = _lnGeminiLaunchUrl();
-  return true;
-};
-
 window._lnPrimeAICopy = function(ev, link) {
   if (!_lastPrompt || !link) return;
+
+  // v3.14：診斷時間戳，僅 ?lndebug=1 時寫入，供 pageshow 比對「點擊到返回」經過多久。
+  if (_lnDebug) { try { sessionStorage.setItem('jy_ln_dbg_click', String(Date.now())); } catch (e) {} }
 
   // pointerdown 與 click 會連續觸發，短時間只複製一次。
   var now = Date.now();
