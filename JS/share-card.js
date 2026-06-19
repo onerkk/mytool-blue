@@ -1,5 +1,6 @@
-/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.2]
+/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.3]
  * ⚠ 檔案位置：JS/share-card.js（v86_16 起與其他 JS 同層；repo 根目錄如仍有舊檔請刪除，避免再傳錯位置）
+ * v2.3(2026/6/19)：雷諾曼五張線分享卡版面改為上3下2，與結果頁一致；不再用五張單排。
  * v2.2(2026/6/12)：renderMeihua——卦無牌面圖資產，「真實畫面」＝直繪六爻卦象（陽爻實線/陰爻斷線、
  *   由下而上、動爻紅金高亮＋圓點標記）；呼叫端補傳 lines/dong，未傳則退 renderTarot 舊版（零風險後備）。
  * v2.1(2026/6/12)：renderTarot 同款根治——cards 帶 img 繪真牌面（逆位旋轉180°、與結果頁一致）、
@@ -390,6 +391,22 @@
         y = y9 + Math.floor(i / 3) * (ch9 + nm9 + gy9);
         cardCell(ctx, x, y, cw9, ch9, cards[i], 0);
         ctext(ctx, (cards[i] && cards[i].name) || '', x + cw9 / 2, y + ch9 + 22, '600 25px "Noto Serif TC", serif', CREAM, 0);
+      }
+    } else if (n === 5) {
+      var cw5 = 190, ch5 = 314, gap5 = 22, nm5 = 72;
+      var y5 = Math.max(qline(ctx, d.question, 345), 390);
+      var xTop5 = (W - (3 * cw5 + 2 * gap5)) / 2;
+      var xBot5 = (W - (2 * cw5 + gap5)) / 2;
+      var rowGap5 = 24;
+      for (i = 0; i < 5; i++) {
+        var c5 = cards[i] || {};
+        var topRow = i < 3;
+        x = (topRow ? xTop5 + i * (cw5 + gap5) : xBot5 + (i - 3) * (cw5 + gap5));
+        y = topRow ? y5 : y5 + ch5 + rowGap5;
+        cardCell(ctx, x, y, cw5, ch5, c5, nm5);
+        var nmFont5 = '600 ' + ((c5.name || '').length > 3 ? 23 : 27) + 'px "Noto Serif TC", serif';
+        ctext(ctx, c5.name || '', x + cw5 / 2, y + ch5 - 48, nmFont5, CREAM, 0);
+        ctext(ctx, (c5.sig ? '★' : '') + (c5.pos || ''), x + cw5 / 2, y + ch5 - 18, '19px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 1);
       }
     } else {
       var m = Math.max(n, 1);

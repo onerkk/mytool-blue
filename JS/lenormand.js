@@ -1652,6 +1652,12 @@ function _getWrap() {
       '.ln-draw-btn{display:block;width:100%;padding:.85rem;border-radius:12px;border:1.5px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:#c9a84c;font-family:inherit;font-size:.95rem;font-weight:600;letter-spacing:4px;cursor:pointer;transition:all .3s;margin-top:.8rem}',
       '.ln-draw-btn:active{transform:scale(.97)}',
       '.ln-cards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;margin:.6rem 0}',
+      '.ln-cards-row.ln-five-layout{display:grid;grid-template-columns:repeat(6,minmax(0,68px));justify-content:center;gap:.5rem .35rem}',
+      '.ln-cards-row.ln-five-layout .ln-card:nth-child(1){grid-column:1 / span 2}',
+      '.ln-cards-row.ln-five-layout .ln-card:nth-child(2){grid-column:3 / span 2}',
+      '.ln-cards-row.ln-five-layout .ln-card:nth-child(3){grid-column:5 / span 2}',
+      '.ln-cards-row.ln-five-layout .ln-card:nth-child(4){grid-column:2 / span 2}',
+      '.ln-cards-row.ln-five-layout .ln-card:nth-child(5){grid-column:4 / span 2}',
       '.ln-card{width:68px;padding:.25rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(145deg,rgba(30,25,15,.9),rgba(20,15,10,.95));text-align:center;animation:lnIn .4s ease-out both;overflow:hidden}',
       '@keyframes lnIn{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:none}}',
       '.ln-card-img{width:100%;border-radius:6px;display:block}',
@@ -1742,7 +1748,7 @@ function _render() {
     if (_lnResolved === 'nine') {
       h += '<div class="ln-grid-3x3">';
     } else {
-      h += '<div class="ln-cards-row">';
+      h += '<div class="ln-cards-row' + (_lnResolved === 'five' ? ' ln-five-layout' : '') + '">';
     }
     for (var j=0;j<_lnDrawn.length;j++) {
       var c = _lnDrawn[j];
