@@ -1,5 +1,12 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v3.0.3
+// 靜月之光 — 雷諾曼牌 Lenormand v3.14
+// v3.14(2026/6/19・index v86_37)：Gemini 複製後導覽流程重構，並恢復固定檔名 JS/lenormand.js。
+//   ①移除 Gemini 的 pointerdown 複製與 document.execCommand('copy')。該舊流程會在 Android／Samsung 瀏覽器
+//     先觸發剪貼簿權限視窗，吃掉後續 click，使畫面只閃一下而未進入 Gemini。
+//   ②Gemini 現在只有單一 click 入口：preventDefault → navigator.clipboard.writeText(prompt) → Promise 完成後
+//     window.location.assign(官方 Gemini 網頁)。同頁導覽不受 popup blocker 限制；複製失敗仍會直接進 Gemini。
+//   ③五張線維持固定六軌網格：上排 3 張、下排 2 張，兩排共用同一幾何中心。
+//   ④部署檔名固定為 JS/lenormand.js；更新時可直接覆蓋，不再使用 lenormand-vX.XX.js 實體檔名。
 // v3.10(2026/6/15・index v86_33)：根治「載入一致性」與「提示詞過長/位置」兩病根（前次稽核問題3+4），治本非補丁。
 //   ①新增單一條件源 _ctx（isTiming/isChoice/isInner/count）——特殊題型、應期、距離法全部只讀它，
 //     條件不再散在各處（舊狀：特殊題型 inline regex、應期無條件硬載＝補一個漏一個）。增刪題型只動 _ctx。
@@ -47,7 +54,7 @@
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v2.3 loaded（+應期技法：距離/速度牌/牌號） — 原典邊界/本盤合法牌名/反盤外反證修正');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v3.11 loaded — 五張線固定 3+2／AI 原生連結導覽');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -623,6 +630,13 @@ function _getWrap() {
       '.ln-draw-btn{display:block;width:100%;padding:.85rem;border-radius:12px;border:1.5px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:#c9a84c;font-family:inherit;font-size:.95rem;font-weight:600;letter-spacing:4px;cursor:pointer;transition:all .3s;margin-top:.8rem}',
       '.ln-draw-btn:active{transform:scale(.97)}',
       '.ln-cards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;margin:.6rem 0}',
+      '.ln-five-layout{display:grid;grid-template-columns:repeat(6,38px);grid-auto-rows:auto;row-gap:.58rem;justify-content:center;align-items:start;width:228px;max-width:100%;margin:.7rem auto .85rem}',
+      '.ln-five-layout .ln-card{justify-self:center;margin:0}',
+      '.ln-five-layout .ln-card:nth-child(1){grid-column:1/3;grid-row:1}',
+      '.ln-five-layout .ln-card:nth-child(2){grid-column:3/5;grid-row:1}',
+      '.ln-five-layout .ln-card:nth-child(3){grid-column:5/7;grid-row:1}',
+      '.ln-five-layout .ln-card:nth-child(4){grid-column:2/4;grid-row:2}',
+      '.ln-five-layout .ln-card:nth-child(5){grid-column:4/6;grid-row:2}',
       '.ln-card{width:68px;padding:.25rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(145deg,rgba(30,25,15,.9),rgba(20,15,10,.95));text-align:center;animation:lnIn .4s ease-out both;overflow:hidden}',
       '@keyframes lnIn{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:none}}',
       '.ln-card-img{width:100%;border-radius:6px;display:block}',
@@ -635,7 +649,7 @@ function _getWrap() {
       '.ln-ai-copy-btn{display:block;width:100%;padding:.75rem;border-radius:12px;border:1.5px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));color:#c9a84c;font-family:inherit;font-size:.88rem;font-weight:600;letter-spacing:3px;cursor:pointer;transition:all .3s;margin-bottom:.5rem}',
       '.ln-ai-copy-btn:active{transform:scale(.97)}',
       '.ln-ai-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.3rem;margin:.5rem 0}',
-      '.ln-ai-sc{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.35rem .1rem;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;font-family:inherit}',
+      '.ln-ai-sc{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.35rem .1rem;border-radius:10px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);cursor:pointer;transition:all .2s;font-family:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}',
       '.ln-ai-sc:active{transform:scale(.91)}',
       '.ln-ai-sc img{width:30px;height:30px;border-radius:8px}',
       '.ln-ai-sc span{font-size:.55rem;color:rgba(232,224,208,.5);font-weight:600}',
@@ -653,7 +667,7 @@ function _getWrap() {
 var AI_LIST = [
   {id:'chatgpt',name:'ChatGPT',url:'https://chatgpt.com/'},
   {id:'claude',name:'Claude',url:'https://claude.ai/new'},
-  {id:'gemini',name:'Gemini',url:'https://gemini.google.com/app'},
+  {id:'gemini',name:'Gemini',url:'https://gemini.google.com/app?hl=zh-TW'},
   {id:'grok',name:'Grok',url:'https://grok.x.ai/'},
   {id:'deepseek',name:'DeepSeek',url:'https://chat.deepseek.com/'},
   {id:'kimi',name:'Kimi',url:'https://kimi.moonshot.cn/'},
@@ -711,6 +725,9 @@ function _render() {
     if (_lnSignif) h += '<div class="ln-auto-note">✦ 指示牌：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・圍繞法）' : _lnResolved==='grand' ? '（於 36 張中定位讀取）' : '（主題透鏡）') + '</div>';
     if (_lnResolved === 'nine') {
       h += '<div class="ln-grid-3x3">';
+    } else if (_lnResolved === 'five') {
+      // v3.11：固定 3+2 幾何網格。不可再交給 flex 依螢幕寬度自行換行，否則會出現 4+1 或底排偏斜。
+      h += '<div class="ln-five-layout" role="group" aria-label="五張線：上排三張，下排兩張">';
     } else {
       h += '<div class="ln-cards-row">';
     }
@@ -726,16 +743,21 @@ function _render() {
 
     // AI card
     h += '<div class="ln-ai-card"><div class="ln-ai-title">🌙 AI 深度解讀</div>';
-    h += '<div class="ln-ai-desc">輕觸按鈕複製，貼到 AI 對話送出即可。</div>';
+    h += '<div class="ln-ai-desc">點擊 AI 圖示會先複製提示詞，再於新分頁直接開啟該 AI 網頁版。</div>';
     h += '<button class="ln-ai-copy-btn" onclick="_lnCopy()">✦ 一鍵複製占卜提示詞 ✦</button>';
     h += '<div class="ln-ai-grid">';
     for (var a=0;a<AI_LIST.length;a++) {
       var ai = AI_LIST[a];
-      h += '<button class="ln-ai-sc" onclick="_lnOpenAI(\''+ai.id+'\',\''+ai.url+'\',this)">';
+      if (ai.id === 'gemini') {
+        // v3.14：Gemini 只綁 click。不得使用 pointerdown 或 execCommand，避免 Android 剪貼簿權限視窗吃掉導覽。
+        h += '<a class="ln-ai-sc" href="'+ai.url+'" rel="external noreferrer" onclick="return _lnCopyThenOpenGemini(event,this)" aria-label="複製提示詞並開啟 Gemini 網頁版">';
+      } else {
+        h += '<a class="ln-ai-sc" href="'+ai.url+'" target="_blank" rel="external noopener noreferrer" onpointerdown="_lnPrimeAICopy(event,this)" onclick="_lnPrimeAICopy(event,this)" aria-label="複製提示詞並開啟 '+ai.name+' 網頁版">';
+      }
       h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'">';
-      h += '<span>'+ai.name+'</span></button>';
+      h += '<span>'+ai.name+'</span></a>';
     }
-    h += '</div><div class="ln-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
+    h += '</div><div class="ln-ai-foot">點 Gemini：先完成提示詞複製，再直接進入官方網頁版</div></div>';
     h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_lenormandShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361</button></div>';
     h += '<div style="text-align:center"><button class="ln-reset-btn" onclick="_lnReset()">↺ 重新抽牌</button></div>';
   }
@@ -853,30 +875,120 @@ window._lnSigPickOpen = function () {
   (_getWrap() || document.body).appendChild(ov);
 };
 
-window._lnCopy = function() {
-  if (!_lastPrompt) return;
+// 一鍵複製與非 Gemini AI 捷徑共用入口。Gemini 不走本段，改由 _lnCopyThenOpenGemini 單獨處理。
+// 非 Gemini AI 維持原生連結導覽；本段不執行 window.open、location.href 或 _render。
+function _lnLegacyCopy(text) {
+  var ta = null;
   try {
-    navigator.clipboard.writeText(_lastPrompt).then(function(){
-      var btn = document.querySelector('.ln-ai-copy-btn');
-      if(btn){var o=btn.innerHTML;btn.innerHTML='✓ 已複製！貼到 AI 送出即可';btn.style.borderColor='rgba(52,211,153,.5)';setTimeout(function(){btn.innerHTML=o;btn.style.borderColor='';},2500);}
-    });
-  } catch(e) {
-    var ta=document.createElement('textarea');ta.value=_lastPrompt;ta.style.cssText='position:fixed;left:-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.setAttribute('aria-hidden', 'true');
+    ta.style.cssText = 'position:fixed;top:0;left:-9999px;width:1px;height:1px;opacity:0;font-size:16px;pointer-events:none';
+    document.body.appendChild(ta);
+    try { ta.focus({ preventScroll: true }); } catch (_focusErr) { ta.focus(); }
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    return !!document.execCommand('copy');
+  } catch (e) {
+    return false;
+  } finally {
+    if (ta && ta.parentNode) ta.parentNode.removeChild(ta);
+  }
+}
+
+function _lnWriteClipboard(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      return navigator.clipboard.writeText(text).then(function () { return true; }).catch(function () {
+        return _lnLegacyCopy(text);
+      });
+    } catch (e) {}
+  }
+  return Promise.resolve(_lnLegacyCopy(text));
+}
+
+window._lnCopy = function() {
+  if (!_lastPrompt) return false;
+  var btn = document.querySelector('.ln-ai-copy-btn');
+  var original = btn ? btn.innerHTML : '';
+  _lnWriteClipboard(_lastPrompt).then(function(ok){
+    if (!btn) return;
+    btn.innerHTML = ok ? '✓ 已複製！貼到 AI 送出即可' : '複製失敗，請長按提示詞複製';
+    btn.style.borderColor = ok ? 'rgba(52,211,153,.5)' : 'rgba(248,113,113,.65)';
+    setTimeout(function(){
+      if (!btn.isConnected) return;
+      btn.innerHTML = original;
+      btn.style.borderColor = '';
+    }, 2500);
+  });
+  return false;
+};
+
+// v3.14：Gemini 專用單一路徑。只使用 Async Clipboard 寫入，不碰 clipboard.read、pointerdown 或 execCommand。
+// 同頁 location.assign 在 Promise 回呼中仍可正常導覽，不受新視窗 popup blocker 限制。
+window._lnCopyThenOpenGemini = function(ev, link) {
+  if (ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+  }
+
+  var url = (link && link.href) ? link.href : 'https://gemini.google.com/app?hl=zh-TW';
+  var text = _lastPrompt || '';
+  var moved = false;
+
+  function goToGemini() {
+    if (moved) return;
+    moved = true;
+    window.location.assign(url);
+  }
+
+  if (!text) {
+    goToGemini();
+    return false;
+  }
+
+  // 使用者 click 內只呼叫 writeText。失敗也直接導覽；不退回 execCommand，避免剪貼簿權限視窗。
+  if (navigator.clipboard && window.isSecureContext && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      var writeJob = navigator.clipboard.writeText(text);
+      if (writeJob && typeof writeJob.then === 'function') {
+        writeJob.then(goToGemini, goToGemini);
+        return false;
+      }
+    } catch (e) {}
+  }
+
+  // 僅供完全不支援 Async Clipboard 的舊瀏覽器。
+  _lnLegacyCopy(text);
+  goToGemini();
+  return false;
+};
+
+window._lnPrimeAICopy = function(ev, link) {
+  if (!_lastPrompt || !link) return;
+
+  // pointerdown 與 click 會連續觸發，短時間只複製一次。
+  var now = Date.now();
+  var last = Number(link.getAttribute('data-ln-copy-at') || 0);
+  if (now - last < 700) return;
+  link.setAttribute('data-ln-copy-at', String(now));
+
+  // 僅同步複製。禁止 preventDefault／stopPropagation／return false；
+  // 連結導覽完全由真實 <a href> 的瀏覽器預設行為執行。
+  var copied = _lnLegacyCopy(_lastPrompt);
+  if (!copied && navigator.clipboard && window.isSecureContext) {
+    try { navigator.clipboard.writeText(_lastPrompt).catch(function(){}); } catch (e) {}
+  }
+
+  var label = link.querySelector('span');
+  if (label && copied) {
+    var original = link.getAttribute('data-ln-label') || label.textContent;
+    link.setAttribute('data-ln-label', original);
+    label.textContent = '已複製';
+    setTimeout(function(){ if (label.isConnected) label.textContent = original; }, 1800);
   }
 };
-
-window._lnOpenAI = function(id, url, btn) {
-  if (!_lastPrompt) return;
-  try {
-    navigator.clipboard.writeText(_lastPrompt).then(function(){
-      var s=btn.querySelector('span');if(s)s.textContent='已複製！';
-      setTimeout(function(){window.open(url,'_blank');},300);
-      var names={chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
-      setTimeout(function(){if(s)s.textContent=names[id]||id;},2000);
-    });
-  } catch(e){window.open(url,'_blank');}
-};
-
 window._lnReset = function() {
   _lnPhase = 'input';
   _render();
