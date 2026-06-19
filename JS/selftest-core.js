@@ -96,60 +96,49 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v5.5',
-        '性題證據歸屬／原子分簇／提示詞再收斂根治',
+        '雷諾曼牌 Lenormand v6.0',
+        '共用判讀公式核心重構',
+        'site_lenormand_canonical_formula_v1',
+        'site_petit_lenormand_v8_0_canonical_formula',
+        'evidence_ledger counting="one_physical_pair_one_vote"',
+        'dependent_claim_reference_only',
+        'distinct_uid_per_required_gate',
+        'function compileFormulaClaimPlan',
+        'function collectApprovedEvidenceLedger',
+        'function claimEvidenceUids',
+        'function assignGlobalEvidenceUids',
+        'function buildGlobalEvidenceLedger',
+        'function enforceGlobalClaimEvidenceUniqueness',
+        'direct_adjacency',
+        'contiguous_three_card_window',
+        'context_window',
         'attraction_opportunity',
         'sexual_component',
         'sexual_event',
-        'unsupported_age',
-        'health_medical_cause',
-        'health_symbolic_context',
-        'comparison_suitability',
         'business_success',
         'debt_clearance',
         'positive_net_worth',
         'life_guidance',
         'timing_rules_not_enabled',
-        'function assignGlobalEvidenceUids',
-        'function enforceGlobalClaimEvidenceUniqueness',
-        'function structureEvidenceRole',
-        'sexual_theme_unassigned',
-        'evidence_role=',
-        '蛇只作誘惑／複雜風險修飾',
-        'function rankAndLimitClusterIds',
-        'function modernThemeAllowedForType',
-        '<claim_evidence>',
-        '<approved_evidence_scope rule="only_claim_linked">',
-        'basis="rule_limit"',
+        'unsupported_age',
+        'health_medical_cause',
+        'comparison_suitability',
+        '<claim_evidence counting="shared_reference_does_not_add_confidence">',
         '<timing_rules enabled="false"',
         'function detectComparisonQuestion',
-        'function resolveSpreadForQuestion',
         'function buildComparisonNinePacket',
-        'function buildEvidenceAwareAnalysisRequirements',
         'function buildApprovedEvidenceView',
         'function buildStoneRecommendationCandidates',
         'site_symmetric_nine_comparison',
-        'site_petit_lenormand_v7_5_atomic_evidence',
         '本站受控的現代工作詞典',
-        '不得自行延伸成清庫存、投廣告、調價格、追毛利',
         '<stone_recommendation mode="select_after_interpretation"',
-        '若都不吻合',
-        '選項名稱只是標籤',
         'hypothetical_noncurrent_counterpart',
-        'function expandSegmentToQuestions',
-        'function buildClusters',
         'function validateEvidencePacket',
         'function failClosedPacket',
-        '<approved_claims>',
-        '<forbidden_claims>',
-        '<core_clusters confidence_counting="one_per_cluster">',
-        '<selected_context certainty_effect="none" scope="approved_clusters_only">',
-        '<packet_validation status="',
         '魚不得轉義為性慾',
         '鞭子不得轉義為性行為',
-        '桃花機會、感官／性成分、實際肉體事件是三個不同命題',
+        '蛇、魚與鞭子均不能單獨建立性結論',
         '<age_rules enabled="false">',
-        'personStatusForScope(item.targetScope)',
         "key:'結束・終止・封閉'",
         "key:'負擔・考驗・難卸壓力'",
         "pos:'暫時不明、判斷需保留'",
@@ -158,31 +147,20 @@
         "pos:'負擔、考驗、難卸責任'"
       ],
       mustNot: [
-        '雷諾曼牌 Lenormand v5.4',
-        'site_petit_lenormand_v7_4_approved_evidence',
-        '雷諾曼牌 Lenormand v5.3',
-        'site_petit_lenormand_v7_3_evidence_lineage',
-        '雷諾曼牌 Lenormand v5.2',
-        'site_petit_lenormand_v7_2_evidence_first',
+        'site_petit_lenormand_v7_5_atomic_evidence',
+        'var QUESTION_SCHEMAS =',
+        'directPairs=directPairs.slice(0,24)',
+        '<selected_context',
+        '<approved_evidence_scope rule="only_claim_linked">',
+        '<core_clusters confidence_counting="one_per_cluster">',
         '<relevant_houses context_only="true">',
-        '雷諾曼牌 Lenormand v5.1',
-        '雷諾曼牌 Lenormand v5.0',
-        '雷諾曼牌 Lenormand v4.5',
-        'site_petit_lenormand_v6_deep',
-        'types="general" target_scope="current_partner"',
         '<modern_context certainty_effect="none">',
         '<thematic_repetitions scope="approved_local_context">',
         'valid_segments列的是最大直線',
-        'current_or_primary_counterpart',
         "key:'結束・轉化・終止'",
         "key:'負擔・命運・考驗'",
-        '末排四張依本站約定只作獨立總結',
-        '不建立與第四排的上下相鄰',
-        "pos:'困惑即將散去、暫時看不清'",
-        "pos:'堅毅、大目標、穩固'",
-        "pos:'減少壓力、放下'",
-        "pos:'宗教、精神信仰、承擔考驗'",
-        '<stone_text>'
+        '魚代表慾望',
+        '鞭子代表性行為'
       ]
     }  };
 
@@ -287,311 +265,146 @@
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
     }
 
-    // ⑦雷諾曼 v5.5 性題證據歸屬／原子分簇／提示詞再收斂根治
+    // ⑦雷諾曼 v6.0 共用公式／全題證據帳本／階層命題根治
     var ln = env.lenormandTest || root.__JY_LN_TEST__;
     if (ln && typeof ln.inferQuestionDimensions === 'function') {
-      var qSex = ln.inferQuestionDimensions('今年有非現任的肉體桃花嗎？');
-      env.report('⑦雷諾曼路由', '非現任肉體桃花→桃花／性成分／事件三命題＋非現任假設對象',
-        qSex.types.indexOf('attraction_opportunity') > -1 &&
-        qSex.types.indexOf('sexual_component') > -1 &&
-        qSex.types.indexOf('sexual_event') > -1 &&
-        qSex.targetScope === 'hypothetical_noncurrent_counterpart', JSON.stringify(qSex));
-
-      var sexSplit = ln.splitQuestionSegments('今年有非現任的肉體桃花嗎？她幾歲？');
-      env.report('⑦雷諾曼路由', '複合題拆成桃花、性成分、事件、不可驗證年齡四 proposition',
-        sexSplit.length === 4 &&
-        sexSplit[0].type === 'attraction_opportunity' &&
-        sexSplit[1].type === 'sexual_component' &&
-        sexSplit[2].type === 'sexual_event' &&
-        sexSplit[3].type === 'unsupported_age', JSON.stringify(sexSplit));
-      env.report('⑦雷諾曼路由', '使用者的「今年」只作問題範圍，不啟用時間推算',
-        !!sexSplit[0].timeScope && sexSplit[0].timeScope.raw === '今年', JSON.stringify(sexSplit[0].timeScope));
-
-      var qAge = ln.inferQuestionDimensions('未來會有25歲上下跟我交往嗎？');
-      env.report('⑦雷諾曼路由', '未來交往＋25歲→關係命題＋年齡限制，不誤判當下意圖',
-        qAge.types.indexOf('relationship_future') > -1 && qAge.types.indexOf('relationship_intent') === -1 &&
-        qAge.targetScope === 'unknown_future_counterpart' && qAge.qualifiers[0] && qAge.qualifiers[0].raw === '25歲上下', JSON.stringify(qAge));
-
-      var qHealth = ln.splitQuestionSegments('我身體為何一直發炎 長痘痘');
-      env.report('⑦雷諾曼路由', '醫療原因與健康象徵狀態分成兩個 proposition',
-        qHealth.length === 2 && qHealth[0].type === 'health_medical_cause' && qHealth[1].type === 'health_symbolic_context', JSON.stringify(qHealth));
-
-      var qCareer = ln.splitQuestionSegments('正職工作適合我嗎？未來我還會升遷嗎？');
-      env.report('⑦雷諾曼路由', '工作適配與升遷保持獨立命題',
-        qCareer.length === 2 && qCareer[0].type === 'career_fit' && qCareer[1].type === 'career_promotion', JSON.stringify(qCareer));
-
-      var qCompare = ln.splitQuestionSegments('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴');
-      env.report('⑦雷諾曼比較路由', '二選一配戴題抽出兩個選項並進入 comparison_suitability',
-        qCompare.length === 1 && qCompare[0].type === 'comparison_suitability' &&
-        qCompare[0].options && qCompare[0].options[0] === '金太陽' && qCompare[0].options[1] === '黑靈骨龍宮舍利', JSON.stringify(qCompare));
-      var cmpAlt = ln.detectComparisonQuestion('月光石還是紫水晶比較適合我');
-      env.report('⑦雷諾曼比較路由', '還是／比較適合語型可穩定抽取選項',
-        !!cmpAlt && cmpAlt.options[0] === '月光石' && cmpAlt.options[1] === '紫水晶', JSON.stringify(cmpAlt));
-      var cmpPrinciple = ln.detectComparisonQuestion('我搭配手鍊 是要搭配自己喜歡的 還是要看八字5行？');
-      env.report('⑦雷諾曼比較路由', '自然語句「喜好還是八字五行」正規化為兩個明確選項',
-        !!cmpPrinciple && cmpPrinciple.options[0] === '自己喜歡的款式' && cmpPrinciple.options[1] === '依八字五行搭配' && cmpPrinciple.criterion === '手鍊搭配原則', JSON.stringify(cmpPrinciple));
-      var notComparison = ln.detectComparisonQuestion('我喜歡水晶和手鍊');
-      env.report('⑦雷諾曼比較路由', '一般並列句不誤判成比較題', notComparison === null, JSON.stringify(notComparison));
-
-      var cmpResolved = ln.resolveSpreadForQuestion('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴','grand');
-      env.report('⑦雷諾曼比較路由', '比較題即使手動選大牌陣仍強制使用對稱九宮格',
-        cmpResolved.id === 'nine' && cmpResolved.forced === true, JSON.stringify(cmpResolved));
-      var normalResolved = ln.resolveSpreadForQuestion('正職工作適合我嗎','grand');
-      env.report('⑦雷諾曼比較路由', '非比較題保留使用者手動牌陣',
-        normalResolved.id === 'grand' && normalResolved.forced === false, JSON.stringify(normalResolved));
-
-      if (typeof ln.buildPrompt === 'function' && ln.cards) {
-        var ids = [30,27,34,26,28,17,36,22,33,3,9,18,24,4,8,7,23,19,21,11,14,25,29,5,6,20,10,35,13,1,15,16,2,12,32,31];
-        var draw = ids.map(function(id){ return ln.cards[id - 1]; });
-        var cmpDraw = [31,8,24,35,33,21,6,4,30].map(function(id){ return ln.cards[id - 1]; });
-        var cmpPacket = ln.buildComparisonNinePacket(qCompare[0], cmpDraw);
-        env.report('⑦雷諾曼比較證據', 'A／B 使用對稱三位置，中央三張只作共同軸',
-          cmpPacket.validation.ok && cmpPacket.optionA.positions.length === 3 && cmpPacket.optionB.positions.length === 3 && cmpPacket.shared.positions.length === 3,
-          JSON.stringify({a:cmpPacket.optionA.band,b:cmpPacket.optionB.band,cap:cmpPacket.claimPlan.certaintyCap}));
-        env.report('⑦雷諾曼比較證據', '相同九張牌不因選項名稱含太陽而改變程式結論',
-          (function(){
-            var q2=ln.splitQuestionSegments('白水晶跟黑曜石 哪個更適合我配戴')[0];
-            var p2=ln.buildComparisonNinePacket(q2,cmpDraw);
-            return p2.claimPlan.status===cmpPacket.claimPlan.status && p2.claimPlan.certaintyCap===cmpPacket.claimPlan.certaintyCap;
-          })(), '');
-        var cmpPrompt = ln.buildPrompt('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴', cmpDraw, 'nine', null, 'male');
-        env.report('⑦雷諾曼比較提示詞', '比較提示含預先分配、名稱非牌義、A/B對稱與程式結論上限',
-          cmpPrompt.indexOf('site_symmetric_nine_comparison') > -1 &&
-          cmpPrompt.indexOf('選項名稱只是標籤') > -1 &&
-          cmpPrompt.indexOf('O-A1') > -1 && cmpPrompt.indexOf('O-B1') > -1 &&
-          cmpPrompt.indexOf('X-C2 決策核心') > -1 &&
-          cmpPrompt.indexOf('不得將選項名稱映射成同名牌') > -1,
-          'len='+cmpPrompt.length);
-        env.report('⑦雷諾曼比較提示詞', '比較題不產生 Grand Tableau D/S/C 證據牆',
-          cmpPrompt.indexOf('<evidence_catalog>') === -1 && cmpPrompt.indexOf('<core_clusters') === -1 && cmpPrompt.length < 8000,
-          'len='+cmpPrompt.length);
-        env.report('⑦雷諾曼推薦', '結尾改為解讀後選擇候選，不再寫死 stone_text／白水晶',
-          cmpPrompt.indexOf('<stone_recommendation mode="select_after_interpretation"') > -1 &&
-          cmpPrompt.indexOf('<stone_text>') === -1 && cmpPrompt.indexOf('若都不吻合') > -1,
-          '');
-        var choiceCandidates = ln.buildStoneRecommendationCandidates('我搭配手鍊 是要搭配自己喜歡的 還是要看八字五行？', ln.splitQuestionSegments('我搭配手鍊 是要搭配自己喜歡的 還是要看八字五行？'), []);
-        var businessCandidates = ln.buildStoneRecommendationCandidates('我的副業賣場該怎麼提升業績？', ln.splitQuestionSegments('我的副業賣場該怎麼提升業績？'), []);
-        env.report('⑦雷諾曼推薦', '問題方向不同會召回對應候選，候選排列不作推薦順位',
-          choiceCandidates.some(function(x){return x.name === '紫水晶';}) && businessCandidates.some(function(x){return x.name === '黃水晶';}),
-          JSON.stringify({choice:choiceCandidates,business:businessCandidates}));
-        var invalidCmpPrompt = ln.buildPrompt('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴', draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼比較守門', '未使用對稱九宮格時 fail-closed，不事後挑牌比較',
-          invalidCmpPrompt.indexOf('comparison_requires_symmetric_nine') > -1 && invalidCmpPrompt.indexOf('任何選項優劣結論') > -1 && invalidCmpPrompt.indexOf('<evidence_catalog>') === -1,
-          '');
-        var geom = ln.buildGrandGeometry(draw);
-
-        var lifeQuestion = '我對人生有些迷茫 請給我建議';
-        var lifeProps = ln.splitQuestionSegments(lifeQuestion);
-        env.report('⑦雷諾曼人生建議路由', '人生迷茫／請給建議獨立進入 life_guidance，不再落入泛用 general',
-          lifeProps.length === 1 && lifeProps[0].type === 'life_guidance', JSON.stringify(lifeProps));
-        var lifePacket = ln.buildEvidencePacket(geom, lifeProps[0], 'male');
-        env.report('⑦雷諾曼人生建議門檻', '人生建議使用分項核准主張，不再由單一通用 A1 包辦所有結論',
-          lifePacket.validation && lifePacket.validation.ok && lifePacket.claimPlan.status !== 'model_evaluate' &&
-          (lifePacket.claimPlan.approvedClaims || []).length >= 3 &&
-          (lifePacket.claimPlan.approvedClaims || []).every(function(c){ return String(c).indexOf('依核心證據與反證') === -1; }),
-          JSON.stringify(lifePacket.claimPlan));
-        var lifeUsed = {};
-        var lifeLinksOk = (lifePacket.claimPlan.claimEvidence || []).every(function(link){
-          return (link.clusters || []).length <= 2 && (link.clusters || []).every(function(cid){
-            if (lifeUsed[cid]) return false;
-            lifeUsed[cid] = true;
-            return true;
-          });
-        });
-        env.report('⑦雷諾曼人生建議血緣', '每項主張最多兩個 C，且不同主張不重複使用同一 C', lifeLinksOk,
-          JSON.stringify(lifePacket.claimPlan.claimEvidence));
-        var lifeView = ln.buildApprovedEvidenceView(lifePacket);
-        var lifeApprovedIds = {};
-        (lifeView.clusters || []).forEach(function(c){ lifeApprovedIds[c.id] = true; });
-        var lifeViewRefsOk = (lifeView.structures || []).every(function(st){
-          return (lifeView.clusters || []).some(function(c){ return (c.refs || []).indexOf(st.id) > -1; });
-        });
-        env.report('⑦雷諾曼核准證據視圖', 'runtime 只保留 claim_evidence 真正引用的 C／D／S',
-          lifeViewRefsOk && (lifeView.clusters || []).length === Object.keys(lifeUsed).length &&
-          (lifeView.structures || []).length <= lifePacket.structures.length,
-          JSON.stringify({all:lifePacket.structures.length,approved:lifeView.structures.length,clusters:Object.keys(lifeApprovedIds)}));
-        var lifePrompt = ln.buildPrompt(lifeQuestion, draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼人生建議提示詞', 'v7.5 只輸出核准證據並封鎖未核准脈絡偷渡',
-          lifePrompt.indexOf('site_petit_lenormand_v7_5_atomic_evidence') > -1 &&
-          lifePrompt.indexOf('type="life_guidance"') > -1 &&
-          lifePrompt.indexOf('<approved_evidence_scope rule="only_claim_linked">') > -1 &&
-          lifePrompt.indexOf('<selected_context certainty_effect="none" scope="approved_clusters_only">') > -1 &&
-          lifePrompt.indexOf('N-P') === -1 && lifePrompt.indexOf('N-T') === -1 &&
-          lifePrompt.indexOf('M1 ') === -1 && lifePrompt.indexOf('K1 ') === -1 &&
-          lifePrompt.indexOf('I1 ') === -1 && lifePrompt.indexOf('F-corners') === -1,
-          'len=' + lifePrompt.length);
-        env.report('⑦雷諾曼人生建議提示詞', '人生建議不載入無關財務範例或自行生成具體處置',
-          lifePrompt.indexOf('收入或副業成功不等於') === -1 &&
-          lifePrompt.indexOf('清庫存') === -1 && lifePrompt.indexOf('投廣告') === -1 &&
-          lifePrompt.indexOf('不得自行指定職業、離職、分手、搬家、期限或唯一使命') > -1 &&
-          lifePrompt.length < 8000,
-          'len=' + lifePrompt.length);
-        var lifeCandidates = ln.buildStoneRecommendationCandidates(lifeQuestion, lifeProps, [{item:lifeProps[0],packet:lifePacket}]);
-        env.report('⑦雷諾曼人生建議推薦', '水晶候選只讀核准證據，方向題可召回紫水晶但不固定推薦',
-          lifeCandidates.some(function(x){return x.name === '紫水晶';}) &&
-          lifePrompt.indexOf('<stone_text>') === -1 && lifePrompt.indexOf('候選按名稱排列，不是推薦順位') > -1,
-          JSON.stringify(lifeCandidates));
-
-        var packets = sexSplit.map(function(q){ return ln.buildEvidencePacket(geom, q, 'male'); });
-        var sexEntries = sexSplit.map(function(item, idx){ return {item:item, packet:packets[idx]}; });
-        ln.assignGlobalEvidenceUids(sexEntries);
-        ln.enforceGlobalClaimEvidenceUniqueness(sexEntries);
-
-        function makeStructure(cardIds, kind) {
-          var positions = cardIds.map(function(id, idx){ return {slot:idx + 1, card:ln.cards[id - 1]}; });
-          return {id:'D1', kind:kind || 'adjacency', positions:positions, cardIds:cardIds.slice()};
-        }
-        function makeRolePacket(type, role, cardIds, polarity) {
-          var structure = makeStructure(cardIds);
-          return {
-            question:{type:type, types:[type]}, structures:[structure], directPairs:[structure], segments:[],
-            clusters:[{id:'C1', role:role, polarity:polarity || 'neutral', structures:[structure], refs:['D1'], cardIds:cardIds.slice()}]
-          };
-        }
-        env.report('⑦雷諾曼性題反例', '紳士＋蛇只屬誘惑／複雜修飾，不得建立性吸引',
-          ln.structureEvidenceRole('sexual_component', makeStructure([28,7]), 'male') === 'sexual_modifier_only' &&
-          ln.buildClaimPlan(makeRolePacket('sexual_component','sexual_modifier_only',[28,7],'neutral'),'male').status === 'sexual_theme_unassigned', '');
-        env.report('⑦雷諾曼性題門檻', '百合與吸引焦點可作本站感官提示；百合遇固定負牌改列風險',
-          ln.structureEvidenceRole('sexual_component', makeStructure([30,9]), 'male') === 'sexual_support' &&
-          ln.structureEvidenceRole('sexual_component', makeStructure([30,8]), 'male') === 'risk', '');
-        env.report('⑦雷諾曼長線距離', '遠端心牌與假設人物不得因同一長線硬連成吸引支持',
-          ln.structureEvidenceRole('attraction_opportunity', makeStructure([24,14,34,29],'segment'), 'male') === 'attraction_context', '');
-        var eventOnlyPlan = ln.buildClaimPlan(makeRolePacket('sexual_event','event_support',[30,29,1],'positive'),'male');
-        env.report('⑦雷諾曼事件門檻', '只有感官／人物接觸結構、沒有獨立關係落實證據時仍不足以判定事件',
-          eventOnlyPlan.status === 'sexual_event_insufficient', JSON.stringify(eventOnlyPlan));
-
-        var globalUsedUid = {};
-        var globalUidUnique = sexEntries.slice(0,3).every(function(entry){
-          var packet = entry.packet, linked = {};
-          (packet.claimPlan.claimEvidence || []).forEach(function(link){ (link.clusters || []).forEach(function(cid){ linked[cid] = true; }); });
-          return (packet.clusters || []).filter(function(c){ return linked[c.id]; }).every(function(c){
-            return (c.structures || []).every(function(st){
-              if (!st.evidenceUid) return false;
-              if (globalUsedUid[st.evidenceUid]) return false;
-              globalUsedUid[st.evidenceUid] = true;
-              return true;
-            });
-          });
-        });
-        env.report('⑦雷諾曼全題證據獨占', '同一 evidence_uid 在桃花／性成分／事件的核准主張中只出現一次',
-          globalUidUnique, JSON.stringify(globalUsedUid));
-
-        env.report('⑦雷諾曼證據包', '每個 packet 通過程式驗證',
-          packets.every(function(p){ return p.validation && p.validation.ok; }), JSON.stringify(packets.map(function(p){ return p.validation; })));
-        env.report('⑦雷諾曼證據包', '年齡 packet fail-closed：零牌面證據',
-          packets[3].structures.length === 0 && packets[3].clusters.length === 0 && packets[3].claimPlan.status === 'unsupported_age', JSON.stringify(packets[3].claimPlan));
-        env.report('⑦雷諾曼證據包', '命題專屬分簇不再把全部 D/S 合成單一 C',
-          packets[0].clusters.length > 1 && packets[0].clusters.length < packets[0].structures.length, 'clusters=' + packets[0].clusters.length + ', structures=' + packets[0].structures.length);
-        env.report('⑦雷諾曼證據包', '現代脈絡已去重並限制數量',
-          packets.slice(0,3).every(function(p){ return p.modernContext.mirrors.length <= 3 && p.modernContext.knightMoves.length <= 3 && p.modernContext.intersections.length <= 2; }), '');
-
-        var allRefsOk = packets.slice(0,3).every(function(p){
-          var counts = {};
-          p.clusters.forEach(function(c){ c.refs.forEach(function(r){ counts[r] = (counts[r] || 0) + 1; }); });
-          return p.structures.every(function(st){ return counts[st.id] === 1; });
-        });
-        env.report('⑦雷諾曼證據包', '每個 D/S 恰好歸屬一個 C，不重複計分', allRefsOk, '');
-        var analysisReq = ln.buildEvidenceAwareAnalysisRequirements(packets[0]);
-        env.report('⑦雷諾曼深度契約', '段落上限依命題與實際C極性啟用，不再固定強迫全部展開',
-          analysisReq.paragraphMax >= analysisReq.paragraphMin &&
-          ['required','insufficient_or_omit'].indexOf(analysisReq.favorable) > -1 &&
-          ['required','omit_if_absent'].indexOf(analysisReq.risk) > -1,
-          JSON.stringify(analysisReq));
-
-        var moneyQuestion = '我副業什麼時候才能成功 讓我負債完全清空 有正資產';
-        var moneyProps = ln.splitQuestionSegments(moneyQuestion);
-        env.report('⑦雷諾曼財務命題', '成功、清債、正資產、時間拆成四個獨立 proposition',
-          moneyProps.length === 4 && moneyProps[0].type === 'business_success' && moneyProps[1].type === 'debt_clearance' && moneyProps[2].type === 'positive_net_worth' && moneyProps[3].type === 'timing',
-          JSON.stringify(moneyProps.map(function(x){return x.type;})));
-        var moneyEntries = moneyProps.map(function(item){return {item:item,packet:ln.buildEvidencePacket(geom,item,'male')};});
-        ln.assignGlobalEvidenceUids(moneyEntries);
-        var timePacket = moneyEntries[3].packet;
-        env.report('⑦雷諾曼時間守門', '未啟用時間規則時為空證據包且禁止猜日期',
-          timePacket.structures.length === 0 && timePacket.claimPlan.status === 'timing_rules_not_enabled' && timePacket.claimPlan.certaintyCap === '不足以判定具體時間',
-          JSON.stringify(timePacket.claimPlan));
-        env.report('⑦雷諾曼財務門檻', '商業成功、清債、正資產各有獨立 claim_plan，不再落入通用 model_evaluate',
-          moneyEntries.slice(0,3).every(function(e){return e.packet.claimPlan.status !== 'model_evaluate';}) &&
-          moneyEntries[0].packet.claimPlan.forbiddenClaims.some(function(x){return x.indexOf('清償負債') > -1;}) &&
-          moneyEntries[1].packet.claimPlan.forbiddenClaims.some(function(x){return x.indexOf('副業成功') > -1;}) &&
-          moneyEntries[2].packet.claimPlan.forbiddenClaims.some(function(x){return x.indexOf('清債等於正資產') > -1;}),
-          JSON.stringify(moneyEntries.slice(0,3).map(function(e){return e.packet.claimPlan.status;})));
-        function makeGatePacket(type, cardIds, polarity) {
-          var positions = cardIds.map(function(id, idx){ return {slot:idx + 1, card:ln.cards[id - 1]}; });
-          var structure = {id:'D1', kind:'adjacency', positions:positions, cardIds:cardIds.slice()};
-          return {
-            question:{type:type, types:[type]},
-            structures:[structure], directPairs:[], segments:[],
-            clusters:[{id:'C1', polarity:polarity || 'neutral', structures:[structure], refs:['D1']}]
-          };
-        }
-        var businessLinkOnly = ln.buildClaimPlan(makeGatePacket('business_success',[28,34],'neutral'),'male');
-        env.report('⑦雷諾曼財務反例', '紳士＋魚只證明副業／財務連結，不得升格為成功',
-          businessLinkOnly.status === 'business_link_without_outcome' && businessLinkOnly.certaintyCap.indexOf('成功結果不足') > -1,
-          JSON.stringify(businessLinkOnly));
-        var debtCutOnly = ln.buildClaimPlan(makeGatePacket('debt_clearance',[15,10],'mixed'),'male');
-        env.report('⑦雷諾曼財務反例', '熊＋鐮刀只支持切減壓力，不得升格為負債歸零',
-          debtCutOnly.status === 'debt_cut_only' && debtCutOnly.certaintyCap.indexOf('不足以確認清空') > -1,
-          JSON.stringify(debtCutOnly));
-        var netWorthLinkOnly = ln.buildClaimPlan(makeGatePacket('positive_net_worth',[28,34],'neutral'),'male');
-        env.report('⑦雷諾曼財務反例', '收入／財務連結不足以證明正資產',
-          netWorthLinkOnly.status === 'positive_net_worth_insufficient' && netWorthLinkOnly.certaintyCap === '不足以確認正資產',
-          JSON.stringify(netWorthLinkOnly));
-        env.report('⑦雷諾曼證據最小化', '財務複合結論只連到最小充分C集合，避免同現象多線段灌票',
-          moneyEntries.slice(0,3).every(function(e){return (e.packet.claimPlan.claimEvidence||[]).every(function(link){return (link.clusters||[]).length <= 2;});}),
-          JSON.stringify(moneyEntries.slice(0,3).map(function(e){return e.packet.claimPlan.claimEvidence;})));
-        env.report('⑦雷諾曼脈絡相關性', '商業／財務 selected_context 不輸出情感主題干擾結論',
-          moneyEntries.slice(0,3).every(function(e){return !(e.packet.modernContext.clusterThemes||[]).some(function(t){return t.id==='relationship_bond'||t.id==='sexual_sensual';});}),
-          JSON.stringify(moneyEntries.slice(0,3).map(function(e){return e.packet.modernContext.clusterThemes;})));
-        var uidByKey = {};
-        moneyEntries.forEach(function(e){e.packet.structures.forEach(function(st){var key=(st.kind==='adjacency'?'D:':'S:')+st.positions.map(function(p){return p.slot;}).sort(function(a,b){return a-b;}).join('-');if(uidByKey[key]&&uidByKey[key]!==st.evidenceUid)uidByKey[key]='MISMATCH';else uidByKey[key]=st.evidenceUid;});});
-        env.report('⑦雷諾曼證據血緣', '跨命題相同實體結構共用 evidence_uid',
-          Object.keys(uidByKey).every(function(k){return uidByKey[k]!=='MISMATCH';}), JSON.stringify(uidByKey).slice(0,220));
-        var moneyPrompt = ln.buildPrompt(moneyQuestion, draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', 'v7.5 含四命題、claim_evidence、核准證據範圍與時間守門',
-          moneyPrompt.indexOf('site_petit_lenormand_v7_5_atomic_evidence') > -1 &&
-          moneyPrompt.indexOf('type="debt_clearance"') > -1 && moneyPrompt.indexOf('type="positive_net_worth"') > -1 &&
-          moneyPrompt.indexOf('<claim_evidence>') > -1 && moneyPrompt.indexOf('basis="rule_limit"') > -1 && moneyPrompt.indexOf('<timing_rules enabled="false"') > -1 &&
-          moneyPrompt.indexOf('本站受控的現代工作詞典') > -1 && moneyPrompt.indexOf('不得自行延伸成清庫存、投廣告、調價格、追毛利') > -1 &&
-          moneyPrompt.indexOf('<relevant_houses') === -1,
-          'len='+moneyPrompt.length);
-
-        var lp = ln.buildPrompt('今年有非現任的肉體桃花嗎？她幾歲？', draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', 'v7.5 提示詞含命題、人物狀態、批准主張與核准證據範圍',
-          lp.indexOf('site_petit_lenormand_v7_5_atomic_evidence') > -1 &&
-          lp.indexOf('type="attraction_opportunity"') > -1 &&
-          lp.indexOf('type="sexual_component"') > -1 &&
-          lp.indexOf('type="sexual_event"') > -1 &&
-          lp.indexOf('type="unsupported_age"') > -1 &&
-          lp.indexOf('status="hypothetical"') > -1 &&
-          (lp.match(/packet_validation status="pass"/g) || []).length === 4 &&
-          lp.indexOf('<approved_claims>') > -1 && lp.indexOf('<forbidden_claims>') > -1, 'len=' + lp.length);
-        env.report('⑦雷諾曼提示詞', '性命題邊界鎖定：蛇不得單獨建性、魚與鞭子不得越權轉義',
-          lp.indexOf('蛇只修飾誘惑／複雜風險，不能單獨建立性成分') > -1 &&
-          lp.indexOf('魚不得轉義為性慾') > -1 && lp.indexOf('鞭子不得轉義為性行為') > -1 &&
-          lp.indexOf('證據不可互借或從不同位置拼接升級') > -1, '');
-        var promptUids = (lp.match(/uid=E\d+/g) || []);
-        var uniquePromptUids = {};
-        promptUids.forEach(function(uid){ uniquePromptUids[uid] = (uniquePromptUids[uid] || 0) + 1; });
-        env.report('⑦雷諾曼提示詞', 'runtime 提示詞全題 evidence_uid 無重複，性題不再輸出 selected_context',
-          Object.keys(uniquePromptUids).every(function(uid){ return uniquePromptUids[uid] === 1; }) &&
-          lp.indexOf('<selected_context') === -1,
-          JSON.stringify(uniquePromptUids));
-        var ageStart = lp.indexOf('<evidence_packet proposition_id="q2"');
-        var ageEnd = lp.indexOf('</evidence_packet>', ageStart);
-        var ageBlock = ageStart > -1 && ageEnd > ageStart ? lp.slice(ageStart, ageEnd) : '';
-        env.report('⑦雷諾曼提示詞', '不可驗證年齡不生成 evidence_catalog／現代脈絡',
-          ageBlock.indexOf('<evidence_catalog>') === -1 && ageBlock.indexOf('<selected_context') === -1 && ageBlock.indexOf('unsupported_age') > -1, ageBlock.slice(0,120));
-        env.report('⑦雷諾曼提示詞', '提示詞移除全量技法資料牆並控制長度',
-          lp.length < 12000 && lp.indexOf('<modern_context certainty_effect="none">') === -1 && lp.indexOf('<thematic_repetitions scope="approved_local_context">') === -1,
-          'len=' + lp.length);
-        env.report('⑦雷諾曼提示詞', '品牌連結為完整 Markdown，沒有裸文字缺網址',
-          lp.indexOf('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)') > -1, '');
-
-        var hp = ln.buildPrompt('我身體為何一直發炎 長痘痘', draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', '健康病因採空證據限制，另保留象徵性深讀',
-          hp.indexOf('type="health_medical_cause"') > -1 && hp.indexOf('type="health_symbolic_context"') > -1 && hp.indexOf('status="medical_limit"') > -1,
-          '');
+      function idsToDraw(ids){ return ids.map(function(id){ return ln.cards[id - 1]; }); }
+      function seededShuffle(seed){
+        var ids=[]; for(var i=1;i<=36;i++)ids.push(i);
+        var x=seed>>>0;
+        function rnd(){x=(x*1664525+1013904223)>>>0;return x/4294967296;}
+        for(var j=ids.length-1;j>0;j--){var k=Math.floor(rnd()*(j+1)),tmp=ids[j];ids[j]=ids[k];ids[k]=tmp;}
+        return idsToDraw(ids);
       }
+      function buildEntries(question, draw){
+        var geom=ln.buildGrandGeometry(draw),items=ln.splitQuestionSegments(question);
+        var entries=items.filter(function(x){return x.type!=='comparison_suitability';}).map(function(item){return {item:item,packet:ln.buildEvidencePacket(geom,item,'male')};});
+        ln.assignGlobalEvidenceUids(entries);ln.enforceGlobalClaimEvidenceUniqueness(entries,'male');
+        return entries;
+      }
+      function linkedStructures(packet){
+        var out=[];
+        (packet.claimPlan.claimEvidence||[]).forEach(function(link){
+          (link.clusters||[]).forEach(function(cid){
+            var c=(packet.clusters||[]).filter(function(z){return z.id===cid;})[0];
+            if(c&&c.structures&&c.structures[0])out.push(c.structures[0]);
+          });
+        });
+        return out;
+      }
+      function compoundGateInvariant(entry){
+        var formula=ln.propositionFormulas[entry.item.type],plan=entry.packet.claimPlan;
+        if(!formula||!plan.gateResults)return true;
+        var success=plan.status===formula.success.status;
+        if(!success)return true;
+        var uids=[];
+        return (formula.required||[]).every(function(g){
+          var ids=plan.gateResults[g]||[];
+          if(ids.length!==1)return false;
+          var c=(entry.packet.clusters||[]).filter(function(z){return z.id===ids[0];})[0];
+          if(!c||!c.structures||!c.structures[0]||c.structures[0].kind!=='adjacency')return false;
+          var uid=c.structures[0].evidenceUid;
+          if(uids.indexOf(uid)>-1)return false;
+          uids.push(uid);return true;
+        });
+      }
+      function ledgerIds(prompt){return Array.prototype.map.call(prompt.matchAll(/<evidence id="(E\d+)"/g),function(m){return m[1];});}
+
+      var sexSplit=ln.splitQuestionSegments('今年有非現任的肉體桃花嗎？她幾歲？');
+      env.report('⑦雷諾曼路由','肉體桃花拆成桃花、感官成分、事件與年齡限制四命題',
+        sexSplit.length===4&&sexSplit.map(function(x){return x.type;}).join(',')==='attraction_opportunity,sexual_component,sexual_event,unsupported_age',JSON.stringify(sexSplit));
+      var moneySplit=ln.splitQuestionSegments('我副業什麼時候才能成功 讓我負債完全清空 有正資產');
+      env.report('⑦雷諾曼路由','成功、清債、正資產、時間互不代證',
+        moneySplit.map(function(x){return x.type;}).join(',')==='business_success,debt_clearance,positive_net_worth,timing',JSON.stringify(moneySplit));
+      env.report('⑦雷諾曼路由','工作適配與升遷保持獨立命題',
+        ln.splitQuestionSegments('我適合目前的工作嗎？會升遷嗎？').map(function(x){return x.type;}).join(',')==='career_fit,career_promotion','');
+      env.report('⑦雷諾曼路由','人生迷茫使用 life_guidance，不落入 general',
+        ln.splitQuestionSegments('我對人生有些迷茫 請給我建議')[0].type==='life_guidance','');
+      var cmp=ln.detectComparisonQuestion('我搭配手鍊要選自己喜歡的還是依八字五行？');
+      env.report('⑦雷諾曼比較','還是語型進入抽牌前對稱比較',!!cmp&&cmp.options.length===2,JSON.stringify(cmp));
+
+      var cf=ln.canonicalFormula;
+      env.report('⑦雷諾曼核心公式','唯一信心單位為直接相鄰，三張窗僅作不加權語境',
+        cf.evidenceUnit==='direct_adjacency'&&cf.contextUnit==='contiguous_three_card_window'&&String(cf.confidenceRule).indexOf('one_physical_unit_one_vote')>-1,JSON.stringify(cf));
+      var formulas=ln.propositionFormulas,formulaKeys=Object.keys(formulas);
+      var formulaShapeOk=formulaKeys.every(function(type){
+        var f=formulas[type];
+        return f.required&&f.required.length&&f.success&&f.fail&&f.boundary&&f.required.every(function(g){return f.gates[g]&&f.gates[g].directOnly===true;});
+      });
+      env.report('⑦雷諾曼核心公式','所有可判命題都以宣告式 gate 定義成功、失敗、邊界與直接證據',formulaShapeOk,'types='+formulaKeys.length);
+      var singleSourceOk=formulaKeys.every(function(type){
+        var profile=ln.buildQuestionFocusProfile({type:type,types:[type],targetScope:'unspecified'},'male');
+        var f=formulas[type],roles={querent:28,counterpart:29},needed=[];
+        Object.keys(f.gates||{}).forEach(function(g){
+          function expand(vals){(vals||[]).forEach(function(v){
+            if(typeof v==='number')needed.push(v);
+            else if(v==='$Q')needed.push(28);
+            else if(v==='$C')needed.push(29);
+            else if(v==='$P')needed=needed.concat([28,29]);
+            else if(ln.formulaGroups[v])needed=needed.concat(ln.formulaGroups[v]);
+          });}
+          expand(f.gates[g].left);expand(f.gates[g].right);
+        });
+        needed=Array.from(new Set(needed));
+        return needed.every(function(id){return profile.all.indexOf(id)>-1;});
+      });
+      env.report('⑦雷諾曼單一語義來源','取證池由同一份 proposition gate 自動展開，不依賴第二套題型牌表',singleSourceOk,'types='+formulaKeys.length);
+
+      var baseDraw=idsToDraw([30,27,34,26,28,17,36,22,33,3,9,18,24,4,8,7,23,19,21,11,14,25,29,5,6,20,10,35,13,1,15,16,2,12,32,31]);
+      var matrixQuestions=[
+        '今年有非現任的肉體桃花嗎？她幾歲？','我副業什麼時候才能成功 讓我負債完全清空 有正資產',
+        '我對人生有些迷茫 請給我建議','我適合目前的工作嗎？會升遷嗎？',
+        '現任對我有真心嗎？未來會長久嗎？','我最近會收到他的訊息嗎？','近期適合旅行嗎？','我身體為何一直發炎 長痘痘'
+      ];
+      var matrixEntries=[];matrixQuestions.forEach(function(q){matrixEntries=matrixEntries.concat(buildEntries(q,baseDraw));});
+      env.report('⑦雷諾曼證據包','所有矩陣命題皆通過 packet validation',matrixEntries.every(function(e){return e.packet.validation&&e.packet.validation.ok;}),JSON.stringify(matrixEntries.map(function(e){return [e.item.type,e.packet.validation];})).slice(0,500));
+      env.report('⑦雷諾曼原子證據','每個 C 只含一個物理結構，核准主張只引用直接相鄰牌對',
+        matrixEntries.every(function(e){return (e.packet.clusters||[]).every(function(c){return c.refs.length===1&&c.structures.length===1;})&&linkedStructures(e.packet).every(function(st){return st.kind==='adjacency';});}),'');
+      env.report('⑦雷諾曼複合門檻','事件／結果成功時每個 required gate 使用不同 evidence_uid',matrixEntries.every(compoundGateInvariant),'');
+      env.report('⑦雷諾曼限制題','時間、年齡、醫療病因皆為零牌面證據',matrixEntries.filter(function(e){return ['timing','unsupported_age','health_medical_cause'].indexOf(e.item.type)>-1;}).every(function(e){return e.packet.structures.length===0;}),'');
+
+      var targetedDraw=idsToDraw([28,24,2,3,4,5,6,7,30,29,1,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,25,26,27,31,32,33,34,35,36]);
+      var sexEntries=buildEntries('今年有非現任的肉體桃花嗎？她幾歲？',targetedDraw);
+      var byType={};sexEntries.forEach(function(e){byType[e.item.type]=e;});
+      env.report('⑦雷諾曼階層一致','性事件成立時，桃花與感官成分也各自成立，不再出現高階成立、低階失敗',
+        byType.sexual_event.packet.claimPlan.status==='sexual_event_possible'&&byType.attraction_opportunity.packet.claimPlan.status==='attraction_possible'&&byType.sexual_component.packet.claimPlan.status==='sexual_component_supported',
+        JSON.stringify({a:byType.attraction_opportunity.packet.claimPlan.status,c:byType.sexual_component.packet.claimPlan.status,e:byType.sexual_event.packet.claimPlan.status}));
+      var sexPrompt=ln.buildPrompt('今年有非現任的肉體桃花嗎？她幾歲？',targetedDraw,'grand',null,'male');
+      var eids=ledgerIds(sexPrompt);
+      env.report('⑦雷諾曼證據帳本','同一實體牌對只在 evidence_ledger 登錄一次，可被相依命題引用但不重複加權',
+        eids.length===new Set(eids).size&&sexPrompt.indexOf('reuse="dependent_claim_reference_only"')>-1&&sexPrompt.indexOf('shared_reference_does_not_add_confidence')>-1,JSON.stringify(eids));
+      env.report('⑦雷諾曼提示詞降噪','runtime 不輸出 selected_context、長線S、房屋、鏡像、騎士跳或C資料牆',
+        sexPrompt.indexOf('<selected_context')===-1&&sexPrompt.indexOf('<core_clusters')===-1&&!/\nS\d+ uid=/.test(sexPrompt)&&sexPrompt.indexOf('<relevant_houses')===-1&&sexPrompt.length<12000,'len='+sexPrompt.length);
+
+      var geom=ln.buildGrandGeometry(baseDraw);
+      function makePacket(type, pairs){
+        var structures=pairs.map(function(ids,idx){var ps=ids.map(function(id,j){return {slot:idx*3+j+1,card:ln.cards[id-1]};});return {id:'D'+(idx+1),kind:'adjacency',positions:ps,cardIds:ids.slice(),evidenceUid:'T'+(idx+1)};});
+        var clusters=structures.map(function(st,idx){return {id:'C'+(idx+1),refs:[st.id],structures:[st],cardIds:st.cardIds.slice(),polarity:'neutral',confidenceEligible:true};});
+        return {question:{id:'t',type:type,types:[type],targetScope:'hypothetical_noncurrent_counterpart'},structures:structures,directPairs:structures.map(function(st){return {positions:st.positions};}),segments:[],clusters:clusters,modernContext:{mirrors:[],knightMoves:[],intersections:[]}};
+      }
+      env.report('⑦雷諾曼反例','紳士＋蛇只有誘惑修飾，不能建立性成分',ln.buildClaimPlan(makePacket('sexual_component',[[28,7]]),'male').status==='sexual_theme_unassigned','');
+      env.report('⑦雷諾曼反例','紳士＋魚不能單獨判副業成功',ln.buildClaimPlan(makePacket('business_success',[[28,34]]),'male').status==='business_link_without_outcome','');
+      env.report('⑦雷諾曼反例','熊＋鐮刀只能支持切減，不等於負債歸零',ln.buildClaimPlan(makePacket('debt_clearance',[[15,10]]),'male').status==='debt_cut_only','');
+      env.report('⑦雷諾曼反例','收入／財務連結不能單獨證明正資產',ln.buildClaimPlan(makePacket('positive_net_worth',[[28,34]]),'male').status==='positive_net_worth_insufficient','');
+
+      var randomizedOk=true,randomDetail='',promptChecks=0;
+      for(var seed=1;seed<=120&&randomizedOk;seed++){
+        var draw=seededShuffle(seed),entries=[];
+        matrixQuestions.forEach(function(q){entries=entries.concat(buildEntries(q,draw));});
+        randomizedOk=entries.every(function(e){return e.packet.validation&&e.packet.validation.ok&&linkedStructures(e.packet).every(function(st){return st.kind==='adjacency';})&&compoundGateInvariant(e);});
+        var map={};entries.forEach(function(e){map[e.item.type]=e;});
+        if(map.sexual_event&&map.sexual_event.packet.claimPlan.status==='sexual_event_possible')randomizedOk=map.sexual_component.packet.claimPlan.status==='sexual_component_supported'&&map.attraction_opportunity.packet.claimPlan.status==='attraction_possible';
+        if(seed<=20){
+          var pmt=ln.buildPrompt(matrixQuestions[seed%matrixQuestions.length],draw,'grand',null,'male'),ids=ledgerIds(pmt);promptChecks++;
+          randomizedOk=randomizedOk&&ids.length===new Set(ids).size&&pmt.indexOf('<selected_context')===-1&&!/\nS\d+ uid=/.test(pmt)&&pmt.length<12000;
+        }
+        if(!randomizedOk)randomDetail='seed='+seed;
+      }
+      env.report('⑦雷諾曼排列不變量','120組決定性洗牌皆符合原子證據、複合門檻、階層一致與提示詞帳本唯一性',randomizedOk,randomDetail+' promptChecks='+promptChecks);
+
+      var cmpPrompt=ln.buildPrompt('我搭配手鍊要選自己喜歡的還是依八字五行？',targetedDraw.slice(0,9),'nine',null,'male');
+      env.report('⑦雷諾曼比較守門','比較題只使用抽牌前對稱九宮格，不使用Grand Tableau帳本',cmpPrompt.indexOf('site_symmetric_nine_comparison')>-1&&cmpPrompt.indexOf('<evidence_ledger')===-1&&cmpPrompt.indexOf('不得將選項名稱映射成同名牌')>-1,'len='+cmpPrompt.length);
+      env.report('⑦雷諾曼推薦','水晶推薦仍在正文後依核准主張選擇，沒有吻合可不推薦',sexPrompt.indexOf('<stone_recommendation mode="select_after_interpretation"')>-1&&sexPrompt.indexOf('<stone_text>')===-1&&sexPrompt.indexOf('若都不吻合')>-1,'');
     }
 
     // ⑤提示詞組裝：13 牌陣 × tarot ＋ ootk/ziwei/meihua

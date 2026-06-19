@@ -1,18 +1,19 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v5.5
-// v5.5（2026-06-19）性題證據歸屬／原子分簇／提示詞再收斂根治：
-//   1. 桃花機會、感官／性成分、實際事件維持三個獨立門檻；使用者指定的「今年」只作評估範圍，不授權推算日期。
-//   2. 百合是本站可選的現代感官提示；蛇只作誘惑／複雜風險修飾，蛇單獨不得建立性成分。
-//   3. 性成分必須連到同一桃花／人物／關係焦點；單純「問卜者＋蛇」不得寫成該假設桃花有性吸引。
-//   4. attraction／sexual_component／sexual_event 依證據角色原子分簇，正向、風險、關係落實不再塞進同一 C。
-//   5. 每項主張最多兩個 C，且同一 C 不得跨主張重用；claim_evidence 真正獨占，避免同證據灌票。
-//   6. 長線只有焦點間距足夠接近才可支撐主張；題外中間牌不再把遠端人物硬連成吸引或事件。
-//   7. 性／桃花提示詞只輸出最小核准證據，不再重複 selected_context 主題摘要；新增反例與時間範圍輸出測試。
+// 靜月之光 — 雷諾曼牌 Lenormand v6.0
+// v6.0（2026-06-19）共用判讀公式核心重構：
+//   1. 歷史層只採可核實的36張、4×8+4與人物牌附近敘事；不宣稱存在官方唯一現代公式。
+//   2. 全題共用單一公式：直接相鄰是唯一可提高結論強度的基本證據；連續三張只作語境，不獨立加權。
+//   3. 每個物理牌組＝一個原子C；不再把同核心牌周圍的多組牌合併成超大C，也不以牌數灌高信心。
+//   4. 命題改由宣告式 gate 編譯：機會、特質、事件、結果、狀態、限制各有固定門檻，LLM只負責轉寫。
+//   5. 事件／結果型結論必須由兩個不同 evidence_uid 的獨立 gate 同時成立；吸引、性成分、事件永不互借。
+//   6. hypothetical人物永遠不作真人存在證據；人物意圖只在 identified 對象且直接組合成立時可判。
+//   7. 全題共用單一 evidence ledger；同一物理牌對只登錄一次、只算一票，但可被階層相依命題引用，不因重複引用提高確定度。
+//   8. runtime prompt只輸出程式已核准的主張與最小直接證據，不再傾倒selected_context、鏡像、騎士跳或長線資料牆。
 // Petit Lenormand 36 張・歷史基線＋本站明示的現代判讀規約
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v5.5 loaded — 性題證據歸屬／原子分簇／提示詞再收斂根治');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v6.0 loaded — 共用判讀公式核心重構');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -378,124 +379,7 @@ function buildGrandGeometry(drawn) {
   return { positions: positions, adjacency: adjacency, lines: lines };
 }
 
-var QUESTION_SCHEMAS = {
-  comparison_suitability: {
-    label:'二選一適配比較',
-    core:[], support:[], contextual:[]
-  },
-  attraction_opportunity: {
-    label:'桃花／吸引機會',
-    core:[24,9,31,32],
-    support:[16,17,1,12,20,25,33],
-    contextual:[]
-  },
-  sexual_component: {
-    label:'肉體／性吸引成分',
-    core:[30],
-    support:[7,24,25,9,31,32],
-    contextual:[30,7]
-  },
-  sexual_event: {
-    label:'實際肉體關係事件',
-    core:[30,25],
-    support:[7,24,1,12,31,33,4,8,10,21,6,23,19],
-    contextual:[30,7]
-  },
-  relationship_longevity: {
-    label:'關係穩定／正緣',
-    core:[24,25], support:[4,35,5,33,31], contextual:[]
-  },
-  multi_partner_commitment: {
-    label:'多人伴侶／一夫多妻',
-    core:[24,25], support:[7,22,20], contextual:[]
-  },
-  relationship_intent: {
-    label:'特定對象的感情意圖',
-    core:[24,25], support:[18,12,27,20], contextual:[]
-  },
-  relationship_future: {
-    label:'未來形成交往',
-    core:[24,25], support:[4,35,5,31,33,1,17], contextual:[]
-  },
-  business_success: {
-    label:'副業／商業成功',
-    core:[34,35,31], support:[32,20,14,3,33], contextual:[]
-  },
-  career_fit: {
-    label:'職涯適配／是否適合',
-    core:[35,14], support:[4,5,30,24,33,19,21,36,8,7,22,23,11], contextual:[]
-  },
-  career_promotion: {
-    label:'升遷／職位向上變動',
-    core:[17,19,15], support:[31,33,27,1,32,35,14,21,36,8,22,7], contextual:[]
-  },
-  career_change: {
-    label:'轉職／離職／錄取',
-    core:[17,35,14], support:[1,27,33,31,21,22,8], contextual:[]
-  },
-  career_general: {
-    label:'一般工作／職涯',
-    core:[35,14], support:[19,15,31,33,27,17], contextual:[]
-  },
-  debt_clearance: {
-    label:'負債完全清償', core:[15,34,36,23], support:[8,10,31,33,35,5], contextual:[]
-  },
-  positive_net_worth: {
-    label:'淨資產轉正', core:[34,15,35], support:[4,5,31,33,23,36], contextual:[]
-  },
-  finance: {
-    label:'一般財務', core:[34,15], support:[35,23,31,33,5,36], contextual:[]
-  },
-  timing: {
-    label:'具體時間（未啟用）', core:[], support:[], contextual:[]
-  },
-  health_medical_cause: {
-    label:'醫學病因／診斷限制', core:[], support:[], contextual:[]
-  },
-  health_symbolic_context: {
-    label:'健康議題的象徵性狀態', core:[5], support:[8,10,23,36,31,21,11,35], contextual:[]
-  },
-  travel: {
-    label:'旅行／移動', core:[3,17], support:[1,21,4], contextual:[]
-  },
-  communication: {
-    label:'消息／溝通', core:[27,12], support:[1,20,6], contextual:[]
-  },
-  life_guidance: {
-    label:'人生方向／迷茫建議',
-    core:[33,22,16,24,35],
-    support:[2,3,4,5,6,8,9,10,11,17,18,21,23,25,26,31,32,36],
-    contextual:[]
-  },
-  unsupported_age: {
-    label:'數字年齡（不可驗證）', core:[], support:[], contextual:[]
-  },
-  general: {
-    label:'一般問題', core:[24,25,34,35,31,33], support:[6,8,10,21,23,36], contextual:[]
-  }
-};
-
 var HARD_NEGATIVE_IDS = [6,8,10,11,21,23,36];
-var ATTRACTION_POSITIVE_IDS = [9,16,17,24,25,31,32,33,1];
-var SEXUAL_PRIMARY_IDS = [30];
-var SEXUAL_MODIFIER_IDS = [7];
-var SEXUAL_CONTEXT_IDS = [30,7];
-
-var MODERN_THEME_GROUPS = [
-  { id:'stability', label:'穩定／持續', cards:[4,5,25,30,35] },
-  { id:'success_opening', label:'機會／成功／解答', cards:[1,2,9,16,31,33] },
-  { id:'movement_change', label:'移動／改變／選擇', cards:[1,3,17,22] },
-  { id:'communication_public', label:'溝通／公開／名聲', cards:[12,20,27,32] },
-  { id:'relationship_bond', label:'情感／信任／承諾', cards:[18,24,25] },
-  { id:'sexual_sensual', label:'肉體／感官／誘惑', cards:[7,30] },
-  { id:'work_money_power', label:'工作／財務／權力', cards:[14,15,19,34,35] },
-  { id:'ending_cut', label:'結束／切斷', cards:[8,10] },
-  { id:'obstacle_burden', label:'阻礙／負擔', cards:[21,36] },
-  { id:'loss_erosion', label:'損耗／侵蝕', cards:[23] },
-  { id:'uncertainty_complexity', label:'不明／複雜／抉擇', cards:[6,7,22] },
-  { id:'conflict_repetition', label:'衝突／反覆／焦慮', cards:[11,12] }
-];
-
 var ANALYSIS_DIMENSIONS = {
   attraction:['桃花機會本身','人物焦點間的吸引結構','有利條件','阻礙與中止因素','可能的現實表現','人物是否已出現的邊界'],
   sexual:['性／感官焦點是否直接成立','一般桃花與肉體成分的區分','支持肉體吸引的核心結構','阻礙與界線','事件是否落實的邊界','未被證明的身分與時間'],
@@ -570,6 +454,259 @@ var CLAIM_POLICIES = {
   }
 };
 
+
+// ════════════════════════════════════
+// 共用判讀公式 v1：所有題型只宣告 gate，不再各題手寫取證流程
+// 歷史資料只支持「36張、4×8+4、由人物牌及附近牌敘事」。以下為本站可測試的現代工程規約。
+// ════════════════════════════════════
+var CANONICAL_READING_FORMULA = {
+  id:'site_lenormand_canonical_formula_v1',
+  evidenceUnit:'direct_adjacency',
+  contextUnit:'contiguous_three_card_window',
+  confidenceRule:'one_physical_unit_one_vote_even_when_shared_by_dependent_claims',
+  compoundRule:'event_or_outcome_requires_distinct_direct_uids_for_each_required_gate',
+  attributionRule:'a person claim requires the person and the claimed theme in the same direct unit',
+  hypotheticalRule:'hypothetical significators never prove a real person already exists',
+  unsupportedRule:'timing_age_medical_diagnosis require an enabled external rule set'
+};
+
+var FORMULA_GROUPS = {
+  romanceCore:[9,24,32],
+  opportunity:[1,2,12,16,17,20,31,33],
+  attraction:[9,24,32],
+  sensual:[30],
+  temptation:[7],
+  relation:[18,24,25,32],
+  realization:[1,12,17,20,25,31,33],
+  contact:[1,12,17,20],
+  stability:[4,5,25,30,35],
+  success:[2,5,9,16,17,20,31,32,33],
+  business:[14,34,35],
+  career:[14,19,35],
+  authority:[15,19,27,31,32,33],
+  change:[1,3,8,10,17,22],
+  resources:[15,34],
+  resourceGrowth:[5,31,33,35],
+  debtPressure:[15,23,34,36],
+  endingCut:[8,10],
+  guidance:[16,22,33],
+  values:[9,18,24,32],
+  health:[5],
+  travel:[3,17],
+  communication:[1,12,27],
+  negative:HARD_NEGATIVE_IDS.slice()
+};
+
+function _lnGroup(values, roles) {
+  var out=[];
+  (Array.isArray(values)?values:[values]).forEach(function(v){
+    if(v==='$Q'){ if(roles.querent)out.push(roles.querent); else out=out.concat([28,29]); }
+    else if(v==='$C'){ if(roles.counterpart)out.push(roles.counterpart); else out=out.concat([28,29]); }
+    else if(v==='$P')out=out.concat(uniqueNumbers([roles.querent,roles.counterpart,28,29]));
+    else if(typeof v==='string'&&FORMULA_GROUPS[v])out=out.concat(FORMULA_GROUPS[v]);
+    else if(typeof v==='number')out.push(v);
+  });
+  return uniqueNumbers(out);
+}
+
+var PROPOSITION_FORMULAS = {
+  attraction_opportunity:{
+    kind:'opportunity', required:['romance'],
+    gates:{romance:{left:['$Q'],right:['romanceCore'],directOnly:true,role:'romance_signal'},context:{left:['$Q','romanceCore'],right:['opportunity'],directOnly:true,role:'opportunity_context'},risk:{left:['$Q','romanceCore'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'attraction_possible',cap:'有機會',text:'問卜者與明確桃花核心形成直接相鄰，只能說存在桃花或明顯吸引機會。'},
+    fail:{status:'attraction_insufficient',cap:'不足以明確判定',text:'問卜者附近缺少心、花束或月亮等直接桃花核心；社交、消息、太陽或星星不能單獨代替桃花證據。'},
+    riskText:'不明、阻礙、反覆、切斷、損耗或負擔會削弱桃花機會。',
+    boundary:'假設性人物牌不證明真人目前已出現，也不證明互相注意、曖昧或交往。'
+  },
+  sexual_component:{
+    kind:'component', required:['component'],
+    gates:{component:{left:['sensual'],right:['$P','relation','romanceCore'],directOnly:true,role:'sensual_component'},modifier:{left:['temptation'],right:['$P','relation','romanceCore'],directOnly:true,role:'temptation_modifier'},risk:{left:['sensual','temptation'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'sexual_component_supported',cap:'較有肉體／感官傾向',text:'百合與人物、關係或明確桃花核心形成直接相鄰，可說較有肉體或感官成分。'},
+    partialGate:'modifier',partial:{status:'sexual_theme_unassigned',cap:'有誘惑／複雜主題，性成分不足',text:'只有蛇的誘惑／複雜修飾，缺少百合等獨立感官核心，不能判成該桃花有明顯性吸引。'},
+    fail:{status:'sexual_component_insufficient',cap:'不足以明確判定',text:'一般桃花、人物牌或關係牌不能代替肉體／性吸引證據。'},
+    riskText:'結束、阻礙、不明、損耗或負擔會限制感官成分的表現。',
+    boundary:'肉體／感官成分不等於實際發生性事件；蛇、魚與鞭子均不能單獨建立性結論。'
+  },
+  sexual_event:{
+    kind:'event', required:['romance','component','realization'],
+    gates:{romance:{left:['$Q'],right:['romanceCore'],directOnly:true,role:'romance_signal'},component:{left:['sensual'],right:['$P','relation','romanceCore'],directOnly:true,role:'sensual_component'},realization:{left:['$C'],right:['contact'],directOnly:true,role:'event_realization'},risk:{left:['sensual','relation','$P'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'sexual_event_possible',cap:'有落實條件但不能確定發生',text:'桃花核心、感官成分與接觸／關係落實分別由三個不同直接牌對支持，只能說存在事件落實條件。'},
+    fail:{status:'sexual_event_insufficient',cap:'不足以判定實際發生',text:'桃花核心、感官成分與事件落實三項門檻未由不同直接牌對同時支持，不能判定會發生肉體關係。'},
+    riskText:'不明、阻礙、切斷、損耗、反覆或負擔會降低事件落實。',
+    boundary:'不得把不同位置的性提示與關係牌事後拼成事件，也不得推次數或具體時間。'
+  },
+  relationship_intent:{
+    kind:'intent', requiresIdentifiedCounterpart:true, required:['intent'],
+    gates:{intent:{left:['$C'],right:['relation','communication'],directOnly:true,role:'intent'},risk:{left:['$C','relation'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'relationship_intent_supported',cap:'較有感情／互動意圖傾向',text:'已識別對象與感情／溝通主題形成直接組合，可說較有相關意圖傾向。'},
+    fail:{status:'relationship_intent_insufficient',cap:'不足以判定對方內心',text:'缺少已識別對象與感情／溝通主題的直接組合，不能判定對方內心。'},
+    riskText:'不明、阻礙、反覆或負擔會削弱意圖表現。',boundary:'牌面只能描述結構傾向，不能證明未表達的實際內心或已採取行動。'
+  },
+  relationship_future:{
+    kind:'event', required:['relation','realization'],
+    gates:{relation:{left:['$Q','$C'],right:['relation'],directOnly:true,role:'relation'},realization:{left:['relation'],right:['realization','stability'],directOnly:true,role:'realization'},risk:{left:['$P','relation'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'relationship_future_possible',cap:'有形成關係的條件',text:'關係主題與落實／穩定條件由兩個不同直接證據分別支持，可說有形成關係的條件。'},
+    fail:{status:'relationship_future_insufficient',cap:'不足以判定形成關係',text:'關係主題與落實條件未由兩個獨立直接證據同時支持，不能判定會形成交往。'},
+    riskText:'阻礙、不明、反覆、切斷或負擔會削弱關係形成。',boundary:'有條件不等於一定交往；假設性人物不等於真人已出現。'
+  },
+  relationship_longevity:{
+    kind:'state', required:['relation','stability'],
+    gates:{relation:{left:['$Q','$C'],right:['relation'],directOnly:true,role:'relation'},stability:{left:['relation'],right:['stability'],directOnly:true,role:'stability'},risk:{left:['$P','relation','stability'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'relationship_longevity_supported',cap:'較有長期穩定條件',text:'關係主題與穩定結構由兩個不同直接證據分別支持，較有長期穩定條件。'},
+    fail:{status:'relationship_longevity_insufficient',cap:'不足以判定長久／正緣',text:'缺少關係與穩定兩類獨立直接證據，不能判定長久或正緣。'},
+    riskText:'阻礙、損耗、反覆或負擔會削弱長期穩定。',boundary:'穩定條件不等於命定或保證走到最後。'
+  },
+  multi_partner_commitment:{
+    kind:'compound', required:['relation','plurality'],
+    gates:{relation:{left:['$Q'],right:['relation'],directOnly:true,role:'relation'},plurality:{left:['relation'],right:[7,20,22],directOnly:true,role:'plurality'},risk:{left:['relation',7,20,22],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'multi_partner_theme_supported',cap:'有多人／非排他主題',text:'關係承諾與多人／選擇主題由兩個不同直接證據分別支持，只能說有相關主題。'},
+    fail:{status:'multi_partner_insufficient',cap:'不足以判定多人伴侶',text:'缺少承諾與多人／選擇兩類獨立直接證據，不能判定一夫多妻或多人伴侶。'},
+    riskText:'複雜、阻礙、反覆或負擔會使此主題更難落實。',boundary:'主題存在不等於所有當事人同意、實際交往或制度可行。'
+  },
+  business_success:{
+    kind:'outcome', required:['domain','outcome'],
+    gates:{domain:{left:['$Q'],right:['business'],directOnly:true,role:'domain'},outcome:{left:['business'],right:['success'],directOnly:true,role:'outcome'},risk:{left:['$Q','business'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'business_success_conditions_supported',cap:'較有成功條件',text:'副業／商業連結與成功／成長條件由兩個不同直接證據分別支持，較有可持續成功條件。'},
+    partialGate:'domain',partial:{status:'business_link_without_outcome',cap:'副業連結明確，成功結果不足',text:'牌面能確認副業／商業連結，但缺少獨立成功結果證據。'},
+    fail:{status:'business_success_insufficient',cap:'不足以明確判定',text:'目前缺少副業連結與成功結果兩類獨立直接證據，不能判定副業成功。'},
+    riskText:'阻礙、損耗、不明、反覆、切斷或負擔會削弱成功條件。',boundary:'成功不等於清償負債或正資產；不得自行延伸成廣告、庫存、價格、毛利或期限建議。'
+  },
+  debt_clearance:{
+    kind:'outcome', required:['improvement','ending'],
+    gates:{improvement:{left:['resources'],right:['resourceGrowth'],directOnly:true,role:'improvement'},ending:{left:['debtPressure'],right:['endingCut'],directOnly:true,role:'ending'},risk:{left:['debtPressure','$Q'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'debt_clearance_possible',cap:'有清償條件，但不能確認必然歸零',text:'資源改善與債務壓力終止／切減由兩個不同直接證據分別支持，可說具備清償條件。'},
+    partialGate:'ending',partial:{status:'debt_cut_only',cap:'有切減壓力的必要，仍不足以確認清空',text:'牌面只支持切減債務壓力，缺少獨立資源改善證據，不能判定負債完全歸零。'},
+    fail:{status:'debt_clearance_insufficient',cap:'不足以確認負債完全清空',text:'資源改善與債務終止兩類門檻未同時成立，不能確認負債完全清空。'},
+    riskText:'阻礙、損耗、反覆、不明或負擔使清償結果仍受壓。',boundary:'收入、副業成功、熊或鐮刀任一項都不能單獨等於清債完成。'
+  },
+  positive_net_worth:{
+    kind:'state', required:['growth','stability'],
+    gates:{growth:{left:['resources'],right:[5,31,33],directOnly:true,role:'growth'},stability:{left:['resources'],right:[4,35],directOnly:true,role:'stability'},risk:{left:['resources','$Q'],right:[11,21,23,36],directOnly:true,role:'risk'}},
+    success:{status:'positive_net_worth_conditions_supported',cap:'較有轉為正資產的條件',text:'資源成長與穩定由兩個不同直接證據分別支持，較有轉為正資產的條件，但不等於已轉正。'},
+    fail:{status:'positive_net_worth_insufficient',cap:'不足以確認正資產',text:'資源成長與穩定兩類獨立門檻未同時成立，不能確認資產大於負債。'},
+    riskText:'損耗、阻礙、反覆或負擔會抵銷資產累積。',boundary:'清債、收入或副業成功任一項都不能單獨代替正資產。'
+  },
+  finance:{
+    kind:'state', required:['resource'],
+    gates:{resource:{left:['$Q','resources'],right:['resourceGrowth','stability'],directOnly:true,role:'resource'},risk:{left:['$Q','resources'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'finance_support',cap:'較有財務改善／穩定條件',text:'問卜者／資源主題與改善或穩定條件形成直接組合。'},
+    fail:{status:'finance_insufficient',cap:'不足以明確判定財務改善',text:'缺少可核准的直接資源改善／穩定組合，不能明確判定財務改善。'},
+    riskText:'阻礙、損耗、不明、反覆或負擔會削弱財務改善。',boundary:'一般財務題不能升級成財務自由、清債或正資產，也不能推具體金額與期限。'
+  },
+  career_fit:{
+    kind:'state', required:['domain','fit'],
+    gates:{domain:{left:['$Q'],right:['career'],directOnly:true,role:'domain'},fit:{left:['career'],right:['stability',24,30,33],directOnly:true,role:'fit'},risk:{left:['$Q','career'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'career_fit_supported',cap:'較有適配條件',text:'問卜者與工作結構、工作與穩定／適配條件由兩個不同直接證據分別支持，較有適配條件。'},
+    partialGate:'domain',partial:{status:'career_link_only',cap:'工作連結明確，適配性未定',text:'牌面只確認工作連結，缺少獨立適配／穩定證據。'},
+    fail:{status:'career_fit_insufficient',cap:'不足以判定適合',text:'缺少工作連結與適配條件兩類獨立直接證據，不能判定適合。'},
+    riskText:'阻礙、不明、反覆、切斷或負擔會削弱適配。',boundary:'仍在職、穩定或機構連結不等於最適合或天職。'
+  },
+  career_promotion:{
+    kind:'event', required:['change','confirmation'],
+    gates:{change:{left:['career'],right:['change'],directOnly:true,role:'change'},confirmation:{left:['career','change'],right:['authority'],directOnly:true,role:'confirmation'},risk:{left:['career','change','authority'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'promotion_possible',cap:'有升遷條件',text:'職位／權責變動與權威／正式確認由兩個不同直接證據分別支持，可說有升遷條件。'},
+    partialGate:'change',partial:{status:'career_change_without_promotion',cap:'有職場變動，不能確定升遷',text:'牌面只有職場變動，缺少獨立權威／正式確認證據，不能判定為升遷。'},
+    fail:{status:'promotion_insufficient',cap:'不足以判定升遷',text:'職位變動與權威／正式確認兩類獨立門檻未同時成立，不能判定升遷。'},
+    riskText:'阻礙、不明、反覆、切斷或負擔會削弱升遷條件。',boundary:'被重視、塔、錨、狐狸或鑰匙任一項都不能單獨等於升職。'
+  },
+  career_change:{
+    kind:'event', required:['domain','change'],
+    gates:{domain:{left:['$Q'],right:['career'],directOnly:true,role:'domain'},change:{left:['career'],right:['change'],directOnly:true,role:'change'},risk:{left:['$Q','career','change'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'career_change_possible',cap:'有工作變動條件',text:'工作連結與變動主題由兩個不同直接證據分別支持，可說有工作變動條件。'},
+    fail:{status:'career_change_insufficient',cap:'不足以判定轉職／離職／錄取',text:'工作連結與變動兩類獨立門檻未同時成立，不能判定轉職、離職或錄取。'},
+    riskText:'阻礙、不明、反覆、切斷或負擔會限制工作變動。',boundary:'工作變動不自動等於錄取、離職成功或更好的結果。'
+  },
+  career_general:{
+    kind:'snapshot', required:['domain'],
+    gates:{domain:{left:['$Q'],right:['career'],directOnly:true,role:'domain'},risk:{left:['$Q','career'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'career_context_supported',cap:'可描述工作結構',text:'問卜者與工作／機構主題形成直接組合，可描述目前工作結構。'},
+    fail:{status:'career_context_insufficient',cap:'工作核心證據不足',text:'問卜者附近缺少直接工作／機構組合，核心證據不足。'},
+    riskText:'阻礙、不明、反覆、切斷或負擔是工作結構中的限制。',boundary:'一般工作結構不能自動升級成適合、升遷或轉職事件。'
+  },
+  health_symbolic_context:{
+    kind:'snapshot', required:['health'],
+    gates:{health:{left:['$Q'],right:['health'],directOnly:true,role:'health'},risk:{left:['$Q','health'],right:['negative'],directOnly:true,role:'risk'},support:{left:['health'],right:[31,35,4],directOnly:true,role:'support'}},
+    success:{status:'symbolic_health_context',cap:'可作象徵性描述',text:'問卜者與大樹形成直接組合，可描述健康議題的象徵性狀態。'},
+    fail:{status:'symbolic_health_insufficient',cap:'象徵性健康證據不足',text:'問卜者附近缺少直接健康焦點，無法提出更具體的象徵性健康描述。'},
+    riskText:'阻礙、損耗、反覆、切斷或負擔可作象徵性限制描述。',boundary:'任何象徵都不能寫成醫學病因、診斷、藥效或治療結果。'
+  },
+  travel:{
+    kind:'event', required:['travel'],
+    gates:{travel:{left:['$Q'],right:['travel'],directOnly:true,role:'travel'},risk:{left:['$Q','travel'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'travel_theme_supported',cap:'有旅行／移動主題',text:'問卜者與旅行／移動牌形成直接組合，可說有旅行或移動主題。'},
+    fail:{status:'travel_theme_insufficient',cap:'不足以判定旅行／移動',text:'問卜者附近缺少直接旅行／移動組合，不能明確判定。'},
+    riskText:'阻礙、不明、反覆、切斷或負擔會限制移動。',boundary:'未啟用時間與方向規則時不能推目的地、日期或先後。'
+  },
+  communication:{
+    kind:'event', required:['communication'],
+    gates:{communication:{left:['$Q','$C'],right:['communication'],directOnly:true,role:'communication'},risk:{left:['$P','communication'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'communication_theme_supported',cap:'有溝通／消息主題',text:'人物焦點與消息／溝通牌形成直接組合，可說有溝通或消息主題。'},
+    fail:{status:'communication_theme_insufficient',cap:'不足以判定聯絡／消息',text:'人物焦點附近缺少直接消息／溝通組合，不能明確判定聯絡。'},
+    riskText:'不明、阻礙、反覆、切斷或負擔會降低溝通清晰度。',boundary:'消息主題不等於特定人一定主動聯絡或已發送訊息。'
+  },
+  life_guidance:{
+    kind:'guidance', required:['orientation','support'],
+    gates:{orientation:{left:['$Q'],right:['guidance'],directOnly:true,role:'orientation'},support:{left:['guidance','values'],right:['stability','success'],directOnly:true,role:'support'},risk:{left:['$Q','guidance','values'],right:['negative'],directOnly:true,role:'risk'}},
+    success:{status:'guidance_supported',cap:'較有可釐清方向',text:'方向／解答線索與可持續支點由兩個不同直接證據分別支持，較有可釐清方向。'},
+    partialGate:'orientation',partial:{status:'guidance_signal_without_support',cap:'有方向線索，但可行支點不足',text:'牌面有直接方向／解答線索，但缺少獨立可持續支點。'},
+    fail:{status:'guidance_direction_insufficient',cap:'不足以明確指定方向',text:'問卜者附近缺少直接方向線索與可持續支點，不能指定明確人生方向。'},
+    riskText:'不明、反覆、阻礙、結束、切斷、損耗或負擔正在干擾判斷。',boundary:'牌面不能指定唯一人生使命、職業、期限或保證某條道路成功。'
+  }
+};
+
+function _lnStructureUid(st){ return st.evidenceUid || physicalStructureKey(st); }
+function _lnClusterStructure(cluster){ return cluster&&cluster.structures&&cluster.structures[0]; }
+function _lnGateMatch(cluster, gate, roles, blockedUids){
+  var st=_lnClusterStructure(cluster); if(!st)return false;
+  var uid=_lnStructureUid(st); if(blockedUids&&blockedUids[uid])return false;
+  if(gate.directOnly&&st.kind!=='adjacency')return false;
+  var left=_lnGroup(gate.left||[],roles),right=_lnGroup(gate.right||[],roles);
+  if(!left.length||!right.length||!structureHasCards(st,left,right))return false;
+  var max=gate.directOnly?1:(gate.maxDistance||2);
+  if(structureMinIndexDistance(st,left,right)>max)return false;
+  return true;
+}
+function _lnRankFormulaClusters(packet, gate, roles, blockedUids, usedUids){
+  return (packet.clusters||[]).filter(function(c){
+    if(!_lnGateMatch(c,gate,roles,blockedUids))return false;
+    var st=_lnClusterStructure(c),uid=_lnStructureUid(st); return !(usedUids&&usedUids[uid]);
+  }).sort(function(a,b){
+    // 所有候選已通過相同 gate；只用物理位置鍵做穩定排序，禁止以題型極性再次暗中加權。
+    var sa=_lnClusterStructure(a),sb=_lnClusterStructure(b);
+    return String(_lnStructureUid(sa)).localeCompare(String(_lnStructureUid(sb)),undefined,{numeric:true});
+  });
+}
+function _lnTakeFormulaGate(packet, gate, roles, blockedUids, usedUids){
+  var list=_lnRankFormulaClusters(packet,gate,roles,blockedUids,usedUids),picked=list[0];
+  if(!picked)return [];
+  var st=_lnClusterStructure(picked),uid=_lnStructureUid(st); if(usedUids)usedUids[uid]=true;
+  picked.role=gate.role||'support'; picked.theme=gate.role||'核准直接組合';
+  return [picked.id];
+}
+function _lnFormulaForType(type){ return PROPOSITION_FORMULAS[type]||null; }
+function compileFormulaClaimPlan(packet, declaredGender, blockedUids){
+  var type=primaryDecisionType(packet.question.types||[packet.question.type]),formula=_lnFormulaForType(type),roles=getPersonRoleIds(declaredGender);
+  if(!formula)return null;
+  var plan={status:'formula_evaluate',formulaOutcome:'fail',certaintyCap:'不足以明確判定',requiredConclusion:'只輸出程式依共用 gate 公式核准的主張；模型不得自行推導新結論。',approvedClaims:[],forbiddenClaims:[],claimEvidence:[],gateResults:{}};
+  if(formula.requiresIdentifiedCounterpart&&personStatusForScope(packet.question.targetScope)!=='identified'){
+    plan.status=type+'_requires_identified_counterpart';plan.formulaOutcome='fail';plan.certaintyCap='不足以判定特定人物意圖';
+    addApprovedClaim(plan,formula.fail.text,[]);addApprovedClaim(plan,formula.boundary,[]);plan.forbiddenClaims=CLAIM_POLICIES[type]?[CLAIM_POLICIES[type].forbidden]:[];return plan;
+  }
+  var usedUids={},selected={},allRequired=true;
+  (formula.required||[]).forEach(function(name){var ids=_lnTakeFormulaGate(packet,formula.gates[name],roles,blockedUids,usedUids);selected[name]=ids;plan.gateResults[name]=ids.slice();if(!ids.length)allRequired=false;});
+  if(allRequired){plan.status=formula.success.status;plan.formulaOutcome='success';plan.certaintyCap=formula.success.cap;var main=[];(formula.required||[]).forEach(function(n){main=main.concat(selected[n]||[]);});addApprovedClaim(plan,formula.success.text,main);}
+  else if(formula.partialGate){
+    var partial=selected[formula.partialGate]||[];
+    if(!partial.length)partial=_lnTakeFormulaGate(packet,formula.gates[formula.partialGate],roles,blockedUids,usedUids);
+    if(partial.length){plan.status=formula.partial.status;plan.formulaOutcome='partial';plan.certaintyCap=formula.partial.cap;addApprovedClaim(plan,formula.partial.text,partial);}
+    else{plan.status=formula.fail.status;plan.formulaOutcome='fail';plan.certaintyCap=formula.fail.cap;addApprovedClaim(plan,formula.fail.text,[]);}
+  }else{plan.status=formula.fail.status;plan.formulaOutcome='fail';plan.certaintyCap=formula.fail.cap;addApprovedClaim(plan,formula.fail.text,[]);}
+  if(formula.gates.risk){var risk=_lnTakeFormulaGate(packet,formula.gates.risk,roles,blockedUids,usedUids);if(risk.length)addApprovedClaim(plan,formula.riskText,risk);}
+  if(formula.boundary)addApprovedClaim(plan,formula.boundary,[]);
+  plan.forbiddenClaims=CLAIM_POLICIES[type]?[CLAIM_POLICIES[type].forbidden]:[];
+  return plan;
+}
+
 function detectAgeQualifier(text) {
   var t = String(text || '');
   var numeral = '(?:\\d{1,2}|[零一二三四五六七八九十兩]{1,3})';
@@ -630,7 +767,7 @@ function inferQuestionDimensions(text) {
   if (asksDebtClear) types.push('debt_clearance');
   if (asksPositiveNetWorth) types.push('positive_net_worth');
   if (!asksDebtClear && !asksPositiveNetWorth && /財運|收入|存款|負債|投資|股票|貸款|金錢|錢|資金|還債|資產/.test(t)) types.push('finance');
-  if (/適不適合.{0,8}(?:工作|職場|正職)|(?:工作|職場|正職|這份工作).{0,8}(?:適合|合適)|天職|適合我做|適合做下去/.test(t)) types.push('career_fit');
+  if (/適不適合.{0,8}(?:工作|職場|正職)|適合.{0,8}(?:目前|現在|這份)?(?:的)?(?:工作|職場|正職)|(?:工作|職場|正職|這份工作).{0,8}(?:適合|合適)|天職|適合我做|適合做下去/.test(t)) types.push('career_fit');
   if (/升遷|升職|晉升|被提拔|升主管|職位.{0,5}(?:提升|上升)|加官|被重用/.test(t)) types.push('career_promotion');
   if (/轉職|離職|換工作|跳槽|錄取|面試|新工作|換.{0,4}職場/.test(t)) types.push('career_change');
   if (!types.some(function(x){ return /^career_/.test(x); }) && /工作|職場|正職|主管|同事|職涯|上班/.test(t)) types.push('career_general');
@@ -805,18 +942,20 @@ function personStatusForScope(scope) {
 }
 
 function buildQuestionFocusProfile(questionItem, declaredGender) {
-  var roles = getPersonRoleIds(declaredGender), type = primaryDecisionType(questionItem.types || [questionItem.type]);
-  var anchors = [], supports = [];
-  if (type === 'unsupported_age' || type === 'health_medical_cause' || type === 'timing') return {anchors:[],supports:[],all:[],contextual:[]};
-  if (roles.querent) anchors.push(roles.querent);
-  var relationshipLike = questionTypeDomain(type) === 'relationship' || questionItem.targetScope !== 'unspecified';
-  if (relationshipLike && roles.counterpart) anchors.push(roles.counterpart);
-  var def = QUESTION_SCHEMAS[type] || QUESTION_SCHEMAS.general;
-  anchors = anchors.concat(def.core || []); supports = supports.concat(def.support || []);
-  if (_lnSignif) supports.push(_lnSignif);
-  anchors = uniqueNumbers(anchors);
-  supports = uniqueNumbers(supports).filter(function(id){ return anchors.indexOf(id) === -1; });
-  return { anchors:anchors, supports:supports, all:uniqueNumbers(anchors.concat(supports)), contextual:(def.contextual || []).slice() };
+  // 單一語義來源：取證池直接由 proposition formula 的 gate 自動展開。
+  // 不再維護第二份「題型 core/support 牌表」，避免公式更新後取證漏同步。
+  var roles=getPersonRoleIds(declaredGender),type=primaryDecisionType(questionItem.types||[questionItem.type]);
+  var formula=_lnFormulaForType(type),anchors=[],supports=[];
+  if(type==='unsupported_age'||type==='health_medical_cause'||type==='timing'||!formula)return {anchors:[],supports:[],all:[],contextual:[]};
+  Object.keys(formula.gates||{}).forEach(function(name){
+    var gate=formula.gates[name]||{};
+    anchors=anchors.concat(_lnGroup(gate.left||[],roles));
+    supports=supports.concat(_lnGroup(gate.right||[],roles));
+  });
+  // 人物角色僅在公式明確引用 $Q／$C／$P 時進入取證池；手動選牌不得成為額外結論證據。
+  anchors=uniqueNumbers(anchors);
+  supports=uniqueNumbers(supports).filter(function(id){return anchors.indexOf(id)===-1;});
+  return {anchors:anchors,supports:supports,all:uniqueNumbers(anchors.concat(supports)),contextual:[]};
 }
 function buildQuestionFocusIds(types, declaredGender) { return buildQuestionFocusProfile({types:Array.isArray(types)?types:[types],targetScope:'unspecified'},declaredGender).all; }
 
@@ -827,44 +966,20 @@ function cardSetFromStructures(structures) {
 }
 
 function classifyClusterPolarity(type, cardIds, anchorIds) {
-  var positivesByType = {
-    attraction_opportunity:[1,2,9,16,17,24,25,31,32,33],
-    sexual_component:[7,9,24,25,30,31,32], sexual_event:[7,24,25,30,31,33],
-    business_success:[2,3,5,9,16,17,20,31,32,33,34,35],
-    debt_clearance:[5,8,10,31,33,34,35], positive_net_worth:[4,5,15,31,33,34,35],
-    finance:[4,5,15,31,33,34,35], career_fit:[4,5,14,19,30,31,33,35],
-    career_promotion:[1,17,19,27,31,32,33], health_symbolic_context:[5,31,35],
-    life_guidance:[2,4,5,9,16,17,18,24,31,32,33,35]
-  };
-  var ignore = uniqueNumbers((anchorIds || []).concat([28,29]));
-  var modifiers = uniqueNumbers(cardIds || []).filter(function(id){ return ignore.indexOf(id) === -1; });
-  var posIds = positivesByType[type] || [1,2,4,5,9,16,17,18,20,24,25,27,30,31,32,33,34,35];
-  var neg = modifiers.filter(function(id){ return HARD_NEGATIVE_IDS.indexOf(id)>-1; }).length;
-  var pos = modifiers.filter(function(id){ return posIds.indexOf(id)>-1; }).length;
-  if (neg && pos) return 'mixed';
-  if (neg) return 'negative';
-  if (pos) return 'positive';
+  // 極性只供文字篇幅判斷，不參與 gate 成立與信心計算；採全站一致表，不再依題型維護第二套語義。
+  var ignore=uniqueNumbers((anchorIds||[]).concat([28,29]));
+  var modifiers=uniqueNumbers(cardIds||[]).filter(function(id){return ignore.indexOf(id)===-1;});
+  var universalPositive=uniqueNumbers([].concat(
+    FORMULA_GROUPS.opportunity,FORMULA_GROUPS.stability,FORMULA_GROUPS.success,
+    FORMULA_GROUPS.resourceGrowth,FORMULA_GROUPS.guidance,FORMULA_GROUPS.values,
+    FORMULA_GROUPS.relation,FORMULA_GROUPS.realization
+  ));
+  var neg=modifiers.some(function(id){return HARD_NEGATIVE_IDS.indexOf(id)>-1;});
+  var pos=modifiers.some(function(id){return universalPositive.indexOf(id)>-1;});
+  if(neg&&pos)return 'mixed';
+  if(neg)return 'negative';
+  if(pos)return 'positive';
   return 'neutral';
-}
-
-function clusterThemeFor(type, anchorIds, cardIds) {
-  if (type === 'attraction_opportunity') {
-    if (anchorIds.indexOf(28)>-1 && anchorIds.indexOf(29)>-1) return '人物焦點間的桃花／吸引連結';
-    if (cardIds.indexOf(24)>-1 || cardIds.indexOf(9)>-1 || cardIds.indexOf(31)>-1 || cardIds.indexOf(32)>-1) return '吸引與被注意的場域';
-  }
-  if (type === 'sexual_component' || type === 'sexual_event') {
-    if (cardIds.indexOf(30)>-1 || cardIds.indexOf(7)>-1) return '肉體／感官／誘惑脈絡';
-    if (cardIds.indexOf(25)>-1 || cardIds.indexOf(24)>-1) return '關係與情感落實脈絡';
-  }
-  if (type === 'life_guidance') {
-    if (cardIds.some(function(id){return [33,22,16].indexOf(id)>-1;})) return '方向／選擇／解答結構';
-    if (cardIds.some(function(id){return [6,8,10,11,21,23,36].indexOf(id)>-1;})) return '迷茫／反覆／負擔結構';
-    if (cardIds.some(function(id){return [4,5,35].indexOf(id)>-1;})) return '穩定／根基支點';
-    if (cardIds.some(function(id){return [9,18,24,32].indexOf(id)>-1;})) return '價值／感受線索';
-  }
-  if (/^career_/.test(type)) return '工作／制度／變動結構';
-  if (/^health_/.test(type)) return '健康議題的象徵性結構';
-  return '核心牌周圍結構';
 }
 
 function structureMinIndexDistance(structure, idsA, idsB) {
@@ -872,184 +987,31 @@ function structureMinIndexDistance(structure, idsA, idsB) {
   positions.forEach(function(a,ia){if(idsA.indexOf(a.card.id)===-1)return;positions.forEach(function(b,ib){if(idsB.indexOf(b.card.id)===-1)return;best=Math.min(best,Math.abs(ia-ib));});});
   return best;
 }
-function structureHasNearCards(structure, idsA, idsB, maxDistance) {
-  return structureHasCards(structure,idsA,idsB)&&structureMinIndexDistance(structure,idsA,idsB)<=maxDistance;
-}
-function structureEvidenceRole(type, structure, declaredGender) {
-  var ids=structure.cardIds||uniqueNumbers((structure.positions||[]).map(function(p){return p.card.id;}));
-  var roles=getPersonRoleIds(declaredGender),q=roles.querent?[roles.querent]:[28,29],c=roles.counterpart?[roles.counterpart]:[28,29];
-  var persons=uniqueNumbers(q.concat(c)),negative=ids.some(function(id){return HARD_NEGATIVE_IDS.indexOf(id)>-1;});
-  var nearNegative=structureHasNearCards(structure,persons.concat([24,25,30,7,9,31,32]),HARD_NEGATIVE_IDS,2);
-  if(type==='attraction_opportunity'){
-    if(nearNegative)return 'risk';
-    if(structureHasNearCards(structure,q,c,2))return 'person_bridge';
-    if(structureHasNearCards(structure,persons,ATTRACTION_POSITIVE_IDS,2))return 'attraction_support';
-    if(ids.some(function(id){return ATTRACTION_POSITIVE_IDS.indexOf(id)>-1;}))return 'attraction_context';
-    return negative?'risk':'neutral';
-  }
-  if(type==='sexual_component'){
-    if(nearNegative&&ids.some(function(id){return SEXUAL_CONTEXT_IDS.indexOf(id)>-1;}))return 'risk';
-    if(structureHasNearCards(structure,SEXUAL_PRIMARY_IDS,persons.concat([9,24,25,31,32]),2))return 'sexual_support';
-    if(structureHasNearCards(structure,SEXUAL_PRIMARY_IDS,SEXUAL_MODIFIER_IDS,2)&&!negative)return 'sexual_support';
-    if(structureHasNearCards(structure,SEXUAL_MODIFIER_IDS,persons.concat([9,24,25,31,32]),2))return 'sexual_modifier_only';
-    return negative?'risk':'context';
-  }
-  if(type==='sexual_event'){
-    if(nearNegative&&ids.some(function(id){return SEXUAL_CONTEXT_IDS.indexOf(id)>-1;}))return 'risk';
-    if(structureHasNearCards(structure,SEXUAL_PRIMARY_IDS,c,2)&&structureHasNearCards(structure,c,[24,25,1,4,12],2))return 'event_support';
-    if(structureHasNearCards(structure,q,c,2)||structureHasNearCards(structure,c,[24,25,1,4,12],2))return 'relation_support';
-    if(structureHasNearCards(structure,SEXUAL_PRIMARY_IDS,persons.concat([9,24,25,31,32]),2))return 'sexual_support';
-    if(structureHasNearCards(structure,SEXUAL_MODIFIER_IDS,persons.concat([9,24,25,31,32]),2))return 'sexual_modifier_only';
-    return negative?'risk':'context';
-  }
-  return '';
-}
-function clusterIdsByRole(packet, roles) {
-  var allowed={};(roles||[]).forEach(function(r){allowed[r]=true;});
-  return (packet.clusters||[]).filter(function(c){return !!allowed[c.role];}).map(function(c){return c.id;});
-}
-function reserveClusterIds(packet, candidates, used, limit) {
-  var available=uniqueStrings(candidates||[]).filter(function(id){return !used[id];});
-  var picked=rankAndLimitClusterIds(packet,available,limit||1);picked.forEach(function(id){used[id]=true;});return picked;
-}
-
 function buildClusters(structures, anchorSlots, type, declaredGender) {
-  var map = {},roleSplit=type==='life_guidance'||type==='attraction_opportunity'||type==='sexual_component'||type==='sexual_event';
-  structures.forEach(function(st){
-    var anchorPositions = st.positions.filter(function(p){ return !!anchorSlots[p.slot]; });
-    var anchorSlotIds = uniqueNumbers(anchorPositions.map(function(p){ return p.slot; })).sort(function(a,b){return a-b;});
-    var key = (anchorSlotIds.length > 1 ? 'bridge:' : 'local:') + (anchorSlotIds.join('-') || 'none:' + st.id);
-    var role='';
-    if(type==='life_guidance'){
-      var structureIds=uniqueNumbers(st.positions.map(function(p){return p.card.id;}));
-      var structureAnchorIds=uniqueNumbers(anchorPositions.map(function(p){return p.card.id;}));
-      var structurePolarity=classifyClusterPolarity(type,structureIds,structureAnchorIds);
-      role=structurePolarity==='negative'||structurePolarity==='mixed'?'risk':structurePolarity==='positive'?'support':'neutral';
-    }else if(roleSplit)role=structureEvidenceRole(type,st,declaredGender);
-    if(roleSplit)key += ':'+(role||'neutral');
-    if (!map[key]) map[key] = {key:key, refs:[], structures:[], cardIds:[], anchorIds:[], anchorSlots:anchorSlotIds,role:role||'neutral'};
-    map[key].refs.push(st.id); map[key].structures.push(st);
-    map[key].cardIds = uniqueNumbers(map[key].cardIds.concat(st.positions.map(function(p){return p.card.id;})));
-    map[key].anchorIds = uniqueNumbers(map[key].anchorIds.concat(anchorPositions.map(function(p){return p.card.id;})));
+  // 原子化：一個物理D/S只建立一個C。直接相鄰可支撐結論；三張窗只作語境。
+  return (structures||[]).map(function(st,idx){
+    var anchorPositions=(st.positions||[]).filter(function(p){return !!anchorSlots[p.slot];});
+    var cardIds=uniqueNumbers((st.positions||[]).map(function(p){return p.card.id;}));
+    var anchorIds=uniqueNumbers(anchorPositions.map(function(p){return p.card.id;}));
+    return {
+      id:'C'+(idx+1), key:'atom:'+physicalStructureKey(st), refs:[st.id], structures:[st],
+      cardIds:cardIds, anchorIds:anchorIds, anchorSlots:anchorPositions.map(function(p){return p.slot;}),
+      kind:st.kind==='adjacency'?'local':'context_window', role:st.kind==='adjacency'?'unassigned':'context_only',
+      theme:st.kind==='adjacency'?'直接相鄰組合':'連續三張語境（不獨立加權）',
+      polarity:classifyClusterPolarity(type,cardIds,anchorIds), confidenceEligible:st.kind==='adjacency'
+    };
   });
-  return Object.keys(map).sort().map(function(k,idx){
-    var c=map[k]; c.id='C'+(idx+1); c.kind=c.anchorSlots.length>1?'bridge':'local';
-    if(c.role==='person_bridge')c.theme='人物焦點連結';
-    else if(c.role==='attraction_support')c.theme='桃花／吸引支持';
-    else if(c.role==='attraction_context')c.theme='桃花主題背景';
-    else if(c.role==='sexual_support')c.theme='感官／性成分支持';
-    else if(c.role==='sexual_modifier_only')c.theme='誘惑／複雜修飾，不能單獨證明性成分';
-    else if(c.role==='event_support')c.theme='感官焦點與同一人物／接觸落實連結';
-    else if(c.role==='relation_support')c.theme='人物／關係落實支持';
-    else if(c.role==='risk')c.theme='阻礙／不明／中止風險';
-    else c.theme=clusterThemeFor(type,c.anchorIds,c.cardIds);
-    c.polarity=classifyClusterPolarity(type,c.cardIds,c.anchorIds);
-    return c;
-  });
-}
-
-function modernThemeAllowedForType(type, groupId) {
-  var byType={
-    business_success:['stability','success_opening','movement_change','communication_public','work_money_power','ending_cut','obstacle_burden','loss_erosion','uncertainty_complexity','conflict_repetition'],
-    debt_clearance:['stability','success_opening','work_money_power','ending_cut','obstacle_burden','loss_erosion','uncertainty_complexity','conflict_repetition'],
-    positive_net_worth:['stability','success_opening','work_money_power','ending_cut','obstacle_burden','loss_erosion','uncertainty_complexity','conflict_repetition'],
-    finance:['stability','success_opening','work_money_power','ending_cut','obstacle_burden','loss_erosion','uncertainty_complexity','conflict_repetition'],
-    attraction_opportunity:['success_opening','communication_public','relationship_bond','obstacle_burden','uncertainty_complexity','conflict_repetition'],
-    sexual_component:['relationship_bond','sexual_sensual','obstacle_burden','uncertainty_complexity','conflict_repetition'],
-    sexual_event:['relationship_bond','sexual_sensual','ending_cut','obstacle_burden','loss_erosion','uncertainty_complexity','conflict_repetition'],
-    career_fit:['stability','success_opening','movement_change','communication_public','work_money_power','ending_cut','obstacle_burden','uncertainty_complexity','conflict_repetition'],
-    career_promotion:['stability','success_opening','movement_change','communication_public','work_money_power','ending_cut','obstacle_burden','uncertainty_complexity','conflict_repetition'],
-    life_guidance:['stability','success_opening','movement_change','relationship_bond','ending_cut','obstacle_burden','loss_erosion','uncertainty_complexity','conflict_repetition']
-  };
-  return !byType[type] || byType[type].indexOf(groupId)>-1;
 }
 
 function buildModernContext(geometry, profile, anchorPositions, directPairs, relevantSegments, declaredGender, type, clusters) {
-  var roles=getPersonRoleIds(declaredGender), personIds=uniqueNumbers([roles.querent,roles.counterpart]);
-  var coveredSlots={};
-  directPairs.forEach(function(x){x.positions.forEach(function(p){coveredSlots[p.slot]=true;});});
-  relevantSegments.forEach(function(x){x.positions.forEach(function(p){coveredSlots[p.slot]=true;});});
-  function novelNeighborhood(center){
-    var raw=neighborhoodFor(geometry,center), novel=raw.positions.filter(function(p){return p.slot!==center.slot&&!coveredSlots[p.slot];});
-    return novel.length?{center:center,positions:novel,novelPositions:novel}:null;
-  }
-  var personCenters=anchorPositions.filter(function(p){return personIds.indexOf(p.card.id)>-1;}).slice(0,2);
-  var topicCenters=anchorPositions.filter(function(p){return personIds.indexOf(p.card.id)===-1;}).slice(0,3);
-  var personNeighborhoods=personCenters.map(novelNeighborhood).filter(Boolean);
-  var topicNeighborhoods=topicCenters.map(novelNeighborhood).filter(Boolean);
-  var personSlots={},topicSlots={};
-  personNeighborhoods.forEach(function(n){n.positions.forEach(function(p){personSlots[p.slot]=p;});});
-  topicNeighborhoods.forEach(function(n){n.positions.forEach(function(p){topicSlots[p.slot]=p;});});
-  var sharedCards=Object.keys(personSlots).filter(function(s){return !!topicSlots[s];}).map(function(s){return personSlots[s];});
-
-  var directKeys={};directPairs.forEach(function(p){directKeys[pairSlotKey(p.positions[0],p.positions[1])]=true;});
-  var chosenPairKeys={};
-  function isRedundantPair(a,b){var key=pairSlotKey(a,b);if(directKeys[key]||chosenPairKeys[key]||(coveredSlots[a.slot]&&coveredSlots[b.slot]))return true;return relevantSegments.some(function(seg){return segmentContainsBoth(seg,a,b);});}
-  var relevantIds=uniqueNumbers(profile.all.concat(HARD_NEGATIVE_IDS).concat(type==='sexual_component'||type==='sexual_event'?SEXUAL_CONTEXT_IDS:[]));
-  function contextScore(source,target){var score=0;if(profile.anchors.indexOf(target.card.id)>-1)score+=5;if(profile.supports.indexOf(target.card.id)>-1)score+=3;if(HARD_NEGATIVE_IDS.indexOf(target.card.id)>-1)score+=3;if(relevantIds.indexOf(target.card.id)>-1)score+=1;return score;}
-  function selectPairs(candidates,limit){
-    candidates.sort(function(a,b){return b.score-a.score||pairSlotKey(a.source,a.target).localeCompare(pairSlotKey(b.source,b.target));});
-    var out=[];candidates.forEach(function(x){var key=pairSlotKey(x.source,x.target);if(out.length>=limit||chosenPairKeys[key])return;chosenPairKeys[key]=true;out.push(x);});return out;
-  }
-  var mirrorCandidates=[];
-  anchorPositions.forEach(function(p){mirrorTargetsFor(geometry,p).forEach(function(m){if(!isRedundantPair(m.source,m.target)){m.score=contextScore(m.source,m.target);if(m.score>0)mirrorCandidates.push(m);}});});
-  var mirrors=selectPairs(mirrorCandidates,2);
-  var knightCandidates=[];
-  anchorPositions.forEach(function(p){knightTargetsFor(geometry,p).forEach(function(k){if(!isRedundantPair(k.source,k.target)){k.score=contextScore(k.source,k.target);if(k.score>0)knightCandidates.push(k);}});});
-  var knightMoves=selectPairs(knightCandidates,2);
-
-  var intersections=[];
-  for(var i=0;i<relevantSegments.length;i++)for(var j=i+1;j<relevantSegments.length;j++){
-    var slotsA={};relevantSegments[i].positions.forEach(function(p){slotsA[p.slot]=p;});
-    var shared=uniquePositions(relevantSegments[j].positions.filter(function(p){return slotsA[p.slot]&&!coveredSlots[p.slot];}));
-    if(shared.length)intersections.push({a:'S'+(i+1),b:'S'+(j+1),positions:shared});
-  }
-  intersections=intersections.slice(0,1);
-  var contextPositions=[];
-  personNeighborhoods.concat(topicNeighborhoods).forEach(function(n){contextPositions=contextPositions.concat(n.positions);});
-  mirrors.forEach(function(m){contextPositions.push(m.source,m.target);});knightMoves.forEach(function(k){contextPositions.push(k.source,k.target);});
-  contextPositions=uniquePositions(contextPositions.filter(function(p){return !coveredSlots[p.slot];}));
-  var clusterThemes=[];
-  if(['attraction_opportunity','sexual_component','sexual_event'].indexOf(type)===-1){
-    (clusters||[]).forEach(function(cluster){
-      var positions=cardSetFromStructures(cluster.structures),best=null;
-      MODERN_THEME_GROUPS.forEach(function(group){if(!modernThemeAllowedForType(type,group.id))return;var hits=positions.filter(function(p){return group.cards.indexOf(p.card.id)>-1;});if(hits.length>=2&&(!best||hits.length>best.positions.length))best={clusterId:cluster.id,id:group.id,label:group.label,positions:hits};});
-      if(best)clusterThemes.push(best);
-    });
-    clusterThemes=clusterThemes.slice(0,3);
-  }
-  return {personNeighborhoods:personNeighborhoods,topicNeighborhoods:topicNeighborhoods,sharedCards:sharedCards,mirrors:mirrors,knightMoves:knightMoves,intersections:intersections,corners:[],centers:[],clusterThemes:clusterThemes,contextPositions:contextPositions};
+  // v6.0：核心公式不向模型輸出鏡像、騎士跳、交會、房屋或鄰近資料牆。
+  // 這些技法並非原始說明書的固定公式，也不應在缺乏明示規則時提高結論。
+  return {personNeighborhoods:[],topicNeighborhoods:[],sharedCards:[],mirrors:[],knightMoves:[],intersections:[],corners:[],centers:[],clusterThemes:[],contextPositions:[]};
 }
 
 function structureHasCards(structure, idsA, idsB) {
   var ids=structure.cardIds||uniqueNumbers(structure.positions.map(function(p){return p.card.id;}));
   return idsA.some(function(x){return ids.indexOf(x)>-1;}) && idsB.some(function(x){return ids.indexOf(x)>-1;});
-}
-function packetHasCoreStructure(packet, idsA, idsB) { return packet.structures.some(function(st){return structureHasCards(st,idsA,idsB);}); }
-function packetHasDirectPair(packet, idsA, idsB) { return packet.directPairs.some(function(p){return structureHasCards({positions:p.positions},idsA,idsB);}); }
-function packetHasNegativeAround(packet, ids) { return packet.structures.some(function(st){return structureHasCards(st,ids,HARD_NEGATIVE_IDS);}); }
-
-function clusterIdsForCards(packet, idsA, idsB) {
-  return (packet.clusters || []).filter(function(c){
-    return (c.structures || []).some(function(st){ return structureHasCards(st,idsA,idsB); });
-  }).map(function(c){ return c.id; });
-}
-function clusterIdsForCardsByPolarity(packet, idsA, idsB, allowedPolarities) {
-  var allowed=allowedPolarities||['positive'];
-  return (packet.clusters || []).filter(function(c){
-    return allowed.indexOf(c.polarity)>-1 && (c.structures || []).some(function(st){ return structureHasCards(st,idsA,idsB); });
-  }).map(function(c){ return c.id; });
-}
-function rankAndLimitClusterIds(packet, clusterIds, limit) {
-  var wanted={}; uniqueStrings(clusterIds||[]).forEach(function(id){wanted[id]=true;});
-  return (packet.clusters||[]).filter(function(c){return !!wanted[c.id];}).sort(function(a,b){
-    function score(c){
-      var direct=(c.structures||[]).filter(function(st){return st.kind==='adjacency';}).length;
-      var shortest=99;(c.structures||[]).forEach(function(st){shortest=Math.min(shortest,(st.positions||[]).length||99);});
-      return direct*100+(99-shortest)*2-(c.structures||[]).length;
-    }
-    return score(b)-score(a)||String(a.id).localeCompare(String(b.id));
-  }).slice(0,limit||1).map(function(c){return c.id;});
 }
 function addApprovedClaim(plan, text, clusterIds) {
   plan.approvedClaims.push(text);
@@ -1067,35 +1029,12 @@ function buildApprovedEvidenceView(packet) {
   allowedIds.forEach(function(id){allowed[id]=true;});
   var clusters=(packet.clusters||[]).filter(function(c){return !!allowed[c.id];});
   clusters.forEach(function(c){(c.refs||[]).forEach(function(ref){refs[ref]=true;});});
-  var structures=(packet.structures||[]).filter(function(st){return !!refs[st.id];});
+  var structures=(packet.structures||[]).filter(function(st){return !!refs[st.id]&&st.kind==='adjacency';});
   var clusterThemes=((packet.modernContext&&packet.modernContext.clusterThemes)||[]).filter(function(t){return !!allowed[t.clusterId];});
   var usedCards={};
   structures.forEach(function(st){(st.positions||[]).forEach(function(pos){usedCards[pos.card.id]=pos.card;});});
   clusterThemes.forEach(function(t){(t.positions||[]).forEach(function(pos){usedCards[pos.card.id]=pos.card;});});
   return {clusterIds:allowedIds,clusters:clusters,structures:structures,clusterThemes:clusterThemes,usedCards:usedCards};
-}
-
-function cardIdsForClusterIds(packet, clusterIds) {
-  var wanted={};uniqueStrings(clusterIds||[]).forEach(function(id){wanted[id]=true;});
-  var ids=[];(packet.clusters||[]).forEach(function(c){if(wanted[c.id])ids=ids.concat(c.cardIds||[]);});
-  return uniqueNumbers(ids);
-}
-function guidanceRiskText(cardIds) {
-  var labels=[];
-  [[6,'不明'],[8,'結束'],[10,'切斷'],[11,'反覆'],[21,'阻礙'],[23,'損耗'],[36,'負擔']].forEach(function(pair){if(cardIds.indexOf(pair[0])>-1)labels.push(pair[1]);});
-  return labels.length?labels.join('、'):'負向干擾';
-}
-function guidancePrincipleText(cardIds) {
-  var hasValue=cardIds.some(function(id){return [9,18,24,32].indexOf(id)>-1;});
-  var hasStability=cardIds.some(function(id){return [4,5,35].indexOf(id)>-1;});
-  var hasDirection=cardIds.some(function(id){return [16,22,33].indexOf(id)>-1;});
-  var hasOpening=cardIds.some(function(id){return [2,17,31].indexOf(id)>-1;});
-  if(hasValue&&hasStability)return '可把真正重視的內容與可持續、可建立根基的條件一起作為篩選原則；這不是唯一答案或具體職業指令。';
-  if(hasValue&&(hasDirection||hasOpening))return '可把真正重視的內容與能讓方向更清楚、形成可選擇空間的條件一起作為篩選原則；這不是成功保證。';
-  if(hasStability&&(hasDirection||hasOpening))return '可把方向清晰度與能否持續、建立根基一起作為篩選原則；這不是唯一答案或具體職業指令。';
-  if(hasValue)return '可把真正重視、願意投入的內容作為篩選線索，但單憑喜歡不能保證結果。';
-  if(hasStability)return '可把能否持續與建立根基作為篩選線索，但牌面沒有指定唯一方向。';
-  return '可把能增加方向清晰度或提供正向支點的條件作為篩選原則，但牌面沒有指定唯一答案。';
 }
 
 function physicalStructureKey(st) {
@@ -1109,54 +1048,38 @@ function assignGlobalEvidenceUids(packetItems) {
   return map;
 }
 
-function claimClusterFitScore(type, claimIndex, claimText, cluster) {
-  var score=claimIndex===1?100:20,role=cluster.role||'neutral';
-  if(type==='sexual_event')score+=30;else if(type==='sexual_component')score+=20;else if(type==='attraction_opportunity')score+=10;
-  var roleScore={event_support:80,relation_support:60,sexual_support:70,sexual_modifier_only:35,person_bridge:55,attraction_support:60,attraction_context:25,risk:40};
-  score+=roleScore[role]||0;
-  if(/阻礙|不明|中止|結束|切斷|負擔|損耗|限制|降低/.test(claimText)&&role==='risk')score+=35;
-  if((cluster.structures||[]).some(function(st){return st.kind==='adjacency';}))score+=8;
-  return score;
-}
-function enforceGlobalClaimEvidenceUniqueness(packetItems) {
-  var candidates=[],usedUids={},accepted={};
-  (packetItems||[]).forEach(function(entry,entryIndex){
-    var packet=entry.packet,type=primaryDecisionType(packet.question.types||[packet.question.type]);
-    if(['attraction_opportunity','sexual_component','sexual_event'].indexOf(type)===-1)return;
+function buildGlobalEvidenceLedger(packetItems, declaredGender) {
+  // v6.0：全題採單一證據帳本，不再讓命題互相搶牌。
+  // 相依命題可引用同一 evidence_uid；該牌對在帳本只登錄一次，重複引用不得提高 certainty cap。
+  var ledger={};
+  (packetItems||[]).forEach(function(entry){
+    var packet=entry.packet;
+    packet.claimPlan=buildClaimPlan(packet,declaredGender,{});
+    (packet.structures||[]).forEach(function(st){
+      if(st.kind!=='adjacency')return;
+      var uid=_lnStructureUid(st);
+      if(!ledger[uid])ledger[uid]={uid:uid,structure:st,propositions:[],claims:[]};
+    });
     (packet.claimPlan.claimEvidence||[]).forEach(function(link){
       (link.clusters||[]).forEach(function(cid){
-        var cluster=(packet.clusters||[]).filter(function(c){return c.id===cid;})[0];if(!cluster)return;
-        var uids=uniqueStrings((cluster.structures||[]).map(function(st){return st.evidenceUid||physicalStructureKey(st);}));
-        candidates.push({entryIndex:entryIndex,packet:packet,type:type,claimIndex:link.claimIndex,claimText:packet.claimPlan.approvedClaims[link.claimIndex-1]||'',cluster:cluster,uids:uids,score:claimClusterFitScore(type,link.claimIndex,packet.claimPlan.approvedClaims[link.claimIndex-1]||'',cluster)});
+        var c=(packet.clusters||[]).filter(function(z){return z.id===cid;})[0],st=_lnClusterStructure(c);
+        if(!st)return;
+        var uid=_lnStructureUid(st);
+        if(!ledger[uid])ledger[uid]={uid:uid,structure:st,propositions:[],claims:[]};
+        if(ledger[uid].propositions.indexOf(packet.question.id)<0)ledger[uid].propositions.push(packet.question.id);
+        ledger[uid].claims.push(packet.question.id+':A'+link.claimIndex);
       });
     });
-  });
-  candidates.sort(function(a,b){return b.score-a.score||a.entryIndex-b.entryIndex||a.claimIndex-b.claimIndex||String(a.cluster.id).localeCompare(String(b.cluster.id));});
-  candidates.forEach(function(c){if(c.uids.some(function(uid){return !!usedUids[uid];}))return;var key=c.entryIndex+':'+c.claimIndex;if(!accepted[key])accepted[key]=[];accepted[key].push(c.cluster.id);c.uids.forEach(function(uid){usedUids[uid]=key;});});
-  (packetItems||[]).forEach(function(entry,entryIndex){
-    var packet=entry.packet,type=primaryDecisionType(packet.question.types||[packet.question.type]);
-    if(['attraction_opportunity','sexual_component','sexual_event'].indexOf(type)===-1)return;
-    var oldClaims=packet.claimPlan.approvedClaims.slice(),oldLinks=(packet.claimPlan.claimEvidence||[]).slice(),newClaims=[],newLinks=[],mainLost=false;
-    oldLinks.forEach(function(link){
-      var key=entryIndex+':'+link.claimIndex,kept=accepted[key]||[],had=(link.clusters||[]).length>0;
-      if(had&&!kept.length){if(link.claimIndex===1)mainLost=true;return;}
-      newClaims.push(oldClaims[link.claimIndex-1]);newLinks.push({claimIndex:newClaims.length,clusters:kept.slice()});
-    });
-    if(mainLost){
-      var fallback=type==='attraction_opportunity'?'在不重複使用同一實體證據的前提下，牌面不足以明確支持非現任桃花。':type==='sexual_component'?'在不重複使用同一實體證據的前提下，無法確認該桃花具有明顯肉體／性吸引。':'在不重複使用同一實體證據的前提下，無法確認實際肉體關係會發生。';
-      newClaims.unshift(fallback);newLinks.unshift({claimIndex:1,clusters:[]});
-      for(var i=1;i<newLinks.length;i++)newLinks[i].claimIndex=i+1;
-      if(type==='attraction_opportunity'){packet.claimPlan.status='attraction_insufficient';packet.claimPlan.certaintyCap='不足以明確判定';}
-      else if(type==='sexual_component'){packet.claimPlan.status='sexual_component_insufficient';packet.claimPlan.certaintyCap='不足以明確判定';}
-      else{packet.claimPlan.status='sexual_event_insufficient';packet.claimPlan.certaintyCap='不足以判定實際發生';}
-    }
-    packet.claimPlan.approvedClaims=newClaims;packet.claimPlan.claimEvidence=newLinks;packet.globalEvidenceOwners=usedUids;
+    packet.globalEvidenceLedger=ledger;
     packet.validation=validateEvidencePacket(packet);
     if(!packet.validation.ok)failClosedPacket(packet,packet.validation);
   });
-  return usedUids;
+  return ledger;
 }
-
+// 舊測試／外部呼叫相容別名；語義已由「獨占」改為「單一帳本、共享引用不加權」。
+function enforceGlobalClaimEvidenceUniqueness(packetItems, declaredGender) {
+  return buildGlobalEvidenceLedger(packetItems,declaredGender);
+}
 
 function comparisonCardWeight(card, role) {
   if (!card) return 0;
@@ -1254,197 +1177,65 @@ function buildComparisonPromptBlock(lines, item, packet, cardLabel, xmlEscape) {
 function buildEvidencePacket(geometry, questionItem, declaredGender) {
   var type=primaryDecisionType(questionItem.types||[questionItem.type]);
   if(type==='unsupported_age'||type==='health_medical_cause'||type==='timing'){
-    var empty={question:questionItem,focusPositions:[],anchorPositions:[],housePositions:[],directPairs:[],segments:[],clusters:[],structures:[],modernContext:{personNeighborhoods:[],topicNeighborhoods:[],sharedCards:[],mirrors:[],knightMoves:[],intersections:[],corners:[],centers:[],clusterThemes:[],contextPositions:[]},analysisDimensions:analysisDimensionsFor(questionItem),usedCards:{}};
-    empty.claimPlan=buildClaimPlan(empty,declaredGender); empty.validation=validateEvidencePacket(empty); return empty.validation.ok?empty:failClosedPacket(empty,empty.validation);
+    var empty={question:questionItem,focusPositions:[],anchorPositions:[],housePositions:[],directPairs:[],segments:[],clusters:[],structures:[],modernContext:buildModernContext(null,null,[],[],[],declaredGender,type,[]),analysisDimensions:analysisDimensionsFor(questionItem),usedCards:{}};
+    empty.claimPlan=buildClaimPlan(empty,declaredGender);empty.validation=validateEvidencePacket(empty);return empty.validation.ok?empty:failClosedPacket(empty,empty.validation);
   }
-  var profile=buildQuestionFocusProfile(questionItem,declaredGender), byCardId={};
+  var profile=buildQuestionFocusProfile(questionItem,declaredGender),byCardId={};
   geometry.positions.forEach(function(p){byCardId[p.card.id]=p;});
   var focusPositions=profile.all.map(function(id){return byCardId[id];}).filter(Boolean);
   var anchorPositions=profile.anchors.map(function(id){return byCardId[id];}).filter(Boolean);
-  var housePositions=anchorPositions.slice(), anchorSlots={}, focusSlots={};
-  anchorPositions.forEach(function(p){anchorSlots[p.slot]=true;});
-  focusPositions.forEach(function(p){focusSlots[p.slot]=true;});
-  var roles=getPersonRoleIds(declaredGender), personSlotMap={};
-  [roles.querent,roles.counterpart].forEach(function(id){var p=byCardId[id];if(p)personSlotMap[p.slot]=true;});
+  var anchorSlots={},focusIds={};anchorPositions.forEach(function(p){anchorSlots[p.slot]=true;});profile.all.concat(HARD_NEGATIVE_IDS).forEach(function(id){focusIds[id]=true;});
 
-  function structureRelevance(ids) {
-    var score = 0;
-    var anchorCount = ids.filter(function(id){ return profile.anchors.indexOf(id) > -1; }).length;
-    var supportCount = ids.filter(function(id){ return profile.supports.indexOf(id) > -1; }).length;
-    var personCount = ids.filter(function(id){ return id === roles.querent || id === roles.counterpart; }).length;
-    var negativeCount = ids.filter(function(id){ return HARD_NEGATIVE_IDS.indexOf(id) > -1; }).length;
-    score += anchorCount * 5 + supportCount * 2 + personCount * 3 + negativeCount * 2;
-    if ((type === 'sexual_component' || type === 'sexual_event') && ids.some(function(id){ return SEXUAL_CONTEXT_IDS.indexOf(id) > -1; })) score += 6;
-    if (type === 'attraction_opportunity' && ids.some(function(id){ return ATTRACTION_POSITIVE_IDS.indexOf(id) > -1; })) score += 3;
-    return score;
-  }
-
-  var pairMap={}, pairCandidates=[];
-  geometry.adjacency.forEach(function(a){
-    if(!anchorSlots[a.position.slot])return;
-    a.neighbors.forEach(function(n){
-      var keep=!!focusSlots[n.slot]||(type!=='life_guidance'&&!!personSlotMap[a.position.slot])||HARD_NEGATIVE_IDS.indexOf(n.card.id)>-1;
-      if(!keep)return;
-      var key=pairSlotKey(a.position,n);if(pairMap[key])return;pairMap[key]=true;
-      var pair={positions:[a.position,n]};
-      pair.score=structureRelevance(pair.positions.map(function(p){return p.card.id;}));
-      pairCandidates.push(pair);
+  // 第一層：人物／主題焦點的直接八方相鄰。這是唯一可提高結論強度的證據單位。
+  var pairMap={},directPairs=[];
+  geometry.adjacency.forEach(function(entry){
+    var centerIsAnchor=!!anchorSlots[entry.position.slot];
+    entry.neighbors.forEach(function(n){
+      if(!centerIsAnchor&&!anchorSlots[n.slot])return;
+      var anchor=centerIsAnchor?entry.position:n,other=centerIsAnchor?n:entry.position;
+      if(!focusIds[other.card.id]&&!anchorSlots[other.slot])return;
+      var key=pairSlotKey(anchor,other);if(pairMap[key])return;pairMap[key]=true;
+      directPairs.push({positions:[anchor,other],score:(focusIds[other.card.id]?5:0)+(HARD_NEGATIVE_IDS.indexOf(other.card.id)>-1?3:0)});
     });
   });
-  pairCandidates.sort(function(a,b){ return b.score-a.score; });
-  var pairLimit=(type==='attraction_opportunity'||type==='sexual_component'||type==='sexual_event')?14:18;
-  var directPairs=pairCandidates.slice(0,pairLimit);
+  // 不在 gate 編譯前截斷候選；36張牌規模有限，先保留全部直接相鄰，再由公式選最小證據。
+  directPairs.sort(function(a,b){return pairSlotKey(a.positions[0],a.positions[1]).localeCompare(pairSlotKey(b.positions[0],b.positions[1]),undefined,{numeric:true});});
 
-  var segmentMap={}, segmentCandidates=[];
-  function addSegment(seq){
-    if(!seq||seq.length<3)return;
-    var key=seq.map(function(p){return p.slot;}).join('-'),rev=seq.slice().reverse().map(function(p){return p.slot;}).join('-');
-    if(segmentMap[key]||segmentMap[rev])return;segmentMap[key]=true;
-    var seg={positions:seq.slice()};
-    seg.score=structureRelevance(seg.positions.map(function(p){return p.card.id;}))-(seq.length-3)*0.5;
-    segmentCandidates.push(seg);
-  }
+  // 第二層：只保留連續三張、且含焦點的語境窗。不得作獨立信心或事件／結果門檻。
+  var segmentMap={},segments=[];
   geometry.lines.forEach(function(line){
-    var anchorIndexes=[];line.positions.forEach(function(p,idx){if(anchorSlots[p.slot])anchorIndexes.push(idx);});
-    for(var i=0;i<anchorIndexes.length;i++)for(var j=i+1;j<anchorIndexes.length;j++)addSegment(line.positions.slice(anchorIndexes[i],anchorIndexes[j]+1));
+    for(var i=0;i<=line.positions.length-3;i++){
+      var win=line.positions.slice(i,i+3),hasAnchor=win.some(function(p){return !!anchorSlots[p.slot];});
+      var relevant=win.filter(function(p){return !!focusIds[p.card.id]||!!anchorSlots[p.slot];}).length;
+      if(!hasAnchor||relevant<2)continue;
+      var f=win.map(function(p){return p.slot;}).join('-'),r=win.slice().reverse().map(function(p){return p.slot;}).join('-'),key=f<r?f:r;
+      if(segmentMap[key])continue;segmentMap[key]=true;segments.push({positions:win,score:relevant});
+    }
   });
-  segmentCandidates.sort(function(a,b){return b.score-a.score||a.positions.length-b.positions.length;});
-  var segmentLimit=(type==='attraction_opportunity'||type==='sexual_component'||type==='sexual_event')?6:8;
-  var relevantSegments=segmentCandidates.slice(0,segmentLimit);
+  segments.sort(function(a,b){return b.score-a.score||a.positions[0].slot-b.positions[0].slot;});segments=segments.slice(0,8);
 
   var structures=[];
-  directPairs.forEach(function(pair,idx){structures.push({id:'D'+(idx+1),kind:'adjacency',positions:pair.positions,cardIds:uniqueNumbers(pair.positions.map(function(p){return p.card.id;}))});});
-  relevantSegments.forEach(function(seg,idx){structures.push({id:'S'+(idx+1),kind:'segment',positions:seg.positions,cardIds:uniqueNumbers(seg.positions.map(function(p){return p.card.id;}))});});
-  var clusters=buildClusters(structures,anchorSlots,type,declaredGender);
-  var modernContext=buildModernContext(geometry,profile,anchorPositions,directPairs,relevantSegments,declaredGender,type,clusters);
-  var usedCards={};
-  anchorPositions.forEach(function(p){usedCards[p.card.id]=p.card;});
-  structures.forEach(function(st){st.positions.forEach(function(p){usedCards[p.card.id]=p.card;});});
-  modernContext.contextPositions.forEach(function(p){usedCards[p.card.id]=p.card;});
-  var packet={question:questionItem,profile:profile,focusPositions:focusPositions,anchorPositions:anchorPositions,housePositions:housePositions,directPairs:directPairs,segments:relevantSegments,clusters:clusters,structures:structures,modernContext:modernContext,analysisDimensions:analysisDimensionsFor(questionItem),usedCards:usedCards};
-  packet.claimPlan=buildClaimPlan(packet,declaredGender); packet.validation=validateEvidencePacket(packet); return packet.validation.ok?packet:failClosedPacket(packet,packet.validation);
+  directPairs.forEach(function(pair,idx){var st={id:'D'+(idx+1),kind:'adjacency',positions:pair.positions,cardIds:uniqueNumbers(pair.positions.map(function(p){return p.card.id;}))};st.evidenceUid=physicalStructureKey(st);structures.push(st);});
+  segments.forEach(function(seg,idx){var st={id:'S'+(idx+1),kind:'context_window',positions:seg.positions,cardIds:uniqueNumbers(seg.positions.map(function(p){return p.card.id;}))};st.evidenceUid=physicalStructureKey(st);structures.push(st);});
+  var clusters=buildClusters(structures,anchorSlots,type,declaredGender),modernContext=buildModernContext(geometry,profile,anchorPositions,directPairs,segments,declaredGender,type,clusters),usedCards={};
+  anchorPositions.forEach(function(p){usedCards[p.card.id]=p.card;});structures.forEach(function(st){st.positions.forEach(function(p){usedCards[p.card.id]=p.card;});});
+  var packet={question:questionItem,profile:profile,focusPositions:focusPositions,anchorPositions:anchorPositions,housePositions:[],directPairs:directPairs,segments:segments,clusters:clusters,structures:structures,modernContext:modernContext,analysisDimensions:analysisDimensionsFor(questionItem),usedCards:usedCards,formulaId:CANONICAL_READING_FORMULA.id};
+  packet.claimPlan=buildClaimPlan(packet,declaredGender);packet.validation=validateEvidencePacket(packet);return packet.validation.ok?packet:failClosedPacket(packet,packet.validation);
 }
 
-function buildClaimPlan(packet, declaredGender) {
-  var type=primaryDecisionType(packet.question.types||[packet.question.type]), roles=getPersonRoleIds(declaredGender), q=roles.querent?[roles.querent]:[28,29], c=roles.counterpart?[roles.counterpart]:[28,29];
-  var plan={status:'model_evaluate',certaintyCap:'較有傾向',requiredConclusion:'只輸出 approved_claims；核心主張限於 claim_evidence 指定的C，未列入者不得補寫。',approvedClaims:[],forbiddenClaims:[],claimEvidence:[]};
-  if(type==='comparison_suitability'){plan.status='comparison_requires_symmetric_nine';plan.certaintyCap='無法由大牌陣公平比較';addApprovedClaim(plan,'目前牌陣沒有為兩個選項建立對稱位置，不能公平比較。',[]);plan.forbiddenClaims=['將選項名稱套成同名牌','事後挑牌代表選項'];return plan;}
-  if(type==='unsupported_age'){plan.status='unsupported_age';plan.certaintyCap='不足以判定';plan.requiredConclusion='直接回答數字年齡與區間無法驗證，不得引用牌面側證。';addApprovedClaim(plan,'無 age_rules，無法判定數字年齡或年齡區間。',[]);plan.forbiddenClaims=['任何歲數、區間、年輕／年長側推'];return plan;}
-  if(type==='timing'){plan.status='timing_rules_not_enabled';plan.certaintyCap='不足以判定具體時間';plan.requiredConclusion='直接回答本站未啟用時間規則，因此無法判定年、月、週、日或先後階段。';addApprovedClaim(plan,'本次無法由牌面判定具體時間。',[]);plan.forbiddenClaims=['牌號換算日期','座標或房屋推時間','D／S／C推先後','任何年、月、週、日'];return plan;}
-  if(type==='health_medical_cause'){plan.status='medical_limit';plan.certaintyCap='不足以判定';plan.requiredConclusion='先明說牌面不能判定醫學病因；不得引用牌面作病因。';addApprovedClaim(plan,'牌面無法判定醫學病因、診斷或治療。',[]);plan.forbiddenClaims=['壓力、飲食、荷爾蒙、器官或藥物效果的病因斷言'];return plan;}
-
-  if(type==='life_guidance'){
-    var usedGuidanceClusters={};
-    function takeGuidance(ids,limit){
-      var available=uniqueStrings(ids||[]).filter(function(id){return !usedGuidanceClusters[id];});
-      var picked=rankAndLimitClusterIds(packet,available,limit||1);
-      picked.forEach(function(id){usedGuidanceClusters[id]=true;});
-      return picked;
-    }
-    var orientationCandidates=clusterIdsForCards(packet,q,[33,22,16]);
-    var orientation=takeGuidance(orientationCandidates,1);
-    var decisionRiskCandidates=clusterIdsForCardsByPolarity(packet,q.concat([33,22,16]),[6,8,10,11,21,23,36],['negative','mixed']);
-    var valueRiskCandidates=clusterIdsForCardsByPolarity(packet,[24,35],[6,8,10,11,21,23,36],['negative','mixed']);
-    var riskGuidance=takeGuidance(decisionRiskCandidates,1).concat(takeGuidance(valueRiskCandidates,1));
-    var constructiveCandidates=clusterIdsForCardsByPolarity(packet,[33,22,16,24,35],[2,4,5,9,17,18,31,32],['positive']);
-    var constructive=takeGuidance(constructiveCandidates,2);
-    if(orientation.length&&constructive.length){
-      plan.status=riskGuidance.length?'guidance_supported_with_interference':'guidance_supported';
-      plan.certaintyCap=riskGuidance.length?'較有可釐清方向，但干擾明顯':'較有可釐清方向';
-      addApprovedClaim(plan,'目前不是完全沒有方向；牌面支持仍有可被釐清的方向線索。',orientation);
-    }else if(orientation.length){
-      plan.status='guidance_signal_without_support';plan.certaintyCap='有方向線索，但可行支點不足';
-      addApprovedClaim(plan,'牌面有方向或解答線索，但不足以指定可持續的具體方向。',orientation);
-    }else{
-      plan.status='guidance_direction_insufficient';plan.certaintyCap=riskGuidance.length?'迷茫與干擾明顯，方向證據不足':'不足以明確指定方向';
-      addApprovedClaim(plan,'目前核心證據不足以指定明確人生方向。',[]);
-    }
-    if(riskGuidance.length){var riskText=guidanceRiskText(cardIdsForClusterIds(packet,riskGuidance));addApprovedClaim(plan,riskText+'正在干擾判斷；只能描述干擾類型，不能推成事件或因果。',riskGuidance);}
-    if(constructive.length)addApprovedClaim(plan,guidancePrincipleText(cardIdsForClusterIds(packet,constructive)),constructive);
-    else addApprovedClaim(plan,'目前沒有足夠正向核心證據提出更具體的選擇原則。',[]);
-    addApprovedClaim(plan,'牌面不能指定唯一人生使命、職業、期限，也不能保證某條道路成功。',[]);
-    plan.forbiddenClaims=['指定唯一職業或人生使命','要求離職、分手、搬家、投資或其他具體處置','未啟用規則下的先後流程、時間或因果','把 selected_context 單獨升級成建議','保證某條路成功'];return plan;
-  }
-  if(type==='business_success'){
-    var businessLink=clusterIdsForCards(packet,q,[14,34,35]);
-    var outcome=clusterIdsForCardsByPolarity(packet,[14,31,34,35],[5,9,16,17,20,32,33],['positive']);
-    var risk=clusterIdsForCards(packet,[14,34,35].concat(q),HARD_NEGATIVE_IDS);
-    if(outcome.length){plan.status=risk.length?'business_success_conditions_mixed':'business_success_conditions_supported';plan.certaintyCap=risk.length?'較有成功條件，但阻礙明顯':'較有成功傾向';addApprovedClaim(plan,'副業具備可持續成功的支持條件，但只代表本次牌面的傾向。',rankAndLimitClusterIds(packet,outcome,2));}
-    else if(businessLink.length){plan.status='business_link_without_outcome';plan.certaintyCap='副業連結明確，成功結果不足';addApprovedClaim(plan,'牌面能確認副業／商業連結，但不足以直接判定成功。',businessLink);}
-    else{plan.status='business_success_insufficient';plan.certaintyCap='不足以明確判定';addApprovedClaim(plan,'目前核心證據不足以判定副業成功。',[]);}
-    if(risk.length)addApprovedClaim(plan,'阻礙、損耗、不明或反覆會削弱成功條件。',rankAndLimitClusterIds(packet,risk,2));
-    plan.forbiddenClaims=['有收入等於成功','副業成功等於清償負債','自行補入毛利、庫存、廣告、折扣、客單價或成交來源策略','具體成功時間'];return plan;
-  }
-  if(type==='debt_clearance'){
-    var improve=clusterIdsForCardsByPolarity(packet,[15,34],[5,31,33,35],['positive']);
-    var ending=clusterIdsForCards(packet,[15,34,36,23],[8,10]);
-    var debtRisk=clusterIdsForCardsByPolarity(packet,[15,34,36,23].concat(q),[6,11,21,23,36],['negative','mixed']);
-    if(improve.length&&ending.length){plan.status=debtRisk.length?'debt_clearance_possible_with_risk':'debt_clearance_possible';plan.certaintyCap='有清償條件，但不能確認必然歸零';addApprovedClaim(plan,'資源改善與債務壓力切減兩類核心支持同時存在，可說有完全清償的條件。',uniqueStrings(rankAndLimitClusterIds(packet,improve,1).concat(rankAndLimitClusterIds(packet,ending,1))));}
-    else if(ending.length){plan.status='debt_cut_only';plan.certaintyCap='有切減債務壓力的必要，仍不足以確認清空';addApprovedClaim(plan,'牌面支持切減財務負擔，但沒有足夠資源改善證據證明負債能完全歸零。',rankAndLimitClusterIds(packet,ending,1));}
-    else{plan.status='debt_clearance_insufficient';plan.certaintyCap='不足以確認負債完全清空';addApprovedClaim(plan,'收入或財務連結不能代替負債歸零；目前缺少完整清償條件。',rankAndLimitClusterIds(packet,improve,1));}
-    if(debtRisk.length)addApprovedClaim(plan,'阻礙、損耗或反覆使清償結果仍受壓。',rankAndLimitClusterIds(packet,debtRisk,2));
-    plan.forbiddenClaims=['副業成功等於負債歸零','熊或鐮刀單獨等於還清','具體還款金額、比例或期限'];return plan;
-  }
-  if(type==='positive_net_worth'){
-    var growth=clusterIdsForCardsByPolarity(packet,[34,15,35],[4,5,31,33],['positive']);
-    var netRisk=clusterIdsForCards(packet,[34,15,35].concat(q),[11,21,23,36]);
-    if(growth.length){plan.status=netRisk.length?'positive_net_worth_conditions_mixed':'positive_net_worth_conditions_supported';plan.certaintyCap=netRisk.length?'有轉為正資產的條件，但反證明顯':'較有轉為正資產的條件';addApprovedClaim(plan,'資源成長與穩定核心支持正資產方向，但不等於已經轉正。',rankAndLimitClusterIds(packet,growth,2));}
-    else{plan.status='positive_net_worth_insufficient';plan.certaintyCap='不足以確認正資產';addApprovedClaim(plan,'目前缺少足夠的資源成長與穩定證據，不能確認資產已能大於負債。',[]);}
-    if(netRisk.length)addApprovedClaim(plan,'損耗、阻礙、反覆或負擔會抵銷資產累積。',rankAndLimitClusterIds(packet,netRisk,2));
-    plan.forbiddenClaims=['清債等於正資產','收入等於正資產','具體淨資產金額或比率','已經轉正'];return plan;
-  }
-  if(type==='finance'){
-    var resource=clusterIdsForCards(packet,q.concat([34,15]),[31,33,35,5]);
-    var fr=clusterIdsForCards(packet,q.concat([34,15]),[6,11,21,23,36]);
-    if(resource.length){plan.certaintyCap=fr.length?'財務改善條件與反證並存':'較有財務改善條件';addApprovedClaim(plan,'牌面支持資源改善或穩定條件。',resource);}else addApprovedClaim(plan,'目前不足以明確判定財務改善。',[]);
-    if(fr.length)addApprovedClaim(plan,'阻礙、損耗、負擔或反覆會削弱財務改善。',fr);
-    plan.forbiddenClaims=['財務自由','負債歸零','正資產','具體金額、期限或投資指令'];return plan;
-  }
-
-  if(type==='attraction_opportunity'){
-    var usedAttraction={},personBridge=clusterIdsByRole(packet,['person_bridge']),directAttraction=clusterIdsByRole(packet,['attraction_support']),attractionContext=clusterIdsByRole(packet,['attraction_context']);
-    var personPick=reserveClusterIds(packet,personBridge,usedAttraction,1),attractionPick=reserveClusterIds(packet,directAttraction,usedAttraction,1);
-    var aSupport=personPick.concat(attractionPick),aContext=[];
-    if(!attractionPick.length)aContext=reserveClusterIds(packet,attractionContext,usedAttraction,1);
-    var aRisk=reserveClusterIds(packet,clusterIdsByRole(packet,['risk']),usedAttraction,2);
-    if(personPick.length&&attractionPick.length){plan.status=aRisk.length?'attraction_supported_with_risk':'attraction_supported';plan.certaintyCap='較有桃花／吸引傾向';addApprovedClaim(plan,'牌面支持非現任桃花或吸引機會，但不證明具體真人已出現或雙方互有意圖。',aSupport);}
-    else if(attractionPick.length||aContext.length){plan.status='attraction_possible';plan.certaintyCap='有機會';addApprovedClaim(plan,'牌面有桃花／吸引主題，但人物間連結不足，只能說存在機會。',attractionPick.concat(aContext));}
-    else{plan.status='attraction_insufficient';plan.certaintyCap='不足以明確判定';addApprovedClaim(plan,'牌面不足以明確支持非現任桃花。',[]);}
-    if(aRisk.length)addApprovedClaim(plan,'阻礙、不明或中止因素會削弱桃花落實。',aRisk);
-    addApprovedClaim(plan,'假設性人物焦點不證明真人目前已出現。',[]);plan.forbiddenClaims=['互相注意','她已經出現','已經曖昧','一定會交往','肉體關係已發生','把淑女＋太陽寫成有人正在注意問卜者'];return plan;
-  }
-  if(type==='sexual_component'){
-    var usedSex={},sexSupport=reserveClusterIds(packet,clusterIdsByRole(packet,['sexual_support']),usedSex,2),modifierOnly=reserveClusterIds(packet,clusterIdsByRole(packet,['sexual_modifier_only']),usedSex,1),sexRisk=reserveClusterIds(packet,clusterIdsByRole(packet,['risk']),usedSex,2);
-    if(sexSupport.length){plan.status='sexual_component_supported';plan.certaintyCap='較有肉體／性吸引傾向';addApprovedClaim(plan,'同一桃花／人物／關係焦點有百合等感官提示，可說較有肉體或感官成分。',sexSupport);}
-    else if(modifierOnly.length){plan.status='sexual_theme_unassigned';plan.certaintyCap='有誘惑／複雜主題，無法確認屬於該桃花';addApprovedClaim(plan,'牌面只有蛇所代表的誘惑／複雜修飾，缺少百合等獨立感官核心，不能判成該桃花有明顯性吸引。',modifierOnly);}
-    else{plan.status='sexual_component_insufficient';plan.certaintyCap='不足以明確判定';addApprovedClaim(plan,'一般桃花證據不能代替肉體／性吸引證據。',[]);}
-    if(sexRisk.length)addApprovedClaim(plan,'結束、阻礙、不明或負擔會限制感官／性成分的表現。',sexRisk);
-    plan.forbiddenClaims=['蛇單獨代表性吸引','問卜者＋蛇等於該桃花有性吸引','魚代表慾望','鞭子代表性行為','一般桃花等於肉體桃花','一定有性吸引'];return plan;
-  }
-  if(type==='sexual_event'){
-    var usedEvent={},eventSupport=reserveClusterIds(packet,clusterIdsByRole(packet,['event_support']),usedEvent,1),relationSupport=reserveClusterIds(packet,clusterIdsByRole(packet,['relation_support']),usedEvent,1),eventRisk=reserveClusterIds(packet,clusterIdsByRole(packet,['risk']),usedEvent,2);
-    if(eventSupport.length&&relationSupport.length){plan.status=eventRisk.length?'sexual_event_possible_with_risk':'sexual_event_possible';plan.certaintyCap='有落實機會但不能確定發生';addApprovedClaim(plan,'感官焦點與同一人物／關係落實各有獨立支持，可說存在事件落實機會，但不能斷成必然發生。',eventSupport.concat(relationSupport));}
-    else{plan.status='sexual_event_insufficient';plan.certaintyCap='不足以判定實際發生';addApprovedClaim(plan,'吸引或性成分不等於實際肉體關係；目前缺少把感官焦點與同一人物／關係落實連在一起的獨立證據。',[]);}
-    if(eventRisk.length)addApprovedClaim(plan,'阻礙、不明、負擔或切斷會降低事件落實。',eventRisk);
-    plan.forbiddenClaims=['把不同位置的性提示與關係牌拼成事件','一定會上床','已發生性關係','具體次數','具體時間'];return plan;
-  }
-  if(type==='career_fit'){
-    var hasWork=packetHasCoreStructure(packet,q,[14,35,19]), hasSupport=packetHasCoreStructure(packet,[14,35],[4,5,30,24,33]), hasStrain=packetHasNegativeAround(packet,q.concat([14,35]));
-    if(!hasWork){plan.status='insufficient_fit';plan.certaintyCap='牌面不足以明確判定';addApprovedClaim(plan,'只能描述工作環境訊號，不能斷定適合。',[]);}
-    else if(hasSupport&&hasStrain){plan.status='mixed_fit';plan.certaintyCap='有適配傾向但反證明顯';addApprovedClaim(plan,'可在此類工作結構中立足，但舒適度與長期適配存在明顯矛盾。',packet.clusters.map(function(x){return x.id;}));}
-    else if(hasSupport){plan.status='supported_fit';plan.certaintyCap='較有適合傾向';addApprovedClaim(plan,'較適合此類工作結構，但不是唯一或絕對最適合。',packet.clusters.map(function(x){return x.id;}));}
-    else{plan.status='work_link_only';plan.certaintyCap='工作連結明確，適配性未定';addApprovedClaim(plan,'與工作／機構有連結，不等於整體適合。',packet.clusters.map(function(x){return x.id;}));}
-    plan.forbiddenClaims=['仍在職等於適合','穩定等於舒服','機構連結等於天職'];return plan;
-  }
-  if(type==='career_promotion'){
-    var change=packetHasCoreStructure(packet,[17],q.concat([14,35,19,15])), authority=packetHasCoreStructure(packet,[19,15],q.concat([14,35,17])), confirm=packetHasCoreStructure(packet,[31,33,27,1,32],q.concat([14,35,17,19,15])), prisk=packetHasNegativeAround(packet,[17,19,15,14,35].concat(q));
-    if(!change){plan.status='insufficient_promotion_change';plan.certaintyCap='牌面不足以判定會升遷';addApprovedClaim(plan,'可描述組織內位置或責任，但缺少職位／權責向上變動。',[]);}
-    else if(authority||confirm){plan.status=prisk?'promotion_possible_with_risk':'promotion_possible';plan.certaintyCap='有升遷機會';addApprovedClaim(plan,'有職位變動與權威／確認支持，可說有升遷機會。',packet.clusters.map(function(x){return x.id;}));}
-    else{plan.status='change_without_promotion_confirmation';plan.certaintyCap='有職場變動，不能確定是升遷';addApprovedClaim(plan,'變動不等於向上升遷。',packet.clusters.map(function(x){return x.id;}));}
-    plan.forbiddenClaims=['被重視等於升遷','塔或鑰匙單獨等於升職'];return plan;
-  }
-  if(type==='health_symbolic_context'){plan.status='symbolic_health_only';plan.certaintyCap='可能';addApprovedClaim(plan,'可分析反覆、阻礙、耗損、壓力與生活脈絡的象徵狀態。',packet.clusters.map(function(x){return x.id;}));addApprovedClaim(plan,'象徵狀態不得寫成醫學病因。',[]);plan.forbiddenClaims=['診斷','病因','藥效','治療效果'];return plan;}
-  addApprovedClaim(plan,'依核心證據與反證給出不超過 certainty_cap 的結論。',packet.clusters.map(function(x){return x.id;}));return plan;
+function buildClaimPlan(packet, declaredGender, blockedUids) {
+  var type=primaryDecisionType(packet.question.types||[packet.question.type]);
+  var limitPlan={status:'model_evaluate',certaintyCap:'不足以明確判定',requiredConclusion:'只輸出程式核准的主張。',approvedClaims:[],forbiddenClaims:[],claimEvidence:[]};
+  if(type==='comparison_suitability'){limitPlan.status='comparison_requires_symmetric_nine';limitPlan.certaintyCap='無法由大牌陣公平比較';addApprovedClaim(limitPlan,'目前牌陣沒有為兩個選項建立抽牌前對稱位置，不能公平比較。',[]);return limitPlan;}
+  if(type==='unsupported_age'){limitPlan.status='unsupported_age';limitPlan.certaintyCap='不足以判定';limitPlan.requiredConclusion='直接回答數字年齡與區間無法驗證。';addApprovedClaim(limitPlan,'無 age_rules，無法判定數字年齡或年齡區間。',[]);return limitPlan;}
+  if(type==='timing'){limitPlan.status='timing_rules_not_enabled';limitPlan.certaintyCap='不足以判定具體時間';limitPlan.requiredConclusion='直接回答本站未啟用時間規則。';addApprovedClaim(limitPlan,'本次無法由牌面判定年、月、週、日或先後階段。',[]);return limitPlan;}
+  if(type==='health_medical_cause'){limitPlan.status='medical_limit';limitPlan.certaintyCap='不足以判定';limitPlan.requiredConclusion='直接說明牌面不能判定醫學病因、診斷或治療。';addApprovedClaim(limitPlan,'牌面無法判定醫學病因、診斷、藥效或治療結果。',[]);return limitPlan;}
+  var compiled=compileFormulaClaimPlan(packet,declaredGender,blockedUids||{});
+  if(compiled)return compiled;
+  // 未建立公式的命題一律保守封閉，不再使用可包辦所有內容的通用A1。
+  limitPlan.status='no_formula_for_proposition';limitPlan.certaintyCap='不足以形成受控結論';
+  addApprovedClaim(limitPlan,'本站目前沒有為此命題建立可驗證的固定 gate 公式，因此不輸出具體結論。',[]);
+  limitPlan.forbiddenClaims=['任何由散牌、長線、房屋、鏡像或直覺自行補出的結論'];return limitPlan;
 }
 
 
@@ -1482,11 +1273,22 @@ function validateEvidencePacket(packet) {
   if (type === 'timing' && packet.structures.length) errors.push('timing_packet_has_evidence');
   var claimClusterUse={};
   (packet.claimPlan&&packet.claimPlan.claimEvidence||[]).forEach(function(link){(link.clusters||[]).forEach(function(cid){if(!packet.clusters.some(function(c){return c.id===cid;}))errors.push('claim_unknown_cluster:'+cid);claimClusterUse[cid]=(claimClusterUse[cid]||0)+1;});});
-  if(type==='life_guidance'||type==='attraction_opportunity'||type==='sexual_component'||type==='sexual_event'){
-    if(type==='life_guidance'&&packet.claimPlan.status==='model_evaluate')errors.push('life_guidance_uses_generic_plan');
+  var formula=_lnFormulaForType(type);
+  if(formula){
+    if(packet.claimPlan.status==='model_evaluate')errors.push(type+'_uses_generic_plan');
     Object.keys(claimClusterUse).forEach(function(cid){if(claimClusterUse[cid]>1)errors.push(type+'_cluster_reused:'+cid);});
-    (packet.claimPlan.claimEvidence||[]).forEach(function(link){if((link.clusters||[]).length>2)errors.push(type+'_claim_overlinked');});
+    (packet.claimPlan.claimEvidence||[]).forEach(function(link){
+      var max=link.claimIndex===1?Math.max(1,(formula.required||[]).length):1;
+      if((link.clusters||[]).length>max)errors.push(type+'_claim_overlinked');
+    });
   }
+  (packet.clusters||[]).forEach(function(c){
+    if((c.refs||[]).length!==1||(c.structures||[]).length!==1)errors.push(c.id+':non_atomic_cluster');
+    if(c.confidenceEligible&&_lnClusterStructure(c).kind!=='adjacency')errors.push(c.id+':non_adjacent_confidence');
+  });
+  (packet.claimPlan&&packet.claimPlan.claimEvidence||[]).forEach(function(link){(link.clusters||[]).forEach(function(cid){
+    var c=(packet.clusters||[]).filter(function(z){return z.id===cid;})[0];if(c&&!c.confidenceEligible)errors.push('claim_uses_context_window:'+cid);
+  });});
   if (!packet.claimPlan || !packet.claimPlan.status || !packet.claimPlan.certaintyCap) errors.push('missing_claim_plan');
   return { ok:errors.length === 0, errors:errors };
 }
@@ -1518,9 +1320,9 @@ function buildEvidenceAwareAnalysisRequirements(packet) {
   var clusters=approvedView.clusters;
   var cardIds=uniqueNumbers((approvedView.structures||[]).reduce(function(out,st){return out.concat(st.cardIds||[]);},[]));
   var claimTexts=(packet.claimPlan&&packet.claimPlan.approvedClaims||[]).join(' ');
-  var specialized=['attraction_opportunity','sexual_component','sexual_event'].indexOf(type)>-1;
-  var hasPositive=specialized?clusters.some(function(c){return ['person_bridge','attraction_support','attraction_context','sexual_support','event_support','relation_support'].indexOf(c.role)>-1;}):clusters.some(function(c){return c.polarity==='positive';});
-  var hasRisk=/阻礙|不明|中止|結束|切斷|負擔|損耗|限制|降低/.test(claimTexts)&&clusters.some(function(c){return c.role==='risk'||(!specialized&&(c.polarity==='negative'||c.polarity==='mixed'));});
+  // 深度開關直接讀程式已編譯的結果，不再用另一套題型角色／極性表猜測主結論是否成立。
+  var hasPositive=packet.claimPlan&&packet.claimPlan.formulaOutcome==='success';
+  var hasRisk=/阻礙|不明|中止|結束|切斷|負擔|損耗|限制|降低/.test(claimTexts)&&clusters.some(function(c){return c.role==='risk';});
   var hasContradiction=hasPositive&&hasRisk,hasRepetition=/反覆/.test(claimTexts)&&cardIds.indexOf(11)>-1;
   var min=1,max=3;
   if(type==='business_success'){min=2;max=4;}
@@ -1578,6 +1380,35 @@ function appendStoneRecommendationPrompt(lines, question, questions, evidenceSou
   lines.push('</stone_recommendation>');
 }
 
+
+function claimEvidenceUids(packet, link) {
+  var out=[];
+  (link&&link.clusters||[]).forEach(function(cid){
+    var c=(packet.clusters||[]).filter(function(z){return z.id===cid;})[0],st=_lnClusterStructure(c);
+    if(st&&st.kind==='adjacency')out.push(_lnStructureUid(st));
+  });
+  return uniqueStrings(out);
+}
+function collectApprovedEvidenceLedger(packetItems) {
+  var map={};
+  (packetItems||[]).forEach(function(entry){
+    var packet=entry.packet;
+    (packet.claimPlan&&packet.claimPlan.claimEvidence||[]).forEach(function(link){
+      claimEvidenceUids(packet,link).forEach(function(uid){
+        var c=(packet.clusters||[]).filter(function(z){var st=_lnClusterStructure(z);return st&&_lnStructureUid(st)===uid;})[0];
+        var st=_lnClusterStructure(c);if(!st)return;
+        if(!map[uid])map[uid]={uid:uid,structure:st,propositions:[],claims:[]};
+        if(map[uid].propositions.indexOf(packet.question.id)<0)map[uid].propositions.push(packet.question.id);
+        map[uid].claims.push(packet.question.id+':A'+link.claimIndex);
+      });
+    });
+  });
+  return Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){
+    var na=parseInt(String(a.uid).replace(/\D/g,''),10)||0,nb=parseInt(String(b.uid).replace(/\D/g,''),10)||0;
+    return na-nb||String(a.uid).localeCompare(String(b.uid));
+  });
+}
+
 function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   var sp=SPREADS[spreadId], q=String(question||'').trim(), lines=[], isGT=spreadId==='grand'&&drawn.length===36, stoneEvidence=drawn;
   function cardLabel(c){return c.id+'.'+c.name;}
@@ -1587,13 +1418,13 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   questions.forEach(function(item){(item.types||[item.type]).forEach(function(type){typeSet[type]=true;});});
 
   lines.push('# 最高規則');
-  lines.push('你是本站 Petit Lenormand v7.5 原子證據解讀器。第一句依 proposition 順序直接回答。');
-  lines.push('只輸出 claim_plan 核准的主張；certainty_cap 只能維持或降低。每項主張只能使用 claim_evidence 指定且未被其他主張占用的C；同一C與同一evidence_uid全題只計一次。');
-  lines.push('selected_context只描述已成立主張的樣貌，不新增結論。D／S／C、脈絡、牌號、座標與房屋均不自行表示時間、因果、互相意圖或事件已發生。');
+  lines.push('你是本站 Petit Lenormand v8.0 固定公式解讀器。第一句依 proposition 順序直接回答。');
+  lines.push('只輸出 claim_plan 核准的主張；certainty_cap 只能維持或降低。每項主張只能轉寫 claim_plan；claim_evidence 只引用全題 evidence_ledger 中的直接相鄰牌對。同一牌對只登錄、只計權一次；相依命題重複引用不得提高確定度。');
+  lines.push('直接相鄰D是唯一可提高結論強度的證據；連續三張S只是語境且不進入claim_evidence。牌號、座標、房屋、鏡像、騎士跳與長線均不自行表示時間、因果、意圖或事件。');
   if(questions.some(function(item){return !!item.timeScope;}))lines.push('time_scope只固定使用者明示的評估範圍，可在結論中原樣回應「今年／本月」；不得縮小、延伸或換算成日期與先後階段。');
   lines.push('沒有證據的 analysis_requirements 直接省略；不得自行補入 claim_plan 未批准的具體行動、期限、金額、人物或事件。');
   lines.push('固定負向語義：棺材＝結束；鐮刀＝切斷；山＝阻礙；老鼠＝損耗；十字架＝負擔；雲＝不明；鞭子＝衝突／反覆。');
-  lines.push('<method_scope>館藏可核實36張牌組與4頁說明；4×8+4及人物牌附近閱讀採保存說明書傳統。approved_dictionary是本站受控的現代工作詞典，不冒充原始說明書逐字牌義或唯一現代標準。D／S／C、房屋、鏡像、騎士跳、門檻與計分皆為本站規約。</method_scope>');
+  lines.push('<method_scope>館藏可核實36張牌組與4頁說明；保存說明書明載4×8+4及由人物牌附近敘事。原始資料沒有一套涵蓋所有現代題型的官方公式；本站因此明示採固定工程公式：直接相鄰為結論證據、三張窗只作語境、每個 required gate 必須由不同直接證據成立。approved_dictionary 是本站受控的現代工作詞典；命題門檻亦為本站規約。</method_scope>');
   var boundaryExamples=[];
   if(typeSet.timing)boundaryExamples.push('timing_rules=false：回答無法判定具體時間，不以牌號或座標猜日期。');
   if(typeSet.business_success||typeSet.finance||typeSet.debt_clearance||typeSet.positive_net_worth)boundaryExamples.push('收入或副業成功不等於負債歸零，也不等於正資產。');
@@ -1615,8 +1446,9 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   if(typeSet.unsupported_age){lines.push('無 age_rules：數字年齡與區間直接回答無法驗證，不得附牌面側證。');lines.push('');}
   if(typeSet.health_medical_cause){lines.push('醫學病因命題不得使用牌面作原因、診斷或治療；若另有 health_symbolic_context，只能作非醫療的象徵性深讀。');lines.push('');}
 
-  lines.push('<reading_request method_profile="site_petit_lenormand_v7_5_atomic_evidence">');
+  lines.push('<reading_request method_profile="site_petit_lenormand_v8_0_canonical_formula">');
   lines.push('<question_original>'+xmlEscape(q||'未指定具體問題')+'</question_original>');
+  lines.push('<formula_contract id="'+CANONICAL_READING_FORMULA.id+'" evidence_unit="direct_adjacency" context_unit="three_card_nonvoting" compound_rule="distinct_uid_per_required_gate" ledger_rule="one_pair_one_vote_shared_reference_no_boost"></formula_contract>');
   lines.push('<propositions>');
   questions.forEach(function(item){
     if(item.type==='comparison_suitability' && item.options && item.options.length===2) lines.push('<proposition id="'+item.id+'" parent="'+item.parentId+'" type="comparison_suitability" target_scope="option_comparison" option_a="'+xmlEscape(item.options[0])+'" option_b="'+xmlEscape(item.options[1])+'">'+xmlEscape(item.text)+'</proposition>');
@@ -1651,12 +1483,16 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
     var geometry=buildGrandGeometry(drawn), globalUsedCards={};
     var packetItems=questions.map(function(item){var packet=buildEvidencePacket(geometry,item,declaredGender);return{item:item,packet:packet};});
     assignGlobalEvidenceUids(packetItems);
-    enforceGlobalClaimEvidenceUniqueness(packetItems);
+    buildGlobalEvidenceLedger(packetItems,declaredGender);
     packetItems.forEach(function(entry){entry.promptView=buildApprovedEvidenceView(entry.packet);Object.keys(entry.promptView.usedCards).forEach(function(id){globalUsedCards[id]=entry.promptView.usedCards[id];});});
+    var evidenceLedger=collectApprovedEvidenceLedger(packetItems);
+    lines.push('<evidence_ledger counting="one_physical_pair_one_vote" reuse="dependent_claim_reference_only">');
+    evidenceLedger.forEach(function(e){lines.push('<evidence id="'+e.uid+'" propositions="'+e.propositions.join(',')+'">'+e.structure.positions.map(function(p){return cardLabel(p.card);}).join(' & ')+'</evidence>');});
+    lines.push('</evidence_ledger>');
     stoneEvidence=packetItems;
     packetItems.forEach(function(entry){
       var item=entry.item,packet=entry.packet,type=item.type,policy=CLAIM_POLICIES[type];
-      lines.push('<evidence_packet proposition_id="'+item.id+'" type="'+type+'" target_scope="'+item.targetScope+'">');
+      lines.push('<evidence_packet proposition_id="'+item.id+'" type="'+type+'" target_scope="'+item.targetScope+'" formula="'+(packet.formulaId||CANONICAL_READING_FORMULA.id)+'">');
       lines.push('<question>'+xmlEscape(item.text)+'</question>');
       lines.push('<packet_validation status="'+(packet.validation&&packet.validation.ok?'pass':'fail')+'"></packet_validation>');
       if(roles.counterpart&&questionTypeDomain(type)==='relationship')lines.push('<role name="counterpart_significator" status="'+personStatusForScope(item.targetScope)+'">'+cardLabel(CARDS[roles.counterpart-1])+'</role>');
@@ -1664,27 +1500,11 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
       lines.push('<claim_plan status="'+packet.claimPlan.status+'" certainty_cap="'+xmlEscape(packet.claimPlan.certaintyCap)+'">');
       lines.push('<required_conclusion>'+xmlEscape(packet.claimPlan.requiredConclusion)+'</required_conclusion>');
       lines.push('<approved_claims>');packet.claimPlan.approvedClaims.forEach(function(x,idx){lines.push('<claim id="A'+(idx+1)+'">'+xmlEscape(x)+'</claim>');});lines.push('</approved_claims>');
-      if(packet.claimPlan.claimEvidence&&packet.claimPlan.claimEvidence.length){lines.push('<claim_evidence>');packet.claimPlan.claimEvidence.forEach(function(link){if(link.clusters&&link.clusters.length)lines.push('<support claim="A'+link.claimIndex+'" clusters="'+link.clusters.join(',')+'"></support>');else lines.push('<support claim="A'+link.claimIndex+'" basis="rule_limit"></support>');});lines.push('</claim_evidence>');}
+      if(packet.claimPlan.claimEvidence&&packet.claimPlan.claimEvidence.length){lines.push('<claim_evidence counting="shared_reference_does_not_add_confidence">');packet.claimPlan.claimEvidence.forEach(function(link){var uids=claimEvidenceUids(packet,link);if(uids.length)lines.push('<support claim="A'+link.claimIndex+'" evidence="'+uids.join(',')+'"></support>');else lines.push('<support claim="A'+link.claimIndex+'" basis="rule_limit"></support>');});lines.push('</claim_evidence>');}
       lines.push('<forbidden_claims>');packet.claimPlan.forbiddenClaims.forEach(function(x){lines.push('<claim>'+xmlEscape(x)+'</claim>');});lines.push('</forbidden_claims>');
       lines.push('</claim_plan>');
 
       var promptView=entry.promptView||buildApprovedEvidenceView(packet);
-      if(promptView.structures.length){
-        lines.push('<approved_evidence_scope rule="only_claim_linked">');
-        lines.push('<evidence_catalog>');
-        promptView.structures.forEach(function(st){lines.push(st.id+' uid='+(st.evidenceUid||'local')+' '+st.positions.map(function(p){return cardLabel(p.card);}).join(st.kind==='adjacency'?' & ':' > '));});
-        lines.push('</evidence_catalog>');
-        lines.push('<core_clusters confidence_counting="one_per_cluster">');
-        promptView.clusters.forEach(function(c){lines.push('<cluster id="'+c.id+'" kind="'+c.kind+'" evidence_role="'+xmlEscape(c.role||'neutral')+'" polarity="'+c.polarity+'" refs="'+c.refs.filter(function(ref){return promptView.structures.some(function(st){return st.id===ref;});}).join(',')+'">'+xmlEscape(c.theme)+'</cluster>');});
-        lines.push('</core_clusters>');
-        lines.push('</approved_evidence_scope>');
-      }
-
-      if(promptView.clusterThemes.length){
-        lines.push('<selected_context certainty_effect="none" scope="approved_clusters_only">');
-        promptView.clusterThemes.forEach(function(t,idx){lines.push('T'+(idx+1)+' cluster='+t.clusterId+' '+t.label+'='+t.positions.map(function(p){return cardLabel(p.card);}).join('、'));});
-        lines.push('</selected_context>');
-      }
       if(type==='unsupported_age'||type==='health_medical_cause'||type==='timing'){
         lines.push('<analysis_requirements mode="necessary_limit_only"></analysis_requirements>');
       }else{
@@ -1711,8 +1531,8 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
     lines.push('比較題第一句直接說A、B哪個較適合，或明說差距不足；正文依序處理A、B、共同決策核心與取捨。');
     lines.push('比較證據引用：O-A／O-B寫選項位置；X-C寫中央共同軸；X1／X2／X3寫完整左右配對列。');
   }
-  lines.push('正文只展開各題 analysis_requirements 中實際啟用的項目；每個判斷都要能回指批准證據，沒有證據就明說不足或省略。');
-  lines.push('每段只處理一項 approved_claim；末尾僅列該 claim_evidence 的證據。D寫牌對、S寫完整線段；同一C內多個D／S只能整合成一組證據，不得拆成多份信心，不得輸出uid。');
+  lines.push('正文逐項轉寫 approved_claims；不得新增主張。每個有證據的主張只能引用 claim_evidence 指向的 evidence_ledger 直接相鄰牌對。');
+  lines.push('每段只處理一項 approved_claim；末尾只列實際使用的牌對名稱。相同 evidence 即使被相依命題引用，仍只算一票，不得寫成多份信心；不得輸出 evidence id。');
   lines.push('正文使用繁體中文與台灣用語，不寫座標、排數、演算法、分數或內部檢查。');
   lines.push('');
   lines.push('<presentation_footer mode="interpretation_aligned">');
@@ -2037,10 +1857,16 @@ window.__JY_LN_TEST__ = {
   buildEvidencePacket: buildEvidencePacket,
   buildApprovedEvidenceView: buildApprovedEvidenceView,
   assignGlobalEvidenceUids: assignGlobalEvidenceUids,
+  buildGlobalEvidenceLedger: buildGlobalEvidenceLedger,
   enforceGlobalClaimEvidenceUniqueness: enforceGlobalClaimEvidenceUniqueness,
   buildClaimPlan: buildClaimPlan,
-  structureEvidenceRole: structureEvidenceRole,
-  clusterIdsByRole: clusterIdsByRole,
+  compileFormulaClaimPlan: compileFormulaClaimPlan,
+  canonicalFormula: CANONICAL_READING_FORMULA,
+  propositionFormulas: PROPOSITION_FORMULAS,
+  formulaGroups: FORMULA_GROUPS,
+  buildQuestionFocusProfile: buildQuestionFocusProfile,
+  collectApprovedEvidenceLedger: collectApprovedEvidenceLedger,
+  claimEvidenceUids: claimEvidenceUids,
   validateEvidencePacket: validateEvidencePacket,
   buildModernContext: buildModernContext,
   analysisDimensionsFor: analysisDimensionsFor,
