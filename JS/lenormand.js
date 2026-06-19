@@ -1,12 +1,14 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v3.14
-// v3.14(2026/6/19・index v86_37)：Gemini 複製後導覽流程重構，並恢復固定檔名 JS/lenormand.js。
-//   ①移除 Gemini 的 pointerdown 複製與 document.execCommand('copy')。該舊流程會在 Android／Samsung 瀏覽器
-//     先觸發剪貼簿權限視窗，吃掉後續 click，使畫面只閃一下而未進入 Gemini。
-//   ②Gemini 現在只有單一 click 入口：preventDefault → navigator.clipboard.writeText(prompt) → Promise 完成後
-//     window.location.assign(官方 Gemini 網頁)。同頁導覽不受 popup blocker 限制；複製失敗仍會直接進 Gemini。
+// 靜月之光 — 雷諾曼牌 Lenormand v3.15
+// v3.15(2026/6/19・index v86_38)：Gemini Android／PWA 導覽根治，實體檔名固定 JS/lenormand.js。
+//   ①Gemini 不再使用 navigator.clipboard、Promise、preventDefault、location.assign 或 window.open。
+//     點擊事件內只做同步 document.execCommand('copy')，隨後由真實 <a href> 的瀏覽器預設行為導覽。
+//     因此不再跳出剪貼簿權限詢問，也不會因非同步回呼失去使用者手勢。
+//   ②Android 依瀏覽器／Samsung 裝置產生 intent://，明確指定實體瀏覽器套件載入 gemini.google.com，
+//     避免 Gemini App Link 接管後白畫面閃退；Samsung Internet 使用官方套件 com.sec.android.app.sbrowser，
+//     Chrome 使用 com.android.chrome，並保留 HTTPS browser_fallback_url。
 //   ③五張線維持固定六軌網格：上排 3 張、下排 2 張，兩排共用同一幾何中心。
-//   ④部署檔名固定為 JS/lenormand.js；更新時可直接覆蓋，不再使用 lenormand-vX.XX.js 實體檔名。
+//   ④部署檔名固定為 JS/lenormand.js；更新時直接覆蓋即可。
 // v3.10(2026/6/15・index v86_33)：根治「載入一致性」與「提示詞過長/位置」兩病根（前次稽核問題3+4），治本非補丁。
 //   ①新增單一條件源 _ctx（isTiming/isChoice/isInner/count）——特殊題型、應期、距離法全部只讀它，
 //     條件不再散在各處（舊狀：特殊題型 inline regex、應期無條件硬載＝補一個漏一個）。增刪題型只動 _ctx。
@@ -677,6 +679,35 @@ var AI_LIST = [
   {id:'perplexity',name:'Perplexity',url:'https://www.perplexity.ai/'}
 ];
 
+
+// v3.15：Gemini 必須進「網頁版瀏覽器」，不能被 Android 的 Gemini App Link 接管。
+// 真實 anchor 直接使用此 URL；不靠 Promise 回呼或程式化開窗。
+function _lnGeminiLaunchUrl() {
+  var web = 'https://gemini.google.com/app?hl=zh-TW';
+  var ua = String((navigator && navigator.userAgent) || '');
+  if (!/Android/i.test(ua)) return web;
+
+  var pkg = '';
+  // Samsung Internet 官方套件；standalone/PWA UA 可能只保留 Samsung 裝置型號，因此兩者都判斷。
+  if (/SamsungBrowser/i.test(ua) || /SM-[A-Z0-9-]+/i.test(ua)) {
+    pkg = 'com.sec.android.app.sbrowser';
+  } else if (/EdgA/i.test(ua)) {
+    pkg = 'com.microsoft.emmx';
+  } else if (/Chrome|Chromium|CriOS/i.test(ua)) {
+    pkg = 'com.android.chrome';
+  }
+
+  // 未能可靠辨識實體瀏覽器時維持標準 HTTPS，避免猜錯套件造成無法開啟。
+  if (!pkg) return web;
+
+  return 'intent://gemini.google.com/app?hl=zh-TW' +
+    '#Intent;scheme=https;' +
+    'action=android.intent.action.VIEW;' +
+    'category=android.intent.category.BROWSABLE;' +
+    'package=' + pkg + ';' +
+    'S.browser_fallback_url=' + encodeURIComponent(web) + ';end';
+}
+
 function _render() {
   // v3.2 根治：重繪會銷毀並重建 textarea——任何觸發 _render 的按鈕（牌陣/指示牌/性別/未來新增）
   //   都曾或將把使用者打到一半的問題刷掉。收口在唯一入口：重建前先把現值回存 _lnQuestion，
@@ -749,15 +780,15 @@ function _render() {
     for (var a=0;a<AI_LIST.length;a++) {
       var ai = AI_LIST[a];
       if (ai.id === 'gemini') {
-        // v3.14：Gemini 只綁 click。不得使用 pointerdown 或 execCommand，避免 Android 剪貼簿權限視窗吃掉導覽。
-        h += '<a class="ln-ai-sc" href="'+ai.url+'" rel="external noreferrer" onclick="return _lnCopyThenOpenGemini(event,this)" aria-label="複製提示詞並開啟 Gemini 網頁版">';
+        // v3.15：真實 intent/HTTPS anchor。onclick 只同步複製，不阻止瀏覽器預設導覽。
+        h += '<a class="ln-ai-sc" href="'+_lnGeminiLaunchUrl()+'" rel="noopener noreferrer" onclick="_lnCopyGeminiSync(this)" aria-label="複製提示詞並以瀏覽器開啟 Gemini 網頁版">';
       } else {
         h += '<a class="ln-ai-sc" href="'+ai.url+'" target="_blank" rel="external noopener noreferrer" onpointerdown="_lnPrimeAICopy(event,this)" onclick="_lnPrimeAICopy(event,this)" aria-label="複製提示詞並開啟 '+ai.name+' 網頁版">';
       }
       h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'">';
       h += '<span>'+ai.name+'</span></a>';
     }
-    h += '</div><div class="ln-ai-foot">點 Gemini：先完成提示詞複製，再直接進入官方網頁版</div></div>';
+    h += '</div><div class="ln-ai-foot">點 Gemini：同步複製後，由實體瀏覽器直接開啟官方網頁版</div></div>';
     h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_lenormandShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361</button></div>';
     h += '<div style="text-align:center"><button class="ln-reset-btn" onclick="_lnReset()">↺ 重新抽牌</button></div>';
   }
@@ -875,7 +906,7 @@ window._lnSigPickOpen = function () {
   (_getWrap() || document.body).appendChild(ov);
 };
 
-// 一鍵複製與非 Gemini AI 捷徑共用入口。Gemini 不走本段，改由 _lnCopyThenOpenGemini 單獨處理。
+// 一鍵複製與非 Gemini AI 捷徑共用入口。Gemini 走 _lnCopyGeminiSync 同步複製＋真實 anchor 導覽。
 // 非 Gemini AI 維持原生連結導覽；本段不執行 window.open、location.href 或 _render。
 function _lnLegacyCopy(text) {
   var ta = null;
@@ -925,44 +956,18 @@ window._lnCopy = function() {
   return false;
 };
 
-// v3.14：Gemini 專用單一路徑。只使用 Async Clipboard 寫入，不碰 clipboard.read、pointerdown 或 execCommand。
-// 同頁 location.assign 在 Promise 回呼中仍可正常導覽，不受新視窗 popup blocker 限制。
-window._lnCopyThenOpenGemini = function(ev, link) {
-  if (ev) {
-    ev.preventDefault();
-    ev.stopPropagation();
-  }
+// v3.15：Gemini 專用同步路徑。
+// 不呼叫 Clipboard API、不等待 Promise、不 preventDefault；同步複製完成後，anchor 立即依 href 導覽。
+window._lnCopyGeminiSync = function(link) {
+  if (!_lastPrompt || !link) return true;
 
-  var url = (link && link.href) ? link.href : 'https://gemini.google.com/app?hl=zh-TW';
-  var text = _lastPrompt || '';
-  var moved = false;
+  var copied = _lnLegacyCopy(_lastPrompt);
+  var label = link.querySelector('span');
+  if (label && copied) label.textContent = '已複製';
 
-  function goToGemini() {
-    if (moved) return;
-    moved = true;
-    window.location.assign(url);
-  }
-
-  if (!text) {
-    goToGemini();
-    return false;
-  }
-
-  // 使用者 click 內只呼叫 writeText。失敗也直接導覽；不退回 execCommand，避免剪貼簿權限視窗。
-  if (navigator.clipboard && window.isSecureContext && typeof navigator.clipboard.writeText === 'function') {
-    try {
-      var writeJob = navigator.clipboard.writeText(text);
-      if (writeJob && typeof writeJob.then === 'function') {
-        writeJob.then(goToGemini, goToGemini);
-        return false;
-      }
-    } catch (e) {}
-  }
-
-  // 僅供完全不支援 Async Clipboard 的舊瀏覽器。
-  _lnLegacyCopy(text);
-  goToGemini();
-  return false;
+  // 每次點擊重新產生，避免 UA／安裝模式改變後仍沿用舊網址。
+  link.href = _lnGeminiLaunchUrl();
+  return true;
 };
 
 window._lnPrimeAICopy = function(ev, link) {
