@@ -1395,7 +1395,7 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260612v6_4" defer></script>
-<script src="JS/lenormand.js?v=20260619v88_9" defer></script>
+<script src="JS/lenormand.js?v=20260619v88_10" defer></script>
 <script src="JS/ink-flow.js?v=20260618v2_1" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260618v80_41" defer></script>
@@ -1460,7 +1460,6 @@
 <!-- v88_4(2026/6/19)：雷諾曼 v5.4 人生建議命題／核准證據視圖／提示詞收斂根治——①「人生迷茫／方向／請給建議」獨立為 life_guidance，不再由 general 混入感情、商業、財務與成功結構。②移除可包辦全部結論的通用 A1，改成方向線索、實際干擾、象徵性篩選原則與未知邊界四類受控主張。③每項主張最多使用兩個 C，且不同主張不得重複使用同一 C。④ runtime prompt 只輸出 claim_evidence 核准的 C／D／S；selected_context 只保留核准 C 的主題摘要，不再輸出未綁定的鄰近、鏡像、騎士跳與交會。⑤人生建議分簇依證據角色與極性拆分，避免同一核心牌附近的無關人物、財務與公開牌被整包帶入。⑥ analysis_requirements 與水晶候選皆只讀核准證據；新增人生迷茫回歸與證據洩漏反例。動 JS/lenormand.js、index.html、JS/selftest-core.js；新增 LENORMAND_V7_4_AUDIT.md -->
 <!-- v88_5(2026/6/19)：雷諾曼 v5.5 性題證據歸屬／原子分簇／全題 evidence_uid 獨占根治——①桃花機會、感官／性成分、實際肉體事件維持三個獨立門檻；使用者明示「今年」只固定評估範圍，不授權日期推算。②百合明示為本站可選的現代感官提示；蛇僅作誘惑／複雜風險修飾，紳士＋蛇不得直接判定該假設桃花有性吸引。③ attraction／sexual_component／sexual_event 依人物連結、吸引支持、感官支持、關係落實與風險等證據角色原子分簇；長線需在限定間距內才可支撐主張。④每項主張最多兩個 C，正向與風險不得共用 C；全題相同實體 D／S 的 evidence_uid 只能由一項核准主張占用，避免跨命題重複灌票。⑤實際肉體事件必須有感官焦點與同一人物／關係落實的獨立支持，禁止把不同位置的性提示與關係牌事後拼接。⑥性題 runtime prompt 不再輸出 selected_context 重複摘要；新增蛇單獨、百合負牌、遠距長線、事件缺證及 250 組排列不變量測試。動 JS/lenormand.js、index.html、JS/selftest-core.js；新增 LENORMAND_V7_5_AUDIT.md -->
 <!-- v88_6(2026/6/19)：雷諾曼 v6.0 共用固定公式核心重構——①不再逐題補規則；全站改用同一判讀管線：命題→焦點→直接相鄰原子牌對→宣告式 gate→claim_plan→AI轉寫。②直接相鄰是唯一可提高確定度的證據；連續三張只作不加權語境；房屋、鏡像、騎士跳與長線不進主張。③事件／結果型結論必須由各 required gate 的不同 evidence_uid 同時成立；時間、年齡、醫療病因維持零牌面 fail-closed。④全題改用單一 evidence ledger：同一實體牌對只登錄、只計權一次；相依命題可引用但不得重複加權，根除「低階失敗、高階反而成立」的倒掛。⑤桃花以心／花束／月亮為核心訊號；百合才可作本站感官提示，蛇只作誘惑／複雜修飾；肉體事件需桃花、感官與接觸三個獨立牌對。⑥runtime prompt只輸出核准主張、最小證據帳本與必要詞典；移除selected_context、C資料牆與S長線。⑦取證池直接由同一份 proposition gate 展開，刪除第二套題型 core/support 牌表；gate 前不再截斷牌對。⑧自檢改為共同公式不變量與多題矩陣，不再替單一案例寫專屬測試。動 JS/lenormand.js、JS/selftest-core.js、index.html；新增 LENORMAND_V8_0_CORE_AUDIT.md -->
-<!-- v88_9(2026/6/19)：雷諾曼五張線視覺版面修正——結果頁與分享卡五張線統一為上3張、下2張；只改前端呈現，不改v10.0命題／證據／claim_plan編譯與牌序。動 JS/lenormand.js、JS/share-card.js、index.html -->
 <!-- v88_8(2026/6/19)：雷諾曼 v10.0 四牌陣統一編譯器根治。三張、五張、九張與36張全部先經同一命題／證據／claim_plan 編譯流程；三張建立2個相鄰牌對＋1個完整短句，五張建立4個相鄰牌對＋3個滑動短句，九張讀中心、中心十字與8條完整線，36張讀人物／主題焦點附近及全局結構。直接牌對D為主要語句，連續三張S為較低權重完整短句，重疊證據採折減而非刪除；正反整合輸出五級傾向。小牌陣不再缺claim_plan，未知題型不再因沒有逐題gate拒答。時間、年齡、醫療因果與hypothetical人物邊界維持。動 JS/lenormand.js、JS/selftest-core.js、index.html；新增 LENORMAND_V10_0_MULTISPREAD_AUDIT.md -->
 
 <!-- v87_0(2026/6/18)：雷諾曼提示詞 v4.0 架構重建——依《希望之遊戲》原始說明、1846近遠傳統與現代GT方法分層；人物牌恢復為大牌陣主要代表牌，自選非人物牌降為次要焦點；證據固定按直接相鄰→完整連續線→相關房屋→可選進階連結；移除無朝向資料卻判面向、固定格數遠近、牌號硬換時間、散牌硬湊；提示詞由11977字/370行縮至3400字/64行，保留完整36牌座標與必要上下文。動 lenormand.js/index -->
@@ -1588,5 +1587,7 @@
   </div>
 </footer>
 
+
+<!-- v88_10(2026/6/19)：雷諾曼五張線畫面排版修正——結果頁與分享卡統一為上3張、下2張置中；移除會因手機寬度造成斜位的單列/位移式排法。動 JS/lenormand.js、JS/share-card.js、index.html -->
 </body>
 </html>
