@@ -96,19 +96,24 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v7.0',
-        '分層組合公式核心重構',
-        'site_lenormand_layered_formula_v2',
-        'site_petit_lenormand_v9_0_layered_composition',
+        '雷諾曼牌 Lenormand v10.0',
+        '四牌陣統一編譯器核心重構',
+        'site_lenormand_multispread_formula_v3',
+        'site_petit_lenormand_v10_0_multispread_compiler',
         'direct_pair_weight_3',
         'contiguous_three_card_sentence_weight_2',
         'unique_support_risk_five_level',
+        'select_top_unique_support_and_risk_with_overlap_discount',
+        'spread_modes="three_five_nine_grand"',
         'one_physical_structure_one_entry',
+        'function buildSpreadGeometry',
         'function compileLayeredClaimPlan',
         'function _lnSelectLayeredEvidence',
         'function _lnStructureScore',
         'action_effectiveness',
         'decision_suitability',
+        'outcome_tendency',
+        'risk_guidance',
         'attraction_opportunity',
         'sexual_component',
         'sexual_event',
@@ -141,6 +146,8 @@
       mustNot: [
         'site_petit_lenormand_v8_0_canonical_formula',
         'site_lenormand_canonical_formula_v1',
+        'site_lenormand_layered_formula_v2',
+        'site_petit_lenormand_v9_0_layered_composition',
         'direct_adjacency',
         'three_card_nonvoting',
         'distinct_uid_per_required_gate',
@@ -257,7 +264,7 @@
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
     }
 
-    // ⑦雷諾曼 v7.0 分層組合公式／通用語義核心
+    // ⑦雷諾曼 v10.0 四牌陣統一編譯器／通用語義核心
     var ln = env.lenormandTest || root.__JY_LN_TEST__;
     if (ln && typeof ln.inferQuestionDimensions === 'function') {
       function idsToDraw(ids){ return ids.map(function(id){ return ln.cards[id - 1]; }); }
@@ -268,8 +275,8 @@
         for(var j=ids.length-1;j>0;j--){var k=Math.floor(rnd()*(j+1)),tmp=ids[j];ids[j]=ids[k];ids[k]=tmp;}
         return idsToDraw(ids);
       }
-      function buildEntries(question, draw){
-        var geom=ln.buildGrandGeometry(draw),items=ln.splitQuestionSegments(question);
+      function buildEntries(question, draw, spread){
+        var geom=ln.buildSpreadGeometry(draw,spread||'grand'),items=ln.splitQuestionSegments(question);
         var entries=items.filter(function(x){return x.type!=='comparison_suitability';}).map(function(item){return {item:item,packet:ln.buildEvidencePacket(geom,item,'male')};});
         ln.assignGlobalEvidenceUids(entries);ln.enforceGlobalClaimEvidenceUniqueness(entries,'male');
         return entries;
@@ -295,9 +302,30 @@
 
       var cf=ln.canonicalFormula;
       env.report('⑦雷諾曼核心公式','牌對D權重3、三張S權重2、五級正反整合',
-        cf.id==='site_lenormand_layered_formula_v2'&&cf.evidenceUnits.direct_pair.weight===3&&cf.evidenceUnits.three_card_sentence.weight===2&&cf.conclusionScale.length===5,JSON.stringify(cf));
+        cf.id==='site_lenormand_multispread_formula_v3'&&cf.evidenceUnits.direct_pair.weight===3&&cf.evidenceUnits.three_card_sentence.weight===2&&cf.conclusionScale.length===5,JSON.stringify(cf));
       env.report('⑦雷諾曼核心公式','不存在逐題 required gate 或 directOnly 公式',
         Object.keys(ln.propositionFormulas).every(function(k){var p=ln.propositionFormulas[k];return !p.required&&!p.gates;}),'profiles='+Object.keys(ln.propositionFormulas).length);
+
+      function uniqueAdjCount(g){var seen={};(g.adjacency||[]).forEach(function(e){(e.neighbors||[]).forEach(function(n){var a=Math.min(e.position.slot,n.slot),b=Math.max(e.position.slot,n.slot);seen[a+'-'+b]=1;});});return Object.keys(seen).length;}
+      var geo3=ln.buildSpreadGeometry(idsToDraw([36,14,8]),'three');
+      var geo5=ln.buildSpreadGeometry(idsToDraw([34,23,33,31,35]),'five');
+      var geo9=ln.buildSpreadGeometry(idsToDraw([24,12,6,18,25,21,32,35,36]),'nine');
+      var geo36=ln.buildSpreadGeometry(seededShuffle(99),'grand');
+      env.report('⑦雷諾曼四牌陣','三張幾何＝2牌對＋1完整短句',geo3.positions.length===3&&uniqueAdjCount(geo3)===2&&geo3.lines.length===1,'');
+      env.report('⑦雷諾曼四牌陣','五張幾何＝4相鄰牌對＋3個滑動三張窗',geo5.positions.length===5&&uniqueAdjCount(geo5)===4&&ln.buildEvidencePacket(geo5,ln.splitQuestionSegments('我副業該怎麼調整？')[0],'male').segments.length===3,'');
+      env.report('⑦雷諾曼四牌陣','九宮格＝中心焦點＋20相鄰關係＋8完整線',geo9.positions.length===9&&uniqueAdjCount(geo9)===20&&geo9.lines.length===8&&geo9.focusSlots[0]===5,'');
+      env.report('⑦雷諾曼四牌陣','36張維持4×8+4與完整幾何',geo36.positions.length===36&&geo36.spreadId==='grand'&&geo36.lines.length>20,'lines='+geo36.lines.length);
+
+      var daily='明天會一切順利嗎？需要注意什麼嗎？';
+      var dailySplit=ln.splitQuestionSegments(daily);
+      env.report('⑦雷諾曼語義解析','日常題拆成整體傾向＋風險提醒，並共享明天範圍',dailySplit.map(function(x){return x.type;}).join(',')==='outcome_tendency,risk_guidance'&&dailySplit.every(function(x){return x.timeScope&&x.timeScope.raw==='明天';}),JSON.stringify(dailySplit));
+      var dailyPrompt=ln.buildPrompt(daily,idsToDraw([36,14,8]),'three',null,'male');
+      env.report('⑦雷諾曼小牌陣編譯','三張牌自動產生claim_plan、D/S帳本與可解讀結論，不再只輸出drawn_cards',dailyPrompt.indexOf('outcome_tendency_strong_against')>-1&&dailyPrompt.indexOf('risk_guidance_strong_against')>-1&&dailyPrompt.indexOf('<claim_evidence')>-1&&dailyPrompt.indexOf('36.十字架 &amp; 14.狐狸')===-1,'len='+dailyPrompt.length);
+      var prompt5=ln.buildPrompt('我這個月副業該怎麼調整？',idsToDraw([34,23,33,31,35]),'five',null,'male');
+      var prompt9=ln.buildPrompt('現任對我是真心的嗎？這段關係會穩定嗎？',idsToDraw([24,12,6,18,25,21,32,35,36]),'nine',null,'male');
+      var prompt36=ln.buildPrompt('我副業未來整體能不能做起來？',seededShuffle(101),'grand',null,'male');
+      env.report('⑦雷諾曼深度契約','三／五／九／36張各有對應段落深度',dailyPrompt.indexOf('paragraph_range="2-3"')>-1&&prompt5.indexOf('paragraph_range="3-5"')>-1&&prompt9.indexOf('paragraph_range="3-6"')>-1&&prompt36.indexOf('paragraph_range="4-7"')>-1,'');
+      env.report('⑦雷諾曼版面脈絡','五張含近身場與對稱組、九張含8線、36張含焦點鄰域與房屋脈絡',prompt5.indexOf('<balanced_pairs>')>-1&&((prompt9.match(/<layout_lines>/g)||[]).length>0)&&prompt36.indexOf('<focal_neighborhoods>')>-1&&prompt36.indexOf('<house_context>')>-1,'');
 
       var baseDraw=idsToDraw([30,27,34,26,28,17,36,22,33,3,9,18,24,4,8,7,23,19,21,11,14,25,29,5,6,20,10,35,13,1,15,16,2,12,32,31]);
       var questions=[campaign,'我對人生有些迷茫 請給我建議','今年有非現任的肉體桃花嗎？她幾歲？','我副業什麼時候才能成功 讓我負債完全清空 有正資產','現任對我有真心嗎？未來會長久嗎？','近期適合旅行嗎？','我最近會收到他的訊息嗎？','我身體為何一直發炎 長痘痘','這個方案對不對？'];
@@ -314,25 +342,31 @@
       env.report('⑦雷諾曼不再拒答','行銷成效與做法適合度都輸出五級傾向，不是「不足以形成受控結論」',
         campaignPlans.action_effectiveness&&campaignPlans.decision_suitability&&/action_effectiveness_(?:strong_support|lean_support|mixed|lean_against|strong_against|insufficient)/.test(campaignPlans.action_effectiveness.status)&&/decision_suitability_(?:strong_support|lean_support|mixed|lean_against|strong_against|insufficient)/.test(campaignPlans.decision_suitability.status),JSON.stringify(campaignPlans));
       var campaignPrompt=ln.buildPrompt(campaign,baseDraw,'grand',null,'male'),eids=ledgerIds(campaignPrompt);
-      env.report('⑦雷諾曼提示詞','runtime 使用 v9 分層契約、D/S權重與唯一帳本',
-        campaignPrompt.indexOf('site_petit_lenormand_v9_0_layered_composition')>-1&&campaignPrompt.indexOf('direct_pair_weight_3')>-1&&campaignPrompt.indexOf('three_card_sentence_weight_2')>-1&&eids.length===new Set(eids).size, 'len='+campaignPrompt.length);
+      env.report('⑦雷諾曼提示詞','runtime 使用 v10 四牌陣契約、D/S權重與唯一帳本',
+        campaignPrompt.indexOf('site_petit_lenormand_v10_0_multispread_compiler')>-1&&campaignPrompt.indexOf('direct_pair_weight_3')>-1&&campaignPrompt.indexOf('three_card_sentence_weight_2')>-1&&eids.length===new Set(eids).size, 'len='+campaignPrompt.length);
       env.report('⑦雷諾曼提示詞','已移除 direct-only、required gate、no_formula 舊核心',
         campaignPrompt.indexOf('直接相鄰D是唯一')===-1&&campaignPrompt.indexOf('distinct_uid_per_required_gate')===-1&&campaignPrompt.indexOf('no_formula_for_proposition')===-1&&campaignPrompt.length<12000,'len='+campaignPrompt.length);
 
-      var randomizedOk=true,detail='',sEvidence=0,maxLen=0;
-      for(var seed=1;seed<=80&&randomizedOk;seed++){
-        var draw=seededShuffle(seed);
-        for(var qi=0;qi<questions.length&&randomizedOk;qi++){
-          var es=buildEntries(questions[qi],draw);
-          randomizedOk=es.every(function(e){
-            if(!e.packet.validation||!e.packet.validation.ok||e.packet.claimPlan.status==='no_formula_for_proposition')return false;
-            linkedStructures(e.packet).forEach(function(st){if(st.kind==='context_window')sEvidence++;});return true;
-          });
-          if(seed<=20){var pmt=ln.buildPrompt(questions[qi],draw,'grand',null,'male'),ids=ledgerIds(pmt);maxLen=Math.max(maxLen,pmt.length);randomizedOk=randomizedOk&&ids.length===new Set(ids).size&&pmt.length<12000;}
+      var randomizedOk=true,detail='',sEvidence=0,maxLen=0,totalPrompts=0;
+      var spreadCases=[['three',3],['five',5],['nine',9],['grand',36]];
+      var stressQuestions=[daily,campaign,'我對人生有些迷茫 請給我建議','現任對我有真心嗎？未來會長久嗎？','我副業什麼時候才能成功 讓我負債完全清空 有正資產'];
+      for(var seed=1;seed<=50&&randomizedOk;seed++){
+        var full=seededShuffle(seed);
+        for(var si=0;si<spreadCases.length&&randomizedOk;si++){
+          var sid=spreadCases[si][0],cnt=spreadCases[si][1],draw=full.slice(0,cnt);
+          for(var qi=0;qi<stressQuestions.length&&randomizedOk;qi++){
+            var es=buildEntries(stressQuestions[qi],draw,sid);
+            randomizedOk=es.every(function(e){
+              if(!e.packet.validation||!e.packet.validation.ok||e.packet.claimPlan.status==='no_formula_for_proposition')return false;
+              linkedStructures(e.packet).forEach(function(st){if(st.kind==='context_window')sEvidence++;});return true;
+            });
+            var pmt=ln.buildPrompt(stressQuestions[qi],draw,sid,null,'male'),ids=ledgerIds(pmt);totalPrompts++;maxLen=Math.max(maxLen,pmt.length);
+            randomizedOk=randomizedOk&&ids.length===new Set(ids).size&&pmt.indexOf('missing_claim_plan')===-1&&pmt.length<12000;
+          }
         }
         if(!randomizedOk)detail='seed='+seed;
       }
-      env.report('⑦雷諾曼排列不變量','80組決定性洗牌×9類問題皆可回答、帳本唯一、提示詞未超長',randomizedOk,detail+' S='+sEvidence+' maxLen='+maxLen);
+      env.report('⑦雷諾曼排列不變量','50組洗牌×4牌陣×5類問題皆可編譯、帳本唯一、提示詞均低於12000字元',randomizedOk,detail+' prompts='+totalPrompts+' S='+sEvidence+' maxLen='+maxLen);
 
       var cmp=ln.detectComparisonQuestion('我搭配手鍊要選自己喜歡的還是依八字五行？');
       var cmpPrompt=ln.buildPrompt('我搭配手鍊要選自己喜歡的還是依八字五行？',baseDraw.slice(0,9),'nine',null,'male');

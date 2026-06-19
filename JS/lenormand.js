@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v7.0
-// v7.0（2026-06-19）分層組合公式核心重構：
+// 靜月之光 — 雷諾曼牌 Lenormand v10.0
+// v10.0（2026-06-19）四牌陣統一編譯器核心重構：
 //   1. 自然語言先保留「主體／行動／目標／判斷」；不再把短期方案題改寫成長期成功題。
 //   2. 所有題型共用同一公式：直接牌對D為主要語句，連續三張S為較低權重短句。
 //   3. 中牌在S中負責主要修飾；正向與負向結構共同彙整，不再用全有全無 gate 裁決。
@@ -8,12 +8,12 @@
 //   5. 一個物理D／S只登錄一次；重複引用不加權，且避免D被包含於S時重複灌票。
 //   6. 人物歸屬、hypothetical、年齡、精確時間與醫療邊界維持嚴格限制。
 //   7. LLM只轉寫程式已整合的主張、支持、風險與未知邊界；不自行發明操作細節。
-//   8. runtime prompt只傳核准D／S與必要詞典，保留深度但移除房屋、鏡像、騎士跳及非連續長線資料牆。
+//   8. 三／五／九／36張全部先經同一證據編譯器；牌陣差異只決定幾何、焦點與分析深度，不再出現小牌陣缺 claim_plan。
 // Petit Lenormand 36 張・歷史基線＋本站明示的現代判讀規約
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v7.0 loaded — 分層組合公式核心重構');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v10.0 loaded — 四牌陣統一編譯器');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -101,21 +101,21 @@ var IMG_MAP = {
 // ════════════════════════════════════
 var SPREADS = {
   three: { id:'three', name:'三張線', en:'Three-Card Line', count:3,
-    desc:'三張線讀。中間牌是焦點，左右相鄰牌修飾；可輔助看左到右的時間推進，但核心仍是組合義，不是塔羅式單張位置。',
-    positions:['左側修飾/前因','焦點','右側修飾/發展']
+    desc:'三張線以中央牌為核心，左右牌共同修飾；兩組相鄰牌對建立局部語句，完整三張形成總結短句。未啟用時間規則時不把左右位置硬解成過去與未來。',
+    positions:['左側條件','核心','右側影響']
   },
   five: { id:'five', name:'五張線', en:'Five-Card Line', count:5,
-    desc:'五張線讀。第3張是焦點；2-3-4 是近身故事，1-2 與 4-5 看延伸。左到右可看時間流，但不能逐張單獨解。',
-    positions:['左外修飾','左近修飾','焦點','右近修飾','右外修飾']
+    desc:'五張線以第3張為核心，2-3-4形成近身主句，1-2與4-5補充外圍條件；並讀取三個連續三張短句與兩組對稱位置。',
+    positions:['左外背景','左近條件','核心','右近影響','右外背景']
   },
   nine: { id:'nine', name:'九宮格', en:'Nine-Card Box (3×3)', count:9,
-    desc:'3×3 Box。中心第5張是焦點；連續行列與對角線屬現代實務，須以相鄰組合與問題為主。',
-    positions:['左上(過去+意識)','上中(意識)','右上(未來+意識)','左中(過去)','核心','右中(未來)','左下(過去+潛意識)','下中(潛意識)','右下(未來+潛意識)'],
+    desc:'九宮格以中心第5張為核心，中心十字優先，三橫、三直與兩條對角線形成八個完整短句；角落只在與核心線或命題相關時補充。',
+    positions:['左上外圍','上方條件','右上外圍','左側條件','核心','右側影響','左下外圍','下方根基','右下外圍'],
     layout:'3x3'
   },
   grand: { id:'grand', name:'大牌陣', en:'Grand Tableau', count:36,
-    desc:'全部36張排出。本站採4排8張＋末排4張置中於第3～6欄；人物牌及周圍為歷史基線，房屋與完整線段僅作後期／現代輔助。',
-    positions:null, // special layout
+    desc:'全部36張採4排8張＋末排4張置中。先讀問卜者／主題牌附近，再讀相關相鄰牌對與連續三張短句；房屋、全局框架與完整線只補充脈絡，不單獨提高確定度。',
+    positions:null,
     layout:'8-8-8-8-4'
   }
 };
@@ -376,7 +376,62 @@ function buildGrandGeometry(drawn) {
     });
   });
 
-  return { positions: positions, adjacency: adjacency, lines: lines };
+  return { spreadId:'grand', positions:positions, adjacency:adjacency, lines:lines, focusSlots:[], slotWeights:{}, readingMode:'grand_tableau' };
+}
+
+function _lnGeometryAdjacency(positions, pairSlots) {
+  var bySlot={}, map={};
+  positions.forEach(function(p){bySlot[p.slot]=p;map[p.slot]=[];});
+  (pairSlots||[]).forEach(function(pair){
+    var a=bySlot[pair[0]],b=bySlot[pair[1]];if(!a||!b)return;
+    map[a.slot].push(b);map[b.slot].push(a);
+  });
+  return positions.map(function(p){return {position:p,neighbors:map[p.slot]||[]};});
+}
+
+function _lnGeometryLines(positions, lineDefs) {
+  var bySlot={};positions.forEach(function(p){bySlot[p.slot]=p;});
+  return (lineDefs||[]).map(function(def,idx){return {id:def.id||('L'+(idx+1)),type:def.type||'連續線',priority:def.priority||1,positions:def.slots.map(function(slot){return bySlot[slot];}).filter(Boolean)};}).filter(function(line){return line.positions.length>=3;});
+}
+
+function buildSpreadGeometry(drawn, spreadId) {
+  var id=spreadId||((drawn||[]).length===36?'grand':(drawn||[]).length===9?'nine':(drawn||[]).length===5?'five':'three');
+  if(id==='grand')return buildGrandGeometry(drawn||[]);
+  var cards=drawn||[],positions=[],weights={},focusSlots=[],pairs=[],lineDefs=[],roles=[];
+  if(id==='three'){
+    weights={1:0.86,2:1,3:0.86};focusSlots=[2];roles=['左側條件','核心','右側影響'];pairs=[[1,2],[2,3]];
+    lineDefs=[{id:'H1',type:'完整三張主句',slots:[1,2,3],priority:1}];
+  }else if(id==='five'){
+    weights={1:0.68,2:0.88,3:1,4:0.88,5:0.68};focusSlots=[3];roles=['左外背景','左近條件','核心','右近影響','右外背景'];pairs=[[1,2],[2,3],[3,4],[4,5]];
+    lineDefs=[{id:'H1',type:'五張主線',slots:[1,2,3,4,5],priority:1}];
+  }else{
+    id='nine';weights={1:0.66,2:0.84,3:0.66,4:0.84,5:1,6:0.84,7:0.66,8:0.84,9:0.66};focusSlots=[5];
+    roles=['左上外圍','上方條件','右上外圍','左側條件','核心','右側影響','左下外圍','下方根基','右下外圍'];
+    for(var a=1;a<=9;a++)for(var b=a+1;b<=9;b++){
+      var ar=Math.floor((a-1)/3),ac=(a-1)%3,br=Math.floor((b-1)/3),bc=(b-1)%3;
+      if(Math.max(Math.abs(ar-br),Math.abs(ac-bc))===1)pairs.push([a,b]);
+    }
+    lineDefs=[
+      {id:'R1',type:'上排',slots:[1,2,3],priority:0.78},{id:'R2',type:'中心橫列',slots:[4,5,6],priority:1},{id:'R3',type:'下排',slots:[7,8,9],priority:0.78},
+      {id:'C1',type:'左欄',slots:[1,4,7],priority:0.78},{id:'C2',type:'中心直欄',slots:[2,5,8],priority:1},{id:'C3',type:'右欄',slots:[3,6,9],priority:0.78},
+      {id:'D1',type:'左上右下對角線',slots:[1,5,9],priority:0.88},{id:'D2',type:'右上左下對角線',slots:[3,5,7],priority:0.88}
+    ];
+  }
+  cards.forEach(function(card,index){
+    var slot=index+1,row=id==='nine'?Math.floor(index/3)+1:1,col=id==='nine'?(index%3)+1:slot;
+    positions.push({index:index,slot:slot,row:row,col:col,house:null,card:card,role:roles[index]||('第'+slot+'張'),positionWeight:weights[slot]||0.7});
+  });
+  return {spreadId:id,positions:positions,adjacency:_lnGeometryAdjacency(positions,pairs),lines:_lnGeometryLines(positions,lineDefs),focusSlots:focusSlots,slotWeights:weights,readingMode:id+'_spread'};
+}
+
+function _lnSpreadPairPriority(geometry,a,b){
+  var wa=(geometry.slotWeights&&geometry.slotWeights[a.slot])||a.positionWeight||0.7,wb=(geometry.slotWeights&&geometry.slotWeights[b.slot])||b.positionWeight||0.7;
+  var focus=(geometry.focusSlots||[]);return Math.min(1.15,(wa+wb)/2+(focus.indexOf(a.slot)>-1||focus.indexOf(b.slot)>-1?0.12:0));
+}
+function _lnSpreadWindowPriority(geometry,win,line){
+  var total=win.reduce(function(sum,p){return sum+((geometry.slotWeights&&geometry.slotWeights[p.slot])||p.positionWeight||0.7);},0)/win.length;
+  var focus=(geometry.focusSlots||[]),hits=win.filter(function(p){return focus.indexOf(p.slot)>-1;}).length;
+  return Math.min(1.15,total+(hits?0.12:0))*((line&&line.priority)||1);
 }
 
 var HARD_NEGATIVE_IDS = [6,8,10,11,21,23,36];
@@ -411,6 +466,14 @@ var CLAIM_POLICIES = {
   sexual_event:{
     meaning:'判斷是否有獨立證據把感官焦點、同一人物／關係焦點與接觸落實連在一起；吸引與性成分不等於事件。',
     forbidden:'只在不同位置各自看到性提示與關係牌，不得拼接成會上床、會發生關係或已發生。'
+  },
+  outcome_tendency:{
+    meaning:'判斷使用者指定期間或情境的整體順利程度；正向與負向結構必須同時整合，不得把一張好牌或壞牌當成全部。',
+    forbidden:'不得自行補出未抽到的人物、事件、日期或保證一切平安。'
+  },
+  risk_guidance:{
+    meaning:'只指出核准證據所呈現的主要注意事項；可轉寫工作、溝通、關係、資源、阻礙、結束等牌義樣貌，但不得發明具體事件。',
+    forbidden:'不得把風險寫成必然災難，也不得將沒有牌面證據的事故、疾病、金額或人物硬加進來。'
   },
   action_effectiveness:{
     meaning:'只判斷題目中的具體行動是否有助於帶動使用者指定結果；不得擴大成整個副業長期成敗。',
@@ -469,10 +532,10 @@ var CLAIM_POLICIES = {
 // 重要：不再為每個自然語句建立一個 gate；題目只映射到少數通用語義軸，所有軸共用同一評估器。
 // ════════════════════════════════════
 var CANONICAL_READING_FORMULA = {
-  id:'site_lenormand_layered_formula_v2',
+  id:'site_lenormand_multispread_formula_v3',
   evidenceUnits:{direct_pair:{weight:3,role:'primary'},three_card_sentence:{weight:2,role:'secondary'}},
   syntaxRule:'direct_pair_is_local_phrase_three_card_center_modifies_edges',
-  aggregationRule:'select_top_unique_support_and_risk_without_subsumed_double_count',
+  aggregationRule:'select_top_unique_support_and_risk_with_overlap_discount',
   conclusionScale:['明顯支持','較支持','正反並存','較不支持','明顯不支持'],
   ledgerRule:'one_physical_structure_one_entry_reuse_never_adds_weight',
   attributionRule:'person_specific_claims_require_the_person_inside_the_same_selected_structure',
@@ -506,6 +569,8 @@ function _lnGroup(values, roles) {
 var UNIVERSAL_READING_PROFILES = {
   action_effectiveness:{domain:'action',anchors:['$Q','action','business','market','offer'],support:['success','opportunity','market','offer','resources','stability'],label:'這項方案帶動目標結果'},
   decision_suitability:{domain:'decision',anchors:['$Q','action','guidance'],support:['success','stability','guidance','opportunity'],label:'這項做法的適合度'},
+  outcome_tendency:{domain:'general',anchors:['$Q','action','guidance'],support:['positive','stability','success','opportunity'],label:'指定期間的整體順利程度'},
+  risk_guidance:{domain:'general',anchors:['$Q','action','guidance'],support:['guidance','stability','opportunity'],label:'需要留意的主要風險'},
   business_success:{domain:'business',anchors:['$Q','business'],support:['success','stability','market','resources'],label:'副業持續成功條件'},
   debt_clearance:{domain:'finance',anchors:['$Q','resources','debtPressure'],support:['resourceGrowth','endingCut','stability'],label:'負債完全清償條件'},
   positive_net_worth:{domain:'finance',anchors:['$Q','resources','debtPressure'],support:['resourceGrowth','stability','success'],label:'正資產形成條件'},
@@ -560,6 +625,14 @@ function _lnStructureRelevance(st,profile,roles){
   var relevant=uniqueNumbers(anchors.concat(supports).concat(HARD_NEGATIVE_IDS));
   var anchorHits=ids.filter(function(id){return anchors.indexOf(id)>-1;}).length;
   var relevantHits=ids.filter(function(id){return relevant.indexOf(id)>-1;}).length;
+  // 三／五／九張皆是針對同一問題抽出的封閉牌陣，位置本身就是相關性來源；
+  // 大牌陣才需要由人物牌／主題牌過濾，避免把36張全部當成同等證據。
+  if(st.spreadScoped){
+    var positional=typeof st.positionWeight==='number'?st.positionWeight:0.72;
+    if(anchorHits)positional=Math.max(positional,1);
+    else if(relevantHits)positional=Math.max(positional,0.78);
+    return _lnClamp(positional,0.5,1.15);
+  }
   if(st.kind==='adjacency')return anchorHits?1:(relevantHits===ids.length&&relevantHits>=2?0.75:0);
   return anchorHits?0.85:(relevantHits>=2?0.6:0);
 }
@@ -585,22 +658,31 @@ function _lnSubsumes(a,b){
   var A=_lnSlots(a),B=_lnSlots(b);return B.every(function(x){return A.indexOf(x)>-1;})||A.every(function(x){return B.indexOf(x)>-1;});
 }
 function _lnSelectLayeredEvidence(packet,profile,roles,type){
-  var candidates=(packet.clusters||[]).map(function(c){var st=_lnClusterStructure(c),ev=_lnStructureScore(st,profile,roles,type);if(!ev)return null;ev.cluster=c;ev.uid=_lnStructureUid(st);ev.kind=st.kind;return ev;}).filter(Boolean);
+  var candidates=(packet.clusters||[]).map(function(c){var st=_lnClusterStructure(c),ev=_lnStructureScore(st,profile,roles,type);if(!ev)return null;ev.cluster=c;ev.uid=_lnStructureUid(st);ev.kind=st.kind;ev.noveltyFactor=1;return ev;}).filter(Boolean);
   candidates.sort(function(a,b){return Math.abs(b.score)-Math.abs(a.score)||(a.kind==='adjacency'?-1:1)||(String(a.uid).localeCompare(String(b.uid),undefined,{numeric:true}));});
+  function edgeKeys(st){var slots=_lnSlots(st),out=[];for(var i=0;i<slots.length-1;i++)out.push([slots[i],slots[i+1]].sort(function(a,b){return a-b;}).join('-'));return out;}
   function pick(sign,max){
-    var out=[];
-    function eligible(x){if(sign>0&&x.score<=0.35)return false;if(sign<0&&x.score>=-0.35)return false;if(out.some(function(y){return _lnSubsumes(x.structure,y.structure);}))return false;return true;}
-    // 先取最多兩個直接牌對，再保留一個真正新增語意的三張短句；不足再由其餘候選補滿。
-    candidates.filter(function(x){return x.kind==='adjacency';}).forEach(function(x){if(out.length<Math.min(2,max)&&eligible(x))out.push(x);});
-    candidates.filter(function(x){return x.kind==='context_window';}).forEach(function(x){if(out.length<max&&eligible(x)&&!out.some(function(y){return y.kind==='context_window';}))out.push(x);});
-    candidates.forEach(function(x){if(out.length<max&&eligible(x))out.push(x);});
+    var out=[],exact={};
+    function eligible(x){
+      if(sign>0&&x.score<=0.35)return false;if(sign<0&&x.score>=-0.35)return false;
+      if(exact[x.kind+':'+_lnSlots(x.structure).join('-')])return false;
+      if(x.kind==='context_window'){
+        var edges=edgeKeys(x.structure),covered=0;
+        out.filter(function(y){return y.kind==='adjacency';}).forEach(function(y){var k=edgeKeys(y.structure)[0];if(edges.indexOf(k)>-1)covered++;});
+        x.noveltyFactor=covered>=2?0.45:covered===1?0.7:1;
+      }
+      return true;
+    }
+    candidates.filter(function(x){return x.kind==='adjacency';}).forEach(function(x){if(out.length<Math.min(2,max)&&eligible(x)){out.push(x);exact[x.kind+':'+_lnSlots(x.structure).join('-')]=true;}});
+    candidates.filter(function(x){return x.kind==='context_window';}).forEach(function(x){if(out.length<max&&eligible(x)&&!out.some(function(y){return y.kind==='context_window';})){out.push(x);exact[x.kind+':'+_lnSlots(x.structure).join('-')]=true;}});
+    candidates.forEach(function(x){if(out.length<max&&eligible(x)){out.push(x);exact[x.kind+':'+_lnSlots(x.structure).join('-')]=true;}});
     return out;
   }
   var support=pick(1,3),risk=pick(-1,3),neutral=candidates.filter(function(x){return Math.abs(x.score)<=0.35;}).slice(0,2);
-  function weighted(list){return list.reduce(function(sum,x,idx){return sum+x.score*(idx<2?1:0.5);},0);}
+  function weighted(list){return list.reduce(function(sum,x,idx){return sum+x.score*(x.noveltyFactor||1)*(idx<2?1:0.5);},0);}
   var supportTotal=weighted(support),riskTotal=weighted(risk),net=supportTotal+riskTotal,count=support.length+risk.length;
   var band='mixed';
-  if(!count)band='insufficient';
+  if(!count)band=neutral.length?'mixed':'insufficient';
   else if(supportTotal>=6&&Math.abs(riskTotal)<=2.5&&support.length>=2)band='strong_support';
   else if(riskTotal<=-6&&supportTotal<=2.5&&risk.length>=2)band='strong_against';
   else if(net>=2.5)band='lean_support';
@@ -629,6 +711,12 @@ function _lnBandText(type,profile,band){
   if(type==='decision_suitability'){
     map.strong_support='這項做法整體上明顯適合執行。';map.lean_support='這項做法較適合執行，但仍需正視牌面限制。';map.mixed='這項做法不是全對或全錯，支持與代價同時存在。';map.lean_against='這項做法目前較不合適照原樣執行。';map.strong_against='這項做法目前明顯不適合照原樣執行。';
   }
+  if(type==='outcome_tendency'){
+    map.strong_support='指定期間整體上明顯較順利。';map.lean_support='指定期間整體較有順利傾向，但仍有需要留意之處。';map.mixed='指定期間順逆並存，不宜概括成一切順利。';map.lean_against='指定期間整體較不順利，阻力高於助力。';map.strong_against='指定期間整體明顯不順，應以處理阻力與收尾為主。';map.insufficient='本次牌面與順利程度的關聯有限，只能保留判斷。';
+  }
+  if(type==='risk_guidance'){
+    map.strong_support='本次未見強烈風險主導，但仍需依核准牌義保持基本留意。';map.lean_support='需要注意的風險較輕，仍可留意局部干擾。';map.mixed='需要注意的因素與緩衝條件同時存在。';map.lean_against='本次有較明顯需要注意的阻力、負擔或中止因素。';map.strong_against='本次注意事項明顯，負擔、阻礙或結束性因素居主導。';map.insufficient='本次缺少足以列出具體注意事項的相關結構。';
+  }
   return map[band]||map.mixed;
 }
 function _lnClusterIds(evs){return (evs||[]).map(function(x){return x.cluster.id;});}
@@ -640,6 +728,19 @@ function compileLayeredClaimPlan(packet,declaredGender){
     addApprovedClaim(plan,'缺少已識別對象，不能判定特定人物的內心或意圖。',[]);addApprovedClaim(plan,'方法占位人物不等於真人已出現。',[]);return plan;
   }
   var ev=_lnSelectLayeredEvidence(packet,profile,roles,type);plan.evaluation=ev;plan.formulaOutcome=ev.band;plan.status=type+'_'+ev.band;plan.certaintyCap=_lnBandCap(ev.band);
+  if(type==='risk_guidance'){
+    var riskIds=_lnClusterIds(ev.risk).slice(0,2),supportIds=_lnClusterIds(ev.support).slice(0,2);if(!supportIds.length&&ev.neutral[0])supportIds=[ev.neutral[0].cluster.id];
+    if(riskIds.length){
+      var riskBand=ev.riskTotal<=-6?'strong_against':'lean_against';plan.formulaOutcome=riskBand;plan.status=type+'_'+riskBand;plan.certaintyCap=riskBand==='strong_against'?'明顯需要注意':'較需要注意';
+      addApprovedClaim(plan,_lnBandText(type,profile,riskBand),riskIds);
+      if(supportIds.length)addApprovedClaim(plan,'仍有可利用的緩衝或支持條件，但不能抵銷主要注意事項。',supportIds);
+    }else{
+      plan.formulaOutcome=ev.support.length?'lean_support':'insufficient';plan.status=type+'_'+plan.formulaOutcome;plan.certaintyCap=ev.support.length?'注意風險較低':'注意事項證據有限';
+      addApprovedClaim(plan,_lnBandText(type,profile,plan.formulaOutcome),supportIds);
+    }
+    addApprovedClaim(plan,'注意事項只能依核准牌義描述，不能擴寫成必然事故、疾病、金額、人物或具體事件。',[]);
+    plan.forbiddenClaims=CLAIM_POLICIES[type]?[CLAIM_POLICIES[type].forbidden]:[];return plan;
+  }
   var main=[];if(ev.support[0])main.push(ev.support[0].cluster.id);if(ev.risk[0])main.push(ev.risk[0].cluster.id);if(!main.length&&ev.neutral[0])main.push(ev.neutral[0].cluster.id);
   addApprovedClaim(plan,_lnBandText(type,profile,ev.band),main);
   var used={};main.forEach(function(id){used[id]=true;});
@@ -670,7 +771,7 @@ function detectAgeQualifier(text) {
 
 function detectUserTimeScope(text) {
   var t = String(text || '');
-  var m = t.match(/今年|明年|後年|本月|下個月|端午節|中秋節|春節|過年|雙十節|雙11|活動期間|未來\s*\d+\s*(?:天|週|月|年)內|\d+\s*(?:天|週|月|年)內|近期|接下來|什麼時候|何時|多久|幾時|哪一年|哪個月|幾月|時間點|應期|多快/);
+  var m = t.match(/今天|明天|後天|本週|這週|下週|這個月|下個月|今年|明年|後年|本月|端午節|中秋節|春節|過年|雙十節|雙11|活動期間|未來\s*\d+\s*(?:天|週|月|年)內|\d+\s*(?:天|週|月|年)內|近期|接下來|什麼時候|何時|多久|幾時|哪一年|哪個月|幾月|時間點|應期|多快/);
   return m ? { source:'user_question', raw:m[0] } : null;
 }
 
@@ -704,12 +805,17 @@ function inferQuestionDimensions(text) {
   var formationQuestion = /(?:會不會|是否會|能否|能不能|有沒有機會|會).{0,12}(?:交往|在一起|復合|結婚|成為伴侶)/.test(t) && !/(?:會不會|是否會|會|是否)?想.{0,12}(?:交往|在一起|復合)/.test(t);
 
   if (/一夫多妻|多妻|多重伴侶|多人伴侶|開放式關係|非排他|同時交往|兩個老婆|多個老婆|多個伴侶/.test(t)) types.push('multi_partner_commitment');
-  if (/正緣|命定|適合長久|走到最後|走一輩子|長久|穩定交往|穩定伴侶|結婚對象|婚姻能否長久/.test(t)) types.push('relationship_longevity');
+  if (/正緣|命定|適合長久|走到最後|走一輩子|長久|穩定交往|穩定伴侶|結婚對象|婚姻能否長久|(?:這段|我們的|彼此的)?關係.{0,8}(?:穩定|長久)|(?:能否|會不會|是否會|會)?穩定嗎/.test(t)) types.push('relationship_longevity');
   if (hasAttraction) types.push('attraction_opportunity');
   if (hasSexual) types.push('sexual_component');
   if (asksSexualEvent) types.push('sexual_event');
   if (hasRelationshipWords && (explicitFutureContext || targetScope === 'unknown_future_counterpart' || formationQuestion)) types.push('relationship_future');
   if (/喜歡我|愛我|好感|心動|真心|想(?:要)?(?:跟|與)?我(?:交往|在一起|復合)|會告白|對我有感覺|她怎麼想|他怎麼想|對方怎麼想/.test(t) && targetScope !== 'unknown_future_counterpart' && targetScope !== 'hypothetical_noncurrent_counterpart') types.push('relationship_intent');
+
+  var asksOverallSmooth = /一切順利|是否順利|會順利嗎|順不順利|整體順利|平安順遂|會不會順利/.test(t);
+  var asksAttention = /需要注意什麼|要注意什麼|該注意什麼|有什麼要注意|注意事項|需要留意|要留意什麼|要小心什麼/.test(t);
+  if (asksOverallSmooth) types.push('outcome_tendency');
+  if (asksAttention) types.push('risk_guidance');
 
   var hasActionPlan = /廣告|折價|折扣|促銷|優惠|活動|方案|做法|策略|投入|採取|執行|嘗試|投放|行銷/.test(t);
   var asksActionResult = /帶起買氣|提升買氣|增加訂單|增加成交|提升業績|帶動業績|帶動銷售|有效|成效|有沒有用|能否帶動|是否能帶動|會不會帶動/.test(t);
@@ -753,6 +859,7 @@ function questionTypeDomain(type) {
   if (type === 'comparison_suitability') return 'comparison';
   if (type === 'attraction_opportunity' || type === 'sexual_component' || type === 'sexual_event' || /^relationship_|^multi_partner_/.test(type)) return 'relationship';
   if (/^business_|^career_|^finance$|^debt_clearance$|^positive_net_worth$|^action_effectiveness$|^decision_suitability$/.test(type)) return 'work_money';
+  if (type === 'outcome_tendency' || type === 'risk_guidance') return 'general';
   if (/^health_/.test(type)) return 'health';
   if (type === 'travel') return 'travel';
   if (type === 'communication') return 'communication';
@@ -775,6 +882,8 @@ function propositionText(type, original, comparison) {
   if (type === 'attraction_opportunity') return '是否有非現任桃花或明顯吸引機會';
   if (type === 'sexual_component') return '該桃花是否帶有明顯肉體或性吸引';
   if (type === 'sexual_event') return '是否足以判斷實際發生肉體關係';
+  if (type === 'outcome_tendency') return '指定期間或情境的整體順利程度';
+  if (type === 'risk_guidance') return '需要注意的主要風險與限制';
   if (type === 'action_effectiveness') return '這項行動是否能有效帶動題目中的目標結果';
   if (type === 'decision_suitability') return '這項做法整體上是否適合執行';
   if (type === 'business_success') return '副業是否具備可持續成功條件';
@@ -829,8 +938,9 @@ function splitQuestionSegments(question) {
     }
     parts.push(current);
   });
-  var out = [];
+  var out = [],globalTime=detectUserTimeScope(raw);
   parts.forEach(function(text, index){ out = out.concat(expandSegmentToQuestions(text, index + 1)); });
+  if(globalTime)out.forEach(function(item){if(!item.timeScope&&item.type!=='timing'&&item.type!=='unsupported_age')item.timeScope={source:'user_question_shared_scope',raw:globalTime.raw};});
   return out;
 }
 
@@ -956,9 +1066,26 @@ function buildClusters(structures, anchorSlots, type, declaredGender) {
 }
 
 function buildModernContext(geometry, profile, anchorPositions, directPairs, relevantSegments, declaredGender, type, clusters) {
-  // v7.0：分層公式不向模型輸出鏡像、騎士跳、交會、房屋或鄰近資料牆。
-  // 這些技法並非原始說明書的固定公式，也不應在缺乏明示規則時提高結論。
-  return {personNeighborhoods:[],topicNeighborhoods:[],sharedCards:[],mirrors:[],knightMoves:[],intersections:[],corners:[],centers:[],clusterThemes:[],contextPositions:[]};
+  var empty={personNeighborhoods:[],topicNeighborhoods:[],sharedCards:[],mirrors:[],knightMoves:[],intersections:[],corners:[],centers:[],clusterThemes:[],contextPositions:[],spreadContext:null};
+  if(!geometry||!geometry.positions)return empty;
+  var bySlot={};geometry.positions.forEach(function(p){bySlot[p.slot]=p;});
+  var ctx={spreadId:geometry.spreadId||'grand',core:[],nearField:[],balancedPairs:[],lines:[],focalNeighborhoods:[],houses:[]};
+  if(ctx.spreadId==='three'){
+    ctx.core=[bySlot[2]].filter(Boolean);ctx.nearField=[bySlot[1],bySlot[2],bySlot[3]].filter(Boolean);
+    ctx.lines=(geometry.lines||[]).slice(0,1);
+  }else if(ctx.spreadId==='five'){
+    ctx.core=[bySlot[3]].filter(Boolean);ctx.nearField=[bySlot[2],bySlot[3],bySlot[4]].filter(Boolean);
+    ctx.balancedPairs=[[bySlot[1],bySlot[5]],[bySlot[2],bySlot[4]]].map(function(x){return x.filter(Boolean);});
+    ctx.lines=(geometry.lines||[]).slice(0,1);
+  }else if(ctx.spreadId==='nine'){
+    ctx.core=[bySlot[5]].filter(Boolean);ctx.nearField=[bySlot[2],bySlot[4],bySlot[5],bySlot[6],bySlot[8]].filter(Boolean);
+    ctx.lines=(geometry.lines||[]).slice();
+  }else{
+    var focal=(anchorPositions||[]).slice(0,3);
+    focal.forEach(function(pos){var nb=neighborhoodFor(geometry,pos);ctx.focalNeighborhoods.push({center:pos,positions:nb.positions});if(pos.house)ctx.houses.push({card:pos.card,house:pos.house});});
+  }
+  empty.spreadContext=ctx;
+  return empty;
 }
 
 function structureHasCards(structure, idsA, idsB) {
@@ -1137,38 +1264,42 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
   var anchorPositions=profile.anchors.map(function(id){return byCardId[id];}).filter(Boolean);
   var anchorSlots={},relevantIds={};anchorPositions.forEach(function(p){anchorSlots[p.slot]=true;});profile.all.forEach(function(id){relevantIds[id]=true;});
 
-  // 第一層：任何直接接觸題目焦點的牌對都保留；不再只留下預先認定的「好牌／壞牌」。
+  var isCompact=geometry.spreadId&&geometry.spreadId!=='grand';
+  // 第一層：小牌陣的每張牌都因同一問題而抽出，因此保留全部合法相鄰牌對；
+  // 大牌陣則只保留接觸人物／主題焦點或雙方皆屬題目相關集合的牌對。
   var pairMap={},directPairs=[];
   geometry.adjacency.forEach(function(entry){
     entry.neighbors.forEach(function(n){
       var a=entry.position,b=n,key=pairSlotKey(a,b);if(pairMap[key])return;
       var touchesAnchor=!!anchorSlots[a.slot]||!!anchorSlots[b.slot];
       var bothRelevant=!!relevantIds[a.card.id]&&!!relevantIds[b.card.id];
-      if(!touchesAnchor&&!bothRelevant)return;
-      pairMap[key]=true;directPairs.push({positions:[a,b],score:touchesAnchor?3:2});
+      if(!isCompact&&!touchesAnchor&&!bothRelevant)return;
+      pairMap[key]=true;directPairs.push({positions:[a,b],score:isCompact?_lnSpreadPairPriority(geometry,a,b):(touchesAnchor?3:2)});
     });
   });
-  directPairs.sort(function(a,b){return pairSlotKey(a.positions[0],a.positions[1]).localeCompare(pairSlotKey(b.positions[0],b.positions[1]),undefined,{numeric:true});});
+  directPairs.sort(function(a,b){return b.score-a.score||pairSlotKey(a.positions[0],a.positions[1]).localeCompare(pairSlotKey(b.positions[0],b.positions[1]),undefined,{numeric:true});});
 
-  // 第二層：連續三張是完整短句。中牌主修飾，左右牌提供主題與結果背景；權重低於直接牌對。
+  // 第二層：每條合法線滑動產生連續三張短句。小牌陣完整保留；大牌陣仍依焦點過濾。
   var segmentMap={},segments=[];
   geometry.lines.forEach(function(line){
     for(var i=0;i<=line.positions.length-3;i++){
       var win=line.positions.slice(i,i+3),anchorHits=win.filter(function(p){return !!anchorSlots[p.slot];}).length;
       var relevantHits=win.filter(function(p){return !!relevantIds[p.card.id];}).length;
-      if(!anchorHits&&relevantHits<2)continue;
+      if(!isCompact&&!anchorHits&&relevantHits<2)continue;
       var f=win.map(function(p){return p.slot;}).join('-'),r=win.slice().reverse().map(function(p){return p.slot;}).join('-'),key=f<r?f:r;
-      if(segmentMap[key])continue;segmentMap[key]=true;segments.push({positions:win,score:anchorHits*3+relevantHits});
+      if(segmentMap[key])continue;segmentMap[key]=true;
+      segments.push({positions:win,score:isCompact?_lnSpreadWindowPriority(geometry,win,line):(anchorHits*3+relevantHits),lineType:line.type||'連續線'});
     }
   });
-  segments.sort(function(a,b){return b.score-a.score||a.positions[0].slot-b.positions[0].slot;});segments=segments.slice(0,14);
+  segments.sort(function(a,b){return b.score-a.score||a.positions[0].slot-b.positions[0].slot;});
+  if(!isCompact)segments=segments.slice(0,14);
 
   var structures=[];
-  directPairs.forEach(function(pair,idx){var st={id:'D'+(idx+1),kind:'adjacency',positions:pair.positions,cardIds:uniqueNumbers(pair.positions.map(function(p){return p.card.id;})),weight:3};st.evidenceUid=physicalStructureKey(st);structures.push(st);});
-  segments.forEach(function(seg,idx){var st={id:'S'+(idx+1),kind:'context_window',positions:seg.positions,cardIds:uniqueNumbers(seg.positions.map(function(p){return p.card.id;})),weight:2};st.evidenceUid=physicalStructureKey(st);structures.push(st);});
+  directPairs.forEach(function(pair,idx){var st={id:'D'+(idx+1),kind:'adjacency',positions:pair.positions,cardIds:uniqueNumbers(pair.positions.map(function(p){return p.card.id;})),weight:3,spreadScoped:isCompact,positionWeight:isCompact?pair.score:1,spreadId:geometry.spreadId||'grand'};st.evidenceUid=physicalStructureKey(st);structures.push(st);});
+  segments.forEach(function(seg,idx){var st={id:'S'+(idx+1),kind:'context_window',positions:seg.positions,cardIds:uniqueNumbers(seg.positions.map(function(p){return p.card.id;})),weight:2,spreadScoped:isCompact,positionWeight:isCompact?seg.score:1,spreadId:geometry.spreadId||'grand',lineType:seg.lineType};st.evidenceUid=physicalStructureKey(st);structures.push(st);});
   var clusters=buildClusters(structures,anchorSlots,type,declaredGender),modernContext=buildModernContext(geometry,profile,anchorPositions,directPairs,segments,declaredGender,type,clusters),usedCards={};
   structures.forEach(function(st){st.positions.forEach(function(p){usedCards[p.card.id]=p.card;});});
-  var packet={question:questionItem,profile:profile,focusPositions:focusPositions,anchorPositions:anchorPositions,housePositions:[],directPairs:directPairs,segments:segments,clusters:clusters,structures:structures,modernContext:modernContext,analysisDimensions:analysisDimensionsFor(questionItem),usedCards:usedCards,formulaId:CANONICAL_READING_FORMULA.id};
+  var packet={question:questionItem,profile:profile,spreadId:geometry.spreadId||'grand',spreadGeometry:geometry,focusPositions:focusPositions,anchorPositions:anchorPositions,housePositions:[],directPairs:directPairs,segments:segments,clusters:clusters,structures:structures,modernContext:modernContext,analysisDimensions:analysisDimensionsFor(questionItem),usedCards:usedCards,formulaId:CANONICAL_READING_FORMULA.id};
   packet.claimPlan=buildClaimPlan(packet,declaredGender);packet.validation=validateEvidencePacket(packet);return packet.validation.ok?packet:failClosedPacket(packet,packet.validation);
 }
 
@@ -1224,7 +1355,7 @@ function failClosedPacket(packet, validation) {
   packet.structures = [];
   packet.clusters = [];
   packet.housePositions = [];
-  packet.modernContext = {personNeighborhoods:[],topicNeighborhoods:[],sharedCards:[],mirrors:[],knightMoves:[],intersections:[],corners:[],centers:[],clusterThemes:[],contextPositions:[]};
+  packet.modernContext = {personNeighborhoods:[],topicNeighborhoods:[],sharedCards:[],mirrors:[],knightMoves:[],intersections:[],corners:[],centers:[],clusterThemes:[],contextPositions:[],spreadContext:null};
   packet.usedCards = {};
   packet.claimPlan = {
     status:'internal_validation_failed',
@@ -1244,9 +1375,13 @@ function buildEvidenceAwareAnalysisRequirements(packet) {
   var ev=packet.claimPlan&&packet.claimPlan.evaluation;
   var hasPositive=!!(ev&&ev.support&&ev.support.length),hasRisk=!!(ev&&ev.risk&&ev.risk.length);
   var cardIds=uniqueNumbers((buildApprovedEvidenceView(packet).structures||[]).reduce(function(out,st){return out.concat(st.cardIds||[]);},[]));
-  var min=1,max=3;
-  if(type==='action_effectiveness'||type==='decision_suitability'||type==='business_success'||type==='life_guidance'){min=2;max=4;}
-  else if(questionTypeDomain(type)==='relationship'||/^career_/.test(type)){min=2;max=4;}
+  var spread=packet.spreadId||'grand',min=1,max=3;
+  if(spread==='three'){min=2;max=3;}
+  else if(spread==='five'){min=3;max=5;}
+  else if(spread==='nine'){min=3;max=6;}
+  else if(spread==='grand'){min=4;max=7;}
+  if(type==='action_effectiveness'||type==='decision_suitability'||type==='business_success'||type==='life_guidance'||type==='outcome_tendency'||type==='risk_guidance')min=Math.max(min,2);
+  if(questionTypeDomain(type)==='relationship'||/^career_/.test(type))min=Math.max(min,2);
   return {items:[],paragraphMin:min,paragraphMax:max,favorable:hasPositive?'required':'insufficient_or_omit',risk:hasRisk?'required':'omit_if_absent',repetition:cardIds.indexOf(11)>-1?'required':'omit',contradiction:hasPositive&&hasRisk?'required':'omit'};
 }
 
@@ -1336,19 +1471,19 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   questions.forEach(function(item){(item.types||[item.type]).forEach(function(type){typeSet[type]=true;});});
 
   lines.push('# 最高規則');
-  lines.push('你是本站 Petit Lenormand v9.0 分層組合解讀器。第一句依 proposition 順序直接回答。');
-  lines.push('只輸出 claim_plan 核准的主張；certainty_cap 只能維持或降低。claim_evidence 可引用直接牌對D與連續三張短句S；同一物理結構只登錄一次，相依命題重複引用不得提高確定度。');
-  lines.push('直接相鄰D是主要語句；連續三張S是較低權重的完整短句，中牌主修飾、左右牌提供主題與結果背景。兩者都必須與命題焦點相關；牌號、座標、房屋、鏡像、騎士跳與非連續長線不自行表示時間、因果、意圖或事件。');
-  if(questions.some(function(item){return !!item.timeScope;}))lines.push('time_scope只固定使用者明示的評估範圍，可在結論中原樣回應「今年／本月」；不得縮小、延伸或換算成日期與先後階段。');
-  lines.push('沒有證據的 analysis_requirements 直接省略；不得自行補入 claim_plan 未批准的具體行動、期限、金額、人物或事件。');
+  lines.push('你是本站 Petit Lenormand v10.0 四牌陣統一解讀器。第一句依 proposition 順序直接回答。');
+  lines.push('只轉寫 claim_plan；certainty_cap 不得提高。claim_evidence 可用D與S；同一物理結構只登錄一次，重複引用不加權。');
+  lines.push('D為主要語句，S為次級三張短句且中牌主修飾。兩者須與命題相關；牌號、座標、房屋、鏡像、騎士跳與長線不自行表示時間、因果或事件。');
+  if(questions.some(function(item){return !!item.timeScope;}))lines.push('time_scope只保留使用者明示範圍，不換算日期或先後階段。');
+  lines.push('無證據項目省略；不得補入未核准的行動、期限、金額、人物或事件。spread_context不新增結論。');
   lines.push('固定負向語義：棺材＝結束；鐮刀＝切斷；山＝阻礙；老鼠＝損耗；十字架＝負擔；雲＝不明；鞭子＝衝突／反覆。');
-  lines.push('<method_scope>館藏可核實36張牌組與4頁說明；保存說明書明載4×8+4及由人物牌附近敘事。原始資料沒有涵蓋所有現代題型的唯一官方公式；本站採公開工程公式：先忠實解析主體、行動與目標，再以直接牌對作主要語句、連續三張作較低權重短句，整合支持與阻力後輸出五級傾向。approved_dictionary是本站受控的現代工作詞典；權重與結論門檻亦為本站受控規約。</method_scope>');
+  lines.push('<method_scope>36張與4頁說明可核實；4×8+4及人物附近敘事採保存傳統。其餘公式為本站規約；approved_dictionary是本站受控的現代工作詞典。</method_scope>');
   var boundaryExamples=[];
-  if(typeSet.timing)boundaryExamples.push('timing_rules=false：回答無法判定具體時間，不以牌號或座標猜日期。');
-  if(typeSet.business_success||typeSet.finance||typeSet.debt_clearance||typeSet.positive_net_worth)boundaryExamples.push('收入或副業成功不等於負債歸零，也不等於正資產。');
-  if(typeSet.business_success||typeSet.finance||typeSet.action_effectiveness||typeSet.decision_suitability)boundaryExamples.push('牌面可判斷方案的支持、阻力與適合度，但不得自行生成廣告金額、折扣幅度、庫存、價格、毛利或期限。');
+  if(typeSet.timing)boundaryExamples.push('不以牌號或座標猜日期。');
+  if(typeSet.business_success||typeSet.finance||typeSet.debt_clearance||typeSet.positive_net_worth)boundaryExamples.push('成功不等於清債或正資產。');
+  if(typeSet.business_success||typeSet.finance||typeSet.action_effectiveness||typeSet.decision_suitability)boundaryExamples.push('方案題不得生成金額、折扣、庫存、價格、毛利或期限。');
   if(typeSet.life_guidance)boundaryExamples.push('人生建議題只可輸出 approved_claims 已核准的篩選原則；不得自行指定職業、離職、分手、搬家、期限或唯一使命。');
-  if(boundaryExamples.length)lines.push('<boundary_examples>'+boundaryExamples.map(function(x){return '<example>'+x+'</example>';}).join('')+'</boundary_examples>');
+  if(boundaryExamples.length)lines.push('<boundaries>'+boundaryExamples.map(function(x){return '<b>'+x+'</b>';}).join('')+'</boundaries>');
   if(isSymmetricComparison){
     lines.push('比較題最高規則：兩個選項已在抽牌前固定到左右對稱欄；選項名稱只是標籤，禁止把名稱中的「太陽、魚、心、熊」等字套成同名牌。');
     lines.push('A與B必須使用完全相同的位置角色比較；不得將選項名稱映射成同名牌，也不得因名稱較熟悉而偏重。');
@@ -1364,9 +1499,9 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   if(typeSet.unsupported_age){lines.push('無 age_rules：數字年齡與區間直接回答無法驗證，不得附牌面側證。');lines.push('');}
   if(typeSet.health_medical_cause){lines.push('醫學病因命題不得使用牌面作原因、診斷或治療；若另有 health_symbolic_context，只能作非醫療的象徵性深讀。');lines.push('');}
 
-  lines.push('<reading_request method_profile="site_petit_lenormand_v9_0_layered_composition">');
+  lines.push('<reading_request method_profile="site_petit_lenormand_v10_0_multispread_compiler">');
   lines.push('<question_original>'+xmlEscape(q||'未指定具體問題')+'</question_original>');
-  lines.push('<formula_contract id="'+CANONICAL_READING_FORMULA.id+'" primary_unit="direct_pair_weight_3" secondary_unit="contiguous_three_card_sentence_weight_2" aggregation="unique_support_risk_five_level" ledger_rule="one_structure_one_entry_shared_reference_no_boost"></formula_contract>');
+  lines.push('<formula_contract id="'+CANONICAL_READING_FORMULA.id+'" primary_unit="direct_pair_weight_3" secondary_unit="contiguous_three_card_sentence_weight_2" spread_modes="three_five_nine_grand" aggregation="unique_support_risk_five_level" ledger_rule="one_structure_one_entry_shared_reference_no_boost"></formula_contract>');
   lines.push('<propositions>');
   questions.forEach(function(item){
     if(item.type==='comparison_suitability' && item.options && item.options.length===2) lines.push('<proposition id="'+item.id+'" parent="'+item.parentId+'" type="comparison_suitability" target_scope="option_comparison" option_a="'+xmlEscape(item.options[0])+'" option_b="'+xmlEscape(item.options[1])+'">'+xmlEscape(item.text)+'</proposition>');
@@ -1397,8 +1532,17 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
     lines.push('<approved_claims><claim>本次牌陣沒有在抽牌前為兩個選項分配對稱位置，因此無法公平比較。</claim></approved_claims>');
     lines.push('<forbidden_claims><claim>事後挑選同名牌或任意牌代表選項</claim><claim>任何選項優劣結論</claim></forbidden_claims>');
     lines.push('</claim_plan></comparison_packet>');
-  }else if(isGT){
-    var geometry=buildGrandGeometry(drawn), globalUsedCards={};
+  }else{
+    var geometry=buildSpreadGeometry(drawn,spreadId),globalUsedCards={};
+    lines.push('<spread id="'+spreadId+'" name="'+xmlEscape(sp.name)+'" count="'+drawn.length+'" reading_mode="'+xmlEscape(geometry.readingMode||spreadId)+'"></spread>');
+    if(spreadId!=='grand'){
+      lines.push('<drawn_cards>');
+      for(var di=0;di<drawn.length;di++){
+        var dpos=geometry.positions[di],dlabel=dpos&&dpos.role?dpos.role:(sp.positions?sp.positions[di]:('第'+(di+1)+'張'));
+        lines.push((di+1)+'. '+dlabel+'＝'+cardLabel(drawn[di])+'（'+drawn[di].key+'）'+(drawn[di]._presetSig?'〔預置焦點，非隨機抽中〕':''));
+      }
+      lines.push('</drawn_cards>');
+    }
     var packetItems=questions.map(function(item){var packet=buildEvidencePacket(geometry,item,declaredGender);return{item:item,packet:packet};});
     assignGlobalEvidenceUids(packetItems);
     buildGlobalEvidenceLedger(packetItems,declaredGender);
@@ -1410,7 +1554,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
     stoneEvidence=packetItems;
     packetItems.forEach(function(entry){
       var item=entry.item,packet=entry.packet,type=item.type,policy=CLAIM_POLICIES[type];
-      lines.push('<evidence_packet proposition_id="'+item.id+'" type="'+type+'" target_scope="'+item.targetScope+'" formula="'+(packet.formulaId||CANONICAL_READING_FORMULA.id)+'">');
+      lines.push('<evidence_packet proposition_id="'+item.id+'" type="'+type+'" target_scope="'+item.targetScope+'" formula="'+(packet.formulaId||CANONICAL_READING_FORMULA.id)+'" spread="'+spreadId+'">');
       lines.push('<question>'+xmlEscape(item.text)+'</question>');
       lines.push('<packet_validation status="'+(packet.validation&&packet.validation.ok?'pass':'fail')+'"></packet_validation>');
       if(roles.counterpart&&questionTypeDomain(type)==='relationship')lines.push('<role name="counterpart_significator" status="'+personStatusForScope(item.targetScope)+'">'+cardLabel(CARDS[roles.counterpart-1])+'</role>');
@@ -1422,7 +1566,18 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
       lines.push('<forbidden_claims>');packet.claimPlan.forbiddenClaims.forEach(function(x){lines.push('<claim>'+xmlEscape(x)+'</claim>');});lines.push('</forbidden_claims>');
       lines.push('</claim_plan>');
 
-      var promptView=entry.promptView||buildApprovedEvidenceView(packet);
+      var sc=packet.modernContext&&packet.modernContext.spreadContext;
+      if(sc){
+        lines.push('<spread_context certainty_effect="none" use="describe_approved_claims_only">');
+        if(sc.core&&sc.core.length)lines.push('<core>'+sc.core.map(function(p){return cardLabel(p.card);}).join(' | ')+'</core>');
+        if(sc.nearField&&sc.nearField.length)lines.push('<near_field>'+sc.nearField.map(function(p){return cardLabel(p.card);}).join(' | ')+'</near_field>');
+        if(sc.balancedPairs&&sc.balancedPairs.length){lines.push('<balanced_pairs>');sc.balancedPairs.forEach(function(pair,idx){if(pair.length===2)lines.push('B'+(idx+1)+' '+pair.map(function(p){return cardLabel(p.card);}).join(' ↔ '));});lines.push('</balanced_pairs>');}
+        if(sc.lines&&sc.lines.length){lines.push('<layout_lines>');sc.lines.slice(0,8).forEach(function(line){lines.push((line.id||'L')+' '+xmlEscape(line.type||'連續線')+'='+line.positions.map(function(p){return cardLabel(p.card);}).join(' → '));});lines.push('</layout_lines>');}
+        if(sc.focalNeighborhoods&&sc.focalNeighborhoods.length){lines.push('<focal_neighborhoods>');sc.focalNeighborhoods.forEach(function(nb,idx){lines.push('N'+(idx+1)+' '+cardLabel(nb.center.card)+'周圍〔'+nb.positions.map(function(p){return cardLabel(p.card);}).join('、')+'〕');});lines.push('</focal_neighborhoods>');}
+        if(sc.houses&&sc.houses.length){lines.push('<house_context>');sc.houses.forEach(function(h){lines.push(cardLabel(h.card)+'落'+cardLabel(h.house)+'宮');});lines.push('</house_context>');}
+        lines.push('</spread_context>');
+      }
+
       if(type==='unsupported_age'||type==='health_medical_cause'||type==='timing'){
         lines.push('<analysis_requirements mode="necessary_limit_only"></analysis_requirements>');
       }else{
@@ -1436,9 +1591,6 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
     lines.push(Object.keys(globalUsedCards).map(function(id){var c=globalUsedCards[id];return cardLabel(c)+'='+c.key;}).join('；'));
     if(typeSet.sexual_component||typeSet.sexual_event)lines.push('；情境限定：30.百合=本站可選的感官／肉體享受提示；7.蛇=誘惑／複雜風險修飾，不能單獨證明性成分；34.魚不得轉義為性慾；11.鞭子不得轉義為性行為');
     lines.push('</approved_dictionary>');
-  }else{
-    lines.push('<spread>'+sp.name+'（'+sp.count+'張）</spread>');
-    lines.push('<drawn_cards>');for(var i=0;i<drawn.length;i++){var pos=sp.positions?sp.positions[i]:('第'+(i+1)+'張');lines.push((i+1)+'. '+pos+'＝'+cardLabel(drawn[i])+'（'+drawn[i].key+'）'+(drawn[i]._presetSig?'〔預置焦點，非隨機抽中〕':''));}lines.push('</drawn_cards>');
   }
   lines.push('</reading_request>');
   lines.push('');
@@ -1772,6 +1924,7 @@ window.__JY_LN_TEST__ = {
   primaryDecisionType: primaryDecisionType,
   splitQuestionSegments: splitQuestionSegments,
   buildGrandGeometry: buildGrandGeometry,
+  buildSpreadGeometry: buildSpreadGeometry,
   buildEvidencePacket: buildEvidencePacket,
   buildApprovedEvidenceView: buildApprovedEvidenceView,
   assignGlobalEvidenceUids: assignGlobalEvidenceUids,
