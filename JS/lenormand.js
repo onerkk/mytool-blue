@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v5.0
-// v5.0（2026-06-19）命題編譯器／受控深讀根治：
+// 靜月之光 — 雷諾曼牌 Lenormand v5.1
+// v5.1（2026-06-19）對稱比較編譯器根治：
 //   1. 問題不再只掛一個領域標籤；先拆成桃花機會、性／肉體成分、事件落實、年齡等獨立 proposition。
 //   2. 人物角色新增 identified／hypothetical／method_placeholder，方法占位牌不得實體化成已出現人物。
 //   3. 證據簇改依命題角色集合分組，不再用傳遞式共享核心把整張牌網合成單一 C。
@@ -8,11 +8,12 @@
 //   5. claim_plan 產生 approved／forbidden claims；吸引、性成分、實際事件不得互相借證升級。
 //   6. 年齡與醫學病因命題採 fail-closed 空證據包；健康另保留象徵性深讀 proposition。
 //   7. 每個 evidence_packet 通過程式驗證後才輸出；失敗時封閉為「無法可靠解讀」。
+//   8. A／B 適配比較題固定使用預先分配的對稱九宮格；選項名稱不得映射成同名牌，兩側使用完全相同的位置規則與權重。
 // Petit Lenormand 36 張・歷史基線＋本站可驗證判讀規約
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v5.0 loaded — 命題編譯器／受控深讀根治');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v5.1 loaded — 對稱比較編譯器根治');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -119,6 +120,25 @@ var SPREADS = {
   }
 };
 
+// v5.1：二選一比較題使用獨立的對稱九宮格。選項在抽牌前即綁定左右欄，
+// 不以選項名稱搜尋同名牌，也不把商品／人物名稱事後硬套成 Lenormand 指示牌。
+var COMPARISON_LAYOUT = {
+  id:'symmetric_nine_comparison',
+  positions:[
+    {slot:1, code:'A-strength', side:'A', role:'有利／優勢'},
+    {slot:2, code:'X-strength', side:'shared', role:'共同條件／比較基準'},
+    {slot:3, code:'B-strength', side:'B', role:'有利／優勢'},
+    {slot:4, code:'A-fit', side:'A', role:'與問卜者的適配核心'},
+    {slot:5, code:'X-core', side:'shared', role:'本題真正決策核心'},
+    {slot:6, code:'B-fit', side:'B', role:'與問卜者的適配核心'},
+    {slot:7, code:'A-risk', side:'A', role:'阻礙／代價'},
+    {slot:8, code:'X-tradeoff', side:'shared', role:'共同取捨／現實限制'},
+    {slot:9, code:'B-risk', side:'B', role:'阻礙／代價'}
+  ]
+};
+var COMPARISON_POSITIVE_IDS = [1,2,4,5,9,16,17,18,24,25,30,31,33,35];
+var COMPARISON_NEGATIVE_IDS = [6,8,10,11,21,23,36];
+
 // ════════════════════════════════════
 // 三、洗牌與抽牌
 // ════════════════════════════════════
@@ -157,8 +177,51 @@ function drawCards(count) {
 // 四、文獻分層提示詞生成
 // ════════════════════════════════════
 // ── v2.6 問題→牌陣 自動判斷（分層交叉，鏡照塔羅 detectSpreadType 的細度，映射到雷諾曼四陣） ──
+
+function _lnCleanOptionLabel(value) {
+  return String(value || '')
+    .replace(/^[\s「『【\[\(（]+|[\s」』】\]\)）]+$/g, '')
+    .replace(/^(?:要選|選|比較|請問)\s*/g, '')
+    .replace(/\s*(?:哪(?:一)?個|那(?:一)?個|何者|哪款|哪種|誰)\s*.*$/g, '')
+    .replace(/\s*(?:比較|更)?適合(?:我)?(?:配戴|佩戴|使用|選擇|購買|戴)?\s*.*$/g, '')
+    .replace(/\s*(?:我該|應該|要)?選(?:哪(?:一)?個|誰)?\s*.*$/g, '')
+    .trim();
+}
+
+function detectComparisonQuestion(text) {
+  var raw = String(text || '').replace(/[？?]/g, '').trim();
+  if (!raw || !/(?:哪(?:一)?個|那(?:一)?個|何者|哪款|哪種|比較適合|更適合|該選|應該選|選哪)/.test(raw)) return null;
+  var connectors = /(?:跟|和|與|還是|或是|或者|或|、|／|\/|\bvs\.?\b)/i;
+  var parts = raw.split(connectors);
+  if (parts.length < 2) return null;
+  var left = _lnCleanOptionLabel(parts.shift());
+  var right = _lnCleanOptionLabel(parts.join(' '));
+  // 清掉第二選項尾端的問句；第一選項則清掉常見開頭。
+  left = left.replace(/^(?:金額|想問)?\s*/, '').trim();
+  right = right.replace(/\s*(?:那|哪)(?:一)?個.*$/g, '').trim();
+  if (!left || !right || left === right || left.length > 40 || right.length > 40) return null;
+  return {
+    type:'comparison_suitability',
+    options:[left,right],
+    criterion:/配戴|佩戴|戴/.test(raw)?'配戴適配':/購買|買/.test(raw)?'選購適配':'整體適配',
+    original:raw
+  };
+}
+
+function comparisonPositionLabels(comparison) {
+  if (!comparison) return SPREADS.nine.positions.slice();
+  var a=comparison.options[0], b=comparison.options[1];
+  return COMPARISON_LAYOUT.positions.map(function(p){
+    if(p.side==='A')return a+'・'+p.role;
+    if(p.side==='B')return b+'・'+p.role;
+    return p.role;
+  });
+}
+
 function _lnDetectSpread(q) {
   q = (q || '').trim();
+  var comparison = detectComparisonQuestion(q);
+  if (comparison) return { id:'nine', why:'二選一適配題——固定使用左右對稱九宮格，兩個選項在抽牌前採相同位置規則比較' };
   var qMarks = (q.match(/[？?]/g) || []).length;
   var len = q.replace(/\s/g, '').length;
 
@@ -197,6 +260,17 @@ function _lnDetectSpread(q) {
   if (isOverview) return { id: 'nine', why: '整體狀況——九宮格全層掃描' };
   if (!q) return { id: 'five', why: '未輸入問題——五張線通用故事線' };
   return { id: 'five', why: '一般問題——五張線看因果走向' };
+}
+
+
+function resolveSpreadForQuestion(question, requestedSpread) {
+  var comparison=detectComparisonQuestion(question);
+  if(comparison) return {id:'nine',forced:true,why:'二選一比較題固定使用左右對稱九宮格；選項A／B在抽牌前採相同位置規則'};
+  if(requestedSpread==='auto'){
+    var auto=_lnDetectSpread(question);
+    return {id:auto.id,forced:false,why:auto.why};
+  }
+  return {id:requestedSpread||'three',forced:false,why:''};
 }
 
 function gtCoordinate(index) {
@@ -277,6 +351,10 @@ function buildGrandGeometry(drawn) {
 }
 
 var QUESTION_SCHEMAS = {
+  comparison_suitability: {
+    label:'二選一適配比較',
+    core:[], support:[], contextual:[]
+  },
   attraction_opportunity: {
     label:'桃花／吸引機會',
     core:[24,9,31,32],
@@ -383,10 +461,15 @@ var ANALYSIS_DIMENSIONS = {
   health:['醫學原因與象徵狀態的界線','反覆或停滯模式','壓力與耗損意象','有利與緩衝因素','生活脈絡的象徵連結','正反矛盾','牌面不能證明的病因／診斷／治療'],
   travel:['移動動力','目的與環境','阻礙與延遲','外部消息','穩定性','矛盾','未知邊界'],
   communication:['溝通意願','訊息品質','公開／私下脈絡','阻礙與誤解','反覆模式','有利條件','未知邊界'],
+  comparison:['選項A的有利與適配','選項A的阻礙與代價','選項B的有利與適配','選項B的阻礙與代價','共同決策核心與取捨','兩者差距與未知邊界'],
   general:['核心動力','有利因素','阻礙風險','重複模式','正反矛盾','可能的實際表現','牌面未證明的部分']
 };
 
 var CLAIM_POLICIES = {
+  comparison_suitability:{
+    meaning:'比較題只能依抽牌前預先指定的左右對稱位置判斷兩個選項；選項名稱只是標籤，不是同名 Lenormand 牌。',
+    forbidden:'不得因選項名稱含太陽、魚、心、熊等字而自動套用同名牌義；不得只分析其中一邊後推斷另一邊。'
+  },
   attraction_opportunity:{
     meaning:'只判斷桃花、被注意或吸引機會，不等於已出現真人、雙方互有意圖、交往或性事件。',
     forbidden:'不得把方法占位淑女寫成已經存在的女性；不得把單方結構寫成互相注意。'
@@ -450,6 +533,8 @@ function hasMedicalCauseIntent(text) {
 
 function inferQuestionDimensions(text) {
   var t = String(text || '').trim();
+  var comparison = detectComparisonQuestion(t);
+  if (comparison) return { types:['comparison_suitability'], targetScope:'option_comparison', qualifiers:[], timeScope:detectUserTimeScope(t), comparison:comparison };
   var types = [];
   var targetScope = inferTargetScope(t);
   var ageQualifier = detectAgeQualifier(t);
@@ -501,6 +586,7 @@ function primaryDecisionType(types) {
 }
 
 function questionTypeDomain(type) {
+  if (type === 'comparison_suitability') return 'comparison';
   if (type === 'attraction_opportunity' || type === 'sexual_component' || type === 'sexual_event' || /^relationship_|^multi_partner_/.test(type)) return 'relationship';
   if (/^business_|^career_|^finance$/.test(type)) return 'work_money';
   if (/^health_/.test(type)) return 'health';
@@ -519,7 +605,8 @@ function shouldSplitCommaClauses(left, right) {
   return !da.some(function(x){ return db.indexOf(x) > -1; });
 }
 
-function propositionText(type, original) {
+function propositionText(type, original, comparison) {
+  if (type === 'comparison_suitability' && comparison) return '比較「'+comparison.options[0]+'」與「'+comparison.options[1]+'」何者更符合'+comparison.criterion;
   if (type === 'attraction_opportunity') return '是否有非現任桃花或明顯吸引機會';
   if (type === 'sexual_component') return '該桃花是否帶有明顯肉體或性吸引';
   if (type === 'sexual_event') return '是否足以判斷實際發生肉體關係';
@@ -537,20 +624,22 @@ function expandSegmentToQuestions(text, baseIndex) {
     out.push({
       id:'q' + baseIndex + (mainTypes.length > 1 ? String.fromCharCode(97 + idx) : ''),
       parentId:'q' + baseIndex,
-      text:propositionText(type, text),
+      text:propositionText(type, text, dims.comparison),
       originalText:text,
       type:type,
       types:uniqueStrings([type].concat(dims.types.indexOf('timing') > -1 ? ['timing'] : [])),
       targetScope:dims.targetScope,
       qualifiers:[],
-      timeScope:dims.timeScope
+      timeScope:dims.timeScope,
+      comparison:dims.comparison || null,
+      options:dims.comparison ? dims.comparison.options.slice() : []
     });
   });
   if (dims.qualifiers.length || dims.types.indexOf('unsupported_age') > -1) {
     out.push({
       id:'q' + baseIndex + (out.length ? String.fromCharCode(97 + out.length) : ''),
       parentId:'q' + baseIndex,
-      text:propositionText('unsupported_age', text),
+      text:propositionText('unsupported_age', text, dims.comparison),
       originalText:text,
       type:'unsupported_age', types:['unsupported_age'], targetScope:dims.targetScope,
       qualifiers:dims.qualifiers.length ? dims.qualifiers : [{kind:'relative_or_unknown_age',raw:'年齡條件',assessable:false}],
@@ -629,6 +718,7 @@ function knightTargetsFor(geometry, center) {
 
 function analysisDimensionsFor(questionItem) {
   var type = primaryDecisionType(questionItem.types || [questionItem.type]);
+  if (type === 'comparison_suitability') return ANALYSIS_DIMENSIONS.comparison.slice();
   if (type === 'attraction_opportunity') return ANALYSIS_DIMENSIONS.attraction.slice();
   if (type === 'sexual_component' || type === 'sexual_event') return ANALYSIS_DIMENSIONS.sexual.slice();
   var domain = questionTypeDomain(type);
@@ -809,6 +899,100 @@ function packetHasCoreStructure(packet, idsA, idsB) { return packet.structures.s
 function packetHasDirectPair(packet, idsA, idsB) { return packet.directPairs.some(function(p){return structureHasCards({positions:p.positions},idsA,idsB);}); }
 function packetHasNegativeAround(packet, ids) { return packet.structures.some(function(st){return structureHasCards(st,ids,HARD_NEGATIVE_IDS);}); }
 
+
+function comparisonCardWeight(card, role) {
+  if (!card) return 0;
+  var positive = COMPARISON_POSITIVE_IDS.indexOf(card.id) > -1;
+  var negative = COMPARISON_NEGATIVE_IDS.indexOf(card.id) > -1;
+  var base = positive ? 1 : negative ? -1 : 0;
+  if (role === 'fit') return base * 2;
+  if (role === 'risk') return base; // 正牌表示風險較可控；負牌表示代價較重。
+  return base;
+}
+
+function optionBand(score) {
+  if (score >= 3) return 'supportive';
+  if (score <= -3) return 'strained';
+  return 'mixed';
+}
+
+function buildComparisonNinePacket(questionItem, drawn) {
+  var comparison = questionItem.comparison || detectComparisonQuestion(questionItem.originalText || questionItem.text);
+  if (!comparison || !comparison.options || comparison.options.length !== 2 || !drawn || drawn.length !== 9) {
+    return { validation:{ok:false,errors:['comparison_requires_two_options_and_nine_cards']}, claimPlan:{status:'internal_validation_failed',certaintyCap:'無法比較',requiredConclusion:'比較資料未完成，不能產生結果。',approvedClaims:['本次比較資料不完整，無法可靠比較。'],forbiddenClaims:['任何選項優劣結論']} };
+  }
+  var cards=drawn.map(function(c){return c;}), byCode={};
+  COMPARISON_LAYOUT.positions.forEach(function(p){byCode[p.code]=cards[p.slot-1];});
+  var aScore=comparisonCardWeight(byCode['A-strength'],'strength')+comparisonCardWeight(byCode['A-fit'],'fit')+comparisonCardWeight(byCode['A-risk'],'risk');
+  var bScore=comparisonCardWeight(byCode['B-strength'],'strength')+comparisonCardWeight(byCode['B-fit'],'fit')+comparisonCardWeight(byCode['B-risk'],'risk');
+  var diff=aScore-bScore, winner='tie', cap='差距有限，無明確勝負';
+  if(diff>=3){winner='A';cap='較明確偏向選項A';}
+  else if(diff>=1){winner='A';cap='較傾向選項A';}
+  else if(diff<=-3){winner='B';cap='較明確偏向選項B';}
+  else if(diff<=-1){winner='B';cap='較傾向選項B';}
+  var a=comparison.options[0],b=comparison.options[1];
+  var approved=[];
+  if(winner==='A')approved.push('依對稱位置比較，較適合的選項是「'+a+'」，但只屬本次牌面的相對適配傾向。');
+  else if(winner==='B')approved.push('依對稱位置比較，較適合的選項是「'+b+'」，但只屬本次牌面的相對適配傾向。');
+  else approved.push('兩個選項各有優缺點，本次牌面不足以分出明確勝負。');
+  approved.push('「'+a+'」的判斷只使用左側三個預設位置；「'+b+'」只使用右側三個預設位置；中央欄只解釋共同條件與取捨。');
+  approved.push('選項名稱只是標籤，不得因名稱含有任何牌名而套用同名牌義。');
+  var plan={
+    status:winner==='tie'?'comparison_close':'comparison_preference',
+    certaintyCap:cap,
+    requiredConclusion:'先分別回答兩個選項的適配，再給相對選擇；不得超過 certainty_cap。',
+    approvedClaims:approved,
+    forbiddenClaims:['把「'+a+'」名稱映射成同名牌','把「'+b+'」名稱映射成同名牌','只分析一邊後推定另一邊','宣稱客觀能量、醫療、財運或生理功效','把相對適配寫成絕對最好']
+  };
+  return {
+    validation:{ok:true,errors:[]}, comparison:comparison, cards:cards,
+    optionA:{label:a,score:aScore,band:optionBand(aScore),positions:[byCode['A-strength'],byCode['A-fit'],byCode['A-risk']]},
+    optionB:{label:b,score:bScore,band:optionBand(bScore),positions:[byCode['B-strength'],byCode['B-fit'],byCode['B-risk']]},
+    shared:{positions:[byCode['X-strength'],byCode['X-core'],byCode['X-tradeoff']]},
+    rows:[
+      {id:'X1',role:'有利／優勢比較',cards:[byCode['A-strength'],byCode['X-strength'],byCode['B-strength']]},
+      {id:'X2',role:'適配核心比較',cards:[byCode['A-fit'],byCode['X-core'],byCode['B-fit']]},
+      {id:'X3',role:'阻礙／代價比較',cards:[byCode['A-risk'],byCode['X-tradeoff'],byCode['B-risk']]}
+    ],
+    claimPlan:plan,
+    analysisDimensions:ANALYSIS_DIMENSIONS.comparison.slice()
+  };
+}
+
+function buildComparisonPromptBlock(lines, item, packet, cardLabel, xmlEscape) {
+  var a=packet.optionA.label,b=packet.optionB.label;
+  lines.push('<comparison_packet proposition_id="'+item.id+'" type="comparison_suitability" method="site_symmetric_nine_comparison">');
+  lines.push('<question>'+xmlEscape(item.text)+'</question>');
+  lines.push('<method_contract>兩個選項已在抽牌前固定分配至左右對稱位置；名稱只作標籤，絕不對應同名牌。左右欄使用相同角色與權重，中央欄只作共同條件與取捨。</method_contract>');
+  lines.push('<packet_validation status="pass"></packet_validation>');
+  lines.push('<claim_plan status="'+packet.claimPlan.status+'" certainty_cap="'+xmlEscape(packet.claimPlan.certaintyCap)+'">');
+  lines.push('<required_conclusion>'+xmlEscape(packet.claimPlan.requiredConclusion)+'</required_conclusion>');
+  lines.push('<approved_claims>');packet.claimPlan.approvedClaims.forEach(function(x){lines.push('<claim>'+xmlEscape(x)+'</claim>');});lines.push('</approved_claims>');
+  lines.push('<forbidden_claims>');packet.claimPlan.forbiddenClaims.forEach(function(x){lines.push('<claim>'+xmlEscape(x)+'</claim>');});lines.push('</forbidden_claims>');
+  lines.push('</claim_plan>');
+  lines.push('<option id="A" label="'+xmlEscape(a)+'" assessment="'+packet.optionA.band+'">');
+  lines.push('O-A1 有利／優勢='+cardLabel(packet.cards[0]));
+  lines.push('O-A2 適配核心='+cardLabel(packet.cards[3]));
+  lines.push('O-A3 阻礙／代價='+cardLabel(packet.cards[6]));
+  lines.push('</option>');
+  lines.push('<option id="B" label="'+xmlEscape(b)+'" assessment="'+packet.optionB.band+'">');
+  lines.push('O-B1 有利／優勢='+cardLabel(packet.cards[2]));
+  lines.push('O-B2 適配核心='+cardLabel(packet.cards[5]));
+  lines.push('O-B3 阻礙／代價='+cardLabel(packet.cards[8]));
+  lines.push('</option>');
+  lines.push('<shared_axis certainty_effect="none">');
+  lines.push('X-C1 共同條件／比較基準='+cardLabel(packet.cards[1]));
+  lines.push('X-C2 決策核心='+cardLabel(packet.cards[4]));
+  lines.push('X-C3 共同取捨／現實限制='+cardLabel(packet.cards[7]));
+  lines.push('</shared_axis>');
+  lines.push('<paired_rows>');
+  packet.rows.forEach(function(r){lines.push(r.id+' '+r.role+'='+r.cards.map(cardLabel).join(' | '));});
+  lines.push('</paired_rows>');
+  lines.push('<approved_dictionary>'+packet.cards.map(function(c){return cardLabel(c)+'='+c.key;}).join('；')+'</approved_dictionary>');
+  lines.push('<analysis_requirements>'+xmlEscape(packet.analysisDimensions.join('；'))+'。先分別分析A與B，再整合共同條件、差距與未知邊界；寫3至6段。</analysis_requirements>');
+  lines.push('</comparison_packet>');
+}
+
 function buildEvidencePacket(geometry, questionItem, declaredGender) {
   var type=primaryDecisionType(questionItem.types||[questionItem.type]);
   if(type==='unsupported_age'||type==='health_medical_cause'){
@@ -886,6 +1070,9 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
 function buildClaimPlan(packet, declaredGender) {
   var type=primaryDecisionType(packet.question.types||[packet.question.type]), roles=getPersonRoleIds(declaredGender), q=roles.querent?[roles.querent]:[28,29], c=roles.counterpart?[roles.counterpart]:[28,29];
   var plan={status:'model_evaluate',certaintyCap:'較有傾向',requiredConclusion:'依 approved_claims 與核心證據呈現正反面；不得超過 certainty_cap。',approvedClaims:[],forbiddenClaims:[]};
+  if(type==='comparison_suitability'){
+    plan.status='comparison_requires_symmetric_nine';plan.certaintyCap='無法由大牌陣公平比較';plan.requiredConclusion='比較題必須使用抽牌前預先分配的對稱九宮格。';plan.approvedClaims=['目前牌陣沒有為兩個選項建立對稱位置，不能公平比較。'];plan.forbiddenClaims=['將選項名稱套成同名牌','事後挑牌代表選項'];return plan;
+  }
   if(type==='unsupported_age'){
     plan.status='unsupported_age';plan.certaintyCap='不足以判定';plan.requiredConclusion='直接回答數字年齡與區間無法驗證，不得引用牌面側證。';plan.approvedClaims=['無 age_rules，無法判定數字年齡或年齡區間。'];plan.forbiddenClaims=['任何歲數、區間、年輕／年長側推'];return plan;
   }
@@ -997,11 +1184,13 @@ var PRESENTATION_FOOTERS = {
   business:'黃水晶象徵行動力與財務目標的專注；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。',
   career:'虎眼石象徵判斷力與行動界線；礦物上屬石英交代石棉假象，常見絲絹般貓眼光。',
   health:'白水晶象徵整理思緒與維持日常秩序；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。',
+  comparison:'比較結果只代表本次牌面的象徵性適配；天然礦石仍應以實物外觀、重量、尺寸與實際配戴舒適度為準。',
   general:'白水晶象徵釐清重點與穩定專注；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。'
 };
 
 function selectPresentationFooter(questions) {
   var all={};questions.forEach(function(q){(q.types||[q.type]).forEach(function(t){all[t]=true;});});
+  if(all.comparison_suitability)return PRESENTATION_FOOTERS.comparison;
   if(all.attraction_opportunity||all.sexual_component||all.sexual_event||all.relationship_intent||all.relationship_future||all.relationship_longevity||all.multi_partner_commitment)return PRESENTATION_FOOTERS.relationship;
   if(all.business_success||all.finance)return PRESENTATION_FOOTERS.business;
   if(all.career_fit||all.career_promotion||all.career_change||all.career_general)return PRESENTATION_FOOTERS.career;
@@ -1014,16 +1203,21 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   function cardLabel(c){return c.id+'.'+c.name;}
   function xmlEscape(value){return String(value==null?'':value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   var questions=splitQuestionSegments(q), roles=getPersonRoleIds(declaredGender), typeSet={};
+  var comparison=detectComparisonQuestion(q), isSymmetricComparison=!!comparison && spreadId==='nine' && drawn.length===9, isInvalidComparison=!!comparison && !isSymmetricComparison;
   questions.forEach(function(item){(item.types||[item.type]).forEach(function(type){typeSet[type]=true;});});
 
   lines.push('# 最高任務');
-  lines.push('你是本站 Petit Lenormand v7 受控深度解讀文字產生器。程式已完成命題拆分、人物狀態、核心取證、命題專屬分簇、現代脈絡去重與結論計畫。');
-  lines.push('第一句依 proposition 順序直接回答。只使用各題 approved_claims、core_clusters、evidence_catalog 與 selected_context；不得提高 certainty_cap。');
+  lines.push('你是本站 Petit Lenormand v7.1 受控深度解讀文字產生器。程式已完成命題拆分、角色／選項狀態、核心取證、命題專屬分簇、現代脈絡去重與結論計畫。');
+  lines.push('第一句依 proposition 順序直接回答。一般題只使用 approved_claims、core_clusters、evidence_catalog 與 selected_context；比較題只使用 comparison_packet 內的 O／X 證據；不得提高 certainty_cap。');
   lines.push('限制的是越權結論，不是分析深度：同一C只算一組信心，但要完整分析核心動力、有利、阻礙、矛盾、可能表現與未知邊界。');
   lines.push('人物 status=hypothetical／method_placeholder 時，不得寫成真人已出現、已有內心或已採取行動。');
   lines.push('D／S／C與脈絡結構均不表示時間、因果、互相意圖或事件已發生；未啟用相應規則時禁止「先、之後、最後、由A走向B」。');
   lines.push('棺材＝結束；鐮刀＝切斷；山＝阻礙；老鼠＝損耗；十字架＝負擔；雲＝不明；鞭子＝衝突／反覆，不得美化。');
-  lines.push('歷史基線只指36張、4×8+4及人物牌附近閱讀；其餘皆為本站現代規約。');
+  lines.push('館藏可核實36張牌組與隨附說明；4×8+4及人物牌附近閱讀採現存說明書轉錄傳統；其餘皆為本站現代規約。');
+  if(isSymmetricComparison){
+    lines.push('比較題最高規則：兩個選項已在抽牌前固定到左右對稱欄；選項名稱只是標籤，禁止把名稱中的「太陽、魚、心、熊」等字套成同名牌。');
+    lines.push('A與B必須使用完全相同的位置角色比較；不得因某選項名稱較熟悉或與牌名相同而偏重。');
+  }
   lines.push('');
 
   if(typeSet.sexual_component||typeSet.sexual_event){
@@ -1035,11 +1229,12 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   if(typeSet.unsupported_age){lines.push('無 age_rules：數字年齡與區間直接回答無法驗證，不得附牌面側證。');lines.push('');}
   if(typeSet.health_medical_cause){lines.push('醫學病因命題不得使用牌面作原因、診斷或治療；若另有 health_symbolic_context，只能作非醫療的象徵性深讀。');lines.push('');}
 
-  lines.push('<reading_request method_profile="site_petit_lenormand_v7_controlled_deep">');
+  lines.push('<reading_request method_profile="site_petit_lenormand_v7_1_controlled_deep">');
   lines.push('<question_original>'+xmlEscape(q||'未指定具體問題')+'</question_original>');
   lines.push('<propositions>');
   questions.forEach(function(item){
-    lines.push('<proposition id="'+item.id+'" parent="'+item.parentId+'" type="'+item.type+'" target_scope="'+item.targetScope+'">'+xmlEscape(item.text)+'</proposition>');
+    if(item.type==='comparison_suitability' && item.options && item.options.length===2) lines.push('<proposition id="'+item.id+'" parent="'+item.parentId+'" type="comparison_suitability" target_scope="option_comparison" option_a="'+xmlEscape(item.options[0])+'" option_b="'+xmlEscape(item.options[1])+'">'+xmlEscape(item.text)+'</proposition>');
+    else lines.push('<proposition id="'+item.id+'" parent="'+item.parentId+'" type="'+item.type+'" target_scope="'+item.targetScope+'">'+xmlEscape(item.text)+'</proposition>');
     if(item.timeScope)lines.push('<time_scope proposition_id="'+item.id+'" source="user_question" value="'+xmlEscape(item.timeScope.raw)+'" inference_enabled="false"></time_scope>');
     if(item.qualifiers&&item.qualifiers.length)item.qualifiers.forEach(function(qf){lines.push('<unsupported_constraint proposition_id="'+item.id+'" kind="age" requested="'+xmlEscape(qf.raw)+'" reason="age_rules_not_provided"></unsupported_constraint>');});
   });
@@ -1053,7 +1248,19 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('<distance_rules enabled="false"></distance_rules>');
   lines.push('<age_rules enabled="false"></age_rules>');
 
-  if(isGT){
+  if(isSymmetricComparison){
+    var comparisonItem=questions.filter(function(x){return x.type==='comparison_suitability';})[0] || questions[0];
+    var comparisonPacket=buildComparisonNinePacket(comparisonItem,drawn);
+    buildComparisonPromptBlock(lines,comparisonItem,comparisonPacket,cardLabel,xmlEscape);
+  }else if(isInvalidComparison){
+    var invalidItem=questions.filter(function(x){return x.type==='comparison_suitability';})[0] || questions[0];
+    lines.push('<comparison_packet proposition_id="'+invalidItem.id+'" type="comparison_suitability" method="site_symmetric_nine_comparison">');
+    lines.push('<packet_validation status="fail" reason="comparison_requires_symmetric_nine"></packet_validation>');
+    lines.push('<claim_plan status="invalid_comparison_spread" certainty_cap="無法比較">');
+    lines.push('<approved_claims><claim>本次牌陣沒有在抽牌前為兩個選項分配對稱位置，因此無法公平比較。</claim></approved_claims>');
+    lines.push('<forbidden_claims><claim>事後挑選同名牌或任意牌代表選項</claim><claim>任何選項優劣結論</claim></forbidden_claims>');
+    lines.push('</claim_plan></comparison_packet>');
+  }else if(isGT){
     var geometry=buildGrandGeometry(drawn), globalUsedCards={};
     var packetItems=questions.map(function(item){var packet=buildEvidencePacket(geometry,item,declaredGender);Object.keys(packet.usedCards).forEach(function(id){globalUsedCards[id]=packet.usedCards[id];});return{item:item,packet:packet};});
     packetItems.forEach(function(entry){
@@ -1108,6 +1315,10 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('');
   lines.push('# 輸出契約');
   lines.push('第一句依 proposition 順序回答全部命題；不得把吸引、性成分、事件落實或年齡合併成同一強度。');
+  if(isSymmetricComparison){
+    lines.push('比較題第一句必須直接說A、B哪個較適合，或明說差距不足；正文依序分析A、B、共同決策核心與最終取捨。');
+    lines.push('比較證據引用：O-A／O-B寫選項位置；X-C寫中央共同軸；X1／X2／X3寫完整左右配對列。');
+  }
   lines.push('每個實質命題呈現核心判斷、有利、阻礙、矛盾、可能表現與未知邊界；深度來自命題與證據整合，不靠重複列舉方法名稱。');
   lines.push('每段末尾只列真正使用的證據：D寫「牌A＆牌B」；S寫完整「牌A→…→牌B」；脈絡寫N／M／K／I／T／F。');
   lines.push('正文使用繁體中文與台灣用語，不寫座標、排數、演算法或內部檢查。');
@@ -1118,7 +1329,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('<closing>願你諸事順遂。</closing>');
   lines.push('</presentation_footer>');
   lines.push('');
-  lines.push('最後複核：只能使用批准主張與證據；hypothetical人物不得實體化；同一C只計一次；現代脈絡不升級結論；魚不是性慾；吸引不等於性成分，性成分不等於事件；無 age_rules 不得猜年齡。正文後逐字附上footer三行。只輸出最終解讀。');
+  lines.push('最後複核：只能使用批准主張與證據；hypothetical人物不得實體化；同一C只計一次；現代脈絡不升級結論；魚不是性慾；吸引不等於性成分，性成分不等於事件；無 age_rules 不得猜年齡；比較題不得將選項名稱映射成同名牌。正文後逐字附上footer三行。只輸出最終解讀。');
   return lines.join('\n');
 }
 
@@ -1230,7 +1441,7 @@ function _render() {
     var _sigCustom = (_lnSignif!==null && _lnSignif!==28 && _lnSignif!==29);
     h += '<button class="ln-spread-btn' + (_sigCustom?' active':'') + '" onclick="_lnSigPickOpen()">' + (_sigCustom ? ('自選：' + _lnSignif + '.' + (CARDS[_lnSignif-1]||{}).name) : '自選一張') + '</button>';
     h += '</div>';
-    h += '<div class="ln-auto-note" style="margin-top:.5rem">男士／女士代表你本人；自選任一張可作主題定位（如問財選魚34、問感情選心24）。九宮格會把指示牌置於中央（本站圍繞法）；大牌陣的非人物指示牌只作次要焦點，主要人物牌仍依問卜者性別判定；三張／五張線只作主題透鏡。</div></div>';
+    h += '<div class="ln-auto-note" style="margin-top:.5rem">男士／女士代表你本人；自選任一張可作主題定位（如問財選魚34、問感情選心24）。九宮格會把指示牌置於中央（本站圍繞法）；二選一比較題改用左右對稱九宮格，會忽略指示牌以保持兩邊公平；大牌陣的非人物指示牌只作次要焦點，主要人物牌仍依問卜者性別判定；三張／五張線只作主題透鏡。</div></div>';
     // v3.1：性別聲明（人物牌歸屬與 GT 代表牌的權威來源；可不選）
     h += '<div class="ln-section"><div class="ln-section-title">✦ 你的性別（可選——抽到淑女/紳士時歸屬會更準）</div>';
     h += '<div style="display:flex;flex-wrap:wrap;gap:.45rem">';
@@ -1242,9 +1453,10 @@ function _render() {
   } else {
     // Results
     var sp = SPREADS[_lnResolved];
-    h += '<div class="ln-section"><div class="ln-section-title">✦ ' + sp.name + '（' + sp.count + ' 張）</div>';
+    var _cmpTitle=detectComparisonQuestion(_lnQuestion);
+    h += '<div class="ln-section"><div class="ln-section-title">✦ ' + (_cmpTitle&&_lnResolved==='nine'?'對稱比較九宮格':sp.name) + '（' + sp.count + ' 張）</div>';
     if (_lnAutoPick) h += '<div class="ln-auto-note">✦ 自動判斷：' + _lnAutoPick.why + '</div>';
-    if (_lnSignif) h += '<div class="ln-auto-note">✦ 指示牌：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・圍繞法）' : _lnResolved==='grand' ? '（於 36 張中定位讀取）' : '（主題透鏡）') + '</div>';
+    if (_lnSignif && !detectComparisonQuestion(_lnQuestion)) h += '<div class="ln-auto-note">✦ 指示牌：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・圍繞法）' : _lnResolved==='grand' ? '（於 36 張中定位讀取）' : '（主題透鏡）') + '</div>';
     if (_lnResolved === 'nine') {
       h += '<div class="ln-grid-3x3">';
     } else {
@@ -1256,7 +1468,9 @@ function _render() {
       h += '<div class="ln-card" style="animation-delay:'+j*0.05+'s">' + (c._presetSig ? '<div style="font-size:.6rem;color:#e8d28a;letter-spacing:.12em;margin-bottom:2px">★ 指示牌</div>' : '');
       if (imgSrc) h += '<img class="ln-card-img" src="'+imgSrc+'" alt="'+c.name+'">';
       h += '<div class="ln-card-name">' + c.id + '. ' + c.name + '</div>';
-      h += '<div class="ln-card-en">' + c.en + '</div></div>';
+      h += '<div class="ln-card-en">' + c.en + '</div>';
+      var _cmpRender=detectComparisonQuestion(_lnQuestion);if(_lnResolved==='nine'&&_cmpRender){var _pl=comparisonPositionLabels(_cmpRender)[j];h+='<div style="font-size:.52rem;color:#e8d28a;line-height:1.3;margin-top:3px">'+_pl+'</div>';}
+      h += '</div>';
     }
     h += '</div></div>';
 
@@ -1297,7 +1511,8 @@ window._lenormandOpen = function() {
 window._lenormandShare = function() {
   if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66'); return; }
   var sp = SPREADS[_lnResolved] || {};
-  var pos = sp.positions || [];
+  var _cmpShare=detectComparisonQuestion(_lnQuestion);
+  var pos = (_lnResolved==='nine' && _cmpShare) ? comparisonPositionLabels(_cmpShare) : (sp.positions || []);
   var cards = (_lnDrawn || []).map(function(c, i) {
     var pl = (pos[i] || ('\u7B2C' + (i + 1) + '\u5F35'));
     pl = String(pl).split('/').pop();
@@ -1306,7 +1521,7 @@ window._lenormandShare = function() {
   });
   JYShareCard.open('lenormand', {
     cardTitle: '\u6211\u7684\u96F7\u8AFE\u66FC',
-    spread: (sp.name || '\u96F7\u8AFE\u66FC') + (sp.count ? '\uFF08' + sp.count + '\u5F35\uFF09' : ''),
+    spread: ((_cmpShare&&_lnResolved==='nine')?'對稱比較九宮格':(sp.name || '\u96F7\u8AFE\u66FC')) + (sp.count ? '\uFF08' + sp.count + '\u5F35\uFF09' : ''),
     question: _lnQuestion || '',
     cards: cards
   });
@@ -1328,15 +1543,13 @@ window._lnDoDraw = function() {
   _lnQuestion = qEl ? qEl.value.trim() : '';
   // v2.6：auto 解析（手動選陣則原樣使用）
   _lnAutoPick = null;
-  _lnResolved = _lnSpread;
-  if (_lnSpread === 'auto') {
-    var _det = _lnDetectSpread(_lnQuestion);
-    _lnResolved = _det.id;
-    _lnAutoPick = _det;
-  }
+  var _comparison=detectComparisonQuestion(_lnQuestion);
+  var _resolved=resolveSpreadForQuestion(_lnQuestion,_lnSpread);
+  _lnResolved=_resolved.id;
+  if(_lnSpread==='auto'||_resolved.forced)_lnAutoPick={id:_resolved.id,why:_resolved.why};
   var sp = SPREADS[_lnResolved];
   // 九宮格＋自選焦點牌：本站採用的現代圍繞法；預置中央後再抽八張，池先移除焦點牌避免重複
-  if (_lnResolved === 'nine' && _lnSignif) {
+  if (_lnResolved === 'nine' && _lnSignif && !_comparison) {
     shuffleDeck();
     _lnDeck = _lnDeck.filter(function (c) { return c.id !== _lnSignif; });
     var _sigCard = JSON.parse(JSON.stringify(CARDS[_lnSignif - 1]));
@@ -1421,6 +1634,10 @@ window._lnReset = function() {
 
 // 僅供自動測試使用；不參與正式 UI 與讀牌結果。
 window.__JY_LN_TEST__ = {
+  detectComparisonQuestion: detectComparisonQuestion,
+  resolveSpreadForQuestion: resolveSpreadForQuestion,
+  comparisonPositionLabels: comparisonPositionLabels,
+  buildComparisonNinePacket: buildComparisonNinePacket,
   inferQuestionDimensions: inferQuestionDimensions,
   primaryDecisionType: primaryDecisionType,
   splitQuestionSegments: splitQuestionSegments,

@@ -96,14 +96,20 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v5.0',
-        '命題編譯器／受控深讀根治',
+        '雷諾曼牌 Lenormand v5.1',
+        '對稱比較編譯器根治',
         'attraction_opportunity',
         'sexual_component',
         'sexual_event',
         'unsupported_age',
         'health_medical_cause',
         'health_symbolic_context',
+        'comparison_suitability',
+        'function detectComparisonQuestion',
+        'function resolveSpreadForQuestion',
+        'function buildComparisonNinePacket',
+        'site_symmetric_nine_comparison',
+        '選項名稱只是標籤',
         'hypothetical_noncurrent_counterpart',
         'function expandSegmentToQuestions',
         'function buildClusters',
@@ -123,6 +129,7 @@
         "key:'負擔・考驗・難卸壓力'"
       ],
       mustNot: [
+        '雷諾曼牌 Lenormand v5.0',
         '雷諾曼牌 Lenormand v4.5',
         'site_petit_lenormand_v6_deep',
         'types="general" target_scope="current_partner"',
@@ -238,7 +245,7 @@
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
     }
 
-    // ⑦雷諾曼 v5.0 命題編譯器／受控深讀根治
+    // ⑦雷諾曼 v5.1 對稱比較編譯器／受控深讀根治
     var ln = env.lenormandTest || root.__JY_LN_TEST__;
     if (ln && typeof ln.inferQuestionDimensions === 'function') {
       var qSex = ln.inferQuestionDimensions('今年有非現任的肉體桃花嗎？');
@@ -271,9 +278,50 @@
       env.report('⑦雷諾曼路由', '工作適配與升遷保持獨立命題',
         qCareer.length === 2 && qCareer[0].type === 'career_fit' && qCareer[1].type === 'career_promotion', JSON.stringify(qCareer));
 
+      var qCompare = ln.splitQuestionSegments('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴');
+      env.report('⑦雷諾曼比較路由', '二選一配戴題抽出兩個選項並進入 comparison_suitability',
+        qCompare.length === 1 && qCompare[0].type === 'comparison_suitability' &&
+        qCompare[0].options && qCompare[0].options[0] === '金太陽' && qCompare[0].options[1] === '黑靈骨龍宮舍利', JSON.stringify(qCompare));
+      var cmpAlt = ln.detectComparisonQuestion('月光石還是紫水晶比較適合我');
+      env.report('⑦雷諾曼比較路由', '還是／比較適合語型可穩定抽取選項',
+        !!cmpAlt && cmpAlt.options[0] === '月光石' && cmpAlt.options[1] === '紫水晶', JSON.stringify(cmpAlt));
+
+      var cmpResolved = ln.resolveSpreadForQuestion('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴','grand');
+      env.report('⑦雷諾曼比較路由', '比較題即使手動選大牌陣仍強制使用對稱九宮格',
+        cmpResolved.id === 'nine' && cmpResolved.forced === true, JSON.stringify(cmpResolved));
+      var normalResolved = ln.resolveSpreadForQuestion('正職工作適合我嗎','grand');
+      env.report('⑦雷諾曼比較路由', '非比較題保留使用者手動牌陣',
+        normalResolved.id === 'grand' && normalResolved.forced === false, JSON.stringify(normalResolved));
+
       if (typeof ln.buildPrompt === 'function' && ln.cards) {
         var ids = [30,27,34,26,28,17,36,22,33,3,9,18,24,4,8,7,23,19,21,11,14,25,29,5,6,20,10,35,13,1,15,16,2,12,32,31];
         var draw = ids.map(function(id){ return ln.cards[id - 1]; });
+        var cmpDraw = [31,8,24,35,33,21,6,4,30].map(function(id){ return ln.cards[id - 1]; });
+        var cmpPacket = ln.buildComparisonNinePacket(qCompare[0], cmpDraw);
+        env.report('⑦雷諾曼比較證據', 'A／B 使用對稱三位置，中央三張只作共同軸',
+          cmpPacket.validation.ok && cmpPacket.optionA.positions.length === 3 && cmpPacket.optionB.positions.length === 3 && cmpPacket.shared.positions.length === 3,
+          JSON.stringify({a:cmpPacket.optionA.band,b:cmpPacket.optionB.band,cap:cmpPacket.claimPlan.certaintyCap}));
+        env.report('⑦雷諾曼比較證據', '相同九張牌不因選項名稱含太陽而改變程式結論',
+          (function(){
+            var q2=ln.splitQuestionSegments('白水晶跟黑曜石 哪個更適合我配戴')[0];
+            var p2=ln.buildComparisonNinePacket(q2,cmpDraw);
+            return p2.claimPlan.status===cmpPacket.claimPlan.status && p2.claimPlan.certaintyCap===cmpPacket.claimPlan.certaintyCap;
+          })(), '');
+        var cmpPrompt = ln.buildPrompt('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴', cmpDraw, 'nine', null, 'male');
+        env.report('⑦雷諾曼比較提示詞', '比較提示含預先分配、名稱非牌義、A/B對稱與程式結論上限',
+          cmpPrompt.indexOf('site_symmetric_nine_comparison') > -1 &&
+          cmpPrompt.indexOf('選項名稱只是標籤') > -1 &&
+          cmpPrompt.indexOf('O-A1') > -1 && cmpPrompt.indexOf('O-B1') > -1 &&
+          cmpPrompt.indexOf('X-C2 決策核心') > -1 &&
+          cmpPrompt.indexOf('不得將選項名稱映射成同名牌') > -1,
+          'len='+cmpPrompt.length);
+        env.report('⑦雷諾曼比較提示詞', '比較題不產生 Grand Tableau D/S/C 證據牆',
+          cmpPrompt.indexOf('<evidence_catalog>') === -1 && cmpPrompt.indexOf('<core_clusters') === -1 && cmpPrompt.length < 8000,
+          'len='+cmpPrompt.length);
+        var invalidCmpPrompt = ln.buildPrompt('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴', draw, 'grand', null, 'male');
+        env.report('⑦雷諾曼比較守門', '未使用對稱九宮格時 fail-closed，不事後挑牌比較',
+          invalidCmpPrompt.indexOf('comparison_requires_symmetric_nine') > -1 && invalidCmpPrompt.indexOf('任何選項優劣結論') > -1 && invalidCmpPrompt.indexOf('<evidence_catalog>') === -1,
+          '');
         var geom = ln.buildGrandGeometry(draw);
         var packets = sexSplit.map(function(q){ return ln.buildEvidencePacket(geom, q, 'male'); });
 
@@ -295,7 +343,7 @@
 
         var lp = ln.buildPrompt('今年有非現任的肉體桃花嗎？她幾歲？', draw, 'grand', null, 'male');
         env.report('⑦雷諾曼提示詞', 'v7 提示詞含命題、人物狀態、批准主張與驗證狀態',
-          lp.indexOf('site_petit_lenormand_v7_controlled_deep') > -1 &&
+          lp.indexOf('site_petit_lenormand_v7_1_controlled_deep') > -1 &&
           lp.indexOf('type="attraction_opportunity"') > -1 &&
           lp.indexOf('type="sexual_component"') > -1 &&
           lp.indexOf('type="sexual_event"') > -1 &&
