@@ -1395,7 +1395,7 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260612v6_4" defer></script>
-<script src="JS/lenormand.js?v=20260619v86_38" defer></script>
+<script src="JS/lenormand.js?v=20260619v3_14" defer></script>
 <script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260612v80_40" defer></script>
@@ -1571,9 +1571,11 @@
   </div>
 </footer>
 
-<!-- v86_36(2026/6/19)：Gemini Android 實機影片根治——v86_35 的 Chrome intent 在手機上呈現白畫面後立即返回，證實病根為 intent://＋_self，而非複製 Promise。移除 intent/package/fallback/Gemini 特例；所有 AI 統一使用官方 HTTPS 真實 <a target="_blank"> 原生新分頁。複製只在 pointerdown/click 做副作用，不 preventDefault、不改 href/target、不程式化開窗、不 render。動 index/lenormand-v3.13.js。 -->
-<!-- v86_38(2026/6/19)：Gemini Android/PWA 根治——移除 Async Clipboard/Promise/location.assign；Gemini 點擊只同步 execCommand 複製，隨後由真實 anchor 直接導覽。Android 依 UA 指定 Samsung Internet(com.sec.android.app.sbrowser)或 Chrome(com.android.chrome) intent，強制載入 Gemini 網頁版並附 HTTPS fallback，避開 Gemini App Link 白畫面閃退。實體檔名固定 JS/lenormand.js。 -->
+<!-- v86_36(2026/6/19)：Android 實機錄影確認 Gemini 白畫面後返回源自新視窗／外部導覽。改為官方 HTTPS 在目前頁面原生開啟；同步複製只做副作用，不攔截連結、不等待 Promise、不程式化開窗。另改用全新實體檔名 lenormand-v3.13.js 破除舊快取。 -->
+<!-- v86_37(2026/6/19)：v86_34(_blank)→v86_36(_self) 兩次改 target 都已實機回報仍會閃退，逐行排查確認本站
+     code 無 history.back／location 改寫，問題不在本站邏輯。改為：①Gemini 改回與其它9家一致的 _blank，
+     拿掉兩次都驗證失敗的特例。②新增 ?lndebug=1 才啟動的可選診斷（pageshow+sessionStorage 時間戳），
+     下次實機重現時用這個拿真證據，不再猜第三次 target。③檔名永久固定 lenormand.js，不再塞版本號進實體
+     檔名，本專案無 SW 攔截 search、之後改版只動這行 ?v=。動 lenormand.js(v3.14)/index。 -->
 </body>
 </html>
-
-<!-- v86_37(2026/6/19)：Gemini 改為單一 click：writeText 完成後 location.assign；移除 Gemini pointerdown/execCommand。檔名固定 JS/lenormand.js，可直接覆蓋。 -->
