@@ -96,8 +96,8 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v5.4',
-        '人生建議命題／核准證據視圖／提示詞收斂根治',
+        '雷諾曼牌 Lenormand v5.5',
+        '性題證據歸屬／原子分簇／提示詞再收斂根治',
         'attraction_opportunity',
         'sexual_component',
         'sexual_event',
@@ -111,6 +111,11 @@
         'life_guidance',
         'timing_rules_not_enabled',
         'function assignGlobalEvidenceUids',
+        'function enforceGlobalClaimEvidenceUniqueness',
+        'function structureEvidenceRole',
+        'sexual_theme_unassigned',
+        'evidence_role=',
+        '蛇只作誘惑／複雜風險修飾',
         'function rankAndLimitClusterIds',
         'function modernThemeAllowedForType',
         '<claim_evidence>',
@@ -124,7 +129,7 @@
         'function buildApprovedEvidenceView',
         'function buildStoneRecommendationCandidates',
         'site_symmetric_nine_comparison',
-        'site_petit_lenormand_v7_4_approved_evidence',
+        'site_petit_lenormand_v7_5_atomic_evidence',
         '本站受控的現代工作詞典',
         '不得自行延伸成清庫存、投廣告、調價格、追毛利',
         '<stone_recommendation mode="select_after_interpretation"',
@@ -142,7 +147,7 @@
         '<packet_validation status="',
         '魚不得轉義為性慾',
         '鞭子不得轉義為性行為',
-        '吸引不等於性成分，性成分不等於事件',
+        '桃花機會、感官／性成分、實際肉體事件是三個不同命題',
         '<age_rules enabled="false">',
         'personStatusForScope(item.targetScope)',
         "key:'結束・終止・封閉'",
@@ -153,6 +158,8 @@
         "pos:'負擔、考驗、難卸責任'"
       ],
       mustNot: [
+        '雷諾曼牌 Lenormand v5.4',
+        'site_petit_lenormand_v7_4_approved_evidence',
         '雷諾曼牌 Lenormand v5.3',
         'site_petit_lenormand_v7_3_evidence_lineage',
         '雷諾曼牌 Lenormand v5.2',
@@ -280,7 +287,7 @@
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
     }
 
-    // ⑦雷諾曼 v5.4 人生建議命題／核准證據視圖／提示詞收斂根治
+    // ⑦雷諾曼 v5.5 性題證據歸屬／原子分簇／提示詞再收斂根治
     var ln = env.lenormandTest || root.__JY_LN_TEST__;
     if (ln && typeof ln.inferQuestionDimensions === 'function') {
       var qSex = ln.inferQuestionDimensions('今年有非現任的肉體桃花嗎？');
@@ -404,8 +411,8 @@
           (lifeView.structures || []).length <= lifePacket.structures.length,
           JSON.stringify({all:lifePacket.structures.length,approved:lifeView.structures.length,clusters:Object.keys(lifeApprovedIds)}));
         var lifePrompt = ln.buildPrompt(lifeQuestion, draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼人生建議提示詞', 'v7.4 只輸出核准證據並封鎖未核准脈絡偷渡',
-          lifePrompt.indexOf('site_petit_lenormand_v7_4_approved_evidence') > -1 &&
+        env.report('⑦雷諾曼人生建議提示詞', 'v7.5 只輸出核准證據並封鎖未核准脈絡偷渡',
+          lifePrompt.indexOf('site_petit_lenormand_v7_5_atomic_evidence') > -1 &&
           lifePrompt.indexOf('type="life_guidance"') > -1 &&
           lifePrompt.indexOf('<approved_evidence_scope rule="only_claim_linked">') > -1 &&
           lifePrompt.indexOf('<selected_context certainty_effect="none" scope="approved_clusters_only">') > -1 &&
@@ -426,6 +433,48 @@
           JSON.stringify(lifeCandidates));
 
         var packets = sexSplit.map(function(q){ return ln.buildEvidencePacket(geom, q, 'male'); });
+        var sexEntries = sexSplit.map(function(item, idx){ return {item:item, packet:packets[idx]}; });
+        ln.assignGlobalEvidenceUids(sexEntries);
+        ln.enforceGlobalClaimEvidenceUniqueness(sexEntries);
+
+        function makeStructure(cardIds, kind) {
+          var positions = cardIds.map(function(id, idx){ return {slot:idx + 1, card:ln.cards[id - 1]}; });
+          return {id:'D1', kind:kind || 'adjacency', positions:positions, cardIds:cardIds.slice()};
+        }
+        function makeRolePacket(type, role, cardIds, polarity) {
+          var structure = makeStructure(cardIds);
+          return {
+            question:{type:type, types:[type]}, structures:[structure], directPairs:[structure], segments:[],
+            clusters:[{id:'C1', role:role, polarity:polarity || 'neutral', structures:[structure], refs:['D1'], cardIds:cardIds.slice()}]
+          };
+        }
+        env.report('⑦雷諾曼性題反例', '紳士＋蛇只屬誘惑／複雜修飾，不得建立性吸引',
+          ln.structureEvidenceRole('sexual_component', makeStructure([28,7]), 'male') === 'sexual_modifier_only' &&
+          ln.buildClaimPlan(makeRolePacket('sexual_component','sexual_modifier_only',[28,7],'neutral'),'male').status === 'sexual_theme_unassigned', '');
+        env.report('⑦雷諾曼性題門檻', '百合與吸引焦點可作本站感官提示；百合遇固定負牌改列風險',
+          ln.structureEvidenceRole('sexual_component', makeStructure([30,9]), 'male') === 'sexual_support' &&
+          ln.structureEvidenceRole('sexual_component', makeStructure([30,8]), 'male') === 'risk', '');
+        env.report('⑦雷諾曼長線距離', '遠端心牌與假設人物不得因同一長線硬連成吸引支持',
+          ln.structureEvidenceRole('attraction_opportunity', makeStructure([24,14,34,29],'segment'), 'male') === 'attraction_context', '');
+        var eventOnlyPlan = ln.buildClaimPlan(makeRolePacket('sexual_event','event_support',[30,29,1],'positive'),'male');
+        env.report('⑦雷諾曼事件門檻', '只有感官／人物接觸結構、沒有獨立關係落實證據時仍不足以判定事件',
+          eventOnlyPlan.status === 'sexual_event_insufficient', JSON.stringify(eventOnlyPlan));
+
+        var globalUsedUid = {};
+        var globalUidUnique = sexEntries.slice(0,3).every(function(entry){
+          var packet = entry.packet, linked = {};
+          (packet.claimPlan.claimEvidence || []).forEach(function(link){ (link.clusters || []).forEach(function(cid){ linked[cid] = true; }); });
+          return (packet.clusters || []).filter(function(c){ return linked[c.id]; }).every(function(c){
+            return (c.structures || []).every(function(st){
+              if (!st.evidenceUid) return false;
+              if (globalUsedUid[st.evidenceUid]) return false;
+              globalUsedUid[st.evidenceUid] = true;
+              return true;
+            });
+          });
+        });
+        env.report('⑦雷諾曼全題證據獨占', '同一 evidence_uid 在桃花／性成分／事件的核准主張中只出現一次',
+          globalUidUnique, JSON.stringify(globalUsedUid));
 
         env.report('⑦雷諾曼證據包', '每個 packet 通過程式驗證',
           packets.every(function(p){ return p.validation && p.validation.ok; }), JSON.stringify(packets.map(function(p){ return p.validation; })));
@@ -498,8 +547,8 @@
         env.report('⑦雷諾曼證據血緣', '跨命題相同實體結構共用 evidence_uid',
           Object.keys(uidByKey).every(function(k){return uidByKey[k]!=='MISMATCH';}), JSON.stringify(uidByKey).slice(0,220));
         var moneyPrompt = ln.buildPrompt(moneyQuestion, draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', 'v7.4 含四命題、claim_evidence、核准證據範圍與時間守門',
-          moneyPrompt.indexOf('site_petit_lenormand_v7_4_approved_evidence') > -1 &&
+        env.report('⑦雷諾曼提示詞', 'v7.5 含四命題、claim_evidence、核准證據範圍與時間守門',
+          moneyPrompt.indexOf('site_petit_lenormand_v7_5_atomic_evidence') > -1 &&
           moneyPrompt.indexOf('type="debt_clearance"') > -1 && moneyPrompt.indexOf('type="positive_net_worth"') > -1 &&
           moneyPrompt.indexOf('<claim_evidence>') > -1 && moneyPrompt.indexOf('basis="rule_limit"') > -1 && moneyPrompt.indexOf('<timing_rules enabled="false"') > -1 &&
           moneyPrompt.indexOf('本站受控的現代工作詞典') > -1 && moneyPrompt.indexOf('不得自行延伸成清庫存、投廣告、調價格、追毛利') > -1 &&
@@ -507,8 +556,8 @@
           'len='+moneyPrompt.length);
 
         var lp = ln.buildPrompt('今年有非現任的肉體桃花嗎？她幾歲？', draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', 'v7.4 提示詞含命題、人物狀態、批准主張與核准證據範圍',
-          lp.indexOf('site_petit_lenormand_v7_4_approved_evidence') > -1 &&
+        env.report('⑦雷諾曼提示詞', 'v7.5 提示詞含命題、人物狀態、批准主張與核准證據範圍',
+          lp.indexOf('site_petit_lenormand_v7_5_atomic_evidence') > -1 &&
           lp.indexOf('type="attraction_opportunity"') > -1 &&
           lp.indexOf('type="sexual_component"') > -1 &&
           lp.indexOf('type="sexual_event"') > -1 &&
@@ -516,16 +565,24 @@
           lp.indexOf('status="hypothetical"') > -1 &&
           (lp.match(/packet_validation status="pass"/g) || []).length === 4 &&
           lp.indexOf('<approved_claims>') > -1 && lp.indexOf('<forbidden_claims>') > -1, 'len=' + lp.length);
-        env.report('⑦雷諾曼提示詞', '性命題邊界鎖定：魚與鞭子不得越權轉義',
+        env.report('⑦雷諾曼提示詞', '性命題邊界鎖定：蛇不得單獨建性、魚與鞭子不得越權轉義',
+          lp.indexOf('蛇只修飾誘惑／複雜風險，不能單獨建立性成分') > -1 &&
           lp.indexOf('魚不得轉義為性慾') > -1 && lp.indexOf('鞭子不得轉義為性行為') > -1 &&
-          lp.indexOf('吸引不等於性成分，性成分不等於事件') > -1, '');
+          lp.indexOf('證據不可互借或從不同位置拼接升級') > -1, '');
+        var promptUids = (lp.match(/uid=E\d+/g) || []);
+        var uniquePromptUids = {};
+        promptUids.forEach(function(uid){ uniquePromptUids[uid] = (uniquePromptUids[uid] || 0) + 1; });
+        env.report('⑦雷諾曼提示詞', 'runtime 提示詞全題 evidence_uid 無重複，性題不再輸出 selected_context',
+          Object.keys(uniquePromptUids).every(function(uid){ return uniquePromptUids[uid] === 1; }) &&
+          lp.indexOf('<selected_context') === -1,
+          JSON.stringify(uniquePromptUids));
         var ageStart = lp.indexOf('<evidence_packet proposition_id="q2"');
         var ageEnd = lp.indexOf('</evidence_packet>', ageStart);
         var ageBlock = ageStart > -1 && ageEnd > ageStart ? lp.slice(ageStart, ageEnd) : '';
         env.report('⑦雷諾曼提示詞', '不可驗證年齡不生成 evidence_catalog／現代脈絡',
           ageBlock.indexOf('<evidence_catalog>') === -1 && ageBlock.indexOf('<selected_context') === -1 && ageBlock.indexOf('unsupported_age') > -1, ageBlock.slice(0,120));
         env.report('⑦雷諾曼提示詞', '提示詞移除全量技法資料牆並控制長度',
-          lp.length < 14000 && lp.indexOf('<modern_context certainty_effect="none">') === -1 && lp.indexOf('<thematic_repetitions scope="approved_local_context">') === -1,
+          lp.length < 12000 && lp.indexOf('<modern_context certainty_effect="none">') === -1 && lp.indexOf('<thematic_repetitions scope="approved_local_context">') === -1,
           'len=' + lp.length);
         env.report('⑦雷諾曼提示詞', '品牌連結為完整 Markdown，沒有裸文字缺網址',
           lp.indexOf('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)') > -1, '');
