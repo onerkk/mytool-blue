@@ -96,8 +96,8 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v5.1',
-        '對稱比較編譯器根治',
+        '雷諾曼牌 Lenormand v5.2',
+        '證據優先提示詞／動態水晶推薦根治',
         'attraction_opportunity',
         'sexual_component',
         'sexual_event',
@@ -108,7 +108,12 @@
         'function detectComparisonQuestion',
         'function resolveSpreadForQuestion',
         'function buildComparisonNinePacket',
+        'function buildEvidenceAwareAnalysisRequirements',
+        'function buildStoneRecommendationCandidates',
         'site_symmetric_nine_comparison',
+        'site_petit_lenormand_v7_2_evidence_first',
+        '<stone_recommendation mode="select_after_interpretation"',
+        '不得固定推薦白水晶',
         '選項名稱只是標籤',
         'hypothetical_noncurrent_counterpart',
         'function expandSegmentToQuestions',
@@ -126,9 +131,14 @@
         '<age_rules enabled="false">',
         'personStatusForScope(item.targetScope)',
         "key:'結束・終止・封閉'",
-        "key:'負擔・考驗・難卸壓力'"
+        "key:'負擔・考驗・難卸壓力'",
+        "pos:'暫時不明、判斷需保留'",
+        "pos:'阻礙存在、進展延遲、難以跨越'",
+        "pos:'持續耗損、逐步減少'",
+        "pos:'負擔、考驗、難卸責任'"
       ],
       mustNot: [
+        '雷諾曼牌 Lenormand v5.1',
         '雷諾曼牌 Lenormand v5.0',
         '雷諾曼牌 Lenormand v4.5',
         'site_petit_lenormand_v6_deep',
@@ -140,7 +150,12 @@
         "key:'結束・轉化・終止'",
         "key:'負擔・命運・考驗'",
         '末排四張依本站約定只作獨立總結',
-        '不建立與第四排的上下相鄰'
+        '不建立與第四排的上下相鄰',
+        "pos:'困惑即將散去、暫時看不清'",
+        "pos:'堅毅、大目標、穩固'",
+        "pos:'減少壓力、放下'",
+        "pos:'宗教、精神信仰、承擔考驗'",
+        '<stone_text>'
       ]
     }  };
 
@@ -245,7 +260,7 @@
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
     }
 
-    // ⑦雷諾曼 v5.1 對稱比較編譯器／受控深讀根治
+    // ⑦雷諾曼 v5.2 證據優先提示詞／動態水晶推薦根治
     var ln = env.lenormandTest || root.__JY_LN_TEST__;
     if (ln && typeof ln.inferQuestionDimensions === 'function') {
       var qSex = ln.inferQuestionDimensions('今年有非現任的肉體桃花嗎？');
@@ -285,6 +300,11 @@
       var cmpAlt = ln.detectComparisonQuestion('月光石還是紫水晶比較適合我');
       env.report('⑦雷諾曼比較路由', '還是／比較適合語型可穩定抽取選項',
         !!cmpAlt && cmpAlt.options[0] === '月光石' && cmpAlt.options[1] === '紫水晶', JSON.stringify(cmpAlt));
+      var cmpPrinciple = ln.detectComparisonQuestion('我搭配手鍊 是要搭配自己喜歡的 還是要看八字5行？');
+      env.report('⑦雷諾曼比較路由', '自然語句「喜好還是八字五行」正規化為兩個明確選項',
+        !!cmpPrinciple && cmpPrinciple.options[0] === '自己喜歡的款式' && cmpPrinciple.options[1] === '依八字五行搭配' && cmpPrinciple.criterion === '手鍊搭配原則', JSON.stringify(cmpPrinciple));
+      var notComparison = ln.detectComparisonQuestion('我喜歡水晶和手鍊');
+      env.report('⑦雷諾曼比較路由', '一般並列句不誤判成比較題', notComparison === null, JSON.stringify(notComparison));
 
       var cmpResolved = ln.resolveSpreadForQuestion('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴','grand');
       env.report('⑦雷諾曼比較路由', '比較題即使手動選大牌陣仍強制使用對稱九宮格',
@@ -318,6 +338,15 @@
         env.report('⑦雷諾曼比較提示詞', '比較題不產生 Grand Tableau D/S/C 證據牆',
           cmpPrompt.indexOf('<evidence_catalog>') === -1 && cmpPrompt.indexOf('<core_clusters') === -1 && cmpPrompt.length < 8000,
           'len='+cmpPrompt.length);
+        env.report('⑦雷諾曼推薦', '結尾改為解讀後選擇候選，不再寫死 stone_text／白水晶',
+          cmpPrompt.indexOf('<stone_recommendation mode="select_after_interpretation"') > -1 &&
+          cmpPrompt.indexOf('<stone_text>') === -1 && cmpPrompt.indexOf('不得固定推薦白水晶') > -1,
+          '');
+        var choiceCandidates = ln.buildStoneRecommendationCandidates('我搭配手鍊 是要搭配自己喜歡的 還是要看八字五行？', ln.splitQuestionSegments('我搭配手鍊 是要搭配自己喜歡的 還是要看八字五行？'), []);
+        var businessCandidates = ln.buildStoneRecommendationCandidates('我的副業賣場該怎麼提升業績？', ln.splitQuestionSegments('我的副業賣場該怎麼提升業績？'), []);
+        env.report('⑦雷諾曼推薦', '問題方向不同會召回不同首選候選',
+          choiceCandidates[0] && choiceCandidates[0].name === '紫水晶' && businessCandidates[0] && businessCandidates[0].name === '黃水晶',
+          JSON.stringify({choice:choiceCandidates[0],business:businessCandidates[0]}));
         var invalidCmpPrompt = ln.buildPrompt('金太陽跟黑靈骨龍宮舍利 那個更適合我配戴', draw, 'grand', null, 'male');
         env.report('⑦雷諾曼比較守門', '未使用對稱九宮格時 fail-closed，不事後挑牌比較',
           invalidCmpPrompt.indexOf('comparison_requires_symmetric_nine') > -1 && invalidCmpPrompt.indexOf('任何選項優劣結論') > -1 && invalidCmpPrompt.indexOf('<evidence_catalog>') === -1,
@@ -340,10 +369,16 @@
           return p.structures.every(function(st){ return counts[st.id] === 1; });
         });
         env.report('⑦雷諾曼證據包', '每個 D/S 恰好歸屬一個 C，不重複計分', allRefsOk, '');
+        var analysisReq = ln.buildEvidenceAwareAnalysisRequirements(packets[0]);
+        env.report('⑦雷諾曼深度契約', '分析項目依實際C極性與牌面啟用，不再固定強迫全部展開',
+          analysisReq.items.some(function(x){return x.indexOf('核心判斷') > -1;}) &&
+          analysisReq.items.some(function(x){return x.indexOf('省略') > -1 || x.indexOf('必寫') > -1;}) &&
+          analysisReq.paragraphMax >= analysisReq.paragraphMin,
+          JSON.stringify(analysisReq));
 
         var lp = ln.buildPrompt('今年有非現任的肉體桃花嗎？她幾歲？', draw, 'grand', null, 'male');
         env.report('⑦雷諾曼提示詞', 'v7 提示詞含命題、人物狀態、批准主張與驗證狀態',
-          lp.indexOf('site_petit_lenormand_v7_1_controlled_deep') > -1 &&
+          lp.indexOf('site_petit_lenormand_v7_2_evidence_first') > -1 &&
           lp.indexOf('type="attraction_opportunity"') > -1 &&
           lp.indexOf('type="sexual_component"') > -1 &&
           lp.indexOf('type="sexual_event"') > -1 &&

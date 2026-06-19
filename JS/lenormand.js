@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v5.1
-// v5.1（2026-06-19）對稱比較編譯器根治：
+// 靜月之光 — 雷諾曼牌 Lenormand v5.2
+// v5.2（2026-06-19）證據優先提示詞／動態水晶推薦根治：
 //   1. 問題不再只掛一個領域標籤；先拆成桃花機會、性／肉體成分、事件落實、年齡等獨立 proposition。
 //   2. 人物角色新增 identified／hypothetical／method_placeholder，方法占位牌不得實體化成已出現人物。
 //   3. 證據簇改依命題角色集合分組，不再用傳遞式共享核心把整張牌網合成單一 C。
@@ -9,11 +9,14 @@
 //   6. 年齡與醫學病因命題採 fail-closed 空證據包；健康另保留象徵性深讀 proposition。
 //   7. 每個 evidence_packet 通過程式驗證後才輸出；失敗時封閉為「無法可靠解讀」。
 //   8. A／B 適配比較題固定使用預先分配的對稱九宮格；選項名稱不得映射成同名牌，兩側使用完全相同的位置規則與權重。
-// Petit Lenormand 36 張・歷史基線＋本站可驗證判讀規約
+//   9. 比較語意改由「替代連接詞＋選擇語法」解析；「自己喜歡還是看八字五行」不再誤落一般題。
+//  10. 提示詞改為優先規則→證據→依證據啟用的分析契約→輸出，移除重複且無證據仍強迫展開的固定清單。
+//  11. 水晶結尾由問題、命題與實際抽牌召回候選，AI完成解讀後依主結論選一項；無吻合方向則不強推。
+// Petit Lenormand 36 張・歷史基線＋本站明示的現代判讀規約
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v5.1 loaded — 對稱比較編譯器根治');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v5.2 loaded — 證據優先提示詞／動態水晶推薦根治');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -24,12 +27,12 @@ var CARDS = [
   {id:3,  name:'船',    en:'Ship',     key:'旅行・貿易・遠方',        pos:'旅行、商業機會、進展',          neg:'延遲、漂泊、不安定',            topic:'移動',   suit:'♠10', element:'water'},
   {id:4,  name:'房屋',  en:'House',    key:'家庭・穩定・根基',        pos:'家庭和睦、穩定、安全感',        neg:'家庭問題、封閉、固執',           topic:'家庭',   suit:'♥K',  element:'earth'},
   {id:5,  name:'大樹',  en:'Tree',     key:'健康・成長・根深',        pos:'健康良好、穩定成長、生命力',    neg:'健康問題、停滯、依賴',           topic:'健康',   suit:'♥7',  element:'earth'},
-  {id:6,  name:'雲',    en:'Clouds',   key:'不明・混亂・判斷不清',      pos:'困惑即將散去、暫時看不清',     neg:'混亂、迷茫、欺騙',              topic:'困惑',   suit:'♣K',  element:'air'},
+  {id:6,  name:'雲',    en:'Clouds',   key:'不明・混亂・判斷不清',      pos:'暫時不明、判斷需保留',     neg:'混亂、迷茫、欺騙',              topic:'困惑',   suit:'♣K',  element:'air'},
   {id:7,  name:'蛇',    en:'Snake',    key:'複雜・欺騙・女性',        pos:'智慧、靈活、有經驗的女性',     neg:'背叛、欺騙、曲折、嫉妒',        topic:'欺騙',   suit:'♣Q',  element:'fire'},
-  {id:8,  name:'棺材',  en:'Coffin',   key:'結束・終止・封閉',        pos:'舊事結束、轉化、放下',         neg:'生病、失去、悲傷、結束',         topic:'結束',   suit:'♦9',  element:'earth'},
+  {id:8,  name:'棺材',  en:'Coffin',   key:'結束・終止・封閉',        pos:'舊事結束、終止、放下',         neg:'生病、失去、悲傷、結束',         topic:'結束',   suit:'♦9',  element:'earth'},
   {id:9,  name:'花束',  en:'Bouquet',  key:'美好・禮物・社交',        pos:'禮物、讚美、美好事物、邀請',   neg:'虛榮、表面功夫',                topic:'美好',   suit:'♠Q',  element:'earth'},
   {id:10, name:'鐮刀',  en:'Scythe',   key:'切斷・突然中止・急迫風險',        pos:'快速決斷、乾脆切割',           neg:'突然的痛苦、意外、手術',         topic:'切斷',   suit:'♦J',  element:'fire'},
-  {id:11, name:'鞭子',  en:'Whip',     key:'衝突・爭論・反覆循環',        pos:'鍛鍊、討論、性吸引',           neg:'爭吵、暴力、痛苦的重複',        topic:'衝突',   suit:'♣J',  element:'fire'},
+  {id:11, name:'鞭子',  en:'Whip',     key:'衝突・爭論・反覆循環',        pos:'鍛鍊、討論、反覆處理',           neg:'爭吵、暴力、痛苦的重複',        topic:'衝突',   suit:'♣J',  element:'fire'},
   {id:12, name:'鳥',    en:'Birds',    key:'溝通・焦慮・一對',        pos:'對話、溝通、一對伴侶',         neg:'焦慮、八卦、緊張',              topic:'溝通',   suit:'♦7',  element:'air'},
   {id:13, name:'孩子',  en:'Child',    key:'新開始・天真・小',        pos:'新開始、天真、新計畫',          neg:'幼稚、不成熟、弱小',            topic:'新事',   suit:'♠J',  element:'water'},
   {id:14, name:'狐狸',  en:'Fox',      key:'工作・狡猾・自保',        pos:'聰明、工作、自我保護',         neg:'欺騙、不誠實、自私',            topic:'工作',   suit:'♣9',  element:'fire'},
@@ -39,9 +42,9 @@ var CARDS = [
   {id:18, name:'狗',    en:'Dog',      key:'忠誠・友誼・信任',        pos:'忠誠的朋友、信任、支持',       neg:'過度依賴、服從、被利用',        topic:'友誼',   suit:'♥10', element:'earth'},
   {id:19, name:'塔',    en:'Tower',    key:'權威・孤立・機構',        pos:'獨立、權威、公司、政府',       neg:'孤立、高傲、被困',              topic:'權威',   suit:'♠6',  element:'earth'},
   {id:20, name:'花園',  en:'Garden',   key:'社交・公開・群眾',        pos:'社交活動、公開場合、名聲',     neg:'缺乏隱私、流言',               topic:'社交',   suit:'♠8',  element:'earth'},
-  {id:21, name:'山',    en:'Mountain', key:'阻礙・延遲・難以跨越',        pos:'堅毅、大目標、穩固',           neg:'阻礙、延遲、困難',              topic:'阻礙',   suit:'♣8',  element:'earth'},
+  {id:21, name:'山',    en:'Mountain', key:'阻礙・延遲・難以跨越',        pos:'阻礙存在、進展延遲、難以跨越',           neg:'阻礙、延遲、困難',              topic:'阻礙',   suit:'♣8',  element:'earth'},
   {id:22, name:'十字路口',en:'Crossroads',key:'選擇・決定・自由',     pos:'多個選擇、自由、機會',         neg:'猶豫不決、方向混亂',            topic:'選擇',   suit:'♦Q',  element:'air'},
-  {id:23, name:'老鼠',  en:'Mice',     key:'侵蝕・損耗・持續消耗',        pos:'減少壓力、放下',               neg:'損失、偷竊、焦慮、侵蝕',       topic:'損失',   suit:'♣7',  element:'earth'},
+  {id:23, name:'老鼠',  en:'Mice',     key:'侵蝕・損耗・持續消耗',        pos:'持續耗損、逐步減少',               neg:'損失、偷竊、焦慮、侵蝕',       topic:'損失',   suit:'♣7',  element:'earth'},
   {id:24, name:'心',    en:'Heart',    key:'愛・感情・熱情',          pos:'愛情、真心、浪漫、熱情',       neg:'心碎、感情問題',                topic:'愛情',   suit:'♥J',  element:'water'},
   {id:25, name:'戒指',  en:'Ring',     key:'承諾・合約・循環',        pos:'承諾、婚約、合約、合作',       neg:'被束縛、不公平的協議',          topic:'承諾',   suit:'♣A',  element:'earth'},
   {id:26, name:'書',    en:'Book',     key:'秘密・知識・學習',        pos:'學習、秘密揭露、教育',         neg:'隱藏的事、無知',                topic:'秘密',   suit:'♦10', element:'air'},
@@ -54,7 +57,7 @@ var CARDS = [
   {id:33, name:'鑰匙',  en:'Key',      key:'解答・確定・重要',        pos:'解答出現、確定、成功、重要',   neg:'被鎖住（罕見，此牌幾乎全正）',   topic:'解答',   suit:'♦8',  element:'fire'},
   {id:34, name:'魚',    en:'Fish',     key:'財富・生意・流動',        pos:'財運、商業、豐盛、流動',       neg:'財務損失、貪婪',                topic:'財富',   suit:'♦K',  element:'water'},
   {id:35, name:'錨',    en:'Anchor',   key:'穩定・工作・堅持',        pos:'穩定、安全感、持久、職業',     neg:'停滯、被困、執著',              topic:'穩定',   suit:'♠9',  element:'earth'},
-  {id:36, name:'十字架', en:'Cross',    key:'負擔・考驗・難卸壓力',        pos:'宗教、精神信仰、命運',         neg:'痛苦、負擔、沉重責任',          topic:'負擔',   suit:'♣6',  element:'earth'}
+  {id:36, name:'十字架', en:'Cross',    key:'負擔・考驗・難卸壓力',        pos:'負擔、考驗、難卸責任',         neg:'痛苦、負擔、沉重責任',          topic:'負擔',   suit:'♣6',  element:'earth'}
 ];
 
 var IMG_MAP = {
@@ -178,32 +181,61 @@ function drawCards(count) {
 // ════════════════════════════════════
 // ── v2.6 問題→牌陣 自動判斷（分層交叉，鏡照塔羅 detectSpreadType 的細度，映射到雷諾曼四陣） ──
 
-function _lnCleanOptionLabel(value) {
+function _lnNormalizeComparisonText(value) {
   return String(value || '')
-    .replace(/^[\s「『【\[\(（]+|[\s」』】\]\)）]+$/g, '')
-    .replace(/^(?:要選|選|比較|請問)\s*/g, '')
-    .replace(/\s*(?:哪(?:一)?個|那(?:一)?個|何者|哪款|哪種|誰)\s*.*$/g, '')
-    .replace(/\s*(?:比較|更)?適合(?:我)?(?:配戴|佩戴|使用|選擇|購買|戴)?\s*.*$/g, '')
-    .replace(/\s*(?:我該|應該|要)?選(?:哪(?:一)?個|誰)?\s*.*$/g, '')
+    .replace(/[？?]/g, '')
+    .replace(/5\s*行/g, '五行')
+    .replace(/[：:]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
+function _lnCanonicalOptionLabel(value) {
+  var label = String(value || '').trim();
+  if (/^(?:看|依|按照|參考)?\s*八字\s*五行/.test(label)) return '依八字五行搭配';
+  if (/自己(?:真正)?喜歡|個人喜好|自己順眼|喜歡的款式/.test(label)) return '自己喜歡的款式';
+  return label;
+}
+
+function _lnCleanOptionLabel(value) {
+  var label = _lnNormalizeComparisonText(value)
+    .replace(/^[\s「『【\[\(（]+|[\s」』】\]\)）]+$/g, '')
+    .replace(/^(?:請問|想問|比較|二選一)\s*/g, '')
+    // 移除「我搭配手鍊是要…」等共同問句骨架，保留真正選項。
+    .replace(/^(?:我)?\s*(?:(?:搭配|配戴|佩戴|戴|選擇?|購買)\s*)?(?:手鍊|水晶|飾品)?\s*(?:是)?\s*(?:要|該|應該)?\s*/g, '')
+    .replace(/^(?:要選|選擇?|要|該|應該|搭配|配戴|佩戴)\s*/g, '')
+    .replace(/\s*(?:哪(?:一)?個|那(?:一)?個|何者|哪款|哪種|誰)\s*.*$/g, '')
+    .replace(/\s*(?:比較|更|最)?適合(?:我)?(?:配戴|佩戴|使用|選擇|購買|戴)?\s*.*$/g, '')
+    .replace(/\s*(?:我該|應該|要)?選(?:哪(?:一)?個|誰)?\s*.*$/g, '')
+    .trim();
+  return _lnCanonicalOptionLabel(label);
+}
+
+function _lnFindComparisonConnector(raw) {
+  // 「還是／或是／或者／vs」本身即表示替代；「跟／和／與／、／或」還需搭配明確選擇語法，避免一般並列句誤判。
+  var explicit = /(?:還是|或是|或者|／|\/|\bvs\.?\b)/i;
+  var choiceCue = /(?:哪(?:一)?個|那(?:一)?個|何者|哪款|哪種|比較適合|更適合|最適合|該選|應該選|選哪|二選一|要選)/;
+  var m = raw.match(explicit);
+  if (m) return { index:m.index, text:m[0] };
+  if (!choiceCue.test(raw)) return null;
+  m = raw.match(/(?:跟|和|與|、|或)/);
+  return m ? { index:m.index, text:m[0] } : null;
+}
+
 function detectComparisonQuestion(text) {
-  var raw = String(text || '').replace(/[？?]/g, '').trim();
-  if (!raw || !/(?:哪(?:一)?個|那(?:一)?個|何者|哪款|哪種|比較適合|更適合|該選|應該選|選哪)/.test(raw)) return null;
-  var connectors = /(?:跟|和|與|還是|或是|或者|或|、|／|\/|\bvs\.?\b)/i;
-  var parts = raw.split(connectors);
-  if (parts.length < 2) return null;
-  var left = _lnCleanOptionLabel(parts.shift());
-  var right = _lnCleanOptionLabel(parts.join(' '));
-  // 清掉第二選項尾端的問句；第一選項則清掉常見開頭。
-  left = left.replace(/^(?:金額|想問)?\s*/, '').trim();
+  var raw = _lnNormalizeComparisonText(text);
+  if (!raw) return null;
+  var connector = _lnFindComparisonConnector(raw);
+  if (!connector) return null;
+  var left = _lnCleanOptionLabel(raw.slice(0, connector.index));
+  var right = _lnCleanOptionLabel(raw.slice(connector.index + connector.text.length));
   right = right.replace(/\s*(?:那|哪)(?:一)?個.*$/g, '').trim();
   if (!left || !right || left === right || left.length > 40 || right.length > 40) return null;
+  var criterion = /手鍊|水晶|五行|搭配/.test(raw) ? '手鍊搭配原則' : /配戴|佩戴|戴/.test(raw) ? '配戴適配' : /購買|買/.test(raw) ? '選購適配' : '整體適配';
   return {
     type:'comparison_suitability',
     options:[left,right],
-    criterion:/配戴|佩戴|戴/.test(raw)?'配戴適配':/購買|買/.test(raw)?'選購適配':'整體適配',
+    criterion:criterion,
     original:raw
   };
 }
@@ -989,7 +1021,7 @@ function buildComparisonPromptBlock(lines, item, packet, cardLabel, xmlEscape) {
   packet.rows.forEach(function(r){lines.push(r.id+' '+r.role+'='+r.cards.map(cardLabel).join(' | '));});
   lines.push('</paired_rows>');
   lines.push('<approved_dictionary>'+packet.cards.map(function(c){return cardLabel(c)+'='+c.key;}).join('；')+'</approved_dictionary>');
-  lines.push('<analysis_requirements>'+xmlEscape(packet.analysisDimensions.join('；'))+'。先分別分析A與B，再整合共同條件、差距與未知邊界；寫3至6段。</analysis_requirements>');
+  lines.push('<analysis_requirements>依序完成：A的有利／適配／代價；B的有利／適配／代價；中央共同條件與取捨；兩側真正差距；未知邊界。只分析O／X實際提供的角色，不額外替選項補牌義；寫3至5段。</analysis_requirements>');
   lines.push('</comparison_packet>');
 }
 
@@ -1179,23 +1211,85 @@ function failClosedPacket(packet, validation) {
   return packet;
 }
 
-var PRESENTATION_FOOTERS = {
-  relationship:'粉晶象徵溫和的情感交流與自我接納；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。',
-  business:'黃水晶象徵行動力與財務目標的專注；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。',
-  career:'虎眼石象徵判斷力與行動界線；礦物上屬石英交代石棉假象，常見絲絹般貓眼光。',
-  health:'白水晶象徵整理思緒與維持日常秩序；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。',
-  comparison:'比較結果只代表本次牌面的象徵性適配；天然礦石仍應以實物外觀、重量、尺寸與實際配戴舒適度為準。',
-  general:'白水晶象徵釐清重點與穩定專注；礦物上屬石英家族，主要成分為 SiO₂，三方晶系，硬度7。'
-};
+function buildEvidenceAwareAnalysisRequirements(packet) {
+  var clusters = packet && packet.clusters ? packet.clusters : [];
+  var cardIds = uniqueNumbers((packet && packet.structures ? packet.structures : []).reduce(function(out, st){
+    return out.concat(st.cardIds || (st.positions || []).map(function(p){ return p.card.id; }));
+  }, []));
+  var hasPositive = clusters.some(function(c){ return c.polarity === 'positive'; });
+  var hasRisk = clusters.some(function(c){ return c.polarity === 'negative' || c.polarity === 'mixed'; });
+  var hasContradiction = hasPositive && hasRisk;
+  var hasRepetition = cardIds.indexOf(11) > -1 || cardIds.indexOf(25) > -1;
+  var items = ['核心判斷與核心動力（必寫）'];
+  items.push(hasPositive ? '有利因素（有獨立正向C，必寫）' : '有利因素（若無獨立正向C，直接說證據不足，不得硬補）');
+  items.push(hasRisk ? '阻礙與風險（有負向或混合C，必寫）' : '阻礙與風險（若無相應C可省略）');
+  items.push(hasRepetition ? '反覆／循環模式（牌面含戒指或鞭子，可分析但不得當時間順序）' : '反覆模式（無戒指／鞭子證據，省略）');
+  items.push(hasContradiction ? '正反矛盾（正向與負向／混合C並存，必寫）' : '正反矛盾（未形成對立證據，省略）');
+  items.push('可能的實際表現（只寫條件式表現，不把事件寫成已發生）');
+  items.push('未知邊界與牌面未證明的部分（必寫）');
+  var paragraphMax = Math.min(6, Math.max(2, 2 + (hasPositive?1:0) + (hasRisk?1:0) + (hasContradiction?1:0)));
+  return {
+    items:items, paragraphMin:2, paragraphMax:paragraphMax,
+    favorable:hasPositive?'required':'insufficient_or_omit',
+    risk:hasRisk?'required':'omit_if_absent',
+    repetition:hasRepetition?'required':'omit',
+    contradiction:hasContradiction?'required':'omit'
+  };
+}
 
-function selectPresentationFooter(questions) {
-  var all={};questions.forEach(function(q){(q.types||[q.type]).forEach(function(t){all[t]=true;});});
-  if(all.comparison_suitability)return PRESENTATION_FOOTERS.comparison;
-  if(all.attraction_opportunity||all.sexual_component||all.sexual_event||all.relationship_intent||all.relationship_future||all.relationship_longevity||all.multi_partner_commitment)return PRESENTATION_FOOTERS.relationship;
-  if(all.business_success||all.finance)return PRESENTATION_FOOTERS.business;
-  if(all.career_fit||all.career_promotion||all.career_change||all.career_general)return PRESENTATION_FOOTERS.career;
-  if(all.health_medical_cause||all.health_symbolic_context)return PRESENTATION_FOOTERS.health;
-  return PRESENTATION_FOOTERS.general;
+var STONE_RECOMMENDATION_CATALOG = [
+  {id:'amethyst',name:'紫水晶',direction:'釐清選擇、整理判斷與保持冷靜',fact:'礦物上屬石英，化學成分為 SiO₂，莫氏硬度7。'},
+  {id:'rose_quartz',name:'粉晶',direction:'溫和表達情感、改善互動與自我接納',fact:'礦物上屬石英，化學成分為 SiO₂，莫氏硬度7。'},
+  {id:'citrine',name:'黃水晶',direction:'聚焦商業目標、資源規劃與可執行步驟',fact:'礦物上屬石英，化學成分為 SiO₂，莫氏硬度7。'},
+  {id:'aquamarine',name:'海藍寶',direction:'清楚溝通、降低表達混亂與確認訊息',fact:'礦物上屬綠柱石，化學成分為 Be₃Al₂Si₆O₁₈，莫氏硬度7.5至8。'},
+  {id:'tigers_eye',name:'虎眼石',direction:'實際判斷、設定行動界線與承擔取捨',fact:'屬具貓眼效應的石英材料，其光帶與定向纖維狀礦物包裹體有關。'},
+  {id:'obsidian',name:'黑曜石',direction:'切斷干擾、守住界線與面對現實限制',fact:'屬天然火山玻璃，通常由富矽熔岩快速冷卻形成。'}
+];
+
+function _lnAddStoneScore(scores, reasons, id, points, reason) {
+  scores[id] = (scores[id] || 0) + points;
+  if (reason) { if (!reasons[id]) reasons[id] = []; if (reasons[id].indexOf(reason) === -1) reasons[id].push(reason); }
+}
+
+function buildStoneRecommendationCandidates(question, questions, drawn) {
+  var q = String(question || ''), scores = {}, reasons = {}, types = {};
+  (questions || []).forEach(function(item){ (item.types || [item.type]).forEach(function(t){ types[t] = true; }); });
+  var ids = uniqueNumbers((drawn || []).map(function(c){ return c && c.id; }));
+  function cardHits(group){ return ids.filter(function(id){ return group.indexOf(id) > -1; }).length; }
+
+  if (/還是|選擇|比較|哪(?:一)?個|五行|搭配|猶豫|判斷/.test(q) || types.comparison_suitability) _lnAddStoneScore(scores,reasons,'amethyst',5,'選擇與判斷');
+  if (/感情|愛情|戀愛|伴侶|桃花|關係|情感互動/.test(q) || types.attraction_opportunity || types.relationship_intent || types.relationship_future || types.relationship_longevity) _lnAddStoneScore(scores,reasons,'rose_quartz',5,'情感與互動');
+  if (/副業|生意|賣場|訂單|業績|財運|收入|資金|工作目標/.test(q) || types.business_success || types.finance) _lnAddStoneScore(scores,reasons,'citrine',5,'商業與資源');
+  if (/溝通|訊息|聯絡|回覆|表達|說清楚/.test(q) || types.communication) _lnAddStoneScore(scores,reasons,'aquamarine',5,'溝通與確認');
+  if (/界線|切斷|離開|停止|干擾|消耗|負擔|阻礙/.test(q)) _lnAddStoneScore(scores,reasons,'obsidian',4,'界線與減少干擾');
+  if (/工作|職場|行動|執行|決定|取捨/.test(q) || types.career_fit || types.career_promotion || types.career_change || types.career_general) _lnAddStoneScore(scores,reasons,'tigers_eye',4,'行動與取捨');
+
+  var n;
+  n=cardHits([6,16,22,26,33]); if(n)_lnAddStoneScore(scores,reasons,'amethyst',n,'牌面含不明／指引／選擇／知識／解答');
+  n=cardHits([9,18,24,25,32]); if(n)_lnAddStoneScore(scores,reasons,'rose_quartz',n,'牌面含情感／信任／承諾');
+  n=cardHits([14,15,31,34,35]); if(n)_lnAddStoneScore(scores,reasons,'citrine',n,'牌面含工作／權力／成功／財務／穩定');
+  n=cardHits([1,12,20,27]); if(n)_lnAddStoneScore(scores,reasons,'aquamarine',n,'牌面含消息／溝通／公開');
+  n=cardHits([8,10,21,23,36]); if(n)_lnAddStoneScore(scores,reasons,'obsidian',n+1,'牌面含結束／切斷／阻礙／損耗／負擔');
+  n=cardHits([10,14,15,21,31,35]); if(n)_lnAddStoneScore(scores,reasons,'tigers_eye',n,'牌面含決斷／工作／力量／阻礙／行動');
+
+  return STONE_RECOMMENDATION_CATALOG.map(function(item){
+    return {id:item.id,name:item.name,direction:item.direction,fact:item.fact,score:scores[item.id]||0,reasons:reasons[item.id]||[]};
+  }).filter(function(item){ return item.score > 0; })
+    .sort(function(a,b){ return b.score-a.score || a.name.localeCompare(b.name,'zh-Hant'); })
+    .slice(0,3);
+}
+
+function appendStoneRecommendationPrompt(lines, question, questions, drawn, xmlEscape) {
+  var candidates = buildStoneRecommendationCandidates(question, questions, drawn);
+  lines.push('<stone_recommendation mode="select_after_interpretation" evidence_basis="question_and_drawn_cards">');
+  lines.push('<selection_rule>先完成正文，再找出正文最主要且可執行的方向；只從候選中選一項與該方向最吻合者。候選清單只用於召回，排列順序不是推薦順位。若沒有候選真正吻合，輸出「本題不強行推薦水晶。」；不得固定推薦白水晶，也不得宣稱醫療、改運或客觀能量效果。</selection_rule>');
+  if (candidates.length) {
+    candidates.forEach(function(c,idx){
+      lines.push('<candidate priority="none" name="'+xmlEscape(c.name)+'" matched_by="'+xmlEscape(c.reasons.join('、'))+'"><symbolic_direction>'+xmlEscape(c.direction)+'</symbolic_direction><mineral_fact>'+xmlEscape(c.fact)+'</mineral_fact></candidate>');
+    });
+  } else lines.push('<candidate status="none"></candidate>');
+  lines.push('<output_format>推薦水晶：{名稱}——象徵{與正文結論吻合的方向}；{該候選的礦物事實}</output_format>');
+  lines.push('</stone_recommendation>');
 }
 
 function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
@@ -1206,30 +1300,35 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   var comparison=detectComparisonQuestion(q), isSymmetricComparison=!!comparison && spreadId==='nine' && drawn.length===9, isInvalidComparison=!!comparison && !isSymmetricComparison;
   questions.forEach(function(item){(item.types||[item.type]).forEach(function(type){typeSet[type]=true;});});
 
-  lines.push('# 最高任務');
-  lines.push('你是本站 Petit Lenormand v7.1 受控深度解讀文字產生器。程式已完成命題拆分、角色／選項狀態、核心取證、命題專屬分簇、現代脈絡去重與結論計畫。');
-  lines.push('第一句依 proposition 順序直接回答。一般題只使用 approved_claims、core_clusters、evidence_catalog 與 selected_context；比較題只使用 comparison_packet 內的 O／X 證據；不得提高 certainty_cap。');
-  lines.push('限制的是越權結論，不是分析深度：同一C只算一組信心，但要完整分析核心動力、有利、阻礙、矛盾、可能表現與未知邊界。');
-  lines.push('人物 status=hypothetical／method_placeholder 時，不得寫成真人已出現、已有內心或已採取行動。');
-  lines.push('D／S／C與脈絡結構均不表示時間、因果、互相意圖或事件已發生；未啟用相應規則時禁止「先、之後、最後、由A走向B」。');
-  lines.push('棺材＝結束；鐮刀＝切斷；山＝阻礙；老鼠＝損耗；十字架＝負擔；雲＝不明；鞭子＝衝突／反覆，不得美化。');
-  lines.push('館藏可核實36張牌組與隨附說明；4×8+4及人物牌附近閱讀採現存說明書轉錄傳統；其餘皆為本站現代規約。');
+  lines.push('# 執行優先順序（由高至低）');
+  lines.push('你是本站 Petit Lenormand v7.2 證據優先解讀器。第一句依 proposition 順序直接回答，先給結論，再給證據整合。');
+  lines.push('1. claim_plan 與 certainty_cap 是結論上限：只能維持或降低，不能提高。一般題只用 approved_claims、core_clusters、evidence_catalog、selected_context；比較題只用 comparison_packet 的 O／X。');
+  lines.push('2. 先以獨立C建立核心判斷；同一C只算一次信心。selected_context只補充已成立主張的樣貌，不新增主張、不升級確定度。');
+  lines.push('3. 依每題 analysis_requirements 寫作；標示可省略的項目沒有證據時就省略，不為湊深度硬造反覆、矛盾或事件。');
+  lines.push('4. status=hypothetical／method_placeholder 的人物只可寫成假設角色或方法占位，不寫成真人已出現、已有內心或已採取行動。');
+  lines.push('5. D／S／C與脈絡結構不自行表示時間、因果、互相意圖或事件已發生；未啟用相應規則時使用靜態結構語言。');
+  lines.push('6. 固定負向語義：棺材＝結束；鐮刀＝切斷；山＝阻礙；老鼠＝損耗；十字架＝負擔；雲＝不明；鞭子＝衝突／反覆。');
+  lines.push('史料層級：館藏可核實《Das Spiel der Hofnung》為36張牌並附4頁說明；4×8+4與人物牌附近閱讀採保存至今的說明書傳統；D／S／C、房屋、鏡像、騎士跳、門檻與計分均是本站明示規約，不宣稱為唯一現代正統。');
+  lines.push('<boundary_examples>');
+  lines.push('<example>comparison_packet驗證失敗時：回答「本次沒有對稱分配，無法公平比較」，不事後挑牌替A／B站隊。</example>');
+  lines.push('<example>人物status=hypothetical時：寫「有出現這類互動的可能」，不寫「她已經出現／她正在想你」。</example>');
+  lines.push('</boundary_examples>');
   if(isSymmetricComparison){
     lines.push('比較題最高規則：兩個選項已在抽牌前固定到左右對稱欄；選項名稱只是標籤，禁止把名稱中的「太陽、魚、心、熊」等字套成同名牌。');
-    lines.push('A與B必須使用完全相同的位置角色比較；不得因某選項名稱較熟悉或與牌名相同而偏重。');
+    lines.push('A與B必須使用完全相同的位置角色比較；不得將選項名稱映射成同名牌，也不得因名稱較熟悉而偏重。');
   }
   lines.push('');
 
   if(typeSet.sexual_component||typeSet.sexual_event){
     lines.push('# 性／肉體題專用邊界');
-    lines.push('桃花機會、性／感官成分、實際肉體事件是三個不同命題，證據不可互借升級。');
+    lines.push('桃花機會、性／感官成分、實際肉體事件是三個不同命題；吸引不等於性成分，性成分不等於事件，證據不可互借升級。');
     lines.push('百合與蛇只在本題 contextual_meanings 中可補充感官、性與誘惑；魚不得寫成慾望，鞭子本站不得當性行為牌。');
     lines.push('');
   }
   if(typeSet.unsupported_age){lines.push('無 age_rules：數字年齡與區間直接回答無法驗證，不得附牌面側證。');lines.push('');}
   if(typeSet.health_medical_cause){lines.push('醫學病因命題不得使用牌面作原因、診斷或治療；若另有 health_symbolic_context，只能作非醫療的象徵性深讀。');lines.push('');}
 
-  lines.push('<reading_request method_profile="site_petit_lenormand_v7_1_controlled_deep">');
+  lines.push('<reading_request method_profile="site_petit_lenormand_v7_2_evidence_first">');
   lines.push('<question_original>'+xmlEscape(q||'未指定具體問題')+'</question_original>');
   lines.push('<propositions>');
   questions.forEach(function(item){
@@ -1300,7 +1399,12 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
         if(packet.modernContext.centers.length)lines.push('F-center '+packet.modernContext.centers.map(function(p){return cardLabel(p.card);}).join('、'));
         lines.push('</selected_context>');
       }
-      lines.push('<analysis_requirements>'+xmlEscape(packet.analysisDimensions.join('；'))+'。實質命題依證據量寫2至6段；unsupported_age與medical_limit只寫必要限制。</analysis_requirements>');
+      if(type==='unsupported_age'||type==='health_medical_cause'){
+        lines.push('<analysis_requirements mode="necessary_limit_only"></analysis_requirements>');
+      }else{
+        var analysisContract=buildEvidenceAwareAnalysisRequirements(packet);
+        lines.push('<analysis_requirements paragraph_range="'+analysisContract.paragraphMin+'-'+analysisContract.paragraphMax+'" core="required" favorable="'+analysisContract.favorable+'" risk="'+analysisContract.risk+'" repetition="'+analysisContract.repetition+'" contradiction="'+analysisContract.contradiction+'" manifestation="conditional_only" unknown_boundary="required"></analysis_requirements>');
+      }
       lines.push('</evidence_packet>');
     });
     lines.push('<approved_dictionary>');
@@ -1314,22 +1418,22 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('</reading_request>');
   lines.push('');
   lines.push('# 輸出契約');
-  lines.push('第一句依 proposition 順序回答全部命題；不得把吸引、性成分、事件落實或年齡合併成同一強度。');
+  lines.push('第一句依 proposition 順序回答全部命題；吸引、性成分、事件落實與年齡各自維持 claim_plan 強度。');
   if(isSymmetricComparison){
-    lines.push('比較題第一句必須直接說A、B哪個較適合，或明說差距不足；正文依序分析A、B、共同決策核心與最終取捨。');
+    lines.push('比較題第一句直接說A、B哪個較適合，或明說差距不足；正文依序處理A、B、共同決策核心與取捨。');
     lines.push('比較證據引用：O-A／O-B寫選項位置；X-C寫中央共同軸；X1／X2／X3寫完整左右配對列。');
   }
-  lines.push('每個實質命題呈現核心判斷、有利、阻礙、矛盾、可能表現與未知邊界；深度來自命題與證據整合，不靠重複列舉方法名稱。');
+  lines.push('正文只展開各題 analysis_requirements 中實際啟用的項目；每個判斷都要能回指批准證據，沒有證據就明說不足或省略。');
   lines.push('每段末尾只列真正使用的證據：D寫「牌A＆牌B」；S寫完整「牌A→…→牌B」；脈絡寫N／M／K／I／T／F。');
-  lines.push('正文使用繁體中文與台灣用語，不寫座標、排數、演算法或內部檢查。');
+  lines.push('正文使用繁體中文與台灣用語，不寫座標、排數、演算法、分數或內部檢查。');
   lines.push('');
-  lines.push('<presentation_footer mode="verbatim_after_reading">');
-  lines.push('<stone_text>'+selectPresentationFooter(questions)+'</stone_text>');
+  lines.push('<presentation_footer mode="interpretation_aligned">');
+  appendStoneRecommendationPrompt(lines,q,questions,drawn,xmlEscape);
   lines.push('<shop_link>[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)</shop_link>');
   lines.push('<closing>願你諸事順遂。</closing>');
   lines.push('</presentation_footer>');
   lines.push('');
-  lines.push('最後複核：只能使用批准主張與證據；hypothetical人物不得實體化；同一C只計一次；現代脈絡不升級結論；魚不是性慾；吸引不等於性成分，性成分不等於事件；無 age_rules 不得猜年齡；比較題不得將選項名稱映射成同名牌。正文後逐字附上footer三行。只輸出最終解讀。');
+  lines.push('交稿前複核：結論未超過certainty_cap；每項主張有批准證據；hypothetical人物未實體化；同一C未重複計信心；selected_context未升級結論；無時間／因果規則時未寫成發展流程；魚未當性慾；吸引未等同性事件；無age_rules未猜年齡；比較選項名稱未映射同名牌。正文後依stone_recommendation輸出一行推薦或「本題不強行推薦水晶。」，再逐字附上賣場與祝福兩行。只輸出最終解讀。');
   return lines.join('\n');
 }
 
@@ -1647,6 +1751,8 @@ window.__JY_LN_TEST__ = {
   validateEvidencePacket: validateEvidencePacket,
   buildModernContext: buildModernContext,
   analysisDimensionsFor: analysisDimensionsFor,
+  buildEvidenceAwareAnalysisRequirements: buildEvidenceAwareAnalysisRequirements,
+  buildStoneRecommendationCandidates: buildStoneRecommendationCandidates,
   buildPrompt: buildPrompt,
   cards: CARDS,
   spreads: SPREADS
