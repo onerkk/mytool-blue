@@ -1,19 +1,19 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v5.3
-// v5.3（2026-06-19）命題門檻／證據血緣／提示詞降噪根治：
-//   1. 「成功、清償負債、正資產、何時」拆成四個獨立 proposition；時間未啟用時採空證據 fail-closed。
-//   2. business／debt_clearance／positive_net_worth／finance 改用各自的 outcome gate，不再共用寬鬆通用結論。
-//   3. C 改依實際焦點位置與橋接關係分簇；牌義相似不再把不相干結構合成同一簇。
-//   4. 每項核准主張輸出可用的 C 血緣；相同實體 D／S 跨命題共用 evidence_uid，避免重複加權。
-//   5. selected_context 只保留核心證據未覆蓋的新位置；鏡像與騎士跳採無向去重，移除互反重複。
-//   6. runtime prompt 改為短版 outcome-first 契約，刪除未被正文使用的房屋清單與重複複核規則。
-//   7. 水晶候選由 proposition 的實際 evidence_packet 召回，不再因大牌陣含全部36張而固定得到同一組。
-//   8. 新增本題回歸測試：四命題拆分、時間封閉、清債／正資產不互相代證、推薦依證據變動。
+// 靜月之光 — 雷諾曼牌 Lenormand v5.4
+// v5.4（2026-06-19）人生建議命題／核准證據視圖／提示詞收斂根治：
+//   1. 「人生迷茫／方向／請給建議」改為 life_guidance，不再落入把感情、商業、成功混成一包的 general。
+//   2. life_guidance 產生狀態、干擾、可採用選擇原則與未知邊界四類受控主張；每項最多兩個且彼此不重複的 C。
+//   3. runtime prompt 只輸出 claim_evidence 真正核准的 C／D／S，未被任何主張使用的證據不再進入模型上下文。
+//   4. selected_context 收斂為核准 C 的主題摘要；不再輸出未綁定主張的鄰近、鏡像、騎士跳或交會，避免脈絡偷渡新結論。
+//   5. analysis_requirements 改依核准證據視圖計算，不因未使用牌或未核准 C 強迫寫反覆、矛盾或風險。
+//   6. 建議題只允許象徵性的篩選原則，不得自行指定唯一職業、人生使命、關係處置、期限或具體操作步驟。
+//   7. 水晶候選只讀核准證據；人生方向題可召回紫水晶，不再因全牌陣雜訊偏向固定商業或負向候選。
+//   8. 新增「我對人生有些迷茫，請給我建議」回歸測試與證據洩漏反例。
 // Petit Lenormand 36 張・歷史基線＋本站明示的現代判讀規約
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v5.3 loaded — 命題門檻／證據血緣／提示詞降噪根治');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v5.4 loaded — 人生建議命題／核准證據視圖／提示詞收斂根治');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -462,6 +462,12 @@ var QUESTION_SCHEMAS = {
   communication: {
     label:'消息／溝通', core:[27,12], support:[1,20,6], contextual:[]
   },
+  life_guidance: {
+    label:'人生方向／迷茫建議',
+    core:[33,22,16,24,35],
+    support:[2,3,4,5,6,8,9,10,11,17,18,21,23,25,26,31,32,36],
+    contextual:[]
+  },
   unsupported_age: {
     label:'數字年齡（不可驗證）', core:[], support:[], contextual:[]
   },
@@ -499,6 +505,7 @@ var ANALYSIS_DIMENSIONS = {
   health:['醫學原因與象徵狀態的界線','反覆或停滯模式','壓力與耗損意象','有利與緩衝因素','生活脈絡的象徵連結','正反矛盾','牌面不能證明的病因／診斷／治療'],
   travel:['移動動力','目的與環境','阻礙與延遲','外部消息','穩定性','矛盾','未知邊界'],
   communication:['溝通意願','訊息品質','公開／私下脈絡','阻礙與誤解','反覆模式','有利條件','未知邊界'],
+  guidance:['目前迷茫的核心','干擾判斷的因素','可採用的選擇原則','有利支點','不能由牌面指定的部分'],
   comparison:['選項A的有利與適配','選項A的阻礙與代價','選項B的有利與適配','選項B的阻礙與代價','共同決策核心與取捨','兩者差距與未知邊界'],
   general:['核心動力','有利因素','阻礙風險','重複模式','正反矛盾','可能的實際表現','牌面未證明的部分']
 };
@@ -535,6 +542,10 @@ var CLAIM_POLICIES = {
   finance:{
     meaning:'只描述資源流動、穩定與耗損；不把財務連結直接升級成財務自由、清債或正資產。',
     forbidden:'不得自行提供牌面未支持的金額、期限、還款比例或投資建議。'
+  },
+  life_guidance:{
+    meaning:'只提供牌面核准的象徵性方向、干擾與選擇原則；建議是篩選框架，不是唯一人生使命、職業指派或事件預告。',
+    forbidden:'不得自行指定職業、離職、分手、搬家、投資、期限、先後流程或保證某條路成功；不得把 selected_context 單獨當成新主張。'
   },
   timing:{
     meaning:'本站未啟用時間／應期規則，D／S／C、牌號、座標、房屋與左右方向都不能推出日期。',
@@ -630,6 +641,7 @@ function inferQuestionDimensions(text) {
   if (/旅行|旅遊|出國|搬家|遷移|遠方|移居|出差/.test(t)) types.push('travel');
   if (/聯絡|訊息|回覆|聊天|溝通|傳訊|來找我|聯繫/.test(t)) types.push('communication');
   if (/什麼時候|何時|多久|幾時|哪一年|哪個月|幾月|時間點|應期|多快/.test(t)) types.push('timing');
+  if (!types.length && /人生.{0,10}(?:迷茫|方向|目標|意義|建議)|迷茫|茫然|沒有方向|找不到方向|未來方向|人生建議|請給我建議|該怎麼走|下一步怎麼走/.test(t)) types.push('life_guidance');
 
   types = uniqueStrings(types);
   if (!types.length && ageQualifier) types = ['unsupported_age'];
@@ -650,6 +662,7 @@ function questionTypeDomain(type) {
   if (/^health_/.test(type)) return 'health';
   if (type === 'travel') return 'travel';
   if (type === 'communication') return 'communication';
+  if (type === 'life_guidance') return 'guidance';
   if (type === 'timing') return 'timing';
   if (type === 'unsupported_age') return 'age_only';
   return 'general';
@@ -675,6 +688,7 @@ function propositionText(type, original, comparison) {
   if (type === 'unsupported_age') return '數字年齡或年齡區間是否可判定';
   if (type === 'health_medical_cause') return '醫學病因是否能由牌面判定';
   if (type === 'health_symbolic_context') return '健康議題在牌面呈現的象徵性狀態';
+  if (type === 'life_guidance') return '目前迷茫的核心、可依循的方向與建議邊界';
   return original;
 }
 
@@ -777,6 +791,7 @@ function analysisDimensionsFor(questionItem) {
   if (type === 'timing') return ['時間規則未啟用的必要限制'];
   if (type === 'debt_clearance') return ['清償條件是否成立','債務壓力／損耗','不足邊界'];
   if (type === 'positive_net_worth') return ['資源成長與穩定','耗損／負擔反證','不足邊界'];
+  if (type === 'life_guidance') return ANALYSIS_DIMENSIONS.guidance.slice();
   var domain = questionTypeDomain(type);
   var key = domain === 'work_money' ? (/^career_/.test(type) ? 'career' : type === 'finance' ? 'finance' : 'business') : domain;
   return (ANALYSIS_DIMENSIONS[key] || ANALYSIS_DIMENSIONS.general).slice();
@@ -817,7 +832,8 @@ function classifyClusterPolarity(type, cardIds, anchorIds) {
     business_success:[2,3,5,9,16,17,20,31,32,33,34,35],
     debt_clearance:[5,8,10,31,33,34,35], positive_net_worth:[4,5,15,31,33,34,35],
     finance:[4,5,15,31,33,34,35], career_fit:[4,5,14,19,30,31,33,35],
-    career_promotion:[1,17,19,27,31,32,33], health_symbolic_context:[5,31,35]
+    career_promotion:[1,17,19,27,31,32,33], health_symbolic_context:[5,31,35],
+    life_guidance:[2,4,5,9,16,17,18,24,31,32,33,35]
   };
   var ignore = uniqueNumbers((anchorIds || []).concat([28,29]));
   var modifiers = uniqueNumbers(cardIds || []).filter(function(id){ return ignore.indexOf(id) === -1; });
@@ -839,6 +855,12 @@ function clusterThemeFor(type, anchorIds, cardIds) {
     if (cardIds.indexOf(30)>-1 || cardIds.indexOf(7)>-1) return '肉體／感官／誘惑脈絡';
     if (cardIds.indexOf(25)>-1 || cardIds.indexOf(24)>-1) return '關係與情感落實脈絡';
   }
+  if (type === 'life_guidance') {
+    if (cardIds.some(function(id){return [33,22,16].indexOf(id)>-1;})) return '方向／選擇／解答結構';
+    if (cardIds.some(function(id){return [6,8,10,11,21,23,36].indexOf(id)>-1;})) return '迷茫／反覆／負擔結構';
+    if (cardIds.some(function(id){return [4,5,35].indexOf(id)>-1;})) return '穩定／根基支點';
+    if (cardIds.some(function(id){return [9,18,24,32].indexOf(id)>-1;})) return '價值／感受線索';
+  }
   if (/^career_/.test(type)) return '工作／制度／變動結構';
   if (/^health_/.test(type)) return '健康議題的象徵性結構';
   return '核心牌周圍結構';
@@ -850,6 +872,13 @@ function buildClusters(structures, anchorSlots, type, declaredGender) {
     var anchorPositions = st.positions.filter(function(p){ return !!anchorSlots[p.slot]; });
     var anchorSlotIds = uniqueNumbers(anchorPositions.map(function(p){ return p.slot; })).sort(function(a,b){return a-b;});
     var key = (anchorSlotIds.length > 1 ? 'bridge:' : 'local:') + (anchorSlotIds.join('-') || 'none:' + st.id);
+    if(type==='life_guidance'){
+      var structureIds=uniqueNumbers(st.positions.map(function(p){return p.card.id;}));
+      var structureAnchorIds=uniqueNumbers(anchorPositions.map(function(p){return p.card.id;}));
+      var structurePolarity=classifyClusterPolarity(type,structureIds,structureAnchorIds);
+      var role=structurePolarity==='negative'||structurePolarity==='mixed'?'risk':structurePolarity==='positive'?'support':'neutral';
+      key += ':'+role;
+    }
     if (!map[key]) map[key] = {key:key, refs:[], structures:[], cardIds:[], anchorIds:[], anchorSlots:anchorSlotIds};
     map[key].refs.push(st.id); map[key].structures.push(st);
     map[key].cardIds = uniqueNumbers(map[key].cardIds.concat(st.positions.map(function(p){return p.card.id;})));
@@ -873,7 +902,8 @@ function modernThemeAllowedForType(type, groupId) {
     sexual_component:['relationship_bond','sexual_sensual','obstacle_burden','uncertainty_complexity','conflict_repetition'],
     sexual_event:['relationship_bond','sexual_sensual','ending_cut','obstacle_burden','loss_erosion','uncertainty_complexity','conflict_repetition'],
     career_fit:['stability','success_opening','movement_change','communication_public','work_money_power','ending_cut','obstacle_burden','uncertainty_complexity','conflict_repetition'],
-    career_promotion:['stability','success_opening','movement_change','communication_public','work_money_power','ending_cut','obstacle_burden','uncertainty_complexity','conflict_repetition']
+    career_promotion:['stability','success_opening','movement_change','communication_public','work_money_power','ending_cut','obstacle_burden','uncertainty_complexity','conflict_repetition'],
+    life_guidance:['stability','success_opening','movement_change','relationship_bond','ending_cut','obstacle_burden','loss_erosion','uncertainty_complexity','conflict_repetition']
   };
   return !byType[type] || byType[type].indexOf(groupId)>-1;
 }
@@ -964,6 +994,48 @@ function addApprovedClaim(plan, text, clusterIds) {
   if (!plan.claimEvidence) plan.claimEvidence=[];
   plan.claimEvidence.push({claimIndex:plan.approvedClaims.length,clusters:uniqueStrings(clusterIds||[])});
 }
+
+function approvedClusterIds(packet) {
+  var ids=[];
+  (packet&&packet.claimPlan&&packet.claimPlan.claimEvidence||[]).forEach(function(link){ids=ids.concat(link.clusters||[]);});
+  return uniqueStrings(ids);
+}
+function buildApprovedEvidenceView(packet) {
+  var allowedIds=approvedClusterIds(packet), allowed={}, refs={};
+  allowedIds.forEach(function(id){allowed[id]=true;});
+  var clusters=(packet.clusters||[]).filter(function(c){return !!allowed[c.id];});
+  clusters.forEach(function(c){(c.refs||[]).forEach(function(ref){refs[ref]=true;});});
+  var structures=(packet.structures||[]).filter(function(st){return !!refs[st.id];});
+  var clusterThemes=((packet.modernContext&&packet.modernContext.clusterThemes)||[]).filter(function(t){return !!allowed[t.clusterId];});
+  var usedCards={};
+  structures.forEach(function(st){(st.positions||[]).forEach(function(pos){usedCards[pos.card.id]=pos.card;});});
+  clusterThemes.forEach(function(t){(t.positions||[]).forEach(function(pos){usedCards[pos.card.id]=pos.card;});});
+  return {clusterIds:allowedIds,clusters:clusters,structures:structures,clusterThemes:clusterThemes,usedCards:usedCards};
+}
+
+function cardIdsForClusterIds(packet, clusterIds) {
+  var wanted={};uniqueStrings(clusterIds||[]).forEach(function(id){wanted[id]=true;});
+  var ids=[];(packet.clusters||[]).forEach(function(c){if(wanted[c.id])ids=ids.concat(c.cardIds||[]);});
+  return uniqueNumbers(ids);
+}
+function guidanceRiskText(cardIds) {
+  var labels=[];
+  [[6,'不明'],[8,'結束'],[10,'切斷'],[11,'反覆'],[21,'阻礙'],[23,'損耗'],[36,'負擔']].forEach(function(pair){if(cardIds.indexOf(pair[0])>-1)labels.push(pair[1]);});
+  return labels.length?labels.join('、'):'負向干擾';
+}
+function guidancePrincipleText(cardIds) {
+  var hasValue=cardIds.some(function(id){return [9,18,24,32].indexOf(id)>-1;});
+  var hasStability=cardIds.some(function(id){return [4,5,35].indexOf(id)>-1;});
+  var hasDirection=cardIds.some(function(id){return [16,22,33].indexOf(id)>-1;});
+  var hasOpening=cardIds.some(function(id){return [2,17,31].indexOf(id)>-1;});
+  if(hasValue&&hasStability)return '可把真正重視的內容與可持續、可建立根基的條件一起作為篩選原則；這不是唯一答案或具體職業指令。';
+  if(hasValue&&(hasDirection||hasOpening))return '可把真正重視的內容與能讓方向更清楚、形成可選擇空間的條件一起作為篩選原則；這不是成功保證。';
+  if(hasStability&&(hasDirection||hasOpening))return '可把方向清晰度與能否持續、建立根基一起作為篩選原則；這不是唯一答案或具體職業指令。';
+  if(hasValue)return '可把真正重視、願意投入的內容作為篩選線索，但單憑喜歡不能保證結果。';
+  if(hasStability)return '可把能否持續與建立根基作為篩選線索，但牌面沒有指定唯一方向。';
+  return '可把能增加方向清晰度或提供正向支點的條件作為篩選原則，但牌面沒有指定唯一答案。';
+}
+
 function physicalStructureKey(st) {
   var slots=(st.positions||[]).map(function(p){return p.slot;});
   if(st.kind==='adjacency')return 'D:'+slots.slice().sort(function(a,b){return a-b;}).join('-');
@@ -1101,7 +1173,7 @@ function buildEvidencePacket(geometry, questionItem, declaredGender) {
   geometry.adjacency.forEach(function(a){
     if(!anchorSlots[a.position.slot])return;
     a.neighbors.forEach(function(n){
-      var keep=!!focusSlots[n.slot]||!!personSlotMap[a.position.slot]||HARD_NEGATIVE_IDS.indexOf(n.card.id)>-1;
+      var keep=!!focusSlots[n.slot]||(type!=='life_guidance'&&!!personSlotMap[a.position.slot])||HARD_NEGATIVE_IDS.indexOf(n.card.id)>-1;
       if(!keep)return;
       var key=pairSlotKey(a.position,n);if(pairMap[key])return;pairMap[key]=true;
       var pair={positions:[a.position,n]};
@@ -1151,6 +1223,38 @@ function buildClaimPlan(packet, declaredGender) {
   if(type==='timing'){plan.status='timing_rules_not_enabled';plan.certaintyCap='不足以判定具體時間';plan.requiredConclusion='直接回答本站未啟用時間規則，因此無法判定年、月、週、日或先後階段。';addApprovedClaim(plan,'本次無法由牌面判定具體時間。',[]);plan.forbiddenClaims=['牌號換算日期','座標或房屋推時間','D／S／C推先後','任何年、月、週、日'];return plan;}
   if(type==='health_medical_cause'){plan.status='medical_limit';plan.certaintyCap='不足以判定';plan.requiredConclusion='先明說牌面不能判定醫學病因；不得引用牌面作病因。';addApprovedClaim(plan,'牌面無法判定醫學病因、診斷或治療。',[]);plan.forbiddenClaims=['壓力、飲食、荷爾蒙、器官或藥物效果的病因斷言'];return plan;}
 
+  if(type==='life_guidance'){
+    var usedGuidanceClusters={};
+    function takeGuidance(ids,limit){
+      var available=uniqueStrings(ids||[]).filter(function(id){return !usedGuidanceClusters[id];});
+      var picked=rankAndLimitClusterIds(packet,available,limit||1);
+      picked.forEach(function(id){usedGuidanceClusters[id]=true;});
+      return picked;
+    }
+    var orientationCandidates=clusterIdsForCards(packet,q,[33,22,16]);
+    var orientation=takeGuidance(orientationCandidates,1);
+    var decisionRiskCandidates=clusterIdsForCardsByPolarity(packet,q.concat([33,22,16]),[6,8,10,11,21,23,36],['negative','mixed']);
+    var valueRiskCandidates=clusterIdsForCardsByPolarity(packet,[24,35],[6,8,10,11,21,23,36],['negative','mixed']);
+    var riskGuidance=takeGuidance(decisionRiskCandidates,1).concat(takeGuidance(valueRiskCandidates,1));
+    var constructiveCandidates=clusterIdsForCardsByPolarity(packet,[33,22,16,24,35],[2,4,5,9,17,18,31,32],['positive']);
+    var constructive=takeGuidance(constructiveCandidates,2);
+    if(orientation.length&&constructive.length){
+      plan.status=riskGuidance.length?'guidance_supported_with_interference':'guidance_supported';
+      plan.certaintyCap=riskGuidance.length?'較有可釐清方向，但干擾明顯':'較有可釐清方向';
+      addApprovedClaim(plan,'目前不是完全沒有方向；牌面支持仍有可被釐清的方向線索。',orientation);
+    }else if(orientation.length){
+      plan.status='guidance_signal_without_support';plan.certaintyCap='有方向線索，但可行支點不足';
+      addApprovedClaim(plan,'牌面有方向或解答線索，但不足以指定可持續的具體方向。',orientation);
+    }else{
+      plan.status='guidance_direction_insufficient';plan.certaintyCap=riskGuidance.length?'迷茫與干擾明顯，方向證據不足':'不足以明確指定方向';
+      addApprovedClaim(plan,'目前核心證據不足以指定明確人生方向。',[]);
+    }
+    if(riskGuidance.length){var riskText=guidanceRiskText(cardIdsForClusterIds(packet,riskGuidance));addApprovedClaim(plan,riskText+'正在干擾判斷；只能描述干擾類型，不能推成事件或因果。',riskGuidance);}
+    if(constructive.length)addApprovedClaim(plan,guidancePrincipleText(cardIdsForClusterIds(packet,constructive)),constructive);
+    else addApprovedClaim(plan,'目前沒有足夠正向核心證據提出更具體的選擇原則。',[]);
+    addApprovedClaim(plan,'牌面不能指定唯一人生使命、職業、期限，也不能保證某條道路成功。',[]);
+    plan.forbiddenClaims=['指定唯一職業或人生使命','要求離職、分手、搬家、投資或其他具體處置','未啟用規則下的先後流程、時間或因果','把 selected_context 單獨升級成建議','保證某條路成功'];return plan;
+  }
   if(type==='business_success'){
     var businessLink=clusterIdsForCards(packet,q,[14,34,35]);
     var outcome=clusterIdsForCardsByPolarity(packet,[14,31,34,35],[5,9,16,17,20,32,33],['positive']);
@@ -1260,7 +1364,13 @@ function validateEvidencePacket(packet) {
   if (type === 'unsupported_age' && packet.structures.length) errors.push('age_packet_has_evidence');
   if (type === 'health_medical_cause' && packet.structures.length) errors.push('medical_cause_packet_has_evidence');
   if (type === 'timing' && packet.structures.length) errors.push('timing_packet_has_evidence');
-  (packet.claimPlan&&packet.claimPlan.claimEvidence||[]).forEach(function(link){(link.clusters||[]).forEach(function(cid){if(!packet.clusters.some(function(c){return c.id===cid;}))errors.push('claim_unknown_cluster:'+cid);});});
+  var claimClusterUse={};
+  (packet.claimPlan&&packet.claimPlan.claimEvidence||[]).forEach(function(link){(link.clusters||[]).forEach(function(cid){if(!packet.clusters.some(function(c){return c.id===cid;}))errors.push('claim_unknown_cluster:'+cid);claimClusterUse[cid]=(claimClusterUse[cid]||0)+1;});});
+  if(type==='life_guidance'){
+    if(packet.claimPlan.status==='model_evaluate')errors.push('life_guidance_uses_generic_plan');
+    Object.keys(claimClusterUse).forEach(function(cid){if(claimClusterUse[cid]>1)errors.push('life_guidance_cluster_reused:'+cid);});
+    (packet.claimPlan.claimEvidence||[]).forEach(function(link){if((link.clusters||[]).length>2)errors.push('life_guidance_claim_overlinked');});
+  }
   if (!packet.claimPlan || !packet.claimPlan.status || !packet.claimPlan.certaintyCap) errors.push('missing_claim_plan');
   return { ok:errors.length === 0, errors:errors };
 }
@@ -1288,12 +1398,14 @@ function failClosedPacket(packet, validation) {
 function buildEvidenceAwareAnalysisRequirements(packet) {
   var type=primaryDecisionType(packet.question.types||[packet.question.type]);
   if(type==='timing'||type==='unsupported_age'||type==='health_medical_cause')return {items:['只寫必要限制'],paragraphMin:0,paragraphMax:1,favorable:'omit',risk:'omit',repetition:'omit',contradiction:'omit'};
-  var clusters=packet&&packet.clusters?packet.clusters:[];
-  var cardIds=uniqueNumbers((packet&&packet.structures?packet.structures:[]).reduce(function(out,st){return out.concat(st.cardIds||[]);},[]));
+  var approvedView=buildApprovedEvidenceView(packet);
+  var clusters=approvedView.clusters;
+  var cardIds=uniqueNumbers((approvedView.structures||[]).reduce(function(out,st){return out.concat(st.cardIds||[]);},[]));
   var hasPositive=clusters.some(function(c){return c.polarity==='positive';}),hasRisk=clusters.some(function(c){return c.polarity==='negative'||c.polarity==='mixed';});
   var hasContradiction=hasPositive&&hasRisk,hasRepetition=cardIds.indexOf(11)>-1||cardIds.indexOf(25)>-1;
   var min=1,max=3;
   if(type==='business_success'){min=2;max=4;}
+  else if(type==='life_guidance'){min=2;max=3;}
   else if(type==='debt_clearance'||type==='positive_net_worth'){min=1;max=2;}
   else if(questionTypeDomain(type)==='relationship'||/^career_/.test(type)){min=2;max=4;}
   return {items:[],paragraphMin:min,paragraphMax:max,favorable:hasPositive?'required':'insufficient_or_omit',risk:hasRisk?'required':'omit_if_absent',repetition:hasRepetition?'required':'omit',contradiction:hasContradiction?'required':'omit'};
@@ -1318,11 +1430,11 @@ function buildStoneRecommendationCandidates(question, questions, evidenceSource)
   (questions||[]).forEach(function(item){(item.types||[item.type]).forEach(function(t){types[t]=true;});});
   var ids=[];
   if(Array.isArray(evidenceSource)&&evidenceSource.length&&evidenceSource[0]&&evidenceSource[0].packet){
-    evidenceSource.forEach(function(entry){(entry.packet.structures||[]).forEach(function(st){ids=ids.concat(st.cardIds||[]);});});
+    evidenceSource.forEach(function(entry){var view=entry.promptView||buildApprovedEvidenceView(entry.packet);(view.structures||[]).forEach(function(st){ids=ids.concat(st.cardIds||[]);});});
   }else ids=(evidenceSource||[]).map(function(c){return c&&c.id;});
   ids=uniqueNumbers(ids);
   function cardHits(group){return ids.filter(function(id){return group.indexOf(id)>-1;}).length;}
-  if(/還是|選擇|比較|哪(?:一)?個|五行|搭配|猶豫|判斷/.test(q)||types.comparison_suitability)_lnAddStoneScore(scores,reasons,'amethyst',5,'選擇與判斷');
+  if(/還是|選擇|比較|哪(?:一)?個|五行|搭配|猶豫|判斷|迷茫|茫然|人生方向|請給我建議/.test(q)||types.comparison_suitability||types.life_guidance)_lnAddStoneScore(scores,reasons,'amethyst',5,'選擇、方向與判斷');
   if(/感情|愛情|戀愛|伴侶|桃花|關係|情感互動/.test(q)||types.attraction_opportunity||types.relationship_intent||types.relationship_future||types.relationship_longevity)_lnAddStoneScore(scores,reasons,'rose_quartz',5,'情感與互動');
   if(/副業|生意|賣場|訂單|業績|財運|收入|資金|負債|資產/.test(q)||types.business_success||types.finance||types.debt_clearance||types.positive_net_worth)_lnAddStoneScore(scores,reasons,'citrine',5,'商業與資源');
   if(/溝通|訊息|聯絡|回覆|表達|說清楚/.test(q)||types.communication)_lnAddStoneScore(scores,reasons,'aquamarine',5,'溝通與確認');
@@ -1356,13 +1468,18 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   questions.forEach(function(item){(item.types||[item.type]).forEach(function(type){typeSet[type]=true;});});
 
   lines.push('# 最高規則');
-  lines.push('你是本站 Petit Lenormand v7.3 證據血緣解讀器。第一句依 proposition 順序直接回答。');
-  lines.push('只輸出 claim_plan 核准的主張；certainty_cap 只能維持或降低。每項核心主張只能使用 claim_evidence 指定的C，同一C與同一evidence_uid只計一次。');
+  lines.push('你是本站 Petit Lenormand v7.4 核准證據解讀器。第一句依 proposition 順序直接回答。');
+  lines.push('只輸出 claim_plan 核准的主張；certainty_cap 只能維持或降低。每項核心主張只能使用 claim_evidence 指定的C；提示詞只提供已核准證據。同一C與同一evidence_uid只計一次，禁止把同一C內多個D／S寫成多份獨立信心。');
   lines.push('selected_context只描述已成立主張的樣貌，不新增結論。D／S／C、脈絡、牌號、座標與房屋均不自行表示時間、因果、互相意圖或事件已發生。');
-  lines.push('沒有證據的 analysis_requirements 直接省略；不得自行補入毛利、庫存、廣告、折扣、金額、期限或其他牌面未批准的操作細節。');
+  lines.push('沒有證據的 analysis_requirements 直接省略；不得自行補入 claim_plan 未批准的具體行動、期限、金額、人物或事件。');
   lines.push('固定負向語義：棺材＝結束；鐮刀＝切斷；山＝阻礙；老鼠＝損耗；十字架＝負擔；雲＝不明；鞭子＝衝突／反覆。');
   lines.push('<method_scope>館藏可核實36張牌組與4頁說明；4×8+4及人物牌附近閱讀採保存說明書傳統。approved_dictionary是本站受控的現代工作詞典，不冒充原始說明書逐字牌義或唯一現代標準。D／S／C、房屋、鏡像、騎士跳、門檻與計分皆為本站規約。</method_scope>');
-  lines.push('<boundary_examples><example>timing_rules=false：回答無法判定具體時間，不以牌號或座標猜日期。</example><example>收入或副業成功不等於負債歸零，也不等於正資產。</example><example>狐狸、魚、錨等牌只可描述工作／資源／穩定結構；不得自行延伸成清庫存、投廣告、調價格、追毛利等營運建議。</example></boundary_examples>');
+  var boundaryExamples=[];
+  if(typeSet.timing)boundaryExamples.push('timing_rules=false：回答無法判定具體時間，不以牌號或座標猜日期。');
+  if(typeSet.business_success||typeSet.finance||typeSet.debt_clearance||typeSet.positive_net_worth)boundaryExamples.push('收入或副業成功不等於負債歸零，也不等於正資產。');
+  if(typeSet.business_success||typeSet.finance)boundaryExamples.push('狐狸、魚、錨等牌只可描述工作／資源／穩定結構；不得自行延伸成清庫存、投廣告、調價格、追毛利等營運建議。');
+  if(typeSet.life_guidance)boundaryExamples.push('人生建議題只可輸出 approved_claims 已核准的篩選原則；不得自行指定職業、離職、分手、搬家、期限或唯一使命。');
+  if(boundaryExamples.length)lines.push('<boundary_examples>'+boundaryExamples.map(function(x){return '<example>'+x+'</example>';}).join('')+'</boundary_examples>');
   if(isSymmetricComparison){
     lines.push('比較題最高規則：兩個選項已在抽牌前固定到左右對稱欄；選項名稱只是標籤，禁止把名稱中的「太陽、魚、心、熊」等字套成同名牌。');
     lines.push('A與B必須使用完全相同的位置角色比較；不得將選項名稱映射成同名牌，也不得因名稱較熟悉而偏重。');
@@ -1378,7 +1495,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   if(typeSet.unsupported_age){lines.push('無 age_rules：數字年齡與區間直接回答無法驗證，不得附牌面側證。');lines.push('');}
   if(typeSet.health_medical_cause){lines.push('醫學病因命題不得使用牌面作原因、診斷或治療；若另有 health_symbolic_context，只能作非醫療的象徵性深讀。');lines.push('');}
 
-  lines.push('<reading_request method_profile="site_petit_lenormand_v7_3_evidence_lineage">');
+  lines.push('<reading_request method_profile="site_petit_lenormand_v7_4_approved_evidence">');
   lines.push('<question_original>'+xmlEscape(q||'未指定具體問題')+'</question_original>');
   lines.push('<propositions>');
   questions.forEach(function(item){
@@ -1412,7 +1529,10 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
     lines.push('</claim_plan></comparison_packet>');
   }else if(isGT){
     var geometry=buildGrandGeometry(drawn), globalUsedCards={};
-    var packetItems=questions.map(function(item){var packet=buildEvidencePacket(geometry,item,declaredGender);Object.keys(packet.usedCards).forEach(function(id){globalUsedCards[id]=packet.usedCards[id];});return{item:item,packet:packet};});assignGlobalEvidenceUids(packetItems);stoneEvidence=packetItems;
+    var packetItems=questions.map(function(item){var packet=buildEvidencePacket(geometry,item,declaredGender);return{item:item,packet:packet};});
+    assignGlobalEvidenceUids(packetItems);
+    packetItems.forEach(function(entry){entry.promptView=buildApprovedEvidenceView(entry.packet);Object.keys(entry.promptView.usedCards).forEach(function(id){globalUsedCards[id]=entry.promptView.usedCards[id];});});
+    stoneEvidence=packetItems;
     packetItems.forEach(function(entry){
       var item=entry.item,packet=entry.packet,type=item.type,policy=CLAIM_POLICIES[type];
       lines.push('<evidence_packet proposition_id="'+item.id+'" type="'+type+'" target_scope="'+item.targetScope+'">');
@@ -1427,34 +1547,29 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
       lines.push('<forbidden_claims>');packet.claimPlan.forbiddenClaims.forEach(function(x){lines.push('<claim>'+xmlEscape(x)+'</claim>');});lines.push('</forbidden_claims>');
       lines.push('</claim_plan>');
 
-      if(packet.structures.length){
+      var promptView=entry.promptView||buildApprovedEvidenceView(packet);
+      if(promptView.structures.length){
+        lines.push('<approved_evidence_scope rule="only_claim_linked">');
         lines.push('<evidence_catalog>');
-        packet.directPairs.forEach(function(pair,idx){var st=packet.structures.filter(function(x){return x.id==='D'+(idx+1);})[0];lines.push('D'+(idx+1)+' uid='+(st&&st.evidenceUid||'local')+' '+pair.positions.map(function(p){return cardLabel(p.card);}).join(' & '));});
-        packet.segments.forEach(function(seg,idx){var st=packet.structures.filter(function(x){return x.id==='S'+(idx+1);})[0];lines.push('S'+(idx+1)+' uid='+(st&&st.evidenceUid||'local')+' '+seg.positions.map(function(p){return cardLabel(p.card);}).join(' > '));});
+        promptView.structures.forEach(function(st){lines.push(st.id+' uid='+(st.evidenceUid||'local')+' '+st.positions.map(function(p){return cardLabel(p.card);}).join(st.kind==='adjacency'?' & ':' > '));});
         lines.push('</evidence_catalog>');
         lines.push('<core_clusters confidence_counting="one_per_cluster">');
-        packet.clusters.forEach(function(c){lines.push('<cluster id="'+c.id+'" kind="'+c.kind+'" polarity="'+c.polarity+'" refs="'+c.refs.join(',')+'">'+xmlEscape(c.theme)+'</cluster>');});
+        promptView.clusters.forEach(function(c){lines.push('<cluster id="'+c.id+'" kind="'+c.kind+'" polarity="'+c.polarity+'" refs="'+c.refs.filter(function(ref){return promptView.structures.some(function(st){return st.id===ref;});}).join(',')+'">'+xmlEscape(c.theme)+'</cluster>');});
         lines.push('</core_clusters>');
+        lines.push('</approved_evidence_scope>');
       }
 
-      if(packet.modernContext.contextPositions.length){
-        lines.push('<selected_context certainty_effect="none" novelty_filtered="true">');
-        packet.modernContext.personNeighborhoods.forEach(function(n,idx){lines.push('N-P'+(idx+1)+' '+cardLabel(n.center.card)+'周圍〔'+n.positions.map(function(p){return cardLabel(p.card);}).join('、')+'〕');});
-        packet.modernContext.topicNeighborhoods.forEach(function(n,idx){lines.push('N-T'+(idx+1)+' '+cardLabel(n.center.card)+'周圍〔'+n.positions.map(function(p){return cardLabel(p.card);}).join('、')+'〕');});
-        if(packet.modernContext.sharedCards.length)lines.push('N-shared '+packet.modernContext.sharedCards.map(function(p){return cardLabel(p.card);}).join('、'));
-        packet.modernContext.mirrors.forEach(function(m,idx){lines.push('M'+(idx+1)+' '+cardLabel(m.source.card)+' <-> '+cardLabel(m.target.card));});
-        packet.modernContext.knightMoves.forEach(function(k,idx){lines.push('K'+(idx+1)+' '+cardLabel(k.source.card)+' ~ '+cardLabel(k.target.card));});
-        packet.modernContext.intersections.forEach(function(it,idx){lines.push('I'+(idx+1)+' '+it.a+' x '+it.b+' shared='+it.positions.map(function(p){return cardLabel(p.card);}).join('、'));});
-        packet.modernContext.clusterThemes.forEach(function(t,idx){lines.push('T'+(idx+1)+' cluster='+t.clusterId+' '+t.label+'='+t.positions.map(function(p){return cardLabel(p.card);}).join('、'));});
-        if(packet.modernContext.corners.length)lines.push('F-corners '+packet.modernContext.corners.map(function(p){return cardLabel(p.card);}).join('、'));
-        if(packet.modernContext.centers.length)lines.push('F-center '+packet.modernContext.centers.map(function(p){return cardLabel(p.card);}).join('、'));
+      if(promptView.clusterThemes.length){
+        lines.push('<selected_context certainty_effect="none" scope="approved_clusters_only">');
+        promptView.clusterThemes.forEach(function(t,idx){lines.push('T'+(idx+1)+' cluster='+t.clusterId+' '+t.label+'='+t.positions.map(function(p){return cardLabel(p.card);}).join('、'));});
         lines.push('</selected_context>');
       }
       if(type==='unsupported_age'||type==='health_medical_cause'||type==='timing'){
         lines.push('<analysis_requirements mode="necessary_limit_only"></analysis_requirements>');
       }else{
         var analysisContract=buildEvidenceAwareAnalysisRequirements(packet);
-        lines.push('<analysis_requirements paragraph_range="'+analysisContract.paragraphMin+'-'+analysisContract.paragraphMax+'" core="required" favorable="'+analysisContract.favorable+'" risk="'+analysisContract.risk+'" repetition="'+analysisContract.repetition+'" contradiction="'+analysisContract.contradiction+'" manifestation="conditional_symbolic_only" unknown_boundary="required"></analysis_requirements>');
+        var claimIds=packet.claimPlan.approvedClaims.map(function(_,idx){return 'A'+(idx+1);}).join(',');
+        lines.push('<analysis_requirements mode="claim_bound" claims="'+claimIds+'" paragraph_range="'+analysisContract.paragraphMin+'-'+analysisContract.paragraphMax+'" favorable="'+analysisContract.favorable+'" risk="'+analysisContract.risk+'" repetition="'+analysisContract.repetition+'" contradiction="'+analysisContract.contradiction+'" manifestation="conditional_symbolic_only" unknown_boundary="required"></analysis_requirements>');
       }
       lines.push('</evidence_packet>');
     });
@@ -1469,13 +1584,14 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('</reading_request>');
   lines.push('');
   lines.push('# 輸出契約');
-  lines.push('第一句依 proposition 順序回答全部命題；成功、清債、正資產與時間彼此獨立，不得互相代證。');
+  lines.push('第一句依 proposition 順序回答全部命題。');
+  if(typeSet.business_success||typeSet.debt_clearance||typeSet.positive_net_worth||typeSet.timing)lines.push('成功、清債、正資產與時間彼此獨立，不得互相代證。');
   if(isSymmetricComparison){
     lines.push('比較題第一句直接說A、B哪個較適合，或明說差距不足；正文依序處理A、B、共同決策核心與取捨。');
     lines.push('比較證據引用：O-A／O-B寫選項位置；X-C寫中央共同軸；X1／X2／X3寫完整左右配對列。');
   }
   lines.push('正文只展開各題 analysis_requirements 中實際啟用的項目；每個判斷都要能回指批准證據，沒有證據就明說不足或省略。');
-  lines.push('每段末尾只列真正使用的證據：D寫牌對、S寫完整線段、脈絡寫N／M／K／I／T／F；不得輸出uid。');
+  lines.push('每段只處理對應 approved_claim；末尾僅列該 claim_evidence 內真正使用的證據。D寫牌對、S寫完整線段、T寫核准C的主題摘要；同一C即使含多個D／S也不得描述成多份獨立信心，不得輸出uid。');
   lines.push('正文使用繁體中文與台灣用語，不寫座標、排數、演算法、分數或內部檢查。');
   lines.push('');
   lines.push('<presentation_footer mode="interpretation_aligned">');
@@ -1798,6 +1914,7 @@ window.__JY_LN_TEST__ = {
   splitQuestionSegments: splitQuestionSegments,
   buildGrandGeometry: buildGrandGeometry,
   buildEvidencePacket: buildEvidencePacket,
+  buildApprovedEvidenceView: buildApprovedEvidenceView,
   assignGlobalEvidenceUids: assignGlobalEvidenceUids,
   buildClaimPlan: buildClaimPlan,
   validateEvidencePacket: validateEvidencePacket,

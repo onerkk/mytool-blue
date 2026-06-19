@@ -96,8 +96,8 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v5.3',
-        '命題門檻／證據血緣／提示詞降噪根治',
+        '雷諾曼牌 Lenormand v5.4',
+        '人生建議命題／核准證據視圖／提示詞收斂根治',
         'attraction_opportunity',
         'sexual_component',
         'sexual_event',
@@ -108,20 +108,23 @@
         'business_success',
         'debt_clearance',
         'positive_net_worth',
+        'life_guidance',
         'timing_rules_not_enabled',
         'function assignGlobalEvidenceUids',
         'function rankAndLimitClusterIds',
         'function modernThemeAllowedForType',
         '<claim_evidence>',
+        '<approved_evidence_scope rule="only_claim_linked">',
         'basis="rule_limit"',
         '<timing_rules enabled="false"',
         'function detectComparisonQuestion',
         'function resolveSpreadForQuestion',
         'function buildComparisonNinePacket',
         'function buildEvidenceAwareAnalysisRequirements',
+        'function buildApprovedEvidenceView',
         'function buildStoneRecommendationCandidates',
         'site_symmetric_nine_comparison',
-        'site_petit_lenormand_v7_3_evidence_lineage',
+        'site_petit_lenormand_v7_4_approved_evidence',
         '本站受控的現代工作詞典',
         '不得自行延伸成清庫存、投廣告、調價格、追毛利',
         '<stone_recommendation mode="select_after_interpretation"',
@@ -135,7 +138,7 @@
         '<approved_claims>',
         '<forbidden_claims>',
         '<core_clusters confidence_counting="one_per_cluster">',
-        '<selected_context certainty_effect="none" novelty_filtered="true">',
+        '<selected_context certainty_effect="none" scope="approved_clusters_only">',
         '<packet_validation status="',
         '魚不得轉義為性慾',
         '鞭子不得轉義為性行為',
@@ -150,6 +153,8 @@
         "pos:'負擔、考驗、難卸責任'"
       ],
       mustNot: [
+        '雷諾曼牌 Lenormand v5.3',
+        'site_petit_lenormand_v7_3_evidence_lineage',
         '雷諾曼牌 Lenormand v5.2',
         'site_petit_lenormand_v7_2_evidence_first',
         '<relevant_houses context_only="true">',
@@ -275,7 +280,7 @@
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
     }
 
-    // ⑦雷諾曼 v5.3 命題門檻／證據血緣／提示詞降噪根治
+    // ⑦雷諾曼 v5.4 人生建議命題／核准證據視圖／提示詞收斂根治
     var ln = env.lenormandTest || root.__JY_LN_TEST__;
     if (ln && typeof ln.inferQuestionDimensions === 'function') {
       var qSex = ln.inferQuestionDimensions('今年有非現任的肉體桃花嗎？');
@@ -367,6 +372,59 @@
           invalidCmpPrompt.indexOf('comparison_requires_symmetric_nine') > -1 && invalidCmpPrompt.indexOf('任何選項優劣結論') > -1 && invalidCmpPrompt.indexOf('<evidence_catalog>') === -1,
           '');
         var geom = ln.buildGrandGeometry(draw);
+
+        var lifeQuestion = '我對人生有些迷茫 請給我建議';
+        var lifeProps = ln.splitQuestionSegments(lifeQuestion);
+        env.report('⑦雷諾曼人生建議路由', '人生迷茫／請給建議獨立進入 life_guidance，不再落入泛用 general',
+          lifeProps.length === 1 && lifeProps[0].type === 'life_guidance', JSON.stringify(lifeProps));
+        var lifePacket = ln.buildEvidencePacket(geom, lifeProps[0], 'male');
+        env.report('⑦雷諾曼人生建議門檻', '人生建議使用分項核准主張，不再由單一通用 A1 包辦所有結論',
+          lifePacket.validation && lifePacket.validation.ok && lifePacket.claimPlan.status !== 'model_evaluate' &&
+          (lifePacket.claimPlan.approvedClaims || []).length >= 3 &&
+          (lifePacket.claimPlan.approvedClaims || []).every(function(c){ return String(c).indexOf('依核心證據與反證') === -1; }),
+          JSON.stringify(lifePacket.claimPlan));
+        var lifeUsed = {};
+        var lifeLinksOk = (lifePacket.claimPlan.claimEvidence || []).every(function(link){
+          return (link.clusters || []).length <= 2 && (link.clusters || []).every(function(cid){
+            if (lifeUsed[cid]) return false;
+            lifeUsed[cid] = true;
+            return true;
+          });
+        });
+        env.report('⑦雷諾曼人生建議血緣', '每項主張最多兩個 C，且不同主張不重複使用同一 C', lifeLinksOk,
+          JSON.stringify(lifePacket.claimPlan.claimEvidence));
+        var lifeView = ln.buildApprovedEvidenceView(lifePacket);
+        var lifeApprovedIds = {};
+        (lifeView.clusters || []).forEach(function(c){ lifeApprovedIds[c.id] = true; });
+        var lifeViewRefsOk = (lifeView.structures || []).every(function(st){
+          return (lifeView.clusters || []).some(function(c){ return (c.refs || []).indexOf(st.id) > -1; });
+        });
+        env.report('⑦雷諾曼核准證據視圖', 'runtime 只保留 claim_evidence 真正引用的 C／D／S',
+          lifeViewRefsOk && (lifeView.clusters || []).length === Object.keys(lifeUsed).length &&
+          (lifeView.structures || []).length <= lifePacket.structures.length,
+          JSON.stringify({all:lifePacket.structures.length,approved:lifeView.structures.length,clusters:Object.keys(lifeApprovedIds)}));
+        var lifePrompt = ln.buildPrompt(lifeQuestion, draw, 'grand', null, 'male');
+        env.report('⑦雷諾曼人生建議提示詞', 'v7.4 只輸出核准證據並封鎖未核准脈絡偷渡',
+          lifePrompt.indexOf('site_petit_lenormand_v7_4_approved_evidence') > -1 &&
+          lifePrompt.indexOf('type="life_guidance"') > -1 &&
+          lifePrompt.indexOf('<approved_evidence_scope rule="only_claim_linked">') > -1 &&
+          lifePrompt.indexOf('<selected_context certainty_effect="none" scope="approved_clusters_only">') > -1 &&
+          lifePrompt.indexOf('N-P') === -1 && lifePrompt.indexOf('N-T') === -1 &&
+          lifePrompt.indexOf('M1 ') === -1 && lifePrompt.indexOf('K1 ') === -1 &&
+          lifePrompt.indexOf('I1 ') === -1 && lifePrompt.indexOf('F-corners') === -1,
+          'len=' + lifePrompt.length);
+        env.report('⑦雷諾曼人生建議提示詞', '人生建議不載入無關財務範例或自行生成具體處置',
+          lifePrompt.indexOf('收入或副業成功不等於') === -1 &&
+          lifePrompt.indexOf('清庫存') === -1 && lifePrompt.indexOf('投廣告') === -1 &&
+          lifePrompt.indexOf('不得自行指定職業、離職、分手、搬家、期限或唯一使命') > -1 &&
+          lifePrompt.length < 8000,
+          'len=' + lifePrompt.length);
+        var lifeCandidates = ln.buildStoneRecommendationCandidates(lifeQuestion, lifeProps, [{item:lifeProps[0],packet:lifePacket}]);
+        env.report('⑦雷諾曼人生建議推薦', '水晶候選只讀核准證據，方向題可召回紫水晶但不固定推薦',
+          lifeCandidates.some(function(x){return x.name === '紫水晶';}) &&
+          lifePrompt.indexOf('<stone_text>') === -1 && lifePrompt.indexOf('候選按名稱排列，不是推薦順位') > -1,
+          JSON.stringify(lifeCandidates));
+
         var packets = sexSplit.map(function(q){ return ln.buildEvidencePacket(geom, q, 'male'); });
 
         env.report('⑦雷諾曼證據包', '每個 packet 通過程式驗證',
@@ -440,8 +498,8 @@
         env.report('⑦雷諾曼證據血緣', '跨命題相同實體結構共用 evidence_uid',
           Object.keys(uidByKey).every(function(k){return uidByKey[k]!=='MISMATCH';}), JSON.stringify(uidByKey).slice(0,220));
         var moneyPrompt = ln.buildPrompt(moneyQuestion, draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', 'v7.3 含四命題、claim_evidence、時間守門且移除未使用房屋清單',
-          moneyPrompt.indexOf('site_petit_lenormand_v7_3_evidence_lineage') > -1 &&
+        env.report('⑦雷諾曼提示詞', 'v7.4 含四命題、claim_evidence、核准證據範圍與時間守門',
+          moneyPrompt.indexOf('site_petit_lenormand_v7_4_approved_evidence') > -1 &&
           moneyPrompt.indexOf('type="debt_clearance"') > -1 && moneyPrompt.indexOf('type="positive_net_worth"') > -1 &&
           moneyPrompt.indexOf('<claim_evidence>') > -1 && moneyPrompt.indexOf('basis="rule_limit"') > -1 && moneyPrompt.indexOf('<timing_rules enabled="false"') > -1 &&
           moneyPrompt.indexOf('本站受控的現代工作詞典') > -1 && moneyPrompt.indexOf('不得自行延伸成清庫存、投廣告、調價格、追毛利') > -1 &&
@@ -449,8 +507,8 @@
           'len='+moneyPrompt.length);
 
         var lp = ln.buildPrompt('今年有非現任的肉體桃花嗎？她幾歲？', draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', 'v7 提示詞含命題、人物狀態、批准主張與驗證狀態',
-          lp.indexOf('site_petit_lenormand_v7_3_evidence_lineage') > -1 &&
+        env.report('⑦雷諾曼提示詞', 'v7.4 提示詞含命題、人物狀態、批准主張與核准證據範圍',
+          lp.indexOf('site_petit_lenormand_v7_4_approved_evidence') > -1 &&
           lp.indexOf('type="attraction_opportunity"') > -1 &&
           lp.indexOf('type="sexual_component"') > -1 &&
           lp.indexOf('type="sexual_event"') > -1 &&
