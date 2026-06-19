@@ -96,59 +96,44 @@
     },
     'lenormand.js': {
       must: [
-        '雷諾曼牌 Lenormand v4.5',                            // v87.6 深度現代解讀層
-        'function gtCoordinate(index)',                       // 置中座標單一真相源
-        'function detectAgeQualifier',                        // 數字年齡條件解析
-        'function inferQuestionDimensions',                   // 謂詞＋目標範圍＋條件三維路由
-        'function primaryDecisionType',                       // 時間標籤不可蓋過主命題
-        'function shouldSplitCommaClauses',                    // 逗號跨領域複合題拆分
-        'age_unverifiable',                                    // 純年齡題不退回一般解讀
-        'function buildEvidencePacket',                       // 每子題證據包
-        'function buildClaimPlan',                            // 程式產生結論上限
-        'function buildModernContext',                         // 現代脈絡由程式計算
-        'function analysisDimensionsFor',                      // 每題分析覆蓋面
-        '<person_neighborhoods method="3x3_local_field">', // 人物局部場域
-        '<topic_neighborhoods method="3x3_local_field">',  // 焦點局部場域
-        '<modern_context certainty_effect="none">',        // 現代技法不提高確定度
-        '<mirrors method="site_axis_mirror">',             // 本站鏡像
-        '<knight_moves method="chess_knight_geometry">',   // 騎士跳
-        '<segment_intersections>',                              // 線段交會
-        '<tableau_frame>',                                      // 中央／四角框架
-        '<thematic_repetitions scope="approved_local_context">', // 局部主題重複
-        '<analysis_requirements>',                              // 深度輸出契約
-        '同一C只算一組確定度，但要完整分析簇內細節',        // 深度與確定度解耦
-        'career_fit',                                         // 工作適配與一般職涯分流
-        'career_promotion',                                   // 升遷獨立命題
-        '<evidence_clusters>',      // 共享核心牌由程式分簇
-        '<claim_plan status="',             // AI不得提高結論強度
-        'unknown_future_counterpart',                         // 未知未來對象不冒充既有人物
-        '<age_rules enabled="false">',                       // 無年齡規則時禁止數字判定
-        '<valid_segments exact="true">',                    // 程式已裁好精確區段
-        '同一C只算一組',    // 相鄰鏈不重複計分
-        '不得用孩子／百合／大樹／房屋側證',        // 25歲案例根治
-        'counterpart_significator" status="method_placeholder"', // 人物牌僅為方法占位
-        '<card_dictionary scope="all_evidence_packets">',      // 跨子題共用一份牌義表
-        '<presentation_footer mode="verbatim_after_reading">',   // 固定呈現層
-        'function selectPresentationFooter',                 // 程式預選短收尾
-        "key:'結束・終止・封閉'",                           // 負面牌義去美化
-        "key:'負擔・考驗・難卸壓力'"                        // 十字架去命定美化
+        '雷諾曼牌 Lenormand v5.0',
+        '命題編譯器／受控深讀根治',
+        'attraction_opportunity',
+        'sexual_component',
+        'sexual_event',
+        'unsupported_age',
+        'health_medical_cause',
+        'health_symbolic_context',
+        'hypothetical_noncurrent_counterpart',
+        'function expandSegmentToQuestions',
+        'function buildClusters',
+        'function validateEvidencePacket',
+        'function failClosedPacket',
+        '<approved_claims>',
+        '<forbidden_claims>',
+        '<core_clusters confidence_counting="one_per_cluster">',
+        '<selected_context certainty_effect="none" novelty_filtered="true">',
+        '<packet_validation status="',
+        '魚不得轉義為性慾',
+        '鞭子不得轉義為性行為',
+        '吸引不等於性成分，性成分不等於事件',
+        '<age_rules enabled="false">',
+        'personStatusForScope(item.targetScope)',
+        "key:'結束・終止・封閉'",
+        "key:'負擔・考驗・難卸壓力'"
       ],
       mustNot: [
-        '雷諾曼牌 Lenormand v4.4',                            // 舊版簽名
-        '雷諾曼牌 Lenormand v4.3',                            // 更舊版簽名
-        '<derived_geometry authoritative="true">',          // v87.2 全量幾何資料牆
-        '<straight_lines>',                                   // v87.2 全31線整包輸出
-        'valid_segments列的是最大直線',                       // v87.3 仍交給模型自行切線
-        'current_or_primary_counterpart',                     // 未知未來對象被冒充既有人物
-        '<presentation_footer stage="after_reading_locked">', // 假兩階段
-        '可用礦物事實：',                                    // 整份礦物表造成提示詞膨脹
-        'var QUESTION_TYPES = {',                             // 舊平面路由
-        "key:'結束・轉化・終止'",                           // 棺材美化詞
-        "key:'負擔・命運・考驗'",                           // 十字架命定化
-        '末排四張依本站約定只作獨立總結',                    // 舊錯誤隔離規則
-        '不建立與第四排的上下相鄰',                           // 舊錯誤隔離規則
-        '在末排收束區第',                                     // 舊切離人物牌
-        'var isRelationship ='                                // 舊單一關鍵字分支
+        '雷諾曼牌 Lenormand v4.5',
+        'site_petit_lenormand_v6_deep',
+        'types="general" target_scope="current_partner"',
+        '<modern_context certainty_effect="none">',
+        '<thematic_repetitions scope="approved_local_context">',
+        'valid_segments列的是最大直線',
+        'current_or_primary_counterpart',
+        "key:'結束・轉化・終止'",
+        "key:'負擔・命運・考驗'",
+        '末排四張依本站約定只作獨立總結',
+        '不建立與第四排的上下相鄰'
       ]
     }  };
 
@@ -253,90 +238,89 @@
       env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
     }
 
-    // ⑦雷諾曼 v4.5 深度現代解讀層、命題分流與結論上限
+    // ⑦雷諾曼 v5.0 命題編譯器／受控深讀根治
     var ln = env.lenormandTest || root.__JY_LN_TEST__;
     if (ln && typeof ln.inferQuestionDimensions === 'function') {
+      var qSex = ln.inferQuestionDimensions('今年有非現任的肉體桃花嗎？');
+      env.report('⑦雷諾曼路由', '非現任肉體桃花→桃花／性成分／事件三命題＋非現任假設對象',
+        qSex.types.indexOf('attraction_opportunity') > -1 &&
+        qSex.types.indexOf('sexual_component') > -1 &&
+        qSex.types.indexOf('sexual_event') > -1 &&
+        qSex.targetScope === 'hypothetical_noncurrent_counterpart', JSON.stringify(qSex));
+
+      var sexSplit = ln.splitQuestionSegments('今年有非現任的肉體桃花嗎？她幾歲？');
+      env.report('⑦雷諾曼路由', '複合題拆成桃花、性成分、事件、不可驗證年齡四 proposition',
+        sexSplit.length === 4 &&
+        sexSplit[0].type === 'attraction_opportunity' &&
+        sexSplit[1].type === 'sexual_component' &&
+        sexSplit[2].type === 'sexual_event' &&
+        sexSplit[3].type === 'unsupported_age', JSON.stringify(sexSplit));
+      env.report('⑦雷諾曼路由', '使用者的「今年」只作問題範圍，不啟用時間推算',
+        !!sexSplit[0].timeScope && sexSplit[0].timeScope.raw === '今年', JSON.stringify(sexSplit[0].timeScope));
+
       var qAge = ln.inferQuestionDimensions('未來會有25歲上下跟我交往嗎？');
-      env.report('⑦雷諾曼路由', '未來＋數字年齡→relationship_future＋未知未來對象',
-        qAge.types.indexOf('relationship_future') > -1 && qAge.types.indexOf('relationship_intent') === -1 && qAge.targetScope === 'unknown_future_counterpart',
-        JSON.stringify(qAge));
-      env.report('⑦雷諾曼路由', '25歲上下被辨識為不可驗證條件',
-        !!(qAge.qualifiers && qAge.qualifiers[0] && qAge.qualifiers[0].raw === '25歲上下' && qAge.qualifiers[0].assessable === false),
-        JSON.stringify(qAge.qualifiers || []));
+      env.report('⑦雷諾曼路由', '未來交往＋25歲→關係命題＋年齡限制，不誤判當下意圖',
+        qAge.types.indexOf('relationship_future') > -1 && qAge.types.indexOf('relationship_intent') === -1 &&
+        qAge.targetScope === 'unknown_future_counterpart' && qAge.qualifiers[0] && qAge.qualifiers[0].raw === '25歲上下', JSON.stringify(qAge));
 
-      var qIntent = ln.inferQuestionDimensions('凌會想跟我交往嗎？');
-      env.report('⑦雷諾曼路由', '特定人物想交往→intent，不誤判已形成未來關係',
-        qIntent.types.indexOf('relationship_intent') > -1 && qIntent.types.indexOf('relationship_future') === -1 && qIntent.targetScope === 'specific_counterpart',
-        JSON.stringify(qIntent));
+      var qHealth = ln.splitQuestionSegments('我身體為何一直發炎 長痘痘');
+      env.report('⑦雷諾曼路由', '醫療原因與健康象徵狀態分成兩個 proposition',
+        qHealth.length === 2 && qHealth[0].type === 'health_medical_cause' && qHealth[1].type === 'health_symbolic_context', JSON.stringify(qHealth));
 
-      var qCareer = ln.inferQuestionDimensions('我何時會升遷？');
-      env.report('⑦雷諾曼路由', '升遷與一般職涯分流，並保留時間標籤',
-        qCareer.types.indexOf('career_promotion') > -1 && qCareer.types.indexOf('career_general') === -1 && qCareer.types.indexOf('timing') > -1,
-        JSON.stringify(qCareer));
-      env.report('⑦雷諾曼路由', '時間標籤不會覆蓋升遷主命題',
-        !ln.primaryDecisionType || ln.primaryDecisionType(qCareer.types) === 'career_promotion',
-        ln.primaryDecisionType ? ln.primaryDecisionType(qCareer.types) : 'no helper');
-      var qFit = ln.inferQuestionDimensions('正職工作適合我嗎？');
-      env.report('⑦雷諾曼路由', '工作適配獨立為 career_fit',
-        qFit.types.length === 1 && qFit.types[0] === 'career_fit',
-        JSON.stringify(qFit));
-
-      var qAgeOnly = ln.inferQuestionDimensions('她幾歲？');
-      env.report('⑦雷諾曼路由', '純年齡題→不可驗證，不退回一般牌義',
-        qAgeOnly.types[0] === 'age_unverifiable' && qAgeOnly.targetScope === 'specific_counterpart',
-        JSON.stringify(qAgeOnly));
-
-      if (typeof ln.splitQuestionSegments === 'function') {
-        var split = ln.splitQuestionSegments('副業能成功嗎，凌會想跟我交往嗎？');
-        env.report('⑦雷諾曼路由', '逗號內跨領域複合題可拆成獨立證據包',
-          split.length === 2 && split[0].types.indexOf('business_success') > -1 && split[1].types.indexOf('relationship_intent') > -1,
-          JSON.stringify(split));
-        var samePerson = ln.splitQuestionSegments('凌會想跟我交往嗎？未來我們會走在一起嗎？');
-        env.report('⑦雷諾曼路由', '「我們」保留特定對象，不誤判未知新人',
-          samePerson.length === 2 && samePerson[1].targetScope === 'specific_counterpart',
-          JSON.stringify(samePerson));
-      }
+      var qCareer = ln.splitQuestionSegments('正職工作適合我嗎？未來我還會升遷嗎？');
+      env.report('⑦雷諾曼路由', '工作適配與升遷保持獨立命題',
+        qCareer.length === 2 && qCareer[0].type === 'career_fit' && qCareer[1].type === 'career_promotion', JSON.stringify(qCareer));
 
       if (typeof ln.buildPrompt === 'function' && ln.cards) {
         var ids = [30,27,34,26,28,17,36,22,33,3,9,18,24,4,8,7,23,19,21,11,14,25,29,5,6,20,10,35,13,1,15,16,2,12,32,31];
         var draw = ids.map(function(id){ return ln.cards[id - 1]; });
-        var lp = ln.buildPrompt('未來會有25歲上下跟我交往嗎？', draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', '提示詞含精確區段、年齡隔離與程式結論上限',
-          lp.length < 12000 && lp.indexOf('<valid_segments exact="true">') > -1 && lp.indexOf('requested="25歲上下" assessable="false"') > -1 && lp.indexOf('<claim_plan status="') > -1,
+        var geom = ln.buildGrandGeometry(draw);
+        var packets = sexSplit.map(function(q){ return ln.buildEvidencePacket(geom, q, 'male'); });
+
+        env.report('⑦雷諾曼證據包', '每個 packet 通過程式驗證',
+          packets.every(function(p){ return p.validation && p.validation.ok; }), JSON.stringify(packets.map(function(p){ return p.validation; })));
+        env.report('⑦雷諾曼證據包', '年齡 packet fail-closed：零牌面證據',
+          packets[3].structures.length === 0 && packets[3].clusters.length === 0 && packets[3].claimPlan.status === 'unsupported_age', JSON.stringify(packets[3].claimPlan));
+        env.report('⑦雷諾曼證據包', '命題專屬分簇不再把全部 D/S 合成單一 C',
+          packets[0].clusters.length > 1 && packets[0].clusters.length < packets[0].structures.length, 'clusters=' + packets[0].clusters.length + ', structures=' + packets[0].structures.length);
+        env.report('⑦雷諾曼證據包', '現代脈絡已去重並限制數量',
+          packets.slice(0,3).every(function(p){ return p.modernContext.mirrors.length <= 3 && p.modernContext.knightMoves.length <= 3 && p.modernContext.intersections.length <= 2; }), '');
+
+        var allRefsOk = packets.slice(0,3).every(function(p){
+          var counts = {};
+          p.clusters.forEach(function(c){ c.refs.forEach(function(r){ counts[r] = (counts[r] || 0) + 1; }); });
+          return p.structures.every(function(st){ return counts[st.id] === 1; });
+        });
+        env.report('⑦雷諾曼證據包', '每個 D/S 恰好歸屬一個 C，不重複計分', allRefsOk, '');
+
+        var lp = ln.buildPrompt('今年有非現任的肉體桃花嗎？她幾歲？', draw, 'grand', null, 'male');
+        env.report('⑦雷諾曼提示詞', 'v7 提示詞含命題、人物狀態、批准主張與驗證狀態',
+          lp.indexOf('site_petit_lenormand_v7_controlled_deep') > -1 &&
+          lp.indexOf('type="attraction_opportunity"') > -1 &&
+          lp.indexOf('type="sexual_component"') > -1 &&
+          lp.indexOf('type="sexual_event"') > -1 &&
+          lp.indexOf('type="unsupported_age"') > -1 &&
+          lp.indexOf('status="hypothetical"') > -1 &&
+          (lp.match(/packet_validation status="pass"/g) || []).length === 4 &&
+          lp.indexOf('<approved_claims>') > -1 && lp.indexOf('<forbidden_claims>') > -1, 'len=' + lp.length);
+        env.report('⑦雷諾曼提示詞', '性命題邊界鎖定：魚與鞭子不得越權轉義',
+          lp.indexOf('魚不得轉義為性慾') > -1 && lp.indexOf('鞭子不得轉義為性行為') > -1 &&
+          lp.indexOf('吸引不等於性成分，性成分不等於事件') > -1, '');
+        var ageStart = lp.indexOf('<evidence_packet proposition_id="q2"');
+        var ageEnd = lp.indexOf('</evidence_packet>', ageStart);
+        var ageBlock = ageStart > -1 && ageEnd > ageStart ? lp.slice(ageStart, ageEnd) : '';
+        env.report('⑦雷諾曼提示詞', '不可驗證年齡不生成 evidence_catalog／現代脈絡',
+          ageBlock.indexOf('<evidence_catalog>') === -1 && ageBlock.indexOf('<selected_context') === -1 && ageBlock.indexOf('unsupported_age') > -1, ageBlock.slice(0,120));
+        env.report('⑦雷諾曼提示詞', '提示詞移除全量技法資料牆並控制長度',
+          lp.length < 14000 && lp.indexOf('<modern_context certainty_effect="none">') === -1 && lp.indexOf('<thematic_repetitions scope="approved_local_context">') === -1,
           'len=' + lp.length);
-        env.report('⑦雷諾曼提示詞', '不再輸出最大整線、假既有人物或整份礦物表',
-          lp.indexOf('valid_segments列的是最大直線') === -1 && lp.indexOf('current_or_primary_counterpart') === -1 && lp.indexOf('可用礦物事實：') === -1,
+        env.report('⑦雷諾曼提示詞', '品牌連結為完整 Markdown，沒有裸文字缺網址',
+          lp.indexOf('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)') > -1, '');
+
+        var hp = ln.buildPrompt('我身體為何一直發炎 長痘痘', draw, 'grand', null, 'male');
+        env.report('⑦雷諾曼提示詞', '健康病因採空證據限制，另保留象徵性深讀',
+          hp.indexOf('type="health_medical_cause"') > -1 && hp.indexOf('type="health_symbolic_context"') > -1 && hp.indexOf('status="medical_limit"') > -1,
           '');
-        env.report('⑦雷諾曼提示詞', '未知未來人物為方法占位，且相鄰鏈不得重複計分',
-          lp.indexOf('counterpart_significator" status="method_placeholder"') > -1 && lp.indexOf('<evidence_clusters>') > -1,
-          '');
-        env.report('⑦雷諾曼提示詞', '現代深度層齊全且明示不提高確定度',
-          lp.indexOf('<person_neighborhoods method="3x3_local_field">') > -1 &&
-          lp.indexOf('<topic_neighborhoods method="3x3_local_field">') > -1 &&
-          lp.indexOf('<modern_context certainty_effect="none">') > -1 &&
-          lp.indexOf('<mirrors method="site_axis_mirror">') > -1 &&
-          lp.indexOf('<knight_moves method="chess_knight_geometry">') > -1 &&
-          lp.indexOf('<tableau_frame>') > -1 &&
-          lp.indexOf('<thematic_repetitions scope="approved_local_context">') > -1,
-          '');
-        env.report('⑦雷諾曼提示詞', '深度與確定度解耦，不再把同一簇壓成單段摘要',
-          lp.indexOf('同一C只算一組確定度，但要完整分析簇內細節') > -1 &&
-          lp.indexOf('大牌陣證據充足時原則上寫3至8段') > -1 &&
-          lp.indexOf('<analysis_requirements>') > -1,
-          '');
-        var cp = ln.buildPrompt('正職工作適合我嗎？未來我還會升遷嗎？', draw, 'grand', null, 'male');
-        env.report('⑦雷諾曼提示詞', '適配與升遷生成不同命題契約／證據包',
-          cp.indexOf('types="career_fit"') > -1 && cp.indexOf('types="career_promotion"') > -1 && cp.indexOf('<decision_rule>') > -1 && cp.indexOf('適合＝可持續匹配') > -1 && cp.indexOf('升遷＝職位／權責向上') > -1,
-          '');
-        env.report('⑦雷諾曼提示詞', '升遷契約禁止把塔錨鑰匙直接當升遷',
-          cp.indexOf('只有塔、錨、狐狸、鑰匙') > -1 && cp.indexOf('職位、權責或層級向上變動') > -1,
-          '');
-        env.report('⑦雷諾曼提示詞', '直接證據為精確牌對且由程式分簇',
-          cp.indexOf('<direct_adjacency exact_pairs="true">') > -1 && cp.indexOf('<evidence_clusters>') > -1,
-          '');
-        env.report('⑦雷諾曼提示詞', '牌義表跨子題只輸出一次',
-          (lp.match(/<card_dictionary/g) || []).length === 1 && lp.indexOf('<card_dictionary scope="all_evidence_packets">') > -1,
-          'count=' + (lp.match(/<card_dictionary/g) || []).length);
       }
     }
 
