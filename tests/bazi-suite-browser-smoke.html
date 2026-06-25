@@ -20,6 +20,10 @@
    if(typeof window._baziFullSuiteOpen!=='function')throw new Error('full suite entry missing');
    window._baziFullSuiteOpen();
    await sleep(100);
+   if(document.querySelector('#bzs-screen input[type="date"],#bzs-screen input[type="time"]'))throw new Error('native date/time input still present');
+   click('#s-date-display');await waitFor(()=>document.querySelector('#bzs-picker-bd .bzs-cal-grid'),'custom date picker');click('[data-picker-act="cancel"]');await sleep(360);
+   click('#s-time-display');await waitFor(()=>document.querySelector('#bzs-picker-bd .bzs-hour-grid'),'custom time picker');click('[data-picker-act="cancel"]');await sleep(360);
+   click('#s-location-display');await waitFor(()=>document.querySelector('#bzs-picker-bd .bzs-loc-chip'),'custom location picker');click('#bzs-picker-bd');await sleep(360);
    set('s-date','1983-08-25');set('s-time','14:55');set('s-name','測試A');
    click('[data-act="cast-single"]');
    await waitFor(()=>window.BaziSuiteUI.getState().single,'single');
@@ -54,7 +58,7 @@
    await waitFor(()=>window.BaziSuiteUI.getState().tools.reverse,'reverse tool');
    st=window.BaziSuiteUI.getState();
    if(!st.tools.reverse.matches.some(x=>x.datetime==='1983-08-25 13:00:00'))throw new Error('reverse lookup');
-   document.body.insertAdjacentHTML('beforeend','<pre id="smoke-result">PASS legacy-ui-preserved+single+compat+personality+share+tools</pre>');
+   document.body.insertAdjacentHTML('beforeend','<pre id="smoke-result">PASS legacy-ui-preserved+custom-pickers+single+compat+personality+share+tools</pre>');
   }catch(e){document.body.insertAdjacentHTML('beforeend','<pre id="smoke-result">FAIL '+String(e.stack||e).replace(/</g,'&lt;')+'</pre>');}
  }
  run();

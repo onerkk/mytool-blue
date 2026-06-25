@@ -98,7 +98,7 @@ test('首頁保留原版UI為預設並另接完整套件',()=>{
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const ui=fs.readFileSync(path.join(ROOT,'JS/bazi-suite.js'),'utf8');
   assert(html.includes('JS/bazi-suite-core.js?v=20260626v1_0_0'));
-  assert(html.includes('JS/bazi-suite.js?v=20260626v1_0_1'));
+  assert(html.includes('JS/bazi-suite.js?v=20260626v1_1_0'));
   assert(ui.includes('window._baziLegacyStandaloneOpen=legacyOpen'));
   assert(ui.includes('window._baziFullSuiteOpen=open'));
   assert(ui.includes('window._baziStandaloneOpen=legacyOpen || open'));
@@ -184,6 +184,32 @@ test('單盤、合盤與人格都能生成圖片分享卡，並保留十個AI入
   assert(share.includes('function renderBaziPersonality'));
   assert(share.includes('function renderBaziCompatibility'));
   ['ChatGPT','Gemini','Claude','Grok','DeepSeek','Kimi','豆包','Meta AI','Copilot','Perplexity'].forEach(x=>assert(ui.includes("['"+x+"'"),x));
+});
+
+
+test('完整套件的日期時間地點全部使用站內自訂UI，不再觸發手機原生日曆',()=>{
+  const ui=fs.readFileSync(path.join(ROOT,'JS/bazi-suite.js'),'utf8');
+  assert(!ui.includes('type="date"'));
+  assert(!ui.includes('type="time"'));
+  assert(ui.includes('data-picker="date"'));
+  assert(ui.includes('data-picker="time"'));
+  assert(ui.includes('data-picker="location"'));
+  assert(ui.includes('bzs-picker-sheet'));
+  assert(ui.includes('bzs-loc-chip'));
+  assert(ui.includes("dateField('u','民用日期')"));
+  assert(ui.includes("locationFields('u','地點（真太陽時校正）')"));
+});
+
+test('單人合盤人格與工具共用同一套自訂出生資料元件',()=>{
+  const ui=fs.readFileSync(path.join(ROOT,'JS/bazi-suite.js'),'utf8');
+  assert(ui.includes("personForm('s'"));
+  assert(ui.includes("personForm('a'"));
+  assert(ui.includes("personForm('b'"));
+  assert(ui.includes("personForm('p'"));
+  assert(ui.includes("function dateField(prefix,label)"));
+  assert(ui.includes("function timeField(prefix,label,allowUnknown,defaultTime)"));
+  assert(ui.includes("function locationFields(prefix,label)"));
+  assert(ui.includes("version:'1.1.0'"));
 });
 
 if(process.exitCode){console.error(`\n${passed} tests passed before failure(s).`);process.exit(process.exitCode);}console.log(`\nAll ${passed} Bazi suite regression tests passed.`);
