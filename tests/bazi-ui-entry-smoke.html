@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Bazi UI Entry Smoke</title></head><body>
+<script src="../JS/bazi-standalone.js"></script>
+<script>window.__originalBaziOpen=window._baziStandaloneOpen;</script>
+<script src="../JS/bazi-suite-core.js"></script>
+<script src="../JS/bazi-suite.js"></script>
+<script>
+(function(){
+  try{
+    if(window._baziStandaloneOpen!==window.__originalBaziOpen) throw new Error('原版入口遭覆蓋');
+    if(typeof window._baziFullSuiteOpen!=='function') throw new Error('完整套件入口不存在');
+    window._baziStandaloneOpen();
+    var legacy=document.getElementById('bzx-screen');
+    var suite=document.getElementById('bzs-screen');
+    if(!legacy||legacy.style.display!=='block') throw new Error('原版UI未開啟');
+    if(suite&&suite.style.display==='block') throw new Error('完整套件錯誤搶佔主入口');
+    if(!legacy.textContent.includes('出生日期')) throw new Error('原版日期入口遺失');
+    if(!legacy.textContent.includes('出生時間')) throw new Error('原版時間入口遺失');
+    if(!legacy.textContent.includes('出生地點')) throw new Error('原版地點入口遺失');
+    if(!legacy.textContent.includes('合盤・人格・曆法工具')) throw new Error('完整功能按鈕遺失');
+    document.body.insertAdjacentHTML('beforeend','<pre id="ui-smoke-result">PASS original-ui-default + full-suite-secondary</pre>');
+  }catch(e){document.body.insertAdjacentHTML('beforeend','<pre id="ui-smoke-result">FAIL '+String(e.stack||e).replace(/</g,'&lt;')+'</pre>');}
+})();
+</script></body></html>

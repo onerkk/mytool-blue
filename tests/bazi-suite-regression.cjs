@@ -94,13 +94,20 @@ test('城市時區表公開給完整套件，海外可用IANA/DST',()=>{
   assert.strictEqual(c.BIRTH_CITY_TIMEZONE_IDS['雪梨'],'Australia/Sydney');
 });
 
-test('首頁接上完整套件且舊版仍可回退',()=>{
+test('首頁保留原版UI為預設並另接完整套件',()=>{
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const ui=fs.readFileSync(path.join(ROOT,'JS/bazi-suite.js'),'utf8');
   assert(html.includes('JS/bazi-suite-core.js?v=20260626v1_0_0'));
-  assert(html.includes('JS/bazi-suite.js?v=20260626v1_0_0'));
+  assert(html.includes('JS/bazi-suite.js?v=20260626v1_0_1'));
   assert(ui.includes('window._baziLegacyStandaloneOpen=legacyOpen'));
-  assert(ui.includes('window._baziStandaloneOpen=open'));
+  assert(ui.includes('window._baziFullSuiteOpen=open'));
+  assert(ui.includes('window._baziStandaloneOpen=legacyOpen || open'));
+  assert(!ui.includes('window._baziStandaloneOpen=open;'));
+  const legacy=fs.readFileSync(path.join(ROOT,'JS/bazi-standalone.js'),'utf8');
+  assert(legacy.includes('合盤・人格・曆法工具'));
+  assert(legacy.includes('window._baziOpenFullSuite'));
+  assert(legacy.includes('window._baziFullSuiteOpen'));
+
   assert(ui.includes('localStorage'));
   assert(ui.includes('列印／存 PDF'));
 });

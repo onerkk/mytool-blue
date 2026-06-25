@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><title>Bazi Suite Smoke</title></head><body>
-<script>window._baziStandaloneOpen=function(){};</script>
+<script>window.__legacyOpen=function(){window.__legacyCalled=(window.__legacyCalled||0)+1;};window._baziStandaloneOpen=window.__legacyOpen;</script>
 <script src="../JS/vendor/lunar.js"></script>
 <script src="../JS/bazi-calendar-core.js"></script>
 <script src="../JS/solar-location.js"></script>
@@ -16,7 +16,9 @@
  async function waitFor(fn,label){for(var i=0;i<100;i++){if(fn())return;await sleep(80);}throw new Error('timeout '+label);}
  async function run(){
   try{
-   window._baziStandaloneOpen();
+   if(window._baziStandaloneOpen!==window.__legacyOpen)throw new Error('legacy entry overridden');
+   if(typeof window._baziFullSuiteOpen!=='function')throw new Error('full suite entry missing');
+   window._baziFullSuiteOpen();
    await sleep(100);
    set('s-date','1983-08-25');set('s-time','14:55');set('s-name','測試A');
    click('[data-act="cast-single"]');
@@ -52,7 +54,7 @@
    await waitFor(()=>window.BaziSuiteUI.getState().tools.reverse,'reverse tool');
    st=window.BaziSuiteUI.getState();
    if(!st.tools.reverse.matches.some(x=>x.datetime==='1983-08-25 13:00:00'))throw new Error('reverse lookup');
-   document.body.insertAdjacentHTML('beforeend','<pre id="smoke-result">PASS single+compat+personality+share+tools</pre>');
+   document.body.insertAdjacentHTML('beforeend','<pre id="smoke-result">PASS legacy-ui-preserved+single+compat+personality+share+tools</pre>');
   }catch(e){document.body.insertAdjacentHTML('beforeend','<pre id="smoke-result">FAIL '+String(e.stack||e).replace(/</g,'&lt;')+'</pre>');}
  }
  run();
