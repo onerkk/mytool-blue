@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 // solar-location.js — 出生地點 + 真太陽時計算
-// 靜月之光 v17.1（2026/6/12：真太陽時分鐘進位根治）
+// 靜月之光 v18.2（2026/6/25：參考時刻保留秒；固定偏移、DST 重疊／缺口均可追溯）
 // ═══════════════════════════════════════════════════════════════
 
 (function() {
@@ -140,54 +140,172 @@ var CITIES = {
   }
 };
 
+
+// IANA 時區：固定 UTC 偏移無法處理夏令時間與歷史時區變更。
+// 城市陣列仍保留第 4 欄固定偏移作舊瀏覽器 fallback，第 5 欄由此表補上。
+var CITY_TIMEZONE_IDS = {
+  '台北':'Asia/Taipei','新北':'Asia/Taipei','桃園':'Asia/Taipei','台中':'Asia/Taipei','台南':'Asia/Taipei','高雄':'Asia/Taipei',
+  '基隆':'Asia/Taipei','新竹':'Asia/Taipei','嘉義':'Asia/Taipei','苗栗':'Asia/Taipei','彰化':'Asia/Taipei','南投':'Asia/Taipei',
+  '雲林':'Asia/Taipei','屏東':'Asia/Taipei','宜蘭':'Asia/Taipei','花蓮':'Asia/Taipei','台東':'Asia/Taipei','澎湖':'Asia/Taipei',
+  '金門':'Asia/Taipei','連江(馬祖)':'Asia/Taipei',
+  '北京':'Asia/Shanghai','上海':'Asia/Shanghai','廣州':'Asia/Shanghai','深圳':'Asia/Shanghai','成都':'Asia/Shanghai','重慶':'Asia/Shanghai',
+  '杭州':'Asia/Shanghai','武漢':'Asia/Shanghai','南京':'Asia/Shanghai','西安':'Asia/Shanghai','天津':'Asia/Shanghai','蘇州':'Asia/Shanghai',
+  '長沙':'Asia/Shanghai','鄭州':'Asia/Shanghai','瀋陽':'Asia/Shanghai','大連':'Asia/Shanghai','青島':'Asia/Shanghai','哈爾濱':'Asia/Shanghai',
+  '廈門':'Asia/Shanghai','福州':'Asia/Shanghai','昆明':'Asia/Shanghai','濟南':'Asia/Shanghai','合肥':'Asia/Shanghai','長春':'Asia/Shanghai',
+  '南昌':'Asia/Shanghai','貴陽':'Asia/Shanghai','南寧':'Asia/Shanghai','石家莊':'Asia/Shanghai','烏魯木齊':'Asia/Shanghai','拉薩':'Asia/Shanghai',
+  '呼和浩特':'Asia/Shanghai','太原':'Asia/Shanghai','蘭州':'Asia/Shanghai',
+  '香港':'Asia/Hong_Kong','澳門':'Asia/Macau','新加坡':'Asia/Singapore','吉隆坡':'Asia/Kuala_Lumpur','檳城':'Asia/Kuala_Lumpur',
+  '新山':'Asia/Kuala_Lumpur','怡保':'Asia/Kuala_Lumpur','古晉':'Asia/Kuching','亞庇':'Asia/Kuching',
+  '東京':'Asia/Tokyo','大阪':'Asia/Tokyo','京都':'Asia/Tokyo','名古屋':'Asia/Tokyo','福岡':'Asia/Tokyo','札幌':'Asia/Tokyo','横浜':'Asia/Tokyo','神戶':'Asia/Tokyo','沖繩(那霸)':'Asia/Tokyo',
+  '首爾':'Asia/Seoul','釜山':'Asia/Seoul','仁川':'Asia/Seoul','大邱':'Asia/Seoul','大田':'Asia/Seoul','濟州':'Asia/Seoul',
+  '曼谷':'Asia/Bangkok','清邁':'Asia/Bangkok','普吉':'Asia/Bangkok','胡志明市':'Asia/Ho_Chi_Minh','河內':'Asia/Ho_Chi_Minh','峴港':'Asia/Ho_Chi_Minh',
+  '馬尼拉':'Asia/Manila','宿霧':'Asia/Manila','雅加達':'Asia/Jakarta','峇里島':'Asia/Makassar','泗水':'Asia/Jakarta',
+  '新德里':'Asia/Kolkata','孟買':'Asia/Kolkata','班加羅爾':'Asia/Kolkata','清奈':'Asia/Kolkata','加爾各答':'Asia/Kolkata',
+  '紐約':'America/New_York','洛杉磯':'America/Los_Angeles','芝加哥':'America/Chicago','休士頓':'America/Chicago','舊金山':'America/Los_Angeles',
+  '西雅圖':'America/Los_Angeles','波士頓':'America/New_York','邁阿密':'America/New_York','拉斯維加斯':'America/Los_Angeles','華盛頓DC':'America/New_York','夏威夷(檀香山)':'Pacific/Honolulu',
+  '多倫多':'America/Toronto','溫哥華':'America/Vancouver','蒙特婁':'America/Toronto',
+  '倫敦':'Europe/London','曼徹斯特':'Europe/London','愛丁堡':'Europe/London',
+  '雪梨':'Australia/Sydney','墨爾本':'Australia/Melbourne','布里斯本':'Australia/Brisbane','伯斯':'Australia/Perth',
+  '奧克蘭':'Pacific/Auckland','威靈頓':'Pacific/Auckland','柏林':'Europe/Berlin','慕尼黑':'Europe/Berlin','巴黎':'Europe/Paris'
+};
+
 // ═══ 均時差（Equation of Time）計算 ═══
-// 返回分鐘數
-function equationOfTime(year, month, day) {
-  // Day of year
-  var d = new Date(year, month - 1, day);
-  var start = new Date(year, 0, 1);
-  var N = Math.floor((d - start) / 86400000) + 1;
-  var B = (360 / 365.242) * (N - 81) * Math.PI / 180; // radians
-  return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+// Jean Meeus《Astronomical Algorithms》近似式；輸入必須是 UTC 瞬間，回傳分鐘。
+function equationOfTimeMeeus(dateUtc) {
+  var jd = dateUtc.getTime() / 86400000 + 2440587.5;
+  var t = (jd - 2451545.0) / 36525.0;
+  var rad = Math.PI / 180;
+  var L0 = (280.46646 + t * (36000.76983 + t * 0.0003032)) % 360;
+  if (L0 < 0) L0 += 360;
+  var M = 357.52911 + t * (35999.05029 - 0.0001537 * t);
+  var e = 0.016708634 - t * (0.000042037 + 0.0000001267 * t);
+  var C = Math.sin(M * rad) * (1.914602 - t * (0.004817 + 0.000014 * t)) +
+          Math.sin(2 * M * rad) * (0.019993 - 0.000101 * t) +
+          Math.sin(3 * M * rad) * 0.000289;
+  var trueLong = L0 + C; // 保留變數，便於與標準公式逐項核對
+  void trueLong;
+  var meanOb = 23 + (26 + (21.448 - t * (46.815 + t * (0.00059 - t * 0.001813))) / 60) / 60;
+  var omega = 125.04 - 1934.136 * t;
+  var ob = meanOb + 0.00256 * Math.cos(omega * rad);
+  var y = Math.pow(Math.tan((ob / 2) * rad), 2);
+  var eot = y * Math.sin(2 * L0 * rad) - 2 * e * Math.sin(M * rad) +
+            4 * e * y * Math.sin(M * rad) * Math.cos(2 * L0 * rad) -
+            0.5 * y * y * Math.sin(4 * L0 * rad) - 1.25 * e * e * Math.sin(2 * M * rad);
+  return eot * 180 / Math.PI * 4;
 }
 
-// ═══ 真太陽時計算 ═══
-// 輸入：年月日時分 + 出生地經度 + 時區偏移（小時）
-// 輸出：{ year, month, day, hour, minute, offset_minutes, note }
-function calcTrueSolarTime(year, month, day, hour, minute, longitude, tzOffset) {
-  if (longitude == null || tzOffset == null) return { year: year, month: month, day: day, hour: hour, minute: minute, offset_minutes: 0, note: '未提供出生地點' };
-  
-  var standardMeridian = tzOffset * 15; // 標準子午線
-  var lonCorrection = (longitude - standardMeridian) * 4; // 經度修正（分鐘）
-  var eot = equationOfTime(year, month, day); // 均時差（分鐘）
-  var totalOffset = lonCorrection + eot; // 總修正量（分鐘）
-  
-  // 修正時間（v17.1 根治：先取整再進位，杜絕「X時60分」——原版 Math.round(totalMinutes%60) 可能進到 60）
-  var totalMinutes = Math.round(hour * 60 + minute + totalOffset);
-  
-  // 處理跨日
-  var newDay = day, newMonth = month, newYear = year;
-  if (totalMinutes >= 1440) {
-    totalMinutes -= 1440;
-    newDay++;
-    var maxDay = new Date(newYear, newMonth, 0).getDate();
-    if (newDay > maxDay) { newDay = 1; newMonth++; }
-    if (newMonth > 12) { newMonth = 1; newYear++; }
-  } else if (totalMinutes < 0) {
-    totalMinutes += 1440;
-    newDay--;
-    if (newDay < 1) { newMonth--; if (newMonth < 1) { newMonth = 12; newYear--; } newDay = new Date(newYear, newMonth, 0).getDate(); }
+function _parseOffsetString(str) {
+  var m = String(str || '').match(/GMT(?:\s*)?([+-])(\d{1,2})(?::?(\d{2}))?/i);
+  if (!m) return null;
+  var sign = m[1] === '-' ? -1 : 1;
+  return sign * (parseInt(m[2], 10) * 60 + parseInt(m[3] || '0', 10));
+}
+
+function _offsetAtInstant(ms, timeZoneId) {
+  try {
+    var parts = new Intl.DateTimeFormat('en-US', { timeZone: timeZoneId, timeZoneName: 'longOffset' }).formatToParts(new Date(ms));
+    var zone = parts.filter(function (p) { return p.type === 'timeZoneName'; })[0];
+    var parsed = _parseOffsetString(zone && zone.value);
+    if (parsed != null) return parsed;
+  } catch (e) {}
+  // fallback：以該時區格式化後的牆鐘時間反推總偏移。
+  try {
+    var p = new Intl.DateTimeFormat('en-CA', { timeZone: timeZoneId, year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false }).formatToParts(new Date(ms));
+    var o = {}; p.forEach(function (x) { if (x.type !== 'literal') o[x.type] = parseInt(x.value, 10); });
+    if (o.hour === 24) o.hour = 0;
+    return Math.round((Date.UTC(o.year, o.month - 1, o.day, o.hour, o.minute, o.second || 0) - ms) / 60000);
+  } catch (e2) { return null; }
+}
+
+function _localPartsAt(ms, timeZoneId) {
+  var parts = new Intl.DateTimeFormat('en-CA', { timeZone: timeZoneId, year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false }).formatToParts(new Date(ms));
+  var o = {}; parts.forEach(function (x) { if (x.type !== 'literal') o[x.type] = parseInt(x.value, 10); });
+  if (o.hour === 24) o.hour = 0;
+  return o;
+}
+
+// 將 IANA 時區的民用牆鐘時間解析成標準偏移與 DST。遇重疊採較早一次；遇缺口採相容模式。
+function resolveCivilTimeOffsets(year, month, day, hour, minute, second, timeZoneId, fallbackOffset) {
+  second = Math.max(0, Math.min(59, parseInt(second || 0, 10) || 0));
+  if (!timeZoneId || typeof Intl === 'undefined' || !Intl.DateTimeFormat) {
+    var fixedMinutes = Number(fallbackOffset || 0) * 60;
+    return {
+      standardOffsetMinutes: fixedMinutes,
+      dstOffsetMinutes: 0,
+      totalOffsetMinutes: fixedMinutes,
+      utcTimestamp: Date.UTC(year, month-1, day, hour, minute, second) - fixedMinutes * 60000,
+      source: 'fixed-offset',
+      civilTimeStatus: 'fixed-offset'
+    };
   }
-  
-  var newHour = Math.floor(totalMinutes / 60);
-  var newMinute = totalMinutes % 60; // totalMinutes 已為整數，不再二次 round
-  
+  var base = Date.UTC(year, month - 1, day, hour, minute, second);
+  var probes = [base, base-86400000, base+86400000, Date.UTC(year,0,1), Date.UTC(year,6,1), base-183*86400000, base+183*86400000];
+  var offsets = {};
+  probes.forEach(function (ms) { var off = _offsetAtInstant(ms, timeZoneId); if (off != null) offsets[off] = true; });
+  var candidates = [];
+  Object.keys(offsets).forEach(function (k) {
+    var off = parseInt(k,10), instant = base - off * 60000;
+    try {
+      var lp = _localPartsAt(instant, timeZoneId);
+      if (lp.year===year && lp.month===month && lp.day===day && lp.hour===hour && lp.minute===minute && (lp.second||0)===second) candidates.push({instant:instant, offset:off});
+    } catch(e) {}
+  });
+  candidates.sort(function(a,b){return a.instant-b.instant;});
+  var selected = candidates[0];
+  var civilTimeStatus = candidates.length > 1 ? 'ambiguous-earlier' : 'exact';
+  if (!selected) {
+    // 不存在的民用時間（例如春季 DST 跳時）採 compatible 慣例解析，並明確回報。
+    var nearOff = _offsetAtInstant(base - Number(fallbackOffset || 0) * 3600000, timeZoneId);
+    if (nearOff == null) nearOff = Number(fallbackOffset || 0) * 60;
+    selected = { instant: base - nearOff * 60000, offset: nearOff };
+    civilTimeStatus = 'nonexistent-compatible';
+  }
+  var jan = _offsetAtInstant(Date.UTC(year,0,1,12), timeZoneId);
+  var jul = _offsetAtInstant(Date.UTC(year,6,1,12), timeZoneId);
+  var standard = (jan == null || jul == null) ? selected.offset : Math.min(jan, jul);
+  var dst = selected.offset - standard;
   return {
-    year: newYear, month: newMonth, day: newDay,
-    hour: newHour, minute: newMinute,
-    offset_minutes: Math.round(totalOffset),
-    note: '修正' + (totalOffset >= 0 ? '+' : '') + Math.round(totalOffset) + '分鐘'
+    standardOffsetMinutes:standard,
+    dstOffsetMinutes:dst,
+    totalOffsetMinutes:selected.offset,
+    utcTimestamp:selected.instant,
+    source:'iana',
+    timeZoneId:timeZoneId,
+    civilTimeStatus:civilTimeStatus
   };
+}
+
+// 輸入可維持舊格式，亦可在第 8 參數傳 IANA timezoneId，或第 7 參數直接傳 options。
+function calcTrueSolarTime(year, month, day, hour, minute, longitude, tzOffset, timeZoneId) {
+  var opt = (tzOffset && typeof tzOffset === 'object') ? tzOffset : { timezone:tzOffset, timezoneId:timeZoneId };
+  var inputSecond = Math.max(0, Math.min(59, parseInt(opt.second || 0, 10) || 0));
+  if (longitude == null || (opt.timezone == null && !opt.timezoneId)) {
+    return { year:year, month:month, day:day, hour:hour, minute:minute, second:inputSecond, offset_minutes:0, note:'未提供出生地點', algorithm:'none' };
+  }
+  var resolved = resolveCivilTimeOffsets(year, month, day, hour, minute, inputSecond, opt.timezoneId, opt.timezone);
+  var standardMeridian = resolved.standardOffsetMinutes / 60 * 15;
+  var rawDiff = longitude - standardMeridian;
+  var lonDiff = ((rawDiff + 540) % 360) - 180;
+  var lonCorrection = lonDiff * 4;
+  var eot = equationOfTimeMeeus(new Date(resolved.utcTimestamp));
+  // 真太陽時＝民用時間＋經度差＋均時差－夏令時間。
+  var totalOffset = lonCorrection + eot - resolved.dstOffsetMinutes;
+  var baseUtc = Date.UTC(year, month - 1, day, hour, minute, inputSecond);
+  var corrected = new Date(baseUtc + totalOffset * 60000);
+  var pad = function(n){return String(n).padStart(2,'0');};
+  var result = {
+    year:corrected.getUTCFullYear(), month:corrected.getUTCMonth()+1, day:corrected.getUTCDate(),
+    hour:corrected.getUTCHours(), minute:corrected.getUTCMinutes(), second:corrected.getUTCSeconds(),
+    offset_minutes:totalOffset, offset_minutes_rounded:Math.round(totalOffset),
+    longitudeCorrectionMinutes:lonCorrection, equationOfTimeMinutes:eot,
+    standardOffsetMinutes:resolved.standardOffsetMinutes, dstOffsetMinutes:resolved.dstOffsetMinutes,
+    standardMeridian:standardMeridian, timezoneId:opt.timezoneId || null, timezoneSource:resolved.source,
+    civilTimeStatus:resolved.civilTimeStatus || null,
+    algorithm:'meeus',
+    trueSolarDateTime:corrected.getUTCFullYear()+'-'+pad(corrected.getUTCMonth()+1)+'-'+pad(corrected.getUTCDate())+' '+pad(corrected.getUTCHours())+':'+pad(corrected.getUTCMinutes())+':'+pad(corrected.getUTCSeconds())
+  };
+  result.note = '修正' + (totalOffset >= 0 ? '+' : '') + Math.round(totalOffset) + '分鐘' + (resolved.dstOffsetMinutes ? '（已扣夏令時間'+resolved.dstOffsetMinutes+'分）' : '');
+  return result;
 }
 
 // ═══ 暴露給全域 ═══
@@ -240,6 +358,7 @@ window.getSelectedBirthLocation = function(countrySelectId, citySelectId) {
     longitude: city[1],
     latitude: city[2],
     timezone: city[3],
+    timezoneId: city[4] || CITY_TIMEZONE_IDS[city[0]] || null,
     label: CITIES[cc].flag + ' ' + CITIES[cc].name + ' ' + city[0]
   };
 };
@@ -365,13 +484,13 @@ function _doSolarPreview(yId,mId,dId,hId,miId,cId,ciId,previewId) {
   }
   if (isNaN(mi)) mi = 0;
 
-  var result = calcTrueSolarTime(y, m, d, h, mi, loc.longitude, loc.timezone);
+  var result = calcTrueSolarTime(y, m, d, h, mi, loc.longitude, { timezone:loc.timezone, timezoneId:loc.timezoneId });
   var pad = function(n) { return (n < 10 ? '0' : '') + n; };
   var shichen = ['子','丑','丑','寅','寅','卯','卯','辰','辰','巳','巳','午','午','未','未','申','申','酉','酉','戌','戌','亥','亥','子'][result.hour] || '';
   
   preview.style.display = 'block';
   preview.innerHTML = 
-    '<span style="color:var(--c-gold);font-weight:600">☀ 真太陽時：' + pad(result.hour) + ':' + pad(result.minute) + '</span>' +
+    '<span style="color:var(--c-gold);font-weight:600">☀ 真太陽時：' + pad(result.hour) + ':' + pad(result.minute) + ':' + pad(result.second || 0) + '</span>' +
     '<span style="opacity:.7">（' + shichen + '時｜' + result.note + '）</span>';
 }
 
