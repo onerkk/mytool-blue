@@ -1400,7 +1400,7 @@
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260612v80_40" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260612v80_58" defer></script>
-<script src="JS/bazi-standalone.js?v=20260612v80_43" defer></script>
+<script src="JS/bazi-standalone.js?v=20260625v80_50" defer></script>
 <script src="JS/ui.js?v=20260612v85_4" defer></script>
 <script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
@@ -1451,9 +1451,10 @@
 <script src="JS/prompt-export.js?v=20260612v86_26" defer></script>
 <script src="JS/share-card.js?v=6" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.4/lunar.js" defer></script>
+<script src="JS/vendor/lunar.js?v=1.7.7" defer></script>
+<script src="JS/bazi-calendar-core.js?v=20260625v1_0_0" defer></script>
 <script>
-/* ★ v80.19 根治：lunar-javascript 1.7.4 的 UMD 會把 Solar / Lunar 各自掛到 window（即 window.Solar、window.Lunar），
+/* ★ v80.19 根治：lunar-javascript 1.7.7 的 UMD 會把 Solar / Lunar 各自掛到 window（即 window.Solar、window.Lunar），
    但全站程式碼（紫微 approxLunar、梅花時間起卦）用的是 Lunar.Solar.fromYmd。Lunar.Solar 其實 undefined → 起盤/起卦丟錯。
    這裡補一個橋接，讓 Lunar.Solar 指向真正的 Solar 類，所有時間起卦/排盤即可正確取得農曆。lunar.js 為 defer，故輪詢補上。 */
 (function(){
@@ -1476,9 +1477,9 @@
 (function(){
   var DEFERRED = [
     'JS/ephemeris-client.js?v=20260507v69_3_0',
-    'JS/solar-location.js?v=20260612v17_1',
-    'JS/bazi.js?v=20260613v86_29',
-    'JS/bazi_upgrade.js?v=20260610v80_32',
+    'JS/solar-location.js?v=20260625v18_2',
+    'JS/bazi.js?v=20260625v44',
+    'JS/bazi_upgrade.js?v=20260625v80_37',
     'JS/western_upgrade.js?v=20260507v69_3_0',
     'JS/jyotish_full_upgrade.js?v=20260507v69_3_0',
     'JS/name_upgrade.js?v=20260507v69_3_0'
