@@ -310,6 +310,7 @@ function calcTrueSolarTime(year, month, day, hour, minute, longitude, tzOffset, 
 
 // ═══ 暴露給全域 ═══
 window.BIRTH_CITIES = CITIES;
+window.BIRTH_CITY_TIMEZONE_IDS = CITY_TIMEZONE_IDS;
 window.calcTrueSolarTime = calcTrueSolarTime;
 
 // ═══ DOM 工具：填充國家和城市下拉 ═══

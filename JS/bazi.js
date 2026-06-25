@@ -5535,9 +5535,19 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   // ── 袁天罡稱骨 ──
   let yearCycle60 = -1;
   for(let n=0;n<60;n++){if(n%10===yGi&&n%12===yZi){yearCycle60=n;break;}}
-  const lunarDate = (typeof approxLunar==='function') ? approxLunar(year,month,day) : null;
+  // 稱骨所需農曆日期優先使用本地 lunar-javascript 精確換算；
+  // 舊 approxLunar 僅作未載入曆法引擎時的備援，避免八字模組依賴紫微模組才有結果。
+  let lunarDate = null;
+  try{
+    if(typeof Solar!=='undefined' && Solar && typeof Solar.fromYmdHms==='function'){
+      const _l = Solar.fromYmdHms(year,month,day,hour||0,minute||0,(options&&options.second)||0).getLunar();
+      lunarDate = {month:Math.abs(_l.getMonth()), day:_l.getDay(), leap:_l.getMonth()<0};
+    }else if(typeof approxLunar==='function'){
+      lunarDate = approxLunar(year,month,day);
+    }
+  }catch(_cgErr){ lunarDate = null; }
   const hZiForCG = Math.floor(((hour+1)%24)/2) % 12;
-  const chenggu = (yearCycle60>=0 && lunarDate) ? computeChengGu(yearCycle60, lunarDate.month, lunarDate.day, hZiForCG) : null;
+  const chenggu = (yearCycle60>=0 && lunarDate) ? computeChengGu(yearCycle60, Math.abs(lunarDate.month), lunarDate.day, hZiForCG) : null;
 
   // ── 星座 + 二十八星宿 ──
   const zodiac = getZodiac(month, day);

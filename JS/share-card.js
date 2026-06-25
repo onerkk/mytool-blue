@@ -1,4 +1,4 @@
-/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.2]
+/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.3]
  * ⚠ 檔案位置：JS/share-card.js（v86_16 起與其他 JS 同層；repo 根目錄如仍有舊檔請刪除，避免再傳錯位置）
  * v2.2(2026/6/12)：renderMeihua——卦無牌面圖資產，「真實畫面」＝直繪六爻卦象（陽爻實線/陰爻斷線、
  *   由下而上、動爻紅金高亮＋圓點標記）；呼叫端補傳 lines/dong，未傳則退 renderTarot 舊版（零風險後備）。
@@ -9,6 +9,7 @@
  *   （3/5 單排、9宮 3×3、大牌陣鏡射實際讀法 8×4＋收束4，指示牌金框★標記）②引擎加 loadImgs
  *   非同步預載（2.5s 逾時保險，缺圖退✦佔位，畫布同源資產無汙染）③open() 先載圖再繪卡。
  *   呼叫端契約：cards[] 可帶 {img, sig}；未帶 img 行為與 v1.2 完全相同（其餘五工具零影響）。
+ * v2.3(2026/6/26)：新增八字人格卡與雙人合盤卡，讓完整八字套件可輸出真正圖片分享卡。
  * 共用畫布：暗金月色 + 品牌 + QR + Web Share / 下載。
  * 5 種卡：invite(邀請) / bazi(八字四柱) / ziwei(紫微命盤) / tarot(塔羅牌陣) / lenormand(雷諾曼牌陣)。
  * 用法：JYShareCard.open('bazi', {...資料});  之後在各結果頁加一顆按鈕呼叫即可。
@@ -217,6 +218,39 @@
     if (d.yongShen) rows.push(['用神', d.yongShen]);
     if (d.dayun) rows.push(['現行大運', d.dayun]);
     drawRows(ctx, rows, ry);
+  }
+
+  // ── 卡片：靜月五軸人格 ── d:{code,name,traits,strengths,watch,birthLine}
+  function renderBaziPersonality(ctx, d) {
+    d = d || {};
+    title(ctx, '五軸人格卡', '出生資訊 ・ 32 型狀態卡');
+    var y = 350;
+    ctext(ctx, d.code || '-----', W / 2, y, '700 112px Georgia, "Noto Serif TC", serif', CREAM, 8);
+    ctext(ctx, d.name || '人格類型', W / 2, y + 92, '700 48px "Noto Serif TC", serif', GOLD, 3);
+    var traits = Array.isArray(d.traits) ? d.traits.join(' ・ ') : (d.traits || '');
+    ctext(ctx, traits, W / 2, y + 160, '32px "Noto Serif TC", serif', 'rgba(232,224,208,.85)', 2);
+    var rows = [];
+    if (d.birthLine) rows.push(['出生資料', d.birthLine]);
+    if (d.strengths) rows.push(['可用優勢', Array.isArray(d.strengths) ? d.strengths.slice(0,2).join('、') : d.strengths]);
+    if (d.watch) rows.push(['需要留意', Array.isArray(d.watch) ? d.watch.slice(0,2).join('、') : d.watch]);
+    drawRows(ctx, rows, y + 230);
+    ctext(ctx, '本站自建模型 ・ 非心理診斷 ・ 非 OpenFate BZTI', W / 2, 1065, '26px "Noto Serif TC", serif', 'rgba(201,168,76,.72)', 1);
+  }
+
+  // ── 卡片：雙人八字合盤 ── d:{scenario,nameA,nameB,pillarsA,pillarsB,signal,support,tension,dayPillars}
+  function renderBaziCompatibility(ctx, d) {
+    d = d || {};
+    title(ctx, (d.scenario || '雙人') + '合盤', '雙向十神 ・ 干支互動');
+    var y = 350;
+    var rows = [
+      [d.nameA || 'A方', d.pillarsA || '—'],
+      [d.nameB || 'B方', d.pillarsB || '—'],
+      ['日柱核心', d.dayPillars || '—'],
+      ['證據整理', d.signal || '—'],
+      ['訊號數量', '支持／牽連 '+String(d.support == null ? 0 : d.support)+' ・ 張力／磨合 '+String(d.tension == null ? 0 : d.tension)]
+    ];
+    drawRows(ctx, rows, y);
+    ctext(ctx, '不設總分 ・ 數量不是成功率 ・ 未審合化不下定論', W / 2, 1065, '26px "Noto Serif TC", serif', 'rgba(201,168,76,.72)', 1);
   }
 
   // ── 卡片：紫微命盤（4×4 十二宮環）── d:{question, palaces:[{branch,name,star}]×12(巳起順), ming, info}
@@ -471,7 +505,7 @@
     }
   }
 
-  var RENDER = { invite: renderInvite, bazi: renderBazi, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderLenormand, meihua: renderMeihua, ootk: renderOOTK }; // v2.0：lenormand 專屬渲染器（原借 renderTarot＝固定3格佔位的根因）
+  var RENDER = { invite: renderInvite, bazi: renderBazi, baziPersonality: renderBaziPersonality, baziCompatibility: renderBaziCompatibility, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderLenormand, meihua: renderMeihua, ootk: renderOOTK }; // v2.0：lenormand 專屬渲染器（原借 renderTarot＝固定3格佔位的根因）
 
   function draw(type, data, canvas) {
     canvas.width = W; canvas.height = H;
