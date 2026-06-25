@@ -1,0 +1,60 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Bazi Suite Smoke</title></head><body>
+<script>window._baziStandaloneOpen=function(){};</script>
+<script src="../JS/vendor/lunar.js"></script>
+<script src="../JS/bazi-calendar-core.js"></script>
+<script src="../JS/solar-location.js"></script>
+<script src="../JS/bazi.js"></script>
+<script src="../JS/bazi_upgrade.js"></script>
+<script src="../JS/bazi-suite-core.js"></script>
+<script src="../JS/share-card.js"></script>
+<script src="../JS/bazi-suite.js"></script>
+<script>
+(function(){
+ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+ function set(id,v){var e=document.getElementById(id);if(!e)throw new Error('missing '+id);e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));}
+ function click(sel){var e=document.querySelector(sel);if(!e)throw new Error('missing '+sel);e.click();}
+ async function waitFor(fn,label){for(var i=0;i<100;i++){if(fn())return;await sleep(80);}throw new Error('timeout '+label);}
+ async function run(){
+  try{
+   window._baziStandaloneOpen();
+   await sleep(100);
+   set('s-date','1983-08-25');set('s-time','14:55');set('s-name','測試A');
+   click('[data-act="cast-single"]');
+   await waitFor(()=>window.BaziSuiteUI.getState().single,'single');
+   var st=window.BaziSuiteUI.getState();
+   if(st.single.chart.qiyun.startDate!=='1989-05-15 14:53:39')throw new Error('single qiyun');
+   click('[data-tab="compat"]');await sleep(50);
+   set('a-date','1983-08-25');set('a-time','14:55');set('a-name','A');
+   set('b-date','1994-06-20');set('b-time','00:00');set('b-name','B');
+   click('[data-scenario="business"]');await sleep(50);
+   click('[data-act="cast-compat"]');
+   await waitFor(()=>window.BaziSuiteUI.getState().compat,'compat');
+   st=window.BaziSuiteUI.getState();
+   if(st.compat.comp.scenario.id!=='business')throw new Error('scenario');
+   if(!st.compat.comp.directionalTenGods.aViewsB.length)throw new Error('directional gods');
+   click('[data-tab="personality"]');await sleep(50);
+   set('p-date','1983-08-25');set('p-time','14:55');set('p-name','P');
+   click('[data-act="cast-personality"]');
+   await waitFor(()=>window.BaziSuiteUI.getState().personality,'personality');
+   st=window.BaziSuiteUI.getState();
+   if(st.personality.profile.axes.length!==5)throw new Error('axes');
+   click('[data-act="share"]');
+   await waitFor(()=>document.querySelector('#jysc-bd .jysc-img'),'share card');
+   var shareImg=document.querySelector('#jysc-bd .jysc-img');
+   if(!shareImg.src.startsWith('data:image/png'))throw new Error('share card image');
+   click('#jysc-close');await sleep(300);
+   click('[data-tab="tools"]');await sleep(80);
+   set('u-date','1983-08-25');set('u-time','14:55:00');click('[data-act="calc-solar"]');
+   await waitFor(()=>window.BaziSuiteUI.getState().tools.solar,'solar tool');
+   st=window.BaziSuiteUI.getState();
+   if(st.tools.solar.trueSolarDateTime!=='1983-08-25 14:53:39')throw new Error('solar tool');
+   set('r-bazi','癸亥 庚申 乙酉 癸未');set('r-start','1983');set('r-end','1983');click('[data-act="reverse-bazi"]');
+   await waitFor(()=>window.BaziSuiteUI.getState().tools.reverse,'reverse tool');
+   st=window.BaziSuiteUI.getState();
+   if(!st.tools.reverse.matches.some(x=>x.datetime==='1983-08-25 13:00:00'))throw new Error('reverse lookup');
+   document.body.insertAdjacentHTML('beforeend','<pre id="smoke-result">PASS single+compat+personality+share+tools</pre>');
+  }catch(e){document.body.insertAdjacentHTML('beforeend','<pre id="smoke-result">FAIL '+String(e.stack||e).replace(/</g,'&lt;')+'</pre>');}
+ }
+ run();
+})();
+</script></body></html>
