@@ -1,4 +1,4 @@
-/*! bazi-suite.js — 靜月之光八字完整功能套件 UI v1.0.0 (2026-06-26)
+/*! bazi-suite.js — 靜月之光八字完整功能套件 UI v1.0.1 (2026-06-26)
  *  單盤多主題／八種情境雙人合盤／本地五軸32型人格／歷史紀錄與匯出。
  */
 (function () {
@@ -54,7 +54,7 @@
   }
 
   function getScreen(){
-    if(screen)return screen;injectCss();screen=document.createElement('div');screen.id='bzs-screen';screen.innerHTML='<div class="bzs-shell"><div class="bzs-top"><div class="bzs-bar"><button class="bzs-back" data-act="close">‹</button><div class="bzs-brand"><b>八字全域分析</b><small>精確排盤・多主題・情境合盤・人格卡</small></div><button class="bzs-legacy" data-act="legacy">舊版單盤</button></div><div class="bzs-tabs"></div></div><main id="bzs-main"></main></div><div id="bzs-toast" class="bzs-toast"></div>';
+    if(screen)return screen;injectCss();screen=document.createElement('div');screen.id='bzs-screen';screen.innerHTML='<div class="bzs-shell"><div class="bzs-top"><div class="bzs-bar"><button class="bzs-back" data-act="close">‹</button><div class="bzs-brand"><b>八字全域分析</b><small>精確排盤・多主題・情境合盤・人格卡</small></div><button class="bzs-legacy" data-act="legacy">返回原版單盤</button></div><div class="bzs-tabs"></div></div><main id="bzs-main"></main></div><div id="bzs-toast" class="bzs-toast"></div>';
     document.body.appendChild(screen);screen.addEventListener('click',onClick);screen.addEventListener('change',onChange);screen.addEventListener('input',onInput);return screen;
   }
 
@@ -164,7 +164,11 @@
   function open(){state.tab='single';state.single=null;state.compat=null;state.personality=null;state.tools={solar:null,reverse:null};state.prompt='';state.exportData=null;var s=getScreen();s.style.display='block';document.body.style.overflow='hidden';render();}
   function close(){if(screen)screen.style.display='none';document.body.style.overflow='';}
 
+  // 保留原版八字單盤作為預設入口；完整套件改用獨立公開入口。
+  // 先前直接覆蓋 window._baziStandaloneOpen，會讓原版自訂日期／時間／地點選擇器消失，
+  // 並因 <input type="date/time"> 觸發 Android 系統日曆。此處不再覆蓋原入口。
   window._baziLegacyStandaloneOpen=legacyOpen;
-  window._baziStandaloneOpen=open;
-  window.BaziSuiteUI={open:open,close:close,version:'1.0.0',getState:function(){return state;}};
+  window._baziFullSuiteOpen=open;
+  window._baziStandaloneOpen=legacyOpen || open;
+  window.BaziSuiteUI={open:open,close:close,version:'1.0.1',getState:function(){return state;}};
 })();

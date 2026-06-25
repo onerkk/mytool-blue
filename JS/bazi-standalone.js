@@ -1,6 +1,6 @@
 // v80.50(2026/6/25)：提示詞明示刑沖合害不參與自動吉凶加減分，與底層預測評分政策一致。
 // v80.49(2026/6/25)：出生城市經度與 solar-location 統一；真太陽時提示改為本系統政策，不冒充所有流派唯一標準。
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.50]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.51]
  *  v80.47(2026/6/25)：前端可選 23:00 子初／00:00 午夜換日；提示詞揭露固定偏移與 DST 重疊／缺口限制。
  *  v80.46(2026/6/25)：地支事實層移除分數；旺衰病象不再自動翻轉五行立場；提示詞標示扶抑基準與候選模型。
  *  v80.45(2026/6/25)：特殊格局改列候選、不自動覆蓋喜忌；未知時辰明確降級；結果頁顯示精確交運日期。
@@ -107,6 +107,8 @@
       '.bzx-header{text-align:center;padding:1.5rem 0 1rem}',
       '.bzx-header h1{font-size:1.5rem;color:'+GOLD+';letter-spacing:8px;margin-bottom:.3rem}',
       '.bzx-header p{font-size:.75rem;color:rgba(232,224,208,.5);letter-spacing:2px}',
+      '.bzx-suite-entry{margin:.75rem auto 0;display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.55rem .9rem;border-radius:999px;border:1px solid rgba(201,168,76,.28);background:rgba(201,168,76,.07);color:#d8c79a;font-family:inherit;font-size:.72rem;letter-spacing:.08em;cursor:pointer;transition:border-color .18s,background-color .18s,color .18s,transform .18s}',
+      '.bzx-suite-entry:active{transform:scale(.97);background:rgba(201,168,76,.14);color:#f5e7b8;border-color:rgba(201,168,76,.5)}',
       '.bzx-back{color:rgba(232,224,208,.5);text-decoration:none;font-size:.82rem;display:inline-block;margin-bottom:.5rem;cursor:pointer}',
       '.bzx-section{background:#13131a;border:1px solid rgba(201,168,76,.15);border-radius:14px;padding:1.1rem;margin-bottom:.8rem}',
       '.bzx-section-title{font-size:.82rem;color:'+GOLD+';margin-bottom:.7rem}',
@@ -264,7 +266,7 @@
     var w = _getWrap();
     var h = '<div class="bzx-container">';
     h += '<a class="bzx-back" onclick="_baziClose()">← 返回靜月之光</a>';
-    h += '<div class="bzx-header"><h1>八 字 命 理</h1><p>子平 ・ 四柱八字 ・ 真太陽時</p></div>';
+    h += '<div class="bzx-header"><h1>八 字 命 理</h1><p>子平 ・ 四柱八字 ・ 真太陽時</p><button type="button" class="bzx-suite-entry" onclick="_baziOpenFullSuite()">合盤・人格・曆法工具</button></div>';
 
     if (_phase === 'input') {
       h += '<div class="bzx-section"><div class="bzx-section-title">✦ 出生資料</div>';
@@ -692,6 +694,17 @@
       yongShen: Array.isArray(b.fav) ? b.fav.join('、') : '',
       dayun: cur ? ((cur.gz || '') + (cur.startDate && cur.endDateExclusive ? '（' + cur.startDate + '～' + cur.endDateExclusive + '）' : (cur.ageStart != null ? '（' + cur.ageStart + '～' + cur.ageEnd + '歲）' : ''))) : ''
     });
+  };
+
+  window._baziOpenFullSuite = function () {
+    if (typeof window._baziFullSuiteOpen !== 'function') {
+      _bzxErr('完整八字功能仍在載入，請稍候再試一次');
+      return;
+    }
+    var w = _getWrap();
+    if (w) w.style.display = 'none';
+    try { document.body.style.overflow = ''; } catch (e) {}
+    window._baziFullSuiteOpen();
   };
 
   window._baziStandaloneOpen = function () {
