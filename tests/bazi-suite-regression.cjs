@@ -98,7 +98,7 @@ test('首頁保留原版UI為預設並另接完整套件',()=>{
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const ui=fs.readFileSync(path.join(ROOT,'JS/bazi-suite.js'),'utf8');
   assert(html.includes('JS/bazi-suite-core.js?v=20260626v1_0_0'));
-  assert(html.includes('JS/bazi-suite.js?v=20260626v1_1_0'));
+  assert(html.includes('JS/bazi-suite.js?v=20260626v1_1_1'));
   assert(ui.includes('window._baziLegacyStandaloneOpen=legacyOpen'));
   assert(ui.includes('window._baziFullSuiteOpen=open'));
   assert(ui.includes('window._baziStandaloneOpen=legacyOpen || open'));
@@ -196,6 +196,9 @@ test('完整套件的日期時間地點全部使用站內自訂UI，不再觸發
   assert(ui.includes('data-picker="location"'));
   assert(ui.includes('bzs-picker-sheet'));
   assert(ui.includes('bzs-loc-chip'));
+  assert(ui.includes('.bzs-cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:0;background:transparent'));
+  assert(!ui.includes('<button type="button" class="bzs-cal-day'));
+  assert(ui.includes('<div role="button" tabindex="0" class="bzs-cal-day'));
   assert(ui.includes("dateField('u','民用日期')"));
   assert(ui.includes("locationFields('u','地點（真太陽時校正）')"));
 });
@@ -209,7 +212,7 @@ test('單人合盤人格與工具共用同一套自訂出生資料元件',()=>{
   assert(ui.includes("function dateField(prefix,label)"));
   assert(ui.includes("function timeField(prefix,label,allowUnknown,defaultTime)"));
   assert(ui.includes("function locationFields(prefix,label)"));
-  assert(ui.includes("version:'1.1.0'"));
+  assert(ui.includes("version:'1.1.1'"));
 });
 
 if(process.exitCode){console.error(`\n${passed} tests passed before failure(s).`);process.exit(process.exitCode);}console.log(`\nAll ${passed} Bazi suite regression tests passed.`);

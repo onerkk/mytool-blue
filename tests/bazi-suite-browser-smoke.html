@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Bazi Suite Smoke</title></head><body>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bazi Suite Smoke</title><link rel="stylesheet" href="../CSS/style.css"></head><body>
 <script>window.__legacyOpen=function(){window.__legacyCalled=(window.__legacyCalled||0)+1;};window._baziStandaloneOpen=window.__legacyOpen;</script>
 <script src="../JS/vendor/lunar.js"></script>
 <script src="../JS/bazi-calendar-core.js"></script>
@@ -21,7 +21,13 @@
    window._baziFullSuiteOpen();
    await sleep(100);
    if(document.querySelector('#bzs-screen input[type="date"],#bzs-screen input[type="time"]'))throw new Error('native date/time input still present');
-   click('#s-date-display');await waitFor(()=>document.querySelector('#bzs-picker-bd .bzs-cal-grid'),'custom date picker');click('[data-picker-act="cancel"]');await sleep(360);
+   click('#s-date-display');await waitFor(()=>document.querySelector('#bzs-picker-bd .bzs-cal-grid'),'custom date picker');
+   var day=document.querySelector('#bzs-picker-bd .bzs-cal-day[data-date-day]');
+   if(!day||day.tagName!=='DIV')throw new Error('calendar day must use legacy div cell');
+   var cs=getComputedStyle(day);
+   if(cs.backgroundColor!=='rgba(0, 0, 0, 0)'&&cs.backgroundColor!=='transparent')throw new Error('calendar day background leaked: '+cs.backgroundColor);
+   if(cs.borderTopWidth!=='0px')throw new Error('calendar day border leaked: '+cs.borderTopWidth);
+   click('[data-picker-act="cancel"]');await sleep(360);
    click('#s-time-display');await waitFor(()=>document.querySelector('#bzs-picker-bd .bzs-hour-grid'),'custom time picker');click('[data-picker-act="cancel"]');await sleep(360);
    click('#s-location-display');await waitFor(()=>document.querySelector('#bzs-picker-bd .bzs-loc-chip'),'custom location picker');click('#bzs-picker-bd');await sleep(360);
    set('s-date','1983-08-25');set('s-time','14:55');set('s-name','測試A');
