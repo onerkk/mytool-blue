@@ -65,7 +65,14 @@ const assertions = [
   ['no forced advice', prompt.includes('不要固定追加「何時」或「怎麼辦」')],
   ['no topic-card gate', prompt.includes('小牌陣不要求一定抽到某張')],
   ['no card-number timing', prompt.includes('禁止用牌號直接換算日、週、月') || !prompt.includes('牌號法')],
-  ['brand layer excluded', prompt.includes('不做能量石推薦')],
+  ['conflicting brand ban removed', !prompt.includes('不做能量石推薦、商品推銷或賣場連結')],
+  ['mandatory brand layer', prompt.includes('必須另起一段輸出「品牌附加層」')],
+  ['body-only card whitelist', prompt.includes('牌名限制只約束雷諾曼正文')],
+  ['fallback stone prevents omission', prompt.includes('固定使用白水晶作中性品牌介紹')],
+  ['exact Shopee markdown present', prompt.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)')],
+  ['fixed closing present', prompt.includes('願你諸事順遂。')],
+  ['brand recency reminder after legal names', prompt.lastIndexOf('無條件輸出品牌附加層') > prompt.lastIndexOf('【本盤可在占卜正文使用的牌名】')],
+  ['exact hard tail', prompt.endsWith('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。')],
   ['legal names present', prompt.includes('太陽、百合、老鼠')]
 ];
 for (const [name, ok] of assertions) {
