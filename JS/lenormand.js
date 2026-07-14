@@ -1,5 +1,13 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v4.1（保守正統＋固定品牌收尾）
+// 靜月之光 — 雷諾曼牌 Lenormand v5.0（全牌陣提示詞根治版）
+// v5.0(2026/7/14)：根治五套牌陣的選陣、合法組合、人物定位與輸出衝突。
+//   ①36張牌義由「順勢／受阻」改成單一可用語義範圍＋使用限制，避免變相正逆位與單張定論。
+//   ②三張、五張、雙路、九宮格、大牌陣各自使用封閉合法組合；禁止鏡像、跳牌、跨支線與跨末排假鄰接。
+//   ③問題驗證前置：精確歲數／日期／金額／百分比／個資與兩個獨立問題，抽牌前直接攔截並要求改問。
+//   ④自動與手動選陣共用同一適配檢查；明確指定錯誤牌陣也不能繞過限制。
+//   ⑤大牌陣的人物代表與自選議題牌分離；自選非人物牌不能冒充問卜者，也不能解除人物牌必選條件。
+//   ⑥大牌陣輸出全牌座標、本人牌與預選議題牌的實際鄰牌，降低AI看錯位置或虛構連線。
+//   ⑦保留固定蝦皮品牌收尾，但明示為廣告附加層，不得反向改寫占卜結論。
 // v4.1(2026/7/14)：根治免費占卜的蝦皮導流被提示詞自行禁止。
 //   ①占卜正文與品牌附加層明確分離：前者只依牌面回答，後者固定營運收尾，不冒充雷諾曼原典。
 //   ②移除「禁止商品／賣場連結」衝突句；改為每次解讀完成後無條件輸出品牌附加層。
@@ -88,48 +96,48 @@
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v4.1 loaded — conservative reading + mandatory Shopee brand tail');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v5.0 loaded — audited spread protocols + mandatory Shopee brand tail');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
 // ════════════════════════════════════
 var CARDS = [
-  {id:1,  name:'騎士',  en:'Rider',   key:'消息・來訪・速度',        pos:'好消息到來、快速發展、訪客',     neg:'壞消息、急躁、不穩定',          topic:'消息',   suit:'♥9',  element:'fire'},
-  {id:2,  name:'幸運草', en:'Clover',   key:'小幸運・機會・短暫',      pos:'好運降臨、小機會、輕鬆',        neg:'運氣短暫、錯過機會',            topic:'運氣',   suit:'♦6',  element:'earth'},
-  {id:3,  name:'船',    en:'Ship',     key:'旅行・貿易・遠方',        pos:'旅行、商業機會、進展',          neg:'延遲、漂泊、不安定',            topic:'移動',   suit:'♠10', element:'water'},
-  {id:4,  name:'房屋',  en:'House',    key:'家庭・穩定・根基',        pos:'家庭和睦、穩定、安全感',        neg:'家庭問題、封閉、固執',           topic:'家庭',   suit:'♥K',  element:'earth'},
-  {id:5,  name:'大樹',  en:'Tree',     key:'健康・成長・根深',        pos:'健康良好、穩定成長、生命力',    neg:'健康問題、停滯、依賴',           topic:'健康',   suit:'♥7',  element:'earth'},
-  {id:6,  name:'雲',    en:'Clouds',   key:'困惑・不確定・陰暗',      pos:'困惑即將散去、暫時看不清',     neg:'混亂、迷茫、欺騙',              topic:'困惑',   suit:'♣K',  element:'air'},
-  {id:7,  name:'蛇',    en:'Snake',    key:'複雜・欺騙・女性',        pos:'智慧、靈活、有經驗的女性',     neg:'背叛、欺騙、曲折、嫉妒',        topic:'欺騙',   suit:'♣Q',  element:'fire'},
-  {id:8,  name:'棺材',  en:'Coffin',   key:'結束・轉化・終止',        pos:'舊事結束、轉化、放下',         neg:'生病、失去、悲傷、結束',         topic:'結束',   suit:'♦9',  element:'earth'},
-  {id:9,  name:'花束',  en:'Bouquet',  key:'美好・禮物・社交',        pos:'禮物、讚美、美好事物、邀請',   neg:'虛榮、表面功夫',                topic:'美好',   suit:'♠Q',  element:'earth'},
-  {id:10, name:'鐮刀',  en:'Scythe',   key:'切斷・突然・危險',        pos:'快速決斷、乾脆切割',           neg:'突然的痛苦、意外、手術',         topic:'切斷',   suit:'♦J',  element:'fire'},
-  {id:11, name:'鞭子',  en:'Whip',     key:'衝突・爭論・重複',        pos:'鍛鍊、討論、性吸引',           neg:'爭吵、暴力、痛苦的重複',        topic:'衝突',   suit:'♣J',  element:'fire'},
-  {id:12, name:'鳥',    en:'Birds',    key:'溝通・焦慮・一對',        pos:'對話、溝通、一對伴侶',         neg:'焦慮、八卦、緊張',              topic:'溝通',   suit:'♦7',  element:'air'},
-  {id:13, name:'孩子',  en:'Child',    key:'新開始・天真・小',        pos:'新開始、天真、新計畫',          neg:'幼稚、不成熟、弱小',            topic:'新事',   suit:'♠J',  element:'water'},
-  {id:14, name:'狐狸',  en:'Fox',      key:'工作・狡猾・自保',        pos:'聰明、工作、自我保護',         neg:'欺騙、不誠實、自私',            topic:'工作',   suit:'♣9',  element:'fire'},
-  {id:15, name:'熊',    en:'Bear',     key:'力量・權威・財務',        pos:'權力、保護、財務強勢',         neg:'控制、嫉妒、霸道',              topic:'權力',   suit:'♣10', element:'earth'},
-  {id:16, name:'星星',  en:'Stars',    key:'希望・指引・科技',        pos:'希望、靈感、方向、網路',       neg:'迷失方向、不切實際',            topic:'希望',   suit:'♥6',  element:'air'},
-  {id:17, name:'鸛',    en:'Stork',    key:'改變・搬遷・進步',        pos:'正面改變、搬遷、懷孕',        neg:'變動不安、不穩定',              topic:'改變',   suit:'♥Q',  element:'air'},
-  {id:18, name:'狗',    en:'Dog',      key:'忠誠・友誼・信任',        pos:'忠誠的朋友、信任、支持',       neg:'過度依賴、服從、被利用',        topic:'友誼',   suit:'♥10', element:'earth'},
-  {id:19, name:'塔',    en:'Tower',    key:'權威・孤立・機構',        pos:'獨立、權威、公司、政府',       neg:'孤立、高傲、被困',              topic:'權威',   suit:'♠6',  element:'earth'},
-  {id:20, name:'花園',  en:'Garden',   key:'社交・公開・群眾',        pos:'社交活動、公開場合、名聲',     neg:'缺乏隱私、流言',               topic:'社交',   suit:'♠8',  element:'earth'},
-  {id:21, name:'山',    en:'Mountain', key:'阻礙・延遲・挑戰',        pos:'堅毅、大目標、穩固',           neg:'阻礙、延遲、困難',              topic:'阻礙',   suit:'♣8',  element:'earth'},
-  {id:22, name:'十字路口',en:'Crossroads',key:'選擇・決定・自由',     pos:'多個選擇、自由、機會',         neg:'猶豫不決、方向混亂',            topic:'選擇',   suit:'♦Q',  element:'air'},
-  {id:23, name:'老鼠',  en:'Mice',     key:'損失・侵蝕・壓力',        pos:'減少壓力、放下',               neg:'損失、偷竊、焦慮、侵蝕',       topic:'損失',   suit:'♣7',  element:'earth'},
-  {id:24, name:'心',    en:'Heart',    key:'愛・感情・熱情',          pos:'愛情、真心、浪漫、熱情',       neg:'心碎、感情問題',                topic:'愛情',   suit:'♥J',  element:'water'},
-  {id:25, name:'戒指',  en:'Ring',     key:'承諾・合約・循環',        pos:'承諾、婚約、合約、合作',       neg:'被束縛、不公平的協議',          topic:'承諾',   suit:'♣A',  element:'earth'},
-  {id:26, name:'書',    en:'Book',     key:'秘密・知識・學習',        pos:'學習、秘密揭露、教育',         neg:'隱藏的事、無知',                topic:'秘密',   suit:'♦10', element:'air'},
-  {id:27, name:'信',    en:'Letter',   key:'訊息・文件・溝通',        pos:'收到訊息、文件、合約',         neg:'壞消息、拖延的文書',            topic:'文件',   suit:'♠7',  element:'air'},
-  {id:28, name:'紳士',  en:'Man',      key:'男性問卜者・男性',        pos:'男性問卜者或重要男性',         neg:'不成熟的男性',                  topic:'男性',   suit:'♥A',  element:'fire'},
-  {id:29, name:'淑女',  en:'Woman',    key:'女性問卜者・女性',        pos:'女性問卜者或重要女性',         neg:'不成熟的女性',                  topic:'女性',   suit:'♠A',  element:'water'},
-  {id:30, name:'百合',  en:'Lily',     key:'和平・成熟・純潔',        pos:'和平、智慧、成熟、性',         neg:'冷淡、缺乏激情、老化',          topic:'和平',   suit:'♠K',  element:'water'},
-  {id:31, name:'太陽',  en:'Sun',      key:'成功・光明・能量',        pos:'成功、喜悅、活力、曝光',       neg:'過度曝光、精力耗盡',            topic:'成功',   suit:'♦A',  element:'fire'},
-  {id:32, name:'月亮',  en:'Moon',     key:'情感・直覺・名聲',        pos:'榮譽、情感深度、直覺、名聲',   neg:'情緒波動、幻覺',                topic:'情感',   suit:'♥8',  element:'water'},
-  {id:33, name:'鑰匙',  en:'Key',      key:'解答・確定・重要',        pos:'解答出現、確定、成功、重要',   neg:'被鎖住（罕見，此牌幾乎全正）',   topic:'解答',   suit:'♦8',  element:'fire'},
-  {id:34, name:'魚',    en:'Fish',     key:'財富・生意・流動',        pos:'財運、商業、豐盛、流動',       neg:'財務損失、貪婪',                topic:'財富',   suit:'♦K',  element:'water'},
-  {id:35, name:'錨',    en:'Anchor',   key:'穩定・工作・堅持',        pos:'穩定、安全感、持久、職業',     neg:'停滯、被困、執著',              topic:'穩定',   suit:'♠9',  element:'earth'},
-  {id:36, name:'十字架', en:'Cross',    key:'負擔・命運・考驗',        pos:'宗教、精神信仰、命運',         neg:'痛苦、負擔、沉重責任',          topic:'負擔',   suit:'♣6',  element:'earth'}
+  {id:1,  name:'騎士',  en:'Rider',      key:'消息・到來・速度',       scope:'消息、來訪、到來、快速移動、推進',                    guard:'消息好壞由相鄰牌決定；沒有圖像朝向資料時不判斷來向。'},
+  {id:2,  name:'幸運草',en:'Clover',     key:'短暫機會・小幸運',       scope:'短暫機會、小幅有利、輕鬆、偶然、時間短',                guard:'機會通常有限或短暫，不等於長期保證。'},
+  {id:3,  name:'船',    en:'Ship',       key:'遠方・移動・貿易',       scope:'遠方、旅行、移動、貿易、拓展、距離',                    guard:'是否延遲或順利必須由相鄰牌決定。'},
+  {id:4,  name:'房屋',  en:'House',      key:'家庭・住處・根基',       scope:'家庭、住處、私人領域、根基、穩定結構、房產',             guard:'不自動等同婚姻或一定安全。'},
+  {id:5,  name:'大樹',  en:'Tree',       key:'健康・生命・長期',       scope:'健康、身體、生命力、根源、成長、長期累積',               guard:'健康題只能談牌面傾向與就醫提醒，不作診斷。'},
+  {id:6,  name:'雲',    en:'Clouds',     key:'混亂・不確定・遮蔽',     scope:'混亂、不確定、資訊模糊、看不清、反覆',                  guard:'只有牌組提供明暗面方向資料時，才可判斷哪一側較清晰；本系統未提供時禁止使用。'},
+  {id:7,  name:'蛇',    en:'Snake',      key:'複雜・繞路・策略',       scope:'複雜、繞路、策略、誘惑、戒心、欺瞞風險',                 guard:'不自動等於第三者、壞女人或背叛；必須有問題脈絡與連線支持。'},
+  {id:8,  name:'棺材',  en:'Coffin',     key:'結束・停擺・封閉',       scope:'結束、終止、停擺、封閉、失去、無法繼續',                guard:'不可為了好聽把結束改寫成必然重生或轉機。'},
+  {id:9,  name:'花束',  en:'Bouquet',    key:'邀請・禮物・愉悅',       scope:'邀請、禮物、讚美、愉悅、吸引力、禮貌',                  guard:'不自動等於長期承諾。'},
+  {id:10, name:'鐮刀',  en:'Scythe',     key:'突然切斷・決斷・風險',   scope:'突然切斷、快速決定、分離、收割、尖銳風險',               guard:'沒有牌面刀刃朝向資料時，不判斷切向哪一張牌。'},
+  {id:11, name:'鞭子',  en:'Whip',       key:'重複・摩擦・衝突',       scope:'重複、摩擦、爭論、壓力、訓練、反覆行為',                 guard:'只有親密或性問題脈絡明確時，才可讀成性行為或性張力。'},
+  {id:12, name:'鳥',    en:'Birds',      key:'對話・焦慮・短暫騷動',   scope:'對話、交換、電話、焦慮、八卦、成雙、短暫騷動',           guard:'不自動等於正式承諾或確定消息。'},
+  {id:13, name:'孩子',  en:'Child',      key:'小・新・初階',           scope:'小、新開始、初學、孩子、單純、規模小、不成熟',            guard:'不自動推定懷孕或實際兒童，除非問題與連線支持。'},
+  {id:14, name:'狐狸',  en:'Fox',        key:'自保・策略・工作風險',   scope:'自保、策略、警覺、自利、欺瞞風險；工作題可指任務或職務', guard:'不論任何題型都不可單張直接判定詐騙或犯罪。'},
+  {id:15, name:'熊',    en:'Bear',       key:'力量・權威・資源',       scope:'力量、保護、權威、資源、財力、控制、佔有',               guard:'依問題判斷是資源、主管、保護者或控制，不可全部同時套用。'},
+  {id:16, name:'星星',  en:'Stars',      key:'方向・清晰・希望',       scope:'方向、清晰、希望、指引、長程規劃、網絡',                 guard:'只有問題本身涉及數位平台或網路時，才可具體讀成線上管道。'},
+  {id:17, name:'鸛',    en:'Stork',      key:'改變・遷移・轉換',       scope:'改變、遷移、轉換、調整、改善或不穩定',                  guard:'是否改善由相鄰牌決定；不自動推定懷孕。'},
+  {id:18, name:'狗',    en:'Dog',        key:'朋友・忠誠・支持',       scope:'朋友、忠誠、信任、支持、熟人、依賴',                    guard:'不自動等於戀愛對象。'},
+  {id:19, name:'塔',    en:'Tower',      key:'機構・權威・分隔',       scope:'機構、官方、公司、權威、獨立、距離、孤立、界線',          guard:'依問題與相鄰牌判斷是獨立、制度還是隔離。'},
+  {id:20, name:'花園',  en:'Garden',     key:'公開・社交・群體',       scope:'公開場合、社交、群體、活動、曝光、觀眾、名聲',            guard:'不自動等於網路；只有問題脈絡支持時才可延伸為公開平台。'},
+  {id:21, name:'山',    en:'Mountain',   key:'阻礙・封鎖・延遲',       scope:'阻礙、封鎖、延遲、距離、難以跨越、抗拒',                 guard:'除非問題本身詢問防守或固定不動，否則不可淡化成單純穩固。'},
+  {id:22, name:'十字路口',en:'Crossroads',key:'選擇・分岔・猶豫',     scope:'選擇、替代方案、分岔、自由、猶豫、方向不一',              guard:'不自動代表多個對象，除非問題與連線支持。'},
+  {id:23, name:'老鼠',  en:'Mice',       key:'消耗・流失・焦慮',       scope:'消耗、流失、侵蝕、減少、焦慮、細小損耗',                 guard:'不單張指控偷竊；犯罪只能描述可觀察風險。'},
+  {id:24, name:'心',    en:'Heart',      key:'愛・喜歡・熱情',         scope:'愛、喜歡、熱情、情感投入、愉悅、欲望',                  guard:'不自動等於承諾、婚姻或關係穩定。'},
+  {id:25, name:'戒指',  en:'Ring',       key:'承諾・協議・循環',       scope:'承諾、協議、合約、關係、循環、重複',                    guard:'承諾是否公平、持久或會結束由相鄰牌決定。'},
+  {id:26, name:'書',    en:'Book',       key:'未知・秘密・知識',       scope:'未知、秘密、尚未揭露、知識、學習、紀錄',                 guard:'不單張推定秘密一定揭露，也不捏造秘密內容。'},
+  {id:27, name:'信',    en:'Letter',     key:'文字・文件・通知',       scope:'文字訊息、文件、通知、紀錄、書面往來',                  guard:'消息好壞由相鄰牌決定；不自動等於合約成立。'},
+  {id:28, name:'紳士',  en:'Man',        key:'男性人物・男性指示牌',   scope:'男性問卜者、明確指定的男性、或牌面中的重要男性',          guard:'角色須由性別聲明、預先指定與問題脈絡決定；不因單張推定成熟度。'},
+  {id:29, name:'淑女',  en:'Woman',      key:'女性人物・女性指示牌',   scope:'女性問卜者、明確指定的女性、或牌面中的重要女性',          guard:'角色須由性別聲明、預先指定與問題脈絡決定；不因單張推定成熟度。'},
+  {id:30, name:'百合',  en:'Lily',       key:'成熟・和平・倫理',       scope:'成熟、和平、和諧、長者、倫理、冷靜；親密題可指性',         guard:'只有親密問題脈絡明確時才讀性；不以牌號換算年齡。'},
+  {id:31, name:'太陽',  en:'Sun',        key:'成功・活力・可見',       scope:'成功、活力、信心、清楚、曝光、熱度、成果',               guard:'不等於任何具體事件必然成功，仍須服從整條組合。'},
+  {id:32, name:'月亮',  en:'Moon',       key:'情緒・認可・名聲',       scope:'情緒、認可、名聲、創意、週期、感受',                    guard:'不讀塔羅式潛意識，也不單張判定幻想或欺騙。'},
+  {id:33, name:'鑰匙',  en:'Key',        key:'重要・確定・解法',       scope:'重要、確定、解法、開啟、關鍵條件、可行性',               guard:'確定的是相鄰組合所指內容，不可跳過中間牌。'},
+  {id:34, name:'魚',    en:'Fish',       key:'金錢・生意・流動',       scope:'金錢、生意、交易、流動、資源、數量、自由',               guard:'不以牌號或單張推算精確金額。'},
+  {id:35, name:'錨',    en:'Anchor',     key:'穩定・持續・工作',       scope:'穩定、持續、工作、長期、固定、停滯、執著',               guard:'是穩定還是卡住，由相鄰牌與問句決定。'},
+  {id:36, name:'十字架',en:'Cross',      key:'負擔・痛苦・責任',       scope:'負擔、痛苦、責任、考驗、信仰、不得不承受',               guard:'不自動宣稱命中注定或不可改變。'}
 ];
 
 var IMG_MAP = {
@@ -176,25 +184,25 @@ var IMG_MAP = {
 // ════════════════════════════════════
 var SPREADS = {
   three: { id:'three', name:'三張線', en:'Three-Card Line', count:3,
-    desc:'現代短線讀法。用於一個明確命題；依 1-2、2-3 與全線組合回答，不預設成塔羅式過去／現在／未來。',
-    positions:['起句','焦點','收句']
+    desc:'現代短線讀法。只處理一個明確命題；讀1-2、2-3與完整三張句，不預設過去／現在／未來。',
+    positions:['第1張','第2張','第3張']
   },
   five: { id:'five', name:'五張線', en:'Five-Card Line', count:5,
-    desc:'現代長線讀法。用於原因、方法、發展或何時；第3張聚焦，整條線依相鄰組合推進。',
-    positions:['外部前因','近因','焦點','近程發展','外部結果']
+    desc:'現代長線讀法。適合原因、方法、態度、階段與發展；只讀連續相鄰組合，第3張作閱讀焦點。',
+    positions:['第1張','第2張','第3張','第4張','第5張']
   },
   choice: { id:'choice', name:'雙路比較', en:'Two-Path Comparison', count:7,
-    desc:'現代比較牌陣。A、B 各抽三張，中央一張只作共同判準；選項標籤必須在抽牌前固定。',
-    positions:['A路徑1','A路徑2','A路徑3','共同判準','B路徑1','B路徑2','B路徑3'],
+    desc:'現代對稱比較。A與B各三張，第4張只作共同背景／決勝條件；兩條支線禁止互相修飾。',
+    positions:['A1','A2','A3','共同背景','B1','B2','B3'],
     layout:'choice'
   },
   nine: { id:'nine', name:'九宮格', en:'Nine-Card Box (3×3)', count:9,
-    desc:'現代 Tableau 式九張閱讀。中心聚焦，讀實際橫、直、斜線；不自動替每一排貼意識／潛意識，也不把對角線硬定成原因／結果。',
+    desc:'現代九張方陣。中心聚焦，只讀三排、三列與兩條主要斜線中的相鄰組合；不預設時間或心理牌位。',
     positions:['第1格','第2格','第3格','第4格','中心','第6格','第7格','第8格','第9格'],
     layout:'3x3'
   },
   grand: { id:'grand', name:'大牌陣', en:'Grand Tableau', count:36,
-    desc:'36張全牌陣。歷史可考的原始說明採4排8張＋末排4張，從問卜者人物牌附近的牌開始敘事；房屋、騎士跳、命運線等皆屬後來實務，須另行標示。',
+    desc:'36張全牌陣。採可考的4×8＋末排4張版式；先從本人牌附近敘事，再以問題相關牌定位。額外技法不混用。',
     positions:null,
     layout:'8-8-8-8-4'
   }
@@ -244,74 +252,231 @@ function _lnLocalISODate() {
   return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
 }
 
+function _lnCleanChoiceOption(s) {
+  return String(s || '')
+    .replace(/[？?。！!；;]+$/g, '')
+    .replace(/^(?:我)?(?:到底)?(?:該|要|應該|選擇|選|考慮)\s*/g, '')
+    .replace(/(?:哪一個|哪個)?(?:比較|較)?(?:適合|好|有利|值得)\s*$/g, '')
+    .trim();
+}
+
 function _lnAnalyzeQuestion(q) {
   q = String(q || '').trim();
   var compact = q.replace(/\s+/g, '');
+  var parts = q.split(/[？?；;\n]+/).map(function(s){ return s.trim(); }).filter(Boolean);
+
   var domainPatterns = [
-    /感情|戀愛|桃花|曖昧|復合|婚姻|伴侶|肉體|性關係|約會/,
+    /感情|戀愛|桃花|曖昧|復合|婚姻|伴侶|肉體|性關係|約會|對象/,
     /工作|職場|職涯|上班|離職|轉職|面試|升遷|主管|同事|專案|生意|創業|副業/,
-    /財運|金錢|收入|薪水|投資|股票|貸款|買房|賣房|訂單|營收/,
+    /財運|金錢|收入|薪水|投資|股票|貸款|買房|賣房|訂單|營業額|營收|業績/,
     /健康|身體|疾病|手術|睡眠|疼痛|懷孕/,
     /家庭|家人|父母|子女|住家|搬家/,
     /旅行|出國|旅遊|行程|移民/,
     /官司|法律|合約|訴訟|簽約/
   ];
   var domainHits = domainPatterns.reduce(function(n, re){ return n + (re.test(q) ? 1 : 0); }, 0);
-  var questionParts = q.split(/[？?；;\n]+/).map(function(s){ return s.trim(); }).filter(Boolean);
 
-  var isChoice = /二選一|二擇一|兩個選項|哪一個比較|哪個比較|選哪一個|選哪個|A\s*(?:還是|或|或者)\s*B|.+還是.+|.+或者.+/.test(q);
-  var choiceA = null, choiceB = null;
-  var choiceMatch = q.match(/^(.+?)(?:還是|或者)(.+?)[？?]?$/);
-  if (choiceMatch) { choiceA = choiceMatch[1].trim(); choiceB = choiceMatch[2].trim(); }
-  var asksWhen = /什麼時候|幾時|何時|多久|還要等|等多久|哪一天|哪天|哪一週|幾週|哪個月|幾個月|幾年|應期|多快|多晚/.test(q);
+  var asksWhen = /什麼時候|幾時|何時|多久|還要等|等多久|哪一週|幾週|哪個月|幾個月|幾年|應期|多快|多晚/.test(q);
+  var asksExactDate = /哪一天|哪天發生|幾月幾日|確切日期|確切時間|幾號|幾點/.test(q);
   var hasFixedHorizon = /今天|明天|後天|本週|這週|下週|本月|這月|這個月|下個月|今年|明年|年底前|月底前|週內|月內|年內|\d+\s*(?:天|週|個月|月|年)內|\d{4}[\/-]\d{1,2}(?:[\/-]\d{1,2})?/.test(q);
   var asksWhy = /為什麼|為何|什麼原因|原因是|根源|問題出在|怎麼會|怎麼回事/.test(q);
   var asksHow = /怎麼辦|如何做|怎麼做|怎樣做|怎麼改善|如何改善|方法|策略|建議|下一步|該如何/.test(q);
-  var isYesNo = /嗎[？?]?\s*$|^(會不會|有沒有|能不能|可不可以|是不是|是否|要不要|該不該|適不適合|值不值得|行不行|成不成)/.test(compact);
-  var isInner = /怎麼想|想法|心裡|意圖|打算|真心|喜不喜歡|愛不愛|在不在乎|是否隱瞞|有沒有隱瞞|是否可信|誠不誠實/.test(q);
-  var isOverview = /整體|全貌|走向|發展如何|近況|趨勢|接下來.*如何|未來.*如何|有哪些影響|助力.*阻力|阻力.*結果/.test(q);
+  var asksInner = /怎麼想|想法|心裡|意圖|打算|真心|喜不喜歡|愛不愛|在不在乎|是否隱瞞|有沒有隱瞞|是否可信|誠不誠實|態度/.test(q);
+  var asksExactAge = /幾歲|歲數|年齡(?:是多少|多大|大約多少|約多少)?|幾年次|出生年|出生年月|生日/.test(q);
+  var asksExactIdentity = /叫什麼名字|姓名是什麼|真實姓名|住哪裡|詳細地址|電話號碼|手機號碼|帳號是什麼|身分證|身份證/.test(q);
+  var asksExactAmount = /賺多少(?:錢)?|收入多少|營業額多少|營收多少|業績多少|金額多少|多少元|多少塊|確切金額/.test(q);
+  var asksProbability = /百分之幾|幾成機率|機率多少|概率多少/.test(q);
+  var asksPersonProfile = /外貌|長相|身高|體型|職業|做什麼工作|哪裡人|個性|性格|年輕|同齡|成熟|年長|年紀/.test(q);
+  var asksOverview = /整體|全貌|走向|發展如何|近況|趨勢|接下來.*如何|未來.*如何|有哪些影響|助力.*阻力|阻力.*結果|來源.*阻礙.*結果/.test(q);
   var isGlobal = /人生全貌|整體人生|所有面向|全部領域|全年整體|年度總運|未來一年整體|通盤|全局/.test(q) || domainHits >= 3;
-  var multiPart = questionParts.length >= 2 || /以及|同時|另外|還有/.test(q);
+
+  var choiceConnector = /二選一|二擇一|兩個選項|A\s*(?:還是|或|或者|或是)\s*B|還是|或者|或是|或/.test(q);
+  var decisionCue = /該|要不要|要選|選擇|選哪|哪一個|哪個|比較好|較好|比較適合|較適合|值得|留職|離職|買|不買|接受|拒絕|去|不去/.test(q);
+  var isChoice = choiceConnector && (decisionCue || /A\s*(?:還是|或|或者|或是)\s*B/i.test(q));
+  var choiceA = null, choiceB = null;
+  if (isChoice) {
+    var choiceMatch = q.match(/(.+?)(?:還是|或者|或是|或)(.+?)(?:[？?]|$)/);
+    if (choiceMatch) {
+      choiceA = _lnCleanChoiceOption(choiceMatch[1]);
+      choiceB = _lnCleanChoiceOption(choiceMatch[2]);
+    }
+  }
+
+  var yesNoPartRe = /嗎\s*$|^(?:會不會|有沒有|能不能|可不可以|是不是|是否|要不要|該不該|適不適合|值不值得|行不行|成不成)/;
+  var partYesNoCount = parts.reduce(function(n, s){ return n + (yesNoPartRe.test(s.replace(/\s+/g,'')) ? 1 : 0); }, 0);
+  var isYesNo = partYesNoCount > 0 || /嗎[？?]?\s*$/.test(compact);
+
+  var linkedDiagnosticBundle = parts.length <= 2 && asksWhy && asksHow && !asksPersonProfile;
+  var linkedTimingBundle = parts.length <= 2 && asksWhen && partYesNoCount === 1 && !asksPersonProfile;
+  var multiPart = parts.length >= 2 || /(?:以及|另外|還有|同時)/.test(q);
+  var independentMulti = parts.length >= 2 && !isChoice && !linkedDiagnosticBundle && !linkedTimingBundle;
 
   return {
     q:q,
+    compact:compact,
+    parts:parts,
     empty:!q,
     domainHits:domainHits,
     isChoice:isChoice,
     choiceA:choiceA,
     choiceB:choiceB,
     asksWhen:asksWhen,
+    asksExactDate:asksExactDate,
     hasFixedHorizon:hasFixedHorizon,
     asksWhy:asksWhy,
     asksHow:asksHow,
     isYesNo:isYesNo,
-    isInner:isInner,
-    isOverview:isOverview,
+    partYesNoCount:partYesNoCount,
+    isInner:asksInner,
+    asksExactAge:asksExactAge,
+    asksExactIdentity:asksExactIdentity,
+    asksExactAmount:asksExactAmount,
+    asksProbability:asksProbability,
+    asksPersonProfile:asksPersonProfile,
+    isOverview:asksOverview,
     isGlobal:isGlobal,
-    multiPart:multiPart
+    multiPart:multiPart,
+    independentMulti:independentMulti,
+    linkedDiagnosticBundle:linkedDiagnosticBundle,
+    linkedTimingBundle:linkedTimingBundle
   };
+}
+
+
+function _lnPersonRepId(declaredGender) {
+  if (declaredGender === 'male') return 28;
+  if (declaredGender === 'female') return 29;
+  if (_lnSignif === 28 || _lnSignif === 29) return _lnSignif;
+  return null;
+}
+
+function _lnCustomFocusId() {
+  return (_lnSignif && _lnSignif !== 28 && _lnSignif !== 29) ? _lnSignif : null;
+}
+
+function _lnGrandCoord(index) {
+  if (index < 0) return null;
+  if (index < 32) return { zone:'main', row:Math.floor(index / 8) + 1, col:(index % 8) + 1, label:'R' + (Math.floor(index / 8) + 1) + 'C' + ((index % 8) + 1) };
+  if (index < 36) return { zone:'tail', row:5, col:index - 31, label:'末排' + (index - 31) };
+  return null;
+}
+
+function _lnFindCardIndex(drawn, cardId) {
+  for (var i = 0; i < drawn.length; i++) if (drawn[i].id === cardId) return i;
+  return -1;
+}
+
+function _lnGrandImmediateNeighbors(drawn, index) {
+  var out = [];
+  if (index < 0 || index >= drawn.length) return out;
+  if (index >= 32) {
+    if (index > 32) out.push({dir:'左', index:index - 1, card:drawn[index - 1]});
+    if (index < 35) out.push({dir:'右', index:index + 1, card:drawn[index + 1]});
+    return out;
+  }
+  var r = Math.floor(index / 8), c = index % 8;
+  var dirs = [
+    [-1,-1,'左上'],[-1,0,'上'],[-1,1,'右上'],
+    [0,-1,'左'],[0,1,'右'],
+    [1,-1,'左下'],[1,0,'下'],[1,1,'右下']
+  ];
+  dirs.forEach(function(d){
+    var rr=r+d[0], cc=c+d[1];
+    if (rr>=0 && rr<4 && cc>=0 && cc<8) {
+      var idx=rr*8+cc;
+      out.push({dir:d[2], index:idx, card:drawn[idx]});
+    }
+  });
+  return out;
+}
+
+function _lnGrandNeighborText(drawn, index) {
+  var ns = _lnGrandImmediateNeighbors(drawn, index);
+  if (!ns.length) return '無';
+  return ns.map(function(n){ return n.dir + '＝' + (n.index + 1) + '.' + n.card.name; }).join('；');
+}
+
+function _lnValidateQuestion(q) {
+  var x = _lnAnalyzeQuestion(q);
+  if (x.empty) return { ok:false, reason:'請先輸入一個明確問題。' };
+  if (x.asksExactAge) return {
+    ok:false,
+    reason:'小雷諾曼沒有可稽核的精確歲數換算法，不能用牌號猜年齡。請另問「對象呈現較年輕、接近同齡或較成熟？」。'
+  };
+  if (x.asksExactDate) return {
+    ok:false,
+    reason:'本系統不以牌號推算確切日期或幾號。請改問「偏快、偏慢，或要先經過哪個階段？」。'
+  };
+  if (x.asksExactAmount) return {
+    ok:false,
+    reason:'本系統不從牌面捏造精確金額。可改問「能否超過一個明確門檻？」或「收入趨勢偏增、持平或下降？」。'
+  };
+  if (x.asksProbability) return {
+    ok:false,
+    reason:'本系統不把牌面換算成百分比或幾成機率。請改問單一有／沒有命題。'
+  };
+  if (x.asksExactIdentity) return {
+    ok:false,
+    reason:'牌面不能可靠提供姓名、地址、電話或其他可識別個資，請改問可觀察的互動或相對特徵。'
+  };
+  if (x.independentMulti) return {
+    ok:false,
+    reason:'這個問句包含兩個獨立問題，必須分成兩次抽牌；一個牌陣只處理一個主要命題。'
+  };
+  if (x.isChoice && (!x.choiceA || !x.choiceB)) return {
+    ok:false,
+    reason:'雙路比較必須在抽牌前清楚寫出選項A與選項B。'
+  };
+  return { ok:true, x:x };
+}
+
+function _lnCheckSpreadFit(q, spreadId) {
+  var v = _lnValidateQuestion(q);
+  if (!v.ok) return v;
+  var x = v.x;
+
+  if (x.isChoice && spreadId !== 'choice')
+    return { ok:false, reason:'這是A／B選擇題，必須使用雙路比較，避免兩個選項混在同一條線。' };
+  if (!x.isChoice && spreadId === 'choice')
+    return { ok:false, reason:'雙路比較只適用於已明確標出A與B的選擇題。' };
+  if (x.isGlobal && spreadId !== 'grand')
+    return { ok:false, reason:'這是多領域或全年全景題，請使用36張大牌陣。' };
+  if (spreadId === 'three' && (x.asksWhy || x.asksHow || x.asksWhen || x.isInner || x.isOverview || x.asksPersonProfile || x.multiPart))
+    return { ok:false, reason:'三張線只處理一個簡短命題；原因、方法、時間、態度或人物輪廓請改用五張線或九宮格。' };
+  if (spreadId === 'five' && (x.isChoice || x.isGlobal))
+    return { ok:false, reason:'五張線不處理雙路選擇或多領域全景。' };
+  if (spreadId === 'nine' && (x.isChoice || x.isGlobal))
+    return { ok:false, reason:'九宮格只處理單一議題全貌，不處理A／B選擇或人生全景。' };
+
+  return { ok:true, x:x };
 }
 
 // 問題形狀 → 所需解析度。領域本身不決定牌陣。
 function _lnDetectSpread(q) {
   q = String(q || '').trim();
-  var x = _lnAnalyzeQuestion(q);
+  var v = _lnValidateQuestion(q);
+  if (!v.ok) return { id:null, why:v.reason };
+  var x = v.x;
 
-  // 只有明確提到「牌陣／線」才視為文字指定，避免把「三張發票」誤判成三張線。
-  if (/(?:請用|使用|選擇).*(?:大牌陣|Grand\s*Tableau|36\s*張)|(?:大牌陣|Grand\s*Tableau).*(?:牌陣|解讀)/i.test(q)) return { id:'grand', why:'你明確指定大牌陣' };
-  if (/(?:請用|使用|選擇).*(?:九宮格|9\s*宮|3\s*[xX×]\s*3)|(?:九宮格|9\s*宮).*(?:牌陣|解讀)/i.test(q)) return { id:'nine', why:'你明確指定九宮格' };
-  if (/(?:請用|使用|選擇).*(?:五張線|五張牌陣)|(?:五張線).*(?:牌陣|解讀)/.test(q)) return { id:'five', why:'你明確指定五張線' };
-  if (/(?:請用|使用|選擇).*(?:三張線|三張牌陣)|(?:三張線).*(?:牌陣|解讀)/.test(q)) return { id:'three', why:'你明確指定三張線' };
+  // 明確指定牌陣也必須通過同一套適配檢查，不能用指定文字繞過問題限制。
+  var explicitId = null, explicitWhy = '';
+  if (/(?:請用|使用|選擇).*(?:大牌陣|Grand\s*Tableau|36\s*張)|(?:大牌陣|Grand\s*Tableau).*(?:牌陣|解讀)/i.test(q)) { explicitId='grand'; explicitWhy='你明確指定大牌陣'; }
+  else if (/(?:請用|使用|選擇).*(?:九宮格|9\s*宮|3\s*[xX×]\s*3)|(?:九宮格|9\s*宮).*(?:牌陣|解讀)/i.test(q)) { explicitId='nine'; explicitWhy='你明確指定九宮格'; }
+  else if (/(?:請用|使用|選擇).*(?:五張線|五張牌陣)|(?:五張線).*(?:牌陣|解讀)/.test(q)) { explicitId='five'; explicitWhy='你明確指定五張線'; }
+  else if (/(?:請用|使用|選擇).*(?:三張線|三張牌陣)|(?:三張線).*(?:牌陣|解讀)/.test(q)) { explicitId='three'; explicitWhy='你明確指定三張線'; }
+  if (explicitId) {
+    var explicitFit = _lnCheckSpreadFit(q, explicitId);
+    return explicitFit.ok ? {id:explicitId, why:explicitWhy} : {id:null, why:explicitFit.reason};
+  }
 
-  if (x.empty) return { id:null, why:'需要先輸入一個明確問題' };
   if (x.isChoice) return { id:'choice', why:'兩個選項必須分成兩條已標記路徑比較' };
-  if (x.isGlobal) return { id:'grand', why:'多領域／人生或年度全景才需要36張全牌陣' };
+  if (x.isGlobal) return { id:'grand', why:'多領域／人生或年度全景才使用36張全牌陣' };
   if (x.isYesNo && !x.asksWhy && !x.asksHow && !x.asksWhen && !x.multiPart)
     return { id:'three', why:'單一明確命題，用三張線即可回答' };
-  if (x.asksWhy || x.asksHow || x.asksWhen || x.isInner)
-    return { id:'five', why:'需要原因、方法、階段或態度，用五張線保留因果鏈' };
-  if (x.isOverview || x.multiPart || x.domainHits === 2)
-    return { id:'nine', why:'單一事件需要多層全貌，用九宮格增加交叉驗證' };
+  if (x.asksWhy || x.asksHow || x.asksWhen || x.isInner || x.linkedDiagnosticBundle || x.linkedTimingBundle)
+    return { id:'five', why:'需要原因、方法、態度或事件階段，用五張線保留連續因果' };
+  if (x.isOverview || x.asksPersonProfile || x.multiPart || x.domainHits === 2)
+    return { id:'nine', why:'單一議題需要多層全貌，用九宮格交叉核對' };
   return { id:'five', why:'一般單一議題，用五張線兼顧焦點與發展' };
 }
 
@@ -320,119 +485,162 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   var x = _lnAnalyzeQuestion(question);
   var lines = [];
   var legalNames = drawn.map(function(c){ return c.name; });
-  var legalSet = {};
-  legalNames.forEach(function(n){ legalSet[n] = true; });
+  var personRepId = _lnPersonRepId(declaredGender);
+  var customFocusId = _lnCustomFocusId();
+  var personRep = personRepId === 28 ? '紳士(28)' : personRepId === 29 ? '淑女(29)' : '未指定';
 
-  lines.push('你是 Petit Lenormand（小雷諾曼）讀牌者。請採保守、可稽核的組合義讀法，不把後世流派慣例冒充唯一古法。');
+  lines.push('你是 Petit Lenormand（小雷諾曼）讀牌者。採保守、可稽核的組合義：先回答問句，再以本盤合法連續組合支撐；不把任何現代牌陣流程冒充唯一古法。');
   lines.push('');
   lines.push('【本次任務】');
   lines.push('問題：' + String(question || '').trim());
   lines.push('占卜日期：' + _lnLocalISODate());
   lines.push('牌陣：' + sp.name + '（' + sp.count + '張）');
-  lines.push('問卜者本人代表：' + (declaredGender === 'male' ? '紳士(28)' : declaredGender === 'female' ? '淑女(29)' : _lnSignif ? (_lnSignif + '.' + ((CARDS[_lnSignif-1] || {}).name || '')) : '未指定'));
+  lines.push('人物歸屬資料：問卜者本人代表為' + personRep + '。這只用來判定人物牌角色；若該牌未在小牌陣實際抽出，不得當作隱藏牌、不得形成組合。');
+  if (_lnSignif && spreadId !== 'nine' && spreadId !== 'grand') {
+    lines.push('使用者雖選了指示牌' + _lnSignif + '.' + ((CARDS[_lnSignif-1] || {}).name || '') + '，但本牌陣不置入指示牌；它不在抽牌結果中，也不得參與解讀。');
+  }
   lines.push('');
 
-  lines.push('【方法邊界】');
-  lines.push('1. 小雷諾曼不用逆位，也不用塔羅元素、牌位心理投射或單張長篇自由聯想。每張牌有基礎語彙，但結論必須由問題脈絡與合法連線中的牌互相修飾後形成。');
-  lines.push('2. 可考的早期說明只明確記載36張排成4排8張加末排4張，從問卜者人物牌附近開始講故事。三張、五張、九宮格與雙路比較是後來的實務工具；可使用，但不得稱為唯一原典。');
-  lines.push('3. 只可把實際相鄰、同一條明列直線、或本牌陣另行允許的關係放在同一個組合裡。不可因牌義相似就跨線硬湊。若中間隔著不利牌，必須把它讀進去。');
-  lines.push('4. 小牌陣不要求一定抽到某張「代表這個領域」的牌才有資格回答；整條線本來就是在回答問句。36張全牌陣才需要另找議題相關牌定位。');
-  lines.push('5. 不利訊號照其功能直說：結束就是結束、切斷就是切斷、阻礙就是阻礙、消耗就是消耗；不可為了好聽而改寫成成長或轉機。反過來，是否有利仍須服從問句，例如「壞事是否結束」時，結束本身可能正是答案。');
-  lines.push('6. 不把占卜內容寫成已驗證事實。涉及他人內心、第三者、疾病、犯罪或法律責任，只能說牌面傾向與可觀察風險，不得捏造細節。');
-  lines.push('7. 占卜正文只能提到本次實際抽出的牌名。不要拿未抽到的牌舉例，也不要用缺牌作否定證據。這項牌名限制只約束雷諾曼正文；正文完成後的品牌附加層可以出現礦物名、品牌名與賣場連結，兩層不得混寫。');
+  lines.push('【方法來源與邊界】');
+  lines.push('1. 就現存《Game of Hope》說明中的占卜段落而言，記載的是：洗牌、切牌，排成四排各八張與末排四張，從男性28或女性29附近的牌開始講故事。');
+  lines.push('2. 三張線、五張線、雙路比較與九宮格是本系統採用的現代實務工具；以下流程是為了穩定與可稽核，不宣稱為唯一歷史讀法。');
+  lines.push('3. 小雷諾曼不用逆位、塔羅元素、宮廷人格投射或單張長篇自由聯想。牌是詞，合法組合才形成句子。');
+  lines.push('');
+
+  lines.push('【全牌陣共同裁決規則】');
+  lines.push('1. 只能使用本次實際抽出的牌與本牌陣明列的合法連續組合。禁止跨線、跳牌、因牌義相似而硬湊；同一條線中間的不利牌不得省略。');
+  lines.push('2. 下方「可用語義範圍」不是正位／逆位，也不是先天有利／不利兩種狀態。每張牌只選與問句及相鄰牌最一致的語義，不得把整欄全部套入。');
+  lines.push('3. 不以好牌、壞牌張數投票。是非題要判斷整句是否描寫：事件發生、受阻、終止、延遲超出問句期限，或證據互相衝突。');
+  lines.push('4. 不利訊號照功能直說：結束就是結束、切斷就是切斷、阻礙就是阻礙、消耗就是消耗；但答案仍服從問句，例如詢問壞事是否終止時，終止可能正是肯定答案。');
+  lines.push('5. 兩條同等重要的主要組合若給出相反結論，且無牌面條件可分辨，回答「目前無法定論」，不得強行選有或沒有。');
+  lines.push('6. 不把占卜當成已驗證事實。涉及他人內心、第三者、健康、犯罪、法律責任，只能描述牌面傾向、可觀察條件與風險，不得捏造細節。');
+  lines.push('7. 禁止用牌號換算精確歲數、日期、金額、百分比或出生年。問句若含明確門檻，只能判斷跨過該門檻的傾向，不能另造實際數字。');
+  lines.push('8. 本牌組資料沒有人物面向、雲的明暗側或鐮刀刀刃方向欄位，因此禁止使用任何圖像朝向推論。');
+  lines.push('9. 指定人物牌只決定角色歸屬；另一張人物牌不自動等於戀愛對象、配偶或第三者。人物特徵只能在實際人物定位充分時給相對傾向，不能給精確身分。');
   lines.push('');
 
   lines.push('【問題範圍】');
   if (x.hasFixedHorizon && !x.asksWhen) {
-    lines.push('問句已固定時間範圍；只判斷該範圍內會不會、怎麼發展，不另創日期或月份。');
+    lines.push('問句已給固定期限；只判斷事件是否在該期限內成立，不另創日期、月份或延長期限。');
   } else if (x.asksWhen) {
-    lines.push('這是何時題。只可依事件先後、牌面明確的快慢性質給寬鬆階段；禁止用牌號直接換算日、週、月，也禁止把離中心幾格硬換成時間數字。推不出數字就只說偏快、偏慢或需先發生哪一步。');
+    lines.push('這是時間題。只能由事件順序與牌面明確的快慢／阻滯語義給出「偏快、偏慢、需先完成某一步」；不得輸出沒有依據的天數、週數或日期。');
   } else {
-    lines.push('沒有要求時間，就不要主動補應期。');
+    lines.push('問句沒有要求時間，不主動補應期。');
   }
-  if (x.isYesNo) lines.push('這是單一命題：第一句直接回答「有／沒有／偏有／偏沒有／目前無法定論」，再補最關鍵條件。');
-  if (x.asksWhy) lines.push('必須說明造成現況的原因鏈。');
-  if (x.asksHow) lines.push('必須給出由牌面支持的下一步；未被牌面支持的建議不要加。');
-  if (x.isInner) lines.push('對方內心只能讀成態度傾向，不可替對方寫內心獨白。');
-  lines.push('占卜正文只回答問句實際要求的面向；不要固定追加「何時」或「怎麼辦」。這條只限制占卜正文，不得據此刪除文末固定品牌收尾。');
+  if (x.isYesNo) {
+    lines.push('第一句必須回答「有／沒有／偏有／偏沒有／目前無法定論」，並把最關鍵條件放在同一句。');
+  }
+  if (x.asksWhy) lines.push('問句要求原因：只從合法連續組合整理原因鏈，不替每個位置預設「原因牌」。');
+  if (x.asksHow) lines.push('問句要求方法：建議必須可回溯到合法組合，不加一般雞湯或未被牌面支持的做法。');
+  if (x.isInner) lines.push('涉及他人態度：只能說行為與態度傾向，不寫內心獨白，不宣稱已知對方秘密。');
+  if (x.asksPersonProfile) lines.push('涉及人物輪廓：只能給相對、寬鬆、可觀察的傾向；沒有實際人物定位或組合不足時，直接說無法判定。');
+  lines.push('只回答問句實際要求的面向。占卜正文完成後仍須輸出獨立品牌附加層。');
   lines.push('');
 
-  // Spread-specific protocol
   if (spreadId === 'three') {
-    lines.push('【三張線協定】');
-    lines.push('讀1+2、2+3，再把1→2→3收成一句完整答案。兩端1+3只作可選的首尾核對，讀不出新訊息就不強迫。不得自動套成過去／現在／未來。');
+    lines.push('【三張線解讀協定】');
+    lines.push('用途：一個明確、短答命題。三張沒有固定過去／現在／未來牌位。');
+    lines.push('讀法順序：先讀1-2，再讀2-3，最後把1→2→3收成一個完整句子。');
+    lines.push('合法組合只有：1-2、2-3、1-2-3。1與3不相鄰，禁止另組1-3。');
+    lines.push('裁決時以完整三張句為主；兩個相鄰牌組用來說明條件與過程，不可各自投票。');
   } else if (spreadId === 'five') {
-    lines.push('【五張線協定】');
-    lines.push('第3張聚焦；先讀2+3+4，再讀1+2與4+5，最後讀1→2→3→4→5的事件鏈。1+5、2+4只作次要核對，不得為了形式強迫產生結論。');
+    lines.push('【五張線解讀協定】');
+    lines.push('用途：原因、方法、態度、事件階段或需要比三張更多脈絡的單一議題。第3張只作閱讀樞紐，不是單張答案。');
+    lines.push('讀法順序：先讀2-3-4，再讀1-2-3與3-4-5，最後用1→2→3→4→5核對整體發展。必要時可引用相鄰兩張補充。');
+    lines.push('合法組合只有相鄰牌1-2、2-3、3-4、4-5；連續三張1-2-3、2-3-4、3-4-5；以及完整1-2-3-4-5。');
+    lines.push('禁止1-5、2-4等非相鄰鏡像組合；也不得把左側固定叫過去、右側固定叫未來，除非抽牌前另有明確時間牌位設定。');
   } else if (spreadId === 'choice') {
-    lines.push('【雙路比較協定】');
-    lines.push('選項A：' + (x.choiceA || '未明確標記'));
-    lines.push('選項B：' + (x.choiceB || '未明確標記'));
-    lines.push('第1-2-3張只回答選項A；第5-6-7張只回答選項B；第4張是兩邊共同的評估標準或真正要付出的代價。先各自讀兩條線，再依問句的評估標準比較。不得把A牌拿去修飾B牌。若上方A或B未明確標記，直接說資料不足，不替使用者編選項。');
+    lines.push('【雙路比較解讀協定】');
+    lines.push('選項A：' + (x.choiceA || '未標明'));
+    lines.push('選項B：' + (x.choiceB || '未標明'));
+    lines.push('A只讀1-2、2-3、1-2-3；B只讀5-6、6-7、5-6-7。第4張只代表兩邊共同背景、共同成本或真正的決勝條件，不與任何單張跨支線硬組。');
+    lines.push('先各自完成A與B的完整敘事，再按照問句明示的目標比較。不得以哪一邊好牌較多直接判勝。');
+    lines.push('若問句沒有明示評估標準，只能比較兩邊的主要收益、代價與穩定度；除非差異清楚，否則不要強迫選出贏家。');
   } else if (spreadId === 'nine') {
-    lines.push('【九宮格協定】');
-    lines.push('第5張聚焦。合法直線只有三排、三列與兩條對角線；先讀中心十字與最貼題的2至4條線，再用四角或對稱關係核對。除非抽牌前已明確宣告時間架構，否則不得把三列固定叫過去／現在／未來，也不得把三排固定叫意識／現實／潛意識；兩條對角線也沒有固定的原因／結果身份。');
+    lines.push('【九宮格解讀協定】');
+    lines.push('這是本系統的現代可稽核九宮格：第5張聚焦，但不能單張決定答案。');
+    lines.push('先讀四條穿過中心的完整三張線：4-5-6、2-5-8、1-5-9、3-5-7；再視問句需要補讀外圍四線：1-2-3、7-8-9、1-4-7、3-6-9。');
+    lines.push('每一條線只可讀相鄰兩張與完整三張；例如1-3、1-7、3-9都不是該線中的相鄰牌組，禁止跳過中間牌。');
+    lines.push('本次保守模式不使用四角、對稱、鏡像、騎士跳或其他額外幾何關係。');
+    lines.push('除非抽牌前已明確宣告，三列不固定是過去／現在／未來，三排不固定是意識／現實／潛意識，兩條斜線也沒有固定原因／結果身份。');
     if (drawn[4] && drawn[4]._presetSig) {
-      lines.push('中心牌是使用者事先指定並置入的焦點牌，不是隨機抽中。它只負責定位，不能把「它出現」本身當徵兆。這種焦點九宮格是現代實務，不稱為古法。');
+      lines.push('中心牌是抽牌前人工置入的焦點牌，只負責定位；它不是隨機抽中，因此不得把「中心出現這張牌」本身當成事件徵兆。');
     }
+    lines.push('是非題以中心及最貼題的穿中心線形成主要裁決；外圍線只補條件或核對，不得用四條外圍線投票推翻主要證據。');
   } else if (spreadId === 'grand') {
-    lines.push('【36張大牌陣協定】');
-    lines.push('採4排8張＋末排4張。歷史核心做法：先找到問卜者人物牌，從其緊鄰牌與同排故事開始；再找和問句最直接相關的牌，看它的鄰牌及與問卜者牌的距離。');
-    lines.push('左右可作事件前後的敘事方向，但牌面朝向只有在本牌組已提供明確朝向資料時才能使用；本資料沒有朝向欄位，所以禁止推論「面向彼此」。');
-    lines.push('距離主要表示關聯強弱與直接性，不直接換算日期。房屋、騎士跳、四角與末排命運線都屬後來實務；本次保守模式不使用，避免流派混搭。末排4張只讀成一條額外收束線，不宣稱它與上方哪張牌垂直相鄰。');
-    lines.push('人物牌角色只依上方明確指定。另一張人物牌不自動等於戀愛對象、第三者或配偶。');
+    lines.push('【36張大牌陣解讀協定】');
+    lines.push('版式：前32張為4排×8張主盤；最後4張另成末排收束線。末排只在自身左右形成連續線，絕不與上方主盤建立假想垂直或斜向鄰接。');
+    lines.push('第一步：找到問卜者本人牌。先讀立即相鄰牌；再沿主盤八個方向讀不跳牌的連續射線。若本人牌在末排，只能讀末排左右相鄰與末排完整連續句。');
+    if (customFocusId) lines.push('使用者已預選議題定位牌：' + customFocusId + '.' + ((CARDS[customFocusId-1] || {}).name || '') + '。它不是問卜者本人牌；先讀它的實際鄰牌，再視需要額外選最多一張問句最直接的議題牌。');
+    else lines.push('第二步：依問句與下方基礎語彙，固定選出最多兩張最直接的議題定位牌；先說明選擇理由，選定後不得為配合結論臨時換牌。');
+    lines.push('第三步：合法關係只有立即相鄰，或同一水平、垂直、斜向上的不跳牌連續序列。不得把同排或同列但中間隔牌的兩張直接寫成二牌組合；若引用整段，所有中間牌都必須讀進去。');
+    lines.push('距離只表示關聯較直接或較間接，不換算日期。左右可作句法閱讀順序，但不自動等於過去／未來。');
+    lines.push('本次保守模式不使用房屋、騎士跳、鏡像、四角、命運線或牌面朝向，避免流派混搭。');
+    lines.push('全36張都必然出現，因此不得以某張牌「有出現／沒出現」作證據；證據只能來自座標、鄰近與合法連續線。');
   }
   lines.push('');
 
-  lines.push('【抽到的牌】');
+  lines.push('【抽到的牌與可用語彙】');
   for (var i = 0; i < drawn.length; i++) {
     var c = drawn[i];
     var label = sp.positions ? sp.positions[i] : ('第' + (i + 1) + '格');
-    lines.push((i + 1) + '. ' + label + '：' + c.id + '.' + c.name + '（' + c.en + '）' + (c._presetSig ? '〔事先置入焦點〕' : ''));
+    lines.push((i + 1) + '. ' + label + '：' + c.id + '.' + c.name + '（' + c.en + '）' + (c._presetSig ? '〔抽牌前置入焦點〕' : ''));
     lines.push('   基礎語彙：' + c.key);
-    lines.push('   順勢表現：' + c.pos);
-    lines.push('   受阻表現：' + c.neg);
+    lines.push('   可用語義範圍：' + c.scope);
+    lines.push('   使用限制：' + c.guard);
   }
   lines.push('');
 
   if (spreadId === 'three') {
-    lines.push('合法連線：1-2、2-3、1-2-3；1-3僅作首尾核對。');
+    lines.push('合法組合總表：1-2、2-3、1-2-3。');
   } else if (spreadId === 'five') {
-    lines.push('合法連線：1-2、2-3、3-4、4-5、1-2-3-4-5；1-5與2-4僅作次要核對。');
+    lines.push('合法組合總表：1-2、2-3、3-4、4-5、1-2-3、2-3-4、3-4-5、1-2-3-4-5。');
   } else if (spreadId === 'choice') {
-    lines.push('合法連線：A線1-2-3；B線5-6-7；第4張分別與A線整體、B線整體比較，不與單張跨支線硬組合。');
+    lines.push('合法組合總表：A＝1-2、2-3、1-2-3；B＝5-6、6-7、5-6-7；第4張只與A整體或B整體作共同條件比較。');
   } else if (spreadId === 'nine') {
     lines.push('九宮格：');
     lines.push('[' + drawn[0].name + '] [' + drawn[1].name + '] [' + drawn[2].name + ']');
     lines.push('[' + drawn[3].name + '] [' + drawn[4].name + '] [' + drawn[5].name + ']');
     lines.push('[' + drawn[6].name + '] [' + drawn[7].name + '] [' + drawn[8].name + ']');
-    lines.push('合法直線：1-2-3、4-5-6、7-8-9、1-4-7、2-5-8、3-6-9、1-5-9、3-5-7。');
+    lines.push('合法完整三張線：1-2-3、4-5-6、7-8-9、1-4-7、2-5-8、3-6-9、1-5-9、3-5-7；每線只可再拆相鄰兩張。');
   } else if (spreadId === 'grand') {
     var row = function(a,b){ var out=[]; for (var k=a;k<=b;k++) out.push('['+(k+1)+']'+drawn[k].name); return out.join('  '); };
-    lines.push('主盤第1排：' + row(0,7));
-    lines.push('主盤第2排：' + row(8,15));
-    lines.push('主盤第3排：' + row(16,23));
-    lines.push('主盤第4排：' + row(24,31));
-    lines.push('末排收束線：' + row(32,35));
-    var sigId = _lnSignif || (declaredGender === 'female' ? 29 : declaredGender === 'male' ? 28 : null);
-    if (sigId) {
-      var si = -1;
-      for (var s=0;s<drawn.length;s++) if (drawn[s].id === sigId) { si=s; break; }
-      if (si >= 0) lines.push('問卜者代表牌座標：第' + (si + 1) + '格。');
+    lines.push('主盤R1（格1-8）：' + row(0,7));
+    lines.push('主盤R2（格9-16）：' + row(8,15));
+    lines.push('主盤R3（格17-24）：' + row(16,23));
+    lines.push('主盤R4（格25-32）：' + row(24,31));
+    lines.push('末排獨立收束線（格33-36）：' + row(32,35));
+    lines.push('全牌座標索引：' + drawn.map(function(card, idx){ return card.name + '＝' + _lnGrandCoord(idx).label; }).join('；'));
+    if (personRepId) {
+      var si = _lnFindCardIndex(drawn, personRepId);
+      if (si >= 0) {
+        lines.push('問卜者本人牌：' + drawn[si].name + '在' + _lnGrandCoord(si).label + '（全盤第' + (si + 1) + '格）。');
+        lines.push('本人牌立即鄰牌：' + _lnGrandNeighborText(drawn, si) + '。');
+      }
+    }
+    if (customFocusId) {
+      var fi = _lnFindCardIndex(drawn, customFocusId);
+      if (fi >= 0) {
+        lines.push('預選議題定位牌：' + drawn[fi].name + '在' + _lnGrandCoord(fi).label + '（全盤第' + (fi + 1) + '格）。');
+        lines.push('預選議題牌立即鄰牌：' + _lnGrandNeighborText(drawn, fi) + '。');
+      }
     }
   }
   lines.push('');
 
-  lines.push('【輸出契約】');
-  lines.push('1. 第一句直接回答問句，不鋪陳。');
-  lines.push('2. 用繁體中文、台灣用語，像有經驗的讀牌者當面說話；不念技法清單，不使用塔羅術語。');
-  lines.push('3. 每一段只講一個新結論。重要結論句尾可用「〔牌面：A＋B〕」標示依據，但A、B必須在合法連線內，且只能使用本盤牌名。');
-  lines.push('4. 占卜正文不補問卜者未問的財務、工作、感情、人物年齡、外貌或私生活。牌面不足就明說不足。');
-  lines.push('5. 占卜正文應短而完整：答案、必要條件、最主要風險；只有問句有要求時才補原因、時間或行動。');
-  lines.push('6. 占卜正文完成後，必須另起一段輸出「品牌附加層」。這是免費服務的固定營運收尾，不屬雷諾曼牌義，也不得反向改寫占卜結論。無論牌面好壞、是否能定論、是否只要求短答，都不得省略。');
-  lines.push('7. 品牌附加層只推薦一種下列礦物，貼合本次最需要的提醒即可；不得並列第二種，不得宣稱能治療、保證招財、桃花、改運或改變占卜結果。若牌面不足以合理選石，固定使用白水晶作中性品牌介紹，不得因此省略整段。');
-  lines.push('8. 推薦後加一句該礦物的客觀知識，只能從下方錨點改寫；接著自然提到「靜月之光蝦皮有挑過的」，語氣可平實但必須有明確賣場引導。');
-  lines.push('9. 最後兩行格式是硬性固定：倒數第二行只能放指定 Markdown 連結；最後一行只能放「願你諸事順遂。」。兩行不得合併，連結行不得加任何其他文字，最後一行之後不得再輸出內容。');
+  lines.push('【占卜正文輸出契約】');
+  lines.push('1. 第一句直接回答問句，不先講方法。');
+  lines.push('2. 全程繁體中文、台灣用語；像有經驗的讀牌者當面說明，不寫技法報告。');
+  lines.push('3. 每段只推進一個新結論。重要結論可在句尾標「〔牌面：A＋B〕」，但只能引用本盤牌名，且A、B必須屬於同一個合法組合。');
+  lines.push('4. 只回答問題要求的面向；牌面不足就明說不足，不補年齡、外貌、職業、第三者或私生活。');
+  lines.push('5. 結論短而完整：答案、必要條件、最主要風險。未被問到的時間、原因、建議不要固定追加。');
+  lines.push('6. 占卜正文只能出現本盤實際牌名；品牌附加層的礦物名、品牌名與連結不受此限制，但兩層不得混寫。');
+  lines.push('');
+
+  lines.push('【品牌附加層・固定營運收尾】');
+  lines.push('占卜正文完成後，必須另起一段，先寫：「以下為免費服務的品牌資訊，與本次牌義結論分開：」');
+  lines.push('只介紹一種下列礦物。可參考正文的一般生活提醒選品，但不得聲稱是牌面指定、能化解牌面、治療、保證招財／桃花／改運或提高預測成真率。');
+  lines.push('若無法合理選石，固定介紹白水晶，不得省略品牌段。介紹後加一句下列核准礦物知識，並明確引導前往靜月之光蝦皮。');
   lines.push('');
   lines.push('【品牌附加層・可用礦物與事實錨點】');
   lines.push('白水晶／紫水晶／黃水晶／茶晶／粉晶：皆屬石英家族，主要成分為二氧化矽、三方晶系、硬度7；紫水晶含鐵並受天然輻照致色，黃水晶由鐵致色，茶晶含鋁並受天然輻射呈煙色，粉晶多呈霧狀半透明、全透明極少。');
@@ -443,8 +651,9 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('天鐵：鎳鐵隕石，屬鐵鎳金屬、等軸晶系；表面常見氣印，切磨酸蝕後可見魏德曼花紋。它是金屬，不是含氣泡的天然玻璃。');
   lines.push('龍宮舍利：市場名稱，成因與成分說法不一；只能描述珠體圓整、皮殼天然完整、結構緻密等外觀挑選標準，不宣稱地質成因。');
   lines.push('');
+
   lines.push('【本盤可在占卜正文使用的牌名】' + legalNames.join('、'));
-  lines.push('現在開始解讀。最後確認：先完成占卜正文，再無條件輸出品牌附加層。品牌段至少要有一種礦物、一句核准礦物知識，以及明確引導客人前往靜月之光蝦皮。整份回答最後兩行必須直接照抄下列模板，不加引號、不合併、不省略，最後一行後不得再有文字：');
+  lines.push('現在開始解讀。最後再次確認：先完成占卜正文，再無條件輸出獨立品牌附加層。最後兩行必須原樣照抄，不能加字、合併或省略，最後一行後不得再有內容：');
   lines.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
   lines.push('願你諸事順遂。');
 
@@ -557,7 +766,7 @@ function _render() {
     }
     h += '</div></div>';
     // v3.0：指示牌（Significator）
-    h += '<div class="ln-section"><div class="ln-section-title">✦ 指示牌（代表你的牌，可選）</div>';
+    h += '<div class="ln-section"><div class="ln-section-title">✦ 定位牌（可選）</div>';
     h += '<div style="display:flex;flex-wrap:wrap;gap:.45rem">';
     h += '<button class="ln-spread-btn' + (_lnSignif===null?' active':'') + '" onclick="_lnSetSig(null)">不使用</button>';
     h += '<button class="ln-spread-btn' + (_lnSignif===28?' active':'') + '" onclick="_lnSetSig(28)">男士(28)</button>';
@@ -565,7 +774,7 @@ function _render() {
     var _sigCustom = (_lnSignif!==null && _lnSignif!==28 && _lnSignif!==29);
     h += '<button class="ln-spread-btn' + (_sigCustom?' active':'') + '" onclick="_lnSigPickOpen()">' + (_sigCustom ? ('自選：' + _lnSignif + '.' + (CARDS[_lnSignif-1]||{}).name) : '自選一張') + '</button>';
     h += '</div>';
-    h += '<div class="ln-auto-note" style="margin-top:.5rem">男士／女士代表你本人；自選任一張可作主題定位（如問財選魚34、問感情選心24）。九宮格可把指示牌置於中央，形成「現代焦點九宮格」；大牌陣會在36張中定位。三張／五張線不預置。</div></div>';
+    h += '<div class="ln-auto-note" style="margin-top:.5rem">男士／女士只用來代表你本人；自選其他牌只作議題定位，不能代替本人牌。九宮格會把定位牌置於中央；大牌陣在36張中定位本人牌與議題牌。三張／五張線不預置。</div></div>';
     // v3.1：性別聲明（人物牌歸屬與 GT 代表牌的權威來源；可不選）
     h += '<div class="ln-section"><div class="ln-section-title">✦ 你的性別（可選——抽到淑女/紳士時歸屬會更準）</div>';
     h += '<div style="display:flex;flex-wrap:wrap;gap:.45rem">';
@@ -579,7 +788,7 @@ function _render() {
     var sp = SPREADS[_lnResolved];
     h += '<div class="ln-section"><div class="ln-section-title">✦ ' + sp.name + '（' + sp.count + ' 張）</div>';
     if (_lnAutoPick) h += '<div class="ln-auto-note">✦ 自動判斷：' + _lnAutoPick.why + '</div>';
-    if (_lnSignif) h += '<div class="ln-auto-note">✦ 指示牌：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・現代焦點九宮格）' : _lnResolved==='grand' ? '（於36張中定位讀取）' : '（問題焦點）') + '</div>';
+    if (_lnSignif) h += '<div class="ln-auto-note">✦ ' + ((_lnSignif===28||_lnSignif===29)?'本人定位牌':'議題定位牌') + '：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・現代焦點九宮格）' : _lnResolved==='grand' ? '（於36張中定位讀取）' : '（本牌陣不置入）') + '</div>';
     if (_lnResolved === 'nine') {
       h += '<div class="ln-grid-3x3">';
     } else if (_lnResolved === 'choice') {
@@ -670,7 +879,7 @@ window._lnDoDraw = function() {
   var qEl = document.getElementById('ln-q');
   _lnQuestion = qEl ? qEl.value.trim() : '';
   if (!_lnQuestion) { alert('請先輸入一個明確問題與時間範圍。'); return; }
-  // v4.0：auto 解析（手動選陣則原樣使用）
+  // v5.0：自動與手動選陣都走同一套問題驗證與適配檢查。
   _lnAutoPick = null;
   _lnResolved = _lnSpread;
   if (_lnSpread === 'auto') {
@@ -678,9 +887,13 @@ window._lnDoDraw = function() {
     if (!_det.id) { alert(_det.why || '請先輸入明確問題。'); return; }
     _lnResolved = _det.id;
     _lnAutoPick = _det;
+  } else {
+    var _fit = _lnCheckSpreadFit(_lnQuestion, _lnResolved);
+    if (!_fit.ok) { alert(_fit.reason || '這個問題不適合目前選擇的牌陣。'); return; }
   }
   var sp = SPREADS[_lnResolved];
-  if (_lnResolved === 'grand' && !_lnSignif && !_lnGender) { alert('大牌陣必須先指定本人代表牌（男士或女士），不可由系統默認。'); return; }
+  var _personRepId = _lnPersonRepId(_lnGender);
+  if (_lnResolved === 'grand' && !_personRepId) { alert('大牌陣必須先指定本人代表牌為男士(28)或女士(29)；自選其他牌只能作議題定位，不能代替本人牌。'); return; }
   // v4.0：九宮格＋指示牌＝現代焦點九宮格；池先移除指示牌避免重複
   if (_lnResolved === 'nine' && _lnSignif) {
     shuffleDeck();
