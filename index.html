@@ -1382,7 +1382,7 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot.js?v=20260613v86_29" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260611v86_router" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260715v89_0" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
 <script src="JS/meihua_upgrade.js?v=20260610v80_16" defer></script>
 <script src="JS/meihua_output_layer.js?v=20260612v2_0" defer></script>
@@ -1391,7 +1391,7 @@
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
-<script src="JS/ai-analysis.js?v=20260611v86_1" defer></script>
+<script src="JS/ai-analysis.js?v=20260715v89_0" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260612v6_4" defer></script>
@@ -1430,6 +1430,8 @@
 <!-- v86_9(2026/6/11)：墨流 ink-flow v1.0——Suminagashi 風格全站背景墨暈層（canvas 回饋平流＋流場墨點；品牌金/月白/絳紅，pickTool 換工具自動換墨色；0.5x 內部解析度、分頁隱藏即停、reduced-motion 靜態墨暈、低階機自動降檔）。新增 JS/ink-flow.js；自檢同步至 96 項 -->
 <!-- v86_10(2026/6/11)：墨流 v1.1——依回饋改「面板內掛載」：首頁不畫（恢復原樣），偵測八字/紫微/梅花/雷諾曼等全版工具面板打開時把畫布掛進面板內部（z-index:-1 子層＝面板底色上、表單內容下），關閉自動收回；依面板內容自動配色（bzx金硃/zw紫金/mhx翠金/ln靛月白）、半透明載入遮罩不掛。動 ink-flow.js；自檢維持 96 項（簽名改 v1.1、v1.0 入黑名單） -->
 <!-- v86_11(2026/6/11)：墨流 v1.2——v1.1 根因修正：工具頁是 display:none/block 切換的常駐面板，MutationObserver 抓不到 display 切換導致表單頁全空。改已知容器 id 輪詢（bzx-screen/mhx-screen/ln-screen/zw-input/zw-result，700ms 閒置輪詢）＋通用後備門檻降至 z≥2900（涵蓋 zw-result）。動 ink-flow.js；簽名 v1.2、v1.1 入黑名單 -->
+<!-- v89_0(2026/7/15)：塔羅全系統觀測能力根治——原問句資訊需求×牌陣可觀測通道×中性牌義×證據矩陣；移除題材預判牌義與衍生故事；數量/身分/時間只由可量測結構回答；開鑰Ace=11來源與計數導航邊界修正。動 prompt-export.js / ai-analysis.js / tarot_upgrade.js / selftest-core.js / tests/tarot-v89-observation-engine.test.js / index.html -->
+<!-- v88_0(2026/7/15)：塔羅全牌陣語義證明引擎——十四種牌陣逐一建立合法互動與合成順序；自動選陣區分已知對象/未知人物事件；開鑰依Book T五次操作、完整計數故事、配對與適配中止重建。動 prompt-export.js / tarot_upgrade.js / selftest-core.js / tests/tarot-v88-all-spreads-root.test.js / index.html -->
 <!-- v87_0(2026/7/15)：塔羅全牌陣提示詞根治——統一完整命題/位置鏡頭/結構合成/反證/語義飽和引擎；移除題材牌義與花色投票；關係牌陣不再預設未知對象；開鑰依Book T五次操作與適配中止重建；篇幅只由有效命題決定。動 prompt-export.js / tests/tarot-v87-semantic-engine.test.js / index.html -->
 <!-- v86_12(2026/6/12)：梅花應期正統化整批根治——①應期改《占卦訣》原典法（事應於生體卦氣之日、敗於剋體卦氣之日；吉應/敗應分窗＋用近互中變遠），廢「用卦五行→季節」法；②體用定性對齊《體用總訣》原文（體剋用＝諸事吉）；③meihua_upgrade2 旺衰表改規則生成＋節氣月支＋tiYongDeep rel/verdict 根修；④output_layer 增 buildMeihuaYingQi 掛 mh.yingQi；⑤solar-location 真太陽時分鐘進位修；⑥standalone 生剋力道中性化＋蝦皮連結獨立成行雙保險。動 meihua_upgrade2.js / meihua_output_layer.js / prompt-export.js / meihua-standalone.js / solar-location.js / index.html 六檔 -->
 <!-- v86_13(2026/6/12)：梅花實測第二輪三根治——①蝦皮連結改犧牲行結構（網址倒數第二行＋固定收尾句墊後；兩輪實測末端皆黏不可見Unicode，屬AI管線副產物、指令攔不住，雜訊改黏收尾句）②生剋力道體克用/體生用補用旺衰雙向分支（修「體囚剋用旺」只標體弱）③動爻爻位參考行（繫辭：二多譽/三多凶/四多懼/五多功）＋鐵律⑧納入主線。只動 meihua-standalone.js -->
@@ -1460,7 +1462,7 @@
 <!-- v86_32(2026/6/15)：雷諾曼主題偵測「架構級」根治——拆掉 v3.2~v3.8 的「問題正則挑主題牌」自然語言解讀層（不再 whack-a-mole）。病灶：用關鍵字正則比對問題來決定預算哪些主題牌格位，自然語言無窮、正則永遠補不完（連續漏接 天職→好感/正緣→愛上/發展空間，每次補詞都只是更大的補丁）。改為：上方「實際版面」(無條件產生、全36張2D座標)＝確定性結構化真相，模型自行判主題＋在版面定位（本批多盤正則未中、AI 仍照版面把魚/熊/心/戒指/人物牌位置全讀對＝版面才是真正防呆，正則純屬冗餘脆弱層）。淨移除約50行脆弱碼、提示詞反而變短。文獻佐證：過量/不相關脈絡降低LLM推理且模型難自濾、自然語言解讀層隨條件數指數退化、確定性結構化真相＋模型語意挑選為上策。動 lenormand.js(v3.9/v86_32)/index -->
 <!-- v86_34(2026/6/19)：雷諾曼兩項前端根治——①五張線由 flex 自動換行改為固定六軌幾何網格：上排3張、下排2張且共用中心，所有手機寬度不再歪斜。②AI捷徑改為真實 <a href target="_blank"> 原生導覽，複製在同一次點擊啟動；移除 Clipboard Promise 後延遲 window.open 的 popup-blocker 病根。Gemini 直接連至 https://gemini.google.com/app，本站不重繪、不切 phase、不會瞬間切掉再跳回。動 lenormand.js/index。 -->
 <!-- v86_33(2026/6/15)：雷諾曼提示詞「載入一致性＋過長/位置」根治（前次稽核問題3+4，治本非補丁）——①新增單一條件源 _ctx（isTiming/isChoice/isInner/count），特殊題型/應期/距離法全部只讀它，條件不再散在各處（舊狀：特殊題型 inline regex、應期無條件硬載＝補一個漏一個）。②應期四法只在時間題載入、非時間題留防呆一行（根治「我是渣男嗎」這種身分題被逼硬湊時間範圍）。③距離法（自標『適用5張以上』）改 count>=5 才載，短盤不再吃無關大塊。④三條最硬鐵律（第一句直答/只引盤內牌/壞牌照講）複製到提示詞頂端 primacy 位，與末端 recency 複述形成頭尾雙壓（ai-divination skill 頭—中—尾三位一體；Liu 2023 Lost-in-the-Middle U 型頭尾最強）。⑤修正 +30% 引用：Anthropic 該數字限 20K+ token 多文件檢索、本檔約3–4K屬指令密集不假借其數字。文獻：Lost-in-the-Middle(TACL 2024)/ManyIFEval(2509.21051)/RECAST(2505.19030)＝脈絡越雜、指令越多遵循越差。沙箱實跑渣男盤：頂端鐵律在✓、應期四法丟✓、距離法丟✓、時間題版應期回✓。⚠ 礦物錨點表（最大常駐字塊）此版未動＝單次呼叫下載重牆，要拆需走兩段式（讀牌→定石→只取該石事實）屬另案。動 lenormand.js(v3.10/v86_33)/index -->
-<script src="JS/prompt-export.js?v=20260715v87_0" defer></script>
+<script src="JS/prompt-export.js?v=20260715v89_0" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="JS/vendor/lunar.js?v=1.7.7" defer></script>
 <script src="JS/bazi-calendar-core.js?v=20260625v1_0_0" defer></script>
