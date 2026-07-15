@@ -1,40 +1,39 @@
-TAROT ROOT-SPEC v91 TEST RESULTS
+ROOT-SPEC v92 clean compiler — actual verification
 Date: 2026-07-15
 
-[1] JavaScript syntax checks
-PASS  JS/tarot-semantic-engine.js
-PASS  JS/ai-analysis.js
-PASS  JS/prompt-export.js
-PASS  JS/selftest-core.js
+1. JavaScript syntax checks
+   node -c JS/tarot-semantic-engine.js
+   node -c JS/ai-analysis.js
+   node -c JS/prompt-export.js
+   node -c JS/selftest-core.js
+   node -c tests/tarot-v92-root-compiler.test.js
+   node -c tests/tarot-v92-metamorphic.test.js
+   node -c tests/tarot-v92-stress.test.js
+   node -c tests/tarot-v92-all.test.js
+   Result: PASS
 
-[2] Root architecture and metamorphic tests
-✓ 原問句編譯保留比較雙方、門檻、模態與成功定義
-✓ 時間範圍與人物屬性不會吞掉存在與事件落實需求
-✓ 問句句法可泛化出未列題材的事件模態與數量存在邊界
-✓ 多子句比較不會只保留第一個門檻
-✓ 凱爾特十字不能把單一情勢網絡冒充雙收入比較通道
-✓ 二選一牌陣提供獨立分支比較，但仍不生成精確金額
-✓ 凱爾特十字完整網絡是依賴圖，不是N01到N10線性路徑
-✓ 牌義資料被拆成候選語義與來源釋義，不是預先事件句
-✓ 所有牌陣都由同一契約編譯器建立合法方法拓撲
-✓ 開鑰五次操作先各自形成階段摘要，再由階段網絡整合
-✓ 答案稽核攔截重新定義成功與無比較通道的肯定門檻
-✓ 所有塔羅牌陣與開鑰之法都能匯出同一根契約且保留各自拓撲
-✓ ROOT-SPEC v91提示包含原句關係、語義義務、量測邊界與非線性拓撲
-✓ index 依正確順序載入v91語義引擎與提示詞
-✓ 提示詞匯出使用v91契約與候選語義素材
+2. Root compiler and metamorphic suite
+   Command: node tests/tarot-v92-all.test.js
+   Result:
+   - 12 root-compiler tests passed
+   - 7 metamorphic/invariant tests passed
+   - 180 cross-question × all-method contracts compiled, validated, rendered, and DAG-checked
 
-15 v91 root architecture tests passed
-✓ 比較題同義改寫保留同一關係運算與比較雙方
-✓ 不含比較的收入題不會被錯編譯成門檻跨越
-✓ 換牌只改語義內容，不改牌陣拓撲與依賴圖
-✓ 非線性牌陣的綜合節點永遠沒有直接牌序
-✓ 未量測門檻不會因結果牌換成財務吉牌而升級
-✓ Mathers來源隔離不因題目改變
-✓ 開鑰不同操作的牌不能進入同一直接證據單位
-✓ ROOT-SPEC不含題材固定公式或線性化凱爾特
+3. Deployment-signature checks relevant to the changed Tarot files
+   Files checked: tarot-semantic-engine.js, prompt-export.js, ai-analysis.js, selftest-core.js
+   Result: 58 / 58 PASS
 
-8 v91 metamorphic tests passed
+4. Structural checks covered
+   - One clean compiler implementation; no v91 overlay or duplicated public compiler functions
+   - All registered spreads compile nodes, binding policies, evidence units, join policies, and source profile
+   - Non-linear spreads preserve dependency graphs rather than fake linear card sequences
+   - Zodiac card 13 is synthesis-only
+   - Comparison and threshold answers require independent, bound, same-scale channels
+   - Unknown counterpart and explicit counterpart alter entity binding, not spread topology
+   - Mathers methods reject incompatible semantic profiles
+   - Opening of the Key produces five QUERY_EVENT stage summaries and one cross-operation stage network
+   - OOTK stage summaries depend on operation validity; cross-operation synthesis cannot directly merge cards
+   - Answer validator blocks unmeasured exact ages, cardinalities, values, probabilities, and dates
 
-[3] Tarot deployment signatures against merged project
-Tarot-related signatures: 57/57 passed
+Important boundary:
+These tests establish program structure, prompt-contract consistency, evidence topology, source isolation, and known failure-class prevention. They do not prove divination is objectively true, and they cannot guarantee identical behavior from every external language model used through copy/paste.

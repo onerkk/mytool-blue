@@ -1,0 +1,106 @@
+ROOT-SPEC v92 — CLEAN ROOT COMPILER
+===================================
+
+Purpose
+-------
+This revision removes the previous v91 + v92 overlay pattern and replaces it with one clean compiler implementation. It is not a list of topic-specific fixes. The same pipeline is generated for every registered Tarot method and Opening of the Key.
+
+Single source of truth
+----------------------
+JS/tarot-semantic-engine.js now owns:
+1. Source profiles and incompatibility boundaries.
+2. Method specifications and observation capabilities.
+3. Position authority and entity/event binding policy.
+4. Typed query graph skeleton and semantic-atom completion rules.
+5. Legal evidence graph and join policy.
+6. Claim schema and six-pass adjudication plan.
+7. Opening of the Key five-operation stage compiler.
+8. Contract and answer validation.
+
+General pipeline
+----------------
+P1 QuestionCompiler
+- Preserves the original sentence.
+- Requires every truth-changing component to become an essential semantic atom.
+- Requires round-trip equivalence, deletion sensitivity, same-event testing, and no-added-premise checking.
+
+P2 EvidenceInterpreter
+- Processes every legal evidence unit.
+- Generates competing local meanings rather than copying a source gloss as the answer.
+- Records what each unit does and does not establish.
+
+P3 GraphBinder
+- Merges claims only with explicit event, entity, role, scope, and polarity compatibility.
+- Topic similarity, same domain, or same suit never proves the same actor or event.
+
+P4 Adjudicator
+- Builds support / conditional / contradiction / unmeasured coverage for every essential atom.
+- The complete event cannot be stronger than its weakest necessary atom.
+- An unmeasured atom limits only that atom; it does not erase the rest of the reading.
+
+P5 SaturationReviewer
+- Tests the strongest alternative interpretation.
+- Marks every evidence unit used, duplicate, irrelevant, or unresolved.
+- Output length follows non-duplicate relevant claims, not card count.
+
+P6 AnswerVerifier
+- Reverse-audits the prose against evidence IDs, event IDs, entity bindings, original scope, legal card names, and numeric anchors.
+
+Method topology
+---------------
+Each spread keeps its own operators:
+- Three-card and timeline spreads: ordered paths.
+- Five-card, Cross, Minor Arcana, Horseshoe: directed mechanism/dependency graphs.
+- Either/Or and the English fifteen-card spread: independent branches or triads before comparison.
+- Relationship: dyadic graph with known-person vs aggregate-unknown binding.
+- Celtic Cross: five-axis non-linear dependency graph.
+- Tree of Life: three-pillar network.
+- Zodiac: six house axes, twelve-domain network, and synthesis-only card 13.
+- Mathers 21: rows, declared pairs, and center.
+- Mathers First Method: separate A, C, and E group claims, then claim-level cross-group synthesis; F is not interpreted.
+
+Opening of the Key
+------------------
+The compiler creates five isolated stages bound to one QUERY_EVENT:
+1. opening_and_present_condition
+2. development_through_houses
+3. continuing_development_through_signs
+4. near_term_decan_development_and_time_anchor
+5. termination_through_tree_of_life
+
+Each operation contains its own landing/procedural facts, full counting path, declared pairs, dignity context, time anchor where applicable, validity gate, and stage summary. Cross-operation synthesis reads only the five stage summaries. It cannot make a new card sentence by joining cards from different operations.
+
+Why this is architectural rather than a prompt patch
+-----------------------------------------------------
+- Question semantics, method topology, source profile, evidence units, and validators are generated as structured contracts by code.
+- The final prompt is rendered from those contracts; it is not a hand-written topic answer table.
+- Tests mutate questions, cards, source profiles, and methods while requiring topology and invariants to remain stable.
+- The compiler rejects structurally unsupported exact quantities and unsupported comparison/threshold claims.
+
+Technical basis used
+--------------------
+- Schema-constrained intermediate representations for reliable required fields.
+- Executable assertions and gates rather than relying only on prose instructions.
+- Modular language-model pipelines instead of one monolithic trial-and-error prompt.
+- Explicit uncertainty, grounding, and reverse verification to reduce unsupported claims.
+
+References consulted
+--------------------
+OpenAI, Structured model outputs:
+https://developers.openai.com/api/docs/guides/structured-outputs
+
+OpenAI, Structured Outputs evaluation:
+https://developers.openai.com/cookbook/examples/evaluation/use-cases/structured-outputs-evaluation
+
+Singhvi et al., DSPy Assertions: Computational Constraints for Self-Refining Language Model Pipelines:
+https://arxiv.org/abs/2312.13382
+
+Khattab et al., DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines:
+https://arxiv.org/abs/2310.03714
+
+Anthropic, Reduce hallucinations:
+https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations
+
+Boundary
+--------
+No prompt, software compiler, or divination method can guarantee objectively correct future facts for every possible question. This revision addresses the reusable structural failure classes: question loss, topic-table bias, source mixing, illegal card joins, entity/event conflation, method-topology loss, unsupported measurement, premature uncertainty, and unsaturated evidence. External models may still vary, especially because this product exports a copy/paste prompt rather than controlling the external model runtime.
