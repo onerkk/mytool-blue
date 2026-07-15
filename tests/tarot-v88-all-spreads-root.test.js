@@ -1,3 +1,4 @@
 'use strict';
-// Compatibility entrypoint: v88 suite is superseded by the v89 observation/capability engine suite.
-require('./tarot-v89-observation-engine.test.js');
+// Compatibility entrypoint: all spread and Opening-of-the-Key invariants now live in the v90 compiler suites.
+require('./tarot-v90-root-compiler.test.js');
+require('./tarot-v90-metamorphic.test.js');
