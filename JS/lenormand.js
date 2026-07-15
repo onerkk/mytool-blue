@@ -1,5 +1,11 @@
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v7.0（原則引擎／AI語意判讀版）
+// 靜月之光 — 雷諾曼牌 Lenormand v9.0（五牌陣通用解題引擎）
+// v9.0(2026/7/15)：根治五種牌陣在不同問法下被前端關鍵字牽著走的問題。
+//   ①所有牌陣共用同一回答契約：AI先依原問句判定主體、命題、範圍與回答形式，再依牌陣幾何取證。
+//   ②前端分析只用於抽牌前的結構選陣與安全攔截，不再把「暗戀、內心、秘密」等內容詞直接升級牌陣或寫進正文結論。
+//   ③手動選陣只阻擋真正幾何錯配；三張線可處理單一原因、方法、時間或態度題，但會遵守較低解析度上限。
+//   ④三張、五張、雙路、九宮格與大牌陣各自採封閉閱讀順序、合法連線與證據優先級，避免跳牌、跨線、全盤撿牌或好壞票選。
+//   ⑤品牌層改以「生活情境→配戴場合→色系／質感」選一種礦物，僅作風格呼應，保留客觀礦物知識與固定蝦皮收尾。
 // v7.0(2026/7/14)：移除題型補丁式解讀，改成少數上位原則。
 //   ①前端只處理牌陣「結構」：單線、雙路、多面向、全景；不再把偵測到的題目詞彙寫成牌義結論條件。
 //   ②提示詞不再列舉暗戀、肉體、錄取、成交等事件強度範例，也不輸出程式猜出的限定清單；完整自然語意交由AI判讀。
@@ -111,7 +117,7 @@
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v7.0 loaded — principle engine + AI semantic reading');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v9.0 loaded — universal question contract + five-spread evidence engine');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -199,11 +205,11 @@ var IMG_MAP = {
 // ════════════════════════════════════
 var SPREADS = {
   three: { id:'three', name:'三張線', en:'Three-Card Line', count:3,
-    desc:'現代短線讀法。處理一個聚焦命題；合法幾何固定，實際語意交由AI依完整問句判讀。',
+    desc:'現代短線讀法。處理一個聚焦命題；可回答是非、原因、方法、時間或態度，但解析度限於一個核心結論。',
     positions:['第1張','第2張','第3張']
   },
   five: { id:'five', name:'五張線', en:'Five-Card Line', count:5,
-    desc:'現代長線讀法。處理需要較多脈絡的單一議題；只讀連續相鄰組合，第3張作閱讀樞紐。',
+    desc:'現代長線讀法。處理需要因果、階段或條件脈絡的單一議題；只讀連續相鄰組合，第3張作閱讀樞紐。',
     positions:['第1張','第2張','第3張','第4張','第5張']
   },
   choice: { id:'choice', name:'雙路比較', en:'Two-Path Comparison', count:7,
@@ -212,7 +218,7 @@ var SPREADS = {
     layout:'choice'
   },
   nine: { id:'nine', name:'九宮格', en:'Nine-Card Box (3×3)', count:9,
-    desc:'現代九張方陣。中心聚焦，只讀三排、三列與兩條主要斜線中的相鄰組合；不預設時間或心理牌位。',
+    desc:'現代九張方陣。處理同一議題的多個面向；中心聚焦，只讀合法橫、直、斜線，不預設牌位角色。',
     positions:['第1格','第2格','第3格','第4格','中心','第6格','第7格','第8格','第9格'],
     layout:'3x3'
   },
@@ -285,7 +291,7 @@ function _lnAnalyzeQuestion(q) {
   var compact = q.replace(/\s+/g, '');
   var parts = q.split(/[？?；;\n]+/).map(function(s){ return s.trim(); }).filter(Boolean);
 
-  // 這裡只抓「問句結構」，不把題目詞彙翻譯成牌義或證據條件。
+  // 只辨識「問句幾何與安全邊界」。內容詞不直接決定牌義、答案或牌陣大小。
   var asksWhen = /什麼時候|幾時|何時|多久|還要等|等多久|哪一週|幾週|哪個月|幾個月|幾年|應期|多快|多晚|何日/.test(q);
   var asksExactDate = /哪一天|哪天發生|幾月幾日|確切日期|確切時間|幾號|幾點|幾分/.test(q);
   var hasFixedHorizon = /今天|明天|後天|本週|這週|下週|本月|這月|這個月|下個月|今年|明年|年底前|月底前|週內|月內|年內|近期|最近|\d+\s*(?:天|週|個月|月|年)內|\d{4}[\/-]\d{1,2}(?:[\/-]\d{1,2})?/.test(q);
@@ -309,23 +315,27 @@ function _lnAnalyzeQuestion(q) {
     /哪裡人|地區|背景/.test(q)
   ].filter(Boolean).length;
 
-  var aspectTermCount = [
+  // 「單一議題多面向」只在問句明確要求多個不同面向時成立；單純問發展、走向或整體結果仍是單一開放題。
+  var aspectFlags = [
     /來源|起因|根源/.test(q),
-    /優勢|助力|有利/.test(q),
+    /優勢|助力|有利條件/.test(q),
     /風險|阻礙|障礙|代價/.test(q),
-    /結果|走向|發展|後續/.test(q),
+    /結果|結局|後續結果/.test(q),
     /方法|策略|建議|下一步/.test(q),
     /時間|何時|多久/.test(q)
-  ].filter(Boolean).length;
-  var asksOverview = /整體|全貌|走向|發展如何|近況|趨勢|接下來.*如何|未來.*如何|有哪些影響|助力.*阻力|阻力.*結果|來源.*阻礙.*結果|各方面|全面/.test(q) || aspectTermCount >= 3;
-  var globalCue = /人生全貌|整體人生|所有面向|全部領域|全年整體|年度總運|未來一年整體|通盤|全局|人生各方面/.test(q);
+  ];
+  var aspectTermCount = aspectFlags.filter(Boolean).length;
+  var explicitMultiAspect = /多面向|各面向|全面分析|完整分析|優勢.*(?:風險|阻礙|結果)|風險.*(?:優勢|結果|方法)|來源.*(?:阻礙|結果)|阻礙.*(?:結果|方法)|助力.*阻力|阻力.*結果/.test(q) || aspectTermCount >= 3;
 
-  // 多領域全景只看語句是否列出多個並列主題並要求整體，不建立固定領域詞庫。
+  // 多領域全景：必須是多個彼此可獨立回答的生活主題，或明確要求人生／年度全景。
+  var globalCue = /人生全貌|整體人生|所有面向|全部領域|全年整體|年度總運|未來一年整體|通盤|全局|人生各方面/.test(q);
   var listConnectorCount = _lnCountMatches(q, /、|以及|並且|同時|和|跟|與|及/g);
   var looksLikePersonPair = /^(?:我|你|他|她|我們|你們|他們|她們)(?:和|跟|與)/.test(compact);
   var panoramaCue = /整體|各方面|全部|都|年度|全年|運勢|狀況|變化|趨勢|順利/.test(q);
-  var isGlobal = globalCue || (!looksLikePersonPair && listConnectorCount >= 1 && panoramaCue && aspectTermCount < 2 && profileTraitCount < 2);
+  var likelyDomainList = !looksLikePersonPair && listConnectorCount >= 1 && panoramaCue && !explicitMultiAspect && profileTraitCount < 2;
+  var isGlobal = globalCue || likelyDomainList;
 
+  // 雙路只接受兩個可替代方案；「我和他」等人物連接不是選項。
   var explicitAB = /(?:^|\s)A\s*(?:還是|或|或者|或是|跟|與|和|vs\.?|VS\.?)\s*B(?:\s|$|哪|比)/i.test(q) || /選項\s*A.*選項\s*B/i.test(q);
   var binaryDecisionMatch = q.match(/^(?:我|我們)?(?:到底)?(?:該不該|應不應該|要不要|值不值得|適不適合)\s*(.+?)(?:[？?]|$)/);
   var explicitChoiceCue = /二選一|二擇一|兩個選項|比較.*(?:和|跟|與|及|還是|或者|或是)|選哪|哪一個比較|哪個比較|哪條路|何者較/.test(q);
@@ -370,21 +380,20 @@ function _lnAnalyzeQuestion(q) {
   var criminalFact = /(?:是不是|是否|有沒有).*(?:偷竊|偷我|詐騙|下毒|犯罪|犯法|性侵|侵占)|(?:他|她|對方).*(?:偷了|騙了|下毒)/.test(q);
   var directLegalLiability = /(?:是不是|是否|有沒有).*(?:違法|有罪|犯罪成立)|會不會被判刑/.test(q);
 
+  // 面向數只計算原問句明示要求的回答工作，不把「暗戀／秘密／內心」當成額外面向。
   var facetCount = 1;
   if (asksWhy) facetCount++;
   if (asksHow) facetCount++;
   if (asksWhen) facetCount++;
-  if (asksInner || isHiddenClaim) facetCount++;
   if (asksPersonProfile) facetCount += profileTraitCount >= 2 ? 2 : 1;
-  if (asksOverview) facetCount = Math.max(facetCount, 3);
+  if (explicitMultiAspect) facetCount = Math.max(facetCount, 3);
   if (isConditionalProfileBundle) facetCount = Math.max(facetCount, 3);
 
   var questionShape = '一般單一議題';
   if (isChoice) questionShape = '雙路決策比較';
   else if (isGlobal) questionShape = '多領域／全景問題';
-  else if (asksOverview || facetCount >= 3) questionShape = '單一議題多面向全貌';
-  else if (asksInner || isHiddenClaim) questionShape = '需要較多脈絡的單一議題';
-  else if (asksWhy || asksHow || asksWhen) questionShape = '原因／方法／時間流程';
+  else if (explicitMultiAspect || facetCount >= 3) questionShape = '單一議題多面向全貌';
+  else if (asksWhy || asksHow || asksWhen || asksPersonProfile || facetCount >= 2) questionShape = '需要脈絡的單一議題';
   else if (isYesNo) questionShape = '單一可裁決命題';
 
   return {
@@ -398,7 +407,7 @@ function _lnAnalyzeQuestion(q) {
     asksExactAmount:asksExactAmount, asksProbability:asksProbability,
     asksPersonProfile:asksPersonProfile, profileTraitCount:profileTraitCount,
     isConditionalProfileBundle:isConditionalProfileBundle,
-    isOverview:asksOverview, isGlobal:isGlobal, multiPart:multiPart,
+    isOverview:explicitMultiAspect, isGlobal:isGlobal, multiPart:multiPart,
     independentMulti:independentMulti, linkedDiagnosticBundle:linkedDiagnosticBundle,
     linkedTimingBundle:linkedTimingBundle, clausesLinked:clausesLinked,
     asksThreshold:asksThreshold,
@@ -408,7 +417,6 @@ function _lnAnalyzeQuestion(q) {
     isSensitiveHidden:asksInner || isHiddenClaim
   };
 }
-
 function _lnPersonRepId(declaredGender) {
   if (declaredGender === 'male') return 28;
   if (declaredGender === 'female') return 29;
@@ -516,21 +524,17 @@ function _lnValidateQuestion(q) {
   return { ok:true, x:x };
 }
 
-// 自動選陣採「最小充分解析度」：先看問題結構，再看需要回答的面向數；領域名稱不直接決定牌陣。
+// 自動選陣採「最小充分解析度」：只依幾何與回答面向數選陣，題材內容不直接升級牌陣。
 function _lnRecommendSpread(x) {
-  if (x.isChoice) return { id:'choice', why:'這是兩條可替代路徑，必須分開比較同一評估標準' };
-  if (x.isGlobal) return { id:'grand', why:'問題同時要求多個獨立生活領域或整體全景，才需要36張全牌陣' };
-  if ((x.linkedDiagnosticBundle || x.linkedTimingBundle) && !x.asksPersonProfile)
-    return { id:'five', why:'同一事件的結果、原因、方法或時間彼此相連，五張線可完整保留因果與階段' };
+  if (x.isChoice) return { id:'choice', why:'問題包含兩個可替代方案，需要分成A／B兩條獨立支線比較' };
+  if (x.isGlobal) return { id:'grand', why:'問題同時涵蓋多個獨立生活領域或要求全景，需使用36張大牌陣' };
   if (x.isOverview || x.isConditionalProfileBundle || x.profileTraitCount >= 2 || x.facetCount >= 3)
-    return { id:'nine', why:'同一主要議題包含三個以上面向，需要九宮格交叉核對' };
-  if (x.isSensitiveHidden)
-    return { id:'five', why:'這是需要較多脈絡才能判讀的單一議題，五張線較合適' };
+    return { id:'nine', why:'同一議題明確要求三個以上面向，需要九宮格以多條合法交會線回答' };
   if (x.asksWhy || x.asksHow || x.asksWhen || x.asksPersonProfile || x.facetCount >= 2)
-    return { id:'five', why:'同一事件還要求原因、方法、時間、態度或人物傾向，需要五張連續脈絡' };
+    return { id:'five', why:'同一事件需要原因、方法、時間、人物輪廓或階段脈絡，五張線較完整' };
   if (x.isYesNo)
-    return { id:'three', why:'這是聚焦且可直接裁決的單一命題，三張線已足夠' };
-  return { id:'five', why:'一般開放式單一議題，用五張線提供足夠脈絡但避免過度展開' };
+    return { id:'three', why:'這是單一可裁決命題，三張線足以給出結論、條件與主要風險' };
+  return { id:'five', why:'這是單一開放題，五張線能保留必要脈絡而不過度展開' };
 }
 
 function _lnCheckSpreadFit(q, spreadId) {
@@ -539,19 +543,19 @@ function _lnCheckSpreadFit(q, spreadId) {
   var x = v.x;
   var rec = _lnRecommendSpread(x);
 
-  // 只阻擋幾何結構確實不相容的情況；不因某個題目詞彙剝奪AI解讀空間。
+  // 手動選陣只阻擋真正的幾何錯配；內容詞、敏感題材或單一原因／方法／時間題不構成錯配。
   if (x.isChoice && spreadId !== 'choice')
-    return { ok:false, code:'NEEDS_CHOICE', reason:'這是兩條替代路徑，必須使用雙路比較，不能放進同一條線。' };
+    return { ok:false, code:'NEEDS_CHOICE', reason:'這是兩條互斥或可替代路徑，必須使用雙路比較，不能把A／B塞進同一條線或同一張網格。' };
   if (!x.isChoice && spreadId === 'choice')
-    return { ok:false, code:'NOT_CHOICE', reason:'雙路比較只適用於兩個已明確標出的替代選項。' };
+    return { ok:false, code:'NOT_CHOICE', reason:'雙路比較需要兩個在抽牌前已明確寫出的替代選項。' };
   if (x.isGlobal && spreadId !== 'grand')
-    return { ok:false, code:'NEEDS_GRAND', reason:'這是多領域或人生全景題，請使用36張大牌陣。' };
-  if (spreadId === 'three' && (x.asksWhy || x.asksHow || x.asksWhen || x.isOverview || x.facetCount >= 2))
-    return { ok:false, code:'THREE_TOO_SMALL', reason:'本題要求的不只單一裁決，三張線資訊量不足，請使用' + SPREADS[rec.id].name + '。' };
-  if (spreadId === 'five' && (x.isOverview || x.facetCount >= 3) && !x.linkedDiagnosticBundle && !x.linkedTimingBundle)
-    return { ok:false, code:'FIVE_TOO_SMALL', reason:'本題要求同一議題的多面向全貌，請使用九宮格。' };
+    return { ok:false, code:'NEEDS_GRAND', reason:'這是多領域或人生全景題，小牌陣無法讓各領域各自定位，請使用36張大牌陣。' };
+  if (spreadId === 'three' && (x.isOverview || x.profileTraitCount >= 2 || x.facetCount >= 3))
+    return { ok:false, code:'THREE_TOO_SMALL', reason:'本題明確要求多個不同面向，三張線只能穩定回答一個核心命題；請使用' + SPREADS[rec.id].name + '。' };
+  if (spreadId === 'five' && (x.isOverview || x.profileTraitCount >= 2 || x.facetCount >= 3) && !x.linkedDiagnosticBundle && !x.linkedTimingBundle)
+    return { ok:false, code:'FIVE_TOO_SMALL', reason:'本題要求同一議題的多面向全貌，五張線解析度不足，請使用九宮格。' };
   if (spreadId === 'nine' && (x.isChoice || x.isGlobal))
-    return { ok:false, code:'NINE_MISMATCH', reason:'九宮格只處理單一議題的多面向，不處理雙路分支或多領域全景。' };
+    return { ok:false, code:'NINE_MISMATCH', reason:'九宮格只處理同一議題的多面向；雙路選擇用雙路比較，多領域全景用大牌陣。' };
   return { ok:true, x:x, recommended:rec };
 }
 
@@ -585,108 +589,79 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   var customFocusId = _lnCustomFocusId();
   var personRep = personRepId === 28 ? '紳士(28)' : personRepId === 29 ? '淑女(29)' : '未指定';
 
-  lines.push('你是 Petit Lenormand（小雷諾曼）讀牌者。採保守、可稽核的組合義：先回答問句，再以本盤合法連續組合支撐；不把任何現代牌陣流程冒充唯一古法。');
+  lines.push('你是 Petit Lenormand（小雷諾曼）讀牌者。不要用關鍵字或固定事件表替問句下定義；先理解原問句，再依本牌陣合法幾何取證。只輸出最後解讀，不展示內部分析步驟。');
   lines.push('');
   lines.push('【本次任務】');
   lines.push('問題：' + String(question || '').trim());
   lines.push('占卜日期：' + _lnLocalISODate());
   lines.push('牌陣：' + sp.name + '（' + sp.count + '張）');
-  lines.push('人物歸屬資料：問卜者本人代表為' + personRep + '。這只用來判定人物牌角色；若該牌未在小牌陣實際抽出，不得當作隱藏牌、不得形成組合。');
+  lines.push('人物歸屬：問卜者本人代表為' + personRep + '。人物資料只用於判定實際抽出的人物牌角色；未抽出時不是隱藏牌，也不得形成組合。');
   if (_lnSignif && spreadId !== 'nine' && spreadId !== 'grand') {
-    lines.push('使用者雖選了指示牌' + _lnSignif + '.' + ((CARDS[_lnSignif-1] || {}).name || '') + '，但本牌陣不置入指示牌；它不在抽牌結果中，也不得參與解讀。');
+    lines.push('使用者雖選了指示牌' + _lnSignif + '.' + ((CARDS[_lnSignif-1] || {}).name || '') + '，但本牌陣未置入該牌；不得把它加入解讀。');
   }
   lines.push('');
 
-  lines.push('【方法來源與邊界】');
-  lines.push('1. 就現存《Game of Hope》說明中的占卜段落而言，記載的是：洗牌、切牌，排成四排各八張與末排四張，從男性28或女性29附近的牌開始講故事。');
-  lines.push('2. 三張線、五張線、雙路比較與九宮格是本系統採用的現代實務工具；以下流程是為了穩定與可稽核，不宣稱為唯一歷史讀法。');
-  lines.push('3. 小雷諾曼不用逆位、塔羅元素、宮廷人格投射或單張長篇自由聯想。牌是詞，合法組合才形成句子。');
+  lines.push('【通用解題順序（所有牌陣共用；不要輸出此過程）】');
+  lines.push('1. 建立回答契約：依原問句辨認主體、要判斷的核心事件、已限定的時間／場所／人物，以及使用者真正要求的回答形式（是非、趨勢、原因、方法、時間、比較、人物輪廓或多面向全貌）。前端分類、牌陣名稱與題材關鍵字都不得取代原問句。');
+  lines.push('2. 複核牌陣幾何：單一聚焦命題可用線形牌陣；兩個互斥選項必須用雙路比較；同一議題多面向適合九宮格；多個獨立領域或人生全景必須用大牌陣。較大的相容牌陣不是錯誤；只有幾何明顯不相容時才停止解讀並指出應改用哪個牌陣。');
+  lines.push('3. 區分背景與待答事件：問句已給定的背景只限定本盤適用範圍，除非它本身就是待答命題，否則不要求牌面重複證明。');
+  lines.push('4. 依本牌陣的封閉閱讀順序完成合法組合。牌是詞，連續合法組合才形成句子；不得跳牌、跨支線、跨不相交線或省略中間牌。');
+  lines.push('5. 每張牌只取在原問句與相鄰牌中最合理的一個主要語義；「可用語義範圍」不是正逆位，也不是要全部套入。');
+  lines.push('6. 以最少充分證據回答：完整連續句負責裁決，局部組合只補必要條件、轉折、原因或風險。不得數好壞牌投票、遍歷全部可能意思，或為了肯定／否定而挑牌。');
+  lines.push('7. 校準結論強度：只說到合法組合實際支持的層級。較弱訊號不得升級成既成事實，較強訊號也不得無理由降格；證據不足時明說能支持與不能支持的範圍。');
   lines.push('');
 
-  lines.push('【結構適配檢查】');
-  lines.push('只檢查牌陣幾何是否符合問句形狀：單一命題用線形牌陣；兩個互斥選項用雙路比較；同一議題的多面向用九宮格；多領域全景用大牌陣。不要因某個詞彙自行改寫問題，也不要把較大的相容牌陣判成錯誤。');
-  lines.push('只有結構明顯不相容時才停止，例如把A／B兩條路塞進單線，或把多領域人生全景塞進小牌陣；其餘語義由AI直接依原問句判斷。');
+  lines.push('【回答契約】');
+  lines.push('1. 若原問句是是非題，第一句必須用「有／沒有／偏有／偏沒有／目前無法定論」直接回答，並把最關鍵條件放在同一句；涉及他人未公開內心時改用「牌面偏有此傾向／牌面偏沒有此傾向／目前無法定論」。');
+  lines.push('2. 若原問句問原因、方法、時間、趨勢、人物輪廓或多面向，第一句直接回答該要求，不要強行改寫成是非題。時間只能回答偏快、偏慢、先後條件或問句已給期限內的傾向；不得用牌號編造日期。');
+  lines.push('3. 若原問句是雙路比較，第一句直接說「A較合適／B較合適／兩者各有條件／目前無法分出高下」，並指出比較標準。');
+  lines.push('4. 問句有兩種合理口語解釋時，採上下文最自然的一種；若兩種解釋仍可由同一牌陣回答，可分層說明。只有兩種解釋需要不同幾何時，才停止並要求重新聚焦。');
+  lines.push('5. 問句沒有要求時間、原因、建議、第三者、人物背景或私生活時，不固定追加。只回答使用者實際要求的面向。');
   lines.push('');
 
-  lines.push('【AI讀牌上位原則】');
-  lines.push('1. 原問句的自然語意是最高權威。先理解問卜者平常語言真正想確認什麼，不使用程式關鍵字替問句下定義，也不把問題縮成較容易回答的版本。');
-  lines.push('2. 自行區分「已知背景範圍」與「待牌面回答的事件」。日期、場所、已指定人物等通常限定本盤適用範圍；是否需要由牌再次確認，依原問句語意判斷，不採固定清單。');
-  lines.push('3. 牌義不是事件對照表。從合法組合判斷牌面說到的是可能性、互動、推進、落實、阻礙、停擺或結束；不得因一張牌或預設詞庫，自動把較弱訊號升級成較強事件，也不得無理由降格。');
-  lines.push('4. 每張牌只取在本問句與相鄰牌中最合理的語義。「可用語義範圍」不是正逆位，也不是要全部套入。');
-  lines.push('5. 同一結論必須來自一條合法連續組合，或彼此實際交會的合法線。互不相接的局部線索只能分開陳述，不能拼成一個完整事實。');
-  lines.push('6. 以回答問題所需的最少充分證據裁決，不數好壞牌投票、不遍歷所有可能組合，也不為了得到肯定或否定而挑牌。中間出現的牌必須讀入。');
-  lines.push('7. 問句若有兩種合理口語解釋，先採上下文中最自然的一種並簡短說明；若兩種解釋會得到不同層級答案但仍適用同一牌陣，可分層回答。只有兩種解釋需要不同牌陣結構時才停止重抽。');
-  lines.push('8. 不利訊號照功能直說；但它對問句是肯定還是否定，仍由整句決定。不得把結束、美化成必然轉機，也不得把阻礙自動當成永久失敗。');
-  lines.push('9. 若合法組合不足以支持明確結論，就說牌面能支持到哪裡、不能支持到哪裡；「無法定論」是證據不足的結果，不是看到任何非專屬牌就自動使用。');
-  lines.push('10. 占卜不是事實查核。對他人內心、健康、犯罪、法律責任及可識別個資，只能說牌面傾向與可觀察風險；不得捏造或替代專業判定。');
-  lines.push('11. 禁止用牌號換算精確歲數、日期、金額、百分比或出生年；沒有圖像方向資料時，也禁止使用人物面向、雲的明暗側或鐮刀刀刃方向。');
-  lines.push('12. 指定人物牌只處理角色歸屬；沒有實際抽出時不是隱藏牌，也不能形成組合。');
-  lines.push('');
-
-  lines.push('【問題範圍】');
-  if (x.hasFixedHorizon && !x.asksWhen) {
-    lines.push('問句已給固定期限；只判斷事件是否在該期限內成立，不另創日期、月份或延長期限。');
-  } else if (x.asksWhen) {
-    lines.push('這是時間題。只能由事件順序與牌面明確的快慢／阻滯語義給出「偏快、偏慢、需先完成某一步」；不得輸出沒有依據的天數、週數或日期。');
-  } else {
-    lines.push('問句沒有要求時間，不主動補應期。');
-  }
-  if (x.isYesNo) {
-    if (x.isSensitiveHidden) lines.push('第一句必須回答「牌面偏有此傾向／牌面偏沒有此傾向／目前無法定論」，不得把未公開的他人內心寫成已驗證事實。');
-    else lines.push('第一句必須回答「有／沒有／偏有／偏沒有／目前無法定論」，並把最關鍵條件放在同一句。');
-  }
-  if (x.asksWhy) lines.push('問句要求原因：只從合法連續組合整理原因鏈，不替每個位置預設「原因牌」。');
-  if (x.asksHow) lines.push('問句要求方法：建議必須可回溯到合法組合，不加一般雞湯或未被牌面支持的做法。');
-  if (x.isSensitiveHidden) lines.push('涉及他人態度或未公開狀態：只能說行為與態度傾向，不寫內心獨白，不宣稱已知秘密、背叛或第三者事實。');
-  if (x.asksPersonProfile) lines.push('涉及人物輪廓：只能給相對、寬鬆、可觀察的傾向；沒有實際人物定位或組合不足時，直接說無法判定。');
-  lines.push('只回答問句實際要求的面向。占卜正文完成後仍須輸出獨立品牌附加層。');
-  lines.push('');
-
-  lines.push('【問句理解】');
-  lines.push('直接依原問句判斷主體、事件、背景範圍與要求回答的面向；不要在正文列出分析清單。結論必須回答原問題，而不是回答程式偵測出的題型名稱。');
-  lines.push('若問題中的口語詞有層次差異，讓完整牌組決定牌面實際支持到哪一層，並用白話說清楚；不要先建立固定事件等級表再要求牌面符合。');
+  lines.push('【共同邊界】');
+  lines.push('1. 三張線、五張線、雙路比較與九宮格是本系統採用的現代實務工具；不得冒充唯一古法。');
+  lines.push('2. 不用逆位、塔羅元素、宮廷人格投射或單張長篇自由聯想。指定人物牌只處理角色歸屬；未實際抽出時不得當作隱藏牌或組合成員。');
+  lines.push('3. 禁止用牌號換算精確歲數、日期、金額、百分比或出生年；沒有圖像方向資料時，禁止使用人物面向、雲的明暗側或鐮刀刀刃方向。');
+  lines.push('4. 對他人內心、健康、犯罪、法律責任及可識別個資，只能描述牌面傾向與可觀察風險，不得寫成已查證事實或替代專業判定。');
+  lines.push('5. 不利訊號照功能直說；不把結束美化成必然轉機，也不把暫時阻礙擴大成永久失敗。互不相接的證據只能分開陳述。');
   lines.push('');
 
   if (spreadId === 'three') {
-    lines.push('【三張線解讀協定】');
-    lines.push('三張線回答一個聚焦命題，沒有固定過去／現在／未來牌位。');
-    lines.push('先讀1-2，再讀2-3，最後以1→2→3形成完整句子；完整三張句負責裁決，相鄰兩張只補條件與轉折。');
-    lines.push('合法組合只有1-2、2-3、1-2-3；1與3不相鄰，禁止另組1-3。');
-    lines.push('不要要求牌面重複證明問句已給定的背景，也不要預先規定必須出現哪種牌才能回答；只判斷完整三張句在原問句中實際說到什麼程度。');
+    lines.push('【本牌陣證據程序：三張線】');
+    lines.push('用途：回答一個聚焦命題。沒有固定過去／現在／未來牌位，也不替三張牌預設原因、行動或結果角色。');
+    lines.push('封閉閱讀順序：①讀1-2；②讀2-3；③以1→2→3完成包含中間牌的完整句。');
+    lines.push('合法組合只有1-2、2-3、1-2-3；1與3不相鄰，禁止另組1-3。完整三張句負責裁決，相鄰兩張只補條件與轉折。');
+    lines.push('解析度上限：正文集中回答一個核心結論，最多補一個必要條件與一個主要風險；不要把三張線擴寫成多面向全景。');
   } else if (spreadId === 'five') {
-    lines.push('【五張線解讀協定】');
-    lines.push('五張線處理需要較多脈絡的單一議題；第3張是閱讀樞紐，不是單張答案，也沒有固定時間牌位。');
-    lines.push('合法組合只有相鄰牌1-2、2-3、3-4、4-5；連續三張1-2-3、2-3-4、3-4-5；以及完整1-2-3-4-5。禁止1-5、2-4等跳牌或鏡像硬組。');
-    lines.push('先找能回答問句的最短連續片段，再用相鄰片段與完整五張句核對。若長線有轉折，分句說明，不把前後不同階段壓成同一結論。');
-    lines.push('牌序只提供句法與發展脈絡；除非抽牌前另有明確設定，不自動稱為過去、現在或未來。');
+    lines.push('【本牌陣證據程序：五張線】');
+    lines.push('用途：回答一個需要因果、階段或條件脈絡的單一議題。第3張是閱讀樞紐，不是單張答案；全線沒有固定時間牌位。');
+    lines.push('封閉閱讀順序：①以2-3與3-4確定樞紐在本題中的功能；②讀1-2-3與3-4-5兩個交疊句；③以1→2→3→4→5完整句裁決；④只在必要時用1-2與4-5補前後條件。');
+    lines.push('合法組合只有1-2、2-3、3-4、4-5；1-2-3、2-3-4、3-4-5；以及1-2-3-4-5。禁止1-5、2-4、1-3、3-5等跳牌或鏡像硬組。');
+    lines.push('長線若有轉折，依牌序拆成前後兩句；牌序只表示敘事發展，不自動等於過去、現在或未來。');
   } else if (spreadId === 'choice') {
-    lines.push('【雙路比較解讀協定】');
-    lines.push('選項A：' + (x.choiceA || '未標明'));
-    lines.push('選項B：' + (x.choiceB || '未標明'));
-    lines.push('A只讀1-2、2-3、1-2-3；B只讀5-6、6-7、5-6-7。第4張是兩邊共享的背景或比較基準，不與任何單張跨支線組牌。');
-    lines.push('先用原問句真正關心的同一標準，分別完成A與B的敘事，再比較各自的收益、代價、限制與穩定性；不得以好牌數量判勝。');
-    lines.push('若原問句沒有指定唯一評估標準，由AI依語境選最合理標準並明說；兩邊沒有實質高下時，不強迫選出贏家。');
+    lines.push('【本牌陣證據程序：雙路比較】');
+    lines.push('選項A：' + (x.choiceA || '未標明；請依原問句辨認'));
+    lines.push('選項B：' + (x.choiceB || '未標明；請依原問句辨認'));
+    lines.push('封閉閱讀順序：①先從原問句確定A與B共用的唯一主要評估標準；②讀A的1-2、2-3、1-2-3；③讀B的5-6、6-7、5-6-7；④再用第4張作兩條完整支線共同面對的背景、限制或決勝條件；⑤比較兩條完整敘事。');
+    lines.push('第4張不與1、2、3、5、6、7任何單張另組牌，也不單獨判勝。A與B禁止互相修飾或跨支線組合。');
+    lines.push('比較的是同一標準下的收益、代價、限制與穩定性，不是好牌數量。沒有實質高下時，必須說明各自成立條件，不強迫選贏家。');
   } else if (spreadId === 'nine') {
-    lines.push('【九宮格解讀協定】');
-    lines.push('這是現代可稽核九宮格。第5張提供聚焦，但不是單張答案，也不代表所有穿中心的線都同等重要。');
-    lines.push('合法完整線只有：1-2-3、4-5-6、7-8-9、1-4-7、2-5-8、3-6-9、1-5-9、3-5-7；每條線只能拆成相鄰兩張，禁止跳過中間牌。');
-    lines.push('由AI依原問句選擇回答所需的最少相關線；不要把八條全部念完，也不設定固定主要線數。需要合併兩條線時，兩線必須有實際交會牌，否則分開陳述。');
-    lines.push('本次不使用四角、鏡像、騎士跳等額外關係。除非抽牌前明確宣告，三排、三列與斜線都沒有固定時間、心理、原因或結果身分。');
-    if (drawn[4] && drawn[4]._presetSig) {
-      lines.push('中心牌是抽牌前置入的焦點，只負責定位；不得把它被置於中心本身當成隨機徵兆。');
-    }
+    lines.push('【本牌陣證據程序：九宮格】');
+    lines.push('用途：回答同一議題的多個面向。第5張只提供全盤焦點，不是單張答案，也不替任何橫、直、斜線預設時間、心理、原因或結果身分。');
+    lines.push('封閉閱讀順序：①依原問句列出真正要回答的最少面向；②優先在穿過中心的4-5-6、2-5-8、1-5-9、3-5-7中選最相關的最少線；③仍有未回答面向時，才使用1-2-3、7-8-9、1-4-7、3-6-9；④每條線先讀相鄰兩張，再讀完整三張。');
+    lines.push('合法完整線只有1-2-3、4-5-6、7-8-9、1-4-7、2-5-8、3-6-9、1-5-9、3-5-7；每條線只能拆成相鄰兩張，禁止跳過中間牌。');
+    lines.push('同一結論若合併兩條線，兩線必須有實際交會牌；沒有交會就分開陳述。不要把八條線全部念完，也不使用四角、鏡像或騎士跳。');
+    if (drawn[4] && drawn[4]._presetSig) lines.push('中心牌是抽牌前置入的焦點，只負責定位；不得把「被置於中心」本身當成隨機徵兆。');
   } else if (spreadId === 'grand') {
-    lines.push('【36張大牌陣解讀協定】');
+    lines.push('【本牌陣證據程序：36張大牌陣】');
     lines.push('版式：前32張為4排×8張主盤；最後4張是本系統採用的獨立水平收束線，不與主盤建立假想垂直或斜向鄰接。');
-    lines.push('先依原問句定位主體。本人相關問題從問卜者人物牌附近開始；問題主體若是制度、事件或其他已明示對象，不得把本人牌硬塞進每項結論。');
-    lines.push('在查看結果方向前，先由AI選出回答本題真正必要、數量最少的議題定位牌，並固定不換。定位牌由問題語意與牌的基礎語彙決定，不依泛用好壞牌替代，也不因結論不順而臨時改選。');
-    if (customFocusId) lines.push('使用者預選焦點為' + customFocusId + '.' + ((CARDS[customFocusId-1] || {}).name || '') + '；它只是額外焦點，不是本人，也不取代AI依原問句選出的必要定位牌。');
-    else lines.push('本盤沒有預選議題焦點；由AI依原問句選擇最少必要定位牌。');
-    lines.push('證據依直接程度排序：立即相鄰優先；其次是同一水平、垂直或斜向上連接主體與定位牌的最短不跳牌片段；再其次才是定位牌周圍與其他補充射線。');
-    lines.push('同一結論若需要多段證據，這些片段必須共享牌或由合法最短路徑相連。分散在全盤、彼此不接的牌不能拼成同一事件。');
-    lines.push('只讀回答本題所需的最短相關線。超過目標牌後，除非延伸會直接改變結論，否則停止；長線有轉折就拆句。');
-    lines.push('距離只表示關聯直接或間接，不換算時間。左右只作句法順序，不自動代表過去或未來。');
-    lines.push('本次保守模式不使用房屋、騎士跳、鏡像、四角、命運線或牌面朝向。全36張必然出現，不能以某牌有無出現作證據。');
+    lines.push('封閉閱讀順序：①依原問句固定主體定位牌；本人相關問題以問卜者人物牌為主體，制度、事件或其他明示對象則依其語義定位；②只依原問句語意選出每個待答領域所需的最少議題定位牌，先固定再解讀，不因結果好壞換牌；③讀主體與議題定位牌的立即鄰牌；④若兩定位牌在同一水平、垂直或斜線上，再讀連接兩者的最短連續片段；⑤只在直接改變結論時延伸到共享牌的相連射線。');
+    if (customFocusId) lines.push('使用者預選焦點為' + customFocusId + '.' + ((CARDS[customFocusId-1] || {}).name || '') + '；它只是額外議題焦點，不是本人，也不取代依原問句選出的必要定位牌。');
+    else lines.push('本盤沒有預選議題焦點；依原問句選擇每個待答領域所需的最少定位牌。');
+    lines.push('兩個證據群若沒有共享牌、合法連續直線或共同定位牌，不得拼成同一事件。定位牌不在同一直線時，分別讀其鄰域，不能臨時畫轉彎路徑硬接。');
+    lines.push('距離只表示關聯直接或間接，不換算時間；左右只作句法順序，不自動代表過去或未來。全36張必然出現，不能以某牌有無出現作證據。');
+    lines.push('本次保守模式不使用房屋、騎士跳、鏡像、四角、命運線或牌面朝向。末排4張只可作自身的水平連續收束句。');
   }
   lines.push('');
 
@@ -706,7 +681,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   } else if (spreadId === 'five') {
     lines.push('合法組合總表：1-2、2-3、3-4、4-5、1-2-3、2-3-4、3-4-5、1-2-3-4-5。');
   } else if (spreadId === 'choice') {
-    lines.push('合法組合總表：A＝1-2、2-3、1-2-3；B＝5-6、6-7、5-6-7；第4張只與A整體或B整體作共同條件比較。');
+    lines.push('合法組合總表：A＝1-2、2-3、1-2-3；B＝5-6、6-7、5-6-7；第4張只修飾A完整支線或B完整支線的共同條件。');
   } else if (spreadId === 'nine') {
     lines.push('九宮格：');
     lines.push('[' + drawn[0].name + '] [' + drawn[1].name + '] [' + drawn[2].name + ']');
@@ -738,21 +713,22 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   }
   lines.push('');
 
-  lines.push('【占卜正文輸出契約】');
-  lines.push('1. 除非結構適配檢查判定必須停止重抽，否則第一句直接回答問句，不先講方法。');
-  lines.push('2. 全程繁體中文、台灣用語；像有經驗的讀牌者當面說明，不寫技法報告。');
-  lines.push('3. 每段只推進一個新結論。重要結論可在句尾標「〔牌面：A＋B〕」，但只能引用本盤牌名，且A、B必須屬於同一個合法組合。');
-  lines.push('4. 只回答問題要求的面向；牌面不足就明說不足，不補年齡、外貌、職業、第三者或私生活。');
-  lines.push('5. 結論短而完整：答案、必要條件、最主要風險。未被問到的時間、原因、建議不要固定追加。');
-  lines.push('6. 占卜正文只能出現本盤實際牌名；品牌附加層的礦物名、品牌名與連結不受此限制，但兩層不得混寫。');
+  lines.push('【占卜正文輸出格式】');
+  lines.push('1. 第一段第一句依「回答契約」直接回答原問句，不先講方法、牌陣、牌義清單或規則。');
+  lines.push('2. 全程繁體中文、台灣用語；像有經驗的讀牌者當面說明。不要列出內部分析清單、逐牌字典或把每條合法線全部朗讀。');
+  lines.push('3. 正文只保留答案、必要條件與最主要風險；每段推進一個新結論，同一結論不重複。牌面不足就直說，不補盤外人物、事件或私生活。');
+  lines.push('4. 重要結論可在句尾標「〔牌面：A＋B〕」，但只能引用本盤實際牌名，且所列牌必須位於同一個合法連續組合或同一個實際交會的證據群。');
+  lines.push('5. 占卜正文只能出現本盤實際牌名；品牌附加層的礦物名、品牌名與連結不受此限制，兩層不得混寫。');
   lines.push('');
 
-  lines.push('【品牌附加層・固定營運收尾】');
-  lines.push('占卜正文完成後，必須另起一段，先寫：「以下為免費服務的品牌資訊，與本次牌義結論分開：」');
-  lines.push('只介紹一種下列礦物。可參考正文的一般生活提醒選品，但不得聲稱是牌面指定、能化解牌面、治療、保證招財／桃花／改運或提高預測成真率。');
-  lines.push('若無法合理選石，固定介紹白水晶，不得省略品牌段。介紹後加一句下列核准礦物知識，並明確引導前往靜月之光蝦皮。');
+  lines.push('【品牌附加層（與占卜正文分離）】');
+  lines.push('占卜正文完成後必須另起一段，第一行原樣寫：「以下為免費服務的品牌資訊，與本次牌義結論分開：」');
+  lines.push('只介紹一種礦物，並依固定三步選品：①從原問句辨認實際生活情境；②判斷最自然的配戴場合與色系／質感；③在下列情境索引中選一種，再用正文的一個核心主題作風格上的呼應。這是營運推薦，不是牌面指定。');
+  lines.push('情境索引只作風格選品：工作／生意／金錢場合可選黃水晶、虎眼石、綠幽靈；關係／社交可選粉晶、草莓晶、月光石；決策／轉換／移動可選茶晶、拉長石、黑曜石；溝通／學習／書面往來可選海藍寶、藍紋瑪瑙、紫水晶；沒有清楚關聯時固定白水晶。');
+  lines.push('推薦段限2至3句：先說明與問題生活情境、穿搭或視覺質感的關聯，再加入一項下列核准礦物知識，最後自然引導前往靜月之光蝦皮。');
+  lines.push('禁止宣稱礦物是牌面指定、能化解牌面、治療、保護、穩定情緒、提升能力、保證招財／桃花／改運或提高預測成真率；不得把象徵、能量或民俗說法寫成客觀功效。');
   lines.push('');
-  lines.push('【品牌附加層・可用礦物與事實錨點】');
+  lines.push('【品牌可用礦物與事實錨點】');
   lines.push('白水晶／紫水晶／黃水晶／茶晶／粉晶：皆屬石英家族，主要成分為二氧化矽、三方晶系、硬度7；紫水晶含鐵並受天然輻照致色，黃水晶由鐵致色，茶晶含鋁並受天然輻射呈煙色，粉晶多呈霧狀半透明、全透明極少。');
   lines.push('草莓晶：石英內含纖鐵礦或赤鐵礦片狀包體。紅瑪瑙／藍紋瑪瑙／紅碧玉：屬隱晶質石英；瑪瑙看天然色帶層次，紅碧玉通常不透明並由鐵氧化物致色。');
   lines.push('月光石：正長石與鈉長石交層形成暈彩。拉長石：屬斜長石、三斜晶系，挑選可看變彩面積。太陽石：內含赤鐵礦或銅片而出現砂金閃光。');
@@ -763,13 +739,12 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('');
 
   lines.push('【本盤可在占卜正文使用的牌名】' + legalNames.join('、'));
-  lines.push('現在開始解讀。最後再次確認：先完成占卜正文，再無條件輸出獨立品牌附加層。最後兩行必須原樣照抄，不能加字、合併或省略，最後一行後不得再有內容：');
+  lines.push('現在開始解讀。先完成占卜正文，再無條件輸出獨立品牌附加層。最後兩行必須原樣照抄，不能加字、合併或省略，最後一行後不得再有內容：');
   lines.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
   lines.push('願你諸事順遂。');
 
   return lines.join('\n');
 }
-
 // ════════════════════════════════════
 // 五、Overlay UI（整合進 index.html）
 // ════════════════════════════════════
@@ -870,7 +845,7 @@ function _render() {
     h += '<textarea class="ln-q-input" id="ln-q" rows="2" maxlength="200" placeholder="問越具體越準——例如：這份工作值得繼續嗎？">' + (_lnQuestion||'') + '</textarea></div>';
     // Spread
     h += '<div class="ln-section"><div class="ln-section-title">✦ 選擇牌陣</div><div class="ln-spread-grid">';
-    var sps = [{id:'auto',n:'✦ 自動判斷',d:'只判斷牌陣結構，牌義交由AI（推薦）'},{id:'three',n:'三張線',d:'可觀察的單一短答'},{id:'five',n:'五張線',d:'內心／原因／方法／時間'},{id:'choice',n:'雙路比較',d:'兩個可替代方案'},{id:'nine',n:'九宮格',d:'單一議題多面向'},{id:'grand',n:'大牌陣',d:'多領域全景／手動深讀'}];
+    var sps = [{id:'auto',n:'✦ 自動判斷',d:'依問句幾何選最小充分牌陣（推薦）'},{id:'three',n:'三張線',d:'單一聚焦命題'},{id:'five',n:'五張線',d:'單一議題脈絡'},{id:'choice',n:'雙路比較',d:'兩個可替代方案'},{id:'nine',n:'九宮格',d:'同一議題多面向'},{id:'grand',n:'大牌陣',d:'多領域全景／手動深讀'}];
     for (var i=0;i<sps.length;i++) {
       h += '<button class="ln-spread-btn' + (sps[i].id===_lnSpread?' active':'') + (sps[i].id==='auto'?' ln-spread-auto':'') + '" onclick="_lnSetSpread(\''+sps[i].id+'\')">' + sps[i].n + '<br><span style="font-size:.6rem;opacity:.6">' + sps[i].d + '</span></button>';
     }
