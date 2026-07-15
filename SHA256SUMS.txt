@@ -1,0 +1,14 @@
+8904a7e9fe8287d5dab905ffa6554cfcc92377096948e0503d635dd388b0c234  ./JS/ai-analysis.js
+c9a856e37158dc717c46107ccedd98892268f26891d899016f44797d45a3e7c8  ./JS/prompt-export.js
+3bc93a073d39809ec618fd022ff24fc87c294c052d2fb61f850bb14a01284199  ./JS/selftest-core.js
+c0410c11af68d48e92e2970058d04436b295622d428687392a861e7c24871488  ./JS/tarot-semantic-engine.js
+ba4a20446837163732eeec7b54fcee0e6f8f17bc41f611ffd17fae1ae4bcaa12  ./JS/tarot_upgrade.js
+908647432b17464f2ec95045dec013be2b30cf83a844d3f1cdb3bebaad0c36b6  ./TAROT-V90-ROOT-NOTES.txt
+3a0128195fa93efc375289585442dc2252af1baefb52dcdc390c951e1ca85838  ./TEST-RESULTS.txt
+66d2fa748a63bfd132a96139044f3f95dd2f7a72dd268df66511b225146459c2  ./index.html
+4e7915fb4e533a4d78629fbc11e3534a547f9d4e48180023a6c74e16ac3f720a  ./selftest.html
+b21c2702c1bcb8ca275360598ad73de8f2ed522ef68830ac21fdfdd660b5de8c  ./tests/tarot-v88-all-spreads-root.test.js
+f0f6d4ad6f5a27523bd22e0a40316a1ae393e87640cc8552fa19fee2db319d94  ./tests/tarot-v89-observation-engine.test.js
+8d0fbf8f136f4f3098dba3674e0daea7373a82405356280ee445a19abb1f2e32  ./tests/tarot-v90-all.test.js
+54669258b48c4b7ae666544fbe9771b140f5cc86d8349625b20d2c8387851bda  ./tests/tarot-v90-metamorphic.test.js
+9626503554a35e143cdfee89f1da95afe1ddf9cba84875dcdb47e099e2c50f6a  ./tests/tarot-v90-root-compiler.test.js

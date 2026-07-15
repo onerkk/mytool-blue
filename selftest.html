@@ -114,21 +114,49 @@
       } catch (e) { report('④多領域守門', '函式抽取執行', false, String(e).slice(0, 80)); }
     }));
 
-    // prompt-export 整檔載入（僅掛 window.JY_buildExportPrompt，無 DOM 副作用）
+    // v90：先載入語義編譯器，再載入 prompt-export；測試資料也必須先通過同一份 ROOT-SPEC 契約。
     pre.push(new Promise(function(res){
-      var s2 = document.createElement('script');
-      s2.src = 'JS/prompt-export.js?st=' + bust;
-      s2.onload = function(){
-        envExtra.buildPrompt = function(tool, spreadId, domains){
-          window.JY_classifyDomains = function(){ return domains || []; };
-          window.S = { form: { type: (domains && domains[0]) || 'general', domains: domains || [], question: '測試問題嗎？' }, tarot: { spreadType: spreadId, spreadDef: { count: 3 } } };
-          window.getCurrentSpread = function(){ return spreadId; };
-          return window.JY_buildExportPrompt(tool);
+      var se = document.createElement('script');
+      se.src = 'JS/tarot-semantic-engine.js?st=' + bust;
+      se.onload = function(){
+        var s2 = document.createElement('script');
+        s2.src = 'JS/prompt-export.js?st=' + bust;
+        s2.onload = function(){
+          envExtra.buildPrompt = function(tool, spreadId, domains, waitePure){
+            window.JY_classifyDomains = function(){ return domains || []; };
+            window.JY_WAITE_PURE = !!waitePure;
+            window.S = { form: { type: (domains && domains[0]) || 'general', domains: domains || [], question: '測試問題會如何發展？' }, tarot: { spreadType: spreadId, spreadDef: null } };
+            window.getCurrentSpread = function(){ return spreadId; };
+            var E = window.JYTarotSemanticEngine;
+            function makeCards(n, sourceProfile){
+              var names = ['太陽','月亮','世界','愚者','魔術師','女祭司','皇后','皇帝','教皇','戀人','戰車','力量','隱者','命運之輪','正義','死神','節制','惡魔','星星','審判','權杖一'];
+              return Array.from({length:n}, function(_,i){ return { name:names[i % names.length], position:'位置'+(i+1), positionMeaning:'位置'+(i+1), isUp:true, direction:'正位', baseMeaning:'中性測試義'+(i+1), semanticProfile:sourceProfile }; });
+            }
+            if (tool === 'ootk') {
+              var operations = {};
+              for (var oi=1; oi<=5; oi++) operations['op'+oi] = { stage:oi, activePile:oi===1?'火元素堆':'', activeHouse:oi===2?7:'', activeSign:oi===3?'天秤':'', activeSephirah:oi===5?'Tiphareth':'', countingPath:[{cardName:'太陽'},{cardName:'月亮'}], pairs:[{left:{name:'魔術師'},right:{name:'女祭司'}}], decanDateRange:oi===4?'測試旬位':'', decanSign:oi===4?'天秤':'', decanRange:oi===4?'0°–10°':'' };
+              var opObj = { mode:'ootk', question:window.S.form.question, ootkData:{ sourceProfile:'gd_book_t', significator:{name:'魔術師'}, operations:operations, crossAnalysis:{} } };
+              opObj.semanticContract = E.compileReadingSpec({ question:opObj.question, spreadId:'ootk', sourceProfile:'gd_book_t', ootkData:opObj.ootkData });
+              opObj.ootkData.semanticContract = opObj.semanticContract;
+              window._buildOOTKPayload = function(){ return opObj; };
+              return window.JY_buildExportPrompt('ootk');
+            }
+            var spec = E.METHOD_SPECS[spreadId] || E.METHOD_SPECS.three_card;
+            var src = E.resolveSemanticProfile(spreadId,{waitePure:!!waitePure});
+            var cs = makeCards(spec.expectedCardCount,src);
+            var obj = { mode:'tarot_only', question:window.S.form.question, tarotData:{spreadType:spreadId,spreadZh:spec.label,sourceProfile:src,cards:cs,summary:cs.length+'正0逆'} };
+            obj.semanticContract = E.compileReadingSpec({question:obj.question,spreadId:spreadId,cards:cs,sourceProfile:src,waitePure:!!waitePure});
+            obj.tarotData.semanticContract = obj.semanticContract;
+            window._buildTarotOnlyPayload = function(){ return obj; };
+            return window.JY_buildExportPrompt('tarot');
+          };
+          res();
         };
-        res();
+        s2.onerror = function(){ report('⑤提示詞組裝', 'prompt-export.js 載入', false, '上傳失敗或路徑錯'); res(); };
+        document.head.appendChild(s2);
       };
-      s2.onerror = function(){ report('⑤提示詞組裝', 'prompt-export.js 載入', false, '上傳失敗或路徑錯'); res(); };
-      document.head.appendChild(s2);
+      se.onerror = function(){ report('⑤提示詞組裝', 'tarot-semantic-engine.js 載入', false, '上傳失敗或路徑錯'); res(); };
+      document.head.appendChild(se);
     }));
 
     Promise.all(pre).then(function(){

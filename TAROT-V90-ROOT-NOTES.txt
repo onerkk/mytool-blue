@@ -1,0 +1,17 @@
+塔羅 ROOT-SPEC v90 修正摘要
+
+這不是再增加題型規則，而是把塔羅與開鑰提示生成拆成可執行契約：
+1. QuestionSpec：保留原問句，抽取存在、數量、年齡、身分、時間、原因、比較、發展等資訊需求。
+2. MethodSpec：14 種塔羅牌陣與 Opening of the Key 各自具有固定位置權限、合法關係及量測邊界。
+3. SemanticProfile：每次只允許一套牌義來源；Mathers 1888、Waite 1910、現代 RWS、GD/Book T 不再自由混用。
+4. EvidenceGraph：前端生成合法證據 ID；Mathers A/C/E 不跨組拼牌，開鑰五次操作不跨操作直接連牌。
+5. Claim/Adjudication：先建立結構化命題，再逐項裁決原問句；完整事件強度不得高於最弱必要成分。
+6. Validator：攔截張數錯誤、來源錯配、缺少開鑰操作、盤外牌名及未量測卻輸出的年齡／人數／金額／機率／精確日期。
+
+技術研究依據：
+- Anthropic Prompt Engineering Overview：https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview
+- Anthropic Define Success Criteria and Build Evaluations：https://docs.anthropic.com/en/docs/build-with-claude/develop-tests
+- Anthropic Reduce Hallucinations：https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/reduce-hallucinations
+- DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines：https://arxiv.org/abs/2310.03714
+- DSPy Assertions: Computational Constraints for Self-Refining Language Model Pipelines：https://arxiv.org/abs/2312.13382
+- Golden Dawn Book T 公開 PDF：https://benebellwen.com/wp-content/uploads/2013/02/mathers-and-felkin-golden-dawn-book-t-the-tarot-1888.pdf

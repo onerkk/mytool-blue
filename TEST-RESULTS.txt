@@ -1,0 +1,18 @@
+執行日期：2026-07-15
+
+執行命令：
+node tests/tarot-v90-all.test.js
+
+結果：
+- ROOT compiler/integration：13 tests passed
+- Metamorphic invariants：8 tests passed
+- 合計：21 tests passed
+
+另行執行語法檢查：
+node -c JS/tarot-semantic-engine.js
+node -c JS/ai-analysis.js
+node -c JS/prompt-export.js
+node -c JS/tarot_upgrade.js
+node -c JS/selftest-core.js
+
+結果：全部通過。
