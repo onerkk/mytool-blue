@@ -23798,7 +23798,8 @@ function generateShareImage() {
 
 // ═══════════════════════════════════════════════════════════════
 // 塔羅快讀 AI — _triggerTarotAI + _buildTarotOnlyPayload
-// v90：語義編譯器先固定單一來源設定、方法規格與合法證據圖；提示詞只負責命題生成，不再自己猜幾何。
+// v91：語義編譯器先固定原句關係／量測形式、單一來源設定、方法拓撲與合法證據圖；
+// 牌義只提供候選語義素材，提示詞負責在位置與依賴圖中形成命題。
 // v89：輸出中性牌義素材；題材語境與事件結論交由提示詞的需求—證據矩陣處理。
 // ═══════════════════════════════════════════════════════════════
 
@@ -23860,8 +23861,10 @@ function _buildTarotOnlyPayload() {
     // v89 根治：只送本牌正／逆位的中性通行義；不依題材預先把牌改寫成愛情、工作、財運或健康事件。
     // 問題語境由外部 AI 在「牌＋位置＋全盤結構」中自行形成，避免資料層先替它作答。
     card.baseMeaning = isUp ? (c.up || '') : (c.rv || '');
-    card.meaning = card.baseMeaning; // 相容舊呼叫者；prompt-export 只讀 baseMeaning。
+    card.sourceGloss = card.baseMeaning; // 來源釋義只是素材，不是已成立的事件句。
+    card.meaning = card.baseMeaning; // 相容舊呼叫者。
     card.keywords = isUp ? (c.kwUp || '') : (c.kwRv || '');
+    card.semanticCandidates = String(card.keywords || '').split(/[·・、,，;；／/|｜。]+/).map(function(x){ return x.trim(); }).filter(Boolean);
 
     // ★ GD-3,4 套入:Court Card 完整 GD 讀法 (Mathers Book T 1888)
     //   - well-dignified / ill-dignified / neutral 由鄰牌元素決定
@@ -23894,7 +23897,7 @@ function _buildTarotOnlyPayload() {
       }
     }
 
-    // v90 單一來源設定：每次讀盤只保留一套可裁決牌義。其他來源欄位僅為資料庫相容，不進 semanticContract。
+    // v91 單一來源設定：每次讀盤只保留一套可裁決牌義。其他來源欄位僅為資料庫相容，不進 semanticContract。
     if (_semanticProfile === 'mathers_1888') {
       card.baseMeaning = isUp ? (card.mathersUp || '') : (card.mathersRv || '');
     } else if (_semanticProfile === 'waite_1910') {
@@ -23903,6 +23906,13 @@ function _buildTarotOnlyPayload() {
       card.baseMeaning = isUp ? (c.up || '') : (c.rv || '');
     }
     card.meaning = card.baseMeaning;
+    card.sourceGloss = card.baseMeaning;
+    if (_semanticProfile !== 'modern_rws' && _semanticProfile !== 'modern_rws_gd_structure') {
+      // 純 Waite／Mathers 不可沿用現代 RWS keywords；候選原子必須從本次選定來源重建。
+      card.semanticCandidates = String(card.baseMeaning || '').split(/[·・、,，;；／/|｜。]+/).map(function(x){ return x.trim(); }).filter(Boolean).slice(0, 8);
+    } else if (!card.semanticCandidates || !card.semanticCandidates.length) {
+      card.semanticCandidates = String(card.baseMeaning || '').split(/[·・、,，;；／/|｜。]+/).map(function(x){ return x.trim(); }).filter(Boolean).slice(0, 8);
+    }
     card.semanticProfile = _semanticProfile;
     // 不把未選中的牌義來源交給後續模型，避免同一張牌在多套字典間自由跳轉。
     delete card.mathersUp; delete card.mathersRv; delete card.waiteUp; delete card.waiteRv;
@@ -24519,7 +24529,7 @@ function _buildTarotOnlyPayload() {
       } : null
     }
   };
-  // v90：把原問句、單一牌義來源、牌陣方法規格與合法證據圖編譯成機器契約。
+  // v91：把原問句的比較／門檻／期限、單一牌義來源、方法拓撲與合法證據圖編譯成機器契約。
   try {
     if (_semanticEngine) {
       var _knownCounterpart = /(?:我|問卜者)(?:跟|和|與).{1,20}(?:的關係|之間|相處)|前任|現任|男友|女友|伴侶|配偶|老公|老婆|某位|這個人|那個人/.test(_jyTarotQuestionText());
