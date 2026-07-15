@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// 靜月之光占卜 · 全路徑自動檢測核心 v1 (2026/6/11 v85.3 基準)
+// 靜月之光占卜 · 全路徑自動檢測核心 v1 (2026/7/15 v87.0 基準)
 // 設計目的：根治「每輪解讀踩到一個新 bug」的被動修法——
 //   一次驗證：①部署完整性（線上檔案是否為最新版的字串簽名）
 //             ②資料表完整性（78 張牌義、Mathers 表、數字學表）
@@ -52,28 +52,34 @@
     },
     'prompt-export.js': {
       must: [
-        '【礦物事實錨點',                                   // v85.2
-        '它是金屬不是玻璃',                                 // v85.2 天鐵防呆
-        '就不算崩解訊號',                                   // v85.2 崩解以牌義判
-        '極小盤（四花色牌總數≤3',                           // v85.3
-        'slice(0, 3)',                                      // v85.3 三領域提示
-        '【多領域優先序】',                                 // v85.1
-        '【輸出載體——硬規則】',                             // v85
-        'FRAG_CRYSTAL_ZIWEI',                               // v85 紫微專屬
-        '正位與逆位皆同）採現代 RWS 通行義',                 // v85 學理鎖定
-        '必須轉成至少一條由該牌推出的具體行動',             // v85.1 建議位契約
-        '嚴禁輸出任何百分比、幾成、小數或區間數字',  // v85.4 機率題規則
-        '【通用溯源鐵律——適用全文每一句】',                // v85.5 無出處數字整類根治
-        '給不出牌面的選項不准排名',                          // v86.1 決策排序逐項溯源契約
-        '漏點任何一宮＝破功',                                // v86.2 黃道每宮點名
-        '不可用「偏少／略缺／偏弱」',                         // v86.2 能量石均衡防繞行
-        '一張不漏＝破功',                                    // v86.3 GD15 每張點名
-        '每張牌名在正文至少出現一次',                         // v86.3 M21 成句全覆蓋
-        '▲▼正逆符號只是資料標記'                              // v86.4 清單去符號註記
+        '塔羅全系統語義引擎根治',
+        '完整命題裁決',
+        '牌位名稱是觀察問題的鏡頭，不是事實宣告',
+        '答案長短只由有效命題數量決定，不由牌數決定',
+        '不能由某花色多寡直接指定題目領域',
+        '若問的是尚未確定存在的對象或未來人物',
+        '第一次操作說明占卜當下的情勢',
+        '第五次說明最終結果',
+        '完整計數路徑要讀成過程',
+        '適配與中止——依原方法誠實處理',
+        '不把落錯堆、落錯宮或落錯星座自動改稱「真正隱藏議題」',
+        '代表牌每次操作都會出現，是選堆機制',
+        '本段不得反向影響牌義、裁決或建議',
+        '不得解釋成問卜者「缺某元素」',
+        '【礦物事實錨點】',
+        '【輸出載體——硬規則】',
+        '【通用溯源鐵律——適用全文每一句】',
+        '▲▼正逆符號只是資料標記'
       ],
       mustNot: [
-        '約一成以下或 0～1 張且總數≥10',                    // 舊能量石判定
-        '逆位採現代通行的「削弱／受阻／內化」邏輯（業界慣例，與 Waite 1888' // 舊學理鎖定
+        '缺聖杯＝',
+        '先把「支持」與「反對」的牌各清點一次',
+        '至少自然帶到 2 張 RWS',
+        '每張牌都要在正文點到名',
+        '極小盤（四花色牌總數≤3',
+        '辟邪定志',
+        '護身安神',
+        'Sig 落在任何元素堆／宮位／星座／質點，都讀成「揭示真實場域」'
       ]
     },
     'ui.js': {
@@ -168,11 +174,12 @@
                     'tree_of_life','zodiac','minor_arcana'];
 
   // 每個工具提示詞必含的共同骨架
-  var PROMPT_COMMON = ['本次問題鎖定','【輸出載體——硬規則】','交稿前檢查'];
-  var PROMPT_TAROT_EXTRA = ['【學理鎖定】','【礦物事實錨點','極小盤（四花色牌總數≤3'];
-  // 舊字串絕不可出現在任何組裝結果
-  var PROMPT_BLACKLIST = ['這件事本身方向有問題','約一成以下或 0～1 張且總數≥10',
-                          '逆位採現代通行的「削弱／受阻／內化」邏輯（業界慣例，與 Waite 1888'];
+  var PROMPT_COMMON = ['本次問題保真','【輸出載體——硬規則】','交稿前語義稽核'];
+  var PROMPT_TAROT_EXTRA = ['完整命題裁決','牌位名稱是觀察問題的鏡頭，不是事實宣告','【礦物事實錨點】'];
+  // 舊式題材公式、吉凶投票與強制篇幅規則不可復活
+  var PROMPT_BLACKLIST = ['缺聖杯＝','先把「支持」與「反對」的牌各清點一次',
+                          '至少自然帶到 2 張 RWS','每張牌都要在正文點到名',
+                          '極小盤（四花色牌總數≤3','辟邪定志','護身安神'];
 
   function runStatic(env, done) {
     var files = Object.keys(SIGNATURES);
@@ -374,7 +381,7 @@
       env.report('⑦雷諾曼推薦','水晶推薦仍於正文後依主結論選擇，沒有吻合可不推薦',campaignPrompt.indexOf('<stone_recommendation mode="select_after_interpretation"')>-1&&campaignPrompt.indexOf('若都不吻合')>-1,'');
     }
 
-    // ⑤提示詞組裝：13 牌陣 × tarot ＋ ootk/ziwei/meihua
+    // ⑤提示詞組裝：13 種塔羅牌陣＋開鑰之法，共用語義引擎但保留各自結構
     if (typeof env.buildPrompt === 'function') {
       SPREAD_IDS.forEach(function (sid) {
         var p = '';
@@ -382,19 +389,33 @@
         var ok = !!p && p.indexOf('本次牌陣：') > -1;
         PROMPT_COMMON.concat(PROMPT_TAROT_EXTRA).forEach(function (m) { ok = ok && p.indexOf(m) > -1; });
         PROMPT_BLACKLIST.forEach(function (m) { ok = ok && p.indexOf(m) === -1; });
-        env.report('⑤提示詞組裝', 'tarot/' + sid + ' 骨架完整且無舊字串', ok, ok ? '' : '缺片段或舊字串復活 len=' + p.length);
+        ok = ok && p.indexOf('內容長短只由本盤能形成多少個不同且可回溯的有效命題決定') > -1;
+        env.report('⑤提示詞組裝', 'tarot/' + sid + ' 語義骨架完整且無舊公式', ok, ok ? '' : '缺片段或舊字串復活 len=' + p.length);
       });
-      var p3 = env.buildPrompt('tarot', 'three_card', ['love', 'money', 'health']);
-      env.report('⑤提示詞組裝', '三領域→三段提示＋優先序裁決', p3.indexOf('感情/關係——') > -1 && p3.indexOf('財運/財務——') > -1 && p3.indexOf('健康——') > -1 && p3.indexOf('【多領域優先序】') > -1, '');
-      ['ootk', 'ziwei', 'meihua'].forEach(function (tool) {
-        var p = '';
-        try { p = env.buildPrompt(tool, 'three_card', ['money']); } catch (e) { p = ''; }
-        var ok = !!p && PROMPT_COMMON.every(function (m) { return p.indexOf(m) > -1; }) && PROMPT_BLACKLIST.every(function (m) { return p.indexOf(m) === -1; });
-        if (tool === 'ziwei') ok = ok && p.indexOf('紫微盤不做元素統計') > -1 && p.indexOf('極小盤（四花色牌總數≤3') === -1;
-        if (tool === 'meihua') ok = ok && p.indexOf('能量石') === -1;
-        if (tool === 'ootk') ok = ok && p.indexOf('【礦物事實錨點') > -1;
-        env.report('⑤提示詞組裝', tool + ' 專屬規則正確', ok, ok ? '' : 'len=' + p.length);
-      });
+
+      var pRel = env.buildPrompt('tarot', 'relationship', ['love']);
+      env.report('⑤提示詞組裝', '未知對象不由關係牌位反向製造',
+        pRel.indexOf('不能反過來證明有人存在') > -1 && pRel.indexOf('較弱子命題') > -1, '');
+
+      var pWaite = '';
+      try { pWaite = env.buildPrompt('tarot', 'celtic_cross', ['general'], true); } catch (e) { pWaite = ''; }
+      if (pWaite) env.report('⑤提示詞組裝', '純Waite不混入GD逆位系統', pWaite.indexOf('不要疊加Golden Dawn元素尊嚴') > -1, '');
+
+      var pO = '';
+      try { pO = env.buildPrompt('ootk', 'three_card', ['money']); } catch (e) { pO = ''; }
+      var ootkOk = !!pO && PROMPT_COMMON.every(function (m) { return pO.indexOf(m) > -1; })
+        && pO.indexOf('第一次操作說明占卜當下的情勢') > -1
+        && pO.indexOf('第五次說明最終結果') > -1
+        && pO.indexOf('完整計數路徑要讀成過程') > -1
+        && pO.indexOf('適配與中止——依原方法誠實處理') > -1
+        && pO.indexOf('代表牌每次操作都會出現，是選堆機制') > -1
+        && pO.indexOf('篇幅由有效命題數量決定') > -1;
+      PROMPT_BLACKLIST.forEach(function (m) { ootkOk = ootkOk && pO.indexOf(m) === -1; });
+      env.report('⑤提示詞組裝', 'ootk 五次操作、適配、計數與配對規則完整', ootkOk, ootkOk ? '' : 'len=' + pO.length);
+
+      var pM = '';
+      try { pM = env.buildPrompt('meihua', 'three_card', ['money']); } catch (e) { pM = ''; }
+      if (pM) env.report('⑤提示詞組裝', '梅花路徑未被塔羅品牌／牌義引擎污染', pM.indexOf('能量石') === -1 && pM.indexOf('完整命題裁決') === -1, '');
     }
   }
 
