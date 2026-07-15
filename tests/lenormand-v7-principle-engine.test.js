@@ -56,20 +56,25 @@ function check(name, condition, detail='') {
   } else passed++;
 }
 
-// 1. 選陣只看結構與解析度，不按領域硬分流。
+// 1. 自動選陣只依問句幾何與回答面向；題材內容不得自行升級。
 const routes = [
+  ['我副業能成功嗎？', 'three'],
   ['這月有肉體桃花嗎？', 'three'],
-  ['本月營業額能破萬嗎？', 'three'],
-  ['我和他會復合嗎？', 'three'],
+  ['公司有異性暗戀我嗎？', 'three'],
+  ['他愛我嗎？', 'three'],
   ['這次面試會錄取嗎？', 'three'],
-  ['公司有異性暗戀我嗎？', 'five'],
+  ['本月營業額能破萬嗎？', 'three'],
   ['他對我怎麼想？', 'five'],
   ['為什麼生意卡住？', 'five'],
+  ['我該如何改善副業？', 'five'],
   ['他會回我嗎？什麼時候？', 'five'],
+  ['我副業未來發展如何？', 'five'],
+  ['未來對象的外貌如何？', 'five'],
   ['留職還是離職？', 'choice'],
   ['台北和高雄哪個比較適合我？', 'choice'],
-  ['這個專案的優勢、風險、阻礙與結果如何？', 'nine'],
+  ['這個專案的優勢、風險與結果如何？', 'nine'],
   ['未來對象的外貌、個性、職業如何？', 'nine'],
+  ['這段關係的來源、阻礙與結果如何？', 'nine'],
   ['感情和工作會順利嗎？', 'grand'],
   ['今年感情、工作、財運整體如何？', 'grand'],
   ['我的年度總運如何？', 'grand']
@@ -78,11 +83,13 @@ for (const [q, expected] of routes) {
   const got = api.detect(q);
   check(`route ${q}`, got.id === expected, `got ${got.id}, expected ${expected}; ${got.why}`);
 }
+check('hidden yes-no remains one facet', api.analyze('公司有異性暗戀我嗎？').facetCount === 1);
+check('hidden yes-no shape is adjudicable', api.analyze('公司有異性暗戀我嗎？').questionShape === '單一可裁決命題');
+check('single future development is not forced nine', api.analyze('我副業未來發展如何？').isOverview === false);
 check('person conjunction is not false choice', api.detect('我和他會復合嗎？').id === 'three');
 check('real alternatives remain choice', api.detect('台北和高雄哪個比較適合我？').id === 'choice');
-check('same-topic facets remain nine not grand', api.detect('關係的來源、阻礙與結果如何？').id === 'nine');
 
-// 2. 不可稽核事實仍統一攔截，這些是風險邊界，不是題型牌義補丁。
+// 2. 不可稽核、高風險與錯誤幾何仍在抽牌前攔截。
 const invalid = [
   ['她幾歲？', 'EXACT_AGE'],
   ['他會在幾月幾日聯絡？', 'EXACT_DATE'],
@@ -103,23 +110,25 @@ for (const [q, codeExpected] of invalid) {
 check('threshold is allowed', api.validate('本月營業額能破萬嗎？').ok === true);
 check('relative age tendency allowed', api.validate('對象看起來偏年輕、同齡或成熟？').ok === true);
 
-// 3. 分析器不再輸出題目專屬證據清單。
-const physical = api.analyze('這月有肉體桃花嗎？');
-check('no claimQualifiers field', !Object.prototype.hasOwnProperty.call(physical, 'claimQualifiers'));
-check('no physicalQualifier field', !Object.prototype.hasOwnProperty.call(physical, 'physicalQualifier'));
-check('no companyContext field', !Object.prototype.hasOwnProperty.call(physical, 'companyContext'));
-check('question shape remains structural', physical.questionShape === '單一可裁決命題');
-
-// 4. 手動牌陣只擋幾何錯配，不用題目詞彙過度封鎖AI。
-check('three accepts narrow hidden yes-no manual override', api.fit('公司有異性暗戀我嗎？', 'three').ok === false); // two facets: hidden state needs more context
-check('three rejects why structurally', api.fit('為什麼他不回我？', 'three').ok === false);
+// 3. 手動牌陣只擋真正幾何錯配，不因問句內容詞或單一問法過度封鎖。
+const compatibleThree = [
+  '我副業能成功嗎？',
+  '公司有異性暗戀我嗎？',
+  '為什麼生意卡住？',
+  '我該如何改善副業？',
+  '他什麼時候會聯絡？',
+  '他對我的態度如何？'
+];
+for (const q of compatibleThree) check(`three manual accepts ${q}`, api.fit(q, 'three').ok === true);
+check('three rejects explicit multi-aspect', api.fit('這段關係的來源、阻礙與結果如何？', 'three').ok === false);
+check('five rejects explicit multi-aspect', api.fit('這段關係的來源、阻礙與結果如何？', 'five').ok === false);
 check('choice required for alternatives', api.fit('留職還是離職？', 'five').ok === false);
 check('choice rejects non-choice', api.fit('這份工作會錄取嗎？', 'choice').ok === false);
-check('nine may deepen one focused question', api.fit('這份工作會錄取嗎？', 'nine').ok === true);
-check('grand may deepen one focused question', api.fit('公司有異性暗戀我嗎？', 'grand').ok === true);
+check('nine may deepen focused yes-no', api.fit('這份工作會錄取嗎？', 'nine').ok === true);
+check('grand may deepen focused question', api.fit('公司有異性暗戀我嗎？', 'grand').ok === true);
 check('global requires grand', api.fit('今年感情、工作、財運整體如何？', 'nine').ok === false);
 
-// 5. 牌義資料維持單一語義範圍，不做變相正逆位。
+// 4. 牌義資料維持單一語義範圍，不做變相正逆位。
 check('36 cards', api.cards.length === 36);
 check('all cards have scope', api.cards.every(c => typeof c.scope === 'string' && c.scope.length > 0));
 check('all cards have guard', api.cards.every(c => typeof c.guard === 'string' && c.guard.length > 0));
@@ -128,70 +137,113 @@ check('coffin keeps ending', api.cards[7].scope.includes('結束') && api.cards[
 check('mountain keeps obstacle', api.cards[20].scope.includes('阻礙'));
 check('mice keeps depletion', api.cards[22].scope.includes('消耗'));
 
-const sample3 = [2,16,17].map(id => api.cards[id - 1]);
+const sample3 = [25,17,27].map(id => api.cards[id - 1]);
 const sample5 = [18,27,6,21,8].map(id => api.cards[id - 1]);
 const sample7 = [31,25,35,21,3,22,23].map(id => api.cards[id - 1]);
 const sample9 = [18,3,35,6,19,8,27,21,22].map(id => api.cards[id - 1]);
 const sample36 = api.cards.slice();
 
-// 6. 通用提示詞採上位原則，不再針對每個事件列補丁。
+// 5. 所有牌陣共用回答契約；正文語義由AI讀原問句，不由前端分類注入。
 api.setSignif(null);
-const p3 = api.build('這月有肉體桃花嗎？', sample3, 'three', null, 'male');
-check('principle engine present', p3.includes('【AI讀牌上位原則】'));
-check('natural language authority', p3.includes('原問句的自然語意是最高權威'));
-check('scope and event separated by AI', p3.includes('已知背景範圍') && p3.includes('待牌面回答的事件'));
-check('no detected qualifier list', !p3.includes('本題已偵測的不可省略限定'));
-check('no patch event example ladder', !p3.includes('暗戀／承諾／錄取／發生關係／跨過門檻'));
-check('no forced physical phrase', !p3.includes('肉體／實際親密接觸'));
-check('AI handles colloquial ambiguity', p3.includes('兩種合理口語解釋'));
-check('insufficient evidence not automatic', p3.includes('不是看到任何非專屬牌就自動使用'));
-check('three geometry exact', p3.includes('合法組合只有1-2、2-3、1-2-3'));
-check('three no 1-3', p3.includes('1與3不相鄰'));
-check('three does not demand background proof', p3.includes('不要要求牌面重複證明問句已給定的背景'));
+const p3 = api.build('我副業能成功嗎？', sample3, 'three', null, 'male');
+const p3why = api.build('為什麼生意卡住？', sample3, 'three', null, 'male');
+check('universal contract present', p3.includes('【通用解題順序（所有牌陣共用；不要輸出此過程）】'));
+check('answer contract present', p3.includes('【回答契約】'));
+check('AI must derive answer form', p3.includes('使用者真正要求的回答形式'));
+check('frontend labels cannot replace question', p3.includes('前端分類、牌陣名稱與題材關鍵字都不得取代原問句'));
+check('AI geometry recheck present', p3.includes('複核牌陣幾何') && p3.includes('較大的相容牌陣不是錯誤'));
+check('background separated from event', p3.includes('區分背景與待答事件'));
+check('minimum sufficient evidence', p3.includes('以最少充分證據回答'));
+check('conclusion strength calibrated', p3.includes('校準結論強度'));
+check('generic contract handles yes-no', p3.includes('若原問句是是非題'));
+check('generic contract handles why/how/when', p3.includes('若原問句問原因、方法、時間、趨勢、人物輪廓或多面向'));
+check('no frontend-generated timing sentence', !p3why.includes('這是時間題') && !p3why.includes('問句要求原因'));
+check('same rules independent of topic classifier', p3.split('【本牌陣證據程序')[0].replace('我副業能成功嗎？','<Q>') === p3why.split('【本牌陣證據程序')[0].replace('為什麼生意卡住？','<Q>'));
 
-const p5 = api.build('公司有異性暗戀我嗎？', sample5, 'five', null, 'male');
-check('five shortest relevant segment', p5.includes('最短連續片段'));
+// 6. 五種牌陣各有封閉閱讀順序、合法組合與證據優先級。
+check('three closed order', p3.includes('封閉閱讀順序：①讀1-2；②讀2-3；③以1→2→3'));
+check('three legal geometry', p3.includes('合法組合只有1-2、2-3、1-2-3'));
+check('three forbids 1-3', p3.includes('禁止另組1-3'));
+check('three resolution ceiling', p3.includes('解析度上限'));
+
+const p5 = api.build('為什麼生意卡住？', sample5, 'five', null, 'male');
+check('five pivot order', p5.includes('①以2-3與3-4確定樞紐'));
+check('five overlapping clauses', p5.includes('②讀1-2-3與3-4-5兩個交疊句'));
+check('five full sentence adjudicates', p5.includes('③以1→2→3→4→5完整句裁決'));
 check('five legal geometry', p5.includes('1-2、2-3、3-4、4-5'));
-check('five forbids jump/mirror', p5.includes('禁止1-5、2-4'));
-check('five lets AI interpret meaning', p5.includes('原問句的自然語意是最高權威'));
+check('five forbids jumps and mirrors', p5.includes('禁止1-5、2-4、1-3、3-5'));
+check('five no fixed temporal positions', p5.includes('不自動等於過去、現在或未來'));
 
 const p7 = api.build('留職還是離職？', sample7, 'choice', null, 'male');
-check('choice branch A isolated', p7.includes('A只讀1-2、2-3、1-2-3'));
-check('choice branch B isolated', p7.includes('B只讀5-6、6-7、5-6-7'));
-check('choice no cross-branch pairs', p7.includes('不與任何單張跨支線組牌'));
-check('choice same criterion', p7.includes('同一標準'));
+check('choice criterion before branches', p7.includes('先從原問句確定A與B共用的唯一主要評估標準'));
+check('choice branch A isolated', p7.includes('A的1-2、2-3、1-2-3'));
+check('choice branch B isolated', p7.includes('B的5-6、6-7、5-6-7'));
+check('choice card 4 only modifies complete branches', p7.includes('第4張不與1、2、3、5、6、7任何單張另組牌'));
+check('choice forbids cross branch', p7.includes('A與B禁止互相修飾或跨支線組合'));
+check('choice no forced winner', p7.includes('不強迫選贏家'));
 
 const p9 = api.build('這段關係的來源、阻礙與結果如何？', sample9, 'nine', null, 'male');
-check('nine legal lines', p9.includes('1-2-3、4-5-6、7-8-9、1-4-7、2-5-8、3-6-9、1-5-9、3-5-7'));
-check('nine no fixed max line count', p9.includes('不設定固定主要線數'));
-check('nine minimal relevant lines', p9.includes('回答所需的最少相關線'));
-check('nine requires intersections', p9.includes('必須有實際交會牌'));
-check('nine no fixed temporal psychology roles', p9.includes('沒有固定時間、心理、原因或結果身分'));
+check('nine center lines prioritized', p9.includes('優先在穿過中心的4-5-6、2-5-8、1-5-9、3-5-7'));
+check('nine outer lines secondary', p9.includes('才使用1-2-3、7-8-9、1-4-7、3-6-9'));
+check('nine legal lines complete', p9.includes('合法完整線只有1-2-3、4-5-6、7-8-9、1-4-7、2-5-8、3-6-9、1-5-9、3-5-7'));
+check('nine requires intersections', p9.includes('兩線必須有實際交會牌'));
+check('nine does not recite all lines', p9.includes('不要把八條線全部念完'));
+check('nine no fixed roles', p9.includes('不替任何橫、直、斜線預設時間、心理、原因或結果身分'));
 
 api.setSignif(34);
-const pg = api.build('公司有異性暗戀我嗎？', sample36, 'grand', null, 'male');
-check('grand minimum necessary anchors', pg.includes('數量最少的議題定位牌'));
-check('grand no fixed four-role cap', !pg.includes('最多四張'));
-check('grand anchors fixed before outcome', pg.includes('在查看結果方向前') && pg.includes('固定不換'));
-check('grand shortest paths', pg.includes('最短不跳牌片段'));
-check('grand no scattered cherry-picking', pg.includes('彼此不接的牌不能拼成同一事件'));
+const pg = api.build('今年感情、工作、財運整體如何？', sample36, 'grand', null, 'male');
+check('grand locks subject and theme anchors', pg.includes('先固定再解讀，不因結果好壞換牌'));
+check('grand immediate neighbors first', pg.includes('讀主體與議題定位牌的立即鄰牌'));
+check('grand straight shortest segment only', pg.includes('同一水平、垂直或斜線上，再讀連接兩者的最短連續片段'));
+check('grand forbids invented turning path', pg.includes('不能臨時畫轉彎路徑硬接'));
+check('grand disconnected evidence separate', pg.includes('不得拼成同一事件'));
 check('grand full-deck presence not evidence', pg.includes('全36張必然出現'));
+check('grand tail independent', pg.includes('末排4張只可作自身的水平連續收束句'));
 
-// 7. 固定品牌層仍保留，且與占卜分離。
-for (const [name, prompt] of [['three',p3],['five',p5],['choice',p7],['nine',p9],['grand',pg]]) {
-  check(`${name} brand layer`, prompt.includes('以下為免費服務的品牌資訊，與本次牌義結論分開：'));
-  check(`${name} shop markdown`, prompt.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));
-  check(`${name} final blessing`, prompt.trim().endsWith('願你諸事順遂。'));
+// 7. 段落順序固定為：原問句契約→牌陣證據→牌資料→輸出→品牌。
+const orderedSections = [
+  '【本次任務】',
+  '【通用解題順序（所有牌陣共用；不要輸出此過程）】',
+  '【回答契約】',
+  '【共同邊界】',
+  '【本牌陣證據程序：三張線】',
+  '【抽到的牌與可用語彙】',
+  '【占卜正文輸出格式】',
+  '【品牌附加層（與占卜正文分離）】',
+  '【本盤可在占卜正文使用的牌名】'
+];
+for (let i = 1; i < orderedSections.length; i++) {
+  check(`section order ${orderedSections[i - 1]} -> ${orderedSections[i]}`,
+    p3.indexOf(orderedSections[i - 1]) < p3.indexOf(orderedSections[i]));
 }
 
-// 8. 版本與提示詞體積：去補丁後應比 v6 更短、且版本正確。
-const source = fs.readFileSync(sourcePath, 'utf8');
-check('v7 source marker', source.includes('Lenormand v7.0'));
-check('v7 console marker', source.includes('principle engine + AI semantic reading'));
-check('removed domain spec table', !source.includes('_LN_DOMAIN_SPECS'));
-check('removed claim qualifier implementation', !source.includes('claimQualifiers'));
+// 8. 品牌層與問題相關，但不能反向污染牌義或宣稱功效。
+check('brand fixed three-step selection', p3.includes('依固定三步選品'));
+check('brand derives from real-life context', p3.includes('從原問句辨認實際生活情境'));
+check('brand derives wearing context and style', p3.includes('配戴場合與色系／質感'));
+check('business context mapping', p3.includes('工作／生意／金錢場合可選黃水晶、虎眼石、綠幽靈'));
+check('relationship context mapping', p3.includes('關係／社交可選粉晶、草莓晶、月光石'));
+check('decision context mapping', p3.includes('決策／轉換／移動可選茶晶、拉長石、黑曜石'));
+check('communication context mapping', p3.includes('溝通／學習／書面往來可選海藍寶、藍紋瑪瑙、紫水晶'));
+check('brand fallback remains', p3.includes('沒有清楚關聯時固定白水晶'));
+check('brand efficacy claims forbidden', p3.includes('禁止宣稱礦物是牌面指定、能化解牌面、治療、保護、穩定情緒、提升能力'));
+for (const [name, prompt] of [['three',p3],['five',p5],['choice',p7],['nine',p9],['grand',pg]]) {
+  check(`${name} brand separation sentence`, prompt.includes('以下為免費服務的品牌資訊，與本次牌義結論分開：'));
+  check(`${name} shop markdown`, prompt.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));
+  check(`${name} exact tail`, prompt.endsWith('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。'));
+}
 
-console.log(`PASS: ${passed} Lenormand v7 principle-engine checks.`);
+// 9. 版本與UI文字同步。
+const source = fs.readFileSync(sourcePath, 'utf8');
+check('v9 source marker', source.includes('Lenormand v9.0'));
+check('v9 console marker', source.includes('universal question contract + five-spread evidence engine'));
+check('auto UI is geometry based', source.includes('依問句幾何選最小充分牌陣（推薦）'));
+check('three UI is topic-neutral', source.includes("d:'單一聚焦命題'"));
+check('five UI is topic-neutral', source.includes("d:'單一議題脈絡'"));
+check('no old hidden forced-five route', !source.includes("if (x.isSensitiveHidden)\n    return { id:'five'"));
+check('no dynamic prompt classification block', !source.includes("lines.push('這是時間題"));
+
+console.log(`PASS: ${passed} Lenormand v9 universal-engine checks.`);
 if (failed) {
   console.error(`FAIL: ${failed} checks.`);
   process.exit(1);
