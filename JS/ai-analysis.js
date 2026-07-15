@@ -23798,7 +23798,7 @@ function generateShareImage() {
 
 // ═══════════════════════════════════════════════════════════════
 // 塔羅快讀 AI — _triggerTarotAI + _buildTarotOnlyPayload
-// v91：語義編譯器先固定原句關係／量測形式、單一來源設定、方法拓撲與合法證據圖；
+// v92：語義編譯器先建立型別化查詢圖、方法觀測模型、合法證據圖與實體／事件共指契約；
 // 牌義只提供候選語義素材，提示詞負責在位置與依賴圖中形成命題。
 // v89：輸出中性牌義素材；題材語境與事件結論交由提示詞的需求—證據矩陣處理。
 // ═══════════════════════════════════════════════════════════════
@@ -23897,7 +23897,7 @@ function _buildTarotOnlyPayload() {
       }
     }
 
-    // v91 單一來源設定：每次讀盤只保留一套可裁決牌義。其他來源欄位僅為資料庫相容，不進 semanticContract。
+    // v92 單一來源設定：每次讀盤只保留一套可裁決牌義。其他來源欄位僅為資料庫相容，不進 semanticContract。
     if (_semanticProfile === 'mathers_1888') {
       card.baseMeaning = isUp ? (card.mathersUp || '') : (card.mathersRv || '');
     } else if (_semanticProfile === 'waite_1910') {
@@ -24529,10 +24529,13 @@ function _buildTarotOnlyPayload() {
       } : null
     }
   };
-  // v91：把原問句的比較／門檻／期限、單一牌義來源、方法拓撲與合法證據圖編譯成機器契約。
+  // v92：把原問句、細粒度語義義務、單一來源、方法拓撲、合法證據與共指規則編譯成機器契約。
   try {
     if (_semanticEngine) {
-      var _knownCounterpart = /(?:我|問卜者)(?:跟|和|與).{1,20}(?:的關係|之間|相處)|前任|現任|男友|女友|伴侶|配偶|老公|老婆|某位|這個人|那個人/.test(_jyTarotQuestionText());
+      // 是否已有可指認對象由語義編譯器集中判定；排除條件（例如「非現任」）不能誤綁成已知對象。
+      var _knownCounterpart = (typeof _semanticEngine.inferExplicitCounterpartBinding === 'function')
+        ? _semanticEngine.inferExplicitCounterpartBinding(_jyTarotQuestionText())
+        : false;
       var _contract = _semanticEngine.compileReadingSpec({
         question: _jyTarotQuestionText(),
         spreadId: _spreadId,
@@ -24542,7 +24545,9 @@ function _buildTarotOnlyPayload() {
         knownCounterpart: _knownCounterpart
       });
       result.semanticContract = _contract;
+      result.semanticProgramVersion = _contract.engineVersion || '92.0.0';
       result.tarotData.semanticContract = _contract;
+      result.tarotData.semanticProgramVersion = result.semanticProgramVersion;
     }
   } catch (_semErr) {
     console.warn('[TarotSemanticEngine] compile failed:', _semErr);
@@ -26891,7 +26896,9 @@ function _buildOOTKPayload() {
         ootkData: ootk_result.ootkData
       });
       ootk_result.semanticContract = _ootkContract;
+      ootk_result.semanticProgramVersion = _ootkContract.engineVersion || '92.0.0';
       ootk_result.ootkData.semanticContract = _ootkContract;
+      ootk_result.ootkData.semanticProgramVersion = ootk_result.semanticProgramVersion;
     }
   } catch (_ootkSemErr) {
     console.warn('[TarotSemanticEngine] OOTK compile failed:', _ootkSemErr);

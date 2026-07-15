@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// 靜月之光占卜 · 全路徑自動檢測核心 v1 (2026/7/15 v91.0 ROOT-SPEC 基準)
+// 靜月之光占卜 · 全路徑自動檢測核心 v1 (2026/7/15 v92.0 ROOT-SPEC 基準)
 // 設計目的：根治「每輪解讀踩到一個新 bug」的被動修法——
 //   一次驗證：①部署完整性（線上檔案是否為最新版的字串簽名）
 //             ②資料表完整性（78 張牌義、Mathers 表、數字學表）
@@ -14,19 +14,23 @@
   var SIGNATURES = {
     'tarot-semantic-engine.js': {
       must: [
-        '塔羅需求編譯器、方法拓撲與證據契約 [v91.0]',
+        'ROOT-SPEC v92 clean compiler',
         'var METHOD_SPECS',
         'function compileQuestion',
         'function compileEvidenceGraph',
         'function compileOOTKEvidence',
         'function compileReadingSpec',
         'function renderPromptContract',
-        'ROOT-SPEC v91',
-        '跨 A／C／E 只能綜合各組已成立命題',
-        '不同操作不可直接連牌',
-        'requires_independent_comparable_channels',
-        'nonlinear_dependency_network',
-        'operation_stage_summary'
+        'ROOT-SPEC v92',
+        '跨組只綜合各組已成立命題',
+        '不能直接把不同操作中的牌拼成新牌句',
+        'typed_query_graph/1',
+        'atomizationRequirement',
+        'entityBindings',
+        'joinTrace',
+        'operation_stage_summary',
+        'QUERY_EVENT_ONLY',
+        'cross_operation_stage_network'
       ],
       mustNot: ['缺聖杯＝','權杖國王通常已婚','牌張數換算現實人數']
     },
@@ -48,9 +52,9 @@
         'opposingPairs = [];',                                      // v89 固定故事停用
         'function _ootkOpPayload',                                  // v89 OOTK 結構化
         'numberPatterns: []',                                       // v89 OOTK 衍生數量敘事停用
-        'compileReadingSpec',                                         // v91 契約編譯
-        'result.semanticContract = _contract',                        // v91 塔羅契約掛載
-        'ootk_result.semanticContract = _ootkContract',               // v91 開鑰契約掛載
+        'compileReadingSpec',                                         // v92 契約編譯
+        'result.semanticContract = _contract',                        // v92 塔羅契約掛載
+        'ootk_result.semanticContract = _ootkContract',               // v92 開鑰契約掛載
         'card.semanticCandidates',
         'card.sourceGloss'
       ],
@@ -78,9 +82,12 @@
         'window.JYTarotSemanticEngine',
         'renderPromptContract',
         'buildRootQuestionLock',
-        'ROOT-SPEC 指定的單一牌義來源',
-        'synthesis_only 單位只能綜合 dependsOn 已成立命題',
-        '完整事件的強度不得高於最弱的必要語義成分',
+        'ROOT-SPEC v92',
+        'QuestionCompiler',
+        'GraphBinder',
+        'SaturationReviewer',
+        '同一人物完成同一事件',
+        '最弱的必要原子',
         '本段不得反向影響牌義、裁決或建議',
         '不得解釋成問卜者「缺某元素」',
         '【礦物事實錨點】',
@@ -192,8 +199,8 @@
                     'tree_of_life','zodiac','minor_arcana','horseshoe'];
 
   // 每個工具提示詞必含的共同骨架
-  var PROMPT_COMMON = ['原問句保真','ROOT-SPEC v91','需求維度：','語義義務：','牌義來源：','方法：','合法證據單位：','內部命題帳本：','完整事件的結論強度不得高於最弱的必要語義成分','【輸出載體——硬規則】'];
-  var PROMPT_TAROT_EXTRA = ['塔羅證據整合者','比較或門檻','synthesis_only','【礦物事實錨點】'];
+  var PROMPT_COMMON = ['原問句保真','ROOT-SPEC v92','型別化查詢圖','細粒度原子化','牌義來源：','方法：','合法證據單位：','命題帳本 schema','實體／事件同一性','語義飽和帳本','【輸出載體——硬規則】'];
+  var PROMPT_TAROT_EXTRA = ['塔羅型別化證據整合者','六階段內部程序','GraphBinder','最強替代解讀','【礦物事實錨點】'];
   // 舊式題材公式、吉凶投票與強制篇幅規則不可復活
   var PROMPT_BLACKLIST = ['缺聖杯＝','先把「支持」與「反對」的牌各清點一次',
                           '至少自然帶到 2 張 RWS','每張牌都要在正文點到名',
@@ -404,10 +411,10 @@
       SPREAD_IDS.forEach(function (sid) {
         var p = '';
         try { p = env.buildPrompt('tarot', sid, ['love', 'money', 'health']); } catch (e) { p = ''; }
-        var ok = !!p && p.indexOf('ROOT-SPEC v91') > -1 && p.indexOf('合法證據單位：') > -1;
+        var ok = !!p && p.indexOf('ROOT-SPEC v92') > -1 && p.indexOf('合法證據單位：') > -1;
         PROMPT_COMMON.concat(PROMPT_TAROT_EXTRA).forEach(function (m) { ok = ok && p.indexOf(m) > -1; });
         PROMPT_BLACKLIST.forEach(function (m) { ok = ok && p.indexOf(m) === -1; });
-        ok = ok && p.indexOf('答案長短只由不同且可回溯的有效命題數量決定') > -1;
+        ok = ok && (p.indexOf('答案長短只由不同且可回溯的有效命題數量決定') > -1 || p.indexOf('答案長短只由不同且可回溯的有效命題') > -1);
         env.report('⑤提示詞組裝', 'tarot/' + sid + ' 語義骨架完整且無舊公式', ok, ok ? '' : '缺片段或舊字串復活 len=' + p.length);
       });
 
@@ -425,8 +432,8 @@ pRel.indexOf('person_aggregate') > -1 && pRel.indexOf('不得當成一名人物�
         && pO.indexOf('gd_book_t') > -1
         && pO.indexOf('operation_counting_path') > -1
         && pO.indexOf('operation_pair') > -1
-        && pO.indexOf('每次操作先以自己的落點、完整計數路徑、配對與有效性成句') > -1
-        && pO.indexOf('不同操作不可直接連牌') > -1
+        && pO.indexOf('每次操作先完成落點、完整計數路徑、配對、牌力校正與程序有效性') > -1
+        && pO.indexOf('不得跨操作直接拼牌') > -1
         && pO.indexOf('operation_stage_summary') > -1
         && pO.indexOf('cross_operation_stage_network') > -1;
       PROMPT_BLACKLIST.forEach(function (m) { ootkOk = ootkOk && pO.indexOf(m) === -1; });
