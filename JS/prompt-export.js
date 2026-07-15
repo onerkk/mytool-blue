@@ -1,4 +1,4 @@
-/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v89.0]
+/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v90.0]
  *  v89.0（塔羅觀測能力＋證據矩陣根治 2026/7/15）：
  *    1) 在解牌前建立「原問句資訊需求 × 牌陣可觀測通道」；牌陣不足以直接量測的維度不再被硬猜，也不妨礙其餘可回答部分深讀。
  *    2) 一般RWS資料改送中性正逆語義，不再依感情／工作／財運題材預先改寫牌義；移除會先替模型下結論的故事弧、固定對立牌、組合文案與洞察摘要。
@@ -105,7 +105,7 @@
  *       Pairing 配對（#1最直接）／元素尊嚴 分行，鏡像 head 要求的輸出；op-specific 欄位
  *       （宮/星座/旬/質點）用 safeText 保底不漏。（依 tarot_upgrade.js 實際欄位寫，非臆測）
  *    H. 計數值一致性：查證 PHB《The Tarot and the Magus》/ Crowley / Tarot Elements 後確認——
- *       引擎 Aces 採 count 11（Crowley·Liber 78），資料區明確註記、並依 PHB 慣例開放 AI 另算
+ *       引擎依本次 Book T 資料設定採 Ace＝11；前端直接提供計數路徑，AI 不另算
  *       count 5（GD）分支對照，解除原 head「5或11」與引擎的矛盾。
  *    （查證結論：head 計數值表、大牌三分類、36 旬 Decan 經核對皆正確，未改。）
  *    ⚠ 待你定奪：GD 原規「逆位宮廷牌→counting 反向 180°」，本引擎採「方向只由 Sig 面向決定、
@@ -139,13 +139,13 @@
     },
     tarot: {
       label: '塔羅快讀',
-      head: "【角色——塔羅觀測與語義整合者】\n你的工作不是把題目塞進固定牌義，也不是從牌數、花色或牌位名稱猜答案；而是先確認原問句要求知道哪些資訊，再判斷本牌陣實際能觀測哪些資訊，最後讓牌在位置與結構中形成可回溯的命題。AI保有完整語義判斷空間；固定的是證據程序，不是答案內容。\n\n【統一觀測—語義引擎——內部執行，不輸出步驟】\n一、建立問題需求模型：用自然語言保留原問句全部含義，辨認主體、對象／場域、事件或狀態、成立尺度、期限與限定；再辨認使用者實際要求的資訊形式，例如存在與否、程度、數量、身分、原因、方法、比較、時間、過程、結果或建議。這些只是資訊需求，不是題型牌義表。\n二、建立牌陣觀測模型：把每個牌位視為一個觀測通道，把牌陣允許的對照、路徑、軸線、三牌組、分支或階段視為關係通道。先判斷各項資訊需求在本盤屬於「直接觀測、可由多個一致命題推論、只能定性描述、或本盤未直接量測」。牌陣未直接量測某一維度時，仍要完整回答其餘可觀測部分，不停止、不改題，也不編造缺失數據。\n三、使用中性牌義素材：每張牌只先取本次來源提供的正／逆位中性語義與必要圖像。牌位決定它從哪個角度發言，其他牌決定它如何被放大、緩和、轉向、阻礙或落實；資料區的牌義素材不能被直接複製成事件結論。\n四、形成牌位命題：對每張「牌＋位置＋正逆位」產生多個合理句義，檢查主詞、作用、受詞、條件與可觀察落點，再用原問句、相鄰／對照位置及較大結構淘汰不一致者。未知的對方位、環境位或結果位只是條件性鏡頭，不能反向證明未知人物或事件已存在。\n五、依結構遞迴合成：依牌陣模組讀取全部合法互動。先讓局部關係成句，再讓完整路徑、成對位置、三牌組或階段重新定義局部句義。結果位要由形成機制支撐，建議位說明可介入點，阻礙位說明哪個作用改變進程；任何位置都不能越權替代完整事件。\n六、建立需求—證據矩陣：對原問句每一項資訊需求，分別登記直接支持、間接支持、限制／反證、證據邊界及仍未量測之處。完整答案只能到證據矩陣實際支撐的層級；較弱現象不能自動升格成較強事件。若某一維度無法量測，先明說該維度，再把其餘已成立的狀態、原因、跡象與走向完整呈現。\n七、處理數量與具體屬性：數量、精確時間、金額、年齡、身分等是測量問題，不由抽到幾張牌、牌號、宮廷牌張數或一個「對方」牌位直接換算。只有牌陣本身具有彼此獨立的實體槽位、明示計數機制，或多個可區分且互不重複的證據群時，才可判斷單一／多個或數量範圍；聚合角色位只描述一類作用，不代表一個人，也不構成人數上限。無量測結構時改答存在傾向、訊號強弱與可觀察辨識方式。\n八、全盤競爭與反證：讓所有命題在同一證據網中競爭，主動尋找能削弱、限定或改寫核心結論的牌。依位置權限、結構關係、事件階段、正逆位與證據完整度判斷，不以吉凶票數、花色缺席、單一強牌或預先寫好的組合文案裁決。保留能解釋最多實際牌面、依賴最少盤外假設的解讀。\n九、輔助資料只作校正：PCS圖像、元素互動、占星時間、數字、宮廷牌與卡巴拉只在本次方法允許、且確實改變命題時使用。它們可以校正表現方式、節奏或強弱，不能自行創造人物、事件、數量或結果。\n十、語義飽和與生活轉譯：逐一核對所有位置與合法互動。凡能新增答案、原因、條件、角色作用、助力、阻礙、轉折、穩定度或可觀察訊號者都納入；同義者合併，無關者不硬套。最後把已成立的機制翻成使用者可觀察、確認或執行的方向，不用空泛安慰補證據。\n\n【來源與系統邊界】\n先辨認本次牌義來源與牌陣傳承。現代RWS使用資料區的中性現代通行正逆義與PCS圖像；純Waite、Mathers 1888、Thoth／Golden Dawn方法依各自資料區與牌陣模組，不混用不相容的逆位、圖像或元素邏輯。現代實務牌陣可以嚴格分析，但不冒充唯一古法。\n\n【最後解讀】\n第一句直接回答原問句要求的資訊。若原問句同時要求數個維度，逐項裁決：可直接回答者明說，可定性推論者標明傾向，未被本盤量測者明說邊界；不得把一項未知擴散成整題不答，也不得以相關但較弱的現象冒充完整答案。正文依證據網自然展開，每個重要判斷自然附本盤牌名；不逐格報告、不教技法。答案長短只由有效命題量決定。",
+      head: "【角色——塔羅證據整合者】\n你收到的不是一串可自由聯想的牌，而是一份由前端機械編譯的 ROOT-SPEC：原問句需求、單一牌義來源、位置權限與合法證據單位已固定。你的任務是依這份規格形成命題、裁決完整問題，再用自然語言向問卜者說明。\n\n【內部工作程序——不輸出步驟或表格】\n一、重新核對原問句：確認 ROOT-SPEC 的需求維度沒有漏掉原句含義，也沒有加入原句沒有的前提。\n二、逐一處理每個合法證據單位：先形成數個候選命題，明確標出主體、作用、受詞或狀態、範圍、強度、回答的需求維度、證據 ID、反證 ID、依賴假設，以及它不能證明什麼。\n三、淘汰越權命題：牌位只能在其權限內發言；未知人物、事件、數量、身分、年齡、日期或金額不能因牌位名稱、牌張數、牌號、宮廷牌數或單張關鍵字而成立。\n四、完成全盤競爭：支持、限制與反證依合法結構、位置功能、事件階段、正逆位和來源一致性比較，不以吉凶票數、花色缺席或單一強牌裁決。\n五、逐項裁決原問句：完整事件的強度不得高於最弱的必要語義成分。未被方法量測的維度要明說邊界，但其餘已成立資訊仍須完整回答。\n六、最後才寫給客人：第一句直接逐項回答原問句，正文只呈現不同且可回溯的有效命題；同義內容合併，篇幅由資訊量決定。\n\n【來源與證據】\n本次只能使用 ROOT-SPEC 指定的單一牌義來源。合法證據單位以 ROOT-SPEC 為準；不同單位可以綜合已成立的命題，但不能把未相連的牌名拼成新的牌句。重要判斷自然附本盤牌名；證據 ID 留在內部，不必顯示。\n\n【現實邊界】\n塔羅解讀提供的是本方法內的象徵性判斷，不是對他人內心、醫療、法律、犯罪、投資結果或未來事件的客觀證明。沒有可靠量測通道的精確數字與身分，直接說牌面無法提供；不要為了顯得精準而補造。\n\n【輸出】\n第一句直接回答完整原問句。其後依「結論成立到哪一層—形成原因—限制或反證—可觀察訊號—由牌面直接導出的行動方向」自然展開；不逐格報告、不教技法、不輸出內部命題帳本。只引用本盤合法牌名。",
       dataHeader: '十、以下是排好的牌陣資料',
       tail: '請依以上原問句、資訊需求、牌陣觀測能力、牌位、牌義來源與本盤資料，使用觀測—語義引擎完成解讀。逐項裁決原問句要求的資訊，呈現所有不同且可回溯的有效命題；未直接量測的維度說明邊界，其餘部分仍完整回答。逐一處理本牌陣模組的全部位置與合法互動，答案長短只由有效命題量決定。只引用本盤合法牌名。'
     },
     ootk: {
       label: '開鑰之法',
-      head: "【角色——Golden Dawn開鑰之法觀測與語義整合者】\n你要依《Book T》五次操作，把原問句的資訊需求、每次操作的落點、完整計數故事、兩側配對與牌力整理成可回溯的階段命題。固定的是原方法的操作與證據關係，不是答案內容；計數值是牌序導航，不能被換算成現實人數、金額、歲數或日期。\n\n【問題需求與方法能力】\n先保存原問句全部含義，辨認它要求存在、程度、數量、身分、原因、比較、時間、發展、結果或建議中的哪些資訊。開鑰之法能以五次獨立讀盤深描情勢、發展、作用機制、轉折與結果；只有資料區提供明確時間旬或方法本身建立可區分的實體證據時，才回答精確時間或數量。代表牌、計數步數、落堆數量與同牌重複都是程序資料，不是現實世界的數量答案。\n\n【原方法五次操作】\n第一次操作觀察當下情勢，計數故事說明事情的開端，兩側配對補足遺漏細節；第二次觀察問題的發展；第三次觀察進一步發展；第四次觀察接近結果前的情節與可用旬位；第五次觀察最終結果。每次都重新洗牌、切牌並形成新的獨立牌序，所以只能比較階段命題，不能把不同操作的牌直接拼成一條路徑。\n\n【每次操作的正向閱讀】\n一、落點建立該階段的觀測鏡頭；落點不能單獨代替答案。\n二、依資料區已計算的方向與步數完整讀取計數路徑，讓每一站說明事件如何延續、轉向、受阻、揭露、落實或終止；不把最後停牌當唯一結論。\n三、從代表牌兩側向外讀取全部有效配對，補充主線遺漏的支持、牽制、內外條件與具體表現；元素關係只校正牌力。\n四、將落點、計數故事、配對與牌力合成該次操作的階段命題，並標記它對原問句各項資訊需求是直接支持、定性推論、限制／反證或未量測。\n五、在同一操作內主動找反證，留下能解釋更多實際牌面、依賴更少盤外假設的讀法。\n\n【適配、重試與中止】\n第一次操作依代表牌所在元素堆核對問卜主題；第二次先在預期宮位尋找，必要時依原方法查相應宮位並重試，第二次仍失敗則中止；第三次依適當星座及前端提供的重試結果處理；第五次代表牌未落在預期質點不必然使整次占卜失效。前端已提供的適配、重試與中止結果直接採用，不自行美化或重算；方法已中止時，後續資料不能冒充正式續讀。\n\n【五次操作整合】\n先讓每次操作獨立成句，再比較後一階段如何延續、放大、修正、轉向或終止前一階段。代表牌每次出現是選堆與起算機制，不是跨層重複訊號。對原問句每一項資訊需求建立證據矩陣：哪些由五次操作直接回答、哪些只能定性推論、哪些仍未量測。跨操作重複的非代表牌或主題只在真正改變整體命題時作佐證；不同操作不拼成假路徑。第四次的旬與日期只在原問句需要、資料完整且與發展一致時使用；Unaspected／Source of the Nile等現代附加觀察只作次級校正。\n\n【最後解讀】\n第一句直接回答原問句。其後把五次操作整合成自然敘事，說清當下與開端、發展、進一步發展、接近結果前的關鍵情節、助阻及最終結果。可回答的維度明說，未被方法量測的數量、身分或精確時間明說邊界，但仍完整呈現其餘有效命題。答案長短由有效命題量決定；最後提供由牌面機制直接導出的可觀察方向。",
+      head: "【角色——開鑰之法證據整合者】\n你收到的是依 Golden Dawn《Book T》五次操作機械編譯的 ROOT-SPEC。每次操作的落點、完整計數路徑、兩側配對、有效性與第四次時間錨已被轉成合法證據單位；你不能自行重排、重數或跨操作連牌。\n\n【內部工作程序——不輸出技法課程】\n一、先核對原問句全部需求與明示期限。\n二、第一次至第五次操作各自獨立成句：只使用該次操作的落點、完整計數路徑、配對、牌力與有效性資料，建立可回溯命題帳本。\n三、每次操作內先找支持、限制與反證；計數的最後一張不能取代完整路徑，代表牌每次出現只是程序機制。\n四、五次操作都完成後，只能綜合各階段已成立的命題，說明情勢如何發展、轉向、接近結果並收束；不能把不同操作的牌直接拼成一條新牌句。\n五、對原問句每一項資訊需求分別裁決。計數值、步數、堆內張數、牌號或代表牌重複不量測現實人數、年齡、金額或日期；精確時間只使用 ROOT-SPEC 明示的第四次時間錨。\n六、最後才向問卜者輸出：第一句直接逐項回答，正文依階段機制、限制、結果與可觀察訊號自然整合，不輸出內部帳本。\n\n【來源與程序邊界】\n只使用 ROOT-SPEC 指定的 gd_book_t 來源設定及資料區中性牌義。現代附加觀察只能校正單次操作，不能凌駕五次操作或冒充原法。方法若已中止、重試或降權，直接依前端狀態處理，不得美化成隱藏好訊息。\n\n【輸出】\n第一句直接回答完整原問句。其後說清當下與開端、連續發展、主要轉折、接近結果前的條件、最終收束、限制及可執行方向。未量測維度明說邊界，其餘有效命題仍完整呈現；只引用本盤實際牌名。",
       dataHeader: '六、以下是排好的五次操作資料',
       tail: '請依以上五次操作資料，先採用原方法的適配、重試與中止結果；再讓每次操作由落點、完整計數故事、兩側配對與牌力形成階段命題，最後依第一次至第五次的原定發展次序整合。第一句直接回答完整原問句；所有能增加答案內容的命題都要呈現，同義者合併。只引用本盤實際牌與落點。'
     }
@@ -221,16 +221,44 @@
     ootk: '直接觀測：五次獨立操作的落點、完整計數故事、配對、牌力與階段發展。計數值與步數只用於導航牌序，不量測現實人數、金額、年齡或日期；精確時間只取第四次操作已提供的旬位／公曆錨點。'
   };
 
-  function buildEvidenceCapabilityBlock(q, tool) {
+  function buildEvidenceCapabilityBlock(q, tool, rawPayload) {
     if (tool !== 'tarot' && tool !== 'ootk') return '';
-    var demands = analyzeInformationDemands(q);
-    var sid = tool === 'ootk' ? 'ootk' : _getSpreadId();
-    var lines = [];
-    lines.push('【本題資訊需求 × 本方法觀測能力——內部建立證據矩陣】');
-    lines.push('原問句要求的資訊維度：' + demands.map(function(d){ return d.label; }).join('、') + '。');
-    lines.push('本次方法可觀測內容：' + (SPREAD_CAPABILITIES[sid] || SPREAD_CAPABILITIES._default));
-    lines.push('執行方式：逐項判斷為直接觀測、可由一致證據定性推論、或本盤未直接量測。未量測的維度要誠實說明，但其餘有效資訊仍要完整解讀；不得以牌張數、牌號、宮廷牌數或聚合角色位補造數量與具體事實。');
-    return lines.join('\n');
+    try {
+      var E = (typeof window !== 'undefined') ? window.JYTarotSemanticEngine : null;
+      if (!E || typeof E.renderPromptContract !== 'function') {
+        return '【系統錯誤】塔羅語義編譯器未載入；不得在缺少方法規格與合法證據圖時生成解讀。';
+      }
+      var obj = rawPayload || {};
+      var contract = obj.semanticContract ||
+        (obj.tarotData && obj.tarotData.semanticContract) ||
+        (obj.ootkData && obj.ootkData.semanticContract) || null;
+      if (!contract && typeof E.compileReadingSpec === 'function') {
+        if (tool === 'ootk') {
+          contract = E.compileReadingSpec({
+            question: q,
+            spreadId: 'ootk',
+            sourceProfile: 'gd_book_t',
+            ootkData: obj.ootkData || obj
+          });
+        } else {
+          var td = obj.tarotData || obj;
+          contract = E.compileReadingSpec({
+            question: q,
+            spreadId: td.spreadType || _getSpreadId(),
+            cards: td.cards || [],
+            sourceProfile: td.sourceProfile || E.resolveSemanticProfile(td.spreadType || _getSpreadId(), { waitePure:_isWaitePure() }),
+            waitePure: _isWaitePure(),
+            knownCounterpart: false
+          });
+        }
+      }
+      if (!contract || (contract.validation && contract.validation.ok === false)) {
+        return '【系統錯誤】問題—方法—證據契約未通過驗證；不得以自由聯想替代。';
+      }
+      return E.renderPromptContract(contract);
+    } catch (e) {
+      return '【系統錯誤】問題—方法—證據契約建立失敗：' + (e && e.message ? e.message : e);
+    }
   }
 
   function getSpreadMethod(q) {
@@ -285,6 +313,20 @@
       if (el && el.value && el.value.trim()) return el.value.trim();
     }
     return '（問卜者未填寫明確問題，請依牌面給通盤解讀）';
+  }
+
+  // v90：只保留原問句與通用資訊需求，不以題材分類重寫問題。
+  function buildRootQuestionLock(question, tool) {
+    if (tool !== 'tarot' && tool !== 'ootk') return buildFocusLock(question, tool);
+    return [
+      BAR,
+      '◆ 原問句保真（最高優先）',
+      BAR,
+      '原問句：' + question,
+      '先在內部確認主體、作用對象或場域、要判斷的事件／狀態、成立尺度、明示期限與所有實質限定；再確認使用者要求的資訊形式。',
+      '不得以題材分類、牌陣名稱、單張牌義或預設故事改寫原問句。ROOT-SPEC 的需求辨識是機械預檢，仍須逐字核對原句是否漏項或多加前提。',
+      '答案長短只由不同且可回溯的有效命題數量決定。'
+    ].join('\n');
   }
 
   // ── 問題分類引擎（v70.1 治本：補回 v70 改純前端複製後掉的 focusType 分類）──
@@ -501,6 +543,7 @@
     var L = [];
     L.push('牌陣類型與各位置：');
     L.push((td.spreadZh || td.spreadType || '未指定牌陣') + '（共 ' + cards.length + ' 張）');
+    if (td.sourceProfile) L.push('牌義來源設定：' + td.sourceProfile + '（本次只使用此設定）');
     L.push('');
     L.push('抽到的牌（逐張，含位置／牌名／正逆位）：');
     // ★ B（純考據 Mathers）：mathers_21 / mathers_horseshoe 兩法改用 Mathers 1888 原典牌義，
@@ -512,21 +555,10 @@
     cards.forEach(function (c, i) {
       var pos = c.positionMeaning || c.position || ('位置' + (i + 1));
       var ln = (i + 1) + '. ' + pos + '：' + (c.name || '');
-      if (_isMathers) {
-        // Mathers 1888 原典義（Etteilla 系）：「→」後面就是該牌正/逆位的原典含義，直接照讀
-        var _mm = c.isUp ? (c.mathersUp || '') : (c.mathersRv || '');
-        if (_mm) ln += ' → ' + _mm;
-      } else if (_isWaite) {
-        // 純-Waite 模式：「→」後面是 Waite《Pictorial Key》原典正/逆義，直接照讀，不疊 keywords/GD 宮廷
-        var _wm = c.isUp ? (c.waiteUp || '') : (c.waiteRv || '');
-        if (_wm) ln += ' → ' + _wm;
-      } else {
-        if (c.keywords) ln += '〔中性語義素材：' + c.keywords + '〕';
-        if (c.baseMeaning) ln += ' → ' + c.baseMeaning;
-        // ★ 根治宮廷牌矛盾：移除 inline GD 宮廷義。那是 Book T「well-dignified」特質、不吃逆位，
-        //   貼在逆位宮廷牌上會與該牌逆位關鍵字＋反位感知的「宮廷人物（td.courtPeople）」那行互相打架。
-        //   GD 的「ill-dignified」≠牌面逆位，RWS 逆位牌本就不適用 GD 宮廷法。人物一律由 td.courtPeople 統一供應。
-      }
+      // v90：ai-analysis 已依 sourceProfile 選出唯一 baseMeaning，並刪除未選中的來源欄位。
+      // Mathers／純 Waite 不輸出現代 RWS keywords，避免同一張牌混入兩套語義。
+      if (!_pureSrc && c.keywords) ln += '〔中性語義素材：' + c.keywords + '〕';
+      if (c.baseMeaning) ln += ' → ' + c.baseMeaning;
       L.push(ln);
     });
     // ★ 花色分布（suit clustering — 某花色佔多＝該領域訊號強，技術庫強訊號）
@@ -686,37 +718,37 @@
   }
 
   // ── 取排盤資料塊（沿用現有 builder，已含全部 GD/Mathers/Crowley/PHB 運算）──
-  function getPayload(tool) {
+  function getPayloadObject(tool) {
     try {
       var obj = null;
-      // ★ 修：builder 是頂層 function 宣告，裸名優先、window 後備、最後 eval 取全域
       function _callBuilder(name) {
         try { var fn = (0, eval)('typeof ' + name + ' === "function" ? ' + name + ' : null'); if (fn) return fn(); } catch (e) {}
         try { if (typeof window !== 'undefined' && typeof window[name] === 'function') return window[name](); } catch (e) {}
         return null;
       }
-      if (tool === 'ootk') {
-        obj = _callBuilder('_buildOOTKPayload');
-      } else if (tool === 'ziwei') {
-        obj = (typeof window !== 'undefined' && window.S && window.S.ziwei) ? window.S.ziwei : null;
-      } else if (tool === 'meihua') {
-        obj = (typeof window !== 'undefined' && window.S && window.S.meihua) ? window.S.meihua : null;
-      } else {
-        obj = _callBuilder('_buildTarotOnlyPayload');
-      }
-      if (!obj) {
-        if (tool === 'ziwei') return '（找不到紫微命盤資料，請先完成出生資料排盤）';
-        if (tool === 'meihua') return '（找不到梅花易數卦盤資料，請先完成起卦）';
-        return '（找不到排盤資料，請先完成抽牌／排盤）';
-      }
-      if (typeof obj === 'string') return obj; // 防呆：萬一回傳字串
-      // v86.26：ziwei 分支隨 TPL.ziwei 一併拆除（formatZiweiData 從未存在；紫微走 ziwei-standalone）
-      if (tool === 'meihua') return formatMeihuaData(obj);
-      if (obj.mode === 'ootk' || obj.ootkData) return formatOOTKData(obj);
-      return formatTarotData(obj);
-    } catch (e) {
-      return '（排盤資料組裝失敗：' + (e && e.message ? e.message : e) + '）';
+      if (tool === 'ootk') obj = _callBuilder('_buildOOTKPayload');
+      else if (tool === 'ziwei') obj = (typeof window !== 'undefined' && window.S && window.S.ziwei) ? window.S.ziwei : null;
+      else if (tool === 'meihua') obj = (typeof window !== 'undefined' && window.S && window.S.meihua) ? window.S.meihua : null;
+      else obj = _callBuilder('_buildTarotOnlyPayload');
+      return obj;
+    } catch (e) { return null; }
+  }
+
+  function formatPayloadObject(tool, obj) {
+    if (!obj) {
+      if (tool === 'ziwei') return '（找不到紫微命盤資料，請先完成出生資料排盤）';
+      if (tool === 'meihua') return '（找不到梅花易數卦盤資料，請先完成起卦）';
+      return '（找不到排盤資料，請先完成抽牌／排盤）';
     }
+    if (typeof obj === 'string') return obj;
+    if (tool === 'meihua') return formatMeihuaData(obj);
+    if (obj.mode === 'ootk' || obj.ootkData) return formatOOTKData(obj);
+    return formatTarotData(obj);
+  }
+
+  function getPayload(tool) {
+    try { return formatPayloadObject(tool, getPayloadObject(tool)); }
+    catch (e) { return '（排盤資料組裝失敗：' + (e && e.message ? e.message : e) + '）'; }
   }
 
   // ── 組成完整可複製提示詞 ──
@@ -724,18 +756,18 @@
     var t = TPL[tool];
     if (!t) return '';
     var question = getQuestion();
-    var payload = getPayload(tool);
-    var focusLock = buildFocusLock(question, tool); // ★ v70.4：分工具——開鑰走深度拆解、塔羅走 yes/no 直答
+    var rawPayload = getPayloadObject(tool);
+    var payload = formatPayloadObject(tool, rawPayload);
+    var isRootTarot = (tool === 'tarot' || tool === 'ootk');
+    var sourceLock = tool === 'meihua' ? FRAG_SOURCELOCK_MEIHUA : (isRootTarot ? '' : FRAG_SOURCELOCK);
+    var uncertainty = tool === 'meihua' ? FRAG_UNCERTAINTY_MEIHUA : (isRootTarot ? '' : FRAG_UNCERTAINTY_TAROT);
+    var recency = tool === 'meihua' ? FRAG_RECENCY_MEIHUA : (isRootTarot ? '' : buildRecencyTarot());
     return [
-      focusLock,
-      buildEvidenceCapabilityBlock(question, tool),
-      (tool === 'tarot' ? ('\n【本次牌陣專屬讀法——最優先，與後面所有通則衝突時一律以這段為準】\n' + getSpreadMethod(question)) : ''),
-      (tool === 'meihua' ? FRAG_SOURCELOCK_MEIHUA
-        : tool === 'tarot' ? (_isWaitePure() ? FRAG_SOURCELOCK_TAROT_WAITE : FRAG_SOURCELOCK_TAROT)
-        : FRAG_SOURCELOCK),
-      t.head
-        .replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
-      (tool === 'ootk' ? FRAG_UNCERTAINTY_OOTK : (tool === 'meihua' ? FRAG_UNCERTAINTY_MEIHUA : FRAG_UNCERTAINTY_TAROT)),
+      buildRootQuestionLock(question, tool),
+      t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
+      buildEvidenceCapabilityBlock(question, tool, rawPayload),
+      sourceLock,
+      uncertainty,
       '',
       BAR,
       t.dataHeader,
@@ -744,7 +776,6 @@
       '問卜者的問題：',
       question,
       '',
-      // ★ v75.2：注入今天日期，讓 AI 能正確錨定 Op4 時機
       (tool === 'ootk' ? '占卜日期：' + new Date().toISOString().slice(0, 10) + '\n' : ''),
       payload,
       '',
@@ -752,9 +783,10 @@
       (tool === 'meihua' ? '' : (tool === 'ziwei' ? FRAG_CRYSTAL_ZIWEI : FRAG_CRYSTAL)),
       FRAG_TRACE,
       FRAG_PLAINTEXT,
-      (tool === 'ootk' ? FRAG_RECENCY_OOTK : (tool === 'meihua' ? FRAG_RECENCY_MEIHUA : buildRecencyTarot()))
-    ].join('\n');
+      recency
+    ].filter(function(x){ return x !== ''; }).join('\n');
   }
+
   window.JY_buildExportPrompt = buildPrompt;
 
   // ── 複製到剪貼簿（含 fallback）──

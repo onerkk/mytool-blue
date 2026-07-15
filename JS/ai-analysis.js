@@ -23798,8 +23798,16 @@ function generateShareImage() {
 
 // ═══════════════════════════════════════════════════════════════
 // 塔羅快讀 AI — _triggerTarotAI + _buildTarotOnlyPayload
+// v90：語義編譯器先固定單一來源設定、方法規格與合法證據圖；提示詞只負責命題生成，不再自己猜幾何。
 // v89：輸出中性牌義素材；題材語境與事件結論交由提示詞的需求—證據矩陣處理。
 // ═══════════════════════════════════════════════════════════════
+
+function _jyTarotQuestionText() {
+  try {
+    var f = (S && S.form) || {};
+    return String(f.question || f.q || f.text || '').trim();
+  } catch (e) { return ''; }
+}
 
 function _buildTarotOnlyPayload() {
   // ── OOTK 模式 ──
@@ -23828,6 +23836,8 @@ function _buildTarotOnlyPayload() {
     minor_arcana: ['core','background','obstacle','external','resource','advice','outcome']
   };
   var _spreadId = (ta.spreadType || 'celtic_cross');
+  var _semanticEngine = (typeof window !== 'undefined') ? window.JYTarotSemanticEngine : null;
+  var _semanticProfile = _semanticEngine ? _semanticEngine.resolveSemanticProfile(_spreadId, { waitePure: !!window.JY_WAITE_PURE }) : ((_spreadId === 'mathers_21' || _spreadId === 'mathers_horseshoe') ? 'mathers_1888' : (window.JY_WAITE_PURE ? 'waite_1910' : 'modern_rws'));
   var _isTree = (_spreadId === 'tree_of_life');  // 生命之樹：質點＋22路徑結構，非直線陣
   var _roles = _roleMap[_spreadId] || [];
   var _focusType = (S.form && S.form.type) ? S.form.type : 'general';
@@ -23883,6 +23893,19 @@ function _buildTarotOnlyPayload() {
         card.waiteRv = _waiteM.rv || '';
       }
     }
+
+    // v90 單一來源設定：每次讀盤只保留一套可裁決牌義。其他來源欄位僅為資料庫相容，不進 semanticContract。
+    if (_semanticProfile === 'mathers_1888') {
+      card.baseMeaning = isUp ? (card.mathersUp || '') : (card.mathersRv || '');
+    } else if (_semanticProfile === 'waite_1910') {
+      card.baseMeaning = isUp ? (card.waiteUp || '') : (card.waiteRv || '');
+    } else {
+      card.baseMeaning = isUp ? (c.up || '') : (c.rv || '');
+    }
+    card.meaning = card.baseMeaning;
+    card.semanticProfile = _semanticProfile;
+    // 不把未選中的牌義來源交給後續模型，避免同一張牌在多套字典間自由跳轉。
+    delete card.mathersUp; delete card.mathersRv; delete card.waiteUp; delete card.waiteRv;
 
     return card;
   });
@@ -24449,7 +24472,7 @@ function _buildTarotOnlyPayload() {
 
   var result = {
     mode: 'tarot_only',
-    question: (S.form && S.form.question) ? S.form.question : '',
+    question: _jyTarotQuestionText(),
     focusType: (S.form && S.form.type) ? S.form.type : 'general',
     gender: genderText,
     name: nameText,
@@ -24460,6 +24483,7 @@ function _buildTarotOnlyPayload() {
     tarotData: {
       spreadType: ta.spreadType || 'celtic_cross',
       spreadZh: (def && def.zh) ? def.zh : '',
+      sourceProfile: _semanticProfile,
       uprightCount: cards.filter(function(c){ return c.isUp; }).length,
       reversedCount: cards.filter(function(c){ return !c.isUp; }).length,
       summary: cards.filter(function(c){ return c.isUp; }).length + '正' + cards.filter(function(c){ return !c.isUp; }).length + '逆',
@@ -24495,6 +24519,25 @@ function _buildTarotOnlyPayload() {
       } : null
     }
   };
+  // v90：把原問句、單一牌義來源、牌陣方法規格與合法證據圖編譯成機器契約。
+  try {
+    if (_semanticEngine) {
+      var _knownCounterpart = /(?:我|問卜者)(?:跟|和|與).{1,20}(?:的關係|之間|相處)|前任|現任|男友|女友|伴侶|配偶|老公|老婆|某位|這個人|那個人/.test(_jyTarotQuestionText());
+      var _contract = _semanticEngine.compileReadingSpec({
+        question: _jyTarotQuestionText(),
+        spreadId: _spreadId,
+        cards: cards,
+        sourceProfile: _semanticProfile,
+        waitePure: !!window.JY_WAITE_PURE,
+        knownCounterpart: _knownCounterpart
+      });
+      result.semanticContract = _contract;
+      result.tarotData.semanticContract = _contract;
+    }
+  } catch (_semErr) {
+    console.warn('[TarotSemanticEngine] compile failed:', _semErr);
+  }
+
   if (_cc.catalog.length) {
     result.crystalCatalog = _cc.catalog;
     result.crystalFavEl = _cc.favEl;
@@ -26790,7 +26833,7 @@ function _buildOOTKPayload() {
 
   var ootk_result = {
     mode: 'ootk',
-    question: (S.form && S.form.question) ? S.form.question : '',
+    question: _jyTarotQuestionText(),
     focusType: (S.form && S.form.type) ? S.form.type : 'general',
     birth: (S.form && S.form.bdate) ? S.form.bdate : '',
     birthTime: (S.form && S.form.btime) ? S.form.btime : '',
@@ -26799,6 +26842,7 @@ function _buildOOTKPayload() {
     trueSolar: (S.form && S.form.trueSolar) ? S.form.trueSolar : null,
     birthLocation: (S.form && S.form.birthLocation) ? S.form.birthLocation : null,
     ootkData: {
+      sourceProfile: 'gd_book_t',
       significator: results.significator || {},
       operations: ops,
       crossAnalysis: {
@@ -26827,6 +26871,22 @@ function _buildOOTKPayload() {
       divinationValidity: (results.divinationValidity || (cross && cross.divinationValidity) || null)
     }
   };
+  try {
+    var _ootkSemanticEngine = (typeof window !== 'undefined') ? window.JYTarotSemanticEngine : null;
+    if (_ootkSemanticEngine) {
+      var _ootkContract = _ootkSemanticEngine.compileReadingSpec({
+        question: _jyTarotQuestionText(),
+        spreadId: 'ootk',
+        sourceProfile: 'gd_book_t',
+        ootkData: ootk_result.ootkData
+      });
+      ootk_result.semanticContract = _ootkContract;
+      ootk_result.ootkData.semanticContract = _ootkContract;
+    }
+  } catch (_ootkSemErr) {
+    console.warn('[TarotSemanticEngine] OOTK compile failed:', _ootkSemErr);
+  }
+
   if (_cc.catalog.length) {
     ootk_result.crystalCatalog = _cc.catalog;
     ootk_result.crystalFavEl = _cc.favEl;

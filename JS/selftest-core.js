@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════════
-// 靜月之光占卜 · 全路徑自動檢測核心 v1 (2026/7/15 v89.0 基準)
+// 靜月之光占卜 · 全路徑自動檢測核心 v1 (2026/7/15 v90.0 ROOT-SPEC 基準)
 // 設計目的：根治「每輪解讀踩到一個新 bug」的被動修法——
 //   一次驗證：①部署完整性（線上檔案是否為最新版的字串簽名）
 //             ②資料表完整性（78 張牌義、Mathers 表、數字學表）
-//             ③引擎行為不變量（數字學、 多領域守門、提示詞組裝 13 種牌陣 × 4 工具）
+//             ③引擎行為不變量（數字學、 多領域守門、提示詞組裝 14 種塔羅牌陣＋開鑰 × 4 工具）
 //   sandbox（Node）與瀏覽器自檢頁共用本檔；env 介面隔離環境差異。
 // env = { getText(fname)->Promise<string>, buildPrompt(tool)|null, evalGlobal(code)|null, report(group,name,pass,detail) }
 // ═══════════════════════════════════════════════════════════════════
@@ -12,6 +12,21 @@
 
   // ── 字串簽名表：必含＝最新版證據；必不含＝舊版/已根治字串復活偵測 ──
   var SIGNATURES = {
+    'tarot-semantic-engine.js': {
+      must: [
+        '塔羅語義編譯器與合法證據圖 [v90.0]',
+        'var METHOD_SPECS',
+        'function compileQuestion',
+        'function compileEvidenceGraph',
+        'function compileOOTKEvidence',
+        'function compileReadingSpec',
+        'function renderPromptContract',
+        'ROOT-SPEC v90',
+        '跨 A/C/E 只能綜合各組已成立命題',
+        '不同操作不可直接連牌'
+      ],
+      mustNot: ['缺聖杯＝','權杖國王通常已婚','牌張數換算現實人數']
+    },
     'tarot_upgrade.js': {
       must: [
         '二十/審判數',                                    // v85 數字學 11-21 補表
@@ -29,7 +44,10 @@
         'card.baseMeaning = isUp ? (c.up || \'\') : (c.rv || \'\')', // v89 中性牌義
         'opposingPairs = [];',                                      // v89 固定故事停用
         'function _ootkOpPayload',                                  // v89 OOTK 結構化
-        'numberPatterns: []'                                        // v89 OOTK 衍生數量敘事停用
+        'numberPatterns: []',                                       // v89 OOTK 衍生數量敘事停用
+        'compileReadingSpec',                                         // v90 契約編譯
+        'result.semanticContract = _contract',                        // v90 塔羅契約掛載
+        'ootk_result.semanticContract = _ootkContract'                // v90 開鑰契約掛載
       ],
       mustNot: [
         '最終出現的人',                                      // 舊誘導措辭（第三者題遞刀）
@@ -51,20 +69,13 @@
     },
     'prompt-export.js': {
       must: [
-        '塔羅觀測能力＋證據矩陣根治',
-        '建立問題需求模型',
-        '建立牌陣觀測模型',
-        '建立需求—證據矩陣',
-        '聚合角色位只描述一類作用，不代表一個人，也不構成人數上限',
-        '未量測的維度要誠實說明，但其餘有效資訊仍要完整解讀',
-        '答案長短只由有效命題量決定',
-        '中性語義素材',
-        '第一次操作觀察當下情勢',
-        '第五次觀察最終結果',
-        '計數值是牌序導航',
-        '適配、重試與中止',
-        '代表牌每次出現是選堆與起算機制',
-        '依《Book T》計數值表採 Ace＝11',
+        'ROOT-SPEC',
+        'window.JYTarotSemanticEngine',
+        'renderPromptContract',
+        'buildRootQuestionLock',
+        '合法證據單位以 ROOT-SPEC 為準',
+        '不能把未相連的牌名拼成新的牌句',
+        '完整事件的強度不得高於最弱的必要語義成分',
         '本段不得反向影響牌義、裁決或建議',
         '不得解釋成問卜者「缺某元素」',
         '【礦物事實錨點】',
@@ -78,8 +89,6 @@
         '至少自然帶到 2 張 RWS',
         '每張牌都要在正文點到名',
         '極小盤（四花色牌總數≤3',
-        '辟邪定志',
-        '護身安神',
         'Sig 落在任何元素堆／宮位／星座／質點，都讀成「揭示真實場域」',
         'Aces 採 count 11（Crowley·Liber 78）',
         '重心傾向未來',
@@ -175,11 +184,11 @@
 
   var SPREAD_IDS = ['three_card','five_card','cross','either_or','timeline','relationship',
                     'celtic_cross','mathers_21','mathers_horseshoe','fifteen_card',
-                    'tree_of_life','zodiac','minor_arcana'];
+                    'tree_of_life','zodiac','minor_arcana','horseshoe'];
 
   // 每個工具提示詞必含的共同骨架
-  var PROMPT_COMMON = ['本次問題保真','【輸出載體——硬規則】','交稿前語義稽核'];
-  var PROMPT_TAROT_EXTRA = ['建立問題需求模型','建立牌陣觀測模型','建立需求—證據矩陣','【本題資訊需求 × 本方法觀測能力','【礦物事實錨點】'];
+  var PROMPT_COMMON = ['原問句保真','ROOT-SPEC v90','需求維度：','牌義來源：','合法證據單位：','內部命題帳本：','完整事件的結論強度不得高於最弱的必要語義成分','【輸出載體——硬規則】'];
+  var PROMPT_TAROT_EXTRA = ['塔羅證據整合者','合法證據單位以 ROOT-SPEC 為準','【礦物事實錨點】'];
   // 舊式題材公式、吉凶投票與強制篇幅規則不可復活
   var PROMPT_BLACKLIST = ['缺聖杯＝','先把「支持」與「反對」的牌各清點一次',
                           '至少自然帶到 2 張 RWS','每張牌都要在正文點到名',
@@ -385,35 +394,34 @@
       env.report('⑦雷諾曼推薦','水晶推薦仍於正文後依主結論選擇，沒有吻合可不推薦',campaignPrompt.indexOf('<stone_recommendation mode="select_after_interpretation"')>-1&&campaignPrompt.indexOf('若都不吻合')>-1,'');
     }
 
-    // ⑤提示詞組裝：13 種塔羅牌陣＋開鑰之法，共用語義引擎但保留各自結構
+    // ⑤提示詞組裝：14 種塔羅牌陣＋開鑰之法，共用 ROOT-SPEC 編譯器但保留各自結構
     if (typeof env.buildPrompt === 'function') {
       SPREAD_IDS.forEach(function (sid) {
         var p = '';
         try { p = env.buildPrompt('tarot', sid, ['love', 'money', 'health']); } catch (e) { p = ''; }
-        var ok = !!p && p.indexOf('本次牌陣：') > -1;
+        var ok = !!p && p.indexOf('ROOT-SPEC v90') > -1 && p.indexOf('合法證據單位：') > -1;
         PROMPT_COMMON.concat(PROMPT_TAROT_EXTRA).forEach(function (m) { ok = ok && p.indexOf(m) > -1; });
         PROMPT_BLACKLIST.forEach(function (m) { ok = ok && p.indexOf(m) === -1; });
-        ok = ok && p.indexOf('內容長短只由本盤能形成多少個不同且可回溯的有效命題決定') > -1;
+        ok = ok && p.indexOf('答案長短只由不同且可回溯的有效命題數量決定') > -1;
         env.report('⑤提示詞組裝', 'tarot/' + sid + ' 語義骨架完整且無舊公式', ok, ok ? '' : '缺片段或舊字串復活 len=' + p.length);
       });
 
       var pRel = env.buildPrompt('tarot', 'relationship', ['love']);
       env.report('⑤提示詞組裝', '未知對象不由關係牌位反向製造',
-        pRel.indexOf('聚合角色通道') > -1 && pRel.indexOf('不構成人數上限') > -1, '');
+pRel.indexOf('person_aggregate') > -1 && pRel.indexOf('不得當成一名人物或人數上限') > -1, '');
 
       var pWaite = '';
       try { pWaite = env.buildPrompt('tarot', 'celtic_cross', ['general'], true); } catch (e) { pWaite = ''; }
-      if (pWaite) env.report('⑤提示詞組裝', '純Waite不混入GD逆位系統', pWaite.indexOf('不要疊加Golden Dawn元素尊嚴') > -1, '');
+      if (pWaite) env.report('⑤提示詞組裝', '純Waite不混入其他來源', pWaite.indexOf('waite_1910') > -1 && pWaite.indexOf('本次只准使用這一個來源設定') > -1, '');
 
       var pO = '';
       try { pO = env.buildPrompt('ootk', 'three_card', ['money']); } catch (e) { pO = ''; }
       var ootkOk = !!pO && PROMPT_COMMON.every(function (m) { return pO.indexOf(m) > -1; })
-        && pO.indexOf('第一次操作觀察當下情勢') > -1
-        && pO.indexOf('第五次觀察最終結果') > -1
-        && pO.indexOf('完整讀取計數路徑') > -1
-        && pO.indexOf('適配、重試與中止') > -1
-        && pO.indexOf('代表牌每次出現是選堆與起算機制') > -1
-        && pO.indexOf('答案長短由有效命題量決定') > -1;
+        && pO.indexOf('gd_book_t') > -1
+        && pO.indexOf('operation_counting_path') > -1
+        && pO.indexOf('operation_pair') > -1
+        && pO.indexOf('每次操作先以自己的落點、完整計數路徑、配對與有效性成句') > -1
+        && pO.indexOf('不同操作不可直接連牌') > -1;
       PROMPT_BLACKLIST.forEach(function (m) { ootkOk = ootkOk && pO.indexOf(m) === -1; });
       env.report('⑤提示詞組裝', 'ootk 五次操作、適配、計數與配對規則完整', ootkOk, ootkOk ? '' : 'len=' + pO.length);
 
