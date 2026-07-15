@@ -24,7 +24,7 @@
 </head>
 <body>
 <h1>🔍 靜月之光 · 系統自檢</h1>
-<div class="sub">部署完整性 ＋ 資料表 ＋ 引擎行為不變量（v85.3 基準）。每次上傳檔案後打開本頁；全綠＝部署成功且無已知 bug 復活。</div>
+<div class="sub">部署完整性 ＋ 資料表 ＋ 引擎行為不變量（v91.0 ROOT-SPEC 基準）。每次上傳檔案後打開本頁；全綠＝部署成功且無已知 bug 復活。</div>
 <button onclick="location.reload()">重新檢測</button>
 <div id="summary" class="summary">檢測中…</div>
 <div id="groups"></div>
@@ -114,7 +114,7 @@
       } catch (e) { report('④多領域守門', '函式抽取執行', false, String(e).slice(0, 80)); }
     }));
 
-    // v90：先載入語義編譯器，再載入 prompt-export；測試資料也必須先通過同一份 ROOT-SPEC 契約。
+    // v91：先載入語義編譯器，再載入 prompt-export；測試資料必須通過同一份關係、量測與拓撲 ROOT-SPEC 契約。
     pre.push(new Promise(function(res){
       var se = document.createElement('script');
       se.src = 'JS/tarot-semantic-engine.js?st=' + bust;

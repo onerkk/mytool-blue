@@ -1,0 +1,68 @@
+靜月之光塔羅 ROOT-SPEC v91｜根架構修正說明
+日期：2026-07-15
+
+一、這次修改的性質
+本版不是增加「感情題、收入題、年齡題」等題材補丁，而是把所有問題與所有塔羅方法統一編譯成：
+
+原問句語義義務
+→ 資訊需求與關係運算
+→ 方法可觀測能力
+→ 單一牌義來源
+→ 牌陣拓撲與合法證據圖
+→ 結構化命題
+→ 需求—證據裁決
+→ 輸出不變量稽核
+
+固定的是證據程序；答案內容仍由本次問題、牌位、正逆位、合法結構與全盤反證共同形成。
+
+二、根層修正
+1. 原句關係編譯
+   - 保留主體、比較雙方、運算符、門檻、模態、期限與成功定義。
+   - 可辨識相對排序、門檻跨越、精確值、數值範圍、趨勢、穩定度等不同量測形式。
+   - 多子句可建立多個獨立語義義務。
+   - 由問句句法推導存在／事件成立需求，不依賴題材詞典。
+
+2. 方法能力對齊
+   - 每個牌陣有自己的 MethodSpec、位置權限、拓撲與量測能力。
+   - 單一情勢網絡不能冒充兩個獨立比較通道。
+   - 無量測通道時，只限制該維度；其餘可觀測內容仍完整回答。
+
+3. 非線性證據圖
+   - 凱爾特十字、生命之樹、黃道十二宮等保留軸線／柱／領域依賴圖，不再線性化成逐張時間故事。
+   - synthesis_only 單位只可綜合 dependsOn 已成立命題，不直接擁有任意牌序。
+
+4. 牌義來源與素材隔離
+   - 每次讀盤只使用一個 SemanticProfile。
+   - 牌義拆成 semanticCandidates 與 sourceGloss；來源釋義不是已成立事件句。
+   - Mathers 1888、Waite 1910、現代 RWS、混合 GD 結構與 Book T 不互相偷渡。
+
+5. 開鑰之法
+   - 五次操作各自建立落點、完整計數路徑、配對、有效性與階段摘要。
+   - 每次操作先形成 operation_stage_summary。
+   - cross_operation_stage_network 只綜合五個階段摘要，不跨操作直接拼牌。
+   - 第四次以外不自行製造精確日期；計數值、步數、堆張數與代表牌重複不換算現實數量。
+
+6. 輸出稽核
+   - 攔截重新定義原問句中的成功門檻。
+   - 攔截沒有獨立比較通道卻肯定跨越門檻。
+   - 攔截無量測通道卻輸出具體人數、年齡、金額、日期或百分比。
+   - 攔截引用本盤外牌名。
+
+三、技術研究依據
+- Anthropic, Prompt engineering overview：先定義成功標準與評估；不是所有失敗都應靠增加提示詞處理。
+  https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview
+- Anthropic, Define success criteria and build evaluations：任務特定、可量測、涵蓋邊界案例並盡量自動化評估。
+  https://docs.anthropic.com/en/docs/build-with-claude/develop-tests
+- DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines：將試誤式長提示改為宣告式模組與計算圖。
+  https://arxiv.org/abs/2310.03714
+- DSPy Assertions: Computational Constraints for Self-Refining Language Model Pipelines：用可執行斷言約束輸出，而非只在提示詞中要求模型遵守。
+  https://arxiv.org/abs/2312.13382
+- S. L. MacGregor Mathers, The Tarot (1888)：第一法 A=26、C=17、E=11 的連續閱讀與首尾配對程序。
+  https://sacred-texts.com/tarot/mathers/index.htm
+  https://benebellwen.com/wp-content/uploads/2019/02/the-tarot-1888-by-macgregor-mathers-1.pdf
+- A. E. Waite, The Pictorial Key to the Tarot：Waite來源與凱爾特十字邊界。
+  https://archive.org/details/A.EWaiteThePictorialKeyToTheTarot
+- Golden Dawn / Book T：開鑰之法五次操作的程序來源；本版將程序資料與現代附加解讀隔離。
+
+四、誠實邊界
+本架構可降低漏問、越權、來源混用、非法拼牌、假精確與子命題升級等系統性錯誤；它不能讓占卜成為可客觀驗證的預測，也不能保證任何語言模型在所有輸入上零錯誤。可靠性仍需依實際模型、題庫與持續回歸評估確認。

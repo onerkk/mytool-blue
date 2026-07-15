@@ -1,18 +1,40 @@
-執行日期：2026-07-15
+TAROT ROOT-SPEC v91 TEST RESULTS
+Date: 2026-07-15
 
-執行命令：
-node tests/tarot-v90-all.test.js
+[1] JavaScript syntax checks
+PASS  JS/tarot-semantic-engine.js
+PASS  JS/ai-analysis.js
+PASS  JS/prompt-export.js
+PASS  JS/selftest-core.js
 
-結果：
-- ROOT compiler/integration：13 tests passed
-- Metamorphic invariants：8 tests passed
-- 合計：21 tests passed
+[2] Root architecture and metamorphic tests
+✓ 原問句編譯保留比較雙方、門檻、模態與成功定義
+✓ 時間範圍與人物屬性不會吞掉存在與事件落實需求
+✓ 問句句法可泛化出未列題材的事件模態與數量存在邊界
+✓ 多子句比較不會只保留第一個門檻
+✓ 凱爾特十字不能把單一情勢網絡冒充雙收入比較通道
+✓ 二選一牌陣提供獨立分支比較，但仍不生成精確金額
+✓ 凱爾特十字完整網絡是依賴圖，不是N01到N10線性路徑
+✓ 牌義資料被拆成候選語義與來源釋義，不是預先事件句
+✓ 所有牌陣都由同一契約編譯器建立合法方法拓撲
+✓ 開鑰五次操作先各自形成階段摘要，再由階段網絡整合
+✓ 答案稽核攔截重新定義成功與無比較通道的肯定門檻
+✓ 所有塔羅牌陣與開鑰之法都能匯出同一根契約且保留各自拓撲
+✓ ROOT-SPEC v91提示包含原句關係、語義義務、量測邊界與非線性拓撲
+✓ index 依正確順序載入v91語義引擎與提示詞
+✓ 提示詞匯出使用v91契約與候選語義素材
 
-另行執行語法檢查：
-node -c JS/tarot-semantic-engine.js
-node -c JS/ai-analysis.js
-node -c JS/prompt-export.js
-node -c JS/tarot_upgrade.js
-node -c JS/selftest-core.js
+15 v91 root architecture tests passed
+✓ 比較題同義改寫保留同一關係運算與比較雙方
+✓ 不含比較的收入題不會被錯編譯成門檻跨越
+✓ 換牌只改語義內容，不改牌陣拓撲與依賴圖
+✓ 非線性牌陣的綜合節點永遠沒有直接牌序
+✓ 未量測門檻不會因結果牌換成財務吉牌而升級
+✓ Mathers來源隔離不因題目改變
+✓ 開鑰不同操作的牌不能進入同一直接證據單位
+✓ ROOT-SPEC不含題材固定公式或線性化凱爾特
 
-結果：全部通過。
+8 v91 metamorphic tests passed
+
+[3] Tarot deployment signatures against merged project
+Tarot-related signatures: 57/57 passed
