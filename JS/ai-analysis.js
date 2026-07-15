@@ -23798,6 +23798,7 @@ function generateShareImage() {
 
 // ═══════════════════════════════════════════════════════════════
 // 塔羅快讀 AI — _triggerTarotAI + _buildTarotOnlyPayload
+// v89：輸出中性牌義素材；題材語境與事件結論交由提示詞的需求—證據矩陣處理。
 // ═══════════════════════════════════════════════════════════════
 
 function _buildTarotOnlyPayload() {
@@ -23846,28 +23847,10 @@ function _buildTarotOnlyPayload() {
     };
     if (c.gdCourt) card.gdCourt = c.gdCourt.combo;
 
-    // ★ v28：根據問題類型送對應的牌義（AI 不再需要自己猜牌義）
-    // ★ v69 升級：新增 lifelesson / karmic / reconcile / thirdparty 的牌義路由
-    if (_focusType === 'love' || _focusType === 'relationship') {
-      card.meaning = isUp ? (c.loveUp || c.up || '') : (c.loveRv || c.rv || '');
-    } else if (_focusType === 'reconcile' || _focusType === 'thirdparty') {
-      // 復合 / 第三者 = 仍走愛情牌義（最契合的牌義庫），AI 在 prompt 層用 V69_SYMBOL_ROUTING 區分讀法
-      card.meaning = isUp ? (c.loveUp || c.up || '') : (c.loveRv || c.rv || '');
-    } else if (_focusType === 'career') {
-      card.meaning = isUp ? (c.careerUp || c.up || '') : (c.careerRv || c.rv || '');
-    } else if (_focusType === 'wealth') {
-      card.meaning = isUp ? (c.wealthUp || c.up || '') : (c.wealthRv || c.rv || '');
-    } else if (_focusType === 'health') {
-      card.meaning = isUp ? (c.healthUp || c.up || '') : (c.healthRv || c.rv || '');
-    } else if (_focusType === 'spiritual' || _focusType === 'lifelesson' || _focusType === 'karmic') {
-      // 靈性/今生課題/業力 = 共用 spiritual 牌義（spiritualUp/Rv），這是靈魂層讀法
-      // AI 會根據 V69_SYMBOL_ROUTING 區分這三者的視角差異
-      card.meaning = isUp ? (c.spiritualUp || c.up || '') : (c.spiritualRv || c.rv || '');
-    } else {
-      // general / timing / decision / family / 其他 = 通用牌義
-      card.meaning = isUp ? (c.up || '') : (c.rv || '');
-    }
-    card.advice = isUp ? (c.adviceUp || '') : (c.adviceRv || '');
+    // v89 根治：只送本牌正／逆位的中性通行義；不依題材預先把牌改寫成愛情、工作、財運或健康事件。
+    // 問題語境由外部 AI 在「牌＋位置＋全盤結構」中自行形成，避免資料層先替它作答。
+    card.baseMeaning = isUp ? (c.up || '') : (c.rv || '');
+    card.meaning = card.baseMeaning; // 相容舊呼叫者；prompt-export 只讀 baseMeaning。
     card.keywords = isUp ? (c.kwUp || '') : (c.kwRv || '');
 
     // ★ GD-3,4 套入:Court Card 完整 GD 讀法 (Mathers Book T 1888)
@@ -24430,6 +24413,19 @@ function _buildTarotOnlyPayload() {
     }
   } catch(_sigErr) { _signifier = null; }
 
+  // v89：下列舊引擎衍生敘事不再送進提示詞。它們把固定組合、正逆比例、題材路由或數字象徵預先寫成答案，
+  // 會污染 AI 對「牌在本位置如何回答原問句」的自主判斷。保留變數只為相容畫面，不作匯出證據。
+  opposingPairs = [];
+  storyArc = '';
+  comboText = '';
+  numerologyText = '';
+  kabbalahText = '';
+  tensions = [];
+  courtPeople = '';
+  majorWeight = '';
+  numberPatterns = '';
+  elementInteraction = '';
+
   // ── 組裝 ──
   var f = S.form || {};
   var genderText = f.gender === 'male' ? '男' : (f.gender === 'female' ? '女' : '');
@@ -24495,7 +24491,7 @@ function _buildTarotOnlyPayload() {
         upRatio: _tarotStats.upRatio,
         rvRatio: _tarotStats.rvRatio,
         coreOutcomeRel: _tarotStats.coreOutcomeRel,
-        insights: _tarotStats.insights
+        insights: []
       } : null
     }
   };
@@ -26277,12 +26273,10 @@ function _buildOOTKPayload() {
     // 元素
     var el = c.el || '';
     var s = name;
-    // 只顯示正面關鍵字（Thoth 標題 + 核心語意），不分正逆
+    // 只輸出中性標題／關鍵詞；問題題材與事件結論由落點、counting、pairing及牌力共同形成。
+    if (thothTitle) s += '〔' + thothTitle + '〕';
     var kw = c.kwUp || '';
-    if (kw) s += '〔' + kw + '〕';
-    // 只顯示正位含義作為牌的本質（逆位含義由元素尊嚴決定）
-    var meaning = c.up || '';
-    if (meaning) s += '→' + meaning;
+    if (kw && kw !== thothTitle) s += '〔' + kw + '〕';
     // 宮廷牌附元素屬性（用於元素尊嚴判斷）
     if (c.courtDesc) s += '｜宮廷牌：' + c.courtDesc;
     return s;
@@ -26309,37 +26303,6 @@ function _buildOOTKPayload() {
     return isUp ? (m.up || '') : (m.rv || '');
   }
 
-  function cardStrFull(c) {
-    if (!c) return '?';
-    var s = cardStr(c);
-    var isUp = c.isUp === true;
-    var meaning = '';
-    // ★ v69 升級：新增 lifelesson / karmic / reconcile / thirdparty 路由
-    if (_ootkFocus === 'love' || _ootkFocus === 'relationship') {
-      meaning = isUp ? (c.loveUp || c.up || '') : (c.loveRv || c.rv || '');
-    } else if (_ootkFocus === 'reconcile' || _ootkFocus === 'thirdparty') {
-      // 復合 / 第三者 = 走愛情牌義
-      meaning = isUp ? (c.loveUp || c.up || '') : (c.loveRv || c.rv || '');
-    } else if (_ootkFocus === 'career') {
-      meaning = isUp ? (c.careerUp || c.up || '') : (c.careerRv || c.rv || '');
-    } else if (_ootkFocus === 'wealth') {
-      meaning = isUp ? (c.wealthUp || c.up || '') : (c.wealthRv || c.rv || '');
-    } else if (_ootkFocus === 'health') {
-      meaning = isUp ? (c.healthUp || c.up || '') : (c.healthRv || c.rv || '');
-    } else if (_ootkFocus === 'spiritual' || _ootkFocus === 'lifelesson' || _ootkFocus === 'karmic') {
-      // 靈性/今生課題/業力 = 共用 spiritual 牌義
-      meaning = isUp ? (c.spiritualUp || c.up || '') : (c.spiritualRv || c.rv || '');
-    } else {
-      meaning = isUp ? (c.up || '') : (c.rv || '');
-    }
-    var kw = isUp ? (c.kwUp || '') : (c.kwRv || '');
-    if (kw) s += '〔' + kw + '〕';
-    if (meaning) s += '→' + meaning;
-    // ★ GD-8 套入 OOTK:Mathers 1888 原書牌義(雙路線判讀的另一條)
-    var mathersM = _ootkGetMathersMeaning(c, isUp);
-    if (mathersM) s += '【Mathers 1888:' + mathersM + '】';
-    return s;
-  }
 
   function buildOpData(op, idx) {
     var lines = [];
@@ -26682,9 +26645,70 @@ function _buildOOTKPayload() {
     return lines.join('\n');
   }
 
+  // v89：輸出結構化、中性的五次操作資料；不再把教學文字、題材例句或預先裁決塞進每個 Op。
+  function _ootkNeutralCard(c) {
+    if (!c) return null;
+    return {
+      name: c.n || c.name || '?',
+      thothTitle: c.thothTitle || c.title || '',
+      keywords: c.kwUp || '',
+      element: c.el || '',
+      suit: c.suit || '',
+      rank: c.rank || '',
+      num: (c.num === undefined ? null : c.num)
+    };
+  }
+  function _ootkOpPayload(op, idx) {
+    var x = {
+      stage: idx + 1,
+      activePile: op.activePile || '',
+      activeHouse: op.activeHouse || '',
+      activeSign: op.activeSign || '',
+      activeSephirah: op.activeSephirah || op.sephirah || '',
+      sephirahZh: op.sephirahZh || '',
+      locationMeaning: op.meaning || op.sephirahMeaning || '',
+      activeCards: (op.activeCards || []).map(_ootkNeutralCard),
+      countingPath: (op.countingPath || []).map(function(step) {
+        return {
+          cardName: step.cardName || (step.card && (step.card.n || step.card.name)) || '?',
+          countValue: step.countValue,
+          startDirection: step.startDirection || step.direction || ''
+        };
+      }),
+      pairs: (op.pairs || []).map(function(pr) {
+        return {
+          left: _ootkNeutralCard(pr.left || pr.card1),
+          right: _ootkNeutralCard(pr.right || pr.card2),
+          single: !!pr.single,
+          dignity: pr.dignity || ''
+        };
+      }),
+      dignities: op.dignities || [],
+      attempt: op.attempt || 1,
+      retryNote: op.retryNote || '',
+      abandonTriggered: !!op.abandonTriggered,
+      abandonReason: op.abandonReason || '',
+      weakSignalWarning: !!op.weakSignalWarning,
+      weakSignalReason: op.weakSignalReason || '',
+      decanSign: op.decanSign || '',
+      decanRange: op.decanRange || '',
+      decanPlanet: op.decanPlanet || '',
+      decanDateRange: op.decanDateRange || '',
+      expectedPiles: op.expectedPiles || [],
+      expectedHouses: op.expectedHouses || [],
+      expectedSigns: op.expectedSigns || [],
+      expectedSephiroth: op.expectedSephiroth || [],
+      sephExpectationMet: op.sephExpectationMet,
+      sephExpectationNote: op.sephExpectationNote || ''
+    };
+    if (op.mq_countingPath && op.mq_countingPath.length) {
+      x.mq_countingPath = op.mq_countingPath.map(function(step){ return { cardName: step.cardName || '?', countValue: step.countValue }; });
+    }
+    return x;
+  }
   var ops = {};
   ['op1','op2','op3','op4','op5'].forEach(function(k, i) {
-    if (results[k]) ops[k] = buildOpData(results[k], i);
+    if (results[k]) ops[k] = _ootkOpPayload(results[k], i);
   });
 
   var cross = results.crossAnalysis || {};
@@ -26795,10 +26819,10 @@ function _buildOOTKPayload() {
         // ── 正統性標記 ──
         _orthodoxy: 'v69.29.0_book_t_universal_validity_gate'
       },
-      numberPatterns: ootk_numberPatterns,
-      majorWeight: ootk_majorWeight,
-      courtPeople: ootk_courtPeople,
-      reversedAnalysis: ootk_reversedAnalysis,
+      numberPatterns: [],
+      majorWeight: '',
+      courtPeople: [],
+      reversedAnalysis: [],
       // 頂層鏡像，避免後端只讀 ootkData.divinationValidity 時漏抓
       divinationValidity: (results.divinationValidity || (cross && cross.divinationValidity) || null)
     }

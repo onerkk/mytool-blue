@@ -638,12 +638,17 @@ function detectSpreadType(question, type) {
   var isWhy      = /為什麼|為何|怎麼會|為啥|什麼原因|原因是|根源|問題出在|到底怎麼了|怎麼回事/.test(q);
   var isHow      = /如何|怎麼做|怎麼辦|怎樣才|方法|建議|策略|怎麼改|怎麼處理|怎麼經營|怎麼提升|要怎麼/.test(q) && !/^.{0,3}如何[？?]?\s*$/.test(q); // 排除「這週如何」「今天如何」這種短概覽
   var isOverview = /整體|全面|深入|詳細|各方面|大局|多面向|分析一下|運勢|近況|最近狀況|現況如何|幫我看看(?!他|她)/.test(q); // v86_router：補客人口語（運勢/近況）——「最近運勢如何」不再掉到五牌陣
+  var asksCardinality = /幾個|幾位|多少(?:人|個|位)|人數|數量/.test(q); // v89：資訊形式偵測；只影響自動選陣，不承諾可精確計數
   var isAnnual   = /年度運勢|整年|一整年|全年運|流年|十二宮|黃道|每個月|逐月|月月|(今年|明年)的?(整體)?運勢/.test(q)
                 || (/今年|明年|未來一年/.test(q) && /運勢|整體|大局|怎麼樣|如何|全面/.test(q) && q.replace(/\s/g,'').length <= 22);
   // v81_router：年度掃描收斂——「今年適合換工作嗎」是具體題不是年掃，舊版只看到「今年」就派13張黃道（過度觸發）
   var isBlocked  = /拉扯|糾結|矛盾|卡住|進退兩難|衝突|阻礙|不順|為什麼卡|怎麼解|僵|瓶頸|困境|動彈不得|解不開|過不去|走不出|掙扎|兩難/.test(q);
   var isPattern  = /為什麼一直|總是|每次都|又.*了|重複|老是|反覆|循環|模式|又來了/.test(q);
-  var hasPerson  = /他|她|對方|另一半|前任|現任|老公|老婆|男友|女友|伴侶|喜歡的人|喜歡上|喜歡我|喜不喜歡|愛不愛|想不想我|暗戀|告白|追我|追求|異性|曖昧|之間|怎麼想|心裡|真心|復合|分手|婚姻|夫妻|配偶/.test(q);
+  // v88_router：區分「已知特定對象」與「未知人物／是否存在的事件」。
+  // 關係牌陣需要可辨識的雙方；「有人、異性、桃花、未來對象、會不會有人告白」不因含感情詞就自動生成一個對方。
+  var hasKnownCounterpart = /(?:^|[，。！？?\s])(他|她|對方)(?:[會想愛喜討在跟與和對把]|$)|另一半|前任|現任|老公|老婆|男友|女友|伴侶|配偶|夫妻|曖昧對象|喜歡的人|那(?:位|個)(?:人|同事|主管|朋友)|這(?:位|個)(?:人|同事|主管|朋友)|某(?:位|個)?(?:人|同事|主管|朋友|客戶|對象)|我(?:跟|和|與)[^？?，。]{1,18}/.test(q);
+  var hasUnknownPersonEvent = /會不會有|會有|有沒有|是否有|有人|異性|桃花|新對象|未來對象|下一個對象|誰會|哪個人|暗戀我|喜歡我嗎|跟我告白|向我告白|追我|追求我|脫單/.test(q) && !hasKnownCounterpart;
+  var hasRelationshipContent = /喜歡|愛情|感情|戀愛|暗戀|告白|追求|曖昧|復合|分手|婚姻|關係|相處|真心|想不想我|愛不愛|喜不喜歡/.test(q);
 
   // ═══ 第 2 層：領域（已由 JY_classifyDomains 偵測，傳入 type）═══
   var isLove     = (type === 'love' || type === 'secret');
@@ -696,10 +701,17 @@ function detectSpreadType(question, type) {
   // 3.4 卡住 / 阻礙 / 為什麼不順 → cross（核心 vs 阻礙）
   if (isBlocked) return 'cross';
 
-  // 3.5 感情 + 涉及對方 → relationship（不管是非/why/how 都走這邊）
-  if ((isLove || isFamily) && hasPerson) {
+  // 3.5 已知特定對象的雙人關係 → relationship；未知人物事件不在這裡創造『對方』。
+  if ((isLove || isFamily || hasRelationshipContent) && hasKnownCounterpart && !hasUnknownPersonEvent) {
     return (qMarks >= 3) ? 'celtic_cross' : 'relationship';
   }
+
+  // 3.54 數量需求：一般塔羅沒有把牌張數換算為現實數量的機制；自動選五牌事件結構，讓 AI 判斷存在訊號、可區分證據群與量測邊界。
+  if (asksCardinality && !isOverview) return 'five_card';
+
+  // 3.55 未知人物是否出現、是否產生感情行動，是事件結構而非既存雙人關係。
+  // 五牌陣提供現況、形成條件、阻礙、可介入作用與結果，不預設人物已存在。
+  if ((isLove || hasRelationshipContent) && hasUnknownPersonEvent) return 'five_card';
 
   // 3.6 「為什麼」原因題（非感情對象題）→ cross
   if (isWhy) return 'cross';
@@ -732,8 +744,8 @@ function detectSpreadType(question, type) {
   // 3.9 健康 + 實際怎麼做 → minor_arcana（日常行動，不需大牌）
   if (isHealth && isHow) return 'minor_arcana';
 
-  // 3.10 感情題（有領域但沒涉及特定對方）→ five_card
-  if (isLove && !hasPerson) return 'five_card';
+  // 3.10 感情題（沒有已知特定對象）→ five_card
+  if (isLove && !hasKnownCounterpart) return 'five_card';
 
   // 3.11 概覽 / 多面向 → 深度全局池（v86_router）
   if (isOverview) return _pickBySeed(['celtic_cross','fifteen_card','mathers_21']);
@@ -750,11 +762,11 @@ function detectSpreadType(question, type) {
   // ═══ 第 5 層：領域預設（所有 regex 都沒中）═══
   var typeDefault = {
     love: 'five_card',
-    secret: 'relationship',
+    secret: 'five_card',
     work: 'five_card',
     money: 'five_card',
     health: 'minor_arcana',
-    family: 'relationship',
+    family: 'five_card',
     spiritual: 'tree_of_life',
     general: 'three_card'  // ★ 短問題沒有明確類型 → 三牌快答，不再一律 five_card
   };
