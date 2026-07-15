@@ -20,6 +20,7 @@ code = code.replace(/\}\)\(\);\s*$/, `window.__lnTest={
   grandCoord:_lnGrandCoord,
   grandNeighbors:_lnGrandImmediateNeighbors,
   grandLines:_lnGrandStraightLines,
+  grandSegmentCount:_lnGrandMainSegmentCount,
   grandLinesThrough:_lnGrandLinesThroughText
 };})();`);
 
@@ -111,62 +112,63 @@ const sample9 = [18,3,35,6,19,8,27,21,22].map(id => api.cards[id - 1]);
 const userGrandIds = [8,14,2,24,35,18,31,28,10,30,34,17,21,19,15,23,3,1,13,9,27,33,22,29,6,11,20,16,7,36,4,32,12,26,5,25];
 const sample36 = userGrandIds.map(id => api.cards[id - 1]);
 
-// 4. 共同引擎必須教模型如何從問句到牌句，而非只列限制。
+// 4. 共同引擎採完整覆蓋：先掃描全部合法組合，再輸出所有不同且相關的資訊。
 api.setSignif(null);
 const p3 = api.build('我副業能成功嗎？', sample3, 'three', null, 'male');
-check('common semantic engine present', p3.includes('【共同判讀流程：從問句到牌句（不要輸出此過程）】'));
-check('question modeling present', p3.includes('問句建模') && p3.includes('誰／什麼、要判斷什麼事件或狀態'));
-check('answer components present', p3.includes('建立回答部件') && p3.includes('不可缺少的語義部件'));
-check('card carriers present', p3.includes('找牌面承載點') && p3.includes('定位牌只是閱讀入口'));
-check('adjacent sentence composition present', p3.includes('相鄰造句') && p3.includes('前牌提出人、事、狀態或動作'));
-check('long-line synthesis present', p3.includes('長線合成') && p3.includes('滑動片段'));
-check('intersection network present', p3.includes('關聯網整合') && p3.includes('共享牌是共同樞紐'));
-check('evidence layers present', p3.includes('證據分層') && p3.includes('主證據'));
-check('progressive saturation present', p3.includes('漸進擴張') && p3.includes('新增證據不再帶來不同資訊時才停止'));
-check('semantic relation grammar section', p3.includes('【牌間關聯語法】'));
-check('no old global compression rule', !p3.includes('以最少充分證據回答'));
+check('coverage engine present', p3.includes('【完整覆蓋判讀法：從問句到全部相關牌句（不要輸出此過程）】'));
+check('question anchoring present', p3.includes('問句定錨') && p3.includes('主體、核心事件或狀態'));
+check('semantic components present', p3.includes('建立語義部件') && p3.includes('問句已給定的背景'));
+check('legal inventory present', p3.includes('建立合法組合清冊') && p3.includes('全部合法相鄰對'));
+check('pair sentence composition present', p3.includes('逐對造句') && p3.includes('前牌提出主題、人物、狀態或動作'));
+check('segment synthesis present', p3.includes('逐段合成') && p3.includes('三張、四張直到完整線'));
+check('intersection synthesis present', p3.includes('交會整合') && p3.includes('共享同一張實際牌'));
+check('coverage classification present', p3.includes('完整性分類') && p3.includes('提供新的相關資訊'));
+check('no early stop present', p3.includes('未完成清冊覆蓋前') && p3.includes('不得因已找到一條看似足夠的答案而停止'));
+check('semantic relation grammar section', p3.includes('【牌間關聯與句法】'));
+check('no fixed output cap', !p3.includes('通常2至3個實質段落') && p3.includes('不設字數、段落數或牌陣篇幅上限'));
 
 // 5. 三張線：相鄰短語→中間樞紐→完整句→條件與風險。
-check('three analysis title', p3.includes('【本牌陣完整分析法：三張線】'));
-check('three pair order', p3.includes('①讀1-2') && p3.includes('②讀2-3'));
-check('three middle function', p3.includes('第2張在整句中是延續、轉換、阻礙、條件或落實樞紐'));
-check('three full natural sentence', p3.includes('以1→2→3重寫成一個不漏牌的完整自然句'));
-check('three legal geometry', p3.includes('合法組合只有1-2、2-3、1-2-3'));
-check('three output depth', p3.includes('通常2至3個實質段落'));
+check('three coverage title', p3.includes('【本牌陣完整覆蓋法：三張線】'));
+check('three pair coverage', p3.includes('①讀1-2') && p3.includes('②讀2-3'));
+check('three middle function', p3.includes('第2張如何承接、轉換、阻礙、放大、削弱或落實'));
+check('three full natural sentence', p3.includes('讀1→2→3完整句'));
+check('three exact coverage count', p3.includes('合法清冊共3組：1-2、2-3、1-2-3'));
+check('three no fixed length', p3.includes('不設固定篇幅'));
 
 // 6. 五張線：核心三張、左右翼、完整五張與轉折。
 const p5 = api.build('為什麼生意卡住？', sample5, 'five', null, 'male');
-check('five analysis title', p5.includes('【本牌陣完整分析法：五張線】'));
-check('five core triad', p5.includes('先讀2-3與3-4') && p5.includes('合成2→3→4核心句'));
-check('five left wing', p5.includes('讀1→2→3，說明事件如何進入核心'));
-check('five right wing', p5.includes('讀3→4→5，說明核心如何向外發展或落實'));
-check('five complete line', p5.includes('再讀1→2→3→4→5完整句'));
-check('five output depth', p5.includes('通常3至5個實質段落'));
+check('five coverage title', p5.includes('【本牌陣完整覆蓋法：五張線】'));
+check('five all adjacent pairs', p5.includes('4組相鄰對：1-2、2-3、3-4、4-5'));
+check('five all triads', p5.includes('3組三張窗：1-2-3、2-3-4、3-4-5'));
+check('five all four-card windows', p5.includes('2組四張窗：1-2-3-4、2-3-4-5'));
+check('five complete line', p5.includes('最後讀1-2-3-4-5完整線'));
+check('five exact ten-combo inventory', p5.includes('合法清冊共10組') && p5.includes('1-2-3-4、2-3-4-5'));
 
 // 7. 雙路：共同標準、兩路完整分析、共同背景與同尺度比較。
 const p7 = api.build('留職還是離職？', sample7, 'choice', null, 'male');
-check('choice analysis title', p7.includes('【本牌陣完整分析法：雙路比較】'));
-check('choice shared criterion', p7.includes('建立兩路共同評估標準'));
-check('choice A complete', p7.includes('1-2、2-3、1→2→3完成A路'));
-check('choice B complete', p7.includes('5-6、6-7、5→6→7完成B路'));
-check('choice evaluates operation and costs', p7.includes('運作方式、收益、代價、限制與可持續性'));
-check('choice card four contextual only', p7.includes('第4張不與任何支線單張另組牌'));
-check('choice output depth', p7.includes('通常4至6個實質段落'));
+check('choice coverage title', p7.includes('【本牌陣完整覆蓋法：雙路比較】'));
+check('choice shared criterion', p7.includes('建立共同標準'));
+check('choice A complete', p7.includes('完整讀A路的1-2、2-3、1-2-3'));
+check('choice B complete', p7.includes('完整讀B路的5-6、6-7、5-6-7'));
+check('choice evaluates full dimensions', p7.includes('起點、運作方式、助力、代價、風險、可持續性與落點'));
+check('choice card four contextual only', p7.includes('第4張不與支線單張另組'));
+check('choice full losing-path disclosure', p7.includes('不能只說哪一路好') && p7.includes('省略另一條路的條件與代價'));
 
 // 8. 九宮格：中心四向→中心線→外圍線→交會整合，並使用所有有新資訊的相關線。
 const p9 = api.build('這段關係的來源、阻礙與結果如何？', sample9, 'nine', null, 'male');
-check('nine analysis title', p9.includes('【本牌陣完整分析法：九宮格】'));
-check('nine center direct effects', p9.includes('先用2-5、4-5、5-6、5-8理解中心受到的四向直接作用'));
-check('nine center complete lines', p9.includes('4→5→6、2→5→8、1→5→9、3→5→7'));
-check('nine uses all distinct relevant lines', p9.includes('使用所有能帶來不同新資訊的相關中心線'));
-check('nine outer context lines', p9.includes('再讀1→2→3、7→8→9、1→4→7、3→6→9等外圍線'));
-check('nine intersection synthesis', p9.includes('把實際交會的線透過共享牌整合'));
-check('nine balanced depth', p9.includes('不為省字只讀一兩條，也不為湊數朗讀全部八條'));
-check('nine output depth', p9.includes('通常4至8個實質段落'));
+check('nine coverage title', p9.includes('【本牌陣完整覆蓋法：九宮格】'));
+check('nine all sixteen pairs', p9.includes('16組相鄰對全部讀完') && p9.includes('1-2、2-3、4-5、5-6'));
+check('nine all eight lines', p9.includes('8條完整線全部讀完') && p9.includes('1-2-3、4-5-6、7-8-9'));
+check('nine exact twenty-four inventory', p9.includes('合法清冊共24組：16組相鄰對＋8條完整線'));
+check('nine outer lines cannot be skipped', p9.includes('外圍線不是次要而可省略'));
+check('nine intersection synthesis', p9.includes('逐一檢查各線共享的中心、角牌與邊牌'));
+check('nine no fixed cap', p9.includes('段落數由24組產生的不同資訊決定，不設上限'));
+check('nine output non-dictionary', p9.includes('不為湊字逐線抄牌義'));
 
 // 9. 36張幾何引擎：30條主盤直線、本人鄰域、本人所有穿越線與獨立末排。
 const grandLines = api.grandLines();
 check('grand has 30 legal main-grid lines', grandLines.length === 30, `got ${grandLines.length}`);
+check('grand has 236 contiguous main-grid segments', api.grandSegmentCount() === 236, `got ${api.grandSegmentCount()}`);
 check('grand rows count', grandLines.filter(x => x.label.startsWith('水平')).length === 4);
 check('grand columns count', grandLines.filter(x => x.label.startsWith('垂直')).length === 8);
 check('grand diagonals count', grandLines.filter(x => x.label.startsWith('斜')).length === 18);
@@ -174,27 +176,27 @@ check('all grand line indices stay in main grid', grandLines.every(x => x.indice
 check('all grand diagonals have at least two cards', grandLines.filter(x => x.label.startsWith('斜')).every(x => x.indices.length >= 2));
 
 const pg = api.build('公司會有30歲以下異性跟我表白嗎？', sample36, 'grand', null, 'male');
-check('grand analysis title', pg.includes('【本牌陣完整分析法：36張大牌陣】'));
-check('grand relationship-network explanation', pg.includes('36張不是36個單張答案，而是一張關係網'));
+check('grand coverage title', pg.includes('【本牌陣完整覆蓋法：36張大牌陣】'));
+check('grand relationship-network explanation', pg.includes('不是把36張各自講一次') && pg.includes('所有與原問句有關的不同資訊'));
 check('grand question map', pg.includes('階段一｜建立問題地圖'));
-check('grand subject field', pg.includes('階段二｜讀主體場'));
-check('grand event fields', pg.includes('階段三｜讀事件場'));
-check('grand event components cannot substitute', pg.includes('不得用其中一個部件代替整個事件'));
-check('grand direct connector then full-line context', pg.includes('先讀兩者之間的最短完整片段作直接證據') && pg.includes('再讀該整條直線在兩端之外的牌作背景修飾'));
-check('grand intersection logic', pg.includes('交會只能作兩句之間的共同機制'));
-check('grand progressive evidence layers', pg.includes('階段五｜漸進擴張證據層'));
-check('grand support obstacle manifestation coverage', pg.includes('哪些牌促成、穩定或放大') && pg.includes('哪些牌阻礙、消耗、拖延或封閉'));
-check('grand tail always read as closure', pg.includes('階段七｜讀末排收束'));
-check('grand focused output coverage', pg.includes('聚焦題至少完整呈現主體場、事件場、直接連接或交會機制、主要助力與阻礙、可觀察呈現程度及末排收束'));
-check('grand all legal line inventory emitted', pg.includes('主盤全部合法直線索引（只有這些水平、垂直、斜線可作連續句）'));
+check('grand all-line scan', pg.includes('階段二｜全盤合法線掃描'));
+check('grand subject field', pg.includes('階段三｜主體場完整覆蓋'));
+check('grand event field', pg.includes('階段四｜事件場完整覆蓋'));
+check('grand direct connector all windows', pg.includes('讀兩者間最短連續片段') && pg.includes('包含兩者的所有較長連續窗'));
+check('grand intersection logic', pg.includes('共享牌只連接兩個已成立的句子'));
+check('grand all-grid expansion', pg.includes('階段六｜全盤擴張'));
+check('grand support obstacle manifestation coverage', pg.includes('助力、阻礙、延遲、轉折、公開程度、穩定度與可觀察結果'));
+check('grand tail all segments', pg.includes('階段八｜末排完整收束') && pg.includes('33-34、34-35、35-36'));
+check('grand focused output coverage', pg.includes('聚焦題要輸出全盤中所有不同且相關的發現'));
+check('grand all legal line inventory emitted', pg.includes('主盤全部合法最大直線索引（共30條；其內共有236個兩張以上連續子段'));
 check('grand subject location emitted', pg.includes('問卜者本人牌：紳士在R1C8'));
 check('grand subject all neighbors emitted', pg.includes('本人牌全部立即鄰牌：左＝7.太陽；左下＝15.熊；下＝16.老鼠'));
 check('grand subject all crossing lines emitted', pg.includes('本人牌全部穿越線：'));
 check('grand subject horizontal line emitted', pg.includes('水平R1＝1.棺材→2.狐狸→3.幸運草→4.心→5.錨→6.狗→7.太陽→8.紳士'));
 check('grand subject vertical line emitted', pg.includes('垂直C8＝8.紳士→16.老鼠→24.淑女→32.月亮'));
 check('grand subject diagonal line emitted', pg.includes('斜↙起R1C8＝8.紳士→15.熊→22.鑰匙→29.蛇'));
-check('grand tail exact line emitted', pg.includes('末排唯一合法線：33.鳥→34.書→35.大樹→36.戒指。'));
-check('grand cannot be compressed to three-card length', pg.includes('大牌陣不得縮成三張線長度'));
+check('grand tail exact inventory emitted', pg.includes('末排合法組合：33-34、34-35、35-36、33-34-35、34-35-36、33-34-35-36'));
+check('grand cannot stop after core', pg.includes('不能因它不在本人附近就省略') && pg.includes('任何新增條件、機制、矛盾或結果層都不得省略'));
 
 // 10. 客觀限定須分層，避免因30歲以下未知而把表白核心一起模糊掉。
 check('objective qualifier layering', pg.includes('將「可由牌面回答的核心」與「無法確認的限定」分層說明'));
@@ -202,13 +204,13 @@ check('objective qualifier layering', pg.includes('將「可由牌面回答的�
 // 11. 段落順序固定為方法→牌陣→牌面資料→輸出→品牌。
 const orderedSections = [
   '【本次任務】',
-  '【共同判讀流程：從問句到牌句（不要輸出此過程）】',
-  '【牌間關聯語法】',
+  '【完整覆蓋判讀法：從問句到全部相關牌句（不要輸出此過程）】',
+  '【牌間關聯與句法】',
   '【回答契約】',
   '【共同方法邊界】',
-  '【本牌陣完整分析法：三張線】',
+  '【本牌陣完整覆蓋法：三張線】',
   '【抽到的牌與可用語彙】',
-  '【占卜正文的組織與深度】',
+  '【占卜正文的完整呈現方式】',
   '【品牌附加層（與占卜正文分離）】',
   '【本盤可在占卜正文使用的牌名】'
 ];
@@ -229,12 +231,12 @@ for (const [name, prompt] of [['three',p3],['five',p5],['choice',p7],['nine',p9]
 // 13. 版本與index快取同步。
 const source = fs.readFileSync(sourcePath, 'utf8');
 const indexSource = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-check('v10 source marker', source.includes('Lenormand v10.0（五牌陣語義合成引擎）'));
-check('v10 console marker', source.includes('semantic composition + spread-scaled depth engine'));
-check('v10 cache marker', indexSource.includes('JS/lenormand.js?v=20260715v10_0'));
-check('v10 changelog marker', indexSource.includes('雷諾曼 v10.0 五牌陣語義合成引擎'));
+check('v11 source marker', source.includes('Lenormand v11.0（五牌陣完整覆蓋解讀引擎）'));
+check('v11 console marker', source.includes('full legal-combination coverage engine'));
+check('v11 cache marker', indexSource.includes('JS/lenormand.js?v=20260715v11_0'));
+check('v11 changelog marker', indexSource.includes('雷諾曼 v11.0 五牌陣完整覆蓋解讀引擎'));
 
-console.log(`PASS: ${passed} Lenormand v10 semantic-reading checks.`);
+console.log(`PASS: ${passed} Lenormand v11 full-coverage checks.`);
 if (failed) {
   console.error(`FAIL: ${failed} checks.`);
   process.exit(1);
