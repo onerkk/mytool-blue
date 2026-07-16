@@ -1,9 +1,10 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🎴 牌陣選擇器（v80.37）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+// 🎴 牌陣選擇器（v94.0）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+//   v94.0:自動模式使用通用語義需求×牌陣能力矩陣，任何問題都會選出最小充分的最佳牌陣；新增七張馬蹄形作為中等複雜通用事件盤。
+//   v93.0:自動模式會立即重新分析目前問題、同步實際牌陣與判斷理由；不再只把按鈕切回「自動」卻沿用舊牌陣。
 //   v80.37:selectSpread（彈窗選單）切牌陣後補呼叫 JY_renderTarotChosenLayoutForCurrentSpread，
 //          與內嵌選單一致，不再殘留前一個牌陣的牌位（例如三牌陣卻顯示凱爾特 10 格）。
-//   機制：手動選定時，包裝 detectSpreadType 使其直接回傳該牌陣，
-//        於是所有自動偵測點（含 initTarotDeck）都會吃到手動選擇，ui.js 不需改動。
+//   機制：所有入口共用 JY_resolveTarotSpread；手動選擇以 _forcedSpread 覆寫，自動選擇保留語義路由的實際結果與理由。
 //   風格：沿用站上 token（--c-gold / --c-bg-card / Noto Serif TC）與 jy-tool-card orb 質感。
 // ══════════════════════════════════════════════════════════════════════
 (function () {
@@ -20,6 +21,7 @@
     cross:        { icon: 'fa-plus',         accent: '251,191,36',  cn: '十字牌陣',      suited: '卡關、糾結、想找原因 ・ 例：「為什麼一直談不成」「到底卡在哪」' },
     timeline:     { icon: 'fa-clock',        accent: '96,165,250',  cn: '時間線',        suited: '問時機 ・ 例：「什麼時候會有結果」「還要等多久」' },
     celtic_cross: { icon: 'fa-cross',        accent: '139,92,246',  cn: '凱爾特十字',    suited: '重要的事想看完整全局（10張深入）・ 例：「這段感情的整體狀況與走向」' },
+    horseshoe:    { icon: 'fa-archway',      accent: '96,165,250',  cn: '七張馬蹄形',    suited: '中等複雜事件、同時看盲點與環境 ・ 例：「這件事我忽略了什麼，接下來該怎麼做」' },
     tree_of_life: { icon: 'fa-sitemap',      accent: '52,211,153',  cn: '生命之樹',      suited: '內在課題、重複模式、靈性方向 ・ 例：「為什麼我總是遇到同一種人」' },
     zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '一整年逐領域掃描 ・ 例：「我今年的整體運勢」（12宮＋年度主軸）' },
     minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '日常具體小事（只用56張小牌）・ 例：「錢包找得回來嗎」「包裹會準時到嗎」' },
@@ -28,7 +30,7 @@
     mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '人生級大盤點、全部攤開（54張最完整，重大問題再用）・ 例：「把我的感情人生徹底攤開看」' }
   };
   var GROUPS = [
-    { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'celtic_cross'] },
+    { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'horseshoe', 'celtic_cross'] },
     { label: '進階・專門', ids: ['tree_of_life', 'zodiac', 'minor_arcana', 'fifteen_card', 'mathers_21', 'mathers_horseshoe'] }
   ];
 
@@ -130,15 +132,29 @@
     var subEl = document.getElementById('jy-spread-cur-sub');
     var iconEl = document.getElementById('jy-spread-cur-icon');
     if (!nameEl) return;
+
     if (!window._forcedSpread) {
-      nameEl.textContent = '自動判斷';
-      if (subEl) subEl.textContent = '依你的問題智慧選擇最適合的牌陣';
-      if (iconEl) iconEl.className = 'fas fa-wand-magic-sparkles';
+      var autoId = window._autoDetectedSpread || '';
+      var autoMeta = META[autoId];
+      var autoDef = defOf(autoId);
+      var decision = window._jyLastSpreadDecision || null;
+      if (autoId && autoMeta && autoDef) {
+        nameEl.textContent = '自動 → ' + autoMeta.cn + '（' + autoDef.count + ' 張）';
+        if (subEl) {
+          var reason = decision && decision.spreadId === autoId ? decision.reason : '';
+          subEl.textContent = reason ? '判斷依據：' + reason : '已依目前問題自動選擇';
+        }
+        if (iconEl) iconEl.className = 'fas ' + autoMeta.icon;
+      } else {
+        nameEl.textContent = '自動判斷';
+        if (subEl) subEl.textContent = '依你的問題智慧選擇最適合的牌陣';
+        if (iconEl) iconEl.className = 'fas fa-wand-magic-sparkles';
+      }
     } else {
       var m = META[window._forcedSpread], def = defOf(window._forcedSpread);
       if (m && def) {
         nameEl.textContent = m.cn + '（' + def.count + ' 張）';
-        if (subEl) subEl.textContent = '適合：' + m.suited;
+        if (subEl) subEl.textContent = '手動選擇・適合：' + m.suited;
         if (iconEl) iconEl.className = 'fas ' + m.icon;
       }
     }
@@ -160,18 +176,40 @@
     document.body.style.overflow = '';
   };
   window.selectSpread = function (id) {
+    var resolvedId = null;
+
     if (id === 'auto') {
       window._forcedSpread = null;
+      // 治本：切回自動時立即讀取「目前畫面上的問題」，不要等下一次進抽牌頁才重算。
+      var q = '';
+      var t = 'general';
+      try {
+        var qEl = document.getElementById('f-question') || document.getElementById('f2-question');
+        if (qEl && qEl.value) q = qEl.value.trim();
+        if (!q) q = (typeof S !== 'undefined' && S.form && S.form.question) ? S.form.question : '';
+        var tEl = document.getElementById('f-type');
+        if (tEl && tEl.value) t = tEl.value;
+        else t = (typeof S !== 'undefined' && S.form && S.form.type) ? S.form.type : 'general';
+      } catch (e) {}
+      if (q && typeof window.JY_resolveTarotSpread === 'function') {
+        resolvedId = window.JY_resolveTarotSpread(q, t);
+      } else if (q && typeof detectSpreadType === 'function') {
+        resolvedId = detectSpreadType(q, t);
+        if (resolvedId && typeof setCurrentSpread === 'function') setCurrentSpread(resolvedId);
+        window._autoDetectedSpread = resolvedId || null;
+      } else {
+        window._autoDetectedSpread = null;
+      }
     } else {
       window._forcedSpread = id;
+      window._autoDetectedSpread = null;
+      resolvedId = id;
       if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
     }
-    // 清牌堆，讓下次抽牌（或返回抽牌頁）依新牌陣重建
+
+    // 清牌堆，讓下次抽牌（或返回抽牌頁）依新牌陣重建。
     try { if (typeof deckShuffled !== 'undefined') deckShuffled = []; } catch (e) {}
-    // v80.37 補:此彈窗原本只更新狀態、沒重畫 #t-chosen，從這裡切牌陣會殘留前一個牌陣
-    //   （例如凱爾特 10 格）。與內嵌選單（tarot_upgrade.js）一致：選定具體牌陣時清已抽牌，
-    //   並立即以當前牌陣呼叫 JY_renderTarotChosenLayoutForCurrentSpread 重畫。
-    if (id !== 'auto') {
+    if (resolvedId) {
       try { if (typeof drawnCards !== 'undefined') drawnCards = []; } catch (e) {}
       var _jyRepaintSpread = function () {
         try {
@@ -184,9 +222,10 @@
       setTimeout(_jyRepaintSpread, 0);
       setTimeout(_jyRepaintSpread, 180);
     }
+
     updateTrigger();
     markSelected();
-    setTimeout(window.closeSpreadPicker, 180); // 讓使用者看到勾選動畫
+    setTimeout(window.closeSpreadPicker, 180);
   };
 
   function init() {

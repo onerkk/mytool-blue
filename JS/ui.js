@@ -1616,14 +1616,11 @@ function submitStep0Fast(){
     ()=>{
       // ★ 自動模式：種子洗牌 + 根據牌陣張數抽牌
       try {
-        // 偵測牌陣
-        var _spreadId = 'celtic_cross';
-        if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
-          _spreadId = window._forcedSpread; setCurrentSpread(_spreadId);
-        } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
-          _spreadId = detectSpreadType(S.form.question || '', S.form.type || 'general');
-          setCurrentSpread(_spreadId);
-        }
+        // v93：所有流程共用單一語義路由入口，禁止頁面分支再二次改寫牌陣。
+        var _spreadId = (typeof window.JY_resolveTarotSpread === 'function')
+          ? window.JY_resolveTarotSpread(S.form.question || '', S.form.type || 'general')
+          : ((typeof detectSpreadType === 'function') ? detectSpreadType(S.form.question || '', S.form.type || 'general') : 'three_card');
+        if (typeof setCurrentSpread === 'function') setCurrentSpread(_spreadId);
 
         // ── OOTK 攔截：不走正常抽牌，標記後面啟動 OOTK 流程 ──
         if (_spreadId === 'ootk') {
@@ -6489,15 +6486,14 @@ showAuraResult = function(){
     // 偵測問題類型 → 選牌陣
     var q = (S.form && S.form.question) ? S.form.question : '';
     var t = (S.form && S.form.type) ? S.form.type : 'general';
-    if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
-      setCurrentSpread(window._forcedSpread);
-      window._autoDetectedSpread = null; // 手動模式
-      console.log('[Tarot] 手動指定牌陣 →', window._forcedSpread);
-    } else if (typeof detectSpreadType === 'function') {
-      var spreadId = detectSpreadType(q, t);
-      if (typeof setCurrentSpread === 'function') setCurrentSpread(spreadId);
-      window._autoDetectedSpread = spreadId; // ★ v75：記錄自動偵測結果
-      console.log('[Tarot] 問題偵測 → 牌陣:', spreadId, '(問題類型:', t, ')');
+    var spreadId = (typeof window.JY_resolveTarotSpread === 'function')
+      ? window.JY_resolveTarotSpread(q, t)
+      : ((typeof detectSpreadType === 'function') ? detectSpreadType(q, t) : 'three_card');
+    if (typeof setCurrentSpread === 'function') setCurrentSpread(spreadId);
+    if (window._forcedSpread) {
+      console.log('[Tarot] 手動指定牌陣 →', spreadId);
+    } else {
+      console.log('[Tarot] 語義路由 →', spreadId, '｜', (window._jyLastSpreadDecision && window._jyLastSpreadDecision.reason) || '無判斷理由');
     }
 
     // ★ v75：更新牌陣選擇器顯示，讓使用者看到偵測結果
@@ -6692,12 +6688,11 @@ showAuraResult = function(){
     var tEl = document.getElementById('f-type');
     var q = qEl ? qEl.value.trim() : '';
     var t = tEl ? tEl.value : 'general';
-    if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread]) {
-      setCurrentSpread(window._forcedSpread);
-    } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
-      setCurrentSpread(detectSpreadType(q, t));
-      console.log('[AutoMode] 牌陣偵測:', getCurrentSpread());
-    }
+    var fastSpread = (typeof window.JY_resolveTarotSpread === 'function')
+      ? window.JY_resolveTarotSpread(q, t)
+      : ((typeof detectSpreadType === 'function') ? detectSpreadType(q, t) : 'three_card');
+    if (typeof setCurrentSpread === 'function') setCurrentSpread(fastSpread);
+    console.log('[AutoMode] 語義牌陣:', fastSpread);
     // 繼續原始流程
     if (_prevSubmitFast) _prevSubmitFast.apply(this, arguments);
   };
@@ -6807,19 +6802,11 @@ async function submitTarotQuick() {
   window._ootkResults = null;
   window._pendingOOTK = false;
 
-  // ── 偵測牌陣 ──
-  var spreadId = 'celtic_cross';
-  if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
-    spreadId = window._forcedSpread; setCurrentSpread(spreadId);
-  } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
-    spreadId = detectSpreadType(question, type);
-    var qMarkCount = (question.match(/[？?]/g) || []).length;
-    if (qMarkCount >= 2 && (spreadId === 'three_card' || spreadId === 'timeline')) {
-      spreadId = (type === 'love' || type === 'relationship' || type === 'family') ? 'relationship' : 'five_card';
-    }
-    if (qMarkCount >= 3) spreadId = 'celtic_cross';
-    setCurrentSpread(spreadId);
-  }
+  // v93：只採用中央語義路由結果；移除「問號數量強制改牌陣」的旁路。
+  var spreadId = (typeof window.JY_resolveTarotSpread === 'function')
+    ? window.JY_resolveTarotSpread(question, type)
+    : ((typeof detectSpreadType === 'function') ? detectSpreadType(question, type) : 'three_card');
+  if (typeof setCurrentSpread === 'function') setCurrentSpread(spreadId);
   var spreadDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
   var targetCount = spreadDef ? spreadDef.count : 10;
 
@@ -7422,16 +7409,11 @@ function resetToHome() {
             S._autoMode = false;
             drawnCards = [];
             S.tarot = { drawn: [], spread: [] };
-            // 偵測牌陣
-            if (window._forcedSpread && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[window._forcedSpread] && typeof setCurrentSpread === 'function') {
-              setCurrentSpread(window._forcedSpread);
-            } else if (typeof detectSpreadType === 'function' && typeof setCurrentSpread === 'function') {
-              var sid = detectSpreadType(q, t);
-              var qm = (q.match(/[？?]/g) || []).length;
-              if (qm >= 2 && (sid === 'three_card' || sid === 'timeline')) sid = (t === 'love' || t === 'relationship' || t === 'family') ? 'relationship' : 'five_card';
-              if (qm >= 3) sid = 'celtic_cross';
-              setCurrentSpread(sid);
-            }
+            // v93：手動抽牌入口也只走中央語義路由，不再以問號數量覆寫。
+            var sid = (typeof window.JY_resolveTarotSpread === 'function')
+              ? window.JY_resolveTarotSpread(q, t)
+              : ((typeof detectSpreadType === 'function') ? detectSpreadType(q, t) : 'three_card');
+            if (typeof setCurrentSpread === 'function') setCurrentSpread(sid);
             // 跳到抽牌頁（step-2）
             goStep(2);
           });
