@@ -1,4 +1,23 @@
-/*! meihua-standalone.js — 靜月之光 梅花易數獨立流程  [v80.17]
+/*! meihua-standalone.js — 靜月之光 梅花易數獨立流程  [v80.41]
+ *  v80.39(2026/6/12)：分享卡補爻線——payload 加 lines（本卦＝下上卦 li 串接、互卦取2-4/3-5爻、
+ *    變卦＝動爻翻轉，與 calcMH 同式）與 dong；配合 share-card v2.2 直繪六爻卦象。
+ *  v80.38(2026/6/12 歐那)：實測第二輪回饋三項根治——
+ *    ①蝦皮連結改「犧牲行」結構：網址倒數第二行、最後固定一句收尾話墊後。兩輪實測輸出末端都黏不可見
+ *      Unicode（U+2060 等），文獻證實為 AI 生成/渲染/剪貼簿管線副產物、提示詞原理上攔不住；雜訊永遠黏在
+ *      輸出最末端，故網址不可當末行——收尾句當犧牲行吃掉雜訊，網址行保持乾淨可點。
+ *    ②生剋力道：體克用/體生用補「用旺衰」雙向分支（鐵律③明言體用都要看，原版這兩支只看體；
+ *      本輪實測「體囚剋用旺」只標出體弱、漏了用旺加重費勁）。
+ *    ③動爻爻位參考行（《繫辭傳下》：初難知/二多譽/三多凶/四多懼/五多功/上易知）——實測輸出
+ *      跳過動爻層位不讀，根因是資料區沒給；資料直給＋鐵律⑧納入主線。
+ *  v80.37(2026/6/12 歐那)：應期正統化＋體用原文定性——
+ *    ①應期改《占卦訣》原典斷法：「事應於生體卦氣之日、敗於剋體卦氣之日」，吉應（生體＋體旺之氣）／敗應（剋體之氣）
+ *      分開給最近窗，另給「用近／互中／變遠」層次；廢除「用卦五行→季節」應期法（非原典，僅保留為事情節奏參考）。
+ *    ②鐵律②吉凶定性對齊《體用總訣》原文：體剋用＝諸事吉（原「小吉」會系統性壓低吉度）、用剋體＝諸事凶、
+ *      體生用＝耗失之患、用生體＝進益之喜、比和＝百事順遂；鐵律⑦改吃資料區吉應／敗應、禁自創應期算法。
+ *    ③生剋力道行中性化：移除「該收手別再貼」等預下結論句（曾與變卦轉好行互相打架），結論統一由鐵律合成。
+ *    ④蝦皮連結改「獨立成行＋末字雙保險」（實測輸出曾在網址後黏不可見字元致連結失效；複製模式無法程式後處理，僅能強化指令）。
+ *  v80.34(2026/6/10)：防線統一——⑩補盤外資訊禁令、選石補嚴禁並列（與八字/紫微同步，紫微未設防實測曾全面復發）
+ *  v80.33(2026/6/10)：①互卦對體生剋資料行（體用總訣「他卦者，謂用互變也」——原本只給互卦名、要 AI 自己算，這次實測就漏了）②最近應期窗（斷占總訣寅卯木…辰戌丑未土，節氣近似換月）③完整性清單加「正文無指令字眼」④fallback 註解誠實化
  *  歐那 2026/6/6：梅花要跟雷諾曼一樣，自成一頁、乾淨、不出現其他入口、無多餘說明，並有自己的過場動畫。
  *  做法：完全比照 lenormand.js 的「自包覆獨立頁 + 組好提示詞複製去 AI」模式。
  *  引擎：直接呼叫既有全域 calcMH()（meihua_upgrade.js 已載入），不重造起卦邏輯。
@@ -26,13 +45,14 @@
     {id:'perplexity',name:'Perplexity',url:'https://www.perplexity.ai/'}
   ];
 
-  // 用神（用卦）五行 → 應期，供提示詞引用
+  // 用神（用卦）五行 → 事情節奏（v80.37 正統化：只定快慢性質、不再給應期月份——
+  // 應期月份照《占卦訣》「事應於生體卦氣之日、敗於剋體卦氣之日」另行計算）
   var WX_TIMING = {
-    木:'春季或農曆一～三月，事情走「成長／推進」的節奏，速度中快',
-    火:'夏季或農曆四～六月，事情走「曝光／情緒／主動」的節奏，速度快',
-    土:'季末（農曆三、六、九、十二月），事情走「穩定／拖延／承擔」的節奏，速度慢',
-    金:'秋季或農曆七～九月，事情走「決斷／切割／壓力」的節奏，速度中等',
-    水:'冬季或農曆十～十二月，事情走「流動／變數／等待」的節奏，速度慢'
+    木:'事情走「成長／推進」的節奏，速度中快',
+    火:'事情走「曝光／情緒／主動」的節奏，速度快',
+    土:'事情走「穩定／拖延／承擔」的節奏，速度慢',
+    金:'事情走「決斷／切割／壓力」的節奏，速度中等',
+    水:'事情走「流動／變數／等待」的節奏，速度慢'
   };
 
   var _mhWrap = null;
@@ -130,6 +150,8 @@
       '.mhx-load-sub{margin-top:.4rem;font-size:.74rem;color:rgba(212,175,55,.55);letter-spacing:.08em;transition:opacity .3s;min-height:1.1rem;text-align:center}'
     ].join('\n');
     document.head.appendChild(css);
+  // ═══ 鎏金夜祭 v2（2026/6/18）：主 CTA 採靜態鎏金底＋transform-only 獨立流光層，避免 Android/Samsung 對 background-position 動畫漏畫按鈕 ═══
+  try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','meihua');_g2.textContent='.mhx-section{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.mhx-section-title{position:relative;padding-left:12px;letter-spacing:.08em;color:#e8d28a}.mhx-section-title::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:1.05em;border-radius:2px;background:rgba(154,184,122,.9);box-shadow:0 0 8px rgba(154,184,122,.9)}.mhx-q-input,.mhx-section input,.mhx-section select,.mhx-section textarea{background:rgba(8,7,5,.62);border:1px solid rgba(201,168,76,.26);border-radius:12px;color:#f2e9d6;transition:border-color .2s,box-shadow .2s}.mhx-q-input:focus,.mhx-section input:focus,.mhx-section select:focus,.mhx-section textarea:focus{border-color:#e8d28a;box-shadow:0 0 0 3px rgba(201,168,76,.16);outline:none}.mhx-method-btn{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.22);color:#d8c79a;border-radius:12px;transition:color .18s,background-color .18s,border-color .18s,box-shadow .18s,transform .18s}.mhx-method-btn.active{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}.mhx-cast-btn{background:linear-gradient(135deg,#a98232 0%,#e8d28a 44%,#f5e7b8 58%,#c9a84c 100%);color:#171208;border:none;border-radius:14px;font-weight:800;letter-spacing:.14em;box-shadow:0 10px 26px rgba(201,168,76,.32),inset 0 1px 0 rgba(255,255,255,.35);position:relative;overflow:hidden;isolation:isolate}.mhx-cast-btn::before{content:none;display:none}.mhx-cast-btn:active{transform:translateY(1px)}.mhx-reset-btn{background:transparent;border:1px solid rgba(201,168,76,.34);color:#cdb87f;border-radius:12px}.mhx-back{color:rgba(232,210,138,.75)}.mhx-back:hover{color:#f5e7b8}.mhx-ai-card{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}@supports not (backdrop-filter:blur(1px)){[data-jy-view-meihua]{}}.mhx-cast-btn:focus-visible{outline:2px solid #e8d28a;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
     return _mhWrap;
   }
 
@@ -187,6 +209,7 @@
         h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'"><span>'+ai.name+'</span></button>';
       }
       h += '</div><div class="mhx-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
+      h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_meihuaShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361</button></div>';
       h += '<div style="text-align:center"><button class="mhx-reset-btn" onclick="_mhReset()">↺ 重新起卦</button></div>';
     }
     h += '<div class="mhx-footer">靜月之光 ・ jingyue.uk<br>梅花易數 ・ 體用占</div></div>';
@@ -353,21 +376,48 @@
   };
 
   function _mhTrig(g){ return g ? ((g.name||'') + (g.nat?('('+g.nat+')'):'') + (g.el?('·'+g.el):'')) : '？'; }
+
+  // v80.41：問題保真路由。只限定「答案要回答什麼」，不替卦象預寫吉凶。
+  function _mhQuestionContract(question) {
+    var q = String(question || '').trim();
+    var L = ['【本題回答契約（優先於通用格式，不得改寫原問句）】'];
+    if (!q) {
+      L.push('問卜者沒有填寫明確問題：不得自行編造人物、事件或生活領域；只能說明本卦所示的一般局勢、可觀察變化與使用限制。');
+      return L.join('\n');
+    }
+    L.push('完整保留原問句的主體、對象、事件、否定、比較、期限、場域與成立門檻；第一句必須回答同一個問題，不能偷換成較容易回答的版本。');
+    var yesno = /會不會|能不能|可不可以|是否|是不是|有沒有|嗎[？?]?\s*$/.test(q);
+    var timing = /何時|什麼時候|多久|幾天|幾週|幾月|哪一年|時間|近期|本月|今年|明年/.test(q);
+    var choice = /還是|二選一|哪個|哪一個|比較|該選|選擇/.test(q);
+    var cause = /為什麼|為何|原因|怎麼會|根源/.test(q);
+    var action = /怎麼做|怎麼辦|如何|建議|方法|策略|該不該|要不要/.test(q);
+    var mind = /愛不愛|愛上|喜歡|想我|想念|在想|心裡|真心|感情|關係|復合|曖昧|桃花/.test(q);
+    var lost = /不見|遺失|掉了|找得到|在哪裡|位置|失物|走失/.test(q);
+    var exact = /幾個|幾位|多少|百分比|幾成|機率|金額|價位|幾歲|年齡|姓名|名字|身分|職業|長相|外貌|號碼|彩票|樂透/.test(q);
+    var high = /疾病|症狀|癌|懷孕|手術|藥|醫療|官司|法律|犯罪|報警|投資|股票|期貨|加密貨幣|借貸|債務|自殺|傷害/.test(q);
+    var allegation = /外遇|偷吃|劈腿|偷竊|下毒|陷害|詐騙|兇手|性侵|跟蹤|犯罪/.test(q);
+    var liveFact = /天氣|氣溫|降雨|颱風|地震|航班|班機|股價|匯率|價格|法規|選舉|比賽|比分|開獎/.test(q);
+    if (yesno) L.push('這是成立與否的命題：第一句給「偏會／偏不會／有條件才會」之一，並標明把握度強、中、弱；不可把短暫訊號直接等同最終成立。');
+    if (timing) L.push('這題要求時間：只准使用資料區已給的吉應、敗應與近中遠層次；沒有可靠時間窗就直說卦面不能精確到日期，不得另造天數或月份。');
+    if (choice) L.push('這是比較題：用同一標準分別評估每個明示選項；若一卦不足以同時量測多個選項，先判目前主線，再明說比較限制，不得硬湊勝負。');
+    if (cause) L.push('這題要求原因：把原因分成當前主因、過程暗線與觸發點，分別落回本卦、互卦與動爻，不以類象故事取代因果。');
+    if (action) L.push('這題要求做法：建議必須直接對應最強阻力或最可控節點，給一至三個可執行動作與停止條件，不講空泛心靈話。');
+    if (mind) L.push('涉及他人感情或內心：只能判互動趨勢、投入程度、界線與可觀察行為；不得宣稱已客觀讀到對方秘密心理，也不得把禮貌、順從或單次互動直接斷成愛意。');
+    if (lost) L.push('涉及失物／位置：依八卦方位、場域與物象給「優先搜索區域與順序」，不可保證精確地址或把類象說成已親眼看見。');
+    if (exact) L.push('涉及數量、身分、金額、年齡、機率或號碼：卦象沒有獨立量測通道就不得編造精確值；改答相對強弱、範圍層級或可驗證特徵。');
+    if (high) L.push('涉及醫療、法律、犯罪、投資或人身安全：只提供象徵性趨勢與風險提醒，不能取代專業判斷；不得給診斷、保證勝訴、報酬承諾或危險指示。');
+    if (allegation) L.push('涉及外遇、詐騙、偷竊、傷害或其他指控：卦象不能作為認定他人違法或不忠的證據；只能說疑點、風險與應查證的現實信號。');
+    if (liveFact) L.push('涉及可即時查證的現實資料：卦象只能補充象徵性趨勢，不得冒充天氣、價格、法規、航班、賽果或開獎的官方資料。');
+    return L.join('\n');
+  }
+
   function buildMeihuaPrompt(question, mh) {
     var tiName = (mh.tiG && mh.tiG.name) || '', yoName = (mh.yoG && mh.yoG.name) || '';
     var tiEl = mh.tiG && mh.tiG.el, yoEl = mh.yoG && mh.yoG.el;
-    var timing = WX_TIMING[yoEl] || '依用卦五行對應的季節月份';
+    var timing = WX_TIMING[yoEl] || '節奏依用卦五行性質判';
     var luck = mh.ty ? mh.ty.f : '';
-    var verdictHint =
-      luck==='大吉' ? '卦象偏向「有利、有外助」' :
-      luck==='吉'   ? '卦象偏向「順、可行」' :
-      luck==='小吉' ? '卦象偏向「可成，但要主動費力」' :
-      luck==='小凶' ? '卦象偏向「不利、在耗你」——壞消息要直說' :
-      luck==='凶'   ? '卦象偏向「受阻、不利」——壞消息要直說' :
-      '依體用生剋據實判斷';
-
     // ── 旺衰（旺相休囚死）：體、用、變後用 都要算，生剋力道才準（天花板在材料）──
-    //    優先用既有引擎 getMhWangShuai（含節氣判月），失敗才退節氣簡表；同一函數對任一五行通用。
+    //    優先用既有引擎 getMhWangShuai（v80.16 起含節氣判月＋四季月土旺），失敗才退國曆近似簡表；同一函數對任一五行通用。
     function _wsLevelOf(el) {
       if (!el) return '';
       try { if (typeof getMhWangShuai === 'function') { var r = getMhWangShuai(el); if (r && r.level) return r.level; } } catch (e) {}
@@ -400,19 +450,23 @@
       var tiStrong = ts>=3, tiWeak = ts<=1, yoStrong = ys>=3, yoWeak = ys<=1;
       if (relName==='用克體') {
         if (yoWeak && tiStrong) return '用衰體旺——克你的力道其實很弱、你站得住，這個「凶」要大打折扣，別當成困難重重。';
-        if (yoStrong && tiWeak) return '用旺體弱——克力強、受傷重，這個凶要當真，得正面處理不利、別硬撐。';
+        if (yoStrong && tiWeak) return '用旺體弱——克力強、受傷重，這個凶要當真。';
         if (yoStrong && tiStrong) return '雙方都旺——硬碰硬，受阻但你頂得住，要主動出力才壓得下。';
         if (yoWeak && tiWeak) return '雙方都弱——事不成氣候，拖著沒力、難有結果。';
-        return '克力中等——受點阻、要主動化解，別硬扛。';
+        return '克力中等——受點阻，程度中等。';
       }
       if (relName==='體生用') {
+        if (tiWeak && yoStrong) return '體弱生旺用——旺者奪氣，洩耗最重、得不償失之象。';
+        if (tiStrong && yoWeak) return '體旺生衰用——洩得起且洩耗有限，付出有本錢，但仍是你在貼。';
         if (tiStrong) return '體旺——洩得起，付出有本錢，但仍是你在貼、被牽著走。';
-        if (tiWeak) return '體弱還在洩——越給越虛，很可能得不償失，該收手別再貼。';
+        if (tiWeak) return '體弱還在洩——越給越虛，洩耗偏重、得不償失之象。';
         return '在洩耗——付出與回收要算清楚，別無底線投入。';
       }
       if (relName==='體克用') {
+        if (tiWeak && yoStrong) return '體弱剋旺用——原局仍屬諸事吉，但落實度最低；主動權名義在你，實際推動最費力。';
+        if (tiStrong && yoWeak) return '體旺剋衰用——壓得輕鬆、最易成。';
         if (tiStrong) return '體旺——你壓得住、可成，主動推進就行。';
-        if (tiWeak) return '體弱想掌控——力道不足，成得很費勁，先把自己養旺。';
+        if (tiWeak) return '體弱想掌控——吉意仍在，但力道不足，成得很費勁。';
         return '掌控力中等——可成但需出力。';
       }
       if (relName==='用生體') {
@@ -445,12 +499,39 @@
     var L = [];
     L.push('你是一位用了二十年梅花易數、講話直接不繞圈的占者。有人剛為一件事起了卦，要你把卦讀成他能用的判斷，而不是把卦辭翻譯一遍。');
     L.push('');
-    L.push('問題：' + (question || '（未填，請依卦象給出最可能的主題與通則判斷）'));
+    L.push('問題：' + (question || '（未填）'));
+    L.push('');
+    L.push(_mhQuestionContract(question));
     L.push('');
     L.push('【卦象資料】');
     L.push('本卦：' + (mh.ben && mh.ben.n) + '（上卦' + _mhTrig(mh.up) + '，下卦' + _mhTrig(mh.lo) + '）—— 事情的當前定性。');
     L.push('互卦：' + (mh.hu && mh.hu.n) + ' —— 發展過程、當事人沒看到的隱情與中間變數。');
+    // v80.33 互卦對體生剋（《體用總訣》「宜受他卦之生，不宜受他卦之剋。他卦者，謂用互變也」——資料直給，不靠 AI 自己算）
+    try {
+      if (mh.lo && mh.lo.li && mh.up && mh.up.li && typeof gByL === 'function' && tiEl) {
+        var _SH = (typeof SHENG !== 'undefined') ? SHENG : {木:'火',火:'土',土:'金',金:'水',水:'木'};
+        var _KEm = (typeof KE !== 'undefined') ? KE : {木:'土',土:'水',水:'火',火:'金',金:'木'};
+        var _six = [mh.lo.li[0], mh.lo.li[1], mh.lo.li[2], mh.up.li[0], mh.up.li[1], mh.up.li[2]];
+        var _huLo = gByL(_six[1], _six[2], _six[3]);
+        var _huUp = gByL(_six[2], _six[3], _six[4]);
+        var _hrel = function (g) {
+          if (!g || !g.el) return '';
+          if (g.el === tiEl) return (g.name||'') + '（' + g.el + '）與體比和＝過程有同氣相助';
+          if (_SH[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）生體＝過程有暗助推力';
+          if (_SH[tiEl] === g.el) return (g.name||'') + '（' + g.el + '）受體生＝過程在洩耗你';
+          if (_KEm[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）剋體＝過程有人事在擋';
+          if (_KEm[tiEl] === g.el) return (g.name||'') + '（' + g.el + '）受體剋＝過程可控但費力';
+          return '';
+        };
+        var _hl = _hrel(_huLo), _hu2 = _hrel(_huUp);
+        if (_hl || _hu2) L.push('互卦對體生剋（過程在幫你還是扯你）：互上' + (_hu2 || '—') + '；互下' + (_hl || '—') + '。');
+      }
+    } catch (e) {}
     L.push('變卦：' + (mh.bian && mh.bian.n) + ' —— 若照目前走向，事情最後的結局。');
+    var _cuo = (typeof mhCuoGua === 'function') ? mhCuoGua(mh) : null;
+    var _zong = (typeof mhZongGua === 'function') ? mhZongGua(mh) : null;
+    if (_cuo) L.push('錯卦（上' + _cuo.up + '下' + _cuo.lo + '）—— 事情的反面、你沒看到的相反可能與潛在反作用力；若這一面反而有利，提醒當事人可能看錯方向或另有轉圜。');
+    if (_zong) L.push('綜卦：' + (_zong.isSelf ? '與本卦相同 —— 正反看都一樣，事情沒有迴旋餘地、難以換角度' : ('上' + _zong.up + '下' + _zong.lo + ' —— 把局面整個倒過來、站對方／對立位置看到的另一種樣貌，可輔助觀察換位後的立場或事情循環另一端，但不能單憑此卦斷定對方內心')) + '。');
     L.push('體卦：' + _mhTrig(mh.tiG) + ' —— 問卜者自身／所問之主體。體宜旺、宜被生。');
     L.push('用卦：' + _mhTrig(mh.yoG) + ' —— 所問之事／外在環境／對方。');
     L.push('本卦體用關係：' + (mh.ty && mh.ty.r) + '（' + luck + '）。' + (mh.ty && mh.ty.d));
@@ -459,9 +540,67 @@
       L.push('變卦體用關係（結局）：體仍為' + tiName + '（' + tiEl + '），用變為' + yoBianName + '（' + yoBianEl + '）→ ' + bianTy.r + '（' + bianTy.f + '）。變後用「' + yoBianName + '」當下旺衰為「' + _wsLevelOf(yoBianEl) + '」。生剋力道：' + _forceNote(bianTy.r, wsLevel, _wsLevelOf(yoBianEl)) + ' 拿它跟本卦體用比：同向＝維持，轉壞＝越走越不利，轉好＝漸入佳境。');
     }
     L.push('動爻：第 ' + mh.dong + ' 爻動（變卦由此而生，是事情變化的關鍵點）。');
+    // v80.38 動爻爻位層次（《繫辭傳下》：其初難知、其上易知；二多譽、四多懼、三多凶、五多功）
+    var _YAO_POS = {
+      1:'初爻＝事之始、根基層，方向未定（其初難知）——變化發生在起步與底層條件',
+      2:'二爻＝內部核心、得中之位，多獲助與稱譽（二多譽）——變化發生在內部主力與核心本身',
+      3:'三爻＝內外交界、進退尷尬之位，多波折（三多凶）——變化發生在轉換與銜接處',
+      4:'四爻＝近事之外場、伴君之位，多戒懼（四多懼）——變化發生在對外接口與關鍵他方',
+      5:'五爻＝主導尊位、事之高峰（五多功）——變化發生在主導權與大局層',
+      6:'上爻＝事之末、過極之位，局面將收（其上易知）——變化發生在收尾與規則層，過頭則散'
+    };
+    if (_YAO_POS[mh.dong]) L.push('動爻爻位參考：' + _YAO_POS[mh.dong] + '。把它跟變卦合著讀，點出變化具體落在事情的哪一層。');
     L.push('體卦旺衰：' + tiName + '（' + tiEl + '）當下時令為「' + wsLevel + '」——' + wsNote);
     L.push('用卦旺衰：' + yoName + '（' + yoEl + '）當下時令為「' + yoWs + '」——用' + (_wsNoteMap[yoWs] || '') + '；用是剋體／受體生剋的一方，它的旺衰直接決定上面「生剋力道」的輕重。');
-    L.push('應期參考：用卦五行為「' + yoEl + '」，' + timing + '。');
+    L.push('事情節奏參考（用卦五行性質，只定快慢、不定應期月份）：用卦五行為「' + yoEl + '」，' + timing + '。');
+    // v80.37 正統應期（《梅花易數·占卦訣》：「看卦中有生體之卦，則事應於生體卦氣之日；有剋體之卦，則事敗於剋體卦氣之日」
+    //   ——吉應看生體＋體旺之氣、敗應看剋體之氣，吉敗分開；節氣近似換月、誤差一兩天。
+    //   取代 v80.33「用卦五行→季節」法（該法非原典應期斷法，原典中用卦只主近期之應的層次）。
+    try {
+      var _nd = new Date(), _gm = _nd.getMonth() + 1, _gd = _nd.getDate();
+      var _JD = {1:6,2:4,3:6,4:5,5:6,6:6,7:7,8:8,9:8,10:8,11:7,12:7};
+      var _lunAfter = {1:12,2:1,3:2,4:3,5:4,6:5,7:6,8:7,9:8,10:9,11:10,12:11};
+      var _cur = (_gd >= (_JD[_gm]||6)) ? _lunAfter[_gm] : (_lunAfter[_gm] === 1 ? 12 : _lunAfter[_gm] - 1);
+      var _SETS = {木:[1,2], 火:[4,5], 土:[3,6,9,12], 金:[7,8], 水:[10,11]};
+      var _TXT  = {木:'寅卯月（農曆正、二月）', 火:'巳午月（農曆四、五月）', 土:'辰未戌丑月（農曆三、六、九、十二月）', 金:'申酉月（農曆七、八月）', 水:'亥子月（農曆十、十一月）'};
+      var _SM = {金:'土', 木:'水', 水:'金', 火:'木', 土:'火'}; // 生我者
+      var _KM = {金:'火', 木:'金', 水:'土', 火:'水', 土:'木'}; // 剋我者
+      var _nearWin = function (set) {
+        if (!set) return null;
+        for (var k = 0; k < 12; k++) {
+          var mm = ((_cur - 1 + k) % 12) + 1;
+          if (set.indexOf(mm) >= 0) return { m: mm, k: k, zhi: '寅卯辰巳午未申酉戌亥子丑'.charAt(mm - 1) };
+        }
+        return null;
+      };
+      var _winTxt = function (w) {
+        if (!w) return '';
+        return w.k === 0 ? '本月（農曆' + w.m + '月・' + w.zhi + '月）即在窗內' : '農曆' + w.m + '月（' + w.zhi + '月），距今約 ' + w.k + ' 個月';
+      };
+      if (tiEl && _SM[tiEl]) {
+        var _shEl = _SM[tiEl], _keEl2 = _KM[tiEl];
+        var _jiWin  = _nearWin((_SETS[_shEl] || []).concat(_SETS[tiEl] || []));
+        var _baiWin = _nearWin(_SETS[_keEl2]);
+        L.push('應期（本系統採用《占卦訣》的生體／剋體卦氣法；依節氣換月、前後誤差一兩天）：');
+        L.push('・吉應之期：生體之氣為「' + _shEl + '」，當令於' + _TXT[_shEl] + '；體旺之氣（' + tiEl + '）當令於' + _TXT[tiEl] + '。最近吉應窗：' + _winTxt(_jiWin) + '。');
+        L.push('・敗應之期：剋體之氣為「' + _keEl2 + '」，當令於' + _TXT[_keEl2] + '。最近敗應窗：' + _winTxt(_baiWin) + '。');
+        L.push('・遠近層次：用卦主近期之應、互卦主中期之應、變卦主遠期之應。');
+      }
+    } catch (e) {}
+    // 品牌收尾選石：先由卦內需求機械決定，避免每次都推同一顆或由 AI 任意編功效。
+    var _shengWo = {木:'水', 火:'木', 土:'火', 金:'土', 水:'金'};
+    var _relNorm = String((mh.ty && mh.ty.r) || '').replace(/剋/g, '克');
+    var _needSupport = (wsLevel === '休' || wsLevel === '囚' || wsLevel === '死' || _relNorm === '用克體' || _relNorm === '體生用');
+    var _supportEl = _needSupport ? (_shengWo[tiEl] || tiEl) : tiEl;
+    var _stoneMap = {
+      水:{name:'海藍寶', fact:'海藍寶屬綠柱石族、六方晶系，主要由鐵致色。'},
+      木:{name:'綠幽靈', fact:'綠幽靈是石英內含綠泥石等綠色包體所形成的景觀。'},
+      火:{name:'紫水晶', fact:'紫水晶屬石英家族，主要成分為二氧化矽，硬度為莫氏7。'},
+      土:{name:'虎眼石', fact:'虎眼石以絲絹狀貓眼光帶為主要外觀特徵，選購可看光帶是否集中。'},
+      金:{name:'白水晶', fact:'白水晶屬石英家族，主要成分為二氧化矽，硬度為莫氏7。'}
+    };
+    var _stonePlan = _stoneMap[_supportEl] || _stoneMap[tiEl] || _stoneMap.金;
+    L.push('品牌收尾指定（不得影響前面斷卦）：本次只推薦「' + _stonePlan.name + '」；取象需求為「' + _supportEl + '」，屬品牌實務的五行色象搭配，不是《梅花易數》原理，也不代表礦物具有改運功效。可用礦物事實：' + _stonePlan.fact);
     L.push('');
     L.push('【八卦類象（推具體人事物，只取與問題相關的，不要全列）】');
     L.push('體卦 ' + tiName + '：' + (GUA_XIANG[tiName] || ''));
@@ -469,36 +608,66 @@
     L.push('其餘速查（推互卦、變卦的人事物用）：乾＝' + GUA_XIANG['乾'] + '；兌＝' + GUA_XIANG['兌'] + '；離＝' + GUA_XIANG['離'] + '；震＝' + GUA_XIANG['震'] + '；巽＝' + GUA_XIANG['巽'] + '；坎＝' + GUA_XIANG['坎'] + '；艮＝' + GUA_XIANG['艮'] + '；坤＝' + GUA_XIANG['坤'] + '。');
     L.push('（類象只用來推「象」；不可從某一卦直接斷定當事人的婚姻、生死、有無對象等卦上未明示的事實。）');
     L.push('');
-    L.push('【斷卦鐵律（違反就是失敗）】');
-    L.push('①結論先行：第一句就正面回答他問的事（能不能／會不會／往哪走／何時）。本卦定方向（' + verdictHint + '），但實際輕重以「生剋力道」那行為準——用衰克體無力就別講成困難重重，用旺克體才當真。');
-    L.push('②體用生剋是斷吉凶的核心，據實說、別只報關係名詞：');
-    L.push('　・用生體＝大吉：外力、貴人、環境來幫你，事半功倍。');
-    L.push('　・比和＝吉：同氣相順，事順但突破有限。');
-    L.push('　・體剋用＝小吉：你能掌控、可成，但要主動出力、費些勁。');
-    L.push('　・體生用＝洩耗：你在付出、被牽著走，耗神耗財，當心得不償失。');
-    L.push('　・用剋體＝凶：受制、受阻、被壓——這是壞消息，講清楚不利在哪。');
-    L.push('③旺衰定力度（體、用都要看）：同樣的生剋，要看雙方旺衰才知真實輕重——剋體之卦（用）若休囚死，克你無力、凶大減；用旺相則凶不可當。體自身乘旺則吉更實、逢凶能扛；體休囚死又被剋，凶上加凶。已附「生剋力道」一行，據它定輕重，別只照生剋名詞一律講「困難重重」或「大吉」。');
-    L.push('④三象串成一條線、不要逐卦分段：本卦（現在是什麼局）→ 互卦（過程藏了什麼、誰在暗中推或擋；除了看象，也看互卦五行對體是生是剋——過程在幫你還是扯你）→ 變卦（照這樣走收在哪）。變卦體用若比本卦轉壞＝越走越不利，轉好＝漸入佳境。');
-    L.push('⑤用類象推具體人事物：依體用互變各卦類象，推對方／貴人／小人是什麼樣的人、事情牽涉什麼物、什麼方位場合，讓他能對照確認；只取相關的象，不要全背。');
-    L.push('⑥壞消息就是壞消息：用剋體、體生用、變卦轉壞，直接講不利、會怎麼發生，並給「要主動做什麼才可能扭」的具體方向，不可用「考驗／轉機／成長」帶過。');
-    L.push('⑦應期要落地：用卦（連同變卦、動爻）五行對應的季節月份就是事情的時間節奏，講清楚大概何時會動、為什麼是那時候，不要只說「快了」。');
-    L.push('⑧挑最強的訊號深挖：把「體用生剋＋動爻變化」這條主線講透，不要十二類象蜻蜓點水。');
-    L.push('⑨不要用粗體標題分類、不要「本卦：…互卦：…」逐段排版，像跟人講話一樣自然過渡。');
-    L.push('⑩只依卦象與生剋推，不臆測他的心理動機、不反問他；卦上看不出來就說看不出來，不硬編。');
+    L.push('【判讀規則（依序執行，後項不得推翻前項）】');
+    L.push('①先回答完整原問句：第一句直接裁決，不鋪陳、不改寫成立門檻。結論強度分為強／中／弱；弱不是含糊，而是明說「目前偏向什麼、缺哪個條件」。');
+    L.push('②證據優先序固定：原問句語義 → 本卦體用生剋 → 體用旺衰力道 → 動爻與爻位 → 本卦、互卦、變卦的事件線 → 應期 → 錯綜與類象。後面的象只能補充或校正，不能反過來壓過體用主線。');
+    L.push('③體用定性照《梅花易數·體用總訣》語彙，旺衰只決定力度與落實度，不得偷改吉凶種類：');
+    L.push('　・用生體＝有進益之喜：外力來助。');
+    L.push('　・比和＝百事順遂：同氣相順，但突破幅度另看旺衰。');
+    L.push('　・體剋用＝諸事吉：主動在體、可成；體弱剋旺用時是吉意難落實，不得改判成凶，也不得吹成輕鬆必成。');
+    L.push('　・體生用＝有耗失之患：體在洩耗，先看投入是否值得。');
+    L.push('　・用剋體＝諸事凶：受制受阻；用衰則凶減，用旺體弱才是重凶。');
+    L.push('④遇到訊號衝突，不准平均成模糊話：先指出最高權重訊號給主結論，再說哪個次級訊號限制它，最後列出「什麼可觀察條件出現時，結論會轉強或轉弱」。');
+    L.push('⑤本卦、互卦、變卦要串成因果與時間線：現在是什麼局 → 中途誰或什麼機制推拉 → 動爻在哪一層觸發 → 按目前走勢收在哪。不得逐卦翻譯卦名或重複同一結論。');
+    L.push('⑥動爻必須連爻位層次一起讀，說清變化落在根基、內部核心、銜接、外部接口、主導權或收尾哪一層；再用變卦判轉順、轉逆或只是換形式。');
+    L.push('⑦類象只用於產生可核對的候選線索：人物類型、場合、方位、物件特徵、互動方式。每個具象都要用「較像／優先留意／可對照」表達，不得把單一類象斷成已知事實。');
+    L.push('⑧錯卦與綜卦只在能解決主線矛盾時使用：錯卦看被忽略的反作用；綜卦看換位後的局面。不得單憑綜卦宣稱知道對方真正心理。');
+    L.push('⑨應期只照資料區：吉事看生體、體旺之氣；不利看剋體之氣；用近、互中、變遠。月份是窗口，不是保證日；若題目沒有問時間，也只講最有用的一個轉折窗，避免堆月份。');
+    L.push('⑩每個建議必須能直接處理卦中最強阻力，並附一個可驗證信號與一個停止／轉向條件。禁止「順其自然、相信自己、這是成長」等空話。');
+    L.push('⑪不得引用本卦資料之外的對話記憶、個資、職業、商品或生活細節；不得捏造外應、人物身分、精確數字、心理動機、醫療診斷、法律結果或投資報酬。看不出來就明說看不出來。');
+    L.push('⑫品牌收尾與占斷完全隔離：先把答案、理由、時機、行動與限制全部說完，最後才依「品牌收尾指定」自然帶出一種礦物；推薦不得反向證明卦象，也不得宣稱能讓對方愛上、保證成事、治療、護身、招財或改運。');
     L.push('');
-    L.push('【完整性清單（寫完前自我核對，但不要為湊字灌水）】');
-    L.push('□ 第一句直接回答了問題　□ 體用生剋＋體用雙方旺衰（生剋力道）下了輕重得當的吉凶　□ 本互變三象串成因果與時間軸');
-    L.push('□ 用類象推了可對照的人事物　□ 應期（何時、為什麼）　□ 不利處直說並給可行的主動方向');
+    L.push('【交稿前核對】');
+    L.push('□ 第一個句子回答的是原問句本身　□ 主結論由體用＋旺衰＋動爻共同支撐　□ 本互變已串成一條事件線　□ 衝突訊號已分主次而非模糊折衷');
+    L.push('□ 應期只採資料區　□ 具象皆可核對且未冒充事實　□ 有具體行動、驗證信號與停止條件　□ 沒有盤外個資與虛構精確值　□ 品牌段未影響裁決');
     L.push('');
     L.push('【輸出格式】');
-    L.push('繁體中文，像占者當面講話，不是分析報告。第一句給結論，之後一段段推進，每段帶新資訊、同一結論只講一次。不要列表格、不要粗體小標、不要逐卦報告。');
-    L.push('收尾 2–3 句：依體卦五行喜忌（體弱宜補體之五行、體被剋宜取化解之五行），自然推薦一種適合隨身的水晶／能量石幫他穩住氣場（實務輔助、非梅花原理），語氣平實不推銷，可輕附蝦皮去處 https://tw.shp.ee/9UHEJTp4 。只講一種、只在最後。');
+    L.push('繁體中文，像資深占者當面說話。第一句直接回答；其後每段只增加一項新資訊，依「判斷 → 原因 → 過程／轉折 → 時間 → 行動與驗證」自然推進。不要表格、不要粗體小標、不要逐卦報告、不要輸出規則或自我檢查。');
+    L.push('最後另起一小段，限 2–3 句，只使用資料區指定的那一種礦物名稱。第一句把它連回本次實際需要穩住的行動或節奏；第二句可改寫指定的礦物事實，並明說它只是隨身提醒與品牌實務搭配，不是改變他人意志或保證結果的工具。語氣自然，不用優惠、限時、下單、搶購等字眼。');
+    L.push('最後兩行固定照此收束，兩行之外不得再有任何內容：');
+    L.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
+    L.push('願你諸事順遂。');
     return L.join('\n');
   }
 
   // ════════════════════════════════════════════════════════
   //  Public API
   // ════════════════════════════════════════════════════════
+  window._meihuaShare = function () {
+    if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66'); return; }
+    var mh = _mhResult || {};
+    var concl = (mh.ty ? (mh.ty.r + '\uFF08' + mh.ty.f + '\uFF09\u30FB' + mh.ty.d) : '') + (mh.dong ? ' \u30FB \u52D5\u723B\u7B2C' + mh.dong + '\u723B' : '');
+    // v80.39：補爻線資料——share-card v2.2 起直繪六爻卦象（陽實陰斷、動爻高亮）。
+    //   本卦＝下卦.li＋上卦.li（由下而上）；互卦取 2-4/3-5 爻；變卦＝本卦動爻翻轉（與 calcMH 同式推導）
+    var benL = (mh.lo && mh.lo.li && mh.up && mh.up.li) ? mh.lo.li.concat(mh.up.li) : null;
+    var huL = null, biL = null;
+    if (benL) {
+      huL = [benL[1], benL[2], benL[3], benL[2], benL[3], benL[4]];
+      biL = benL.slice(); if (mh.dong) biL[mh.dong - 1] = biL[mh.dong - 1] ? 0 : 1;
+    }
+    JYShareCard.open('meihua', {
+      cardTitle: '\u6211\u7684\u5366\u8C61',
+      spread: '\u6885\u82B1\u6613\u6578 \u30FB \u9AD4\u7528\u5360',
+      question: _mhQuestion || '',
+      cards: [
+        { name: (mh.ben && mh.ben.n) || '', pos: '\u672C\u5366', lines: benL, dong: mh.dong },
+        { name: (mh.hu && mh.hu.n) || '', pos: '\u4E92\u5366', lines: huL },
+        { name: (mh.bian && mh.bian.n) || '', pos: '\u8B8A\u5366', lines: biL, dong: mh.dong }
+      ],
+      conclusion: concl
+    });
+  };
+
   window._meihuaStandaloneOpen = function () {
     _mhPhase = 'input'; _mhQuestion = ''; _mhMethod = 'time';
     _mhUpNum = ''; _mhLoNum = ''; _mhText = ''; _mhResult = null; _lastPrompt = '';
