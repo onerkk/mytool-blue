@@ -18,7 +18,8 @@
         'if (finalNum === 22) finalNum = 0',              // v85 22→0 愚者
         '加總後化約至0-21對應大牌',                        // v85 描述同步
         "if (S.form && S.form.domains && S.form.domains.length > 1) ftKey = ''", // v85.3 結果頁守門
-        '_pickBySeed'                                       // v86 路由池輪替
+        'JY_SEMANTIC_SPREAD_ROUTER_V93',                   // v93 語義路由，不再雜湊輪替
+        'function resolveTarotSpread'                         // v93 全 UI 單一解析入口
       ],
       mustNot: [
         '逐牌先化約再加總（宮廷牌計侍1騎2后3王4，非各牌面號直加）' // 舊描述
@@ -187,7 +188,7 @@
       var manual = env.typeMeaning({}, 15, true, 'love');
       env.report('④多領域守門', '手動選類型（無 domains）不受影響', manual.indexOf('關係中') === 0, manual.slice(0, 16));
     }
-    // ⑥牌陣路由覆蓋（v86）：13 種牌陣各有代表句可達；深度池可重現且落在池內
+    // ⑥牌陣語義路由覆蓋（v93）：13 種牌陣各有專屬結構可達；禁止字數／問號旁路與雜湊輪替
     if (typeof env.route === 'function') {
       var EXPECT = [
         ['這件事會成嗎？', 'three_card'],
@@ -201,7 +202,7 @@
         ['錢包不見了找得回來嗎？', 'minor_arcana'],
         ['幫我看看感情和工作整體狀況', 'fifteen_card'],
         ['這段關係的來龍去脈是什麼？', 'mathers_21'],
-        ['我和他之間怎麼回事？接下來呢？會穩定嗎？', 'celtic_cross'],
+        ['請完整分析目前這件事的整體局勢與所有影響', 'celtic_cross'],
         ['把我的人生全部攤開看一次最完整的', 'mathers_horseshoe']
       ];
       EXPECT.forEach(function (pair) {
@@ -209,10 +210,13 @@
         try { got = env.route(pair[0]); } catch (e) { got = 'ERR'; }
         env.report('⑥路由覆蓋', pair[1] + ' 可達（' + pair[0].slice(0, 12) + '…）', got === pair[1], '實得 ' + got);
       });
-      var POOL = ['celtic_cross', 'fifteen_card', 'mathers_21'];
-      var p1 = env.route('最近運勢如何？'), p2 = env.route('最近運勢如何？');
-      env.report('⑥路由覆蓋', '深度池：口語概覽落在池內', POOL.indexOf(p1) > -1, '實得 ' + p1);
-      env.report('⑥路由覆蓋', '深度池：同題可重現', p1 === p2, p1 + ' vs ' + p2);
+      env.report('⑥路由覆蓋', '門檻題：本月副業營業額破萬→五牌事件鏈',
+        env.route('這月我副業營業額能破萬嗎？') === 'five_card', '實得 ' + env.route('這月我副業營業額能破萬嗎？'));
+      env.report('⑥路由覆蓋', '已知雙方＋多問號仍維持關係結構',
+        env.route('我和他之間怎麼回事？接下來呢？會穩定嗎？') === 'relationship', '實得 ' + env.route('我和他之間怎麼回事？接下來呢？會穩定嗎？'));
+      env.report('⑥路由覆蓋', '年度全域與單一關係年度題正確分流',
+        env.route('我今年的整體運勢如何？') === 'zodiac' && env.route('今年我跟他的關係整體如何？') === 'relationship',
+        env.route('我今年的整體運勢如何？') + ' / ' + env.route('今年我跟他的關係整體如何？'));
     }
 
     // ⑤提示詞組裝：13 牌陣 × tarot ＋ ootk/ziwei/meihua

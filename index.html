@@ -1382,7 +1382,7 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot.js?v=20260613v86_29" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260715v90_0" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260716v94_0" defer></script>
 <!-- v92：先載入型別化查詢圖、方法觀測模型、合法證據圖與實體／事件共指編譯器，再由 ai-analysis 建立排盤契約。 -->
 <script src="JS/tarot-semantic-engine.js?v=20260715v92_1" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
@@ -1408,8 +1408,8 @@
 <script src="JS/share-card.js?v=20260626v2_3" defer></script>
 <script src="JS/bazi-suite-core.js?v=20260626v1_0_0" defer></script>
 <script src="JS/bazi-suite.js?v=20260626v1_1_1" defer></script>
-<script src="JS/ui.js?v=20260612v85_4" defer></script>
-<script src="JS/spread-picker.js?v=20260611v86_router" defer></script>
+<script src="JS/ui.js?v=20260716v94_0" defer></script>
+<script src="JS/spread-picker.js?v=20260716v94_0" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
@@ -1597,5 +1597,6 @@
      拿掉兩次都驗證失敗的特例。②新增 ?lndebug=1 才啟動的可選診斷（pageshow+sessionStorage 時間戳），
      下次實機重現時用這個拿真證據，不再猜第三次 target。③檔名永久固定 lenormand.js，不再塞版本號進實體
      檔名，本專案無 SW 攔截 search、之後改版只動這行 ?v=。動 lenormand.js(v3.14)/index。 -->
+<!-- v94_0(2026/7/16)：塔羅通用自動選陣——問題先編譯為觀測需求向量，再以全牌陣能力矩陣做覆蓋率、專用性與過度解讀成本評分；任何問題皆有可解釋且可重現的最佳候選；新增七張馬蹄形作為中等複雜通用事件盤。動 tarot_upgrade.js / spread-picker.js / tests/tarot-v94-universal-router.test.js / index.html -->
 </body>
 </html>
