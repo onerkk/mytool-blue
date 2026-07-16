@@ -228,6 +228,14 @@ test('提示詞分離排盤事實與流派模型，包含精確運界及限制',
   assert.strictEqual((prompt.match(/六害：年支亥害月支申/g) || []).length, 1);
   assert(prompt.includes('沒有證據可保證改運、招財或治療'));
   assert(prompt.includes('刑沖合害、三合三會只列觸發，不參與自動加減分'));
+  assert(prompt.includes('【最高優先任務——先在內部完成，不要輸出分類名稱】'));
+  assert(prompt.includes('第一句必須回答同一個完整問題'));
+  assert(prompt.includes('同一訊號不得重複計票'));
+  assert(prompt.includes('用神」是處理全局核心矛盾'));
+  assert(prompt.includes('原局題不強塞歲運'));
+  assert(prompt.includes('礦石五行歸類屬現代配飾文化'));
+  assert(prompt.includes('精度提醒：真太陽時顯示到秒是曆法換算結果'));
+  assert(prompt.includes('最後兩行必須原樣輸出'));
   assert(!prompt.includes('主規範底下的隱性壓力與暗中競爭'));
   assert(!prompt.includes('非貧即夭'));
   assert(!prompt.includes('已化成某五行。半合'));
@@ -277,7 +285,7 @@ test('首頁載入本地曆法引擎且版本路徑正確', () => {
   assert(html.includes('JS/bazi-calendar-core.js?v=20260625v1_0_0'));
   assert(html.includes('JS/bazi.js?v=20260625v44'));
   assert(html.includes('JS/bazi_upgrade.js?v=20260625v80_37'));
-  assert(html.includes('JS/bazi-standalone.js?v=20260626v80_51'));
+  assert(html.includes('JS/bazi-standalone.js?v=20260716v80_52'));
   const standalone = fs.readFileSync(path.join(ROOT, 'JS/bazi-standalone.js'), 'utf8');
   const upgrade = fs.readFileSync(path.join(ROOT, 'JS/bazi_upgrade.js'), 'utf8');
   assert(standalone.includes("var _dayBoundaryMode = 'ZI_HOUR_23'"));

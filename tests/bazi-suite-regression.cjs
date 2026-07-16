@@ -69,7 +69,7 @@ test('六合五合與三合三會只列候選不宣告成化',()=>{
 
 test('六種單盤提示詞各自載入正確分析範圍',()=>{
   const expected={chart:'不延伸具體人生事件',general:'綜合判讀',career:'職涯結構',wealth:'現金流風險',love:'親密需求',annual:'未來四個立春年度'};
-  Object.keys(expected).forEach(id=>{const p=c.BaziSuiteCore.buildSinglePrompt(id,A.chart,A.meta,'測試');assert(p.includes(expected[id]),id);assert(p.includes('排盤事實層'));assert(p.includes('流派模型層'));});
+  Object.keys(expected).forEach(id=>{const p=c.BaziSuiteCore.buildSinglePrompt(id,A.chart,A.meta,'測試');assert(p.includes(expected[id]),id);assert(p.includes('排盤事實層'));assert(p.includes('流派模型層'));assert(p.includes('【最高優先任務'));assert(p.includes('用神是處理核心矛盾'));assert(p.includes('品牌附加層'));assert(p.endsWith('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。'));});
 });
 
 test('五軸人格固定產生32個唯一類型且相同命盤可重現',()=>{
@@ -97,7 +97,7 @@ test('城市時區表公開給完整套件，海外可用IANA/DST',()=>{
 test('首頁保留原版UI為預設並另接完整套件',()=>{
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const ui=fs.readFileSync(path.join(ROOT,'JS/bazi-suite.js'),'utf8');
-  assert(html.includes('JS/bazi-suite-core.js?v=20260626v1_0_0'));
+  assert(html.includes('JS/bazi-suite-core.js?v=20260716v1_1_0'));
   assert(html.includes('JS/bazi-suite.js?v=20260626v1_1_1'));
   assert(ui.includes('window._baziLegacyStandaloneOpen=legacyOpen'));
   assert(ui.includes('window._baziFullSuiteOpen=open'));
