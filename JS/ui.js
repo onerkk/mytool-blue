@@ -5980,17 +5980,29 @@ showAuraResult = function(){
     }
   };
 
-  // ★ v80.26：首頁八字命理入口
+  // ★ v80.60：首頁八字命理入口（ROOT-SPEC v2 共用核心先載、再載獨立頁）
   window._baziOpen = function() {
-    // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
     if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
-    if (typeof window._jyLazyScript === 'function') {
+    if (typeof window._jyLazyScript !== 'function') {
+      alert('八字獨立頁尚未載入，請確認 JS/bazi-prompt-root.js 與 JS/bazi-standalone.js 已上傳並強制重新整理。');
+      return;
+    }
+
+    function loadStandalone() {
       window._jyLazyScript('JS/bazi-standalone.js', function(ok){
         if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
         else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
       });
+    }
+
+    // 舊快取可能只有 ui.js，必須保證共用提示詞核心先完成，避免兩條路徑產生不同規則。
+    if (window.JY_BAZI_PROMPT_ROOT) {
+      loadStandalone();
     } else {
-      alert('八字獨立頁尚未載入，請確認 JS/bazi-standalone.js 已上傳並強制重新整理。');
+      window._jyLazyScript('JS/bazi-prompt-root.js', function(ok){
+        if (ok && window.JY_BAZI_PROMPT_ROOT) loadStandalone();
+        else alert('八字提示詞核心載入失敗：請確認主機 JS/ 資料夾內已有 bazi-prompt-root.js，並強制重新整理一次。');
+      });
     }
   };
 

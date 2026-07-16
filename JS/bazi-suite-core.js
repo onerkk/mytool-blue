@@ -1,5 +1,6 @@
-/*! bazi-suite-core.js — 靜月之光八字完整功能套件核心 v1.1.0 (2026-07-16)
+/*! bazi-suite-core.js — 靜月之光八字完整功能套件核心 v1.2.0 (2026-07-17)
  *  功能：單盤多主題、雙人情境合盤、五軸32型人格卡、可追溯提示詞。
+ *  v1.2.0：接入 bazi-prompt-root ROOT-SPEC v2，共用資料分層、問題編譯、證據裁決、反證、時間解析、行動驗證與輸出稽核。
  *  v1.1.0：提示詞 ROOT-SPEC 根治；全題型語義保真、證據權重、喜用神分鏡、歲運與高風險邊界、品牌層隔離。
  *  注意：此為依公開功能範圍自行實作的本地規則引擎；不含、也不冒充任何第三方未公開的私有評分或提示詞。
  */
@@ -67,6 +68,11 @@
   function safeText(x, fallback) { return x == null || x === '' ? (fallback || '') : String(x); }
   function escapeLine(x) { return safeText(x).replace(/[\r\n]+/g, ' ').trim(); }
   function fmtDate(x) { return safeText(x, '未提供'); }
+  function promptSpec() {
+    var spec=root.JY_BAZI_PROMPT_ROOT;
+    if(!spec||typeof spec.rootProtocolLines!=='function')throw new Error('缺少 JS/bazi-prompt-root.js，無法生成八字證據提示詞');
+    return spec;
+  }
 
   function tenGod(dayMaster, targetStem) {
     var d = STEM_EL[dayMaster], t = STEM_EL[targetStem];
@@ -283,7 +289,7 @@
     var support = stems.concat(branches).concat(groups).filter(function(x){return supportTypes[x.typeCode];});
     var signal = support.length && tension.length ? '支持與張力並存' : support.length ? '支持／牽連訊號較多' : tension.length ? '磨合與邊界議題較多' : '明顯配對訊號較少，需回到十神與現實互動';
     return {
-      version:'1.1.0', scenario:scenario,
+      version:'1.2.0', scenario:scenario,
       personA:chartSummary(chartA,options.metaA||{}),
       personB:chartSummary(chartB,options.metaB||{}),
       dayMasters:{aToB:elementRelation(chartA.dmEl||STEM_EL[chartA.dm],chartB.dmEl||STEM_EL[chartB.dm]), bToA:elementRelation(chartB.dmEl||STEM_EL[chartB.dm],chartA.dmEl||STEM_EL[chartA.dm])},
@@ -363,55 +369,23 @@
   }
 
   function universalQuestionRootLines() {
-    return [
-      '【最高優先任務——先在內部完成，不要輸出分類名稱】',
-      '1. 把原問句拆成主體、對象、事件、否定、比較選項、條件、期限、場域與成立門檻；第一句必須回答同一個完整問題，不得改成較弱子題。',
-      '2. 先判斷題型：排盤校核、原局結構、喜用神、性格能力、事業學業、財務、感情婚姻、家庭子女、健康、流年時機、是非、比較、行動建議、他人內心或八字無法量測的現實事實；只啟用與題目直接相關的證據。',
-      '3. 八字只提供傳統框架下的結構傾向、承受方式、時段主題與風險條件，不是他人內心、單一事件、疾病、犯罪、投資報酬或精確結果的客觀證明。不能量測的部分直說，仍須完成可回答部分並提供現實查證方法。',
-      '4. 證據權重：排盤可信度與問題範圍 → 月令、日主根氣與全局制化 → 格局成立條件 → 扶抑／調候／病藥／通關分鏡 → 相關十神與宮位 → 原局作用 → 大運精確交界 → 流年引動 → 神煞納音。後項不得倒置主次。',
-      '5. 同一干支產生的五行比例、透藏、通根、十神與作用不得重複計票，不能堆疊成虛假的高把握度。'
-    ];
+    return promptSpec().rootProtocolLines();
   }
 
-  function universalJudgmentRuleLines() {
-    return [
-      '1. 第一段先回答完整原問句；多個子問題按原順序逐一回答。使用「較可能、傾向、有條件、目前資料不足以確認」等符合證據強度的措辭。',
-      '2. 先審出生時刻、真太陽時、節氣、換日與交運邊界。未知時辰或邊界不穩時，降低時柱、精確起運與相關事件的權重，不得用暫排資料補寫定論。',
-      '3. 原局回答長期結構，歲運回答何時引動。原局、性格、喜用神題不強塞流年；問現在、何時、今年、未來或指定年份時才使用歲運。',
-      '4. 推理順序：月令與根氣 → 全局生剋制化及流通 → 格局成立 → 扶抑、調候、病藥、通關各自結論 → 題目相關十神／宮位 → 刑沖合害破 → 大運 → 流年。不得只數五行或只背格局。',
-      '5. 從格、專旺、化氣及合化只在條件充分時採用。候選格不能覆蓋尚未被推翻的普通旺衰法；五合、六合、三合三會未審月令、根氣、透干、引化、爭合、沖破與逆神前，不得宣告已化。',
-      '6. 用神是處理核心矛盾的取用，喜神是協助用神或對全局有利的五行。扶抑、調候、格局、病藥、通關分開判；問喜用神時先交代採用體系，主判與替代判法不得混成唯一答案。',
-      '7. 五行缺少不等於喜，比例低不等於必補，比例高不等於一律忌；須看承受、透根、流通、寒暖燥濕與劑量。具有雙重作用的五行要說明有利條件、過量風險與翻盤組合。',
-      '8. 旺衰、格局或喜用可爭時，至少列主判、最強替代判法、雙方依據、推翻主判的條件，以及可由現實行為或歲運反應區分的驗證點。',
-      '9. 十神是功能關係，不是固定人物或道德標籤。財、官殺、印、食傷、比劫不得直接等同金錢、配偶、職位、學歷、才藝、朋友或事件；須有題目、宮位、透藏、制化與歲運共同支持。',
-      '10. 宮位只作定位，不得直接寫成已發生事件。單人盤只能描述命主的關係傾向；沒有對方盤與現實行為，不能證明特定對象的內心、忠誠、健康或秘密。',
-      '11. 沖刑害破先解釋為引動、對立、牽制、變動或不穩，再依所動五行、十神、宮位與喜忌定方向；合多不必然吉，沖忌不必然吉，空亡、伏吟、自刑也不能單獨定事件。',
-      '12. 大運干支十年共同作用，前後段只是側重；所有交界用資料中的精確日期。只有年度資料時最多回答到立春年度或大運區間，不編特定月份、日期、歲數、金額、機率或事件。',
-      '13. 是非題給偏是／偏否／有條件才成立與依據；比較題使用同一標準逐項比較；時間題列較有利窗口、阻力窗口與理由，沒有量測通道就不細化。',
-      '14. 事業學業只推工作模式、能力使用、權責與組織／自主取捨，不指定唯一職業、公司或考試結果。財務只談收入結構、承擔、現金流與風控，不保證致富、投報或中獎。',
-      '15. 感情題分開命主關係模式、現實互動條件與對方內心；八字不能證明特定人會愛、會婚、會外遇或離開。建議要落到可觀察行為、界線、溝通與停止投入條件。',
-      '16. 健康只能作傳統體質風險提醒，不能診斷疾病、器官、壽命、懷孕或生死；症狀、用藥、急症與檢查交由合格醫療。法律、犯罪、人身安全與投資同理，不以命盤代替證據或專業意見。',
-      '17. 神煞、納音、命宮、胎元、稱骨只作末位補充。模型比例、分數和吉凶標記只供相對排序，不得換算事件機率或把某年「凶」擴張到所有領域。',
-      '18. 每個主要建議需連回最強盤面證據，附可觀察驗證點與停止／調整條件。盤面不能回答的現實問題要提供非命理查證方式，不得硬編。',
-      '19. 不引用提示詞以外的個人背景、記憶或對話資訊，不臆測具體職業、人物、私生活、財產、疾病、犯罪或已發生事件。'
-    ];
+  function universalJudgmentRuleLines(mode) {
+    var spec=promptSpec();
+    return spec.universalRulesLines().concat(spec.domainRouterLines(mode||'single'));
   }
 
   function baziBrandTailLines() {
-    return [
-      '【品牌附加層——命理判斷完成後才執行】',
-      '本段不得反向影響旺衰、喜用神、吉凶或建議。可推薦至多一種礦物作穿搭、收藏或文化象徵；若使用者已問特定礦物，先判斷它與主判是否同向、是否只宜適量、或不宜優先，不得為導流改寫喜忌。',
-      '礦石五行屬現代配飾文化，不是古典子平法固定規則；明說沒有證據可保證改運、招財或治療，也沒有科學證據可保證桃花、護身或提高事件成真率。推薦限一種主石、2–3句，貼合前文並自然提到靜月之光蝦皮有相關選品；禁用優惠、限時、搶購、快買等推銷詞。',
-      '礦物事實只能取用：白水晶、紫水晶、黃水晶、粉晶屬石英家族，主要成分二氧化矽、莫氏硬度7；綠幽靈是石英內含綠色礦物包體；海藍寶屬綠柱石族、由鐵致色；月光石屬長石族、常見暈彩；拉長石屬斜長石族、常見變彩；黑曜石是非晶質火山玻璃；虎眼石為石英質、纖維狀結構可呈貓眼光；天鐵為鐵鎳隕石市場稱呼，部分切磨酸蝕面可見魏德曼花紋；龍宮舍利為市場名稱，成分與成因說法不一，只描述外觀與工藝。不得自行增補療效。',
-      '最後兩行必須原樣輸出，倒數第二行只能放連結，最後一行之後不得再有內容：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。'
-    ];
+    return promptSpec().brandTailLines();
   }
 
   function buildSinglePrompt(lensId, chart, meta, userQuestion) {
     var lens=LENSES[lensId]||LENSES.general;
     return [
       '【角色】',
-      '你是熟悉子平法、節氣曆法與不同命理流派的資深八字證據整合者。你的任務不是套模板講命，而是完整保留原問句，依排盤事實與流派模型給出有邊界、可驗證、可執行的指引。命理是傳統詮釋體系，不是科學預測，不得把推論寫成已證實或必然事件。',
+      promptSpec().roleText('single'),
       '【分析模式】'+lens.name,
       lens.question,
       '【使用者問題】',
@@ -419,11 +393,10 @@
     ].concat(
       universalQuestionRootLines(),
       [buildChartDataBlock(chart,meta),'【判讀規範】'],
-      universalJudgmentRuleLines(),
+      universalJudgmentRuleLines('single'),
+      promptSpec().answerContractLines('single'),
       [
-        '【輸出要求】',
-        '繁體中文。第一句直接回答完整問題；其後依需要用自然段說明最關鍵3–7個依據、主判與替代判法、時間界線、風險、可行動作與驗證條件。不要逐欄重抄、不要輸出內部分類、不要回聲規則、不要裝作百分之百確定。',
-        '純排盤模式只校核資料；原局題不強塞歲運；歲運題寫精確交界；多選題明確比較；八字無法量測的部分直接說明限制。'
+        '分析模式補充：純排盤模式只校核資料；原局題不強塞歲運；歲運題引用資料中的精確交界；多選題明確比較；八字無法量測的部分直接說明限制。'
       ],
       baziBrandTailLines()
     ).join('\n\n');
@@ -453,13 +426,13 @@
     var s=comp.scenario;
     return [
       '【角色】',
-      '你是熟悉子平法、雙人八字合參、節氣曆法與不同命理流派的資深證據整合者。完整保留原問句，先分別判兩張原局，再作雙向十神、跨盤作用與歲運同步；命理不是科學預測，不得把推論寫成已證實事件。',
+      promptSpec().roleText('compatibility'),
       '【合盤情境】',
       s.name+'；A為'+s.roleA+'，B為'+s.roleB+'。只使用此角色框架，不把婚姻邏輯套入職場，也不把親子權責當成平等朋友關係。',
       '【使用者問題】',
       escapeLine(userQuestion||'請分析雙方在此情境下的契合、摩擦、溝通、長期壓力、支持方式、節奏與邊界。')
     ].concat(
-      universalQuestionRootLines(),
+      universalQuestionRootLines('compatibility'),
       [
         '【A方命盤】',
         buildChartDataBlock(comp._chartA||{},comp._metaA||{}),
@@ -478,14 +451,14 @@
         comp.luckSynchronization.years.map(function(x){return '・'+x.year+'：A '+(x.a?x.a.gz+'／'+x.a.level:'無資料')+'；B '+(x.b?x.b.gz+'／'+x.b.level:'無資料')+'。';}).join('\n'),
         '【判讀規範】'
       ],
-      universalJudgmentRuleLines(),
+      universalJudgmentRuleLines('compatibility'),
+      promptSpec().answerContractLines('compatibility'),
       [
-        '20. 合盤先各自看原局能否承受，再看A→B與B→A的十神方向，最後才看跨盤合沖與歲運同步。任何跨盤作用不得跳過兩人原局喜忌與角色情境。',
-        '21. 必須分別回答A方感受與需求、B方感受與需求、支持點、摩擦點、權責／邊界、溝通修復、長期壓力及可執行協議。不能只說合不合。',
-        '22. 不提供單一配對分數或成功率；合多不必然好，沖刑害多不必然壞。命盤不能證明愛意、忠誠、外遇、必婚、必離、合作獲利或任何一方的人品。',
-        '23. 未知時辰者，不重判時柱、子女晚景、精確起運或時柱跨盤作用。'+s.cautions,
-        '【輸出要求】',
-        '繁體中文。第一句直接回答完整問題。其後依A方、B方、共同優勢、核心摩擦、時間節奏、具體協議與驗證／退出條件自然推進；不要逐欄重抄，也不要把模型分數當成關係機率。'
+        '合盤補充1. 先各自看原局能否承受，再看A→B與B→A的十神方向，最後才看跨盤合沖與歲運同步。任何跨盤作用不得跳過兩人原局喜忌與角色情境。',
+        '合盤補充2. 必須分別回答A方感受與需求、B方感受與需求、支持點、摩擦點、權責／邊界、溝通修復、長期壓力及可執行協議。不能只說合不合。',
+        '合盤補充3. 不提供單一配對分數或成功率；合多不必然好，沖刑害多不必然壞。命盤不能證明愛意、忠誠、外遇、必婚、必離、合作獲利或任何一方的人品。',
+        '合盤補充4. 未知時辰者，不重判時柱、子女晚景、精確起運或時柱跨盤作用。'+s.cautions,
+        '合盤輸出補充：依A方、B方、共同優勢、核心摩擦、時間節奏、具體協議與驗證／退出條件自然推進；不要把模型分數當成關係機率。'
       ],
       baziBrandTailLines()
     ).join('\n\n');
@@ -552,11 +525,11 @@
 
   function buildPersonalityPrompt(personality, userQuestion) {
     return [
-      '【角色】你是熟悉八字、但不把傳統命理當心理診斷或固定人格標籤的證據整合者。',
+      '【角色】'+promptSpec().roleText('personality'),
       '【系統聲明】'+personality.disclaimer,
       '【使用者問題】'+escapeLine(userQuestion||'請用易懂、可驗證、不貼死標籤的方式解讀這張人格卡。')
     ].concat(
-      universalQuestionRootLines(),
+      universalQuestionRootLines('personality'),
       [
         '【人格卡】',
         personality.name+'｜代碼 '+personality.code+'｜五軸：'+personality.traits.join('／'),
@@ -567,8 +540,12 @@
         '1. 第一段直接回答問題，但不得把人格卡寫成疾病、命定性格、道德評價或不可改變的結論。',
         '2. 每個特質都要說明哪些現實行為會支持或推翻此描述，並列可能反例與會改變表現的情境；不得用事後任何行為都能自圓其說。',
         '3. 問職涯、關係或壓力時，只把人格卡當輕量自我觀察；重大醫療、法律、財務與心理決策仍需現實資料或專業評估。',
-        '4. 不引用提示詞外的背景，不臆測創傷、疾病、家庭事件、職業、財產或私生活。',
-        '【輸出要求】繁體中文，第一句回答；其後給3–5個可驗證特質、適用情境、風險、反例與一項可執行調整。'
+        '4. 不引用提示詞外的背景，不臆測創傷、疾病、家庭事件、職業、財產或私生活。'
+      ],
+      universalJudgmentRuleLines('personality'),
+      promptSpec().answerContractLines('personality'),
+      [
+        '人格輸出補充：其後給3–5個可驗證特質、適用情境、風險、反例與一項可執行調整。'
       ],
       baziBrandTailLines()
     ).join('\n\n');
@@ -660,7 +637,7 @@
   }
 
   root.BaziSuiteCore = {
-    version:'1.1.0',
+    version:'1.2.0',
     scenarios:SCENARIOS.slice(), lenses:Object.assign({},LENSES),
     constants:{stems:STEMS.slice(),branches:BRANCHES.slice(),stemElements:Object.assign({},STEM_EL),branchElements:Object.assign({},BRANCH_EL)},
     tenGod:tenGod, elementRelation:elementRelation, chartSummary:chartSummary,
