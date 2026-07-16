@@ -15,7 +15,7 @@ function tiYong(ti,yo){
   if(SHENG[yo]===ti)return{r:'用生體',f:'大吉',d:'外力助益，事半功倍。'};
   if(SHENG[ti]===yo)return{r:'體生用',f:'小凶',d:'耗費精力，付出多回報少。'};
   if(KE[yo]===ti)return{r:'用克體',f:'凶',d:'外力阻礙，困難重重。'};
-  if(KE[ti]===yo)return{r:'體克用',f:'小吉',d:'可掌控局面，但需費力。'};
+  if(KE[ti]===yo)return{r:'體克用',f:'吉',d:'諸事吉，主動在我；仍須依旺衰判斷實際落實度。'};
   return{r:'—',f:'平',d:''};
 }
 

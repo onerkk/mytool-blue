@@ -307,9 +307,10 @@ function mhTiYongDeep(mh, dateOrZhi) {
     else if (tiPower < 0.8)  verdict = '平：體用比和但雙方失令，順而無力，突破有限';
     else                     verdict = '吉：體用比和，謀為順利';
   } else if (rel === '體克用') {
-    if (yoPower >= 1.2)      verdict = '平偏吉：體克用但用卦強旺，可成而費力';
-    else if (tiPower < 0.8)  verdict = '小吉：體克用但體卦自身衰弱，克出更耗，成得辛苦';
-    else                     verdict = '吉：體克用，諸事可成，主動在我';
+    if (tiPower < 0.8 && yoPower >= 1.2) verdict = '吉但落實度低：體克用仍屬諸事吉，但體弱用旺，主動最費力';
+    else if (yoPower >= 1.2)              verdict = '吉但費力：體克用仍屬諸事吉，用卦強旺使推進成本提高';
+    else if (tiPower < 0.8)               verdict = '吉但後勁弱：體克用仍屬諸事吉，體卦衰弱使成果不易坐實';
+    else                                  verdict = '吉：體克用，諸事可成，主動在我';
   } else if (rel === '體生用') {
     if (tiPower >= 1.2)      verdict = '平：體生用有耗，但體卦有力可承受';
     else if (tiPower >= 0.8) verdict = '小凶：體生用，有耗失之患';
