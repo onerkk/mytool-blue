@@ -2,8 +2,8 @@
 // JS/HTML → network-first（永遠拿最新）
 // 圖片/字型 → cache-first（省流量）
 // API → 不攔截
-// v51: bump 版本號強制清舊快取（用戶不需手動清）+ JS/HTML 加 no-cache header 繞過瀏覽器 HTTP cache
-const CACHE_NAME = 'jy-main-v51';
+// v52: 八字提示詞 ROOT-SPEC 上線，強制清舊快取；JS/HTML 維持 network-first + no-cache
+const CACHE_NAME = 'jy-main-v52';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
