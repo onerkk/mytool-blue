@@ -351,11 +351,12 @@
     function easeOut(u) { return 1 - Math.pow(1 - clamp(u, 0, 1), 3); }
     function inkColor() {
       var base = palette[(Math.random() * palette.length) | 0];
-      var dark = mix(base, [10, 8, 14], 0.62 + Math.random() * 0.1);
-      var dense = mix(dark, [0, 0, 0], 0.12 + Math.random() * 0.08);
-      var rim = mix(base, MOON, 0.34 + Math.random() * 0.12);
-      var glow = mix(base, MOON, 0.58 + Math.random() * 0.12);
-      return { base: dark, dense: dense, rim: rim, glow: glow };
+      var wash = mix(base, BACK, 0.24 + Math.random() * 0.1);
+      var body = mix(base, [18, 14, 24], 0.42 + Math.random() * 0.08);
+      var dense = mix(body, [0, 0, 0], 0.1 + Math.random() * 0.06);
+      var edge = mix(body, [6, 6, 10], 0.22 + Math.random() * 0.08);
+      var glow = mix(base, MOON, 0.68 + Math.random() * 0.12);
+      return { wash: wash, base: body, dense: dense, edge: edge, glow: glow };
     }
 
     function size() {
@@ -396,9 +397,9 @@
     function makeThread(px, py, ang, col, baseR) {
       return {
         x: px, y: py, px: px, py: py, ang: ang, born: t + Math.random() * 180,
-        life: 2400 + Math.random() * 2000, speed: 0.65 + Math.random() * 0.8,
-        curl: (Math.random() - 0.5) * 0.18, noise: Math.random() * 999, width: 0.55 + Math.random() * 1.2,
-        alpha: 0.055 + Math.random() * 0.045, color: col, drift: baseR * (0.5 + Math.random() * 0.5),
+        life: 2200 + Math.random() * 1800, speed: 0.55 + Math.random() * 0.65,
+        curl: (Math.random() - 0.5) * 0.14, noise: Math.random() * 999, width: 0.35 + Math.random() * 0.95,
+        alpha: 0.028 + Math.random() * 0.028, color: col, drift: baseR * (0.5 + Math.random() * 0.5),
         trail: []
       };
     }
@@ -407,74 +408,95 @@
       var seed = Math.random() * 99999;
       var color = inkColor();
       var scale = Math.min(W, H) / 720;
-      var maxR = (small ? 24 : 46) * scale + Math.random() * (small ? 28 : 70) * scale;
+      var maxR = (small ? 30 : 64) * scale + Math.random() * (small ? 24 : 82) * scale;
       var b = {
-        x: px + (Math.random() - 0.5) * W * 0.018,
-        y: py + (Math.random() - 0.5) * H * 0.018,
-        born: t + (delay || 0), life: (small ? 3200 : 5200) + Math.random() * (small ? 900 : 1800),
-        maxR: maxR, alpha: small ? 0.145 : 0.18, feather: small ? 0.28 : 0.34,
-        seed: seed, color: color, driftX: (Math.random() - 0.5) * 0.12, driftY: (Math.random() - 0.5) * 0.12,
-        lobes: [], satellites: [], grain: 20 + (Math.random() * 14 | 0)
+        x: px + (Math.random() - 0.5) * W * 0.014,
+        y: py + (Math.random() - 0.5) * H * 0.014,
+        born: t + (delay || 0), life: (small ? 3400 : 5600) + Math.random() * (small ? 1200 : 2200),
+        maxR: maxR, alpha: small ? 0.095 : 0.13, feather: small ? 0.4 : 0.52,
+        seed: seed, color: color, driftX: (Math.random() - 0.5) * 0.08, driftY: (Math.random() - 0.5) * 0.08,
+        rot: Math.random() * 6.2832, sx: 1.05 + Math.random() * 0.55, sy: 0.8 + Math.random() * 1.25,
+        lobes: [], satellites: [], grain: 10 + (Math.random() * 10 | 0), backruns: []
       };
-      for (var i = 0; i < 24; i++) b.lobes.push(0.84 + prng(seed + i * 1.71) * 0.32);
-      var satN = small ? 5 + (Math.random() * 2 | 0) : 8 + (Math.random() * 4 | 0);
+      for (var i = 0; i < 28; i++) b.lobes.push(0.82 + prng(seed + i * 1.71) * 0.36);
+      var satN = small ? 4 + (Math.random() * 2 | 0) : 6 + (Math.random() * 3 | 0);
       for (var s2 = 0; s2 < satN; s2++) {
         b.satellites.push({
-          ang: (Math.PI * 2 * s2 / satN) + (Math.random() - 0.5) * 0.7,
-          dist: 0.58 + Math.random() * 0.55,
-          r: maxR * (0.08 + Math.random() * 0.18),
-          born: b.born + 120 + Math.random() * 700,
-          life: 1800 + Math.random() * 2400,
+          ang: (Math.PI * 2 * s2 / satN) + (Math.random() - 0.5) * 0.9,
+          dist: 0.45 + Math.random() * 0.65,
+          r: maxR * (0.12 + Math.random() * 0.22),
+          born: b.born + 80 + Math.random() * 520,
+          life: 2000 + Math.random() * 2600,
           spread: 0.18 + Math.random() * 0.25
         });
       }
-      var tN = small ? 3 + (Math.random() * 2 | 0) : 5 + (Math.random() * 4 | 0);
+      var backN = small ? 5 + (Math.random() * 3 | 0) : 9 + (Math.random() * 4 | 0);
+      for (var q = 0; q < backN; q++) {
+        b.backruns.push({
+          ang: Math.random() * 6.2832,
+          dist: 0.72 + Math.random() * 0.34,
+          r: maxR * (0.04 + Math.random() * 0.08),
+          born: b.born + 220 + Math.random() * 900,
+          life: 1800 + Math.random() * 2600
+        });
+      }
+      var tN = small ? 2 + (Math.random() * 2 | 0) : 4 + (Math.random() * 3 | 0);
       for (var k = 0; k < tN && threads.length < THREAD_CAP; k++) {
-        threads.push(makeThread(b.x, b.y, Math.random() * 6.2832, color.dense, maxR));
+        threads.push(makeThread(b.x, b.y, Math.random() * 6.2832, color.edge, maxR));
       }
       return b;
     }
 
     function drawBlob(x, y, r, bloom, alphaMul, phase) {
-      var points = 26;
-      var rot = bloom.seed * 0.0002 + phase * 0.4;
+      var points = 30;
+      var rot = (bloom.rot || 0) + bloom.seed * 0.00014 + phase * 0.28;
+      var sx = bloom.sx || 1.0, sy = bloom.sy || 1.0;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rot);
+      ctx.scale(sx, sy);
       ctx.beginPath();
       for (var i = 0; i <= points; i++) {
         var p = i % points;
-        var ang = rot + (Math.PI * 2 * p / points);
+        var ang = (Math.PI * 2 * p / points);
         var n = bloom.lobes[p % bloom.lobes.length];
-        var ripple = 1 + Math.sin(ang * 2.0 + phase * 1.8 + bloom.seed * 0.002) * 0.04;
+        var ripple = 1 + Math.sin(ang * 2.2 + phase * 1.6 + bloom.seed * 0.002) * 0.055;
         var rr = r * n * ripple;
-        var px = x + Math.cos(ang) * rr, py = y + Math.sin(ang) * rr;
+        var px = Math.cos(ang) * rr, py = Math.sin(ang) * rr;
         if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
       }
       ctx.closePath();
-      var g = ctx.createRadialGradient(x, y, r * 0.04, x, y, r);
-      g.addColorStop(0, alpha(bloom.color.dense, alphaMul * 0.95));
-      g.addColorStop(0.28, alpha(bloom.color.base, alphaMul * 0.78));
-      g.addColorStop(0.76, alpha(bloom.color.base, alphaMul * 0.24));
+
+      var g = ctx.createRadialGradient(0, 0, r * 0.03, 0, 0, r * 1.02);
+      g.addColorStop(0, alpha(bloom.color.base, alphaMul * 0.42));
+      g.addColorStop(0.18, alpha(bloom.color.wash, alphaMul * 0.95));
+      g.addColorStop(0.52, alpha(bloom.color.wash, alphaMul * 0.55));
+      g.addColorStop(0.88, alpha(bloom.color.base, alphaMul * 0.12));
       g.addColorStop(1, alpha(bloom.color.base, 0));
       ctx.fillStyle = g;
       ctx.fill();
 
-      ctx.lineWidth = Math.max(0.8, r * 0.03);
-      ctx.strokeStyle = alpha(bloom.color.rim, alphaMul * 0.22);
-      ctx.stroke();
+      var edge = ctx.createRadialGradient(0, 0, r * 0.72, 0, 0, r * 1.08);
+      edge.addColorStop(0, alpha(bloom.color.edge, 0));
+      edge.addColorStop(0.82, alpha(bloom.color.edge, alphaMul * 0.045));
+      edge.addColorStop(1, alpha(bloom.color.edge, alphaMul * 0.16));
+      ctx.fillStyle = edge;
+      ctx.fill();
 
-      var innerR = r * 0.52;
-      var g2 = ctx.createRadialGradient(x, y, 0, x, y, innerR);
-      g2.addColorStop(0, alpha(bloom.color.dense, alphaMul * 0.36));
-      g2.addColorStop(1, alpha(bloom.color.dense, 0));
-      ctx.fillStyle = g2;
-      ctx.beginPath(); ctx.arc(x, y, innerR, 0, 6.2832); ctx.fill();
+      var core = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.46);
+      core.addColorStop(0, alpha(bloom.color.dense, alphaMul * 0.12));
+      core.addColorStop(1, alpha(bloom.color.dense, 0));
+      ctx.fillStyle = core;
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.46, 0, 6.2832); ctx.fill();
+      ctx.restore();
     }
 
     function drawSettledStain(x, y, r, seed, color, a) {
-      var fake = { seed: seed, lobes: [], color: color };
+      var fake = { seed: seed, lobes: [], color: color, rot: prng(seed) * 6.2832, sx: 1.35, sy: 0.92 };
       for (var i = 0; i < 24; i++) fake.lobes.push(0.82 + prng(seed + i * 2.3) * 0.3);
       drawBlob(x, y, r, fake, a, 0.2);
       ctx.save();
-      ctx.globalAlpha = 0.05;
+      ctx.globalAlpha = 0.04;
       ctx.drawImage(paper, 0, 0);
       ctx.restore();
     }
@@ -484,11 +506,11 @@
       for (var i = 0; i < dots; i++) {
         var rn = prng(bloom.seed * 0.19 + i * 7.11 + u * 21.0);
         var ang = rn * 6.2832;
-        var dist = r * (0.45 + prng(bloom.seed * 0.31 + i * 3.9) * 0.55);
+        var dist = r * (0.52 + prng(bloom.seed * 0.31 + i * 3.9) * 0.5);
         var gx = x + Math.cos(ang) * dist;
         var gy = y + Math.sin(ang) * dist;
-        var gr = 0.4 + prng(bloom.seed * 0.73 + i * 4.2) * Math.max(0.8, r * 0.025);
-        ctx.fillStyle = alpha(bloom.color.dense, a2 * (0.05 + prng(i + bloom.seed) * 0.06));
+        var gr = 0.32 + prng(bloom.seed * 0.73 + i * 4.2) * Math.max(0.45, r * 0.012);
+        ctx.fillStyle = alpha(bloom.color.edge, a2 * (0.02 + prng(i + bloom.seed) * 0.03));
         ctx.beginPath(); ctx.arc(gx, gy, gr, 0, 6.2832); ctx.fill();
       }
     }
@@ -500,28 +522,43 @@
       bloom.x += bloom.driftX; bloom.y += bloom.driftY;
       var x = bloom.x + Math.sin((bloom.seed + t) * 0.00045) * 0.18;
       var y = bloom.y + Math.cos((bloom.seed + t) * 0.00038) * 0.18;
-      var r = bloom.maxR * (0.18 + 0.82 * grow);
-      var a2 = bloom.alpha * Math.pow(1 - u, 0.88);
+      var r = bloom.maxR * (0.16 + 0.84 * grow);
+      var a2 = bloom.alpha * Math.pow(1 - u, 0.76);
 
       drawBlob(x, y, r, bloom, a2, u);
-      drawBlob(x, y, r * 0.74, bloom, a2 * 0.6, u + 0.4);
-      drawBlob(x, y, r * 0.42, bloom, a2 * 0.35, u + 0.8);
+      drawBlob(x, y, r * 0.86, bloom, a2 * 0.55, u + 0.22);
+      drawBlob(x, y, r * 0.58, bloom, a2 * 0.28, u + 0.62);
 
-      ctx.strokeStyle = alpha(bloom.color.glow, a2 * 0.16);
-      ctx.lineWidth = Math.max(0.7, r * 0.018);
-      ctx.beginPath(); ctx.arc(x, y, r * (0.82 + 0.04 * Math.sin(u * Math.PI)), 0, 6.2832); ctx.stroke();
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((bloom.rot || 0) + u * 0.1);
+      ctx.scale((bloom.sx || 1), (bloom.sy || 1));
+      var halo = ctx.createRadialGradient(0, 0, r * 0.45, 0, 0, r * 1.18);
+      halo.addColorStop(0, alpha(bloom.color.glow, 0));
+      halo.addColorStop(0.62, alpha(bloom.color.glow, a2 * 0.08));
+      halo.addColorStop(1, alpha(bloom.color.glow, a2 * 0.18));
+      ctx.fillStyle = halo;
+      ctx.beginPath(); ctx.arc(0, 0, r * 1.18, 0, 6.2832); ctx.fill();
+      ctx.restore();
 
       for (var i = 0; i < bloom.satellites.length; i++) {
         var s3 = bloom.satellites[i];
         var sa = t - s3.born; if (sa < 0 || sa > s3.life) continue;
         var su = sa / s3.life;
-        var sr = s3.r * (0.35 + 0.75 * easeOut(su));
-        var sx = x + Math.cos(s3.ang) * r * s3.dist * (0.55 + 0.45 * easeOut(su));
-        var sy = y + Math.sin(s3.ang) * r * s3.dist * (0.55 + 0.45 * easeOut(su));
-        drawBlob(sx, sy, sr, bloom, a2 * 0.35 * (1 - su), su + i * 0.15);
-        ctx.strokeStyle = alpha(bloom.color.dense, a2 * 0.07 * (1 - su));
-        ctx.lineWidth = Math.max(0.35, sr * 0.12);
-        ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo((x + sx) * 0.5 + Math.sin(i + bloom.seed) * 6, (y + sy) * 0.5 + Math.cos(i + bloom.seed) * 6, sx, sy); ctx.stroke();
+        var sr = s3.r * (0.4 + 0.85 * easeOut(su));
+        var sx = x + Math.cos(s3.ang + bloom.rot * 0.2) * r * s3.dist * (0.52 + 0.48 * easeOut(su));
+        var sy = y + Math.sin(s3.ang + bloom.rot * 0.2) * r * s3.dist * (0.52 + 0.48 * easeOut(su));
+        drawBlob(sx, sy, sr, { seed: bloom.seed + i * 9.1, lobes: bloom.lobes, color: bloom.color, rot: bloom.rot + i * 0.45, sx: 0.9 + i * 0.02, sy: 0.9 }, a2 * 0.24 * (1 - su), su + i * 0.08);
+      }
+
+      for (var j = 0; j < bloom.backruns.length; j++) {
+        var br = bloom.backruns[j];
+        var ba = t - br.born; if (ba < 0 || ba > br.life) continue;
+        var bu = ba / br.life;
+        var bx = x + Math.cos(br.ang + (bloom.rot || 0)) * r * br.dist * (1.02 + bu * 0.08);
+        var by = y + Math.sin(br.ang + (bloom.rot || 0)) * r * br.dist * (1.02 + bu * 0.08);
+        ctx.fillStyle = alpha(bloom.color.edge, a2 * 0.11 * (1 - bu));
+        ctx.beginPath(); ctx.arc(bx, by, br.r * (0.65 + 0.6 * bu), 0, 6.2832); ctx.fill();
       }
       drawGranules(x, y, r, bloom, u, a2);
       return true;
@@ -809,7 +846,7 @@
   }
 
   window.JY_INK = {
-    version: '2.2',
+    version: '2.3',
     burst: function (x, y) {
       if (!host) return;
       var bx = (x == null ? window.innerWidth / 2 : x), by = (y == null ? window.innerHeight / 2 : y);
