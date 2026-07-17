@@ -1397,7 +1397,7 @@
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
-<script src="JS/ai-analysis.js?v=20260717v98_0" defer></script>
+<script src="JS/ai-analysis.js?v=20260717v98_2" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260612v6_4" defer></script>
@@ -1474,7 +1474,7 @@
 <!-- v86_32(2026/6/15)：雷諾曼主題偵測「架構級」根治——拆掉 v3.2~v3.8 的「問題正則挑主題牌」自然語言解讀層（不再 whack-a-mole）。病灶：用關鍵字正則比對問題來決定預算哪些主題牌格位，自然語言無窮、正則永遠補不完（連續漏接 天職→好感/正緣→愛上/發展空間，每次補詞都只是更大的補丁）。改為：上方「實際版面」(無條件產生、全36張2D座標)＝確定性結構化真相，模型自行判主題＋在版面定位（本批多盤正則未中、AI 仍照版面把魚/熊/心/戒指/人物牌位置全讀對＝版面才是真正防呆，正則純屬冗餘脆弱層）。淨移除約50行脆弱碼、提示詞反而變短。文獻佐證：過量/不相關脈絡降低LLM推理且模型難自濾、自然語言解讀層隨條件數指數退化、確定性結構化真相＋模型語意挑選為上策。動 lenormand.js(v3.9/v86_32)/index -->
 <!-- v86_34(2026/6/19)：雷諾曼兩項前端根治——①五張線由 flex 自動換行改為固定六軌幾何網格：上排3張、下排2張且共用中心，所有手機寬度不再歪斜。②AI捷徑改為真實 <a href target="_blank"> 原生導覽，複製在同一次點擊啟動；移除 Clipboard Promise 後延遲 window.open 的 popup-blocker 病根。Gemini 直接連至 https://gemini.google.com/app，本站不重繪、不切 phase、不會瞬間切掉再跳回。動 lenormand.js/index。 -->
 <!-- v86_33(2026/6/15)：雷諾曼提示詞「載入一致性＋過長/位置」根治（前次稽核問題3+4，治本非補丁）——①新增單一條件源 _ctx（isTiming/isChoice/isInner/count），特殊題型/應期/距離法全部只讀它，條件不再散在各處（舊狀：特殊題型 inline regex、應期無條件硬載＝補一個漏一個）。②應期四法只在時間題載入、非時間題留防呆一行（根治「我是渣男嗎」這種身分題被逼硬湊時間範圍）。③距離法（自標『適用5張以上』）改 count>=5 才載，短盤不再吃無關大塊。④三條最硬鐵律（第一句直答/只引盤內牌/壞牌照講）複製到提示詞頂端 primacy 位，與末端 recency 複述形成頭尾雙壓（ai-divination skill 頭—中—尾三位一體；Liu 2023 Lost-in-the-Middle U 型頭尾最強）。⑤修正 +30% 引用：Anthropic 該數字限 20K+ token 多文件檢索、本檔約3–4K屬指令密集不假借其數字。文獻：Lost-in-the-Middle(TACL 2024)/ManyIFEval(2509.21051)/RECAST(2505.19030)＝脈絡越雜、指令越多遵循越差。沙箱實跑渣男盤：頂端鐵律在✓、應期四法丟✓、距離法丟✓、時間題版應期回✓。⚠ 礦物錨點表（最大常駐字塊）此版未動＝單次呼叫下載重牆，要拆需走兩段式（讀牌→定石→只取該石事實）屬另案。動 lenormand.js(v3.10/v86_33)/index -->
-<script src="JS/prompt-export.js?v=20260717v98_0" defer></script>
+<script src="JS/prompt-export.js?v=20260717v98_2" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="JS/vendor/lunar.js?v=1.7.7" defer></script>
 <script src="JS/bazi-calendar-core.js?v=20260625v1_0_0" defer></script>
