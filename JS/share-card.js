@@ -2,7 +2,7 @@
  * ⚠ 檔案位置：JS/share-card.js（v86_16 起與其他 JS 同層；repo 根目錄如仍有舊檔請刪除，避免再傳錯位置）
  * v2.2(2026/6/12)：renderMeihua——卦無牌面圖資產，「真實畫面」＝直繪六爻卦象（陽爻實線/陰爻斷線、
  *   由下而上、動爻紅金高亮＋圓點標記）；呼叫端補傳 lines/dong，未傳則退 renderTarot 舊版（零風險後備）。
- * v2.1(2026/6/12)：renderTarot 同款根治——cards 帶 img 繪真牌面（逆位旋轉180°、與結果頁一致）、
+ * v2.3：renderTarot 統一 Golden Dawn Book T——cards 帶 img 繪真牌面、
  *   >3 張改通用網格自適應（凱爾特10/GD15/M21/馬蹄54 全張數入卡，不再截到3張）；未帶 img 行為不變（梅花等零影響）。
  * v2.0(2026/6/12)：雷諾曼專屬渲染器根治——原 lenormand 借用 renderTarot（寫死最多3格＋✦佔位），
  *   實測五張線只出3張、大牌陣36張只出3張、無真牌面。改：①renderLenormand 照牌陣張數排版
@@ -81,12 +81,8 @@
       ctx.save(); rr(ctx, x + pad, y + pad, w - pad * 2, ih, Math.min(9, w * 0.07)); ctx.clip();
       var iw = c._im.width || 1, ihh = c._im.height || 1, bw = w - pad * 2, bh = ih;
       var sc = Math.max(bw / iw, bh / ihh), dw = iw * sc, dh = ihh * sc;
-      if (c.rev) { // v2.1：逆位＝牌面旋轉 180°（與結果頁一致）
-        ctx.translate(x + pad + bw / 2, y + pad + bh / 2); ctx.rotate(Math.PI);
-        ctx.drawImage(c._im, -dw / 2, -dh / 2, dw, dh);
-      } else {
-        ctx.drawImage(c._im, x + pad + (bw - dw) / 2, y + pad + (bh - dh) / 2, dw, dh);
-      }
+      // Golden Dawn Book T：牌面物理方向不建立固定逆位字典。
+      ctx.drawImage(c._im, x + pad + (bw - dw) / 2, y + pad + (bh - dh) / 2, dw, dh);
       ctx.restore();
     } else {
       sparkle(ctx, x + w / 2, y + pad + ih * 0.45, Math.min(30, w * 0.2), 'rgba(201,168,76,0.7)');
@@ -294,7 +290,7 @@
     // v2.1：①cards 帶 img/_im 時繪真牌面（逆位旋轉180°）②>3 張改通用網格自適應（凱爾特10/GD15/M21/馬蹄54 皆可入卡）
     //   未帶 img 時 ≤3 張行為與 v1.2 視覺等價（佔位＋名稱＋位置）。
     d = d || {};
-    title(ctx, d.cardTitle || '我的塔羅', d.spread || 'RWS 塔羅');
+    title(ctx, d.cardTitle || 'Golden Dawn Book T 塔羅', d.spread || 'Book T 牌陣');
     var cards = d.cards || [{ name: '月亮', pos: '過去' }, { name: '星星', pos: '現況' }, { name: '太陽', pos: '未來' }];
     var n = cards.length, i, x, c;
     if (n <= 3) {
@@ -302,9 +298,9 @@
       var cw = 230, chh = 380, gap = 36, nameH = 86, x0 = (W - (n * cw + (n - 1) * gap)) / 2, ty = Math.max(y, 400);
       for (i = 0; i < n; i++) {
         x = x0 + i * (cw + gap); c = cards[i] || {};
-        c.rev = c.rev || c.reversed;
+        c.rev = false;
         cardCell(ctx, x, ty, cw, chh, c, nameH);
-        var nm = (c.name || '') + (c.rev ? '（逆）' : '');
+        var nm = (c.name || '');
         ctext(ctx, nm, x + cw / 2, ty + chh - 56, '600 ' + (nm.length > 4 ? 28 : 38) + 'px "Noto Serif TC", serif', CREAM, 0);
         ctext(ctx, c.pos || '', x + cw / 2, ty + chh - 22, '22px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 1);
       }
@@ -337,10 +333,10 @@
       var rx0 = (W - (row.length * cwG + (row.length - 1) * gp)) / 2;
       var ry = y0 + r * (chG + nmH + gp);
       for (i = 0; i < row.length; i++) {
-        c = row[i] || {}; c.rev = c.rev || c.reversed;
+        c = row[i] || {}; c.rev = false;
         x = rx0 + i * (cwG + gp);
         cardCell(ctx, x, ry, cwG, chG, c, 0);
-        if (showName) ctext(ctx, (c.name || '') + (c.rev ? '（逆）' : ''), x + cwG / 2, ry + chG + 20, '600 22px "Noto Serif TC", serif', CREAM, 0);
+        if (showName) ctext(ctx, (c.name || ''), x + cwG / 2, ry + chG + 20, '600 22px "Noto Serif TC", serif', CREAM, 0);
       }
     }
   }

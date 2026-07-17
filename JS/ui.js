@@ -1651,23 +1651,21 @@ function submitStep0Fast(){
           autoDrawn = [];
           for(let i=0; i<_count && i<shuffled.length; i++){
             const card = shuffled[i];
-            // 用同一 seed 決定正逆位（金色黎明傳統：接近 50%）
-            const _r2 = makeSeededRng(S.form.bdate, S.form.gender, S.form.type, S.form.question);
-            for(let _k=0; _k<=card.id; _k++) _r2();
-            const isUp = _r2() > 0.48; // fallback：保留舊邏輯，主路徑由 JY_buildCanonicalTarotDraw 管控
+            // Book T：牌面方向不建立 Waite 式固定逆位；後續以元素尊貴裁決。
+            const isUp = true;
             var _posName = '';
             if (_spreadDef && _spreadDef.positions && _spreadDef.positions[i]) {
               _posName = _spreadDef.positions[i].name;
             } else if (typeof CELTIC_POS !== 'undefined') {
               _posName = CELTIC_POS[i] || '';
             }
-            autoDrawn.push({...card, isUp, pos: _posName});
+            autoDrawn.push({...card, isUp, pos: _posName, sourceProfile:'gd_book_t', orientationPolicy:'elemental_dignities'});
           }
         }
         drawnCards = autoDrawn;
         S.tarot = {drawn: autoDrawn, spread: autoDrawn, spreadType: _spreadId, spreadDef: _spreadDef};
         try { if(typeof enhanceTarot==='function') enhanceTarot(S.tarot); } catch(e){ console.warn('[AutoTarot] enhanceTarot:', e); }
-        console.log('[AutoMode] 牌陣:'+_spreadId+'('+_count+'張) 抽牌:', autoDrawn.map(c=>c.n+(c.isUp?'正':'逆')).join(', '));
+        console.log('[AutoMode] Golden Dawn Book T 牌陣:'+_spreadId+'('+_count+'張) 抽牌:', autoDrawn.map(c=>c.n).join(', '));
         } // ← end of else (non-OOTK)
       } catch(e) {
         console.error('[AutoMode] 塔羅抽牌失敗:', e);
@@ -2638,8 +2636,8 @@ function showFortuneResult(f){
       else if(_buRel==='體克用') actionTips.push('梅花卦象顯示你能掌控局面，但會比較費力');
     }
     if(_7dDaily && S.tarot && S.tarot.drawn && S.tarot.drawn.length>=3){
-      var _todayTarot=S.tarot.drawn[0]; // 核心現狀牌
-      if(_todayTarot && !_todayTarot.isUp) actionTips.push('塔羅核心牌逆位（'+_todayTarot.n+'），今天心態需要調整');
+      var _todayTarot=S.tarot.drawn[0];
+      if(_todayTarot && window.JYGoldenDawn) actionTips.push('塔羅核心牌（'+_todayTarot.n+'）請連同牌位與相鄰元素尊貴理解');
     }
   }catch(e){}
 
@@ -5901,7 +5899,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20260717v80_62', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });
@@ -5980,29 +5978,17 @@ showAuraResult = function(){
     }
   };
 
-  // ★ v80.60：首頁八字命理入口（ROOT-SPEC v2 共用核心先載、再載獨立頁）
+  // ★ v80.26：首頁八字命理入口
   window._baziOpen = function() {
+    // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
     if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
-    if (typeof window._jyLazyScript !== 'function') {
-      alert('八字獨立頁尚未載入，請確認 JS/bazi-prompt-root.js 與 JS/bazi-standalone.js 已上傳並強制重新整理。');
-      return;
-    }
-
-    function loadStandalone() {
-      window._jyLazyScript('JS/bazi-standalone.js?v=20260717v80_62', function(ok){
+    if (typeof window._jyLazyScript === 'function') {
+      window._jyLazyScript('JS/bazi-standalone.js', function(ok){
         if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
         else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
       });
-    }
-
-    // 舊快取可能只有 ui.js，必須保證共用提示詞核心先完成，避免兩條路徑產生不同規則。
-    if (window.JY_BAZI_PROMPT_ROOT) {
-      loadStandalone();
     } else {
-      window._jyLazyScript('JS/bazi-prompt-root.js', function(ok){
-        if (ok && window.JY_BAZI_PROMPT_ROOT) loadStandalone();
-        else alert('八字提示詞核心載入失敗：請確認主機 JS/ 資料夾內已有 bazi-prompt-root.js，並強制重新整理一次。');
-      });
+      alert('八字獨立頁尚未載入，請確認 JS/bazi-standalone.js 已上傳並強制重新整理。');
     }
   };
 
@@ -6130,11 +6116,11 @@ showAuraResult = function(){
     var idx = hash % TAROT.length;
     var card = TAROT[idx];
     var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(card) : '';
-    var isUp = (hash % 7) > 2;
+    var isUp = true;
     var toggleEl = document.querySelector('.jy-home-daily-toggle');
     if (toggleEl && imgSrc) {
       toggleEl.innerHTML =
-        '<img src="' + imgSrc + '" style="width:22px;height:34px;border-radius:3px;object-fit:cover;border:1px solid rgba(212,175,55,.2);' + (isUp ? '' : 'transform:rotate(180deg)') + '">' +
+        '<img src="' + imgSrc + '" style="width:22px;height:34px;border-radius:3px;object-fit:cover;border:1px solid rgba(212,175,55,.2);">' +
         '<span>今日一牌 · ' + (card.n || '') + '</span>' +
         '<i id="daily-card-arrow" class="fas fa-chevron-down jy-home-daily-arr"></i>';
     }
@@ -6153,23 +6139,19 @@ showAuraResult = function(){
     hash = Math.abs(hash);
     var idx = hash % TAROT.length;
     var card = TAROT[idx];
-    var isUp = (hash % 7) > 2; // 大約 57% 正位
-
+    var isUp = true;
+    var gdProfile = window.JYGoldenDawn ? window.JYGoldenDawn.profile(card) : null;
     var name = card.n || card.name || '未知';
-    var upLabel = isUp ? '正位' : '逆位';
-    var brief = isUp
-      ? (card.up || '順勢而行')
-      : (card.rv || '暫停反思');
-    if (brief.length > 50) brief = brief.substring(0, 50) + '…';
-
-    // 從 GD 牌組取關鍵字
-    var keyword = isUp ? (card.kwUp || '') : (card.kwRv || '');
+    var upLabel = 'Book T';
+    var brief = gdProfile ? gdProfile.core : (card.up || '此牌須依問題、位置與相鄰元素尊貴解讀');
+    if (brief.length > 70) brief = brief.substring(0, 70) + '…';
+    var keyword = gdProfile ? (gdProfile.bookTTitle || '') : (card.kwUp || '');
 
     var cardImg = (typeof getTarotCardImage === 'function') ? getTarotCardImage(card) : '';
 
     container.innerHTML =
       '<div style="padding:1rem;border-radius:12px;background:rgba(212,175,55,.03);border:1px solid rgba(212,175,55,.1);display:flex;gap:.8rem;align-items:flex-start">' +
-        (cardImg ? '<img src="' + cardImg + '" style="width:60px;height:92px;border-radius:6px;object-fit:cover;border:1px solid rgba(212,175,55,.2);flex-shrink:0;' + (isUp ? '' : 'transform:rotate(180deg)') + '">' : '') +
+        (cardImg ? '<img src="' + cardImg + '" style="width:60px;height:92px;border-radius:6px;object-fit:cover;border:1px solid rgba(212,175,55,.2);flex-shrink:0;">' : '') +
         '<div style="flex:1">' +
           '<div style="font-size:.95rem;color:var(--c-gold,#d4af37);font-weight:700;font-family:var(--f-display,serif);margin-bottom:.15rem">' + name + ' <span style="font-size:.72rem;font-weight:400;opacity:.6">' + upLabel + '</span></div>' +
           (keyword ? '<div style="font-size:.72rem;color:var(--c-text-muted,#6b6355);margin-bottom:.4rem">' + keyword + '</div>' : '') +
@@ -6329,7 +6311,7 @@ showAuraResult = function(){
   function jyBuildSlot(spreadId, def) {
       // v80.38 治本：版面以牌陣定義為準，避免傳入的 spreadId 失準導致掉進通用方格。
       if (def && def.id && def.id !== spreadId) spreadId = def.id;
-      // v80.14：優先使用 tarot_upgrade.js 的正統版面（含 Waite 凱爾特、Mathers 21、Mathers 54）。
+      // v80.14：優先使用 tarot_upgrade.js 的正統版面（含凱爾特、Mathers 21、Mathers 54；牌義統一 Book T）。
       // v80.40：包 try/catch — 萬一 buildSlotLayout 內部丟例外，退回本函式自己的正統分支，
       //   不讓錯誤往上炸成「通用方格」。
       if (typeof window.buildSlotLayout === 'function') {
@@ -6342,7 +6324,7 @@ showAuraResult = function(){
         var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
         var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
         var _ic = (spreadId === 'celtic_cross' && id === 1);
-        if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><div class="tarot-reveal flipping" style="'+(_ic?'transform:rotate(-90deg)':'')+'"><div class="tarot-reveal-inner"><div class="tarot-reveal-back"></div><div class="tarot-reveal-front"><img src="'+_di+'" class="tc-img" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'"><span class="tc-name" style="'+(_dc.isUp?'':'transform:rotate(180deg)')+'">'+(_dc.n||'')+'</span><span class="tc-dir '+(_dc.isUp?'up':'rv')+'">'+(_dc.isUp?'順位':'逆位')+'</span></div></div></div>'+(_ic?'':'<span class="slot-label">'+label+'</span>')+'</div>';
+        if (_dc && _di) return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><div class="tarot-reveal flipping" style="'+(_ic?'transform:rotate(-90deg)':'')+'"><div class="tarot-reveal-inner"><div class="tarot-reveal-back"></div><div class="tarot-reveal-front"><img src="'+_di+'" class="tc-img"><span class="tc-name">'+(_dc.n||'')+'</span><span class="tc-dir up">Book T</span></div></div></div>'+(_ic?'':'<span class="slot-label">'+label+'</span>')+'</div>';
         return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
       }
       if (!def) return null;
@@ -6450,8 +6432,8 @@ showAuraResult = function(){
         h += '<div class="jy-arrow">← 過去 ─── 轉折 ─── 結果 →</div>';
       }
       else if (spreadId === 'fifteen_card') {
-        // ── Thoth/GD 15 張 Fifteen-Card Method（Crowley LWB「開鑰之法簡化版」/ The English Spread）──
-        // 正統布局（Crowley LWB；arnellart「opposing elements in opposing corners」）：
+        // ── 十五張英式觀測布局（布局來源獨立；牌義固定 Golden Dawn Book T）──
+        // 五個三牌組布局；各組先獨立成句，再依 Book T 元素尊貴比較：
         //   核心三張 2-1-3 居中＝Spirit；四組三張環繞中心，對立元素置於對角（火↔水、風↔土）。
         //   每組三張＝同方位的內/中/外三圈，內圈靠核心、外圈最遠，主牌＝中圈(8/9/10/11)。
         //   左上＝土(自然路徑4,8,12) 右上＝水(替代路徑5,9,13) 左下＝火(命運7,11,15) 右下＝風(心理6,10,14)
@@ -6838,12 +6820,10 @@ async function submitTarotQuick() {
       autoDrawn = [];
       for (var i = 0; i < targetCount && i < shuffled.length; i++) {
         var card = shuffled[i];
-        var _r2 = (typeof makeSeededRng === 'function') ? makeSeededRng(seed, type, question, String(card.id)) : Math.random;
-        if (typeof _r2 === 'function') { for (var _k = 0; _k <= card.id; _k++) _r2(); }
-        // fallback：保留舊邏輯，主路徑由 JY_buildCanonicalTarotDraw 管控
-        var isUp = (typeof _r2 === 'function') ? (_r2() >= 0.5) : (Math.random() >= 0.5);
+        // Book T fallback：不以物理倒置生成固定逆位牌義。
+        var isUp = true;
         var posName = (spreadDef && spreadDef.positions && spreadDef.positions[i]) ? spreadDef.positions[i].name : '';
-        autoDrawn.push(Object.assign({}, card, { isUp: isUp, pos: posName }));
+        autoDrawn.push(Object.assign({}, card, { isUp: true, pos: posName, sourceProfile:'gd_book_t', orientationPolicy:'elemental_dignities' }));
       }
     }
 
@@ -6937,41 +6917,40 @@ function renderTarotSpreadDisplay() {
 
   var title = document.getElementById('tarot-spread-title');
   var def = S.tarot.spreadDef || null;
-  if (title && def) title.textContent = def.zh || '你的牌陣';
+  var spreadType = (S.tarot && S.tarot.spreadType) || (def && def.id) || '';
+  if (title) title.textContent = ((def && def.zh) || '你的牌陣') + '｜Golden Dawn Book T';
 
+  var cards = drawnCards || [];
+  if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(cards);
   var h = '';
-  var ftKey = { love:'love', career:'career', wealth:'wealth', health:'health', relationship:'love', family:'love' }[(S.form && S.form.type) || ''] || '';
-
-  (drawnCards || []).forEach(function(c, i) {
+  cards.forEach(function(c, i) {
     if (!c) return;
-    var posName = (def && def.positions && def.positions[i]) ? def.positions[i].name : ('第' + (i + 1) + '張');
-    var posZh = (def && def.positions && def.positions[i]) ? def.positions[i].zh : '';
-    var dp = (typeof getTarotDeep === 'function') ? getTarotDeep(c) : {};
-    var coreDesc = c.isUp ? (dp.coreUp || '') : (dp.coreRv || '');
-    var fc = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
-    var typeR = ftKey ? (c.isUp ? (fc[ftKey + 'Up'] || '') : (fc[ftKey + 'Rv'] || '')) : '';
-    var elC = { '火': '#ef4444', '水': '#3b82f6', '風': '#22d3ee', '土': '#a78b5a' }[c.el] || 'var(--c-gold)';
-    var kw = c.isUp ? (fc.kwUp || '') : (fc.kwRv || '');
+    var posData = (def && def.positions && def.positions[i]) ? def.positions[i] : null;
+    var posName = posData ? posData.name : ('第' + (i + 1) + '張');
+    var posZh = posData ? (posData.zh || '') : '';
+    var gd = window.JYGoldenDawn ? window.JYGoldenDawn.profile(c) : null;
+    var dignity = window.JYGoldenDawn ? window.JYGoldenDawn.dignityContext(cards, i, (spreadType || (S.tarot && S.tarot.spreadType) || '')) : null;
+    var stateLabel = dignity && dignity.state === 'well_dignified' ? '得勢' : (dignity && dignity.state === 'ill_dignified' ? '失勢' : (dignity && dignity.state === 'supported' ? '友善支援' : (dignity && dignity.state === 'networked' ? '多邊網絡' : '混合／未定')));
+    var reading = dignity ? dignity.reading : (gd ? gd.core : (c.up || '依牌位解讀'));
+    var elC = { '火': '#ef4444', '水': '#3b82f6', '風': '#22d3ee', '土': '#a78b5a' }[(gd && gd.element) || c.el] || 'var(--c-gold)';
     var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
-    var gdInfo = c.gdCourt ? '<div style="font-size:.7rem;color:#a78bfa;margin-top:.2rem">⚡ ' + c.gdCourt.combo + '</div>' : '';
 
     h += '<div class="card" style="padding:.7rem;margin-bottom:.4rem;border-left:3px solid ' + elC + '">';
     h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
     h += '<span class="tag tag-gold" style="font-size:.75rem">' + (i + 1) + '. ' + posName + '</span>';
-    h += '<span class="tag ' + (c.isUp ? 'tag-blue' : 'tag-red') + '" style="font-size:.7rem">' + (c.isUp ? '順位' : '逆位') + '</span></div>';
+    h += '<span class="tag tag-blue" style="font-size:.7rem">' + stateLabel + '</span></div>';
     if (posZh) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">' + posZh + '</div>';
     h += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
-    if (imgSrc) h += '<img src="' + imgSrc + '" alt="' + c.n + '" style="width:55px;height:85px;border-radius:5px;flex-shrink:0;object-fit:cover;' + (c.isUp ? '' : 'transform:rotate(180deg)') + '">';
+    if (imgSrc) h += '<img src="' + imgSrc + '" alt="' + c.n + '" style="width:55px;height:85px;border-radius:5px;flex-shrink:0;object-fit:cover">';
     h += '<div style="flex:1"><strong class="text-gold serif" style="font-size:.9rem">' + (c.n || c.name) + '</strong>';
-    if (kw) h += '<div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.15rem">🔑 ' + kw + '</div>';
-    h += gdInfo;
-    h += '<p style="font-size:.78rem;color:var(--c-text-dim);margin-top:.2rem;line-height:1.5">' + (c.isUp ? fc.up : fc.rv) + '</p>';
-    if (typeR) h += '<p style="font-size:.76rem;color:var(--c-gold-light,#e8c968);margin-top:.2rem;line-height:1.5;border-top:1px solid rgba(212,175,55,.1);padding-top:.2rem">📌 ' + typeR + '</p>';
-    if (coreDesc) h += '<p style="font-size:.74rem;color:var(--c-gold-light);margin-top:.15rem;line-height:1.4;opacity:.85">' + coreDesc + '</p>';
+    if (gd && gd.bookTTitle) h += '<div style="font-size:.7rem;color:var(--c-text-dim);margin-top:.15rem">' + gd.bookTTitle + '</div>';
+    if (gd && gd.correspondence) h += '<div style="font-size:.68rem;color:#a78bfa;margin-top:.15rem">' + gd.correspondence + '</div>';
+    h += '<p style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.55">' + reading + '</p>';
+    if (dignity && dignity.neutralizedByContraryFlanks) h += '<p style="font-size:.7rem;color:var(--c-text-muted);margin-top:.15rem">左右兩牌互相敵對，本牌依 Book T 視為受兩側影響有限。</p>';
     h += '</div></div></div>';
   });
 
-  h += '<div style="text-align:center;margin-top:.7rem"><button onclick="_tarotShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:var(--c-gold);font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361\uFF08\u6645\u724C\u9663\uFF09</button></div>';
+  h += '<div style="text-align:center;margin-top:.7rem"><button onclick="_tarotShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:var(--c-gold);font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">📤 生成分享卡（Book T 牌陣）</button></div>';
   el.innerHTML = h;
 }
 
@@ -7006,12 +6985,12 @@ window._tarotShare = function () {
     var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
     // v85.4：補傳 img——share-card v2.1 起繪真牌面（逆位旋轉180°）、>3張全張數入卡
     var img = (typeof getTarotCardImage === 'function' && c) ? (getTarotCardImage(c) || '') : '';
-    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: !(c && c.isUp), img: img };
+    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: false, img: img, sourceProfile:'gd_book_t' };
   });
   JYShareCard.open('tarot', {
-    cardTitle: '我的塔羅',
+    cardTitle: 'Golden Dawn Book T 塔羅',
     question: (S.form && S.form.question) || '',
-    spread: def.zh || '塔羅牌陣',
+    spread: (def.zh || '塔羅牌陣') + '｜Book T',
     cards: cards
   });
 };
@@ -8054,7 +8033,7 @@ function jyTarotFillSlots(drawn, sid, def){
     var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
     var posName = (def && def.positions && def.positions[i] && def.positions[i].name)
                   ? def.positions[i].name : (c.pos || ('位置' + (i + 1)));
-    var rot = c.isUp ? '' : 'transform:rotate(180deg)';
+    var rot = '';
     slotEl.classList.add('filled');
     slotEl.innerHTML =
       '<div class="tarot-reveal flipping" style="' + (isCard2 ? 'transform:rotate(-90deg)' : '') + '">' +
@@ -8063,7 +8042,7 @@ function jyTarotFillSlots(drawn, sid, def){
           '<div class="tarot-reveal-front">' +
             (imgSrc ? '<img src="' + imgSrc + '" class="tc-img" style="' + rot + '">' : '') +
             '<span class="tc-name" style="' + rot + '">' + (c.n || '') + '</span>' +
-            '<span class="tc-dir ' + (c.isUp ? 'up' : 'rv') + '">' + (c.isUp ? '順位' : '逆位') + '</span>' +
+            '<span class="tc-dir up">Book T</span>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -8124,10 +8103,10 @@ function jyTarotBuildDraw(def, sid){
     try { if (typeof makeSeededRng === 'function') rng = makeSeededRng(seed, 'tarot-autodraw', 'v80.36'); } catch(e) {}
     for (var i = 0; i < targetCount && i < deck.length; i++) {
       var card = deck[i];
-      var r = Math.random();
-      try { if (typeof rng === 'function') r = rng(); } catch(e) {}
       var out = Object.assign({}, card || {});
-      out.isUp = r >= 0.5;
+      out.isUp = true;
+      out.direction = '元素尊貴裁決';
+      out.sourceProfile = 'gd_book_t';
       out.pos = (def && def.positions && def.positions[i]) ? def.positions[i].name : ('第' + (i + 1) + '張');
       out.seq = i + 1;
       drawn.push(out);

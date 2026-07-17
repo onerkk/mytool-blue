@@ -1,4 +1,4 @@
-/*! tarot-semantic-engine.js — ROOT-SPEC v92 clean compiler
+/*! tarot-semantic-engine.js — ROOT-SPEC v95 Golden Dawn compiler
  * 單一乾淨架構：原句型別化 → 方法觀測模型 → 合法證據圖 →
  * 實體／事件共指 → 原子覆蓋裁決 → 語義飽和 → 反向稽核。
  *
@@ -11,7 +11,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '92.0.0';
+  var VERSION = '95.1.0';
   var SCHEMA = 'jy.tarot.semantic-contract/3';
 
   function clone(value) {
@@ -50,8 +50,7 @@
   function getDirection(card) {
     if (!card) return '';
     if (card.direction) return text(card.direction);
-    if (card.isUp === true) return '正位';
-    if (card.isUp === false) return '逆位';
+    if (card.isUp === true || card.isUp === false) return '元素尊貴裁決';
     return '';
   }
   function splitCandidates(value) {
@@ -60,40 +59,13 @@
   }
 
   var SOURCE_PROFILES = {
-    modern_rws: {
-      id: 'modern_rws',
-      label: '現代 RWS 通行義＋PCS 圖像',
-      reversalPolicy: '使用資料區明示的現代通行正逆義',
-      imagePolicy: 'PCS 圖像只在確實改變命題時作次級證據',
-      forbiddenMixes: ['mathers_1888', 'gd_book_t']
-    },
-    waite_1910: {
-      id: 'waite_1910',
-      label: 'Waite 1910《Pictorial Key》',
-      reversalPolicy: '依資料區提供的 Waite 正逆占義',
-      imagePolicy: 'PCS 圖像只輔助 Waite 原義，不以現代固定關鍵字覆寫',
-      forbiddenMixes: ['mathers_1888', 'gd_book_t']
-    },
-    mathers_1888: {
-      id: 'mathers_1888',
-      label: 'Mathers 1888《The Tarot》牌義與程序',
-      reversalPolicy: '依 Mathers 1888 的正逆義與該方法程序',
-      imagePolicy: '不以後來的 PCS 小牌場景取代原方法證據',
-      forbiddenMixes: ['modern_rws', 'waite_1910', 'gd_book_t']
-    },
-    modern_rws_gd_structure: {
-      id: 'modern_rws_gd_structure',
-      label: '現代 RWS 牌義＋明示的 GD／Thoth 結構混合實務',
-      reversalPolicy: '依資料區；方法明示不用逆位時不得自行讀逆位',
-      imagePolicy: 'PCS 圖像只作次級敘事',
-      forbiddenMixes: ['mathers_1888', 'gd_book_t']
-    },
     gd_book_t: {
       id: 'gd_book_t',
-      label: 'Golden Dawn《Book T》開鑰之法',
-      reversalPolicy: '依本方法的計數、配對、牌力與元素程序，不套一般 RWS 逆位心理化',
-      imagePolicy: '不以 PCS 場景取代計數路徑、配對與操作有效性',
-      forbiddenMixes: ['modern_rws', 'waite_1910', 'mathers_1888']
+      label: 'Golden Dawn《Book T／Liber T》',
+      reversalPolicy: '不套用 Waite 固定正逆位字典；一般牌陣由位置、相鄰牌元素尊貴、卡巴拉位階與占星對應裁決，Opening of the Key 依其程序裁決。',
+      imagePolicy: '牌面圖像只作辨識與次級象徵；不得以 PCS 或 Thoth 圖像敘事覆寫 Book T 的結構與牌義。',
+      forbiddenMixes: ['modern_rws', 'waite_1910', 'thoth_crowley', 'etteilla'],
+      sourceContract: '所有牌陣與開鑰之法共用同一 Golden Dawn Book T 牌義核心；牌陣本身只是一種觀測拓撲，不冒充 Book T 原創。'
     }
   };
 
@@ -213,14 +185,12 @@
   }
 
   function makeSpec(id, label, sourceProfile, roles, operators, measurementOverrides, topology, notes) {
-    var strict = sourceProfile === 'mathers_1888' || sourceProfile === 'gd_book_t';
+    sourceProfile = 'gd_book_t';
     return {
       id: id,
       label: label,
       sourceProfile: sourceProfile,
-      allowedSourceProfiles: strict
-        ? [sourceProfile]
-        : uniq([sourceProfile, 'modern_rws', 'waite_1910']),
+      allowedSourceProfiles: ['gd_book_t'],
       roles: roles.slice(),
       expectedCardCount: id === 'ootk' ? null : roles.length,
       expectedOperationCount: id === 'ootk' ? 5 : null,
@@ -234,7 +204,7 @@
 
   var METHOD_SPECS = {
     three_card: makeSpec(
-      'three_card', '三牌陣', 'modern_rws',
+      'three_card', '三牌陣', 'gd_book_t',
       ['state', 'state', 'outcome'],
       ['atomic_node', 'adjacent_segment', 'whole_ordered_path'],
       { trajectory: 'direct_channel', outcome: 'direct_channel' },
@@ -242,7 +212,7 @@
       ['位置數不等於人物數、事件數或固定時間單位。']
     ),
     five_card: makeSpec(
-      'five_card', '五牌陣', 'modern_rws',
+      'five_card', '五牌陣', 'gd_book_t',
       ['state', 'cause', 'obstacle', 'advice', 'outcome'],
       ['atomic_node', 'declared_mechanism', 'full_event_chain'],
       { cause: 'direct_channel', trajectory: 'qualitative_inference', outcome: 'direct_channel', guidance: 'direct_channel' },
@@ -250,7 +220,7 @@
       ['結果須由現況、原因、阻礙與介入點共同限定。']
     ),
     cross: makeSpec(
-      'cross', '十字牌陣', 'modern_rws',
+      'cross', '十字牌陣', 'gd_book_t',
       ['state', 'interaction_force', 'cause', 'outcome', 'advice'],
       ['atomic_node', 'core_cross', 'development_axis', 'intervention_link'],
       { cause: 'direct_channel', trajectory: 'direct_channel', guidance: 'direct_channel' },
@@ -258,7 +228,7 @@
       ['交叉力量不預設為負面，須與核心共同裁決。']
     ),
     either_or: makeSpec(
-      'either_or', '二選一牌陣', 'modern_rws',
+      'either_or', '二選一牌陣', 'gd_book_t',
       ['state', 'comparison', 'comparison', 'outcome', 'outcome'],
       ['atomic_node', 'branch_A', 'branch_B', 'branch_comparison'],
       {
@@ -272,7 +242,7 @@
       ['兩路必須各自成句後，才可在同一尺度下比較。']
     ),
     relationship: makeSpec(
-      'relationship', '關係牌陣', 'modern_rws',
+      'relationship', '關係牌陣', 'gd_book_t',
       ['state', 'person_aggregate', 'state', 'obstacle', 'advice', 'outcome'],
       ['atomic_node', 'self_other_contrast', 'relationship_mechanism', 'obstacle_link', 'intervention_chain', 'outcome_dependency_graph'],
       {
@@ -290,7 +260,7 @@
       ['已知對象可綁定；未知對象只能描述聚合作用，不反向證明有人存在。']
     ),
     timeline: makeSpec(
-      'timeline', '時間線牌陣', 'modern_rws',
+      'timeline', '時間線牌陣', 'gd_book_t',
       ['cause', 'timeline', 'timeline', 'timeline', 'outcome'],
       ['atomic_node', 'ordered_timeline', 'trigger_chain'],
       { cause: 'direct_channel', trajectory: 'direct_channel', outcome: 'direct_channel', exact_date: 'anchor_required' },
@@ -298,7 +268,7 @@
       ['直接觀察相對順序與節奏；日期必須另有明示錨點。']
     ),
     celtic_cross: makeSpec(
-      'celtic_cross', '凱爾特十字', 'waite_1910',
+      'celtic_cross', '凱爾特十字', 'gd_book_t',
       ['state', 'interaction_force', 'structural', 'cause', 'timeline', 'timeline', 'state', 'environment', 'state', 'outcome'],
       ['atomic_node', 'core_cross', 'vertical_axis', 'time_axis', 'self_environment_axis', 'expectation_outcome_axis', 'dependency_network'],
       {
@@ -314,7 +284,7 @@
       ['第九位是希望／恐懼，不是結果。', '完整牌陣是多軸依賴圖，不是十張線性時間線。']
     ),
     tree_of_life: makeSpec(
-      'tree_of_life', '生命之樹', 'modern_rws_gd_structure',
+      'tree_of_life', '生命之樹', 'gd_book_t',
       ['structural', 'structural', 'structural', 'structural', 'structural', 'state', 'state', 'state', 'state', 'outcome'],
       ['atomic_node', 'mercy_pillar', 'severity_pillar', 'middle_pillar', 'pillar_dependency_network'],
       { cause: 'qualitative_inference', trajectory: 'qualitative_inference', outcome: 'direct_channel' },
@@ -322,7 +292,7 @@
       ['質點是作用層級，不是現實數量或固定時間。']
     ),
     zodiac: makeSpec(
-      'zodiac', '黃道十二宮牌陣', 'modern_rws_gd_structure',
+      'zodiac', '黃道十二宮牌陣', 'gd_book_t',
       ['domain', 'domain', 'domain', 'domain', 'domain', 'domain', 'domain', 'domain', 'domain', 'domain', 'domain', 'domain', 'synthesis'],
       ['atomic_node', 'house_axis', 'domain_dependency_network', 'domain_synthesis'],
       { state: 'direct_channel', trajectory: 'qualitative_inference', outcome: 'qualitative_inference_only_if_supported' },
@@ -330,7 +300,7 @@
       ['十二宮分隔生活領域，不枚舉未知人物。', '第十三張只作全盤綜合／指引，不自動成為結果位。']
     ),
     minor_arcana: makeSpec(
-      'minor_arcana', '小阿卡那專題牌陣', 'modern_rws',
+      'minor_arcana', '小阿卡那專題牌陣', 'gd_book_t',
       ['state', 'cause', 'obstacle', 'environment', 'state', 'advice', 'outcome'],
       ['atomic_node', 'mechanism_chain', 'resource_intervention', 'outcome_dependency_graph'],
       { cause: 'direct_channel', guidance: 'direct_channel', outcome: 'direct_channel' },
@@ -338,7 +308,7 @@
       ['人物通道未綁定時仍是環境作用，不代表具體一人。']
     ),
     fifteen_card: makeSpec(
-      'fifteen_card', '十五張英式牌陣', 'modern_rws_gd_structure',
+      'fifteen_card', '十五張英式牌陣', 'gd_book_t',
       ['state', 'state', 'state', 'timeline', 'timeline', 'state', 'structural', 'timeline', 'timeline', 'state', 'structural', 'timeline', 'timeline', 'state', 'structural'],
       ['atomic_node', 'triad_core', 'triad_natural', 'triad_alternative', 'triad_decision', 'triad_fate', 'triad_comparison'],
       {
@@ -353,7 +323,7 @@
       ['五個三牌組各自成句後才能比較，不跨組任意拼牌。']
     ),
     mathers_21: makeSpec(
-      'mathers_21', 'Mathers 1888 第二法', 'mathers_1888',
+      'mathers_21', 'Mathers 1888 第二法', 'gd_book_t',
       new Array(21).fill('structural'),
       ['atomic_node', 'ordered_row', 'declared_outer_pair', 'center_card', 'row_dependency_network'],
       { state: 'qualitative_inference', cause: 'qualitative_inference', trajectory: 'qualitative_inference', outcome: 'qualitative_inference' },
@@ -361,7 +331,7 @@
       ['三排從右往左各自成句，再讀指定首尾配對與中心牌。']
     ),
     mathers_horseshoe: makeSpec(
-      'mathers_horseshoe', 'Mathers 1888 第一法完整 Horseshoe', 'mathers_1888',
+      'mathers_horseshoe', 'Mathers 1888 第一法完整 Horseshoe', 'gd_book_t',
       new Array(54).fill('structural'),
       ['atomic_node', 'ordered_group', 'contiguous_segment', 'declared_outer_pair', 'center_card', 'group_claim_synthesis', 'cross_group_synthesis'],
       { state: 'qualitative_inference', cause: 'qualitative_inference', trajectory: 'qualitative_inference', outcome: 'qualitative_inference', exact_age: 'not_measured', cardinality: 'not_measured' },
@@ -369,7 +339,7 @@
       ['只讀 A=26、C=17、E=11；F組不進入解讀。', '跨組只綜合各組已成立命題。']
     ),
     horseshoe: makeSpec(
-      'horseshoe', '七張馬蹄形牌陣', 'modern_rws_gd_structure',
+      'horseshoe', '七張馬蹄形牌陣', 'gd_book_t',
       ['cause', 'state', 'state', 'advice', 'environment', 'obstacle', 'outcome'],
       ['atomic_node', 'ordered_arc', 'environment_obstacle_link', 'intervention_outcome_chain'],
       { cause: 'direct_channel', trajectory: 'qualitative_inference', outcome: 'direct_channel', guidance: 'direct_channel' },
@@ -379,8 +349,8 @@
     ootk: makeSpec(
       'ootk', 'Opening of the Key 五次操作', 'gd_book_t',
       ['stage', 'stage', 'stage', 'stage', 'stage'],
-      ['operation_landing', 'operation_counting_path', 'operation_pair', 'operation_dignity_context', 'operation_validity', 'operation_stage_summary', 'op4_time_anchor', 'cross_operation_stage_network'],
-      { state: 'direct_channel', cause: 'qualitative_inference', trajectory: 'direct_channel', outcome: 'direct_channel', exact_date: 'op4_anchor_only', cardinality: 'not_measured', exact_age: 'not_measured', identity: 'not_measured' },
+      ['operation_landing', 'operation_counting_path', 'operation_pair', 'operation_dignity_context', 'operation_validity', 'operation_stage_summary', 'op4_ring_structure', 'cross_operation_stage_network'],
+      { state: 'direct_channel', cause: 'qualitative_inference', trajectory: 'direct_channel', outcome: 'direct_channel', exact_date: 'not_measured', cardinality: 'not_measured', exact_age: 'not_measured', identity: 'not_measured' },
       { kind: 'five_stage_procedure', independentComparableChannels: 0 },
       ['五次操作是同一 QUERY_EVENT 的階段程序，不得跨操作直接拼牌。']
     )
@@ -640,11 +610,7 @@
   }
 
   function resolveSemanticProfile(spreadId, options) {
-    var opts = options || {};
-    var spec = METHOD_SPECS[spreadId] || METHOD_SPECS.three_card;
-    if (opts.sourceProfile && SOURCE_PROFILES[opts.sourceProfile]) return opts.sourceProfile;
-    if (opts.waitePure === true && spec.allowedSourceProfiles.indexOf('waite_1910') >= 0) return 'waite_1910';
-    return spec.sourceProfile;
+    return 'gd_book_t';
   }
 
   function positionLabel(card, index) {
@@ -961,7 +927,7 @@
       'opening_and_present_condition',
       'development_through_houses',
       'continuing_development_through_signs',
-      'near_term_decan_development_and_time_anchor',
+      'penultimate_ring_of_thirty_six',
       'termination_through_tree_of_life'
     ][stage - 1];
   }
@@ -1043,18 +1009,19 @@
         }));
       }
 
-      if (stage === 4 && (op.decanDateRange || op.decanRange || op.decanSign)) {
-        stageDeps.push(factory.add('op4_time_anchor', '第四次操作明示旬位／時間錨', [], {
-          topology: 'time_anchor',
+      if (stage === 4) {
+        stageDeps.push(factory.add('op4_ring_structure', '第四次操作：代表牌後方三十六張之環', [], {
+          topology: 'ring_of_thirty_six',
           stage: stage,
           claimPolicy: 'direct_procedure_fact',
           eventBinding: 'QUERY_EVENT_STAGE_4',
           metadata: {
-            decanSign: text(op.decanSign),
-            decanRange: text(op.decanRange),
-            decanDateRange: text(op.decanDateRange)
+            ringSize: 36,
+            orderPolicy: 'the_thirty_six_cards_following_the_significator',
+            pairingPolicy: '1_with_36_2_with_35_and_so_on',
+            timingPolicy: 'not_a_calendar_or_decan_time_anchor'
           },
-          eventJoin: 'time_anchor_applies_only_to_compatible_stage_claims'
+          eventJoin: 'ring_structure_applies_only_to_stage_4_claims'
         }));
       }
 
@@ -1095,7 +1062,7 @@
       eventBinding: 'QUERY_EVENT_ONLY',
       eventJoin: 'stage_summaries_only',
       entityJoin: 'same_query_event_roles_only',
-      scopeJoin: 'stage_order_and_op4_time_anchor_only',
+      scopeJoin: 'stage_order_only_op4_is_not_a_date_anchor',
       synthesisJoin: 'operation_stage_summaries_only_no_direct_card_merge',
       forbidden: ['不能直接把不同操作中的牌拼成新牌句', '代表牌重複出現不等於新增人物或事件']
     });
@@ -1107,7 +1074,7 @@
       significator: clone(data.significator || null),
       nodes: nodes,
       evidenceUnits: factory.units,
-      legalSynthesisRule: '五次操作各自先完成落點、完整計數路徑、明示配對、牌力脈絡與有效性。跨操作只能綜合 operation_stage_summary；不能直接把不同操作中的牌拼成新牌句。第四次操作的明示旬位／日期資料只作相容命題的時間錨。',
+      legalSynthesisRule: '五次操作各自先完成落點、完整計數路徑、明示配對、牌力脈絡與有效性。跨操作只能綜合 operation_stage_summary；不能直接把不同操作中的牌拼成新牌句。第四次操作的三十六牌環只形成倒數階段的計數與配對命題，不提供旬位、月份或日期錨。',
       forbiddenInference: [
         '計數值與步數只導航牌序，不換算現實人數、年齡、金額或機率',
         '代表牌只錨定問卜者，不建立未知行動者',
@@ -1198,7 +1165,7 @@
     var questionSpec = compileQuestion(data.question);
     var method = clone(METHOD_SPECS[spreadId]);
     var sourceProfileId = resolveSemanticProfile(spreadId, data);
-    var sourceProfile = clone(SOURCE_PROFILES[sourceProfileId] || SOURCE_PROFILES.modern_rws);
+    var sourceProfile = clone(SOURCE_PROFILES[sourceProfileId] || SOURCE_PROFILES.gd_book_t);
     method.defaultSourceProfile = method.sourceProfile;
     method.sourceProfile = sourceProfileId;
 
@@ -1361,7 +1328,7 @@
     var source = contract.sourceProfile;
     var lines = [];
     lines.push('────────────────────────────');
-    lines.push('◆ ROOT-SPEC v92｜型別化查詢圖—方法觀測模型—合法證據／共指契約');
+    lines.push('◆ ROOT-SPEC v95｜型別化查詢圖—方法觀測模型—合法證據／共指契約');
     lines.push('────────────────────────────');
     lines.push('原問句：' + question.originalQuestion);
     lines.push('需求預檢：' + question.requestedDimensions.map(function (dimension) {

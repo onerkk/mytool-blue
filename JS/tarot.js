@@ -1566,6 +1566,14 @@ function getTarotDeep(card){
 function getTarotTypeMeaning(id, isUp, type){
   var card = TAROT[id];
   if(!card) return '';
+  // Golden Dawn unified mode: Book T card force is interpreted through the position and
+  // elemental dignity; do not switch to topic-specific RWS or fixed reversed dictionaries.
+  try {
+    if (window.JYGoldenDawn) {
+      var _gdp = window.JYGoldenDawn.profile(card);
+      if (_gdp) return _gdp.core;
+    }
+  } catch(_gdErr) {}
   var t = type || 'general';
   // ★ v85.3 根治：問題同時命中多個領域時（S.form.domains 由 ui.js 寫入），
   //   不可用單一領域文案餵全部牌（「財運 桃花 健康」整盤變感情版的根因）——改用中性 general 牌義，
@@ -2965,9 +2973,9 @@ function showTarotLocked(){
       <div class="tarot-reveal-inner">
         <div class="tarot-reveal-back"></div>
         <div class="tarot-reveal-front">
-          ${imgSrc?`<img src="${imgSrc}" class="tc-img" style="${c.isUp?'':'transform:rotate(180deg)'}">`:``}
-          <span class="tc-name" style="${c.isUp?'':'transform:rotate(180deg)'}">${c.n}</span>
-          <span class="tc-dir ${c.isUp?'up':'rv'}">${c.isUp?'順位':'逆位'}</span>
+          ${imgSrc?`<img src="${imgSrc}" class="tc-img" style="">`:``}
+          <span class="tc-name" style="">${c.n}</span>
+          <span class="tc-dir ${c.isUp?'up':'rv'}">Book T</span>
         </div>
       </div>
     </div>${!isCard2?'<span class="slot-label">'+(c.pos||_jyCurrentPosName(i))+'</span>':''}`;
@@ -3385,13 +3393,10 @@ function pickCard(deckIdx,deckEl){
 
   var card=deckShuffled[deckIdx];
 
-  // 正逆位（seeded）
-  var isUp;
-  if(S.form&&S.form.bdate&&S.form.gender&&S.form.type){
-    var _r=makeSeededRng(S.form.bdate,S.form.gender,S.form.type,S.form.question);
-    for(var _k=0;_k<=card.id;_k++) _r();
-    isUp=_r()>=0.5;
-  } else { isUp=_secRand()>=0.5; } // v86_22 密碼學隨機正逆位
+  // Golden Dawn Book T mode does not use a Waite-style fixed reversed dictionary.
+  // Ordinary layouts remain visually upright; strength/obstruction comes from position,
+  // adjacent elemental dignity and the method topology. Opening of the Key manages its own direction rules.
+  var isUp = true; // Golden Dawn Book T：一般牌陣不抽固定逆位；強弱由元素尊貴與拓撲裁決。
 
   var slotIdx=drawnCards.length;
   var pos=_jyCurrentPosName(slotIdx); // v80.37：牌位名跟著當前牌陣，三牌陣不再貼凱爾特名
@@ -3448,9 +3453,9 @@ function pickCard(deckIdx,deckEl){
         '<div class="tarot-reveal-inner">'+
           '<div class="tarot-reveal-back"></div>'+
           '<div class="tarot-reveal-front">'+
-            (imgSrc?'<img src="'+imgSrc+'" class="tc-img" style="'+(isUp?'':'transform:rotate(180deg)')+'">':'')+
-            '<span class="tc-name" style="'+(isUp?'':'transform:rotate(180deg)')+'">'+card.n+'</span>'+
-            '<span class="tc-dir '+(isUp?'up':'rv')+'">'+(isUp?'順位':'逆位')+'</span>'+
+            (imgSrc?'<img src="'+imgSrc+'" class="tc-img" style="">':'')+
+            '<span class="tc-name" style="">'+card.n+'</span>'+
+            '<span class="tc-dir up">Book T</span>'+
           '</div>'+
         '</div>'+
       '</div>'+(!isCard2?'<span class="slot-label">'+pos+'</span>':'');
@@ -3509,10 +3514,10 @@ function showSpread(){
     <div class="card" style="padding:var(--sp-md);margin-bottom:var(--sp-sm)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-xs)">
         <span class="tag tag-gold">${i+1}. ${posLabel}</span>
-        <span class="tag ${c.isUp?'tag-blue':'tag-red'}">${c.isUp?'順位':'逆位'}</span>
+        <span class="tag tag-blue">Book T</span>
       </div>
       <div style="display:flex;gap:var(--sp-md);align-items:flex-start">
-        ${imgSrc?`<img src="${imgSrc}" alt="${c.n}" class="tc-spread-img" style="width:72px;height:112px;border-radius:6px;flex-shrink:0;${c.isUp?'':'transform:rotate(180deg)'}">`:``}
+        ${imgSrc?`<img src="${imgSrc}" alt="${c.n}" class="tc-spread-img" style="width:72px;height:112px;border-radius:6px;flex-shrink:0;">`:``}
         <div>
           <strong class="text-gold serif">${c.n}</strong>
           <p class="text-sm text-dim mt-sm">${c.isUp?c.up:c.rv}</p>
@@ -5282,3 +5287,112 @@ function buildMeihuaOutput(mh, type) {
 
 
 // （calcMH 已移至檔案頂部，gByL 之後）
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Golden Dawn Book T 全站相容覆寫（v95.1）
+// 舊的 Waite 正逆位／固定組合函式保留於檔案內只為歷史相容；所有現行公開入口
+// 由此統一改讀 JYGoldenDawn，避免舊入口復活另一套牌義。
+// ═══════════════════════════════════════════════════════════════════
+(function(root){
+  'use strict';
+  function gd(){ return root.JYGoldenDawn || null; }
+  function norm(cards){ var g=gd(); if(g&&g.normalizeDraw) g.normalizeDraw(cards||[]); return cards||[]; }
+  function prof(card){ var g=gd(); return g&&g.profile ? g.profile(card) : null; }
+  function dign(cards,i,spreadId){ var g=gd(); return g&&g.dignityContext ? g.dignityContext(cards,i,spreadId) : null; }
+  function text(cards,i,spreadId){
+    var p=prof(cards[i]),d=dign(cards,i,spreadId);
+    return (d&&d.reading)||(p&&p.core)||(cards[i]&&cards[i].up)||'';
+  }
+  function posName(i){
+    return ['現況核心','交叉力量','根基／深層機制','近期過去','可能成形','近期走向','本人位置','外在環境','希望與顧慮','結果走向'][i]||('第'+(i+1)+'位');
+  }
+  function ref(cards,i){ return cards[i] ? '【'+(cards[i].n||cards[i].name||'')+'】' : ''; }
+  function majority(cards){ var g=gd(); return g&&g.majorityObservations ? g.majorityObservations(cards) : {suitCounts:{wand:0,cup:0,sword:0,pent:0},observations:[]}; }
+
+  root.buildTarotStats=function(cards){
+    cards=norm(cards);
+    var m=majority(cards),s=m.suitCounts||{};
+    return {
+      total:cards.length,suitCounts:{major:m.keyCount||0,wand:s.wand||0,cup:s.cup||0,sword:s.sword||0,pent:s.pent||0},
+      majorCount:m.keyCount||0,courtCount:m.courtCount||0,aceCount:m.aceCount||0,rankCounts:m.rankCounts||{},
+      upCount:cards.length,rvCount:0,upRatio:100,rvRatio:0,
+      insights:(m.observations||[]).slice(),sourceProfile:'gd_book_t',
+      directionPolicy:'不使用固定正逆位；由牌位與相鄰元素尊貴裁決。'
+    };
+  };
+
+  root.buildTarotStatsHtml=function(cards){
+    var s=root.buildTarotStats(cards), obs=s.insights||[];
+    var h='<div class="tarot-stats"><div style="font-size:.72rem;color:var(--c-gold)">Golden Dawn Book T・元素尊貴裁決</div>';
+    if(obs.length) h+='<div style="font-size:.72rem;color:var(--c-text-dim);line-height:1.6;margin-top:.35rem">'+obs.join('；')+'</div>';
+    return h+'</div>';
+  };
+
+  root.analyzeCelticCross=function(cards){
+    cards=norm(cards).slice(0,10);
+    if(cards.length<10) return null;
+    return {
+      overallTone:ref(cards,0)+'在現況位呈現「'+text(cards,0,'celtic_cross')+'」，'+ref(cards,1)+'作為交叉力量修正其可行方式；交叉牌是作用力，不預設為吉或凶。',
+      progression:ref(cards,3)+'所示的已形成背景，正轉入'+ref(cards,5)+'的近期階段，最後由'+ref(cards,9)+'收束；這是相對先後，不是固定月份。',
+      mainObstacle:ref(cards,1)+'是目前最直接的限制或催化，需依其Book T本性與左右元素尊貴判斷是過量、欠缺或對抗。',
+      innerState:ref(cards,2)+'描述底層形成機制，'+ref(cards,4)+'描述可成形方向；兩者相容時路徑集中，衝突時先處理根基。',
+      outerState:ref(cards,6)+'與'+ref(cards,7)+'分別描述本人位置與外在條件；不得把環境位自動具體化為某一未知人物。',
+      resultTendency:ref(cards,9)+'只是在前述結構與行動條件延續時的結果走向，不是必然事件。',
+      actionAdvice:'先處理'+ref(cards,1)+'指出的交叉力量，再用'+ref(cards,5)+'作為近期可觀察指標；現實紀錄與牌面衝突時，以現實為準。'
+    };
+  };
+
+  root.analyzeTarotInteractions=function(cards,type){
+    cards=norm(cards);
+    var m=majority(cards);
+    return {
+      sourceProfile:'gd_book_t',
+      majorityObservations:m.observations||[],
+      priorityCards:{core:cards[0]&&cards[0].n,obstacle:cards[1]&&cards[1].n,outcome:cards[cards.length-1]&&cards[cards.length-1].n},
+      supportFlags:[],conflictFlags:[],selfExternalSync:'需由牌位與元素尊貴裁決',timing:'只提供牌陣位置的相對時序'
+    };
+  };
+
+  root.buildTarotDeepReport=function(cards,type){
+    cards=norm(cards);
+    if(!cards.length) return '';
+    var cc=cards.length>=10?root.analyzeCelticCross(cards,type):null;
+    var m=majority(cards), h='';
+    function block(title,body){ return '<div style="margin-bottom:12px;padding:10px 14px;background:rgba(212,175,55,.03);border-radius:8px;border-left:3px solid var(--c-gold);line-height:1.7;font-size:.87rem"><div style="font-size:.92rem;font-weight:700;color:var(--c-gold);margin-bottom:5px">'+title+'</div><p>'+body+'</p></div>'; }
+    if(cc){
+      h+=block('整體結構',cc.overallTone);
+      h+=block('發展與收束',cc.progression+' '+cc.resultTendency);
+      h+=block('可執行方向',cc.actionAdvice);
+    }else{
+      h+=block('牌陣核心',cards.map(function(c,i){return posName(i)+' '+ref(cards,i)+'：'+text(cards,i,type||'');}).join('；'));
+    }
+    if(m.observations&&m.observations.length) h+=block('Book T 第二層結構觀察',m.observations.join('；'));
+    return h;
+  };
+
+  root.buildTarotAnalysisSummary=function(cards,type){
+    cards=norm(cards);
+    var last=cards[cards.length-1], m=majority(cards);
+    return {
+      direction:'conditional',score:50,
+      summary:last ? ref(cards,cards.length-1)+'描述條件延續下的收束，不能用單張結果牌或正逆位直接定吉凶。' : '',
+      timing:'只依牌陣位置回答相對階段；沒有外部時間錨不換算月份或日期。',
+      supportFlags:m.observations||[],conflictFlags:[],selfExternalSync:'需由具體牌位裁決'
+    };
+  };
+
+  root.analyzeTarotSpread=function(cards,type){
+    cards=norm(cards);
+    var insights=cards.map(function(c,i){return {pos:posName(i),card:c.n||c.name||'',meaning:text(cards,i,type||'')};});
+    return {score:50,direction:'conditional',insights:insights,gdAnalysis:{sourceProfile:'gd_book_t',priorityCards:{core:cards[0]&&cards[0].n,obstacle:cards[1]&&cards[1].n,outcome:cards[cards.length-1]&&cards[cards.length-1].n}}};
+  };
+
+  root.generateTarotStory=function(type,cards){
+    cards=norm(cards);
+    if(!cards.length) return '';
+    var first=ref(cards,0)+'在核心位置呈現「'+text(cards,0)+'」';
+    var last=ref(cards,cards.length-1)+'在收束位置呈現「'+text(cards,cards.length-1)+'」';
+    return first+'；'+last+'。完整判斷仍須依牌陣拓撲與相鄰元素尊貴，不以固定正逆位或吉凶票數裁決。';
+  };
+})(typeof window!=='undefined'?window:globalThis);

@@ -1,14 +1,14 @@
-/*! prompt-export.js — 靜月之光 前端提示詞匯出引擎  [v92.0]
- *  v92.0（型別化查詢圖＋實體／事件共指＋分階段驗證 2026/7/15）：
+/*! prompt-export.js — 靜月之光 Golden Dawn Book T 提示詞匯出引擎 [v95.0]
+ *  v95.0（Golden Dawn Book T 單一來源＋型別化證據驗證 2026/7/17）：
  *    1) 原句先建立型別化查詢圖並細分所有會改變答案真值的語義原子；不靠題材詞庫決定問題內容。
  *    2) 每個合法證據單位先產生候選命題，再以 eventId／entityBindings／roleBindings／joinTrace 驗證同一人物與同一事件。
  *    3) 六階段管線：QuestionCompiler→EvidenceInterpreter→GraphBinder→Adjudicator→SaturationReviewer→AnswerVerifier；正文不得新增未驗證推論。
  *    4) 所有牌陣保留各自拓撲；開鑰五次操作只以 QUERY_EVENT 階段摘要承接，禁止跨操作拼牌。
  *  v89.0（塔羅觀測能力＋證據矩陣根治 2026/7/15）：
  *    1) 在解牌前建立「原問句資訊需求 × 牌陣可觀測通道」；牌陣不足以直接量測的維度不再被硬猜，也不妨礙其餘可回答部分深讀。
- *    2) 一般RWS資料改送中性正逆語義，不再依感情／工作／財運題材預先改寫牌義；移除會先替模型下結論的故事弧、固定對立牌、組合文案與洞察摘要。
+ *    2) 一般牌陣資料改送Golden Dawn Book T中性結構，不再依感情／工作／財運題材預先改寫牌義；移除會先替模型下結論的故事弧、固定對立牌、組合文案與洞察摘要。
  *    3) 所有牌陣共用「需求建模→觀測映射→牌位命題→結構合成→證據矩陣→反證→答案」；張數只決定觀測幾何，內容量只看有效命題。
- *    4) 開鑰之法保留Book T五次操作，修正Ace計數來源、移除由正逆位虛構代表牌面向，並將計數值明確限定為路徑導航而非現實數量。
+ *    4) 開鑰之法固定Book T五次操作、Ace計數與代表牌固有朝向，並將計數值明確限定為路徑導航而非現實數量。
  *  v88.0（塔羅全牌陣語義證明引擎 2026/7/15）：
  *    1) 以「完整問題命題→牌位節點→合法互動圖→候選命題→蘊涵強度→反證競爭→語義飽和」取代題型補丁。
  *    2) 十四種一般牌陣逐一建立正向合成順序；牌數只決定幾何，正文長短只由有效命題量決定。
@@ -79,8 +79,8 @@
  *    3) 雷諾曼禁止引用本盤外牌名做反證，年齡/人物訊號不足時直接說不足。
  *    4) 所有輸出維持命理師/占卜師對提問者口吻，技法只作內部檢查。
  *  v78.0（正統性總修正）：
- *    1) 塔羅：明確區分古典正統牌陣與現代牌陣；所有現代牌陣只宣稱「以 RWS/GD 技法正統分析」。
- *    2) 開鑰：保留 Crowley/Book T 五次操作內部必查，但輸出改為命理師口吻，不再把技術清單當正文。
+ *    1) 塔羅：明確區分古典正統牌陣與現代牌陣；所有後世牌陣只保留布局拓撲，牌義固定Golden Dawn Book T。
+ *    2) 開鑰：保留 Golden Dawn Book T 五次操作內部必查，但輸出改為命理師口吻，不再把技術清單當正文。
  *    3) 二選一牌陣修正為實際 5 張，避免提示詞 7 張與前端抽牌 5 張矛盾。
  *    4) 雷諾曼/靈籤：修正人設與輸出規則，區分正統讀法與品牌收尾。
  *  v75.0（塔羅 prompt v2 深度優化 + 開鑰分析深度補強）：
@@ -103,18 +103,18 @@
  *       ①算法教學（計數步驟/count值表/旬主星教學）——前端引擎已算好填進資料區，AI 不需重學；
  *       ②同一規則在「任務/方法/檢查」重複三次→併一次；③冗詞與過度舉例。
  *    （查證確認：塔羅 timeConclusion 未含 Decan 日期，故塔羅保留 36 旬對照表；
- *       開鑰 Op4 已算好旬位/旬主星/月份，故開鑰移除旬主星教學僅留解讀重點。）
+ *       開鑰第四次操作為三十六牌環，不產生月份。）
  *  v72.0（對權威來源查證 + 補完 v71 只做一半的開鑰結構化）：
  *  v72.0（對權威來源查證 + 補完 v71 只做一半的開鑰結構化）：
  *    G. 開鑰資料區真正結構化：每層改為 Sig落點／本層活躍牌／Counting 走過（依序+走幾步）／
  *       Pairing 配對（#1最直接）／元素尊嚴 分行，鏡像 head 要求的輸出；op-specific 欄位
  *       （宮/星座/旬/質點）用 safeText 保底不漏。（依 tarot_upgrade.js 實際欄位寫，非臆測）
- *    H. 計數值一致性：查證 PHB《The Tarot and the Magus》/ Crowley / Tarot Elements 後確認——
+ *    H. 計數值一致性：依 Golden Dawn《Book T》原文確認——
  *       引擎依本次 Book T 資料設定採 Ace＝11；前端直接提供計數路徑，AI 不另算
  *       count 5（GD）分支對照，解除原 head「5或11」與引擎的矛盾。
  *    （查證結論：head 計數值表、大牌三分類、36 旬 Decan 經核對皆正確，未改。）
  *    ⚠ 待你定奪：GD 原規「逆位宮廷牌→counting 反向 180°」，本引擎採「方向只由 Sig 面向決定、
- *       途中不反向」（modern 簡化；PHB 等亦有人逆位即反向）——無共識，未動引擎。
+ *       途中不反向」（modern 簡化；後世資料另有不同做法，本系統不採）——無共識，未動引擎。
  *  v71.0（外科手術接全集，head 與風格一字未動，全走 composition + 資料層）：
  *    A. 資料層治本：塔羅/開鑰資料區由「供參考、自行驗證」改「已精算、直接採用、勿重算」
  *       （尤其開鑰 counting 自算極易出錯，準確度最大槓桿）。
@@ -138,21 +138,21 @@
     //   且其規則停在舊版（無⑦年級限制/借星/身宮主軸）＝未來接錯線的陷阱。紫微提示詞唯一真相來源＝ziwei-standalone.js
     meihua: {
       label: '梅花易數',
-      head: "【角色——梅花易數事件判讀者】\n你收到的是前端已計算完成的本卦、互卦、變卦、動爻、體用、生剋、旺衰與應期資料。你的工作不是翻譯卦辭，而是回答原問句，並把結論轉成可驗證、可行動的判斷。\n\n【最高優先順序】\n1. 完整保留原問句的主體、對象、事件、否定、比較、期限、場域與成立門檻；第一句回答同一問題，不得偷換成較弱子題。\n2. 證據權重固定：原問句語義 → 體用生剋 → 體用旺衰 → 動爻與爻位 → 本互變事件線 → 應期 → 錯綜與類象。後項只能補充，不能推翻前項。\n3. 體剋用依《體用總訣》定為諸事吉；旺衰決定落實度，不得把體弱剋旺用改判成凶，也不得吹成輕鬆必成。其他關係同理：用生體有進益之喜、比和百事順遂、體生用有耗失之患、用剋體諸事凶。\n4. 訊號衝突時先定主次：先給最高權重結論，再說次級限制，最後列出使結論轉強或轉弱的可觀察條件；不得平均成模糊話。\n5. 本卦、互卦、變卦串成現在→過程→轉折→結果；動爻必連爻位層次說明變化落在哪一層。\n6. 類象只生成候選線索，以「較像、優先留意、可對照」表達；不得把人物身分、心理、位置、疾病、數字或外應說成已知事實。\n7. 應期只採資料區的吉應／敗應與用近互中變遠，不另造天數、月份或其他算法。\n8. 每個建議都要處理最強阻力，並附可驗證信號與停止／轉向條件。\n\n【不同問題的回答邊界】\n是非題給偏會／偏不會／有條件才會及強中弱把握度；感情與他人內心只判互動趨勢和可觀察行為；比較題用同一標準評估明示選項；失物題給優先搜索區域而非保證地址；數量、身分、金額、年齡、機率、號碼若無量測通道就不編精確值；醫療、法律、投資、犯罪與人身安全只給象徵性風險提醒，不替代專業判斷。\n\n【輸出】\n繁體中文，像資深占者當面說話。依判斷、原因、過程／轉折、時間、行動與驗證自然推進；不要逐卦報告、表格、粗體小標、規則回聲或心理雞湯。盤面不足就說哪個維度不足，但其餘可回答部分仍完整說清楚。",
+      head: "【人設——資深梅花易數解卦者，對問卜者說話】\n你是以《梅花易數》體用、卦氣、動爻、互卦、變卦、外應為核心的解卦者。你已經拿到前端起好的本卦、互卦、變卦、動爻、體用資料；現在只輸出問卜者需要的答案，不寫教科書。\n・第一句直接回答問卜者問題，不鋪墊。\n・每個結論都要回扣本盤資料：本卦、互卦、變卦、動爻、體卦、用卦、五行生剋、旺衰、外應或卦象。\n・沒有卦面支撐就說「此卦資料不足以定論」，不可硬編。\n・梅花易數可判趨勢、阻力、應期與行動方向，不可替代醫療、法律、投資決策。\n\n【正統性邊界——必須誠實】\n本工具以梅花易數常用結構為準：先看本卦定事情本質，互卦看中間過程與內在機制，變卦看結果走向，動爻看變化觸發點，體用看我方與外界的生剋關係。\n可用技法：體用生剋、八卦萬物類象、五行旺衰、動爻、互卦、變卦、卦氣、外應、時空取象。\n不同傳承對外應、卦氣權重有差異；資料區未明列的外應，不要假裝已經看到。\n不可把塔羅、開鑰、七維命盤、姓名學、星盤內容混入本次判斷。\n\n【讀卦內部流程——每步都要查，但正文不要逐條教學】\n1. 先看本卦，定此事的本質與目前局勢。\n2. 再看體用：體為問卜者或我方，用為對方、事情、環境；看生我、我生、剋我、我剋、比和。\n3. 看互卦：判中途過程、暗線與卡點。\n4. 看變卦與動爻：判轉折、結果與變化方向。應期依正統：事應於生體卦氣之時、敗於剋體卦氣之時（資料區已算好吉應／敗應之期，直接採用並說明理由，不可自創應期算法、不可用「用卦五行對應季節」斷應期）。\n5. 看八卦類象與五行：用於人物、場域、方位、時間、情緒與事件性質，不可超出卦面硬推。\n\n【輸出要求】\n・第一句直接回答問題。\n・正文必須包含：答案強弱、卦象依據、阻礙、轉折點、應期（照資料區吉應／敗應之期講並給理由）、24 小時內可做的事、可驗證信號。\n・重要判斷用「——本卦／互卦／變卦／動爻／體用」自然附出處。\n・不要逐格報告，不要把八卦萬物類象列成百科；只講與問題有關的部分。\n・壞消息直接講，風險與限制要清楚。\n・最後提醒：本分析限研究與娛樂參考，不作人生重大決策唯一依據。",
       dataHeader: "九、以下是前端已起好的梅花易數卦盤資料",
-      tail: "請依以上資料完成單一純文字解讀。第一句直接回答完整原問句；所有具體主張都須可回扣本盤資料。先完成占斷，再執行品牌收尾；品牌推薦不得反向影響卦象結論。"
+      tail: "請依以上梅花易數卦盤資料，用繁體中文寫一份完整、深入、可驗證的梅花易數解讀。必須直接回答問卜者問題，再用本卦、互卦、變卦、動爻、體用與五行生剋說清楚原因；不可混入塔羅、開鑰、七維命盤或姓名學；不可把沒有提供的外應硬編成事實。"
     },
     tarot: {
       label: '塔羅快讀',
-      head: "【角色——塔羅型別化證據整合者】\n你收到的是前端機械編譯的 ROOT-SPEC v92。它固定原問句、方法拓撲、單一牌義來源、位置權限與合法證據單位；它不替你預寫答案。你的工作是完成六個內部階段，最後才向問卜者作答。\n\n【六階段內部程序——不得輸出帳本】\n一、QuestionCompiler：把原句拆成所有會改變答案真值的細粒度語義原子，包括主體、對象、事件作用、意圖、行為、結果、否定／排除、身分／場域、比較／門檻、模態與期限。用完成後的查詢圖重建原句，並逐一刪除必要原子測試；重建不等義或刪除不改義時，先修正查詢圖。\n二、EvidenceInterpreter：逐一處理每個合法證據單位。每個單位先產生多個符合牌位權限與來源的候選命題，同時記錄它能證明、不能證明及可能的反讀；不得直接照抄牌義素材。\n三、GraphBinder：只有具備明示 joinTrace 的命題才能合併。必須證明實體共指、事件同一、角色承接、時間範圍與極性相容；同領域、同題材或互相呼應，不等於同一人物完成同一事件。\n四、Adjudicator：逐項建立必要原子覆蓋矩陣，區分支持、條件支持、反證與未量測。完整結論的強度不得高於最弱的必要原子；未量測只限制該原子，不得使其餘證據消失。\n五、SaturationReviewer：為核心結論建立最強替代解讀，選擇能解釋更多合法證據、依賴更少盤外假設者。每個證據單位必須標記已使用、同義重複、與問題無關或仍未解決；不能用「訊號不足」提前停止。\n六、AnswerVerifier：正文生成後反向抽取每項主張，逐句核對證據、事件／實體綁定、原句範圍、數字錨與合法牌名。正文階段不得新增帳本中不存在的推論。\n\n【來源與現實邊界】\n只使用 ROOT-SPEC 指定的單一牌義來源。塔羅是象徵性方法，不是對他人內心、醫療、法律、犯罪、投資結果或未來事件的客觀證明。精確數字、身分、日期、金額、年齡與現實數量只有在方法具有明示量測通道時才可回答。\n\n【輸出】\n第一句直接裁決完整原問句，不重定義成立門檻。其後只輸出不同且可回溯的有效命題：已成立到哪一層、形成機制、限制與反證、最強替代解讀為何較弱、可觀察辨識訊號及由牌面直接導出的行動方向。對已被同一事件證據鏈支持的內容要明確回答；真正未量測或未綁定的部分才保留。不要逐格報告、不要教技法、不要輸出內部帳本。",
+      head: "【角色——Golden Dawn《Book T》塔羅證據整合者】\n你只使用 Hermetic Order of the Golden Dawn《Book T／Liber T》的塔羅象徵與占卜規則。牌陣可以是後世布局，但牌義來源、宮廷牌功能、數字牌稱號、卡巴拉世界／質點、占星分度與元素尊貴一律以 Book T 為核心。不得混入 Waite 1910 固定正逆位字典、Rider-Waite 圖像故事、Crowley／Thoth 專屬泰勒瑪詮釋或其他牌系關鍵字。\n\n【ROOT-SPEC——只在內部執行】\n一、完整保留原問句的主體、對象、事件、否定、條件、比較、期限與成立門檻；多子題依原順序全部回答。\n二、每張牌先按牌位權限形成候選命題，再依實際相鄰牌判元素尊貴：同花色強化；權杖與聖杯、寶劍與金幣互相削弱；其餘友善。強弱只修正牌本性，不把吉牌自動變凶，也不以吉凶票數表決。\n三、一般牌陣不使用固定正逆位。牌面強弱由 Book T 核心義、位置、相鄰元素、卡巴拉位階、占星對應及牌陣拓撲共同裁決。牌陣位置不是人物、數量或日期的自動證明。\n四、宮廷牌依 Book T 分層：Princes／Queens多數情況可指與事情相關的人；Knights／Lords有時表示事情或消息的到來／離去；Princesses可指意見、想法或計畫。網站牌面標籤固定映射為國王＝Book T Knight／Lord（火）、皇后＝Queen（水）、騎士＝Prince（風）、侍者＝Princess（土）。只有原問句、牌位及至少一條獨立證據完成共指時，才能具體化為某人，不得硬編年齡、外貌、職業或內心。\n五、Book T 的花色多數、三張／四張同階只作第二層結構觀察，不得凌駕牌位或把牌張數換成現實數量、機率、日期與金額。\n六、先形成主判，再找最大反證與最強替代解讀。完整答案的把握不得高於最弱必要條件；未量測只限制該部分，不得把其餘有效訊號一併抹除。\n七、時間只能依牌陣明示的相對時間位置或資料區可回溯的時間通道回答；沒有明示時間錨時只能說近期、後續或結果階段，不得自行編月份、日期或年數。\n八、財務、醫療、法律、犯罪、投資與人身安全問題，塔羅只提供象徵性風險與行動優先順序，不能取代帳目、合約、檢查、證據或專業意見。\n九、每項主要建議都要連成：牌面證據→可能機制→低風險可逆行動→可觀察驗證點→停止／調整條件。現實資料與牌面衝突時，以現實資料優先。\n十、交稿前逐句核對：只引用本盤合法牌名；不新增牌面未支持的身分、事件、精確數字或日期；不輸出內部帳本與規則。\n\n【輸出】\n第一句直接回答完整問題。其後只保留真正會改變判斷的3至7個結構命題，依「主判→形成機制→反證／限制→相對時間（題目需要時）→行動→驗證與停止條件」自然推進。不要逐張翻譯、不要教技法、不要把後世牌陣冒充 Book T 原創。",
       dataHeader: '十、以下是排好的牌陣資料',
-      tail: '請依 ROOT-SPEC v92 的六階段程序完成解讀：先補全細粒度查詢圖，再逐一處理全部合法證據單位、完成實體／事件共指、必要原子裁決、最強替代解讀與反向稽核。第一句回答完整原問句；未量測的維度只限制自身，其餘有效資訊仍完整呈現。答案長短只由非重複有效命題決定，只引用本盤合法牌名。'
+      tail: "請依本次 Golden Dawn《Book T》牌陣資料完成解讀。先回答完整原問句，再以牌位權限、Book T 核心義、相鄰元素尊貴、卡巴拉／占星對應與牌陣拓撲形成主判；處理最大反證、量測邊界、可執行行動、驗證點與停止條件。不得使用固定正逆位、Waite 或 Thoth 專屬牌義，也不得編造日期、金額、機率、人物身分或未抽到的牌。"
     },
     ootk: {
       label: '開鑰之法',
-      head: "【角色——開鑰之法型別化證據整合者】\n你收到的是依 Golden Dawn《Book T》五次操作機械編譯的 ROOT-SPEC v92。原問句的型別化查詢圖、代表牌錨定、每次操作的落點、完整計數路徑、配對、牌力／適配資料、階段摘要及第四次操作的明示時間錨已固定；不得自由重排。\n\n【六階段內部程序——不得輸出帳本或技法課程】\n一、先完成原句的細粒度語義原子化與往返驗證；所有身分、排除、比較、門檻、模態與期限都必須保留。\n二、第一次至第五次操作各自獨立解讀：逐一處理落點、完整計數路徑、合法配對、牌力與有效性，為同一個 QUERY_EVENT 建立該階段候選命題與反證。計數終點不能取代完整路徑。\n三、每次操作只能先形成自己的 operation_stage_summary；跨操作整合只能讀取五個階段摘要，不能直接把不同操作中的牌拼成新牌句，也不能因代表牌重複而創造額外人物或事件。\n四、依原方法階段功能綜合：第一次描述開端／當下，第二與第三延續發展，第四接近結果並只採資料區明示的旬位／日期錨，第五收束終局。適配失敗、重試、中止或降權屬程序限制，必須直接保留。\n五、以同一事件／實體共指與必要原子覆蓋裁決完整問題，再建立最強替代解讀及語義飽和帳本。計數值、步數、堆張數、牌號與宮廷牌階不量測現實人數、年齡、金額或日期。\n六、生成正文後反向稽核：每項主張須回到某次操作的合法命題或階段摘要；正文不得新增未驗證推論。\n\n【來源與程序邊界】\n只使用 gd_book_t 與本盤資料。現代附加觀察只能作明示的次級校正，不得凌駕五次操作或冒充原法。塔羅仍是象徵性判斷，不是現實事件的客觀證明。\n\n【輸出】\n第一句直接裁決完整原問句。其後依五次操作真正成立的命題，說清開端、連續發展、轉折、接近結果的條件、最終收束、反證、可觀察訊號與可執行方向。不能回答的精確維度明說邊界，但不得丟掉其餘有效資訊；只引用本盤實際牌與落點。",
+      head: "【角色——Golden Dawn《Book T》Opening of the Key 證據整合者】\n你只使用《Book T／Liber T》所載的代表牌、五次操作、計數、配對與元素尊貴。不得混入 Waite 固定正逆位、Crowley／Thoth 專屬牌義、PHB 現代擴充、跨操作重複牌投票、虛構十分度應期或其他手稿版本的混合規則。\n\n【程序不變量——只在內部執行】\n一、完整保留原問句；先確認本次程序是否已被 Book T 規則停止。若已停止，第一句直接說本次開鑰無法形成有效完整答案，並只說明停止原因與可重新占問的方式；不得解讀未生成的後續操作。\n二、第一次操作描述問卜當下情勢。代表牌所在 YHVH 堆須能正確辨識問題大類；若不符，依資料狀態停止。計數故事描述事情開端，配對故事補足細節。\n三、第二次操作描述問題發展。占卜前選定主宮及相近宮；兩者皆未找到代表牌時停止。第三次操作描述進一步發展，先選定適當黃道星座堆並照前法讀取。\n四、第四次操作只讀代表牌後方三十六張所成的環、計數故事及1↔36、2↔35的配對故事，權限是倒數階段；它不是日期或月份量測器。\n五、第五次操作為最終結果，將牌發成生命樹十堆。代表牌未落在預期位置不必然使占卜失效，但會降低該位置與原問句的直接綁定強度。\n六、計數方向依代表牌圖像固有朝向，不依正逆位；計數包含起算牌。Knights／Queens／Princes計4，Princesses計7，Aces計11，小牌依牌號，大牌依元素／行星／黃道分別計3／9／12。計數值只導航牌序，不能換算日期、金額、人數或機率。\n七、每次操作先獨立形成「落點→計數故事→配對細節→元素尊貴」的階段命題，再依第一至第五次的明示功能綜合。不得把不同操作的牌直接拼成不存在的新牌句，也不得因同牌重複而加票。\n八、元素尊貴依 Book T：同花色強化；權杖與聖杯、寶劍與金幣互相削弱；其餘友善。強弱修正牌義，不以正逆位字典裁決。\n九、先形成主判，再找最大反證與最強替代解讀；每項建議要有現實驗證點與停止條件。高風險問題以現實證據和專業意見優先。\n十、交稿前逐句反查，只引用本盤實際牌與落點，不輸出程序帳本，不編造月份、人物身分或精確結果。\n\n【輸出】\n第一句回答完整原問句；若程序已停止，先明確說不能有效裁決。有效時依五次操作的權限自然說明當下、發展、進一步發展、倒數階段與最終收束，只展開真正影響答案的計數／配對結構。",
       dataHeader: '六、以下是排好的五次操作資料',
-      tail: '請依 ROOT-SPEC v92 先完成原句細粒度語義圖，再讓五次操作各自以落點、完整計數路徑、配對、牌力與有效性形成同一 QUERY_EVENT 的階段命題；跨操作只綜合階段摘要。完成必要原子裁決、最強替代解讀與反向稽核後，第一句回答完整原問句；所有非重複有效命題均須呈現，只引用本盤實際牌與落點。'
+      tail: "請依 Golden Dawn《Book T》開鑰之法資料完成解讀。先檢查程序是否中止；中止後不得解讀不存在的操作。若有效，依每次操作的落點、完整計數路徑、配對與元素尊貴形成階段命題，再按五次操作權限綜合；不得混入固定正逆位、Waite／Thoth牌義、PHB擴充、跨層投票或自創應期。"
     }
   };
 
@@ -161,20 +161,20 @@
   // 省 ~700 tok/call，Opus 4.7 $5/M input 下有意義。
   var SPREAD_METHODS = {
       "_default": "本次牌陣依前端提供的位置與順序建立互動圖。每張牌先在自己的位置形成命題，再依實際相鄰、對照、路徑、軸線或分支合成；所有位置與合法互動均須內部處理。正文只呈現能為原問句增加不同內容的有效命題，篇幅不依張數決定。",
-      "three_card": "本次牌陣：三牌陣（3張，現代實務）。把三個位置視為一個最小語義圖：先讓每張牌依前端位置功能成句，再讀1↔2、2↔3及1→2→3整體如何互相改寫。若位置是過去／現在／未來，讀成階段流；若位置是原因／現況／結果或其他功能，依實際名稱重建作用鏈。三張全部處理；只要形成不同的結果、原因、條件、轉折、限制或可行方向，就完整輸出。",
-      "five_card": "本次牌陣：五牌陣（5張，現代實務）。以現況為中心，原因說明其形成，阻礙說明何處改變進程，建議是可介入的作用，結果是前四張共同導向的收束。依序建立原因→現況、現況↔阻礙、建議如何作用於阻礙與結果、以及完整五張因果網；結果位不能脫離形成機制單獨定案。五張全部處理，正文依有效命題量展開。",
-      "cross": "本次牌陣：十字牌陣（5張，現代實務）。核心牌定義本題目前的主要狀態，阻礙牌與核心形成最直接的拉扯；過去說明拉扯如何形成，未來顯示在現有機制下的發展，建議說明可介入哪個節點。先讀核心↔阻礙，再讀過去→核心→未來，最後把建議接回整體因果鏈。五個位置共同形成裁決，不讓阻礙或建議單獨代替結果。",
-      "either_or": "本次牌陣：二選一牌陣（5張，現代決策工具）。第1張先定義問卜者的需求與比較基準；A路由1→2→4形成完整路徑，B路由1→3→5形成完整路徑。兩路必須用同一標準比較實際形成的推進方式、代價、風險、可持續性與落點；不得跨路拼牌。若兩路各有成立條件，就逐項說明，不為了給單一答案而抹掉差異。",
-      "timeline": "本次牌陣：時間線牌陣（5張，現代實務）。把五張讀成根源→近期狀態→轉折→轉折後發展→收束的連續事件鏈；每一張都要說明如何改寫前一階段。位置表示先後而非等距日曆時間。先完成事件進程，再由資料區可回溯的占星、元素速度或數字錨點校正快慢；無可靠錨點時只給階段與觸發條件。",
-      "relationship": "本次牌陣：關係牌陣（6張，現代雙人對比工具）。六個觀測通道是你、對方或對方作用、關係現況、挑戰、可介入點與短期走向。已知對象時可建立雙方對照；未知對象時，對方位是聚合的條件性角色通道，只描述若有此作用會呈現什麼，不證明人物存在，也不代表一人或人數上限。先比較雙方作用如何形成現況，再讀挑戰如何改變進程、建議可介入何處、走向如何收束。它直接量測的是一組關係結構，不直接枚舉未知人群；數量問題只有出現彼此獨立且可區分的多個實體證據群時才能定性談單一或多個。六個位置全部處理，完整事件必須由角色、關係性質、行動內容與走向共同支持。",
-      "celtic_cross": "本次牌陣：Waite凱爾特十字（10張）。以第1張現況與第2張橫跨力量為核心交叉；第3張上方可成形與第4張腳下根基互相校正，第5張身後與第6張身前形成時間轉換，第7張本人與第8張環境形成主客對照，第9張只描述希望／恐懼，第10張是前述結構共同導向的最終將至。先完成四組對照，再追蹤它們如何匯入第10張；所有位置都要內部使用，但正文按獨立命題整合，不逐位念牌。",
+      "three_card": "本次牌陣：三牌陣（3張現代布局；牌義統一依Golden Dawn Book T）。把三個位置視為一個最小語義圖：先讓每張牌依前端位置功能成句，再讀1↔2、2↔3及1→2→3整體如何互相改寫。若位置是過去／現在／未來，讀成階段流；若位置是原因／現況／結果或其他功能，依實際名稱重建作用鏈。三張全部處理；只要形成不同的結果、原因、條件、轉折、限制或可行方向，就完整輸出。",
+      "five_card": "本次牌陣：五牌陣（5張現代布局；牌義統一依Golden Dawn Book T）。以現況為中心，原因說明其形成，阻礙說明何處改變進程，建議是可介入的作用，結果是前四張共同導向的收束。依序建立原因→現況、現況↔阻礙、建議如何作用於阻礙與結果、以及完整五張因果網；結果位不能脫離形成機制單獨定案。五張全部處理，正文依有效命題量展開。",
+      "cross": "本次牌陣：十字牌陣（5張現代布局；牌義統一依Golden Dawn Book T）。核心牌定義本題目前的主要狀態，阻礙牌與核心形成最直接的拉扯；過去說明拉扯如何形成，未來顯示在現有機制下的發展，建議說明可介入哪個節點。先讀核心↔阻礙，再讀過去→核心→未來，最後把建議接回整體因果鏈。五個位置共同形成裁決，不讓阻礙或建議單獨代替結果。",
+      "either_or": "本次牌陣：二選一牌陣（5張現代決策布局；牌義統一依Golden Dawn Book T）。第1張先定義問卜者的需求與比較基準；A路由1→2→4形成完整路徑，B路由1→3→5形成完整路徑。兩路必須用同一標準比較實際形成的推進方式、代價、風險、可持續性與落點；不得跨路拼牌。若兩路各有成立條件，就逐項說明，不為了給單一答案而抹掉差異。",
+      "timeline": "本次牌陣：時間線牌陣（5張現代布局；牌義統一依Golden Dawn Book T）。把五張讀成根源→近期狀態→轉折→轉折後發展→收束的連續事件鏈；每一張都要說明如何改寫前一階段。位置表示先後而非等距日曆時間。先完成事件進程，資料區若未明示可回溯的時間尺度，只能給相對階段與觸發條件；不得用牌號、元素或占星對應自行換算日期。",
+      "relationship": "本次牌陣：關係牌陣（6張現代雙人布局；牌義統一依Golden Dawn Book T）。六個觀測通道是你、對方或對方作用、關係現況、挑戰、可介入點與短期走向。已知對象時可建立雙方對照；未知對象時，對方位是聚合的條件性角色通道，只描述若有此作用會呈現什麼，不證明人物存在，也不代表一人或人數上限。先比較雙方作用如何形成現況，再讀挑戰如何改變進程、建議可介入何處、走向如何收束。它直接量測的是一組關係結構，不直接枚舉未知人群；數量問題只有出現彼此獨立且可區分的多個實體證據群時才能定性談單一或多個。六個位置全部處理，完整事件必須由角色、關係性質、行動內容與走向共同支持。",
+      "celtic_cross": "本次牌陣：凱爾特十字布局（10張，布局本身不是Book T原創；牌義與強弱全部使用Golden Dawn Book T）。以第1張現況與第2張橫跨力量為核心交叉；第3張上方可成形與第4張腳下根基互相校正，第5張身後與第6張身前形成時間轉換，第7張本人與第8張環境形成主客對照，第9張只描述希望／恐懼，第10張是前述結構共同導向的最終將至。先完成四組對照，再追蹤它們如何匯入第10張；所有位置都要內部使用，但正文按獨立命題整合，不逐位念牌。",
       "tree_of_life": "本次牌陣：生命之樹（10張，Hermetic Qabalah塔羅應用）。每個質點先依其功能形成命題，再讀右柱的擴張、左柱的界定、中柱的整合，以及Kether→Tiphareth→Yesod→Malkuth由源頭到落地的主軸；Chokmah↔Binah、Chesed↔Geburah、Netzach↔Hod作成對校正，Tiphareth負責整合。質點是作用鏡頭而非固定吉凶。十個質點全部處理，正文只輸出真正增加原問句內容的結構命題。",
       "zodiac": "本次牌陣：黃道十二宮（12+1張，占星宮位塔羅應用）。每張牌先在其宮位領域形成命題；再讀與原問句直接相關的宮位、其對宮、同一角宮／續宮／果宮節奏及第13張全盤主旋律如何互相校正。若原問句是年度或多領域全景，十二宮都要各自形成可用結論；若是聚焦題，十二宮仍全部內部檢查，但正文只保留能直接補充核心事件的宮位命題。第13張只統整，不覆蓋各宮差異。",
-      "minor_arcana": "本次牌陣：小阿卡那專題牌陣（7張，現代實務，只用56張小牌）。依現狀→原因→挑戰建立問題機制，再把周圍人物與本人資源接入，判斷建議行動如何改變結果。小牌聚焦日常可觀察的互動、資源、流程與階段，不因缺少大牌就降低事件重要性。七個位置全部處理，正文依有效命題輸出。",
-      "fifteen_card": "本次牌陣：Thoth／Golden Dawn風格十五張（The English Spread／開鑰簡化實務，不用RWS逆位）。先讀五個三牌組：2–1–3為問卜者與問題核心，4–8–12為自然發展，13–9–5為替代行動路徑，6–10–14為心理與決策依據，7–11–15為不可控外在條件。每組以中牌為主題、兩側牌用元素關係與牌義校正，再比較自然路徑、替代路徑、決策層與外在條件如何共同改寫核心。十五張全部處理，正文按各三牌組真正新增的命題與路徑差異整合。",
-      "mathers_21": "本次牌陣：Mathers 1888第二法二十一張。依資料區的Mathers／Etteilla正逆義，把三排各自從代表牌一側由右往左讀成三段連續故事；再讀1↔21、2↔20直到10↔12的首尾配對，第11張作中心校正。原典沒有替三排指定過去／現在／未來，不自行添加。每排的局部牌義由整排故事改寫，配對補充跨段呼應；二十一張全部內部處理，正文只保留能改變原問句答案的排內命題、配對與中心作用。",
-      "mathers_horseshoe": "本次牌陣：Mathers 1888第一法完整horseshoe。依原法先把A組26張由右往左讀成第一個連續答案，再讀A1↔A26至A13↔A14；C組17張與E組11張依同樣方式各自成句、配對並處理中心單張。A、C、E是三個依次閱讀的證據群，F組24張不進入解讀。先讓三組各自完整，再比較後組如何補充、修正或限定前組；全部牌內部處理，正文按有效命題整合，不逐張抄寫五十四張。",
-      "horseshoe": "本次牌陣：七張馬蹄形（現代／GD衍生實務）。先讀過去→現在→隱藏影響形成目前局勢，再讀建議如何作用於他人態度與阻礙，最後由前六張共同導向結果。隱藏影響是尚未看清的作用，不自動等於秘密人物；他人態度只有在身分可可靠對應時才描述特定人。七張全部處理，正文按有效命題輸出。"
+      "minor_arcana": "本次牌陣：小阿卡那專題牌陣（7張現代布局，只用56張小牌；牌義統一依Golden Dawn Book T）。依現狀→原因→挑戰建立問題機制，再把周圍人物與本人資源接入，判斷建議行動如何改變結果。小牌聚焦日常可觀察的互動、資源、流程與階段，不因缺少大牌就降低事件重要性。七個位置全部處理，正文依有效命題輸出。",
+      "fifteen_card": "本次牌陣：十五張英式布局（Golden Dawn衍生布局；不得冒充Book T開鑰原法，牌義與元素尊貴統一使用Book T）。先讀五個三牌組：2–1–3為問卜者與問題核心，4–8–12為自然發展，13–9–5為替代行動路徑，6–10–14為心理與決策依據，7–11–15為不可控外在條件。每組以中牌為主題、兩側牌用元素關係與牌義校正，再比較自然路徑、替代路徑、決策層與外在條件如何共同改寫核心。十五張全部處理，正文按各三牌組真正新增的命題與路徑差異整合。",
+      "mathers_21": "本次牌陣：二十一張Mathers衍生布局。布局順序可保留，但牌義只用Golden Dawn Book T，不使用Etteilla或固定正逆義；把三排各自從代表牌一側由右往左讀成三段連續故事；再讀1↔21、2↔20直到10↔12的首尾配對，第11張作中心校正。原典沒有替三排指定過去／現在／未來，不自行添加。每排的局部牌義由整排故事改寫，配對補充跨段呼應；二十一張全部內部處理，正文只保留能改變原問句答案的排內命題、配對與中心作用。",
+      "mathers_horseshoe": "本次牌陣：Mathers衍生完整馬蹄布局。布局程序可保留，所有牌義與強弱統一依Golden Dawn Book T；依原法先把A組26張由右往左讀成第一個連續答案，再讀A1↔A26至A13↔A14；C組17張與E組11張依同樣方式各自成句、配對並處理中心單張。A、C、E是三個依次閱讀的證據群，F組24張不進入解讀。先讓三組各自完整，再比較後組如何補充、修正或限定前組；全部牌內部處理，正文按有效命題整合，不逐張抄寫五十四張。",
+      "horseshoe": "本次牌陣：七張馬蹄形（現代布局；牌義統一依Golden Dawn Book T）。先讀過去→現在→隱藏影響形成目前局勢，再讀建議如何作用於他人態度與阻礙，最後由前六張共同導向結果。隱藏影響是尚未看清的作用，不自動等於秘密人物；他人態度只有在身分可可靠對應時才描述特定人。七張全部處理，正文按有效命題輸出。"
   };
 
 
@@ -213,7 +213,7 @@
     five_card: '直接觀測：現況、形成原因、阻礙、可介入作用與結果之間的事件機制。可深讀是否成立、如何發生與主要條件；不以五張牌當作五個人物、五次或五個時間單位。',
     cross: '直接觀測：核心狀態與阻礙的拉扯、形成背景、發展與可介入點。適合診斷衝突機制；不直接枚舉未知人群或量測精確數量。',
     either_or: '直接觀測：兩條彼此分離的選項路徑與共同比較基準。可比較相對適配、代價與落點；不能把路徑牌號換算成機率或金額。',
-    timeline: '直接觀測：事件的相對先後、轉折、快慢與收束。精確日期只在資料區有可回溯占星／旬位錨點時量測；五個階段不是固定五天或五月。',
+    timeline: '直接觀測：事件的相對先後、轉折、快慢與收束。牌面的占星／十分度對應不等於本次事件的公曆日期；只有前端另行提供明確牌陣時間跨度或外部日曆錨時才可細化。五個階段不是固定五天或五月。',
     relationship: '直接觀測：一組你—對方／對方作用—關係的互動結構、阻礙、介入點與走向。已知對象可做雙方對照；未知對象時「對方」是聚合角色通道，不證明人物存在、不等於一人、也不構成人數上限。此牌陣不直接枚舉未知人群。',
     celtic_cross: '直接觀測：單一情勢的核心、交叉力量、根基、時間轉換、本人、環境、期待與結果。能建立多層因果網；十張不是十個人物或十個月，精確數量仍需獨立實體證據。',
     tree_of_life: '直接觀測：同一問題在十個質點與三柱／中軸中的作用層次。適合結構與內外機制；質點不等於現實人數或固定時間單位。',
@@ -223,7 +223,7 @@
     mathers_21: '直接觀測：三排連續故事、首尾配對與中心校正。能深描歷程與相互呼應；二十一張與配對數不是人數、日期或機率。',
     mathers_horseshoe: '直接觀測：A、C、E三個大型證據群的連續故事與配對。能提供廣泛情勢與反證；牌組大小不是現實數量，F組不進入解讀。',
     horseshoe: '直接觀測：過去、現在、隱藏作用、建議、他人／環境、阻礙與結果。未知的他人位是作用通道，不直接證明特定人物或數量。',
-    ootk: '直接觀測：五次獨立操作的落點、完整計數故事、配對、牌力與階段發展。計數值與步數只用於導航牌序，不量測現實人數、金額、年齡或日期；精確時間只取第四次操作已提供的旬位／公曆錨點。'
+    ootk: '直接觀測：Book T 五次操作中實際完成的落點、完整計數故事、配對、元素尊貴與階段發展。計數值與步數只用於導航牌序，不量測現實人數、金額、年齡或日期；第四次操作是代表牌後方三十六張的環，不是旬位或公曆應期。程序若依 Book T 中止，未完成操作沒有觀測權限。'
   };
 
   function buildEvidenceCapabilityBlock(q, tool, rawPayload) {
@@ -251,8 +251,8 @@
             question: q,
             spreadId: td.spreadType || _getSpreadId(),
             cards: td.cards || [],
-            sourceProfile: td.sourceProfile || E.resolveSemanticProfile(td.spreadType || _getSpreadId(), { waitePure:_isWaitePure() }),
-            waitePure: _isWaitePure(),
+            sourceProfile: 'gd_book_t',
+            waitePure: false,
             knownCounterpart: (typeof E.inferExplicitCounterpartBinding === 'function' ? E.inferExplicitCounterpartBinding(q) : false)
           });
         }
@@ -280,25 +280,13 @@
     return SPREAD_METHODS['_default'];
   }
 
-  // ★ 圖像要求隨牌陣切換：RWS 系牌陣讀 PCS 場景圖；Mathers（基於 Marseille，小牌無場景圖）禁止描述 RWS 畫面
+  // Golden Dawn Book T 只把現有牌圖當辨識載體；圖像敘事不得取代 Book T 對應與元素尊貴。
   function getImageryReq() {
-    try {
-      var S = (typeof window!=='undefined' && window.S) ? window.S : null;
-      if (!S) try { S = (0, eval)('typeof S !== "undefined" ? S : null'); } catch(e){}
-      var t = (S && S.tarot) || {};
-      var id = t.spreadType || (typeof getCurrentSpread === 'function' ? getCurrentSpread() : '');
-      if (id === 'mathers_horseshoe' || id === 'mathers_21') {
-        return '本法依資料區的Mathers／Etteilla牌義與牌序合成，不描述RWS／PCS小牌場景。圖像不是固定輸出項目。';
-      }
-    } catch(e){}
-    return 'RWS／PCS圖像只在人物姿態、視線、背景或物件確實改變本題命題時才自然引用；沒有新增判斷就不為湊數描述。';
+    return '牌圖只用於辨識本次實際牌與宮廷牌固有朝向；不得用Rider-Waite場景故事、人物視線或後世圖像關鍵字取代Golden Dawn Book T牌義。';
   }
 
-  // ★ 純-Waite 模式旗標（由匯出卡「牌義來源」切換鈕設定；預設關＝現代 RWS）。
-  //   只作用在 RWS 牌陣：開啟時牌義改用 Waite《Pictorial Key》原典正/逆義，並關掉 GD 元素尊嚴/旬/卡巴拉疊層。
-  function _isWaitePure() {
-    try { return (typeof window !== 'undefined') && window.JY_WAITE_PURE === true; } catch (e) { return false; }
-  }
+  // 全站塔羅來源固定為 Golden Dawn Book T；舊版來源切換旗標永久關閉。
+  function _isWaitePure() { return false; }
 
   // ── 取問卜者問題（多來源防呆）──
   function getQuestion() {
@@ -320,7 +308,7 @@
     return '（問卜者未填寫明確問題，請依牌面給通盤解讀）';
   }
 
-  // v92：原句先編譯成型別化查詢圖；不靠題材詞庫決定問題內容。
+  // v95：原句先編譯成型別化查詢圖；不靠題材詞庫決定問題內容。
   function buildRootQuestionLock(question, tool) {
     if (tool !== 'tarot' && tool !== 'ootk') return buildFocusLock(question, tool);
     return [
@@ -365,20 +353,20 @@
 
   // ── 注入片段：只補共用證據與來源邊界──
   // ① 嚴格不確定判準：防 AI 把「訊號弱」當偷懶藉口
-  var FRAG_UNCERTAINTY_TAROT = "\n【證據完成度檢查】\n在說「不確定／訊號不足」前，先確認每個位置、正逆位、牌陣互動、完整命題與反證均已處理。若完整問題證據不足，但較弱子命題成立，必須先回答完整問題，再說明牌面實際支持到哪一層；不得因無法確認完整事件而丟掉其餘有效資訊。\n";
-  var FRAG_UNCERTAINTY_OOTK = "\n【證據完成度檢查】\n在說某階段或整體訊號不足前，先確認五次操作的適配結果、落點、完整計數路徑、配對與階段整合均已處理。若完整問題不能定論，仍須分層說明五次操作能確認的子命題、限制與觸發條件。\n";
+  var FRAG_UNCERTAINTY_TAROT = "\n【證據完成度檢查】\n在說「不確定／訊號不足」前，先確認每個位置、Book T核心義、相鄰元素尊貴、牌陣互動、完整命題與反證均已處理。若完整問題證據不足，但較弱子命題成立，必須先回答完整問題，再說明牌面實際支持到哪一層；不得因無法確認完整事件而丟掉其餘有效資訊。\n";
+  var FRAG_UNCERTAINTY_OOTK = "\n【證據完成度檢查】\n在說某階段或整體訊號不足前，先確認本次依Book T實際完成的操作、適配結果、落點、完整計數路徑、配對、元素尊貴與階段整合均已處理；程序已中止時不得假裝後續操作存在。若完整問題不能定論，仍須分層說明五次操作能確認的子命題、限制與觸發條件。\n";
   var FRAG_UNCERTAINTY_MEIHUA =
     '\n【說「訊號弱」前的硬檢查】\n「弱」不是偷懶的避難所。要說某一項訊號不足，先確認：本卦、互卦、變卦、動爻、體用、生剋、旺衰與問題焦點都已對照過。全部看過仍沒有指向，才能說卦面不足；正文用白話說明，不要只丟不確定三個字。\n';
   var FRAG_SOURCELOCK_MEIHUA =
     '\n【學理鎖定】只用三種知識：①本次梅花易數卦盤實際資料 ②梅花易數常用正統技法（本卦、互卦、變卦、動爻、體用、五行生剋、旺衰、八卦萬物類象、外應）③已明示為現代實務的輸出框架。禁止：混入塔羅／開鑰／七維命盤／姓名學、把沒有提供的外應當成已知、把心理學雞湯包裝成術數結論。若只是實務判斷，要說「實務上我會這樣看」，不要說成原典必然。\n';
   var FRAG_RECENCY_MEIHUA =
     '\n' + BAR + '\n交稿前檢查（後半段最容易破功）\n' + BAR +
-    '\n□ 第一段已回答完整原問句 □ 體用＋旺衰＋動爻已定主結論 □ 本互變已串成事件線 □ 衝突訊號已分主次 □ 沒有混入其他系統或盤外個資 □ 沒把類象、外應、內心或精確數字硬編成事實 □ 有具體行動、驗證信號與停止條件 □ 應期只採資料區 □ 品牌收尾只一種礦石且未反向影響裁決\n';
+    '\n□ 第一段已直接回答問題 □ 本卦／互卦／變卦／動爻／體用都已檢查 □ 沒有混入塔羅、開鑰、七維或姓名學 □ 沒把沒有提供的外應硬編成事實 □ 有說明阻礙、24小時行動、可驗證信號 □ 應期照資料區吉應／敗應講、沒有自創應期算法 □ 壞消息沒有包裝 □ 最後有研究娛樂提醒\n';
 
   // ② 學理鎖定：擋掉網紅/心理學/雞湯，逼回正統
-  var FRAG_SOURCELOCK = "\n【學理來源鎖定】\n只使用本盤資料與本次明示的牌義系統。開鑰之法以Golden Dawn《Book T》的五次操作骨架為主，Crowley／Thoth與現代研究只在資料區明示時作補充；不把現代附加法冒充原典，也不混入RWS逆位心理化。原典沒有規定的部分可作實務推論，但要保持證據強度，不說成唯一正統。\n";
-  var FRAG_SOURCELOCK_TAROT = "\n【學理來源鎖定・現代RWS】\n本次採資料區提供的現代RWS通行正逆義，以Pamela Colman Smith圖像作有關聯的敘事輔助；Golden Dawn／Book T元素與占星資料只作次級校正。不要把現代通行義冒充Waite 1910逐字原義，也不要使用與本盤資料衝突的網路固定牌義、心理雞湯或題材公式。\n";
-  var FRAG_SOURCELOCK_TAROT_WAITE = "\n【學理來源鎖定・純Waite】\n本次只採資料區提供的A.E. Waite《The Pictorial Key to the Tarot》正位與逆位占義；PCS圖像只輔助該原義，不以現代RWS關鍵字改寫。不要疊加Golden Dawn元素尊嚴、旬、卡巴拉或現代逆位心理學。牌在位置中的句法仍須由原問句與全盤結構形成，不把原書單張詞義直接升格成完整事件。\n";
+  var FRAG_SOURCELOCK = "\n【學理來源鎖定・Golden Dawn Book T】\n全站塔羅與開鑰之法只使用Hermetic Order of the Golden Dawn《Book T／Liber T》：小牌稱號與占星分度、宮廷牌YHVH／元素層級、卡巴拉世界與質點、相鄰元素尊貴、花色／同階多數，以及Book T五次Opening of the Key程序。不得混入Waite 1910固定正逆位字典、RWS圖像敘事、Crowley／Thoth泰勒瑪專屬改寫、PHB現代擴充或Etteilla牌義。後世牌陣只保留布局拓撲，不改變牌義來源，也不得冒充Book T原創。\n";
+  var FRAG_SOURCELOCK_TAROT = FRAG_SOURCELOCK;
+  var FRAG_SOURCELOCK_TAROT_WAITE = FRAG_SOURCELOCK;
   // ③ 交稿前 recency 檢查：模型最常在後半段破功，放最後一段（recency 最強）
   function buildRecencyTarot() { return "\n────────────────────────────\n交稿前語義稽核\n────────────────────────────\n□ 已逐字保留原句比較雙方、關係、門檻、模態與期限 □ 已分開精確值、範圍、相對排序、門檻跨越、趨勢與穩定度 □ 第一個裁決沒有重新定義成功或只回答較弱子命題 □ synthesis_only 單位只綜合 dependsOn 命題、未線性化依賴圖 □ 牌義來源釋義沒有被直接複製成事件結論 □ 情境例子已標成可能表現、沒有冒充事實 □ 每個位置與合法互動均已處理 □ 未由牌張數、牌號、宮廷牌數或聚合角色位換算數量 □ 全盤已完成反證競爭與語義飽和 □ 時間、人物與數字均可溯源 □ 只引用本盤合法牌名 □ 品牌收尾沒有反向影響牌義\n"; }
   var FRAG_RECENCY_OOTK = "\n────────────────────────────\n交稿前語義稽核\n────────────────────────────\n□ 已逐項回答原問句的資訊需求並建立證據矩陣 □ 五次操作均已依Book T階段功能處理 □ 已採用資料區的適配、重試與中止結果 □ 每次操作均由落點、完整計數故事、兩側配對與牌力形成階段命題 □ 計數值、步數、落堆張數沒有被換算成現實數量 □ 代表牌反覆出現沒有被當成訊號 □ 不同操作沒有拼成假連線 □ 第一次至第五次已形成發展序列並裁決完整命題 □ 現代附加觀察只作次證、沒有凌駕Book T程序 □ 時間只在資料可靠且問題需要時輸出 □ 所有不同有效命題已呈現、同義者已合併 □ 篇幅由有效命題決定 □ 只引用本盤實際牌與落點 □ 品牌收尾沒有反向影響牌義\n";
@@ -388,15 +376,6 @@
   //    不碰八字五行命盤——故塔羅與開鑰共用，且不破壞開鑰「不引命盤」的純粹性。
   //    放在 t.tail 之後、recency 檢查之前（緊貼結論、但不搶最後品管位）。
   // v84_audit5(2026/6/10)：防線統一——輸出要求補盤外資訊禁令＋指令回聲禁令、FRAG_CRYSTAL 補嚴禁並列（六系統同步）
-  var FRAG_CRYSTAL_MEIHUA =
-    '\n【品牌附加層——占斷完成後才執行，不得反向影響結論】\n' +
-    '只推薦一種可隨身配戴的通用礦石。先看體卦是否休、囚、死，或是否出現用剋體／體生用：是則取生體之五行作品牌色象；否則取體卦本行。固定對應只准五選一：水＝海藍寶、木＝綠幽靈、火＝紫水晶、土＝虎眼石、金＝白水晶。此對應是品牌實務的五行色象，不是《梅花易數》原理，也不代表礦物具有改運功效。\n' +
-    '推薦限2至3句，只出現一個礦石名稱：先連回本次真正需要穩住的行動、節奏或界線，再加入一項對應礦物事實，並說它只是隨身提醒與搭配。禁止宣稱能改變他人意志、治療、護身、辟邪、安神、招財、桃花、改運、保證成事或提高占卜成真率；禁止優惠、特價、限時、下單、搶購、快買等字眼。\n' +
-    '礦物事實只能取自此表改寫：海藍寶屬綠柱石族、六方晶系、主要由鐵致色；綠幽靈是石英內含綠泥石等綠色包體；紫水晶屬石英家族、主要成分二氧化矽、莫氏硬度7；虎眼石主要外觀是絲絹狀貓眼光帶；白水晶屬石英家族、主要成分二氧化矽、莫氏硬度7。\n' +
-    '最後兩行必須原樣輸出，倒數第二行只能放連結，最後一行之後不得再有內容：\n' +
-    '[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n' +
-    '願你諸事順遂。\n';
-
   var FRAG_CRYSTAL = "\n【品牌附加層——占卜完全結束後才執行】\n本段不得反向影響牌義、裁決或建議。另起一段，只介紹一種可隨身配戴的礦物：先依原問句的真實生活情境與自然配戴場合，再看色系、透明度、光澤及材質感選品。資料區的花色分布只可作視覺色調的次要靈感，不得解釋成問卜者「缺某元素」、具有某種人格或必須補某種功能。\n工作／生意／金錢情境可從黃水晶、虎眼石、綠幽靈選一種；關係／社交可從粉晶、草莓晶、月光石選一種；決策／轉換／移動可從茶晶、拉長石、黑曜石選一種；溝通／學習／書面往來可從海藍寶、藍紋瑪瑙、紫水晶選一種；沒有清楚關聯時選白水晶。牌面呈現重大崩解也不能宣稱礦物能化解，只能依沉穩、低調或耐用的視覺與配戴需求選品。\n推薦限2至3句：說明它為何適合這次生活情境或穿搭，再加入一項下列礦物事實，最後自然引導前往靜月之光蝦皮。禁止宣稱治療、護身、辟邪、安神、補元素、提升能力、保證招財／桃花／改運或提高占卜成真率；民俗象徵不得寫成客觀功效。不得使用優惠、特價、限時、下單、搶購、快買等推銷字眼。\n\n【礦物事實錨點】\n白水晶／紫水晶／黃水晶／茶晶／粉晶屬石英家族，主要成分為二氧化矽、三方晶系、硬度7；紫水晶含鐵並受天然輻照致色，黃水晶由鐵致色，茶晶含鋁並受天然輻射呈煙色，粉晶多呈霧狀半透明、全透明極少。草莓晶為石英內含纖鐵礦或赤鐵礦片狀包體。紅瑪瑙／藍紋瑪瑙／紅碧玉屬隱晶質石英；瑪瑙可看天然色帶層次，紅碧玉通常不透明並由鐵氧化物致色。月光石由正長石與鈉長石交層形成暈彩。拉長石屬斜長石、三斜晶系，挑選可看變彩面積。太陽石內含赤鐵礦或銅片而出現砂金閃光。海藍寶屬綠柱石族、六方晶系，由鐵致色。黑曜石是火山玻璃、非晶質，常見貝殼狀斷口。黑碧璽屬電氣石族、三方晶系，柱面常見縱紋。紫龍晶為紫色纖維狀、具絲絹光澤，產於俄羅斯查拉河流域。虎眼石是石英交代石棉假象，呈絲絹貓眼光。綠幽靈是白水晶內含綠泥石包體。葡萄石為斜方晶系，常呈葡萄狀集合體。天鐵是鎳鐵隕石，屬鐵鎳金屬、等軸晶系；表面常見氣印，切磨酸蝕後可見魏德曼花紋，它是金屬而不是含氣泡的天然玻璃。龍宮舍利是市場名稱，成因與成分說法不一，只能描述珠體圓整、皮殼天然完整、結構緻密等外觀挑選標準。\n最後兩行必須原樣輸出，倒數第二行只能放連結，最後一行之後不得再有內容：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。\n";
 
   // ④b 紫微專用能量石（v85 歐那 2026/6/11）：根治紫微被注入塔羅版規則的錯位——
@@ -434,15 +413,10 @@
 
     if (tool === 'meihua') {
       if (f.noQ) {
-        L.push('問卜者沒有填寫明確問題：不得自行編造人物、事件或生活領域；只說卦盤的一般局勢、可觀察變化與使用限制。');
+        L.push('問卜者沒有填寫明確問題；依卦盤收斂出最有證據的一個核心議題，不跨系統亂掃。');
       } else {
         L.push('原問句：' + f.raw);
-        L.push('完整保留原問句的主體、對象、事件、否定、比較、期限、場域與成立門檻；第一句直接回答同一問題。');
-        if (f.yesno) L.push('是非命題：給偏會／偏不會／有條件才會，並標強中弱把握度；短暫跡象不可直接當最終成立。');
-        if (f.timing) L.push('時間命題：只用資料區吉應、敗應及近中遠層次；沒有可靠時間窗就說不能精確到日期。');
-        if (f.decision) L.push('比較命題：用同一標準分別評估明示選項；一卦不足以量測全部選項時，說清比較限制。');
-        if (f.portrait) L.push('人物／內心命題：只判互動趨勢、投入程度、界線與可觀察行為，不宣稱客觀讀到秘密心理。');
-        if (f.prob) L.push('機率命題：只給相對強弱，不編百分比或幾成。');
+        L.push('完整保留原問句的主體、事件、場域、期限與限定；第一句直接回答，再用本卦、互卦、變卦、動爻與體用說明。');
       }
       return L.join('\n') + '\n';
     }
@@ -521,7 +495,7 @@
     return L.join('\n');
   }
 
-  // ── 取排盤資料塊（沿用現有 builder，已含全部 GD/Mathers/Crowley/PHB 運算）──
+  // ── 取排盤資料塊（沿用現有 builder，只匯出 Golden Dawn Book T 核心資料）──
   // ── 防呆字串化：任何型別都轉成乾淨文字，杜絕 [object Object] ──
   function safeText(v) {
     if (v === null || v === undefined) return '';
@@ -560,184 +534,97 @@
     var td = (result && result.tarotData) || {};
     var cards = td.cards || [];
     var L = [];
-    L.push('牌陣類型與各位置：');
-    L.push((td.spreadZh || td.spreadType || '未指定牌陣') + '（共 ' + cards.length + ' 張）');
-    if (td.sourceProfile) L.push('牌義來源設定：' + td.sourceProfile + '（本次只使用此設定）');
+    L.push('牌陣：' + (td.spreadZh || td.spreadType || '未指定') + '（' + cards.length + '張）');
+    L.push('唯一牌義來源：Golden Dawn《Book T／Liber T》〔gd_book_t〕');
+    L.push('方向政策：一般牌陣不使用 Waite 固定正逆位；強弱由牌位與相鄰元素尊貴裁決。');
+    if (td.sourceContract) L.push('來源契約：' + safeText(td.sourceContract));
     L.push('');
-    L.push('抽到的牌（逐張，含位置／牌名／正逆位）：');
-    // ★ B（純考據 Mathers）：mathers_21 / mathers_horseshoe 兩法改用 Mathers 1888 原典牌義，
-    //   並關掉所有非 Mathers 的 GD/現代分析層（元素尊嚴宮廷、卡巴拉、Decan 時間、對立牌、數字學…）。
-    var _isMathers = (td.spreadType === 'mathers_horseshoe' || td.spreadType === 'mathers_21');
-    var _isTree = (td.spreadType === 'tree_of_life');
-    var _isWaite = !_isMathers && _isWaitePure();   // 純-Waite 模式只作用在 RWS 牌陣（不覆蓋 Mathers）
-    var _pureSrc = _isMathers || _isWaite;           // 任一純原典模式：關掉現代 GD 疊層（元素尊嚴/旬/卡巴拉/對立牌…）
-    cards.forEach(function (c, i) {
-      var pos = c.positionMeaning || c.position || ('位置' + (i + 1));
-      var ln = (i + 1) + '. ' + pos + '：' + (c.name || '');
-      // v92：只輸出所選來源的候選語義原子與來源釋義；兩者都是素材，不是已成立事件句。
-      var _atoms = Array.isArray(c.semanticCandidates) ? c.semanticCandidates.join('／') : (c.semanticCandidates || c.keywords || '');
-      if (_atoms) ln += '〔候選語義原子：' + _atoms + '〕';
-      var _gloss = c.sourceGloss || c.baseMeaning || '';
-      if (_gloss) ln += '；來源釋義（僅素材，不是事件結論）：' + _gloss;
-      L.push(ln);
+    L.push('抽到的牌：');
+    cards.forEach(function(c,i){
+      var pos = c.positionMeaning || c.position || ('位置'+(i+1));
+      var line = (i+1)+'. '+pos+'：'+(c.name||'?');
+      if (c.bookTTitle) line += '〔'+c.bookTTitle+'〕';
+      if (c.element) line += '｜元素：'+c.element;
+      if (c.sephirah || c.world) line += '｜卡巴拉：'+[c.sephirah,c.world].filter(Boolean).join('／');
+      if (c.correspondence) line += '｜對應：'+c.correspondence;
+      line += '｜Book T核心義：'+(c.baseMeaning||c.sourceGloss||'依位置與相鄰牌裁決');
+      if (c.elementalDignity) {
+        var d=c.elementalDignity;
+        line += '｜元素尊貴：'+(d.state||'mixed')+(d.reading?'；本位讀法：'+d.reading:'');
+      }
+      if (c.courtPolicy) line += '｜宮廷牌限制：'+c.courtPolicy;
+      L.push(line);
     });
-    // ★ 花色分布（suit clustering — 某花色佔多＝該領域訊號強，技術庫強訊號）
-    var _suit = { 火: 0, 水: 0, 風: 0, 土: 0, 大牌: 0 };
-    cards.forEach(function (c) {
-      var n = c.name || '';
-      if (/權杖|火杖|杖/.test(n)) _suit.火++;
-      else if (/聖杯|杯/.test(n)) _suit.水++;
-      else if (/寶劍|劍/.test(n)) _suit.風++;
-      else if (/錢幣|金幣|星幣|圓盤|錢/.test(n)) _suit.土++;
-      else _suit.大牌++;
-    });
-    if (cards.length) {
-      L.push('');
-      L.push('花色分布（結構統計，只用來觀察全盤表達方式與重複功能；不能由某花色多寡直接指定題目領域，缺席也不代表相應功能不存在）：火(權杖)' + _suit.火 + '・水(聖杯)' + _suit.水 + '・風(寶劍)' + _suit.風 + '・土(錢幣)' + _suit.土 + '・大牌' + _suit.大牌);
+    var legal=cards.map(function(c){return c.name;}).filter(Boolean);
+    if (legal.length){L.push('');L.push('【合法牌名】'+legal.join('、'));}
+    if (td.preStats && td.preStats.observations && td.preStats.observations.length) {
+      L.push('【Book T多數／同階觀察】'+td.preStats.observations.join('；'));
     }
-    // ★ 合法牌名清單（禁幻覺——複製模式沒有後端機械審計，用清單替代）
-    var _legal = cards.map(function (c) { return c.name; }).filter(Boolean);
-    if (_legal.length) { L.push(''); L.push('【本次合法牌名清單（你只能引用這些牌，清單外的牌一律不可出現；▲▼正逆符號只是資料標記——正文引用時只寫牌名本身，不得帶「▲」「▼」「正位」「逆位」前綴）】'); L.push('  ' + _legal.join('、')); }
-    var extra = [];
-    function add(label, val) { if (val !== null && val !== undefined && val !== '' && !(val.length === 0)) { var x = safeText(val); if (x) extra.push(label + '：' + x); } }
-    // 只輸出可機械驗證、且沒有預先替牌下結論的資料。
-    add('正逆位事實計數', td.summary);
-    if (_isTree) add('三柱分佈（生命之樹結構資料）', td.treePillars);
-    if (!_pureSrc && td.elementalDignity) add('相鄰元素作用分數（只校正牌力，不自行產生命題）', td.elementalDignity);
-    var _qTime = /什麼時候|何時|幾時|多久|幾天|幾週|幾月|哪一年|時間/.test(getQuestion());
-    if (!_pureSrc && _qTime && td.timeConclusion) add('可回溯時間錨點（僅因原問句要求時間而提供）', td.timeConclusion);
-    if (extra.length) {
-      L.push('');
-      L.push('── 中性校正資料（不可取代牌位命題，也不可由此直接製造事件／人物／數量）──');
-      extra.forEach(function (e) { L.push('・' + e); });
+    if (td.elementalDignityGroups && td.elementalDignityGroups.length) {
+      var dgLines=[];
+      td.elementalDignityGroups.forEach(function(g){
+        (g.links||[]).forEach(function(link){
+          var rel=link.relation||{};
+          dgLines.push((link.fromName||('位置'+(link.from+1)))+' ↔ '+(link.toName||('位置'+(link.to+1)))+'：'+(rel.label||rel.code||'未定'));
+        });
+      });
+      if(dgLines.length)L.push('【Book T拓撲相鄰元素尊貴】'+dgLines.join('；'));
+    }
+    if (td.treePillars) L.push('【生命之樹牌陣結構】'+safeText(td.treePillars));
+    var qTime=/什麼時候|何時|幾時|多久|幾天|幾週|幾月|哪一年|時間/.test(getQuestion());
+    if (qTime) {
+      if (td.timeConclusion) L.push('【時間通道】'+safeText(td.timeConclusion)+'；只能採資料明示的相對時序，不得另換算日期。');
+      else L.push('【時間邊界】本次資料沒有可回溯的曆日量測通道，只能回答牌位所示的相對階段。');
     }
     return L.join('\n');
   }
 
   // ── 開鑰之法：結構化物件 → 五次操作完整文字 + 補充觀察 ──
   function formatOOTKData(result) {
-    var od = (result && result.ootkData) || {};
-    var ops = od.operations || {};
-    var ca = od.crossAnalysis || {};
-    var sig = od.significator || {};
-    var L = [];
-    L.push('── 以下五次操作資料（含 counting／pairing／dignities 計算）已由排盤系統精算完成，請直接採用，不要自行重數、重排或重算位置。本引擎依《Book T》計數值表採 Ace＝11；計數值與步數只用於導航牌序，不代表現實人數、金額、年齡或日期 ──');
-    L.push('');
-    var sigName = sig.n || sig.name || (typeof sig === 'string' ? sig : '');
-    var sigPrefix = '';  // ★ v76：OOTK 不標正逆位
-    L.push('代表牌（Significator）：' + (sigName || safeText(sig) || '（未提供）'));
-    L.push('適配判斷說明：請直接以原問句完整語意，對照每次操作的實際落點判斷是否符合Book T／Mathers方法；前端題材分類不作裁決。若資料沒有第二次重發結果，不得假稱已完成第二次適配驗證。');
-    L.push('');
-    var opLabels = {
-      op1: 'Op1 四元素堆（YHVH）——當下處境',
-      op2: 'Op2 十二宮——問題的展開',
-      op3: 'Op3 十二星座——進一步展開（內在驅力）',
-      op4: 'Op4 三十六旬——倒數階段（時機節奏）',
-      op5: 'Op5 生命之樹——最終結果'
-    };
-    // ★ 把每層真正結構化（鏡像 head 要的 Sig落點/Counting/Pairing/Dignities），
-    //   op-specific 欄位（宮/星座/旬/質點，名稱不一）用 safeText 保底，絕不漏資料。
-    function cn(c) { return c ? (c.n || c.name || '?') : '?'; } // ★ v76：OOTK 不標逆位
-    var PILE = { fire: 'Yod 火堆（主動、推進與工作功能）', water: 'Heh 水堆（感受、關係與接受功能）', air: 'Vau 風堆（思考、衝突與變動功能）', earth: 'Heh-final 土堆（物質、資源與落實功能）' };
-    // ── 精簡：引擎把整個 Op 分析當長字串傳來；剝掉每層重複 5 次的方法論講稿＋Mathers 1888 字典＋裝飾線，只留實際牌面/路徑/配對/落點 ──
-    function _slimOp(s) {
-      if (typeof s !== 'string') return safeText(s);
-      return s
-        // ── 額外鷹架（每 Op 重複、且 head 已涵蓋，砍掉不損牌義／路徑／尊嚴）──
-        .replace(/[^\n]*盤面揭示・真實場域（[^）]*）/g, '')
-        .replace(/【本 Op Narrative Pairs[\s\S]*?(?=\n+[━【★]|$)/g, '')
-        .replace(/（配對是從代表牌兩側對稱展開[\s\S]*?）/g, '')
-        .replace(/【Op4 雙版本對照】[\s\S]*?鏡像細節」。/g, '')
-        .replace(/（Mathers：[^（）]*）/g, '')
-        // ── v74.1 清理：截斷的方向尊嚴 JSON、孤兒 📍、與 Thoth 鎖矛盾的 Waite 挑版本提示 ──
-        .replace(/【本 Op 宮廷牌面向互動[\s\S]*$/g, '')
-        .replace(/\n[ \t]*\u{1F4CD}[ \t]*(?=\n)/gu, '')
-        .replace(/★ AI 提示:Waite 與 Crowley[\s\S]*?並列。/g, '')
-        // ── v74.2：Op4 同數字組／主導花色 砂 Waite 欄，只留 Crowley（呼應 head 的 Thoth 鎖）──
-        .replace(/\n[ \t]*\[Waite 1910\][^\n]*/g, '')
-        .replace(/Mathers 1888:[^\/\n]*\/ *(?=Crowley Liber 78)/g, '')
-        .replace(/Waite 1910 vs /g, '')
-        .replace(/ 雙版本/g, '')
-        .replace(/（v63 正統 Book T：[\s\S]*?結論牌」。）/g, '')
-        .replace(/（★ Mathers 原文：[\s\S]*?本身的能量。）/g, '')
-        .replace(/★ 本 Op 為[\s\S]*?排名。/g, '')
-        .replace(/Mathers 原文:「Pair[\s\S]*?不跨 Op 比較。/g, '')
-        .replace(/Sig\([^)]*\)兩次都落[\s\S]*?照常進行。/g, '')
-        .replace(/AI 必讀:[\s\S]*?(?:照常給答案。|當讀盤失敗。|不可給強斷言。)/g, '')
-        .replace(/Op\d+ 預期觀察[\s\S]*?分開看。」/g, '')
-        .replace(/把這個落堆讀成[\s\S]*?照常給答案。/g, '')
-        .replace(/不要寫「[^」]*」「?[^」]*」?，?也?不要把它當讀盤失敗。/g, '')
-        .replace(/【Mathers 1888:[^】]*】/g, '')
-        .replace(/【GD:[^】]*】/g, '')
-        .replace(/【(?:well|ill) 含義:[^】]*】/g, '')
-        .replace(/[━]{6,}/g, '')
-        .replace(/[ \t]+\n/g, '\n')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
+    var od=(result&&result.ootkData)||{};
+    var ops=od.operations||{};
+    var sig=od.significator||{};
+    var L=[];
+    L.push('方法：Golden Dawn《Book T／Liber T》Opening of the Key 五次操作');
+    L.push('唯一牌義來源：gd_book_t；不使用固定正逆位、Waite／Thoth專屬牌義、PHB擴充或自創應期。');
+    L.push('代表牌：'+(sig.name||sig.n||safeText(sig)||'未提供'));
+    if(od.procedureStatus){
+      L.push('程序狀態：'+safeText(od.procedureStatus));
+      if(od.procedureStatus.abandoned) L.push('【硬限制】程序已於'+od.procedureStatus.abandonedAt+'停止；不得解讀未生成的後續操作。');
     }
-    ['op1', 'op2', 'op3', 'op4', 'op5'].forEach(function (k) {
-      if (!ops[k]) return;
-      var o = ops[k];
+    if(od.validityPolicy)L.push('程序規則：'+od.validityPolicy);
+    L.push('');
+    var labels={op1:'第一次操作・當下情勢',op2:'第二次操作・問題發展',op3:'第三次操作・進一步發展',op4:'第四次操作・倒數階段（三十六牌環）',op5:'第五次操作・最終結果（生命之樹）'};
+    function cn(c){return c?(c.name||c.n||'?'):'?';}
+    ['op1','op2','op3','op4','op5'].forEach(function(k){
+      var o=ops[k];if(!o)return;
       L.push('────────────────────────');
-      L.push('【' + opLabels[k] + '】');
-      if (typeof o === 'string') { var _s = _slimOp(o); if (_s) L.push(_s); L.push(''); return; }
-      if (o.activePile) L.push('Sig 落點/活躍堆：' + (PILE[o.activePile] || o.activePile) + (o.locationMeaning ? '（' + o.locationMeaning + '）' : ''));
-      if (o.activeHouse) L.push('Sig 落點/宮位：第' + o.activeHouse + '宮' + (o.locationMeaning ? '（' + o.locationMeaning + '）' : ''));
-      if (o.activeSign) L.push('Sig 落點/星座：' + o.activeSign + (o.locationMeaning ? '（' + o.locationMeaning + '）' : ''));
-      if (o.activeSephirah) L.push('Sig 落點/質點：' + o.activeSephirah + (o.sephirahZh ? '（' + o.sephirahZh + '）' : '') + (o.locationMeaning ? '——' + o.locationMeaning : ''));
-      if (o.activeCards && o.activeCards.length) L.push('本層活躍牌（中性資料）：' + o.activeCards.map(function(c){ var x=cn(c); if(c.thothTitle) x+='〔'+c.thothTitle+'〕'; else if(c.keywords) x+='〔'+c.keywords+'〕'; return x; }).join('、'));
-      if (o.countingPath && o.countingPath.length) L.push('Counting 走過（依序，方向已定，勿重數）：' + o.countingPath.map(function (p) { return (p.cardName || '?') + '〔走' + p.countValue + '〕'; }).join(' → '));
-      if (o.mq_countingPath && o.mq_countingPath.length) L.push('Op4 環形 Counting（順發牌方向，1↔36 時序）：' + o.mq_countingPath.map(function (p) { return (p.cardName || '?') + '〔走' + p.countValue + '〕'; }).join(' → '));
-      if (o.pairs && o.pairs.length) L.push('Pairing 配對（Sig 兩側往外，#1 最直接）：' + o.pairs.map(function (pr, i) { if (!pr || pr.single || !pr.right) return '#' + (i + 1) + ' 單張殘餘:' + cn(pr && pr.left); return '#' + (i + 1) + ' ' + cn(pr.left) + '↔' + cn(pr.right) + (pr.dignity ? '〔' + safeText(pr.dignity) + '〕' : ''); }).join('；'));
-      if (o.dignities) { var _dg = safeText(o.dignities); if (_dg) L.push('元素尊嚴（逐張受鄰牌元素增減的強度分；正=被鄰牌助旺、負=被鄰牌削弱、0=中性——只作內部輕重判斷，正文禁用此術語）：' + _dg); }
-      // ★ v75.2：Op4 預算公曆日期，明確顯示，AI 不需再自己換算
-      if (o.decanDateRange) L.push('聚焦旬：' + (o.decanSign||'') + ' ' + (o.decanRange||'') + ' → 公曆約 ' + o.decanDateRange + '（旬主星：' + (o.decanPlanet||'') + '）');
-      if (o.attempt && o.attempt > 1) L.push('本層重試：第' + o.attempt + '次' + (o.retryNote ? '（' + o.retryNote + '）' : ''));
-      if (o.abandonTriggered) L.push('原方法中止狀態：已觸發' + (o.abandonReason ? '——' + o.abandonReason : ''));
-      if (o.weakSignalWarning) L.push('本層訊號校準：降權' + (o.weakSignalReason ? '——' + o.weakSignalReason : ''));
-      if (o.sephExpectationMet === false) L.push('第五次質點適配：未符合預期' + (o.sephExpectationNote ? '——' + o.sephExpectationNote : '') + '；依本法不自動使整次占卜失效。');
-      // op-specific 落點與其餘欄位（只保留尚未明列的中性資料）
-      var _rest = {}, _skip = { piles: 1, activePile: 1, meaning: 1, locationMeaning: 1, stage: 1, activeHouse: 1, activeSign: 1, activeSephirah: 1, sephirahZh: 1, activeCards: 1, sigIndex: 1, keyCards: 1, countingPath: 1, mq_countingPath: 1, pairs: 1, dignities: 1, decanSign: 1, decanRange: 1, decanPlanet: 1, decanDateRange: 1, expectedPiles: 1, expectedHouses: 1, expectedSigns: 1, expectedSephiroth: 1, abandonTriggered: 1, abandonReason: 1, weakSignalWarning: 1, weakSignalReason: 1, sephExpectationMet: 1, sephExpectationNote: 1, firstAttemptPile: 1, firstAttemptHouse: 1, firstAttemptSign: 1, attempt: 1 };
-      Object.keys(o).forEach(function (kk) { if (!_skip[kk]) _rest[kk] = o[kk]; });
-      var _rs = safeText(_rest); if (_rs) L.push('本層落點與其他：' + _rs);
-      L.push('');
+      L.push('【'+labels[k]+'】');
+      if(o.abandoned)L.push('狀態：依Book T停止——'+(o.abandonReason||''));
+      if(o.activePile)L.push('代表牌落堆：'+o.activePile+(o.domainMeaning?'（'+o.domainMeaning+'）':''));
+      if(o.activeHouse)L.push('代表牌落宮：第'+o.activeHouse+'宮'+(o.domainMeaning?'（'+o.domainMeaning+'）':''));
+      if(o.activeSign)L.push('代表牌落星座堆：'+o.activeSign);
+      if(o.activeSephirah)L.push('代表牌落生命樹：'+o.activeSephirah+(o.sephirahZh?'（'+o.sephirahZh+'）':'')+(o.sephirahMeaning?'——'+o.sephirahMeaning:''));
+      if(o.ringSize)L.push('三十六牌環：'+o.ringSize+'張；本操作不量測日期或月份。');
+      if(o.activeCards&&o.activeCards.length)L.push('活躍牌：'+o.activeCards.map(function(c){return cn(c)+(c.bookTTitle?'〔'+c.bookTTitle+'〕':'');}).join('、'));
+      if(o.countingPath&&o.countingPath.length)L.push('計數故事（依序）：'+o.countingPath.map(function(s){return (s.cardName||'?')+'〔計'+s.countValue+'〕';}).join(' → '));
+      if(o.ringCountingPath&&o.ringCountingPath.length&&o.ringCountingPath!==o.countingPath)L.push('環形計數：'+o.ringCountingPath.map(function(s){return (s.cardName||'?')+'〔計'+s.countValue+'〕';}).join(' → '));
+      var pairs=(o.ringPairing&&o.ringPairing.length)?o.ringPairing:o.pairs;
+      if(pairs&&pairs.length)L.push('配對故事（由近到遠）：'+pairs.map(function(pr,i){return '#'+(i+1)+' '+cn(pr.left)+(pr.right?'↔'+cn(pr.right):'')+(pr.dignity?'〔'+pr.dignity+'〕':'');}).join('；'));
+      if(o.dignities&&o.dignities.length)L.push('元素尊貴：'+safeText(o.dignities));
+      if(o.bookTMajorities&&o.bookTMajorities.observations&&o.bookTMajorities.observations.length)L.push('Book T多數／同階觀察：'+o.bookTMajorities.observations.join('；'));
+      if(o.expectationNote)L.push('位置適配：'+o.expectationNote);
     });
-    var obs = [];
-    function addO(label, val) { if (val !== null && val !== undefined && val !== '' && !(val.length === 0)) { var s = safeText(val); if (s) obs.push(label + '：' + s); } }
-    addO('Unaspected Cards（各層隱藏推力，單層內判斷）', ca.unaspectedCards);
-    addO('可解度閘門', ca.divinationValidity || od.divinationValidity);
-    if (obs.length) {
-      L.push('── 五次操作的次級觀察（只校正單層命題，不建立現實數量或人物身分）──');
-      obs.forEach(function (o) { L.push('・' + o); });
-    }
-    // ★ 合法牌名清單（禁幻覺）— 盡力從各 Op 蒐集實際出現的牌名
-    try {
-      var _seen = {};
-      (function harvest(o) {
-        if (!o) return;
-        if (Array.isArray(o)) { o.forEach(harvest); return; }
-        if (typeof o === 'string') {
-          // 字串型 op（引擎預格式化）：用正則抽「正位/逆位 <牌名>」
-          var _re = /[正逆]位\s+([^\s〔（()→↔，。\n]{2,5})/g, _m;
-          while ((_m = _re.exec(o))) { _seen[_m[1]] = 1; }
-          return;
-        }
-        if (typeof o === 'object') {
-          var nm = o.n || o.name || o.cardStr || o.cardName;
-          if (nm && typeof nm === 'string' && nm.length <= 8) _seen[nm] = 1;
-          Object.keys(o).forEach(function (k) { harvest(o[k]); });
-        }
-      })(ops);
-      if (sigName) _seen[sigName] = 1;
-      var _lg = Object.keys(_seen);
-      L.push('');
-      if (_lg.length > 1) { L.push('【本次合法牌名清單（只能引用本盤實際出現的牌，清單外一律不可出現）】'); L.push('  ' + _lg.join('、')); }
-      else { L.push('【禁幻覺】只能引用本盤五次操作資料區實際出現的牌（活躍堆／counting／pairing 列出的都算），清單外的牌一律不可出現。'); }
-    } catch (e) { L.push(''); L.push('【禁幻覺】只能引用本盤資料區實際出現的牌，清單外的牌一律不可出現。'); }
+    var seen={};
+    Object.keys(ops).forEach(function(k){(ops[k].activeCards||[]).forEach(function(c){if(c&&c.name)seen[c.name]=1;});});
+    if(sig.name)seen[sig.name]=1;
+    var legal=Object.keys(seen);
+    if(legal.length){L.push('');L.push('【合法牌名】'+legal.join('、'));}
+    L.push('【數字邊界】計數值只導航牌序，不代表日期、金額、年齡、人數或機率。');
     return L.join('\n');
   }
 
-  // ── 取排盤資料塊（沿用現有 builder，已含全部 GD/Mathers/Crowley/PHB 運算）──
+  // ── 取排盤資料塊（沿用現有 builder，只匯出 Golden Dawn Book T 核心資料）──
   function getPayloadObject(tool) {
     try {
       var obj = null;
@@ -800,7 +687,7 @@
       payload,
       '',
       t.tail,
-      (tool === 'meihua' ? FRAG_CRYSTAL_MEIHUA : (tool === 'ziwei' ? FRAG_CRYSTAL_ZIWEI : FRAG_CRYSTAL)),
+      (tool === 'meihua' ? '' : (tool === 'ziwei' ? FRAG_CRYSTAL_ZIWEI : FRAG_CRYSTAL)),
       FRAG_TRACE,
       FRAG_PLAINTEXT,
       recency
@@ -904,16 +791,9 @@
     var prompt = buildPrompt(tool);
     var emblem = (tool === 'ootk') ? '🗝️' : (tool === 'ziwei' ? '🪐' : (tool === 'meihua' ? '☯️' : '🔮'));
 
-    // ★ 純-Waite 切換鈕：僅塔羅且非 Mathers 牌陣時顯示（手機可點，預設＝現代 RWS）
-    var _spId = '';
-    try { var _SR = (typeof window!=='undefined' && window.S) ? window.S : null; if (!_SR) try { _SR = (0, eval)('typeof S !== "undefined" ? S : null'); } catch(e){} _spId = (_SR && _SR.tarot && _SR.tarot.spreadType) || ''; } catch(e){}
-    var _showWaiteToggle = (tool === 'tarot') && _spId !== 'mathers_21' && _spId !== 'mathers_horseshoe';
-    var _waiteOn = _isWaitePure();
-    var toggleHTML = _showWaiteToggle
-      ? ('<div class="jy-ex-srcwrap">牌義來源：' +
-         '<button type="button" class="jy-src-btn' + (!_waiteOn ? ' on' : '') + '" data-src="modern">現代 RWS</button>' +
-         '<button type="button" class="jy-src-btn' + (_waiteOn ? ' on' : '') + '" data-src="waite">Waite 原典</button>' +
-         '</div>')
+    // 全站固定單一牌義來源，移除舊版RWS／Waite切換，避免同一牌陣因入口不同而漂移。
+    var toggleHTML = (tool === 'tarot' || tool === 'ootk')
+      ? '<div class="jy-ex-srcwrap">牌義來源：<span class="jy-src-btn on" aria-label="Golden Dawn Book T">Golden Dawn Book T</span></div>'
       : '';
 
     var card = document.createElement('div');
@@ -943,16 +823,7 @@
     var btn = card.querySelector('.jy-ex-btn');
     btn.addEventListener('click', function () { copyText(prompt, btn); });
 
-    // ★ 純-Waite 切換鈕事件：切換旗標後重渲染（卡牌已在抽牌時掛 waiteUp/waiteRv，故只需重建提示詞，不用重抽）
-    var srcBtns = card.querySelectorAll('.jy-src-btn');
-    for (var bi = 0; bi < srcBtns.length; bi++) {
-      (function (sb) {
-        sb.addEventListener('click', function () {
-          try { window.JY_WAITE_PURE = (sb.getAttribute('data-src') === 'waite'); } catch (e) {}
-          render(tool, el);
-        });
-      })(srcBtns[bi]);
-    }
+    // 牌義來源固定為 Golden Dawn Book T，無切換入口。
 
     // ★ v76：AI 快捷鍵 — 複製＋開啟對應 AI
     var aiUrls = {

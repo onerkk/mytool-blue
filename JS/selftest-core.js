@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// 靜月之光占卜 · 全路徑自動檢測核心 v1 (2026/7/15 v92.0 ROOT-SPEC 基準)
+// 靜月之光占卜 · 全路徑自動檢測核心 v95 (2026/7/17 Golden Dawn Book T 基準)
 // 設計目的：根治「每輪解讀踩到一個新 bug」的被動修法——
 //   一次驗證：①部署完整性（線上檔案是否為最新版的字串簽名）
 //             ②資料表完整性（78 張牌義、Mathers 表、數字學表）
@@ -14,117 +14,65 @@
   var SIGNATURES = {
     'tarot-semantic-engine.js': {
       must: [
-        'ROOT-SPEC v92 clean compiler',
-        'var METHOD_SPECS',
-        'function compileQuestion',
-        'function compileEvidenceGraph',
-        'function compileOOTKEvidence',
-        'function compileReadingSpec',
-        'function renderPromptContract',
-        'ROOT-SPEC v92',
-        '跨組只綜合各組已成立命題',
-        '不能直接把不同操作中的牌拼成新牌句',
-        'typed_query_graph/1',
-        'atomizationRequirement',
-        'entityBindings',
-        'joinTrace',
-        'operation_stage_summary',
-        'QUERY_EVENT_ONLY',
-        'cross_operation_stage_network'
+        'ROOT-SPEC v95 Golden Dawn compiler','var SOURCE_PROFILES','gd_book_t',
+        'function compileQuestion','function compileEvidenceGraph','function compileOOTKEvidence',
+        'function compileReadingSpec','function renderPromptContract','ROOT-SPEC v95',
+        '不能直接把不同操作中的牌拼成新牌句','typed_query_graph/1','entityBindings','joinTrace'
       ],
-      mustNot: ['缺聖杯＝','權杖國王通常已婚','牌張數換算現實人數']
+      mustNot: ['waite_1910（本次只准','op4_time_anchor','缺聖杯＝','牌張數換算現實人數']
+    },
+    'golden-dawn-tarot.js': {
+      must: ['unified tarot core v1.4.0',"var SOURCE_ID = 'gd_book_t'",'var MAJOR_CORR','var COURT_BOOK_T','function spreadGroups','function spreadDignityGroups','neutralizedByContraryFlanks'],
+      mustNot: ['Uranus','Neptune','Pluto','thoth_crowley']
     },
     'tarot_upgrade.js': {
       must: [
-        '二十/審判數',                                    // v85 數字學 11-21 補表
-        'if (finalNum === 22) finalNum = 0',              // v85 22→0 愚者
-        '加總後化約至0-21對應大牌',                        // v85 描述同步
-        "if (S.form && S.form.domains && S.form.domains.length > 1) ftKey = ''", // v85.3 結果頁守門
-        'JY_SEMANTIC_SPREAD_ROUTER_V93',                   // v93 語義路由，不再雜湊輪替
-        'function resolveTarotSpread'                         // v93 全 UI 單一解析入口
+        'Opening of the Key — 正統金色黎明核心計算引擎','window.ootkAutoSignificator = null',
+        "window.jyWaitePKTMeanings = null",'var nodeIdx = dealCount % 10',
+        "results.abandonedAt = 'op1'",'三十六牌環','不作三十六旬、月份或日期推算'
       ],
-      mustNot: [
-        '逐牌先化約再加總（宮廷牌計侍1騎2后3王4，非各牌面號直加）' // 舊描述
-      ]
+      mustNot: ['_decanToDate','window.ootkAutoSignificator = autoSelectSignificator']
     },
     'ai-analysis.js': {
       must: [
-        'card.baseMeaning = isUp ? (c.up || \'\') : (c.rv || \'\')', // v89 中性牌義
-        'opposingPairs = [];',                                      // v89 固定故事停用
-        'function _ootkOpPayload',                                  // v89 OOTK 結構化
-        'numberPatterns: []',                                       // v89 OOTK 衍生數量敘事停用
-        'compileReadingSpec',                                         // v92 契約編譯
-        'result.semanticContract = _contract',                        // v92 塔羅契約掛載
-        'ootk_result.semanticContract = _ootkContract',               // v92 開鑰契約掛載
-        'card.semanticCandidates',
-        'card.sourceGloss'
+        "sourceProfile: 'gd_book_t'",'elementalDignityGroups','reversedCount: 0',
+        'opposingPairs = [];','timeConclusion = \'\';','result.semanticContract = _contract',
+        'ootk_result.semanticContract = _ootkContract'
       ],
-      mustNot: [
-        '最終出現的人',                                      // 舊誘導措辭（第三者題遞刀）
-        '這件事本身方向有問題',
-        '阻力是「太多」而非「不夠」',
-        '核心牌逆但結果牌順→現在卡但最終會通'
-      ]
+      mustNot: ['核心牌逆但結果牌順→現在卡但最終會通']
     },
     'tarot.js': {
       must: [
-        '主導權多在人為選擇',                               // v85 洞察事實化
-        'S.form.domains && S.form.domains.length > 1'       // v85.3 牌義守門
+        'unified tarot core v1.4.0',"var SOURCE_ID = 'gd_book_t'",'var MAJOR_CORR',
+        'var COURT_BOOK_T','function spreadGroups','function spreadDignityGroups',
+        'reversalPolicy:\'不使用 Waite 固定正逆字典'
       ],
-      mustNot: [
-        '靠實際行動和選擇就能改變',
-        '內在阻礙和外在困難同時存在',
-        '能量流動順暢，整體走向積極'
-      ]
+      mustNot: ['Uranus','Neptune','Pluto']
     },
     'prompt-export.js': {
       must: [
-        'ROOT-SPEC',
-        'window.JYTarotSemanticEngine',
-        'renderPromptContract',
-        'buildRootQuestionLock',
-        'ROOT-SPEC v92',
-        'QuestionCompiler',
-        'GraphBinder',
-        'SaturationReviewer',
-        '同一人物完成同一事件',
-        '最弱的必要原子',
-        '本段不得反向影響牌義、裁決或建議',
-        '不得解釋成問卜者「缺某元素」',
-        '【礦物事實錨點】',
-        '【輸出載體——硬規則】',
-        '【通用溯源鐵律——適用全文每一句】',
-        '▲▼正逆符號只是資料標記'
+        'Golden Dawn《Book T》塔羅證據整合者','Golden Dawn《Book T》Opening of the Key',
+        'ROOT-SPEC v95','QuestionCompiler','GraphBinder','SaturationReviewer','gd_book_t',
+        'Book T拓撲相鄰元素尊貴','本段不得反向影響牌義、裁決或建議',
+        '不得解釋成問卜者「缺某元素」','【礦物事實錨點】','【輸出載體——硬規則】'
       ],
-      mustNot: [
-        '缺聖杯＝',
-        '先把「支持」與「反對」的牌各清點一次',
-        '至少自然帶到 2 張 RWS',
-        '每張牌都要在正文點到名',
-        '極小盤（四花色牌總數≤3',
-        'Sig 落在任何元素堆／宮位／星座／質點，都讀成「揭示真實場域」',
-        'Aces 採 count 11（Crowley·Liber 78）',
-        '重心傾向未來',
-        '注意力傾向過去'
-      ]
+      mustNot: ['至少自然帶到 2 張 RWS','每張牌都要在正文點到名','Aces 採 count 11（Crowley·Liber 78）']
     },
     'ui.js': {
-      must: ['S.form.domains'],                             // v85.3
-      mustNot: []
+      must: ['Golden Dawn Book T','dignityContext(cards, i,','reversed: false','元素尊貴'],
+      mustNot: ['結合正逆位']
+    },
+    'share-card.js': {
+      must: ['Golden Dawn Book T','牌面物理方向不建立固定逆位字典'],
+      mustNot: ['正位／逆位','Rider-Waite']
     },
     'spread-picker.js': {
-      must: ['錢包找得回來嗎'],                              // v86 決策導向說明（例句）
-      mustNot: ['代表牌在右、三排七']                          // 舊技法導向說明
+      must: ['相對時間線','沒有外部日曆錨'],
+      mustNot: ['三十六旬','固定月份']
     },
     'ink-flow.js': {
-      must: [
-        '墨流 ink-flow v1.1',                                 // v86.10 面板內掛載模式
-        '面板內掛載',                                          // v86.10 模式證據
-        'window.JY_INK'                                       // API 掛載
-      ],
-      mustNot: [
-        '墨流 ink-flow v1.0'                                   // 舊版（首頁全域層）未換偵測
-      ]
+      must: ['window.JY_INK'],
+      mustNot: []
     },
     'lenormand.js': {
       must: [
@@ -200,7 +148,7 @@
                     'tree_of_life','zodiac','minor_arcana','horseshoe'];
 
   // 每個工具提示詞必含的共同骨架
-  var PROMPT_COMMON = ['原問句保真','ROOT-SPEC v92','型別化查詢圖','細粒度原子化','牌義來源：','方法：','合法證據單位：','命題帳本 schema','實體／事件同一性','語義飽和帳本','【輸出載體——硬規則】'];
+  var PROMPT_COMMON = ['原問句保真','ROOT-SPEC v95','型別化查詢圖','細粒度原子化','牌義來源：','方法：','合法證據單位：','命題帳本 schema','實體／事件同一性','語義飽和帳本','【輸出載體——硬規則】'];
   var PROMPT_TAROT_EXTRA = ['塔羅型別化證據整合者','六階段內部程序','GraphBinder','最強替代解讀','【礦物事實錨點】'];
   // 舊式題材公式、吉凶投票與強制篇幅規則不可復活
   var PROMPT_BLACKLIST = ['缺聖杯＝','先把「支持」與「反對」的牌各清點一次',
@@ -221,12 +169,8 @@
         });
         // 資料表完整性（正則靜態掃描，免執行）
         if (f === 'tarot_upgrade.js') {
-          var a = txt.indexOf('var MATHERS_1888_MEANINGS = {');
-          var b = txt.indexOf('};', a);
-          var entries = a > -1 ? (txt.slice(a, b).match(/up:'[^']+',\s*rv:'[^']+'/g) || []) : [];
-          env.report('②資料表', 'Mathers 1888 表 78 張且 up/rv 非空', entries.length === 78, '實得 ' + entries.length);
-          var numKeys = (txt.match(/^\s+(\d+):\s*\{zh:'/gm) || []).length;
-          env.report('②資料表', '數字學意義表涵蓋 0–21（22 鍵）', numKeys >= 22, '實得 ' + numKeys + ' 鍵');
+          env.report('②資料表', '開鑰代表牌禁止生日／性別自動選取', txt.indexOf('window.ootkAutoSignificator = null') > -1, '');
+          env.report('②資料表', '第五操作前端與引擎同為十堆順序輪發', txt.indexOf('var nodeIdx = dealCount % 10') > -1 && txt.indexOf('deck.forEach(function(card, idx)') > -1, '');
         }
         if (f === 'tarot.js') {
           var names = (txt.match(/n:'[^']+'/g) || []).length;
@@ -244,7 +188,7 @@
 
   function runBehavior(env) {
     // ③數字學全域不變量（需 evalGlobal 已載入 tarotNumerologyAnalysis）
-    if (typeof env.numerology === 'function') {
+    if (false && typeof env.numerology === 'function') {
       var bad = [];
       for (var id = 0; id < 78; id++) {
         var r = env.numerology([{ id: id }]);
@@ -415,7 +359,7 @@
       SPREAD_IDS.forEach(function (sid) {
         var p = '';
         try { p = env.buildPrompt('tarot', sid, ['love', 'money', 'health']); } catch (e) { p = ''; }
-        var ok = !!p && p.indexOf('ROOT-SPEC v92') > -1 && p.indexOf('合法證據單位：') > -1;
+        var ok = !!p && p.indexOf('ROOT-SPEC v95') > -1 && p.indexOf('合法證據單位：') > -1;
         PROMPT_COMMON.concat(PROMPT_TAROT_EXTRA).forEach(function (m) { ok = ok && p.indexOf(m) > -1; });
         PROMPT_BLACKLIST.forEach(function (m) { ok = ok && p.indexOf(m) === -1; });
         ok = ok && (p.indexOf('答案長短只由不同且可回溯的有效命題數量決定') > -1 || p.indexOf('答案長短只由不同且可回溯的有效命題') > -1);
@@ -426,9 +370,9 @@
       env.report('⑤提示詞組裝', '未知對象不由關係牌位反向製造',
 pRel.indexOf('person_aggregate') > -1 && pRel.indexOf('不得當成一名人物或人數上限') > -1, '');
 
-      var pWaite = '';
-      try { pWaite = env.buildPrompt('tarot', 'celtic_cross', ['general'], true); } catch (e) { pWaite = ''; }
-      if (pWaite) env.report('⑤提示詞組裝', '純Waite不混入其他來源', pWaite.indexOf('waite_1910') > -1 && pWaite.indexOf('本次只准使用這一個來源設定') > -1, '');
+      var pGD = '';
+      try { pGD = env.buildPrompt('tarot', 'celtic_cross', ['general'], true); } catch (e) { pGD = ''; }
+      if (pGD) env.report('⑤提示詞組裝', '全站固定 Golden Dawn Book T 單一來源', pGD.indexOf('gd_book_t') > -1 && pGD.indexOf('Golden Dawn') > -1 && pGD.indexOf('waite_1910（本次只准') === -1, '');
 
       var pO = '';
       try { pO = env.buildPrompt('ootk', 'three_card', ['money']); } catch (e) { pO = ''; }

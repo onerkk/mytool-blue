@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🎴 牌陣選擇器（v94.0）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+// 🎴 牌陣選擇器（v95.0）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
 //   v94.0:自動模式使用通用語義需求×牌陣能力矩陣，任何問題都會選出最小充分的最佳牌陣；新增七張馬蹄形作為中等複雜通用事件盤。
 //   v93.0:自動模式會立即重新分析目前問題、同步實際牌陣與判斷理由；不再只把按鈕切回「自動」卻沿用舊牌陣。
 //   v80.37:selectSpread（彈窗選單）切牌陣後補呼叫 JY_renderTarotChosenLayoutForCurrentSpread，
@@ -19,15 +19,15 @@
     relationship: { icon: 'fa-heart',        accent: '251,113,133', cn: '關係牌陣',      suited: '我與某個特定對象 ・ 例：「我跟他會走下去嗎」「主管怎麼看我」' },
     either_or:    { icon: 'fa-code-branch',  accent: '96,165,250',  cn: '二選一',        suited: '兩條路選一條 ・ 例：「留下還是離職」「A 還是 B」（各看發展再比）' },
     cross:        { icon: 'fa-plus',         accent: '251,191,36',  cn: '十字牌陣',      suited: '卡關、糾結、想找原因 ・ 例：「為什麼一直談不成」「到底卡在哪」' },
-    timeline:     { icon: 'fa-clock',        accent: '96,165,250',  cn: '時間線',        suited: '問時機 ・ 例：「什麼時候會有結果」「還要等多久」' },
+    timeline:     { icon: 'fa-clock',        accent: '96,165,250',  cn: '相對時間線',    suited: '看階段先後與轉折；沒有外部日曆錨時不換算月份或日期' },
     celtic_cross: { icon: 'fa-cross',        accent: '139,92,246',  cn: '凱爾特十字',    suited: '重要的事想看完整全局（10張深入）・ 例：「這段感情的整體狀況與走向」' },
     horseshoe:    { icon: 'fa-archway',      accent: '96,165,250',  cn: '七張馬蹄形',    suited: '中等複雜事件、同時看盲點與環境 ・ 例：「這件事我忽略了什麼，接下來該怎麼做」' },
     tree_of_life: { icon: 'fa-sitemap',      accent: '52,211,153',  cn: '生命之樹',      suited: '內在課題、重複模式、靈性方向 ・ 例：「為什麼我總是遇到同一種人」' },
     zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '一整年逐領域掃描 ・ 例：「我今年的整體運勢」（12宮＋年度主軸）' },
     minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '日常具體小事（只用56張小牌）・ 例：「錢包找得回來嗎」「包裹會準時到嗎」' },
-    fifteen_card: { icon: 'fa-shapes',       accent: '139,92,246',  cn: '金色黎明十五張', suited: '想一次看 2-3 個面向 ・ 例：「感情和工作一起看」（GD 三元組法、不用逆位）' },
-    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '一件事的來龍去脈：過去→現在→未來 ・ 例：「這段關係怎麼走到今天、之後呢」（1888 古法）' },
-    mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '人生級大盤點、全部攤開（54張最完整，重大問題再用）・ 例：「把我的感情人生徹底攤開看」' }
+    fifteen_card: { icon: 'fa-shapes',       accent: '139,92,246',  cn: '金色黎明十五張', suited: '多面向結構與三元組互動 ・ 牌義、宮廷牌與元素尊貴統一依 Book T' },
+    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '一件事的來龍去脈與首尾配對 ・ 牌義統一依 Golden Dawn Book T' },
+    mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '重大議題的長篇連續敘事與配對 ・ 牌義統一依 Golden Dawn Book T' }
   };
   var GROUPS = [
     { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'horseshoe', 'celtic_cross'] },
@@ -231,6 +231,12 @@
   function init() {
     injectCSS();
     updateTrigger();
+    try {
+      var sub = document.querySelector('#jy-spread-modal .jym-sub');
+      if (sub) sub.textContent = '所有牌陣只改變觀測布局；牌義、宮廷牌、卡巴拉／占星對應與元素尊貴全站統一採 Golden Dawn《Book T》。';
+      var triggerSub = document.getElementById('jy-spread-cur-sub');
+      if (triggerSub && !triggerSub.textContent) triggerSub.textContent = '牌義固定 Golden Dawn Book T；此處只選觀測布局';
+    } catch (_gdBadgeErr) {}
     // 只在「塔羅快讀」顯示牌陣選單；開鑰之法用固定的 Opening of the Key，隱藏
     if (typeof window.pickTool === 'function' && !window._pickToolWrappedForSpread) {
       window._pickToolWrappedForSpread = true;
