@@ -1,4 +1,4 @@
-/*! golden-dawn-tarot.js — Golden Dawn Book T unified tarot core v3.0.0
+/*! golden-dawn-tarot.js — Golden Dawn Book T unified tarot core v3.1.0
  * Single source of truth for every tarot layout and Opening of the Key.
  * Interpretation source: Golden Dawn Book T / Liber T.
  * Physical orientation is not a fixed Waite-style reversed dictionary.
@@ -7,7 +7,7 @@
   'use strict';
   if (!root || root.JYGoldenDawn) return;
 
-  var VERSION = '3.0.0';
+  var VERSION = '3.1.0';
   var SOURCE_ID = 'gd_book_t';
   var SOURCE_LABEL = 'Golden Dawn《Book T／Liber T》';
   var ELEMENT = { wand:'火', cup:'水', sword:'風', pent:'土', major:'' };
@@ -306,7 +306,7 @@
     if(full.length>1)return {state:'multi_line',score:null,reading:p.core,spreadId:spreadId||'',topologyBound:true,fullDignity:true,lineReadings:full,localCompatibility:one,interactionCompatibility:edges,relations:[]};
     if(one.length){
       var only=one[0];
-      var localState=only.state==='ill_dignified'?'locally_weakened':(only.state==='well_dignified'||only.state==='supported'?'locally_supported':'local_mixed');
+      var localState=only.state==='ill_dignified'?'one_sided_hostile':(only.state==='well_dignified'||only.state==='supported'?'one_sided_friendly':'one_sided_mixed');
       return {state:localState,score:only.score,reading:p.core,spreadId:spreadId||'',topologyBound:true,fullDignity:false,localCompatibility:one,interactionCompatibility:edges,relations:only.relations};
     }
     if(edges.length)return {state:'interaction_only',score:null,reading:p.core,spreadId:spreadId||'',topologyBound:true,fullDignity:false,localCompatibility:[],interactionCompatibility:edges,relations:edges};

@@ -1,4 +1,4 @@
-/*! tarot-semantic-engine.js — ROOT-SPEC v97 Foundation compiler
+/*! tarot-semantic-engine.js — ROOT-SPEC v98 Foundation compiler
  * 單一乾淨架構：原句型別化 → 方法觀測模型 → 合法證據圖 →
  * 實體／事件共指 → 原子覆蓋裁決 → 語義飽和 → 反向稽核。
  *
@@ -18,8 +18,8 @@
       : (typeof require === 'function' ? require('./tarot-foundation.js') : null);
   } catch (_foundationErr) { Foundation = null; }
 
-  var VERSION = '97.0.0';
-  var SCHEMA = 'jy.tarot.semantic-contract/5';
+  var VERSION = '98.0.0';
+  var SCHEMA = 'jy.tarot.semantic-contract/6';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -82,9 +82,11 @@
     development: '只描述後續發展傾向或下一階段；不能自動升格為最終結果。',
     cause: '只說明形成機制；不能單獨取代完整事件或結果。',
     obstacle: '只說明限制、延遲、扭曲或反證。',
+    enabler: '只說明助力、催化或可用資源；不能單獨證明結果已成立。',
     interaction_force: '描述橫跨核心的作用；可為助力、阻力、催化、代價或混合作用，須由相連結構裁決。',
     advice: '只說明可介入點；不能用來證明預測事件已存在。',
-    outcome: '說明本結構下的收束；仍須由前段機制與角色鏈支撐。',
+    outcome: '說明本結構下的條件性收束；仍須由前段機制與角色鏈支撐。',
+    bounded_outcome: '在原問句明示的期限終點，定性裁決完整事件或固定門檻的成立傾向；不得反推實際金額、差額、機率或額外日期。',
     person_known: '可描述原問句已明確指認的對象；仍不得越權推算未量測身分與數字。',
     person_aggregate: '只描述條件性或聚合角色作用；不證明人物存在、不等於一人、也不是人數上限。',
     environment: '描述外界條件或他人作用；未完成實體綁定時不得具名或計數。',
@@ -382,35 +384,19 @@
       var source = Foundation.METHODS[id];
       var target = METHOD_SPECS[id];
       if (!source || !target) return;
-      var roles=(source.slots || []).map(function (slot) { return slot.authority || 'structural'; });
-      var caps=source.capabilities || {};
       target.label = source.label || target.label;
       target.layoutSource = source.layoutSource || target.layoutSource;
       target.expectedCardCount = source.count == null ? target.expectedCardCount : source.count;
-      target.roles = roles;
-      target.measurement = measurement({
-        state: roles.indexOf('state')>=0 || roles.indexOf('domain')>=0 ? 'direct_channel' : 'qualitative_inference',
-        existence: caps.existence>=.7 ? 'qualitative_inference' : 'not_measured_insufficient_existence_channel',
-        cause: roles.indexOf('cause')>=0 ? 'direct_channel' : (caps.cause>=.5 ? 'qualitative_inference' : 'not_measured_no_cause_channel'),
-        guidance: roles.indexOf('advice')>=0 ? 'direct_channel' : (caps.guidance>=.5 ? 'qualitative_inference' : 'not_measured_no_advice_channel'),
-        trajectory: (roles.indexOf('timeline')>=0 || roles.indexOf('development')>=0 || roles.indexOf('outcome')>=0) ? 'direct_channel' : (caps.trajectory>=.5 ? 'qualitative_inference' : 'not_measured_no_trajectory_channel'),
-        outcome: roles.indexOf('outcome')>=0 ? 'direct_channel' : (caps.outcome>=.5 ? 'qualitative_inference_not_terminal' : 'not_measured_no_outcome_channel'),
-        comparison: caps.comparison>=.9 ? 'direct_comparison_channel' : 'requires_independent_channels',
-        relative_order: caps.comparison>=.9 ? 'direct_comparison_channel' : 'requires_independent_comparable_channels',
-        annual_overview: caps.annual>=.85 ? 'direct_domain_channels' : (caps.annual>=.45 ? 'partial_scope_coverage' : 'not_measured_insufficient_domain_channels'),
-        multi_domain: caps.domains>=.85 ? 'direct_domain_channels' : (caps.domains>=.45 ? 'partial_scope_coverage' : 'not_measured_insufficient_domain_channels'),
-        timing: caps.timing>=.85 ? 'direct_relative_timing_channel' : (caps.timing>=.4 ? 'partial_relative_timing_channel' : 'not_measured_no_timing_channel'),
-        location: caps.location>=.8 ? 'qualitative_location_channel' : (caps.location>=.4 ? 'partial_location_channel' : 'not_measured_no_location_channel')
-      });
+      target.roles = (source.slots || []).map(function (slot) { return slot.authority || 'structural'; });
+      target.provides = clone(source.provides || []);
+      target.specialties = clone(source.specialties || []);
       target.topology.registryId = id;
       target.topology.dignityLines = clone(source.dignityLines || []);
       target.topology.dependencyGroups = clone(source.dependencies || []);
       target.topology.compatibilityEdges = clone(source.compatibilityEdges || []);
-      target.topology.independentComparableChannels = (id==='either_or'||id==='fifteen_card') ? 2 : 0;
+      target.topology.independentComparableChannels = target.provides.indexOf('comparison_outcome') >= 0 ? 2 : 0;
       target.observationModel.foundationVersion = Foundation.VERSION;
       target.observationModel.comparisonChannels = target.topology.independentComparableChannels;
-      target.observationModel.temporalModel = caps.timing>=.85 ? 'ordered_relative_time' : target.observationModel.temporalModel;
-      target.capabilities = clone(caps);
     });
   }
   applyFoundationMethods();
@@ -443,7 +429,7 @@
     return out;
   }
   function normalizeThresholdRelation(relation, scopes) {
-    if (!relation || relation.type !== 'threshold_or_order') return relation;
+    if (!relation || relation.type !== 'fixed_numeric_threshold') return relation;
     var left = cleanRelationOperand(relation.left, scopes);
     var right = cleanRelationOperand(relation.right, scopes);
     // Remove a trailing success/modal phrase when the actual same-scale attribute
@@ -694,13 +680,19 @@
       policy.cannotEstablish.push('terminal_result');
     } else if (authority === 'cause') {
       policy.eventRoles = ['cause', 'mechanism'];
+    } else if (authority === 'enabler') {
+      policy.eventRoles = ['support', 'catalyst', 'available_resource'];
+      policy.cannotEstablish.push('result');
     } else if (authority === 'obstacle' || authority === 'interaction_force') {
       policy.eventRoles = ['constraint', 'counterevidence', 'catalyst'];
     } else if (authority === 'advice') {
       policy.eventRoles = ['intervention'];
       policy.cannotEstablish.push('event_exists');
     } else if (authority === 'outcome') {
-      policy.eventRoles = ['result', 'terminal_state'];
+      policy.eventRoles = ['conditional_result', 'terminal_tendency'];
+    } else if (authority === 'bounded_outcome') {
+      policy.eventRoles = ['bounded_result', 'threshold_result'];
+      policy.cannotEstablish.push('actual_numeric_value', 'difference_amount', 'probability');
     } else if (authority === 'timeline') {
       policy.eventRoles = ['stage', 'transition'];
     } else if (authority === 'environment' || authority === 'domain') {
@@ -810,8 +802,14 @@
   function compileEvidenceGraph(spreadId, cards, options) {
     var id = METHOD_SPECS[spreadId] ? spreadId : 'three_card';
     if (id === 'ootk') return compileOOTKEvidence((options || {}).ootkData || options || {});
-    var spec = METHOD_SPECS[id];
     var opts = options || {};
+    var spec = clone(METHOD_SPECS[id]);
+    var methodPlan = opts.methodPlan || null;
+    if (methodPlan && Array.isArray(methodPlan.slots)) {
+      spec.roles = methodPlan.slots.map(function (slot) { return slot.authority || 'structural'; });
+      spec.slotBindings = clone(methodPlan.slotBindings || []);
+      spec.expectedCardCount = methodPlan.count == null ? spec.expectedCardCount : methodPlan.count;
+    }
     var questionSpec = opts.questionSpec || null;
     var known = typeof opts.knownCounterpart === 'boolean'
       ? opts.knownCounterpart
@@ -842,7 +840,7 @@
     if (id === 'three_card') {
       var t1 = direct('adjacent_segment', '相鄰段 1→2', [0, 1], { topology: 'ordered_edge' });
       var t2 = direct('adjacent_segment', '相鄰段 2→3', [1, 2], { topology: 'ordered_edge' });
-      synthesis('whole_ordered_path', '三張完整路徑', [t1, t2, atomicIds[0], atomicIds[2]]);
+      synthesis('whole_ordered_path', '三張完整路徑', [t1, t2].concat(atomicIds));
     } else if (id === 'five_card') {
       var f1 = direct('cause_to_state', '原因→現況', [1, 0], { topology: 'directed_edge' });
       var f2 = direct('obstacle_to_state', '阻礙↔現況', [2, 0], { topology: 'interaction_edge' });
@@ -1145,93 +1143,38 @@
     };
   }
 
-  function capabilityForDimension(method, dimensionId, questionSpec) {
-    var relation = ((questionSpec || {}).relations || [])[0];
-    if ((dimensionId === 'threshold_crossing' || dimensionId === 'relational_event') && relation && relation.type === 'threshold_or_order') {
-      var trajectory = method.measurement.trajectory || '';
-      var outcome = method.measurement.outcome || '';
-      var hasResultChannel = !/^not_measured/.test(outcome) || !/^not_measured/.test(trajectory);
-      return hasResultChannel ? 'qualitative_relational_event_if_query_bound' : 'not_measured_no_outcome_channel';
-    }
-    var configured = method.measurement[dimensionId];
-    if (configured) return configured;
-    if (dimensionId === 'comparison' || dimensionId === 'relative_order') {
-      return method.topology.independentComparableChannels >= 2
-        ? 'direct_comparison_channel'
-        : 'not_measured_no_independent_comparable_channels';
-    }
-    return BASE_MEASUREMENT[dimensionId] || 'qualitative_inference';
+  function requiredDimensionId(dimension) {
+    var id = dimension && dimension.id || '';
+    var map = {
+      event_or_state:'state', existence:'realization', event_realization:'realization',
+      cause:'cause', trajectory:'trajectory', outcome:'conditional_outcome', guidance:'advice',
+      comparison:'comparison_outcome', relative_order:'comparison_outcome', threshold_crossing:'threshold_outcome',
+      relational_event:'realization', annual_overview:'annual_overview', multi_domain:'domain_coverage',
+      timing:'temporal_sequence', location:'location'
+    };
+    return map[id] || id;
   }
 
   function buildCapabilityMatrix(questionSpec, method) {
+    var provided = (method.provides || []).slice();
+    var providedSet = Object.create(null);
+    provided.forEach(function (id) { providedSet[id] = true; });
+    var unsupported = Object.create(null);
+    ((questionSpec || {}).unsupportedDimensions || []).forEach(function (id) { unsupported[id] = true; });
     return (questionSpec.requestedDimensions || []).map(function (dimension) {
-      var capability = capabilityForDimension(method, dimension.id, questionSpec);
-      var canAnswer = true;
-      var status = 'qualitative_or_direct';
-      var reason = '依方法位置／結構通道與合法證據圖定性裁決。';
-
-      if (capability === 'qualitative_relational_event_if_query_bound') {
-        status = 'qualitative_relational_event';
-        reason = '原句已把比較雙方、同一尺度與門檻綁成單一關係命題；本方法可由結果／發展通道定性判斷其成立傾向，但不能量測差額、金額、比例或機率。';
-      } else if (capability === 'direct_domain_channels') {
-        status = 'direct_channel';
-        reason = '方法提供分離的生活領域通道，可在原句範圍內形成跨領域綜合。';
-      } else if (capability === 'partial_scope_coverage') {
-        status = 'partial_coverage';
-        reason = '方法只能觀察部分主題或結構，不能宣稱完整涵蓋原句要求的所有領域。';
-      } else if (capability === 'direct_relative_timing_channel') {
-        status = 'direct_channel';
-        reason = '方法具有明示的相對時間順序；仍不得把牌面占星對應換算成日期。';
-      } else if (capability === 'partial_relative_timing_channel') {
-        status = 'partial_coverage';
-        reason = '方法只能提供局部先後或發展階段，不能給出完整時間線或精確日期。';
-      } else if (capability === 'qualitative_location_channel') {
-        status = 'qualitative_or_direct';
-        reason = '方法可提供尋物／位置的象徵方向與排查優先序，但不能保證精確地點、距離或座標。';
-      } else if (capability === 'partial_location_channel') {
-        status = 'partial_coverage';
-        reason = '方法只能提供有限的位置線索；必須以現實搜尋與紀錄驗證。';
-      } else if (/^not_measured/.test(capability)) {
-        canAnswer = false;
-        status = 'not_measured';
-        if (dimension.id === 'comparison' || dimension.id === 'relative_order' || dimension.id === 'threshold_crossing') {
-          reason = '兩個選項的相對排序需要兩個已綁定、獨立且同尺度的觀測通道；本方法未提供。';
-        } else if (dimension.id === 'annual_overview' || dimension.id === 'multi_domain') {
-          reason = '本方法沒有足夠且分離的生活領域通道，不能宣稱完整年度或多領域總覽。';
-        } else if (dimension.id === 'timing') {
-          reason = '本方法沒有明示的相對時間通道。';
-        } else if (dimension.id === 'location') {
-          reason = '本方法沒有合法的位置觀測通道。';
-        } else {
-          reason = '本方法沒有該資訊的明示量測通道。';
-        }
-      } else if (/requires_independent/.test(capability)) {
-        var channels = method.topology.independentComparableChannels || 0;
-        if (channels < 2) {
-          canAnswer = false;
-          status = 'not_measured';
-          reason = '兩個選項的相對排序需要兩個已綁定、獨立且同尺度的觀測通道；本方法未提供。';
-        } else {
-          status = 'requires_binding';
-          reason = '方法具有獨立比較通道，但仍須確認兩路已綁定至原句比較雙方與同一尺度。';
-        }
-      } else if (capability === 'scope_constraint' || capability === 'question_operator') {
-        status = 'query_constraint';
-        reason = '這是原句提供的範圍／模態約束，不是由牌面推算。';
-      } else if (capability === 'op4_anchor_only' || capability === 'anchor_required') {
-        status = 'anchor_required';
-        reason = '只有資料區存在明示且相容的時間錨時才能回答。';
-      }
-
-      return {
-        dimensionId: dimension.id,
-        dimension: dimension.label,
-        source: dimension.source,
-        methodCapability: capability,
-        precheckStatus: status,
-        canAnswer: canAnswer,
-        reason: reason
-      };
+      var observable = requiredDimensionId(dimension);
+      var queryConstraint = dimension.id === 'time_scope' || dimension.id === 'modality';
+      var intrinsicallyUnmeasured = unsupported[dimension.id] || /^(?:exact_value|numeric_range|cardinality|exact_age|identity|exact_date|probability)$/.test(dimension.id);
+      var canAnswer = queryConstraint || (!intrinsicallyUnmeasured && !!providedSet[observable]);
+      var status = queryConstraint ? 'query_constraint' : (intrinsicallyUnmeasured ? 'not_measured' : (canAnswer ? 'direct_or_qualitative_channel' : 'missing_required_channel'));
+      var reason;
+      if (queryConstraint) reason = '這是原句提供的範圍／模態約束，不是由牌面推算。';
+      else if (intrinsicallyUnmeasured) reason = '本方法不推算實際精確數值、差額、機率、身分或日期；使用者明示的門檻仍保留為查詢條件。';
+      else if (canAnswer && observable === 'threshold_outcome') reason = '方法具有綁定原問句尺度、比較子、門檻與截止範圍的結果通道，可定性裁決是否跨越；不得反推實際營業額或差額。';
+      else if (canAnswer && observable === 'comparison_outcome') reason = '方法提供兩個獨立且同尺度的分支結果通道，先各自成句再比較。';
+      else if (canAnswer) reason = '方法註冊表明示提供此觀測通道，可依合法證據圖定性裁決。';
+      else reason = '原問句需要此觀測通道，但所選方法未提供；自動路由時必須改選，使用者強制指定時只能明示限制。';
+      return {dimensionId:dimension.id,dimension:dimension.label,source:dimension.source,observableId:observable,methodCapability:canAnswer?'provided':'not_provided',precheckStatus:status,canAnswer:canAnswer,reason:reason};
     });
   }
 
@@ -1255,9 +1198,25 @@
 
   function compileReadingSpec(input) {
     var data = input || {};
-    var spreadId = METHOD_SPECS[data.spreadId] ? data.spreadId : 'three_card';
     var questionSpec = compileQuestion(data.question, { referenceDate: data.referenceDate || data.readingDate || null });
+    var route = Foundation && typeof Foundation.routeQuestion === 'function'
+      ? Foundation.routeQuestion(questionSpec, { referenceDate: data.referenceDate || data.readingDate || null })
+      : null;
+    var spreadId = METHOD_SPECS[data.spreadId] ? data.spreadId : (route && route.spreadId) || 'three_card';
+    var methodPlan = data.methodPlan || (Foundation && typeof Foundation.instantiateMethod === 'function' ? Foundation.instantiateMethod(spreadId, questionSpec) : null);
     var method = clone(METHOD_SPECS[spreadId]);
+    if (methodPlan) {
+      method.label = methodPlan.label || method.label;
+      method.roles = (methodPlan.slots || []).map(function (slot) { return slot.authority || 'structural'; });
+      method.expectedCardCount = methodPlan.count == null ? method.expectedCardCount : methodPlan.count;
+      method.provides = clone(methodPlan.provides || []);
+      method.requiredObservables = clone(methodPlan.requiredObservables || questionSpec.requiredObservables || []);
+      method.missingObservables = clone(methodPlan.missingObservables || []);
+      method.coverageComplete = method.missingObservables.length === 0;
+      method.questionShape = methodPlan.questionShape || (questionSpec.features && questionSpec.features.shape) || '';
+      method.slotBindings = clone(methodPlan.slotBindings || []);
+      method.dynamicSlots = clone(methodPlan.slots || []);
+    }
     var sourceProfileId = resolveSemanticProfile(spreadId, data);
     var sourceProfile = clone(SOURCE_PROFILES[sourceProfileId] || SOURCE_PROFILES.gd_book_t);
     method.defaultSourceProfile = method.sourceProfile;
@@ -1268,6 +1227,7 @@
       ? compileOOTKEvidence(data.ootkData || {})
       : compileEvidenceGraph(spreadId, data.cards || [], {
           questionSpec: questionSpec,
+          methodPlan: methodPlan,
           knownCounterpart: typeof data.knownCounterpart === 'boolean'
             ? data.knownCounterpart
             : questionSpec.knownCounterpart
@@ -1277,6 +1237,8 @@
       schema: SCHEMA,
       engineVersion: VERSION,
       question: questionSpec,
+      route: route ? { spreadId: route.spreadId, selectedBy: route.selectedBy, reason: route.reason, coverage: clone(route.coverage || {}) } : null,
+      methodPlan: clone(methodPlan || null),
       method: method,
       sourceProfile: sourceProfile,
       capabilityMatrix: buildCapabilityMatrix(questionSpec, method),
@@ -1316,7 +1278,7 @@
         status: ['used', 'duplicate', 'irrelevant_to_query', 'unresolved']
       },
       outputContract: {
-        firstSentence: '第一句直接回答完整原問句。若必要實體、事件作用或量測原子未被同一證據鏈覆蓋，先明說完整命題不能確認，再說牌面實際支持到哪一層。',
+        firstSentence: '第一句直接回答完整原問句。固定門檻題若方法具有 bounded_outcome／threshold_outcome 通道，可對原句門檻作定性肯定、否定或附條件裁決；實際數值與差額仍不得推算。若必要通道缺失，先明說完整命題不能確認。',
         body: '依已成立命題自然展開形成原因、限制／反證、最強替代解讀為何較弱、歧義如何辨識、可觀察訊號及直接可行方向；不逐格報告、不教內部程序。',
         visibleEvidence: '重要判斷附本盤實際牌名；不得把未相連牌名排列成不存在的牌句。',
         length: '輸出所有不同且與原問句相關的有效命題；同義合併，篇幅不由牌數決定。',
@@ -1424,20 +1386,20 @@
     var source = contract.sourceProfile;
     var lines = [];
     lines.push('────────────────────────────');
-    lines.push('◆ ROOT-SPEC v97｜型別化查詢圖—方法觀測模型—合法證據／共指契約');
+    lines.push('◆ ROOT-SPEC v98｜已驗證查詢圖—最小充分方法—合法證據／共指契約');
     lines.push('────────────────────────────');
     lines.push('原問句：' + question.originalQuestion);
     lines.push('需求預檢：' + question.requestedDimensions.map(function (dimension) {
       return dimension.label + (dimension.source ? '〔' + dimension.source + '〕' : '');
     }).join('、'));
-    lines.push('型別化查詢圖（前端只提供骨架，QuestionCompiler 必須先補全）：');
+    lines.push('已完成並通過驗證的型別化查詢圖（正文不得重新分類或改寫）：');
     question.queryGraph.events.forEach(function (event) {
-      lines.push('・' + event.id + '｜surface=' + event.surface + '｜actor=' + event.roles.actor + '｜predicate=' + event.predicate + '｜target/state=' + event.roles.target);
+      lines.push('・' + event.id + '｜surface=' + event.surface + '｜actor=' + event.roles.actor + '｜predicate=' + event.predicate + '｜roles=' + JSON.stringify(event.roles));
     });
     if (question.queryGraph.constraints.length) {
       lines.push('原句必要限定：');
       question.queryGraph.constraints.forEach(function (constraint) {
-        lines.push('・' + constraint.id + '｜' + constraint.type + '｜' + constraint.text + '｜attach=' + constraint.attachTo + '｜source=' + constraint.source);
+        lines.push('・' + constraint.id + '｜' + constraint.type + '｜' + constraint.text + '｜attach=' + constraint.attachTo || constraint.attach + '｜source=' + constraint.source);
       });
     }
     lines.push('必要語義原子：' + question.queryGraph.requiredAtoms.map(function (atom) { return atom.id + '=' + atom.text; }).join('；'));
@@ -1516,7 +1478,7 @@
 
     (((contract || {}).question || {}).relations || []).forEach(function (relation) {
       var cap = capabilityMap.threshold_crossing || capabilityMap.relative_order;
-      if (relation.type !== 'threshold_or_order' && cap && cap.canAnswer === false && positiveThresholdAssertion(output, relation)) {
+      if (relation.type !== 'fixed_numeric_threshold' && cap && cap.canAnswer === false && positiveThresholdAssertion(output, relation)) {
         violations.push('本方法沒有獨立選項比較通道，卻肯定相對排序：' + relation.left + ' ' + relation.operatorText + ' ' + relation.right);
       }
     });

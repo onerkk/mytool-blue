@@ -23522,7 +23522,7 @@ function generateShareImage() {
 
 // ═══════════════════════════════════════════════════════════════
 // 塔羅快讀 AI — _triggerTarotAI + _buildTarotOnlyPayload
-// v95：Golden Dawn 單一來源語義編譯器先建立型別化查詢圖、方法觀測模型、合法證據圖與實體／事件共指契約；
+// v98：單一 Foundation 先建立型別化查詢圖、觀測需求、最小充分牌陣、動態牌位與合法證據契約；
 // 牌義只提供候選語義素材，提示詞負責在位置與依賴圖中形成命題。
 // v89：輸出中性牌義素材；題材語境與事件結論交由提示詞的需求—證據矩陣處理。
 // ═══════════════════════════════════════════════════════════════
@@ -23548,25 +23548,28 @@ function _buildTarotOnlyPayload() {
     throw new Error('Golden Dawn tarot foundation, Book T core and semantic engine must all be loaded');
   }
 
+  var question=_jyTarotQuestionText();
+  var compiled=ta.compiledQuestion||foundation.compileQuestion(question,{referenceDate:new Date().toISOString()});
   var drawn=ta.drawn||((typeof drawnCards!=='undefined'&&drawnCards)||[]);
-  var spreadId=ta.spreadType||((typeof getCurrentSpread==='function'&&getCurrentSpread())||'three_card');
-  var method=foundation.getMethod(spreadId);
-  if(!method)throw new Error('Unknown tarot method: '+spreadId);
-  if(method.count!=null&&drawn.length!==method.count){
-    throw new Error('Card count mismatch for '+spreadId+': expected '+method.count+', got '+drawn.length);
+  var spreadId=ta.spreadType||((typeof getCurrentSpread==='function'&&getCurrentSpread())||foundation.routeQuestion(compiled).spreadId);
+  var methodPlan=(ta.methodPlan&&ta.methodPlan.id===spreadId)?ta.methodPlan:foundation.instantiateMethod(spreadId,compiled);
+  if(!methodPlan)throw new Error('Unknown tarot method plan: '+spreadId);
+  if(methodPlan.count!=null&&drawn.length!==methodPlan.count){
+    throw new Error('Card count mismatch for '+spreadId+': expected '+methodPlan.count+', got '+drawn.length);
   }
   gd.normalizeDraw(drawn);
 
-  var def=ta.spreadDef||((typeof SPREAD_DEFS!=='undefined'&&SPREAD_DEFS[spreadId])||null);
+  var method=methodPlan;
+  var def=ta.dynamicSpreadDef||ta.spreadDef||((typeof SPREAD_DEFS!=='undefined'&&SPREAD_DEFS[spreadId])||null);
   var cards=drawn.map(function(c,i){
-    var slot=(method.slots&&method.slots[i])||{authority:'structural',role:'structural'};
+    var slot=(methodPlan.slots&&methodPlan.slots[i])||{authority:'structural',role:'structural'};
     var pos=(def&&def.positions&&def.positions[i])||{};
     var gp=gd.profile(c);
     if(!gp||gp.sourceId!=='gd_book_t')throw new Error('Card profile is not Book T: '+(c.n||c.name||i));
     var dignity=gd.dignityContext(drawn,i,spreadId);
     return {
       name:c.n||c.name||'',rawName:c.n||c.name||'',direction:'元素尊貴裁決',isUp:true,
-      position:pos.name||('位置'+(i+1)),positionMeaning:pos.zh||pos.name||'',
+      position:(slot.label||pos.name||('位置'+(i+1))),positionMeaning:(slot.label||pos.zh||pos.name||''),slotBinding:slot.binding||{eventId:'QUERY_EVENT'},
       authority:slot.authority||'structural',role:slot.role||'structural',
       semanticProfile:'gd_book_t',sourceLabel:gp.sourceLabel,bookTTitle:gp.bookTTitle||'',
       sourceCore:gp.sourceCore||gp.core||'',baseMeaning:gp.sourceCore||gp.core||'',sourceGloss:gp.contextualGloss||gp.core||'',
@@ -23579,10 +23582,9 @@ function _buildTarotOnlyPayload() {
     };
   });
 
-  var question=_jyTarotQuestionText();
   var contract=semantic.compileReadingSpec({
-    question:question,spreadId:spreadId,cards:cards,sourceProfile:'gd_book_t',
-    knownCounterpart:foundation.compileQuestion(question,{referenceDate:new Date().toISOString()}).knownCounterpart,
+    question:question,spreadId:spreadId,cards:cards,methodPlan:methodPlan,sourceProfile:'gd_book_t',
+    knownCounterpart:compiled.knownCounterpart,
     referenceDate:new Date().toISOString()
   });
   var validation=semantic.validateContract(contract);
@@ -23590,11 +23592,12 @@ function _buildTarotOnlyPayload() {
 
   var stats=gd.majorityObservations(drawn);
   var f=S.form||{};
-  var crystal=(typeof _buildCrystalCatalog==='function')?_buildCrystalCatalog():{catalog:[],favEl:[]};
+  var inventory=(typeof window!=='undefined')?window.JYShopInventory:null;
+  var recommendationCandidates=inventory&&typeof inventory.recommendCandidates==='function'?inventory.recommendCandidates(question,(compiled.features&&compiled.features.domains)||[],6):[];
   var result={
     mode:'tarot_only',question:question,focusType:f.type||'general',name:f.name||'',
     tarotData:{
-      spreadType:spreadId,spreadZh:(def&&def.zh)||method.label||spreadId,
+      spreadType:spreadId,spreadZh:(def&&def.zh)||methodPlan.label||spreadId,methodPlan:methodPlan,
       foundationVersion:foundation.VERSION,semanticProgramVersion:contract.engineVersion,
       sourceProfile:'gd_book_t',sourceContract:gd.sourceContract(),
       summary:'Golden Dawn Book T 單一來源；一般牌陣不使用固定正逆位；完整元素尊貴只沿方法註冊表的明示有序連續線裁決，其他連線只作語義互動。',
@@ -23608,9 +23611,9 @@ function _buildTarotOnlyPayload() {
       }:null,
       semanticContract:contract,semanticProgramVersion:contract.engineVersion
     },
-    semanticContract:contract,semanticProgramVersion:contract.engineVersion
+    semanticContract:contract,semanticProgramVersion:contract.engineVersion,
+    shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'最後只輸出一行：推薦品項：<從 allowedItems 逐字選一項>'}
   };
-  if(crystal.catalog&&crystal.catalog.length){result.crystalCatalog=crystal.catalog;result.crystalFavEl=crystal.favEl;}
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
 }

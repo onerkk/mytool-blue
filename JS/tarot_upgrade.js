@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🃏 Golden Dawn Tarot runtime — Foundation Root Architecture v97
+// 🃏 Golden Dawn Tarot runtime — Foundation Root Architecture v98
 // 單一方法註冊表 · Book T 牌義來源防火牆 · 牌陣拓撲／元素尊貴分離
 // ══════════════════════════════════════════════════════════════════════
 // 載入順序：tarot.js 之後
@@ -525,75 +525,95 @@ function detectSpreadType(question, type) {
   var raw=String(question||'').trim();
   var foundation=(typeof window!=='undefined'&&window.JYTarotFoundation)?window.JYTarotFoundation:null;
   if(!foundation||typeof foundation.routeQuestion!=='function'){
-    var missing={version:'97.0.0',engine:'foundation_router',spreadId:null,reason:'JYTarotFoundation 未載入；為避免使用第二套路由器，系統已停止自動選陣。',question:raw,type:String(type||'general'),confidence:0,selectedBy:'fail_closed',features:{},candidates:[]};
+    var missing={version:'98.0.0',engine:'foundation_router',spreadId:null,reason:'JYTarotFoundation 未載入；為避免使用第二套路由器，系統已停止自動選陣。',question:raw,type:String(type||'general'),confidence:0,selectedBy:'fail_closed',features:{},candidates:[]};
     try{detectSpreadType.lastDecision=missing;if(typeof window!=='undefined')window._jyLastSpreadDecision=missing;}catch(_e){}
     throw new Error('JYTarotFoundation is required before tarot_upgrade.js');
   }
   var result=foundation.routeQuestion(raw,{type:String(type||'general'),referenceDate:new Date().toISOString()});
+  if(!result.spreadId||!result.methodPlan){
+    try{detectSpreadType.lastDecision=result;if(typeof window!=='undefined')window._jyLastSpreadDecision=result;}catch(_blockedErr){}
+    throw new Error(result.reason||'沒有可完整覆蓋原問句的牌陣');
+  }
   var decision={
     version:result.version||foundation.VERSION,engine:result.engine||'foundation_router',spreadId:result.spreadId,
     reason:result.reason,question:raw,normalizedQuestion:(result.compiledQuestion&&result.compiledQuestion.normalizedQuestion)||raw,
     type:String(type||'general'),confidence:result.confidence,selectedBy:result.selectedBy,
-    features:(result.compiledQuestion&&result.compiledQuestion.features)||{},candidates:result.candidates||[]
+    features:(result.compiledQuestion&&result.compiledQuestion.features)||{},compiledQuestion:result.compiledQuestion||null,methodPlan:result.methodPlan||null,coverage:result.coverage||null,unsupportedDimensions:result.unsupportedDimensions||[],candidates:result.candidates||[]
   };
   try{detectSpreadType.lastDecision=decision;if(typeof window!=='undefined')window._jyLastSpreadDecision=decision;}catch(_e2){}
   return result.spreadId;
 }
 
-// 單一牌陣解析入口：所有 UI 流程只接受此函式的結果，不得再用問號數、字數或頁面分支二次改寫。
-function resolveTarotSpread(question, type) {
-  var spreadId = '';
-  var forced = (typeof window !== 'undefined') ? window._forcedSpread : null;
-  if (forced && typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[forced]) {
-    spreadId = forced;
-    try { window._autoDetectedSpread = null; } catch (e) {}
-  } else {
-    spreadId = detectSpreadType(question, type);
-    try { window._autoDetectedSpread = spreadId; } catch (e) {}
+// 單一牌陣解析入口：先完成問題編譯與「需求通道 ⊆ 方法能力」檢查，再建立動態牌位；不得在 UI 端二次猜題。
+function _jyBuildDynamicSpreadDef(spreadId, methodPlan) {
+  var base=(typeof SPREAD_DEFS!=='undefined'&&SPREAD_DEFS[spreadId])?SPREAD_DEFS[spreadId]:null;
+  if(!base)throw new Error('Unknown spread definition: '+spreadId);
+  var def=JSON.parse(JSON.stringify(base));
+  if(methodPlan&&Array.isArray(methodPlan.slots)){
+    def.count=methodPlan.count==null?def.count:methodPlan.count;
+    def.zh=methodPlan.label||def.zh;
+    def.positions=methodPlan.slots.map(function(slot,i){
+      var basePos=(base.positions&&base.positions[i])||{};
+      var label=slot.label||basePos.zh||basePos.name||slot.role||'位置';
+      return {name:(i+1)+'.'+label,zh:label,authority:slot.authority||'structural',role:slot.role||'structural',binding:slot.binding||{eventId:'QUERY_EVENT'}};
+    });
   }
-  if (!spreadId || typeof SPREAD_DEFS === 'undefined' || !SPREAD_DEFS[spreadId]) spreadId = 'three_card';
-  if (typeof setCurrentSpread === 'function') setCurrentSpread(spreadId);
-  try {
-    if (typeof window !== 'undefined' && typeof window._jyUpdateSpreadTrigger === 'function') {
-      setTimeout(window._jyUpdateSpreadTrigger, 0);
-    }
-  } catch (e) {}
+  return def;
+}
+
+function resolveTarotSpread(question, type) {
+  var foundation=(typeof window!=='undefined'&&window.JYTarotFoundation)?window.JYTarotFoundation:null;
+  if(!foundation)throw new Error('JYTarotFoundation is required before spread resolution');
+  var raw=String(question||'').trim(), forced=(typeof window!=='undefined')?window._forcedSpread:null;
+  var route=foundation.routeQuestion(raw,{type:String(type||'general'),referenceDate:new Date().toISOString()});
+  var spreadId=route.spreadId, plan=route.methodPlan;
+  if(forced){
+    if(!SPREAD_DEFS[forced])throw new Error('Unknown forced spread: '+forced);
+    spreadId=forced;
+    plan=foundation.instantiateMethod(forced,route.compiledQuestion);
+    route={version:foundation.VERSION,engine:'foundation_router_v3',spreadId:forced,selectedBy:'explicit_ui_override',reason:'使用者在介面明確指定牌陣；能力缺口必須保留，不得靜默改寫問題。',compiledQuestion:route.compiledQuestion,methodPlan:plan,coverage:{required:plan.requiredObservables,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:route.unsupportedDimensions||[],candidates:route.candidates||[]};
+    try{window._autoDetectedSpread=null;}catch(_e){}
+  }else{
+    try{window._autoDetectedSpread=spreadId;}catch(_e2){}
+    if(!route.coverage||route.coverage.complete!==true||!spreadId||!plan)throw new Error(route.reason||'沒有可完整覆蓋原問句的牌陣');
+  }
+  if(!spreadId||!SPREAD_DEFS[spreadId]||!plan)throw new Error('Tarot router returned an unusable method plan');
+  var dynamicDef=_jyBuildDynamicSpreadDef(spreadId,plan);
+  S.tarot=S.tarot||{};
+  S.tarot.compiledQuestion=route.compiledQuestion;
+  S.tarot.methodPlan=plan;
+  S.tarot.dynamicSpreadDef=dynamicDef;
+  S.tarot.spreadType=spreadId;
+  try{window._jyLastSpreadDecision=route;}catch(_e3){}
+  setCurrentSpread(spreadId,dynamicDef);
+  try{if(typeof window!=='undefined'&&typeof window._jyUpdateSpreadTrigger==='function')setTimeout(window._jyUpdateSpreadTrigger,0);}catch(_e4){}
   return spreadId;
 }
 try { if (typeof window !== 'undefined') window.JY_resolveTarotSpread = resolveTarotSpread; } catch (e) {}
 
-
 // ── 建構牌陣結果物件（通用）──
 function buildSpreadResult(drawn, spreadId) {
-  var def = SPREAD_DEFS[spreadId];
-  if (!def) return null;
-  if (!drawn || drawn.length < def.count) return null;
-
-  var positions = def.positions.map(function(pos, i) {
-    var card = drawn[i];
-    return {
-      name: pos.name,
-      zh: pos.zh,
-      card: card,
-      cardName: card ? (card.name || card.n) : '',
-      isUp: card ? card.isUp : true
-    };
+  var def=(S.tarot&&S.tarot.dynamicSpreadDef&&S.tarot.dynamicSpreadDef.id===spreadId)?S.tarot.dynamicSpreadDef:SPREAD_DEFS[spreadId];
+  var plan=(S.tarot&&S.tarot.methodPlan)||null;
+  if(!def)return null;
+  if(!drawn||drawn.length<def.count)return null;
+  var positions=def.positions.map(function(pos,i){
+    var card=drawn[i],slot=plan&&plan.slots&&plan.slots[i];
+    return {name:pos.name,zh:pos.zh,authority:(slot&&slot.authority)||pos.authority||'structural',role:(slot&&slot.role)||pos.role||'structural',binding:(slot&&slot.binding)||pos.binding||{eventId:'QUERY_EVENT'},card:card,cardName:card?(card.name||card.n):'',isUp:card?card.isUp:true};
   });
-
-  return {
-    type: spreadId,
-    zh: def.zh,
-    count: def.count,
-    desc: def.desc,
-    positions: positions
-  };
+  return {type:spreadId,zh:def.zh,count:def.count,desc:def.desc,positions:positions,methodPlan:plan};
 }
 
 // ── 全域存取：當前選擇的牌陣 ──
-var _currentSpreadId = 'celtic_cross'; // 預設
-function getCurrentSpread() { return _currentSpreadId; }
-function setCurrentSpread(id) { if (SPREAD_DEFS[id]) { _currentSpreadId = id; S.tarot = S.tarot || {}; S.tarot.spreadDef = SPREAD_DEFS[id]; } }
-function getCurrentSpreadDef() { return SPREAD_DEFS[_currentSpreadId] || SPREAD_DEFS.celtic_cross; }
+var _currentSpreadId='celtic_cross';
+function getCurrentSpread(){return _currentSpreadId;}
+function setCurrentSpread(id,dynamicDef){
+  if(!SPREAD_DEFS[id])throw new Error('Unknown spread: '+id);
+  _currentSpreadId=id;S.tarot=S.tarot||{};
+  if(dynamicDef)S.tarot.dynamicSpreadDef=dynamicDef;
+  S.tarot.spreadDef=(S.tarot.dynamicSpreadDef&&S.tarot.dynamicSpreadDef.id===id)?S.tarot.dynamicSpreadDef:SPREAD_DEFS[id];
+}
+function getCurrentSpreadDef(){return (S.tarot&&S.tarot.dynamicSpreadDef&&S.tarot.dynamicSpreadDef.id===_currentSpreadId)?S.tarot.dynamicSpreadDef:(SPREAD_DEFS[_currentSpreadId]||SPREAD_DEFS.celtic_cross);}
 
 // ══════════════════════════════════════════════════════════════════════
 // 6. showSpread 覆寫 — 適配所有牌陣類型
@@ -610,8 +630,8 @@ function getBookTRenderData(card, index, spreadId, cards) {
   try { d = gd.dignityContext(cards || [], index, spreadId || ''); } catch (_d) {}
   var labelMap = {
     well_dignified:'完整元素尊貴：強化', ill_dignified:'完整元素尊貴：削弱', supported:'完整元素尊貴：協調',
-    mixed:'完整元素尊貴：混合', multi_line:'多條有序線分別裁決', locally_supported:'單邊元素相容',
-    locally_weakened:'單邊元素削弱', local_mixed:'單邊元素混合', interaction_only:'僅牌陣互動', unlinked:'無完整尊貴線'
+    mixed:'完整元素尊貴：混合', multi_line:'多條有序線分別裁決', one_sided_friendly:'單邊元素相容（非完整尊貴）',
+    one_sided_hostile:'單邊元素削弱（非完整尊貴）', one_sided_mixed:'單邊元素混合（非完整尊貴）', interaction_only:'僅牌陣互動', unlinked:'無完整尊貴線'
   };
   return {
     title:p.bookTTitle || '',
