@@ -22,7 +22,7 @@
       mustNot: ['waite_1910（本次只准','op4_time_anchor','缺聖杯＝','牌張數換算現實人數']
     },
     'golden-dawn-tarot.js': {
-      must: ['unified tarot core v1.4.0',"var SOURCE_ID = 'gd_book_t'",'var MAJOR_CORR','var COURT_BOOK_T','function spreadGroups','function spreadDignityGroups','neutralizedByContraryFlanks'],
+      must: ['unified tarot core v2.0.0',"var SOURCE_ID = 'gd_book_t'",'var MAJOR_CORR','var COURT_BOOK_T','function spreadGroups','function spreadDignityGroups','neutralizedByContraryFlanks'],
       mustNot: ['Uranus','Neptune','Pluto','thoth_crowley']
     },
     'tarot_upgrade.js': {
@@ -43,7 +43,7 @@
     },
     'tarot.js': {
       must: [
-        'unified tarot core v1.4.0',"var SOURCE_ID = 'gd_book_t'",'var MAJOR_CORR',
+        'unified tarot core v2.0.0',"var SOURCE_ID = 'gd_book_t'",'var MAJOR_CORR',
         'var COURT_BOOK_T','function spreadGroups','function spreadDignityGroups',
         'reversalPolicy:\'不使用 Waite 固定正逆字典'
       ],
@@ -53,7 +53,7 @@
       must: [
         'Golden Dawn《Book T》塔羅證據整合者','Golden Dawn《Book T》Opening of the Key',
         'ROOT-SPEC v95','QuestionCompiler','GraphBinder','SaturationReviewer','gd_book_t',
-        'Book T拓撲相鄰元素尊貴','本段不得反向影響牌義、裁決或建議',
+        'Book T有序相鄰線元素尊貴','本段不得反向影響牌義、裁決或建議',
         '不得解釋成問卜者「缺某元素」','【礦物事實錨點】','【輸出載體——硬規則】'
       ],
       mustNot: ['至少自然帶到 2 張 RWS','每張牌都要在正文點到名','Aces 採 count 11（Crowley·Liber 78）']

@@ -1873,7 +1873,7 @@ enhanceTarot = function(tarot) {
 // - Op4：Sig 居中 + 後續 36 張環繞（Book T 原文）
 // - Op5：順序輪發到 10 質點（Book T「Deal into ten packs」）
 // - 計數值：宮廷 Knight=4,Queen=4,King=4,Page/Princess=7
-// - Ace 計數值 = 11（Crowley Liber 78 / Book T）
+// - Ace 計數值 = 11（Golden Dawn Book T）
 // - 花色名稱修正：匹配 tarot.js 的 'wand'/'cup'/'sword'/'pent'
 // ══════════════════════════════════════════════════════════════════════
 
@@ -2276,6 +2276,8 @@ enhanceTarot = function(tarot) {
   // 依 RWS 圖像實測分類（Parsifal's Wheel Tarot 2018 實測 + TarotPugs 三分法）
   // 'left'=圖像主要方向面左；'right'=面右；'forward'=正面/中性
   // 本站不抽固定逆位；本表只記錄實際牌圖人物的固有朝向，供 Book T 計數方向使用。
+  var _ootkSessionCountDirection = null; // 發牌前由使用者依實際牌圖確認，禁止用 RWS 固定表替代。
+
   var COURT_FACING = {
     'wand-king':   'left',     'wand-queen':  'right',
     'wand-knight': 'left',     'wand-page':   'right',
@@ -2298,8 +2300,11 @@ enhanceTarot = function(tarot) {
     return COURT_FACING[s + '-' + r] || 'forward';
   }
   function getBookTCountDirection(card) {
+    if (_ootkSessionCountDirection === 'left') return -1;
+    if (_ootkSessionCountDirection === 'right') return 1;
+    // 非開鑰／舊資料相容時才讀網站牌圖表；正式開鑰流程必須在發牌前明示左右。
     var facing = getCourtFacing(card);
-    return facing === 'left' ? -1 : 1; // 正面牌無左右時沿發牌方向
+    return facing === 'left' ? -1 : 1;
   }
 
   // Directional Dignity 分析（v55）
@@ -2814,12 +2819,6 @@ enhanceTarot = function(tarot) {
     var paired = ootkPairing(activeCards, sigIdx);
     var unaspected = []; // Book T 核心版不加入 PHB Source of the Nile 擴充
 
-    // ★ v70.3:附上關鍵宮位牌面（第5/7宮），供對方畫像與感情分析用
-    var keyHouses = {};
-    [0, 4, 6, 7, 9, 11].forEach(function(hi) { // 1宮/5宮/7宮/8宮/10宮/12宮
-      keyHouses[hi + 1] = houses[hi] || [];
-    });
-
     return {
       houseDistribution: houses.map(function(h) { return h.length; }),
       activeHouse: activeHouse + 1,
@@ -2830,7 +2829,6 @@ enhanceTarot = function(tarot) {
       pairs: paired,
       dignities: ootkDignities(counted.keyCards),
       unaspected: unaspected,
-      keyHouses: keyHouses,
       bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
     };
   }
@@ -2865,7 +2863,6 @@ enhanceTarot = function(tarot) {
     // ★ v70.3 正統 Book T Op3：「Shuffle, etc., as before.
     //   Deal cards into twelve stacks for the twelve signs of the Zodiac.」
     // 「as before」= 跟 Op2 一樣順序輪發（idx % 12），不是按 GD 歸屬分配。
-    // Book T / Crowley Book of Thoth / Equinox Vol. I No. 8 三處文字一致。
     // Op2 vs Op3 的差別在解讀（宮位 vs 星座能量），不在發牌方式。
     // ════════════════════════════════════════════════════════════
     var signs = [];
@@ -2947,14 +2944,14 @@ enhanceTarot = function(tarot) {
     for (var s = 1; s < sigCount; s++) idx = (idx + direction + ring.length) % ring.length;
     path.push({cardId:sigCard.id,cardName:sigCard.n||sigCard.name,position:'center',countValue:sigCount,isUp:true,direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
     keyCards.push({card:sigCard,position:'center'});
-    for (var step = 0; step < 18 && ring.length; step++) {
+    for (var step = 0; step < ring.length + 1 && ring.length; step++) {
       if (visited[idx]) break;
       visited[idx] = true;
       var card = ring[idx];
       keyCards.push({card:card,position:idx+1});
       var count = getCountValue(card);
       path.push({cardId:card.id,cardName:card.n||card.name,position:idx+1,countValue:count,isUp:true,direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
-      for (var c = 0; c < count; c++) idx = (idx + direction + ring.length) % ring.length;
+      for (var c = 1; c < count; c++) idx = (idx + direction + ring.length) % ring.length;
     }
 
     // 環形配對：代表牌兩側由近到遠，即第1↔第36、第2↔第35……
@@ -2979,10 +2976,7 @@ enhanceTarot = function(tarot) {
   // ════════════════════════════════════════════════
   // Operation 5：生命之樹（Tree of Life）
   // ════════════════════════════════════════════════
-  // 正統做法：
-  // - 數字牌 Ace-10 → 直接對應 Sephiroth 1-10
-  // - 大阿爾克那 → 按路徑分配到路徑連接的較低 Sephirah
-  // - 宮廷牌 → King=Chokmah, Queen=Binah, Knight=Tiphereth, Page=Malkuth
+  // Book T：全副牌依序輪發為生命之樹十堆，代表牌所在堆為本次觀測位置。
 
   var SEPHIROTH = [
     {name:'Kether',   zh:'王冠', meaning:'精神目標、最高指引、神聖意志'},
@@ -2997,96 +2991,16 @@ enhanceTarot = function(tarot) {
     {name:'Malkuth',  zh:'王國', meaning:'物質現實、具體結果、身體'}
   ];
 
-  // ★ GD-11 補:Op5 Mathers Manuscript Q 明文規定的「SIG 落在 X Sephirah → Y 預兆」
-  //   依據:Mathers Manuscript Q「The packet containing the Significator falls under
-  //        [X]. This is an argument of [Y]」+ Cicero《Magical Tarot》
-  //   每個 Sephirah 在 OOTK Op5 都有特定的「占卜性意涵」(不只是基本屬性)
-  var SEPHIRAH_OMEN = [
-    // 0 Kether 王冠
-    { mood:'極其有利',
-      omen:'這事關乎「源頭與啟示」— Significator 落在 Kether 是 OOTK 中最高層的指示,代表事情正在最純粹的能量源頭被啟動。神性指引、創造力的源頭、與更高自我的連結。重大時刻,人生新階段的開始,可能是命定性的轉折。',
-      action:'相信當下的直覺與靈感,這是難得的「神性接收」狀態。靜下心,聽見內在更高層的聲音。' },
-    // 1 Chokmah 智慧
-    { mood:'有利',
-      omen:'這事關乎「智慧的應用與動能的啟動」— Chokmah 是純粹的陽性力量、智慧的初始爆發。事情處於「動能正在啟動」的階段,有遠見、有方向。智慧、洞察、原始驅動力。',
-      action:'用你已經擁有的智慧與經驗,以慈悲與和諧的方式應用於當下情境。' },
-    // 2 Binah 理解
-    { mood:'凶兆/試煉',
-      omen:'⚠ 這事關乎「悲傷與試煉」— Mathers Q 原文:Binah 對 OOTK 是「sadness and trial 的主張」。Binah 是限制與形式的力量,意味事情正面臨架構性的挑戰、人生的形變期、母性原型的考驗。可能涉及失去、嚴肅的責任、深層的理解過程。',
-      action:'這不是失敗,而是被迫成熟。把這次試煉當作獲得真正智慧的代價,接受限制、學習耐心。' },
-    // 3 Chesed 慈悲
-    { mood:'非常有利',
-      omen:'這事關乎「擴展與恩典」— Chesed 是仁慈、繁榮、好運的力量。事情正進入豐盛、機會、寬厚的階段,有貴人相助、財富累積、人脈擴展的機會。木星能量,是 OOTK 中最吉利的位置之一。',
-      action:'大方接受機會與好運,但勿揮霍。慷慨會帶來更多繁榮。' },
-    // 4 Geburah 嚴厲
-    { mood:'凶兆/衝突',
-      omen:'⚠ 這事關乎「割捨與必要的破壞」— Geburah 是收縮、嚴厲、火星的力量。事情正面臨衝突、競爭、必須切除什麼東西的時刻。可能涉及訴訟、爭執、強烈的情感反彈、必要的結束。',
-      action:'這是「該斷的時刻」。果斷處理,該結束的就結束,不要拖延。痛苦但必要。' },
-    // 5 Tiphereth 美
-    { mood:'有利/平衡',
-      omen:'這事關乎「核心自我與平衡」— Tiphereth 是 Tree of Life 的中心,代表和諧、覺醒、太陽能量、犧牲帶來的整合。事情處於「真實的自我與外在世界協調」的位置,可能是覺醒時刻、藝術靈感、領導力的展現。',
-      action:'回到中心,做真實的自己。整合內外的衝突,你的核心已具備所有需要的東西。' },
-    // 6 Netzach 勝利
-    { mood:'有利(感情/藝術)',
-      omen:'這事關乎「情感、慾望、藝術、愛情」— Netzach 是金星的力量,代表情感的勝利、創作的衝動、愛戀、自然之美。事情有感性面、人際吸引力、藝術或情感創作的元素。',
-      action:'用你的情感與創造力推進。但勿被情緒淹沒,平衡感性與理性。' },
-    // 7 Hod 榮耀
-    { mood:'有利(思維/溝通)',
-      omen:'這事關乎「思維、溝通、學術、儀式」— Hod 是水星的力量,代表理性、智慧的具體應用、書寫、教學、商業談判。事情需要清晰的思維與精準的表達。',
-      action:'用語言、文字、邏輯處理。寫下計畫,清楚溝通,精準表達。' },
-    // 8 Yesod 基礎
-    { mood:'中性/隱藏',
-      omen:'這事關乎「潛意識、夢境、隱藏的影響」— Yesod 是月亮的力量,代表潛意識、星光體、未顯化的能量、想像的世界。事情可能涉及夢境訊息、潛意識的牽引、尚未浮上檯面的影響。',
-      action:'重視夢境與直覺。事情背後有你還沒看見的力量在作用,先觀察再行動。' },
-    // 9 Malkuth 王國
-    { mood:'中性/實際',
-      omen:'這事關乎「物質現實、具體結果、身體層面」— Malkuth 是物質世界的最終呈現。事情已經落地到日常實際層面,涉及金錢、健康、實際工作、家庭、身體狀況。',
-      action:'用實際行動處理。這不是抽象的事,是具體的、需要動手做的。回歸基本面,腳踏實地。' }
-  ];
-
+  // 生命之樹只保留 Book T 程序所需的質點結構；不附加 Manuscript Q／後世預兆字典。
   var SEPH_INDEX = {};
   SEPHIROTH.forEach(function(s, i) { SEPH_INDEX[s.name] = i; });
 
-  // 大阿爾克那路徑→分配到較低的 Sephirah
-  function getTrumpSephirah(card) {
-    var gd = TRUMP_GD[card.id];
-    if (!gd || !gd.path) return 5; // default Tiphereth
-    var parts = gd.path.split('-');
-    if (parts.length === 2) {
-      var a = SEPH_INDEX[parts[0]], b = SEPH_INDEX[parts[1]];
-      if (a != null && b != null) return Math.max(a, b); // 取較低（數字較大）的
-    }
-    return 5;
-  }
-
-  // 宮廷牌→ Sephirah（GD 標準）
-  var COURT_SEPH = { 'king':1, 'queen':2, 'knight':5, 'page':9 };
-  // King=Chokmah(1), Queen=Binah(2), Knight/Prince=Tiphereth(5), Page/Princess=Malkuth(9)
-
-  function getCardSephirah(card) {
-    var gd = getCardGD(card);
-
-    // 大阿爾克那 → 路徑的較低端
-    if (card.suit === 'major') return getTrumpSephirah(card);
-
-    // Ace → Kether (0)
-    if (String(card.rank) === 'ace') return 0;
-
-    // 數字牌 2-10 → 直接對應
-    var numRank = parseInt(card.rank);
-    if (numRank >= 2 && numRank <= 10) return numRank - 1; // 2=Chokmah(1), 3=Binah(2), ...10=Malkuth(9)
-
-    // 宮廷牌
-    var r = String(card.rank);
-    if (COURT_SEPH[r] != null) return COURT_SEPH[r];
-
-    return 9; // fallback Malkuth
-  }
+  // 第五次操作按牌序輪發成十堆；不按單張牌的占星／宮廷屬性重新分配。
 
   function ootkOp5(deck, significatorId) {
     // ════════════════════════════════════════════════════════════
     // ★ v70.3 正統 Book T Op5：「Deal into ten packs in the form of
-    //   the Tree of Life.」 — Mathers Book T / Crowley Book of Thoth
+    //   the Tree of Life.」 — Golden Dawn Book T
     // 「Deal into ten packs」= 順序輪發（idx % 10），不是按 GD 歸屬分配。
     // 質點意義由堆序號決定：堆0=Kether、堆1=Chokmah...堆9=Malkuth。
     // ════════════════════════════════════════════════════════════
@@ -3107,12 +3021,10 @@ enhanceTarot = function(tarot) {
     }
 
     var sp = SEPHIROTH[activeSeph] || {};
-    var omen = SEPHIRAH_OMEN[activeSeph] || {};
     var activeCards = sephirot[activeSeph] || [];
     var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
     var counted = ootkCounting(activeCards, sigIdx >= 0 ? sigIdx : 0);
     var paired = ootkPairing(activeCards, sigIdx >= 0 ? sigIdx : 0);
-    var effectiveSigIdx = sigIdx >= 0 ? sigIdx : 0;
     var unaspected = []; // Book T 核心版不加入 PHB Source of the Nile 擴充
 
     return {
@@ -3141,7 +3053,7 @@ enhanceTarot = function(tarot) {
     var path = [];
     var visited = {};
     var idx = startIdx;
-    var maxSteps = 12; // 最多 12 步防止無限迴圈
+    var maxSteps = cards.length + 1; // 直到落點重複；上限只作防呆
 
     // ════════════════════════════════════════════════════════════
     // ★ v63 正統 Book T 修正（最重要的引擎修正）
@@ -3182,7 +3094,8 @@ enhanceTarot = function(tarot) {
         direction: direction > 0 ? 'right' : 'left',
         startDirection: direction > 0 ? 'right' : 'left'
       });
-      for (var c = 0; c < count; c++) {
+      // Book T：起算牌本身算第一張，因此只前進 count - 1 格。
+      for (var c = 1; c < count; c++) {
         idx = (idx + direction + cards.length) % cards.length;
       }
     }
@@ -3197,96 +3110,25 @@ enhanceTarot = function(tarot) {
   function ootkPairing(cards, sigIdx) {
     if (!cards.length || sigIdx < 0) return [];
     var pairs = [];
-    var n = cards.length;
-    // ★ v69.21.6 治本(2026-05-14):環狀繞回配對(Crowley + Regardie 方法)
-    //   根因:舊版 left=-1 或 right>=n 時直接停止,Sig 在邊界就 0 對配對
-    //   實機發現:
-    //     Op4 sigIdx=0(Sig 居中,在最左) → 0 對 → narrativePairs.op4=[]
-    //     Op3 sigIdx=n-1(Sig 在最右)   → 0 對 → narrativePairs.op3=[]
-    //   參考依據:Parsifal's Wheel 2017「bend the line into a circle」
-    //   = Israel Regardie Complete GD System「continue at the other end」
-    //   治本:改用環狀 mod 繞回,讓 Sig 在任何位置都能配對
-    //   ★ 環狀配對最多 Math.floor(n/2) 對,Sig 自己不配對(total n-1 個位置,各取一個)
     var left = sigIdx - 1;
     var right = sigIdx + 1;
-    // 最多配 floor(n/2) 對(防止重複繞回)
-    var maxPairs = Math.floor((n - 1) / 2);
-    var pairCount = 0;
-    while (pairCount < maxPairs) {
-      // 環狀繞回:左邊超出就從右端繞,右邊超出就從左端繞
-      var leftIdx = ((left % n) + n) % n;
-      var rightIdx = right % n;
-      // 防止左右撞到 Sig 或相撞
-      if (leftIdx === sigIdx || rightIdx === sigIdx || leftIdx === rightIdx) break;
-      var ed = elementalDignity(cards[leftIdx], cards[rightIdx]);
-      pairs.push({ left: cards[leftIdx], right: cards[rightIdx], dignity: ed });
+    // Book T：由代表牌兩側最近者開始，逐層向外配對；線性牌列不循環繞回。
+    while (left >= 0 && right < cards.length) {
+      var ed = elementalDignity(cards[left], cards[right]);
+      pairs.push({
+        left: cards[left],
+        right: cards[right],
+        dignity: ed,
+        leftPos: left,
+        rightPos: right
+      });
       left--;
       right++;
-      pairCount++;
-    }
-    // ★ 剩餘未配對牌(奇數總牌數時 Sig 對面那張)→ 標記為 single(free agent)
-    // Parsifal's Wheel:「read as a 'partial outcome'」
-    // 如果有 single 牌且 n 是奇數,加入最後
-    if ((n - 1) % 2 === 0 && pairCount > 0) {
-      // 偶數非 Sig 牌,正好配完,無 single
-    } else if ((n - 1) % 2 !== 0) {
-      // 奇數非 Sig 牌,最後一張沒有配對(Sig 正對面)
-      var singleIdx = (sigIdx + Math.floor(n / 2)) % n;
-      if (singleIdx !== sigIdx) {
-        pairs.push({ left: cards[singleIdx], right: null, dignity: null, single: true, freeAgent: true });
-      }
     }
     return pairs;
   }
 
-  // ════════════════════════════════════════════════════════════
-  // ★ v63 Op4 Manuscript Q 版本（Mathers 原始手稿Book T 對齊做法）
-  //
-  // Mathers 原文（Manuscript Q）：
-  //   "instead of counting from the Significator itself, it begins from
-  //    the first card of the 36, and always goes in the direction of dealing"
-  //   "the cards are paired together; 1st and 36th; 2nd and 35th; 3rd and 34th"
-  //
-  // 與 Crowley Book of Thoth「count and pair as before」並列存在。
-  // 兩個版本都送給 AI，由 AI 視情況採用。
-  // ════════════════════════════════════════════════════════════
-
-  // Op4 環形 counting:從第一張環繞牌起、按 dealing 方向(Manuscript Q「against direction of the Sun」)固定
-  function ootkCountingRing(ring) {
-    if (!ring || !ring.length) return { keyCards: [], path: [] };
-    var keyCards = [];
-    var path = [];
-    var visited = {};
-    var idx = 0; // ★ Manuscript Q：從第 1 張環繞牌起，不是從 Sig
-    var maxSteps = 12;
-    var direction = 1; // ★ Manuscript Q:永遠按 dealing 方向(against direction of the Sun = 逆太陽方向)固定
-
-    // ★ v68.21.8:Aces 已修正預設 count=11(對齊 Book T 文獻),不再需要 useCrowleyAce 切換
-    //   舊邏輯保留為註解:當 Aces=5 預設時遇到死循環自動切 11,現在預設就是 11 不會死循環
-
-    for (var step = 0; step < maxSteps; step++) {
-      var card = ring[idx];
-      if (!card || visited[idx]) break;
-      keyCards.push({ card: card, position: idx });
-      visited[idx] = true;
-      var count = getCountValue(card);
-      var cardIsUp = true;
-      path.push({
-        cardId: card.id,
-        cardName: card.n || card.name,
-        position: idx,
-        countValue: count,
-        isUp: cardIsUp,
-        direction: 'dealing', // 永遠按 dealing 方向(against the Sun)
-        startDirection: 'dealing'
-      });
-      for (var c = 0; c < count; c++) {
-        idx = (idx + direction + ring.length) % ring.length;
-      }
-    }
-    return { keyCards: keyCards, path: path, startDirection: 'dealing' };
-  }
-
+  // Book T 第四次操作：三十六牌按 1↔36、2↔35……配對。
   // Op4 環形 pairing：1↔36, 2↔35, 3↔34, ...
   function ootkPairingRing(ring) {
     if (!ring || !ring.length) return [];
@@ -3320,11 +3162,14 @@ enhanceTarot = function(tarot) {
       var rightN = (i < keyCards.length - 1) ? keyCards[i + 1].card : null;
       var leftEd = leftN ? elementalDignity(card, leftN) : 'none';
       var rightEd = rightN ? elementalDignity(card, rightN) : 'none';
+      var full = !!(leftN && rightN);
       result.push({
         card: card.n || card.name,
         cardElement: getCardElement(card),
         leftDignity: leftEd,
-        rightDignity: rightEd
+        rightDignity: rightEd,
+        fullDignity: full,
+        dignityScope: full ? 'full_flanked' : 'one_sided_local_context'
       });
     }
     return result;
@@ -3336,35 +3181,8 @@ enhanceTarot = function(tarot) {
   // ════════════════════════════════════════════════
 
   function ootkUnaspected(activeCards, sigIdx, countedKeyCards, pairs) {
-    // ★ PHB「Source of the Nile / Unaspected」正統定義（2026 根治 + 一致性修正）
-    //   做法：對活躍堆「每一張牌」各數一次（走其 count 值格、環狀折返），記下落點那張；
-    //   全部數完後，從頭到尾「沒被任何一張牌的計數落點碰到」的牌，就是 unaspected。
-    //   ⚠ 只看 counting，不看 pairing：pairing 會把幾乎每張非主牌都配到，
-    //      把它算進「被碰到」會讓 unaspected 永遠為空（舊版的 bug，等於關閉此功能）。
-    //   ⚠ 方向必須跟引擎的 ootkCounting 一致——整串用「代表牌的面向」（v63 Book T 取向：
-    //      方向只由起點代表牌決定、不隨各牌正逆位改變）。若改用「各牌自己的面向」，會跟
-    //      計數路徑用不同規則，導致「計數終點牌反而被列為 unaspected」的自相矛盾。
-    //   依據：Paul Hughes-Barlow《Tarot and the Magus》Ch.6；實務轉述「counted from every
-    //         single card to check their counts」——沒被碰到的孤立牌＝尼羅河源頭，指向未知/未來。
-    var n = activeCards ? activeCards.length : 0;
-    if (!n) return [];
-    var sigCard = (sigIdx >= 0 && sigIdx < n) ? activeCards[sigIdx] : null;
-    var dir = (sigCard && sigCard.isUp === true) ? 1 : -1;   // 整串同方向＝代表牌方向，與 counting 一致
-    var targeted = {};
-    for (var i = 0; i < n; i++) {
-      var card = activeCards[i];
-      if (!card) continue;
-      var cnt = getCountValue(card);
-      var t = i;
-      for (var c = 0; c < cnt; c++) { t = (t + dir + n) % n; }
-      if (t !== i) targeted[t] = true;            // 落在自己不算（孤立＝沒被「別張」碰到）
-    }
-    var unaspected = [];
-    for (var j = 0; j < n; j++) {
-      if (j === sigIdx) continue;                 // 代表牌是錨點，永遠不算隱藏牌
-      if (activeCards[j] && !targeted[j]) unaspected.push(activeCards[j]);
-    }
-    return unaspected;
+    // Source-locked Book T mode: PHB／Source of the Nile is deliberately excluded.
+    return [];
   }
 
   // ════════════════════════════════════════════════
@@ -3487,7 +3305,9 @@ enhanceTarot = function(tarot) {
       cognateHouse:cognate>=1&&cognate<=12&&cognate!==house ? cognate : null,
       expectedSign:sign>=0&&sign<12 ? sign : null,
       expectedSephirah:seph>=0&&seph<10 ? seph : null,
-      confirmedBeforeDeal:bindings.confirmedBeforeDeal === true
+      confirmedBeforeDeal:bindings.confirmedBeforeDeal === true,
+      countDirection:bindings.countDirection === 'left' || bindings.countDirection === 'right' ? bindings.countDirection : '',
+      op3Policy:bindings.op3Policy === 'observe_only' ? 'observe_only' : 'strict_inherit_proceed_as_before'
     };
   }
 
@@ -3578,11 +3398,12 @@ enhanceTarot = function(tarot) {
     results.questionText = questionText || '';
     results.predeclaredBindings = bindings;
     results.bindingPolicy = 'confirmed_before_deal';
-    if (!bindings.confirmedBeforeDeal || !bindings.expectedPile || bindings.primaryHouse == null || bindings.expectedSign == null || bindings.expectedSephirah == null) {
+    _ootkSessionCountDirection = bindings.countDirection || null;
+    if (!bindings.confirmedBeforeDeal || !bindings.countDirection || !bindings.expectedPile || bindings.primaryHouse == null || bindings.expectedSign == null || bindings.expectedSephirah == null) {
       results.abandonedAt = 'predeal_binding';
       results.completedOperations = 0;
       results.divinationValidity = { valid:false, source:'Golden Dawn Book T' };
-      results.abandonReason = '開鑰之法必須在發牌前確認第一次操作題目堆、第二次操作主宮、第三次操作黃道堆與第五次操作生命樹預期位置。本次缺少完整的發牌前綁定，因此沒有開始占卜，也不以事後結果反推落點。';
+      results.abandonReason = '開鑰之法必須在發牌前依實際牌圖確認代表牌計數方向，並確認第一次操作題目堆、第二次操作主宮、第三次操作黃道堆與第五次操作生命樹預期位置。本次缺少完整的發牌前綁定，因此沒有開始占卜，也不以事後結果反推落點。';
       return results;
     }
 
@@ -3594,6 +3415,11 @@ enhanceTarot = function(tarot) {
     results.op1 = ootkOp1(deck1, significatorId);
     results.op1.attempt = 1;
     results.op1.expectedPiles = expectedPiles;
+    results.op1.mainLineValidation = {
+      requiredBySource:true,
+      status:'requires_querent_confirmation',
+      note:'Book T 要求第一次操作的主要線索能正確指出所問之事；程式不能代替問卜者完成這項確認。'
+    };
 
     if (expectedPiles && expectedPiles.indexOf(results.op1.activePile) < 0) {
       var pileZh = { fire: 'Yod／火（工作、事業、行動）', water: 'Heh／水（愛、婚姻、愉悅）', air: 'Vav／風（爭執、損失、麻煩）', earth: 'Heh-final／土（金錢、物品、物質事務）' };
@@ -3604,6 +3430,7 @@ enhanceTarot = function(tarot) {
         '」，與本題預先判定的問題領域不相符。依 Golden Dawn《Book T》，若第一次操作無法正確指出問卜者所問之事，應停止本次占卜，而不是改寫問題或硬讀後續操作。';
       results.completedOperations = 1;
       results.abandonedAt = 'op1';
+      results.divinationValidity = { valid:false, completedOperations:1, source:'Golden Dawn Book T' };
       return results;
     }
 
@@ -3622,12 +3449,12 @@ enhanceTarot = function(tarot) {
         '宮；實際：第' + results.op2.activeHouse + '宮）。依 Golden Dawn《Book T》，主宮與相近宮位皆失敗時應停止本次占卜。';
       results.completedOperations = 2;
       results.abandonedAt = 'op2';
+      results.divinationValidity = { valid:false, completedOperations:2, source:'Golden Dawn Book T' };
       return results;
     }
 
-    // ── Op3:十二星座 — 正統 Mathers 二次重洗 abandon 機制 ──
-    // Mathers 原文沒明確要求 Op3 重洗,但既然「合適宮位邏輯」也適用於星座
-    // (PHB 補充規則),Op3 也採同樣機制保持正統一致性
+    // ── Op3:十二星座 ──
+    // 《Book T》要求先選定適當星座堆並照前法進行；錯位處理依已明示的保守程序政策。
     var expectedSigns = [bindings.expectedSign];
     var deck3 = shuffleNewDeck();
     results.op3 = ootkOp3(deck3, significatorId);
@@ -3638,9 +3465,19 @@ enhanceTarot = function(tarot) {
       var op3SignIdx = SIGNS_ORDER.indexOf(results.op3.activeSign);
       results.op3.expectedSigns = expectedSigns;
       results.op3.signExpectationMet = isSigInExpectedPosition(op3SignIdx, expectedSigns);
+      results.op3.procedurePolicy = bindings.op3Policy || 'strict_inherit_proceed_as_before';
       results.op3.signExpectationNote = results.op3.signExpectationMet
         ? '第三次操作的代表牌落在占卜前選定的相關星座堆。'
-        : '第三次操作的代表牌未落在預選星座堆；Book T 本段只說「選定適當星座堆並照前法進行」，沒有另立自動中止條款，因此保留為綁定強度限制，不停止後續操作。';
+        : '第三次操作的代表牌未落在預選星座堆。《Book T》只說先選定適當星座堆並「照前法進行」；本程式採保守程序政策，把錯位視為本次問題綁定失敗並停止，而不把它改寫成隱藏訊息。';
+      if (!results.op3.signExpectationMet && results.op3.procedurePolicy !== 'observe_only') {
+        results.op3.abandonTriggered = true;
+        results.op3.abandoned = true;
+        results.op3.abandonReason = results.op3.signExpectationNote;
+        results.completedOperations = 3;
+        results.abandonedAt = 'op3';
+        results.divinationValidity = { valid:false, completedOperations:3, source:'Golden Dawn Book T', policy:'strict_inherit_proceed_as_before' };
+        return results;
+      }
     }
 
     // ── Op4:代表牌後方三十六牌環（Book T 無自動中止條件） ──
@@ -3681,263 +3518,19 @@ enhanceTarot = function(tarot) {
 
     results.completedOperations = 5;
     results.crossAnalysis = {
-      significatorFacing: getCourtFacing(sigCard) || 'forward',
-      countDirection: getBookTCountDirection(sigCard) > 0 ? 'right' : 'left',
+      significatorFacing: bindings.countDirection,
+      countDirection: bindings.countDirection,
       sourceProfile: 'gd_book_t',
       doctrine: '五次操作各自依 Book T 的位置權限、計數故事、配對故事與元素尊貴解讀；不做跨層重複牌投票或自創日期。'
     };
-    results.divinationValidity = { valid: true, completedOperations: 5, source: 'Golden Dawn Book T' };
-    return results;
-
-    // ════════════════════════════════════════════════════════════
-    // ★ v63E 正統 Book T 重寫(2026-04-26)── 嚴格依 OOTK_ORTHODOXY.md
-    //
-    // 核心原則(Mathers Book T / Crowley Book of Thoth Appendix A / PHB):
-    //   ① 五個 Operations 是「五次獨立讀盤」,不是「同一答案的五層穿透」
-    //   ② Mathers/Crowley 原文沒有「跨層綜合」「重複牌偵測」「結論牌」
-    //      「五層元素進程」「五層方向預判」「五層仲裁」這些概念
-    //   ③ Abandon 是逐 Op 內的判斷,沒有跨五層綜合分數
-    //   ④ Counting 走過的整串牌都是「故事」(the story of the affair),
-    //      不是某張單牌作結論——終點只是「故事自然結束於此」
-    //   ⑤ PHB 的 Source of the Nile / Unaspected Cards 是單層內判斷
-    //   ⑥ 代表牌每層必在是演算法機制必然,不是訊號
-    //
-    // 已從前版砍掉的非正統概念(全部不在文獻中):
-    //   ✗ recurringCards(跨層重複牌)
-    //   ✗ crossPairCards(跨層配對統計)
-    //   ✗ elementEnvironment / elementShift(五層元素進程/環境變化)
-    //   ✗ keyCardNames(結論牌)
-    //   ✗ strongUnaspected(跨層彙整 unaspected)
-    //   ✗ triadStrengths / strongCards / weakCards(全盤 Triad scoring)
-    //   ✗ abandonScore / abandonSuggested(跨五層綜合 abandon)
-    //   ✗ keyDirectionalInteractions(跨層彙整 directional)
-    //   ✗ layerAlignment(五層方向預判)
-    //   ✗ dominantCards(多層核心牌)
-    //   ✗ progression(舊「進程」綜合)
-    //   ✗ keyCardThemeConsistency(五層結論牌主題)
-    //
-    // 保留(有 Book T / PHB 正統根據,且皆為單層內或純記錄):
-    //   ✓ 五層 Sig 落點記錄(pileElement / elementFlow / elementProgression)
-    //     —— 純「Sig 在每層落到哪」客觀紀錄,不下綜合判斷
-    //   ✓ 每層 unaspectedCards(PHB Source of the Nile)
-    //   ✓ 每層 narrativePairs(Mathers 原文 pairing 補細節故事)
-    //   ✓ 每層 directionalFindings(PHB 單層內 directional dignity)
-    //   ✓ significatorDirectional(代表牌面向決定 counting 方向)
-    //   ✓ abandonObservations(改為 Mathers 原文的逐 Op 條件)
-    // ════════════════════════════════════════════════════════════
-
-    var opZh = { 'op1': '四元素', 'op2': '十二宮', 'op3': '十二星座', 'op4': '三十六牌環', 'op5': '生命之樹' };
-
-    // ── ① Unaspected Cards(PHB Source of the Nile,單層內) ──
-    // 該層活躍堆中沒被 counting/pairing 觸及的牌 = 該層的隱藏推力
-    // ★ 排除代表牌(counting 起點 = Sig,理論一定 touched,加防禦)
-    // ── ① Unaspected Cards(PHB Source of the Nile,單層內) ──
-    // 該層活躍堆中沒被 counting/pairing 觸及的牌 = 該層的隱藏推力
-    // ★ 排除代表牌(counting 起點 = Sig,理論一定 touched,加防禦)
-    //
-    // ★ v69.21.5 治本(2026-05-13):Op4 走 mq_pairs(同 narrativePairs 治本)
-    //   根因:Op4 sigIdx=0,ootkPairing 產出全 single 對(left=null,right=ring 牌)
-    //         touched 只能標 right 那 36 張,結構不完整
-    //   治本:Op4 用 mq_pairs(環形 1↔36),left/right 都有牌,touched 完整
-    var _unaspectedCards = {};
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (!op || !op.activeCards || !op.activeCards.length) return;
-      var touched = {};
-      (op.countingPath || []).forEach(function(p) {
-        if (p && p.cardId != null) touched[p.cardId] = true;
-      });
-      // ★ v69.21.5:Op4 用 mq_pairs(環形),其他 Op 用 pairs(Sig 兩側)
-      var pairsForTouched = (k === 'op4' && op.mq_pairs && op.mq_pairs.length) ? op.mq_pairs : op.pairs;
-      (pairsForTouched || []).forEach(function(pr) {
-        var l = pr.left || pr.card1;
-        var r = pr.right || pr.card2;
-        if (l && l.id != null) touched[l.id] = true;
-        if (r && r.id != null) touched[r.id] = true;
-      });
-      var ua = [];
-      op.activeCards.forEach(function(c) {
-        if (c && c.id != null && c.id !== significatorId && !touched[c.id]) {
-          ua.push({ id: c.id, name: c.n || c.name, element: getCardElement(c) });
-        }
-      });
-      if (ua.length) _unaspectedCards[k] = ua;
-    });
-
-    // ── ② Narrative Pairs(Mathers 原文 pairing 補細節故事,單層內) ──
-    // Mathers 原文:「Pair the cards on either side of the Significator,
-    //   then those outside them, and so on. Make another story...
-    //   which should fill in the details omitted in the first.」
-    //
-    // ★ v69.21.5 治本(2026-05-13):Op4 narrativePairs 走 mq_pairs(Manuscript Q 環形)
-    //   根因:Op4 結構特殊 — Sig 居中(sigIdx=0),activeCards = [Sig, ring[0], ..., ring[35]]
-    //         ootkPairing(cards, sigIdx=0) 因為 left=-1<0 直接跳出,所有 pairs 變 single
-    //         → narrativePairs 計算邏輯 if(!l || !r) return 全 skip → op4 = []
-    //   治本:Op4 改讀 mq_pairs(Manuscript Q 環形配對 1↔36, 2↔35, ...)
-    //         mq_pairs 結構完整(left + right + dignity)且永遠 18 對
-    //         Mathers Manuscript Q 原文正統做法,符合 Op4「36 圓圈」結構
-    var _narrativePairs = {};
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (!op) return;
-      // ★ v69.21.5:Op4 用 mq_pairs(Manuscript Q),其他 Op 用 pairs(Crowley)
-      var pairsToUse = (k === 'op4' && op.mq_pairs && op.mq_pairs.length) ? op.mq_pairs : op.pairs;
-      if (!pairsToUse || !pairsToUse.length) return;
-      var seq = [];
-      pairsToUse.forEach(function(pr, idx) {
-        var l = pr.left, r = pr.right;
-        if (!l || !r) return;
-        var dig = pr.dignity || elementalDignity(l, r);
-        // 單層內近到遠:idx=0 最接近 Sig(最即時),越外越遠
-        // ★ v69.21.5:Op4 走 mq_pairs 時,idx=0 是 1↔36(最外環),不是最即時
-        //   但 Manuscript Q 原文沒指定 phase 概念,沿用「外側=即時、內側=遠期」會誤導
-        //   實務:Op4 18 對全標「環形對位」,phase 用 idx 分段給時序提示
-        var phase;
-        if (idx === 0) phase = '即時(最近)';
-        else if (idx < 3) phase = '近期';
-        else if (idx < 6) phase = '中期';
-        else phase = '遠期';
-        var impact;
-        if (dig === 'strengthen') impact = '同頻強化';
-        else if (dig === 'friendly') impact = '順勢推進';
-        else if (dig === 'weaken') impact = '對立阻礙';
-        else impact = '中性';
-        seq.push({
-          order: idx + 1,
-          phase: phase,
-          left: l.n || l.name,
-          right: r.n || r.name,
-          dignity: dig,
-          impact: impact
-        });
-      });
-      _narrativePairs[k] = seq;
-    });
-
-    // ── ③ Directional Dignity(PHB 單層內,已排除代表牌) ──
-    // 代表牌面向已單獨在 _sigDirectional 處理,跨層掃會放大成 5 倍偽訊號
-    var _directionalFindings = {};
-    ['op1','op2','op3','op4','op5'].forEach(function(k) {
-      var op = results[k];
-      if (!op || !op.activeCards || !op.activeCards.length) return;
-      var layerFindings = [];
-      for (var di = 0; di < op.activeCards.length; di++) {
-        var curCard = op.activeCards[di];
-        if (!curCard) continue;
-        if (curCard.id === significatorId) continue;
-        var curFacing = getCourtFacing(curCard);
-        if (!curFacing) continue;
-        var dd = computeDirectionalDignity(op.activeCards, di);
-        if (dd && dd.interactions && dd.interactions.length) {
-          layerFindings.push(dd);
-        }
-      }
-      if (layerFindings.length) _directionalFindings[k] = layerFindings;
-    });
-
-    // ── ④ Significator Directional(代表牌自身面向——Book T 核心) ──
-    // Book T 原文:「Count the cards from him, in the direction in which he faces.」
-    // 代表牌面向決定 counting 方向,是 Book T 機制核心
-    var _sigDirectional = null;
-    var sigC = TAROT.find(function(c) { return c.id === significatorId; });
-    if (sigC) {
-      for (var sdk in results) {
-        var _op = results[sdk];
-        if (_op && _op.activeCards) {
-          for (var sdi = 0; sdi < _op.activeCards.length; sdi++) {
-            if (_op.activeCards[sdi].id === significatorId) {
-              var _sigCopy = _op.activeCards[sdi];
-              var _sigFacing = getCourtFacing(_sigCopy);
-              if (_sigFacing) {
-                var _sigMeaning;
-                if (_sigFacing === 'left') _sigMeaning = '代表牌面左——counting 向左走,注意力傾向過去';
-                else if (_sigFacing === 'right') _sigMeaning = '代表牌面右——counting 向右走,重心傾向未來';
-                else if (_sigFacing === 'averted') _sigMeaning = '代表牌固有朝向背離——計數方向依牌圖朝向處理';
-                else _sigMeaning = '代表牌正面';
-                _sigDirectional = {
-                  facing: _sigFacing,
-                  meaning: _sigMeaning
-                };
-              }
-              break;
-            }
-          }
-          if (_sigDirectional) break;
-        }
-      }
-    }
-
-    // ── ⑤ Abandon 觀察(Mathers 逐層原文,非綜合分數) ──
-    // Book T 原文 abandon 條件僅有三處:
-    //   Op1: 說錯問者要問什麼 → abandon
-    //   Op1: counting story 主軸不準 → abandon
-    //   Op2: Sig 不在預期宮位且 cognate house 也不在 → abandon
-    // Op3/Op4 沒有 abandon 條件;Op5「找錯位不必然」意味失敗
-    //
-    // 演算法只能列出客觀觀察事實,abandon 由解讀者(AI/人)依 Mathers 原則判斷
-    var _abandonObservations = [];
-    if (results.op1 && results.op1.activePile) {
-      var pileTypeZh = {
-        fire: 'Yod 火堆 → 工作/事業',
-        water: 'Heh 水堆 → 愛情/喜悅',
-        air: 'Vau 風堆 → 衝突/損失/scandal',
-        earth: 'Heh-final 土堆 → 金錢/物質'
-      };
-      _abandonObservations.push(
-        'Op1 Sig 落於 ' + (pileTypeZh[results.op1.activePile] || results.op1.activePile) +
-        ' —— 若與用戶問題大類不符，依 Book T/PHB 正統不是 abandon，而是揭示真實場域：把答案對準這個元素堆的場域，照常解讀'
-      );
-    }
-    if (results.op2 && results.op2.activeHouse) {
-      _abandonObservations.push(
-        'Op2 Sig 落於第 ' + results.op2.activeHouse + ' 宮 —— ' +
-        '若與問題性質不符，視為「問題真正聚焦的人生領域」揭示，對準此宮位解讀，不要拒答或 abandon'
-      );
-    }
-
-    // ── 純資料記錄:五個 Op 的 Sig 落點(不下綜合判斷) ──
-    // ⚠ 這些只是「Sig 在每層落到哪」的客觀紀錄,AI 須各層獨立讀,不可拼成單一進程故事
-    results.crossAnalysis = {
-      // 落點記錄(純資料)
-      pileElement: results.op1.activePile,
-      elementFlow: {
-        op1: results.op1.activePile || '',
-        op2: results.op2.activeHouse ? '第' + results.op2.activeHouse + '宮' : '',
-        op3: results.op3.activeSign || '',
-        op4: (results.op4.decanSign || '') + (results.op4.decanPlanet ? '(' + results.op4.decanPlanet + ')' : ''),
-        op5: (results.op5.activeSephirah || '') + (results.op5.sephirahZh ? '(' + results.op5.sephirahZh + ')' : '')
-      },
-      // ⚠ 用 ' / ' 分隔而非 ' → ',避免暗示「進程」
-      elementProgression: [
-        results.op1.activePile,
-        (results.op2.activeHouse || '') + '宮',
-        results.op3.activeSign,
-        (results.op4.decanSign || '') + ' ' + (results.op4.decanRange || ''),
-        (results.op5.activeSephirah || '') + '(' + (results.op5.sephirahZh || '') + ')'
-      ].join(' / '),
-
-      // 三個 PHB / Book T 正統技術觀察(每個都是單層內判斷)
-      unaspectedCards: _unaspectedCards,           // PHB Source of the Nile,各層獨立
-      narrativePairs: _narrativePairs,             // Mathers 補細節故事,各層獨立
-      directionalFindings: _directionalFindings,   // PHB Directional Dignity,各層獨立
-
-      // Book T 核心:代表牌自身面向(決定 counting 方向)
-      significatorDirectional: _sigDirectional,
-
-      // Mathers 逐 Op abandon 觀察(不是綜合分數)
-      abandonObservations: _abandonObservations,
-
-      // 正統性標記
-      _orthodoxy: 'v63E_book_t_orthodox',
-      _doctrine: '五個 Operations 是獨立讀盤,本物件不含跨層綜合判斷',
-      _removed_concepts: [
-        'recurringCards', 'crossPairCards', 'elementEnvironment', 'elementShift',
-        'keyCardNames', 'strongUnaspected', 'triadStrengths', 'strongCards',
-        'weakCards', 'abandonScore', 'abandonSuggested', 'keyDirectionalInteractions',
-        'layerAlignment', 'dominantCards', 'progression', 'keyCardThemeConsistency'
-      ]
+    results.divinationValidity = {
+      valid: null,
+      provisional: true,
+      completedOperations: 5,
+      pendingCheckpoint: 'op1_main_line_confirmation',
+      source: 'Golden Dawn Book T',
+      note: '程序計算已完成；在問卜者確認第一次操作主要線索確實對應原問句前，不宣稱已通過完整的來源有效性檢查。'
     };
-
     return results;
   }
 
@@ -3997,6 +3590,10 @@ enhanceTarot = function(tarot) {
   window.ootkOp3 = ootkOp3;
   window.ootkOp4 = ootkOp4;
   window.ootkOp5 = ootkOp5;
+  window.ootkCounting = ootkCounting;
+  window.ootkPairing = ootkPairing;
+  window.ootkPairingRing = ootkPairingRing;
+  window.ootkDignities = ootkDignities;
   window.ootkGetCountValue = getCountValue;
   window.ootkGetCardGD = getCardGD;
   window.ootkElementalDignity = elementalDignity;
@@ -4352,6 +3949,8 @@ enhanceTarot = function(tarot) {
     html += '<div style="font-size:.78rem;color:var(--c-gold);font-weight:700;margin-bottom:.35rem;text-align:center">發牌前落點綁定</div>';
     html += '<div style="font-size:.66rem;color:var(--c-text-muted);line-height:1.55;margin-bottom:.65rem">系統可依問句預填建議，但必須由你在發牌前確認。發牌後不會改選落點來製造命中。</div>';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem">';
+    html += '<label style="grid-column:1/-1;font-size:.65rem;color:var(--c-text-dim)">代表牌計數方向（依你看到的牌圖）<select id="ootk-bind-direction" style="width:100%;margin-top:.22rem;padding:.48rem;border-radius:8px;background:#11101a;color:var(--c-text);border:1px solid rgba(255,255,255,.12)">';
+    html += _opt('', '請確認牌面人物朝向', '') + _opt('left','人物朝左・由代表牌向左計數','') + _opt('right','人物朝右・由代表牌向右計數','') + '</select></label>';
     html += '<label style="font-size:.65rem;color:var(--c-text-dim)">第一操作・題目堆<select id="ootk-bind-pile" style="width:100%;margin-top:.22rem;padding:.48rem;border-radius:8px;background:#11101a;color:var(--c-text);border:1px solid rgba(255,255,255,.12)">';
     html += _opt('', '請選擇', bindingSuggestion.expectedPile) + _opt('fire','Yod 火・工作／行動',bindingSuggestion.expectedPile) + _opt('water','Heh 水・愛／婚姻／愉悅',bindingSuggestion.expectedPile) + _opt('air','Vav 風・爭執／損失／麻煩',bindingSuggestion.expectedPile) + _opt('earth','Heh-final 土・金錢／物質',bindingSuggestion.expectedPile) + '</select></label>';
     html += '<label style="font-size:.65rem;color:var(--c-text-dim)">第二操作・主宮<select id="ootk-bind-house-primary" style="width:100%;margin-top:.22rem;padding:.48rem;border-radius:8px;background:#11101a;color:var(--c-text);border:1px solid rgba(255,255,255,.12)">';
@@ -4435,6 +4034,7 @@ enhanceTarot = function(tarot) {
       e.stopPropagation();
       if (_selectedSigId < 0) { alert('請先依性格選擇一張代表牌'); return; }
       var raw = {
+        countDirection:(overlay.querySelector('#ootk-bind-direction')||{}).value || '',
         expectedPile:(overlay.querySelector('#ootk-bind-pile')||{}).value || '',
         primaryHouse:(overlay.querySelector('#ootk-bind-house-primary')||{}).value || '',
         cognateHouse:(overlay.querySelector('#ootk-bind-house-cognate')||{}).value || '',
@@ -4443,8 +4043,8 @@ enhanceTarot = function(tarot) {
         confirmedBeforeDeal:true
       };
       var binding = normalizeOotkBindings(raw);
-      if (!binding.expectedPile || binding.primaryHouse == null || binding.expectedSign == null || binding.expectedSephirah == null) {
-        alert('請先完成第一操作題目堆、第二操作主宮、第三操作黃道堆與第五操作生命樹位置');
+      if (!binding.countDirection || !binding.expectedPile || binding.primaryHouse == null || binding.expectedSign == null || binding.expectedSephirah == null) {
+        alert('請先確認代表牌計數方向，並完成第一操作題目堆、第二操作主宮、第三操作黃道堆與第五操作生命樹位置');
         return;
       }
       overlay.remove();
@@ -4684,7 +4284,7 @@ enhanceTarot = function(tarot) {
             '<div style="margin:1rem 0;padding:1rem;border-radius:10px;' +
             'border:1px solid rgba(251,191,36,.45);background:rgba(251,191,36,.07);">' +
             '<div style="font-size:.85rem;font-weight:700;color:#fbbf24;margin-bottom:.5rem">' +
-              '第三次操作：預選星座綁定較弱' +
+              '第三次操作：程序綁定失敗' +
             '</div>' +
             '<div style="font-size:.74rem;color:rgba(254,243,199,.92);line-height:1.65">' +
               _esc(opData.signExpectationNote) +
@@ -4700,7 +4300,7 @@ enhanceTarot = function(tarot) {
             '</div>' +
             '</div>';
         } else if (opData.sephExpectationNote && opData.sephExpectationMet === false) {
-          // Op5「找錯位不必然意味失敗」(Crowley)— 紫色觀察卡
+          // Op5「找錯位不必然意味失敗」（Book T）— 紫色觀察卡
           abandonBanner =
             '<div style="margin:1rem 0;padding:1rem 1.1rem;border-radius:10px;' +
             'border:1px solid rgba(168,85,247,.4);background:rgba(168,85,247,.06);">' +

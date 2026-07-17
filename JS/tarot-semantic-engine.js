@@ -1,4 +1,4 @@
-/*! tarot-semantic-engine.js — ROOT-SPEC v95 Golden Dawn compiler
+/*! tarot-semantic-engine.js — ROOT-SPEC v96 Golden Dawn compiler
  * 單一乾淨架構：原句型別化 → 方法觀測模型 → 合法證據圖 →
  * 實體／事件共指 → 原子覆蓋裁決 → 語義飽和 → 反向稽核。
  *
@@ -11,8 +11,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '95.1.0';
-  var SCHEMA = 'jy.tarot.semantic-contract/3';
+  var VERSION = '96.0.0';
+  var SCHEMA = 'jy.tarot.semantic-contract/4';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -62,7 +62,7 @@
     gd_book_t: {
       id: 'gd_book_t',
       label: 'Golden Dawn《Book T／Liber T》',
-      reversalPolicy: '不套用 Waite 固定正逆位字典；一般牌陣由位置、相鄰牌元素尊貴、卡巴拉位階與占星對應裁決，Opening of the Key 依其程序裁決。',
+      reversalPolicy: '不套用 Waite 固定正逆位字典；一般牌陣由位置、有序連續線上的左右相鄰元素尊貴、卡巴拉位階與占星對應裁決；後世牌陣的因果連線只作互動，不自動視為 Book T 相鄰，Opening of the Key 依其程序裁決。',
       imagePolicy: '牌面圖像只作辨識與次級象徵；不得以 PCS 或 Thoth 圖像敘事覆寫 Book T 的結構與牌義。',
       forbiddenMixes: ['modern_rws', 'waite_1910', 'thoth_crowley', 'etteilla'],
       sourceContract: '所有牌陣與開鑰之法共用同一 Golden Dawn Book T 牌義核心；牌陣本身只是一種觀測拓撲，不冒充 Book T 原創。'
@@ -100,7 +100,8 @@
     stability: 'qualitative_inference',
     comparison: 'requires_independent_channels',
     relative_order: 'requires_independent_comparable_channels',
-    threshold_crossing: 'requires_independent_comparable_channels',
+    threshold_crossing: 'qualitative_relational_event_if_query_bound',
+    relational_event: 'qualitative_inference',
     exact_value: 'not_measured',
     numeric_range: 'not_measured',
     cardinality: 'not_measured',
@@ -191,6 +192,11 @@
       label: label,
       sourceProfile: sourceProfile,
       allowedSourceProfiles: ['gd_book_t'],
+      layoutSource: id === 'ootk'
+        ? 'Golden Dawn《Book T／Liber T》程序'
+        : (/^mathers_/.test(id)
+          ? 'Mathers 歷史布局；牌義與尊貴仍鎖定 Book T'
+          : '後世觀測布局；不得冒充 Book T 原創'),
       roles: roles.slice(),
       expectedCardCount: id === 'ootk' ? null : roles.length,
       expectedOperationCount: id === 'ootk' ? 5 : null,
@@ -276,9 +282,9 @@
         trajectory: 'direct_channel',
         outcome: 'direct_channel',
         guidance: 'qualitative_inference',
-        comparison: 'not_measured_single_subject_network',
-        relative_order: 'not_measured_single_subject_network',
-        threshold_crossing: 'not_measured_single_subject_network'
+        comparison: 'requires_independent_channels',
+        relative_order: 'requires_independent_comparable_channels',
+        threshold_crossing: 'qualitative_relational_event_if_query_bound'
       },
       { kind: 'nonlinear_dependency_network', independentComparableChannels: 0 },
       ['第九位是希望／恐懼，不是結果。', '完整牌陣是多軸依賴圖，不是十張線性時間線。']
@@ -376,8 +382,51 @@
     }));
   }
 
+  function cleanRelationOperand(value, scopes) {
+    var out = text(value);
+    (scopes || []).forEach(function (scope) { out = out.replace(scope.surface, ''); });
+    out = out.replace(/(?:將會|可能會|會不會|能不能|可不可以|是否|可以|能夠|能|會|未來|之後|最終)+\s*$/g, '');
+    out = out.replace(/^[，,、\s]+|[，,、\s]+$/g, '');
+    return out;
+  }
+  function normalizeThresholdRelation(relation, scopes) {
+    if (!relation || relation.type !== 'threshold_or_order') return relation;
+    var left = cleanRelationOperand(relation.left, scopes);
+    var right = cleanRelationOperand(relation.right, scopes);
+    // Remove a trailing success/modal phrase when the actual same-scale attribute
+    // is supplied by the opposite operand (e.g.「副業能成功超過正職收入」).
+    left = left.replace(/(?:可以|能夠|能|會)?成功\s*$/g, '');
+    right = right.replace(/(?:可以|能夠|能|會)?成功\s*$/g, '');
+    var scale = 'model_resolve_same_scale';
+    var leftEntity = left, rightEntity = right;
+    var scalePattern = /^(.+?)(?:的)?(收入|薪水|營收|獲利|成本|價格|金額|數量|人數|成績|表現|速度|高度|重量|價值|程度)$/;
+    var rightScale = right.match(scalePattern);
+    var leftScale = left.match(scalePattern);
+    if (rightScale) { rightEntity=text(rightScale[1]); scale=text(rightScale[2]); }
+    if (leftScale) { leftEntity=text(leftScale[1]); scale=text(leftScale[2]); }
+    // Canonical relation surfaces make synonymous threshold questions comparable.
+    function canonical(entity, metric) {
+      entity=text(entity);
+      if (!metric || metric==='model_resolve_same_scale') return entity;
+      if (/^我(?!的)/.test(entity)) entity='我的'+entity.slice(1);
+      return entity + metric;
+    }
+    if (scale !== 'model_resolve_same_scale') {
+      left = canonical(leftEntity, scale);
+      right = canonical(rightEntity, scale);
+    }
+    relation.left = left;
+    relation.right = right;
+    relation.leftEntity = leftEntity;
+    relation.rightEntity = rightEntity;
+    relation.scale = scale;
+    relation.queryMode = 'single_relational_proposition';
+    return relation;
+  }
+
   function detectRelations(question) {
     var q = text(question);
+    var relationScopes = detectScopes(q);
     var relations = [];
     var match;
 
@@ -434,7 +483,7 @@
         });
       }
     }
-    return relations;
+    return relations.map(function (relation) { return normalizeThresholdRelation(relation, relationScopes); });
   }
 
   function extractConstraints(question, scopes, relations) {
@@ -510,29 +559,43 @@
       }
     }
 
-    if (/(?:嗎|呢|是否|有沒有|會不會|能不能|可不可以|是不是)[？?]?\s*$/.test(q) || /(?:是否|有沒有|會不會|能不能|可不可以)/.test(q)) {
+    if (/(?:嗎|呢|是否|有沒有|會不會|能不能|可不可以|是不是)[？?]?\s*$/.test(q) || /(?:是否|有沒有|會不會|能不能|可不可以)/.test(q) || /(?:有|會|能|可以|可能)[^，。！？?]{0,30}(?:嗎|呢|？|\?)/.test(q)) {
       add('existence', '存在／成立與否');
       add('modality', '可能性／能力模態');
     }
     if ((relations || []).length) {
-      add('comparison', '比較關係', relations[0].source);
-      add('relative_order', '相對排序', relations[0].source);
-      if (relations[0].type === 'threshold_or_order') add('threshold_crossing', '門檻跨越', relations[0].source);
+      if (relations[0].type === 'threshold_or_order') {
+        add('relational_event', '比較命題本身是否成立', relations[0].source);
+        add('threshold_crossing', '門檻跨越', relations[0].source);
+      } else {
+        add('comparison', '比較關係', relations[0].source);
+        add('relative_order', '相對排序', relations[0].source);
+      }
     }
     if (/(?:幾個|幾位|多少(?:人|個|位|次)|人數|數量)/.test(q)) add('cardinality', '現實數量');
     if (/(?:幾歲|年齡)/.test(q)) {
       add('exact_age', '精確年齡');
       add('person_attribute', '人物屬性');
     }
-    if (/(?:多少錢|金額|價位|薪水|收入|成本|獲利|營收|百分比|幾成|機率)/.test(q)) add('exact_value', '精確數值／金額');
+    if (/(?:多少錢|多少(?:薪水|收入|成本|獲利|營收)|(?:薪水|收入|成本|獲利|營收)(?:是多少|有多少|多少|金額)|具體(?:金額|數字|數值)|金額|價位|百分比|幾成|機率)/.test(q)) add('exact_value', '精確數值／金額');
     if (/(?:誰|哪位|哪一個人|姓名|名字|身分|是什麼人)/.test(q)) add('identity', '人物身分');
     if (/(?:為什麼|為何|原因|根源|怎麼會)/.test(q)) add('cause', '原因／機制');
     if (/(?:怎麼做|怎麼辦|如何改善|建議|策略|方法|該怎麼)/.test(q)) add('guidance', '方法／建議');
+    if (/(?:成長|增加|上升|提升|改善|變多|擴大|下降|減少|衰退|惡化|變少|縮小)/.test(q)) add('trend', '增減／變化趨勢');
     if (/(?:未來|走向|結果|發展|最後|結局|之後|會變成)/.test(q)) add('trajectory', '發展／結果');
     if (/(?:穩定|長久|持續|短暫|維持)/.test(q)) add('stability', '穩定度');
     if ((scopes || []).length) add('time_scope', '使用者明示期限／範圍', scopes.map(function (s) { return s.surface; }).join('、'));
 
     return dimensions;
+  }
+
+  function normalizeQuerentOwnedOperand(value) {
+    var raw = text(value);
+    var match = raw.match(/^我(?:的)?(.+)$/);
+    if (match && text(match[1])) {
+      return { surface:text(match[1]), ownedBy:'QUERENT', source:raw };
+    }
+    return { surface:raw, ownedBy:null, source:raw };
   }
 
   function compileQuestion(question) {
@@ -542,68 +605,82 @@
     var relations = detectRelations(q);
     var constraints = extractConstraints(q, scopes, relations);
     var dimensions = requestedDimensions(q, scopes, relations);
+    var atoms = [];
+    var entities = [{ id:'QUERENT', type:'querent', source:'問卜者' }];
+    function atom(kind, value, role, source) {
+      value=text(value); if(!value)return;
+      atoms.push({id:'A'+pad(atoms.length+1,2),kind:kind,text:value,source:text(source||value),essential:true,eventId:'QUERY_EVENT',role:role||'predicate'});
+    }
+    var actor = /(?:^|[，。！？?])\s*我/.test(q) || /^我/.test(q) ? 'QUERENT' : 'model_resolve';
+    if (actor==='QUERENT') atom('actor','我','actor','我');
 
-    var atoms = [{
-      id: 'A01',
-      kind: 'clause_preservation',
-      text: q,
-      source: q,
-      essential: true,
-      eventId: 'QUERY_EVENT'
-    }];
-    constraints.forEach(function (constraint) {
-      atoms.push({
-        id: 'A' + pad(atoms.length + 1, 2),
-        kind: constraint.type,
-        text: constraint.text,
-        source: constraint.source,
-        essential: true,
-        eventId: 'QUERY_EVENT'
-      });
-    });
+    var eventType='qualitative_event';
+    var predicate='model_resolve_from_atomic_roles';
+    var roleMap={actor:actor,target:'model_resolve',leftOperand:'',rightOperand:'',attribute:'',comparator:''};
+    var reconstructionLeft='';
+    var reconstructionRight='';
+    if(relations.length && relations[0].type==='threshold_or_order'){
+      var r=relations[0]; eventType='query_bound_relational_event'; predicate='compare_on_same_scale';
+      var leftId='REL_LEFT', rightId='REL_RIGHT';
+      var leftBinding=normalizeQuerentOwnedOperand(r.leftEntity||r.left);
+      var rightBinding=normalizeQuerentOwnedOperand(r.rightEntity||r.right);
+      entities.push({id:leftId,type:'query_explicit_operand',surface:leftBinding.surface,source:r.left,ownedBy:leftBinding.ownedBy});
+      entities.push({id:rightId,type:'query_explicit_operand',surface:rightBinding.surface,source:r.right,ownedBy:rightBinding.ownedBy});
+      roleMap.leftOperand=leftId; roleMap.rightOperand=rightId; roleMap.attribute=r.scale; roleMap.comparator=r.operator;
+      atom('left_operand',leftBinding.surface,'leftOperand',r.left);
+      atom('measured_attribute',r.scale,'attribute',r.source);
+      atom('comparator',r.operatorText,'comparator',r.operatorText);
+      atom('right_operand',rightBinding.surface,'rightOperand',r.right);
+      reconstructionLeft=(leftBinding.ownedBy==='QUERENT'?'我的':'')+leftBinding.surface;
+      reconstructionRight=(rightBinding.ownedBy==='QUERENT'?'我的':'')+rightBinding.surface;
+    } else if(relations.length) {
+      var ar=relations[0]; eventType='branch_or_attribute_comparison'; predicate='compare_independent_operands';
+      entities.push({id:'REL_LEFT',type:'query_explicit_operand',surface:ar.left,source:ar.left});
+      entities.push({id:'REL_RIGHT',type:'query_explicit_operand',surface:ar.right,source:ar.right});
+      roleMap.leftOperand='REL_LEFT'; roleMap.rightOperand='REL_RIGHT'; roleMap.comparator=ar.operator;
+      atom('left_operand',ar.left,'leftOperand',ar.left);
+      atom('comparator',ar.operatorText||ar.operator,'comparator',ar.source);
+      atom('right_operand',ar.right,'rightOperand',ar.right);
+      if(ar.scale&&ar.scale!=='model_resolve')atom('measured_attribute',ar.scale,'attribute',ar.scale);
+    } else {
+      var core=q.replace(/[？?。！!]$/,'');
+      scopes.forEach(function(sc){core=core.replace(sc.surface,'');});
+      core=core.replace(/(?:會不會|能不能|可不可以|是否|有沒有|是不是|嗎|呢)$/,'').trim();
+      atom('event_predicate',core||q,'predicate',q);
+    }
+    var modality = (q.match(/(?:一定|必然|應該|可能|會不會|能不能|可不可以|是否|有沒有|可以|能夠|會|能)/)||[])[0];
+    if(modality)atom('modality',modality,'modality',modality);
+    scopes.forEach(function(sc){atom('scope',sc.surface,'timeScope',sc.source);});
+    constraints.filter(function(c){return c.type==='exclusion'||c.type==='polarity'||c.type==='quantifier';}).forEach(function(c){atom(c.type,c.text,c.attachTo||c.type,c.source);});
 
-    var event = {
-      id: 'QUERY_EVENT',
-      type: 'model_resolve_from_original_clause',
-      surface: q,
-      predicate: 'model_resolve_without_topic_table',
-      roles: {
-        actor: 'model_resolve',
-        target: 'model_resolve',
-        experiencer: 'model_resolve',
-        instrument: 'model_resolve'
-      },
-      polarity: 'model_resolve',
-      modality: 'model_resolve',
-      timeScope: scopes.map(function (scope) { return scope.surface; }),
-      relationIds: relations.map(function (relation) { return relation.id; })
+    var event={
+      id:'QUERY_EVENT', type:eventType, surface:q, predicate:predicate, roles:roleMap,
+      polarity:constraints.some(function(c){return c.type==='polarity';})?'query_explicit':'positive_or_open',
+      modality:modality||'open', timeScope:scopes.map(function(scope){return scope.surface;}),
+      relationIds:relations.map(function(relation){return relation.id;})
     };
-
+    var reconstruction = relations.length && relations[0].type==='threshold_or_order'
+      ? [scopes.map(function(x){return x.surface;}).join(''), reconstructionLeft||(relations[0].leftEntity||relations[0].left), relations[0].scale!=='model_resolve_same_scale'?'的'+relations[0].scale:'', modality||'', relations[0].operatorText, reconstructionRight||(relations[0].rightEntity||relations[0].right), relations[0].scale!=='model_resolve_same_scale'?'的'+relations[0].scale:'', '嗎'].join('')
+      : q;
     return {
-      originalQuestion: q,
-      requestedDimensions: dimensions,
-      explicitScopes: scopes,
-      relations: relations,
-      knownCounterpart: inferExplicitCounterpartBinding(q),
-      queryGraph: {
-        schema: 'typed_query_graph/1',
-        events: [event],
-        entities: [{ id: 'QUERENT', type: 'querent', source: '問卜者' }],
-        relations: clone(relations),
-        constraints: constraints,
-        requiredAtoms: atoms,
-        atomizationRequirement: '不得只保留整句。模型必須把每個會改變答案真值的主體、受詞、事件作用、意圖、行為、結果、身分／關係、場域、否定／排除、比較／門檻、模態、期限與其他限定拆成獨立 essential atom，並維持同一 QUERY_EVENT 的角色結構。',
-        completionRules: [
+      originalQuestion:q, requestedDimensions:dimensions, explicitScopes:scopes, relations:relations,
+      knownCounterpart:inferExplicitCounterpartBinding(q),
+      queryGraph:{
+        schema:'typed_query_graph/2', events:[event], entities:entities, relations:clone(relations), constraints:constraints,
+        requiredAtoms:atoms, roundTripReconstruction:reconstruction,
+        compilerStatus:atoms.length?'atomized':'unresolved',
+        atomizationRequirement:'每個會改變答案真值的主體、兩側比較對象、被比較屬性、比較運算子、模態、期限、否定與排除都須成為獨立 essential atom；完整原句只作 round-trip surface，不得再充當單一必要原子。',
+        completionRules:[
           '每個會改變答案真值的自然語言成分都必須成為 essential atom。',
-          '每個 atom 必須綁定 eventId、role 或 scope；不得只列關鍵字。',
+          '每個 atom 必須綁定 eventId 與 role／scope。',
           '未知人物只能建立 UNBOUND_ENTITY，不得因牌位名稱直接具體化。',
           '原句未明示的前提只能列為 assumption，不能偷渡成必要事實。'
         ],
-        validationRules: {
-          roundTrip: '用完成後的查詢圖重建原句；重建句與原句必須雙向相容。',
-          deletionSensitivity: '逐一刪除 essential atom；若答案真值條件不變，該 atom 不是必要原子或原圖仍漏項。',
-          sameEventTest: '所有被宣稱屬於同一完整事件的角色、行為、意圖、結果與期限必須共享同一 eventId。',
-          noAddedPremise: '任何原句未含且牌面未建立的前提，不能進入完整命題。'
+        validationRules:{
+          roundTrip:'依角色圖重建的命題須與原句雙向相容；語序可規範化，但比較雙方、尺度、模態與期限不得改變。',
+          deletionSensitivity:'逐一刪除 essential atom；刪除任一原子都必須改變真值條件。',
+          sameEventTest:'同一完整事件的角色、作用、結果與期限共享 QUERY_EVENT。',
+          noAddedPremise:'原句未含且牌面未建立的前提不得進入完整命題。'
         }
       }
     };
@@ -1085,10 +1162,15 @@
     };
   }
 
-  function capabilityForDimension(method, dimensionId) {
+  function capabilityForDimension(method, dimensionId, questionSpec) {
+    var relation = ((questionSpec || {}).relations || [])[0];
+    if ((dimensionId === 'threshold_crossing' || dimensionId === 'relational_event') && relation && relation.type === 'threshold_or_order') {
+      var hasOutcome = method.roles.indexOf('outcome') >= 0 || !/^not_measured/.test(method.measurement.outcome || method.measurement.trajectory || 'qualitative_inference');
+      return hasOutcome ? 'qualitative_relational_event_if_query_bound' : 'not_measured_no_outcome_channel';
+    }
     var configured = method.measurement[dimensionId];
     if (configured) return configured;
-    if (dimensionId === 'comparison' || dimensionId === 'relative_order' || dimensionId === 'threshold_crossing') {
+    if (dimensionId === 'comparison' || dimensionId === 'relative_order') {
       return method.topology.independentComparableChannels >= 2
         ? 'direct_comparison_channel'
         : 'not_measured_no_independent_comparable_channels';
@@ -1098,16 +1180,19 @@
 
   function buildCapabilityMatrix(questionSpec, method) {
     return (questionSpec.requestedDimensions || []).map(function (dimension) {
-      var capability = capabilityForDimension(method, dimension.id);
+      var capability = capabilityForDimension(method, dimension.id, questionSpec);
       var canAnswer = true;
       var status = 'qualitative_or_direct';
       var reason = '依方法位置／結構通道與合法證據圖定性裁決。';
 
-      if (/^not_measured/.test(capability)) {
+      if (capability === 'qualitative_relational_event_if_query_bound') {
+        status = 'qualitative_relational_event';
+        reason = '原句已把比較雙方、同一尺度與門檻綁成單一關係命題；本方法可由結果／發展通道定性判斷其成立傾向，但不能量測差額、金額、比例或機率。';
+      } else if (/^not_measured/.test(capability)) {
         canAnswer = false;
         status = 'not_measured';
         if (dimension.id === 'comparison' || dimension.id === 'relative_order' || dimension.id === 'threshold_crossing') {
-          reason = '比較／門檻需要兩個已綁定、獨立且同尺度的觀測通道；本方法未提供。';
+          reason = '兩個選項的相對排序需要兩個已綁定、獨立且同尺度的觀測通道；本方法未提供。';
         } else {
           reason = '本方法沒有該資訊的明示量測通道。';
         }
@@ -1116,7 +1201,7 @@
         if (channels < 2) {
           canAnswer = false;
           status = 'not_measured';
-          reason = '比較／門檻需要兩個已綁定、獨立且同尺度的觀測通道；本方法未提供。';
+          reason = '兩個選項的相對排序需要兩個已綁定、獨立且同尺度的觀測通道；本方法未提供。';
         } else {
           status = 'requires_binding';
           reason = '方法具有獨立比較通道，但仍須確認兩路已綁定至原句比較雙方與同一尺度。';
@@ -1167,6 +1252,7 @@
     var sourceProfileId = resolveSemanticProfile(spreadId, data);
     var sourceProfile = clone(SOURCE_PROFILES[sourceProfileId] || SOURCE_PROFILES.gd_book_t);
     method.defaultSourceProfile = method.sourceProfile;
+    method.requestedSourceProfile = text(data.sourceProfile || 'gd_book_t');
     method.sourceProfile = sourceProfileId;
 
     var evidenceGraph = spreadId === 'ootk'
@@ -1246,6 +1332,7 @@
     if (!graph || !Array.isArray(graph.nodes) || !Array.isArray(graph.evidenceUnits)) errors.push('evidence_graph_missing');
 
     if (method) {
+      if (method.requestedSourceProfile && method.requestedSourceProfile !== 'gd_book_t') errors.push('source_profile_not_allowed:' + method.requestedSourceProfile);
       if (method.allowedSourceProfiles.indexOf(method.sourceProfile) < 0) errors.push('source_profile_not_allowed:' + method.sourceProfile);
       if (method.id !== 'ootk' && graph && graph.nodes.length !== method.expectedCardCount) {
         errors.push('card_count_mismatch:' + graph.nodes.length + '/' + method.expectedCardCount);
@@ -1349,6 +1436,7 @@
     lines.push('查詢圖完成規則：' + question.queryGraph.completionRules.join(' '));
     lines.push('查詢圖驗證：' + question.queryGraph.validationRules.roundTrip + ' ' + question.queryGraph.validationRules.deletionSensitivity + ' ' + question.queryGraph.validationRules.sameEventTest + ' ' + question.queryGraph.validationRules.noAddedPremise);
     lines.push('方法：' + method.label + '〔' + method.id + '〕；拓撲=' + method.topology.kind + '。');
+    lines.push('布局來源：' + method.layoutSource + '。');
     lines.push('方法觀測模型：entityResolution=' + method.observationModel.entityResolution + '；eventResolution=' + method.observationModel.eventResolution + '；comparisonChannels=' + method.observationModel.comparisonChannels + '；temporalModel=' + method.observationModel.temporalModel + '；synthesis=' + method.observationModel.synthesisModel + '。');
     lines.push('牌義來源：' + source.label + '〔' + source.id + '〕；本次只准使用這一個來源設定。');
     lines.push('觀測能力預檢：');
@@ -1419,8 +1507,8 @@
 
     (((contract || {}).question || {}).relations || []).forEach(function (relation) {
       var cap = capabilityMap.threshold_crossing || capabilityMap.relative_order;
-      if (cap && cap.canAnswer === false && positiveThresholdAssertion(output, relation)) {
-        violations.push('本方法沒有獨立比較通道，卻肯定跨越比較門檻：' + relation.left + ' ' + relation.operatorText + ' ' + relation.right);
+      if (relation.type !== 'threshold_or_order' && cap && cap.canAnswer === false && positiveThresholdAssertion(output, relation)) {
+        violations.push('本方法沒有獨立選項比較通道，卻肯定相對排序：' + relation.left + ' ' + relation.operatorText + ' ' + relation.right);
       }
     });
 

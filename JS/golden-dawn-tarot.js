@@ -1,4 +1,4 @@
-/*! golden-dawn-tarot.js — Golden Dawn Book T unified tarot core v1.4.0
+/*! golden-dawn-tarot.js — Golden Dawn Book T unified tarot core v2.0.0
  * Single source of truth for every tarot layout and Opening of the Key.
  * Interpretation source: Golden Dawn Book T / Liber T.
  * Physical orientation is not a fixed Waite-style reversed dictionary.
@@ -7,7 +7,7 @@
   'use strict';
   if (!root || root.JYGoldenDawn) return;
 
-  var VERSION = '1.4.0';
+  var VERSION = '2.0.0';
   var SOURCE_ID = 'gd_book_t';
   var SOURCE_LABEL = 'Golden Dawn《Book T／Liber T》';
   var ELEMENT = { wand:'火', cup:'水', sword:'風', pent:'土', major:'' };
@@ -69,54 +69,61 @@
     '世界':{title:'The Great One of the Night of Time',letter:'Tav',path:32,astro:'Earth and Saturn',element:'土',count:9}
   };
 
-  var PIPS = {
+  // Legacy modernized pip table removed in v2.0.0.
+
+  // Source-faithful Book T meanings.  The older PIPS table is retained only for
+  // backward-compatible field names; profile() reads this canonical table.
+  // Each entry is [Book T title, source core, constructive expression,
+  // adverse/limited expression].  The last two fields are dignity-conditioned
+  // paraphrases, not fixed upright/reversed meanings.
+  var BOOK_T_PIPS = {
     wand: {
-      1:['火之力的根源','自然力、力量、衝勢、活力與能量；作用方式須依問題與尊貴裁決。','自然火力集中，能迅速啟動與創造。','力量失控、暴烈、耗散或缺乏承載。'],
-      2:['統御之主','意志確立疆界、決策與主導權。','果斷、能控制局勢。','專橫、衝突、力量互不相讓。'],
-      3:['既成力量之主','力量開始穩固並向外拓展。','遠見、合作、計畫進入可執行階段。','野心散漫、延誤、支援不足。'],
-      4:['完成工作之主','火力形成穩定成果、休整與秩序。','完成、和諧、可享用成果。','穩定停滯、成果表面化或內部不合。'],
-      5:['爭鬥之主','多股火力競逐，必須測試優先順序。','競爭激發能力、可藉衝突排序。','內耗、爭權、資源被無效消耗。'],
-      6:['勝利之主','行動獲得承認，力量被群體接納。','勝利、進展、聲望。','虛榮、短暫勝利、認可不穩。'],
-      7:['勇氣之主','在不利比例中維持立場與戰力。','勇敢、防守成功、壓力下仍能行動。','硬撐、寡不敵眾、消耗超過成果。'],
-      8:['迅捷之主','能量高速傳遞，事件快速連動。','消息迅速、行動順暢、時機成熟。','倉促、失速、訊息錯位。'],
-      9:['巨大力量之主','力量被集中保護並準備最後推進。','韌性、恢復、守住核心。','戒備過度、疲勞、力量封閉。'],
-      10:['壓迫之主','火力過量而成負擔，責任壓縮自由。','承擔重大任務、可完成最後一段。','超載、權責失衡、壓力使系統崩解。']
+      1:['火之力的根源','自然的火之根本力量：力量、衝勢、活力與能量；其作用依問題性質而定。','自然力量集中，能啟動、推進或創造。','力量過烈、迅速耗散，或欠缺能承接它的形式。'],
+      2:['統御之主','力量、統御與公正秩序的和諧；亦含勇猛、野心、敏感、躁動與不寬恕。','權威、勇氣與決斷形成有效主導。','統御轉為報復、強硬、動盪或頑固。'],
+      3:['既成力量之主','力量已建立，願望開始實現；勞作完成，經爭鬥後成功，亦伴隨驕傲與自我主張。','既有力量穩固，工作可完成並見成果。','驕傲、傲慢或粗魯的自我主張破壞成果。'],
+      4:['完成工作之主','經困難與勞作建成之事達到完成；勞後休息、安排、機巧與完成的成功。','工作完成、秩序建立，能在成果上休整。','過度焦慮與倉促使行動不穩，或以表面完成掩蓋不可靠。'],
+      5:['爭鬥之主','激烈衝突與大膽；魯莽、殘酷、暴力、慾望、揮霍或慷慨，須依尊貴裁決。','競爭中的膽量與投入可被導向有用行動。','衝突失控，魯莽、殘酷或耗散擴大。'],
+      6:['勝利之主','爭鬥後的勝利；由勞動取得的愛與愉悅，謹慎、社交與避免衝突；亦可能因成功而驕矜。','努力後取得勝利、收益與承認。','因財富或成功而傲慢，勝利被自滿削弱。'],
+      7:['勇氣之主','可能的勝利取決於所用的能量與勇氣；有阻礙、困難與爭執，也可在小事上獲勝。','在阻力中持續投入，勇氣足以爭取可能勝利。','能量不足、爭執與虛張聲勢使可能勝利流失。'],
+      8:['迅捷之主','力量施加過快過猛，迅速但很快耗盡；亦指迅捷、膽量、訊息與行動。','快速傳遞、消息與行動能在短程內推進。','過猛、短促、不持久，或迅速行動帶來壓迫與失信。'],
+      9:['巨大力量之主','巨大而穩定、難以撼動的力量；成功伴隨鬥爭與能量，勝利前有憂懼。','持續力量、恢復力與成功能承受阻力。','固執、難以駕馭或因戒備與外觀而僵化。'],
+      10:['壓迫之主','殘酷且壓迫性的力量，常被用於物質與自利目的；也可能因最初自私而遭遇過強反對與失敗。','良好尊貴時可表現為慷慨、無私與自我犧牲。','壓迫、惡意、報復、不義，或負荷與阻力使事情失敗。']
     },
     cup: {
-      1:['水之力的根源','生育力、產出、美、愉悅與幸福的原始水性力量。','滋養、感受與關係能形成豐富產出。','情感氾濫、依附、享樂或容器不足。'],
-      2:['愛之主','兩股情感形成互惠、吸引與交換。','互相回應、和解、合作。','期待不對等、依賴或關係失衡。'],
-      3:['豐盛之主','情感與資源在群體中增殖。','慶賀、共享、支持網絡。','放縱、表面和樂、界線模糊。'],
-      4:['混合歡樂之主','已得滿足開始停滯，感受需要重新辨識。','安定、休息、享有既得成果。','厭倦、停滯、舒適使機會被忽略。'],
-      5:['歡樂損失之主','期待受挫，情感容器出現缺口。','承認失落後可辨識仍保留的資源。','沉溺失望、關係破損、難以回收。'],
-      6:['歡樂之主','過往善意、記憶與熟悉資源回流。','和解、善意、舊資源有用。','懷舊綁架現在、依賴過去。'],
-      7:['幻象成功之主','選項繁多但實質不明，慾望投射成可能。','想像提供創意，但需篩選。','誘惑、虛假承諾、判斷失真。'],
-      8:['放棄成功之主','已有成果失去生命力，需離開舊滿足。','主動退出失效局面、尋找更真實價值。','停留不甘、離開又回頭、能量耗散。'],
-      9:['物質幸福之主','願望在可感受的現實中得到滿足。','享受、滿足、成果可用。','自滿、過度享樂、幸福缺乏深度。'],
-      10:['圓滿成功之主','情感、家庭或群體資源形成完整循環。','長期和諧、共享成果、關係穩定。','理想化幸福、群體壓力或表面圓滿。']
+      1:['水之力的根源','水的根本力量：生育、產出、美、愉悅與幸福。','感受與滋養形成產出、愉悅與美。','情感與享樂缺乏容器，產出被氾濫或依附稀釋。'],
+      2:['愛之主','陰陽力量結合的和諧；愛、婚姻、愉悅與細膩，失勢時可成愚行、放蕩與浪費。','互惠、愛與結合形成可持續的和諧。','關係中的愚行、耗散或享樂失度。'],
+      3:['豐盛之主','豐盛、充足、成功、愉悅、感官享受、被動成功與好運；亦含親切與慷慨。','資源與情感充足，分享、款待與愉悅增加。','被動享受、感官放縱或富足缺乏方向。'],
+      4:['混合歡樂之主','成功或愉悅接近尾聲；幸福進入停滯期，可能延續也可能不延續，且愉悅中帶有不適。','已有愉悅可暫時維持，但需辨識其限制。','停滯、被動與愉悅中的代價使成功走向結束。'],
+      5:['歡樂損失之主','愉悅的死亡或終止；對原本期待帶來快樂之事感到失望、悲傷與損失，且麻煩可由意外來源出現。','承認愉悅已結束，辨認失望與意外損失的來源。','背叛、欺瞞、惡意與未預期的憂患擴大。'],
+      6:['歡樂之主','穩定增加、收益與愉悅的開端，但仍只是開始；亦可能因不當自我主張與虛榮引起衝突。','願望、幸福、成功或享受開始增長。','自負、忘恩或過早自滿使初步愉悅轉為爭執。'],
+      7:['幻象成功之主','可能勝利被人的懈怠抵銷；表面勝利時出現欺瞞，承諾不履行，初步成功未被追進。','辨認表面成功與真實成果的差距，及時續進。','幻想、錯誤、虛假承諾與放縱使成功無法保留。'],
+      8:['放棄成功之主','短暫成功而沒有後續結果；所得很快被放下，興趣衰退、漂移與不穩定。','停止無後續價值的成功，承認興趣已下降。','得到即棄、惰性與不穩使成果無法延續。'],
+      9:['物質幸福之主','愉悅與幸福幾乎完整實現，願望達成；亦可能自誇、虛榮、過度談論自己。','願望與可感受的幸福得到充分實現。','自滿、虛榮或過度自我假定損害幸福。'],
+      10:['圓滿成功之主','受上方啟發而形成持久成功與幸福；事情安定、完整好運，亦含平靜、調停、慷慨或浪費。','成功與幸福得到持久安定，群體可共享成果。','放蕩、浪費或過度享樂侵蝕已完成的好運。']
     },
     sword: {
-      1:['風之力的根源','被召喚的強大力量，可為善或惡；亦指旋轉之力、在困難中形成的力量與正義裁決。','意志與理性被正確召喚，能清楚裁決並穿越困難。','召喚失控、極端、懲罰性或以理性造成傷害。'],
-      2:['恢復和平之主','相反意見暫時平衡，需維持清醒。','休戰、理性協調、暫時穩定。','壓抑衝突、猶豫、平衡脆弱。'],
-      3:['悲傷之主','清楚看見分裂、損失與痛苦事實。','誠實面對痛點，切除幻想。','殘酷、傷害延長、思緒反覆刺痛。'],
-      4:['爭鬥休息之主','思想暫停運作以恢復秩序。','休息、撤退、重新整理。','停滯、逃避、休息不足或過久。'],
-      5:['失敗之主','策略與力量比例失衡，勝負帶有代價。','辨認不可打的戰並止損。','羞辱、報復、錯誤競爭持續。'],
-      6:['贏得成功之主','理性方法帶領局勢離開混亂。','過渡、改善、技術性解法。','改善緩慢、舊問題隨行、方向不清。'],
-      7:['不穩定努力之主','策略迂迴、成果不確定，需要審查資訊。','機智、低調行動、避開正面耗損。','欺瞞、漏洞、計畫無法持續。'],
-      8:['縮短力量之主','認知與規則限制行動幅度。','接受邊界後聚焦可控部分。','自我束縛、資訊封閉、無效焦慮。'],
-      9:['絕望與殘酷之主','思想轉向自我攻擊，壓力在夜間或內在放大。','看清恐懼來源並停止精神酷刑。','焦慮、罪惡感、殘酷判斷。'],
-      10:['毀滅之主','思想結構走到極限，舊策略無法延續。','承認結束、停止無效系統。','崩潰、極端悲觀、破壞擴大。']
+      1:['風之力的根源','被召喚的巨大力量，可為善或惡；亦是旋轉之力、困難中形成的力量，以及維持神聖權威的正義。','力量被正確召喚，用於裁決、澄清與穿越困難。','召喚成為憤怒、懲罰、苦難或破壞性的權力。'],
+      2:['恢復和平之主','同一性質中的矛盾特徵；苦難中生出力量，痛苦後有愉悅；安排、休戰與和平恢復，但關係仍有張力。','衝突獲得安排與休戰，公平與互助可恢復秩序。','和解不完整、反覆冒犯、缺乏分寸或真假混雜。'],
+      3:['悲傷之主','破裂、中斷、分離、爭吵、挑撥、悲傷與眼淚；亦可能保有誠信或某些愉悅，依尊貴而定。','誠實面對分裂與悲傷，守住承諾與交易誠信。','挑撥、欺語、爭端與自利使分離加劇。'],
+      4:['爭鬥休息之主','悲傷後的休息、戰爭後的和平；焦慮放鬆、安靜、休整與充足，皆在爭鬥之後。','爭鬥後得以休息、恢復並轉好。','休息只是暫停，未處理的爭鬥仍限制穩定。'],
+      5:['失敗之主','競爭已結束並判定對問卜者不利；失敗、焦慮、麻煩與損失，亦含惡意、誹謗與不可靠。','明確認出已敗的競爭，停止讓損失擴大。','惡意、報復、搬弄與持續爭鬥加深失敗。'],
+      6:['贏得成功之主','經焦慮與麻煩後取得成功；亦含勞動、耐心、自尊、支配與旅程。','耐心與工作使局勢在困難後成功。','自負、支配或過度在意形象削弱所得。'],
+      7:['不穩定努力之主','只有部分成功；勝利在握時因未繼續努力而退讓，性格搖擺、不可靠，也可能窺探或洩露祕密。','承認成果尚不完整，持續最後一段努力。','在將得之際放棄、搖擺、失信或洩密，令成果流失。'],
+      8:['縮短力量之主','把過多力量用於小事，因過度注意細節而犧牲主要與重要之處；細節耐心與其他方面混亂並存。','細節上的耐心與技巧被限制在適當範圍內。','狹隘、瑣碎、支配性，或智慧被用在小而不值得之事。'],
+      9:['絕望與殘酷之主','絕望、殘酷、無情、惡意、痛苦、缺乏、損失與壓迫；亦可能依尊貴表現為服從、忠誠、耐心與無私。','在痛苦中仍維持耐心、忠誠與無私，避免殘酷擴大。','絕望、殘酷、謊言與壓迫直接主導局面。'],
+      10:['毀滅之主','失去紀律的交戰力量，造成完全瓦解與失敗；所有計畫與工程遭到毀壞。','唯一建設性方向是承認既有計畫已被破壞並停止擴大損失。','全面破壞、失敗、敗北與中斷成為收束。']
     },
     pent: {
-      1:['土之力的根源','物質性本身及其正反面，涉及物質收益、勞動、力量與財富。','資源、工作與具體機會能形成可用成果。','物質幻象、貪著、資源閒置或形式大於效益。'],
-      2:['和諧變化之主','資源在變動中維持循環與平衡。','彈性調度、周轉、兩端兼顧。','周轉失衡、反覆、成本吞噬成果。'],
-      3:['物質工作之主','技藝、分工與實際建造成果。','專業合作、品質被看見。','低品質、協作失靈、做工無法變現。'],
-      4:['世俗權力之主','資源被集中、保護與控制。','守成、邊界、資產穩定。','僵化、囤積、控制阻礙流動。'],
-      5:['物質困難之主','現金、健康或基本安全受到壓迫。','承認缺口並尋求實際援助。','匱乏惡化、孤立、資源鏈中斷。'],
-      6:['物質成功之主','資源交換達成比例，付出與回收較平衡。','收入、支持、公平分配。','依賴、分配不公、表面有進帳卻留不住。'],
-      7:['未完成成功之主','投入已有成果但尚未達到預期回報。','評估、耐心、調整投入比例。','回報不足、沉沒成本、等待失去理由。'],
-      8:['謹慎之主','重複技術、細節管理與可量化進步。','熟練、改善流程、穩定產出。','機械化、完美主義、努力方向錯誤。'],
-      9:['物質收益之主','獨立資源、品質與累積成果可被享用。','收益、自治、穩健成果。','孤立、奢侈、收益依賴單一條件。'],
-      10:['財富之主','資產、制度與長期累積形成完整基礎。','穩定財富、傳承、系統化成果。','結構沉重、家族或制度成本、資產不流動。']
+      1:['土之力的根源','一切意義上的物質性，兼具善惡與幻象性；涉及物質收益、勞動、力量與財富。','物質、工作與資源形成可使用的收益。','對物質形式的迷執、幻象或代價遮蔽真實效益。'],
+      2:['和諧變化之主','得失、強弱與工作狀態交替；管理得當可幸運，但也有反覆、不可靠與矛盾。','以審慎管理維持變動中的周轉與和諧。','搖擺、不一致與管理失誤使得失反覆。'],
+      3:['物質工作之主','建造、創作與物質事物的實現及增加；商業交易、職位、受薪工作與建立中的事務。','工作、建造與商業技能形成實際增加。','狹隘、自利或追逐不可能之事偏離可建立的工作。'],
+      4:['世俗權力之主','確定的物質收益、地位、統御與世俗權力已完成，但不再通向更遠；有秩序卻欠缺進取與原創。','收益、影響與資源獲得保護和秩序。','貪求、猜疑、不滿與缺乏進取使完成停滯。'],
+      5:['物質困難之主','金錢或地位損失，物質事務的麻煩、勞動與焦慮；有時可在艱苦工作後取回金錢。','承認物質缺口，以嚴謹工作與實際知識爭取恢復。','職業或金錢損失、貧困與焦慮形成直接壓力。'],
+      6:['物質成功之主','物質事業中的成功與收益；權力、影響、地位與治理，良好尊貴時慷慨而公正。','商業繁榮、物質成功與公平運用資源。','因過量而傲慢、炫富或揮霍。'],
+      7:['未完成成功之主','成功的承諾未實現；看似有前景的財運落空，少量孤立收益沒有後續果實，常是多勞少得。','及早辨認不會結果的承諾，重新評估投入。','希望破滅、無利投機、沉重投入只換得微小且孤立的收益。'],
+      8:['謹慎之主','在小事上過度謹慎而犧牲大局；小額現金收益、勤勞、栽培與囤積，但缺乏進取。','技巧、勤勞與謹慎能帶來小額、可驗證的收益。','斤斤計較、囤積、過度細節化與缺乏進取使大局受損。'],
+      9:['物質收益之主','物質收益完全實現：財富、繼承與物品增加；亦可能貪求、囤藏，甚至偷盜與欺詐，須依尊貴裁決。','物質收益、資產增加與成果實現。','貪求、囤積或不正手段污染收益。'],
+      10:['財富之主','物質收益與財運完成，到達成功頂點但不再通向更遠；可能伴隨沉重、怠惰或部分損失。','財富與金錢交易達到完成和頂點。','停滯、沉重、怠惰或高點後的部分損失。']
     }
   };
 
@@ -164,7 +171,7 @@
     cup:{
       king:{title:'Knight／Lord of the Waves and Waters',core:'情感優雅、詩性而具吸引力，平靜下仍有可被喚起的力量。',well:'有同理、想像與柔韌的推進力。',ill:'感官放縱、懶散、失信或情感漂移。'},
       queen:{title:'Queen of the Thrones of the Waters',core:'高度感受與想像，能反映並孕育周遭情緒。',well:'溫柔、富想像、善於理解與承接。',ill:'過度被環境影響、被動或界線鬆散。'},
-      knight:{title:'Prince of the Chariot of the Waters',core:'外表平靜而內在強烈，兼具藝術感、策略與情緒推力。',well:'細膩、敏銳、富創意，能把感受化為策略。',ill:'操控、冷酷、迂迴或情緒手段化。'},
+      knight:{title:'Prince of the Chariot of the Waters',core:'本性細微、強烈、狡黠而有藝術性，外表平靜；能成為善或惡的強大力量，且容易受表面權力與智慧吸引。',well:'細微、藝術而強韌，能把平靜外表下的強烈力量導向建設性成果。',ill:'極端冷酷、無情、狡詐，或把情感與才智用於惡意目的。'},
       page:{title:'Princess of the Waters',core:'以溫柔、詩意與關懷使情感具體化。',well:'親切、夢想豐富、富同情與美感。',ill:'自我中心、享樂或沉溺幻想。'}
     },
     sword:{
@@ -179,6 +186,17 @@
       knight:{title:'Prince of the Chariot of Earth',core:'使物質增加、凝固與成形，重視程序、可靠與實作。',well:'穩定、可信、耐心，能把計畫落地。',ill:'自利、遲鈍、過度物質化或抗拒變化。'},
       page:{title:'Princess of the Echoing Hills',core:'以勤勉、細心和毅力承接物質世界的種子。',well:'慷慨、可靠、認真，能持續完成細節。',ill:'浪費、揮霍、缺乏紀律或只顧眼前。'}
     }
+  };
+
+
+  // Book T's divinatory role priority, with an application-level grounding
+  // safeguard.  The priority comes from Book T; the prohibition on inventing
+  // identity, age, appearance or occupation is an app evidence rule.
+  var COURT_ROLE_PRIORITY = {
+    king:['事情、影響或消息的到來／離去','人物（需由問題與位置完成共指）'],
+    queen:['與事情相關的人物','其花色的承接與實現作用'],
+    knight:['與事情相關的人物','其花色的組織與實現作用'],
+    page:['意見、思想或計畫','人物（需另有共指證據）']
   };
 
   var SEPHIRAH = {1:'Kether',2:'Chokmah',3:'Binah',4:'Chesed',5:'Geburah',6:'Tiphareth',7:'Netzach',8:'Hod',9:'Yesod',10:'Malkuth'};
@@ -201,12 +219,12 @@
       var m = MAJOR[card.n] || ['此大牌的作用須依位置、占星與相鄰牌裁決。','力量能被建設性運用。','力量受阻、過度或失去承載。'];
       var mc = MAJOR_CORR[card.n] || {};
       var corr = [mc.title, mc.letter ? ('字母 '+mc.letter) : '', mc.path ? ('Path '+mc.path) : '', mc.astro || ''].filter(Boolean).join('／');
-      return {sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,name:card.n,kind:'major',element:mc.element || card.el || '',bookTTitle:mc.title || '',letter:mc.letter || '',path:mc.path || null,astro:mc.astro || '',countValue:mc.count || 0,core:m[0],well:m[1],ill:m[2],correspondence:corr,candidates:[mc.title||'',m[0],m[1],m[2]].filter(Boolean)};
+      return {sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,name:card.n,kind:'major',element:mc.element || card.el || '',bookTTitle:mc.title || '',letter:mc.letter || '',path:mc.path || null,astro:mc.astro || '',countValue:mc.count || 0,sourceCore:m[0],contextualGloss:m[0],core:m[0],well:m[1],ill:m[2],correspondence:corr,candidates:[mc.title||'',m[0],m[1],m[2]].filter(Boolean)};
     }
     var num = rankNumber(card);
-    if (num && num <= 10 && PIPS[card.suit] && PIPS[card.suit][num]) {
-      var p = PIPS[card.suit][num];
-      return {sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,name:card.n,kind:num===1?'ace':'pip',suit:card.suit,element:ELEMENT[card.suit],number:num,bookTTitle:p[0],core:p[1],well:p[2],ill:p[3],sephirah:SEPHIRAH[num] || '',world:WORLD[card.suit] || '',decan:astro.decan,dateRange:astro.date,correspondence:astro.raw,candidates:[p[0],p[1],p[2],p[3]]};
+    if (num && num <= 10 && BOOK_T_PIPS[card.suit] && BOOK_T_PIPS[card.suit][num]) {
+      var p = BOOK_T_PIPS[card.suit][num];
+      return {sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,name:card.n,kind:num===1?'ace':'pip',suit:card.suit,element:ELEMENT[card.suit],number:num,bookTTitle:p[0],sourceCore:p[1],contextualGloss:p[1],core:p[1],well:p[2],ill:p[3],sephirah:SEPHIRAH[num] || '',world:WORLD[card.suit] || '',decan:astro.decan,dateRange:astro.date,correspondence:astro.raw,candidates:[p[0],p[1],p[2],p[3]]};
     }
     var c = COURT[card.rank] || COURT.page;
     var exact = (COURT_BOOK_T[card.suit] || {})[card.rank] || null;
@@ -215,7 +233,7 @@
     var core = exact ? exact.core : (c.well + ' 本花色主題為' + sf[0]);
     var well = exact ? exact.well : (c.well + ' ' + sf[0]);
     var ill = exact ? exact.ill : (c.ill + ' ' + sf[1]);
-    return {sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,name:card.n,kind:'court',suit:card.suit,element:ELEMENT[card.suit],rank:card.rank,bookTTitle:title,layer:c.layer,core:core,well:well,ill:ill,correspondence:astro.raw,candidates:[title,c.layer,core,well,ill]};
+    return {sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,name:card.n,kind:'court',suit:card.suit,element:ELEMENT[card.suit],rank:card.rank,bookTTitle:title,layer:c.layer,sourceCore:core,contextualGloss:core,core:core,well:well,ill:ill,rolePriority:(COURT_ROLE_PRIORITY[card.rank]||[]).slice(),groundingRule:'不得僅憑宮廷牌具體化未知人物；身分、年齡、外貌與職業須有原問句或獨立證據。',correspondence:astro.raw,candidates:[title,c.layer,core,well,ill]};
   }
 
   function relation(a,b){
@@ -229,18 +247,19 @@
     if ((ea==='火'&&eb==='水')||(ea==='水'&&eb==='火')||(ea==='風'&&eb==='土')||(ea==='土'&&eb==='風')) return {code:'weaken',label:'敵對元素削弱',effect:-2};
     return {code:'support',label:'友善元素協調',effect:1};
   }
-  // 每個牌陣先定義「哪些牌真的相鄰／同組」，避免把抽牌陣列順序誤當成
-  // 物理相鄰。Book T 元素尊貴只作用於方法拓撲明示的牌組或直接鄰牌。
+  // Interpretation dependency edges and Book T dignity lines are distinct.
+  // A modern spread may define causal/semantic links, but those links do not
+  // automatically become Book T's physical "cards next to it on either side".
   function range(a,b){var out=[];for(var i=a;i<b;i++)out.push(i);return out;}
-  function spreadGroups(spreadId,count){
+  function spreadDependencyGroups(spreadId,count){
     var id=spreadId||'';
     if(id==='three_card')return [[0,1,2]];
-    if(id==='five_card')return [[1,0,2],[3,2,0,4]];
+    if(id==='five_card')return [[1,0,2],[3,0,4]];
     if(id==='cross')return [[2,0,3],[4,0,1]];
     if(id==='either_or')return [[0,1,3],[0,2,4]];
     if(id==='relationship')return [[0,2,1],[4,3,2,5]];
     if(id==='timeline')return [[0,1,2,3,4]];
-    if(id==='celtic_cross')return [[0,1],[2,3],[4,5],[6,7],[8,9]];
+    if(id==='celtic_cross')return [[0,1],[2,0,3],[4,0,5],[6,7,8,9]];
     if(id==='tree_of_life')return [[1,3,6],[2,4,7],[0,5,8,9]];
     if(id==='zodiac')return [[0,6],[1,7],[2,8],[3,9],[4,10],[5,11]];
     if(id==='minor_arcana')return [[1,0,2],[3,4,5,6]];
@@ -251,28 +270,46 @@
     if(id==='ootk')return [range(0,count||0)];
     return count>0?[range(0,count)]:[];
   }
-  function topologyNeighbors(spreadId,count,index){
-    var groups=spreadGroups(spreadId,count), found=[];
-    groups.forEach(function(group){
-      var at=group.indexOf(index);if(at<0)return;
-      if(at>0&&found.indexOf(group[at-1])<0)found.push(group[at-1]);
-      if(at<group.length-1&&found.indexOf(group[at+1])<0)found.push(group[at+1]);
-    });
-    return {groups:groups,neighbors:found};
+  function spreadDignityLines(spreadId,count){
+    var id=spreadId||'';
+    if(id==='three_card')return [[0,1,2]];
+    if(id==='five_card')return [[1,0,2],[3,0,4]];
+    if(id==='cross')return [[2,0,3],[4,0,1]];
+    if(id==='either_or')return [[0,1,3],[0,2,4]];
+    if(id==='relationship')return [[0,2,1],[4,3,2,5]];
+    if(id==='timeline')return [[0,1,2,3,4]];
+    // Celtic Cross: only physically/ordinally continuous axes and the staff.
+    // The crossing card is an interaction edge, not a two-sided dignity line.
+    if(id==='celtic_cross')return [[4,0,5],[3,0,2],[6,7,8,9]];
+    if(id==='tree_of_life')return [[1,3,6],[2,4,7],[0,5,8,9]];
+    if(id==='minor_arcana')return [[1,0,2],[3,4,5,6]];
+    if(id==='fifteen_card')return [[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]];
+    if(id==='mathers_21')return [range(0,7),range(7,14),range(14,21)];
+    if(id==='mathers_horseshoe')return [range(0,26),range(26,43),range(43,54)];
+    if(id==='horseshoe')return [range(0,7)];
+    if(id==='ootk')return [range(0,count||0)];
+    return [];
   }
-  function dignityContext(cards,index,spreadId){
-    cards=cards||[];
-    var card=cards[index],p=profile(card);
-    if(!p)return null;
-    var topo=topologyNeighbors(spreadId,cards.length,index);
-    var ids=topo.neighbors;
-    if(!ids.length)return {state:'unlinked',score:0,relations:[],reading:p.core,spreadId:spreadId||'',topologyBound:!!spreadId};
+  function spreadCompatibilityEdges(spreadId){
+    if(spreadId==='celtic_cross')return [[0,1]];
+    return [];
+  }
+  // Backward compatibility: spreadGroups now means interpretation topology,
+  // not Book T dignity adjacency.
+  function spreadGroups(spreadId,count){return spreadDependencyGroups(spreadId,count);}
+  function lineContexts(spreadId,count,index){
+    var contexts=[];
+    spreadDignityLines(spreadId,count).forEach(function(line,li){
+      var at=line.indexOf(index);if(at<0)return;
+      var n=[];if(at>0)n.push(line[at-1]);if(at<line.length-1)n.push(line[at+1]);
+      contexts.push({lineIndex:li,line:line.slice(),position:at,neighbors:n,full:n.length===2});
+    });
+    return contexts;
+  }
+  function evaluateRelations(card,cards,ids,p){
     var rels=ids.map(function(i){return {index:i,card:cards[i],relation:relation(card,cards[i])};});
-    // 一張牌同時連到三個以上節點時，沒有單一「左右夾牌」可合法裁成一個尊貴等級；
-    // 保留各邊關係，交由方法網絡逐邊解讀，不做平均投票。
-    if(rels.length>2)return {state:'networked',score:null,relations:rels,reading:p.core,spreadId:spreadId||'',topologyBound:true};
-    var flanking=rels.length===2?relation(cards[rels[0].index],cards[rels[1].index]):null;
-    var neutralized=!!(flanking&&flanking.code==='weaken');
+    var flank=rels.length===2?relation(cards[rels[0].index],cards[rels[1].index]):null;
+    var neutralized=!!(flank&&flank.code==='weaken');
     var effects=rels.map(function(r){return r.relation.effect;});
     var score=neutralized?0:effects.reduce(function(a,b){return a+b;},0);
     var hasWeak=rels.some(function(r){return r.relation.code==='weaken';});
@@ -284,18 +321,35 @@
     else if(hasWeak)state='ill_dignified';
     else if(hasStrong||score>=2)state='well_dignified';
     else if(hasSupport)state='supported';
-    var reading=state==='well_dignified'?p.well:(state==='ill_dignified'?p.ill:p.core);
-    return {state:state,score:score,relations:rels,flanking:flanking,neutralizedByContraryFlanks:neutralized,reading:reading,spreadId:spreadId||'',topologyBound:!!spreadId};
+    return {state:state,score:score,relations:rels,flanking:flank,neutralizedByContraryFlanks:neutralized,reading:state==='well_dignified'?p.well:(state==='ill_dignified'?p.ill:p.core)};
+  }
+  function dignityContext(cards,index,spreadId){
+    cards=cards||[];var card=cards[index],p=profile(card);if(!p)return null;
+    var contexts=lineContexts(spreadId,cards.length,index);
+    var full=contexts.filter(function(c){return c.full;}).map(function(c){return Object.assign({basis:'ordered_flanking_line'},c,evaluateRelations(card,cards,c.neighbors,p));});
+    var one=contexts.filter(function(c){return !c.full&&c.neighbors.length;}).map(function(c){return Object.assign({basis:'one_sided_local_compatibility'},c,evaluateRelations(card,cards,c.neighbors,p));});
+    var edges=spreadCompatibilityEdges(spreadId).filter(function(e){return e[0]===index||e[1]===index;}).map(function(e){var other=e[0]===index?e[1]:e[0];return {index:other,card:cards[other],relation:relation(card,cards[other]),basis:'declared_interaction_compatibility'};});
+    if(full.length===1){var r=full[0];r.spreadId=spreadId||'';r.topologyBound=true;r.fullDignity=true;r.localCompatibility=one;r.interactionCompatibility=edges;return r;}
+    if(full.length>1)return {state:'multi_line',score:null,reading:p.core,spreadId:spreadId||'',topologyBound:true,fullDignity:true,lineReadings:full,localCompatibility:one,interactionCompatibility:edges,relations:[]};
+    if(one.length){
+      var only=one[0];
+      var localState=only.state==='ill_dignified'?'locally_weakened':(only.state==='well_dignified'||only.state==='supported'?'locally_supported':'local_mixed');
+      return {state:localState,score:only.score,reading:p.core,spreadId:spreadId||'',topologyBound:true,fullDignity:false,localCompatibility:one,interactionCompatibility:edges,relations:only.relations};
+    }
+    if(edges.length)return {state:'interaction_only',score:null,reading:p.core,spreadId:spreadId||'',topologyBound:true,fullDignity:false,localCompatibility:[],interactionCompatibility:edges,relations:edges};
+    return {state:'unlinked',score:0,relations:[],reading:p.core,spreadId:spreadId||'',topologyBound:!!spreadId,fullDignity:false};
   }
   function spreadDignityGroups(cards,spreadId){
     cards=cards||[];
-    return spreadGroups(spreadId,cards.length).map(function(group,gi){
-      var links=[];
-      for(var i=0;i<group.length-1;i++){
-        var a=group[i],b=group[i+1];
-        if(cards[a]&&cards[b])links.push({from:a,to:b,fromName:cards[a].n||cards[a].name||'',toName:cards[b].n||cards[b].name||'',relation:relation(cards[a],cards[b])});
-      }
-      return {group:gi+1,indices:group.slice(),links:links};
+    return spreadDignityLines(spreadId,cards.length).map(function(line,gi){
+      var links=[];for(var i=0;i<line.length-1;i++){var a=line[i],b=line[i+1];if(cards[a]&&cards[b])links.push({from:a,to:b,fromName:cards[a].n||cards[a].name||'',toName:cards[b].n||cards[b].name||'',relation:relation(cards[a],cards[b]),basis:'ordered_contiguous_line'});}
+      return {group:gi+1,indices:line.slice(),links:links,basis:'book_t_ordered_line'};
+    });
+  }
+  function spreadInteractionGroups(cards,spreadId){
+    cards=cards||[];
+    return spreadDependencyGroups(spreadId,cards.length).map(function(group,gi){
+      return {group:gi+1,indices:group.slice(),basis:'spread_interpretive_dependency_not_book_t_dignity'};
     });
   }
 
@@ -307,9 +361,10 @@
     if (p.kind==='major') { card.astro=p.correspondence; card.el=p.element; }
     card.sourceProfile=SOURCE_ID;
     card.up=p.core;
-    card.rv=p.ill;
+    card.rv='';
     card.kwUp=p.bookTTitle||p.core;
-    card.kwRv='失勢：'+p.ill;
+    card.kwRv='';
+    card.gdIllDignified=p.ill;
     return card;
   }
   function annotateDeck(deck){(deck||[]).forEach(annotate);return deck;}
@@ -371,20 +426,20 @@
 
   function sourceContract(){return {
     id:SOURCE_ID,label:SOURCE_LABEL,version:VERSION,
-    meaningOrder:['Book T 核心義','牌陣位置權限','相鄰牌元素尊貴','卡巴拉位階／世界','占星分度','方法拓撲'],
+    meaningOrder:['Book T 原典核心義','牌陣位置權限','實際有序相鄰線的元素尊貴','卡巴拉位階／世界','占星分度','牌陣依賴拓撲（不冒充 Book T 相鄰）'],
     reversalPolicy:'不使用 Waite 固定正逆字典；一般牌陣牌面統一正向，強弱由元素尊貴、位置與方法結構裁決。',
-    spreadPolicy:'牌陣是觀測布局；不把後世布局冒充 Book T 原創。',
+    spreadPolicy:'牌陣是觀測布局；後世牌陣的因果／語義連線不自動等於 Book T 左右相鄰。只有明示有序連續線才套用完整元素尊貴；其他連線只讀互動相容性。',
     timingPolicy:'只有牌陣明示的相對時間位置或前端提供的外部日曆錨，才能回答時序；牌面占星對應與第四次操作三十六牌環都不是日期換算器。',
-    courtMapping:'現有牌圖 King=Book T Knight/Lord（火/Yod）；Queen=Queen（水/Heh）；Knight=Prince（風/Vau）；Page=Princess（土/末Heh）。',
+    courtMapping:'現有牌圖 King=Book T Knight/Lord（火/Yod）；Queen=Queen（水/Heh）；Knight=Prince（風/Vau）；Page=Princess（土/末Heh）。角色優先序依 Book T，具體人物身分另受應用程式證據綁定限制。',
     openingOfKey:'第四次操作為代表牌後方三十六張牌環及1↔36配對，不作三十六旬、月份或日期推算。'
   };}
 
   var api={
     version:VERSION,sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,
     profile:profile,annotate:annotate,annotateDeck:annotateDeck,normalizeDraw:normalizeDraw,
-    relation:relation,dignityContext:dignityContext,spreadDignityGroups:spreadDignityGroups,spreadGroups:spreadGroups,countValue:countValue,majorityObservations:majorityObservations,sourceContract:sourceContract,
+    relation:relation,dignityContext:dignityContext,spreadDignityGroups:spreadDignityGroups,spreadInteractionGroups:spreadInteractionGroups,spreadDignityLines:spreadDignityLines,spreadDependencyGroups:spreadDependencyGroups,spreadCompatibilityEdges:spreadCompatibilityEdges,spreadGroups:spreadGroups,countValue:countValue,majorityObservations:majorityObservations,sourceContract:sourceContract,
     forceUpright:function(){return true;},
-    majorCorrespondences:MAJOR_CORR,courtBookT:COURT_BOOK_T,
+    majorCorrespondences:MAJOR_CORR,courtBookT:COURT_BOOK_T,courtRolePriority:COURT_ROLE_PRIORITY,canonicalPips:BOOK_T_PIPS,
     elements:ELEMENT,englishElements:EN_ELEMENT,suits:SUIT_ZH
   };
   root.JY_GOLDEN_DAWN_MODE=true;

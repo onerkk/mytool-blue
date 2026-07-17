@@ -16357,7 +16357,7 @@ function _buildPayload() {
       var posMeaning = pos && (pos.zh || pos.meaning || '') || '';
       var gp = gdCore && gdCore.profile ? gdCore.profile(c) : (c.gd || null);
       var dc = gdCore && gdCore.dignityContext ? gdCore.dignityContext(gdCards, i, spreadId) : null;
-      var dLabel = dc ? ({well_dignified:'得勢',supported:'友善支持',ill_dignified:'失勢',mixed:'混合／抵消',networked:'網絡逐邊裁決',unlinked:'未建立相鄰尊貴'}[dc.state] || dc.state) : '待裁決';
+      var dLabel = dc ? ({well_dignified:'有序左右夾牌得勢',supported:'有序左右夾牌友善支持',ill_dignified:'有序左右夾牌失勢',mixed:'有序左右夾牌混合／抵消',multi_line:'多條有序線分別裁決',locally_supported:'單側相容性支持（非完整尊貴）',locally_weakened:'單側相容性削弱（非完整尊貴）',local_mixed:'單側相容性混合（非完整尊貴）',interaction_only:'牌位互動相容性（非完整尊貴）',unlinked:'未建立有序相鄰線'}[dc.state] || dc.state) : '待裁決';
       var line = '【' + posLabel + '】' + _s(c.name||c.n);
       if (gp && gp.bookTTitle) line += '｜' + _s(gp.bookTTitle);
       if (gp && gp.element) line += '｜元素：' + _s(gp.element);
@@ -16372,7 +16372,7 @@ function _buildPayload() {
       var groups = gdCore.spreadDignityGroups(gdCards, spreadId) || [];
       var rels = [];
       groups.forEach(function(g){ (g.links||[]).forEach(function(l){ rels.push(l.fromName + '↔' + l.toName + '：' + (l.relation && l.relation.label || '')); }); });
-      if (rels.length) L.push('合法相鄰元素關係：' + rels.join('；'));
+      if (rels.length) L.push('Book T 有序相鄰線：' + rels.join('；'));
     }
     if (gdCore && gdCore.majorityObservations) {
       var mo = gdCore.majorityObservations(gdCards);
@@ -23860,8 +23860,9 @@ function _buildTarotOnlyPayload() {
       semanticProfile: 'gd_book_t',
       sourceLabel: (gp && gp.sourceLabel) || 'Golden Dawn《Book T／Liber T》',
       bookTTitle: (gp && gp.bookTTitle) || '',
-      baseMeaning: (gp && gp.core) || c.up || '',
-      sourceGloss: (gp && gp.core) || c.up || '',
+      sourceCore: (gp && gp.sourceCore) || (gp && gp.core) || c.up || '',
+      baseMeaning: (gp && gp.sourceCore) || (gp && gp.core) || c.up || '',
+      sourceGloss: (gp && gp.contextualGloss) || (gp && gp.core) || c.up || '',
       meaning: (dignity && dignity.reading) || (gp && gp.core) || c.up || '',
       wellDignifiedMeaning: (gp && gp.well) || '',
       illDignifiedMeaning: (gp && gp.ill) || '',
@@ -23876,7 +23877,8 @@ function _buildTarotOnlyPayload() {
     // Court cards are functions/archetypes unless the query already identifies a person.
     if (gp && gp.kind === 'court') {
       card.courtLayer = gp.layer || '';
-      card.courtPolicy = '人物、心態或事件作用皆是候選；位置與問題共指未成立前不得具體化為某一現實人物。';
+      card.courtRolePriority = gp.rolePriority || [];
+      card.courtPolicy = '角色優先序依 Book T：' + (gp.rolePriority || []).join('；') + '。應用程式證據限制：位置與問題共指未成立前，不得具體化身分、年齡、外貌或職業。';
     }
     return card;
   });
@@ -24463,9 +24465,10 @@ function _buildTarotOnlyPayload() {
       sourceContract: (window.JYGoldenDawn && window.JYGoldenDawn.sourceContract) ? window.JYGoldenDawn.sourceContract() : null,
       uprightCount: cards.length,
       reversedCount: 0,
-      summary: 'Golden Dawn Book T；一般牌陣不使用 Waite 固定逆位字典，強弱由位置與元素尊貴裁決',
+      summary: 'Golden Dawn Book T；一般牌陣不使用 Waite 固定逆位字典。完整元素尊貴只由明示有序連續線的左右相鄰裁決；其他牌陣連線只讀互動相容性。',
       cards: cards,
       elementalDignityGroups: (_gd && _gd.spreadDignityGroups) ? _gd.spreadDignityGroups(drawn, _spreadId) : [],
+      spreadInteractionGroups: (_gd && _gd.spreadInteractionGroups) ? _gd.spreadInteractionGroups(drawn, _spreadId) : [],
       numerology: numerologyText,
       elementInteraction: elementInteraction,
       kabbalah: kabbalahText,
@@ -26368,6 +26371,7 @@ function _buildOOTKPayload() {
       out.activePile = op.activePile || '';
       out.domainMeaning = op.meaning || '';
       out.expectedPiles = op.expectedPiles || [];
+      out.mainLineValidation = op.mainLineValidation || null;
     } else if (index === 1) {
       out.activeHouse = op.activeHouse || null;
       out.domainMeaning = op.meaning || '';
@@ -26378,6 +26382,9 @@ function _buildOOTKPayload() {
       out.signTrump = op.signTrump || '';
       out.signDistribution = op.signDistribution || [];
       out.expectedSigns = op.expectedSigns || [];
+      out.expectationMet = op.signExpectationMet;
+      out.expectationNote = op.signExpectationNote || '';
+      out.procedurePolicy = op.procedurePolicy || '';
     } else if (index === 3) {
       out.ringSize = op.ringSize || 36;
       out.ringPairing = (op.ringPairs || op.mq_pairs || []).map(pairData).filter(Boolean);
@@ -26417,14 +26424,16 @@ function _buildOOTKPayload() {
       method: 'Golden Dawn《Book T／Liber T》Opening of the Key 五次操作',
       significator: results.significator || {},
       questionType: results.questionType || '',
+      predeclaredBindings: results.predeclaredBindings || null,
       operations: operations,
       procedureStatus: {
         completedOperations: results.completedOperations || Object.keys(operations).length,
         abandoned: !!abandonedAt,
         abandonedAt: abandonedAt,
-        reason: abandonedAt && results[abandonedAt] ? (results[abandonedAt].abandonReason || '') : ''
+        reason: abandonedAt && results[abandonedAt] ? (results[abandonedAt].abandonReason || '') : '',
+        divinationValidity: results.divinationValidity || null
       },
-      validityPolicy: '第一次操作若不能正確辨識問題主題應停止；第二次操作的主宮與相近宮皆失敗時停止；第三次操作依適當星座堆並照前法；第五次操作錯位不必然失效。被停止後的後續操作不得生成或解讀。',
+      validityPolicy: '第一次操作若不能正確辨識問題主題應停止，且主要線索仍須由問卜者確認；第二次操作的主宮與相近宮皆失敗時停止；第三次操作依適當星座堆並照前法，錯位是否停止依發牌前明示政策；第五次操作錯位不必然失效。被停止後的後續操作不得生成或解讀。',
       interpretationPolicy: '五次操作各有階段／功能權限；每次只讀代表牌所在堆的計數故事與配對故事，元素尊貴決定強弱。不使用 Waite 固定逆位、Crowley／Thoth 專屬牌義、跨層重複牌投票、牌數機率或自創日期。',
       numericPolicy: '計數值只用於導航，不得換算日期、金額、年齡、人物數量或機率。',
       divinationValidity: results.divinationValidity || null
