@@ -23612,7 +23612,7 @@ function _buildTarotOnlyPayload() {
       semanticContract:contract,semanticProgramVersion:contract.engineVersion
     },
     semanticContract:contract,semanticProgramVersion:contract.engineVersion,
-    shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'最後只輸出一行：推薦品項：<從 allowedItems 逐字選一項>'}
+    shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'正文最後固定輸出兩行：第一行推薦品項：<從 allowedItems 逐字選一項>；第二行[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'}
   };
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
