@@ -1,8 +1,9 @@
+// v80.61(2026/7/17)：根治 Android／Samsung 底部選單偶發缺欄、缺列與空白重繪：獨立 box-sizing、dvh、安全區、防橫溢、固定六週日曆、手機無 transform 疊層、雙 requestAnimationFrame 開啟。
 // v80.60(2026/7/17)：八字提示詞 ROOT-SPEC v2：抽離共用證據核心，新增資料四層、模糊門檻操作化、獨立證據裁決、替代判法／反證、喜用副作用、時間滯後、行動驗證與答案反向稽核。
 // v80.52(2026/7/16)：八字提示詞 ROOT-SPEC 根治：原問句語義保真、全題型路由、證據權重、喜用神分鏡、歲運邊界、高風險限制與品牌附加層隔離。
 // v80.50(2026/6/25)：提示詞明示刑沖合害不參與自動吉凶加減分，與底層預測評分政策一致。
 // v80.49(2026/6/25)：出生城市經度與 solar-location 統一；真太陽時提示改為本系統政策，不冒充所有流派唯一標準。
-/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.60]
+/*! bazi-standalone.js — 靜月之光 八字命理獨立流程  [v80.61]
  *  v80.47(2026/6/25)：前端可選 23:00 子初／00:00 午夜換日；提示詞揭露固定偏移與 DST 重疊／缺口限制。
  *  v80.46(2026/6/25)：地支事實層移除分數；旺衰病象不再自動翻轉五行立場；提示詞標示扶抑基準與候選模型。
  *  v80.45(2026/6/25)：特殊格局改列候選、不自動覆蓋喜忌；未知時辰明確降級；結果頁顯示精確交運日期。
@@ -191,14 +192,16 @@
       '.bzx-err{margin:.6rem 0 0;padding:.55rem .7rem;border-radius:10px;border:1px solid rgba(214,108,92,.55);background:rgba(214,108,92,.12);color:#f0c8be;font-size:.74rem;line-height:1.5;display:none}',
       '.bzx-err.show{display:block;animation:bzxIn .3s ease-out}',
       // 底部選擇器 sheet
-      '.bzx-sheet-bd{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}',
+      '.bzx-sheet-bd,.bzx-sheet-bd *{box-sizing:border-box}',
+      '.bzx-sheet-bd{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;z-index:100002;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;overscroll-behavior:none;opacity:0;transition:opacity .18s ease-out;padding-top:env(safe-area-inset-top)}',
       '.bzx-sheet-bd.show{opacity:1}',
-      '.bzx-sheet{width:100%;max-width:480px;max-height:84vh;overflow-y:auto;background:linear-gradient(180deg,#16161e,#0d0d13);border-radius:20px 20px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:none;box-shadow:0 -10px 50px rgba(0,0,0,.6),0 0 60px rgba(201,168,76,.05);padding:.9rem 1rem 1.4rem;transform:translateY(101%);transition:transform .32s cubic-bezier(.16,1,.3,1);font-family:"Noto Serif TC",serif;-webkit-overflow-scrolling:touch}',
-      '.bzx-sheet-bd.show .bzx-sheet{transform:translateY(0)}',
+      '.bzx-sheet{width:100%;max-width:480px;max-height:calc(100vh - env(safe-area-inset-top));max-height:calc(100dvh - env(safe-area-inset-top));display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,#16161e,#0d0d13);border-radius:20px 20px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:none;box-shadow:0 -10px 50px rgba(0,0,0,.6),0 0 60px rgba(201,168,76,.05);padding:.9rem max(1rem,env(safe-area-inset-right)) calc(1.4rem + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left));opacity:0;transform:none;transition:opacity .18s ease-out;font-family:"Noto Serif TC",serif;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable both-edges}',
+      '.bzx-sheet-bd.show .bzx-sheet{opacity:1}',
+      '#bzx-sheet-body{width:100%;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}.bzx-cal-nav,.bzx-cal-grid{width:100%;min-width:0}',
       '.bzx-sheet-grip{width:40px;height:4px;border-radius:2px;background:rgba(201,168,76,.4);margin:0 auto .7rem}',
       '.bzx-sheet-title{text-align:center;color:'+GOLD+';font-size:1.02rem;letter-spacing:3px;margin-bottom:.2rem}',
       '.bzx-sheet-sub{text-align:center;color:rgba(232,224,208,.5);font-size:.7rem;margin-bottom:.9rem;min-height:1rem;line-height:1.5}',
-      '.bzx-sheet-foot{display:grid;grid-template-columns:1fr 1.2fr;gap:.5rem;margin-top:1.1rem}',
+      '.bzx-sheet-foot{flex:0 0 auto;display:grid;grid-template-columns:1fr 1.2fr;gap:.5rem;margin-top:.45rem;padding:.7rem 0 .1rem;background:linear-gradient(180deg,rgba(13,13,19,0),#0d0d13 30%)}',
       '.bzx-sheet-btn{padding:.72rem;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:rgba(232,224,208,.6);font-family:inherit;font-size:.86rem;cursor:pointer;letter-spacing:2px}',
       '.bzx-sheet-btn.go{border-color:rgba(201,168,76,.55);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:'+GOLD+';font-weight:600}',
       '.bzx-sheet-btn:active{transform:scale(.97)}',
@@ -208,9 +211,9 @@
       '.bzx-cal-nav button:active{transform:scale(.92)}',
       '.bzx-cal-ttl{flex:1;text-align:center;color:#ffeab8;font-size:.96rem;letter-spacing:1px;cursor:pointer;padding:.5rem;border-radius:9px}',
       '.bzx-cal-ttl:active{background:rgba(201,168,76,.08)}',
-      '.bzx-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.22rem}',
+      '.bzx-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.22rem}',
       '.bzx-cal-wk{text-align:center;color:rgba(201,168,76,.55);font-size:.66rem;padding:.2rem 0}',
-      '.bzx-cal-d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;color:rgba(232,224,208,.82);font-size:.88rem;cursor:pointer}',
+      '.bzx-cal-d{min-width:0;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;color:rgba(232,224,208,.82);font-size:.88rem;cursor:pointer}',
       '.bzx-cal-d:active{background:rgba(201,168,76,.12)}',
       '.bzx-cal-d.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700;box-shadow:0 0 14px rgba(201,168,76,.4)}',
       '.bzx-cal-d.empty{cursor:default}',
@@ -253,11 +256,14 @@
       '.bzx-loc-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:.35rem}',
       '.bzx-loc-chip{padding:.58rem .2rem;text-align:center;border-radius:9px;border:1px solid rgba(201,168,76,.16);background:rgba(255,255,255,.03);color:rgba(232,224,208,.82);font-size:.74rem;cursor:pointer;line-height:1.2}',
       '.bzx-loc-chip.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700;box-shadow:0 0 12px rgba(201,168,76,.3)}',
-      '.bzx-loc-chip:active{transform:scale(.92)}'
+      '.bzx-loc-chip:active{transform:scale(.92)}',
+      '@media(max-width:700px),(pointer:coarse){.bzx-sheet{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;transition:opacity .14s ease-out!important}.bzx-sheet-bd{transition:opacity .14s ease-out}.bzx-cal-grid{gap:.12rem}.bzx-cal-d{font-size:.84rem}}',
+      '@media(max-height:620px){.bzx-sheet{max-height:100dvh;border-radius:16px 16px 0 0;padding-top:.55rem}.bzx-sheet-grip{margin-bottom:.45rem}.bzx-sheet-sub{margin-bottom:.55rem}.bzx-cal-nav{margin-bottom:.3rem}.bzx-cal-nav button{height:38px}.bzx-cal-d{aspect-ratio:auto;min-height:34px}.bzx-sheet-foot{margin-top:.55rem}}',
+      '@media(prefers-reduced-motion:reduce){.bzx-sheet-bd,.bzx-sheet{transition:none!important}}'
     ].join('\n');
     document.head.appendChild(css);
   // ═══ 鎏金夜祭 v2（2026/6/18）：主 CTA 採靜態鎏金底＋transform-only 獨立流光層，避免 Android/Samsung 對 background-position 動畫漏畫按鈕 ═══
-  try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','bazi');_g2.textContent='.bzx-section{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.bzx-section-title{position:relative;padding-left:12px;letter-spacing:.08em;color:#e8d28a}.bzx-section-title::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:1.05em;border-radius:2px;background:rgba(201,168,76,.95);box-shadow:0 0 8px rgba(201,168,76,.95)}.bzx-input,.bzx-select,.bzx-q-input,.bzx-field input,.bzx-field select,.bzx-field textarea{background:rgba(8,7,5,.62);border:1px solid rgba(201,168,76,.26);border-radius:12px;color:#f2e9d6;transition:border-color .2s,box-shadow .2s}.bzx-input:focus,.bzx-select:focus,.bzx-q-input:focus,.bzx-field input:focus,.bzx-field select:focus,.bzx-field textarea:focus{border-color:#e8d28a;box-shadow:0 0 0 3px rgba(201,168,76,.16);outline:none}.bzx-gbtn,.bzx-dbtn,.bzx-sheet-btn,.bzx-loc-chip,.bzx-pick-cell{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.22);color:#d8c79a;border-radius:12px;transition:color .18s,background-color .18s,border-color .18s,box-shadow .18s,transform .18s}.bzx-gbtn.active,.bzx-dbtn.active,.bzx-sheet-btn.active,.bzx-loc-chip.active,.bzx-pick-cell.active,.bzx-pick-cell.on{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}.bzx-cast-btn{background:linear-gradient(135deg,#a98232 0%,#e8d28a 44%,#f5e7b8 58%,#c9a84c 100%);color:#171208;border:none;border-radius:14px;font-weight:800;letter-spacing:.14em;box-shadow:0 10px 26px rgba(201,168,76,.32),inset 0 1px 0 rgba(255,255,255,.35);position:relative;overflow:hidden;isolation:isolate}.bzx-cast-btn::before{content:none;display:none}.bzx-cast-btn:active{transform:translateY(1px)}.bzx-reset-btn{background:transparent;border:1px solid rgba(201,168,76,.34);color:#cdb87f;border-radius:12px}.bzx-back{color:rgba(232,210,138,.75);transition:color .2s}.bzx-back:active,.bzx-back:hover{color:#f5e7b8}.bzx-sheet{background:rgba(16,13,10,.93);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid rgba(201,168,76,.3);box-shadow:0 -18px 50px rgba(0,0,0,.6)}.bzx-sheet-grip{background:linear-gradient(90deg,#8a6d2f,#e8d28a,#8a6d2f);opacity:.85;border-radius:99px}.bzx-ai-card{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.bzx-cal-d{border-radius:10px;transition:all .15s}.bzx-cal-d.active{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}@supports not (backdrop-filter:blur(1px)){[data-jy-view-bazi]{}}.bzx-cast-btn:focus-visible{outline:2px solid #e8d28a;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
+  try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','bazi');_g2.textContent='.bzx-section{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.bzx-section-title{position:relative;padding-left:12px;letter-spacing:.08em;color:#e8d28a}.bzx-section-title::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:1.05em;border-radius:2px;background:rgba(201,168,76,.95);box-shadow:0 0 8px rgba(201,168,76,.95)}.bzx-input,.bzx-select,.bzx-q-input,.bzx-field input,.bzx-field select,.bzx-field textarea{background:rgba(8,7,5,.62);border:1px solid rgba(201,168,76,.26);border-radius:12px;color:#f2e9d6;transition:border-color .2s,box-shadow .2s}.bzx-input:focus,.bzx-select:focus,.bzx-q-input:focus,.bzx-field input:focus,.bzx-field select:focus,.bzx-field textarea:focus{border-color:#e8d28a;box-shadow:0 0 0 3px rgba(201,168,76,.16);outline:none}.bzx-gbtn,.bzx-dbtn,.bzx-sheet-btn,.bzx-loc-chip,.bzx-pick-cell{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.22);color:#d8c79a;border-radius:12px;transition:color .18s,background-color .18s,border-color .18s,box-shadow .18s,transform .18s}.bzx-gbtn.active,.bzx-dbtn.active,.bzx-sheet-btn.active,.bzx-loc-chip.active,.bzx-pick-cell.active,.bzx-pick-cell.on{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}.bzx-cast-btn{background:linear-gradient(135deg,#a98232 0%,#e8d28a 44%,#f5e7b8 58%,#c9a84c 100%);color:#171208;border:none;border-radius:14px;font-weight:800;letter-spacing:.14em;box-shadow:0 10px 26px rgba(201,168,76,.32),inset 0 1px 0 rgba(255,255,255,.35);position:relative;overflow:hidden;isolation:isolate}.bzx-cast-btn::before{content:none;display:none}.bzx-cast-btn:active{transform:translateY(1px)}.bzx-reset-btn{background:transparent;border:1px solid rgba(201,168,76,.34);color:#cdb87f;border-radius:12px}.bzx-back{color:rgba(232,210,138,.75);transition:color .2s}.bzx-back:active,.bzx-back:hover{color:#f5e7b8}.bzx-sheet{background:rgba(16,13,10,.97);backdrop-filter:none;-webkit-backdrop-filter:none;border-top:1px solid rgba(201,168,76,.3);box-shadow:0 -18px 50px rgba(0,0,0,.6)}.bzx-sheet-grip{background:linear-gradient(90deg,#8a6d2f,#e8d28a,#8a6d2f);opacity:.85;border-radius:99px}.bzx-ai-card{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.bzx-cal-d{border-radius:10px;transition:all .15s}.bzx-cal-d.active{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}@supports not (backdrop-filter:blur(1px)){[data-jy-view-bazi]{}}.bzx-cast-btn:focus-visible{outline:2px solid #e8d28a;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
     return _wrap;
   }
 
@@ -826,28 +832,30 @@
   function _bzxClearErr(){ var e=document.getElementById('bzx-err'); if(e) e.classList.remove('show'); }
 
   // ── 底部 sheet 基礎 ──
-  var _sheetType='';
+  var _sheetType='', _sheetPrevBodyOverflow='';
   function _openSheet(title, sub, body, foot){
     _closeSheet(true);
-    var bd=document.createElement('div'); bd.id='bzx-sheet-bd'; bd.className='bzx-sheet-bd';
+    var bd=document.createElement('div'); bd.id='bzx-sheet-bd'; bd.className='bzx-sheet-bd'; bd.setAttribute('role','presentation');
     bd.onclick=function(e){ if(e.target===bd) _closeSheet(); };
-    bd.innerHTML='<div class="bzx-sheet" id="bzx-sheet"><div class="bzx-sheet-grip"></div>'+
+    bd.onkeydown=function(e){ if(e.key==='Escape') _closeSheet(); };
+    bd.innerHTML='<div class="bzx-sheet" id="bzx-sheet" role="dialog" aria-modal="true" aria-label="'+title+'"><div class="bzx-sheet-grip"></div>'+
       '<div class="bzx-sheet-title">'+title+'</div>'+
       '<div class="bzx-sheet-sub" id="bzx-sheet-sub">'+(sub||'')+'</div>'+
       '<div id="bzx-sheet-body">'+body+'</div>'+
       (foot?'<div class="bzx-sheet-foot"><button class="bzx-sheet-btn" onclick="_bzxSheetCancel()">取消</button><button class="bzx-sheet-btn go" onclick="_bzxSheetConfirm()">確定</button></div>':'')+
       '</div>';
+    _sheetPrevBodyOverflow=document.body.style.overflow; document.body.style.overflow='hidden';
     document.body.appendChild(bd);
-    void bd.offsetWidth; bd.classList.add('show');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ if(bd.isConnected) bd.classList.add('show'); }); });
   }
   function _closeSheet(immediate){
     var bd=document.getElementById('bzx-sheet-bd'); if(!bd) return;
-    if(immediate){ if(bd.parentNode) bd.parentNode.removeChild(bd); return; }
+    if(immediate){ if(bd.parentNode) bd.parentNode.removeChild(bd); document.body.style.overflow=_sheetPrevBodyOverflow; return; }
     bd.classList.remove('show');
-    setTimeout(function(){ if(bd&&bd.parentNode) bd.parentNode.removeChild(bd); },320);
+    setTimeout(function(){ if(bd&&bd.parentNode) bd.parentNode.removeChild(bd); document.body.style.overflow=_sheetPrevBodyOverflow; },200);
   }
   function _setSub(t){ var s=document.getElementById('bzx-sheet-sub'); if(s) s.innerHTML=t; }
-  function _setBody(h){ var b=document.getElementById('bzx-sheet-body'); if(b) b.innerHTML=h; }
+  function _setBody(h){ var b=document.getElementById('bzx-sheet-body'); if(b){ b.innerHTML=h; b.scrollTop=0; } }
   window._bzxSheetCancel=function(){ _closeSheet(); };
   window._bzxSheetConfirm=function(){
     if(_sheetType==='date'){
@@ -877,8 +885,9 @@
       '<button onclick="_bzxDpNav(1)">›</button></div><div class="bzx-cal-grid">';
     for(var w=0;w<7;w++) h+='<div class="bzx-cal-wk">'+WK[w]+'</div>';
     var fd=_firstDow(_dpY,_dpM), dim=_daysInMonth(_dpY,_dpM), i;
-    for(i=0;i<fd;i++) h+='<div class="bzx-cal-d empty"></div>';
+    for(i=0;i<fd;i++) h+='<div class="bzx-cal-d empty" aria-hidden="true"></div>';
     for(i=1;i<=dim;i++) h+='<div class="bzx-cal-d'+(i===_dpD?' sel':'')+'" onclick="_bzxDpPickDay('+i+')">'+i+'</div>';
+    for(i=fd+dim;i<42;i++) h+='<div class="bzx-cal-d empty" aria-hidden="true"></div>';
     h+='</div>'; _setBody(h); _setSub('點日期，或點上方年月快速跳轉');
   }
   function _dpRenderYear(){
