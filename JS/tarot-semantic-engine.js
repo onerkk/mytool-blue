@@ -1,4 +1,4 @@
-/*! tarot-semantic-engine.js — ROOT-SPEC v96 Golden Dawn compiler
+/*! tarot-semantic-engine.js — ROOT-SPEC v97 Foundation compiler
  * 單一乾淨架構：原句型別化 → 方法觀測模型 → 合法證據圖 →
  * 實體／事件共指 → 原子覆蓋裁決 → 語義飽和 → 反向稽核。
  *
@@ -11,8 +11,15 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '96.0.0';
-  var SCHEMA = 'jy.tarot.semantic-contract/4';
+  var Foundation = null;
+  try {
+    Foundation = (typeof globalThis !== 'undefined' && globalThis.JYTarotFoundation)
+      ? globalThis.JYTarotFoundation
+      : (typeof require === 'function' ? require('./tarot-foundation.js') : null);
+  } catch (_foundationErr) { Foundation = null; }
+
+  var VERSION = '97.0.0';
+  var SCHEMA = 'jy.tarot.semantic-contract/5';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -71,6 +78,8 @@
 
   var ROLE_AUTHORITY = {
     state: '描述本觀測通道的狀態；不自行建立未知人物或盤外事件。',
+    antecedent: '只描述先前階段或既有影響；不能自動升格為根本原因。',
+    development: '只描述後續發展傾向或下一階段；不能自動升格為最終結果。',
     cause: '只說明形成機制；不能單獨取代完整事件或結果。',
     obstacle: '只說明限制、延遲、扭曲或反證。',
     interaction_force: '描述橫跨核心的作用；可為助力、阻力、催化、代價或混合作用，須由相連結構裁決。',
@@ -111,7 +120,12 @@
     exact_date: 'not_measured',
     probability: 'not_measured',
     time_scope: 'scope_constraint',
-    modality: 'question_operator'
+    modality: 'question_operator',
+    description: 'qualitative_direct',
+    annual_overview: 'domain_channels_required',
+    multi_domain: 'domain_channels_required',
+    timing: 'relative_timing_channel',
+    location: 'qualitative_location_only'
   };
 
   function measurement(overrides) {
@@ -362,6 +376,45 @@
     )
   };
 
+  function applyFoundationMethods() {
+    if (!Foundation || !Foundation.METHODS) return;
+    Object.keys(METHOD_SPECS).forEach(function (id) {
+      var source = Foundation.METHODS[id];
+      var target = METHOD_SPECS[id];
+      if (!source || !target) return;
+      var roles=(source.slots || []).map(function (slot) { return slot.authority || 'structural'; });
+      var caps=source.capabilities || {};
+      target.label = source.label || target.label;
+      target.layoutSource = source.layoutSource || target.layoutSource;
+      target.expectedCardCount = source.count == null ? target.expectedCardCount : source.count;
+      target.roles = roles;
+      target.measurement = measurement({
+        state: roles.indexOf('state')>=0 || roles.indexOf('domain')>=0 ? 'direct_channel' : 'qualitative_inference',
+        existence: caps.existence>=.7 ? 'qualitative_inference' : 'not_measured_insufficient_existence_channel',
+        cause: roles.indexOf('cause')>=0 ? 'direct_channel' : (caps.cause>=.5 ? 'qualitative_inference' : 'not_measured_no_cause_channel'),
+        guidance: roles.indexOf('advice')>=0 ? 'direct_channel' : (caps.guidance>=.5 ? 'qualitative_inference' : 'not_measured_no_advice_channel'),
+        trajectory: (roles.indexOf('timeline')>=0 || roles.indexOf('development')>=0 || roles.indexOf('outcome')>=0) ? 'direct_channel' : (caps.trajectory>=.5 ? 'qualitative_inference' : 'not_measured_no_trajectory_channel'),
+        outcome: roles.indexOf('outcome')>=0 ? 'direct_channel' : (caps.outcome>=.5 ? 'qualitative_inference_not_terminal' : 'not_measured_no_outcome_channel'),
+        comparison: caps.comparison>=.9 ? 'direct_comparison_channel' : 'requires_independent_channels',
+        relative_order: caps.comparison>=.9 ? 'direct_comparison_channel' : 'requires_independent_comparable_channels',
+        annual_overview: caps.annual>=.85 ? 'direct_domain_channels' : (caps.annual>=.45 ? 'partial_scope_coverage' : 'not_measured_insufficient_domain_channels'),
+        multi_domain: caps.domains>=.85 ? 'direct_domain_channels' : (caps.domains>=.45 ? 'partial_scope_coverage' : 'not_measured_insufficient_domain_channels'),
+        timing: caps.timing>=.85 ? 'direct_relative_timing_channel' : (caps.timing>=.4 ? 'partial_relative_timing_channel' : 'not_measured_no_timing_channel'),
+        location: caps.location>=.8 ? 'qualitative_location_channel' : (caps.location>=.4 ? 'partial_location_channel' : 'not_measured_no_location_channel')
+      });
+      target.topology.registryId = id;
+      target.topology.dignityLines = clone(source.dignityLines || []);
+      target.topology.dependencyGroups = clone(source.dependencies || []);
+      target.topology.compatibilityEdges = clone(source.compatibilityEdges || []);
+      target.topology.independentComparableChannels = (id==='either_or'||id==='fifteen_card') ? 2 : 0;
+      target.observationModel.foundationVersion = Foundation.VERSION;
+      target.observationModel.comparisonChannels = target.topology.independentComparableChannels;
+      target.observationModel.temporalModel = caps.timing>=.85 ? 'ordered_relative_time' : target.observationModel.temporalModel;
+      target.capabilities = clone(caps);
+    });
+  }
+  applyFoundationMethods();
+
   function inferExplicitCounterpartBinding(question) {
     var q = text(question);
     if (!q) return false;
@@ -598,91 +651,15 @@
     return { surface:raw, ownedBy:null, source:raw };
   }
 
-  function compileQuestion(question) {
-    var q = text(question);
-    if (!q) q = '（未提供明確問題）';
-    var scopes = detectScopes(q);
-    var relations = detectRelations(q);
-    var constraints = extractConstraints(q, scopes, relations);
-    var dimensions = requestedDimensions(q, scopes, relations);
-    var atoms = [];
-    var entities = [{ id:'QUERENT', type:'querent', source:'問卜者' }];
-    function atom(kind, value, role, source) {
-      value=text(value); if(!value)return;
-      atoms.push({id:'A'+pad(atoms.length+1,2),kind:kind,text:value,source:text(source||value),essential:true,eventId:'QUERY_EVENT',role:role||'predicate'});
+  function compileQuestion(question, options) {
+    if (Foundation && typeof Foundation.compileQuestion === 'function') {
+      return Foundation.compileQuestion(question, options || {});
     }
-    var actor = /(?:^|[，。！？?])\s*我/.test(q) || /^我/.test(q) ? 'QUERENT' : 'model_resolve';
-    if (actor==='QUERENT') atom('actor','我','actor','我');
-
-    var eventType='qualitative_event';
-    var predicate='model_resolve_from_atomic_roles';
-    var roleMap={actor:actor,target:'model_resolve',leftOperand:'',rightOperand:'',attribute:'',comparator:''};
-    var reconstructionLeft='';
-    var reconstructionRight='';
-    if(relations.length && relations[0].type==='threshold_or_order'){
-      var r=relations[0]; eventType='query_bound_relational_event'; predicate='compare_on_same_scale';
-      var leftId='REL_LEFT', rightId='REL_RIGHT';
-      var leftBinding=normalizeQuerentOwnedOperand(r.leftEntity||r.left);
-      var rightBinding=normalizeQuerentOwnedOperand(r.rightEntity||r.right);
-      entities.push({id:leftId,type:'query_explicit_operand',surface:leftBinding.surface,source:r.left,ownedBy:leftBinding.ownedBy});
-      entities.push({id:rightId,type:'query_explicit_operand',surface:rightBinding.surface,source:r.right,ownedBy:rightBinding.ownedBy});
-      roleMap.leftOperand=leftId; roleMap.rightOperand=rightId; roleMap.attribute=r.scale; roleMap.comparator=r.operator;
-      atom('left_operand',leftBinding.surface,'leftOperand',r.left);
-      atom('measured_attribute',r.scale,'attribute',r.source);
-      atom('comparator',r.operatorText,'comparator',r.operatorText);
-      atom('right_operand',rightBinding.surface,'rightOperand',r.right);
-      reconstructionLeft=(leftBinding.ownedBy==='QUERENT'?'我的':'')+leftBinding.surface;
-      reconstructionRight=(rightBinding.ownedBy==='QUERENT'?'我的':'')+rightBinding.surface;
-    } else if(relations.length) {
-      var ar=relations[0]; eventType='branch_or_attribute_comparison'; predicate='compare_independent_operands';
-      entities.push({id:'REL_LEFT',type:'query_explicit_operand',surface:ar.left,source:ar.left});
-      entities.push({id:'REL_RIGHT',type:'query_explicit_operand',surface:ar.right,source:ar.right});
-      roleMap.leftOperand='REL_LEFT'; roleMap.rightOperand='REL_RIGHT'; roleMap.comparator=ar.operator;
-      atom('left_operand',ar.left,'leftOperand',ar.left);
-      atom('comparator',ar.operatorText||ar.operator,'comparator',ar.source);
-      atom('right_operand',ar.right,'rightOperand',ar.right);
-      if(ar.scale&&ar.scale!=='model_resolve')atom('measured_attribute',ar.scale,'attribute',ar.scale);
-    } else {
-      var core=q.replace(/[？?。！!]$/,'');
-      scopes.forEach(function(sc){core=core.replace(sc.surface,'');});
-      core=core.replace(/(?:會不會|能不能|可不可以|是否|有沒有|是不是|嗎|呢)$/,'').trim();
-      atom('event_predicate',core||q,'predicate',q);
-    }
-    var modality = (q.match(/(?:一定|必然|應該|可能|會不會|能不能|可不可以|是否|有沒有|可以|能夠|會|能)/)||[])[0];
-    if(modality)atom('modality',modality,'modality',modality);
-    scopes.forEach(function(sc){atom('scope',sc.surface,'timeScope',sc.source);});
-    constraints.filter(function(c){return c.type==='exclusion'||c.type==='polarity'||c.type==='quantifier';}).forEach(function(c){atom(c.type,c.text,c.attachTo||c.type,c.source);});
-
-    var event={
-      id:'QUERY_EVENT', type:eventType, surface:q, predicate:predicate, roles:roleMap,
-      polarity:constraints.some(function(c){return c.type==='polarity';})?'query_explicit':'positive_or_open',
-      modality:modality||'open', timeScope:scopes.map(function(scope){return scope.surface;}),
-      relationIds:relations.map(function(relation){return relation.id;})
-    };
-    var reconstruction = relations.length && relations[0].type==='threshold_or_order'
-      ? [scopes.map(function(x){return x.surface;}).join(''), reconstructionLeft||(relations[0].leftEntity||relations[0].left), relations[0].scale!=='model_resolve_same_scale'?'的'+relations[0].scale:'', modality||'', relations[0].operatorText, reconstructionRight||(relations[0].rightEntity||relations[0].right), relations[0].scale!=='model_resolve_same_scale'?'的'+relations[0].scale:'', '嗎'].join('')
-      : q;
+    var q = text(question) || '（未提供明確問題）';
     return {
-      originalQuestion:q, requestedDimensions:dimensions, explicitScopes:scopes, relations:relations,
-      knownCounterpart:inferExplicitCounterpartBinding(q),
-      queryGraph:{
-        schema:'typed_query_graph/2', events:[event], entities:entities, relations:clone(relations), constraints:constraints,
-        requiredAtoms:atoms, roundTripReconstruction:reconstruction,
-        compilerStatus:atoms.length?'atomized':'unresolved',
-        atomizationRequirement:'每個會改變答案真值的主體、兩側比較對象、被比較屬性、比較運算子、模態、期限、否定與排除都須成為獨立 essential atom；完整原句只作 round-trip surface，不得再充當單一必要原子。',
-        completionRules:[
-          '每個會改變答案真值的自然語言成分都必須成為 essential atom。',
-          '每個 atom 必須綁定 eventId 與 role／scope。',
-          '未知人物只能建立 UNBOUND_ENTITY，不得因牌位名稱直接具體化。',
-          '原句未明示的前提只能列為 assumption，不能偷渡成必要事實。'
-        ],
-        validationRules:{
-          roundTrip:'依角色圖重建的命題須與原句雙向相容；語序可規範化，但比較雙方、尺度、模態與期限不得改變。',
-          deletionSensitivity:'逐一刪除 essential atom；刪除任一原子都必須改變真值條件。',
-          sameEventTest:'同一完整事件的角色、作用、結果與期限共享 QUERY_EVENT。',
-          noAddedPremise:'原句未含且牌面未建立的前提不得進入完整命題。'
-        }
-      }
+      originalQuestion:q, normalizedQuestion:q, requestedDimensions:[{id:'event_or_state',label:'核心事件／狀態',source:q}],
+      explicitScopes:[], relations:[], knownCounterpart:false, features:{},
+      queryGraph:{schema:'typed_query_graph/3',events:[{id:'QUERY_EVENT',type:'qualitative_state_query',surface:q,predicate:'describe_state',roles:{actor:'QUERENT',target:'TARGET_STATE'}}],entities:[{id:'QUERENT',type:'querent',source:'問卜者'}],relations:[],constraints:[],requiredAtoms:[{id:'A01',kind:'actor',text:'問卜者本人',source:'語境預設問卜者',essential:true,eventId:'QUERY_EVENT',role:'actor',implicit:true},{id:'A02',kind:'state_target',text:q,source:q,essential:true,eventId:'QUERY_EVENT',role:'target'}],roundTripReconstruction:q,compilerStatus:'fallback_atomized',validation:{roundTripCompatible:true,everyDeletionChangesTruthConditions:true,noAddedPremise:true},atomizationRequirement:'每個會改變真值條件的語義角色必須獨立成為 essential atom。'}
     };
   }
 
@@ -709,6 +686,12 @@
     } else if (authority === 'person_aggregate') {
       policy.entityBinding = 'AGGREGATE_UNBOUND_COUNTERPART';
       policy.eventRoles = ['conditional_actor作用', 'environment'];
+    } else if (authority === 'antecedent') {
+      policy.eventRoles = ['prior_stage', 'antecedent_influence'];
+      policy.cannotEstablish.push('root_cause');
+    } else if (authority === 'development') {
+      policy.eventRoles = ['future_tendency', 'next_stage'];
+      policy.cannotEstablish.push('terminal_result');
     } else if (authority === 'cause') {
       policy.eventRoles = ['cause', 'mechanism'];
     } else if (authority === 'obstacle' || authority === 'interaction_force') {
@@ -868,7 +851,7 @@
       synthesis('full_event_chain', '五牌事件依賴網', [f1, f2, f3, f4]);
     } else if (id === 'cross') {
       var c1 = direct('core_cross', '核心與交叉力量', [0, 1], { topology: 'cross' });
-      var c2 = direct('development_axis', '原因→核心→發展', [2, 0, 3], { topology: 'directed_axis' });
+      var c2 = direct('development_axis', '過去影響→核心→後續趨勢', [2, 0, 3], { topology: 'directed_axis' });
       var c3 = direct('intervention_link', '建議→核心／交叉', [4, 0, 1], { topology: 'intervention_link' });
       synthesis('cross_dependency_network', '十字完整網絡', [c1, c2, c3]);
     } else if (id === 'either_or') {
@@ -1165,8 +1148,10 @@
   function capabilityForDimension(method, dimensionId, questionSpec) {
     var relation = ((questionSpec || {}).relations || [])[0];
     if ((dimensionId === 'threshold_crossing' || dimensionId === 'relational_event') && relation && relation.type === 'threshold_or_order') {
-      var hasOutcome = method.roles.indexOf('outcome') >= 0 || !/^not_measured/.test(method.measurement.outcome || method.measurement.trajectory || 'qualitative_inference');
-      return hasOutcome ? 'qualitative_relational_event_if_query_bound' : 'not_measured_no_outcome_channel';
+      var trajectory = method.measurement.trajectory || '';
+      var outcome = method.measurement.outcome || '';
+      var hasResultChannel = !/^not_measured/.test(outcome) || !/^not_measured/.test(trajectory);
+      return hasResultChannel ? 'qualitative_relational_event_if_query_bound' : 'not_measured_no_outcome_channel';
     }
     var configured = method.measurement[dimensionId];
     if (configured) return configured;
@@ -1188,11 +1173,35 @@
       if (capability === 'qualitative_relational_event_if_query_bound') {
         status = 'qualitative_relational_event';
         reason = '原句已把比較雙方、同一尺度與門檻綁成單一關係命題；本方法可由結果／發展通道定性判斷其成立傾向，但不能量測差額、金額、比例或機率。';
+      } else if (capability === 'direct_domain_channels') {
+        status = 'direct_channel';
+        reason = '方法提供分離的生活領域通道，可在原句範圍內形成跨領域綜合。';
+      } else if (capability === 'partial_scope_coverage') {
+        status = 'partial_coverage';
+        reason = '方法只能觀察部分主題或結構，不能宣稱完整涵蓋原句要求的所有領域。';
+      } else if (capability === 'direct_relative_timing_channel') {
+        status = 'direct_channel';
+        reason = '方法具有明示的相對時間順序；仍不得把牌面占星對應換算成日期。';
+      } else if (capability === 'partial_relative_timing_channel') {
+        status = 'partial_coverage';
+        reason = '方法只能提供局部先後或發展階段，不能給出完整時間線或精確日期。';
+      } else if (capability === 'qualitative_location_channel') {
+        status = 'qualitative_or_direct';
+        reason = '方法可提供尋物／位置的象徵方向與排查優先序，但不能保證精確地點、距離或座標。';
+      } else if (capability === 'partial_location_channel') {
+        status = 'partial_coverage';
+        reason = '方法只能提供有限的位置線索；必須以現實搜尋與紀錄驗證。';
       } else if (/^not_measured/.test(capability)) {
         canAnswer = false;
         status = 'not_measured';
         if (dimension.id === 'comparison' || dimension.id === 'relative_order' || dimension.id === 'threshold_crossing') {
           reason = '兩個選項的相對排序需要兩個已綁定、獨立且同尺度的觀測通道；本方法未提供。';
+        } else if (dimension.id === 'annual_overview' || dimension.id === 'multi_domain') {
+          reason = '本方法沒有足夠且分離的生活領域通道，不能宣稱完整年度或多領域總覽。';
+        } else if (dimension.id === 'timing') {
+          reason = '本方法沒有明示的相對時間通道。';
+        } else if (dimension.id === 'location') {
+          reason = '本方法沒有合法的位置觀測通道。';
         } else {
           reason = '本方法沒有該資訊的明示量測通道。';
         }
@@ -1247,7 +1256,7 @@
   function compileReadingSpec(input) {
     var data = input || {};
     var spreadId = METHOD_SPECS[data.spreadId] ? data.spreadId : 'three_card';
-    var questionSpec = compileQuestion(data.question);
+    var questionSpec = compileQuestion(data.question, { referenceDate: data.referenceDate || data.readingDate || null });
     var method = clone(METHOD_SPECS[spreadId]);
     var sourceProfileId = resolveSemanticProfile(spreadId, data);
     var sourceProfile = clone(SOURCE_PROFILES[sourceProfileId] || SOURCE_PROFILES.gd_book_t);
@@ -1415,7 +1424,7 @@
     var source = contract.sourceProfile;
     var lines = [];
     lines.push('────────────────────────────');
-    lines.push('◆ ROOT-SPEC v95｜型別化查詢圖—方法觀測模型—合法證據／共指契約');
+    lines.push('◆ ROOT-SPEC v97｜型別化查詢圖—方法觀測模型—合法證據／共指契約');
     lines.push('────────────────────────────');
     lines.push('原問句：' + question.originalQuestion);
     lines.push('需求預檢：' + question.requestedDimensions.map(function (dimension) {
@@ -1533,6 +1542,13 @@
     };
   }
 
+  function routeQuestion(question, options) {
+    if (Foundation && typeof Foundation.routeQuestion === 'function') {
+      return Foundation.routeQuestion(typeof question === 'string' ? compileQuestion(question, options || {}) : question, options || {});
+    }
+    return { version:VERSION, engine:'fallback', spreadId:'three_card', reason:'基礎路由不可用，使用最小一般牌陣', confidence:.5, candidates:[{id:'three_card',score:0}] };
+  }
+
   return {
     VERSION: VERSION,
     SCHEMA: SCHEMA,
@@ -1540,6 +1556,8 @@
     METHOD_SPECS: METHOD_SPECS,
     ROLE_AUTHORITY: ROLE_AUTHORITY,
     compileQuestion: compileQuestion,
+    routeQuestion: routeQuestion,
+    Foundation: Foundation,
     resolveSemanticProfile: resolveSemanticProfile,
     compileEvidenceGraph: compileEvidenceGraph,
     compileOOTKEvidence: compileOOTKEvidence,

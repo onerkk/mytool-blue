@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════════════
-// 🃏 塔羅 TOP-TIER UPGRADE
-// 牌號數字學 · 多牌陣支持 · 卡巴拉生命之樹 · 元素尊貴交叉
+// 🃏 Golden Dawn Tarot runtime — Foundation Root Architecture v97
+// 單一方法註冊表 · Book T 牌義來源防火牆 · 牌陣拓撲／元素尊貴分離
 // ══════════════════════════════════════════════════════════════════════
 // 載入順序：tarot.js 之後
 // enhanceTarot(S.tarot) 在塔羅抽牌後呼叫
@@ -49,60 +49,9 @@ var TAROT_NUMEROLOGY = {
 };
 
 function tarotNumerologyAnalysis(drawn) {
-  if (!drawn || !drawn.length) return null;
-
-  // 統計每個數字出現次數
-  var numCounts = {};
-  var totalReduction = 0;
-
-  drawn.forEach(function(card) {
-    var num;
-    if (card.id < 22) {
-      // 大阿爾克那
-      num = card.id;
-    } else {
-      // 小阿爾克那
-      num = ((card.id - 22) % 14) + 1;
-      if (num > 10) num = num - 10; // 宮廷牌映射為11-14→1-4
-    }
-
-    // 數字學化約
-    var reduced = num;
-    while (reduced > 10) reduced = Math.floor(reduced / 10) + (reduced % 10);
-    if (!numCounts[reduced]) numCounts[reduced] = 0;
-    numCounts[reduced]++;
-    totalReduction += reduced;
-  });
-
-  // 化約總和（quintessence：化約至 ≤22，22 映射回 0 愚者，使結果必落在 0-21 大牌對應表內）
-  var finalNum = totalReduction;
-  while (finalNum > 22) finalNum = Math.floor(finalNum / 10) + (finalNum % 10);
-  if (finalNum === 22) finalNum = 0;
-
-  // 找重複數字（主題）
-  var dominantNums = [];
-  Object.keys(numCounts).forEach(function(n) {
-    if (numCounts[n] >= 2) {
-      var info = TAROT_NUMEROLOGY[parseInt(n)] || {};
-      dominantNums.push({
-        number: parseInt(n),
-        count: numCounts[n],
-        meaning: info.meaning || '',
-        zh: '數字' + n + '出現' + numCounts[n] + '次：' + (info.meaning || '此數字的能量被強調')
-      });
-    }
-  });
-
-  var finalInfo = TAROT_NUMEROLOGY[finalNum] || {};
-
-  return {
-    numCounts: numCounts,
-    totalReduction: totalReduction,
-    finalNum: finalNum,
-    finalMeaning: finalInfo.meaning || '',
-    dominantNums: dominantNums,
-    zh: '牌陣數字學（小牌按面號、10保留為命運數；宮廷牌計侍1騎2后3王4；大牌號碼>10先化約至10以內、如節制14→5；加總後化約至0-21對應大牌）為' + finalNum + '：' + (finalInfo.meaning || '')
-  };
+  // Source firewall: ordinary Book T readings do not use the site's former
+  // arbitrary reduction/quintessence routine as divinatory evidence.
+  return null;
 }
 
 
@@ -201,29 +150,22 @@ var TAROT_KABBALAH = {
 var KABBALAH_MAJOR_IDX = {'愚者':0,'魔術師':1,'女祭司':2,'皇后':3,'皇帝':4,'教皇':5,'戀人':6,'戰車':7,'力量':8,'隱者':9,'命運之輪':10,'正義':11,'吊人':12,'死神':13,'節制':14,'惡魔':15,'塔':16,'星星':17,'月亮':18,'太陽':19,'審判':20,'世界':21};
 function tarotKabbalahAnalysis(drawn) {
   if (!drawn || !drawn.length) return [];
-
+  var gd = (typeof window !== 'undefined') ? window.JYGoldenDawn : null;
+  if (!gd || typeof gd.profile !== 'function') return [];
   var results = [];
   drawn.forEach(function(card) {
-    // ★ 根治：嚴格以「大牌正名」判定（牌庫存於 .n；不靠 card.id——小牌的點數 2/5… 會誤撞 0-21 大牌路徑索引）。
-    //   小牌即使點數<22 也不取路徑；名稱不在 22 大牌表內一律跳過。
-    var _nm = String(card.n || card.name || '').replace(/^[▲▼]\s*(正位|逆位)\s*/, '').trim();
-    var _mid = KABBALAH_MAJOR_IDX[_nm];
-    if (_mid === undefined) return;                 // 非大牌（含全部小牌）→ 無路徑
-    if (card.suit && card.suit !== 'major') return; // 雙保險：明標非 major 者排除
-    var kb = TAROT_KABBALAH[_mid];
-    if (kb) {
-      results.push({
-        cardId: _mid,
-        cardName: _nm,
-        path: kb.path,
-        sephirot: kb.sephirot,
-        sephirotZh: kb.zh,
-        letter: kb.letter,
-        meaning: kb.meaning
-      });
-    }
+    var p = gd.profile(card);
+    if (!p || p.kind !== 'major') return;
+    results.push({
+      cardName: p.name,
+      path: p.path,
+      letter: p.letter || '',
+      astro: p.astro || '',
+      title: p.bookTTitle || '',
+      sourceCore: p.sourceCore || '',
+      sourceProfile: 'gd_book_t'
+    });
   });
-
   return results;
 }
 
@@ -580,329 +522,22 @@ var SPREAD_DEFS = {
 // Relationship: 兩人關係
 // Either-Or: 二選一
 function detectSpreadType(question, type) {
-  // JY_UNIVERSAL_SEMANTIC_SPREAD_ROUTER_V94
-  // 不是「命中某個關鍵字就選某個牌陣」，而是先把問題編譯成觀測需求，
-  // 再以每個牌陣的能力向量做覆蓋率、專用性與過度解讀成本評分。
-  // 因此任何非空問題都會得到一個可解釋、可重現的最佳候選；明示牌陣名稱仍是唯一硬覆寫。
-  var raw = String(question || '').trim();
-  var q = raw;
-  try { if (q.normalize) q = q.normalize('NFKC'); } catch (e) {}
-  q = q.replace(/[\u3000\t\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
-  // 常見簡體詞先做局部正規化；不改人名與實體內容。
-  var simpMap = {
-    '为什么':'為什麼','为何':'為何','什么时候':'什麼時候','多久才':'多久才','关系':'關係','选择':'選擇',
-    '还是':'還是','整体':'整體','发展':'發展','事业':'事業','财运':'財運','收入':'收入','结果':'結果',
-    '复合':'復合','对象':'對象','对方':'對方','问题':'問題','建议':'建議','阻碍':'阻礙','未来':'未來',
-    '现在':'現在','过去':'過去','职业':'職業','离职':'離職','创业':'創業','健康':'健康','家庭':'家庭'
-  };
-  Object.keys(simpMap).forEach(function (k) { q = q.split(k).join(simpMap[k]); });
-  var compact = q.replace(/\s/g, '');
-  var lower = q.toLowerCase();
-  type = String(type || 'general').toLowerCase();
-
-  function has(re) { return re.test(q) || re.test(lower); }
-  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-  function uniq(arr) {
-    var out = [];
-    for (var i = 0; i < arr.length; i++) if (out.indexOf(arr[i]) < 0) out.push(arr[i]);
-    return out;
+  var raw=String(question||'').trim();
+  var foundation=(typeof window!=='undefined'&&window.JYTarotFoundation)?window.JYTarotFoundation:null;
+  if(!foundation||typeof foundation.routeQuestion!=='function'){
+    var missing={version:'97.0.0',engine:'foundation_router',spreadId:null,reason:'JYTarotFoundation 未載入；為避免使用第二套路由器，系統已停止自動選陣。',question:raw,type:String(type||'general'),confidence:0,selectedBy:'fail_closed',features:{},candidates:[]};
+    try{detectSpreadType.lastDecision=missing;if(typeof window!=='undefined')window._jyLastSpreadDecision=missing;}catch(_e){}
+    throw new Error('JYTarotFoundation is required before tarot_upgrade.js');
   }
-  function _recordDecision(spreadId, reason, features, candidates, confidence, selectedBy) {
-    var decision = {
-      version: '94.0.0',
-      engine: 'capability_scoring',
-      spreadId: spreadId,
-      reason: reason,
-      question: raw,
-      normalizedQuestion: q,
-      type: type,
-      confidence: typeof confidence === 'number' ? confidence : 1,
-      selectedBy: selectedBy || 'semantic_score',
-      features: features || {},
-      candidates: candidates || []
-    };
-    try {
-      detectSpreadType.lastDecision = decision;
-      if (typeof window !== 'undefined') window._jyLastSpreadDecision = decision;
-    } catch (e) {}
-    return spreadId;
-  }
-  function _explicit(id, reason) {
-    return _recordDecision(id, reason, { explicitSpread: true }, [{ id: id, score: 999 }], 1, 'explicit');
-  }
-
-  // ═══ 第 0 層：使用者明確指定牌陣名稱（唯一硬覆寫）═══
-  if (/Mathers.*(?:第一法|古法|horseshoe|馬蹄|馬蹄形)|1888.*(?:第一法|古法|horseshoe|馬蹄)|五十四.?張|54.?張/i.test(q)) return _explicit('mathers_horseshoe', '你已明確指定 Mathers 五十四張／第一法');
-  if (/Mathers.*牌陣|1888.*牌陣|三排七|三排.*七|二十一.?張|21.?張.*牌陣|Mathers.*(?:第二法|second)/i.test(q)) return _explicit('mathers_21', '你已明確指定 Mathers 二十一張／第二法');
-  if (/金色黎明.*牌陣|GD.*牌陣|英式.*牌陣|fifteen.?card|十五.?張|Crowley.*牌陣/i.test(q)) return _explicit('fifteen_card', '你已明確指定金色黎明十五張牌陣');
-  if (/小阿卡那|小牌牌陣|minor arcana/i.test(q)) return _explicit('minor_arcana', '你已明確指定小阿卡那牌陣');
-  if (/凱爾特|celtic/i.test(q)) return _explicit('celtic_cross', '你已明確指定凱爾特十字');
-  if (/生命之樹|卡巴拉牌陣|tree of life/i.test(q)) return _explicit('tree_of_life', '你已明確指定生命之樹');
-  if (/(?:黃道|十二宮|星座)牌陣|zodiac/i.test(q)) return _explicit('zodiac', '你已明確指定黃道十二宮');
-  if (/七張馬蹄|馬蹄形牌陣|seven.?card horseshoe/i.test(q)) return _explicit('horseshoe', '你已明確指定七張馬蹄形牌陣');
-  if (/關係牌陣|relationship spread/i.test(q)) return _explicit('relationship', '你已明確指定關係牌陣');
-  if (/時間線牌陣|timeline spread/i.test(q)) return _explicit('timeline', '你已明確指定時間線牌陣');
-  if (/十字牌陣|cross spread/i.test(q)) return _explicit('cross', '你已明確指定十字牌陣');
-  if (/(?:三牌|三張牌)陣|three.?card spread/i.test(q)) return _explicit('three_card', '你已明確指定三牌陣');
-  if (/(?:五牌|五張牌)陣|five.?card spread/i.test(q)) return _explicit('five_card', '你已明確指定五牌陣');
-  if (/二選一牌陣|either.?or spread/i.test(q)) return _explicit('either_or', '你已明確指定二選一牌陣');
-
-  // ═══ 第 1 層：把自然語言問題編譯成「需要觀測什麼」═══
-  var qMarks = (q.match(/[？?]/g) || []).length;
-  var clauses = q.split(/[？?！!。；;]+/).filter(function (x) { return x.trim().length > 0; });
-  var connectorClauses = (q.match(/(?:而且|並且|同時|另外|還有|以及|再來|其次|and|also|plus)/gi) || []).length;
-  var effectiveQuestions = Math.max(1, qMarks, clauses.length + connectorClauses);
-
-  var isYesNo = /嗎[？?]?\s*$|^(?:會不會|有沒有|該不該|可不可以|能不能|能否|是否|可否|是不是|適不適合|好不好|值得不值得|值不值得|行不行|對不對|要不要)|(?:會嗎|能嗎|好嗎|行嗎|夠嗎|對嗎|有救嗎)|^(?:will|would|can|could|should|is|are|do|does|did|has|have)\b/i.test(q);
-  var choiceConnectors = (q.match(/還是|或者|或是|\bor\b|\bversus\b|\bvs\.?\b/gi) || []).length;
-  var isChoice = /還是|或者|或是|二選一|兩個.*選|哪一個|哪個(?:比較)?好|哪個.*(?:適合|選擇|較好|比較好)|兩者|選.*哪|A.*B.*選|留.*走|留下.*離職|離職.*留下|分.*不分|接受.*拒絕|choose between|which (?:one|option)|should i choose|\b(?:should|do|can|would)\s+i\b.{0,48}\bor\b|\bvs\.?\b|\bversus\b/i.test(q);
-  var isMultiChoice = choiceConnectors >= 2 || /(?:A|甲).*(?:B|乙).*(?:C|丙)|三個.*選|四個.*選|多個.*選|哪幾個|three options|multiple options/i.test(q);
-  // 列舉 A、B、C 或短項目＋「哪個」也視為多選。
-  if (!isMultiChoice && /哪(?:一)?個|which/.test(q)) {
-    var listed = (q.match(/(?:^|[、，,;；])\s*(?:[A-Z甲乙丙丁]|\d+)[\.、:：]?/g) || []).length;
-    if (listed >= 2) isMultiChoice = true;
-  }
-
-  var isTimingQuestion = /什麼時候|何時|幾時|哪一天|哪個時間|幾月幾日|何年何月|要(?:再)?等多久|還要等多久|多久(?:才|後|會)|何時才|何時會|when\b|how long|what date|which month|which year|timing/i.test(q);
-  var hasDeadline = /(?:今天|今日|明天|本週|這週|下週|本月|這個月|這月|下個月|月底|年底|年內|近期|短期|期限|截止).{0,10}(?:前|內|以前|以內|能|會|可)|來得及|趕得上|在.{0,12}(?:之前|以前|以內)|by (?:today|tomorrow|this week|this month|month.?end|year.?end)|before the deadline/i.test(q);
-  var isWhy = /為什麼|為何|怎麼會|為啥|什麼原因|原因是|根源|問題出在|到底怎麼了|怎麼回事|why\b|root cause|what causes|what is causing/i.test(q);
-  var isHow = /如何|怎麼做|怎麼辦|怎樣才|方法|建議|策略|怎麼改|怎麼處理|怎麼經營|怎麼提升|要怎麼|下一步|how should|what should i do|what can i do|next step|strategy|advice/i.test(q) && !/^(?:今天|今日|明天|本週|這週|本月|這月|近期|最近).{0,4}如何[？?]?$/.test(compact);
-  var isBlocked = /拉扯|糾結|矛盾|卡住|進退兩難|衝突|阻礙|不順|為什麼卡|怎麼解|僵局|瓶頸|困境|動彈不得|解不開|過不去|走不出|掙扎|兩難|stuck|blocked|obstacle|conflict|deadlock|bottleneck/i.test(q);
-  var isPattern = /為什麼一直|總是|每次都|又.*了|重複|老是|反覆|循環|模式|又來了|keep (?:doing|choosing|meeting|ending)|always|every time|repeating pattern|same pattern/i.test(q);
-  var isSpiritualText = /靈性|業力|課題|天命|使命|潛意識|自我成長|卡巴拉|冥想|靈魂|內在(?:課題|模式|成長|陰影)|spiritual|karma|karmic|soul|life purpose|inner shadow|subconscious/i.test(q);
-  var isNarrative = /來龍去脈|前因後果|從頭到尾|始末|整段(?:過程|經過|關係|時間)|過去.{0,6}現在.{0,6}未來|這(?:段|件).{0,12}(?:怎麼走到|演變|經過)|一路走來|完整歷程|how did .* get here|from the beginning|past.*present.*future|whole story|full history/i.test(q);
-  var isExhaustive = /全部攤開|最完整|徹底.{0,6}(?:解|看|攤)|大解讀|人生大局|人生級|通盤.{0,6}(?:看|解)|所有人生面向|整個人生|everything about my life|complete life reading|leave nothing out|most exhaustive/i.test(q);
-  var isDeepOverview = /完整|全面|深入|詳細|各方面|全局|大局|多面向|所有影響|整體局勢|通盤|徹底分析|full picture|in depth|deep dive|comprehensive|all influences|whole situation/i.test(q);
-  var isLightOverview = /整體|運勢|近況|最近狀況|現況如何|幫我看看(?!他|她)|走向如何|發展如何|overall|how are things|general outlook|what is going on/i.test(q);
-  var isAnnualScan = /年度運勢|整年|一整年|全年運|流年|十二宮|黃道|每個月|逐月|月月|未來一年.{0,10}(?:整體|各方面|各領域|運勢)|(?:今年|明年).{0,10}(?:整體運勢|全年運勢|各方面|各領域|十二個月)|yearly outlook|whole year|month by month|annual forecast|next 12 months/i.test(q);
-
-  var hasKnownCounterpart = /(?:^|[，。！？?\s])(?:他|她|對方)(?:[會想愛喜討在跟與和對把]|$)|(?:他|她|對方).{0,10}(?:怎麼看我|看待我|對我|跟我|和我|與我|的態度|的想法|是否|會不會|會否|接下來)|另一半|前任|現任|老公|老婆|男友|女友|伴侶|配偶|夫妻|曖昧對象|喜歡的人|那(?:位|個)(?:人|同事|主管|朋友)|這(?:位|個)(?:人|同事|主管|朋友)|某(?:位|個)?(?:人|同事|主管|朋友|客戶|對象)|我(?:跟|和|與)[^？?，。]{1,28}|(?:主管|老闆|同事|朋友|客戶|老師|同學|合夥人).{0,10}(?:怎麼看我|看待我|對我|和我|跟我|與我|的態度|的關係|相處)|\b(?:my partner|my ex|my boss|my coworker|my friend|my client|he|she|they|this person)\b/i.test(q);
-  var hasUnknownPersonEvent = /會不會有|會有|有沒有|是否有|有人|異性|桃花|新對象|未來對象|下一個對象|誰會|哪個人|暗戀我|喜歡我嗎|跟我告白|向我告白|追我|追求我|脫單|will i meet someone|anyone likes me|who will|future partner|new person/i.test(q) && !hasKnownCounterpart;
-  var hasRelationshipContent = /喜歡|愛情|感情|戀愛|暗戀|告白|追求|曖昧|復合|分手|婚姻|關係|相處|真心|想不想我|愛不愛|喜不喜歡|love|romance|relationship|marriage|dating|breakup|reconcile|feelings/i.test(q);
-  var hasInterpersonalFrame = hasRelationshipContent || /怎麼看我|看待我|對我(?:的)?態度|互動|合不合|處不處|處得來|處不來|信任我|對我的想法|和我的關係|跟我的關係|與我的關係|what .* think of me|attitude toward me|between us|our relationship/i.test(q);
-
-  var asksCardinality = /幾個|幾位|多少(?:人|個|位)|人數|數量|how many/i.test(q);
-  var hasNumericTarget = /營業額|業績|收入|薪水|獲利|利潤|成本|銷量|成交(?:額|量)|回本|打平|盈虧|達標|門檻|目標|百分比|％|%|[0-9０-９]+\s*(?:萬|千|百|元|塊|件|單|人|個|位|k|m)|revenue|sales target|profit|income target|break even|quota/i.test(q);
-  var hasThreshold = /超過|突破|破(?:萬|千|百|[0-9０-９]+)|達到|至少|至多|不低於|不高於|高於|低於|不到|超標|達標|門檻|回本|打平|能有多少|會有多少|reach|exceed|at least|at most|above|below|hit the target|break even/i.test(q) || hasNumericTarget;
-  var hasCondition = /如果|若是|若|只要|除非|前提|條件|同時|而且|但(?:是)?|可是|除了|不含|非現任|仍然|是否仍|在.{0,12}(?:情況|條件)下|if\b|unless|provided that|under .* condition|but\b|as long as/i.test(q);
-  var asksHidden = /沒看到|忽略|盲點|隱藏|背後|未察覺|不知道的|what am i missing|overlooking|hidden influence|blind spot|behind the scenes/i.test(q);
-  var asksExternal = /外在|環境|別人影響|周圍|他人態度|市場|公司環境|家庭影響|external|environment|other people|market condition/i.test(q);
-  var asksOutcome = /結果|結局|走向|發展|會怎樣|會如何|成不成|成功|失敗|後來|接下來|未來|outcome|result|what happens|how will it develop|where is this going/i.test(q) || isYesNo;
-
-  var isPractical = /(?:找|遺失|不見|掉了|搞丟).{0,8}(?:東西|鑰匙|錢包|手機|文件|證件)|(?:東西|鑰匙|錢包|手機|文件|證件).{0,6}(?:不見|掉了|搞丟|遺失|找得回|找不到|找得到)|包裹|快遞|訂單|報稅|證件|水電|家電|修(?:車|機車)|搬家|租屋|行程|日程|繳費|預約|寄(?:件|貨)|出貨|退貨|維修|掛號|lost (?:item|wallet|key|phone)|package|delivery|appointment|repair|refund|shipment/i.test(q);
-
-  var domainPatterns = [
-    /感情|愛情|婚姻|桃花|戀愛|復合|伴侶|love|romance|relationship|marriage/i,
-    /工作|事業|職場|轉職|離職|升遷|業績|副業|創業|生意|career|job|work|business|promotion/i,
-    /財運|金錢|財務|投資|收入|營業額|薪水|獲利|利潤|錢|money|finance|income|revenue|investment/i,
-    /健康|身體|疾病|手術|藥物|睡眠|health|illness|surgery|sleep/i,
-    /家庭|家人|父母|小孩|子女|家宅|family|parents|children|home/i,
-    /學業|考試|進修|學習|證照|study|exam|school|certificate|learning/i
-  ];
-  var domainHits = [];
-  for (var di = 0; di < domainPatterns.length; di++) if (domainPatterns[di].test(q) || domainPatterns[di].test(lower)) domainHits.push(di);
-  var domainCount = domainHits.length;
-  var isMultiDomain = domainCount >= 2 && /一起看|都看|同時|以及|跟.{0,12}(?:一起|都)|和.{0,12}(?:一起|都)|整體|全面|各方面|both|all areas|together|at the same time|and/i.test(q);
-
-  var isLove = (type === 'love' || type === 'secret' || type === 'relationship') || hasRelationshipContent;
-  var isHealth = type === 'health' || domainHits.indexOf(3) >= 0;
-  var isSpirit = type === 'spiritual' || isSpiritualText;
-
-  var complexityPoints = 0;
-  complexityPoints += Math.max(0, effectiveQuestions - 1);
-  if (hasCondition) complexityPoints++;
-  if (hasDeadline) complexityPoints++;
-  if (hasThreshold) complexityPoints++;
-  if (asksHidden) complexityPoints++;
-  if (asksExternal) complexityPoints++;
-  if (domainCount >= 2) complexityPoints += 2;
-  if (compact.length >= 34) complexityPoints++;
-  if (compact.length >= 62) complexityPoints++;
-  if (compact.length >= 100) complexityPoints += 2;
-  var complexityBand = complexityPoints >= 5 ? 'high' : (complexityPoints >= 2 ? 'medium' : 'low');
-
-  // 需求向量：每一項都是「問題要求牌陣提供哪種觀測通道」。
-  var req = {
-    binary: isYesNo ? 1 : 0,
-    comparison: isChoice ? 1 : 0,
-    timing: isTimingQuestion ? 1 : 0,
-    dyad: ((isLove || hasInterpersonalFrame || type === 'family') && hasKnownCounterpart && !hasUnknownPersonEvent) ? 1 : 0,
-    causal: (isWhy || isBlocked) ? 1 : (hasCondition ? 0.35 : 0),
-    advice: (isHow || isChoice || isBlocked) ? 1 : (hasThreshold || hasDeadline ? 0.65 : 0.2),
-    outcome: asksOutcome || hasThreshold || hasDeadline ? 1 : 0.45,
-    hidden: asksHidden ? 1 : (complexityBand === 'high' ? 0.55 : 0),
-    external: asksExternal ? 1 : (hasKnownCounterpart ? 0.65 : (complexityBand === 'high' ? 0.35 : 0)),
-    sequence: isNarrative ? 1 : (isTimingQuestion ? 0.8 : (asksOutcome ? 0.55 : 0.25)),
-    narrative: isNarrative ? 1 : 0,
-    inner: (isPattern || isSpirit) ? 1 : 0,
-    annual: isAnnualScan ? 1 : 0,
-    multiDomain: isMultiDomain ? 1 : 0,
-    exhaustive: isExhaustive ? 1 : 0,
-    practical: isPractical ? 1 : 0,
-    overview: isDeepOverview ? 1 : (isLightOverview ? 0.55 : 0.15),
-    metric: hasThreshold ? 1 : (asksCardinality ? 0.75 : 0)
+  var result=foundation.routeQuestion(raw,{type:String(type||'general'),referenceDate:new Date().toISOString()});
+  var decision={
+    version:result.version||foundation.VERSION,engine:result.engine||'foundation_router',spreadId:result.spreadId,
+    reason:result.reason,question:raw,normalizedQuestion:(result.compiledQuestion&&result.compiledQuestion.normalizedQuestion)||raw,
+    type:String(type||'general'),confidence:result.confidence,selectedBy:result.selectedBy,
+    features:(result.compiledQuestion&&result.compiledQuestion.features)||{},candidates:result.candidates||[]
   };
-
-  var features = {
-    yesNo: isYesNo, choice: isChoice, multiChoice: isMultiChoice, timingQuestion: isTimingQuestion,
-    deadline: hasDeadline, why: isWhy, how: isHow, blocked: isBlocked, repeatedPattern: isPattern,
-    spiritual: isSpirit, narrative: isNarrative, exhaustive: isExhaustive, deepOverview: isDeepOverview,
-    lightOverview: isLightOverview, annualScan: isAnnualScan, knownCounterpart: hasKnownCounterpart,
-    unknownPersonEvent: hasUnknownPersonEvent, practical: isPractical, thresholdOrMetric: hasThreshold,
-    cardinality: asksCardinality, multiDomain: isMultiDomain, domainCount: domainCount,
-    asksHidden: asksHidden, asksExternal: asksExternal, complexityPoints: complexityPoints,
-    complexityBand: complexityBand, requirements: req
-  };
-
-  // ═══ 第 2 層：牌陣能力矩陣 ═══
-  // 值越高，表示該牌陣越能直接觀測該需求；不是牌張數票決。
-  var defs = {
-    three_card: { cards:3, cap:{binary:.95,comparison:.05,timing:.25,dyad:.15,causal:.25,advice:.25,outcome:.82,hidden:.05,external:.05,sequence:.82,narrative:.35,inner:.15,annual:.05,multiDomain:.05,exhaustive:0,practical:.55,overview:.25,metric:.25} },
-    five_card: { cards:5, cap:{binary:.78,comparison:.45,timing:.35,dyad:.35,causal:.82,advice:.95,outcome:.92,hidden:.45,external:.35,sequence:.58,narrative:.35,inner:.35,annual:.1,multiDomain:.35,exhaustive:0,practical:.72,overview:.68,metric:.82} },
-    relationship: { cards:6, cap:{binary:.7,comparison:.25,timing:.2,dyad:1,causal:.72,advice:.72,outcome:.88,hidden:.55,external:.95,sequence:.45,narrative:.35,inner:.45,annual:.1,multiDomain:.15,exhaustive:0,practical:.2,overview:.72,metric:.2} },
-    either_or: { cards:5, cap:{binary:.55,comparison:1,timing:.2,dyad:.2,causal:.35,advice:.72,outcome:.95,hidden:.15,external:.1,sequence:.45,narrative:.1,inner:.15,annual:0,multiDomain:.1,exhaustive:0,practical:.45,overview:.35,metric:.35} },
-    cross: { cards:5, cap:{binary:.68,comparison:.2,timing:.25,dyad:.35,causal:1,advice:.92,outcome:.82,hidden:.62,external:.35,sequence:.68,narrative:.35,inner:.55,annual:.05,multiDomain:.2,exhaustive:0,practical:.62,overview:.65,metric:.58} },
-    timeline: { cards:5, cap:{binary:.55,comparison:.1,timing:1,dyad:.2,causal:.3,advice:.35,outcome:.9,hidden:.15,external:.1,sequence:1,narrative:.62,inner:.15,annual:.15,multiDomain:.1,exhaustive:0,practical:.55,overview:.35,metric:.45} },
-    celtic_cross: { cards:10, cap:{binary:.72,comparison:.3,timing:.35,dyad:.58,causal:.98,advice:.9,outcome:.96,hidden:1,external:1,sequence:.78,narrative:.65,inner:.72,annual:.2,multiDomain:.55,exhaustive:.25,practical:.45,overview:1,metric:.68} },
-    tree_of_life: { cards:10, cap:{binary:.35,comparison:.15,timing:.1,dyad:.35,causal:.78,advice:.68,outcome:.62,hidden:.95,external:.45,sequence:.48,narrative:.48,inner:1,annual:.15,multiDomain:.5,exhaustive:.25,practical:.1,overview:.9,metric:.15} },
-    zodiac: { cards:13, cap:{binary:.25,comparison:.1,timing:.55,dyad:.25,causal:.45,advice:.55,outcome:.72,hidden:.55,external:.65,sequence:.65,narrative:.35,inner:.55,annual:1,multiDomain:.95,exhaustive:.45,practical:.1,overview:1,metric:.25} },
-    minor_arcana: { cards:7, cap:{binary:.78,comparison:.35,timing:.35,dyad:.25,causal:.6,advice:.72,outcome:.78,hidden:.45,external:.35,sequence:.58,narrative:.25,inner:.2,annual:.05,multiDomain:.15,exhaustive:0,practical:1,overview:.48,metric:.48} },
-    fifteen_card: { cards:15, cap:{binary:.45,comparison:.35,timing:.25,dyad:.45,causal:.78,advice:.7,outcome:.82,hidden:.85,external:.85,sequence:.62,narrative:.55,inner:.65,annual:.55,multiDomain:1,exhaustive:.55,practical:.15,overview:.98,metric:.48} },
-    mathers_21: { cards:21, cap:{binary:.45,comparison:.2,timing:.55,dyad:.4,causal:.65,advice:.48,outcome:.88,hidden:.62,external:.55,sequence:1,narrative:1,inner:.55,annual:.35,multiDomain:.65,exhaustive:.65,practical:.1,overview:.92,metric:.35} },
-    mathers_horseshoe: { cards:54, cap:{binary:.35,comparison:.25,timing:.45,dyad:.5,causal:.88,advice:.62,outcome:.9,hidden:1,external:1,sequence:.9,narrative:.9,inner:.9,annual:.75,multiDomain:1,exhaustive:1,practical:.05,overview:1,metric:.25} },
-    horseshoe: { cards:7, cap:{binary:.7,comparison:.3,timing:.42,dyad:.5,causal:.86,advice:.96,outcome:.92,hidden:.95,external:.86,sequence:.84,narrative:.58,inner:.55,annual:.1,multiDomain:.35,exhaustive:.05,practical:.62,overview:.82,metric:.62} }
-  };
-
-  var idealCards = 3;
-  if (isExhaustive) idealCards = 54;
-  else if (isNarrative) idealCards = 21;
-  else if (isMultiDomain) idealCards = 15;
-  else if (isAnnualScan) idealCards = 13;
-  else if (isDeepOverview || complexityBand === 'high') idealCards = 10;
-  else if (asksHidden || asksExternal || complexityBand === 'medium') idealCards = 7;
-  else if (isHow || isWhy || isBlocked || hasThreshold || hasDeadline || hasCondition) idealCards = 5;
-
-  var specializedGate = {
-    relationship: req.dyad,
-    either_or: req.comparison && !isMultiChoice ? 1 : 0,
-    timeline: req.timing,
-    tree_of_life: req.inner,
-    zodiac: req.annual,
-    minor_arcana: req.practical,
-    fifteen_card: req.multiDomain,
-    mathers_21: req.narrative,
-    mathers_horseshoe: req.exhaustive
-  };
-
-  var candidates = [];
-  Object.keys(defs).forEach(function (id) {
-    var d = defs[id], score = 0, coverage = 0, weightSum = 0;
-    Object.keys(req).forEach(function (k) {
-      var need = req[k] || 0;
-      if (need <= 0) return;
-      var cap = d.cap[k] || 0;
-      var w = need * (need >= .75 ? 1.35 : 1);
-      score += w * cap * 12;
-      if (need >= .7 && cap < .45) score -= (need - cap) * 8;
-      coverage += w * cap;
-      weightSum += w;
-    });
-
-    // 專用牌陣沒有相應結構時要付出高額誤配成本。
-    if (Object.prototype.hasOwnProperty.call(specializedGate, id) && specializedGate[id] < .5) {
-      var gatePenalty = id === 'mathers_horseshoe' ? 34 : (id === 'mathers_21' ? 19 : (id === 'zodiac' ? 18 : 13));
-      score -= gatePenalty;
-    }
-    if (id === 'either_or' && isMultiChoice) score -= 25;
-    if (id === 'relationship' && hasUnknownPersonEvent) score -= 18;
-    if (id === 'minor_arcana' && (isDeepOverview || complexityBand === 'high')) score -= 6;
-    if (id === 'three_card' && complexityBand !== 'low') score -= 5 + complexityPoints;
-    if (id === 'three_card' && hasUnknownPersonEvent) score -= 10;
-    if (id === 'five_card' && (asksHidden || asksExternal) && complexityBand !== 'low') score -= 2;
-    if (id === 'celtic_cross' && complexityBand === 'low' && !isDeepOverview) score -= 8;
-    if (id === 'horseshoe' && complexityBand === 'low' && !asksHidden && !asksExternal && !isHow) score -= 3;
-
-    // 牌數不是「越多越準」；只以問題所需深度校正過度／不足成本。
-    if (d.cards > idealCards) score -= Math.min(15, (d.cards - idealCards) * .32);
-    else if (d.cards < idealCards) score -= Math.min(10, (idealCards - d.cards) * .24);
-
-    // 強結構精準匹配獎勵。
-    if (id === 'either_or' && req.comparison && !isMultiChoice) score += 18;
-    if (id === 'timeline' && req.timing) score += 18;
-    if (id === 'relationship' && req.dyad) score += 16;
-    if (id === 'tree_of_life' && req.inner) score += 15;
-    if (id === 'zodiac' && req.annual) score += 18;
-    if (id === 'minor_arcana' && req.practical && !req.timing) score += 12;
-    if (id === 'fifteen_card' && req.multiDomain) score += 17;
-    if (id === 'mathers_21' && req.narrative) score += 20;
-    if (id === 'mathers_horseshoe' && req.exhaustive) score += 28;
-    if (id === 'cross' && req.causal >= .75 && (isBlocked || isWhy)) score += 11;
-    if (id === 'celtic_cross' && (isDeepOverview || complexityBand === 'high') && !req.multiDomain && !req.narrative) score += 10;
-    if (id === 'five_card' && (hasThreshold || hasDeadline || hasCondition || (isHow && complexityBand === 'low'))) score += 9;
-    if (id === 'five_card' && hasUnknownPersonEvent) score += 13;
-    if (id === 'three_card' && isYesNo && complexityBand === 'low' && !hasThreshold && !hasDeadline && !hasCondition) score += 12;
-    if (id === 'horseshoe' && complexityBand === 'medium' && (asksHidden || asksExternal || (isHow && asksOutcome))) score += 10;
-    if (id === 'horseshoe' && complexityBand === 'medium' && !isChoice && !isTimingQuestion && !req.dyad && !req.inner) score += 4;
-
-    candidates.push({
-      id: id,
-      score: Math.round(score * 100) / 100,
-      coverage: weightSum ? Math.round((coverage / weightSum) * 1000) / 1000 : 0,
-      cards: d.cards
-    });
-  });
-
-  candidates.sort(function (a, b) {
-    if (b.score !== a.score) return b.score - a.score;
-    // 同分時優先較少牌，避免無必要的大牌陣。
-    if (a.cards !== b.cards) return a.cards - b.cards;
-    return a.id < b.id ? -1 : 1;
-  });
-
-  var top = candidates[0] || { id:'three_card', score:0, coverage:0, cards:3 };
-  var second = candidates[1] || { score:top.score - 10 };
-  var margin = top.score - second.score;
-  var confidence = clamp(.48 + margin / 32 + top.coverage * .22, .45, .99);
-
-  // 低信心時不用隨機；回到最小充分的一般結構。
-  // 「所有問題都能選」不等於硬猜專用牌陣。
-  if (confidence < .56) {
-    if (complexityBand === 'high') top = candidates.filter(function (x) { return x.id === 'celtic_cross'; })[0] || top;
-    else if (complexityBand === 'medium') top = candidates.filter(function (x) { return x.id === 'horseshoe'; })[0] || top;
-    else if (isHow || isWhy || hasCondition) top = candidates.filter(function (x) { return x.id === 'five_card'; })[0] || top;
-    else top = candidates.filter(function (x) { return x.id === 'three_card'; })[0] || top;
-    confidence = .56;
-  }
-
-  var reasonMap = {
-    three_card: '問題是單一、低複雜度的快問，過去—現在—走向已足以回答',
-    five_card: '問題需要把現況、成因、阻礙、行動與結果串成一條完整事件鏈',
-    relationship: '問題有可辨識的雙方，需要分開觀測你、對方與關係本身',
-    either_or: '問題要求在兩條互斥路徑間做對稱比較',
-    cross: '問題核心是原因、阻礙、衝突或卡點，需要先定位問題再給建議',
-    timeline: '問題直接要求時間點、等待長度或階段進程',
-    celtic_cross: '問題是單一主題的高複雜度全局，需要內外因素、盲點、建議與結果',
-    tree_of_life: '問題聚焦反覆模式、深層內在或靈性課題',
-    zodiac: '問題要求整年、逐月或跨生活領域的年度掃描',
-    minor_arcana: '問題是具體日常事件，適合以實務層面的七張小牌結構觀測',
-    fifteen_card: '問題同時涵蓋多個生活領域，需要多面向並行觀測',
-    mathers_21: '問題核心是完整來龍去脈與過去—現在—未來的長敘事',
-    mathers_horseshoe: '問題明確要求人生級、全部攤開的最完整盤點',
-    horseshoe: '問題需要同時看過去、現況、隱藏作用、環境、行動與結果，七張結構最小且充分'
-  };
-
-  var reason = reasonMap[top.id] || '已依問題所需的觀測結構選出覆蓋率最高的牌陣';
-  var evidenceBits = [];
-  if (isMultiChoice) evidenceBits.push('選項超過兩個');
-  if (hasThreshold) evidenceBits.push('含數值或門檻');
-  if (hasDeadline) evidenceBits.push('含期限');
-  if (hasCondition) evidenceBits.push('含條件');
-  if (asksHidden) evidenceBits.push('要求盲點／隱藏因素');
-  if (asksExternal) evidenceBits.push('要求外在環境');
-  if (effectiveQuestions >= 2) evidenceBits.push('含多個子問');
-  if (evidenceBits.length && ['five_card','horseshoe','celtic_cross'].indexOf(top.id) >= 0) reason += '；本題' + uniq(evidenceBits).join('、');
-
-  return _recordDecision(top.id, reason, features, candidates.slice(0, 5), confidence, 'semantic_score');
+  try{detectSpreadType.lastDecision=decision;if(typeof window!=='undefined')window._jyLastSpreadDecision=decision;}catch(_e2){}
+  return result.spreadId;
 }
 
 // 單一牌陣解析入口：所有 UI 流程只接受此函式的結果，不得再用問號數、字數或頁面分支二次改寫。
@@ -963,6 +598,33 @@ function getCurrentSpreadDef() { return SPREAD_DEFS[_currentSpreadId] || SPREAD_
 // ══════════════════════════════════════════════════════════════════════
 // 6. showSpread 覆寫 — 適配所有牌陣類型
 // ══════════════════════════════════════════════════════════════════════
+function getBookTRenderData(card, index, spreadId, cards) {
+  var gd = (typeof window !== 'undefined') ? window.JYGoldenDawn : null;
+  if (!gd || typeof gd.profile !== 'function') {
+    return { title:'Book T 資料未載入', reading:'本牌不以舊牌義回退；請重新載入 Golden Dawn 來源模組。', dignityLabel:'來源未載入', correspondence:'', element:'' };
+  }
+  try { gd.normalizeDraw(cards || []); } catch (_e) {}
+  var p = gd.profile(card);
+  if (!p) return { title:'', reading:'', dignityLabel:'未定', correspondence:'', element:'' };
+  var d = null;
+  try { d = gd.dignityContext(cards || [], index, spreadId || ''); } catch (_d) {}
+  var labelMap = {
+    well_dignified:'完整元素尊貴：強化', ill_dignified:'完整元素尊貴：削弱', supported:'完整元素尊貴：協調',
+    mixed:'完整元素尊貴：混合', multi_line:'多條有序線分別裁決', locally_supported:'單邊元素相容',
+    locally_weakened:'單邊元素削弱', local_mixed:'單邊元素混合', interaction_only:'僅牌陣互動', unlinked:'無完整尊貴線'
+  };
+  return {
+    title:p.bookTTitle || '',
+    reading:(d && d.reading) || p.sourceCore || '',
+    dignityLabel:labelMap[(d && d.state) || 'unlinked'] || ((d && d.state) || '未定'),
+    correspondence:p.correspondence || '',
+    element:p.element || card.el || '',
+    kind:p.kind || '',
+    courtLayer:p.kind === 'court' ? (p.layer || '') : '',
+    sourceProfile:'gd_book_t'
+  };
+}
+
 (function() {
   var _origShowSpread = (typeof showSpread === 'function') ? showSpread : null;
 
@@ -1000,20 +662,9 @@ function getCurrentSpreadDef() { return SPREAD_DEFS[_currentSpreadId] || SPREAD_
         posZh = '';
       }
 
-      // 取 deep 解讀
-      var dp = (typeof getTarotDeep === 'function') ? getTarotDeep(c) : {};
-      var coreDesc = c.isUp ? (dp.coreUp || '') : (dp.coreRv || '');
-      var adviceDesc = c.isUp ? (dp.adviceUp || '') : (dp.adviceRv || '');
+      // 單一來源渲染：只讀 Golden Dawn profile + 本牌陣有序尊貴線。
+      var bt = getBookTRenderData(c, i, spreadId, drawnCards);
       var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
-
-      // 問題類型專屬解讀
-      var ftKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love'}[(S.form && S.form.type) || ''] || '';
-      if (S.form && S.form.domains && S.form.domains.length > 1) ftKey = ''; // v85.3：多領域問題結果頁也用中性牌義，與 getTarotTypeMeaning 同步
-      var typeReading = '';
-      if (ftKey) {
-        var fullCard = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
-        typeReading = c.isUp ? (fullCard[ftKey + 'Up'] || '') : (fullCard[ftKey + 'Rv'] || '');
-      }
 
       // 元素對應色
       var elColor = {'火':'#ef4444','水':'#3b82f6','風':'#22d3ee','土':'#a78b5a','水星':'#c9a84c','金星':'#f472b6','木星':'#38bdf8','土星':'#475569','月亮':'#a3e635','太陽':'#fbbf24'}[c.el] || 'var(--c-gold)';
@@ -1023,7 +674,7 @@ function getCurrentSpreadDef() { return SPREAD_DEFS[_currentSpreadId] || SPREAD_
       // 頂部：位置 + Golden Dawn Book T 來源
       cardsHtml += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
       cardsHtml += '<span class="tag tag-gold" style="font-size:.75rem">' + (i + 1) + '. ' + posName + '</span>';
-      cardsHtml += '<span class="tag ' + (c.isUp ? 'tag-blue' : 'tag-red') + '" style="font-size:.7rem">' + 'Book T' + '</span>';
+      cardsHtml += '<span class="tag tag-blue" style="font-size:.7rem">Book T／元素尊貴</span>';
       cardsHtml += '</div>';
 
       // 位置含義（如果有）
@@ -1034,28 +685,17 @@ function getCurrentSpreadDef() { return SPREAD_DEFS[_currentSpreadId] || SPREAD_
       // 牌名 + 圖片
       cardsHtml += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
       if (imgSrc) {
-        cardsHtml += '<img src="' + imgSrc + '" alt="' + c.n + '" style="width:65px;height:100px;border-radius:6px;flex-shrink:0;object-fit:cover;' + (c.isUp ? '' : 'transform:rotate(180deg)') + '">';
+        cardsHtml += '<img src="' + imgSrc + '" alt="' + c.n + '" style="width:65px;height:100px;border-radius:6px;flex-shrink:0;object-fit:cover">';
       }
       cardsHtml += '<div style="flex:1">';
       cardsHtml += '<strong class="text-gold serif" style="font-size:.95rem">' + c.n + '</strong>';
       if (c.el) cardsHtml += '<span style="font-size:.68rem;color:' + elColor + ';margin-left:.4rem">' + c.el + '</span>';
 
-      // 關鍵字
-      var kw = c.isUp ? (c.kwUp || '') : (c.kwRv || '');
-      if (!kw) { var fc = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c; kw = c.isUp ? (fc.kwUp || '') : (fc.kwRv || ''); }
-      if (kw) cardsHtml += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.2rem">🔑 ' + kw + '</div>';
-
-      // 基本解讀
-      cardsHtml += '<p style="font-size:.82rem;color:var(--c-text-dim);margin-top:.3rem;line-height:1.6">' + (c.isUp ? c.up : c.rv) + '</p>';
-
-      // 專屬解讀
-      if (typeReading) {
-        cardsHtml += '<p style="font-size:.8rem;color:var(--c-gold-light,#e8c968);margin-top:.3rem;line-height:1.6;border-top:1px solid rgba(201,168,76,.1);padding-top:.3rem">📌 ' + typeReading + '</p>';
-      }
-
-      // 深度解讀
-      if (coreDesc) cardsHtml += '<p style="font-size:.78rem;color:var(--c-gold-light,#c9a84c);margin-top:.2rem;line-height:1.5;opacity:.85">' + coreDesc + '</p>';
-      if (adviceDesc) cardsHtml += '<p style="font-size:.72rem;opacity:.6;margin-top:.15rem">💡 ' + adviceDesc + '</p>';
+      if (bt.title) cardsHtml += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.2rem">🔑 ' + bt.title + '</div>';
+      if (bt.courtLayer) cardsHtml += '<div style="font-size:.7rem;color:var(--c-gold);margin-top:.15rem">' + bt.courtLayer + '</div>';
+      cardsHtml += '<div style="font-size:.68rem;color:var(--c-text-muted);margin-top:.2rem">' + bt.dignityLabel + '</div>';
+      if (bt.reading) cardsHtml += '<p style="font-size:.82rem;color:var(--c-text-dim);margin-top:.3rem;line-height:1.6">' + bt.reading + '</p>';
+      if (bt.correspondence) cardsHtml += '<p style="font-size:.7rem;color:var(--c-text-muted);margin-top:.2rem;line-height:1.45">' + bt.correspondence + '</p>';
 
       cardsHtml += '</div></div></div>';
     }
@@ -1161,7 +801,13 @@ var GD_COURT_ELEMENTS = {
   74:{rank:'Page',suit:'土',rankEl:'土',combo:'土中之土',zh:'錢幣侍從：純粹的物質學徒，踏實但尚未成熟'}
 };
 
-function getGDCourtElement(card) { return card ? (GD_COURT_ELEMENTS[card.id] || null) : null; }
+function getGDCourtElement(card) {
+  var gd = (typeof window !== 'undefined') ? window.JYGoldenDawn : null;
+  if (!card || !gd || typeof gd.profile !== 'function') return null;
+  var p = gd.profile(card);
+  if (!p || p.kind !== 'court') return null;
+  return { rank:p.rank, suit:p.element, rankEl:'', combo:p.layer || '', zh:p.sourceCore || '', sourceProfile:'gd_book_t' };
+}
 
 // 覆寫 enhanceTarot — 注入宮廷牌元素
 var _etBase = enhanceTarot;
@@ -1189,35 +835,27 @@ enhanceTarot = function(tarot) {
     if (def && def.desc) h += '<br><span style="font-size:.72rem;color:var(--c-text-muted)">' + def.desc + '</span>';
     h += '</div>';
     var count = def ? Math.min(def.count, drawnCards.length) : drawnCards.length;
-    var ftKey = {love:'love',career:'career',wealth:'wealth',health:'health',relationship:'love',family:'love'}[(S.form&&S.form.type)||''] || '';
-      if (S.form && S.form.domains && S.form.domains.length > 1) ftKey = ''; // v85.3：多領域問題結果頁也用中性牌義，與 getTarotTypeMeaning 同步
     for (var i = 0; i < count; i++) {
       var c = drawnCards[i]; if (!c) continue;
       var posName = (def&&def.positions&&def.positions[i]) ? def.positions[i].name : (c.pos||'第'+(i+1)+'張');
       var posZh = (def&&def.positions&&def.positions[i]) ? def.positions[i].zh : '';
-      var dp = (typeof getTarotDeep === 'function') ? getTarotDeep(c) : {};
-      var coreDesc = c.isUp ? (dp.coreUp||'') : (dp.coreRv||'');
-      var adviceDesc = c.isUp ? (dp.adviceUp||'') : (dp.adviceRv||'');
+      var spreadId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : ((_currentSpreadId || 'celtic_cross'));
+      var bt = getBookTRenderData(c, i, spreadId, drawnCards);
       var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
-      var fc = (typeof TAROT !== 'undefined' && TAROT[c.id]) ? TAROT[c.id] : c;
-      var typeR = ftKey ? (c.isUp ? (fc[ftKey+'Up']||'') : (fc[ftKey+'Rv']||'')) : '';
-      var elC = {'火':'#ef4444','水':'#3b82f6','風':'#22d3ee','土':'#a78b5a'}[c.el] || 'var(--c-gold)';
-      var gdInfo = c.gdCourt ? '<div style="font-size:.7rem;color:#c9a84c;margin-top:.2rem">⚡ ' + c.gdCourt.combo + '</div>' : '';
+      var elC = {'火':'#ef4444','水':'#3b82f6','風':'#22d3ee','土':'#a78b5a'}[bt.element] || 'var(--c-gold)';
       h += '<div class="card" style="padding:.8rem;margin-bottom:.5rem;border-left:3px solid '+elC+'">';
       h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
       h += '<span class="tag tag-gold" style="font-size:.75rem">'+(i+1)+'. '+posName+'</span>';
-      h += '<span class="tag '+(c.isUp?'tag-blue':'tag-red')+'" style="font-size:.7rem">'+'Book T'+'</span></div>';
+      h += '<span class="tag tag-blue" style="font-size:.7rem">Book T／元素尊貴</span></div>';
       if (posZh) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">'+posZh+'</div>';
       h += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
-      if (imgSrc) h += '<img src="'+imgSrc+'" alt="'+c.n+'" style="width:65px;height:100px;border-radius:6px;flex-shrink:0;'+(c.isUp?'':'transform:rotate(180deg)')+'">';
+      if (imgSrc) h += '<img src="'+imgSrc+'" alt="'+c.n+'" style="width:65px;height:100px;border-radius:6px;flex-shrink:0">';
       h += '<div style="flex:1"><strong class="text-gold serif" style="font-size:.95rem">'+c.n+'</strong>';
-      var kw = c.isUp ? (fc.kwUp||'') : (fc.kwRv||'');
-      if (kw) h += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.15rem">🔑 '+kw+'</div>';
-      h += gdInfo;
-      h += '<p style="font-size:.82rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">'+(c.isUp?fc.up:fc.rv)+'</p>';
-      if (typeR) h += '<p style="font-size:.8rem;color:var(--c-gold-light,#e8c968);margin-top:.25rem;line-height:1.6;border-top:1px solid rgba(201,168,76,.1);padding-top:.25rem">📌 '+typeR+'</p>';
-      if (coreDesc) h += '<p style="font-size:.78rem;color:var(--c-gold-light);margin-top:.15rem;line-height:1.5;opacity:.85">'+coreDesc+'</p>';
-      if (adviceDesc) h += '<p style="font-size:.72rem;opacity:.6;margin-top:.1rem">💡 '+adviceDesc+'</p>';
+      if (bt.title) h += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.15rem">🔑 '+bt.title+'</div>';
+      if (bt.courtLayer) h += '<div style="font-size:.7rem;color:var(--c-gold);margin-top:.15rem">'+bt.courtLayer+'</div>';
+      h += '<div style="font-size:.68rem;color:var(--c-text-muted);margin-top:.2rem">'+bt.dignityLabel+'</div>';
+      if (bt.reading) h += '<p style="font-size:.82rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">'+bt.reading+'</p>';
+      if (bt.correspondence) h += '<p style="font-size:.7rem;color:var(--c-text-muted);margin-top:.2rem;line-height:1.45">'+bt.correspondence+'</p>';
       h += '</div></div></div>';
     }
     el.innerHTML = h;
@@ -5044,11 +4682,9 @@ enhanceTarot = function(tarot) {
         var rotateDeg = ang * 180 / Math.PI + 90;
         var card = ringCards[ri];
         var cardImg = getImg(card);
-        var isUp = card && card.isUp !== false;
-        var imgRotate = isUp ? 0 : 180;
         html += '<div class="ootk-op4-ring-card" data-idx="' + ri + '" style="left:50%;top:50%;transform:translate(-50%,-50%) translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) rotate(' + rotateDeg + 'deg)">';
         if (cardImg) {
-          html += '<img src="' + cardImg + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px;transform:rotate(' + imgRotate + 'deg)" />';
+          html += '<img src="' + cardImg + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px" />';
         }
         html += '</div>';
       }

@@ -1,4 +1,4 @@
-/*! golden-dawn-tarot.js — Golden Dawn Book T unified tarot core v2.0.0
+/*! golden-dawn-tarot.js — Golden Dawn Book T unified tarot core v3.0.0
  * Single source of truth for every tarot layout and Opening of the Key.
  * Interpretation source: Golden Dawn Book T / Liber T.
  * Physical orientation is not a fixed Waite-style reversed dictionary.
@@ -7,7 +7,7 @@
   'use strict';
   if (!root || root.JYGoldenDawn) return;
 
-  var VERSION = '2.0.0';
+  var VERSION = '3.0.0';
   var SOURCE_ID = 'gd_book_t';
   var SOURCE_LABEL = 'Golden Dawn《Book T／Liber T》';
   var ELEMENT = { wand:'火', cup:'水', sword:'風', pent:'土', major:'' };
@@ -251,47 +251,20 @@
   // A modern spread may define causal/semantic links, but those links do not
   // automatically become Book T's physical "cards next to it on either side".
   function range(a,b){var out=[];for(var i=a;i<b;i++)out.push(i);return out;}
+  function foundation(){ return root && root.JYTarotFoundation ? root.JYTarotFoundation : null; }
   function spreadDependencyGroups(spreadId,count){
-    var id=spreadId||'';
-    if(id==='three_card')return [[0,1,2]];
-    if(id==='five_card')return [[1,0,2],[3,0,4]];
-    if(id==='cross')return [[2,0,3],[4,0,1]];
-    if(id==='either_or')return [[0,1,3],[0,2,4]];
-    if(id==='relationship')return [[0,2,1],[4,3,2,5]];
-    if(id==='timeline')return [[0,1,2,3,4]];
-    if(id==='celtic_cross')return [[0,1],[2,0,3],[4,0,5],[6,7,8,9]];
-    if(id==='tree_of_life')return [[1,3,6],[2,4,7],[0,5,8,9]];
-    if(id==='zodiac')return [[0,6],[1,7],[2,8],[3,9],[4,10],[5,11]];
-    if(id==='minor_arcana')return [[1,0,2],[3,4,5,6]];
-    if(id==='fifteen_card')return [[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]];
-    if(id==='mathers_21')return [range(0,7),range(7,14),range(14,21)];
-    if(id==='mathers_horseshoe')return [range(0,26),range(26,43),range(43,54)];
-    if(id==='horseshoe')return [range(0,7)];
-    if(id==='ootk')return [range(0,count||0)];
+    var f=foundation();
+    if(f&&typeof f.getDependencyGroups==='function')return f.getDependencyGroups(spreadId,count);
     return count>0?[range(0,count)]:[];
   }
   function spreadDignityLines(spreadId,count){
-    var id=spreadId||'';
-    if(id==='three_card')return [[0,1,2]];
-    if(id==='five_card')return [[1,0,2],[3,0,4]];
-    if(id==='cross')return [[2,0,3],[4,0,1]];
-    if(id==='either_or')return [[0,1,3],[0,2,4]];
-    if(id==='relationship')return [[0,2,1],[4,3,2,5]];
-    if(id==='timeline')return [[0,1,2,3,4]];
-    // Celtic Cross: only physically/ordinally continuous axes and the staff.
-    // The crossing card is an interaction edge, not a two-sided dignity line.
-    if(id==='celtic_cross')return [[4,0,5],[3,0,2],[6,7,8,9]];
-    if(id==='tree_of_life')return [[1,3,6],[2,4,7],[0,5,8,9]];
-    if(id==='minor_arcana')return [[1,0,2],[3,4,5,6]];
-    if(id==='fifteen_card')return [[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]];
-    if(id==='mathers_21')return [range(0,7),range(7,14),range(14,21)];
-    if(id==='mathers_horseshoe')return [range(0,26),range(26,43),range(43,54)];
-    if(id==='horseshoe')return [range(0,7)];
-    if(id==='ootk')return [range(0,count||0)];
+    var f=foundation();
+    if(f&&typeof f.getDignityLines==='function')return f.getDignityLines(spreadId,count);
     return [];
   }
   function spreadCompatibilityEdges(spreadId){
-    if(spreadId==='celtic_cross')return [[0,1]];
+    var f=foundation();
+    if(f&&typeof f.getCompatibilityEdges==='function')return f.getCompatibilityEdges(spreadId);
     return [];
   }
   // Backward compatibility: spreadGroups now means interpretation topology,
@@ -435,7 +408,7 @@
   };}
 
   var api={
-    version:VERSION,sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,
+    version:VERSION,foundationVersion:(foundation()&&foundation().VERSION)||'',sourceId:SOURCE_ID,sourceLabel:SOURCE_LABEL,
     profile:profile,annotate:annotate,annotateDeck:annotateDeck,normalizeDraw:normalizeDraw,
     relation:relation,dignityContext:dignityContext,spreadDignityGroups:spreadDignityGroups,spreadInteractionGroups:spreadInteractionGroups,spreadDignityLines:spreadDignityLines,spreadDependencyGroups:spreadDependencyGroups,spreadCompatibilityEdges:spreadCompatibilityEdges,spreadGroups:spreadGroups,countValue:countValue,majorityObservations:majorityObservations,sourceContract:sourceContract,
     forceUpright:function(){return true;},
