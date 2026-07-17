@@ -1,4 +1,5 @@
-/*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v80.60]
+/*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v80.61]
+ *  v80.61(2026/7/17)：真正根治手機選單機率性缺列——移除透明 fixed 疊層雙 RAF 顯示競態與巢狀捲動，改同步可見、visualViewport 實高、整張 sheet 捲動；日期改為明確六列七欄，並在字型／視窗穩定後校驗 6 列 42 格及強制重繪。
  *  v80.60(2026/7/17)：紫微提示詞 ROOT-SPEC 共用根治——三合主判與飛星／欽天輔助分層、問題保真、空宮／格局／四化／運限證據裁決、題型量測邊界、反證與可驗證行動、依問題自然導流的單一礦物品牌層。另修正資料標頭不再誤稱已作真太陽時校正，並將引擎格局／星系固定文案降為候選。
  *  v80.59(2026/7/17)：根治 Android／Samsung 底部選單偶發缺欄、缺列與空白重繪：補獨立 box-sizing、動態視窗高度、安全區、橫向防溢出、固定六週日曆；手機停用 transform＋backdrop-filter 疊層，改穩定淡入並以雙 requestAnimationFrame 開啟。
  *  v80.58(2026/6/12)：①題型判斷把「天命/人生方向/人生意義」明列綜合題（實測此類問題被當單一主題從簡：
@@ -163,11 +164,11 @@
       '.zwx-err{margin:.5rem 0 0;padding:.55rem .7rem;border-radius:10px;border:1px solid rgba(214,108,92,.55);background:rgba(214,108,92,.12);color:#f0c8be;font-size:.74rem;line-height:1.5;display:none}',
       '.zwx-err.show{display:block}',
       '.zwx-sheet-bd,.zwx-sheet-bd *{box-sizing:border-box}',
-      '.zwx-sheet-bd{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;z-index:100002;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;overscroll-behavior:none;opacity:0;transition:opacity .18s ease-out;padding-top:env(safe-area-inset-top)}',
+      '.zwx-sheet-bd{position:fixed;inset:0;width:100%;height:var(--jy-picker-vh,100vh);z-index:100002;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;overscroll-behavior:none;opacity:1;transition:none;padding-top:env(safe-area-inset-top);contain:none;content-visibility:visible}',
       '.zwx-sheet-bd.show{opacity:1}',
-      '.zwx-sheet{width:100%;max-width:480px;max-height:calc(100vh - env(safe-area-inset-top));max-height:calc(100dvh - env(safe-area-inset-top));display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,#16161e,#0d0d13);border-radius:20px 20px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:none;box-shadow:0 -10px 50px rgba(0,0,0,.6),0 0 60px rgba(201,168,76,.05);padding:.9rem max(1rem,env(safe-area-inset-right)) calc(1.4rem + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left));opacity:0;transform:none;transition:opacity .18s ease-out;font-family:"Noto Serif TC",serif;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable both-edges}',
+      '.zwx-sheet{width:100%;max-width:480px;max-height:calc(var(--jy-picker-vh,100vh) - env(safe-area-inset-top));display:block;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;background:linear-gradient(180deg,#16161e,#0d0d13);border-radius:20px 20px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:none;box-shadow:0 -10px 50px rgba(0,0,0,.6),0 0 60px rgba(201,168,76,.05);padding:.9rem max(1rem,env(safe-area-inset-right)) calc(1.4rem + env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left));opacity:1;transform:none;transition:none;font-family:"Noto Serif TC",serif;-webkit-overflow-scrolling:touch;contain:none;content-visibility:visible}',
       '.zwx-sheet-bd.show .zwx-sheet{opacity:1}',
-      '#zwx-sbody{width:100%;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}.zwx-cal-nav,.zwx-cal-grid{width:100%;min-width:0}',
+      '#zwx-sbody{width:100%;min-width:0;min-height:0;overflow:visible;overscroll-behavior:auto;touch-action:auto;contain:none;content-visibility:visible}.zwx-cal-nav,.zwx-cal-table,.zwx-cal-head,.zwx-cal-row{width:100%;min-width:0}',
       '.zwx-grip{width:40px;height:4px;border-radius:2px;background:rgba(201,168,76,.4);margin:0 auto .7rem}',
       '.zwx-stitle{text-align:center;color:'+GOLD+';font-size:1.02rem;letter-spacing:3px;margin-bottom:.2rem}',
       '.zwx-ssub{text-align:center;color:rgba(232,224,208,.5);font-size:.7rem;margin-bottom:.9rem;min-height:1rem;line-height:1.5}',
@@ -180,9 +181,11 @@
       '.zwx-cal-nav button:active{transform:scale(.92)}',
       '.zwx-cal-ttl{flex:1;text-align:center;color:#ffeab8;font-size:.96rem;letter-spacing:1px;cursor:pointer;padding:.5rem;border-radius:9px}',
       '.zwx-cal-ttl:active{background:rgba(201,168,76,.08)}',
-      '.zwx-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.22rem}',
+      '.zwx-cal-table{display:block;contain:none;content-visibility:visible}',
+      '.zwx-cal-head,.zwx-cal-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:.22rem;contain:none;content-visibility:visible}',
+      '.zwx-cal-row{min-height:44px;align-items:center}',
       '.zwx-cal-wk{text-align:center;color:rgba(201,168,76,.55);font-size:.66rem;padding:.2rem 0}',
-      '.zwx-cal-d{min-width:0;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:9px;color:rgba(232,224,208,.82);font-size:.88rem;cursor:pointer}',
+      '.zwx-cal-d{appearance:none;-webkit-appearance:none;border:0;background:transparent;padding:0;margin:0;min-width:0;width:100%;height:42px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:rgba(232,224,208,.82);font-family:inherit;font-size:.88rem;line-height:1;cursor:pointer;contain:none;content-visibility:visible}',
       '.zwx-cal-d:active{background:rgba(201,168,76,.12)}',
       '.zwx-cal-d.sel{background:linear-gradient(135deg,#c9a84c,#a8863a);color:#1a140a;font-weight:700;box-shadow:0 0 14px rgba(201,168,76,.4)}',
       '.zwx-cal-d.empty{cursor:default}',
@@ -205,8 +208,8 @@
       '.zwx-sc:active{transform:scale(.94)}',
       '.zwx-sc.wide{grid-column:1/-1;flex-direction:row;gap:.5rem}',
       '.zw-in-foot{text-align:center;font-size:.6rem;color:rgba(232,224,208,.4);margin-top:1.5rem;letter-spacing:1px;line-height:1.8}',
-      '@media(max-width:700px),(pointer:coarse){.zwx-sheet{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;transition:opacity .14s ease-out!important}.zwx-sheet-bd{transition:opacity .14s ease-out}.zwx-cal-grid{gap:.12rem}.zwx-cal-d{font-size:.84rem}}',
-      '@media(max-height:620px){.zwx-sheet{max-height:100dvh;border-radius:16px 16px 0 0;padding-top:.55rem}.zwx-grip{margin-bottom:.45rem}.zwx-ssub{margin-bottom:.55rem}.zwx-cal-nav{margin-bottom:.3rem}.zwx-cal-nav button{height:38px}.zwx-cal-d{aspect-ratio:auto;min-height:34px}.zwx-sfoot{margin-top:.55rem}}',
+      '@media(max-width:700px),(pointer:coarse){.zwx-sheet{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;transition:none!important}.zwx-sheet-bd{transition:none!important}.zwx-cal-head,.zwx-cal-row{column-gap:.12rem}.zwx-cal-d{font-size:.84rem}}',
+      '@media(max-height:620px){.zwx-sheet{border-radius:16px 16px 0 0;padding-top:.55rem}.zwx-grip{margin-bottom:.45rem}.zwx-ssub{margin-bottom:.55rem}.zwx-cal-nav{margin-bottom:.3rem}.zwx-cal-nav button{height:38px}.zwx-cal-row{min-height:36px}.zwx-cal-d{height:34px}.zwx-sfoot{margin-top:.55rem}}',
       '@media(prefers-reduced-motion:reduce){.zwx-sheet-bd,.zwx-sheet{transition:none!important}}'
     ].join('');
     (document.head || document.documentElement).appendChild(st);
@@ -894,10 +897,33 @@
   function _zwxClearErr(){ var e=document.getElementById('zwx-err'); if(e) e.classList.remove('show'); }
 
   // ── 底部 sheet ──
-  var _zwxSheetType='', _zwxPrevBodyOverflow='';
+  var _zwxSheetType='', _zwxPrevBodyOverflow='', _zwxViewportOff=null, _zwxPaintTimers=[];
+  function _zwxViewportHeight(){ var vv=window.visualViewport; return Math.max(320,Math.round((vv&&vv.height)||window.innerHeight||document.documentElement.clientHeight||640)); }
+  function _zwxForcePaint(){
+    var bd=document.getElementById('zwx-sheet-bd'); if(!bd) return;
+    bd.style.setProperty('--jy-picker-vh',_zwxViewportHeight()+'px');
+    var cal=bd.querySelector('.zwx-cal-table'); if(!cal) return;
+    var rows=cal.querySelectorAll('.zwx-cal-row'), cells=cal.querySelectorAll('.zwx-cal-d');
+    if(rows.length!==6||cells.length!==42){ if(_zwxSheetType==='date') _zwDpDay(); return; }
+    cal.style.display='none'; void cal.offsetHeight; cal.style.display='block'; void cal.offsetHeight;
+  }
+  function _zwxBindViewport(bd){
+    if(_zwxViewportOff){ try{_zwxViewportOff();}catch(e){} _zwxViewportOff=null; }
+    function sync(){ if(bd&&bd.isConnected){ bd.style.setProperty('--jy-picker-vh',_zwxViewportHeight()+'px'); _zwxForcePaint(); } }
+    var vv=window.visualViewport;
+    window.addEventListener('resize',sync,{passive:true}); window.addEventListener('orientationchange',sync,{passive:true});
+    if(vv){ vv.addEventListener('resize',sync,{passive:true}); vv.addEventListener('scroll',sync,{passive:true}); }
+    _zwxViewportOff=function(){ window.removeEventListener('resize',sync); window.removeEventListener('orientationchange',sync); if(vv){vv.removeEventListener('resize',sync);vv.removeEventListener('scroll',sync);} };
+    sync();
+  }
+  function _zwxSchedulePaint(){
+    while(_zwxPaintTimers.length) clearTimeout(_zwxPaintTimers.pop());
+    [0,60,220].forEach(function(ms){ _zwxPaintTimers.push(setTimeout(_zwxForcePaint,ms)); });
+    try{ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(_zwxForcePaint); }catch(e){}
+  }
   function _zwxOpenSheet(title, sub, body, foot){
     _zwxCloseSheet(true);
-    var bd=document.createElement('div'); bd.id='zwx-sheet-bd'; bd.className='zwx-sheet-bd'; bd.setAttribute('role','presentation');
+    var bd=document.createElement('div'); bd.id='zwx-sheet-bd'; bd.className='zwx-sheet-bd show'; bd.setAttribute('role','presentation');
     bd.onclick=function(e){ if(e.target===bd) _zwxCloseSheet(); };
     bd.onkeydown=function(e){ if(e.key==='Escape') _zwxCloseSheet(); };
     bd.innerHTML='<div class="zwx-sheet" role="dialog" aria-modal="true" aria-label="'+title+'"><div class="zwx-grip"></div>'+
@@ -907,17 +933,19 @@
       (foot?'<div class="zwx-sfoot"><button class="zwx-sbtn" onclick="_zwxCancel()">取消</button><button class="zwx-sbtn go" onclick="_zwxConfirm()">確定</button></div>':'')+
       '</div>';
     _zwxPrevBodyOverflow=document.body.style.overflow; document.body.style.overflow='hidden';
+    bd.style.setProperty('--jy-picker-vh',_zwxViewportHeight()+'px');
     document.body.appendChild(bd);
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){ if(bd.isConnected) bd.classList.add('show'); }); });
+    _zwxBindViewport(bd); _zwxSchedulePaint();
   }
   function _zwxCloseSheet(immediate){
     var bd=document.getElementById('zwx-sheet-bd'); if(!bd) return;
-    if(immediate){ if(bd.parentNode) bd.parentNode.removeChild(bd); document.body.style.overflow=_zwxPrevBodyOverflow; return; }
-    bd.classList.remove('show');
-    setTimeout(function(){ if(bd&&bd.parentNode) bd.parentNode.removeChild(bd); document.body.style.overflow=_zwxPrevBodyOverflow; },200);
+    while(_zwxPaintTimers.length) clearTimeout(_zwxPaintTimers.pop());
+    if(_zwxViewportOff){ try{_zwxViewportOff();}catch(e){} _zwxViewportOff=null; }
+    if(bd.parentNode) bd.parentNode.removeChild(bd);
+    document.body.style.overflow=_zwxPrevBodyOverflow;
   }
   function _zwxSub(t){ var s=document.getElementById('zwx-ssub'); if(s) s.innerHTML=t; }
-  function _zwxBody(h){ var b=document.getElementById('zwx-sbody'); if(b){ b.innerHTML=h; b.scrollTop=0; } }
+  function _zwxBody(h){ var b=document.getElementById('zwx-sbody'); if(b){ b.innerHTML=h; b.scrollTop=0; _zwxSchedulePaint(); } }
   window._zwxCancel=function(){ _zwxCloseSheet(); };
   window._zwxConfirm=function(){
     if(_zwxSheetType==='date'){ _zwSelDate=_zwDpY+'-'+_zwPad(_zwDpM)+'-'+_zwPad(_zwDpD); }
@@ -936,14 +964,18 @@
   function _zwDpClamp(){ var dim=_zwDim(_zwDpY,_zwDpM); if(_zwDpD>dim) _zwDpD=dim; if(_zwDpD<1) _zwDpD=1; }
   function _zwDpDay(){
     _zwDpClamp();
-    var h='<div class="zwx-cal-nav"><button onclick="_zwxDpNav(-1)">‹</button>'+
-      '<div class="zwx-cal-ttl" onclick="_zwxDpMode(\'year\')">'+_zwDpY+' 年 '+_zwDpM+' 月 ▾</div>'+
-      '<button onclick="_zwxDpNav(1)">›</button></div><div class="zwx-cal-grid">';
-    for(var w=0;w<7;w++) h+='<div class="zwx-cal-wk">'+ZWK[w]+'</div>';
-    var fd=_zwFdow(_zwDpY,_zwDpM), dim=_zwDim(_zwDpY,_zwDpM), i;
-    for(i=0;i<fd;i++) h+='<div class="zwx-cal-d empty" aria-hidden="true"></div>';
-    for(i=1;i<=dim;i++) h+='<div class="zwx-cal-d'+(i===_zwDpD?' sel':'')+'" onclick="_zwxDpDay('+i+')">'+i+'</div>';
-    for(i=fd+dim;i<42;i++) h+='<div class="zwx-cal-d empty" aria-hidden="true"></div>';
+    var h='<div class="zwx-cal-nav"><button type="button" onclick="_zwxDpNav(-1)">‹</button>'+ 
+      '<div class="zwx-cal-ttl" onclick="_zwxDpMode(\'year\')">'+_zwDpY+' 年 '+_zwDpM+' 月 ▾</div>'+ 
+      '<button type="button" onclick="_zwxDpNav(1)">›</button></div><div class="zwx-cal-table" role="grid"><div class="zwx-cal-head" role="row">';
+    for(var w=0;w<7;w++) h+='<div class="zwx-cal-wk" role="columnheader">'+ZWK[w]+'</div>';
+    h+='</div>';
+    var fd=_zwFdow(_zwDpY,_zwDpM), dim=_zwDim(_zwDpY,_zwDpM), cells=[], i, day;
+    for(i=0;i<42;i++){
+      day=i-fd+1;
+      if(day<1||day>dim) cells.push('<span class="zwx-cal-d empty" aria-hidden="true"></span>');
+      else cells.push('<button type="button" class="zwx-cal-d'+(day===_zwDpD?' sel':'')+'" onclick="_zwxDpDay('+day+')">'+day+'</button>');
+    }
+    for(var r=0;r<6;r++) h+='<div class="zwx-cal-row" role="row">'+cells.slice(r*7,r*7+7).join('')+'</div>';
     h+='</div>'; _zwxBody(h); _zwxSub('點日期，或點上方年月快速跳轉');
   }
   function _zwDpYear(){
