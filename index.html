@@ -1401,15 +1401,15 @@
 <script src="JS/ink-flow.js?v=20260612v2_0" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260716v80_41" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260612v80_58" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260717v80_59" defer></script>
 <script src="JS/bazi-prompt-root.js?v=20260717v2_0_0" defer></script>
-<script src="JS/bazi-standalone.js?v=20260717v80_60" defer></script>
+<script src="JS/bazi-standalone.js?v=20260717v80_61" defer></script>
 <!-- v87_0(2026/6/26)：八字完整功能套件——單盤六主題、八種角色情境合盤、雙向十神與跨盤作用、五行互補、雙方歲運同步、本地五軸32型人格、歷史/匯出。第三方未公開私有演算法不冒充搬運，採本地可檢查規則重建。 -->
 <!-- v87_1(2026/6/26)：恢復原版八字 UI 為預設入口；保留原自訂日期、時間、出生地點選擇器。完整合盤／人格／工具改由原版頁面的次要按鈕開啟，不再以原生 date/time 輸入覆蓋主入口。 -->
 <script src="JS/share-card.js?v=20260626v2_3" defer></script>
 <script src="JS/bazi-suite-core.js?v=20260717v1_2_0" defer></script>
-<script src="JS/bazi-suite.js?v=20260626v1_1_1" defer></script>
-<script src="JS/ui.js?v=20260717v94_1" defer></script>
+<script src="JS/bazi-suite.js?v=20260717v1_1_2" defer></script>
+<script src="JS/ui.js?v=20260717v94_2" defer></script>
 <script src="JS/spread-picker.js?v=20260716v94_0" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
@@ -1459,6 +1459,7 @@
 <!-- v86_27(2026/6/12)：計算引擎層全面查證＋bazi.js 半合/拱合根治——三引擎(bazi/ziwei/tarot)計算層逐項讀碼核實：星盤 Meeus Ch.25太陽/ELP2000月亮、行星日心Kepler+攝動、吠陀Lahiri ayanamsa+sidereal 全業界標準（本人生日實算太陽處女1.5°/月亮雙魚19.8°落點正確）；紫微命身宮/五行局/紫微天府定位正統；八字半合判定根治：缺中神(子午卯酉)兩支原誤標半合，正統應為拱合（亥未誤標半合木為例），今分生地/墓地半合與拱合三級、拱合score0.5不參與合化。動 bazi.js -->
 <!-- v86_28(2026/6/13)：根治「開始解讀」按鈕無反應——根因：全域狀態 S 原僅以 const 宣告於 bazi.js，而 const/let 頂層不掛 window、不跨 <script> 共享，加上 bazi.js 走 DEFERRED 閒置延遲載入，ui.js 的 _enterFromHome 用到 S 時拋 ReferenceError 致按鈕靜默失效。jsdom 實測重現並驗證修復。改由最早載入的 tarot.js 以 var＋window.S 宣告（var 掛 window、後續檔裸 S 經作用域鏈可取），bazi.js 改複用 window.S（v37）。動 tarot.js(v86_28)/bazi.js(v86_28)/index -->
 <!-- v86_29(2026/6/13)：根治梅花起卦「SHENG is not defined」——與 v86_28 同病根：SHENG/KE/WX_G/WX_Z 原僅以 const 宣告於 bazi.js，const/let 不跨 <script>＋bazi.js 延遲載入，致 tarot.js 的 tiYong/calcMH 用 SHENG[] 時拋錯、梅花起卦計算失敗。jsdom 實測 calcMH 四組起卦全炸→全通過。改由 tarot.js 以 var＋window 宣告四常數、bazi.js 改複用(v38)。系統性掃描全站確認僅 tarot.js 此四處有跨 script const 依賴、無第三處。動 tarot.js(v86_29)/bazi.js(v86_29)/index -->
+<!-- v88_2(2026/7/17)：手機底部選單渲染根治——紫微／八字單盤／八字完整套件三套日期時間地點選單統一補 box-sizing、100dvh、安全區、橫向防溢出、固定六週格；Android/Samsung 停用 transform＋backdrop-filter 疊層，雙 RAF 開啟並鎖背景捲動，修復偶發缺欄、缺列、大片空白。動 ziwei-standalone/bazi-standalone/bazi-suite/ui/index。 -->
 <!-- v88_1(2026/7/17)：八字提示詞 ROOT-SPEC v2 真正共用根治——新增 bazi-prompt-root 單一核心，統一資料四層、模糊門檻操作化、獨立證據／禁止重複計票、主判與替代反證、喜用副作用、時間觸發／結構轉折／落實滯後、低風險行動鏈與答案反向稽核；單盤／合盤／人格全部接同一核心。動 bazi-prompt-root/bazi-standalone/bazi-suite-core/index/tests。 -->
 <!-- v87_2(2026/7/16)：八字提示詞 ROOT-SPEC 根治——原問句語義保真、全題型路由、證據權重、喜用神分鏡、歲運邊界、高風險限制、單盤／合盤／人格提示詞同步，品牌推薦改為命理判斷完成後才執行。動 bazi-standalone/bazi-suite-core/index/tests。 -->
 <!-- v87_1(2026/7/14)：雷諾曼 v4.1 固定蝦皮收尾根治——占卜正文與品牌附加層分離；移除禁止賣場的衝突規則，改為每次解讀後無條件輸出一種礦物建議、客觀礦物知識、靜月之光品牌引導與固定 Markdown 蝦皮連結。牌名白名單與只答問句僅約束占卜正文，不得吃掉品牌尾段；末端再複述固定兩行格式。動 lenormand.js/tests/index。 -->
