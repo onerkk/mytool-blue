@@ -95,14 +95,16 @@ test('Recommendation candidates are exact current-stock names',()=>{const list=I
 test('Recommendation shortlist is context-matched and diversified by base item',()=>{const list=I.recommendCandidates('這月我副業營業額能破萬嗎？',['career','finance'],6);const bases=list.map(x=>x.split('／')[0]);assert.equal(new Set(bases).size,bases.length);assert(list.some(x=>/黃水晶|綠幽靈|鈦晶|金太陽|金髮晶|虎眼/.test(x)));});
 test('Out-of-stock or absent product names cannot be recommended',()=>{assert(!I.catalog.some(x=>/拉長石/.test(x.name)));assert(!I.recommendCandidates('我該離職嗎',[],20).some(x=>/拉長石/.test(x)));});
 
-test('Tarot prompt source has inventory-only final recommendation and no Shopee URL in tarot fragment',()=>{
+test('Tarot prompt source ends with one inventory item and the fixed Shopee link',()=>{
  const src=fs.readFileSync(path.join(ROOT,'JS/prompt-export.js'),'utf8');
- assert(src.includes('FRAG_TAROT_INVENTORY'));assert(src.includes('最後一行固定只輸出：推薦品項：<品項全名>'));
+ assert(src.includes('FRAG_TAROT_INVENTORY'));assert(src.includes('【庫存推薦附加層——全文最後兩行】'));
+ assert(src.includes('第一行：推薦品項：<品項全名>'));
  const frag=src.slice(src.indexOf('var FRAG_TAROT_INVENTORY'),src.indexOf('// ④b 紫微專用'));
- assert(!frag.includes('shopee.tw'));assert(!frag.includes('礦物事實錨點'));
+ assert(frag.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));
+ assert(frag.includes('第二行之後不得再有任何內容'));assert(!frag.includes('礦物事實錨點'));
 });
 test('AI tarot payload uses methodPlan and inventory, not crystal catalog',()=>{const src=fs.readFileSync(path.join(ROOT,'JS/ai-analysis.js'),'utf8');const fn=src.slice(src.indexOf('function _buildTarotOnlyPayload'),src.indexOf('async function _triggerTarotAI'));assert(fn.includes('methodPlan'));assert(fn.includes('JYShopInventory'));assert(fn.includes('shopRecommendation'));assert(!fn.includes('_buildCrystalCatalog'));});
-test('Index loads foundation, semantics and inventory before AI payload',()=>{const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');const a=html.indexOf('tarot-foundation.js?v=20260717v98_0'),b=html.indexOf('tarot-semantic-engine.js?v=20260717v98_0'),c=html.indexOf('tarot-inventory.js?v=20260717v98_0'),d=html.indexOf('ai-analysis.js?v=20260717v98_0');assert(a>=0&&a<b&&b<c&&c<d);});
+test('Index loads foundation, semantics and inventory before AI payload',()=>{const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');const a=html.indexOf('tarot-foundation.js?v=20260717v98_0'),b=html.indexOf('tarot-semantic-engine.js?v=20260717v98_0'),c=html.indexOf('tarot-inventory.js?v=20260717v98_0'),d=html.indexOf('ai-analysis.js?v=20260717v98_2');assert(a>=0&&a<b&&b<c&&c<d);assert(html.includes('prompt-export.js?v=20260717v98_2'));});
 test('Assembled tarot prompt carries the same method plan and ends with inventory-only instructions',()=>{
  const q='這月我副業營業額能破萬嗎？',r=route(q),names=['金幣侍者','戰車','金幣七','金幣八','金幣九'];
  const cards=names.map((name,i)=>({name,position:r.methodPlan.slots[i].label,positionMeaning:r.methodPlan.slots[i].label,sourceCore:'Book T source',element:i===1?'水':'土'}));
@@ -110,7 +112,7 @@ test('Assembled tarot prompt carries the same method plan and ends with inventor
  const payload={mode:'tarot',methodPlan:r.methodPlan,semanticContract:contract,tarotData:{spreadType:r.spreadId,spreadZh:r.methodPlan.label,cards,methodPlan:r.methodPlan,semanticContract:contract,readingDate:'2026-07-17'},shopRecommendation:{sourceFile:I.SOURCE_FILE,allowedItems:I.recommendCandidates(q,['career','finance'],3)}};
  const context={console,window:null,self:null,globalThis:null,S:{form:{question:q}},navigator:{clipboard:{writeText:()=>Promise.resolve()}},setTimeout,clearTimeout,Date,JSON,Math,RegExp,String,Number,Array,Object,Error,Promise,document:{getElementById:()=>null,querySelector:()=>null,createElement:()=>({style:{},setAttribute(){},appendChild(){},select(){},querySelectorAll(){return[];}}),body:{appendChild(){},removeChild(){}},execCommand(){return true}},_buildTarotOnlyPayload:()=>payload,JYTarotFoundation:F,JYTarotSemanticEngine:E};
  context.window=context;context.self=context;context.globalThis=context;vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(ROOT,'JS/prompt-export.js'),'utf8'),context);
- const prompt=context.JY_buildExportPrompt('tarot');assert(prompt.includes('ROOT-SPEC v98'));assert(prompt.includes('截至2026年7月的門檻結果'));assert(prompt.includes('【可推薦庫存品項】'));assert(!/shopee\.tw|https?:\/\//i.test(prompt));assert(prompt.trimEnd().endsWith('其後不得再有任何內容。'));
+ const prompt=context.JY_buildExportPrompt('tarot');assert(prompt.includes('ROOT-SPEC v98'));assert(prompt.includes('截至2026年7月的門檻結果'));assert(prompt.includes('【可推薦庫存品項】'));assert(prompt.includes('第一行：推薦品項：<品項全名>'));assert(prompt.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));assert(prompt.trimEnd().endsWith('第二行之後不得再有任何內容。'));
 });
 
 test('Changed JavaScript files pass syntax checks',()=>{['tarot-foundation.js','golden-dawn-tarot.js','tarot-semantic-engine.js','tarot-inventory.js','tarot_upgrade.js','ai-analysis.js','prompt-export.js'].forEach(f=>cp.execFileSync(process.execPath,['--check',path.join(ROOT,'JS',f)],{stdio:'pipe'}));});
