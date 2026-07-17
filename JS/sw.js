@@ -2,8 +2,8 @@
 // JS/HTML → network-first（永遠拿最新）
 // 圖片/字型 → cache-first（省流量）
 // API → 不攔截
-// v54: 手機選單同步渲染根治，強制清除舊版透明疊層／雙 RAF 快取；JS/HTML 維持 network-first + no-cache
-const CACHE_NAME = 'jy-main-v54';
+// v55: 紫微 ROOT-SPEC v2 與動態三方索引；強制清除舊提示詞快取，JS/HTML 維持 network-first + no-cache
+const CACHE_NAME = 'jy-main-v55';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
