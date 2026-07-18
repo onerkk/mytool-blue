@@ -140,6 +140,7 @@
  */
 (function () {
   'use strict';
+  // v102：提示詞改為「方法資料包」；移除查詢圖、能力閘門與命題帳本對外輸出，讓 AI 依正確方法自行分析。
 
   var BAR = "────────────────────────────";
 
@@ -155,56 +156,41 @@
     tarot: {
       label: '塔羅快讀',
       head: [
-        '【角色——Golden Dawn《Book T／Liber T》塔羅解讀者】',
-        '你使用各家 AI 本身的分析能力，但所有塔羅判斷只以 Hermetic Order of the Golden Dawn《Book T／Liber T》為牌義核心。牌陣若是後世布局，就依該布局自己的牌位與閱讀順序解讀；不得把後世布局冒充 Book T 原創，也不得混入 Waite 1910 固定正逆位字典、Rider-Waite 圖像故事或 Crowley／Thoth 專屬泰勒瑪牌義。',
+        '【任務】',
+        '請以你本身的分析能力解讀本盤；提示詞只提供方法、牌位／序列、牌面與 Golden Dawn 資料，不替你預先決定結論。',
         '',
-        '【Golden Dawn 解牌總順序——先方法，後結論】',
-        '一、先辨認本次牌陣的用途、牌位名稱、閱讀方向、分組、軸線與結果位；牌陣手冊是本次解牌的骨架，不得把所有牌陣都讀成由左到右的一條線。',
-        '二、每張牌依固定層級解讀：Book T 原典核心義 → 本方法賦予它的功能（獨立牌位、三牌組成員、序列成員、宮位、質點或操作階段）→ 真正有序相鄰線的元素尊貴 → 卡巴拉質點／世界與占星對應的細化 → 宮廷牌在該方法單位中的人物、消息、態度或計畫功能。序列成員沒有獨立牌位問題，不得硬編位置意義。',
-        '三、再依本牌陣指定的原生閱讀順序，把牌組合成事件、關係、路徑、軸線、三牌組、連續答案、首尾配對或操作階段。語義牌位先決定牌回答什麼；序列法則由前後文與配對共同成義，不能把序號誤當語義牌位。',
-        '四、最後回到原問句：先直接回答，再說形成原因、助力與阻力、關鍵轉折、可採取行動、現實驗證點與停止條件。多子題依原順序逐一回答。',
+        '【牌義來源】',
+        '所有塔羅牌義只以 Hermetic Order of the Golden Dawn《Book T／Liber T》為核心。後世牌陣依其原生布局閱讀，但不得冒充 Book T 原創；不得混入 Waite 固定正逆位字典、Rider-Waite 圖像故事或 Crowley／Thoth 專屬牌義。',
         '',
-        '【正位、逆位與元素尊貴】',
-        '本工具的 Golden Dawn 一般牌陣不抽 Waite 式固定逆位，牌面方向統一視為正向展示；「正位／逆位」不構成兩套牌義字典。牌的順暢、受阻、成熟、扭曲或強弱，應由 Book T 牌本性、牌位、明示有序牌列左右兩側的元素尊貴，以及整個牌陣結構共同判斷。',
-        '同花色在兩側強化該牌本性；權杖與聖杯、寶劍與金幣互相削弱；其他元素友善。強弱只放大或削弱牌的本性，不把吉牌機械翻成凶牌，也不以吉凶牌數投票。只有真正的有序相鄰線才做完整元素尊貴；牌陣中的因果線、對照線、軸線、首尾配對或依賴線只表示語義互動，不自動等於左右相鄰。',
+        '【使用方法資料】',
+        '先辨認本次方法屬於獨立牌位、三牌組、連續牌列、宮位／質點、軸線、分支或配對，再依資料區明示的原生順序綜合。位置名稱有語義時按位置讀；序列索引沒有獨立牌位意義時，只在整列前後文與原法配對中成義。',
+        '完整元素尊貴只用資料區明示的真正有序相鄰線。配對、因果、對照、軸線與分支只是語義關係，不因此變成左右相鄰。',
         '',
-        '【Book T 人物與細節】',
-        '宮廷牌優先按 Book T 功能判讀：Queens／Princes常可指與事情相關的人；Knights／Lords可表示事情、消息或力量的到來與離去；Princesses可表示意見、想法、計畫或物質化的開端。網站牌面標籤固定映射為國王＝Book T Knight／Lord、皇后＝Queen、騎士＝Prince、侍者＝Princess。人物必須由原問句、牌位與其他牌共同確認，不能只憑一張宮廷牌編造身分、年齡、外貌、職業或內心。',
-        '牌號、牌張數、占星分度、質點與牌位名稱不能直接換算現實日期、年齡、金額、人數或機率；若資料沒有量測該細節，就明說牌面給不出該數字，但仍要完成其餘可解讀部分。',
+        '【方向與細節】',
+        '一般牌陣牌面統一正向展示，不使用 Waite 式固定逆位字典；順暢、受阻或扭曲由 Book T 牌本性、方法位置、真正相鄰元素尊貴與全盤結構判斷。宮廷牌依 Book T 的 Knight／Queen／Prince／Princess 功能判讀，不憑單張編造人物身分、年齡、外貌、職業或內心。',
+        '牌號、張數、占星分度、質點與計數值不能直接換算日期、年齡、金額、人數或機率。沒有依據的精確細節直接說牌面給不出，其他可支持的內容照常解讀。',
         '',
-        '【輸出方式】',
-        '第一句直接回答完整原問句。正文不要逐張翻譯或展示內部推理表，而要按本牌陣的真正結構，把同一命題的牌合併成自然段落。重要結論要點名本盤實際牌；高風險問題以現實證據與專業處理優先。'
+        '【輸出】',
+        '第一句直接回答原問句；正文依本牌陣真正的結構自然綜合，不逐張抄義、不展示內部推理表。說清主判、主要依據、最大反證、可行方向、現實驗證點與停止／調整條件。'
       ].join('\n'),
       dataHeader: '十、以下是排好的牌陣資料',
-      tail: '請依「本次牌陣原生解牌手冊」指定的牌位、序列、分組、軸線、配對與閱讀順序，完整解讀本盤。先回答原問句，再以 Book T 核心義、元素尊貴、卡巴拉／占星對應及本牌陣的結構綜合；不得把所有牌陣套成同一種讀法，不得使用固定正逆位、Waite 或 Thoth 專屬牌義，也不得編造未由資料支持的日期、數字或人物細節。'
+      tail: '請直接依上方「本次方法資料」與本盤牌面完成解讀。方法資料是閱讀上下文，不是預先寫好的答案；請自行綜合 Book T 牌義、牌位／序列、真正相鄰元素尊貴與全盤結構，回答原問句。'
     },
     ootk: {
       label: '開鑰之法',
       head: [
-        '【角色——Golden Dawn《Book T／Liber T》Opening of the Key 解讀者】',
-        '你只使用《Book T／Liber T》所載的代表牌、五次操作、計數、配對與元素尊貴。不得混入 Waite 固定正逆位、Crowley／Thoth 專屬牌義、PHB 現代擴充、跨操作重複牌投票或自創應期。',
+        '【任務】',
+        '請以你本身的分析能力，依 Golden Dawn《Book T／Liber T》Opening of the Key 原生程序解讀；資料只提供代表牌、有效操作、落點、計數路徑、配對與元素尊貴。',
         '',
-        '【開鑰之法解讀總順序】',
-        '一、先確認程序有效性與代表牌的發牌前綁定；若資料明示某次操作已依 Book T 中止，只停止未完成的後續操作，不得虛構其內容。',
-        '二、每一次操作都先獨立讀完：代表牌落點所代表的領域／階段 → 從代表牌開始的完整計數故事 → 代表牌兩側由內向外的配對故事 → 有序牌列中的元素尊貴 → 該操作的階段結論。',
-        '三、五次操作的功能依序是：第一次＝問卜當下情勢與事情開端；第二次＝問題的發展；第三次＝進一步發展；第四次＝倒數階段與臨近結果的面向；第五次＝最終結果。跨操作只能用這五個階段結論承接，不能把不同操作的單牌直接拼成一條不存在的牌句。',
-        '四、完成五個階段後才回答原問句，說清楚主線、最大反證、哪些條件會改變結果，以及現實中如何驗證。',
+        '【方法邊界】',
+        '開鑰之法是五次獨立操作，不是一般牌陣，也不是 Mathers 二十一張或五十四張馬蹄法。每次操作先獨立讀完，再依第一次至第五次的原生階段功能綜合；程序若已中止，不得補寫未完成操作。',
+        '不使用 Waite 固定正逆位、Crowley／Thoth 專屬牌義或自創應期。計數值只導航牌序，不換算現實日期、金額、人數、年齡或機率。',
         '',
-        '【正逆位、方向與計數】',
-        '開鑰之法不使用 Waite 固定正逆位字典。計數方向依代表牌或起算牌的固有面向規則，不因牌面被旋轉而改變牌義；元素尊貴負責判斷牌力。計數包含起算牌：Knights／Queens／Princes計4，Princesses計7，Aces計11，小牌依牌號，大牌依元素／行星／黃道分別計3／9／12。這些數字只導航牌序，不能換算現實日期、金額、人數、年齡或機率。',
-        '',
-        '【五次操作的位置意義】',
-        '第一次操作：四個 YHVH 堆先辨認問題所屬領域；代表牌所在堆錯誤且程序資料判定失敗時停止。計數故事是事情開端，配對故事補足細節。',
-        '第二次操作：十二宮中預先選定的主宮與相近宮描述問題發展；兩次皆未找到代表牌且資料判定停止時，不讀後續。',
-        '第三次操作：十二黃道星座堆描述進一步發展，仍按落點、計數、配對、尊貴的順序讀。',
-        '第四次操作：只讀代表牌後方三十六張所成之環、環形計數與1↔36、2↔35等配對；它是倒數階段，不是月份、旬位或公曆日期。',
-        '第五次操作：生命之樹十堆描述最終結果；代表牌落在何質點決定結果從哪個層次顯現，再以該堆計數與配對完成收束。',
-        '',
-        '【輸出方式】',
-        '第一句回答完整原問句。有效時按第一次至第五次的功能自然敘述，不逐步抄錄所有牌；只展開真正改變答案的落點、計數與配對。高風險問題以現實證據與專業處理優先。'
+        '【輸出】',
+        '第一句直接回答原問句；正文自然整合真正改變答案的落點、計數故事、配對與元素尊貴，不逐步抄錄所有牌。說清主線、最大反證、條件、行動與現實驗證。'
       ].join('\n'),
       dataHeader: '六、以下是排好的五次操作資料',
-      tail: '請依 Golden Dawn《Book T》開鑰之法的原生順序解讀：每次操作先完成落點、完整計數故事、配對故事與元素尊貴，再把五次操作依當下→發展→進一步發展→倒數階段→最終結果綜合。不得把不同操作的單牌任意拼接，也不得使用固定正逆位、Waite／Thoth牌義或自創日期。'
+      tail: '請依資料區實際完成的 Opening of the Key 操作自行綜合解讀；不要把不同操作的單牌任意拼接，也不要虛構已中止或未提供的程序。'
     }
   };
 
@@ -278,45 +264,8 @@
     ootk: '直接觀測：Book T 五次操作中實際完成的落點、完整計數故事、配對、元素尊貴與階段發展。計數值與步數只用於導航牌序，不量測現實人數、金額、年齡或日期；第四次操作是代表牌後方三十六張的環，不是旬位或公曆應期。程序若依 Book T 中止，未完成操作沒有觀測權限。'
   };
 
-  function buildEvidenceCapabilityBlock(q, tool, rawPayload) {
-    if (tool !== 'tarot' && tool !== 'ootk') return '';
-    try {
-      var E = (typeof window !== 'undefined') ? window.JYTarotSemanticEngine : null;
-      if (!E) return '';
-      var obj = rawPayload || {};
-      var contract = obj.semanticContract ||
-        (obj.tarotData && obj.tarotData.semanticContract) ||
-        (obj.ootkData && obj.ootkData.semanticContract) || null;
-      if (!contract && typeof E.compileReadingSpec === 'function') {
-        contract = E.compileReadingSpec({
-          question: q,
-          spreadId: tool === 'ootk' ? 'ootk' : ((obj.tarotData && obj.tarotData.spreadType) || obj.spreadId || _getSpreadId()),
-          cards: (obj.tarotData && obj.tarotData.cards) || obj.cards || [],
-          methodPlan: obj.methodPlan || (obj.tarotData && obj.tarotData.methodPlan) || null,
-          ootkData: obj.ootkData || null,
-          referenceDate: (obj.tarotData && obj.tarotData.readingDate) || obj.readingDate || null
-        });
-      }
-      if (!contract) return '';
-      var lines=[BAR,'◆ 原問句核對清單（只防漏答，不指揮牌義）',BAR];
-      var question=contract.question||{};
-      lines.push('原問句：'+(question.originalQuestion||q));
-      var events=(question.queryGraph&&question.queryGraph.events)||[];
-      if(events.length){
-        lines.push('依原順序要回答：'+events.map(function(ev,i){return (i+1)+'. '+(ev.surface||ev.predicate||'事件');}).join('；'));
-      }
-      var limits=(contract.capabilityMatrix||[]).filter(function(row){
-        return row.precheckStatus==='not_measured'||row.precheckStatus==='missing_required_channel';
-      });
-      if(limits.length){
-        lines.push('精確細節邊界：'+limits.map(function(row){return row.dimension;}).join('、')+'沒有獨立數值錨。只需避免虛構精確值；仍須依本牌陣原生讀法完成狀態、關係、路徑、結果或趨勢的解讀。');
-      }
-      lines.push('使用方式：先完成牌陣／開鑰解讀，最後用本清單檢查是否漏掉子問句；不得反過來讓查詢圖取代牌位與閱讀順序。');
-      return lines.join('\n');
-    } catch (e) {
-      return '';
-    }
-  }
+  // v102：查詢編譯只留在程式端做輸入整理，不再輸出給 AI，也不指揮解牌。
+  function buildEvidenceCapabilityBlock() { return ''; }
 
 
   function getSpreadMethod(q) {
@@ -343,75 +292,79 @@
     var protocol=(plan&&plan.protocol)||((foundation&&typeof foundation.getMethodProtocol==='function')?foundation.getMethodProtocol(spreadId):null);
     var cards=td.cards||obj.cards||[];
     var slots=(plan&&plan.slots)||[];
-    var lines=[BAR,'◆ 本次牌陣原生解牌手冊（本段決定實際解牌順序）',BAR];
+    var lines=[BAR,'◆ 本次方法資料（提供閱讀上下文，不替 AI 預判答案）',BAR];
 
     function cardName(index){var c=cards[index]||{};return c.name||c.cardName||('第'+(index+1)+'張');}
     function slotLabel(index){var c=cards[index]||{},slot=slots[index]||{};return slot.label||c.positionMeaning||c.position||('位置'+(index+1));}
-    function refs(indices){return (indices||[]).map(function(i){return '第'+(i+1)+'張「'+cardName(i)+'」';}).join(' → ');}
+    function cardRef(i){return '第'+(i+1)+'張「'+cardName(i)+'」';}
+    function seq(indices){return (indices||[]).map(cardRef).join(' → ');}
+    function members(indices){return (indices||[]).map(cardRef).join('、');}
     function pairSummary(pairs){
       if(!pairs||!pairs.length)return '';
-      if(pairs.length<=5)return pairs.map(function(pair){return '第'+(pair[0]+1)+'↔第'+(pair[1]+1);}).join('、');
+      if(pairs.length<=5)return pairs.map(function(pair){return cardRef(pair[0])+' ↔ '+cardRef(pair[1]);}).join('；');
       var first=pairs[0],last=pairs[pairs.length-1];
-      return '第'+(first[0]+1)+'↔第'+(first[1]+1)+'，依序至第'+(last[0]+1)+'↔第'+(last[1]+1);
+      return cardRef(first[0])+' ↔ '+cardRef(first[1])+'，依序至 '+cardRef(last[0])+' ↔ '+cardRef(last[1]);
+    }
+    function endpoint(v){
+      if(Array.isArray(v))return v.map(cardRef).join('＋');
+      return cardRef(v);
     }
 
     if(!protocol){
-      lines.push('方法協議缺失：不得自行猜測牌位、閱讀方向、配對、結果位或時間權限。本盤只能依前端明示牌位作有限解讀。');
+      lines.push('前端未提供此方法的可靠手冊。請只依已明示的牌位／序列資料有限解讀，不自行猜測不存在的結果位、時間軸、配對或元素相鄰。');
       return lines.join('\n');
     }
 
-    lines.push('方法識別：'+spreadId+'｜方法類型='+protocol.kind+'｜單張模式='+protocol.slotMode+'。');
-    if(protocol.sourceNote)lines.push('方法來源定位：'+protocol.sourceNote+'。');
-    lines.push(protocol.summary);
-    lines.push('');
-    lines.push('原生執行順序：');
-    (protocol.phases||[]).forEach(function(phase,i){lines.push('・'+(i+1)+'. '+phase);});
+    lines.push('方法：'+spreadId+'｜類型：'+protocol.kind+'｜單張性質：'+protocol.slotMode+'。');
+    if(protocol.sourceNote)lines.push('來源定位：'+protocol.sourceNote+'。');
+    lines.push('方法摘要：'+protocol.summary);
+    lines.push('閱讀順序：'+(protocol.phases||[]).join(' → ')+'。');
 
     if(tool==='tarot'){
       lines.push('');
       if(protocol.slotMode==='semantic_position'||protocol.slotMode==='qabalistic_position'||protocol.slotMode==='domain_position'){
-        lines.push('本盤明示牌位：');
-        cards.forEach(function(card,i){
-          var slot=slots[i]||{};
-          lines.push('・第'+(i+1)+'張「'+cardName(i)+'」｜牌位「'+slotLabel(i)+'」｜先在此牌位權限內成義，再進入結構綜合；不得越權替其他牌位作答。');
-        });
+        lines.push('牌位與實際牌：');
+        cards.forEach(function(card,i){lines.push('・'+cardRef(i)+'｜'+slotLabel(i));});
       }else if(protocol.slotMode==='triad_member'){
-        lines.push('單張權限：十五張均為三牌組成員，不是十五個彼此獨立的結果位。每組以手冊指定的中牌為主題，兩側牌依Book T本性與元素尊貴修正。');
+        lines.push('單張性質：本盤牌是三牌組成員，不是彼此獨立的結果位。');
       }else if(protocol.slotMode==='sequence_member'){
-        lines.push('單張權限：本法中的每張牌只是有序牌列成員，不具獨立的「現況／原因／對方內心／結果」牌位。先在整列前後文中成義，再用原法首尾配對補充。');
+        lines.push('單張性質：本盤牌是有序牌列成員；序號只標示順序與配對，不自行產生「現況／原因／結果」牌位。');
       }
 
       if(protocol.structures&&protocol.structures.length){
         lines.push('');
-        lines.push('本盤合法結構：');
-        protocol.structures.forEach(function(st,i){
+        lines.push('原生結構：');
+        protocol.structures.forEach(function(st){
           var detail='';
-          if(st.indices&&st.indices.length)detail=refs(st.indices);
-          else if(st.pairs&&st.pairs.length)detail=pairSummary(st.pairs);
+          if(st.type==='semantic_pairing') detail=pairSummary(st.pairs);
+          else if(st.type==='dependency_network'||st.type==='dyad'||st.type==='cross'||st.type==='synthesis'||st.type==='house_wheel') detail=members(st.indices);
+          else if(st.indices&&st.indices.length) detail=seq(st.indices);
           lines.push('・'+st.label+'〔'+st.type+'〕'+(detail?'：'+detail:'')+'。'+(st.instruction||''));
+          (st.links||[]).forEach(function(link){
+            lines.push('　關係：'+endpoint(link.from)+(link.bidirectional?' ↔ ':' → ')+endpoint(link.to)+'｜'+link.relation+'。');
+          });
         });
       }
 
       if(plan&&Array.isArray(plan.dignityLines)&&plan.dignityLines.length){
         lines.push('');
-        lines.push('可套用完整Book T元素尊貴的真正有序相鄰線：');
-        plan.dignityLines.forEach(function(path,i){lines.push('・相鄰線'+(i+1)+'：'+refs(path));});
+        lines.push('真正有序相鄰線（僅這些線可做完整元素尊貴）：');
+        plan.dignityLines.forEach(function(path,i){lines.push('・相鄰線'+(i+1)+'：'+seq(path));});
+      }else{
+        lines.push('真正有序相鄰線：本方法資料未聲明，不自行創建。');
       }
-      lines.push('元素尊貴邊界：只有上列真正牌列中的左右相鄰才作完整元素尊貴。首尾配對、對宮、軸線、因果線、分支與依賴線只作語義互動；即使兩張被配對，也不因此成為元素相鄰。');
       if(plan&&Array.isArray(plan.compatibilityEdges)&&plan.compatibilityEdges.length){
-        lines.push('其他互動線：');
-        plan.compatibilityEdges.forEach(function(edge,i){lines.push('・互動'+(i+1)+'：'+refs(edge)+'（只讀互動，不冒充左右相鄰）');});
+        lines.push('其他語義互動（不是元素相鄰）：');
+        plan.compatibilityEdges.forEach(function(edge){lines.push('・'+members(edge));});
       }
     }else{
-      lines.push('五次操作必須各自完成落點、計數故事、配對故事與元素尊貴；程序中止後不得虛構後續操作。');
+      lines.push('程序單位：每次操作各自包含落點、計數故事、配對故事與元素尊貴；程序中止後沒有後續資料。');
     }
 
     lines.push('');
-    lines.push('結論權限：'+protocol.conclusionRule);
-    lines.push('衝突裁決：'+protocol.conflictRule);
-    lines.push('時間權限：'+protocol.timeRule);
-    lines.push('正逆位政策：不使用Waite固定正逆位字典。牌面統一正向展示；順暢、受阻、強化、削弱或扭曲，由Book T牌本性、方法功能、真正相鄰元素尊貴及全盤結構共同裁決。');
-    lines.push('實際輸出：先完成上述原生程序，再回到原問句形成主判、最大反證、行動、驗證點與停止條件；不得把所有牌陣套成同一條故事，也不得只挑一張牌定案。');
+    lines.push('結論範圍：'+protocol.conclusionRule);
+    lines.push('衝突處理：'+protocol.conflictRule);
+    lines.push('時間範圍：'+protocol.timeRule);
     return lines.join('\n');
   }
 
@@ -449,13 +402,12 @@
     if (tool !== 'tarot' && tool !== 'ootk') return buildFocusLock(question, tool);
     return [
       BAR,
-      '◆ 原問句與本次解牌任務（最高優先）',
+      '◆ 原問句',
       BAR,
       '原問句：' + question,
-      '完整保留原問句中的主體、對象、事件、否定、條件、比較、期限與所有子問句；第一句依原順序直接回答。',
-      '先按本次牌陣或開鑰程序的原生牌位、閱讀順序與綜合方式完成解牌，再用資料區的查詢圖核對是否漏答。查詢圖是核對工具，不得取代牌陣讀法，也不得因某個精確細節沒有專屬量測位就停止整盤。',
-      '若牌面無法提供某個精確數字、日期、身分或人物屬性，只限制該細節並明說；其餘由牌位與牌面支持的狀態、發展、結果與行動仍要完整回答。',
-      '若原問句使用「正緣、命定、靈魂伴侶」等非Book T原生詞，先按使用者語境轉成可觀察條件（真實感情、互惠、承諾、可持續性、共同處理現實與修復衝突），不得宣稱宇宙唯一指定或必然終身。'
+      '完整保留原問句的主體、對象、事件、否定、條件、比較、期限與所有子問句；第一句依原順序直接回答。',
+      '遇到「正緣、命定、肉體桃花」等非 Book T 原生用語時，依使用者一般語境理解並在必要時用一句話說明你的理解；不要把問題改成另一題。',
+      '精確數字、日期、身分或人物屬性若沒有牌面或資料錨，只說該細節無法由本盤推出；不要因此停止整盤。'
     ].join('\n');
   }
 
@@ -507,19 +459,12 @@
   // ③ 交稿前 recency 檢查：模型最常在後半段破功，放最後一段（recency 最強）
   function buildRecencyTarot() {
     return [
-      '',
-      BAR,
-      '交稿前解牌核對',
-      BAR,
-      '□ 已先按本次牌陣手冊確認牌位、閱讀方向、分組、軸線或分支',
-      '□ 每張牌先回答自己的牌位問題，再依本牌陣合法順序綜合',
-      '□ 沒有把所有牌陣讀成同一條由左到右的故事',
-      '□ 沒有使用 Waite 固定正逆位字典；牌力依 Book T 與元素尊貴裁決',
-      '□ 第一段已依原順序直接回答全部子問句',
-      '□ 重要結論有本盤實際牌、牌位與結構支持',
-      '□ 沒有用牌號、張數、占星分度或質點推造日期、年齡、金額、人數或機率',
-      '□ 行動建議包含可觀察驗證點與停止／調整條件',
-      '□ 延伸選品承接原問句與本盤提醒，但沒有反向影響占卜結論'
+      '', BAR, '交稿前核對', BAR,
+      '□ 已按本次方法的原生牌位／序列／分組／配對閱讀，而不是套用通用故事模板',
+      '□ 元素尊貴只用了資料區明示的真正相鄰線',
+      '□ 第一段直接回答完整原問句，重要結論能回到本盤實際牌與方法結構',
+      '□ 沒有由牌號、張數、占星分度或質點編造精確日期、年齡、金額、人數或機率',
+      '□ 延伸選品自然承接原問句與本盤提醒，且沒有冒充占卜證據'
     ].join('\n');
   }
   var FRAG_RECENCY_OOTK = [
@@ -874,7 +819,6 @@
       buildRootQuestionLock(question, tool),
       t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
       buildSpreadReadingGuide(tool, rawPayload),
-      buildEvidenceCapabilityBlock(question, tool, rawPayload),
       sourceLock,
       uncertainty,
       '',
@@ -969,7 +913,7 @@
       '.jy-ai-shortcut:active{transform:scale(.91);background:rgba(255,255,255,.07)}',
       '.jy-ai-icon{width:36px;height:36px;border-radius:10px;object-fit:cover}',
       '.jy-ai-name{font-size:.62rem;font-weight:600;color:rgba(240,230,210,.65);letter-spacing:.01em;white-space:nowrap}'
-    ].join('');
+    ].join('\n');
     document.head.appendChild(st);
   }
 

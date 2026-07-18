@@ -23544,8 +23544,8 @@ function _buildTarotOnlyPayload() {
   var foundation=(typeof window!=='undefined')?window.JYTarotFoundation:null;
   var gd=(typeof window!=='undefined')?window.JYGoldenDawn:null;
   var semantic=(typeof window!=='undefined')?window.JYTarotSemanticEngine:null;
-  if(!foundation||!gd||!semantic){
-    throw new Error('Golden Dawn tarot foundation, Book T core and semantic engine must all be loaded');
+  if(!foundation||!gd){
+    throw new Error('Golden Dawn tarot foundation and Book T core must be loaded');
   }
 
   var question=_jyTarotQuestionText();
@@ -23583,13 +23583,21 @@ function _buildTarotOnlyPayload() {
     };
   });
 
-  var contract=semantic.compileReadingSpec({
-    question:question,spreadId:spreadId,cards:cards,methodPlan:methodPlan,sourceProfile:'gd_book_t',
-    knownCounterpart:compiled.knownCounterpart,
-    referenceDate:new Date().toISOString()
-  });
-  var validation=semantic.validateContract(contract);
-  if(!validation.ok)throw new Error('Tarot semantic contract invalid: '+validation.errors.join(','));
+  // v102：語義編譯只作程式端診斷，不再成為抽牌／匯出提示詞的硬閘門。
+  // AI 取得正確方法資料與牌面後自行完成解讀；診斷失敗時仍可正常匯出。
+  var contract=null;
+  if(semantic&&typeof semantic.compileReadingSpec==='function'){
+    try{
+      contract=semantic.compileReadingSpec({
+        question:question,spreadId:spreadId,cards:cards,methodPlan:methodPlan,sourceProfile:'gd_book_t',
+        knownCounterpart:compiled.knownCounterpart,
+        referenceDate:new Date().toISOString()
+      });
+    }catch(contractError){
+      console.warn('[TarotSemanticEngine] diagnostic compile skipped:',contractError);
+      contract=null;
+    }
+  }
 
   var stats=gd.majorityObservations(drawn);
   var f=S.form||{};
@@ -23599,7 +23607,7 @@ function _buildTarotOnlyPayload() {
     mode:'tarot_only',question:question,focusType:f.type||'general',name:f.name||'',
     tarotData:{
       spreadType:spreadId,spreadZh:(def&&def.zh)||methodPlan.label||spreadId,methodPlan:methodPlan,
-      foundationVersion:foundation.VERSION,semanticProgramVersion:contract.engineVersion,
+      foundationVersion:foundation.VERSION,semanticProgramVersion:contract&&contract.engineVersion||'',
       sourceProfile:'gd_book_t',sourceContract:gd.sourceContract(),
       summary:'Golden Dawn Book T 單一來源；先執行各牌陣原生方法協議，再以Book T牌義與真正相鄰元素尊貴裁決。一般牌陣不使用固定正逆位；配對、軸線、因果與分支只作語義互動。',
       cards:cards,
@@ -23610,9 +23618,9 @@ function _buildTarotOnlyPayload() {
         aceCount:stats.aceCount,rankCounts:stats.rankCounts,observations:stats.observations||[],
         policy:'Book T 花色多數與同階觀察只作第二層結構，不換算日期、數量、金額或機率。'
       }:null,
-      semanticContract:contract,semanticProgramVersion:contract.engineVersion
+      semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||''
     },
-    semanticContract:contract,semanticProgramVersion:contract.engineVersion,
+    semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||'',
     shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'完成解讀正文後另起「延伸選品」段落。文案須自然承接使用者原問句與本次已成立結論或可執行方向，只從 allowedItems 逐字選一個正庫存品項；不得宣稱療效、改運、保證結果或尺寸適合。品項與賣場連結各自獨立成段，賣場連結必須是全文最後一行。'}
   };
   if(window._jyPhotos)result.photos=window._jyPhotos;

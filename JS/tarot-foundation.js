@@ -1,4 +1,4 @@
-/*! tarot-foundation.js — Golden Dawn Tarot v101 native-method foundation
+/*! tarot-foundation.js — Golden Dawn Tarot v102 method-data foundation
  * 單一真相來源：問題型別化、觀測需求、牌陣能力、動態牌位綁定與自動路由。
  * 牌義不在本檔；牌義只由 golden-dawn-tarot.js 的 Book T 核心提供。
  */
@@ -9,8 +9,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '101.0.0';
-  var SCHEMA = 'jy.tarot.foundation/5';
+  var VERSION = '102.0.0';
+  var SCHEMA = 'jy.tarot.foundation/6';
 
   function text(v) { return v == null ? '' : String(v).trim(); }
   function clone(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
@@ -128,7 +128,7 @@
     five_card: protocolDef('five_card','directed_event_graph','semantic_position',
       '現況、原因、阻礙、建議與結果形成有向事件網，不是五張直線故事。',
       ['現況定義問題','原因與阻礙建立形成機制','建議作用於阻礙','結果由前四張共同限定'],
-      [{type:'dependency_network',label:'五牌事件網',indices:[1,0,2,3,4],elementalDignity:false,instruction:'依原因→現況、阻礙↔現況、建議→阻礙／結果的權限綜合。'}],
+      [{type:'dependency_network',label:'五牌事件網',indices:[0,1,2,3,4],elementalDignity:false,links:[{from:1,to:0,relation:'形成機制影響現況'},{from:2,to:0,bidirectional:true,relation:'主要限制與現況互相作用'},{from:3,to:2,relation:'介入方向作用於限制'},{from:[0,1,2,3],to:4,relation:'前述條件共同限定結果'}],instruction:'這是具名互動網，不是第2張一路走到第5張的時間或因果直線。'}],
       '結果位可作條件性裁決，但不得脫離原因、阻礙與介入條件單獨定案。',
       '阻礙與反證優先限定結果的成立條件，不用吉凶票數。',
       '只有原問句提供期限或牌位明示相對階段時才能談時間。','現代五牌事件布局'),
@@ -149,7 +149,7 @@
     relationship: protocolDef('relationship','dyadic_network','semantic_position',
       '問卜者、已知對象／對方作用、關係現況、挑戰、建議與走向形成雙人關係網。',
       ['比較雙方狀態或作用','雙方共同形成關係現況','挑戰與建議改寫關係','走向作條件性收束'],
-      [{type:'dyad',label:'雙方—關係機制',indices:[0,1,2],elementalDignity:false,instruction:'已知對象才能具體化；未知對象位只作聚合作用；此三者是語義網，不冒充左右相鄰。'},{type:'dependency_network',label:'挑戰—介入—走向',indices:[3,4,5],elementalDignity:false,instruction:'走向須受前述雙方與關係現況支撐；因果承接不是元素相鄰。'}],
+      [{type:'dyad',label:'雙方—關係機制',indices:[0,1,2],elementalDignity:false,links:[{from:[0,1],to:2,relation:'雙方狀態／作用共同形成關係現況'}],instruction:'已知對象才能具體化；未知對象位只作聚合作用；此三者是語義網，不冒充左右相鄰。'},{type:'dependency_network',label:'挑戰—介入—走向',indices:[2,3,4,5],elementalDignity:false,links:[{from:3,to:2,bidirectional:true,relation:'挑戰改寫關係現況'},{from:4,to:3,relation:'建議作用於挑戰'},{from:[0,1,2,3,4],to:5,relation:'整體條件共同限定走向'}],instruction:'走向須受雙方、關係現況、挑戰與介入共同支撐；不是一條直線。'}],
       '走向位是維持目前互動條件下的關係傾向，不是對方內心的獨立證明。',
       '現實中明示的界線、同意與行為優先於牌面推測。',
       '只提供相對後續；無日曆錨不報日期。','現代關係布局'),
@@ -191,7 +191,7 @@
     minor_arcana: protocolDef('minor_arcana','practical_event_graph','semantic_position',
       '七個實務牌位建立現況、原因、挑戰、環境、資源、建議與結果。',
       ['原因→現況→挑戰','環境與資源接入建議','建議作用後形成結果'],
-      [{type:'dependency_network',label:'小牌實務網',indices:[1,0,2,3,4,5,6],elementalDignity:false,instruction:'小牌聚焦可觀察流程，不因無大牌而降低重要性。'}],
+      [{type:'dependency_network',label:'小牌實務網',indices:[0,1,2,3,4,5,6],elementalDignity:false,links:[{from:1,to:0,relation:'原因影響現況'},{from:2,to:0,bidirectional:true,relation:'挑戰與現況互相作用'},{from:[3,4],to:5,relation:'環境與資源共同限定建議'},{from:[0,1,2,3,4,5],to:6,relation:'全盤條件共同限定結果'}],instruction:'小牌聚焦可觀察流程；這是互動網，不是牌號順序故事。'}],
       '結果位是依建議行動後的條件性結果。',
       '周圍人物位未完成共指時只描述環境作用，不具名。',
       '不以小牌占星分度自行換算日期。','現代小阿卡那專題布局'),
