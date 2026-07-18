@@ -1382,7 +1382,7 @@
 <!-- ★ v75 修正：tarot.js 必須在 tarot_upgrade.js 之前載入，
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
-<script src="JS/tarot-foundation.js?v=20260718v101_0" defer></script>
+<script src="JS/tarot-foundation.js?v=20260718v102_0" defer></script>
 <script src="JS/golden-dawn-tarot.js?v=20260717v98_0" defer></script>
 <script src="JS/tarot.js?v=20260717v96_0" defer></script>
 <script src="JS/tarot_upgrade.js?v=20260718v101_0" defer></script>
@@ -1397,7 +1397,7 @@
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
-<script src="JS/ai-analysis.js?v=20260718v101_0" defer></script>
+<script src="JS/ai-analysis.js?v=20260718v102_0" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260612v6_4" defer></script>
@@ -1476,7 +1476,8 @@
 <!-- v86_33(2026/6/15)：雷諾曼提示詞「載入一致性＋過長/位置」根治（前次稽核問題3+4，治本非補丁）——①新增單一條件源 _ctx（isTiming/isChoice/isInner/count），特殊題型/應期/距離法全部只讀它，條件不再散在各處（舊狀：特殊題型 inline regex、應期無條件硬載＝補一個漏一個）。②應期四法只在時間題載入、非時間題留防呆一行（根治「我是渣男嗎」這種身分題被逼硬湊時間範圍）。③距離法（自標『適用5張以上』）改 count>=5 才載，短盤不再吃無關大塊。④三條最硬鐵律（第一句直答/只引盤內牌/壞牌照講）複製到提示詞頂端 primacy 位，與末端 recency 複述形成頭尾雙壓（ai-divination skill 頭—中—尾三位一體；Liu 2023 Lost-in-the-Middle U 型頭尾最強）。⑤修正 +30% 引用：Anthropic 該數字限 20K+ token 多文件檢索、本檔約3–4K屬指令密集不假借其數字。文獻：Lost-in-the-Middle(TACL 2024)/ManyIFEval(2509.21051)/RECAST(2505.19030)＝脈絡越雜、指令越多遵循越差。沙箱實跑渣男盤：頂端鐵律在✓、應期四法丟✓、距離法丟✓、時間題版應期回✓。⚠ 礦物錨點表（最大常駐字塊）此版未動＝單次呼叫下載重牆，要拆需走兩段式（讀牌→定石→只取該石事實）屬另案。動 lenormand.js(v3.10/v86_33)/index -->
 <!-- v100_0(2026/7/18)：Golden Dawn 解牌方法根治——提示詞先注入各牌陣原生牌位、閱讀順序、合法相鄰線與綜合結構；開鑰改按五次操作原生流程；查詢圖降為漏答核對；選品改自然承接原問句。只動 prompt-export.js / index.html -->
 <!-- v101_0(2026/7/18)：Golden Dawn 原生方法協議根治——所有已登錄牌陣分別註冊單張模式、原生閱讀階段、合法結構、結果／時間權限與衝突優先序；Mathers 21／54改為序列成員而非假性獨立牌位，首尾配對與元素相鄰徹底分離；開鑰之法維持獨立五操作程序；AI資料與提示詞只讀方法計畫。動 tarot-foundation.js / tarot-semantic-engine.js / tarot_upgrade.js / ai-analysis.js / prompt-export.js / tests / package.json / index.html -->
-<script src="JS/prompt-export.js?v=20260718v101_0" defer></script>
+<!-- v102_0(2026/7/18)：塔羅提示詞根治為方法資料包——AI自行分析；移除ROOT-SPEC查詢圖、能力閘門、命題帳本等對外推理控制；非線性牌陣改輸出具名互動關係而非假性直線；語義引擎降為可選診斷，不再阻斷抽牌與匯出。動 tarot-foundation.js / ai-analysis.js / prompt-export.js / tests / package.json / index.html -->
+<script src="JS/prompt-export.js?v=20260718v102_0" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="JS/vendor/lunar.js?v=1.7.7" defer></script>
 <script src="JS/bazi-calendar-core.js?v=20260625v1_0_0" defer></script>
