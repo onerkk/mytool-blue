@@ -1,4 +1,4 @@
-/*! tarot-semantic-engine.js — ROOT-SPEC v99 Foundation compiler
+/*! tarot-semantic-engine.js — ROOT-SPEC v101 native-method compiler
  * 單一乾淨架構：原句型別化 → 方法觀測模型 → 合法證據圖 →
  * 實體／事件共指 → 原子覆蓋裁決 → 語義飽和 → 反向稽核。
  *
@@ -18,8 +18,8 @@
       : (typeof require === 'function' ? require('./tarot-foundation.js') : null);
   } catch (_foundationErr) { Foundation = null; }
 
-  var VERSION = '99.2.0';
-  var SCHEMA = 'jy.tarot.semantic-contract/7';
+  var VERSION = '101.0.0';
+  var SCHEMA = 'jy.tarot.semantic-contract/8';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -94,6 +94,8 @@
     timeline: '描述相對先後、節奏與轉折；無時間錨不得換算日期。',
     domain: '描述生活領域；不自動枚舉該領域內的未知人物或事件。',
     structural: '描述結構層級、路徑或程序功能；不能單獨創造現實事實。',
+    sequence_member: '本張只是原生牌列中的序列成員；必須在整列前後文與原法配對中成義，不具有獨立現況、原因、人物內心或結果權限。',
+    triad_member: '本張只是三牌組成員；須依該組中牌主題、兩側修正與元素尊貴共同成義，不得脫離三牌組獨立定案。',
     synthesis: '只綜合其依賴命題、指出主旋律或校正；不能自行創造人物、意圖、行為或結果。',
     stage: '只描述本次操作的階段作用；跨階段只能透過已完成的階段摘要承接。'
   };
@@ -708,6 +710,12 @@
       policy.entityBinding = 'SIGNIFICATOR_OR_QUERY_EXPLICIT';
       policy.eventBinding = 'QUERY_EVENT_STAGE_ONLY';
       policy.eventRoles = ['stage_state', 'stage_transition'];
+    } else if (authority === 'sequence_member') {
+      policy.eventRoles = ['ordered_context_member'];
+      policy.cannotEstablish = uniq(policy.cannotEstablish.concat(['independent_position_meaning','independent_result','independent_person_state']));
+    } else if (authority === 'triad_member') {
+      policy.eventRoles = ['triad_context_member'];
+      policy.cannotEstablish = uniq(policy.cannotEstablish.concat(['independent_result','independent_event']));
     } else if (authority === 'structural') {
       policy.eventRoles = ['structural作用'];
     }
@@ -718,7 +726,11 @@
     var opts = options || {};
     var known = opts.knownCounterpart === true;
     return (cards || []).map(function (card, index) {
+      var binding=(spec.slotBindings&&spec.slotBindings[index])||{};
+      var slotKind=binding.slotKind||text(card&&card.slotKind)||'semantic_position';
       var authority = spec.roles[index] || 'structural';
+      if(slotKind==='sequence_member')authority='sequence_member';
+      else if(slotKind==='triad_member')authority='triad_member';
       if (spec.id === 'relationship' && index === 1) authority = known ? 'person_known' : 'person_aggregate';
       var candidates = splitCandidates(
         card && (card.semanticCandidates || card.candidateMeanings || card.keywords || card.keyword || card.title)
@@ -728,6 +740,8 @@
         id: nodeId(index),
         index: index,
         position: positionLabel(card, index),
+        slotKind: slotKind,
+        independentSemanticPosition: binding.independentSemanticPosition !== false && slotKind !== 'sequence_member' && slotKind !== 'triad_member',
         authority: authority,
         authorityRule: ROLE_AUTHORITY[authority] || ROLE_AUTHORITY.structural,
         bindingPolicy: nodeBindingPolicy(authority),
@@ -775,7 +789,9 @@
         forbidden: uniq((opts.forbidden || []).concat([
           'topic_similarity_is_not_coreference',
           'same_domain_is_not_same_actor',
-          'same_suit_is_not_same_event'
+          'same_suit_is_not_same_event',
+          'declared_pair_is_not_elemental_adjacency',
+          'sequence_index_is_not_semantic_position'
         ]))
       };
       units.push(unit);
@@ -786,9 +802,14 @@
 
   function addAtomicUnits(factory, nodes) {
     nodes.forEach(function (node, index) {
-      factory.add('atomic_node', node.position + '：' + node.cardName, [index], {
-        topology: 'node',
-        roleJoin: 'single_node_role_only'
+      var isSequence=node.slotKind==='sequence_member';
+      var isTriad=node.slotKind==='triad_member';
+      factory.add(isSequence?'sequence_member_node':(isTriad?'triad_member_node':'atomic_node'), node.position + '：' + node.cardName, [index], {
+        topology: isSequence?'ordered_context_member':(isTriad?'triad_context_member':'node'),
+        roleJoin: isSequence?'must_join_declared_sequence_or_pair':(isTriad?'must_join_declared_triad':'single_node_role_only'),
+        claimPolicy: isSequence||isTriad?'context_member_only':'direct_interpretation',
+        forbidden: isSequence?['sequence_index_is_not_semantic_position','sequence_member_cannot_establish_result_alone']:(isTriad?['triad_member_cannot_establish_result_alone']:[]),
+        metadata:{slotKind:node.slotKind,independentSemanticPosition:node.independentSemanticPosition}
       });
     });
   }
@@ -808,6 +829,7 @@
     if (methodPlan && Array.isArray(methodPlan.slots)) {
       spec.roles = methodPlan.slots.map(function (slot) { return slot.authority || 'structural'; });
       spec.slotBindings = clone(methodPlan.slotBindings || []);
+      spec.protocol = clone(methodPlan.protocol || null);
       spec.expectedCardCount = methodPlan.count == null ? spec.expectedCardCount : methodPlan.count;
     }
     var questionSpec = opts.questionSpec || null;
@@ -927,32 +949,32 @@
       ];
       var pairs21 = [];
       for (var mp = 0; mp < 10; mp += 1) {
-        pairs21.push(direct('declared_outer_pair', '配對 ' + (mp + 1) + '↔' + (21 - mp), [mp, 20 - mp], { topology: 'declared_pair' }));
+        pairs21.push(direct('declared_outer_pair', '配對 ' + (mp + 1) + '↔' + (21 - mp), [mp, 20 - mp], { topology: 'declared_pair', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
       }
-      var center21 = direct('center_card', '中心牌', [10], { topology: 'center' });
-      synthesis('row_dependency_network', '三排、配對與中心綜合', rows.concat(pairs21, [center21]));
+      var center21 = direct('unpaired_sequence_member', '未配對第11張（仍屬整體，不是結果位）', [10], { topology: 'unpaired_member', metadata:{independentResult:false} });
+      synthesis('row_dependency_network', '三排連續答案、首尾配對與未配對成員綜合', rows.concat(pairs21, [center21]), {eventJoin:'row_summaries_and_declared_pairs_only'});
     } else if (id === 'mathers_horseshoe') {
       var groupA = direct('ordered_group', 'A 組 26 張由右往左', range(0, 26), { topology: 'ordered_group', eventBinding: 'GROUP_A_EVENT' });
       var groupC = direct('ordered_group', 'C 組 17 張由右往左', range(26, 43), { topology: 'ordered_group', eventBinding: 'GROUP_C_EVENT' });
       var groupE = direct('ordered_group', 'E 組 11 張由右往左', range(43, 54), { topology: 'ordered_group', eventBinding: 'GROUP_E_EVENT' });
       var groupAPairs = [];
       for (var ap = 0; ap < 13; ap += 1) {
-        groupAPairs.push(direct('declared_outer_pair', 'A 配對 ' + (ap + 1) + '↔' + (26 - ap), [ap, 25 - ap], { topology: 'declared_pair', eventBinding: 'GROUP_A_EVENT' }));
+        groupAPairs.push(direct('declared_outer_pair', 'A 配對 ' + (ap + 1) + '↔' + (26 - ap), [ap, 25 - ap], { topology: 'declared_pair', eventBinding: 'GROUP_A_EVENT', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
       }
       var groupCPairs = [];
       for (var cp = 0; cp < 8; cp += 1) {
-        groupCPairs.push(direct('declared_outer_pair', 'C 配對 ' + (cp + 1) + '↔' + (17 - cp), [26 + cp, 42 - cp], { topology: 'declared_pair', eventBinding: 'GROUP_C_EVENT' }));
+        groupCPairs.push(direct('declared_outer_pair', 'C 配對 ' + (cp + 1) + '↔' + (17 - cp), [26 + cp, 42 - cp], { topology: 'declared_pair', eventBinding: 'GROUP_C_EVENT', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
       }
-      var centerC = direct('center_card', 'C 組中心牌', [34], { topology: 'center', eventBinding: 'GROUP_C_EVENT' });
+      var centerC = direct('unpaired_sequence_member', 'C組未配對成員C9（不是結果位）', [34], { topology: 'unpaired_member', eventBinding: 'GROUP_C_EVENT', metadata:{independentResult:false} });
       var groupEPairs = [];
       for (var ep = 0; ep < 5; ep += 1) {
-        groupEPairs.push(direct('declared_outer_pair', 'E 配對 ' + (ep + 1) + '↔' + (11 - ep), [43 + ep, 53 - ep], { topology: 'declared_pair', eventBinding: 'GROUP_E_EVENT' }));
+        groupEPairs.push(direct('declared_outer_pair', 'E 配對 ' + (ep + 1) + '↔' + (11 - ep), [43 + ep, 53 - ep], { topology: 'declared_pair', eventBinding: 'GROUP_E_EVENT', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
       }
-      var centerE = direct('center_card', 'E 組中心牌', [48], { topology: 'center', eventBinding: 'GROUP_E_EVENT' });
+      var centerE = direct('unpaired_sequence_member', 'E組未配對成員E6（不是結果位）', [48], { topology: 'unpaired_member', eventBinding: 'GROUP_E_EVENT', metadata:{independentResult:false} });
       var summaryA = synthesis('group_claim_synthesis', 'A 組完整命題', [groupA].concat(groupAPairs), { eventBinding: 'GROUP_A_EVENT' });
       var summaryC = synthesis('group_claim_synthesis', 'C 組完整命題', [groupC].concat(groupCPairs, [centerC]), { eventBinding: 'GROUP_C_EVENT' });
       var summaryE = synthesis('group_claim_synthesis', 'E 組完整命題', [groupE].concat(groupEPairs, [centerE]), { eventBinding: 'GROUP_E_EVENT' });
-      synthesis('cross_group_synthesis', 'A→C→E 已成立命題綜合', [summaryA, summaryC, summaryE], {
+      synthesis('cross_group_synthesis', 'A→C→E 三組完整答案依序補充、修正與限定', [summaryA, summaryC, summaryE], {
         eventBinding: 'QUERY_EVENT_CROSS_GROUP',
         eventJoin: 'group_summaries_only_no_cross_group_card_sentence'
       });
@@ -975,7 +997,9 @@
         '位置名稱不能反向證明未知人物或事件存在',
         '同題材、同宮位領域或同花色不等於同一實體或同一事件',
         '無 eventId／entityBindings／roleBindings／joinTrace 的訊號不得併成完整事件',
-        '不以吉凶牌數、正逆位票數、花色缺席或單一強牌裁決'
+        '不以吉凶牌數、正逆位票數、花色缺席或單一強牌裁決',
+        '首尾配對、軸線、因果線與分支不是元素尊貴的左右相鄰',
+        '序列索引不是獨立語義牌位；未經方法協議不得賦予現況、原因、人物內心或結果功能'
       ]
     };
   }
@@ -1318,6 +1342,7 @@
       method.questionShape = methodPlan.questionShape || (questionSpec.features && questionSpec.features.shape) || '';
       method.slotBindings = clone(methodPlan.slotBindings || []);
       method.dynamicSlots = clone(methodPlan.slots || []);
+      method.protocol = clone(methodPlan.protocol || null);
     }
     var sourceProfileId = resolveSemanticProfile(spreadId, data);
     var sourceProfile = clone(SOURCE_PROFILES[sourceProfileId] || SOURCE_PROFILES.gd_book_t);
@@ -1341,9 +1366,9 @@
     var missingDimensions = capabilityMatrix.filter(function (row) { return row.precheckStatus === 'missing_required_channel'; }).map(function (row) { return row.dimensionId; });
     var procedureStopped = spreadId === 'ootk' && !!evidenceGraph.stopped;
     var procedureComplete = spreadId !== 'ootk' || evidenceGraph.completedStageCount === 5;
-    var gateStatus = !compilerValid || missingDimensions.length || procedureStopped
+    var gateStatus = !compilerValid || procedureStopped
       ? 'blocked_or_partial'
-      : (unmeasuredDimensions.length || !procedureComplete ? 'partial' : 'full');
+      : (missingDimensions.length || unmeasuredDimensions.length || !procedureComplete ? 'partial' : 'full');
     var answerabilityGate = {
       status: gateStatus,
       compilerValid: compilerValid,
@@ -1353,7 +1378,7 @@
       completedProcedureStages: spreadId === 'ootk' ? evidenceGraph.completedStageCount : null,
       missingDimensions: uniq(missingDimensions),
       unmeasuredDimensions: uniq(unmeasuredDimensions),
-      rule: '完整裁決只適用於查詢圖有效、方法通道完整、程序未停止且必要實體／事件完成共指的子命題；未量測子題必須獨立回答為無法由本盤給出，不得拖累其餘已量測子題。開鑰之法停止後不得補寫後續操作。'
+      rule: '先完成本方法原生解讀。查詢圖無效或開鑰程序停止時才阻斷相應程序；方法缺少某個精確或專屬通道時，只限制該子題，不得停止整盤，也不得讓查詢圖取代牌陣讀法。未量測不等於否定。'
     };
 
     var contract = {
@@ -1519,7 +1544,7 @@
     var source = contract.sourceProfile;
     var lines = [];
     lines.push('────────────────────────────');
-    lines.push('◆ ROOT-SPEC v99｜多子題查詢圖—最小充分方法—合法證據／共指契約');
+    lines.push('◆ ROOT-SPEC v101｜原生方法優先—查詢核對—合法證據／共指契約');
     lines.push('────────────────────────────');
     lines.push('原問句：' + question.originalQuestion);
     if (question.queryGraph.subquestions && question.queryGraph.subquestions.length > 1) {
@@ -1554,9 +1579,9 @@
     contract.capabilityMatrix.forEach(function (row) {
       lines.push('・' + row.dimension + '＝' + row.precheckStatus + '〔' + row.methodCapability + '〕｜' + row.reason);
     });
-    lines.push('位置／節點權限與綁定：');
+    lines.push('方法節點權限與綁定（語義牌位／三牌組成員／序列成員不得混用）：');
     graph.nodes.forEach(function (node) {
-      lines.push('・' + node.id + ' ' + node.position + '=' + node.cardName + (node.direction ? '(' + node.direction + ')' : '') + '｜authority=' + node.authority + '｜entityBinding=' + node.bindingPolicy.entityBinding + '｜eventRoles=' + node.bindingPolicy.eventRoles.join('/') + '｜' + node.authorityRule);
+      lines.push('・' + node.id + ' ' + node.position + '=' + node.cardName + (node.direction ? '(' + node.direction + ')' : '') + '｜slotKind=' + (node.slotKind||'semantic_position') + '｜authority=' + node.authority + '｜entityBinding=' + node.bindingPolicy.entityBinding + '｜eventRoles=' + node.bindingPolicy.eventRoles.join('/') + '｜' + node.authorityRule);
     });
     lines.push('牌義素材（不是已成立事件句）：');
     graph.nodes.forEach(function (node) {

@@ -390,32 +390,18 @@ var SPREAD_DEFS = {
     id: 'mathers_21', zh: 'Mathers Second Method (1888 三排七)', count: 21,
     en: 'Mathers Second Method',
     desc: 'Mathers 1888 第二法布局・代表牌抽出後每隔7張抽1共21張；牌義統一採 Golden Dawn Book T，強弱由位置與元素尊貴裁決，不套 Waite 固定逆位字典',
-    positions: [
-      // 第一排 — 從代表牌往左讀(第1張緊鄰代表牌、最連結問卜者)
-      { name: '1.第一排-1', zh: '第一排第1張(緊鄰代表牌)・敘事起點、與問卜者最直接相關' },
-      { name: '2.第一排-2', zh: '第一排第2張・接續' },
-      { name: '3.第一排-3', zh: '第一排第3張・接續' },
-      { name: '4.第一排-4', zh: '第一排第4張・接續' },
-      { name: '5.第一排-5', zh: '第一排第5張・接續' },
-      { name: '6.第一排-6', zh: '第一排第6張・接續' },
-      { name: '7.第一排-7', zh: '第一排第7張(最左)・第一段收尾' },
-      // 第二排 — 延續敘事
-      { name: '8.第二排-1', zh: '第二排第1張・延續第一排的故事' },
-      { name: '9.第二排-2', zh: '第二排第2張・接續' },
-      { name: '10.第二排-3', zh: '第二排第3張・接續' },
-      { name: '11.第二排-4', zh: '第二排第4張・接續' },
-      { name: '12.第二排-5', zh: '第二排第5張・接續' },
-      { name: '13.第二排-6', zh: '第二排第6張・接續' },
-      { name: '14.第二排-7', zh: '第二排第7張(最左)・第二段收尾' },
-      // 第三排 — 敘事最終段
-      { name: '15.第三排-1', zh: '第三排第1張・敘事最終段開始' },
-      { name: '16.第三排-2', zh: '第三排第2張・接續' },
-      { name: '17.第三排-3', zh: '第三排第3張・接續' },
-      { name: '18.第三排-4', zh: '第三排第4張・接續' },
-      { name: '19.第三排-5', zh: '第三排第5張・接續' },
-      { name: '20.第三排-6', zh: '第三排第6張・接續' },
-      { name: '21.第三排-7', zh: '第三排第7張(最左)・整個敘事的最終落點' }
-    ]
+    positions: (function(){
+      var out=[];
+      for(var row=1;row<=3;row++){
+        for(var pos=1;pos<=7;pos++){
+          out.push({
+            name:row+'.排-'+pos,
+            zh:'第'+row+'排第'+pos+'張（序列成員；由右至左，代表牌在右側作共同起點）'
+          });
+        }
+      }
+      return out;
+    })()
   },
 
   // ★ v80.0 修正:Mathers First Method (1888) 完整 horseshoe
@@ -426,62 +412,25 @@ var SPREAD_DEFS = {
     id: 'mathers_horseshoe', zh: 'Mathers First Method (1888 完整 horseshoe)', count: 54,
     en: 'Mathers First Method (A=26, C=17, E=11)',
     desc: 'Mathers 1888 第一法布局・A/C/E 三組 horseshoe；牌義統一採 Golden Dawn Book T，由右到左與首尾配對，F=24 棄用不讀',
-    positions: [
-      { name: 'A組-01', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A1↔A26' },
-      { name: 'A組-02', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A2↔A25' },
-      { name: 'A組-03', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A3↔A24' },
-      { name: 'A組-04', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A4↔A23' },
-      { name: 'A組-05', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A5↔A22' },
-      { name: 'A組-06', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A6↔A21' },
-      { name: 'A組-07', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A7↔A20' },
-      { name: 'A組-08', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A8↔A19' },
-      { name: 'A組-09', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A9↔A18' },
-      { name: 'A組-10', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A10↔A17' },
-      { name: 'A組-11', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A11↔A16' },
-      { name: 'A組-12', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A12↔A15' },
-      { name: 'A組-13', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A13↔A14' },
-      { name: 'A組-14', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A13↔A14' },
-      { name: 'A組-15', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A12↔A15' },
-      { name: 'A組-16', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A11↔A16' },
-      { name: 'A組-17', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A10↔A17' },
-      { name: 'A組-18', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A9↔A18' },
-      { name: 'A組-19', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A8↔A19' },
-      { name: 'A組-20', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A7↔A20' },
-      { name: 'A組-21', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A6↔A21' },
-      { name: 'A組-22', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A5↔A22' },
-      { name: 'A組-23', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A4↔A23' },
-      { name: 'A組-24', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A3↔A24' },
-      { name: 'A組-25', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A2↔A25' },
-      { name: 'A組-26', zh: '第一組 A=26（原文第一個 horseshoe）・由右到左讀；配對 A1↔A26' },
-      { name: 'C組-01', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C1↔C17' },
-      { name: 'C組-02', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C2↔C16' },
-      { name: 'C組-03', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C3↔C15' },
-      { name: 'C組-04', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C4↔C14' },
-      { name: 'C組-05', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C5↔C13' },
-      { name: 'C組-06', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C6↔C12' },
-      { name: 'C組-07', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C7↔C11' },
-      { name: 'C組-08', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C8↔C10' },
-      { name: 'C組-09', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；中心單張' },
-      { name: 'C組-10', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C8↔C10' },
-      { name: 'C組-11', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C7↔C11' },
-      { name: 'C組-12', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C6↔C12' },
-      { name: 'C組-13', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C5↔C13' },
-      { name: 'C組-14', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C4↔C14' },
-      { name: 'C組-15', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C3↔C15' },
-      { name: 'C組-16', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C2↔C16' },
-      { name: 'C組-17', zh: '第二組 C=17（原文第二個 horseshoe）・由右到左讀；配對 C1↔C17' },
-      { name: 'E組-01', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E1↔E11' },
-      { name: 'E組-02', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E2↔E10' },
-      { name: 'E組-03', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E3↔E9' },
-      { name: 'E組-04', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E4↔E8' },
-      { name: 'E組-05', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E5↔E7' },
-      { name: 'E組-06', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；中心單張' },
-      { name: 'E組-07', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E5↔E7' },
-      { name: 'E組-08', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E4↔E8' },
-      { name: 'E組-09', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E3↔E9' },
-      { name: 'E組-10', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E2↔E10' },
-      { name: 'E組-11', zh: '第三組 E=11（原文第三個 horseshoe）・由右到左讀；配對 E1↔E11' }
-    ]
+    positions: (function(){
+      var out=[];
+      function addGroup(group,count,label){
+        for(var i=1;i<=count;i++){
+          var mate=count+1-i;
+          var note=(i===mate)
+            ? '未配對序列成員；不是中心牌、結果位或時間位'
+            : '與'+group+mate+'作原法首尾語義配對；配對不是元素相鄰';
+          out.push({
+            name:group+'組-'+String(i).padStart(2,'0'),
+            zh:label+'第'+i+'張（序列成員；由右至左）・'+note
+          });
+        }
+      }
+      addGroup('A',26,'第一組A=26・');
+      addGroup('C',17,'第二組C=17・');
+      addGroup('E',11,'第三組E=11・');
+      return out;
+    })()
   },
 
   // ★ GD-11 補:7-card Horseshoe (現代衍生版)

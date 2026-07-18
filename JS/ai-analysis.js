@@ -23570,6 +23570,7 @@ function _buildTarotOnlyPayload() {
     return {
       name:c.n||c.name||'',rawName:c.n||c.name||'',direction:'元素尊貴裁決',isUp:true,
       position:(slot.label||pos.name||('位置'+(i+1))),positionMeaning:(slot.label||pos.zh||pos.name||''),slotBinding:slot.binding||{eventId:'QUERY_EVENT'},
+      slotKind:slot.slotKind||'semantic_position',independentSemanticPosition:slot.independentSemanticPosition!==false,
       authority:slot.authority||'structural',role:slot.role||'structural',
       semanticProfile:'gd_book_t',sourceLabel:gp.sourceLabel,bookTTitle:gp.bookTTitle||'',
       sourceCore:gp.sourceCore||gp.core||'',baseMeaning:gp.sourceCore||gp.core||'',sourceGloss:gp.contextualGloss||gp.core||'',
@@ -23578,7 +23579,7 @@ function _buildTarotOnlyPayload() {
       decan:gp.decan||'',dateRange:gp.dateRange||'',sephirah:gp.sephirah||'',world:gp.world||'',
       semanticCandidates:(gp.candidates||[]).slice(0,8),courtLayer:gp.kind==='court'?(gp.layer||''):'',
       courtRolePriority:gp.kind==='court'?(gp.rolePriority||[]):[],
-      courtPolicy:gp.kind==='court'?'角色優先序依 Book T；只有原問句、牌位與獨立證據完成共指時才能具體化人物，不得推造身分、年齡、外貌或職業。':''
+      courtPolicy:gp.kind==='court'?'角色優先序依 Book T；只有原問句、本方法單位（牌位／三牌組／序列／操作）與獨立證據完成共指時才能具體化人物，不得推造身分、年齡、外貌或職業。':''
     };
   });
 
@@ -23600,7 +23601,7 @@ function _buildTarotOnlyPayload() {
       spreadType:spreadId,spreadZh:(def&&def.zh)||methodPlan.label||spreadId,methodPlan:methodPlan,
       foundationVersion:foundation.VERSION,semanticProgramVersion:contract.engineVersion,
       sourceProfile:'gd_book_t',sourceContract:gd.sourceContract(),
-      summary:'Golden Dawn Book T 單一來源；一般牌陣不使用固定正逆位；完整元素尊貴只沿方法註冊表的明示有序連續線裁決，其他連線只作語義互動。',
+      summary:'Golden Dawn Book T 單一來源；先執行各牌陣原生方法協議，再以Book T牌義與真正相鄰元素尊貴裁決。一般牌陣不使用固定正逆位；配對、軸線、因果與分支只作語義互動。',
       cards:cards,
       elementalDignityGroups:gd.spreadDignityGroups(drawn,spreadId),
       spreadInteractionGroups:gd.spreadInteractionGroups(drawn,spreadId),
@@ -25552,7 +25553,7 @@ function _buildOOTKPayload() {
         referenceDate: (payload && payload.readingDate) || new Date().toISOString()
       });
       payload.semanticContract = contract;
-      payload.semanticProgramVersion = contract.engineVersion || '99.2.0';
+      payload.semanticProgramVersion = contract.engineVersion || '101.0.0';
       payload.ootkData.semanticContract = contract;
       payload.ootkData.semanticProgramVersion = payload.semanticProgramVersion;
     }
