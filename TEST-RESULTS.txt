@@ -1,39 +1,36 @@
-ROOT-SPEC v92 clean compiler — actual verification
-Date: 2026-07-15
+Golden Dawn Tarot / Opening of the Key v99.2 verification
+Date: 2026-07-18
 
-1. JavaScript syntax checks
-   node -c JS/tarot-semantic-engine.js
-   node -c JS/ai-analysis.js
-   node -c JS/prompt-export.js
-   node -c JS/selftest-core.js
-   node -c tests/tarot-v92-root-compiler.test.js
-   node -c tests/tarot-v92-metamorphic.test.js
-   node -c tests/tarot-v92-stress.test.js
-   node -c tests/tarot-v92-all.test.js
+1. Root architecture suite
+   Command: npm run test:tarot
+   Result: 28 / 28 PASS
+
+2. Metamorphic invariants
+   Command: node tests/tarot-v92-metamorphic.test.js
+   Result: 7 / 7 PASS
+
+3. Syntax checks
+   Files:
+   - JS/tarot-foundation.js
+   - JS/tarot-semantic-engine.js
+   - JS/tarot-inventory.js
+   - JS/prompt-export.js
+   - JS/ai-analysis.js
    Result: PASS
 
-2. Root compiler and metamorphic suite
-   Command: node tests/tarot-v92-all.test.js
-   Result:
-   - 12 root-compiler tests passed
-   - 7 metamorphic/invariant tests passed
-   - 180 cross-question × all-method contracts compiled, validated, rendered, and DAG-checked
+4. Verified failure-class coverage
+   - Compound questions remain typed as separate but coreferable events.
+   - Unknown people are not created from spread positions or excluded relationship terms.
+   - Exact ages, dates, amounts, probabilities, identities and other unmeasured details fail closed.
+   - Natural comparisons preserve both operands and one shared comparison scale.
+   - Fixed numeric thresholds remain user constraints rather than predicted values.
+   - Every spread declares typed positions, observable dimensions and legal evidence topology.
+   - Only declared ordered adjacent lines receive full Book T elemental dignity.
+   - Opening of the Key follows five sequential operations and stops on invalid or missing stages.
+   - The fourth operation remains a thirty-six-card ring and is never converted into calendar dates.
+   - Tarot and Opening of the Key use Golden Dawn Book T as the sole card-meaning source.
+   - Product recommendations use one exact positive-stock item and are written as a separate, naturally connected closing section.
+   - Recommendation copy cannot alter the divination verdict or claim mineral effects, guarantees or professional outcomes.
 
-3. Deployment-signature checks relevant to the changed Tarot files
-   Files checked: tarot-semantic-engine.js, prompt-export.js, ai-analysis.js, selftest-core.js
-   Result: 58 / 58 PASS
-
-4. Structural checks covered
-   - One clean compiler implementation; no v91 overlay or duplicated public compiler functions
-   - All registered spreads compile nodes, binding policies, evidence units, join policies, and source profile
-   - Non-linear spreads preserve dependency graphs rather than fake linear card sequences
-   - Zodiac card 13 is synthesis-only
-   - Comparison and threshold answers require independent, bound, same-scale channels
-   - Unknown counterpart and explicit counterpart alter entity binding, not spread topology
-   - Mathers methods reject incompatible semantic profiles
-   - Opening of the Key produces five QUERY_EVENT stage summaries and one cross-operation stage network
-   - OOTK stage summaries depend on operation validity; cross-operation synthesis cannot directly merge cards
-   - Answer validator blocks unmeasured exact ages, cardinalities, values, probabilities, and dates
-
-Important boundary:
-These tests establish program structure, prompt-contract consistency, evidence topology, source isolation, and known failure-class prevention. They do not prove divination is objectively true, and they cannot guarantee identical behavior from every external language model used through copy/paste.
+Boundary:
+These tests verify program structure, query preservation, method coverage, evidence binding, source isolation, failure-safe behavior and output-contract consistency. They do not establish divination as an objectively infallible prediction and cannot guarantee identical prose from every external language model.
