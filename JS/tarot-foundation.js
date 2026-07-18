@@ -1,4 +1,4 @@
-/*! tarot-foundation.js — Golden Dawn Tarot v98 semantic foundation
+/*! tarot-foundation.js — Golden Dawn Tarot v99 semantic foundation
  * 單一真相來源：問題型別化、觀測需求、牌陣能力、動態牌位綁定與自動路由。
  * 牌義不在本檔；牌義只由 golden-dawn-tarot.js 的 Book T 核心提供。
  */
@@ -9,8 +9,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '98.0.0';
-  var SCHEMA = 'jy.tarot.foundation/3';
+  var VERSION = '99.2.0';
+  var SCHEMA = 'jy.tarot.foundation/4';
 
   function text(v) { return v == null ? '' : String(v).trim(); }
   function clone(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
@@ -91,7 +91,7 @@
     ],[[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]],[[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]],['state','cause','advice','trajectory','conditional_outcome','comparison_outcome','domain_coverage','hidden','external','structural_depth'],['multi_domain','wide_overview'],'後世金色黎明衍生布局；牌義與尊貴仍鎖定 Book T'),
     mathers_21: methodDef('mathers_21','Mathers 二十一張',21,new Array(21).fill(null).map(function(){return {authority:'structural',role:'ordered_narrative'};}),[range(0,7),range(7,14),range(14,21)],[range(0,7),range(7,14),range(14,21)],['state','antecedent','cause','trajectory','conditional_outcome','narrative','hidden','external'],['narrative'],'Mathers 歷史布局；牌義與尊貴仍鎖定 Book T'),
     mathers_horseshoe: methodDef('mathers_horseshoe','Mathers 五十四張',54,new Array(54).fill(null).map(function(){return {authority:'structural',role:'ordered_group'};}),[range(0,26),range(26,43),range(43,54)],[range(0,26),range(26,43),range(43,54)],['state','antecedent','cause','trajectory','conditional_outcome','narrative','exhaustive','domain_coverage','hidden','external'],['exhaustive'],'Mathers 歷史布局；牌義與尊貴仍鎖定 Book T'),
-    ootk: methodDef('ootk','Opening of the Key 五次操作',null,new Array(5).fill(null).map(function(){return {authority:'stage',role:'operation_stage'};}),[],[],['state','antecedent','cause','advice','trajectory','conditional_outcome','realization','hidden','external','domain_coverage','structural_depth','narrative','exhaustive'],['ootk','exhaustive'],'Golden Dawn《Book T／Liber T》程序')
+    ootk: methodDef('ootk','Opening of the Key 五次操作',null,new Array(5).fill(null).map(function(){return {authority:'stage',role:'operation_stage'};}),[],[],['state','antecedent','cause','obstacle','enabler','advice','trajectory','temporal_sequence','conditional_outcome','bounded_outcome','threshold_outcome','realization','dyad','hidden','external','annual_overview','domain_coverage','structural_depth','narrative','exhaustive'],['ootk','exhaustive'],'Golden Dawn《Book T／Liber T》程序')
   };
 
   function method(id){return clone(METHODS[id]||null);}
@@ -106,8 +106,12 @@
     var ym,yre=/(20\d{2})\s*年/g;while((ym=yre.exec(q))){var yy=Number(ym[1]);add(ym[0],'calendar_year',{label:yy+'年',start:yy+'-01-01',end:yy+'-12-31',anchor:d.iso},true);}
     var monthDefs=[{re:/(?:本月|這月|這個月)/g,off:0},{re:/下個月/g,off:1},{re:/上個月/g,off:-1}];
     monthDefs.forEach(function(x){var m;while((m=x.re.exec(q))){var mm=addMonths(d.year,d.month,x.off),b=monthBounds(mm.year,mm.month);b.anchor=d.iso;add(m[0],'calendar_month',b,true);}});
-    var rel=q.match(/(?:本週|這週|下週|今天|明天|後天|近期|短期|長期|未來|過去|目前|現在|年底前|年內|月底前|\d+\s*(?:天|週|個月)(?:內|後|前)?|\d+\s*年(?:內|後|前))/g)||[];
-    rel.forEach(function(s){add(s,'relative_scope',{label:s,anchor:d.iso},/(?:前|內|月底|年底|年內)/.test(s));});
+    var rel=q.match(/(?:(?:未來|接下來)\s*[0-9零〇一二兩三四五六七八九十百]+\s*(?:天|週|個月|月|年)(?:內|後|前)?|本週|這週|下週|今天|明天|後天|近期|短期|長期|未來|過去|目前|現在|年底前|年內|月底前|[0-9零〇一二兩三四五六七八九十百]+\s*(?:天|週|個月|月|年)(?:內|後|前)?)/g)||[];
+    rel.forEach(function(surface){
+      var compact=text(surface).replace(/\s/g,'');
+      var bounded=/(?:前|內|月底|年底|年內)/.test(compact)||/^(?:未來|接下來)[0-9零〇一二兩三四五六七八九十百]+(?:天|週|個月|月|年)$/.test(compact);
+      add(surface,'relative_scope',{label:surface,anchor:d.iso},bounded);
+    });
     return out.map(function(x){delete x._key;return x;});
   }
 
@@ -116,7 +120,7 @@
       ['relationship',/感情|愛情|婚姻|桃花|戀愛|復合|伴侶|關係|前任|現任|男友|女友|love|romance|relationship|marriage/i],
       ['career',/工作|事業|職場|轉職|離職|升遷|副業|創業|生意|賣場|career|job|work|business/i],
       ['finance',/財運|金錢|財務|投資|收入|營業額|營收|薪水|獲利|利潤|現金流|money|finance|income|revenue/i],
-      ['health',/健康|身體|疾病|手術|藥物|睡眠|health|illness|surgery|sleep/i],
+      ['health',/健康|身體|疾病|病症|癌症|腫瘤|感染|疼痛|症狀|診斷|檢查|治療|手術|藥物|睡眠|懷孕|生育|health|illness|cancer|diagnosis|surgery|sleep/i],
       ['family',/家庭|家人|父母|小孩|子女|家宅|family|parents|children|home/i],
       ['study',/學業|考試|進修|學習|證照|書面|溝通|study|exam|school|certificate|learning/i],
       ['legal',/法律|訴訟|官司|合約|law|legal|court case|contract/i],
@@ -146,9 +150,11 @@
     var annualWords=/流年|全年|整年|一整年|年度|年運|整體運勢|各方面運勢|各領域運勢|overall outlook|yearly|annual/i;
     var bareYearFortune=yearScope&&domainCount===0&&/(?:今年|明年|20\d{2}年).{0,8}運勢(?:為何|如何|怎樣|怎麼樣)?/i.test(q);
     var annual=yearScope&&(annualWords.test(q)||bareYearFortune), annualSingleDomain=yearScope&&domainCount===1&&!annual;
-    var knownDyad=/我(?:和|與|跟).{1,24}|(?:對方|他|她|現任|前任|伴侶|配偶|男友|女友|主管|老闆|同事|朋友|客戶).{0,12}(?:對我|跟我|和我|與我|怎麼看我|的態度|的想法|的關係)|between us|my partner|my ex|my boss/i.test(q);
+    // v99.2：已知雙方必須由主要問句中的正向人物指稱建立；「非現任／排除前任」等排除語不得反向建立既有關係。
+    var dyadProbe=q.replace(/(?:非|不是|不含|排除|除了)(?:現任|前任|伴侶|配偶|男友|女友|特定對象)/g,'');
+    var knownDyad=/我(?:和|與|跟).{1,24}|(?:我們|這段關係|目前這段關係)|(?:對方|他|她|現任|前任|伴侶|配偶|男友|女友|主管|老闆|同事|朋友|客戶).{0,12}(?:對我|跟我|和我|與我|怎麼看我|的態度|的想法|的關係)|^(?:對方|他|她|現任|前任|伴侶|配偶|男友|女友)(?!.*(?:是誰|幾歲|多大年紀|做什麼工作|什麼職業|長什麼樣|住哪))|between us|my partner|my ex|my boss/i.test(dyadProbe);
     var unknownPerson=/有人|某人|哪個人|誰會|新對象|未來對象|桃花|暗戀我|喜歡我嗎|追求我|future partner|anyone likes me|who will/i.test(q)&&!knownDyad;
-    var yesNo=/嗎[？?]?\s*$|^(?:會不會|有沒有|該不該|可不可以|能不能|能否|是否|可否|是不是|適不適合|要不要)|will\b|can\b|should\b|is\b|are\b/i.test(q);
+    var yesNo=/(?:嗎[？?]?\s*$|會不會|有沒有|該不該|可不可以|能不能|能否|是否|可否|是不是|適不適合|要不要|應不應該|值不值得)|\b(?:will|can|should|is|are|do|does)\b/i.test(q);
     var descriptive=isNominalWeiHe(q)||/如何[？?]?$|怎麼樣[？?]?$|怎樣[？?]?$|狀況如何|運勢如何|走向如何|what is .* like|how is/i.test(q);
     var multiDomain=domainCount>=2&&/整體|全面|各方面|一起看|都看|同時|以及|和|與|both|all areas|together/i.test(q);
     return {causal:causal,choice:choice,timing:timing,advice:advice,hidden:hidden,external:external,pattern:pattern,spiritual:spiritual,narrative:narrative,exhaustive:exhaustive,deepOverview:deepOverview,practical:practical,location:location,conflict:conflict,annual:annual,annualSingleDomain:annualSingleDomain,knownDyad:knownDyad,unknownPerson:unknownPerson,yesNo:yesNo,descriptive:descriptive,multiDomain:multiDomain};
@@ -164,32 +170,91 @@
     for(var i=0;i<s.length;i+=1){var ch=s[i];if(CN_DIGIT[ch]!=null){number=CN_DIGIT[ch];seen=true;continue;}var unit=CN_UNIT[ch];if(!unit)return null;seen=true;if(unit===10000||unit===100000000){section+=(number||0);if(section===0)section=1;total+=section*unit;section=0;number=0;}else{if(number===0)number=1;section+=number*unit;number=0;}}
     return seen?total+section+number:null;
   }
-  function cleanCore(q,scopes){var out=q.replace(/[？?。！!，,]+$/,'');(scopes||[]).forEach(function(s){out=out.split(s.surface).join('');});return text(out);}
-  function stripQuestionPrefix(v){return text(v).replace(/^(?:請|幫我|請幫我|想問|我想問)\s*/,'').replace(/^(?:我|本人)(?:的)?/,'').replace(/^(?:該|應該|要不要|是否要|是否該)\s*/,'').trim();}
+  function stripSpreadDirective(v){
+    var out=text(v);
+    out=out.replace(/^(?:請|麻煩|幫我|請幫我)?\s*(?:用|使用|採用)\s*(?:Golden\s*Dawn|金色黎明|Book\s*T|Liber\s*T)?\s*(?:開鑰之法|Opening\s+of\s+the\s+Key|Mathers[^看占解讀分析]{0,16}|凱爾特十字(?:牌陣)?|生命之樹(?:牌陣)?|黃道十二宮(?:牌陣)?|十二宮(?:牌陣)?|七張馬蹄(?:形)?(?:牌陣)?|馬蹄形(?:牌陣)?|關係牌陣|時間線牌陣|十字牌陣|三牌陣|三張牌陣|五牌陣|五張牌陣|二選一牌陣|雙路比較牌陣|小阿卡那(?:實務)?牌陣|十五張(?:牌陣)?|二十一張(?:牌陣)?|五十四張(?:牌陣)?)\s*(?:來)?\s*(?:看|占|解讀|分析|問)?\s*/i,'');
+    return text(out);
+  }
+  function cleanCore(q,scopes){var out=stripSpreadDirective(q).replace(/[？?。！!，,]+$/,'');(scopes||[]).forEach(function(s){out=out.split(s.surface).join('');});return text(out);}
+  function stripQuestionPrefix(v){return text(v).replace(/^(?:請|幫我|請幫我|想問|我想問|看看|看一下)\s*/,'').replace(/^(?:我|本人)(?:的)?/,'').replace(/^(?:該|應該|要不要|是否要|是否該)\s*/,'').trim();}
+  function stripComparisonOperand(v){var raw=text(v);if(/^(?:我|本人)$/.test(raw))return '問卜者本人';return stripModalTail(stripQuestionPrefix(raw)).replace(/(?:未來|之後|接下來)$/,'').replace(/(?:能|會|可以|可能)?(?:成功|達成|做到|實現)$/,'').trim();}
   function stripModalTail(v){return text(v).replace(/(?:一定|必然|應該|可能|會不會|能不能|可不可以|是否|有沒有|可以|能夠|會|能)+$/g,'').trim();}
   function metricName(v){var m=text(v).match(/(營業額|營收|收入|薪水|獲利|利潤|成本|價格|金額|數量|人數|成績|表現|速度|高度|重量|價值|程度)$/);return m?m[1]:'';}
   function splitEntityMetric(v){var m=text(v).match(/^(.+?)(?:的)?(營業額|營收|收入|薪水|獲利|利潤|成本|價格|金額|數量|人數|成績|表現|速度|高度|重量|價值|程度)$/);return m?{entity:text(m[1]),metric:m[2]}:{entity:text(v),metric:''};}
 
   function scaleLabel(v){return v==='suitability'?'適合度':(v==='model_resolve_same_scale'?'同一可比較尺度':text(v));}
-  function queryOperatorLabel(v){var map={truth_or_realization:'是否成立',choice:'選擇較適合者',qualitative_description:'描述狀態與走向',cause_explanation:'說明原因／形成機制',relative_timing:'判斷相對時序',location_guidance:'判斷位置線索',action_guidance:'提出可介入方向'};return map[v]||text(v);}
+  function queryOperatorLabel(v){var map={truth_or_realization:'是否成立',choice:'選擇較適合者',qualitative_description:'描述狀態與走向',cause_explanation:'說明原因／形成機制',relative_timing:'判斷相對時序',location_guidance:'判斷位置線索',action_guidance:'提出可介入方向',exact_attribute:'詢問精確人物屬性'};return map[v]||text(v);}
+
+  // v99：先把多子題切成獨立查詢事件，避免把「會不會發生？她幾歲？」整串塞進同一 target。
+  function splitQuestionClauses(q){
+    q=text(q);if(!q)return [];
+    var source=q.match(/[^？?！!。；;]+[？?！!。；;]?/g)||[q];
+    var out=source.map(function(x){return text(x).replace(/[？?！!。；;]+$/,'');}).filter(Boolean);
+    if(out.length===1){
+      var m=out[0].match(/^(.+?嗎)(?=(?:他|她|它|對方|這個人|那個人|其).{0,20}(?:幾歲|年齡|姓名|名字|身分|職業|工作|外貌|長相|星座|生肖|住哪|在哪))/);
+      if(m){var rest=text(out[0].slice(m[1].length));out=[text(m[1]),rest].filter(Boolean);}
+    }
+    return out.map(function(surface,index){return {id:'Q'+pad(index+1,2),surface:surface,index:index};});
+  }
+
+  function attributeRequest(clause){
+    var c=text(clause).replace(/\s/g,'');
+    var subject='';
+    var sm=c.match(/^(他|她|它|對方|這個人|那個人|其)/);if(sm){subject=sm[1];c=c.slice(sm[1].length).replace(/^的/,'');}
+    var defs=[
+      {id:'exact_age',re:/^(?:幾歲|多大(?:年紀)?|年齡(?:是多少|多大|如何)?)/,label:'實際年齡',role:'age'},
+      {id:'identity',re:/^(?:是誰|誰|姓名|名字|身分(?:是什麼)?|什麼人)/,label:'人物身分',role:'identity'},
+      {id:'person_attribute',re:/^(?:做什麼工作|從事什麼|什麼職業|職業(?:是什麼)?|工作(?:是什麼)?)/,label:'職業',role:'occupation'},
+      {id:'person_attribute',re:/^(?:長什麼樣|外貌|長相|身高|體重)/,label:'外貌／身體特徵',role:'appearance'},
+      {id:'person_attribute',re:/^(?:什麼星座|什麼生肖|星座|生肖)/,label:'星座／生肖',role:'astrological_identity'},
+      {id:'exact_location',re:/^(?:住哪|住在哪|在哪裡|來自哪裡|哪裡人)/,label:'具體地點',role:'location'}
+    ];
+    for(var i=0;i<defs.length;i+=1){var m=c.match(defs[i].re);if(m)return {dimensionId:defs[i].id,label:defs[i].label,attributeRole:defs[i].role,subjectSurface:subject||'',source:text(clause),matched:m[0]};}
+    return null;
+  }
+
+  function unsupportedDimensionsFor(q){
+    var out=[];
+    if(/多少錢|多少(?:收入|薪水|營收|營業額|獲利|成本)|具體(?:金額|數字|數值)|確切(?:金額|數字|數值)|價位/.test(q))out.push('exact_value');
+    if(/百分比|幾成|機率|概率|%/.test(q))out.push('probability');
+    if(/幾個|幾位|多少人|人數|數量/.test(q))out.push('cardinality');
+    if(/幾歲|多大年紀|年齡|年齡區間/.test(q))out.push('exact_age');
+    if(/姓名|名字|身分|是什麼人|是誰|什麼人/.test(q))out.push('identity');
+    if(/職業|工作是什麼|做什麼工作|什麼職業|外貌|長相|長什麼樣|身高|體重|星座|生肖/.test(q))out.push('person_attribute');
+    if(/住哪|住在哪|具體地點|地址|哪裡人/.test(q))out.push('exact_location');
+    if(/哪一天|幾月(?:幾號)?|確切日期|幾號/.test(q))out.push('exact_date');
+    return uniq(out);
+  }
 
   function detectNumericThreshold(q,scopes){
     var core=cleanCore(q,scopes);
-    var re=/(.*?)(營業額|營收|收入|薪水|獲利|利潤|成本|價格|金額|數量|人數|成績|表現|速度|高度|重量|價值|程度)(?:是否|能否|可否|能不能|可不可以|會不會|可以|能夠|可能|會|能)?\s*(不超過|至多|低於|小於|少於|破|超過|高於|大於|達到|至少)\s*([0-9][0-9,]*(?:\.[0-9]+)?(?:萬|億)?|[零〇一二兩三四五六七八九十百千萬億]+)/;
+    var metric='(?:營業額|營收|收入|薪水|獲利|利潤|成本|價格|金額|數量|人數|成績|表現|速度|高度|重量|價值|程度)';
+    var number='(?:[0-9][0-9,]*(?:\\.[0-9]+)?(?:萬|億)?|[零〇一二兩三四五六七八九十百千萬億]+)';
+    var re=new RegExp('^(.*?)('+metric+')(?:是否|能否|可否|能不能|可不可以|會不會|可以|能夠|可能|會|能)?\\s*(不超過|至多|低於|小於|少於|破|超過|高於|大於|達到|至少)\\s*('+number+')');
     var m=core.match(re); if(!m)return null;
-    var subject=stripQuestionPrefix(m[1]), metric=m[2], opText=m[3], thresholdSurface=m[4], value=parseChineseNumber(thresholdSurface);
-    if(!subject||value==null)return null;
+    var subject=stripQuestionPrefix(m[1])||'問卜者本人', metricNameValue=m[2], opText=m[3], thresholdSurface=m[4], value=parseChineseNumber(thresholdSurface);
+    if(value==null)return null;
     var op=(opText==='破'||opText==='超過'||opText==='高於'||opText==='大於')?'gt':(opText==='達到'||opText==='至少')?'gte':(opText==='不超過'||opText==='至多')?'lte':'lt';
-    return {id:'R01',type:'fixed_numeric_threshold',subject:subject,metric:metric,operator:op,operatorText:opText,thresholdValue:value,thresholdSurface:thresholdSurface,source:m[0]};
+    return {id:'R01',type:'fixed_numeric_threshold',subject:subject,metric:metricNameValue,operator:op,operatorText:opText,thresholdValue:value,thresholdSurface:thresholdSurface,source:m[0]};
   }
   function detectRelation(q,scopes){
     var numeric=detectNumericThreshold(q,scopes);if(numeric)return numeric;
     var core=cleanCore(q,scopes);
-    var c=core.match(/(.{1,36}?)\s*(?:還是|或是|或者|\bor\b)\s*(.{1,36}?)(?:比較|較|更)?(?:好|適合|有利|可行|嗎|呢|？|\?|$)/i);
-    if(c)return {id:'R01',type:'alternative_comparison',operator:'choose',operatorText:'還是',left:stripModalTail(stripQuestionPrefix(c[1])),right:stripModalTail(c[2]),scale:'suitability',source:c[0]};
-    var patterns=[{re:/(.{1,48}?)\s*(超過|高於|大於|多於)\s*(.{1,48}?)(?:嗎|呢|？|\?|$)/,op:'gt'},{re:/(.{1,48}?)\s*(低於|小於|少於|不及)\s*(.{1,48}?)(?:嗎|呢|？|\?|$)/,op:'lt'},{re:/(.{1,48}?)\s*(等於|相同於|一樣多|持平)\s*(.{1,48}?)(?:嗎|呢|？|\?|$)/,op:'eq'},{re:/(.{1,36}?)\s*比\s*(.{1,36}?)\s*(更|較)(.{1,20}?)(?:嗎|呢|？|\?|$)/,op:'comparative'}];
-    for(var i=0;i<patterns.length;i+=1){var m=core.match(patterns[i].re);if(!m)continue;if(patterns[i].op==='comparative')return {id:'R01',type:'entity_comparison',operator:'comparative',operatorText:m[3]+m[4],left:stripModalTail(stripQuestionPrefix(m[1])),right:stripModalTail(m[2]),scale:text(m[4]),source:m[0]};
-      var lm=splitEntityMetric(stripModalTail(stripQuestionPrefix(m[1]))),rm=splitEntityMetric(stripModalTail(m[3]));return {id:'R01',type:'entity_comparison',operator:patterns[i].op,operatorText:m[2],left:lm.entity,right:rm.entity,scale:lm.metric||rm.metric||'model_resolve_same_scale',source:m[0]};}
+    var c=core.match(/(.{1,36}?)\s*(?:還是|或是|或者|或|\bor\b)\s*(.{1,36}?)(?:哪個|何者)?(?:比較|較|更)?(?:好|適合|有利|可行|嗎|呢|？|\?|$)/i);
+    if(!c)c=core.match(/(.{1,36}?)\s*(?:和|與|跟)\s*(.{1,36}?)(?:哪個|何者)(?:比較|較|更)?(?:好|適合|有利|可行)(?:嗎|呢|？|\?|$)/i);
+    if(c)return {id:'R01',type:'alternative_comparison',operator:'choose',operatorText:/還是|或是|或者|或|\bor\b/i.test(c[0])?'二選一':'何者較適合',left:stripModalTail(stripQuestionPrefix(c[1])),right:stripModalTail(c[2].replace(/(?:哪個|何者).*$/,'')),scale:'suitability',source:c[0]};
+    var bm=core.match(/^(.{1,36}?)\s*比\s*(.{1,48}?)(?:嗎|呢|？|\?|$)/);
+    if(bm){
+      var tail=text(bm[2]),detail=tail.match(/^(.+?)(?:的)?(營業額|營收|收入|薪水|獲利|利潤|成本|價格|金額|數量|人數|成績|表現|速度|高度|重量|價值|穩定度)(更|較)?(高|低|多|少|好|差|快|慢|強|弱|穩定)$/);
+      if(detail)return {id:'R01',type:'entity_comparison',operator:'comparative',operatorText:text(detail[3])+detail[4],left:stripComparisonOperand(bm[1]),right:stripComparisonOperand(detail[1]),scale:detail[2],source:bm[0]};
+      var simple=tail.match(/^(.+?)(更|較)?(成功|適合|有利|穩定|好|差|快|慢|高|低|多|少|強|弱)$/);
+      if(simple){var scaleMap={成功:'成功程度',適合:'適合度',有利:'有利程度',穩定:'穩定度',好:'整體表現',差:'整體表現',快:'速度',慢:'速度',高:'高度／程度',低:'高度／程度',多:'數量／程度',少:'數量／程度',強:'強度',弱:'強度'};return {id:'R01',type:'entity_comparison',operator:'comparative',operatorText:text(simple[2])+simple[3],left:stripComparisonOperand(bm[1]),right:stripComparisonOperand(simple[1]),scale:scaleMap[simple[3]]||simple[3],source:bm[0]};}
+    }
+    var patterns=[{re:/(.{1,48}?)\s*(超過|高於|大於|多於)\s*(.{1,48}?)(?:嗎|呢|？|\?|$)/,op:'gt'},{re:/(.{1,48}?)\s*(低於|小於|少於|不及)\s*(.{1,48}?)(?:嗎|呢|？|\?|$)/,op:'lt'},{re:/(.{1,48}?)\s*(等於|相同於|一樣多|持平)\s*(.{1,48}?)(?:嗎|呢|？|\?|$)/,op:'eq'}];
+    for(var i=0;i<patterns.length;i+=1){var m=core.match(patterns[i].re);if(!m)continue;
+      var rawLeft=text(m[1]),rawRight=text(m[3]),lm=splitEntityMetric(stripComparisonOperand(rawLeft)),rm=splitEntityMetric(stripComparisonOperand(rawRight));
+      var inferredScale=lm.metric||rm.metric||(/成功|達成|實現/.test(rawLeft+rawRight)?'成功程度':'model_resolve_same_scale');
+      return {id:'R01',type:'entity_comparison',operator:patterns[i].op,operatorText:m[2],left:lm.entity,right:rm.entity,scale:inferredScale,source:m[0]};}
     return null;
   }
 
@@ -200,15 +265,22 @@
     core=core.replace(/(?:為何|如何|怎麼樣|怎樣|是什麼|會怎樣|會如何|會怎麼發展|嗎|呢)$/,'').replace(/(?:徹底)?攤開$/,'');
     if(intent.location)core=core.replace(/(?:在)?哪(?:裡|邊)|何處|什麼位置|哪個方向/g,'位置');
     if(intent.advice)core=core.replace(/(?:我)?(?:該|應該)?(?:怎麼做|怎麼辦|如何改善|下一步|怎麼找|如何找)$/,'');
+    if(intent.hidden||intent.external){
+      core=core.replace(/(?:有)?(?:哪些|什麼|何種|有何)?(?:隱藏|背後|未察覺|盲點|外在|環境)(?:與|和|及|或)?(?:隱藏|背後|未察覺|盲點|外在|環境)?(?:條件|影響|因素|力量|作用)?$/,'');
+      core=core.replace(/(?:忽略了?|未察覺|不知道的)(?:哪些|什麼|何種)?(?:外在|環境|隱藏|背後|盲點)+(?:條件|影響|因素|力量|作用)?$/,'');
+    }
     return text(core)||'整體事件／狀態';
   }
 
   function buildShape(intent,relation,scopes,domains){
-    if(intent.exhaustive)return 'exhaustive'; if(intent.narrative)return 'narrative'; if(intent.annual)return 'annual'; if(intent.annualSingleDomain&&!intent.timing)return 'annual_single_domain';
+    if(intent.exhaustive)return 'exhaustive'; if(intent.narrative)return 'narrative';
     if(relation&&relation.type==='alternative_comparison')return 'choice'; if(relation&&relation.type==='entity_comparison')return 'comparison'; if(relation&&relation.type==='fixed_numeric_threshold')return 'threshold';
-    if(intent.knownDyad)return 'dyad'; if(intent.timing)return 'timing'; if(intent.location)return 'location'; if(intent.pattern||intent.spiritual)return 'deep_structure';
+    if(intent.timing)return 'timing'; if(intent.knownDyad)return 'dyad'; if(intent.location)return 'location'; if(intent.pattern||intent.spiritual)return 'deep_structure';
+    if(intent.annual)return 'annual';
+    if((scopes||[]).some(function(s){return s.bounded;})&&intent.yesNo)return 'bounded_yes_no';
+    if(intent.annualSingleDomain&&!intent.timing)return 'annual_single_domain';
     if(intent.multiDomain)return 'multi_domain'; if(intent.hidden||intent.external)return 'hidden_external'; if(intent.deepOverview)return 'deep_overview'; if(intent.conflict)return 'conflict';
-    if(intent.causal||intent.advice)return 'cause_action'; if((scopes||[]).some(function(s){return s.bounded;})&&intent.yesNo)return 'bounded_yes_no'; if(intent.yesNo)return 'yes_no'; return 'simple';
+    if(intent.causal||intent.advice)return 'cause_action'; if(intent.yesNo)return 'yes_no'; return 'simple';
   }
   function requiredObservables(intent,relation,scopes,domains,shape){
     var req=['state'];
@@ -231,58 +303,118 @@
   }
 
   function compileQuestion(question,options){
-    options=options||{};var q=normalize(question)||'（未提供明確問題）';var scopes=detectScopes(q,options.referenceDate,options.timezone),domains=detectDomains(q),intent=detectIntent(q,scopes,domains);intent._q=q;var relation=detectRelation(q,scopes);var shape=buildShape(intent,relation,scopes,domains);
-    var atoms=[],entities=[{id:'QUERENT',type:'querent',source:'問卜者'}],constraints=[],assumptions=[];
-    function atom(kind,value,role,source,implicit){value=text(value);if(!value)return;atoms.push({id:'A'+pad(atoms.length+1,2),kind:kind,text:value,source:text(source||value),essential:true,eventId:'QUERY_EVENT',role:role,implicit:!!implicit});}
+    options=options||{};
+    var q=normalize(question)||'（未提供明確問題）';
+    var clauses=splitQuestionClauses(q);
+    var scopes=detectScopes(q,options.referenceDate,options.timezone),domains=detectDomains(q);
+    var clauseMeta=clauses.map(function(clause){
+      var analysisSurface=stripSpreadDirective(clause.surface)||clause.surface;
+      var cs=detectScopes(analysisSurface,options.referenceDate,options.timezone),cd=detectDomains(analysisSurface),ci=detectIntent(analysisSurface,cs,cd);
+      ci._q=analysisSurface;
+      return {clause:clause,analysisSurface:analysisSurface,scopes:cs,domains:cd,intent:ci,relation:detectRelation(analysisSurface,cs),attribute:attributeRequest(analysisSurface)};
+    });
+    var inheritedScopeNotes=[];
+    clauseMeta.forEach(function(meta,index){
+      if(index>0&&!meta.scopes.length&&!meta.attribute&&clauseMeta[0]&&clauseMeta[0].scopes.length){
+        meta.scopes=clone(clauseMeta[0].scopes);meta.inheritedScope=true;
+        inheritedScopeNotes.push({eventIndex:index,scope:meta.scopes.map(function(x){return x.surface;}).join('、')});
+      }
+    });
+    var intent=detectIntent(q,scopes,domains);intent._q=q;
+    ['causal','choice','timing','advice','hidden','external','pattern','spiritual','narrative','exhaustive','deepOverview','practical','location','conflict','yesNo','descriptive'].forEach(function(k){
+      intent[k]=!!intent[k]||clauseMeta.some(function(x){return !!x.intent[k];});
+    });
+    // 人物共指只由第一個非屬性事件建立。附屬「她幾歲／他是誰」不得把未知人物誤升格為既知雙方。
+    var primaryMeta=clauseMeta.find(function(x){return !x.attribute;})||clauseMeta[0];
+    intent.knownDyad=!!(primaryMeta&&primaryMeta.intent&&primaryMeta.intent.knownDyad);
+    intent.unknownPerson=!!(primaryMeta&&primaryMeta.intent&&primaryMeta.intent.unknownPerson);
+    if(intent.unknownPerson)intent.knownDyad=false;
+    var yearScope=scopes.some(function(s){return s.kind==='calendar_year';});
+    intent.multiDomain=!!intent.multiDomain||(domains.length>=2&&clauses.length>=2);
+    // 年份＋多個關鍵字不等於年度總覽；只有原句確實並列多領域時才升格為 annual overview。
+    if(yearScope&&intent.multiDomain)intent.annual=true;
+    intent.annualSingleDomain=yearScope&&domains.length===1&&!intent.annual;
+    var relations=clauseMeta.map(function(x){return x.relation;}).filter(Boolean),relation=relations[0]||null;
+    var shape=buildShape(intent,relation,scopes,domains);
+    var atoms=[],entities=[{id:'QUERENT',type:'querent',source:'問卜者'}],constraints=[],assumptions=[],events=[],graphRelations=[];
     var explicitThird=q.match(/^([^，。！？?]{1,20}?)(?:的)(?:今年|明年|未來|目前|現在)?(?:運勢|狀況|感情|工作|事業|健康|財運)/),actor='QUERENT';
-    if(explicitThird&&!/^我$|^本人$/.test(text(explicitThird[1]))){actor='ACTOR_1';entities.push({id:actor,type:'query_explicit_actor',surface:text(explicitThird[1]),source:explicitThird[1]});atom('actor',text(explicitThird[1]),'actor',explicitThird[1],false);}else{var explicitSelf=/(?:我|本人)(?:的)?/.test(q),implicitActor=!explicitSelf;atom('actor','問卜者本人','actor',implicitActor?'語境預設問卜者':(q.indexOf('本人')>=0?'本人':'我'),implicitActor);if(implicitActor)assumptions.push({id:'AS01',type:'deictic_subject_resolution',value:'省略主詞依占卜語境解析為問卜者本人',status:'explicitly_marked'});}
-    var roles={actor:actor,target:'',subject:'',metric:'',threshold:'',leftOperand:'',rightOperand:'',attribute:'',comparator:'',queryOperator:''},eventType='qualitative_state_query',predicate='describe_state';
-    if(relation&&relation.type==='fixed_numeric_threshold'){
-      eventType='fixed_threshold_event';predicate='cross_fixed_threshold';entities.push({id:'SUBJECT_1',type:'query_subject',surface:relation.subject,owner:'QUERENT',source:relation.subject});roles.subject='SUBJECT_1';roles.metric=relation.metric;roles.threshold='THRESHOLD_1';roles.comparator=relation.operator;roles.queryOperator='truth_or_realization';
-      atom('subject',relation.subject,'subject',relation.subject);atom('measured_attribute',relation.metric,'metric',relation.metric);atom('comparator',relation.operatorText,'comparator',relation.operatorText);atom('threshold_value',relation.thresholdSurface+'〔'+relation.thresholdValue+'〕','threshold',relation.thresholdSurface);atom('query_operator',queryOperatorLabel('truth_or_realization'),'queryOperator',q);
-    }else if(relation&&relation.type==='alternative_comparison'){
-      eventType='alternative_comparison';predicate='compare_branches';entities.push({id:'REL_LEFT',type:'query_explicit_operand',surface:relation.left,source:relation.left});entities.push({id:'REL_RIGHT',type:'query_explicit_operand',surface:relation.right,source:relation.right});roles.leftOperand='REL_LEFT';roles.rightOperand='REL_RIGHT';roles.comparator=relation.operator;roles.attribute=relation.scale;roles.queryOperator='choice';
-      atom('left_operand',relation.left,'leftOperand',relation.left);atom('comparator',relation.operatorText,'comparator',relation.source);atom('right_operand',relation.right,'rightOperand',relation.right);atom('measured_attribute',scaleLabel(relation.scale),'attribute',relation.scale);atom('query_operator',queryOperatorLabel('choice'),'queryOperator',q);
-    }else if(relation){
-      eventType='entity_comparison';predicate='compare_on_same_scale';entities.push({id:'REL_LEFT',type:'query_explicit_operand',surface:relation.left,source:relation.left});entities.push({id:'REL_RIGHT',type:'query_explicit_operand',surface:relation.right,source:relation.right});roles.leftOperand='REL_LEFT';roles.rightOperand='REL_RIGHT';roles.comparator=relation.operator;roles.attribute=relation.scale;roles.queryOperator='truth_or_realization';
-      atom('left_operand',relation.left,'leftOperand',relation.left);atom('measured_attribute',scaleLabel(relation.scale),'attribute',relation.source);atom('comparator',relation.operatorText,'comparator',relation.operatorText);atom('right_operand',relation.right,'rightOperand',relation.right);atom('query_operator',queryOperatorLabel('truth_or_realization'),'queryOperator',q);
-    }else{
-      var target=queryTarget(q,scopes,intent);entities.push({id:'TARGET_STATE',type:'query_target',surface:target,source:target});roles.target='TARGET_STATE';atom('state_target',target,'target',target);var op='qualitative_description';if(intent.causal)op='cause_explanation';else if(intent.timing)op='relative_timing';else if(intent.location)op='location_guidance';else if(intent.advice)op='action_guidance';else if(intent.yesNo)op='truth_or_realization';roles.queryOperator=op;atom('query_operator',queryOperatorLabel(op),'queryOperator',q);
+    if(explicitThird&&!/^我$|^本人$/.test(text(explicitThird[1]))){actor='ACTOR_1';entities.push({id:actor,type:'query_explicit_actor',surface:text(explicitThird[1]),source:explicitThird[1]});}
+    var explicitSelf=/(?:我|本人)(?:的)?/.test(q),implicitActor=actor==='QUERENT'&&!explicitSelf;
+    if(implicitActor)assumptions.push({id:'AS01',type:'deictic_subject_resolution',value:'省略主詞依占卜語境解析為問卜者本人',status:'explicitly_marked'});
+    inheritedScopeNotes.forEach(function(note){assumptions.push({id:'AS'+pad(assumptions.length+1,2),type:'scope_ellipsis_resolution',value:'後續平行子問句沿用前一子問句明示範圍：'+note.scope,status:'explicitly_marked'});});
+    function atom(kind,value,role,source,eventId,implicit){value=text(value);if(!value)return;atoms.push({id:'A'+pad(atoms.length+1,2),kind:kind,text:value,source:text(source||value),essential:true,eventId:eventId||'QUERY_EVENT',role:role,implicit:!!implicit});}
+    var rootEntityId='';
+    if(intent.unknownPerson){
+      rootEntityId='UNBOUND_ENTITY_01';
+      entities.push({id:rootEntityId,type:'unbound_person',source:'原問句中的未知人物／新對象',bindingStatus:'conditional_unbound'});
     }
-    var modality=(q.match(/(?:一定|必然|應該|可能|會不會|能不能|可不可以|是否|有沒有|可以|能夠|能否|可否|會|能)/)||[])[0];if(modality)atom('modality',modality,'modality',modality);
-    scopes.forEach(function(s){atom('scope',s.resolved&&s.resolved.label?s.surface+'〔'+s.resolved.label+'〕':s.surface,'timeScope',s.source);constraints.push({id:'C'+pad(constraints.length+1,2),type:'scope',surface:s.surface,text:s.surface,resolved:clone(s.resolved),bounded:s.bounded,timezone:s.timezone,attach:'QUERY_EVENT.timeScope',source:s.source});});
-    (q.match(/(?:不會|不能|沒有|未曾|尚未|不要|不再|不是|不成立)/g)||[]).forEach(function(x){atom('polarity',x,'polarity',x);});(q.match(/(?:除了|排除|不含|非)[^，。！？?]{1,24}/g)||[]).forEach(function(x){atom('exclusion',x,'exclusion',x);});
-    var reqObs=requiredObservables(intent,relation,scopes,domains,shape),unsupported=[];
-    if(/多少錢|多少(?:收入|薪水|營收|營業額|獲利|成本)|具體(?:金額|數字|數值)|確切(?:金額|數字|數值)|價位|百分比|幾成|機率/.test(q))unsupported.push('exact_value');
-    if(/幾個|幾位|多少人|人數|數量/.test(q))unsupported.push('cardinality');if(/幾歲|年齡/.test(q))unsupported.push('exact_age');if(/姓名|名字|身分|是什麼人/.test(q))unsupported.push('identity');if(intent.timing&&/哪一天|幾月幾號|確切日期/.test(q))unsupported.push('exact_date');
-    var dims=[{id:'event_or_state',label:'核心事件／狀態',source:q}];reqObs.forEach(function(id){if(id!=='state')dims.push({id:id,label:OBSERVABLES[id]||id,source:q});});unsupported.forEach(function(id){dims.push({id:id,label:id==='exact_value'?'精確數值／金額':id,source:q});});if(scopes.length)dims.push({id:'time_scope',label:'使用者明示期限／範圍',source:scopes.map(function(s){return s.surface;}).join('、')});
-    var event={id:'QUERY_EVENT',type:eventType,surface:q,predicate:predicate,roles:roles,modality:modality||'open',timeScope:scopes.map(function(s){return s.surface;}),resolvedTimeScopes:clone(scopes),relationIds:relation?[relation.id]:[],shape:shape,requiredObservables:reqObs};
-    var canonical=atoms.map(function(a){return a.role+'='+a.text;}).join('|');var deletion=atoms.map(function(a){var rem=atoms.filter(function(x){return x.id!==a.id;});return {atomId:a.id,removedRole:a.role,changesTruthConditions:rem.map(function(x){return x.role+'='+x.text;}).join('|')!==canonical&&!rem.some(function(x){return x.role===a.role&&x.text===a.text;})};});
-    var scopeSurface=scopes.map(function(s){return s.surface;}).join(''),reconstructed;
-    if(relation&&relation.type==='fixed_numeric_threshold'){
-      reconstructed=scopeSurface+'我的'+relation.subject+relation.metric+(modality||'是否能')+relation.operatorText+relation.thresholdSurface+'？';
-    }else if(relation&&relation.type==='alternative_comparison'){
-      reconstructed=scopeSurface+relation.left+'與'+relation.right+'何者較適合？';
-    }else if(relation){
-      var scale=relation.scale&&relation.scale!=='model_resolve_same_scale'?relation.scale:'';
-      reconstructed=scopeSurface+'我的'+relation.left+(scale?scale:'')+(modality||'是否')+relation.operatorText+relation.right+(scale?scale:'')+'？';
-    }else{
-      reconstructed=scopeSurface+queryTarget(q,scopes,intent)+(intent.causal?'的原因為何？':intent.timing?'的相對時序為何？':intent.location?'的位置為何？':intent.advice?'應如何處理？':intent.yesNo?'是否成立？':'如何？');
-    }
-    var hasActor=atoms.some(function(a){return a.role==='actor';}),noWhole=atoms.every(function(a){return normalize(a.text)!==q;}),allSensitive=deletion.every(function(x){return x.changesTruthConditions;}),hasShape=relation?atoms.some(function(a){return a.role==='queryOperator';}):['target','queryOperator'].every(function(r){return atoms.some(function(a){return a.role===r;});});
-    var graph={schema:'typed_query_graph/6',events:[event],entities:entities,relations:relation?[relation]:[],constraints:constraints,assumptions:assumptions,requiredAtoms:atoms,requiredObservables:reqObs,unsupportedDimensions:unsupported,roundTripReconstruction:reconstructed,canonicalSemanticSignature:canonical,compilerStatus:(hasActor&&hasShape&&noWhole&&allSensitive)?'validated_atomized':'invalid_atomization',validation:{roundTripCompatible:hasActor&&hasShape&&noWhole&&!!reconstructed,deletionSensitivity:deletion,everyDeletionChangesTruthConditions:allSensitive,noAddedPremise:assumptions.every(function(a){return a.status==='explicitly_marked';}),uniqueAtomIds:new Set(atoms.map(function(a){return a.id;})).size===atoms.length,noWholeQuestionAtom:noWhole,allAtomsBound:atoms.every(function(a){return a.eventId==='QUERY_EVENT'&&!!a.role;})},atomizationRequirement:'主體／所有者、事件主體、尺度、比較子、門檻、模態、期限、否定與排除須各自成為 essential atom；使用者明示數字是查詢條件，不是牌面推算值。'};
-    graph.completionRules=[
-      '每個會改變答案真值的自然語言成分都必須成為 essential atom，且綁定 eventId 與 role／scope。',
-      '未知人物只能建立 UNBOUND_ENTITY；原句未明示的前提只能列為 assumption。'
-    ];
-    graph.validationRules={
-      roundTrip:'依角色圖重建的命題須與原句雙向相容；語序可規範化，但主體、尺度、比較子、門檻、模態與期限不得改變。',
-      deletionSensitivity:'逐一刪除 essential atom；刪除任何原子都必須改變真值條件。',
-      sameEventTest:'同一完整事件的角色、作用、結果與期限共享 QUERY_EVENT；比較分支另用已宣告 subevent。',
-      noAddedPremise:'原句未含且牌面未建立的前提不得進入完整命題。'
-    };
-    var features=Object.assign({},intent,{domains:domains,domainCount:domains.length,relationType:relation?relation.type:null,hasRelation:!!relation,hasThreshold:!!(relation&&relation.type==='fixed_numeric_threshold'),shape:shape,requiredObservables:reqObs,unsupportedDimensions:unsupported,referenceDate:dateParts(options.referenceDate).iso,questionLength:q.length});
-    return {originalQuestion:q,normalizedQuestion:q,requestedDimensions:dims,explicitScopes:scopes,relations:relation?[relation]:[],knownCounterpart:intent.knownDyad,queryGraph:graph,features:features,requiredObservables:reqObs,unsupportedDimensions:unsupported};
+    clauseMeta.forEach(function(meta,index){
+      var clause=meta.clause.surface,analysisClause=meta.analysisSurface||clause,eventId=index===0?'QUERY_EVENT':'QUERY_EVENT_'+pad(index+1,2),roles={actor:actor,target:'',subject:'',metric:'',threshold:'',leftOperand:'',rightOperand:'',attribute:'',comparator:'',queryOperator:''};
+      var eventType='qualitative_state_query',predicate='describe_state',modality=(analysisClause.match(/(?:一定|必然|應該|可能|會不會|能不能|可不可以|是否|有沒有|可以|能夠|能否|可否|要不要|應不應該|會|能)/)||[])[0]||'open';
+      atom('actor',actor==='QUERENT'?'問卜者本人':text(explicitThird&&explicitThird[1]),'actor',actor==='QUERENT'?(implicitActor?'語境預設問卜者':(q.indexOf('本人')>=0?'本人':'我')):text(explicitThird&&explicitThird[1]),eventId,implicitActor);
+      var rel=meta.relation;
+      if(meta.attribute){
+        var subjectId=rootEntityId||'UNBOUND_ENTITY_01';
+        if(!rootEntityId){rootEntityId=subjectId;entities.push({id:subjectId,type:'unbound_person',source:meta.attribute.subjectSurface||'附屬人物指稱',bindingStatus:'conditional_unbound'});}
+        eventType='person_attribute_query';predicate='query_person_attribute';roles.subject=subjectId;roles.attribute=meta.attribute.attributeRole;roles.queryOperator='exact_attribute';
+        atom('entity_reference',meta.attribute.subjectSurface||'該人物','subject',meta.attribute.source,eventId,false);
+        atom('requested_attribute',meta.attribute.label,'attribute',meta.attribute.matched,eventId,false);
+        atom('query_operator',queryOperatorLabel('exact_attribute'),'queryOperator',clause,eventId,false);
+        if(index>0)graphRelations.push({id:'QR'+pad(graphRelations.length+1,2),type:'conditional_coreference',fromEventId:eventId,toEventId:'QUERY_EVENT',entityId:subjectId,source:meta.attribute.subjectSurface||'附屬人物指稱',rule:'只有主要事件建立並完成實體共指後，附屬人物屬性問題才有可回答對象；未量測屬性仍須明示未量測。'});
+      }else if(rel&&rel.type==='fixed_numeric_threshold'){
+        eventType='fixed_threshold_event';predicate='cross_fixed_threshold';var sid='SUBJECT_'+pad(index+1,2);entities.push({id:sid,type:'query_subject',surface:rel.subject,owner:'QUERENT',source:rel.subject});roles.subject=sid;roles.metric=rel.metric;roles.threshold='THRESHOLD_'+pad(index+1,2);roles.comparator=rel.operator;roles.queryOperator='truth_or_realization';
+        atom('subject',rel.subject,'subject',rel.subject,eventId);atom('measured_attribute',rel.metric,'metric',rel.metric,eventId);atom('comparator',rel.operatorText,'comparator',rel.operatorText,eventId);atom('threshold_value',rel.thresholdSurface+'〔'+rel.thresholdValue+'〕','threshold',rel.thresholdSurface,eventId);atom('query_operator',queryOperatorLabel('truth_or_realization'),'queryOperator',clause,eventId);
+      }else if(rel&&rel.type==='alternative_comparison'){
+        eventType='alternative_comparison';predicate='compare_branches';var leftId='REL_LEFT_'+pad(index+1,2),rightId='REL_RIGHT_'+pad(index+1,2);entities.push({id:leftId,type:'query_explicit_operand',surface:rel.left,source:rel.left});entities.push({id:rightId,type:'query_explicit_operand',surface:rel.right,source:rel.right});roles.leftOperand=leftId;roles.rightOperand=rightId;roles.comparator=rel.operator;roles.attribute=rel.scale;roles.queryOperator='choice';
+        atom('left_operand',rel.left,'leftOperand',rel.left,eventId);atom('comparator',rel.operatorText,'comparator',rel.source,eventId);atom('right_operand',rel.right,'rightOperand',rel.right,eventId);atom('measured_attribute',scaleLabel(rel.scale),'attribute',rel.scale,eventId);atom('query_operator',queryOperatorLabel('choice'),'queryOperator',clause,eventId);
+      }else if(rel){
+        eventType='entity_comparison';predicate='compare_on_same_scale';var lId='REL_LEFT_'+pad(index+1,2),rId='REL_RIGHT_'+pad(index+1,2);entities.push({id:lId,type:'query_explicit_operand',surface:rel.left,source:rel.left});entities.push({id:rId,type:'query_explicit_operand',surface:rel.right,source:rel.right});roles.leftOperand=lId;roles.rightOperand=rId;roles.comparator=rel.operator;roles.attribute=rel.scale;roles.queryOperator='truth_or_realization';
+        atom('left_operand',rel.left,'leftOperand',rel.left,eventId);atom('measured_attribute',scaleLabel(rel.scale),'attribute',rel.source,eventId);atom('comparator',rel.operatorText,'comparator',rel.operatorText,eventId);atom('right_operand',rel.right,'rightOperand',rel.right,eventId);atom('query_operator',queryOperatorLabel('truth_or_realization'),'queryOperator',clause,eventId);
+      }else{
+        var target=queryTarget(analysisClause,meta.scopes,meta.intent),targetId=index===0?'TARGET_STATE':'TARGET_STATE_'+pad(index+1,2);entities.push({id:targetId,type:'query_target',surface:target,source:target});roles.target=targetId;if(rootEntityId&&index===0)roles.conditionalEntity=rootEntityId;atom('state_target',target,'target',target,eventId);
+        var op='qualitative_description';if(meta.intent.causal)op='cause_explanation';else if(meta.intent.timing)op='relative_timing';else if(meta.intent.location)op='location_guidance';else if(meta.intent.advice)op='action_guidance';else if(meta.intent.yesNo)op='truth_or_realization';roles.queryOperator=op;atom('query_operator',queryOperatorLabel(op),'queryOperator',analysisClause,eventId);
+      }
+      if(modality!=='open')atom('modality',modality,'modality',modality,eventId);
+      meta.scopes.forEach(function(sc){atom('scope',sc.resolved&&sc.resolved.label?sc.surface+'〔'+sc.resolved.label+'〕':sc.surface,'timeScope',sc.source,eventId);constraints.push({id:'C'+pad(constraints.length+1,2),type:'scope',surface:sc.surface,text:sc.surface,resolved:clone(sc.resolved),bounded:sc.bounded,timezone:sc.timezone,attach:eventId+'.timeScope',source:sc.source});});
+      (analysisClause.match(/(?:不會|不能|沒有|未曾|尚未|不要|不再|不是|不成立)/g)||[]).forEach(function(x){atom('polarity',x,'polarity',x,eventId);constraints.push({id:'C'+pad(constraints.length+1,2),type:'polarity',surface:x,text:x,attach:eventId+'.polarity',source:x});});
+      (analysisClause.match(/(?:除了|排除|不含)[^，。！？?]{1,24}|非(?:現任|前任|本人|單身|特定對象|[^的，。！？?\s]{1,10})/g)||[]).forEach(function(x){var cleanEx=x.replace(/(?:嗎|呢)$/,'');atom('exclusion',cleanEx,'exclusion',x,eventId);constraints.push({id:'C'+pad(constraints.length+1,2),type:'exclusion',surface:cleanEx,text:cleanEx,attach:eventId+'.exclusion',source:x});});
+      var clauseReq=requiredObservables(meta.intent,rel,meta.scopes,meta.domains,buildShape(meta.intent,rel,meta.scopes,meta.domains));
+      events.push({id:eventId,type:eventType,surface:clause,analysisSurface:analysisClause,predicate:predicate,roles:roles,modality:modality,timeScope:meta.scopes.map(function(s){return s.surface;}),resolvedTimeScopes:clone(meta.scopes),relationIds:rel?[rel.id]:[],shape:buildShape(meta.intent,rel,meta.scopes,meta.domains),requiredObservables:clauseReq,dependsOn:index>0&&meta.attribute?['QUERY_EVENT']:[]});
+    });
+    var reqObs=requiredObservables(intent,relation,scopes,domains,shape),unsupported=unsupportedDimensionsFor(q);
+    var dims=[],seenDim=Object.create(null);
+    function addDim(id,label,source){var key=id+'|'+source;if(seenDim[key])return;seenDim[key]=1;dims.push({id:id,label:label,source:source});}
+    clauseMeta.forEach(function(meta,index){
+      if(meta.attribute)addDim(meta.attribute.dimensionId,meta.attribute.label,meta.clause.surface);
+      else addDim('event_or_state','核心事件／狀態',meta.clause.surface);
+      var creq=events[index].requiredObservables||[];creq.forEach(function(id){if(id!=='state')addDim(id,OBSERVABLES[id]||id,meta.clause.surface);});
+    });
+    unsupported.forEach(function(id){var labels={exact_value:'精確數值／金額',cardinality:'精確人數／數量',exact_age:'實際精確年齡',identity:'具體人物身分',person_attribute:'具體人物屬性',exact_location:'具體地點',exact_date:'精確日期',probability:'精確機率／比例'};if(!dims.some(function(d){return d.id===id;}))addDim(id,labels[id]||id,q);});
+    if(scopes.length)addDim('time_scope','使用者明示期限／範圍',scopes.map(function(s){return s.surface;}).join('、'));
+    var canonical=atoms.map(function(a){return a.eventId+':'+a.role+'='+a.text;}).join('|');
+    var deletion=atoms.map(function(a){var rem=atoms.filter(function(x){return x.id!==a.id;});return {atomId:a.id,removedRole:a.role,changesTruthConditions:rem.map(function(x){return x.eventId+':'+x.role+'='+x.text;}).join('|')!==canonical&&!rem.some(function(x){return x.eventId===a.eventId&&x.role===a.role&&x.text===a.text;})};});
+    var reconstructed=events.map(function(event){
+      if(event.type==='person_attribute_query'){var attrLabel={age:'實際年齡',identity:'人物身分',occupation:'職業',appearance:'外貌／身體特徵',astrological_identity:'星座／生肖',location:'具體地點'}[event.roles.attribute]||'人物屬性';return (event.roles.subject==='UNBOUND_ENTITY_01'?'該人物':'該對象')+'的'+attrLabel+'為何？';}
+      var sourceMeta=clauseMeta[events.indexOf(event)],rel=sourceMeta&&sourceMeta.relation,ss=(sourceMeta&&sourceMeta.scopes||[]).map(function(x){return x.surface;}).join('');
+      if(rel&&rel.type==='fixed_numeric_threshold')return ss+'我的'+rel.subject+rel.metric+(event.modality==='open'?'是否能':event.modality)+rel.operatorText+rel.thresholdSurface+'？';
+      if(rel&&rel.type==='alternative_comparison')return ss+rel.left+'與'+rel.right+'何者較適合？';
+      if(rel){var scale=rel.scale&&rel.scale!=='model_resolve_same_scale'?rel.scale:'';return ss+'我的'+rel.left+(scale?scale:'')+(event.modality==='open'?'是否':event.modality)+rel.operatorText+rel.right+(scale?scale:'')+'？';}
+      return ss+queryTarget(event.analysisSurface||event.surface,sourceMeta.scopes,sourceMeta.intent)+(sourceMeta.intent.causal?'的原因為何？':sourceMeta.intent.timing?'的相對時序為何？':sourceMeta.intent.location?'的位置為何？':sourceMeta.intent.advice?'應如何處理？':sourceMeta.intent.yesNo?'是否成立？':'如何？');
+    }).join('；');
+    var eventIds=setOf(events.map(function(e){return e.id;}));
+    var hasActor=atoms.some(function(a){return a.role==='actor';}),noWhole=atoms.every(function(a){return normalize(a.text)!==q&&a.text.indexOf('?')<0&&a.text.indexOf('？')<0;}),allSensitive=deletion.every(function(x){return x.changesTruthConditions;});
+    var everyEventTyped=events.length===clauses.length&&events.every(function(event){return !!event.predicate&&!!event.roles.queryOperator&&(!!event.roles.target||!!event.roles.subject||!!event.roles.leftOperand);});
+    var noAdded=assumptions.every(function(a){return a.status==='explicitly_marked';});
+    var valid=hasActor&&noWhole&&allSensitive&&everyEventTyped&&noAdded;
+    var graph={schema:'typed_query_graph/7',events:events,entities:entities,relations:relations.concat(graphRelations),constraints:constraints,assumptions:assumptions,requiredAtoms:atoms,requiredObservables:reqObs,unsupportedDimensions:unsupported,roundTripReconstruction:reconstructed,canonicalSemanticSignature:canonical,compilerStatus:valid?'validated_atomized':'invalid_atomization',validation:{roundTripCompatible:everyEventTyped&&!!reconstructed,deletionSensitivity:deletion,everyDeletionChangesTruthConditions:allSensitive,noAddedPremise:noAdded,uniqueAtomIds:new Set(atoms.map(function(a){return a.id;})).size===atoms.length,noWholeQuestionAtom:noWhole,allAtomsBound:atoms.every(function(a){return !!eventIds[a.eventId]&&!!a.role;}),subquestionCountPreserved:events.length===clauses.length},atomizationRequirement:'每個子問句先成獨立 event；主體／事件主體／人物共指／屬性／尺度／比較子／門檻／模態／期限／否定與排除須各自成為 essential atom。精確數字是查詢需求，不是牌面推算值。'};
+    graph.subquestions=clauses.map(function(c,i){return {id:c.id,surface:c.surface,eventId:events[i]&&events[i].id,order:i+1};});
+    graph.completionRules=['每個會改變答案真值的自然語言成分都必須成為 essential atom，且綁定其 eventId 與 role／scope。','多子題不得合併成單一 target；指示詞人物只能建立條件性 UNBOUND_ENTITY，並以明示 coreference 關係承接。','原句未明示的前提只能列為 assumption；附屬人物屬性問題必須受主要事件與實體共指是否成立所限制。'];
+    graph.validationRules={roundTrip:'依各子問句的事件角色圖重建，須保留原順序、主體、事件、屬性、比較、門檻、模態、期限、否定與排除。',deletionSensitivity:'逐一刪除 essential atom；刪除任何原子都必須改變該事件或附屬查詢的真值條件。',sameEventTest:'同一完整事件的角色、作用、結果與期限共享其 eventId；附屬人物屬性查詢另建 event，透過明示 conditional_coreference 承接。',noAddedPremise:'原句未含且牌面未建立的前提不得進入完整命題。'};
+    var riskDomains=domains.filter(function(id){return /^(?:health|legal|finance)$/.test(id);});
+    if(/犯罪|暴力|威脅|跟蹤|自殺|自傷|人身安全|失蹤/.test(q))riskDomains.push('personal_safety');
+    riskDomains=uniq(riskDomains);
+    var features=Object.assign({},intent,{domains:domains,domainCount:domains.length,relationType:relation?relation.type:null,hasRelation:!!relation,hasThreshold:!!(relation&&relation.type==='fixed_numeric_threshold'),shape:shape,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains,highRisk:riskDomains.length>0,referenceDate:dateParts(options.referenceDate).iso,questionLength:q.length,subquestionCount:clauses.length,compoundQuestion:clauses.length>1});
+    return {originalQuestion:q,normalizedQuestion:q,requestedDimensions:dims,explicitScopes:scopes,relations:relations,knownCounterpart:intent.knownDyad,queryGraph:graph,features:features,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains};
   }
 
   function explicitSpread(q){var rules=[['mathers_horseshoe',/Mathers.*(?:第一法|古法|horseshoe|馬蹄)|五十四.?張|54.?張/i],['mathers_21',/Mathers.*(?:第二法|牌陣)|三排七|二十一.?張|21.?張/i],['fifteen_card',/金色黎明.*十五|英式.*牌陣|fifteen.?card|十五.?張/i],['minor_arcana',/小阿卡那|小牌牌陣|minor arcana/i],['celtic_cross',/凱爾特|celtic/i],['tree_of_life',/生命之樹|卡巴拉牌陣|tree of life/i],['zodiac',/(?:黃道|十二宮|星座)牌陣|zodiac/i],['horseshoe',/七張馬蹄|馬蹄形牌陣|seven.?card horseshoe/i],['relationship',/關係牌陣|relationship spread/i],['timeline',/時間線牌陣|timeline spread/i],['cross',/十字牌陣|cross spread/i],['three_card',/(?:三牌|三張牌)陣|three.?card spread/i],['five_card',/(?:五牌|五張牌)陣|five.?card spread/i],['either_or',/二選一牌陣|雙路比較牌陣|either.?or spread/i],['ootk',/開鑰之法|opening of the key/i]];for(var i=0;i<rules.length;i+=1)if(rules[i][1].test(q))return rules[i][0];return '';}
@@ -294,9 +426,11 @@
     function s(i,authority,role,label,bind){slots[i]=Object.assign({},slots[i]||{},{authority:authority,role:role,label:label,binding:bind||{eventId:'QUERY_EVENT'}});}
     if(base.id==='three_card'){
       s(0,'antecedent','basis','形成目前局勢的既有基礎');s(1,'state','current_state','目前核心狀態');s(2,'outcome','conditional_outcome','維持現狀的條件性走向');
-    }else if(base.id==='five_card'&&(shape==='threshold'||shape==='bounded_yes_no')){
+    }else if(base.id==='five_card'&&shape==='threshold'){
       var threshold=rel&&rel.type==='fixed_numeric_threshold'?(rel.metric+rel.operatorText+rel.thresholdSurface):'原問句成立門檻';
       s(0,'state','current_baseline','目前累積狀態',{eventId:'QUERY_EVENT',metric:rel&&rel.metric});s(1,'enabler','threshold_enabler','推動跨越門檻的力量',{eventId:'QUERY_EVENT',threshold:threshold});s(2,'obstacle','threshold_obstacle','阻礙跨越門檻的力量',{eventId:'QUERY_EVENT',threshold:threshold});s(3,'advice','intervention','可介入的行動',{eventId:'QUERY_EVENT'});s(4,'bounded_outcome','threshold_result','截至'+scopeLabel+'的門檻結果',{eventId:'QUERY_EVENT',scope:scopeLabel,threshold:threshold});
+    }else if(base.id==='five_card'&&shape==='bounded_yes_no'){
+      s(0,'state','current_state','目前事件狀態',{eventId:'QUERY_EVENT'});s(1,'enabler','event_enabler','促成事件成立的力量',{eventId:'QUERY_EVENT'});s(2,'obstacle','event_obstacle','阻礙事件成立的力量',{eventId:'QUERY_EVENT'});s(3,'advice','intervention','可介入的方向',{eventId:'QUERY_EVENT'});s(4,'bounded_outcome','event_result','截至'+scopeLabel+'的事件成立傾向',{eventId:'QUERY_EVENT',scope:scopeLabel});
     }else if(base.id==='five_card'&&f.annualSingleDomain){
       s(0,'state','current_state','本領域目前狀態');s(1,'cause','year_driver','本年度形成機制');s(2,'obstacle','year_constraint','本年度主要限制');s(3,'advice','intervention','本年度可介入方向');s(4,'bounded_outcome','scope_end_outcome','截至'+scopeLabel+'的條件性結果',{eventId:'QUERY_EVENT',scope:scopeLabel});
     }else if(base.id==='five_card'){
@@ -323,17 +457,18 @@
 
   function routeQuestion(input,options){
     options=options||{};var compiled=typeof input==='string'?compileQuestion(input,options):input,q=compiled.normalizedQuestion||compiled.originalQuestion||'',shape=compiled.features&&compiled.features.shape||'simple',required=compiled.requiredObservables||[],explicit=explicitSpread(q);
-    if(explicit){var plan=instantiateMethod(explicit,compiled);return {version:VERSION,engine:'foundation_router_v3',spreadId:explicit,reason:'使用者明確指定牌陣；系統保留指定，但同時回報方法能否覆蓋原問句。',confidence:plan.coverageComplete?1:.55,selectedBy:'explicit',compiledQuestion:compiled,methodPlan:plan,coverage:{required:required,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:[{id:explicit,eligible:plan.coverageComplete,missing:plan.missingObservables,rank:0}]};}
+    if(!compiled.queryGraph||compiled.queryGraph.compilerStatus!=='validated_atomized'){return {version:VERSION,engine:'foundation_router_v4',spreadId:null,reason:'型別化查詢圖未通過 round-trip、逐原子敏感度或無新增前提檢查；系統已停止選陣，避免自由改題。',confidence:0,selectedBy:'blocked_invalid_query_graph',compiledQuestion:compiled,methodPlan:null,coverage:{required:required,provided:[],missing:required.slice(),complete:false},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:[]};}
+    if(explicit){var plan=instantiateMethod(explicit,compiled);return {version:VERSION,engine:'foundation_router_v4',spreadId:explicit,reason:'使用者明確指定牌陣；系統保留指定，但同時回報方法能否覆蓋原問句。',confidence:plan.coverageComplete?1:.55,selectedBy:'explicit',compiledQuestion:compiled,methodPlan:plan,coverage:{required:required,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:[{id:explicit,eligible:plan.coverageComplete,missing:plan.missingObservables,rank:0}]};}
     var candidates=Object.keys(METHODS).filter(function(id){return id!=='ootk';}).map(function(id){var m=METHODS[id],missing=difference(required,m.provides),eligible=!missing.length,rank=eligible?candidateRank(m,shape,required):99999+missing.length*100+(m.count||999);return {id:id,eligible:eligible,missing:missing,rank:rank,cards:m.count,provides:m.provides};}).sort(function(a,b){return a.rank-b.rank||((a.cards||999)-(b.cards||999));});
     var eligible=candidates.filter(function(c){return c.eligible;}),selected=eligible.length?eligible[0].id:'';
     var preferred={annual:'zodiac',annual_single_domain:'five_card',choice:'either_or',comparison:'either_or',threshold:'five_card',bounded_yes_no:'five_card',dyad:'relationship',timing:'timeline',location:'minor_arcana',deep_structure:'tree_of_life',multi_domain:'fifteen_card',hidden_external:'horseshoe',deep_overview:'celtic_cross',conflict:'cross',cause_action:'five_card',narrative:'mathers_21',exhaustive:'mathers_horseshoe',yes_no:'three_card',simple:'three_card'}[shape];
     if(preferred){var pc=candidates.find(function(c){return c.id===preferred&&c.eligible;});if(pc)selected=preferred;}
     if(!selected){
       var nearest=candidates[0]||null,missing=nearest?nearest.missing:required.slice();
-      return {version:VERSION,engine:'foundation_router_v3',spreadId:null,reason:'沒有單一已登錄牌陣能同時觀測原問句要求的全部通道；系統已停止抽牌，避免把不相容方法硬套成答案。',confidence:0,selectedBy:'blocked_no_compatible_method',compiledQuestion:compiled,methodPlan:null,coverage:{required:required,provided:nearest?nearest.provides:[],missing:missing,complete:false},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:candidates.slice(0,8)};
+      return {version:VERSION,engine:'foundation_router_v4',spreadId:null,reason:'沒有單一已登錄牌陣能同時觀測原問句要求的全部通道；系統已停止抽牌，避免把不相容方法硬套成答案。',confidence:0,selectedBy:'blocked_no_compatible_method',compiledQuestion:compiled,methodPlan:null,coverage:{required:required,provided:nearest?nearest.provides:[],missing:missing,complete:false},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:candidates.slice(0,8)};
     }
     var plan=instantiateMethod(selected,compiled),reason='依型別化問題所需觀測通道選擇最小充分牌陣：'+required.map(function(x){return OBSERVABLES[x]||x;}).join('、')+'。';
-    return {version:VERSION,engine:'foundation_router_v3',spreadId:selected,reason:reason,confidence:plan.coverageComplete?.99:.6,selectedBy:'observable_subset_and_minimum_sufficient_method',compiledQuestion:compiled,methodPlan:plan,coverage:{required:required,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:candidates.slice(0,8)};
+    return {version:VERSION,engine:'foundation_router_v4',spreadId:selected,reason:reason,confidence:plan.coverageComplete?.99:.6,selectedBy:'observable_subset_and_minimum_sufficient_method',compiledQuestion:compiled,methodPlan:plan,coverage:{required:required,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:candidates.slice(0,8)};
   }
 
   function validateMethodRegistry(){var errors=[],authorities={state:1,antecedent:1,development:1,cause:1,enabler:1,obstacle:1,interaction_force:1,advice:1,outcome:1,bounded_outcome:1,person_known:1,person_aggregate:1,environment:1,comparison:1,timeline:1,domain:1,structural:1,synthesis:1,stage:1};Object.keys(METHODS).forEach(function(id){var m=METHODS[id];if(m.id!==id)errors.push('id_mismatch:'+id);if(id!=='ootk'&&m.slots.length!==m.count)errors.push('slot_count:'+id);m.slots.forEach(function(s,i){if(!authorities[s.authority])errors.push('unknown_authority:'+id+':'+i+':'+s.authority);});(m.dignityLines||[]).forEach(function(line,li){if(line.length<3)errors.push('dignity_line_requires_three_or_more:'+id+':'+li);line.forEach(function(i){if(i<0||(m.count!=null&&i>=m.count))errors.push('dignity_index:'+id+':'+i);});});difference(m.provides,Object.keys(OBSERVABLES)).forEach(function(x){errors.push('unknown_observable:'+id+':'+x);});});return {ok:!errors.length,errors:errors};}

@@ -1,4 +1,4 @@
-/*! tarot-semantic-engine.js — ROOT-SPEC v98 Foundation compiler
+/*! tarot-semantic-engine.js — ROOT-SPEC v99 Foundation compiler
  * 單一乾淨架構：原句型別化 → 方法觀測模型 → 合法證據圖 →
  * 實體／事件共指 → 原子覆蓋裁決 → 語義飽和 → 反向稽核。
  *
@@ -18,8 +18,8 @@
       : (typeof require === 'function' ? require('./tarot-foundation.js') : null);
   } catch (_foundationErr) { Foundation = null; }
 
-  var VERSION = '98.0.0';
-  var SCHEMA = 'jy.tarot.semantic-contract/6';
+  var VERSION = '99.2.0';
+  var SCHEMA = 'jy.tarot.semantic-contract/7';
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -995,6 +995,11 @@
     var nodes = [];
     var factory = makeUnitFactory(nodes);
     var operations = data.operations || {};
+    var procedureStatus = data.procedureStatus || {};
+    var stopped = false;
+    var stopStage = 0;
+    var stopReason = '';
+    var sequenceGap = false;
 
     function addNode(cardName, position, stage, raw) {
       var index = nodes.length;
@@ -1016,17 +1021,41 @@
       return index;
     }
 
+    function operationExists(stage) {
+      return Object.prototype.hasOwnProperty.call(operations, 'op' + stage) || Object.prototype.hasOwnProperty.call(operations, stage);
+    }
+
+    function declaredStop(stage, op) {
+      var at = text(procedureStatus.abandonedAt || '');
+      return !!(op && (op.stop || op.abandoned || op.valid === false)) || at === ('op' + stage) || at === String(stage);
+    }
+
     var summaryIds = [];
     for (var stage = 1; stage <= 5; stage += 1) {
+      if (stopped) break;
+      if (!operationExists(stage)) {
+        var laterExists = false;
+        for (var later = stage + 1; later <= 5; later += 1) if (operationExists(later)) laterExists = true;
+        if (laterExists) {
+          stopped = true;
+          sequenceGap = true;
+          stopStage = stage;
+          stopReason = 'Opening of the Key 操作必須依序完成；第' + stage + '次操作缺失，因此不得解讀其後已出現的操作資料。';
+        }
+        break;
+      }
       var op = operations['op' + stage] || operations[stage] || {};
       var stageDeps = [];
       var pathIndices = [];
-      (op.countingPath || []).forEach(function (entry, index) {
+      var countingPath = stage === 4 && Array.isArray(op.ringCountingPath) && op.ringCountingPath.length
+        ? op.ringCountingPath
+        : (op.countingPath || []);
+      countingPath.forEach(function (entry, index) {
         pathIndices.push(addNode(entry.cardName || entry.name || entry.title, '第' + stage + '次操作計數路徑 #' + (index + 1), stage, entry));
       });
       if (pathIndices.length) {
         stageDeps.push(factory.add('operation_counting_path', '第' + stage + '次操作完整計數路徑', pathIndices, {
-          topology: 'ordered_counting_path',
+          topology: stage === 4 ? 'ordered_ring_counting_path' : 'ordered_counting_path',
           stage: stage,
           eventBinding: 'QUERY_EVENT_STAGE_' + stage,
           eventJoin: 'within_same_operation_path_only'
@@ -1043,20 +1072,24 @@
         eventJoin: 'procedure_stage_only'
       }));
 
-      (op.pairs || []).forEach(function (pair, index) {
+      var declaredPairs = stage === 4 && Array.isArray(op.ringPairing) && op.ringPairing.length
+        ? op.ringPairing
+        : (op.pairs || []);
+      declaredPairs.forEach(function (pair, index) {
         var left = pair.left || {};
         var right = pair.right || {};
         var leftIndex = addNode(left.name || left.cardName || left.title, '第' + stage + '次操作配對 #' + (index + 1) + ' 左', stage, left);
         var rightIndex = addNode(right.name || right.cardName || right.title, '第' + stage + '次操作配對 #' + (index + 1) + ' 右', stage, right);
         stageDeps.push(factory.add('operation_pair', '第' + stage + '次操作配對 #' + (index + 1), [leftIndex, rightIndex], {
-          topology: 'declared_pair',
+          topology: stage === 4 ? 'declared_ring_pair' : 'declared_pair',
           stage: stage,
           eventBinding: 'QUERY_EVENT_STAGE_' + stage,
+          metadata: { dignity: clone(pair.dignity || null), single: !!pair.single },
           eventJoin: 'within_same_operation_declared_pair_only'
         }));
       });
 
-      if ((op.dignities || []).length) {
+      if (op.dignities && (Array.isArray(op.dignities) ? op.dignities.length : true)) {
         stageDeps.push(factory.add('operation_dignity_context', '第' + stage + '次操作牌力脈絡', [], {
           topology: 'procedural_context',
           stage: stage,
@@ -1067,7 +1100,40 @@
         }));
       }
 
+      if (stage === 1 && op.mainLineValidation) {
+        stageDeps.push(factory.add('operation_human_confirmation', '第一次操作主要線索確認', [], {
+          topology: 'human_confirmation_gate',
+          stage: stage,
+          claimPolicy: 'direct_procedure_fact',
+          eventBinding: 'QUERY_EVENT_STAGE_1',
+          metadata: { mainLineValidation: clone(op.mainLineValidation) },
+          eventJoin: 'confirmation_limits_overall_validity'
+        }));
+      }
+
+      if (stage === 2 || stage === 3 || stage === 5) {
+        if (op.expectationMet !== undefined || op.expectationNote || op.expectedHouses || op.expectedSigns || op.expectedSephiroth) {
+          stageDeps.push(factory.add('operation_binding_fit', '第' + stage + '次操作預先綁定適配', [], {
+            topology: 'predeclared_binding_check',
+            stage: stage,
+            claimPolicy: 'direct_procedure_fact',
+            eventBinding: 'QUERY_EVENT_STAGE_' + stage,
+            metadata: {
+              expectationMet: op.expectationMet,
+              expectationNote: text(op.expectationNote),
+              expectedHouses: clone(op.expectedHouses || []),
+              expectedSigns: clone(op.expectedSigns || []),
+              expectedSephiroth: clone(op.expectedSephiroth || []),
+              procedurePolicy: text(op.procedurePolicy)
+            },
+            eventJoin: 'binding_fit_controls_directness_not_card_meaning'
+          }));
+        }
+      }
+
       if (stage === 4) {
+        var declaredRingSize = Number(op.ringSize);
+        var ringSizeValid = !declaredRingSize || declaredRingSize === 36;
         stageDeps.push(factory.add('op4_ring_structure', '第四次操作：代表牌後方三十六張之環', [], {
           topology: 'ring_of_thirty_six',
           stage: stage,
@@ -1075,6 +1141,8 @@
           eventBinding: 'QUERY_EVENT_STAGE_4',
           metadata: {
             ringSize: 36,
+            declaredRingSize: declaredRingSize || null,
+            ringSizeValid: ringSizeValid,
             orderPolicy: 'the_thirty_six_cards_following_the_significator',
             pairingPolicy: '1_with_36_2_with_35_and_so_on',
             timingPolicy: 'not_a_calendar_or_decan_time_anchor'
@@ -1083,16 +1151,18 @@
         }));
       }
 
+      var stageStopped = declaredStop(stage, op);
       var validity = factory.add('operation_validity', '第' + stage + '次操作適配／有效性', [], {
         topology: 'procedure_gate',
         stage: stage,
         claimPolicy: 'direct_procedure_fact',
         eventBinding: 'QUERY_EVENT_STAGE_' + stage,
         metadata: {
-          valid: op.valid !== false,
-          retry: !!op.retry,
-          stop: !!op.stop,
-          reason: text(op.validityReason || op.stopReason || op.reason)
+          present: true,
+          valid: op.valid !== false && !op.abandoned && !op.stop && (stage !== 4 || ringSizeValid),
+          retry: !!op.retry || Number(op.attempt || 1) > 1,
+          stop: stageStopped,
+          reason: text(op.validityReason || op.stopReason || op.abandonReason || op.reason || (stage === 4 && !ringSizeValid ? '第四次操作必須使用代表牌後方三十六張之環；輸入的環張數不符。' : '') || (stageStopped ? procedureStatus.reason : ''))
         },
         eventJoin: 'validity_gate_controls_stage_weight'
       });
@@ -1111,34 +1181,66 @@
         forbidden: ['不能直接把不同操作中的牌拼成新牌句']
       });
       summaryIds.push(summary);
+
+      if (stageStopped || (stage === 4 && !ringSizeValid)) {
+        stopped = true;
+        stopStage = stage;
+        stopReason = text(op.validityReason || op.stopReason || op.abandonReason || op.reason || (stage === 4 && !ringSizeValid ? '第四次操作必須使用代表牌後方三十六張之環；輸入的環張數不符。' : '') || procedureStatus.reason);
+      }
     }
 
-    factory.add('cross_operation_stage_network', '五次操作階段綜合', [], {
-      topology: 'ordered_stage_dependency_network',
-      dependsOn: summaryIds,
-      claimPolicy: 'synthesis_only',
-      eventBinding: 'QUERY_EVENT_ONLY',
-      eventJoin: 'stage_summaries_only',
-      entityJoin: 'same_query_event_roles_only',
-      scopeJoin: 'stage_order_only_op4_is_not_a_date_anchor',
-      synthesisJoin: 'operation_stage_summaries_only_no_direct_card_merge',
-      forbidden: ['不能直接把不同操作中的牌拼成新牌句', '代表牌重複出現不等於新增人物或事件']
-    });
+    if (procedureStatus.abandoned || stopped) {
+      factory.add('procedure_stop_gate', 'Opening of the Key 程序停止', [], {
+        topology: 'procedure_stop',
+        claimPolicy: 'direct_procedure_fact',
+        eventBinding: 'QUERY_EVENT_ONLY',
+        metadata: {
+          abandoned: true,
+          abandonedAt: text(procedureStatus.abandonedAt || (stopStage ? 'op' + stopStage : '')),
+          reason: text(procedureStatus.reason || stopReason || '')
+        },
+        eventJoin: 'blocks_all_unperformed_later_operations'
+      });
+    }
+
+    if (summaryIds.length) {
+      factory.add('cross_operation_stage_network', '已完成操作的階段綜合', [], {
+        topology: 'ordered_stage_dependency_network',
+        dependsOn: summaryIds,
+        claimPolicy: 'synthesis_only',
+        eventBinding: 'QUERY_EVENT_ONLY',
+        eventJoin: 'stage_summaries_only',
+        entityJoin: 'same_query_event_roles_only',
+        scopeJoin: 'stage_order_only_op4_is_not_a_date_anchor',
+        synthesisJoin: 'operation_stage_summaries_only_no_direct_card_merge',
+        forbidden: ['不能直接把不同操作中的牌拼成新牌句', '代表牌重複出現不等於新增人物或事件', '不得解讀未生成或已被停止的後續操作']
+      });
+    }
 
     return {
       methodId: 'ootk',
       topology: clone(METHOD_SPECS.ootk.topology),
       observationModel: clone(METHOD_SPECS.ootk.observationModel),
       significator: clone(data.significator || null),
+      procedureStatus: Object.assign({}, clone(procedureStatus), {
+        normalizedStopped: !!(procedureStatus.abandoned || stopped),
+        sequenceGap: sequenceGap,
+        normalizedStopStage: stopStage || null,
+        normalizedReason: text(procedureStatus.reason || stopReason || '')
+      }),
+      completedStageCount: summaryIds.length,
+      stopped: !!(procedureStatus.abandoned || stopped),
+      stopStage: stopStage || null,
       nodes: nodes,
       evidenceUnits: factory.units,
-      legalSynthesisRule: '五次操作各自先完成落點、完整計數路徑、明示配對、牌力脈絡與有效性。跨操作只能綜合 operation_stage_summary；不能直接把不同操作中的牌拼成新牌句。第四次操作的三十六牌環只形成倒數階段的計數與配對命題，不提供旬位、月份或日期錨。',
+      legalSynthesisRule: '每個實際生成的操作先完成落點、完整計數路徑、明示配對、牌力脈絡與有效性。跨操作只能綜合 operation_stage_summary；程序停止後不得建立或解讀後續操作。第四次操作的三十六牌環只形成倒數階段的計數與配對命題，不提供旬位、月份或日期錨。',
       forbiddenInference: [
         '計數值與步數只導航牌序，不換算現實人數、年齡、金額或機率',
         '代表牌只錨定問卜者，不建立未知行動者',
         '適配失敗、重試、中止或降權必須保留，不能美化成隱藏吉兆',
         '五次操作不能被壓成一條任意牌序',
-        '不同操作只能透過階段摘要承接'
+        '不同操作只能透過階段摘要承接',
+        '未生成或停止後的操作不得補寫'
       ]
     };
   }
@@ -1164,7 +1266,7 @@
     return (questionSpec.requestedDimensions || []).map(function (dimension) {
       var observable = requiredDimensionId(dimension);
       var queryConstraint = dimension.id === 'time_scope' || dimension.id === 'modality';
-      var intrinsicallyUnmeasured = unsupported[dimension.id] || /^(?:exact_value|numeric_range|cardinality|exact_age|identity|exact_date|probability)$/.test(dimension.id);
+      var intrinsicallyUnmeasured = unsupported[dimension.id] || /^(?:exact_value|numeric_range|cardinality|exact_age|identity|person_attribute|exact_location|exact_date|probability)$/.test(dimension.id);
       var canAnswer = queryConstraint || (!intrinsicallyUnmeasured && !!providedSet[observable]);
       var status = queryConstraint ? 'query_constraint' : (intrinsicallyUnmeasured ? 'not_measured' : (canAnswer ? 'direct_or_qualitative_channel' : 'missing_required_channel'));
       var reason;
@@ -1233,6 +1335,27 @@
             : questionSpec.knownCounterpart
         });
 
+    var capabilityMatrix = buildCapabilityMatrix(questionSpec, method);
+    var compilerValid = !!(questionSpec && questionSpec.queryGraph && questionSpec.queryGraph.compilerStatus === 'validated_atomized');
+    var unmeasuredDimensions = capabilityMatrix.filter(function (row) { return row.precheckStatus === 'not_measured'; }).map(function (row) { return row.dimensionId; });
+    var missingDimensions = capabilityMatrix.filter(function (row) { return row.precheckStatus === 'missing_required_channel'; }).map(function (row) { return row.dimensionId; });
+    var procedureStopped = spreadId === 'ootk' && !!evidenceGraph.stopped;
+    var procedureComplete = spreadId !== 'ootk' || evidenceGraph.completedStageCount === 5;
+    var gateStatus = !compilerValid || missingDimensions.length || procedureStopped
+      ? 'blocked_or_partial'
+      : (unmeasuredDimensions.length || !procedureComplete ? 'partial' : 'full');
+    var answerabilityGate = {
+      status: gateStatus,
+      compilerValid: compilerValid,
+      methodCoverageComplete: !!method.coverageComplete,
+      procedureStopped: procedureStopped,
+      procedureComplete: procedureComplete,
+      completedProcedureStages: spreadId === 'ootk' ? evidenceGraph.completedStageCount : null,
+      missingDimensions: uniq(missingDimensions),
+      unmeasuredDimensions: uniq(unmeasuredDimensions),
+      rule: '完整裁決只適用於查詢圖有效、方法通道完整、程序未停止且必要實體／事件完成共指的子命題；未量測子題必須獨立回答為無法由本盤給出，不得拖累其餘已量測子題。開鑰之法停止後不得補寫後續操作。'
+    };
+
     var contract = {
       schema: SCHEMA,
       engineVersion: VERSION,
@@ -1241,7 +1364,8 @@
       methodPlan: clone(methodPlan || null),
       method: method,
       sourceProfile: sourceProfile,
-      capabilityMatrix: buildCapabilityMatrix(questionSpec, method),
+      capabilityMatrix: capabilityMatrix,
+      answerabilityGate: answerabilityGate,
       evidenceGraph: evidenceGraph,
       claimSchema: claimSchema(),
       adjudication: {
@@ -1278,7 +1402,7 @@
         status: ['used', 'duplicate', 'irrelevant_to_query', 'unresolved']
       },
       outputContract: {
-        firstSentence: '第一句直接回答完整原問句。固定門檻題若方法具有 bounded_outcome／threshold_outcome 通道，可對原句門檻作定性肯定、否定或附條件裁決；實際數值與差額仍不得推算。若必要通道缺失，先明說完整命題不能確認。',
+        firstSentence: '第一句依原順序直接回答全部子問句；已量測子題明確裁決，未量測的精確年齡、身分、數值或日期同句明確說牌面給不出。固定門檻題若方法具有 bounded_outcome／threshold_outcome 通道，可定性裁決是否跨越；不得反推實際數值與差額。',
         body: '依已成立命題自然展開形成原因、限制／反證、最強替代解讀為何較弱、歧義如何辨識、可觀察訊號及直接可行方向；不逐格報告、不教內部程序。',
         visibleEvidence: '重要判斷附本盤實際牌名；不得把未相連牌名排列成不存在的牌句。',
         length: '輸出所有不同且與原問句相關的有效命題；同義合併，篇幅不由牌數決定。',
@@ -1300,6 +1424,8 @@
     if (!question || !question.queryGraph || !question.queryGraph.requiredAtoms || !question.queryGraph.requiredAtoms.length) errors.push('typed_query_graph_missing');
     if (!question || !question.queryGraph || !question.queryGraph.atomizationRequirement) errors.push('semantic_atomization_requirement_missing');
     if (!question || !question.queryGraph || !question.queryGraph.validationRules || !question.queryGraph.validationRules.roundTrip) errors.push('query_round_trip_rule_missing');
+    if (question && question.queryGraph && question.queryGraph.compilerStatus !== 'validated_atomized') errors.push('query_graph_not_validated');
+    if (!contract || !contract.answerabilityGate) errors.push('answerability_gate_missing');
     if (!graph || !Array.isArray(graph.nodes) || !Array.isArray(graph.evidenceUnits)) errors.push('evidence_graph_missing');
 
     if (method) {
@@ -1347,10 +1473,13 @@
     }
     if (method && method.id === 'ootk') {
       var summaries = (graph.evidenceUnits || []).filter(function (unit) { return unit.type === 'operation_stage_summary'; });
-      if (summaries.length !== 5) errors.push('ootk_stage_summary_count:' + summaries.length);
-      summaries.forEach(function (summary, index) {
+      var expectedSummaryCount = Number(graph.completedStageCount);
+      if (!Number.isFinite(expectedSummaryCount)) expectedSummaryCount = summaries.length;
+      if (summaries.length !== expectedSummaryCount) errors.push('ootk_stage_summary_count:' + summaries.length + '/' + expectedSummaryCount);
+      if (!graph.stopped && summaries.length !== 5) warnings.push('ootk_procedure_incomplete:' + summaries.length + '/5');
+      summaries.forEach(function (summary) {
         if (summary.eventBinding !== 'QUERY_EVENT_ONLY') errors.push('ootk_stage_event_binding:' + summary.id);
-        if (summary.stageFunction !== ootkStageFunction(index + 1)) errors.push('ootk_stage_function:' + summary.id);
+        if (summary.stageFunction !== ootkStageFunction(summary.stage)) errors.push('ootk_stage_function:' + summary.id);
         var hasValidity = summary.dependsOn.some(function (depId) {
           var dep = graph.evidenceUnits.find(function (unit) { return unit.id === depId; });
           return dep && dep.type === 'operation_validity';
@@ -1358,8 +1487,12 @@
         if (!hasValidity) errors.push('ootk_stage_validity_missing:' + summary.id);
       });
       var cross = (graph.evidenceUnits || []).find(function (unit) { return unit.type === 'cross_operation_stage_network'; });
-      if (!cross || cross.nodes.length || cross.dependsOn.length !== 5) errors.push('ootk_cross_operation_network_invalid');
+      if (summaries.length && (!cross || cross.nodes.length || cross.dependsOn.length !== summaries.length)) errors.push('ootk_cross_operation_network_invalid');
+      if (!summaries.length && cross) errors.push('ootk_empty_cross_operation_network');
       if (cross && cross.dependsOn.some(function (depId) { return !summaries.some(function (summary) { return summary.id === depId; }); })) errors.push('ootk_cross_operation_direct_dependency');
+      var stopGate = (graph.evidenceUnits || []).find(function (unit) { return unit.type === 'procedure_stop_gate'; });
+      if (graph.stopped && !stopGate) errors.push('ootk_stop_gate_missing');
+      if (!graph.stopped && stopGate) errors.push('ootk_unexpected_stop_gate');
     }
 
     if (!contract || !contract.adjudication || !contract.adjudication.executionPlan || contract.adjudication.executionPlan.passes.length !== 6) errors.push('staged_execution_plan_missing');
@@ -1386,15 +1519,22 @@
     var source = contract.sourceProfile;
     var lines = [];
     lines.push('────────────────────────────');
-    lines.push('◆ ROOT-SPEC v98｜已驗證查詢圖—最小充分方法—合法證據／共指契約');
+    lines.push('◆ ROOT-SPEC v99｜多子題查詢圖—最小充分方法—合法證據／共指契約');
     lines.push('────────────────────────────');
     lines.push('原問句：' + question.originalQuestion);
+    if (question.queryGraph.subquestions && question.queryGraph.subquestions.length > 1) {
+      lines.push('子問句順序：' + question.queryGraph.subquestions.map(function (item) { return item.order + '.' + item.surface + '〔' + item.eventId + '〕'; }).join('；'));
+    }
+    lines.push('裁決閘門：status=' + (contract.answerabilityGate && contract.answerabilityGate.status) + '；compilerValid=' + (contract.answerabilityGate && contract.answerabilityGate.compilerValid) + '；coverageComplete=' + (contract.answerabilityGate && contract.answerabilityGate.methodCoverageComplete) + '；procedureStopped=' + (contract.answerabilityGate && contract.answerabilityGate.procedureStopped) + '；unmeasured=' + ((contract.answerabilityGate && contract.answerabilityGate.unmeasuredDimensions || []).join(',') || 'none') + '。');
     lines.push('需求預檢：' + question.requestedDimensions.map(function (dimension) {
       return dimension.label + (dimension.source ? '〔' + dimension.source + '〕' : '');
     }).join('、'));
     lines.push('已完成並通過驗證的型別化查詢圖（正文不得重新分類或改寫）：');
     question.queryGraph.events.forEach(function (event) {
       lines.push('・' + event.id + '｜surface=' + event.surface + '｜actor=' + event.roles.actor + '｜predicate=' + event.predicate + '｜roles=' + JSON.stringify(event.roles));
+    });
+    (question.queryGraph.relations || []).filter(function (rel) { return rel.type === 'conditional_coreference'; }).forEach(function (rel) {
+      lines.push('・共指依賴｜' + rel.fromEventId + ' → ' + rel.toEventId + '｜entity=' + rel.entityId + '｜' + rel.rule);
     });
     if (question.queryGraph.constraints.length) {
       lines.push('原句必要限定：');

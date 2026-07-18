@@ -23612,7 +23612,7 @@ function _buildTarotOnlyPayload() {
       semanticContract:contract,semanticProgramVersion:contract.engineVersion
     },
     semanticContract:contract,semanticProgramVersion:contract.engineVersion,
-    shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'正文最後固定輸出兩行：第一行推薦品項：<從 allowedItems 逐字選一項>；第二行[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'}
+    shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'完成解讀正文後另起「延伸選品」段落。文案須自然承接使用者原問句與本次已成立結論或可執行方向，只從 allowedItems 逐字選一個正庫存品項；不得宣稱療效、改運、保證結果或尺寸適合。品項與賣場連結各自獨立成段，賣場連結必須是全文最後一行。'}
   };
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
@@ -24980,8 +24980,9 @@ async function _triggerTarotFollowUp() {
   var _fuBirthTime = _fuForm.btime || '';
   // Bug #4 修復：保留原始問題
   var _fuOrigQ = (_fuForm.question || '');
-  // Bug #1 修復：追問也送水晶清單
-  var _fuCC = _buildCrystalCatalog();
+  // v99.2：塔羅／開鑰追問沿用正庫存候選；七維整合追問保留既有 crystalCatalog。
+  var _fuInventory = (typeof window !== 'undefined') ? window.JYShopInventory : null;
+  var _fuCC = isFullFollowUp ? _buildCrystalCatalog() : {catalog:[],favEl:''};
 
   if (isFullFollowUp && window._jyFullPayloadCache) {
     // ★ v15：七維度追問：送七系統背景 + 補充牌 + 完整上一輪結果
@@ -25058,8 +25059,25 @@ async function _triggerTarotFollowUp() {
       }
     };
   }
-  // 水晶清單注入
-  if (_fuCC.catalog.length) {
+  // 選品資料注入：塔羅／開鑰使用實際正庫存；完整七維追問維持原有水晶資料格式。
+  if (!isFullFollowUp) {
+    var _fuDomains = [];
+    try {
+      var _fuFoundation = window.JYTarotFoundation;
+      var _fuCompiled = _fuFoundation && typeof _fuFoundation.compileQuestion === 'function'
+        ? _fuFoundation.compileQuestion(followQ, { referenceDate: new Date().toISOString() })
+        : null;
+      _fuDomains = _fuCompiled && _fuCompiled.features ? (_fuCompiled.features.domains || []) : [];
+    } catch (_) {}
+    var _fuCandidates = _fuInventory && typeof _fuInventory.recommendCandidates === 'function'
+      ? _fuInventory.recommendCandidates((followQ || '') + ' ' + (_fuOrigQ || ''), _fuDomains, 6)
+      : [];
+    payload.shopRecommendation = {
+      sourceFile: _fuInventory && _fuInventory.SOURCE_FILE || '',
+      allowedItems: _fuCandidates,
+      outputRule: '追問正文完成後另起「延伸選品」段落，自然承接本次追問、原始問題與已成立結論，只從 allowedItems 逐字選一個正庫存品項；不得宣稱療效、改運或保證結果，賣場連結必須是全文最後一行。'
+    };
+  } else if (_fuCC.catalog.length) {
     payload.crystalCatalog = _fuCC.catalog;
     payload.crystalFavEl = _fuCC.favEl;
   }
@@ -25534,7 +25552,7 @@ function _buildOOTKPayload() {
         referenceDate: (payload && payload.readingDate) || new Date().toISOString()
       });
       payload.semanticContract = contract;
-      payload.semanticProgramVersion = contract.engineVersion || '97.0.0';
+      payload.semanticProgramVersion = contract.engineVersion || '99.2.0';
       payload.ootkData.semanticContract = contract;
       payload.ootkData.semanticProgramVersion = payload.semanticProgramVersion;
     }
@@ -25542,11 +25560,21 @@ function _buildOOTKPayload() {
     console.warn('[TarotSemanticEngine] OOTK compile failed:', err);
   }
 
-  var catalog = _buildCrystalCatalog();
-  if (catalog.catalog.length) {
-    payload.crystalCatalog = catalog.catalog;
-    payload.crystalFavEl = catalog.favEl;
-  }
+  var inventory = (typeof window !== 'undefined') ? window.JYShopInventory : null;
+  var domains = [];
+  try {
+    domains = payload.semanticContract && payload.semanticContract.question && payload.semanticContract.question.features
+      ? (payload.semanticContract.question.features.domains || [])
+      : [];
+  } catch (_) {}
+  var candidates = inventory && typeof inventory.recommendCandidates === 'function'
+    ? inventory.recommendCandidates(payload.question, domains, 6)
+    : [];
+  payload.shopRecommendation = {
+    sourceFile: inventory && inventory.SOURCE_FILE || '',
+    allowedItems: candidates,
+    outputRule: '完成開鑰之法正文後另起「延伸選品」段落。文案須自然承接使用者原問句與有效程序結論或可執行方向，只從 allowedItems 逐字選一個正庫存品項；若程序停止或問題未獲確認，只能承接使用者關切，不得假裝牌面已有結論。不得宣稱療效、改運、保證結果或尺寸適合。品項與賣場連結各自獨立成段，賣場連結必須是全文最後一行。'
+  };
   if (window._jyPhotos) payload.photos = window._jyPhotos;
   return payload;
 }
