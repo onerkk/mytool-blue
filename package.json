@@ -3,6 +3,6 @@
     "javascript-obfuscator": "^5.3.0"
   },
   "scripts": {
-    "test:tarot": "node tests/tarot-v99-root-architecture.test.js"
+    "test:tarot": "node tests/tarot-v101-native-methods.test.js"
   }
 }
