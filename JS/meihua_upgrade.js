@@ -25,6 +25,14 @@ function tiYong(ti,yo){
 // 節氣近似日判月支＋四季月（辰未戌丑）土旺。《梅花易數·體用總訣》：「盛者…四季之月坤艮是也；衰者…四季之月坎是也」。
 function getMhWangShuai(el, month){
   if(!el) return {level:'平',score:0};
+  // upgrade2 載入後優先用實際「節」定位月支；固定日期表只作引擎缺席時的明示備援。
+  if(typeof mhPreciseWangShuai==='function'){
+    try{
+      var precise=mhPreciseWangShuai(el, month instanceof Date ? month : new Date());
+      var preciseScore={旺:3,相:1,休:0,囚:-1,死:-2}[precise.label]||0;
+      return {level:precise.label,score:preciseScore,season:'jieqi',monthZhi:precise.monthZhi,precision:'engine-jieqi'};
+    }catch(e){}
+  }
   var now = new Date();
   var m = typeof month==='number' ? month : (now.getMonth()+1);
   var d = now.getDate();
@@ -41,7 +49,7 @@ function getMhWangShuai(el, month){
   };
   var levelScore={旺:3,相:1,休:0,囚:-1,死:-2};
   var level=table[season][el]||'平';
-  return {level:level, score:levelScore[level]||0, season:season};
+  return {level:level, score:levelScore[level]||0, season:season, precision:'approximate-jie-day-fallback'};
 }
 
 // ═══ 五行生剋關係判定 ═══
@@ -170,7 +178,7 @@ function _mhTimingSemantics(tiWS, yoWS){
   return {stance:'觀望',desc:'目前氣場普通，不急著動'};
 }
 
-// ═══ 應期推算 ═══
+// ═══ 相對節奏判斷（不把卦象分數換算成日曆） ═══
 function _mhTiming(dong, tiRel, dongEl, tiWS, type){
   // 動爻位置
   const dongSpeed = dong<=2?'快' : dong<=4?'中' : '慢';
@@ -187,23 +195,23 @@ function _mhTiming(dong, tiRel, dongEl, tiWS, type){
 
   let label, range, note;
   if(total>=3){
-    label='很快'; range='1～7天'; note='卦氣旺，動得快，不要等';
+    label='很快'; range='相對近期'; note='卦象節奏偏快，但不能由此換算天數或日期';
   } else if(total>=1){
-    label='短期'; range='1～4週'; note='有動力但需走過過程';
+    label='短期'; range='相對近期'; note='有動力但仍需走過盤面所示過程，不能換算週數';
   } else if(total>=-1){
-    label='稍晚'; range='1～3個月'; note='過程中有等待，別催';
+    label='稍晚'; range='相對中期'; note='過程中有等待；只能判相對層次，不能換算月份';
   } else if(total>=-2){
-    label='拖延型'; range='3個月以上'; note='體用阻滯，推進困難，需等條件改變';
+    label='拖延型'; range='相對較遠'; note='體用阻滯，需等條件改變；不能由分數推算實際月數';
   } else {
     label='反覆型'; range='時間不定，可能走走停停'; note='五行不和，容易反覆';
   }
 
   // 類型微調
   if(type==='love'&&tiRel==='用克體') note='感情受壓，對方或外界阻力大，應期延後';
-  if(type==='wealth'&&dongEl==='水') note='財水流動慢，等待冬季或水相月';
+  if(type==='wealth'&&dongEl==='水') note='財務節奏偏流動與反覆，須用現金流或成交等現實指標驗證；不得直接指定季節或月份';
   if(type==='health') note='身體恢復視調養而定，不以卦論速';
 
-  return {label, range, note, score:total};
+  return {label, range, note, score:total, precision:'relative-only'};
 }
 
 // ═══ 類型專用信號與建議 ═══
