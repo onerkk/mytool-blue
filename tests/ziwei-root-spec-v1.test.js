@@ -41,7 +41,7 @@ function load(rel){
 
 load('JS/ziwei-prompt-root.js');
 assert(ctx.JY_ZIWEI_PROMPT_ROOT, 'root api missing');
-assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '2.0.0');
+assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '2.0.1');
 
 const head = ctx.JY_ZIWEI_PROMPT_ROOT.composeHead();
 const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
