@@ -3299,12 +3299,7 @@ function talkBaziFor(bazi, focusType){
     } else if(focusType==='love' || focusType==='career' || focusType==='wealth'){
       // 只有感情/事業/財運才 fallback 到通用格局描述
       // 健康/家庭/人際跟格局描述關聯性低，不輸出
-      var desc = geju.desc;
-      if(desc.length > 80){
-        var cut = desc.lastIndexOf('。', 80);
-        if(cut > 20) desc = desc.substring(0, cut+1);
-      }
-      texts.push(desc);
+      texts.push(geju.desc);
     }
   }
   
@@ -3491,11 +3486,10 @@ function talkMeihua(mh, focusType){
     // 月令旺衰
     if(analysis.wangShuai && analysis.wangShuai.ti){
       var tiWS = analysis.wangShuai.ti;
-      var curMonth = (new Date()).getMonth()+1;
       if(tiWS.level==='旺'||tiWS.level==='相'){
-        texts.push(curMonth+'月體卦能量'+tiWS.level+'，你的底氣足，是有力的時機');
+        texts.push('本次月令旺衰評估為體卦'+tiWS.level+'，你的底氣較足；精度以引擎提供的月支與節氣資料為準');
       } else if(tiWS.level==='囚'||tiWS.level==='死'){
-        texts.push(curMonth+'月體卦能量'+tiWS.level+'，你的狀態偏弱，行動前多準備');
+        texts.push('本次月令旺衰評估為體卦'+tiWS.level+'，你的狀態偏弱；精度以引擎提供的月支與節氣資料為準');
       }
     }
     
@@ -3593,7 +3587,7 @@ function talkMeihua(mh, focusType){
     }
   }
   
-  return texts.slice(0,6).map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+'。';
+  return texts.map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+(texts.length?'。':'');
 }
 
 // ── 4. 塔羅白話讀取 v2.0 ── 引用牌名+花色能量+宮廷牌人物解讀
@@ -3835,7 +3829,7 @@ function talkNatal(focusType){
   if(goodAsp >= badAsp + 3) texts.push('星盤相位以和諧為主，人生路上助力多於阻力');
   else if(badAsp >= goodAsp + 3) texts.push('星盤相位挑戰較多，但壓力也是成長的動力');
   
-  return texts.slice(0,5).map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+(texts.length?'。':'');
+  return texts.map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+(texts.length?'。':'');
 }
 
 // ── 6. 姓名白話讀取 ──
@@ -3954,7 +3948,7 @@ function talkName(focusType){
     else if((scGood && znBad)||(scBad && znGood)) texts.push('兩派結論相反，代表名字的影響較中性，不用太放在心上');
   }
   
-  return texts.slice(0,4).map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+(texts.length?'。':'');
+  return texts.map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+(texts.length?'。':'');
 }
 
 // ── 7. 吠陀白話讀取 ──
@@ -4102,7 +4096,7 @@ function talkJyotish(focusType){
     var _goodYogas = jy.yogas.filter(function(y){return y.type !== 'Dosha' && (y.strength === 'strong' || y.strength === 'very strong');});
     var _badYogas = jy.yogas.filter(function(y){return y.type === 'Dosha' && y.strength !== 'weak';});
     if(_goodYogas.length){
-      var _yogaNames = _goodYogas.slice(0,2).map(function(y){return y.zh ? y.zh.split('：')[0] : y.name;});
+      var _yogaNames = _goodYogas.map(function(y){return y.zh ? y.zh.split('：')[0] : y.name;});
       texts.push('命盤帶有'+_yogaNames.join('、')+'等吉祥格局，底子好');
     }
     if(_badYogas.length){
@@ -4302,9 +4296,9 @@ function talkZiweiFor(focusType){
         else if (lv==='雙面') _shuang.push(item);
         else if (lv==='大吉'||lv==='吉') _cheng.push(item);
       });
-      if (_cheng.length) texts.push('命盤成格：'+_cheng.slice(0,3).join('；')+'。');
-      if (_shuang.length) texts.push('雙面格局（成敗看後天用神與煞忌）：'+_shuang.slice(0,2).join('；')+'。');
-      if (_po.length) texts.push('需正視的破格／警示：'+_po.slice(0,3).join('；')+'。這些是命盤先天弱點，解讀時須誠實點出並給對治方向，不可迴避。');
+      if (_cheng.length) texts.push('命盤成格候選：'+_cheng.join('；')+'。各候選仍須逐一核對成立與破格條件，不可因標籤直接定人生事件。');
+      if (_shuang.length) texts.push('雙面格局候選：'+_shuang.join('；')+'。成敗須看成立條件、煞忌與運限，不可直接定性。');
+      if (_po.length) texts.push('破格／警示候選：'+_po.join('；')+'。這些是待核對的模型提示，須回到宮位、星曜、四化與運限證據裁決。');
     }
   } catch(_zwDeep){}
 
@@ -4347,22 +4341,14 @@ function build7D(bazi, mh, tarot, focusType){
     }
   }catch(e){}
   
-  // 工具函數：截斷過長的白話段落（最多 500 字）
-  function capLen(s, max){
-    if(!s || s.length <= (max||500)) return s;
-    var cut = s.lastIndexOf('。', max||500);
-    if(cut > 30) return s.substring(0, cut+1);
-    return s.substring(0, max||500) + '…';
-  }
-  
   // 紫微
-  if(_d.ziwei){ parts.push(capLen(_d.ziwei)); }
+  if(_d.ziwei){ parts.push(_d.ziwei); }
   // 八字
-  if(_d.bazi){ parts.push(capLen(_d.bazi)); }
+  if(_d.bazi){ parts.push(_d.bazi); }
   // 梅花
   if(_d.meihua){ parts.push(_d.meihua); }
   // 塔羅
-  if(_d.tarot){ parts.push(capLen(_d.tarot)); }
+  if(_d.tarot){ parts.push(_d.tarot); }
   // 星盤
   if(_d.natal){ parts.push(_d.natal); }
   // 吠陀
@@ -4371,7 +4357,7 @@ function build7D(bazi, mh, tarot, focusType){
   if(_d.name){ parts.push(_d.name); }
   // 大運/流年
   parts.push(_d.dayun.current);
-  if(_d.dayun.goodYears.length) parts.push('有利年份：'+_d.dayun.goodYears.slice(0,3).join('、')+'年。');
+  if(_d.dayun.goodYears.length) parts.push('有利年份候選：'+_d.dayun.goodYears.join('、')+'年；須逐年核對原始歲運證據。');
 
   return {score:score, parts:parts, dayun:_d.dayun};
 }
@@ -4645,8 +4631,8 @@ function resolveConflicts(r, focusType){
     });
   }
   
-  // 最多保留2條矛盾解讀（避免資訊過載）
-  return conflicts.slice(0, 2);
+  // 所有彼此獨立、會改變結論的衝突都保留；同源衝突由後續證據層去重。
+  return conflicts;
 }
 
 // ═══ Phase 1 重構：verdictFromProb — 單一裁決管線 ═══
@@ -15321,7 +15307,12 @@ function _buildPayload() {
   var q = S.form ? S.form.question : '';
   var ft = S.form ? S.form.type : 'general';
   var b = S.bazi, zw = S.ziwei, mh = S.meihua, ta = S.tarot;
-  var p = { question:q, focusType:ft, readings:{} };
+  var p = {
+    question:q,
+    focusType:ft,
+    readings:{},
+    evidencePolicy:'排盤事實優先；模型摘要、標籤、分數只作候選，不得重複計票。請回到原始盤面自行裁決，保留反證、資料缺口與信心層級；沒有可靠時間資料時不得編日期、月份、金額或機率。'
+  };
 
   // ★ v69.2.0：前端規則分類（同步） — 先用正則命中，命中就塞 qType
   //   未命中（unmatched）的話，呼叫端會 await JyClassifier.classify() 再塞 haiku 結果
@@ -15354,73 +15345,34 @@ function _buildPayload() {
   //   - unknown:不知道時辰,跳過時辰相關判讀,八字保留年月日(時柱降權)
   p.timePrecision = f.timePrecision || (f.btimeUnknown ? 'unknown' : 'precise');
 
-  // v64.F 中期:節氣切換警告 — 出生在節氣交接前後 < 3 小時 → AI 月柱判讀降權
-  //   背景:八字月柱以「節氣」劃分(立春後=寅月,驚蟄後=卯月)。
-  //   若用戶出生時間離節氣交接 < 3 小時,月柱可能落隔月,後端排盤雖會用近似演算法,
-  //   但仍有不確定性。這條讓 AI 判讀月柱相關時主動標明降權。
-  //
-  //   實作:用近似節氣表(節氣每月約 5-7 號 + 20-22 號),計算與生日的時間差。
-  //   精準節氣計算需天文曆,本地簡化版抓 ±3 小時內視為「節氣交接區」。
+  // 節氣交界只使用排盤引擎提供的精確節氣時刻；沒有精確資料就不猜。
   try {
-    if (f.bdate && f.btime && !f.btimeUnknown) {
-      // 解析生日時間
+    if (b && b.calendarBoundary && f.bdate && f.btime && !f.btimeUnknown) {
       var _bDateParts = f.bdate.split('-');
       var _bTimeParts = f.btime.split(':');
       var _bY = parseInt(_bDateParts[0]);
       var _bM = parseInt(_bDateParts[1]);
       var _bD = parseInt(_bDateParts[2]);
-      var _bH = parseInt(_bTimeParts[0]) || 12;
+      var _bH = parseInt(_bTimeParts[0]);
       var _bMin = parseInt(_bTimeParts[1]) || 0;
-
-      // 節氣近似表(月份 → [節氣 1 日期, 節氣 2 日期],時間統一抓中午)
-      // 立春2/4 雨水2/19 驚蟄3/6 春分3/21 清明4/5 穀雨4/20 立夏5/6 小滿5/21
-      // 芒種6/6 夏至6/21 小暑7/7 大暑7/23 立秋8/8 處暑8/23 白露9/8 秋分9/23
-      // 寒露10/8 霜降10/23 立冬11/7 小雪11/22 大雪12/7 冬至12/22
-      // 小寒1/6 大寒1/20
-      var _solarTermDays = {
-        1: [6, 20],    // 小寒、大寒
-        2: [4, 19],    // 立春、雨水
-        3: [6, 21],    // 驚蟄、春分
-        4: [5, 20],    // 清明、穀雨
-        5: [6, 21],    // 立夏、小滿
-        6: [6, 21],    // 芒種、夏至
-        7: [7, 23],    // 小暑、大暑
-        8: [8, 23],    // 立秋、處暑
-        9: [8, 23],    // 白露、秋分
-        10: [8, 23],   // 寒露、霜降
-        11: [7, 22],   // 立冬、小雪
-        12: [7, 22]    // 大雪、冬至
-      };
-      var _termNames = {
-        1: ['小寒', '大寒'], 2: ['立春', '雨水'], 3: ['驚蟄', '春分'],
-        4: ['清明', '穀雨'], 5: ['立夏', '小滿'], 6: ['芒種', '夏至'],
-        7: ['小暑', '大暑'], 8: ['立秋', '處暑'], 9: ['白露', '秋分'],
-        10: ['寒露', '霜降'], 11: ['立冬', '小雪'], 12: ['大雪', '冬至']
-      };
-      // 換月節氣(每月第一個節氣)— 立春/驚蟄/清明/立夏/芒種/小暑/立秋/白露/寒露/立冬/大雪/小寒
-      // 這幾個是「換月柱」的關鍵節氣,差幾小時就跨月柱
-      var _monthChangingTerms = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // 全部都會換月柱
-      var _termsForMonth = _solarTermDays[_bM] || [];
-      var _firstTermDay = _termsForMonth[0];   // 換月節氣
-      var _secondTermDay = _termsForMonth[1];  // 中氣
-      var _firstTermName = _termNames[_bM] ? _termNames[_bM][0] : '';
-
-      // 計算離換月節氣的時間差(以小時計,假設節氣在中午 12:00)
-      if (_firstTermDay) {
-        var _bTotalMin = _bD * 24 * 60 + _bH * 60 + _bMin;
-        var _termTotalMin = _firstTermDay * 24 * 60 + 12 * 60; // 節氣抓中午
-        var _diffMin = Math.abs(_bTotalMin - _termTotalMin);
-        var _diffHours = Math.round(_diffMin / 60 * 10) / 10;
-
-        // 3 小時(180 分鐘)內視為交接區
-        if (_diffMin <= 180) {
-          var _direction = _bTotalMin < _termTotalMin ? 'before' : 'after';
+      if (isFinite(_bY) && isFinite(_bM) && isFinite(_bD) && isFinite(_bH)) {
+        var _birthWallMs = Date.UTC(_bY, _bM - 1, _bD, _bH, _bMin, 0);
+        var _boundaryCandidates = [b.calendarBoundary.previousJie, b.calendarBoundary.nextJie].filter(Boolean).map(function(x) {
+          var m = String(x.date || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/);
+          if (!m) return null;
+          var ms = Date.UTC(+m[1], +m[2]-1, +m[3], +m[4], +m[5], +(m[6]||0));
+          return { name:x.name || '', date:x.date, ms:ms, diffMin:Math.abs(_birthWallMs-ms)/60000 };
+        }).filter(Boolean).sort(function(a,c){ return a.diffMin-c.diffMin; });
+        var _nearestBoundary = _boundaryCandidates[0];
+        p.calendarBoundary = b.calendarBoundary;
+        if (_nearestBoundary && _nearestBoundary.diffMin <= 180) {
           p.monthTransitionWarning = {
-            term: _firstTermName,
-            termDay: _firstTermDay,
-            diffHours: _diffHours,
-            direction: _direction,  // before=節氣前(可能屬上月柱)/ after=節氣後(可能屬本月柱)
-            severity: _diffMin <= 60 ? 'high' : (_diffMin <= 120 ? 'medium' : 'low')
+            term:_nearestBoundary.name,
+            exactTime:_nearestBoundary.date,
+            diffHours:Math.round(_nearestBoundary.diffMin/6)/10,
+            direction:_birthWallMs < _nearestBoundary.ms ? 'before' : 'after',
+            precision:b.calendarBoundary.precision || 'engine-provided',
+            severity:_nearestBoundary.diffMin <= 60 ? 'high' : (_nearestBoundary.diffMin <= 120 ? 'medium' : 'low')
           };
         }
       }
@@ -15477,26 +15429,7 @@ function _buildPayload() {
     L.push('日主' + _s(b.dm) + '（' + _s(b.dmEl) + '行），' + (b.strong ? '身強' : '身弱'));
     if (b.selfRatio) L.push('身強比例' + b.selfRatio + '%');
     if (b.structType) L.push('格局：' + b.structType);
-    // ★ 格局白話（讓 AI 知道這個格局在生活中意味著什麼）
-    if (b.strong != null) {
-      var _structWH = '';
-      if (b.specialStructure && b.specialStructure.type) {
-        var _spMap = {
-          '從財格':'天生要靠經手錢財吃飯，不適合固定薪水，適合業務/投資/經商',
-          '從殺格':'需要找到一個體制去依附，在結構裡反而如魚得水，適合公務/大企業/軍警',
-          '從兒格':'才華就是命，靠手藝靠創意就是出路，不要走穩定路線',
-          '從弱格':'不要硬撐，找到大趨勢跟著走反而順利',
-          '從強格':'能量非常足，關鍵是找到配得上能量的舞台，不要委屈做小事'
-        };
-        _structWH = _spMap[b.specialStructure.type] || '';
-        if (!_structWH && b.specialStructure.type.indexOf('化氣格') >= 0) _structWH = '命格已「變身」，能量集中度很高，以化神五行為核心';
-      } else if (b.strong) {
-        _structWH = '天生能量足，扛得住壓力，但容易固執或過度自信，需要有人制衡才會更好';
-      } else {
-        _structWH = '天生需要外力支撐才能發揮，在團隊裡比單打獨鬥好，貴人和環境對你特別重要';
-      }
-      if (_structWH) L.push('格局白話：' + _structWH);
-    }
+    // 不預寫格局的人生結論；交給 AI 依成立條件、破格與題目自行裁決。
     if (b.specialStructure && b.specialStructure.desc) L.push('特殊格局：' + b.specialStructure.desc);
     if (b.zhengGe && b.zhengGe.zh) L.push(b.zhengGe.zh);
 
@@ -15516,19 +15449,19 @@ function _buildPayload() {
       Object.entries(b.godBreakdown).forEach(function(e) {
         if (e[1] && e[1].length) gdParts.push(e[0] + '在' + e[1].join('/'));
       });
-      if (gdParts.length) L.push('十神分佈：' + gdParts.slice(0,8).join('，'));
+      if (gdParts.length) L.push('十神分佈：' + gdParts.join('，'));
     }
 
     // 十神能量（保留原始十神名 + 分數）
     var tgAll = Object.entries(ep).filter(function(e){return e[1]>0;}).sort(function(a,c){return c[1]-a[1];});
-    if (tgAll.length) L.push('十神能量：' + tgAll.slice(0,6).map(function(e){return e[0]+':'+Math.round(e[1]);}).join('、'));
+    if (tgAll.length) L.push('十神能量：' + tgAll.map(function(e){return e[0]+':'+Math.round(e[1]);}).join('、'));
 
     // 喜忌（保留原始五行名）
     L.push('喜用神：' + (b.fav||[]).join('、') + '；忌神：' + (b.unfav||[]).join('、'));
     if (b.tiaohou) L.push('調候：' + b.tiaohou);
 
     // 神煞（保留原始神煞名）
-    var allSS = (b.shensha||[]).slice(0,10);
+    var allSS = (b.shensha||[]).slice();
     if (b.extraShenSha) allSS = allSS.concat(b.extraShenSha.map(function(x){return typeof x==='string'?x:x.name;}));
     if (allSS.length) L.push('神煞：' + allSS.join('、'));
 
@@ -15548,12 +15481,12 @@ function _buildPayload() {
 
     // 地支互動
     if (b.branchInteractions && b.branchInteractions.length) {
-      L.push('地支互動：' + b.branchInteractions.slice(0,6).map(function(x){return x.desc;}).join('、'));
+      L.push('地支互動：' + b.branchInteractions.map(function(x){return x.desc;}).join('、'));
     }
 
     // 十神組合
     if (b.tenGodCombos && b.tenGodCombos.length) L.push('十神格局：' + b.tenGodCombos.map(function(c){return c.zh||c.name;}).join('。'));
-    if (b.hiddenInteractions && b.hiddenInteractions.length) L.push('暗合暗沖：' + b.hiddenInteractions.slice(0,4).map(function(h){return h.zh||h.type+h.from+'→'+h.to;}).join('。'));
+    if (b.hiddenInteractions && b.hiddenInteractions.length) L.push('暗合暗沖：' + b.hiddenInteractions.map(function(h){return h.zh||h.type+h.from+'→'+h.to;}).join('。'));
 
     // ★ 六親映射（告訴 AI 十神對應什麼類型的人）
     var _isMale = (S.form && S.form.gender === 'male');
@@ -15562,7 +15495,7 @@ function _buildPayload() {
     var _liuqinMale = '正財=妻子/穩定伴侶，偏財=父親/情人/流動財，正官=兒子/上司/約束力，偏官(七殺)=女兒/競爭對手/壓力，正印=母親/貴人/保護，偏印=繼母/偏門貴人，食神=孫輩/才華外展/福氣，傷官=叛逆才華/口才/與上司衝突，比肩=兄弟/同輩競爭，劫財=爭奪者/強勢同輩';
     var _liuqinFemale = '正官=丈夫/穩定伴侶，偏官(七殺)=情人/強勢對象，正財=父親/實際收入，偏財=流動收入/投機，正印=母親/長輩貴人，偏印=偏門貴人，食神=兒子/溫和才華，傷官=女兒/銳利才華/與體制衝突，比肩=姐妹/同輩，劫財=爭奪者';
     if (_genderKnown) {
-      L.push('六親映射（' + (_isMale ? '男命' : '女命') + '）：' + (_isMale ? _liuqinMale : _liuqinFemale));
+      L.push('六親映射（傳統角色候選，須結合柱位、題意與現實資料，不得直接指定人物；' + (_isMale ? '男命' : '女命') + '）：' + (_isMale ? _liuqinMale : _liuqinFemale));
     } else {
       L.push('六親映射（性別未知，男女不同，以下列出兩版）：');
       L.push('男命：' + _liuqinMale);
@@ -15574,7 +15507,7 @@ function _buildPayload() {
       L.push('目前大運：' + dy.gz + '，運勢' + _scoreLv(dy.score, dy.level) + '，走' + (dy.palaceName||''));
       if (dy.theme) L.push('十年主題：' + dy.theme);
       if (dy.stars && dy.stars.length) L.push('大運星曜：' + dy.stars.join('、'));
-      if (dy.notes && dy.notes.length) L.push(dy.notes.slice(0,3).join('。'));
+      if (dy.notes && dy.notes.length) L.push(dy.notes.join('。'));
 
       // ★ 前後大運（讓 AI 判斷運勢走向：上升還是下降？）
       if (b.dayun && b.dayun.length) {
@@ -15608,12 +15541,12 @@ function _buildPayload() {
     // 流年（干支 + 語意等級）
     var _liuNianEmitted = false;
     if (dy && dy.liuNian) {
-      var next3 = dy.liuNian.filter(function(l){return l.year>=yr && l.year<=yr+2;});
-      if (next3.length) {
+      var currentLuckYears = dy.liuNian.filter(function(l){return l.year>=yr;});
+      if (currentLuckYears.length) {
         _liuNianEmitted = true;
-        L.push('近三年：' + next3.map(function(l){
+        L.push('目前大運內可用流年：' + currentLuckYears.map(function(l){
           var detail = l.gz ? l.gz + '，運勢' + _scoreLv(l.score, l.level) : '';
-          if (l.notes && l.notes.length) detail += '，' + l.notes.slice(0,2).join('；');
+          if (l.notes && l.notes.length) detail += '，' + l.notes.join('；');
           return l.year+'年' + detail;
         }).join('、'));
       }
@@ -15824,9 +15757,9 @@ function _buildPayload() {
       if (curDx.hua && curDx.hua.length) {
         L.push('大限四化飛入：' + curDx.hua.map(function(h){return h.star+h.hua+'入'+_palZh(h.palace);}).join('；'));
       }
-      // ★ 大限重要 notes（不限 3 條，最多 8 條）
+      // ★ 大限重要 notes 完整送出，由 AI 依問題相關性去重。
       if (curDx.notes && curDx.notes.length) {
-        curDx.notes.slice(0, 8).forEach(function(n){ L.push(n); });
+        curDx.notes.forEach(function(n){ L.push(n); });
       }
 
       // ★ 前後大限（讓 AI 判斷運勢走向）
@@ -15855,48 +15788,32 @@ function _buildPayload() {
         if (curLn.hua && curLn.hua.length) {
           L.push('流年四化：' + curLn.hua.map(function(h){return h.star+h.hua+'入'+_palZh(h.palace);}).join('；'));
         }
-        // ★ 流年 notes（最多 6 條，含三方四正分析）
+        // ★ 流年 notes 完整送出（含三方四正分析）。
         if (curLn.notes && curLn.notes.length) {
-          curLn.notes.slice(0, 6).forEach(function(n){ L.push(n); });
+          curLn.notes.forEach(function(n){ L.push(n); });
         }
       }
     } catch(e){}
 
-    // ★ 流月（紫微斗數月運，送近 6 個月讓 AI 判斷月份節奏）
+    // ★ 流月（紫微斗數月運）：全年完整送出；當前農曆月只用曆法引擎定位。
     try {
       if (zw.getLiuYueZw) {
         var liuYueAll = zw.getLiuYueZw(yr);
         if (liuYueAll && liuYueAll.length) {
-          // 農曆月近似（使用節氣修正）
           var nowDate = new Date();
-          var curMonth = nowDate.getMonth() + 1;
-          var curDay = nowDate.getDate();
-          // 節氣近似表：index=西曆月, value=該月節氣日（立春2/4, 驚蟄3/6, 清明4/5...）
-          var JIEQI_DAY = [0, 6, 4, 6, 5, 6, 6, 7, 8, 8, 8, 7, 7];
-          var lunarMonth;
-          if (curMonth === 1) {
-            // 1月有兩個節氣：小寒(~1/6)→農曆11月, 大寒(~1/20)→農曆12月
-            lunarMonth = curDay >= 20 ? 12 : (curDay >= 6 ? 11 : 11);
-          } else if (curMonth === 2) {
-            // 立春(~2/4)→農曆正月
-            lunarMonth = curDay >= 4 ? 1 : 12;
-          } else {
-            var jqDay = JIEQI_DAY[curMonth] || 6;
-            lunarMonth = curDay >= jqDay ? (curMonth - 1) : (curMonth - 2);
-            if (lunarMonth <= 0) lunarMonth += 12;
-          }
-          // 送當前月前後各 3 個月（共 6 個月）
-          var monthsToSend = liuYueAll.filter(function(m) {
-            var diff = m.month - lunarMonth;
-            return diff >= -2 && diff <= 3;
-          });
-          if (!monthsToSend.length) monthsToSend = liuYueAll.slice(0, 6);
-          var lyParts = monthsToSend.map(function(m) {
+          var lunarMonth = null;
+          try {
+            if(typeof Solar!=='undefined' && Solar && typeof Solar.fromDate==='function'){
+              var currentLunar=Solar.fromDate(nowDate).getLunar();
+              lunarMonth=Math.abs(currentLunar.getMonth());
+            }
+          }catch(_lyCalendarErr){}
+          var lyParts = liuYueAll.map(function(m) {
             // ★ v14：保留全部四化（化祿/化權/化科/化忌），不再只送祿忌
             var huaShort = m.hua.map(function(h) { return h.star + h.hua + '入' + h.palace; }).join('、');
             return m.monthName + '(' + m.gz + ')走' + m.mingPalace + '，運勢' + _scoreLv(m.score) + (huaShort ? '，' + huaShort : '');
           });
-          if (lyParts.length) L.push('紫微流月：' + lyParts.join('；'));
+          if (lyParts.length) L.push('紫微流月全年資料' + (lunarMonth ? '（曆法引擎定位目前農曆'+lunarMonth+'月）' : '（未取得可靠當前農曆月定位，不得自行猜目前月份）') + '：' + lyParts.join('；'));
         }
       }
     } catch(e){}
@@ -15918,7 +15835,7 @@ function _buildPayload() {
         var huaPri = {'化忌':0,'化祿':1,'化權':2,'化科':3};
         return (huaPri[a.type]||4) - (huaPri[b.type]||4);
       });
-      var shTexts = shSorted.slice(0, 12).map(function(sh) {
+      var shTexts = shSorted.map(function(sh) {
         return sh.palace + sh.star + (sh.type||'') + (sh.direction==='↓'?'自化離心':'從'+(sh.from||'對宮')+'飛入');
       });
       if (shTexts.length) L.push('宮干飛星：' + shTexts.join('；'));
@@ -15928,8 +15845,8 @@ function _buildPayload() {
     if (typeof S !== 'undefined' && S.ziweiTags && S.ziweiTags.length) {
       var deepTags = S.ziweiTags.filter(function(t) {
         return t.tag && (t.tag.includes('_chain_') || t.tag.includes('_selfhua_') || t.tag.includes('_flyin_') || t.tag.includes('_sf_bright') || t.tag.includes('_sf_dark'));
-      }).slice(0, 4);
-      if (deepTags.length) L.push('深度分析：' + deepTags.map(function(t) { return t.label + (t.detail ? '（' + t.detail.substring(0, 40) + '）' : ''); }).join('；'));
+      });
+      if (deepTags.length) L.push('深度分析：' + deepTags.map(function(t) { return t.label + (t.detail ? '（' + t.detail + '）' : ''); }).join('；'));
     }
 
     p.readings.ziwei = L.join('\n');
@@ -15983,14 +15900,14 @@ function _buildPayload() {
       if (typeof nb.action === 'string') L.push('建議：' + nb.action);
     }
 
-    // ★ 應期推算細節
+    // 相對節奏資料（不得把模型分數換算成日曆）
     if (mh.analysis && mh.analysis.timing) {
       var ti = mh.analysis.timing;
       var tiParts = [];
       if (ti.label) tiParts.push(ti.label);
       if (ti.range) tiParts.push(ti.range);
       if (ti.note) tiParts.push(ti.note);
-      if (tiParts.length) L.push('應期推算：' + tiParts.join('，'));
+      if (tiParts.length) L.push('相對節奏：' + tiParts.join('，'));
     }
 
     if (mh.tiYongDeep && mh.tiYongDeep.zh) L.push('力量對比：' + mh.tiYongDeep.zh);
@@ -16000,7 +15917,7 @@ function _buildPayload() {
     if (mh.upWanwu && mh.upWanwu.person) L.push('上卦象徵：' + _s(mh.upWanwu.person) + '/' + _s(mh.upWanwu.thing));
     if (mh.loWanwu && mh.loWanwu.person) L.push('下卦象徵：' + _s(mh.loWanwu.person) + '/' + _s(mh.loWanwu.thing));
 
-    // ★ 體用五行 + 卦象數字（AI 可用於推應期）
+    // 體用五行與卦象資料；卦數不得直接換算日曆。
     if (mh.ben && mh.ben.el) L.push('本卦五行：上'+_s(mh.ben.upEl||'')+'/下'+_s(mh.ben.loEl||''));
     if (mh.analysis && mh.analysis.tiYongEl) {
       L.push('體卦五行：'+_s(mh.analysis.tiYongEl.ti)+'，用卦五行：'+_s(mh.analysis.tiYongEl.yo));
@@ -16012,55 +15929,34 @@ function _buildPayload() {
     if (mh.decisionHint) L.push('決策建議：' + mh.decisionHint);
     if (mh.strategy) L.push('行動策略：' + (typeof mh.strategy === 'string' ? mh.strategy : _s(mh.strategy.zh || mh.strategy.text || '')));
 
-    // ★ 梅花應期（output_layer 完整版：速度/窗口/天數/趨勢）
+    // 梅花相對節奏（只有相對層次，除非資料另有可靠曆法精度）
     if (mh.timing && typeof mh.timing === 'object') {
       var tParts = [];
       if (mh.timing.speed) tParts.push(mh.timing.speed);
       if (mh.timing.windowLabel) tParts.push('窗口' + mh.timing.windowLabel);
       if (mh.timing.tendency) tParts.push('趨勢' + mh.timing.tendency);
       if (mh.timing.note) tParts.push(mh.timing.note);
-      if (tParts.length) L.push('應期詳情：' + tParts.join('，'));
+      if (tParts.length) L.push('相對節奏詳情：' + tParts.join('，'));
     }
 
     // ★ 梅花風險評估（output_layer：等級+具體風險點）
     if (mh.risk && typeof mh.risk === 'object') {
       var rParts = [];
       if (mh.risk.level) rParts.push('風險等級' + mh.risk.level);
-      if (mh.risk.points && mh.risk.points.length) rParts.push(mh.risk.points.slice(0, 4).join('、'));
+      if (mh.risk.points && mh.risk.points.length) rParts.push(mh.risk.points.join('、'));
       if (rParts.length) L.push('風險評估：' + rParts.join('，'));
     }
 
     // ★ 梅花標籤（output_layer：結論性 tags）
     if (mh.tags && mh.tags.length) {
-      var mtParts = mh.tags.filter(function(t) { return t && t.label; }).slice(0, 5).map(function(t) {
+      var mtParts = mh.tags.filter(function(t) { return t && t.label; }).map(function(t) {
         return (t.direction === 'pos' ? '✓' : t.direction === 'neg' ? '✗' : '·') + t.label;
       });
       if (mtParts.length) L.push('梅花結論：' + mtParts.join('、'));
     }
 
-    // ★ 梅花應期精確推算（基於體用五行旺衰 + 卦數）— 只在前面都沒有應期時才補
-    var _hasTimingData = L.some(function(l){ return l.indexOf('應期') >= 0; });
-    if (!_hasTimingData && mh.ben && mh.analysis && mh.analysis.tiYongEl) {
-      var tiEl = mh.analysis.tiYongEl.ti;
-      var guaNum = mh.ben.up || 0;
-      var guaNumLo = mh.ben.lo || 0;
-      var totalGuaNum = (guaNum + guaNumLo) || 6;
-      var seasonEl2 = { 1:'木',2:'木',3:'木', 4:'火',5:'火',6:'火', 7:'金',8:'金',9:'金', 10:'水',11:'水',12:'水' };
-      var curM2 = new Date().getMonth() + 1;
-      var curSeason2 = seasonEl2[curM2] || '土';
-      var SHENG_M2 = { '木':'水', '火':'木', '土':'火', '金':'土', '水':'金' };
-      var timingUnit2 = '天', timingNote2 = '';
-      if (tiEl === curSeason2) {
-        timingUnit2 = '天';
-        timingNote2 = '體卦當令（' + tiEl + '旺），事情發展較快';
-      } else if (SHENG_M2[tiEl] === curSeason2) {
-        timingUnit2 = '週';
-        timingNote2 = '體卦得生（' + curSeason2 + '生' + tiEl + '），速度中等';
-      } else {
-        timingUnit2 = '月';
-        timingNote2 = '體卦失令，事情發展較慢';
-      }
-      L.push('應期推算：約' + totalGuaNum + timingUnit2 + '（' + timingNote2 + '）');
+    if (!L.some(function(l){ return l.indexOf('應期') >= 0 || l.indexOf('相對節奏') >= 0; })) {
+      L.push('應期限制：資料不足以換算天、週、月或日期；只能依用卦、互卦、變卦判相對近中遠。');
     }
 
     p.readings.meihua = L.join('\n');
@@ -16130,19 +16026,19 @@ function _buildPayload() {
       var ga = S.natal.aspects.filter(function(a){return a.good;}).length;
       var ba = S.natal.aspects.filter(function(a){return !a.good;}).length;
       L.push('相位統計：和諧' + ga + '/緊張' + ba);
-      var top5 = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);}).slice(0,5);
-      L.push('主要相位：' + top5.map(function(a){return _s(a.p1)+_s(a.sym)+_s(a.p2)+(a.good?'(吉)':'(凶)');}).join('、'));
+      var top5 = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);});
+      L.push('相位（依容許度排序）：' + top5.map(function(a){return _s(a.p1)+_s(a.sym)+_s(a.p2)+(a.good?'(吉)':'(凶)');}).join('、'));
     }
     if (S.natal.aspectPatterns && S.natal.aspectPatterns.length) L.push('格局：' + S.natal.aspectPatterns.map(function(pt){return pt.meaning||pt.zh||pt.name;}).join('。'));
     if (S.natal.dispositorChain && S.natal.dispositorChain.meaning) L.push('定位星鏈：' + S.natal.dispositorChain.meaning);
     if (S.natal.profections && S.natal.profections.meaning) L.push('小限主題：' + S.natal.profections.meaning);
     if (S.natal.transits && S.natal.transits.aspects) {
-      var slow = S.natal.transits.aspects.filter(function(a){return a.isSlow;}).slice(0,5);
+      var slow = S.natal.transits.aspects.filter(function(a){return a.isSlow;});
       if (slow.length) L.push('行運（外行星）：' + slow.map(function(a){return _s(a.transitPlanet)+' '+_s(a.nature)+'→'+_s(a.natalPlanet);}).join('；'));
       // ★ 火星行運（衝突/動力/感情觸發器）
       var marsTransits = S.natal.transits.aspects.filter(function(a){
         return _s(a.transitPlanet).indexOf('火星') >= 0 && !a.good;
-      }).slice(0,3);
+      });
       if (marsTransits.length) L.push('火星行運（觸發事件）：' + marsTransits.map(function(a){return _s(a.transitPlanet)+' '+_s(a.nature)+'→'+_s(a.natalPlanet);}).join('；'));
     }
     if (S.natal.progressions && S.natal.progressions.summary) L.push('推運：' + S.natal.progressions.summary);
@@ -16180,7 +16076,7 @@ function _buildPayload() {
 
     // ★ 太陽弧推運
     if (S.natal.solarArc && S.natal.solarArc.aspects && S.natal.solarArc.aspects.length) {
-      var saTop = S.natal.solarArc.aspects.slice(0, 4);
+      var saTop = S.natal.solarArc.aspects.slice();
       L.push('太陽弧：' + saTop.map(function(a) {
         return _s(a.directedPlanet) + _s(a.aspectSymbol || a.type) + _s(a.natalPlanet) + (a.orb ? '(orb' + a.orb.toFixed(1) + '°)' : '');
       }).join('、'));
@@ -16196,7 +16092,7 @@ function _buildPayload() {
     if (j.currentMD) {
       L.push('Dasha主星：' + _s(j.currentMD.lord) + (j.currentMD.zh ? '（'+j.currentMD.zh+'）' : '') + (j.currentAD ? '，副運：'+_s(j.currentAD.zh) : '') + (j.currentPD ? '，小運：'+_s(j.currentPD.zh) : ''));
     }
-    if (j.yogas && j.yogas.length) L.push('Yoga格局：' + j.yogas.slice(0,6).map(function(y){return y.zh?y.zh.substring(0,60):_s(y.name);}).join('。'));
+    if (j.yogas && j.yogas.length) L.push('Yoga格局：' + j.yogas.map(function(y){return y.zh||_s(y.name);}).join('。'));
     // v52: Kala Sarpa / Mangal Dosha / Badhaka 三個新判定欄位
     if (j.kalaSarpa) {
       if (j.kalaSarpa.active) {
@@ -16265,10 +16161,10 @@ function _buildPayload() {
       if (_nkTrait) L.push('月宿性格：' + _nkTrait);
     }
     if (j.refinedGochar) {
-      var gch = j.refinedGochar.filter(function(g){return g.isSlow;}).slice(0,4);
+      var gch = j.refinedGochar.filter(function(g){return g.isSlow;});
       if (gch.length) L.push('Gochar行運：' + gch.map(function(g){return _s(g.planetZh)+(g.effectiveGood?'吉':'凶')+',bindus='+g.bindus+'/8';}).join('、'));
     }
-    if (j.crossValidation && j.crossValidation.signals) L.push('交叉驗證：' + j.crossValidation.signals.slice(0,3).map(function(s){return _s(s.zh);}).join('。'));
+    if (j.crossValidation && j.crossValidation.signals) L.push('交叉驗證：' + j.crossValidation.signals.map(function(s){return _s(s.zh);}).join('。'));
     if (j.charaDasha && j.charaDasha.current) L.push('Jaimini運勢：' + _s(j.charaDasha.current.signZh) + '(' + _s(j.charaDasha.current.lordZh) + '主宰)');
     if (j.karakamsa && j.karakamsa.zh) L.push('靈魂指引：' + j.karakamsa.zh);
 
@@ -16339,7 +16235,7 @@ function _buildPayload() {
         var nb = j.neechaBhanga[pn];
         if (nb && nb.cancelled) {
           var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[pn]) ? JY_PLANETS[pn].zh : pn;
-          nbParts.push(zhName + '落陷被救（' + (nb.conditions || []).slice(0, 2).join('、') + '）');
+          nbParts.push(zhName + '落陷被救（' + (nb.conditions || []).join('、') + '）');
         }
       });
       if (nbParts.length) L.push('落陷救濟：' + nbParts.join('、'));
@@ -16410,7 +16306,7 @@ function _buildPayload() {
 
     // ★ Chara Karakas（靈魂七主星 — Jaimini 體系）
     if (j.charaKarakas && j.charaKarakas.length) {
-      var ckParts = j.charaKarakas.slice(0, 7).map(function(ck) {
+      var ckParts = j.charaKarakas.map(function(ck) {
         var zhName = (typeof JY_PLANETS !== 'undefined' && JY_PLANETS[ck.planet]) ? JY_PLANETS[ck.planet].zh : ck.planet;
         return (ck.karakaZh || ck.karaka) + '=' + zhName;
       });
@@ -16488,9 +16384,6 @@ function _buildPayload() {
       }
     }
 
-    // ★ v13：吠陀 readings 長度上限——超過 2500 字時從尾部砍進階項目
-    while (L.join('\n').length > 2500 && L.length > 10) { L.pop(); }
-
     p.readings.vedic = L.join('\n');
   } catch(e){ console.error('payload vedic:', e); } }
 
@@ -16531,8 +16424,8 @@ function _buildPayload() {
     var zr = S.zodiacNameResult;
     if (!p.readings.name) p.readings.name = '';
     p.readings.name += '\n生肖' + _s(zr.zodiac) + '姓名學：' + _s(zr.overallLevel);
-    if (zr.goodRoots && zr.goodRoots.length) p.readings.name += '。好字根：' + zr.goodRoots.slice(0,4).join('、');
-    if (zr.badRoots && zr.badRoots.length) p.readings.name += '。不利字根：' + zr.badRoots.slice(0,4).join('、');
+    if (zr.goodRoots && zr.goodRoots.length) p.readings.name += '。好字根：' + zr.goodRoots.join('、');
+    if (zr.badRoots && zr.badRoots.length) p.readings.name += '。不利字根：' + zr.badRoots.join('、');
   } catch(e){} }
 
   // ═══ 七維融合 ═══
@@ -16541,7 +16434,7 @@ function _buildPayload() {
     p.verdict = comb.finalDir === 'pos' ? '多數正面' : comb.finalDir === 'neg' ? '多數負面' : '正反各半';
     p.compositeScore = comb.score || null;
     if (comb.topTags && comb.topTags.length) {
-      p.tags = comb.topTags.slice(0, 12);
+      p.tags = comb.topTags.slice();
     }
     // v6.0：共振數據
     if (comb.resonance) {
@@ -16555,7 +16448,7 @@ function _buildPayload() {
     }
     // v6.0：衝突對
     if (comb.conflictPairs && comb.conflictPairs.length) {
-      p.conflicts = comb.conflictPairs.slice(0, 3).map(function(cp) {
+      p.conflicts = comb.conflictPairs.map(function(cp) {
         return cp.pos + ' vs ' + cp.neg + '→' + (cp.resolved || '未裁') + '（' + (cp.reason || '') + '）';
       });
     }
@@ -16575,7 +16468,7 @@ function _buildPayload() {
     ];
     _tagSources.forEach(function(src) {
       if (src.tags && src.tags.length) {
-        src.tags.slice(0, 8).forEach(function(t) {
+        src.tags.forEach(function(t) {
           allTags.push({
             system: src.key,
             direction: t.direction || 'mid',
@@ -16594,7 +16487,7 @@ function _buildPayload() {
       var nqr = S._nameQuestionResult;
       p.readings.name = (p.readings.name || '') + '\n問事結果：' + (nqr.answer || '') + 
         (nqr.score ? '（分數' + nqr.score + '）' : '') +
-        (nqr.evidence ? '。依據：' + nqr.evidence.slice(0, 3).join('、') : '');
+        (nqr.evidence ? '。依據：' + nqr.evidence.join('、') : '');
     }
   } catch(e) {}
 
@@ -16646,7 +16539,7 @@ function _buildPayload() {
     }
     if (S._uResult && S._uResult.comb && S._uResult.comb.resonance && S._uResult.comb.resonance.semanticResonance) {
       var semRes = S._uResult.comb.resonance.semanticResonance;
-      var semResFiltered = semRes.filter(function(sr) { return sr.count >= 2; }).slice(0, 6);
+      var semResFiltered = semRes.filter(function(sr) { return sr.count >= 2; });
       if (semResFiltered.length) {
         p.semanticResonance = semResFiltered.map(function(sr) {
           return sr.code + '（' + sr.systems.join('+') + '→' + sr.direction + '）：' + sr.evidence.join('、');
@@ -16655,16 +16548,7 @@ function _buildPayload() {
     }
   } catch(e) { console.error('conflict desc:', e); }
 
-  // ★ v36：rawReadings 主分析已不送 AI（v29b），僅追問用（截600字）
-  // 省網路傳輸 + 避免 trim 死邏輯浪費 CPU
-  try {
-    var _rr = p.readings || {};
-    Object.keys(_rr).forEach(function(k) {
-      if (typeof _rr[k] === 'string' && _rr[k].length > 600) {
-        _rr[k] = _rr[k].substring(0, 600) + '\n…（已精簡）';
-      }
-    });
-  } catch(e) {}
+  // 保留各系統完整資料；後續由證據層去重與排序，不在傳送前截斷結尾。
 
   // ★ 升級：可學習權重 + 信心降權注入
   //   依 form / model 動態取得權重與信心矩陣，加入 payload
@@ -19645,7 +19529,7 @@ renderTarot = function(){
           }
           if (mhAnalysis && mhAnalysis.signals && mhAnalysis.signals.length) {
             p.dims.meihua = p.dims.meihua || {};
-            p.dims.meihua.signals = mhAnalysis.signals.slice(0, 5);
+            p.dims.meihua.signals = mhAnalysis.signals.slice();
           }
           if (mhAnalysis) {
             p.dims.meihua = p.dims.meihua || {};
@@ -19664,7 +19548,7 @@ renderTarot = function(){
               p.dims.meihua.tenAppliances = mhAnalysis.tenAppliances;
             }
             if (mhAnalysis.risk) p.dims.meihua.risk = mhAnalysis.risk;
-            if (mhAnalysis.strategy) p.dims.meihua.actionAdvice = mhAnalysis.strategy.slice(0, 3);
+            if (mhAnalysis.strategy) p.dims.meihua.actionAdvice = mhAnalysis.strategy.slice();
             if (mhAnalysis.structure) {
               if (mhAnalysis.structure.huGua && mhAnalysis.structure.huGua.hidden) {
                 p.dims.meihua.huHidden = mhAnalysis.structure.huGua.hidden.cat + '：' + mhAnalysis.structure.huGua.hidden.desc;
@@ -19763,7 +19647,7 @@ renderTarot = function(){
         if (bz.branchInteractions && bz.branchInteractions.length) {
           var _biKey = bz.branchInteractions.filter(function(bi) {
             return bi.type === '六沖' || bi.type === '三合局' || bi.type === '三會局' || bi.type === '六合化' || bi.type === '暗合' || bi.type === '拱合' || bi.type === '暗沖';
-          }).slice(0, 6);
+          });
           if (_biKey.length) {
             p.dims.bazi.branchKey = _biKey.map(function(bi) { return bi.desc + '（' + bi.effect + '）'; }).join('；');
           }
@@ -19798,11 +19682,11 @@ renderTarot = function(){
         }
         // ★ v25b：十神組合格局
         if (bz.tenGodCombos && bz.tenGodCombos.length) {
-          p.dims.bazi.tenGodCombos = bz.tenGodCombos.slice(0, 4).map(function(c) { return c.name + '（' + (c.effect || '') + '）'; }).join('；');
+          p.dims.bazi.tenGodCombos = bz.tenGodCombos.map(function(c) { return c.name + '（' + (c.effect || '') + '）'; }).join('；');
         }
         // ★ v25b：額外神煞
         if (bz.extraShenSha && bz.extraShenSha.length) {
-          p.dims.bazi.extraShenSha = bz.extraShenSha.slice(0, 6).map(function(s) { return s.name + (s.pillar ? '@' + s.pillar : ''); }).join('、');
+          p.dims.bazi.extraShenSha = bz.extraShenSha.map(function(s) { return s.name + (s.pillar ? '@' + s.pillar : ''); }).join('、');
         }
 
         // ═══ v30：八字完整數據補齊（之前完全未送的核心結構）═══
@@ -19898,7 +19782,7 @@ renderTarot = function(){
         // 神煞完整版（原版只送6個）
         if (bz.shensha && bz.shensha.length) {
           p.dims.bazi.shensha = bz.shensha.map(function(s) {
-            return s.name + (s.pillar ? '@' + s.pillar : '') + (s.desc ? '(' + s.desc.slice(0, 15) + ')' : '');
+            return s.name + (s.pillar ? '@' + s.pillar : '') + (s.desc ? '(' + s.desc + ')' : '');
           }).join('、');
         }
 
@@ -20031,10 +19915,10 @@ renderTarot = function(){
               if (star.hua) huaStars.push(star.name + star.hua + '入' + palName);
             });
           });
-          if (huaStars.length) p.dims.ziwei.sihua = huaStars.slice(0, 6);
+          if (huaStars.length) p.dims.ziwei.sihua = huaStars.slice();
           // 宮干自化＋飛化（宮位之間的四化互動）
           if (S.ziwei.selfHua && S.ziwei.selfHua.length) {
-            p.dims.ziwei.gongHua = S.ziwei.selfHua.slice(0, 10).map(function(sh) {
+            p.dims.ziwei.gongHua = S.ziwei.selfHua.map(function(sh) {
               var dirLabel = sh.direction === '↓' ? '自化離心' : '化入向心';
               var from = (sh.from && sh.direction === '↑') ? '（從' + sh.from + '飛入）' : '';
               return sh.palace + '的' + sh.star + sh.type + dirLabel + from;
@@ -20152,7 +20036,7 @@ renderTarot = function(){
           }
           // ═══ v25：星曜組合 ═══
           if (S.ziwei.starComboNotes && S.ziwei.starComboNotes.length) {
-            p.dims.ziwei.combos = S.ziwei.starComboNotes.slice(0, 6).join('；');
+            p.dims.ziwei.combos = S.ziwei.starComboNotes.join('；');
           }
           // ═══ v25：今年小限 ═══
           if (S.ziwei.getXiaoXian && p.birth) {
@@ -20163,7 +20047,7 @@ renderTarot = function(){
                 var _xx = S.ziwei.getXiaoXian(_curAge);
                 if (_xx) {
                   p.dims.ziwei.xiaoXian = '今年' + _xx.age + '歲小限走' + _xx.palace + '（' + _xx.branch + '）';
-                  if (_xx.notes && _xx.notes.length) p.dims.ziwei.xiaoXian += '：' + _xx.notes.slice(0, 3).join('、');
+                  if (_xx.notes && _xx.notes.length) p.dims.ziwei.xiaoXian += '：' + _xx.notes.join('、');
                 }
               }
             } catch(_xxe) {}
@@ -20341,7 +20225,7 @@ renderTarot = function(){
           if (S.natal.mcSign) p.dims.natal.mc = S.natal.mcSign.name || '';
           // 當前行運（外行星，最影響命運走向）
           if (S.natal.transits && S.natal.transits.aspects) {
-            var slowTransits = S.natal.transits.aspects.filter(function(a) { return a.isSlow; }).slice(0, 4);
+            var slowTransits = S.natal.transits.aspects.filter(function(a) { return a.isSlow; });
             if (slowTransits.length) {
               p.dims.natal.transits = slowTransits.map(function(a) {
                 return (a.transitPlanet || '') + ' ' + (a.nature || '') + '→' + (a.natalPlanet || '');
@@ -20352,14 +20236,14 @@ renderTarot = function(){
           if (S.natal.profections && S.natal.profections.meaning) p.dims.natal.profection = S.natal.profections.meaning;
           // ★ #19 修復：本命相位——西洋占星最核心的判斷依據（readings 可能被 trim，dims 保底）
           if (S.natal.aspects && S.natal.aspects.length) {
-            var topAsp = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);}).slice(0, 8);
+            var topAsp = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);});
             p.dims.natal.aspects = topAsp.map(function(a) {
               return (a.p1||'') + (a.sym||'') + (a.p2||'') + (a.good ? '(吉)' : '(凶)');
             }).join('、');
           }
           // ★ #20 修復：相位格局（T-square, Grand Trine 等——整體命盤結構的關鍵）
           if (S.natal.aspectPatterns && S.natal.aspectPatterns.length) {
-            p.dims.natal.patterns = S.natal.aspectPatterns.slice(0, 3).map(function(pt) {
+            p.dims.natal.patterns = S.natal.aspectPatterns.map(function(pt) {
               return pt.meaning || pt.zh || pt.name || '';
             }).filter(Boolean).join('；');
           }
@@ -20406,7 +20290,7 @@ renderTarot = function(){
             if (_prog.moonSignChanged) progParts.push('月亮已換座（近期情緒和需求模式在轉變）');
             // 推運相位（精度到月份的事件觸發器）
             if (_prog.aspects && _prog.aspects.length) {
-              var _progTop = _prog.aspects.slice(0, 4).map(function(a) {
+              var _progTop = _prog.aspects.map(function(a) {
                 return '推運' + a.progPlanet + a.aspect + '本命' + a.natalPlanet;
               });
               progParts.push(_progTop.join('、'));
@@ -20415,7 +20299,7 @@ renderTarot = function(){
           }
           // ★ v16.5：太陽弧推運（Solar Arc——所有行星同速前進，合/刑/沖本命行星=事件觸發）
           if (S.natal.solarArc && S.natal.solarArc.aspects && S.natal.solarArc.aspects.length) {
-            var _saTop = S.natal.solarArc.aspects.slice(0, 4).map(function(a) {
+            var _saTop = S.natal.solarArc.aspects.map(function(a) {
               return '弧' + a.directedPlanet + a.aspect + '本命' + a.natalPlanet;
             });
             p.dims.natal.solarArc = _saTop.join('、');
@@ -20431,7 +20315,7 @@ renderTarot = function(){
           }
           // ★ v20：互容（兩顆行星互借力——遇阻力時有轉彎空間）
           if (S.natal.mutualReceptions && S.natal.mutualReceptions.length) {
-            p.dims.natal.mutualReceptions = S.natal.mutualReceptions.slice(0, 3).map(function(m) {
+            p.dims.natal.mutualReceptions = S.natal.mutualReceptions.map(function(m) {
               return (m.p1 || '') + '↔' + (m.p2 || '') + (m.type ? '(' + m.type + ')' : '');
             }).join('、');
           }
@@ -20452,7 +20336,7 @@ renderTarot = function(){
           }
           // ★ v25b：恆星合相
           if (S.natal.fixedStars && S.natal.fixedStars.length) {
-            p.dims.natal.fixedStars = S.natal.fixedStars.slice(0, 3).map(function(fs) {
+            p.dims.natal.fixedStars = S.natal.fixedStars.map(function(fs) {
               return fs.planet + '合' + fs.star + '（' + fs.orb + '°）';
             }).join('、');
           }
@@ -20495,7 +20379,7 @@ renderTarot = function(){
 
           // 完整相位列表（之前只送前8個）
           if (S.natal.aspects && S.natal.aspects.length) {
-            var _fullAsp = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);}).slice(0, 15);
+            var _fullAsp = S.natal.aspects.slice().sort(function(a,b){return (a.diff||99)-(b.diff||99);});
             p.dims.natal.aspects = _fullAsp.map(function(a) {
               return (a.p1||'') + (a.sym||'') + (a.p2||'') + (a.diff != null ? Math.round(a.diff*10)/10 + '°' : '') + (a.good ? '吉' : '凶');
             }).join('、');
@@ -20555,7 +20439,7 @@ renderTarot = function(){
           }
           // Yogas
           if (jy.yogas && jy.yogas.length) {
-            p.dims.vedic.yogas = jy.yogas.slice(0, 5).map(function(y) {
+            p.dims.vedic.yogas = jy.yogas.map(function(y) {
               return (y.nameZh || y.name || '') + (y.effect ? '：' + y.effect : '');
             }).join('；');
           }
@@ -20655,7 +20539,7 @@ renderTarot = function(){
               var vs = jy.vargaStrength[pk];
               if (vs && vs.score != null && vs.score >= 4) _vsParts.push((vs.zh || pk) + '：' + vs.score + '分（' + (vs.label || '') + '）');
             });
-            if (_vsParts.length) p.dims.vedic.vargaStrong = _vsParts.slice(0, 5).join('、');
+            if (_vsParts.length) p.dims.vedic.vargaStrong = _vsParts.join('、');
           }
         } catch (e) { console.warn('[buildPayload v2] vedic dims:', e); }
       }
@@ -20678,8 +20562,8 @@ renderTarot = function(){
           }
 
           // 完整 Yogas（之前只送5個）
-          if (jy2.yogas && jy2.yogas.length > 5) {
-            p.dims.vedic.yogas = jy2.yogas.slice(0, 12).map(function(y) {
+          if (jy2.yogas && jy2.yogas.length) {
+            p.dims.vedic.yogas = jy2.yogas.map(function(y) {
               return (y.nameZh || y.name || '') + (y.effect ? '：' + y.effect : '');
             }).join('；');
           }
@@ -23267,7 +23151,7 @@ function generateShareImage() {
       label: label,
       direction: direction,
       weight: weight,
-      detail: _sbClip(t.detail || t.text || '', 140)
+      detail: _sbTxt(t.detail || t.text || '')
     };
   }
   function _sbExtractList(sp, keys){
@@ -23291,7 +23175,7 @@ function generateShareImage() {
         });
       }
     });
-    return _sbUniq(out).map(function(x){ return _sbClip(x, 160); }).filter(Boolean);
+    return _sbUniq(out).filter(Boolean);
   }
   function _sbBuildSystemEvidence(sysKey, sp, raw, dim){
     var tags = [];
@@ -23314,26 +23198,23 @@ function generateShareImage() {
     var actionPool = _sbExtractList(sp, ['actions','actionAdvice','advice','strategy']);
     var corePool = _sbExtractList(sp, ['summary','verdict','reason','detail','core']);
     var rawSeg = _sbSplitRaw(raw);
-    var rawImportant = rawSeg.slice(0, 8)
-      .concat(rawSeg.length > 16 ? rawSeg.slice(Math.max(8, Math.floor(rawSeg.length/2)-4), Math.max(12, Math.floor(rawSeg.length/2)+4)) : [])
-      .concat(rawSeg.length > 8 ? rawSeg.slice(-8) : []);
-    rawImportant = _sbUniq(rawImportant).map(function(x){ return _sbClip(x, 180); }).slice(0, 18);
+    var rawImportant = _sbUniq(rawSeg);
 
     return {
       system: sysKey,
       score: (sp && sp.score != null) ? sp.score : (dim && dim.score != null ? dim.score : null),
       confidence: (sp && sp.confidence != null) ? sp.confidence : (dim && dim.confidence != null ? dim.confidence : null),
       direction: sp && sp.direction ? sp.direction : (dim && dim.dir ? dim.dir : 'mid'),
-      verdict: _sbClip((sp && sp.verdict) || (dim && dim.verdict) || '', 200),
-      summary: _sbClip((sp && sp.summary) || (dim && dim.reason) || '', 280),
-      supports: _sbUniq(supportPool).slice(0, 12),
-      risks: _sbUniq(riskPool).slice(0, 12),
-      variables: _sbUniq(variablePool).slice(0, 10),
-      timing: _sbUniq(timingPool).slice(0, 8),
-      actions: _sbUniq(actionPool).slice(0, 8),
-      core: _sbUniq(corePool).slice(0, 12),
+      verdict: _sbTxt((sp && sp.verdict) || (dim && dim.verdict) || ''),
+      summary: _sbTxt((sp && sp.summary) || (dim && dim.reason) || ''),
+      supports: _sbUniq(supportPool),
+      risks: _sbUniq(riskPool),
+      variables: _sbUniq(variablePool),
+      timing: _sbUniq(timingPool),
+      actions: _sbUniq(actionPool),
+      core: _sbUniq(corePool),
       raw_fragments: rawImportant,
-      tags: tags.slice(0, 18)
+      tags: tags
     };
   }
   function _sbCanonical(label){
@@ -23371,9 +23252,9 @@ function generateShareImage() {
       return x;
     }).sort(function(a,b){ return b.score - a.score || b.overlap - a.overlap; });
 
-    var main = arr.filter(function(x){ return x.kind === 'supports' && x.overlap >= 2; }).slice(0, 8);
-    var risks = arr.filter(function(x){ return x.kind === 'risks' && x.overlap >= 2; }).slice(0, 8);
-    var vars = arr.filter(function(x){ return x.kind === 'variables' || x.overlap === 1; }).slice(0, 10);
+    var main = arr.filter(function(x){ return x.kind === 'supports' && x.overlap >= 2; });
+    var risks = arr.filter(function(x){ return x.kind === 'risks' && x.overlap >= 2; });
+    var vars = arr.filter(function(x){ return x.kind === 'variables' || x.overlap === 1; });
 
     var conflicts = [];
     main.forEach(function(pos){
@@ -23390,16 +23271,14 @@ function generateShareImage() {
         }
       });
     });
-    conflicts = conflicts.slice(0, 8);
-
     return {
-      main_symbols: main.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details.slice(0, 6) }; }),
-      risk_symbols: risks.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details.slice(0, 6) }; }),
-      variable_symbols: vars.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details.slice(0, 4), kind:x.kind }; }),
+      main_symbols: main.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details }; }),
+      risk_symbols: risks.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details }; }),
+      variable_symbols: vars.map(function(x){ return { symbol:x.label, systems:x.systems, overlap:x.overlap, score:x.score, details:x.details, kind:x.kind }; }),
       conflict_pairs: conflicts,
-      narrative_spine: main.slice(0,4).map(function(x){ return x.label; }),
-      narrative_risks: risks.slice(0,4).map(function(x){ return x.label; }),
-      narrative_variables: vars.slice(0,4).map(function(x){ return x.label; })
+      narrative_spine: main.map(function(x){ return x.label; }),
+      narrative_risks: risks.map(function(x){ return x.label; }),
+      narrative_variables: vars.map(function(x){ return x.label; })
     };
   }
 
@@ -23577,7 +23456,7 @@ function _buildTarotOnlyPayload() {
       meaning:(dignity&&dignity.reading)||gp.core||'',wellDignifiedMeaning:gp.well||'',illDignifiedMeaning:gp.ill||'',
       elementalDignity:dignity||null,element:gp.element||'',correspondence:gp.correspondence||'',
       decan:gp.decan||'',dateRange:gp.dateRange||'',sephirah:gp.sephirah||'',world:gp.world||'',
-      semanticCandidates:(gp.candidates||[]).slice(0,8),courtLayer:gp.kind==='court'?(gp.layer||''):'',
+      semanticCandidates:(gp.candidates||[]).slice(),courtLayer:gp.kind==='court'?(gp.layer||''):'',
       courtRolePriority:gp.kind==='court'?(gp.rolePriority||[]):[],
       courtPolicy:gp.kind==='court'?'角色優先序依 Book T；只有原問句、本方法單位（牌位／三牌組／序列／操作）與獨立證據完成共指時才能具體化人物，不得推造身分、年齡、外貌或職業。':''
     };
@@ -26030,49 +25909,10 @@ function _renderOOTKResult(container, r, admin) {
   _appendFollowUpUI(container, 'ootk');
 }
 
-// ═══ v28：AI 輸出後處理——硬殺術語 ═══
-// Haiku 禁用詞無效，這是最後防線：渲染前正則刪除所有命理術語
+// AI 輸出後處理：只清理渲染雜訊，保留可核對的命理術語與來源。
 function _cleanAITerms(s) {
   if (!s || typeof s !== 'string') return s || '';
-  // Golden Dawn 模式保留牌名與元素尊貴術語，但不保留固定正逆位字典
-  var _isPaidTarotMode = (window._jyActiveResultMode === 'tarot' || window._jyActiveResultMode === 'ootk');
-  // 0. 清空括號和多餘符號
-  s = s.replace(/（\s*）/g, '').replace(/\(\s*\)/g, '').replace(/\[\s*\]/g, '');
-  // 1. 系統方法名——直接刪除整個提及
-  s = s.replace(/(?:八字|紫微斗數?|西洋占星|吠陀占星|梅花易數|姓名學|凱爾特十字)(?:的|裡|中|上|說|看|盤)?/g, '');
-  // 2. v36: OOTK 方法名和 Sephiroth 不再刪除
-  s = s.replace(/[（(]\s*(?:Op\.?\d|四元素|十二宮位|十二星座|三十六牌環|生命之樹)[^）)]*[）)]/g, '');
-  // 3. 宮位名——替換成人話（七維度才做，塔羅/OOTK 保留原文）
-  if (!_isPaidTarotMode) {
-    s = s.replace(/第(\d+)宮/g, function(m, n) {
-      var map = {'1':'你自己','2':'你的錢','3':'你的溝通','4':'你的家','5':'你的創造力','6':'你的日常','7':'你跟另一個人之間','8':'你的深層連結','9':'你的信念','10':'你的事業','11':'你的圈子','12':'你的潛意識'};
-      return map[n] || '';
-    });
-    s = s.replace(/命宮/g, '你的核心').replace(/夫妻宮/g, '你跟另一個人之間').replace(/官祿宮/g, '工作上');
-    s = s.replace(/財帛宮/g, '你跟錢的關係').replace(/子女宮/g, '你做自己東西的那股衝勁').replace(/疾厄宮/g, '身心狀態');
-    s = s.replace(/遷移宮/g, '外面的機會').replace(/田宅宮/g, '你的家和根').replace(/福德宮/g, '內心的滿足感');
-    s = s.replace(/交友宮|僕役宮/g, '你的人脈').replace(/父母宮/g, '長輩的影響');
-  }
-  // 4. Golden Dawn Book T 不使用 Waite 固定正逆位字典
-  if (_isPaidTarotMode) {
-    s = s.replace(/逆位/g, '舊版方向標記').replace(/正位/g, '舊版方向標記');
-  } else {
-    s = s.replace(/逆位/g, '卡住').replace(/正位/g, '順的');
-  }
-  // 紫微/八字/吠陀術語——不管什麼模式都翻（這些不是塔羅術語）
-  s = s.replace(/化忌/g, '卡點').replace(/化祿/g, '資源進場').replace(/化權/g, '掌控力增強').replace(/化科/g, '名聲加分');
-  s = s.replace(/大限/g, '你這十年').replace(/流年/g, '今年').replace(/流月/g, '這幾個月');
-  s = s.replace(/身弱/g, '你自身能量偏薄').replace(/身強/g, '你自身能量偏強');
-  s = s.replace(/Dasha/gi, '時運週期').replace(/Yoga/gi, '特殊格局').replace(/Nakshatra/gi, '月宿');
-  s = s.replace(/Gandanta/gi, '轉彎的卡點').replace(/Sade\s*Sati/gi, '土星考驗期');
-  // 5. 分析口吻詞——只刪最明顯的報告用語
-  s = s.replace(/(?:可以看出|進一步來看|值得注意的是|整體來說|綜合判斷|交叉比對)/g, '');
-  s = s.replace(/從牌面來看|從盤面來看/g, '');
-  // 6. 牌面場景描述直接引用——AI 應該消化成人話，不是搬原文
-  s = s.replace(/(?:就像|像是?|彷彿|如同)(?:那個|一個)?(?:站在|坐在|騎[馬在]|扛著|拿著|舉著|握著|端著|持著|撐著|背對|蒙眼|倒掛|跪在)[^，。！？]{2,25}(?:的人|的樣子)?/g, '');
-  s = s.replace(/雙手持[劍杯棍幣杖]|手[持握]著?[劍杯棍幣杖金鑰]|扛著[十\d]*根[棍杖棒]|頭戴花冠|蒙[眼著]的|倒掛在樹上|懸崖邊的|石頭王座|騎[著在]?[白黑]?馬/g, '');
-  // v36: 不再刪除牌名
-  // 7. 清理多餘空白和標點
+  // 保留系統名、宮位、四化、十神、牌名等可追溯證據；只清理渲染雜訊。
   s = s.replace(/（\s*[-—・,，\s]*\s*）/g, '').replace(/\(\s*[-—・,，\s]*\s*\)/g, '');
   s = s.replace(/（\s*）/g, '').replace(/\(\s*\)/g, '');
   s = s.replace(/[，,]{2,}/g, '，').replace(/[。]{2,}/g, '。').replace(/^\s*[，,。]\s*/gm, '');

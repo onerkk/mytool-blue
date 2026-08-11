@@ -145,6 +145,14 @@ function tiYong(ti,yo){
 // 四季末(3,6,9,12月末18天)土旺金相水死木囚火休
 function getMhWangShuai(el, month){
   if(!el) return {level:'平',score:0};
+  // upgrade2 載入後優先用實際「節」定位月支；固定日期表只作引擎缺席時的明示備援。
+  if(typeof mhPreciseWangShuai==='function'){
+    try{
+      var precise=mhPreciseWangShuai(el, month instanceof Date ? month : new Date());
+      var preciseScore={旺:3,相:1,休:0,囚:-1,死:-2}[precise.label]||0;
+      return {level:precise.label,score:preciseScore,season:'jieqi',monthZhi:precise.monthZhi,precision:'engine-jieqi'};
+    }catch(e){}
+  }
   // ── 依節氣近似日判定當前月支所屬季節 ──
   // 節氣邊界日（每月「節」的平均日期，誤差±1天）
   // 小寒~6, 立春~4, 驚蟄~6, 清明~5, 立夏~6, 芒種~6,
@@ -170,7 +178,7 @@ function getMhWangShuai(el, month){
   };
   var levelScore={旺:3,相:1,休:0,囚:-1,死:-2};
   var level=table[season][el]||'平';
-  return {level:level, score:levelScore[level]||0, season:season};
+  return {level:level, score:levelScore[level]||0, season:season, precision:'approximate-jie-day-fallback'};
 }
 
 // ═══ 五行生剋關係判定 ═══
@@ -4165,7 +4173,7 @@ function _mhTimingSemantics(tiWS, yoWS){
   return {stance:'觀望',desc:'目前氣場普通，不急著動'};
 }
 
-// ═══ 應期推算 ═══
+// ═══ 相對節奏判斷（不把卦象分數換算成日曆） ═══
 function _mhTiming(dong, tiRel, dongEl, tiWS, type){
   // 動爻位置
   const dongSpeed = dong<=2?'快' : dong<=4?'中' : '慢';
@@ -4182,23 +4190,23 @@ function _mhTiming(dong, tiRel, dongEl, tiWS, type){
 
   let label, range, note;
   if(total>=3){
-    label='很快'; range='1～7天'; note='卦氣旺，動得快，不要等';
+    label='很快'; range='相對近期'; note='卦象節奏偏快，但不能由此換算天數或日期';
   } else if(total>=1){
-    label='短期'; range='1～4週'; note='有動力但需走過過程';
+    label='短期'; range='相對近期'; note='有動力但需走過過程，不能由此換算週數';
   } else if(total>=-1){
-    label='稍晚'; range='1～3個月'; note='過程中有等待，別催';
+    label='稍晚'; range='相對中期'; note='過程中有等待；不能由此換算月份';
   } else if(total>=-2){
-    label='拖延型'; range='3個月以上'; note='體用阻滯，推進困難，需等條件改變';
+    label='拖延型'; range='相對較遠'; note='體用阻滯，需等條件改變；不能由分數推算實際月數';
   } else {
     label='反覆型'; range='時間不定，可能走走停停'; note='五行不和，容易反覆';
   }
 
   // 類型微調
   if(type==='love'&&tiRel==='用克體') note='感情受壓，對方或外界阻力大，應期延後';
-  if(type==='wealth'&&dongEl==='水') note='財水流動慢，等待冬季或水相月';
+  if(type==='wealth'&&dongEl==='水') note='財務節奏偏流動與反覆，須用現金流或成交等現實指標驗證；不得直接指定季節或月份';
   if(type==='health') note='身體恢復視調養而定，不以卦論速';
 
-  return {label, range, note, score:total};
+  return {label, range, note, score:total, precision:'relative-only'};
 }
 
 // ═══ 應期三法交集（v55：讓 AI 不自算月份）═══
@@ -4207,6 +4215,14 @@ function _mhTiming(dong, tiRel, dongEl, tiWS, type){
 // 依賴: MH_WANGSHUAI_PRECISE (來自 meihua_upgrade2.js，typeof 防呆已處理)
 function _mhTimingTriple(mh, dongEl, curMonth){
   if(!mh || !mh.tiG || !mh.yoG) return null;
+  return {
+    numMethod:'卦數只可作傳統象數候選，不可直接換算天數或月份',
+    qiMethod:'卦氣只可列旺相的傳統候選，不可冒充最近日曆窗口',
+    yaoMethod:'爻位表示變化層次，不等於日期倍數',
+    intersection:null,
+    confidence:'不提供日曆精度',
+    reasoning:'缺少可驗證的曆法單位與事件尺度，禁止把三法硬交集成日期'
+  };
 
   var tiN = mh.tiG.n || 0;
   var yoN = mh.yoG.n || 0;
@@ -4332,6 +4348,13 @@ function _mhTimingTriple(mh, dongEl, curMonth){
 // 回傳: { riYing, keYing, fangYing, summary }
 function _mhTenAppliances(mh, dongEl, userLat, userLng){
   if(!mh || !dongEl) return null;
+  return {
+    riYing:null,
+    keYing:null,
+    fangYing:null,
+    precision:'insufficient-observation',
+    summary:'未提供可核對的外應、起卦現場方位與明確取用規則，不自動用目前日期、時辰或相對台灣位置製造日應、刻應、方應。'
+  };
 
   // 五行生剋函式（與 tiYong 函式同邏輯：相生=體被生吉／相剋=體被克凶）
   function relateFromElement(srcEl, targetEl){
@@ -5097,7 +5120,7 @@ function buildMeihuaSummary(mh, type, analysis) {
 // ─────────────────────────────────────────────────────────────────
 function buildMeihuaTiming(mh, type, analysis) {
   if (!mh || !analysis) {
-    return { speed: 'normal', windowLabel: '1-4週', windowDays: [7,28], tendency: 'delayed', note: '資料不足，暫以短期估算' };
+    return { speed: 'unknown', windowLabel: '資料不足，只能判相對遠近', windowDays: null, tendency: 'unknown', precision: 'insufficient', note: '不得自行估算天數、週數或月份' };
   }
 
   var timingObj = analysis.timingFull  || { label: '短期', score: 0 };
@@ -5114,13 +5137,13 @@ function buildMeihuaTiming(mh, type, analysis) {
   var speed = speedMap[timingObj.label] || 'normal';
 
   var windowData = {
-    '很快':   { label: '1-7天',     days: [1, 7] },
-    '短期':   { label: '1-4週',     days: [7, 28] },
-    '稍晚':   { label: '1-3個月',   days: [28, 90] },
-    '拖延型': { label: '3個月以上', days: [90, 180] },
-    '反覆型': { label: '時機未定',  days: null }
+    '很快':   { label: '相對近期' },
+    '短期':   { label: '相對近期' },
+    '稍晚':   { label: '相對中期' },
+    '拖延型': { label: '相對較遠' },
+    '反覆型': { label: '時機未定' }
   };
-  var wd = windowData[timingObj.label] || { label: '1-4週', days: [7, 28] };
+  var wd = windowData[timingObj.label] || { label: '只能判相對遠近' };
 
   var tendency = 'delayed';
   if      (speed === 'fast')     tendency = 'quick-hit';
@@ -5131,10 +5154,10 @@ function buildMeihuaTiming(mh, type, analysis) {
 
   var note = timingObj.note || '';
   if (!note) {
-    if      (speed === 'fast')     note = '卦氣活躍，近期很快有動靜，不要錯過';
-    else if (speed === 'normal')   note = '有進展，但不是馬上，保持耐心推進';
+    if      (speed === 'fast')     note = '卦象節奏偏快，但資料不足以換算天數或日期';
+    else if (speed === 'normal')   note = '卦象層次偏近期，但資料不足以換算週數或日期';
     else if (speed === 'unstable') note = '時間不定，可能走走停停，準備好長期應對';
-    else                           note = '需要等待條件改變，不宜強催';
+    else                           note = '卦象層次偏後，需等待條件改變；不得自行換算月份';
   }
   if (tiWS.level === '旺' || tiWS.level === '相') note += '（月令有利，時機靠近）';
   else if (tiWS.level === '死' || tiWS.level === '囚') note += '（月令不利，應期可能再延後）';
@@ -5142,8 +5165,9 @@ function buildMeihuaTiming(mh, type, analysis) {
   return {
     speed:       speed,
     windowLabel: wd.label,
-    windowDays:  wd.days,
+    windowDays:  null,
     tendency:    tendency,
+    precision:   'relative-only',
     note:        note
   };
 }

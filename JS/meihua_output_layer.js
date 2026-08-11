@@ -280,7 +280,7 @@ function buildMeihuaSummary(mh, type, analysis) {
 // ─────────────────────────────────────────────────────────────────
 function buildMeihuaTiming(mh, type, analysis) {
   if (!mh || !analysis) {
-    return { speed: 'normal', windowLabel: '1-4週', windowDays: [7,28], tendency: 'delayed', note: '資料不足，暫以短期估算' };
+    return { speed: 'unknown', windowLabel: '資料不足，只能判相對遠近', windowDays: null, tendency: 'unknown', precision: 'insufficient', note: '不得自行估算天數、週數或月份' };
   }
 
   var timingObj = analysis.timingFull  || { label: '短期', score: 0 };
@@ -297,13 +297,13 @@ function buildMeihuaTiming(mh, type, analysis) {
   var speed = speedMap[timingObj.label] || 'normal';
 
   var windowData = {
-    '很快':   { label: '1-7天',     days: [1, 7] },
-    '短期':   { label: '1-4週',     days: [7, 28] },
-    '稍晚':   { label: '1-3個月',   days: [28, 90] },
-    '拖延型': { label: '3個月以上', days: [90, 180] },
-    '反覆型': { label: '時機未定',  days: null }
+    '很快':   { label: '相對近期' },
+    '短期':   { label: '相對近期' },
+    '稍晚':   { label: '相對中期' },
+    '拖延型': { label: '相對較遠' },
+    '反覆型': { label: '時機未定' }
   };
-  var wd = windowData[timingObj.label] || { label: '1-4週', days: [7, 28] };
+  var wd = windowData[timingObj.label] || { label: '只能判相對遠近' };
 
   var tendency = 'delayed';
   if      (speed === 'fast')     tendency = 'quick-hit';
@@ -314,10 +314,10 @@ function buildMeihuaTiming(mh, type, analysis) {
 
   var note = timingObj.note || '';
   if (!note) {
-    if      (speed === 'fast')     note = '卦氣活躍，近期很快有動靜，不要錯過';
-    else if (speed === 'normal')   note = '有進展，但不是馬上，保持耐心推進';
+    if      (speed === 'fast')     note = '卦象節奏偏快，但資料不足以換算天數或日期';
+    else if (speed === 'normal')   note = '卦象層次偏近期，但資料不足以換算週數或日期';
     else if (speed === 'unstable') note = '時間不定，可能走走停停，準備好長期應對';
-    else                           note = '需要等待條件改變，不宜強催';
+    else                           note = '卦象層次偏後，需等待條件改變；不得自行換算月份';
   }
   if (tiWS.level === '旺' || tiWS.level === '相') note += '（月令有利，時機靠近）';
   else if (tiWS.level === '死' || tiWS.level === '囚') note += '（月令不利，應期可能再延後）';
@@ -325,8 +325,9 @@ function buildMeihuaTiming(mh, type, analysis) {
   return {
     speed:       speed,
     windowLabel: wd.label,
-    windowDays:  wd.days,
+    windowDays:  null,
     tendency:    tendency,
+    precision:   'relative-only',
     note:        note
   };
 }
@@ -432,49 +433,20 @@ function buildMeihuaYingQi(mh) {
     if (!ti) return null;
     var SHENG_ME = {金:'土', 木:'水', 水:'金', 火:'木', 土:'火'}; // 生我者
     var KE_ME    = {金:'火', 木:'金', 水:'土', 火:'水', 土:'木'}; // 剋我者
-    var EL_ZHIS  = {木:['寅','卯'], 火:['巳','午'], 土:['辰','未','戌','丑'], 金:['申','酉'], 水:['亥','子']};
     var EL_TXT   = {
       木:'寅卯月（農曆正、二月）', 火:'巳午月（農曆四、五月）',
       土:'辰未戌丑月（農曆三、六、九、十二月）',
       金:'申酉月（農曆七、八月）', 水:'亥子月（農曆十、十一月）'
     };
-    var ZHI_ORDER = ['寅','卯','辰','巳','午','未','申','酉','戌','亥','子','丑'];
-    var ZHI_LUNAR = {寅:1,卯:2,辰:3,巳:4,午:5,未:6,申:7,酉:8,戌:9,亥:10,子:11,丑:12};
-
-    // 當前節氣月支：優先用 meihua_upgrade2.js v2 的 mhMonthZhiFromDate；無則內建近似（同法）
-    var nowZhi;
-    if (typeof mhMonthZhiFromDate === 'function') {
-      nowZhi = mhMonthZhiFromDate(new Date());
-    } else {
-      var _JIE = {1:6,2:4,3:6,4:5,5:6,6:6,7:7,8:8,9:8,10:8,11:7,12:7};
-      var _GZ  = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-      var _d = new Date(), _m = _d.getMonth() + 1;
-      if (_d.getDate() < _JIE[_m]) _m = (_m === 1) ? 12 : _m - 1;
-      nowZhi = _GZ[_m % 12];
-    }
-
-    function nearestWindow(zhis) {
-      var nowIdx = ZHI_ORDER.indexOf(nowZhi), best = null;
-      zhis.forEach(function (z) {
-        var dd = (ZHI_ORDER.indexOf(z) - nowIdx + 12) % 12;
-        if (dd === 0) dd = 12; // 當月不算，看下一輪
-        if (best === null || dd < best.dist) best = { zhi: z, dist: dd };
-      });
-      return best;
-    }
-
     var shengEl = SHENG_ME[ti], keEl = KE_ME[ti];
-    var jiWin  = nearestWindow(EL_ZHIS[shengEl].concat(EL_ZHIS[ti]));
-    var baiWin = nearestWindow(EL_ZHIS[keEl]);
 
     return {
-      tiEl: ti, shengEl: shengEl, keEl: keEl, nowZhi: nowZhi,
+      tiEl: ti, shengEl: shengEl, keEl: keEl, precision:'traditional-qi-candidate-only',
       jiTxt:  '生體之氣為' + shengEl + '，當令於' + EL_TXT[shengEl] +
-              '；體旺之氣（' + ti + '）當令於' + EL_TXT[ti] +
-              '。最近一個吉應窗：農曆' + ZHI_LUNAR[jiWin.zhi] + '月（' + jiWin.zhi + '月），距今約 ' + jiWin.dist + ' 個月',
+              '；體旺之氣（' + ti + '）當令於' + EL_TXT[ti] + '。這是傳統卦氣候選，不是已換算的最近月份或日期',
       baiTxt: '剋體之氣為' + keEl + '，當令於' + EL_TXT[keEl] +
-              '。最近一個敗應窗：農曆' + ZHI_LUNAR[baiWin.zhi] + '月（' + baiWin.zhi + '月），距今約 ' + baiWin.dist + ' 個月',
-      layerTxt: '用卦主近期之應、互卦主中期之應、變卦主遠期之應'
+              '。這是傳統卦氣候選，不是已換算的最近月份或日期',
+      layerTxt: '用卦主近期、互卦主中期、變卦主遠期；若沒有可靠曆法與起卦時間基準，只能給相對層次，不得編最近幾個月或精確日期'
     };
   } catch (e) { return null; }
 }

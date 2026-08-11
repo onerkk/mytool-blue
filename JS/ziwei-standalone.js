@@ -467,7 +467,7 @@
       if (zw.starComboNotes && zw.starComboNotes.length) {
         L.push('');
         L.push('【星系組合候選】(只列同宮結構名稱，固定事件描述不作證據；請重新依本宮、三方、廟旺與運限裁決)');
-        zw.starComboNotes.slice(0, 12).forEach(function(n){
+        zw.starComboNotes.forEach(function(n){
           var raw = (typeof n === 'string' ? n : (n && n.text) || '');
           var nameOnly = raw.split('：')[0] || raw;
           if (nameOnly) L.push('・' + nameOnly);
@@ -509,7 +509,7 @@
           L.push('・' + yy + tag + '　' + (lnf.gz || '') + '　命宮落「' + (lnf.mingPalace || '') + '」' +
             (lnf.focus ? '·' + lnf.focus : '') +
             ((lnf.hua && lnf.hua.length) ? '　四化:' + lnf.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入'+h.palace+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : ''));
-          if (yy === ly0 && lnf.notes && lnf.notes.length) lnf.notes.slice(0,3).forEach(function(n){ L.push('    - ' + n); });
+          if (yy === ly0 && lnf.notes && lnf.notes.length) lnf.notes.forEach(function(n){ L.push('    - ' + n); });
         }
       }
     } catch (e) {}
@@ -583,9 +583,9 @@
         var hua = s.hua ? '<span class="hua' + (s.hua==='化忌'?' ji':'') + '">' + huaShort(s.hua) + '</span>' : '';
         starHtml += '<span>' + esc(s.name) + (br?'<span style="opacity:.5;font-size:.5rem">' + (br==='不得'?'不得':br.slice(-1)) + '</span>':'') + hua + '</span>';
       });
-      // 輔吉/煞（精簡，最多各3）
-      var auxArr = (p.stars||[]).filter(function(s){ return s.type!=='major' && s.type!=='sha'; }).slice(0,3);
-      var shaArr = (p.stars||[]).filter(function(s){ return s.type==='sha'; }).slice(0,3);
+      // 輔吉／煞完整送出；由 AI 依題目相關性與獨立性去重，不在資料層先截斷。
+      var auxArr = (p.stars||[]).filter(function(s){ return s.type!=='major' && s.type!=='sha'; });
+      var shaArr = (p.stars||[]).filter(function(s){ return s.type==='sha'; });
       auxArr.forEach(function(s){ starHtml += '<span class="aux">' + esc(s.name) + (s.hua?'<span class="hua' + (s.hua==='化忌'?' ji':'') + '">'+huaShort(s.hua)+'</span>':'') + '</span>'; });
       shaArr.forEach(function(s){ starHtml += '<span class="sha">' + esc(s.name) + '</span>'; });
       if (!starHtml) starHtml = '<span style="opacity:.4">空宮</span>';
@@ -695,7 +695,7 @@
 
     // chips（格局）
     var chips = '';
-    (zw.patterns||[]).slice(0,8).forEach(function(g){
+    (zw.patterns||[]).forEach(function(g){
       var warn = /凶|忌|煞|破|沖/.test((g.level||'')+(g.name||''));
       chips += '<span class="zw-chip' + (warn?' warn':'') + '">' + esc(g.name) + (g.level?'·'+g.level:'') + '</span>';
     });

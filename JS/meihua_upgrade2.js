@@ -234,6 +234,17 @@ var MH_GREG_MONTH_ZHI = ['子','丑','寅','卯','辰','巳','午','未','申','
 
 function mhMonthZhiFromDate(d) {
   d = (d instanceof Date) ? d : new Date();
+  // 優先以 lunar-javascript 的實際節氣時刻取月建，避免固定日期在交界附近判錯。
+  try {
+    if (typeof Solar !== 'undefined' && Solar && typeof Solar.fromDate === 'function') {
+      var lunar = Solar.fromDate(d).getLunar();
+      var prevJie = lunar && lunar.getPrevJie ? lunar.getPrevJie() : null;
+      var jieName = prevJie && prevJie.getName ? prevJie.getName() : '';
+      var JIE_ZHI = {立春:'寅',驚蟄:'卯',清明:'辰',立夏:'巳',芒種:'午',小暑:'未',立秋:'申',白露:'酉',寒露:'戌',立冬:'亥',大雪:'子',小寒:'丑'};
+      if (JIE_ZHI[jieName]) return JIE_ZHI[jieName];
+    }
+  } catch (e) {}
+  // 引擎缺席時才使用明示的近似備援；提示詞不得把此結果包裝成精確節氣時刻。
   var m = d.getMonth() + 1, day = d.getDate();
   if (day < MH_JIE_DAY[m]) m = (m === 1) ? 12 : m - 1; // 未過節，仍屬上一個月支
   return MH_GREG_MONTH_ZHI[m % 12];

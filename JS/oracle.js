@@ -570,7 +570,7 @@ if(_phase==='intro'){
 //   24h 智慧鎖: 當日已抽過 → 溫和提示,但仍允許繼續(權力交還用戶)
 h+='<div class="orc-fade"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div>';
 h+='<p class="orc-desc">心中默念您的姓名、住址<br>以及所求之事<br>靜月之神 派遣神將聆聽</p>';
-h+='<div class="orc-q-input-wrap" style="max-width:380px;margin:1.2rem auto .6rem;padding:0 .8rem"><textarea id="orc-q-input" class="orc-q-textarea" placeholder="在此寫下您所求之事（選填）\n例：工作升遷是否順利？感情能否修復？" maxlength="120" rows="2" oninput="_oracleSyncQText(this.value)"></textarea><div id="orc-q-hint" style="text-align:right;font-size:.65rem;color:rgba(228,210,170,.45);margin-top:.2rem">0 / 120 字</div><div id="orc-q-multi-warn" style="display:none;font-size:.72rem;color:#ff9866;margin-top:.3rem;line-height:1.5"></div></div>';
+h+='<div class="orc-q-input-wrap" style="max-width:380px;margin:1.2rem auto .6rem;padding:0 .8rem"><textarea id="orc-q-input" class="orc-q-textarea" placeholder="在此寫下您所求之事（選填）\n例：工作升遷是否順利？感情能否修復？" rows="3" oninput="_oracleSyncQText(this.value)"></textarea><div id="orc-q-hint" style="text-align:right;font-size:.65rem;color:rgba(228,210,170,.45);margin-top:.2rem">0 字</div><div id="orc-q-multi-warn" style="display:none;font-size:.72rem;color:#ff9866;margin-top:.3rem;line-height:1.5"></div></div>';
 h+='<p class="orc-note" style="margin-top:.6rem">求得籤詩後需連擲三聖筊方為確認</p>';
 // v63: 24h 智慧鎖——僅當日已抽過任何題才提示,不阻擋
 var todayDrawn=_oracleHasDrawnToday();
@@ -927,9 +927,9 @@ h+='</div>';w.innerHTML=h;
 // v62：問事類型/文字輸入 helper
 window._oracleSetType=function(k){_qType=k;_render();};
 window._oracleSyncQText=function(v){
-  _qText=String(v||'').slice(0,120);
+  _qText=String(v||'');
   var hint=document.getElementById('orc-q-hint');
-  if(hint)hint.textContent=_qText.length+' / 120 字';
+  if(hint)hint.textContent=_qText.length+' 字';
   var warn=document.getElementById('orc-q-multi-warn');
   var multiMsg=_oracleDetectMultiQuestion(_qText);
   if(warn){
@@ -1407,29 +1407,30 @@ function _buildOraclePrompt(poem, qText) {
   _orderHint.forEach(function (k) { if (dd[k]) fieldLines.push(k + '：' + dd[k]); });
   Object.keys(dd).forEach(function (k) { if (k.charAt(0) !== '_' && _orderHint.indexOf(k) < 0 && dd[k]) fieldLines.push(k + '：' + dd[k]); });
   if (fieldLines.length > 0) {
-    lines.push('【各項判讀（傳統籤解逐項；挑與問題相關的引用，無關的不要硬扯）】');
+  lines.push('【各項判讀（歷史傳承文本；可能含過時、矛盾或高風險措辭，先核對詩文與現代安全邊界，再選與問題相關者使用）】');
     lines.push(fieldLines.join('。'));
     lines.push('');
   }
   lines.push('────────────────');
   lines.push('【解籤規則】');
   lines.push('1. 第一句直接回答求籤者的問題，給明確方向（吉/凶/宜/忌/等待/行動），不鋪墊。');
-  lines.push('2. 解讀緊扣籤詩原文四句、籤等與典故；逐句對應求籤者的處境，不能脫離詩文空談，也不能引入本籤資料外的命盤或牌面。');
+  lines.push('2. 解讀緊扣籤詩原文、籤等與典故；先判整體語勢、轉折與結局，再引用真正支撐本題的句子。四句都要在內部審過，但不強迫每句各編一個現實事件，也不能引入本籤資料外的命盤或牌面。');
   lines.push('3. 典故是神明藉古人故事為求籤者借鏡，須說明典故與求籤者處境的對應（典故故事已附在資料中，依它解，不要自行杜撰情節）。');
-  lines.push('4. 依籤等定基調：上籤不硬找壞處，下籤不包裝成好事。');
-  lines.push('5. 各項判讀中若有與問題直接相關的欄位，必須引用並解釋；無關欄位不要硬扯。');
-  lines.push('6. 屬性（五行、利季節、方位）只能作時間與方位輔助，不可壓過籤詩與籤等。');
-  lines.push('7. 結尾給具體可做的行動建議；若籤詩沒有時間線索，明說不能硬定日期。');
+  lines.push('4. 籤等是整體基調之一，不是壓過詩文的結論；上籤仍要保留詩中明示的條件與風險，下籤也要保留詩中確有的轉圜，不得為配合籤等扭曲原文。');
+  lines.push('5. 各項判讀屬歷史傳承文本，不等於已驗證事實。逐一檢查與原問句、詩文及典故是否一致；直接相關且不互相矛盾者才引用，矛盾或過時者要明說限制，無關者不硬扯。');
+  lines.push('6. 屬性、生肖、五行、利季節、方位，以及「某日、半月、月中、某月」等傳統時間語，只能列為低精度的傳統候選；沒有可回溯的曆法換算與起訖資料時，不得寫成公曆日期或保證期限。');
+  lines.push('7. 結尾給由籤詩直接推導、可逆且可驗證的行動建議；若籤詩沒有可靠時間線索，明說不能硬定日期。');
   lines.push('8. 口氣像廟裡解籤的老師父對香客說話——溫和但直接，難聽的也照講清楚，不嚇人、不灌雞湯。');
-  lines.push('9. 不用粗體標題。像跟人說話，不像寫報告。');
+  lines.push('9. 對治病、懷孕、生死、犯罪、訴訟、投資或人身安全，籤文只能作傳統象徵參考；不得照抄「必死、必生男／女、一定有罪、必賺／必失」等斷語，不得取代醫療、法律、財務或安全專業判斷。');
+  lines.push('10. 可依問題複雜度使用簡短標題或條列，但語氣仍像當面解籤，不要把規則或逐欄資料抄成報告。');
   if (qText && qText.trim().length > 0) {
-    lines.push('10. 只回答求籤者問的問題，不擴展成人生課題。');
+    lines.push('11. 完整回答求籤者的每個實質子題，但不擴展成沒有被問的人生課題。');
   }
   lines.push('');
   lines.push('');
   lines.push('【完整性清單（寫完前自我核對，不要為湊字灌水）】');
-  lines.push('□ 第一句直接給了方向（吉/凶/宜/忌/等待/行動）　□ 緊扣籤詩四句逐句對應處境　□ 依籤等定基調（上不硬挑壞、下不包裝）');
-  lines.push('□ 講了典故與處境的對應　□ 引用了與問題相關的判讀欄　□ 屬性（五行利季方位）給了時間／方位輔助　□ 壞處直說＋可做的行動　□ 正文沒有出現任何指令字眼（「語氣平實」「只講一種」等）——指令是給你的，不是讀給客人聽的');
+  lines.push('□ 第一句直接給方向　□ 主判可回溯到詩文、籤等與典故　□ 最大反證或條件沒有被省略　□ 沒有為四句各自硬編事件');
+  lines.push('□ 講了典故與處境的對應　□ 相關判讀欄已核對、矛盾或過時內容未當事實　□ 時間精度沒有被誇大　□ 高風險問題未照抄致命或保證式斷語　□ 壞處直說＋可做的行動　□ 正文沒有出現任何指令字眼（「語氣平實」「只講一種」等）——指令是給你的，不是讀給客人聽的');
   lines.push('');
   lines.push('全程繁體中文（台灣用語），嚴禁混入任何簡體字。');
   lines.push('嚴禁引用籤詩之外你自以為知道的求籤者個人資訊（職業、班別、副業、商品、生活細節等）——即使對話上下文或你的記憶裡有，一律不得寫進來；所有具象都必須從籤詩與判讀欄推出。');

@@ -545,7 +545,7 @@
       universalJudgmentRuleLines('personality'),
       promptSpec().answerContractLines('personality'),
       [
-        '人格輸出補充：其後給3–5個可驗證特質、適用情境、風險、反例與一項可執行調整。'
+        '人格輸出補充：納入所有有獨立證據且彼此不重複的可驗證特質，逐項交代適用情境、風險、反例與可執行調整；不設任意項數上限，也不為湊數擴寫弱訊號。'
       ],
       baziBrandTailLines()
     ).join('\n\n');
