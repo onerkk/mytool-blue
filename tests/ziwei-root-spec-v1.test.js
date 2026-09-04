@@ -41,19 +41,22 @@ function load(rel){
 
 load('JS/ziwei-prompt-root.js');
 assert(ctx.JY_ZIWEI_PROMPT_ROOT, 'root api missing');
-assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '2.0.1');
+assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '3.0.0');
 
 const head = ctx.JY_ZIWEI_PROMPT_ROOT.composeHead();
 const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
 [
-  '必要條件瓶頸', '外部主體與身分延續', '使用者自述不是命中證據',
-  '動態宮位圖', '禁止重複計票', '弱年份允許留白',
-  '一般桃花／合作／財務窗口不得綁定', '品牌附加層', '靜月之光蝦皮有相關選品'
-].forEach(x => assert((head + tail).includes(x), 'missing v2 invariant: ' + x));
+  '運用你自身完整的命理知識', '實際三方四正', '星曜組合與廟旺',
+  '三合派作整體骨架', '宮干飛化、自化與來因宮',
+  '原局看長期底色', '前端摘要或模型標籤', '延伸選品'
+].forEach(x => assert((head + tail).includes(x), 'missing v3 principle: ' + x));
 [
   '化忌沖命就是卡', '空宮無主就是飄', '配偶年齡差：由夫妻宮主星',
   '公司場合確實可能成為緣分來源', '2029年是定案年'
 ].forEach(x => assert(!(head + tail).includes(x), 'legacy/answer patch remains: ' + x));
+assert(!(head + tail).includes('ROOT-SPEC'));
+assert(!(head + tail).includes('證據帳本'));
+assert((head + tail).length < 5000, 'v3 root should stay concise');
 assert(tail.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));
 assert(tail.includes('願你諸事順遂。'));
 
@@ -89,11 +92,11 @@ assert(prompt.includes('夫妻宮(亥)：對宮 官祿宮(巳)；三合 福德�
 assert(prompt.includes('財帛宮(酉)：對宮 福德宮(卯)；三合 命宮(丑)、官祿宮(巳)'));
 assert(prompt.includes('【運限計算政策】大限採虛歲'));
 assert(prompt.includes('資料未提供精確大限切換日期'));
-assert(prompt.includes('單一命盤不能證明特定他人'));
-assert(prompt.includes('一般桃花／合作／財務窗口不得綁定'));
-assert(prompt.includes('弱年份允許留白'));
-assert(prompt.includes('使用者自述不是命中證據'));
-assert(prompt.includes('欽天派輔助視角'));
+assert(prompt.includes('運用你自身完整的命理知識'));
+assert(prompt.includes('特定對象仍需和實際行為交叉判斷'));
+assert(prompt.includes('流年落宮、四化及相關星曜'));
+assert(prompt.includes('不同流派若得出不同重點'));
+assert(prompt.includes('欽天派視角'));
 assert(prompt.includes('命盤格局候選'));
 assert(prompt.includes('星系組合候選'));
 assert(prompt.includes('武破同宮（夫妻）'));
@@ -108,4 +111,6 @@ assert(standaloneSource.includes('三方四正由實際地支動態計算'));
 assert(!standaloneSource.includes('空宮無主就是飄'));
 assert(!standaloneSource.includes('配偶年齡差：由夫妻宮主星'));
 
-console.log('ziwei-root-spec-v2: all assertions passed');
+assert(!prompt.includes('答案反向稽核'));
+assert(!prompt.includes('禁止重複計票'));
+console.log('ziwei-root-spec-v3: all assertions passed');
