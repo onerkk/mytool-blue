@@ -5300,7 +5300,7 @@ document.addEventListener('click',function(e){
   console.log('%c靜月之光 v5.0 — 版權所有 © 2024-2026','font-size:12px;color:#888');
 })();
 
-/* ═══ 真實人次計數器（Google Sheets 雲端版）═══ */
+/* ═══ 真實人次計數器（Pages Function → Google Sheets）═══ */
 /*
  * 【設定步驟】
  * 1. 開 Google Sheets → 建新試算表
@@ -5356,45 +5356,67 @@ document.addEventListener('click',function(e){
  * 6. 點「部署」→「新增部署作業」→ 類型選「網頁應用程式」
  *    - 執行身分：你自己
  *    - 誰可以存取：「所有人」
- * 7. 複製部署的網址，貼到下面 CTR_ENDPOINT
+ * 7. 部署網址由 functions/api/counter.js 保管；前端只呼叫本站 API
  */
 
-// ★★★ 把這裡換成你的 Apps Script 部署網址 ★★★
-const CTR_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxCvM09XbFUyl0BC2im-H6DU_t2Ipjq9p-dZDGAuiildcxmBGC-CGngvvqWmaiPxW8wNQ/exec';
+// 自家網域走同源；GitHub Pages 備援站改走正式 Pages Function。
+const CTR_ENDPOINT = (function(){
+  var host = window.location.hostname || '';
+  if(host === 'jingyue.uk' || host === 'www.jingyue.uk' || host === 'mytool-blue.pages.dev' ||
+     host === 'localhost' || host === '127.0.0.1') return '/api/counter';
+  return 'https://mytool-blue.pages.dev/api/counter';
+})();
+const CTR_FALLBACK_ENDPOINT = 'https://mytool-blue.pages.dev/api/counter';
 
-// ── 呼叫 Apps Script（用 script 注入，最可靠的跨域方式）──
-function _gasCall(action){
-  return new Promise((resolve)=>{
-    const cbName = '_gasCb_' + Date.now();
-    const timeout = setTimeout(()=>{
-      delete window[cbName];
-      resolve(null);
-    }, 8000);
-    
-    window[cbName] = function(data){
-      clearTimeout(timeout);
-      delete window[cbName];
-      resolve(data);
-    };
-    
-    // Apps Script 不支援 JSONP，改用 fetch
-    fetch(CTR_ENDPOINT + '?action=' + action, {redirect:'follow'})
-      .then(r => r.json())
-      .then(data => {
-        clearTimeout(timeout);
-        delete window[cbName];
-        resolve(data);
-      })
-      .catch(()=>{
-        // fetch 失敗時用 Image beacon（只能送不能收）
-        if(action === 'increment' || action === 'reset'){
-          new Image().src = CTR_ENDPOINT + '?action=' + action + '&_t=' + Date.now();
-        }
-        clearTimeout(timeout);
-        delete window[cbName];
-        resolve(null);
-      });
-  });
+function _normalizeCounterData(data, action){
+  if(!data || typeof data !== 'object' || Array.isArray(data) || data.error) return null;
+  var out={};
+  if(data.total !== undefined){
+    var total=Number(data.total);
+    if(!Number.isFinite(total) || total<0) return null;
+    out.total=Math.floor(total);
+  }
+  if(data.today !== undefined){
+    var today=Number(data.today);
+    if(!Number.isFinite(today) || today<0) return null;
+    out.today=Math.floor(today);
+  }
+  if(action === 'get' && (out.total === undefined || out.today === undefined)) return null;
+  if(action === 'increment' && out.total === undefined) return null;
+  return out;
+}
+
+// ── 只呼叫本站代理，避免手機瀏覽器攔截 Google 跨網域與重新導向 ──
+async function _gasCall(action){
+  var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var timeout = setTimeout(function(){ if(controller) controller.abort(); }, 10000);
+  var isRead = action === 'get';
+  var options = {
+    method: isRead ? 'GET' : 'POST',
+    cache: 'no-store',
+    headers: { 'Accept': 'application/json' }
+  };
+  if(controller) options.signal = controller.signal;
+  if(!isRead){
+    options.headers['Content-Type']='application/json';
+    options.body=JSON.stringify({action:action});
+  }
+  try{
+    var suffix = isRead ? '?action=get&_t=' + Date.now() : '?_t=' + Date.now();
+    var response = await fetch(CTR_ENDPOINT + suffix, options);
+    // 若自訂網域實際由純靜態主機承載，404/405 代表請求未進入計數器，
+    // 此時才安全改走 pages.dev；上游 5xx 或網路中斷不重送，避免重複 +1。
+    if(CTR_ENDPOINT !== CTR_FALLBACK_ENDPOINT &&
+       (response.status === 404 || response.status === 405)){
+      response = await fetch(CTR_FALLBACK_ENDPOINT + suffix, options);
+    }
+    if(!response.ok) return null;
+    return _normalizeCounterData(await response.json(), action);
+  }catch(_){
+    return null;
+  }finally{
+    clearTimeout(timeout);
+  }
 }
 
 // ── 計數 +1（連進首頁觸發一次）──
