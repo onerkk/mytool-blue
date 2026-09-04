@@ -5356,17 +5356,17 @@ document.addEventListener('click',function(e){
  * 6. 點「部署」→「新增部署作業」→ 類型選「網頁應用程式」
  *    - 執行身分：你自己
  *    - 誰可以存取：「所有人」
- * 7. 部署網址由 functions/api/counter.js 保管；前端只呼叫本站 API
+ * 7. 部署網址由 functions/api/pulse.js 保管；前端只呼叫本站 API
  */
 
 // 自家網域走同源；GitHub Pages 備援站改走正式 Pages Function。
 const CTR_ENDPOINT = (function(){
   var host = window.location.hostname || '';
   if(host === 'jingyue.uk' || host === 'www.jingyue.uk' || host === 'mytool-blue.pages.dev' ||
-     host === 'localhost' || host === '127.0.0.1') return '/api/counter';
-  return 'https://mytool-blue.pages.dev/api/counter';
+     host === 'localhost' || host === '127.0.0.1') return '/api/pulse';
+  return 'https://mytool-blue.pages.dev/api/pulse';
 })();
-const CTR_FALLBACK_ENDPOINT = 'https://mytool-blue.pages.dev/api/counter';
+const CTR_FALLBACK_ENDPOINT = 'https://mytool-blue.pages.dev/api/pulse';
 
 function _normalizeCounterData(data, action){
   if(!data || typeof data !== 'object' || Array.isArray(data) || data.error) return null;
