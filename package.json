@@ -3,9 +3,10 @@
     "javascript-obfuscator": "^5.3.0"
   },
   "scripts": {
-    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei",
+    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter",
     "test:prompts": "node tests/prompt-accuracy-20260811.test.cjs",
     "test:tarot": "node tests/tarot-v102-method-data-prompt.test.js",
-    "test:ziwei": "node tests/ziwei-root-spec-v1.test.js"
+    "test:ziwei": "node tests/ziwei-root-spec-v1.test.js",
+    "test:counter": "node tests/counter-proxy.test.mjs"
   }
 }
