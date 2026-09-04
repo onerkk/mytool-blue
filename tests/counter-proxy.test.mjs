@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const counterModuleUrl = new URL('../functions/api/counter.js', import.meta.url);
+const counterModuleUrl = new URL('../functions/api/pulse.js', import.meta.url);
 const counterSource = await readFile(counterModuleUrl, 'utf8');
 const counterModule = await import(`data:text/javascript;base64,${Buffer.from(counterSource).toString('base64')}`);
 const { onRequest } = counterModule;
@@ -18,9 +18,10 @@ function siteRequest(path, init = {}) {
 async function run() {
   const uiSource = await readFile(new URL('../JS/ui.js', import.meta.url), 'utf8');
   const indexSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(uiSource, /\/api\/counter/);
+  assert.match(uiSource, /\/api\/pulse/);
+  assert.doesNotMatch(uiSource, /\/api\/counter/);
   assert.doesNotMatch(uiSource, /const CTR_ENDPOINT\s*=\s*['"]https:\/\/script\.google\.com/);
-  assert.match(indexSource, /JS\/ui\.js\?v=20260904counterv1/);
+  assert.match(indexSource, /JS\/ui\.js\?v=20260904pulsev2/);
 
   globalThis.fetch = async url => {
     upstreamUrl = String(url);
@@ -31,7 +32,7 @@ async function run() {
   };
 
   const getResponse = await onRequest({
-    request: siteRequest('/api/counter?action=get'),
+    request: siteRequest('/api/pulse?action=get'),
     env: { COUNTER_GAS_URL: 'https://script.google.com/macros/s/test/exec' },
   });
   assert.equal(getResponse.status, 200);
@@ -41,7 +42,7 @@ async function run() {
   assert.match(getResponse.headers.get('Cache-Control'), /no-store/);
 
   const incrementResponse = await onRequest({
-    request: siteRequest('/api/counter', {
+    request: siteRequest('/api/pulse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'increment' }),
@@ -52,13 +53,13 @@ async function run() {
   assert.match(upstreamUrl, /action=increment/);
 
   const invalidResponse = await onRequest({
-    request: siteRequest('/api/counter?action=erase'),
+    request: siteRequest('/api/pulse?action=erase'),
     env: {},
   });
   assert.equal(invalidResponse.status, 400);
 
   const blockedResponse = await onRequest({
-    request: siteRequest('/api/counter?action=get', {
+    request: siteRequest('/api/pulse?action=get', {
       headers: { Origin: 'https://example.com' },
     }),
     env: {},
@@ -69,7 +70,7 @@ async function run() {
   const realConsoleError = console.error;
   console.error = () => {};
   const upstreamFailure = await onRequest({
-    request: siteRequest('/api/counter?action=get'),
+    request: siteRequest('/api/pulse?action=get'),
     env: { COUNTER_GAS_URL: 'https://script.google.com/macros/s/test/exec' },
   });
   console.error = realConsoleError;
