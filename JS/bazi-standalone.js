@@ -1,3 +1,4 @@
+// v3.0.0(2026/9/4)：提示詞改為知識開放核心；保留精確排盤、流派鏡頭與運限資料，移除 ROOT-SPEC、帳本、稽核及大量限制式指令。
 // v80.62(2026/7/17)：真正根治手機選單機率性缺列——移除透明 fixed 疊層雙 RAF 顯示競態與巢狀捲動，改同步可見、visualViewport 實高、整張 sheet 捲動；日期改為明確六列七欄，並做完整性校驗與強制重繪。
 // v80.61(2026/7/17)：根治 Android／Samsung 底部選單偶發缺欄、缺列與空白重繪：獨立 box-sizing、dvh、安全區、防橫溢、固定六週日曆、手機無 transform 疊層、雙 requestAnimationFrame 開啟。
 // v80.60(2026/7/17)：八字提示詞 ROOT-SPEC v2：抽離共用證據核心，新增資料四層、模糊門檻操作化、獨立證據裁決、替代判法／反證、喜用副作用、時間滯後、行動驗證與答案反向稽核。
@@ -482,19 +483,19 @@
     L=L.concat(spec.rootProtocolLines());
     L.push('');
 
-    L.push('【A. 排盤事實層——可以重算核對，不得擅自改柱】');
+    L.push('【A. 排盤與曆法資料】');
     L.push('命主：'+(b.gender==='female'?'女命':'男命')+(animal?'・屬'+animal:'')+(meta&&meta.birthLine?'・'+meta.birthLine:''));
     if(meta&&meta.solarInfo){
       var si=meta.solarInfo;
       L.push('民用出生時間校正為真太陽時：'+(si.trueSolarDateTime||'—')+'；經度 '+(meta&&meta.longitude!=null?Number(meta.longitude).toFixed(2)+'°':'未提供')+'；經度修正 '+Number(si.longitudeCorrectionMinutes||0).toFixed(2)+' 分、均時差 '+Number(si.equationOfTimeMinutes||0).toFixed(2)+' 分、DST '+Number(si.dstOffsetMinutes||0)+' 分；時區 '+(si.timezoneId||'固定UTC偏移')+'。');
       L.push('精度提醒：真太陽時顯示到秒是曆法換算結果，不會提高原始出生紀錄的可信精度；若原始資料只到分鐘，判讀仍以分鐘級處理。');
-      if(si.timezoneSource==='fixed-offset')L.push('時區限制：本次只有固定 UTC 偏移，無法驗證出生地歷史 DST／時區變更；若接近時辰、換日或節氣邊界，須補 IANA 時區後重排。');
+      if(si.timezoneSource==='fixed-offset')L.push('時區精度：本次只有固定 UTC 偏移；若接近時辰、換日或節氣邊界，補上 IANA 時區後可進一步核對歷史 DST／時區變更。');
       if(si.civilTimeStatus==='ambiguous-earlier')L.push('DST 重疊警告：該民用時間對應兩個瞬間，本次採較早一次；須確認出生證明記錄採哪一個偏移。');
-      if(si.civilTimeStatus==='nonexistent-compatible')L.push('DST 缺口警告：輸入的民用時間在該地不存在，本次採相容解析；不得用此結果下邊界性結論。');
+      if(si.civilTimeStatus==='nonexistent-compatible')L.push('DST 缺口警告：輸入的民用時間在該地不存在，本次採相容解析，邊界相關判讀的把握度較低。');
     }else if(meta&&meta.solarNote){L.push('真太陽時：'+meta.solarNote+'。');}
     L.push('排盤政策：曆法引擎 '+(policy.calendarEngine||'備援演算法')+(policy.calendarEngineVersion?' '+policy.calendarEngineVersion:'')+'；精度 '+(policy.calendarPrecision||'未標示')+'；換日 '+(policy.dayBoundaryLabel||'未標示')+'；流年以'+(policy.annualBoundary||'立春')+'為界；大運採半開區間 [起點,下一起點)；目前運勢比較基準 '+(policy.referenceTimeBasis||'未標示')+'。');
-    if(policy.calendarFallback)L.push('警告：本次未使用精確曆法引擎，結果屬備援近似；遇節氣、23時或交運邊界不得下精確結論。');
-    if(meta&&meta.unknown)L.push('重大限制：出生時辰未知，目前以午時暫排。時柱、時柱十神與藏干、命宮／胎息類資料、部分神煞、真太陽時細節及精確起運時刻均屬低信度；回答不得把這些欄位當成定論，並應優先使用年、月、日三柱可支持的內容。');
+    if(policy.calendarFallback)L.push('精度提醒：本次使用備援近似曆法；節氣、23時或交運邊界附近宜降低精確度並核對正式曆表。');
+    if(meta&&meta.unknown)L.push('時辰未知：目前以午時暫排。時柱、時柱十神與藏干、命宮／胎息類資料、部分神煞、真太陽時細節及精確起運時刻的把握度較低；請以年、月、日三柱作主要依據，並分開說明時柱候選。');
     keys.forEach(function(k){
       var p=P[k]||{}, gd=G[k]||{}, cg=Array.isArray(CG[k])?CG[k]:[];
       var zgs=Array.isArray(gd.zhi)?gd.zhi:[];
@@ -503,7 +504,7 @@
     if(b.renyuan)L.push('・人元司令：'+_fmt(b.renyuan)+'（輔助月令用事，不改變月柱）。');
     if(b.kongwang){var kw=[].concat(b.kongwang.year||[],b.kongwang.day||[]).filter(function(v,i,a){return v&&a.indexOf(v)===i;});if(kw.length)L.push('・空亡：'+kw.join('、')+'。');}
     if(b.qiyun){L.push('・起運：'+(b.qiyun.startAgeText||'—')+'；交運點 '+fmtDate(b.qiyun.startDate)+'；順逆 '+(b.qiyun.direction==='forward'?'順行':'逆行')+'；取'+(b.qiyun.referenceJie||'節')+' '+fmtDate(b.qiyun.referenceJieDate)+'；精度 '+(b.qiyun.precision||'未標示')+'。');}
-    L.push('四柱宮位只作傳統象義定位：年柱＝'+palace.year+'；月柱＝'+palace.month+'；日柱＝'+palace.day+'；時柱＝'+palace.hour+'。不可把宮位象義直接當成已發生事件。');
+    L.push('四柱宮位傳統象義：年柱＝'+palace.year+'；月柱＝'+palace.month+'；日柱＝'+palace.day+'；時柱＝'+palace.hour+'。請與十神、生剋、歲運及現實情境綜合。');
     L.push('');
 
     L.push('【原局干支作用——由核心唯一計算】');
@@ -511,18 +512,18 @@
     (b.branchInteractions||[]).forEach(function(x){
       if(!x)return; interactions.push('・'+(x.type||x.typeCode||'作用')+'：'+(x.desc||((x.branches||[]).join('')))+(x.effect?'；'+x.effect:'')+(x.typeCode==='COMBINATION_2'?'；僅代表六合配對，是否合化待審':''));
     });
-    (b.hiddenInteractions||[]).forEach(function(x){if(x&&x.zh)interactions.push('・暗合參考：'+x.zh+'（暗合屬輔助，不可壓過明見刑沖合害）。');});
+    (b.hiddenInteractions||[]).forEach(function(x){if(x&&x.zh)interactions.push('・暗合參考：'+x.zh+'（與明見刑沖合害共同衡量）。');});
     if(b.hiddenInteractionPolicy&&!b.hiddenInteractionPolicy.enabled)L.push('暗合政策：'+b.hiddenInteractionPolicy.reason);
     if(interactions.length)L.push(interactions.join('\n'));else L.push('原局未檢出需特別列示的明顯刑沖合害破、三合三會或半合拱合。');
-    L.push('判讀限制：配對存在≠必然成化；合化須另審月令、透干、引化、同黨、沖破與全局氣勢。沖、刑、害、破也不自動等於凶，須看所動之柱、十神、喜忌與歲運是否引發。');
+    L.push('判讀提示：配對存在後，仍需以月令、透干、引化、同黨、沖破與全局氣勢判斷是否成化；沖、刑、害、破的方向則結合所動之柱、十神、喜忌與歲運。');
     L.push('');
 
-    L.push('【B. 流派模型層——必須標成判斷，不得冒充客觀數值】');
+    L.push('【B. 前端流派模型（供交叉核對）】');
     L.push('日主 '+(b.dm||'')+'（'+(b.dmEl||'')+'），生於'+((P.month&&P.month.zhi)||'')+'月；得令 '+(b.deLing?'是':'否')+'、日支坐根 '+(b.deDi?'是':'否')+'、天干助勢 '+(b.deShi?'是':'否')+'。');
     if(b.tongGen&&b.tongGen.zh)L.push('通根：'+b.tongGen.zh+'。');
-    L.push('本系統旺衰模型判為：'+(b.strongLevel||(b.strong?'身強':'身弱'))+(b.selfPts!=null?'；自黨相對分 '+Math.round(b.selfPts):'')+(b.strengthConflict?'；存在邊界/矛盾，必須提供替代判法':'')+'。');
+    L.push('本系統旺衰模型判為：'+(b.strongLevel||(b.strong?'身強':'身弱'))+(b.selfPts!=null?'；自黨相對分 '+Math.round(b.selfPts):'')+(b.strengthConflict?'；位於判法邊界，請同時比較替代判法':'')+'。');
     if(b.strengthNote)L.push('旺衰複核提示：'+b.strengthNote);
-    if(b.strengthAssessment&&b.strengthAssessment.disclaimer)L.push('旺衰模型限制：'+b.strengthAssessment.disclaimer);
+    if(b.strengthAssessment&&b.strengthAssessment.disclaimer)L.push('旺衰模型說明：'+b.strengthAssessment.disclaimer);
     if(b.ep){L.push('五行相對權重（僅供本模型內比較，不是古籍固定比例）：'+['木','火','土','金','水'].map(function(e){return e+Math.round(b.ep[e]||0)+'%';}).join('、')+'。');}
     if(b.specialStructure){L.push('特殊格局已確認候選：'+(b.specialStructure.type||'')+'；'+(b.specialStructure.desc||'')+'。仍須檢查根氣、破格字與逆勢。');}
     if(Array.isArray(b.specialStructureCandidates)&&b.specialStructureCandidates.length){
@@ -530,9 +531,9 @@
     }
     if(!b.specialStructure&&b.zhengGe&&b.zhengGe.geName){L.push('月令取格候選：'+b.zhengGe.geName+(b.zhengGe.geGod?'（格神 '+b.zhengGe.geGod+'）':'')+'。取格是觀察框架，不可單獨代替旺衰、調候與全局生剋。');}
     if(b.guanShaMix&&b.guanShaMix.zh)L.push('官殺辨析：'+b.guanShaMix.zh);
-    if(Array.isArray(b.strengthPattern)&&b.strengthPattern.length)L.push('旺衰結構候選標記：'+b.strengthPattern.map(function(x){return (x.type||'未命名')+(x.el?'（'+(Array.isArray(x.el)?x.el.join('、'):x.el)+'）':'');}).join('、')+'。這些只列候選證據，需由月令、根氣、透干與制化重新論證，不自動改寫喜忌，也不得直接推成人生事件。');
+    if(Array.isArray(b.strengthPattern)&&b.strengthPattern.length)L.push('旺衰結構候選標記：'+b.strengthPattern.map(function(x){return (x.type||'未命名')+(x.el?'（'+(Array.isArray(x.el)?x.el.join('、'):x.el)+'）':'');}).join('、')+'。請用月令、根氣、透干與制化覆核，再判斷它如何影響喜忌與本題。');
     L.push('扶抑喜用候選：'+(Array.isArray(b.fav)&&b.fav.length?b.fav.join('、'):'—')+'；忌神候選：'+(Array.isArray(b.unfav)&&b.unfav.length?b.unfav.join('、'):'—')+'。');
-    if(b.wuxingStance&&b.wuxingStance.summary)L.push('本系統扶抑基準五行立場：'+b.wuxingStance.summary+'。若不同流派取用相反，必須把爭點與會翻盤的條件說明，不可假裝只有一種答案。');
+    if(b.wuxingStance&&b.wuxingStance.summary)L.push('本系統扶抑基準五行立場：'+b.wuxingStance.summary+'。若不同流派取用相反，請比較爭點、採用理由與會使判斷改變的條件。');
     if(b.tiaohou&&b.tiaohou.need&&b.tiaohou.need.length)L.push('調候候選：需 '+b.tiaohou.need.join('、')+(b.tiaohou.avoid&&b.tiaohou.avoid.length?'；避 '+b.tiaohou.avoid.join('、'):'')+'；理由 '+(b.tiaohou.reason||'')+' '+(b.tiaohou.detail||'')+'；急迫度 '+(b.tiaohou.priority||'未標示')+'。'+(b.tiaohou.sourcePolicy||'調候為傳統季節象義')+'。'+(b.tiaohou.integrationNote||'調候與扶抑分開判讀。'));
     if(b.medicineGod)L.push('病藥模型：'+_fmt(b.medicineGod)+'。');
     if(b.relayGod)L.push('通關模型：'+_fmt(b.relayGod)+'。');
@@ -557,13 +558,13 @@
     (b.dayun||[]).forEach(function(d){(d&&d.liuNian||[]).forEach(function(x){if(x&&x.year>=refYear&&x.year<=refYear+3&&!future.some(function(y){return y.year===x.year;}))future.push(x);});});
     future.sort(function(a,c){return a.year-c.year;});
     if(future.length)L.push('近四個立春年度：'+future.map(function(x){return x.year+' '+x.gz+'（模型 '+(x.level||'未評')+'；區間 '+x.periodStart+' ～ '+x.periodEndExclusive+'）';}).join('；')+'。');
-    L.push('流年與大運的「吉凶等級」只能當相對排序。刑沖合害、三合三會只列觸發，不參與自動加減分；不得從分數直接編造百分比、必然事件、特定月份、金額、對象年齡或疾病。');
+    L.push('流年與大運的「吉凶等級」是前端相對排序；刑沖合害、三合三會在此列為觸發。請回到干支、十神、原局承受與題目領域自行判讀。');
     L.push('');
 
     var ss=[];
     (b.shensha||[]).forEach(function(x){var t=x&&x.name?x.name:_fmt(x);if(t&&ss.indexOf(t)<0)ss.push(t);});
     (b.extraShenSha||[]).forEach(function(x){var t=x&&x.name?x.name:_fmt(x);if(t&&ss.indexOf(t)<0)ss.push(t);});
-    if(ss.length){L.push('【神煞資料（末位輔助）】');L.push(ss.join('、')+'。神煞不能單獨定吉凶、婚姻、疾病或生死，只能在干支生剋已有同向訊號時補充。');L.push('');}
+    if(ss.length){L.push('【神煞資料（輔助）】');L.push(ss.join('、')+'。請放回干支生剋、格局、宮位與歲運中綜合。');L.push('');}
 
     L=L.concat(spec.universalRulesLines());
     L.push('');

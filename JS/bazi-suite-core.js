@@ -1,5 +1,6 @@
-/*! bazi-suite-core.js — 靜月之光八字完整功能套件核心 v1.2.0 (2026-07-17)
+/*! bazi-suite-core.js — 靜月之光八字完整功能套件核心 v1.3.0 (2026-09-04)
  *  功能：單盤多主題、雙人情境合盤、五軸32型人格卡、可追溯提示詞。
+ *  v1.3.0：同步知識開放提示詞核心，精簡單盤、合盤與人格模式的重複限制。
  *  v1.2.0：接入 bazi-prompt-root ROOT-SPEC v2，共用資料分層、問題編譯、證據裁決、反證、時間解析、行動驗證與輸出稽核。
  *  v1.1.0：提示詞 ROOT-SPEC 根治；全題型語義保真、證據權重、喜用神分鏡、歲運與高風險邊界、品牌層隔離。
  *  注意：此為依公開功能範圍自行實作的本地規則引擎；不含、也不冒充任何第三方未公開的私有評分或提示詞。
@@ -40,23 +41,23 @@
   var CHINESE_ZODIAC = {子:'鼠',丑:'牛',寅:'虎',卯:'兔',辰:'龍',巳:'蛇',午:'馬',未:'羊',申:'猴',酉:'雞',戌:'狗',亥:'豬'};
 
   var SCENARIOS = [
-    {id:'marriage', name:'婚戀／婚姻', roleA:'甲方', roleB:'乙方', focus:'親密需求、承諾、夫妻宮、情緒與生活節奏、長期壓力及邊界', cautions:'不得以單一日柱、生肖、合沖或分數斷定必婚、必離或外遇。'},
-    {id:'business', name:'事業合夥', roleA:'發起人／夥伴A', roleB:'夥伴B', focus:'決策權、風險偏好、財務責任、執行互補、分工與退出機制', cautions:'命盤不能代替盡職調查、契約、股權與財務審查。'},
-    {id:'mother_in_law', name:'婆媳關係', roleA:'婆婆', roleB:'媳婦', focus:'家庭角色、權責邊界、照顧方式、生活規則與代際壓力', cautions:'不得將十神或宮位直接等同為任何一方的人品或固定衝突。'},
-    {id:'best_friends', name:'閨蜜／摯友', roleA:'朋友A', roleB:'朋友B', focus:'信任、支持方式、社交節奏、競爭感、情緒承接與長期友誼', cautions:'不以比劫、刑害等單一訊號直接判定背叛或嫉妒。'},
-    {id:'father_son', name:'父子關係', roleA:'父親', roleB:'兒子', focus:'規範、期待、獨立、權威、教養方式與成年後邊界', cautions:'不得把父星、子女宮或官殺直接套成已發生的家庭事件。'},
-    {id:'mother_son', name:'母子關係', roleA:'母親', roleB:'兒子', focus:'保護、依附、情緒照顧、控制感、獨立與成年後邊界', cautions:'不得以印星多寡直接斷定溺愛、冷漠或心理疾病。'},
-    {id:'friendship', name:'一般朋友', roleA:'朋友A', roleB:'朋友B', focus:'溝通、互惠、距離感、資源交換、衝突修復與相處成本', cautions:'不以單一合沖判定朋友一定可靠或一定有害。'},
-    {id:'boss_employee', name:'主管與部屬', roleA:'主管', roleB:'部屬', focus:'授權、回報、規則、績效壓力、溝通與權責不對稱', cautions:'命盤不能代替勞動法、績效資料與實際管理紀錄。'}
+    {id:'marriage', name:'婚戀／婚姻', roleA:'甲方', roleB:'乙方', focus:'親密需求、承諾、夫妻宮、情緒與生活節奏、長期壓力及邊界', cautions:'請以雙方完整原局、跨盤作用和現實互動共同判斷婚戀走向。'},
+    {id:'business', name:'事業合夥', roleA:'發起人／夥伴A', roleB:'夥伴B', focus:'決策權、風險偏好、財務責任、執行互補、分工與退出機制', cautions:'合夥判斷請結合盡職調查、契約、股權與財務審查。'},
+    {id:'mother_in_law', name:'婆媳關係', roleA:'婆婆', roleB:'媳婦', focus:'家庭角色、權責邊界、照顧方式、生活規則與代際壓力', cautions:'十神與宮位請放回雙方性格、角色和實際互動中理解。'},
+    {id:'best_friends', name:'閨蜜／摯友', roleA:'朋友A', roleB:'朋友B', focus:'信任、支持方式、社交節奏、競爭感、情緒承接與長期友誼', cautions:'比劫、刑害等訊號請與全局和現實行為交叉判斷。'},
+    {id:'father_son', name:'父子關係', roleA:'父親', roleB:'兒子', focus:'規範、期待、獨立、權威、教養方式與成年後邊界', cautions:'父星、子女宮與官殺請結合雙方完整結構和生活階段判讀。'},
+    {id:'mother_son', name:'母子關係', roleA:'母親', roleB:'兒子', focus:'保護、依附、情緒照顧、控制感、獨立與成年後邊界', cautions:'印星請結合全局強弱、角色與實際互動判讀。'},
+    {id:'friendship', name:'一般朋友', roleA:'朋友A', roleB:'朋友B', focus:'溝通、互惠、距離感、資源交換、衝突修復與相處成本', cautions:'合沖請與雙方原局和可觀察行為共同判斷。'},
+    {id:'boss_employee', name:'主管與部屬', roleA:'主管', roleB:'部屬', focus:'授權、回報、規則、績效壓力、溝通與權責不對稱', cautions:'職場判斷請結合勞動規範、績效資料與實際管理紀錄。'}
   ];
 
   var LENSES = {
     chart: {name:'純排盤', question:'請校核排盤事實，清楚列出四柱、藏干、十神、十二長生、納音、空亡、起運、大運與原局作用；不延伸具體人生事件。'},
     general: {name:'綜合命盤', question:'請從月令、日主根氣、全局制化、格局候選、扶抑、調候、大運與流年，給出平衡且可驗證的綜合判讀。'},
-    career: {name:'事業方向', question:'請聚焦職涯結構、適合的工作模式、權責承擔、組織與自主性的取捨、升遷或轉型節奏；不得憑空指定職業。'},
-    wealth: {name:'財富策略', question:'請聚焦財星、食傷生財、官殺與承擔能力、現金流風險、大運流年節奏，提出保守且可執行的財務策略；不得保證致富或編造金額。'},
-    love: {name:'感情婚姻', question:'請聚焦日支、財官十神、親密需求、界線與關係節奏，並結合大運流年看較可能的關係主題；不得斷定必婚、必離或特定對象。'},
-    annual: {name:'流年趨勢', question:'請以精確大運交界和立春流年區間，說明未來四個立春年度的主題、觸發與風險；不得編造月份、事件或機率。'}
+    career: {name:'事業方向', question:'請聚焦職涯結構、適合的工作模式、權責承擔、組織與自主性的取捨、升遷或轉型節奏，並給出具體方向。'},
+    wealth: {name:'財富策略', question:'請聚焦財星、食傷生財、官殺與承擔能力、現金流風險、大運流年節奏，提出可執行的財務策略。'},
+    love: {name:'感情婚姻', question:'請聚焦日支、財官十神、親密需求、界線與關係節奏，並結合大運流年分析關係主題與發展條件。'},
+    annual: {name:'流年趨勢', question:'請以大運交界和立春流年區間，說明未來四個立春年度的主題、觸發、助力、風險與可驗證窗口。'}
   };
 
   function own(obj, key) { return Object.prototype.hasOwnProperty.call(obj || {}, key); }
@@ -345,18 +346,18 @@
     meta=meta||{};
     var current=safeArray(chart&&chart.dayun).find(function(x){return x&&x.isCurrent;});
     return [
-      '【A. 排盤事實層——可以重算核對，不得擅自改柱】',
+      '【A. 排盤與曆法資料】',
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.genderLabel||chart&&chart.gender||'')+'・'+escapeLine(meta.birthLine||'出生資料未標示'),
       meta.solarInfo&&meta.solarInfo.trueSolarDateTime?'民用出生時間校正為真太陽時：'+meta.solarInfo.trueSolarDateTime+'；經度 '+safeText(meta.longitude)+'°；時區 '+safeText(meta.timezoneId||meta.solarInfo.timezoneId)+'。':'真太陽時資料未提供。',
       '排盤政策：換日 '+safeText(chart&&chart.calculationPolicy&&chart.calculationPolicy.dayBoundaryMode)+'；流年以立春為界；大運採半開區間 [起點,下一起點)。',
-      meta.unknown?'重要限制：時辰未知，以暫定時刻排盤；時柱、神煞、子女晚景象義及精確起運可信度降低。':'',
+      meta.unknown?'時辰未知：目前以暫定時刻排盤，時柱、神煞、子女晚景象義及精確起運的把握度較低。':'',
       pillarFactLines(chart).join('\n'),
-      (meta.unknown?'・暫定起運（以12:00暫排，不可作精確交運依據）：':'・起運：')+safeText(chart&&chart.qiyun&&chart.qiyun.startAgeText)+'；交運點 '+safeText(chart&&chart.qiyun&&chart.qiyun.startDate)+'；順逆 '+safeText(chart&&chart.qiyun&&chart.qiyun.direction)+'。',
-      '・輔助資料：生肖 '+safeText(CHINESE_ZODIAC[chart&&chart.pillars&&chart.pillars.year&&chart.pillars.year.zhi],'—')+'；空亡 '+(safeArray(chart&&chart.kongwang).join('、')||'—')+'；命宮 '+safeText(chart&&chart.mingGong&&(chart.mingGong.gan+chart.mingGong.zhi),'—')+'；胎元 '+safeText(chart&&chart.taiYuan&&(chart.taiYuan.gan+chart.taiYuan.zhi),'—')+'；八字重量 '+safeText(chart&&chart.chenggu&&chart.chenggu.display,'未計得')+'。稱骨、命宮、胎元、納音與神煞只列末位輔助，不得凌駕月令與生剋主線。',
+      (meta.unknown?'・暫定起運（以12:00暫排，精確交運把握度較低）：':'・起運：')+safeText(chart&&chart.qiyun&&chart.qiyun.startAgeText)+'；交運點 '+safeText(chart&&chart.qiyun&&chart.qiyun.startDate)+'；順逆 '+safeText(chart&&chart.qiyun&&chart.qiyun.direction)+'。',
+      '・輔助資料：生肖 '+safeText(CHINESE_ZODIAC[chart&&chart.pillars&&chart.pillars.year&&chart.pillars.year.zhi],'—')+'；空亡 '+(safeArray(chart&&chart.kongwang).join('、')||'—')+'；命宮 '+safeText(chart&&chart.mingGong&&(chart.mingGong.gan+chart.mingGong.zhi),'—')+'；胎元 '+safeText(chart&&chart.taiYuan&&(chart.taiYuan.gan+chart.taiYuan.zhi),'—')+'；八字重量 '+safeText(chart&&chart.chenggu&&chart.chenggu.display,'未計得')+'。稱骨、命宮、胎元、納音與神煞可作輔助視角，主判仍綜合月令與全局生剋。',
       '【原局干支作用——由核心唯一計算】',
       interactionLines(chart).join('\n'),
-      '判讀限制：配對存在≠必然成化；沖刑害破不自動等於凶，須看所動之柱、十神、喜忌與歲運。',
-      '【B. 流派模型層——必須標成判斷，不得冒充客觀數值】',
+      '判讀提示：配對存在後仍需審成化條件；沖刑害破的方向結合所動之柱、十神、喜忌與歲運。',
+      '【B. 前端流派模型（供交叉核對）】',
       modelLines(chart).join('\n'),
       '【大運資料】',
       luckLines(chart,10).join('\n'),
@@ -396,7 +397,7 @@
       universalJudgmentRuleLines('single'),
       promptSpec().answerContractLines('single'),
       [
-        '分析模式補充：純排盤模式只校核資料；原局題不強塞歲運；歲運題引用資料中的精確交界；多選題明確比較；八字無法量測的部分直接說明限制。'
+        '分析模式補充：純排盤模式聚焦資料校核；原局題以長期結構為主；歲運題引用資料中的交界；多選題使用一致標準比較。'
       ],
       baziBrandTailLines()
     ).join('\n\n');
@@ -428,7 +429,7 @@
       '【角色】',
       promptSpec().roleText('compatibility'),
       '【合盤情境】',
-      s.name+'；A為'+s.roleA+'，B為'+s.roleB+'。只使用此角色框架，不把婚姻邏輯套入職場，也不把親子權責當成平等朋友關係。',
+      s.name+'；A為'+s.roleA+'，B為'+s.roleB+'。請依此情境理解雙方角色、權責與互動方式。',
       '【使用者問題】',
       escapeLine(userQuestion||'請分析雙方在此情境下的契合、摩擦、溝通、長期壓力、支持方式、節奏與邊界。')
     ].concat(
@@ -444,7 +445,7 @@
         '【雙向十神映射】',
         'A看B：'+comp.directionalTenGods.aViewsB.map(function(x){return PILLAR_LABEL[x.partnerPillar]+x.partnerStem+'＝'+x.tenGod+(x.hidden&&x.hidden.length?'（藏干 '+x.hidden.map(function(h){return h.stem+'＝'+h.tenGod;}).join('、')+'）':'');}).join('；')+'。',
         'B看A：'+comp.directionalTenGods.bViewsA.map(function(x){return PILLAR_LABEL[x.partnerPillar]+x.partnerStem+'＝'+x.tenGod+(x.hidden&&x.hidden.length?'（藏干 '+x.hidden.map(function(h){return h.stem+'＝'+h.tenGod;}).join('、')+'）':'');}).join('；')+'。',
-        '十神映射方向不可互換；同一人對A與B可能呈現不同角色感受。',
+        '十神映射有方向性；同一人對A與B可能呈現不同角色感受。',
         '【運勢同步】',
         'A現行大運：'+(comp.luckSynchronization.aCurrent?comp.luckSynchronization.aCurrent.gz+'（'+comp.luckSynchronization.aCurrent.startDate+'～'+comp.luckSynchronization.aCurrent.endDateExclusive+'）':'未判定')+'。',
         'B現行大運：'+(comp.luckSynchronization.bCurrent?comp.luckSynchronization.bCurrent.gz+'（'+comp.luckSynchronization.bCurrent.startDate+'～'+comp.luckSynchronization.bCurrent.endDateExclusive+'）':'未判定')+'。',
@@ -454,11 +455,9 @@
       universalJudgmentRuleLines('compatibility'),
       promptSpec().answerContractLines('compatibility'),
       [
-        '合盤補充1. 先各自看原局能否承受，再看A→B與B→A的十神方向，最後才看跨盤合沖與歲運同步。任何跨盤作用不得跳過兩人原局喜忌與角色情境。',
-        '合盤補充2. 必須分別回答A方感受與需求、B方感受與需求、支持點、摩擦點、權責／邊界、溝通修復、長期壓力及可執行協議。不能只說合不合。',
-        '合盤補充3. 不提供單一配對分數或成功率；合多不必然好，沖刑害多不必然壞。命盤不能證明愛意、忠誠、外遇、必婚、必離、合作獲利或任何一方的人品。',
-        '合盤補充4. 未知時辰者，不重判時柱、子女晚景、精確起運或時柱跨盤作用。'+s.cautions,
-        '合盤輸出補充：依A方、B方、共同優勢、核心摩擦、時間節奏、具體協議與驗證／退出條件自然推進；不要把模型分數當成關係機率。'
+        '合盤方法：先分析兩人各自原局，再讀A→B與B→A的十神方向、跨盤干支作用和歲運同步。',
+        '回答請分清A方、B方與共同關係層，說明吸引、支持、摩擦、權責／界線、溝通修復、長期壓力、時間節奏與可執行協議。',
+        '前端配對分數是摘要參考；實際結論請依雙方全局與現實互動判斷。未知時辰相關部分請標示較低把握度。'+s.cautions
       ],
       baziBrandTailLines()
     ).join('\n\n');
@@ -536,16 +535,15 @@
         personality.axes.map(function(x){return '・'+x.left+'／'+x.right+'：選擇 '+(x.rightSelected?x.right:x.left)+'；依據 '+x.evidence+'。';}).join('\n'),
         '優勢候選：'+personality.strengths.join('；')+'。',
         '留意點：'+(personality.watch.join('；')||'無單一固定弱點，仍需看情境')+'。',
-        '【規範】',
-        '1. 第一段直接回答問題，但不得把人格卡寫成疾病、命定性格、道德評價或不可改變的結論。',
-        '2. 每個特質都要說明哪些現實行為會支持或推翻此描述，並列可能反例與會改變表現的情境；不得用事後任何行為都能自圓其說。',
-        '3. 問職涯、關係或壓力時，只把人格卡當輕量自我觀察；重大醫療、法律、財務與心理決策仍需現實資料或專業評估。',
-        '4. 不引用提示詞外的背景，不臆測創傷、疾病、家庭事件、職業、財產或私生活。'
+        '【分析重點】',
+        '1. 第一段直接回答問題，再說明人格特質的正向表現、壓力表現與轉化方式。',
+        '2. 每個主要特質請附可觀察行為、可能反例，以及會改變表現的情境。',
+        '3. 問職涯、關係或壓力時，將人格卡與完整八字及現實資料交叉分析。'
       ],
       universalJudgmentRuleLines('personality'),
       promptSpec().answerContractLines('personality'),
       [
-        '人格輸出補充：納入所有有獨立證據且彼此不重複的可驗證特質，逐項交代適用情境、風險、反例與可執行調整；不設任意項數上限，也不為湊數擴寫弱訊號。'
+        '人格輸出補充：聚焦最有根據的特質，交代適用情境、優勢、風險、反例與可執行調整。'
       ],
       baziBrandTailLines()
     ).join('\n\n');

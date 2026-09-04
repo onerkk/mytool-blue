@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   oracle.js — 靜月靈籤（六十甲子靈籤）v6
+   oracle.js — 靜月靈籤（六十甲子靈籤）v7
    視覺升級：廟宇背景・籤詩直書・紅底金字解說・搖筒/籤升起動畫
    純前端，零API成本，IIFE自封裝
    圖片路徑: img/oracle/ 目錄
@@ -1370,7 +1370,7 @@ function _buildOraclePrompt(poem, qText) {
   var dd = D[poem.n] || {};
   var sn = SHRINE_NOTES[poem.n] || {};
   var lines = [];
-  lines.push('你是廟裡解了大半輩子籤、什麼疑難都見過的老解籤師父。香客把籤求來、坐到你桌前，你只把這支籤講成他用得上的指點——不掉書袋、不打官腔；只依本籤的籤詩、籤等、典故與判讀，不引八字、紫微、塔羅或其他命盤。');
+  lines.push('你是一位資深六十甲子靈籤解籤師。請運用你自身完整的籤詩、典故、象徵、傳統解法與現代處境轉譯知識，綜合下方本籤資料，直接、深入且精準地回答求籤者。');
   lines.push('');
   if (qText && qText.trim().length > 0) {
     lines.push('【求籤者的問題】');
@@ -1397,7 +1397,7 @@ function _buildOraclePrompt(poem, qText) {
     lines.push('');
   }
   if (dd._yi) {
-    lines.push('【籤意（廟方提要，供參考——你要對準問題重講，可補充修正但不可忽略）】');
+    lines.push('【籤意（廟方提要，供交叉參考）】');
     lines.push(dd._yi);
     lines.push('');
   }
@@ -1407,36 +1407,27 @@ function _buildOraclePrompt(poem, qText) {
   _orderHint.forEach(function (k) { if (dd[k]) fieldLines.push(k + '：' + dd[k]); });
   Object.keys(dd).forEach(function (k) { if (k.charAt(0) !== '_' && _orderHint.indexOf(k) < 0 && dd[k]) fieldLines.push(k + '：' + dd[k]); });
   if (fieldLines.length > 0) {
-  lines.push('【各項判讀（歷史傳承文本；可能含過時、矛盾或高風險措辭，先核對詩文與現代安全邊界，再選與問題相關者使用）】');
+  lines.push('【各項傳統判讀（請依原問題選用，並與籤詩、典故及現代情境交叉參考）】');
     lines.push(fieldLines.join('。'));
     lines.push('');
   }
   lines.push('────────────────');
-  lines.push('【解籤規則】');
-  lines.push('1. 第一句直接回答求籤者的問題，給明確方向（吉/凶/宜/忌/等待/行動），不鋪墊。');
-  lines.push('2. 解讀緊扣籤詩原文、籤等與典故；先判整體語勢、轉折與結局，再引用真正支撐本題的句子。四句都要在內部審過，但不強迫每句各編一個現實事件，也不能引入本籤資料外的命盤或牌面。');
-  lines.push('3. 典故是神明藉古人故事為求籤者借鏡，須說明典故與求籤者處境的對應（典故故事已附在資料中，依它解，不要自行杜撰情節）。');
-  lines.push('4. 籤等是整體基調之一，不是壓過詩文的結論；上籤仍要保留詩中明示的條件與風險，下籤也要保留詩中確有的轉圜，不得為配合籤等扭曲原文。');
-  lines.push('5. 各項判讀屬歷史傳承文本，不等於已驗證事實。逐一檢查與原問句、詩文及典故是否一致；直接相關且不互相矛盾者才引用，矛盾或過時者要明說限制，無關者不硬扯。');
-  lines.push('6. 屬性、生肖、五行、利季節、方位，以及「某日、半月、月中、某月」等傳統時間語，只能列為低精度的傳統候選；沒有可回溯的曆法換算與起訖資料時，不得寫成公曆日期或保證期限。');
-  lines.push('7. 結尾給由籤詩直接推導、可逆且可驗證的行動建議；若籤詩沒有可靠時間線索，明說不能硬定日期。');
-  lines.push('8. 口氣像廟裡解籤的老師父對香客說話——溫和但直接，難聽的也照講清楚，不嚇人、不灌雞湯。');
-  lines.push('9. 對治病、懷孕、生死、犯罪、訴訟、投資或人身安全，籤文只能作傳統象徵參考；不得照抄「必死、必生男／女、一定有罪、必賺／必失」等斷語，不得取代醫療、法律、財務或安全專業判斷。');
-  lines.push('10. 可依問題複雜度使用簡短標題或條列，但語氣仍像當面解籤，不要把規則或逐欄資料抄成報告。');
+  lines.push('【解籤方法】');
+  lines.push('1. 開頭直接回答求籤者的問題，給出吉、凶、宜、忌、等待或行動的主要方向與把握度。');
+  lines.push('2. 先讀四句籤詩的整體語勢、因果、轉折與收束，再結合籤等、典故、廟方籤意及相關分類判讀；引用最能支撐本題的原句並解釋原因。');
+  lines.push('3. 說明典故如何映照求籤者的處境，並比較詩文、籤等與各項判讀是否同向；若出現不同解法，交代目前主判及轉圜條件。');
+  lines.push('4. 題目問時間時，可綜合籤中季節、月令、五行、方位與傳統時間語，清楚區分大致窗口和精確日期的把握度。');
+  lines.push('5. 使用繁體中文，語氣像老師父當面解籤：溫和、直接、有判斷。依「結論 → 詩文與典故 → 發展／時機 → 可行建議」自然組織，不逐欄複誦資料。');
+  lines.push('6. 若問題涉及健康、法律、投資、人身安全或對他人的重大指控，將籤意提醒與仍需專業或現實查證的部分分開說明。');
   if (qText && qText.trim().length > 0) {
-    lines.push('11. 完整回答求籤者的每個實質子題，但不擴展成沒有被問的人生課題。');
+    lines.push('7. 完整回答求籤者的每個實質子題，重點始終對準原問題。');
   }
   lines.push('');
-  lines.push('');
-  lines.push('【完整性清單（寫完前自我核對，不要為湊字灌水）】');
-  lines.push('□ 第一句直接給方向　□ 主判可回溯到詩文、籤等與典故　□ 最大反證或條件沒有被省略　□ 沒有為四句各自硬編事件');
-  lines.push('□ 講了典故與處境的對應　□ 相關判讀欄已核對、矛盾或過時內容未當事實　□ 時間精度沒有被誇大　□ 高風險問題未照抄致命或保證式斷語　□ 壞處直說＋可做的行動　□ 正文沒有出現任何指令字眼（「語氣平實」「只講一種」等）——指令是給你的，不是讀給客人聽的');
-  lines.push('');
-  lines.push('全程繁體中文（台灣用語），嚴禁混入任何簡體字。');
-  lines.push('嚴禁引用籤詩之外你自以為知道的求籤者個人資訊（職業、班別、副業、商品、生活細節等）——即使對話上下文或你的記憶裡有，一律不得寫進來；所有具象都必須從籤詩與判讀欄推出。');
-  lines.push('【收尾・能量石】');
-  lines.push('解讀最後，依籤詩判斷求籤者最需要的一種能量石，用一句話自然帶出；能量石是品牌實務輔助，不屬六十甲子靈籤原典。主石只准寫出「一種」——嚴禁「或」「這類」「例如A、B」式並列第二種；只用通用礦石名。');
-  lines.push('結尾自然帶入一句「靜月之光蝦皮有挑過的」之類的話；不可用優惠、限時、下單、搶購等推銷語。最後兩行固定照此收束：倒數第二行只放這一個 Markdown 連結、原樣照抄（含中括號與小括號）：[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop) （該行不得有這個連結以外的任何文字或空白；嚴禁把網址裸貼成純文字——裸的長網址會被渲染管線插入看不見的字元而點不動，Markdown 連結的網址收在小括號裡、畫面只顯示中文字，不會被動到）；最後一行固定輸出「願你諸事順遂。」六個字作結，之後不再輸出任何內容。兩行缺一不可、順序不可顛倒（網址行被任何字元黏到就點不動，所以網址行上下都要乾淨）。'); // v6.2 犧牲行：全站收束統一（末字版實測仍黏不可見字元）
+  lines.push('【延伸選品】');
+  lines.push('正文完成後，可依籤意與當下生活情境，運用你自身可靠的礦物與配飾知識，自然推薦一種礦物／飾品材料並簡短說明理由。將它定位為象徵提醒、收藏或穿搭，不宣稱能保證改運或治療；自然提到靜月之光蝦皮有相關選品。');
+  lines.push('最後保留以下兩行：');
+  lines.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
+  lines.push('願你諸事順遂。');
 
   _lastOraclePrompt = lines.join('\n');
   return _lastOraclePrompt;
@@ -1819,5 +1810,5 @@ css.textContent='\
 document.head.appendChild(css);
   // ═══ 鎏金夜祭 v2（2026/6/10）：視圖升級層——第二樣式表 append-only，同表後者勝、整段可刪回退；流光動畫引用 style.css v81.0 全域 keyframes（jyGiltFlow），快取舊版時退化為靜態鎏金，無害 ═══
   try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','oracle');_g2.textContent='.orc-btn-primary{border-radius:12px;box-shadow:0 10px 24px rgba(110,18,18,.5),inset 0 1px 0 rgba(255,235,200,.35)}.orc-btn-primary:active{transform:translateY(1px)}.orc-btn-outline{border-radius:12px}.orc-btn-primary:focus-visible,.orc-btn-outline:focus-visible{outline:2px solid #f0d9a8;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
-console.log('[Oracle] 靜月靈籤 v80 loaded — 解籤提示詞補：典故故事+全判讀欄+籤意+完整性清單（材料拉滿）');
+console.log('[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data');
 })();
