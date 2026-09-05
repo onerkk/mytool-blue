@@ -21,7 +21,7 @@ async function run() {
   assert.match(uiSource, /\/api\/pulse/);
   assert.doesNotMatch(uiSource, /\/api\/counter/);
   assert.doesNotMatch(uiSource, /const CTR_ENDPOINT\s*=\s*['"]https:\/\/script\.google\.com/);
-  assert.match(indexSource, /JS\/ui\.js\?v=20260904pulsev2/);
+  assert.match(indexSource, /JS\/ui\.js\?v=20260905fix1/);
 
   globalThis.fetch = async url => {
     upstreamUrl = String(url);

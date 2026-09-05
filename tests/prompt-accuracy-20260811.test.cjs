@@ -79,13 +79,13 @@ test('首頁先載入 v3 共用提示詞根，再載入八字與紫微 standalon
   const zStandalone = html.indexOf('JS/ziwei-standalone.js');
   assert(bRoot >= 0 && bRoot < bStandalone);
   assert(zRoot >= 0 && zRoot < zStandalone);
-  assert(html.includes('JS/bazi-prompt-root.js?v=20260904promptv3'));
-  assert(html.includes('JS/ziwei-prompt-root.js?v=20260904promptv3'));
+  assert(html.includes('JS/bazi-prompt-root.js?v=20260905fix1'));
+  assert(html.includes('JS/ziwei-prompt-root.js?v=20260905fix1'));
 });
 
 test('八字提示詞根在真實執行路徑可用，並開放 AI 自身命理知識', () => {
   const ctx = loadBaziRuntime();
-  assert.strictEqual(ctx.JY_BAZI_PROMPT_ROOT.version, '3.0.0');
+  assert.strictEqual(ctx.JY_BAZI_PROMPT_ROOT.version, '3.1.0');
   const solar = ctx.calcTrueSolarTime(1983, 8, 25, 14, 55, 120.23, 8, 'Asia/Taipei');
   const chart = ctx.computeBazi(solar.year, solar.month, solar.day, solar.hour, solar.minute, 'male', {
     second: solar.second,
@@ -116,7 +116,7 @@ test('紫微資料不再截掉第四顆之後的輔星、煞星或第九個格�
   assert(!source.includes('(zw.patterns||[]).slice(0,8)'));
   assert.strictEqual(require('vm').runInNewContext(read('JS/ziwei-prompt-root.js') + ';window.JY_ZIWEI_PROMPT_ROOT.version', {
     window: {}, console
-  }), '3.0.0');
+  }), '3.1.0');
 });
 
 test('梅花兩條 standalone 路徑完全一致，且不製造日曆假精確', () => {
