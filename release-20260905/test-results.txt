@@ -1,0 +1,74 @@
+Command: npm test
+Exit code: 0
+Environment: Node.js v24.19.0
+All 6 suites passed. Upstream APIs mocked in failure tests; browser layout was not tested.
+
+
+> test
+> npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures
+
+
+> test:prompts
+> node tests/prompt-accuracy-20260811.test.cjs
+
+✓ 首頁先載入 v3 共用提示詞根，再載入八字與紫微 standalone
+✓ 八字提示詞根在真實執行路徑可用，並開放 AI 自身命理知識
+✓ 紫微資料不再截掉第四顆之後的輔星、煞星或第九個格局
+✓ 梅花兩條 standalone 路徑完全一致，且不製造日曆假精確
+✓ 靈籤提示詞保留完整材料並開放 AI 的解籤知識
+✓ 雷諾曼保留合法幾何，並改為精簡的牌組整合方法
+✓ 七維 API 以盤面為主並允許模型使用自身跨系統知識
+
+All 7 prompt-accuracy regression tests passed.
+
+> test:tarot
+> node tests/tarot-v102-method-data-prompt.test.js
+
+✓ foundation upgraded to method-data schema
+✓ export prompt no longer exposes query graph, ROOT-SPEC, capability gate or claim ledger
+✓ prompt invites the AI to use its own tarot knowledge while keeping method data
+✓ five-card network is rendered as named relations, never a fake 2→1→3→4→5 chain
+✓ Mathers methods remain ordered sequence methods
+✓ prompt preserves Book T, true adjacency and a concise recommendation ending
+✓ changed JS syntax is valid
+
+7 tests passed.
+
+> test:ziwei
+> node tests/ziwei-root-spec-v1.test.js
+
+ziwei-root-spec-v3: all assertions passed
+
+> test:counter
+> node tests/counter-proxy.test.mjs
+
+counter-proxy: all assertions passed
+
+> test:picker-data
+> node tests/picker-and-data-regression.cjs
+
+✓ Gregorian date validity and clamped month navigation
+✓ Modal viewport events, scroll lock and focus are fully restored
+✓ Legacy dialog fallback restores inert siblings and focus
+✓ Actual Ziwei and Bazi picker handlers render all six weeks and confirm leap day
+✓ Full Bazi suite keeps the last month clamped and confirms the selected date
+[八字DEBUG] 日主:乙(木) | ec: {"金":23,"木":8,"水":18,"火":5,"土":6} | selfPts:26 | selfRatio:43% | 強弱級別:太弱(身弱) | specialStructure:null | fav:木 | unfav:金 | medicineGod:病在金(23/60)，藥用火(剋) | relayGod:無
+✓ Unknown Bazi birth time excludes artificial hour and full-chart judgments
+✓ Unknown time does not create a fixed personality type from a noon placeholder
+✓ Known Bazi preserves actual hour and full data, reference date stays reproducible
+✓ Unknown Ziwei time never exports an invented personal chart
+✓ All three pickers load after the shared core and body ID rules override legacy overflow
+picker-and-data-regression: 10 groups passed (DOM contract tests, not browser layout tests)
+
+> test:api-failures
+> node tests/api-failure-regression.mjs
+
+✓ Counter rejects false zero, unsafe integers and inconsistent totals
+✓ Counter reset requires POST and the configured admin token
+✓ Legacy empty reset response is followed by read-only verification
+✓ Browser counter read falls back after blocked requests and static HTML responses
+✓ Browser counter never retries an uncertain write or fabricates zero
+✓ AI endpoint rejects fake origins, invalid input and empty admin configuration
+✓ Malformed or incomplete AI outputs are failures and do not consume quota
+✓ Valid AI answer preserves methods and consumes one quota entry
+api-failure-regression: 8 groups passed (mocked upstream; no live mutations)
