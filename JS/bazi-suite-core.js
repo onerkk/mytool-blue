@@ -107,6 +107,7 @@
 
   function chartSummary(chart, meta) {
     var p = getPillars(chart);
+    if(meta && meta.unknown) return {name:meta.name||'',gender:chart&&chart.gender||'',birthLine:meta.birthLine||'',pillars:p.filter(function(x){return x.key!=='hour';}),dayMaster:chart&&chart.dm||'',dayMasterElement:chart&&chart.dmEl||'',unknownTime:true,provisional:true};
     var current = safeArray(chart && chart.dayun).find(function(x){return x && x.isCurrent;}) || null;
     return {
       name: meta && meta.name || '',
@@ -297,17 +298,17 @@
       spousePalace:spousePalaceRelation(chartA,chartB),
       directionalTenGods:{aViewsB:directionalTenGods(chartA,chartB,{partnerUnknown:unknownB}),bViewsA:directionalTenGods(chartB,chartA,{partnerUnknown:unknownA})},
       stemRelations:stems, branchRelations:branches, groupRelations:groups,
-      elementComplement:elementComplement(chartA,chartB),
-      luckSynchronization:luckSynchronization(chartA,chartB),
+      elementComplement:(unknownA||unknownB)?{partnerMaySupportA:[],partnerMaySupportB:[],partnerMayLoadA:[],partnerMayLoadB:[],caveat:'時辰未知，喜忌與五行互補尚未定；保留三柱的跨盤互動。',provisional:true}:elementComplement(chartA,chartB),
+      luckSynchronization:(unknownA||unknownB)?{aCurrent:null,bCurrent:null,years:[],provisional:true}:luckSynchronization(chartA,chartB),
       evidenceSummary:{signal:signal,supportCount:support.length,tensionCount:tension.length,neutralRule:'數量只作資料整理，不是配對分數或成功機率。'},
-      uncertainty:{unknownTimeA:unknownA,unknownTimeB:unknownB,hourRelationsExcluded:unknownA||unknownB,luckTimingProvisionalA:unknownA,luckTimingProvisionalB:unknownB,note:(unknownA||unknownB)?'未知時辰一方的時柱跨盤關係已排除；其精確起運與歲運同步只作暫排。':'雙方時辰已提供，仍須以出生資料準確性為前提。'},
+      uncertainty:{unknownTimeA:unknownA,unknownTimeB:unknownB,hourRelationsExcluded:unknownA||unknownB,luckTimingProvisionalA:unknownA,luckTimingProvisionalB:unknownB,note:(unknownA||unknownB)?'未知時辰一方的時柱跨盤關係已排除；其精確起運、喜忌互補與歲運同步不作定論，已排除相關模型結果。':'雙方時辰已提供，仍須以出生資料準確性為前提。'},
       policy:{scenarioAware:true,roleAware:true,noSingleScore:true,noAutomaticTransformation:true,noDeterministicEvents:true,excludeUnknownHourRelations:true}
     };
   }
 
-  function pillarFactLines(chart) {
+  function pillarFactLines(chart, unknown) {
     var P = chart && chart.pillars || {}, gods=chart&&chart.gods||{}, cang=chart&&chart.cangGan||{}, cs=chart&&chart.cs||{}, ny=chart&&chart.nayinAll||{};
-    return PILLAR_ORDER.map(function(k){
+    return PILLAR_ORDER.filter(function(k){return !(unknown && k==='hour');}).map(function(k){
       var p=P[k]||{}, g=gods[k]||{};
       return '・'+PILLAR_LABEL[k]+'：'+(p.gan||'')+(p.zhi||'')+'；天干十神 '+safeText(g.gan,'—')+'；藏干 '+safeArray(cang[k]).join('、')+'（'+safeArray(g.zhi).join('、')+'）；十二長生 '+safeText(cs[k],'—')+'；納音 '+safeText(ny[k],'—');
     });
@@ -326,7 +327,7 @@
   }
 
   function annualLines(chart, count) {
-    var nowYear=new Date().getFullYear(), byYear={};
+    var ref=Number(chart&&chart._referenceTimestamp), nowYear=Number.isFinite(ref)?new Date(ref).getUTCFullYear():new Date().getFullYear(), byYear={};
     safeArray(chart&&chart.dayun).forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){if(y&&y.year>=nowYear&&!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz},y);});});
     return Object.keys(byYear).map(Number).sort().slice(0,count||5).map(function(year){var x=byYear[year];return '・'+year+' '+safeText(x.gz)+'（大運 '+safeText(x.dayun)+'；模型 '+safeText(x.level,'未標記')+'；區間 '+safeText(x.periodStart,'未提供')+' ～ '+safeText(x.periodEndExclusive,'未提供')+'）';});
   }
@@ -344,6 +345,13 @@
 
   function buildChartDataBlock(chart, meta) {
     meta=meta||{};
+    if (meta.unknown) return [
+      '【A. 三柱資料：時辰未知】',
+      '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.birthLine||'出生日期未標示'),
+      pillarFactLines(chart,true).join('\n'),
+      '午時是暫排值，已排除時柱及其衍生模型、命宮、神煞和精確交運時間。請以三柱作有限分析；喜忌格局、合盤五行互補與人格卡若依賴暫排全盤，只列為待校時候選。',
+      '日期若接近節氣或換日邊界，年月日柱也可能需要出生時間才能確認。'
+    ].join('\n');
     var current=safeArray(chart&&chart.dayun).find(function(x){return x&&x.isCurrent;});
     return [
       '【A. 排盤與曆法資料】',
@@ -416,6 +424,7 @@
     safeArray(comp.groupRelations).forEach(function(x){lines.push('・'+x.description);});
     if (!comp.branchRelations.length&&!comp.groupRelations.length) lines.push('・跨盤地支未偵測到需特別列出的合沖刑害破；不代表關係一定平淡或合適。');
     var c=comp.elementComplement;
+    if(c.provisional){lines.push(c.caveat);return lines;}
     lines.push('五行互補候選：B較強五行中落入A喜候選＝'+(c.partnerMaySupportA.join('、')||'無明顯項')+'；A較強五行中落入B喜候選＝'+(c.partnerMaySupportB.join('、')||'無明顯項')+'。');
     lines.push('五行負荷候選：B較強五行中落入A忌候選＝'+(c.partnerMayLoadA.join('、')||'無明顯項')+'；A較強五行中落入B忌候選＝'+(c.partnerMayLoadB.join('、')||'無明顯項')+'。');
     lines.push(c.caveat);
@@ -498,6 +507,12 @@
   }
 
   function buildPersonality(chart, meta) {
+    if(meta && meta.unknown) return {
+      system:'靜月五軸人格',version:'1.1.0',independent:true,provisional:true,
+      disclaimer:'出生時辰未知，五軸人格類型尚未確定。可先以三柱及實際行為整理問題，確認時辰後再檢視完整模型。這不是心理測驗或科學診斷。',
+      index:null,code:'未定',name:'時辰待確認',traits:[],axes:[],strengths:[],
+      watch:['暫排時柱可能改變十神比例與旺衰，不能據此貼上固定人格標籤。'],chart:chartSummary(chart,meta)
+    };
     var axes=personalityAxes(chart), bits=axes.map(function(x){return x.rightSelected?1:0;}), idx=bits.reduce(function(a,b){return (a<<1)|b;},0);
     var coreIdx=(bits[0]<<2)|(bits[1]<<1)|bits[2], variantIdx=(bits[3]<<1)|bits[4];
     var code=(bits[0]?'E':'I')+(bits[1]?'S':'F')+(bits[2]?'C':'A')+(bits[3]?'T':'V')+(bits[4]?'M':'P');
@@ -523,6 +538,13 @@
   }
 
   function buildPersonalityPrompt(personality, userQuestion) {
+    if(personality.provisional) return [
+      '【角色】'+promptSpec().roleText('personality'),
+      '【使用者問題】'+escapeLine(userQuestion||'如何理解自己的行為與壓力反應？'),
+      personality.disclaimer,
+      '【三柱參考】'+safeArray(personality.chart&&personality.chart.pillars).map(function(x){return x.label+' '+x.gan+x.zhi;}).join('；'),
+      '先依三柱可支持的結構與當事人已提供的具體行為分析；將可觀察的傾向、反例與待確認部分說清楚。節氣或換日附近的三柱仍需核對。'
+    ].concat(universalQuestionRootLines('personality'),universalJudgmentRuleLines('personality'),promptSpec().answerContractLines('personality'),baziBrandTailLines()).join('\n\n');
     return [
       '【角色】'+promptSpec().roleText('personality'),
       '【系統聲明】'+personality.disclaimer,

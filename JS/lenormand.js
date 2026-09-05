@@ -640,6 +640,8 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('</本次任務>');
   lines.push('');
 
+  lines.push('先分清輸入的盤面事實、流派解釋與現實假設。可自由運用自身知識補充技法；若原始資料與摘要衝突，指出具體差異，以可核對的原始資料為先。結論要有支持、反向訊號與成立條件；象徵不等於事件證明，分數不等於成功機率。');
+  lines.push('雷諾曼以本次牌序形成組合語法；指示牌有明確角色才綁定。蛇、狐狸、棺材等象徵先依題目及相鄰牌分辨情境，不憑單牌認定第三者、欺騙、疾病或死亡。');
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId);
   _lnPushCardData(lines, drawn, sp);

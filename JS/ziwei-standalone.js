@@ -340,6 +340,11 @@
     var btime = (form && form.btime) ? form.btime : (form && form.btimeUnknown ? '時辰未知(暫以午時)' : '');
     var gender = (form && form.gender === 'male') ? '男' : (form && form.gender === 'female') ? '女' : '';
 
+    if (form && form.btimeUnknown) {
+      return ['【出生資料待確認】', '國曆出生日期：' + birth + '；性別：' + gender + '；出生時辰未知。',
+        '本次沒有已確認的紫微命盤。午時只是程式內部暫排值，未作時辰校驗；命宮、身宮、星曜落宮、三方四正與大限落宮均可能改變，因此不把午時盤交給 AI 當成命主的定盤。',
+        '先針對原問題整理目前可確認的現實條件與需要補充的資訊，說明如何查找出生紀錄；確認時辰後再作個人化紫微判讀。若需要校時，應以多個候選時辰和可核對事件比較，不能只靠一段自述認定。'].join('\n');
+    }
     L.push('【基本資料】');
     L.push('出生(國曆；以時辰代表時排盤，未作出生地經度真太陽時校正)：' + birth + ' ' + btime + '　性別：' + gender);
     L.push('年干支：' + ((zw.yGan||'') + (zw.yZhi||'')) + '　五行局：' + ({2:'水二局',3:'木三局',4:'金四局',5:'土五局',6:'火六局'}[zw.wuxingJu]||zw.wuxingJu||'') + '　命主：' + (zw.mingZhu||'') + '　身主：' + (zw.shenZhu||'') + '　命宮天干：' + (zw.mingGan||''));
@@ -629,7 +634,7 @@
     w.id = 'zw-input';
     var hhOpts = '<option value="">選擇時辰</option>';
     for (var i=0;i<SHICHEN.length;i++) hhOpts += '<option value="'+SHICHEN[i].h+'">'+SHICHEN[i].n+'</option>';
-    hhOpts += '<option value="unknown">不確定（暫以午時推算）</option>';
+    hhOpts += '<option value="unknown">不確定（尚未定盤）</option>';
     w.innerHTML =
       '<div class="zw-in-wrap">' +
         '<a class="zw-in-back" onclick="_zwClose()">← 返回靜月之光</a>' +
@@ -646,7 +651,7 @@
             '<div class="zw-in-pill" id="zw-g-f" onclick="_zwSetGender(\'female\')">女</div>' +
           '</div></div>' +
           '<div class="zwx-err" id="zwx-err"></div>' +
-          '<div class="zw-in-hint">紫微以時辰定盤，故只需到「時辰」即可；時辰不確定可選最後一項，命盤仍可成。</div>' +
+          '<div class="zw-in-hint">紫微以時辰定盤；不知道時辰可先整理問題與出生資料，確認後再解讀個人命盤。</div>' +
         '</div>' +
         '<button class="zw-in-go" onclick="_ziweiSubmit()">✦ 起 盤 ✦</button>' +
         '<div class="zw-in-foot">靜月之光 ・ jingyue.uk<br>紫微斗數 ・ 命盤僅供參考</div>' +
@@ -714,13 +719,11 @@
           '<div class="zw-res-title">🪐 紫微斗數命盤</div>' +
           '<button class="zw-res-x" onclick="_zwClose()" aria-label="關閉">×</button>' +
         '</div>' +
-        '<div class="zw-meta">三合派四化骨架 ・ 已校正真太陽時 ・ 不需姓名</div>' +
-        renderChartGrid(zw) +
-        '<div class="zw-facts">' + facts + '</div>' +
-        '<div class="zw-chips">' + chips + '</div>' +
+        '<div class="zw-meta">三合派四化骨架 ・ 民用時辰代表時，未校正真太陽時 ・ 不需姓名</div>' +
+        (form.btimeUnknown ? '<div class="zw-meta" role="status">出生時辰未知，尚未定盤。請先查找出生紀錄；下方提示詞會協助整理問題，不會把午時盤當作你的命盤。</div>' : renderChartGrid(zw) + '<div class="zw-facts">' + facts + '</div><div class="zw-chips">' + chips + '</div>') +
         '<div class="zw-ai">' +
           '<div class="zw-ai-title">🌙 AI 深度解讀</div>' +
-          '<div class="zw-ai-desc">已為你寫好一份比一般斗數軟體更深的解讀提示詞（含三方四正、四化飛星、大限流年）。輕觸複製，貼到任何 AI 對話送出即可。</div>' +
+          '<div class="zw-ai-desc">依已確認的出生資料整理提示詞；時辰已知時附命盤依據，未知時協助整理問題及定盤所需資料。輕觸複製後貼到 AI 對話即可。</div>' +
           '<button class="zw-ai-copy" onclick="_zwCopy()">✦ 一鍵複製紫微解讀提示詞 ✦</button>' +
           '<div class="zw-ai-grid">' + aiSc + '</div>' +
           '<div class="zw-ai-foot">點 AI 圖示 → 自動複製＋開啟 → 貼上送出</div>' +
@@ -756,11 +759,14 @@
     var md = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bd);
     if (!md) { _zwxErr('請選擇國曆出生日期'); return; }
     var y = +md[1], mo = +md[2], d = +md[3];
+    if (!window.JY_PICKER.validDate(y, mo, d, 2100)) { _zwxErr('請選擇有效的國曆日期（1900–2100）'); return; }
 
     var hhEl = document.getElementById('zw-hh');
     var hhVal = hhEl ? hhEl.value : '';
-    var btimeUnknown = (hhVal === 'unknown' || hhVal === '');
-    var hh = btimeUnknown ? 12 : parseInt(hhVal, 10);
+    if (hhVal === '') { _zwxErr('請選擇出生時辰，或明確選擇「不確定」'); return; }
+    var btimeUnknown = (hhVal === 'unknown');
+    var hh = btimeUnknown ? 12 : Number(hhVal);
+    if (!Number.isInteger(hh) || hh < 0 || hh > 23) { _zwxErr('出生時辰格式不正確'); return; }
 
     if (typeof computeZiwei !== 'function') { _zwxErr('排盤引擎仍在背景載入，請過幾秒再按一次「起盤」'); return; }
 
@@ -819,6 +825,7 @@
   //  複製 / 開啟 AI / 重設 / 關閉
   // ════════════════════════════════════════════════════════
   window._ziweiShare = function () {
+    if (_zwLastForm && _zwLastForm.btimeUnknown) { _zwxErr('時辰未知，尚無可分享的個人命盤'); return; }
     if (!window.JYShareCard) { _zwxErr('分享元件載入中，請稍候再試一次'); return; }
     var zw = _zwLastChart || {}, form = _zwLastForm || {};
     var palaces = zw.palaces || [];
@@ -873,6 +880,7 @@
     showInput();
   };
   window._zwClose = function () {
+    _zwxCloseSheet();
     var r = document.getElementById('zw-result'); if (r) r.remove();
     var inp = document.getElementById('zw-input'); if (inp) inp.remove();
     try { document.body.style.overflow = ''; } catch(e){}
@@ -907,7 +915,7 @@
   }
   function _zwHHInner(){
     if(_zwSelHH===''||_zwSelHH==null) return '<span class="ph">請選擇出生時辰</span><span class="chev">▾</span>';
-    if(_zwSelHH==='unknown') return '<span class="val">不確定（午時推算）</span><span class="chev">▾</span>';
+    if(_zwSelHH==='unknown') return '<span class="val">不確定（尚未定盤）</span><span class="chev">▾</span>';
     var hh=parseInt(_zwSelHH,10), nm='';
     for(var i=0;i<SHICHEN.length;i++){ if(SHICHEN[i].h===hh){ nm=SHICHEN[i].n; break; } }
     return '<span class="val">'+(nm||(_zwPad(hh)+':00'))+'</span><span class="chev">▾</span>';
@@ -924,33 +932,10 @@
   function _zwxClearErr(){ var e=document.getElementById('zwx-err'); if(e) e.classList.remove('show'); }
 
   // ── 底部 sheet ──
-  var _zwxSheetType='', _zwxPrevBodyOverflow='', _zwxViewportOff=null, _zwxPaintTimers=[];
-  function _zwxViewportHeight(){ var vv=window.visualViewport; return Math.max(320,Math.round((vv&&vv.height)||window.innerHeight||document.documentElement.clientHeight||640)); }
-  function _zwxForcePaint(){
-    var bd=document.getElementById('zwx-sheet-bd'); if(!bd) return;
-    bd.style.setProperty('--jy-picker-vh',_zwxViewportHeight()+'px');
-    var cal=bd.querySelector('.zwx-cal-table'); if(!cal) return;
-    var rows=cal.querySelectorAll('.zwx-cal-row'), cells=cal.querySelectorAll('.zwx-cal-d');
-    if(rows.length!==6||cells.length!==42){ if(_zwxSheetType==='date') _zwDpDay(); return; }
-    cal.style.display='none'; void cal.offsetHeight; cal.style.display='block'; void cal.offsetHeight;
-  }
-  function _zwxBindViewport(bd){
-    if(_zwxViewportOff){ try{_zwxViewportOff();}catch(e){} _zwxViewportOff=null; }
-    function sync(){ if(bd&&bd.isConnected){ bd.style.setProperty('--jy-picker-vh',_zwxViewportHeight()+'px'); _zwxForcePaint(); } }
-    var vv=window.visualViewport;
-    window.addEventListener('resize',sync,{passive:true}); window.addEventListener('orientationchange',sync,{passive:true});
-    if(vv){ vv.addEventListener('resize',sync,{passive:true}); vv.addEventListener('scroll',sync,{passive:true}); }
-    _zwxViewportOff=function(){ window.removeEventListener('resize',sync); window.removeEventListener('orientationchange',sync); if(vv){vv.removeEventListener('resize',sync);vv.removeEventListener('scroll',sync);} };
-    sync();
-  }
-  function _zwxSchedulePaint(){
-    while(_zwxPaintTimers.length) clearTimeout(_zwxPaintTimers.pop());
-    [0,60,220].forEach(function(ms){ _zwxPaintTimers.push(setTimeout(_zwxForcePaint,ms)); });
-    try{ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(_zwxForcePaint); }catch(e){}
-  }
+  var _zwxSheetType='', _zwxDispose=null;
   function _zwxOpenSheet(title, sub, body, foot){
     _zwxCloseSheet(true);
-    var bd=document.createElement('div'); bd.id='zwx-sheet-bd'; bd.className='zwx-sheet-bd show'; bd.setAttribute('role','presentation');
+    var bd=document.createElement('dialog'); bd.id='zwx-sheet-bd'; bd.className='zwx-sheet-bd show'; bd.setAttribute('role','presentation');
     bd.onclick=function(e){ if(e.target===bd) _zwxCloseSheet(); };
     bd.onkeydown=function(e){ if(e.key==='Escape') _zwxCloseSheet(); };
     bd.innerHTML='<div class="zwx-sheet" role="dialog" aria-modal="true" aria-label="'+title+'"><div class="zwx-grip"></div>'+
@@ -959,20 +944,12 @@
       '<div id="zwx-sbody">'+body+'</div>'+
       (foot?'<div class="zwx-sfoot"><button class="zwx-sbtn" onclick="_zwxCancel()">取消</button><button class="zwx-sbtn go" onclick="_zwxConfirm()">確定</button></div>':'')+
       '</div>';
-    _zwxPrevBodyOverflow=document.body.style.overflow; document.body.style.overflow='hidden';
-    bd.style.setProperty('--jy-picker-vh',_zwxViewportHeight()+'px');
-    document.body.appendChild(bd);
-    _zwxBindViewport(bd); _zwxSchedulePaint();
+    _zwxDispose=window.JY_PICKER.mount(bd,'#zwx-sbody',_zwxCloseSheet);
   }
-  function _zwxCloseSheet(immediate){
-    var bd=document.getElementById('zwx-sheet-bd'); if(!bd) return;
-    while(_zwxPaintTimers.length) clearTimeout(_zwxPaintTimers.pop());
-    if(_zwxViewportOff){ try{_zwxViewportOff();}catch(e){} _zwxViewportOff=null; }
-    if(bd.parentNode) bd.parentNode.removeChild(bd);
-    document.body.style.overflow=_zwxPrevBodyOverflow;
-  }
+
+  function _zwxCloseSheet(){ if(_zwxDispose){ var dispose=_zwxDispose; _zwxDispose=null; dispose(); } }
   function _zwxSub(t){ var s=document.getElementById('zwx-ssub'); if(s) s.innerHTML=t; }
-  function _zwxBody(h){ var b=document.getElementById('zwx-sbody'); if(b){ b.innerHTML=h; b.scrollTop=0; _zwxSchedulePaint(); } }
+  function _zwxBody(h){ var b=document.getElementById('zwx-sbody'); if(b){ b.innerHTML=h; b.scrollTop=0; window.JY_PICKER.refresh(document.getElementById('zwx-sheet-bd')); } }
   window._zwxCancel=function(){ _zwxCloseSheet(); };
   window._zwxConfirm=function(){
     if(_zwxSheetType==='date'){ _zwSelDate=_zwDpY+'-'+_zwPad(_zwDpM)+'-'+_zwPad(_zwDpD); }
@@ -992,7 +969,7 @@
   function _zwDpDay(){
     _zwDpClamp();
     var h='<div class="zwx-cal-nav"><button type="button" onclick="_zwxDpNav(-1)">‹</button>'+ 
-      '<div class="zwx-cal-ttl" onclick="_zwxDpMode(\'year\')">'+_zwDpY+' 年 '+_zwDpM+' 月 ▾</div>'+ 
+      '<button type="button" class="zwx-cal-ttl jy-picker-title-button" onclick="_zwxDpMode(\'year\')">'+_zwDpY+' 年 '+_zwDpM+' 月 ▾</button>'+ 
       '<button type="button" onclick="_zwxDpNav(1)">›</button></div><div class="zwx-cal-table" role="grid"><div class="zwx-cal-head" role="row">';
     for(var w=0;w<7;w++) h+='<div class="zwx-cal-wk" role="columnheader">'+ZWK[w]+'</div>';
     h+='</div>';
@@ -1000,7 +977,7 @@
     for(i=0;i<42;i++){
       day=i-fd+1;
       if(day<1||day>dim) cells.push('<span class="zwx-cal-d empty" aria-hidden="true"></span>');
-      else cells.push('<button type="button" class="zwx-cal-d'+(day===_zwDpD?' sel':'')+'" onclick="_zwxDpDay('+day+')">'+day+'</button>');
+      else cells.push('<button type="button" class="zwx-cal-d'+(day===_zwDpD?' sel':'')+'" aria-pressed="'+(day===_zwDpD?'true':'false')+'" onclick="_zwxDpDay('+day+')">'+day+'</button>');
     }
     for(var r=0;r<6;r++) h+='<div class="zwx-cal-row" role="row">'+cells.slice(r*7,r*7+7).join('')+'</div>';
     h+='</div>'; _zwxBody(h); _zwxSub('點日期，或點上方年月快速跳轉');
@@ -1008,17 +985,17 @@
   function _zwDpYear(){
     var h='<div class="zwx-yhead"><button onclick="_zwxDpDec(-1)">‹</button><span>'+_zwDpDec+' – '+(_zwDpDec+11)+'</span><button onclick="_zwxDpDec(1)">›</button></div><div class="zwx-pg y">';
     for(var y=_zwDpDec;y<_zwDpDec+12;y++){ var dis=(y<1900||y>2100);
-      h+='<div class="zwx-cell'+(y===_zwDpY?' sel':'')+'"'+(dis?' style="opacity:.3;pointer-events:none"':' onclick="_zwxDpYear('+y+')"')+'>'+y+'</div>'; }
+      h+='<button type="button" class="zwx-cell'+(y===_zwDpY?' sel':'')+'"'+(dis?' disabled style="opacity:.3;pointer-events:none"':' onclick="_zwxDpYear('+y+')"')+'>'+y+'</button>'; }
     h+='</div>'; _zwxBody(h); _zwxSub('選擇年份');
   }
   function _zwDpMonth(){
     var h='<div class="zwx-pg mo">';
-    for(var m=1;m<=12;m++) h+='<div class="zwx-cell'+(m===_zwDpM?' sel':'')+'" onclick="_zwxDpMonth('+m+')">'+m+' 月</div>';
+    for(var m=1;m<=12;m++) h+='<button type="button" class="zwx-cell'+(m===_zwDpM?' sel':'')+'" onclick="_zwxDpMonth('+m+')">'+m+' 月</button>';
     h+='</div>'; _zwxBody(h); _zwxSub('選擇月份（'+_zwDpY+' 年）');
   }
   window._zwxDpMode=function(mode){ if(mode==='year'){ _zwDpDec=Math.floor(_zwDpY/12)*12; if(_zwDpDec<1896)_zwDpDec=1896; _zwDpYear(); } else if(mode==='month'){ _zwDpMonth(); } else { _zwDpDay(); } };
-  window._zwxDpNav=function(d){ _zwDpM+=d; if(_zwDpM>12){_zwDpM=1;_zwDpY++;} if(_zwDpM<1){_zwDpM=12;_zwDpY--;} if(_zwDpY<1900)_zwDpY=1900; if(_zwDpY>2100)_zwDpY=2100; _zwDpClamp(); _zwDpDay(); };
-  window._zwxDpDec=function(d){ _zwDpDec+=d*12; if(_zwDpDec<1896)_zwDpDec=1896; if(_zwDpDec>2088)_zwDpDec=2088; _zwDpYear(); };
+  window._zwxDpNav=function(d){ var next=window.JY_PICKER.shiftMonth(_zwDpY,_zwDpM,_zwDpD,d,2100); _zwDpY=next.year; _zwDpM=next.month; _zwDpD=next.day; _zwDpDay(); };
+  window._zwxDpDec=function(d){ _zwDpDec+=d*12; if(_zwDpDec<1896)_zwDpDec=1896; if(_zwDpDec>2100)_zwDpDec=2100; _zwDpYear(); };
   window._zwxDpDay=function(d){ _zwDpD=d; _zwDpDay(); };
   window._zwxDpYear=function(y){ _zwDpY=y; _zwDpClamp(); _zwDpMonth(); };
   window._zwxDpMonth=function(m){ _zwDpM=m; _zwDpClamp(); _zwDpDay(); };
@@ -1026,12 +1003,12 @@
   // ── 時辰選擇器（單點即選；12 時辰＋不確定）──
   window._zwxOpenHH=function(){
     _zwxSheetType='hh';
-    var h='<div class="zwx-sc-grid">';
+    var h='<button type="button" class="zwx-sc-grid">';
     for(var i=0;i<SHICHEN.length;i++){
       var parts=SHICHEN[i].n.split(' ');
-      h+='<div class="zwx-sc'+((''+SHICHEN[i].h)===(''+_zwSelHH)?' sel':'')+'" onclick="_zwxPickHH('+SHICHEN[i].h+')"><b>'+parts[0]+'</b><i>'+(parts[1]||'')+'</i></div>';
+      h+='<button type="button" class="zwx-sc'+((''+SHICHEN[i].h)===(''+_zwSelHH)?' sel':'')+'" onclick="_zwxPickHH('+SHICHEN[i].h+')"><b>'+parts[0]+'</b><i>'+(parts[1]||'')+'</i></button>';
     }
-    h+='<div class="zwx-sc wide'+(_zwSelHH==='unknown'?' sel':'')+'" onclick="_zwxPickHHU()"><b>不確定</b><i>暫以午時推算</i></div>';
+    h+='<button type="button" class="zwx-sc wide'+(_zwSelHH==='unknown'?' sel':'')+'" onclick="_zwxPickHHU()"><b>不確定</b><i>尚未定盤</i></button>';
     h+='</div>';
     _zwxOpenSheet('出生時辰','紫微以時辰定盤，不需到分', h, false);
   };

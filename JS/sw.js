@@ -2,8 +2,8 @@
 // JS/HTML → network-first（永遠拿最新）
 // 圖片/字型 → cache-first（省流量）
 // API → 不攔截
-// v55: 紫微 ROOT-SPEC v2 與動態三方索引；強制清除舊提示詞快取，JS/HTML 維持 network-first + no-cache
-const CACHE_NAME = 'jy-main-v55';
+// v56: 共用選擇器與提示詞資料完整性； 紫微 ROOT-SPEC v2 與動態三方索引；強制清除舊提示詞快取，JS/HTML 維持 network-first + no-cache
+const CACHE_NAME = 'jy-main-v56';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -13,7 +13,7 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+        keys.filter(k => k.startsWith('jy-main-') && k !== CACHE_NAME).map(k => caches.delete(k))
       ))
       .then(() => self.clients.claim())
   );
@@ -21,6 +21,8 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
+
+  if (event.request.method !== 'GET' || url.pathname.startsWith('/api/')) return;
 
   // API / Worker → 不攔截
   if (url.hostname.includes('workers.dev') ||

@@ -5371,52 +5371,50 @@ const CTR_FALLBACK_ENDPOINT = 'https://mytool-blue.pages.dev/api/pulse';
 function _normalizeCounterData(data, action){
   if(!data || typeof data !== 'object' || Array.isArray(data) || data.error) return null;
   var out={};
-  if(data.total !== undefined){
-    var total=Number(data.total);
-    if(!Number.isFinite(total) || total<0) return null;
-    out.total=Math.floor(total);
+  for(var key of ['total','today']){
+    if(!Object.prototype.hasOwnProperty.call(data,key)) continue;
+    var value=data[key];
+    if(typeof value !== 'number' && !(typeof value === 'string' && /^\d+$/.test(value.trim()))) return null;
+    var count=Number(value);
+    if(!Number.isSafeInteger(count) || count<0) return null;
+    out[key]=count;
   }
-  if(data.today !== undefined){
-    var today=Number(data.today);
-    if(!Number.isFinite(today) || today<0) return null;
-    out.today=Math.floor(today);
-  }
-  if(action === 'get' && (out.total === undefined || out.today === undefined)) return null;
+  if((action === 'get' || action === 'reset') && (out.total === undefined || out.today === undefined)) return null;
   if(action === 'increment' && out.total === undefined) return null;
+  if(out.total !== undefined && out.today !== undefined && out.today > out.total) return null;
   return out;
 }
 
-// ── 只呼叫本站代理，避免手機瀏覽器攔截 Google 跨網域與重新導向 ──
+var _counterError='';
+// 讀取可嘗試另一個已設定代理；寫入只在明確未進入路由時切換，避免重複計數。
 async function _gasCall(action){
-  var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  var timeout = setTimeout(function(){ if(controller) controller.abort(); }, 10000);
-  var isRead = action === 'get';
-  var options = {
-    method: isRead ? 'GET' : 'POST',
-    cache: 'no-store',
-    headers: { 'Accept': 'application/json' }
-  };
-  if(controller) options.signal = controller.signal;
-  if(!isRead){
-    options.headers['Content-Type']='application/json';
-    options.body=JSON.stringify({action:action});
+  var isRead=action==='get';
+  var endpoints=CTR_ENDPOINT===CTR_FALLBACK_ENDPOINT?[CTR_ENDPOINT]:[CTR_ENDPOINT,CTR_FALLBACK_ENDPOINT];
+  _counterError='';
+  for(var i=0;i<endpoints.length;i++){
+    var controller=typeof AbortController!=='undefined'?new AbortController():null;
+    var timeout=setTimeout(function(){if(controller)controller.abort();},action==='reset'?22000:12000);
+    var options={method:isRead?'GET':'POST',cache:'no-store',headers:{Accept:'application/json'}};
+    if(controller)options.signal=controller.signal;
+    if(!isRead){options.headers['Content-Type']='application/json';options.body=JSON.stringify({action:action});}
+    if(action==='reset' && window._JY_ADMIN_TOKEN)options.headers.Authorization='Bearer '+window._JY_ADMIN_TOKEN;
+    var canRetry=isRead;
+    try{
+      var response=await fetch(endpoints[i]+(isRead?'?action=get&_t=':'?_t=')+Date.now(),options);
+      canRetry=isRead || response.status===404 || response.status===405;
+      if(!response.ok){
+        _counterError=response.status===403?'管理權限驗證失敗':response.status===404||response.status===405?'統計服務路由未部署':'統計服務暫時無法讀取（HTTP '+response.status+'）';
+      }else{
+        var data=_normalizeCounterData(await response.json(),action);
+        if(data){_counterError='';return data;}
+        _counterError='統計服務回傳資料不完整';
+      }
+    }catch(error){
+      _counterError=error&&error.name==='AbortError'?'統計服務逾時':'統計服務連線或回應失敗';
+    }finally{clearTimeout(timeout);}
+    if(!canRetry)break;
   }
-  try{
-    var suffix = isRead ? '?action=get&_t=' + Date.now() : '?_t=' + Date.now();
-    var response = await fetch(CTR_ENDPOINT + suffix, options);
-    // 若自訂網域實際由純靜態主機承載，404/405 代表請求未進入計數器，
-    // 此時才安全改走 pages.dev；上游 5xx 或網路中斷不重送，避免重複 +1。
-    if(CTR_ENDPOINT !== CTR_FALLBACK_ENDPOINT &&
-       (response.status === 404 || response.status === 405)){
-      response = await fetch(CTR_FALLBACK_ENDPOINT + suffix, options);
-    }
-    if(!response.ok) return null;
-    return _normalizeCounterData(await response.json(), action);
-  }catch(_){
-    return null;
-  }finally{
-    clearTimeout(timeout);
-  }
+  return null;
 }
 
 // ── 計數 +1（連進首頁觸發一次）──
@@ -5467,9 +5465,11 @@ function _ensureAdminPanel(){
   var p=document.createElement('div');
   p.className='admin-panel'; p.id='admin-panel';
   p.innerHTML='<button class="admin-close" onclick="closeAdmin()">&times;</button>'+
-    '<h3>📊 解讀人次統計</h3>'+
+    '<h3>📊 網站造訪統計</h3>'+
     '<div class="admin-row"><label>累計總人次</label><span class="admin-val" id="admin-count">…</span></div>'+
     '<div class="admin-row"><label>今日人次</label><span class="admin-val" id="admin-today">…</span></div>'+
+    '<div id="admin-status" role="status" style="font-size:.75rem;line-height:1.5"></div>'+
+    '<button class="admin-btn" onclick="openAdmin()">重新讀取</button>'+
     '<button class="admin-btn" onclick="closeAdmin()">關閉</button>'+
     '<button class="admin-reset" onclick="resetVisitorCount()">歸零計數</button>'+
     '<div style="margin-top:var(--sp-sm);font-size:.68rem;color:var(--c-text-muted);text-align:center">每次造訪首頁 = 1 人次<br>連點月亮 5 下開啟 · 重整後隱藏</div>';
@@ -5489,6 +5489,7 @@ async function openAdmin(){
     document.getElementById('admin-today').textContent='未設定';
     return;
   }
+  var status=document.getElementById('admin-status');if(status)status.textContent='';
   const data = await _gasCall('get');
   if(data){
     document.getElementById('admin-count').textContent=(data.total||0).toLocaleString();
@@ -5497,7 +5498,8 @@ async function openAdmin(){
     var ct=document.getElementById('counter-today'); if(ct) ct.textContent=(data.today||0).toLocaleString();
   }else{
     document.getElementById('admin-count').textContent='連線失敗';
-    document.getElementById('admin-today').textContent='-';
+    document.getElementById('admin-today').textContent='—';
+    if(status)status.textContent=_counterError+'，請稍後重新讀取。';
   }
 }
 
@@ -5508,17 +5510,15 @@ function closeAdmin(){
 
 // ── 人次歸零（後台限定，需 GAS 支援 action=reset）──
 async function resetVisitorCount(){
+  if(!window._JY_ADMIN_TOKEN){alert('請先登入管理員再重設人次。');return;}
   if(!confirm('確定要將人次歸零嗎？此動作無法復原。')) return;
-  if(!CTR_ENDPOINT){ alert('未設定計數端點'); return; }
-  var ac=document.getElementById('admin-count'), at=document.getElementById('admin-today');
-  if(ac) ac.textContent='…'; if(at) at.textContent='…';
-  await _gasCall('reset');
-  var data = await _gasCall('get');
-  var total=(data&&data.total)||0, today=(data&&data.today)||0;
-  if(ac) ac.textContent=total.toLocaleString();
-  if(at) at.textContent=today.toLocaleString();
-  var n=document.getElementById('counter-num'); if(n) n.textContent=total.toLocaleString();
-  var t=document.getElementById('counter-today'); if(t) t.textContent=today.toLocaleString();
+  var data=await _gasCall('reset');
+  if(!data){alert(_counterError+'；尚未確認重設結果，請重新讀取。');return;}
+  [['admin-count','total'],['admin-today','today'],['counter-num','total'],['counter-today','today']].forEach(function(pair){
+    var el=document.getElementById(pair[0]);if(el)el.textContent=data[pair[1]].toLocaleString();
+  });
+  var status=document.getElementById('admin-status');
+  if(status)status.textContent=data.total===0&&data.today===0?'已確認歸零。':'已讀取最新數字；上游未回傳歸零結果，請檢查 GAS 的 reset 實作。';
 }
 
 
