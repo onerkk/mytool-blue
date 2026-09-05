@@ -1,4 +1,4 @@
-// 靜月之光 — Pages Function: visitor tally proxy v1.1.0
+// 靜月之光 — Pages Function: visitor tally proxy v1.2.0
 // Browser -> same-origin Pages Function -> Google Apps Script.
 // This keeps Google redirects/CORS out of the browser and preserves the
 // existing spreadsheet + LockService counter implementation.
@@ -20,7 +20,7 @@ function corsHeaders(request) {
   return {
     'Access-Control-Allow-Origin': ALLOWED_ORIGINS.has(origin) ? origin : 'https://jingyue.uk',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Cache-Control': 'no-store, no-cache, must-revalidate',
     'Vary': 'Origin',
   };
@@ -37,8 +37,9 @@ function jsonResponse(request, data, status = 200) {
 }
 
 function normalizeCount(value) {
+  if (typeof value !== 'number' && !(typeof value === 'string' && /^\d+$/.test(value.trim()))) return null;
   const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? Math.floor(number) : 0;
+  return Number.isSafeInteger(number) && number >= 0 ? number : null;
 }
 
 function normalizePayload(value) {
@@ -46,6 +47,8 @@ function normalizePayload(value) {
   const result = {};
   if (Object.prototype.hasOwnProperty.call(value, 'total')) result.total = normalizeCount(value.total);
   if (Object.prototype.hasOwnProperty.call(value, 'today')) result.today = normalizeCount(value.today);
+  if (result.total === null || result.today === null ||
+      (result.total !== undefined && result.today !== undefined && result.today > result.total)) return null;
   return result;
 }
 
@@ -105,12 +108,28 @@ export async function onRequest(context) {
     return jsonResponse(request, { error: 'invalid_action' }, 400);
   }
 
+  if (request.method === 'GET' && action !== 'get') {
+    return jsonResponse(request, { error: 'mutation_requires_post' }, 405);
+  }
+  if (action === 'reset') {
+    const token = env.COUNTER_ADMIN_TOKEN || env.ADMIN_TOKEN;
+    if (!token || request.headers.get('Authorization') !== `Bearer ${token}`) {
+      return jsonResponse(request, { error: 'admin_required' }, 403);
+    }
+  }
+
   const gasUrl = env.COUNTER_GAS_URL || DEFAULT_GAS_URL;
   try {
     const upstream = await requestGas(gasUrl, action);
-    const payload = normalizePayload(upstream);
+    let payload = normalizePayload(upstream);
+    // 舊 GAS 可能只回 {}；重設後讀回真正數字，不把空回應當歸零成功。
+    if (action === 'reset' && payload && !upstream.error &&
+        (payload.total === undefined || payload.today === undefined)) {
+      const confirmed = await requestGas(gasUrl, 'get');
+      payload = confirmed && !confirmed.error ? normalizePayload(confirmed) : null;
+    }
     if (!payload || upstream.error ||
-        (action === 'get' && (payload.total === undefined || payload.today === undefined)) ||
+        ((action === 'get' || action === 'reset') && (payload.total === undefined || payload.today === undefined)) ||
         (action === 'increment' && payload.total === undefined)) {
       throw new Error('Google Apps Script returned invalid counter data');
     }
