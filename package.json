@@ -3,12 +3,13 @@
     "javascript-obfuscator": "^5.3.0"
   },
   "scripts": {
-    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures",
+    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions",
     "test:prompts": "node tests/prompt-accuracy-20260811.test.cjs",
     "test:tarot": "node tests/tarot-v102-method-data-prompt.test.js",
     "test:ziwei": "node tests/ziwei-root-spec-v1.test.js",
     "test:counter": "node tests/counter-proxy.test.mjs",
     "test:picker-data": "node tests/picker-and-data-regression.cjs",
-    "test:api-failures": "node tests/api-failure-regression.mjs"
+    "test:api-failures": "node tests/api-failure-regression.mjs",
+    "test:interactions": "node tests/interaction-hotfix-20260906.cjs"
   }
 }
