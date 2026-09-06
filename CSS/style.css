@@ -1163,7 +1163,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 
 /* Image performance */
 img{max-width:100%;height:auto}
-img[loading="lazy"]{content-visibility:auto}
+img[loading="lazy"]{content-visibility:visible}
 
 /* Touch target minimum (WCAG 2.5.8) */
 .q-preset-btn{min-height:44px;display:flex;align-items:center}
@@ -2231,3 +2231,22 @@ details[open]>summary .jy-chev{transform:rotate(180deg)}
 .jy-reading-result p{font-size:14px;line-height:1.6;margin:6px 0}.jy-reading-result small{font-size:13px;color:#c8bea9;line-height:1.6}.jy-reading-result>div:last-child{flex:1;min-width:0}
 .jy-reading-face{width:86px;flex:0 0 86px;height:136px}.jy-reading-face .jy-card-face{position:relative;width:100%;height:100%;padding:0;border:0;background:#211b2a;cursor:zoom-in;overflow:hidden;border-radius:8px}.jy-reading-face img{width:100%;height:100%;object-fit:cover;content-visibility:visible}
 @media(prefers-reduced-motion:reduce){.tarot-reveal-inner{transition:none}.tarot-pick-hint{animation:none!important}}
+
+
+/* Mobile rendering: static decoration, opaque controls, no backdrop sampling.
+   Native lazy loading already defers offscreen images; content-visibility is
+   unnecessary on the same images and can defer their paint a second time. */
+@media (max-width:760px),(any-pointer:coarse){
+  *,*::before,*::after{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  body{background-attachment:scroll}
+  .jy-stars,.jy-vignette,.particles-bg{display:none!important}
+  .jy-bg-slide,.tarot-stage-bg-img{animation:none!important;transform:none!important;will-change:auto!important;opacity:0}
+  .jy-bg-s1{opacity:.35}
+  .tarot-stage-bg-img:first-child{opacity:1}
+  .card,.card-reveal,.jy-stagger{animation:none!important;transition:none!important;opacity:1!important;transform:none!important}
+  #bzx-screen,#zw-input,#bzs-screen{font-family:system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif!important}
+  .bzx-section,.bzx-ai-card,.zw-in-sec{background:linear-gradient(180deg,#15110d,#0e0c09)!important}
+}
