@@ -1,0 +1,23 @@
+'use strict';
+const vm=require('node:vm');
+function environment(){
+  let doc;
+  class Element {
+    constructor(tag='div'){this.tagName=tag.toUpperCase();this.attrs={};this.children=[];this.parentNode=null;this.listeners={};this.style={setProperty(k,v){this[k]=v;}};this.value='';this.checked=false;this.disabled=false;this.inert=false;this.dataset={};this.classList={add:(...xs)=>{this.className=[...new Set((this.className||'').split(' ').concat(xs))].join(' ');},remove:(...xs)=>{this.className=(this.className||'').split(' ').filter(x=>!xs.includes(x)).join(' ');},contains:x=>(this.className||'').split(' ').includes(x),toggle:(x,on)=>on?this.classList.add(x):this.classList.remove(x)};}
+    setAttribute(k,v){this.attrs[k]=String(v);if(k==='id')this.id=String(v);if(k==='class')this.className=v;if(k==='disabled')this.disabled=true;if(k==='value')this.value=v;if(k.startsWith('data-'))this.dataset[k.slice(5).replace(/-([a-z])/g,(_,a)=>a.toUpperCase())]=String(v);}
+    getAttribute(k){return k==='class'?this.className||null:this.attrs[k]??null;} removeAttribute(k){delete this.attrs[k];}
+    appendChild(x){x.parentNode=this;this.children.push(x);return x;}removeChild(x){this.children=this.children.filter(n=>n!==x);x.parentNode=null;}remove(){if(this.parentNode)this.parentNode.removeChild(this);}
+    get firstElementChild(){return this.children[0];}get isConnected(){return this===doc.body||this===doc.head||!!(this.parentNode&&this.parentNode.isConnected);}
+    addEventListener(k,fn){(this.listeners[k]??=new Set()).add(fn);}removeEventListener(k,fn){this.listeners[k]?.delete(fn);}dispatch(k,e={}){e.target??=this;e.preventDefault??=()=>{};e.stopPropagation??=()=>{};if(typeof this['on'+k]==='function')this['on'+k](e);for(const fn of [...this.listeners[k]||[]])fn(e);}
+    matches(sel){return sel.split(',').some(raw=>{const s=raw.trim();if(s.startsWith('#'))return this.id===s.slice(1);if(s.startsWith('.'))return this.classList.contains(s.slice(1));let m=s.match(/^\[([^=\]]+)(?:=["']?([^"'\]]+)["']?)?\]$/);if(m)return m[2]===undefined?this.getAttribute(m[1])!==null:this.getAttribute(m[1])===m[2];return this.tagName.toLowerCase()===s;});}
+    querySelectorAll(s){return this.children.flatMap(n=>[...(n.matches(s)?[n]:[]),...n.querySelectorAll(s)]);}querySelector(s){return this.querySelectorAll(s)[0]||null;}closest(s){return this.matches(s)?this:this.parentNode?.closest(s)||null;}
+    focus(){doc.activeElement=this;} getBoundingClientRect(){return {top:0,left:0,width:62,height:92};} click(){this.dispatch('click');}getClientRects(){return this.isConnected?[{}]:[];}
+    showModal(){this.open=true;this.setAttribute('open','');}close(){this.open=false;this.removeAttribute('open');}
+    set innerHTML(html){this._html=html;this.children.forEach(n=>n.parentNode=null);this.children=[];let stack=[this];for(const token of html.match(/<[^>]+>/g)||[]){if(/^<\//.test(token)){if(stack.length>1)stack.pop();continue;}const match=token.match(/^<([\w-]+)/);if(!match)continue;const el=new Element(match[1]);for(const m of token.slice(match[0].length).matchAll(/([\w-]+)(?:="([^"]*)"|='([^']*)'|=([^\s>]+))?/g))el.setAttribute(m[1],m[2]??m[3]??m[4]??'');stack.at(-1).appendChild(el);if(!/^(input|img|br|hr|meta|link)$/i.test(match[1])&&!token.endsWith('/>'))stack.push(el);}}
+    get innerHTML(){return this._html||'';}
+  }
+  doc={body:new Element('body'),head:new Element('head'),createElement:t=>new Element(t),getElementsByName(){return [];},getElementById(id){return this.body.querySelector('#'+id)||this.head.querySelector('#'+id);},querySelector(s){return this.body.querySelector(s)||this.head.querySelector(s);},querySelectorAll(s){return this.body.querySelectorAll(s);},addEventListener(){}};
+  const events=new Element(),vv=new Element();vv.height=600;vv.width=360;vv.offsetTop=0;
+  const ctx={window:null,document:doc,console,Date,Math,Intl,TextEncoder,TextDecoder,Blob,URL,innerWidth:360,innerHeight:800,visualViewport:vv,addEventListener:events.addEventListener.bind(events),removeEventListener:events.removeEventListener.bind(events),localStorage:{getItem(){return null;},setItem(){},removeItem(){}},navigator:{clipboard:{writeText:async()=>{}}},sessionStorage:{getItem(){return null;},setItem(){},removeItem(){}},location:{hostname:'localhost',href:'http://localhost/'},setTimeout(){return 1;},clearTimeout(){},setInterval(){return 1;},clearInterval(){},requestIdleCallback(){},requestAnimationFrame(){return 1;},cancelAnimationFrame(){},performance:{now:()=>0},alert(){},scrollTo(){}};ctx.window=ctx;vm.createContext(ctx);return {ctx,doc,Element,events,vv};
+}
+module.exports={environment};
