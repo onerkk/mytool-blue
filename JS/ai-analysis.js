@@ -11563,58 +11563,10 @@ function getStarBrightness(starName, zhiBranch){
   return arr[idx]||'';
 }
 
-/* =============================================================
-   ENHANCEMENT 5: 增強 renderZiwei 加入亮度
-   ============================================================= */
-const _origRenderZiwei = renderZiwei;
-renderZiwei = function(){
-  _origRenderZiwei();
-  // Post-process: add brightness tags
-  if(!S.ziwei)return;
-  S.ziwei.palaces.forEach(p=>{
-    p.stars.forEach(s=>{
-      if(s.type==='major'){
-        s.brightness=getStarBrightness(s.name, p.branch);
-      }
-    });
-  });
-  // Re-render grid with brightness
-  const zw=S.ziwei;
-  const order=[[3,4,5,6],[2,-1,-1,7],[1,-1,-1,8],[0,11,10,9]];
-  let html='<div class="zw-grid">';
-  for(let row=0;row<4;row++){
-    for(let col=0;col<4;col++){
-      const idx=order[row][col];
-      if(idx===-1){
-        if(row===1&&col===1){
-          html+=`<div class="zw-cell zw-center" style="grid-column:2/4;grid-row:2/4">
-            <div class="serif text-gold" style="font-size:1.1rem;margin-bottom:var(--sp-sm)">紫微斗數</div>
-            <p class="text-dim text-xs">命宮：${DZ[zw.mingIdx]}</p>
-            <p class="text-dim text-xs">${zw.yGan}${zw.yZhi}年 ｜ ${zw.wuxingJu}局</p></div>`;
-        }
-        continue;
-      }
-      const palace=zw.palaces.find(p=>DZ.indexOf(p.branch)===idx);
-      if(!palace){html+=`<div class="zw-cell"><span class="zw-palace">${DZ[idx]}</span></div>`;continue}
-      const isMing=palace.isMing;
-      html+=`<div class="zw-cell${isMing?' active-palace':''}">
-        <div class="zw-palace">${palace.name}${isMing?' ⭐':''}</div>
-        <div class="zw-branch">${palace.branch}</div><div class="zw-stars">`;
-      palace.stars.forEach(s=>{
-        const cls=s.type==='major'?'major':s.type==='sha'?'text-danger':'minor';
-        const bright=s.brightness?`<span class="text-xs text-muted">(${s.brightness})</span>`:'';
-        html+=`<span class="zw-star ${cls}">${s.name}${bright}</span>`;
-        if(s.hua){
-          const huaCls2 = s.hua.includes('祿')?'color:#4ade80':s.hua.includes('權')?'color:#d8b56a':s.hua.includes('科')?'color:#60a5fa':'color:#f87171';
-          html+=`<span class="zw-hua" style="${huaCls2}">${s.hua}</span>`;
-        }
-      });
-      html+=`</div></div>`;
-    }
-  }
-  html+='</div>';
-  document.getElementById('d-ziwei-grid').innerHTML=html;
-};
+// renderZiwei belongs to the lazily loaded ziwei.js renderer. Capturing it
+// during initial boot throws before the remaining analysis UI can initialize.
+// Its chart brightness must also remain owned by the Ziwei engine, rather
+// than being rewritten by this obsolete presentation-layer wrapper.
 
 /* =============================================================
    ENHANCEMENT 6: 增強 renderBazi 使用新大運

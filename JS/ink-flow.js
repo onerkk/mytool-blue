@@ -1,5 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════
-// 靜月之光 墨流 ink-flow v2.1 (2026/6/18)
+// 靜月之光 墨流 ink-flow v2.4 (2026/9/6)
+// v2.4：手機、觸控與 reduced-motion 使用既有靜態背景，不建立 canvas。
+// 桌面在選擇器開啟、分頁隱藏或手動 pause 時停止；close 不覆蓋手動 pause。
+// 補齊 2D 調色底色 BACK，避免背景掛載拋出 ReferenceError。
 // Suminagashi（墨流し）墨暈層——v2.0 渲染核心改寫：WebGL Stable Fluids
 //   依設計參考影片（THREE.JS·STABLE FLUIDS 同類效果）根治 v1.x「大光圈散景感」：
 //   v1.x 是 2D canvas 徑向漸層墨點＋回饋平流近似，0.5x 解析度，墨無湍流捲鬚；
@@ -10,10 +13,9 @@
 // 掛載架構沿用 v1.2 並擴充：已知容器 id 輪詢（700ms）＋通用後備；
 //   v2.0 補收塔羅主流程 step-tarot/step-2/step-1/step-0（v1.2 漏收＝塔羅頁無墨流根因）；
 //   靜態定位的 step 容器掛載時補 isolation:isolate 建立堆疊上下文，z:-1 子層才不會沉到頁面背景之下。
-// 後備鏈：觸控／粗指標裝置固定走 2D 動態墨流，桌面才啟用 WebGL；
-//   避免 Android Chromium 在「固定 WebGL canvas＋backdrop-filter＋互動元件」組合下發生合成圖塊黑屏。
+// 後備鏈：桌面啟用 WebGL，不支援時走 2D；行動裝置不啟動動態繪圖。
 //   WebGL 初始化失敗時會換一張乾淨 canvas 再進 2D，避免同一 canvas 取過 WebGL context 後無法再取 2D。
-//   prefers-reduced-motion→靜態墨暈。
+//   prefers-reduced-motion→既有 CSS 靜態背景。
 // 效能：分頁隱藏即停、幀時 EMA>30ms 自動降檔（染料 768→448、Jacobi 18→11）。
 // API：window.JY_INK = { burst(x,y), setPalette(name), pause(), resume() }（不變）
 // ═══════════════════════════════════════════════════════════════════
@@ -22,7 +24,7 @@
   if (typeof document === 'undefined' || window.JY_INK) return;
 
   var GOLD = [201, 168, 76], MOON = [233, 226, 207], CRIMSON = [158, 53, 72],
-      VIOLET = [126, 95, 174], INDIGO = [74, 93, 168], JADE = [79, 143, 110];
+      VIOLET = [126, 95, 174], INDIGO = [74, 93, 168], JADE = [79, 143, 110], BACK = [10, 10, 18];
   var PALETTES = {
     'default': [GOLD, MOON, CRIMSON],
     'bazi':    [GOLD, CRIMSON, MOON],
@@ -37,6 +39,21 @@
 
   var reduced = false;
   try { reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  // Form rendering must not compete with a full-viewport canvas. A 2D canvas
+  // still repaints every frame, so changing WebGL to 2D was not a mobile fix.
+  function prefersStatic() {
+    return reduced || (navigator.maxTouchPoints || 0) > 0 ||
+      !!(window.matchMedia && window.matchMedia('(max-width: 760px), (any-pointer: coarse)').matches);
+  }
+  if (prefersStatic()) {
+    // Keep the public API for callers; the existing CSS supplies the still backdrop.
+    // Return before creating canvases, contexts, input listeners, or timers.
+    window.JY_INK = {version:'2.4',mode:'static',burst:function(){},setPalette:function(){},pause:function(){},resume:function(){},setPickerOpen:function(){}};
+    return;
+  }
+  var pausedByUser=false, pickerOpen=false;
+  function suspended() { return pausedByUser || pickerOpen || document.hidden || prefersStatic(); }
 
   function makeCanvas() {
     var el = document.createElement('canvas');
@@ -675,6 +692,7 @@
 
   function frame(ts) {
     if (!running) return;
+    if (suspended()) { stop(); cv.hidden=true; return; }
     rafId = requestAnimationFrame(frame);
     if (!host || !host.isConnected || !cv.isConnected || !isVisible(host)) { unmount(); return; }
     var dt = lastTs ? ts - lastTs : 16; lastTs = ts; t += Math.min(dt, 50);
@@ -693,8 +711,12 @@
     }
   }
 
-  function start() { if (running || reduced) return; running = true; lastTs = 0; rafId = requestAnimationFrame(frame); }
-  function stop() { running = false; if (rafId) cancelAnimationFrame(rafId); }
+  function start() { if (running || suspended()) return; cv.hidden=false; running = true; lastTs = 0; rafId = requestAnimationFrame(frame); }
+  function stop() { running = false; if (rafId) cancelAnimationFrame(rafId); rafId=0; }
+  function syncActivity() {
+    if (suspended()) { stop(); cv.hidden=true; }
+    else if (host && isVisible(host)) start();
+  }
 
   function sniffPalette() {
     if (manualPalette || !host) return;
@@ -715,6 +737,7 @@
   }
 
   function mount(panel) {
+    if (suspended()) return;
     if (host === panel) return;
     unmount();
     host = panel;
@@ -763,6 +786,7 @@
 
   function isPanel(el) {
     if (!el || el.nodeType !== 1 || el === cv || (el.getAttribute && el.getAttribute('data-no-ink'))) return false;
+    if (el.tagName === 'DIALOG' || (el.closest && el.closest('dialog'))) return false;
     if (!isVisible(el)) return false;
     var cs;
     try { cs = window.getComputedStyle(el); } catch (e) { return false; }
@@ -791,11 +815,13 @@
   }
 
   function poll() {
+    if (suspended()) { syncActivity(); return; }
     if (host) {
       if (!host.isConnected || !isVisible(host)) { unmount(); return; }
       // v2.0：主流程 step 切換時換目標（同為可見時取 z 較高／清單較前者）
       var p = findOpenPanel();
       if (p && p !== host) mount(p);
+      else syncActivity();
       return;
     }
     var p2 = findOpenPanel();
@@ -808,17 +834,19 @@
     poll();
 
     document.addEventListener('visibilitychange', function () {
-      if (document.hidden) stop(); else if (host && !reduced) start();
+      syncActivity();
     });
     var rsT;
     window.addEventListener('resize', function () {
       clearTimeout(rsT);
-      rsT = setTimeout(function () { if (host) { sizeUp(); } }, 320);
+      syncActivity();
+      rsT = setTimeout(function () { if (host && !suspended()) { sizeUp(); } }, 320);
     });
     // 注墨互動：點按＝滴墨；拖曳＝沿軌跡注墨（画面をなぞって墨を流す）
     var lastMv = 0, px = 0, py = 0;
     window.addEventListener('pointerdown', function (ev) {
-      if (!host || !running) return;
+      if (!host || !running || suspended()) return;
+      if (ev.target && ev.target.closest && ev.target.closest('button,input,select,textarea,[role="button"],dialog')) return;
       var now = Date.now();
       px = ev.clientX; py = ev.clientY;
       if (now - lastPointer < 450) return;
@@ -831,7 +859,7 @@
       } else { var L = D2.toLocal(ev.clientX, ev.clientY); D2.spawn(L[0], L[1], 1, false); }
     }, { passive: true });
     window.addEventListener('pointermove', function (ev) {
-      if (!host || !running || MODE !== 'gl') return;
+      if (!host || !running || suspended() || MODE !== 'gl') return;
       if (ev.buttons !== 1 && ev.pointerType !== 'touch') return; // 僅按住拖曳/觸控滑動
       var now = Date.now();
       if (now - lastMv < 33) return;
@@ -846,9 +874,9 @@
   }
 
   window.JY_INK = {
-    version: '2.3',
+    version: '2.4',
     burst: function (x, y) {
-      if (!host) return;
+      if (!host || suspended()) return;
       var bx = (x == null ? window.innerWidth / 2 : x), by = (y == null ? window.innerHeight / 2 : y);
       if (MODE === 'gl') {
         var c = palette[(Math.random() * palette.length) | 0];
@@ -861,8 +889,9 @@
       } else { var L = D2.toLocal(bx, by); D2.spawn(L[0], L[1], 4); }
     },
     setPalette: function (name) { manualPalette = true; palette = PALETTES[name] || PALETTES['default']; },
-    pause: stop,
-    resume: function () { if (host) start(); }
+    pause: function () { pausedByUser=true; syncActivity(); },
+    resume: function () { pausedByUser=false; syncActivity(); },
+    setPickerOpen: function (open) { pickerOpen=!!open; syncActivity(); }
   };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

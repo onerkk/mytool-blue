@@ -216,7 +216,7 @@
     ].join('');
     (document.head || document.documentElement).appendChild(st);
   // ═══ 鎏金夜祭 v2（2026/6/18）：主 CTA 採靜態鎏金底＋transform-only 獨立流光層，避免 Android/Samsung 對 background-position 動畫漏畫按鈕 ═══
-  try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','ziwei');_g2.textContent='.zw-in-sec{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.zw-in-title{position:relative;padding-left:12px;letter-spacing:.08em;color:#e8d28a}.zw-in-title::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:1.05em;border-radius:2px;background:rgba(156,130,222,.9);box-shadow:0 0 8px rgba(156,130,222,.9)}.zw-in-q,.zwx-field,.zw-in-sec input,.zw-in-sec select,.zw-in-sec textarea{background:rgba(8,7,5,.62);border:1px solid rgba(201,168,76,.26);border-radius:12px;color:#f2e9d6;transition:border-color .2s,box-shadow .2s}.zw-in-q:focus,.zwx-field:focus,.zw-in-sec input:focus,.zw-in-sec select:focus,.zw-in-sec textarea:focus{border-color:#e8d28a;box-shadow:0 0 0 3px rgba(201,168,76,.16);outline:none}.zw-in-pill,.zwx-sbtn,.zwx-cell{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.22);color:#d8c79a;border-radius:12px;transition:color .18s,background-color .18s,border-color .18s,box-shadow .18s,transform .18s}.zw-in-pill.active,.zw-in-pill.on,.zwx-sbtn.active,.zwx-cell.active,.zwx-cell.on{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}.zw-in-go{background:linear-gradient(135deg,#a98232 0%,#e8d28a 44%,#f5e7b8 58%,#c9a84c 100%);color:#171208;border:none;border-radius:14px;font-weight:800;letter-spacing:.14em;box-shadow:0 10px 26px rgba(201,168,76,.32),inset 0 1px 0 rgba(255,255,255,.35);position:relative;overflow:hidden;isolation:isolate}.zw-in-go::before{content:none;display:none}.zw-in-go:active{transform:translateY(1px)}.zw-in-back{color:rgba(232,210,138,.75)}.zw-in-back:hover{color:#f5e7b8}.zwx-sheet{background:rgba(16,13,10,.97);backdrop-filter:none;-webkit-backdrop-filter:none;border-top:1px solid rgba(201,168,76,.3);box-shadow:0 -18px 50px rgba(0,0,0,.6)}.zwx-grip{background:linear-gradient(90deg,#8a6d2f,#e8d28a,#8a6d2f);opacity:.85;border-radius:99px}.zw-ai{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}.zwx-cal-d{border-radius:10px}.zwx-cal-d.active{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}.zw-board{border-color:rgba(201,168,76,.28)}@supports not (backdrop-filter:blur(1px)){[data-jy-view-ziwei]{}}.zw-in-go:focus-visible{outline:2px solid #e8d28a;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
+  try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','ziwei');_g2.textContent='.zw-in-sec{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:none;-webkit-backdrop-filter:none}.zw-in-title{position:relative;padding-left:12px;letter-spacing:.08em;color:#e8d28a}.zw-in-title::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:1.05em;border-radius:2px;background:rgba(156,130,222,.9);box-shadow:0 0 8px rgba(156,130,222,.9)}.zw-in-q,.zwx-field,.zw-in-sec input,.zw-in-sec select,.zw-in-sec textarea{background:rgba(8,7,5,.62);border:1px solid rgba(201,168,76,.26);border-radius:12px;color:#f2e9d6;transition:border-color .2s,box-shadow .2s}.zw-in-q:focus,.zwx-field:focus,.zw-in-sec input:focus,.zw-in-sec select:focus,.zw-in-sec textarea:focus{border-color:#e8d28a;box-shadow:0 0 0 3px rgba(201,168,76,.16);outline:none}.zw-in-pill,.zwx-sbtn,.zwx-cell{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.22);color:#d8c79a;border-radius:12px;transition:color .18s,background-color .18s,border-color .18s,box-shadow .18s,transform .18s}.zw-in-pill.active,.zw-in-pill.on,.zwx-sbtn.active,.zwx-cell.active,.zwx-cell.on{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}.zw-in-go{background:linear-gradient(135deg,#a98232 0%,#e8d28a 44%,#f5e7b8 58%,#c9a84c 100%);color:#171208;border:none;border-radius:14px;font-weight:800;letter-spacing:.14em;box-shadow:0 10px 26px rgba(201,168,76,.32),inset 0 1px 0 rgba(255,255,255,.35);position:relative;overflow:hidden;isolation:isolate}.zw-in-go::before{content:none;display:none}.zw-in-go:active{transform:translateY(1px)}.zw-in-back{color:rgba(232,210,138,.75)}.zw-in-back:hover{color:#f5e7b8}.zwx-sheet{background:rgba(16,13,10,.97);backdrop-filter:none;-webkit-backdrop-filter:none;border-top:1px solid rgba(201,168,76,.3);box-shadow:0 -18px 50px rgba(0,0,0,.6)}.zwx-grip{background:linear-gradient(90deg,#8a6d2f,#e8d28a,#8a6d2f);opacity:.85;border-radius:99px}.zw-ai{background:linear-gradient(180deg,rgba(24,20,14,.78),rgba(14,12,9,.86));border:1px solid rgba(201,168,76,.2);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(245,231,184,.14);backdrop-filter:none;-webkit-backdrop-filter:none}.zwx-cal-d{border-radius:10px}.zwx-cal-d.active{background:linear-gradient(135deg,#e8d28a,#c9a84c);color:#171208;border-color:transparent;box-shadow:0 6px 18px rgba(201,168,76,.28);font-weight:700}.zw-board{border-color:rgba(201,168,76,.28)}@supports not (backdrop-filter:blur(1px)){[data-jy-view-ziwei]{}}.zw-in-go:focus-visible{outline:2px solid #e8d28a;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
   }
 
   // ════════════════════════════════════════════════════════
@@ -933,7 +933,7 @@
 
   // ── 底部 sheet ──
   var _zwxSheetType='', _zwxDispose=null;
-  function _zwxOpenSheet(title, sub, body, foot){
+  function _zwxOpenSheet(title, sub, body, foot, prepare){
     _zwxCloseSheet(true);
     var bd=document.createElement('dialog'); bd.id='zwx-sheet-bd'; bd.className='zwx-sheet-bd show'; bd.setAttribute('role','presentation');
     bd.onclick=function(e){ if(e.target===bd) _zwxCloseSheet(); };
@@ -944,6 +944,7 @@
       '<div id="zwx-sbody">'+body+'</div>'+
       (foot?'<div class="zwx-sfoot"><button class="zwx-sbtn" onclick="_zwxCancel()">取消</button><button class="zwx-sbtn go" onclick="_zwxConfirm()">確定</button></div>':'')+
       '</div>';
+    if(prepare) prepare(bd.querySelector('#zwx-sbody'));
     _zwxDispose=window.JY_PICKER.mount(bd,'#zwx-sbody',_zwxCloseSheet);
   }
 
@@ -962,11 +963,10 @@
     _zwxSheetType='date';
     if(_zwSelDate){ var p=_zwSelDate.split('-'); _zwDpY=+p[0]; _zwDpM=+p[1]; _zwDpD=+p[2]; }
     else { _zwDpY=1990; _zwDpM=1; _zwDpD=1; }
-    _zwxOpenSheet('出生日期','國曆，點上方年月可快速跳轉', '', true);
-    _zwDpDay();
+    _zwxOpenSheet('出生日期','國曆，點上方年月可快速跳轉', '', true, _zwDpDay);
   };
   function _zwDpClamp(){ var dim=_zwDim(_zwDpY,_zwDpM); if(_zwDpD>dim) _zwDpD=dim; if(_zwDpD<1) _zwDpD=1; }
-  function _zwDpDay(){
+  function _zwDpDay(initialBody){
     _zwDpClamp();
     var h='<div class="zwx-cal-nav"><button type="button" onclick="_zwxDpNav(-1)">‹</button>'+ 
       '<button type="button" class="zwx-cal-ttl jy-picker-title-button" onclick="_zwxDpMode(\'year\')">'+_zwDpY+' 年 '+_zwDpM+' 月 ▾</button>'+ 
@@ -980,7 +980,9 @@
       else cells.push('<button type="button" class="zwx-cal-d'+(day===_zwDpD?' sel':'')+'" aria-pressed="'+(day===_zwDpD?'true':'false')+'" onclick="_zwxDpDay('+day+')">'+day+'</button>');
     }
     for(var r=0;r<6;r++) h+='<div class="zwx-cal-row" role="row">'+cells.slice(r*7,r*7+7).join('')+'</div>';
-    h+='</div>'; _zwxBody(h); _zwxSub('點日期，或點上方年月快速跳轉');
+    h+='</div>';
+    if(initialBody) initialBody.innerHTML=h;
+    else { _zwxBody(h); _zwxSub('點日期，或點上方年月快速跳轉'); }
   }
   function _zwDpYear(){
     var h='<div class="zwx-yhead"><button onclick="_zwxDpDec(-1)">‹</button><span>'+_zwDpDec+' – '+(_zwDpDec+11)+'</span><button onclick="_zwxDpDec(1)">›</button></div><div class="zwx-pg y">';

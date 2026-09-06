@@ -1,4 +1,4 @@
-/*! Shared picker lifecycle and stable time fields. v1.1.0 */
+/*! Shared picker lifecycle and stable time fields. v1.2.0 */
 (function (root) {
   'use strict';
   var active = null;
@@ -27,13 +27,13 @@
     if (doc.getElementById('jy-picker-style')) return;
     var style = doc.createElement('style'); style.id = 'jy-picker-style';
     style.textContent = [
-      'dialog.jy-picker-dialog{position:fixed;inset:auto;top:var(--jy-picker-top,0px);left:var(--jy-picker-left,0px);width:var(--jy-picker-width,100vw);height:var(--jy-picker-vh,100dvh);max-width:none;max-height:none;min-height:0;margin:0;border:0;padding:env(safe-area-inset-top,0px) 0 0;box-sizing:border-box;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;background:rgba(0,0,0,.62);color:#eee7d7;z-index:2147483647;isolation:isolate;transform:none;opacity:1}',
+      'dialog.jy-picker-dialog{position:fixed;inset:auto;top:var(--jy-picker-top,0px);left:var(--jy-picker-left,0px);width:var(--jy-picker-width,100vw);height:var(--jy-picker-vh,100dvh);max-width:none;max-height:none;min-height:0;margin:0;border:0;padding:env(safe-area-inset-top,0px) 0 0;box-sizing:border-box;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;background:transparent;color:#eee7d7;z-index:2147483647;transform:none;opacity:1}',
       'dialog.jy-picker-dialog:not([open]){display:none}',
-      'dialog.jy-picker-dialog::backdrop{background:transparent}',
+      'dialog.jy-picker-dialog::backdrop{background:rgba(0,0,0,.62);backdrop-filter:none;-webkit-backdrop-filter:none}',
       'dialog.jy-picker-dialog>*{box-sizing:border-box}',
-      'dialog.jy-picker-dialog>.jy-picker-panel{position:relative;display:flex;flex-direction:column;flex:0 1 480px;width:100%;height:auto;min-height:0;max-height:100%;margin:0;overflow:hidden;transform:none;contain:none;content-visibility:visible;box-sizing:border-box;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}',
-      'dialog.jy-picker-dialog>.jy-picker-panel>div{flex-shrink:0}',
-      'dialog.jy-picker-dialog>.jy-picker-panel>.jy-picker-body{flex:0 1 auto;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}',
+      'dialog.jy-picker-dialog>.jy-picker-panel{position:relative;display:flex;flex-direction:column;flex:0 1 480px;width:100%;height:auto;min-height:0;max-height:100%;margin:0;overflow:hidden;background:#100d0a;transform:none;contain:none;content-visibility:visible;box-sizing:border-box;padding-top:52px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));backdrop-filter:none;-webkit-backdrop-filter:none;scrollbar-gutter:auto;-webkit-overflow-scrolling:auto}',
+      'dialog.jy-picker-dialog>.jy-picker-panel>*{flex-shrink:0}',
+      'dialog.jy-picker-dialog>.jy-picker-panel>.jy-picker-body{flex:0 1 auto;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:auto;scrollbar-gutter:auto}',
       'dialog.jy-picker-dialog #zwx-sbody,dialog.jy-picker-dialog #bzx-sheet-body,dialog.jy-picker-dialog #bzs-picker-body{display:block;flex:0 1 auto;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}',
       'dialog.jy-picker-dialog .jy-picker-calendar{height:auto;min-height:0;display:block;contain:none;content-visibility:visible}',
       'dialog.jy-picker-dialog .jy-picker-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:44px;height:44px;min-height:44px;max-height:44px;align-content:start;contain:none;content-visibility:visible}',
@@ -43,8 +43,15 @@
       'dialog.jy-picker-dialog .jy-picker-body [aria-disabled=true]{opacity:.3;pointer-events:none}',
       'dialog.jy-picker-dialog .jy-picker-panel,dialog.jy-picker-dialog button,dialog.jy-picker-dialog input,dialog.jy-picker-dialog select{font-family:system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif}',
       'dialog.jy-picker-dialog .jy-picker-body{animation:none;transition:none;opacity:1;visibility:visible}',
+      'dialog.jy-picker-dialog,dialog.jy-picker-dialog *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;transition:none!important;will-change:auto!important}',
+      'dialog.jy-picker-dialog .jy-picker-close{position:absolute;top:4px;right:8px;min-width:44px;min-height:44px;padding:8px;border:0;border-radius:8px;background:#211b12;color:#f5e7b8;font:600 14px system-ui;cursor:pointer;z-index:1}',
+      'dialog.jy-picker-dialog .bzx-loc-chip,dialog.jy-picker-dialog .bzs-loc-chip{min-height:44px;font-size:14px;line-height:1.4}',
+      'dialog.jy-picker-dialog .bzx-sheet-sub,dialog.jy-picker-dialog .zwx-ssub,dialog.jy-picker-dialog .bzs-picker-sub,dialog.jy-picker-dialog .bzx-loc-gt,dialog.jy-picker-dialog .bzs-loc-title{color:#c2b69f}',
+      'body.jy-picker-open>:not(.jy-picker-dialog),body.jy-picker-open>:not(.jy-picker-dialog) *{animation-play-state:paused!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}',
+      '@media(max-width:760px),(any-pointer:coarse){dialog.jy-picker-dialog{background:#100d0a}dialog.jy-picker-dialog>.jy-picker-panel{flex:1 1 auto;max-width:none;height:100%;border:0;border-radius:0;box-shadow:none}dialog.jy-picker-dialog>.jy-picker-panel>.jy-picker-body{flex:1 1 auto}dialog.jy-picker-dialog #zwx-sbody,dialog.jy-picker-dialog #bzx-sheet-body,dialog.jy-picker-dialog #bzs-picker-body{flex:1 1 auto}dialog.jy-picker-dialog .bzx-sheet-grip,dialog.jy-picker-dialog .zwx-grip,dialog.jy-picker-dialog .bzs-picker-grip{display:none}}',
       '.jy-time-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}.jy-time-fields label{display:grid;gap:8px;color:#e8d28a;font-size:14px}.jy-time-fields select{display:block;width:100%;min-width:0;height:52px;padding:8px 12px;border:1px solid #78663e;border-radius:10px;background:#19171e;color:#fff3d5;font-size:20px;font-variant-numeric:tabular-nums}.jy-time-fields select:disabled{opacity:.4}.jy-time-preview{display:block;text-align:center;min-height:36px;font-size:24px;color:#fff3d5;font-variant-numeric:tabular-nums}.jy-time-unknown{display:flex;align-items:center;gap:10px;min-height:48px;font-size:14px}.jy-time-unknown input{width:20px;height:20px;accent-color:#c9a84c}.jy-time-help{font-size:13px;line-height:1.7;color:#c3bba8;margin:8px 0}',
-      '@media(max-height:620px){dialog.jy-picker-dialog .jy-picker-week{height:36px;min-height:36px;max-height:36px;grid-template-rows:36px}dialog.jy-picker-dialog .jy-picker-week>*{height:34px;max-height:34px}}'
+      '@media(max-height:620px){dialog.jy-picker-dialog .jy-picker-week{height:36px;min-height:36px;max-height:36px;grid-template-rows:36px}dialog.jy-picker-dialog .jy-picker-week>*{height:34px;max-height:34px}}',
+      '@media(max-height:420px){dialog.jy-picker-dialog>.jy-picker-panel{display:block;height:100%;overflow-x:hidden;overflow-y:auto}dialog.jy-picker-dialog .jy-picker-body,dialog.jy-picker-dialog #zwx-sbody,dialog.jy-picker-dialog #bzx-sheet-body,dialog.jy-picker-dialog #bzs-picker-body{overflow:visible}dialog.jy-picker-dialog footer,dialog.jy-picker-dialog .bzx-sheet-foot,dialog.jy-picker-dialog .zwx-sfoot,dialog.jy-picker-dialog .bzs-picker-foot{position:sticky;bottom:0;background:#100d0a}}'
     ].join('\n');
     doc.head.appendChild(style);
   }
@@ -89,6 +96,11 @@
     panel.removeAttribute('role'); panel.removeAttribute('aria-modal');
     panel.classList.add('jy-picker-panel'); panel.tabIndex = -1;
     if (body) body.classList.add('jy-picker-body');
+    var closeButton=doc.createElement('button');
+    closeButton.type='button'; closeButton.className='jy-picker-close';
+    closeButton.textContent='關閉'; closeButton.setAttribute('aria-label','關閉選擇視窗');
+    // Append, so callers that bind their first existing button keep the same target.
+    panel.appendChild(closeButton);
     var lastSize='';
     function sync() {
       if (!bd.isConnected) return;
@@ -101,7 +113,10 @@
       bd.style.setProperty('--jy-picker-top', size.top + 'px');
       bd.style.setProperty('--jy-picker-left', size.left + 'px');
     }
-    function cancel(e) { if (e) e.preventDefault(); onCancel(); }
+    function cancel(e) {
+      if (e) e.preventDefault();
+      try { if(onCancel) onCancel(); } finally { dispose(); }
+    }
     function keydown(e) {
       if (e.key === 'Escape') { e.stopPropagation(); cancel(e); return; }
       if (e.key !== 'Tab') return;
@@ -113,33 +128,46 @@
       if (e.shiftKey && (doc.activeElement === first || doc.activeElement === panel)) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && (doc.activeElement === last || doc.activeElement === panel)) { e.preventDefault(); first.focus(); }
     }
-    doc.body.appendChild(bd); doc.body.style.overflow = 'hidden'; sync(); refresh(bd);
-    bd.addEventListener('cancel', cancel); bd.addEventListener('keydown', keydown);
-    root.addEventListener('resize', sync); root.addEventListener('orientationchange', sync);
-    var vv = root.visualViewport;
-    if (vv) { vv.addEventListener('resize', sync); vv.addEventListener('scroll', sync); }
-    var hidden = [];
-    if (typeof bd.showModal === 'function') bd.showModal();
-    else {
-      bd.setAttribute('open', ''); bd.setAttribute('role', 'dialog'); bd.setAttribute('aria-modal', 'true');
-      Array.prototype.forEach.call(doc.body.children, function (node) {
-        if (node !== bd) { hidden.push([node, node.inert]); node.inert = true; }
-      });
+    var entry = { cancel: cancel }, closed = false, hidden = [], vv = root.visualViewport;
+    function ink(open) {
+      if(root.JY_INK && typeof root.JY_INK.setPickerOpen==='function') root.JY_INK.setPickerOpen(open);
     }
-    panel.focus({ preventScroll: true });
-    var entry = { cancel: cancel }; active = entry;
-    var closed = false;
-    return function () {
+    function dispose() {
       if (closed) return; closed = true;
       bd.removeEventListener('cancel', cancel); bd.removeEventListener('keydown', keydown);
+      bd.removeEventListener('close', dispose);
       root.removeEventListener('resize', sync); root.removeEventListener('orientationchange', sync);
       if (vv) { vv.removeEventListener('resize', sync); vv.removeEventListener('scroll', sync); }
       if (typeof bd.close === 'function' && bd.open) bd.close();
       bd.remove(); hidden.forEach(function (x) { x[0].inert = x[1]; });
-      doc.body.style.overflow = overflow;
-      if (active === entry) active = null;
-      if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus({ preventScroll: true });
-    };
+      if (active === entry) {
+        active = null; doc.body.style.overflow = overflow;
+        doc.body.classList.remove('jy-picker-open'); ink(false);
+        if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus({ preventScroll: true });
+      }
+    }
+    active = entry;
+    closeButton.addEventListener('click',cancel);
+    doc.body.classList.add('jy-picker-open'); ink(true);
+    doc.body.appendChild(bd); doc.body.style.overflow = 'hidden'; sync(); refresh(bd);
+    bd.addEventListener('cancel', cancel); bd.addEventListener('keydown', keydown); bd.addEventListener('close',dispose);
+    root.addEventListener('resize', sync); root.addEventListener('orientationchange', sync);
+    if (vv) { vv.addEventListener('resize', sync); vv.addEventListener('scroll', sync); }
+    try {
+      if (typeof bd.showModal === 'function') bd.showModal();
+      else {
+        bd.setAttribute('open', ''); bd.setAttribute('role', 'dialog'); bd.setAttribute('aria-modal', 'true');
+        // Older browsers have no ::backdrop/top layer; the fallback owns its scrim.
+        bd.style.background='#100d0a';
+        Array.prototype.forEach.call(doc.body.children, function (node) {
+          if (node !== bd) { hidden.push([node, node.inert]); node.inert = true; }
+        });
+      }
+      panel.focus({ preventScroll: true });
+    } catch(error) {
+      dispose(); throw error;
+    }
+    return dispose;
   }
-  root.JY_PICKER = Object.freeze({ version: '1.1.0', mount: mount, refresh: refresh, renderTime: renderTime, dimensions: dimensions, validDate: validDate, daysInMonth: daysInMonth, shiftMonth: shiftMonth });
+  root.JY_PICKER = Object.freeze({ version: '1.2.0', mount: mount, refresh: refresh, renderTime: renderTime, dimensions: dimensions, validDate: validDate, daysInMonth: daysInMonth, shiftMonth: shiftMonth });
 })(typeof window !== 'undefined' ? window : globalThis);

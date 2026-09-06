@@ -2,8 +2,8 @@
 // JS/HTML → network-first（永遠拿最新）
 // 圖片/字型 → cache-first（省流量）
 // API → 不攔截
-// v57: 20260906 開鑰／時間欄位／塔羅正逆位； 共用選擇器與提示詞資料完整性； 紫微 ROOT-SPEC v2 與動態三方索引；強制清除舊提示詞快取，JS/HTML 維持 network-first + no-cache
-const CACHE_NAME = 'jy-main-v57';
+// v58: 20260906display3 手機靜態背景、選擇器生命週期與啟動順序；原 v57: 20260906 開鑰／時間欄位／塔羅正逆位； 共用選擇器與提示詞資料完整性； 紫微 ROOT-SPEC v2 與動態三方索引；強制清除舊提示詞快取，JS/HTML 維持 network-first + no-cache
+const CACHE_NAME = 'jy-main-v58';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

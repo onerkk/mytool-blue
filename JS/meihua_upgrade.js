@@ -82,7 +82,9 @@ function calcMH(un,ln,dy){
 // ═══════════════════════════════════════════════════════════════
 // 五行事件映射（供所有層使用）
 // ═══════════════════════════════════════════════════════════════
-const MH_WX_EVENT={
+// tarot.js publishes the same shared table before this upgrade is loaded.
+// A top-level const would reject the entire script before any function runs.
+var MH_WX_EVENT={
   木:{label:'木',events:['成長','推進','發展','啟動','人際互動'],timing:'春季/1-3月',speed:'中快'},
   火:{label:'火',events:['曝光','情緒','主動','衝突','熱度'],timing:'夏季/4-6月',speed:'快'},
   土:{label:'土',events:['穩定','拖延','現實','承擔','阻滯'],timing:'季末/3,6,9,12月',speed:'慢'},
