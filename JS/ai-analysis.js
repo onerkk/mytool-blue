@@ -23436,6 +23436,12 @@ function _buildTarotOnlyPayload() {
   if(methodPlan.count!=null&&drawn.length!==methodPlan.count){
     throw new Error('Card count mismatch for '+spreadId+': expected '+methodPlan.count+', got '+drawn.length);
   }
+  if(drawn[0]&&drawn[0].readingMode==='rws_reversals'&&window.JYTarotReading){
+    var rws=window.JYTarotReading.payload(ta,question,drawn,spreadId,methodPlan,ta.dynamicSpreadDef||ta.spreadDef||SPREAD_DEFS[spreadId]);
+    var inv=window.JYShopInventory;
+    rws.shopRecommendation={allowedItems:inv&&inv.recommendCandidates?inv.recommendCandidates(question,(compiled.features&&compiled.features.domains)||[],6):[],sourceFile:inv&&inv.SOURCE_FILE||''};
+    return rws;
+  }
   gd.normalizeDraw(drawn);
 
   var method=methodPlan;

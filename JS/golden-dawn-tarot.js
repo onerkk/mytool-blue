@@ -328,6 +328,7 @@
 
   function annotate(card){
     if (!card) return card;
+    if (card.readingMode==='rws_reversals') return card;
     var p=profile(card); if (!p) return card;
     if (!card._legacyGoldenDawnBackup) card._legacyGoldenDawnBackup={up:card.up,rv:card.rv,kwUp:card.kwUp,kwRv:card.kwRv,astro:card.astro,el:card.el};
     card.gd=p;
@@ -342,7 +343,7 @@
   }
   function annotateDeck(deck){(deck||[]).forEach(annotate);return deck;}
   function normalizeDraw(cards){
-    (cards||[]).forEach(function(c){if(c){annotate(c);c.isUp=true;c.direction='元素尊貴裁決';}});
+    (cards||[]).forEach(function(c){if(c){if(c.readingMode==='rws_reversals')return;annotate(c);c.isUp=true;c.direction='元素尊貴裁決';}});
     return cards;
   }
   function countValue(card){

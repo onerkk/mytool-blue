@@ -848,7 +848,7 @@
 
   // ── 底部 sheet 基礎 ──
   var _sheetType='', _sheetDispose=null;
-  function _openSheet(title, sub, body, foot){
+  function _openSheet(title, sub, body, foot, prepare){
     _closeSheet(true);
     var bd=document.createElement('dialog'); bd.id='bzx-sheet-bd'; bd.className='bzx-sheet-bd show'; bd.setAttribute('role','presentation');
     bd.onclick=function(e){ if(e.target===bd) _closeSheet(); };
@@ -859,6 +859,7 @@
       '<div id="bzx-sheet-body">'+body+'</div>'+
       (foot?'<div class="bzx-sheet-foot"><button class="bzx-sheet-btn" onclick="_bzxSheetCancel()">取消</button><button class="bzx-sheet-btn go" onclick="_bzxSheetConfirm()">確定</button></div>':'')+
       '</div>';
+    if(prepare) prepare(bd.querySelector('#bzx-sheet-body'));
     _sheetDispose=window.JY_PICKER.mount(bd,'#bzx-sheet-body',_closeSheet);
   }
 
@@ -924,31 +925,12 @@
     if(_selUnknown){ _tpUnknown=true; _tpH=12; _tpM=0; }
     else if(_selTime){ var p=_selTime.split(':'); _tpH=+p[0]; _tpM=+p[1]; _tpUnknown=false; }
     else { _tpH=12; _tpM=0; _tpUnknown=false; }
-    _openSheet('出生時間','真太陽時校正需精確到分', _tpBody(), true);
+    _openSheet('出生時間','選擇當地出生時間，精確到分', '', true, function(body){
+      window.JY_PICKER.renderTime(body,{hour:_tpH,minute:_tpM,unknown:_tpUnknown,onChange:function(value){
+        _tpH=value.hour;_tpM=value.minute;_tpUnknown=value.unknown;
+      }});
+    });
   };
-  function _tpBody(){
-    var u=_tpUnknown, dim=u?' style="opacity:.35;pointer-events:none"':'';
-    var h='<div class="bzx-time-big">'+(u?'—— ：——':(_pad2(_tpH)+'：'+_pad2(_tpM)))+'</div>';
-    h+='<div class="bzx-time-sc">'+(u?'時辰未知，將以午時（11–13）暫排，時柱僅供參考':_shichen(_tpH))+'</div>';
-    h+='<div class="bzx-hour-grid"'+dim+'>';
-    for(var x=0;x<24;x++) h+='<div class="bzx-hour'+(x===_tpH?' sel':'')+'" onclick="_bzxTpHour('+x+')">'+_pad2(x)+'</div>';
-    h+='</div>';
-    h+='<div class="bzx-min-cap"'+dim+'>分（先點十位，再點個位）</div>';
-    h+='<div class="bzx-min-grid tens"'+dim+'>';
-    for(var mt=0;mt<6;mt++) h+='<div class="bzx-min-cell'+(Math.floor(_tpM/10)===mt?' sel':'')+'" onclick="_bzxTpMinTens('+mt+')">'+_pad2(mt*10)+'</div>';
-    h+='</div>';
-    h+='<div class="bzx-min-grid ones"'+dim+'>';
-    for(var mo=0;mo<10;mo++) h+='<div class="bzx-min-cell o'+((_tpM%10)===mo?' sel':'')+'" onclick="_bzxTpMinOnes('+mo+')">'+mo+'</div>';
-    h+='</div>';
-    h+='<div class="bzx-unknown-row"><label><input type="checkbox" '+(u?'checked':'')+' onchange="_bzxTpUnk()">不知時辰（以午時暫排，時柱僅供參考）</label></div>';
-    return h;
-  }
-  window._bzxTpHour=function(h){ _tpH=h; _setBody(_tpBody()); };
-  window._bzxTpMin=function(d){ _tpM=(_tpM+d+60)%60; _setBody(_tpBody()); };
-  // v80.44：十位／個位直接點選分鐘（任意分 ≤2 下到位）
-  window._bzxTpMinTens=function(t){ _tpM=t*10+(_tpM%10); if(_tpM>59)_tpM=59; _setBody(_tpBody()); };
-  window._bzxTpMinOnes=function(o){ _tpM=Math.floor(_tpM/10)*10+o; if(_tpM>59)_tpM=59; _setBody(_tpBody()); };
-  window._bzxTpUnk=function(){ _tpUnknown=!_tpUnknown; _setBody(_tpBody()); };
 
   // ── 地點選擇器（單點即選＋關閉）──
   window._bzxOpenCity=function(){

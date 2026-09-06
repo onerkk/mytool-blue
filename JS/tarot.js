@@ -3404,7 +3404,9 @@ function pickCard(deckIdx,deckEl){
   // Golden Dawn Book T mode does not use a Waite-style fixed reversed dictionary.
   // Ordinary layouts remain visually upright; strength/obstruction comes from position,
   // adjacent elemental dignity and the method topology. Opening of the Key manages its own direction rules.
-  var isUp = true; // Golden Dawn Book T：一般牌陣不抽固定逆位；強弱由元素尊貴與拓撲裁決。
+  var reading=window.JYTarotReading;
+  var spreadId=typeof getCurrentSpread==='function'?getCurrentSpread():'';
+  var isUp=reading?reading.orientation(spreadId):true;
 
   var slotIdx=drawnCards.length;
   var pos=_jyCurrentPosName(slotIdx); // v80.37：牌位名跟著當前牌陣，三牌陣不再貼凱爾特名
@@ -3453,6 +3455,7 @@ function pickCard(deckIdx,deckEl){
       // 複製 card 的其他屬性
       for(var k in card){ if(!drawnCard.hasOwnProperty(k)) drawnCard[k]=card[k]; }
 
+      if(reading)reading.apply(drawnCard,isUp,spreadId);
       var imgSrc=typeof getTarotCardImage==='function'?getTarotCardImage(drawnCard):'';
       var isCelticCross2=_jyIsCeltic();
       var isCard2=(slotIdx===1&&isCelticCross2);
@@ -3461,9 +3464,7 @@ function pickCard(deckIdx,deckEl){
         '<div class="tarot-reveal-inner">'+
           '<div class="tarot-reveal-back"></div>'+
           '<div class="tarot-reveal-front">'+
-            (imgSrc?'<img src="'+imgSrc+'" class="tc-img" style="">':'')+
-            '<span class="tc-name" style="">'+card.n+'</span>'+
-            '<span class="tc-dir up">Book T</span>'+
+            (reading?reading.face(drawnCard):((imgSrc?'<img src="'+imgSrc+'" class="tc-img">':'')+'<span class="tc-name">'+card.n+'</span><span class="tc-dir up">正向・Book T</span>'))+
           '</div>'+
         '</div>'+
       '</div>'+(!isCard2?'<span class="slot-label">'+pos+'</span>':'');
@@ -3475,12 +3476,13 @@ function pickCard(deckIdx,deckEl){
       },200);
 
       drawnCards.push(drawnCard);
+      if(reading)reading.syncControls();
       var pickedEl=document.getElementById('t-remain-picked');
       if(pickedEl) pickedEl.textContent=drawnCards.length;
 
       var _targetCount=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)?S.tarot.spreadDef.count:10;
       var _btnAna=document.getElementById('btn-analyze');
-      if(drawnCards.length>=3&&_btnAna&&_btnAna.disabled) _btnAna.disabled=false;
+      if(drawnCards.length>=_targetCount&&_btnAna&&_btnAna.disabled) _btnAna.disabled=false;
 
       if(drawnCards.length>=_targetCount){
         var hint=document.getElementById('pick-hint');
@@ -3493,7 +3495,7 @@ function pickCard(deckIdx,deckEl){
         setTimeout(function(){ var act=document.querySelector('#step-2 .actions'); if(act) act.scrollIntoView({behavior:'smooth',block:'center'}); },600);
       } else if(drawnCards.length>=3){
         var _hint=document.getElementById('pick-hint');
-        if(_hint){ _hint.textContent='已可分析，抽滿 '+_targetCount+' 張更準確'; _hint.style.display=''; }
+        if(_hint){ _hint.textContent='請再選 '+(_targetCount-drawnCards.length)+' 張，完成本次牌陣'; _hint.style.display=''; }
       }
 
       pickAnimating=false;
@@ -5335,6 +5337,7 @@ function buildMeihuaOutput(mh, type) {
   function majority(cards){ var g=gd(); return g&&g.majorityObservations ? g.majorityObservations(cards) : {suitCounts:{wand:0,cup:0,sword:0,pent:0},observations:[]}; }
 
   root.buildTarotStats=function(cards){
+    if(cards&&cards[0]&&cards[0].readingMode==='rws_reversals'&&root.JYTarotReading)return root.JYTarotReading.stats(cards);
     cards=norm(cards);
     var m=majority(cards),s=m.suitCounts||{};
     return {
@@ -5347,6 +5350,7 @@ function buildMeihuaOutput(mh, type) {
   };
 
   root.buildTarotStatsHtml=function(cards){
+    if(cards&&cards[0]&&cards[0].readingMode==='rws_reversals'&&root.JYTarotReading)return root.JYTarotReading.statsHTML(cards);
     var s=root.buildTarotStats(cards), obs=s.insights||[];
     var h='<div class="tarot-stats"><div style="font-size:.72rem;color:var(--c-gold)">Golden Dawn Book T・元素尊貴裁決</div>';
     if(obs.length) h+='<div style="font-size:.72rem;color:var(--c-text-dim);line-height:1.6;margin-top:.35rem">'+obs.join('；')+'</div>';
@@ -5379,6 +5383,7 @@ function buildMeihuaOutput(mh, type) {
   };
 
   root.buildTarotDeepReport=function(cards,type){
+    if(cards&&cards[0]&&cards[0].readingMode==='rws_reversals'&&root.JYTarotReading)return root.JYTarotReading.statsHTML(cards);
     cards=norm(cards);
     if(!cards.length) return '';
     var cc=cards.length>=10?root.analyzeCelticCross(cards,type):null;

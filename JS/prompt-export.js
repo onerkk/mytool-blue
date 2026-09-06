@@ -629,6 +629,7 @@
   // ── 塔羅：結構化物件 → 模板要的逐張牌文字 + 預運算數據 ──
   function formatTarotData(result) {
     var td = (result && result.tarotData) || {};
+    if(td.sourceProfile==='rws_reversals'&&window.JYTarotReading)return window.JYTarotReading.formatData(td,result.shopRecommendation);
     var cards = td.cards || [];
     var L = [];
     L.push('牌陣：' + (td.spreadZh || td.spreadType || '未指定') + '（' + cards.length + '張）');
@@ -776,6 +777,7 @@
     var question = getQuestion();
     var rawPayload = getPayloadObject(tool);
     var payload = formatPayloadObject(tool, rawPayload);
+    var rws=tool==='tarot'&&rawPayload.tarotData&&rawPayload.tarotData.sourceProfile==='rws_reversals'&&window.JYTarotReading;
     var isRootTarot = (tool === 'tarot' || tool === 'ootk');
     var sourceLock = tool === 'meihua' ? FRAG_SOURCELOCK_MEIHUA : (isRootTarot ? '' : FRAG_SOURCELOCK);
     var uncertainty = tool === 'meihua' ? FRAG_UNCERTAINTY_MEIHUA : (isRootTarot ? '' : FRAG_UNCERTAINTY_TAROT);
@@ -784,8 +786,8 @@
       buildRootQuestionLock(question, tool),
       '先分清輸入的盤面事實、流派解釋與現實假設。可自由運用自身知識補充技法；若原始資料與摘要衝突，指出具體差異，以可核對的原始資料為先。結論要有支持、反向訊號與成立條件；象徵不等於事件證明，分數不等於成功機率。',
       '題目中的假設與已確認事實分開；例如問某人是否欺騙，先檢視支持與其他解釋，再提出可觀察的互動訊號。牌位、計數值和傳統對應不直接換算成中獎機率、精確年齡或日期。',
-      t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
-      buildSpreadReadingGuide(tool, rawPayload),
+      rws?rws.promptHead():t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
+      rws?rws.guide(rawPayload.tarotData):buildSpreadReadingGuide(tool, rawPayload),
       sourceLock,
       uncertainty,
       '',
@@ -799,7 +801,7 @@
       (tool === 'ootk' ? '占卜日期：' + new Date().toISOString().slice(0, 10) + '\n' : ''),
       payload,
       '',
-      t.tail,
+      rws?'請依實際正逆位、牌位關係與前述情境完成分析，回答原問句並說明行動與條件。':t.tail,
       (tool === 'ziwei' ? FRAG_CRYSTAL_ZIWEI : ''),
       FRAG_TRACE,
       FRAG_PLAINTEXT,
@@ -907,7 +909,7 @@
 
     // 全站固定單一牌義來源，移除舊版RWS／Waite切換，避免同一牌陣因入口不同而漂移。
     var toggleHTML = (tool === 'tarot' || tool === 'ootk')
-      ? '<div class="jy-ex-srcwrap">牌義來源：<span class="jy-src-btn on" aria-label="Golden Dawn Book T">Golden Dawn Book T</span></div>'
+      ? '<div class="jy-ex-srcwrap">讀牌方式：<span class="jy-src-btn on">'+(tool==='tarot'&&prompt.indexOf('Rider–Waite–Smith')>=0?'RWS・正逆位':'Golden Dawn Book T')+'</span></div>'
       : '';
 
     var card = document.createElement('div');

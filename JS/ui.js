@@ -1012,8 +1012,10 @@ function submitWithTool() {
   if (qHint) {
     // 不阻擋，只提示一次
     var hintKey = '_jy_q_hint_shown';
-    if (!sessionStorage.getItem(hintKey)) {
-      sessionStorage.setItem(hintKey, '1');
+    var shown = false;
+    try { shown = !!sessionStorage.getItem(hintKey); } catch (_) {}
+    if (!shown) {
+      try { sessionStorage.setItem(hintKey, '1'); } catch (_) {}
       var confirmed = confirm(qHint + '\n\n按「確定」繼續，或按「取消」回去修改問題。');
       if (!confirmed) return;
     }
@@ -1128,30 +1130,7 @@ function submitWithTool() {
     S._tarotOnlyMode = false;
     S._autoMode = false;
 
-    // v69.9.3:若用戶在出生資料卡上有填,順便預算基礎盤(同 enterOOTKFromTarot 邏輯)
-    // 沒填就保持 S.bazi/ziwei/natal/jyotish = undefined,worker.js OOTK 路徑容錯處理
-    var _ootkGender = document.querySelector('input[name="gender"]:checked');
-    var _ootkBirth = (typeof _readBirthForm === 'function') ? _readBirthForm() : null;
-    var _ootkHasBirth = !!(_ootkBirth && _ootkBirth.y && _ootkBirth.m && _ootkBirth.d);
-    var _ootkHasGender = !!_ootkGender;
-
-    if (_ootkHasBirth && _ootkHasGender) {
-      try {
-        var _ootkType = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
-        S.form = { type: _ootkType, question: question, gender: _ootkGender.value, bdate: _ootkBirth.bdate, btime: _ootkBirth.btime, name: _ootkBirth.name, btimeUnknown: _ootkBirth.btimeUnknown };
-        var _ootkC = _calcSolarAndCompute(_ootkBirth, _ootkGender.value);
-        S.bazi = computeBazi(_ootkC.solarY, _ootkC.solarM, _ootkC.solarD, _ootkC.solarHH, _ootkC.solarMM, _ootkGender.value);
-        try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
-        S.ziwei = computeZiwei(_ootkC.solarY, _ootkC.solarM, _ootkC.solarD, _ootkC.solarHH, _ootkGender.value);
-        try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
-        try { S.natal = computeNatalChart(_ootkC.clockY, _ootkC.clockM, _ootkC.clockD, _ootkC.clockHH, _ootkC.clockMM, _ootkC.geoLon, _ootkC.geoLat); } catch(e) { S.natal = null; }
-        try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, _ootkC.clockY, _ootkC.clockM, _ootkC.clockD, _ootkC.clockHH, _ootkC.clockMM); } catch(e) {}
-        try { S.jyotish = S.natal ? computeJyotish(S.natal, _ootkC.clockY, _ootkC.clockM, _ootkC.clockD, _ootkC.clockHH, _ootkC.clockMM) : null; } catch(e) { S.jyotish = null; }
-      } catch(e) { console.error('[OOTK] pre-calc:', e); }
-    } else {
-      // 沒填出生資料,只記錄問題到 S.form
-      S.form = { type: 'general', question: question, gender: '', bdate: '', btime: '', name: '', btimeUnknown: true };
-    }
+    S.form = { type: 'general', question: question, gender: '', bdate: '', btime: '', name: '', btimeUnknown: true };
 
     // 啟動 OOTK(含限流檢查;不需出生資料,worker 端容錯處理)
     if (typeof window._jyStartOOTK === 'function') {
@@ -5906,15 +5885,25 @@ showAuraResult = function(){
   // 注意：現有前端的紫微排盤依賴出生資料與七維 payload，所以入口會導到出生資料表單，並以 full 模式送出。
   // ★ v80.18：即時補載小工具——當獨立頁模組尚未在 window 上時，直接從主機抓最新檔（帶時間戳避快取）。
   //   這樣即使 index.html 的 <script> 標籤被瀏覽器快取成舊版，點按鈕仍會載入到最新的獨立頁，絕不掉回舊流程。
+  // A module is evaluated once even when a foreground calculation and the
+  // background loader request it together. All callers share completion.
+  var jyScriptLoads={};
   window._jyLazyScript = function(src, cb){
-    try {
-      var bust = src + (src.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now();
-      var s = document.createElement('script');
-      s.src = bust; s.async = false;
-      s.onload = function(){ if (cb) cb(true); };
-      s.onerror = function(){ if (cb) cb(false); };
-      document.body.appendChild(s);
-    } catch(e){ if (cb) cb(false); }
+    var key;
+    try {key=new URL(src,location.href).pathname;}catch(e){if(cb)cb(false);return;}
+    var entry=jyScriptLoads[key];
+    if(entry){if(entry.loaded){if(cb)cb(true);}else if(cb)entry.callbacks.push(cb);return;}
+    entry=jyScriptLoads[key]={loaded:false,callbacks:cb?[cb]:[]};
+    function finish(ok){
+      if(ok)entry.loaded=true;else delete jyScriptLoads[key];
+      var callbacks=entry.callbacks.splice(0);
+      callbacks.forEach(function(fn){try{fn(ok);}catch(e){console.error('[Script loader] callback failed',e);}});
+    }
+    try{
+      var script=document.createElement('script');script.src=src;script.async=false;
+      script.onload=function(){finish(true);};script.onerror=function(){finish(false);};
+      document.body.appendChild(script);
+    }catch(e){finish(false);}
   };
 
   window._ziweiOpen = function() {
@@ -6943,6 +6932,10 @@ function renderTarotSpreadDisplay() {
   if (title) title.textContent = ((def && def.zh) || '你的牌陣') + '｜Golden Dawn Book T';
 
   var cards = drawnCards || [];
+  if(cards[0]&&cards[0].readingMode==='rws_reversals'&&window.JYTarotReading){
+    if(title)title.textContent=((def&&def.zh)||'你的牌陣')+'｜RWS 正逆位';
+    el.innerHTML=window.JYTarotReading.resultHTML(cards,def);return;
+  }
   if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(cards);
   var h = '';
   cards.forEach(function(c, i) {
@@ -7007,12 +7000,12 @@ window._tarotShare = function () {
     var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
     // v85.4：補傳 img——share-card v2.1 起繪真牌面（逆位旋轉180°）、>3張全張數入卡
     var img = (typeof getTarotCardImage === 'function' && c) ? (getTarotCardImage(c) || '') : '';
-    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: false, img: img, sourceProfile:'gd_book_t' };
+    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: c.readingMode==='rws_reversals'&&c.isUp===false, img: img, sourceProfile:c.readingMode||'gd_book_t' };
   });
   JYShareCard.open('tarot', {
-    cardTitle: 'Golden Dawn Book T 塔羅',
+    cardTitle: cards[0]&&cards[0].sourceProfile==='rws_reversals'?'RWS 正逆位塔羅':'Golden Dawn Book T 塔羅',
     question: (S.form && S.form.question) || '',
-    spread: (def.zh || '塔羅牌陣') + '｜Book T',
+    spread: (def.zh || '塔羅牌陣') + (cards[0]&&cards[0].sourceProfile==='rws_reversals'?'｜正逆位':'｜Book T'),
     cards: cards
   });
 };
@@ -7925,6 +7918,7 @@ function resetToHome() {
   function jyFixChosen() {
     var chosen = document.getElementById('t-chosen');
     var step2 = document.getElementById('step-2');
+    if (!chosen || !step2 || step2.classList.contains('hidden')) return;
     var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
     var sid = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : (def ? def.id : null);
     var hasJBS = typeof window.jyBuildSlot === 'function';
@@ -7962,7 +7956,7 @@ function resetToHome() {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _startTcObs);
     else _startTcObs();
   }
-  setInterval(jyFixChosen, 600); // 後備：定期校正
+  // DOM observers above respond only to actual layout changes. No permanent polling.
 
 })();
 
@@ -8000,8 +7994,8 @@ function jyTarotHardfixCSS(){
     //   這裡把牌名放底部色帶（永遠正向、可讀），正逆位放右上角徽章（不再蓋住牌名）。
     //   注意：不要動 .tarot-reveal-inner/.tarot-reveal-front 的定位，否則正面會顯示不出來（變背面）。
     //   tc-name/tc-dir 用 absolute 會相對最近的定位祖先 .tarot-reveal 定位，剛好就是整張牌的範圍。
-    '#t-chosen .tarot-chosen-slot .tc-name{position:absolute!important;left:0;right:0;bottom:0;z-index:4;transform:none!important;text-align:center;font-size:.42rem;line-height:1.2;padding:3px 2px 2px;color:#f6e8b8;background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.42) 70%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
-    '#t-chosen .tarot-chosen-slot .tc-dir{position:absolute!important;top:3px;right:3px;z-index:5;font-size:.4rem;line-height:1;padding:1px 3px;border-radius:4px;background:rgba(0,0,0,.72);font-weight:700}',
+    '#t-chosen .tarot-chosen-slot .tarot-reveal-front>.tc-name{position:absolute!important;left:0;right:0;bottom:0;z-index:4;transform:none!important;text-align:center;font-size:.42rem;line-height:1.2;padding:3px 2px 2px;color:#f6e8b8;background:linear-gradient(to top,rgba(0,0,0,.88),rgba(0,0,0,.42) 70%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '#t-chosen .tarot-chosen-slot .tarot-reveal-front>.tc-dir{position:absolute!important;top:3px;right:3px;z-index:5;font-size:.4rem;line-height:1;padding:1px 3px;border-radius:4px;background:rgba(0,0,0,.72);font-weight:700}',
     '#t-chosen .tarot-chosen-slot .tc-dir.rv{color:#ff9c9c}',
     '#t-chosen .tarot-chosen-slot .tc-dir.up{color:#9fe6a8}',
     '#t-chosen .jy-row,#t-chosen .gd15-core,#t-chosen .tol-pair{min-height:96px}'
@@ -8062,9 +8056,7 @@ function jyTarotFillSlots(drawn, sid, def){
         '<div class="tarot-reveal-inner">' +
           '<div class="tarot-reveal-back"></div>' +
           '<div class="tarot-reveal-front">' +
-            (imgSrc ? '<img src="' + imgSrc + '" class="tc-img" style="' + rot + '">' : '') +
-            '<span class="tc-name" style="' + rot + '">' + (c.n || '') + '</span>' +
-            '<span class="tc-dir up">Book T</span>' +
+            (window.JYTarotReading ? window.JYTarotReading.face(c) : ((imgSrc ? '<img src="' + imgSrc + '" class="tc-img">' : '') + '<span class="tc-name">' + (c.n || '') + '</span><span class="tc-dir up">正向・Book T</span>')) +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -8074,6 +8066,7 @@ function jyTarotFillSlots(drawn, sid, def){
 
 function jyTarotFinishAutodraw(drawn, sid, def){
   drawnCards = drawn;
+  if(window.JYTarotReading)window.JYTarotReading.syncControls();
   S.tarot = S.tarot || {};
   S.tarot.drawn = drawnCards;
   S.tarot.spread = drawnCards;
@@ -8110,6 +8103,19 @@ function jyTarotBuildDraw(def, sid){
   } catch(e) {}
   if (!deck.length && typeof TAROT !== 'undefined' && TAROT && TAROT.length) deck = jyTarotShuffleArray(TAROT);
   if (def && def.deckFilter === 'minor_only') deck = deck.filter(function(c){ return c && c.suit !== 'major'; });
+  // Quick completion preserves cards already chosen, including their direction.
+  var existing=typeof drawnCards!=='undefined'&&drawnCards?drawnCards.slice():[];
+  if(existing.length && ['mathers_21','mathers_horseshoe','fifteen_card'].indexOf(sid)<0){
+    var used={};existing.forEach(function(c){used[c.id]=true;});
+    var available=deck.filter(function(c){return !used[c.id];});
+    while(existing.length<targetCount && available.length){
+      var c=Object.assign({},available.shift()),i=existing.length;
+      if(window.JYTarotReading)window.JYTarotReading.apply(c,window.JYTarotReading.orientation(sid),sid,existing[0].readingMode);
+      else c.isUp=true;
+      c.pos=def.positions&&def.positions[i]?def.positions[i].name:'位置'+(i+1);c.seq=i+1;existing.push(c);
+    }
+    return existing;
+  }
 
   var seed = String(Date.now()) + '|' + ((S.form && S.form.question) || '') + '|' + sid + '|v80.36';
   var drawn = [];
@@ -8129,6 +8135,7 @@ function jyTarotBuildDraw(def, sid){
       out.isUp = true;
       out.direction = '元素尊貴裁決';
       out.sourceProfile = 'gd_book_t';
+      if(window.JYTarotReading)window.JYTarotReading.apply(out,window.JYTarotReading.orientation(sid),sid);
       out.pos = (def && def.positions && def.positions[i]) ? def.positions[i].name : ('第' + (i + 1) + '張');
       out.seq = i + 1;
       drawn.push(out);
@@ -8181,6 +8188,7 @@ window.initTarotDeck = function(){
     } catch(e) {}
   }
   repaint();
+  if(window.JYTarotReading)window.JYTarotReading.syncControls();
   setTimeout(repaint, 0);
   setTimeout(repaint, 180);
   return ret;
@@ -8188,6 +8196,8 @@ window.initTarotDeck = function(){
 
 var _oldAutoDrawV8035 = window.autoDraw;
 window.autoDraw = function(){
+  if(typeof pickAnimating!=='undefined' && pickAnimating)return;
+
   jyTarotHardfixCSS();
   var def = jyTarotGetDef();
   var sid = jyTarotGetSid(def);

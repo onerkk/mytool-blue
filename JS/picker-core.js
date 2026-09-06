@@ -1,4 +1,4 @@
-/*! Shared picker lifecycle: viewport, modal layer and Gregorian boundaries. v1.0.0 */
+/*! Shared picker lifecycle and stable time fields. v1.1.0 */
 (function (root) {
   'use strict';
   var active = null;
@@ -41,6 +41,9 @@
       'dialog.jy-picker-dialog button:focus-visible,dialog.jy-picker-dialog [role=button]:focus-visible{outline:2px solid #e8d28a;outline-offset:-2px}',
       'dialog.jy-picker-dialog .jy-picker-panel .jy-picker-title-button{width:auto;height:auto;min-height:42px;flex:1;font-size:.96rem}',
       'dialog.jy-picker-dialog .jy-picker-body [aria-disabled=true]{opacity:.3;pointer-events:none}',
+      'dialog.jy-picker-dialog .jy-picker-panel,dialog.jy-picker-dialog button,dialog.jy-picker-dialog input,dialog.jy-picker-dialog select{font-family:system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif}',
+      'dialog.jy-picker-dialog .jy-picker-body{animation:none;transition:none;opacity:1;visibility:visible}',
+      '.jy-time-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}.jy-time-fields label{display:grid;gap:8px;color:#e8d28a;font-size:14px}.jy-time-fields select{display:block;width:100%;min-width:0;height:52px;padding:8px 12px;border:1px solid #78663e;border-radius:10px;background:#19171e;color:#fff3d5;font-size:20px;font-variant-numeric:tabular-nums}.jy-time-fields select:disabled{opacity:.4}.jy-time-preview{display:block;text-align:center;min-height:36px;font-size:24px;color:#fff3d5;font-variant-numeric:tabular-nums}.jy-time-unknown{display:flex;align-items:center;gap:10px;min-height:48px;font-size:14px}.jy-time-unknown input{width:20px;height:20px;accent-color:#c9a84c}.jy-time-help{font-size:13px;line-height:1.7;color:#c3bba8;margin:8px 0}',
       '@media(max-height:620px){dialog.jy-picker-dialog .jy-picker-week{height:36px;min-height:36px;max-height:36px;grid-template-rows:36px}dialog.jy-picker-dialog .jy-picker-week>*{height:34px;max-height:34px}}'
     ].join('\n');
     doc.head.appendChild(style);
@@ -55,6 +58,27 @@
       });
     }
   }
+  // Render once. Changing time updates values only, preserving focus and scroll.
+  function renderTime(container, options) {
+    var state = { hour: Number(options.hour) || 0, minute: Number(options.minute) || 0, unknown: options.allowUnknown !== false && !!options.unknown };
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function choices(n) { var h = ''; for (var i=0; i<n; i++) h += '<option value="'+i+'">'+pad(i)+'</option>'; return h; }
+    container.innerHTML = '<output class="jy-time-preview" aria-live="polite"></output><div class="jy-time-fields"><label>小時（24 小時制）<select data-jy-hour aria-label="小時">'+choices(24)+'</select></label><label>分鐘<select data-jy-minute aria-label="分鐘">'+choices(60)+'</select></label></div>' +
+      (options.allowUnknown !== false ? '<label class="jy-time-unknown"><input type="checkbox" data-jy-unknown>出生時辰不確定</label>' : '') + '<p class="jy-time-help">請填出生紀錄上的當地時間；按「確定」才會套用。</p>';
+    var hour=container.querySelector('[data-jy-hour]'), minute=container.querySelector('[data-jy-minute]'), unknown=container.querySelector('[data-jy-unknown]'), preview=container.querySelector('output');
+    function sync() {
+      hour.value=String(state.hour); minute.value=String(state.minute);
+      hour.disabled=minute.disabled=state.unknown;
+      if (unknown) unknown.checked=state.unknown;
+      preview.textContent=state.unknown ? '時辰未知，僅分析可確定資料' : pad(state.hour)+'：'+pad(state.minute);
+    }
+    container.addEventListener('change', function(e) {
+      if(e.target!==hour && e.target!==minute && e.target!==unknown) return;
+      state.hour=Number(hour.value); state.minute=Number(minute.value); state.unknown=!!(unknown&&unknown.checked);
+      sync(); if(options.onChange) options.onChange({hour:state.hour,minute:state.minute,unknown:state.unknown});
+    });
+    sync(); return state;
+  }
   function mount(bd, bodySelector, onCancel) {
     if (active) active.cancel();
     installStyle();
@@ -65,9 +89,13 @@
     panel.removeAttribute('role'); panel.removeAttribute('aria-modal');
     panel.classList.add('jy-picker-panel'); panel.tabIndex = -1;
     if (body) body.classList.add('jy-picker-body');
+    var lastSize='';
     function sync() {
       if (!bd.isConnected) return;
       var size = dimensions(root.visualViewport, { width: root.innerWidth, height: root.innerHeight });
+      var key=[size.width,size.height,size.top,size.left].join('|');
+      if(key===lastSize) return;
+      lastSize=key;
       bd.style.setProperty('--jy-picker-vh', size.height + 'px');
       bd.style.setProperty('--jy-picker-width', size.width + 'px');
       bd.style.setProperty('--jy-picker-top', size.top + 'px');
@@ -113,5 +141,5 @@
       if (previousFocus && previousFocus.isConnected && previousFocus.focus) previousFocus.focus({ preventScroll: true });
     };
   }
-  root.JY_PICKER = Object.freeze({ version: '1.0.0', mount: mount, refresh: refresh, dimensions: dimensions, validDate: validDate, daysInMonth: daysInMonth, shiftMonth: shiftMonth });
+  root.JY_PICKER = Object.freeze({ version: '1.1.0', mount: mount, refresh: refresh, renderTime: renderTime, dimensions: dimensions, validDate: validDate, daysInMonth: daysInMonth, shiftMonth: shiftMonth });
 })(typeof window !== 'undefined' ? window : globalThis);

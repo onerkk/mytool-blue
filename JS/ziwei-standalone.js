@@ -1003,10 +1003,10 @@
   // ── 時辰選擇器（單點即選；12 時辰＋不確定）──
   window._zwxOpenHH=function(){
     _zwxSheetType='hh';
-    var h='<button type="button" class="zwx-sc-grid">';
+    var h='<div class="zwx-sc-grid" role="group" aria-label="十二時辰">';
     for(var i=0;i<SHICHEN.length;i++){
       var parts=SHICHEN[i].n.split(' ');
-      h+='<button type="button" class="zwx-sc'+((''+SHICHEN[i].h)===(''+_zwSelHH)?' sel':'')+'" onclick="_zwxPickHH('+SHICHEN[i].h+')"><b>'+parts[0]+'</b><i>'+(parts[1]||'')+'</i></button>';
+      h+='<button type="button" aria-pressed="'+((''+SHICHEN[i].h)===(''+_zwSelHH))+'" class="zwx-sc'+((''+SHICHEN[i].h)===(''+_zwSelHH)?' sel':'')+'" onclick="_zwxPickHH('+SHICHEN[i].h+')"><b>'+parts[0]+'</b><i>'+(parts[1]||'')+'</i></button>';
     }
     h+='<button type="button" class="zwx-sc wide'+(_zwSelHH==='unknown'?' sel':'')+'" onclick="_zwxPickHHU()"><b>不確定</b><i>尚未定盤</i></button>';
     h+='</div>';
