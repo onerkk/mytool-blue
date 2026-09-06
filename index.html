@@ -252,7 +252,7 @@
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="stylesheet" href="CSS/style.css?v=20260906fix2">
+<link rel="stylesheet" href="CSS/style.css?v=20260906display3">
 <style id="jy-spread-pick-css">
 .jy-spread-trigger{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid rgba(201,168,76,.22);background:linear-gradient(135deg,rgba(201,168,76,.05),rgba(201,168,76,.012));cursor:pointer;font-family:var(--f-body);transition:all .3s cubic-bezier(.4,0,.2,1)}
 .jy-spread-trigger:active{transform:scale(.98)}
@@ -1392,32 +1392,33 @@
 <script src="JS/tarot-semantic-engine.js?v=20260718v101_0" defer></script>
 <script src="JS/tarot-inventory.js?v=20260717v98_0" defer></script>
 <!-- v80.15：首頁新增紫微斗數/梅花易數入口 + 塔羅 Mathers 21/54 正統位置 + 梅花易數核心正統輸出層；順序不可改：核心 → 輸出層 → 萬物類象/外應增強 -->
-<script src="JS/meihua_upgrade.js?v=20260811promptfix" defer></script>
+<script src="JS/meihua_upgrade.js?v=20260906display3" defer></script>
 <script src="JS/meihua_output_layer.js?v=20260811promptfix" defer></script>
 <script src="JS/meihua_upgrade2.js?v=20260811promptfix" defer></script>
 <!-- ★ v70 全免費：payment-wall.js 已移除 -->
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
-<script src="JS/ai-analysis.js?v=20260906fix2" defer></script>
+<script src="JS/ai-analysis.js?v=20260906display3" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260905fix1" defer></script>
 <script src="JS/lenormand.js?v=20260905fix1" defer></script>
-<script src="JS/ink-flow.js?v=20260717v2_3" defer></script>
+<!-- display3：手機靜態背景；出生選單先備妥內容再開啟，避免初始化錯誤與重複繪圖。 -->
+<script src="JS/ink-flow.js?v=20260906display3" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
 <script src="JS/meihua-standalone.js?v=20260905fix1" defer></script>
 <!-- 共用提示詞根必須先於 standalone 載入，否則八字會直接失敗、紫微會退回舊提示詞。 -->
-<script src="JS/picker-core.js?v=20260906fix2" defer></script>
+<script src="JS/picker-core.js?v=20260906display3" defer></script>
 <script src="JS/ziwei-prompt-root.js?v=20260905fix1" defer></script>
 <script src="JS/bazi-prompt-root.js?v=20260905fix1" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260906fix2" defer></script>
-<script src="JS/bazi-standalone.js?v=20260906fix2" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260906display3" defer></script>
+<script src="JS/bazi-standalone.js?v=20260906display3" defer></script>
 <!-- v87_0(2026/6/26)：八字完整功能套件——單盤六主題、八種角色情境合盤、雙向十神與跨盤作用、五行互補、雙方歲運同步、本地五軸32型人格、歷史/匯出。第三方未公開私有演算法不冒充搬運，採本地可檢查規則重建。 -->
 <!-- v87_1(2026/6/26)：恢復原版八字 UI 為預設入口；保留原自訂日期、時間、出生地點選擇器。完整合盤／人格／工具改由原版頁面的次要按鈕開啟，不再以原生 date/time 輸入覆蓋主入口。 -->
 <script src="JS/share-card.js?v=20260717v96_0" defer></script>
 <script src="JS/bazi-suite-core.js?v=20260905fix1" defer></script>
-<script src="JS/bazi-suite.js?v=20260906fix2" defer></script>
+<script src="JS/bazi-suite.js?v=20260906display3" defer></script>
 <script src="JS/ui.js?v=20260906fix2" defer></script>
 <script src="JS/spread-picker.js?v=20260717v96_0" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
