@@ -275,12 +275,14 @@
   }
 
   function _castNumbers() {
-    var sc = _shichen();
+    var now = new Date(), sc = Math.floor((now.getHours()+1)%24/2)+1;
+    var context={method:_mhMethod,timestamp:now.toISOString(),localDate:now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate(),utcOffsetMinutes:-now.getTimezoneOffset(),shichen:sc};
     if (_mhMethod === 'num') {
-      var u = parseInt(_mhUpNum, 10), l = parseInt(_mhLoNum, 10);
-      if (!u || !l || u < 1 || l < 1) { alert('請各報一個正整數（上數、下數）'); return null; }
+      var u = Number(_mhUpNum), l = Number(_mhLoNum);
+      if (!Number.isSafeInteger(u) || !Number.isSafeInteger(l) || u < 1 || l < 1 || !Number.isSafeInteger(u+l+sc)) { alert('請各報一個可精確計算的正整數（上數、下數），不要輸入小數或文字。'); return null; }
       var up = u % 8 || 8, lo = l % 8 || 8, dong = (u + l + sc) % 6 || 6;
-      return { up: up, lo: lo, dong: dong };
+      context.upperNumber=u;context.lowerNumber=l;context.policy='報數加時法：上下數各除8取餘，動爻用上下原數加時辰除6；整除取8或6。';
+      return { up: up, lo: lo, dong: dong, context:context };
     }
     // 時間起卦：需農曆換算。lunar-javascript 把 Solar 掛在 window.Solar（非 Lunar.Solar），兩者皆接受。
     var SolarLib = (window.Lunar && window.Lunar.Solar) || window.Solar;
@@ -289,14 +291,15 @@
       return null;
     }
     try {
-      var now = new Date();
       var solar = SolarLib.fromYmd(now.getFullYear(), now.getMonth()+1, now.getDate());
       var lunar = solar.getLunar();
       var lY = lunar.getYear(), lM = lunar.getMonth(), lD = lunar.getDay();
       var yzhi = ((lY - 4) % 12 + 12) % 12 + 1;
       var base = yzhi + Math.abs(lM) + lD;
       var up = base % 8 || 8, lo = (base + sc) % 8 || 8, dong = (base + sc) % 6 || 6;
-      return { up: up, lo: lo, dong: dong };
+      context.lunar={year:lY,month:lM,day:lD,yearBranchNumber:yzhi};
+      context.policy='年月日時法：年支數＋農曆月日取上卦，再加時辰取下卦與動爻；閏月沿用本月數，採本地民用日期，未校正真太陽時。';
+      return { up: up, lo: lo, dong: dong, context:context };
     } catch (e) {
       alert('起卦失敗，請改用「數字起卦」。');
       return null;
@@ -328,17 +331,17 @@
     var raw = (_mhText || '').trim();
     var chars = raw.match(/[\u4e00-\u9fa5\u3400-\u4dbf]/g); // 只取中文字（含擴展A）
     if (!chars || !chars.length) { alert('請先輸入中文字（漢字起卦）。'); cb(null); return; }
-    var sc = _shichen();
+    var now = new Date(), sc = Math.floor((now.getHours()+1)%24/2)+1;
     function compute() {
       try {
         if (!window.cnchar || typeof window.cnchar.stroke !== 'function') return null;
         var arr = window.cnchar.stroke(chars.join(''), 'array'); // 每字繁體筆畫（已註冊 cncharTrad）
-        if (!arr || !arr.length) return null;
-        var total = 0; for (var i=0;i<arr.length;i++) total += (arr[i] || 0);
+        if (!arr || arr.length!==chars.length || arr.some(function(n){return !Number.isSafeInteger(n)||n<=0;})) return null;
+        var total = 0; for (var i=0;i<arr.length;i++) total += arr[i];
         if (!total) return null;
         var up, lo;
         if (arr.length === 1) {
-          // 一字難分：以筆畫為上卦，筆畫＋時辰為下卦（邵雍一字加時法）
+          // 一字難分：以筆畫為上卦，筆畫＋時辰為下卦（本站一字加時變體）
           up = arr[0] % 8 || 8;
           lo = (arr[0] + sc) % 8 || 8;
         } else {
@@ -350,7 +353,7 @@
           lo = loSum % 8 || 8;
         }
         var dong = (total + sc) % 6 || 6; // 動爻：總筆畫加時辰
-        return { up: up, lo: lo, dong: dong };
+        return { up: up, lo: lo, dong: dong, context:{method:'char',timestamp:now.toISOString(),utcOffsetMinutes:-now.getTimezoneOffset(),shichen:sc,characters:chars.join(''),strokes:arr.slice(),totalStrokes:total,policy:arr.length===1?'本站一字加時變體：筆畫取上卦、筆畫加時辰取下卦和動爻；不冒充原書的一字左右拆字法。':'本站多字筆畫法：前少後多分上下卦，總筆畫加時辰取動爻；以本次 cnchar 繁體筆畫為準，不混稱康熙筆畫。'} };
       } catch (e) { return null; }
     }
     _loadCnchar(function(ok){
@@ -405,12 +408,16 @@
     if (action) L.push('這題要求做法：將最關鍵的阻力或轉機轉成具體可執行建議。');
     if (mind) L.push('涉及感情或他人想法：解讀互動傾向、投入、顧慮與後續發展，並提示可用哪些現實行為驗證。');
     if (lost) L.push('涉及失物／位置：綜合八卦方位、場域與物象，給優先搜索區域、物件特徵與順序。');
-    if (exact) L.push('涉及數量、身分、金額、年齡或機率時，精度要與卦象實際辨識力相稱，可改用範圍與特徵表達。');
+    if (exact) L.push('涉及數量、身分、金額、年齡或機率時，沒有可查的數值依據就明說無法測得；不得把猜測改寫成範圍或百分比。仍可解讀與問題相關的處境、條件與行動。');
     if (high || allegation || liveFact) L.push('若問題牽涉醫療、法律、投資、安全、指控或即時資料，請把卦象判斷和需要現實查證的部分分開說明。');
     return L.join('\n');
   }
 
   function buildMeihuaPrompt(question, mh) {
+    if(!mh||!mh.up||!mh.lo||!Number.isInteger(mh.dong)||mh.dong<1||mh.dong>6||!mh.ben||!mh.hu||!mh.bian||!mh.tiG||!mh.yoG)throw new Error('梅花卦盤資料不完整');
+    var castDate=mh.castContext&&mh.castContext.timestamp?new Date(mh.castContext.timestamp):null;
+    if(castDate&&!Number.isFinite(castDate.getTime()))throw new Error('起卦時間資料無效');
+    var seasonDate=castDate||new Date(), seasonPrecision='未確認';
     var tiName = (mh.tiG && mh.tiG.name) || '', yoName = (mh.yoG && mh.yoG.name) || '';
     var tiEl = mh.tiG && mh.tiG.el, yoEl = mh.yoG && mh.yoG.el;
     var timing = WX_TIMING[yoEl] || '節奏依用卦五行性質判';
@@ -419,8 +426,9 @@
     //    優先用既有引擎 getMhWangShuai（v80.16 起含節氣判月＋四季月土旺），失敗才退國曆近似簡表；同一函數對任一五行通用。
     function _wsLevelOf(el) {
       if (!el) return '';
-      try { if (typeof getMhWangShuai === 'function') { var r = getMhWangShuai(el); if (r && r.level) return r.level; } } catch (e) {}
-      var _m = new Date().getMonth() + 1, _sea;
+      try { if (typeof getMhWangShuai === 'function') { var r = getMhWangShuai(el,seasonDate); if (r && r.level) {seasonPrecision=r.precision||'未標示算法精度';return r.level;} } } catch (e) {}
+      seasonPrecision='公曆季節近似備援，節令交界不作精細旺衰判斷';
+      var _m = seasonDate.getMonth() + 1, _sea;
       if (_m>=2 && _m<=4) _sea='spring'; else if (_m>=5 && _m<=7) _sea='summer';
       else if (_m>=8 && _m<=10) _sea='autumn'; else _sea='winter';
       var _T = { spring:{木:'旺',火:'相',水:'休',金:'囚',土:'死'}, summer:{火:'旺',土:'相',木:'休',水:'囚',金:'死'}, autumn:{金:'旺',水:'相',土:'休',火:'囚',木:'死'}, winter:{水:'旺',木:'相',金:'休',土:'囚',火:'死'} };
@@ -505,6 +513,12 @@
     L.push(_mhQuestionContract(question));
     L.push('');
     L.push('【卦象資料】');
+    L.push('起卦依據：'+(mh.castContext?JSON.stringify(mh.castContext):'舊資料未保存起卦時間與原始取數；當下旺衰只作匯出時參考，不能追認為起卦時令。'));
+    L.push('旺衰算法：'+seasonPrecision+'。');
+    if(mh.lo.li&&mh.up.li)L.push('本卦六爻（自下而上，1陽0陰）：'+mh.lo.li.concat(mh.up.li).join('、')+'；只翻轉第'+mh.dong+'爻生成變卦。');
+    L.push('判讀順序：先核對取數與體用，再以本卦定背景、互卦觀察內部過程、變後用卦對原體卦看條件變化；用卦含動爻，體卦是不動的另一個三爻卦。比較生剋方向與雙方旺衰，不只計算吉凶數量。');
+    L.push('每個主判指出本互變的具體卦名、生剋關係與動爻位置，再說明對原問題的含義、反向訊號和可觀察條件。錯綜及爻辭屬補充鏡頭，不取代體用；本法只有一動爻，不擅自套用六爻納甲世應與多爻變占規則。');
+    L.push('原典參考：《梅花易數》卷一、卷二 https://www.eee-learning.com/book/4080 、 https://www.eee-learning.com/book/4085 。本次公式變體已另行標示；書目不代表 AI 已即時查網。');
     L.push('本卦：' + (mh.ben && mh.ben.n) + '（上卦' + _mhTrig(mh.up) + '，下卦' + _mhTrig(mh.lo) + '）—— 事情的當前定性。');
     L.push('互卦：' + (mh.hu && mh.hu.n) + ' —— 發展過程、可供思考的內在結構與中間變數（尚待現實核對）。');
     // v80.33 互卦對體生剋（《體用總訣》「宜受他卦之生，不宜受他卦之剋。他卦者，謂用互變也」——資料直給，不靠 AI 自己算）
@@ -520,7 +534,7 @@
           if (g.el === tiEl) return (g.name||'') + '（' + g.el + '）與體比和＝過程有同氣相助';
           if (_SH[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）生體＝過程有暗助推力';
           if (_SH[tiEl] === g.el) return (g.name||'') + '（' + g.el + '）受體生＝過程在洩耗你';
-          if (_KEm[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）剋體＝過程有人事在擋';
+          if (_KEm[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）剋體＝可檢視過程的外部限制，不證明特定人物阻撓';
           if (_KEm[tiEl] === g.el) return (g.name||'') + '（' + g.el + '）受體剋＝過程可控但費力';
           return '';
         };
@@ -657,6 +671,7 @@
     _showLoading(function () {
       try {
         _mhResult = calcMH(nums.up, nums.lo, nums.dong);
+        _mhResult.castContext=nums.context||null;
         _lastPrompt = buildMeihuaPrompt(_mhQuestion, _mhResult);
         _mhPhase = 'result';
         _render();
