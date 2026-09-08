@@ -26,8 +26,8 @@
     zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '一整年逐領域掃描 ・ 例：「我今年的整體運勢」（12宮＋年度主軸）' },
     minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '日常具體小事（只用56張小牌）・ 例：「錢包找得回來嗎」「包裹會準時到嗎」' },
     fifteen_card: { icon: 'fa-shapes',       accent: '139,92,246',  cn: '金色黎明十五張', suited: '多面向結構與三元組互動 ・ 牌義、宮廷牌與元素尊貴統一依 Book T' },
-    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '一件事的來龍去脈與首尾配對 ・ 牌義統一依 Golden Dawn Book T' },
-    mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '重大議題的長篇連續敘事與配對 ・ 牌義統一依 Golden Dawn Book T' }
+    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '隔七取牌、三排敘事與首尾配對 ・ 沿用歷史程序，牌義依選定方式' },
+    mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '三輪分堆、長篇連續敘事與配對 ・ 沿用歷史程序，牌義依選定方式' }
   };
   var GROUPS = [
     { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'horseshoe', 'celtic_cross'] },
@@ -233,9 +233,9 @@
     updateTrigger();
     try {
       var sub = document.querySelector('#jy-spread-modal .jym-sub');
-      if (sub) sub.textContent = '所有牌陣只改變觀測布局；牌義、宮廷牌、卡巴拉／占星對應與元素尊貴全站統一採 Golden Dawn《Book T》。';
+      if (sub) sub.textContent = '一般牌陣可選 RWS 正逆位或 Golden Dawn 元素尊貴。金色黎明十五張與開鑰之法採 Golden Dawn；各牌陣保留自己的位置、閱讀順序與配對規則。';
       var triggerSub = document.getElementById('jy-spread-cur-sub');
-      if (triggerSub && !triggerSub.textContent) triggerSub.textContent = '牌義固定 Golden Dawn Book T；此處只選觀測布局';
+      if (triggerSub && !triggerSub.textContent) triggerSub.textContent = '選擇適合問題的牌陣，再設定讀牌方式';
     } catch (_gdBadgeErr) {}
     // 只在「塔羅快讀」顯示牌陣選單；開鑰之法用固定的 Opening of the Key，隱藏
     if (typeof window.pickTool === 'function' && !window._pickToolWrappedForSpread) {
@@ -257,4 +257,3 @@
   if (document.readyState === 'complete') init();
   else document.addEventListener('DOMContentLoaded', init);
 })();
-

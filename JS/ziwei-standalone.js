@@ -351,7 +351,7 @@
 
     // 命宮/身宮定位
     var palaces = zw.palaces || [];
-    var ming = palaces[0];
+    var ming = palaces.find(function(p){return p.isMing||/^命宮?$/.test(p.name||'');});
     var shen = palaces.find(function(p){ return p.isShen; });
     if (ming) {
       var mp = palaceStarParts(ming);
@@ -837,7 +837,7 @@
       if (nm && nm.charAt(nm.length - 1) !== '宮') nm += '宮';
       return { branch: br, name: nm, star: majors(p) };
     });
-    var ming = palaces[0] || {};
+    var ming = palaces.find(function(p){return p.isMing||/^命宮?$/.test(p.name||'');}) || {};
     var juName = ({ 2: '水二局', 3: '木三局', 4: '金四局', 5: '土五局', 6: '火六局' })[zw.wuxingJu] || (zw.wuxingJu || '');
     var shen = null;
     for (var i = 0; i < palaces.length; i++) { if (palaces[i].isShen) { shen = palaces[i]; break; } }

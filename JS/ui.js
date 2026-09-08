@@ -8123,9 +8123,13 @@ function jyTarotBuildDraw(def, sid){
     if (typeof window.JY_buildCanonicalTarotDraw === 'function') {
       drawn = window.JY_buildCanonicalTarotDraw(deck.slice(), sid, def, seed, (S.form && S.form.type) || 'general', (S.form && S.form.question) || '') || [];
     }
-  } catch(e) { drawn = []; }
+  } catch(e) {
+    if(/^mathers_/.test(sid))throw e;
+    drawn = [];
+  }
 
   if (!drawn || !drawn.length) {
+    if(/^mathers_/.test(sid))throw new Error('Mathers 抽牌程序尚未載入，請重新整理後再試。');
     drawn = [];
     var rng = null;
     try { if (typeof makeSeededRng === 'function') rng = makeSeededRng(seed, 'tarot-autodraw', 'v80.36'); } catch(e) {}
@@ -8209,7 +8213,12 @@ window.autoDraw = function(){
   // v80.35：快速抽牌不再停在洗牌步驟；它本身就完成洗牌狀態並補滿牌陣。
   jyTarotForceShuffledState();
 
-  var drawn = jyTarotBuildDraw(def, sid);
+  var drawn;
+  try{drawn = jyTarotBuildDraw(def, sid);}catch(e){
+    console.error('[Tarot] draw procedure failed',e);
+    alert('抽牌尚未完成：'+(e&&e.message?e.message:'請重新整理後再試。'));
+    return;
+  }
   if (!drawn || !drawn.length) {
     // 極端失敗才退回舊函式，不假裝成功。
     console.warn('[Tarot v80.36] instant autodraw failed; fallback to previous autoDraw');

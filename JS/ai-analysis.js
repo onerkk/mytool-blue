@@ -23368,8 +23368,7 @@ function _jyTarotQuestionText() {
 function _buildTarotOnlyPayload() {
   var ta=S.tarot||{};
   if(ta.spreadType==='ootk'){
-    var ootkPayload=_buildOOTKPayload();
-    if(ootkPayload)return ootkPayload;
+    return _buildOOTKPayload();
   }
 
   var foundation=(typeof window!=='undefined')?window.JYTarotFoundation:null;
@@ -23388,8 +23387,14 @@ function _buildTarotOnlyPayload() {
   if(methodPlan.count!=null&&drawn.length!==methodPlan.count){
     throw new Error('Card count mismatch for '+spreadId+': expected '+methodPlan.count+', got '+drawn.length);
   }
+  if(drawn.some(function(c){return !c||!Number.isInteger(c.id)||c.id<0||c.id>77;}))throw new Error('Invalid tarot card identity');
+  if(new Set(drawn.map(function(c){return c.id;})).size!==drawn.length)throw new Error('Duplicate cards in tarot draw');
+  var readingModes=new Set(drawn.map(function(c){return c.readingMode||c.sourceProfile||'gd_book_t';}));
+  if(readingModes.size>1)throw new Error('Mixed reading modes in one tarot draw');
+  if(drawn.some(function(c){return c.readingMode==='rws_reversals'&&typeof c.isUp!=='boolean';}))throw new Error('Missing tarot orientation');
   if(drawn[0]&&drawn[0].readingMode==='rws_reversals'&&window.JYTarotReading){
     var rws=window.JYTarotReading.payload(ta,question,drawn,spreadId,methodPlan,ta.dynamicSpreadDef||ta.spreadDef||SPREAD_DEFS[spreadId]);
+    rws.tarotData.referenceDate=compiled.features&&compiled.features.referenceDate||'';
     var inv=window.JYShopInventory;
     rws.shopRecommendation={allowedItems:inv&&inv.recommendCandidates?inv.recommendCandidates(question,(compiled.features&&compiled.features.domains)||[],6):[],sourceFile:inv&&inv.SOURCE_FILE||''};
     return rws;
@@ -23444,6 +23449,8 @@ function _buildTarotOnlyPayload() {
     mode:'tarot_only',question:question,focusType:f.type||'general',name:f.name||'',
     tarotData:{
       spreadType:spreadId,spreadZh:(def&&def.zh)||methodPlan.label||spreadId,methodPlan:methodPlan,
+      referenceDate:compiled.features&&compiled.features.referenceDate||'',
+      drawProcedure:drawn[0]&&drawn[0].drawProcedure||null,
       foundationVersion:foundation.VERSION,semanticProgramVersion:contract&&contract.engineVersion||'',
       sourceProfile:'gd_book_t',sourceContract:gd.sourceContract(),
       summary:'Golden Dawn Book T 單一來源；先執行各牌陣原生方法協議，再以Book T牌義與真正相鄰元素尊貴裁決。一般牌陣不使用固定正逆位；配對、軸線、因果與分支只作語義互動。',
@@ -25233,6 +25240,7 @@ window._triggerTarotFollowUp = _triggerTarotFollowUp;
 function _buildOOTKPayload() {
   var results = window._ootkResults;
   if (!results) return null;
+  if(!results.op1)return null;
   var gd = window.JYGoldenDawn;
 
   function cardData(c) {
@@ -25302,7 +25310,7 @@ function _buildOOTKPayload() {
     var out = {
       operation: index + 1,
       name: names[index],
-      valid: !op.abandonTriggered,
+      valid: !(op.abandonTriggered || op.abandoned),
       abandoned: !!op.abandonTriggered || !!op.abandoned,
       abandonReason: op.abandonReason || '',
       attempt: op.attempt || 1,
@@ -25351,13 +25359,20 @@ function _buildOOTKPayload() {
 
   var operations = {};
   ['op1','op2','op3','op4','op5'].forEach(function(k, i){
-    if (results[k]) operations[k] = opData(results[k], i);
+    var stop=Number(String(results.abandonedAt||'').replace('op',''));
+    if(stop&&i+1>stop)return;
+    if(results[k]){
+      if(i>0&&!operations['op'+i])throw new Error('Opening of the Key operations are not consecutive');
+      var active=results[k].activeCards||[];
+      if(new Set(active.map(function(c){return c.id;})).size!==active.length)throw new Error('Duplicate cards in Opening of the Key operation');
+      operations[k] = opData(results[k], i);
+    }
   });
 
   var abandonedAt = results.abandonedAt || '';
   var payload = {
     mode: 'ootk',
-    question: _jyTarotQuestionText(),
+    question: results.questionText || _jyTarotQuestionText(),
     focusType: (S.form && S.form.type) ? S.form.type : 'general',
     birth: (S.form && S.form.bdate) ? S.form.bdate : '',
     birthTime: (S.form && S.form.btime) ? S.form.btime : '',
@@ -25371,10 +25386,11 @@ function _buildOOTKPayload() {
       method: 'Golden Dawn《Book T／Liber T》Opening of the Key 五次操作',
       significator: results.significator || {},
       questionType: results.questionType || '',
+      castTimestamp: results.castTimestamp || '',
       predeclaredBindings: results.predeclaredBindings || null,
       operations: operations,
       procedureStatus: {
-        completedOperations: results.completedOperations || Object.keys(operations).length,
+        completedOperations: Object.keys(operations).length,
         abandoned: !!abandonedAt,
         abandonedAt: abandonedAt,
         reason: abandonedAt && results[abandonedAt] ? (results[abandonedAt].abandonReason || '') : '',

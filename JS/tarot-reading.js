@@ -2,7 +2,7 @@
 (function(root){
   'use strict';
   var RWS='rws_reversals',GD='gd_book_t',requested=RWS;
-  var nativeGD=['ootk','fifteen_card','mathers_21','mathers_horseshoe'];
+  var nativeGD=['ootk','fifteen_card'];
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function currentSpread(){return typeof getCurrentSpread==='function'?getCurrentSpread():((root.S||{}).tarot||{}).spreadType||'five_card';}
   function currentCards(){return typeof drawnCards!=='undefined'?drawnCards:(((root.S||{}).tarot||{}).drawn||[]);}
@@ -56,6 +56,8 @@
     return {mode:'tarot_only',question:question,focusType:((root.S||{}).form||{}).type||'general',tarotData:{
       spreadType:spread,spreadZh:(def&&def.zh)||plan.label||spread,readingMode:RWS,sourceProfile:RWS,
       methodPlan:plan,sourceContract:{id:RWS,label:'Rider–Waite–Smith・正逆位',reversalPolicy:'每張牌依發牌時記錄的正位／逆位解讀；逆位可呈現內在化、受阻、延遲、過度或不足，依問題與牌組選擇最有支持的讀法。'},
+      referenceDate:ta.compiledQuestion&&ta.compiledQuestion.features&&ta.compiledQuestion.features.referenceDate||'',
+      drawProcedure:drawn[0]&&drawn[0].drawProcedure||null,
       cards:drawn.map(function(c,i){var slot=(plan.slots||[])[i]||{},pos=((def||{}).positions||[])[i]||{};return {
         id:c.id,name:c.n||c.name||'',isUp:c.isUp!==false,direction:c.isUp===false?'逆位':'正位',sourceProfile:RWS,
         position:slot.label||pos.name||c.pos||('位置'+(i+1)),positionMeaning:slot.label||pos.zh||c.pos||'',
@@ -70,17 +72,21 @@
     '牌面為本站藝術詮釋，採 RWS 讀法；不能假設藝術圖像包含原版 Waite 牌圖的每個細節。',
     '【讀法】先掌握核心局勢，再分析形成原因、助力與阻力、行動選擇、條件延續下的發展。對照相關牌位中的支持與矛盾，說明哪些因素更有份量，以及什麼現實訊號會改變主判。',
     '逆位依牌本性與上下文判斷內在化、受阻、延遲、過量或不足等可能；不把所有逆位視為壞事，也不機械反轉正位牌義。橫放的交叉牌仍以資料記錄的正逆位為準。',
+    '先辨認哪張牌在說狀態、原因、阻力、建議或走向，依本次完整方法資料讀軸線、分支、組合與配對；同一牌在不同牌位不會產生相同句子。大牌、小牌、宮廷牌和花色分布作次級背景，不能把某花色缺席或逆位比例直接當成否定答案。',
+    '宮廷牌先比較人物、當事人的行動方式或環境角色三種讀法；有現實身分資料與牌位支持才綁定特定人物。關係牌陣的對方位是象徵視角，不是已讀取對方內心的證據。',
     '【輸出】使用繁體中文，開頭直接回應原問句。接著以具體牌名與牌位支持判斷，解釋關鍵牌組如何互相影響、最值得考慮的替代解讀、可行的下一步及可觀察的驗證訊號。每個子題都要回應；深入來自比較與整合，避免逐張堆疊字典或重複結論。',
     '對尚未發生的事給出有條件的傾向，區分當事人已提供的事實與象徵推測；涉及他人內心、年齡或應期時，說明資料實際支持的範圍。只拿到牌名而看不到牌圖時，勿聲稱已檢視本次圖像細節。'
   ].join('\n');}
   function formatData(td,rec){
     var L=['牌陣：'+td.spreadZh+'（'+td.cards.length+' 張）','讀牌體系：Rider–Waite–Smith・使用正逆位','下列牌名、順序與方向為本次實際抽牌紀錄：'];
     td.cards.forEach(function(c,i){L.push((i+1)+'. '+c.position+'：'+c.name+'【'+c.direction+'】');});
+    if(td.drawProcedure){L.push('【本次發牌程序】'+td.drawProcedure.description);if(td.drawProcedure.significator)L.push('代表牌：'+td.drawProcedure.significator.name+'；選牌方式：'+td.drawProcedure.significator.policy);}
     var s=td.preStats||{};L.push('正位 '+s.upCount+' 張；逆位 '+s.reversedCount+' 張。這是抽牌統計，不換算事件機率。');
     L.push('【可推薦庫存品項】'+(rec&&rec.allowedItems&&rec.allowedItems.length?rec.allowedItems.join('、'):'無'));
     return L.join('\n');
   }
   function guide(td){
+    if(root.JY_buildSpreadReadingGuide)return root.JY_buildSpreadReadingGuide('tarot',{tarotData:td});
     var p=td.methodPlan||{},L=['◆ 本次方法資料','依每個牌位的名稱與問題讀牌，將單張意義連成整體判斷。'];
     (p.slots||[]).forEach(function(s,i){if(td.cards[i])L.push((i+1)+'. '+(s.label||td.cards[i].position));});
     (p.compatibilityEdges||[]).forEach(function(edge){if(Array.isArray(edge))L.push('對照：'+edge.map(function(i){return (i+1)+'. '+((td.cards[i]||{}).position||'');}).join(' ↔ '));});
@@ -97,7 +103,21 @@
       syncControls();
     });}
     selector.value=mode(sid,cards);selector.disabled=fixed||cards.length>0;
-    host.querySelector('p').textContent=fixed?'本牌陣依 Golden Dawn 程序，採正向牌面與元素尊貴判讀。':cards.length?'本輪方式已確認。點牌面可放大查看方向與牌位。':'先選方式，再洗牌、選牌。本站藝術牌面翻開後明示正位／逆位；點牌可放大。';
+    host.querySelector('p').textContent=fixed?'本牌陣採 Golden Dawn 元素尊貴；十五張為後世衍生布局，開鑰為五次操作。':cards.length?'本輪方式已確認。點牌面可放大查看方向與牌位。':/^mathers_/.test(sid)?'沿用 Mathers 發牌與配對程序，牌義可選 RWS 或 Book T；本站為混合應用，非原書完整復刻。':'先選方式，再洗牌、選牌。本站藝術牌面翻開後明示正位／逆位；點牌可放大。';
+    var sigWrap=host.querySelector('#jy-mathers-sig-wrap');
+    if(sid==='mathers_21'&&!sigWrap){
+      sigWrap=root.document.createElement('div');sigWrap.id='jy-mathers-sig-wrap';
+      var deck=typeof TAROT!=='undefined'?TAROT:[];
+      sigWrap.innerHTML='<label for="jy-mathers-significator">代表牌（國王／皇后）</label><select id="jy-mathers-significator"><option value="auto">自動選取・不作人物性格配牌</option>'+deck.filter(function(c){return /^(king|queen)$/.test(c.rank||'');}).map(function(c){return '<option value="'+c.id+'">'+esc(c.n)+'</option>';}).join('')+'</select><p>可依你認同的角色特質選牌，代表牌另置於牌陣右側，不計入21張。自動選取會明示在本次紀錄。</p>';
+      host.appendChild(sigWrap);
+      sigWrap.querySelector('select').addEventListener('change',function(event){
+        if(currentCards().length){syncControls();return;}
+        var value=event.target.value;
+        if(value==='auto')delete root._jyMathersSignificatorId;else root._jyMathersSignificatorId=Number(value);
+        syncControls();
+      });
+    }
+    if(sigWrap){sigWrap.style.display=sid==='mathers_21'?'':'none';var sigSelect=sigWrap.querySelector('select');sigSelect.value=root._jyMathersSignificatorId==null?'auto':String(root._jyMathersSignificatorId);sigSelect.disabled=cards.length>0;}
   }
   function preview(id){
     var card=currentCards().find(function(c){return c.id===id;});if(!card||!root.JY_PICKER)return;
@@ -106,5 +126,5 @@
     var close=root.JY_PICKER.mount(dialog,'.jy-card-preview-body',function(){close();});dialog.querySelector('button').onclick=close;
   }
   root.document.addEventListener('click',function(e){var button=e.target.closest&&e.target.closest('[data-jy-preview]');if(button){e.preventDefault();preview(Number(button.dataset.jyPreview));}});
-  root.JYTarotReading={version:'1.0.0',RWS:RWS,GD:GD,mode:mode,orientation:orientation,apply:apply,label:label,imageStyle:imageStyle,face:face,meaning:meaning,stats:stats,statsHTML:statsHTML,payload:payload,promptHead:promptHead,formatData:formatData,guide:guide,resultHTML:resultHTML,syncControls:syncControls};
+  root.JYTarotReading={version:'1.1.0',RWS:RWS,GD:GD,mode:mode,orientation:orientation,apply:apply,label:label,imageStyle:imageStyle,face:face,meaning:meaning,stats:stats,statsHTML:statsHTML,payload:payload,promptHead:promptHead,formatData:formatData,guide:guide,resultHTML:resultHTML,syncControls:syncControls};
 })(window);

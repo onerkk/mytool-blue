@@ -232,37 +232,42 @@ var MH_WANGSHUAI_PRECISE = (function () {
 var MH_JIE_DAY = {1:6, 2:4, 3:6, 4:5, 5:6, 6:6, 7:7, 8:8, 9:8, 10:8, 11:7, 12:7};
 var MH_GREG_MONTH_ZHI = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']; // index = 過節後的國曆月 % 12
 
-function mhMonthZhiFromDate(d) {
+function mhMonthContextFromDate(d) {
   d = (d instanceof Date) ? d : new Date();
   // 優先以 lunar-javascript 的實際節氣時刻取月建，避免固定日期在交界附近判錯。
   try {
-    if (typeof Solar !== 'undefined' && Solar && typeof Solar.fromDate === 'function') {
-      var lunar = Solar.fromDate(d).getLunar();
+    if (typeof Solar !== 'undefined' && Solar && typeof Solar.fromYmdHms === 'function') {
+      // lunar-javascript solar terms use UTC+8 civil time. Convert the instant once,
+      // independent of the browser's timezone; local casting date remains in castContext.
+      var wall = new Date(d.getTime()+8*60*60*1000);
+      var lunar = Solar.fromYmdHms(wall.getUTCFullYear(),wall.getUTCMonth()+1,wall.getUTCDate(),wall.getUTCHours(),wall.getUTCMinutes(),wall.getUTCSeconds()).getLunar();
       var prevJie = lunar && lunar.getPrevJie ? lunar.getPrevJie() : null;
       var jieName = prevJie && prevJie.getName ? prevJie.getName() : '';
-      var JIE_ZHI = {立春:'寅',驚蟄:'卯',清明:'辰',立夏:'巳',芒種:'午',小暑:'未',立秋:'申',白露:'酉',寒露:'戌',立冬:'亥',大雪:'子',小寒:'丑'};
-      if (JIE_ZHI[jieName]) return JIE_ZHI[jieName];
+      var JIE_ZHI = {立春:'寅',驚蟄:'卯',惊蛰:'卯',清明:'辰',立夏:'巳',芒種:'午',芒种:'午',小暑:'未',立秋:'申',白露:'酉',寒露:'戌',立冬:'亥',大雪:'子',小寒:'丑'};
+      if (JIE_ZHI[jieName]) return {monthZhi:JIE_ZHI[jieName],precision:'engine-jieqi',jieName:jieName};
     }
   } catch (e) {}
   // 引擎缺席時才使用明示的近似備援；提示詞不得把此結果包裝成精確節氣時刻。
   var m = d.getMonth() + 1, day = d.getDate();
   if (day < MH_JIE_DAY[m]) m = (m === 1) ? 12 : m - 1; // 未過節，仍屬上一個月支
-  return MH_GREG_MONTH_ZHI[m % 12];
+  return {monthZhi:MH_GREG_MONTH_ZHI[m % 12],precision:'approximate-jie-day-fallback'};
 }
+function mhMonthZhiFromDate(d){return mhMonthContextFromDate(d).monthZhi;}
 
 // 參數可傳：地支字串（'午'，正統）、Date 物件、或數字（視為農曆月，向下相容舊呼叫）
 function mhPreciseWangShuai(el, monthOrZhi) {
-  var mZhi;
+  var mZhi, precision='explicit-month-branch';
   if (typeof monthOrZhi === 'string' && MH_LING_BY_ZHI[monthOrZhi]) {
     mZhi = monthOrZhi;
   } else if (monthOrZhi instanceof Date) {
-    mZhi = mhMonthZhiFromDate(monthOrZhi);
+    var context=mhMonthContextFromDate(monthOrZhi);mZhi=context.monthZhi;precision=context.precision;
   } else if (typeof monthOrZhi === 'number') {
     // 農曆月：正月=寅 … 十一月=子、十二月=丑
     var lunarZhi = ['丑','寅','卯','辰','巳','午','未','申','酉','戌','亥','子'];
     mZhi = lunarZhi[monthOrZhi % 12];
+    precision='lunar-month-number';
   } else {
-    mZhi = mhMonthZhiFromDate(new Date());
+    var context=mhMonthContextFromDate(new Date());mZhi=context.monthZhi;precision=context.precision;
   }
 
   var table = MH_WANGSHUAI_PRECISE[el];
@@ -275,6 +280,7 @@ function mhPreciseWangShuai(el, monthOrZhi) {
     multiplier: mult,
     label: label,
     monthZhi: mZhi,
+    precision: precision,
     zh: el + '行在' + mZhi + '月為「' + label + '」（力量×' + mult + '）'
   };
 }

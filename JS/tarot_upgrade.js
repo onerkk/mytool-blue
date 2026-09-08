@@ -389,7 +389,7 @@ var SPREAD_DEFS = {
   mathers_21: {
     id: 'mathers_21', zh: 'Mathers Second Method (1888 三排七)', count: 21,
     en: 'Mathers Second Method',
-    desc: 'Mathers 1888 第二法布局・代表牌抽出後每隔7張抽1共21張；牌義統一採 Golden Dawn Book T，強弱由位置與元素尊貴裁決，不套 Waite 固定逆位字典',
+    desc: 'Mathers 1888 第二法程序・抽出代表牌後先取頂牌，再隔七取牌共21張；牌義依本次選定的 RWS 或 Golden Dawn，非原書牌義復刻',
     positions: (function(){
       var out=[];
       for(var row=1;row<=3;row++){
@@ -411,7 +411,7 @@ var SPREAD_DEFS = {
   mathers_horseshoe: {
     id: 'mathers_horseshoe', zh: 'Mathers First Method (1888 完整 horseshoe)', count: 54,
     en: 'Mathers First Method (A=26, C=17, E=11)',
-    desc: 'Mathers 1888 第一法布局・A/C/E 三組 horseshoe；牌義統一採 Golden Dawn Book T，由右到左與首尾配對，F=24 棄用不讀',
+    desc: 'Mathers 1888 第一法衍生・A26/C17/E11、F24不讀；原文末輪數量有歧義，本站以明示張數為準，牌義依選定方式',
     positions: (function(){
       var out=[];
       function addGroup(group,count,label){
@@ -946,6 +946,7 @@ enhanceTarot = function(tarot) {
     return Math.random;
   }
   function _jyOrient(card, seed, spreadId, idx, forceUpright) {
+    if(window.JYTarotReading)return window.JYTarotReading.orientation(spreadId);
     if (window.JYGoldenDawn && window.JYGoldenDawn.forceUpright(spreadId)) return true;
     if (forceUpright) return true;
     var r = _jyRng(String(seed || '') + '|' + spreadId + '|' + idx + '|' + (card && card.id));
@@ -974,34 +975,50 @@ enhanceTarot = function(tarot) {
 
     // Mathers Second Method：代表牌先抽出；剩餘牌每數到第七張取出，直到 21 張。
     if (spreadId === 'mathers_21') {
-      var sig = deck.shift();
+      if(deck.length!==78||new Set(deck.map(function(c){return c.id;})).size!==78)throw new Error('Mathers 第二法需要78張不重複的完整牌組');
+      // 原書使用國王／皇后代表牌。未提供人工選擇時，明示本站的自動選法。
+      var sigIndex=deck.findIndex(function(c){return c.id===window._jyMathersSignificatorId&&/^(king|queen)$/.test(c.rank||'');});
+      var sigPolicy=sigIndex>=0?'使用者預選的國王／皇后':'本站自動取洗牌後首張國王／皇后；未作人物性格配牌';
+      if(sigIndex<0)sigIndex=deck.findIndex(function(c){return /^(king|queen)$/.test(c.rank||'');});
+      if(sigIndex<0)throw new Error('Mathers 第二法需要包含國王／皇后的完整牌組');
+      var sig = deck.splice(sigIndex,1)[0];
       window._jyLastMathersSignificator = sig ? Object.assign({}, sig, { isSignificator:true, isUp:true }) : null;
       var idx = 0;
       for (var k=0; k<21 && deck.length; k++) {
-        idx = (idx + 6) % deck.length; // 數到第七張：目前位置算第一張，所以 +6
+        // 原文先取頂牌，再從下一張起數七张；抽出的牌移除後繼續循環。
+        if(k>0)idx = (idx + 6) % deck.length;
         var card = deck.splice(idx, 1)[0];
         out.push(_jyCloneCard(card, _jyOrient(card, seed, spreadId, k, false), _jyPos(spreadDef, k), k+1, {
           mathersGroup: 'B',
           mathersMethod: 'Second Method every seventh card',
-          mathersPair: (k < 10) ? ((k+1) + '↔' + (21-k)) : (k === 10 ? '中心單張' : ((22-k) + '↔' + (k+1)))
+          mathersPair: k===10?'中心單張':(Math.min(k+1,21-k)+'↔'+Math.max(k+1,21-k))
         }));
       }
+      out[0].drawProcedure={id:'mathers_21',description:'第二法：抽出代表牌後，先取頂牌，再由下一張起每數七張取一張；已抽牌移除，循環至21張。三排由右往左，另作首尾配對。牌義採本次選用體系，非1888原書牌義復刻。',significator:{id:sig.id,name:sig.n,policy:sigPolicy}};
+      if(window.JYTarotReading)out.forEach(function(c){window.JYTarotReading.apply(c,c.isUp,spreadId);});
       if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(out);
       return out;
     }
 
     // Mathers First Method：依序形成 A=26、C=17、E=11 三組；剩餘 F=24 不讀。
     if (spreadId === 'mathers_horseshoe') {
+      if(deck.length!==78||new Set(deck.map(function(c){return c.id;})).size!==78)throw new Error('Mathers 第一法需要78張不重複的完整牌組');
+      // 每輪第2、5、8…張入所選堆，其餘續分；不能把前54張切成三段。
+      // Each dealt card lands on TOP of its heap. Arrays always represent top-to-bottom.
+      // The source's 35-card dealing text would select 12, yet it explicitly lists
+      // E=11/F=24. Follow its stated heap sizes: incomplete final triples stay in F.
+      function splitThird(input){var selected=[],rest=[],limit=Math.floor(input.length/3);input.forEach(function(c,i){(i%3===1&&selected.length<limit?selected:rest).unshift(c);});return {selected:selected,rest:rest};}
+      var ab=splitThird(deck),cd=splitThird(ab.rest),ef=splitThird(cd.rest);
       var spec = [
-        {g:'A', count:26, center:null},
-        {g:'C', count:17, center:9},
-        {g:'E', count:11, center:6}
+        {g:'A', count:26, center:null,cards:ab.selected},
+        {g:'C', count:17, center:9,cards:cd.selected},
+        {g:'E', count:11, center:6,cards:ef.selected}
       ];
       var posIdx = 0;
       for (var si=0; si<spec.length; si++) {
         var g = spec[si];
-        for (var j=1; j<=g.count && deck.length; j++) {
-          var c = deck.shift();
+        for (var j=1; j<=g.count; j++) {
+          var c = g.cards[j-1];
           var pair;
           if (g.count % 2 === 1 && j === Math.ceil(g.count/2)) pair = '中心單張';
           else {
@@ -1017,7 +1034,9 @@ enhanceTarot = function(tarot) {
           posIdx++;
         }
       }
-      window._jyMathersDiscardedF = deck.slice(0, 24).map(function(card){ return {id:card.id, n:card.n}; });
+      window._jyMathersDiscardedF = ef.rest.map(function(card){ return {id:card.id, n:card.n}; });
+      out[0].drawProcedure={id:'mathers_horseshoe',description:'第一法衍生：每輪第2、5、8…張入選，按原文明示張數形成A26、C17、E11與F24；末輪未滿三張的尾牌留F。原書35張的逐張描述會得到12/23，與所列11/24有出入，本站採後者，不隱藏此歧義。發入牌覆在堆頂，下一輪由堆頂起取；A/C/E各自向左展開並首尾配對，F不讀。牌義採本次選用體系。',groupCounts:[26,17,11],discardedCount:ef.rest.length};
+      if(window.JYTarotReading)out.forEach(function(c){window.JYTarotReading.apply(c,c.isUp,spreadId);});
       if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(out);
       return out;
     }
@@ -3000,6 +3019,7 @@ enhanceTarot = function(tarot) {
     // ════════════════════════════════════════════════════════════
 
     var results = {};
+    results.castTimestamp = new Date().toISOString();
     results.significatorId = significatorId;
     var sigCard = TAROT.find(function(c) { return c.id === significatorId; });
     results.significator = sigCard ? {

@@ -1,6 +1,6 @@
 /*! tarot-foundation.js — Golden Dawn Tarot v102 method-data foundation
  * 單一真相來源：問題型別化、觀測需求、牌陣能力、動態牌位綁定與自動路由。
- * 牌義不在本檔；牌義只由 golden-dawn-tarot.js 的 Book T 核心提供。
+ * 牌義不在本檔；Book T 由 golden-dawn-tarot.js 提供；RWS 正逆位由 tarot-reading.js 處理。
  */
 (function (root, factory) {
   var api = factory();
@@ -83,15 +83,15 @@
     zodiac: methodDef('zodiac','黃道十二宮',13,new Array(12).fill(null).map(function(){return {authority:'domain',role:'house_domain'};}).concat([{authority:'synthesis',role:'annual_synthesis'}]),[],[[0,6],[1,7],[2,8],[3,9],[4,10],[5,11]],['state','annual_overview','domain_coverage','trajectory','realization','external'],['annual','domains'],'後世占星宮位觀測布局；不得冒充 Book T 原創占卜程序'),
     minor_arcana: methodDef('minor_arcana','小阿卡那實務牌陣',7,[
       {authority:'state',role:'current_state'},{authority:'cause',role:'cause'},{authority:'obstacle',role:'constraint'},{authority:'environment',role:'external_condition'},{authority:'state',role:'available_resource'},{authority:'advice',role:'intervention'},{authority:'outcome',role:'conditional_outcome'}
-    ],[[1,0,2],[3,4,5,6]],[[1,0,2],[3,4,5,6]],['state','cause','obstacle','external','advice','trajectory','conditional_outcome','realization','location'],['practical','location'],'後世觀測布局；牌組限制為小阿卡那，牌義仍採 Book T'),
+    ],[[1,0,2],[3,4,5,6]],[[1,0,2],[3,4,5,6]],['state','cause','obstacle','external','advice','trajectory','conditional_outcome','realization','location'],['practical','location'],'後世觀測布局；牌組限制為小阿卡那，牌義依本次讀牌方式'),
     fifteen_card: methodDef('fifteen_card','金色黎明衍生十五張',15,[
       {authority:'state',role:'core_state'},{authority:'state',role:'core_support'},{authority:'state',role:'core_support'},
       {authority:'development',role:'natural_path'},{authority:'development',role:'alternative_path'},{authority:'advice',role:'decision_basis'},{authority:'structural',role:'uncontrolled_condition'},
       {authority:'development',role:'natural_path'},{authority:'development',role:'alternative_path'},{authority:'advice',role:'decision_basis'},{authority:'structural',role:'uncontrolled_condition'},
       {authority:'development',role:'natural_path'},{authority:'development',role:'alternative_path'},{authority:'advice',role:'decision_basis'},{authority:'structural',role:'uncontrolled_condition'}
     ],[[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]],[[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]],['state','cause','advice','trajectory','conditional_outcome','comparison_outcome','realization','domain_coverage','hidden','external','structural_depth'],['multi_domain','wide_overview'],'後世金色黎明衍生布局；牌義與尊貴仍鎖定 Book T'),
-    mathers_21: methodDef('mathers_21','Mathers 二十一張',21,new Array(21).fill(null).map(function(){return {authority:'structural',role:'ordered_narrative'};}),[range(0,7),range(7,14),range(14,21)],[range(0,7),range(7,14),range(14,21)],['state','antecedent','cause','trajectory','conditional_outcome','realization','narrative','hidden','external'],['narrative'],'Mathers 歷史布局；牌義與尊貴仍鎖定 Book T'),
-    mathers_horseshoe: methodDef('mathers_horseshoe','Mathers 五十四張',54,new Array(54).fill(null).map(function(){return {authority:'structural',role:'ordered_group'};}),[range(0,26),range(26,43),range(43,54)],[range(0,26),range(26,43),range(43,54)],['state','antecedent','cause','trajectory','conditional_outcome','realization','narrative','exhaustive','domain_coverage','hidden','external'],['exhaustive'],'Mathers 歷史布局；牌義與尊貴仍鎖定 Book T'),
+    mathers_21: methodDef('mathers_21','Mathers 二十一張',21,new Array(21).fill(null).map(function(){return {authority:'structural',role:'ordered_narrative'};}),[range(0,7),range(7,14),range(14,21)],[range(0,7),range(7,14),range(14,21)],['state','antecedent','cause','trajectory','conditional_outcome','realization','narrative','hidden','external'],['narrative'],'Mathers 1888 歷史程序；牌義依選定的 RWS 或 Golden Dawn，不等同1888原書牌義'),
+    mathers_horseshoe: methodDef('mathers_horseshoe','Mathers 五十四張',54,new Array(54).fill(null).map(function(){return {authority:'structural',role:'ordered_group'};}),[range(0,26),range(26,43),range(43,54)],[range(0,26),range(26,43),range(43,54)],['state','antecedent','cause','trajectory','conditional_outcome','realization','narrative','exhaustive','domain_coverage','hidden','external'],['exhaustive'],'Mathers 1888 歷史程序；牌義依選定的 RWS 或 Golden Dawn，不等同1888原書牌義'),
     ootk: methodDef('ootk','Opening of the Key 五次操作',null,new Array(5).fill(null).map(function(){return {authority:'stage',role:'operation_stage'};}),[],[],['state','antecedent','cause','obstacle','enabler','advice','trajectory','temporal_sequence','conditional_outcome','bounded_outcome','threshold_outcome','realization','dyad','hidden','external','annual_overview','domain_coverage','structural_depth','narrative','exhaustive'],['ootk','exhaustive'],'Golden Dawn《Book T／Liber T》程序')
   };
 
@@ -208,14 +208,14 @@
       [{type:'ordered_sequence',label:'第一排',indices:range(0,7),elementalDignity:true,instruction:'由右至左；代表牌在右側作共同起點。'},{type:'ordered_sequence',label:'第二排',indices:range(7,14),elementalDignity:true,instruction:'由右至左；不是第一排的時間續篇。'},{type:'ordered_sequence',label:'第三排',indices:range(14,21),elementalDignity:true,instruction:'由右至左；不是預設的未來／結果排。'},{type:'semantic_pairing',label:'首尾配對',pairs:mirrorPairs(0,21),elementalDignity:false,instruction:'配對補充連續答案省略的細節；配對不是左右相鄰。'},{type:'unpaired_member',label:'未配對第11張',indices:[10],elementalDignity:false,instruction:'仍屬整體答案，不是中心結果牌。'}],
       '本方法可由三排連續答案與配對整體作定性裁決，但沒有專屬結果位。',
       '連續答案是主線；配對用來補充、限定或在多組一致反證時修正主線，單一配對不得翻盤。',
-      '三排不自動等於過去、現在、未來，也不提供日期。','S. L. MacGregor Mathers 1888 第二法；牌義改用 Book T'),
+      '三排不自動等於過去、現在、未來，也不提供日期。','S. L. MacGregor Mathers 1888 第二法；牌義依本次讀牌方式，代表牌自動選法另見抽牌紀錄'),
     mathers_horseshoe: protocolDef('mathers_horseshoe','ordered_groups_with_mirror_pairs','sequence_member',
       '五十四張都只是A、C、E三組馬蹄序列成員，沒有五十四個獨立牌位。每組先由右至左形成connected answer，再由外向內配對；A、C、E依序讀，F組不讀。',
       ['A組26張由右至左形成第一個連續答案','A1↔A26至A13↔A14配對補充','C組17張同法，C9為未配對成員','E組11張同法，E6為未配對成員','比較C、E如何補充、修正或限定A，但不賦予時間／結果名稱'],
       [{type:'ordered_sequence',label:'A組',indices:range(0,26),elementalDignity:true,instruction:'由右至左讀成connected answer。'},{type:'semantic_pairing',label:'A組配對',pairs:mirrorPairs(0,26),elementalDignity:false,instruction:'A1↔A26至A13↔A14；配對不是元素相鄰。'},{type:'ordered_sequence',label:'C組',indices:range(26,43),elementalDignity:true,instruction:'由右至左讀成第二個connected answer。'},{type:'semantic_pairing',label:'C組配對',pairs:mirrorPairs(26,17),elementalDignity:false,instruction:'C1↔C17至C8↔C10；C9未配對。'},{type:'ordered_sequence',label:'E組',indices:range(43,54),elementalDignity:true,instruction:'由右至左讀成第三個connected answer。'},{type:'semantic_pairing',label:'E組配對',pairs:mirrorPairs(43,11),elementalDignity:false,instruction:'E1↔E11至E5↔E7；E6未配對。'}],
       '本方法以三組完整答案作定性綜合；A、C、E沒有原典授權的過去／現在／未來或最終結果身份。',
       '每組連續答案是主線，該組配對補細節；後組只能補充、修正或限定前組，不能把跨組單牌拼成新句。',
-      '牌組先後不是時間軸，牌張數與配對數也不是日期。','S. L. MacGregor Mathers 1888 第一法；牌義改用 Book T'),
+      '牌組先後不是時間軸，牌張數與配對數也不是日期。','S. L. MacGregor Mathers 1888 第一法；牌義依本次讀牌方式'),
     ootk: protocolDef('ootk','five_operation_procedure','procedure_stage',
       'Book T 開鑰之法是五次獨立洗牌與程序操作，不是一般牌陣，也不得與Mathers馬蹄法混用。',
       ['第一次：YHVH四堆、落點驗題、計數故事、配對故事','第二次：十二宮預選主宮／相近宮、計數與配對','第三次：十二星座預選落點、計數與配對','第四次：代表牌後方三十六牌環、計數與配對','第五次：生命之樹十堆、計數與配對、最終結果'],

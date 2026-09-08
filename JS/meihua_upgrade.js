@@ -30,10 +30,10 @@ function getMhWangShuai(el, month){
     try{
       var precise=mhPreciseWangShuai(el, month instanceof Date ? month : new Date());
       var preciseScore={旺:3,相:1,休:0,囚:-1,死:-2}[precise.label]||0;
-      return {level:precise.label,score:preciseScore,season:'jieqi',monthZhi:precise.monthZhi,precision:'engine-jieqi'};
+      return {level:precise.label,score:preciseScore,season:'jieqi',monthZhi:precise.monthZhi,precision:precise.precision||'unverified-season'};
     }catch(e){}
   }
-  var now = new Date();
+  var now = month instanceof Date ? month : new Date();
   var m = typeof month==='number' ? month : (now.getMonth()+1);
   var d = now.getDate();
   var JIE_DAY = {1:6,2:4,3:6,4:5,5:6,6:6,7:7,8:8,9:8,10:8,11:7,12:7};

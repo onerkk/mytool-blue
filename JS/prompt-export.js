@@ -186,7 +186,7 @@
       label: '開鑰之法',
       head: [
         '【任務】',
-        '你是一位熟悉 Golden Dawn Opening of the Key 的資深塔羅讀牌者。請運用你自身完整的 Book T、計數、配對與元素尊貴知識，綜合本次實際完成的五次操作，直接、深入且精準地回答問題。',
+        '你是一位熟悉 Golden Dawn Opening of the Key 的資深塔羅讀牌者。請運用你自身完整的 Book T、計數、配對與元素尊貴知識，綜合本次已完成的操作資料，直接、深入且精準地回答問題。',
         '',
         '【解讀方法】',
         '開鑰之法是五次相互承接的獨立操作。先讀每次操作的代表牌落點、計數故事、配對故事與元素尊貴，再依第一次至第五次的階段功能整合；若程序中止，就分析實際完成的部分與其意義。',
@@ -194,7 +194,7 @@
         '【輸出】',
         '使用繁體中文。第一句直接回答原問句，再依操作階段說清主線、支持、反證、發展、條件、行動與可驗證訊號；避免逐步抄錄所有牌。'
       ].join('\n'),
-      dataHeader: '六、以下是排好的五次操作資料',
+      dataHeader: '六、以下是本次實際操作資料',
       tail: '請依資料區實際完成的 Opening of the Key 操作與你自身的 Golden Dawn 知識完成綜合解讀。'
     }
   };
@@ -296,6 +296,7 @@
     var plan=obj.methodPlan||td.methodPlan||null;
     var protocol=(plan&&plan.protocol)||((foundation&&typeof foundation.getMethodProtocol==='function')?foundation.getMethodProtocol(spreadId):null);
     var cards=td.cards||obj.cards||[];
+    var isRWS=td.sourceProfile==='rws_reversals';
     var slots=(plan&&plan.slots)||[];
     var lines=[BAR,'◆ 本次方法資料（提供閱讀上下文，不替 AI 預判答案）',BAR];
 
@@ -324,6 +325,10 @@
     if(protocol.sourceNote)lines.push('來源定位：'+protocol.sourceNote+'。');
     lines.push('方法摘要：'+protocol.summary);
     lines.push('閱讀順序：'+(protocol.phases||[]).join(' → ')+'。');
+    if(protocol.conclusionRule)lines.push('結果整合：'+protocol.conclusionRule);
+    if(protocol.conflictRule)lines.push('矛盾處理：'+protocol.conflictRule);
+    if(protocol.timeRule)lines.push('時間邊界：'+protocol.timeRule);
+    if(isRWS)lines.push('本次採 RWS 正逆位，以下沿用牌陣結構；Book T 元素尊貴不參與本次強弱裁決。');
 
     if(tool==='tarot'){
       lines.push('');
@@ -351,12 +356,12 @@
         });
       }
 
-      if(plan&&Array.isArray(plan.dignityLines)&&plan.dignityLines.length){
+      if(!isRWS&&plan&&Array.isArray(plan.dignityLines)&&plan.dignityLines.length){
         lines.push('');
         lines.push('真正有序相鄰線（用於完整元素尊貴）：');
         plan.dignityLines.forEach(function(path,i){lines.push('・相鄰線'+(i+1)+'：'+seq(path));});
-      }else{
-        lines.push('真正有序相鄰線：本方法資料未聲明，可依牌陣原法判斷並標示依據。');
+      }else if(!isRWS){
+        lines.push('真正有序相鄰線：本方法資料未聲明；本次不計算完整元素尊貴，仍依各牌位與語義互動解讀。');
       }
       if(plan&&Array.isArray(plan.compatibilityEdges)&&plan.compatibilityEdges.length){
         lines.push('其他語義互動：');
@@ -373,6 +378,7 @@
 
 
   // 圖像與 Book T 對應可相互補充，資料來源不同時清楚標示視角。
+  window.JY_buildSpreadReadingGuide = buildSpreadReadingGuide;
   function getImageryReq() {
     return '可結合本次牌圖中的人物、方向、場景與象徵作補充，並與 Golden Dawn Book T 的牌義、占星對應和元素尊貴交叉分析；兩者不同時請標明視角。';
   }
@@ -635,6 +641,10 @@
     L.push('牌陣：' + (td.spreadZh || td.spreadType || '未指定') + '（' + cards.length + '張）');
     L.push('主要資料來源：Golden Dawn《Book T／Liber T》〔gd_book_t〕；可用你自身可靠的塔羅知識交叉補充並標明體系差異。');
     L.push('牌面方向：一般牌陣正向展示；元素尊貴以明示有序連續線為主，其他連線依其牌陣語義解讀。');
+    if(td.drawProcedure){
+      L.push('抽牌程序：'+td.drawProcedure.description);
+      if(td.drawProcedure.significator)L.push('代表牌：'+td.drawProcedure.significator.name+'；'+td.drawProcedure.significator.policy);
+    }
     L.push('');
     L.push('抽到的牌：');
     var methodPlan=td.methodPlan||null;
@@ -696,6 +706,7 @@
     L.push('方法：Golden Dawn《Book T／Liber T》Opening of the Key 五次操作');
     L.push('布局與主要程序來源：Golden Dawn《Book T／Liber T》Opening of the Key；請運用你自身可靠的 Golden Dawn 知識交叉分析。');
     L.push('代表牌：'+(sig.name||sig.n||safeText(sig)||'未提供'));
+    if(od.castTimestamp)L.push('本次程序建立時間（UTC）：'+od.castTimestamp+'；只作本次紀錄，不是事件應期。');
     if(od.predeclaredBindings)L.push('發牌前綁定：'+safeText(od.predeclaredBindings));
     if(od.procedureStatus){
       L.push('程序狀態：'+safeText(od.procedureStatus));
@@ -719,8 +730,8 @@
       if(o.activeSephirah)L.push('代表牌落生命樹：'+o.activeSephirah+(o.sephirahZh?'（'+o.sephirahZh+'）':'')+(o.sephirahMeaning?'——'+o.sephirahMeaning:''));
       if(o.ringSize)L.push('三十六牌環：'+o.ringSize+'張。');
       if(o.activeCards&&o.activeCards.length)L.push('活躍牌：'+o.activeCards.map(function(c){return cn(c)+(c.bookTTitle?'〔'+c.bookTTitle+'〕':'');}).join('、'));
-      if(o.countingPath&&o.countingPath.length)L.push('計數故事（依序）：'+o.countingPath.map(function(s){return (s.cardName||'?')+'〔計'+s.countValue+'〕';}).join(' → '));
-      if(o.ringCountingPath&&o.ringCountingPath.length&&o.ringCountingPath!==o.countingPath)L.push('環形計數：'+o.ringCountingPath.map(function(s){return (s.cardName||'?')+'〔計'+s.countValue+'〕';}).join(' → '));
+      var counting=o.ringCountingPath&&o.ringCountingPath.length?o.ringCountingPath:o.countingPath;
+      if(counting&&counting.length)L.push('計數故事（依序，位置自0編號）：'+counting.map(function(s){return (s.cardName||'?')+'〔位置'+s.position+'，計'+s.countValue+(s.direction?'，方向'+s.direction:'')+'〕';}).join(' → '));
       var pairs=(o.ringPairing&&o.ringPairing.length)?o.ringPairing:o.pairs;
       if(pairs&&pairs.length)L.push('配對故事（由近到遠）：'+pairs.map(function(pr,i){return '#'+(i+1)+' '+cn(pr.left)+(pr.right?'↔'+cn(pr.right):'')+(pr.dignity?'〔'+pr.dignity+'〕':'');}).join('；'));
       if(o.dignities&&o.dignities.length)L.push('元素尊貴：'+safeText(o.dignities));
@@ -728,11 +739,13 @@
       if(o.expectationNote)L.push('位置適配：'+o.expectationNote);
     });
     var seen={};
-    Object.keys(ops).forEach(function(k){(ops[k].activeCards||[]).forEach(function(c){if(c&&c.name)seen[c.name]=1;});});
-    if(sig.name)seen[sig.name]=1;
+    Object.keys(ops).forEach(function(k){(ops[k].activeCards||[]).forEach(function(c){if(c&&c.name)seen[c.name]=c;});});
+    L.push('【本次活躍牌的牌義底稿（相同牌只列一次，各操作分開解讀）】');
+    Object.keys(seen).forEach(function(name){var c=seen[name];L.push('・'+name+'｜元素 '+(c.element||'未提供')+'｜核心 '+(c.coreMeaning||'未提供')+'｜得尊貴 '+(c.wellDignified||'未提供')+'｜失尊貴 '+(c.illDignified||'未提供')+(c.correspondence?'｜對應 '+c.correspondence:''));});
+    if(sig.name&&!seen[sig.name])seen[sig.name]=sig;
     var legal=Object.keys(seen);
     if(legal.length){L.push('');L.push('【合法牌名】'+legal.join('、'));}
-    L.push('【計數說明】計數值用於導航牌序；現實時間與數量仍需其他牌面或資料支持。');
+    L.push('【計數說明】包含起算牌；宮廷國王／皇后／王子=4、公主=7、Aces=11、小牌依牌號、大牌依元素／行星／黃道=3／9／12。計數值只導航牌序，不量測現實時間或數量。元素尊貴衡量作用力度，力度強不自動等於吉利；配對故事與計數故事先各自成立再比較。');
     return L.join('\n');
   }
 
@@ -741,9 +754,11 @@
     try {
       var obj = null;
       function _callBuilder(name) {
-        try { var fn = (0, eval)('typeof ' + name + ' === "function" ? ' + name + ' : null'); if (fn) return fn(); } catch (e) {}
-        try { if (typeof window !== 'undefined' && typeof window[name] === 'function') return window[name](); } catch (e) {}
-        return null;
+        var fn=null;
+        try { fn = (0, eval)('typeof ' + name + ' === "function" ? ' + name + ' : null'); } catch (e) {}
+        if(!fn&&typeof window!=='undefined')fn=window[name];
+        // A failed builder is incomplete data, never a second draw/retry through an alias.
+        return typeof fn==='function'?fn():null;
       }
       if (tool === 'ootk') obj = _callBuilder('_buildOOTKPayload');
       else if (tool === 'ziwei') obj = (typeof window !== 'undefined' && window.S && window.S.ziwei) ? window.S.ziwei : null;
@@ -774,8 +789,10 @@
   function buildPrompt(tool) {
     var t = TPL[tool];
     if (!t) return '';
-    var question = getQuestion();
     var rawPayload = getPayloadObject(tool);
+    if(!rawPayload)return '';
+    if(rawPayload.mode==='ootk'||rawPayload.ootkData){tool='ootk';t=TPL.ootk;}
+    var question = String(rawPayload.question||getQuestion());
     var payload = formatPayloadObject(tool, rawPayload);
     var rws=tool==='tarot'&&rawPayload.tarotData&&rawPayload.tarotData.sourceProfile==='rws_reversals'&&window.JYTarotReading;
     var isRootTarot = (tool === 'tarot' || tool === 'ootk');
@@ -787,7 +804,10 @@
       '先分清輸入的盤面事實、流派解釋與現實假設。可自由運用自身知識補充技法；若原始資料與摘要衝突，指出具體差異，以可核對的原始資料為先。結論要有支持、反向訊號與成立條件；象徵不等於事件證明，分數不等於成功機率。',
       '題目中的假設與已確認事實分開；例如問某人是否欺騙，先檢視支持與其他解釋，再提出可觀察的互動訊號。牌位、計數值和傳統對應不直接換算成中獎機率、精確年齡或日期。',
       rws?rws.promptHead():t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
-      rws?rws.guide(rawPayload.tarotData):buildSpreadReadingGuide(tool, rawPayload),
+      buildSpreadReadingGuide(tool, rawPayload),
+      '【分析深度】每個主要結論說明「本盤具體牌位／牌組 → 相互修飾或牽制 → 對原問題的含義 → 成立條件」。用全盤比較最有力的替代解讀；區分描述現況、預期發展和建議行動，不把建議牌當成事情已發生。每個子題均回應，不能確認的部分明說依據不足。',
+      (tool==='tarot'?'方法參考：Waite 凱爾特十字 https://sacred-texts.com/tarot/pkt/pkt0307.htm；Mathers 1888 https://sacred-texts.com/tarot/mathers/mtar04.htm。現代布局與本次選用的牌義流派分開標示；書目不表示本次 AI 已即時查網。':''),
+      (tool==='ootk'?'程序參考：Liber LXXVIII https://sacred-texts.com/oto/lib78.htm。這是可核對的 Golden Dawn 衍生修訂文本，不與 Mathers 1888《The Tarot》混為同一本書。各次操作的現在時點並非固定，不能將五次操作硬配五個月份；尚未確認的第一操作主線不能說成已獲問卜者認可。':''),
       sourceLock,
       uncertainty,
       '',
@@ -798,7 +818,7 @@
       '問卜者的問題：',
       question,
       '',
-      (tool === 'ootk' ? '占卜日期：' + new Date().toISOString().slice(0, 10) + '\n' : ''),
+      (tool === 'tarot' && rawPayload.tarotData && rawPayload.tarotData.referenceDate ? '問題時間基準：'+rawPayload.tarotData.referenceDate+'（依建立本輪問題時的本地日期）；今年、下月等相對詞以此為錨。' : ''),
       payload,
       '',
       rws?'請依實際正逆位、牌位關係與前述情境完成分析，回答原問句並說明行動與條件。':t.tail,
@@ -905,9 +925,10 @@
     ensureFx();
     var t = TPL[tool] || { label: '命理' };
     var prompt = buildPrompt(tool);
+    if(!prompt){el.textContent='本次資料尚未完整，請先完成抽牌／排盤，再產生解讀提示詞。';return;}
     var emblem = (tool === 'ootk') ? '🗝️' : (tool === 'ziwei' ? '🪐' : (tool === 'meihua' ? '☯️' : '🔮'));
 
-    // 全站固定單一牌義來源，移除舊版RWS／Waite切換，避免同一牌陣因入口不同而漂移。
+    // 本輪讀法由抽牌紀錄決定，結果頁不重新切換牌義來源。
     var toggleHTML = (tool === 'tarot' || tool === 'ootk')
       ? '<div class="jy-ex-srcwrap">讀牌方式：<span class="jy-src-btn on">'+(tool==='tarot'&&prompt.indexOf('Rider–Waite–Smith')>=0?'RWS・正逆位':'Golden Dawn Book T')+'</span></div>'
       : '';
@@ -919,7 +940,7 @@
       '<div class="jy-ex-emblem">' + emblem + '</div>' +
       '<div class="jy-ex-title">' + t.label + '・占卜提示詞已備妥</div>' +
       '<div class="jy-ex-sub">輕觸下方按鈕複製，貼到任何 AI 對話（<b>ChatGPT・Claude・Gemini・Grok</b>）送出，' +
-        '即可得到一份完整深入的命理解讀。<br>提示詞已封入本次工具所需的正統技法與排盤資料，無需再多做說明。</div>' +
+        '即可依本次資料進行深入解讀。<br>提示詞包含牌陣讀法、流派設定、排盤資料與需要保留的不確定處。</div>' +
       toggleHTML +
       '<button type="button" class="jy-ex-btn">✦ 一鍵複製占卜提示詞 ✦</button>' +
       '<div class="jy-ex-ai-grid">' +

@@ -504,6 +504,8 @@ function _lnPushReaderKernel(lines) {
   lines.push('相鄰牌是最小句法；主題、動作、修飾、條件與落點由原問句、牌序及更長路徑共同決定。');
   lines.push('先讀相鄰組合，再逐張加入並重讀整句；同一牌可在交會路徑中連結不同層面，但只使用本牌陣真實存在的連線。');
   lines.push('結論強度看整條證據鏈：分清可能、推進、落實、穩定、停滯與結束，並保留會改變結果的阻力或條件。');
+  lines.push('每條關鍵牌句先說主題與修飾的方向，再解釋加入中間牌後如何改變原意；比較最有力的另一種讀法並交代取捨，不能只串接吉凶關鍵字。共同節點在不同線出現是交會，不是多份獨立證據。');
+  lines.push('宮位是落入牌的背景修飾；人物周圍、鏡像及騎士步是不同關係。只在資料提供相應幾何時使用，不把不相鄰的牌稱為相鄰；中心與末排的功能以本次牌陣設定為準，不自動換算成日期。');
   lines.push('</牌句建模原則>');
   lines.push('');
   lines.push('<系統設定>');
@@ -621,6 +623,7 @@ function _lnPushBrandModule(lines) {
 
 function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   var sp = SPREADS[spreadId];
+  if(!sp||!Array.isArray(drawn)||drawn.length!==sp.count||drawn.some(function(c){return !c||!Number.isInteger(c.id)||c.id<1||c.id>36||!c.name;})||new Set(drawn.map(function(c){return c.id;})).size!==drawn.length)throw new Error('雷諾曼牌陣未完成或牌面資料重複，請重新抽牌');
   var lines = [];
   var legalNames = drawn.map(function(c){ return c.name; });
   var personRepId = _lnPersonRepId(declaredGender);
@@ -642,6 +645,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
 
   lines.push('先分清輸入的盤面事實、流派解釋與現實假設。可自由運用自身知識補充技法；若原始資料與摘要衝突，指出具體差異，以可核對的原始資料為先。結論要有支持、反向訊號與成立條件；象徵不等於事件證明，分數不等於成功機率。');
   lines.push('雷諾曼以本次牌序形成組合語法；指示牌有明確角色才綁定。蛇、狐狸、棺材等象徵先依題目及相鄰牌分辨情境，不憑單牌認定第三者、欺騙、疾病或死亡。');
+  lines.push('方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。宮位與幾何有各家變體，本次以已提供的4×8＋4設定為準；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId);
   _lnPushCardData(lines, drawn, sp);
