@@ -1,1 +1,63 @@
-
+{
+  "baseline": "mytool-blue-master.zip",
+  "baselineSha256": "5d688621447fc04c7e808048dae57c2126860eda37f5b2f00d5de3e519b62a6d",
+  "checks": [
+    {
+      "name": "npm test",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "timezone": null,
+      "exitCode": 0
+    },
+    {
+      "name": "audit Asia/Taipei",
+      "command": [
+        "node",
+        "tests/divination-audit-20260908.cjs"
+      ],
+      "timezone": "Asia/Taipei",
+      "exitCode": 0
+    },
+    {
+      "name": "audit America/New_York",
+      "command": [
+        "node",
+        "tests/divination-audit-20260908.cjs"
+      ],
+      "timezone": "America/New_York",
+      "exitCode": 0
+    }
+  ],
+  "syntaxChecked": [
+    "JS/ai-analysis.js",
+    "JS/bazi-prompt-root.js",
+    "JS/bazi-suite-core.js",
+    "JS/lenormand.js",
+    "JS/meihua-standalone.js",
+    "JS/meihua_upgrade.js",
+    "JS/meihua_upgrade2.js",
+    "JS/oracle.js",
+    "JS/prompt-export.js",
+    "JS/spread-picker.js",
+    "JS/sw.js",
+    "JS/tarot-foundation.js",
+    "JS/tarot-reading.js",
+    "JS/tarot_upgrade.js",
+    "JS/ui.js",
+    "JS/ziwei-prompt-root.js",
+    "JS/ziwei-standalone.js",
+    "functions/api/ai.js",
+    "meihua-standalone.js",
+    "tests/divination-audit-20260908.cjs",
+    "tests/prompt-accuracy-20260811.test.cjs",
+    "tests/ziwei-root-spec-v1.test.js"
+  ],
+  "localScriptAndStylesheetReferences": 37,
+  "missingLocalEntryAssets": [],
+  "meihuaCopiesIdentical": true,
+  "browserPixelValidation": false,
+  "liveAIRequests": false,
+  "deployed": false
+}
