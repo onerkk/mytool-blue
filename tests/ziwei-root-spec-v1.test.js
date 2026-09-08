@@ -41,7 +41,7 @@ function load(rel){
 
 load('JS/ziwei-prompt-root.js');
 assert(ctx.JY_ZIWEI_PROMPT_ROOT, 'root api missing');
-assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '3.1.0');
+assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '4.0.0');
 
 const head = ctx.JY_ZIWEI_PROMPT_ROOT.composeHead();
 const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
@@ -49,14 +49,14 @@ const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
   '運用你自身完整的命理知識', '實際三方四正', '星曜組合與廟旺',
   '三合派作整體骨架', '宮干飛化、自化與來因宮',
   '原局看長期底色', '前端摘要或模型標籤', '延伸選品'
-].forEach(x => assert((head + tail).includes(x), 'missing v3 principle: ' + x));
+].forEach(x => assert((head + tail).includes(x), 'missing v4 principle: ' + x));
 [
   '化忌沖命就是卡', '空宮無主就是飄', '配偶年齡差：由夫妻宮主星',
   '公司場合確實可能成為緣分來源', '2029年是定案年'
 ].forEach(x => assert(!(head + tail).includes(x), 'legacy/answer patch remains: ' + x));
 assert(!(head + tail).includes('ROOT-SPEC'));
 assert(!(head + tail).includes('證據帳本'));
-assert((head + tail).length < 5000, 'v3 root should stay concise');
+assert((head + tail).length < 5000, 'v4 root should stay concise');
 assert(tail.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));
 assert(tail.includes('願你諸事順遂。'));
 
@@ -113,4 +113,4 @@ assert(!standaloneSource.includes('配偶年齡差：由夫妻宮主星'));
 
 assert(!prompt.includes('答案反向稽核'));
 assert(!prompt.includes('禁止重複計票'));
-console.log('ziwei-root-spec-v3: all assertions passed');
+console.log('ziwei-root-spec-v4: all assertions passed');
