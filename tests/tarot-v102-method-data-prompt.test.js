@@ -18,7 +18,7 @@ function prompt(id,q='今年有肉體桃花的機率有多高'){
   ctx.window=ctx;ctx.self=ctx;ctx.globalThis=ctx;vm.createContext(ctx);vm.runInContext(fs.readFileSync(path.join(ROOT,'JS/prompt-export.js'),'utf8'),ctx);return ctx.JY_buildExportPrompt('tarot');
 }
 
-test('foundation upgraded to method-data schema',()=>{assert.equal(F.VERSION,'102.0.0');assert.equal(F.SCHEMA,'jy.tarot.foundation/6');assert.deepEqual(F.validateMethodRegistry(),{ok:true,errors:[]});});
+test('foundation upgraded to method-data schema',()=>{assert.equal(F.VERSION,'103.0.0');assert.equal(F.SCHEMA,'jy.tarot.foundation/6');assert.deepEqual(F.validateMethodRegistry(),{ok:true,errors:[]});});
 test('export prompt no longer exposes query graph, ROOT-SPEC, capability gate or claim ledger',()=>{const p=prompt('five_card');['ROOT-SPEC','型別化查詢圖','觀測能力預檢','裁決閘門','命題帳本','語義飽和帳本','合法證據單位'].forEach(x=>assert(!p.includes(x),x));});
 test('prompt invites the AI to use its own tarot knowledge while keeping method data',()=>{const p=prompt('five_card');assert(p.includes('運用你自身完整的塔羅知識'));assert(p.includes('提供閱讀上下文，不替 AI 預判答案'));assert(p.includes('方法資料是閱讀上下文，不是預先寫好的答案'));assert(p.includes('圖像描述須來自本次實際牌圖'));assert(p.includes('Book T 元素尊貴'));});
 test('five-card network is rendered as named relations, never a fake 2→1→3→4→5 chain',()=>{const p=prompt('five_card');assert(p.includes('形成機制影響現況'));assert(p.includes('主要限制與現況互相作用'));assert(p.includes('前述條件共同限定結果'));assert(!p.includes('第2張「聖杯七」 → 第1張「寶劍四」 → 第3張「審判」 → 第4張「金幣皇后」 → 第5張「聖杯五」'));});
