@@ -1,1 +1,81 @@
-
+{
+  "release": "20260910professional1",
+  "validated_at_utc": "2026-09-10T23:23:41.021587+00:00",
+  "suites": [
+    {
+      "suite": "test:prompts",
+      "command": "node tests/prompt-accuracy-20260811.test.cjs",
+      "exit_code": 0,
+      "seconds": 0.54,
+      "log": "test-prompts.log"
+    },
+    {
+      "suite": "test:tarot",
+      "command": "node tests/tarot-v102-method-data-prompt.test.js",
+      "exit_code": 0,
+      "seconds": 0.27,
+      "log": "test-tarot.log"
+    },
+    {
+      "suite": "test:ziwei",
+      "command": "node tests/ziwei-root-spec-v1.test.js",
+      "exit_code": 0,
+      "seconds": 0.06,
+      "log": "test-ziwei.log"
+    },
+    {
+      "suite": "test:counter",
+      "command": "node tests/counter-proxy.test.mjs",
+      "exit_code": 0,
+      "seconds": 0.06,
+      "log": "test-counter.log"
+    },
+    {
+      "suite": "test:picker-data",
+      "command": "node tests/picker-and-data-regression.cjs",
+      "exit_code": 0,
+      "seconds": 0.53,
+      "log": "test-picker-data.log"
+    },
+    {
+      "suite": "test:api-failures",
+      "command": "node tests/api-failure-regression.mjs",
+      "exit_code": 0,
+      "seconds": 0.09,
+      "log": "test-api-failures.log"
+    },
+    {
+      "suite": "test:interactions",
+      "command": "node tests/interaction-hotfix-20260906.cjs",
+      "exit_code": 0,
+      "seconds": 0.7,
+      "log": "test-interactions.log"
+    },
+    {
+      "suite": "test:display",
+      "command": "node tests/display-lifecycle-regression.cjs",
+      "exit_code": 0,
+      "seconds": 0.15,
+      "log": "test-display.log"
+    },
+    {
+      "suite": "test:audit",
+      "command": "node tests/divination-audit-20260908.cjs",
+      "exit_code": 0,
+      "seconds": 2.87,
+      "log": "test-audit.log"
+    },
+    {
+      "suite": "test:professional",
+      "command": "node tests/divination-professional-20260910.cjs",
+      "exit_code": 0,
+      "seconds": 1.42,
+      "log": "test-professional.log"
+    }
+  ],
+  "changed_js_syntax_files": 18,
+  "syntax_check": "acorn parse: scripts and API module passed",
+  "professional_regression_groups": 14,
+  "routing_cases": 56,
+  "verification_scope": "offline runtime, real draw/export data and geometry; no paid AI calls, external Worker updates or predictive-accuracy validation"
+}
