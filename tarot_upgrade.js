@@ -1,0 +1,6024 @@
+// ══════════════════════════════════════════════════════════════════════
+// 🃏 Golden Dawn Tarot runtime — Foundation Root Architecture v98
+// 單一方法註冊表 · Book T 牌義來源防火牆 · 牌陣拓撲／元素尊貴分離
+// ══════════════════════════════════════════════════════════════════════
+// 載入順序：tarot.js 之後
+// enhanceTarot(S.tarot) 在塔羅抽牌後呼叫
+
+
+// ── OOTK Op5 Sephiroth constants (global-safe) ──
+// v69.29.5: 修正 OOTK 計算流程中 SEPH_NAMES_5 可能因區塊/函式作用域或快取差異而未定義。
+// 使用 var 掛在檔案頂層，避免前端抽牌引擎在 Op5 生命之樹階段 ReferenceError 中斷。
+var SEPH_NAMES_5 = ['Kether','Chokmah','Binah','Chesed','Geburah','Tiphereth','Netzach','Hod','Yesod','Malkuth'];
+var SEPH_ZH_5 = ['王冠','智慧','理解','慈悲','嚴厲','美','勝利','榮耀','基礎','王國'];
+function normalizeOotkSephirahName(name) {
+  if (!name) return '';
+  // 常見拼法差異：Tiphereth / Tiphareth 都指第六質點。
+  if (name === 'Tiphareth') return 'Tiphereth';
+  return String(name);
+}
+
+// ── 1. 牌號數字學 (Numerology) ──
+// 大阿爾克那 0-21 每張的數字意義
+// 小阿爾克那 Ace-10 + 宮廷牌的數字意義
+
+var TAROT_NUMEROLOGY = {
+  0: {zh:'零/愚者數', meaning:'無限可能、新的循環起點、純粹的潛能'},
+  1: {zh:'一/魔術師數', meaning:'開始、意志力、個體化、主動創造'},
+  2: {zh:'二/女祭司數', meaning:'二元、平衡、直覺、等待、合作'},
+  3: {zh:'三/女皇數', meaning:'創造、豐盛、表達、成長、三位一體'},
+  4: {zh:'四/皇帝數', meaning:'穩定、結構、秩序、基礎、務實'},
+  5: {zh:'五/教皇數', meaning:'變動、衝突、挑戰、自由、學習'},
+  6: {zh:'六/戀人數', meaning:'和諧、責任、選擇、愛、美'},
+  7: {zh:'七/戰車數', meaning:'反思、神秘、內在探索、信仰、勝利'},
+  8: {zh:'八/力量數', meaning:'力量、掌控、業力、無限、物質'},
+  9: {zh:'九/隱者數', meaning:'完成、智慧、獨處、人道、轉化'},
+  10: {zh:'十/命運數', meaning:'循環結束、回歸、重新開始、命運'},
+  // 11-21：總和化約後落在 11-22 區間時對應大牌（quintessence 慣例；22 在程式中映射回 0 愚者）
+  11: {zh:'十一/正義數', meaning:'平衡裁決、因果對帳、誠實面對現實'},
+  12: {zh:'十二/吊人數', meaning:'暫停、換視角、以等待或讓步換取洞見'},
+  13: {zh:'十三/死神數', meaning:'一個階段確定結束、斷捨後才有新局'},
+  14: {zh:'十四/節制數', meaning:'調和比例、節奏管理、過與不及都需修正'},
+  15: {zh:'十五/惡魔數', meaning:'慾望與執著的束縛、被現實條件綁住'},
+  16: {zh:'十六/高塔數', meaning:'結構性突變、舊架構崩解後重建'},
+  17: {zh:'十七/星星數', meaning:'修復與希望、放長線的願景'},
+  18: {zh:'十八/月亮數', meaning:'不明朗、資訊不足、疑慮與潛流'},
+  19: {zh:'十九/太陽數', meaning:'明朗化、活力、成果可見'},
+  20: {zh:'二十/審判數', meaning:'總結算、覺醒、對過往做出回應與了結'},
+  21: {zh:'二十一/世界數', meaning:'整合完成、一個大循環圓滿收束'}
+};
+
+function tarotNumerologyAnalysis(drawn) {
+  // Source firewall: ordinary Book T readings do not use the site's former
+  // arbitrary reduction/quintessence routine as divinatory evidence.
+  return null;
+}
+
+
+// ── 2. 多牌陣支持 ──
+
+// 三牌陣（過去-現在-未來）
+function tarotThreeCardSpread(drawn, type) {
+  if (!drawn || drawn.length < 3) return null;
+
+  var positions = [
+    {name: '過去', zh: '過去（影響你走到這裡的因素）', card: drawn[0]},
+    {name: '現在', zh: '現在（你正在經歷的核心能量）', card: drawn[1]},
+    {name: '未來', zh: '未來（如果保持現狀的走向）', card: drawn[2]}
+  ];
+
+  // 時間軸元素分析
+  var els = positions.map(function(p) { return p.card ? (p.card.el || '') : ''; });
+  var allSame = els[0] === els[1] && els[1] === els[2] && els[0] !== '';
+  var narrative = '';
+  if (allSame) narrative = '三張牌同為' + els[0] + '元素，整個時間軸由同一股能量貫穿';
+
+  return {
+    type: 'three_card',
+    zh: '三牌陣（過去-現在-未來）',
+    positions: positions,
+    elementNarrative: narrative
+  };
+}
+
+// 五牌十字陣
+function tarotCrossSpread(drawn, type) {
+  if (!drawn || drawn.length < 5) return null;
+
+  return {
+    type: 'cross',
+    zh: '十字牌陣',
+    positions: [
+      {name: '現狀', zh: '現在的處境', card: drawn[0]},
+      {name: '挑戰', zh: '面臨的挑戰或阻礙', card: drawn[1]},
+      {name: '過去', zh: '過去的影響', card: drawn[2]},
+      {name: '未來', zh: '未來的發展趨勢', card: drawn[3]},
+      {name: '建議', zh: '最佳行動建議', card: drawn[4]}
+    ]
+  };
+}
+
+// 馬蹄形牌陣（7張）
+function tarotHorseshoeSpread(drawn, type) {
+  if (!drawn || drawn.length < 7) return null;
+
+  return {
+    type: 'horseshoe',
+    zh: '馬蹄形牌陣',
+    positions: [
+      {name: '過去', zh: '過去的影響', card: drawn[0]},
+      {name: '現在', zh: '目前的處境', card: drawn[1]},
+      {name: '隱藏影響', zh: '你可能忽略的因素', card: drawn[2]},
+      {name: '環境', zh: '周圍人的影響', card: drawn[3]},
+      {name: '態度', zh: '你應採取的態度', card: drawn[4]},
+      {name: '行動', zh: '建議的具體行動', card: drawn[5]},
+      {name: '結果', zh: '最可能的結果', card: drawn[6]}
+    ]
+  };
+}
+
+
+// ── 3. 卡巴拉生命之樹對應 ──
+// 大阿爾克那與生命之樹 22 條路徑的對應
+
+var TAROT_KABBALAH = {
+  0:  {path:'11', sephirot:'Kether→Chokmah',     zh:'王冠→智慧',   letter:'Aleph',  meaning:'神聖的愚者，純粹意識的飛躍'},
+  1:  {path:'12', sephirot:'Kether→Binah',        zh:'王冠→理解',   letter:'Beth',   meaning:'創造的意志，將神性轉化為形式'},
+  2:  {path:'13', sephirot:'Kether→Tiphereth',    zh:'王冠→美',     letter:'Gimel',  meaning:'跨越深淵的橋樑，直覺的通道'},
+  3:  {path:'14', sephirot:'Chokmah→Binah',       zh:'智慧→理解',   letter:'Daleth', meaning:'豐盛之門，創造與接收的結合'},
+  4:  {path:'15', sephirot:'Chokmah→Tiphereth',   zh:'智慧→美',     letter:'He',     meaning:'靈性的窗口，內在教導'},
+  5:  {path:'16', sephirot:'Chokmah→Chesed',      zh:'智慧→慈悲',   letter:'Vav',    meaning:'靈魂的選擇，上下的連結'},
+  6:  {path:'17', sephirot:'Binah→Tiphereth',     zh:'理解→美',     letter:'Zain',   meaning:'對立的結合，關係的考驗'},
+  7:  {path:'18', sephirot:'Binah→Geburah',       zh:'理解→嚴厲',   letter:'Cheth',  meaning:'意志的戰車，突破限制'},
+  8:  {path:'19', sephirot:'Chesed→Geburah',      zh:'慈悲→嚴厲',   letter:'Teth',   meaning:'愛的力量，馴服內在野獸'},
+  9:  {path:'20', sephirot:'Chesed→Tiphereth',    zh:'慈悲→美',     letter:'Yod',    meaning:'孤獨的智者，內在之光'},
+  10: {path:'21', sephirot:'Chesed→Netzach',      zh:'慈悲→勝利',   letter:'Kaph',   meaning:'命運之輪，業力的循環'},
+  11: {path:'22', sephirot:'Geburah→Tiphereth',   zh:'嚴厲→美',     letter:'Lamed',  meaning:'因果的天平，宇宙的正義'},
+  12: {path:'23', sephirot:'Geburah→Hod',         zh:'嚴厲→榮耀',   letter:'Mem',    meaning:'犧牲與臣服，水的洗禮'},
+  13: {path:'24', sephirot:'Tiphereth→Netzach',   zh:'美→勝利',     letter:'Nun',    meaning:'死亡與重生，根本的轉化'},
+  14: {path:'25', sephirot:'Tiphereth→Yesod',     zh:'美→基礎',     letter:'Samekh', meaning:'節制與調和，天使的道路'},
+  15: {path:'26', sephirot:'Tiphereth→Hod',       zh:'美→榮耀',     letter:'Ayin',   meaning:'物質的誘惑，陰影的面對'},
+  16: {path:'27', sephirot:'Netzach→Hod',         zh:'勝利→榮耀',   letter:'Peh',    meaning:'雷擊塔，舊結構的摧毀'},
+  17: {path:'28', sephirot:'Netzach→Yesod',       zh:'勝利→基礎',   letter:'Tzaddi', meaning:'星星的希望，靈性的引導'},
+  18: {path:'29', sephirot:'Netzach→Malkuth',     zh:'勝利→王國',   letter:'Qoph',   meaning:'月亮的幻象，潛意識的旅程'},
+  19: {path:'30', sephirot:'Hod→Yesod',           zh:'榮耀→基礎',   letter:'Resh',   meaning:'太陽的光輝，意識的覺醒'},
+  20: {path:'31', sephirot:'Hod→Malkuth',         zh:'榮耀→王國',   letter:'Shin',   meaning:'最後的審判，靈魂的覺醒'},
+  21: {path:'32', sephirot:'Yesod→Malkuth',       zh:'基礎→王國',   letter:'Tav',    meaning:'世界的完成，宇宙之舞'}
+};
+
+// 大牌正名→路徑索引（Book T：22 路徑只屬 22 張大牌 trump；小牌對應單一質點、無路徑）
+var KABBALAH_MAJOR_IDX = {'愚者':0,'魔術師':1,'女祭司':2,'皇后':3,'皇帝':4,'教皇':5,'戀人':6,'戰車':7,'力量':8,'隱者':9,'命運之輪':10,'正義':11,'吊人':12,'死神':13,'節制':14,'惡魔':15,'塔':16,'星星':17,'月亮':18,'太陽':19,'審判':20,'世界':21};
+function tarotKabbalahAnalysis(drawn) {
+  if (!drawn || !drawn.length) return [];
+  var gd = (typeof window !== 'undefined') ? window.JYGoldenDawn : null;
+  if (!gd || typeof gd.profile !== 'function') return [];
+  var results = [];
+  drawn.forEach(function(card) {
+    var p = gd.profile(card);
+    if (!p || p.kind !== 'major') return;
+    results.push({
+      cardName: p.name,
+      path: p.path,
+      letter: p.letter || '',
+      astro: p.astro || '',
+      title: p.bookTTitle || '',
+      sourceCore: p.sourceCore || '',
+      sourceProfile: 'gd_book_t'
+    });
+  });
+  return results;
+}
+
+
+// ── 4. 牌組數量統計深化 ──
+
+function tarotSuitAnalysis(drawn) {
+  if (!drawn || !drawn.length) return null;
+  try { if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(drawn); } catch(_gd) {}
+  var counts = {major:0,wands:0,cups:0,swords:0,pentacles:0,court:0,pip:0};
+  drawn.forEach(function(card) {
+    if (!card) return;
+    if (card.suit === 'major' || card.id < 22) { counts.major++; return; }
+    var sm = {wand:'wands',cup:'cups',sword:'swords',pent:'pentacles'};
+    if (sm[card.suit]) counts[sm[card.suit]]++;
+    if (/king|queen|knight|page/.test(String(card.rank||''))) counts.court++; else counts.pip++;
+  });
+  var suitMap={wands:'火',cups:'水',swords:'風',pentacles:'土'};
+  var max=0,dom='',ties=0;
+  ['wands','cups','swords','pentacles'].forEach(function(k){
+    if(counts[k]>max){max=counts[k];dom=k;ties=1;}else if(counts[k]===max&&max>0){ties++;}
+  });
+  if (!(ties===1 && max>drawn.length/2)) dom='';
+  var maj = window.JYGoldenDawn && window.JYGoldenDawn.majorityObservations ? window.JYGoldenDawn.majorityObservations(drawn) : null;
+  return {
+    counts:counts,reversedCount:0,reversedRatio:0,dominantSuit:dom,dominantElement:suitMap[dom]||'',missingElements:[],
+    majorRatio:Math.round(counts.major/drawn.length*100),courtRatio:Math.round(counts.court/drawn.length*100),
+    bookTMajorities:maj,
+    zh:(maj&&maj.observations&&maj.observations.length)?maj.observations.join('；'):'本盤沒有符合Book T門檻的花色或同階多數；不以缺席花色製造結論。'
+  };
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// 5. 牌陣自動選擇系統 — 根據問題性質匹配最適牌陣
+// ══════════════════════════════════════════════════════════════════════
+
+// ── 所有牌陣定義（金色黎明系統 + 現代實務常搭配牌陣）──
+var SPREAD_DEFS = {
+  three_card: {
+    id: 'three_card', zh: 'Three-Card Spread（三牌陣）', count: 3,
+    en: 'Three-Card Spread',
+    desc: '單一短問・快速判斷主線',
+    positions: [
+      { name: '過去', zh: '影響你走到這裡的因素' },
+      { name: '現在', zh: '你正在經歷的核心能量' },
+      { name: '未來', zh: '如果保持現狀的走向' }
+    ]
+  },
+  five_card: {
+    id: 'five_card', zh: 'Five-Card Spread（五牌陣）', count: 5,
+    en: 'Five-Card Spread',
+    desc: '中等複雜問題・看現況＋原因＋阻礙＋建議＋結果',
+    positions: [
+      { name: '現況', zh: '目前正在發生什麼' },
+      { name: '原因', zh: '事情走到這步的根源' },
+      { name: '阻礙', zh: '正在擋住你的力量' },
+      { name: '建議', zh: '最適合的應對方式' },
+      { name: '結果', zh: '最可能的走向' }
+    ]
+  },
+  either_or: {
+    id: 'either_or', zh: '二選一牌陣', count: 5,
+    en: 'Either-Or Spread',
+    desc: '現代決策對比牌陣・5張實際抽牌・看清兩條路',
+    positions: [
+      { name: '你', zh: '你目前的狀態與核心需求' },
+      { name: 'A 選項', zh: '選 A 的能量與發展' },
+      { name: 'B 選項', zh: '選 B 的能量與發展' },
+      { name: 'A 結果', zh: '走 A 路的最終走向' },
+      { name: 'B 結果', zh: '走 B 路的最終走向' }
+    ]
+  },
+  cross: {
+    id: 'cross', zh: 'Cross Spread（十字牌陣）', count: 5,
+    en: 'Cross Spread',
+    desc: '問題有衝突拉扯・看核心 vs 阻礙',
+    positions: [
+      { name: '核心', zh: '問題的核心本質' },
+      { name: '阻礙', zh: '正在阻擋你的力量' },
+      { name: '過去', zh: '過去的影響' },
+      { name: '未來', zh: '未來的發展趨勢' },
+      { name: '建議', zh: '最佳行動方向' }
+    ]
+  },
+  relationship: {
+    id: 'relationship', zh: '關係牌陣', count: 6,
+    en: 'Relationship Spread',
+    desc: '現代雙人對比牌陣・看兩人狀態、阻力與短期走向',
+    positions: [
+      { name: '你', zh: '你在這段關係中的狀態' },
+      { name: '對方', zh: '對方在這段關係中的狀態' },
+      { name: '關係現狀', zh: '你們之間目前的能量' },
+      { name: '挑戰', zh: '這段關係面臨的考驗' },
+      { name: '建議', zh: '最適合的應對方式' },
+      { name: '走向', zh: '關係未來的發展方向' }
+    ]
+  },
+  celtic_cross: {
+    id: 'celtic_cross', zh: 'Celtic Cross（凱爾特十字）', count: 10,
+    en: 'Celtic Cross',
+    desc: '完整局勢解析・看現況、阻礙、過去、未來、內在、外在、結果',
+    positions: [
+      { name: '1.現況核心', zh: '核心狀態／覆蓋此事的主題' },
+      { name: '2.交叉力量', zh: '橫跨現況的力量；依位置與元素尊貴判助力、阻力或混合作用' },
+      { name: '3.上方/可能成形', zh: '上方／理想與可能成形的方向' },
+      { name: '4.腳下/根基', zh: '腳下／事情根基與已形成的力量' },
+      { name: '5.身後/正在離開', zh: '身後／近期過去與正在退場的影響' },
+      { name: '6.身前/即將到來', zh: '身前／短期即將出現的走向' },
+      { name: '7.本人', zh: '本人／你在情境中的立場與狀態' },
+      { name: '8.環境/家宅', zh: '環境／外界、他人或現實條件' },
+      { name: '9.希望或恐懼', zh: '希望或恐懼／期待與擔憂，不是結果位' },
+      { name: '10.最終將至', zh: '最終將至／全盤結構共同導向的收束' }
+    ]
+  },
+  tree_of_life: {
+    id: 'tree_of_life', zh: '生命之樹', count: 10,
+    en: '生命之樹',
+    desc: 'Hermetic Qabalah 生命之樹應用・人生架構、深層自我、落地結果',
+    positions: [
+      { name: 'Kether 王冠', zh: '靈性最高指引・你的終極方向' },
+      { name: 'Chokmah 智慧', zh: '創造的力量・你的原始動力' },
+      { name: 'Binah 理解', zh: '限制與形式・你必須面對的現實' },
+      { name: 'Chesed 慈悲', zh: '擴展的力量・機會與恩典' },
+      { name: 'Geburah 嚴厲', zh: '收縮的力量・必須割捨或面對的' },
+      { name: 'Tiphereth 美', zh: '核心自我・你真正的狀態' },
+      { name: 'Netzach 勝利', zh: '情感與慾望・你想要什麼' },
+      { name: 'Hod 榮耀', zh: '思維與溝通・你怎麼想的' },
+      { name: 'Yesod 基礎', zh: '潛意識・你沒察覺的影響' },
+      { name: 'Malkuth 王國', zh: '物質現實・最終落地的結果' }
+    ]
+  },
+  timeline: {
+    id: 'timeline', zh: '時間線牌陣', count: 5,
+    en: 'Timeline Spread',
+    desc: '回答「什麼時候」「要多久」',
+    positions: [
+      { name: '過去根源', zh: '事情的源頭在哪裡' },
+      { name: '近期狀態', zh: '目前正在發生什麼' },
+      { name: '轉折點', zh: '什麼會觸發改變' },
+      { name: '發展', zh: '轉折之後的走勢' },
+      { name: '最終結果', zh: '事情最終會怎樣' }
+    ]
+  },
+  zodiac: {
+    id: 'zodiac', zh: 'Zodiac Spread（黃道十二宮）', count: 13,
+    en: 'Zodiac Spread',
+    desc: '占星十二宮塔羅應用・12 宮位逐一掃描未來一年或特定事件的 12 個面向',
+    positions: [
+      { name: '第一宮・自我', zh: '你目前的狀態與身體能量' },
+      { name: '第二宮・財務', zh: '金錢、資源、你重視的東西' },
+      { name: '第三宮・溝通', zh: '學習、短途旅行、兄弟姐妹、日常交流' },
+      { name: '第四宮・家庭', zh: '家庭根基、內在安全感、父親/家族' },
+      { name: '第五宮・創造', zh: '戀愛、子女、創作、快樂、冒險' },
+      { name: '第六宮・健康', zh: '日常工作、健康狀態、服務、習慣' },
+      { name: '第七宮・伴侶', zh: '婚姻、合夥、公開的敵人、重要他人' },
+      { name: '第八宮・轉化', zh: '共同資產、死亡與重生、親密關係深層' },
+      { name: '第九宮・遠方', zh: '信仰、高等教育、遠行、法律、人生哲學' },
+      { name: '第十宮・事業', zh: '事業頂點、社會地位、公眾形象、母親' },
+      { name: '第十一宮・社群', zh: '朋友圈、理想抱負、團體、人脈網絡' },
+      { name: '第十二宮・隱藏', zh: '潛意識、業力、秘密敵人、靈性修煉' },
+      { name: '總結・年度主旋律', zh: '整體能量的核心訊息與最終指引' }
+    ]
+  },
+  minor_arcana: {
+    id: 'minor_arcana', zh: 'Minor Arcana（小阿卡那占卜）', count: 7,
+    en: 'Minor Arcana Divination',
+    desc: '只用56張小阿卡那的現代布局；解讀統一採 Golden Dawn Book T 的十位、四世界、占星分度與元素尊貴',
+    deckFilter: 'minor_only',
+    positions: [
+      { name: '現狀', zh: '你現在面對的具體處境' },
+      { name: '原因', zh: '造成這個處境的實際因素' },
+      { name: '挑戰', zh: '你必須克服的障礙' },
+      { name: '周圍的人', zh: '影響你的人物和他們的態度' },
+      { name: '你的資源', zh: '你手上可以運用的東西' },
+      { name: '建議行動', zh: '最適合的下一步' },
+      { name: '結果', zh: '如果照建議走的最可能結果' }
+    ]
+  },
+
+  // ★ GD-6 (G1) 補:Fifteen-Card Method (英式牌陣 / GD 標準塔羅 spread)
+  //   依據:Golden Dawn 衍生布局（自述為開鑰之法簡化版・The English Spread）・非 Book of Thoth 開鑰正文本身
+  //   特性:Golden Dawn 衍生 15-card spread,完全不用反位,純靠 elemental dignity
+  //   版面:
+  //     13  9  5     (上排:13/9/5 = 替代行動  4/8/12 = 自然趨勢)
+  //      2  1  3     (中排:1=querent  2/3=核心狀態)
+  //     14 10  6     (中下:6/10/14 = 心理層面與決策依據)
+  //      4  8 12
+  //      7 11 15     (下排:7/11/15 = 命運/業力 不可控)
+  fifteen_card: {
+    id: 'fifteen_card', zh: 'Fifteen-Card Method（金色黎明衍生15張）', count: 15,
+    en: 'Fifteen-Card Method (Golden Dawn-derived)',
+    desc: '後世金色黎明衍生布局・不是 Book T 原始開鑰程序・全牌依 Book T 牌義與 elemental dignity 讀五個 triad',
+    positions: [
+      // Card 1 = querent / 問題本質
+      { name: '1.Querent 核心', zh: '提問者 + 問題本質 + 主要影響(中心)' },
+      // Card 2, 3 = 與 1 合讀,描述局面性質與 querent 性格
+      { name: '2.核心左', zh: '與 1 合讀的左翼:描述局面性質與 querent 性格(細節 1)' },
+      { name: '3.核心右', zh: '與 1 合讀的右翼:描述局面性質與 querent 性格(細節 2)' },
+      // Card 4, 8, 12 = 自然會走的路 (右上 triad)
+      { name: '4.自然路徑近', zh: '若不採取行動,自然會走的路(近期)' },
+      { name: '5.替代路徑遠', zh: '若採取替代行動,可能達到的方向(遠景)' },
+      { name: '6.決策層上', zh: '心理層面與決策依據(意識層上方)' },
+      { name: '7.命運上', zh: '命運/業力,不可控、需適應的力量(上)' },
+      { name: '8.自然路徑中', zh: '若不採取行動,自然會走的路(中段)' },
+      { name: '9.替代路徑中', zh: '若採取替代行動,可能達到的方向(中段)' },
+      { name: '10.決策層中', zh: '心理層面與決策依據(中)' },
+      { name: '11.命運中', zh: '命運/業力,不可控、需適應的力量(中)' },
+      { name: '12.自然路徑遠', zh: '若不採取行動,自然會走的路(遠期)' },
+      { name: '13.替代路徑近', zh: '若採取替代行動,可能達到的方向(近期)' },
+      { name: '14.決策層下', zh: '心理層面與決策依據(深層)' },
+      { name: '15.命運下', zh: '命運/業力,不可控、需適應的力量(下)' }
+    ]
+  },
+
+  // ★ GD-7 補:Mathers 1888《The Tarot》Second Method of Divination (21 張)
+  //   全名:Mathers Second Method (Three rows of seven, Significator centred)
+  //   依據:Mathers 1888 原書 METHODS OF DIVINATION 章節
+  //   特性:Significator 抽出後,從 78 張中每隔 7 張抽 1,共 21 張,3 列 7 行
+  //   讀法:每列從右到左讀,然後配對 1↔21、2↔20...讀
+  mathers_21: {
+    id: 'mathers_21', zh: 'Mathers Second Method (1888 三排七)', count: 21,
+    en: 'Mathers Second Method',
+    desc: 'Mathers 1888 第二法程序・抽出代表牌後先取頂牌，再隔七取牌共21張；牌義依本次選定的 RWS 或 Golden Dawn，非原書牌義復刻',
+    positions: (function(){
+      var out=[];
+      for(var row=1;row<=3;row++){
+        for(var pos=1;pos<=7;pos++){
+          out.push({
+            name:row+'.排-'+pos,
+            zh:'第'+row+'排第'+pos+'張（序列成員；由右至左，代表牌在右側作共同起點）'
+          });
+        }
+      }
+      return out;
+    })()
+  },
+
+  // ★ v80.0 修正:Mathers First Method (1888) 完整 horseshoe
+  //   依據:Mathers《The Tarot》1888 Methods of Divination FIRST METHOD
+  //   原文不是只讀 A=26；而是分出 A=26、C=17、E=11，F=24 棄用。
+  //   A/C/E 各自排成 horseshoe，由右到左先成連貫答案，再首尾配對讀。
+  mathers_horseshoe: {
+    id: 'mathers_horseshoe', zh: 'Mathers First Method (1888 完整 horseshoe)', count: 54,
+    en: 'Mathers First Method (A=26, C=17, E=11)',
+    desc: 'Mathers 1888 第一法衍生・A26/C17/E11、F24不讀；原文末輪數量有歧義，本站以明示張數為準，牌義依選定方式',
+    positions: (function(){
+      var out=[];
+      function addGroup(group,count,label){
+        for(var i=1;i<=count;i++){
+          var mate=count+1-i;
+          var note=(i===mate)
+            ? '未配對序列成員；不是中心牌、結果位或時間位'
+            : '與'+group+mate+'作原法首尾語義配對；配對不是元素相鄰';
+          out.push({
+            name:group+'組-'+String(i).padStart(2,'0'),
+            zh:label+'第'+i+'張（序列成員；由右至左）・'+note
+          });
+        }
+      }
+      addGroup('A',26,'第一組A=26・');
+      addGroup('C',17,'第二組C=17・');
+      addGroup('E',11,'第三組E=11・');
+      return out;
+    })()
+  },
+
+  // ★ GD-11 補:7-card Horseshoe (現代衍生版)
+  //   依據:Cicero《Golden Dawn Magical Tarot》提到的常見 GD 衍生牌陣
+  //   特性:7 張弧形・past / present / hidden / advice / external / obstacle / outcome
+  //   是 Celtic Cross 之外最普及的 GD 風格牌陣
+  horseshoe: {
+    id: 'horseshoe', zh: 'Horseshoe Spread（七張馬蹄形）', count: 7,
+    en: 'Seven-Card Horseshoe',
+    desc: '現代馬蹄形布局；以 Golden Dawn Book T 牌義與元素尊貴看過去、現在、介入點、阻礙與結果',
+    positions: [
+      { name: '1.過去', zh: '過去影響' },
+      { name: '2.現在', zh: '現在處境' },
+      { name: '3.隱藏影響', zh: '隱藏的影響或未來短期將發生' },
+      { name: '4.建議', zh: '弧頂中央・採取的最佳行動' },
+      { name: '5.他人態度', zh: '其他人對此事的態度與影響' },
+      { name: '6.阻礙', zh: '面臨的障礙或挑戰' },
+      { name: '7.最終結果', zh: '最終走向' }
+    ]
+  },
+
+  ootk: {
+    id: 'ootk', zh: '開鑰之法', count: 0,
+    en: '開鑰之法',
+    desc: '金色黎明開鑰之法・五次獨立讀盤・使用全部 78 張牌・依 Golden Dawn Book T 骨架',
+    special: 'ootk',
+    positions: []
+  }
+};
+
+// ── 問題性質偵測 → 牌陣匹配（金色黎明系統）──
+// Three-Card: 單一短問、快速判斷
+// Five-Card: 中等複雜、要看原因和建議
+// Cross: 問題有衝突拉扯、有阻礙
+// Celtic Cross: 複雜完整局勢
+// Tree of Life: 人生結構、靈性課題、深層內在
+// Timeline: 時機題
+// Relationship: 兩人關係
+// Either-Or: 二選一
+function detectSpreadType(question, type) {
+  var raw=String(question||'').trim();
+  var foundation=(typeof window!=='undefined'&&window.JYTarotFoundation)?window.JYTarotFoundation:null;
+  if(!foundation||typeof foundation.routeQuestion!=='function'){
+    var missing={version:'98.0.0',engine:'foundation_router',spreadId:null,reason:'JYTarotFoundation 未載入；為避免使用第二套路由器，系統已停止自動選陣。',question:raw,type:String(type||'general'),confidence:0,selectedBy:'fail_closed',features:{},candidates:[]};
+    try{detectSpreadType.lastDecision=missing;if(typeof window!=='undefined')window._jyLastSpreadDecision=missing;}catch(_e){}
+    throw new Error('JYTarotFoundation is required before tarot_upgrade.js');
+  }
+  var result=foundation.routeQuestion(raw,{type:String(type||'general'),referenceDate:new Date().toISOString()});
+  if(!result.spreadId||!result.methodPlan){
+    try{detectSpreadType.lastDecision=result;if(typeof window!=='undefined')window._jyLastSpreadDecision=result;}catch(_blockedErr){}
+    throw new Error(result.reason||'沒有可完整覆蓋原問句的牌陣');
+  }
+  var decision={
+    version:result.version||foundation.VERSION,engine:result.engine||'foundation_router',spreadId:result.spreadId,
+    reason:result.reason,question:raw,normalizedQuestion:(result.compiledQuestion&&result.compiledQuestion.normalizedQuestion)||raw,
+    type:String(type||'general'),confidence:result.confidence,selectedBy:result.selectedBy,
+    features:(result.compiledQuestion&&result.compiledQuestion.features)||{},compiledQuestion:result.compiledQuestion||null,methodPlan:result.methodPlan||null,coverage:result.coverage||null,unsupportedDimensions:result.unsupportedDimensions||[],candidates:result.candidates||[]
+  };
+  try{detectSpreadType.lastDecision=decision;if(typeof window!=='undefined')window._jyLastSpreadDecision=decision;}catch(_e2){}
+  return result.spreadId;
+}
+
+// 單一牌陣解析入口：先完成問題編譯與「需求通道 ⊆ 方法能力」檢查，再建立動態牌位；不得在 UI 端二次猜題。
+function _jyBuildDynamicSpreadDef(spreadId, methodPlan) {
+  var base=(typeof SPREAD_DEFS!=='undefined'&&SPREAD_DEFS[spreadId])?SPREAD_DEFS[spreadId]:null;
+  if(!base)throw new Error('Unknown spread definition: '+spreadId);
+  var def=JSON.parse(JSON.stringify(base));
+  if(methodPlan&&Array.isArray(methodPlan.slots)){
+    def.count=methodPlan.count==null?def.count:methodPlan.count;
+    def.zh=methodPlan.label||def.zh;
+    def.positions=methodPlan.slots.map(function(slot,i){
+      var basePos=(base.positions&&base.positions[i])||{};
+      var label=slot.label||basePos.zh||basePos.name||slot.role||'位置';
+      return {name:(i+1)+'.'+label,zh:label,authority:slot.authority||'structural',role:slot.role||'structural',binding:slot.binding||{eventId:'QUERY_EVENT'}};
+    });
+  }
+  return def;
+}
+
+function resolveTarotSpread(question, type) {
+  var foundation=(typeof window!=='undefined'&&window.JYTarotFoundation)?window.JYTarotFoundation:null;
+  if(!foundation)throw new Error('JYTarotFoundation is required before spread resolution');
+  var raw=String(question||'').trim(), forced=(typeof window!=='undefined')?window._forcedSpread:null;
+  var route=foundation.routeQuestion(raw,{type:String(type||'general'),referenceDate:new Date().toISOString()});
+  var spreadId=route.spreadId, plan=route.methodPlan;
+  if(forced){
+    if(!SPREAD_DEFS[forced])throw new Error('Unknown forced spread: '+forced);
+    spreadId=forced;
+    plan=foundation.instantiateMethod(forced,route.compiledQuestion);
+    plan.selectionReason='依你手動選擇的牌陣解讀。';
+    plan.routingNotes=(plan.missingObservables||[]).length?['本陣未設獨立牌位的部分：'+plan.missingObservables.map(function(id){return (foundation.OBSERVABLES&&foundation.OBSERVABLES[id])||id;}).join('、')+'；保留原問句，僅按實際牌面討論，不編造牌位。']:[];
+    route={version:foundation.VERSION,engine:'foundation_router_v3',spreadId:forced,selectedBy:'explicit_ui_override',reason:'依你手動選擇的牌陣解讀；未設獨立牌位的部分會另行說明。',compiledQuestion:route.compiledQuestion,methodPlan:plan,coverage:{required:plan.requiredObservables,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:route.unsupportedDimensions||[],candidates:route.candidates||[]};
+    try{window._autoDetectedSpread=null;}catch(_e){}
+  }else{
+    try{window._autoDetectedSpread=spreadId;}catch(_e2){}
+    if(!spreadId||!plan)throw new Error(route.reason||'沒有可完整覆蓋原問句的牌陣');
+  }
+  if(!spreadId||!SPREAD_DEFS[spreadId]||!plan)throw new Error('Tarot router returned an unusable method plan');
+  var dynamicDef=_jyBuildDynamicSpreadDef(spreadId,plan);
+  S.tarot=S.tarot||{};
+  S.tarot.compiledQuestion=route.compiledQuestion;
+  S.tarot.methodPlan=plan;
+  S.tarot.dynamicSpreadDef=dynamicDef;
+  S.tarot.spreadType=spreadId;
+  try{window._jyLastSpreadDecision=route;}catch(_e3){}
+  setCurrentSpread(spreadId,dynamicDef);
+  try{if(typeof window!=='undefined'&&typeof window._jyUpdateSpreadTrigger==='function')setTimeout(window._jyUpdateSpreadTrigger,0);}catch(_e4){}
+  return spreadId;
+}
+try { if (typeof window !== 'undefined') window.JY_resolveTarotSpread = resolveTarotSpread; } catch (e) {}
+
+// ── 建構牌陣結果物件（通用）──
+function buildSpreadResult(drawn, spreadId) {
+  var def=(S.tarot&&S.tarot.dynamicSpreadDef&&S.tarot.dynamicSpreadDef.id===spreadId)?S.tarot.dynamicSpreadDef:SPREAD_DEFS[spreadId];
+  var plan=(S.tarot&&S.tarot.methodPlan)||null;
+  if(!def)return null;
+  if(!drawn||drawn.length<def.count)return null;
+  var positions=def.positions.map(function(pos,i){
+    var card=drawn[i],slot=plan&&plan.slots&&plan.slots[i];
+    return {name:pos.name,zh:pos.zh,authority:(slot&&slot.authority)||pos.authority||'structural',role:(slot&&slot.role)||pos.role||'structural',binding:(slot&&slot.binding)||pos.binding||{eventId:'QUERY_EVENT'},card:card,cardName:card?(card.name||card.n):'',isUp:card?card.isUp:true};
+  });
+  return {type:spreadId,zh:def.zh,count:def.count,desc:def.desc,positions:positions,methodPlan:plan};
+}
+
+// ── 全域存取：當前選擇的牌陣 ──
+var _currentSpreadId='celtic_cross';
+function getCurrentSpread(){return _currentSpreadId;}
+function setCurrentSpread(id,dynamicDef){
+  if(!SPREAD_DEFS[id])throw new Error('Unknown spread: '+id);
+  _currentSpreadId=id;S.tarot=S.tarot||{};
+  if(dynamicDef)S.tarot.dynamicSpreadDef=dynamicDef;
+  S.tarot.spreadDef=(S.tarot.dynamicSpreadDef&&S.tarot.dynamicSpreadDef.id===id)?S.tarot.dynamicSpreadDef:SPREAD_DEFS[id];
+}
+function getCurrentSpreadDef(){return (S.tarot&&S.tarot.dynamicSpreadDef&&S.tarot.dynamicSpreadDef.id===_currentSpreadId)?S.tarot.dynamicSpreadDef:(SPREAD_DEFS[_currentSpreadId]||SPREAD_DEFS.celtic_cross);}
+
+// ══════════════════════════════════════════════════════════════════════
+// 6. showSpread 覆寫 — 適配所有牌陣類型
+// ══════════════════════════════════════════════════════════════════════
+function getBookTRenderData(card, index, spreadId, cards) {
+  if(card && card.readingMode==='rws_reversals' && window.JYTarotReading){
+    return {title:window.JYTarotReading.label(card),reading:window.JYTarotReading.meaning(card),dignityLabel:'依正逆位與牌位解讀',correspondence:'',element:card.el||'',sourceProfile:'rws_reversals'};
+  }
+  var gd = (typeof window !== 'undefined') ? window.JYGoldenDawn : null;
+  if (!gd || typeof gd.profile !== 'function') {
+    return { title:'Book T 資料未載入', reading:'本牌不以舊牌義回退；請重新載入 Golden Dawn 來源模組。', dignityLabel:'來源未載入', correspondence:'', element:'' };
+  }
+  try { gd.normalizeDraw(cards || []); } catch (_e) {}
+  var p = gd.profile(card);
+  if (!p) return { title:'', reading:'', dignityLabel:'未定', correspondence:'', element:'' };
+  var d = null;
+  try { d = gd.dignityContext(cards || [], index, spreadId || ''); } catch (_d) {}
+  var labelMap = {
+    well_dignified:'完整元素尊貴：強化', ill_dignified:'完整元素尊貴：削弱', supported:'完整元素尊貴：協調',
+    mixed:'完整元素尊貴：混合', multi_line:'多條有序線分別裁決', one_sided_friendly:'單邊元素相容（非完整尊貴）',
+    one_sided_hostile:'單邊元素削弱（非完整尊貴）', one_sided_mixed:'單邊元素混合（非完整尊貴）', interaction_only:'僅牌陣互動', unlinked:'無完整尊貴線'
+  };
+  return {
+    title:p.bookTTitle || '',
+    reading:(d && d.reading) || p.sourceCore || '',
+    dignityLabel:labelMap[(d && d.state) || 'unlinked'] || ((d && d.state) || '未定'),
+    correspondence:p.correspondence || '',
+    element:p.element || card.el || '',
+    kind:p.kind || '',
+    courtLayer:p.kind === 'court' ? (p.layer || '') : '',
+    sourceProfile:'gd_book_t'
+  };
+}
+
+(function() {
+  var _origShowSpread = (typeof showSpread === 'function') ? showSpread : null;
+
+  showSpread = function() {
+    S.tarot.drawn = drawnCards;
+    S.tarot.spread = drawnCards;
+    document.getElementById('t-spread-sec').classList.remove('hidden');
+
+    var el = document.getElementById('t-spread');
+    if (!el) return;
+
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var spreadId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
+
+    // 牌陣標題
+    var titleHtml = '<div style="text-align:center;margin-bottom:.8rem">';
+    titleHtml += '<span style="font-size:.85rem;color:var(--c-gold);font-weight:700">' + (def ? def.zh : '凱爾特十字牌陣') + '</span>';
+    if (def && def.desc) titleHtml += '<br><span style="font-size:.72rem;color:var(--c-text-muted)">' + def.desc + '</span>';
+    titleHtml += '</div>';
+
+    // 每張牌的卡片
+    var cardsHtml = '';
+    var count = def ? Math.min(def.count, drawnCards.length) : drawnCards.length;
+
+    for (var i = 0; i < count; i++) {
+      var c = drawnCards[i];
+      if (!c) continue;
+      var posName = '';
+      var posZh = '';
+      if (def && def.positions && def.positions[i]) {
+        posName = def.positions[i].name;
+        posZh = def.positions[i].zh;
+      } else {
+        posName = (c.pos || '第' + (i + 1) + '張');
+        posZh = '';
+      }
+
+      // 單一來源渲染：只讀 Golden Dawn profile + 本牌陣有序尊貴線。
+      var bt = getBookTRenderData(c, i, spreadId, drawnCards);
+      var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
+
+      // 元素對應色
+      var elColor = {'火':'#ef4444','水':'#3b82f6','風':'#22d3ee','土':'#a78b5a','水星':'#c9a84c','金星':'#f472b6','木星':'#38bdf8','土星':'#475569','月亮':'#a3e635','太陽':'#fbbf24'}[c.el] || 'var(--c-gold)';
+
+      cardsHtml += '<div class="card" style="padding:.8rem;margin-bottom:.5rem;border-left:3px solid ' + elColor + '">';
+
+      // 頂部：位置 + Golden Dawn Book T 來源
+      cardsHtml += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
+      cardsHtml += '<span class="tag tag-gold" style="font-size:.75rem">' + (i + 1) + '. ' + posName + '</span>';
+      cardsHtml += '<span class="tag tag-blue" style="font-size:.7rem">'+(c.readingMode==='rws_reversals'?window.JYTarotReading.label(c):'正向・Book T')+'</span>';
+      cardsHtml += '</div>';
+
+      // 位置含義（如果有）
+      if (posZh) {
+        cardsHtml += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.4rem">' + posZh + '</div>';
+      }
+
+      // 牌名 + 圖片
+      cardsHtml += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
+      if (imgSrc) {
+        cardsHtml += '<img src="' + imgSrc + '" alt="' + c.n + '" style="'+(window.JYTarotReading?window.JYTarotReading.imageStyle(c):'')+'width:65px;height:100px;border-radius:6px;flex-shrink:0;object-fit:cover">';
+      }
+      cardsHtml += '<div style="flex:1">';
+      cardsHtml += '<strong class="text-gold serif" style="font-size:.95rem">' + c.n + '</strong>';
+      if (c.el) cardsHtml += '<span style="font-size:.68rem;color:' + elColor + ';margin-left:.4rem">' + c.el + '</span>';
+
+      if (bt.title) cardsHtml += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.2rem">🔑 ' + bt.title + '</div>';
+      if (bt.courtLayer) cardsHtml += '<div style="font-size:.7rem;color:var(--c-gold);margin-top:.15rem">' + bt.courtLayer + '</div>';
+      cardsHtml += '<div style="font-size:.68rem;color:var(--c-text-muted);margin-top:.2rem">' + bt.dignityLabel + '</div>';
+      if (bt.reading) cardsHtml += '<p style="font-size:.82rem;color:var(--c-text-dim);margin-top:.3rem;line-height:1.6">' + bt.reading + '</p>';
+      if (bt.correspondence) cardsHtml += '<p style="font-size:.7rem;color:var(--c-text-muted);margin-top:.2rem;line-height:1.45">' + bt.correspondence + '</p>';
+
+      cardsHtml += '</div></div></div>';
+    }
+
+    el.innerHTML = titleHtml + cardsHtml;
+  };
+})();
+
+function enhanceTarot(tarot) {
+  if (!tarot || !tarot.drawn || !tarot.drawn.length) return tarot;
+
+  var drawn = tarot.drawn;
+  if(drawn[0].readingMode==='rws_reversals' && window.JYTarotReading){
+    tarot.readingMode=tarot.sourceProfile='rws_reversals';tarot.stats=window.JYTarotReading.stats(drawn);
+    tarot.numerology=null;tarot.bookTStructure=null;tarot.sourceContract=null;return tarot;
+  }
+  if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(drawn);
+
+  // Golden Dawn Book T 不使用本站舊有的任意加總／靈數推導。
+  tarot.numerology = null;
+  tarot.bookTStructure = window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(drawn) : null;
+  tarot.sourceContract = window.JYGoldenDawn ? window.JYGoldenDawn.sourceContract() : null;
+
+  // 2. 根據當前牌陣建構結果
+  try {
+    var spreadId = _currentSpreadId || 'celtic_cross';
+    tarot.spreadAnalysis = buildSpreadResult(drawn, spreadId);
+    tarot.spreadType = spreadId;
+    tarot.spreadDef = SPREAD_DEFS[spreadId] || null;
+  } catch(e) { console.warn('[Tarot] spread build error:', e); }
+
+  // 3. 卡巴拉
+  try { tarot.kabbalah = tarotKabbalahAnalysis(drawn); } catch(e) { tarot.kabbalah = []; }
+
+  // 4. 牌組深度統計
+  try { tarot.suitAnalysis = tarotSuitAnalysis(drawn); } catch(e) { tarot.suitAnalysis = null; }
+
+  return tarot;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// 7. 手動牌陣切換 UI
+// ══════════════════════════════════════════════════════════════════════
+function injectSpreadSelector() {
+  var step2 = document.getElementById('step-2');
+  if (!step2 || document.getElementById('jy-spread-selector')) return;
+  var container = document.createElement('div');
+  container.id = 'jy-spread-selector';
+  container.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;margin:.5rem 0 .8rem;padding:0 .5rem';
+  var spreads = ['three_card','five_card','cross','either_or','timeline','relationship','horseshoe','celtic_cross','tree_of_life','zodiac','minor_arcana','fifteen_card','mathers_21','mathers_horseshoe','ootk'];
+  var labels = {three_card:'3牌',five_card:'5牌',cross:'十字',either_or:'二選一',timeline:'時間線',relationship:'關係',horseshoe:'馬蹄7',celtic_cross:'凱爾特',tree_of_life:'生命之樹',zodiac:'12宮',minor_arcana:'小牌',fifteen_card:'15張GD',mathers_21:'21張古法',mathers_horseshoe:'54張古法',ootk:'開鑰之法'};
+  spreads.forEach(function(id) {
+    var btn = document.createElement('button');
+    btn.className = 'jy-spread-btn'; btn.dataset.spread = id;
+    btn.textContent = labels[id] || id;
+    btn.style.cssText = 'padding:.3rem .6rem;border-radius:8px;font-size:.7rem;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--c-text-dim);cursor:pointer;font-family:inherit;transition:all .2s';
+    btn.onclick = function() {
+      window._forcedSpread = id; // ★ v75.6：讓 initTarotDeck 知道是手動選擇
+      if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
+      container.querySelectorAll('.jy-spread-btn').forEach(function(b) {
+        b.style.borderColor = 'rgba(255,255,255,.1)'; b.style.background = 'rgba(255,255,255,.03)'; b.style.color = 'var(--c-text-dim)';
+      });
+      btn.style.borderColor = 'rgba(201,168,76,.5)'; btn.style.background = 'rgba(201,168,76,.08)'; btn.style.color = 'var(--c-gold,#c9a84c)';
+      drawnCards = []; deckShuffled = [];
+      if (typeof initTarotDeck === 'function') initTarotDeck();
+      // v80.36：切換牌陣後，舊 initTarotDeck 可能剛寫入凱爾特 10 格；立即以目前牌陣重畫。
+      setTimeout(function(){
+        try {
+          if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
+          else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
+        } catch(e) {}
+      }, 0);
+      setTimeout(function(){
+        try {
+          if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
+          else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
+        } catch(e) {}
+      }, 160);
+    };
+    var currentId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
+    if (id === currentId) { btn.style.borderColor = 'rgba(201,168,76,.5)'; btn.style.background = 'rgba(201,168,76,.08)'; btn.style.color = 'var(--c-gold,#c9a84c)'; }
+    container.appendChild(btn);
+  });
+  var deckWrap = step2.querySelector('.tarot-deck-wrap');
+  if (deckWrap) deckWrap.parentNode.insertBefore(container, deckWrap);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// 8. 金色黎明宮廷牌元素對應
+// ══════════════════════════════════════════════════════════════════════
+var GD_COURT_ELEMENTS = {
+  35:{rank:'King',suit:'火',rankEl:'火',combo:'火中之火',zh:'權杖國王：純粹的火焰意志，極致的領導力與創造力，但容易暴烈失控'},
+  34:{rank:'Queen',suit:'火',rankEl:'水',combo:'火中之水',zh:'權杖皇后：火焰中的滋養力，熱情但有包容，直覺敏銳的引導者'},
+  33:{rank:'Knight',suit:'火',rankEl:'風',combo:'火中之風',zh:'權杖騎士：火焰被風助燃，衝動冒進，行動力爆發但難以持久'},
+  32:{rank:'Page',suit:'火',rankEl:'土',combo:'火中之土',zh:'權杖侍從：火焰在土壤中紮根，有想法但還在學習如何落地執行'},
+  49:{rank:'King',suit:'水',rankEl:'火',combo:'水中之火',zh:'聖杯國王：情感中的意志力，外表冷靜但內心有強烈的保護慾和決斷力'},
+  48:{rank:'Queen',suit:'水',rankEl:'水',combo:'水中之水',zh:'聖杯皇后：純粹的情感直覺，最深層的共感力，但容易被情緒淹沒'},
+  47:{rank:'Knight',suit:'水',rankEl:'風',combo:'水中之風',zh:'聖杯騎士：情感的信使，浪漫理想化，帶來邀請但可能不切實際'},
+  46:{rank:'Page',suit:'水',rankEl:'土',combo:'水中之土',zh:'聖杯侍從：情感的新芽，剛開始學習感受，純真但脆弱'},
+  63:{rank:'King',suit:'風',rankEl:'火',combo:'風中之火',zh:'寶劍國王：思維的最高權威，判斷銳利但可能冷酷'},
+  62:{rank:'Queen',suit:'風',rankEl:'水',combo:'風中之水',zh:'寶劍皇后：以直覺輔助理性，看穿表象的洞察力'},
+  61:{rank:'Knight',suit:'風',rankEl:'風',combo:'風中之風',zh:'寶劍騎士：純粹的思維風暴，極快但容易過於激進'},
+  60:{rank:'Page',suit:'風',rankEl:'土',combo:'風中之土',zh:'寶劍侍從：剛開始學習分析，好奇但缺乏經驗'},
+  77:{rank:'King',suit:'土',rankEl:'火',combo:'土中之火',zh:'錢幣國王：物質世界的掌控者，穩健但可能過於物質化'},
+  76:{rank:'Queen',suit:'土',rankEl:'水',combo:'土中之水',zh:'錢幣皇后：大地中的滋養泉源，實際但懂得享受'},
+  75:{rank:'Knight',suit:'土',rankEl:'風',combo:'土中之風',zh:'錢幣騎士：穩扎穩打的行動者，專注效率和可靠性'},
+  74:{rank:'Page',suit:'土',rankEl:'土',combo:'土中之土',zh:'錢幣侍從：純粹的物質學徒，踏實但尚未成熟'}
+};
+
+function getGDCourtElement(card) {
+  var gd = (typeof window !== 'undefined') ? window.JYGoldenDawn : null;
+  if (!card || !gd || typeof gd.profile !== 'function') return null;
+  var p = gd.profile(card);
+  if (!p || p.kind !== 'court') return null;
+  return { rank:p.rank, suit:p.element, rankEl:'', combo:p.layer || '', zh:p.sourceCore || '', sourceProfile:'gd_book_t' };
+}
+
+// 覆寫 enhanceTarot — 注入宮廷牌元素
+var _etBase = enhanceTarot;
+enhanceTarot = function(tarot) {
+  tarot = _etBase(tarot);
+  if (!tarot || !tarot.drawn) return tarot;
+  tarot.drawn.forEach(function(c) { var gd = getGDCourtElement(c); if (gd) c.gdCourt = gd; });
+  var courts = tarot.drawn.filter(function(c) { return !!c.gdCourt; });
+  if (courts.length) {
+    tarot.courtElementAnalysis = { count: courts.length, cards: courts.map(function(c) { return {name:c.n||c.name, combo:c.gdCourt.combo, zh:c.gdCourt.zh}; }) };
+  }
+  return tarot;
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// 9. showSpread 覆寫 — 適配所有牌陣
+// ══════════════════════════════════════════════════════════════════════
+(function() {
+  showSpread = function() {
+    S.tarot.drawn = drawnCards; S.tarot.spread = drawnCards;
+    document.getElementById('t-spread-sec').classList.remove('hidden');
+    var el = document.getElementById('t-spread'); if (!el) return;
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var h = '<div style="text-align:center;margin-bottom:.8rem"><span style="font-size:.85rem;color:var(--c-gold);font-weight:700">' + (def ? def.zh : '牌陣') + '</span>';
+    if (def && def.desc) h += '<br><span style="font-size:.72rem;color:var(--c-text-muted)">' + def.desc + '</span>';
+    h += '</div>';
+    var count = def ? Math.min(def.count, drawnCards.length) : drawnCards.length;
+    for (var i = 0; i < count; i++) {
+      var c = drawnCards[i]; if (!c) continue;
+      var posName = (def&&def.positions&&def.positions[i]) ? def.positions[i].name : (c.pos||'第'+(i+1)+'張');
+      var posZh = (def&&def.positions&&def.positions[i]) ? def.positions[i].zh : '';
+      var spreadId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : ((_currentSpreadId || 'celtic_cross'));
+      var bt = getBookTRenderData(c, i, spreadId, drawnCards);
+      var imgSrc = (typeof getTarotCardImage === 'function') ? getTarotCardImage(c) : '';
+      var elC = {'火':'#ef4444','水':'#3b82f6','風':'#22d3ee','土':'#a78b5a'}[bt.element] || 'var(--c-gold)';
+      h += '<div class="card" style="padding:.8rem;margin-bottom:.5rem;border-left:3px solid '+elC+'">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
+      h += '<span class="tag tag-gold" style="font-size:.75rem">'+(i+1)+'. '+posName+'</span>';
+      h += '<span class="tag tag-blue" style="font-size:.7rem">'+(c.readingMode==='rws_reversals'?window.JYTarotReading.label(c):'正向・Book T')+'</span></div>';
+      if (posZh) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">'+posZh+'</div>';
+      h += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
+      if (imgSrc) h += '<img src="'+imgSrc+'" alt="'+c.n+'" style="'+(window.JYTarotReading?window.JYTarotReading.imageStyle(c):'')+'width:65px;height:100px;border-radius:6px;flex-shrink:0">';
+      h += '<div style="flex:1"><strong class="text-gold serif" style="font-size:.95rem">'+c.n+'</strong>';
+      if (bt.title) h += '<div style="font-size:.72rem;color:var(--c-text-dim);margin-top:.15rem">🔑 '+bt.title+'</div>';
+      if (bt.courtLayer) h += '<div style="font-size:.7rem;color:var(--c-gold);margin-top:.15rem">'+bt.courtLayer+'</div>';
+      h += '<div style="font-size:.68rem;color:var(--c-text-muted);margin-top:.2rem">'+bt.dignityLabel+'</div>';
+      if (bt.reading) h += '<p style="font-size:.82rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">'+bt.reading+'</p>';
+      if (bt.correspondence) h += '<p style="font-size:.7rem;color:var(--c-text-muted);margin-top:.2rem;line-height:1.45">'+bt.correspondence+'</p>';
+      h += '</div></div></div>';
+    }
+    el.innerHTML = h;
+    // 注入牌陣選擇器（手動模式）
+    try { injectSpreadSelector(); } catch(e) {}
+  };
+})();
+
+// ══════════════════════════════════════════════════════════════════════
+// 10. TAROT_DEEP 擴充：56 張小阿爾克那深度解讀
+// 金色黎明體系：每張牌的心理/事件/風險/時間/人物
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+  if (typeof TAROT_DEEP === 'undefined') return;
+
+  // 輔助：批量定義
+  function D(id, o) { TAROT_DEEP[id] = o; }
+
+  // ═══ 權杖 WANDS (火) id:22-35 ═══
+  D(22,{coreUp:'純粹的創造力火種，新計畫的起始能量',coreRv:'有想法但遲遲不動手',psycheUp:'充滿熱情和信心',psycheRv:'對開始感到焦慮',eventUp:'新專案啟動、靈感爆發',eventRv:'計畫延宕、缺乏動力',riskUp:'只有開頭沒有後續',riskRv:'錯過最佳時機',timeUp:'立即、當下',timeRv:'延遲',personUp:'充滿幹勁的開創者',personRv:'光說不練的空想家'});
+  D(23,{coreUp:'掌握資源後的規劃階段',coreRv:'計畫停滯，猶豫不決',psycheUp:'胸有成竹，運籌帷幄',psycheRv:'失去方向，不知道下一步',eventUp:'談合作、做決策、制定策略',eventRv:'合作談不攏，計畫受阻',riskUp:'想太多而不動手',riskRv:'錯失良機',timeUp:'近期需做決定',timeRv:'時機尚未成熟',personUp:'有遠見的策略家',personRv:'優柔寡斷的人'});
+  D(24,{coreUp:'等待開花結果的耐心期',coreRv:'等不到結果的焦躁',psycheUp:'知道方向對，願意等',psycheRv:'不確定等待是否值得',eventUp:'海外機會、擴張、等待回音',eventRv:'計畫延遲、期望落空',riskUp:'等太久失去耐心',riskRv:'放棄在黎明前',timeUp:'需要再等一段時間',timeRv:'遙遙無期',personUp:'有耐心的遠見者',personRv:'望穿秋水的等待者'});
+  D(25,{coreUp:'穩定的慶祝與收穫',coreRv:'表面和諧下的不安',psycheUp:'滿足感，感恩',psycheRv:'總覺得少了什麼',eventUp:'搬家、結婚、完成里程碑',eventRv:'聚會不歡而散',riskUp:'安逸太久失去動力',riskRv:'根基不穩',timeUp:'穩定期，可以享受',timeRv:'過渡期',personUp:'好客溫暖的主人',personRv:'表面開心實際焦慮的人'});
+  D(26,{coreUp:'競爭中的成長',coreRv:'惡性競爭或內鬥',psycheUp:'鬥志昂揚，享受挑戰',psycheRv:'被衝突消耗',eventUp:'比稿、競標、辯論',eventRv:'團隊內鬥、意見分歧',riskUp:'爭贏了但傷了關係',riskRv:'變成人身攻擊',timeUp:'衝突期但會快速解決',timeRv:'僵持不下',personUp:'有競爭力的選手',personRv:'只顧吵架的人'});
+  D(27,{coreUp:'勝利與公開肯定',coreRv:'私下成功但缺乏認可',psycheUp:'自信心高漲',psycheRv:'渴望認同但得不到',eventUp:'獲獎、升遷、好評如潮',eventRv:'成果被忽視或搶功',riskUp:'自滿招損',riskRv:'默默努力但無人看見',timeUp:'高光時刻',timeRv:'需要更多時間證明',personUp:'站在台上的勝利者',personRv:'幕後英雄'});
+  D(28,{coreUp:'面對眾多挑戰但堅持立場',coreRv:'防線快被攻破',psycheUp:'頑強不屈',psycheRv:'疲憊不堪',eventUp:'同時處理多個問題、堅守底線',eventRv:'四面楚歌',riskUp:'過度防禦變得封閉',riskRv:'真的守不住了',timeUp:'短期壓力大但撐得過',timeRv:'長期消耗戰',personUp:'堅守陣地的戰士',personRv:'筋疲力盡的防守者'});
+  D(29,{coreUp:'快速推進、消息傳來',coreRv:'延遲、誤解、資訊混亂',psycheUp:'期待好消息的興奮',psycheRv:'等待中的焦慮',eventUp:'收到offer、航班、重要訊息',eventRv:'延誤、溝通不良',riskUp:'太急躁犯錯',riskRv:'重要訊息被忽略',timeUp:'快，幾天內',timeRv:'延遲但會到',personUp:'帶來好消息的信使',personRv:'遲到的快遞員'});
+  D(30,{coreUp:'扛著重擔前進的責任感',coreRv:'終於放下重擔',psycheUp:'使命感強但壓力大',psycheRv:'突然輕鬆但可能逃避',eventUp:'承擔重要職責、獨撐大局',eventRv:'辭職、卸任、把責任交出去',riskUp:'身體撐不住',riskRv:'卸責可能有後果',timeUp:'高負荷但有終點',timeRv:'快結束了',personUp:'負重前行的領導者',personRv:'學會放下的人'});
+  D(31,{coreUp:'目標明確的最後衝刺',coreRv:'半途而廢、精力耗盡',psycheUp:'堅定完成的決心',psycheRv:'懷疑是否值得繼續',eventUp:'專案收尾、搬家、長途旅行',eventRv:'拖延症發作',riskUp:'為了完成犧牲健康',riskRv:'功虧一簣',timeUp:'接近終點',timeRv:'還有最後一關',personUp:'咬牙衝線的馬拉松跑者',personRv:'中途棄賽的人'});
+
+  // ═══ 聖杯 CUPS (水) id:36-49 ═══
+  D(36,{coreUp:'情感的新開始，愛的種子',coreRv:'情感封閉或自欺',psycheUp:'心打開了，願意感受',psycheRv:'害怕再受傷',eventUp:'表白、心動、新關係',eventRv:'感情機會錯過',riskUp:'理想化對方',riskRv:'太保護自己反而錯過',timeUp:'感情萌芽期',timeRv:'尚未準備好',personUp:'純真的戀人',personRv:'把心關起來的人'});
+  D(37,{coreUp:'兩人之間的真實連結',coreRv:'表面和諧但缺乏深度',psycheUp:'感受到被理解',psycheRv:'貌合神離',eventUp:'約會、合作、和好',eventRv:'溝通不良、假裝沒事',riskUp:'只看到對方好的一面',riskRv:'冷處理傷害更深',timeUp:'關係升溫期',timeRv:'需要修復期',personUp:'心意相通的伴侶',personRv:'同床異夢的人'});
+  D(38,{coreUp:'值得慶祝的情感豐收',coreRv:'放縱或虛假的歡樂',psycheUp:'真心的快樂',psycheRv:'用派對掩蓋空虛',eventUp:'婚禮、生日、朋友聚會',eventRv:'酒後失態、虛假社交',riskUp:'只顧享樂忘了正事',riskRv:'孤獨被掩蓋',timeUp:'慶祝時刻',timeRv:'狂歡後的空虛',personUp:'快樂的分享者',personRv:'派對結束後最寂寞的人'});
+  D(39,{coreUp:'對已有的感到不滿足',coreRv:'重新感恩珍惜',psycheUp:'倦怠感，覺得無聊',psycheRv:'開始懂得知足',eventUp:'拒絕好機會、對工作或感情失去熱情',eventRv:'回頭珍惜、重新評估',riskUp:'錯過眼前的好事',riskRv:'已經錯過了才後悔',timeUp:'停滯期',timeRv:'覺醒期',personUp:'挑剔的完美主義者',personRv:'學會珍惜的人'});
+  D(40,{coreUp:'失去後的哀傷',coreRv:'開始走出傷痛',psycheUp:'沉浸在遺憾中',psycheRv:'願意向前看了',eventUp:'分手、失去、告別',eventRv:'重新連結、放下過去',riskUp:'被悲傷困住太久',riskRv:'還沒真正處理就急著走',timeUp:'低潮期',timeRv:'轉角處',personUp:'哀悼中的人',personRv:'擦乾眼淚站起來的人'});
+  D(41,{coreUp:'回憶中的溫暖',coreRv:'沉溺過去無法前進',psycheUp:'懷舊的溫柔',psycheRv:'用回憶逃避現實',eventUp:'重逢、回到故鄉、老照片',eventRv:'過度沉溺舊情',riskUp:'活在過去錯過現在',riskRv:'把過去美化了',timeUp:'短暫的回顧',timeRv:'被過去卡住',personUp:'重感情的懷舊者',personRv:'走不出來的人'});
+  D(42,{coreUp:'太多選擇讓人迷幻',coreRv:'回到現實做取捨',psycheUp:'什麼都想要的貪心',psycheRv:'開始務實',eventUp:'面對多個機會或誘惑',eventRv:'認清幻覺、做出選擇',riskUp:'追逐彩虹忘了路',riskRv:'打破幻想的痛',timeUp:'迷茫期',timeRv:'清醒時刻',personUp:'做白日夢的幻想家',personRv:'腳踏實地的人'});
+  D(43,{coreUp:'主動離開不對的地方',coreRv:'離不開或不知道要去哪',psycheUp:'雖然難過但知道該走了',psycheRv:'猶豫不決',eventUp:'主動分手、辭職、離開舒適圈',eventRv:'走不了、困在原地',riskUp:'離開後更孤單',riskRv:'留下來更痛苦',timeUp:'離開的時機到了',timeRv:'還沒準備好',personUp:'有勇氣放手的人',personRv:'捨不得但留不住的人'});
+  D(44,{coreUp:'願望成真，情感圓滿',coreRv:'接近但還差一步',psycheUp:'深層的滿足和感恩',psycheRv:'差一點到手的遺憾',eventUp:'結婚、夢想成真、心靈滿足',eventRv:'目標八成達成但不完美',riskUp:'滿足後失去動力',riskRv:'對結果不夠滿意',timeUp:'圓滿時刻',timeRv:'再等一下',personUp:'心想事成的幸運兒',personRv:'差一步的追夢人'});
+  D(45,{coreUp:'情感的完整循環和圓滿',coreRv:'家庭或關係出現裂痕',psycheUp:'被愛包圍的幸福感',psycheRv:'對家庭/關係感到失望',eventUp:'家庭團聚、長久關係確認',eventRv:'家庭衝突、關係破裂',riskUp:'太依賴這個圓',riskRv:'冷漠或疏離',timeUp:'長期穩定',timeRv:'需要修復期',personUp:'被幸福圍繞的人',personRv:'家庭有傷的人'});
+
+  // ═══ 寶劍 SWORDS (風) id:50-63 ═══
+  D(50,{coreUp:'清晰的洞見，斬斷迷惑',coreRv:'用真相傷人',psycheUp:'頭腦清醒，看穿本質',psycheRv:'過於偏激或武斷',eventUp:'做出重要決定、得到關鍵資訊',eventRv:'資訊被曲解或武器化',riskUp:'真相可能讓人受傷',riskRv:'偏見當作真理',timeUp:'果斷行動的時刻',timeRv:'衝動判斷',personUp:'手持真理之劍的人',personRv:'用言語傷人的人'});
+  D(51,{coreUp:'暫時的僵局需要平衡',coreRv:'做出選擇打破僵局',psycheUp:'在矛盾中求平衡',psycheRv:'選擇了但不確定對不對',eventUp:'調解、等待、需要更多資訊',eventRv:'終於做了決定',riskUp:'逃避選擇太久',riskRv:'倉促決定',timeUp:'等待期',timeRv:'行動期',personUp:'需要時間思考的人',personRv:'終於下決心的人'});
+  D(52,{coreUp:'心碎但必要的痛',coreRv:'開始癒合',psycheUp:'感受到被背叛或失去',psycheRv:'慢慢接受事實',eventUp:'分手、背叛被揭露、令人心痛的真相',eventRv:'傷口開始復原',riskUp:'傷痛轉為怨恨',riskRv:'太快假裝沒事',timeUp:'急性傷痛期',timeRv:'療傷期',personUp:'心碎的人',personRv:'在療傷中的人'});
+  D(53,{coreUp:'必要的休息和恢復',coreRv:'被迫停下或拒絕休息',psycheUp:'需要獨處充電',psycheRv:'躺平太久或過勞',eventUp:'住院、休假、退一步思考',eventRv:'被迫停工、過勞倒下',riskUp:'休息太久失去節奏',riskRv:'身體發出警告了',timeUp:'恢復期',timeRv:'還沒真正休息夠',personUp:'正在充電的人',personRv:'不肯休息的工作狂'});
+  D(54,{coreUp:'以智取勝，策略性的撤退',coreRv:'偷雞不成蝕把米',psycheUp:'精明但有點狡猾',psycheRv:'被自己的聰明反噬',eventUp:'成功的策略、挖到對手的弱點',eventRv:'陰謀被識破',riskUp:'手段太髒毀名聲',riskRv:'被反將一軍',timeUp:'需要智取的時機',timeRv:'詭計被拆穿',personUp:'足智多謀的策略家',personRv:'搬石頭砸自己的人'});
+  D(55,{coreUp:'走過困境後的平靜',coreRv:'還在風暴中',psycheUp:'鬆了一口氣',psycheRv:'看不到盡頭',eventUp:'搬到安全的地方、渡過危機',eventRv:'還在掙扎中',riskUp:'傷痕還在，別急著忘',riskRv:'可能需要求助',timeUp:'最壞的已過去',timeRv:'還需要撐一下',personUp:'渡過難關的倖存者',personRv:'還在風雨中的人'});
+  D(56,{coreUp:'被自己的思想困住',coreRv:'找到出路',psycheUp:'焦慮、過度思考',psycheRv:'突然想開了',eventUp:'失眠、心理壓力大、自我設限',eventRv:'心結解開、走出思維陷阱',riskUp:'在腦子裡打轉出不來',riskRv:'還有一些殘留的擔憂',timeUp:'困擾期',timeRv:'突破期',personUp:'困在自己思維裡的人',personRv:'打開牢籠的人'});
+  D(57,{coreUp:'需要面對不想面對的事',coreRv:'逃避真相',psycheUp:'知道該面對但害怕',psycheRv:'假裝看不見',eventUp:'被監控、資訊洩露、需要透明',eventRv:'隱瞞或自欺',riskUp:'遲早要面對',riskRv:'拖越久越嚴重',timeUp:'真相浮現的時刻',timeRv:'繼續逃避',personUp:'被迫面對真相的人',personRv:'把頭埋進沙裡的人'});
+  D(58,{coreUp:'多慮但沒有行動',coreRv:'開始減少不必要的擔心',psycheUp:'焦慮到失眠',psycheRv:'學會放下焦慮',eventUp:'半夜想太多、壓力夢、精神內耗',eventRv:'情況比想像的好',riskUp:'焦慮影響健康',riskRv:'還有殘留的不安',timeUp:'深夜或凌晨（最焦慮的時段）',timeRv:'天亮了',personUp:'半夜睡不著的焦慮者',personRv:'學會跟焦慮共處的人'});
+  D(59,{coreUp:'痛苦的結束，被迫接受',coreRv:'最壞的已經過去了',psycheUp:'絕望感，覺得沒有出路',psycheRv:'觸底反彈的希望',eventUp:'被開除、被甩、跌到谷底',eventRv:'從谷底爬起來',riskUp:'放棄希望',riskRv:'還有後遺症',timeUp:'最低點',timeRv:'開始回升',personUp:'被命運重擊的人',personRv:'浴火重生的人'});
+
+  // ═══ 錢幣 PENTACLES (土) id:64-77 ═══
+  D(64,{coreUp:'實質的新機會，財富的種子',coreRv:'機會來了但抓不住',psycheUp:'務實且有企圖心',psycheRv:'錯過或不重視眼前的機會',eventUp:'新工作offer、投資機會、實質收入',eventRv:'財務機會流失',riskUp:'只播種不耕耘',riskRv:'太保守錯過',timeUp:'播種期',timeRv:'還沒準備好接住',personUp:'腳踏實地的創業者',personRv:'眼高手低的人'});
+  D(65,{coreUp:'在多個事務間取得平衡',coreRv:'失去平衡、疲於奔命',psycheUp:'靈活變通',psycheRv:'什麼都做但什麼都做不好',eventUp:'兼差、多工、時間管理',eventRv:'優先順序混亂',riskUp:'太多球在空中',riskRv:'哪個球都接不住',timeUp:'忙碌但可控',timeRv:'需要斷捨離',personUp:'多才多藝的斜槓族',personRv:'被瑣事淹沒的人'});
+  D(66,{coreUp:'團隊合作帶來成果',coreRv:'團隊合作出問題',psycheUp:'認為合作比單打獨鬥好',psycheRv:'對團隊失去信心',eventUp:'接到合作案、師徒關係、技能提升',eventRv:'合作不愉快、被排擠',riskUp:'過度依賴團隊',riskRv:'獨來獨往錯過資源',timeUp:'學習期',timeRv:'磨合期',personUp:'優秀的團隊成員',personRv:'無法融入團隊的人'});
+  D(67,{coreUp:'守住已有的資源',coreRv:'過度執著或吝嗇',psycheUp:'安全感來自物質',psycheRv:'缺乏安全感',eventUp:'存錢、保守投資、守住底線',eventRv:'過度囤積或捨不得花',riskUp:'太保守錯過增長',riskRv:'因小失大',timeUp:'守成期',timeRv:'需要放手',personUp:'穩健的理財者',personRv:'守財奴'});
+  D(68,{coreUp:'經歷困難後的相互扶持',coreRv:'走出困境、有人伸出援手',psycheUp:'感到孤立和排斥',psycheRv:'開始接受幫助',eventUp:'失業、經濟困難、被排擠',eventRv:'找到支持系統',riskUp:'一直困在匱乏心態',riskRv:'不好意思求助',timeUp:'低谷期',timeRv:'有人會來幫你',personUp:'困難中互相取暖的人',personRv:'學會開口求助的人'});
+  D(69,{coreUp:'慷慨分享帶來富足',coreRv:'施與受的失衡',psycheUp:'給予讓我快樂',psycheRv:'被佔便宜或不懂感恩',eventUp:'捐款、加薪、獎學金、貴人給予資源',eventRv:'借出去的錢收不回來',riskUp:'給太多消耗自己',riskRv:'封閉不願分享',timeUp:'豐收期',timeRv:'需要重新平衡',personUp:'慷慨的給予者',personRv:'施恩圖報或被佔便宜的人'});
+  D(70,{coreUp:'長期努力終於看到成果',coreRv:'付出但回報不成比例',psycheUp:'踏實的成就感',psycheRv:'付出得不到認可的委屈',eventUp:'收成、回本、事業穩定',eventRv:'報酬不符期望',riskUp:'把自我價值綁在報酬上',riskRv:'被低估了不敢爭取',timeUp:'收穫期',timeRv:'需要重新議價',personUp:'埋頭苦幹終於出頭的人',personRv:'勞多獲少的人'});
+  D(71,{coreUp:'耐心等待的投資期',coreRv:'不耐煩或放棄',psycheUp:'相信時間會給答案',psycheRv:'對回報失去信心',eventUp:'長線投資、等待升值、進修中',eventRv:'投資失利、半途而廢',riskUp:'等太久機會成本高',riskRv:'太早放棄',timeUp:'中長期',timeRv:'需要重新評估期限',personUp:'有耐心的投資者',personRv:'急功近利的人'});
+  D(72,{coreUp:'物質與精神的完美平衡',coreRv:'物質豐富但精神空虛',psycheUp:'富足且自在',psycheRv:'有錢但不快樂',eventUp:'財務自由、傳承、優質生活',eventRv:'用錢填補空虛',riskUp:'炫富或驕傲',riskRv:'失去生活重心',timeUp:'穩定的富足期',timeRv:'需要找回意義',personUp:'既富且貴的人',personRv:'金玉其外的人'});
+  D(73,{coreUp:'家族財富與世代傳承',coreRv:'家族問題或遺產糾紛',psycheUp:'歸屬感和傳承使命',psycheRv:'家族壓力',eventUp:'繼承、家族事業、買房置產',eventRv:'遺產爭議、家族企業問題',riskUp:'被家族期望綁住',riskRv:'家產散掉',timeUp:'長期傳承',timeRv:'需要處理家族事務',personUp:'家族的守護者',personRv:'被家族紛爭困擾的人'});
+
+  console.log('[DEEP] 小阿爾克那 56 張深度解讀已載入');
+})();
+
+// ══ 16 張宮廷牌 DEEP（補齊 78/78）══
+(function(){
+  if (typeof TAROT_DEEP === 'undefined') return;
+  function D(id, o) { TAROT_DEEP[id] = o; }
+
+  // 權杖宮廷（id 32-35）
+  D(32,{coreUp:'火元素的初學者：有熱情但不穩定',coreRv:'三分鐘熱度',psycheUp:'對新事物充滿好奇',psycheRv:'注意力分散',eventUp:'收到好消息、開始新學習',eventRv:'消息延遲',riskUp:'做太多但完成太少',riskRv:'失去興趣',timeUp:'起步期',timeRv:'等待更好時機',personUp:'熱情的新手',personRv:'三分鐘熱度的人'});
+  D(33,{coreUp:'火焰被風助燃，極致行動力',coreRv:'衝動無腦',psycheUp:'想到就做的魄力',psycheRv:'根本沒想過後果',eventUp:'搬家、旅行、突然的冒險',eventRv:'車禍或魯莽行為',riskUp:'燒得太快燒完了',riskRv:'闖禍',timeUp:'非常快',timeRv:'太急反而誤事',personUp:'風火般的行動者',personRv:'魯莽的冒失鬼'});
+  D(34,{coreUp:'火中的滋養力，熱情且有包容',coreRv:'控制慾或嫉妒',psycheUp:'溫暖自信的領導力',psycheRv:'佔有慾過強',eventUp:'創業成功、被信任、成為核心人物',eventRv:'情緒失控或嫉妒爆發',riskUp:'把溫暖變成控制',riskRv:'用熱情窒息別人',timeUp:'穩定中帶有熱力',timeRv:'情緒風暴期',personUp:'魅力型領袖',personRv:'佔有慾強的人'});
+  D(35,{coreUp:'純粹的火焰意志力',coreRv:'暴君或獨裁',psycheUp:'絕對的自信和決斷',psycheRv:'不聽勸的固執',eventUp:'創業領導、大刀闊斧改革',eventRv:'獨裁引發反抗',riskUp:'太霸道失人心',riskRv:'眾叛親離',timeUp:'快速決斷',timeRv:'需要緩一下',personUp:'有遠見的領袖',personRv:'一言堂的暴君'});
+
+  // 聖杯宮廷
+  D(46,{coreUp:'情感的新芽，純真的感受力',coreRv:'情緒不成熟',psycheUp:'對世界充滿好奇和善意',psycheRv:'玻璃心',eventUp:'初戀、第一次被感動',eventRv:'過度敏感受傷',riskUp:'太天真被傷',riskRv:'情緒反應過度',timeUp:'萌芽期',timeRv:'尚未成熟',personUp:'純真的孩子',personRv:'情緒化的小孩'});
+  D(47,{coreUp:'帶著愛的邀請',coreRv:'虛假的承諾',psycheUp:'浪漫理想化',psycheRv:'畫大餅',eventUp:'告白、求婚、浪漫驚喜',eventRv:'空頭支票',riskUp:'太浪漫不切實際',riskRv:'被騙感情',timeUp:'邀請期',timeRv:'先觀望',personUp:'浪漫的追求者',personRv:'不可靠的情人'});
+  D(48,{coreUp:'純粹的情感直覺力',coreRv:'情緒失控或依賴',psycheUp:'深層的共情和直覺',psycheRv:'被情緒淹沒',eventUp:'藝術創作、心靈連結、直覺準確',eventRv:'情緒化決策',riskUp:'替別人的情緒負責',riskRv:'失去自我邊界',timeUp:'順著感覺走',timeRv:'先穩定情緒',personUp:'有共感力的療癒者',personRv:'情緒勒索的人'});
+  D(49,{coreUp:'情感的成熟智慧',coreRv:'冷漠或情感操控',psycheUp:'外冷內熱的深沉',psycheRv:'用冷靜掩蓋冷漠',eventUp:'成為情感上的支柱',eventRv:'情感操控或封閉',riskUp:'太壓抑自己',riskRv:'變得不近人情',timeUp:'沉穩期',timeRv:'需要打開心房',personUp:'沉穩的靈魂伴侶',personRv:'情感操控者'});
+
+  // 寶劍宮廷（id 60-63）
+  D(60,{coreUp:'思維的新學徒',coreRv:'多疑或散播謠言',psycheUp:'好奇心旺盛',psycheRv:'偷窺或八卦',eventUp:'調查、學習新知、發現真相',eventRv:'散播未經證實的消息',riskUp:'知道太多反而危險',riskRv:'成為是非製造機',timeUp:'調查期',timeRv:'先查證再說',personUp:'機靈的偵探',personRv:'搬弄是非的人'});
+  D(61,{coreUp:'思維的極速風暴',coreRv:'口無遮攔或魯莽言行',psycheUp:'思維極快但缺乏同理',psycheRv:'用言語當武器',eventUp:'辯論獲勝、快速解決問題',eventRv:'傷人的話或衝動決定',riskUp:'嘴太快傷感情',riskRv:'變成霸凌者',timeUp:'快到讓人措手不及',timeRv:'急煞車',personUp:'犀利的辯論家',personRv:'嘴巴很毒的人'});
+  D(62,{coreUp:'以直覺輔助理性的洞察力',coreRv:'冷漠或疏離',psycheUp:'獨立清醒',psycheRv:'孤獨成為習慣',eventUp:'做出理性但艱難的決定',eventRv:'太冷漠傷害親近的人',riskUp:'高處不勝寒',riskRv:'沒人敢靠近',timeUp:'需要冷靜判斷的時刻',timeRv:'別把自己隔絕太久',personUp:'冷靜的決策者',personRv:'冰山美人'});
+  D(63,{coreUp:'最高的理性權威',coreRv:'冷酷無情',psycheUp:'以邏輯和公正為最高原則',psycheRv:'完全沒有感情的機器',eventUp:'法律判決、高層決策',eventRv:'不近人情的裁決',riskUp:'正確但不一定對',riskRv:'用權力壓人',timeUp:'審判時刻',timeRv:'上訴期',personUp:'公正的法官',personRv:'冷血的獨裁者'});
+
+  // 錢幣宮廷
+  D(74,{coreUp:'踏實學習物質世界的規則',coreRv:'好高騖遠',psycheUp:'認真且務實',psycheRv:'眼高手低',eventUp:'實習、學徒、開始存錢',eventRv:'不切實際的計畫',riskUp:'學太慢跟不上',riskRv:'根本不想從基層做起',timeUp:'學習期',timeRv:'還沒準備好',personUp:'認真的學徒',personRv:'嫌苦嫌累的人'});
+  D(75,{coreUp:'穩扎穩打的行動力',coreRv:'速度太慢錯過機會',psycheUp:'相信穩定就是最好的策略',psycheRv:'固執不知變通',eventUp:'按計畫推進、穩定收入',eventRv:'項目進度落後',riskUp:'太慢被超越',riskRv:'市場變了你還沒動',timeUp:'按部就班',timeRv:'需要加速',personUp:'可靠的執行者',personRv:'慢到讓人急死的人'});
+  D(76,{coreUp:'大地的滋養與富足',coreRv:'物質主義或過度操心',psycheUp:'享受生活中的美好',psycheRv:'用物質填補不安',eventUp:'投資回報、環境改善、懷孕',eventRv:'過度消費或擔心錢',riskUp:'太安逸失去上進心',riskRv:'用錢買安全感',timeUp:'豐收享受期',timeRv:'需要節制',personUp:'懂得生活的富人',personRv:'購物成癮的人'});
+  D(77,{coreUp:'物質世界的最高掌控者',coreRv:'守財奴或過度物質化',psycheUp:'以穩健的手腕累積財富',psycheRv:'只看錢不看人',eventUp:'事業頂峰、投資成功、財務自由',eventRv:'為了錢失去重要的東西',riskUp:'把錢看得比什麼都重',riskRv:'富裕但孤獨',timeUp:'收成期',timeRv:'該思考錢以外的事了',personUp:'成功的企業家',personRv:'眼裡只有錢的人'});
+
+  console.log('[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成');
+})();
+
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v80.14 正統抽牌建構器：Mathers 21 / Mathers 54 不可只取前 N 張
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+  if (window.JY_buildCanonicalTarotDraw) return;
+
+  function _jyRng(seed) {
+    if (typeof makeSeededRng === 'function') return makeSeededRng(String(seed || ''), 'tarot-canonical', 'v80.14');
+    return Math.random;
+  }
+  function _jyOrient(card, seed, spreadId, idx, forceUpright) {
+    if(window.JYTarotReading)return window.JYTarotReading.orientation(spreadId);
+    if (window.JYGoldenDawn && window.JYGoldenDawn.forceUpright(spreadId)) return true;
+    if (forceUpright) return true;
+    var r = _jyRng(String(seed || '') + '|' + spreadId + '|' + idx + '|' + (card && card.id));
+    if (typeof r === 'function') {
+      for (var i=0;i<((card && card.id) || 0)+idx+1;i++) r();
+      return r() >= 0.5;
+    }
+    return Math.random() >= 0.5;
+  }
+  function _jyCloneCard(card, isUp, posName, seq, extra) {
+    var out = Object.assign({}, card || {});
+    out.isUp = !!isUp;
+    out.pos = posName || '';
+    out.seq = seq || 0;
+    if (extra) Object.assign(out, extra);
+    return out;
+  }
+  function _jyPos(spreadDef, i) {
+    return (spreadDef && spreadDef.positions && spreadDef.positions[i]) ? spreadDef.positions[i].name : ('第' + (i+1) + '張');
+  }
+
+  window.JY_buildCanonicalTarotDraw = function(shuffled, spreadId, spreadDef, seed, type, question) {
+    if (!shuffled || !shuffled.length || !spreadDef) return [];
+    var deck = shuffled.slice();
+    var out = [];
+
+    // Mathers Second Method：代表牌先抽出；剩餘牌每數到第七張取出，直到 21 張。
+    if (spreadId === 'mathers_21') {
+      if(deck.length!==78||new Set(deck.map(function(c){return c.id;})).size!==78)throw new Error('Mathers 第二法需要78張不重複的完整牌組');
+      // 原書使用國王／皇后代表牌。未提供人工選擇時，明示本站的自動選法。
+      var sigIndex=deck.findIndex(function(c){return c.id===window._jyMathersSignificatorId&&/^(king|queen)$/.test(c.rank||'');});
+      var sigPolicy=sigIndex>=0?'使用者預選的國王／皇后':'本站自動取洗牌後首張國王／皇后；未作人物性格配牌';
+      if(sigIndex<0)sigIndex=deck.findIndex(function(c){return /^(king|queen)$/.test(c.rank||'');});
+      if(sigIndex<0)throw new Error('Mathers 第二法需要包含國王／皇后的完整牌組');
+      var sig = deck.splice(sigIndex,1)[0];
+      window._jyLastMathersSignificator = sig ? Object.assign({}, sig, { isSignificator:true, isUp:true }) : null;
+      var idx = 0;
+      for (var k=0; k<21 && deck.length; k++) {
+        // 原文先取頂牌，再從下一張起數七张；抽出的牌移除後繼續循環。
+        if(k>0)idx = (idx + 6) % deck.length;
+        var card = deck.splice(idx, 1)[0];
+        out.push(_jyCloneCard(card, _jyOrient(card, seed, spreadId, k, false), _jyPos(spreadDef, k), k+1, {
+          mathersGroup: 'B',
+          mathersMethod: 'Second Method every seventh card',
+          mathersPair: k===10?'中心單張':(Math.min(k+1,21-k)+'↔'+Math.max(k+1,21-k))
+        }));
+      }
+      out[0].drawProcedure={id:'mathers_21',description:'第二法：抽出代表牌後，先取頂牌，再由下一張起每數七張取一張；已抽牌移除，循環至21張。三排由右往左，另作首尾配對。牌義採本次選用體系，非1888原書牌義復刻。',significator:{id:sig.id,name:sig.n,policy:sigPolicy}};
+      if(window.JYTarotReading)out.forEach(function(c){window.JYTarotReading.apply(c,c.isUp,spreadId);});
+      if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(out);
+      return out;
+    }
+
+    // Mathers First Method：依序形成 A=26、C=17、E=11 三組；剩餘 F=24 不讀。
+    if (spreadId === 'mathers_horseshoe') {
+      if(deck.length!==78||new Set(deck.map(function(c){return c.id;})).size!==78)throw new Error('Mathers 第一法需要78張不重複的完整牌組');
+      // 每輪第2、5、8…張入所選堆，其餘續分；不能把前54張切成三段。
+      // Each dealt card lands on TOP of its heap. Arrays always represent top-to-bottom.
+      // The source's 35-card dealing text would select 12, yet it explicitly lists
+      // E=11/F=24. Follow its stated heap sizes: incomplete final triples stay in F.
+      function splitThird(input){var selected=[],rest=[],limit=Math.floor(input.length/3);input.forEach(function(c,i){(i%3===1&&selected.length<limit?selected:rest).unshift(c);});return {selected:selected,rest:rest};}
+      var ab=splitThird(deck),cd=splitThird(ab.rest),ef=splitThird(cd.rest);
+      var spec = [
+        {g:'A', count:26, center:null,cards:ab.selected},
+        {g:'C', count:17, center:9,cards:cd.selected},
+        {g:'E', count:11, center:6,cards:ef.selected}
+      ];
+      var posIdx = 0;
+      for (var si=0; si<spec.length; si++) {
+        var g = spec[si];
+        for (var j=1; j<=g.count; j++) {
+          var c = g.cards[j-1];
+          var pair;
+          if (g.count % 2 === 1 && j === Math.ceil(g.count/2)) pair = '中心單張';
+          else {
+            var other = g.count + 1 - j;
+            pair = g.g + Math.min(j, other) + '↔' + g.g + Math.max(j, other);
+          }
+          out.push(_jyCloneCard(c, _jyOrient(c, seed, spreadId, posIdx, false), _jyPos(spreadDef, posIdx), posIdx+1, {
+            mathersGroup: g.g,
+            mathersGroupIndex: j,
+            mathersMethod: 'First Method A/C/E horseshoe; F discarded',
+            mathersPair: pair
+          }));
+          posIdx++;
+        }
+      }
+      window._jyMathersDiscardedF = ef.rest.map(function(card){ return {id:card.id, n:card.n}; });
+      out[0].drawProcedure={id:'mathers_horseshoe',description:'第一法衍生：每輪第2、5、8…張入選，按原文明示張數形成A26、C17、E11與F24；末輪未滿三張的尾牌留F。原書35張的逐張描述會得到12/23，與所列11/24有出入，本站採後者，不隱藏此歧義。發入牌覆在堆頂，下一輪由堆頂起取；A/C/E各自向左展開並首尾配對，F不讀。牌義採本次選用體系。',groupCounts:[26,17,11],discardedCount:ef.rest.length};
+      if(window.JYTarotReading)out.forEach(function(c){window.JYTarotReading.apply(c,c.isUp,spreadId);});
+      if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(out);
+      return out;
+    }
+
+    // Fifteen-card Golden Dawn 衍生不使用逆位。
+    if (spreadId === 'fifteen_card') {
+      for (var f=0; f<15 && f<deck.length; f++) out.push(_jyCloneCard(deck[f], true, _jyPos(spreadDef, f), f+1));
+      if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(out);
+      return out;
+    }
+
+    // 所有其餘牌陣共用同一個 Book T 抽牌建構器：牌面方向不形成
+    // Waite 式固定逆位，強弱在解讀時由位置、相鄰元素尊貴與拓撲裁決。
+    var need = (spreadDef.positions && spreadDef.positions.length) || spreadDef.count || deck.length;
+    for (var d=0; d<need && d<deck.length; d++) {
+      var reading=window.JYTarotReading;
+      var drawnCard=_jyCloneCard(deck[d], reading?reading.orientation(spreadId):true, _jyPos(spreadDef, d), d+1);
+      if(reading)reading.apply(drawnCard,drawnCard.isUp,spreadId);
+      out.push(drawnCard);
+    }
+    if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(out);
+    return out;
+  };
+})();
+
+// ══════════════════════════════════════════════════════════════════════
+// 10. 牌陣自適應佈局 — 覆寫 initTarotDeck + pickCard + showSpread
+// ══════════════════════════════════════════════════════════════════════
+(function() {
+
+  // ── 注入 CSS（一次性）──
+  if (!document.getElementById('jy-spread-css')) {
+    var st = document.createElement('style');
+    st.id = 'jy-spread-css';
+    st.textContent = [
+      '#t-chosen .jy-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0;width:100%}',
+      '#t-chosen .tarot-chosen-slot{position:relative!important;min-width:42px;min-height:58px;border:1px solid rgba(212,175,55,.18)!important;border-radius:8px!important;background:rgba(212,175,55,.035)!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;overflow:visible!important}',
+      '#t-chosen .jy-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}',
+      '#t-chosen .jy-col{display:flex;flex-direction:column;align-items:center;gap:8px}',
+      '#t-chosen .jy-lbl{font-size:.65rem;color:var(--c-gold,#c9a84c);font-weight:600}',
+      '#t-chosen .jy-arrow{font-size:.6rem;color:var(--c-text-dim,#888);text-align:center;opacity:.5}',
+      // 覆蓋 .tarot-chosen-slot 的 position:absolute
+      '#t-chosen .jy-wrap .tarot-chosen-slot{position:relative!important;width:62px!important;height:92px!important;border:1px solid rgba(212,175,55,.15)!important;border-radius:8px!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;flex-shrink:0!important;background:rgba(212,175,55,.03)!important;box-shadow:0 0 8px rgba(212,175,55,.04)!important}',
+      '#t-chosen .jy-wrap .tarot-chosen-slot .slot-label{position:absolute;bottom:-14px;font-size:.48rem;color:rgba(212,175,55,.4);white-space:nowrap;text-align:center;width:80px;left:50%;transform:translateX(-50%);opacity:.7}',
+      '#t-chosen .jy-wrap .tarot-chosen-slot .slot-num{font-size:.55rem;opacity:.3;color:rgba(212,175,55,.3)}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
+  // v80.40 治本：S() 與 buildSlotLayout 是「並列」函式，S() 內卻引用了只存在於
+  //   buildSlotLayout 參數作用域的 spreadId → 每次呼叫 S() 都 ReferenceError，
+  //   導致 buildSlotLayout 整個拋錯、退回通用方格（所有牌陣都畫不出正統排列）。
+  //   改用此 IIFE 作用域變數，由 buildSlotLayout 進入時設定，S() 才讀得到。
+  var _jyCurSpreadId = '';
+
+  function S(id, num, label) {
+    // ★ 已抽到該位置的牌時，直接畫牌面（修正「快速全抽 / 重渲染後格子留空」）。
+    //   drawnCards[id] = 該位置的牌（canonical 全抽與逐張選都以位置索引對齊 t-slot-id）。
+    var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
+    var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
+    var _ic = (_jyCurSpreadId === 'celtic_cross' && id === 1); // 凱爾特「跨越牌」橫置
+    if (_dc && _di) {
+      var face=window.JYTarotReading?window.JYTarotReading.face(_dc):'<img src="'+_di+'" class="tc-img"><span class="tc-name">'+_dc.n+'</span><span class="tc-dir up">正向・Book T</span>';
+      return '<div class="tarot-chosen-slot filled" id="t-slot-'+id+'"><div class="tarot-reveal flipping" style="'+(_ic?'transform:rotate(-90deg)':'')+'"><div class="tarot-reveal-inner"><div class="tarot-reveal-back"></div><div class="tarot-reveal-front">'+face+'</div></div></div>'+(_ic?'':'<span class="slot-label">'+label+'</span>')+'</div>';
+    }
+    return '<div class="tarot-chosen-slot" id="t-slot-'+id+'"><span class="slot-num">'+num+'</span><span class="slot-label">'+label+'</span></div>';
+  }
+
+  function buildSlotLayout(spreadId, def) {
+    if (!def) return null;
+    // v80.38 治本：版面一律以「牌陣定義」為準。若傳入的 spreadId 與 def.id 不一致
+    //   （例如沿用到前一個牌陣的舊值），會掉進最後的通用方格分支、失去正統排列。
+    //   這裡強制對齊 def.id，正統排版（凱爾特／生命之樹／黃道／Mathers…）才不會被跳過。
+    if (def.id && def.id !== spreadId) spreadId = def.id;
+    _jyCurSpreadId = spreadId; // v80.40：供並列的 S() 判斷凱爾特跨越牌橫置，避免 ReferenceError
+    var P = def.positions || [];
+    function pn(i) { return P[i] ? P[i].name : ''; }
+    var h = '<div class="jy-wrap">';
+
+    if (spreadId === 'celtic_cross') {
+      // ── Waite 凱爾特十字正統排列 ──
+      // 上：3 Crowns / 下：4 Beneath / 左：5 Behind / 右：6 Before
+      // 右柱由下往上：7 Himself, 8 House, 9 Hopes/Fears, 10 What will come
+      h += '<style>#t-chosen .jy-celtic{display:grid;grid-template-columns:70px 70px 70px 18px 70px;grid-template-rows:auto auto auto;gap:24px 8px;align-items:center;justify-content:center}';
+      h += '#t-chosen .jy-celtic .gc-top{grid-column:2;grid-row:1;justify-self:center}';
+      h += '#t-chosen .jy-celtic .gc-left{grid-column:1;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-celtic .gc-center{grid-column:2;grid-row:2;justify-self:center;position:relative}';
+      h += '#t-chosen .jy-celtic .gc-right{grid-column:3;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-celtic .gc-bottom{grid-column:2;grid-row:3;justify-self:center}';
+      h += '#t-chosen .jy-celtic .gc-staff{grid-column:5;grid-row:1/4;display:flex;flex-direction:column-reverse;align-items:center;gap:26px}</style>';
+      h += '<div class="jy-celtic">';
+      h += '<div class="gc-top">' + S(2,3,pn(2)) + '</div>';
+      h += '<div class="gc-left">' + S(4,5,pn(4)) + '</div>';
+      h += '<div class="gc-center">' + S(0,1,pn(0)) + '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);pointer-events:none;z-index:6">' + S(1,2,'') + '</div></div>';
+      h += '<div class="gc-right">' + S(5,6,pn(5)) + '</div>';
+      h += '<div class="gc-bottom">' + S(3,4,pn(3)) + '</div>';
+      h += '<div class="gc-staff">' + S(6,7,pn(6)) + S(7,8,pn(7)) + S(8,9,pn(8)) + S(9,10,pn(9)) + '</div>';
+      h += '</div>';
+    }
+    else if (spreadId === 'mathers_21') {
+      // ── Mathers 1888 第二法：三排七張；每排由代表牌旁向左讀 ──
+      h += '<style>#t-chosen .jy-m21-wrap{display:flex;align-items:center;justify-content:center;gap:12px;overflow-x:auto;max-width:100%;padding-bottom:6px}';
+      h += '#t-chosen .jy-m21-rows{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:540px}';
+      h += '#t-chosen .jy-m21-row{display:flex;flex-direction:row;gap:8px;justify-content:flex-end}';
+      h += '#t-chosen .jy-m21-sig{width:54px;min-height:300px;border:1px dashed rgba(212,175,55,.35);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.65rem;writing-mode:vertical-rl;background:rgba(212,175,55,.035)}';
+      h += '#t-chosen .jy-m21-note{font-size:.65rem;color:var(--c-text-dim);text-align:center;margin-top:4px}</style>';
+      h += '<div class="jy-m21-note">Mathers 第二法：代表牌在最右；每排從右往左讀，之後 1↔21、2↔20…配對</div>';
+      h += '<div class="jy-m21-wrap"><div class="jy-m21-rows">';
+      for (var r=0; r<3; r++) {
+        h += '<div class="jy-m21-row">';
+        for (var c=6; c>=0; c--) {
+          var idx = r*7 + c;
+          h += S(idx, idx+1, pn(idx));
+        }
+        h += '</div>';
+      }
+      h += '</div><div class="jy-m21-sig">Significator<br>代表牌</div></div>';
+    }
+    else if (spreadId === 'mathers_horseshoe') {
+      // ── Mathers 1888 第一法：A=26, C=17, E=11；F=24 棄用不讀 ──
+      function arcGroup(title, start, count, cls) {
+        var gh = '<div class="mh-title">' + title + '</div><div class="jy-mh-arc ' + cls + '">';
+        for (var i=0; i<count; i++) {
+          var t = (count === 1) ? 0.5 : i/(count-1);
+          // 右上 → 底部 → 左上：由右到左讀
+          var deg = -35 + 250*t;
+          var rad = deg * Math.PI / 180;
+          var x = 50 + 44*Math.cos(rad);
+          var y = 20 + 70*Math.sin(rad);
+          var idx = start + i;
+          gh += '<div class="mh-slot" style="left:'+x.toFixed(2)+'%;top:'+y.toFixed(2)+'%">' + S(idx, idx+1, pn(idx)) + '</div>';
+        }
+        gh += '</div>';
+        return gh;
+      }
+      h += '<style>#t-chosen .jy-mh-wrap{width:100%;max-width:720px;overflow-x:auto;padding-bottom:10px}';
+      h += '#t-chosen .jy-mh-inner{min-width:620px;display:flex;flex-direction:column;gap:18px;align-items:center}';
+      h += '#t-chosen .mh-title{font-size:.72rem;color:var(--c-gold);font-weight:700;text-align:center;margin-bottom:2px}';
+      h += '#t-chosen .jy-mh-arc{position:relative;width:600px;height:230px;margin:0 auto;border-bottom:1px dashed rgba(212,175,55,.12);border-radius:0 0 50% 50%}';
+      h += '#t-chosen .jy-mh-arc.mh-c{width:520px;height:205px}#t-chosen .jy-mh-arc.mh-e{width:430px;height:185px}';
+      h += '#t-chosen .jy-mh-arc .mh-slot{position:absolute;transform:translate(-50%,-50%)}';
+      h += '#t-chosen .jy-mh-arc .tarot-chosen-slot{width:38px!important;height:57px!important;border-radius:6px!important}';
+      h += '#t-chosen .jy-mh-arc .slot-label{font-size:.42rem!important;bottom:-11px!important;width:58px!important;overflow:hidden;text-overflow:ellipsis}';
+      h += '#t-chosen .jy-mh-note{font-size:.65rem;color:var(--c-text-dim);line-height:1.5;text-align:center;max-width:620px}</style>';
+      h += '<div class="jy-mh-wrap"><div class="jy-mh-inner">';
+      h += '<div class="jy-mh-note">Mathers 第一法完整讀法：A/C/E 各自成 horseshoe，從右往左讀；F=24 張棄用不讀。</div>';
+      h += arcGroup('A 組 26 張：第一個 horseshoe', 0, 26, 'mh-a');
+      h += arcGroup('C 組 17 張：第二個 horseshoe', 26, 17, 'mh-c');
+      h += arcGroup('E 組 11 張：第三個 horseshoe', 43, 11, 'mh-e');
+      h += '</div></div>';
+    }
+    else if (spreadId === 'fifteen_card') {
+      // ── 正統布局（Golden Dawn 衍生實務；arnellart「opposing elements in opposing corners」）──
+      //   核心三張 2-1-3 居中＝Spirit；四組三張環繞，對立元素置於對角（火↔水、風↔土）。
+      //   每組＝同方位內/中/外三圈，內圈靠核心、外圈最遠，主牌＝中圈(8/9/10/11)。
+      //   左上＝土(自然4,8,12) 右上＝水(替代5,9,13) 左下＝火(命運7,11,15) 右下＝風(心理6,10,14)
+      h += '<style>#t-chosen .jy-15{display:flex;flex-direction:column;align-items:center;gap:4px}'
+        + '#t-chosen .jy-15 .g15-top,#t-chosen .jy-15 .g15-bot{display:flex;gap:40px;justify-content:center;align-items:flex-start}'
+        + '#t-chosen .jy-15 .g15-core{display:flex;gap:10px;justify-content:center;margin:3px 0}'
+        + '#t-chosen .jy-15 .g15-arm{display:flex;flex-direction:column;gap:9px}</style>';
+      h += '<div class="jy-15">';
+      h += '<div class="g15-top">';
+      h += '<div class="g15-arm">' + S(11,12,pn(11)) + S(7,8,pn(7)) + S(3,4,pn(3)) + '</div>';
+      h += '<div class="g15-arm">' + S(12,13,pn(12)) + S(8,9,pn(8)) + S(4,5,pn(4)) + '</div>';
+      h += '</div>';
+      h += '<div class="g15-core">' + S(1,2,pn(1)) + S(0,1,pn(0)) + S(2,3,pn(2)) + '</div>';
+      h += '<div class="g15-bot">';
+      h += '<div class="g15-arm">' + S(6,7,pn(6)) + S(10,11,pn(10)) + S(14,15,pn(14)) + '</div>';
+      h += '<div class="g15-arm">' + S(5,6,pn(5)) + S(9,10,pn(9)) + S(13,14,pn(13)) + '</div>';
+      h += '</div>';
+      h += '</div>';
+    }
+    else if (spreadId === 'tree_of_life') {
+      // ── 生命之樹：卡巴拉 Sephiroth 正統三柱排列 ──
+      // 右柱(慈悲/陽)：Chokmah(2)・Chesed(4)・Netzach(7)
+      // 左柱(嚴厲/陰)：Binah(3)・Geburah(5)・Hod(8)
+      // 中柱(均衡)：Kether(1)・Tiphereth(6)・Yesod(9)・Malkuth(10)
+      // 故每一對「左=奇數(3/5/8)、右=偶數(2/4/7)」，與傳統樹形圖一致。
+      h += '<style>#t-chosen .jy-tol{display:flex;flex-direction:column;align-items:center;gap:8px}';
+      h += '#t-chosen .jy-tol .tol-pair{display:flex;gap:24px;justify-content:center}</style>';
+      h += '<div class="jy-tol">';
+      h += S(0,1,pn(0));
+      h += '<div class="tol-pair">' + S(2,3,pn(2)) + S(1,2,pn(1)) + '</div>'; // 左 Binah(3)・右 Chokmah(2)
+      h += '<div class="tol-pair">' + S(4,5,pn(4)) + S(3,4,pn(3)) + '</div>'; // 左 Geburah(5)・右 Chesed(4)
+      h += S(5,6,pn(5));
+      h += '<div class="tol-pair">' + S(7,8,pn(7)) + S(6,7,pn(6)) + '</div>'; // 左 Hod(8)・右 Netzach(7)
+      h += S(8,9,pn(8));
+      h += S(9,10,pn(9));
+      h += '</div>';
+    }
+    else if (spreadId === 'zodiac') {
+      // ── 黃道十二宮：占星輪盤；1宮在左、4宮下、7宮右、10宮上 ──
+      h += '<style>#t-chosen .jy-zodiac{position:relative;width:320px;height:320px;margin:0 auto}';
+      h += '#t-chosen .jy-zodiac .zod-slot{position:absolute;transform:translate(-50%,-50%)}';
+      h += '#t-chosen .jy-zodiac .zod-slot .tarot-chosen-slot{width:46px!important;height:68px!important}';
+      h += '#t-chosen .jy-zodiac .zod-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}</style>';
+      h += '<div class="jy-zodiac">';
+      for (var zi = 0; zi < 12; zi++) {
+        // 正統占星盤：第1宮在 9 點鐘(左/東方地平線)，依「逆時針」排列
+        //   → 1宮左、4宮(天底)下、7宮(下降)右、10宮(天頂)上。
+        var angle = (180 - zi * 30) * Math.PI / 180;
+        var cx = 50 + 42 * Math.cos(angle);
+        var cy = 50 + 42 * Math.sin(angle);
+        h += '<div class="zod-slot" style="left:' + cx.toFixed(1) + '%;top:' + cy.toFixed(1) + '%">' + S(zi, zi+1, (zi+1)+'宮') + '</div>';
+      }
+      h += '<div class="zod-center">' + S(12, 13, '總結') + '</div>';
+      h += '</div>';
+    }
+    else if (spreadId === 'minor_arcana') {
+      h += '<div class="jy-row">' + S(0,1,pn(0)) + S(1,2,pn(1)) + S(2,3,pn(2)) + S(3,4,pn(3)) + '</div>';
+      h += '<div class="jy-row">' + S(4,5,pn(4)) + S(5,6,pn(5)) + S(6,7,pn(6)) + '</div>';
+    }
+    else if (spreadId === 'three_card') {
+      h += '<div class="jy-row">' + S(0,1,pn(0)) + S(1,2,pn(1)) + S(2,3,pn(2)) + '</div>';
+      h += '<div class="jy-arrow">← 過去 ─ 現在 ─ 未來 →</div>';
+    }
+    else if (spreadId === 'five_card') {
+      h += '<div class="jy-row">' + S(0,1,pn(0)) + S(1,2,pn(1)) + S(2,3,pn(2)) + '</div>';
+      h += '<div class="jy-row">' + S(3,4,pn(3)) + S(4,5,pn(4)) + '</div>';
+    }
+    else if (spreadId === 'cross') {
+      // ── 十字牌陣：正統十字形（中心＋上下左右四臂）──
+      //   中=核心(0)、上=阻礙(1)、左=過去(2)、右=未來(3)、下=建議(4)
+      h += '<style>#t-chosen .jy-cross5{display:grid;grid-template-columns:70px 70px 70px;grid-template-rows:auto auto auto;gap:10px 8px;justify-content:center;align-items:center}';
+      h += '#t-chosen .jy-cross5 .cx-top{grid-column:2;grid-row:1;justify-self:center}';
+      h += '#t-chosen .jy-cross5 .cx-left{grid-column:1;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-cross5 .cx-mid{grid-column:2;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-cross5 .cx-right{grid-column:3;grid-row:2;justify-self:center}';
+      h += '#t-chosen .jy-cross5 .cx-bottom{grid-column:2;grid-row:3;justify-self:center}</style>';
+      h += '<div class="jy-cross5">';
+      h += '<div class="cx-top">' + S(1,2,pn(1)) + '</div>';
+      h += '<div class="cx-left">' + S(2,3,pn(2)) + '</div>';
+      h += '<div class="cx-mid">' + S(0,1,pn(0)) + '</div>';
+      h += '<div class="cx-right">' + S(3,4,pn(3)) + '</div>';
+      h += '<div class="cx-bottom">' + S(4,5,pn(4)) + '</div>';
+      h += '</div>';
+    }
+    else if (spreadId === 'horseshoe') {
+      h += '<div class="jy-row">' + S(6,7,pn(6)) + S(5,6,pn(5)) + S(4,5,pn(4)) + '</div>';
+      h += '<div class="jy-row">' + S(0,1,pn(0)) + S(1,2,pn(1)) + S(2,3,pn(2)) + S(3,4,pn(3)) + '</div>';
+    }
+    else if (spreadId === 'either_or') {
+      h += S(0,1,pn(0));
+      h += '<div class="jy-row" style="gap:24px">';
+      h += '<div class="jy-col"><div class="jy-lbl">A 選項</div>' + S(1,2,pn(1)) + S(3,4,pn(3)) + '</div>';
+      h += '<div class="jy-col"><div class="jy-lbl">B 選項</div>' + S(2,3,pn(2)) + S(4,5,pn(4)) + '</div>';
+      h += '</div>';
+    }
+    else if (spreadId === 'relationship') {
+      h += '<div class="jy-row" style="gap:20px">';
+      h += '<div class="jy-col"><div class="jy-lbl">你</div>' + S(0,1,pn(0)) + '</div>';
+      h += '<div class="jy-col"><div class="jy-lbl">對方</div>' + S(1,2,pn(1)) + '</div>';
+      h += '</div>';
+      h += S(2,3,pn(2));
+      h += '<div class="jy-row">' + S(3,4,pn(3)) + S(4,5,pn(4)) + S(5,6,pn(5)) + '</div>';
+    }
+    else if (spreadId === 'timeline') {
+      h += '<div class="jy-row">';
+      for (var i = 0; i < 5; i++) h += S(i,i+1,pn(i));
+      h += '</div>';
+      h += '<div class="jy-arrow">← 過去 ─── 轉折 ─── 結果 →</div>';
+    }
+    else {
+      h += '<div class="jy-row">';
+      for (var i = 0; i < def.count; i++) h += S(i,i+1,pn(i));
+      h += '</div>';
+    }
+    h += '</div>';
+    return h;
+  }
+  window.buildSlotLayout = buildSlotLayout;
+
+  // ── 覆寫 initTarotDeck ──
+  var _origInitTarotDeck = window.initTarotDeck;
+  window.initTarotDeck = function() {
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var spreadId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
+    var targetCount = def ? def.count : 10;
+
+    _origInitTarotDeck();
+
+    // ── 小阿卡那專用：過濾掉大阿爾克那 ──
+    if (def && def.deckFilter === 'minor_only' && typeof deckShuffled !== 'undefined') {
+      deckShuffled = deckShuffled.filter(function(c) { return c.suit !== 'major'; });
+      // 重新渲染牌組 UI（3D 雙排結構）
+      var deckWrap = document.getElementById('t-deck');
+      if (deckWrap) {
+        // 觸發重新初始化牌堆渲染
+        var half = Math.ceil(deckShuffled.length / 2);
+        var topHtml = '', botHtml = '';
+        for (var fi = 0; fi < half; fi++) {
+          var d = (fi * 0.13).toFixed(2);
+          var imgUrl = (typeof getTarotCardImage === 'function') ? getTarotCardImage(deckShuffled[fi]) : '';
+          var faceCss = imgUrl ? 'background-image:url(' + imgUrl + ')' : 'background:#1a1a2e';
+          topHtml += '<div class="tarot-deck-card" data-idx="' + fi + '" style="--float-delay:' + d + 's"><div class="tarot-deck-card-inner"><div class="tdc-face" style="' + faceCss + '"></div><div class="tdc-back"></div></div></div>';
+        }
+        for (var fi = half; fi < deckShuffled.length; fi++) {
+          var d = ((fi - half) * 0.13).toFixed(2);
+          var imgUrl = (typeof getTarotCardImage === 'function') ? getTarotCardImage(deckShuffled[fi]) : '';
+          var faceCss = imgUrl ? 'background-image:url(' + imgUrl + ')' : 'background:#1a1a2e';
+          botHtml += '<div class="tarot-deck-card" data-idx="' + fi + '" style="--float-delay:' + d + 's"><div class="tarot-deck-card-inner"><div class="tdc-face" style="' + faceCss + '"></div><div class="tdc-back"></div></div></div>';
+        }
+        deckWrap.className = 'tarot-3d-stage';
+        var bgHtml = '<div class="tarot-stage-bg">';
+        for (var bi = 1; bi <= 6; bi++) bgHtml += '<div class="tarot-stage-bg-img" style="background-image:url(\'img/tarot-bg-' + bi + '.jpg\')"></div>';
+        bgHtml += '</div>';
+        deckWrap.innerHTML = bgHtml +
+          '<div class="tarot-3d-row tarot-3d-top" id="t-row-top">' + topHtml + topHtml + '</div>' +
+          '<div class="tarot-3d-row tarot-3d-bot" id="t-row-bot">' + botHtml + botHtml + '</div>';
+        deckWrap.querySelectorAll('.tarot-deck-card').forEach(function(el) {
+          el.addEventListener('click', function() { pickCard(parseInt(el.dataset.idx), el); });
+        });
+        // ★ v28：3D 觸控修復——stage 層級捕獲 touch
+        (function(dw){
+          var _tm2 = false;
+          dw.addEventListener('touchstart', function(){ _tm2 = false; }, {passive:true});
+          dw.addEventListener('touchmove', function(){ _tm2 = true; }, {passive:true});
+          dw.addEventListener('touchend', function(e){
+            if (_tm2) return;
+            var touch = e.changedTouches && e.changedTouches[0];
+            if (!touch) return;
+            var tx = touch.clientX, ty = touch.clientY;
+            var best = null, bestDist = 999999;
+            dw.querySelectorAll('.tarot-deck-card:not(.picked)').forEach(function(card){
+              var r = card.getBoundingClientRect();
+              var cx = r.left + r.width/2, cy = r.top + r.height/2;
+              var dist = Math.sqrt((tx-cx)*(tx-cx)+(ty-cy)*(ty-cy));
+              if (tx >= r.left-20 && tx <= r.right+20 && ty >= r.top-20 && ty <= r.bottom+20) {
+                if (dist < bestDist) { bestDist = dist; best = card; }
+              }
+            });
+            if (best) { e.preventDefault(); pickCard(parseInt(best.dataset.idx), best); }
+          });
+        })(deckWrap);
+        if (typeof _startDeck3D === 'function') _startDeck3D(half, deckShuffled.length - half);
+
+        // ★ v28：重新渲染後重置洗牌狀態
+        window._deckIsShuffled = false;
+        // v64.B:tarot.js 已建立按鈕並綁定 v64.B 動畫
+        //   這裡只在 tarot.js 沒建按鈕時做 fallback(極少觸發)
+        var sfExist = document.getElementById('jy-shuffle-btn');
+        if (!sfExist) {
+          var shuffleWrap2 = document.querySelector('#step-2 .text-center');
+          if (shuffleWrap2) {
+            var sfBtn2 = document.createElement('button');
+            sfBtn2.className = 'jy-shuffle-btn';
+            sfBtn2.id = 'jy-shuffle-btn';
+            sfBtn2.innerHTML = '🌙 靜月為你洗牌';
+            shuffleWrap2.insertBefore(sfBtn2, shuffleWrap2.firstChild);
+            var autoDrawBtn2 = document.querySelector('#step-2 .btn-outline');
+            if (autoDrawBtn2) autoDrawBtn2.style.display = 'none';
+            var pickHint2 = document.getElementById('pick-hint');
+            if (pickHint2) pickHint2.innerHTML = '✨ 滑動欣賞牌面 ✨';
+            sfBtn2.addEventListener('click', function() {
+              if (window._deckIsShuffled) return;
+              sfBtn2.style.pointerEvents = 'none';
+              sfBtn2.style.opacity = '0';
+              // ═══════════════════════════════════════════════════════════
+              // v64.B 華麗三幕式洗牌動畫(對齊七維儀式設計)
+              //   第 1-2 次:完整 2.8 秒(收攏 0.8 + 洗牌 1.2 + 散開 0.8)
+              //   第 3 次起:compact 模式 0.8 秒(只播散開)
+              //   全程「跳過 →」按鈕可隨時略過
+              // ═══════════════════════════════════════════════════════════
+              _v64bTarotShuffleRitual(deckWrap, function() {
+                window._deckIsShuffled = true;
+                sfBtn2.remove();
+                if (autoDrawBtn2) autoDrawBtn2.style.display = '';
+                if (pickHint2) {
+                  pickHint2.innerHTML = '觸碰任一張你有感覺的牌,選出 <span id="t-target-count">' + targetCount + '</span> 張';
+                }
+              });
+            });
+          }
+        }
+      }
+    }
+
+    var customLayout = buildSlotLayout(spreadId, def);
+    if (customLayout) {
+      var chosen = document.getElementById('t-chosen');
+      if (chosen) chosen.innerHTML = customLayout;
+    }
+
+    // 更新說明文字
+    try {
+      var descEl = document.querySelector('#step-2 .text-dim.text-sm.mb-sm');
+      var deckTotal = (def && def.deckFilter === 'minor_only') ? '56' : '78';
+      if (descEl) descEl.innerHTML = '凝神冥想你的問題，然後從 <strong class="text-gold">' + deckTotal + '</strong> 張塔羅牌中選出 <strong class="text-gold">' + targetCount + '</strong> 張牌';
+      var countEl = document.getElementById('t-remain-text');
+      if (countEl) countEl.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + targetCount + ' 張';
+      var pickHint = document.getElementById('pick-hint');
+      if (pickHint) pickHint.textContent = '觸碰任一張你有感覺的牌，選出 ' + targetCount + ' 張';
+    } catch(e) {}
+
+    // ★ v80.1：洗牌鈕原本被 tarot.js 放在牌堆「下方」，手機進入抽牌頁時在視窗外看不到，
+    //   使用者不知要先洗牌。這裡進頁時把洗牌鈕移到牌堆上方、改成明確「先洗牌」指引、
+    //   並把按鈕捲入視野中央。洗牌完成(按鈕被移除)後自動還原「觸碰選牌」指引。
+    try { if (typeof window._jyShuffleUX === 'function') window._jyShuffleUX(targetCount); } catch(e) {}
+  };
+
+  // ── 覆寫 pickCard — 非凱爾特牌陣的完成判定 ──
+  var _origPickCard2 = window.pickCard;
+  window.pickCard = function(deckIdx, deckEl) {
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var targetCount = def ? def.count : 10;
+    if (drawnCards.length >= targetCount) return;
+
+    // ★ Bug1 根治 v2：temp-gate 模式已移除（原始 pickCard 若異步呼叫 showSpread，
+    //   同步還原會導致 gate 失效）。改由 showSpread 自身永久守門（見下方覆寫）。
+    _origPickCard2(deckIdx, deckEl);
+
+    // ★ 修正(歐那 2026/5/30)：原本 `targetCount < 10` 只處理少於10張的牌陣，
+    //   導致 15/21 張牌陣 fallback 到原版凱爾特(10張)完成判定 → 抽10張就結束、用錯位置名。
+    //   改為 `!== 10`：除標準10張(凱爾特/生命之樹)走原版外，其餘張數都用此自適應完成判定。
+    if (targetCount !== 10) {
+      setTimeout(function() {
+        if (drawnCards.length >= targetCount) {
+          var btn = document.getElementById('btn-analyze');
+          if (btn) btn.disabled = false;
+          var hint = document.getElementById('pick-hint');
+          if (hint) hint.style.display = 'none';
+          S.tarot = S.tarot || {};
+          S.tarot.drawn = drawnCards;
+          S.tarot.spread = drawnCards;
+          // 更新 t-spread-sec 的標題
+          var titleText = document.getElementById('t-spread-title-text');
+          if (titleText && def) titleText.textContent = def.zh;
+          if (typeof showSpread === 'function') showSpread();
+          setTimeout(function() {
+            var act = document.querySelector('#step-2 .actions');
+            if (act) act.scrollIntoView({behavior:'smooth', block:'center'});
+          }, 400);
+        }
+      }, 600);
+    }
+  };
+
+  // ── 覆寫 showSpread 的標題更新 + 永久張數守門 ──
+  var _origShowSpread2 = showSpread;
+  showSpread = function() {
+    // ★ 永久守門：張數未達牌陣要求時，靜默攔截，不執行任何動作
+    //   根治原始 tarot.js pickCard 在第 10 張硬呼叫 showSpread 的問題
+    //   影響牌陣：zodiac(13), fifteen_card(15), mathers_21(21), mathers_horseshoe(54)
+    var _gDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var _gTarget = _gDef ? _gDef.count : 10;
+    if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length < _gTarget) {
+      console.log('[showSpread] 攔截：已抽', drawnCards.length, '張，需要', _gTarget, '張');
+      return;
+    }
+    // 更新 t-spread-sec 的硬編碼標題
+    var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    var titleText = document.getElementById('t-spread-title-text');
+    if (titleText && def) titleText.textContent = def.zh;
+    // 呼叫原版
+    if (_origShowSpread2) _origShowSpread2();
+  };
+
+  console.log('[牌陣] 自適應佈局 v2 + 完成判定已啟用');
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════
+// 9. 開鑰之法 (Opening of the Key) — 正統金色黎明核心計算引擎
+// ══════════════════════════════════════════════════════════════════════
+// 修正版 v3.0（正統 Book T 對齊）：
+// - 每階段獨立重新洗牌（Book T「Shuffle, etc., as before」）
+// - Op1：模擬切四堆（YHVH），堆大小 nearly equal（Mathers 原文）
+// - Op2：順序輪發到 12 宮（Book T「Deal cards into twelve stacks」）
+// - Op3：順序輪發到 12 星座（Book T「Deal cards into twelve stacks...as before」）
+// - Op4：Sig 居中 + 後續 36 張環繞（Book T 原文）
+// - Op5：順序輪發到 10 質點（Book T「Deal into ten packs」）
+// - 計數值：宮廷 Knight=4,Queen=4,King=4,Page/Princess=7
+// - Ace 計數值 = 11（Golden Dawn Book T）
+// - 花色名稱修正：匹配 tarot.js 的 'wand'/'cup'/'sword'/'pent'
+// ══════════════════════════════════════════════════════════════════════
+
+(function() {
+  'use strict';
+
+  // ════════════════════════════════════════════════
+  // GD 大阿爾克那歸屬表（完整 22 張）
+  // ════════════════════════════════════════════════
+  // type: 'element'|'planet'|'zodiac'
+  // sign: 對應的星座（zodiac 類型）
+  // planet: 對應的行星（planet 類型）
+  // element: 對應的元素（element 類型）
+  // sephirah: 生命之樹路徑（22 paths 連接的 Sephiroth）
+  // decan: 不適用（大阿爾克那不分配到旬）
+  var TRUMP_GD = {
+    0:  {type:'element', element:'風',     count:3,  sign:null,   path:'Kether-Chokmah'},     // 愚者=風
+    1:  {type:'planet',  planet:'水星',    count:9,  sign:null,   path:'Kether-Binah'},       // 魔術師=水星
+    2:  {type:'planet',  planet:'月亮',    count:9,  sign:null,   path:'Kether-Tiphereth'},   // 女祭司=月亮
+    3:  {type:'planet',  planet:'金星',    count:9,  sign:null,   path:'Chokmah-Binah'},      // 皇后=金星
+    4:  {type:'zodiac',  sign:'牡羊',      count:12, planet:null, path:'Chokmah-Tiphereth'},  // 皇帝=牡羊
+    5:  {type:'zodiac',  sign:'金牛',      count:12, planet:null, path:'Chokmah-Chesed'},     // 教皇=金牛
+    6:  {type:'zodiac',  sign:'雙子',      count:12, planet:null, path:'Binah-Tiphereth'},    // 戀人=雙子
+    7:  {type:'zodiac',  sign:'巨蟹',      count:12, planet:null, path:'Binah-Geburah'},      // 戰車=巨蟹
+    8:  {type:'zodiac',  sign:'獅子',      count:12, planet:null, path:'Chesed-Geburah'},     // 力量=獅子 (GD: VIII=Strength=Leo)
+    9:  {type:'zodiac',  sign:'處女',      count:12, planet:null, path:'Chesed-Tiphereth'},   // 隱者=處女
+    10: {type:'planet',  planet:'木星',    count:9,  sign:null,   path:'Chesed-Netzach'},     // 命運之輪=木星
+    11: {type:'zodiac',  sign:'天秤',      count:12, planet:null, path:'Geburah-Tiphereth'},  // 正義=天秤 (GD: XI=Justice=Libra)
+    12: {type:'element', element:'水',     count:3,  sign:null,   path:'Geburah-Hod'},        // 吊人=水
+    13: {type:'zodiac',  sign:'天蠍',      count:12, planet:null, path:'Tiphereth-Netzach'},  // 死神=天蠍
+    14: {type:'zodiac',  sign:'射手',      count:12, planet:null, path:'Tiphereth-Yesod'},    // 節制=射手
+    15: {type:'zodiac',  sign:'摩羯',      count:12, planet:null, path:'Tiphereth-Hod'},      // 惡魔=摩羯
+    16: {type:'planet',  planet:'火星',    count:9,  sign:null,   path:'Netzach-Hod'},        // 塔=火星
+    17: {type:'zodiac',  sign:'水瓶',      count:12, planet:null, path:'Netzach-Yesod'},      // 星星=水瓶
+    18: {type:'zodiac',  sign:'雙魚',      count:12, planet:null, path:'Netzach-Malkuth'},    // 月亮=雙魚
+    19: {type:'planet',  planet:'太陽',    count:9,  sign:null,   path:'Hod-Yesod'},          // 太陽=太陽
+    20: {type:'element', element:'火',     count:3,  sign:null,   path:'Hod-Malkuth'},        // 審判=火
+    21: {type:'planet',  planet:'土星',    count:9,  sign:null,   path:'Yesod-Malkuth'}       // 世界=土星
+  };
+
+  // ════════════════════════════════════════════════
+  // ★ GD-3 (J1) 補:16 Court Cards 的 well-dignified / ill-dignified 變體含義
+  // 依據:Mathers《Book T》1888 原始手稿
+  // 用法:GD 系統用「鄰牌元素」決定 well/ill,而非正逆位
+  //   - 雙鄰同元素或友好元素 = well-dignified → 顯示 well_meaning
+  //   - 雙鄰對立元素 = ill-dignified → 顯示 ill_meaning
+  //   - 一鄰友好一鄰對立 = neutral → 兩者皆需考慮
+  // ════════════════════════════════════════════════
+  var COURT_DIGNITY_MEANINGS = {
+    // 權杖宮廷
+    'wand-king':   { // Knight of Wands (Lord of Flame and Lightning)
+      well: '活躍、慷慨、驕傲、迅速、衝動 — 火之火,意志最純粹的表達',
+      ill:  '邪惡、殘忍、偏見、暴戾 — 衝動失控變成霸凌、蠻橫'
+    },
+    'wand-queen':  { // Queen of Thrones of Flame
+      well: '適應力強、持續能量、平靜權威、有吸引力、慷慨但不容忍 — 穩定的火',
+      ill:  '頑固、復仇心、支配慾、暴政、會無故反目'
+    },
+    'wand-knight': { // Prince of Chariot of Fire
+      well: '快速強壯、衝動但正義、慷慨幽默 — 行動派貴族',
+      ill:  '驕傲、不容忍、殘忍、懦弱、偏見 — 表面強硬內心脆弱'
+    },
+    'wand-page':   { // Princess of Shining Flame
+      well: '個人主義、聰穎大膽、表達力強、熱情 — 火的種子',
+      ill:  '膚淺、戲劇化、殘忍、不穩定、不可靠 — 火花一閃即逝'
+    },
+    // 聖杯宮廷
+    'cup-king':    { // Knight of Waves (Lord of Waters)
+      well: '優雅、詩意、金星特質、慵懶但被激發後熱情 — 水中的火',
+      ill:  '感官沉溺、懶惰、不誠實 — 情感被慾望腐蝕'
+    },
+    'cup-queen':   { // Queen of Thrones of Waters
+      well: '富想像力、詩意、善良、深愛但不願為他人勞累 — 水的精華',
+      ill:  '善變、易受影響、懶散、想像強過真實感受 — 沉溺幻夢'
+    },
+    'cup-knight':  { // Prince of Chariot of Water
+      well: '微妙、暴力但隱藏、強烈但秘密的力量 — 水中的風',
+      ill:  '極端邪惡、無情、隱藏的危險 — 水底暗流變成毒'
+    },
+    'cup-page':    { // Princess of Waters
+      well: '甜美、詩意、溫柔、富想像、夢幻、善良 — 水的本質',
+      ill:  '自私、奢華、沉溺感官 — 溫柔變成黏膩控制'
+    },
+    // 寶劍宮廷
+    'sword-king':  { // Knight of Wind and Breezes
+      well: '主動、機敏、靈巧、勇敢、熟練 — 風之火,思維的劍',
+      ill:  '欺騙、暴政、狡詐、不謹慎、分裂 — 機敏變陰險'
+    },
+    'sword-queen': { // Queen of Thrones of Air
+      well: '極度敏銳、憎恨虛偽、敏感、機智、自信 — 風中的水',
+      ill:  '殘忍、欺騙、不可靠、頑固、狹隘 — 銳利變成刻薄'
+    },
+    'sword-knight':{ // Prince of Chariot of Winds
+      well: '充滿想法、思想細膩、敏捷、富表現力 — 風的純粹',
+      ill:  '無能、完全沒有想法、缺乏判斷 — 思想變成空轉'
+    },
+    'sword-page':  { // Princess of Rushing Winds
+      well: '智慧、力量、機智、熟練 — 風的種子',
+      ill:  '欺騙、低能、無情 — 機智變成刻薄與小聰明'
+    },
+    // 金幣宮廷
+    'pent-king':   { // Knight of Wide and Fertile Land
+      well: '勤勞、耐心、有條不紊、值得信賴、緩慢但確實 — 土之火',
+      ill:  '愚鈍、唯物、嫉妒、遲緩 — 穩定變成停滯'
+    },
+    'pent-queen':  { // Queen of Thrones of Earth
+      well: '慷慨、聰明、富有、寬厚、慈悲、誠實 — 土中的水（Water of Earth）',
+      ill:  '懶惰、奴性、無聊、漠不關心 — 富足變成怠惰'
+    },
+    'pent-knight': { // Prince of Chariot of Earth
+      well: '可信賴、能勞動、有實際技能、很少野心過度 — 土中的風',
+      ill:  '愚鈍、唯物主義、緩慢、怨恨 — 實際變成短視'
+    },
+    'pent-page':   { // Princess of Echoing Hills
+      well: '慷慨、善良、勤勉、慈悲、有耐心、深思 — 土的種子',
+      ill:  '浪費、揮霍、揮霍 — 慷慨變成不負責'
+    }
+  };
+
+  // ════════════════════════════════════════════════
+  // ★ GD-4 (I1+I2) 補:Court Cards 三層讀法 (Mathers Book T 明文)
+  // 原文:「the Knights and Queens almost invariably represent actual men and women
+  //       connected with the subject in hand. But the Kings sometimes represent
+  //       either the coming on or going off of a matter, arrival, or departure,
+  //       according to the way in which they face. While the Knaves show opinions,
+  //       thoughts, or ideas, either in harmony with or opposed to the subject.」
+  // 用法:依花色 + 階級給 AI 三種讀法選項
+  // ════════════════════════════════════════════════
+  var COURT_PERSON_ROLE = {
+    page:'較年少、學習或承接中的角色傾向（不是現實年齡量測）',
+    knight:'主動傳遞與執行的角色傾向（不是現實年齡量測）',
+    queen:'接納、調節與孕育的角色傾向（不是現實年齡量測）',
+    king:'發起、決斷與主導的角色傾向（不是現實年齡量測）'
+  };
+
+  // ════════════════════════════════════════════════
+  // ★ GD-8 補:Mathers《The Tarot》1888 原書 56 張小牌完整原始牌義 + Major
+  // 依據:Mathers, S.L. MacGregor (1888) "The Tarot, Its Occult Signification..."
+  // 用法:作為 Book T(Mathers/Felkin 1888 後期版)的「另一條傳統解讀」參考
+  //   - Mathers 1888 = 早期義大利傳統 + Etteilla 修飾
+  //   - Book T = 後期 GD 內部 Adeptus Minor 用的進階版
+  //   - 兩者牌義有時不同(如 Six of Cups, Three of Pentacles),提供 AI 多角度判讀
+  // 透過 ai-analysis.js 注入 cards[i].mathersUp / mathersRv
+  // ════════════════════════════════════════════════
+  var MATHERS_1888_MEANINGS = {
+    // ── 22 大牌 (Mathers 1888 簡明牌義) ──
+    '愚者':       { up:'愚行、贖罪、搖擺',                    rv:'猶豫、不穩、由此產生的麻煩' },
+    '魔術師':     { up:'意志、意志力、靈巧',                  rv:'意志用於邪惡、意志薄弱、狡詐、欺騙' },
+    '女祭司':     { up:'科學、智慧、知識、教育',              rv:'自負、無知、笨拙、淺薄知識' },
+    '皇后':       { up:'行動、計畫、行動力、主動',            rv:'惰性、力量浪費、缺乏專注、猶豫' },
+    '皇帝':       { up:'實現、結果、發展',                    rv:'停滯、阻礙、不成熟、未成熟' },
+    '教皇':       { up:'仁慈、恩澤、善良',                    rv:'過度仁慈、軟弱、愚蠢的慷慨' },
+    '戀人':       { up:'明智的安排、考驗、克服試煉',          rv:'不智的計畫、考驗中失敗' },
+    '戰車':       { up:'勝利、戰勝障礙',                      rv:'被推翻、最後關頭被障礙征服' },
+    '正義':       { up:'平衡、公正、公道',                    rv:'偏執、失衡、濫用正義、過度嚴苛、偏見' },
+    '隱者':       { up:'謹慎、小心、深思熟慮',                rv:'過度謹慎、膽怯、恐懼' },
+    '命運之輪':   { up:'好運、成功、意外的幸運',              rv:'厄運、失敗、意外的不幸' },
+    '力量':       { up:'力量、強壯、能力、堅毅',              rv:'濫用權力、傲慢、缺乏勇氣' },
+    '吊人':       { up:'自我犧牲、奉獻、被束縛',              rv:'自私、解開束縛、不完全的犧牲' },
+    '死神':       { up:'死亡、改變、轉化、惡化',              rv:'死亡僥倖逃過、部分改變、向好的轉變' },
+    '節制':       { up:'結合、整合、聯合',                    rv:'不智的結合、分裂、利益衝突' },
+    '惡魔':       { up:'好的命定',                            rv:'壞的命定' },
+    '塔':         { up:'毀滅、崩潰、破產、損失',              rv:'以上各點程度較輕' },
+    '星星':       { up:'希望、期待、光明的承諾',              rv:'希望未實現、期待落空或僅小幅實現' },
+    '月亮':       { up:'黃昏、欺騙、錯誤',                    rv:'波動、輕微的欺騙、小錯誤' },
+    '太陽':       { up:'幸福、滿足、喜悅',                    rv:'以上各點程度較輕' },
+    '審判':       { up:'更新、結果、事情的決定',              rv:'結果延遲、拖延、事情之後重啟' },
+    '世界':       { up:'完成、好的回報',                      rv:'壞的回報、報應' },
+    // ── 權杖 Wands (王牌→十) ──
+    '權杖王牌':   { up:'誕生、開始、起源、源頭',              rv:'迫害、追擊、暴力、煩惱、殘酷、暴政' },
+    '權杖二':     { up:'財富、運氣、富足、宏偉、輝煌',        rv:'驚訝、震驚、突發事件、不尋常事件' },
+    '權杖三':     { up:'進取、事業、商業、貿易、談判',        rv:'希望、慾望、嘗試、願望' },
+    '權杖四':     { up:'社會、結合、結社、和諧',              rv:'繁榮、成功、幸福、優勢' },
+    '權杖五':     { up:'金、財富、利益、繼承、財運、金錢',    rv:'法律訴訟、判決、官司、律師、法庭' },
+    '權杖六':     { up:'嘗試、希望、慾望、心願、期待',        rv:'不忠、背叛、不忠誠、欺騙' },
+    '權杖七':     { up:'成功、收益、優勢、利潤、勝利',        rv:'猶豫、懷疑、躊躇、困窘、焦慮' },
+    '權杖八':     { up:'理解、觀察、方向',                    rv:'爭吵、內部紛爭、不和' },
+    '權杖九':     { up:'秩序、紀律、好的安排、布局',          rv:'障礙、麻煩、延遲、不悅' },
+    '權杖十':     { up:'信任、安全、榮譽、誠信',              rv:'背叛、藉口、欺騙、阻礙' },
+    // ── 權杖宮廷 ──
+    '權杖侍者':   { up:'好的陌生人、好消息、樂趣、滿足',      rv:'壞消息、不悅、煩躁、憂慮' },
+    '權杖騎士':   { up:'離別、分離、不和(⚠看鄰牌：此牌指「下一張牌」所代表事物的離開／分離，須與下一張合讀)', rv:'破裂、不和、爭吵' },
+    '權杖皇后':   { up:'鄉間婦人、莊園女主人、愛財、貪婪、放高利',rv:'好且貞潔的婦人,但嚴格節儉、障礙、阻力、反對' },
+    '權杖國王':   { up:'住在鄉間的男人、鄉紳、知識、教養',    rv:'天性善良但嚴厲的男人、忠告、建議、深思熟慮' },
+    // ── 聖杯 Cups (王牌→十) ──
+    '聖杯王牌':   { up:'宴飲、宴會、好心情',                  rv:'改變、新奇、變化、無常' },
+    '聖杯二':     { up:'愛、依戀、友誼、真誠、感情',          rv:'慾望受阻、障礙、反對、阻撓' },
+    '聖杯三':     { up:'成功、勝利、勝出、有利結果',          rv:'業務迅速進展、敏捷、機警' },
+    '聖杯四':     { up:'倦怠、不悅、不滿、不滿意(⚠看鄰牌：這份不滿從何而來、往何處去，依前後牌而定，須與前後牌合讀)', rv:'新交、推測、徵兆、預感' },
+    '聖杯五':     { up:'結合、聯姻、繼承',                    rv:'到來、回歸、消息、驚訝、虛偽計畫' },
+    '聖杯六':     { up:'過去、已過去、消逝、消失',            rv:'未來、即將到來、不久、很快' },
+    '聖杯七':     { up:'想法、感觸、反思、計畫(⚠看鄰牌：此牌說明「下一張牌」的內容，須與下一張合讀)', rv:'設計、決議、決定' },
+    '聖杯八':     { up:'膚色白皙的少女、友誼、依附、溫柔',          rv:'歡樂、宴飲、喜悅、樂趣' },
+    '聖杯九':     { up:'勝利、優勢、成功、凱旋、克服困難',    rv:'過錯、錯誤、失誤、缺陷' },
+    '聖杯十':     { up:'居住的城鎮、榮譽、尊重、聲望、美德',  rv:'戰鬥、衝突、反對、分歧、爭執' },
+    // ── 聖杯宮廷 ──
+    '聖杯侍者':   { up:'膚色白皙的青年、信心、誠實、謹慎、正直',    rv:'阿諛奉承者、欺騙、詭計' },
+    '聖杯騎士':   { up:'到來、接近、推進(⚠看鄰牌：此牌宣告「下一張牌」所代表事物的到來，須與下一張合讀)', rv:'雙重性、濫用信任、欺詐、狡猾' },
+    '聖杯皇后':   { up:'膚色白皙的女子、成功、幸福、優勢、樂趣',    rv:'地位好但好管閒事、不可信任的女人' },
+    '聖杯國王':   { up:'膚色白皙的男子、善良、慷慨、寬厚',          rv:'地位好但行為不一的男人、不信任、懷疑、疑慮' },
+    // ── 寶劍 Swords (王牌→十) ──
+    '寶劍王牌':   { up:'凱旋、豐饒、富裕、繁榮',              rv:'困窘、愚蠢無望的愛、障礙、阻撓' },
+    '寶劍二':     { up:'友誼、勇敢、堅定、勇氣',              rv:'虛偽朋友、背叛、謊言' },
+    '寶劍三':     { up:'修女、分離、移除、決裂、爭吵',        rv:'錯誤、混亂、失序、騷亂（亦可僅是某物丟失或暫時錯位）' },
+    '寶劍四':     { up:'孤獨、隱退、被遺棄、隱士',            rv:'節省、預防、開支管理' },
+    '寶劍五':     { up:'哀悼、悲傷、苦難',                    rv:'損失、麻煩(正逆位含義相同)' },
+    '寶劍六':     { up:'特使、信使、航行、旅行',              rv:'宣告、求愛、揭示、驚訝' },
+    '寶劍七':     { up:'希望、信心、慾望、嘗試、心願',        rv:'明智的建議、好的勸告、智慧、謹慎' },
+    '寶劍八':     { up:'疾病、誹謗、批評、責備',              rv:'過去的背叛、事件、意外、值得注意的事件' },
+    '寶劍九':     { up:'神職人員、牧師、良知、誠實、誠信',    rv:'明智的不信任、懷疑、恐懼、可疑人物' },
+    '寶劍十':     { up:'眼淚、苦難、悲傷、憂愁',              rv:'短暫的成功、暫時的優勢' },
+    // ── 寶劍宮廷 ──
+    '寶劍侍者':   { up:'間諜、監視、權威',                    rv:'未預見的事、警覺、支援(也可能=意外的禮物或意外的悲傷)' },
+    '寶劍騎士':   { up:'軍人、職業武人、技巧、能力、敏捷',    rv:'自負的傻瓜、天真、簡單' },
+    '寶劍皇后':   { up:'寡婦、損失、剝奪、缺席、分離',        rv:'壞女人、易怒偏執、富裕但有不和、富足卻憂慮' },
+    '寶劍國王':   { up:'律師、法律人、權力、命令、優越、權威',rv:'惡人、煩惱、憂慮、悲傷、恐懼、不安' },
+    // ── 金幣 Pentacles (王牌→十) ──
+    '金幣王牌':   { up:'完美的滿足、福樂、繁榮、凱旋',        rv:'金幣袋、金錢、收益、幫助、利潤、財富' },
+    '金幣二':     { up:'尷尬、煩惱、困難',                    rv:'信件、訊息、書信、消息' },
+    '金幣三':     { up:'高貴、提升、尊嚴、地位、權力',        rv:'子女、兒女、年輕人、開始' },
+    '金幣四':     { up:'樂趣、歡愉、享受、滿足',              rv:'障礙、阻礙' },
+    '金幣五':     { up:'戀人或情人、愛、甜蜜、感情、純潔的愛',rv:'丟臉的愛、輕率、放縱、放蕩' },
+    '金幣六':     { up:'禮物、贈與、喜悅',                    rv:'野心、慾望、激情、目標、渴望' },
+    '金幣七':     { up:'金錢、財務、寶藏、收益、利潤',        rv:'紛擾、煩惱、焦慮、憂鬱' },
+    '金幣八':     { up:'膚色較深的少女、美麗、坦白、貞潔、純真',rv:'阿諛、放高利、虛偽、不可靠' },
+    '金幣九':     { up:'謹慎、慎重、明智、辨別力',            rv:'欺騙、不誠信、詭計、欺瞞' },
+    '金幣十':     { up:'家、住所、居處、家庭',                rv:'賭博、揮霍、搶劫、損失' },
+    // ── 金幣宮廷 ──
+    '金幣侍者':   { up:'膚色較深的青年、節省、有條理、規則、管理',rv:'揮霍、浪費、糟蹋、放縱(下一張牌會說明在哪方面揮霍)' },
+    '金幣騎士':   { up:'有用的人、可信任、智慧、節省、秩序',  rv:'勇敢但失業、懶散、不工作、疏忽' },
+    '金幣皇后':   { up:'膚色較深的婦人、慷慨女性、寬厚、靈魂偉大、慷慨大方',rv:'必然的邪惡、可疑的女人、應被懷疑的女人' },
+    '金幣國王':   { up:'膚色較深的男人、勝利、勇敢、勇氣、成功',rv:'年老有惡習的男人、危險的人、懷疑、恐懼、危險' }
+  };
+
+  // ════════════════════════════════════════════════
+  // Waite《The Pictorial Key to the Tarot》(1910/1911) 原典占卜義（純-Waite 模式專用）
+  //   來源：sacred-texts.com 全本 §3.3（大牌）＋§2 各花色逐張「Divinatory Meanings / Reversed」
+  //   逐字忠譯、不疊現代義、不疊 GD 元素尊嚴；逆位照 Waite 原文（與現代否定式邏輯常不同）。
+  //   鍵名與 MATHERS_1888_MEANINGS 完全一致（對齊 rawName = c.n||c.name）。
+  // ════════════════════════════════════════════════
+  var WAITE_PKT_MEANINGS = {
+    // ── 22 大牌（§3.3 The Greater Arcana and their Divinatory Meanings）──
+    '愚者':       { up:'愚行、狂亂、揮霍、沉醉、譫妄、瘋狂、洩密',                          rv:'疏忽、缺席、散漫、粗心、冷漠、虛無、徒勞' },
+    '魔術師':     { up:'技巧、手腕、靈巧、機敏；意志、自信；亦有疾病、痛苦、損失、災禍、敵人的陷阱（男問則為其本人）', rv:'醫者、術士、精神疾病、名譽受損、不安' },
+    '女祭司':     { up:'秘密、神秘、尚未揭曉的未來；沉默、堅韌；智慧、學問（男問為他在意的女性、女問為其本人）',   rv:'激情、身心的熱切、自負、淺薄的知識' },
+    '皇后':       { up:'豐饒、行動、主動、長壽；亦有未知、隱密、困難、懷疑、無知',          rv:'光明、真相、繁雜之事得解、公眾的歡慶；另說躊躇不定' },
+    '皇帝':       { up:'穩定、權力、保護、實現；貴人；援助、理性、信念；權威與意志',        rv:'仁慈、同情、信用；亦有挫敗敵人、阻礙、未成熟' },
+    '教皇':       { up:'婚姻、結盟、束縛、屈從；亦有慈悲與良善、啟示；問卜者求助的對象',    rv:'結社、相知、和睦、過度仁慈、軟弱' },
+    '戀人':       { up:'吸引、愛、美、克服考驗',                                          rv:'失敗、愚蠢的計畫；另說婚姻受挫、種種不順' },
+    '戰車':       { up:'援助、天佑；亦有戰爭、勝利、自負、復仇、麻煩',                      rv:'動亂、爭吵、糾紛、訴訟、失敗' },
+    '正義':       { up:'公正、正當、正直、執行力；訴訟中理直一方獲勝',                    rv:'法律的方方面面、法律糾紛、偏執、偏見、過度嚴苛' },
+    '隱者':       { up:'審慎、謹慎；尤其也指背叛、掩飾、奸詐、腐敗',                      rv:'隱瞞、偽裝、權謀、恐懼、無謂的戒備' },
+    '命運之輪':   { up:'命運、運勢、成功、提升、好運、幸福',                              rv:'增長、豐盛、過剩' },
+    '力量':       { up:'力量、能量、行動、勇氣、寬宏；亦有圓滿成功與榮譽',                rv:'專橫、濫權、軟弱、不和、有時甚至蒙羞' },
+    '吊人':       { up:'智慧、謹慎、洞察、考驗、犧牲、直覺、占卜、預言',                  rv:'自私、盲從的群眾、政體／組織' },
+    '死神':       { up:'終結、死亡、毀滅、腐敗；對男性是失去恩人、對女性是諸多不順、對少女是婚事告吹', rv:'停滯、沉睡、倦怠、僵化、夢遊；希望破滅' },
+    '節制':       { up:'節約、節制、儉樸、管理、調和折衷',                                rv:'與教會、宗教、教派、神職相關之事（有時即主持婚禮的神父）；亦有分裂、不幸的結合、利益相爭' },
+    '惡魔':       { up:'蹂躪、暴力、激烈、超常的努力、強力、宿命；命中註定但未必是惡',    rv:'惡的宿命、軟弱、瑣碎、盲目' },
+    '塔':         { up:'苦難、困頓、貧困、逆境、災禍、蒙羞、欺瞞、毀滅；尤指突如其來的災難', rv:'同上但程度較輕；亦有壓迫、監禁、暴政' },
+    '星星':       { up:'損失、失竊、匱乏、被遺棄；另說希望與光明的前景',                  rv:'傲慢、自大、無能為力' },
+    '月亮':       { up:'暗藏的敵人、危險、誹謗、黑暗、恐懼、欺騙、隱密的力量、錯誤',      rv:'不穩定、反覆無常、沉默、程度較輕的欺騙與錯誤' },
+    '太陽':       { up:'物質的幸福、美滿的婚姻、滿足',                                    rv:'同上但程度較輕' },
+    '審判':       { up:'地位轉變、更新、結果；另說因訴訟而全盤皆輸',                      rv:'軟弱、怯懦、單純；亦有審議、裁決、判決' },
+    '世界':       { up:'必然的成功、回報、遠行、路途、移居、遷徙、地點變動',              rv:'惰性、固著、停滯、一成不變' },
+    // ── 權杖 Wands（王牌→十）──
+    '權杖王牌':   { up:'創造、發明、進取；起源、開端、本源；誕生、家族、根源、生命力；事業的起點；另說金錢、財富、繼承', rv:'墜落、衰敗、毀滅、淪亡；亦有一種蒙上陰影的喜悅' },
+    '權杖二':     { up:'一面是財富、運勢、宏偉；一面是身體的痛苦、疾病、懊惱、悲傷、屈辱；如領主俯瞰自己的領地', rv:'驚訝、訝異、著迷、激動、煩擾、恐懼' },
+    '權杖三':     { up:'穩固的實力、進取、努力、貿易、商業、發現；事業上有力的合作',      rv:'麻煩告終、逆境止息、辛勞與失望結束' },
+    '權杖四':     { up:'鄉居生活、避風港、豐收般的圓滿、安歇、和睦、和諧、繁榮、平安',    rv:'（含義不變）繁榮、增長、幸福、美好、錦上添花' },
+    '權杖五':     { up:'模仿、佯裝的爭鬥；為財富與功名而起的激烈競爭與奮鬥；人生的戰鬥；亦為黃金、收益、富足之牌', rv:'訴訟、糾紛、欺詐、矛盾對立' },
+    '權杖六':     { up:'凱旋的勝利者；如國王信使傳來的大好消息；願望得償、希望加冕',      rv:'憂懼、恐懼，如勝利的敵人已臨城下；背叛、不忠；亦有無限期的延遲' },
+    '權杖七':     { up:'勇武；論辯、口角之爭；商業上的談判、商戰、交易、競爭；亦為成功之牌', rv:'困惑、難堪、焦慮；亦警告勿優柔寡斷' },
+    '權杖八':     { up:'事務的活躍與其進程、迅捷如急使；極度匆忙、滿懷希望、朝著篤定圓滿的結局疾進；一切正在行進之事；亦為愛的箭', rv:'嫉妒之箭、內部紛爭、良心的刺痛、爭吵；已婚者的家庭口角' },
+    '權杖九':     { up:'逆境中的力量；若遭攻擊將勇敢迎戰，是難纏的對手；伴隨延遲、暫停、延期', rv:'障礙、逆境、災厄' },
+    '權杖十':     { up:'壓迫（主義）；亦有運勢、收益、各種成功——以及被這些所累；虛偽、偽裝、背信', rv:'種種不順、困難、陰謀算計之類' },
+    // ── 權杖宮廷 ──
+    '權杖侍者':   { up:'膚色深的青年、忠誠、情人、使者、信差；會帶來有利的見證；若其後接聖杯侍者則為危險情敵；家庭的消息', rv:'軼聞、通告、壞消息；亦有猶豫不決與隨之而來的不穩' },
+    '權杖騎士':   { up:'離去、離開、逃離、移居；膚色深、友善的青年；遷居',                rv:'破裂、分裂、中斷、不和' },
+    '權杖皇后':   { up:'膚色深的女子、鄉間女子、友善、貞潔、慈愛、可敬；若旁牌為男性則對他有好感；愛財，或事業上某種成功', rv:'善良、節儉、樂於助人；（某些位置）亦有對立、嫉妒、甚至欺騙與不忠' },
+    '權杖國王':   { up:'膚色深、友善的男子、鄉間人、通常已婚、誠實盡責；恆指誠實；可能預示意外遺產的消息', rv:'良善但嚴厲；嚴峻卻寬容' },
+    // ── 聖杯 Cups（王牌→十）──
+    '聖杯王牌':   { up:'真心之家、喜悅、滿足、居所、滋養、豐盈、多產；聖桌、福樂',        rv:'虛情之家、變異、不穩、變革' },
+    '聖杯二':     { up:'愛、激情、友誼、契合、結合、和睦、同理、兩性的交流',              rv:'激情（Waite 原書本牌主文未另列逆位，此為其補充義）' },
+    '聖杯三':     { up:'任何事圓滿、完美、歡騰地落幕；圓滿結局、勝利、實現、慰藉、療癒',  rv:'迅速推進、辦妥、達成、結束；亦指縱情聲色、感官享樂的過度面' },
+    '聖杯四':     { up:'倦怠、厭膩、反感、想像出來的煩惱，彷彿世間之酒只帶來饜足；另有如仙賜的新酒被遞上卻視而不見；苦樂參半', rv:'新奇、預兆、新的教導、新的關係' },
+    '聖杯五':     { up:'損失，但仍有所剩；三杯傾倒、兩杯仍立；繼承、遺產、傳承，卻不如預期；有人讀作婚姻，但帶著苦澀或受挫', rv:'消息、結盟、親近、血親、家世、歸返、虛妄的計畫' },
+    '聖杯六':     { up:'關乎過去與回憶之牌，回首往昔（如童年）；幸福、歡樂，但多來自過去；已逝之物', rv:'未來、更新、即將很快發生之事' },
+    '聖杯七':     { up:'虛幻的恩賜、映現的幻象、情緒、想像、靜觀鏡中所見；略有所得卻無持久或實質', rv:'慾望、意志、決心、計畫' },
+    '聖杯八':     { up:'一事的衰退；以為重要之事其實無足輕重；（另說喜悅、溫和、羞怯、榮譽、謙遜）', rv:'極大的喜悅、幸福、宴飲' },
+    '聖杯九':     { up:'和睦、滿足、身體的安適；亦有勝利、成功、優勢；如願以償',          rv:'真實、忠誠、自由；但各說不一，亦含過失、缺憾' },
+    '聖杯十':     { up:'滿足、整顆心的安歇；此境的圓滿；人間之愛與友誼的圓滿',            rv:'虛情的安歇、憤慨、暴力' },
+    // ── 聖杯宮廷 ──
+    '聖杯侍者':   { up:'膚色白皙的青年、樂於效勞、將與問卜者有所連結；好學的年輕人；消息、訊息；專注、反思、沉思；用於事業', rv:'品味、傾向、依附、誘惑、欺騙、詭計' },
+    '聖杯騎士':   { up:'到來、接近——有時是信使；示好、提議、舉止、邀請、慫恿',          rv:'欺瞞、詭計、心機、行騙、口是心非、詐欺' },
+    '聖杯皇后':   { up:'良善、美麗的女子；誠實、忠誠、會效勞的女人；充滿愛的智慧、預見之能；成功、幸福、愉悅；智慧、美德；完美的伴侶與好母親', rv:'好女人；又或顯赫卻不可信任；乖張的女人；惡習、不名譽、墮落' },
+    '聖杯國王':   { up:'膚色白皙的男子、商界／法律／神職中人；負責、樂於成全問卜者；公正、藝術與科學（含從事科學、法律、藝術者）；富創造力的才智', rv:'不誠實、兩面三刀的男人；奸詐、勒索、不公、惡習、醜聞、掠奪、重大損失' },
+    // ── 寶劍 Swords（王牌→十）──
+    '寶劍王牌':   { up:'凱旋、凡事走向極端、征服、力量的勝利；強大的力量，於愛於恨皆然',  rv:'同上，但結果是災難性的；另說受孕、生產、增長、繁衍' },
+    '寶劍二':     { up:'順從及其所示的均衡、勇氣、友誼、僵持中的和睦；另說溫柔、情感、親密', rv:'冒充、虛假、口是心非、不忠' },
+    '寶劍三':     { up:'移除、離別、延遲、分裂、決裂、離散，以及牌面所示之意',            rv:'精神錯亂、過失、損失、心神渙散、失序、混亂' },
+    '寶劍四':     { up:'警醒、退隱、孤獨、隱士的安歇、流放、墳塚與棺木',                  rv:'明智的治理、謹慎、節約、慳吝、預防、遺囑' },
+    '寶劍五':     { up:'墮落、毀滅、撤銷、惡名、不名譽、損失',                            rv:'同上；以及埋葬與葬禮' },
+    '寶劍六':     { up:'水路之旅、路途、路徑、使者、受託者、權宜之計',                    rv:'聲明、坦白、公開；另說一樁求愛' },
+    '寶劍七':     { up:'計謀、嘗試、心願、希望、信心；亦有爭吵、可能失敗的計畫、惱人之事', rv:'良言、忠告、教誨；亦有誹謗、饒舌' },
+    '寶劍八':     { up:'壞消息、劇烈的懊惱、危機、譴責、受縛的力量、衝突、誹謗；亦有疾病',  rv:'不安、困難、對立、意外、背叛；未預見之事；宿命' },
+    '寶劍九':     { up:'死亡、失敗、挫敗、延遲、欺騙、失望、絕望',                        rv:'監禁、猜疑、懷疑、合理的恐懼、羞愧' },
+    '寶劍十':     { up:'痛苦、磨難、眼淚、悲傷、淒涼；並非特指橫死之牌',                  rv:'好處、利益、成功、恩惠，但皆不持久；亦有權力與權威' },
+    // ── 寶劍宮廷 ──
+    '寶劍侍者':   { up:'權威、監督、密探、警覺、偵查、審查',                            rv:'上述較惡的一面；未預見之事、毫無準備的狀態；疾病' },
+    '寶劍騎士':   { up:'技巧、勇敢、才幹、防衛、手腕、敵意、憤怒、戰爭、破壞、對立、抵抗、毀滅；若鄰近凶牌則指死亡', rv:'魯莽、無能、揮霍無度' },
+    '寶劍皇后':   { up:'寡居、女性的悲傷與困窘、缺席、不孕、哀悼、匱乏、分離',            rv:'惡意、偏執、詭計、假正經、禍害、欺騙' },
+    '寶劍國王':   { up:'凡出於審判之事——權力、命令、權威、好戰的才智、法律、王權的職位',  rv:'殘忍、乖戾、野蠻、背信、惡意' },
+    // ── 金幣 Pentacles（王牌→十）──
+    '金幣王牌':   { up:'圓滿的滿足、福樂、極喜；亦有敏捷的消息；黃金',                    rv:'財富陰暗的一面、壞消息；亦指巨富' },
+    '金幣二':     { up:'歡快、消遣之牌；亦讀作書面的消息與訊息，以及阻礙、躁動、煩擾、糾葛', rv:'強顏歡笑、佯裝的享樂、字面之意、手寫文字、撰述、匯票' },
+    '金幣三':     { up:'本行、技藝、熟練的工作；通常視為高貴、名望、榮耀之牌',          rv:'平庸（工作及其他方面）、幼稚、瑣碎、軟弱' },
+    '金幣四':     { up:'財產的保障、緊守已有之物、贈與、遺贈、繼承',                    rv:'懸而未決、延遲、對立' },
+    '金幣五':     { up:'首要是物質的困頓，無論是赤貧或其他；（有人讀作愛與情人之牌）',  rv:'失序、混亂、毀滅、不和、放蕩' },
+    '金幣六':     { up:'禮物、餽贈、滿足；另說關注、警覺、正逢其時、當下的興旺',        rv:'慾望、貪婪、嫉羨、妒忌、幻想' },
+    '金幣七':     { up:'主要是金錢、生意、交易；一說爭執、口角；另說純真、巧思、滌淨',  rv:'為一筆可能借出的錢而生的憂慮' },
+    '金幣八':     { up:'工作、受雇、委託、工藝、技藝與生意上的本領，或許仍在準備階段',  rv:'落空的抱負、虛榮、貪婪、勒索、放高利貸；本領淪為奸巧與算計' },
+    '金幣九':     { up:'審慎、安穩、成功、成就、篤定、辨識力',                          rv:'奸詐、欺騙、落空的計畫、背信' },
+    '金幣十':     { up:'得利、財富；家族事務、家檔、門第出身、家宅',                    rv:'機運、宿命、損失、劫掠、賭博；有時是餽贈、嫁妝、撫卹金' },
+    // ── 金幣宮廷 ──
+    '金幣侍者':   { up:'用功、研讀、學識、反思；另說消息、訊息及其傳遞者；亦有統御、管理', rv:'揮霍、放蕩、過度慷慨、奢華；不利的消息' },
+    '金幣騎士':   { up:'實用、可靠、盡責、責任感、正直——皆在尋常而外在的層面',          rv:'惰性、懶散、止步不前、停滯；亦有平庸無波、灰心、粗心' },
+    '金幣皇后':   { up:'富足、慷慨、雍容、安穩、自在',                                  rv:'惡、猜疑、懸而未決、恐懼、不信任' },
+    '金幣國王':   { up:'英勇、能成事的才智、生意與一般的智識才能，有時是數理天分；於此諸途的成功', rv:'惡習、軟弱、醜陋、乖戾、腐敗、危險' }
+  };
+
+
+  // ════════════════════════════════════════════════
+  // GD 小阿爾克那歸屬表
+  // ════════════════════════════════════════════════
+
+  // 花色→元素（匹配 tarot.js 的 suit 名稱）
+  var SUIT_ELEMENT = { 'wand':'火', 'cup':'水', 'sword':'風', 'pent':'土' };
+
+  // Ace 歸屬：各元素的精華，分配到對應的 Kether
+  // 數字牌 2-10：按黃道十分度（decan）分配到星座
+  // 宮廷牌：按 GD 體系分配到星座跨度
+
+  // ── 數字牌 2-10 的黃道十分度歸屬（GD 標準）──
+  // 格式：{suit, rank} → {sign, decanIdx(0-35), sephirah}
+  // 牌對應 Sephirah: Ace=Kether, 2=Chokmah, 3=Binah, 4=Chesed, 5=Geburah,
+  //                  6=Tiphereth, 7=Netzach, 8=Hod, 9=Yesod, 10=Malkuth
+  var RANK_SEPHIRAH = {
+    'ace':0, '2':1, '3':2, '4':3, '5':4, '6':5, '7':6, '8':7, '9':8, '10':9
+  };
+
+  // GD 三十六黃道十分度對照表（按黃道順序，每星座 3 旬）
+  // index 0-35, 與 DECAN_MAP 一致
+  // 每個黃道十分度對應一張數字牌(2-10)
+  var DECAN_CARDS = {
+    // 火-權杖: 牡羊=2,3,4; 獅子=5,6,7; 射手=8,9,10
+    'wand-2': {sign:'牡羊',decan:0},  'wand-3': {sign:'牡羊',decan:1},  'wand-4': {sign:'牡羊',decan:2},
+    'wand-5': {sign:'獅子',decan:12}, 'wand-6': {sign:'獅子',decan:13}, 'wand-7': {sign:'獅子',decan:14},
+    'wand-8': {sign:'射手',decan:24}, 'wand-9': {sign:'射手',decan:25}, 'wand-10':{sign:'射手',decan:26},
+    // 水-聖杯: 巨蟹=2,3,4; 天蠍=5,6,7; 雙魚=8,9,10
+    'cup-2':  {sign:'巨蟹',decan:9},  'cup-3':  {sign:'巨蟹',decan:10}, 'cup-4':  {sign:'巨蟹',decan:11},
+    'cup-5':  {sign:'天蠍',decan:21}, 'cup-6':  {sign:'天蠍',decan:22}, 'cup-7':  {sign:'天蠍',decan:23},
+    'cup-8':  {sign:'雙魚',decan:33}, 'cup-9':  {sign:'雙魚',decan:34}, 'cup-10': {sign:'雙魚',decan:35},
+    // 風-寶劍: 天秤=2,3,4; 水瓶=5,6,7; 雙子=8,9,10
+    'sword-2':{sign:'天秤',decan:18}, 'sword-3':{sign:'天秤',decan:19}, 'sword-4':{sign:'天秤',decan:20},
+    'sword-5':{sign:'水瓶',decan:30}, 'sword-6':{sign:'水瓶',decan:31}, 'sword-7':{sign:'水瓶',decan:32},
+    'sword-8':{sign:'雙子',decan:6},  'sword-9':{sign:'雙子',decan:7},  'sword-10':{sign:'雙子',decan:8},
+    // 土-錢幣: 摩羯=2,3,4; 金牛=5,6,7; 處女=8,9,10
+    'pent-2': {sign:'摩羯',decan:27}, 'pent-3': {sign:'摩羯',decan:28}, 'pent-4': {sign:'摩羯',decan:29},
+    'pent-5': {sign:'金牛',decan:3},  'pent-6': {sign:'金牛',decan:4},  'pent-7': {sign:'金牛',decan:5},
+    'pent-8': {sign:'處女',decan:15}, 'pent-9': {sign:'處女',decan:16}, 'pent-10':{sign:'處女',decan:17}
+  };
+
+  // ── 宮廷牌的星座跨度（GD 標準）──
+  // GD 宮廷牌跨越兩個星座的最後一旬和下一個星座的前兩旬
+  // King(GD Knight)=火的火, Queen=水的火, Knight(GD Prince)=風的火, Page(GD Princess)=土的火
+  var COURT_SIGN = {
+    // 權杖宮廷
+    'wand-king':   {signs:['射手','牡羊'], primary:'射手'},  // 火之火：射手21°-牡羊20°
+    'wand-queen':  {signs:['雙魚','牡羊'], primary:'牡羊'},  // 火之水：雙魚21°-牡羊20°→修正
+    'wand-knight': {signs:['巨蟹','獅子'], primary:'獅子'},  // 火之風
+    'wand-page':   {signs:['火'],          primary:'火'},    // 火之土（公主=整個元素象限）
+    // 聖杯宮廷
+    'cup-king':    {signs:['雙魚','巨蟹'], primary:'雙魚'},
+    'cup-queen':   {signs:['雙子','巨蟹'], primary:'巨蟹'},
+    'cup-knight':  {signs:['天秤','天蠍'], primary:'天蠍'},
+    'cup-page':    {signs:['水'],          primary:'水'},
+    // 寶劍宮廷
+    'sword-king':  {signs:['金牛','雙子'], primary:'雙子'},
+    'sword-queen': {signs:['處女','天秤'], primary:'天秤'},
+    'sword-knight':{signs:['摩羯','水瓶'], primary:'水瓶'},
+    'sword-page':  {signs:['風'],          primary:'風'},
+    // 錢幣宮廷
+    'pent-king':   {signs:['獅子','處女'], primary:'處女'},
+    'pent-queen':  {signs:['射手','摩羯'], primary:'摩羯'},
+    'pent-knight': {signs:['牡羊','金牛'], primary:'金牛'},
+    'pent-page':   {signs:['土'],          primary:'土'}
+  };
+
+  // ═══ v55：宮廷牌面向表（Directional Dignity）═══
+  // 依 RWS 圖像實測分類（Parsifal's Wheel Tarot 2018 實測 + TarotPugs 三分法）
+  // 'left'=圖像主要方向面左；'right'=面右；'forward'=正面/中性
+  // 本站不抽固定逆位；本表只記錄實際牌圖人物的固有朝向，供 Book T 計數方向使用。
+  var _ootkSessionCountDirection = null; // 發牌前由使用者依實際牌圖確認，禁止用 RWS 固定表替代。
+
+  var COURT_FACING = {
+    'wand-king':   'left',     'wand-queen':  'right',
+    'wand-knight': 'left',     'wand-page':   'right',
+    'cup-king':    'forward',  'cup-queen':   'left',
+    'cup-knight':  'right',    'cup-page':    'left',
+    'sword-king':  'forward',  'sword-queen': 'right',
+    'sword-knight':'left',     'sword-page':  'right',
+    'pent-king':   'forward',  'pent-queen':  'left',
+    'pent-knight': 'right',    'pent-page':   'forward'
+  };
+
+  // 取得代表牌在網站牌面圖像中的固有面向。
+  // Golden Dawn《Book T》的計數方向依「代表牌朝向」，不是依 Waite 式正逆位。
+  function getCourtFacing(card) {
+    if (!card) return null;
+    var s = card.suit || '';
+    var r = String(card.rank || '');
+    if (s === 'major') return null;
+    if (!(r === 'king' || r === 'queen' || r === 'knight' || r === 'page')) return null;
+    return COURT_FACING[s + '-' + r] || 'forward';
+  }
+  function getBookTCountDirection(card) {
+    if (_ootkSessionCountDirection === 'left') return -1;
+    if (_ootkSessionCountDirection === 'right') return 1;
+    // 非開鑰／舊資料相容時才讀網站牌圖表；正式開鑰流程必須在發牌前明示左右。
+    var facing = getCourtFacing(card);
+    return facing === 'left' ? -1 : 1;
+  }
+
+  // Directional Dignity 分析（v55）
+  // 輸入：一串牌 + 特定位置（通常是 Significator 或某宮廷牌）
+  // 輸出：該位置宮廷牌跟左右鄰的互動關係
+  function computeDirectionalDignity(cards, idx) {
+    if (!cards || !cards.length || idx < 0 || idx >= cards.length) return null;
+    var self = cards[idx];
+    var selfFacing = getCourtFacing(self);
+    if (!selfFacing) return null; // 不是宮廷牌
+    var leftN = (idx > 0) ? cards[idx - 1] : null;
+    var rightN = (idx < cards.length - 1) ? cards[idx + 1] : null;
+    var leftFacing = leftN ? getCourtFacing(leftN) : null;
+    var rightFacing = rightN ? getCourtFacing(rightN) : null;
+    var result = {
+      card: self.n || self.name,
+      facing: selfFacing,
+      leftNeighbor: leftN ? (leftN.n || leftN.name) : null,
+      leftFacing: leftFacing,
+      rightNeighbor: rightN ? (rightN.n || rightN.name) : null,
+      rightFacing: rightFacing,
+      interactions: []
+    };
+    // 左鄰是宮廷牌：判斷對望關係
+    if (leftN && leftFacing) {
+      if (selfFacing === 'left' && leftFacing === 'right') {
+        result.interactions.push({
+          with: 'left',
+          type: 'mutual_gaze',
+          label: '互相對望',
+          meaning: '與左側人物（' + (leftN.n || leftN.name) + '）有直接互動——對話、合作、或衝突都可能，是這段關係的活躍雙方'
+        });
+      } else if (selfFacing === 'right' && leftFacing === 'right') {
+        result.interactions.push({
+          with: 'left',
+          type: 'same_direction',
+          label: '同向前進',
+          meaning: '與左側人物（' + (leftN.n || leftN.name) + '）朝同方向——並肩前進，但沒有互相注意'
+        });
+      } else if (selfFacing === 'left' && leftFacing === 'left') {
+        result.interactions.push({
+          with: 'left',
+          type: 'back_turned',
+          label: '背對對方',
+          meaning: '與左側人物（' + (leftN.n || leftN.name) + '）互相背對——疏離、無溝通、或各自抽身'
+        });
+      } else if (selfFacing === 'right' && leftFacing === 'left') {
+        result.interactions.push({
+          with: 'left',
+          type: 'diverging',
+          label: '分道揚鑣',
+          meaning: '與左側人物（' + (leftN.n || leftN.name) + '）背道而馳——關係正在走散'
+        });
+      } else if (selfFacing === 'averted' || leftFacing === 'averted') {
+        result.interactions.push({
+          with: 'left',
+          type: 'averted',
+          label: '避開視線',
+          meaning: '跟左側人物有張力但不直面——話沒說開的狀態'
+        });
+      }
+    }
+    // 右鄰是宮廷牌：判斷對望關係
+    if (rightN && rightFacing) {
+      if (selfFacing === 'right' && rightFacing === 'left') {
+        result.interactions.push({
+          with: 'right',
+          type: 'mutual_gaze',
+          label: '互相對望',
+          meaning: '與右側人物（' + (rightN.n || rightN.name) + '）有直接互動——對話、合作、或衝突，活躍雙方'
+        });
+      } else if (selfFacing === 'right' && rightFacing === 'right') {
+        result.interactions.push({
+          with: 'right',
+          type: 'same_direction',
+          label: '同向前進',
+          meaning: '與右側人物（' + (rightN.n || rightN.name) + '）朝同方向——並肩但沒有互相注意'
+        });
+      } else if (selfFacing === 'left' && rightFacing === 'right') {
+        result.interactions.push({
+          with: 'right',
+          type: 'diverging',
+          label: '分道揚鑣',
+          meaning: '與右側人物（' + (rightN.n || rightN.name) + '）背道而馳——關係正在走散'
+        });
+      } else if (selfFacing === 'left' && rightFacing === 'left') {
+        result.interactions.push({
+          with: 'right',
+          type: 'back_turned',
+          label: '背對對方',
+          meaning: '與右側人物（' + (rightN.n || rightN.name) + '）互相背對——疏離、無溝通'
+        });
+      } else if (selfFacing === 'averted' || rightFacing === 'averted') {
+        result.interactions.push({
+          with: 'right',
+          type: 'averted',
+          label: '避開視線',
+          meaning: '跟右側人物有張力但不直面——話沒說開'
+        });
+      }
+    }
+    // Significator 的面向含義（本身）
+    var selfMeaning;
+    if (selfFacing === 'left') selfMeaning = '朝向過去——還在處理之前的事件/關係';
+    else if (selfFacing === 'right') selfMeaning = '朝向未來——準備邁步/期待新階段';
+    else if (selfFacing === 'averted') selfMeaning = '固有朝向背離計數方向——該階段的敘事需反向追蹤';
+    else selfMeaning = '正面面對——站在當下、直面當前局面';
+    result.selfMeaning = selfMeaning;
+    return result;
+  }
+
+  // 星座→宮位映射（自然宮位）
+  var SIGN_HOUSE = {
+    '牡羊':1,'金牛':2,'雙子':3,'巨蟹':4,'獅子':5,'處女':6,
+    '天秤':7,'天蠍':8,'射手':9,'摩羯':10,'水瓶':11,'雙魚':12
+  };
+  var SIGNS_ORDER = ['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'];
+
+  // ════════════════════════════════════════════════
+  // 取得牌的 GD 歸屬
+  // ════════════════════════════════════════════════
+
+  function getCardGD(card) {
+    if (!card) return {};
+    var s = card.suit || '';
+    var r = String(card.rank || '');
+
+    // 大阿爾克那：唯一讀取全站 Golden Dawn Book T 核心，禁止舊表與外行星替代。
+    if (s === 'major') {
+      var core = (typeof window !== 'undefined') ? window.JYGoldenDawn : null;
+      var p = core && core.profile ? core.profile(card) : null;
+      var astro = p ? p.astro : '';
+      var signMap = {Aries:'牡羊',Taurus:'金牛',Gemini:'雙子',Cancer:'巨蟹',Leo:'獅子',Virgo:'處女',Libra:'天秤',Scorpio:'天蠍',Sagittarius:'射手',Capricorn:'摩羯',Aquarius:'水瓶',Pisces:'雙魚'};
+      var planetMap = {Mercury:'水星',Moon:'月亮',Venus:'金星',Jupiter:'木星',Mars:'火星',Sun:'太陽',Saturn:'土星'};
+      var isZodiac = !!signMap[astro];
+      var isPlanet = !!planetMap[astro] || astro === 'Earth and Saturn';
+      return {
+        type: isZodiac ? 'zodiac' : (isPlanet ? 'planet' : 'element'),
+        sign: isZodiac ? signMap[astro] : null,
+        element: p ? p.element : null,
+        planet: astro === 'Earth and Saturn' ? '土星' : (planetMap[astro] || null),
+        path: p && p.path ? ('Path ' + p.path) : null,
+        count: core && core.countValue ? core.countValue(card) : (p && p.countValue ? p.countValue : 3),
+        decan: null,
+        sephirah: null
+      };
+    }
+
+    // Ace
+    if (r === 'ace') {
+      var aceEl = SUIT_ELEMENT[s] || '';
+      return {
+        type: 'ace',
+        sign: null,
+        element: aceEl,
+        // ★ v68.21.8 修正:Mathers Book T 1888 + Crowley Liber 78 文獻明文 Aces=11
+        //   舊版預設 5 是錯的(可能是早期誤把 Ace 當小牌按 pip),可查兩個源頭都是 11
+        //   For Aces, count 11. — Book T pg.50 / Liber 78 First Operation step 6
+        count: 11,
+        decan: null,
+        sephirah: 'Kether' // Ace = Kether
+      };
+    }
+
+    // 數字牌 2-10
+    var numRank = parseInt(r);
+    if (numRank >= 2 && numRank <= 10) {
+      var dk = s + '-' + r;
+      var decanInfo = DECAN_CARDS[dk] || {};
+      var sephIdx = RANK_SEPHIRAH[r];
+      var SEPH_NAMES = ['Kether','Chokmah','Binah','Chesed','Geburah','Tiphereth','Netzach','Hod','Yesod','Malkuth'];
+      return {
+        type: 'number',
+        sign: decanInfo.sign || null,
+        element: SUIT_ELEMENT[s] || '',
+        count: numRank,
+        decan: decanInfo.decan != null ? decanInfo.decan : null,
+        sephirah: SEPH_NAMES[sephIdx] || null
+      };
+    }
+
+    // 宮廷牌
+    var courtKey = s + '-' + r;
+    var courtInfo = COURT_SIGN[courtKey] || {};
+    var courtCount = (r === 'page') ? 7 : 4; // Page/Princess=7, 其他=4
+    return {
+      type: 'court',
+      sign: courtInfo.primary || null,
+      signs: courtInfo.signs || [],
+      element: SUIT_ELEMENT[s] || '',
+      count: courtCount,
+      decan: null,
+      sephirah: null // 宮廷牌不直接對應 Sephirah
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // 計數值
+  // ════════════════════════════════════════════════
+
+  function getCountValue(card) {
+    var gd = getCardGD(card);
+    return gd.count || 1;
+  }
+
+  // ════════════════════════════════════════════════
+  // 元素尊嚴（Elemental Dignities）
+  // ════════════════════════════════════════════════
+
+  // ED_MAP v55：按 Book T 原文修正
+  // Book T 原文：「Cards of opposite natures on either side weaken it greatly.」
+  //              「Swords are inimical to Pentacles. Wands are inimical to Cups.」
+  //              「Swords are friendly with Cups and Wands. Wands are friendly with Swords and Pentacles.」
+  // 只有三類：同元素強化 / 友好 / 敵對（沒有 neutral——這是 Book T 明確的）
+  var ED_MAP = {
+    // 同元素：強化（strengthen）
+    '火+火':'strengthen','水+水':'strengthen',
+    '風+風':'strengthen','土+土':'strengthen',
+    // 對立元素（火水、風土）：敵對削弱（weaken）
+    '火+水':'weaken','水+火':'weaken',
+    '風+土':'weaken','土+風':'weaken',
+    // 其他組合全部為友好（friendly）——按 Book T 原文
+    '火+風':'friendly','風+火':'friendly',
+    '水+土':'friendly','土+水':'friendly',
+    '火+土':'friendly','土+火':'friendly',
+    '水+風':'friendly','風+水':'friendly'
+  };
+
+  // Triad 強度打分（v55）：-3 最弱 到 +3 最強
+  // 規則：
+  //   兩側同元素 = +3（大幅強化，好壞都放大）
+  //   兩側跟中間同元素 = +3
+  //   兩側全部友好 = +1
+  //   一側友好一側敵對 = 0（抵消）
+  //   兩側跟中間敵對 = -3（大幅削弱，可忽略）
+  //   兩側互相敵對（火+水 或 風+土）但跟中間不敵對 = -1（兩側內耗，中間牌反而獨立）
+  function computeTriadStrength(card, leftN, rightN) {
+    if (!card) return 0;
+    var cEl = getCardElement(card);
+    var leftEl = leftN ? getCardElement(leftN) : '';
+    var rightEl = rightN ? getCardElement(rightN) : '';
+    var lEd = (leftN && leftEl && cEl) ? (ED_MAP[cEl + '+' + leftEl] || 'friendly') : 'none';
+    var rEd = (rightN && rightEl && cEl) ? (ED_MAP[cEl + '+' + rightEl] || 'friendly') : 'none';
+    // 兩側都沒有（邊緣牌）返回 0
+    if (lEd === 'none' && rEd === 'none') return 0;
+    // 只有單側（邊緣牌）
+    if (lEd === 'none') {
+      if (rEd === 'strengthen') return 2;
+      if (rEd === 'weaken') return -2;
+      return 0;
+    }
+    if (rEd === 'none') {
+      if (lEd === 'strengthen') return 2;
+      if (lEd === 'weaken') return -2;
+      return 0;
+    }
+    // 雙側都有
+    if (lEd === 'strengthen' && rEd === 'strengthen') return 3;
+    if (lEd === 'weaken' && rEd === 'weaken') return -3;
+    if ((lEd === 'strengthen' && rEd === 'weaken') || (lEd === 'weaken' && rEd === 'strengthen')) return 0;
+    if (lEd === 'strengthen' && rEd === 'friendly') return 2;
+    if (lEd === 'friendly' && rEd === 'strengthen') return 2;
+    if (lEd === 'weaken' && rEd === 'friendly') return -2;
+    if (lEd === 'friendly' && rEd === 'weaken') return -2;
+    if (lEd === 'friendly' && rEd === 'friendly') {
+      // 再看左右兩側互為敵對與否
+      if (leftEl && rightEl) {
+        var lrEd = ED_MAP[leftEl + '+' + rightEl];
+        if (lrEd === 'weaken') return 0; // Book T：兩側彼此敵對時，中牌不受任一側明顯支配
+      }
+      return 1;
+    }
+    return 0;
+  }
+
+  function getCardElement(card) {
+    if (!card) return '';
+    // 先看 GD 歸屬
+    var gd = getCardGD(card);
+    if (gd.element) return gd.element;
+    // 大阿爾克那有些是行星/星座，取其元素
+    if (gd.sign) {
+      var SE = {'牡羊':'火','金牛':'土','雙子':'風','巨蟹':'水','獅子':'火','處女':'土',
+                '天秤':'風','天蠍':'水','射手':'火','摩羯':'土','水瓶':'風','雙魚':'水'};
+      return SE[gd.sign] || '';
+    }
+    // fallback: 花色
+    var s = card.suit || '';
+    return SUIT_ELEMENT[s] || card.el || '';
+  }
+
+  function elementalDignity(card, neighbor) {
+    var e1 = getCardElement(card), e2 = getCardElement(neighbor);
+    if (!e1 || !e2) return 'neutral';
+    return ED_MAP[e1 + '+' + e2] || 'neutral';
+  }
+
+  // ════════════════════════════════════════════════
+  // Significator 自動選擇（GD 正統）
+  // ════════════════════════════════════════════════
+  // GD 標準：根據太陽星座的元素 + 性別/年齡選宮廷牌
+  // 成年男性=國王(King)，成年女性=皇后(Queen)
+  // 年輕男性=騎士(Knight)，年輕女性=侍者(Page)
+
+  var SIGN_ELEMENT_MAP = {
+    '牡羊':'火','金牛':'土','雙子':'風','巨蟹':'水',
+    '獅子':'火','處女':'土','天秤':'風','天蠍':'水',
+    '射手':'火','摩羯':'土','水瓶':'風','雙魚':'水'
+  };
+
+  function monthToSign(m, d) {
+    d = d || 15;
+    if ((m===3&&d>=21)||(m===4&&d<=19)) return '牡羊';
+    if ((m===4&&d>=20)||(m===5&&d<=20)) return '金牛';
+    if ((m===5&&d>=21)||(m===6&&d<=21)) return '雙子';
+    if ((m===6&&d>=22)||(m===7&&d<=22)) return '巨蟹';
+    if ((m===7&&d>=23)||(m===8&&d<=22)) return '獅子';
+    if ((m===8&&d>=23)||(m===9&&d<=22)) return '處女';
+    if ((m===9&&d>=23)||(m===10&&d<=23)) return '天秤';
+    if ((m===10&&d>=24)||(m===11&&d<=21)) return '天蠍';
+    if ((m===11&&d>=22)||(m===12&&d<=21)) return '射手';
+    if ((m===12&&d>=22)||(m===1&&d<=19)) return '摩羯';
+    if ((m===1&&d>=20)||(m===2&&d<=18)) return '水瓶';
+    return '雙魚';
+  }
+
+  var EL_SUIT_MAP = {'火':'wand','水':'cup','風':'sword','土':'pent'};
+
+  function findCourtCard(element, gender, age) {
+    if (typeof TAROT === 'undefined') return null;
+    var suitTarget = EL_SUIT_MAP[element] || 'cup';
+    var rankTarget;
+    if (gender === '女' || gender === 'female' || gender === 'F') {
+      rankTarget = (age && age < 25) ? 'page' : 'queen';
+    } else {
+      rankTarget = (age && age < 25) ? 'knight' : 'king';
+    }
+    for (var i = 0; i < TAROT.length; i++) {
+      var c = TAROT[i];
+      if (c.suit === suitTarget && c.rank === rankTarget) return c;
+    }
+    return null;
+  }
+
+  function autoSelectSignificator(birthMonth, birthDay, gender, age) {
+    var sign = monthToSign(birthMonth, birthDay);
+    var el = SIGN_ELEMENT_MAP[sign] || '水';
+    var card = findCourtCard(el, gender, age);
+    return { card: card, sign: sign, element: el };
+  }
+
+  // ════════════════════════════════════════════════
+  // Operation 1：四元素分堆（YHVH）
+  // ════════════════════════════════════════════════
+  // 正統做法：問卜者切成四堆，大小不均等
+  // 數位模擬：以隨機切點模擬「直覺切牌」
+
+  function ootkOp1(deck, significatorId) {
+    // ★ v64.1 正統 Mathers Book T:「cut each of the packets as nearly in the centre
+    //   as possible, putting each uppermost half to the right of and beside the lower
+    //   half, thus yielding four packets of nearly equal dimensions.」
+    // 正統做法:兩刀切,每刀盡量對半 → 四堆「nearly equal」
+    // 78 / 4 = 19.5,正統範圍應該在 19-20 ±3 內(16-22),不是隨意 12-27
+    var len = deck.length; // 78
+    var MIN_PILE = 16;
+    var MAX_PILE = 22;
+
+    // 模擬人手「對半切」的自然偏差:每堆 19.5 ± 2.5,符合 Mathers「nearly equal」
+    var sizes = [];
+    for (var s = 0; s < 4; s++) {
+      sizes.push(Math.round(19.5 + (Math.random() - 0.5) * 5)); // 17 ~ 22
+    }
+    // 正規化:調整到總和 = len,每堆在 MIN_PILE ~ MAX_PILE
+    var diff = len - sizes.reduce(function(a, b) { return a + b; }, 0);
+    var safety = 0;
+    while (diff !== 0 && safety < 200) {
+      var ri = Math.floor(Math.random() * 4);
+      if (diff > 0 && sizes[ri] < MAX_PILE) { sizes[ri]++; diff--; }
+      else if (diff < 0 && sizes[ri] > MIN_PILE) { sizes[ri]--; diff++; }
+      safety++;
+    }
+    // ★ Bug #33 fix: safety 退出時 sizes 加總可能仍 ≠ 78（極端情況都頂到 MAX/MIN 邊界）
+    //   後面 deck[idx++] 會讀到 undefined 造成 piles[pk][pi].id throw
+    //   修法：強制把 sizes 校正成加總 = 78（直接從第一堆吸收差額）
+    var finalSum = sizes.reduce(function(a, b) { return a + b; }, 0);
+    if (finalSum !== len) {
+      sizes[0] += (len - finalSum); // 把差額塞給第一堆
+      // 萬一第一堆變成負數或太大，做夾擠保險
+      if (sizes[0] < 1) {
+        // 把 sizes 直接 reset 成 [20, 20, 19, 19] 的合理基準
+        sizes = [20, 20, 19, 19];
+      }
+    }
+
+    // YHVH 四堆：Yod=火, Heh=水, Vav=風, Heh(final)=土
+    var pileKeys = ['fire', 'water', 'air', 'earth'];
+    var piles = { fire: [], water: [], air: [], earth: [] };
+    var idx = 0;
+    for (var p = 0; p < 4; p++) {
+      for (var i = 0; i < sizes[p]; i++) {
+        piles[pileKeys[p]].push(deck[idx++]);
+      }
+    }
+
+    // 找 Significator 在哪堆
+    var activePile = '';
+    for (var pk in piles) {
+      for (var pi = 0; pi < piles[pk].length; pi++) {
+        if (piles[pk][pi].id === significatorId) {
+          activePile = pk;
+          break;
+        }
+      }
+      if (activePile) break;
+    }
+
+    var pileMeaning = {
+      fire: '工作、事業、行動、意志',
+      water: '愛情、婚姻、快樂、情感',
+      air: '煩惱、損失、衝突、思維',
+      earth: '金錢、物質、實際事務'
+    };
+
+    var activeCards = piles[activePile] || [];
+    var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
+    var counted = ootkCounting(activeCards, sigIdx);
+    var paired = ootkPairing(activeCards, sigIdx);
+    var dignities = ootkDignities(counted.keyCards);
+    var unaspected = []; // Book T 核心版不加入 PHB Source of the Nile 擴充
+
+    return {
+      piles: { fire: piles.fire.length, water: piles.water.length, air: piles.air.length, earth: piles.earth.length },
+      activePile: activePile,
+      meaning: pileMeaning[activePile] || '',
+      activeCards: activeCards,
+      sigIndex: sigIdx,
+      keyCards: counted.keyCards,
+      countingPath: counted.path,
+      pairs: paired,
+      dignities: dignities,
+      unaspected: unaspected,
+      bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // Operation 2：十二宮位
+  // ════════════════════════════════════════════════
+  // 正統做法：按牌的 GD 星座歸屬分配到對應宮位
+  // 沒有星座歸屬的牌（Ace、元素大牌、行星大牌、Page）→ 按元素分配
+
+  var ELEMENT_HOUSE = { '火':1, '土':2, '風':3, '水':4 }; // 元素牌的預設宮位
+
+  function getCardHouse(card) {
+    var gd = getCardGD(card);
+    // 有明確星座的 → 對應宮位
+    if (gd.sign && SIGN_HOUSE[gd.sign]) return SIGN_HOUSE[gd.sign];
+    // 宮廷牌有多個星座 → 取 primary
+    if (gd.signs && gd.signs.length > 0 && gd.signs[0] !== '火' && gd.signs[0] !== '水' && gd.signs[0] !== '風' && gd.signs[0] !== '土') {
+      var ps = gd.sign || gd.signs[0];
+      if (SIGN_HOUSE[ps]) return SIGN_HOUSE[ps];
+    }
+    // 元素牌/Ace → 按元素分配到對應的基本宮位
+    var el = gd.element || getCardElement(card);
+    if (ELEMENT_HOUSE[el]) return ELEMENT_HOUSE[el];
+    // fallback
+    return 1;
+  }
+
+  function ootkOp2(deck, significatorId) {
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 正統 Book T Op2：「Deal cards into twelve stacks, for
+    //   the twelve astrological houses of heaven.」 — Mathers Book T
+    // 全副 78 張獨立洗牌後依序發到 12 宮，第1張→第1宮、第2張→第2宮...
+    // 第13張→第1宮...循環。找 Sig 在哪宮 = 該宮為 active stack
+    // ════════════════════════════════════════════════════════════
+    var houses = [];
+    for (var h = 0; h < 12; h++) houses.push([]);
+
+    deck.forEach(function(card, idx) {
+      houses[idx % 12].push(card);
+    });
+
+    var activeHouse = -1;
+    for (var hi = 0; hi < 12; hi++) {
+      if (houses[hi].some(function(c) { return c.id === significatorId; })) {
+        activeHouse = hi;
+        break;
+      }
+    }
+    // fallback：如果 Sig 不在 active pile（不應該發生）
+    if (activeHouse < 0) activeHouse = 0;
+
+    var houseMeanings = [
+      '自我、身體、外貌',
+      '財務、價值觀、資源',
+      '溝通、學習、兄弟',
+      '家庭、根基、父親',
+      '創造、戀愛、子女、快樂',
+      '健康、工作、日常',
+      '伴侶、合夥、公開敵人',
+      '轉化、共同資產、深層親密',
+      '遠方、信仰、高等教育',
+      '事業、地位、社會形象',
+      '社群、理想、朋友',
+      '隱藏、業力、潛意識'
+    ];
+
+    var activeCards = houses[activeHouse] || [];
+    var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
+    var counted = ootkCounting(activeCards, sigIdx);
+    var paired = ootkPairing(activeCards, sigIdx);
+    var unaspected = []; // Book T 核心版不加入 PHB Source of the Nile 擴充
+
+    return {
+      houseDistribution: houses.map(function(h) { return h.length; }),
+      activeHouse: activeHouse + 1,
+      meaning: houseMeanings[activeHouse] || '',
+      activeCards: activeCards,
+      keyCards: counted.keyCards,
+      countingPath: counted.path,
+      pairs: paired,
+      dignities: ootkDignities(counted.keyCards),
+      unaspected: unaspected,
+      bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // Operation 3：十二星座
+  // ════════════════════════════════════════════════
+  // 正統做法：跟 Op2 類似但重點是星座能量而非人生領域
+
+  function getCardSignIdx(card) {
+    var gd = getCardGD(card);
+    if (gd.sign) {
+      var idx = SIGNS_ORDER.indexOf(gd.sign);
+      if (idx >= 0) return idx;
+    }
+    // 元素牌→對應的 cardinal sign
+    var el = gd.element || getCardElement(card);
+    var elSign = { '火':'牡羊', '土':'摩羯', '風':'天秤', '水':'巨蟹' };
+    if (elSign[el]) return SIGNS_ORDER.indexOf(elSign[el]);
+    return 0;
+  }
+
+  var SIGN_TRUMPS = [
+    {sign:'牡羊',trump:4},{sign:'金牛',trump:5},{sign:'雙子',trump:6},
+    {sign:'巨蟹',trump:7},{sign:'獅子',trump:8},{sign:'處女',trump:9},
+    {sign:'天秤',trump:11},{sign:'天蠍',trump:13},{sign:'射手',trump:14},
+    {sign:'摩羯',trump:15},{sign:'水瓶',trump:17},{sign:'雙魚',trump:18}
+  ];
+
+  function ootkOp3(deck, significatorId) {
+    // ════════════════════════════════════════════════════════════
+    // ★ v70.3 正統 Book T Op3：「Shuffle, etc., as before.
+    //   Deal cards into twelve stacks for the twelve signs of the Zodiac.」
+    // 「as before」= 跟 Op2 一樣順序輪發（idx % 12），不是按 GD 歸屬分配。
+    // Op2 vs Op3 的差別在解讀（宮位 vs 星座能量），不在發牌方式。
+    // ════════════════════════════════════════════════════════════
+    var signs = [];
+    for (var s = 0; s < 12; s++) signs.push([]);
+
+    // 正統：順序輪發，第1張→牡羊、第2張→金牛...第13張→牡羊...
+    deck.forEach(function(card, idx) {
+      signs[idx % 12].push(card);
+    });
+
+    var activeSign = -1;
+    for (var si = 0; si < 12; si++) {
+      if (signs[si].some(function(c) { return c.id === significatorId; })) {
+        activeSign = si;
+        break;
+      }
+    }
+
+    var activeCards = signs[activeSign] || [];
+    var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
+    var counted = ootkCounting(activeCards, sigIdx);
+    var paired = ootkPairing(activeCards, sigIdx);
+    var unaspected = []; // Book T 核心版不加入 PHB Source of the Nile 擴充
+
+    var st = SIGN_TRUMPS[activeSign] || {};
+    var trumpName = '';
+    if (typeof TAROT !== 'undefined' && st.trump != null) {
+      var t = TAROT.find(function(c) { return c.id === st.trump; });
+      if (t) trumpName = t.n;
+    }
+
+    return {
+      signDistribution: signs.map(function(s) { return s.length; }),
+      activeSign: st.sign || SIGNS_ORDER[activeSign] || '',
+      signTrump: trumpName,
+      signTrumpId: st.trump,
+      activeCards: activeCards,
+      keyCards: counted.keyCards,
+      countingPath: counted.path,
+      pairs: paired,
+      dignities: ootkDignities(counted.keyCards),
+      unaspected: unaspected,
+      bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // Operation 4：代表牌後方三十六張之環（Book T）
+  // ════════════════════════════════════════════════
+  // 舊版十分度資料只供單張牌占星對應；不得用來決定本操作落點或日期
+  // 只有數字牌 2-10 有明確的黃道十分度歸屬（36 張 → 36 旬，一對一）
+  // 其他牌（大牌、Ace、宮廷牌）→ 按最接近的星座十分度分配
+
+  // Book T 的三十六個黃道十分度只屬於數字牌的占星對應資料。
+  // 第四次操作不把代表牌後方三十六張映射成十分度、日期、月份或旬期。
+
+  function ootkOp4(deck, significatorId) {
+    // Golden Dawn《Book T》：取出代表牌，將其後三十六張圍成環，依前法計數與配對。
+    // 本操作是「倒數階段」，不是黃道十分度日期推算器；不得由此換算月份或日數。
+    var sigDeckIdx = deck.findIndex(function(c){ return c.id === significatorId; });
+    if (sigDeckIdx < 0) return { ringSize:0, activeCards:[], keyCards:[], countingPath:[], pairs:[], ringPairs:[], dignities:[] };
+
+    var sigCard = deck[sigDeckIdx];
+    var ring = [];
+    var cursor = sigDeckIdx;
+    while (ring.length < 36) {
+      cursor = (cursor + 1) % deck.length;
+      if (cursor === sigDeckIdx) break;
+      ring.push(deck[cursor]);
+    }
+
+    var direction = getBookTCountDirection(sigCard);
+    var path = [];
+    var keyCards = [];
+    var visited = {};
+    var idx = direction > 0 ? 0 : ring.length - 1;
+    // 從代表牌開始，代表牌本身包含在第一次計數；其餘步數落到環牌。
+    var sigCount = getCountValue(sigCard);
+    for (var s = 1; s < sigCount; s++) idx = (idx + direction + ring.length) % ring.length;
+    path.push({cardId:sigCard.id,cardName:sigCard.n||sigCard.name,position:'center',countValue:sigCount,isUp:true,direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
+    keyCards.push({card:sigCard,position:'center'});
+    for (var step = 0; step < ring.length + 1 && ring.length; step++) {
+      if (visited[idx]) break;
+      visited[idx] = true;
+      var card = ring[idx];
+      keyCards.push({card:card,position:idx+1});
+      var count = getCountValue(card);
+      path.push({cardId:card.id,cardName:card.n||card.name,position:idx+1,countValue:count,isUp:true,direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
+      for (var c = 1; c < count; c++) idx = (idx + direction + ring.length) % ring.length;
+    }
+
+    // 環形配對：代表牌兩側由近到遠，即第1↔第36、第2↔第35……
+    var ringPairs = ootkPairingRing(ring);
+    var activeCards = [sigCard].concat(ring);
+    return {
+      ringSize:ring.length,
+      sigPosition:sigDeckIdx,
+      countDirection:direction>0?'right':'left',
+      activeCards:activeCards,
+      ringCards:ring,
+      keyCards:keyCards,
+      countingPath:path,
+      ringCountingPath:path,
+      pairs:ringPairs,
+      ringPairs:ringPairs,
+      dignities:ootkDignities(keyCards),
+      bookTMajorities:(window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(ring) : null)
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // Operation 5：生命之樹（Tree of Life）
+  // ════════════════════════════════════════════════
+  // Book T：全副牌依序輪發為生命之樹十堆，代表牌所在堆為本次觀測位置。
+
+  var SEPHIROTH = [
+    {name:'Kether',   zh:'王冠', meaning:'精神目標、最高指引、神聖意志'},
+    {name:'Chokmah',  zh:'智慧', meaning:'創造衝動、原始動力、父性原則'},
+    {name:'Binah',    zh:'理解', meaning:'結構限制、必須面對的現實、母性原則'},
+    {name:'Chesed',   zh:'慈悲', meaning:'擴展、機會、恩典、秩序'},
+    {name:'Geburah',  zh:'嚴厲', meaning:'收縮、割捨、紀律、勇氣'},
+    {name:'Tiphereth',zh:'美',   meaning:'核心自我、和諧、平衡、犧牲'},
+    {name:'Netzach',  zh:'勝利', meaning:'情感、慾望、愛、藝術'},
+    {name:'Hod',      zh:'榮耀', meaning:'思維、溝通、理性、魔法'},
+    {name:'Yesod',    zh:'基礎', meaning:'潛意識、想像、基礎、月亮'},
+    {name:'Malkuth',  zh:'王國', meaning:'物質現實、具體結果、身體'}
+  ];
+
+  // 生命之樹只保留 Book T 程序所需的質點結構；不附加 Manuscript Q／後世預兆字典。
+  var SEPH_INDEX = {};
+  SEPHIROTH.forEach(function(s, i) { SEPH_INDEX[s.name] = i; });
+
+  // 第五次操作按牌序輪發成十堆；不按單張牌的占星／宮廷屬性重新分配。
+
+  function ootkOp5(deck, significatorId) {
+    // ════════════════════════════════════════════════════════════
+    // ★ v70.3 正統 Book T Op5：「Deal into ten packs in the form of
+    //   the Tree of Life.」 — Golden Dawn Book T
+    // 「Deal into ten packs」= 順序輪發（idx % 10），不是按 GD 歸屬分配。
+    // 質點意義由堆序號決定：堆0=Kether、堆1=Chokmah...堆9=Malkuth。
+    // ════════════════════════════════════════════════════════════
+    var sephirot = [];
+    for (var s = 0; s < 10; s++) sephirot.push([]);
+
+    // 正統：順序輪發，第1張→Kether、第2張→Chokmah...第11張→Kether...
+    deck.forEach(function(card, idx) {
+      sephirot[idx % 10].push(card);
+    });
+
+    var activeSeph = -1;
+    for (var si = 0; si < 10; si++) {
+      if (sephirot[si].some(function(c) { return c.id === significatorId; })) {
+        activeSeph = si;
+        break;
+      }
+    }
+
+    var sp = SEPHIROTH[activeSeph] || {};
+    var activeCards = sephirot[activeSeph] || [];
+    var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
+    var counted = ootkCounting(activeCards, sigIdx >= 0 ? sigIdx : 0);
+    var paired = ootkPairing(activeCards, sigIdx >= 0 ? sigIdx : 0);
+    var unaspected = []; // Book T 核心版不加入 PHB Source of the Nile 擴充
+
+    return {
+      sephirahDistribution: sephirot.map(function(s) { return s.length; }),
+      activeSephirah: sp.name || '',
+      sephirahZh: sp.zh || '',
+      sephirahMeaning: sp.meaning || '',
+      activeCards: activeCards,
+      keyCards: counted.keyCards,
+      countingPath: counted.path,
+      pairs: paired,
+      dignities: ootkDignities(counted.keyCards),
+      unaspected: unaspected,
+      bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
+    };
+  }
+
+  // ════════════════════════════════════════════════
+  // 計數程序（Counting）— 通用
+  // ════════════════════════════════════════════════
+  // 正統：從 Significator 出發，依其牌面人物固有朝向計數，直到重複。
+
+  function ootkCounting(cards, startIdx) {
+    if (!cards.length || startIdx < 0) return { keyCards: [], path: [] };
+    var keyCards = [];
+    var path = [];
+    var visited = {};
+    var idx = startIdx;
+    var maxSteps = cards.length + 1; // 直到落點重複；上限只作防呆
+
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 正統 Book T 修正（最重要的引擎修正）
+    //
+    // Mathers Book T 原文：
+    //   "Count the cards from him, in the direction in which he faces.
+    //    The counting should include the card from which you count."
+    //
+    // 正統規則：方向只由起點（代表牌 Significator）的「面向」決定。
+    //   - 整串 Counting 只依代表牌在實際牌圖中的固有朝向
+    //   - 不用正逆位字典改變方向
+    //
+    // 走進其他牌時，那張牌的正/逆位「不會」改變方向——
+    // 這是 Jack Chanek 的個人發想（"a thought for you"），不是 Book T 正統。
+    //
+    // 此修正確保 Counting 走的牌串符合 Mathers Book T 原始手稿規範。
+    // ════════════════════════════════════════════════════════════
+    var startCard = cards[startIdx];
+    var direction = getBookTCountDirection(startCard); // 只依代表牌固有朝向
+
+    // ★ v68.21.8 對齊 Book T 1888 + Liber 78:Aces 已預設 count=11
+    //   舊邏輯(useCrowleyAce 死循環時切換)在預設 5 時用,現在不需要
+
+    for (var step = 0; step < maxSteps; step++) {
+      var card = cards[idx];
+      if (!card || visited[idx]) break;
+      keyCards.push({ card: card, position: idx });
+      visited[idx] = true;
+      var count = getCountValue(card);
+      var cardIsUp = true;
+      path.push({
+        cardId: card.id,
+        cardName: card.n || card.name,
+        position: idx,
+        countValue: count,
+        isUp: cardIsUp,
+        // ★ v63:每張牌記錄它自己的 isUp 給 dignity 用,但 direction 整串都是起點方向
+        direction: direction > 0 ? 'right' : 'left',
+        startDirection: direction > 0 ? 'right' : 'left'
+      });
+      // Book T：起算牌本身算第一張，因此只前進 count - 1 格。
+      for (var c = 1; c < count; c++) {
+        idx = (idx + direction + cards.length) % cards.length;
+      }
+    }
+    return { keyCards: keyCards, path: path, startDirection: direction > 0 ? 'right' : 'left' };
+  }
+
+  // ════════════════════════════════════════════════
+  // 配對程序（Pairing）— 通用
+  // ════════════════════════════════════════════════
+  // 正統：從 Significator 兩側同時向外配對
+
+  function ootkPairing(cards, sigIdx) {
+    if (!cards.length || sigIdx < 0) return [];
+    var pairs = [];
+    var left = sigIdx - 1;
+    var right = sigIdx + 1;
+    // Book T：由代表牌兩側最近者開始，逐層向外配對；線性牌列不循環繞回。
+    while (left >= 0 && right < cards.length) {
+      var ed = elementalDignity(cards[left], cards[right]);
+      pairs.push({
+        left: cards[left],
+        right: cards[right],
+        dignity: ed,
+        leftPos: left,
+        rightPos: right
+      });
+      left--;
+      right++;
+    }
+    return pairs;
+  }
+
+  // Book T 第四次操作：三十六牌按 1↔36、2↔35……配對。
+  // Op4 環形 pairing：1↔36, 2↔35, 3↔34, ...
+  function ootkPairingRing(ring) {
+    if (!ring || !ring.length) return [];
+    var pairs = [];
+    var n = ring.length;
+    var half = Math.floor(n / 2);
+    for (var i = 0; i < half; i++) {
+      var left = ring[i];
+      var right = ring[n - 1 - i];
+      var ed = elementalDignity(left, right);
+      pairs.push({
+        left: left,
+        right: right,
+        dignity: ed,
+        leftPos: i + 1,    // 1-indexed
+        rightPos: n - i    // 1-indexed
+      });
+    }
+    return pairs;
+  }
+
+  // ════════════════════════════════════════════════
+  // 元素尊嚴分析（Elemental Dignities）
+  // ════════════════════════════════════════════════
+
+  function ootkDignities(keyCards) {
+    var result = [];
+    for (var i = 0; i < keyCards.length; i++) {
+      var card = keyCards[i].card;
+      var leftN = (i > 0) ? keyCards[i - 1].card : null;
+      var rightN = (i < keyCards.length - 1) ? keyCards[i + 1].card : null;
+      var leftEd = leftN ? elementalDignity(card, leftN) : 'none';
+      var rightEd = rightN ? elementalDignity(card, rightN) : 'none';
+      var full = !!(leftN && rightN);
+      result.push({
+        card: card.n || card.name,
+        cardElement: getCardElement(card),
+        leftDignity: leftEd,
+        rightDignity: rightEd,
+        fullDignity: full,
+        dignityScope: full ? 'full_flanked' : 'one_sided_local_context'
+      });
+    }
+    return result;
+  }
+
+  // ════════════════════════════════════════════════
+  // Unaspected 牌計算（PHB「尼羅河源頭」）
+  // 該層既沒被 counting 走到、也沒被 pairing 配到的牌
+  // ════════════════════════════════════════════════
+
+  function ootkUnaspected(activeCards, sigIdx, countedKeyCards, pairs) {
+    // Source-locked Book T mode: PHB／Source of the Nile is deliberately excluded.
+    return [];
+  }
+
+  // ════════════════════════════════════════════════
+  // 完整 OOTK 執行（五階段・每階段獨立重新洗牌）
+  // ════════════════════════════════════════════════
+
+  // ════════════════════════════════════════════════════════════
+  // v63 helper：洗一副新牌（Book T：不使用固定正逆位）
+  // 每階段都重新洗一副 78 張，符合 Book T「Shuffle, etc., as before」
+  // ════════════════════════════════════════════════════════════
+  function shuffleNewDeck() {
+    if (typeof TAROT === 'undefined') return [];
+    var deck = TAROT.map(function(c) {
+      var copy = Object.assign({}, c, { isUp: true, directionPolicy: 'Book T elemental dignity / court facing' });
+      try { if (window.JYGoldenDawn) window.JYGoldenDawn.annotate(copy); } catch(_gd) {}
+      return copy;
+    });
+    // Fisher-Yates shuffle
+    for (var i = deck.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
+    }
+    return deck;
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // ★ v64.1 正統 Mathers Book T:Op2/Op3 二次重洗 abandon 機制
+  //
+  // Mathers 原文(Manuscript Q):
+  //   "If the Significator be not found in the right packet referring to
+  //    the matter under consideration, the Diviner can shuffle and deal
+  //    once more, but if it again fails, the divination should be abandoned."
+  //
+  // 「合適宮位/星座」對應表(問題類型 → 期望的宮位 / cognate house):
+  //
+  // 問題類型對應宮位(Op2):
+  //   感情/婚姻 → 主 7 宮(夫妻),cognate 5 宮(戀愛)、8 宮(性/共有)
+  //   財務/金錢 → 主 2 宮(財帛),cognate 8 宮(共有資源)、10 宮(事業收入)
+  //   工作/事業 → 主 10 宮(官祿),cognate 6 宮(工作)、2 宮(收入)
+  //   家庭/居住 → 主 4 宮(田宅),cognate 3 宮(家人)、10 宮(母親)
+  //   健康/身體 → 主 6 宮(健康),cognate 1 宮(體格)、12 宮(慢性)
+  //   友情/社交 → 主 11 宮(朋友),cognate 3 宮(熟人)、7 宮(合夥)
+  //   學習/旅行 → 主 9 宮(遷移/學問),cognate 3 宮(短途)
+  //   隱私/秘密 → 主 12 宮(玄秘),cognate 8 宮(深層)
+  //
+  // 問題類型對應星座(Op3,依該題的能量本質):
+  //   感情 → 巨蟹(情感家庭)、天蠍(深度結合)、雙魚(浪漫)、金牛(穩定)
+  //   財務 → 金牛、摩羯、處女(土象,物質穩定)
+  //   工作 → 摩羯、處女、白羊(行動)、獅子(領導)
+  //   家庭 → 巨蟹、金牛
+  //   健康 → 處女、摩羯
+  //   學習 → 雙子、射手、水瓶
+  //   靈性 → 雙魚、天蠍、射手
+  // ════════════════════════════════════════════════════════════
+
+  // 問題類型 → 合適 Op1 元素堆
+  // Mathers Book T:Yod 火堆=work、Heh 水堆=love、Vav 風堆=quarrels/loss、Heh-final 土堆=money
+  // Book T 第一操作只檢查四個明示的大類；其他問題不以現代題型表硬判失敗。
+  var QUESTION_PILES = {
+    'love':   ['water'], // love, marriage, pleasure
+    'money':  ['earth'], // money, goods, material affairs
+    'work':   ['fire'],  // work, business, action
+    'secret': ['air'],   // quarrels, trouble, loss／隱情爭議
+    'family': null,
+    'health': null,
+    'friend': null,
+    'travel': null,
+    'general': null
+  };
+
+  // 第二、三操作的數位預選只採一個自然宮與其對應黃道宮；這是網站的
+  // pre-declared topic binding，不把多個任意「相關宮」累加成命中。
+  var QUESTION_HOUSES = {
+    'love':[7], 'money':[2], 'work':[10], 'family':[4],
+    'health':[6], 'friend':[11], 'travel':[9], 'secret':[12], 'general':null
+  };
+  var QUESTION_SIGNS = {
+    'love':[6], 'money':[1], 'work':[9], 'family':[3],
+    'health':[5], 'friend':[10], 'travel':[8], 'secret':[11], 'general':null
+  };
+
+  // 第五操作原典要求占者在發牌前先決定代表牌應落在哪一質點。
+  // 網站目前沒有讓使用者手動預選質點，因此不以事後題型映射製造「命中／錯位」；
+  // 只忠實呈現實際落點及其牌序故事。
+  var QUESTION_SEPHIROTH = {
+    'love':null, 'money':null, 'work':null, 'family':null,
+    'health':null, 'friend':null, 'travel':null, 'secret':null, 'general':null
+  };
+
+  // Book T 的操作落點必須在發牌前決定。關鍵字分類只能產生可編輯建議，
+  // 不能在發牌後替使用者選一個「看起來命中」的落點。
+  var QUESTION_COGNATE_HOUSE = {
+    love:5, money:8, work:6, family:3, health:1, friend:7, travel:3, secret:8, general:null
+  };
+  function getOotkBindingSuggestion(question) {
+    var qType = detectQuestionType(question);
+    var pile = QUESTION_PILES[qType] && QUESTION_PILES[qType][0] || '';
+    var house = QUESTION_HOUSES[qType] && QUESTION_HOUSES[qType][0];
+    var sign = QUESTION_SIGNS[qType] && QUESTION_SIGNS[qType][0];
+    return {
+      questionType:qType,
+      expectedPile:pile,
+      primaryHouse:house == null ? '' : house,
+      cognateHouse:QUESTION_COGNATE_HOUSE[qType] == null ? '' : QUESTION_COGNATE_HOUSE[qType],
+      expectedSign:sign == null ? '' : sign,
+      expectedSephirah:'',
+      suggestionOnly:true
+    };
+  }
+  function normalizeOotkBindings(bindings) {
+    bindings = bindings || {};
+    var pile = String(bindings.expectedPile || '');
+    var house = parseInt(bindings.primaryHouse,10);
+    var cognate = parseInt(bindings.cognateHouse,10);
+    var sign = parseInt(bindings.expectedSign,10);
+    var seph = parseInt(bindings.expectedSephirah,10);
+    return {
+      expectedPile:/^(fire|water|air|earth)$/.test(pile) ? pile : '',
+      primaryHouse:house>=1&&house<=12 ? house : null,
+      cognateHouse:cognate>=1&&cognate<=12&&cognate!==house ? cognate : null,
+      expectedSign:sign>=0&&sign<12 ? sign : null,
+      expectedSephirah:seph>=0&&seph<10 ? seph : null,
+      confirmedBeforeDeal:bindings.confirmedBeforeDeal === true,
+      countDirection:bindings.countDirection === 'left' || bindings.countDirection === 'right' ? bindings.countDirection : '',
+      op3Policy:bindings.op3Policy === 'observe_only' ? 'observe_only' : 'strict_inherit_proceed_as_before'
+    };
+  }
+
+  // 問題類型中文對照
+  function getQTypeZh(qType) {
+    var map = {
+      'love':    '感情/婚姻',
+      'money':   '財務',
+      'work':    '工作/事業',
+      'family':  '家庭/居住',
+      'health':  '健康',
+      'friend':  '友情/社交',
+      'travel':  '學習/旅行',
+      'secret':  '隱私/秘密',
+      'general': '一般'
+    };
+    return map[qType] || qType;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ★ v70.7 根治(歐那 2026/5/29)：單一權威問題分類器（單一資料來源）
+  //   過去 detectQuestionType(本檔，開鑰 abandon 用) 與 detectFocus(prompt-export，鎖定區用)
+  //   是兩份獨立詞庫，靠關鍵字各自列舉、永遠不同步 → 同一句「會想跟我交往」一邊判感情一邊判事業。
+  //   現在合併為單一來源 window.JY_classifyDomains：一份詞庫，兩處都讀它，避免各說各話。
+  //   回傳「按優先序的領域陣列(多選)」。優先序：感情/情慾/秘密 > 場域(同事/公司只是「在哪認識」)。
+  //   本檔(tarot_upgrade.js)先於 prompt-export.js 載入，故定義在此掛 window。
+  window.JY_classifyDomains = (function () {
+    // ★ v80.55 根治：love 補回桃花核心詞（異性／追求我／想追我／被追求／看上我／對我有好感…），
+    //   修「公司會有異性追求我嗎」這類『桃花＋職場場域』被誤判成事業題的根因。
+    //   刻意不加裸「追求」——避免「追求事業／夢想」誤觸；新詞一律鎖在「我／異性」上。
+    var RULES = [
+      ['love',     /愛情|戀愛|感情|交往|在一起|曖昧|曖不曖昧|男友|女友|喜歡|喜不喜歡|桃花|姻緣|對象|分手|復合|挽回|婚姻|結婚|嫁|娶|配偶|另一半|老公|老婆|伴侶|單身|脫單|做愛|上床|嘿咻|啪啪|發生關係|肉體|親密|想跟我|跟我做|想睡|心動|動心|對我有意思|對我有感覺|喜歡我|愛我|想我|想念|追我|想追我|想追求我|追求我|來追|有人追|被追求|異性|異性緣|看上我|中意我|對我有好感|對我有興趣|示好|搭訕|暗戀|表白|告白|約會|有沒有別人|回心轉意|挽留|想不想我|愛不愛我|有沒有機會|當.{0,3}(男|女)朋友|love|relationship|marriage|sex/],
+      ['secret',   /外遇|劈腿|出軌|小三|偷吃|背叛|隱情|秘密|affair/],
+      ['money',    /錢|財運|財務|錢財|收入|薪水|薪資|存錢|理財|投資|股票|股市|加密|幣|賺|虧|買賣|債|貸款|報酬|破財|偏財|正財|樂透|彩券|中獎|中大獎|頭獎|獎金|發票|統一發票|對獎|刮刮樂|開獎|營業額|營收|業績|破萬|破百萬|客單|客單價|成交|銷售|銷量|出貨|訂單|下單|生意|副業|外快|斜槓|被動收入|月入|流水|帶貨|電商|蝦皮|賣場|上架|擺攤|批貨|進貨|利潤|毛利|money|finance|income|salary/], // v80.58 補：統一發票/中獎/獎金/對獎/刮刮樂/開獎——修「統一發票中獎」漏判財運
+      ['work',     /工作|事業|職場|升遷|升職|跳槽|轉職|離職|辭職|創業|開店|老闆|主管|同事|面試|錄取|offer|合夥|生意|公司|職位|資遣|裁員|被開除|接案|career|job|work|business/],
+      ['family',   /家庭|家人|父母|爸媽|搬家|住處|居住|家裡|home|family|house/],
+      ['health',   /健康|身體|生病|疾病|手術|開刀|懷孕|受孕|備孕|失眠|住院|看醫生|醫療|health|illness|disease/],
+      ['study',    /讀書|考試|留學|出國|遊學|搬到|study|exam|travel/],
+      ['friend',   /朋友|社交|同學|聚會|友情|friend|social/],
+      ['spiritual',/頻率|脈輪|靈魂|業力|因果|雙生火焰|靈魂伴侶|前世|今生|靈性|能量場|靈魂課題|高我|指導靈|使命|天命|修行/]
+    ];
+    return function (q) {
+      var s = String(q || '').toLowerCase();
+      var hits = [];
+      for (var i = 0; i < RULES.length; i++) { if (RULES[i][1].test(s)) hits.push(RULES[i][0]); }
+      return hits; // 陣列順序即優先序
+    };
+  })();
+
+  // 自動偵測問題類型(開鑰 abandon 用，回傳單一領域)——改讀單一權威分類器
+  //   統一 enum → 開鑰 8 類映射：study→travel、spiritual→general(QUESTION_PILES 無此類不檢查)
+  function detectQuestionType(question) {
+    var hits = (typeof window !== 'undefined' && window.JY_classifyDomains) ? window.JY_classifyDomains(question) : [];
+    if (!hits.length) return 'general';
+    var MAP = { love:'love', secret:'secret', money:'money', work:'work', family:'family', health:'health', study:'travel', friend:'friend', spiritual:'general' };
+    return MAP[hits[0]] || 'general';
+  }
+
+  // 檢查 Sig 是否落在合適宮位/星座
+  function isSigInExpectedPosition(activePosition, expectedPositions) {
+    if (!expectedPositions) return true; // general 類不檢查
+    return expectedPositions.indexOf(activePosition) >= 0;
+  }
+
+  function runFullOOTK(significatorId, questionText, predeclaredBindings) {
+    if (typeof TAROT === 'undefined') return null;
+
+    // ════════════════════════════════════════════════════════════
+    // ★ v63 Book T 對齊:每階段獨立重新洗牌
+    // Mathers Book T 原文五階段都明寫「Shuffle, etc., as before」
+    // 每階段 78 張全副牌、全新洗牌、全新洗牌順序（不使用固定正逆位）
+    // 五個 Operation 是五次獨立的儀式,不是「同一次抽牌的五個切片」
+    // ════════════════════════════════════════════════════════════
+
+    var results = {};
+    results.castTimestamp = new Date().toISOString();
+    results.significatorId = significatorId;
+    var sigCard = TAROT.find(function(c) { return c.id === significatorId; });
+    results.significator = sigCard ? {
+      id: sigCard.id,
+      name: sigCard.n,
+      element: getCardElement(sigCard)
+    } : null;
+
+    // 發牌前綁定是 Book T 程序的一部分；問題分類器只保留為 UI 建議來源。
+    var qType = detectQuestionType(questionText);
+    var bindings = normalizeOotkBindings(predeclaredBindings);
+    results.questionType = qType;
+    results.questionText = questionText || '';
+    results.predeclaredBindings = bindings;
+    results.bindingPolicy = 'confirmed_before_deal';
+    _ootkSessionCountDirection = bindings.countDirection || null;
+    if (!bindings.confirmedBeforeDeal || !bindings.countDirection || !bindings.expectedPile || bindings.primaryHouse == null || bindings.expectedSign == null || bindings.expectedSephirah == null) {
+      results.abandonedAt = 'predeal_binding';
+      results.completedOperations = 0;
+      results.divinationValidity = { valid:false, source:'Golden Dawn Book T' };
+      results.abandonReason = '開鑰之法必須在發牌前依實際牌圖確認代表牌計數方向，並確認第一次操作題目堆、第二次操作主宮、第三次操作黃道堆與第五次操作生命樹預期位置。本次缺少完整的發牌前綁定，因此沒有開始占卜，也不以事後結果反推落點。';
+      return results;
+    }
+
+    // ── Op1:四元素分堆 — 正統 Mathers 二次重洗 abandon 機制 ──
+    // Mathers 原文 Op1:「告訴問者他要問什麼,如果說錯 → abandon」
+    // 程式碼層級實作:檢查 Sig 落堆是否符合問題類型
+    var expectedPiles = [bindings.expectedPile];
+    var deck1 = shuffleNewDeck();
+    results.op1 = ootkOp1(deck1, significatorId);
+    results.op1.attempt = 1;
+    results.op1.expectedPiles = expectedPiles;
+    results.op1.mainLineValidation = {
+      requiredBySource:true,
+      status:'requires_querent_confirmation',
+      note:'Book T 要求第一次操作的主要線索能正確指出所問之事；程式不能代替問卜者完成這項確認。'
+    };
+
+    if (expectedPiles && expectedPiles.indexOf(results.op1.activePile) < 0) {
+      var pileZh = { fire: 'Yod／火（工作、事業、行動）', water: 'Heh／水（愛、婚姻、愉悅）', air: 'Vav／風（爭執、損失、麻煩）', earth: 'Heh-final／土（金錢、物品、物質事務）' };
+      results.op1.abandonTriggered = true;
+      results.op1.abandoned = true;
+      results.op1.abandonReason =
+        '第一次操作的代表牌落於「' + (pileZh[results.op1.activePile] || results.op1.activePile) +
+        '」，與本題預先判定的問題領域不相符。依 Golden Dawn《Book T》，若第一次操作無法正確指出問卜者所問之事，應停止本次占卜，而不是改寫問題或硬讀後續操作。';
+      results.completedOperations = 1;
+      results.abandonedAt = 'op1';
+      results.divinationValidity = { valid:false, completedOperations:1, source:'Golden Dawn Book T' };
+      return results;
+    }
+
+    // ── Op2:十二宮位 — 正統 Mathers 二次重洗 abandon 機制 ──
+    var expectedHouses = [bindings.primaryHouse].concat(bindings.cognateHouse == null ? [] : [bindings.cognateHouse]);
+    var deck2 = shuffleNewDeck();
+    results.op2 = ootkOp2(deck2, significatorId);
+    results.op2.attempt = 1;
+    results.op2.expectedHouses = expectedHouses;
+
+    if (expectedHouses && !isSigInExpectedPosition(results.op2.activeHouse, expectedHouses)) {
+      results.op2.abandonTriggered = true;
+      results.op2.abandoned = true;
+      results.op2.abandonReason =
+        '第二次操作中，代表牌未落入預先選定的主宮或相近宮位（預期：' + expectedHouses.join('/') +
+        '宮；實際：第' + results.op2.activeHouse + '宮）。依 Golden Dawn《Book T》，主宮與相近宮位皆失敗時應停止本次占卜。';
+      results.completedOperations = 2;
+      results.abandonedAt = 'op2';
+      results.divinationValidity = { valid:false, completedOperations:2, source:'Golden Dawn Book T' };
+      return results;
+    }
+
+    // ── Op3:十二星座 ──
+    // 《Book T》要求先選定適當星座堆並照前法進行；錯位處理依已明示的保守程序政策。
+    var expectedSigns = [bindings.expectedSign];
+    var deck3 = shuffleNewDeck();
+    results.op3 = ootkOp3(deck3, significatorId);
+    results.op3.attempt = 1;
+    results.op3.expectedSigns = expectedSigns;
+
+    if (expectedSigns) {
+      var op3SignIdx = SIGNS_ORDER.indexOf(results.op3.activeSign);
+      results.op3.expectedSigns = expectedSigns;
+      results.op3.signExpectationMet = isSigInExpectedPosition(op3SignIdx, expectedSigns);
+      results.op3.procedurePolicy = bindings.op3Policy || 'strict_inherit_proceed_as_before';
+      results.op3.signExpectationNote = results.op3.signExpectationMet
+        ? '第三次操作的代表牌落在占卜前選定的相關星座堆。'
+        : '第三次操作的代表牌未落在預選星座堆。《Book T》只說先選定適當星座堆並「照前法進行」；本程式採保守程序政策，把錯位視為本次問題綁定失敗並停止，而不把它改寫成隱藏訊息。';
+      if (!results.op3.signExpectationMet && results.op3.procedurePolicy !== 'observe_only') {
+        results.op3.abandonTriggered = true;
+        results.op3.abandoned = true;
+        results.op3.abandonReason = results.op3.signExpectationNote;
+        results.completedOperations = 3;
+        results.abandonedAt = 'op3';
+        results.divinationValidity = { valid:false, completedOperations:3, source:'Golden Dawn Book T', policy:'strict_inherit_proceed_as_before' };
+        return results;
+      }
+    }
+
+    // ── Op4:代表牌後方三十六牌環（Book T 無自動中止條件） ──
+    var deck4 = shuffleNewDeck();
+    results.op4 = ootkOp4(deck4, significatorId);
+
+    // ── Op5:生命之樹(Book T「Make up your mind where the Significator should be」) ──
+    // Book T 原文:「failure does not here necessarily imply that the divination has gone astray.」
+    // → Op5 只做「預期 vs 實際」觀察,不觸發 abandon、不重洗
+    var expectedSephiroth = [bindings.expectedSephirah];
+    var deck5 = shuffleNewDeck();
+    results.op5 = ootkOp5(deck5, significatorId);
+    results.op5.expectedSephiroth = expectedSephiroth;
+
+    // 找 Sig 落的 Sephirah index(0-indexed)
+    var actualSephIdx = SEPH_NAMES_5.indexOf(normalizeOotkSephirahName(results.op5.activeSephirah));
+
+    if (expectedSephiroth && actualSephIdx >= 0) {
+      var sephZh = SEPH_ZH_5;
+      if (expectedSephiroth.indexOf(actualSephIdx) >= 0) {
+        // Sig 落合適 Sephirah
+        results.op5.sephExpectationMet = true;
+        results.op5.sephExpectationNote =
+          '第五次操作的代表牌落於 ' + SEPH_NAMES_5[actualSephIdx] + '(' + sephZh[actualSephIdx] +
+          ')，與占卜前預定的相關生命樹位置一致。';
+      } else {
+        // Sig 不在預期 Sephirah,但依 Book T 原文「failure does not imply abandon」
+        // → 只做觀察附註,標明此次 Op5 揭示的是「靈魂功課跟你問的議題不同層」
+        results.op5.sephExpectationMet = false;
+        var expectedZh = expectedSephiroth.map(function(idx) {
+          return SEPH_NAMES_5[idx] + '(' + sephZh[idx] + ')';
+        }).join(' / ');
+        results.op5.sephExpectationNote =
+          '第五次操作的代表牌落於 ' + SEPH_NAMES_5[actualSephIdx] + '(' + sephZh[actualSephIdx] + ')，' +
+          '而占卜前預定位置為 ' + expectedZh + '。依 Golden Dawn《Book T》，第五次操作的錯位不必然使占卜失效；只能降低該位置與原問句的直接綁定強度。';
+      }
+    }
+
+    results.completedOperations = 5;
+    results.crossAnalysis = {
+      significatorFacing: bindings.countDirection,
+      countDirection: bindings.countDirection,
+      sourceProfile: 'gd_book_t',
+      doctrine: '五次操作各自依 Book T 的位置權限、計數故事、配對故事與元素尊貴解讀；不做跨層重複牌投票或自創日期。'
+    };
+    results.divinationValidity = {
+      valid: null,
+      provisional: true,
+      completedOperations: 5,
+      pendingCheckpoint: 'op1_main_line_confirmation',
+      source: 'Golden Dawn Book T',
+      note: '程序計算已完成；在問卜者確認第一次操作主要線索確實對應原問句前，不宣稱已通過完整的來源有效性檢查。'
+    };
+    return results;
+  }
+
+  // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════════
+  // ★ GD-3,4 (J1+I1+I2) 補:Court Card 完整 GD 讀法計算
+  //   1. 依鄰牌元素決定 well-dignified / ill-dignified / neutral
+  //   2. 給出對應的 Book T 含義
+  //   3. 給出三層讀法 (人物/想法/事件接近離開)
+  // ════════════════════════════════════════════════
+  function analyzeCourtCard(card, leftNeighbor, rightNeighbor) {
+    if (!card || card.suit === 'major') return null;
+    var rank = String(card.rank || '');
+    if (rank !== 'king' && rank !== 'queen' && rank !== 'knight' && rank !== 'page') return null;
+
+    var courtKey = card.suit + '-' + rank;
+    var meanings = COURT_DIGNITY_MEANINGS[courtKey] || null;
+    var personRole = COURT_PERSON_ROLE[rank] || '';
+
+    // 計算 well/ill dignified
+    var leftEd = leftNeighbor ? elementalDignity(card, leftNeighbor) : null;
+    var rightEd = rightNeighbor ? elementalDignity(card, rightNeighbor) : null;
+    var dignityState; // 'well' | 'ill' | 'neutral'
+    if (leftEd === 'strengthen' || rightEd === 'strengthen') {
+      // 至少一鄰同元素 = 強化(極端化)
+      dignityState = (leftEd === 'weaken' || rightEd === 'weaken') ? 'neutral' : 'well';
+    } else if (leftEd === 'weaken' && rightEd === 'weaken') {
+      // 雙鄰皆對立元素 = 極弱(背景化)
+      dignityState = 'ill';
+    } else if (leftEd === 'weaken' || rightEd === 'weaken') {
+      dignityState = 'neutral'; // 一鄰對立一鄰友好 = 抵消
+    } else if (leftEd === 'friendly' && rightEd === 'friendly') {
+      dignityState = 'well'; // 雙鄰友好 = well-dignified
+    } else {
+      dignityState = 'neutral';
+    }
+
+    return {
+      courtKey: courtKey,
+      dignityState: dignityState, // 'well' | 'ill' | 'neutral'
+      meaning: meanings ? (dignityState === 'ill' ? meanings.ill : meanings.well) : '',
+      wellMeaning: meanings ? meanings.well : '',
+      illMeaning: meanings ? meanings.ill : '',
+      personRole: personRole, // 三層讀法:人物/想法/事件接近離開
+      leftDignity: leftEd,
+      rightDignity: rightEd
+    };
+  }
+
+  // 全域輸出
+  // ════════════════════════════════════════════════
+
+  window.OOTKSetup = Object.freeze({
+    suggestBindings:getOotkBindingSuggestion, normalizeBindings:normalizeOotkBindings,
+    signs:Object.freeze(SIGNS_ORDER.slice())
+  });
+  window.ootkAutoSignificator = null; // Book T：代表牌依性格判斷手動選取，不用出生／性別公式
+  window.ootkRunFull = runFullOOTK;
+  window.ootkOp1 = ootkOp1;
+  window.ootkOp2 = ootkOp2;
+  window.ootkOp3 = ootkOp3;
+  window.ootkOp4 = ootkOp4;
+  window.ootkOp5 = ootkOp5;
+  window.ootkCounting = ootkCounting;
+  window.ootkPairing = ootkPairing;
+  window.ootkPairingRing = ootkPairingRing;
+  window.ootkDignities = ootkDignities;
+  window.ootkGetCountValue = getCountValue;
+  window.ootkGetCardGD = getCardGD;
+  window.ootkElementalDignity = elementalDignity;
+  // GD-3,4 新增 export
+  window.ootkAnalyzeCourtCard = analyzeCourtCard;
+  window.ootkCourtDignityMeanings = COURT_DIGNITY_MEANINGS;
+  window.ootkCourtPersonRole = COURT_PERSON_ROLE;
+  // GD-8 新增 export
+  window.ootkMathers1888Meanings = null; // 單一來源：JYGoldenDawn / Book T
+  window.jyWaitePKTMeanings = null; // 全站固定 Golden Dawn Book T，不再暴露 Waite 牌義入口
+
+  console.log('[OOTK v95] Golden Dawn Book T Opening of the Key 已載入');
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════
+// 10. OOTK Phase 2 — 前端 UI、五階段動畫、Significator 選擇
+// ══════════════════════════════════════════════════════════════════════
+
+(function() {
+  'use strict';
+
+  // ★ v63E 正統 Book T:五個 Operation 是「五次獨立讀盤」(Mathers 原文)
+  //    每次重洗、發牌、找 Sig、Counting、Pairing,各自完整、各自結論
+  //    desc 文案強調「獨立」,避免暗示「五層遞進深入同一個答案」
+  var OP_LABELS = [
+    { id: 'op1', zh: '四元素分堆', en: 'Elemental Piles', icon: '🜂', desc: '第一次讀盤・當下處境(Mathers Book T)' },
+    { id: 'op2', zh: '十二宮位', en: '12 Houses', icon: '🏠', desc: '第二次讀盤・問題的展開(獨立於 Op1)' },
+    { id: 'op3', zh: '十二星座', en: '12 Signs', icon: '♈', desc: '第三次讀盤・進一步展開(獨立於前兩 Op)' },
+    { id: 'op4', zh: '三十六牌環', en: 'Ring of 36', icon: '🔮', desc: '第四次讀盤・問題的倒數階段' },
+    { id: 'op5', zh: '生命之樹', en: 'Tree of Life', icon: '🌳', desc: '第五次讀盤・最終結果' }
+  ];
+
+  var PILE_ZH = { fire: '火堆・意志', water: '水堆・情感', air: '風堆・思維', earth: '土堆・物質' };
+  var PILE_COLOR = { fire: '#ef4444', water: '#3b82f6', air: '#c9a84c', earth: '#22c55e' };
+
+  // ── CSS 注入 ──
+  function _injectOOTKStyles() {
+    if (document.getElementById('ootk-styles')) return;
+    var s = document.createElement('style');
+    s.id = 'ootk-styles';
+    s.textContent = [
+      '.ootk-overlay{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;padding:1.5rem 1rem}',
+      '.ootk-sig-card{width:80px;height:128px;border-radius:8px;object-fit:cover;border:2px solid rgba(201,168,76,.5);transition:all .3s;cursor:pointer}',
+      '.ootk-sig-card:hover,.ootk-sig-card.active{border-color:var(--c-gold);box-shadow:0 0 20px rgba(201,168,76,.4);transform:scale(1.06)}',
+      '.ootk-phase{opacity:0;transform:translateY(24px) scale(.97);transition:opacity .7s ease,transform .7s ease}',
+      '.ootk-phase.visible{opacity:1;transform:translateY(0) scale(1)}',
+      '.ootk-progress{display:flex;gap:.3rem;justify-content:center;margin:1rem 0}',
+      '.ootk-dot{width:32px;height:4px;border-radius:99px;background:rgba(255,255,255,.12);transition:background .4s}',
+      '.ootk-dot.done{background:rgba(201,168,76,.7)}',
+      '.ootk-dot.current{background:var(--c-gold);box-shadow:0 0 8px rgba(201,168,76,.5)}',
+      '.ootk-result-card{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.12);border-radius:12px;padding:.8rem;margin:.4rem 0}',
+      '.ootk-pile-bar{height:6px;border-radius:99px;transition:width .8s ease-out}',
+      '.ootk-key-card{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:6px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.15);font-size:.72rem;color:var(--c-gold);margin:.15rem}',
+      '@keyframes ootkReveal{from{opacity:0;transform:scale(.92) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}',
+      '.ootk-reveal{animation:ootkReveal .5s ease-out forwards}',
+      '@keyframes ootkGlow{0%,100%{box-shadow:0 0 15px rgba(201,168,76,.1)}50%{box-shadow:0 0 30px rgba(201,168,76,.25)}}',
+      '.ootk-glow{animation:ootkGlow 2.5s ease-in-out infinite}',
+      '@keyframes ootkBtnPulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.3)}50%{box-shadow:0 0 0 8px rgba(201,168,76,0)}}',
+      '#ootk-next{animation:none}',
+      '#ootk-next:active{transform:scale(.95)}',
+      '.ootk-dot{transition:all .5s cubic-bezier(.4,0,.2,1)}',
+      '.ootk-dot.current{width:48px}',
+
+      /* ── Key Card Flip Reveal ── */
+      '.ootk-keycards-strip{margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;perspective:800px}',
+      '.ootk-kc-flip{width:58px;text-align:center;opacity:0;transform:translateY(12px);animation:ootkKcAppear .5s ease-out forwards}',
+      '.ootk-kc-inner{position:relative;width:52px;height:78px;margin:0 auto;transform-style:preserve-3d;animation:ootkKcSpin .6s ease-out forwards}',
+      '.ootk-kc-front{position:absolute;inset:0;backface-visibility:hidden}',
+      '.ootk-kc-back{position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:5px;background:url(\"/tarot_img/card-back.jpg\") center/cover;border:2px solid rgba(201,168,76,.3);box-shadow:0 2px 8px rgba(0,0,0,.4)}',
+      '@keyframes ootkKcAppear{0%{opacity:0;transform:translateY(12px) scale(.85)}40%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}',
+      '@keyframes ootkKcSpin{0%{transform:rotateY(180deg)}60%{transform:rotateY(-8deg)}100%{transform:rotateY(0deg)}}',
+      '@keyframes ootkKcGlow{0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.4)}50%{box-shadow:0 0 16px rgba(201,168,76,.35),0 2px 8px rgba(0,0,0,.4)}}',
+
+      /* ── Op2 House Grid ── */
+      '.ootk-house-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:280px;margin:0 auto}',
+      '.ootk-hcell{padding:10px 4px;border-radius:8px;border:1px solid rgba(96,165,250,.08);background:rgba(96,165,250,.02);text-align:center;opacity:0;transform:scale(.7) translateY(8px);transition:all .35s cubic-bezier(.34,1.56,.64,1)}',
+      '.ootk-hcell.show{opacity:1;transform:scale(1) translateY(0)}',
+      '.ootk-hcell.active{border-color:rgba(96,165,250,.6)!important;background:rgba(96,165,250,.12)!important;box-shadow:0 0 24px rgba(96,165,250,.25);transform:scale(1.12)!important}',
+      '@keyframes ootkHousePulse{0%,100%{box-shadow:0 0 16px rgba(96,165,250,.2)}50%{box-shadow:0 0 32px rgba(96,165,250,.45)}}',
+
+      /* ── Op3 Zodiac Ring ── */
+      '.ootk-zodiac-ring{position:relative;width:220px;height:220px;margin:0 auto}',
+      '.ootk-znode{position:absolute;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;border:1px solid rgba(168,85,247,.12);background:rgba(168,85,247,.04);color:rgba(168,85,247,.4);opacity:0;transform:scale(.5);transition:all .4s cubic-bezier(.34,1.56,.64,1)}',
+      '.ootk-znode.show{opacity:1;transform:scale(1)}',
+      '.ootk-znode.active{border-color:rgba(168,85,247,.7);background:rgba(168,85,247,.15);color:rgba(168,85,247,1);box-shadow:0 0 24px rgba(168,85,247,.35);transform:scale(1.25);font-weight:700;z-index:2}',
+      '.ootk-zsweep{position:absolute;width:8px;height:8px;border-radius:50%;background:rgba(168,85,247,.6);box-shadow:0 0 12px rgba(168,85,247,.5);opacity:0;transition:opacity .2s}',
+
+      /* ── Op4 Decan Focus ── */
+      '.ootk-focus-ring{width:160px;height:160px;border-radius:50%;border:2px solid rgba(234,179,8,.15);display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;transition:all .6s ease}',
+      '.ootk-focus-ring.narrow{width:100px;height:100px;border-color:rgba(234,179,8,.4);box-shadow:0 0 30px rgba(234,179,8,.15)}',
+      '.ootk-focus-ring.tight{width:72px;height:72px;border-color:rgba(234,179,8,.7);box-shadow:0 0 40px rgba(234,179,8,.25)}',
+      '.ootk-focus-text{text-align:center;transition:all .4s ease;color:rgba(234,179,8,.7)}',
+
+      /* ── Op5 Tree of Life ── */
+      '.ootk-tree{position:relative;width:200px;height:280px;margin:0 auto}',
+      '.ootk-seph{position:absolute;width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(34,197,94,.12);background:rgba(34,197,94,.03);display:flex;align-items:center;justify-content:center;font-size:.5rem;color:rgba(34,197,94,.3);transition:all .4s ease}',
+      '.ootk-seph.lit{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);color:rgba(34,197,94,.7);box-shadow:0 0 12px rgba(34,197,94,.15)}',
+      '.ootk-seph.active{border-color:rgba(34,197,94,.8);background:rgba(34,197,94,.2);color:rgba(34,197,94,1);box-shadow:0 0 28px rgba(34,197,94,.4);transform:scale(1.3);font-weight:700;z-index:2}',
+      '.ootk-tree-line{position:absolute;background:rgba(34,197,94,.06);transition:background .4s}',
+      '.ootk-tree-line.lit{background:rgba(34,197,94,.2)}',
+      // ════════════════════════════════════════════════════════════
+      // ★ v63 六儀式 CSS（注入式）— Book T 對齊 動畫
+      // ════════════════════════════════════════════════════════════
+      // v63 CSS marker: ═══ v63 ① 召喚祝禱層 ═══
+      '.ootk-invocation-layer{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity .9s ease}',
+      '.ootk-invocation-layer.fade-out{opacity:0;pointer-events:none}',
+      '.ootk-invoc-bg{position:absolute;inset:0;background:url(\'/img/ootk/invocation-bg.jpg\') center/cover no-repeat;opacity:0;transition:opacity 1.6s ease;filter:brightness(.9)}',
+      '.ootk-invocation-layer.show-bg .ootk-invoc-bg{opacity:.85}',
+      '.ootk-invoc-bg::after{content:\'\';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.7) 100%)}',
+      '.ootk-invoc-angel{position:absolute;top:50%;left:50%;width:280px;height:420px;margin-left:-140px;margin-top:-260px;background:url(\'/img/ootk/hru-angel.png\') center/contain no-repeat;opacity:0;transform:translateY(20px) scale(.92);transition:all 1.8s cubic-bezier(.2,.7,.3,1);z-index:1;pointer-events:none;filter:drop-shadow(0 0 30px rgba(201,168,76,.4))}',
+      '.ootk-invocation-layer.show-angel .ootk-invoc-angel{opacity:.92;transform:translateY(0) scale(1)}',
+      '.ootk-invoc-scroll{position:relative;z-index:2;width:90%;max-width:520px;padding:60px 40px 50px;background:url(\'/img/ootk/scroll-bg.png\') center/100% 100% no-repeat;opacity:0;transform:translateY(40px) scale(.95);transition:all 1.4s cubic-bezier(.2,.7,.3,1);text-align:center;color:#3a2a14;font-family:\'Cormorant Garamond\',\'Noto Serif TC\',serif;min-height:520px;display:flex;flex-direction:column;justify-content:center}',
+      '.ootk-invocation-layer.show-scroll .ootk-invoc-scroll{opacity:.96;transform:translateY(0) scale(1)}',
+      // v68.11(2026-05-02):色階加深 + 文字陰影,解決羊皮紙底圖標題隱形問題
+      // 原本 #7a5a20 / #8a6a30 / #9a7a3a 跟 scroll-bg.png 同色階,完全融入背景
+      // 改深棕 + 雙層陰影(白光暈 + 黑邊),既保留古風又能讀清楚
+      '.ootk-invoc-title{font-size:1.6rem;font-weight:800;color:#3a1f08;letter-spacing:6px;margin-bottom:.3rem;text-shadow:0 0 8px rgba(255,235,180,.7),1px 1px 2px rgba(0,0,0,.4)}',
+      '.ootk-invoc-subtitle{font-size:.95rem;font-style:italic;color:#5a3614;letter-spacing:3px;margin-bottom:.6rem;text-shadow:0 0 6px rgba(255,235,180,.6),1px 1px 1px rgba(0,0,0,.3)}',
+      '.ootk-invoc-divider{font-size:.7rem;color:#6a4220;letter-spacing:2px;margin-bottom:1.4rem;font-style:italic;font-weight:600;text-shadow:0 0 4px rgba(255,235,180,.5)}',
+      '.ootk-invoc-prayer{opacity:0;transition:opacity 2s ease;line-height:1.85}',
+      '.ootk-invocation-layer.show-prayer .ootk-invoc-prayer{opacity:1}',
+      '.ootk-invoc-en{font-size:.78rem;font-style:italic;color:#3a2410;margin-bottom:1.2rem;line-height:1.7;letter-spacing:.5px;text-shadow:0 0 3px rgba(255,235,180,.4)}',
+      '.ootk-invoc-zh{font-size:.88rem;color:#1f1408;line-height:1.9;letter-spacing:1px;font-weight:500;text-shadow:0 0 3px rgba(255,235,180,.4)}',
+      '.ootk-invoc-btn{margin-top:1.4rem;padding:.7rem 1.8rem;background:linear-gradient(135deg,#7a5a20,#a07530);color:#f5e6c0;border:1px solid #5a3a10;border-radius:4px;font-family:inherit;font-size:.85rem;font-weight:600;letter-spacing:3px;cursor:pointer;opacity:0;transform:translateY(8px);transition:all .8s ease,box-shadow .25s ease;box-shadow:0 2px 12px rgba(0,0,0,.3)}',
+      '.ootk-invocation-layer.show-btn .ootk-invoc-btn{opacity:1;transform:translateY(0)}',
+      '.ootk-invoc-btn:hover{box-shadow:0 4px 24px rgba(201,168,76,.5);transform:translateY(-1px)}',
+      '.ootk-invoc-btn:active{transform:scale(.97)}',
+      // v63 CSS marker: ═══ v63 階段標題與場景容器 ═══
+      '.ootk-ritual-scene{padding:.5rem 0;text-align:center}',
+      '.ootk-stage-title{margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid rgba(201,168,76,.15)}',
+      '.ootk-stage-num{font-size:.7rem;color:var(--c-gold);letter-spacing:3px;margin-bottom:.2rem}',
+      '.ootk-stage-name{font-size:1.2rem;font-weight:700;color:var(--c-gold);letter-spacing:2px;margin-bottom:.15rem}',
+      '.ootk-stage-en{font-size:.62rem;color:var(--c-text-dim);letter-spacing:3px;font-style:italic}',
+      '.ootk-stage-area{position:relative;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:.5rem}',
+      '.ootk-stage-caption{font-size:.78rem;color:var(--c-text-dim);min-height:1.2rem;margin-bottom:.8rem;line-height:1.6;text-align:center;max-width:420px;padding:0 .5rem}',
+      // v63 CSS marker: ═══ v63 ② 洗牌儀式 ═══
+      '.ootk-shuffle-box{position:relative;width:200px;height:200px;margin:0 auto}',
+      '.ootk-shuffle-box.done .ootk-shuffle-card{opacity:0;transition:opacity .5s}',
+      '.ootk-shuffle-card{position:absolute;top:50%;left:50%;width:36px;height:54px;margin-left:-18px;margin-top:-27px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.4);border-radius:3px;animation:ootkShuffleSpin 1.6s ease-in-out;animation-fill-mode:both;box-shadow:0 2px 6px rgba(0,0,0,.5)}',
+      '@keyframes ootkShuffleSpin{0%{transform:translate(0,0) rotate(0deg);opacity:0}10%{opacity:1}50%{transform:translate(calc(cos(calc(var(--i)*15deg))*60px),calc(sin(calc(var(--i)*15deg))*60px)) rotate(calc(var(--i)*15deg))}100%{transform:translate(0,0) rotate(0deg);opacity:.6}}',
+      // v63 CSS marker: ═══ v63 飛卡 ═══
+      '.ootk-fly-card-v63{position:absolute;width:20px;height:30px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.5);border-radius:2px;transition:all .45s cubic-bezier(.4,.1,.3,1);opacity:.95;z-index:5;pointer-events:none;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.5)}',
+      '.ootk-fly-card-v63.with-img{box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 8px rgba(201,168,76,.3)}',
+      '.ootk-fly-card-v63.landed{opacity:.7;border-color:rgba(201,168,76,.3)}',
+      // v63 CSS marker: ═══ v63 ③ Op1 YHVH 四元素堆 ═══
+      '.ootk-op1-scene{position:relative;width:100%;max-width:380px;min-height:260px;margin:0 auto}',
+      '.ootk-op1-deck{position:absolute;top:8px;left:50%;width:32px;height:50px;margin-left:-16px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.5);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.62rem;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.5);text-shadow:0 1px 2px #000}',
+      '.ootk-op1-deck-count{font-size:.68rem;font-weight:700}',
+      '.ootk-op1-piles{position:absolute;top:80px;left:0;right:0;display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;padding:0 .5rem}',
+      '.ootk-op1-pile{position:relative;padding:.7rem .5rem;border:1px solid rgba(201,168,76,.12);border-radius:8px;background:rgba(255,255,255,.02);min-height:90px;transition:all .5s ease;text-align:center}',
+      '.ootk-op1-pile-letter{position:absolute;top:.3rem;right:.4rem;font-size:1.1rem;color:var(--c-gold);opacity:.4;font-family:serif;font-weight:600}',
+      '.ootk-op1-pile-stack{height:50px;width:36px;margin:0 auto .35rem;position:relative;background:url("/tarot_img/card-back.jpg") center/cover #2a1d08;border:1px solid rgba(201,168,76,.4);border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 -2px 0 rgba(0,0,0,.3),2px 1px 0 -1px rgba(50,30,10,.6),4px 2px 0 -2px rgba(50,30,10,.4)}',
+      '.ootk-op1-pile-meta{font-size:.7rem}',
+      '.ootk-op1-pile-label{font-weight:700;color:var(--c-text);font-size:.78rem}',
+      '.ootk-op1-pile-meaning{color:var(--c-text-dim);font-size:.62rem;margin-top:.1rem}',
+      '.ootk-op1-pile-count{color:var(--c-gold);font-size:.68rem;margin-top:.2rem;font-weight:600}',
+      '.ootk-op1-pile.spotlight{box-shadow:0 0 24px rgba(201,168,76,.45);border-color:rgba(201,168,76,.6);background:rgba(201,168,76,.08)}',
+      '.ootk-op1-pile.found{box-shadow:0 0 36px rgba(201,168,76,.7);border-color:var(--c-gold);background:rgba(201,168,76,.16);transform:scale(1.06);animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op1-pile.dimmed{opacity:.3;transform:scale(.95)}',
+      '@keyframes ootkV63Pulse{0%,100%{box-shadow:0 0 24px rgba(201,168,76,.4)}50%{box-shadow:0 0 48px rgba(201,168,76,.8)}}',
+      // v63 CSS marker: ═══ v63 ③ Op2 12 宮位 ═══
+      '.ootk-op2-scene{padding:1rem 0;display:flex;justify-content:center}',
+      '.ootk-op2-wheel{position:relative;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at center,rgba(96,165,250,.06) 0%,rgba(96,165,250,.02) 50%,transparent 80%);box-shadow:0 0 40px rgba(96,165,250,.08),inset 0 0 30px rgba(0,0,0,.4)}',
+      '.ootk-op2-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}',
+      '.ootk-op2-ring-outer{fill:none;stroke:rgba(96,165,250,.25);stroke-width:1.5}',
+      '.ootk-op2-ring-inner{fill:rgba(0,0,0,.3);stroke:rgba(201,168,76,.3);stroke-width:1}',
+      '.ootk-op2-spoke{stroke:rgba(96,165,250,.18);stroke-width:1;transition:stroke .6s ease}',
+      '.ootk-op2-spoke.lit{stroke:rgba(201,168,76,.7);stroke-width:1.5}',
+      '.ootk-op2-axis-lbl{fill:rgba(201,168,76,.6);font-size:9px;font-weight:600;letter-spacing:1px;font-family:serif}',
+      '.ootk-op2-center{position:absolute;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(201,168,76,.4),rgba(201,168,76,.1));border:1.5px solid var(--c-gold);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(201,168,76,.4),inset 0 0 12px rgba(0,0,0,.4);z-index:5}',
+      '.ootk-op2-center-inner{font-size:.66rem;font-weight:700;color:var(--c-gold);letter-spacing:2px;text-shadow:0 1px 2px rgba(0,0,0,.6)}',
+      '.ootk-op2-house{position:absolute;border-radius:50%;background:rgba(96,165,250,.05);border:1px solid rgba(96,165,250,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(96,165,250,.6);transition:all .4s ease;z-index:3}',
+      '.ootk-op2-house-num{font-size:.7rem;font-weight:700;color:rgba(96,165,250,.95);line-height:1}',
+      '.ootk-op2-house-desc{font-size:.48rem;opacity:.7;margin-top:1px;letter-spacing:.3px}',
+      '.ootk-op2-house-count{font-size:.5rem;color:rgba(255,255,255,.55);margin-top:1px;font-weight:700}',
+      '.ootk-op2-house.flash{background:rgba(96,165,250,.22);border-color:rgba(96,165,250,.7);box-shadow:0 0 14px rgba(96,165,250,.4)}',
+      '.ootk-op2-house.spotlight{box-shadow:0 0 22px rgba(96,165,250,.55);border-color:rgba(96,165,250,.8);background:rgba(96,165,250,.18);transform:scale(1.15);z-index:4}',
+      '.ootk-op2-house.found{box-shadow:0 0 36px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.25),rgba(201,168,76,.1));transform:scale(1.3);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op2-house.found .ootk-op2-house-num,.ootk-op2-house.found .ootk-op2-house-desc,.ootk-op2-house.found .ootk-op2-house-count{color:var(--c-gold)}',
+      '.ootk-op2-house.dimmed{opacity:.25;transform:scale(.88)}',
+      '.ootk-op2-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
+      '.ootk-op2-fly img{width:100%;height:100%;object-fit:cover;display:block}',
+      // v63 CSS marker: ═══ v63 ③ Op3 12 星座 ═══
+      '.ootk-op3-scene{padding:1rem 0;display:flex;justify-content:center}',
+      '.ootk-op3-zodiac{position:relative;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at center,rgba(168,85,247,.06) 0%,rgba(168,85,247,.02) 50%,transparent 80%);box-shadow:0 0 40px rgba(168,85,247,.08),inset 0 0 30px rgba(0,0,0,.4)}',
+      '.ootk-op3-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}',
+      '.ootk-op3-ring-outer{fill:none;stroke:rgba(168,85,247,.25);stroke-width:1.5}',
+      '.ootk-op3-ring-inner{fill:none;stroke:rgba(168,85,247,.18);stroke-width:1}',
+      '.ootk-op3-spoke{stroke:rgba(168,85,247,.15);stroke-width:1;transition:stroke .6s ease}',
+      '.ootk-op3-spoke.lit{stroke:rgba(201,168,76,.7);stroke-width:1.5}',
+      '.ootk-op3-trump{position:absolute;top:50%;left:50%;width:140px;margin-left:-70px;margin-top:-30px;text-align:center;opacity:0;transform:scale(.8);transition:all .8s ease;z-index:5}',
+      '.ootk-op3-trump.show{opacity:1;transform:scale(1)}',
+      '.ootk-op3-trump-label{font-size:.6rem;color:var(--c-text-dim);letter-spacing:2px;margin-bottom:.3rem}',
+      '.ootk-op3-trump-name{font-size:1rem;font-weight:700;color:var(--c-gold);letter-spacing:1px;text-shadow:0 0 12px rgba(201,168,76,.5)}',
+      '.ootk-op3-sign{position:absolute;border-radius:50%;border:1px solid rgba(168,85,247,.25);background:rgba(168,85,247,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(168,85,247,.6);opacity:0;transform:scale(.5);transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:3}',
+      '.ootk-op3-sign.show{opacity:1;transform:scale(1)}',
+      '.ootk-op3-sign-icon{font-size:.95rem;font-weight:700;line-height:1}',
+      '.ootk-op3-sign-name{font-size:.46rem;margin-top:1px;opacity:.85;letter-spacing:.3px}',
+      '.ootk-op3-sign.flash{background:rgba(168,85,247,.22);border-color:rgba(168,85,247,.7);box-shadow:0 0 14px rgba(168,85,247,.4)}',
+      '.ootk-op3-sign.spotlight{box-shadow:0 0 22px rgba(168,85,247,.55);border-color:rgba(168,85,247,.85);background:rgba(168,85,247,.18);transform:scale(1.18);color:rgba(168,85,247,1);z-index:4}',
+      '.ootk-op3-sign.found{box-shadow:0 0 36px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.25),rgba(201,168,76,.1));color:var(--c-gold);transform:scale(1.35);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op3-sign.dimmed{opacity:.25;transform:scale(.88)}',
+      '.ootk-op3-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
+      '.ootk-op3-fly img{width:100%;height:100%;object-fit:cover;display:block}',
+      // v63 CSS marker: ═══ v63 ③ Op4 Sig 居中 + 36 環繞（Book T 對齊）═══
+      '.ootk-op4-scene{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}',
+      '.ootk-op4-table{position:relative;width:320px;height:320px;border-radius:50%;background:url(\'/img/ootk/decan-ring-bg.png\') center/cover no-repeat;box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 0 60px rgba(0,0,0,.4)}',
+      '.ootk-op4-bg{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at center,transparent 35%,rgba(0,0,0,.5) 100%);pointer-events:none}',
+      // ─── Op4 Sig 居中（顯示真實牌照）───
+      '.ootk-op4-sig{position:absolute;top:50%;left:50%;width:78px;height:118px;margin-left:-39px;margin-top:-59px;border-radius:6px;border:2px solid var(--c-gold);overflow:hidden;box-shadow:0 0 32px rgba(201,168,76,.6),0 4px 16px rgba(0,0,0,.6);opacity:0;transform:scale(.5);transition:opacity 1s ease,transform 1s cubic-bezier(.34,1.56,.64,1),box-shadow 1s ease;z-index:5}',
+      '.ootk-op4-sig.show{opacity:1;transform:scale(1);box-shadow:0 0 48px rgba(201,168,76,.85),0 0 16px rgba(201,168,76,.6)}',
+      '.ootk-op4-sig-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:4px;display:block}',
+      '.ootk-op4-sig-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.85) 100%);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:.4rem .2rem;border-radius:4px}',
+      '.ootk-op4-sig-name{font-size:.62rem;color:var(--c-gold);font-weight:700;text-align:center;line-height:1.15;letter-spacing:.3px;text-shadow:0 1px 2px rgba(0,0,0,.9)}',
+      '.ootk-op4-sig-label{font-size:.42rem;color:rgba(255,255,255,.6);letter-spacing:2px;margin-top:.15rem;text-shadow:0 1px 2px rgba(0,0,0,.9)}',
+      // ─── Op4 環繞 36 張牌（顯示真實牌照）───
+      '.ootk-op4-ring-card{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.3);border-radius:2px;overflow:hidden;opacity:0;transition:opacity .5s ease;transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.5);z-index:2;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08}',
+      '.ootk-op4-ring-card.show{opacity:.95}',
+      '.ootk-op4-ring-card img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.ootk-op4-decan-info{margin-top:1rem;padding:.6rem 1rem;border-radius:8px;background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.2);text-align:center;opacity:0;transform:translateY(8px);transition:all .6s ease;max-width:280px}',
+      '.ootk-op4-decan-info.show{opacity:1;transform:translateY(0)}',
+      '.ootk-op4-decan-label{font-size:.62rem;color:var(--c-text-dim);letter-spacing:2px;margin-bottom:.2rem}',
+      '.ootk-op4-decan-sign{font-size:.85rem;color:rgba(234,179,8,.95);font-weight:700;letter-spacing:.5px}',
+      '.ootk-op4-decan-planet{font-size:.68rem;color:var(--c-text-muted);margin-top:.15rem}',
+      // v63 CSS marker: ═══ v63 ③ Op5 生命之樹 ═══
+      '.ootk-op5-scene{padding:.5rem 0;display:flex;justify-content:center}',
+      '.ootk-op5-tree{position:relative;width:232px;height:336px}',
+      '.ootk-op5-tree-bg{position:absolute;inset:0;background:url(\'/img/ootk/tree-of-life.png\') center/contain no-repeat;opacity:.18;pointer-events:none}',
+      '.ootk-op5-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}',
+      '.ootk-op5-path{stroke:rgba(34,197,94,.12);stroke-width:1.2;fill:none;transition:stroke 1s ease}',
+      '.ootk-op5-path.lit{stroke:rgba(201,168,76,.4);stroke-width:1.4}',
+      '.ootk-op5-path.gold-lit{stroke:rgba(201,168,76,.95);stroke-width:2;filter:drop-shadow(0 0 4px rgba(201,168,76,.6))}',
+      '.ootk-op5-node{position:absolute;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at center,rgba(34,197,94,.15) 0%,rgba(34,197,94,.04) 60%,transparent 100%);border:1.5px solid rgba(34,197,94,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(34,197,94,.5);opacity:0;transform:scale(.5);transition:all .5s cubic-bezier(.34,1.56,.64,1);z-index:2}',
+      '.ootk-op5-node.show{opacity:1;transform:scale(1)}',
+      '.ootk-op5-node-num{font-size:.62rem;font-weight:700}',
+      '.ootk-op5-node-name{font-size:.45rem;opacity:.7;margin-top:-1px}',
+      '.ootk-op5-node.flash{background:radial-gradient(circle at center,rgba(34,197,94,.35),rgba(34,197,94,.1));box-shadow:0 0 14px rgba(34,197,94,.5);border-color:rgba(34,197,94,.7)}',
+      '.ootk-op5-node.spotlight{box-shadow:0 0 18px rgba(34,197,94,.5);border-color:rgba(34,197,94,.7);transform:scale(1.18)}',
+      '.ootk-op5-node.found{box-shadow:0 0 32px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.3) 0%,rgba(201,168,76,.1) 60%,transparent 100%);color:var(--c-gold);transform:scale(1.4);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
+      '.ootk-op5-node.dimmed{opacity:.25;transform:scale(.85)}',
+      '.ootk-op5-fly{position:absolute;width:18px;height:28px;border:1px solid rgba(201,168,76,.6);border-radius:2px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.5),0 0 8px rgba(201,168,76,.3);z-index:7;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
+      '.ootk-op5-fly img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.ootk-op5-sig-card{position:absolute;top:50%;left:50%;width:52px;height:78px;margin-left:-26px;margin-top:-39px;border-radius:5px;border:2px solid var(--c-gold);overflow:hidden;opacity:0;transform:scale(.4);transition:opacity .8s ease,transform .8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 24px rgba(201,168,76,.6),0 4px 12px rgba(0,0,0,.7);z-index:8;background:#1a1208}',
+      '.ootk-op5-sig-card.show{opacity:1;transform:scale(1)}',
+      '.ootk-op5-sig-card img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.ootk-op5-sig-overlay{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,transparent 0%,rgba(0,0,0,.85) 100%);padding:.25rem .15rem;text-align:center}',
+      '.ootk-op5-sig-name{font-size:.5rem;color:var(--c-gold);font-weight:700;letter-spacing:.3px;text-shadow:0 1px 2px #000}',
+      // v63 CSS marker: ═══ v63 ⑤ Counting Story 路徑 ═══
+      '.ootk-counting-scene{padding:1rem 0;display:flex;flex-direction:column;align-items:center}',
+      '.ootk-counting-track{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.3rem;max-width:420px;margin-bottom:1rem}',
+      '.ootk-counting-card{display:inline-flex;align-items:center;gap:.3rem;opacity:0;transform:translateY(8px) scale(.9);transition:all .5s cubic-bezier(.34,1.56,.64,1)}',
+      '.ootk-counting-card.show{opacity:1;transform:translateY(0) scale(1)}',
+      '.ootk-counting-card-inner{padding:.4rem .55rem;border-radius:6px;border:1px solid rgba(201,168,76,.3);background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));box-shadow:0 2px 8px rgba(0,0,0,.3);min-width:62px;text-align:center}',
+      '.ootk-counting-card-inner.reversed{border-color:rgba(180,80,80,.5);background:linear-gradient(135deg,rgba(180,80,80,.12),rgba(180,80,80,.04))}',
+      '.ootk-counting-card-inner.reversed .ootk-counting-card-name{transform:rotate(180deg);display:inline-block}',
+      '.ootk-counting-card-name{font-size:.7rem;font-weight:700;color:var(--c-gold);line-height:1.2}',
+      '.ootk-counting-card-inner.reversed .ootk-counting-card-name{color:rgba(220,140,140,.95)}',
+      '.ootk-counting-card-val{font-size:.55rem;color:var(--c-text-dim);margin-top:.1rem;letter-spacing:.5px}',
+      '.ootk-counting-arrow{font-size:1rem;color:var(--c-gold);opacity:0;transition:opacity .5s ease;font-weight:700}',
+      '.ootk-counting-arrow.show{opacity:.7}',
+      '.ootk-counting-summary{opacity:0;transform:translateY(6px);transition:all .6s ease;max-width:380px;padding:.6rem .8rem;border-radius:8px;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.15);text-align:center}',
+      '.ootk-counting-summary.show{opacity:1;transform:translateY(0)}',
+      '.ootk-counting-meta{font-size:.72rem;color:var(--c-text);margin-bottom:.3rem}',
+      '.ootk-counting-end{font-size:.68rem;color:var(--c-text-dim);margin-bottom:.3rem;line-height:1.5}',
+      '.ootk-counting-note{font-size:.62rem;color:var(--c-gold);opacity:.85;line-height:1.6;font-style:italic}',
+      // v63 CSS marker: ═══ v63 ⑥ Pairing Story ═══
+      '.ootk-pairing-scene{padding:1rem 0;display:flex;flex-direction:column;align-items:center}',
+      '.ootk-pairing-grid{display:flex;flex-direction:column;gap:.4rem;max-width:380px;width:100%;padding:0 .5rem}',
+      '.ootk-pairing-center{display:flex;justify-content:center;margin-bottom:.4rem}',
+      '.ootk-pairing-sig{padding:.4rem .8rem;border-radius:6px;background:linear-gradient(135deg,rgba(201,168,76,.3),rgba(201,168,76,.12));border:1px solid var(--c-gold);font-size:.72rem;font-weight:700;color:var(--c-gold);letter-spacing:1px;box-shadow:0 0 16px rgba(201,168,76,.3)}',
+      '.ootk-pairing-row{display:grid;grid-template-columns:1fr auto 1fr;gap:.4rem;align-items:center;opacity:0;transform:translateX(-12px);transition:all .5s ease}',
+      '.ootk-pairing-row.show{opacity:1;transform:translateX(0)}',
+      '.ootk-pairing-side{display:flex;justify-content:center}',
+      '.ootk-pairing-side.left{justify-content:flex-end}',
+      '.ootk-pairing-side.right{justify-content:flex-start}',
+      '.ootk-pairing-card{padding:.35rem .5rem;border-radius:5px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.25);font-size:.66rem;color:var(--c-text);font-weight:600;text-align:center;min-width:72px;line-height:1.2}',
+      '.ootk-pairing-card.reversed{background:rgba(180,80,80,.08);border-color:rgba(180,80,80,.35);color:rgba(220,140,140,.95)}',
+      '.ootk-pairing-card.reversed{transform:rotate(180deg)}',
+      '.ootk-pairing-link{position:relative;display:flex;flex-direction:column;align-items:center;gap:.1rem;min-width:80px}',
+      '.ootk-pairing-link-line{width:100%;height:1.5px;background:linear-gradient(90deg,transparent 0%,rgba(201,168,76,.5) 50%,transparent 100%);position:relative}',
+      '.ootk-pairing-link-num{font-size:.52rem;color:var(--c-gold);font-weight:700;letter-spacing:.5px;margin-top:.1rem}',
+      '.ootk-pairing-link-dig{font-size:.5rem;color:var(--c-text-dim);font-weight:600;letter-spacing:.3px}',
+      '.ootk-pairing-link.dig-strong .ootk-pairing-link-line{background:linear-gradient(90deg,transparent,rgba(201,168,76,.9),transparent);box-shadow:0 0 6px rgba(201,168,76,.6)}',
+      '.ootk-pairing-link.dig-strong .ootk-pairing-link-dig{color:rgba(201,168,76,.9)}',
+      '.ootk-pairing-link.dig-friendly .ootk-pairing-link-line{background:linear-gradient(90deg,transparent,rgba(96,165,250,.7),transparent)}',
+      '.ootk-pairing-link.dig-friendly .ootk-pairing-link-dig{color:rgba(96,165,250,.85)}',
+      '.ootk-pairing-link.dig-neutral .ootk-pairing-link-line{background:linear-gradient(90deg,transparent,rgba(150,150,150,.4),transparent)}',
+      '.ootk-pairing-link.dig-neutral .ootk-pairing-link-dig{color:rgba(180,180,180,.7)}',
+      '.ootk-pairing-link.dig-contrary .ootk-pairing-link-line{background:linear-gradient(90deg,transparent,rgba(180,80,80,.6),transparent);height:1px;opacity:.6}',
+      '.ootk-pairing-link.dig-contrary .ootk-pairing-link-dig{color:rgba(220,140,140,.85)}',
+      '.ootk-pairing-note{margin-top:.8rem;font-size:.62rem;color:var(--c-gold);opacity:0;transform:translateY(4px);transition:all .6s ease;font-style:italic;letter-spacing:.5px}',
+      '.ootk-pairing-note.show{opacity:.85;transform:translateY(0)}',
+      // v63 CSS marker: ═══ v63 響應式 ═══
+      '@media (max-width:480px){.ootk-invoc-scroll{padding:50px 30px 40px;max-width:90%}.ootk-invoc-en{font-size:.7rem}.ootk-invoc-zh{font-size:.78rem}.ootk-op4-table{width:280px;height:280px}.ootk-op2-wheel,.ootk-op3-zodiac{width:240px;height:240px}}',
+      // ═══ v63 ★ 共用：金光擴散圈 + 洗牌真實牌閃現 ═══
+      '.ootk-burst{position:absolute;width:160px;height:160px;border-radius:50%;border:2px solid rgba(201,168,76,.7);background:radial-gradient(circle,rgba(201,168,76,.2) 0%,transparent 70%);opacity:0;transform:scale(.3);animation:ootkBurstExpand 1.4s ease-out forwards;pointer-events:none;z-index:10}',
+      '.ootk-burst.inner{width:100px;height:100px;border-color:rgba(255,230,180,.9);background:radial-gradient(circle,rgba(255,230,180,.35) 0%,transparent 60%);animation-duration:1.1s}',
+      '@keyframes ootkBurstExpand{0%{opacity:0;transform:scale(.3)}20%{opacity:1}100%{opacity:0;transform:scale(2.4)}}',
+      '.ootk-shuffle-flash{position:absolute;top:50%;left:50%;width:60px;height:90px;margin-left:-30px;margin-top:-45px;border-radius:5px;border:1.5px solid rgba(201,168,76,.7);overflow:hidden;opacity:0;transform:scale(.4);transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.56,.64,1);z-index:7;box-shadow:0 0 20px rgba(201,168,76,.5),0 4px 10px rgba(0,0,0,.6);background:#1a1208}',
+      '.ootk-shuffle-flash img{width:100%;height:100%;object-fit:cover;display:block}',
+      '.ootk-shuffle-flash.show{opacity:1;transform:scale(1)}',
+      '.ootk-shuffle-flash.out{opacity:0;transform:scale(1.4)}',
+      '@media(prefers-reduced-motion:reduce){.ootk-kc-flip,.ootk-kc-inner{animation:none!important;opacity:1;transform:none}.ootk-hcell,.ootk-znode,.ootk-seph{transition:none;opacity:1;transform:none}.ootk-burst{display:none}}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  // ── Significator 選擇畫面 ──
+  function _showSignificatorSelection(onSelect) {
+    var existing=document.getElementById('ootk-sig-overlay');
+    if(existing){existing.querySelector('button').focus();return;}
+    var setup=window.OOTKSetup;
+    if(!setup || !window.JY_PICKER) throw new Error('開鑰選牌模組未完整載入，請重新整理後再試。');
+    _injectOOTKStyles();
+    var questionText=String((S.form||{}).question||'');
+    var suggestion=setup.suggestBindings(questionText);
+    var courts=TAROT.filter(function(c){return c.suit!=='major' && /king|queen|knight|page/.test(c.rank||'');});
+    if(courts.length!==16) throw new Error('宮廷牌資料不完整，請重新整理後再試。');
+    function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+    function select(id,label,items,value){return '<label>'+label+'<select id="'+id+'"><option value="">請選擇</option>'+items.map(function(x){return '<option value="'+x[0]+'"'+(String(x[0])===String(value)?' selected':'')+'>'+esc(x[1])+'</option>';}).join('')+'</select></label>';}
+    var houseLabels=['自我與身心','金錢與資源','溝通與近程往來','家庭與居所','戀愛與創作','日常工作與照護','伴侶與合作','共享資源與轉變','進修與遠行','事業與社會角色','朋友與群體','隱而未明之事'];
+    var houses=houseLabels.map(function(x,i){return [i+1,'第'+(i+1)+'宮・'+x];});
+    var sephLabels=['起心動念','形成方向','理解與結構','擴展資源','界線與取捨','整合與平衡','情感與欲望','思考與溝通','醞釀成形','實際落實'];
+    var panel=document.createElement('dialog');panel.id='ootk-sig-overlay';panel.className='ootk-setup';
+    var html='<section class="ootk-setup-panel" aria-label="開鑰之法設定"><header><h2>開鑰之法</h2><p id="ootk-setup-progress" aria-live="polite">1／2　選擇代表牌</p></header><div id="ootk-setup-body"><p class="ootk-setup-question">'+esc(questionText)+'</p>';
+    html+='<div id="ootk-setup-step1"><p>選一張最接近你面對這個問題時的性格與行動方式的牌。</p><div class="ootk-court-grid" role="group" aria-label="選擇代表牌">';
+    var rankDescription={king:'主導與推進',queen:'感受與承接',knight:'思考與行動',page:'學習與落實'};
+    var suitDescription={wand:'意志',cup:'情感',sword:'思辨',pent:'務實'};
+    courts.forEach(function(c){
+      var img=typeof getTarotCardImage==='function'?getTarotCardImage(c):'';
+      html+='<button type="button" class="ootk-manual-sig" data-id="'+c.id+'" aria-pressed="false">'+(img?'<img src="'+esc(img)+'" alt="'+esc(c.n)+'" width="64" height="102" loading="eager">':'')+'<b>'+esc(c.n)+'</b><small>'+esc(suitDescription[c.suit]+'・'+rankDescription[c.rank])+'</small></button>';
+    });
+    html+='</div><p class="ootk-setup-note">依性格選牌；這裡的牌階對應 Book T 的 Knight、Queen、Prince、Princess。</p></div>';
+    html+='<div id="ootk-setup-step2" style="display:none"><div class="ootk-selected"><img id="ootk-selected-img" alt="代表牌" width="90" height="144"><div><b id="ootk-selected-name"></b><p>確認這次問題關注的領域。以下選擇會在發牌前記錄；可修改系統建議。</p></div></div><div class="ootk-binding-fields">';
+    html+=select('ootk-bind-direction','牌中主要人物朝向／本次計數方向（請看牌圖）',[['left','朝左，向左計數'],['right','朝右，向右計數']],'');
+    html+=select('ootk-bind-pile','第一操作・問題領域',[['fire','火・意志／競爭／事業'],['water','水・感情／婚姻／愉悅'],['air','風・爭執／損失／麻煩'],['earth','土・金錢／物質']],suggestion.expectedPile);
+    html+=select('ootk-bind-house-primary','第二操作・主要生活領域',houses,suggestion.primaryHouse);
+    html+=select('ootk-bind-house-cognate','第二操作・相關領域（可不指定）',houses,suggestion.cognateHouse);
+    html+=select('ootk-bind-sign','第三操作・黃道領域',setup.signs.map(function(x,i){return [i,x+'・'+houseLabels[i]];}),suggestion.expectedSign);
+    html+=select('ootk-bind-seph','第五操作・關注的實現層次',SEPH_NAMES_5.map(function(x,i){return [i,sephLabels[i]+'（'+SEPH_ZH_5[i]+'）'];}),'');
+    html+='</div><p class="ootk-setup-note">黃道領域是本網站的問題映射建議，並非你的出生星座；請依本題確認。牌面正對前方或朝向不清楚時，請先約定計數方向。第四操作沿用代表牌的位置與既定程序，無須另填。</p></div></div><p id="ootk-setup-error" role="alert"></p><footer><button type="button" id="ootk-cancel">取消</button><button type="button" id="ootk-back" style="display:none">上一步</button><button type="button" id="ootk-confirm">下一步：確認領域</button></footer></section>';
+    panel.innerHTML=html;
+    if(!document.getElementById('ootk-setup-style')){
+      var style=document.createElement('style');style.id='ootk-setup-style';
+      style.textContent='.ootk-setup-panel{background:#14121b;border:1px solid #645432;border-radius:18px 18px 0 0;padding:16px;color:#eee7d7}.ootk-setup-panel header{padding-bottom:12px}.ootk-setup-panel h2{font-size:20px;color:#e8d28a}.ootk-setup-panel p{font-size:14px;line-height:1.65;margin:6px 0}.ootk-setup-panel header p,.ootk-setup-note{color:#c2b69f}.ootk-setup-question{padding:12px;border-left:3px solid #c9a84c;background:#201c28;overflow-wrap:anywhere}.ootk-court-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}.ootk-setup-panel button{color:#e8d28a;background:#211c29;border:1px solid #635433;border-radius:10px;min-height:44px;padding:8px;cursor:pointer}.ootk-manual-sig{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}.ootk-manual-sig img{width:100%;max-width:64px;height:auto;aspect-ratio:64/102;object-fit:cover;content-visibility:visible}.ootk-manual-sig b{font-size:12px}.ootk-manual-sig small{font-size:11px;line-height:1.4}.ootk-manual-sig[aria-pressed=true]{outline:2px solid #e8d28a;background:#3a2d22}.ootk-selected{display:flex;align-items:center;gap:16px;margin:16px 0}.ootk-selected img{object-fit:cover;flex:0 0 90px;content-visibility:visible}.ootk-binding-fields{display:grid;gap:16px}.ootk-binding-fields label{font-size:14px}.ootk-binding-fields select{width:100%;display:block;margin-top:6px;min-height:48px;background:#211c29;color:#fff3d5;border:1px solid #635433;border-radius:8px;font-size:16px;padding:8px}.ootk-setup-panel footer{display:flex;gap:8px;padding-top:12px;flex-shrink:0}.ootk-setup-panel footer #ootk-confirm{flex:1;background:#c9a84c;color:#19130a;font-weight:700}.ootk-setup-panel #ootk-setup-error{color:#ffc1ab;flex-shrink:0;font-size:13px;max-height:64px;overflow:auto}';
+      document.head.appendChild(style);
+    }
+    var selected=-1,step=1,close=window.JY_PICKER.mount(panel,'#ootk-setup-body',function(){close();});
+    var error=panel.querySelector('#ootk-setup-error'),next=panel.querySelector('#ootk-confirm'),back=panel.querySelector('#ootk-back');
+    function showStep(n){step=n;error.textContent='';panel.querySelector('#ootk-setup-step1').style.display=n===1?'':'none';panel.querySelector('#ootk-setup-step2').style.display=n===2?'':'none';back.style.display=n===2?'':'none';next.textContent=n===1?'下一步：確認領域':'確認並開始五次操作';panel.querySelector('#ootk-setup-progress').textContent=n+'／2　'+(n===1?'選擇代表牌':'確認問題領域');panel.querySelector('#ootk-setup-body').scrollTop=0;}
+    panel.querySelector('#ootk-cancel').onclick=close;back.onclick=function(){showStep(1);};
+    panel.querySelectorAll('.ootk-manual-sig').forEach(function(button){button.onclick=function(){
+      selected=Number(button.dataset.id);error.textContent='';
+      panel.querySelectorAll('.ootk-manual-sig').forEach(function(other){other.setAttribute('aria-pressed',String(other===button));});
+      var card=courts.find(function(c){return c.id===selected;});
+      panel.querySelector('#ootk-selected-name').textContent=card.n;
+      panel.querySelector('#ootk-selected-img').src=getTarotCardImage(card);
+    };});
+    next.onclick=function(){
+      if(selected<0){error.textContent='請先選擇一張代表牌。';panel.querySelector('.ootk-manual-sig').focus();return;}
+      if(step===1){showStep(2);panel.querySelector('#ootk-bind-direction').focus();return;}
+      var fields={countDirection:'direction',expectedPile:'pile',primaryHouse:'house-primary',cognateHouse:'house-cognate',expectedSign:'sign',expectedSephirah:'seph'},raw={confirmedBeforeDeal:true};
+      Object.keys(fields).forEach(function(k){raw[k]=panel.querySelector('#ootk-bind-'+fields[k]).value;});
+      var missing=Object.keys(fields).find(function(k){return k!=='cognateHouse' && raw[k]==='';});
+      if(missing){error.textContent='請完成標示的欄位，再開始發牌。';panel.querySelector('#ootk-bind-'+fields[missing]).focus();return;}
+      next.disabled=true;
+      try {onSelect(selected,Object.freeze(setup.normalizeBindings(raw)));close();}
+      catch(e){console.error('[OOTK] launch failed',e);error.textContent='開鑰啟動失敗：'+(e.message||'請重試');next.disabled=false;}
+    };
+  }
+
+  // ── 五階段動畫主控台 ──
+  // ════════════════════════════════════════════════════════════════════
+  // ★ v63 五階段動畫主控台 — Book T 對齊 儀式版
+  //
+  // 六大儀式 (per stage):
+  //   ① Invocation — Mathers IAO/HRU 召喚祝禱（首次）
+  //   ② Shuffle — 78 張螺旋洗牌動畫
+  //   ③ Deal — 各階段獨有的發牌儀式
+  //          Op1: YHVH 切四元素堆
+  //          Op2: 發到 12 宮位
+  //          Op3: 發到 12 星座
+  //          Op4: Sig 取出居中 + 36 張環繞
+  //          Op5: 發到生命之樹 10 質點
+  //   ④ Find Significator — 聚光燈逐堆掃過、Sig 那刻金光乍現
+  //   ⑤ Counting Path — 從 Sig 出發、走過的牌依序高亮 + 連線
+  //   ⑥ Pairing — 兩側對稱往內配對的光線連結
+  //
+  // 依據：Mathers Book T 原始手稿、Regardie《Golden Dawn》、
+  //        Cicero《Magical Tarot》、Mary K. Greer 對 elemental dignities
+  //        的權威解析
+  // ════════════════════════════════════════════════════════════════════
+  function _runOOTKSequence(significatorId, predeclaredBindings) {
+    _injectOOTKStyles();
+    var sequenceClosed=false,sequenceTimers=[],sequenceFrames=[];
+    function sequenceTimeout(fn,delay){var id=window.setTimeout(function(){if(!sequenceClosed)fn();},delay);sequenceTimers.push(id);return id;}
+    function sequenceFrame(fn){var id=window.requestAnimationFrame(function(){if(!sequenceClosed)fn();});sequenceFrames.push(id);return id;}
+    function closeSequence(){
+      if(sequenceClosed)return;sequenceClosed=true;
+      sequenceTimers.forEach(function(id){window.clearTimeout(id);});sequenceFrames.forEach(function(id){window.cancelAnimationFrame(id);});
+      overlay.remove();
+    }
+    function finishSequence(){
+      if(sequenceClosed)return;closeSequence();
+      if(typeof goStep==='function')goStep('step-tarot');
+      _triggerOOTKAI(results);
+    }
+
+    // ★ v64.1 正統 Mathers Book T:傳入問題文字以啟動 Op2/Op3 abandon 機制
+    var questionText = '';
+    try {
+      questionText = (S && S.form && S.form.question) ? String(S.form.question) : '';
+    } catch(_qe) { questionText = ''; }
+
+    // 跑五階段計算(引擎已改為每階段獨立洗牌 + Mathers 二次重洗 abandon 邏輯)
+    var results = null;
+    try {
+      results = window.ootkRunFull ? window.ootkRunFull(significatorId, questionText, predeclaredBindings) : null;
+    } catch(e) { throw new Error('開鑰計算失敗：'+e.message); }
+    if (!results) throw new Error('開鑰計算引擎未完整載入，請重新整理後再試。');
+
+    // 欄位別名（新引擎 → 渲染器）
+    if (results.op3) results.op3.rulingMajor = results.op3.signTrump || '';
+
+    // 儲存到 S.tarot
+    S.tarot = S.tarot || {};
+    S.tarot.ootkResults = results;
+    S.tarot.spreadType = 'ootk';
+    S.tarot.spreadDef = { id: 'ootk', zh: '開鑰之法' };
+
+    // ──────────────────────────────────────────────────────────────
+    // 建立全螢幕展示 overlay（含召喚背景）
+    // ──────────────────────────────────────────────────────────────
+    var overlay = document.createElement('div');
+    overlay.className = 'ootk-overlay';
+    overlay.id = 'ootk-sequence-overlay';
+    overlay.style.justifyContent = 'flex-start';
+    overlay.style.paddingTop = '0';
+
+    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','開鑰之法儀式');
+    var html = '<div class="ootk-sequence-actions" style="position:sticky;top:0;z-index:100;display:flex;gap:8px;justify-content:space-between;width:100%;padding:12px;background:#14121b"><button type="button" id="ootk-fast-result" style="min-height:44px;padding:8px 12px;border:1px solid #c9a84c;border-radius:8px;background:#c9a84c;color:#171208;font:14px system-ui">略過動畫，直接解讀</button><button type="button" id="ootk-sequence-cancel" style="min-height:44px;padding:8px 12px;border:1px solid #78663e;border-radius:8px;background:#211c29;color:#eee7d7;font:14px system-ui">取消儀式</button></div>';
+
+    // ① 召喚祝禱層（首次顯示，使用者點擊後消失進入主流程）
+    html += '<div id="ootk-invocation" class="ootk-invocation-layer show-bg show-angel show-scroll show-prayer show-btn">';
+    html += '  <div class="ootk-invoc-bg"></div>';
+    html += '  <div class="ootk-invoc-angel"></div>';
+    html += '  <div class="ootk-invoc-scroll">';
+    html += '    <div class="ootk-invoc-title">✦ 開鑰之法 ✦</div>';
+    html += '    <div class="ootk-invoc-subtitle">Opening of the Key</div>';
+    html += '    <div class="ootk-invoc-divider">— Hermetic Order of the Golden Dawn —</div>';
+    html += '    <div class="ootk-invoc-prayer">';
+    html += '      <div class="ootk-invoc-en">';
+    html += '        I invoke thee, I A O,<br>';
+    html += '        that thou wilt send H R U,<br>';
+    html += '        the great Angel that is set over<br>';
+    html += '        the operations of this Secret Wisdom,<br>';
+    html += '        to lay his hand invisibly upon<br>';
+    html += '        these consecrated cards of art,<br>';
+    html += '        that thereby we may obtain<br>';
+    html += '        true knowledge of hidden things,<br>';
+    html += '        to the glory of thine ineffable Name.<br>';
+    html += '        Amen.';
+    html += '      </div>';
+    html += '      <div class="ootk-invoc-zh">';
+    html += '        我以 IAO 之名召喚你，<br>';
+    html += '        HRU——主掌此祕智運作的偉大天使，<br>';
+    html += '        請你以無形之手按於此聖牌之上，<br>';
+    html += '        使我們得見隱秘之真相，<br>';
+    html += '        以彰汝不可名之榮光。<br>';
+    html += '        Amen.';
+    html += '      </div>';
+    html += '    </div>';
+    html += '    <button id="ootk-invoc-begin" class="ootk-invoc-btn">承接 · 開始儀式</button>';
+    html += '  </div>';
+    html += '</div>';
+
+    // ② 主流程容器（召喚後出現）
+    html += '<div id="ootk-main-flow" style="display:none;text-align:center;max-width:520px;width:100%;margin:0 auto">';
+
+    // 頂部標題
+    html += '  <div style="font-size:.85rem;color:var(--c-gold);font-weight:700;margin-bottom:.2rem;letter-spacing:2px">✦ 開鑰之法 ✦</div>';
+    html += '  <div style="font-size:.62rem;color:var(--c-text-dim);margin-bottom:.6rem;letter-spacing:3px">OPENING · OF · THE · KEY</div>';
+
+    // 進度點
+    html += '  <div class="ootk-progress" id="ootk-dots">';
+    for (var d = 0; d < 5; d++) html += '<div class="ootk-dot" data-idx="' + d + '"></div>';
+    html += '  </div>';
+
+    // 五個階段的內容區
+    html += '  <div id="ootk-phases"></div>';
+
+    // 底部按鈕
+    html += '  <div id="ootk-actions" style="margin-top:1rem;display:flex;gap:.5rem;justify-content:center">';
+    html += '    <button id="ootk-next" style="padding:.55rem 1.5rem;border-radius:20px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--c-gold);font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit">開始第一階段 →</button>';
+    html += '  </div>';
+    html += '</div>';
+
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+
+    // ──────────────────────────────────────────────────────────────
+    // ① 召喚祝禱動畫節奏控制
+    // ──────────────────────────────────────────────────────────────
+    var invocLayer = document.getElementById('ootk-invocation');
+    var mainFlow = document.getElementById('ootk-main-flow');
+    var beginBtn = document.getElementById('ootk-invoc-begin');
+
+    // Navigation is usable immediately; the reading is already calculated.
+    document.getElementById('ootk-fast-result').onclick=finishSequence;
+    document.getElementById('ootk-sequence-cancel').onclick=closeSequence;
+    overlay.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();closeSequence();}});
+    sequenceTimeout(function(){document.getElementById('ootk-fast-result').focus();},0);
+    var invocationStarted=false;
+    beginBtn.onclick = function() {
+      if(invocationStarted)return;invocationStarted=true;
+      invocLayer.classList.add('fade-out');
+      sequenceTimeout(function() {
+        invocLayer.style.display = 'none';
+        mainFlow.style.display = 'block';
+        // 進入第一階段
+        startStageFlow();
+      }, 900);
+    };
+
+    // ──────────────────────────────────────────────────────────────
+    // 階段展示主控
+    // ──────────────────────────────────────────────────────────────
+    var currentPhase = -1;
+    var phasesEl;
+    var nextBtn;
+    var _advanceLock = false;
+    var _ootkAuto = true;
+    var _lastPhaseHadBanner = false;
+    var maxPhases = Math.max(1, Math.min(5, results.completedOperations || 5));
+    document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot, idx){ if (idx >= maxPhases) dot.style.display = 'none'; });
+
+    function startStageFlow() {
+      phasesEl = document.getElementById('ootk-phases');
+      nextBtn = document.getElementById('ootk-next');
+      nextBtn.addEventListener('click', advancePhase);
+      if (_ootkAuto) sequenceTimeout(function(){ try{ advancePhase(); }catch(_e){} }, 600);
+    }
+
+    function advancePhase() {
+      if (_advanceLock) return;
+      _advanceLock = true;
+      try {
+        currentPhase++;
+        if (currentPhase >= maxPhases) {
+          _advanceLock = false;
+          nextBtn.textContent = results.abandonedAt ? '查看本次停止原因' : '🌙 靜月為你解讀';
+          nextBtn.onclick = finishSequence;
+          document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
+          return;
+        }
+
+        // 更新 dots
+        document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot, idx) {
+          if (idx < currentPhase) dot.className = 'ootk-dot done';
+          else if (idx === currentPhase) dot.className = 'ootk-dot current';
+          else dot.className = 'ootk-dot';
+        });
+
+        nextBtn.style.opacity = '0.3';
+        nextBtn.style.pointerEvents = 'none';
+
+        // ════════════════════════════════════════════════
+        // 每階段六儀式流程：洗牌 → 發牌 → 找Sig → Counting → Pairing → 顯示結果
+        // ════════════════════════════════════════════════
+        runStageRitual(currentPhase, function() {
+          // 儀式跑完，顯示文字結果
+          showPhaseContent();
+        });
+      } catch(err) {
+        _advanceLock = false;
+        console.error('[OOTK advancePhase] Error:', err);
+        alert('階段載入失敗：' + err.message);
+      }
+    }
+
+    function showPhaseContent() {
+      _advanceLock = false;
+      // ★ v64.1 inline HTML escape (避免 abandon 訊息中的 < > & 破壞 HTML)
+      function _esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+      var opData = results['op' + (currentPhase + 1)];
+      var label = OP_LABELS[currentPhase];
+      var phaseDiv = document.createElement('div');
+      phaseDiv.className = 'ootk-phase';
+
+      // ★ v64.1 正統 Mathers Book T:abandon 警示 UI 渲染 + 用戶選擇
+      // 資料層觸發的 abandon/弱訊號警示必須讓用戶看見並做選擇
+      var abandonBanner = '';
+      if (opData) {
+        if (opData.abandonTriggered && opData.abandonReason) {
+          abandonBanner =
+            '<div style="margin:1rem 0;padding:1.1rem;border-radius:12px;border:1px solid rgba(248,113,113,.48);background:rgba(127,29,29,.16)">' +
+            '<div style="font-size:.92rem;font-weight:700;color:#fca5a5;margin-bottom:.6rem">本次開鑰依 Book T 停止</div>' +
+            '<div style="font-size:.78rem;color:rgba(254,226,226,.94);line-height:1.75">' + _esc(opData.abandonReason) + '</div>' +
+            '<div style="font-size:.7rem;color:rgba(254,202,202,.78);line-height:1.6;margin-top:.65rem">後續操作不會生成，也不會把錯位改寫成答案。可查看停止原因，或重新開始一次新的占卜。</div>' +
+            '</div>';
+        } else if (opData.signExpectationMet === false && opData.signExpectationNote) {
+          abandonBanner =
+            '<div style="margin:1rem 0;padding:1rem;border-radius:10px;' +
+            'border:1px solid rgba(251,191,36,.45);background:rgba(251,191,36,.07);">' +
+            '<div style="font-size:.85rem;font-weight:700;color:#fbbf24;margin-bottom:.5rem">' +
+              '第三次操作：程序綁定失敗' +
+            '</div>' +
+            '<div style="font-size:.74rem;color:rgba(254,243,199,.92);line-height:1.65">' +
+              _esc(opData.signExpectationNote) +
+            '</div>' +
+            '</div>';
+        } else if (opData.attempt === 2 && opData.retryNote) {
+          // 二次重洗成功(第二次落合適位置)— 灰色資訊卡
+          abandonBanner =
+            '<div style="margin:.8rem 0;padding:.7rem .9rem;border-radius:8px;' +
+            'border:1px dashed rgba(201,168,76,.35);background:rgba(201,168,76,.04);">' +
+            '<div style="font-size:.7rem;color:rgba(212,175,55,.85);line-height:1.6">' +
+              '⚙️ Mathers 二次重洗:' + _esc(opData.retryNote) +
+            '</div>' +
+            '</div>';
+        } else if (opData.sephExpectationNote && opData.sephExpectationMet === false) {
+          // Op5「找錯位不必然意味失敗」（Book T）— 紫色觀察卡
+          abandonBanner =
+            '<div style="margin:1rem 0;padding:1rem 1.1rem;border-radius:10px;' +
+            'border:1px solid rgba(168,85,247,.4);background:rgba(168,85,247,.06);">' +
+            '<div style="font-size:.85rem;font-weight:700;color:#c4b5fd;margin-bottom:.5rem">' +
+              '📍 第五次操作位置觀察（Book T）' +
+            '</div>' +
+            '<div style="font-size:.74rem;color:rgba(233,213,255,.92);line-height:1.65">' +
+              _esc(opData.sephExpectationNote) +
+            '</div>' +
+            '</div>';
+        } else if (opData.sephExpectationMet === true) {
+          // Op5 預期符合 — 簡短綠色提示
+          abandonBanner =
+            '<div style="margin:.8rem 0;padding:.6rem .85rem;border-radius:8px;' +
+            'border:1px dashed rgba(74,222,128,.3);background:rgba(74,222,128,.04);">' +
+            '<div style="font-size:.7rem;color:rgba(134,239,172,.85);line-height:1.6">' +
+              '✓ Op5 Sig 落合適 Sephirah:' + _esc(opData.sephExpectationNote) +
+            '</div>' +
+            '</div>';
+        }
+      }
+
+      _lastPhaseHadBanner = !!abandonBanner; // 有揭示/警示卡 → 自動模式下停在此階段等使用者
+      phaseDiv.innerHTML = abandonBanner + _renderPhase(currentPhase, label, opData, results);
+      phasesEl.appendChild(phaseDiv);
+      sequenceFrame(function() { sequenceFrame(function() { phaseDiv.classList.add('visible'); }); });
+      // ★ v75.1 修正：scrollIntoView 在手機 fixed overlay 內不可靠，改用 overlay.scrollTop
+      sequenceTimeout(function() {
+        try {
+          var _ov = document.getElementById('ootk-sequence-overlay');
+          if (_ov) _ov.scrollTop = _ov.scrollHeight;
+        } catch(e) {}
+      }, 300);
+      nextBtn.style.opacity = '1';
+      nextBtn.style.pointerEvents = 'auto';
+      if (currentPhase < maxPhases - 1) {
+        nextBtn.textContent = OP_LABELS[currentPhase + 1].zh + ' →';
+      } else {
+        nextBtn.textContent = results.abandonedAt ? '查看本次停止原因' : '🌙 靜月為你解讀';
+        nextBtn.onclick = finishSequence;
+        document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot) { dot.className = 'ootk-dot done'; });
+      }
+      // ── 自動推進：本階段無警示卡才自動往下；有卡則停在此處等使用者（重抽鈕已在卡內）──
+      if (_ootkAuto && !_lastPhaseHadBanner) {
+        if (currentPhase < maxPhases - 1) {
+          sequenceTimeout(function(){ try{ advancePhase(); }catch(_e){} }, 2600);
+        } else {
+          // 第五階段完成 → 自動進入解讀
+          sequenceTimeout(function(){ try{ if(nextBtn) nextBtn.click(); }catch(_e){} }, 2600);
+        }
+      }
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ★ 階段儀式總控：洗牌 → 發牌 → 找 Sig → Counting → Pairing
+    // ════════════════════════════════════════════════════════════════
+    function runStageRitual(phaseIdx, onComplete) {
+      var ritualScene = document.createElement('div');
+      ritualScene.className = 'ootk-ritual-scene';
+      ritualScene.style.cssText = 'opacity:0;transition:opacity .5s;min-height:340px';
+      phasesEl.appendChild(ritualScene);
+      sequenceFrame(function() { ritualScene.style.opacity = '1'; });
+
+      // 階段標題
+      // ★ v63E 正統 Book T:加上「第 N 次獨立讀盤」副標,讓動畫上清楚顯示
+      //    每個 Op 是 Mathers 原文「Shuffle, etc., as before」設計的獨立讀盤
+      var stageTitle = document.createElement('div');
+      stageTitle.className = 'ootk-stage-title';
+      stageTitle.innerHTML =
+        '<div class="ootk-stage-num">第 ' + ['一','二','三','四','五'][phaseIdx] + ' 階段 · Operation ' + (phaseIdx + 1) + '</div>' +
+        '<div class="ootk-stage-name">' + OP_LABELS[phaseIdx].zh + '</div>' +
+        '<div class="ootk-stage-en">' + OP_LABELS[phaseIdx].en + '</div>' +
+        '<div style="font-size:.62rem;color:rgba(212,175,55,.65);margin-top:.4rem;letter-spacing:.05em;font-style:italic">' +
+          '※ 第 ' + (phaseIdx + 1) + ' 次獨立讀盤(重洗、重新切牌)・Book T 原文「Shuffle, etc., as before」' +
+        '</div>';
+      ritualScene.appendChild(stageTitle);
+
+      // 儀式場
+      var stage = document.createElement('div');
+      stage.className = 'ootk-stage-area';
+      ritualScene.appendChild(stage);
+
+      // 階段提示文字
+      var caption = document.createElement('div');
+      caption.className = 'ootk-stage-caption';
+      stage.appendChild(caption);
+
+      // 流程：② 洗牌 → ③ 發牌（含找 Sig） → ⑤ Counting → ⑥ Pairing
+      ritualShuffle(stage, caption, function() {
+        ritualDeal(phaseIdx, stage, caption, function() {
+          ritualCounting(phaseIdx, stage, caption, function() {
+            ritualPairing(phaseIdx, stage, caption, function() {
+              // 全部跑完，淡出 ritualScene
+              sequenceTimeout(function() {
+                ritualScene.style.opacity = '0';
+                sequenceTimeout(function() {
+                  ritualScene.remove();
+                  onComplete();
+                }, 500);
+              }, 800);
+            });
+          });
+        });
+      });
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ★ 共用：找到 Sig 那刻的金光擴散特效
+    // ════════════════════════════════════════════════════════════════
+    function _emitGoldBurst(parentEl, targetEl) {
+      if (!parentEl || !targetEl) return;
+      var pBox = parentEl.getBoundingClientRect();
+      var tBox = targetEl.getBoundingClientRect();
+      var burst = document.createElement('div');
+      burst.className = 'ootk-burst';
+      burst.style.left = (tBox.left - pBox.left + tBox.width / 2 - 80) + 'px';
+      burst.style.top = (tBox.top - pBox.top + tBox.height / 2 - 80) + 'px';
+      parentEl.appendChild(burst);
+      sequenceTimeout(function() { burst.remove(); }, 1400);
+      // 多一道內圈光暈
+      var burst2 = document.createElement('div');
+      burst2.className = 'ootk-burst inner';
+      burst2.style.left = (tBox.left - pBox.left + tBox.width / 2 - 50) + 'px';
+      burst2.style.top = (tBox.top - pBox.top + tBox.height / 2 - 50) + 'px';
+      parentEl.appendChild(burst2);
+      sequenceTimeout(function() { burst2.remove(); }, 1100);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ② 洗牌儀式 — 78 張螺旋洗牌 + 真實牌照閃現
+    // ════════════════════════════════════════════════════════════════
+    function ritualShuffle(stage, caption, onDone) {
+      // ★ v63E 正統 Book T:每階段都重新洗整副 78 張牌
+      //   Mathers Book T 原文五階段都明寫「Shuffle, etc., as before」
+      //   這不是「續上一階段」,是新的一次完整讀盤
+      caption.textContent = '🃏 重新洗牌(全部 78 張)——這是新的一次獨立讀盤,請靜心默念你的問題';
+      var box = document.createElement('div');
+      box.className = 'ootk-shuffle-box';
+      stage.appendChild(box);
+
+      // 生成 24 張卡背螺旋（純粹視覺）
+      for (var i = 0; i < 24; i++) {
+        var c = document.createElement('div');
+        c.className = 'ootk-shuffle-card';
+        c.style.animationDelay = (i * 80) + 'ms';
+        c.style.setProperty('--i', i);
+        box.appendChild(c);
+      }
+
+      // 隨機抽 6 張真實牌從中央閃過、依序放大消失（強化「78 張真實在洗」感）
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+      if (visualDeck.length) {
+        var FLASH_COUNT = 6;
+        var picked = [];
+        for (var p = 0; p < FLASH_COUNT; p++) {
+          var idx = Math.floor(Math.random() * visualDeck.length);
+          picked.push(visualDeck[idx]);
+        }
+        picked.forEach(function(card, fi) {
+          sequenceTimeout(function() {
+            var imgUrl = getImg(card);
+            if (!imgUrl) return;
+            var flash = document.createElement('div');
+            flash.className = 'ootk-shuffle-flash';
+            flash.innerHTML = '<img src="' + imgUrl + '" />';
+            box.appendChild(flash);
+            sequenceFrame(function() { flash.classList.add('show'); });
+            sequenceTimeout(function() { flash.classList.add('out'); }, 380);
+            sequenceTimeout(function() { flash.remove(); }, 750);
+          }, 200 + fi * 280);
+        });
+      }
+
+      // 2.4 秒後淡出（延長以容納 6 張閃現）
+      sequenceTimeout(function() {
+        box.classList.add('done');
+        sequenceTimeout(function() {
+          box.remove();
+          onDone();
+        }, 600);
+      }, 2400);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ③ 發牌儀式 + ④ 找 Significator — 各階段獨有
+    // ════════════════════════════════════════════════════════════════
+    function ritualDeal(phaseIdx, stage, caption, onDone) {
+      if (phaseIdx === 0) ritualDealOp1(stage, caption, onDone);
+      else if (phaseIdx === 1) ritualDealOp2(stage, caption, onDone);
+      else if (phaseIdx === 2) ritualDealOp3(stage, caption, onDone);
+      else if (phaseIdx === 3) ritualDealOp4(stage, caption, onDone);
+      else if (phaseIdx === 4) ritualDealOp5(stage, caption, onDone);
+      else onDone();
+    }
+
+    // ─── Op1 發牌：YHVH 切四元素堆 ───
+    function ritualDealOp1(stage, caption, onDone) {
+      caption.innerHTML = '🜂 切牌——按 <b>YHVH</b> 四聖名分為四元素堆';
+
+      var op = results.op1;
+      var piles = op.piles || {};
+      var activeKey = op.activePile || 'fire';
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op1-scene';
+      var sceneHTML = '<div class="ootk-op1-deck" id="ootk-op1-deck"><div class="ootk-op1-deck-count" id="ootk-op1-count">78</div></div>';
+      var elSlots = [
+        { el: 'fire',  letter: 'י', letterEn: 'Yod', label: '🜂 火', meaning: '工作・事業' },
+        { el: 'water', letter: 'ה', letterEn: 'Heh', label: '🜄 水', meaning: '愛情・愉悅' },
+        { el: 'air',   letter: 'ו', letterEn: 'Vav', label: '🜁 風', meaning: '衝突・損失' },
+        { el: 'earth', letter: 'ה', letterEn: 'Heh', label: '🜃 土', meaning: '金錢・物質' }
+      ];
+      sceneHTML += '<div class="ootk-op1-piles">';
+      elSlots.forEach(function(s) {
+        sceneHTML +=
+          '<div class="ootk-op1-pile" data-el="' + s.el + '">' +
+          '  <div class="ootk-op1-pile-letter">' + s.letter + '</div>' +
+          '  <div class="ootk-op1-pile-stack" id="op1-stack-' + s.el + '"></div>' +
+          '  <div class="ootk-op1-pile-meta">' +
+          '    <div class="ootk-op1-pile-label">' + s.label + '</div>' +
+          '    <div class="ootk-op1-pile-meaning">' + s.meaning + '</div>' +
+          '    <div class="ootk-op1-pile-count"><span id="op1-count-' + s.el + '">0</span> 張</div>' +
+          '  </div>' +
+          '</div>';
+      });
+      sceneHTML += '</div>';
+      scene.innerHTML = sceneHTML;
+      stage.appendChild(scene);
+
+      var elKeys = ['fire','water','air','earth'];
+      var totalPerPile = { fire: piles.fire || 19, water: piles.water || 19, air: piles.air || 20, earth: piles.earth || 20 };
+      var dist = [];
+      elKeys.forEach(function(k) {
+        for (var i = 0; i < totalPerPile[k]; i++) dist.push(k);
+      });
+      // shuffle
+      for (var sh = dist.length - 1; sh > 0; sh--) { var sj = Math.floor(Math.random() * (sh + 1)); var tmp = dist[sh]; dist[sh] = dist[sj]; dist[sj] = tmp; }
+
+      var counts = { fire: 0, water: 0, air: 0, earth: 0 };
+      var flown = 0;
+      var deckEl = scene.querySelector('#ootk-op1-deck');
+      var countEl = scene.querySelector('#ootk-op1-count');
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+
+      function flyOne() {
+        if (flown >= dist.length) {
+          sequenceTimeout(highlightActive, 300);
+          return;
+        }
+        var k = dist[flown];
+        counts[k]++;
+        flown++;
+        countEl.textContent = String(78 - flown);
+        scene.querySelector('#op1-count-' + k).textContent = String(counts[k]);
+
+        // 視覺：飛卡
+        var fly = document.createElement('div');
+        fly.className = 'ootk-fly-card-v63';
+        // 前 12 張顯示真實牌照（增加儀式感），其後用卡背省效能
+        if (flown <= 12 && visualDeck.length) {
+          var card = visualDeck[(flown * 13) % visualDeck.length];
+          var imgUrl = getImg(card);
+          if (imgUrl) {
+            fly.innerHTML = '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:1px" />';
+            fly.classList.add('with-img');
+          }
+        }
+        var dRect = deckEl.getBoundingClientRect();
+        var sRect = scene.getBoundingClientRect();
+        fly.style.left = (dRect.left - sRect.left + 12) + 'px';
+        fly.style.top = (dRect.top - sRect.top + 8) + 'px';
+        scene.appendChild(fly);
+
+        var stackEl = scene.querySelector('#op1-stack-' + k);
+        var stRect = stackEl.getBoundingClientRect();
+        sequenceFrame(function() {
+          fly.style.left = (stRect.left - sRect.left + 8) + 'px';
+          fly.style.top = (stRect.top - sRect.top - counts[k] * 1.2) + 'px';
+          fly.style.transform = 'rotate(' + (Math.random() * 4 - 2) + 'deg)';
+          fly.style.opacity = '.9';
+        });
+        sequenceTimeout(function() { fly.classList.add('landed'); }, 380);
+
+        var delay = flown < 8 ? 110 : flown < 30 ? 55 : flown < 60 ? 30 : 18;
+        sequenceTimeout(flyOne, delay);
+      }
+
+      // ④ 找 Significator
+      function highlightActive() {
+        caption.innerHTML = '🔍 尋找代表牌——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
+
+        var pileEls = scene.querySelectorAll('.ootk-op1-pile');
+        var idx = 0;
+        function spotlight() {
+          // 移除所有 spotlight
+          pileEls.forEach(function(p) { p.classList.remove('spotlight'); });
+          if (idx >= 4) {
+            // 結束掃描，亮起 active
+            sequenceTimeout(function() {
+              pileEls.forEach(function(p) {
+                if (p.dataset.el === activeKey) p.classList.add('found');
+                else p.classList.add('dimmed');
+              });
+              // 金光擴散
+              sequenceTimeout(function() {
+                var foundEl = scene.querySelector('.ootk-op1-pile.found');
+                if (foundEl) _emitGoldBurst(scene, foundEl);
+              }, 100);
+              caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">' + (PILE_ZH[activeKey] || activeKey) + '</b>';
+              sequenceTimeout(onDone, 1400);
+            }, 200);
+            return;
+          }
+          // 高亮這堆
+          var key = elKeys[idx];
+          var p = scene.querySelector('.ootk-op1-pile[data-el="' + key + '"]');
+          if (p) p.classList.add('spotlight');
+          // 如果這堆是 active，提早停留更久
+          var stayTime = (key === activeKey) ? 800 : 350;
+          idx++;
+          sequenceTimeout(spotlight, stayTime);
+        }
+        // 從第一堆開始掃
+        sequenceTimeout(spotlight, 400);
+      }
+
+      sequenceTimeout(flyOne, 400);
+    }
+
+    // ─── Op2 發牌：12 宮位 ───
+    function ritualDealOp2(stage, caption, onDone) {
+      caption.innerHTML = '🏠 發牌——依序發到 <b>十二宮位</b>（占星天宮圖）';
+
+      var op = results.op2;
+      var activeH = (op.activeHouse || 1) - 1;
+
+      var HOUSE_LBL = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
+      var HOUSE_DESC = ['自我','財帛','兄弟','田宅','子女','奴僕','夫妻','疾厄','遷移','官祿','福德','玄秘'];
+
+      // ── 占星天宮圖 12 宮位排列(嚴格對齊) ──
+      // 第 1 宮 ASC 在左方下緣(195°),逆時針 +30° 一格
+      // 第 4 宮 IC = 285° = 正下方
+      // 第 7 宮 DSC = 15° = 右方略下
+      // 第 10 宮 MC = 105° = 正上方
+      // CSS 座標 y 軸向下,所以 cy = center - r * sin
+      var WHEEL_SIZE = 280;
+      var CENTER = WHEEL_SIZE / 2;
+      var HOUSE_R = 110;
+      var HOUSE_BOX = 48;
+      var INNER_R = 70;
+      var OUTER_R = 130;
+
+      function angOfHouse(hi) {
+        return 195 + hi * 30;
+      }
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op2-scene';
+
+      var html = '<div class="ootk-op2-wheel" id="ootk-op2-wheel" style="width:' + WHEEL_SIZE + 'px;height:' + WHEEL_SIZE + 'px">';
+
+      html += '<svg class="ootk-op2-svg" viewBox="0 0 ' + WHEEL_SIZE + ' ' + WHEEL_SIZE + '">';
+      html += '<circle cx="' + CENTER + '" cy="' + CENTER + '" r="' + OUTER_R + '" class="ootk-op2-ring-outer" />';
+      html += '<circle cx="' + CENTER + '" cy="' + CENTER + '" r="' + INNER_R + '" class="ootk-op2-ring-inner" />';
+      for (var li = 0; li < 12; li++) {
+        var aDeg = 180 + li * 30;
+        var aRad = aDeg * Math.PI / 180;
+        var x1 = CENTER + INNER_R * Math.cos(aRad);
+        var y1 = CENTER - INNER_R * Math.sin(aRad);
+        var x2 = CENTER + OUTER_R * Math.cos(aRad);
+        var y2 = CENTER - OUTER_R * Math.sin(aRad);
+        html += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" class="ootk-op2-spoke" data-i="' + li + '" />';
+      }
+      html += '<text x="' + (CENTER - OUTER_R - 6) + '" y="' + (CENTER + 4) + '" class="ootk-op2-axis-lbl" text-anchor="end">ASC</text>';
+      html += '<text x="' + (CENTER + OUTER_R + 6) + '" y="' + (CENTER + 4) + '" class="ootk-op2-axis-lbl">DSC</text>';
+      html += '<text x="' + CENTER + '" y="' + (CENTER - OUTER_R - 4) + '" class="ootk-op2-axis-lbl" text-anchor="middle">MC</text>';
+      html += '<text x="' + CENTER + '" y="' + (CENTER + OUTER_R + 14) + '" class="ootk-op2-axis-lbl" text-anchor="middle">IC</text>';
+      html += '</svg>';
+
+      html += '<div class="ootk-op2-center" id="ootk-op2-center" style="left:' + (CENTER - 30) + 'px;top:' + (CENTER - 30) + 'px">';
+      html += '  <div class="ootk-op2-center-inner">SIG</div>';
+      html += '</div>';
+
+      for (var hi = 0; hi < 12; hi++) {
+        var deg = angOfHouse(hi);
+        var rad = deg * Math.PI / 180;
+        var cx = CENTER + HOUSE_R * Math.cos(rad) - HOUSE_BOX / 2;
+        var cy = CENTER - HOUSE_R * Math.sin(rad) - HOUSE_BOX / 2;
+        html += '<div class="ootk-op2-house" data-idx="' + hi + '" style="left:' + cx + 'px;top:' + cy + 'px;width:' + HOUSE_BOX + 'px;height:' + HOUSE_BOX + 'px">';
+        html += '  <div class="ootk-op2-house-num">' + HOUSE_LBL[hi] + '</div>';
+        html += '  <div class="ootk-op2-house-desc">' + HOUSE_DESC[hi] + '</div>';
+        html += '  <div class="ootk-op2-house-count" id="op2-cnt-' + hi + '">0</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      var counts = new Array(12).fill(0);
+      var dealt = 0;
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+
+      function dealNext() {
+        if (dealt >= 78) {
+          sequenceTimeout(highlightActive, 400);
+          return;
+        }
+        var targetIdx = dealt % 12;
+        counts[targetIdx]++;
+        dealt++;
+        scene.querySelector('#op2-cnt-' + targetIdx).textContent = String(counts[targetIdx]);
+
+        var house = scene.querySelector('.ootk-op2-house[data-idx="' + targetIdx + '"]');
+        if (house) {
+          house.classList.add('flash');
+          sequenceTimeout(function() { house.classList.remove('flash'); }, 220);
+        }
+
+        // 持續飛卡(前段密集、後段降頻)
+        // ★ 飛卡顯示的就是「正在發到該宮位的這張牌」（visualDeck[dealt-1]）
+        var flyTrigger = (dealt < 24 && dealt % 3 === 1) || (dealt >= 24 && dealt < 48 && dealt % 6 === 1) || (dealt >= 48 && dealt % 12 === 1);
+        if (flyTrigger && visualDeck.length) {
+          var card = visualDeck[(dealt - 1) % visualDeck.length];
+          var imgUrl = getImg(card);
+          if (imgUrl && house) {
+            var fly = document.createElement('div');
+            fly.className = 'ootk-op2-fly';
+            fly.innerHTML = '<img src="' + imgUrl + '" />';
+            var wheel = scene.querySelector('.ootk-op2-wheel');
+            var sceneRect = wheel.getBoundingClientRect();
+            fly.style.left = (CENTER - 11) + 'px';
+            fly.style.top = (CENTER - 17) + 'px';
+            wheel.appendChild(fly);
+            var hRect = house.getBoundingClientRect();
+            var targetX = hRect.left - sceneRect.left + (hRect.width / 2) - 11;
+            var targetY = hRect.top - sceneRect.top + (hRect.height / 2) - 17;
+            sequenceFrame(function() {
+              fly.style.left = targetX + 'px';
+              fly.style.top = targetY + 'px';
+              fly.style.opacity = '0';
+              fly.style.transform = 'scale(.35)';
+            });
+            sequenceTimeout(function() { fly.remove(); }, 750);
+          }
+        }
+
+        var delay = dealt < 12 ? 140 : dealt < 36 ? 70 : 30;
+        sequenceTimeout(dealNext, delay);
+      }
+
+      function highlightActive() {
+        caption.innerHTML = '🔍 尋找代表牌的宮位——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
+
+        var houses = scene.querySelectorAll('.ootk-op2-house');
+        var spokes = scene.querySelectorAll('.ootk-op2-spoke');
+        var idx = 0;
+        function spotlight() {
+          houses.forEach(function(h) { h.classList.remove('spotlight'); });
+          if (idx >= 12) {
+            houses.forEach(function(h) {
+              var i = parseInt(h.dataset.idx);
+              if (i === activeH) h.classList.add('found');
+              else h.classList.add('dimmed');
+            });
+            spokes.forEach(function(sp) {
+              var i = parseInt(sp.dataset.i);
+              if (i === activeH || i === (activeH + 1) % 12) sp.classList.add('lit');
+            });
+            // 金光擴散
+            sequenceTimeout(function() {
+              var foundEl = scene.querySelector('.ootk-op2-house.found');
+              var wheel = scene.querySelector('.ootk-op2-wheel');
+              if (foundEl && wheel) _emitGoldBurst(wheel, foundEl);
+            }, 100);
+            caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">第 ' + HOUSE_LBL[activeH] + ' 宮 · ' + HOUSE_DESC[activeH] + '</b>';
+            sequenceTimeout(onDone, 1600);
+            return;
+          }
+          var h = scene.querySelector('.ootk-op2-house[data-idx="' + idx + '"]');
+          if (h) h.classList.add('spotlight');
+          var stay = (idx === activeH) ? 800 : 220;
+          idx++;
+          sequenceTimeout(spotlight, stay);
+        }
+        sequenceTimeout(spotlight, 350);
+      }
+
+      sequenceTimeout(dealNext, 500);
+    }
+
+    // ─── Op3 發牌：12 星座 ───
+    function ritualDealOp3(stage, caption, onDone) {
+      caption.innerHTML = '♈ 發牌——依 GD 對應分入 <b>黃道十二星座</b>';
+
+      var op = results.op3;
+      var SIGN_NAMES = ['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'];
+      var SIGN_ICONS = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+      var SIGN_ELEMENTS = ['火','土','風','水','火','土','風','水','火','土','風','水'];
+      var activeIdx = -1;
+      for (var si = 0; si < 12; si++) {
+        if (SIGN_NAMES[si] === op.activeSign) { activeIdx = si; break; }
+      }
+      if (activeIdx < 0) activeIdx = 0;
+
+      var WHEEL_SIZE = 280;
+      var CENTER = WHEEL_SIZE / 2;
+      var SIGN_R = 110;
+      var SIGN_BOX = 44;
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op3-scene';
+      var html = '<div class="ootk-op3-zodiac" id="ootk-op3-zodiac" style="width:' + WHEEL_SIZE + 'px;height:' + WHEEL_SIZE + 'px">';
+
+      // SVG 黃道環
+      html += '<svg class="ootk-op3-svg" viewBox="0 0 ' + WHEEL_SIZE + ' ' + WHEEL_SIZE + '">';
+      html += '<circle cx="' + CENTER + '" cy="' + CENTER + '" r="130" class="ootk-op3-ring-outer" />';
+      html += '<circle cx="' + CENTER + '" cy="' + CENTER + '" r="86" class="ootk-op3-ring-inner" />';
+      // 12 條輻射線
+      for (var li = 0; li < 12; li++) {
+        var aDeg = -90 + li * 30 - 15; // 線在星座之間
+        var aRad = aDeg * Math.PI / 180;
+        var x1 = CENTER + 86 * Math.cos(aRad);
+        var y1 = CENTER + 86 * Math.sin(aRad);
+        var x2 = CENTER + 130 * Math.cos(aRad);
+        var y2 = CENTER + 130 * Math.sin(aRad);
+        html += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" class="ootk-op3-spoke" data-i="' + li + '" />';
+      }
+      html += '</svg>';
+
+      // 中央星座主牌區（會在最後浮現）
+      html += '<div class="ootk-op3-trump" id="ootk-op3-trump"></div>';
+
+      // 12 星座圈（牡羊在頂、順時針排列符合占星傳統）
+      for (var zi = 0; zi < 12; zi++) {
+        var ang = (-90 + zi * 30) * Math.PI / 180;
+        var cx = CENTER + SIGN_R * Math.cos(ang) - SIGN_BOX / 2;
+        var cy = CENTER + SIGN_R * Math.sin(ang) - SIGN_BOX / 2;
+        html += '<div class="ootk-op3-sign" data-idx="' + zi + '" data-el="' + SIGN_ELEMENTS[zi] + '" style="left:' + cx + 'px;top:' + cy + 'px;width:' + SIGN_BOX + 'px;height:' + SIGN_BOX + 'px">';
+        html += '  <div class="ootk-op3-sign-icon">' + SIGN_ICONS[zi] + '</div>';
+        html += '  <div class="ootk-op3-sign-name">' + SIGN_NAMES[zi] + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+
+      // 第一階段：星座圈逐一浮現
+      var signs = scene.querySelectorAll('.ootk-op3-sign');
+      var idx = 0;
+      function lightSign() {
+        if (idx >= 12) {
+          sequenceTimeout(dealCardsToSigns, 200);
+          return;
+        }
+        signs[idx].classList.add('show');
+        idx++;
+        sequenceTimeout(lightSign, 95);
+      }
+
+      // 第二階段：發牌（飛卡到各星座）
+      // ★ Book T 正統：每張按 GD 星座屬性分到對應星座
+      // 動畫採真正 78 張依序發牌（不再「平均循環」誤導）
+      function dealCardsToSigns() {
+        caption.innerHTML = '♈ 發牌——按 Golden Dawn 對應，將 <b>78 張</b>分入十二星座';
+        var dealCount = 0;
+        var maxDeals = 78; // 真正發 78 張
+        function flyCard() {
+          if (dealCount >= maxDeals) {
+            sequenceTimeout(highlightActive, 400);
+            return;
+          }
+          // 取 visualDeck 真實牌的 GD 對應星座
+          var card = visualDeck[dealCount % visualDeck.length];
+          var targetSignIdx;
+          // 直接呼叫同檔閉包內的 getCardSignIdx 算 GD 屬性
+          if (card && typeof getCardSignIdx === 'function') {
+            try { targetSignIdx = getCardSignIdx(card); } catch(_e) {}
+          }
+          if (typeof targetSignIdx !== 'number' || targetSignIdx < 0 || targetSignIdx > 11) {
+            targetSignIdx = dealCount % 12;
+          }
+          var targetSign = scene.querySelector('.ootk-op3-sign[data-idx="' + targetSignIdx + '"]');
+          if (targetSign && card) {
+            var imgUrl = getImg(card);
+            // 視覺優化：78 張全發但只在前 36 張產生飛卡實體（避免 DOM 過多）
+            if (imgUrl && dealCount < 36) {
+              var fly = document.createElement('div');
+              fly.className = 'ootk-op3-fly';
+              fly.innerHTML = '<img src="' + imgUrl + '" />';
+              var zodiac = scene.querySelector('.ootk-op3-zodiac');
+              fly.style.left = (CENTER - 11) + 'px';
+              fly.style.top = (CENTER - 17) + 'px';
+              zodiac.appendChild(fly);
+              var sRect = targetSign.getBoundingClientRect();
+              var zRect = zodiac.getBoundingClientRect();
+              var tx = sRect.left - zRect.left + sRect.width / 2 - 11;
+              var ty = sRect.top - zRect.top + sRect.height / 2 - 17;
+              sequenceFrame(function() {
+                fly.style.left = tx + 'px';
+                fly.style.top = ty + 'px';
+                fly.style.opacity = '0';
+                fly.style.transform = 'scale(.4)';
+              });
+              sequenceTimeout(function() { fly.remove(); }, 700);
+            }
+            targetSign.classList.add('flash');
+            sequenceTimeout(function() { targetSign.classList.remove('flash'); }, 250);
+          }
+          dealCount++;
+          // 節奏：前 12 張稍慢、12-36 中速、36+ 快速跑完 78 張
+          var delay = dealCount < 12 ? 130 : dealCount < 36 ? 70 : 30;
+          sequenceTimeout(flyCard, delay);
+        }
+        flyCard();
+      }
+
+      function highlightActive() {
+        caption.innerHTML = '🔍 尋找代表牌的星座——<b style="color:var(--c-gold)">' + (results.significator ? results.significator.name : '') + '</b>';
+
+        var spokes = scene.querySelectorAll('.ootk-op3-spoke');
+        var pos = 0;
+        function sweep() {
+          signs.forEach(function(s) { s.classList.remove('spotlight'); });
+          if (pos > activeIdx) {
+            signs.forEach(function(s, i) {
+              if (i === activeIdx) s.classList.add('found');
+              else s.classList.add('dimmed');
+            });
+            spokes.forEach(function(sp) {
+              var i = parseInt(sp.dataset.i);
+              if (i === activeIdx || i === (activeIdx + 1) % 12) sp.classList.add('lit');
+            });
+            // 金光擴散
+            sequenceTimeout(function() {
+              var foundEl = scene.querySelector('.ootk-op3-sign.found');
+              var zodiac = scene.querySelector('.ootk-op3-zodiac');
+              if (foundEl && zodiac) _emitGoldBurst(zodiac, foundEl);
+            }, 100);
+            // 對應大牌（中央浮現）
+            if (op.signTrump) {
+              sequenceTimeout(function() {
+                var trumpDiv = scene.querySelector('#ootk-op3-trump');
+                trumpDiv.innerHTML =
+                  '<div class="ootk-op3-trump-label">星座主牌</div>' +
+                  '<div class="ootk-op3-trump-name">' + op.signTrump + '</div>';
+                trumpDiv.classList.add('show');
+              }, 600);
+            }
+            sequenceTimeout(onDone, 2000);
+            return;
+          }
+          if (signs[pos]) signs[pos].classList.add('spotlight');
+          var stay = (pos === activeIdx) ? 700 : 150;
+          pos++;
+          sequenceTimeout(sweep, stay);
+        }
+        sequenceTimeout(sweep, 300);
+      }
+
+      sequenceTimeout(lightSign, 250);
+    }
+
+    // ─── Op4 發牌：正統 Book T「Sig 居中、36 張環繞」 ───
+    function ritualDealOp4(stage, caption, onDone) {
+      caption.innerHTML = '🔮 將代表牌取出居中——<b>三十六張緊隨其後形成環</b>（Book T 對齊）';
+
+      var op = results.op4;
+      var activeCards = op.activeCards || [];
+      // activeCards[0] = Sig 居中，activeCards[1..36] = 環繞 36 張
+      var ringCards = activeCards.slice(1);
+      var ringCount = ringCards.length || 36;
+
+      // 取得牌照路徑的 helper
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') {
+          return window.getTarotCardImage(card);
+        }
+        return '';
+      }
+
+      // Sig 牌照
+      var sigCard = activeCards[0] || (results.significator ? { id: results.significator.id, n: results.significator.name } : null);
+      var sigImg = getImg(sigCard);
+      var sigName = (sigCard && (sigCard.n || sigCard.name)) || (results.significator ? results.significator.name : '代表牌');
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op4-scene';
+      var html = '<div class="ootk-op4-table" id="ootk-op4-table">';
+      html += '  <div class="ootk-op4-bg"></div>';
+      // 中心 Significator（顯示真實牌照）
+      html += '  <div class="ootk-op4-sig" id="ootk-op4-sig">';
+      if (sigImg) {
+        html += '    <img class="ootk-op4-sig-img" src="' + sigImg + '" alt="' + sigName + '" />';
+      }
+      html += '    <div class="ootk-op4-sig-overlay">';
+      html += '      <div class="ootk-op4-sig-name">' + sigName + '</div>';
+      html += '      <div class="ootk-op4-sig-label">SIGNIFICATOR</div>';
+      html += '    </div>';
+      html += '  </div>';
+      // 36 張環繞牌（顯示真實牌照）
+      // v80.32 修正：改用「容器真實中心(50%,50%) + 位移向量」定位，不再寫死 160。
+      //   原本寫死中心 160 是假設表格 320px；但手機觸發 @media(max-width:480px) 後表格縮成 280px，
+      //   真實中心其實是 140 → 整個卡環往右下偏 20px，與置中的背景圓對不齊（看起來歪掉）。
+      //   改用 translate 後，無論 280/320 任何尺寸都與背景同心。
+      var R = 132;
+      for (var ri = 0; ri < ringCount; ri++) {
+        var ang = (ri * 360 / ringCount - 90) * Math.PI / 180;
+        var dx = R * Math.cos(ang);   // 距中心水平位移
+        var dy = R * Math.sin(ang);   // 距中心垂直位移
+        var rotateDeg = ang * 180 / Math.PI + 90;
+        var card = ringCards[ri];
+        var cardImg = getImg(card);
+        html += '<div class="ootk-op4-ring-card" data-idx="' + ri + '" style="left:50%;top:50%;transform:translate(-50%,-50%) translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) rotate(' + rotateDeg + 'deg)">';
+        if (cardImg) {
+          html += '<img src="' + cardImg + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:2px" />';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+
+      html += '<div class="ootk-op4-decan-info">';
+      html += '  <div class="ootk-op4-decan-label">BOOK T · FOURTH OPERATION</div>';
+      html += '  <div class="ootk-op4-decan-sign">代表牌居中・後方三十六張成環</div>';
+      html += '  <div class="ootk-op4-decan-planet">計數包含起算牌；配對由1↔36向內進行。本操作不換算日期。</div>';
+      html += '</div>';
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 中心 Sig 放大
+      var sigEl = scene.querySelector('#ootk-op4-sig');
+      sequenceTimeout(function() { sigEl.classList.add('show'); }, 300);
+
+      // 環繞牌依序浮現
+      var ringEls = scene.querySelectorAll('.ootk-op4-ring-card');
+      sequenceTimeout(function() {
+        ringEls.forEach(function(c, i) {
+          sequenceTimeout(function() { c.classList.add('show'); }, i * 50);
+        });
+      }, 1100);
+
+      // 黃道十分度資訊浮現
+      sequenceTimeout(function() {
+        var info = scene.querySelector('.ootk-op4-decan-info');
+        if (info) info.classList.add('show');
+      }, 1100 + ringCount * 50 + 300);
+
+      sequenceTimeout(onDone, 1400 + ringCount * 50 + 800);
+    }
+
+    // ─── Op5 發牌：生命之樹十質點 ───
+    function ritualDealOp5(stage, caption, onDone) {
+      caption.innerHTML = '🌳 發牌——依 GD 對應分入 <b>生命之樹十質點</b>（Sephirot）';
+
+      var op = results.op5;
+      var SEPH_NAMES = SEPH_NAMES_5;
+      var SEPH_ZH = SEPH_ZH_5;
+      var activeIdx = SEPH_NAMES.indexOf(normalizeOotkSephirahName(op.activeSephirah || ''));
+      if (activeIdx < 0) activeIdx = 9;
+
+      // 統一座標系:容器 240×360, 內部繪圖區 200×320 + 20px padding 四週
+      // 節點中心點(以容器左上為原點),NODE_R=18 半徑
+      var TREE_W = 240, TREE_H = 360;
+      var PAD = 20;        // 邊距
+      var NODE_R = 18;     // 節點半徑(直徑 36)
+      // 質點中心位置(統一座標系)
+      var SEPH_POS = [
+        {x: 120, y: PAD + 16},          // 0 Kether (top center)
+        {x: 178, y: PAD + 64},          // 1 Chokmah (right upper)
+        {x: 62,  y: PAD + 64},          // 2 Binah (left upper)
+        {x: 178, y: PAD + 132},         // 3 Chesed (right mid)
+        {x: 62,  y: PAD + 132},         // 4 Geburah (left mid)
+        {x: 120, y: PAD + 178},         // 5 Tiphareth (center)
+        {x: 178, y: PAD + 224},         // 6 Netzach (right lower)
+        {x: 62,  y: PAD + 224},         // 7 Hod (left lower)
+        {x: 120, y: PAD + 268},         // 8 Yesod (center lower)
+        {x: 120, y: PAD + 318}          // 9 Malkuth (bottom)
+      ];
+      // 22 條 paths(對應 Tarot 大牌 22 張)
+      var TREE_LINES = [
+        [0,1],[0,2],[0,5],[1,2],[1,3],[1,5],[2,4],[2,5],
+        [3,4],[3,5],[3,6],[4,5],[4,7],[5,6],[5,7],[5,8],
+        [6,7],[6,8],[7,8],[8,9]
+      ];
+      function pathsOfNode(nodeIdx) {
+        var arr = [];
+        TREE_LINES.forEach(function(ln, i) {
+          if (ln[0] === nodeIdx || ln[1] === nodeIdx) arr.push(i);
+        });
+        return arr;
+      }
+
+      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
+      function getImg(card) {
+        if (!card) return '';
+        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
+        return '';
+      }
+      var sigCard = (op.activeCards && op.activeCards.length) ? op.activeCards[0] : null;
+      if (!sigCard && results.significator) {
+        sigCard = (typeof TAROT !== 'undefined') ? TAROT.find(function(c) { return c.id === results.significator.id; }) : null;
+      }
+      var sigName = (sigCard && (sigCard.n || sigCard.name)) || (results.significator ? results.significator.name : '代表牌');
+      var sigImg = getImg(sigCard);
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-op5-scene';
+      var html = '<div class="ootk-op5-tree" id="ootk-op5-tree" style="width:' + TREE_W + 'px;height:' + TREE_H + 'px">';
+      html += '<div class="ootk-op5-tree-bg"></div>';
+      // SVG paths(同一座標系)
+      html += '<svg class="ootk-op5-svg" viewBox="0 0 ' + TREE_W + ' ' + TREE_H + '">';
+      TREE_LINES.forEach(function(ln, i) {
+        var a = SEPH_POS[ln[0]], b = SEPH_POS[ln[1]];
+        html += '<line class="ootk-op5-path" data-i="' + i + '" x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" />';
+      });
+      html += '</svg>';
+      // Sephirot 節點(中心 = SEPH_POS, 用 left/top 等於 x-NODE_R, y-NODE_R)
+      for (var ti = 0; ti < 10; ti++) {
+        var nx = SEPH_POS[ti].x - NODE_R;
+        var ny = SEPH_POS[ti].y - NODE_R;
+        html += '<div class="ootk-op5-node" data-idx="' + ti + '" style="left:' + nx + 'px;top:' + ny + 'px">';
+        html += '<div class="ootk-op5-node-num">' + (ti + 1) + '</div>';
+        html += '<div class="ootk-op5-node-name">' + SEPH_NAMES[ti].substring(0, 4) + '</div>';
+        html += '</div>';
+      }
+      // 中央代表牌(Sig)──最後浮現,放在 Tiphareth (5 號)位置
+      var sigCx = SEPH_POS[5].x;
+      var sigCy = SEPH_POS[5].y;
+      html += '<div class="ootk-op5-sig-card" id="ootk-op5-sig" style="left:' + (sigCx - 26) + 'px;top:' + (sigCy - 39) + 'px">';
+      if (sigImg) html += '<img src="' + sigImg + '" alt="' + sigName + '" />';
+      html += '<div class="ootk-op5-sig-overlay"><div class="ootk-op5-sig-name">' + sigName + '</div></div>';
+      html += '</div>';
+      html += '</div>';
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 第一階段:節點從上往下逐一浮現
+      var nodes = scene.querySelectorAll('.ootk-op5-node');
+      var paths = scene.querySelectorAll('.ootk-op5-path');
+      var idx = 0;
+      function lightNode() {
+        if (idx >= 10) {
+          sequenceTimeout(function() {
+            paths.forEach(function(p) { p.classList.add('lit'); });
+            sequenceTimeout(dealCardsToSephirot, 500);
+          }, 200);
+          return;
+        }
+        nodes[idx].classList.add('show');
+        idx++;
+        sequenceTimeout(lightNode, 130);
+      }
+
+      // 第二階段：從畫面上方外部牌堆飛真實牌到各質點
+      // ★ Book T 原文：「Deal into ten packs in the form of the Tree of Life」
+      // 發牌來源是「外部牌堆」，不是 Tiphareth 中央。
+      // 每張依 Book T 順序輪發到十堆：第1張 Kether…第10張 Malkuth，第11張回 Kether。
+      function dealCardsToSephirot() {
+        caption.innerHTML = '🌳 發牌——依 Book T 順序輪發為生命之樹十堆';
+        var dealCount = 0;
+        var maxDeals = 78; // 真正發 78 張
+        var tree = scene.querySelector('.ootk-op5-tree');
+        // 牌堆來源點：畫面上方（容器頂端中央，Kether 之上）
+        var DECK_X = TREE_W / 2 - 9;
+        var DECK_Y = -30;
+        function flyCard() {
+          if (dealCount >= maxDeals) {
+            sequenceTimeout(highlightActive, 400);
+            return;
+          }
+          // 視覺必須與計算引擎一致：按牌序輪發，不按牌本身的卡巴拉歸屬分類。
+          var card = visualDeck[dealCount % visualDeck.length];
+          var nodeIdx = dealCount % 10;
+          var node = scene.querySelector('.ootk-op5-node[data-idx="' + nodeIdx + '"]');
+          if (node && card) {
+            var imgUrl = getImg(card);
+            // 視覺優化：78 張全發但只在前 30 張產生飛卡實體
+            if (imgUrl && dealCount < 30) {
+              var fly = document.createElement('div');
+              fly.className = 'ootk-op5-fly';
+              fly.innerHTML = '<img src="' + imgUrl + '" />';
+              fly.style.left = DECK_X + 'px';
+              fly.style.top = DECK_Y + 'px';
+              tree.appendChild(fly);
+              var targetX = SEPH_POS[nodeIdx].x - 9;
+              var targetY = SEPH_POS[nodeIdx].y - 14;
+              sequenceFrame(function() {
+                fly.style.left = targetX + 'px';
+                fly.style.top = targetY + 'px';
+                fly.style.opacity = '0';
+                fly.style.transform = 'scale(.4)';
+              });
+              sequenceTimeout(function() { fly.remove(); }, 700);
+            }
+            node.classList.add('flash');
+            sequenceTimeout(function() { node.classList.remove('flash'); }, 280);
+          }
+          dealCount++;
+          var delay = dealCount < 10 ? 150 : dealCount < 30 ? 80 : 30;
+          sequenceTimeout(flyCard, delay);
+        }
+        flyCard();
+      }
+
+      function highlightActive() {
+        caption.innerHTML = '🔍 尋找代表牌的質點——<b style="color:var(--c-gold)">' + sigName + '</b>';
+
+        var pos = 0;
+        function sweep() {
+          nodes.forEach(function(n) { n.classList.remove('spotlight'); });
+          if (pos >= 10) {
+            nodes.forEach(function(n, i) {
+              if (i === activeIdx) n.classList.add('found');
+              else n.classList.add('dimmed');
+            });
+            // active 質點對應的 paths 變金色
+            var activePaths = pathsOfNode(activeIdx);
+            paths.forEach(function(p) {
+              var i = parseInt(p.dataset.i);
+              if (activePaths.indexOf(i) >= 0) p.classList.add('gold-lit');
+            });
+            // 中央 Sig 牌照浮現
+            sequenceTimeout(function() {
+              var sigEl = scene.querySelector('#ootk-op5-sig');
+              if (sigEl) sigEl.classList.add('show');
+            }, 400);
+            // 金光擴散
+            sequenceTimeout(function() {
+              var tree = scene.querySelector('.ootk-op5-tree');
+              if (tree) _emitGoldBurst(tree, nodes[activeIdx]);
+            }, 200);
+            caption.innerHTML = '✦ 代表牌落在 <b style="color:var(--c-gold)">' + SEPH_NAMES[activeIdx] + '（' + SEPH_ZH[activeIdx] + '）</b>';
+            sequenceTimeout(onDone, 2400);
+            return;
+          }
+          nodes[pos].classList.add('spotlight');
+          var stay = (pos === activeIdx) ? 800 : 150;
+          pos++;
+          sequenceTimeout(sweep, stay);
+        }
+        sequenceTimeout(sweep, 200);
+      }
+
+      sequenceTimeout(lightNode, 280);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ⑤ Counting 路徑視覺化 — 從 Sig 出發、走過的牌依序高亮 + 連線
+    // ════════════════════════════════════════════════════════════════
+    function ritualCounting(phaseIdx, stage, caption, onDone) {
+      var op = results['op' + (phaseIdx + 1)];
+      var path = op.countingPath || [];
+
+      // ★ v63E UI 修正(2026-04-26):清空 stage 內的前一階段(ritualDeal)視覺化
+      //   原本沒清→四堆/十二宮/十二星座/十堆等發牌 DOM 會跟 Counting 牌塊疊加,造成版面偏移
+      //   只保留 caption(由 runStageRitual 的 stage 子元素管理)
+      Array.from(stage.children).forEach(function(child) {
+        if (child !== caption) child.remove();
+      });
+
+      caption.innerHTML = '📖 <b style="color:var(--c-gold)">Counting Story</b>——從代表牌出發,按計數值跳數,每張走過的牌都是事件的時序';
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-counting-scene';
+      var html = '<div class="ootk-counting-track" id="ootk-counting-track">';
+      // 顯示走過的牌（最多 8 張，多了截掉）
+      var displayPath = path.slice(0, 8);
+      displayPath.forEach(function(step, i) {
+        var dirArrow = step.direction === 'left' ? '←' : '→';
+        var rev = (step.isUp === false);
+        html += '<div class="ootk-counting-card" data-i="' + i + '">';
+        html += '  <div class="ootk-counting-card-inner' + (rev ? ' reversed' : '') + '">';
+        html += '    <div class="ootk-counting-card-name">' + (step.cardName || '?') + '</div>';
+        html += '    <div class="ootk-counting-card-val">值 ' + (step.countValue || 0) + ' ' + dirArrow + '</div>';
+        html += '  </div>';
+        if (i < displayPath.length - 1) html += '<div class="ootk-counting-arrow">' + dirArrow + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      // 路徑摘要
+      html += '<div class="ootk-counting-summary">';
+      html += '  <div class="ootk-counting-meta">共走過 <b>' + path.length + '</b> 張牌（包含起點代表牌）</div>';
+      var lastStep = path[path.length - 1];
+      if (lastStep) {
+        html += '  <div class="ootk-counting-end">自然終點：' + (lastStep.cardName || '?') + '（落到已訪過的牌，計數結束）</div>';
+        html += '  <div class="ootk-counting-note">★ 正統 Book T：終點不是「結論牌」，整串走過的牌構成一個故事</div>';
+      }
+      html += '</div>';
+
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 牌依序浮現
+      var cards = scene.querySelectorAll('.ootk-counting-card');
+      var arrows = scene.querySelectorAll('.ootk-counting-arrow');
+      var i = 0;
+      function showNext() {
+        if (i >= cards.length) {
+          sequenceTimeout(function() {
+            scene.querySelector('.ootk-counting-summary').classList.add('show');
+          }, 200);
+          sequenceTimeout(onDone, 2000);
+          return;
+        }
+        cards[i].classList.add('show');
+        if (i < arrows.length) {
+          sequenceTimeout(function() {
+            if (arrows[i]) arrows[i].classList.add('show');
+          }, 200);
+        }
+        i++;
+        sequenceTimeout(showNext, 480);
+      }
+
+      sequenceTimeout(showNext, 300);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // ⑥ Pairing 視覺化 — 兩側對稱往內配對的光線連結
+    // ════════════════════════════════════════════════════════════════
+    function ritualPairing(phaseIdx, stage, caption, onDone) {
+      var op = results['op' + (phaseIdx + 1)];
+      var pairs = op.pairs || [];
+
+      // ★ v63E UI 修正:清空前一階段(Counting)視覺化,避免 Pairing 牌塊跟 Counting 牌塊疊加
+      Array.from(stage.children).forEach(function(child) {
+        if (child !== caption) child.remove();
+      });
+
+      if (!pairs.length) {
+        caption.innerHTML = '🔗 此層沒有 Pairing 配對(活躍堆過小)';
+        sequenceTimeout(onDone, 1000);
+        return;
+      }
+
+      caption.innerHTML = '🔗 <b style="color:var(--c-gold)">Pairing Story</b>——從代表牌兩側對稱配對,補充 Counting 的細節';
+
+      var scene = document.createElement('div');
+      scene.className = 'ootk-pairing-scene';
+      var html = '<div class="ootk-pairing-grid" id="ootk-pairing-grid">';
+
+      // 中心 Sig
+      html += '<div class="ootk-pairing-center">';
+      html += '  <div class="ootk-pairing-sig">' + (results.significator ? results.significator.name : 'SIG') + '</div>';
+      html += '</div>';
+
+      var displayPairs = pairs.slice(0, 5);
+      displayPairs.forEach(function(pr, pi) {
+        var l = pr.left || pr.card1 || {};
+        var r = pr.right || pr.card2 || {};
+        var lName = l.n || l.name || (l.cardName || '?');
+        var rName = r.n || r.name || (r.cardName || '?');
+        var lUp = (l.isUp === true);
+        var rUp = (r.isUp === true);
+        var dignityLabel = '';
+        var dignityClass = '';
+        var dig = pr.dignity || '';
+        var DIG_MAP = {
+          'strengthen':  { label: '同元素・強化', cls: 'dig-strong' },
+          'weaken':      { label: 'Contrary・抵消', cls: 'dig-contrary' },
+          'friendly':    { label: 'Friendly・友善', cls: 'dig-friendly' },
+          'neutral':     { label: 'Neutral・中性', cls: 'dig-neutral' },
+          'hostile':     { label: '對立・衝突', cls: 'dig-contrary' }
+        };
+        if (DIG_MAP[dig]) {
+          dignityLabel = DIG_MAP[dig].label;
+          dignityClass = DIG_MAP[dig].cls;
+        }
+
+        html += '<div class="ootk-pairing-row" data-i="' + pi + '">';
+        html += '  <div class="ootk-pairing-side left">';
+        html += '    <div class="ootk-pairing-card' + (lUp ? '' : ' reversed') + '">' + lName + '</div>';
+        html += '  </div>';
+        html += '  <div class="ootk-pairing-link ' + dignityClass + '">';
+        html += '    <div class="ootk-pairing-link-line"></div>';
+        html += '    <div class="ootk-pairing-link-num">#' + (pi + 1) + '</div>';
+        if (dignityLabel) html += '    <div class="ootk-pairing-link-dig">' + dignityLabel + '</div>';
+        html += '  </div>';
+        html += '  <div class="ootk-pairing-side right">';
+        html += '    <div class="ootk-pairing-card' + (rUp ? '' : ' reversed') + '">' + rName + '</div>';
+        html += '  </div>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+      html += '<div class="ootk-pairing-note">★ 從代表牌兩側對稱往外配對：左側 ↔ 右側 = 一體兩面的細節</div>';
+
+      scene.innerHTML = html;
+      stage.appendChild(scene);
+
+      // 對依序浮現
+      var rows = scene.querySelectorAll('.ootk-pairing-row');
+      var i = 0;
+      function showNext() {
+        if (i >= rows.length) {
+          sequenceTimeout(function() {
+            scene.querySelector('.ootk-pairing-note').classList.add('show');
+          }, 200);
+          sequenceTimeout(onDone, 1600);
+          return;
+        }
+        rows[i].classList.add('show');
+        i++;
+        sequenceTimeout(showNext, 480);
+      }
+      sequenceTimeout(showNext, 300);
+    }
+  }
+
+  // ── 渲染單個階段 ──
+  var PHASE_ACCENTS = [
+    { bg: 'rgba(239,68,68,.03)', border: 'rgba(239,68,68,.15)', accent: '#ef4444' },    // 火
+    { bg: 'rgba(96,165,250,.03)', border: 'rgba(96,165,250,.15)', accent: '#60a5fa' },   // 宮
+    { bg: 'rgba(168,85,247,.03)', border: 'rgba(168,85,247,.15)', accent: '#a855f7' },   // 星座
+    { bg: 'rgba(234,179,8,.03)', border: 'rgba(234,179,8,.15)', accent: '#eab308' },     // 旬
+    { bg: 'rgba(34,197,94,.03)', border: 'rgba(34,197,94,.15)', accent: '#22c55e' }      // 樹
+  ];
+
+  function _renderPhase(phaseIdx, label, opData, allResults) {
+    var pa = PHASE_ACCENTS[phaseIdx] || PHASE_ACCENTS[0];
+    var h = '';
+    h += '<div class="ootk-result-card" style="border:1px solid ' + pa.border + ';background:linear-gradient(145deg,' + pa.bg + ',transparent)">';
+
+    // 階段頭：大圖標 + 標題
+    h += '<div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid ' + pa.border + '">';
+    h += '<div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:' + pa.bg + ';border:1px solid ' + pa.border + ';flex-shrink:0">' + label.icon + '</div>';
+    h += '<div><div style="font-size:.92rem;font-weight:700;color:' + pa.accent + '">' + label.zh + '</div>';
+    h += '<div style="font-size:.68rem;color:var(--c-text-dim);margin-top:.1rem">' + label.desc + '</div></div>';
+    h += '</div>';
+
+    if (phaseIdx === 0) h += _renderOp1(opData, allResults);
+    else if (phaseIdx === 1) h += _renderOp2(opData, allResults);
+    else if (phaseIdx === 2) h += _renderOp3(opData, allResults);
+    else if (phaseIdx === 3) h += _renderOp4(opData, allResults);
+    else if (phaseIdx === 4) h += _renderOp5(opData, allResults);
+
+    h += '</div>';
+    return h;
+  }
+
+  // ── Op1 四元素 ──
+  function _renderOp1(op, allResults) {
+    var h = '';
+    // 四堆比例
+    var piles = op.piles || {};
+    var total = (piles.fire || 0) + (piles.water || 0) + (piles.air || 0) + (piles.earth || 0);
+    h += '<div style="margin:.4rem 0">';
+    var pileIcons = {fire:'🔥',water:'💧',air:'💨',earth:'🌱'};
+    ['fire','water','air','earth'].forEach(function(k) {
+      var n = piles[k] || 0;
+      var pct = total > 0 ? Math.round(n / total * 100) : 25;
+      var isActive = (k === op.activePile);
+      h += '<div style="display:flex;align-items:center;gap:.4rem;margin:.35rem 0;' + (isActive ? 'padding:.3rem;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid ' + PILE_COLOR[k] + '30' : '') + '">';
+      h += '<span style="font-size:.85rem;width:24px;text-align:center">' + pileIcons[k] + '</span>';
+      h += '<span style="font-size:.72rem;width:65px;color:' + (isActive ? PILE_COLOR[k] : 'var(--c-text-dim)') + ';font-weight:' + (isActive ? '700' : '400') + '">' + PILE_ZH[k] + '</span>';
+      h += '<div style="flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden">';
+      h += '<div class="ootk-pile-bar" style="width:' + pct + '%;background:' + PILE_COLOR[k] + ';opacity:' + (isActive ? '1' : '.3') + ';height:100%;border-radius:99px"></div>';
+      h += '</div>';
+      h += '<span style="font-size:.68rem;color:' + (isActive ? PILE_COLOR[k] : 'var(--c-text-muted)') + ';width:32px;text-align:right;font-weight:' + (isActive ? '700' : '400') + '">' + n + '張</span>';
+      h += '</div>';
+    });
+    h += '</div>';
+
+    // 結果
+    h += '<div style="padding:.6rem;border-radius:10px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.12);margin-top:.4rem">';
+    h += '<div style="font-size:.88rem;color:var(--c-gold);font-weight:700">你的代表牌落入 ' + (PILE_ZH[op.activePile] || op.activePile) + '</div>';
+    h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">問題核心：' + (op.meaning || '') + '</div>';
+    h += '</div>';
+
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
+    return h;
+  }
+
+  // ── Op2 十二宮 ──
+  function _renderOp2(op, allResults) {
+    var HOUSE_ZH = ['一宮・自我','二宮・財帛','三宮・兄弟','四宮・田宅','五宮・子女','六宮・奴僕','七宮・夫妻','八宮・疾厄','九宮・遷移','十宮・官祿','十一宮・福德','十二宮・玄秘'];
+    var activeH = op.activeHouse || 1;
+    var h = '';
+
+    // 結果卡
+    h += '<div style="padding:.6rem;border-radius:10px;background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.12)">';
+    h += '<div style="font-size:.88rem;color:rgba(96,165,250,.9);font-weight:700">代表牌落在 第' + activeH + '宮</div>';
+    h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.2rem">' + (HOUSE_ZH[activeH - 1] || '') + '</div>';
+    if (op.meaning) h += '<div style="font-size:.75rem;color:var(--c-text-muted);margin-top:.2rem;line-height:1.6">' + op.meaning + '</div>';
+    h += '</div>';
+
+    // 宮位分佈 3×4 網格
+    h += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem;margin-top:.5rem">';
+    var houseCounts = op.houseDistribution || op.houseCounts || [];
+    for (var i = 0; i < 12; i++) {
+      var cnt = houseCounts[i] || 0;
+      var isActive = (activeH === i + 1);
+      h += '<div style="text-align:center;padding:.35rem .2rem;border-radius:8px;font-size:.62rem;line-height:1.4;' +
+        (isActive ? 'background:rgba(96,165,250,.1);color:rgba(96,165,250,.9);font-weight:700;border:1px solid rgba(96,165,250,.25);box-shadow:0 0 8px rgba(96,165,250,.1)' : 'color:var(--c-text-muted);background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04)') + '">';
+      h += '<div style="font-weight:600">' + (i+1) + '宮' + (cnt > 0 ? '<span style="opacity:.6">(' + cnt + ')</span>' : '') + '</div>';
+      h += '</div>';
+    }
+    h += '</div>';
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
+    return h;
+  }
+
+  // ── Op3 十二星座 ──
+  function _renderOp3(op, allResults) {
+    var h = '';
+    h += '<div style="padding:.6rem;border-radius:10px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.12)">';
+    h += '<div style="font-size:.88rem;color:rgba(168,85,247,.9);font-weight:700">代表牌落在 ' + (op.activeSign || '?') + '</div>';
+    if (op.rulingMajor) {
+      h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">主牌：' + (op.rulingMajor || '') + '</div>';
+    }
+    h += '</div>';
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
+    return h;
+  }
+
+  // ── Op4 代表牌後方三十六張之環 ──
+  function _renderOp4(op, allResults) {
+    var h = '';
+    h += '<div style="padding:.6rem;border-radius:10px;background:rgba(234,179,8,.06);border:1px solid rgba(234,179,8,.12)">';
+    h += '<div style="font-size:.88rem;color:rgba(234,179,8,.9);font-weight:700">代表牌後方三十六張之環</div>';
+    h += '<div style="font-size:.75rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">環內 ' + (op.ringSize || 36) + ' 張；計數方向：' + ((op.countDirection === 'left') ? '向左' : '向右') + '。這是倒數階段的事件故事，不是十分度、旬期或日期。</div>';
+    h += '</div>';
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
+    return h;
+  }
+
+  // ── Op5 生命之樹 ──
+  function _renderOp5(op, allResults) {
+    var SEPH_MAP = {Kether:'Kether 王冠',Chokmah:'Chokmah 智慧',Binah:'Binah 理解',Chesed:'Chesed 慈悲',Geburah:'Geburah 嚴厲',Tiphareth:'Tiphareth 美',Netzach:'Netzach 勝利',Hod:'Hod 榮耀',Yesod:'Yesod 基礎',Malkuth:'Malkuth 王國'};
+    var sephLabel = SEPH_MAP[op.activeSephirah] || (op.sephirahZh ? (op.activeSephirah + ' ' + op.sephirahZh) : op.activeSephirah || '未知');
+    var h = '';
+    h += '<div style="padding:.6rem;border-radius:10px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.12)">';
+    h += '<div style="font-size:.88rem;color:rgba(34,197,94,.9);font-weight:700">代表牌落在 ' + sephLabel + '</div>';
+    if (op.sephirahMeaning) h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">' + op.sephirahMeaning + '</div>';
+    h += '</div>';
+    h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
+
+    // ── v63E 正統 Book T:五次操作 Sig 落點記錄(純資料,各 Op 獨立讀盤) ──
+    if (allResults && allResults.crossAnalysis) {
+      var ca = allResults.crossAnalysis;
+      h += '<div style="margin-top:.6rem;padding:.7rem;border-radius:10px;border:1px solid rgba(212,175,55,.15);background:linear-gradient(135deg,rgba(212,175,55,.04),rgba(34,197,94,.03))">';
+      h += '<div style="font-size:.82rem;font-weight:700;color:var(--c-gold);margin-bottom:.35rem">📍 五次操作 Sig 落點</div>';
+      h += '<div style="font-size:.68rem;color:var(--c-text-muted);margin-bottom:.3rem;font-style:italic;line-height:1.5">Book T 正統:五個 Operations 各自獨立讀盤,下方僅為「Sig 在每層落到哪」的客觀位置記錄,不可串成單一進程故事</div>';
+      h += '<div style="font-size:.75rem;color:var(--c-text-dim);line-height:1.75">' + (ca.elementProgression || '') + '</div>';
+      // ✗ 已移除「重複出現的牌」(recurringCards)——不符 Book T 正統,
+      //   代表牌每層必在是機制必然,非真訊號
+      h += '</div>';
+    }
+    return h;
+  }
+
+  // ── Counting 路徑牌列表(帶牌面圖)──
+  // ★ v63E 正統 Book T:
+  //   ① 標出代表牌(counting 起點 = Sig),避免使用者誤把代表牌當訊號牌
+  //   ② 用 PHB elemental dignity 真實判斷上色——不再用死碼 kc.dignity
+  //   ③ 名稱不再叫「關鍵牌」(誤導);改為「Counting 路徑」(Mathers 原文 the story)
+  function _renderKeyCards(keyCards, sigId) {
+    if (!keyCards || !keyCards.length) return '';
+    var h = '<div class="ootk-keycards-strip">';
+    keyCards.slice(0, 8).forEach(function(kc, idx) {
+      var c = kc.card || {};
+      var name = c.n || c.name || '';
+      var imgSrc = (typeof getTarotCardImage === 'function' && c.id != null) ? getTarotCardImage(c) : '';
+      var isSig = (sigId != null && c.id === sigId);
+      // 代表牌:金色強調;其他牌依與左右鄰的 elemental dignity 上色
+      var dColor = 'rgba(201,168,76,.3)';
+      if (isSig) {
+        dColor = 'rgba(212,175,55,.85)';
+      } else if (typeof elementalDignity === 'function') {
+        var leftN = (idx > 0) ? (keyCards[idx - 1].card) : null;
+        var rightN = (idx < keyCards.length - 1) ? (keyCards[idx + 1].card) : null;
+        var leftEd = leftN ? elementalDignity(c, leftN) : 'none';
+        var rightEd = rightN ? elementalDignity(c, rightN) : 'none';
+        var goodCount = (leftEd === 'strengthen' || leftEd === 'friendly' ? 1 : 0) +
+                        (rightEd === 'strengthen' || rightEd === 'friendly' ? 1 : 0);
+        var badCount = (leftEd === 'weaken' ? 1 : 0) + (rightEd === 'weaken' ? 1 : 0);
+        if (goodCount > badCount) dColor = 'rgba(34,197,94,.5)';
+        else if (badCount > goodCount) dColor = 'rgba(239,68,68,.5)';
+      }
+      var delay = idx * 200;
+      h += '<div class="ootk-kc-flip" style="animation-delay:' + delay + 'ms">';
+      h += '<div class="ootk-kc-inner" style="animation-delay:' + (delay + 100) + 'ms">';
+      if (imgSrc) {
+        h += '<div class="ootk-kc-front" style="position:relative"><img src="' + imgSrc + '" style="width:52px;height:78px;border-radius:5px;object-fit:cover;border:2px solid ' + dColor + ';box-shadow:0 2px 8px rgba(0,0,0,.4)">';
+        if (isSig) h += '<div style="position:absolute;top:-6px;right:-6px;background:rgba(212,175,55,.95);color:#1a1a1a;font-size:.5rem;font-weight:800;padding:1px 4px;border-radius:8px;letter-spacing:.05em">SIG</div>';
+        h += '</div>';
+      } else {
+        h += '<div class="ootk-kc-front" style="display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--c-gold);border-radius:5px;border:2px solid ' + dColor + ';background:rgba(201,168,76,.08);position:relative">' + name.charAt(0);
+        if (isSig) h += '<div style="position:absolute;top:-6px;right:-6px;background:rgba(212,175,55,.95);color:#1a1a1a;font-size:.5rem;font-weight:800;padding:1px 4px;border-radius:8px">SIG</div>';
+        h += '</div>';
+      }
+      h += '<div class="ootk-kc-back"></div>';
+      h += '</div>';
+      var nameStyle = 'font-size:.52rem;color:var(--c-gold);margin-top:.25rem;font-weight:' + (isSig ? '700' : '600') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px';
+      h += '<div style="' + nameStyle + '">' + name + (isSig ? ' (起點)' : '') + '</div>';
+      if (kc.step) h += '<div style="font-size:.45rem;color:var(--c-text-muted)">(' + kc.step + '步)</div>';
+      h += '</div>';
+    });
+    h += '</div>';
+    return h;
+  }
+
+  // ── 觸發 OOTK AI 分析（獨立 API 呼叫，不借用 _triggerTarotAI）──
+  async function _triggerOOTKAI(results) {
+    window._ootkResults = results;
+    S.tarot = S.tarot || {};
+    S.tarot.ootkResults = results;
+    S.tarot.spreadType = 'ootk';
+
+    // ★ v70 複製模式：開鑰抽完牌 → 直接產生可複製提示詞，跳過深度選單/worker/付費（以下為死碼）
+    if (window.JY_renderExportPrompt) {
+      var _w70 = document.getElementById('tarot-ai-wrap');
+      if (!_w70) {
+        _w70 = document.createElement('div'); _w70.id = 'tarot-ai-wrap';
+        var _sp70 = document.getElementById('t-spread-sec');
+        if (_sp70) { _sp70.classList.remove('hidden'); _sp70.after(_w70); } else document.body.appendChild(_w70);
+      }
+      try { if (typeof goStep === 'function') goStep('step-tarot'); } catch (e) {}
+      try {
+        var _ts70 = document.getElementById('tarot-spread-card'); if (_ts70) _ts70.style.display = 'none';
+        var _tc70 = document.getElementById('tarot-crystal-rec'); if (_tc70) _tc70.style.display = 'none';
+        var _tf70 = document.getElementById('tarot-to-full'); if (_tf70) _tf70.style.display = 'none';
+      } catch (e) {}
+      _w70.style.display = '';
+      window.JY_renderExportPrompt('ootk', _w70);
+      // ★ v75.1：overlay 移除後確保結果頁滾到最上方
+      setTimeout(function() { try { window.scrollTo({top:0,behavior:'instant'}); } catch(e){} }, 100);
+      return;
+    }
+
+    // 確保結果頁可見
+    if (typeof goStep === 'function') goStep('step-tarot');
+
+    var wrap = document.getElementById('tarot-ai-wrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = 'tarot-ai-wrap';
+      var spreadSec = document.getElementById('t-spread-sec');
+      if (spreadSec) { spreadSec.classList.remove('hidden'); spreadSec.after(wrap); }
+      else document.body.appendChild(wrap);
+    }
+
+    // 隱藏塔羅牌陣展示區（OOTK 不需要顯示原本的塔羅牌面）
+    try {
+      var _tsCard = document.getElementById('tarot-spread-card'); if (_tsCard) _tsCard.style.display = 'none';
+      var _tsCrystal = document.getElementById('tarot-crystal-rec'); if (_tsCrystal) _tsCrystal.style.display = 'none';
+      var _tsSpread = document.getElementById('t-spread-sec'); if (_tsSpread) _tsSpread.style.display = 'none';
+      var _tsToFull = document.getElementById('tarot-to-full'); if (_tsToFull) _tsToFull.style.display = 'none';
+    } catch(_e) {}
+
+    // ★ Opus 深度選擇器（首次觸發時顯示）
+    if (!window._jyOotkDepthChosen) {
+      window._jyOotkDepthChosen = true;
+      var admin = !!(window._JY_ADMIN_TOKEN);
+      wrap.style.display = '';
+      wrap.innerHTML =
+        '<div style="text-align:center;padding:1.2rem .8rem .8rem">' +
+          '<div style="font-size:.72rem;color:var(--c-text-dim);margin-bottom:.6rem;letter-spacing:.05em">選擇解讀深度</div>' +
+          '<div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:.6rem">' +
+            '<button onclick="window._jyOpusDepth=false;if(window._ootkTriggerAI&&window._ootkResults)window._ootkTriggerAI(window._ootkResults)" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:rgba(212,175,55,.06);border:1.5px solid rgba(212,175,55,.25);color:var(--c-gold);cursor:pointer;font-family:inherit;text-align:left">' +
+              '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">⚡ 標準解讀</div>' +
+              // v68.21 Bug #2 修:OOTK 沒免費,文案改「需付費解鎖」(後端 FREE_OOTK_LIMIT=0)
+              '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">需付費解鎖<br>五層深潛解讀<br>速度快・適合日常</div>' +
+            '</button>' +
+            '<button onclick="if(typeof _handleOpusClickForMode===\'function\')_handleOpusClickForMode(\'ootk\')" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.08),rgba(212,175,55,.04));border:1.5px solid rgba(147,51,234,.3);color:#c084fc;cursor:pointer;font-family:inherit;text-align:left">' +
+              '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">🔮 深度解析</div>' +
+              '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">最強推理模型<br>五層鑰匙交叉驗證<br>根源挖掘更精準</div>' +
+            '</button>' +
+          '</div>' +
+          '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5">' +
+            (admin ? '🔧 管理員・無限使用' : (function(){
+              // v64.C:會員制下架,只顯示單次價
+              // v68.21 Bug #8 修:會員下架後不再顯示「高級會員每月免費」分支(此資訊不該對前台一般用戶顯示)
+              var _P = window.JY_PRICES || {};
+              // v68.20 Bug #19/#31 修:fallback 對齊 worker.js PRICE_OPUS_OOTK = 140
+              var _single = _P.OPUS_OOTK || 140;
+              return '單次 NT$' + _single;
+            })()) +
+          '</div>' +
+        '</div>';
+      return;
+    }
+
+    try { if (typeof _ensureAiLoadingFx === 'function') _ensureAiLoadingFx(); } catch(_e) {}
+
+    // ★ v27：隱藏回饋區（loading 期間不該出現）
+    try { var _fb = document.getElementById('jy-feedback') || document.getElementById('feedback-section'); if (_fb) _fb.style.display = 'none'; } catch(_) {}
+
+    // ── 從 OOTK 結果抓牌象等待訊息（不用命盤語言）──
+    var _ootkSnippets = [];
+    try {
+      var _or = window._ootkResults;
+      if (_or) {
+        if (_or.op1 && _or.op1.activePile) { var _pzh = {fire:'火堆・意志',water:'水堆・情感',air:'風堆・思維',earth:'土堆・物質'}; _ootkSnippets.push('你的牌落入「' + (_pzh[_or.op1.activePile] || _or.op1.activePile) + '」，' + (_or.op1.activeCards ? _or.op1.activeCards.length + ' 張牌在述說你的故事' : '')); }
+        if (_or.op2 && _or.op2.activeHouse) {
+          var _hzh = ['自我','財帛','兄弟','田宅','子女','奴僕','夫妻','疾厄','遷移','官祿','福德','玄秘'];
+          _ootkSnippets.push('這件事打到第' + _or.op2.activeHouse + '宮（' + (_hzh[(_or.op2.activeHouse||1)-1]||'') + '）');
+        }
+        if (_or.op3 && _or.op3.activeSign) _ootkSnippets.push('主導能量來自' + _or.op3.activeSign);
+        if (_or.significator && _or.significator.name) _ootkSnippets.push('代表牌：' + _or.significator.name);
+      }
+      // 命盤補充（有的話加，但不當主角）
+      var _lb = S.bazi;
+      if (_lb && _lb.dm) _ootkSnippets.push('命盤背景：日主' + _lb.dm + '，' + (_lb.strength > 50 ? '能量偏強' : '善於借力使力'));
+    } catch(_e) {}
+    if (!_ootkSnippets.length) _ootkSnippets = ['正在依 Mathers Book T 解讀五次獨立讀盤…'];
+
+    // 🔑 OOTK 專屬 loading（v21：牌象風格 + tag 初始亮燈 + 進度條）
+    wrap.innerHTML = '<div style="text-align:center;padding:2rem 1.2rem 2.3rem">' +
+      '<div style="position:relative;width:min(300px,80vw);aspect-ratio:5/7;margin:0 auto .6rem;border-radius:18px;overflow:hidden;box-shadow:0 0 40px rgba(212,175,55,.12)">' +
+        '<img src="/img/loading-ootk.png" alt="" style="width:100%;height:100%;object-fit:cover;animation:jyImgPulse 4s ease-in-out infinite">' +
+        '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(10,8,4,.6) 70%,rgba(10,8,4,.92))"></div>' +
+        '<div class="jy-particles"><span style="left:10%;animation-duration:3.2s;animation-delay:0s;width:3px;height:3px"></span><span style="left:20%;animation-duration:4.1s;animation-delay:.5s"></span><span style="left:35%;animation-duration:3.5s;animation-delay:1.2s;width:5px;height:5px"></span><span style="left:48%;animation-duration:3.8s;animation-delay:.3s;width:3px;height:3px"></span><span style="left:55%;animation-duration:4.5s;animation-delay:1.8s"></span><span style="left:65%;animation-duration:3.3s;animation-delay:.8s;width:5px;height:5px"></span><span style="left:75%;animation-duration:4.2s;animation-delay:1.5s;width:3px;height:3px"></span><span style="left:85%;animation-duration:3.6s;animation-delay:.2s"></span><span style="left:42%;animation-duration:5s;animation-delay:2.1s;width:6px;height:6px;background:rgba(255,236,184,.8)"></span><span style="left:28%;animation-duration:4.8s;animation-delay:1s;width:2px;height:2px"></span><span style="left:58%;animation-duration:3.9s;animation-delay:2.5s;width:3px;height:3px"></span><span style="left:15%;animation-duration:4.4s;animation-delay:1.7s;width:2px;height:2px;background:rgba(255,220,150,.7)"></span></div><div class="jy-glow-center"></div><div style="position:absolute;inset:0;border-radius:18px;border:1px solid rgba(212,175,55,.2)"></div>' +
+        '<div style="position:absolute;bottom:1rem;left:0;right:0;text-align:center">' +
+          '<div style="font-size:1.05rem;color:var(--c-gold);font-weight:700;letter-spacing:.03em;text-shadow:0 2px 12px rgba(0,0,0,.7)">靜月正在為你開鑰…</div>' +
+        '</div>' +
+      '</div>' +
+      '<div id="ootk-ai-phase" style="font-size:.85rem;color:var(--c-gold);font-weight:600;transition:opacity .35s;min-height:1.25rem">正在初始化…</div>' +
+      // 牌象 snippet
+      '<div id="ootk-loading-snippet" style="max-width:320px;margin:.6rem auto 0;padding:.6rem .85rem;border-radius:12px;border:1px solid rgba(201,168,76,.12);background:rgba(201,168,76,.04);min-height:2.5rem">' +
+        '<div style="font-size:.72rem;color:rgba(201,168,76,.6);margin-bottom:.2rem">你的占卜</div>' +
+        '<div id="ootk-loading-snippet-text" style="font-size:.82rem;color:var(--c-text);line-height:1.6;transition:opacity .4s">' + (_ootkSnippets[0] || '') + '</div>' +
+      '</div>' +
+      '<div style="width:min(280px,82%);height:3px;border-radius:999px;background:rgba(201,168,76,.08);overflow:hidden;margin:.95rem auto .4rem">' +
+        '<div id="ootk-loading-bar" style="width:6%;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(201,168,76,.6),rgba(201,168,76,.95),rgba(255,236,184,.9));transition:width .8s ease-out"></div>' +
+      '</div>' +
+      '<div id="ootk-loading-tags" style="display:flex;justify-content:center;gap:.4rem;flex-wrap:wrap;margin-top:.55rem">' +
+        '<span data-sys="0" style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(201,168,76,.88);border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.08);transition:all .5s">四元素</span>' +
+        '<span data-sys="1" style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(201,168,76,.35);border:1px solid rgba(201,168,76,.08);background:transparent;transition:all .5s">宮位</span>' +
+        '<span data-sys="2" style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(201,168,76,.35);border:1px solid rgba(201,168,76,.08);background:transparent;transition:all .5s">星座</span>' +
+        '<span data-sys="3" style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(201,168,76,.35);border:1px solid rgba(201,168,76,.08);background:transparent;transition:all .5s">牌環</span>' +
+        '<span data-sys="4" style="padding:.22rem .5rem;border-radius:999px;font-size:.66rem;color:rgba(201,168,76,.35);border:1px solid rgba(201,168,76,.08);background:transparent;transition:all .5s">生命之樹</span>' +
+      '</div>' +
+    '</div>';
+
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    var phases = ['讀取四元素分堆…','對照十二宮位…','解讀星座分堆…','展開代表牌後方三十六張之環…','攀上生命之樹…','核對Book T五次操作…','整理最終答案…'];
+    var phaseIdx = 0;
+    var _ootkSnippetIdx = 0;
+
+    // ★ v69.34.0 升級:啟動 smart timer 接管 ootk-ai-phase
+    //   OOTK 深度 = Opus 4.7 xhigh + thinking + advisor + Best-of-N + 五階段獨立讀盤
+    //   實測 5-15 分鐘,舊 phase 1 秒一條 × 7 條 = 7 秒就跑完不再變化
+    var _ootkIsOpus = !!window._jyOpusDepth;
+    if (typeof window._jyStartSmartTimer === 'function') {
+      window._jyStartSmartTimer('ootk', _ootkIsOpus, 'ootk-ai-phase');
+    }
+
+    var phaseTimer = setInterval(function() {
+      try {
+      phaseIdx++;
+      if (phaseIdx >= phases.length) phaseIdx = phases.length - 1;
+      // ★ v69.34:ootk-ai-phase 由 smart timer 接管,這裡只更新 tag 與 snippet
+      var tagWrap = document.getElementById('ootk-loading-tags');
+      if (tagWrap) {
+        var tags = tagWrap.querySelectorAll('span');
+        var lightIdx = Math.min(phaseIdx, tags.length - 1);
+        for (var ti = 0; ti < tags.length; ti++) {
+          if (ti <= lightIdx) {
+            tags[ti].style.color = 'rgba(201,168,76,.88)';
+            tags[ti].style.borderColor = 'rgba(201,168,76,.3)';
+            tags[ti].style.background = 'rgba(201,168,76,.08)';
+          }
+        }
+      }
+      // snippet 輪播
+      if (_ootkSnippets.length > 1) {
+        _ootkSnippetIdx = (_ootkSnippetIdx + 1) % _ootkSnippets.length;
+        var snipEl = document.getElementById('ootk-loading-snippet-text');
+        if (snipEl) { snipEl.style.opacity = '0'; setTimeout(function(){ if(snipEl){ snipEl.textContent = _ootkSnippets[_ootkSnippetIdx]; snipEl.style.opacity = '1'; }}, 350); }
+      }
+      // ★ v69.34:bar 由 smart timer 統一管理
+      } catch(_te) { console.warn('[OOTK phase]', _te); }
+    }, 1000);
+
+    try {
+      var payload = (typeof _buildOOTKPayload === 'function') ? _buildOOTKPayload() : null;
+      if (!payload) throw new Error('OOTK payload 建構失敗');
+
+      var body = { payload: payload };
+      if (window._jyOpusDepth) payload.depth = 'opus';
+      if (window._JY_ADMIN_TOKEN) body.admin_token = window._JY_ADMIN_TOKEN;
+      if (window._JY_SESSION_TOKEN) body.session_token = window._JY_SESSION_TOKEN;
+      var _pt = localStorage.getItem('_jy_paid_token');
+      if (_pt) body.paid_token = _pt;
+
+      // ★ v69.36.0(歐那 2026/5/15):OOTK 補 AbortController 30 分鐘 timeout
+      //   舊版完全沒 AbortController,瀏覽器/CDN 端 SSE 默認超時(通常 5-10 分鐘)會切斷連線
+      //   實測:Opus 深度 + advisor + Best-of-N + 五階段獨立讀盤 = 12-15 分鐘
+      //   30 分鐘 = 1800000 ms 是合理上限(超過此時間幾乎肯定是真的失敗)
+      var _ootkAbortCtrl = new AbortController();
+      var _ootkAbortTimer = setTimeout(function() { _ootkAbortCtrl.abort(); }, 1800000);
+
+      var resp = await fetch(window.AI_WORKER_URL || 'https://jy-ai-proxy.onerkk.workers.dev', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: _ootkAbortCtrl.signal
+      });
+
+      // 收到 response 後就可以清 abort timer(後續 stream 由 reader 控制)
+      clearTimeout(_ootkAbortTimer);
+
+      // ★ v29c：不在這裡 clearInterval——SSE streaming 時 timer 要繼續跑
+      if (resp.status === 429) {
+        clearInterval(phaseTimer);
+        try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
+        var errBody = {}; try { errBody = await resp.json(); } catch(_){}
+        var e = new Error(errBody.error || 'rate limit');
+        e.status = 429;
+        e.code = errBody.code || '';
+        throw e;
+      }
+      if (!resp.ok) {
+        clearInterval(phaseTimer);
+        try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
+        var _errBody2 = {}; try { _errBody2 = await resp.json(); } catch(_){}
+        var e2 = new Error(_errBody2.error || 'HTTP ' + resp.status);
+        e2.status = resp.status;
+        e2.code = _errBody2.code || '';
+        throw e2;
+      }
+
+      var r = null;
+      var ct = resp.headers.get('content-type') || '';
+      if (ct.indexOf('text/event-stream') >= 0) {
+        var reader = resp.body.getReader(), decoder = new TextDecoder(), buf = '';
+        while (true) {
+          var chunk = await reader.read(); if (chunk.done) break;
+          buf += decoder.decode(chunk.value, { stream: true });
+          var parts = buf.split('\n\n'); buf = parts.pop();
+          for (var pi = 0; pi < parts.length; pi++) {
+            var block = parts[pi].trim(); if (!block) continue;
+            var lines = block.split('\n'), evtType = '', evtData = '';
+            for (var li = 0; li < lines.length; li++) {
+              if (lines[li].indexOf('event: ') === 0) evtType = lines[li].slice(7).trim();
+              else if (lines[li].indexOf('data: ') === 0) evtData += lines[li].slice(6);
+            }
+            if (evtType === 'result' && evtData) { try { var parsed = JSON.parse(evtData); r = parsed.result || parsed; if (parsed.usage) window._jyLastUsage = parsed.usage; if (parsed.crystalProducts) window._jyCrystalProducts = parsed.crystalProducts; if (parsed.freeUsesLeft != null) window._jyFreeUsesLeft = parsed.freeUsesLeft; if (parsed.freeStatus) window._jyFreeStatus = parsed.freeStatus; if (parsed.freeLimits) window._jyFreeLimits = parsed.freeLimits; if (parsed.v62Config) window._jyV62ConfigSnapshot = parsed.v62Config; } catch(_){} }
+            // ★ v68.21.19 Bug #15:OOTK SSE 處理之前只有 result+error,缺 audit/thinking/progress
+            //   觸發場景:isOpusDepth(OOTK 用 Opus 4.7) + admin opus47_bestofn_config.enabled = true
+            //   原本沒處理 → audit badge 完全不顯示給用戶
+            else if (evtType === 'audit_start' && evtData) {
+              try {
+                var _ootkAuStart = JSON.parse(evtData);
+                window._jyAuditStart = _ootkAuStart && _ootkAuStart.message;
+                if (typeof window._jyRenderAuditBadge === 'function') {
+                  window._jyRenderAuditBadge({ loading: true, message: _ootkAuStart.message });
+                }
+              } catch(_){}
+            }
+            else if (evtType === 'audit' && evtData) {
+              try {
+                var _ootkAud = JSON.parse(evtData);
+                if (_ootkAud && _ootkAud.audit) window._jyAuditResultSnapshot = _ootkAud.audit;
+                window._jyAuditResult = _ootkAud;
+                if (typeof window._jyRenderAuditBadge === 'function') {
+                  window._jyRenderAuditBadge(_ootkAud);
+                }
+              } catch(_){}
+            }
+            else if (evtType === 'progress' && evtData) {
+              // 不覆蓋 ootk-ai-phase——client-side phase timer 負責輪播
+              try { var _ootkProg = JSON.parse(evtData); } catch(_){}
+            }
+            else if (evtType === 'thinking' && evtData) {
+              // v51 一致決策:不覆寫 UI(thinking_delta 切片不穩,輪播 phase timer 視覺更穩)
+              try { if (window._JY_DEBUG) console.log('[OOTK thinking]', evtData); } catch(_){}
+            }
+            else if (evtType === 'error' && evtData) { try { var err = JSON.parse(evtData); throw new Error(err.error || '伺服器錯誤'); } catch(e){ throw e; } }
+          }
+        }
+      } else {
+        var data = await resp.json();
+        r = data.result || data;
+      }
+
+      if (!r) throw new Error('回傳為空');
+
+      // ★ v29c：SSE 讀完才停 timer + bar 跳 100% + tags 全亮
+      clearInterval(phaseTimer);
+      try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
+      try { var _ob = document.getElementById('ootk-loading-bar'); if (_ob) { _ob.style.animation='none'; _ob.style.width='100%'; _ob.style.transition='width .4s'; } } catch(_) {}
+      try { var _otw = document.getElementById('ootk-loading-tags'); if (_otw) { var _ots = _otw.querySelectorAll('span'); for (var _oti=0;_oti<_ots.length;_oti++) { _ots[_oti].style.color='rgba(201,168,76,.88)'; _ots[_oti].style.borderColor='rgba(201,168,76,.3)'; _ots[_oti].style.background='rgba(201,168,76,.08)'; } } } catch(_) {}
+
+      if (typeof _renderOOTKResult === 'function') {
+        _renderOOTKResult(wrap, r, !!(window._JY_ADMIN_TOKEN));
+      } else {
+        wrap.innerHTML = '<div style="padding:1rem;color:var(--c-text)">' + JSON.stringify(r).substring(0, 500) + '</div>';
+      }
+      var _tabT2 = document.getElementById('tab-tarot-back');
+      if (_tabT2) _tabT2.innerHTML = '<i class="fas fa-key"></i> 開鑰深讀';
+
+      // ★ v38：Admin 費用顯示（OOTK 獨立路徑）
+      if (window._JY_ADMIN_TOKEN && window._jyLastUsage && typeof _adminCostHTML === 'function') {
+        try {
+          wrap.innerHTML += _adminCostHTML(window._jyLastUsage);
+          // payload debug
+          var _op = window._jyLastTarotPayload;
+          if (_op) {
+            var _opSize = JSON.stringify(_op).length;
+            var _opOps = (_op.ootkData && _op.ootkData.operations) ? Object.keys(_op.ootkData.operations).length : 0;
+            var _opPhotos = _op.photos ? ['face','palmLeft','palmRight','crystal'].filter(function(k){ return _op.photos[k]; }).join(',') : '';
+            var _rSize = 0; try { _rSize = JSON.stringify(r).length; } catch(_) {}
+            var _stLen = (r.story || '').length;
+            wrap.innerHTML += '<div style="font-size:.55rem;color:#a78bfa;margin-top:.3rem;opacity:.5;word-break:break-all">[payload] ' + Math.round(_opSize/1024) + 'KB | ootk | ' + _opOps + '層' + (_opPhotos ? ' | 📷' + _opPhotos : '') + ' | output:' + Math.round(_rSize/1024) + 'KB | story:' + _stLen + '字</div>';
+          }
+          delete window._jyLastUsage;
+        } catch(_ce) {}
+      }
+
+      // ★ v27：標記 OOTK 完成 + 刷新導航
+      try {
+        window._jyResultModes = window._jyResultModes || {};
+        window._jyResultModes.ootk = true;
+        if (typeof _refreshAllNavs === 'function') _refreshAllNavs('ootk');
+      } catch(_ne) {}
+
+      // ★ v27：顯示回饋區
+      try { if (typeof showFeedbackSection === 'function') setTimeout(showFeedbackSection, 3000); } catch(_fe) {}
+      // ★ v38：試用期倒數提示
+      try { if (typeof _showTrialBanner === 'function') setTimeout(_showTrialBanner, 1500); } catch(_tb) {}
+
+      // 存完整解讀摘要供追問用
+      window._jyTarotFollowUps = 0;
+      var _ootkSummaryParts = [r.directAnswer || ''];
+      if (r.operations) {
+        ['op1','op2','op3','op4','op5'].forEach(function(k) {
+          if (r.operations[k] && r.operations[k].conclusion) _ootkSummaryParts.push(r.operations[k].conclusion);
+        });
+      }
+      if (r.crossAnalysis) _ootkSummaryParts.push(r.crossAnalysis);
+      if (r.summary) _ootkSummaryParts.push(r.summary);
+      window._jyTarotPrevReading = _ootkSummaryParts.filter(Boolean).join(' ');
+
+      var _closing = (r.closing || r.oneliner || r.directAnswer || '').trim();
+      if (_closing) window._jyClosingText = _closing;
+      try { if (typeof _storeShareData === 'function') _storeShareData('ootk', r); } catch(_sd) {}
+      try { if (typeof _notifyComplete === 'function') _notifyComplete('ootk', r); } catch(_ne) {}
+
+    } catch(err) {
+      clearInterval(phaseTimer);
+      try { window._jyStopSmartTimer && window._jyStopSmartTimer(); } catch(_) {}
+      console.error('[OOTK-AI]', err);
+      if (err.code === 'LOGIN_REQUIRED') {
+        // 未登入 → 彈登入視窗
+        wrap.innerHTML = '';
+        if (typeof _jyGoogleLogin === 'function') _jyGoogleLogin();
+      } else if (err.status === 403 && err.code === 'OPUS_PAYMENT_REQUIRED' && !window._JY_ADMIN_TOKEN) {
+        // v68.21.1 Bug #86 修:OOTK 深度需付費,顯示明確付費牆
+        //   原本只查 'OOTK_PAYMENT_REQUIRED',但 worker 從沒回過這個 code(實際是 OPUS_PAYMENT_REQUIRED)
+        //   結果:用戶配額用完點深度 → 看到「連線不順」誤導訊息,完全找不到付費按鈕
+        // ★ Bug A 修:fallback 從 120 改 140(對齊 worker.js PRICE_OPUS_OOTK=140)
+        //   過去寫死 120 是 v68.13 升價前的舊值,升價後沒同步改 → 用戶看 NT$120 但點付款是 140
+        //   雖然 pricing-loader 載入後 window.JY_PRICES.OPUS_OOTK 會是 140 蓋過 fallback,
+        //   但若 pricing-loader 抓 /pricing 失敗 + 沒有快取 → fallback 顯示 120 → 投訴
+        var _ootkOpusPrice = (window.JY_PRICES && window.JY_PRICES.OPUS_OOTK) || 140;
+        wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
+          '<div style="font-size:2rem;margin-bottom:.5rem">🔮</div>' +
+          '<div style="font-size:.9rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">開鑰深度解析需單次購買</div>' +
+          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem;line-height:1.6">深度解析使用最高階模型<br>單次 NT$' + _ootkOpusPrice + '</div>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'opus_single\')" style="padding:.7rem 1.4rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.08));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.45);cursor:pointer;font-family:inherit;margin-right:.5rem">🔮 開鑰深度 NT$' + _ootkOpusPrice + '</button>' +
+          '<button onclick="window._jyOpusDepth=false;if(window._ootkTriggerAI && window._ootkResults) window._ootkTriggerAI(window._ootkResults)" style="padding:.7rem 1rem;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.15);cursor:pointer;font-family:inherit">改用標準</button>' +
+          '</div>';
+      } else if (err.code === 'OOTK_PAYMENT_REQUIRED' || (err.status === 429 && !window._JY_ADMIN_TOKEN)) {
+        // 需要付費 → 彈付費牆
+        // ★ Bug B 修:過去同時做兩件事(_jyStartPayment + wrap.innerHTML 付費按鈕),
+        //   結果用戶關掉 modal 後仍看到一個重複的「需付費解鎖」按鈕,UI 凌亂。
+        //   修法:只渲染 wrap 內的「需付費解鎖」+「重試」按鈕(不主動彈 modal)
+        //         讓用戶自主點按鈕觸發 _jyStartOOTK(該函式內會走付費攔截器)
+        //   注意:err.code === 'OOTK_PAYMENT_REQUIRED' worker 從未回過,實際只有 status===429,
+        //         (worker 對 OOTK FREE_USED_UP 回 status=429 走進這裡)
+        //         保留 err.code 比對是 backward compat
+        var _ootkSinglePrice = (window.JY_PRICES && window.JY_PRICES.SINGLE_OOTK) || 70;
+        wrap.innerHTML = '<div style="text-align:center;padding:1.5rem">' +
+          '<div style="font-size:2rem;margin-bottom:.5rem">🔑</div>' +
+          '<div style="font-size:.9rem;color:var(--c-gold);font-weight:700;margin-bottom:.3rem">開鑰之法需付費解鎖</div>' +
+          '<div style="font-size:.8rem;color:var(--c-text-dim);margin-bottom:.8rem">NT$' + _ootkSinglePrice + ' · 五次獨立讀盤(Book T 正統)</div>' +
+          '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'single\')" style="padding:.6rem 1.2rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1px solid rgba(255,255,255,.1);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🔑 付費解鎖</button></div>';
+      } else {
+        wrap.innerHTML = '<div style="text-align:center;padding:1rem"><div style="color:#f87171;font-size:.82rem;margin-bottom:.6rem">連線不順，請再試一次</div>' +
+          '<button onclick="if(window._ootkTriggerAI && window._ootkResults) window._ootkTriggerAI(window._ootkResults)" style="padding:.6rem 1.2rem;border-radius:10px;background:transparent;color:var(--c-gold);border:1px solid rgba(255,255,255,.1);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">🔑 重試</button></div>';
+      }
+    }
+  }
+
+  // ── 主入口：啟動 OOTK 流程 ──
+  function startOOTK() {
+    try {
+      _showSignificatorSelection(function(sigId, bindings) { _runOOTKSequence(sigId, bindings); });
+    } catch (e) {
+      console.error('[OOTK] setup failed',e);
+      alert(e.message || '開鑰載入失敗，請重新整理後再試。');
+    }
+  }
+
+  // ── 全域輸出 ──
+  window.startOOTK = startOOTK;
+  window._ootkTriggerAI = _triggerOOTKAI;
+
+  // ═══ v69.39.0 治本(歐那 2026/5/15):重抽整盤函式 ═══
+  //   舊版重抽按鈕 onclick 直接 location.href='/' 回首頁 → 用戶要重填問題
+  //   新版:確認 + 清結果 + 重啟 OOTK 流程,form 資料保留(S.form 在 window 上不會丟)
+  //   ★ v70.2(歐那 2026/5/29):全免費，重抽不再消耗次數，移除恐嚇文字
+  window._jyOOTKRedraw = function() {
+    try {
+      // 清掉當前 OOTK 結果(避免下次入口誤觸發舊資料)
+      window._ootkResults = null;
+
+      // ★ v69.41.0 治本(歐那 2026/5/15 黑畫面 bug):
+      //   清掉所有殘留的 ootk-overlay / ootk-sig-overlay
+      //   舊版只清 result innerHTML,沒清 body 上的 fixed overlay
+      //   →    解讀流程結束時若沒走 overlay.remove() 路徑(例 abandon),
+      //        DOM 裡會留一個透明 ootk-overlay(z-index:9998,半透黑 88% 不透明)
+      //        重抽 startOOTK() 再 append 一個新 overlay → 兩層黑屏疊加 → 全黑
+      //   治本:暴力清光所有 .ootk-overlay 元素,確保乾淨環境再開新 overlay
+      var _existingOverlays = document.querySelectorAll('.ootk-overlay, #ootk-sig-overlay');
+      for (var _i = 0; _i < _existingOverlays.length; _i++) {
+        try { _existingOverlays[_i].remove(); } catch(_e) {}
+      }
+
+      // 清掉解讀結果容器(讓 startOOTK 從乾淨狀態開始)
+      var rd = document.getElementById('result') ||
+               document.querySelector('#jy-result') ||
+               document.querySelector('.jy-result');
+      if (rd) rd.innerHTML = '';
+
+      // 滾到頂端(用 instant 而非 smooth — smooth 跟 fixed overlay 渲染衝突可能讓 transform 失效)
+      try { window.scrollTo(0, 0); } catch(_) {}
+
+      // ★ v69.41.0:給瀏覽器一個 tick 讓 DOM remove 完成,再 startOOTK
+      //   不延遲的話 startOOTK 立即 append 新 overlay,可能跟舊 overlay remove 的 paint 衝突
+      setTimeout(function() {
+        try {
+          if (typeof window.startOOTK === 'function') {
+            window.startOOTK();
+          } else {
+            console.warn('[v69.41 重抽] startOOTK not mounted, fallback to home');
+            location.href = '/';
+          }
+        } catch(_se) {
+          console.error('[v69.41 重抽 startOOTK]', _se);
+          location.href = '/';
+        }
+      }, 50);  // 50ms 給瀏覽器 paint 一輪
+    } catch (_e) {
+      console.error('[v69.41 重抽]', _e);
+      // 任何錯誤都 fallback 到首頁,確保用戶不會卡住
+      location.href = '/';
+    }
+  };
+
+  console.log('[OOTK-UI] Opening of the Key 前端 UI 已載入');
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// v64.B 塔羅華麗洗牌動畫 — 三幕式儀式(對齊七維儀式設計)
+// 設計:
+//   第 1-2 次:完整 2.8 秒(收攏 0.8 + 洗牌 1.2 + 散開 0.8)
+//   第 3 次起:compact 模式 0.8 秒(只播散開)
+//   全程「跳過 →」按鈕可隨時略過
+//   localStorage key:_jy_tarot_shuffle_count
+// ═══════════════════════════════════════════════════════════════
+(function(){
+'use strict';
+
+function _ensureV64bShuffleStyles() {
+  if (document.getElementById('jy-v64b-shuffle-fx')) return;
+  var s = document.createElement('style');
+  s.id = 'jy-v64b-shuffle-fx';
+  s.textContent =
+    // 全屏儀式 overlay
+    '.jy-tshuffle-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000;opacity:0;transition:opacity .5s ease;font-family:inherit}' +
+    '.jy-tshuffle-overlay.show{opacity:1}' +
+    '.jy-tshuffle-overlay.fade-out{opacity:0;pointer-events:none}' +
+    // 背景圖
+    '.jy-tshuffle-bg{position:absolute;inset:0;background:url("/img/tarot-shuffle-bg.jpg") center/cover no-repeat,radial-gradient(ellipse at center,#0a0d18 0%,#000 70%);opacity:0;transition:opacity 1.2s ease}' +
+    '.jy-tshuffle-overlay.show-bg .jy-tshuffle-bg{opacity:.92}' +
+    // 月光符號(focal point)
+    '.jy-tshuffle-glyph{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.5);width:min(280px,72vw);height:auto;opacity:0;transition:opacity 1s ease,transform 1s cubic-bezier(.4,.1,.3,1);pointer-events:none;filter:drop-shadow(0 0 32px rgba(253,230,138,.5))}' +
+    '.jy-tshuffle-overlay.show-glyph .jy-tshuffle-glyph{opacity:.95;transform:translate(-50%,-50%) scale(1)}' +
+    '.jy-tshuffle-overlay.show-glyph .jy-tshuffle-glyph img{width:100%;height:auto;animation:jyTshuffleGlyphPulse 2.4s ease-in-out infinite}' +
+    '@keyframes jyTshuffleGlyphPulse{0%,100%{filter:brightness(1) drop-shadow(0 0 16px rgba(253,230,138,.5));transform:scale(1) rotate(0deg)}50%{filter:brightness(1.2) drop-shadow(0 0 32px rgba(253,230,138,.85));transform:scale(1.05) rotate(180deg)}}' +
+    // 牌堆中央(模擬 78 張疊起來)
+    '.jy-tshuffle-deck{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:180px;opacity:0;transition:opacity .5s ease;pointer-events:none}' +
+    '.jy-tshuffle-overlay.show-deck .jy-tshuffle-deck{opacity:1}' +
+    '.jy-tshuffle-deck-card{position:absolute;inset:0;background:url("/tarot_img/card-back.jpg") center/cover #0a0d18;border:1px solid rgba(212,175,55,.5);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.7),0 0 16px rgba(212,175,55,.3);will-change:transform;backface-visibility:hidden}' +
+    // 收攏階段:牌從散開飛回中央(stagger 入場)
+    '@keyframes jyTshuffleConverge{0%{transform:translate(var(--start-x),var(--start-y)) rotate(var(--start-rot)) scale(.8);opacity:0}50%{opacity:.9}100%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}}' +
+    '.jy-tshuffle-deck-card.converging{animation:jyTshuffleConverge .8s cubic-bezier(.6,0,.4,1) forwards}' +
+    // 洗牌階段:切牌 → 交錯 → 旋轉
+    '@keyframes jyTshuffleSplit{0%{transform:translate(0,0) rotate(0deg)}30%{transform:translate(var(--split-x),var(--split-y)) rotate(var(--split-rot))}70%{transform:translate(calc(var(--split-x)*.3),calc(var(--split-y)*.3)) rotate(calc(var(--split-rot)*.4))}100%{transform:translate(0,0) rotate(0deg)}}' +
+    '.jy-tshuffle-deck-card.shuffling{animation:jyTshuffleSplit 1.2s cubic-bezier(.4,.1,.3,1) forwards}' +
+    // 旋轉光環(洗牌期間出現)
+    '.jy-tshuffle-aura{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:280px;height:280px;border-radius:50%;border:1px solid rgba(212,175,55,.3);opacity:0;transition:opacity .5s ease;pointer-events:none}' +
+    '.jy-tshuffle-overlay.show-aura .jy-tshuffle-aura{opacity:1;animation:jyTshuffleAuraSpin 4s linear infinite}' +
+    '@keyframes jyTshuffleAuraSpin{0%{transform:translate(-50%,-50%) rotate(0deg);box-shadow:0 0 24px rgba(212,175,55,.3),inset 0 0 24px rgba(212,175,55,.15)}50%{box-shadow:0 0 48px rgba(212,175,55,.5),inset 0 0 36px rgba(212,175,55,.25)}100%{transform:translate(-50%,-50%) rotate(360deg);box-shadow:0 0 24px rgba(212,175,55,.3),inset 0 0 24px rgba(212,175,55,.15)}}' +
+    // 文字提示
+    '.jy-tshuffle-text{position:absolute;bottom:18%;left:50%;transform:translateX(-50%);color:#fde68a;font-size:1.05rem;letter-spacing:.18em;font-weight:600;text-shadow:0 0 16px rgba(253,230,138,.6);opacity:0;transition:opacity .5s ease;text-align:center;white-space:nowrap}' +
+    '.jy-tshuffle-text.show{opacity:1}' +
+    // 跳過按鈕(對齊七維設計)
+    '.jy-tshuffle-skip{position:absolute;bottom:1.5rem;right:1.5rem;padding:.5rem 1rem;background:rgba(0,0,0,.5);color:rgba(212,175,55,.7);border:1px solid rgba(212,175,55,.3);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:.05em;backdrop-filter:blur(4px);transition:all .3s ease;z-index:10}' +
+    '.jy-tshuffle-skip:hover,.jy-tshuffle-skip:active{background:rgba(212,175,55,.15);color:#fde68a;border-color:rgba(212,175,55,.6)}' +
+    // 散開階段:從中央爆炸式回到扇形位置
+    '@keyframes jyTshuffleDisperse{0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}30%{transform:translate(calc(var(--end-x)*.3),calc(var(--end-y)*.3)) rotate(calc(var(--end-rot)*.5)) scale(1.1);opacity:1}100%{transform:translate(var(--end-x),var(--end-y)) rotate(var(--end-rot)) scale(0);opacity:0}}' +
+    '.jy-tshuffle-deck-card.dispersing{animation:jyTshuffleDisperse .8s cubic-bezier(.5,-.2,.5,1) forwards}' +
+    // reduced motion 支援(無障礙)
+    '@media (prefers-reduced-motion: reduce){.jy-tshuffle-overlay{transition:opacity .2s ease}.jy-tshuffle-deck-card.converging,.jy-tshuffle-deck-card.shuffling,.jy-tshuffle-deck-card.dispersing{animation-duration:.3s !important}}' +
+    // 行動裝置最佳化
+    '@media (max-width:480px){.jy-tshuffle-glyph{width:min(220px,68vw)}.jy-tshuffle-text{font-size:.92rem;bottom:14%}.jy-tshuffle-aura{width:220px;height:220px}}';
+  document.head.appendChild(s);
+}
+
+// 主洗牌儀式函式
+window._v64bTarotShuffleRitual = function(deckWrap, onComplete) {
+  _ensureV64bShuffleStyles();
+
+  // 累計觀看次數,第 3 次起 compact 模式
+  var seenCount = 0;
+  try { seenCount = parseInt(localStorage.getItem('_jy_tarot_shuffle_count') || '0') || 0; } catch(_) {}
+  var compact = seenCount >= 2;
+
+  // 偵測 reduced motion(無障礙)
+  var reducedMotion = false;
+  try {
+    reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch(_) {}
+
+  // 建立 overlay
+  var overlay = document.createElement('div');
+  overlay.className = 'jy-tshuffle-overlay';
+  overlay.innerHTML =
+    '<div class="jy-tshuffle-bg"></div>' +
+    '<div class="jy-tshuffle-aura"></div>' +
+    '<div class="jy-tshuffle-glyph"><img src="/img/tarot-moon-glyph.png" alt="" onerror="this.style.display=\'none\'"></div>' +
+    '<div class="jy-tshuffle-deck" id="jy-tshuffle-deck"></div>' +
+    '<div class="jy-tshuffle-text" id="jy-tshuffle-text"></div>' +
+    '<button class="jy-tshuffle-skip" id="jy-tshuffle-skip">跳過洗牌 →</button>';
+  document.body.appendChild(overlay);
+
+  // 建立 12 張視覺牌堆(視覺效果用,不是真的 78 張)
+  var deckEl = overlay.querySelector('#jy-tshuffle-deck');
+  var visualCards = [];
+  var CARD_COUNT = compact ? 8 : 12;
+  for (var i = 0; i < CARD_COUNT; i++) {
+    var card = document.createElement('div');
+    card.className = 'jy-tshuffle-deck-card';
+    // 給每張隨機起始位置(模擬從散開飛回)
+    var angle = (i / CARD_COUNT) * Math.PI * 2;
+    var radius = 200 + Math.random() * 80;
+    var startX = Math.cos(angle) * radius;
+    var startY = Math.sin(angle) * radius;
+    var startRot = (Math.random() - 0.5) * 60;
+    card.style.setProperty('--start-x', startX + 'px');
+    card.style.setProperty('--start-y', startY + 'px');
+    card.style.setProperty('--start-rot', startRot + 'deg');
+    // 切牌時的偏移
+    var splitDir = i % 2 === 0 ? 1 : -1;
+    card.style.setProperty('--split-x', (splitDir * 30 + (Math.random() - 0.5) * 20) + 'px');
+    card.style.setProperty('--split-y', ((Math.random() - 0.5) * 40) + 'px');
+    card.style.setProperty('--split-rot', (splitDir * (8 + Math.random() * 8)) + 'deg');
+    // 散開時的目標位置
+    card.style.setProperty('--end-x', (Math.cos(angle + Math.PI / 4) * 220) + 'px');
+    card.style.setProperty('--end-y', (Math.sin(angle + Math.PI / 4) * 220) + 'px');
+    card.style.setProperty('--end-rot', ((Math.random() - 0.5) * 90) + 'deg');
+    deckEl.appendChild(card);
+    visualCards.push(card);
+  }
+
+  // ═══ 動畫節奏 ═══
+  var timers = [];
+  function _t(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function _abortTimers() { timers.forEach(function(t){ clearTimeout(t); }); timers = []; }
+
+  function _setText(text) {
+    var txtEl = overlay.querySelector('#jy-tshuffle-text');
+    if (!txtEl) return;
+    txtEl.classList.remove('show');
+    setTimeout(function() {
+      txtEl.textContent = text;
+      txtEl.classList.add('show');
+    }, 200);
+  }
+
+  function _finish() {
+    _abortTimers();
+    overlay.classList.add('fade-out');
+    setTimeout(function() {
+      try { overlay.remove(); } catch(_e){}
+      try { localStorage.setItem('_jy_tarot_shuffle_count', String(seenCount + 1)); } catch(_e){}
+      if (typeof onComplete === 'function') onComplete();
+    }, 500);
+  }
+
+  // 跳過按鈕(立即執行)
+  _t(function() {
+    var skipBtn = overlay.querySelector('#jy-tshuffle-skip');
+    if (skipBtn) skipBtn.addEventListener('click', _finish);
+  }, 50);
+
+  // reduced motion → 直接秒結束
+  if (reducedMotion) {
+    _t(_finish, 300);
+    overlay.classList.add('show');
+    return;
+  }
+
+  // ═══ COMPACT 模式(第 3 次起):0.8 秒精簡版 ═══
+  if (compact) {
+    overlay.classList.add('show');
+    _t(function() { overlay.classList.add('show-bg', 'show-deck'); }, 100);
+    _t(function() {
+      _setText('🌙 洗牌完成');
+      visualCards.forEach(function(c, i) {
+        _t(function() { c.classList.add('dispersing'); }, i * 30);
+      });
+    }, 300);
+    _t(_finish, 1100);
+    return;
+  }
+
+  // ═══ 完整三幕式動畫(2.8 秒) ═══
+  overlay.classList.add('show');
+
+  // 幕 1:背景淡入 + 牌堆收攏(0-0.8s)
+  _t(function() {
+    overlay.classList.add('show-bg', 'show-deck');
+    _setText('凝神冥想 ⋯');
+    visualCards.forEach(function(c, i) {
+      _t(function() { c.classList.add('converging'); }, i * 30);
+    });
+  }, 100);
+
+  // 幕 2:洗牌(0.8-2.0s)
+  _t(function() {
+    overlay.classList.add('show-glyph', 'show-aura');
+    _setText('靜月為你洗牌 ⋯');
+    visualCards.forEach(function(c, i) {
+      _t(function() {
+        c.classList.remove('converging');
+        c.classList.add('shuffling');
+      }, i * 25);
+    });
+  }, 900);
+
+  // 幕 3:散開 + 完成提示(2.0-2.8s)
+  _t(function() {
+    _setText('🌙 牌已就緒 · 觸碰你有感覺的牌');
+    overlay.classList.remove('show-glyph');
+    visualCards.forEach(function(c, i) {
+      _t(function() {
+        c.classList.remove('shuffling');
+        c.classList.add('dispersing');
+      }, i * 20);
+    });
+  }, 2100);
+
+  // 結束
+  _t(_finish, 2900);
+};
+
+})();
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v80.5 洗牌後卡死修正 + 快速全抽上移 (歐那 2026/6/5)
+// ──────────────────────────────────────────────────────────────────────
+// v80.3 卡死原因：MutationObserver 監看 #step-2 後，_findShuffleBtn() 使用
+//   step2.querySelector('[class*="shuffle"]')，洗牌完成按鈕被移除後，會誤把
+//   .jy-shuffle-top 容器當成「洗牌按鈕」再搬移，形成「容器包容器」的連續 DOM mutation，
+//   手機主執行緒會被 observer 反覆觸發卡住。
+// v80.4/v80.5 改法：
+//   ① 只接受 button / a / [role="button"]，不再把 div 容器當按鈕。
+//   ② MutationObserver 加 debounce，避免同步連續 mutation 造成迴圈。
+//   ③ 還原指引時清掉沒有真正按鈕的 .jy-shuffle-top 容器。
+//   ④ 保留原本「洗牌鈕移到已選張數下方」與「洗牌後還原選牌提示」。
+//   ⑤ 快速全抽按鈕已由 index.html 上移到已選張數下方、牌堆上方。
+// ══════════════════════════════════════════════════════════════════════
+(function(){
+'use strict';
+
+var _jyTargetCount = 10;
+var _jyPlacing = false;
+
+function _isRealButton(el) {
+  if (!el || !el.matches) return false;
+  return el.matches('button, a, [role="button"]');
+}
+
+function _isShuffleButton(el) {
+  if (!_isRealButton(el)) return false;
+  var step2 = document.getElementById('step-2');
+  if (!step2 || !step2.contains(el)) return false;
+
+  var text = (el.textContent || '').replace(/\s+/g, '');
+  var cls = String(el.className || '');
+  var id = String(el.id || '');
+
+  // 排除快速全抽 / 分析 / 上一步等非洗牌操作
+  if (/全抽|快速全抽|分析|上一步|跳過/.test(text)) return false;
+
+  // 優先接受明確洗牌 class/id，其次接受文字含洗牌或靜月為你洗牌
+  if (/\bjy-shuffle-btn\b/.test(cls) || id === 'jy-shuffle-btn') return true;
+  if (/shuffle/i.test(cls) && /洗牌|靜月/.test(text)) return true;
+  if (/洗牌|靜月為你洗牌/.test(text)) return true;
+
+  return false;
+}
+
+// 僅回傳真正的可點擊洗牌按鈕；不可回傳 .jy-shuffle-top 這類容器
+function _findShuffleBtn() {
+  var step2 = document.getElementById('step-2');
+  if (!step2) return null;
+
+  var btns = step2.querySelectorAll('button, a, [role="button"]');
+  for (var i = 0; i < btns.length; i++) {
+    if (_isShuffleButton(btns[i])) return btns[i];
+  }
+  return null;
+}
+
+function _placeShuffleBtn() {
+  if (_jyPlacing) return;
+  _jyPlacing = true;
+
+  try {
+    var btn = _findShuffleBtn();
+
+    // 沒有真正洗牌按鈕：代表尚未建立或已洗完被移除，只還原提示與清空容器
+    if (!btn) {
+      _maybeRestoreHint();
+      return;
+    }
+
+    var anchor = document.getElementById('t-remain-text');
+    if (anchor && anchor.parentNode) {
+      // 清掉沒有真正按鈕的殘留容器；保留目前按鈕所在容器
+      document.querySelectorAll('#step-2 .jy-shuffle-top').forEach(function(s){
+        if (!s.contains(btn) && !s.querySelector('button, a, [role="button"]')) s.remove();
+      });
+
+      var currentWrap = btn.closest ? btn.closest('.jy-shuffle-top') : null;
+      if (!currentWrap) {
+        var wrap = document.createElement('div');
+        wrap.className = 'text-center jy-shuffle-top';
+        wrap.style.margin = '10px 0 4px';
+        anchor.parentNode.insertBefore(wrap, anchor.nextSibling);
+        wrap.appendChild(btn); // 移動節點，保留 tarot.js 原本 click 事件
+      } else if (currentWrap.previousElementSibling !== anchor) {
+        // 已在容器內，但位置不對時只移動容器，不重建巢狀容器
+        anchor.parentNode.insertBefore(currentWrap, anchor.nextSibling);
+      }
+
+      btn.dataset.jyPlaced = '1';
+      btn.style.display = 'inline-block';
+    }
+
+    var hint = document.getElementById('pick-hint');
+    if (hint) hint.innerHTML = '🌙 第一步：點「靜月為你洗牌」，洗牌後即可選牌';
+
+    if (!btn.dataset.jyScrolled) {
+      btn.dataset.jyScrolled = '1';
+      setTimeout(function(){
+        try { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
+      }, 90);
+    }
+  } finally {
+    _jyPlacing = false;
+  }
+}
+
+// 洗牌完成：若按鈕已被 tarot.js 移除，就還原選牌提示，並清掉空容器
+function _maybeRestoreHint() {
+  var hint = document.getElementById('pick-hint');
+  if (hint && /第一步|請先點|靜月為你洗牌/.test(hint.textContent || '')) {
+    hint.innerHTML = '觸碰任一張你有感覺的牌，選出 <span id="t-target-count">' + _jyTargetCount + '</span> 張';
+  }
+
+  document.querySelectorAll('#step-2 .jy-shuffle-top').forEach(function(s){
+    if (!s.querySelector('button, a, [role="button"]')) s.remove();
+  });
+}
+
+// 對外：initTarotDeck override 進抽牌頁時呼叫
+window._jyShuffleUX = function(targetCount) {
+  _jyTargetCount = targetCount || 10;
+  [0, 50, 150, 300, 600, 1000].forEach(function(ms){
+    setTimeout(_placeShuffleBtn, ms);
+  });
+};
+
+var _jyShuffleUXTimer = null;
+function _schedulePlaceShuffleBtn() {
+  if (_jyShuffleUXTimer) clearTimeout(_jyShuffleUXTimer);
+  _jyShuffleUXTimer = setTimeout(function(){
+    _jyShuffleUXTimer = null;
+    _placeShuffleBtn();
+  }, 60);
+}
+
+function _installObserver() {
+  var step2 = document.getElementById('step-2');
+  if (!step2) { setTimeout(_installObserver, 300); return; }
+  if (step2._jyObservedV804) return;
+  step2._jyObservedV804 = true;
+
+  var mo = new MutationObserver(_schedulePlaceShuffleBtn);
+  mo.observe(step2, { childList: true, subtree: true });
+
+  _placeShuffleBtn();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _installObserver);
+} else {
+  _installObserver();
+}
+
+
+  function _applyGoldenDawnTarotLabels() {
+    try {
+      var nodes=document.querySelectorAll('p,strong,span,div');
+      for(var i=0;i<nodes.length;i++){
+        var el=nodes[i]; if(el.children.length) continue;
+        var x=el.textContent||'';
+        if(x.indexOf('Opening of the Key')>=0 && x.indexOf('三十六牌環')>=0){
+          el.textContent=x.replace(/依 Crowley《Book of Thoth》附錄 A 與 Book T 骨架/g,'依 Golden Dawn《Book T／Liber T》')
+            .replace(/三十六牌環/g,'代表牌後方三十六張之環');
+        }
+      }
+    } catch(e) {}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_applyGoldenDawnTarotLabels); else _applyGoldenDawnTarotLabels();
+})();

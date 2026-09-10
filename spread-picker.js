@@ -1,0 +1,263 @@
+// ══════════════════════════════════════════════════════════════════════
+// 🎴 牌陣選擇器（v95.0）— 讓使用者手動挑選任一牌陣，並標示適合的問題類型
+//   v94.0:自動模式使用通用語義需求×牌陣能力矩陣，任何問題都會選出最小充分的最佳牌陣；新增七張馬蹄形作為中等複雜通用事件盤。
+//   v93.0:自動模式會立即重新分析目前問題、同步實際牌陣與判斷理由；不再只把按鈕切回「自動」卻沿用舊牌陣。
+//   v80.37:selectSpread（彈窗選單）切牌陣後補呼叫 JY_renderTarotChosenLayoutForCurrentSpread，
+//          與內嵌選單一致，不再殘留前一個牌陣的牌位（例如三牌陣卻顯示凱爾特 10 格）。
+//   機制：所有入口共用 JY_resolveTarotSpread；手動選擇以 _forcedSpread 覆寫，自動選擇保留語義路由的實際結果與理由。
+//   風格：沿用站上 token（--c-gold / --c-bg-card / Noto Serif TC）與 jy-tool-card orb 質感。
+// ══════════════════════════════════════════════════════════════════════
+(function () {
+  if (window._jySpreadPickerInit) return;
+  window._jySpreadPickerInit = true;
+  if (typeof window._forcedSpread === 'undefined') window._forcedSpread = null;
+
+  // ── 每個牌陣的圖示 / 點綴色(rgb) / 中文名 / 適合的問題 ──
+  var META = {
+    three_card:   { icon: 'fa-grip-lines',   accent: '201,168,76',  cn: '三牌陣',        suited: '單一明確問題、要快速答案 ・ 例：「他會回我嗎」「這件事成不成」' },
+    five_card:    { icon: 'fa-border-all',   accent: '223,195,115', cn: '五牌陣',        suited: '一般問題、原因與下一步；門檻題會改用促成／阻礙的牌位 ・ 例：「生意卡住該怎麼辦」' },
+    relationship: { icon: 'fa-heart',        accent: '251,113,133', cn: '關係牌陣',      suited: '我與某個特定對象 ・ 例：「我跟他會走下去嗎」「主管怎麼看我」' },
+    either_or:    { icon: 'fa-code-branch',  accent: '96,165,250',  cn: '二選一',        suited: '兩條路選一條 ・ 例：「留下還是離職」「A 還是 B」（各看發展再比）' },
+    cross:        { icon: 'fa-plus',         accent: '251,191,36',  cn: '十字牌陣',      suited: '卡關、糾結、想找原因 ・ 例：「為什麼一直談不成」「到底卡在哪」' },
+    timeline:     { icon: 'fa-clock',        accent: '96,165,250',  cn: '相對時間線',    suited: '看階段先後與轉折；沒有外部日曆錨時不換算月份或日期' },
+    celtic_cross: { icon: 'fa-cross',        accent: '139,92,246',  cn: '凱爾特十字',    suited: '重要的事想看完整全局（10張深入）・ 例：「這段感情的整體狀況與走向」' },
+    horseshoe:    { icon: 'fa-archway',      accent: '96,165,250',  cn: '七張馬蹄形',    suited: '中等複雜事件、同時看盲點與環境 ・ 例：「這件事我忽略了什麼，接下來該怎麼做」' },
+    tree_of_life: { icon: 'fa-sitemap',      accent: '52,211,153',  cn: '生命之樹',      suited: '內在課題、重複模式、靈性方向 ・ 例：「為什麼我總是遇到同一種人」' },
+    zodiac:       { icon: 'fa-compass',      accent: '223,195,115', cn: '黃道十二宮',    suited: '一整年逐領域掃描 ・ 例：「我今年的整體運勢」（12宮＋年度主軸）' },
+    minor_arcana: { icon: 'fa-list-ul',      accent: '212,168,87',  cn: '小阿卡那',      suited: '日常具體小事（只用56張小牌）・ 例：「錢包找得回來嗎」「包裹會準時到嗎」' },
+    fifteen_card: { icon: 'fa-shapes',       accent: '139,92,246',  cn: '金色黎明十五張', suited: '多面向結構與三元組互動 ・ 牌義、宮廷牌與元素尊貴統一依 Book T' },
+    mathers_21:   { icon: 'fa-table-cells',  accent: '201,168,76',  cn: 'Mathers 二十一張', suited: '隔七取牌、三排敘事與首尾配對 ・ 沿用歷史程序，牌義依選定方式' },
+    mathers_horseshoe: { icon: 'fa-archway', accent: '212,168,87', cn: 'Mathers 五十四張', suited: '三輪分堆、長篇連續敘事與配對 ・ 沿用歷史程序，牌義依選定方式' }
+  };
+  var GROUPS = [
+    { label: '常用', ids: ['three_card', 'five_card', 'relationship', 'either_or', 'cross', 'timeline', 'horseshoe', 'celtic_cross'] },
+    { label: '進階・專門', ids: ['tree_of_life', 'zodiac', 'minor_arcana', 'fifteen_card', 'mathers_21', 'mathers_horseshoe'] }
+  ];
+
+  function defOf(id) { return (typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[id]) ? SPREAD_DEFS[id] : null; }
+
+  // detectSpreadType 不再包裝（跨檔重新指派在實機不可靠）。
+  // 手動選定的牌陣改由 ui.js 各偵測點直接讀 window._forcedSpread 強制套用。
+
+  function injectCSS() {
+    if (document.getElementById('jy-spread-pick-css')) return;
+    var st = document.createElement('style');
+    st.id = 'jy-spread-pick-css';
+    st.textContent = [
+      // 觸發卡片裡的列
+      '.jy-spread-trigger{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid rgba(201,168,76,.22);background:linear-gradient(135deg,rgba(201,168,76,.05),rgba(201,168,76,.012));cursor:pointer;font-family:var(--f-body);transition:all .3s cubic-bezier(.4,0,.2,1)}',
+      '.jy-spread-trigger:active{transform:scale(.98)}',
+      '.jy-spread-trigger:hover{border-color:rgba(201,168,76,.4)}',
+      '.jy-spread-trigger-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));border:1.5px solid rgba(201,168,76,.35);color:var(--c-gold);box-shadow:0 2px 12px rgba(0,0,0,.2)}',
+      '.jy-spread-trigger-body{flex:1;min-width:0}',
+      '.jy-spread-trigger-name{display:block;font-size:.9rem;font-weight:700;color:var(--c-text);letter-spacing:.01em}',
+      '.jy-spread-trigger-sub{display:block;font-size:.7rem;color:var(--c-text-dim);line-height:1.4;margin-top:2px}',
+      '.jy-spread-trigger-chevron{color:var(--c-text-muted);font-size:.8rem;flex-shrink:0;transition:transform .2s,color .2s}',
+      '.jy-spread-trigger:hover .jy-spread-trigger-chevron{transform:translateX(2px);color:var(--c-gold)}',
+      // 彈窗（手機由下滑入、桌機置中）
+      '.jym-overlay{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-start;justify-content:center}',
+      '.jym-sheet{background:var(--c-bg-card,#161618);border:1px solid rgba(201,168,76,.2);border-radius:0 0 20px 20px;width:100%;max-width:520px;max-height:100vh;overflow-y:auto;padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 12px 48px rgba(0,0,0,.5);animation:jymDown .32s cubic-bezier(.16,1,.3,1);-webkit-overflow-scrolling:touch}',
+      '@media(min-width:640px){.jym-overlay{align-items:center}.jym-sheet{border-radius:20px;max-height:86vh;animation:jymPop .28s cubic-bezier(.16,1,.3,1)}}',
+      '@keyframes jymDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}',
+      '@keyframes jymPop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}',
+      '.jym-grip{width:38px;height:4px;border-radius:999px;background:rgba(255,255,255,.16);margin:12px auto -4px}',
+      '@media(min-width:640px){.jym-grip{display:none}}',
+      '.jym-head{display:flex;align-items:center;justify-content:space-between;gap:10px}',
+      '.jym-title{font-family:var(--f-display,"Noto Serif TC",serif);font-size:1.12rem;font-weight:700;color:var(--c-gold);display:flex;align-items:center;gap:8px}',
+      '.jym-title i{font-size:.95rem;opacity:.8}',
+      '.jym-close{background:none;border:none;color:var(--c-text-dim);font-size:1.7rem;line-height:1;cursor:pointer;padding:0 6px;border-radius:8px;transition:color .2s}',
+      '.jym-close:hover{color:var(--c-gold)}',
+      '.jym-sub{font-size:.72rem;color:var(--c-text-muted);margin:5px 0 14px;line-height:1.55}',
+      '.jym-group-label{font-size:.64rem;font-weight:700;letter-spacing:.14em;color:var(--c-text-muted);margin:16px 2px 9px;display:flex;align-items:center;gap:10px}',
+      '.jym-group-label::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.06)}',
+      '.jym-list{display:flex;flex-direction:column;gap:8px}',
+      '.jym-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 13px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(135deg,rgba(255,255,255,.02),rgba(255,255,255,.004));cursor:pointer;font-family:var(--f-body);transition:all .25s cubic-bezier(.4,0,.2,1)}',
+      '.jym-item:active{transform:scale(.985)}',
+      '.jym-item:hover{border-color:rgba(255,255,255,.12)}',
+      '.jym-orb{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;border:1.5px solid;box-shadow:0 2px 12px rgba(0,0,0,.2)}',
+      '.jym-body{flex:1;min-width:0}',
+      '.jym-name{display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:700;color:var(--c-text);line-height:1.25;flex-wrap:wrap}',
+      '.jym-count{font-size:.62rem;font-weight:600;color:var(--c-gold);background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.22);padding:1px 7px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}',
+      '.jym-desc{display:block;font-size:.7rem;color:var(--c-text-dim);line-height:1.45;margin-top:3px}',
+      '.jym-check{margin-left:auto;color:var(--c-gold);font-size:.85rem;opacity:0;transform:scale(.6);transition:all .2s;flex-shrink:0}',
+      '.jym-item-on{border-color:rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.02));box-shadow:0 0 22px rgba(201,168,76,.06),inset 0 1px 0 rgba(201,168,76,.08)}',
+      '.jym-item-on .jym-check{opacity:1;transform:scale(1)}'
+    ].join('\n');
+    document.head.appendChild(st);
+  // ═══ 鎏金夜祭 v2（2026/6/10）：視圖升級層——第二樣式表 append-only，同表後者勝、整段可刪回退；流光動畫引用 style.css v81.0 全域 keyframes（jyGiltFlow），快取舊版時退化為靜態鎏金，無害 ═══
+  try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','picker');_g2.textContent='.jym-sheet{background:rgba(16,13,10,.93);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid rgba(201,168,76,.3);box-shadow:0 -18px 50px rgba(0,0,0,.6);border-radius:22px 22px 0 0}.jym-grip{background:linear-gradient(90deg,#8a6d2f,#e8d28a,#8a6d2f);opacity:.85;border-radius:99px}.jym-item{border:1px solid rgba(201,168,76,.16);border-radius:14px;background:rgba(201,168,76,.04);transition:all .18s}.jym-item:active{transform:scale(.985)}.jym-item-on{border-color:rgba(232,210,138,.65);background:rgba(201,168,76,.1);box-shadow:0 0 0 1px rgba(201,168,76,.2),0 8px 22px rgba(201,168,76,.14)}.jym-check{color:#e8d28a}.jym-group-label{color:rgba(216,199,154,.6);letter-spacing:.14em}.jym-orb{box-shadow:0 0 16px rgba(201,168,76,.5)}.jym-close:focus-visible,.jym-item:focus-visible{outline:2px solid #e8d28a;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
+  }
+
+  function autoItemHTML() {
+    return '<button type="button" class="jym-item" data-id="auto" onclick="selectSpread(\'auto\')">'
+      + '<span class="jym-orb" style="background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.05));border-color:rgba(201,168,76,.4);color:var(--c-gold)"><i class="fas fa-wand-magic-sparkles"></i></span>'
+      + '<span class="jym-body"><span class="jym-name">自動判斷 <span class="jym-count" style="color:var(--c-success,#34d399);background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.25)">推薦</span></span>'
+      + '<span class="jym-desc">依你輸入的問題，智慧選出最適合的牌陣</span></span>'
+      + '<i class="fas fa-check jym-check"></i></button>';
+  }
+
+  function itemHTML(id) {
+    var m = META[id], def = defOf(id);
+    if (!m || !def) return '';
+    var r = m.accent;
+    return '<button type="button" class="jym-item" data-id="' + id + '" onclick="selectSpread(\'' + id + '\')">'
+      + '<span class="jym-orb" style="background:linear-gradient(135deg,rgba(' + r + ',.18),rgba(' + r + ',.05));border-color:rgba(' + r + ',.38);color:rgba(' + r + ',.95)"><i class="fas ' + m.icon + '"></i></span>'
+      + '<span class="jym-body"><span class="jym-name">' + m.cn + ' <span class="jym-count">' + def.count + ' 張</span></span>'
+      + '<span class="jym-desc">適合：' + m.suited + '</span></span>'
+      + '<i class="fas fa-check jym-check"></i></button>';
+  }
+
+  function renderList() {
+    var host = document.getElementById('jy-spread-list');
+    if (!host) return;
+    var html = autoItemHTML();
+    GROUPS.forEach(function (g) {
+      html += '<div class="jym-group-label">' + g.label + '</div>';
+      g.ids.forEach(function (id) { html += itemHTML(id); });
+    });
+    host.innerHTML = html;
+    markSelected();
+  }
+
+  function markSelected() {
+    var cur = window._forcedSpread || 'auto';
+    var items = document.querySelectorAll('#jy-spread-list .jym-item');
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.toggle('jym-item-on', items[i].getAttribute('data-id') === cur);
+    }
+  }
+
+  function updateTrigger() {
+    var nameEl = document.getElementById('jy-spread-cur-name');
+    var subEl = document.getElementById('jy-spread-cur-sub');
+    var iconEl = document.getElementById('jy-spread-cur-icon');
+    if (!nameEl) return;
+
+    if (!window._forcedSpread) {
+      var qEl=document.getElementById('f-question')||document.getElementById('f2-question');
+      var liveQuestion=qEl?String(qEl.value||'').trim():'';
+      var preview=qEl&&liveQuestion&&window.JYTarotFoundation?window.JYTarotFoundation.routeQuestion(liveQuestion):null;
+      var autoId=qEl?(preview&&preview.spreadId||''):(window._autoDetectedSpread||'');
+      var autoMeta = META[autoId];
+      var autoDef = defOf(autoId);
+      var decision = preview || (qEl?null:window._jyLastSpreadDecision) || null;
+      if (autoId && autoMeta && autoDef) {
+        nameEl.textContent = '自動 → ' + autoMeta.cn + '（' + autoDef.count + ' 張）';
+        if (subEl) {
+          var reason = decision && decision.spreadId === autoId ? decision.reason : '';
+          subEl.textContent = reason ? '判斷依據：' + reason : '已依目前問題自動選擇';
+        }
+        if (iconEl) iconEl.className = 'fas ' + autoMeta.icon;
+      } else {
+        nameEl.textContent = '自動判斷';
+        if (subEl) subEl.textContent = '依你的問題智慧選擇最適合的牌陣';
+        if (iconEl) iconEl.className = 'fas fa-wand-magic-sparkles';
+      }
+    } else {
+      var m = META[window._forcedSpread], def = defOf(window._forcedSpread);
+      if (m && def) {
+        nameEl.textContent = m.cn + '（' + def.count + ' 張）';
+        if (subEl) subEl.textContent = '手動選擇・適合：' + m.suited;
+        if (iconEl) iconEl.className = 'fas ' + m.icon;
+      }
+    }
+  }
+
+  // ★ v75.6：暴露給 resetAll 使用，保證同一函數管同一個按鈕
+  window._jyUpdateSpreadTrigger = updateTrigger;
+  document.addEventListener('input',function(e){if(e.target&&(e.target.id==='f-question'||e.target.id==='f2-question'))updateTrigger();});
+
+  window.openSpreadPicker = function () {
+    var o = document.getElementById('jy-spread-modal');
+    if (!o) return;
+    renderList();
+    o.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeSpreadPicker = function () {
+    var o = document.getElementById('jy-spread-modal');
+    if (o) o.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+  window.selectSpread = function (id) {
+    var resolvedId = null;
+
+    if (id === 'auto') {
+      window._forcedSpread = null;
+      // 治本：切回自動時立即讀取「目前畫面上的問題」，不要等下一次進抽牌頁才重算。
+      var q = '';
+      var t = 'general';
+      try {
+        var qEl = document.getElementById('f-question') || document.getElementById('f2-question');
+        if (qEl && qEl.value) q = qEl.value.trim();
+        if (!q) q = (typeof S !== 'undefined' && S.form && S.form.question) ? S.form.question : '';
+        var tEl = document.getElementById('f-type');
+        if (tEl && tEl.value) t = tEl.value;
+        else t = (typeof S !== 'undefined' && S.form && S.form.type) ? S.form.type : 'general';
+      } catch (e) {}
+      if (q && typeof window.JY_resolveTarotSpread === 'function') {
+        resolvedId = window.JY_resolveTarotSpread(q, t);
+      } else if (q && typeof detectSpreadType === 'function') {
+        resolvedId = detectSpreadType(q, t);
+        if (resolvedId && typeof setCurrentSpread === 'function') setCurrentSpread(resolvedId);
+        window._autoDetectedSpread = resolvedId || null;
+      } else {
+        window._autoDetectedSpread = null;
+      }
+    } else {
+      window._forcedSpread = id;
+      window._autoDetectedSpread = null;
+      resolvedId = id;
+      if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
+    }
+
+    // 清牌堆，讓下次抽牌（或返回抽牌頁）依新牌陣重建。
+    try { if (typeof deckShuffled !== 'undefined') deckShuffled = []; } catch (e) {}
+    if (resolvedId) {
+      try { if (typeof drawnCards !== 'undefined') drawnCards = []; } catch (e) {}
+      var _jyRepaintSpread = function () {
+        try {
+          if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length > 0) return;
+          if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
+          else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
+        } catch (e) {}
+      };
+      _jyRepaintSpread();
+      setTimeout(_jyRepaintSpread, 0);
+      setTimeout(_jyRepaintSpread, 180);
+    }
+
+    updateTrigger();
+    markSelected();
+    setTimeout(window.closeSpreadPicker, 180);
+  };
+
+  function init() {
+    injectCSS();
+    updateTrigger();
+    try {
+      var sub = document.querySelector('#jy-spread-modal .jym-sub');
+      if (sub) sub.textContent = '一般牌陣可選 RWS 正逆位或 Golden Dawn 元素尊貴。金色黎明十五張與開鑰之法採 Golden Dawn；各牌陣保留自己的位置、閱讀順序與配對規則。';
+      var triggerSub = document.getElementById('jy-spread-cur-sub');
+      if (triggerSub && !triggerSub.textContent) triggerSub.textContent = '選擇適合問題的牌陣，再設定讀牌方式';
+    } catch (_gdBadgeErr) {}
+    // 只在「塔羅快讀」顯示牌陣選單；開鑰之法用固定的 Opening of the Key，隱藏
+    if (typeof window.pickTool === 'function' && !window._pickToolWrappedForSpread) {
+      window._pickToolWrappedForSpread = true;
+      var _op = window.pickTool;
+      window.pickTool = function (tool) {
+        _op(tool);
+        var c = document.getElementById('jy-spread-card');
+        if (c) c.style.display = (tool === 'tarot') ? '' : 'none';
+      };
+    }
+    // 初始可見性：預設工具為塔羅
+    var card = document.getElementById('jy-spread-card');
+    if (card && typeof _selectedTool !== 'undefined' && _selectedTool && _selectedTool !== 'tarot') {
+      card.style.display = 'none';
+    }
+  }
+
+  if (document.readyState === 'complete') init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
