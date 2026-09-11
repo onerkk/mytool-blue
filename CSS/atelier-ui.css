@@ -422,3 +422,62 @@ body.jy-atelier{
 }
 @media(max-width:360px){.jy-atelier .at-room-nav{flex-wrap:wrap}.jy-atelier .at-tool-header .at-art{width:92px;max-width:30%}.jy-atelier .at-tool-header h1{font-size:1.55rem}.jy-atelier .at-input-head .at-art{width:70px}.jy-atelier .orc-topbar{flex-wrap:wrap!important}.jy-atelier .orc-topbar .orc-topbar-title{order:3;flex-basis:100%}.jy-atelier .orc-topbar .at-room-shop{margin-left:auto}}
 @media(prefers-reduced-motion:reduce){.jy-atelier .at-tool:hover .at-art{transform:none!important}.jy-atelier .at-tool .at-art{transition:none!important}}
+
+/* Reading flow: one reachable navigation row, one persistent draw action. */
+.jy-atelier :is(#step-2,#step-tarot)>.at-room-nav{top:var(--jy-header-height,76px);z-index:40;margin-bottom:14px;box-shadow:0 10px 18px #02071255}
+.jy-atelier #step-2{padding-bottom:145px!important;scroll-margin-top:var(--jy-header-height,76px)}
+.jy-atelier #step-2>.at-tarot-workspace{padding:22px!important;background:radial-gradient(ellipse at 50% 15%,#47537125,transparent 60%),#101b29!important}
+.jy-atelier #step-2 .card-title{font-size:1.4rem!important;line-height:1.5!important;padding-bottom:14px!important;margin-bottom:14px!important}
+.jy-atelier #step-2 #t-deck-intro{font-size:1rem!important;line-height:1.8!important;margin:8px 0!important;text-align:left!important}
+.jy-atelier #step-2 #jy-spread-desc{font-size:.875rem!important;line-height:1.8!important;text-align:left!important;margin:0 0 8px!important;color:#b6c3d4!important}
+.jy-atelier #step-2 #pick-hint{font-size:.875rem!important;line-height:1.7!important;color:#d6c69f!important;animation:none!important;text-align:left!important;margin:10px 0 16px!important}
+.jy-atelier #step-2 :is(.jy-autodraw-top,.jy-shuffle-top,#t-remain-text,#pick-hint+p){display:none!important}
+.jy-atelier .at-reading-settings,.jy-atelier .at-spread-details{border:1px solid #b7c5d32e;border-radius:12px;background:#0a1523;margin:16px 0;padding:0;overflow:hidden;min-width:0}
+.jy-atelier :is(.at-reading-settings,.at-spread-details)>summary{cursor:pointer;padding:15px 16px;min-height:48px;color:#e7dbbc;font-size:.875rem;line-height:1.8;box-sizing:border-box}
+.jy-atelier :is(.at-reading-settings,.at-spread-details)>summary span{float:right;font-size:.875rem;color:#aebdd0;margin-left:10px}
+.jy-atelier #tarot-reading-controls{margin:0!important;border:0!important;border-top:1px solid #aebed522!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:16px!important}
+.jy-atelier #tarot-reading-controls label{font-size:.875rem!important;line-height:1.6!important;color:#e5d2a6!important}
+.jy-atelier #tarot-reading-controls p{font-size:.875rem!important;line-height:1.85!important;color:#aebed0!important}
+.jy-atelier #tarot-reading-controls select{background:#172536!important;min-height:48px;font-size:1rem!important;border-color:#d1bd8850!important;color:#ede4d1!important}
+.jy-atelier #step-2 .tarot-deck-wrap{margin:20px -6px 12px!important;min-width:0}
+.jy-atelier #step-2 #t-deck{height:340px!important;max-width:100%;border:1px solid #d5bc854d;border-radius:20px;background:radial-gradient(ellipse at 50% 30%,#65758b3b,transparent 70%),linear-gradient(150deg,#172538,#090f19);box-shadow:inset 0 1px 0 #fff2,inset 0 -25px 40px #03081099,0 8px 22px #0004;overflow:hidden}
+.jy-atelier #step-2 #t-deck .tarot-stage-bg{display:none!important}
+.jy-atelier #step-2 #t-deck .tdc-face{display:none!important}
+.jy-atelier #step-2 #t-deck .tdc-back{transform:none!important;background-image:url('../tarot_img/card-back.jpg');border-color:#d8b978!important}
+.jy-atelier #step-2 #t-deck .tarot-deck-card{cursor:pointer}
+.jy-atelier .at-last-card{display:flex;align-items:center;gap:16px;min-height:60px;margin:12px 0 20px;padding:12px 14px;border-left:2px solid #d5bd88;background:#1b293955;border-radius:0 12px 12px 0;color:#bbc9da;font-size:.875rem;line-height:1.8;box-sizing:border-box}
+.jy-atelier .at-last-card>div:last-child{min-width:0;flex:1}.jy-atelier .at-last-card small{display:block;color:#a8b9ce;font-size:.75rem;margin-bottom:3px}.jy-atelier .at-last-card strong{display:block;color:#f2ddba;font-size:1rem;font-weight:500}.jy-atelier .at-last-card p{font-size:.875rem;line-height:1.75;margin:4px 0 0;color:#b7c6d6}
+.jy-atelier .at-last-card .at-recent-face{width:60px;height:94px;flex:0 0 60px;position:relative;border-radius:7px;overflow:hidden;box-shadow:0 5px 14px #0008}
+.jy-atelier .at-last-card .jy-card-face{height:100%;width:100%}.jy-atelier .at-last-card .tc-img{width:100%;height:100%;object-fit:cover}.jy-atelier .at-last-card :is(.tc-name,.tc-dir){display:none!important}
+.jy-atelier .at-layout-help{font-size:.875rem!important;line-height:1.8!important;color:#b7c5d5!important;padding:0 16px;margin:0 0 12px}
+.jy-atelier #step-2 #t-chosen{margin:0!important;border-radius:0!important;padding:20px 12px 30px!important;max-height:470px;overflow:auto!important;background:#081321!important;overscroll-behavior:contain}
+.jy-atelier #step-2 #t-chosen .slot-label{display:none!important}
+.jy-atelier #step-2 #t-chosen .slot-num{font-size:.875rem!important;color:#d8c69d!important}
+.jy-atelier #step-2 #t-chosen .jy-arrow{font-size:.875rem!important;line-height:1.8!important;white-space:normal}
+.jy-atelier #step-2 #t-chosen .jy-m21{min-width:560px!important}
+.jy-atelier #step-2 #t-chosen .jy-m54{min-width:560px!important}
+.jy-atelier #tarot-position-list{counter-reset:position;padding:10px 18px 0;margin:0;list-style:none}
+.jy-atelier #tarot-position-list li{counter-increment:position;position:relative;padding:12px 0 12px 32px;border-bottom:1px solid #c3cddd1c;font-size:.875rem;line-height:1.8;color:#dddbc9}
+.jy-atelier #tarot-position-list li::before{content:counter(position,decimal-leading-zero);position:absolute;left:0;top:14px;color:#bba574;font-size:.75rem}
+.jy-atelier #tarot-position-list small{display:block;font-size:.875rem;color:#adbed3}.jy-atelier .at-change-spread{margin:16px;min-height:44px;font:inherit;font-size:.875rem;color:#dec59b;background:#1a2a3d;border:1px solid #d6bd8866;border-radius:10px;padding:10px 16px;cursor:pointer}
+.jy-atelier #step-2 #t-spread-sec[hidden]{display:none!important}
+.jy-atelier #step-2 #t-spread .tag{font-size:.875rem!important;line-height:1.7!important;white-space:normal!important}
+.jy-atelier #step-2 #t-spread p{font-size:1rem!important;line-height:1.85!important}.jy-atelier #step-2 #t-spread strong{font-size:1.15rem!important}.jy-atelier #step-2 #t-spread .card{border-radius:15px!important;padding:18px!important;margin:14px 0!important}
+.jy-atelier #step-2 #t-spread>div:first-child{display:none}
+.jy-atelier #step-2>.actions{display:none!important}
+.jy-atelier .at-draw-dock{display:none;position:fixed;z-index:140;bottom:0;left:0;right:0;align-items:center;justify-content:space-between;gap:16px;padding:15px max(20px,calc((100vw - 760px)/2)) max(15px,env(safe-area-inset-bottom));border-top:1px solid #dcc08666;background:linear-gradient(140deg,#203044f7,#0c1624fa);box-shadow:0 -10px 30px #0005;backdrop-filter:blur(16px);box-sizing:border-box}
+.jy-atelier #step-2.active .at-draw-dock{display:flex}
+.jy-atelier .at-draw-dock>div{min-width:0;flex:1}.jy-atelier .at-draw-dock span{display:block;font-size:.875rem;color:#b4c3d6;line-height:1.6}.jy-atelier .at-draw-dock strong{font:500 1.2rem/1.6 var(--f-display);color:#f2d9aa;letter-spacing:1px}
+.jy-atelier .at-draw-dock>button{font:600 1rem/1.6 var(--f-body);min-height:52px;padding:12px 22px;border:1px solid #f7dbacc9;border-radius:11px;background:linear-gradient(115deg,#f9e7c3,#d8b678);color:#272219;box-shadow:inset 0 1px 0 #fff9,0 4px 0 #77613e;cursor:pointer}
+.jy-atelier .at-draw-dock>button:active{translate:0 2px;box-shadow:inset 0 1px 0 #fff9,0 2px 0 #77613e}
+.jy-atelier :is(.at-reading-settings,.at-spread-details)>summary:focus-visible,.jy-atelier .at-draw-dock>button:focus-visible{outline:2px solid #f1dab0;outline-offset:3px}
+@media(max-width:600px){
+ .jy-atelier #step-2>.at-tarot-workspace{padding:18px 14px!important;border-radius:16px!important}
+ .jy-atelier :is(#step-2,#step-tarot)>.at-room-nav{padding:8px 0;min-height:58px}
+ .jy-atelier #step-2 #t-deck{height:300px!important}.jy-atelier #step-2 #jy-spread-desc{display:none}
+ .jy-atelier .at-draw-dock{gap:10px;padding:12px 16px max(14px,env(safe-area-inset-bottom))}
+ .jy-atelier .at-draw-dock>button{padding:11px 14px;font-size:.875rem;max-width:55%}
+ .jy-atelier .at-input-head{min-height:0;padding:0 0 16px!important;margin-bottom:12px!important}
+ .jy-atelier .at-input-head h1{font-size:1.5rem!important;line-height:1.6!important;margin:10px 0!important}.jy-atelier .at-input-head p{font-size:.875rem!important;line-height:1.8!important;margin:0}
+ .jy-atelier #input-screen .jy-tool-card{padding:13px!important}.jy-atelier #input-screen .jy-tool-head{grid-template-columns:50px 1fr;gap:8px!important}.jy-atelier #input-screen .at-mode-art{width:50px}.jy-atelier #input-screen .jy-tool-name{font-size:1.125rem!important}.jy-atelier #input-screen .jy-tool-desc{font-size:.875rem!important}.jy-atelier #input-screen .jy-tool-free{display:none}
+}
