@@ -238,7 +238,7 @@ var _poem=null,_holy=0,_phase='intro',_throwResult=null,_allowResult=null,_prayT
 var _qType=null;          // 問事類型 key (v63 後可為 null,鎖籤改成全域時間鎖)
 var _qText='';            // v63 後保留變數但不填(鎖籤不再依賴文字)
 var _redrawCount=0;       // 三聖筊失敗的「重抽」次數
-var _laughDarkCount=0;    // 累計擲到笑筊/陰筊次數（同一支籤）
+var _laughDarkCount=0;    // 本輪累計笑筊／陰筊次數；重新搖籤仍保留累計
 var _rejectedLots=[];     // v65s: 已被神明否決的籤(出現任一笑陰筊就放進這裡,後續抽籤排除)
 var _drawAt=null;         // 此次抽籤的時間戳（用於今日鎖籤判斷）
 
@@ -560,7 +560,7 @@ function _getWrap(){if(!_wrap){_wrap=document.createElement('div');_wrap.id='ora
 function _render(){
 var w=_getWrap(),h='';
 h+='<div class="orc-temple-overlay"></div>';
-h+='<div class="orc-topbar"><button class="orc-back" onclick="_oracleClose()"><i class="fas fa-arrow-left"></i></button><span class="orc-topbar-title">靜月靈籤</span><span style="width:40px"></span></div>';
+h+='<div class="orc-topbar"><button class="orc-back" onclick="_oracleClose()" aria-label="返回靜月之光"><i class="fas fa-arrow-left"></i></button><span class="orc-topbar-title">靜月靈籤</span><span style="width:40px"></span></div>';
 h+='<div class="orc-body">';
 
 if(_phase==='intro'){
@@ -568,9 +568,9 @@ if(_phase==='intro'){
 //   論述: 全台廟方線上求籤(鹿港/台北城隍/新港奉天宮/地母廟/威天宮/行天宮)
 //         無一強制打字,「心中默念」就是傳統儀式
 //   24h 智慧鎖: 當日已抽過 → 溫和提示,但仍允許繼續(權力交還用戶)
-h+='<div class="orc-fade"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div>';
+h+='<div class="orc-fade at-oracle-intro"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div>';
 h+='<p class="orc-desc">心中默念您的姓名、住址<br>以及所求之事<br>靜月之神 派遣神將聆聽</p>';
-h+='<div class="orc-q-input-wrap" style="max-width:380px;margin:1.2rem auto .6rem;padding:0 .8rem"><textarea id="orc-q-input" class="orc-q-textarea" placeholder="在此寫下您所求之事（選填）\n例：工作升遷是否順利？感情能否修復？" rows="3" oninput="_oracleSyncQText(this.value)"></textarea><div id="orc-q-hint" style="text-align:right;font-size:.65rem;color:rgba(228,210,170,.45);margin-top:.2rem">0 字</div><div id="orc-q-multi-warn" style="display:none;font-size:.72rem;color:#ff9866;margin-top:.3rem;line-height:1.5"></div></div>';
+h+='<div class="orc-q-input-wrap" style="max-width:380px;margin:1.2rem auto .6rem;padding:0 .8rem"><textarea id="orc-q-input" aria-label="所求之事（選填）" class="orc-q-textarea" placeholder="在此寫下您所求之事（選填）\n例：工作升遷是否順利？感情能否修復？" rows="3" oninput="_oracleSyncQText(this.value)"></textarea><div id="orc-q-hint" style="text-align:right;font-size:.65rem;color:rgba(228,210,170,.45);margin-top:.2rem">0 字</div><div id="orc-q-multi-warn" style="display:none;font-size:.72rem;color:#ff9866;margin-top:.3rem;line-height:1.5"></div></div>';
 h+='<p class="orc-note" style="margin-top:.6rem">求得籤詩後需連擲三聖筊方為確認</p>';
 // v63: 24h 智慧鎖——僅當日已抽過任何題才提示,不阻擋
 var todayDrawn=_oracleHasDrawnToday();
@@ -1168,27 +1168,26 @@ var co=_throwResult==='holy'?'#ffd700':_throwResult==='laugh'?'#e67e22':'#7f8c8d
 // v63b: 視覺分層 — 主筊筊狀態大字 + 計數小字輔助 + 中文襯線質感
 if(lb){
   lb.innerHTML='<span class="orc-jiao-status">'+txt+'</span>'+
-    '<span class="orc-jiao-count">'+_holy+' / 3 聖杯</span>';
+    '<span class="orc-jiao-count">'+_holy+' / 3 聖筊</span>';
   lb.style.color=co;
 }
 setTimeout(function(){
 var ui=document.getElementById('orc-throw-ui');
 if(ui){
-if(_throwResult==='holy'&&_holy>=3){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleViewPoem()">恭　領　聖　笈</button>';}
+if(_throwResult==='holy'&&_holy>=3){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleViewPoem()">查看籤詩</button>';}
 else if(_throwResult==='holy'){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleContinue()">繼續擲筊</button>';}
 else{
-  // v63b: 重寫文案 — 廟簽級文言敘述,丟掉「終止/重新整理問題」工程腔
-  //       視覺分層: 主訊息 (xl 級襯線) + 副解釋 (低對比小字) + 計數 (極小)
+  // Keep ritual wording consistent with the actual cumulative retry counter.
   var msgMain=_throwResult==='laugh'?'笑筊':'陰筊';
   var msgSub=_throwResult==='laugh'
     ? '所問之事訊號不明，或心中已有定見'
     : '神明此刻不予允此籤';
   if(_laughDarkCount>=3){
-    // 連續三次笑陰筊 — 民俗上「訊號不明則改日再問」,文案改文言
+    // Three cumulative non-holy results end this session; no invented quotation.
     ui.innerHTML=
       '<div class="orc-jiao-msg-block">'+
-        '<div class="orc-jiao-msg-main">訊號不明，今日不宜再求</div>'+
-        '<div class="orc-jiao-msg-sub">已連擲三次笑陰筊。<br>古例云：「同事之問，須俟一段時日，方可再恭請聖示」。</div>'+
+        '<div class="orc-jiao-msg-main">本輪尚未確認，先留一點時間</div>'+
+        '<div class="orc-jiao-msg-sub">本輪累計三次笑筊或陰筊，依本站求籤流程暫停。<br>先記下仍不確定的事，待情況更清楚時，再整理問題。</div>'+
       '</div>'+
       '<button class="orc-btn-outline orc-jiao-btn-end" onclick="_oracleReset()">改 日 再 來</button>';
   } else {
@@ -1196,9 +1195,9 @@ else{
       '<div class="orc-jiao-msg-block">'+
         '<div class="orc-jiao-msg-main">'+msgMain+'</div>'+
         '<div class="orc-jiao-msg-sub">'+msgSub+'</div>'+
-        '<div class="orc-jiao-msg-tally">已擲笑陰筊 '+_laughDarkCount+' 次・三次則止</div>'+
+        '<div class="orc-jiao-msg-tally">本輪累計笑筊／陰筊 '+_laughDarkCount+' 次・三次則止</div>'+
       '</div>'+
-      '<button class="orc-btn-outline orc-jiao-btn-retry" onclick="_oracleRedraw()">重 擲 一 次</button>';
+      '<button class="orc-btn-outline orc-jiao-btn-retry" onclick="_oracleRedraw()">重新搖籤</button>';
   }
 }
 ui.style.opacity='1';}

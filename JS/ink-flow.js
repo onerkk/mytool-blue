@@ -43,7 +43,7 @@
   // Form rendering must not compete with a full-viewport canvas. A 2D canvas
   // still repaints every frame, so changing WebGL to 2D was not a mobile fix.
   function prefersStatic() {
-    return reduced || (navigator.maxTouchPoints || 0) > 0 ||
+    return !!(document.body && document.body.classList.contains('jy-atelier')) || reduced || (navigator.maxTouchPoints || 0) > 0 ||
       !!(window.matchMedia && window.matchMedia('(max-width: 760px), (any-pointer: coarse)').matches);
   }
   if (prefersStatic()) {

@@ -637,18 +637,18 @@
     hhOpts += '<option value="unknown">不確定（尚未定盤）</option>';
     w.innerHTML =
       '<div class="zw-in-wrap">' +
-        '<a class="zw-in-back" onclick="_zwClose()">← 返回靜月之光</a>' +
-        '<div class="zw-in-head"><h1>紫 微 斗 數</h1><p>三方四正 ・ 四化飛星 ・ 大限流年</p></div>' +
+        '<button type="button" class="zw-in-back" onclick="_zwClose()">← 返回靜月之光</button>' +
+        '<div class="zw-in-head at-tool-header"><div class="at-heading-icon" aria-hidden="true"><i class="fas fa-compass"></i></div><div><span class="at-eyebrow">ZI WEI · TWELVE PALACES</span><h1>紫微斗數</h1><p>以十二宮為圖，探索人生的不同面向。</p></div></div><div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 核對資料排盤</span><span><b>03</b> 探索解讀</span></div>' +
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 你想問什麼？</div>' +
-          '<textarea class="zw-in-q" id="zw-q" rows="2" maxlength="200" placeholder="問越具體越準——例如：今年適合換工作嗎？（留空＝整體命盤綜論）"></textarea></div>' +
+          '<textarea class="zw-in-q" id="zw-q" aria-label="紫微斗數想釐清的問題（選填）" rows="2" maxlength="200" placeholder="例如：今年適合換工作嗎？留空可探索整體命盤。"></textarea></div>' +
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 出生資料（國曆，不需姓名）</div>' +
           '<div class="zw-in-field"><label class="zw-in-label">國曆出生日期</label><button type="button" class="zwx-field" id="zwx-fld-date" onclick="_zwxOpenDate()">' + _zwDateInner() + '</button></div>' +
           '<div class="zw-in-field"><label class="zw-in-label">出生時辰</label><button type="button" class="zwx-field" id="zwx-fld-hh" onclick="_zwxOpenHH()">' + _zwHHInner() + '</button></div>' +
           '<input type="hidden" id="zw-bd" value="' + _zwSelDate + '">' +
           '<input type="hidden" id="zw-hh" value="' + _zwSelHH + '">' +
           '<div class="zw-in-field"><label class="zw-in-label">性別</label><div class="zw-in-pills">' +
-            '<div class="zw-in-pill" id="zw-g-m" onclick="_zwSetGender(\'male\')">男</div>' +
-            '<div class="zw-in-pill" id="zw-g-f" onclick="_zwSetGender(\'female\')">女</div>' +
+            '<button type="button" class="zw-in-pill" id="zw-g-m" onclick="_zwSetGender(\'male\')">男</button>' +
+            '<button type="button" class="zw-in-pill" id="zw-g-f" onclick="_zwSetGender(\'female\')">女</button>' +
           '</div></div>' +
           '<div class="zwx-err" id="zwx-err"></div>' +
           '<div class="zw-in-hint">紫微以時辰定盤；不知道時辰可先整理問題與出生資料，確認後再解讀個人命盤。</div>' +
@@ -657,6 +657,7 @@
         '<div class="zw-in-foot">靜月之光 ・ jingyue.uk<br>紫微斗數 ・ 命盤僅供參考</div>' +
       '</div>';
     document.body.appendChild(w);
+    if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
     try { document.body.style.overflow = 'hidden'; } catch(e){} // 鎖背景捲動，避免抖動
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
@@ -720,7 +721,7 @@
           '<button class="zw-res-x" onclick="_zwClose()" aria-label="關閉">×</button>' +
         '</div>' +
         '<div class="zw-meta">三合派四化骨架 ・ 民用時辰代表時，未校正真太陽時 ・ 不需姓名</div>' +
-        (form.btimeUnknown ? '<div class="zw-meta" role="status">出生時辰未知，尚未定盤。請先查找出生紀錄；下方提示詞會協助整理問題，不會把午時盤當作你的命盤。</div>' : renderChartGrid(zw) + '<div class="zw-facts">' + facts + '</div><div class="zw-chips">' + chips + '</div>') +
+        (form.btimeUnknown ? '<div class="zw-meta" role="status">出生時辰未知，尚未定盤。請先查找出生紀錄；下方提示詞會協助整理問題，不會把午時盤當作你的命盤。</div>' : '<p class="at-result-note">十二宮保留完整星曜與四化標記。手機可左右滑動查看命盤。</p><div class="at-chart-scroll" tabindex="0" role="region" aria-label="可橫向捲動的紫微十二宮命盤">' + renderChartGrid(zw) + '</div><div class="zw-facts">' + facts + '</div><div class="zw-chips">' + chips + '</div>') +
         '<div class="zw-ai">' +
           '<div class="zw-ai-title">🌙 AI 深度解讀</div>' +
           '<div class="zw-ai-desc">依已確認的出生資料整理提示詞；時辰已知時附命盤依據，未知時協助整理問題及定盤所需資料。輕觸複製後貼到 AI 對話即可。</div>' +
@@ -736,6 +737,7 @@
         '<div class="zw-res-foot">靜月之光 ・ jingyue.uk<br>紫微斗數 ・ 命盤僅供參考，不構成醫療、法律或財務建議</div>' +
       '</div>';
     document.body.appendChild(w);
+    if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
     w.scrollTop = 0;
   }
 
@@ -874,6 +876,8 @@
     var m = document.getElementById('zw-g-m'), f = document.getElementById('zw-g-f');
     if (m) m.classList.toggle('active', g === 'male');
     if (f) f.classList.toggle('active', g === 'female');
+    if (m) m.setAttribute('aria-pressed', String(g==='male'));
+    if (f) f.setAttribute('aria-pressed', String(g==='female'));
   };
   window._zwReset = function () {
     var r = document.getElementById('zw-result'); if (r) r.remove();

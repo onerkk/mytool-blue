@@ -6,7 +6,9 @@
 // v60: 20260910professional1 逐陣讀法、問題選陣、共用提示詞與合理選品。
 // v61: 20260911cards1 Moon Atelier 分享卡與靈籤統一，2x 高清輸出。
 // v62: 20260911preview1 分享卡立即載入、預覽錯誤與生命週期修正。
-const CACHE_NAME = 'jy-main-v62';
+// v63: 20260911atelier1 全站 Moon Atelier 介面、可讀命盤與操作焦點。
+// v64: 20260911atelier2 起卦內容分層、合盤閱讀引導與流程核對。
+const CACHE_NAME = 'jy-main-v64';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

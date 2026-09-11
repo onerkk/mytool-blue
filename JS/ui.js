@@ -868,16 +868,16 @@ function _calcSolarAndCompute(birth, genderValue) {
 // ═══ v17：工具選擇系統 ═══
 var _selectedTool = null; // 'tarot' | 'ootk' | 'full'
 
-function pickTool(tool) {
+function pickTool(tool, options) {
   _selectedTool = tool;
 
   // 視覺選中
   ['tool-tarot','tool-ootk','tool-full'].forEach(function(id) {
     var el = document.getElementById(id);
-    if (el) el.classList.remove('selected');
+    if (el) { el.classList.remove('selected'); el.setAttribute('aria-pressed', 'false'); }
   });
   var sel = document.getElementById('tool-' + tool);
-  if (sel) sel.classList.add('selected');
+  if (sel) { sel.classList.add('selected'); sel.setAttribute('aria-pressed', 'true'); }
 
   // 顯示/隱藏表單
   var birthHint = document.getElementById('birth-form-hint');
@@ -929,6 +929,7 @@ function pickTool(tool) {
   // v69.9.4 修正:OOTK v69.7 起把出生資料卡 hide,但這裡仍嘗試滾到隱藏的卡片,
   //              導致用戶看不到「開始五層深潛」按鈕在哪。改成跟塔羅一樣滾到 CTA。
   setTimeout(function() {
+    if (options && options.stayAtQuestion) return;
     if (tool === 'tarot' || tool === 'ootk') {
       if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
@@ -5750,119 +5751,23 @@ showAuraResult = function(){
   function _redesignHomepage() {
     var hookScreen = document.getElementById('hook-screen');
     if (!hookScreen) return;
-
-    var isAdmin = !!(window._JY_ADMIN_TOKEN);
-    // v68.21:_checkUsedToday() 移除(v40 起改總量制,函數仍保留供舊邏輯參考但不再呼叫)
-
-    // 保留粒子背景
-    var particles = hookScreen.querySelector('.particles');
-    var particlesHtml = particles ? particles.outerHTML : '';
-
-    hookScreen.innerHTML = particlesHtml +
-    '<div class="jy-home">' +
-
-      // 月牙徽章
-      '<img src="img/moon-emblem.png" alt="" class="jy-home-emblem" id="hero-moon" onclick="_moonTap()">' +
-
-      // 主標語：大字，發光
-      '<h1 class="jy-home-title">靜月之光</h1>' +
-
-      // 副標：一句話勾住
-      '<p class="jy-home-sub">你心裡的事，牌都知道</p>' +
-
-      // 分隔線裝飾
-      '<div class="jy-home-divider"><span>✦</span></div>' +
-
-      // 說明（極短）
-      '<p class="jy-home-desc">塔羅快讀 × 開鑰之法 ・ AI 深度解牌</p>' +
-
-      // CTA
-      '<button id="home-cta-btn" class="jy-home-cta" onclick="_enterFromHome()">' +
-        '<span class="jy-home-cta-text">開始解讀</span>' +
-        '<span class="jy-home-cta-arrow">→</span>' +
-      '</button>' +
-
-      // 快問按鈕（v28：更具體的問題 → 更準的解讀）
-      '<div class="jy-home-quick">' +
-        '<div style="width:100%;text-align:center;font-size:.68rem;color:var(--c-text-muted,#6b6355);margin-bottom:.2rem;letter-spacing:.04em">不用想，點了就問 ↓</div>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'我今天的整體運勢走向如何？今天需要特別注意或把握什麼？\')"><span class="jy-qk-icon">🌙</span>今天運勢如何</button>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'我今天的財運如何？今天適不適合進貨、談錢、做生意上的決定？\')"><span class="jy-qk-icon">💰</span>今天財運如何</button>' +
-        '<button class="jy-qk" onclick="_quickAsk(\'我今天的桃花與感情運如何？今天在感情上會有什麼互動或機會？\')"><span class="jy-qk-icon">🌸</span>今天桃花運如何</button>' +
-      '</div>' +
-
-      // 靜月靈籤入口
-      '<div class="jy-home-oracle">' +
-        '<button onclick="_oracleOpen()" class="jy-oracle-btn">' +
-          '<span class="jy-oracle-icon">🌙</span>' +
-          '<span class="jy-oracle-text">' +
-            '<strong>靜月靈籤</strong>' +
-            '<small>六十甲子籤 ・ 擲筊求神 ・ 免費</small>' +
-          '</span>' +
-          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
-        '</button>' +
-      '</div>' +
-
-      // ★ v76：雷諾曼入口
-      '<div class="jy-home-oracle">' +
-        '<button onclick="_lenormandOpen()" class="jy-oracle-btn">' +
-          '<span class="jy-oracle-icon">🃏</span>' +
-          '<span class="jy-oracle-text">' +
-            '<strong>雷諾曼牌</strong>' +
-            '<small>Lenormand 36 張 ・ 組合義占卜 ・ 免費</small>' +
-          '</span>' +
-          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
-        '</button>' +
-      '</div>' +
-
-      // ★ v80.15：紫微斗數入口（首頁獨立入口，跟雷諾曼同層）
-      '<div class="jy-home-oracle">' +
-        '<button onclick="_ziweiOpen()" class="jy-oracle-btn">' +
-          '<span class="jy-oracle-icon">🪐</span>' +
-          '<span class="jy-oracle-text">' +
-            '<strong>紫微斗數</strong>' +
-            '<small>十二宮命盤 ・ 大限流年 ・ 需出生資料</small>' +
-          '</span>' +
-          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
-        '</button>' +
-      '</div>' +
-
-      // ★ v80.15：梅花易數入口（首頁獨立入口，跟雷諾曼同層）
-      '<div class="jy-home-oracle">' +
-        '<button onclick="_meihuaOpen()" class="jy-oracle-btn">' +
-          '<span class="jy-oracle-icon">☯️</span>' +
-          '<span class="jy-oracle-text">' +
-            '<strong>梅花易數</strong>' +
-            '<small>時間・數字・漢字・隨機起卦 ・ 免費</small>' +
-          '</span>' +
-          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
-        '</button>' +
-      '</div>' +
-
-      // ★ v80.26：八字命理入口（首頁獨立入口，跟雷諾曼同層）
-      '<div class="jy-home-oracle">' +
-        '<button onclick="_baziOpen()" class="jy-oracle-btn">' +
-          '<span class="jy-oracle-icon">📜</span>' +
-          '<span class="jy-oracle-text">' +
-            '<strong>八字命理</strong>' +
-            '<small>子平四柱 ・ 真太陽時 ・ 窮通調候 ・ 免費</small>' +
-          '</span>' +
-          '<span class="jy-oracle-arrow"><i class="fas fa-chevron-right"></i></span>' +
-        '</button>' +
-      '</div>' +
-
-      // ★ v70 今日一牌已移除
-      '' +
-
-      // 計數 + 底部
-      '<div class="jy-home-footer">' +
-        '<div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div>' +
-        (isAdmin ?
-          '<div class="jy-home-quota">👑 管理員・無限次</div>' :
-          '<div class="jy-home-quota" id="jy-home-quota-text">塔羅快讀 ・ 開鑰之法 ・ 雷諾曼 ・ <strong style="color:var(--c-gold)">完全免費</strong></div>'
-        ) +
-      '</div>' +
-
-    '</div>';
+    var methods = [
+      ['tarot','01','fa-star','塔羅快讀','釐清眼前的問題，找到可以採取的下一步。','不需出生資料'],
+      ['ootk','02','fa-key','開鑰之法','循五次操作，探索事件更深一層的脈絡。','78 張完整牌組'],
+      ['lenormand','03','fa-clover','雷諾曼','把生活中的線索，連成清楚的故事。','依問題選擇牌陣'],
+      ['bazi','04','fa-scroll','八字命理','認識自己的特質，理解人生的節奏。','需出生資料'],
+      ['compat','05','fa-heart','八字合盤','看見兩人相處、合作與關係中的課題。','需雙方出生資料'],
+      ['ziwei','06','fa-compass','紫微斗數','從十二宮，理解優勢、選擇與人生階段。','需出生日期與時辰'],
+      ['meihua','07','fa-yin-yang','梅花易數','從本卦、互卦與變卦，梳理眼前的變化。','時間・數字・漢字'],
+      ['oracle','08','fa-moon','靜月靈籤','安靜片刻，為心中的事求一份籤詩指引。','六十甲子靈籤']
+    ];
+    var tiles = methods.map(function(m){return '<button type="button" class="at-tool" data-tool="'+m[0]+'" onclick="_atelierChoose(\''+m[0]+'\')"><span class="at-tool-top"><span class="at-tool-icon"><i class="fas '+m[2]+'" aria-hidden="true"></i></span><span class="at-tool-number">'+m[1]+'</span></span><strong>'+m[3]+'</strong><span class="at-tool-desc">'+m[4]+'</span><span class="at-tool-foot"><span>'+m[5]+'</span><i class="fas fa-arrow-right" aria-hidden="true"></i></span></button>';}).join('');
+    hookScreen.innerHTML = '<div class="at-home">'+
+      '<div class="at-hero"><div class="at-hero-copy"><span class="at-eyebrow">JINGYUE · A MOMENT FOR YOURSELF</span><h1>為心裡的問號，<br><em>找到下一步的光。</em></h1><p>關係的靠近、工作的轉彎，或更認識自己。<br>從你最在意的事，開始探索。</p><button type="button" id="home-cta-btn" class="at-primary" onclick="_atelierChoose(\'tarot\')"><span>用塔羅問一件事</span><span aria-hidden="true">↗</span></button></div><div class="at-hero-art"><img id="hero-moon" src="assets/share/moon-atelier-20260911.webp" width="500" height="400" loading="eager" alt="金色弦月與塔羅牌" onclick="_moonTap()"><span class="at-hero-seal">靜月之光 · 月光陪你探索</span></div></div>'+
+      '<div class="at-quick"><span>還沒有想好問題？</span><button type="button" onclick="_quickAsk(\'我今天的整體運勢走向如何？今天需要特別注意或把握什麼？\')"><i class="fas fa-sun" aria-hidden="true"></i>今日方向</button><button type="button" onclick="_quickAsk(\'我今天的財運如何？今天適不適合進貨、談錢、做生意上的決定？\')"><i class="fas fa-coins" aria-hidden="true"></i>工作財運</button><button type="button" onclick="_quickAsk(\'我今天的桃花與感情運如何？今天在感情上會有什麼互動或機會？\')"><i class="far fa-heart" aria-hidden="true"></i>感情關係</button></div>'+
+      '<div class="at-section-head" id="at-explore"><h2>選一種方式，靠近答案</h2><p>八種探索，從此刻的需要出發。</p></div><div class="at-tools">'+tiles+'</div>'+
+      '<p class="at-home-note"><i class="fas fa-check-circle" aria-hidden="true"></i>免費抽牌與排盤 · 複製提示詞後可交由 AI 解讀</p>'+
+      '<div class="jy-home-footer"><div class="counter-badge" id="counter-badge"><i class="fas fa-user-clock"></i> 今日 <span id="counter-today">0</span> 人 ｜ <i class="fas fa-users"></i> 累計 <span id="counter-num">0</span> 人</div><div id="jy-home-quota-text" class="jy-home-quota"></div></div></div>';
   }
 
   // ★ v26：零思考入口 — 點了直接跑塔羅
@@ -6207,7 +6112,7 @@ showAuraResult = function(){
     // 設 placeholder 引導
     var textarea = document.getElementById('f-question');
     if (textarea) {
-      textarea.placeholder = '問越具體越準——例如：他為什麼最近不主動找我了？我該先開口嗎？';
+      textarea.placeholder = '例如：最近我們聯絡變少了，我該如何開啟一次坦誠的對話？';
       textarea.focus();
     }
 
@@ -7701,6 +7606,7 @@ function resetToHome() {
 
   // ── 3. Title character-by-character reveal ──
   function _initTitleReveal(){
+    if (document.body.classList.contains('jy-atelier')) return;
     // Try multiple selectors since _redesignHomepage creates h1 inside a wrapper div
     var h1 = document.querySelector('#hook-screen h1');
     if (!h1) { console.log('[Anim] Title h1 not found'); return; }

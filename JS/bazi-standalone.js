@@ -277,10 +277,11 @@
   function _render() {
     var w = _getWrap();
     var h = '<div class="bzx-container">';
-    h += '<a class="bzx-back" onclick="_baziClose()">← 返回靜月之光</a>';
-    h += '<div class="bzx-header"><h1>八 字 命 理</h1><p>子平 ・ 四柱八字 ・ 真太陽時</p><button type="button" class="bzx-suite-entry" onclick="_baziOpenFullSuite()">合盤・人格・曆法工具</button></div>';
+    h += '<button type="button" class="bzx-back" onclick="_baziClose()">← 返回靜月之光</button>';
+    h += '<div class="bzx-header at-tool-header"><div class="at-heading-icon" aria-hidden="true"><i class="fas fa-scroll"></i></div><div><span class="at-eyebrow">FOUR PILLARS</span><h1>八字命理</h1><p>從四柱與時間節奏，理解自己的選擇。</p><button type="button" class="bzx-suite-entry" onclick="_baziOpenFullSuite()">合盤・人格・曆法工具 ↗</button></div></div>';
 
     if (_phase === 'input') {
+      h += '<div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 核對資料排盤</span><span><b>03</b> 探索解讀</span></div>';
       h += '<div class="bzx-section"><div class="bzx-section-title">✦ 出生資料</div>';
       h += '<span class="bzx-label">性別（影響大運順逆，必填）</span>';
       h += '<div class="bzx-gender">';
@@ -309,7 +310,7 @@
       h += '</div>';
 
       h += '<div class="bzx-section"><div class="bzx-section-title">✦ 想問什麼？（選填）</div>';
-      h += '<textarea class="bzx-q-input" id="bzx-q" rows="2" maxlength="200" placeholder="留空＝整體命格；或問具體事，如：今年事業能不能換跑道？"></textarea></div>';
+      h += '<textarea class="bzx-q-input" id="bzx-q" aria-label="八字想釐清的問題（選填）" rows="2" maxlength="200" placeholder="留空＝整體命格；或問具體事，如：今年事業能不能換跑道？"></textarea></div>';
 
       h += '<button class="bzx-cast-btn" onclick="_baziDoCast()">✦ 排 盤 ✦</button>';
     } else {
@@ -317,6 +318,7 @@
     }
     h += '<div class="bzx-footer">靜月之光 ・ jingyue.uk<br>八字命理 ・ 子平法 ・ 調候參考</div></div>';
     w.innerHTML = h;
+    if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
   }
 
   function _renderResult() {
@@ -373,7 +375,7 @@
       h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'"><span>'+ai.name+'</span></button>';
     }
     h += '</div><div class="bzx-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
-    h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_baziShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">📤 生成分享卡</button></div>';
+    h += '<div style="text-align:center;margin-top:.2rem"><button type="button" class="at-share-button" onclick="_baziShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">📤 生成分享卡</button></div>';
     h += '<div style="text-align:center"><button class="bzx-reset-btn" onclick="_baziReset()">↺ 重新排盤</button></div>';
     return h;
   }
@@ -743,6 +745,8 @@
     if (btns && btns.length === 2) {
       btns[0].classList.toggle('active', g === 'male');
       btns[1].classList.toggle('active', g === 'female');
+      btns[0].setAttribute('aria-pressed', String(g === 'male'));
+      btns[1].setAttribute('aria-pressed', String(g === 'female'));
     }
   };
   window._baziSetDayBoundary = function (mode) {
@@ -751,6 +755,8 @@
     if (btns && btns.length === 2) {
       btns[0].classList.toggle('active', _dayBoundaryMode === 'ZI_HOUR_23');
       btns[1].classList.toggle('active', _dayBoundaryMode === 'MIDNIGHT_00');
+      btns[0].setAttribute('aria-pressed', String(_dayBoundaryMode === 'ZI_HOUR_23'));
+      btns[1].setAttribute('aria-pressed', String(_dayBoundaryMode === 'MIDNIGHT_00'));
     }
   };
   window._baziToggleUnknown = function () {

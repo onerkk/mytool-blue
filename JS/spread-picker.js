@@ -15,7 +15,7 @@
   // ── 每個牌陣的圖示 / 點綴色(rgb) / 中文名 / 適合的問題 ──
   var META = {
     three_card:   { icon: 'fa-grip-lines',   accent: '201,168,76',  cn: '三牌陣',        suited: '單一明確問題、要快速答案 ・ 例：「他會回我嗎」「這件事成不成」' },
-    five_card:    { icon: 'fa-border-all',   accent: '223,195,115', cn: '五牌陣',        suited: '一般問題、想知道原因與下一步 ・ 例：「生意卡住該怎麼辦」（現況→原因→阻礙→建議→結果）' },
+    five_card:    { icon: 'fa-border-all',   accent: '223,195,115', cn: '五牌陣',        suited: '一般問題、原因與下一步；門檻題會改用促成／阻礙的牌位 ・ 例：「生意卡住該怎麼辦」' },
     relationship: { icon: 'fa-heart',        accent: '251,113,133', cn: '關係牌陣',      suited: '我與某個特定對象 ・ 例：「我跟他會走下去嗎」「主管怎麼看我」' },
     either_or:    { icon: 'fa-code-branch',  accent: '96,165,250',  cn: '二選一',        suited: '兩條路選一條 ・ 例：「留下還是離職」「A 還是 B」（各看發展再比）' },
     cross:        { icon: 'fa-plus',         accent: '251,191,36',  cn: '十字牌陣',      suited: '卡關、糾結、想找原因 ・ 例：「為什麼一直談不成」「到底卡在哪」' },
@@ -124,6 +124,7 @@
     var items = document.querySelectorAll('#jy-spread-list .jym-item');
     for (var i = 0; i < items.length; i++) {
       items[i].classList.toggle('jym-item-on', items[i].getAttribute('data-id') === cur);
+      items[i].setAttribute('aria-pressed', String(items[i].getAttribute('data-id') === cur));
     }
   }
 
@@ -134,10 +135,13 @@
     if (!nameEl) return;
 
     if (!window._forcedSpread) {
-      var autoId = window._autoDetectedSpread || '';
+      var qEl=document.getElementById('f-question')||document.getElementById('f2-question');
+      var liveQuestion=qEl?String(qEl.value||'').trim():'';
+      var preview=qEl&&liveQuestion&&window.JYTarotFoundation?window.JYTarotFoundation.routeQuestion(liveQuestion):null;
+      var autoId=qEl?(preview&&preview.spreadId||''):(window._autoDetectedSpread||'');
       var autoMeta = META[autoId];
       var autoDef = defOf(autoId);
-      var decision = window._jyLastSpreadDecision || null;
+      var decision = preview || (qEl?null:window._jyLastSpreadDecision) || null;
       if (autoId && autoMeta && autoDef) {
         nameEl.textContent = '自動 → ' + autoMeta.cn + '（' + autoDef.count + ' 張）';
         if (subEl) {
@@ -162,18 +166,40 @@
 
   // ★ v75.6：暴露給 resetAll 使用，保證同一函數管同一個按鈕
   window._jyUpdateSpreadTrigger = updateTrigger;
+  document.addEventListener('input',function(e){if(e.target&&(e.target.id==='f-question'||e.target.id==='f2-question'))updateTrigger();});
 
+  var pickerFocus = null, pickerOverflow = '';
+  function pickerKeyboard(e) {
+    if (e.key === 'Escape') { e.preventDefault(); window.closeSpreadPicker(); return; }
+    if (e.key !== 'Tab') return;
+    var root = document.getElementById('jy-spread-modal');
+    if (!root) return;
+    var buttons = Array.prototype.filter.call(root.querySelectorAll('button'), function (button) { return !button.disabled && button.getClientRects().length; });
+    var first = buttons[0], last = buttons[buttons.length - 1];
+    if (!first) return;
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
   window.openSpreadPicker = function () {
     var o = document.getElementById('jy-spread-modal');
     if (!o) return;
+    if (o.style.display === 'flex') return;
+    pickerFocus = document.activeElement;
+    pickerOverflow = document.body.style.overflow;
     renderList();
     o.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', pickerKeyboard);
+    var closeButton = o.querySelector('.jym-close');
+    if (closeButton) closeButton.focus();
   };
   window.closeSpreadPicker = function () {
     var o = document.getElementById('jy-spread-modal');
     if (o) o.style.display = 'none';
-    document.body.style.overflow = '';
+    document.body.style.overflow = pickerOverflow;
+    document.removeEventListener('keydown', pickerKeyboard);
+    if (pickerFocus && pickerFocus.isConnected) pickerFocus.focus();
+    pickerFocus = null;
   };
   window.selectSpread = function (id) {
     var resolvedId = null;
@@ -242,9 +268,10 @@
       window._pickToolWrappedForSpread = true;
       var _op = window.pickTool;
       window.pickTool = function (tool) {
-        _op(tool);
+        var result = _op.apply(this, arguments);
         var c = document.getElementById('jy-spread-card');
         if (c) c.style.display = (tool === 'tarot') ? '' : 'none';
+        return result;
       };
     }
     // 初始可見性：預設工具為塔羅

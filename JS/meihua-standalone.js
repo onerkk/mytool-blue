@@ -162,12 +162,13 @@
   function _render() {
     var w = _getWrap();
     var h = '<div class="mhx-container">';
-    h += '<a class="mhx-back" onclick="_meihuaClose()">← 返回靜月之光</a>';
-    h += '<div class="mhx-header"><h1>梅 花 易 數</h1><p>體用五行 ・ 本互變三象</p></div>';
+    h += '<button type="button" class="mhx-back" onclick="_meihuaClose()">← 返回靜月之光</button>';
+    h += '<div class="mhx-header at-tool-header"><div class="at-heading-icon" aria-hidden="true"><i class="fas fa-yin-yang"></i></div><div><span class="at-eyebrow">PLUM BLOSSOM I CHING</span><h1>梅花易數</h1><p>從本、互、變三象，梳理事情的進退。</p></div></div>';
 
     if (_mhPhase === 'input') {
+      h += '<div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 選擇方式起卦</span><span><b>03</b> 探索解讀</span></div>';
       h += '<div class="mhx-section"><div class="mhx-section-title">✦ 你想問什麼？</div>';
-      h += '<textarea class="mhx-q-input" id="mhx-q" rows="2" maxlength="200" placeholder="問越具體越準——例如：這個案子推得動嗎？">' + (_mhQuestion||'') + '</textarea></div>';
+      h += '<textarea class="mhx-q-input" id="mhx-q" aria-label="梅花易數想釐清的問題" rows="2" maxlength="200" placeholder="例如：這個案子推得動嗎？目前卡在哪一步？">' + _mhEscape(_mhQuestion) + '</textarea></div>';
 
       h += '<div class="mhx-section"><div class="mhx-section-title">✦ 起卦方式</div><div class="mhx-method-grid">';
       h += '<button class="mhx-method-btn' + (_mhMethod==='time'?' active':'') + '" onclick="_mhSetMethod(\'time\')">時間起卦<br><span style="font-size:.58rem;opacity:.6">以當下時間</span></button>';
@@ -175,10 +176,10 @@
       h += '<button class="mhx-method-btn' + (_mhMethod==='char'?' active':'') + '" onclick="_mhSetMethod(\'char\')">漢字起卦<br><span style="font-size:.58rem;opacity:.6">中文字筆畫</span></button>';
       h += '</div>';
       if (_mhMethod === 'num') {
-        h += '<div class="mhx-num-row"><input type="number" inputmode="numeric" id="mhx-up" min="1" placeholder="上數" value="'+(_mhUpNum||'')+'"><input type="number" inputmode="numeric" id="mhx-lo" min="1" placeholder="下數" value="'+(_mhLoNum||'')+'"></div>';
+        h += '<div class="mhx-num-row"><input type="number" inputmode="numeric" id="mhx-up" aria-label="起卦上數" min="1" placeholder="上數" value="'+(_mhUpNum||'')+'"><input type="number" inputmode="numeric" id="mhx-lo" aria-label="起卦下數" min="1" placeholder="下數" value="'+(_mhLoNum||'')+'"></div>';
         h += '<div class="mhx-hint">心中默念所問，隨意各報一數（如 8、25），動爻以當下時辰定。</div>';
       } else if (_mhMethod === 'char') {
-        h += '<div class="mhx-char-row"><input type="text" id="mhx-text" maxlength="20" placeholder="輸入中文字（如：問前途）" value="'+(_mhText||'').replace(/"/g,'&quot;')+'"></div>';
+        h += '<div class="mhx-char-row"><input type="text" id="mhx-text" aria-label="起卦漢字" maxlength="20" placeholder="輸入中文字（如：問前途）" value="'+_mhEscape(_mhText)+'"></div>';
         h += '<div class="mhx-hint">心中默念所問，輸入一句中文字，依先天卦數以筆畫起卦：一字以筆畫分上下、二字各為上下卦、多字前半為上後半為下，動爻加時辰定。</div>';
       } else {
         h += '<div class="mhx-hint">以此刻年月日時自動起卦（先天卦數＋時辰定動爻）。</div>';
@@ -187,21 +188,22 @@
       h += '<button class="mhx-cast-btn" onclick="_mhDoCast()">✦ 起 卦 ✦</button>';
     } else {
       var mh = _mhResult;
+      if (_mhQuestion) h += '<div class="at-result-question"><span>你想釐清的事</span><p>' + _mhEscape(_mhQuestion) + '</p></div>';
       h += '<div class="mhx-section"><div class="mhx-section-title">✦ 卦象</div>';
       h += '<div class="mhx-gua-row">';
       h += _guaCell('本卦', mh.ben && mh.ben.n, (mh.up&&mh.up.el)+'／'+(mh.lo&&mh.lo.el));
-      h += _guaCell('互卦', mh.hu && mh.hu.n, '過程');
-      h += _guaCell('變卦', mh.bian && mh.bian.n, '結局');
+      h += _guaCell('互卦', mh.hu && mh.hu.n, '過程線索');
+      h += _guaCell('變卦', mh.bian && mh.bian.n, '後續趨勢');
       h += '</div>';
-      var bad = (mh.ty && (mh.ty.f==='凶' || mh.ty.f==='小凶'));
       h += '<div class="mhx-ty"><span class="rel">' + (mh.ty?mh.ty.r:'—') + '</span>';
-      h += '<span class="luck' + (bad?' bad':'') + '">' + (mh.ty?mh.ty.f:'') + '</span>';
-      h += '<div class="desc">' + (mh.ty?mh.ty.d:'') + '</div></div>';
-      h += '<div class="mhx-dong">體卦 ' + (mh.tiG?mh.tiG.n+'（'+mh.tiG.el+'）':'') + ' ・ 用卦 ' + (mh.yoG?mh.yoG.n+'（'+mh.yoG.el+'）':'') + ' ・ 動爻第 ' + (mh.dong||'?') + ' 爻</div>';
+      h += '<span class="luck">體用初判</span>';
+      h += '<div class="desc">' + _mhEscape(_mhRelationNote(mh.ty && mh.ty.r)) + '</div></div>';
+      h += '<div class="mhx-dong">體卦 ' + (mh.tiG?_mhEscape(mh.tiG.name||mh.tiG.n)+'（'+mh.tiG.el+'）':'') + ' ・ 用卦 ' + (mh.yoG?_mhEscape(mh.yoG.name||mh.yoG.n)+'（'+mh.yoG.el+'）':'') + ' ・ 動爻第 ' + (mh.dong||'?') + ' 爻</div>';
+      h += '<div class="at-reading-note"><strong>把卦象放回你的問題</strong><p>體用先看助力與消耗；再合看時令旺衰、互卦的過程與變卦的後續。若訊號不同，先辨認條件如何改變，再決定下一步。</p></div>';
       h += '</div>';
 
       h += '<div class="mhx-ai-card"><div class="mhx-ai-title">🌙 AI 深度解讀</div>';
-      h += '<div class="mhx-ai-desc">輕觸按鈕複製，貼到 AI 對話送出即可。</div>';
+      h += '<div class="mhx-ai-desc">複製本次問題與卦象，貼到 AI 對話送出。提示詞會引導逐層解讀，整理你可採取的行動與需要觀察的變化。</div>';
       h += '<button class="mhx-ai-copy-btn" onclick="_mhCopy()">✦ 一鍵複製占卦提示詞 ✦</button>';
       h += '<div class="mhx-ai-grid">';
       for (var a=0;a<AI_LIST.length;a++) {
@@ -210,11 +212,26 @@
         h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'"><span>'+ai.name+'</span></button>';
       }
       h += '</div><div class="mhx-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
-      h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_meihuaShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361</button></div>';
+      h += '<div style="text-align:center;margin-top:.2rem"><button type="button" class="at-share-button" onclick="_meihuaShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361</button></div>';
       h += '<div style="text-align:center"><button class="mhx-reset-btn" onclick="_mhReset()">↺ 重新起卦</button></div>';
     }
     h += '<div class="mhx-footer">靜月之光 ・ jingyue.uk<br>梅花易數 ・ 體用占</div></div>';
     w.innerHTML = h;
+    if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
+  }
+
+  function _mhEscape(value) { return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+  // Reader-facing paraphrases; raw engine relations remain intact in the prompt.
+  // 梅花易數卷二：體用總訣、人事占、卦斷遺論。A single relation is not a final verdict.
+  function _mhRelationNote(relation) {
+    return {
+      '比和': '體與用同五行，可先留意協調與共同基礎；是否能推進，仍看旺衰與互變。',
+      '用生體': '用卦生助體卦，可先找出可運用的支持；也要確認助力能否持續、如何落實。',
+      '體生用': '體卦向用卦付出，可先檢視投入與消耗；釐清能承擔的範圍及預期回應。',
+      '用克體': '用卦對體卦形成制約，可先辨認壓力來源；把可調整的條件與暫時限制分開。',
+      '體克用': '體卦對用卦具有制約方向，可先找出能主動調整的環節；實際掌握度仍看體卦強弱。'
+    }[relation] || '體用關係尚待確認，請合看完整卦象與當下情境。';
   }
 
   function _guaCell(role, name, sub) {
@@ -579,27 +596,18 @@
         L.push('應期資料：本盤沒有曆法換算結果，可依用卦、互卦與變卦說明近期、中期、遠期的相對層次；精確日期的把握度較低。');
       }
     } catch (e) {}
-    // 品牌收尾選石：先由卦內需求機械決定，避免每次都推同一顆或由 AI 任意編功效。
-    var _shengWo = {木:'水', 火:'木', 土:'火', 金:'土', 水:'金'};
-    var _relNorm = String((mh.ty && mh.ty.r) || '').replace(/剋/g, '克');
-    var _needSupport = (wsLevel === '休' || wsLevel === '囚' || wsLevel === '死' || _relNorm === '用克體' || _relNorm === '體生用');
-    var _supportEl = _needSupport ? (_shengWo[tiEl] || tiEl) : tiEl;
-    var _stoneMap = {
-      水:{name:'海藍寶', fact:'海藍寶屬綠柱石族、六方晶系，主要由鐵致色。'},
-      木:{name:'綠幽靈', fact:'綠幽靈是石英內含綠泥石等綠色包體所形成的景觀。'},
-      火:{name:'紫水晶', fact:'紫水晶屬石英家族，主要成分為二氧化矽，硬度為莫氏7。'},
-      土:{name:'虎眼石', fact:'虎眼石以絲絹狀貓眼光帶為主要外觀特徵，選購可看光帶是否集中。'},
-      金:{name:'白水晶', fact:'白水晶屬石英家族，主要成分為二氧化矽，硬度為莫氏7。'}
-    };
-    var _stonePlan = _stoneMap[_supportEl] || _stoneMap[tiEl] || _stoneMap.金;
-    L.push('延伸選品參考：本次可考慮「' + _stonePlan.name + '」，取象方向為「' + _supportEl + '」。這是配飾與象徵提醒，不屬《梅花易數》原理。材質參考：' + _stonePlan.fact);
-    L.push('');
+    // 選品置於完整解讀後，由生活情境承接，不把體用當成補五行處方。
     L.push('【八卦類象（推具體人事物，只取與問題相關的，不要全列）】');
     L.push('體卦 ' + tiName + '：' + (GUA_XIANG[tiName] || ''));
     L.push('用卦 ' + yoName + '：' + (GUA_XIANG[yoName] || ''));
     L.push('其餘速查（推互卦、變卦的人事物用）：乾＝' + GUA_XIANG['乾'] + '；兌＝' + GUA_XIANG['兌'] + '；離＝' + GUA_XIANG['離'] + '；震＝' + GUA_XIANG['震'] + '；巽＝' + GUA_XIANG['巽'] + '；坎＝' + GUA_XIANG['坎'] + '；艮＝' + GUA_XIANG['艮'] + '；坤＝' + GUA_XIANG['坤'] + '。');
     L.push('類象請與問題、本互變、體用和動爻交叉使用，挑選真正相關且可驗證的線索。');
     L.push('');
+    L.push("先接住使用者真正困擾的處境，直接給出本次可支持的結論，再說明仍能選擇或改變的部分。術語第一次出現時用白話解釋；不責怪命主、不把困境說成報應或終身定局。建議寫清下一步、目的、限制與可觀察的改善訊號，讓使用者知道何時應調整做法；不要只說保持正向或等待好運。");
+    L.push("互卦不只抄卦名：分上互與下互的五行，分別與原體卦比較生剋，再看互卦之間是否制約本卦的助力或阻力。變後體仍取原體，動爻所在的用卦改變；不為求吉而交換體用。");
+    L.push("天時、尋物、感情、求財等題有各自取象方式；先看原問題需要何種現象，再用本互變與旺衰交叉選象。無現場外應資料時明說未用外應，不編造聽到、看到或感應到的徵兆。");
+    L.push("本吉變受制時說清有利條件為何可能耗損，本受制變得助時說清轉機依賴什麼；體用屬主從與作用比喻，不能用體克用鼓勵控制伴侶或他人。");
+    L.push("同一動爻形成變卦，因此動爻與變卦不是兩份獨立佐證。卦數、動爻、月份符號可作傳統取象的候選，但未經日曆推導與現實資料支持時不能報確切日期。");
     L.push('【判讀方法】');
     L.push('1. 先直接回答完整問題，再依體用與旺衰定主調，將本卦、互卦、動爻、變卦串成「現況—過程—觸發—結果」；錯綜卦與類象用來補充另一視角。');
     L.push('2. 體用基本關係可依《梅花易數》傳統語義理解，再按雙方旺衰、動爻和變卦校準實際力度：');
@@ -610,7 +618,9 @@
     L.push('　・用剋體＝外力制約、阻力較明顯；用衰時影響減輕，用旺體弱時較重。');
     L.push('3. 訊號衝突時給出主判與牽制，說明哪些現實條件會讓結果轉強、轉弱或改變；具象線索用人物、場所、方位、物件和互動方式呈現。');
     L.push('4. 題目問時間時，結合用近、互中、變遠、五行卦氣與盤內應期資料；時間精度請與資料相稱。');
-    L.push('5. 使用繁體中文，像資深占者當面說話。依「直接結論 → 關鍵卦理 → 發展與轉折 → 時機 → 可行建議與驗證」自然組織，避免逐卦抄義。最後可用一小段帶出指定選品，定位為生活提醒。');
+    L.push('5. 使用繁體中文，像資深占者當面說話。依「直接結論 → 關鍵卦理 → 發展與轉折 → 時機 → 可行建議與驗證」自然組織，避免逐卦抄義。最後再以一小段自然帶出生活選品。');
+    L.push('取互版本：本站純乾／純坤仍依本卦2–4與3–5爻取互，部分古本另有乾坤改取變卦之互的例外；此次以已提供卦象為準，不暗中更換算法。');
+    L.push("【延伸選品】正文解讀與具體建議完成後，以兩三句自然承接本題的生活提醒，再邀請到靜月之光蝦皮看看水晶、天鐵與龍宮舍利選品。可推薦一種飾品材料作穿搭或提醒，不以五行缺項或凶象製造購買需要；沒有品項資料時只推薦類別，不保證現貨、價格、鑑定、產地或功效。勿捏造材質成分，不把購買說成改運、治療、消災或改變他人心意的方法。財務困難者先使用既有物品作提醒，選購量力而為。若涉及即時人身危機，先提供切合情境的求助方向，不作商品推薦。最後連結只出現一次，讓閱讀者自由決定是否瀏覽。");
     L.push('最後保留以下兩行：');
     L.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
     L.push('願你諸事順遂。');
