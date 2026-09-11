@@ -35,8 +35,11 @@ export function mountStage(host,kind,options={}){
   observer?.disconnect();document.removeEventListener('visibilitychange',visibility);
   input.removeEventListener('pointermove',follow);input.removeEventListener('pointerleave',leave);
   window.removeEventListener('resize',resize);
-  if(renderer){renderer.domElement.removeEventListener('webglcontextlost',contextLost);renderer.dispose();renderer.domElement.remove();}
-  resources.forEach(x=>x.dispose());textures.forEach(x=>x.dispose());resources.clear();textures.clear();scene.clear();
+  // Context loss can also make renderer/resource disposal throw. Release each
+  // independently so one broken resource cannot leave a canvas or reading lock.
+  const release=x=>{try{x.dispose();}catch(error){console.warn('[JYCinema dispose]',error);}};
+  if(renderer){renderer.domElement.removeEventListener('webglcontextlost',contextLost);release(renderer);renderer.domElement.remove();renderer=null;}
+  resources.forEach(release);textures.forEach(release);resources.clear();textures.clear();scene.clear();
   host.classList.remove('jr-gpu-ready','jr-actor-ready');
  }
  function contextLost(event){event.preventDefault();lost=true;cancelAnimationFrame(raf);raf=0;host.classList.remove('jr-gpu-ready','jr-actor-ready');host.setAttribute('data-renderer','fallback');options.onFallback?.();}
