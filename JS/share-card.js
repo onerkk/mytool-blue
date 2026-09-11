@@ -1,11 +1,11 @@
-/*! 靜月之光 · Moon Atelier share cards v3.0.0 / 20260911cards1
+/*! 靜月之光 · Moon Atelier share cards v3.0.1 / 20260911preview1
  * Ten result/invitation renderers; decorative art never substitutes live data.
  * Golden Dawn Book T：牌面物理方向不建立固定逆位字典；RWS 保留實際逆位。
  * Public API: open, close, render (async), download; legacy _draw remains available.
  */
 (function () {
   'use strict';
-  if (window.JYShareCard && window.JYShareCard.version === '3.0.0') return;
+  if (window.JYShareCard && window.JYShareCard.version === '3.0.1') return;
   var W=1080, H=1350, SCALE=2, INK='#090f19', GOLD='#eed299', WHITE='#f7f1e6', MUTED='#b1b6c0';
   var SERIF='"Noto Serif TC","Songti TC","PMingLiU",serif';
   var SANS='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
@@ -88,11 +88,65 @@
   function saveBlob(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);}
   function download(type,data){return render(type,data).then(blobOf).then(function(blob){saveBlob(blob,fileName(type));return blob;});}
   function css(){if(document.getElementById('jysc-css'))return;var link=document.createElement('link');link.id='jysc-css';link.rel='stylesheet';link.href=BASE+'assets/share/share-cards-20260911.css';document.head.appendChild(link);}
-  function close(){serial++;if(!active)return;var cur=active;active=null;cur.bd.remove();document.removeEventListener('keydown',cur.key);document.body.style.overflow=cur.overflow;if(cur.url)URL.revokeObjectURL(cur.url);if(cur.focus&&cur.focus.isConnected)cur.focus.focus();}
-  function open(type,data){css();close();var id=++serial,t=THEMES[type]||THEMES.invite,d=Object.assign({},data||{}),bd=document.createElement('div');bd.id='jysc-bd';bd.className='jysc-bd';bd.innerHTML='<section class="jysc-box" role="dialog" aria-modal="true" aria-labelledby="jysc-title"><header class="jysc-head"><div><span class="jysc-eyebrow">JINGYUE · MOON ATELIER</span><h2 id="jysc-title">把這一刻，分享出去</h2></div><button type="button" class="jysc-x" id="jysc-close" aria-label="關閉分享卡">×</button></header><div class="jysc-stage" id="jysc-stage"><div class="jysc-loading" role="status">正在製作你的卡片…</div><img class="jysc-img" alt="'+t.name+'分享卡" hidden></div><p class="jysc-status" id="jysc-status" role="status" aria-live="polite">等待畫面與字體就緒</p><label class="jysc-privacy"'+(type==='invite'||type==='oracle'||(!d.question&&!d.nameA&&!d.nameB&&!d.birthLine)?' hidden':'')+'><input type="checkbox" id="jysc-personal" checked> 顯示問題、姓名與出生資料</label><div class="jysc-row"><button type="button" class="jysc-btn jysc-primary" id="jysc-share" disabled>分享這張卡片 ↗</button><button type="button" class="jysc-btn" id="jysc-dl" disabled>下載高清圖片 ↓</button></div><p class="jysc-tip">長按圖片也可儲存 · 適合 IG / Threads / LINE</p></section>';
+  function close(){serial++;if(!active)return;var cur=active;active=null;if(cur.stopPreview)cur.stopPreview();cur.bd.remove();document.removeEventListener('keydown',cur.key);document.body.style.overflow=cur.overflow;if(cur.focus&&cur.focus.isConnected)cur.focus.focus();}
+  function open(type,data){css();close();var id=++serial,t=THEMES[type]||THEMES.invite,d=Object.assign({},data||{}),bd=document.createElement('div');bd.id='jysc-bd';bd.className='jysc-bd';bd.innerHTML='<section class="jysc-box" role="dialog" aria-modal="true" aria-labelledby="jysc-title"><header class="jysc-head"><div><span class="jysc-eyebrow">JINGYUE · MOON ATELIER</span><h2 id="jysc-title">把這一刻，分享出去</h2></div><button type="button" class="jysc-x" id="jysc-close" aria-label="關閉分享卡">×</button></header><div class="jysc-stage" id="jysc-stage"><div class="jysc-loading" role="status">正在製作你的卡片…</div><img class="jysc-img" alt="'+t.name+'分享卡" loading="eager" decoding="async" hidden></div><p class="jysc-status" id="jysc-status" role="status" aria-live="polite">等待畫面與字體就緒</p><label class="jysc-privacy"'+(type==='invite'||type==='oracle'||(!d.question&&!d.nameA&&!d.nameB&&!d.birthLine)?' hidden':'')+'><input type="checkbox" id="jysc-personal" checked> 顯示問題、姓名與出生資料</label><div class="jysc-row"><button type="button" class="jysc-btn jysc-primary" id="jysc-share" disabled>分享這張卡片 ↗</button><button type="button" class="jysc-btn" id="jysc-dl" disabled>下載高清圖片 ↓</button></div><p class="jysc-tip">長按圖片也可儲存 · 適合 IG / Threads / LINE</p></section>';
     var focus=document.activeElement,overflow=document.body.style.overflow;document.body.appendChild(bd);document.body.style.overflow='hidden';var el={bd:bd,focus:focus,overflow:overflow,url:null,key:null};active=el;var share=bd.querySelector('#jysc-share'),dl=bd.querySelector('#jysc-dl'),status=bd.querySelector('#jysc-status'),img=bd.querySelector('img'),checkbox=bd.querySelector('#jysc-personal'),prepared=null,drawId=0;bd.querySelector('#jysc-close').onclick=close;bd.onclick=function(e){if(e.target===bd)close();};el.key=function(e){if(e.key==='Escape'){close();return;}if(e.key==='Tab'){var list=Array.from(bd.querySelectorAll('button:not(:disabled),input')).filter(function(n){return n.offsetParent!==null;}),first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};document.addEventListener('keydown',el.key);bd.querySelector('#jysc-close').focus();
-    function refresh(){var mine=++drawId;share.disabled=dl.disabled=true;status.textContent='正在製作你的卡片…';var payload=Object.assign({},d);if(!checkbox.checked){payload.question='';payload.nameA='A 方';payload.nameB='B 方';payload.birthLine='未顯示';}render(type,payload).then(function(cv){return blobOf(cv);}).then(function(blob){if(id!==serial||mine!==drawId||active!==el)return;prepared=blob;if(el.url)URL.revokeObjectURL(el.url);el.url=URL.createObjectURL(blob);img.onload=function(){var loading=bd.querySelector('.jysc-loading');if(loading)loading.remove();img.hidden=false;};img.src=el.url;share.disabled=dl.disabled=false;status.textContent='2160 × 2700 高清圖片 · '+t.name;}).catch(function(){if(id===serial)status.textContent='圖片暫時未能完成，請關閉後重試。';});}
+    function refresh(){
+      var mine=++drawId,timer=null;
+      if(el.stopPreview)el.stopPreview();
+      prepared=null;
+      share.disabled=dl.disabled=true;
+      // ui.js adds loading="lazy" to dynamic images without an explicit policy.
+      // A hidden lazy image waits for visibility while our UI waits for its load.
+      // Set eager BEFORE insertion, and use a new node for each privacy revision
+      // so a late event cannot reveal the previous card's personal information.
+      var preview=document.createElement('img');
+      preview.className='jysc-img';preview.alt=t.name+'分享卡';preview.hidden=true;
+      preview.setAttribute('loading','eager');preview.setAttribute('decoding','async');
+      stage.replaceChild(preview,img);img=preview;
+      var loading=bd.querySelector('.jysc-loading'),tip=bd.querySelector('.jysc-tip');
+      if(!loading){loading=document.createElement('div');loading.className='jysc-loading';loading.setAttribute('role','status');stage.appendChild(loading);}
+      loading.textContent='正在製作你的卡片…';status.textContent='正在製作你的卡片…';
+      tip.textContent='適合 IG / Threads / LINE';stage.setAttribute('aria-busy','true');
+      function current(){return id===serial&&mine===drawId&&active===el;}
+      function clearPreviewTimer(){if(timer!==null){clearTimeout(timer);timer=null;}}
+      el.stopPreview=function(){
+        clearPreviewTimer();preview.onload=preview.onerror=null;preview.removeAttribute('src');
+        if(el.url){URL.revokeObjectURL(el.url);el.url=null;}
+      };
+      function previewReady(){
+        if(!current()||!preview.naturalWidth)return;
+        clearPreviewTimer();preview.onload=preview.onerror=null;loading.remove();preview.hidden=false;
+        stage.setAttribute('aria-busy','false');status.textContent='2160 × 2700 高清圖片 · '+t.name;
+        tip.textContent='長按圖片也可儲存 · 適合 IG / Threads / LINE';
+      }
+      function previewFailed(){
+        if(!current())return;
+        clearPreviewTimer();preview.hidden=true;stage.setAttribute('aria-busy','false');
+        loading.textContent='卡片已完成，預覽暫時無法顯示。';
+        status.textContent='可直接分享或下載高清圖片，也可關閉後重新預覽。';
+        tip.textContent='請使用下方按鈕儲存或分享卡片。';
+      }
+      var payload=Object.assign({},d);
+      if(!checkbox.checked){payload.question='';payload.nameA='A 方';payload.nameB='B 方';payload.birthLine='未顯示';}
+      render(type,payload).then(function(cv){if(current())return blobOf(cv);}).then(function(blob){
+        if(!current())return;
+        prepared=blob;share.disabled=dl.disabled=false;
+        loading.textContent='正在載入卡片預覽…';status.textContent='高清圖片已完成，正在載入預覽…';
+        preview.onload=previewReady;preview.onerror=previewFailed;
+        timer=setTimeout(previewFailed,12000);
+        el.url=URL.createObjectURL(blob);preview.src=el.url;
+        // Cached images can already be complete before the load handler runs.
+        if(preview.complete&&preview.naturalWidth)previewReady();
+      }).catch(function(){
+        if(!current())return;
+        if(prepared){previewFailed();return;}
+        clearPreviewTimer();stage.setAttribute('aria-busy','false');
+        loading.textContent='卡片暫時無法製作。';status.textContent='請關閉視窗後重新製作。';
+        tip.textContent='圖片尚未完成，請稍後再試。';
+      });
+    }
     checkbox.onchange=refresh;dl.onclick=function(){if(prepared)saveBlob(prepared,fileName(type));};share.onclick=function(){if(!prepared)return;try{var f=new File([prepared],fileName(type),{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'靜月之光',text:'為心裡的問號，找到下一步的光。jingyue.uk'}).catch(function(e){if(e&&e.name==='AbortError')return;status.textContent='此環境無法直接分享，可使用「下載高清圖片」。';});return;}}catch(e){}saveBlob(prepared,fileName(type));status.textContent='圖片已下載，可貼到你想分享的社群。';};
     var stage=bd.querySelector('#jysc-stage');if(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){stage.onpointermove=function(e){var r=stage.getBoundingClientRect();img.style.transform='perspective(1000px) rotateX('+(-(e.clientY-r.top-r.height/2)/r.height*4)+'deg) rotateY('+((e.clientX-r.left-r.width/2)/r.width*4)+'deg)';};stage.onpointerleave=function(){img.style.transform='';};}refresh();return bd;}
-  window.JYShareCard={version:'3.0.0',open:open,close:close,render:render,download:download,_draw:draw,_W:W,_H:H,types:Object.keys(RENDER)};
+  window.JYShareCard={version:'3.0.1',open:open,close:close,render:render,download:download,_draw:draw,_W:W,_H:H,types:Object.keys(RENDER)};
 })();
