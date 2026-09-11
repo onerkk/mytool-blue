@@ -16,6 +16,7 @@ function expose(env, file, code) { vm.runInContext(read('JS/'+file+'.js').replac
 function add(e, tag, id) { const el=e.doc.body.appendChild(new e.Element(tag)); el.id=id; return el; }
 test('Eight home entrances are native buttons and reach the right flow; direct compatibility remains separate',()=>{
  const e=environment(),calls=[];add(e,'div','hook-screen');const input=add(e,'section','input-screen'),q=add(e,'textarea','f-question');
+ const heading=input.appendChild(new e.Element('header'));heading.className='at-input-head';
  e.ctx._enterFromHome=()=>calls.push('input');e.ctx.pickTool=(tool,options)=>calls.push([tool,options.stayAtQuestion]);
  e.ctx.BaziSuiteUI={open:tab=>calls.push(tab)};
  const bridges={lenormand:'_lenormandOpen',bazi:'_baziOpen',ziwei:'_ziweiOpen',meihua:'_meihuaOpen',oracle:'_oracleOpen'};
@@ -24,7 +25,7 @@ test('Eight home entrances are native buttons and reach the right flow; direct c
  const tiles=e.doc.getElementById('hook-screen').querySelectorAll('.at-tool');assert.equal(tiles.length,8);
  for(const tile of tiles){assert.equal(tile.tagName,'BUTTON');vm.runInContext(tile.getAttribute('onclick'),e.ctx);}
  assert.deepEqual(JSON.parse(JSON.stringify(calls)),['input',['tarot',true],'input',['ootk',true],'lenormand','bazi','compat','ziwei','meihua','oracle']);
- assert.equal(input.getAttribute('data-atelier-mode'),'ootk');assert.equal(e.doc.activeElement,q);
+ assert.equal(input.getAttribute('data-atelier-mode'),'ootk');assert.equal(e.doc.activeElement,heading);assert.notEqual(e.doc.activeElement,q);
 });
 test('Spread picker preserves incoming options, traps Tab, closes with Escape and restores prior focus/overflow',()=>{
  const e=environment(),events=new e.Element();e.doc.addEventListener=events.addEventListener.bind(events);e.doc.removeEventListener=events.removeEventListener.bind(events);e.doc.readyState='complete';
@@ -65,10 +66,11 @@ test('Compatibility opens directly with two independent forms; single/personalit
 });
 test('Tarot home and edit buttons have real handlers and preserve the question and chosen mode',()=>{
  const e=environment(),steps=[];const home=add(e,'section','hook-screen'),input=add(e,'section','input-screen'),q=add(e,'textarea','f-question'),start=add(e,'button','home-cta-btn');
+ const heading=input.appendChild(new e.Element('header'));heading.className='at-input-head';
  q.value='工作改變後，我想先釐清什麼？';input.setAttribute('data-atelier-mode','ootk');e.ctx.goStep=n=>steps.push(n);e.ctx._enterFromHome=()=>{};
  load(e,'atelier-ui');
  e.ctx.backToHook();assert.equal(home.style.display,'block');assert.equal(input.style.display,'none');assert.equal(e.doc.activeElement,start);
- e.ctx._atelierReturnToInput();assert.equal(home.style.display,'none');assert.equal(input.style.display,'block');assert.equal(e.doc.activeElement,q);
+ e.ctx._atelierReturnToInput();assert.equal(home.style.display,'none');assert.equal(input.style.display,'block');assert.equal(e.doc.activeElement,heading);
  assert.equal(q.value,'工作改變後，我想先釐清什麼？');assert.equal(input.getAttribute('data-atelier-mode'),'ootk');assert.deepEqual(steps,[0,0]);
 });
 test('Returning from Ziwei restores the known or unknown birth time, date, gender and question',()=>{
