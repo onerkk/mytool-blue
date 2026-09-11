@@ -162,12 +162,13 @@
   function _render() {
     var w = _getWrap();
     var h = '<div class="mhx-container">';
-    h += '<a class="mhx-back" onclick="_meihuaClose()">← 返回靜月之光</a>';
-    h += '<div class="mhx-header"><h1>梅 花 易 數</h1><p>體用五行 ・ 本互變三象</p></div>';
+    h += '<button type="button" class="mhx-back" onclick="_meihuaClose()">← 返回靜月之光</button>';
+    h += '<div class="mhx-header at-tool-header"><div class="at-heading-icon" aria-hidden="true"><i class="fas fa-yin-yang"></i></div><div><span class="at-eyebrow">PLUM BLOSSOM I CHING</span><h1>梅花易數</h1><p>從本、互、變三象，梳理事情的進退。</p></div></div>';
 
     if (_mhPhase === 'input') {
+      h += '<div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 選擇方式起卦</span><span><b>03</b> 探索解讀</span></div>';
       h += '<div class="mhx-section"><div class="mhx-section-title">✦ 你想問什麼？</div>';
-      h += '<textarea class="mhx-q-input" id="mhx-q" rows="2" maxlength="200" placeholder="問越具體越準——例如：這個案子推得動嗎？">' + (_mhQuestion||'') + '</textarea></div>';
+      h += '<textarea class="mhx-q-input" id="mhx-q" aria-label="梅花易數想釐清的問題" rows="2" maxlength="200" placeholder="例如：這個案子推得動嗎？目前卡在哪一步？">' + _mhEscape(_mhQuestion) + '</textarea></div>';
 
       h += '<div class="mhx-section"><div class="mhx-section-title">✦ 起卦方式</div><div class="mhx-method-grid">';
       h += '<button class="mhx-method-btn' + (_mhMethod==='time'?' active':'') + '" onclick="_mhSetMethod(\'time\')">時間起卦<br><span style="font-size:.58rem;opacity:.6">以當下時間</span></button>';
@@ -175,10 +176,10 @@
       h += '<button class="mhx-method-btn' + (_mhMethod==='char'?' active':'') + '" onclick="_mhSetMethod(\'char\')">漢字起卦<br><span style="font-size:.58rem;opacity:.6">中文字筆畫</span></button>';
       h += '</div>';
       if (_mhMethod === 'num') {
-        h += '<div class="mhx-num-row"><input type="number" inputmode="numeric" id="mhx-up" min="1" placeholder="上數" value="'+(_mhUpNum||'')+'"><input type="number" inputmode="numeric" id="mhx-lo" min="1" placeholder="下數" value="'+(_mhLoNum||'')+'"></div>';
+        h += '<div class="mhx-num-row"><input type="number" inputmode="numeric" id="mhx-up" aria-label="起卦上數" min="1" placeholder="上數" value="'+(_mhUpNum||'')+'"><input type="number" inputmode="numeric" id="mhx-lo" aria-label="起卦下數" min="1" placeholder="下數" value="'+(_mhLoNum||'')+'"></div>';
         h += '<div class="mhx-hint">心中默念所問，隨意各報一數（如 8、25），動爻以當下時辰定。</div>';
       } else if (_mhMethod === 'char') {
-        h += '<div class="mhx-char-row"><input type="text" id="mhx-text" maxlength="20" placeholder="輸入中文字（如：問前途）" value="'+(_mhText||'').replace(/"/g,'&quot;')+'"></div>';
+        h += '<div class="mhx-char-row"><input type="text" id="mhx-text" aria-label="起卦漢字" maxlength="20" placeholder="輸入中文字（如：問前途）" value="'+_mhEscape(_mhText)+'"></div>';
         h += '<div class="mhx-hint">心中默念所問，輸入一句中文字，依先天卦數以筆畫起卦：一字以筆畫分上下、二字各為上下卦、多字前半為上後半為下，動爻加時辰定。</div>';
       } else {
         h += '<div class="mhx-hint">以此刻年月日時自動起卦（先天卦數＋時辰定動爻）。</div>';
@@ -187,21 +188,22 @@
       h += '<button class="mhx-cast-btn" onclick="_mhDoCast()">✦ 起 卦 ✦</button>';
     } else {
       var mh = _mhResult;
+      if (_mhQuestion) h += '<div class="at-result-question"><span>你想釐清的事</span><p>' + _mhEscape(_mhQuestion) + '</p></div>';
       h += '<div class="mhx-section"><div class="mhx-section-title">✦ 卦象</div>';
       h += '<div class="mhx-gua-row">';
       h += _guaCell('本卦', mh.ben && mh.ben.n, (mh.up&&mh.up.el)+'／'+(mh.lo&&mh.lo.el));
-      h += _guaCell('互卦', mh.hu && mh.hu.n, '過程');
-      h += _guaCell('變卦', mh.bian && mh.bian.n, '結局');
+      h += _guaCell('互卦', mh.hu && mh.hu.n, '過程線索');
+      h += _guaCell('變卦', mh.bian && mh.bian.n, '後續趨勢');
       h += '</div>';
-      var bad = (mh.ty && (mh.ty.f==='凶' || mh.ty.f==='小凶'));
       h += '<div class="mhx-ty"><span class="rel">' + (mh.ty?mh.ty.r:'—') + '</span>';
-      h += '<span class="luck' + (bad?' bad':'') + '">' + (mh.ty?mh.ty.f:'') + '</span>';
-      h += '<div class="desc">' + (mh.ty?mh.ty.d:'') + '</div></div>';
-      h += '<div class="mhx-dong">體卦 ' + (mh.tiG?mh.tiG.n+'（'+mh.tiG.el+'）':'') + ' ・ 用卦 ' + (mh.yoG?mh.yoG.n+'（'+mh.yoG.el+'）':'') + ' ・ 動爻第 ' + (mh.dong||'?') + ' 爻</div>';
+      h += '<span class="luck">體用初判</span>';
+      h += '<div class="desc">' + _mhEscape(_mhRelationNote(mh.ty && mh.ty.r)) + '</div></div>';
+      h += '<div class="mhx-dong">體卦 ' + (mh.tiG?_mhEscape(mh.tiG.name||mh.tiG.n)+'（'+mh.tiG.el+'）':'') + ' ・ 用卦 ' + (mh.yoG?_mhEscape(mh.yoG.name||mh.yoG.n)+'（'+mh.yoG.el+'）':'') + ' ・ 動爻第 ' + (mh.dong||'?') + ' 爻</div>';
+      h += '<div class="at-reading-note"><strong>把卦象放回你的問題</strong><p>體用先看助力與消耗；再合看時令旺衰、互卦的過程與變卦的後續。若訊號不同，先辨認條件如何改變，再決定下一步。</p></div>';
       h += '</div>';
 
       h += '<div class="mhx-ai-card"><div class="mhx-ai-title">🌙 AI 深度解讀</div>';
-      h += '<div class="mhx-ai-desc">輕觸按鈕複製，貼到 AI 對話送出即可。</div>';
+      h += '<div class="mhx-ai-desc">複製本次問題與卦象，貼到 AI 對話送出。提示詞會引導逐層解讀，整理你可採取的行動與需要觀察的變化。</div>';
       h += '<button class="mhx-ai-copy-btn" onclick="_mhCopy()">✦ 一鍵複製占卦提示詞 ✦</button>';
       h += '<div class="mhx-ai-grid">';
       for (var a=0;a<AI_LIST.length;a++) {
@@ -210,11 +212,26 @@
         h += '<img src="ai-icons/ai-'+ai.id+'.png" alt="'+ai.name+'"><span>'+ai.name+'</span></button>';
       }
       h += '</div><div class="mhx-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
-      h += '<div style="text-align:center;margin-top:.2rem"><button onclick="_meihuaShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361</button></div>';
+      h += '<div style="text-align:center;margin-top:.2rem"><button type="button" class="at-share-button" onclick="_meihuaShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">\uD83D\uDCE4 \u751F\u6210\u5206\u4EAB\u5361</button></div>';
       h += '<div style="text-align:center"><button class="mhx-reset-btn" onclick="_mhReset()">↺ 重新起卦</button></div>';
     }
     h += '<div class="mhx-footer">靜月之光 ・ jingyue.uk<br>梅花易數 ・ 體用占</div></div>';
     w.innerHTML = h;
+    if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
+  }
+
+  function _mhEscape(value) { return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+  // Reader-facing paraphrases; raw engine relations remain intact in the prompt.
+  // 梅花易數卷二：體用總訣、人事占、卦斷遺論。A single relation is not a final verdict.
+  function _mhRelationNote(relation) {
+    return {
+      '比和': '體與用同五行，可先留意協調與共同基礎；是否能推進，仍看旺衰與互變。',
+      '用生體': '用卦生助體卦，可先找出可運用的支持；也要確認助力能否持續、如何落實。',
+      '體生用': '體卦向用卦付出，可先檢視投入與消耗；釐清能承擔的範圍及預期回應。',
+      '用克體': '用卦對體卦形成制約，可先辨認壓力來源；把可調整的條件與暫時限制分開。',
+      '體克用': '體卦對用卦具有制約方向，可先找出能主動調整的環節；實際掌握度仍看體卦強弱。'
+    }[relation] || '體用關係尚待確認，請合看完整卦象與當下情境。';
   }
 
   function _guaCell(role, name, sub) {

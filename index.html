@@ -373,8 +373,9 @@
 #t-chosen .jy-row,#t-chosen .gd-triad,#t-chosen .tol-pair{min-height:96px;}
 </style>
 <link id="jysc-css" rel="stylesheet" href="assets/share/share-cards-20260911.css">
+<link rel="stylesheet" href="CSS/atelier-ui.css?v=20260911atelier2">
 </head>
-<body>
+<body class="jy-atelier">
 <noscript>
   <div style="text-align:center;padding:40px;font-family:sans-serif">
     <h2>靜月之光 — 免費AI塔羅・開鑰之法・雷諾曼線上解牌</h2>
@@ -383,7 +384,7 @@
   </div>
 </noscript>
 <nav class="nav"><div class="nav-inner">
-  <div class="nav-brand"><i class="fas fa-moon"></i><span>靜月之光</span></div>
+  <div class="nav-brand"><i class="fas fa-moon" aria-hidden="true"></i><span>靜月之光<small>JINGYUE</small></span></div>
   <div class="nav-links">
     <button class="nav-link active" onclick="goStep(0)">輸入</button>
     <button class="nav-link" onclick="goStep(1)">梅花</button>
@@ -391,7 +392,7 @@
     <button class="nav-link" onclick="goStep(3)">結果</button>
   </div>
   <div class="nav-shop">
-    <a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">🛒 蝦皮</a>
+    <a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer" aria-label="前往蝦皮水晶選物賣場"><i class="fas fa-bag-shopping" aria-hidden="true"></i> 水晶選物 ↗</a>
   </div>
 </div></nav>
 
@@ -423,6 +424,7 @@
 
   <!-- ═══ PHASE B: Quick Input (hidden until type picked) ═══ -->
   <div id="input-screen" style="display:none">
+    <header class="at-input-head"><button type="button" class="at-back" onclick="backToHook()" aria-label="返回首頁"><i class="fas fa-arrow-left" aria-hidden="true"></i></button><div><h1>此刻，你想釐清什麼？</h1><p>寫下問題，選擇適合你的探索方式。</p></div></header>
     <!-- 已選類型 breadcrumb -->
     <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
       <button class="btn btn-outline btn-sm" onclick="backToHook()" style="padding:.3rem .6rem"><i class="fas fa-arrow-left"></i></button>
@@ -456,10 +458,10 @@
 
     <!-- 牌陣選擇彈窗 -->
     <div class="jym-overlay" id="jy-spread-modal" style="display:none" onclick="if(event.target===this)closeSpreadPicker()">
-      <div class="jym-sheet">
+      <div class="jym-sheet" role="dialog" aria-modal="true" aria-labelledby="jym-dialog-title">
         <div class="jym-grip"></div>
         <div class="jym-head">
-          <div class="jym-title"><i class="fas fa-clone"></i> 選擇牌陣</div>
+          <div class="jym-title" id="jym-dialog-title"><i class="fas fa-clone"></i> 選擇牌陣</div>
           <button class="jym-close" type="button" onclick="closeSpreadPicker()" aria-label="關閉">&times;</button>
         </div>
         <div class="jym-sub">不同問題適合不同牌陣 ・ 選「自動」我會依你的問題判斷最合適的</div>
@@ -569,20 +571,20 @@
     <div class="card" style="padding:.8rem">
       <div style="font-size:.82rem;font-weight:700;color:var(--c-text);margin-bottom:.6rem"><i class="fas fa-compass" style="color:var(--c-gold);margin-right:.3rem"></i>選擇分析方式</div>
       <div class="jy-tool-grid">
-        <div class="jy-tool-card jy-tool-tarot selected" id="tool-tarot" onclick="pickTool('tarot')">
+        <button type="button" class="jy-tool-card jy-tool-tarot selected" id="tool-tarot" aria-pressed="true" onclick="pickTool('tarot')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
-            <div><div class="jy-tool-name">塔羅快讀</div><div class="jy-tool-desc">一個問題，抽牌就有答案<br><span style="opacity:.6">不需出生資料・30 秒出結果</span></div></div>
+            <div><div class="jy-tool-name">塔羅快讀</div><div class="jy-tool-desc">從一個問題，整理牌面的提醒<br><span style="opacity:.6">不需出生資料・可自選牌陣</span></div></div>
             <div class="jy-tool-free" id="tool-tarot-badge">完全免費</div>
           </div>
-        </div>
-        <div class="jy-tool-card jy-tool-ootk" id="tool-ootk" onclick="pickTool('ootk')">
+        </button>
+        <button type="button" class="jy-tool-card jy-tool-ootk" id="tool-ootk" aria-pressed="false" onclick="pickTool('ootk')">
           <div class="jy-tool-head">
             <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(217,151,56,.18),rgba(217,151,56,.06));border-color:rgba(217,151,56,.3)"><i class="fas fa-key" style="color:rgba(217,151,56,.9)"></i></div>
-            <div><div class="jy-tool-name">開鑰之法</div><div class="jy-tool-desc">78 張牌五層深潛,問到根源<br><span style="opacity:.6">不需任何資料・金色黎明開鑰儀式</span></div></div>
+            <div><div class="jy-tool-name">開鑰之法</div><div class="jy-tool-desc">78 張牌，循五層儀式深入探索<br><span style="opacity:.6">不需生辰・金色黎明傳統程序</span></div></div>
             <div class="jy-tool-free" id="tool-ootk-badge">完全免費</div>
           </div>
-        </div>
+        </button>
         <!-- ★ v70 七維度交叉分析工具卡已移除 -->
       </div>
     </div>
@@ -697,7 +699,7 @@
 
   <!-- 📤 生成分享卡-->
   <div id="tarot-share-wrap" style="text-align:center;margin-top:var(--sp-md)">
-    <button onclick="_tarotShare()" style="padding:.82rem 1.6rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:var(--c-gold);font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">📤 生成分享卡</button>
+    <button type="button" class="at-share-button" onclick="_tarotShare()" style="padding:.82rem 1.6rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:var(--c-gold);font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">📤 生成分享卡</button>
   </div>
 
   <!-- ═══ 想看更深？七維度入口 ═══ -->
@@ -1406,25 +1408,26 @@
 <script src="JS/ai-analysis.js?v=20260910professional1" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/oracle.js?v=20260911cards1" defer></script>
-<script src="JS/lenormand.js?v=20260910professional1" defer></script>
+<script src="JS/oracle.js?v=20260911atelier2" defer></script>
+<script src="JS/lenormand.js?v=20260911atelier2" defer></script>
 <!-- display3：手機靜態背景；出生選單先備妥內容再開啟，避免初始化錯誤與重複繪圖。 -->
-<script src="JS/ink-flow.js?v=20260906display3" defer></script>
+<script src="JS/ink-flow.js?v=20260911atelier2" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260910professional1" defer></script>
+<script src="JS/meihua-standalone.js?v=20260911atelier2" defer></script>
 <!-- 共用提示詞根必須先於 standalone 載入，否則八字會直接失敗、紫微會退回舊提示詞。 -->
 <script src="JS/picker-core.js?v=20260906display3" defer></script>
 <script src="JS/ziwei-prompt-root.js?v=20260910professional1" defer></script>
 <script src="JS/bazi-prompt-root.js?v=20260910professional1" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260908audit1" defer></script>
-<script src="JS/bazi-standalone.js?v=20260906display3" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260911atelier2" defer></script>
+<script src="JS/bazi-standalone.js?v=20260911atelier2" defer></script>
 <!-- v87_0(2026/6/26)：八字完整功能套件——單盤六主題、八種角色情境合盤、雙向十神與跨盤作用、五行互補、雙方歲運同步、本地五軸32型人格、歷史/匯出。第三方未公開私有演算法不冒充搬運，採本地可檢查規則重建。 -->
 <!-- v87_1(2026/6/26)：恢復原版八字 UI 為預設入口；保留原自訂日期、時間、出生地點選擇器。完整合盤／人格／工具改由原版頁面的次要按鈕開啟，不再以原生 date/time 輸入覆蓋主入口。 -->
 <script src="JS/share-card.js?v=20260911preview1" defer></script>
 <script src="JS/bazi-suite-core.js?v=20260910professional1" defer></script>
-<script src="JS/bazi-suite.js?v=20260906display3" defer></script>
-<script src="JS/ui.js?v=20260911cards1" defer></script>
-<script src="JS/spread-picker.js?v=20260910professional1" defer></script>
+<script src="JS/bazi-suite.js?v=20260911atelier2" defer></script>
+<script src="JS/ui.js?v=20260911atelier2" defer></script>
+<script src="JS/atelier-ui.js?v=20260911atelier2" defer></script>
+<script src="JS/spread-picker.js?v=20260911atelier2" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
