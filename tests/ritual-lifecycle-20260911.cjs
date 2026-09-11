@@ -35,7 +35,8 @@ function tarotFixture(){
  e.ctx.S.form={question:'這段關係裡，我需要理解自己的哪些模式？',type:'love'};e.clock.clear();return e;
 }
 function complete(e,id){const c=e.ctx;c.setCurrentSpread(id);const def=c.getCurrentSpreadDef();c.drawnCards=c.JY_buildCanonicalTarotDraw(c.TAROT.slice(),id,def,'test','love',c.S.form.question);c.S.tarot.drawn=c.drawnCards;c.S.tarot.spread=c.drawnCards;c.showSpread();return c.drawnCards;}
-(async()=>{
+module.exports={fixture,load,tarotFixture,add};
+if(require.main===module)(async()=>{
  for(const kind of ['tarot','lenormand','bazi','compat','ziwei','meihua','oracle'])await test(kind+': user-led scenes never time out; completion, focus and cleanup occur once',async()=>{
   const e=fixture(),trigger=add(e,'button','trigger');trigger.focus();e.doc.body.style.overflow='auto';load(e,'ritual-ateliers');let done=0;
   const h=e.ctx.JYRitual.play(kind,{onComplete:()=>done++}),dialog=e.doc.querySelector('dialog');assert(dialog.open);assert.equal(e.doc.body.style.overflow,'hidden');assert.equal(e.ctx.JYRitual.play(kind),h);
