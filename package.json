@@ -20,7 +20,8 @@
     "test:ui": "node tests/atelier-ui-20260911.cjs",
     "test:ritual": "node tests/ritual-lifecycle-20260911.cjs",
     "build:cinematic": "node scripts/build-cinematic.mjs",
-    "test:cinematic": "node tests/cinematic-20260911.cjs"
+    "test:cinematic": "node tests/cinematic-20260911.cjs && npm run test:shuffle-recovery",
+    "test:shuffle-recovery": "node tests/shuffle-recovery-20260911.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"
