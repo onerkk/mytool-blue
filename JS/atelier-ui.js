@@ -1,7 +1,7 @@
 /* 靜月之光 · Celestial Atelier UI / 20260911celestial1 */
 (function () {
   'use strict';
-  var entrance = null;
+  var entrance = null, retryDeckPreparation = false;
   function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   // Explicit render hooks: no global MutationObserver or background polling.
   window.JY_ATELIER = {
@@ -98,17 +98,23 @@
   // The visible action owns the ceremony. Never delegate to a hidden, stale DOM button.
   window._atelierStartTarotShuffle=function(){
     if(window._deckIsShuffled || (window.JYRitual && window.JYRitual.isActive()))return;
-    function report(message){var hint=document.getElementById('pick-hint');if(hint){hint.textContent=message;hint.style.display='';hint.setAttribute('role','alert');if(hint.scrollIntoView)hint.scrollIntoView({block:'center'});}else window.alert(message);}
+    function report(message){
+      var action=document.getElementById('tarot-dock-action');if(action){action.disabled=false;action.textContent='重試洗牌';}
+      var hint=document.getElementById('pick-hint');if(hint){hint.textContent=message;hint.style.display='';hint.setAttribute('role','alert');}else window.alert(message);
+    }
     if(!window.JYRitual || typeof window.JYRitual.play!=='function'){
-      report('洗牌元件尚未載入，請重新整理頁面後再試。');return;
+      report('洗牌元件尚未載入，請稍後按「重試洗牌」。原問題與牌陣會保留。');return;
     }
     try{
-      if(typeof deckShuffled==='undefined'||!deckShuffled.length){
-        if(typeof initTarotDeck==='function')initTarotDeck();
+      var hint=document.getElementById('pick-hint');if(hint){hint.setAttribute('role','status');hint.textContent='正在準備洗牌…';}
+      if(retryDeckPreparation||typeof deckShuffled==='undefined'||!deckShuffled.length){
+        if(typeof initTarotDeck==='function'){
+          retryDeckPreparation=true;initTarotDeck();retryDeckPreparation=false;
+        }
       }
       var deck=document.getElementById('t-deck');
       if(!deck || typeof deckShuffled==='undefined' || !deckShuffled.length){
-        report('牌組尚未準備完成，請返回修改問題後重新進入。');return;
+        report('牌組尚未準備完成，請按「重試洗牌」。不需修改問題。');return;
       }
       var epoch=window.JYTarotSession?window.JYTarotSession.epoch():0;
       return window.JYRitual.play('tarot',{
@@ -128,8 +134,13 @@
       });
     }catch(error){
       console.error('[Tarot shuffle]',error);
+      // Cancel presentation only. Resetting JYTarotSession or navigating back
+      // here would discard the current deck and incorrectly blame the input.
+      if(window.JYRitual&&typeof window.JYRitual.cancel==='function'){
+        try{window.JYRitual.cancel('tarot');}catch(cleanupError){console.error('[Tarot shuffle cleanup]',cleanupError);}
+      }
       window._deckIsShuffled=false;
-      report('洗牌未能啟動，請返回修改問題後重試。');
+      report('洗牌暫時未能啟動。原問題與牌陣已保留，請直接按「重試洗牌」。');
     }
   };
   window._atelierTarotAction=function(){

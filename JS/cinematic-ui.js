@@ -77,11 +77,19 @@
   if(phase==='poem')results(container);
  }
  function syncHome(){
-  if(homeScene&&(!homeVisible||homeSuspended||document.hidden)){homeScene.dispose();homeScene=null;}
+  if(homeScene&&(!homeVisible||homeSuspended||document.hidden))releaseHome();
   if(!homeScene&&homeVisible&&!homeSuspended&&!document.hidden&&homeHost&&homeHost.isConnected&&root.JYCinema){
-   homeScene=root.JYCinema.mount(homeHost,'tarot',{mode:'hold',reduced:root.matchMedia('(prefers-reduced-motion: reduce)').matches});
+   try{homeScene=root.JYCinema.mount(homeHost,'tarot',{mode:'hold',reduced:!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches)});}
+   catch(error){releaseHome();if(root.console)root.console.warn('[JYCinema home mount]',error);}
   }
  }
+ function releaseHome(){
+  var scene=homeScene;homeScene=null;
+  try{if(scene&&typeof scene.dispose==='function')scene.dispose();}
+  catch(error){if(root.console)root.console.warn('[JYCinema home dispose]',error);}
+  finally{if(homeHost){homeHost.querySelectorAll('canvas').forEach(function(canvas){canvas.remove();});homeHost.classList.remove('jr-gpu-ready','jr-actor-ready');}}
+ }
+ function homePhase(value){try{if(homeScene)homeScene.setPhase(value);}catch(error){releaseHome();if(root.console)root.console.warn('[JYCinema home phase]',error);}}
  function home(){
   var hero=document.querySelector('.at-hero');if(!hero)return;
   if(hero.querySelector('.jc-home-stage'))return;
@@ -95,8 +103,8 @@
   homeHost.innerHTML='<div class="jr-actor-fallback" aria-hidden="true"><span class="jr-actor-pose" style="opacity:1;background-image:url(assets/ui/lunar-guide.webp);background-position:0% 0"></span></div>';
   art.prepend(homeHost);
   var cap=document.createElement('div');cap.className='jc-home-caption';cap.innerHTML='<span>月見 <small>· 塔羅引路人</small></span><p>「不必急著有答案，先說說你最在意的事。」</p>';art.appendChild(cap);
-  homeHost.addEventListener('pointerenter',function(){if(homeScene)homeScene.setPhase(3);});
-  homeHost.addEventListener('pointerleave',function(){if(homeScene)homeScene.setPhase(0);});
+  homeHost.addEventListener('pointerenter',function(){homePhase(3);});
+  homeHost.addEventListener('pointerleave',function(){homePhase(0);});
   var button=hero.querySelector('#home-cta-btn>span');if(button)button.textContent='走進月下神殿';
   if(typeof IntersectionObserver==='function'){homeObserver?.disconnect();homeObserver=new IntersectionObserver(function(entries){homeVisible=entries.some(function(e){return e.isIntersecting;});syncHome();},{threshold:.08});homeObserver.observe(homeHost);}
   // Older browsers keep an illustrated entrance rather than a permanent render loop.
