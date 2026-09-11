@@ -1,0 +1,216 @@
+{
+  "version": "20260911cinema4",
+  "package_type": "cumulative changed files; merge into existing site root",
+  "files": [
+    {
+      "path": "CSS/atelier-ui.css",
+      "bytes": 96937,
+      "sha256": "9ee449e441732af8e1dd5b9f061a7244d4d9ab4e2b9757d1c617ad6171263219"
+    },
+    {
+      "path": "CSS/cinematic-stage.css",
+      "bytes": 19188,
+      "sha256": "9f1af3da995a7755a46420dffed5919f0fe7f5b70dcdf6308c81371362895faa"
+    },
+    {
+      "path": "CSS/ritual-ateliers.css",
+      "bytes": 19041,
+      "sha256": "0edc13cfae37ccca254b6c8bd98b6669bee7132ed82f39637359fa22c3ec1aa9"
+    },
+    {
+      "path": "JS/atelier-ui.js",
+      "bytes": 9692,
+      "sha256": "53c8aae159be9c6d7f4a7aaf5b3f6392a2110e7380ff79ca4ee99548ff79c257"
+    },
+    {
+      "path": "JS/bazi-standalone.js",
+      "bytes": 80985,
+      "sha256": "013809119e0f52d3d369ee7b8bfd14a1e74ad7d0ca4e6bf8d331ca39514919fc"
+    },
+    {
+      "path": "JS/bazi-suite.js",
+      "bytes": 71717,
+      "sha256": "36bd0c5a939de6266399ecd80baa0bc8ac07c01341d3e276f886303bc9a001a6"
+    },
+    {
+      "path": "JS/cinematic-src/choreography.mjs",
+      "bytes": 2412,
+      "sha256": "2e94df2207082fab9536fe230a024dc4ca8584b0d798460da2c4b7ea3c86107c"
+    },
+    {
+      "path": "JS/cinematic-src/entry.mjs",
+      "bytes": 142,
+      "sha256": "ad77ec693dd54c110908f7bf7c023827b1b4e76fa2db35511a319f90ceb0686c"
+    },
+    {
+      "path": "JS/cinematic-src/stage.mjs",
+      "bytes": 14025,
+      "sha256": "fd92651f258146d33e24a708feec060eecc0243d118e4d4c07e8711c8d3c11b2"
+    },
+    {
+      "path": "JS/cinematic-stage.js",
+      "bytes": 550103,
+      "sha256": "1c61ad047747171684383435a6ab8563768da18de1a0f32762141d2e84476e4b"
+    },
+    {
+      "path": "JS/cinematic-ui.js",
+      "bytes": 10307,
+      "sha256": "6cf171c11684029a219c4f04efbf93e72901695d094b0742d5c93f35e44ef8ba"
+    },
+    {
+      "path": "JS/lenormand.js",
+      "bytes": 90715,
+      "sha256": "4c16598023fb1e7c1dbecf284b7fe7866c56cbc7e2da48955cd87a645cc642b5"
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "bytes": 63121,
+      "sha256": "c5a5a70e43f957979801c4354756e83c9328f86f9cccd9998963d5e865302cdd"
+    },
+    {
+      "path": "JS/oracle.js",
+      "bytes": 295338,
+      "sha256": "e7ac41960689d0f512765593ce93bc50477c4fb2df3b1bdc5514780fe5667fa3"
+    },
+    {
+      "path": "JS/ritual-ateliers.js",
+      "bytes": 23114,
+      "sha256": "67435f7597e207cca1e6abb4bc5ef5ab5c04e0a834f665be4104c98d5bb1dbe8"
+    },
+    {
+      "path": "JS/spread-picker.js",
+      "bytes": 21854,
+      "sha256": "5ddabf9242a21fb520bccd1b71fddb373b2d0a6f6abb28695d4cbf5640df1876"
+    },
+    {
+      "path": "JS/sw.js",
+      "bytes": 3931,
+      "sha256": "539770d298d0acc7ce2a457fdfd940a9e51a42a17f24b8643d14858446fb35c5"
+    },
+    {
+      "path": "JS/tarot-reading.js",
+      "bytes": 13169,
+      "sha256": "b9cb7be1b4387ae1abd664999d5df4212ecbb5d67b13ab632b12327636f3b3a2"
+    },
+    {
+      "path": "JS/tarot.js",
+      "bytes": 381833,
+      "sha256": "56bec1c1cffc6202d2084ad1ad1e582d1cdc55e83ed2518d420aef6c739dd70b"
+    },
+    {
+      "path": "JS/tarot_upgrade.js",
+      "bytes": 397983,
+      "sha256": "efbb1fbe360b2f28edd00aebc92630c92780e1389dcc2d18ad3f51fffe6c2451"
+    },
+    {
+      "path": "JS/ui.js",
+      "bytes": 432019,
+      "sha256": "1b8f659dfa21115ba1172d2df74d1d472f872b618e6861a01bab7d25c3317e54"
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "bytes": 77829,
+      "sha256": "c26674d402204562bb2e987d928b6ca36f4e5185806d07ffa7d850277cdd602d"
+    },
+    {
+      "path": "UPDATE-20260911-CINEMA.md",
+      "bytes": 6411,
+      "sha256": "e244a48be806e3eae407e5f8321a43c7297ed1e1004ee981d7410512637f41bc"
+    },
+    {
+      "path": "UPDATE-20260911-RITUAL.md",
+      "bytes": 6889,
+      "sha256": "a638a97c7ed33be60a9c940e9751b64899cca8977760896a512be7644a340f3d"
+    },
+    {
+      "path": "UPDATE-20260911-SHUFFLE.md",
+      "bytes": 1480,
+      "sha256": "86706e68585bcddc1d3dfca457d12ac0a5742e1430e11390226a13b1110ed84a"
+    },
+    {
+      "path": "assets/ui/blossom-guide.webp",
+      "bytes": 631714,
+      "sha256": "feb7f59c410976865c81d76c905e39648599e02100f5c4ee5eb943e28dcb5036"
+    },
+    {
+      "path": "assets/ui/lunar-guide.webp",
+      "bytes": 566078,
+      "sha256": "e609819bbe66ee00da92a5ecea390e6afc49823a42b8b8e024e5be929a76b5fa"
+    },
+    {
+      "path": "assets/ui/ritual-celestial-observatory.webp",
+      "bytes": 296884,
+      "sha256": "ee132ff5bfccd27c6496b6e4455919841b15825d16598c4f1f5b7d68e705cdb5"
+    },
+    {
+      "path": "assets/ui/ritual-moon-garden.webp",
+      "bytes": 292936,
+      "sha256": "da4f295060cdb79a201b225c7fb6a4d91038a3337c486d7182e0b2b1908f5ac0"
+    },
+    {
+      "path": "assets/ui/ritual-moon-sanctum.webp",
+      "bytes": 175076,
+      "sha256": "03e227d31003537316191b66855cf54441fde5a25ec0c71e5ccc2bc77ad1e084"
+    },
+    {
+      "path": "assets/ui/star-guide.webp",
+      "bytes": 518088,
+      "sha256": "75e0cbdad3b9112b8dd6c26729f70faf90a8ece6665ccbe0a8fc972fc36c8ea0"
+    },
+    {
+      "path": "index.html",
+      "bytes": 143371,
+      "sha256": "3e77a6d247d76762a1070a309a31185fd81fe374510078836710cb9e44d35bc4"
+    },
+    {
+      "path": "licenses/three-MIT.txt",
+      "bytes": 1081,
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+    },
+    {
+      "path": "meihua-standalone.js",
+      "bytes": 63121,
+      "sha256": "c5a5a70e43f957979801c4354756e83c9328f86f9cccd9998963d5e865302cdd"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 77529,
+      "sha256": "b5474f01fba499cf58d129e40f694dec1f864b30b5073f78496c2e0dd77d3574"
+    },
+    {
+      "path": "package.json",
+      "bytes": 1532,
+      "sha256": "a3ee7a25661b2cbd672673bcb328369aff7704798eb27aebe09f354e6b029b17"
+    },
+    {
+      "path": "release-cinema-20260911/asset-prompts.json",
+      "bytes": 6826,
+      "sha256": "65791cc2e95a645403e4f7621da7baa69d2b13f174566ec1125bebea58ea09b9"
+    },
+    {
+      "path": "release-cinema-20260911/validation.json",
+      "bytes": 904,
+      "sha256": "35113441dda352ceb4ece225400f7694762a397c0b89213cb2da2ea8998fe6c0"
+    },
+    {
+      "path": "scripts/build-cinematic.mjs",
+      "bytes": 479,
+      "sha256": "751780d7735042bb08a4a4c5a511aafa573f9484b1efa3e2158e2e1e52e90cfd"
+    },
+    {
+      "path": "tests/atelier-ui-20260911.cjs",
+      "bytes": 9489,
+      "sha256": "31b4f4c6993c8b3f1590738b29ad6f7bb4178d6574a53d54483d53cf1f525364"
+    },
+    {
+      "path": "tests/cinematic-20260911.cjs",
+      "bytes": 11744,
+      "sha256": "8044f28d0b8e56afd72f9553c5d36a8d25aaa9515b268a83262f69c8056b777e"
+    },
+    {
+      "path": "tests/ritual-lifecycle-20260911.cjs",
+      "bytes": 24567,
+      "sha256": "acea26f567a2207fb3586e6726d46a7bf31f5c58b6f85acde73d4809fb3d2320"
+    }
+  ]
+}

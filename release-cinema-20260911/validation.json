@@ -1,1 +1,34 @@
-
+{
+  "version": "20260911cinema4",
+  "npm_test": "passed",
+  "ritual_groups": 25,
+  "cinematic_groups": 10,
+  "routing_cases_in_existing_professional_suite": 56,
+  "production_bundle": "built successfully",
+  "new_preview": "unreachable from cloud browser; blank tab",
+  "gpu_pixel_validation": "not completed",
+  "physical_mobile_validation": "not completed",
+  "live_deployment": "not performed",
+  "three_version": "0.186.0",
+  "actor_medium": "four-pose transparent illustrated atlas, not 3D skeletal human or video",
+  "assets": [
+    {
+      "path": "assets/ui/lunar-guide.webp",
+      "width": 1774,
+      "height": 887,
+      "bytes": 566078
+    },
+    {
+      "path": "assets/ui/star-guide.webp",
+      "width": 1774,
+      "height": 887,
+      "bytes": 518088
+    },
+    {
+      "path": "assets/ui/blossom-guide.webp",
+      "width": 1774,
+      "height": 887,
+      "bytes": 631714
+    }
+  ]
+}
