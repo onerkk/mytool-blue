@@ -79,6 +79,22 @@ function complete(e,id){const c=e.ctx;c.setCurrentSpread(id);const def=c.getCurr
   const e=fixture(),normal=add(e,'main','main'),inert=add(e,'aside','aside');normal.inert=false;inert.inert=true;e.Element.prototype.showModal=function(){throw Error('Unavailable');};load(e,'ritual-ateliers');
   const h=e.ctx.JYRitual.play('bazi'),d=e.doc.querySelector('dialog');assert(normal.inert);assert(inert.inert);d.querySelector('.jr-skip').focus();d.dispatch('keydown',{key:'Tab'});assert.equal(e.doc.activeElement,d.querySelector('.jr-cancel'));d.dispatch('keydown',{key:'Escape'});assert.equal(await h.finished,false);assert.equal(normal.inert,false);assert.equal(inert.inert,true);
  });
+ await test('Visible Start Shuffle works with no legacy button, then enables real selection without drawing early',async()=>{
+  const e=tarotFixture(),c=e.ctx;c.setCurrentSpread('tree_of_life');c.deckShuffled=c.TAROT.slice();load(e,'atelier-ui');
+  const button=add(e,'button','tarot-dock-action');button.onclick=()=>c._atelierTarotAction();assert.equal(e.doc.getElementById('jy-shuffle-btn'),null);
+  button.click();const d=e.doc.querySelector('dialog');assert(d,'Visible dock must launch the ceremony without a hidden button');assert.equal(c._deckIsShuffled,false);assert.equal(c.drawnCards.length,0);assert(e.doc.getElementById('btn-analyze').disabled);
+  button.click();assert.equal(e.doc.querySelectorAll('dialog').length,1);d.querySelector('.jr-next').click();d.querySelector('.jr-next').click();e.clock.advance(2100);assert.equal(c._deckIsShuffled,false);d.querySelector('.jr-next').click();assert.equal(c._deckIsShuffled,true);assert.equal(c.drawnCards.length,0);assert(!c.JYRitual.isActive());
+ });
+ await test('Stale legacy handlers are bypassed; cancel and return can start another shuffle safely',()=>{
+  const e=tarotFixture(),c=e.ctx;c.setCurrentSpread('three_card');c.deckShuffled=c.TAROT.slice();load(e,'atelier-ui');
+  const legacy=add(e,'button','jy-shuffle-btn');let staleCalls=0;legacy.onclick=()=>staleCalls++;
+  c._atelierTarotAction();assert(e.doc.querySelector('dialog'));assert.equal(staleCalls,0);e.doc.querySelector('.jr-cancel').click();assert.equal(c._deckIsShuffled,false);assert.equal(c.drawnCards.length,0);assert(!c.JYRitual.isActive());
+  c.deckShuffled=c.TAROT.slice();c._atelierTarotAction();assert(e.doc.querySelector('dialog'));e.doc.querySelector('.jr-skip').click();assert.equal(c._deckIsShuffled,true);assert.equal(c.drawnCards.length,0);
+ });
+ await test('Missing ritual reports an error, and changing spread invalidates an in-flight shuffle completion',()=>{
+  const e=tarotFixture(),c=e.ctx;c.setCurrentSpread('three_card');c.deckShuffled=c.TAROT.slice();load(e,'atelier-ui');const ritual=c.JYRitual;c.JYRitual=null;c._deckIsShuffled=false;c._atelierTarotAction();assert.match(e.doc.getElementById('pick-hint').textContent,/尚未載入/);assert.equal(c._deckIsShuffled,false);c.JYRitual=ritual;
+  c._atelierTarotAction();c.setCurrentSpread('five_card');e.clock.advance(5000);assert.equal(c._deckIsShuffled,false);assert.equal(c.drawnCards.length,0);assert(!c.JYRitual.isActive());
+ });
  await test('Tree of Life → Mathers 21 clears previous cards, derived data, visible meanings and analysis access together',()=>{
   const e=tarotFixture(),c=e.ctx;complete(e,'tree_of_life');assert.equal(c.drawnCards.length,10);assert.equal(e.doc.getElementById('t-spread-sec').hidden,false);assert(e.doc.getElementById('t-spread').innerHTML.length>0);c.S.tarot.oldPayload={card:'old'};
   c.setCurrentSpread('mathers_21');assert.equal(c.getCurrentSpreadDef().count,21);assert.equal(c.drawnCards.length,0);assert.equal(c.S.tarot.drawn.length,0);assert.equal(c.S.tarot.oldPayload,undefined);assert.equal(e.doc.getElementById('t-spread').innerHTML,'');assert(e.doc.getElementById('t-spread-sec').hidden);assert(e.doc.getElementById('btn-analyze').disabled);assert.equal(e.doc.getElementById('t-remain-picked').textContent,'0');
