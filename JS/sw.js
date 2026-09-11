@@ -3,7 +3,9 @@
 // 圖片/字型 → cache-first（省流量）
 // API → 不攔截
 // v59: 20260908audit1 方法核對與提示詞資料修正；v58: 20260906display3 手機靜態背景、選擇器生命週期與啟動順序；原 v57: 20260906 開鑰／時間欄位／塔羅正逆位； 共用選擇器與提示詞資料完整性； 紫微 ROOT-SPEC v2 與動態三方索引；強制清除舊提示詞快取，JS/HTML 維持 network-first + no-cache
-const CACHE_NAME = 'jy-main-v59';
+// v60: 20260910professional1 逐陣讀法、問題選陣、共用提示詞與合理選品。
+// v61: 20260911cards1 Moon Atelier 分享卡與靈籤統一，2x 高清輸出。
+const CACHE_NAME = 'jy-main-v61';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

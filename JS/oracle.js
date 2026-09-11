@@ -1214,107 +1214,22 @@ window._oracleViewPoem=function(){
   _phase='shengjia';_render();
   setTimeout(function(){_phase='poem';_render();},2400);
 };
-// ★ v9 Canvas API 繪製分享圖 — 長條書籤比例
-function _drawShareCard(callback){
-var p=_poem;if(!p)return;
-var W=750,H=1200;
-var cv=document.createElement('canvas');cv.width=W;cv.height=H;
-var ctx=cv.getContext('2d');
-var wmImg=new Image();wmImg.crossOrigin='anonymous';
-wmImg.onload=function(){
-// ── 背景 ──
-ctx.fillStyle='#fdf6e3';ctx.fillRect(0,0,W,H);
-// ── 女神浮水印（佔下半，彩色，上方淡出融合）──
-var wmH=H*0.6;var wmY=H-wmH-48;
-var wmAspect=wmImg.width/wmImg.height;
-var drawW=W-40,drawH=drawW/wmAspect;
-if(drawH<wmH)drawH=wmH;
-var drawX=(W-drawW)/2;
-ctx.save();ctx.globalAlpha=0.8;
-ctx.drawImage(wmImg,drawX,wmY,drawW,drawH);
-ctx.restore();
-// 上方淡出漸層（讓女神頭部自然融入背景）
-var fadeH=260;
-var grad=ctx.createLinearGradient(0,wmY,0,wmY+fadeH);
-grad.addColorStop(0,'#fdf6e3');grad.addColorStop(0.5,'rgba(253,246,227,0.75)');grad.addColorStop(1,'rgba(253,246,227,0)');
-ctx.fillStyle=grad;ctx.fillRect(0,wmY,W,fadeH);
-// ── 金色外框 ──
-ctx.strokeStyle='#c9a84c';ctx.lineWidth=8;
-ctx.strokeRect(10,10,W-20,H-20);
-ctx.strokeStyle='rgba(201,168,76,0.35)';ctx.lineWidth=1.5;
-ctx.strokeRect(22,22,W-44,H-44);
-// ── 頂部標題 ──
-ctx.fillStyle='rgba(139,105,20,0.5)';
-ctx.font='21px "Noto Serif TC",serif';ctx.textAlign='center';
-ctx.fillText('靜月之光 ・ 六十甲子靈籤',W/2,58);
-// 分隔線
-ctx.strokeStyle='rgba(201,168,76,0.25)';ctx.lineWidth=1;
-ctx.beginPath();ctx.moveTo(50,74);ctx.lineTo(W-50,74);ctx.stroke();
-// ── 右側：籤號直書 ──
-var numText='第'+CN[p.n]+'籤';
-ctx.fillStyle='#c9a84c';ctx.font='bold 46px "Noto Serif TC",serif';
-ctx.textAlign='center';
-for(var ni=0;ni<numText.length;ni++){
-ctx.fillText(numText[ni],W-55,120+ni*52);
-}
-// 干支+等級
-ctx.fillStyle='#6b5530';ctx.font='26px "Noto Serif TC",serif';
-ctx.fillText(p.g[0],W-118,160);
-ctx.fillText(p.g[1],W-118,192);
-var rc=_rc(p.r);
-ctx.fillStyle=rc.c==='var(--c-gold)'?'#c9a84c':rc.c;
-ctx.font='22px "Noto Serif TC",serif';
-ctx.fillText(p.r,W-118,235);
-// ── 籤詩直書（4句從右到左）──
-var lines=p.p.split('\n');
-ctx.fillStyle='#2c1810';ctx.font='bold 40px "Noto Serif TC",serif';
-ctx.textAlign='center';
-var poemRightX=W-185;
-var colGap=72;
-var charH=48;
-var poemTopY=108;
-for(var li=0;li<lines.length;li++){
-var line=lines[li];
-var lx=poemRightX-li*colGap;
-for(var ci=0;ci<line.length;ci++){
-ctx.fillText(line[ci],lx,poemTopY+ci*charH);
-}
-}
-// ── 五行方位+典故（置中）──
-var infoY=poemTopY+7*charH+18;
-ctx.fillStyle='rgba(100,70,20,0.5)';ctx.font='italic 18px "Noto Serif TC",serif';
-ctx.textAlign='center';
-ctx.fillText(p.t,W/2,infoY);
-ctx.fillText('典故：'+p.s,W/2,infoY+26);
-// ── 底部品牌金色條 ──
-var brandY=H-48;
-var brandGrad=ctx.createLinearGradient(0,brandY,W,brandY);
-brandGrad.addColorStop(0,'#c9a84c');brandGrad.addColorStop(1,'#8b6914');
-ctx.fillStyle=brandGrad;ctx.fillRect(10,brandY,W-20,38);
-ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='18px monospace';
-ctx.textAlign='left';ctx.fillText('jingyue.uk',30,brandY+26);
-ctx.textAlign='right';ctx.font='18px "Noto Serif TC",serif';
-ctx.fillText('靜月之光',W-30,brandY+26);
-callback(cv);
-};
-wmImg.onerror=function(){wmImg.onload()};
-wmImg.src=IMG.cardWm;
+// Moon Atelier: 靈籤與其他九類共用高清分享引擎，保留本次完整原詩。
+function _oracleShareData(){
+  if(!_poem)return null;
+  return {number:_poem.n,numberLabel:'第'+(CN[_poem.n]||_poem.n)+'籤',ganzhi:_poem.g,
+    rank:_poem.r,poem:_poem.p,story:_poem.s,question:_qText||'',edition:'靜月靈籤 · 六十甲子籤原詩'};
 }
 window._oracleShare=function(){
-_drawShareCard(function(cv){
-cv.toBlob(function(blob){
-if(navigator.share&&navigator.canShare){
-var f=new File([blob],'jingyue-oracle.png',{type:'image/png'});
-if(navigator.canShare({files:[f]})){navigator.share({title:'靜月靈籤',text:'靜月之光 ・ 六十甲子靈籤',files:[f]}).catch(function(){});}
-else{_dlBlob(blob)}
-}else{_dlBlob(blob)}
-},'image/png')})};
+  var data=_oracleShareData();if(!data)return;
+  if(!window.JYShareCard){alert('分享元件載入中，請稍候再試');return;}
+  JYShareCard.open('oracle',data);
+};
 window._oracleDownload=function(){
-_drawShareCard(function(cv){
-var a=document.createElement('a');a.href=cv.toDataURL('image/png');
-a.download='jingyue-oracle-'+_poem.n+'.png';a.click();
-})};
-function _dlBlob(d){var a=document.createElement('a');a.href=typeof d==='string'?d:URL.createObjectURL(d);a.download='jingyue-oracle.png';a.click()}
+  var data=_oracleShareData();if(!data)return;
+  if(!window.JYShareCard){alert('分享元件載入中，請稍候再試');return;}
+  JYShareCard.download('oracle',data).catch(function(){alert('圖片暫時未能完成，請再試一次');});
+};
 window._oracleRedraw=function(){
   // v65s/t: 笑/陰筊出現 = 神明否決此籤,籤不放回籤桶 → 從剩餘籤桶抽新籤
   if(_poem){
@@ -1422,6 +1337,10 @@ function _buildOraclePrompt(poem, qText) {
   lines.push('2. 先讀四句籤詩的整體語勢、因果、轉折與收束，逐句辨識背景、條件、阻力、轉機或勸戒的功能，再結合籤等、典故及相關分類判讀。引用最能支撐本題的原句，說明從詩句到本題的推論，不用籤等取代詩意。');
   lines.push('3. 說明典故如何映照求籤者的處境，並比較詩文、籤等與各項判讀是否同向；若出現不同解法，交代目前主判及轉圜條件。');
   lines.push('4. 題目問時間時，分辨詩中季節詞是實際時令、典故背景或象徵轉機；只有另有時間依據才給日曆窗口，不憑籤號、五行或方位推造日期。傳統治病與六甲條目不作診斷、療程或胎兒性別預測。');
+  lines.push("先接住使用者真正困擾的處境，直接給出本次可支持的結論，再說明仍能選擇或改變的部分。術語第一次出現時用白話解釋；不責怪命主、不把困境說成報應或終身定局。建議寫清下一步、目的、限制與可觀察的改善訊號，讓使用者知道何時應調整做法；不要只說保持正向或等待好運。");
+  lines.push("逐句解讀要保留原詩次序：每句先用白話解釋，再交代它在整首是背景、條件、轉折、勸戒還是收束，最後連回求問者的具體處境；不能把四句硬配四個月份。");
+  lines.push("典故只比較處境結構、人物抉擇與轉圜方式，不假設求問者會重演整段故事。詩意和後加吉凶標籤不同時，以可核對原詩為起點，說明分歧，不能挑好聽的一條。");
+  lines.push("分別回答「現在宜做什麼、暫時不宜做什麼、等什麼條件成熟再進一步」；等待要有可觀察條件與檢查點，不能勸人無限期忍受困境。遇到不好籤意也保留能做的實際選擇，不把困境歸咎於求問者不夠虔誠。");
   lines.push('整合要求：詩句、典故與問事條目衝突時，交代不同材料各自的條件與限制，提出主判及可推翻主判的現實訊號；典故角色不可直接指認成現實中的某人。每個建議連回具體詩意，給出可做的下一步，不只說保持正向。');
   lines.push('5. 使用繁體中文，語氣像老師父當面解籤：溫和、直接、有判斷。依「結論 → 詩文與典故 → 發展／時機 → 可行建議」自然組織，不逐欄複誦資料。');
   lines.push('6. 若問題涉及健康、法律、投資、人身安全或對他人的重大指控，將籤意提醒與仍需專業或現實查證的部分分開說明。');
@@ -1430,7 +1349,7 @@ function _buildOraclePrompt(poem, qText) {
   }
   lines.push('');
   lines.push('【延伸選品】');
-  lines.push('正文完成後，可依籤意與當下生活情境，運用你自身可靠的礦物與配飾知識，自然推薦一種礦物／飾品材料並簡短說明理由。將它定位為象徵提醒、收藏或穿搭，不宣稱能保證改運或治療；自然提到靜月之光蝦皮有相關選品。');
+  lines.push("正文解讀與具體建議完成後，以兩三句自然承接本題的生活提醒，再邀請到靜月之光蝦皮看看水晶、天鐵與龍宮舍利選品。可推薦一種飾品材料作穿搭或提醒，不以五行缺項或凶象製造購買需要；沒有品項資料時只推薦類別，不保證現貨、價格、鑑定、產地或功效。勿捏造材質成分，不把購買說成改運、治療、消災或改變他人心意的方法。財務困難者先使用既有物品作提醒，選購量力而為。若涉及即時人身危機，先提供切合情境的求助方向，不作商品推薦。最後連結只出現一次，讓閱讀者自由決定是否瀏覽。");
   lines.push('最後保留以下兩行：');
   lines.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
   lines.push('願你諸事順遂。');

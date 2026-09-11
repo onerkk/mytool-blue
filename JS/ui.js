@@ -6994,8 +6994,8 @@ window._tarotShare = function () {
     return;
   }
 
-  var def = (S.tarot && S.tarot.spreadDef) || {};
-  var cards = (drawnCards || []).map(function (c, i) {
+  var def = (S.tarot && (S.tarot.dynamicSpreadDef || S.tarot.spreadDef)) || {};
+  var cards = ((S.tarot && S.tarot.drawn) || drawnCards || []).map(function (c, i) {
     var pp = (def.positions && def.positions[i]) ? def.positions[i] : null;
     var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
     // v85.4：補傳 img——share-card v2.1 起繪真牌面（逆位旋轉180°）、>3張全張數入卡

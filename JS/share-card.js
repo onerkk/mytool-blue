@@ -1,593 +1,98 @@
-/*! share-card.js — 靜月之光 占卜結果分享卡引擎  [v2.3]
- * ⚠ 檔案位置：JS/share-card.js（v86_16 起與其他 JS 同層；repo 根目錄如仍有舊檔請刪除，避免再傳錯位置）
- * v2.2(2026/6/12)：renderMeihua——卦無牌面圖資產，「真實畫面」＝直繪六爻卦象（陽爻實線/陰爻斷線、
- *   由下而上、動爻紅金高亮＋圓點標記）；呼叫端補傳 lines/dong，未傳則退 renderTarot 舊版（零風險後備）。
- * v2.3：renderTarot 統一 Golden Dawn Book T——cards 帶 img 繪真牌面、
- *   >3 張改通用網格自適應（凱爾特10/GD15/M21/馬蹄54 全張數入卡，不再截到3張）；未帶 img 行為不變（梅花等零影響）。
- * v2.0(2026/6/12)：雷諾曼專屬渲染器根治——原 lenormand 借用 renderTarot（寫死最多3格＋✦佔位），
- *   實測五張線只出3張、大牌陣36張只出3張、無真牌面。改：①renderLenormand 照牌陣張數排版
- *   （3/5 單排、9宮 3×3、大牌陣鏡射實際讀法 8×4＋收束4，指示牌金框★標記）②引擎加 loadImgs
- *   非同步預載（2.5s 逾時保險，缺圖退✦佔位，畫布同源資產無汙染）③open() 先載圖再繪卡。
- *   呼叫端契約：cards[] 可帶 {img, sig}；未帶 img 行為與 v1.2 完全相同（其餘五工具零影響）。
- * v2.3(2026/6/26)：新增八字人格卡與雙人合盤卡，讓完整八字套件可輸出真正圖片分享卡。
- * 共用畫布：暗金月色 + 品牌 + QR + Web Share / 下載。
- * 5 種卡：invite(邀請) / bazi(八字四柱) / ziwei(紫微命盤) / tarot(塔羅牌陣) / lenormand(雷諾曼牌陣)。
- * 用法：JYShareCard.open('bazi', {...資料});  之後在各結果頁加一顆按鈕呼叫即可。
- * 純前端、零外部套件、手機優先；不支援系統分享時自動退成「下載圖片」。
+/*! 靜月之光 · Moon Atelier share cards v3.0.0 / 20260911cards1
+ * Ten result/invitation renderers; decorative art never substitutes live data.
+ * Golden Dawn Book T：牌面物理方向不建立固定逆位字典；RWS 保留實際逆位。
+ * Public API: open, close, render (async), download; legacy _draw remains available.
  */
 (function () {
   'use strict';
-  if (window.JYShareCard) return;
-
-  var W = 1080, H = 1350;                 // 4:5 直式，最適合 IG / Threads
-  var GOLD = '#c9a84c', GOLD_D = '#a8863a', CREAM = '#ffeab8';
-  var QR_SRC = 'data:image/png;base64,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';
-  var _qrImg = null, _qrReady = false;
-  (function () { try { var im = new Image(); im.onload = function () { _qrImg = im; _qrReady = true; }; im.src = QR_SRC; } catch (e) {} })();
-
-  // ── helpers ───────────────────────────────────────────
-  function rr(ctx, x, y, w, h, r) {
-    if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); return; }
-    ctx.beginPath();
-    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  if (window.JYShareCard && window.JYShareCard.version === '3.0.0') return;
+  var W=1080, H=1350, SCALE=2, INK='#090f19', GOLD='#eed299', WHITE='#f7f1e6', MUTED='#b1b6c0';
+  var SERIF='"Noto Serif TC","Songti TC","PMingLiU",serif';
+  var SANS='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  var script=document.currentScript;
+  var BASE=new URL('../',script&&script.src?script.src:new URL('JS/share-card.js',document.baseURI).href).href;
+  var QR_SRC='data:image/png;base64,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';
+  var HERO=BASE+'assets/share/moon-atelier-20260911.webp';
+  var cache=Object.create(null), active=null, serial=0;
+  var THEMES={
+    invite:{name:'月光邀請',en:'AN INVITATION TO YOURSELF',title:'為心裡的問號，',sub:'找到下一步的光。',accent:'#dfba75',rgb:'223,186,117',deep:'#263752',motif:'moon'},
+    tarot:{name:'塔羅牌陣',en:'TAROT / YOUR MOMENT',title:'此刻，牌為你展開',sub:'從一張牌，靠近真正的問題。',accent:'#c8afff',rgb:'200,175,255',deep:'#343054',motif:'tarot'},
+    ootk:{name:'開鑰之法',en:'OPENING OF THE KEY',title:'向內，再深一層',sub:'沿著已完成的操作，整理問題的脈絡。',accent:'#b9cdfb',rgb:'185,205,251',deep:'#263d62',motif:'key'},
+    lenormand:{name:'雷諾曼',en:'PETIT LENORMAND',title:'讓線索，連成故事',sub:'看見生活裡值得留意的連結。',accent:'#9dd4c0',rgb:'157,212,192',deep:'#1e4847',motif:'clover'},
+    bazi:{name:'八字四柱',en:'BA ZI / PERSONAL CHART',title:'讀懂自己的節奏',sub:'四柱之間，尋找能發揮的方向。',accent:'#e3b382',rgb:'227,179,130',deep:'#49382d',motif:'pillars'},
+    baziCompatibility:{name:'雙人合盤',en:'TWO LIVES / ONE CONNECTION',title:'靠近，也理解彼此',sub:'看見支持，理解需要磨合的地方。',accent:'#e5afb9',rgb:'229,175,185',deep:'#4e3041',motif:'pair'},
+    baziPersonality:{name:'五軸人格',en:'FIVE AXES / SELF EXPLORATION',title:'你的模樣，不只一面',sub:'看見優勢，也接住不同狀態的自己。',accent:'#99cee3',rgb:'153,206,227',deep:'#244458',motif:'prism'},
+    ziwei:{name:'紫微斗數',en:'ZI WEI / TWELVE PALACES',title:'展開你的人生星圖',sub:'從十二宮，梳理眼前的人生課題。',accent:'#cbb8ed',rgb:'203,184,237',deep:'#3e335d',motif:'orbit'},
+    meihua:{name:'梅花易數',en:'MEI HUA / THE CHANGING MOMENT',title:'變化裡，自有線索',sub:'本、互、變之間，看見轉折的條件。',accent:'#b8d5b1',rgb:'184,213,177',deep:'#304b3d',motif:'yin'},
+    oracle:{name:'靜月靈籤',en:'SACRED VERSE / A QUIET MOMENT',title:'給此刻，一句提醒',sub:'靜下心，讀懂籤詩留給你的話。',accent:'#e4b092',rgb:'228,176,146',deep:'#55322e',motif:'lot'}
+  };
+  function str(v){return v==null?'':String(v);}
+  function arr(v){return Array.isArray(v)?v:[];}
+  function rgba(t,a){return 'rgba('+t.rgb+','+a+')';}
+  function font(size,weight,serif){return (weight||400)+' '+size+'px '+(serif?SERIF:SANS);}
+  function rr(c,x,y,w,h,r){r=Math.max(0,Math.min(r||0,w/2,h/2));c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+  function line(c,x,y,xx,yy,color,width){c.save();c.strokeStyle=color;c.lineWidth=width||1;c.beginPath();c.moveTo(x,y);c.lineTo(xx,yy);c.stroke();c.restore();}
+  function star(c,x,y,r,col){c.save();c.fillStyle=col;c.beginPath();c.moveTo(x,y-r);c.quadraticCurveTo(x,y,x+r,y);c.quadraticCurveTo(x,y,x,y+r);c.quadraticCurveTo(x,y,x-r,y);c.quadraticCurveTo(x,y,x,y-r);c.fill();c.restore();}
+  function text(c,value,x,y,size,col,weight,align,serif,maxW){c.save();var s=str(value);c.font=font(size,weight,serif);if(maxW){while(c.measureText(s).width>maxW&&size>16){size-=1;c.font=font(size,weight,serif);}if(c.measureText(s).width>maxW){while(s.length&&c.measureText(s+'…').width>maxW)s=Array.from(s).slice(0,-1).join('');s+='…';}}c.fillStyle=col||WHITE;c.textAlign=align||'left';c.textBaseline='middle';c.fillText(s,x,y);c.restore();}
+  function wrap(c,s,maxW){var out=[],cur='';Array.from(str(s)).forEach(function(ch){if(ch==='\n'){out.push(cur);cur='';return;}if(cur&&c.measureText(cur+ch).width>maxW){out.push(cur);cur=ch;}else cur+=ch;});if(cur)out.push(cur);return out;}
+  function paragraph(c,s,x,y,width,size,color,maxLines,step,weight,serif){c.save();c.font=font(size,weight,serif);var ls=wrap(c,s,width),cut=ls.length>(maxLines||ls.length);ls=ls.slice(0,maxLines||ls.length);if(cut&&ls.length){var tail=ls[ls.length-1];while(tail&&c.measureText(tail+'…').width>width)tail=Array.from(tail).slice(0,-1).join('');ls[ls.length-1]=tail+'…';}ls.forEach(function(l,i){text(c,l,x,y+i*(step||size*1.5),size,color,weight,'left',serif);});c.restore();return ls.length*(step||size*1.5);}
+  function plate(c,x,y,w,h,t,r,bright){c.save();c.shadowColor='#000';c.shadowBlur=24;c.shadowOffsetY=14;c.fillStyle='#050910';rr(c,x+3,y+8,w,h,r||22);c.fill();c.shadowColor='transparent';var g=c.createLinearGradient(x,y,x+w,y+h);g.addColorStop(0,bright?t.deep:'#202734');g.addColorStop(.45,'#121b28');g.addColorStop(1,'#0c121e');c.fillStyle=g;rr(c,x,y,w,h,r||22);c.fill();var edge=c.createLinearGradient(x,y,x+w,y+h);edge.addColorStop(0,rgba(t,bright?.95:.57));edge.addColorStop(.35,'rgba(255,255,255,.07)');edge.addColorStop(.72,rgba(t,.13));edge.addColorStop(1,rgba(t,.53));c.strokeStyle=edge;c.lineWidth=1.8;c.stroke();c.strokeStyle='rgba(255,255,255,.045)';rr(c,x+5,y+5,w-10,h-10,Math.max(4,(r||22)-5));c.stroke();c.restore();}
+  function orb(c,x,y,r,t){c.save();c.shadowColor=rgba(t,.16);c.shadowBlur=32;var g=c.createRadialGradient(x-r*.4,y-r*.5,r*.04,x,y,r);g.addColorStop(0,'#fff2cf');g.addColorStop(.23,t.accent);g.addColorStop(.62,t.deep);g.addColorStop(.91,'#111827');g.addColorStop(1,t.accent);c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.restore();}
+  function ring(c,x,y,rx,ry,rot,t,width){c.save();c.translate(x,y);c.rotate(rot||0);var g=c.createLinearGradient(-rx,-ry,rx,ry);g.addColorStop(0,'#fff3d3');g.addColorStop(.22,t.accent);g.addColorStop(.55,t.deep);g.addColorStop(.81,t.accent);g.addColorStop(1,'#fff1cb');c.strokeStyle=g;c.lineWidth=width||3;c.beginPath();c.ellipse(0,0,rx,ry,0,0,Math.PI*2);c.stroke();c.restore();}
+  function emblem(c,x,y,r,t){c.save();var glow=c.createRadialGradient(x,y,0,x,y,r*1.45);glow.addColorStop(0,rgba(t,.18));glow.addColorStop(1,rgba(t,0));c.fillStyle=glow;c.fillRect(x-r*1.5,y-r*1.5,r*3,r*3);ring(c,x,y,r,r*.78,-.55,t,3);ring(c,x,y,r*.81,r*.46,.6,t,1.3);orb(c,x+r*.81,y-r*.35,r*.085,t);
+    if(t.motif==='moon'){c.save();c.fillStyle=t.accent;c.beginPath();c.arc(x,y,r*.61,Math.PI*.25,Math.PI*1.75,false);c.bezierCurveTo(x-r*.13,y-r*.27,x-r*.13,y+r*.27,x+r*.43,y+r*.43);c.fill();c.restore();}
+    else if(t.motif==='pair'){ring(c,x-r*.23,y,r*.45,r*.57,-.4,t,12);ring(c,x+r*.23,y,r*.45,r*.57,.4,t,12);}
+    else if(t.motif==='yin'){orb(c,x,y,r*.55,t);c.fillStyle='#101c24';c.beginPath();c.arc(x,y,r*.51,-Math.PI/2,Math.PI/2);c.arc(x,y+r*.255,r*.255,Math.PI/2,Math.PI*1.5,true);c.arc(x,y-r*.255,r*.255,Math.PI/2,-Math.PI/2);c.fill();c.fillStyle=t.accent;c.beginPath();c.arc(x,y+r*.255,r*.07,0,7);c.fill();c.fillStyle='#172029';c.beginPath();c.arc(x,y-r*.255,r*.07,0,7);c.fill();}
+    else if(t.motif==='clover'){[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(function(p){orb(c,x+p[0]*r*.21,y+p[1]*r*.21,r*.28,t);});}
+    else if(t.motif==='key'){ring(c,x-r*.17,y-r*.22,r*.25,r*.25,0,t,12);line(c,x,y,x+r*.36,y+r*.46,t.accent,13);line(c,x+r*.25,y+r*.32,x+r*.1,y+r*.45,t.accent,10);}
+    else if(t.motif==='pillars'||t.motif==='lot'){for(var i=0;i<(t.motif==='lot'?3:4);i++){c.save();c.translate(x+(i-1.5)*r*.28,y);c.rotate(t.motif==='lot'?(i-1)*.17:0);plate(c,-r*.09,-r*.49,r*.2,r*.98,t,5,true);line(c,-r*.03,-r*.26,r*.03,-r*.26,t.accent,2);line(c,-r*.03,r*.2,r*.03,r*.2,t.accent,2);c.restore();}}
+    else if(t.motif==='tarot'){for(var j=0;j<3;j++){c.save();c.translate(x+(j-1)*r*.27,y);c.rotate((j-1)*.2);plate(c,-r*.25,-r*.44,r*.5,r*.88,t,7,true);star(c,0,0,r*.14,t.accent);c.restore();}}
+    else if(t.motif==='prism'){for(var k=0;k<5;k++){var a=k*Math.PI*2/5-Math.PI/2,b=(k+2)*Math.PI*2/5-Math.PI/2;line(c,x+Math.cos(a)*r*.6,y+Math.sin(a)*r*.6,x+Math.cos(b)*r*.6,y+Math.sin(b)*r*.6,t.accent,2);}orb(c,x,y,r*.16,t);}
+    else {orb(c,x,y,r*.3,t);ring(c,x,y,r*.63,r*.63,0,t,2);for(var n=0;n<12;n++){var ang=n*Math.PI/6;star(c,x+Math.cos(ang)*r*.63,y+Math.sin(ang)*r*.63,4,t.accent);}}
+    c.restore();
   }
-  function sparkle(ctx, cx, cy, r, color) {
-    ctx.save(); ctx.fillStyle = color; ctx.beginPath();
-    ctx.moveTo(cx, cy - r); ctx.quadraticCurveTo(cx, cy, cx + r, cy);
-    ctx.quadraticCurveTo(cx, cy, cx, cy + r); ctx.quadraticCurveTo(cx, cy, cx - r, cy);
-    ctx.quadraticCurveTo(cx, cy, cx, cy - r); ctx.closePath(); ctx.fill(); ctx.restore();
-  }
-  function wrap(ctx, text, maxW) {
-    var lines = [], cur = '';
-    for (var i = 0; i < text.length; i++) {
-      var ch = text[i];
-      if (ch === '\n') { lines.push(cur); cur = ''; continue; }
-      if (ctx.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ch; }
-      else cur += ch;
-    }
-    if (cur) lines.push(cur);
-    return lines;
-  }
-
-  // v2.0：非同步圖片預載——載完（或逾時/失敗）才繪卡；成功者掛 c._im，失敗者維持無圖退✦佔位
-  function loadImgs(cards, done) {
-    var list = (cards || []).filter(function (c) { return c && c.img && !c._im; });
-    if (!list.length) { done(); return; }
-    var left = list.length, fired = false;
-    function fin() { if (!fired) { fired = true; done(); } }
-    var t = setTimeout(fin, 2500); // 逾時保險：先出卡，缺圖各自退佔位
-    list.forEach(function (c) {
-      try {
-        var im = new Image();
-        im.onload = function () { c._im = im; if (--left <= 0) { clearTimeout(t); fin(); } };
-        im.onerror = function () { if (--left <= 0) { clearTimeout(t); fin(); } };
-        im.src = c.img;
-      } catch (e) { if (--left <= 0) { clearTimeout(t); fin(); } }
-    });
-  }
-
-  // v2.0：單一牌格——真牌面 cover-fit 圓角裁切；無圖退✦佔位；指示牌金框＋★
-  function cardCell(ctx, x, y, w, h, c, nameH) {
-    c = c || {}; nameH = nameH || 0;
-    ctx.save();
-    ctx.fillStyle = 'rgba(20,20,32,0.9)';
-    ctx.strokeStyle = c.sig ? 'rgba(232,210,138,0.95)' : 'rgba(201,168,76,0.5)';
-    ctx.lineWidth = c.sig ? 3 : 2;
-    rr(ctx, x, y, w, h, Math.min(14, w * 0.1)); ctx.fill(); ctx.stroke();
-    var pad = Math.max(5, w * 0.045);
-    var ih = h - pad * 2 - nameH;
-    if (c._im) {
-      ctx.save(); rr(ctx, x + pad, y + pad, w - pad * 2, ih, Math.min(9, w * 0.07)); ctx.clip();
-      var iw = c._im.width || 1, ihh = c._im.height || 1, bw = w - pad * 2, bh = ih;
-      var sc = Math.max(bw / iw, bh / ihh), dw = iw * sc, dh = ihh * sc;
-      // Golden Dawn Book T：牌面物理方向不建立固定逆位字典。
-      ctx.drawImage(c._im, x + pad + (bw - dw) / 2, y + pad + (bh - dh) / 2, dw, dh);
-      ctx.restore();
-    } else {
-      sparkle(ctx, x + w / 2, y + pad + ih * 0.45, Math.min(30, w * 0.2), 'rgba(201,168,76,0.7)');
-    }
-    if (c.sig) ctext(ctx, '★', x + Math.max(14, w * 0.12), y + Math.max(20, w * 0.16), '600 ' + Math.max(18, Math.round(w * 0.16)) + 'px serif', 'rgba(232,210,138,0.95)', 0);
-    ctx.restore();
-  }
-  function ctext(ctx, t, x, y, font, color, ls) {
-    ctx.save(); ctx.font = font; ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    if (ls) {
-      var total = 0, ws = [];
-      for (var i = 0; i < t.length; i++) { var w = ctx.measureText(t[i]).width; ws.push(w); total += w + (i < t.length - 1 ? ls : 0); }
-      var cx = x - total / 2; ctx.textAlign = 'left';
-      for (var j = 0; j < t.length; j++) { ctx.fillText(t[j], cx, y); cx += ws[j] + ls; }
-    } else ctx.fillText(t, x, y);
-    ctx.restore();
-  }
-
-  // ── 共用背景：漸層 + 弦月 + 星點 + 金框 ──
-  function bg(ctx) {
-    var g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#171722'); g.addColorStop(0.5, '#101019'); g.addColorStop(1, '#0a0a10');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    // 放射星塵（中上發散）
-    var cx0 = W * 0.5, cy0 = H * 0.30;
-    var rg = ctx.createRadialGradient(cx0, cy0, 0, cx0, cy0, W * 0.7);
-    rg.addColorStop(0, 'rgba(201,168,76,0.10)'); rg.addColorStop(1, 'rgba(201,168,76,0)');
-    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
-    // 星點（固定分布，consistent）
-    var seed = 20260607; function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
-    ctx.save();
-    for (var i = 0; i < 90; i++) {
-      var x = rnd() * W, y = rnd() * H * 0.92, r = rnd() * 1.8 + 0.4, a = rnd() * 0.5 + 0.15;
-      ctx.fillStyle = 'rgba(255,230,170,' + a.toFixed(2) + ')'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
-    }
-    ctx.restore();
-    // 弦月（右上，小而精緻）
-    var mx = W * 0.85, my = H * 0.115, mr = 60;
-    ctx.save();
-    var mg = ctx.createRadialGradient(mx, my, mr * 0.4, mx, my, mr * 2.6);
-    mg.addColorStop(0, 'rgba(255,225,150,0.22)'); mg.addColorStop(1, 'rgba(255,225,150,0)');
-    ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(mx, my, mr * 2.4, 0, 7); ctx.fill();
-    ctx.fillStyle = '#f0d68a'; ctx.beginPath(); ctx.arc(mx, my, mr, 0, 7); ctx.fill();
-    ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(mx + mr * 0.52, my - mr * 0.16, mr * 0.96, 0, 7); ctx.fill();
-    ctx.restore();
-    // 金框
-    ctx.save(); ctx.strokeStyle = 'rgba(201,168,76,0.45)'; ctx.lineWidth = 2; rr(ctx, 28, 28, W - 56, H - 56, 26); ctx.stroke();
-    ctx.strokeStyle = 'rgba(201,168,76,0.18)'; ctx.lineWidth = 1; rr(ctx, 40, 40, W - 80, H - 80, 20); ctx.stroke();
-    // 角落小飾
-    ctx.strokeStyle = 'rgba(201,168,76,0.6)'; ctx.lineWidth = 2;
-    var c = [[60, 60, 1, 1], [W - 60, 60, -1, 1], [60, H - 60, 1, -1], [W - 60, H - 60, -1, -1]];
-    for (var k = 0; k < 4; k++) { var p = c[k]; ctx.beginPath(); ctx.moveTo(p[0], p[1] + 34 * p[3]); ctx.lineTo(p[0], p[1]); ctx.lineTo(p[0] + 34 * p[2], p[1]); ctx.stroke(); }
-    ctx.restore();
-  }
-
-  // ── 底部品牌列 + QR ──
-  function footer(ctx) {
-    var fy = H - 188;
-    ctx.save();
-    ctx.strokeStyle = 'rgba(201,168,76,0.22)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(70, fy); ctx.lineTo(W - 70, fy); ctx.stroke();
-    var qs = 104, qx = W - 78 - qs, qy = fy + 24;
-    ctx.fillStyle = '#ffffff'; rr(ctx, qx - 9, qy - 9, qs + 18, qs + 18, 12); ctx.fill();
-    if (_qrReady && _qrImg) { try { ctx.drawImage(_qrImg, qx, qy, qs, qs); } catch (e) {} }
-    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = GOLD; ctx.font = '700 42px "Noto Serif TC", serif'; ctx.fillText('靜月之光', 80, fy + 58);
-    ctx.fillStyle = 'rgba(232,224,208,0.7)'; ctx.font = '28px "Noto Serif TC", serif'; ctx.fillText('免費 AI 占卜', 80, fy + 102);
-    ctx.fillStyle = 'rgba(201,168,76,0.85)'; ctx.font = '600 30px Georgia, "Noto Serif TC", serif'; ctx.fillText('jingyue.uk　掃碼免費算', 80, fy + 142);
-    ctx.restore();
-  }
-
-  function title(ctx, big, sub) {
-    var tfs = big.length >= 6 ? 72 : 84, tls = big.length >= 6 ? 5 : 6;
-    ctx.save();
-    ctx.shadowColor = 'rgba(255,210,120,0.5)'; ctx.shadowBlur = 30;
-    ctext(ctx, big, W / 2, 175, '700 ' + tfs + 'px "Noto Serif TC", serif', CREAM, tls);
-    ctx.restore();
-    if (sub) ctext(ctx, sub, W / 2, 248, '30px "Noto Serif TC", serif', 'rgba(201,168,76,0.85)', 8);
-    ctx.save(); ctx.strokeStyle = 'rgba(201,168,76,0.4)'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(W / 2 - 120, 290); ctx.lineTo(W / 2 + 120, 290); ctx.stroke();
-    ctx.fillStyle = GOLD; ctx.beginPath(); ctx.arc(W / 2, 290, 4, 0, 7); ctx.fill(); ctx.restore();
-  }
-
-  function qline(ctx, q, y) {
-    if (!q) return y;
-    ctx.save();
-    var lines = (function () { ctx.font = '30px "Noto Serif TC", serif'; return wrap(ctx, '「' + q + '」', W - 240); })();
-    for (var i = 0; i < Math.min(lines.length, 2); i++) ctext(ctx, lines[i], W / 2, y + i * 42, '30px "Noto Serif TC", serif', 'rgba(232,224,208,0.78)', 0);
-    ctx.restore();
-    return y + Math.min(lines.length, 2) * 42 + 20;
-  }
-
-  // ── 卡片：邀請 ──
-  function renderInvite(ctx, d) {
-    title(ctx, '免費 AI 占卜', '靜月之光');
-    ctext(ctx, (d && d.tagline) || '卡在心裡那件事，今晚就有答案', W / 2, 360, '36px "Noto Serif TC", serif', CREAM, 2);
-    var systems = ['塔羅快讀', '開鑰之法', '雷諾曼', '紫微斗數', '八字', '梅花易數', '靈籤'];
-    var cols = 2, bw = 380, bh = 92, gap = 40, x0 = (W - (cols * bw + (cols - 1) * gap)) / 2, y0 = 470;
-    for (var i = 0; i < systems.length; i++) {
-      var r = Math.floor(i / cols), c = i % cols, x = x0 + c * (bw + gap), y = y0 + r * (bh + 28);
-      if (i === systems.length - 1) x = (W - bw) / 2; // 最後一個置中
-      ctx.save(); ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.strokeStyle = 'rgba(201,168,76,0.35)'; ctx.lineWidth = 1.5;
-      rr(ctx, x, y, bw, bh, 16); ctx.fill(); ctx.stroke();
-      ctext(ctx, systems[i], x + bw / 2, y + bh / 2, '600 40px "Noto Serif TC", serif', CREAM, 4); ctx.restore();
-    }
-    ctext(ctx, '七大占卜　一鍵複製提示詞貼到 AI 即出深度解讀', W / 2, y0 + 4 * (bh + 28) + 10, '28px "Noto Serif TC", serif', 'rgba(201,168,76,0.8)', 1);
-  }
-
-  // ── 卡片：八字四柱 ── d:{question, pillars:[{label,gan,zhi}]×4, dayMaster, yongShen, dayun}
-  function renderBazi(ctx, d) {
-    d = d || {};
-    title(ctx, '我的八字', '子平 ・ 四柱八字');
-    var y = qline(ctx, d.question, 350);
-    var pillars = d.pillars || [{ label: '年柱', gan: '癸', zhi: '亥' }, { label: '月柱', gan: '庚', zhi: '申' }, { label: '日柱', gan: '乙', zhi: '酉' }, { label: '時柱', gan: '癸', zhi: '未' }];
-    var n = pillars.length, cw = 210, gap = 26, x0 = (W - (n * cw + (n - 1) * gap)) / 2, ty = Math.max(y, 410), ch = 290;
-    for (var i = 0; i < n; i++) {
-      var x = x0 + i * (cw + gap), p = pillars[i];
-      ctx.save();
-      ctx.fillStyle = (p.label === '日柱') ? 'rgba(201,168,76,0.12)' : 'rgba(255,255,255,0.03)';
-      ctx.strokeStyle = (p.label === '日柱') ? 'rgba(201,168,76,0.6)' : 'rgba(201,168,76,0.28)'; ctx.lineWidth = (p.label === '日柱') ? 2.5 : 1.5;
-      rr(ctx, x, ty, cw, ch, 18); ctx.fill(); ctx.stroke();
-      ctext(ctx, p.label || '', x + cw / 2, ty + 40, '26px "Noto Serif TC", serif', 'rgba(201,168,76,0.85)', 2);
-      ctext(ctx, p.gan || '', x + cw / 2, ty + 130, '700 96px "Noto Serif TC", serif', CREAM, 0);
-      ctext(ctx, p.zhi || '', x + cw / 2, ty + 236, '700 96px "Noto Serif TC", serif', 'rgba(232,224,208,0.92)', 0);
-      ctx.restore();
-    }
-    var ry = ty + ch + 50, rows = [];
-    if (d.dayMaster) rows.push(['日主', d.dayMaster]);
-    if (d.yongShen) rows.push(['用神', d.yongShen]);
-    if (d.dayun) rows.push(['現行大運', d.dayun]);
-    drawRows(ctx, rows, ry);
-  }
-
-  // ── 卡片：靜月五軸人格 ── d:{code,name,traits,strengths,watch,birthLine}
-  function renderBaziPersonality(ctx, d) {
-    d = d || {};
-    title(ctx, '五軸人格卡', '出生資訊 ・ 32 型狀態卡');
-    var y = 350;
-    ctext(ctx, d.code || '-----', W / 2, y, '700 112px Georgia, "Noto Serif TC", serif', CREAM, 8);
-    ctext(ctx, d.name || '人格類型', W / 2, y + 92, '700 48px "Noto Serif TC", serif', GOLD, 3);
-    var traits = Array.isArray(d.traits) ? d.traits.join(' ・ ') : (d.traits || '');
-    ctext(ctx, traits, W / 2, y + 160, '32px "Noto Serif TC", serif', 'rgba(232,224,208,.85)', 2);
-    var rows = [];
-    if (d.birthLine) rows.push(['出生資料', d.birthLine]);
-    if (d.strengths) rows.push(['可用優勢', Array.isArray(d.strengths) ? d.strengths.slice(0,2).join('、') : d.strengths]);
-    if (d.watch) rows.push(['需要留意', Array.isArray(d.watch) ? d.watch.slice(0,2).join('、') : d.watch]);
-    drawRows(ctx, rows, y + 230);
-    ctext(ctx, '本站自建模型 ・ 非心理診斷 ・ 非 OpenFate BZTI', W / 2, 1065, '26px "Noto Serif TC", serif', 'rgba(201,168,76,.72)', 1);
-  }
-
-  // ── 卡片：雙人八字合盤 ── d:{scenario,nameA,nameB,pillarsA,pillarsB,signal,support,tension,dayPillars}
-  function renderBaziCompatibility(ctx, d) {
-    d = d || {};
-    title(ctx, (d.scenario || '雙人') + '合盤', '雙向十神 ・ 干支互動');
-    var y = 350;
-    var rows = [
-      [d.nameA || 'A方', d.pillarsA || '—'],
-      [d.nameB || 'B方', d.pillarsB || '—'],
-      ['日柱核心', d.dayPillars || '—'],
-      ['證據整理', d.signal || '—'],
-      ['訊號數量', '支持／牽連 '+String(d.support == null ? 0 : d.support)+' ・ 張力／磨合 '+String(d.tension == null ? 0 : d.tension)]
-    ];
-    drawRows(ctx, rows, y);
-    ctext(ctx, '不設總分 ・ 數量不是成功率 ・ 未審合化不下定論', W / 2, 1065, '26px "Noto Serif TC", serif', 'rgba(201,168,76,.72)', 1);
-  }
-
-  // ── 卡片：紫微命盤（4×4 十二宮環）── d:{question, palaces:[{branch,name,star}]×12(巳起順), ming, info}
-  function renderZiwei(ctx, d) {
-    d = d || {};
-    title(ctx, '我的紫微命盤', '三方四正 ・ 四化飛星');
-    var y = qline(ctx, d.question, 345);
-    // 12 宮環：巳午未申 / 辰..酉 / 卯..戌 / 寅丑子亥
-    var P = d.palaces || [
-      { branch: '巳', name: '田宅', star: '太陰' }, { branch: '午', name: '官祿', star: '貪狼' }, { branch: '未', name: '僕役', star: '巨門' }, { branch: '申', name: '遷移', star: '天相' },
-      { branch: '辰', name: '福德', star: '廉貞' }, { branch: '酉', name: '疾厄', star: '天梁' },
-      { branch: '卯', name: '父母', star: '七殺' }, { branch: '戌', name: '財帛', star: '' },
-      { branch: '寅', name: '命宮', star: '天府' }, { branch: '丑', name: '兄弟', star: '' }, { branch: '子', name: '夫妻', star: '破軍' }, { branch: '亥', name: '子女', star: '' }
-    ];
-    var pos = [[0, 0], [1, 0], [2, 0], [3, 0], [0, 1], [3, 1], [0, 2], [3, 2], [0, 3], [1, 3], [2, 3], [3, 3]];
-    var gy = Math.max(y, 380), footTop = H - 206;
-    var cell = Math.min(196, (footTop - gy) / 4), gw = cell * 4, gx = (W - gw) / 2;
-    for (var i = 0; i < 12; i++) {
-      var col = pos[i][0], row = pos[i][1], x = gx + col * cell, yy = gy + row * cell, p = P[i];
-      var isMing = (p.name === '命宮');
-      ctx.save();
-      ctx.fillStyle = isMing ? 'rgba(201,168,76,0.14)' : 'rgba(255,255,255,0.025)';
-      ctx.strokeStyle = isMing ? 'rgba(255,236,184,0.7)' : 'rgba(201,168,76,0.22)'; ctx.lineWidth = isMing ? 2.5 : 1;
-      rr(ctx, x + 4, yy + 4, cell - 8, cell - 8, 10); ctx.fill(); ctx.stroke();
-      ctext(ctx, p.star || '·', x + cell / 2, yy + cell * 0.42, '600 ' + (p.star && p.star.length > 2 ? 34 : 44) + 'px "Noto Serif TC", serif', isMing ? CREAM : 'rgba(232,224,208,0.82)', 1);
-      ctext(ctx, p.name || '', x + cell / 2, yy + cell * 0.70, '24px "Noto Serif TC", serif', isMing ? GOLD : 'rgba(201,168,76,0.6)', 1);
-      ctext(ctx, p.branch || '', x + cell - 22, yy + cell - 22, '20px "Noto Serif TC", serif', 'rgba(232,224,208,0.4)', 0);
-      ctx.restore();
-    }
-    // 中宮
-    var ccx = gx + cell, ccy = gy + cell, csz = cell * 2;
-    ctx.save(); ctx.fillStyle = 'rgba(201,168,76,0.05)'; ctx.strokeStyle = 'rgba(201,168,76,0.25)'; ctx.lineWidth = 1;
-    rr(ctx, ccx + 6, ccy + 6, csz - 12, csz - 12, 12); ctx.fill(); ctx.stroke();
-    ctext(ctx, d.ming || '命宮 ・ 天府', ccx + csz / 2, ccy + csz / 2 - 18, '600 38px "Noto Serif TC", serif', CREAM, 2);
-    ctext(ctx, d.info || '紫微斗數', ccx + csz / 2, ccy + csz / 2 + 34, '26px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 2);
-    ctx.restore();
-  }
-
-  // ── 卡片：塔羅牌陣 ── d:{question, spread, cards:[{name,pos,reversed}], conclusion}
-  function renderTarot(ctx, d) {
-    // v2.1：①cards 帶 img/_im 時繪真牌面（逆位旋轉180°）②>3 張改通用網格自適應（凱爾特10/GD15/M21/馬蹄54 皆可入卡）
-    //   未帶 img 時 ≤3 張行為與 v1.2 視覺等價（佔位＋名稱＋位置）。
-    d = d || {};
-    title(ctx, d.cardTitle || 'Golden Dawn Book T 塔羅', d.spread || 'Book T 牌陣');
-    var cards = d.cards || [{ name: '月亮', pos: '過去' }, { name: '星星', pos: '現況' }, { name: '太陽', pos: '未來' }];
-    var n = cards.length, i, x, c;
-    if (n <= 3) {
-      var y = qline(ctx, d.question, 345);
-      var cw = 230, chh = 380, gap = 36, nameH = 86, x0 = (W - (n * cw + (n - 1) * gap)) / 2, ty = Math.max(y, 400);
-      for (i = 0; i < n; i++) {
-        x = x0 + i * (cw + gap); c = cards[i] || {};
-        c.rev = false;
-        cardCell(ctx, x, ty, cw, chh, c, nameH);
-        var nm = (c.name || '');
-        ctext(ctx, nm, x + cw / 2, ty + chh - 56, '600 ' + (nm.length > 4 ? 28 : 38) + 'px "Noto Serif TC", serif', CREAM, 0);
-        ctext(ctx, c.pos || '', x + cw / 2, ty + chh - 22, '22px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 1);
-      }
-      if (d.conclusion) {
-        ctx.save(); var ly = ty + chh + 50; ctx.font = '32px "Noto Serif TC", serif';
-        var ls = wrap(ctx, d.conclusion, W - 200);
-        for (var j = 0; j < Math.min(ls.length, 2); j++) ctext(ctx, ls[j], W / 2, ly + j * 44, '32px "Noto Serif TC", serif', 'rgba(232,224,208,0.85)', 0);
-        ctx.restore();
-      }
-      return;
-    }
-    // >3 張：通用網格——直式 2:3 牌面，逐欄數試算取最大格
-    var y0 = Math.max(qline(ctx, d.question, 330), 368);
-    var boxW = W - 80, boxH = (H - 210) - y0 - 8, gp = 10;
-    var best = null;
-    for (var cols = 2; cols <= Math.min(n, 9); cols++) {
-      var rows = Math.ceil(n / cols);
-      var cwf = Math.min((boxW - (cols - 1) * gp) / cols, ((boxH - (rows - 1) * gp) / rows) / 1.5);
-      if (!best || cwf > best.cw) best = { cols: cols, rows: rows, cw: cwf };
-    }
-    var cwG = Math.floor(best.cw), chG = Math.floor(cwG * 1.5);
-    var showName = cwG >= 150; // 格夠大才放名稱列
-    if (showName) { chG -= 0; } // 名稱畫在格下方，重新檢核高度
-    var nmH = showName ? 28 : 0;
-    while (showName && best.rows * (chG + nmH) + (best.rows - 1) * gp > boxH && chG > 60) { chG -= 4; cwG = Math.floor(chG / 1.5); }
-    var rowsArr = [];
-    for (i = 0; i < n; i += best.cols) rowsArr.push(cards.slice(i, i + best.cols));
-    for (var r = 0; r < rowsArr.length; r++) {
-      var row = rowsArr[r];
-      var rx0 = (W - (row.length * cwG + (row.length - 1) * gp)) / 2;
-      var ry = y0 + r * (chG + nmH + gp);
-      for (i = 0; i < row.length; i++) {
-        c = row[i] || {}; c.rev = false;
-        x = rx0 + i * (cwG + gp);
-        cardCell(ctx, x, ry, cwG, chG, c, 0);
-        if (showName) ctext(ctx, (c.name || ''), x + cwG / 2, ry + chG + 20, '600 22px "Noto Serif TC", serif', CREAM, 0);
-      }
-    }
-  }
-
-  // ── 卡片：梅花易數（v2.2）── d:{cardTitle, spread, question, conclusion,
-  //   cards:[{name, pos, lines:[6個0/1，由下而上], dong:動爻1-6（本卦/變卦標記用）}]}
-  // 卦無牌面圖資產——「真實畫面」＝直接繪六爻卦象：陽爻實線、陰爻斷線、動爻紅金高亮＋圓點
-  function renderMeihua(ctx, d) {
-    d = d || {};
-    var cards = d.cards || [];
-    if (!cards.length || !cards[0].lines) { renderTarot(ctx, d); return; } // 無爻線資料→退舊版
-    title(ctx, d.cardTitle || '我的卦象', d.spread || '梅花易數');
-    var y = qline(ctx, d.question, 345);
-    var n = Math.min(cards.length, 3);
-    var cw = 230, chh = 380, gap = 36, nameH = 86, x0 = (W - (n * cw + (n - 1) * gap)) / 2, ty = Math.max(y, 400);
-    for (var i = 0; i < n; i++) {
-      var x = x0 + i * (cw + gap), c = cards[i] || {};
-      // 卡框（沿用牌格樣式，無圖模式）
-      ctx.save();
-      ctx.fillStyle = 'rgba(20,20,32,0.9)';
-      ctx.strokeStyle = 'rgba(201,168,76,0.5)';
-      ctx.lineWidth = 2;
-      rr(ctx, x, ty, cw, chh, 14); ctx.fill(); ctx.stroke();
-      // ── 六爻卦象 ──
-      var L = c.lines, gx = x + 38, gw = cw - 76;
-      var gTop = ty + 34, gBot = ty + chh - nameH - 18;
-      var rowH = (gBot - gTop) / 6, barH = Math.min(13, rowH * 0.42);
-      for (var li = 0; li < 6; li++) {
-        // lines[0]=初爻在最下 → 畫面由下而上
-        var yy = gBot - rowH * li - rowH / 2 - barH / 2;
-        var isDong = c.dong && (c.dong - 1) === li;
-        ctx.fillStyle = isDong ? 'rgba(214,118,86,0.95)' : 'rgba(201,168,76,0.88)';
-        if (L[li]) { // 陽爻：實線
-          rr(ctx, gx, yy, gw, barH, barH / 2); ctx.fill();
-        } else {     // 陰爻：兩段
-          var seg = (gw - 18) / 2;
-          rr(ctx, gx, yy, seg, barH, barH / 2); ctx.fill();
-          rr(ctx, gx + seg + 18, yy, seg, barH, barH / 2); ctx.fill();
-        }
-        if (isDong) { // 動爻圓點標記
-          ctx.beginPath(); ctx.arc(gx + gw + 16, yy + barH / 2, 4.5, 0, 6.2832); ctx.fill();
-        }
-      }
-      ctx.restore();
-      var nm = c.name || '';
-      ctext(ctx, nm, x + cw / 2, ty + chh - 52, '600 ' + (nm.length > 4 ? 28 : 34) + 'px "Noto Serif TC", serif', CREAM, 0);
-      ctext(ctx, c.pos || '', x + cw / 2, ty + chh - 20, '22px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 1);
-    }
-    if (d.conclusion) {
-      ctx.save(); var ly = ty + chh + 50; ctx.font = '30px "Noto Serif TC", serif';
-      var ls = wrap(ctx, d.conclusion, W - 180);
-      for (var j = 0; j < Math.min(ls.length, 2); j++) ctext(ctx, ls[j], W / 2, ly + j * 42, '30px "Noto Serif TC", serif', 'rgba(232,224,208,0.85)', 0);
-      ctx.restore();
-    }
-  }
-
-  // ── 卡片：雷諾曼（v2.0）── d:{cardTitle, spread, question, cards:[{id,name,pos,img,sig}]}
-  // 照牌陣張數排版：≤3 單排大格、5 單排、9 宮 3×3、≥30 大牌陣（鏡射實際讀法 8×4＋收束 4）
-  function renderLenormand(ctx, d) {
-    d = d || {};
-    title(ctx, d.cardTitle || '我的雷諾曼', d.spread || 'Petit Lenormand');
-    var cards = d.cards || [];
-    var n = cards.length, i, x, y;
-    if (n >= 30) {
-      var y0 = Math.max(qline(ctx, d.question, 330), 368);
-      var cw = 92, chh = 138, gx = 10, gy = 10; // v2.0.1：自 96×144 縮一階——樁件量測底緣 1160 超出頁尾安全線(1140)
-      var rows = [cards.slice(0, 8), cards.slice(8, 16), cards.slice(16, 24), cards.slice(24, 32), cards.slice(32)];
-      for (var r = 0; r < rows.length; r++) {
-        var row = rows[r];
-        if (!row.length) continue;
-        var x0 = (W - (row.length * cw + (row.length - 1) * gx)) / 2;
-        var ry = y0 + r * (chh + gy);
-        for (i = 0; i < row.length; i++) cardCell(ctx, x0 + i * (cw + gx), ry, cw, chh, row[i], 0);
-      }
-    } else if (n === 9) {
-      var y9 = Math.max(qline(ctx, d.question, 340), 396);
-      var cw9 = 172, ch9 = 200, gx9 = 26, gy9 = 12, nm9 = 30;
-      var x9 = (W - (3 * cw9 + 2 * gx9)) / 2;
-      for (i = 0; i < 9; i++) {
-        x = x9 + (i % 3) * (cw9 + gx9);
-        y = y9 + Math.floor(i / 3) * (ch9 + nm9 + gy9);
-        cardCell(ctx, x, y, cw9, ch9, cards[i], 0);
-        ctext(ctx, (cards[i] && cards[i].name) || '', x + cw9 / 2, y + ch9 + 22, '600 25px "Noto Serif TC", serif', CREAM, 0);
-      }
-    } else if (n === 5) {
-      // v2.3：雷諾曼五張線分享卡同步結果頁——上3張、下2張置中，不再單排或斜位。
-      var cw5 = 172, ch5 = 244, gap5 = 28, rowGap5 = 28;
-      var y5 = Math.max(qline(ctx, d.question, 345), 382);
-      var topW5 = 3 * cw5 + 2 * gap5;
-      var botW5 = 2 * cw5 + gap5;
-      var xTop5 = (W - topW5) / 2;
-      var xBot5 = (W - botW5) / 2;
-      for (i = 0; i < 5; i++) {
-        var c5 = cards[i] || {};
-        var row5 = i < 3 ? 0 : 1;
-        var col5 = i < 3 ? i : i - 3;
-        x = (row5 === 0 ? xTop5 : xBot5) + col5 * (cw5 + gap5);
-        y = y5 + row5 * (ch5 + rowGap5);
-        cardCell(ctx, x, y, cw5, ch5, c5, 0);
-        ctext(ctx, c5.name || '', x + cw5 / 2, y + ch5 - 40, '600 ' + ((c5.name || '').length > 3 ? 24 : 28) + 'px "Noto Serif TC", serif', CREAM, 0);
-        ctext(ctx, (c5.sig ? '★' : '') + (c5.pos || ''), x + cw5 / 2, y + ch5 - 15, '19px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 1);
-      }
-    } else {
-      var m = Math.max(n, 1);
-      var cwL = m <= 3 ? 230 : 180, chL = m <= 3 ? 380 : 312, gapL = m <= 3 ? 36 : 16;
-      var nmL = m <= 3 ? 86 : 74;
-      var yL = Math.max(qline(ctx, d.question, 345), 400);
-      var xL = (W - (m * cwL + (m - 1) * gapL)) / 2;
-      for (i = 0; i < m; i++) {
-        var c = cards[i] || {};
-        x = xL + i * (cwL + gapL);
-        cardCell(ctx, x, yL, cwL, chL, c, nmL);
-        var nmFont = '600 ' + (m <= 3 ? ((c.name || '').length > 4 ? 28 : 36) : ((c.name || '').length > 3 ? 24 : 28)) + 'px "Noto Serif TC", serif';
-        ctext(ctx, c.name || '', x + cwL / 2, yL + chL - (m <= 3 ? 56 : 48), nmFont, CREAM, 0);
-        ctext(ctx, (c.sig ? '★' : '') + (c.pos || ''), x + cwL / 2, yL + chL - (m <= 3 ? 22 : 18), (m <= 3 ? 22 : 19) + 'px "Noto Serif TC", serif', 'rgba(201,168,76,0.75)', 1);
-      }
-    }
-  }
-
-  // ── 卡片：開鑰之法（五層深潛）── d:{question, layers:[{label,cards}]}
-  function renderOOTK(ctx, d) {
-    d = d || {};
-    title(ctx, '我的開鑰', '開鑰之法 ・ Book T 五層深潛');
-    var y = qline(ctx, d.question, 345);
-    var layers = (d.layers && d.layers.length) ? d.layers : [];
-    var n = layers.length || 5;
-    var top = Math.max(y, 420);
-    var footTop = H - 210, gap = 18;
-    var rh = Math.min(150, (footTop - top - (n - 1) * gap) / n);
-    if (rh < 70) rh = 70;
-    for (var i = 0; i < layers.length; i++) {
-      var ry = top + i * (rh + gap), L = layers[i] || {};
-      ctx.save();
-      ctx.fillStyle = 'rgba(255,255,255,0.03)';
-      ctx.strokeStyle = 'rgba(201,168,76,0.28)'; ctx.lineWidth = 1.5;
-      rr(ctx, 80, ry, W - 160, rh, 14); ctx.fill(); ctx.stroke();
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = GOLD; ctx.font = '600 34px "Noto Serif TC", serif'; ctx.textAlign = 'left';
-      ctx.fillText(L.label || '', 116, ry + rh / 2);
-      ctx.strokeStyle = 'rgba(201,168,76,0.18)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(262, ry + 22); ctx.lineTo(262, ry + rh - 22); ctx.stroke();
-      var cards = L.cards || '\u2014';
-      var fs = 36, maxW = (W - 80) - 262 - 50;
-      ctx.font = fs + 'px "Noto Serif TC", serif';
-      while (ctx.measureText(cards).width > maxW && fs > 20) { fs -= 2; ctx.font = fs + 'px "Noto Serif TC", serif'; }
-      ctx.fillStyle = CREAM; ctx.textAlign = 'center';
-      ctx.fillText(cards, 262 + ((W - 80) - 262) / 2, ry + rh / 2);
-      ctx.restore();
-    }
-  }
-
-  function drawRows(ctx, rows, y) {
-    for (var i = 0; i < rows.length; i++) {
-      var ry = y + i * 70;
-      ctx.save();
-      ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.strokeStyle = 'rgba(201,168,76,0.2)'; ctx.lineWidth = 1;
-      rr(ctx, 120, ry, W - 240, 56, 12); ctx.fill(); ctx.stroke();
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'rgba(201,168,76,0.85)'; ctx.font = '28px "Noto Serif TC", serif'; ctx.textAlign = 'left'; ctx.fillText(rows[i][0], 150, ry + 30);
-      ctx.fillStyle = CREAM; ctx.font = '600 30px "Noto Serif TC", serif'; ctx.textAlign = 'right'; ctx.fillText(rows[i][1], W - 150, ry + 30);
-      ctx.restore();
-    }
-  }
-
-  var RENDER = { invite: renderInvite, bazi: renderBazi, baziPersonality: renderBaziPersonality, baziCompatibility: renderBaziCompatibility, ziwei: renderZiwei, tarot: renderTarot, lenormand: renderLenormand, meihua: renderMeihua, ootk: renderOOTK }; // v2.0：lenormand 專屬渲染器（原借 renderTarot＝固定3格佔位的根因）
-
-  function draw(type, data, canvas) {
-    canvas.width = W; canvas.height = H;
-    var ctx = canvas.getContext('2d');
-    bg(ctx);
-    (RENDER[type] || renderInvite)(ctx, data || {});
-    footer(ctx);
-    return canvas;
-  }
-
-  function fileName(type) { return '靜月之光_' + (type || 'card') + '_' + Date.now() + '.png'; }
-
-  function shareOrDownload(canvas, type) {
-    canvas.toBlob(function (blob) {
-      if (!blob) return;
-      var fn = fileName(type);
-      try {
-        var file = new File([blob], fn, { type: 'image/png' });
-        if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-          navigator.share({ files: [file], title: '靜月之光 ・ 免費AI占卜', text: '我在靜月之光算的，免費AI占卜 jingyue.uk' })
-            .catch(function () { _dl(blob, fn); });
-          return;
-        }
-      } catch (e) {}
-      _dl(blob, fn);
-    }, 'image/png');
-  }
-  function _dl(blob, fn) {
-    var url = URL.createObjectURL(blob); var a = document.createElement('a');
-    a.href = url; a.download = fn; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
-  }
-
-  // ── CSS（一次注入）──
-  function ensureCSS() {
-    if (document.getElementById('jysc-css')) return;
-    var st = document.createElement('style'); st.id = 'jysc-css';
-    st.textContent = [
-      '.jysc-bd{position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;transition:opacity .25s}',
-      '.jysc-bd.show{opacity:1}',
-      '.jysc-box{width:100%;max-width:420px;max-height:92vh;overflow-y:auto;background:linear-gradient(180deg,#16161e,#0d0d13);border:1px solid rgba(201,168,76,.3);border-radius:18px;padding:16px;text-align:center;-webkit-overflow-scrolling:touch}',
-      '.jysc-img{width:100%;border-radius:12px;display:block;box-shadow:0 8px 40px rgba(0,0,0,.5)}',
-      '.jysc-tip{color:rgba(232,224,208,.55);font-size:.74rem;margin:.7rem 0 .2rem;font-family:"Noto Serif TC",serif}',
-      '.jysc-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.7rem}',
-      '.jysc-btn{padding:.8rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:"Noto Serif TC",serif;font-size:.95rem;font-weight:600;letter-spacing:2px;cursor:pointer}',
-      '.jysc-btn.sub{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:rgba(232,224,208,.65);font-weight:400}',
-      '.jysc-btn:active{transform:scale(.97)}',
-      '.jysc-x{margin-top:.6rem;color:rgba(232,224,208,.4);font-size:.8rem;cursor:pointer;font-family:"Noto Serif TC",serif}'
-    ].join('\n');
-    document.head.appendChild(st);
-  }
-
-  function close() {
-    var bd = document.getElementById('jysc-bd');
-    if (!bd) return; bd.classList.remove('show');
-    setTimeout(function () { if (bd && bd.parentNode) bd.parentNode.removeChild(bd); }, 260);
-  }
-
-  function open(type, data) {
-    ensureCSS();
-    var canvas = document.createElement('canvas');
-    function build() {
-      draw(type, data, canvas);
-      var url = canvas.toDataURL('image/png');
-      var old = document.getElementById('jysc-bd'); if (old) old.remove();
-      var bd = document.createElement('div'); bd.id = 'jysc-bd'; bd.className = 'jysc-bd';
-      bd.onclick = function (e) { if (e.target === bd) close(); };
-      bd.innerHTML = '<div class="jysc-box">' +
-        '<img class="jysc-img" src="' + url + '" alt="分享卡">' +
-        '<div class="jysc-tip">長按圖片可存圖；或用下方按鈕分享</div>' +
-        '<div class="jysc-row"><button class="jysc-btn" id="jysc-share">分享到社群</button><button class="jysc-btn sub" id="jysc-dl">下載圖片</button></div>' +
-        '<div class="jysc-x" id="jysc-close">關閉</div></div>';
-      document.body.appendChild(bd);
-      void bd.offsetWidth; bd.classList.add('show');
-      document.getElementById('jysc-share').onclick = function () { shareOrDownload(canvas, type); };
-      document.getElementById('jysc-dl').onclick = function () { canvas.toBlob(function (b) { if (b) _dl(b, fileName(type)); }, 'image/png'); };
-      document.getElementById('jysc-close').onclick = close;
-    }
-    function ready() {
-      // 等 QR 載入（最多等 ~600ms）再畫，確保 QR 入圖
-      if (_qrReady) build();
-      else { var n = 0, t = setInterval(function () { if (_qrReady || ++n > 12) { clearInterval(t); build(); } }, 50); }
-    }
-    // v2.0：cards 帶 img 時先非同步預載真牌面（內含 2.5s 逾時保險）；未帶 img 立即繪卡，行為同 v1.2
-    loadImgs(data && data.cards, ready);
-  }
-
-  window.JYShareCard = { open: open, close: close, _draw: draw, _W: W, _H: H };
+  function background(c,t){var g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#172232');g.addColorStop(.46,INK);g.addColorStop(1,'#090d16');c.fillStyle=g;c.fillRect(0,0,W,H);var gl=c.createRadialGradient(920,100,0,920,100,720);gl.addColorStop(0,rgba(t,.13));gl.addColorStop(1,rgba(t,0));c.fillStyle=gl;c.fillRect(0,0,W,H);c.save();var seed=37;function rnd(){seed=(seed*16807)%2147483647;return(seed-1)/2147483646;}for(var i=0;i<76;i++){var x=rnd()*W,y=rnd()*H;c.fillStyle='rgba(229,217,188,'+(rnd()*.22+.06)+')';c.beginPath();c.arc(x,y,rnd()*1.3+.3,0,7);c.fill();}c.restore();line(c,40,40,360,40,rgba(t,.25));line(c,40,40,40,226,rgba(t,.25));line(c,W-40,H-40,W-360,H-40,rgba(t,.25));line(c,W-40,H-40,W-40,H-226,rgba(t,.25));}
+  function masthead(c,t,d){star(c,81,83,15,GOLD);text(c,'靜月之光',113,83,31,GOLD,600,'left',true);text(c,'JINGYUE',336,83,15,MUTED,500,'left',false);plate(c,818,60,198,46,t,23,false);text(c,d.demo?'設計示意・非占卜':t.name,917,83,d.demo?20:23,t.accent,500,'center');}
+  function heading(c,t,d){masthead(c,t,d);text(c,t.en,68,156,17,t.accent,500);text(c,t.title,65,230,61,WHITE,600,'left',true,733);text(c,t.sub,68,299,27,MUTED,400,'left',false,738);emblem(c,910,233,94,t);}
+  function question(c,d,t){var q=str(d.question);plate(c,64,347,952,108,t,20);text(c,q?'這一次，我想問':'留下這一刻',87,369,18,t.accent,500);paragraph(c,q||'把問題交給此刻，把選擇留給自己。',87,407,905,28,WHITE,2,32);return 469;}
+  function footer(c,t,invite){line(c,64,1139,1016,1139,rgba(t,.35));text(c,invite?'從你最在意的事，開始。':'你的問題，也值得被好好聽見。',67,1193,35,WHITE,500,'left',true,740);text(c,'jingyue.uk',68,1244,33,t.accent,500,'left',false);text(c,'免費抽牌・排盤',310,1244,25,MUTED);text(c,'掃描 QR，開啟你的命理探索',68,1290,24,MUTED);var im=cache[QR_SRC],qx=855,qy=1162,sz=152;c.save();c.fillStyle='#fff';rr(c,qx-10,qy-10,sz+20,sz+20,15);c.fill();if(im){c.imageSmoothingEnabled=false;c.drawImage(im,qx,qy,sz,sz);}else{text(c,'jingyue.uk',qx+sz/2,qy+sz/2,22,'#14202b',600,'center');}c.restore();}
+  function note(c,s,t,y){text(c,s,540,y||1098,23,rgba(t,.9),400,'center',false,944);}
+  function rows(c,items,y,t,maxH){var h=Math.min(80,(maxH||240)/Math.max(1,items.length));items.forEach(function(it,i){plate(c,66,y+i*h,948,h-10,t,15);text(c,it[0],87,y+i*h+(h-10)/2,23,t.accent,500,'left',false,180);text(c,it[1]||'未提供',991,y+i*h+(h-10)/2,27,WHITE,500,'right',false,694);});}
+  function missing(c,t,message){plate(c,122,525,836,360,t,28);emblem(c,540,635,76,t);text(c,message||'尚無可分享的結果',540,766,38,WHITE,500,'center',true);note(c,'請先完成抽牌或排盤，再留下這一刻。',t,830);}
+  function renderInvite(c,d,t){masthead(c,t,d);text(c,t.title,68,184,75,WHITE,600,'left',true,950);text(c,t.sub,68,278,75,GOLD,600,'left',true,950);var im=cache[HERO];if(im){var art=document.createElement('canvas');art.width=930;art.height=620;var ac=art.getContext('2d');ac.drawImage(im,0,0,930,620);ac.globalCompositeOperation='destination-in';var fade=ac.createLinearGradient(0,0,0,620);fade.addColorStop(0,'rgba(0,0,0,0)');fade.addColorStop(.13,'#000');fade.addColorStop(.83,'#000');fade.addColorStop(1,'rgba(0,0,0,0)');ac.fillStyle=fade;ac.fillRect(0,0,930,620);var side=ac.createLinearGradient(0,0,930,0);side.addColorStop(0,'rgba(0,0,0,0)');side.addColorStop(.2,'#000');side.addColorStop(.8,'#000');side.addColorStop(1,'rgba(0,0,0,0)');ac.fillStyle=side;ac.fillRect(0,0,930,620);c.drawImage(art,75,319);}else{emblem(c,540,602,246,t);}
+    var tag=str(d.tagline)||'感情的靠近，工作的轉彎，或下一個自己。';text(c,tag,540,871,29,WHITE,400,'center',false,930);
+    var systems=[['塔羅快讀','tarot'],['開鑰之法','ootk'],['雷諾曼','lenormand'],['紫微斗數','ziwei'],['八字命理','bazi'],['八字合盤','baziCompatibility'],['梅花易數','meihua'],['靜月靈籤','oracle']];systems.forEach(function(v,i){var x=65+(i%4)*241,y=918+Math.floor(i/4)*74,tt=THEMES[v[1]];plate(c,x,y,226,61,tt,17);star(c,x+24,y+30,6,tt.accent);text(c,v[0],x+128,y+30,28,WHITE,500,'center',false,175);});note(c,'選一種方式，為自己留一段安靜的時間。',t,1090);}
+  function renderBazi(c,d,t){heading(c,t,d);question(c,d,t);var ps=arr(d.pillars);if(!ps.length){missing(c,t);return;}ps.slice(0,4).forEach(function(p,i){var x=67+i*242;plate(c,x,483,220,347,t,22,p.label==='日柱');text(c,p.label||['年柱','月柱','日柱','時柱'][i],x+110,522,27,t.accent,500,'center');line(c,x+33,555,x+187,555,rgba(t,.25));text(c,p.gan||'—',x+110,627,95,WHITE,600,'center',true);text(c,p.zhi||'—',x+110,745,95,p.label==='日柱'?GOLD:WHITE,600,'center',true);if(p.label==='日柱'){star(c,x+191,508,6,GOLD);}});rows(c,[['日主',d.dayMaster],['喜用候選',d.yongShen],['現行大運',d.dayun]],867,t,218);note(c,'從命盤看傾向，從生活確認方向。',t);}
+  function renderBaziPersonality(c,d,t){heading(c,t,d);if(!d.code){missing(c,t);return;}plate(c,66,353,948,322,t,27,true);text(c,'FIVE AXES',96,393,19,t.accent,500);text(c,d.code,540,493,108,WHITE,600,'center',false,866);text(c,d.name||'五軸人格',540,594,46,t.accent,600,'center',true,856);var traits=Array.isArray(d.traits)?d.traits.join('  ·  '):str(d.traits);paragraph(c,traits,91,717,898,30,WHITE,2,41);var strengths=Array.isArray(d.strengths)?d.strengths.join('、'):str(d.strengths),watch=Array.isArray(d.watch)?d.watch.join('、'):str(d.watch);rows(c,[['可用優勢',strengths],['需要留意',watch],['出生資料',d.birthLine||'未顯示']],828,t,230);note(c,'本站五軸模型 · 作自我探索參考，非心理測驗。',t);}
+  function renderBaziCompatibility(c,d,t){heading(c,t,d);text(c,d.scenario||'雙人關係',68,370,31,t.accent,500);var names=[d.nameA||'A 方',d.nameB||'B 方'],ps=[d.pillarsA,d.pillarsB];for(var i=0;i<2;i++){var x=65+i*500;plate(c,x,427,450,229,t,25,true);text(c,i?'乙方 / B':'甲方 / A',x+27,467,18,t.accent,500);text(c,names[i],x+27,518,39,WHITE,500,'left',true,394);paragraph(c,ps[i]||'未提供四柱',x+27,588,394,28,MUTED,2,35);}orb(c,540,540,22,t);rows(c,[['日柱互動',d.dayPillars],['互動摘要',d.signal],['支持／牽連',d.support==null?'未提供':str(d.support)+' 項'],['張力／磨合',d.tension==null?'未提供':str(d.tension)+' 項']],718,t,337);note(c,'訊號數量不是成功率；關係仍由彼此的選擇形成。',t);}
+  function renderZiwei(c,d,t){heading(c,t,d);question(c,d,t);var ps=arr(d.palaces);if(!ps.length){missing(c,t);return;}var order=['巳','午','未','申','辰','酉','卯','戌','寅','丑','子','亥'],pos=[[0,0],[1,0],[2,0],[3,0],[0,1],[3,1],[0,2],[3,2],[0,3],[1,3],[2,3],[3,3]],cell=155,gx=230,gy=471;order.forEach(function(br,i){var p=ps.find(function(z){return z.branch===br;})||{branch:br},x=gx+pos[i][0]*cell,y=gy+pos[i][1]*cell,ming=/^命宮?$/.test(p.name||'');plate(c,x,y,cell-8,cell-8,t,14,ming);text(c,p.name||'未提供',x+15,y+29,23,ming?GOLD:t.accent,500,'left',false,121);paragraph(c,p.star||'—',x+15,y+76,120,30,WHITE,2,33,500,true);text(c,br,x+cell-23,y+cell-28,19,MUTED,400,'right');});var cx=gx+2*cell-4,cy=gy+2*cell-4;emblem(c,cx,cy-49,79,t);text(c,d.ming||'命宮資料未提供',cx,cy+63,28,WHITE,600,'center',true,276);text(c,d.info||'十二宮命盤',cx,cy+107,21,t.accent,400,'center',false,280);}
+  function reversed(card,source){var mode=card.sourceProfile||card.readingMode||source||'';if(mode==='gd_book_t'||mode==='gd')return false;return card.reversed===true||card.rev===true||(mode==='rws_reversals'&&card.isUp===false);}
+  function cardCell(c,card,x,y,w,h,t,i,opts){opts=opts||{};var dense=w<130,lh=opts.noLabels?0:(dense?34:69),pad=dense?5:9,bw=w-pad*2,bh=h-pad*2-lh,rev=reversed(card,opts.source);plate(c,x,y,w,h,t,Math.min(16,w*.08),!!card.sig);var im=card._im||cache[card.img],ix=x+pad,iy=y+pad;c.save();rr(c,ix,iy,bw,bh,7);c.clip();c.fillStyle='#0c1220';c.fillRect(ix,iy,bw,bh);if(im){var iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height;if(iw&&ih){var sc=Math.min(bw/iw,bh/ih),dw=iw*sc,dh=ih*sc;c.translate(ix+bw/2,iy+bh/2);if(rev)c.rotate(Math.PI);c.drawImage(im,-dw/2,-dh/2,dw,dh);}}else{star(c,ix+bw/2,iy+bh*.44,Math.min(26,w*.11),t.accent);text(c,card.name||'未提供牌面',ix+bw/2,iy+bh*.66,dense?14:22,MUTED,400,'center',false,bw-8);}c.restore();if(!opts.noLabels){var nm=str(card.name)||'未提供牌名';text(c,nm,x+w/2,y+h-(dense?24:47),dense?17:27,WHITE,500,'center',true,w-12);text(c,(i+1)+'. '+str(card.pos||'')+(rev?' · 逆位':''),x+w/2,y+h-(dense?9:19),dense?12:18,rev?'#efb1bd':t.accent,500,'center',false,w-12);}if(card.sig){c.save();c.fillStyle=t.accent;rr(c,x+5,y+5,25,25,6);c.fill();text(c,'★',x+17,y+18,15,INK,600,'center');c.restore();}}
+  function bestGrid(n,w,h,maxCols,ratio){var best=null;for(var cols=1;cols<=Math.min(n,maxCols||9);cols++){var rowsN=Math.ceil(n/cols),cw=(w-(cols-1)*13)/cols,ch=(h-(rowsN-1)*18)/rowsN;cw=Math.min(cw,ch/(ratio||1.7));ch=cw*(ratio||1.7);if(!best||cw>best.w)best={cols:cols,rows:rowsN,w:cw,h:ch};}return best;}
+  function renderTarot(c,d,t){heading(c,t,d);question(c,d,t);var cards=arr(d.cards);if(!cards.length){missing(c,t);return;}text(c,d.spread||'塔羅牌陣',67,483,28,t.accent,500,'left',false,743);text(c,cards.length+' 張',1009,483,25,MUTED,500,'right');var large=cards.length>15,grid=bestGrid(cards.length,946,large?544:511,9,large?1.58:1.82);cards.forEach(function(card,i){var col=i%grid.cols,row=Math.floor(i/grid.cols),nrow=Math.min(grid.cols,cards.length-row*grid.cols),x=(W-(nrow*grid.w+(nrow-1)*13))/2+col*(grid.w+13),y=527+row*(grid.h+18);cardCell(c,card,x,y,grid.w,grid.h,t,i,{source:d.sourceProfile});});if(d.conclusion&&!large)paragraph(c,d.conclusion,68,1060,944,26,MUTED,2,31);else note(c,'依抽牌順序展示 · 牌位與方向依本次紀錄',t);}
+  function renderLenormand(c,d,t){heading(c,t,d);question(c,d,t);var cards=arr(d.cards),n=cards.length;if(!n){missing(c,t);return;}text(c,d.spread||'雷諾曼牌陣',67,483,28,t.accent,500,'left',false,900);var i,x,y,w,h,g;
+    if(n===36){w=107;h=96;g=12;for(i=0;i<36;i++){var row=Math.floor(i/8),col=i%8;x=row===4?308+col*(w+g):70+col*(w+g);y=531+row*113+(row===4?9:0);cardCell(c,cards[i],x,y,w,h,t,i);}note(c,'4 × 8 主盤 + 4 張獨立收束 · 依實際落宮排列',t);}
+    else if(n===9){w=165;h=173;g=17;for(i=0;i<n;i++){x=(W-3*w-2*g)/2+(i%3)*(w+g);y=526+Math.floor(i/3)*(h+14);cardCell(c,cards[i],x,y,w,h,t,i);}note(c,'九宮格 · 中心、四角與行列關係保留',t);}
+    else if(n===7){w=141;h=167;g=16;var x0=(W-3*w-2*g)/2;for(i=0;i<7;i++){var r=i<3?0:i===3?1:2,colN=i<3?i:i===3?1:i-4;x=x0+colN*(w+g);y=525+r*184;cardCell(c,cards[i],x,y,w,h,t,i);}text(c,'A 路',199,607,24,t.accent,500,'right');text(c,'共同',199,791,24,t.accent,500,'right');text(c,'B 路',199,975,24,t.accent,500,'right');}
+    else{var layout=bestGrid(n,941,468,n,1.92);if(n===5){layout={cols:5,w:176,h:352};}else if(n===3){layout={cols:3,w:258,h:465};}for(i=0;i<n;i++){var rowN=Math.floor(i/layout.cols),count=Math.min(layout.cols,n-rowN*layout.cols);x=(W-count*layout.w-(count-1)*14)/2+(i%layout.cols)*(layout.w+14);y=540+rowN*(layout.h+18);cardCell(c,cards[i],x,y,layout.w,layout.h,t,i);}note(c,n===5?'五張線 · 依序連讀，中央為焦點':n===3?'三張線 · 由左至右，組合成句':'依實際牌序展示',t);}}
+  function renderMeihua(c,d,t){heading(c,t,d);question(c,d,t);var cards=arr(d.cards);if(!cards.length){missing(c,t);return;}cards.slice(0,3).forEach(function(card,i){var x=68+i*321,w=300,y=492;plate(c,x,y,w,419,t,25,i===0);text(c,card.pos||['本卦','互卦','變卦'][i],x+w/2,y+40,26,t.accent,500,'center');var ls=arr(card.lines);if(ls.length===6){for(var li=0;li<6;li++){var yy=y+275-li*32,isDong=card.dong===li+1,col=isDong?'#f1bb7e':t.accent,bar=c.createLinearGradient(x+49,yy,x+249,yy+13);bar.addColorStop(0,'#f6ebcb');bar.addColorStop(.55,col);bar.addColorStop(1,t.deep);c.save();c.fillStyle=bar;c.shadowColor='#000';c.shadowOffsetY=4;c.shadowBlur=2;if(ls[li]){rr(c,x+49,yy,202,13,3);c.fill();}else{rr(c,x+49,yy,91,13,3);c.fill();rr(c,x+160,yy,91,13,3);c.fill();}c.restore();if(isDong)star(c,x+274,yy+6,5,'#ffbd86');}}else text(c,'未提供爻線',x+w/2,y+202,26,MUTED,400,'center');text(c,card.name||'未提供卦名',x+w/2,y+355,36,WHITE,500,'center',true,w-30);});if(d.conclusion)paragraph(c,d.conclusion,68,970,944,27,MUTED,3,36);note(c,'六爻由下而上 · 暖金標示動爻',t);}
+  function renderOOTK(c,d,t){heading(c,t,d);question(c,d,t);var layers=arr(d.layers);if(!layers.length){missing(c,t,'尚無已完成的操作');return;}layers.slice(0,5).forEach(function(layer,i){var y=484+i*115;plate(c,67,y,947,98,t,19,layer.completed===true);orb(c,111,y+49,22,t);text(c,String(i+1).padStart(2,'0'),111,y+49,21,WHITE,500,'center');text(c,layer.label||'第'+(i+1)+'次操作',156,y+31,26,t.accent,500,'left',false,280);var value=str(layer.cards)||'尚未完成';if(value==='—')value='尚未記錄關鍵牌';text(c,value,156,y+67,28,WHITE,400,'left',true,822);});note(c,'僅呈現本次已記錄的操作摘要。',t);}
+  function renderOracle(c,d,t){heading(c,t,d);var poem=str(d.poem);if(!poem){missing(c,t,'尚無可分享的籤詩');return;}plate(c,65,357,950,679,t,29,true);text(c,d.numberLabel||('第 '+str(d.number)+' 籤'),98,411,40,GOLD,600,'left',true,610);text(c,[d.ganzhi,d.rank].filter(Boolean).join(' · '),979,411,27,t.accent,500,'right',false,335);line(c,98,456,982,456,rgba(t,.3));var lines=poem.split('\n').filter(Boolean),maxChars=Math.max.apply(null,lines.map(function(l){return Array.from(l).length;})),sz=Math.min(49,378/Math.max(1,maxChars)),step=sz*1.2;lines.slice(0,4).forEach(function(l,i){var x=831-i*198;Array.from(l).forEach(function(ch,j){text(c,ch,x,516+j*step,sz,WHITE,500,'center',true);});});line(c,98,942,982,942,rgba(t,.25));text(c,d.story?'典故 · '+d.story:'六十甲子籤',98,984,27,t.accent,400,'left',true,880);note(c,d.edition||'原詩留在卡片裡，完整解讀回到本次籤文。',t);}
+  var RENDER={invite:renderInvite,bazi:renderBazi,baziPersonality:renderBaziPersonality,baziCompatibility:renderBaziCompatibility,ziwei:renderZiwei,tarot:renderTarot,lenormand:renderLenormand,meihua:renderMeihua,ootk:renderOOTK,oracle:renderOracle};
+  function draw(type,data,canvas,options){var t=THEMES[type]||THEMES.invite,d=data||{},scale=options&&options.scale||SCALE;canvas.width=W*scale;canvas.height=H*scale;var c=canvas.getContext('2d');if(!c)throw new Error('無法建立卡片畫布');c.scale(scale,scale);background(c,t);(RENDER[type]||renderInvite)(c,d,t);footer(c,t,type==='invite');return canvas;}
+  function loadImage(src){if(!src)return Promise.resolve(null);if(cache[src])return Promise.resolve(cache[src]);return new Promise(function(resolve){var im=new Image(),done=false,tm=setTimeout(function(){finish(null);},6500);function finish(v){if(done)return;done=true;clearTimeout(tm);im.onload=im.onerror=null;if(v)cache[src]=v;resolve(v);}im.onload=function(){finish(im);};im.onerror=function(){finish(null);};try{var u=new URL(src,document.baseURI);if(!/^(https?:|file:|data:|blob:)$/.test(u.protocol)){finish(null);return;}if(u.protocol!=='data:'&&u.protocol!=='file:'&&u.origin!==location.origin)im.crossOrigin='anonymous';im.src=src;}catch(e){finish(null);}});}
+  function fontReady(d){if(!document.fonts)return Promise.resolve();var sample='靜月之光為心裡的問號找到下一步塔羅八字紫微雷諾曼梅花靈籤'+JSON.stringify(d||{}).slice(0,5000);return Promise.race([Promise.all([document.fonts.load(font(40,600,true),sample),document.fonts.load(font(30,400,false),sample)]).catch(function(){}),new Promise(function(r){setTimeout(r,4000);})]);}
+  function render(type,data,options){var d=Object.assign({},data||{});d.cards=arr(d.cards).map(function(c){return Object.assign({},c);});var jobs=[loadImage(QR_SRC),fontReady(d)];if(type==='invite')jobs.push(loadImage(HERO));d.cards.forEach(function(c){if(c.img)jobs.push(loadImage(c.img));});return Promise.all(jobs).then(function(){return draw(type,d,document.createElement('canvas'),options);});}
+  function fileName(type){return '靜月之光_'+(THEMES[type]||THEMES.invite).name+'_'+new Date().toISOString().slice(0,10)+'.png';}
+  function blobOf(canvas){return new Promise(function(resolve,reject){try{canvas.toBlob(function(b){b?resolve(b):reject(new Error('圖片轉檔未完成'));},'image/png');}catch(e){reject(e);}});}
+  function saveBlob(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);}
+  function download(type,data){return render(type,data).then(blobOf).then(function(blob){saveBlob(blob,fileName(type));return blob;});}
+  function css(){if(document.getElementById('jysc-css'))return;var link=document.createElement('link');link.id='jysc-css';link.rel='stylesheet';link.href=BASE+'assets/share/share-cards-20260911.css';document.head.appendChild(link);}
+  function close(){serial++;if(!active)return;var cur=active;active=null;cur.bd.remove();document.removeEventListener('keydown',cur.key);document.body.style.overflow=cur.overflow;if(cur.url)URL.revokeObjectURL(cur.url);if(cur.focus&&cur.focus.isConnected)cur.focus.focus();}
+  function open(type,data){css();close();var id=++serial,t=THEMES[type]||THEMES.invite,d=Object.assign({},data||{}),bd=document.createElement('div');bd.id='jysc-bd';bd.className='jysc-bd';bd.innerHTML='<section class="jysc-box" role="dialog" aria-modal="true" aria-labelledby="jysc-title"><header class="jysc-head"><div><span class="jysc-eyebrow">JINGYUE · MOON ATELIER</span><h2 id="jysc-title">把這一刻，分享出去</h2></div><button type="button" class="jysc-x" id="jysc-close" aria-label="關閉分享卡">×</button></header><div class="jysc-stage" id="jysc-stage"><div class="jysc-loading" role="status">正在製作你的卡片…</div><img class="jysc-img" alt="'+t.name+'分享卡" hidden></div><p class="jysc-status" id="jysc-status" role="status" aria-live="polite">等待畫面與字體就緒</p><label class="jysc-privacy"'+(type==='invite'||type==='oracle'||(!d.question&&!d.nameA&&!d.nameB&&!d.birthLine)?' hidden':'')+'><input type="checkbox" id="jysc-personal" checked> 顯示問題、姓名與出生資料</label><div class="jysc-row"><button type="button" class="jysc-btn jysc-primary" id="jysc-share" disabled>分享這張卡片 ↗</button><button type="button" class="jysc-btn" id="jysc-dl" disabled>下載高清圖片 ↓</button></div><p class="jysc-tip">長按圖片也可儲存 · 適合 IG / Threads / LINE</p></section>';
+    var focus=document.activeElement,overflow=document.body.style.overflow;document.body.appendChild(bd);document.body.style.overflow='hidden';var el={bd:bd,focus:focus,overflow:overflow,url:null,key:null};active=el;var share=bd.querySelector('#jysc-share'),dl=bd.querySelector('#jysc-dl'),status=bd.querySelector('#jysc-status'),img=bd.querySelector('img'),checkbox=bd.querySelector('#jysc-personal'),prepared=null,drawId=0;bd.querySelector('#jysc-close').onclick=close;bd.onclick=function(e){if(e.target===bd)close();};el.key=function(e){if(e.key==='Escape'){close();return;}if(e.key==='Tab'){var list=Array.from(bd.querySelectorAll('button:not(:disabled),input')).filter(function(n){return n.offsetParent!==null;}),first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};document.addEventListener('keydown',el.key);bd.querySelector('#jysc-close').focus();
+    function refresh(){var mine=++drawId;share.disabled=dl.disabled=true;status.textContent='正在製作你的卡片…';var payload=Object.assign({},d);if(!checkbox.checked){payload.question='';payload.nameA='A 方';payload.nameB='B 方';payload.birthLine='未顯示';}render(type,payload).then(function(cv){return blobOf(cv);}).then(function(blob){if(id!==serial||mine!==drawId||active!==el)return;prepared=blob;if(el.url)URL.revokeObjectURL(el.url);el.url=URL.createObjectURL(blob);img.onload=function(){var loading=bd.querySelector('.jysc-loading');if(loading)loading.remove();img.hidden=false;};img.src=el.url;share.disabled=dl.disabled=false;status.textContent='2160 × 2700 高清圖片 · '+t.name;}).catch(function(){if(id===serial)status.textContent='圖片暫時未能完成，請關閉後重試。';});}
+    checkbox.onchange=refresh;dl.onclick=function(){if(prepared)saveBlob(prepared,fileName(type));};share.onclick=function(){if(!prepared)return;try{var f=new File([prepared],fileName(type),{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'靜月之光',text:'為心裡的問號，找到下一步的光。jingyue.uk'}).catch(function(e){if(e&&e.name==='AbortError')return;status.textContent='此環境無法直接分享，可使用「下載高清圖片」。';});return;}}catch(e){}saveBlob(prepared,fileName(type));status.textContent='圖片已下載，可貼到你想分享的社群。';};
+    var stage=bd.querySelector('#jysc-stage');if(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){stage.onpointermove=function(e){var r=stage.getBoundingClientRect();img.style.transform='perspective(1000px) rotateX('+(-(e.clientY-r.top-r.height/2)/r.height*4)+'deg) rotateY('+((e.clientX-r.left-r.width/2)/r.width*4)+'deg)';};stage.onpointerleave=function(){img.style.transform='';};}refresh();return bd;}
+  window.JYShareCard={version:'3.0.0',open:open,close:close,render:render,download:download,_draw:draw,_W:W,_H:H,types:Object.keys(RENDER)};
 })();
