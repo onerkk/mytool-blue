@@ -1,0 +1,264 @@
+/* Moon Table · shared interaction system, 20260911flow6.
+   Loaded last. Chart geometry, card positions and reading data stay independent. */
+body.jy-atelier{
+ --jf-ink:#080f19;--jf-panel:#101d2b;--jf-raised:#1b2c3c;
+ --jf-paper:#f0e9dc;--jf-muted:#b0bece;--jf-gold:#e6c997;
+ --jf-line:#b9c8da29;--jf-focus:#f6d9a3;
+ --jf-edge:inset 0 1px 0 #ffffff12,0 1px 2px #0005,0 14px 34px #02071145;
+ color:var(--jf-paper);font-family:var(--f-body,'Noto Sans TC',sans-serif);
+}
+.jy-atelier :is(button,input,textarea,select){font-family:var(--f-body,'Noto Sans TC',sans-serif);letter-spacing:.02em}
+.jy-atelier :is(button,a,input,textarea,select,summary):focus-visible{outline:2px solid var(--jf-focus)!important;outline-offset:3px;box-shadow:0 0 0 5px #e6c99714!important}
+.jy-atelier :is(button,input,select,textarea)[disabled]{cursor:not-allowed;opacity:.48;filter:none;transform:none!important}
+.jy-atelier [hidden]{display:none!important}
+.jy-atelier :is(#input-screen,#step-2,#step-tarot,.ln-container,.mhx-container,.bzx-container,.zw-in-wrap,.bzs-shell){overflow-anchor:none}
+.jy-atelier :is(#input-screen,#step-2,#step-tarot){scroll-margin-top:calc(var(--jy-header-height,72px) + 16px)}
+.jy-atelier :is(.at-room-nav,.bzs-top){position:relative!important;top:auto!important;z-index:10;background:transparent!important;box-shadow:none!important;border-bottom:1px solid var(--jf-line);padding:10px 0 16px!important;margin:0 0 16px!important;gap:8px;flex-wrap:wrap}
+.jy-atelier :is(.at-back,.at-home-link,.at-room-shop,.bzs-back,.bzs-legacy,.at-share-button,.ln-reset-btn,.mhx-reset-btn,.bzx-reset-btn,.zw-reset,.btn-outline){
+ min-height:44px;border:1px solid var(--jf-line)!important;border-radius:12px!important;
+ background:linear-gradient(150deg,#233344aa,#121f2baa)!important;color:#e2d2b5!important;
+ box-shadow:inset 0 1px #ffffff0c!important;font-size:14px!important;font-weight:500;
+ line-height:1.5!important;padding:10px 15px!important;text-decoration:none;
+ transition:background .16s,border-color .16s,transform .16s;
+}
+.jy-atelier :is(.at-home-link,.at-room-shop){background:transparent!important;border-color:transparent!important;padding-inline:8px!important;color:var(--jf-muted)!important}
+.jy-atelier .at-room-shop{margin-left:auto;color:#e4cca5!important}
+.jy-atelier .at-back:active{transform:translateY(1px)}
+.jy-atelier .nav{padding:10px 20px!important;background:#08111df5!important;border-bottom:1px solid var(--jf-line)!important;box-shadow:0 2px 16px #0002!important}
+.jy-atelier .nav-brand{font-size:20px!important}.jy-atelier .nav-shop{font-size:14px!important;min-height:44px!important}
+
+/* The title uses the full line. The character accompanies the subtitle. */
+.jy-atelier .jc-room-header,.jy-atelier .at-input-head.jc-room-header{
+ display:grid!important;grid-template-columns:minmax(0,1fr) 84px;align-items:center;gap:12px;
+ min-height:0!important;padding:22px!important;margin:12px 0 22px!important;
+ border:1px solid var(--jf-line)!important;border-radius:20px!important;
+ background:var(--jf-ink);box-shadow:var(--jf-edge)!important;
+}
+.jy-atelier .jc-room-header:before{background:linear-gradient(100deg,#0b1928f5,#0b1928c9),var(--jc-room) center 45%/cover}
+.jy-atelier .jc-room-header>div:not(.jc-guide){grid-column:1;min-width:0}
+.jy-atelier .jc-room-header h1{font-size:clamp(25px,4vw,36px)!important;line-height:1.5!important;letter-spacing:.04em!important;margin:8px 0 10px!important;font-weight:400}
+.jy-atelier .jc-room-header p{font-family:var(--f-body,sans-serif);font-size:15px!important;line-height:1.8!important;margin:0!important;color:#bdc9d5!important}
+.jy-atelier .jc-room-header .at-eyebrow{font-size:10px!important;letter-spacing:1.6px;line-height:1.6;display:block;color:#cfb994}
+.jy-atelier .at-input-head.jc-room-header>.at-back{position:static!important;grid-column:1/-1;justify-self:start;margin:0 0 4px;padding:6px 0!important;background:transparent!important;border:0!important;min-height:36px}
+.jy-atelier .jc-room-header .jc-guide{grid-column:2;align-self:end;position:relative;width:84px;min-height:148px}
+.jy-atelier .jc-room-header .jc-portrait{position:absolute;inset:0 auto auto 50%;transform:translateX(-50%);width:90px;height:150px;min-height:0;animation:none;mask-image:linear-gradient(#000 65%,transparent 96%);-webkit-mask-image:linear-gradient(#000 65%,transparent 96%)}
+.jy-atelier .jc-room-header .jc-guide-line{position:absolute;left:-10px;right:-10px;bottom:-2px;margin:0;padding:0;border:0;text-align:center;white-space:nowrap}
+.jy-atelier .jc-room-header .jc-guide-line>span{font-size:13px;letter-spacing:2px}.jy-atelier .jc-room-header .jc-guide-line small,.jy-atelier .jc-room-header .jc-guide-line p{display:none!important}
+.jy-atelier .jc-room-header .bzx-suite-entry{min-height:40px;padding:8px 10px!important;font-size:13px!important}
+.jy-atelier .at-input-head.jc-room-header>div:not(.jc-guide){grid-column:1/-1;padding-right:0}
+.jy-atelier .at-input-head.jc-room-header h1{padding-right:0;margin-right:0!important}
+.jy-atelier .at-input-head.jc-room-header>div:not(.jc-guide)>p{max-width:calc(100% - 95px);min-height:65px}
+.jy-atelier .at-input-head.jc-room-header .jc-guide{position:absolute;right:18px;bottom:14px;min-height:126px;pointer-events:none}
+.jy-atelier .at-input-head.jc-room-header .jc-portrait{height:126px;width:76px}
+.jy-atelier .at-input-head.jc-room-header .jc-guide-line{display:none}
+
+/* Calm, consistent surfaces. Nested controls have one visible boundary. */
+.jy-atelier :is(.bzx-section,.ln-section,.mhx-section,.zw-in-sec,.bzs-card,#input-screen>.card,.step>.card,.jc-pane){
+ background:linear-gradient(155deg,#1b2a39 0%,#101d2b 65%,#0e1925)!important;
+ border:1px solid var(--jf-line)!important;border-radius:18px!important;
+ box-shadow:var(--jf-edge)!important;padding:22px!important;margin-bottom:18px!important;
+}
+.jy-atelier :is(.bzx-section-title,.ln-section-title,.mhx-section-title,.zw-in-sec-title,#input-screen .card-title,.at-tarot-workspace>.card-title){
+ color:#ead7b5!important;font:400 21px/1.55 var(--f-display,serif)!important;
+ padding:0 0 14px!important;margin:0 0 18px!important;letter-spacing:.04em;
+ border-bottom:1px solid var(--jf-line)!important;
+}
+.jy-atelier #input-screen .card-title i{font-size:15px;color:#c5ad86;filter:none}
+.jy-atelier :is(.form-label,.bzx-label,.zw-in-label,.bzs-field>label,.ln-label,.mhx-label){font-family:var(--f-body,sans-serif)!important;font-size:14px!important;color:#c4cfda!important;line-height:1.65;margin-bottom:8px!important}
+.jy-atelier :is(.form-group,.bzx-field-wrap,.bzs-field){margin-bottom:16px}
+.jy-atelier :is(.form-hint,.bzx-hint,.bzs-hint,.zw-in-hint){font-size:13px!important;line-height:1.7!important;color:#adbac8!important;opacity:1!important}
+.jy-atelier :is(.bzx-field,.zwx-field,.bzs-pick-field,.form-input,.jy-select,.bzs-input,.bzs-select,.bzs-text,.bzx-q-input,.ln-q-input,.mhx-q-input,.zw-in-q,.orc-q-textarea,.mhx-num-row input,.mhx-char-row input,#f-question){
+ width:100%;box-sizing:border-box;min-width:0;min-height:52px!important;
+ padding:14px 15px!important;border:1px solid #9badc438!important;border-radius:12px!important;
+ background:#091421!important;color:#eee9df!important;
+ box-shadow:inset 0 2px 4px #0003!important;font-size:16px!important;line-height:1.65!important;
+ transition:border-color .16s,background .16s;letter-spacing:.01em;
+}
+.jy-atelier :is(textarea,#f-question){resize:vertical;min-height:110px!important;max-height:340px}
+.jy-atelier :is(input,textarea)::placeholder{color:#95a5b9!important;opacity:1}
+.jy-atelier :is(.bzx-field,.bzs-pick-field,.zwx-field) .ph{color:#95a5b9!important;opacity:1}
+.jy-atelier :is(.bzs-pick-field,.bzx-field,.zwx-field) .chev{color:#c5b594!important}
+.jy-atelier :is(.bzx-gbtn,.bzx-dbtn,.zw-in-pill,.ln-spread-btn,.mhx-method-btn,.bzs-chip,.bzs-lens,.bzs-choice-btn,.bzs-action,.bzs-tab){
+ min-height:48px!important;padding:12px 13px!important;border-radius:12px!important;
+ background:#101e2d!important;border:1px solid #9dadc030!important;color:#bdc9d6!important;
+ box-shadow:inset 0 1px #ffffff08!important;font-size:15px!important;line-height:1.55!important;
+ transition:background .16s,border-color .16s,transform .16s;
+}
+.jy-atelier :is(.bzx-gbtn,.bzx-dbtn,.zw-in-pill,.ln-spread-btn,.mhx-method-btn,.bzs-chip,.bzs-lens,.bzs-choice-btn,.bzs-tab):is(.active,.on,.sel,.selected,[aria-pressed=true]){
+ border-color:#d9c092!important;background:linear-gradient(145deg,#39433f,#263540)!important;
+ color:#f8e5c4!important;box-shadow:inset 0 1px #e6c99733,0 0 0 1px #e6c99718!important;
+}
+.jy-atelier :is(.ln-spread-btn,.mhx-method-btn) :is(small,span){color:#b7c4d0!important;opacity:1!important;font-size:13px!important;line-height:1.6!important}
+.jy-atelier :is(.ln-spread-grid,.mhx-method-grid,.bzx-gender-row,.bzs-choice-row){gap:10px!important}
+.jy-atelier .ln-spread-btn{position:relative;text-align:left!important;padding:16px!important;min-height:85px!important}
+.jy-atelier .ln-spread-btn.active::after{content:'✓';position:absolute;right:12px;top:10px;font:14px var(--f-body,sans-serif);color:#ead2a9}
+
+/* Gold means continue. Choices and links never compete with this action. */
+.jy-atelier :is(.bzx-cast-btn,.ln-draw-btn,.mhx-cast-btn,.zw-in-go,.bzs-primary,.btn-primary,.orc-btn-primary,.bzx-ai-copy-btn,.ln-ai-copy-btn,.mhx-ai-copy-btn,.zw-ai-copy,.orc-ai-copy-btn,.jy-ex-btn,.jc-continue,#tarot-dock-action,.jr-next){
+ min-height:54px!important;padding:15px 20px!important;border-radius:12px!important;
+ border:1px solid #f4dfb4!important;color:#222b31!important;
+ background:linear-gradient(115deg,#f4e3be,#e4c58e 65%,#d4b17b)!important;
+ box-shadow:inset 0 1px 0 #fff8,inset 0 -2px 0 #8b694133,0 2px 0 #795e3d,0 9px 24px #0004!important;
+ font:600 16px/1.5 var(--f-body,sans-serif)!important;letter-spacing:.03em!important;
+ animation:none!important;transition:filter .16s,transform .16s,box-shadow .16s!important;
+}
+.jy-atelier :is(.btn-primary,.jy-ex-btn,.jc-continue,#tarot-dock-action,.jr-next):active{transform:translateY(2px)!important;box-shadow:inset 0 1px 3px #59432533,0 0 0 #0000!important}
+.jy-atelier #tool-cta{position:static!important;margin:22px 0 12px!important;padding:0!important;background:none!important;gap:12px!important}
+.jy-atelier #btn-tool-sub{font-size:13px!important;color:#aebdcb!important;opacity:1!important;line-height:1.7}
+.jy-atelier #input-screen #q-custom-wrap{margin-top:0!important}.jy-atelier #at-question-card .form-group{margin:0}.jy-atelier #f-char{font-variant-numeric:tabular-nums}.jy-atelier #at-question-card .form-hint{text-align:right;margin-top:8px}
+.jy-atelier .jy-tool-grid{gap:12px!important}
+.jy-atelier .jy-tool-card{position:relative;padding:15px!important;border-radius:14px!important;border:1px solid var(--jf-line)!important;background:#122130!important;box-shadow:inset 0 1px #ffffff0a!important;min-height:0!important}
+.jy-atelier .jy-tool-card.selected{border-color:#d9c092!important;background:linear-gradient(120deg,#344047,#1c3042)!important;box-shadow:inset 0 1px #fff1!important}
+.jy-atelier .jy-tool-head{display:grid!important;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:15px!important}
+.jy-atelier .jy-tool-head .at-art{width:58px!important;height:76px!important;min-height:0!important;margin:0!important}
+.jy-atelier .jy-tool-name{font:400 21px/1.5 var(--f-display,serif)!important;color:#efe2ca!important;margin-bottom:6px!important}
+.jy-atelier .jy-tool-desc{font:400 14px/1.7 var(--f-body,sans-serif)!important;color:#c0cbd8!important}
+.jy-atelier .jy-tool-desc span{font-size:12px!important;opacity:1!important;color:#a3b3c5!important}
+.jy-atelier .jy-tool-free{position:static!important;grid-column:2;justify-self:start;font-size:11px!important;line-height:1.4!important;padding:3px 8px!important;margin:0!important;border:1px solid #b8d2b926!important;background:#405b4b44!important;color:#c2dbbf!important;box-shadow:none!important}
+.jy-atelier .jy-spread-trigger{border:1px solid var(--jf-line)!important;background:#0e1b29!important;border-radius:13px!important;box-shadow:none!important;padding:14px!important;min-height:88px!important;gap:13px!important}
+.jy-atelier .jy-spread-trigger-icon{width:42px!important;height:48px!important;min-width:42px!important;border-radius:10px!important;background:#d1bc951a!important;border:1px solid #dfc39333!important;box-shadow:inset 0 1px #fff1!important;font-size:19px!important}
+.jy-atelier .jy-spread-trigger-name{font-size:16px!important;line-height:1.6!important;font-weight:500!important}
+.jy-atelier .jy-spread-trigger-sub{font-size:13px!important;line-height:1.7!important;color:#b5c1cf!important}
+
+/* The step indicator is the destination of an explicit Next / Previous tap. */
+.jy-atelier .jc-flow{scroll-margin-top:20px;margin:0 0 18px}
+.jy-atelier .jc-flow-steps{gap:6px;padding:6px;background:#101c28;border:1px solid var(--jf-line);border-radius:14px;box-shadow:inset 0 1px #ffffff0a}
+.jy-atelier .jc-flow-steps button{font-size:13px;line-height:1.5;gap:6px;padding:10px 4px!important;min-height:66px;border-radius:10px}
+.jy-atelier .jc-flow-steps button b{border:0;width:auto;height:auto;font-size:12px;letter-spacing:1.5px;box-shadow:none!important;background:none!important;color:#9dabbb}
+.jy-atelier .jc-flow-steps button[aria-current=step]{color:#f0dfc0;background:#e3c59314;box-shadow:inset 0 -2px #d9bc83}
+.jy-atelier .jc-flow-steps button[aria-current=step] b{color:#e9c997}
+.jy-atelier .jc-flow-status{font-size:13px;padding:10px 4px 0}
+.jy-atelier .jc-flow-actions{gap:10px;margin:16px 0 22px;align-items:center}
+.jy-atelier .jc-flow-actions .jc-previous{font-size:14px;min-height:52px;padding:12px;border-radius:12px;background:#152432;border:1px solid var(--jf-line);color:#d2dbe4}
+.jy-atelier .jc-flow-actions .jc-all{font-size:13px;min-height:42px;padding:7px;color:#adbbc9;order:3}
+
+/* Tarot: state, action, table, latest card, optional geometry. No fixed dock. */
+.jy-atelier #step-2{padding-bottom:28px!important}
+.jy-atelier #step-2 .at-tarot-workspace{padding:22px!important}
+.jy-atelier #step-2 .at-draw-dock{position:relative!important;inset:auto!important;transform:none!important;display:flex!important;flex-wrap:wrap;width:100%!important;max-width:none!important;box-sizing:border-box;gap:12px;margin:18px 0 16px!important;padding:14px 0!important;border:0!important;border-block:1px solid var(--jf-line)!important;background:transparent!important;box-shadow:none!important;z-index:1}
+.jy-atelier #tarot-dock-step{font-size:12px!important;line-height:1.6;color:#b9c5d3}.jy-atelier #tarot-dock-count{font:400 22px/1.5 var(--f-display,serif)!important;color:#edd5ad;display:block}
+.jy-atelier #tarot-dock-action{margin-left:auto;max-width:100%;min-height:50px!important;padding:12px 18px!important;font-size:15px!important}
+.jy-atelier #step-2 #pick-hint{animation:none!important;color:#b8c7d6!important;font-size:14px!important;line-height:1.7!important;text-align:left!important;margin:10px 0!important}
+.jy-atelier #step-2 #t-deck-intro{text-align:left!important;font-size:14px!important;line-height:1.8!important;margin:0!important;color:#c1ccd9!important}
+.jy-atelier .at-table-instruction{font-size:13px!important;line-height:1.7!important;color:#9eafc2!important;text-align:left;margin:8px 0!important}
+.jy-atelier #step-2 .tarot-deck-wrap{margin:12px 0!important}
+.jy-atelier #step-2 #t-deck{height:290px!important;border-radius:16px!important;border:1px solid #c7ac7d38!important;touch-action:pan-y pinch-zoom!important;user-select:none;-webkit-user-select:none;cursor:grab;scroll-behavior:auto}
+.jy-atelier #step-2 #t-deck.is-dragging,.jy-atelier #step-2 #t-deck.is-dragging .tarot-deck-card{cursor:grabbing!important}
+.jy-atelier #step-2 #t-deck .tarot-deck-card{touch-action:pan-y pinch-zoom!important;-webkit-user-drag:none;animation:none!important}
+.jy-atelier #step-2 #t-deck .tarot-deck-card-inner{animation:none!important;transition:filter .15s}
+.jy-atelier #step-2[data-draw-phase=ready] :is(.tarot-deck-wrap,.at-deck-browser,#tarot-last-card,.at-table-instruction){display:none!important}
+.jy-atelier #step-2[data-draw-phase=complete] .at-deck-browser{display:none!important}
+.jy-atelier .at-deck-browser{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;margin:8px 0 14px}
+.jy-atelier .at-deck-browser>span{font-size:11px;text-align:center;color:#aebdcd;line-height:1.5}
+.jy-atelier .at-deck-browser button{font-size:13px;min-height:44px;padding:9px 12px;color:#ead5ad;border:1px solid var(--jf-line);border-radius:10px;background:#182737;box-shadow:inset 0 1px #ffffff10}
+.jy-atelier .at-reading-settings,.jy-atelier .at-spread-details{border:1px solid var(--jf-line)!important;border-radius:12px!important;background:#0c1825!important;box-shadow:none!important;margin:16px 0!important;overflow:hidden}
+.jy-atelier :is(.at-reading-settings,.at-spread-details)>summary{padding:14px 15px!important;min-height:48px;box-sizing:border-box;font-size:14px!important;color:#dac9a9!important;line-height:1.6}
+.jy-atelier #tarot-position-list{font-size:13px;line-height:1.6;padding:0 16px 16px 36px}.jy-atelier #tarot-position-list small{font-size:12px}
+.jy-atelier .at-layout-help{font-size:13px!important;line-height:1.7!important;padding:0 16px!important}
+.jy-atelier #t-chosen{touch-action:pan-x pan-y!important;overscroll-behavior:contain}
+.jy-atelier .at-last-card{margin:16px 0!important;border:1px solid var(--jf-line);border-left:2px solid #d9c096;border-radius:12px;background:#142434;padding:12px!important}
+
+/* A concise handoff, with more providers available on demand. */
+.jy-atelier :is(.bzx-ai-card,.ln-ai-card,.mhx-ai-card,.zw-ai,.orc-ai-prompt-card,.jy-ex-card){
+ text-align:left!important;max-width:none!important;background:linear-gradient(135deg,#203442,#10202e 65%)!important;
+ padding:24px!important;border:1px solid #d1bd873b!important;border-radius:18px!important;
+ box-shadow:var(--jf-edge)!important;margin:20px 0!important;
+}
+.jy-atelier :is(.jy-ex-card::before,.jy-ex-stars,.jy-ex-emblem){display:none!important}
+.jy-atelier :is(.jy-ex-title,.ln-ai-title,.bzx-ai-title,.mhx-ai-title,.zw-ai-title,.orc-ai-title){font:400 24px/1.55 var(--f-display,serif)!important;color:#f0d8b0!important;text-align:left!important;letter-spacing:.02em!important;margin:0 0 12px!important}
+.jy-atelier :is(.jy-ex-sub,.ln-ai-desc,.bzx-ai-desc,.mhx-ai-desc,.zw-ai-desc,.orc-ai-desc){font:400 15px/1.85 var(--f-body,sans-serif)!important;text-align:left!important;color:#becbd7!important;max-width:none!important;margin:0 0 18px!important}
+.jy-atelier .jy-ex-srcwrap{font-size:12px!important;display:flex;align-items:center;gap:8px;justify-content:flex-start!important;margin:10px 0 18px!important;color:#aebdca!important}
+.jy-atelier .jy-src-btn.on{background:#cbb38a14!important;color:#ead1a6!important;box-shadow:none!important;border:1px solid #cbb38a35!important;border-radius:7px!important;padding:5px 8px!important}
+.jy-atelier :is(.jy-ex-ai-grid,.ln-ai-grid,.bzx-ai-grid,.mhx-ai-grid,.zw-ai-grid,.orc-ai-grid,.bzs-ai){display:grid;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;max-width:none!important;margin:16px 0 0!important;width:100%}
+.jy-atelier :is(.jy-ai-shortcut,.ln-ai-sc,.bzx-ai-sc,.mhx-ai-sc,.zw-ai-sc,.orc-ai-shortcut,.bzs-ai a){font:500 13px/1.4 var(--f-body,sans-serif)!important;min-height:64px!important;border-radius:10px!important;background:#10202d!important;border:1px solid #a8bcc936!important;color:#d5dfe7!important;box-shadow:inset 0 1px #ffffff08!important;gap:6px!important;padding:10px 5px!important;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none}
+.jy-atelier :is(.jy-ai-shortcut,.ln-ai-sc,.bzx-ai-sc,.mhx-ai-sc,.zw-ai-sc,.orc-ai-shortcut) img{width:25px!important;height:25px!important;object-fit:contain;border-radius:6px!important;box-shadow:none!important;margin:0!important}
+.jy-atelier .jy-ai-name{font-size:12px!important;line-height:1.5!important}
+.jy-atelier .jf-more-ai{margin-top:8px;border-bottom:1px solid var(--jf-line)}
+.jy-atelier .jf-more-ai>summary{font-size:13px;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 2px;color:#bbc8d5;cursor:pointer;list-style:none}
+.jy-atelier .jf-more-ai>summary::-webkit-details-marker{display:none}.jy-atelier .jf-more-ai>summary::after{content:'＋';color:#d7bd94}.jy-atelier .jf-more-ai[open]>summary::after{content:'−'}
+.jy-atelier .jf-more-ai .jf-more-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin:0 0 14px!important}
+.jy-atelier .jf-more-ai :is(button,a){flex-direction:row!important;gap:10px!important;min-height:48px!important;padding:10px!important}
+.jy-atelier :is(.jy-ex-foot,.ln-ai-foot,.bzx-ai-foot,.mhx-ai-foot,.zw-ai-foot,.orc-ai-foot){font-size:12px!important;line-height:1.7!important;text-align:left!important;color:#afbdca!important;opacity:1!important;margin:14px 0 0!important}
+.jy-atelier .at-result-heading{margin:18px 0 22px;padding:0 4px}.jy-atelier .at-result-heading h1{font:400 28px/1.55 var(--f-display,serif);color:#efddbc;margin:10px 0}.jy-atelier .at-result-heading p{font-size:15px;color:#b1c0d0;line-height:1.8;margin:0}
+.jy-atelier #tarot-question-hero{border:1px solid var(--jf-line)!important;border-radius:12px!important;padding:16px!important;font-size:16px!important;line-height:1.7!important;text-align:left!important;background:#132331!important;margin:20px 0!important}
+.jy-atelier .jc-reading-close{border-radius:16px;padding:22px;background:#12212b;border:1px solid var(--jf-line)}.jy-atelier .jc-reading-close h3{font-size:23px}.jy-atelier .jc-reading-close p{font-size:14px!important;line-height:1.85!important}.jy-atelier .jc-reading-close a{border-radius:10px;font-size:14px;padding:10px 14px;box-shadow:0 2px #65553e}
+
+/* Picker sheets match the same materials, without changing calendar geometry. */
+.jy-atelier :is(.jym-sheet,.bzs-picker-sheet,.jy-picker-sheet,.bzx-picker-sheet,.zw-picker-sheet){background:#11202f!important;border:1px solid #b4c4d33b!important;border-radius:22px 22px 0 0!important;box-shadow:0 -15px 65px #0008!important}
+.jy-atelier :is(.jym-item,.bzs-pick-field){border-radius:12px!important;box-shadow:inset 0 1px #ffffff0a!important}
+.jy-atelier .jym-item{background:#142331!important;border:1px solid var(--jf-line)!important;margin-bottom:9px!important;padding:14px!important}.jy-atelier .jym-item.active{border-color:#dfc393!important;background:#28383e!important}
+.jy-atelier .jym-sub{font-size:13px!important;line-height:1.75!important;color:#aebfcf!important}.jy-atelier .jym-item-name{font-size:16px!important}.jy-atelier .jym-item-desc{font-size:13px!important;line-height:1.7!important;color:#afc0d0!important}
+.jy-atelier :is(.jym-close,.bzs-cal-nav button,.bzs-year-head button){min-width:44px;min-height:44px;border-radius:10px!important}
+.jy-atelier .bzs-tabs{gap:6px}.jy-atelier .bzs-tab{font-size:13px!important;padding:10px 7px!important}
+
+/* Ceremony reading order: introduction → interactive scene → action.
+   The gesture target wins over shared button touch-action rules. */
+.jy-atelier .jr-shell{display:grid;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto minmax(230px,1fr) auto!important;gap:0;padding:12px 20px max(16px,env(safe-area-inset-bottom))!important;min-height:100dvh;width:100%;overflow:hidden}
+.jy-atelier .jr-header{grid-area:1/1!important;margin:0 auto 12px;max-width:780px;width:100%;padding:0 0 10px;border-bottom:1px solid #d7c39d22;align-items:center}
+.jy-atelier .jr-header>span{font-size:17px;letter-spacing:2px}.jy-atelier .jr-header>span small{font-size:9px;letter-spacing:3px}
+.jy-atelier .jr-header button{min-height:42px!important;padding:8px 12px!important;border:1px solid #b2c4d332!important;border-radius:11px!important;color:#dfd4c0!important;background:#0d1b287f!important;font-size:13px!important;box-shadow:inset 0 1px #ffffff0a!important}
+.jy-atelier .jr-brief{grid-area:2/1;position:relative;z-index:5;width:min(100%,620px);margin:0 auto;padding:6px 2px 10px;box-sizing:border-box}
+.jy-atelier .jr-speaker{float:right;margin:0 0 8px 8px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;color:#b8c6d2;font:400 11px/1.5 var(--f-body,sans-serif);gap:6px;border-radius:0}
+.jy-atelier .jr-speaker-name{color:#dcc69e;font-size:13px;letter-spacing:1px}
+.jy-atelier .jr-eyebrow{font:400 11px/1.6 var(--f-body,sans-serif);color:#c8b597;letter-spacing:1.5px;margin:0 0 10px}
+.jy-atelier .jr-text{clear:both}.jy-atelier .jr-text h2{font-size:clamp(22px,3.8vw,30px)!important;line-height:1.5!important;margin:0 0 8px!important;font-weight:400;letter-spacing:.04em}
+.jy-atelier .jr-text p{font:400 14px/1.8 var(--f-body,sans-serif)!important;color:#c4d1dc!important;margin:0!important}
+.jy-atelier .jr-intent{margin:12px 0 4px!important;gap:9px}.jy-atelier .jr-intent button{min-height:40px;border-radius:10px;font:400 13px/1.5 var(--f-body,sans-serif);background:#152637aa;border-color:#aabecd30;padding:9px 12px}
+.jy-atelier .jr-intent button[aria-pressed=true]{background:#cbaf7d24;border-color:#d4b882;color:#f1d9b0;box-shadow:inset 0 1px #ffffff12}
+.jy-atelier .jr-question{margin:10px 0 0!important;font-size:12px!important;border:0;background:transparent;padding:0;line-height:1.6;color:#b8c4d2}.jy-atelier .jr-question summary{min-height:34px;display:list-item;cursor:pointer}.jy-atelier .jr-question p{background:#0d1c2acc;padding:10px;border-radius:8px;max-height:88px;overflow:auto;color:#dedacb}
+.jy-atelier .jr-stage{grid-area:3/1!important;width:min(100%,720px);height:clamp(245px,34dvh,400px)!important;min-height:245px!important;margin:0 auto;align-self:center}
+.jy-atelier .jr-actor-fallback{width:clamp(155px,45%,230px)!important;height:100%!important;top:0!important;bottom:0!important;max-width:none!important}
+.jy-atelier .jr-playfield,.jy-atelier .jr-dialog[data-phase="0"] .jr-playfield{grid-area:3/1!important;width:min(100%,470px)!important;height:175px!important;min-height:150px!important;margin:0 auto 0!important;align-self:end;z-index:4}
+.jy-atelier .jr-dialog button.jr-touch{touch-action:none!important;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-user-drag:none;width:100%;height:185px!important;margin:0!important;border-radius:24px!important;background:none!important;border:0!important;box-shadow:none!important;outline-offset:-3px!important;cursor:grab;transform:none!important;overflow:visible}
+.jy-atelier .jr-dialog.is-holding button.jr-touch{cursor:grabbing}
+.jy-atelier .jr-touch :is(img,span,div){pointer-events:none!important;-webkit-user-drag:none}
+.jy-atelier .jr-touch .jr-fan,.jy-atelier .jr-touch .jr-art{translate:var(--gesture-x,0px) var(--gesture-y,0px);rotate:var(--gesture-tilt,0deg);transition:translate .25s ease,rotate .25s ease}
+.jy-atelier .jr-dialog.is-holding .jr-touch .jr-fan,.jy-atelier .jr-dialog.is-holding .jr-touch .jr-art{transition:none}
+.jy-atelier .jr-touch-label{bottom:16px!important;padding:6px 12px!important;font-size:12px!important;border-radius:9px!important;max-width:94%!important;background:#081a2aed!important;border:1px solid #ebd4a940!important;color:#eddab7;box-shadow:0 3px 15px #0005;white-space:normal}
+.jy-atelier .jr-touch-track{bottom:4px!important;left:20%!important;right:20%!important;height:4px!important;background:#b5c9dd29;box-shadow:0 0 10px #d8bd8333}
+.jy-atelier .jr-dialogue{grid-area:4/1!important;align-self:start;width:min(100%,620px)!important;margin:0 auto!important;box-sizing:border-box;padding:12px 0 0!important;border:0!important;border-top:1px solid #d7c39d29!important;border-radius:0!important;background:linear-gradient(#081622bf,#081622f5)!important;box-shadow:none!important;z-index:5}
+.jy-atelier .jr-hint{font:400 12px/1.65 var(--f-body,sans-serif)!important;margin:0 0 10px!important;color:#d4c8b1!important;text-align:center;min-height:0}
+.jy-atelier .jr-next{width:100%;font-size:15px!important;min-height:50px!important;padding:12px 18px!important}
+.jy-atelier .jr-footer{padding:8px 0 0!important;gap:10px;display:flex;align-items:center;justify-content:space-between}.jy-atelier .jr-footer ol{font-size:11px;gap:9px;letter-spacing:.2px}.jy-atelier .jr-footer .jr-skip{font-size:12px;min-height:40px;padding:8px 0;color:#b8c6d0}
+.jy-atelier .jr-seals{align-items:flex-end;margin:0 0 14px!important;gap:10px}.jy-atelier .jr-seal{border-radius:12px!important;min-height:82px!important;border:1px solid #d8bd8955!important;padding:10px!important;box-shadow:inset 0 1px #ffffff14,0 8px 20px #0005}
+.jy-atelier .jr-reveal-row{gap:15px;padding-bottom:9px}.jy-atelier .jr-reveal{max-width:90px!important}.jy-atelier .jr-card-label{font-size:12px!important;margin-top:7px!important}
+
+@media(hover:hover) and (pointer:fine){
+ .jy-atelier :is(.at-back,.at-share-button,.jy-tool-card,.jy-spread-trigger,.ln-spread-btn,.mhx-method-btn,.jy-ai-shortcut,.jf-more-ai a,.at-deck-browser button):hover{border-color:#d0ba8d8a!important;background-color:#243749!important}
+ .jy-atelier :is(.btn-primary,.jy-ex-btn,.jc-continue,.jr-next,#tarot-dock-action):hover{filter:brightness(1.06)}
+}
+@media(min-width:850px){
+ .jy-atelier .jc-room-header{grid-template-columns:minmax(0,1fr) 125px;padding:28px 30px!important}
+ .jy-atelier .jc-room-header .jc-guide{width:125px;min-height:168px}.jy-atelier .jc-room-header .jc-portrait{width:100px;height:166px}
+ .jy-atelier .jr-shell{padding:18px 36px max(20px,env(safe-area-inset-bottom))!important}
+ .jy-atelier .jr-brief{padding-top:10px}.jy-atelier .jr-stage{height:clamp(270px,39dvh,480px)!important}
+ .jy-atelier .jr-dialogue{padding-top:16px!important}.jy-atelier .jr-text p{font-size:15px!important}
+ .jy-atelier .at-input-head.jc-room-header .jc-guide{right:30px}.jy-atelier .at-input-head.jc-room-header>div:not(.jc-guide)>p{max-width:calc(100% - 130px)}
+}
+@media(max-width:480px){
+ .jy-atelier .nav{padding:9px 16px!important}.jy-atelier .nav-brand{font-size:19px!important}
+ .jy-atelier :is(.bzx-section,.ln-section,.mhx-section,.zw-in-sec,.bzs-card,#input-screen>.card,.step>.card,.jc-pane){padding:19px!important;border-radius:16px!important;margin-bottom:16px!important}
+ .jy-atelier #step-2 .at-tarot-workspace{padding:18px!important}
+ .jy-atelier .jc-room-header,.jy-atelier .at-input-head.jc-room-header{padding:20px 18px!important;border-radius:16px!important;grid-template-columns:minmax(0,1fr) 70px;gap:9px}
+ .jy-atelier .jc-room-header h1{font-size:25px!important;letter-spacing:.02em!important}.jy-atelier .jc-room-header .jc-guide{width:70px}.jy-atelier .jc-room-header .jc-portrait{width:80px}
+ .jy-atelier .jy-tool-head{grid-template-columns:47px minmax(0,1fr);gap:12px!important}.jy-atelier .jy-tool-head .at-art{width:47px!important;height:67px!important}.jy-atelier .jy-tool-name{font-size:20px!important}
+ .jy-atelier :is(.bzx-ai-card,.ln-ai-card,.mhx-ai-card,.zw-ai,.orc-ai-prompt-card,.jy-ex-card){padding:20px!important;border-radius:16px!important}
+ .jy-atelier .jr-shell{padding-left:16px!important;padding-right:16px!important}.jy-atelier .jr-header{margin-bottom:8px}.jy-atelier .jr-stage{height:clamp(240px,32dvh,340px)!important;min-height:240px!important}
+ .jy-atelier #tarot-dock-action{font-size:14px!important;padding:12px 14px!important}
+}
+@media(max-width:359px){
+ .jy-atelier .jr-header{gap:8px}.jy-atelier .jr-header>span{font-size:15px}.jy-atelier .jr-header button{font-size:12px!important;padding:8px 9px!important}
+ .jy-atelier .jr-speaker>span:last-child{display:none}.jy-atelier .jr-brief .jr-text h2{font-size:21px!important}
+ .jy-atelier .at-deck-browser>span{font-size:10px}.jy-atelier .at-deck-browser button{padding:9px}
+ .jy-atelier #tarot-dock-action{flex:1 1 100%;margin-left:0}.jy-atelier .jc-flow-steps button{font-size:12px;padding:9px 2px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .jy-atelier :is(.jr-dialog *,.jc-room-header *,.at-tool,.jy-tool-card,.btn-primary){animation:none!important;transition:none!important}
+}
+/* The remaining native pickers / oracle controls use the same boundaries. */
+.jy-atelier :is(.bzx-sheet,.zwx-sheet){background:#11202f!important;border:1px solid #b4c4d33b!important;border-radius:22px 22px 0 0!important;box-shadow:0 -15px 65px #0008!important}
+.jy-atelier :is(.bzx-sheet-btn,.zwx-sbtn,.orc-btn-outline,.orc-btn-share,.orc-tc-btn){min-height:44px;padding:11px 15px;border-radius:11px!important;border:1px solid var(--jf-line)!important;background:#152535!important;color:#d8ccb5!important;box-shadow:inset 0 1px #ffffff10!important;font:500 14px/1.6 var(--f-body,sans-serif)!important}
+.jy-atelier :is(.bzx-sheet-btn,.zwx-sbtn,.orc-tc-btn):is(.active,.on,.sel){background:#344142!important;border-color:#d5bd91!important;color:#f2dcba!important}
+.jy-atelier .at-room-nav .at-back,.jy-atelier .bzs-back.at-back{border-radius:12px!important;background:linear-gradient(150deg,#233344aa,#121f2baa)!important;border-color:#b9c8da29!important;font-size:14px!important;padding:10px 14px!important;box-shadow:inset 0 1px #ffffff0c!important}
+.jy-atelier .nav-shop>a{min-height:42px!important;padding:9px 14px!important;border-radius:12px!important;border:1px solid #cbbb9855!important;background:linear-gradient(140deg,#283747,#152432)!important;box-shadow:inset 0 1px #ffffff14,0 2px 7px #0003!important;font-size:13px!important}
+.jy-atelier .jf-manual-copy{margin-top:12px;color:#adbdcd;font-size:12px;line-height:1.7}.jy-atelier .jf-manual-copy summary{cursor:pointer;min-height:38px;padding:8px 0}.jy-atelier .jf-manual-copy textarea{box-sizing:border-box;width:100%;height:190px;min-height:110px;padding:14px;border:1px solid #b8c9d736;border-radius:10px;background:#081421;color:#e3e9e9;font-size:14px;line-height:1.7}
