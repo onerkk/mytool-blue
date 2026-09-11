@@ -73,7 +73,7 @@
       "name": "塔羅快讀和開鑰之法有什麼不同？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "塔羅解讀統一採金色黎明《Book T／Liber T》：以卡巴拉、占星對應、四元素與相鄰牌的元素尊貴裁決強弱，不套用偉特固定正逆位字典。一般牌陣是觀測布局；開鑰之法依 Book T 五次操作，使用四個 YHVH 牌堆、十二宮、十二星座、代表牌後方三十六張牌環與生命之樹，適合深入檢查同一問題的不同結構層次。"
+        "text": "塔羅快讀可依問題選擇牌陣，讀牌方式依本次設定採 RWS 正逆位或適用的 Book T 模式；提示詞會保留實際牌位與讀法。開鑰之法依 Book T 五次操作，使用四個 YHVH 牌堆、十二宮、十二星座、代表牌後方三十六張牌環與生命之樹，適合深入檢查同一問題的不同結構層次。"
       }
     },
     {
@@ -373,13 +373,14 @@
 #t-chosen .jy-row,#t-chosen .gd-triad,#t-chosen .tol-pair{min-height:96px;}
 </style>
 <link id="jysc-css" rel="stylesheet" href="assets/share/share-cards-20260911.css">
-<link rel="stylesheet" href="CSS/atelier-ui.css?v=20260911celestial1">
+<link rel="stylesheet" href="CSS/atelier-ui.css?v=20260911ritual1">
+<link rel="stylesheet" href="CSS/ritual-ateliers.css?v=20260911ritual1">
 </head>
 <body class="jy-atelier">
 <noscript>
   <div style="text-align:center;padding:40px;font-family:sans-serif">
     <h2>靜月之光 — 免費AI塔羅・開鑰之法・雷諾曼線上解牌</h2>
-    <p>免費線上AI塔羅占卜：所有塔羅牌陣與開鑰之法統一使用金色黎明《Book T／Liber T》系統，以卡巴拉、占星、四元素、數字位階及元素尊貴解讀；不使用偉特固定正逆位牌義。AI依問題與牌陣結構給出有邊界的指引，並另行提供不影響占卜裁決的礦物選品建議。</p>
+    <p>免費線上AI塔羅占卜：塔羅快讀提供不同牌陣與讀牌設定；開鑰之法使用金色黎明 Book T 程序。抽牌後可複製本次提示詞，帶到你使用的 AI 繼續解讀。AI依問題與牌陣結構給出有邊界的指引，並另行提供不影響占卜裁決的礦物選品建議。</p>
     <p>本工具需要啟用 JavaScript 才能使用。請開啟瀏覽器的 JavaScript 功能後重新載入頁面。</p>
   </div>
 </noscript>
@@ -658,7 +659,7 @@
 <!-- ========== STEP 2: TAROT ========== -->
 <section class="step" id="step-2">
   <nav class="at-room-nav" aria-label="抽牌頁導覽"><button type="button" class="at-back" onclick="_atelierReturnToInput()">← 返回修改問題</button><button type="button" class="at-home-link" onclick="backToHook()">返回首頁</button></nav>
-  <div class="card">
+  <div class="card at-tarot-workspace">
     <div class="card-title"><i class="fas fa-star"></i> 金色黎明塔羅牌</div>
     <p class="text-dim text-sm mb-sm" id="t-deck-intro" style="text-align:center">感受牌陣意象，從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張與你共鳴的牌</p>
     <p class="tarot-pick-hint" id="pick-hint" style="text-align:center;font-size:.82rem;color:var(--c-gold);margin:.4rem 0;animation:jyBreath 2.5s ease-in-out infinite">觸碰任一張你有感覺的牌，選出 <span id="t-target-count">10</span> 張</p>
@@ -671,22 +672,27 @@
     </div>
 
     <!-- 已選牌位（10個凱爾特十字位） -->
-    <div class="jy-reading-controls" id="tarot-reading-controls"></div>
-    <div class="tarot-chosen-area" id="t-chosen"></div>
+    <details class="at-reading-settings"><summary>讀牌方式 <span id="tarot-mode-summary">RWS・正逆位</span></summary><div class="jy-reading-controls" id="tarot-reading-controls"></div></details>
 
     <!-- 可滑動的牌堆 -->
     <div class="tarot-deck-wrap">
       <div class="tarot-deck-scroll" id="t-deck"></div>
     </div>
+    <div id="tarot-last-card" class="at-last-card" aria-live="polite"><span>選牌前先洗牌，讓心緒沉澱。</span></div>
+    <details id="tarot-layout-details" class="at-spread-details"><summary>查看牌陣與已選牌位 <span id="tarot-layout-count">0 張</span></summary><p class="at-layout-help">依本次牌陣保留位置與順序；完整牌位名稱列在圖下。</p><div class="tarot-chosen-area" id="t-chosen"></div><ol id="tarot-position-list"></ol></details>
 
   </div>
   <div id="t-spread-sec" class="hidden"><div class="card"><div class="card-title" id="t-spread-title"><i class="fas fa-cross"></i> <span id="t-spread-title-text">塔羅牌陣解讀</span></div><div id="t-spread"></div></div></div>
   <div class="actions">
     <button class="btn btn-outline" id="btn-back-meihua" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> 上一步</button>
     <button class="btn btn-outline" id="btn-skip-tarot" onclick="skipToResult()"><i class="fas fa-forward"></i> 跳過塔羅</button>
-    <button class="btn btn-primary" id="btn-analyze" onclick="var _bDef=(typeof getCurrentSpreadDef==='function')?getCurrentSpreadDef():null;var _bNeed=_bDef?_bDef.count:10;if(typeof drawnCards!=='undefined'&&drawnCards.length<_bNeed){alert('尚需抽滿 '+_bNeed+' 張牌（目前 '+drawnCards.length+' 張）');return;}if(S._tarotOnlyMode){S.tarot.drawn=drawnCards;S.tarot.spread=drawnCards;try{if(typeof enhanceTarot==='function')enhanceTarot(S.tarot);}catch(e){}showTarotResult();}else{goStep(3);}" disabled><i class="fas fa-chart-bar"></i> 進行分析</button>
+    <button class="btn btn-primary" id="btn-analyze" onclick="var _bDef=(typeof getCurrentSpreadDef==='function')?getCurrentSpreadDef():null;var _bNeed=_bDef?_bDef.count:10;if(typeof drawnCards!=='undefined'&&drawnCards.length<_bNeed){alert('尚需抽滿 '+_bNeed+' 張牌（目前 '+drawnCards.length+' 張）');return;}if(S._tarotOnlyMode){S.tarot.drawn=drawnCards;S.tarot.spread=drawnCards;try{if(typeof enhanceTarot==='function')enhanceTarot(S.tarot);}catch(e){}showTarotResult();}else{goStep(3);}" disabled><i class="fas fa-chart-bar"></i> 取得解讀提示詞</button>
   </div>
-  <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 多抽塔羅 → 多得「時間點＋行動建議」，完整分析準確度更高</p>
+  <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 完成抽牌後，可複製專屬提示詞，到你選擇的 AI 閱讀完整解答。</p>
+  <div id="tarot-draw-dock" class="at-draw-dock" aria-label="抽牌進度與下一步">
+    <div><span id="tarot-dock-step">準備洗牌</span><strong id="tarot-dock-count" aria-live="polite">0 / 0 張</strong></div>
+    <button type="button" id="tarot-dock-action" onclick="_atelierTarotAction()">開始洗牌</button>
+  </div>
 </section>
 
 <!-- ========== STEP TAROT: 塔羅快讀結果頁 ========== -->
@@ -1393,9 +1399,10 @@
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/tarot-foundation.js?v=20260910professional1" defer></script>
 <script src="JS/golden-dawn-tarot.js?v=20260906fix2" defer></script>
-<script src="JS/tarot.js?v=20260906fix2" defer></script>
-<script src="JS/tarot-reading.js?v=20260908audit1" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260910professional1" defer></script>
+<script src="JS/ritual-ateliers.js?v=20260911ritual1" defer></script>
+<script src="JS/tarot.js?v=20260911ritual1" defer></script>
+<script src="JS/tarot-reading.js?v=20260911ritual1" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260911ritual1" defer></script>
 <!-- v95：先載入 Golden Dawn Book T 單一來源、方法觀測模型與證據契約，再由 ai-analysis 建立牌陣資料。 -->
 <script src="JS/tarot-semantic-engine.js?v=20260718v101_0" defer></script>
 <script src="JS/tarot-inventory.js?v=20260717v98_0" defer></script>
@@ -1410,26 +1417,26 @@
 <script src="JS/ai-analysis.js?v=20260910professional1" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/oracle.js?v=20260911celestial1" defer></script>
-<script src="JS/lenormand.js?v=20260911celestial1" defer></script>
+<script src="JS/oracle.js?v=20260911ritual1" defer></script>
+<script src="JS/lenormand.js?v=20260911ritual1" defer></script>
 <!-- display3：手機靜態背景；出生選單先備妥內容再開啟，避免初始化錯誤與重複繪圖。 -->
 <script src="JS/ink-flow.js?v=20260911celestial1" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260911celestial1" defer></script>
+<script src="JS/meihua-standalone.js?v=20260911ritual1" defer></script>
 <!-- 共用提示詞根必須先於 standalone 載入，否則八字會直接失敗、紫微會退回舊提示詞。 -->
 <script src="JS/picker-core.js?v=20260906display3" defer></script>
 <script src="JS/ziwei-prompt-root.js?v=20260910professional1" defer></script>
 <script src="JS/bazi-prompt-root.js?v=20260910professional1" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260911celestial1" defer></script>
-<script src="JS/bazi-standalone.js?v=20260911celestial1" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260911ritual1" defer></script>
+<script src="JS/bazi-standalone.js?v=20260911ritual1" defer></script>
 <!-- v87_0(2026/6/26)：八字完整功能套件——單盤六主題、八種角色情境合盤、雙向十神與跨盤作用、五行互補、雙方歲運同步、本地五軸32型人格、歷史/匯出。第三方未公開私有演算法不冒充搬運，採本地可檢查規則重建。 -->
 <!-- v87_1(2026/6/26)：恢復原版八字 UI 為預設入口；保留原自訂日期、時間、出生地點選擇器。完整合盤／人格／工具改由原版頁面的次要按鈕開啟，不再以原生 date/time 輸入覆蓋主入口。 -->
 <script src="JS/share-card.js?v=20260911preview1" defer></script>
 <script src="JS/bazi-suite-core.js?v=20260910professional1" defer></script>
-<script src="JS/bazi-suite.js?v=20260911celestial1" defer></script>
-<script src="JS/ui.js?v=20260911celestial1" defer></script>
-<script src="JS/atelier-ui.js?v=20260911celestial1" defer></script>
-<script src="JS/spread-picker.js?v=20260911celestial1" defer></script>
+<script src="JS/bazi-suite.js?v=20260911ritual1" defer></script>
+<script src="JS/ui.js?v=20260911ritual1" defer></script>
+<script src="JS/atelier-ui.js?v=20260911ritual1" defer></script>
+<script src="JS/spread-picker.js?v=20260911ritual1" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>
@@ -1590,12 +1597,12 @@
       <summary>關於靜月之光<span class="jy-chev">▾</span></summary>
       <div class="jy-footer-panel">
       <h1 style="margin:0 0 1rem;font-size:.82rem;font-weight:600;color:rgba(212,175,55,.5);letter-spacing:.03em;text-align:center">免費AI塔羅占卜・開鑰之法・雷諾曼線上解牌 — 靜月之光</h1>
-      <p>靜月之光是免費線上AI占卜平台，提供三種解牌系統：<strong style="color:rgba(212,175,55,.6)">金色黎明塔羅</strong>——所有古典與現代觀測牌陣統一使用《Book T／Liber T》的牌義、占星／卡巴拉對應及元素尊貴，不套固定正逆位；<strong style="color:rgba(212,175,55,.6)">開鑰之法</strong>——依 Book T 五次操作進行分堆、計數、配對與生命樹檢查；<strong style="color:rgba(212,175,55,.6)">雷諾曼牌</strong>——Petit Lenormand 36張，使用組合義讀法。不需出生資料，點了就問。</p>
-      <p style="margin-top:.8rem">可分析的面向包含：感情桃花（正緣、復合、曖昧、對方想法）、事業方向（升遷、轉職、留或走）、財運時機、決策兩難、人際關係。AI 即時解牌，給你一個收斂、可執行的答案。</p>
-      <p style="margin-top:.8rem"><strong style="color:rgba(212,175,55,.6)">金色黎明塔羅</strong>：使用完整78張牌與多種古典／現代觀測布局；牌義固定採《Book T／Liber T》的小牌稱號、古典占星與卡巴拉對應、宮廷牌元素層級及相鄰牌元素尊貴，不套用偉特固定正逆位字典。布局只決定每個位置能觀測什麼，不冒充《Book T》原創，也不自行編造日期、人物或保證結果。</p>
+      <p>靜月之光是免費線上AI占卜平台，提供三種解牌系統：<strong style="color:rgba(212,175,55,.6)">塔羅快讀</strong>——依問題選牌陣，依本次設定保留牌面方向與讀牌方式；<strong style="color:rgba(212,175,55,.6)">開鑰之法</strong>——依 Book T 五次操作進行分堆、計數、配對與生命樹檢查；<strong style="color:rgba(212,175,55,.6)">雷諾曼牌</strong>——Petit Lenormand 36張，使用組合義讀法。不需出生資料，點了就問。</p>
+      <p style="margin-top:.8rem">可分析的面向包含：感情桃花（正緣、復合、曖昧、對方想法）、事業方向（升遷、轉職、留或走）、財運時機、決策兩難、人際關係。抽牌或排盤後，將提示詞貼到你使用的 AI，整理提醒、需要驗證的線索與可以採取的下一步。</p>
+      <p style="margin-top:.8rem"><strong style="color:rgba(212,175,55,.6)">塔羅快讀</strong>：可依問題自動推薦牌陣，也能手動選擇。一般牌陣可使用 RWS 正逆位，特定程序另有 Book T 設定；小阿卡那牌陣限用56張小牌。每次提示詞會附上實際使用的牌陣、牌位及讀牌方式。</p>
       <p style="margin-top:.8rem"><strong style="color:rgba(212,175,55,.6)">開鑰之法</strong>：依金色黎明《Book T／Liber T》進行五次操作——四個 YHVH 牌堆、十二宮牌堆、十二星座牌堆、代表牌後方三十六張牌環與生命之樹牌堆；以 Book T 計數值、配對及元素尊貴建立解讀。第四次操作的三十六牌環不是月份、旬期或日期換算器。</p>
       <p style="margin-top:.8rem"><strong style="color:rgba(212,175,55,.6)">紫微斗數</strong>：完整十二宮命盤，三合派四化骨架，含命主身主、五行局、生年四化、大限流年與星曜廟旺，輸入出生年月日時即可排盤，AI 解讀本命格局與當前運勢。<strong style="color:rgba(212,175,55,.6)">梅花易數</strong>：支援時間、數字、漢字（繁體筆畫）與隨機起卦，依體用生剋、卦象與動爻斷事，適合即時占問單一事件。</p>
-      <p style="margin-top:.8rem"><strong style="color:rgba(212,175,55,.6)">五行水晶開運對照</strong>：缺金（喜金）白水晶、鈦赫茲、天鐵鎳鐵隕石；缺木（喜木）綠幽靈、橄欖石、綠碧璽；缺水（喜水）海藍寶、拉長石、月光石、黑曜石；缺火（喜火）石榴石、草莓晶、超七水晶、紫水晶；缺土（喜土）黃水晶、虎眼石、龍宮舍利。本站依八字喜用神 AI 自動推薦，客製水晶手鍊可於蝦皮下單。</p>
+      <p style="margin-top:.8rem"><strong style="color:rgba(212,175,55,.6)">把喜歡的月光，帶進日常</strong>：若你喜歡水晶與礦石的色澤、質感，可以到靜月之光蝦皮賣場看看手鍊與礦石選品，依自己的喜好與預算慢慢選。選物是自願的日常陪伴，不影響本次占卜結果。</p>
       </div>
     </details>
 

@@ -3,7 +3,7 @@
     "javascript-obfuscator": "^5.3.0"
   },
   "scripts": {
-    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui",
+    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual",
     "test:prompts": "node tests/prompt-accuracy-20260811.test.cjs",
     "test:tarot": "node tests/tarot-v102-method-data-prompt.test.js",
     "test:ziwei": "node tests/ziwei-root-spec-v1.test.js",
@@ -16,7 +16,8 @@
     "test:professional": "node tests/divination-professional-20260910.cjs",
     "test:cards": "node tests/share-card-20260911.cjs && node tests/share-card-preview-20260911.cjs",
     "dev": "vite",
-    "test:ui": "node tests/atelier-ui-20260911.cjs"
+    "test:ui": "node tests/atelier-ui-20260911.cjs",
+    "test:ritual": "node tests/ritual-lifecycle-20260911.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"
