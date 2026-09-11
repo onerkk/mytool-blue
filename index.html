@@ -373,7 +373,7 @@
 #t-chosen .jy-row,#t-chosen .gd-triad,#t-chosen .tol-pair{min-height:96px;}
 </style>
 <link id="jysc-css" rel="stylesheet" href="assets/share/share-cards-20260911.css">
-<link rel="stylesheet" href="CSS/atelier-ui.css?v=20260911atelier2">
+<link rel="stylesheet" href="CSS/atelier-ui.css?v=20260911celestial1">
 </head>
 <body class="jy-atelier">
 <noscript>
@@ -384,7 +384,7 @@
   </div>
 </noscript>
 <nav class="nav"><div class="nav-inner">
-  <div class="nav-brand"><i class="fas fa-moon" aria-hidden="true"></i><span>靜月之光<small>JINGYUE</small></span></div>
+  <a href="#" class="nav-brand" onclick="backToHook();return false" aria-label="靜月之光，返回首頁"><i class="fas fa-moon" aria-hidden="true"></i><span>靜月之光<small>JINGYUE</small></span></a>
   <div class="nav-links">
     <button class="nav-link active" onclick="goStep(0)">輸入</button>
     <button class="nav-link" onclick="goStep(1)">梅花</button>
@@ -424,7 +424,7 @@
 
   <!-- ═══ PHASE B: Quick Input (hidden until type picked) ═══ -->
   <div id="input-screen" style="display:none">
-    <header class="at-input-head"><button type="button" class="at-back" onclick="backToHook()" aria-label="返回首頁"><i class="fas fa-arrow-left" aria-hidden="true"></i></button><div><h1>此刻，你想釐清什麼？</h1><p>寫下問題，選擇適合你的探索方式。</p></div></header>
+    <header class="at-input-head"><button type="button" class="at-back" onclick="backToHook()"><span aria-hidden="true">←</span> 返回首頁</button><div><span class="at-eyebrow">TAROT · 此刻的選擇</span><h1>從一個問題，<br>開始靠近答案。</h1><p>寫下最在意的事，讓解讀有一個清楚的起點。</p></div><span class="at-art" data-art="tarot" aria-hidden="true"></span></header>
     <!-- 已選類型 breadcrumb -->
     <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
       <button class="btn btn-outline btn-sm" onclick="backToHook()" style="padding:.3rem .6rem"><i class="fas fa-arrow-left"></i></button>
@@ -573,14 +573,14 @@
       <div class="jy-tool-grid">
         <button type="button" class="jy-tool-card jy-tool-tarot selected" id="tool-tarot" aria-pressed="true" onclick="pickTool('tarot')">
           <div class="jy-tool-head">
-            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(168,85,247,.08));border-color:rgba(139,92,246,.3)"><i class="fas fa-star-of-david" style="color:rgba(168,85,247,.9)"></i></div>
+            <span class="at-art at-mode-art" data-art="tarot" aria-hidden="true"></span>
             <div><div class="jy-tool-name">塔羅快讀</div><div class="jy-tool-desc">從一個問題，整理牌面的提醒<br><span style="opacity:.6">不需出生資料・可自選牌陣</span></div></div>
             <div class="jy-tool-free" id="tool-tarot-badge">完全免費</div>
           </div>
         </button>
         <button type="button" class="jy-tool-card jy-tool-ootk" id="tool-ootk" aria-pressed="false" onclick="pickTool('ootk')">
           <div class="jy-tool-head">
-            <div class="jy-tool-orb" style="background:linear-gradient(135deg,rgba(217,151,56,.18),rgba(217,151,56,.06));border-color:rgba(217,151,56,.3)"><i class="fas fa-key" style="color:rgba(217,151,56,.9)"></i></div>
+            <span class="at-art at-mode-art" data-art="ootk" aria-hidden="true"></span>
             <div><div class="jy-tool-name">開鑰之法</div><div class="jy-tool-desc">78 張牌，循五層儀式深入探索<br><span style="opacity:.6">不需生辰・金色黎明傳統程序</span></div></div>
             <div class="jy-tool-free" id="tool-ootk-badge">完全免費</div>
           </div>
@@ -657,6 +657,7 @@
 
 <!-- ========== STEP 2: TAROT ========== -->
 <section class="step" id="step-2">
+  <nav class="at-room-nav" aria-label="抽牌頁導覽"><button type="button" class="at-back" onclick="_atelierReturnToInput()">← 返回修改問題</button><button type="button" class="at-home-link" onclick="backToHook()">返回首頁</button></nav>
   <div class="card">
     <div class="card-title"><i class="fas fa-star"></i> 金色黎明塔羅牌</div>
     <p class="text-dim text-sm mb-sm" id="t-deck-intro" style="text-align:center">感受牌陣意象，從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張與你共鳴的牌</p>
@@ -690,6 +691,7 @@
 
 <!-- ========== STEP TAROT: 塔羅快讀結果頁 ========== -->
 <section class="step" id="step-tarot" style="padding-top:2rem;padding-bottom:7rem">
+  <nav class="at-room-nav" aria-label="解讀結果導覽"><button type="button" class="at-back" onclick="_atelierReturnToInput()">← 返回修改問題</button><button type="button" class="at-home-link" onclick="backToHook()">返回首頁</button></nav>
 
   <!-- 🎯 你問的問題 -->
   <div id="tarot-question-hero" class="text-dim" style="text-align:center;font-size:.9rem;margin:0 0 .8rem;padding:0 var(--sp-md)"></div>
@@ -1408,26 +1410,26 @@
 <script src="JS/ai-analysis.js?v=20260910professional1" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/oracle.js?v=20260911atelier2" defer></script>
-<script src="JS/lenormand.js?v=20260911atelier2" defer></script>
+<script src="JS/oracle.js?v=20260911celestial1" defer></script>
+<script src="JS/lenormand.js?v=20260911celestial1" defer></script>
 <!-- display3：手機靜態背景；出生選單先備妥內容再開啟，避免初始化錯誤與重複繪圖。 -->
-<script src="JS/ink-flow.js?v=20260911atelier2" defer></script>
+<script src="JS/ink-flow.js?v=20260911celestial1" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260911atelier2" defer></script>
+<script src="JS/meihua-standalone.js?v=20260911celestial1" defer></script>
 <!-- 共用提示詞根必須先於 standalone 載入，否則八字會直接失敗、紫微會退回舊提示詞。 -->
 <script src="JS/picker-core.js?v=20260906display3" defer></script>
 <script src="JS/ziwei-prompt-root.js?v=20260910professional1" defer></script>
 <script src="JS/bazi-prompt-root.js?v=20260910professional1" defer></script>
-<script src="JS/ziwei-standalone.js?v=20260911atelier2" defer></script>
-<script src="JS/bazi-standalone.js?v=20260911atelier2" defer></script>
+<script src="JS/ziwei-standalone.js?v=20260911celestial1" defer></script>
+<script src="JS/bazi-standalone.js?v=20260911celestial1" defer></script>
 <!-- v87_0(2026/6/26)：八字完整功能套件——單盤六主題、八種角色情境合盤、雙向十神與跨盤作用、五行互補、雙方歲運同步、本地五軸32型人格、歷史/匯出。第三方未公開私有演算法不冒充搬運，採本地可檢查規則重建。 -->
 <!-- v87_1(2026/6/26)：恢復原版八字 UI 為預設入口；保留原自訂日期、時間、出生地點選擇器。完整合盤／人格／工具改由原版頁面的次要按鈕開啟，不再以原生 date/time 輸入覆蓋主入口。 -->
 <script src="JS/share-card.js?v=20260911preview1" defer></script>
 <script src="JS/bazi-suite-core.js?v=20260910professional1" defer></script>
-<script src="JS/bazi-suite.js?v=20260911atelier2" defer></script>
-<script src="JS/ui.js?v=20260911atelier2" defer></script>
-<script src="JS/atelier-ui.js?v=20260911atelier2" defer></script>
-<script src="JS/spread-picker.js?v=20260911atelier2" defer></script>
+<script src="JS/bazi-suite.js?v=20260911celestial1" defer></script>
+<script src="JS/ui.js?v=20260911celestial1" defer></script>
+<script src="JS/atelier-ui.js?v=20260911celestial1" defer></script>
+<script src="JS/spread-picker.js?v=20260911celestial1" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
 <script src="JS/render_upgrade.js?v=20260507v69_3_0" defer></script>

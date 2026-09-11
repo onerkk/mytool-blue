@@ -162,8 +162,8 @@
   function _render() {
     var w = _getWrap();
     var h = '<div class="mhx-container">';
-    h += '<button type="button" class="mhx-back" onclick="_meihuaClose()">← 返回靜月之光</button>';
-    h += '<div class="mhx-header at-tool-header"><div class="at-heading-icon" aria-hidden="true"><i class="fas fa-yin-yang"></i></div><div><span class="at-eyebrow">PLUM BLOSSOM I CHING</span><h1>梅花易數</h1><p>從本、互、變三象，梳理事情的進退。</p></div></div>';
+    h += '<nav class="at-room-nav" aria-label="頁面導覽"><button type="button" class="at-back mhx-back" onclick="' + (_mhPhase === 'input' ? '_meihuaClose()' : '_mhReset()') + '">← ' + (_mhPhase === 'input' ? '返回首頁' : '返回修改') + '</button>' + (_mhPhase !== 'input' ? '<button type="button" class="at-home-link" onclick="_meihuaClose()">首頁</button>' : '') + '<a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></nav>';
+    h += '<div class="mhx-header at-tool-header"><span class="at-art" data-art="meihua" aria-hidden="true"></span><div><span class="at-eyebrow">PLUM BLOSSOM I CHING</span><h1>梅花易數</h1><p>從本、互、變三象，梳理事情的進退。</p></div></div>';
 
     if (_mhPhase === 'input') {
       h += '<div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 選擇方式起卦</span><span><b>03</b> 探索解讀</span></div>';
@@ -668,6 +668,8 @@
     var w = _getWrap();
     if (w) w.style.display = 'none';
     try { document.body.style.overflow = ''; } catch(e){}
+  
+    if (window.JY_ATELIER) window.JY_ATELIER.restoreEntrance();
   };
   window._mhSetMethod = function (m) {
     var qEl = document.getElementById('mhx-q'); if (qEl) _mhQuestion = qEl.value;
