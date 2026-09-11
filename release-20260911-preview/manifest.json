@@ -1,0 +1,67 @@
+{
+  "release": "20260911preview1",
+  "base_release": "20260911cards1",
+  "file_count_including_manifest": 11,
+  "files": [
+    {
+      "path": "JS/share-card.js",
+      "bytes": 45683,
+      "sha256": "b641735454f6901e760d27026c48e72df928557c424ea5eea72d60b466c836d1",
+      "change": "modified"
+    },
+    {
+      "path": "JS/sw.js",
+      "bytes": 3519,
+      "sha256": "a21cca9a29752a71b0f925e3bb43ffe63a7b92ae60eeeb0148c47335a64936d4",
+      "change": "modified"
+    },
+    {
+      "path": "index.html",
+      "bytes": 141282,
+      "sha256": "c94d0221c2ecf97170fecbe709440402d8aa16bbd8c0b972cc03cab337d5edbc",
+      "change": "modified"
+    },
+    {
+      "path": "preview-share.html",
+      "bytes": 10270,
+      "sha256": "5af161171ca26fcabede988811e06a4f90e5f0d4fe5db8d94d974e50af1a702d",
+      "change": "modified"
+    },
+    {
+      "path": "package.json",
+      "bytes": 1139,
+      "sha256": "49c3c4bc8cb941bb22019b9dfff37e20babdcbd36de56d94efd37ff83d897c09",
+      "change": "modified"
+    },
+    {
+      "path": "tests/share-card-20260911.cjs",
+      "bytes": 7007,
+      "sha256": "4befae0affe8b1662274b74d57b5e3aaf0e0dbdd09807a0ea7635a4bb33cd00b",
+      "change": "modified"
+    },
+    {
+      "path": "tests/share-card-preview-20260911.cjs",
+      "bytes": 12961,
+      "sha256": "3c9812973e6630efc90e6bfa65e4dfd6175c2fc8886d6b80b7598a7dab93a29f",
+      "change": "added"
+    },
+    {
+      "path": "release-20260911-preview/README.md",
+      "bytes": 3532,
+      "sha256": "cc751870bd61f2ef0254d6c88fea3efe6dfee1b296e1715f131cbefd81e15fdc",
+      "change": "added"
+    },
+    {
+      "path": "release-20260911-preview/validation.json",
+      "bytes": 1869,
+      "sha256": "7ffbcc44836a6fb0cbf3e655cbd47e4eb15cf836797fed91edf860fcf6855367",
+      "change": "added"
+    },
+    {
+      "path": "release-20260911-preview/test-results.txt",
+      "bytes": 12810,
+      "sha256": "03aa503b7a79da7ffc526ef26aefd723406d4b0dca684596b043995d966b706b",
+      "change": "added"
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:prompts
+> node tests/prompt-accuracy-20260811.test.cjs
+
+✓ 首頁先載入 v5 共用提示詞根，再載入八字與紫微 standalone
+✓ 八字提示詞根在真實執行路徑可用，並開放 AI 自身命理知識
+✓ 紫微資料不再截掉第四顆之後的輔星、煞星或第九個格局
+✓ 梅花兩條 standalone 路徑完全一致，且不製造日曆假精確
+✓ 靈籤提示詞保留完整材料並開放 AI 的解籤知識
+✓ 雷諾曼保留合法幾何，並改為精簡的牌組整合方法
+✓ 七維 API 以盤面為主並允許模型使用自身跨系統知識
+
+All 7 prompt-accuracy regression tests passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:tarot
+> node tests/tarot-v102-method-data-prompt.test.js
+
+✓ foundation upgraded to method-data schema
+✓ export prompt no longer exposes query graph, ROOT-SPEC, capability gate or claim ledger
+✓ prompt invites the AI to use its own tarot knowledge while keeping method data
+✓ five-card network is rendered as named relations, never a fake 2→1→3→4→5 chain
+✓ Mathers methods remain ordered sequence methods
+✓ prompt preserves Book T, true adjacency and a concise recommendation ending
+✓ changed JS syntax is valid
+
+7 tests passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:ziwei
+> node tests/ziwei-root-spec-v1.test.js
+
+ziwei-root-spec-v4: all assertions passed
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:counter
+> node tests/counter-proxy.test.mjs
+
+counter-proxy: all assertions passed
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:picker-data
+> node tests/picker-and-data-regression.cjs
+
+✓ Gregorian date validity and clamped month navigation
+✓ Modal viewport events, scroll lock and focus are fully restored
+✓ Legacy dialog fallback restores inert siblings and focus
+✓ Actual Ziwei and Bazi picker handlers render all six weeks and confirm leap day
+✓ Full Bazi suite keeps the last month clamped and confirms the selected date
+[八字DEBUG] 日主:乙(木) | ec: {"金":23,"木":8,"水":18,"火":5,"土":6} | selfPts:26 | selfRatio:43% | 強弱級別:太弱(身弱) | specialStructure:null | fav:木 | unfav:金 | medicineGod:病在金(23/60)，藥用火(剋) | relayGod:無
+✓ Unknown Bazi birth time excludes artificial hour and full-chart judgments
+✓ Unknown time does not create a fixed personality type from a noon placeholder
+✓ Known Bazi preserves actual hour and full data, reference date stays reproducible
+✓ Unknown Ziwei time never exports an invented personal chart
+✓ All three pickers load after the shared core and body ID rules override legacy overflow
+picker-and-data-regression: 10 groups passed (DOM contract tests, not browser layout tests)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:api-failures
+> node tests/api-failure-regression.mjs
+
+✓ Counter rejects false zero, unsafe integers and inconsistent totals
+✓ Counter reset requires POST and the configured admin token
+✓ Legacy empty reset response is followed by read-only verification
+✓ Browser counter read falls back after blocked requests and static HTML responses
+✓ Browser counter never retries an uncertain write or fabricates zero
+✓ AI endpoint rejects fake origins, invalid input and empty admin configuration
+✓ Malformed or incomplete AI outputs are failures and do not consume quota
+✓ Valid AI answer preserves methods and consumes one quota entry
+api-failure-regression: 8 groups passed (mocked upstream; no live mutations)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:interactions
+> node tests/interaction-hotfix-20260906.cjs
+
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Real OOTK entry opens without calling unrelated birth engines
+✓ Storage refusal does not break the entry button
+✓ OOTK two-step selection validates before dealing and restores scroll on cancel
+✓ Shared setup exports accept zero-index sign and sephirah without losing them
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Confirmed OOTK setup forwards all predeal bindings as an immutable snapshot
+✓ Ziwei uses one non-interactive grid with all 13 valid child buttons
+✓ Bazi hour and minute fields are complete on open and keep node identity when edited
+✓ Full Bazi suite commits minutes and cancellation preserves the original time
+✓ Canonical draws include actual upright/reversed values and normalization preserves them
+✓ Book T procedures stay upright and are explicitly labelled
+✓ Quick completion preserves manually chosen card identities and their directions
+✓ Automatic slot rendering and result display retain inverse image and readable direction
+✓ Real AI payload and final exported prompt agree on every card orientation and method
+✓ Manual pick commits its original reversal and waits for the entire spread before analysis
+✓ Concurrent engine requests share one script and notify every caller; a failed load can retry
+✓ Deferred engines wait for a closed picker and yield between dependent files
+✓ Real OOTK confirmation runs the engine and exposes immediate skip/cancel controls
+✓ Skipping the ritual hands off the same result and exports only actual OOTK operations
+interaction-hotfix: 18 groups passed (offline DOM/runtime contracts; no browser layout or live AI assertion)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:display
+> node tests/display-lifecycle-regression.cjs
+
+✓ Touch, narrow and reduced-motion pages create no canvas, context, polling or input effects
+✓ Desktop 2D fallback initializes without BACK error; picker suspension survives polling and visibility changes
+✓ A desktop viewport becoming narrow suspends its existing background renderer
+✓ Picker close, native close, replacement and failed showModal release the backdrop and focus lock
+✓ All birth picker content is present at native showModal, before any timer or animation frame
+✓ Full analysis module initializes in the real script order without eager optional-engine references
+✓ Mobile styles make the picker opaque and contain no deferred image-paint rule
+display-lifecycle: 7 groups passed (source/runtime contracts; device raster output requires browser/device validation)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:audit
+> node tests/divination-audit-20260908.cjs
+
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ OOTK keeps the original question, actual operation boundary, card lexicon and cast timestamp
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:professional
+> node tests/divination-professional-20260910.cjs
+
+✓ Tarot: 28 natural-language cases select the intended method without altering the question
+✓ Tarot: comparison branches, multiple choices and missing capabilities remain honest
+✓ Tarot: actual resolver → dynamic positions → draw → payload → exported guide agree
+✓ Tarot: each of 14 spread protocols has its own concrete reading sequence
+✓ Lenormand: 28 question cases distinguish focused lines, real branches, facets and panorama
+✓ Lenormand: actual auto/manual casting exports matching positions and complete cards
+✓ Lenormand: methods cannot substitute tarot meanings or each other’s geometry
+✓ Lenormand: all 36 houses, 32 mirror positions and all knight moves are geometrically valid
+✓ Lenormand: preset center is disclosed and optional focus never blocks a panorama
+✓ Lenormand: preview updates with current question without changing a completed draw
+✓ Bazi: each lens and each role scenario injects its distinct guide into the actual export
+✓ Meihua: both prompt paths preserve actual hexagrams, method boundaries and one shop ending
+✓ Follow-up: original RWS reversals and branch positions survive alongside separate Book T supplements
+✓ The local API preserves its JSON contract with system-specific depth and honest brand constraints
+professional-regression: 14 groups passed; 56 routing cases plus real draw/export and geometry checks.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:cards
+> node tests/share-card-20260911.cjs && node tests/share-card-preview-20260911.cjs
+
+✓ Ten card types and the public render/download APIs exist
+✓ Rendering preserves source data and produces 2160 × 2700
+✓ RWS inverse rotates the actual image; Book T does not inherit an inverse
+✓ Every tarot card survives the 3–54 card layouts
+✓ Lenormand 3/5 stay on one line; comparison has distinct A/shared/B rows
+✓ Lenormand nine-square and 4×8+4 preserve row order and independent tail
+✓ Missing chart/poem data cannot display a fabricated personal result
+✓ All 60 oracle poems retain their exact four columns, right to left
+✓ Long user text is visibly shortened; prompt/result data remains untouched
+✓ Oracle buttons use the unified engine; original question/spread callers remain connected
+share-card-regression: 10 groups passed. Canvas contracts only; real-browser/mobile sharing is a separate gate.
+✓ All ten dialogs show their completed image with the production lazy observer active
+✓ Ready Blob and still-loading preview are distinct states; download remains available
+✓ Already-complete cached previews do not depend on a later load event
+✓ Decode error ends loading without discarding a valid downloadable PNG
+✓ Missing image events time out; a late successful image can still recover
+✓ PNG encoding failure ends loading and keeps empty downloads disabled
+✓ Privacy redraw immediately removes the old image and rejects its late events
+✓ Out-of-order privacy renders and stale failures cannot replace the newest card
+✓ Closing during rendering or decoding releases resources and ignores late completion
+✓ Cancelling native share does not start an unwanted download
+share-card-preview: 10 integration groups passed (simulated DOM/image lifecycle).

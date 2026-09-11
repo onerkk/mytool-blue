@@ -1,1 +1,45 @@
-
+{
+  "release": "20260911preview1",
+  "share_card_version": "3.0.1",
+  "production_observation": {
+    "complete": false,
+    "display": "none",
+    "downloadDisabled": false,
+    "hasBlobSource": true,
+    "hidden": true,
+    "loading": "lazy",
+    "loadingText": "正在製作你的卡片…",
+    "naturalWidth": 0,
+    "statusText": "2160 × 2700 高清圖片 · 月光邀請",
+    "url": "https://jingyue.uk/"
+  },
+  "baseline_regression": {
+    "exit_code": 1,
+    "expected_failure": true,
+    "output": "AssertionError [ERR_ASSERTION]: invite: preview must become visible\n\ntrue !== false\n\n    at /workspace/scratch/6a1f5c679a31/source/mytool-blue-master/tests/share-card-preview-20260911.cjs:132:14\n    at async test (/workspace/scratch/6a1f5c679a31/source/mytool-blue-master/tests/share-card-preview-20260911.cjs:125:33)\n    at async /workspace/scratch/6a1f5c679a31/source/mytool-blue-master/tests/share-card-preview-20260911.cjs:127:3 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: true,\n  expected: false,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n"
+  },
+  "fixed_regression": {
+    "command": "node tests/share-card-preview-20260911.cjs",
+    "groups_passed": 10,
+    "mode": "Simulated DOM/image events; actual production lazy observer and share-card source"
+  },
+  "syntax_checks": {
+    "files": [
+      "JS/share-card.js",
+      "JS/sw.js"
+    ],
+    "command": "node --check",
+    "passed": true
+  },
+  "limitations": [
+    "Fixed files have not been deployed by this session.",
+    "Android/iOS device preview, long-press save and native sharing have not been tested after the fix."
+  ],
+  "reference": "https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading",
+  "formal_test_flow": {
+    "command": "npm test",
+    "exit_code": 0,
+    "duration_seconds": 7.95,
+    "named_suites_passed": 11
+  }
+}
