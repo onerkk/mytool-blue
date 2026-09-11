@@ -624,11 +624,14 @@
     {n:'申時 15–17', h:16},{n:'酉時 17–19', h:18},{n:'戌時 19–21', h:20},{n:'亥時 21–23', h:22}
   ];
 
-  function showInput() {
+  function showInput(restoreForm) {
     zwEnsureCSS();
     var old = document.getElementById('zw-input'); if (old) old.remove();
     var oldR = document.getElementById('zw-result'); if (oldR) oldR.remove();
-    _zwGender = ''; _zwSelDate = ''; _zwSelHH = '';
+    var draft = restoreForm === true ? _zwLastForm : null;
+    _zwGender = draft ? draft.gender : '';
+    _zwSelDate = draft ? draft.bdate : '';
+    _zwSelHH = draft ? (draft.btimeUnknown ? 'unknown' : String(parseInt(draft.btime, 10))) : '';
     var w = document.createElement('div');
     w.className = 'zw-in';
     w.id = 'zw-input';
@@ -637,8 +640,8 @@
     hhOpts += '<option value="unknown">不確定（尚未定盤）</option>';
     w.innerHTML =
       '<div class="zw-in-wrap">' +
-        '<button type="button" class="zw-in-back" onclick="_zwClose()">← 返回靜月之光</button>' +
-        '<div class="zw-in-head at-tool-header"><div class="at-heading-icon" aria-hidden="true"><i class="fas fa-compass"></i></div><div><span class="at-eyebrow">ZI WEI · TWELVE PALACES</span><h1>紫微斗數</h1><p>以十二宮為圖，探索人生的不同面向。</p></div></div><div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 核對資料排盤</span><span><b>03</b> 探索解讀</span></div>' +
+        '<nav class="at-room-nav" aria-label="頁面導覽"><button type="button" class="at-back zw-in-back" onclick="_zwClose()">← 返回首頁</button><a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></nav>' +
+        '<div class="zw-in-head at-tool-header"><span class="at-art" data-art="ziwei" aria-hidden="true"></span><div><span class="at-eyebrow">ZI WEI · TWELVE PALACES</span><h1>紫微斗數</h1><p>以十二宮為圖，探索人生的不同面向。</p></div></div><div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 核對資料排盤</span><span><b>03</b> 探索解讀</span></div>' +
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 你想問什麼？</div>' +
           '<textarea class="zw-in-q" id="zw-q" aria-label="紫微斗數想釐清的問題（選填）" rows="2" maxlength="200" placeholder="例如：今年適合換工作嗎？留空可探索整體命盤。"></textarea></div>' +
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 出生資料（國曆，不需姓名）</div>' +
@@ -657,6 +660,10 @@
         '<div class="zw-in-foot">靜月之光 ・ jingyue.uk<br>紫微斗數 ・ 命盤僅供參考</div>' +
       '</div>';
     document.body.appendChild(w);
+    if (draft) {
+      document.getElementById('zw-q').value = draft.question || '';
+      window._zwSetGender(_zwGender);
+    }
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
     try { document.body.style.overflow = 'hidden'; } catch(e){} // 鎖背景捲動，避免抖動
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
@@ -716,8 +723,9 @@
 
     w.innerHTML =
       '<div class="zw-res-inner">' +
+        '<nav class="at-room-nav" aria-label="命盤結果導覽"><button type="button" class="at-back" onclick="_zwReset()">← 返回修改資料</button><button type="button" class="at-home-link" onclick="_zwClose()">首頁</button><a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></nav>' +
         '<div class="zw-res-head">' +
-          '<div class="zw-res-title">🪐 紫微斗數命盤</div>' +
+          '<div class="zw-res-title">紫微斗數命盤</div>' +
           '<button class="zw-res-x" onclick="_zwClose()" aria-label="關閉">×</button>' +
         '</div>' +
         '<div class="zw-meta">三合派四化骨架 ・ 民用時辰代表時，未校正真太陽時 ・ 不需姓名</div>' +
@@ -881,10 +889,11 @@
   };
   window._zwReset = function () {
     var r = document.getElementById('zw-result'); if (r) r.remove();
-    showInput();
+    showInput(true);
   };
   window._zwClose = function () {
     _zwxCloseSheet();
+    if (window.JY_ATELIER) window.JY_ATELIER.restoreEntrance();
     var r = document.getElementById('zw-result'); if (r) r.remove();
     var inp = document.getElementById('zw-input'); if (inp) inp.remove();
     try { document.body.style.overflow = ''; } catch(e){}

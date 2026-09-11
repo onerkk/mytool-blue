@@ -65,12 +65,18 @@
   }
 
   function getScreen(){
-    if(screen)return screen;injectCss();screen=document.createElement('div');screen.id='bzs-screen';screen.innerHTML='<div class="bzs-shell"><div class="bzs-top"><div class="bzs-bar"><button class="bzs-back" data-act="close" aria-label="返回靜月之光">‹</button><div class="bzs-brand"><b>八字探索室</b><small>命盤・雙人關係・人格・曆法工具</small></div><button class="bzs-legacy" data-act="legacy">四柱快排 ↗</button></div><div class="bzs-tabs"></div></div><main id="bzs-main"></main></div><div id="bzs-toast" class="bzs-toast"></div>';
+    if(screen)return screen;injectCss();screen=document.createElement('div');screen.id='bzs-screen';screen.innerHTML='<div class="bzs-shell"><div class="bzs-top"><div class="bzs-bar"><button type="button" class="bzs-back at-back" data-act="close">← 返回首頁</button><div class="bzs-brand"><b>八字探索室</b><small>命盤・雙人關係・人格・曆法工具</small></div><button class="bzs-legacy" data-act="legacy">四柱快排 ↗</button><a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></div><div class="bzs-tabs"></div></div><main id="bzs-main"></main></div><div id="bzs-toast" class="bzs-toast"></div>';
     document.body.appendChild(screen);screen.addEventListener('click',onClick);screen.addEventListener('change',onChange);screen.addEventListener('input',onInput);return screen;
   }
 
   function tabsHtml(){var tabs=[['single','單人'],['compat','合盤'],['personality','人格'],['tools','工具'],['history','紀錄']];return tabs.map(function(x){return '<button class="bzs-tab '+(state.tab===x[0]?'active':'')+'" data-tab="'+x[0]+'">'+x[1]+'</button>';}).join('');}
-  function render(){cacheAllForms();var s=getScreen();s.querySelector('.bzs-tabs').innerHTML=tabsHtml();var main=byId('bzs-main');if(state.tab==='single')main.innerHTML=renderSingle();else if(state.tab==='compat')main.innerHTML=renderCompat();else if(state.tab==='personality')main.innerHTML=renderPersonality();else if(state.tab==='tools')main.innerHTML=renderTools();else main.innerHTML=renderHistory();afterRender();if(window.JY_ATELIER)window.JY_ATELIER.enhance(s);s.scrollTop=0;}
+  function render(){cacheAllForms();var s=getScreen();s.querySelector('.bzs-tabs').innerHTML=tabsHtml();var main=byId('bzs-main');if(state.tab==='single')main.innerHTML=renderSingle();else if(state.tab==='compat')main.innerHTML=renderCompat();else if(state.tab==='personality')main.innerHTML=renderPersonality();else if(state.tab==='tools')main.innerHTML=renderTools();else main.innerHTML=renderHistory();main.innerHTML=roomIntro()+main.innerHTML;afterRender();if(window.JY_ATELIER)window.JY_ATELIER.enhance(s);s.scrollTop=0;}
+
+  function roomIntro(){
+    var info={single:['bazi','FOUR PILLARS','認識自己的節奏','從命盤出發，把特質放回真實生活。'],compat:['compat','TOGETHER, IN UNDERSTANDING','兩個人，如何更靠近？','理解彼此的差異，也找到可以一起調整的地方。'],personality:['bazi','A PORTRAIT OF YOU','看見不同面向的自己','用五軸探索慣性，把結果當作自我觀察的起點。'],tools:['meihua','CALENDAR & TIME','把時間，核對清楚','真太陽時與曆法工具，協助整理排盤依據。'],history:['ootk','YOUR READING JOURNAL','回看每一次探索','保留在這台裝置上的分析紀錄。']}[state.tab];
+    var isResult=state.tab==='single'&&state.single||state.tab==='compat'&&state.compat||state.tab==='personality'&&state.personality;
+    return (isResult?'<button type="button" class="at-back at-suite-return" data-act="reset-current">← 返回修改資料</button>':'')+'<header class="at-tool-header at-suite-intro"><span class="at-art" data-art="'+info[0]+'" aria-hidden="true"></span><div><span class="at-eyebrow">'+info[1]+'</span><h1>'+info[2]+'</h1><p>'+info[3]+'</p></div></header>';
+  }
 
   var WEEK=['日','一','二','三','四','五','六'];
   var BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
@@ -236,7 +242,7 @@
   function onChange(e){var country=e.target.closest('[data-country]');if(country){fillCities(country.dataset.country,country.value,'');captureDraft(country.dataset.country);syncPickerDisplay(country.dataset.country);return;}if(e.target.id){var p=e.target.id.split('-')[0];if(['s','a','b','p','u'].indexOf(p)>=0){captureDraft(p);syncPickerDisplay(p);}}}
 
   function open(initialTab){state.tab=['single','compat','personality','tools','history'].indexOf(initialTab)>=0?initialTab:'single';state.single=null;state.compat=null;state.personality=null;state.tools={solar:null,reverse:null};state.prompt='';state.exportData=null;var s=getScreen();s.style.display='block';document.body.style.overflow='hidden';render();}
-  function close(){if(screen)screen.style.display='none';document.body.style.overflow='';}
+  function close(){cacheAllForms();closePicker();if(screen)screen.style.display='none';document.body.style.overflow='';if(window.JY_ATELIER)window.JY_ATELIER.restoreEntrance();}
 
   // 保留原版八字單盤作為預設入口；完整套件改用獨立公開入口。
   // 先前直接覆蓋 window._baziStandaloneOpen，會讓原版自訂日期／時間／地點選擇器消失，

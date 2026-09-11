@@ -8,7 +8,8 @@
 // v62: 20260911preview1 分享卡立即載入、預覽錯誤與生命週期修正。
 // v63: 20260911atelier1 全站 Moon Atelier 介面、可讀命盤與操作焦點。
 // v64: 20260911atelier2 起卦內容分層、合盤閱讀引導與流程核對。
-const CACHE_NAME = 'jy-main-v64';
+// v65: 20260911celestial1 立體器物視覺、返回導覽及紫微資料保留。
+const CACHE_NAME = 'jy-main-v65';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

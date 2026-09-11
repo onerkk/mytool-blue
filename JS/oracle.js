@@ -560,7 +560,7 @@ function _getWrap(){if(!_wrap){_wrap=document.createElement('div');_wrap.id='ora
 function _render(){
 var w=_getWrap(),h='';
 h+='<div class="orc-temple-overlay"></div>';
-h+='<div class="orc-topbar"><button class="orc-back" onclick="_oracleClose()" aria-label="返回靜月之光"><i class="fas fa-arrow-left"></i></button><span class="orc-topbar-title">靜月靈籤</span><span style="width:40px"></span></div>';
+h+='<div class="orc-topbar"><button type="button" class="orc-back at-back" onclick="_oracleClose()">← 返回首頁</button><span class="orc-topbar-title">靜月靈籤</span><a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></div>';
 h+='<div class="orc-body">';
 
 if(_phase==='intro'){
@@ -568,8 +568,8 @@ if(_phase==='intro'){
 //   論述: 全台廟方線上求籤(鹿港/台北城隍/新港奉天宮/地母廟/威天宮/行天宮)
 //         無一強制打字,「心中默念」就是傳統儀式
 //   24h 智慧鎖: 當日已抽過 → 溫和提示,但仍允許繼續(權力交還用戶)
-h+='<div class="orc-fade at-oracle-intro"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div>';
-h+='<p class="orc-desc">心中默念您的姓名、住址<br>以及所求之事<br>靜月之神 派遣神將聆聽</p>';
+h+='<div class="orc-fade at-oracle-intro"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><span class="at-eyebrow at-oracle-eyebrow">A QUIET MOMENT · 靜心問籤</span><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div>';
+h+='<p class="orc-desc">靜心片刻，專注在一件想釐清的事。<br>姓名、住址與所求之事，在心中默念即可。</p>';
 h+='<div class="orc-q-input-wrap" style="max-width:380px;margin:1.2rem auto .6rem;padding:0 .8rem"><textarea id="orc-q-input" aria-label="所求之事（選填）" class="orc-q-textarea" placeholder="在此寫下您所求之事（選填）\n例：工作升遷是否順利？感情能否修復？" rows="3" oninput="_oracleSyncQText(this.value)"></textarea><div id="orc-q-hint" style="text-align:right;font-size:.65rem;color:rgba(228,210,170,.45);margin-top:.2rem">0 字</div><div id="orc-q-multi-warn" style="display:none;font-size:.72rem;color:#ff9866;margin-top:.3rem;line-height:1.5"></div></div>';
 h+='<p class="orc-note" style="margin-top:.6rem">求得籤詩後需連擲三聖筊方為確認</p>';
 // v63: 24h 智慧鎖——僅當日已抽過任何題才提示,不阻擋
@@ -1012,7 +1012,7 @@ window._oracleOpen=function(){
   }
   _phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;_allowNoShengCount=0;_rejectedLots=[];var w=_getWrap();w.style.display='block';_render();var hk=$('hook-screen');if(hk)hk.style.display='none';document.body.style.overflow='hidden';
 };
-window._oracleClose=function(){var w=_getWrap();w.style.display='none';document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
+window._oracleClose=function(){var w=_getWrap();w.style.display='none';if(window.JY_ATELIER)window.JY_ATELIER.restoreEntrance();document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
 // ★ v6c: intro → guide → pray → allowAsk → allowThrow → shake → rise → drawn
 window._oracleShowGuide=function(){_phase='guide';_render()};
 // v63: 儀式過場強化 —— 文字三階段呈現,3.6 秒總時長維持

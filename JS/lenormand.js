@@ -818,8 +818,8 @@ function _render() {
   if (_qNow) _lnQuestion = _qNow.value;
   var w = _getWrap();
   var h = '<div class="ln-container">';
-  h += '<button type="button" class="ln-back" onclick="_lenormandClose()">← 返回靜月之光</button>';
-  h += '<div class="ln-header at-tool-header"><div class="at-heading-icon" aria-hidden="true"><i class="fas fa-clover"></i></div><div><span class="at-eyebrow">PETIT LENORMAND · 36 CARDS</span><h1>雷諾曼</h1><p>把牌與牌連成一句話，釐清生活的線索。</p></div></div>';
+  h += '<nav class="at-room-nav" aria-label="頁面導覽"><button type="button" class="at-back ln-back" onclick="' + (_lnPhase === 'input' ? '_lenormandClose()' : '_lnReset()') + '">← ' + (_lnPhase === 'input' ? '返回首頁' : '返回修改') + '</button>' + (_lnPhase !== 'input' ? '<button type="button" class="at-home-link" onclick="_lenormandClose()">首頁</button>' : '') + '<a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></nav>';
+  h += '<div class="ln-header at-tool-header"><span class="at-art" data-art="lenormand" aria-hidden="true"></span><div><span class="at-eyebrow">PETIT LENORMAND · 36 CARDS</span><h1>雷諾曼</h1><p>把牌與牌連成一句話，釐清生活的線索。</p></div></div>';
 
   if (_lnPhase === 'input') {
     h += '<div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 選陣與抽牌</span><span><b>03</b> 探索解讀</span></div>';
@@ -956,7 +956,9 @@ window._lenormandShare = function() {
 window._lenormandClose = function() {
   var w = _getWrap();
   w.style.display = 'none';
-};
+
+    if (window.JY_ATELIER) window.JY_ATELIER.restoreEntrance();
+  };
 
 window._lnSetSpread = function(id) {
   if(id!=='auto'&&!SPREADS[id])return;

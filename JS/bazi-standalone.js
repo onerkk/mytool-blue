@@ -277,8 +277,8 @@
   function _render() {
     var w = _getWrap();
     var h = '<div class="bzx-container">';
-    h += '<button type="button" class="bzx-back" onclick="_baziClose()">← 返回靜月之光</button>';
-    h += '<div class="bzx-header at-tool-header"><div class="at-heading-icon" aria-hidden="true"><i class="fas fa-scroll"></i></div><div><span class="at-eyebrow">FOUR PILLARS</span><h1>八字命理</h1><p>從四柱與時間節奏，理解自己的選擇。</p><button type="button" class="bzx-suite-entry" onclick="_baziOpenFullSuite()">合盤・人格・曆法工具 ↗</button></div></div>';
+    h += '<nav class="at-room-nav" aria-label="頁面導覽"><button type="button" class="at-back bzx-back" onclick="' + (_phase === 'input' ? '_baziClose()' : '_baziReset()') + '">← ' + (_phase === 'input' ? '返回首頁' : '返回修改') + '</button>' + (_phase !== 'input' ? '<button type="button" class="at-home-link" onclick="_baziClose()">首頁</button>' : '') + '<a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></nav>';
+    h += '<div class="bzx-header at-tool-header"><span class="at-art" data-art="bazi" aria-hidden="true"></span><div><span class="at-eyebrow">FOUR PILLARS</span><h1>八字命理</h1><p>從四柱與時間節奏，理解自己的選擇。</p><button type="button" class="bzx-suite-entry" onclick="_baziOpenFullSuite()">合盤・人格・曆法工具 ↗</button></div></div>';
 
     if (_phase === 'input') {
       h += '<div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 核對資料排盤</span><span><b>03</b> 探索解讀</span></div>';
@@ -737,6 +737,7 @@
     _closeSheet();
     var w = _getWrap();
     if (w) w.style.display = 'none';
+    if (window.JY_ATELIER) window.JY_ATELIER.restoreEntrance();
     try { document.body.style.overflow = ''; } catch (e) {}
   };
   window._baziSetGender = function (g) {
