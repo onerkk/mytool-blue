@@ -3198,6 +3198,7 @@ function initTarotDeck(){
     shuffleWrap.insertBefore(sfBtn, shuffleWrap.firstChild);
 
     sfBtn.addEventListener('click', function() {
+      if(typeof window._atelierStartTarotShuffle==='function')return window._atelierStartTarotShuffle();
       if (window._deckIsShuffled || drawEpoch !== _tarotEpoch) return;
       sfBtn.style.pointerEvents = 'none';
       sfBtn.style.opacity = '0';

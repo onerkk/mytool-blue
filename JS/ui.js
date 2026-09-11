@@ -8144,7 +8144,7 @@ window.autoDraw = function(){
     pickAnimating=true;
     window.JYRitual.play('tarot', {
       variant:'deal', question:(S.form && S.form.question) || '', spreadName:def.name || def.title || '',
-      cards:drawn.map(function(c){return {id:c.id,name:c.name,image:getTarotCardImage(c),isUp:c.isUp};}),
+      cards:drawn.map(function(c){return {id:c.id,name:c.n||c.name,image:getTarotCardImage(c),isUp:c.isUp};}),
       onComplete:finish,onCancel:function(){pickAnimating=false;if(window._atelierReturnToInput)window._atelierReturnToInput();}
     });
   }else finish();

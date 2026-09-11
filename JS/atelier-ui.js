@@ -93,6 +93,43 @@
     if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
+  // The visible action owns the ceremony. Never delegate to a hidden, stale DOM button.
+  window._atelierStartTarotShuffle=function(){
+    if(window._deckIsShuffled || (window.JYRitual && window.JYRitual.isActive()))return;
+    function report(message){var hint=document.getElementById('pick-hint');if(hint){hint.textContent=message;hint.style.display='';hint.setAttribute('role','alert');if(hint.scrollIntoView)hint.scrollIntoView({block:'center'});}else window.alert(message);}
+    if(!window.JYRitual || typeof window.JYRitual.play!=='function'){
+      report('洗牌元件尚未載入，請重新整理頁面後再試。');return;
+    }
+    try{
+      if(typeof deckShuffled==='undefined'||!deckShuffled.length){
+        if(typeof initTarotDeck==='function')initTarotDeck();
+      }
+      var deck=document.getElementById('t-deck');
+      if(!deck || typeof deckShuffled==='undefined' || !deckShuffled.length){
+        report('牌組尚未準備完成，請返回修改問題後重新進入。');return;
+      }
+      var epoch=window.JYTarotSession?window.JYTarotSession.epoch():0;
+      return window.JYRitual.play('tarot',{
+        variant:'shuffle',question:(typeof S!=='undefined'&&S.form&&S.form.question)||'',finishLabel:'開始選牌',
+        onComplete:function(){
+          if(window.JYTarotSession && epoch!==window.JYTarotSession.epoch())return;
+          deck.querySelectorAll('.tarot-deck-card').forEach(function(card){
+            var face=card.querySelector('.tdc-face'),back=card.querySelector('.tdc-back');
+            if(face)face.style.display='none';if(back)back.style.transform='none';
+            card.style.visibility='';card.classList.remove('shuffling','deck-center');
+          });
+          window._deckIsShuffled=true;
+          var old=document.getElementById('jy-shuffle-btn');if(old)old.remove();
+          window.JY_ATELIER.syncTarot();
+        },
+        onCancel:function(){window._atelierReturnToInput();}
+      });
+    }catch(error){
+      console.error('[Tarot shuffle]',error);
+      window._deckIsShuffled=false;
+      report('洗牌未能啟動，請返回修改問題後重試。');
+    }
+  };
   window._atelierTarotAction=function(){
     if(window.JYRitual && window.JYRitual.isActive())return;
     var def=typeof getCurrentSpreadDef==='function'?getCurrentSpreadDef():null;
@@ -100,7 +137,7 @@
     if(typeof drawnCards!=='undefined'&&drawnCards.length===def.count){
       var analyze=document.getElementById('btn-analyze');if(analyze&&!analyze.disabled)analyze.click();return;
     }
-    if(!window._deckIsShuffled){var shuffle=document.getElementById('jy-shuffle-btn');if(shuffle)shuffle.click();return;}
+    if(!window._deckIsShuffled)return window._atelierStartTarotShuffle();
     if(typeof autoDraw==='function')autoDraw();
   };
   // Measure the real header so larger text and wrapped navigation stay usable.

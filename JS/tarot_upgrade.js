@@ -1362,6 +1362,7 @@ enhanceTarot = function(tarot) {
             var pickHint2 = document.getElementById('pick-hint');
             if (pickHint2) pickHint2.innerHTML = '選牌前先洗牌，讓心緒沉澱。';
             sfBtn2.addEventListener('click', function() {
+      if(typeof window._atelierStartTarotShuffle==='function')return window._atelierStartTarotShuffle();
               if (window._deckIsShuffled) return;
               sfBtn2.style.pointerEvents = 'none';
               sfBtn2.style.opacity = '0';
