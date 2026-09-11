@@ -1,1 +1,30 @@
-
+/* Moon Atelier · share surface, scoped to avoid changing divination screens. */
+.jysc-bd,.jysc-bd *{box-sizing:border-box}
+.jysc-bd{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:rgba(3,8,15,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#f7f1e6;isolation:isolate}
+.jysc-box{width:100%;max-width:480px;max-height:calc(100dvh - 36px);overflow:auto;overscroll-behavior:contain;padding:20px;border:1px solid rgba(230,206,154,.27);border-radius:26px;background:radial-gradient(ellipse at 100% 0,rgba(78,103,125,.22),transparent 48%),#111823;box-shadow:0 24px 90px #000,0 1px 0 rgba(255,255,255,.08) inset;scrollbar-width:thin;scrollbar-color:#4c535f #111823}
+.jysc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}
+.jysc-eyebrow{display:block;color:#cbb48a;font-size:9px;letter-spacing:2px;margin:0 0 6px}
+.jysc-head h2{margin:0;font:500 20px/1.45 "Noto Serif TC","PMingLiU",serif;letter-spacing:1px;color:#f7f1e6}
+.jysc-x{width:38px;height:38px;flex-shrink:0;border:1px solid #35404c;border-radius:50%;color:#ced1d6;background:rgba(255,255,255,.04);font:300 26px/1 sans-serif;cursor:pointer}
+.jysc-stage{position:relative;min-height:180px;perspective:1100px}
+.jysc-img{display:block;width:100%;height:auto;border:1px solid rgba(237,210,161,.19);border-radius:14px;box-shadow:0 18px 35px rgba(0,0,0,.45),0 1px 0 #8c7858;transform-origin:50% 50%;transition:transform .18s ease-out}
+.jysc-img[hidden],.jysc-privacy[hidden]{display:none}
+.jysc-loading{padding:85px 10px;text-align:center;color:#c9b087;font-size:14px;letter-spacing:2px;background:radial-gradient(ellipse at center,#253448,#0c131e);border:1px solid #343e4b;border-radius:14px}
+.jysc-status{margin:15px 0 9px;color:#b7bec8;font-size:11px;line-height:1.6;text-align:center;min-height:18px}
+.jysc-privacy{display:flex;align-items:center;justify-content:center;gap:8px;min-height:32px;color:#bfc4cc;font-size:12px;cursor:pointer;margin-bottom:10px}
+.jysc-privacy input{accent-color:#e8c991;width:16px;height:16px;margin:0}
+.jysc-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.jysc-btn{min-height:48px;padding:11px 8px;border:1px solid #44505f;border-radius:13px;background:linear-gradient(135deg,#222e3d,#152031);color:#e4e8ed;font:500 13px/1.5 "Noto Sans TC",sans-serif;cursor:pointer;box-shadow:0 3px 0 #080f19}
+.jysc-primary{background:linear-gradient(125deg,#f3deb4,#cfac70);border-color:#f4ddb3;color:#252019}
+.jysc-btn:disabled{opacity:.45;cursor:wait}
+.jysc-btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #080f19}
+.jysc-bd button:focus-visible,.jysc-privacy input:focus-visible{outline:2px solid #f8dba4;outline-offset:4px}
+.jysc-tip{margin:14px 0 0;color:#838d9c;text-align:center;font-size:10px;line-height:1.6}
+.jy-invite-entry{position:relative;display:grid;grid-template-columns:112px 1fr;align-items:center;gap:12px;overflow:hidden;margin:20px var(--sp-md,16px) 0;padding:17px 19px 17px 7px;border:1px solid rgba(222,191,132,.32);border-radius:22px;background:radial-gradient(ellipse at 10% 35%,#233349,transparent 66%),linear-gradient(130deg,#192330,#0b121d);box-shadow:0 10px 24px #0005,0 1px 0 #ffffff0d inset;text-align:left}
+.jy-invite-entry img{display:block;width:140px;height:140px;object-fit:cover;mix-blend-mode:screen;margin-left:-20px;pointer-events:none}
+.jy-invite-entry .jy-invite-overline{margin:0 0 7px;color:#c7ae82;font-size:9px;letter-spacing:1.6px}
+.jy-invite-entry h3{margin:0 0 8px;font-size:19px;font-weight:600;line-height:1.55;color:#f2e7d3}
+.jy-invite-entry p{margin:0 0 12px;color:#acb6c4;font-size:11px;line-height:1.7}
+.jy-invite-entry button{min-height:40px;padding:9px 15px;border:1px solid #e2c58f;border-radius:10px;background:linear-gradient(120deg,#f1d9ab,#c4a16c);color:#24221e;font:600 12px/1.5 inherit;cursor:pointer;box-shadow:0 3px 0 #4e402c}
+@media(max-width:480px){.jysc-bd{padding:12px}.jysc-box{padding:15px;max-height:calc(100dvh - 24px);border-radius:21px}.jysc-head h2{font-size:18px}.jysc-head{margin-bottom:12px}.jysc-img{border-radius:11px}.jysc-btn{font-size:12px}.jysc-eyebrow{font-size:8px}.jy-invite-entry{grid-template-columns:91px 1fr}.jy-invite-entry img{width:125px;height:140px;margin-left:-24px}.jy-invite-entry h3{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.jysc-img,.jysc-btn{transition:none;transform:none!important}}
