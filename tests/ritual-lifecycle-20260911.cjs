@@ -36,11 +36,14 @@ function tarotFixture(){
 }
 function complete(e,id){const c=e.ctx;c.setCurrentSpread(id);const def=c.getCurrentSpreadDef();c.drawnCards=c.JY_buildCanonicalTarotDraw(c.TAROT.slice(),id,def,'test','love',c.S.form.question);c.S.tarot.drawn=c.drawnCards;c.S.tarot.spread=c.drawnCards;c.showSpread();return c.drawnCards;}
 (async()=>{
- for(const kind of ['tarot','lenormand','bazi','compat','ziwei','meihua','oracle'])await test(kind+': three stages complete once; focus, scrolling and timers are restored',async()=>{
+ for(const kind of ['tarot','lenormand','bazi','compat','ziwei','meihua','oracle'])await test(kind+': user-led scenes never time out; completion, focus and cleanup occur once',async()=>{
   const e=fixture(),trigger=add(e,'button','trigger');trigger.focus();e.doc.body.style.overflow='auto';load(e,'ritual-ateliers');let done=0;
   const h=e.ctx.JYRitual.play(kind,{onComplete:()=>done++}),dialog=e.doc.querySelector('dialog');assert(dialog.open);assert.equal(e.doc.body.style.overflow,'hidden');assert.equal(e.ctx.JYRitual.play(kind),h);
-  e.clock.advance(1600);assert.equal(dialog.getAttribute('data-phase'),'1');e.clock.advance(1600);assert.equal(dialog.getAttribute('data-phase'),'2');assert.equal(done,0);
-  e.clock.advance(1500);assert.equal(await h.finished,true);assert.equal(done,1);h.skip();assert.equal(done,1);assert.equal(e.clock.timers.size,0);assert(!e.doc.querySelector('dialog'));assert.equal(e.doc.body.style.overflow,'auto');assert.equal(e.doc.activeElement,trigger);assert.equal(e.events.listeners.popstate.size,0);assert.equal(e.docEvents.listeners.visibilitychange.size,0);
+  e.clock.advance(12000);assert.equal(dialog.getAttribute('data-phase'),'0');assert.equal(done,0);
+  dialog.querySelector('.jr-next').click();assert.equal(dialog.getAttribute('data-phase'),'1');e.clock.advance(6000);assert.equal(done,0);
+  const seals=dialog.querySelectorAll('.jr-seal');if(seals.length)seals.forEach(b=>b.click());else dialog.querySelector('.jr-next').click();
+  assert.equal(dialog.getAttribute('data-phase'),'2');e.clock.advance(2100);assert.equal(dialog.getAttribute('data-phase'),'3');assert.equal(done,0);
+  e.clock.advance(12000);assert.equal(done,0);dialog.querySelector('.jr-next').click();assert.equal(await h.finished,true);assert.equal(done,1);h.skip();assert.equal(done,1);assert.equal(e.clock.timers.size,0);assert(!e.doc.querySelector('dialog'));assert.equal(e.doc.body.style.overflow,'auto');assert.equal(e.doc.activeElement,trigger);assert.equal(e.events.listeners.popstate.size,0);assert.equal(e.docEvents.listeners.visibilitychange.size,0);
  });
  await test('Skip, cancel, Escape, native close and navigation settle only once, including queued stale callbacks',async()=>{
   for(const action of ['skip','cancel','escape','native-close','popstate','pagehide','programmatic']){
@@ -50,13 +53,31 @@ function complete(e,id){const c=e.ctx;c.setCurrentSpread(id);const def=c.getCurr
    stale.forEach(t=>t.fn());assert.equal(await h.finished,action==='skip');assert.equal(done,action==='skip'?1:0);assert.equal(cancelled,['cancel','escape','native-close','popstate'].includes(action)?1:0);assert.equal(e.clock.timers.size,0);assert(!e.ctx.JYRitual.isActive());
   }
  });
- await test('Reduced motion and a suspended tab can finish without waiting for animation frames',async()=>{
-  const e=fixture();e.ctx.matchMedia=()=>({matches:true});load(e,'ritual-ateliers');const h=e.ctx.JYRitual.play('ziwei');e.clock.advance(180);assert.equal(await h.finished,true);assert.equal(e.clock.timers.size,0);
-  e.ctx.matchMedia=()=>({matches:false});const h2=e.ctx.JYRitual.play('bazi');e.clock.setTime(20000);e.doc.hidden=false;e.docEvents.dispatch('visibilitychange');assert.equal(await h2.finished,true);assert.equal(e.clock.timers.size,0);
+ await test('Reduced motion preserves user control; hidden tabs cannot complete an untouched ritual',async()=>{
+  const e=fixture();e.ctx.matchMedia=()=>({matches:true});load(e,'ritual-ateliers');const h=e.ctx.JYRitual.play('ziwei');e.clock.advance(9000);const d=e.doc.querySelector('dialog');assert.equal(d.getAttribute('data-phase'),'0');d.querySelector('.jr-next').click();d.querySelector('.jr-next').click();e.clock.advance(0);assert.equal(d.getAttribute('data-phase'),'3');d.querySelector('.jr-next').click();assert.equal(await h.finished,true);
+  e.ctx.matchMedia=()=>({matches:false});const h2=e.ctx.JYRitual.play('bazi');e.clock.setTime(20000);e.doc.hidden=false;e.docEvents.dispatch('visibilitychange');assert(e.ctx.JYRitual.isActive());assert.equal(e.doc.querySelector('dialog').getAttribute('data-phase'),'0');h2.cancel();assert.equal(await h2.finished,false);assert.equal(e.clock.timers.size,0);
+ });
+ await test('Partial holds cancel cleanly; release, pointer cancellation and visibility changes never reveal a result',async()=>{
+  for(const action of ['pointerup','pointercancel','lostpointercapture','visibilitychange']){
+   const e=fixture();load(e,'ritual-ateliers');let done=0;const h=e.ctx.JYRitual.play('tarot',{onComplete:()=>done++}),d=e.doc.querySelector('dialog');d.querySelector('.jr-next').click();const t=d.querySelector('.jr-touch');t.dispatch('pointerdown',{button:0,pointerId:1});e.clock.advance(700);
+   if(action==='visibilitychange'){e.doc.hidden=true;e.docEvents.dispatch(action);}else t.dispatch(action);e.clock.advance(10000);assert.equal(d.getAttribute('data-phase'),'1');assert.equal(done,0);assert.equal(e.clock.timers.size,0);
+   e.doc.hidden=false;t.dispatch('pointerdown',{button:0,pointerId:2});e.clock.advance(1620);assert.equal(d.getAttribute('data-phase'),'2');h.cancel();assert.equal(await h.finished,false);assert.equal(e.clock.timers.size,0);
+  }
+ });
+ await test('Card faces are absent before touch; real card order, reversal and callbacks survive sequential reveal',async()=>{
+  const e=fixture();load(e,'ritual-ateliers');let done=0;const cards=[{id:8,name:'力量',image:'tarot_img/08-strength.jpg',isUp:false},{id:25,name:'聖杯四',image:'tarot_img/25.jpg',isUp:true},{id:9,name:'隱者',image:'tarot_img/09-hermit.jpg',isUp:true},{id:0,name:'愚者'}],original=JSON.stringify(cards);
+  const h=e.ctx.JYRitual.play('tarot',{variant:'deal',cards,question:'<img src=x onerror=alert(1)>',onComplete:()=>done++}),d=e.doc.querySelector('dialog');assert.equal(d.getAttribute('data-phase'),'1');assert.equal(d.querySelectorAll('.jr-front img').length,0);assert.equal(d.querySelectorAll('.jr-question img').length,0);
+  const buttons=d.querySelectorAll('.jr-reveal');buttons[1].click();assert.equal(d.querySelectorAll('.jr-front img').length,1);assert.equal(done,0);buttons[0].click();assert(buttons[0].querySelector('.is-reversed'));buttons[2].click();e.clock.advance(3000);assert.equal(d.getAttribute('data-phase'),'3');assert.equal(done,0);d.querySelector('.jr-next').click();assert.equal(await h.finished,true);assert.equal(done,1);assert.equal(JSON.stringify(cards),original);
+ });
+ await test('Sound requires an explicit gesture and closes its AudioContext on every exit',async()=>{
+  const e=fixture();let created=0,closed=0,suspended=0,resumed=0;
+  const param={setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}};
+  e.ctx.AudioContext=class{constructor(){created++;this.currentTime=0;this.destination={};}createGain(){return {gain:{...param},connect(){}};}createOscillator(){return {frequency:{...param},connect(){},start(){},stop(){}};}resume(){resumed++;return Promise.resolve();}suspend(){suspended++;return Promise.resolve();}close(){closed++;return Promise.resolve();}};
+  load(e,'ritual-ateliers');let h=e.ctx.JYRitual.play('meihua'),d=e.doc.querySelector('dialog');e.clock.advance(1000);assert.equal(created,0);const sound=d.querySelector('.jr-sound');sound.click();assert.equal(created,1);assert.equal(sound.getAttribute('aria-pressed'),'true');e.doc.hidden=true;e.docEvents.dispatch('visibilitychange');assert.equal(suspended,1);e.doc.hidden=false;e.docEvents.dispatch('visibilitychange');assert.equal(resumed,2);sound.click();assert.equal(closed,1);sound.click();h.cancel();assert.equal(await h.finished,false);assert.equal(created,2);assert.equal(closed,2);
  });
  await test('Native-dialog failure retains keyboard controls and restores existing inert states',async()=>{
   const e=fixture(),normal=add(e,'main','main'),inert=add(e,'aside','aside');normal.inert=false;inert.inert=true;e.Element.prototype.showModal=function(){throw Error('Unavailable');};load(e,'ritual-ateliers');
-  const h=e.ctx.JYRitual.play('bazi'),d=e.doc.querySelector('dialog');assert(normal.inert);assert(inert.inert);d.dispatch('keydown',{key:'Tab'});assert.equal(e.doc.activeElement,d.querySelector('.jr-cancel'));d.dispatch('keydown',{key:'Escape'});assert.equal(await h.finished,false);assert.equal(normal.inert,false);assert.equal(inert.inert,true);
+  const h=e.ctx.JYRitual.play('bazi'),d=e.doc.querySelector('dialog');assert(normal.inert);assert(inert.inert);d.querySelector('.jr-skip').focus();d.dispatch('keydown',{key:'Tab'});assert.equal(e.doc.activeElement,d.querySelector('.jr-cancel'));d.dispatch('keydown',{key:'Escape'});assert.equal(await h.finished,false);assert.equal(normal.inert,false);assert.equal(inert.inert,true);
  });
  await test('Tree of Life → Mathers 21 clears previous cards, derived data, visible meanings and analysis access together',()=>{
   const e=tarotFixture(),c=e.ctx;complete(e,'tree_of_life');assert.equal(c.drawnCards.length,10);assert.equal(e.doc.getElementById('t-spread-sec').hidden,false);assert(e.doc.getElementById('t-spread').innerHTML.length>0);c.S.tarot.oldPayload={card:'old'};
