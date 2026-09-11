@@ -1,27 +1,46 @@
-<!doctype html><html lang="zh-Hant"><head>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>分享卡預覽 ・ 靜月之光</title>
+<meta name="robots" content="noindex,nofollow">
+<title>月光卡片工坊 · 靜月之光</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<link id="jysc-css" rel="stylesheet" href="assets/share/share-cards-20260911.css">
 <style>
-  body{margin:0;background:#0a0a10;color:#e8e0d0;font-family:"Noto Serif TC",serif;padding:28px 18px 60px;text-align:center}
-  h1{color:#c9a84c;font-weight:600;letter-spacing:3px;font-size:1.2rem}
-  p{color:rgba(232,224,208,.55);font-size:.82rem;line-height:1.7;max-width:420px;margin:0 auto 1.4rem}
-  .b{display:block;width:100%;max-width:420px;margin:.6rem auto;padding:1rem;border-radius:14px;border:1px solid rgba(201,168,76,.45);
-     background:linear-gradient(135deg,rgba(201,168,76,.16),rgba(201,168,76,.04));color:#c9a84c;font-family:inherit;font-size:1.05rem;font-weight:600;letter-spacing:3px;cursor:pointer}
-  .b:active{transform:scale(.98)}
-</style></head><body>
-<h1>分享卡預覽</h1>
-<p>點下面任一張,看卡片長怎樣,並測「分享到社群 / 下載圖片」在你手機能不能用。<br>(這是測試頁,確認 OK 後我再把按鈕接到各占卜結果頁)</p>
-<button class="b" onclick="P('invite')">通用邀請卡</button>
-<button class="b" onclick="P('bazi')">八字四柱卡</button>
-<button class="b" onclick="P('ziwei')">紫微命盤卡</button>
-<button class="b" onclick="P('tarot')">塔羅牌陣卡</button>
-<script src="share-card.js?v=1"></script>
-<script>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,#213344,transparent 45%),#090f19;color:#eee9df;font-family:"Noto Sans TC",sans-serif}main{max-width:1380px;padding:52px 28px 65px;margin:auto}.brand{color:#d7bd8d;font:500 17px "Noto Serif TC",serif;letter-spacing:3px}.top{display:flex;align-items:end;justify-content:space-between;gap:24px;margin:50px 0 37px}h1{font:500 clamp(30px,4vw,48px)/1.4 "Noto Serif TC",serif;margin:12px 0;color:#f2e6d0}.overline{color:#ad9c7d;font-size:10px;letter-spacing:2px}.top p{font-size:13px;line-height:1.8;color:#a4afbc;margin:0;max-width:410px}.gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px 23px}.sample{appearance:none;display:block;width:100%;padding:0;border:0;text-align:left;background:none;color:inherit;cursor:pointer;font:inherit}.sample img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border:1px solid #514c43;border-radius:13px;background:#121c2a;box-shadow:0 18px 26px #0007;transition:transform .2s}.sample:hover img{transform:translateY(-5px) rotate(-.4deg)}.sample:focus-visible{outline:2px solid #ebcd98;outline-offset:6px;border-radius:12px}.caption{display:flex;justify-content:space-between;margin-top:14px;font-size:14px}.caption span:last-child{font-size:12px;color:#b99f77}.helper{font-size:11px;color:#8190a2;line-height:1.7;margin:8px 0 0}.lab{margin:50px 0 0;padding:23px;border:1px solid #334054;border-radius:17px;background:#121c29}.lab h2{font-size:17px;font-weight:500;margin:0 0 15px}.lab select,.lab button{min-height:42px;max-width:100%;border:1px solid #52627a;border-radius:10px;background:#1c2a3c;color:#ddd8cb;padding:8px 16px;font:inherit;font-size:13px;margin:5px 8px 5px 0}.lab button{cursor:pointer;color:#e8c894}.end{font-size:11px;color:#768294;border-top:1px solid #283445;padding-top:20px;margin-top:32px;line-height:1.8}a{color:#d4b983}@media(max-width:1000px){.gallery{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){main{padding:28px 18px 45px}.top{display:block;margin:34px 0 26px}.top p{margin-top:15px}.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 14px}.caption{font-size:13px}.caption span:last-child{font-size:10px}.helper{font-size:10px}.sample img{border-radius:10px}.lab{padding:16px}}@media(max-width:360px){.gallery{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.sample img{transition:none;transform:none!important}}
+</style>
+</head>
+<body><main>
+<div class="brand">✧ 靜月之光</div>
+<div class="top"><div><div class="overline">THE MOON ATELIER / 2026</div><h1>為每個問號，<br>留下一束月光。</h1></div><p>十款分享卡，各自承載一種探索自己的方式。<br>點選卡片即可預覽、下載或分享。<br>本頁命盤與牌面均為設計示意，並非個人占卜結果。</p></div>
+<div class="gallery" id="gallery"></div>
+<div class="lab"><h2>查看完整牌陣版面</h2><label for="layout-select" class="helper">不同張數仍保留完整牌面與牌序</label><br><select id="layout-select"><option value="ln3">雷諾曼 · 三張線</option><option value="ln5">雷諾曼 · 五張線</option><option value="ln7">雷諾曼 · 雙路比較</option><option value="ln9">雷諾曼 · 九宮格</option><option value="ln36">雷諾曼 · 大牌陣</option><option value="t5">塔羅 · 五張</option><option value="t6">塔羅 · 六張</option><option value="t7">塔羅 · 七張</option><option value="t10">塔羅 · 十張</option><option value="t13">塔羅 · 十三張</option><option value="t15">塔羅 · 十五張</option><option value="t21">塔羅 · 二十一張</option><option value="t54">塔羅 · 五十四張</option></select><button type="button" id="layout-open">打開牌陣卡片 ↗</button></div>
+<div class="end">卡片保留本次資料；裝飾圖騰不代表額外命盤資訊。<br>Moon Atelier · <a href="index.html">返回靜月之光</a></div>
+</main>
+<script src="JS/share-card.js?v=20260911cards1"></script>
+<script id="preview-data">
+var LNCARDS=['rider','clover','ship','house','tree','clouds','snake','coffin','bouquet','scythe','whip','birds','child','fox','bear','stars','stork','dog','tower','garden','mountain','crossroads','mice','heart','ring','book','letter','man','woman','lily','sun','moon','key','fish','anchor','cross'];
+var LNNAMES=['騎士','幸運草','船','房屋','樹','雲','蛇','棺木','花束','鐮刀','鞭子','鳥','孩子','狐狸','熊','星星','鸛','狗','塔','花園','山','十字路口','老鼠','心','戒指','書','信','紳士','女士','百合','太陽','月亮','鑰匙','魚','錨','十字架'];
+function lnCards(n){return Array.from({length:n},function(_,i){return {id:i+1,name:LNNAMES[i],pos:'位置 '+(i+1),img:'ln-cards/ln-'+String(i+1).padStart(2,'0')+'-'+LNCARDS[i]+'.png'};});}
+function tarotCards(n){return Array.from({length:n},function(_,i){return {name:['星星','月亮','太陽'][i%3],pos:'牌位 '+(i+1),img:'tarot_img/'+['17-star','18-moon','19-sun'][i%3]+'.jpg',sourceProfile:'rws_reversals',reversed:i===1};});}
 var D={
-  invite:{},
-  bazi:{question:'今年事業有什麼要注意',pillars:[{label:'年柱',gan:'癸',zhi:'亥'},{label:'月柱',gan:'庚',zhi:'申'},{label:'日柱',gan:'乙',zhi:'酉'},{label:'時柱',gan:'癸',zhi:'未'}],dayMaster:'乙木 ・ 身弱',yongShen:'丁火',dayun:'丙辰（2019–2029）'},
-  ziwei:{question:'今年適合換工作嗎',ming:'命宮 ・ 天府（廟）',info:'金四局 ・ 身宮在福德',palaces:[{branch:'巳',name:'田宅',star:'太陰'},{branch:'午',name:'官祿',star:'貪狼'},{branch:'未',name:'僕役',star:'巨門'},{branch:'申',name:'遷移',star:'天相'},{branch:'辰',name:'福德',star:'廉貞'},{branch:'酉',name:'疾厄',star:'天梁'},{branch:'卯',name:'父母',star:'七殺'},{branch:'戌',name:'財帛',star:''},{branch:'寅',name:'命宮',star:'天府'},{branch:'丑',name:'兄弟',star:''},{branch:'子',name:'夫妻',star:'破軍'},{branch:'亥',name:'子女',star:''}]},
-  tarot:{question:'這段關係的走向',spread:'時間之流',cards:[{name:'月亮',pos:'過去',reversed:true},{name:'星星',pos:'現況'},{name:'太陽',pos:'未來'}],conclusion:'迷霧漸散,方向轉趨明朗,但需先面對內在的不安。'}
+ invite:{},
+ tarot:{demo:true,question:'這段關係，接下來可以怎麼做？',spread:'三牌陣 · RWS 正逆位',cards:tarotCards(3)},
+ ootk:{demo:true,question:'面對工作轉變，我需要理解哪些條件？',layers:[{label:'第一次操作',cards:'依已完成操作顯示關鍵牌',completed:true},{label:'第二次操作',cards:'依已完成操作顯示關鍵牌',completed:true},{label:'第三次操作',cards:'尚未完成'},{label:'第四次操作',cards:'尚未完成'},{label:'第五次操作',cards:'尚未完成'}]},
+ lenormand:{demo:true,question:'想開啟新的工作方向，有哪些線索？',spread:'五張線 · 5 張',cards:lnCards(5)},
+ bazi:{demo:true,question:'我適合怎樣的工作步調？',pillars:[{label:'年柱',gan:'甲',zhi:'戌'},{label:'月柱',gan:'丙',zhi:'寅'},{label:'日柱',gan:'壬',zhi:'申'},{label:'時柱',gan:'庚',zhi:'子'}],dayMaster:'壬水 · 狀態需合參全盤',yongShen:'僅示範欄位，不作命盤判斷',dayun:'本次計算結果顯示於此'},
+ baziCompatibility:{demo:true,scenario:'婚戀／婚姻',nameA:'小安',nameB:'小晴',pillarsA:'甲戌 · 丙寅 · 壬申 · 庚子',pillarsB:'乙亥 · 丁卯 · 癸酉 · 辛丑',dayPillars:'壬申 × 癸酉',signal:'依兩張原局分別整理互動',support:3,tension:2},
+ baziPersonality:{demo:true,code:'ABCDE',name:'示範人格類型',traits:['內在步調','對外表達','壓力回應'],strengths:['看見自己的優勢','辨認能發揮的環境'],watch:['疲累時的應對方式','留意需求與界線'],birthLine:'設計示意，未使用個人出生資料'},
+ ziwei:{demo:true,question:'我想更認識自己的優勢與課題。',ming:'命宮 · 主星欄位',info:'命身與局數依實際排盤',palaces:[{branch:'巳',name:'田宅宮',star:'太陰'},{branch:'午',name:'官祿宮',star:'貪狼'},{branch:'未',name:'交友宮',star:'巨門'},{branch:'申',name:'遷移宮',star:'天相'},{branch:'辰',name:'福德宮',star:'廉貞'},{branch:'酉',name:'疾厄宮',star:'天梁'},{branch:'卯',name:'父母宮',star:'七殺'},{branch:'戌',name:'財帛宮',star:''},{branch:'寅',name:'命宮',star:'天府'},{branch:'丑',name:'兄弟宮',star:''},{branch:'子',name:'夫妻宮',star:'破軍'},{branch:'亥',name:'子女宮',star:''}]},
+ meihua:{demo:true,question:'面對眼前的變化，我可以如何準備？',cards:[{name:'澤火革',pos:'本卦',lines:[1,0,1,1,1,0],dong:1},{name:'天風姤',pos:'互卦',lines:[0,1,1,1,1,1]},{name:'澤山咸',pos:'變卦',lines:[0,0,1,1,1,0],dong:1}]},
+ oracle:{demo:true,number:1,numberLabel:'第一籤',ganzhi:'甲子',rank:'上上',poem:'日出便見風雲散\n光明清靜照世間\n一向前途通大道\n萬事清吉保平安',story:'唐太宗坐享太平',edition:'六十甲子籤 · 此卡為版面示意，並未替你抽籤'}
 };
-function P(t){ if(window.JYShareCard) JYShareCard.open(t, D[t]); else alert('share-card.js 未載入'); }
-</script></body></html>
+var NAMES={invite:'月光邀請卡',tarot:'塔羅牌陣卡',ootk:'開鑰之法卡',lenormand:'雷諾曼牌陣卡',bazi:'八字四柱卡',baziCompatibility:'雙人合盤卡',baziPersonality:'五軸人格卡',ziwei:'紫微命盤卡',meihua:'梅花卦象卡',oracle:'靜月靈籤卡'};
+</script>
+<script>
+var gallery=document.getElementById('gallery');
+Object.keys(D).forEach(function(type){var cell=document.createElement('div'),button=document.createElement('button'),im=document.createElement('img'),cap=document.createElement('div');button.type='button';button.className='sample';button.setAttribute('aria-label','打開'+NAMES[type]);im.alt=NAMES[type]+'設計預覽';cap.className='caption';cap.innerHTML='<span>'+NAMES[type]+'</span><span>預覽 ↗</span>';button.appendChild(im);button.appendChild(cap);button.onclick=function(){JYShareCard.open(type,D[type]);};cell.appendChild(button);var hint=document.createElement('p');hint.className='helper';hint.textContent=type==='invite'?'傳遞一束月光，邀請朋友開始探索。':'設計示意 · 正式分享時使用當次資料';cell.appendChild(hint);gallery.appendChild(cell);JYShareCard.render(type,D[type],{scale:.5}).then(function(cv){im.src=cv.toDataURL('image/png');}).catch(function(){hint.textContent='載入未完成，請點擊重新預覽。';});});
+document.getElementById('layout-open').onclick=function(){var v=document.getElementById('layout-select').value,n=Number(v.replace(/\D/g,'')),ln=v.indexOf('ln')===0;JYShareCard.open(ln?'lenormand':'tarot',{demo:true,spread:ln?({3:'三張線',5:'五張線',7:'雙路比較',9:'九宮格',36:'大牌陣'})[n]:n+' 張 · 牌序紀錄',question:'此為版面示意，完整保留每張牌與原始次序。',cards:ln?lnCards(n):tarotCards(n)});};
+</script>
+</body></html>
