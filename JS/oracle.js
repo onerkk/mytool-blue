@@ -922,6 +922,7 @@ h+='</div>';
 h+='<div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem"><button class="orc-btn-outline" onclick="_oracleReset()">重新求籤</button><button class="orc-btn-outline" onclick="_oracleClose()">返回首頁</button></div><div class="orc-footer">靜月之光 ・ jingyue.uk<br>六十甲子靈籤</div></div>';
 }
 h+='</div>';w.innerHTML=h;
+if(window.JYCinemaUI)window.JYCinemaUI.oracle(w,_phase);
 }
 
 // v62：問事類型/文字輸入 helper

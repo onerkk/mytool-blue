@@ -30,7 +30,8 @@
     if(active)return active.handle;
     var cfg=themes[kind],doc=root.document,previous=doc.activeElement;
     var reduced=!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    var phase=0,settled=false,timers=[],frame=0,holding=false,holdAt=0,lit=0,audio=null,audioOn=false;
+    var phase=0,settled=false,timers=[],frame=0,holding=false,holdAt=0,lit=0,audio=null,audioOn=false,stage=null;
+    var gesture=null,travel=0,turn=0,intent='clarity';
     var bodyOverflow=doc.body.style.overflow,inertSiblings=[],fallback=false;
     // Snapshot supplied cards; do not mutate the canonical draw or generate a replacement.
     var cards=(options.cards||[]).slice(0,3).map(function(c){return {id:c.id,name:String(c.name||''),image:safeImage(c.image),isUp:c.isUp!==false};});
@@ -38,6 +39,8 @@
     var mode=(dealing&&cards.length)||kind==='lenormand'&&cards.length?'cards':cfg.type==='cards'?'hold':cfg.type;
     var question=String(options.question!=null?options.question:fallbackQuestion(kind)).trim().slice(0,500);
     var dialog=doc.createElement('dialog');dialog.className='jr-dialog';
+    var actors={tarot:['lunar-guide','月見','塔羅引路人'],lenormand:['lunar-guide','月見','牌語引路人'],bazi:['star-guide','星衡','四柱引路人'],compat:['star-guide','星衡','關係引路人'],ziwei:['star-guide','星衡','星圖引路人'],meihua:['blossom-guide','清和','觀象引路人'],oracle:['blossom-guide','清和','靜心引路人']};
+    var actor=actors[kind],gestureCopy={tarot:'左右拖曳切牌，或按住牌組',ziwei:'沿星軌轉動手指，或按住星儀',meihua:'左右拂過光線，或按住凝心',oracle:'上下輕晃籤筒，或按住祈願'};
     dialog.setAttribute('data-ritual',kind);dialog.setAttribute('data-world',cfg.world);dialog.setAttribute('data-mode',mode);
     dialog.setAttribute('data-motion',reduced?'still':'full');dialog.setAttribute('aria-labelledby','jr-title');dialog.setAttribute('aria-describedby','jr-note');
     var interaction='';
@@ -46,17 +49,20 @@
     }else if(mode==='seals'){
       interaction='<div class="jr-seals">'+cfg.seals.map(function(label,i){return '<button type="button" class="jr-seal" data-seal-index="'+i+'" aria-pressed="false" aria-label="點亮'+label+'座標"><span>'+label+'</span><small>'+String(i+1).padStart(2,'0')+'</small></button>';}).join('')+'</div>';
     }else{
-      interaction='<button type="button" class="jr-touch" aria-label="'+esc(cfg.guide)+'">'+(kind==='tarot'?fan():'<span class="jr-art at-art" data-art="'+kind+'" aria-hidden="true"></span>')+'<span class="jr-touch-label">按住，讓光靠近</span><span class="jr-touch-track"><i></i></span></button>';
+      interaction='<button type="button" class="jr-touch" aria-label="'+esc(gestureCopy[kind]||cfg.guide)+'">'+(kind==='tarot'?fan():'<span class="jr-art at-art" data-art="'+kind+'" aria-hidden="true"></span>')+'<span class="jr-touch-label">'+esc(gestureCopy[kind]||'按住，讓光靠近')+'</span><span class="jr-touch-track"><i></i></span></button>';
     }
     var constellation='';
     if(kind==='ziwei')constellation='<div class="jr-stars" aria-hidden="true">'+['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'].map(function(x,i){return '<span style="--i:'+i+';--angle:'+(i*30)+'deg">'+x+'</span>';}).join('')+'</div>';
-    dialog.innerHTML='<div class="jr-shell"><div class="jr-world" aria-hidden="true"><img class="jr-world-image" src="assets/ui/ritual-'+cfg.world+'.webp" alt=""><div class="jr-light"></div><div class="jr-vignette"></div><img class="jr-mist" src="img/oracle/oracle-smoke.png" alt=""><div class="jr-dust"></div><div class="jr-flash"></div></div><header class="jr-header"><button type="button" class="jr-cancel">← 返回</button><span>靜月之光<small>JINGYUE</small></span><button type="button" class="jr-sound" aria-pressed="false">聲音：關</button></header><div class="jr-place"><span>'+cfg.en+'</span><p>'+cfg.room+'</p></div><div class="jr-playfield">'+constellation+interaction+'</div><section class="jr-dialogue"><p class="jr-eyebrow">'+cfg.name+' · <span class="jr-chapter">入境</span></p><div class="jr-text" aria-live="polite" aria-atomic="true"><h2 id="jr-title">'+cfg.title+'</h2><p id="jr-note">'+cfg.intro+'</p></div>'+(question?'<details class="jr-question"><summary>此刻，我想問…</summary><p>'+esc(question)+'</p></details>':'')+'<p class="jr-hint" role="status"></p><button type="button" class="jr-next">走進'+cfg.room+' <span aria-hidden="true">→</span></button><footer class="jr-footer"><ol aria-label="儀式進度"><li class="is-current">入境</li><li>凝心</li><li>啟程</li></ol><button type="button" class="jr-skip">跳過儀式 →</button></footer></section></div>';
+    var portrait='<div class="jr-actor-fallback" aria-hidden="true">';
+    for(var pi=0;pi<4;pi++)portrait+='<span class="jr-actor-pose" data-pose="'+pi+'" style="background-image:url(assets/ui/'+actor[0]+'.webp);background-position:'+(pi*100/3)+'% 0"></span>';
+    portrait+='</div>';
+    dialog.innerHTML='<div class="jr-shell"><div class="jr-world" aria-hidden="true"><img class="jr-world-image" src="assets/ui/ritual-'+cfg.world+'.webp" alt=""><div class="jr-light"></div><div class="jr-vignette"></div><img class="jr-mist" src="img/oracle/oracle-smoke.png" alt=""><div class="jr-dust"></div><div class="jr-flash"></div></div><header class="jr-header"><button type="button" class="jr-cancel">← 返回</button><span>靜月之光<small>JINGYUE</small></span><button type="button" class="jr-sound" aria-pressed="false">聲音：關</button></header><div class="jr-place"><span>'+cfg.en+'</span><p>'+cfg.room+'</p></div><div class="jr-stage">'+portrait+'</div><div class="jr-playfield">'+constellation+interaction+'</div><section class="jr-dialogue"><div class="jr-speaker"><span class="jr-speaker-name">'+actor[1]+'</span><span>'+actor[2]+'</span><i aria-hidden="true"></i></div><p class="jr-eyebrow">'+cfg.name+' · <span class="jr-chapter">入境</span></p><div class="jr-text" aria-live="polite" aria-atomic="true"><h2 id="jr-title">'+cfg.title+'</h2><p id="jr-note">'+cfg.intro+'</p></div><div class="jr-intent" role="group" aria-label="這次想如何探索"><button type="button" data-intent="clarity" aria-pressed="true">我想看清現況</button><button type="button" data-intent="action" aria-pressed="false">我想找到下一步</button></div>'+(question?'<details class="jr-question"><summary>此刻，我想問…</summary><p>'+esc(question)+'</p></details>':'')+'<p class="jr-hint" role="status"></p><button type="button" class="jr-next">走進'+cfg.room+' <span aria-hidden="true">→</span></button><footer class="jr-footer"><ol aria-label="儀式進度"><li class="is-current">相遇</li><li>共鳴</li><li>啟程</li></ol><button type="button" class="jr-skip">跳過儀式 →</button></footer></section></div>';
     var resolve,finished=new Promise(function(r){resolve=r;});
     var handle={finished:finished,cancel:function(){finish(false,false);},skip:function(){finish(true,false);}};
     var entry={kind:kind,handle:handle};active=entry;
     var next=dialog.querySelector('.jr-next'),touch=dialog.querySelector('.jr-touch'),hint=dialog.querySelector('.jr-hint'),sound=dialog.querySelector('.jr-sound');
     function schedule(fn,ms){var id=root.setTimeout(function(){if(!settled)fn();},ms);timers.push(id);return id;}
-    function stopHold(){holding=false;if(frame)root.cancelAnimationFrame(frame);frame=0;if(phase===1)dialog.style.setProperty('--hold','0');dialog.classList.remove('is-holding');}
+    function stopHold(){holding=false;gesture=null;travel=0;if(frame)root.cancelAnimationFrame(frame);frame=0;if(phase===1){dialog.style.setProperty('--hold','0');if(stage)stage.setPower(0);}dialog.classList.remove('is-holding');}
     function disposeAudio(){if(!audio)return;var ctx=audio;audio=null;audioOn=false;try{var p=ctx.close();if(p&&p.catch)p.catch(function(){});}catch(e){}}
     function bell(){if(!audioOn||!audio||doc.hidden)return;try{var t=audio.currentTime,g=audio.createGain(),o=audio.createOscillator();o.type='sine';o.frequency.setValueAtTime(kind==='lenormand'?659.25:523.25,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.035,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+1.5);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+1.6);}catch(e){}}
     function toggleSound(){
@@ -73,6 +79,8 @@
     }
     function cleanup(){
       stopHold();timers.forEach(function(id){root.clearTimeout(id);});disposeAudio();
+      if(stage){stage.dispose();stage=null;}
+      if(root.JYCinemaUI)root.JYCinemaUI.suspendHome(false);
       root.removeEventListener('pagehide',onPageHide);root.removeEventListener('popstate',onPopState);doc.removeEventListener('visibilitychange',onVisibility);
       dialog.removeEventListener('close',onNativeClose);dialog.removeEventListener('keydown',onKeyDown);
       try{if(dialog.open)dialog.close();}catch(e){}
@@ -101,26 +109,29 @@
     function setCopy(title,note){dialog.querySelector('#jr-title').textContent=title;dialog.querySelector('#jr-note').textContent=note;}
     function updatePhase(value){
       if(settled)return;phase=value;dialog.setAttribute('data-phase',String(value));
+      if(stage)stage.setPhase(value);
+      var choices=dialog.querySelector('.jr-intent');if(choices)choices.hidden=value!==0;
       dialog.querySelector('.jr-chapter').textContent=value===0?'入境':value===1?'凝心':'啟程';
       dialog.querySelectorAll('.jr-footer li').forEach(function(li,i){li.classList.toggle('is-current',i===Math.min(value,2));li.classList.toggle('is-done',i<Math.min(value,2));});
       dialog.querySelectorAll('.jr-playfield button').forEach(function(btn){btn.disabled=value!==1||btn.getAttribute('aria-pressed')==='true';});
       if(value===1){
-        setCopy(dealing?'你選擇的牌，即將相遇。':cfg.focus,mode==='cards'?'輕觸每一張牌，讓本次抽牌的線索逐一出現。':cfg.guide);
-        if(question)dialog.querySelector('.jr-question').open=true;
+        setCopy(dealing?'你選擇的牌，即將相遇。':cfg.focus,mode==='cards'?'輕觸每一張牌，讓本次抽牌的線索逐一出現。':mode==='hold'?(gestureCopy[kind]||cfg.guide)+'。讓演出隨你的手勢展開。':cfg.guide);
+        if(question)dialog.querySelector('.jr-question').open=false;
         hint.textContent=mode==='cards'?((options.cards||[]).length>3?'先揭開本次牌陣前 3 張，其餘將在完整牌陣呈現。':'按照你的節奏，親手揭開本次的牌。'):mode==='seals'?'已點亮 0 / '+cfg.seals.length:'長按約 1.6 秒，或使用下方按鈕。';
         next.disabled=mode!=='hold';next.textContent=mode==='hold'?'點一下啟動 →':mode==='cards'?'等待你揭開牌面':'等待你點亮座標';
         if(mode==='hold')next.focus({preventScroll:true});else {var first=dialog.querySelector(mode==='cards'?'.jr-reveal':'.jr-seal');if(first)first.focus({preventScroll:true});}
       }else if(value===2){
         setCopy(cfg.action,'');hint.textContent='';next.disabled=true;next.textContent='光正在展開…';if(question)dialog.querySelector('.jr-question').open=false;
       }else if(value===3){
-        setCopy(dealing?'你的牌陣，已在眼前。':cfg.ready,dealing?'保留你已親手選出的牌，接著查看本次完整牌陣與牌位。':cfg.outro);
+        setCopy(dealing?'你的牌陣，已在眼前。':cfg.ready,dealing?'保留你已親手選出的牌，接著查看本次完整牌陣與牌位。':cfg.outro+(intent==='action'?' 讀完後，選一件自己做得到的小事開始。':''));
         hint.textContent=options.spreadName?String(options.spreadName):'';next.disabled=false;next.textContent=(options.finishLabel||(dealing?'查看本次牌陣':cfg.finish))+' →';next.focus({preventScroll:true});
       }
     }
     function awaken(){if(settled||phase!==1)return;stopHold();dialog.style.setProperty('--hold','1');updatePhase(2);bell();schedule(function(){updatePhase(3);},reduced?0:1900);}
-    function holdTick(){if(!holding||settled||phase!==1)return;var progress=Math.min(1,(Date.now()-holdAt)/1600);dialog.style.setProperty('--hold',String(progress));if(progress>=1){awaken();return;}frame=root.requestAnimationFrame(holdTick);}
+    function holdTick(){if(!holding||settled||phase!==1)return;var progress=Math.min(1,Math.max(travel/180,(Date.now()-holdAt)/1600));dialog.style.setProperty('--hold',String(progress));if(stage)stage.setPower(progress);if(progress>=1){awaken();return;}frame=root.requestAnimationFrame(holdTick);}
     if(touch){
-      touch.onpointerdown=function(event){if(phase!==1||settled||event.isPrimary===false||event.button>0)return;holding=true;holdAt=Date.now();dialog.classList.add('is-holding');try{touch.setPointerCapture(event.pointerId);}catch(e){}frame=root.requestAnimationFrame(holdTick);};
+      touch.onpointerdown=function(event){if(phase!==1||settled||event.isPrimary===false||event.button>0)return;holding=true;holdAt=Date.now();travel=0;turn=0;gesture={x:event.clientX||0,y:event.clientY||0};dialog.classList.add('is-holding');try{touch.setPointerCapture(event.pointerId);}catch(e){}frame=root.requestAnimationFrame(holdTick);};
+      touch.onpointermove=function(event){if(!holding||!gesture||phase!==1)return;var x=event.clientX||0,y=event.clientY||0,dx=x-gesture.x,dy=y-gesture.y;travel+=kind==='oracle'?Math.abs(dy):kind==='ziwei'?Math.hypot(dx,dy):Math.abs(dx);turn+=(kind==='oracle'?dy:dx)/90;gesture={x:x,y:y};if(stage)stage.setTurn(turn);};
       touch.onpointerup=touch.onpointercancel=touch.onlostpointercapture=stopHold;
       touch.onclick=function(event){if(event.detail===0)awaken();};
     }
@@ -128,6 +139,7 @@
       if(phase!==1||settled||btn.getAttribute('aria-pressed')==='true')return;
       if(kind==='bazi'&&i!==lit){hint.textContent='先點亮「'+cfg.seals[lit]+'」，再沿著時間往前。';return;}
       btn.setAttribute('aria-pressed','true');btn.disabled=true;lit++;dialog.style.setProperty('--lit',String(lit));hint.textContent='已點亮 '+lit+' / '+cfg.seals.length;bell();
+      if(stage)stage.setLit(lit);
       if(lit===cfg.seals.length)awaken();else{var remaining=Array.prototype.find.call(dialog.querySelectorAll('.jr-seal'),function(x){return !x.disabled;});if(remaining)remaining.focus({preventScroll:true});}
     };});
     dialog.querySelectorAll('.jr-reveal').forEach(function(btn,i){btn.onclick=function(){
@@ -136,14 +148,18 @@
       // Face and accessible card name are inserted only after a deliberate reveal.
       if(c.image){var img=doc.createElement('img');img.src=c.image;img.alt=c.name;img.className=c.isUp?'':'is-reversed';front.appendChild(img);img.onerror=function(){img.remove();front.textContent=c.name;};}else front.textContent=c.name;
       btn.setAttribute('aria-pressed','true');btn.setAttribute('aria-label','第 '+(i+1)+' 張：'+c.name+(kind==='tarot'?(c.isUp?'，正位':'，逆位'):''));btn.disabled=true;btn.querySelector('.jr-card-label').textContent=c.name;lit++;bell();
+      if(stage){stage.setLit(lit);stage.setPower(lit/cards.length);}
       hint.textContent='已揭開 '+lit+' / '+cards.length+((options.cards||[]).length>3?' · 其餘牌面在完整牌陣查看':'');
       if(lit===cards.length)schedule(awaken,reduced?0:900);else{var remaining=Array.prototype.find.call(dialog.querySelectorAll('.jr-reveal'),function(x){return !x.disabled;});if(remaining)remaining.focus({preventScroll:true});}
     };});
     next.onclick=function(){if(settled||next.disabled)return;if(phase===0)updatePhase(1);else if(phase===1&&mode==='hold')awaken();else if(phase===3)finish(true,false);};
+    dialog.querySelectorAll('[data-intent]').forEach(function(btn){btn.onclick=function(){if(phase!==0)return;intent=btn.getAttribute('data-intent');dialog.querySelectorAll('[data-intent]').forEach(function(b){b.setAttribute('aria-pressed',String(b===btn));});setCopy(intent==='action'?'好，我們一起找一個起點。':cfg.title,intent==='action'?'帶著你真正能改變的部分進入探索。解讀之後，我們再把提醒整理成可以採取的行動。':cfg.intro);};});
     sound.onclick=toggleSound;dialog.querySelector('.jr-cancel').onclick=function(){finish(false,true);};dialog.querySelector('.jr-skip').onclick=function(){finish(true,false);};
     dialog.addEventListener('cancel',function(event){event.preventDefault();finish(false,true);});dialog.addEventListener('close',onNativeClose);dialog.addEventListener('keydown',onKeyDown);
     doc.body.appendChild(dialog);doc.body.style.overflow='hidden';
+    if(root.JYCinemaUI)root.JYCinemaUI.suspendHome(true);
     try{if(typeof dialog.showModal!=='function')throw new Error('Native dialog unavailable');dialog.showModal();}catch(e){fallback=true;dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');Array.prototype.forEach.call(doc.body.children,function(node){if(node!==dialog){inertSiblings.push({node:node,value:node.inert});node.inert=true;}});}
+    if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced});}catch(e){dialog.setAttribute('data-renderer','fallback');}}
     updatePhase(0);next.focus({preventScroll:true});if(dealing)updatePhase(1);
     root.addEventListener('pagehide',onPageHide);root.addEventListener('popstate',onPopState);doc.addEventListener('visibilitychange',onVisibility);
     return handle;

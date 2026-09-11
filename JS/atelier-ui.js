@@ -36,6 +36,7 @@
       input.setAttribute('data-atelier-mode', tool);
       var label = input.querySelector('.at-input-head .at-eyebrow');
       if (label) label.textContent = tool === 'ootk' ? 'OPENING OF THE KEY · 深入脈絡' : 'TAROT · 此刻的選擇';
+      if(window.JYCinemaUI)window.JYCinemaUI.input();
     },
     restoreEntrance: function () {
       if (entrance && entrance.isConnected && typeof entrance.focus === 'function') entrance.focus({ preventScroll: true });
@@ -49,6 +50,7 @@
         var label = field.querySelector('label'), control = field.querySelector('button,input:not([type="hidden"]),select,textarea');
         if (label && control && control.id && !label.getAttribute('for')) label.setAttribute('for', control.id);
       });
+      if(window.JYCinemaUI)window.JYCinemaUI.enhance(root);
     }
   };
   window._atelierChoose = function (tool) {
