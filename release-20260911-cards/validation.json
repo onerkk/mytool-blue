@@ -1,1 +1,252 @@
-
+{
+  "release": "20260911cards1",
+  "validated_at_utc": "2026-09-11T04:32:42.322109+00:00",
+  "formal_suites": [
+    {
+      "suite": "test:prompts",
+      "exit_code": 0,
+      "seconds": 0.509
+    },
+    {
+      "suite": "test:tarot",
+      "exit_code": 0,
+      "seconds": 0.308
+    },
+    {
+      "suite": "test:ziwei",
+      "exit_code": 0,
+      "seconds": 0.061
+    },
+    {
+      "suite": "test:counter",
+      "exit_code": 0,
+      "seconds": 0.069
+    },
+    {
+      "suite": "test:picker-data",
+      "exit_code": 0,
+      "seconds": 0.521
+    },
+    {
+      "suite": "test:api-failures",
+      "exit_code": 0,
+      "seconds": 0.073
+    },
+    {
+      "suite": "test:interactions",
+      "exit_code": 0,
+      "seconds": 0.608
+    },
+    {
+      "suite": "test:display",
+      "exit_code": 0,
+      "seconds": 0.142
+    },
+    {
+      "suite": "test:audit",
+      "exit_code": 0,
+      "seconds": 2.667
+    },
+    {
+      "suite": "test:professional",
+      "exit_code": 0,
+      "seconds": 1.44
+    },
+    {
+      "suite": "test:cards",
+      "exit_code": 0,
+      "seconds": 0.075
+    }
+  ],
+  "new_contract_test_groups": 10,
+  "native_canvas_renders": [
+    {
+      "type": "invite",
+      "texts": 19,
+      "images": 2,
+      "minX": 67,
+      "maxX": 972
+    },
+    {
+      "type": "tarot",
+      "texts": 21,
+      "images": 4,
+      "minX": 65,
+      "maxX": 1009
+    },
+    {
+      "type": "ootk",
+      "texts": 28,
+      "images": 1,
+      "minX": 65,
+      "maxX": 997
+    },
+    {
+      "type": "lenormand",
+      "texts": 24,
+      "images": 6,
+      "minX": 65,
+      "maxX": 997
+    },
+    {
+      "type": "bazi",
+      "texts": 31,
+      "images": 1,
+      "minX": 65,
+      "maxX": 997
+    },
+    {
+      "type": "baziCompatibility",
+      "texts": 26,
+      "images": 1,
+      "minX": 65,
+      "maxX": 997
+    },
+    {
+      "type": "baziPersonality",
+      "texts": 21,
+      "images": 1,
+      "minX": 65,
+      "maxX": 997
+    },
+    {
+      "type": "ziwei",
+      "texts": 50,
+      "images": 1,
+      "minX": 65,
+      "maxX": 997
+    },
+    {
+      "type": "meihua",
+      "texts": 19,
+      "images": 1,
+      "minX": 65,
+      "maxX": 997
+    },
+    {
+      "type": "oracle",
+      "texts": 42,
+      "images": 1,
+      "minX": 65,
+      "maxX": 997
+    },
+    {
+      "type": "ln3",
+      "images": 4
+    },
+    {
+      "type": "ln5",
+      "images": 6
+    },
+    {
+      "type": "ln7",
+      "images": 8
+    },
+    {
+      "type": "ln9",
+      "images": 10
+    },
+    {
+      "type": "ln36",
+      "images": 37
+    },
+    {
+      "type": "tarot5",
+      "images": 6
+    },
+    {
+      "type": "tarot6",
+      "images": 7
+    },
+    {
+      "type": "tarot7",
+      "images": 8
+    },
+    {
+      "type": "tarot10",
+      "images": 11
+    },
+    {
+      "type": "tarot13",
+      "images": 14
+    },
+    {
+      "type": "tarot15",
+      "images": 16
+    },
+    {
+      "type": "tarot21",
+      "images": 22
+    },
+    {
+      "type": "tarot54",
+      "images": 55
+    }
+  ],
+  "qr_validation": {
+    "embedded": {
+      "grid": 25,
+      "mask": 4,
+      "decoded": "https://jingyue.uk"
+    },
+    "cards": {
+      "invite": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "tarot": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "ootk": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "lenormand": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "bazi": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "baziCompatibility": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "baziPersonality": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "ziwei": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "meihua": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      },
+      "oracle": {
+        "grid": 25,
+        "mask": 4,
+        "decoded": "https://jingyue.uk"
+      }
+    }
+  },
+  "browser_mobile_integration": "not completed: local file URL rejected by browser policy",
+  "preview_font": "Droid Sans Fallback",
+  "legacy_optional_test": {
+    "name": "tests/bazi-suite-regression.cjs",
+    "status": "failed",
+    "reason": "legacy harness misses new prompt dependency; old version/CSS assertions"
+  }
+}

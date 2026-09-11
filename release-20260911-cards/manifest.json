@@ -1,0 +1,85 @@
+{
+  "release": "20260911cards1",
+  "base": "previous delivered 20260910professional1",
+  "files": [
+    {
+      "path": "JS/oracle.js",
+      "sha256": "9d0633e31a1ddb97e9466954fdeb684bf46c96bbe1f560f4cbedf6c50fd6e7f7",
+      "previous_sha256": "0e688410e362e87b21fc51de41d1228ca272ae983d71eb651655b7201b0009a6",
+      "bytes": 294737
+    },
+    {
+      "path": "JS/share-card.js",
+      "sha256": "ff3d0d55d54697dbfd3d8c21a54220178f742e279db2a918b0b8572cea8ad643",
+      "previous_sha256": "a543bd744d03ec92cfb271a814de86d62f7f21f07dbff2c3738921ae71346c05",
+      "bytes": 42947
+    },
+    {
+      "path": "JS/sw.js",
+      "sha256": "8fb30e834eb0c3c124b258d41384df5d2c8fae7d7f8979fec2f6c5db5902404f",
+      "previous_sha256": "a67392f7db2eab64c948135eebcf0580681c33a0f2e78878183e1436d25a0362",
+      "bytes": 3433
+    },
+    {
+      "path": "JS/ui.js",
+      "sha256": "c1c708c600b23aa656ea6200b014134a730b7464088ff9dba702b6ac034d0b74",
+      "previous_sha256": "f4c351745b1e9e2bb5acaed1596e6e36bccd9bf54c8eff283f6226fc2d049844",
+      "bytes": 431406
+    },
+    {
+      "path": "assets/share/moon-atelier-20260911.webp",
+      "sha256": "ae7abeefbe84644521378abe97e6946c4de0316109150de64592bf6668102e17",
+      "previous_sha256": null,
+      "bytes": 178380
+    },
+    {
+      "path": "assets/share/share-cards-20260911.css",
+      "sha256": "d5b40b474525dbc4829f48ede21c656f95ea0134b33324ce02a8e575d8103cd1",
+      "previous_sha256": null,
+      "bytes": 4508
+    },
+    {
+      "path": "index.html",
+      "sha256": "1d342997b6b8d467fdc3d4d5f3d673fcf6094377225b565efddf3a5eab104664",
+      "previous_sha256": "de2ddcdbf02070565d1aa4e6ccc939fa004aa793ede2d2c3aa7241e2595e2a41",
+      "bytes": 141280
+    },
+    {
+      "path": "package.json",
+      "sha256": "8440dda9be165cdbb25697501e82008406b7b3add02b2f995d1fa81f16fb8d14",
+      "previous_sha256": "b308d88cea8e7b0d998799ec6ed747e450e1dfb68dba9eb5c5a3cbad5928230a",
+      "bytes": 1093
+    },
+    {
+      "path": "preview-share.html",
+      "sha256": "5c051e250d222c7a0d20695eafd3aa696b3fb285f0cb5383951e21582cc6bde3",
+      "previous_sha256": "f7d72511ceb30115241732a5e068e60d9863ed8214f6745b84bc94aede05ca48",
+      "bytes": 10268
+    },
+    {
+      "path": "release-20260911-cards/README.md",
+      "sha256": "2aa188d524294db0509e514ea972b3bf911d03476f97f652dce10f94aca75bd1",
+      "previous_sha256": null,
+      "bytes": 4994
+    },
+    {
+      "path": "release-20260911-cards/test-results.txt",
+      "sha256": "00704820b2ff8e57ec7dbb2947088d2c95d8ee01c5cf3c136af11c847a7f858a",
+      "previous_sha256": null,
+      "bytes": 10006
+    },
+    {
+      "path": "release-20260911-cards/validation.json",
+      "sha256": "a03872093f6bc3bed906dda4ee985e67178e40964f97d6fecd834368d6178164",
+      "previous_sha256": null,
+      "bytes": 4560
+    },
+    {
+      "path": "tests/share-card-20260911.cjs",
+      "sha256": "3b2d859eebea5a0e68820abb6519babb7d785b96ee4bafac3006521b3913c007",
+      "previous_sha256": null,
+      "bytes": 7005
+    }
+  ],
+  "deleted": []
+}
