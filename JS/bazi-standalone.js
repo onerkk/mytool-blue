@@ -90,6 +90,7 @@
   var _bazi = null;          // computeBazi + enhanceBazi 結果
   var _meta = null;          // 排盤輸入摘要（真太陽時等）
   var _lastPrompt = '';
+  var _castEpoch = 0;
   // v80.30 自訂選擇器選取狀態（寫回同名隱藏欄位供 _doCast 沿用）
   var _selDate = '';
   var _selTime = '';
@@ -384,45 +385,11 @@
   //  過場動畫（天干環 + 太極）
   // ════════════════════════════════════════════════════════
   function _showLoading(done) {
-    var ov = document.createElement('div');
-    ov.className = 'bzx-load';
-    ov.id = 'bzx-loading';
-    var stars = '';
-    for (var i=0;i<24;i++) stars += '<i style="left:'+(Math.random()*100).toFixed(1)+'%;--d:'+(3.5+Math.random()*4).toFixed(1)+'s;--dl:'+(Math.random()*5).toFixed(1)+'s;'+(Math.random()>.7?'width:3px;height:3px;':'')+'"></i>';
-    var gan = '';
-    for (var k=0;k<10;k++) {
-      gan += '<div class="bzx-gan" style="--a:'+(k*36)+'deg;--td:'+(0.65+k*0.08).toFixed(2)+'s">'+TIANGAN[k]+'</div>';
-    }
-    ov.innerHTML =
-      '<div class="bzx-stars">'+stars+'</div>' +
-      '<div class="bzx-ring">'+gan+
-        '<div class="bzx-taiji"><span class="y"></span><span class="n"></span></div>' +
-      '</div>' +
-      '<div class="bzx-load-status" id="bzx-load-status">凝神靜氣・回到出生那一刻</div>' +
-      '<div class="bzx-load-sub" id="bzx-load-sub">八字排盤</div>';
-    document.body.appendChild(ov);
-
-    var steps = [
-      ['校真太陽時','以出生地經度＋均時差定真時'],
-      ['排定四柱','年月日時，依節氣換月'],
-      ['藏干透干','人元司令、十神成形'],
-      ['權衡旺衰','得令得地得勢，定身強弱'],
-      ['格局候選','扶抑／調候／特殊格局分層複核'],
-      ['大運流年','順逆起運，運程展開']
-    ];
-    var TOTAL = 3000, per = TOTAL / steps.length;
-    steps.forEach(function (s, idx) {
-      setTimeout(function () {
-        var st = document.getElementById('bzx-load-status'), sb = document.getElementById('bzx-load-sub');
-        if (st) { st.style.opacity='0'; setTimeout(function(){ st.textContent=s[0]; st.style.opacity='1'; },150); }
-        if (sb) { sb.style.opacity='0'; setTimeout(function(){ sb.textContent=s[1]; sb.style.opacity='1'; },150); }
-      }, idx*per);
+    if (window.JYRitual) return window.JYRitual.play('bazi', {
+      onComplete: done,
+      onCancel: function(){}
     });
-    setTimeout(function () {
-      var o = document.getElementById('bzx-loading');
-      if (o) { o.style.transition='opacity .5s'; o.style.opacity='0'; setTimeout(function(){ o.remove(); },500); }
-      if (typeof done === 'function') done();
-    }, TOTAL + 240);
+    if (typeof done === 'function') done();
   }
 
   // ════════════════════════════════════════════════════════
@@ -592,6 +559,7 @@
   //  排盤（呼叫既有引擎，不重造）
   // ════════════════════════════════════════════════════════
   function _doCast() {
+    var epoch=++_castEpoch;
     _bzxClearErr();
     var dateEl = document.getElementById('bzx-date');
     var timeEl = document.getElementById('bzx-time');
@@ -624,6 +592,7 @@
     if (typeof window.computeBazi !== 'function' && typeof computeBazi !== 'function') {
       // 引擎還沒背景載入完 → 即時補載 bazi.js / bazi_upgrade.js / solar-location.js 再排
       _ensureEngine(function (ok) {
+        if(epoch!==_castEpoch)return;
         if (!ok) { _bzxErr('八字引擎載入失敗：請確認 JS/bazi.js、bazi_upgrade.js、solar-location.js 已上傳並強制重新整理'); return; }
         _castWith(y, m, d, hh, mm, unknown, city, question);
       });
@@ -734,6 +703,8 @@
     w.scrollTop = 0;
   };
   window._baziClose = function () {
+    _castEpoch++;
+    if(window.JYRitual)window.JYRitual.cancel('bazi');
     _closeSheet();
     var w = _getWrap();
     if (w) w.style.display = 'none';
@@ -764,7 +735,8 @@
     var u = document.getElementById('bzx-unknown'), t = document.getElementById('bzx-time');
     if (t) { t.disabled = !!(u && u.checked); t.style.opacity = (u && u.checked) ? '.4' : '1'; }
   };
-  window._baziDoCast = function () { _doCast(); };
+  window._baziDoCast = function () {
+    if(window.JYRitual && window.JYRitual.isActive())return; _doCast(); };
   window._baziCopy = function () {
     if (!_lastPrompt) return;
     var ok = function () {

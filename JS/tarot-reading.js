@@ -48,7 +48,7 @@
   function statsHTML(cards){var s=stats(cards);return '<div class="jy-reading-summary"><b>RWS 塔羅・正逆位</b><p>正位 '+s.upCount+' 張　／　逆位 '+s.rvCount+' 張</p><p>點牌面可放大。正逆位需結合牌位與整體牌組解讀。</p></div>';}
   function resultHTML(cards,def){
     var h=statsHTML(cards);
-    cards.forEach(function(c,i){var pos=def&&def.positions&&def.positions[i]||{};h+='<article class="jy-reading-result"><div class="jy-reading-face">'+face(c)+'</div><div><b>'+(i+1)+'. '+esc(pos.name||c.pos)+'</b><p>'+esc(pos.zh||'')+'</p><p>'+esc(c.n)+'・'+esc(label(c))+'</p><small>牌義參考：'+esc(meaning(c))+'</small></div></article>';});
+    cards.forEach(function(c,i){var pos=def&&def.positions&&def.positions[i]||{},name=String(pos.name||c.pos||'').replace(/^\s*\d+\s*[.．、]\s*/,'');h+='<article class="jy-reading-result"><div class="jy-reading-face">'+face(c)+'</div><div><b>'+(i+1)+'. '+esc(name)+'</b>'+(pos.zh&&name.indexOf(pos.zh)<0?'<p>'+esc(pos.zh)+'</p>':'')+'<p>'+esc(c.n)+'・'+esc(label(c))+'</p><small>牌義參考：'+esc(meaning(c))+'</small></div></article>';});
     return h+'<button type="button" class="btn btn-outline" onclick="_tarotShare()">分享這次牌陣</button>';
   }
   function payload(ta,question,drawn,spread,plan,def){
@@ -103,6 +103,8 @@
       syncControls();
     });}
     selector.value=mode(sid,cards);selector.disabled=fixed||cards.length>0;
+    var summary=root.document.getElementById('tarot-mode-summary');
+    if(summary)summary.textContent=mode(sid,cards)===RWS?'RWS・正逆位':'Golden Dawn・元素尊貴';
     host.querySelector('p').textContent=fixed?'本牌陣採 Golden Dawn 元素尊貴；十五張為後世衍生布局，開鑰為五次操作。':cards.length?'本輪方式已確認。點牌面可放大查看方向與牌位。':/^mathers_/.test(sid)?'沿用 Mathers 發牌與配對程序，牌義可選 RWS 或 Book T；本站為混合應用，非原書完整復刻。':'先選方式，再洗牌、選牌。本站藝術牌面翻開後明示正位／逆位；點牌可放大。';
     var sigWrap=host.querySelector('#jy-mathers-sig-wrap');
     if(sid==='mathers_21'&&!sigWrap){

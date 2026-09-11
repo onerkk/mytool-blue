@@ -520,11 +520,13 @@ function resolveTarotSpread(question, type) {
     if(!SPREAD_DEFS[forced])throw new Error('Unknown forced spread: '+forced);
     spreadId=forced;
     plan=foundation.instantiateMethod(forced,route.compiledQuestion);
-    route={version:foundation.VERSION,engine:'foundation_router_v3',spreadId:forced,selectedBy:'explicit_ui_override',reason:'使用者在介面明確指定牌陣；能力缺口必須保留，不得靜默改寫問題。',compiledQuestion:route.compiledQuestion,methodPlan:plan,coverage:{required:plan.requiredObservables,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:route.unsupportedDimensions||[],candidates:route.candidates||[]};
+    plan.selectionReason='依你手動選擇的牌陣解讀。';
+    plan.routingNotes=(plan.missingObservables||[]).length?['本陣未設獨立牌位的部分：'+plan.missingObservables.map(function(id){return (foundation.OBSERVABLES&&foundation.OBSERVABLES[id])||id;}).join('、')+'；保留原問句，僅按實際牌面討論，不編造牌位。']:[];
+    route={version:foundation.VERSION,engine:'foundation_router_v3',spreadId:forced,selectedBy:'explicit_ui_override',reason:'依你手動選擇的牌陣解讀；未設獨立牌位的部分會另行說明。',compiledQuestion:route.compiledQuestion,methodPlan:plan,coverage:{required:plan.requiredObservables,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:route.unsupportedDimensions||[],candidates:route.candidates||[]};
     try{window._autoDetectedSpread=null;}catch(_e){}
   }else{
     try{window._autoDetectedSpread=spreadId;}catch(_e2){}
-    if(!route.coverage||route.coverage.complete!==true||!spreadId||!plan)throw new Error(route.reason||'沒有可完整覆蓋原問句的牌陣');
+    if(!spreadId||!plan)throw new Error(route.reason||'沒有可完整覆蓋原問句的牌陣');
   }
   if(!spreadId||!SPREAD_DEFS[spreadId]||!plan)throw new Error('Tarot router returned an unusable method plan');
   var dynamicDef=_jyBuildDynamicSpreadDef(spreadId,plan);
@@ -558,7 +560,9 @@ var _currentSpreadId='celtic_cross';
 function getCurrentSpread(){return _currentSpreadId;}
 function setCurrentSpread(id,dynamicDef){
   if(!SPREAD_DEFS[id])throw new Error('Unknown spread: '+id);
+  if (id !== _currentSpreadId && window.JYTarotSession) window.JYTarotSession.reset();
   _currentSpreadId=id;S.tarot=S.tarot||{};
+  S.tarot.spreadType=id;
   if(dynamicDef)S.tarot.dynamicSpreadDef=dynamicDef;
   S.tarot.spreadDef=(S.tarot.dynamicSpreadDef&&S.tarot.dynamicSpreadDef.id===id)?S.tarot.dynamicSpreadDef:SPREAD_DEFS[id];
 }
@@ -712,47 +716,14 @@ function enhanceTarot(tarot) {
 // 7. 手動牌陣切換 UI
 // ══════════════════════════════════════════════════════════════════════
 function injectSpreadSelector() {
-  var step2 = document.getElementById('step-2');
-  if (!step2 || document.getElementById('jy-spread-selector')) return;
-  var container = document.createElement('div');
-  container.id = 'jy-spread-selector';
-  container.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:center;gap:.35rem;margin:.5rem 0 .8rem;padding:0 .5rem';
-  var spreads = ['three_card','five_card','cross','either_or','timeline','relationship','horseshoe','celtic_cross','tree_of_life','zodiac','minor_arcana','fifteen_card','mathers_21','mathers_horseshoe','ootk'];
-  var labels = {three_card:'3牌',five_card:'5牌',cross:'十字',either_or:'二選一',timeline:'時間線',relationship:'關係',horseshoe:'馬蹄7',celtic_cross:'凱爾特',tree_of_life:'生命之樹',zodiac:'12宮',minor_arcana:'小牌',fifteen_card:'15張GD',mathers_21:'21張古法',mathers_horseshoe:'54張古法',ootk:'開鑰之法'};
-  spreads.forEach(function(id) {
-    var btn = document.createElement('button');
-    btn.className = 'jy-spread-btn'; btn.dataset.spread = id;
-    btn.textContent = labels[id] || id;
-    btn.style.cssText = 'padding:.3rem .6rem;border-radius:8px;font-size:.7rem;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--c-text-dim);cursor:pointer;font-family:inherit;transition:all .2s';
-    btn.onclick = function() {
-      window._forcedSpread = id; // ★ v75.6：讓 initTarotDeck 知道是手動選擇
-      if (typeof setCurrentSpread === 'function') setCurrentSpread(id);
-      container.querySelectorAll('.jy-spread-btn').forEach(function(b) {
-        b.style.borderColor = 'rgba(255,255,255,.1)'; b.style.background = 'rgba(255,255,255,.03)'; b.style.color = 'var(--c-text-dim)';
-      });
-      btn.style.borderColor = 'rgba(201,168,76,.5)'; btn.style.background = 'rgba(201,168,76,.08)'; btn.style.color = 'var(--c-gold,#c9a84c)';
-      drawnCards = []; deckShuffled = [];
-      if (typeof initTarotDeck === 'function') initTarotDeck();
-      // v80.36：切換牌陣後，舊 initTarotDeck 可能剛寫入凱爾特 10 格；立即以目前牌陣重畫。
-      setTimeout(function(){
-        try {
-          if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
-          else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
-        } catch(e) {}
-      }, 0);
-      setTimeout(function(){
-        try {
-          if (typeof window.JY_renderTarotChosenLayoutForCurrentSpread === 'function') window.JY_renderTarotChosenLayoutForCurrentSpread();
-          else if (typeof window._jyRenderCurrentTarotLayout === 'function') window._jyRenderCurrentTarotLayout();
-        } catch(e) {}
-      }, 160);
-    };
-    var currentId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
-    if (id === currentId) { btn.style.borderColor = 'rgba(201,168,76,.5)'; btn.style.background = 'rgba(201,168,76,.08)'; btn.style.color = 'var(--c-gold,#c9a84c)'; }
-    container.appendChild(btn);
-  });
-  var deckWrap = step2.querySelector('.tarot-deck-wrap');
-  if (deckWrap) deckWrap.parentNode.insertBefore(container, deckWrap);
+  var step2=document.getElementById('step-2');
+  if(!step2 || document.getElementById('jy-spread-selector'))return;
+  var button=document.createElement('button');button.type='button';
+  button.id='jy-spread-selector';button.className='at-change-spread';
+  button.textContent='返回更換問題或牌陣';
+  button.onclick=function(){if(window._atelierReturnToInput)window._atelierReturnToInput();};
+  var details=document.getElementById('tarot-layout-details');
+  if(details)details.appendChild(button);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -821,9 +792,9 @@ enhanceTarot = function(tarot) {
       var elC = {'火':'#ef4444','水':'#3b82f6','風':'#22d3ee','土':'#a78b5a'}[bt.element] || 'var(--c-gold)';
       h += '<div class="card" style="padding:.8rem;margin-bottom:.5rem;border-left:3px solid '+elC+'">';
       h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
-      h += '<span class="tag tag-gold" style="font-size:.75rem">'+(i+1)+'. '+posName+'</span>';
+      h += '<span class="tag tag-gold" style="font-size:.75rem">'+(i+1)+'. '+posName.replace(/^\s*\d+\s*[.．、]\s*/, '')+'</span>';
       h += '<span class="tag tag-blue" style="font-size:.7rem">'+(c.readingMode==='rws_reversals'?window.JYTarotReading.label(c):'正向・Book T')+'</span></div>';
-      if (posZh) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">'+posZh+'</div>';
+      if (posZh && posName.indexOf(posZh) < 0) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">'+posZh+'</div>';
       h += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
       if (imgSrc) h += '<img src="'+imgSrc+'" alt="'+c.n+'" style="'+(window.JYTarotReading?window.JYTarotReading.imageStyle(c):'')+'width:65px;height:100px;border-radius:6px;flex-shrink:0">';
       h += '<div style="flex:1"><strong class="text-gold serif" style="font-size:.95rem">'+c.n+'</strong>';
@@ -1316,7 +1287,9 @@ enhanceTarot = function(tarot) {
     var spreadId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : 'celtic_cross';
     var targetCount = def ? def.count : 10;
 
+    var alreadyComplete=drawnCards.length===targetCount&&!S._isAdmin;
     _origInitTarotDeck();
+    if(alreadyComplete)return;
 
     // ── 小阿卡那專用：過濾掉大阿爾克那 ──
     if (def && def.deckFilter === 'minor_only' && typeof deckShuffled !== 'undefined') {
@@ -1329,15 +1302,13 @@ enhanceTarot = function(tarot) {
         var topHtml = '', botHtml = '';
         for (var fi = 0; fi < half; fi++) {
           var d = (fi * 0.13).toFixed(2);
-          var imgUrl = (typeof getTarotCardImage === 'function') ? getTarotCardImage(deckShuffled[fi]) : '';
-          var faceCss = imgUrl ? 'background-image:url(' + imgUrl + ')' : 'background:#1a1a2e';
-          topHtml += '<div class="tarot-deck-card" data-idx="' + fi + '" style="--float-delay:' + d + 's"><div class="tarot-deck-card-inner"><div class="tdc-face" style="' + faceCss + '"></div><div class="tdc-back"></div></div></div>';
+          var faceCss = 'display:none';
+          topHtml += '<div class="tarot-deck-card" data-idx="' + fi + '" style="--float-delay:' + d + 's"><div class="tarot-deck-card-inner"><div class="tdc-face" style="' + faceCss + '"></div><div class="tdc-back" style="transform:none"></div></div></div>';
         }
         for (var fi = half; fi < deckShuffled.length; fi++) {
           var d = ((fi - half) * 0.13).toFixed(2);
-          var imgUrl = (typeof getTarotCardImage === 'function') ? getTarotCardImage(deckShuffled[fi]) : '';
-          var faceCss = imgUrl ? 'background-image:url(' + imgUrl + ')' : 'background:#1a1a2e';
-          botHtml += '<div class="tarot-deck-card" data-idx="' + fi + '" style="--float-delay:' + d + 's"><div class="tarot-deck-card-inner"><div class="tdc-face" style="' + faceCss + '"></div><div class="tdc-back"></div></div></div>';
+          var faceCss = 'display:none';
+          botHtml += '<div class="tarot-deck-card" data-idx="' + fi + '" style="--float-delay:' + d + 's"><div class="tarot-deck-card-inner"><div class="tdc-face" style="' + faceCss + '"></div><div class="tdc-back" style="transform:none"></div></div></div>';
         }
         deckWrap.className = 'tarot-3d-stage';
         var bgHtml = '<div class="tarot-stage-bg">';
@@ -1389,7 +1360,7 @@ enhanceTarot = function(tarot) {
             var autoDrawBtn2 = document.querySelector('#step-2 .btn-outline');
             if (autoDrawBtn2) autoDrawBtn2.style.display = 'none';
             var pickHint2 = document.getElementById('pick-hint');
-            if (pickHint2) pickHint2.innerHTML = '✨ 滑動欣賞牌面 ✨';
+            if (pickHint2) pickHint2.innerHTML = '選牌前先洗牌，讓心緒沉澱。';
             sfBtn2.addEventListener('click', function() {
               if (window._deckIsShuffled) return;
               sfBtn2.style.pointerEvents = 'none';
@@ -1447,12 +1418,14 @@ enhanceTarot = function(tarot) {
     // ★ Bug1 根治 v2：temp-gate 模式已移除（原始 pickCard 若異步呼叫 showSpread，
     //   同步還原會導致 gate 失效）。改由 showSpread 自身永久守門（見下方覆寫）。
     _origPickCard2(deckIdx, deckEl);
+    var drawEpoch = window.JYTarotSession ? window.JYTarotSession.epoch() : 0;
 
     // ★ 修正(歐那 2026/5/30)：原本 `targetCount < 10` 只處理少於10張的牌陣，
     //   導致 15/21 張牌陣 fallback 到原版凱爾特(10張)完成判定 → 抽10張就結束、用錯位置名。
     //   改為 `!== 10`：除標準10張(凱爾特/生命之樹)走原版外，其餘張數都用此自適應完成判定。
     if (targetCount !== 10) {
       setTimeout(function() {
+        if (window.JYTarotSession && drawEpoch !== window.JYTarotSession.epoch()) return;
         if (drawnCards.length >= targetCount) {
           var btn = document.getElementById('btn-analyze');
           if (btn) btn.disabled = false;
@@ -1465,10 +1438,6 @@ enhanceTarot = function(tarot) {
           var titleText = document.getElementById('t-spread-title-text');
           if (titleText && def) titleText.textContent = def.zh;
           if (typeof showSpread === 'function') showSpread();
-          setTimeout(function() {
-            var act = document.querySelector('#step-2 .actions');
-            if (act) act.scrollIntoView({behavior:'smooth', block:'center'});
-          }, 400);
         }
       }, 600);
     }
@@ -1482,10 +1451,11 @@ enhanceTarot = function(tarot) {
     //   影響牌陣：zodiac(13), fifteen_card(15), mathers_21(21), mathers_horseshoe(54)
     var _gDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
     var _gTarget = _gDef ? _gDef.count : 10;
-    if (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length < _gTarget) {
-      console.log('[showSpread] 攔截：已抽', drawnCards.length, '張，需要', _gTarget, '張');
+    if (typeof drawnCards === 'undefined' || !drawnCards || drawnCards.length !== _gTarget) {
+      if (window.JYTarotSession) window.JYTarotSession.clearView();
       return;
     }
+    document.getElementById('t-spread-sec').hidden = false;
     // 更新 t-spread-sec 的硬編碼標題
     var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
     var titleText = document.getElementById('t-spread-title-text');
@@ -5701,6 +5671,13 @@ function _ensureV64bShuffleStyles() {
 
 // 主洗牌儀式函式
 window._v64bTarotShuffleRitual = function(deckWrap, onComplete) {
+  if (window.JYRitual) {
+    var epoch = window.JYTarotSession ? window.JYTarotSession.epoch() : 0;
+    return window.JYRitual.play('tarot', {
+      onComplete: function(){ if (!window.JYTarotSession || epoch === window.JYTarotSession.epoch()) onComplete(); },
+      onCancel: function(){ if (typeof window._atelierReturnToInput === 'function') window._atelierReturnToInput(); }
+    });
+  }
   _ensureV64bShuffleStyles();
 
   // 累計觀看次數,第 3 次起 compact 模式
@@ -5908,6 +5885,7 @@ function _findShuffleBtn() {
 }
 
 function _placeShuffleBtn() {
+  if(document.getElementById('tarot-draw-dock'))return;
   if (_jyPlacing) return;
   _jyPlacing = true;
 
@@ -5971,6 +5949,7 @@ function _maybeRestoreHint() {
 
 // 對外：initTarotDeck override 進抽牌頁時呼叫
 window._jyShuffleUX = function(targetCount) {
+  if(document.getElementById('tarot-draw-dock'))return;
   _jyTargetCount = targetCount || 10;
   [0, 50, 150, 300, 600, 1000].forEach(function(ms){
     setTimeout(_placeShuffleBtn, ms);
@@ -5987,6 +5966,7 @@ function _schedulePlaceShuffleBtn() {
 }
 
 function _installObserver() {
+  if(document.getElementById('tarot-draw-dock'))return;
   var step2 = document.getElementById('step-2');
   if (!step2) { setTimeout(_installObserver, 300); return; }
   if (step2._jyObservedV804) return;

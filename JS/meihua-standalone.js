@@ -65,6 +65,7 @@
   var _mhText = '';         // 漢字起卦：中文字
   var _mhResult = null;     // calcMH 回傳
   var _lastPrompt = '';
+  var _castEpoch = 0;
 
   // ════════════════════════════════════════════════════════
   //  容器 + CSS（命名空間 mhx-，自帶不依賴 style.css）
@@ -242,45 +243,11 @@
   //  起卦過場動畫（太極 + 八卦環）
   // ════════════════════════════════════════════════════════
   function _showLoading(done) {
-    var ov = document.createElement('div');
-    ov.className = 'mhx-load';
-    ov.id = 'mhx-loading';
-    var stars = '';
-    for (var i=0;i<24;i++) stars += '<i style="left:'+(Math.random()*100).toFixed(1)+'%;--d:'+(3.5+Math.random()*4).toFixed(1)+'s;--dl:'+(Math.random()*5).toFixed(1)+'s;'+(Math.random()>.7?'width:3px;height:3px;':'')+'"></i>';
-    var tri = '';
-    for (var k=0;k<8;k++) {
-      tri += '<div class="mhx-tri" style="--a:'+(k*45)+'deg;--td:'+(0.7+k*0.1).toFixed(2)+'s">'+BAGUA_SYM[k]+'</div>';
-    }
-    ov.innerHTML =
-      '<div class="mhx-stars">'+stars+'</div>' +
-      '<div class="mhx-ring">'+tri+
-        '<div class="mhx-taiji"><span class="y"></span><span class="n"></span></div>' +
-      '</div>' +
-      '<div class="mhx-load-status" id="mhx-load-status">心誠則靈・默念所問</div>' +
-      '<div class="mhx-load-sub" id="mhx-load-sub">梅花易數起卦</div>';
-    document.body.appendChild(ov);
-
-    var steps = [
-      ['取數成卦','以時／數定上下二卦'],
-      ['上下既成','本卦立，定體用之分'],
-      ['二三四五','互卦現，看過程隱情'],
-      ['動爻一變','變卦成，推結局走向'],
-      ['體用相參','五行生剋定吉凶'],
-      ['卦象已成','體用判，應期在五行']
-    ];
-    var TOTAL = 3000, per = TOTAL / steps.length;
-    steps.forEach(function (s, idx) {
-      setTimeout(function () {
-        var st = document.getElementById('mhx-load-status'), sb = document.getElementById('mhx-load-sub');
-        if (st) { st.style.opacity='0'; setTimeout(function(){ st.textContent=s[0]; st.style.opacity='1'; },150); }
-        if (sb) { sb.style.opacity='0'; setTimeout(function(){ sb.textContent=s[1]; sb.style.opacity='1'; },150); }
-      }, idx*per);
+    if (window.JYRitual) return window.JYRitual.play('meihua', {
+      onComplete: done,
+      onCancel: function(){}
     });
-    setTimeout(function () {
-      var o = document.getElementById('mhx-loading');
-      if (o) { o.style.transition='opacity .5s'; o.style.opacity='0'; setTimeout(function(){ o.remove(); },500); }
-      if (typeof done === 'function') done();
-    }, TOTAL + 240);
+    if (typeof done === 'function') done();
   }
 
   // ════════════════════════════════════════════════════════
@@ -665,6 +632,8 @@
     w.scrollTop = 0;
   };
   window._meihuaClose = function () {
+    _castEpoch++;
+    if(window.JYRitual)window.JYRitual.cancel('meihua');
     var w = _getWrap();
     if (w) w.style.display = 'none';
     try { document.body.style.overflow = ''; } catch(e){}
@@ -695,13 +664,15 @@
     });
   }
   window._mhDoCast = function () {
+    if(window.JYRitual && window.JYRitual.isActive())return;
+    var epoch=++_castEpoch;
     var qEl = document.getElementById('mhx-q'); _mhQuestion = qEl ? qEl.value.trim() : '';
     var uEl = document.getElementById('mhx-up'); if (uEl) _mhUpNum = uEl.value;
     var lEl = document.getElementById('mhx-lo'); if (lEl) _mhLoNum = lEl.value;
     var tEl = document.getElementById('mhx-text'); if (tEl) _mhText = tEl.value;
     if (typeof calcMH !== 'function') { alert('梅花引擎尚未載入，請重新整理頁面。'); return; }
     if (_mhMethod === 'char') {
-      _castChar(function (nums) { if (nums) _finishCast(nums); });
+      _castChar(function (nums) { if (epoch===_castEpoch && nums) _finishCast(nums); });
     } else {
       var nums = _castNumbers();
       if (!nums) return;

@@ -24,7 +24,7 @@ var IMG = {
   dragonBg:'img/oracle/oracle-dragon-bg.jpg'+IMG_V,
   cardWm:'img/oracle/oracle-deity.png'+IMG_V,  // v65w: 統一用 deity 同一張銀色月光女神,避免前後不一致
   templeBg:'img/oracle/oracle-temple-bg.jpg'+IMG_V,
-  ritualBg:'img/oracle/oracle-ritual-bg.jpg'+IMG_V,  // v63: 抽籤儀式過場背景
+  ritualBg:'img/oracle/oracle-temple-bg.jpg'+IMG_V,
   // v65: 新增資產(全圖視覺升級)
   scrollBg:    'img/oracle/oracle-scroll-bg.jpg'+IMG_V,     // 米色信箋紙底
   poemCardBg:  'img/oracle/oracle-poem-card-bg.jpg'+IMG_V,  // 紅金卷軸(籤詩本體)
@@ -1012,7 +1012,7 @@ window._oracleOpen=function(){
   }
   _phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;_allowNoShengCount=0;_rejectedLots=[];var w=_getWrap();w.style.display='block';_render();var hk=$('hook-screen');if(hk)hk.style.display='none';document.body.style.overflow='hidden';
 };
-window._oracleClose=function(){var w=_getWrap();w.style.display='none';if(window.JY_ATELIER)window.JY_ATELIER.restoreEntrance();document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
+window._oracleClose=function(){if(window.JYRitual)window.JYRitual.cancel('oracle');var w=_getWrap();w.style.display='none';if(window.JY_ATELIER)window.JY_ATELIER.restoreEntrance();document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
 // ★ v6c: intro → guide → pray → allowAsk → allowThrow → shake → rise → drawn
 window._oracleShowGuide=function(){_phase='guide';_render()};
 // v63: 儀式過場強化 —— 文字三階段呈現,3.6 秒總時長維持
@@ -1020,7 +1020,12 @@ window._oracleShowGuide=function(){_phase='guide';_render()};
 //   1.2s ~ 2.4s: "神明聆聽中..."
 //   2.4s ~ 3.6s: "籤筒已備"
 window._oracleStartPray=function(){
+  if(window.JYRitual && window.JYRitual.isActive())return;
   _phase='praying';_holy=0;_throwResult=null;_allowResult=null;_render();
+  if(window.JYRitual)return window.JYRitual.play('oracle',{
+    onComplete:function(){_phase='allowAsk';_render();},
+    onCancel:function(){_phase='guide';_render();}
+  });
   var c=0;
   var stages=['靜候神明指引','神明聆聽中','籤筒已備'];
   _prayTimer=setInterval(function(){

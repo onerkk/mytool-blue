@@ -9,7 +9,8 @@
 // v63: 20260911atelier1 全站 Moon Atelier 介面、可讀命盤與操作焦點。
 // v64: 20260911atelier2 起卦內容分層、合盤閱讀引導與流程核對。
 // v65: 20260911celestial1 立體器物視覺、返回導覽及紫微資料保留。
-const CACHE_NAME = 'jy-main-v65';
+// v66: 20260911ritual1 抽牌狀態隔離、七種儀式及手機抽牌導覽。
+const CACHE_NAME = 'jy-main-v66';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

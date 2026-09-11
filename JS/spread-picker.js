@@ -146,7 +146,8 @@
         nameEl.textContent = '自動 → ' + autoMeta.cn + '（' + autoDef.count + ' 張）';
         if (subEl) {
           var reason = decision && decision.spreadId === autoId ? decision.reason : '';
-          subEl.textContent = reason ? '判斷依據：' + reason : '已依目前問題自動選擇';
+          var publicReasons={three_card:'聚焦一件事，先看現況、關鍵與下一步。',five_card:'把現況、原因、阻礙與行動方向一起釐清。',relationship:'從雙方與互動關係，整理這段關係的線索。',either_or:'分別看兩條路的條件、代價與可能發展。',cross:'聚焦目前的卡點，對照助力與阻力。',timeline:'依相對階段，整理事情的變化脈絡。',horseshoe:'把事件背景、外在影響與下一步一起看。',celtic_cross:'從多個相關面向，梳理整件事的脈絡。'};
+          subEl.textContent = publicReasons[autoId] || '已依問題重點推薦；也可以自行更換牌陣。';
         }
         if (iconEl) iconEl.className = 'fas ' + autoMeta.icon;
       } else {
@@ -234,6 +235,7 @@
     }
 
     // 清牌堆，讓下次抽牌（或返回抽牌頁）依新牌陣重建。
+    if(window.JYTarotSession)window.JYTarotSession.reset();
     try { if (typeof deckShuffled !== 'undefined') deckShuffled = []; } catch (e) {}
     if (resolvedId) {
       try { if (typeof drawnCards !== 'undefined') drawnCards = []; } catch (e) {}

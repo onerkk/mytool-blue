@@ -232,71 +232,11 @@
   var RING_NAMES = ['命','財','官','遷','福','田','子','夫','兄','疾','友','父'];
 
   function showLoading(done) {
-    zwEnsureCSS();
-    var old = document.getElementById('zw-loading');
-    if (old) old.remove();
-
-    var ov = document.createElement('div');
-    ov.className = 'zw-load';
-    ov.id = 'zw-loading';
-
-    var stars = '';
-    for (var i = 0; i < 26; i++) {
-      stars += '<i style="left:' + (Math.random()*100).toFixed(1) + '%;--d:' + (3.5+Math.random()*4).toFixed(1) + 's;--dl:' + (Math.random()*5).toFixed(1) + 's;' +
-        (Math.random()>.7 ? 'width:3px;height:3px;' : '') + '"></i>';
-    }
-
-    var cells = '';
-    for (var k = 0; k < 12; k++) {
-      var p = RING[k];
-      var isMing = (k === 0);
-      cells += '<div class="zw-cell' + (isMing ? ' zw-ming' : '') + '" style="grid-row:' + p.r + ';grid-column:' + p.c + ';--cd:' + (0.5 + k*0.09).toFixed(2) + 's">' + RING_NAMES[k] + '</div>';
-    }
-
-    ov.innerHTML =
-      '<div class="zw-load-stars">' + stars + '</div>' +
-      '<div class="zw-board">' + cells +
-        '<div class="zw-center">' +
-          '<svg class="zw-svg" viewBox="0 0 100 100" preserveAspectRatio="none">' +
-            '<line x1="50" y1="50" x2="50" y2="-46" style="animation-delay:1.5s"/>' +   // 對宮(遷移)
-            '<line x1="50" y1="50" x2="-46" y2="96" style="animation-delay:1.7s"/>' +   // 三合(官祿)
-            '<line x1="50" y1="50" x2="146" y2="96" style="animation-delay:1.9s"/>' +   // 三合(財帛)
-          '</svg>' +
-          '<div class="zw-ziwei" style="animation-delay:1.7s">✦</div>' +
-          '<div class="zw-burst" id="zw-burst"></div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="zw-load-status" id="zw-load-status">定命宮・安身宮</div>' +
-      '<div class="zw-load-sub" id="zw-load-sub">十二宮天成</div>';
-    document.body.appendChild(ov);
-
-    var steps = [
-      ['定命宮・安身宮', '由生時逆推命宮'],
-      ['起五行局', '納音定局數'],
-      ['安紫微星系', '帝星領五曜入宮'],
-      ['布天府星系', '府相同梁殺破狼歸位'],
-      ['點生年四化', '祿權科忌定動線'],
-      ['推大限流年', '體用相參定應期'],
-      ['命盤天成', '三方四正照命']
-    ];
-    var TOTAL = 3400;
-    var per = TOTAL / steps.length;
-    steps.forEach(function (s, idx) {
-      setTimeout(function () {
-        var st = document.getElementById('zw-load-status');
-        var sb = document.getElementById('zw-load-sub');
-        if (st) { st.style.opacity = '0'; setTimeout(function(){ st.textContent = s[0]; st.style.opacity = '1'; }, 160); }
-        if (sb) { sb.style.opacity = '0'; setTimeout(function(){ sb.textContent = s[1]; sb.style.opacity = '1'; }, 160); }
-      }, idx * per);
+    if (window.JYRitual) return window.JYRitual.play('ziwei', {
+      onComplete: done,
+      onCancel: function(){var input=document.getElementById('zw-input');if(input)input.style.display='block';}
     });
-
-    setTimeout(function () { var b = document.getElementById('zw-burst'); if (b) b.classList.add('go'); }, 2700);
-
-    setTimeout(function () {
-      var o = document.getElementById('zw-loading');
-      if (o) { o.style.transition = 'opacity .5s'; o.style.opacity = '0'; setTimeout(function(){ o.remove(); }, 500); }
-      if (typeof done === 'function') done();
-    }, TOTAL + 260);
+    if (typeof done === 'function') done();
   }
 
   // ════════════════════════════════════════════════════════
@@ -892,6 +832,7 @@
     showInput(true);
   };
   window._zwClose = function () {
+    if(window.JYRitual)window.JYRitual.cancel('ziwei');
     _zwxCloseSheet();
     if (window.JY_ATELIER) window.JY_ATELIER.restoreEntrance();
     var r = document.getElementById('zw-result'); if (r) r.remove();

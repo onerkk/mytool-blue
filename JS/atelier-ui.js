@@ -2,8 +2,34 @@
 (function () {
   'use strict';
   var entrance = null;
+  function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   // Explicit render hooks: no global MutationObserver or background polling.
   window.JY_ATELIER = {
+    syncTarot: function () {
+      var def=typeof getCurrentSpreadDef==='function'?getCurrentSpreadDef():null;
+      var cards=typeof drawnCards!=='undefined'?drawnCards:[];
+      var count=cards.length, target=def?def.count:3, complete=count===target;
+      var dock=document.getElementById('tarot-draw-dock');
+      if(!dock)return;
+      dock.setAttribute('data-phase',complete?'complete':window._deckIsShuffled?'choosing':'ready');
+      document.getElementById('tarot-dock-count').textContent=count+' / '+target+' 張';
+      document.getElementById('tarot-dock-step').textContent=complete?'本次牌陣已完成':window._deckIsShuffled?'還差 '+(target-count)+' 張':'第一步 · 靜心洗牌';
+      document.getElementById('tarot-dock-action').textContent=complete?'取得解讀提示詞':window._deckIsShuffled?(count?'快速補滿':'快速抽牌'):'開始洗牌';
+      var layoutCount=document.getElementById('tarot-layout-count');
+      if(layoutCount)layoutCount.textContent=count+' / '+target;
+      var details=document.getElementById('tarot-layout-details');
+      if(details && count===0)details.open=false;
+      var legend=document.getElementById('tarot-position-list');
+      if(legend && def)legend.innerHTML=def.positions.map(function(pos,i){return '<li><span>'+esc(pos.name.replace(/^\s*\d+\s*[.．、]\s*/,''))+'</span><small>'+esc(cards[i]?(cards[i].n+' · '+(window.JYTarotReading?window.JYTarotReading.label(cards[i]):'')):'尚未選牌')+'</small></li>';}).join('');
+      var recent=document.getElementById('tarot-last-card');
+      if(recent){
+        var last=cards[count-1];
+        if(last&&window.JYTarotReading)recent.innerHTML='<div class="at-recent-face">'+window.JYTarotReading.face(last)+'</div><div><small>剛選的第 '+count+' 張</small><strong>'+esc(last.n)+' · '+esc(window.JYTarotReading.label(last))+'</strong><p>'+esc(last.pos)+'</p></div>';
+        else recent.innerHTML='<span>'+(window._deckIsShuffled?'左右滑動牌背，選一張你想停下來的牌。':'選牌前先洗牌，讓心緒沉澱。')+'</span>';
+      }
+      var hint=document.getElementById('pick-hint');
+      if(hint){hint.style.display='';hint.textContent=complete?'牌陣已完成，可查看牌位或取得解讀提示詞。':window._deckIsShuffled?'慢慢選牌，讓問題留在心裡。':'留一段時間，專注在你的問題。';}
+    },
     setMode: function (tool) {
       var input = document.getElementById('input-screen');
       if (!input || (tool !== 'tarot' && tool !== 'ootk')) return;
@@ -32,8 +58,8 @@
       window.pickTool(tool, { stayAtQuestion: true });
       var input = document.getElementById('input-screen');
       if (input) input.setAttribute('data-atelier-mode', tool);
-      var question = document.getElementById('f-question');
-      if (question) question.focus({ preventScroll: true });
+      var heading = input && input.querySelector('.at-input-head');
+      if (heading) { heading.tabIndex=-1; heading.focus({ preventScroll: true }); }
       window.scrollTo({ top: 0, behavior: 'instant' });
       return;
     }
@@ -45,6 +71,7 @@
   // The old input markup still called backToHook after its implementation was
   // removed. Navigation must not call the reading reset and erase the question.
   window.backToHook = function () {
+    if(window.JYTarotSession)window.JYTarotSession.reset();
     if (typeof window.goStep === 'function') window.goStep(0);
     var home = document.getElementById('hook-screen');
     var input = document.getElementById('input-screen');
@@ -55,14 +82,29 @@
     if (start) start.focus({ preventScroll: true });
   };
   window._atelierReturnToInput = function () {
+    if(window.JYTarotSession)window.JYTarotSession.reset();
     if (typeof window.goStep === 'function') window.goStep(0);
     if (typeof window._enterFromHome === 'function') window._enterFromHome();
     var input = document.getElementById('input-screen');
     var home = document.getElementById('hook-screen');
     if (input) input.style.display = 'block';
     if (home) home.style.display = 'none';
-    var question = document.getElementById('f-question');
-    if (question) question.focus({ preventScroll: true });
+    var heading=input&&input.querySelector('.at-input-head');
+    if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});}
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
+  window._atelierTarotAction=function(){
+    if(window.JYRitual && window.JYRitual.isActive())return;
+    var def=typeof getCurrentSpreadDef==='function'?getCurrentSpreadDef():null;
+    if(!def)return;
+    if(typeof drawnCards!=='undefined'&&drawnCards.length===def.count){
+      var analyze=document.getElementById('btn-analyze');if(analyze&&!analyze.disabled)analyze.click();return;
+    }
+    if(!window._deckIsShuffled){var shuffle=document.getElementById('jy-shuffle-btn');if(shuffle)shuffle.click();return;}
+    if(typeof autoDraw==='function')autoDraw();
+  };
+  // Measure the real header so larger text and wrapped navigation stay usable.
+  function measureHeader(){var nav=document.querySelector('body>.nav');if(!nav)nav=document.querySelector('.nav');if(nav)document.documentElement.style.setProperty('--jy-header-height',Math.ceil(nav.getBoundingClientRect().height)+'px');}
+  function start(){measureHeader();var nav=document.querySelector('.nav');if(nav&&window.ResizeObserver){var observer=new ResizeObserver(measureHeader);observer.observe(nav);}window.JY_ATELIER.syncTarot();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();

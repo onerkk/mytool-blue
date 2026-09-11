@@ -2919,6 +2919,47 @@ let drawnCards=[];
 let deckShuffled=[];
 let pickAnimating=false;
 
+// A reading is one transaction. Leaving or starting another reading invalidates
+// pending animation callbacks; the DOM and both card stores reset together.
+var _tarotEpoch = 0;
+function invalidateTarotDraw() {
+  _tarotEpoch++;
+  pickAnimating = false;
+  if (_deck3dRAF) { cancelAnimationFrame(_deck3dRAF); _deck3dRAF = null; }
+  document.querySelectorAll('.tarot-fly-card,.tarot-particle').forEach(function(el){ el.remove(); });
+  if (window.JYRitual) window.JYRitual.cancel('tarot');
+}
+function clearTarotSpreadView() {
+  var section = document.getElementById('t-spread-sec');
+  if (section) { section.classList.add('hidden'); section.hidden = true; }
+  var spread = document.getElementById('t-spread');
+  if (spread) spread.textContent = '';
+  var result = document.getElementById('tarot-spread-display');
+  if (result) result.textContent = '';
+  var button = document.getElementById('btn-analyze');
+  if (button) button.disabled = true;
+}
+function resetTarotDraw() {
+  invalidateTarotDraw();
+  drawnCards = []; deckShuffled = []; window._deckIsShuffled = false;
+  var old = S.tarot || {}, fresh = { drawn: [], spread: [] };
+  ['spreadType','spreadDef','dynamicSpreadDef','methodPlan','compiledQuestion','readingMode'].forEach(function(key){
+    if (old[key] !== undefined) fresh[key] = old[key];
+  });
+  S.tarot = fresh;
+  clearTarotSpreadView();
+  var chosen = document.getElementById('t-chosen');
+  if (chosen) chosen.textContent = '';
+  var count = document.getElementById('t-remain-picked');
+  if (count) count.textContent = '0';
+  document.querySelectorAll('#jy-shuffle-btn,.jy-shuffle-top,#jy-spread-selector').forEach(function(el){el.remove();});
+  if (window.JY_ATELIER && window.JY_ATELIER.syncTarot) window.JY_ATELIER.syncTarot();
+}
+window.JYTarotSession = {
+  reset: resetTarotDraw, invalidate: invalidateTarotDraw, clearView: clearTarotSpreadView,
+  epoch: function(){return _tarotEpoch;}
+};
+
 /* v80.36：牌位版面單一渲染入口
    根因修正：舊版 tarot.js 的 initTarotDeck/showTarotLocked 永遠先寫入凱爾特十字 10 格，
    導致目前牌陣已是 3 張時，畫面仍殘留 10 格凱爾特。
@@ -2977,6 +3018,10 @@ function showTarotLocked(){
     if(!slotEl)return;
     const isCard2 = (i === 1 && _jyIsCeltic());
     const imgSrc=typeof getTarotCardImage==='function'?getTarotCardImage(c):'';
+    if(window.JYTarotReading){
+      slotEl.innerHTML='<div class="tarot-reveal flipping"'+(isCard2?' style="transform:rotate(-90deg)"':'')+'><div class="tarot-reveal-inner"><div class="tarot-reveal-back"></div><div class="tarot-reveal-front">'+window.JYTarotReading.face(c)+'</div></div></div>';
+      return;
+    }
     slotEl.innerHTML=`<div class="tarot-reveal flipping" style="${isCard2?'transform:rotate(-90deg)':''}">
       <div class="tarot-reveal-inner">
         <div class="tarot-reveal-back"></div>
@@ -2990,15 +3035,13 @@ function showTarotLocked(){
   });
   // 隱藏牌堆，顯示鎖定訊息
   const deckEl=document.getElementById('t-deck');
-  deckEl.innerHTML='<div class="energy-locked-badge" style="margin:1rem auto;text-align:center"><i class="fas fa-lock"></i> 牌陣已定 — 同日同問題不可重複抽牌，心誠則靈</div>';
+  deckEl.innerHTML='<div class="energy-locked-badge" style="margin:1rem auto;text-align:center"><i class="fas fa-lock"></i> 本次牌陣已完成，可查看牌位與解讀提示詞。</div>';
   // 隱藏抽牌提示
   const hint=document.getElementById('pick-hint');
   if(hint) hint.style.display='none';
   // 啟用分析按鈕
   const btn=document.getElementById('btn-analyze');
   if(btn) btn.disabled=false;
-  // v60-hotfix7-g：抽完牌自動滾到分析按鈕，讓使用者看到下一步
-  if(btn) setTimeout(function(){ try { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(_) {} }, 400);
   // 更新計數
   const countEl=document.getElementById('t-remain-picked');
   var _tc = (S.tarot && S.tarot.spreadDef && S.tarot.spreadDef.count) ? S.tarot.spreadDef.count : 10; if(countEl) countEl.textContent=String(_tc);
@@ -3006,6 +3049,7 @@ function showTarotLocked(){
   S.tarot.drawn=drawnCards;
   S.tarot.spread=drawnCards;
   showSpread();
+  if(window.JY_ATELIER&&window.JY_ATELIER.syncTarot)window.JY_ATELIER.syncTarot();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3021,6 +3065,9 @@ function initTarotDeck(){
   var _maxC=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10;
   if(drawnCards.length>=_maxC && !S._isAdmin){ showTarotLocked(); return; }
   if(drawnCards.length>=_maxC && S._isAdmin){ drawnCards=[]; console.log('[管理員] 重置塔羅牌'); }
+
+  resetTarotDraw();
+  var drawEpoch = _tarotEpoch;
 
   // ═══ 洗牌 ═══
   // ★ Bug #6 fix: 原本 admin / 缺 form 時用 .sort(()=>Math.random()-0.5)，
@@ -3062,22 +3109,20 @@ function initTarotDeck(){
     }
   }
 
-  // ═══ 3D 雙排牌堆（牌面朝上 + 背景輪播）═══
+  // 3D 雙排牌堆：從初始畫面起保持牌背，不提前載入或洩漏牌面。
   var deckEl=document.getElementById('t-deck');
   var half=Math.ceil(deckShuffled.length/2);
   var topHtml='', botHtml='';
 
   for(var i=0;i<half;i++){
     var d=(i*0.13).toFixed(2);
-    var imgUrl=(typeof getTarotCardImage==='function')?getTarotCardImage(deckShuffled[i]):'';
-    var faceCss=imgUrl?'background-image:url('+imgUrl+')':'background:#1a1a2e';
-    topHtml+='<div class="tarot-deck-card" data-idx="'+i+'" style="--float-delay:'+d+'s"><div class="tarot-deck-card-inner"><div class="tdc-face" style="'+faceCss+'"></div><div class="tdc-back"></div></div></div>';
+    var faceCss='display:none';
+    topHtml+='<div class="tarot-deck-card" data-idx="'+i+'" style="--float-delay:'+d+'s"><div class="tarot-deck-card-inner"><div class="tdc-face" style="'+faceCss+'"></div><div class="tdc-back" style="transform:none"></div></div></div>';
   }
   for(var i=half;i<deckShuffled.length;i++){
     var d=((i-half)*0.13).toFixed(2);
-    var imgUrl=(typeof getTarotCardImage==='function')?getTarotCardImage(deckShuffled[i]):'';
-    var faceCss=imgUrl?'background-image:url('+imgUrl+')':'background:#1a1a2e';
-    botHtml+='<div class="tarot-deck-card" data-idx="'+i+'" style="--float-delay:'+d+'s"><div class="tarot-deck-card-inner"><div class="tdc-face" style="'+faceCss+'"></div><div class="tdc-back"></div></div></div>';
+    var faceCss='display:none';
+    botHtml+='<div class="tarot-deck-card" data-idx="'+i+'" style="--float-delay:'+d+'s"><div class="tarot-deck-card-inner"><div class="tdc-face" style="'+faceCss+'"></div><div class="tdc-back" style="transform:none"></div></div></div>';
   }
 
   // 背景輪播 + 雙份牌（無縫循環）
@@ -3132,12 +3177,12 @@ function initTarotDeck(){
   document.getElementById('t-remain-picked').textContent='0';
   document.getElementById('btn-analyze').disabled=true;
 
-  // ★ v28：洗牌機制 — 先展示牌面，洗牌後才能選牌
+  // 洗牌完成後開放選牌。
   window._deckIsShuffled = false;
 
-  // 隱藏選牌提示，改顯示「欣賞牌面」
+  // 初始洗牌提示。
   var pickHint = document.getElementById('pick-hint');
-  if (pickHint) pickHint.innerHTML = '✨ 滑動欣賞 78 張牌面 ✨';
+  if (pickHint) pickHint.innerHTML = '選牌前先洗牌，讓心緒沉澱。';
 
   // 隱藏快速全抽按鈕
   var autoDrawBtn = document.querySelector('#step-2 .btn-outline');
@@ -3153,7 +3198,7 @@ function initTarotDeck(){
     shuffleWrap.insertBefore(sfBtn, shuffleWrap.firstChild);
 
     sfBtn.addEventListener('click', function() {
-      if (window._deckIsShuffled) return;
+      if (window._deckIsShuffled || drawEpoch !== _tarotEpoch) return;
       sfBtn.style.pointerEvents = 'none';
       sfBtn.style.opacity = '0';
       // ═══════════════════════════════════════════════════════════
@@ -3163,6 +3208,7 @@ function initTarotDeck(){
       // ═══════════════════════════════════════════════════════════
       if (typeof window._v64bTarotShuffleRitual === 'function') {
         window._v64bTarotShuffleRitual(deckEl, function() {
+          if (drawEpoch !== _tarotEpoch) return;
           // 儀式結束後:把所有牌翻成牌背狀態(資料層),啟用選牌
           var allCards = deckEl.querySelectorAll('.tarot-deck-card');
           allCards.forEach(function(card) {
@@ -3182,6 +3228,7 @@ function initTarotDeck(){
             _startDeck3D(halfNum, deckShuffled.length - halfNum);
           }
           window._deckIsShuffled = true;
+          if (window.JY_ATELIER && window.JY_ATELIER.syncTarot) window.JY_ATELIER.syncTarot();
           sfBtn.remove();
           if (autoDrawBtn) autoDrawBtn.style.display = '';
           if (pickHint) {
@@ -3205,6 +3252,7 @@ function initTarotDeck(){
         fbDelay += 12;
       });
       setTimeout(function() {
+        if (drawEpoch !== _tarotEpoch) return;
         window._deckIsShuffled = true;
         sfBtn.remove();
         if (autoDrawBtn) autoDrawBtn.style.display = '';
@@ -3331,12 +3379,13 @@ function _update3DCards(rowEl){
 // ═══ 快速全抽（串連式：前一張動畫完才抽下一張）═══
 function autoDraw(){
   if(!deckShuffled.length) initTarotDeck();
+  var autoEpoch=_tarotEpoch;
   // ★ v28：如果還沒洗牌，先自動洗牌再全抽
   if (!window._deckIsShuffled) {
     var sfBtn = document.getElementById('jy-shuffle-btn');
     if (sfBtn) sfBtn.click();
     // 等洗牌完成後再自動抽
-    setTimeout(function(){ autoDraw(); }, 5000);
+    setTimeout(function(){ if(autoEpoch===_tarotEpoch)autoDraw(); }, 5000);
     return;
   }
   var _tgt=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10;
@@ -3359,6 +3408,7 @@ function autoDraw(){
 
   var step=0;
   function _next(){
+    if(autoEpoch!==_tarotEpoch)return;
     if(step>=toPick.length||drawnCards.length>=_tgt) return;
     if(pickAnimating){
       setTimeout(_next,80);
@@ -3396,8 +3446,9 @@ function pickCard(deckIdx,deckEl){
   // ★ v28：洗牌前不能選牌
   if (!window._deckIsShuffled) return;
   var _maxC=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10;
-  if(pickAnimating||drawnCards.length>=_maxC||deckEl.classList.contains('picked')) return;
+  if(!deckEl || !deckShuffled[deckIdx] || pickAnimating||drawnCards.length>=_maxC||deckEl.classList.contains('picked')) return;
   pickAnimating=true;
+  var drawEpoch = _tarotEpoch;
 
   var card=deckShuffled[deckIdx];
 
@@ -3420,6 +3471,7 @@ function pickCard(deckIdx,deckEl){
 
   // ── Phase 2: 標記所有同 idx 的 clone 為 picked，創建飛牌 ──
   setTimeout(function(){
+    if (drawEpoch !== _tarotEpoch) return;
     // 標記 picked（含 duplicate）
     var allDup=document.querySelectorAll('.tarot-deck-card[data-idx="'+deckIdx+'"]');
     for(var d=0;d<allDup.length;d++){
@@ -3430,6 +3482,11 @@ function pickCard(deckIdx,deckEl){
     var slotEl=document.getElementById('t-slot-'+slotIdx);
     if(!slotEl){ pickAnimating=false; return; }
     var slotRect=slotEl.getBoundingClientRect();
+    var peek=document.getElementById('tarot-last-card');
+    if(peek && (slotRect.width===0 || slotRect.top<0 || slotRect.bottom>window.innerHeight)){
+      var peekRect=peek.getBoundingClientRect();
+      if(peekRect.width>0)slotRect={left:peekRect.left+10,top:peekRect.top+10,width:60,height:92};
+    }
 
     // 飛牌
     var fly=document.createElement('div');
@@ -3441,6 +3498,7 @@ function pickCard(deckIdx,deckEl){
     document.body.appendChild(fly);
 
     requestAnimationFrame(function(){
+      if (drawEpoch !== _tarotEpoch) { fly.remove(); return; }
       fly.style.left=slotRect.left+'px';
       fly.style.top=slotRect.top+'px';
       fly.style.width=slotRect.width+'px';
@@ -3449,6 +3507,7 @@ function pickCard(deckIdx,deckEl){
 
     // ── Phase 3: 落定翻牌 ──
     setTimeout(function(){
+      if (drawEpoch !== _tarotEpoch) { fly.remove(); return; }
       fly.remove();
       slotEl.classList.add('filled');
       var drawnCard={id:card.id,n:card.n,suit:card.suit,up:card.up,rv:card.rv,isUp:isUp,pos:pos};
@@ -3471,11 +3530,14 @@ function pickCard(deckIdx,deckEl){
 
       // 翻牌
       setTimeout(function(){
+        if (drawEpoch !== _tarotEpoch) return;
         var rev=document.getElementById('t-rev-'+slotIdx);
         if(rev) rev.classList.add('flipping');
       },200);
 
       drawnCards.push(drawnCard);
+      S.tarot.drawn = drawnCards; S.tarot.spread = drawnCards;
+      if (window.JY_ATELIER && window.JY_ATELIER.syncTarot) window.JY_ATELIER.syncTarot();
       if(reading)reading.syncControls();
       var pickedEl=document.getElementById('t-remain-picked');
       if(pickedEl) pickedEl.textContent=drawnCards.length;
@@ -3492,7 +3554,7 @@ function pickCard(deckIdx,deckEl){
         showSpread();
         // 停止 3D 漂移
         if(_deck3dRAF){ cancelAnimationFrame(_deck3dRAF); _deck3dRAF=null; }
-        setTimeout(function(){ var act=document.querySelector('#step-2 .actions'); if(act) act.scrollIntoView({behavior:'smooth',block:'center'}); },600);
+        // Keep the user's position. The persistent draw bar exposes the next step.
       } else if(drawnCards.length>=3){
         var _hint=document.getElementById('pick-hint');
         if(_hint){ _hint.textContent='請再選 '+(_targetCount-drawnCards.length)+' 張，完成本次牌陣'; _hint.style.display=''; }
@@ -3509,8 +3571,11 @@ Object.defineProperty(document.getElementById('t-remain-picked')||document.creat
 
 // ===== [UPGRADE: showSpread DEEP VERSION] =====
 function showSpread(){
+  var def = typeof getCurrentSpreadDef === 'function' ? getCurrentSpreadDef() : null;
+  if (!def || drawnCards.length !== def.count) { clearTarotSpreadView(); return; }
   S.tarot.drawn=drawnCards;
   S.tarot.spread=drawnCards;
+  document.getElementById('t-spread-sec').hidden = false;
   document.getElementById('t-spread-sec').classList.remove('hidden');
   const el=document.getElementById('t-spread');
   el.innerHTML=drawnCards.map((c,i)=>{

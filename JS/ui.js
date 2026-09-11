@@ -556,6 +556,7 @@ function goStep(n){
   var needsTransition = (currentId==='step-1'&&targetId==='step-2') || (currentId==='step-2'&&targetId==='step-3');
   
   function doSwitch(){
+    if (currentId === 'step-2' && targetId !== 'step-2' && window.JYTarotSession) window.JYTarotSession.invalidate();
     document.querySelectorAll('.step').forEach(function(s){
       s.classList.toggle('active', s.id === targetId);
     });
@@ -996,7 +997,9 @@ function _checkToolQuota(tool) {
 
 // ★ v28：問題品質引導——太模糊的問題提示用戶補充
 function _checkQuestionQuality(question) {
-  if (!question || question.length <= 4) return '問題太短了，多說一些讓靜月看得更準。例如：「我跟他最近冷戰，他還在乎我嗎？」';
+  if (!question) return '寫下你最想釐清的那件事。';
+  if (/^(誰|誰會|有誰|誰在)(愛我|喜歡我|暗戀我)[？?。！!]*$/.test(question.trim())) return '你想了解特定對象的互動，還是未來的感情機會？可以補充目前的關係與最近發生的事。牌面能協助整理線索，無法直接確認某人的身分或內心。';
+  if (question.length <= 4) return '可以補充你目前的情況，以及最想釐清的事；也可以直接用原問題抽牌。';
   // 純 yes/no 但沒有背景
   if (question.length <= 10 && /嗎|呢|？/.test(question)) return '可以多說一些背景嗎？比如：對方是什麼關係、現在卡在哪裡、你在猶豫什麼——背景越具體，解讀越精準。';
   // 太廣泛
@@ -7997,10 +8000,7 @@ function jyTarotFinishAutodraw(drawn, sid, def){
   if (btn) btn.disabled = false;
 
   try { if (typeof showSpread === 'function') showSpread(); } catch(e) { console.warn('[Tarot v80.36] showSpread failed:', e); }
-  setTimeout(function(){
-    var act = document.querySelector('#step-2 .actions');
-    try { if (act) act.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e) {}
-  }, 120);
+  if(window.JY_ATELIER && window.JY_ATELIER.syncTarot)window.JY_ATELIER.syncTarot();
 }
 
 function jyTarotBuildDraw(def, sid){
@@ -8101,6 +8101,7 @@ window.initTarotDeck = function(){
   }
   repaint();
   if(window.JYTarotReading)window.JYTarotReading.syncControls();
+  if(window.JY_ATELIER && window.JY_ATELIER.syncTarot)window.JY_ATELIER.syncTarot();
   setTimeout(repaint, 0);
   setTimeout(repaint, 180);
   return ret;
@@ -8133,7 +8134,16 @@ window.autoDraw = function(){
     if (typeof _oldAutoDrawV8035 === 'function') return _oldAutoDrawV8035.apply(this, arguments);
     return;
   }
-  jyTarotFinishAutodraw(drawn, sid, def);
+  var epoch=window.JYTarotSession ? window.JYTarotSession.epoch() : 0;
+  function finish(){
+    if(window.JYTarotSession && epoch !== window.JYTarotSession.epoch())return;
+    pickAnimating=false;
+    jyTarotFinishAutodraw(drawn, sid, def);
+  }
+  if(window.JYRitual){
+    pickAnimating=true;
+    window.JYRitual.play('tarot', {onComplete:finish,onCancel:function(){pickAnimating=false;if(window._atelierReturnToInput)window._atelierReturnToInput();}});
+  }else finish();
 };
 
 jyTarotHardfixCSS();

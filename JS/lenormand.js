@@ -954,6 +954,7 @@ window._lenormandShare = function() {
 };
 
 window._lenormandClose = function() {
+    if(window.JYRitual)window.JYRitual.cancel('lenormand');
   var w = _getWrap();
   w.style.display = 'none';
 
@@ -968,6 +969,7 @@ window._lnSetSpread = function(id) {
 };
 
 window._lnDoDraw = function() {
+    if(window.JYRitual && window.JYRitual.isActive())return;
   var qEl = document.getElementById('ln-q');
   _lnQuestion = qEl ? qEl.value.trim() : '';
   if (!_lnQuestion) { alert('請先輸入一個明確問題。時間範圍只有在你需要限定期限時才必填。'); return; }
@@ -999,9 +1001,14 @@ window._lnDoDraw = function() {
   }
   if (_lnGender) _lnSigGender = _lnGender; // v3.1：聲明性別優先
   _lastPrompt = buildPrompt(_lnQuestion, _lnDrawn, _lnResolved, _lnSigGender, _lnGender);
-  _lnPhase = 'result';
-  _render();
-  _getWrap().scrollTop = 0;
+  function reveal(){
+    _lnPhase = 'result'; _render(); _getWrap().scrollTop = 0;
+  }
+  if(window.JYRitual)window.JYRitual.play('lenormand',{
+    onComplete:reveal,
+    onCancel:function(){_lnDrawn=[];_lastPrompt='';}
+  });
+  else reveal();
 };
 
 // v3.0：指示牌選擇
@@ -1140,6 +1147,8 @@ window._lnPrimeAICopy = function(ev, link) {
   }
 };
 window._lnReset = function() {
+  if(window.JYRitual)window.JYRitual.cancel('lenormand');
+  _lnDrawn=[];_lastPrompt='';
   _lnPhase = 'input';
   _render();
   _getWrap().scrollTop = 0;
