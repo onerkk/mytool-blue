@@ -5674,6 +5674,7 @@ window._v64bTarotShuffleRitual = function(deckWrap, onComplete) {
   if (window.JYRitual) {
     var epoch = window.JYTarotSession ? window.JYTarotSession.epoch() : 0;
     return window.JYRitual.play('tarot', {
+      variant:'shuffle', question:(typeof S !== 'undefined' && S.form && S.form.question) || '', finishLabel:'開始選牌',
       onComplete: function(){ if (!window.JYTarotSession || epoch === window.JYTarotSession.epoch()) onComplete(); },
       onCancel: function(){ if (typeof window._atelierReturnToInput === 'function') window._atelierReturnToInput(); }
     });

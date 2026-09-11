@@ -8142,7 +8142,11 @@ window.autoDraw = function(){
   }
   if(window.JYRitual){
     pickAnimating=true;
-    window.JYRitual.play('tarot', {onComplete:finish,onCancel:function(){pickAnimating=false;if(window._atelierReturnToInput)window._atelierReturnToInput();}});
+    window.JYRitual.play('tarot', {
+      variant:'deal', question:(S.form && S.form.question) || '', spreadName:def.name || def.title || '',
+      cards:drawn.map(function(c){return {id:c.id,name:c.name,image:getTarotCardImage(c),isUp:c.isUp};}),
+      onComplete:finish,onCancel:function(){pickAnimating=false;if(window._atelierReturnToInput)window._atelierReturnToInput();}
+    });
   }else finish();
 };
 

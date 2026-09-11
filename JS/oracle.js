@@ -1023,6 +1023,7 @@ window._oracleStartPray=function(){
   if(window.JYRitual && window.JYRitual.isActive())return;
   _phase='praying';_holy=0;_throwResult=null;_allowResult=null;_render();
   if(window.JYRitual)return window.JYRitual.play('oracle',{
+    question:_qText,
     onComplete:function(){_phase='allowAsk';_render();},
     onCancel:function(){_phase='guide';_render();}
   });

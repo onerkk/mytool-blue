@@ -1005,6 +1005,8 @@ window._lnDoDraw = function() {
     _lnPhase = 'result'; _render(); _getWrap().scrollTop = 0;
   }
   if(window.JYRitual)window.JYRitual.play('lenormand',{
+    question:_lnQuestion, spreadName:sp.name+'（'+sp.count+' 張）',
+    cards:_lnDrawn.map(function(c){return {id:c.id,name:c.name,image:IMG_MAP[c.id]||''};}),
     onComplete:reveal,
     onCancel:function(){_lnDrawn=[];_lastPrompt='';}
   });
