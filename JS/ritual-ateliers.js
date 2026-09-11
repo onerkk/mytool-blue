@@ -21,7 +21,7 @@
   }
   function fan(){
     var h='<div class="jr-fan" aria-hidden="true">';
-    for(var i=0;i<9;i++)h+='<span class="jr-card" style="--i:'+i+';--offset:'+(i-4)+'"><img src="img/card-back.jpg" alt=""></span>';
+    for(var i=0;i<9;i++)h+='<span class="jr-card" style="--i:'+i+';--offset:'+(i-4)+'"><img src="img/card-back.jpg" alt="" draggable="false"></span>';
     return h+'</div>';
   }
   function play(kind,options){
@@ -45,7 +45,7 @@
     dialog.setAttribute('data-motion',reduced?'still':'full');dialog.setAttribute('aria-labelledby','jr-title');dialog.setAttribute('aria-describedby','jr-note');
     var interaction='';
     if(mode==='cards'){
-      interaction='<div class="jr-reveal-row">'+cards.map(function(c,i){return '<button type="button" class="jr-reveal" data-card-index="'+i+'" aria-label="揭開第 '+(i+1)+' 張牌" aria-pressed="false"><span class="jr-flip"><span class="jr-back"><img src="img/card-back.jpg" alt=""></span><span class="jr-front"></span></span><span class="jr-card-label">'+String(i+1).padStart(2,'0')+' · 輕觸揭牌</span></button>';}).join('')+'</div>';
+      interaction='<div class="jr-reveal-row">'+cards.map(function(c,i){return '<button type="button" class="jr-reveal" data-card-index="'+i+'" aria-label="揭開第 '+(i+1)+' 張牌" aria-pressed="false"><span class="jr-flip"><span class="jr-back"><img src="img/card-back.jpg" alt="" draggable="false"></span><span class="jr-front"></span></span><span class="jr-card-label">'+String(i+1).padStart(2,'0')+' · 輕觸揭牌</span></button>';}).join('')+'</div>';
     }else if(mode==='seals'){
       interaction='<div class="jr-seals">'+cfg.seals.map(function(label,i){return '<button type="button" class="jr-seal" data-seal-index="'+i+'" aria-pressed="false" aria-label="點亮'+label+'座標"><span>'+label+'</span><small>'+String(i+1).padStart(2,'0')+'</small></button>';}).join('')+'</div>';
     }else{
@@ -56,7 +56,16 @@
     var portrait='<div class="jr-actor-fallback" aria-hidden="true">';
     for(var pi=0;pi<4;pi++)portrait+='<span class="jr-actor-pose" data-pose="'+pi+'" style="background-image:url(assets/ui/'+actor[0]+'.webp);background-position:'+(pi*100/3)+'% 0"></span>';
     portrait+='</div>';
-    dialog.innerHTML='<div class="jr-shell"><div class="jr-world" aria-hidden="true"><img class="jr-world-image" src="assets/ui/ritual-'+cfg.world+'.webp" alt=""><div class="jr-light"></div><div class="jr-vignette"></div><img class="jr-mist" src="img/oracle/oracle-smoke.png" alt=""><div class="jr-dust"></div><div class="jr-flash"></div></div><header class="jr-header"><button type="button" class="jr-cancel">← 返回</button><span>靜月之光<small>JINGYUE</small></span><button type="button" class="jr-sound" aria-pressed="false">聲音：關</button></header><div class="jr-place"><span>'+cfg.en+'</span><p>'+cfg.room+'</p></div><div class="jr-stage">'+portrait+'</div><div class="jr-playfield">'+constellation+interaction+'</div><section class="jr-dialogue"><div class="jr-speaker"><span class="jr-speaker-name">'+actor[1]+'</span><span>'+actor[2]+'</span><i aria-hidden="true"></i></div><p class="jr-eyebrow">'+cfg.name+' · <span class="jr-chapter">入境</span></p><div class="jr-text" aria-live="polite" aria-atomic="true"><h2 id="jr-title">'+cfg.title+'</h2><p id="jr-note">'+cfg.intro+'</p></div><div class="jr-intent" role="group" aria-label="這次想如何探索"><button type="button" data-intent="clarity" aria-pressed="true">我想看清現況</button><button type="button" data-intent="action" aria-pressed="false">我想找到下一步</button></div>'+(question?'<details class="jr-question"><summary>此刻，我想問…</summary><p>'+esc(question)+'</p></details>':'')+'<p class="jr-hint" role="status"></p><button type="button" class="jr-next">走進'+cfg.room+' <span aria-hidden="true">→</span></button><footer class="jr-footer"><ol aria-label="儀式進度"><li class="is-current">相遇</li><li>共鳴</li><li>啟程</li></ol><button type="button" class="jr-skip">跳過儀式 →</button></footer></section></div>';
+    dialog.innerHTML='<div class="jr-shell">'+
+      '<div class="jr-world" aria-hidden="true"><img class="jr-world-image" src="assets/ui/ritual-'+cfg.world+'.webp" alt=""><div class="jr-light"></div><div class="jr-vignette"></div><img class="jr-mist" src="img/oracle/oracle-smoke.png" alt=""><div class="jr-dust"></div><div class="jr-flash"></div></div>'+
+      '<header class="jr-header"><button type="button" class="jr-cancel">← 返回</button><span>靜月之光<small>JINGYUE</small></span><button type="button" class="jr-sound" aria-pressed="false">聲音：關</button></header>'+
+      '<section class="jr-brief"><div class="jr-speaker"><span class="jr-speaker-name">'+actor[1]+'</span><span>'+actor[2]+'</span></div><p class="jr-eyebrow">'+cfg.room+' · <span class="jr-chapter">入境</span></p>'+
+      '<div class="jr-text" aria-live="polite" aria-atomic="true"><h2 id="jr-title">'+cfg.title+'</h2><p id="jr-note">'+cfg.intro+'</p></div>'+
+      '<div class="jr-intent" role="group" aria-label="這次想如何探索"><button type="button" data-intent="clarity" aria-pressed="true">看清現況</button><button type="button" data-intent="action" aria-pressed="false">找到下一步</button></div>'+
+      (question?'<details class="jr-question"><summary>回看我的問題</summary><p>'+esc(question)+'</p></details>':'')+'</section>'+
+      '<div class="jr-stage">'+portrait+'</div><div class="jr-playfield">'+constellation+interaction+'</div>'+
+      '<section class="jr-dialogue"><p class="jr-hint" role="status"></p><button type="button" class="jr-next">走進'+cfg.room+' <span aria-hidden="true">→</span></button>'+
+      '<footer class="jr-footer"><ol aria-label="儀式進度"><li class="is-current">相遇</li><li>共鳴</li><li>啟程</li></ol><button type="button" class="jr-skip">跳過儀式 →</button></footer></section></div>';
     var resolve,finished=new Promise(function(r){resolve=r;});
     var handle={finished:finished,cancel:function(){finish(false,false);},skip:function(){finish(true,false);}};
     var entry={kind:kind,handle:handle};
@@ -74,7 +83,7 @@
     function suspendHome(value){if(root.JYCinemaUI&&typeof root.JYCinemaUI.suspendHome==='function'){try{root.JYCinemaUI.suspendHome(value);}catch(error){warn('home',error);}}}
     function focus(el){if(!el||typeof el.focus!=='function')return;try{el.focus({preventScroll:true});}catch(error){try{el.focus();}catch(ignored){}}}
     function schedule(fn,ms){var id=root.setTimeout(function(){if(!settled)fn();},ms);timers.push(id);return id;}
-    function stopHold(){holding=false;gesture=null;travel=0;if(frame)root.cancelAnimationFrame(frame);frame=0;if(phase===1){dialog.style.setProperty('--hold','0');stageCall('setPower',0);}dialog.classList.remove('is-holding');}
+    function stopHold(){holding=false;gesture=null;travel=0;if(frame)root.cancelAnimationFrame(frame);frame=0;if(phase===1){dialog.style.setProperty('--hold','0');dialog.style.setProperty('--gesture-x','0px');dialog.style.setProperty('--gesture-y','0px');dialog.style.setProperty('--gesture-tilt','0deg');stageCall('setPower',0);}dialog.classList.remove('is-holding');}
     function disposeAudio(){if(!audio)return;var ctx=audio;audio=null;audioOn=false;try{var p=ctx.close();if(p&&p.catch)p.catch(function(){});}catch(e){}}
     function bell(){if(!audioOn||!audio||doc.hidden)return;try{var t=audio.currentTime,g=audio.createGain(),o=audio.createOscillator();o.type='sine';o.frequency.setValueAtTime(kind==='lenormand'?659.25:523.25,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.035,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+1.5);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+1.6);}catch(e){}}
     function toggleSound(){
@@ -127,10 +136,10 @@
       dialog.querySelectorAll('.jr-footer li').forEach(function(li,i){li.classList.toggle('is-current',i===Math.min(value,2));li.classList.toggle('is-done',i<Math.min(value,2));});
       dialog.querySelectorAll('.jr-playfield button').forEach(function(btn){btn.disabled=value!==1||btn.getAttribute('aria-pressed')==='true';});
       if(value===1){
-        setCopy(dealing?'你選擇的牌，即將相遇。':cfg.focus,mode==='cards'?'輕觸每一張牌，讓本次抽牌的線索逐一出現。':mode==='hold'?(gestureCopy[kind]||cfg.guide)+'。讓演出隨你的手勢展開。':cfg.guide);
+        setCopy(dealing?'你選擇的牌，即將相遇。':cfg.focus,mode==='cards'?'輕觸每一張牌，讓本次抽牌的線索逐一出現。':mode==='hold'?(gestureCopy[kind]||cfg.guide)+'。牌組會跟隨你的手勢移動。':cfg.guide);
         if(question)dialog.querySelector('.jr-question').open=false;
         hint.textContent=mode==='cards'?((options.cards||[]).length>3?'先揭開本次牌陣前 3 張，其餘將在完整牌陣呈現。':'按照你的節奏，親手揭開本次的牌。'):mode==='seals'?'已點亮 0 / '+cfg.seals.length:'長按約 1.6 秒，或使用下方按鈕。';
-        next.disabled=mode!=='hold';next.textContent=mode==='hold'?'點一下啟動 →':mode==='cards'?'等待你揭開牌面':'等待你點亮座標';
+        next.disabled=mode!=='hold';next.textContent=mode==='hold'?'直接啟動儀式 →':mode==='cards'?'等待你揭開牌面':'等待你點亮座標';
         if(mode==='hold')focus(next);else focus(dialog.querySelector(mode==='cards'?'.jr-reveal':'.jr-seal'));
       }else if(value===2){
         setCopy(cfg.action,'');hint.textContent='';next.disabled=true;next.textContent='光正在展開…';if(question)dialog.querySelector('.jr-question').open=false;
@@ -142,9 +151,38 @@
     function awaken(){if(settled||phase!==1)return;stopHold();dialog.style.setProperty('--hold','1');updatePhase(2);bell();schedule(function(){updatePhase(3);},reduced?0:1900);}
     function holdTick(){if(!holding||settled||phase!==1)return;var progress=Math.min(1,Math.max(travel/180,(Date.now()-holdAt)/1600));dialog.style.setProperty('--hold',String(progress));stageCall('setPower',progress);if(progress>=1){awaken();return;}frame=root.requestAnimationFrame(holdTick);}
     if(touch){
-      touch.onpointerdown=function(event){if(phase!==1||settled||event.isPrimary===false||event.button>0)return;holding=true;holdAt=Date.now();travel=0;turn=0;gesture={x:event.clientX||0,y:event.clientY||0};dialog.classList.add('is-holding');try{touch.setPointerCapture(event.pointerId);}catch(e){}frame=root.requestAnimationFrame(holdTick);};
-      touch.onpointermove=function(event){if(!holding||!gesture||phase!==1)return;var x=event.clientX||0,y=event.clientY||0,dx=x-gesture.x,dy=y-gesture.y;travel+=kind==='oracle'?Math.abs(dy):kind==='ziwei'?Math.hypot(dx,dy):Math.abs(dx);turn+=(kind==='oracle'?dy:dx)/90;gesture={x:x,y:y};stageCall('setTurn',turn);};
-      touch.onpointerup=touch.onpointercancel=touch.onlostpointercapture=stopHold;
+      // The surface owns this gesture. Pointer capture keeps a drag alive
+      // outside the fan; CSS touch-action prevents native pan from cancelling it.
+      touch.onpointerdown=function(event){
+        if(phase!==1||settled||holding||event.isPrimary===false||event.button>0)return;
+        if(event.cancelable)event.preventDefault();
+        holding=true;holdAt=Date.now();travel=0;turn=0;
+        gesture={x:event.clientX||0,y:event.clientY||0,startX:event.clientX||0,startY:event.clientY||0,id:event.pointerId};
+        dialog.classList.add('is-holding');
+        try{touch.setPointerCapture(event.pointerId);}catch(e){}
+        frame=root.requestAnimationFrame(holdTick);
+      };
+      touch.onpointermove=function(event){
+        if(!holding||!gesture||phase!==1||event.isPrimary===false||event.pointerId!==gesture.id)return;
+        if(event.cancelable)event.preventDefault();
+        var x=event.clientX||0,y=event.clientY||0,dx=x-gesture.x,dy=y-gesture.y;
+        travel+=kind==='oracle'?Math.abs(dy):kind==='ziwei'?Math.hypot(dx,dy):Math.abs(dx);
+        turn+=(kind==='oracle'?dy:dx)/90;
+        gesture.x=x;gesture.y=y;
+        // Same immediate feedback with and without a GPU scene.
+        var offset=Math.max(-65,Math.min(65,x-gesture.startX));
+        dialog.style.setProperty('--gesture-x',offset+'px');
+        dialog.style.setProperty('--gesture-y',(kind==='oracle'?Math.max(-35,Math.min(35,y-gesture.startY)):0)+'px');
+        dialog.style.setProperty('--gesture-tilt',(offset/7)+'deg');
+        stageCall('setTurn',turn);
+        holdTickNow();
+      };
+      function holdTickNow(){var progress=Math.min(1,travel/180);dialog.style.setProperty('--hold',String(progress));stageCall('setPower',progress);}
+      touch.onpointerup=touch.onpointercancel=touch.onlostpointercapture=function(event){
+        if(gesture&&event.pointerId!==undefined&&event.pointerId!==gesture.id)return;
+        stopHold();
+      };
+      touch.ondragstart=function(event){event.preventDefault();};
       touch.onclick=function(event){if(event.detail===0)awaken();};
     }
     dialog.querySelectorAll('.jr-seal').forEach(function(btn,i){btn.onclick=function(){

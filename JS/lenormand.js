@@ -817,6 +817,7 @@ function _render() {
   var _qNow = document.getElementById('ln-q');
   if (_qNow) _lnQuestion = _qNow.value;
   var w = _getWrap();
+    var savedScroll=w.getAttribute('data-flow-view')===_lnPhase?w.scrollTop:0;w.setAttribute('data-flow-view',_lnPhase);
   var h = '<div class="ln-container">';
   h += '<nav class="at-room-nav" aria-label="頁面導覽"><button type="button" class="at-back ln-back" onclick="' + (_lnPhase === 'input' ? '_lenormandClose()' : '_lnReset()') + '">← ' + (_lnPhase === 'input' ? '返回首頁' : '返回修改') + '</button>' + (_lnPhase !== 'input' ? '<button type="button" class="at-home-link" onclick="_lenormandClose()">首頁</button>' : '') + '<a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></nav>';
   h += '<div class="ln-header at-tool-header"><span class="at-art" data-art="lenormand" aria-hidden="true"></span><div><span class="at-eyebrow">PETIT LENORMAND · 36 CARDS</span><h1>雷諾曼</h1><p>把牌與牌連成一句話，釐清生活的線索。</p></div></div>';
@@ -905,6 +906,7 @@ function _render() {
   h += '<div class="ln-footer">靜月之光 ・ jingyue.uk<br>Petit Lenormand 雷諾曼牌</div></div>';
   w.innerHTML = h;
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
+    w.scrollTop=savedScroll;
   var input=document.getElementById('ln-q');
   if(input){input.addEventListener('input',_lnUpdateSpreadPreview);_lnUpdateSpreadPreview();}
 }

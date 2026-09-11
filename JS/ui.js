@@ -917,37 +917,10 @@ function pickTool(tool, options) {
   }
   if (cta) cta.style.display = 'block';
 
-  // CTA 按鈕：七維度/開鑰 → sticky 在螢幕底部，塔羅 → 正常位置
+  // A selection updates this form in place. Only explicit navigation or
+  // validation may move the viewport; choosing a tool must not skip content.
   var ctaWrap = btn ? btn.parentElement : null;
-  if (ctaWrap) {
-    if (tool === 'tarot') {
-      ctaWrap.style.cssText = 'flex-direction:column;gap:6px;padding:0 var(--sp-md)';
-    } else {
-      ctaWrap.style.cssText = 'flex-direction:column;gap:6px;padding:12px var(--sp-md);position:sticky;bottom:0;z-index:99;background:linear-gradient(transparent,rgba(26,10,10,.95) 20%);padding-top:1.5rem';
-    }
-  }
-
-  // 滾動：塔羅/OOTK→CTA(出生資料卡已隱藏),七維度→出生資料表單
-  // v69.9.4 修正:OOTK v69.7 起把出生資料卡 hide,但這裡仍嘗試滾到隱藏的卡片,
-  //              導致用戶看不到「開始五層深潛」按鈕在哪。改成跟塔羅一樣滾到 CTA。
-  setTimeout(function() {
-    if (options && options.stayAtQuestion) return;
-    if (tool === 'tarot' || tool === 'ootk') {
-      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      // 七維度:滾到出生資料卡片
-      var birthCard = null;
-      if (inputScreen) {
-        var cards = inputScreen.querySelectorAll('.card');
-        cards.forEach(function(c) {
-          var t = c.querySelector('.card-title');
-          if (t && t.textContent.indexOf('出生資料') >= 0) birthCard = c;
-        });
-      }
-      if (birthCard) birthCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, 200);
+  if (ctaWrap) ctaWrap.style.cssText = 'flex-direction:column;gap:8px';
 
   // 限流檢查（非阻塞，只更新 badge）
   _checkToolQuota(tool);
@@ -6118,11 +6091,10 @@ showAuraResult = function(){
     var textarea = document.getElementById('f-question');
     if (textarea) {
       textarea.placeholder = '例如：最近我們聯絡變少了，我該如何開啟一次坦誠的對話？';
-      textarea.focus();
     }
 
     inputScreen.style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   // _pickTypeNew 已移除 — AI 自動從問題判斷類型
@@ -6542,7 +6514,7 @@ showAuraResult = function(){
         var _hint = document.getElementById('pick-hint'); if (_hint) _hint.style.display = 'none';
         var _countEl = document.getElementById('t-remain-picked'); if (_countEl) _countEl.textContent = String(drawnCards.length);
         try { if (typeof showSpread === 'function') showSpread(); } catch(_e){}
-        setTimeout(function(){ var act=document.querySelector('#step-2 .actions'); if(act) act.scrollIntoView({behavior:'smooth', block:'center'}); }, 300);
+        // Keep the reading position; the next action is beside the card table.
         return;
       }
     }

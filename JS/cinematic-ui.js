@@ -2,7 +2,7 @@
  * original validation/handlers. This layer never changes chart or draw data. */
 (function(root){
  'use strict';
- var steps=Object.create(null),homeScene=null,homeObserver=null,homeVisible=false,homeSuspended=false,homeHost=null;
+ var steps=Object.create(null),expanded=Object.create(null),homeScene=null,homeObserver=null,homeVisible=false,homeSuspended=false,homeHost=null;
  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
  function cast(kind){return root.JYCinema&&root.JYCinema.cast[kind];}
  function portrait(cfg){return '<div class="jc-portrait" aria-hidden="true">'+[0,1,3].map(function(n){return '<span data-jc-pose="'+n+'" style="background-image:url(assets/ui/'+cfg.actor+'.webp);background-position:'+(n*100/3)+'% 0"></span>';}).join('')+'</div>';}
@@ -15,18 +15,19 @@
  }
  function enhance(container){
   if(!container||!container.querySelector)return;
+  handoff(container);
   var header=container.querySelector('.at-tool-header'),art=header&&header.querySelector('[data-art]');
   var kind=art&&art.getAttribute('data-art'),cfg=cast(kind);if(!cfg)return;
   addGuide(header,kind);
   var selector={lenormand:'.ln-section',bazi:'.bzx-section',meihua:'.mhx-section',ziwei:'.zw-in-sec',compat:'.bzs-card'}[kind];
   var submit=container.querySelector('.ln-draw-btn,.bzx-cast-btn,.mhx-cast-btn,.zw-in-go,[data-act="cast-compat"],[data-act="cast-single"],[data-act="cast-personality"]');
   var sections=selector?Array.from(container.querySelectorAll(selector)):[];
-  if(!submit||sections.length<2){delete steps[kind];header.setAttribute('data-guide-state','result');results(container);return;}
+  if(!submit||sections.length<2){delete steps[kind];delete expanded[kind];header.setAttribute('data-guide-state','result');results(container);return;}
   if(container.querySelector('.jc-flow'))return;
   // A rerender (changing a spread/gender/method) resumes the same chapter.
   var groups=kind==='lenormand'?[sections.slice(0,1),sections.slice(1,2),sections.slice(2)]:sections.map(function(s){return [s];});
   groups=groups.filter(function(g){return g.length;});
-  var current=Math.min(steps[kind]||0,groups.length-1),all=false;
+  var current=Math.min(steps[kind]||0,groups.length-1),all=!!expanded[kind];
   var nav=document.createElement('nav');nav.className='jc-flow';nav.setAttribute('aria-label','填寫進度');
   var labels=kind==='lenormand'?['心裡的問題','選擇牌陣','個人設定']:kind==='compat'?['關係情境','甲方資料','乙方資料','關係問題']:kind==='bazi'?['出生資料','心裡的問題']:kind==='ziwei'?['心裡的問題','出生資料']:['心裡的問題','起卦方式'];
   nav.innerHTML='<div class="jc-flow-steps">'+groups.map(function(g,i){return '<button type="button" data-jc-step="'+i+'"><b>'+String(i+1).padStart(2,'0')+'</b><span>'+esc(labels[i]||'核對資料')+'</span></button>';}).join('')+'</div><div class="jc-flow-status" aria-live="polite"></div>';
@@ -35,7 +36,7 @@
   submit.before(actions);
   var oldFlow=container.querySelector('.at-flow-guide');if(oldFlow)oldFlow.hidden=true;
   function update(focus){
-   steps[kind]=current;
+   steps[kind]=current;expanded[kind]=all;
    groups.forEach(function(g,i){g.forEach(function(s){s.classList.add('jc-pane');s.hidden=!all&&i!==current;});});
    nav.querySelectorAll('[data-jc-step]').forEach(function(b,i){b.setAttribute('aria-current',i===current?'step':'false');});
    nav.querySelector('.jc-flow-status').textContent=all?'所有欄位已展開，可自由核對。':'第 '+(current+1)+' 步，共 '+groups.length+' 步 · '+(labels[current]||'核對資料');
@@ -44,11 +45,11 @@
    actions.querySelector('.jc-continue').hidden=current===groups.length-1||all;
    actions.querySelector('.jc-all').textContent=all?'回到逐步填寫':'展開全部欄位';
    submit.hidden=!all&&current!==groups.length-1;
-   if(focus){var first=groups[current][0];first.tabIndex=-1;first.focus({preventScroll:true});first.scrollIntoView({block:'start',behavior:'auto'});}
+   if(focus){nav.tabIndex=-1;nav.focus({preventScroll:true});nav.scrollIntoView({block:'start',behavior:'instant'});}
   }
   actions.querySelector('.jc-previous').onclick=function(){current=Math.max(0,current-1);update(true);};
   actions.querySelector('.jc-continue').onclick=function(){current=Math.min(groups.length-1,current+1);update(true);};
-  actions.querySelector('.jc-all').onclick=function(){all=!all;update(false);};
+  actions.querySelector('.jc-all').onclick=function(){all=!all;update(true);};
   nav.querySelectorAll('[data-jc-step]').forEach(function(btn){btn.onclick=function(){current=Number(btn.getAttribute('data-jc-step'));all=false;update(true);};});
   // Existing validation can report an error in any section. Reveal all before
   // invoking it so an invalid date/location can never be trapped off-screen.
@@ -57,7 +58,23 @@
  }
  function inputGuide(){
   var input=document.getElementById('input-screen');if(!input)return;
-  var header=input.querySelector('.at-input-head');addGuide(header,input.getAttribute('data-atelier-mode')==='ootk'?'ootk':'tarot');
+  var header=input.querySelector('.at-input-head'),isKey=input.getAttribute('data-atelier-mode')==='ootk';
+  addGuide(header,isKey?'ootk':'tarot');
+  var title=header&&header.querySelector('h1');if(title)title.textContent=isKey?'循著問題，深入探索。':'把心事，說清楚。';
+ }
+ // Keep provider nodes (and their bound handlers) intact. Secondary providers
+ // remain reachable through native details; a rerender cannot duplicate them.
+ function handoff(container){
+  if(!container||!container.querySelectorAll)return;
+  container.querySelectorAll('.jy-ex-ai-grid,.ln-ai-grid,.bzx-ai-grid,.mhx-ai-grid,.zw-ai-grid,.orc-ai-grid,.bzs-ai').forEach(function(grid){
+   if(grid.getAttribute('data-flow-providers'))return;
+   grid.setAttribute('data-flow-providers','true');
+   var items=Array.from(grid.children);if(items.length<=4)return;
+   var extra=document.createElement('details');extra.className='jf-more-ai';
+   var label=document.createElement('summary');label.textContent='其他 AI 工具（'+(items.length-3)+'）';extra.appendChild(label);
+   var more=document.createElement('div');more.className=grid.className+' jf-more-grid';more.setAttribute('data-flow-providers','true');
+   items.slice(3).forEach(function(item){more.appendChild(item);});extra.appendChild(more);grid.after(extra);
+  });
  }
  function results(container){
   if(!container||!container.querySelector||container.querySelector('.jc-reading-close'))return;
@@ -67,6 +84,7 @@
   if(target){var parent=target.closest('.bzs-card')||target;parent.after(note);}else container.appendChild(note);
  }
  function oracle(container,phase){
+  handoff(container);
   if(!container||container.querySelector('.jc-oracle-companion'))return;
   if(['praying','allowThrowing','throwing','rising','shaking','shengjia','todayClosed'].indexOf(phase)>=0)return;
   var area=container.querySelector('.orc-fade');if(!area)return;
@@ -110,6 +128,6 @@
   // Older browsers keep an illustrated entrance rather than a permanent render loop.
  }
  function start(){inputGuide();home();var result=document.getElementById('step-tarot');if(result)results(result);document.addEventListener('visibilitychange',syncHome);}
- root.JYCinemaUI={enhance:enhance,home:home,input:inputGuide,oracle:oracle,results:results,suspendHome:function(value){homeSuspended=!!value;syncHome();}};
+ root.JYCinemaUI={enhance:enhance,handoff:handoff,home:home,input:inputGuide,oracle:oracle,results:results,suspendHome:function(value){homeSuspended=!!value;syncHome();}};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })(window);

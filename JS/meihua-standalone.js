@@ -162,6 +162,7 @@
   // ════════════════════════════════════════════════════════
   function _render() {
     var w = _getWrap();
+    var savedScroll=w.getAttribute('data-flow-view')===_mhPhase?w.scrollTop:0;w.setAttribute('data-flow-view',_mhPhase);
     var h = '<div class="mhx-container">';
     h += '<nav class="at-room-nav" aria-label="頁面導覽"><button type="button" class="at-back mhx-back" onclick="' + (_mhPhase === 'input' ? '_meihuaClose()' : '_mhReset()') + '">← ' + (_mhPhase === 'input' ? '返回首頁' : '返回修改') + '</button>' + (_mhPhase !== 'input' ? '<button type="button" class="at-home-link" onclick="_meihuaClose()">首頁</button>' : '') + '<a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></nav>';
     h += '<div class="mhx-header at-tool-header"><span class="at-art" data-art="meihua" aria-hidden="true"></span><div><span class="at-eyebrow">PLUM BLOSSOM I CHING</span><h1>梅花易數</h1><p>從本、互、變三象，梳理事情的進退。</p></div></div>';
@@ -219,6 +220,7 @@
     h += '<div class="mhx-footer">靜月之光 ・ jingyue.uk<br>梅花易數 ・ 體用占</div></div>';
     w.innerHTML = h;
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
+    w.scrollTop=savedScroll;
   }
 
   function _mhEscape(value) { return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }

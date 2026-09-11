@@ -5182,8 +5182,7 @@ enhanceTarot = function(tarot) {
       } catch (e) {}
       _w70.style.display = '';
       window.JY_renderExportPrompt('ootk', _w70);
-      // ★ v75.1：overlay 移除後確保結果頁滾到最上方
-      setTimeout(function() { try { window.scrollTo({top:0,behavior:'instant'}); } catch(e){} }, 100);
+      // goStep already positioned this explicit result transition at the top.
       return;
     }
 
@@ -5926,12 +5925,8 @@ function _placeShuffleBtn() {
     var hint = document.getElementById('pick-hint');
     if (hint) hint.innerHTML = '🌙 第一步：點「靜月為你洗牌」，洗牌後即可選牌';
 
-    if (!btn.dataset.jyScrolled) {
-      btn.dataset.jyScrolled = '1';
-      setTimeout(function(){
-        try { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
-      }, 90);
-    }
+    // Reposition the legacy button without moving the user's viewport.
+
   } finally {
     _jyPlacing = false;
   }

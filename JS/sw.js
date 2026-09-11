@@ -12,7 +12,8 @@
 // v66: 20260911ritual1 抽牌狀態隔離、七種儀式及手機抽牌導覽。
 // v69: 20260911cinema4 原創角色、WebGL2 場景及逐步填寫流程。
 // v70: 20260911shuffle5 洗牌原頁重試、儀式啟動回復及特效失敗保護。
-const CACHE_NAME = 'jy-main-v70';
+// v71: 20260911flow6 手勢、閱讀順序與共用控制元件更新。
+const CACHE_NAME = 'jy-main-v71';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

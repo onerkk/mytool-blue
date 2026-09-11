@@ -11,7 +11,11 @@
       var count=cards.length, target=def?def.count:3, complete=count===target;
       var dock=document.getElementById('tarot-draw-dock');
       if(!dock)return;
-      dock.setAttribute('data-phase',complete?'complete':window._deckIsShuffled?'choosing':'ready');
+      var phase=complete?'complete':window._deckIsShuffled?'choosing':'ready';
+      dock.setAttribute('data-phase',phase);
+      var room=document.getElementById('step-2');if(room)room.setAttribute('data-draw-phase',phase);
+      if(phase==='choosing'&&window.JYTarotDeckBrowse)window.JYTarotDeckBrowse.move(0);
+      document.querySelectorAll('[data-deck-browse]').forEach(function(button){button.disabled=phase!=='choosing';});
       document.getElementById('tarot-dock-count').textContent=count+' / '+target+' 張';
       document.getElementById('tarot-dock-step').textContent=complete?'本次牌陣已完成':window._deckIsShuffled?'還差 '+(target-count)+' 張':'第一步 · 靜心洗牌';
       document.getElementById('tarot-dock-action').textContent=complete?'取得解讀提示詞':window._deckIsShuffled?(count?'快速補滿':'快速抽牌'):'開始洗牌';
@@ -44,7 +48,7 @@
     enhance: function (root) {
       if (!root || !root.querySelectorAll) return;
       root.querySelectorAll('.ln-spread-btn,.mhx-method-btn,.bzx-gbtn,.bzx-dbtn,.zw-in-pill,.bzs-chip,.bzs-choice-btn,.bzs-tab').forEach(function (button) {
-        button.setAttribute('aria-pressed', String(button.classList.contains('active') || button.classList.contains('on')));
+        button.setAttribute('aria-pressed', String(button.classList.contains('active') || button.classList.contains('on') || button.classList.contains('selected') || button.classList.contains('sel')));
       });
       root.querySelectorAll('.bzs-field,.zw-in-field').forEach(function (field) {
         var label = field.querySelector('label'), control = field.querySelector('button,input:not([type="hidden"]),select,textarea');

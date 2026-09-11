@@ -226,8 +226,7 @@ function showMH(r){
     <p><strong>卦辭：</strong>${r.ben.j}</p><p><strong>解讀：</strong>${r.ben.m}</p>
     <p><strong>動爻：</strong>第 ${r.dong} 爻</p><p class="mt-sm"><strong>變卦：</strong>${r.bian.m}</p>`;
   document.getElementById('mh-result').classList.remove('hidden');
-  // 梅花起卦完成 → 自動滾動到「下一步：塔羅牌」按鈕
-  setTimeout(function(){ var act=document.querySelector('#step-1 .actions'); if(act) act.scrollIntoView({behavior:'smooth',block:'center'}); }, 350);
+  // Keep the newly revealed hexagrams in normal reading order.
   // 起卦成功後鎖定所有起卦按鈕
   lockMhButtons();
 }
@@ -2924,6 +2923,7 @@ let pickAnimating=false;
 var _tarotEpoch = 0;
 function invalidateTarotDraw() {
   _tarotEpoch++;
+  if (_deck3dCleanup) _deck3dCleanup();
   pickAnimating = false;
   if (_deck3dRAF) { cancelAnimationFrame(_deck3dRAF); _deck3dRAF = null; }
   document.querySelectorAll('.tarot-fly-card,.tarot-particle').forEach(function(el){ el.remove(); });
@@ -3055,7 +3055,8 @@ function showTarotLocked(){
 // ═══════════════════════════════════════════════════════════════
 // 3D 雙排塔羅牌堆 — 對向漂移 + 弧形透視 + 粒子選牌
 // ═══════════════════════════════════════════════════════════════
-var _deck3dRAF=null, _deck3dPaused=false;
+var _deck3dRAF=null, _deck3dPaused=false, _deck3dCleanup=null;
+window.JYTarotDeckBrowse={move:function(){}};
 var _deck3dTopOff=0, _deck3dBotOff=0;
 var _deck3dDragging=false, _deck3dVelX=0;
 var _deck3dReducedMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -3139,39 +3140,8 @@ function initTarotDeck(){
     el.addEventListener('click',function(){ pickCard(parseInt(el.dataset.idx),el); });
   });
 
-  // ★ v28：3D 透視觸控修復——在 stage 容器層級捕獲 touch，手動找最近的牌
-  // 3D perspective+rotateX 讓瀏覽器的 hit-test 偏移，所以不能依賴個別牌的 touch 事件
-  (function(){
-    var _stgTouchMoved = false;
-    deckEl.addEventListener('touchstart', function(){ _stgTouchMoved = false; }, {passive:true});
-    deckEl.addEventListener('touchmove', function(){ _stgTouchMoved = true; }, {passive:true});
-    deckEl.addEventListener('touchend', function(e){
-      if (_stgTouchMoved) return;
-      var touch = e.changedTouches && e.changedTouches[0];
-      if (!touch) return;
-      var tx = touch.clientX, ty = touch.clientY;
-      // 遍歷所有未選牌，找觸控點最近的那張
-      var best = null, bestDist = 999999;
-      deckEl.querySelectorAll('.tarot-deck-card:not(.picked)').forEach(function(card){
-        var r = card.getBoundingClientRect();
-        // 擴大判定範圍（上下左右各 12px）
-        var cx = r.left + r.width/2;
-        var cy = r.top + r.height/2;
-        var dx = tx - cx, dy = ty - cy;
-        var dist = Math.sqrt(dx*dx + dy*dy);
-        // 只接受在牌面視覺範圍 + 20px 容差內的
-        if (tx >= r.left - 20 && tx <= r.right + 20 && ty >= r.top - 20 && ty <= r.bottom + 20) {
-          if (dist < bestDist) { bestDist = dist; best = card; }
-        }
-      });
-      if (best) {
-        e.preventDefault();
-        pickCard(parseInt(best.dataset.idx), best);
-      }
-    });
-  })();
-
-  // 啟動 3D 自動漂移
+  // One pointer controller owns both touch and mouse. No duplicate touchend
+  // handler: a dragged card must never become an accidental selection.
   _startDeck3D(half, deckShuffled.length-half);
 
   document.getElementById('t-remain-picked').textContent='0';
@@ -3266,78 +3236,68 @@ function initTarotDeck(){
   }
 }
 
-// ═══ 3D 漂移引擎 ═══
+// A still card table: render on movement, not an endless drifting frame loop.
 function _startDeck3D(topCount,botCount){
-  if(_deck3dRAF) cancelAnimationFrame(_deck3dRAF);
-  var topRow=document.getElementById('t-row-top');
-  var botRow=document.getElementById('t-row-bot');
-  if(!topRow||!botRow) return;
-
-  var cardW=76; // 72px card + 4px gap
-  var topLoopW=topCount*cardW;
-  var botLoopW=botCount*cardW;
-  var speed=_deck3dReducedMotion?0:0.25;
-
-  _deck3dTopOff=0;
-  _deck3dBotOff=0;
-  _deck3dPaused=false;
-  _deck3dDragging=false;
-
-  function tick(){
-    if(!_deck3dPaused&&!_deck3dDragging){
-      _deck3dTopOff-=speed;
-      _deck3dBotOff+=speed;
-    }
-    // 循環
-    if(_deck3dTopOff<=-topLoopW) _deck3dTopOff+=topLoopW;
-    if(_deck3dTopOff>0) _deck3dTopOff-=topLoopW;
-    if(_deck3dBotOff>=botLoopW) _deck3dBotOff-=botLoopW;
-    if(_deck3dBotOff<0) _deck3dBotOff+=botLoopW;
-
-    topRow.style.transform='translateX('+_deck3dTopOff.toFixed(1)+'px) rotateX(8deg)';
-    botRow.style.transform='translateX('+(_deck3dBotOff-botLoopW).toFixed(1)+'px) rotateX(-6deg)';
-
-    _update3DCards(topRow);
-    _update3DCards(botRow);
-
-    _deck3dRAF=requestAnimationFrame(tick);
-  }
-  tick();
-
-  // ── 觸控拖曳 ──
-  var stage=document.getElementById('t-deck');
-  if(!stage) return;
-  var lastX=0, resumeTimer=null;
-
-  stage.addEventListener('touchstart',function(e){
-    _deck3dDragging=true;
-    _deck3dVelX=0;
-    lastX=e.touches[0].clientX;
-    if(resumeTimer) clearTimeout(resumeTimer);
-  },{passive:true});
-
-  stage.addEventListener('touchmove',function(e){
-    if(!_deck3dDragging) return;
-    var x=e.touches[0].clientX;
-    var dx=x-lastX;
-    _deck3dVelX=dx;
-    lastX=x;
-    _deck3dTopOff+=dx;
-    _deck3dBotOff-=dx;
-  },{passive:true});
-
-  stage.addEventListener('touchend',function(){
-    _deck3dDragging=false;
-    // 慣性
-    var mId=setInterval(function(){
-      _deck3dVelX*=0.90;
-      _deck3dTopOff+=_deck3dVelX;
-      _deck3dBotOff-=_deck3dVelX;
-      if(Math.abs(_deck3dVelX)<0.25) clearInterval(mId);
-    },16);
-    // 2秒後恢復自動漂移
-    resumeTimer=setTimeout(function(){ _deck3dPaused=false; },2000);
+  if(_deck3dCleanup)_deck3dCleanup();
+  var topRow=document.getElementById('t-row-top'),botRow=document.getElementById('t-row-bot'),stage=document.getElementById('t-deck');
+  if(!topRow||!botRow||!stage)return;
+  var cardW=76,topLoopW=topCount*cardW,botLoopW=botCount*cardW;
+  if(!topLoopW||!botLoopW)return;
+  var gesture=null,suppressUntil=0,disposed=false,listeners=[];
+  _deck3dTopOff=0;_deck3dBotOff=0;_deck3dDragging=false;
+  stage.tabIndex=0;stage.setAttribute('role','group');stage.setAttribute('aria-label','塔羅牌組：左右拖曳瀏覽，點牌選取，也可使用左右瀏覽鍵');
+  stage.querySelectorAll('.tarot-deck-card').forEach(function(card){
+    card.setAttribute('role','button');card.setAttribute('aria-label','選取牌背 '+(Number(card.dataset.idx)+1));card.setAttribute('draggable','false');
   });
+  function wrap(n,width){return ((n%width)+width)%width-width;}
+  function render(){
+    _deck3dRAF=null;if(disposed)return;
+    _deck3dTopOff=wrap(_deck3dTopOff,topLoopW);_deck3dBotOff=wrap(_deck3dBotOff,botLoopW);
+    topRow.style.transform='translateX('+_deck3dTopOff.toFixed(1)+'px) rotateX(8deg)';
+    botRow.style.transform='translateX('+_deck3dBotOff.toFixed(1)+'px) rotateX(-6deg)';
+    _update3DCards(topRow);_update3DCards(botRow);
+  }
+  function queue(){if(!_deck3dRAF&&!disposed)_deck3dRAF=requestAnimationFrame(render);}
+  function shift(px){_deck3dTopOff+=px;_deck3dBotOff+=px;queue();}
+  function move(direction){if(!window._deckIsShuffled||disposed)return;shift(direction*cardW*3);}
+  window.JYTarotDeckBrowse.move=move;
+  function on(el,name,fn,opts){el.addEventListener(name,fn,opts);listeners.push(function(){el.removeEventListener(name,fn,opts);});}
+  function stop(){
+    if(_deck3dDragging)suppressUntil=Date.now()+450;
+    gesture=null;_deck3dDragging=false;stage.classList.remove('is-dragging');
+  }
+  on(stage,'pointerdown',function(e){
+    if(!window._deckIsShuffled||gesture||e.isPrimary===false||e.button>0)return;
+    gesture={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,axis:null};
+  });
+  on(stage,'pointermove',function(e){
+    if(!gesture||e.pointerId!==gesture.id)return;
+    var dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
+    if(!gesture.axis){
+      if(Math.max(Math.abs(dx),Math.abs(dy))<7)return;
+      gesture.axis=Math.abs(dx)>Math.abs(dy)?'x':'y';
+      if(gesture.axis==='x'){_deck3dDragging=true;stage.classList.add('is-dragging');try{stage.setPointerCapture(e.pointerId);}catch(ignored){}}
+    }
+    if(gesture.axis!=='x')return;
+    if(e.cancelable)e.preventDefault();
+    shift(e.clientX-gesture.lastX);gesture.lastX=e.clientX;
+  });
+  function end(e){if(!gesture||e.pointerId===undefined||e.pointerId===gesture.id)stop();}
+  on(stage,'pointerup',end);on(stage,'pointercancel',end);on(stage,'lostpointercapture',end);
+  on(stage,'click',function(e){if(Date.now()<suppressUntil&&e.detail!==0){e.preventDefault();e.stopImmediatePropagation();}},true);
+  on(stage,'dragstart',function(e){e.preventDefault();});
+  on(stage,'keydown',function(e){
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();move(e.key==='ArrowLeft'?1:-1);}
+    else if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('tarot-deck-card')){e.preventDefault();e.target.click();}
+  });
+  on(window,'resize',queue);on(window,'blur',stop);
+  _deck3dCleanup=function(){
+    if(disposed)return;disposed=true;stop();listeners.forEach(function(remove){remove();});
+    if(_deck3dRAF)cancelAnimationFrame(_deck3dRAF);_deck3dRAF=null;
+    if(window.JYTarotDeckBrowse.move===move)window.JYTarotDeckBrowse.move=function(){};
+    _deck3dCleanup=null;
+  };
+  render();
 }
 
 // ═══ 3D 透視計算 ═══
@@ -3355,9 +3315,9 @@ function _update3DCards(rowEl){
     var cR=card.getBoundingClientRect();
     // 跳過畫面外的牌
     if(cR.right<sR.left-80||cR.left>sR.right+80){
-      card.style.visibility='hidden'; continue;
+      card.style.visibility='hidden';card.tabIndex=-1;continue;
     }
-    card.style.visibility='';
+    card.style.visibility='';card.tabIndex=0;
     var dist=(cR.left+cR.width/2-centerX)/halfW; // -1..1
     var ad=Math.abs(dist);
 
