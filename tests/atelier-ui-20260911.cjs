@@ -63,4 +63,22 @@ test('Compatibility opens directly with two independent forms; single/personalit
  for(const tab of ['single','personality','tools','history']){e.ctx.BaziSuiteUI.open(tab);assert.equal(e.ctx.BaziSuiteUI.getState().tab,tab);assert(e.doc.getElementById('bzs-main').innerHTML.length>0);}
  e.ctx.BaziSuiteUI.open('unknown');assert.equal(e.ctx.BaziSuiteUI.getState().tab,'single');e.ctx.BaziSuiteUI.close();assert.equal(e.doc.body.style.overflow,'');
 });
+test('Tarot home and edit buttons have real handlers and preserve the question and chosen mode',()=>{
+ const e=environment(),steps=[];const home=add(e,'section','hook-screen'),input=add(e,'section','input-screen'),q=add(e,'textarea','f-question'),start=add(e,'button','home-cta-btn');
+ q.value='工作改變後，我想先釐清什麼？';input.setAttribute('data-atelier-mode','ootk');e.ctx.goStep=n=>steps.push(n);e.ctx._enterFromHome=()=>{};
+ load(e,'atelier-ui');
+ e.ctx.backToHook();assert.equal(home.style.display,'block');assert.equal(input.style.display,'none');assert.equal(e.doc.activeElement,start);
+ e.ctx._atelierReturnToInput();assert.equal(home.style.display,'none');assert.equal(input.style.display,'block');assert.equal(e.doc.activeElement,q);
+ assert.equal(q.value,'工作改變後，我想先釐清什麼？');assert.equal(input.getAttribute('data-atelier-mode'),'ootk');assert.deepEqual(steps,[0,0]);
+});
+test('Returning from Ziwei restores the known or unknown birth time, date, gender and question',()=>{
+ const e=environment();load(e,'atelier-ui');
+ expose(e,'ziwei-standalone',`window.seedReturnForm=function(form){_zwLastForm=form;};`);
+ for(const unknown of [false,true]){
+  const question='</textarea> & 我如何面對工作轉變？';
+  e.ctx.seedReturnForm({gender:'female',bdate:'1990-01-02',btime:unknown?'':'12:00',btimeUnknown:unknown,question});
+  e.ctx._zwReset();assert.equal(e.doc.getElementById('zw-bd').value,'1990-01-02');assert.equal(e.doc.getElementById('zw-hh').value,unknown?'unknown':'12');assert.equal(e.doc.getElementById('zw-q').value,question);assert.equal(e.doc.getElementById('zw-g-f').getAttribute('aria-pressed'),'true');
+  assert.equal(e.doc.getElementById('zw-input').querySelector('.at-back').getAttribute('onclick'),'_zwClose()');e.ctx._zwClose();assert(!e.doc.getElementById('zw-input'));assert.equal(e.doc.body.style.overflow,'');
+ }
+});
 console.log('atelier-ui: '+passed+' groups passed (simulated DOM; visual/device checks remain separate).');
