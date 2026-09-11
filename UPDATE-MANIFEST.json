@@ -1,0 +1,115 @@
+{
+  "version": "20260911flow6",
+  "base": "current 20260911shuffle5 workspace",
+  "kind": "changed-files-only",
+  "files": [
+    {
+      "path": "CSS/flow-refinement.css",
+      "sha256": "8643370667fa2739a185261fe4e171313eb4cb3a40d3ea66b1fa233f053c865c",
+      "bytes": 33773,
+      "change": "added"
+    },
+    {
+      "path": "JS/atelier-ui.js",
+      "sha256": "fdebbcf02e7bf1330b84f48988778087eb4fa195192f8f8c1834b7e4a227204d",
+      "bytes": 10879,
+      "change": "modified"
+    },
+    {
+      "path": "JS/bazi-standalone.js",
+      "sha256": "3b6faa32bfced1d9500ca579318d049c9c78fe66b38e67fe0ab7a53d54cf672a",
+      "bytes": 81131,
+      "change": "modified"
+    },
+    {
+      "path": "JS/bazi-suite.js",
+      "sha256": "d7fe5327498997ec85282dea7f729de2d3e1d5886d8c1d459d36d0a6bba5e7b0",
+      "bytes": 71903,
+      "change": "modified"
+    },
+    {
+      "path": "JS/cinematic-ui.js",
+      "sha256": "97357346741bd318f271c3455a786c61db7160fe81c06a0c950f654feff9d479",
+      "bytes": 12201,
+      "change": "modified"
+    },
+    {
+      "path": "JS/lenormand.js",
+      "sha256": "0734821187250e22a714a8f365df8612e885d2774bec91ff47d439dd1c46fad2",
+      "bytes": 90865,
+      "change": "modified"
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "sha256": "e93d87d2bd50d7686ae0c7a2aa603fb044e272de027d452ab22d7c3d5e502c6b",
+      "bytes": 63271,
+      "change": "modified"
+    },
+    {
+      "path": "JS/prompt-export.js",
+      "sha256": "31d8efccf3fd57bae9f49b0a6aec44a16a63b1146caf8d135d0f8908c90abb13",
+      "bytes": 86799,
+      "change": "modified"
+    },
+    {
+      "path": "JS/ritual-ateliers.js",
+      "sha256": "e079bac8b91c5b822cfce2ea7136eb3a9e1acca964f1190c2a7130ad3f703fec",
+      "bytes": 25746,
+      "change": "modified"
+    },
+    {
+      "path": "JS/sw.js",
+      "sha256": "945c06fc490b7f91d99c24230aca86ea205bf72b47caccb60dd5144ad6646dd7",
+      "bytes": 4094,
+      "change": "modified"
+    },
+    {
+      "path": "JS/tarot.js",
+      "sha256": "2ccc9fa4c2ca8b3d688b6b78929590c3eaa2cdbe16cc38ad92385e37f03496a3",
+      "bytes": 382093,
+      "change": "modified"
+    },
+    {
+      "path": "JS/tarot_upgrade.js",
+      "sha256": "d923f5cdacda6abd7cf33bff9cd34545f11854a3115e7090b674b3cec4d967b0",
+      "bytes": 397754,
+      "change": "modified"
+    },
+    {
+      "path": "JS/ui.js",
+      "sha256": "88eaa621afe67ec8fd1791c5457b2cc05be78a8df566eb8b64b0ef34afde7c13",
+      "bytes": 430653,
+      "change": "modified"
+    },
+    {
+      "path": "UPDATE-20260911-FLOW-REFINEMENT.md",
+      "sha256": "761e3231893655ab040d8966b26ec5591fa9f8c53748a258379ecb10482035d5",
+      "bytes": 3976,
+      "change": "added"
+    },
+    {
+      "path": "index.html",
+      "sha256": "4ccaaa4c056c23c4663d8bd4bc0834791caacb97a8e3dc26716a6d16533ce932",
+      "bytes": 143825,
+      "change": "modified"
+    },
+    {
+      "path": "meihua-standalone.js",
+      "sha256": "e93d87d2bd50d7686ae0c7a2aa603fb044e272de027d452ab22d7c3d5e502c6b",
+      "bytes": 63271,
+      "change": "modified"
+    },
+    {
+      "path": "package.json",
+      "sha256": "09f3fec111b018548a83f2ed61dc454fc7540c9e57c627e817508b1571c8167a",
+      "bytes": 1720,
+      "change": "modified"
+    },
+    {
+      "path": "tests/flow-interaction-20260911.cjs",
+      "sha256": "e9aea7df3a760797fe1c84b0324358a695597a6c45f672d1ba187408848b24a2",
+      "bytes": 12392,
+      "change": "added"
+    }
+  ]
+}

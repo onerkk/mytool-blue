@@ -376,6 +376,7 @@
 <link rel="stylesheet" href="CSS/atelier-ui.css?v=20260911cinema4">
 <link rel="stylesheet" href="CSS/ritual-ateliers.css?v=20260911cinema4">
 <link rel="stylesheet" href="CSS/cinematic-stage.css?v=20260911cinema4">
+<link rel="stylesheet" href="CSS/flow-refinement.css?v=20260911flow6">
 </head>
 <body class="jy-atelier">
 <noscript>
@@ -426,7 +427,7 @@
 
   <!-- ═══ PHASE B: Quick Input (hidden until type picked) ═══ -->
   <div id="input-screen" style="display:none">
-    <header class="at-input-head"><button type="button" class="at-back" onclick="backToHook()"><span aria-hidden="true">←</span> 返回首頁</button><div><span class="at-eyebrow">TAROT · 此刻的選擇</span><h1>從一個問題，<br>開始靠近答案。</h1><p>寫下最在意的事，讓解讀有一個清楚的起點。</p></div><span class="at-art" data-art="tarot" aria-hidden="true"></span></header>
+    <header class="at-input-head"><button type="button" class="at-back" onclick="backToHook()"><span aria-hidden="true">←</span> 返回首頁</button><div><span class="at-eyebrow">TAROT · 此刻的選擇</span><h1>把心事，說清楚。</h1><p>一次專注一件事，為這次探索留一個起點。</p></div><span class="at-art" data-art="tarot" aria-hidden="true"></span></header>
     <!-- 已選類型 breadcrumb -->
     <div style="display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-md)">
       <button class="btn btn-outline btn-sm" onclick="backToHook()" style="padding:.3rem .6rem"><i class="fas fa-arrow-left"></i></button>
@@ -434,7 +435,7 @@
     </div>
 
     <!-- 預設問題選擇 -->
-    <div class="card">
+    <div class="card" id="at-question-card">
       <div class="card-title"><i class="fas fa-question-circle"></i> 你想問什麼？</div>
       <div class="form-group">
         <div class="q-preset-grid" id="q-presets"></div>
@@ -452,7 +453,7 @@
         <span class="jy-spread-trigger-icon"><i class="fas fa-wand-magic-sparkles" id="jy-spread-cur-icon"></i></span>
         <span class="jy-spread-trigger-body">
           <span class="jy-spread-trigger-name" id="jy-spread-cur-name">自動判斷</span>
-          <span class="jy-spread-trigger-sub" id="jy-spread-cur-sub">依你的問題智慧選擇最適合的牌陣</span>
+          <span class="jy-spread-trigger-sub" id="jy-spread-cur-sub">依問題建議牌陣，也可以自行選擇</span>
         </span>
         <i class="fas fa-chevron-right jy-spread-trigger-chevron"></i>
       </button>
@@ -466,7 +467,7 @@
           <div class="jym-title" id="jym-dialog-title"><i class="fas fa-clone"></i> 選擇牌陣</div>
           <button class="jym-close" type="button" onclick="closeSpreadPicker()" aria-label="關閉">&times;</button>
         </div>
-        <div class="jym-sub">不同問題適合不同牌陣 ・ 選「自動」我會依你的問題判斷最合適的</div>
+        <div class="jym-sub">先看適合的問題，再決定牌陣。自動建議可隨時改選。</div>
         <div class="jym-list" id="jy-spread-list"></div>
       </div>
     </div>
@@ -570,8 +571,8 @@
     </div>
 
     <!-- ═══ 工具選擇 ═══ -->
-    <div class="card" style="padding:.8rem">
-      <div style="font-size:.82rem;font-weight:700;color:var(--c-text);margin-bottom:.6rem"><i class="fas fa-compass" style="color:var(--c-gold);margin-right:.3rem"></i>選擇分析方式</div>
+    <div class="card" id="at-method-card">
+      <div class="card-title"><i class="fas fa-compass"></i> 選擇分析方式</div>
       <div class="jy-tool-grid">
         <button type="button" class="jy-tool-card jy-tool-tarot selected" id="tool-tarot" aria-pressed="true" onclick="pickTool('tarot')">
           <div class="jy-tool-head">
@@ -664,7 +665,7 @@
     <div class="card-title"><i class="fas fa-star"></i> 金色黎明塔羅牌</div>
     <p class="text-dim text-sm mb-sm" id="t-deck-intro" style="text-align:center">感受牌陣意象，從 <strong class="text-gold">78</strong> 張塔羅牌中選出 <strong class="text-gold">10</strong> 張與你共鳴的牌</p>
     <p class="tarot-pick-hint" id="pick-hint" style="text-align:center;font-size:.82rem;color:var(--c-gold);margin:.4rem 0;animation:jyBreath 2.5s ease-in-out infinite">觸碰任一張你有感覺的牌，選出 <span id="t-target-count">10</span> 張</p>
-    <p class="text-dim text-xs" style="text-align:center;font-size:.68rem;color:var(--c-text-muted);margin:-.1rem 0 .3rem">左右滑動瀏覽牌面 ・ 點擊選牌 ・ 或按上方「快速抽牌」</p>
+    <p class="at-table-instruction">洗牌後，左右拖曳瀏覽牌背，輕點選牌。也可使用左右瀏覽鍵。</p>
     <style>@keyframes jyBreath{0%,100%{opacity:.55}50%{opacity:1}}</style>
     <p class="text-dim text-xs" style="text-align:center" id="t-remain-text">已選 <strong id="t-remain-picked" class="text-gold">0</strong> / 10 張</p>
 
@@ -675,10 +676,15 @@
     <!-- 已選牌位（10個凱爾特十字位） -->
     <details class="at-reading-settings"><summary>讀牌方式 <span id="tarot-mode-summary">RWS・正逆位</span></summary><div class="jy-reading-controls" id="tarot-reading-controls"></div></details>
 
+  <div id="tarot-draw-dock" class="at-draw-dock" aria-label="抽牌進度與下一步">
+    <div><span id="tarot-dock-step">準備洗牌</span><strong id="tarot-dock-count" aria-live="polite">0 / 0 張</strong></div>
+    <button type="button" id="tarot-dock-action" onclick="_atelierTarotAction()">開始洗牌</button>
+  </div>
     <!-- 可滑動的牌堆 -->
     <div class="tarot-deck-wrap">
       <div class="tarot-deck-scroll" id="t-deck"></div>
     </div>
+    <div class="at-deck-browser" aria-label="瀏覽牌組"><button type="button" data-deck-browse="previous" onclick="JYTarotDeckBrowse.move(1)" aria-label="向左瀏覽牌組">← 向左</button><span>拖曳瀏覽 · 輕點選牌</span><button type="button" data-deck-browse="next" onclick="JYTarotDeckBrowse.move(-1)" aria-label="向右瀏覽牌組">向右 →</button></div>
     <div id="tarot-last-card" class="at-last-card" aria-live="polite"><span>選牌前先洗牌，讓心緒沉澱。</span></div>
     <details id="tarot-layout-details" class="at-spread-details"><summary>查看牌陣與已選牌位 <span id="tarot-layout-count">0 張</span></summary><p class="at-layout-help">依本次牌陣保留位置與順序；完整牌位名稱列在圖下。</p><div class="tarot-chosen-area" id="t-chosen"></div><ol id="tarot-position-list"></ol></details>
 
@@ -690,10 +696,7 @@
     <button class="btn btn-primary" id="btn-analyze" onclick="var _bDef=(typeof getCurrentSpreadDef==='function')?getCurrentSpreadDef():null;var _bNeed=_bDef?_bDef.count:10;if(typeof drawnCards!=='undefined'&&drawnCards.length<_bNeed){alert('尚需抽滿 '+_bNeed+' 張牌（目前 '+drawnCards.length+' 張）');return;}if(S._tarotOnlyMode){S.tarot.drawn=drawnCards;S.tarot.spread=drawnCards;try{if(typeof enhanceTarot==='function')enhanceTarot(S.tarot);}catch(e){}showTarotResult();}else{goStep(3);}" disabled><i class="fas fa-chart-bar"></i> 取得解讀提示詞</button>
   </div>
   <p class="text-xs text-muted mt-xs" style="text-align:center"><i class="fas fa-info-circle"></i> 完成抽牌後，可複製專屬提示詞，到你選擇的 AI 閱讀完整解答。</p>
-  <div id="tarot-draw-dock" class="at-draw-dock" aria-label="抽牌進度與下一步">
-    <div><span id="tarot-dock-step">準備洗牌</span><strong id="tarot-dock-count" aria-live="polite">0 / 0 張</strong></div>
-    <button type="button" id="tarot-dock-action" onclick="_atelierTarotAction()">開始洗牌</button>
-  </div>
+
 </section>
 
 <!-- ========== STEP TAROT: 塔羅快讀結果頁 ========== -->
@@ -704,6 +707,7 @@
   <div id="tarot-question-hero" class="text-dim" style="text-align:center;font-size:.9rem;margin:0 0 .8rem;padding:0 var(--sp-md)"></div>
 
   <!-- 🔮 AI 塔羅深度解讀 -->
+  <header class="at-result-heading"><span class="at-eyebrow">YOUR READING · 本次探索</span><h1>讓線索，成為下一步。</h1><p>牌陣已完成。接著複製本次資料，帶到你習慣的 AI 對話中解讀。</p></header>
   <div id="tarot-ai-wrap"></div>
 
   <!-- 📤 生成分享卡-->
@@ -1401,10 +1405,10 @@
 <script src="JS/tarot-foundation.js?v=20260910professional1" defer></script>
 <script src="JS/golden-dawn-tarot.js?v=20260906fix2" defer></script>
 <script src="JS/cinematic-stage.js?v=20260911shuffle5" defer></script>
-<script src="JS/ritual-ateliers.js?v=20260911shuffle5" defer></script>
-<script src="JS/tarot.js?v=20260911cinema4" defer></script>
+<script src="JS/ritual-ateliers.js?v=20260911flow6" defer></script>
+<script src="JS/tarot.js?v=20260911flow6" defer></script>
 <script src="JS/tarot-reading.js?v=20260911cinema4" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260911cinema4" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260911flow6" defer></script>
 <!-- v95：先載入 Golden Dawn Book T 單一來源、方法觀測模型與證據契約，再由 ai-analysis 建立牌陣資料。 -->
 <script src="JS/tarot-semantic-engine.js?v=20260718v101_0" defer></script>
 <script src="JS/tarot-inventory.js?v=20260717v98_0" defer></script>
@@ -1420,25 +1424,25 @@
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
 <script src="JS/oracle.js?v=20260911cinema4" defer></script>
-<script src="JS/lenormand.js?v=20260911cinema4" defer></script>
+<script src="JS/lenormand.js?v=20260911flow6" defer></script>
 <!-- display3：手機靜態背景；出生選單先備妥內容再開啟，避免初始化錯誤與重複繪圖。 -->
 <script src="JS/ink-flow.js?v=20260911celestial1" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260911cinema4" defer></script>
+<script src="JS/meihua-standalone.js?v=20260911flow6" defer></script>
 <!-- 共用提示詞根必須先於 standalone 載入，否則八字會直接失敗、紫微會退回舊提示詞。 -->
 <script src="JS/picker-core.js?v=20260906display3" defer></script>
 <script src="JS/ziwei-prompt-root.js?v=20260910professional1" defer></script>
 <script src="JS/bazi-prompt-root.js?v=20260910professional1" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260911cinema4" defer></script>
-<script src="JS/bazi-standalone.js?v=20260911cinema4" defer></script>
+<script src="JS/bazi-standalone.js?v=20260911flow6" defer></script>
 <!-- v87_0(2026/6/26)：八字完整功能套件——單盤六主題、八種角色情境合盤、雙向十神與跨盤作用、五行互補、雙方歲運同步、本地五軸32型人格、歷史/匯出。第三方未公開私有演算法不冒充搬運，採本地可檢查規則重建。 -->
 <!-- v87_1(2026/6/26)：恢復原版八字 UI 為預設入口；保留原自訂日期、時間、出生地點選擇器。完整合盤／人格／工具改由原版頁面的次要按鈕開啟，不再以原生 date/time 輸入覆蓋主入口。 -->
 <script src="JS/share-card.js?v=20260911preview1" defer></script>
 <script src="JS/bazi-suite-core.js?v=20260910professional1" defer></script>
-<script src="JS/bazi-suite.js?v=20260911cinema4" defer></script>
-<script src="JS/ui.js?v=20260911cinema4" defer></script>
-<script src="JS/atelier-ui.js?v=20260911shuffle5" defer></script>
-<script src="JS/cinematic-ui.js?v=20260911shuffle5" defer></script>
+<script src="JS/bazi-suite.js?v=20260911flow6" defer></script>
+<script src="JS/ui.js?v=20260911flow6" defer></script>
+<script src="JS/atelier-ui.js?v=20260911flow6" defer></script>
+<script src="JS/cinematic-ui.js?v=20260911flow6" defer></script>
 <script src="JS/spread-picker.js?v=20260911cinema4" defer></script>
 <script src="JS/tool-guide.js?v=20260529v70_1" defer></script>
 <script src="JS/guide.js?v=20260531v74_1" defer></script>
@@ -1503,7 +1507,7 @@
 <!-- v100_0(2026/7/18)：Golden Dawn 解牌方法根治——提示詞先注入各牌陣原生牌位、閱讀順序、合法相鄰線與綜合結構；開鑰改按五次操作原生流程；查詢圖降為漏答核對；選品改自然承接原問句。只動 prompt-export.js / index.html -->
 <!-- v101_0(2026/7/18)：Golden Dawn 原生方法協議根治——所有已登錄牌陣分別註冊單張模式、原生閱讀階段、合法結構、結果／時間權限與衝突優先序；Mathers 21／54改為序列成員而非假性獨立牌位，首尾配對與元素相鄰徹底分離；開鑰之法維持獨立五操作程序；AI資料與提示詞只讀方法計畫。動 tarot-foundation.js / tarot-semantic-engine.js / tarot_upgrade.js / ai-analysis.js / prompt-export.js / tests / package.json / index.html -->
 <!-- v102_0(2026/7/18)：塔羅提示詞根治為方法資料包——AI自行分析；移除ROOT-SPEC查詢圖、能力閘門、命題帳本等對外推理控制；非線性牌陣改輸出具名互動關係而非假性直線；語義引擎降為可選診斷，不再阻斷抽牌與匯出。動 tarot-foundation.js / ai-analysis.js / prompt-export.js / tests / package.json / index.html -->
-<script src="JS/prompt-export.js?v=20260910professional1" defer></script>
+<script src="JS/prompt-export.js?v=20260911flow6" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="JS/vendor/lunar.js?v=1.7.7" defer></script>
 <script src="JS/bazi-calendar-core.js?v=20260625v1_0_0" defer></script>
