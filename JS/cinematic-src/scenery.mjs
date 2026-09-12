@@ -2,10 +2,10 @@ import * as T from 'three';
 import {clamp,ease} from './choreography.mjs';
 
 // Physical set pieces. These symbols describe a room, never a calculated chart.
-export function buildScenery({kind,rig,keep,gold,accent,reduced}){
+export function buildScenery({kind,rig,keep,gold,accent,reduced,craft}){
  const world=new T.Group();rig.add(world);
  const moving=[],gates=[],lights=[];
- const enamel=keep(new T.MeshStandardMaterial({color:kind==='lenormand'?'#153a30':kind==='oracle'?'#361d23':'#142132',metalness:.7,roughness:.32}));
+ const enamel=craft.enamel;
  const glow=keep(new T.MeshBasicMaterial({color:accent,transparent:true,opacity:.65,depthWrite:false,blending:T.AdditiveBlending}));
  function mesh(geometry,mat=gold,parent=world){const node=new T.Mesh(keep(geometry),mat);parent.add(node);return node;}
  function torus(radius,parent=world,width=.018){return mesh(new T.TorusGeometry(radius,width,6,64),gold,parent);}
@@ -19,11 +19,8 @@ export function buildScenery({kind,rig,keep,gold,accent,reduced}){
  function gate(x,z,width,height,index){
   for(const side of [-1,1]){
    const hinge=new T.Group();hinge.position.set(x+side*width/2,-2.4,z);world.add(hinge);
-   const leaf=new T.Group();leaf.position.set(-side*width/4,height/2,0);hinge.add(leaf);
-   const panel=mesh(new T.BoxGeometry(width/2,height,.09),enamel,leaf);
-   const trim=new T.LineSegments(keep(new T.EdgesGeometry(panel.geometry)),keep(new T.LineBasicMaterial({color:'#e2bd7c',transparent:true,opacity:.8})));leaf.add(trim);
-   for(let j=0;j<3;j++){const arch=torus(width*(.11+j*.022),leaf,.006);arch.scale.y=1.8;arch.position.z=.057;}
-   for(const y of [-height*.34,height*.34]){const stud=mesh(new T.OctahedronGeometry(.045),gold,leaf);stud.position.set(0,y,.09);}
+   const leaf=craft.door(width/2,height);leaf.position.set(-side*width/4,height/2,0);hinge.add(leaf);
+   leaf.scale.x=side<0?1:-1;
    gates.push({node:hinge,side,index});
   }
  }
@@ -37,7 +34,7 @@ export function buildScenery({kind,rig,keep,gold,accent,reduced}){
  if(kind==='bazi'){
   for(let i=0;i<4;i++){
    const dial=new T.Group();dial.position.set((i-1.5)*1.12,.15,-1.5-Math.abs(i-1.5)*.55);world.add(dial);
-   torus(.49,dial);torus(.42,dial,.006);
+   craft.bezel(dial,.49);
    for(let j=0;j<12;j++){const a=j*Math.PI/6,tick=mesh(new T.BoxGeometry(.012,.04,.015),gold,dial);tick.position.set(Math.sin(a)*.46,Math.cos(a)*.46,0);tick.rotation.z=-a;}
    const hand=mesh(new T.BoxGeometry(.012,.38,.018),gold,dial);hand.position.y=.15;moving.push({node:dial,type:'dial',index:i});
   }
@@ -45,7 +42,7 @@ export function buildScenery({kind,rig,keep,gold,accent,reduced}){
  if(kind==='compat'){
   for(let i=0;i<2;i++){
    const group=new T.Group();group.position.set(i?1.65:-1.65,.1,-1.7);world.add(group);
-   for(let j=0;j<3;j++){const ring=torus(.72+j*.045,group,.009);ring.rotation.y=j*.25;}
+   for(let j=0;j<2;j++){const ring=craft.bezel(group,.72+j*.09);ring.rotation.y=j*.38;}
    moving.push({node:group,type:'twin',index:i});
   }
  }
@@ -60,10 +57,11 @@ export function buildScenery({kind,rig,keep,gold,accent,reduced}){
  }
  if(kind==='meihua'||kind==='lenormand'){
   for(const side of [-1,1]){
-   const branch=mesh(new T.CylinderGeometry(.022,.045,3.1,7),enamel);branch.position.set(side*2.0,-.1,-.8);branch.rotation.z=side*-.3;
+   craft.curve([[side*2.4,-1.6,-.9],[side*1.9,-.4,-.85],[side*1.8,.4,-.7],[side*2.2,1.65,-.8]],.027,world,craft.bronze);
    for(let i=0;i<9;i++){
     const flower=new T.Group();flower.position.set(side*(1.48+i*.075),.05+i*.2,-.65+(i%3)*.1);world.add(flower);
-    for(let p=0;p<5;p++){const petal=mesh(new T.SphereGeometry(.08,8,6),kind==='meihua'?glow:gold,flower);petal.scale.set(.6,1,.25);petal.position.set(Math.cos(p*Math.PI*.4)*.085,Math.sin(p*Math.PI*.4)*.085,0);petal.rotation.z=p*Math.PI*.4;}
+    for(let p=0;p<5;p++){const petal=craft.petal(flower);petal.scale.setScalar(.42);petal.rotation.z=p*Math.PI*.4;}
+    craft.gem(flower,0,0,.03,.023);
     moving.push({node:flower,type:'flower',index:i+ (side>0?9:0),x:flower.position.x,y:flower.position.y,z:flower.position.z});
    }
   }

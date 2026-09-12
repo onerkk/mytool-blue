@@ -55,10 +55,10 @@ function extract(file,name){const src=read(file);let found;function walk(n){if(!
    const e=dom(),tracked=new Set(),disposed=new Set(),pending=[];let rendererDisposed=0,renderCount=0;const host=add(e,'div','stage');
    class Renderer{constructor(){this.domElement=new e.Element('canvas');this.capabilities={getMaxAnisotropy:()=>4};this.ratio=1;}setPixelRatio(n){this.ratio=n;}getPixelRatio(){return this.ratio;}setClearColor(){}setSize(){}dispose(){rendererDisposed++;}render(scene,camera){renderCount++;assert([camera.position.x,camera.position.y,camera.position.z].every(Number.isFinite));scene.traverse(n=>{assert([...n.position.toArray(),...n.scale.toArray()].every(Number.isFinite));for(const r of [n.geometry,...(Array.isArray(n.material)?n.material:[n.material])])if(r&&!tracked.has(r)){tracked.add(r);r.addEventListener('dispose',()=>disposed.add(r));}});}}
    class Loader{load(url,done){pending.push(done);}}
-   e.ctx.__T={...Three,WebGLRenderer:Renderer,TextureLoader:Loader};e.ctx.__choreo=choreo;e.ctx.__presence=await import('../JS/cinematic-src/presence.mjs');
+   e.ctx.__T={...Three,WebGLRenderer:Renderer,TextureLoader:Loader};e.ctx.__choreo=choreo;e.ctx.__presence=await import('../JS/cinematic-src/presence.mjs');e.ctx.__craft=await import('../JS/cinematic-src/craft.mjs');
    const scenery=read('JS/cinematic-src/scenery.mjs').replace(/^import .*;\n/gm,'').replace('export function buildScenery','function buildScenery');
    const stage=read('JS/cinematic-src/stage.mjs').replace(/^import .*;\n/gm,'').replace('export function mountStage','function mountStage');
-   vm.runInContext('const T=__T;const {buildPresence}=__presence;const {cardPose,actorPose,cameraPose,instrumentPose,CAST,clamp,ease}=__choreo;'+scenery+stage+';window.__mount=mountStage;',e.ctx);
+   vm.runInContext('const T=__T;const {buildPresence}=__presence;const {buildCraft}=__craft;const {cardPose,actorPose,cameraPose,instrumentPose,CAST,clamp,ease}=__choreo;'+scenery+stage+';window.__mount=mountStage;',e.ctx);
    const instance=e.ctx.__mount(host,kind,{story:true});assert.equal(host.getAttribute('data-renderer'),'webgl2');
    for(const phase of [0,1,2,3]){instance.setPhase(phase);instance.setShot({name:['arrival','listen','orbit','settle'][phase]});instance.setPower(.8);instance.setLit(3);instance.setTurn(.7);e.clock.advance(350);}
    instance.setCovered(true);const beforeCover=renderCount;e.clock.advance(1000);assert.equal(renderCount,beforeCover);instance.setCovered(false);e.clock.advance(50);assert(renderCount>beforeCover);

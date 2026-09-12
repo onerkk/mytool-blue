@@ -208,6 +208,71 @@ function _lnDomainIds(q) {
   return [['love',/感情|愛情|婚姻|桃花|戀愛|復合|伴侶|前任|男友|女友/],['work',/工作|事業|職場|轉職|離職|升遷|創業|生意/],['money',/財運|財務|投資|收入|負債|現金流/],['family',/家庭|家人|親子|父母|子女/],['study',/學業|考試|進修|證照/],['health',/健康|睡眠|身體/],['travel',/旅行|搬家|移居/]].filter(function(d){return d[1].test(q);}).map(function(d){return d[0];});
 }
 
+// BEGIN SHARED DECISION PARSER
+// Canonical source, embedded in both independent readers by build-decision-parser.cjs.
+// This is a conservative language parser, not a claim that keywords understand every question.
+function classifyDecisionQuestion(question) {
+  var raw = String(question || '').trim();
+  function result(kind, left, right, reason) {
+    return {kind:kind, left:left || null, right:right || null, source:raw, reason:reason || ''};
+  }
+  function clean(value, first) {
+    var s = String(value || '').trim().replace(/^[，,：:\s]+|[，,。？?！!；;\s]+$/g, '');
+    s = s.replace(/(?:[，,]\s*)?(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合(?:我|我們)?|好|有利|可行|值得).*$/, '');
+    s = s.replace(/(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)(?:嗎|呢)?$/, '').replace(/[嗎呢]$/, '').trim();
+    if (first) {
+      s = s.replace(/^(?:請幫我|請問|請|幫我|我想知道|我想問|想問|我想|想)(?:比較)?\s*/, '').replace(/^比較\s*/, '');
+      s = s.replace(/^(?:我|我們)(?:和|跟|與).{1,16}?(?:應該|該|要選|選擇|考慮)\s*/, '');
+      s = s.replace(/^(?:我|我們)?(?:到底)?(?:應該|該|可以|要選|要|選擇|選|考慮)\s*/, '');
+      s = s.replace(/^(?:我|我們)(?=留|接受|拒絕|全職|兼職|辭|離|搬|轉|去|繼續|開始)/, '');
+    }
+    return s.replace(/^[，,\s]+|[，,\s]+$/g, '');
+  }
+  if (!raw) return result('none');
+  // Labels and their time qualifiers are part of the user's options. Do not strip dates/durations.
+  if (/\bA(?:\s*[：:.、]|\s+)[\s\S]+\bB(?:\s*[：:.、]|\s+)[\s\S]+\bC(?:\s*[：:.、]|\s+)/i.test(raw) || /(?:三|四|五|3|4|5)(?:個|家|種)?(?:選項|方案)|三選一|三擇一|四選一/.test(raw)) return result('multiple', null, null, '超過兩個方案，不能套成只有 A、B 的牌位。');
+  if(/(?:^|[，,：:\s])A(?:\s*[：:.、]|\s+)[\s\S]*B\s*[：:.、]\s*[？?]?\s*$/i.test(raw))return result('incomplete');
+  var labelled = raw.match(/(?:^|[，,：:\s])A(?:\s*[：:.、]\s*|\s+)([\s\S]+?)\s*(?:還是|或者|或是|或|與|和|跟|vs\.?|versus)?\s*B(?:\s*[：:.、]\s*|\s+)([\s\S]+?)(?:[。！？?]|$)/i);
+  if (labelled && !/^(?:還是|或者|或是|或|or|vs\.?)\s*$/i.test(labelled[1].trim())) {
+    var la = clean(labelled[1].replace(/(?:還是|或者|或是|或|與|和|跟|vs\.?)\s*$/i, ''), false), lb = clean(labelled[2], false);
+    return la && lb ? result('binary', la, lb, '使用原文明確標示的 A、B 方案。') : result('incomplete');
+  }
+  var q = raw.split(/[？?！!。；;\n]/)[0].trim();
+  var connector = /還是|或者|或是|或(?!許)|\bor\b|\bversus\b|\bvs\.?\b/ig;
+  var matches = [], m;
+  while ((m = connector.exec(q))) matches.push({at:m.index, value:m[0]});
+  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)|(?:該|應該)選|比較.{1,50}(?:適合|有利)/.test(q);
+  if (matches.length > 1 && decisionCue) return result('multiple', null, null, '原文有三個以上選項，先整理共同條件，不能假造第三條路的牌位。');
+  var takeOrWait = !matches.length && q.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,]|$)/);
+  if (takeOrWait) {
+    var action = clean(takeOrWait[1], false);
+    return action ? result('binary', action, '暫不採取「' + action + '」，維持目前安排', '比較採取這個行動與暫不採取，沒有新增其他方案。') : result('incomplete');
+  }
+  var left = '', right = '';
+  if (matches.length === 1) {
+    left = clean(q.slice(0, matches[0].at), true); right = clean(q.slice(matches[0].at + matches[0].value.length), false);
+    if (!left || !right) return result('incomplete', left, right, '請把另一個方案補齊，才能分別安排兩路牌位。');
+    if (decisionCue && /[、]/.test(left + right)) return result('multiple');
+    if (decisionCue && /(?:選|考慮)[^，,]+[，,][^，,]+$/.test(q.slice(0, matches[0].at).replace(/[，,\s]+$/, ''))) return result('multiple');
+    // 「她還是喜歡我嗎」means "still", not A=her, B=likes me.
+    if (/^(?:他|她|你|我|它|對方|我們|他們|她們)(?:現在|最近|今年|明年)?$/.test(left)) return result('none', null, null, '「還是」在這裡表示仍然如此，不是兩個方案。');
+    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
+    var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
+    var hypothesis = /^(?:只是|僅僅|單純)|禮貌|客氣|沒興趣|不喜歡|不愛|挑戰|變糟|失敗|生氣|隱瞞/.test(right) || /(?:會|能|是|喜歡|愛我|機會|變好|上漲|下跌)/.test(left);
+    if (!decisionCue && !labels && !(actionStart.test(left) && actionStart.test(right))) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
+    return result('binary', left, right, '先比較兩個原文方案各自的條件與走向，再看共同限制。');
+  }
+  // 「跟」can be inside an action. Use it as a separator only for an explicit comparison.
+  var comparison = q.match(/^(?:請)?(?:幫我)?比較\s*(.+?)(?:與|和|跟)\s*(.+?)(?:[，,]\s*)?(?:哪個|哪一個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)/) || q.match(/^(.+?)(?:與|和|跟)\s*(.+?)(?:[，,]\s*)?(?:哪個|哪一個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)/);
+  if (comparison) {
+    left = clean(comparison[1], true); right = clean(comparison[2], false);
+    if (left && right && !/^(?:我|我們|他|她|你)$/.test(left)) return result('binary', left, right, '按原問句的比較對象安排 A、B 牌位。');
+  }
+  if (/(?:還是|或者|或是|或)\s*$/.test(q)) return result('incomplete');
+  if (/(?:要|該|應該)?選哪(?:一個|個)?[呢嗎]?$|^(?:我要|我該|我應該|請)?二選一$/.test(q)) return result('incomplete');
+  return result('none');
+}
+// END SHARED DECISION PARSER
 function _lnAnalyzeQuestion(q) {
   var originalQuestion = String(q || '').trim();
   q = _lnQuestionFocus(originalQuestion);
@@ -257,29 +322,13 @@ function _lnAnalyzeQuestion(q) {
   var domainList = /(?:感情|愛情|婚姻|桃花|工作|事業|財運|財務|家庭|學業|健康|旅行)(?:方面)?(?:、|以及|及|和|與|跟)(?:感情|愛情|婚姻|桃花|工作|事業|財運|財務|家庭|學業|健康|旅行)/.test(q);
   var isGlobal = globalCue || (domainIds.length >= 2 && domainList);
 
-  // 雙路只接受兩個可替代方案；「我和他」等人物連接不是選項。
-  var explicitAB = /A\s*(?:還是|或|或者|或是|跟|與|和|vs\.?)\s*B/i.test(q) || /選項\s*A.*選項\s*B/i.test(q);
-  var binaryDecisionMatch = q.match(/^(?:我想知道|想問|請問)?(?:我|我們)?(?:到底)?(?:該不該|應不應該|要不要)\s*(.+?)(?:[，,？?；;]|$)/);
-  var explicitChoiceCue = /二選一|二擇一|兩個選項|比較|選哪|哪一個比較|哪個比較|哪條路|何者較/.test(q);
-  var actionAlternativeCue = /(?:我|我們)?(?:該|應該|要|選|考慮).*(?:還是|或者|或是)|留職|離職|轉職|搬家|買房|賣房|接受|拒絕|留下|離開|分手|復合|創業/.test(q);
-  var optionClause=q.split(/[，,？?；;]/)[0];
-  var altConnectorCount = _lnCountMatches(optionClause, /還是|或者|或是|或|、/g);
-  var moreThanTwoOptions = /\bA\b.*\bB\b.*\bC\b/i.test(optionClause) || /三個選項|三選一|三擇一|四選一/.test(q) || (altConnectorCount >= 2 && /選|比較/.test(optionClause));
-  var incompleteChoice = /(?:還是|或者|或是|或|和|跟|與)\s*[？?]?\s*$/.test(q) || /^\s*(?:還是|或者|或是)\s*/.test(q);
-  var hypothesisChoice = /(?:還是|或者|或是).*(?:只是|禮貌|忙|沒興趣|不喜歡|不愛|隱瞞)|(?:他|她|對方).*(?:喜歡|愛我|不回|真心).*(?:還是|或者|或是)/.test(q) && !/(?:我|我們)(?:該|應該|要|選)|選哪|二選一/.test(q);
-  var explicitPairMatch = optionClause.match(/(.+?)(?:還是|或者|或是|或|和|跟|與)(.+?)(?:[？?]|$)/);
-  var isChoice = !!(!incompleteChoice && !moreThanTwoOptions && !hypothesisChoice && (explicitAB || !!binaryDecisionMatch || (!looksLikePersonPair && explicitPairMatch && (explicitChoiceCue || actionAlternativeCue))));
-  var choiceA = null, choiceB = null;
-  if (binaryDecisionMatch) {
-    var action = _lnCleanChoiceOption(binaryDecisionMatch[1]);
-    choiceA = action;
-    choiceB = action ? ('不採取「' + action + '」，維持目前安排') : null;
-  } else if (isChoice && explicitPairMatch) {
-    choiceA = _lnCleanChoiceOption(explicitPairMatch[1]);
-    choiceB = _lnCleanChoiceOption(explicitPairMatch[2]);
-  } else if (isChoice && explicitAB) {
-    choiceA = '選項A'; choiceB = '選項B';
-  }
+  // The same tested parser is embedded in both readers; no load-order dependency.
+  var decision = classifyDecisionQuestion(q);
+  var moreThanTwoOptions = decision.kind === 'multiple';
+  var incompleteChoice = decision.kind === 'incomplete';
+  var hypothesisChoice = decision.kind === 'hypotheses' || decision.kind === 'ambiguous';
+  var isChoice = decision.kind === 'binary' && !!decision.left && !!decision.right;
+  var choiceA = isChoice ? decision.left : null, choiceB = isChoice ? decision.right : null;
 
   var yesNoPartRe = /嗎\s*$|^(?:會不會|有沒有|能不能|可不可以|是不是|是否|要不要|該不該|應不應該|適不適合|值不值得|行不行|成不成|愛不愛|喜不喜歡)/;
   var partYesNoCount = parts.reduce(function(n, part){ return n + (yesNoPartRe.test(part.replace(/\s+/g,'')) ? 1 : 0); }, 0);
@@ -485,7 +534,7 @@ function _lnValidateQuestion(q) {
 function _lnRecommendSpread(x) {
   if (x.moreThanTwoOptions) return {id:'nine',why:'問題超過兩個方案，九宮格先釐清共同條件與阻力；本盤不為每個方案配置獨立支線，不合併選項或編造排名'};
   if (x.incompleteChoice) return {id:'five',why:'比較選項尚未完整，五張線先分析已說明的處境；不代你補出另一個方案'};
-  if (x.moreThanTwoOptions) return { id:'nine', why:'問題包含三個以上方案，九宮格可把各方案放進同一比較語義網；若涉及多個生活領域則可改用大牌陣' };
+  if (x.hypothesisChoice) return {id:'five',why:'先分析同一件事的不同可能解釋，沒有確認是兩個可選行動，因此不建立 A／B 支線'};
   if (x.independentMulti) return { id:'grand', why:'問題包含多個可獨立回答的主題，大牌陣能保留各主題及其交互作用' };
   if (x.isChoice) return { id:'choice', why:'問題包含兩個可替代方案，需要分成A／B兩條獨立支線比較' };
   if (x.isGlobal) return { id:'grand', why:'問題同時涵蓋多個獨立生活領域或要求全景，需使用36張大牌陣' };
@@ -921,6 +970,7 @@ function _lnUpdateSpreadPreview() {
   if(_lnSpread!=='auto'){host.textContent='手動選擇：'+SPREADS[_lnSpread].name+'（'+SPREADS[_lnSpread].count+'張）。依實際牌位解讀。';return;}
   var pick=_lnDetectSpread(q);
   host.textContent=pick.id?'建議：'+SPREADS[pick.id].name+'（'+SPREADS[pick.id].count+'張）・'+pick.why:pick.why;
+  if(pick.x&&pick.x.isChoice)host.textContent+='\nA：'+pick.x.choiceA+'\nB：'+pick.x.choiceB+'\n請核對這是否就是你想比較的兩條路；可直接修改上方問題。';
 }
 
 // ════ Public API ════

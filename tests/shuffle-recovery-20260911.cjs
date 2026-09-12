@@ -74,9 +74,9 @@ function finish(e){const d=e.doc.querySelector('dialog');assert(d&&d.open);d.que
   const T=await import('three'),choreo=await import('../JS/cinematic-src/choreography.mjs'),e=quiet(fixture()),host=add(e,'div','stage');let disposed=0,rendered=0;const resources=new Set(),released=new Set();
   e.Element.prototype.prepend=function(node){this.insertBefore(node,this.children[0]);};
   class Renderer{constructor(){this.domElement=new e.Element('canvas');this.capabilities={getMaxAnisotropy:()=>1};}setPixelRatio(){}setClearColor(){}setSize(){}render(scene){rendered++;scene.traverse(n=>{for(const r of [n.geometry,...(Array.isArray(n.material)?n.material:[n.material])])if(r&&!resources.has(r)){resources.add(r);r.addEventListener('dispose',()=>released.add(r));}});}dispose(){disposed++;throw Error('simulated GPU disposal failure');}}
-  e.ctx.__T={...T,WebGLRenderer:Renderer,TextureLoader:class{load(){}}};e.ctx.__choreo=choreo;
+  e.ctx.__T={...T,WebGLRenderer:Renderer,TextureLoader:class{load(){}}};e.ctx.__choreo=choreo;e.ctx.__craft=await import('../JS/cinematic-src/craft.mjs');
   const source=fs.readFileSync(path.join(__dirname,'../JS/cinematic-src/stage.mjs'),'utf8').replace(/^import .*;\n/gm,'').replace('export function mountStage','function mountStage');
-  vm.runInContext('const T=__T;const {cardPose,actorPose,cameraPose,instrumentPose,CAST,clamp,ease}=__choreo;'+source+';window.__mount=mountStage;',e.ctx);
+  vm.runInContext('const T=__T;const {buildCraft}=__craft;const {cardPose,actorPose,cameraPose,instrumentPose,CAST,clamp,ease}=__choreo;'+source+';window.__mount=mountStage;',e.ctx);
   const stage=e.ctx.__mount(host,'tarot');assert(rendered>0);stage.dispose();stage.dispose();assert.equal(disposed,1);assert.equal(resources.size,released.size);assert.equal(host.querySelectorAll('canvas').length,0);assert.equal(e.clock.timers.size,0);const before=rendered;e.clock.advance(9000);assert.equal(rendered,before);
  });
  console.log('shuffle-recovery: '+passed+' groups passed (fault injection, not phone-specific error reproduction).');

@@ -3264,6 +3264,15 @@ function _startDeck3D(topCount,botCount){
       card.classList.add('is-awake');
       card.style.visibility='';card.style.transform='';card.tabIndex=0;
       card.setAttribute('role','button');card.setAttribute('aria-label','選取牌背 '+(Number(id)+1));card.setAttribute('draggable','false');
+      // One opaque face, shared artwork. This picker never flips a hidden 3D face.
+      // The dedicated image avoids relying on a backface-culled CSS background.
+      var back=card.querySelector('.tdc-back');
+      if(back&&!back.querySelector('.tdc-back-art')){
+        var art=document.createElement('img');art.className='tdc-back-art';
+        art.setAttribute('src','assets/ui/tarot-back-moon-gold.jpg');
+        art.setAttribute('alt','');art.setAttribute('aria-hidden','true');art.setAttribute('draggable','false');
+        back.appendChild(art);
+      }
       if(card.firstElementChild)card.firstElementChild.style.filter='';
     });row.style.transform='';
   });

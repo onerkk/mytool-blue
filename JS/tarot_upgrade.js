@@ -3605,8 +3605,7 @@ enhanceTarot = function(tarot) {
     } catch(e) { throw new Error('開鑰計算失敗：'+e.message); }
     if (!results) throw new Error('開鑰計算引擎未完整載入，請重新整理後再試。');
 
-    // 欄位別名（新引擎 → 渲染器）
-    if (results.op3) results.op3.rulingMajor = results.op3.signTrump || '';
+    // Render aliases at the view boundary; do not mutate the saved operation.
 
     // 儲存到 S.tarot
     S.tarot = S.tarot || {};
@@ -3624,7 +3623,7 @@ enhanceTarot = function(tarot) {
     overlay.style.paddingTop = '0';
 
     overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','開鑰之法儀式');
-    var html = '<div class="ootk-sequence-actions" style="position:sticky;top:0;z-index:100;display:flex;gap:8px;justify-content:space-between;width:100%;padding:12px;background:#14121b"><button type="button" id="ootk-fast-result" style="min-height:44px;padding:8px 12px;border:1px solid #c9a84c;border-radius:8px;background:#c9a84c;color:#171208;font:14px system-ui">略過動畫，直接解讀</button><button type="button" id="ootk-sequence-cancel" style="min-height:44px;padding:8px 12px;border:1px solid #78663e;border-radius:8px;background:#211c29;color:#eee7d7;font:14px system-ui">取消儀式</button></div>';
+    var html = '<div class="ootk-sequence-actions" style="position:sticky;top:0;z-index:100;display:flex;gap:8px;justify-content:space-between;width:100%;padding:12px;background:#14121b"><button type="button" id="ootk-fast-result" style="min-height:44px;padding:8px 12px;border:1px solid #c9a84c;border-radius:8px;background:#c9a84c;color:#171208;font:14px system-ui">略過演出，查看資料</button><button type="button" id="ootk-sequence-cancel" style="min-height:44px;padding:8px 12px;border:1px solid #78663e;border-radius:8px;background:#211c29;color:#eee7d7;font:14px system-ui">取消儀式</button></div>';
 
     // ① 召喚祝禱層（首次顯示，使用者點擊後消失進入主流程）
     html += '<div id="ootk-invocation" class="ootk-invocation-layer show-bg show-angel show-scroll show-prayer show-btn">';
@@ -3726,10 +3725,11 @@ enhanceTarot = function(tarot) {
     document.getElementById('ootk-actions').prepend(autoBtn);
     autoBtn.onclick=function(){_ootkAuto=!_ootkAuto;autoBtn.textContent='連續演出：'+(_ootkAuto?'開':'關');autoBtn.setAttribute('aria-pressed',String(_ootkAuto));if(_ootkAuto&&!_advanceLock&&!_lastPhaseHadBanner&&currentPhase>=0)nextBtn.click();};
     var _lastPhaseHadBanner = false;
-    var maxPhases = Math.max(1, Math.min(5, results.completedOperations || 5));
+    var maxPhases = Math.max(0, Math.min(5, Number(results.completedOperations)||0));
     document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot, idx){ if (idx >= maxPhases) dot.style.display = 'none'; });
 
     function startStageFlow() {
+      if(!maxPhases){finishSequence();return;}
       phasesEl = document.getElementById('ootk-phases');
       nextBtn = document.getElementById('ootk-next');
       nextBtn.addEventListener('click', advancePhase);
@@ -5032,8 +5032,8 @@ enhanceTarot = function(tarot) {
     var h = '';
     h += '<div style="padding:.6rem;border-radius:10px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.12)">';
     h += '<div style="font-size:.88rem;color:rgba(168,85,247,.9);font-weight:700">代表牌落在 ' + (op.activeSign || '?') + '</div>';
-    if (op.rulingMajor) {
-      h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">主牌：' + (op.rulingMajor || '') + '</div>';
+    if (op.rulingMajor || op.signTrump) {
+      h += '<div style="font-size:.78rem;color:var(--c-text-dim);margin-top:.25rem;line-height:1.6">主牌：' + (op.rulingMajor || op.signTrump || '') + '</div>';
     }
     h += '</div>';
     h += _renderKeyCards(op.keyCards, allResults && allResults.significatorId);
@@ -5127,6 +5127,31 @@ enhanceTarot = function(tarot) {
     return h;
   }
 
+  // Same result object for full playback and skip. Five visible rows distinguish
+  // "not calculated by procedure" from "calculated but animation skipped".
+  function _ootkCompletionHTML(results) {
+    function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+    var names=['四元素分堆','十二宮分堆','十二星座分堆','三十六牌環','生命之樹分堆'];
+    var count=0,rows='',stopped=results.abandonedAt,stopData=stopped&&results[stopped];
+    names.forEach(function(name,index){
+      var op=results['op'+(index+1)],has=!!op;
+      if(has)count++;
+      var halted=has&&!!(op.abandonTriggered||op.abandoned);
+      rows+='<li class="ootk-record-row" data-operation="'+(index+1)+'" data-record-state="'+(has?(halted?'stopped':'retained'):'not-run')+'"><span class="ootk-record-number">0'+(index+1)+'</span><div><h3>'+name+'</h3><p>'+(has?(halted?'資料保留・本層停止':'資料已保留'):'未進行・'+(stopped?'依前層停止結果':'尚無計算資料'))+'</p>';
+      if(has){
+        var cards=op.activeCards||[],path=op.countingPath||[],pairs=op.pairs||[];
+        rows+='<details><summary>查看本層資料 <span>'+cards.length+' 張牌・'+path.length+' 步計數・'+pairs.length+' 組配對</span></summary>';
+        if(op.abandonReason)rows+='<p class="ootk-record-note">'+esc(op.abandonReason)+'</p>';
+        if(cards.length)rows+='<p>依實際順序：'+cards.map(function(c){return esc(c.n||c.name||c.id);}).join(' → ')+'</p>';
+        if(path.length)rows+='<p>計數路徑：'+path.map(function(c){return esc(c.cardName||c.cardId)+(c.position==='center'?'（中央代表牌）':'（第 '+(Number(c.position)+(index===3?0:1))+' 位）');}).join(' → ')+'</p>';
+        if(pairs.length)rows+='<p>配對：'+pairs.map(function(p){var a=p.left||p.card1||{},b=p.right||p.card2||{};return esc(a.n||a.name||a.id||'')+(p.single?'（單張）':' ＋ '+esc(b.n||b.name||b.id||''));}).join('；')+'</p>';
+        rows+='</details>';
+      }
+      rows+='</div></li>';
+    });
+    var reason=(stopData&&stopData.abandonReason)||(results.divinationValidity&&results.divinationValidity.reason)||'';
+    return '<section class="ootk-record" aria-label="五次操作資料總覽"><div class="ootk-record-heading"><span>OPENING OF THE KEY</span><strong>'+count+' <small>/ 5 次操作</small></strong></div><h2>'+(count===5?'五層資料，完整留存。':'本次資料與停止原因。')+'</h2><p>略過只結束演出。這裡與提示詞使用同一次運算，已完成的資料全部保留。</p>'+(stopped?'<p class="ootk-record-note">'+esc(reason||'本次程序已停止，後續操作未生成。')+' 後續未進行的層次，不會補抽或假造資料。</p>':'<p class="ootk-record-note">資料齊全代表操作完成；解讀的主要線索仍需與你的實際處境核對。</p>')+'<ol>'+rows+'</ol></section>';
+  }
   // ── 觸發 OOTK AI 分析（獨立 API 呼叫，不借用 _triggerTarotAI）──
   async function _triggerOOTKAI(results) {
     window._ootkResults = results;
@@ -5150,6 +5175,7 @@ enhanceTarot = function(tarot) {
       } catch (e) {}
       _w70.style.display = '';
       window.JY_renderExportPrompt('ootk', _w70);
+      var record=document.createElement('div');record.innerHTML=_ootkCompletionHTML(results);_w70.prepend(record);
       // goStep already positioned this explicit result transition at the top.
       return;
     }

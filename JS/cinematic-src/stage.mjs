@@ -2,6 +2,7 @@ import * as T from 'three';
 import {cardPose,actorPose,cameraPose,instrumentPose,CAST,clamp,ease} from './choreography.mjs';
 import {buildScenery} from './scenery.mjs';
 import {buildPresence} from './presence.mjs';
+import {buildCraft} from './craft.mjs';
 
 // One renderer per ceremony. This module owns presentation only: no RNG, birth
 // calculation, card selection, storage, or interpretation is permitted here.
@@ -78,16 +79,13 @@ export function mountStage(host,kind,options={}){
  actor=mesh(new T.PlaneGeometry(3.05,6.10,20,32),actorMaterial,rig);actor.position.set(0,-.58,-.65);actor.visible=false;actor.renderOrder=1;
  loadTexture('assets/ui/'+cfg.actor+'.webp',texture=>{uniforms.atlas.value=texture;actor.visible=true;host.classList.add('jr-actor-ready');});
 
- const stageRing=ring(1.5,.008);stageRing.rotation.x=1.2;stageRing.position.y=-.45;
- const stageRing2=ring(1.35,.006);stageRing2.rotation.x=1.2;stageRing2.position.y=-.43;
- // An illuminated plinth grounds the objects; concentric light traces carry
- // interaction energy without flashing or covering the actual controls.
- const plinth=mesh(new T.CylinderGeometry(1.23,1.36,.10,64),dark);plinth.position.y=-.76;
- const plinthRim=ring(1.26,.016);plinthRim.rotation.x=Math.PI/2;plinthRim.position.y=-.705;
+ const craft=buildCraft({keep,gold,accent,doc:host.ownerDocument||document});
+ // A bevelled, inlaid object with a visible thickness replaces the plain disc.
+ craft.table(objects);
  // Physical portal ribs and enamel inlays provide depth behind the illustrated
  // actor. No full-screen postprocessing or animation-dependent navigation.
  const architecture=new T.Group();rig.add(architecture);
- const enamel=keep(new T.MeshStandardMaterial({color:'#182b40',metalness:.65,roughness:.36}));
+ const enamel=craft.enamel;
  for(let i=0;i<3;i++){
   const gate=new T.Group();architecture.add(gate);gate.position.set(0,.38,-1.8-i*1.7);
   const arc=mesh(new T.TorusGeometry(2.05,.038,8,80,Math.PI),gold,gate);arc.position.y=.85;
@@ -119,13 +117,13 @@ export function mountStage(host,kind,options={}){
   }
  }else if(kind==='ziwei'){
   const instrument=new T.Group();objects.add(instrument);instrument.position.y=.07;
-  [0,.8,1.5].forEach((a,i)=>{const r=ring(.9+i*.08,.021,instrument);r.rotation.set(a,.45+i*.65,.3);animated.push({type:'orbit',node:r,index:i,rate:(i%2?-.12:.15)});});
-  const core=mesh(new T.IcosahedronGeometry(.15,1),light,instrument);
+  [0,.8,1.5].forEach((a,i)=>{const r=craft.bezel(instrument,.9+i*.08);r.rotation.set(a,.45+i*.65,.3);animated.push({type:'orbit',node:r,index:i,rate:(i%2?-.12:.15)});});
+  const core=mesh(new T.IcosahedronGeometry(.17,1),craft.jewel,instrument);
   animated.push({type:'core',node:core});
   for(let i=0;i<12;i++){const a=i*Math.PI/6;const star=mesh(new T.OctahedronGeometry(.057),light,instrument);star.position.set(Math.cos(a)*1.04,Math.sin(a)*1.04,0);animated.push({type:'star',node:star,index:i});}
  }else if(kind==='bazi'){
   for(let i=0;i<4;i++){const pillar=new T.Group();pillar.position.x=(i-1.5)*.68;objects.add(pillar);
-   mesh(new T.CylinderGeometry(.15,.15,.85,24),dark,pillar);
+   craft.decoratePillar(pillar);
    for(let j=0;j<6;j++){const a=j*Math.PI/3;const inlay=mesh(new T.BoxGeometry(.008,.76,.008),gold,pillar);inlay.position.set(Math.sin(a)*.151,0,Math.cos(a)*.151);}
    [-.43,.43].forEach(y=>{const c=mesh(new T.CylinderGeometry(.185,.185,.055,24),gold,pillar);c.position.y=y;});
    const top=mesh(new T.OctahedronGeometry(.15),light,pillar);top.position.y=.59;
@@ -135,8 +133,8 @@ export function mountStage(host,kind,options={}){
  }else if(kind==='compat'){
   for(let i=0;i<2;i++){const orb=new T.Group();orb.position.x=i?.6:-.6;objects.add(orb);
    const material=keep(new T.MeshPhysicalMaterial({color:i?'#a8c8e5':'#e2b9c5',metalness:.35,roughness:.14,clearcoat:1,clearcoatRoughness:.08,emissive:i?'#50799e':'#aa687b',emissiveIntensity:.3}));
-   mesh(new T.IcosahedronGeometry(.23,3),material,orb);
-   [0,1,2].forEach(j=>{const r=ring(.47,.012,orb);r.rotation.set(j*.72,j*.83,j*.3);});
+   mesh(new T.IcosahedronGeometry(.23,1),material,orb);
+   [0,1].forEach(j=>{const r=craft.bezel(orb,.44+j*.07);r.rotation.set(j*.72,j*.83,j*.3);});
    animated.push({type:'partner',node:orb,index:i});
   }
   for(let i=0;i<3;i++){
@@ -151,14 +149,14 @@ export function mountStage(host,kind,options={}){
   const blossom=new T.Group();objects.add(blossom);blossom.position.y=.42;
   for(let i=0;i<5;i++){
    const petal=new T.Group();blossom.add(petal);petal.rotation.z=i*Math.PI*2/5;
-   const leaf=mesh(new T.SphereGeometry(.2,16,12),light,petal);leaf.scale.set(.64,1.32,.12);leaf.position.y=.21;
+   const leaf=craft.petal(petal);leaf.rotation.y=.2;
    const vein=mesh(new T.CylinderGeometry(.006,.006,.32,6),gold,petal);vein.position.set(0,.21,.035);
    animated.push({type:'petal',node:petal,index:i});
   }
  }else if(kind==='oracle'){
-  const cup=mesh(new T.CylinderGeometry(.32,.27,.66,40,1,true),dark);cup.position.y=-.25;
-  [-.58,.075].forEach(y=>{const r=ring(.325,.027);r.rotation.x=Math.PI/2;r.position.y=y;});
-  for(let i=0;i<13;i++){const a=i*2.3999,r=.075+Math.sqrt(i)*.041;const stick=mesh(new T.BoxGeometry(.035,.88,.018),gold);stick.position.set(Math.cos(a)*r,.1+(i%3)*.035,Math.sin(a)*r);stick.rotation.z=Math.cos(a)*.11;animated.push({type:'stick',node:stick,index:i,base:stick.position.y});}
+  craft.cup(objects);
+  const vermilion=keep(new T.MeshStandardMaterial({color:'#933e39',metalness:.12,roughness:.38}));
+  for(let i=0;i<13;i++){const a=i*2.3999,r=.075+Math.sqrt(i)*.041;const stick=new T.Group();objects.add(stick);mesh(new T.BoxGeometry(.035,.88,.018),craft.wood,stick);mesh(new T.BoxGeometry(.036,.15,.020),vermilion,stick).position.y=.366;stick.position.set(Math.cos(a)*r,.1+(i%3)*.035,Math.sin(a)*r);stick.rotation.z=Math.cos(a)*.11;animated.push({type:'stick',node:stick,index:i,base:stick.position.y});}
  }
  // Shared spark field is deterministic decoration, unrelated to the reading RNG.
  const particles=128,positions=new Float32Array(particles*3),seeds=[];
@@ -168,7 +166,7 @@ export function mountStage(host,kind,options={}){
   vertexShader:`uniform float t,energy,motion;varying float alpha;void main(){vec3 p=position;p.y=mod(p.y+3.0+t*.07*motion,6.0)-3.0;p.x+=sin(t*.3+p.y)*.03*motion;vec4 mv=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mv;gl_PointSize=min(9.0,(8.0+energy*10.0)/(-mv.z));alpha=.32+energy*.42;}`,
   fragmentShader:`uniform vec3 color;varying float alpha;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(color,smoothstep(.5,.04,d)*alpha);}`
  }));scene.add(new T.Points(pgeo,pmat));
- const scenery=state.story?buildScenery({kind,rig,keep,gold,accent,reduced}):null;
+ const scenery=state.story?buildScenery({kind,rig,keep,gold,accent,reduced,craft}):null;
  const presence=state.story?buildPresence({kind,rig,keep,accent,reduced}):null;
 
  function resize(){if(dead||lost)return;const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderOnce();}
@@ -205,7 +203,6 @@ export function mountStage(host,kind,options={}){
   });
   traces.forEach((r,i)=>{const q=state.phase===2?clamp(state.since/2.65-i*.1):state.power*.45;
    r.scale.setScalar(1+q*(.35+i*.15));r.material.opacity=.045+Math.sin(q*Math.PI)*.24;});
-  stageRing.rotation.z=state.time*.045;stageRing2.rotation.z=-state.time*.06;
   pmat.uniforms.t.value=state.time;pmat.uniforms.energy.value=energy;
   scenery?.update({...state,since:reduced?6:state.since});
   presence?.update({...state,since:reduced?6:state.since});
