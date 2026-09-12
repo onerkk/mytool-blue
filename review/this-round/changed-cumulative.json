@@ -1,0 +1,187 @@
+[
+  {
+    "path": "package.json",
+    "sha256": "9e2f656fe504c2ed963e27073d082346001a43191b2d19f1554be90d2abbd408",
+    "status": "modified"
+  },
+  {
+    "path": "index.html",
+    "sha256": "c852e788a73bff76a081ca06f109c7737cc38e8060d074f99e3f9733e41ecf31",
+    "status": "modified"
+  },
+  {
+    "path": "meihua-standalone.js",
+    "sha256": "85ea73f7ed48b803426e0d36bed155984476a0eeee5edee983d97559d7dd0861",
+    "status": "modified"
+  },
+  {
+    "path": "tests/reading-depth-20260912.cjs",
+    "sha256": "35440cc21b933770c461218319b6ab1df0e490116df7d3f1a7b046dc9e37efce",
+    "status": "added"
+  },
+  {
+    "path": "tests/divination-audit-20260908.cjs",
+    "sha256": "006e1eb82ac9dd392e84d8b60ed5ca3a4f7f76564daf431582058965da701863",
+    "status": "modified"
+  },
+  {
+    "path": "tests/prompt-accuracy-20260811.test.cjs",
+    "sha256": "a9c64d06ed59d7bc65f87f2186f75f2cca0ef98892f9edf0876caa448cba047b",
+    "status": "modified"
+  },
+  {
+    "path": "tests/flow-polish-20260912.cjs",
+    "sha256": "412aaff8e30d1b244dc5a24028c3f23d80e979833b10cedc69bfcf4832f64750",
+    "status": "added"
+  },
+  {
+    "path": "tests/cinematic-20260911.cjs",
+    "sha256": "295b47497a1f25dc716229252bafbf12b6bebafad2b47e7d411924d46c0ae0ac",
+    "status": "modified"
+  },
+  {
+    "path": "tests/flow-interaction-20260911.cjs",
+    "sha256": "c6598b7f4164e6842ff4627b45a7b7d4f625ce3cf5d96b8819e3ff62171983f4",
+    "status": "modified"
+  },
+  {
+    "path": "tests/shuffle-recovery-20260911.cjs",
+    "sha256": "eeca362a0b11969028ee2bd38e87d2cdb28f0af24decc709b7bdb25aa8d6d0b6",
+    "status": "modified"
+  },
+  {
+    "path": "tests/ritual-lifecycle-20260911.cjs",
+    "sha256": "052785c3605c88b2fd2ba7323e63e07f9448a4cc208e4451f625c47d9d34c565",
+    "status": "modified"
+  },
+  {
+    "path": "CSS/reading-depth.css",
+    "sha256": "6cf6c451bef2c8462a16ce0fe1c50b1eef4d6967476f4b67aa0f7ba780510b44",
+    "status": "added"
+  },
+  {
+    "path": "JS/bazi-prompt-root.js",
+    "sha256": "991cf96289e5aac50fb2e436d54f291dcbb60df021344ebaaf5297d4abcdd2e0",
+    "status": "modified"
+  },
+  {
+    "path": "JS/tarot-foundation.js",
+    "sha256": "2713188d0b6535784dc5218b0998cf78d9e62736ec8aeadc55a229ba92f47052",
+    "status": "modified"
+  },
+  {
+    "path": "JS/bazi-suite-core.js",
+    "sha256": "9498c6b0d1fd85d163524d643f34301a545a67b770bad8889d078d0921f811a0",
+    "status": "modified"
+  },
+  {
+    "path": "JS/oracle.js",
+    "sha256": "27f671201f3d095b44b2dbbc097b35ea2692accb4c58249cee314af414224770",
+    "status": "modified"
+  },
+  {
+    "path": "JS/sw.js",
+    "sha256": "43e761b8a16d892e3daaccf7c621010ebde2b44f6833878837c31a98e37d273a",
+    "status": "modified"
+  },
+  {
+    "path": "JS/prompt-export.js",
+    "sha256": "3430d34697ddaf548865f0ea1f76a88743449175cd9424e26fb760f781673bcb",
+    "status": "modified"
+  },
+  {
+    "path": "JS/meihua_output_layer.js",
+    "sha256": "6e0297d27529ce2c3a5f6dd7cff6e98383b1a947d6e049bcfb5bb7d676cdca42",
+    "status": "modified"
+  },
+  {
+    "path": "JS/tarot.js",
+    "sha256": "1734a032f929fa202a6e36d7c14dfe22e3c40c6da2b31bb71af9d78404027e11",
+    "status": "modified"
+  },
+  {
+    "path": "JS/ziwei.js",
+    "sha256": "adb624795a1805363fe59c2f51128b1f40ce5d37a3fb8cf8763847441783b2d0",
+    "status": "modified"
+  },
+  {
+    "path": "JS/ziwei-prompt-root.js",
+    "sha256": "52eae877ffacb0c0e86ead20a53057c6a08ad304b58df6630c462fb9ff054f98",
+    "status": "modified"
+  },
+  {
+    "path": "JS/lenormand.js",
+    "sha256": "038f67930eea9d64ffa1033100d6e96a9b88c5491ca3cbb8be260254dfcca355",
+    "status": "modified"
+  },
+  {
+    "path": "JS/bazi_upgrade.js",
+    "sha256": "876be2adee9b7c3b3b5f86b50fff25b81a5eef1b5582d031cb989f7670b63b13",
+    "status": "modified"
+  },
+  {
+    "path": "JS/meihua-standalone.js",
+    "sha256": "85ea73f7ed48b803426e0d36bed155984476a0eeee5edee983d97559d7dd0861",
+    "status": "modified"
+  },
+  {
+    "path": "JS/ui.js",
+    "sha256": "58f4dacf19b75143323ea146afb7f5c07d4fc7a5de90cc5a266798ad8cea1aee",
+    "status": "modified"
+  },
+  {
+    "path": "JS/cinematic-ui.js",
+    "sha256": "e9b47a5f66fb45c8df21edfa43cc7fafd72f8782c56bb06fe4149b355975f224",
+    "status": "modified"
+  },
+  {
+    "path": "JS/cinematic-stage.js",
+    "sha256": "4319a2fd1de69c20285e7c5209dfddfd840d2006b1e06aa1cbf1b49340c6877c",
+    "status": "modified"
+  },
+  {
+    "path": "JS/reading-quality.js",
+    "sha256": "935da32421affaec79d471e438ab11b04d03e250a59a842af3041b2006198146",
+    "status": "added"
+  },
+  {
+    "path": "JS/ziwei-standalone.js",
+    "sha256": "763d85550ca95baa69df6b6b7ae42dd7b35ba16b1a95a18c181cafe005986da4",
+    "status": "modified"
+  },
+  {
+    "path": "JS/atelier-ui.js",
+    "sha256": "ae950a984cfddd17179d10d6102d788546a73547aa02603b491ba79e4970e4eb",
+    "status": "modified"
+  },
+  {
+    "path": "JS/tarot_upgrade.js",
+    "sha256": "e2de52d8b18de408177449522e94e32407599cec223515a85785a9228ccb58d0",
+    "status": "modified"
+  },
+  {
+    "path": "JS/ritual-ateliers.js",
+    "sha256": "c3df58a0455053ca3ad693efe3f1e0c5c6d39a23a899de58fbf5a21c1801f366",
+    "status": "modified"
+  },
+  {
+    "path": "JS/bazi-standalone.js",
+    "sha256": "bbefbed77c80f28fa79be38334f55db50d977abdb9e8ed9c68d7d5fad0adeb62",
+    "status": "modified"
+  },
+  {
+    "path": "JS/bazi-suite.js",
+    "sha256": "847842ff47e125e12f886fca66a281b60e28d6f310655ccb1491cc36c7edb5e7",
+    "status": "modified"
+  },
+  {
+    "path": "JS/cinematic-src/choreography.mjs",
+    "sha256": "67335ef944af715d881f1cce9f309b4e2ad94dfe91b2b8bab1d9ea64257b48ab",
+    "status": "modified"
+  },
+  {
+    "path": "JS/cinematic-src/stage.mjs",
+    "sha256": "ab8fdb51eb174989ddb48a373179550b235dde6d4126448e79a7406038f461ad",
+    "status": "modified"
+  }
+]
