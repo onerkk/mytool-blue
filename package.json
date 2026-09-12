@@ -4,7 +4,7 @@
     "three": "0.186.0"
   },
   "scripts": {
-    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual && npm run test:cinematic && npm run test:flow",
+    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual && npm run test:cinematic && npm run test:flow && npm run test:depth && npm run test:flow-polish",
     "test:prompts": "node tests/prompt-accuracy-20260811.test.cjs",
     "test:tarot": "node tests/tarot-v102-method-data-prompt.test.js",
     "test:ziwei": "node tests/ziwei-root-spec-v1.test.js",
@@ -22,7 +22,9 @@
     "build:cinematic": "node scripts/build-cinematic.mjs",
     "test:cinematic": "node tests/cinematic-20260911.cjs && npm run test:shuffle-recovery",
     "test:shuffle-recovery": "node tests/shuffle-recovery-20260911.cjs",
-    "test:flow": "node tests/flow-interaction-20260911.cjs"
+    "test:flow": "node tests/flow-interaction-20260911.cjs",
+    "test:depth": "node tests/reading-depth-20260912.cjs",
+    "test:flow-polish": "node tests/flow-polish-20260912.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"

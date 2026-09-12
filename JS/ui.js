@@ -8082,6 +8082,7 @@ window.initTarotDeck = function(){
 var _oldAutoDrawV8035 = window.autoDraw;
 window.autoDraw = function(){
   if(typeof pickAnimating!=='undefined' && pickAnimating)return;
+  if(window.JYRitual&&window.JYRitual.isActive())return;
 
   jyTarotHardfixCSS();
   var def = jyTarotGetDef();
@@ -8094,8 +8095,8 @@ window.autoDraw = function(){
   // v80.35：快速抽牌不再停在洗牌步驟；它本身就完成洗牌狀態並補滿牌陣。
   jyTarotForceShuffledState();
 
-  var drawn;
-  try{drawn = jyTarotBuildDraw(def, sid);}catch(e){
+  var pending=window.JYTarotSession&&window.JYTarotSession.pending(),drawn;
+  try{drawn = pending&&pending.sid===sid?pending.cards:jyTarotBuildDraw(def, sid);}catch(e){
     console.error('[Tarot] draw procedure failed',e);
     alert('抽牌尚未完成：'+(e&&e.message?e.message:'請重新整理後再試。'));
     return;
@@ -8107,18 +8108,30 @@ window.autoDraw = function(){
     return;
   }
   var epoch=window.JYTarotSession ? window.JYTarotSession.epoch() : 0;
+  if(window.JYTarotSession)window.JYTarotSession.stageDraw({sid:sid,cards:drawn});
+  function sync(){if(window.JY_ATELIER&&window.JY_ATELIER.syncTarot)window.JY_ATELIER.syncTarot();}
   function finish(){
     if(window.JYTarotSession && epoch !== window.JYTarotSession.epoch())return;
     pickAnimating=false;
+    if(window.JYTarotSession)window.JYTarotSession.clearPending();
     jyTarotFinishAutodraw(drawn, sid, def);
+    sync();
   }
   if(window.JYRitual){
-    pickAnimating=true;
+    pickAnimating=true;sync();
+    try{
     window.JYRitual.play('tarot', {
       variant:'deal', question:(S.form && S.form.question) || '', spreadName:def.name || def.title || '',
       cards:drawn.map(function(c){return {id:c.id,name:c.n||c.name,image:getTarotCardImage(c),isUp:c.isUp};}),
-      onComplete:finish,onCancel:function(){pickAnimating=false;if(window._atelierReturnToInput)window._atelierReturnToInput();}
+      onComplete:finish,onCancel:function(){
+        if(window.JYTarotSession&&epoch!==window.JYTarotSession.epoch())return;
+        pickAnimating=false;sync();
+      }
     });
+    }catch(error){
+      pickAnimating=false;sync();console.error('[Tarot] reveal unavailable',error);
+      var hint=document.getElementById('pick-hint');if(hint){hint.textContent='揭牌暫時未能啟動。本組牌已保留，請按「繼續揭牌」重試。';hint.setAttribute('role','alert');}
+    }
   }else finish();
 };
 

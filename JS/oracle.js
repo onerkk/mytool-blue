@@ -588,28 +588,28 @@ else if(_phase==='todayClosed'){
 h+='<div class="orc-fade orc-today-closed" style="background-image:url(img/oracle/oracle-tc-bg.png?v='+IMG_V.slice(2)+')">';
 h+='<div class="orc-tc-bg-overlay"></div>';
 h+='<div class="orc-tc-content">';
-h+='<h2 class="orc-tc-title">神明示意・今日靜心</h2>';
+h+='<h2 class="orc-tc-title">今日儀式・到此靜心</h2>';
 h+='<div class="orc-tc-divider"><span>✦</span></div>';
 h+='<div class="orc-tc-section">';
 h+='<p class="orc-tc-line">連擲三筊，未得允杯，</p>';
-h+='<p class="orc-tc-line">此乃神明示意：<strong>今日不宜再請</strong>。</p>';
+h+='<p class="orc-tc-line">依本站儀式規則，<strong>今天先在這裡停下</strong>。</p>';
 h+='</div>';
 h+='<div class="orc-tc-classical">';
-h+='<p class="orc-tc-quote">《擲筊禮節》古例 ——<br>「連無聖筊，短期不宜再問同事。」</p>';
+h+='<p class="orc-tc-quote">三次未允杯後暫停，是本站採用的儀式安排。<br>這不是對你的誠心、品格或事情成敗的判定。</p>';
 h+='</div>';
 h+='<div class="orc-tc-section">';
-h+='<p class="orc-tc-explain-title">或為以下三因：</p>';
+h+='<p class="orc-tc-explain-title">你仍然可以做的事：</p>';
 h+='<ul class="orc-tc-reasons">';
-h+='<li>心緒未定，問題尚未明朗</li>';
-h+='<li>時機未到，需待時日沉澱</li>';
-h+='<li>此事神明暫無明確指引</li>';
+h+='<li>把真正需要決定的事，寫成一句話</li>';
+h+='<li>分開已知事實、擔心與尚待確認的部分</li>';
+h+='<li>選一個不必等籤詩，也能開始的小行動</li>';
 h+='</ul>';
 h+='</div>';
-h+='<p class="orc-tc-final">請沉心淨念，改日再來。</p>';
+h+='<p class="orc-tc-final">今天沒有取得籤詩，仍可以好好照顧自己的步調。</p>';
 h+='<div class="orc-tc-actions">';
 h+='<button class="orc-btn-primary orc-tc-btn" onclick="_oracleClose()">🌙 今日到此・謝過神恩</button>';
 h+='</div>';
-h+='<p class="orc-tc-footnote">此鎖定僅限今日 · 明日重新誠心請示即可</p>';
+h+='<p class="orc-tc-footnote">本日暫停 · 明日可重新開始</p>';
 h+='</div>';  // /content
 h+='</div>';
 }
@@ -1074,11 +1074,11 @@ var lb=document.getElementById('orc-throw-label');
 // v63b: 視覺分層 — 主筊筊狀態大字 + 神諭副文小字
 // v67:笑筊/陰筊文案神格化(模仿七王爺「為什麼」+「神明個性」)
 var albMain=_allowResult==='holy'?'聖筊':_allowResult==='laugh'?'笑筊':'陰筊';
-var _laughReasons=['陳述不清,神明聽不明','機緣未到,何必多此一問','所求之事早有定數','心未誠,意未專'];
-var _yinReasons=['神明否決所求,慎思','時機未至,且退','問題本身有問題,先想清楚','此事神明不應'];
-var albSub=_allowResult==='holy'?'神明應允此求'
-  :_allowResult==='laugh'?('笑而不答 — '+_laughReasons[Math.floor(Math.random()*_laughReasons.length)])
-  :('神不應許 — '+_yinReasons[Math.floor(Math.random()*_yinReasons.length)]);
+var _laughReasons=['這次未得到允杯，可以先停一口呼吸'];
+var _yinReasons=['這次未得到允杯，請按自己的步調決定是否繼續'];
+var albSub=_allowResult==='holy'?'依本次儀式規則，可以進入搖籤'
+  :_allowResult==='laugh'?('笑筊 — '+_laughReasons[Math.floor(Math.random()*_laughReasons.length)])
+  :('陰筊 — '+_yinReasons[Math.floor(Math.random()*_yinReasons.length)]);
 var aco=_allowResult==='holy'?'#ffd700':'#e67e22';
 if(lb){
   lb.innerHTML='<span class="orc-jiao-status">'+albMain+'</span>'+
@@ -1100,8 +1100,8 @@ if(_allowResult==='holy'){ui.innerHTML='<button class="orc-btn-primary" onclick=
 else{
   // v66:顯示剩餘次數提示
   var remain=3-_allowNoShengCount;
-  var hint=remain===1?'<div class="orc-toss-hint">再無聖筊則今日不宜再請示</div>':
-           remain===2?'<div class="orc-toss-hint">心需靜,意需誠</div>':'';
+  var hint=remain===1?'<div class="orc-toss-hint">還有一次；若未允杯，本日儀式將在此收束</div>':
+           remain===2?'<div class="orc-toss-hint">筊象不代表你的誠心或事情成敗</div>':'';
   ui.innerHTML=hint+'<button class="orc-btn-primary" onclick="_oracleAllowThrow()">再 擲 杯</button>';
 }
 ui.style.opacity='1';}
@@ -1338,6 +1338,7 @@ function _buildOraclePrompt(poem, qText) {
     lines.push('');
   }
   lines.push('────────────────');
+  if(window.JY_READING_QUALITY)lines=lines.concat(window.JY_READING_QUALITY.lines('oracle'));
   lines.push('【解籤方法】');
   lines.push('1. 開頭直接回答求籤者的問題，給出吉、凶、宜、忌、等待或行動的主要方向與把握度。');
   lines.push('2. 先讀四句籤詩的整體語勢、因果、轉折與收束，逐句辨識背景、條件、阻力、轉機或勸戒的功能，再結合籤等、典故及相關分類判讀。引用最能支撐本題的原句，說明從詩句到本題的推論，不用籤等取代詩意。');

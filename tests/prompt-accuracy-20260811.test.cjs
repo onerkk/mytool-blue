@@ -79,8 +79,8 @@ test('首頁先載入 v5 共用提示詞根，再載入八字與紫微 standalon
   const zStandalone = html.indexOf('JS/ziwei-standalone.js');
   assert(bRoot >= 0 && bRoot < bStandalone);
   assert(zRoot >= 0 && zRoot < zStandalone);
-  assert(html.includes('JS/bazi-prompt-root.js?v=20260910professional1'));
-  assert(html.includes('JS/ziwei-prompt-root.js?v=20260910professional1'));
+  assert(html.includes('JS/bazi-prompt-root.js?v=20260912flow2'));
+  assert(html.includes('JS/ziwei-prompt-root.js?v=20260912flow2'));
 });
 
 test('八字提示詞根在真實執行路徑可用，並開放 AI 自身命理知識', () => {

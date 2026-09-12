@@ -15,6 +15,17 @@ export function cardPose(index,count,state){
  return {x,y,z,rx,ry,rz};
 }
 export function actorPose(phase){return phase===0?0:phase===1?1:phase===2?2:3;}
+// Distinct, reversible motion for each instrument. A phase never changes data.
+export function instrumentPose(type,index,state){
+ const p=clamp(state.power||0),u=ease((state.since||0)/2.65),active=state.phase===2,
+  settled=state.phase>=3,lit=(state.lit||0)>index,turn=clamp(state.turn||0,-2,2);
+ if(type==='pillar')return {rise:(lit?.16:0)+(active?Math.sin(u*Math.PI)*.22:0),tilt:active?Math.sin(u*Math.PI)*(index-1.5)*.12:0,glow:lit?1:.12};
+ if(type==='partner')return {radius:active?.66-.23*u:settled?.43:.66,angle:(index?1:-1)*(active?u*Math.PI*2:turn*.3),rise:active?Math.sin(u*Math.PI)*.3:0};
+ if(type==='seed')return {spread:1+(active?Math.sin(u*Math.PI)*.65:p*.18),angle:turn*.55+(active?u*Math.PI*(index%2?1:-1):0),glow:active||settled?1:p};
+ if(type==='stick')return {rise:active?Math.sin(u*Math.PI)*(.08+index%4*.045):0,tilt:turn*.12+(active?Math.sin(u*Math.PI*6)*.045:0)};
+ if(type==='orbit')return {angle:turn*.4+(active?u*Math.PI*2*(index%2?-1:1):0),glow:active||settled?1:p};
+ return {rise:0,tilt:0,glow:0};
+}
 export const CAST={
  tarot:{actor:'lunar-guide',speaker:'月見',role:'塔羅引路人',accent:'#ddbd81',chapter:'月下問心',lens:'把心事說清楚，再看見下一步。'},
  lenormand:{actor:'lunar-guide',speaker:'月見',role:'牌語引路人',accent:'#9ed9c4',chapter:'翡翠密語',lens:'讓具體的生活線索，彼此相連。'},

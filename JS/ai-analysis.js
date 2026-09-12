@@ -23358,6 +23358,14 @@ function generateShareImage() {
 // v89：輸出中性牌義素材；題材語境與事件結論交由提示詞的需求—證據矩陣處理。
 // ═══════════════════════════════════════════════════════════════
 
+// Preserve original orientation and dynamic position in the follow-up payload.
+function _jyFollowupCardData(card, slot, position) {
+  card=card||{};slot=slot||{};
+  var mode=card.readingMode||card.sourceProfile||'gd_book_t';
+  var rws=mode==='rws_reversals',up=rws?(typeof card.isUp==='boolean'?card.isUp:null):true;
+  return {id:card.id,name:card.n||card.name||'',direction:rws?(up===null?'方向未記錄':up?'正位':'逆位'):'元素尊貴裁決',isUp:up,sourceProfile:mode,element:card.el||card.element||'',position:slot.label||position||'',role:slot.role||'',authority:slot.authority||'',slotBinding:slot.binding||null};
+}
+
 function _jyTarotQuestionText() {
   try {
     var f = (S && S.form) || {};
@@ -23465,7 +23473,7 @@ function _buildTarotOnlyPayload() {
       semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||''
     },
     semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||'',
-    shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'完成解讀正文後另起「延伸選品」段落。文案須自然承接使用者原問句與本次已成立結論或可執行方向，只從 allowedItems 逐字選一個正庫存品項；不得宣稱療效、改運、保證結果或尺寸適合。品項與賣場連結各自獨立成段，賣場連結必須是全文最後一行。'}
+    shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'完成解讀正文後另起「延伸選品」段落。文案自然承接原問句與可執行方向，從 allowedItems 逐字選一個快照內可選品項，沒有候選時只邀請瀏覽，不捏造品項、現貨、價格、產地或材質；不得宣稱療效、改運、保證結果或尺寸適合。用兩三句把飾品連到日常提醒，財務困難者先使用既有物品；即時危機先提供求助方向、不推商品。最後只保留一次靜月之光蝦皮賣場連結 https://shopee.tw/a50h95648d?tab=shop ，下一行為願你諸事順遂。'}
   };
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
@@ -24779,7 +24787,7 @@ async function _triggerTarotFollowUp() {
 
   var newCards = [];
   for (var ci = 0; ci < cardCount; ci++) {
-    var nc = Object.assign({}, available[ci], { isUp: true, direction: '元素尊貴裁決', sourceProfile: 'gd_book_t' });
+    var nc = Object.assign({}, available[ci], { isUp: true, direction: '元素尊貴裁決', readingMode: 'gd_book_t', sourceProfile: 'gd_book_t' });
     try { if (window.JYGoldenDawn) window.JYGoldenDawn.annotate(nc); } catch (_gdFu) {}
     newCards.push(nc);
   }
@@ -24886,9 +24894,10 @@ async function _triggerTarotFollowUp() {
   } else {
     // 塔羅追問
     var originalCards = drawn.map(function(c, i) {
-      var def = (S.tarot && S.tarot.spreadDef) ? S.tarot.spreadDef : null;
-      var posName = (def && def.positions && def.positions[i]) ? def.positions[i].name : '';
-      var _isUp2 = c.isUp === true; return { name: (c.n || c.name || ''), direction: '元素尊貴裁決', isUp: true, sourceProfile: 'gd_book_t', element: c.el || '', position: posName };
+      var ta=S.tarot||{},def=ta.dynamicSpreadDef||ta.spreadDef||null;
+      var posName=(def&&def.positions&&def.positions[i])?def.positions[i].name:'';
+      var slot=ta.methodPlan&&ta.methodPlan.slots&&ta.methodPlan.slots[i];
+      return _jyFollowupCardData(c,slot,posName);
     });
     payload = {
       mode: 'tarot_followup',
@@ -24904,6 +24913,8 @@ async function _triggerTarotFollowUp() {
         spreadType: (S.tarot && S.tarot.spreadType) ? S.tarot.spreadType : 'celtic_cross',
         spreadZh: (S.tarot && S.tarot.spreadDef && S.tarot.spreadDef.zh) ? S.tarot.spreadDef.zh : '',
         cards: originalCards,
+        methodPlan: (S.tarot&&S.tarot.methodPlan)||null,
+        sourceProfile: originalCards.length?originalCards[0].sourceProfile:'',
         followUp: {
           question: followQ,
           supplementCards: newCards.map(function(c) { var _isUp = c.isUp === true; return { name: (c.n || c.name || ''), direction: '元素尊貴裁決', isUp: true, sourceProfile: 'gd_book_t', element: c.el || '' }; }),
@@ -24912,6 +24923,7 @@ async function _triggerTarotFollowUp() {
       }
     };
   }
+  if(payload.tarotData&&payload.tarotData.followUp)payload.tarotData.followUp.methodGuide='先依原問題與原牌陣的實際牌位和讀牌方式回顧結論，再說明追問新增加的條件。補充牌是另抽的Book T序列，先讀相鄰及全句並按元素尊貴校準，不是把原陣更換成另一個牌陣；原牌若採RWS正逆位，其方向保持原紀錄。原牌與補充牌不能跨序列自造元素鄰接，補牌也不延伸為開鑰的新操作。比較支持與反向訊號，說清維持或修正原結論的理由，回應追問並給可觀察的下一步，不因使用者重問就強改答案。';
   // 選品資料注入：塔羅／開鑰使用實際正庫存；完整七維追問維持原有水晶資料格式。
   if (!isFullFollowUp) {
     var _fuDomains = [];
@@ -24928,7 +24940,7 @@ async function _triggerTarotFollowUp() {
     payload.shopRecommendation = {
       sourceFile: _fuInventory && _fuInventory.SOURCE_FILE || '',
       allowedItems: _fuCandidates,
-      outputRule: '追問正文完成後另起「延伸選品」段落，自然承接本次追問、原始問題與已成立結論，只從 allowedItems 逐字選一個正庫存品項；不得宣稱療效、改運或保證結果，賣場連結必須是全文最後一行。'
+      outputRule: '追問正文完成後，用兩三句把本次追問的可行建議連到日常配飾或提醒；只從 allowedItems 快照候選逐字選一項，沒有候選時只邀請瀏覽，不捏造現貨、價格、產地或功效。不宣稱療效、改運或保證結果；財務困難者先使用既有物品，即時危機先協助求助而不推商品。最後只保留一次 [靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)，下一行為願你諸事順遂。'
     };
   } else if (_fuCC.catalog.length) {
     payload.crystalCatalog = _fuCC.catalog;
@@ -25435,7 +25447,7 @@ function _buildOOTKPayload() {
   payload.shopRecommendation = {
     sourceFile: inventory && inventory.SOURCE_FILE || '',
     allowedItems: candidates,
-    outputRule: '完成開鑰之法正文後另起「延伸選品」段落。文案須自然承接使用者原問句與有效程序結論或可執行方向，只從 allowedItems 逐字選一個正庫存品項；若程序停止或問題未獲確認，只能承接使用者關切，不得假裝牌面已有結論。不得宣稱療效、改運、保證結果或尺寸適合。品項與賣場連結各自獨立成段，賣場連結必須是全文最後一行。'
+    outputRule: '完成開鑰之法正文後另起「延伸選品」段落。文案自然承接使用者原問句與有效程序結論或可執行方向，只從 allowedItems 快照候選逐字選一項，沒有候選時只邀請瀏覽，不保證即時現貨、價格或產地；若程序停止或問題未獲確認，只能承接使用者關切，不假裝牌面已有結論。不宣稱療效、改運、保證結果或尺寸適合。品項作日常配飾與提醒，財務困難者先使用既有物品，即時危機不作商品推薦。最後只保留一次 [靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)，下一行為願你諸事順遂。'
   };
   if (window._jyPhotos) payload.photos = window._jyPhotos;
   return payload;

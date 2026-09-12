@@ -14,7 +14,7 @@ function drawing(){
  e.original={question:c.S.form.question,deck:c.deckShuffled,ids:c.deckShuffled.map(x=>x.id).join(','),epoch:c.JYTarotSession.epoch(),spread:c.getCurrentSpreadDef()};return e;
 }
 function unchanged(e){const c=e.ctx;assert.equal(c.S.form.question,e.original.question);assert.equal(c.getCurrentSpreadDef(),e.original.spread);assert.equal(c.JYTarotSession.epoch(),e.original.epoch);assert.equal(c.deckShuffled,e.original.deck);assert.equal(c.deckShuffled.map(x=>x.id).join(','),e.original.ids);assert.equal(c.drawnCards.length,0);assert(e.doc.getElementById('btn-analyze').disabled);}
-function finish(e){const d=e.doc.querySelector('dialog');assert(d&&d.open);d.querySelector('.jr-next').click();d.querySelector('.jr-next').click();e.clock.advance(2100);d.querySelector('.jr-next').click();}
+function finish(e){const d=e.doc.querySelector('dialog');assert(d&&d.open);d.querySelector('.jr-next').click();d.querySelector('.jr-next').click();e.clock.advance(2800);d.querySelector('.jr-next').click();}
 (async()=>{
  await test('Home animation failure cannot prevent opening or finishing the shuffle',()=>{
   const e=drawing(),c=e.ctx;c.JYCinemaUI={suspendHome(){throw Error('home scene unavailable');}};

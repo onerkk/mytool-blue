@@ -358,8 +358,9 @@
     var unfavTxt = Array.isArray(b.unfav)? b.unfav.join('、') : '';
     var curDy = _currentDayun(b);
     h += '<div class="bzx-summary">';
-    h += '<div class="sline">日主 <b>'+dm+'</b>（'+dmEl+'行）・ <span class="sgold">'+(b.strongLevel||(b.strong?'身強':'身弱'))+'</span>'+(b.structType?'（'+b.structType+'）':'')+'</div>';
-    if (geTxt) h += '<div class="sline">格局：<b>'+geTxt+'</b></div>';
+    h += '<div class="sline">日主 <b>'+dm+'</b>（'+dmEl+'行）・ 模型候選 <span class="sgold">'+(b.strongLevel||(b.strong?'身強':'身弱'))+'</span>'+(b.structType?'（'+b.structType+'）':'')+'</div>';
+    h += '<p class="jd-model-note">以下為判法候選，需以月令、根氣與全局覆核。旺衰不是能力評分，喜忌也不是全年吉凶。</p>';
+    if (geTxt) h += '<div class="sline">取格候選：<b>'+geTxt+'</b></div>';
     if (favTxt) h += '<div class="sline">用神候選：<span class="sgold">'+favTxt+'</span>'+(unfavTxt?' ・ 忌神候選：'+unfavTxt:'')+'</div>';
     if (b.tiaohou && b.tiaohou.need) h += '<div class="sline">調候：'+(b.tiaohou.need.join('、'))+'（'+(b.tiaohou.reason||'窮通寶鑑')+'）</div>';
     if (curDy) h += '<div class="sline">現行大運：<b>'+(curDy.gz||'')+'</b>'+((curDy.startDate&&curDy.endDateExclusive)?'（'+curDy.startDate+' ～ '+curDy.endDateExclusive+'）':((curDy.ageStart!=null)?'（'+curDy.ageStart+'～'+curDy.ageEnd+'歲）':''))+'</div>';
@@ -499,7 +500,7 @@
     L.push('');
 
     L.push('【B. 前端流派模型（供交叉核對）】');
-    L.push('日主 '+(b.dm||'')+'（'+(b.dmEl||'')+'），生於'+((P.month&&P.month.zhi)||'')+'月；得令 '+(b.deLing?'是':'否')+'、日支坐根 '+(b.deDi?'是':'否')+'、天干助勢 '+(b.deShi?'是':'否')+'。');
+    L.push('日主 '+(b.dm||'')+'（'+(b.dmEl||'')+'），生於'+((P.month&&P.month.zhi)||'')+'月；得令 '+(b.deLing?'是':'否')+'、日支坐根 '+(b.deDi?'是':'否')+'；天干得勢門檻模型 '+(b.deShi?'達標':'未達標')+'（本模型須其他三干至少兩干為印比；未達標不代表沒有生扶，請以各柱明列十神核對）。');
     if(b.tongGen&&b.tongGen.zh)L.push('通根：'+b.tongGen.zh+'。');
     L.push('本系統旺衰模型判為：'+(b.strongLevel||(b.strong?'身強':'身弱'))+(b.selfPts!=null?'；自黨相對分 '+Math.round(b.selfPts):'')+(b.strengthConflict?'；位於判法邊界，請同時比較替代判法':'')+'。');
     if(b.strengthNote)L.push('旺衰複核提示：'+b.strengthNote);
@@ -535,9 +536,9 @@
     if(b.liuNianGZ)L.push('目前流年：'+b.liuNianGZ+'（以立春為年界；對應年份 '+((b.liuNianPeriod&&b.liuNianPeriod.year)||'—')+'）。');
     var refYear=(b.liuNianPeriod&&b.liuNianPeriod.year)||new Date(isFinite(b._referenceTimestamp)?b._referenceTimestamp:Date.now()).getUTCFullYear();
     var future=[];
-    (b.dayun||[]).forEach(function(d){(d&&d.liuNian||[]).forEach(function(x){if(x&&x.year>=refYear&&x.year<=refYear+3&&!future.some(function(y){return y.year===x.year;}))future.push(x);});});
+    (b.dayun||[]).forEach(function(d){(d&&d.liuNian||[]).forEach(function(x){if(x&&x.year>=refYear&&x.year<=refYear+3&&!future.some(function(y){return y.year===x.year&&y.periodStart===x.periodStart&&y.dayun===d.gz;}))future.push(Object.assign({dayun:d.gz},x));});});
     future.sort(function(a,c){return a.year-c.year;});
-    if(future.length)L.push('近四個立春年度：'+future.map(function(x){return x.year+' '+x.gz+'（模型 '+(x.level||'未評')+'；區間 '+x.periodStart+' ～ '+x.periodEndExclusive+'）';}).join('；')+'。');
+    if(future.length)L.push('近四個立春年度（交運年分段列出）：'+future.map(function(x){return x.year+' '+x.gz+'（大運 '+x.dayun+'；模型 '+(x.level||'未評')+'；區間 '+x.periodStart+' ～ '+x.periodEndExclusive+'）';}).join('；')+'。');
     L.push('流年與大運的「吉凶等級」是前端相對排序；刑沖合害、三合三會在此列為觸發。請回到干支、十神、原局承受與題目領域自行判讀。');
     L.push('');
 

@@ -19,7 +19,7 @@ function form(e,kind,section,button,count){
  return container;
 }
 (async()=>{
- const {cardPose,actorPose,CAST}=await import('../JS/cinematic-src/choreography.mjs');
+ const {cardPose,actorPose,instrumentPose,CAST}=await import('../JS/cinematic-src/choreography.mjs');
  await test('All eight systems have an original actor and complete local transparent atlas',()=>{
   assert.equal(Object.keys(CAST).length,8);
   for(const c of Object.values(CAST)){assert(fs.statSync(path.join(project,'assets/ui',c.actor+'.webp')).size>10000);assert(c.speaker&&c.role&&c.chapter);}
@@ -40,7 +40,7 @@ function form(e,kind,section,button,count){
    touch.dispatch('pointerdown',{button:0,clientX:10,clientY:10,pointerId:1});
    touch.dispatch('pointermove',{clientX:kind==='oracle'?10:210,clientY:kind==='oracle'?210:10,pointerId:1});e.clock.advance(16);
    assert.equal(d.getAttribute('data-phase'),'2');assert(calls.some(c=>c[0]==='turn'&&c[1]!==0));assert.equal(done,0);
-   e.clock.advance(2200);assert.equal(done,0);d.querySelector('.jr-next').click();assert.equal(await h.finished,true);assert.equal(done,1);assert.equal(calls.filter(c=>c[0]==='dispose').length,1);assert.equal(e.clock.timers.size,0);
+   e.clock.advance(2800);assert.equal(done,0);d.querySelector('.jr-next').click();assert.equal(await h.finished,true);assert.equal(done,1);assert.equal(calls.filter(c=>c[0]==='dispose').length,1);assert.equal(e.clock.timers.size,0);
   }
  });
  await test('Wrong gesture direction does not instantly complete; pointer cancellation resets progress',()=>{
@@ -80,9 +80,9 @@ function form(e,kind,section,button,count){
    const e=dom(),pending=[],tracked=new Set(),disposed=new Set(),host=add(e,'div','scene-host');let rendering=0,rendererDisposed=0;
    class Renderer{constructor(){this.domElement=new e.Element('canvas');this.capabilities={getMaxAnisotropy:()=>4};this.ratio=1;}setPixelRatio(n){this.ratio=n;}getPixelRatio(){return this.ratio;}setClearColor(){}setSize(){}dispose(){rendererDisposed++;}render(scene){rendering++;scene.traverse(node=>{assert([node.position.x,node.position.y,node.position.z].every(Number.isFinite));for(const r of [node.geometry,...(Array.isArray(node.material)?node.material:[node.material])])if(r&&!tracked.has(r)){tracked.add(r);r.addEventListener('dispose',()=>disposed.add(r));}});}}
    class Loader{load(url,loaded){pending.push({url,loaded});}}
-   e.ctx.__T={...Three,WebGLRenderer:Renderer,TextureLoader:Loader};e.ctx.__choreo={cardPose,actorPose,CAST,clamp:(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),ease:v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);}};
+   e.ctx.__T={...Three,WebGLRenderer:Renderer,TextureLoader:Loader};e.ctx.__choreo={cardPose,actorPose,instrumentPose,CAST,clamp:(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),ease:v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);}};
    const src=fs.readFileSync(path.join(project,'JS/cinematic-src/stage.mjs'),'utf8').replace(/^import .*;\n/gm,'').replace('export function mountStage','function mountStage');
-   vm.runInContext('const T=__T;const {cardPose,actorPose,CAST,clamp,ease}=__choreo;'+src+';window.__mount=mountStage;',e.ctx);
+   vm.runInContext('const T=__T;const {cardPose,actorPose,instrumentPose,CAST,clamp,ease}=__choreo;'+src+';window.__mount=mountStage;',e.ctx);
    const stage=e.ctx.__mount(host,kind,{mode:'hold'});assert.equal(host.getAttribute('data-renderer'),'webgl2');
    const first=pending.shift();assert(first);const loaded=new Three.Texture();let textureDisposed=0;loaded.addEventListener('dispose',()=>textureDisposed++);first.loaded(loaded);
    stage.setPhase(1);stage.setPower(.8);stage.setLit(2);stage.setTurn(.5);e.clock.advance(100);assert(rendering>1);

@@ -248,7 +248,13 @@
     var dayun=safeArray(chart && chart.dayun),current = dayun.find(function(x){return x && x.isCurrent;}) || null;
     var ref=Number(chart&&chart._referenceTimestamp);
     var nowYear=Number(chart&&chart.liuNianPeriod&&chart.liuNianPeriod.year)||(Number.isFinite(ref)?new Date(ref).getUTCFullYear():new Date().getFullYear()), byYear={};
-    dayun.forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){if(y&&y.year>=nowYear-1&&y.year<=nowYear+4&&!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz},y);});});
+    dayun.forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){
+      if(!y||y.year<nowYear-1||y.year>nowYear+4)return;
+      if(!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz,segments:[]},y);
+      var group=byYear[y.year],segment=Object.assign({dayun:d.gz},y);
+      if(!group.segments.some(function(s){return s.dayun===segment.dayun&&s.periodStart===segment.periodStart;}))group.segments.push(segment);
+    });});
+    Object.keys(byYear).forEach(function(y){var g=byYear[y];g.segments.sort(function(a,b){return String(a.periodStart).localeCompare(String(b.periodStart));});if(g.segments.length>1)g.level='交運分段，須分別判讀';});
     var annual=Object.keys(byYear).map(Number).sort().map(function(y){return byYear[y];});
     return {currentLuck:current, annual:annual};
   }
@@ -330,18 +336,20 @@
   function annualLines(chart, count) {
     var ref=Number(chart&&chart._referenceTimestamp), civilYear=Number.isFinite(ref)?new Date(ref).getUTCFullYear():new Date().getFullYear();
     var nowYear=Number(chart&&chart.liuNianPeriod&&chart.liuNianPeriod.year)||civilYear, byYear={};
-    safeArray(chart&&chart.dayun).forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){if(y&&y.year>=nowYear&&!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz},y);});});
-    return Object.keys(byYear).map(Number).sort().slice(0,count||5).map(function(year){var x=byYear[year];return '・'+year+' '+safeText(x.gz)+'（大運 '+safeText(x.dayun)+'；模型 '+safeText(x.level,'未標記')+'；區間 '+safeText(x.periodStart,'未提供')+' ～ '+safeText(x.periodEndExclusive,'未提供')+'）';});
+    safeArray(chart&&chart.dayun).forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){if(y&&y.year>=nowYear){var group=byYear[y.year]||(byYear[y.year]=[]);if(!group.some(function(x){return x.dayun===d.gz&&x.periodStart===y.periodStart;}))group.push(Object.assign({dayun:d.gz},y));}});});
+    return Object.keys(byYear).map(Number).sort().slice(0,count||5).map(function(year){return byYear[year].sort(function(a,b){return String(a.periodStart).localeCompare(String(b.periodStart));}).map(function(x){return '・'+year+' '+safeText(x.gz)+'（大運 '+safeText(x.dayun)+'；模型 '+safeText(x.level,'未標記')+'；區間 '+safeText(x.periodStart,'未提供')+' ～ '+safeText(x.periodEndExclusive,'未提供')+'）';}).join('\n');});
   }
 
   function modelLines(chart) {
     var ep=chart&&chart.ep||{}, stance=chart&&chart.wuxingStance||{}, th=chart&&chart.tiaohou||{};
     function modelText(value){return value&&typeof value==='object'?JSON.stringify(value):safeText(value,'未提供');}
+    var ge=chart&&chart.zhengGe;
+    if(ge){ge={geName:ge.geName,geGod:ge.geGod,geGan:ge.geGan,touChu:ge.touChu,benQiGod:ge.benQiGod};}
     return [
       '日主 '+safeText(chart&&chart.dm)+'（'+safeText(chart&&chart.dmEl)+'），本系統旺衰候選：'+safeText(chart&&chart.strongLevel,'未判定')+'；自黨相對分 '+safeText(chart&&chart.selfPts,'—')+'。',
       '五行相對權重：'+ELEMENTS.map(function(e){return e+safeText(ep[e],0)+'%';}).join('、')+'。此為本模型內比較，不是古籍固定比例或科學測量。',
       '扶抑立場：'+safeText(stance.summary, '喜候選 '+safeArray(chart&&chart.fav).join('、')+'；忌候選 '+safeArray(chart&&chart.unfav).join('、'))+'。',
-      '月令格局候選：'+modelText(chart&&chart.zhengGe)+'。格神、相神與成敗救應須回到透藏根氣；格局用神與扶抑用神分義。',
+      '月令格局候選：'+modelText(ge)+'。格神、相神與成敗救應須回到透藏根氣；touChu 為空時不能宣稱格神已透干。格局用神與扶抑用神分義。',
       '官殺辨析：'+modelText(chart&&chart.guanShaMix)+'。',
       '病藥模型：'+modelText(chart&&chart.medicineGod)+'；通關模型：'+modelText(chart&&chart.relayGod)+'。未提供的模型不可補造。',
       '調候鏡頭：需 '+safeArray(th.need).join('、')+'；'+safeText(th.detail)+'。調候與扶抑分開，不自動互相覆蓋。',
@@ -408,8 +416,9 @@
     ].concat(
       universalQuestionRootLines(),
       [buildChartDataBlock(chart,meta),'【判讀規範】'],
-      universalJudgmentRuleLines('single'),
-      promptSpec().answerContractLines('single'),
+      universalJudgmentRuleLines(lensId==='chart'?'chart':'single'),
+      promptSpec().lensGuideLines(lensId),
+      promptSpec().answerContractLines(lensId==='chart'?'chart':'single'),
       [
         '分析模式補充：純排盤模式聚焦資料校核；原局題以長期結構為主；歲運題引用資料中的交界；多選題使用一致標準比較。'
       ],
@@ -468,6 +477,7 @@
         '【判讀規範】'
       ],
       universalJudgmentRuleLines('compatibility'),
+      promptSpec().scenarioGuideLines(s.id),
       promptSpec().answerContractLines('compatibility'),
       [
         '合盤方法：先分析兩人各自原局，再讀A→B與B→A的十神方向、跨盤干支作用和歲運同步。',

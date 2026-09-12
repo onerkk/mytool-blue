@@ -125,16 +125,20 @@ function baziDetectZhengGe(bazi) {
     geName = '建祿格（月令無用神透出）';
   }
 
-  // 成格/破格條件
-  var geDesc = '';
-  if (geGod === '正官') geDesc = '正官格：月令正官透出，喜印來護官，忌傷官破格。最忌七殺混雜。';
-  else if (geGod === '七殺') geDesc = '七殺格：月令七殺透出，必須食神制殺或印綬化殺方能成格。無制則凶。';
-  else if (geGod === '正印') geDesc = '正印格：月令正印透出，喜官來生印，忌財壞印。學業智慧型命格。';
-  else if (geGod === '偏印') geDesc = '偏印格：月令偏印透出，又稱梟神奪食。忌食神被奪，喜偏財制梟。';
-  else if (geGod === '食神') geDesc = '食神格：月令食神透出，喜財來洩秀，忌偏印奪食。溫和有福之格。';
-  else if (geGod === '傷官') geDesc = '傷官格：月令傷官透出，喜傷官配印或傷官生財。忌見官（傷官見官為禍百端）。';
-  else if (geGod === '正財') geDesc = '正財格：月令正財透出，喜官來護財，忌比劫奪財。穩定守成型命格。';
-  else if (geGod === '偏財') geDesc = '偏財格：月令偏財透出，喜食傷生財，忌比劫分奪。善於投資理財。';
+  // Distinguish an exposed month stem from a fallback root candidate.
+  // Descriptions must not assert an exposure the calculation did not find.
+  var geTopics = {
+    '正官':'觀察官星、財印與食傷的制化，分清有根、受制與救應。',
+    '七殺':'觀察殺的力量、日主承受、食傷制化與印綬承接；不能只憑殺星論凶。',
+    '正印':'觀察印星生扶是否有效，以及財、官與全局流通的配合。',
+    '偏印':'觀察印與食傷、財星的實際位置及制化；有偏印不等於必然奪食。',
+    '食神':'觀察食神輸出、財星承接與印星制約，兼看日主承受。',
+    '傷官':'觀察表達、財印承接與官星互動；見官不等於必然生禍。',
+    '正財':'觀察財星根氣、食傷來源、比劫互動與日主承受，不直接等同收入。',
+    '偏財':'觀察資源運用、財星根氣與承受條件，不直接推定投資能力。'
+  };
+  var geDesc = geName+'候選：'+(touChu?'月令藏干 '+touChu+'（'+touChuGod+'）明透。':'月令藏干未透，本模型先以本氣 '+benQi+'（'+benQiGod+'）列為候選。')+
+    (geTopics[geGod]||'取格須再審月令、透藏、根氣與全局。')+'成格與取用仍待綜合覆核。';
 
   return {
     geName: geName,

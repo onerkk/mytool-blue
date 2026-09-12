@@ -712,6 +712,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   lines.push('雷諾曼以本次牌序形成組合語法；指示牌有明確角色才綁定。蛇、狐狸、棺材等象徵先依題目及相鄰牌分辨情境，不憑單牌認定第三者、欺騙、疾病或死亡。');
   lines.push('線讀／鏡像／九宮格方法參考：Tina Gong（Labyrinthos）https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-three-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-nine-card-portrait-box-or-3x3-lenormand-spreads 。本站雙路比較、議題九宮格的軸與末排收束採明示變體，不宣稱是唯一正統。');
   lines.push('方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。宮位與幾何有各家變體，本次以已提供的4×8＋4設定為準；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
+  if(window.JY_READING_QUALITY)lines=lines.concat(window.JY_READING_QUALITY.lines('lenormand'));
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId);
   _lnPushCardData(lines, drawn, sp);

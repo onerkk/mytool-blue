@@ -13,7 +13,9 @@
 // v69: 20260911cinema4 原創角色、WebGL2 場景及逐步填寫流程。
 // v70: 20260911shuffle5 洗牌原頁重試、儀式啟動回復及特效失敗保護。
 // v71: 20260911flow6 手勢、閱讀順序與共用控制元件更新。
-const CACHE_NAME = 'jy-main-v71';
+// v72: 20260912depth1 判讀品質、交運分段、選牌與多頁揭牌、立體儀式。
+// v73: 20260912flow2 快速手勢、即時進度、保留牌組續讀與筆記隔離。
+const CACHE_NAME = 'jy-main-v73';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

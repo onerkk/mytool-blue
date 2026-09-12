@@ -1320,28 +1320,6 @@ enhanceTarot = function(tarot) {
         deckWrap.querySelectorAll('.tarot-deck-card').forEach(function(el) {
           el.addEventListener('click', function() { pickCard(parseInt(el.dataset.idx), el); });
         });
-        // ★ v28：3D 觸控修復——stage 層級捕獲 touch
-        (function(dw){
-          var _tm2 = false;
-          dw.addEventListener('touchstart', function(){ _tm2 = false; }, {passive:true});
-          dw.addEventListener('touchmove', function(){ _tm2 = true; }, {passive:true});
-          dw.addEventListener('touchend', function(e){
-            if (_tm2) return;
-            var touch = e.changedTouches && e.changedTouches[0];
-            if (!touch) return;
-            var tx = touch.clientX, ty = touch.clientY;
-            var best = null, bestDist = 999999;
-            dw.querySelectorAll('.tarot-deck-card:not(.picked)').forEach(function(card){
-              var r = card.getBoundingClientRect();
-              var cx = r.left + r.width/2, cy = r.top + r.height/2;
-              var dist = Math.sqrt((tx-cx)*(tx-cx)+(ty-cy)*(ty-cy));
-              if (tx >= r.left-20 && tx <= r.right+20 && ty >= r.top-20 && ty <= r.bottom+20) {
-                if (dist < bestDist) { bestDist = dist; best = card; }
-              }
-            });
-            if (best) { e.preventDefault(); pickCard(parseInt(best.dataset.idx), best); }
-          });
-        })(deckWrap);
         if (typeof _startDeck3D === 'function') _startDeck3D(half, deckShuffled.length - half);
 
         // ★ v28：重新渲染後重置洗牌狀態

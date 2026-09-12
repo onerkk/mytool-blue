@@ -3,6 +3,7 @@
 (function(root){
  'use strict';
  var steps=Object.create(null),expanded=Object.create(null),homeScene=null,homeObserver=null,homeVisible=false,homeSuspended=false,homeHost=null;
+ var readingKeys=new WeakMap();
  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
  function cast(kind){return root.JYCinema&&root.JYCinema.cast[kind];}
  function portrait(cfg){return '<div class="jc-portrait" aria-hidden="true">'+[0,1,3].map(function(n){return '<span data-jc-pose="'+n+'" style="background-image:url(assets/ui/'+cfg.actor+'.webp);background-position:'+(n*100/3)+'% 0"></span>';}).join('')+'</div>';}
@@ -75,12 +76,35 @@
    var more=document.createElement('div');more.className=grid.className+' jf-more-grid';more.setAttribute('data-flow-providers','true');
    items.slice(3).forEach(function(item){more.appendChild(item);});extra.appendChild(more);grid.after(extra);
   });
+  container.querySelectorAll('.jy-ex-card,.ln-ai-card,.bzx-ai-card,.mhx-ai-card,.zw-ai,.orc-ai-prompt-card').forEach(function(card){
+   if(card.querySelector('.jd-handoff-steps'))return;
+   var guide=document.createElement('ol');guide.className='jd-handoff-steps';guide.setAttribute('aria-label','取得解讀的三個步驟');
+   guide.innerHTML='<li><span>01</span>複製本次資料</li><li><span>02</span>貼到 AI 並送出</li><li><span>03</span>核對與行動</li>';card.prepend(guide);
+  });
  }
- function results(container){
-  if(!container||!container.querySelector||container.querySelector('.jc-reading-close'))return;
+ function resetResults(container){
+  if(!container||!container.querySelector)return;
+  var old=container.querySelector('.jc-reading-close');if(old)old.remove();readingKeys.delete(container);
+ }
+ function results(container,readingKey){
+  if(!container||!container.querySelector)return;
+  var existing=container.querySelector('.jc-reading-close');
+  if(existing&&(readingKey===undefined||readingKeys.get(container)===readingKey))return;
+  if(existing)resetResults(container);
+  if(readingKey!==undefined)readingKeys.set(container,readingKey);
   var target=container.querySelector('.ln-ai-card,.bzx-ai-card,.mhx-ai-card,.zw-ai,.orc-ai-card,.bzs-copy-guide');
   if(!target&&container.id!=='step-tarot')return;
   var note=document.createElement('aside');note.className='jc-reading-close';note.innerHTML='<span class="jc-close-label">把提醒，帶回生活</span><h3>留下一個，做得到的下一步。</h3><p>把本次提示詞貼到 AI 送出後，先對照自己的經驗，再選一件可以開始的小事。你仍然可以調整自己的選擇。</p><details><summary>為這段靜心時間，留一個日常提醒 ↗</summary><p>如果你喜歡水晶與飾品，可以到靜月蝦皮選一件合眼緣的日常配件，紀念自己願意重新出發的時刻。</p><a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">逛逛靜月蝦皮選物 ↗</a></details>';
+  var journal=document.createElement('div'),jid='jd-'+(container.id||'reading');journal.className='jd-journal';
+  journal.innerHTML='<label for="'+jid+'-action">讀完後，我準備先做…</label><textarea id="'+jid+'-action" rows="2" maxlength="300" placeholder="寫一件自己能採取的小行動"></textarea><label for="'+jid+'-check">出現什麼訊號時，我會重新評估？</label><input id="'+jid+'-check" maxlength="180" placeholder="例如：對方能否確認交付日期"><button type="button" class="jd-copy-action">複製我的下一步</button><p class="jd-journal-status" role="status">這裡的筆記不會自動儲存，離開前可以複製帶走。</p>';
+  note.querySelector('details').before(journal);
+  journal.querySelector('button').onclick=function(){
+   var action=journal.querySelector('textarea').value.trim(),check=journal.querySelector('input').value.trim(),status=journal.querySelector('.jd-journal-status');
+   if(!action){status.textContent='先留下一件你願意開始的小事。';journal.querySelector('textarea').focus({preventScroll:true});return;}
+   var value='我的下一步：'+action+'\n重新評估的訊號：'+(check||'待補充');
+   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(function(){status.textContent='已複製。把它留在自己容易看見的地方。';},function(){status.textContent='瀏覽器未允許複製，請長按上方文字選取複製。';});}
+   else status.textContent='請長按上方文字選取複製。';
+  };
   if(target){var parent=target.closest('.bzs-card')||target;parent.after(note);}else container.appendChild(note);
  }
  function oracle(container,phase){
@@ -128,6 +152,6 @@
   // Older browsers keep an illustrated entrance rather than a permanent render loop.
  }
  function start(){inputGuide();home();var result=document.getElementById('step-tarot');if(result)results(result);document.addEventListener('visibilitychange',syncHome);}
- root.JYCinemaUI={enhance:enhance,handoff:handoff,home:home,input:inputGuide,oracle:oracle,results:results,suspendHome:function(value){homeSuspended=!!value;syncHome();}};
+ root.JYCinemaUI={enhance:enhance,handoff:handoff,home:home,input:inputGuide,oracle:oracle,results:results,resetResults:resetResults,suspendHome:function(value){homeSuspended=!!value;syncHome();}};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })(window);

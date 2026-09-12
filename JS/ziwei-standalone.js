@@ -297,7 +297,7 @@
       var mp = palaceStarParts(ming);
       L.push('');
       L.push('【命宮】' + (ming.branch||'') + '宮　' + (mp.majors.length ? '主星：' + mp.majors.join('、') : '空宮(無主星，借對宮遷移星力)') +
-        (mp.aux.length ? '　輔吉：' + mp.aux.join('、') : '') + (mp.sha.length ? '　煞：' + mp.sha.join('、') : ''));
+        (mp.aux.length ? '　輔雜曜：' + mp.aux.join('、') : '') + (mp.sha.length ? '　煞：' + mp.sha.join('、') : ''));
     }
     if (shen) {
       L.push('【身宮】坐於「' + shen.name + '」(' + shen.branch + ')—一生後天用力與晚運落點在此。');
@@ -379,7 +379,7 @@
 
     // 十二宮全盤
     L.push('');
-    L.push('【十二宮全盤】(每宮：地支｜主星含廟旺｜輔吉｜煞｜十二長生)');
+    L.push('【十二宮全盤】(每宮：地支｜主星含廟旺｜輔雜曜｜煞｜十二長生)');
     palaces.forEach(function(p, _pi){
       var pp = palaceStarParts(p);
       var _pn = (p.name && p.name.charAt(p.name.length-1)==='宮') ? p.name : (p.name + '宮'); // 修「命宮宮」重複
@@ -396,7 +396,7 @@
       }
       var seg = _pn + '(' + p.branch + ')：' +
         (pp.majors.length ? pp.majors.join('、') : _emptyTxt) +
-        (pp.aux.length ? '｜吉:' + pp.aux.join('、') : '') +
+        (pp.aux.length ? '｜輔雜曜:' + pp.aux.join('、') : '') +
         (pp.sha.length ? '｜煞:' + pp.sha.join('、') : '') +
         (p.changsheng ? '｜長生:' + p.changsheng : '');
       L.push('・' + seg);
@@ -609,7 +609,7 @@
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        window._jyLazyScript('JS/ziwei.js?v=20260609v80_50', null);
+        window._jyLazyScript('JS/ziwei.js?v=20260912depth1', null);
       }
     } catch(e){}
     w.scrollTop = 0;

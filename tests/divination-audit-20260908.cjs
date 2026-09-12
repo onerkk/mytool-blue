@@ -82,11 +82,11 @@ test('Canonical Mathers failure cannot silently become an ordinary top-N draw',(
   vm.runInContext('deckShuffled=TAROT.slice(0,60);drawnCards=[];',c);
   assert.throws(()=>c.jyTarotBuildDraw(c.__defs.mathers_horseshoe,'mathers_horseshoe'),/78/);
 });
-test('OOTK keeps the original question, actual operation boundary, card lexicon and cast timestamp',()=>{
+test('Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations',()=>{
   c._ootkResults={questionText:'原始開鑰問題',castTimestamp:'2026-09-08T01:02:03Z',significator:{id:35,name:'權杖國王'},op1:{activeCards:c.__deck.slice(0,4),countingPath:[{cardId:0,cardName:c.__deck[0].n,countValue:3,position:0,direction:'right'}],mainLineValidation:{status:'requires_querent_confirmation'}},op2:{activeCards:c.__deck.slice(4,8),abandoned:true},op3:{activeCards:c.__deck.slice(8,12)},abandonedAt:'op2'};
   c._ootkResults.completedOperations=5;c.S.form.question='後來改寫的問題';const p=c._buildOOTKPayload();assert.equal(p.question,'原始開鑰問題');assert.deepEqual(Object.keys(p.ootkData.operations),['op1','op2']);
   assert.equal(p.ootkData.operations.op2.valid,false);assert.equal(p.ootkData.procedureStatus.completedOperations,2);
-  const text=c.JY_buildExportPrompt('ootk');assert(text.includes('2026-09-08T01:02:03Z'));assert(text.includes('requires_querent_confirmation'));assert(text.includes('本次活躍牌的牌義底稿'));assert(!text.includes('【第三次操作'));
+  const text=c.JY_buildExportPrompt('ootk');assert(text.includes('2026-09-08T01:02:03Z'));assert(text.includes('requires_querent_confirmation'));assert(!text.includes('本次活躍牌的牌義底稿'));assert(text.includes('本輪不能提供完成五次操作的結論'));assert(!text.includes('【第三次操作'));
   c.S.tarot.spreadType='ootk';assert(c.JY_buildExportPrompt('tarot').includes('程序參考：Liber LXXVIII'));
   c._ootkResults={abandonedAt:'predeal_binding'};assert.equal(c._buildOOTKPayload(),null);assert.equal(c.JY_buildExportPrompt('ootk'),'');
   assert.equal(c._buildTarotOnlyPayload(),null);assert.equal(c.JY_buildExportPrompt('tarot'),'');

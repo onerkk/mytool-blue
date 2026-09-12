@@ -1019,7 +1019,7 @@ function computeZiwei(year,month,day,hour,gender){
   // 18. 武曲天府（武曲+天府同宮）
   for (var _wt = 0; _wt < 12; _wt++) {
     if (_hasStar(_wt, '武曲') && _hasStar(_wt, '天府')) {
-      patterns.push({ name: '武府同宮', level: '吉', desc: '武曲天府同宮，財星庫星聯手，主理財有道、財運穩健。' });
+      patterns.push({ name: '武府同宮', level: '吉', desc: '武曲天府同宮，可觀察執行、資源管理與守成的配合；須依實際落宮、四化及三方覆核，不保證理財成果。' });
       break;
     }
   }
@@ -1039,7 +1039,7 @@ function computeZiwei(year,month,day,hour,gender){
   for (var _mj = 0; _mj < 12; _mj++) {
     if (_hasStar(_mj, '天機') && _hasStar(_mj, '巨門')) {
       var _mjNote = _mj === 0 ? '坐命' : '在' + palaces[_mj].name;
-      patterns.push({ name: '機巨同宮', level: '雙面', desc: '天機巨門' + _mjNote + '，聰明多疑，口才好但易招口舌是非。化祿/化權則為名嘴或評論家。' });
+      patterns.push({ name: '機巨同宮', level: '雙面', desc: '天機巨門' + _mjNote + '，可觀察分析、調整與表達的配合；是否反覆或形成爭論，須結合四化及現實溝通方式，不直接指定職業。' });
       break;
     }
   }
@@ -1049,7 +1049,7 @@ function computeZiwei(year,month,day,hour,gender){
   }
   // 23. 命無正曜（空宮坐命）
   if (mingMajors.length === 0) {
-    patterns.push({ name: '命無正曜', level: '中性', desc: '命宮無主星，借對宮星力。性格多變、適應力強，但主見較弱，容易受環境影響。' });
+    patterns.push({ name: '命無正曜', level: '中性', desc: '命宮無十四主星，參照對宮並合看本宮輔煞與三方；空宮本身不能判定缺乏主見或人生缺陷。' });
   }
   // 24. 六煞星集命（命宮3煞以上）
   if (mingShas.length >= 3) {

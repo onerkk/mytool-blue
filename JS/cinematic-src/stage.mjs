@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {cardPose,actorPose,CAST,clamp,ease} from './choreography.mjs';
+import {cardPose,actorPose,instrumentPose,CAST,clamp,ease} from './choreography.mjs';
 
 // One renderer per ceremony. This module owns presentation only: no RNG, birth
 // calculation, card selection, storage, or interpretation is permitted here.
@@ -19,8 +19,8 @@ export function mountStage(host,kind,options={}){
  const key=new T.DirectionalLight('#fff0ce',4);key.position.set(-3,5,5);scene.add(key);
  const rim=new T.PointLight(accent,13,9,2);rim.position.set(2,1,2);scene.add(rim);
  const pulse=new T.PointLight(accent,0,5,2);pulse.position.set(0,-.6,2);scene.add(pulse);
- const gold=keep(new T.MeshStandardMaterial({color:'#cfad6d',metalness:.84,roughness:.27}));
- const dark=keep(new T.MeshStandardMaterial({color:'#122a37',metalness:.5,roughness:.35}));
+ const gold=keep(new T.MeshPhysicalMaterial({color:'#d3b17b',metalness:.87,roughness:.23,clearcoat:.5,clearcoatRoughness:.18}));
+ const dark=keep(new T.MeshPhysicalMaterial({color:'#153540',metalness:.4,roughness:.24,clearcoat:.8,clearcoatRoughness:.2}));
  const light=keep(new T.MeshStandardMaterial({color:accent,metalness:.35,roughness:.2,emissive:accent,emissiveIntensity:.35}));
  const objects=new T.Group();objects.position.set(0,-.86,.75);rig.add(objects);
  function mesh(geometry,material=gold,parent=objects){const m=new T.Mesh(keep(geometry),material);parent.add(m);return m;}
@@ -64,6 +64,15 @@ export function mountStage(host,kind,options={}){
 
  const stageRing=ring(1.5,.008);stageRing.rotation.x=1.2;stageRing.position.y=-.45;
  const stageRing2=ring(1.35,.006);stageRing2.rotation.x=1.2;stageRing2.position.y=-.43;
+ // An illuminated plinth grounds the objects; concentric light traces carry
+ // interaction energy without flashing or covering the actual controls.
+ const plinth=mesh(new T.CylinderGeometry(1.23,1.36,.10,64),dark);plinth.position.y=-.76;
+ const plinthRim=ring(1.26,.016);plinthRim.rotation.x=Math.PI/2;plinthRim.position.y=-.705;
+ const traces=[];
+ for(let i=0;i<3;i++){
+  const mat=keep(new T.MeshBasicMaterial({color:accent,transparent:true,opacity:.08,depthWrite:false,blending:T.AdditiveBlending}));
+  const r=mesh(new T.TorusGeometry(1.12,.004,5,96),mat);r.rotation.x=Math.PI/2;r.position.y=-.69+i*.012;traces.push(r);
+ }
  const deck=[];
  if(kind==='tarot'||kind==='lenormand'||kind==='ootk'){
   if(options.mode!=='cards'){
@@ -74,13 +83,14 @@ export function mountStage(host,kind,options={}){
   }
  }else if(kind==='ziwei'){
   const instrument=new T.Group();objects.add(instrument);instrument.position.y=.07;
-  [0,.8,1.5].forEach((a,i)=>{const r=ring(.9+i*.08,.021,instrument);r.rotation.set(a,.45+i*.65,.3);animated.push({type:'orbit',node:r,rate:(i%2?-.12:.15)});});
+  [0,.8,1.5].forEach((a,i)=>{const r=ring(.9+i*.08,.021,instrument);r.rotation.set(a,.45+i*.65,.3);animated.push({type:'orbit',node:r,index:i,rate:(i%2?-.12:.15)});});
   const core=mesh(new T.IcosahedronGeometry(.15,1),light,instrument);
   animated.push({type:'core',node:core});
   for(let i=0;i<12;i++){const a=i*Math.PI/6;const star=mesh(new T.OctahedronGeometry(.057),light,instrument);star.position.set(Math.cos(a)*1.04,Math.sin(a)*1.04,0);animated.push({type:'star',node:star,index:i});}
  }else if(kind==='bazi'){
   for(let i=0;i<4;i++){const pillar=new T.Group();pillar.position.x=(i-1.5)*.68;objects.add(pillar);
    mesh(new T.CylinderGeometry(.15,.15,.85,24),dark,pillar);
+   for(let j=0;j<6;j++){const a=j*Math.PI/3;const inlay=mesh(new T.BoxGeometry(.008,.76,.008),gold,pillar);inlay.position.set(Math.sin(a)*.151,0,Math.cos(a)*.151);}
    [-.43,.43].forEach(y=>{const c=mesh(new T.CylinderGeometry(.185,.185,.055,24),gold,pillar);c.position.y=y;});
    const top=mesh(new T.OctahedronGeometry(.15),light,pillar);top.position.y=.59;
    const line=ring(.19,.012,pillar);line.rotation.x=Math.PI/2;line.position.y=.25;
@@ -88,7 +98,7 @@ export function mountStage(host,kind,options={}){
   }
  }else if(kind==='compat'){
   for(let i=0;i<2;i++){const orb=new T.Group();orb.position.x=i?.6:-.6;objects.add(orb);
-   const material=keep(new T.MeshStandardMaterial({color:i?'#a8c8e5':'#e2b9c5',metalness:.45,roughness:.17,emissive:i?'#50799e':'#aa687b',emissiveIntensity:.3}));
+   const material=keep(new T.MeshPhysicalMaterial({color:i?'#a8c8e5':'#e2b9c5',metalness:.35,roughness:.14,clearcoat:1,clearcoatRoughness:.08,emissive:i?'#50799e':'#aa687b',emissiveIntensity:.3}));
    mesh(new T.IcosahedronGeometry(.23,3),material,orb);
    [0,1,2].forEach(j=>{const r=ring(.47,.012,orb);r.rotation.set(j*.72,j*.83,j*.3);});
    animated.push({type:'partner',node:orb,index:i});
@@ -128,14 +138,17 @@ export function mountStage(host,kind,options={}){
   uniforms.mixPose.value=reduced?1:ease((elapsed-blendAt)/.65);
   deck.forEach((g,i)=>{const p=cardPose(i,deck.length,{...state,since:reduced?3:state.since});g.position.set(p.x,p.y,p.z);g.rotation.set(p.rx,p.ry,p.rz);});
   animated.forEach(item=>{const n=item.node,t=state.time;
-   if(item.type==='orbit')n.rotation.z+=dt*item.rate*(state.phase===2?3:1)*(reduced?0:1);
+   const pose=instrumentPose(item.type,item.index||0,{...state,since:reduced?3:state.since});
+   if(item.type==='orbit')n.rotation.z=(reduced?0:t*item.rate)+pose.angle;
    if(item.type==='core')n.rotation.y=t*.35;
    if(item.type==='star')n.scale.setScalar(1+((state.phase>=2||state.power>(item.index/12))?.5:0));
-   if(item.type==='pillar'){n.position.y=(state.lit>item.index?.16:0)+(reduced?0:Math.sin(t+item.index)*.018);item.gem.rotation.y=t*.25;item.gem.scale.setScalar(state.lit>item.index?1.3:.7);}
-   if(item.type==='partner'){n.rotation.y=t*(item.index?-.12:.12);n.position.x=(item.index?1:-1)*(state.phase>=2?.43:.65);n.position.y=reduced?0:Math.sin(t+item.index*Math.PI)*.06;}
-   if(item.type==='seed')n.rotation.z=t*(item.index%2?.12:-.13)+state.turn*.4;
-   if(item.type==='stick')n.position.y=item.base+(state.phase===2&&!reduced?Math.sin(t*8+item.index)*.055:0);
+   if(item.type==='pillar'){n.position.y=pose.rise+(reduced?0:Math.sin(t+item.index)*.018);n.rotation.z=pose.tilt;item.gem.rotation.y=t*.25;item.gem.scale.setScalar(.7+pose.glow*.6);}
+   if(item.type==='partner'){const a=(item.index?0:Math.PI)+pose.angle;n.rotation.y=t*(item.index?-.12:.12);n.position.x=Math.cos(a)*pose.radius;n.position.z=Math.sin(a)*.3;n.position.y=pose.rise+(reduced?0:Math.sin(t+item.index*Math.PI)*.04);}
+   if(item.type==='seed'){n.rotation.z=t*(item.index%2?.12:-.13)+pose.angle;n.scale.setScalar(pose.spread);}
+   if(item.type==='stick'){n.position.y=item.base+pose.rise;n.rotation.z=pose.tilt;}
   });
+  traces.forEach((r,i)=>{const q=state.phase===2?clamp(state.since/2.65-i*.1):state.power*.45;
+   r.scale.setScalar(1+q*(.35+i*.15));r.material.opacity=.045+Math.sin(q*Math.PI)*.24;});
   stageRing.rotation.z=state.time*.045;stageRing2.rotation.z=-state.time*.06;
   pmat.uniforms.t.value=state.time;pmat.uniforms.energy.value=energy;
  }

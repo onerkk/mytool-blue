@@ -9,16 +9,22 @@
       var def=typeof getCurrentSpreadDef==='function'?getCurrentSpreadDef():null;
       var cards=typeof drawnCards!=='undefined'?drawnCards:[];
       var count=cards.length, target=def?def.count:3, complete=count===target;
+      var session=window.JYTarotSession,busy=!!(session&&session.busy()),pending=!!(session&&session.pending());
       var dock=document.getElementById('tarot-draw-dock');
       if(!dock)return;
-      var phase=complete?'complete':window._deckIsShuffled?'choosing':'ready';
+      var phase=complete?'complete':pending?'pending':window._deckIsShuffled?'choosing':'ready';
       dock.setAttribute('data-phase',phase);
+      dock.setAttribute('aria-busy',String(busy));
+      var table=document.getElementById('t-deck');if(table)table.setAttribute('aria-busy',String(busy));
       var room=document.getElementById('step-2');if(room)room.setAttribute('data-draw-phase',phase);
       if(phase==='choosing'&&window.JYTarotDeckBrowse)window.JYTarotDeckBrowse.move(0);
-      document.querySelectorAll('[data-deck-browse]').forEach(function(button){button.disabled=phase!=='choosing';});
+      document.querySelectorAll('[data-deck-browse]').forEach(function(button){button.disabled=phase!=='choosing'||busy;});
       document.getElementById('tarot-dock-count').textContent=count+' / '+target+' 張';
-      document.getElementById('tarot-dock-step').textContent=complete?'本次牌陣已完成':window._deckIsShuffled?'還差 '+(target-count)+' 張':'第一步 · 靜心洗牌';
-      document.getElementById('tarot-dock-action').textContent=complete?'取得解讀提示詞':window._deckIsShuffled?(count?'快速補滿':'快速抽牌'):'開始洗牌';
+      document.getElementById('tarot-dock-step').textContent=complete?'本次牌陣已完成':pending?'本組牌已保留，等你繼續':busy?'正在收下第 '+(count+1)+' 張牌':window._deckIsShuffled?'還差 '+(target-count)+' 張':'第一步 · 靜心洗牌';
+      var action=document.getElementById('tarot-dock-action');action.disabled=busy;
+      action.textContent=busy?(pending?'正在揭牌…':'正在收牌…'):complete?'取得解讀提示詞':pending?'繼續揭牌':window._deckIsShuffled?(count?'快速補滿':'快速抽牌'):'開始洗牌';
+      var progress=document.getElementById('tarot-selection-progress');if(progress){progress.max=target;progress.value=count;progress.setAttribute('aria-valuetext','已選 '+count+' 張，共 '+target+' 張');}
+      var path=document.getElementById('tarot-flow-path');if(path)path.querySelectorAll('li').forEach(function(li,i){var current=complete?2:window._deckIsShuffled?1:0;li.setAttribute('aria-current',i===current?'step':'false');li.classList.toggle('is-done',i<current);});
       var layoutCount=document.getElementById('tarot-layout-count');
       if(layoutCount)layoutCount.textContent=count+' / '+target;
       var details=document.getElementById('tarot-layout-details');
@@ -32,7 +38,7 @@
         else recent.innerHTML='<span>'+(window._deckIsShuffled?'左右滑動牌背，選一張你想停下來的牌。':'選牌前先洗牌，讓心緒沉澱。')+'</span>';
       }
       var hint=document.getElementById('pick-hint');
-      if(hint){hint.style.display='';hint.textContent=complete?'牌陣已完成，可查看牌位或取得解讀提示詞。':window._deckIsShuffled?'慢慢選牌，讓問題留在心裡。':'留一段時間，專注在你的問題。';}
+      if(hint){hint.style.display='';hint.setAttribute('role','status');hint.textContent=complete?'牌陣已完成，可查看牌位或取得解讀提示詞。':pending?'返回不會重抽；繼續揭開的是同一組牌。':busy?'已接住你的選擇，牌正落向自己的位置。':window._deckIsShuffled?'慢慢選牌，讓問題留在心裡。':'留一段時間，專注在你的問題。';}
     },
     setMode: function (tool) {
       var input = document.getElementById('input-screen');
@@ -134,7 +140,7 @@
           var old=document.getElementById('jy-shuffle-btn');if(old)old.remove();
           window.JY_ATELIER.syncTarot();
         },
-        onCancel:function(){window._atelierReturnToInput();}
+        onCancel:function(){window.JY_ATELIER.syncTarot();}
       });
     }catch(error){
       console.error('[Tarot shuffle]',error);
@@ -149,6 +155,7 @@
   };
   window._atelierTarotAction=function(){
     if(window.JYRitual && window.JYRitual.isActive())return;
+    if(window.JYTarotSession&&window.JYTarotSession.busy())return;
     var def=typeof getCurrentSpreadDef==='function'?getCurrentSpreadDef():null;
     if(!def)return;
     if(typeof drawnCards!=='undefined'&&drawnCards.length===def.count){

@@ -1,4 +1,4 @@
-/*! tarot-foundation.js — Golden Dawn Tarot v102 method-data foundation
+/*! tarot-foundation.js — Tarot v103 method-data foundation
  * 單一真相來源：問題型別化、觀測需求、牌陣能力、動態牌位綁定與自動路由。
  * 牌義不在本檔；Book T 由 golden-dawn-tarot.js 提供；RWS 正逆位由 tarot-reading.js 處理。
  */
@@ -9,7 +9,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '102.0.0';
+  var VERSION = '103.0.0';
   var SCHEMA = 'jy.tarot.foundation/6';
 
   function text(v) { return v == null ? '' : String(v).trim(); }
@@ -34,7 +34,10 @@
     return q.replace(/[\u3000\t\r\n]+/g,' ').replace(/\s+/g,' ').trim();
   }
   function dateParts(value) {
-    var d=value?new Date(value):new Date(); if(isNaN(d.getTime()))d=new Date();
+    // A civil date is not a UTC midnight. Preserve the stated day in every TZ.
+    var civil=typeof value==='string'&&/^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    var d=civil?new Date(Number(civil[1]),Number(civil[2])-1,Number(civil[3]),12):value?new Date(value):new Date();
+    if(isNaN(d.getTime()))d=new Date();
     return {date:d,year:d.getFullYear(),month:d.getMonth()+1,day:d.getDate(),iso:d.getFullYear()+'-'+pad(d.getMonth()+1,2)+'-'+pad(d.getDate(),2)};
   }
   function monthBounds(year,month){var end=new Date(year,month,0).getDate();return {label:year+'年'+month+'月',start:year+'-'+pad(month,2)+'-01',end:year+'-'+pad(month,2)+'-'+pad(end,2)};}
@@ -69,7 +72,7 @@
     ],[[0,1,3],[0,2,4]],[[0,1,3],[0,2,4]],['state','trajectory','comparison_outcome','conditional_outcome','realization'],['choice','comparison']),
     relationship: methodDef('relationship','關係牌陣',6,[
       {authority:'state',role:'querent_state'},{authority:'person_aggregate',role:'counterpart_state'},{authority:'state',role:'relation_state'},{authority:'obstacle',role:'relation_constraint'},{authority:'advice',role:'intervention'},{authority:'outcome',role:'relation_outcome'}
-    ],[[0,2,1],[4,3,2,5]],[[0,1,2],[3,2],[4,3,2,5]],['state','dyad','obstacle','advice','trajectory','conditional_outcome','realization','external'],['dyad','relationship']),
+    ],[[0,2,1],[4,3,2,5]],[[0,1,2],[3,2],[4,3,2,5]],['state','dyad','cause','obstacle','advice','trajectory','conditional_outcome','realization','external'],['dyad','relationship']),
     timeline: methodDef('timeline','相對時間線',5,[
       {authority:'antecedent',role:'prior_stage'},{authority:'timeline',role:'near_stage'},{authority:'timeline',role:'turning_point'},{authority:'timeline',role:'later_stage'},{authority:'development',role:'terminal_tendency'}
     ],[[0,1,2,3,4]],[[0,1,2,3,4]],['state','antecedent','trajectory','temporal_sequence','realization'],['timing']),
@@ -201,7 +204,7 @@
       [{type:'triad',label:'核心',indices:[1,0,2],elementalDignity:true,instruction:'中牌1為主題，2與3修正。'},{type:'triad',label:'自然路徑',indices:[3,7,11],elementalDignity:true,instruction:'描述不改變做法時的發展。'},{type:'triad',label:'替代路徑',indices:[12,8,4],elementalDignity:true,instruction:'描述改採其他做法的發展。'},{type:'triad',label:'決策依據',indices:[5,9,13],elementalDignity:true,instruction:'描述心理與決策作用。'},{type:'triad',label:'不可控條件',indices:[6,10,14],elementalDignity:true,instruction:'描述需適應的外在結構。'}],
       '本布局沒有專屬最終結果牌；只能比較自然與替代路徑的整體傾向。',
       '單張或單一三牌組不得覆蓋其他組的反證；路徑保持分離。',
-      '近／中／遠只表示組內相對位置，不能換算月份或日期。','後世 Golden Dawn 衍生十五張布局；非 Book T 開鑰原法'),
+      '三牌組是主題與修飾結構，不自帶近／中／遠時間標籤。','後世 Golden Dawn 衍生十五張布局；非 Book T 開鑰原法'),
     mathers_21: protocolDef('mathers_21','ordered_rows_with_mirror_pairs','sequence_member',
       '二十一張都只是三排序列成員，沒有二十一個獨立牌位。每排由右至左、以代表牌為共同起點讀成連續答案，再讀首尾配對。',
       ['第一排由右至左，從代表牌起讀','第二排由右至左，重新從代表牌起讀','第三排由右至左，重新從代表牌起讀','讀1↔21、2↔20…10↔12','第11張作未配對成員納入全盤','綜合三排主線與配對補充'],
@@ -224,6 +227,167 @@
       '每次操作先獨立成階段結論；跨操作只能承接階段摘要，不拼接不同操作的單牌。',
       '第四次三十六牌環不是月份或旬位；無外部錨不得換算日期。','Golden Dawn Book T Opening of the Key')
   };
+
+  // v103: interpretation depth belongs to each method, not a single generic paragraph.
+  var READING_PLANS = {
+  "three_card": [
+    "先用一句話確認這三個牌位在本次實際代表什麼。本站預設是既有基礎、核心現況、維持現狀的走向，不是抽完後再改成身心靈或三種選項。",
+    "第1張解釋哪種既有條件帶到現在；第2張是目前正在作用的矛盾或資源；第3張解釋這種互動持續時的發展。每張都須參與完整答案。",
+    "比較1→2與2→3的變化：是同一傾向累積、轉折，還是表面改善但條件未解？指出造成轉向的具體牌義。",
+    "是非題給有條件的偏向及最主要反證；沒有專屬建議位時，從已辨識的限制提出可做的一件事，明示這是建議。"
+  ],
+  "five_card": [
+    "先依本次動態牌位確認第2張是原因、助力或年度驅動因素，不能把所有五牌問題都讀成「原因」。",
+    "以第1張描述正在困擾使用者的機制，第2張說明它如何形成或受到推動，第3張辨認真正瓶頸及使用者可否控制。",
+    "第4張必須對準第3張的具體限制：說明採取何種行動、需要什麼資源、應避免何種過量反應；不只翻成抽象鼓勵。",
+    "第5張結合前四張判斷維持目前條件的走向；若討論採取建議後的改善，要標為條件推演，不能宣稱另抽了一個改善後的結果。",
+    "收入或門檻題分開需求、現有資源、代價與達成條件，不能用結果牌直接報金額或成功率。"
+  ],
+  "cross": [
+    "先讀1核心與2交叉力量的具體拉扯，分清是外在障礙、內在猶豫，還是某項優勢使用過度。",
+    "以3過去影響→1核心→4後續趨勢建立發展脈絡；第3張說已形成的模式，第4張說近期力量開始往哪裡走。",
+    "第5張建議回應交叉力量：哪些需要接受、哪些可以協商、哪些要停止？給出與本題相符的操作方式。",
+    "本陣沒有獨立最終結果牌。收束應回答如何鬆動僵局及可能走向，不能把第5張建議當必然結局。"
+  ],
+  "either_or": [
+    "先從原問句逐字對齊A、B選項與共同目標；第1張是共同背景。若分支名稱不完整，明示採用的理解，不自行替使用者新增選項。",
+    "A路只讀1、2、4；B路只讀1、3、5。兩路分別說明投入方式、主要代價、可能發展，再使用同一組判準比較。",
+    "先比較使用者最重視的條件，再比較時間、資源及可逆性；較順利的牌面不一定符合使用者的優先需求。",
+    "給出目前較值得考慮的選項及何種條件下會改選另一項。兩路都受限時可提出蒐集資料或暫緩的現實建議，但不得把它寫成已抽出的第三條路。"
+  ],
+  "relationship": [
+    "第1張談使用者在關係中的需要與表達，第2張是對方在互動中的象徵狀態，第3張是雙方實際形成的關係；比較需求與表達是否互相接得住。",
+    "第4張挑戰要連回1、2、3：可能是節奏、溝通、承諾、距離或角色壓力；選哪一解釋須有本盤支持，不能只憑牌名指定第三者。",
+    "第5張建議以使用者能做、且尊重對方界線的行動落地；第6張受雙方投入與挑戰是否改變所限定。",
+    "問愛意時分開好感、持續投入、願意承諾三件事；問不聯絡時比較關係冷卻、生活壓力或互動習慣等與本盤相容的解釋，指出可觀察差異。",
+    "不能把一張對方牌當讀心事實。若對方已明確拒絕或保持距離，建議應尊重其表態；分析的目的包含幫使用者取回選擇權。"
+  ],
+  "timeline": [
+    "先確認問題是詢問發展階段，還是要求日曆日期；本陣五張預設只提供相對時間，不是五個固定月份。",
+    "依1前置→2近期→3轉折→4後續→5較後段逐步分析，每段說清正在變化的因素，而非為每張各編一件事件。",
+    "第3張轉折須翻成可辨識的觸發條件，並檢查第2與第4張是否支持這種轉變；牌面無明確改變時也要如實說明。",
+    "給出使用者可觀察的進展訊號和重新評估點；提問有截止日僅限定觀察範圍，不能據此把五張等分成精確日期。"
+  ],
+  "horseshoe": [
+    "先讀1過去、2現在、3隱藏影響，找出使用者原來的理解與可能忽略的條件；隱藏位只是探索線索，不證明有秘密。",
+    "第4張是可採取行動，第5張是他人／環境，第6張是障礙；比較行動能否接住外援、避開摩擦，以及何處超出控制。",
+    "第7張受前六張限定。若行動位積極但環境與障礙不支持，應說明成本或前置條件，不能只看結果牌報好消息。",
+    "七個牌位各交代其本題作用，再把核心盲點、最有效介入與條件性結果串起來；馬蹄形狀本身不提供時間單位。"
+  ],
+  "celtic_cross": [
+    "本次採Waite式編號：1現況、2交叉、3冠頂／目標與潛能、4根基、5漸退影響、6漸入影響、7本人、8環境、9希望／恐懼、10綜合結果。第3與第5位置不要套入別家版本；本站未另置代表牌，勿編造第11張。",
+    "1↔2先定核心矛盾；4→1→3比較已成事實與尚未實現的目標，指出真正落差；5→1→6辨認退場與進場的力量。",
+    "7↔8比較本人態度與外界回應是否一致；9分辨希望、恐懼或投射，回頭核對1、2、7、8，不能把害怕的情境判成已發生。",
+    "10由前九張整合：說明哪幾組支持、哪一組最能反駁、目前採何種有條件的主判。第6張近期和第10張整體結果可以不同，須解釋中間需要改變什麼。",
+    "正文涵蓋十個牌位，但以核心軸線分組說明。末段提出最值得先處理的矛盾、可執行行動和停止無效等待的觀察條件。"
+  ],
+  "tree_of_life": [
+    "這是本站赫密士卡巴拉取向的十質點布局；質點是象徵分析層，不是心理診斷或過去世證據。依資料中的質點與牌位名稱，不混入其他生命之樹排列。",
+    "1王冠定位核心方向；2智慧與3理解比較推動力和承載結構；4慈悲與5嚴厲比較擴展、限制及界線；6美麗看整合方式。",
+    "7勝利與8光輝比較感受／欲求及語言／思考；9基礎檢視習慣與內在模式如何傳遞；10王國看這些結構如何落到生活實踐。",
+    "比較三柱2–4–7、3–5–8及1–6–9–10，不把十質點當十個月份；指出哪一層失衡、哪種資源能接回整合。",
+    "反覆模式題要描述「觸發情境—常見反應—代價—可練習的替代行動」，讓使用者檢查是否符合自身經驗。"
+  ],
+  "zodiac": [
+    "逐一讀12個領域：1自我、2個人資源、3學習溝通、4家與根基、5創作戀愛、6日常工作照顧、7伙伴、8共享資源、9遠行信念、10社會角色、11社群願景、12休整與隱性壓力。以實際牌位標示為準。",
+    "第13張是跨領域主軸，需從前12張歸納而不是覆蓋它們；每宮至少交代一個和本次問題相關的具體作用。",
+    "比較1↔7自我與伙伴、2↔8個人與共享資源、3↔9資訊與觀點、4↔10私人與公共角色、5↔11創作與社群、6↔12日常投入與休整。",
+    "選出互相牽動最明顯的領域，說明改善哪一處能帶動另一處；最後排出生活行動的優先順序。",
+    "12宮不是12個月份，也不是使用者的實際出生星盤；疾病、死亡和投資收益不能按第6、8、12宮的單牌直接斷定。"
+  ],
+  "minor_arcana": [
+    "本次僅由56張小阿卡那抽取，沒有大牌是牌組設定，不可解釋為問題不重要。",
+    "依1現況、2原因、3阻礙辨識日常問題；4外在條件、5可用資源評估能調動的時間、人手與資訊；6行動接回瓶頸，7條件性結果收束。",
+    "花色與點數幫助辨別操作、情緒、資訊或物質層面的議題；宮廷牌可代表做事方式、服務窗口或協助角色，需有問題背景支持。",
+    "尋物題把牌象轉成待排查的場景特徵，並列出先查最近路線、常放處、聯絡窗口等現實步驟；不宣稱牌已定位某地址或證明遭竊。"
+  ],
+  "fifteen_card": [
+    "嚴格依資料的五個三牌組讀。核心2–1–3先定主題；其他四組分別是4–8–12自然路徑、13–9–5替代路徑、6–10–14決策依據、7–11–15不可控條件。",
+    "每組中牌定主題，兩側分別說明如何增強、削弱或限制；元素尊貴須計入兩側彼此的關係，強不等於好、弱不等於壞。十五張都要在組內有作用。",
+    "自然與替代兩路依本站抽前設定保持分開，先各自成句，再比較決策依據與不可控條件會讓哪一路更能落地；不可因牌面喜好事後互換路徑。",
+    "若兩路相似，指出改變做法仍須面對的共同條件；若兩路相反，指出需要改變哪項行動才成立。這不是五個時間區段，也沒有單獨的最後一張結果牌。",
+    "這是本站採用的後世衍生十五張布局，元素規則參考Book T；不得聲稱其布局就是Book T五次開鑰原法或已獲原作者認證。"
+  ],
+  "mathers_21": [
+    "先交代代表牌及實際發牌紀錄，再按資料中三排各七張由右至左讀完整牌句。每排都從同一代表牌重新定位問題，不把三排命名為過去、現在、未來。",
+    "三排各自形成一段有主詞、作用、轉折與條件的答案；21張都須在所屬排參與意義，可按相鄰小段合併說明，不能只挑三張當全盤。",
+    "依實際序號讀1↔21至10↔12，共10組首尾配對；第11張沒有配對，仍放回第二排序列。配對補充或限定主線，不當相鄰元素線。",
+    "綜合三排與配對一致、矛盾的部分，以共同條件回答原問題。沒有抽前時間設定就不為各排指定年份。",
+    "此為Mathers 1888第二法布局；本站牌義採本次選定RWS或Book T，屬明示混合用法，不能稱逐字復刻1888原書牌義。"
+  ],
+  "mathers_horseshoe": [
+    "核對實際發牌紀錄為A26、C17、E11，共54張；F24不參與解讀。原文末輪張數存在算術歧義，本站採完整三張組取牌的11／24設定，按這份紀錄讀而不偷偷換牌。",
+    "依A→C→E逐組讀由右至左的完整答案，每組用相鄰片段呈現起點、轉折與落點。所有54張納入所屬組，但可合併相同作用，避免54段字典。",
+    "每組讀完再由首尾向內配對，A13組、C8組、E5組；C9與E6是未配對成員，仍在各組主線中。",
+    "分別說明C、E如何補充、限制或修正A；三組不是三段固定時間，不能跨組抽出喜歡的牌組新故事，也不能把F組拿來補證。",
+    "本法的深度在連續答案及配對的相互校驗，最後要收斂到本題的主要困境、條件與可做行動，而不是以張數宣稱更準。"
+  ],
+  "ootk": [
+    "先核對代表牌、提問、各次預選落點與實際完成狀態。第一次主線需問卜者確認；待確認或不適配應如實說明，不能把中止解成凶兆。",
+    "第一操作用四堆落點建立當前問題背景，再讀計數與配對。第二操作讀十二宮的發展場域，第三操作讀十二星座的進一步發展；只有實際命中的堆和相近宮紀錄可用。",
+    "第四操作讀代表牌後36張環的後段因素；第五操作依十質點堆讀最後整合。五次各自重新洗牌，同牌重現不能當作獨立的現實事件證明。",
+    "每次計數故事保留包含起算牌的計數與實際方向，配對故事補充被計數省略的細節；尊貴依所在堆／環的鄰牌，不以計數跳點冒充相鄰。",
+    "每一已完成操作都交代它新增了什麼、修正了什麼；跨操作只整合階段結論。只完成前幾次就交付相應範圍，不補造第五次最終結果。"
+  ]
+};
+  var METHOD_REFERENCES = {
+  "three_card": [
+    "https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/3-card-tarot-spreads-simple-tarot-spreads-organized-by-layout"
+  ],
+  "either_or": [
+    "https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/making-tough-choices-a-5-card-tarot-spread-for-decision-making"
+  ],
+  "relationship": [
+    "https://biddytarot.com/blog/relationship-check-in-tarot-spread/"
+  ],
+  "celtic_cross": [
+    "https://sacred-texts.com/tarot/pkt/pkt0307.htm",
+    "https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/the-celtic-cross-tarot-spread-exploring-the-classic-10-card-tarot-spread"
+  ],
+  "mathers_21": [
+    "https://sacred-texts.com/tarot/mathers/mtar04.htm"
+  ],
+  "mathers_horseshoe": [
+    "https://sacred-texts.com/tarot/mathers/mtar04.htm"
+  ],
+  "ootk": [
+    "https://sacred-texts.com/oto/lib78.htm"
+  ],
+  "fifteen_card": [
+    "https://sacred-texts.com/oto/lib78.htm"
+  ],
+  "tree_of_life": [
+    "https://sacred-texts.com/oto/lib78.htm"
+  ],
+  "five_card": [
+    "https://www.learntarot.com/less4.htm",
+    "https://www.learntarot.com/less18.htm"
+  ],
+  "cross": [
+    "https://www.learntarot.com/less4.htm",
+    "https://www.learntarot.com/less18.htm"
+  ],
+  "timeline": [
+    "https://www.learntarot.com/less4.htm",
+    "https://www.learntarot.com/less18.htm"
+  ],
+  "horseshoe": [
+    "https://www.learntarot.com/less4.htm",
+    "https://www.learntarot.com/less18.htm"
+  ],
+  "zodiac": [
+    "https://www.learntarot.com/less4.htm",
+    "https://www.learntarot.com/less18.htm"
+  ],
+  "minor_arcana": [
+    "https://www.learntarot.com/less4.htm",
+    "https://www.learntarot.com/less18.htm"
+  ]
+};
+  Object.keys(METHOD_PROTOCOLS).forEach(function(id){
+    METHOD_PROTOCOLS[id].readingPlan=READING_PLANS[id]||[];
+    METHOD_PROTOCOLS[id].references=METHOD_REFERENCES[id]||[];
+  });
 
   function method(id){var m=clone(METHODS[id]||null);if(m)m.protocol=clone(METHOD_PROTOCOLS[id]||null);return m;}
   function dignityLines(id,count){var m=METHODS[id];return m?clone(m.dignityLines||[]):(count?[range(0,count)]:[]);}
@@ -266,7 +430,7 @@
     if(isNominalWeiHe(q))causal=false;
     var choice=/還是|或者|或是|二選一|哪一個|哪個比較|choose between|which option|\bvs\.?\b|\bversus\b/i.test(q);
     var timing=/什麼時候|何時|幾時|哪一天|幾月|多久|要等|時間點|when\b|how long|what date|which month/i.test(q);
-    var advice=/怎麼做|怎麼辦|如何改善|建議|策略|方法|該怎麼|下一步|應如何|怎麼找|如何找|what should|what can i do|advice|strategy/i.test(q);
+    var advice=/該先開口|該做什麼|該從哪|怎麼改善|如何處理|怎麼做|怎麼辦|如何改善|建議|策略|方法|該怎麼|下一步|應如何|怎麼找|如何找|what should|what can i do|advice|strategy/i.test(q);
     var hidden=/忽略|盲點|隱藏|背後|未察覺|不知道的|overlook|hidden influence|blind spot/i.test(q);
     var external=/外在|環境|市場|公司環境|家庭影響|別人影響|他人態度|external|environment|market condition/i.test(q);
     var pattern=/為什麼一直|總是|每次都|反覆|重複|循環|模式|always|every time|repeating pattern/i.test(q);
@@ -274,8 +438,8 @@
     var narrative=/來龍去脈|前因後果|從頭到尾|始末|完整歷程|過去.{0,8}現在.{0,8}未來|whole story|from the beginning|past.*present.*future/i.test(q);
     var exhaustive=/全部攤開|最完整|徹底|人生大局|整個人生|所有人生面向|most exhaustive|complete life reading|everything about my life/i.test(q);
     var deepOverview=/完整|全面|深入|詳細|全局|大局|所有影響|整體局勢|comprehensive|full picture|in depth/i.test(q);
-    var practical=/(?:東西|鑰匙|錢包|手機|文件|證件).{0,10}(?:遺失|不見|掉|找不到|在哪|位置)|(?:遺失|不見|掉了|找不到).{0,10}(?:東西|鑰匙|錢包|手機|文件|證件)|包裹|快遞|訂單|報稅|證件|維修|退貨|寄件|出貨|lost item|package|delivery|repair|refund/i.test(q);
-    var location=/在哪(?:裡|邊)?|位置|何處|哪個方向|where\b|location/i.test(q);
+    var practical=/找回.{0,5}(?:錢包|鑰匙|手機|文件|證件)|(?:東西|鑰匙|錢包|手機|文件|證件).{0,10}(?:遺失|不見|掉|找不到|在哪|位置)|(?:遺失|不見|掉了|找不到).{0,10}(?:東西|鑰匙|錢包|手機|文件|證件)|包裹|快遞|訂單|報稅|證件|維修|退貨|寄件|出貨|lost item|package|delivery|repair|refund/i.test(q);
+    var location=/從哪裡找|從哪找|找回|在哪(?:裡|邊)?|位置|何處|哪個方向|where\b|location/i.test(q);
     var conflict=/卡住|阻礙|衝突|拉扯|困境|僵局|競爭|壓力|對立|stuck|conflict|blocked/i.test(q);
     var yearScope=(scopes||[]).some(function(s){return s.kind==='calendar_year';}), domainCount=(domains||[]).length;
     var annualWords=/流年|全年|整年|一整年|年度|年運|整體運勢|各方面運勢|各領域運勢|overall outlook|yearly|annual/i;
@@ -283,11 +447,11 @@
     var annual=yearScope&&(annualWords.test(q)||bareYearFortune), annualSingleDomain=yearScope&&domainCount===1&&!annual;
     // v99.2：已知雙方必須由主要問句中的正向人物指稱建立；「非現任／排除前任」等排除語不得反向建立既有關係。
     var dyadProbe=q.replace(/(?:非|不是|不含|排除|除了)(?:現任|前任|伴侶|配偶|男友|女友|特定對象)/g,'');
-    var knownDyad=/我(?:和|與|跟).{1,24}|(?:我們|這段關係|目前這段關係)|(?:對方|他|她|現任|前任|伴侶|配偶|男友|女友|主管|老闆|同事|朋友|客戶).{0,12}(?:對我|跟我|和我|與我|怎麼看我|的態度|的想法|的關係)|^(?:對方|他|她|現任|前任|伴侶|配偶|男友|女友)(?!.*(?:是誰|幾歲|多大年紀|做什麼工作|什麼職業|長什麼樣|住哪))|between us|my partner|my ex|my boss/i.test(dyadProbe);
+    var knownDyad=/(?:公司)?(?:女|男)?(?:工程師|主管|老闆|同事|朋友|客戶).{0,18}(?:愛我|喜歡我|不回|對我|跟我|和我)|我(?:和|與|跟).{1,24}|(?:我們|這段關係|目前這段關係)|(?:對方|他|她|現任|前任|伴侶|配偶|男友|女友|主管|老闆|同事|朋友|客戶).{0,12}(?:對我|跟我|和我|與我|怎麼看我|的態度|的想法|的關係)|^(?:對方|他|她|現任|前任|伴侶|配偶|男友|女友)(?!.*(?:是誰|幾歲|多大年紀|做什麼工作|什麼職業|長什麼樣|住哪))|between us|my partner|my ex|my boss/i.test(dyadProbe);
     var unknownPerson=/有人|某人|哪個人|誰會|新對象|未來對象|桃花|暗戀我|喜歡我嗎|追求我|future partner|anyone likes me|who will/i.test(q)&&!knownDyad;
     var yesNo=/(?:嗎[？?]?\s*$|會不會|有沒有|該不該|可不可以|能不能|能否|是否|可否|是不是|適不適合|要不要|應不應該|值不值得)|\b(?:will|can|should|is|are|do|does)\b/i.test(q);
     var descriptive=isNominalWeiHe(q)||/如何[？?]?$|怎麼樣[？?]?$|怎樣[？?]?$|狀況如何|運勢如何|走向如何|what is .* like|how is/i.test(q);
-    var multiDomain=domainCount>=2&&/整體|全面|各方面|一起看|都看|同時|以及|和|與|both|all areas|together/i.test(q);
+    var multiDomain=domainCount>=2&&(/(?:感情|愛情|婚姻|桃花|工作|事業|財運|財務|家庭|學業|健康|旅行)(?:方面)?(?:、|以及|及|和|與|跟)(?:感情|愛情|婚姻|桃花|工作|事業|財運|財務|家庭|學業|健康|旅行)/.test(q)||/各方面|一起看|都看|所有領域|both|all areas|together/i.test(q));
     return {causal:causal,choice:choice,timing:timing,advice:advice,hidden:hidden,external:external,pattern:pattern,spiritual:spiritual,narrative:narrative,exhaustive:exhaustive,deepOverview:deepOverview,practical:practical,location:location,conflict:conflict,annual:annual,annualSingleDomain:annualSingleDomain,knownDyad:knownDyad,unknownPerson:unknownPerson,yesNo:yesNo,descriptive:descriptive,multiDomain:multiDomain};
   }
 
@@ -307,7 +471,7 @@
     return text(out);
   }
   function cleanCore(q,scopes){var out=stripSpreadDirective(q).replace(/[？?。！!，,]+$/,'');(scopes||[]).forEach(function(s){out=out.split(s.surface).join('');});return text(out);}
-  function stripQuestionPrefix(v){return text(v).replace(/^(?:請|幫我|請幫我|想問|我想問|看看|看一下)\s*/,'').replace(/^(?:我|本人)(?:的)?/,'').replace(/^(?:該|應該|要不要|是否要|是否該)\s*/,'').trim();}
+  function stripQuestionPrefix(v){return text(v).replace(/^(?:請|幫我|請幫我|想問|我想問|看看|看一下)\s*/,'').replace(/^(?:我|本人)(?:的)?/,'').replace(/^(?:該|應該|要選|選擇|要不要|是否要|是否該)\s*/,'').trim();}
   function stripComparisonOperand(v){var raw=text(v);if(/^(?:我|本人)$/.test(raw))return '問卜者本人';return stripModalTail(stripQuestionPrefix(raw)).replace(/(?:未來|之後|接下來)$/,'').replace(/(?:能|會|可以|可能)?(?:成功|達成|做到|實現)$/,'').trim();}
   function stripModalTail(v){return text(v).replace(/(?:一定|必然|應該|可能|會不會|能不能|可不可以|是否|有沒有|可以|能夠|會|能)+$/g,'').trim();}
   function metricName(v){var m=text(v).match(/(營業額|營收|收入|薪水|獲利|利潤|成本|價格|金額|數量|人數|成績|表現|速度|高度|重量|價值|程度)$/);return m?m[1]:'';}
@@ -371,6 +535,13 @@
   function detectRelation(q,scopes){
     var numeric=detectNumericThreshold(q,scopes);if(numeric)return numeric;
     var core=cleanCore(q,scopes);
+    // Explicit A/B operands retain durations and qualifiers. Removing "兩週"
+    // here changed the action the user was actually asking us to compare.
+    var explicit=stripSpreadDirective(q).match(/(?:^|[：:,，])\s*A[：:.、\s]+(.+?)\s*[,，]?\s*(?:還是|或是|或者|或|與|和|跟|vs\.?|versus)\s*B[：:.、\s]+(.+?)(?=[，,。；;？?]|$)/i);
+    if(explicit)return {id:'R01',type:'alternative_comparison',operator:'choose',operatorText:'二選一',left:text(explicit[1]).replace(/[，,]+$/,''),right:text(explicit[2]),scale:'suitability',source:explicit[0]};
+    var action=core.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,？?；;]|$)/);
+    if(action&&text(action[1]))return {id:'R01',type:'alternative_comparison',operator:'choose',operatorText:'採取或暫不採取行動',left:text(action[1]),right:'暫不採取「'+text(action[1])+'」，維持目前安排',scale:'suitability',source:core};
+    if(comparisonKind(core)==='hypotheses'||comparisonKind(core)==='multiple')return null;
     var c=core.match(/(.{1,36}?)\s*(?:還是|或是|或者|或|\bor\b)\s*(.{1,36}?)(?:哪個|何者)?(?:比較|較|更)?(?:好|適合|有利|可行|嗎|呢|？|\?|$)/i);
     if(!c)c=core.match(/(.{1,36}?)\s*(?:和|與|跟)\s*(.{1,36}?)(?:哪個|何者)(?:比較|較|更)?(?:好|適合|有利|可行)(?:嗎|呢|？|\?|$)/i);
     if(c)return {id:'R01',type:'alternative_comparison',operator:'choose',operatorText:/還是|或是|或者|或|\bor\b/i.test(c[0])?'二選一':'何者較適合',left:stripModalTail(stripQuestionPrefix(c[1])),right:stripModalTail(c[2].replace(/(?:哪個|何者).*$/,'')),scale:'suitability',source:c[0]};
@@ -433,11 +604,24 @@
     return uniq(req);
   }
 
+  function questionFocus(q) {
+    return text(q).replace(/(?:我)?(?:並?不是|並?非)(?:在)?(?:問|要問|想問|詢問)[^，。；;！？?]*?(?=而是|[，。；;！？?]|$)/g, '')
+      .replace(/(?:不用|不要用|不使用|不採用|排除)\s*(?:Mathers\s*)?(?:凱爾特十字(?:牌陣)?|生命之樹(?:牌陣)?|(?:黃道)?十二宮(?:牌陣)?|五十四張(?:牌陣|牌)?|54\s*張(?:牌陣|牌)?|二十一張(?:牌陣|牌)?|21\s*張(?:牌陣|牌)?|三牌陣|五牌陣|關係牌陣|時間線牌陣|十字牌陣)/gi, '')
+      .replace(/^[，。；;！？?\s]+|[，。；;！？?\s]+$/g, '').trim();
+  }
+  function comparisonKind(q) {
+    if (!/還是|或是|或者|\bor\b|哪個|何者/i.test(q)) return '';
+    if (/(?:^|[，。！？?])(?:他|她|對方).{0,30}(?:喜歡|愛我|在乎|有意思|禮貌|客氣|忙|生氣|討厭).{0,20}(?:還是|或是|或者)|(?:還是|或是)(?:只是|僅僅|單純)(?:禮貌|客氣|朋友|同事|寂寞|無聊)/.test(q)) return 'hypotheses';
+    if (/(?:選|考慮|比較|應該|該去|要去|要留|加入).{0,55}(?:[^，。！？?]+[、,，]){1,}.{0,30}(?:還是|或是|或者)|(?:三|四|五|3|4|5)(?:個|家|種)?(?:選項|方案|公司|工作).{0,20}(?:選|比較)/.test(q)) return 'multiple';
+    return 'binary';
+  }
+
   function compileQuestion(question,options){
     options=options||{};
     var q=normalize(question)||'（未提供明確問題）';
-    var clauses=splitQuestionClauses(q);
-    var scopes=detectScopes(q,options.referenceDate,options.timezone),domains=detectDomains(q);
+    var analysisQ=questionFocus(q)||q;
+    var clauses=splitQuestionClauses(analysisQ);
+    var scopes=detectScopes(analysisQ,options.referenceDate,options.timezone),domains=detectDomains(analysisQ);
     var clauseMeta=clauses.map(function(clause){
       var analysisSurface=stripSpreadDirective(clause.surface)||clause.surface;
       var cs=detectScopes(analysisSurface,options.referenceDate,options.timezone),cd=detectDomains(analysisSurface),ci=detectIntent(analysisSurface,cs,cd);
@@ -451,7 +635,7 @@
         inheritedScopeNotes.push({eventIndex:index,scope:meta.scopes.map(function(x){return x.surface;}).join('、')});
       }
     });
-    var intent=detectIntent(q,scopes,domains);intent._q=q;
+    var intent=detectIntent(analysisQ,scopes,domains);intent._q=analysisQ;
     ['causal','choice','timing','advice','hidden','external','pattern','spiritual','narrative','exhaustive','deepOverview','practical','location','conflict','yesNo','descriptive'].forEach(function(k){
       intent[k]=!!intent[k]||clauseMeta.some(function(x){return !!x.intent[k];});
     });
@@ -461,7 +645,7 @@
     intent.unknownPerson=!!(primaryMeta&&primaryMeta.intent&&primaryMeta.intent.unknownPerson);
     if(intent.unknownPerson)intent.knownDyad=false;
     var yearScope=scopes.some(function(s){return s.kind==='calendar_year';});
-    intent.multiDomain=!!intent.multiDomain||(domains.length>=2&&clauses.length>=2);
+    intent.multiDomain=!!intent.multiDomain||(domains.length>=2&&clauseMeta.some(function(meta,i){return i>0&&meta.domains.some(function(id){return clauseMeta[0].domains.indexOf(id)<0;})&&/如何|怎樣|運勢|會不會|能不能|嗎/.test(meta.analysisSurface);}));
     // 年份＋多個關鍵字不等於年度總覽；只有原句確實並列多領域時才升格為 annual overview。
     if(yearScope&&intent.multiDomain)intent.annual=true;
     intent.annualSingleDomain=yearScope&&domains.length===1&&!intent.annual;
@@ -548,7 +732,35 @@
     return {originalQuestion:q,normalizedQuestion:q,requestedDimensions:dims,explicitScopes:scopes,relations:relations,knownCounterpart:intent.knownDyad,queryGraph:graph,features:features,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains};
   }
 
-  function explicitSpread(q){var rules=[['mathers_horseshoe',/Mathers.*(?:第一法|古法|horseshoe|馬蹄)|五十四.?張|54.?張/i],['mathers_21',/Mathers.*(?:第二法|牌陣)|三排七|二十一.?張|21.?張/i],['fifteen_card',/金色黎明.*十五|英式.*牌陣|fifteen.?card|十五.?張/i],['minor_arcana',/小阿卡那|小牌牌陣|minor arcana/i],['celtic_cross',/凱爾特|celtic/i],['tree_of_life',/生命之樹|卡巴拉牌陣|tree of life/i],['zodiac',/(?:黃道|十二宮|星座)牌陣|zodiac/i],['horseshoe',/七張馬蹄|馬蹄形牌陣|seven.?card horseshoe/i],['relationship',/關係牌陣|relationship spread/i],['timeline',/時間線牌陣|timeline spread/i],['cross',/十字牌陣|cross spread/i],['three_card',/(?:三牌|三張牌)陣|three.?card spread/i],['five_card',/(?:五牌|五張牌)陣|five.?card spread/i],['either_or',/二選一牌陣|雙路比較牌陣|either.?or spread/i],['ootk',/開鑰之法|opening of the key/i]];for(var i=0;i<rules.length;i+=1)if(rules[i][1].test(q))return rules[i][0];return '';}
+  function spreadDirectives(q) {
+    var rules=[
+      ['ootk',/開鑰之法|opening\s+of\s+the\s+key/i],
+      ['mathers_horseshoe',/Mathers\s*(?:第一法|古法|horseshoe|馬蹄|五十四|54)|(?:五十四|54)\s*張牌陣/i],
+      ['mathers_21',/Mathers\s*(?:第二法|二十一|21)|三排七|(?:二十一|21)\s*張牌陣/i],
+      ['fifteen_card',/金色黎明.{0,8}(?:十五|15)|英式牌陣|fifteen.?card/i],
+      ['minor_arcana',/小阿卡那|小牌牌陣|minor arcana/i],['celtic_cross',/凱爾特(?:十字)?|celtic(?: cross)?/i],
+      ['tree_of_life',/生命之樹|卡巴拉牌陣|tree of life/i],['zodiac',/(?:黃道十二宮|黃道|十二宮|星座)牌陣|黃道十二宮|zodiac spread/i],
+      ['horseshoe',/七張馬蹄|馬蹄形牌陣|seven.?card horseshoe/i],['relationship',/關係牌陣|relationship spread/i],
+      ['timeline',/時間線牌陣|timeline spread/i],['cross',/十字牌陣|cross spread/i],
+      ['three_card',/(?:三牌|三張牌)陣|three.?card spread/i],['five_card',/(?:五牌|五張牌)陣|five.?card spread/i],
+      ['either_or',/二選一牌陣|雙路比較牌陣|either.?or spread/i]
+    ];
+    var selected='',excluded=[];
+    text(q).split(/[，,。；;！？?]/).forEach(function(clause){
+      var numeric=clause.match(/(?:用|使用|採用|抽|選擇)\s*(五十四|54|二十一|21|十五|15)\s*張(?:牌)?/i);
+      var hits=rules.map(function(rule){var m=clause.match(rule[1]);return m?{id:rule[0],at:m.index}:null;}).filter(Boolean);
+      if(numeric)hits.unshift({id:/五十四|54/.test(numeric[1])?'mathers_horseshoe':/二十一|21/.test(numeric[1])?'mathers_21':'fifteen_card',at:numeric.index});
+      // A specific Celtic name must not also match the generic cross alias.
+      if(hits.some(function(h){return h.id==='celtic_cross';}))hits=hits.filter(function(h){return h.id!=='cross';});
+      hits.forEach(function(hit){
+        var before=clause.slice(0,hit.at),neg=/(?:不要|不用|不使用|不採用|別用|不想用|排除|不選|不需要)(?:\s*(?:用|使用|採用))?\s*$/i.test(before)||/^(?:不要|不用|不使用|不採用|排除|別用)/.test(clause.trim());
+        if(neg){excluded.push(hit.id);if(selected===hit.id)selected='';}
+        else if((!before.trim()||/(?:請(?:幫我)?|麻煩(?:幫我)?)?(?:使用|採用|選擇|改用|用|抽)\s*$/.test(before)||numeric)&&!/上次|之前|曾經|昨天/.test(before)){selected=hit.id;excluded=excluded.filter(function(id){return id!==hit.id;});}
+      });
+    });
+    return {selected:selected,excluded:uniq(excluded)};
+  }
+  function explicitSpread(q){return spreadDirectives(q).selected;}
   function affinity(method,shape){return method.specialties.indexOf(shape)>=0?0:(method.specialties.indexOf('simple')>=0&&shape==='yes_no'?1:4);}
   function candidateRank(m,shape,required){var surplus=difference(m.provides,required).length;return affinity(m,shape)*100+(m.count==null?80:m.count)+surplus*2;}
 
@@ -587,19 +799,39 @@
   function instantiateMethod(id,compiled){var base=method(id);if(!base)return null;compiled=compiled&&compiled.queryGraph?compiled:compileQuestion((compiled&&compiled.originalQuestion)||'');base.slots=bindSlots(base,compiled);var protocol=base.protocol||METHOD_PROTOCOLS[id]||null;if(protocol){base.slots=base.slots.map(function(slot,i){var copy=Object.assign({},slot||{});copy.slotMode=protocol.slotMode;copy.independentSemanticPosition=protocol.slotMode==='semantic_position'||protocol.slotMode==='qabalistic_position'||protocol.slotMode==='domain_position';if(protocol.slotMode==='sequence_member'){copy.slotKind='sequence_member';copy.independentSemanticPosition=false;if(id==='mathers_21'){var row=Math.floor(i/7)+1,pos=(i%7)+1;copy.label='第'+row+'排第'+pos+'張（序列成員；由右至左）';}else if(id==='mathers_horseshoe'){var group=i<26?'A':(i<43?'C':'E'),local=i<26?i+1:(i<43?i-25:i-42);copy.label=group+'組第'+local+'張（序列成員）';}}else if(protocol.slotMode==='triad_member'){copy.slotKind='triad_member';copy.independentSemanticPosition=false;}else{copy.slotKind='semantic_position';}return copy;});}base.requiredObservables=clone(compiled.requiredObservables||[]);base.missingObservables=difference(base.requiredObservables,base.provides);base.coverageComplete=!base.missingObservables.length;base.questionShape=compiled.features&&compiled.features.shape;base.slotBindings=base.slots.map(function(s,i){return {index:i,authority:s.authority,role:s.role,label:s.label||s.role,slotKind:s.slotKind||'semantic_position',independentSemanticPosition:s.independentSemanticPosition!==false,binding:clone(s.binding||{eventId:'QUERY_EVENT'})};});return base;}
 
   function routeQuestion(input,options){
-    options=options||{};var compiled=typeof input==='string'?compileQuestion(input,options):input,q=compiled.normalizedQuestion||compiled.originalQuestion||'',shape=compiled.features&&compiled.features.shape||'simple',required=compiled.requiredObservables||[],explicit=explicitSpread(q);
-    if(!compiled.queryGraph||compiled.queryGraph.compilerStatus!=='validated_atomized'){return {version:VERSION,engine:'foundation_router_v5',spreadId:null,reason:'型別化查詢圖未通過 round-trip、逐原子敏感度或無新增前提檢查；系統已停止選陣，避免自由改題。',confidence:0,selectedBy:'blocked_invalid_query_graph',compiledQuestion:compiled,methodPlan:null,coverage:{required:required,provided:[],missing:required.slice(),complete:false},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:[]};}
-    if(explicit){var plan=instantiateMethod(explicit,compiled);return {version:VERSION,engine:'foundation_router_v5',spreadId:explicit,reason:'使用者明確指定牌陣；系統保留指定，但同時回報方法能否覆蓋原問句。',confidence:plan.coverageComplete?1:.55,selectedBy:'explicit',compiledQuestion:compiled,methodPlan:plan,coverage:{required:required,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:[{id:explicit,eligible:plan.coverageComplete,missing:plan.missingObservables,rank:0}]};}
-    var candidates=Object.keys(METHODS).filter(function(id){return id!=='ootk';}).map(function(id){var m=METHODS[id],missing=difference(required,m.provides),eligible=!missing.length,rank=eligible?candidateRank(m,shape,required):99999+missing.length*100+(m.count||999);return {id:id,eligible:eligible,missing:missing,rank:rank,cards:m.count,provides:m.provides};}).sort(function(a,b){return a.rank-b.rank||((a.cards||999)-(b.cards||999));});
-    var eligible=candidates.filter(function(c){return c.eligible;}),selected=eligible.length?eligible[0].id:'';
-    var preferred={annual:'zodiac',annual_single_domain:'five_card',choice:'either_or',comparison:'either_or',threshold:'five_card',bounded_yes_no:'five_card',dyad:'relationship',timing:'timeline',location:'minor_arcana',deep_structure:'tree_of_life',multi_domain:'fifteen_card',hidden_external:'horseshoe',deep_overview:'celtic_cross',conflict:'cross',cause_action:'five_card',narrative:'mathers_21',exhaustive:'mathers_horseshoe',yes_no:'three_card',simple:'three_card'}[shape];
-    if(preferred){var pc=candidates.find(function(c){return c.id===preferred&&c.eligible;});if(pc)selected=preferred;}
-    if(!selected){
-      var nearest=candidates[0]||null,missing=nearest?nearest.missing:required.slice();
-      return {version:VERSION,engine:'foundation_router_v5',spreadId:null,reason:'沒有單一已登錄牌陣能同時觀測原問句要求的全部通道；系統已停止抽牌，避免把不相容方法硬套成答案。',confidence:0,selectedBy:'blocked_no_compatible_method',compiledQuestion:compiled,methodPlan:null,coverage:{required:required,provided:nearest?nearest.provides:[],missing:missing,complete:false},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:candidates.slice(0,8)};
-    }
-    var plan=instantiateMethod(selected,compiled),reason='依型別化問題所需觀測通道選擇最小充分牌陣：'+required.map(function(x){return OBSERVABLES[x]||x;}).join('、')+'。';
-    return {version:VERSION,engine:'foundation_router_v5',spreadId:selected,reason:reason,confidence:plan.coverageComplete?.99:.6,selectedBy:'observable_subset_and_minimum_sufficient_method',compiledQuestion:compiled,methodPlan:plan,coverage:{required:required,provided:plan.provides,missing:plan.missingObservables,complete:plan.coverageComplete},unsupportedDimensions:compiled.unsupportedDimensions||[],candidates:candidates.slice(0,8)};
+    options=options||{};
+    var compiled=typeof input==='string'?compileQuestion(input,options):input;
+    if(!compiled||!text(compiled.originalQuestion)||compiled.originalQuestion==='（未提供明確問題）')return {spreadId:null,methodPlan:null,reason:'請先寫下想詢問的問題。',selectedBy:'empty_question',coverage:{complete:false,missing:[]},compiledQuestion:compiled};
+    var q=compiled.normalizedQuestion||compiled.originalQuestion,active=questionFocus(q)||q,f=compiled.features||{},shape=f.shape||'simple',required=compiled.requiredObservables||[],directive=spreadDirectives(q),kind=comparisonKind(active),notes=[];
+    var preferred={annual:'zodiac',annual_single_domain:'five_card',choice:'either_or',comparison:'either_or',threshold:'five_card',bounded_yes_no:'five_card',dyad:'relationship',timing:'timeline',location:'minor_arcana',deep_structure:'tree_of_life',multi_domain:'zodiac',hidden_external:'horseshoe',deep_overview:'celtic_cross',conflict:'cross',cause_action:'five_card',narrative:'celtic_cross',exhaustive:'zodiac',yes_no:'three_card',simple:'three_card'}[shape]||'five_card';
+    // Decisions compare actions; competing explanations of one person's behaviour do not create two independent futures.
+    if(kind==='hypotheses')preferred=f.knownDyad?'relationship':'five_card';
+    else if(kind==='multiple'){
+      preferred='celtic_cross';
+      notes.push('問題含三個以上選項：本次看共同決策局勢與取捨，逐項比較已知條件；沒有為每一選項抽獨立結果牌，不能編造各選項的抽牌結果或成功排名。若要分支牌位，需另選兩個明確選項。');
+    }else if(kind==='binary'&&compiled.relations&&compiled.relations.some(function(r){return /comparison/.test(r.type);}))preferred='either_or';
+    else if(f.timing&&(f.causal||f.advice||f.hidden||f.external))preferred='celtic_cross';
+    else if(f.knownDyad&&!f.deepOverview&&!f.multiDomain&&(f.causal||f.advice||!f.timing))preferred='relationship';
+    if(f.multiDomain&&(f.causal||f.advice)&&/互相影響|兼顧|平衡|衝突/.test(active))preferred='celtic_cross';
+    if(f.location&&f.practical)preferred='minor_arcana';
+    if((f.pattern||f.spiritual)&&kind!=='binary'&&!f.timing)preferred='tree_of_life';
+    if(f.deepOverview&&(preferred==='three_card'||preferred==='relationship'))preferred='celtic_cross';
+    if(directive.selected)preferred=directive.selected;
+    var candidates=Object.keys(METHODS).filter(function(id){return id!=='ootk'&&directive.excluded.indexOf(id)<0;}).map(function(id){
+      var m=METHODS[id],missing=difference(required,m.provides);
+      // Historical large procedures are opt-in, never triggered by ordinary numbers or adjectives such as "thorough".
+      var rank=missing.length*40+(m.count||80)+(id==='mathers_21'||id==='mathers_horseshoe'?300:0);
+      if(id===preferred)rank-=150;
+      return {id:id,eligible:!missing.length,missing:missing,rank:rank,cards:m.count,provides:m.provides};
+    }).sort(function(a,b){return a.rank-b.rank||a.cards-b.cards;});
+    var selected=directive.selected||((directive.excluded.indexOf(preferred)<0)?preferred:(candidates[0]&&candidates[0].id));
+    if(!selected)return {spreadId:null,methodPlan:null,reason:'目前可用牌陣都已被排除，請保留至少一種牌陣。',selectedBy:'all_methods_excluded',coverage:{complete:false,missing:required},compiledQuestion:compiled};
+    var plan=instantiateMethod(selected,compiled),missing=plan.missingObservables||[];
+    if(missing.length)notes.push('本陣未設獨立牌位的面向：'+missing.map(function(x){return OBSERVABLES[x]||x;}).join('、')+'。完整保留原問句；可由整體結構作條件性討論，無資料可判的部分明說，不新增牌位或假裝已量測。');
+    if(f.knownDyad&&selected==='timeline')notes.push('本次優先讀相對階段與轉折，沒有獨立的雙方內心牌位；不以階段牌認定對方意願。');
+    var reasons={three_card:'單一焦點，先看既有基礎、現況與條件性走向',five_card:'需要分辨現況、形成因素、阻礙、可做的事與走向',cross:'重點是卡住的核心、拉扯力量與可介入方向',either_or:'兩個可辨識的選項，需要用相同標準比較兩條路',relationship:'問題聚焦已指明的雙方、互動原因、限制及下一步',timeline:'主要想了解階段順序與轉折條件',horseshoe:'需要同時查看盲點、外在影響、阻礙與可採取行動',celtic_cross:'需要整合根基、目標、近程、本人、環境及整體走向',tree_of_life:'問題聚焦反覆模式、內在需求或深層課題',zodiac:'需要分開檢視多個生活領域，再整合整體重點',minor_arcana:'具體日常事件，適合整理操作、資源與搜尋線索',fifteen_card:'依指定的五個三牌組比較核心、發展、決策與外在條件',mathers_21:'依指定的歷史三排七與首尾配對程序',mathers_horseshoe:'依指定的歷史三輪分堆與配對程序',ootk:'依指定的五次開鑰操作'};
+    plan.routingNotes=notes.slice();plan.selectionReason=reasons[selected]+'。';
+    return {version:VERSION,engine:'question_structure_router_v6',spreadId:selected,reason:(directive.selected?'你已指定此牌陣；':'')+plan.selectionReason,selectedBy:directive.selected?'explicit':'question_structure',compiledQuestion:compiled,methodPlan:plan,ready:true,coverage:{required:required,provided:plan.provides,missing:missing,complete:!missing.length},readingNotes:notes,unsupportedDimensions:compiled.unsupportedDimensions||[],excludedMethods:directive.excluded,candidates:candidates.slice(0,8)};
   }
 
   function validateMethodRegistry(){
@@ -631,5 +863,5 @@
     return {ok:!errors.length,errors:errors};
   }
 
-  return {VERSION:VERSION,SCHEMA:SCHEMA,OBSERVABLES:OBSERVABLES,METHODS:METHODS,METHOD_PROTOCOLS:METHOD_PROTOCOLS,normalizeQuestion:normalize,parseChineseNumber:parseChineseNumber,compileQuestion:compileQuestion,routeQuestion:routeQuestion,instantiateMethod:instantiateMethod,getMethod:method,getMethodProtocol:function(id){return clone(METHOD_PROTOCOLS[id]||null);},getDignityLines:dignityLines,getDependencyGroups:dependencyGroups,getCompatibilityEdges:compatibilityEdges,validateMethodRegistry:validateMethodRegistry};
+  return {VERSION:VERSION,SCHEMA:SCHEMA,OBSERVABLES:OBSERVABLES,METHODS:METHODS,METHOD_PROTOCOLS:METHOD_PROTOCOLS,normalizeQuestion:normalize,questionFocus:questionFocus,spreadDirectives:spreadDirectives,parseChineseNumber:parseChineseNumber,compileQuestion:compileQuestion,routeQuestion:routeQuestion,instantiateMethod:instantiateMethod,getMethod:method,getMethodProtocol:function(id){return clone(METHOD_PROTOCOLS[id]||null);},getDignityLines:dignityLines,getDependencyGroups:dependencyGroups,getCompatibilityEdges:compatibilityEdges,validateMethodRegistry:validateMethodRegistry};
 });

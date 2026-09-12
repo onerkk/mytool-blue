@@ -723,7 +723,7 @@
     if(od.predeclaredBindings)L.push('發牌前綁定：'+safeText(od.predeclaredBindings));
     if(od.procedureStatus){
       L.push('程序狀態：'+safeText(od.procedureStatus));
-      if(od.procedureStatus.abandoned) L.push('程序於'+od.procedureStatus.abandonedAt+'停止，請整合此前已完成的操作。');
+      if(od.procedureStatus.abandoned) L.push('程序於'+od.procedureStatus.abandonedAt+'停止；以下是程序紀錄，不得將未通過驗題的牌面當作對原問題的有效占斷。');
     }
     if(od.validityPolicy)L.push('程序規則：'+od.validityPolicy);
     if(od.divinationValidity)L.push('占卜有效性：'+safeText(od.divinationValidity));
@@ -799,13 +799,43 @@
   }
 
   // ── 組成完整可複製提示詞 ──
-  function buildPrompt(tool) {
+  function ootkStatus(raw) {
+    var od=raw&&raw.ootkData;
+    if(!od)return null;
+    var ps=od.procedureStatus||{},v=od.divinationValidity||{},ops=od.operations||{};
+    var keys=['op1','op2','op3','op4','op5'].filter(function(k){return !!ops[k];});
+    var stopped=!!ps.abandoned||v.valid===false||keys.some(function(k){return ops[k].abandoned;});
+    return {stopped:stopped,complete:!stopped&&keys.length===5,recorded:keys.length,
+      at:ps.abandonedAt||keys.filter(function(k){return ops[k].abandoned;})[0]||'未完成的操作',
+      reason:ps.reason||ps.abandonReason||v.reason||keys.map(function(k){return ops[k].abandonReason||'';}).filter(Boolean).join('；')||'程序尚未完成'};
+  }
+  function stoppedPrompt(raw,status){
+    var od=raw.ootkData||{};
+    return [
+      '你是一位審慎的 Golden Dawn Book T — Opening of the Key 開鑰解讀者。本次任務是解釋未完成的程序並協助整理問題，不是給出有效占斷。',
+      '【原問題】',String(raw.question||getQuestion()),
+      '【本次程序紀錄】','狀態：'+(status.stopped?'已停止':'尚未完成')+'；已記錄 '+status.recorded+'／5 次操作。記錄數不等於通過驗題的操作數。',
+      '停止位置：'+status.at+'；原因：'+status.reason,
+      '起局時間：'+String(od.castTimestamp||'未提供'),
+      '各階段驗題紀錄：'+JSON.stringify(Object.keys(od.operations||{}).map(function(k){var op=od.operations[k];return {operation:k,valid:op.valid,abandoned:op.abandoned,mainLineValidation:op.mainLineValidation||null};})),
+      '預先綁定：'+safeText(od.predeclaredBindings||{}),
+      '有效性紀錄：'+safeText(od.divinationValidity||{}),
+      '【回答要求】',
+      '先明說本輪不能提供完成五次操作的結論。第一操作驗題失敗時，不用其牌面、計數、元素或代表牌位置解釋求問者的處境；這是程序未通過，不代表問題錯誤、求問者不誠心或未來不利。',
+      '若在較後操作停止，只能區分已通過的階段紀錄與尚未形成的全程結論；本提示詞未附完整已驗證牌面時，不補寫任何階段解讀。不得假造第二至第五操作、另抽牌或反覆重抽到符合期待。',
+      '再依原問題的現實資訊，提出一個有幫助的釐清問題及一個可逆的小行動，明標「依問題提供的實務建議，並非本輪占斷」。用繁體中文，溫和直接，不把無效牌面包裝成深度分析。',
+      '程序參考：Liber LXXVIII https://sacred-texts.com/oto/lib78.htm；網站採預先綁定的明示驗題政策。本次未聲稱 AI 已上網核對。'
+    ].join('\n');
+  }
+  function buildPrompt(tool, suppliedPayload) {
     var t = TPL[tool];
     if (!t) return '';
-    var rawPayload = getPayloadObject(tool);
+    var rawPayload = arguments.length>1?suppliedPayload:getPayloadObject(tool);
     if(!rawPayload)return '';
     if(tool==='meihua'&&(!rawPayload.ben||!rawPayload.hu||!rawPayload.bian||!rawPayload.tiG||!rawPayload.yoG||!Number.isInteger(rawPayload.dong)||rawPayload.dong<1||rawPayload.dong>6))return '';
     if(rawPayload.mode==='ootk'||rawPayload.ootkData){tool='ootk';t=TPL.ootk;}
+    var status=ootkStatus(rawPayload);
+    if(status&&!status.complete)return stoppedPrompt(rawPayload,status);
     var question = String(rawPayload.question||getQuestion());
     var payload = formatPayloadObject(tool, rawPayload);
     var rws=tool==='tarot'&&rawPayload.tarotData&&rawPayload.tarotData.sourceProfile==='rws_reversals'&&window.JYTarotReading;
@@ -815,6 +845,7 @@
     var recency = tool === 'meihua' ? FRAG_RECENCY_MEIHUA : (tool === 'ootk' ? FRAG_RECENCY_OOTK : buildRecencyTarot());
     return [
       buildRootQuestionLock(question, tool),
+      window.JY_READING_QUALITY?window.JY_READING_QUALITY.lines(tool).join('\n'):'',
       '先分清輸入的盤面事實、流派解釋與現實假設。可自由運用自身知識補充技法；若原始資料與摘要衝突，指出具體差異，以可核對的原始資料為先。結論要有支持、反向訊號與成立條件；象徵不等於事件證明，分數不等於成功機率。',
       tool==='meihua'?'題目中的假設與已確認事實分開；卦數、五行與傳統類象不直接換算成精確日期、金額或人物資料。':
       '題目中的假設與已確認事實分開；例如問某人是否欺騙，先檢視支持與其他解釋，再提出可觀察的互動訊號。牌位、計數值和傳統對應不直接換算成中獎機率、精確年齡或日期。',
@@ -943,8 +974,19 @@
     if (!el) { console.warn('[prompt-export] 找不到掛載容器'); return; }
     ensureFx();
     var t = TPL[tool] || { label: '命理' };
-    var prompt = buildPrompt(tool);
+    var rawPayload=getPayloadObject(tool),status=ootkStatus(rawPayload);
+    var prompt = buildPrompt(tool,rawPayload);
     if(!prompt){el.textContent='本次資料尚未完整，請先完成抽牌／排盤，再產生解讀提示詞。';return;}
+    var incomplete=status&&!status.complete;
+    var share=document.getElementById('tarot-share-wrap');
+    if(share&&(tool==='tarot'||tool==='ootk')){share.hidden=!!incomplete;share.style.display=incomplete?'none':'';}
+    var hero=document.getElementById('tarot-question-hero');
+    if(hero&&(tool==='tarot'||tool==='ootk'))hero.textContent='「'+String(rawPayload.question||getQuestion())+'」';
+    var heading=document.querySelector('#step-tarot .at-result-heading');
+    if(heading){heading.setAttribute('data-reading-state',incomplete?'stopped':'complete');
+      var h=heading.querySelector('h1'),p=heading.querySelector('p');
+      if(h)h.textContent=incomplete?'這次，先停在這裡。':'讓線索，成為下一步。';
+      if(p)p.textContent=incomplete?'本輪開鑰未完成有效驗題。你可以查看停止紀錄，或保留問題返回整理。':'本次牌陣已完成。複製資料與讀法，到 AI 對話中取得完整解讀。';}
     var emblem = (tool === 'ootk') ? '🗝️' : (tool === 'ziwei' ? '🪐' : (tool === 'meihua' ? '☯️' : '🔮'));
 
     // 本輪讀法由抽牌紀錄決定，結果頁不重新切換牌義來源。
@@ -957,10 +999,10 @@
     card.innerHTML =
       '<div class="jy-ex-stars">' + starsHTML() + '</div>' +
       '<div class="jy-ex-emblem">' + emblem + '</div>' +
-      '<div class="jy-ex-title">' + t.label + ' · 準備解讀</div>' +
-      '<div class="jy-ex-sub">本次資料與讀法已整理好。複製提示詞，貼到 AI 對話並送出，即可繼續探索。</div>' +
+      '<div class="jy-ex-title">' + t.label + (incomplete?' · 程序停止紀錄':' · 準備解讀')+'</div>' +
+      '<div class="jy-ex-sub">'+(incomplete?'本輪沒有完整占斷。複製停止紀錄，可請 AI 協助釐清程序與問題。':'本次資料與讀法已整理好。複製提示詞，貼到 AI 對話並送出，即可繼續探索。')+'</div>' +
       toggleHTML +
-      '<button type="button" class="jy-ex-btn">複製本次解讀提示詞 →</button>' +
+      '<button type="button" class="jy-ex-btn">'+(incomplete?'複製停止紀錄與整理提示詞 →':'複製本次解讀提示詞 →')+'</button>' +
       '<div class="jy-ex-ai-grid">' +
         '<button type="button" class="jy-ai-shortcut" data-ai="chatgpt"><img class="jy-ai-icon" src="ai-icons/ai-chatgpt.png" alt="ChatGPT"><span class="jy-ai-name">ChatGPT</span></button>' +
         '<button type="button" class="jy-ai-shortcut" data-ai="claude"><img class="jy-ai-icon" src="ai-icons/ai-claude.png" alt="Claude"><span class="jy-ai-name">Claude</span></button>' +
@@ -1022,6 +1064,7 @@
     el.innerHTML = '';
     el.appendChild(card);
     if(window.JYCinemaUI)window.JYCinemaUI.handoff(el);
+    if(window.JYCinemaUI&&window.JYCinemaUI.results&&(tool==='tarot'||tool==='ootk'))window.JYCinemaUI.results(document.getElementById('step-tarot'),tool+'|'+prompt);
   }
   window.JY_renderExportPrompt = render;
 

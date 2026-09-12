@@ -43,7 +43,7 @@ if(require.main===module)(async()=>{
   e.clock.advance(12000);assert.equal(dialog.getAttribute('data-phase'),'0');assert.equal(done,0);
   dialog.querySelector('.jr-next').click();assert.equal(dialog.getAttribute('data-phase'),'1');e.clock.advance(6000);assert.equal(done,0);
   const seals=dialog.querySelectorAll('.jr-seal');if(seals.length)seals.forEach(b=>b.click());else dialog.querySelector('.jr-next').click();
-  assert.equal(dialog.getAttribute('data-phase'),'2');e.clock.advance(2100);assert.equal(dialog.getAttribute('data-phase'),'3');assert.equal(done,0);
+  assert.equal(dialog.getAttribute('data-phase'),'2');e.clock.advance(2800);assert.equal(dialog.getAttribute('data-phase'),'3');assert.equal(done,0);
   e.clock.advance(12000);assert.equal(done,0);dialog.querySelector('.jr-next').click();assert.equal(await h.finished,true);assert.equal(done,1);h.skip();assert.equal(done,1);assert.equal(e.clock.timers.size,0);assert(!e.doc.querySelector('dialog'));assert.equal(e.doc.body.style.overflow,'auto');assert.equal(e.doc.activeElement,trigger);assert.equal(e.events.listeners.popstate.size,0);assert.equal(e.docEvents.listeners.visibilitychange.size,0);
  });
  await test('Skip, cancel, Escape, native close and navigation settle only once, including queued stale callbacks',async()=>{
@@ -68,7 +68,7 @@ if(require.main===module)(async()=>{
  await test('Card faces are absent before touch; real card order, reversal and callbacks survive sequential reveal',async()=>{
   const e=fixture();load(e,'ritual-ateliers');let done=0;const cards=[{id:8,name:'力量',image:'tarot_img/08-strength.jpg',isUp:false},{id:25,name:'聖杯四',image:'tarot_img/25.jpg',isUp:true},{id:9,name:'隱者',image:'tarot_img/09-hermit.jpg',isUp:true},{id:0,name:'愚者'}],original=JSON.stringify(cards);
   const h=e.ctx.JYRitual.play('tarot',{variant:'deal',cards,question:'<img src=x onerror=alert(1)>',onComplete:()=>done++}),d=e.doc.querySelector('dialog');assert.equal(d.getAttribute('data-phase'),'1');assert.equal(d.querySelectorAll('.jr-front img').length,0);assert.equal(d.querySelectorAll('.jr-question img').length,0);
-  const buttons=d.querySelectorAll('.jr-reveal');buttons[1].click();assert.equal(d.querySelectorAll('.jr-front img').length,1);assert.equal(done,0);buttons[0].click();assert(buttons[0].querySelector('.is-reversed'));buttons[2].click();e.clock.advance(3000);assert.equal(d.getAttribute('data-phase'),'3');assert.equal(done,0);d.querySelector('.jr-next').click();assert.equal(await h.finished,true);assert.equal(done,1);assert.equal(JSON.stringify(cards),original);
+  const buttons=d.querySelectorAll('.jr-reveal');buttons[1].click();assert.equal(d.querySelectorAll('.jr-front img').length,1);assert.equal(done,0);buttons[0].click();assert(buttons[0].querySelector('.is-reversed'));buttons[2].click();assert.equal(d.getAttribute('data-phase'),'1');assert.equal(d.querySelector('.jr-next').textContent,'下一組牌 →');d.querySelector('.jr-next').click();assert(!buttons[3].hidden);buttons[3].click();e.clock.advance(3700);assert.equal(d.getAttribute('data-phase'),'3');assert.equal(done,0);d.querySelector('.jr-next').click();assert.equal(await h.finished,true);assert.equal(done,1);assert.equal(JSON.stringify(cards),original);
  });
  await test('Sound requires an explicit gesture and closes its AudioContext on every exit',async()=>{
   const e=fixture();let created=0,closed=0,suspended=0,resumed=0;
@@ -84,7 +84,7 @@ if(require.main===module)(async()=>{
   const e=tarotFixture(),c=e.ctx;c.setCurrentSpread('tree_of_life');c.deckShuffled=c.TAROT.slice();load(e,'atelier-ui');
   const button=add(e,'button','tarot-dock-action');button.onclick=()=>c._atelierTarotAction();assert.equal(e.doc.getElementById('jy-shuffle-btn'),null);
   button.click();const d=e.doc.querySelector('dialog');assert(d,'Visible dock must launch the ceremony without a hidden button');assert.equal(c._deckIsShuffled,false);assert.equal(c.drawnCards.length,0);assert(e.doc.getElementById('btn-analyze').disabled);
-  button.click();assert.equal(e.doc.querySelectorAll('dialog').length,1);d.querySelector('.jr-next').click();d.querySelector('.jr-next').click();e.clock.advance(2100);assert.equal(c._deckIsShuffled,false);d.querySelector('.jr-next').click();assert.equal(c._deckIsShuffled,true);assert.equal(c.drawnCards.length,0);assert(!c.JYRitual.isActive());
+  button.click();assert.equal(e.doc.querySelectorAll('dialog').length,1);d.querySelector('.jr-next').click();d.querySelector('.jr-next').click();e.clock.advance(2800);assert.equal(c._deckIsShuffled,false);d.querySelector('.jr-next').click();assert.equal(c._deckIsShuffled,true);assert.equal(c.drawnCards.length,0);assert(!c.JYRitual.isActive());
  });
  await test('Stale legacy handlers are bypassed; cancel and return can start another shuffle safely',()=>{
   const e=tarotFixture(),c=e.ctx;c.setCurrentSpread('three_card');c.deckShuffled=c.TAROT.slice();load(e,'atelier-ui');

@@ -83,7 +83,7 @@ function point(el,type,x,y,id=1,extra={}){el.dispatch(type,{clientX:x,clientY:y,
   }
  });
  await test('AI opens inside the click gesture; clipboard rejection offers the actual prompt instead of a dead end',async()=>{
-  const e=dom(),events=[],payload='完整的本次資料 <keep> & 不可變更';e.ctx.ensureFx=()=>{};e.ctx.starsHTML=()=>'';e.ctx.TPL={tarot:{label:'塔羅'}};e.ctx.buildPrompt=()=>payload;
+  const e=dom(),events=[],payload='完整的本次資料 <keep> & 不可變更';e.ctx.ensureFx=()=>{};e.ctx.starsHTML=()=>'';e.ctx.TPL={tarot:{label:'塔羅'}};e.ctx.buildPrompt=()=>payload;e.ctx.getPayloadObject=()=>({question:'這次的問題'});e.ctx.ootkStatus=()=>null;
   e.ctx.open=()=>events.push('open');let reject;e.ctx.navigator.clipboard.writeText=()=>new Promise((_,r)=>{reject=r;events.push('copy');});
   vm.runInContext(actual('JS/prompt-export.js','copyText')+actual('JS/prompt-export.js','render'),e.ctx);const container=add(e,'div','export-test');e.ctx.render('tarot',container);
   const provider=container.querySelector('.jy-ai-shortcut');provider.click();assert.deepEqual(events,['open','copy']);reject(Error('permission denied'));await Promise.resolve();

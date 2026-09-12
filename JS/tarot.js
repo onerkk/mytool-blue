@@ -2917,12 +2917,14 @@ try { window._jyCurrentPosName = _jyCurrentPosName; window._jyRenderNeutralSlots
 let drawnCards=[];
 let deckShuffled=[];
 let pickAnimating=false;
+var _tarotPendingDraw = null;
 
 // A reading is one transaction. Leaving or starting another reading invalidates
 // pending animation callbacks; the DOM and both card stores reset together.
 var _tarotEpoch = 0;
 function invalidateTarotDraw() {
   _tarotEpoch++;
+  _tarotPendingDraw = null;
   if (_deck3dCleanup) _deck3dCleanup();
   pickAnimating = false;
   if (_deck3dRAF) { cancelAnimationFrame(_deck3dRAF); _deck3dRAF = null; }
@@ -2948,6 +2950,7 @@ function resetTarotDraw() {
   });
   S.tarot = fresh;
   clearTarotSpreadView();
+  if(window.JYCinemaUI&&window.JYCinemaUI.resetResults)window.JYCinemaUI.resetResults(document.getElementById('step-tarot'));
   var chosen = document.getElementById('t-chosen');
   if (chosen) chosen.textContent = '';
   var count = document.getElementById('t-remain-picked');
@@ -2957,6 +2960,10 @@ function resetTarotDraw() {
 }
 window.JYTarotSession = {
   reset: resetTarotDraw, invalidate: invalidateTarotDraw, clearView: clearTarotSpreadView,
+  busy: function(){return pickAnimating;},
+  pending: function(){return _tarotPendingDraw;},
+  stageDraw: function(value){_tarotPendingDraw=value;},
+  clearPending: function(){_tarotPendingDraw=null;},
   epoch: function(){return _tarotEpoch;}
 };
 
@@ -3268,7 +3275,7 @@ function _startDeck3D(topCount,botCount){
   }
   on(stage,'pointerdown',function(e){
     if(!window._deckIsShuffled||gesture||e.isPrimary===false||e.button>0)return;
-    gesture={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,axis:null};
+    gesture={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,axis:null,card:e.target.closest&&e.target.closest('.tarot-deck-card')};
   });
   on(stage,'pointermove',function(e){
     if(!gesture||e.pointerId!==gesture.id)return;
@@ -3282,7 +3289,16 @@ function _startDeck3D(topCount,botCount){
     if(e.cancelable)e.preventDefault();
     shift(e.clientX-gesture.lastX);gesture.lastX=e.clientX;
   });
-  function end(e){if(!gesture||e.pointerId===undefined||e.pointerId===gesture.id)stop();}
+  function end(e){
+    if(!gesture)return;
+    if(e.pointerId!==undefined&&e.pointerId!==gesture.id)return;
+    // Commit a genuine tap from its original card. Browser focus/3D transforms
+    // can retarget the later synthetic click to the stage instead of that card.
+    var tapped=e.type==='pointerup'&&!gesture.axis&&gesture.card&&
+      Math.max(Math.abs(e.clientX-gesture.x),Math.abs(e.clientY-gesture.y))<7?gesture.card:null;
+    stop();
+    if(tapped){suppressUntil=Date.now()+450;pickCard(Number(tapped.dataset.idx),tapped);}
+  }
   on(stage,'pointerup',end);on(stage,'pointercancel',end);on(stage,'lostpointercapture',end);
   on(stage,'click',function(e){if(Date.now()<suppressUntil&&e.detail!==0){e.preventDefault();e.stopImmediatePropagation();}},true);
   on(stage,'dragstart',function(e){e.preventDefault();});
@@ -3407,8 +3423,9 @@ function pickCard(deckIdx,deckEl){
   // ★ v28：洗牌前不能選牌
   if (!window._deckIsShuffled) return;
   var _maxC=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10;
-  if(!deckEl || !deckShuffled[deckIdx] || pickAnimating||drawnCards.length>=_maxC||deckEl.classList.contains('picked')) return;
+  if(!deckEl || !deckShuffled[deckIdx] || pickAnimating||_tarotPendingDraw||drawnCards.length>=_maxC||deckEl.classList.contains('picked')) return;
   pickAnimating=true;
+  if(window.JY_ATELIER&&window.JY_ATELIER.syncTarot)window.JY_ATELIER.syncTarot();
   var drawEpoch = _tarotEpoch;
 
   var card=deckShuffled[deckIdx];
@@ -3433,6 +3450,15 @@ function pickCard(deckIdx,deckEl){
   // ── Phase 2: 標記所有同 idx 的 clone 為 picked，創建飛牌 ──
   setTimeout(function(){
     if (drawEpoch !== _tarotEpoch) return;
+    // The slot is presentation. Rebuild it if a layout refresh removed it;
+    // never silently consume a card without committing the canonical draw.
+    var slotEl=document.getElementById('t-slot-'+slotIdx);
+    if(!slotEl&&typeof renderTarotChosenLayoutForCurrentSpread==='function'){
+      renderTarotChosenLayoutForCurrentSpread();slotEl=document.getElementById('t-slot-'+slotIdx);
+    }
+    if(!slotEl){deckEl.classList.remove('lifting');pickAnimating=false;
+      if(window.JY_ATELIER&&window.JY_ATELIER.syncTarot)window.JY_ATELIER.syncTarot();
+      var failedHint=document.getElementById('pick-hint');if(failedHint)failedHint.textContent='牌位暫時未準備好，請再點一次。已選的牌與問題會保留。';return;}
     // 標記 picked（含 duplicate）
     var allDup=document.querySelectorAll('.tarot-deck-card[data-idx="'+deckIdx+'"]');
     for(var d=0;d<allDup.length;d++){
@@ -3440,8 +3466,6 @@ function pickCard(deckIdx,deckEl){
       allDup[d].classList.remove('lifting');
     }
 
-    var slotEl=document.getElementById('t-slot-'+slotIdx);
-    if(!slotEl){ pickAnimating=false; return; }
     var slotRect=slotEl.getBoundingClientRect();
     var peek=document.getElementById('tarot-last-card');
     if(peek && (slotRect.width===0 || slotRect.top<0 || slotRect.bottom>window.innerHeight)){
@@ -3498,6 +3522,7 @@ function pickCard(deckIdx,deckEl){
 
       drawnCards.push(drawnCard);
       S.tarot.drawn = drawnCards; S.tarot.spread = drawnCards;
+      pickAnimating=false;
       if (window.JY_ATELIER && window.JY_ATELIER.syncTarot) window.JY_ATELIER.syncTarot();
       if(reading)reading.syncControls();
       var pickedEl=document.getElementById('t-remain-picked');
@@ -3522,8 +3547,8 @@ function pickCard(deckIdx,deckEl){
       }
 
       pickAnimating=false;
-    },580);
-  },400);
+    },_deck3dReducedMotion?0:580);
+  },_deck3dReducedMotion?0:400);
 }
 
 
