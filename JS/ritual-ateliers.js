@@ -25,6 +25,16 @@
     for(var i=0;i<9;i++)h+='<span class="jr-card" style="--i:'+i+';--offset:'+(i-4)+'"><img src="assets/ui/tarot-back-moon-gold.jpg" alt="" draggable="false"></span>';
     return h+'</div>';
   }
+  function timeSeal(label,i){
+    var glyphs=[
+      '<path d="M26 21V9m-9 5h18M20 22l6-7 6 7M15 31c3-8 19-8 22 0M10 36h32"/>',
+      '<path d="M32 9a17 17 0 1 0 7 26A15 15 0 0 1 32 9Z"/><path d="m17 16 2 3-2 3-2-3Z"/>',
+      '<circle cx="26" cy="25" r="9"/><path d="M26 7v5m0 26v5M8 25h5m26 0h5M13 12l4 4m18 18 4 4m0-26-4 4M17 34l-4 4"/>',
+      '<path d="M17 9h18M17 41h18M19 10c0 12 14 16 14 30M33 10c0 12-14 16-14 30M22 16h8m-9 21h10"/>'
+    ];
+    var ornament='<svg class="jr-seal-etch" viewBox="0 0 84 148" aria-hidden="true"><path d="M42 3 78 21v112l-12 11H18L6 133V21Z M42 9 72 25v105l-10 8H22l-10-8V25Z"/><path d="M16 38v-9l26-14 26 14v9M16 110v17l8 7h36l8-7v-17M10 52h5m54 0h5M10 102h5m54 0h5"/><path d="M19 45c-11 8-2 17 3 12s-7-7-3 2m46-14c11 8 2 17-3 12s7-7 3 2M20 116c-8-8-2-13 2-8m42 8c8-8 2-13-2-8"/></svg>';
+    return '<button type="button" class="jr-seal jr-time-seal" style="--i:'+i+'" data-seal-index="'+i+'" aria-pressed="false" aria-label="點亮'+label+'座標">'+ornament+'<i class="jr-seal-jewel" aria-hidden="true"></i><svg class="jr-seal-emblem" viewBox="0 0 52 48" aria-hidden="true">'+glyphs[i]+'</svg><span class="jr-seal-glyph">'+label+'</span><small class="jr-seal-caption">'+['YEAR','MONTH','DAY','HOUR'][i]+'</small><small class="jr-seal-state" aria-hidden="true">待點亮</small><i class="jr-seal-foot" aria-hidden="true"></i></button>';
+  }
   function play(kind,options){
     options=options||{};
     if(!themes[kind])throw new Error('Unknown ceremony: '+kind);
@@ -51,7 +61,7 @@
     if(mode==='cards'){
       interaction='<div class="jr-reveal-row">'+cards.map(function(c,i){return '<button type="button" class="jr-reveal" data-card-index="'+i+'" aria-label="揭開第 '+(i+1)+' 張牌" aria-pressed="false"><span class="jr-flip"><span class="jr-back"><img src="assets/ui/tarot-back-moon-gold.jpg" alt="" draggable="false"></span><span class="jr-front"></span></span><span class="jr-card-label">'+String(i+1).padStart(2,'0')+' · 輕觸揭牌</span></button>';}).join('')+'</div>';
     }else if(mode==='seals'){
-      interaction='<div class="jr-seals">'+cfg.seals.map(function(label,i){return '<button type="button" class="jr-seal" data-seal-index="'+i+'" aria-pressed="false" aria-label="點亮'+label+'座標"><span>'+label+'</span><small>'+String(i+1).padStart(2,'0')+'</small></button>';}).join('')+'</div>';
+      interaction='<div class="jr-seals">'+cfg.seals.map(function(label,i){return kind==='bazi'?timeSeal(label,i):'<button type="button" class="jr-seal" data-seal-index="'+i+'" aria-pressed="false" aria-label="點亮'+label+'座標"><span>'+label+'</span><small>'+String(i+1).padStart(2,'0')+'</small></button>';}).join('')+'</div>';
     }else{
       interaction='<button type="button" class="jr-touch" aria-label="'+esc(gestureCopy[kind]||cfg.guide)+'">'+(kind==='tarot'||kind==='ootk'?fan():'<span class="jr-art at-art" data-art="'+kind+'" aria-hidden="true"></span>')+'<span class="jr-touch-label">'+esc(gestureCopy[kind]||'按住，讓光靠近')+'</span><span class="jr-touch-track"><i></i></span></button>';
     }
@@ -228,7 +238,10 @@
       if(phase!==1||settled||btn.getAttribute('aria-pressed')==='true')return;
       if(kind==='bazi'&&i!==lit){hint.textContent='先點亮「'+cfg.seals[lit]+'」，再沿著時間往前。';return;}
       contact(event,btn);
-      btn.setAttribute('aria-pressed','true');btn.disabled=true;if(options.sealValues&&options.sealValues[i]){btn.querySelector('small').textContent=String(options.sealValues[i]);}lit++;dialog.style.setProperty('--lit',String(lit));hint.textContent='已點亮 '+lit+' / '+cfg.seals.length;bell();
+      btn.setAttribute('aria-pressed','true');btn.disabled=true;
+      var sealState=btn.querySelector('.jr-seal-state');if(sealState)sealState.textContent='已點亮';
+      if(options.sealValues&&options.sealValues[i]){(sealState||btn.querySelector('small')).textContent=String(options.sealValues[i]);}
+      lit++;dialog.style.setProperty('--lit',String(lit));hint.textContent='已點亮 '+lit+' / '+cfg.seals.length;bell();
       stageCall('setLit',lit);
       showProgress(lit/cfg.seals.length,'已點亮 '+lit+' / '+cfg.seals.length+' 個座標');
       if(lit===cfg.seals.length)awaken();else{var remaining=Array.prototype.find.call(dialog.querySelectorAll('.jr-seal'),function(x){return !x.disabled;});if(remaining)remaining.focus({preventScroll:true});}

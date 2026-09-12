@@ -227,7 +227,7 @@ function baziCalcLiuYue(bazi, liuNianGan, liuNianZhi, stance) {
 
 function baziCheckSuiYunBingLin(bazi) {
   if (!bazi || !Array.isArray(bazi.dayun)) return null;
-  var refMs = isFinite(bazi._referenceTimestamp) ? bazi._referenceTimestamp : Date.now();
+  var refMs = Number.isFinite(bazi._referenceInstantTimestamp) ? bazi._referenceInstantTimestamp : Date.now();
   var curDayun = bazi.dayun.find(function(d) { return d && d.isCurrent && d.gz && d.gz !== '小運'; });
   if (!curDayun || !curDayun.gz || curDayun.gz.length < 2) return null;
 
@@ -764,7 +764,7 @@ function enhanceBazi(bazi) {
 
   // 12.5 流月（取當前流年；v80.30：移到 wuxingStance 之後，吉凶用完整喜忌表＋沖合依喜忌定向）
   try {
-    var _refMs = isFinite(bazi._referenceTimestamp) ? bazi._referenceTimestamp : Date.now();
+    var _refMs = Number.isFinite(bazi._referenceInstantTimestamp) ? bazi._referenceInstantTimestamp : Date.now();
     var _annual = (window.BAZI_CORE && window.BAZI_CORE.getYearGanZhiAt) ? window.BAZI_CORE.getYearGanZhiAt(new Date(_refMs)) : null;
     if (!_annual) { var _ny = new Date(_refMs).getUTCFullYear(), _yo = ((_ny - 4) % 60 + 60) % 60; _annual = {gan:TG10[_yo % 10],zhi:DZ12[_yo % 12],gz:TG10[_yo % 10]+DZ12[_yo % 12],year:_ny,boundary:'立春近似'}; }
     bazi.liuYue = baziCalcLiuYue(bazi, _annual.gan, _annual.zhi, bazi.wuxingStance);

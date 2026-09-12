@@ -610,10 +610,10 @@
   function _ensureEngine(cb) {
     var need = [];
     if (typeof window.Solar === 'undefined') need.push('JS/vendor/lunar.js');
-    if (typeof window.BaziCalendarCore === 'undefined') need.push('JS/bazi-calendar-core.js?v=20260912accuracy1');
+    if (typeof window.BaziCalendarCore === 'undefined') need.push('JS/bazi-calendar-core.js?v=20260912engine2');
     if (typeof calcTrueSolarTime !== 'function') need.push('JS/solar-location.js?v=20260912accuracy1');
-    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260912accuracy1');
-    if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260912accuracy1');
+    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260912engine2');
+    if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260912engine2');
     if (!need.length) { cb(true); return; }
     if (typeof window._jyLazyScript !== 'function') { cb(typeof computeBazi === 'function'); return; }
     var idx = 0;

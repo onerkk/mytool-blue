@@ -126,7 +126,7 @@ export function mountStage(host,kind,options={}){
    craft.decoratePillar(pillar);
    for(let j=0;j<6;j++){const a=j*Math.PI/3;const inlay=mesh(new T.BoxGeometry(.008,.76,.008),gold,pillar);inlay.position.set(Math.sin(a)*.151,0,Math.cos(a)*.151);}
    [-.43,.43].forEach(y=>{const c=mesh(new T.CylinderGeometry(.185,.185,.055,24),gold,pillar);c.position.y=y;});
-   const top=mesh(new T.OctahedronGeometry(.15),light,pillar);top.position.y=.59;
+   const top=craft.pillarCrown(pillar);
    const line=ring(.19,.012,pillar);line.rotation.x=Math.PI/2;line.position.y=.25;
    animated.push({type:'pillar',node:pillar,index:i,gem:top});
   }

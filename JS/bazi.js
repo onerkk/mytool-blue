@@ -127,7 +127,9 @@ function _baziAddCalendarOffset(y,m,d,h,mi,sec,years,months,days,hours){
   return base.getTime();
 }
 function _baziAddYearsMs(ms,years){
-  var d=new Date(ms); return Date.UTC(d.getUTCFullYear()+years,d.getUTCMonth(),d.getUTCDate(),d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds());
+  var d=new Date(ms),y=d.getUTCFullYear()+years,m=d.getUTCMonth();
+  var day=Math.min(d.getUTCDate(),new Date(Date.UTC(y,m+1,0)).getUTCDate());
+  return Date.UTC(y,m,day,d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds());
 }
 function _baziJqToMs(year,num){
   if(!num) return null;
@@ -138,22 +140,29 @@ function getBaziLiChunMs(year){
   try{
     if(window.BaziCalendarCore&&window.BaziCalendarCore.hasEngine()){
       var exact=window.BaziCalendarCore.getLiChun(year);
-      if(exact&&isFinite(exact.timestamp)) return exact.timestamp;
+      if(exact&&Number.isFinite(exact.instantTimestamp)) return exact.instantTimestamp;
     }
   }catch(e){}
-  if(typeof JQ!=='undefined'&&JQ[year]&&JQ[year][1]) return _baziJqToMs(year,JQ[year][1]);
-  return Date.UTC(year,1,4,12,0,0); // 曆法庫與本地表均無資料時才近似
+  throw new Error('立春邊界需要已載入的節氣引擎，已停止計算。');
 }
 function getBaziYearGanZhiAt(dateLike){
   var d=dateLike instanceof Date?dateLike:new Date(dateLike==null?Date.now():dateLike);
+  if(!Number.isFinite(d.getTime()))throw new Error('流年參考瞬間無效。');
   var y=d.getUTCFullYear(),effective=d.getTime()<getBaziLiChunMs(y)?y-1:y;
   return {year:effective,gan:TG[((effective-4)%10+10)%10],zhi:DZ[((effective-4)%12+12)%12],gz:TG[((effective-4)%10+10)%10]+DZ[((effective-4)%12+12)%12],boundary:'立春'};
 }
-function getBaziAnnualYearsOverlapping(startMs,endMs){
+function getBaziAnnualYearsOverlapping(startMs,endMs,chartOptions){
+  if(!Number.isFinite(startMs)||!Number.isFinite(endMs)||endMs<=startMs)throw new Error('流年比較區間無效。');
+  // Public inputs are UTC instants. Internal decade intervals use chart-wall time;
+  // convert the SAME astronomical boundary to that wall before intersecting.
+  function boundary(y){
+    var instant=getBaziLiChunMs(y);
+    return chartOptions?_baziReferenceToChartWall(instant,Object.assign({},chartOptions,{referenceTimeBasis:null})).timestamp:instant;
+  }
   var sy=new Date(startMs).getUTCFullYear()-1,ey=new Date(endMs).getUTCFullYear()+1,out=[];
   for(var y=sy;y<=ey;y++){
-    var a=getBaziLiChunMs(y),b=getBaziLiChunMs(y+1);
-    if(a<endMs&&b>startMs) out.push({year:y,periodStart:_baziFormatDateTime(Math.max(a,startMs)),periodEndExclusive:_baziFormatDateTime(Math.min(b,endMs)),partialStart:a<startMs,partialEnd:b>endMs,boundaryApprox:!(typeof JQ!=='undefined'&&JQ[y]&&JQ[y][1]&&JQ[y+1]&&JQ[y+1][1])});
+    var a=boundary(y),b=boundary(y+1);
+    if(a<endMs&&b>startMs) out.push({year:y,periodStart:_baziFormatDateTime(Math.max(a,startMs)),periodEndExclusive:_baziFormatDateTime(Math.min(b,endMs)),partialStart:a<startMs,partialEnd:b>endMs,boundaryApprox:false,timeBasis:chartOptions?'chart-wall':'UTC',precision:'astronomical-estimate'});
   }
   return out;
 }
@@ -4551,9 +4560,15 @@ function _baziWallPartsAtInstant(instantMs, timezoneId, timezoneOffset){
 function _baziReferenceToChartWall(referenceValue,options){
   options=options||{};
   let instantMs=referenceValue instanceof Date?referenceValue.getTime():new Date(referenceValue).getTime();
-  if(!Number.isFinite(instantMs)) instantMs=Date.now();
+  if(!Number.isFinite(instantMs)) throw new Error('參考日期無效。');
   if(options.referenceTimeBasis==='chart-wall'){
-    return {timestamp:instantMs,instantTimestamp:instantMs,basis:'chart-wall-explicit',civilParts:null,solarInfo:null};
+    var wallMs=instantMs,normalOptions=Object.assign({},options,{referenceTimeBasis:null});
+    var guess=wallMs-(options.timezoneOffset==null?8:Number(options.timezoneOffset))*3600000;
+    for(var n=0;n<5;n++){
+      var actual=_baziReferenceToChartWall(guess,normalOptions).timestamp,delta=wallMs-actual;
+      guess+=delta;if(Math.abs(delta)<1000)break;
+    }
+    return {timestamp:wallMs,instantTimestamp:guess,basis:'chart-wall-explicit',civilParts:null,solarInfo:null};
   }
   const civil=_baziWallPartsAtInstant(instantMs,options.timezoneId||null,options.timezoneOffset);
   if(!civil) return {timestamp:instantMs,instantTimestamp:instantMs,basis:'utc-fallback',civilParts:null,solarInfo:null};
@@ -4573,19 +4588,21 @@ function _baziReferenceToChartWall(referenceValue,options){
 // ── computeBazi + computeStartAge + related (lines 4051-5269) ──
 function computeBazi(year,month,day,hour,minute,gender,options){
   options=Object.assign({timezoneOffset:8},options||{});
-  const dayBoundaryMode=options.dayBoundaryMode||BAZI_DEFAULT_POLICY.dayBoundaryMode;
+  minute=minute==null?0:minute;
+  const second=options.second==null?0:options.second;
+  const dayBoundaryMode=options.dayBoundaryMode==null?BAZI_DEFAULT_POLICY.dayBoundaryMode:options.dayBoundaryMode;
   const referenceInstantMs=options.referenceDate!=null?new Date(options.referenceDate).getTime():Date.now();
-  const referenceResolved=_baziReferenceToChartWall(Number.isFinite(referenceInstantMs)?referenceInstantMs:Date.now(),options);
+  const referenceResolved=_baziReferenceToChartWall(referenceInstantMs,options);
   const referenceMs=referenceResolved.timestamp;
   // 曆法事實層必須成功；不以近似日期或預設起運歲數代替。
-  if(![year,month,day,hour,minute||0].every(Number.isInteger) || year<1900 || year>2100 || hour<0 || hour>23 || (minute||0)<0 || (minute||0)>59 || !['male','female'].includes(gender)) throw new Error('出生日期、時間或性別無效。');
+  if(![year,month,day,hour,minute,second].every(Number.isInteger) || year<1900 || year>2100 || hour<0 || hour>23 || minute<0 || minute>59 || second<0 || second>59 || !['male','female'].includes(gender)) throw new Error('出生日期、時間或性別無效。');
   const inputDate=new Date(Date.UTC(year,month-1,day));
   if(inputDate.getUTCFullYear()!==year || inputDate.getUTCMonth()+1!==month || inputDate.getUTCDate()!==day) throw new Error('出生日期不存在。');
   if(options.civilTimeStatus==='nonexistent-compatible') throw new Error('這個出生時間位於夏令時間跳時缺口，請核對出生紀錄後重填。');
   const termInstant=options.birthInstant!=null?(typeof options.birthInstant==='number'?options.birthInstant:Date.parse(options.birthInstant)):Date.UTC(year,month-1,day,hour,minute||0,options.second||0)-(options.timezoneOffset==null?8:Number(options.timezoneOffset))*3600000;
   if(!Number.isFinite(termInstant))throw new Error('出生瞬間無效。');
   const termClock=new Date(termInstant+8*3600000);
-  const jqInfo = findJieqiForBirth(termClock.getUTCFullYear(),termClock.getUTCMonth()+1,termClock.getUTCDate(),termClock.getUTCHours(),termClock.getUTCMinutes());
+  let jqInfo = null;
   let calendarFact=null;
   try{
     if(window.BaziCalendarCore&&window.BaziCalendarCore.hasEngine()){
@@ -4593,6 +4610,15 @@ function computeBazi(year,month,day,hour,minute,gender,options){
     }
   }catch(e){throw new Error('曆法計算未完成：'+e.message);}
   if(!calendarFact) throw new Error('農曆節氣引擎尚未載入，已停止排盤。');
+  // Use one ephemeris for the month pillar AND the days used by the model.
+  // The old minute table could disagree across a Jie boundary and depended on browser DST.
+  if(calendarFact.previousJie&&calendarFact.nextJie){
+    const prev=calendarFact.previousJie,next=calendarFact.nextJie;
+    const a=new Date(prev.date.replace(' ','T')+'+08:00'),b=new Date(next.date.replace(' ','T')+'+08:00');
+    const tradName=n=>n.replace('惊蛰','驚蟄').replace('芒种','芒種');
+    const ap=new Date(a.getTime()+8*3600000),bp=new Date(b.getTime()+8*3600000),idx=JQ_NAMES.indexOf(tradName(prev.name));
+    jqInfo={jieIdx:idx,jieName:tradName(prev.name),jieMonth:ap.getUTCMonth()+1,jieDay:ap.getUTCDate(),jieHour:ap.getUTCHours(),jieMinute:ap.getUTCMinutes(),jieSecond:ap.getUTCSeconds(),nextJieName:tradName(next.name),nextJieMonth:bp.getUTCMonth()+1,nextJieDay:bp.getUTCDate(),nextJieHour:bp.getUTCHours(),nextJieMinute:bp.getUTCMinutes(),nextJieSecond:bp.getUTCSeconds(),daysAfterJie:Math.floor((termInstant-a.getTime())/86400000),monthMi:JQ_MI[idx],monthZhi:JQ_MZI[idx],source:'lunar-javascript'};
+  }
 
   let yGi,yZi,yG,yZ,mGi,mZi,mG,mZ,dGi,dZi,dG,dZ,hGi,hZi,hG,hZ,mi;
   if(calendarFact&&calendarFact.pillars){
@@ -4622,7 +4648,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
     hZi=Math.floor(((hour+1)%24)/2)%12; hGi=((dGi%5)*2+hZi)%10; hG=TG[hGi]; hZ=DZ[hZi];
   }
   const pillars={year:{gan:yG,zhi:yZ},month:{gan:mG,zhi:mZ},day:{gan:dG,zhi:dZ},hour:{gan:hG,zhi:hZ}};
-  // 人元司令仍採本地節氣日數表，屬命理模型輔助，不影響四柱與起運曆法事實。
+  // 人元司令的分日規則屬流派模型；日數與四柱使用同一節氣邊界。
   const renyuan=jqInfo?getRenyuanSiling(mZ,jqInfo.daysAfterJie):null;
 
   const dm=dG, dmEl=WX_G[dm];
@@ -5316,18 +5342,19 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   const dayun=[];
   const firstDaYunStart=qiyun.startTimestamp;
   const birthTimestamp=Date.UTC(year,month-1,day,hour||0,minute||0,options.second||0);
-  // App：起運前為「小運」（1～起運前一歲）
-  if(startAge>1){
+  // 起運前的獨立區間，含未滿一歲即起運者；此處未另排小運干支。
+  if(firstDaYunStart>birthTimestamp){
     const curAgeMs=referenceMs-birthTimestamp;
     dayun.push({
       gz:'小運',
-      ageStart:1,
-      ageEnd:startAge-1,
+      ageStart:0,
+      ageEnd:Math.max(0,startAge),
+      ageStartText:'出生',ageEndText:qiyun.startAgeText,
       level:'小運',
       score:0,
       god:'',
       zGod:'',
-      notes:['起運前以小運論（參考）'],
+      notes:['出生至首次起運的區間；此列未另排小運干支。'],
       clash:[],he:[],xing:[],
       liuNian:[],
       ganScore:0,
@@ -5442,7 +5469,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
 
     // ── 流年精斷 ──
     const liuNian=[];
-    const annualPeriods=getBaziAnnualYearsOverlapping(cycleStart,cycleEnd);
+    const annualPeriods=getBaziAnnualYearsOverlapping(cycleStart,cycleEnd,options);
     for(let j=0;j<annualPeriods.length;j++){
       const annualPeriod=annualPeriods[j];
       const lnYear=annualPeriod.year;

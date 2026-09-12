@@ -47,6 +47,20 @@
   var _zwLastChart = null;
   var _zwLastForm = null;
 
+  function zwReferenceYear(zw){
+    var policy=zw.calculationPolicy||{};
+    if(Number.isInteger(policy.referenceLunarYear))return policy.referenceLunarYear;
+    var instant=policy.referenceDate?new Date(policy.referenceDate):new Date();
+    var clock=new Date(instant.getTime()+8*3600000);
+    if(typeof approxLunar==='function')return approxLunar(clock.getUTCFullYear(),clock.getUTCMonth()+1,clock.getUTCDate()).year;
+    return clock.getUTCFullYear(); // Legacy supplied charts without a calendar engine.
+  }
+  function zwNominalAge(zw){
+    if(Number.isInteger(zw.currentAge))return zw.currentAge;
+    var lunar=zw.lunar||zw.birthLunar;
+    return lunar&&Number.isInteger(lunar.year)?zwReferenceYear(zw)-lunar.year+1:null;
+  }
+
   // ════════════════════════════════════════════════════════
   //  CSS（命名空間 zw-*，自帶不依賴 style.css）
   // ════════════════════════════════════════════════════════
@@ -292,7 +306,7 @@
       var raw=zw.birthLunar||zw.lunar;
       L.push('引擎版本：'+zw.engineVersion+'；農曆出生：'+raw.year+'年'+(raw.isLeap?'閏':'')+raw.month+'月'+raw.day+'日。');
       L.push('【安星政策】農曆正月初一換年；'+(policy.dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日')+'；閏月'+(policy.leapMonthPolicy==='SPLIT_AT_15'?'十五日後作次月':'沿用本月')+'；實際安星月='+policy.effectiveMonth+'、日='+policy.effectiveDay+'。');
-      L.push('命主按命宮地支，身主按生年地支；天傷交友、天使疾厄；解神為月解；流月採斗君、小限按生年三合起宮；旬空／截空採雙支。不同設定須重排，不能混套別派星位。');
+      L.push('命主按命宮地支，身主按生年地支；天傷交友、天使疾厄；解神為月解；流月採斗君、小限按生年三合起宮；旬空／截空保留雙支，依生年陰陽分正副（旬空／副旬、截空／副截），不作兩顆同等正星。不同設定須重排，不能混套別派星位。');
       L.push('本盤四化順序為祿權科忌：'+policy.sihuaTable+'。');
       L.push('參考時刻：'+policy.referenceDate+'；參考農曆年：'+policy.referenceLunarYear+'；目前虛歲：'+zw.currentAge+'，每年正月初一增歲。');
     }
@@ -434,14 +448,13 @@
 
     // 大限
     if (zw.daXian && zw.daXian.length) {
-      var nowY = new Date().getFullYear();
-      var age = null;
+      var nowY = zwReferenceYear(zw);
+      var age = zwNominalAge(zw);
       // v80.48 治本：紫微大限以「虛歲」計（與引擎 isCurrent 同基準），不可用實歲，否則虛歲/實歲兩套
       //   基準各標一限造成「兩個◀現在」。虛歲 = 今年 - 出生年 + 1。
-      try { var by = parseInt((form.bdate||'').slice(0,4)); if (by) age = nowY - by + 1; } catch(e){}
       var _hasCur = zw.daXian.some(function(d){ return d.isCurrent; }); // 引擎已標當前大限就以它為唯一準
       L.push('');
-      L.push('【運限計算政策】大限採虛歲；現行大限優先採引擎 isCurrent，若引擎未標才以「查詢日期所在農曆年－出生農曆年＋1」回推。資料未提供精確大限切換日期，以引擎年齡區間判讀；流年以下方公曆年份參數列示，流月與精確年度切換時間未提供。');
+      L.push('【運限計算政策】大限採虛歲；現行大限依同一查詢時刻的 isCurrent 與農曆虛歲判斷。資料未提供精確大限切換日期，以引擎年齡區間判讀。下方年份為農曆年度，正月初一交替；公曆元旦至農曆新年前仍列前一年度，不能把公曆「今年」誤套成同號農曆流年。流月未在本提示詞列出。');
       L.push('【大限走勢】(本命為長期底色，大限為十年作用場域；〔吉凶〕與主題是前端相對標記，請結合具體星曜與四化分析；現行大限以 ◀現在 標示)');
       zw.daXian.forEach(function(dx){
         // 只標一個：優先信引擎 isCurrent；引擎全沒標時才用虛歲回推（同一基準，不混實歲、不 OR 兩套）
@@ -456,13 +469,13 @@
     // 流年（今年＋未來3年，供「明年運勢」「未來三年哪一年」類問題比較）
     try {
       if (typeof zw.getLiuNianZw === 'function') {
-        var ly0 = new Date().getFullYear();
+        var ly0 = zwReferenceYear(zw);
         L.push('');
         L.push('【流年走勢 ' + ly0 + '–' + (ly0+3) + '】(提供年度觸發：流年命宮落點與流年四化；時間精度為年度層級)');
         for (var yy = ly0; yy <= ly0 + 3; yy++) {
           var lnf = zw.getLiuNianZw(yy);
           if (!lnf) continue;
-          var tag = (yy === ly0) ? '（今年）' : (yy === ly0 + 1) ? '（明年）' : '';
+          var tag = (yy === ly0) ? '（現行農曆年度）' : (yy === ly0 + 1) ? '（下一農曆年度）' : '';
           L.push('・' + yy + tag + '　' + (lnf.gz || '') + '　命宮落「' + (lnf.mingPalace || '') + '」' +
             (lnf.focus ? '·' + lnf.focus : '') +
             ((lnf.hua && lnf.hua.length) ? '　四化:' + lnf.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入'+h.palace+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : ''));
@@ -625,8 +638,8 @@
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260912accuracy1', null);};
-        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260912accuracy1', function(ok){if(ok)loadZiwei();}); else loadZiwei();
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260912engine2', null);};
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260912engine2', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;
@@ -644,12 +657,12 @@
     w.id = 'zw-result';
 
     // facts
-    var nowY = new Date().getFullYear();
+    var nowY = zwReferenceYear(zw);
     var curDx = null;
     try {
       curDx = (zw.daXian||[]).find(function(d){ return d.isCurrent; });
       if (!curDx) {
-        var by = parseInt((form.bdate||'').slice(0,4)); var age = by ? nowY - by + 1 : null; // 虛歲（與引擎 isCurrent 同基準）
+        var age = zwNominalAge(zw);
         if (age != null) curDx = (zw.daXian||[]).find(function(d){ return age>=d.ageStart && age<=d.ageEnd; });
       }
     } catch(e){}

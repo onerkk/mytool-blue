@@ -263,7 +263,7 @@ test('首頁載入本地曆法引擎且版本路徑正確', () => {
   assert(html.includes('JS/solar-location.js'));
   assert(html.includes('JS/bazi-calendar-core.js'));
   assert(html.includes('JS/bazi.js'));
-  assert(html.includes('JS/bazi_upgrade.js?v=20260912accuracy1'));
+  assert(html.includes('JS/bazi_upgrade.js?v=20260912engine2'));
   assert(html.includes('JS/bazi-standalone.js'));
   const standalone = fs.readFileSync(path.join(ROOT, 'JS/bazi-standalone.js'), 'utf8');
   const upgrade = fs.readFileSync(path.join(ROOT, 'JS/bazi_upgrade.js'), 'utf8');

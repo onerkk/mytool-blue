@@ -3531,7 +3531,7 @@ enhanceTarot = function(tarot) {
     var selected=-1,step=1,close=window.JY_PICKER.mount(panel,'#ootk-setup-body',function(){close();});
     var error=panel.querySelector('#ootk-setup-error'),next=panel.querySelector('#ootk-confirm'),back=panel.querySelector('#ootk-back');
     function showStep(n){step=n;error.textContent='';panel.querySelector('#ootk-setup-step1').style.display=n===1?'':'none';panel.querySelector('#ootk-setup-step2').style.display=n===2?'':'none';back.style.display=n===2?'':'none';next.textContent=n===1?'下一步：確認領域':'確認並開始五次操作';panel.querySelector('#ootk-setup-progress').textContent=n+'／2　'+(n===1?'選擇代表牌':'確認問題領域');panel.querySelector('#ootk-setup-body').scrollTop=0;}
-    panel.querySelector('#ootk-cancel').onclick=close;back.onclick=function(){showStep(1);};
+    panel.querySelector('#ootk-cancel').onclick=function(){close();};back.onclick=function(){showStep(1);};
     panel.querySelectorAll('.ootk-manual-sig').forEach(function(button){button.onclick=function(){
       selected=Number(button.dataset.id);error.textContent='';
       panel.querySelectorAll('.ootk-manual-sig').forEach(function(other){other.setAttribute('aria-pressed',String(other===button));});
@@ -3547,8 +3547,21 @@ enhanceTarot = function(tarot) {
       var missing=Object.keys(fields).find(function(k){return k!=='cognateHouse' && raw[k]==='';});
       if(missing){error.textContent='請完成標示的欄位，再開始發牌。';panel.querySelector('#ootk-bind-'+fields[missing]).focus();return;}
       next.disabled=true;
-      try {onSelect(selected,Object.freeze(setup.normalizeBindings(raw)));close();}
-      catch(e){console.error('[OOTK] launch failed',e);error.textContent='開鑰啟動失敗：'+(e.message||'請重試');next.disabled=false;}
+      try {
+        var bindings=Object.freeze(setup.normalizeBindings(raw));
+        // Finish the picker lifecycle before the ritual captures its scroll/focus state.
+        // Opening it first captured overflow:hidden and restored that stale lock on exit.
+        close();
+        onSelect(selected,bindings);
+      } catch(e){
+        console.error('[OOTK] launch failed',e);
+        // Keep the user's selections available if calculation cannot start.
+        if(!panel.isConnected){
+          panel.querySelectorAll('.jy-picker-close').forEach(function(button){button.remove();});
+          close=window.JY_PICKER.mount(panel,'#ootk-setup-body',function(){close();});
+        }
+        error.textContent='開鑰啟動失敗：'+(e.message||'請重試');next.disabled=false;
+      }
     };
   }
 

@@ -67,3 +67,39 @@
 #ootk-sequence-overlay #ootk-fast-result{background:linear-gradient(120deg,#efddb6,#c5a36d)!important;border-color:#f2d89c!important;box-shadow:inset 0 1px #fff7,0 2px #6b533a;color:#18222e!important}
 @media(max-width:380px){.ootk-record{padding:20px 17px}.ootk-record-row{gap:9px;grid-template-columns:28px minmax(0,1fr)}.ootk-record-heading>span{font-size:9px;letter-spacing:1px}.jy-atelier .jy-spread-trigger-sub{font-size:12px!important}}
 @media(prefers-reduced-motion:reduce){.jy-atelier .jr-dialog[data-story] :is(button,summary){transition:none!important}}
+
+/* Four time seals: sculpted metal, recessed enamel and engraved light.
+   These are ceremonial controls; no invented birth-chart values are displayed. */
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-playfield{perspective:900px;isolation:isolate;height:171px!important;max-width:410px!important;margin-bottom:8px!important}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seals{position:relative;align-items:end!important;gap:clamp(10px,3vw,20px)!important;padding:0 10px 15px;transform-style:preserve-3d}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seals::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:20px;z-index:-1;border:1px solid #e5c4868c;border-radius:50% 50% 7px 7px / 35% 35% 6px 6px;background:linear-gradient(#141e30 5%,#b89960 15%,#ecce8b 23%,#574733 32%,#172130 47%,#323037 76%,#997642 81%,#1b1620 95%);box-shadow:0 9px 14px #000b,inset 0 1px #fae6b5}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal{
+ --seal-glow:#d8c29a;position:relative;display:flex!important;flex-direction:column;align-items:center;justify-content:flex-start!important;gap:0!important;box-sizing:border-box;min-width:0!important;width:100%!important;max-width:84px;min-height:0!important;height:150px!important;padding:18px 4px 8px!important;overflow:visible!important;
+ border:1px solid #c2a570b3!important;border-radius:30px 30px 11px 11px / 16px 16px 8px 8px!important;
+ background:radial-gradient(ellipse at 26% 9%,#d7c5a130,transparent 44%),repeating-linear-gradient(100deg,#b6cecc05 0 1px,transparent 1px 4px),linear-gradient(105deg,#0c1726,#34465a 15%,#162737 25%,#0c1727 61%,#344052 85%,#131b2a)!important;
+ color:#dfc28b!important;box-shadow:inset 2px 0 2px #fff2,inset -3px -2px 4px #02050bbf,inset 0 0 0 4px #b6996033,inset 0 0 0 5px #050d1e,2px 4px 0 #665038,3px 6px 0 #241e20,0 12px 18px #000a!important;
+ transform:rotateY(calc((var(--i) - 1.5)*-3deg)) translateY(0)!important;transform-origin:50% 100%;transition:transform .35s,box-shadow .35s,filter .35s!important;text-shadow:0 1px #040811,0 -1px #fae1a340;touch-action:manipulation;
+}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal::before{content:"";position:absolute;inset:7px;border:1px solid #b8a37633;border-radius:24px 24px 6px 6px;pointer-events:none;background:linear-gradient(130deg,#fff2,transparent 23% 75%,#cce5ed09);box-shadow:inset 0 0 13px #030912}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-etch{position:absolute;inset:-3px -3px 0;width:calc(100% + 6px);height:calc(100% + 3px);fill:none;stroke:#c3a56b;stroke-width:.7;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #fff2);pointer-events:none}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-emblem{position:relative;width:31px;height:30px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;margin:0 0 3px;filter:drop-shadow(0 1px 1px #000)}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-glyph{position:relative;display:block!important;font:400 31px/1.3 var(--f-display,"Noto Serif TC",serif)!important;letter-spacing:0!important;color:inherit!important}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-caption{position:relative;display:block!important;margin:3px 0 0!important;font:500 8px/1.4 var(--f-body,sans-serif)!important;letter-spacing:1.7px!important;color:#d3c3a2!important;opacity:.85!important}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-state{position:relative;display:block!important;margin:7px 0 0!important;padding-top:4px;border-top:1px solid #d9ba713d;font:400 9px/1.4 var(--f-body,sans-serif)!important;letter-spacing:1px!important;color:#acb8bf!important;opacity:1!important;white-space:nowrap}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-jewel{position:absolute;z-index:1;left:calc(50% - 5px);top:2px;width:10px;height:12px;clip-path:polygon(50% 0,100% 38%,85% 80%,50% 100%,15% 80%,0 38%);background:conic-gradient(from 30deg,#466178,#cfdfdd,#5b7b8d,#142e41,#aacccf,#3e5b70);filter:drop-shadow(0 0 4px #aed8dc80)}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-foot{position:absolute;bottom:-6px;left:11%;right:11%;height:9px;border:1px solid #b59665;border-radius:2px;background:linear-gradient(#f1d797,#6d5433 36%,#d1ab66 52%,#403527 85%);box-shadow:0 2px 3px #0008}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal[aria-pressed=true]{
+ color:#ffdfa0!important;border-color:#f4d693!important;
+ background:radial-gradient(ellipse at 50% 35%,#c59a4b30,transparent 66%),repeating-linear-gradient(100deg,#e6d2a509 0 1px,transparent 1px 4px),linear-gradient(105deg,#162431,#4b5360 15%,#203344 28%,#122234 61%,#4c5360 85%,#202738)!important;
+ box-shadow:inset 2px 0 3px #ffebb163,inset -3px -2px 4px #02050bcc,inset 0 0 0 4px #e5bb6350,inset 0 0 0 5px #081321,2px 4px 0 #967544,3px 6px 0 #332927,0 12px 18px #000a,0 0 20px #e3be652b!important;
+ transform:rotateY(calc((var(--i) - 1.5)*-3deg)) translateY(-5px)!important;
+}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal[aria-pressed=true] .jr-seal-etch{stroke:#f6d796;filter:drop-shadow(0 1px 0 #2d2114) drop-shadow(0 0 2px #edc57755)}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal[aria-pressed=true] .jr-seal-jewel{background:conic-gradient(from 30deg,#906c3f,#fff7d4,#e4c280,#785537,#fff0b9,#bfa371);filter:drop-shadow(0 0 5px #f8d788)}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal[aria-pressed=true] .jr-seal-state{color:#f2d8a2!important}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal:focus-visible{outline:2px solid #fff0bc!important;outline-offset:6px!important}
+.jy-atelier .jr-dialog[data-ritual=bazi] .jr-dialogue::before{content:"";position:absolute;left:24px;right:24px;top:5px;height:7px;border-top:1px solid #efdba35e;border-radius:50%;pointer-events:none}
+@media(hover:hover){.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal:hover{filter:brightness(1.16)}}
+@media(min-width:850px){.jy-atelier .jr-dialog[data-ritual=bazi] .jr-playfield{height:184px!important;margin-bottom:44px!important;max-width:440px!important}.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal{height:164px!important;max-width:91px;padding-top:22px!important}.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-glyph{font-size:35px!important}}
+@media(max-width:370px){.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seals{gap:9px!important;padding-left:5px;padding-right:5px}.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal{height:143px!important}.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-caption{font-size:7px!important}.jy-atelier .jr-dialog[data-ritual=bazi] .jr-seal-glyph{font-size:29px!important}}
+@media(prefers-reduced-motion:reduce){.jy-atelier .jr-dialog[data-ritual=bazi] .jr-time-seal{transition:none!important}}

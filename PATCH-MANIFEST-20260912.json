@@ -1,0 +1,170 @@
+{
+  "date": "2026-09-12",
+  "base_archive": "mytool-blue-master.zip",
+  "type": "changed-files-only",
+  "instructions": "Overlay these paths at the original project root. No deployment performed.",
+  "verification": {
+    "npm_test_exit_code": 0,
+    "iztro_comparison_charts": 960,
+    "iztro_comparisons": 110400,
+    "frozen_reference_charts": 160,
+    "frozen_comparisons": 18560,
+    "physical_mobile_device_tested": false
+  },
+  "files": [
+    {
+      "path": "CSS/celestial-craft.css",
+      "change": "modified",
+      "size": 13873,
+      "sha256": "229f515e0fc167eed330c13885fb8f44acc85d5f86d48b5d53347061fe77cd9e",
+      "original_sha256": "524be6bca16bd8239571fd0eb9240110c9b72c4dbb78e051f29e428768edbd08"
+    },
+    {
+      "path": "JS/bazi-calendar-core.js",
+      "change": "modified",
+      "size": 7204,
+      "sha256": "5b7e329dc8973ad9e2e25e6ea48316ea6c8626bda3ce2586640870bde73ff8e7",
+      "original_sha256": "4e8a095295903ae6ac43a2179fc88dd54429017af476b5eeff7d401f3f66a3b8"
+    },
+    {
+      "path": "JS/bazi-standalone.js",
+      "change": "modified",
+      "size": 82027,
+      "sha256": "d2b4939bedeab07877e085ebfca9d032679e83bd01a0ca533a4acdd19219ec6b",
+      "original_sha256": "98937780aa78c84ad0b17815caacd9aafef0bf43d7d409d10365e7f302685598"
+    },
+    {
+      "path": "JS/bazi-suite.js",
+      "change": "modified",
+      "size": 72567,
+      "sha256": "b5917016180a38127b43802ce6bac7eb4cf2dee1e9dbcd9bad5b689ae79e77c8",
+      "original_sha256": "6020efea914c67b63865dc17bc2849f68732e4137a058b1173d597ae7c67b523"
+    },
+    {
+      "path": "JS/bazi.js",
+      "change": "modified",
+      "size": 328476,
+      "sha256": "925d640b33858997e8694ea1f734e2791283a85e439c2cb71cd7584bbb050e10",
+      "original_sha256": "3b3b3b6a66b5bec7a076450760e2a0437cf793f4085d33264a727eb3a6ac342d"
+    },
+    {
+      "path": "JS/bazi_upgrade.js",
+      "change": "modified",
+      "size": 46277,
+      "sha256": "1ff7abfbb577e6ca1069e55c0386e9e5559c1c35521a9e5863c40879498a78b8",
+      "original_sha256": "876be2adee9b7c3b3b5f86b50fff25b81a5eef1b5582d031cb989f7670b63b13"
+    },
+    {
+      "path": "JS/cinematic-src/craft.mjs",
+      "change": "modified",
+      "size": 12225,
+      "sha256": "4716371fa10637886b17467c55c6162de3892f43ae6e3c23aac1af3c1ee45f5b",
+      "original_sha256": "8f40071697974eac67b64c456bf0042ec991e7549ac827b206a21765bef74329"
+    },
+    {
+      "path": "JS/cinematic-src/stage.mjs",
+      "change": "modified",
+      "size": 19463,
+      "sha256": "e5847c906e5d51b8bb2a5949067a59f6e8f5757cf72280312f3e05d67c06781a",
+      "original_sha256": "0840a08568227ca38d775aa2556c03bbd5a3ffa22870f1ba5a5f6e333330a580"
+    },
+    {
+      "path": "JS/cinematic-stage.js",
+      "change": "modified",
+      "size": 614471,
+      "sha256": "7da18f7c2466179161ac39e18beffdfb8e3fb78815880ca0e3accdd09d471e6d",
+      "original_sha256": "07b78dd3dca32a762417c3271a437e48fbb5b534d3dd92e54f6f556e719d109e"
+    },
+    {
+      "path": "JS/ritual-ateliers.js",
+      "change": "modified",
+      "size": 35850,
+      "sha256": "746afd7471b8f5ec9aaa8a2454ce04622827faec9a4eb2adfd54086716c1f166",
+      "original_sha256": "251638f21ffbe83a4868f23696c0ece8b9ff1b381246f525bcc14b86e6181d82"
+    },
+    {
+      "path": "JS/tarot_upgrade.js",
+      "change": "modified",
+      "size": 402497,
+      "sha256": "780e6fddc4c628035a984c8368ef31857dafea9b51302be5f70711bb8a603147",
+      "original_sha256": "ff44bb8fcc4a9e7c625cc705d252eef245e22e7e90c0a545f1f12b0550d89a78"
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "change": "modified",
+      "size": 79322,
+      "sha256": "71b4c9507735475eacf83fb17d9519851935c8080dd505f407bba8766728b3be",
+      "original_sha256": "6170d1bf8529b0d530a6e951cdc6dd75cc685ff4976bdb247df2e25f25629324"
+    },
+    {
+      "path": "JS/ziwei.js",
+      "change": "modified",
+      "size": 236119,
+      "sha256": "c227c59a85c055f6b374827ce2f32d76fe3f062abb6e2584ab15710887382eea",
+      "original_sha256": "6b544ec579ca4f5ca1ccd4fcc1967cee164257e5e5615d9472c519a577c40a3e"
+    },
+    {
+      "path": "docs/engine-ui-audit-20260912.md",
+      "change": "added",
+      "size": 9271,
+      "sha256": "e3e60af9530486b61c28b9ff970f227ed8b093016e8103c3b5611a9529274776",
+      "original_sha256": null
+    },
+    {
+      "path": "index.html",
+      "change": "modified",
+      "size": 144837,
+      "sha256": "f283c88e053fed452244ed8c7db858b6a52d740035066332d9690e033b16298a",
+      "original_sha256": "e21435098af40e7437c8570ad0e4d25199d371d32a9b5114a576c9ec15568240"
+    },
+    {
+      "path": "package.json",
+      "change": "modified",
+      "size": 2773,
+      "sha256": "bad9cf7c70316d278532c6d839479928b7398a850a6e7c9bf077727f6e9a7141",
+      "original_sha256": "18b86f8a988d31e78941b51aab337fe6cae3e77a4f1793ccf611f34c80ef36b6"
+    },
+    {
+      "path": "tests/bazi-regression.cjs",
+      "change": "modified",
+      "size": 13623,
+      "sha256": "5e3311863e9be5edd475dde91d3875d6e1a95d3b9e52ef6ed5536923db2f98c9",
+      "original_sha256": "e758274691000796b9316fbeab67972236cdaec40cfcfaaa2f5f7f91ec341dbd"
+    },
+    {
+      "path": "tests/bazi-suite-regression.cjs",
+      "change": "modified",
+      "size": 14111,
+      "sha256": "b0d42d3e8641ccfb16f9f60a9dcbe75a532e505f3c7abaf1f8243fbc2c0f19a9",
+      "original_sha256": "2341687f2a851cc1b8fb11b1defc1a7ba83538f16464a592e753b117a3eee67f"
+    },
+    {
+      "path": "tests/engine-fixes-20260912.cjs",
+      "change": "added",
+      "size": 8124,
+      "sha256": "939deeee21417b6696d6b13f7ab19f5c9c8c8a50be7beda5669ae16ef26312c4",
+      "original_sha256": null
+    },
+    {
+      "path": "tests/fixtures/iztro-2.5.8-comparison.json",
+      "change": "added",
+      "size": 296033,
+      "sha256": "c1877daa65018aafa6f25ad77f6c32e99c29501b2bf13f2ac092ec63d87f18dc",
+      "original_sha256": null
+    },
+    {
+      "path": "tests/ootk-scroll-20260912.cjs",
+      "change": "added",
+      "size": 2207,
+      "sha256": "012421b06bfae5c8661f18afd65ef40d618aa8390f43261040d272584521bf8b",
+      "original_sha256": null
+    },
+    {
+      "path": "tests/reading-depth-20260912.cjs",
+      "change": "modified",
+      "size": 15175,
+      "sha256": "909a17172a6c719f92b7c0667ff25f4bbd895a6fe2ef09ca7791edaada24a2bd",
+      "original_sha256": "79d1ab489b6d933e818f6edb9ca0946392fdb41e1492ae1f3dcc700b92895222"
+    }
+  ]
+}

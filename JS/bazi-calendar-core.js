@@ -1,4 +1,4 @@
-/*! bazi-calendar-core.js — 八字曆法事實層 v1.1.0 (2026-09-12)
+/*! bazi-calendar-core.js — 八字曆法事實層 v1.2.0 (2026-09-12)
  * 依賴本地 JS/vendor/lunar.js（lunar-javascript 1.7.7）。
  * 僅處理：節氣四柱、換日政策、按分鐘折算起運與立春界線；不判旺衰、喜忌或吉凶。
  */
@@ -12,6 +12,14 @@
   function formatParts(p){return p.year+'-'+pad2(p.month)+'-'+pad2(p.day)+' '+pad2(p.hour||0)+':'+pad2(p.minute||0)+':'+pad2(p.second||0);}
   function splitGz(gz){return {gan:String(gz||'').charAt(0),zhi:String(gz||'').charAt(1)};}
   function hasEngine(){return typeof root.Solar!=='undefined'&&root.Solar&&typeof root.Solar.fromYmdHms==='function';}
+  function validateInput(input){
+    var values=[input.year,input.month,input.day,input.hour==null?0:input.hour,input.minute==null?0:input.minute,input.second==null?0:input.second];
+    if(!values.every(Number.isInteger)||values[0]<1900||values[0]>2100||values[3]<0||values[3]>23||values[4]<0||values[4]>59||values[5]<0||values[5]>59)throw new Error('出生日期或時間無效。');
+    var d=new Date(Date.UTC(values[0],values[1]-1,values[2]));
+    if(d.getUTCFullYear()!==values[0]||d.getUTCMonth()+1!==values[1]||d.getUTCDate()!==values[2])throw new Error('出生日期不存在。');
+    if(input.dayBoundaryMode!=null&&!['MIDNIGHT_00','ZI_HOUR_23'].includes(input.dayBoundaryMode))throw new Error('未支援的換日設定。');
+    if(input.timezoneOffset!=null&&(!Number.isFinite(Number(input.timezoneOffset))||Math.abs(Number(input.timezoneOffset))>14))throw new Error('時區偏移無效。');
+  }
   function getEightChar(y,m,d,h,mi,sec,mode){
     if(!hasEngine()) return null;
     var solar=root.Solar.fromYmdHms(y,m,d,h||0,mi||0,sec||0);
@@ -36,6 +44,7 @@
   }
   function calculateChart(input){
     input=input||{};
+    validateInput(input);
     var mode=input.dayBoundaryMode==='MIDNIGHT_00'?'MIDNIGHT_00':'ZI_HOUR_23';
     var ctx=getEightChar(input.year,input.month,input.day,input.hour,input.minute,input.second,mode);
     if(!ctx) return null;
@@ -65,6 +74,8 @@
   }
   function calculateYun(input){
     input=input||{};
+    validateInput(input);
+    if(!['male','female'].includes(input.gender))throw new Error('起運性別資料無效。');
     var mode=input.dayBoundaryMode==='MIDNIGHT_00'?'MIDNIGHT_00':'ZI_HOUR_23';
     var ctx=termContext(input,mode);
     if(!ctx) return null;
@@ -93,10 +104,10 @@
     var table=lunar.getJieQiTable(),s=table['立春'];
     if(!s)return null;
     var p=parts(s);
-    return {timestamp:pseudoUtc(p),date:formatParts(p),parts:p,engine:'lunar-javascript',precision:'astronomical-estimate',timeResolution:'second'};
+    return {timestamp:pseudoUtc(p),instantTimestamp:pseudoUtc(p)-8*3600000,timeBasis:'UTC+08:00',date:formatParts(p),parts:p,engine:'lunar-javascript',precision:'astronomical-estimate',timeResolution:'second'};
   }
   root.BaziCalendarCore={
-    version:'1.1.0',engine:'lunar-javascript',engineVersion:'1.7.7',
+    version:'1.2.0',engine:'lunar-javascript',engineVersion:'1.7.7',
     hasEngine:hasEngine,calculateChart:calculateChart,calculateYun:calculateYun,getLiChun:getLiChun,
     formatParts:formatParts
   };

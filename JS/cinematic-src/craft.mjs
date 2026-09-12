@@ -126,6 +126,27 @@ export function buildCraft({keep,gold,accent,doc}){
   for(const y of [-.38,-.29,.29,.38]){const c=mesh(geo('pillar-collar',()=>new T.TorusGeometry(.168,.013,8,32)),gold,parent);c.rotation.x=Math.PI/2;c.position.y=y;}
   for(let i=0;i<8;i++){const a=i*Math.PI/4;gem(parent,Math.sin(a)*.153,0,Math.cos(a)*.153,.025);}
  }
+ function pillarCrown(parent){
+  // A faceted jewel in an open, raised setting. Batch the fixed metalwork;
+  // keep the jewel separate for the existing light/rotation choreography.
+  const setting=new T.Group();setting.name='filigree-time-crown';
+  for(const [r,y] of [[.18,.46],[.15,.50],[.105,.56]]){
+   const collar=mesh(geo('crown-collar:'+r,()=>new T.TorusGeometry(r,.011,8,32)),gold,setting);collar.rotation.x=Math.PI/2;collar.position.y=y;
+  }
+  for(let i=0;i<6;i++){
+   const a=i*Math.PI/3,s=Math.sin(a),c=Math.cos(a);
+   curve([[s*.17,.46,c*.17],[s*.20,.52,c*.20],[s*.145,.63,c*.145],[s*.115,.68,c*.115]],.009,setting);
+   gem(setting,s*.182,.51,c*.182,.022);
+  }
+  const halo=mesh(geo('crown-halo',()=>new T.TorusGeometry(.245,.006,6,48)),gold,setting);halo.position.set(0,.67,-.055);
+  for(let i=0;i<12;i++){const a=i*Math.PI/6;const n=mesh(geo('crown-bead',()=>new T.SphereGeometry(.012,6,4)),ivory,setting);n.position.set(Math.sin(a)*.245,.67+Math.cos(a)*.245,-.055);}
+  batch(setting);parent.add(setting);
+  const cut=geo('time-crystal',()=>{
+   const g=new T.LatheGeometry([[0,-.15],[.13,-.035],[.13,.025],[.078,.105],[0,.14]].map(p=>new T.Vector2(...p)),8);
+   const flat=g.toNonIndexed();g.dispose();flat.computeVertexNormals();return flat;
+  });
+  const crystal=mesh(cut,jewel,parent);crystal.position.y=.66;crystal.name='cut-time-crystal';return crystal;
+ }
  function bezel(parent,radius){
   const g=new T.Group();g.name='engraved-armillary-band';
   const belt=mesh(geo('belt:'+radius,()=>new T.CylinderGeometry(radius,radius,.047,64,1,true)),bronze,g);belt.rotation.x=Math.PI/2;
@@ -138,5 +159,5 @@ export function buildCraft({keep,gold,accent,doc}){
   const g=geo('petal',()=>{const g=new T.ExtrudeGeometry(s,{depth:.013,bevelEnabled:true,bevelSize:.012,bevelThickness:.008,bevelSegments:2,steps:1,curveSegments:12});const p=g.attributes.position;for(let i=0;i<p.count;i++)p.setZ(i,p.getZ(i)+Math.pow(p.getY(i),2)*.25);g.computeVertexNormals();return g;});
   return mesh(g,jewel,parent);
  }
- return {door,table,cup,decoratePillar,bezel,petal,rod,curve,gem,wood,stone,enamel,bronze,ivory,jewel};
+ return {door,table,cup,decoratePillar,pillarCrown,bezel,petal,rod,curve,gem,wood,stone,enamel,bronze,ivory,jewel};
 }

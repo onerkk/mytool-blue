@@ -56,7 +56,8 @@ function analyzePalace(palace, branchIdx) {
     var br = (typeof getStarBright === 'function') ? getStarBright(s.name, branchIdx) : null;
     if (br && br.label) {
       if (/廟|旺/.test(br.label)) { score += 8; notes.push(s.name + br.label + '，力量充足'); }
-      else if (/得|利/.test(br.label)) { score += 4; notes.push(s.name + br.label + '，尚可'); }
+      else if (/^(不得地|不得|不)$/.test(br.label)) { score -= 4; notes.push(s.name + br.label + '，力量較弱'); }
+      else if (/^(得地|得|利益|利)$/.test(br.label)) { score += 4; notes.push(s.name + br.label + '，尚可'); }
       else if (/落陷|陷/.test(br.label)) { score -= 8; notes.push(s.name + '落陷，力量不足'); }
       else if (/平/.test(br.label)) { /* 不加不減 */ }
       if (!brightLabel) brightLabel = s.name + br.label;
@@ -127,11 +128,11 @@ function computeZiwei(year,month,day,hour,gender,options){
   const ageAtLunarYear = function(y){ return y-lunar.year+1; };
   const currentAge = ageAtLunarYear(referenceLunar.year);
   const calculationPolicy = {
-    version:'20260912-accuracy1', yearBoundary:'LUNAR_NEW_YEAR', dayBoundaryMode:dayBoundaryMode,
+    version:'20260912-engine2', yearBoundary:'LUNAR_NEW_YEAR', dayBoundaryMode:dayBoundaryMode,
     leapMonthPolicy:leapMonthPolicy, effectiveMonth:effectiveMonth, effectiveDay:lunar.day,
     mingZhuBasis:'MING_PALACE_BRANCH', shenZhuBasis:'BIRTH_YEAR_BRANCH',
-    monthPalaceMethod:'DOUJUN', minorLimitMethod:'BIRTH_YEAR_TRINE_MALE_FORWARD_FEMALE_BACKWARD',
-    injuryAngelMethod:'FIXED_FRIENDS_HEALTH', voidMethod:'TWO_BRANCHES',
+    monthPalaceMethod:'DOUJUN', monthStemMethod:'YEAR_STEM_WUHU', monthScoreBasis:'ZERO_CENTERED_RELATIVE_MODEL', minorLimitMethod:'BIRTH_YEAR_TRINE_MALE_FORWARD_FEMALE_BACKWARD',
+    injuryAngelMethod:'FIXED_FRIENDS_HEALTH', voidMethod:'TWO_BRANCHES_PRIMARY_SECONDARY_BY_YEAR_PARITY',
     sihuaTable:'甲廉破武陽；乙機梁紫陰；丙同機昌廉；丁陰同機巨；戊貪陰弼機；己武貪梁曲；庚陽武陰同；辛巨陽曲昌；壬梁紫輔武；癸破巨陰貪',
     referenceDate:referenceDate.toISOString(), referenceLunarYear:referenceLunar.year,
     ageMethod:'LUNAR_NEW_YEAR_NOMINAL', predictionValidated:false,
@@ -373,16 +374,18 @@ function computeZiwei(year,month,day,hour,gender,options){
   // 空亡 = 旬首前兩位 = xunShou-2, xunShou-1 (mod 12)
   const xk1 = ((xunShou - 2) % 12 + 12) % 12;
   const xk2 = ((xunShou - 1) % 12 + 12) % 12;
-  addStarToPalace(palaces,'旬空','minor3',xk1);
-  // 第二旬空（如果與第一個不同）
-  if(xk1 !== xk2) addStarToPalace(palaces,'旬空','minor3',xk2);
+  // Both void branches are retained, but only the matching year parity is primary.
+  const primaryXun=xk1%2===yZhiIdx%2?xk1:xk2;
+  addStarToPalace(palaces,'旬空','minor3',primaryXun);
+  addStarToPalace(palaces,'副旬','minor3',primaryXun===xk1?xk2:xk1);
 
   // 截空（截路空亡）：依年干
   // 甲己→申酉, 乙庚→午未, 丙辛→辰巳, 丁壬→寅卯, 戊癸→子丑
   const JIEKONG_TABLE={甲:[8,9],己:[8,9],乙:[6,7],庚:[6,7],丙:[4,5],辛:[4,5],丁:[2,3],壬:[2,3],戊:[0,1],癸:[0,1]};
   const jk=JIEKONG_TABLE[yGan]||[0,1];
-  addStarToPalace(palaces,'截空','minor3',jk[0]);
-  addStarToPalace(palaces,'截空','minor3',jk[1]);
+  const primaryJie=jk[yZhiIdx%2];
+  addStarToPalace(palaces,'截空','minor3',primaryJie);
+  addStarToPalace(palaces,'副截','minor3',jk[1-yZhiIdx%2]);
 
   // ═══ 博士十二星（依祿存位置+陰陽順逆）═══
   // 博士從祿存所在宮位起，陽男陰女順行，陰男陽女逆行
@@ -621,6 +624,7 @@ function computeZiwei(year,month,day,hour,gender,options){
   // ═══ 流年盤（依流年地支走宮）═══
   // 流年命宮 = 流年地支所在宮位（斗數流年以太歲入命）
   function getLiuNianZw(lnYear){
+    if(!Number.isInteger(lnYear)||lnYear<1900||lnYear>2300)throw new Error('流年年度無效。');
     const lnZI=((lnYear-4)%12+12)%12;
     const lnGI=((lnYear-4)%10+10)%10;
     const lnZ=DZ[lnZI], lnG=TG[lnGI];
@@ -639,7 +643,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     // ═══ 流年吉凶（紫微象徵體系）═══
     const lnBranchIdx=DZ.indexOf(lnZ);
     const lnAnalysis=analyzePalace(lnMingPalace, lnBranchIdx);
-    let lnScore=lnAnalysis.score;
+    let lnScore=lnAnalysis.score-50;
     let lnNotes=[...lnAnalysis.notes];
 
     // ═══ 三方四正合參 ═══
@@ -660,7 +664,7 @@ function computeZiwei(year,month,day,hour,gender,options){
         if(!sp) return;
         var spBrIdx=DZ.indexOf(sp.branch);
         var spA=analyzePalace(sp, spBrIdx);
-        lnScore+=spA.score*sf.w;
+        lnScore+=(spA.score-50)*sf.w;
         // 三方四正有四化才記錄
         sp.stars.forEach(function(s){
           if(s.hua==='化祿') lnNotes.push(sf.label+sp.name+'有'+s.name+'化祿（助力）');
@@ -710,13 +714,14 @@ function computeZiwei(year,month,day,hour,gender,options){
     };
     const lnFocus=LN_FOCUS[lnMingName]||'';
 
-    return {year:lnYear,gz:lnG+lnZ,mingPalace:lnMingName,focus:lnFocus,hua:lnHua,score:lnScore,notes:lnNotes,bright:lnAnalysis.bright};
+    return {year:lnYear,gz:lnG+lnZ,mingPalace:lnMingName,focus:lnFocus,hua:lnHua,score:lnScore,scoreBasis:'ZERO_CENTERED_RELATIVE_MODEL',notes:lnNotes,bright:lnAnalysis.bright};
   }
 
   // ═══ 流月盤（斗君安流月命宮；月份干支另列）═══
   // 正月=寅(2), 二月=卯(3), ... 十二月=丑(1)
   // 流月天干 = 五虎遁（流年天干→正月天干→逐月遞推）
   function getLiuYueZw(lnYear) {
+    if(!Number.isInteger(lnYear)||lnYear<1900||lnYear>2300)throw new Error('流月年度無效。');
     // 流年天干地支
     var lnGI = ((lnYear - 4) % 10 + 10) % 10;
     var lnGan = TG[lnGI];
@@ -761,7 +766,8 @@ function computeZiwei(year,month,day,hour,gender,options){
       if (typeof analyzePalace === 'function') {
         try {
           var mAnalysis = analyzePalace(mMingPalace, mBranchIdx);
-          mScore = mAnalysis.score || 0;
+          // analyzePalace is centred on 50; month/year/decade model scores on 0.
+          mScore = mAnalysis.score - 50;
           mNotes = mAnalysis.notes ? mAnalysis.notes.slice() : [];
         } catch(e) {}
       } else {
@@ -805,6 +811,7 @@ function computeZiwei(year,month,day,hour,gender,options){
         focus: LM_FOCUS[mMingPalace.name] || '',
         hua: mHua,
         score: Math.round(mScore * 10) / 10,
+        scoreBasis:'ZERO_CENTERED_RELATIVE_MODEL',
         notes: mNotes.slice(0, 4)
       });
     }
@@ -1090,7 +1097,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     });
   } catch (_e) {}
 
-  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20260912-accuracy1', birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
+  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20260912-engine2', birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
   } catch(_zwErr) {
     console.error('[computeZiwei] 排盤失敗:', _zwErr && _zwErr.message ? _zwErr.message : _zwErr, _zwErr && _zwErr.stack ? _zwErr.stack : '');
     window._jyZiweiError = (_zwErr && _zwErr.message) ? _zwErr.message : String(_zwErr);
@@ -1307,13 +1314,17 @@ function renderZiwei(){
   var lnHtmlZW = '';
   try {
     if(zw.getLiuNianZw){
-      var thisYearZW = new Date().getFullYear();
+      var thisYearZW = zw.calculationPolicy && zw.calculationPolicy.referenceLunarYear;
+      if(!Number.isInteger(thisYearZW)){
+        var refZW=new Date(Date.now()+8*3600000);
+        thisYearZW=approxLunar(refZW.getUTCFullYear(),refZW.getUTCMonth()+1,refZW.getUTCDate()).year;
+      }
       var zwLnR = zw.getLiuNianZw(thisYearZW);
       if(zwLnR){
         var lnLC = zwLnR.score >= 3 ? '#4ade80' : zwLnR.score <= -3 ? '#f87171' : 'var(--c-gold)';
         lnHtmlZW += '<div style="padding:.6rem;background:rgba(212,175,55,.05);border-radius:8px">';
-        lnHtmlZW += '<p style="margin:0;font-weight:600"><span style="color:var(--c-gold)">'+thisYearZW+'年</span> 流年命宮走「<span style="color:'+lnLC+'">'+zwLnR.mingPalace+'</span>」</p>';
-        lnHtmlZW += '<p style="margin:.3rem 0;font-size:.85rem">干支：'+zwLnR.gz+' ｜ 今年焦點：'+(zwLnR.focus||'綜合運勢')+'</p>';
+        lnHtmlZW += '<p style="margin:0;font-weight:600"><span style="color:var(--c-gold)">農曆'+thisYearZW+'年</span> 流年命宮走「<span style="color:'+lnLC+'">'+zwLnR.mingPalace+'</span>」</p>';
+        lnHtmlZW += '<p style="margin:.3rem 0;font-size:.85rem">干支：'+zwLnR.gz+' ｜ 本年度焦點：'+(zwLnR.focus||'綜合運勢')+'</p>';
         if(zwLnR.hua && zwLnR.hua.length){
           lnHtmlZW += '<div style="margin:.4rem 0">';
           zwLnR.hua.forEach(function(h){
@@ -5370,4 +5381,3 @@ function renderCrystalExpanded(bazi, type){
 
   document.getElementById('r-crystal').innerHTML=html;
 }
-
