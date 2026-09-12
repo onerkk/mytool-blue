@@ -1035,8 +1035,43 @@ function _ji(type,cls){return'<img src="'+(type==='flat'?IMG.jiaoFlat:IMG.jiaoRo
 var _wrap=null;
 function _getWrap(){if(!_wrap){_wrap=document.createElement('div');_wrap.id='oracle-screen';_wrap.style.cssText='display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:99999;overflow-y:auto;overflow-x:hidden;background:#1a0a05;background-image:url('+IMG.templeBg+');background-size:cover;background-position:center;-webkit-overflow-scrolling:touch;isolation:isolate;';document.body.appendChild(_wrap)}return _wrap}
 
+// Result markup owns presentation only. The canonical poem and prompt are
+// passed in unchanged; no invented rank or local interpretation is added.
+function _oracleResultHTML(data){
+ var poem=data.poem,esc=function(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+ var name=esc(data.numberLabel),lines=poem.p.split('\n'),h='';
+ h+='<main class="or-result" data-result-version="20260912oracle1">';
+ h+='<header class="or-result-heading"><div class="or-heading-copy"><p class="or-eyebrow">JINGYUE · YOUR ORACLE</p><p class="or-intro">靜月靈籤・本次所求</p><h1>'+name+'<span>'+esc(poem.g)+'</span></h1><p class="or-confirm"><span aria-hidden="true">✧</span> '+(data.confirmed?'三聖筊確認':'本次籤詩')+'</p></div><div class="or-portrait" aria-hidden="true"><img src="'+esc(data.art)+'" alt=""><span></span></div></header>';
+ if(data.question)h+='<section class="or-question"><span>你想問的事</span><p>'+esc(data.question)+'</p></section>';
+ h+='<div class="or-result-grid"><section class="or-poem-column" aria-label="本次籤詩">';
+ h+='<article id="orc-share-card" class="or-manuscript"><div class="or-paper-head"><span>籤詩原文</span><div class="or-layout-options" role="group" aria-label="籤詩閱讀方向"><button type="button" aria-pressed="true" data-or-layout="horizontal" onclick="_oracleSetPoemLayout(\'horizontal\')">橫讀</button><button type="button" aria-pressed="false" data-or-layout="vertical" onclick="_oracleSetPoemLayout(\'vertical\')">直讀</button></div></div>';
+ h+='<div class="or-poem-lines" data-layout="horizontal" aria-label="'+name+'原詩">';
+ for(var i=0;i<lines.length;i++)h+='<p class="or-poem-line">'+esc(lines[i])+'</p>';
+ h+='</div><div class="or-paper-foot"><span>'+esc(poem.t)+'</span><span class="or-paper-seal" aria-hidden="true">靜月</span></div><div class="or-paper-brand"><span>六十甲子靈籤</span><span>jingyue.uk</span></div></article>';
+ h+='<div class="or-save-actions"><button type="button" onclick="_oracleShare()"><span aria-hidden="true">↗</span> 分享這支籤</button><button type="button" onclick="_oracleDownload()"><span aria-hidden="true">↓</span> 儲存籤詩圖片</button></div>';
+ h+='<details class="or-source"><summary>原詩版本與出處 <span aria-hidden="true">＋</span></summary><p>'+esc(poem.sourceNote)+'</p><a href="'+esc(poem.sourceUrl)+'" target="_blank" rel="noopener noreferrer">核對這支籤的原文 ↗</a></details></section>';
+ if(data.hasPrompt){
+  h+='<section class="or-reading-panel orc-ai-prompt-card" aria-labelledby="or-reading-title" data-result-handoff="true"><p class="or-eyebrow">THE NEXT CHAPTER</p><h2 id="or-reading-title" class="orc-ai-title">用白話，<br>讀懂這支籤。</h2><p class="orc-ai-desc">把籤詩和你的問題一起交給 AI，整理詩中的提醒，以及接下來能做的事。</p>';
+  h+='<ol class="or-reading-points"><li><span>01</span><div><strong>這首詩，在提醒什麼？</strong><p>先讀整首意思，再看關鍵的轉折。</p></div></li><li><span>02</span><div><strong>和你的處境，有什麼關係？</strong><p>分清有依據的解讀，以及仍要確認的事。</p></div></li><li><span>03</span><div><strong>下一步，可以先做什麼？</strong><p>把提醒變成一件自己做得到的小事。</p></div></li></ol>';
+  h+='<button type="button" class="orc-ai-copy-btn" onclick="_oracleCopyPrompt()"><span aria-hidden="true">⧉</span> 複製解籤內容</button><p class="or-copy-status" role="status" aria-live="polite">複製後，貼到你慣用的 AI 對話送出。</p>';
+  h+='<div class="or-manual-copy" hidden><label for="or-copy-text">長按選取以下內容，再複製</label><textarea id="or-copy-text" rows="6" readonly></textarea></div>';
+  h+='<p class="or-provider-label">或選擇 AI，複製並開啟對話</p><div class="orc-ai-grid">';
+  var providers=[['chatgpt','ChatGPT'],['claude','Claude'],['gemini','Gemini'],['grok','Grok'],['deepseek','DeepSeek'],['kimi','Kimi'],['doubao','豆包'],['metaai','Meta AI'],['copilot','Copilot'],['perplexity','Perplexity']];
+  for(var j=0;j<providers.length;j++){var ai=providers[j];h+='<button type="button" class="orc-ai-shortcut" onclick="_oracleOpenAI(\''+ai[0]+'\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-'+ai[0]+'.png" alt=""><span class="orc-ai-sc-name">'+ai[1]+'</span></button>';}
+  h+='</div></section>';
+ }
+ h+='</div><footer class="or-result-footer"><p>讀完之後，把選擇留在自己手裡。</p><div><button type="button" onclick="_oracleReset()">重新求籤</button><button type="button" onclick="_oracleClose()">返回首頁</button></div><small>靜月之光 · JINGYUE</small></footer></main>';
+ return h;
+}
+window._oracleSetPoemLayout=function(layout){
+ if(layout!=='horizontal'&&layout!=='vertical')return;
+ var area=document.querySelector('#oracle-screen .or-poem-lines');if(!area)return;
+ area.setAttribute('data-layout',layout);
+ document.querySelectorAll('#oracle-screen [data-or-layout]').forEach(function(button){button.setAttribute('aria-pressed',String(button.getAttribute('data-or-layout')===layout));});
+};
 function _render(){
-var w=_getWrap(),h='';
+var w=_getWrap(),h='',previousPhase=w.getAttribute('data-oracle-phase');
+w.setAttribute('data-oracle-phase',_phase);
 h+='<div class="orc-temple-overlay"></div>';
 h+='<div class="orc-topbar"><button type="button" class="orc-back at-back" onclick="_oracleClose()">← 返回首頁</button><span class="orc-topbar-title">靜月靈籤</span><a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></div>';
 h+='<div class="orc-body">';
@@ -1190,64 +1225,13 @@ else if(_phase==='shengjia'){
   h+='</div>';
 }
 else if(_phase==='poem'){
-var rc=_rc(_poem.r),lines=_poem.p.split('\n');
-h+='<div class="orc-fade">';
-h+='<div class="orc-confirm-badge">✦ 三聖杯確認 ✦</div>';
-// ★ v8 籤詩卡：金框+浮水印+品牌
-h+='<div id="orc-share-card" class="orc-card8">';
-h+='<div class="orc-card8-frame">';
-// 上區：籤詩直書
-h+='<div class="orc-card8-top">';
-h+='<div class="orc-card8-label">靜月之光 ・ 六十甲子靈籤</div>';
-h+='<div class="orc-card8-poem-area">';
-h+='<div class="orc-vpoem">';
-for(var i=0;i<lines.length;i++){h+='<div class="orc-vpoem-line orc-poem-line" style="animation-delay:'+(0.4+i*0.2)+'s">'+lines[i]+'</div>';}
-h+='</div>';
-h+='<div class="orc-vcard-meta"><div class="orc-vcard-num">第'+CN[_poem.n]+'籤</div><div class="orc-vcard-gz">'+_poem.g+'</div><div class="orc-rank-badge" style="color:'+rc.c+';background:'+rc.bg+';border-color:'+rc.bd+'">依原詩解讀</div></div>';
-h+='</div>';
-h+='<div class="orc-card8-info">'+_poem.t+'<br>六十甲子籤・原詩版本已註明</div>';
-h+='</div>';
-// 下區：浮水印圖
-h+='<div class="orc-card8-wm"><img src="'+IMG.cardWm+'" alt="" class="orc-card8-wm-img"></div>';
-// 品牌條
-h+='<div class="orc-card8-brand"><span>jingyue.uk</span><span>靜月之光</span></div>';
-h+='</div></div>';
-// 分享按鈕
-h+='<div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem"><button class="orc-btn-share" onclick="_oracleShare()"><i class="fas fa-share-alt"></i> 分享籤詩</button><button class="orc-btn-share" onclick="_oracleDownload()"><i class="fas fa-download"></i> 儲存圖片</button></div>';
-
-// The poem and its edition are the verified input; interpretation follows the user's question.
-h+='<div class="orc-shrine-note"><div class="orc-shrine-note-header"><span class="orc-shrine-glyph">☽</span><span class="orc-shrine-label">先讀整首，再看自己的處境</span></div>';
-h+='<div class="orc-shrine-body">留意詩中從什麼處境開始、在哪裡轉折，以及最後提醒你如何選擇。下方解讀會連回你的問題，分清詩意與仍需確認的現實條件。</div>';
-h+='<details class="orc-shrine-footer"><summary>原詩版本與來源</summary><p>'+_poem.sourceNote+'</p><a href="'+_poem.sourceUrl+'" target="_blank" rel="noopener noreferrer">查看本籤原詩 ↗</a></details></div>';
-h+='<div class="orc-jh-temple"><img src="'+IMG.templeFooter+'" alt="" class="orc-jh-temple-img"></div>';
-
-// ★ v75：AI 解籤提示詞生成 + 複製按鈕
-var _aiPrompt = _buildOraclePrompt(_poem, _qText);
-if (_aiPrompt) {
-h+='<div class="orc-ai-prompt-card">';
-h+='<div class="orc-ai-prompt-header"><span class="orc-ai-glyph">🌙</span><span class="orc-ai-title">AI 深度解籤</span></div>';
-h+='<p class="orc-ai-desc">輕觸下方按鈕複製，貼到任何 AI 對話送出，即可得到一份針對您問題的深度籤詩解讀。</p>';
-h+='<button class="orc-ai-copy-btn" onclick="_oracleCopyPrompt()"><span class="orc-ai-copy-icon">✦</span> 一鍵複製解籤提示詞 <span class="orc-ai-copy-icon">✦</span></button>';
-h+='<div class="orc-ai-grid">';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'chatgpt\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-chatgpt.png" alt="ChatGPT"><span class="orc-ai-sc-name">ChatGPT</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'claude\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-claude.png" alt="Claude"><span class="orc-ai-sc-name">Claude</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'gemini\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-gemini.png" alt="Gemini"><span class="orc-ai-sc-name">Gemini</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'grok\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-grok.png" alt="Grok"><span class="orc-ai-sc-name">Grok</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'deepseek\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-deepseek.png" alt="DeepSeek"><span class="orc-ai-sc-name">DeepSeek</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'kimi\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-kimi.png" alt="Kimi"><span class="orc-ai-sc-name">Kimi</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'doubao\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-doubao.png" alt="豆包"><span class="orc-ai-sc-name">豆包</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'metaai\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-metaai.png" alt="Meta AI"><span class="orc-ai-sc-name">Meta AI</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'copilot\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-copilot.png" alt="Copilot"><span class="orc-ai-sc-name">Copilot</span></button>';
-h+='<button class="orc-ai-shortcut" onclick="_oracleOpenAI(\'perplexity\')"><img class="orc-ai-sc-icon" src="ai-icons/ai-perplexity.png" alt="Perplexity"><span class="orc-ai-sc-name">Perplexity</span></button>';
-h+='</div>';
-h+='<p class="orc-ai-copy-hint">點擊 AI 按鈕 → 自動複製＋開啟對話 → 貼上送出</p>';
-h+='</div>';
+var _aiPrompt=_buildOraclePrompt(_poem,_qText);
+h+=_oracleResultHTML({poem:_poem,numberLabel:'第'+(CN[_poem.n]||_poem.n)+'籤',question:_qText,confirmed:_holy>=3,hasPrompt:!!_aiPrompt,art:IMG.cardWm});
 }
 
-h+='<div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem"><button class="orc-btn-outline" onclick="_oracleReset()">重新求籤</button><button class="orc-btn-outline" onclick="_oracleClose()">返回首頁</button></div><div class="orc-footer">靜月之光 ・ jingyue.uk<br>六十甲子靈籤</div></div>';
-}
 h+='</div>';w.innerHTML=h;
 if(window.JYCinemaUI)window.JYCinemaUI.oracle(w,_phase);
+if(_phase==='poem'&&previousPhase!=='poem')w.scrollTop=0;
 }
 
 // v62：問事類型/文字輸入 helper
@@ -1655,35 +1639,47 @@ function _buildOraclePrompt(poem, qText) {
   return _lastOraclePrompt;
 }
 
-window._oracleCopyPrompt = function() {
-  if (!_lastOraclePrompt) return;
-  try {
-    navigator.clipboard.writeText(_lastOraclePrompt).then(function() {
-      var btn = document.querySelector('.orc-ai-copy-btn');
-      if (btn) {
-        var orig = btn.innerHTML;
-        btn.innerHTML = '✓ 已複製！貼到 AI 對話送出即可';
-        btn.style.background = 'linear-gradient(135deg,rgba(52,211,153,.25),rgba(52,211,153,.08))';
-        btn.style.borderColor = 'rgba(52,211,153,.5)';
-        setTimeout(function() { btn.innerHTML = orig; btn.style.background = ''; btn.style.borderColor = ''; }, 2500);
-      }
-    });
-  } catch(e) {
-    var ta = document.createElement('textarea');
-    ta.value = _lastOraclePrompt;
-    ta.style.cssText = 'position:fixed;left:-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    var btn2 = document.querySelector('.orc-ai-copy-btn');
-    if (btn2) { var o2 = btn2.innerHTML; btn2.innerHTML = '✓ 已複製！'; setTimeout(function(){ btn2.innerHTML = o2; }, 2000); }
+// Return the actual copy outcome, including denied asynchronous permissions.
+function _oracleCopyContent(text){
+  function legacyCopy(){
+    var ta=document.createElement('textarea'),active=document.activeElement;
+    var screen=document.getElementById('oracle-screen'),top=screen?screen.scrollTop:0,ok=false;
+    ta.value=text;ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;font-size:16px';
+    try{document.body.appendChild(ta);ta.select();ok=!!document.execCommand('copy');}catch(_){}
+    finally{
+      if(ta.parentNode)ta.parentNode.removeChild(ta);
+      if(active&&typeof active.focus==='function'){try{active.focus({preventScroll:true});}catch(_){}}
+      if(screen)screen.scrollTop=top;
+    }
+    return ok;
   }
+  try{
+    if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
+      return Promise.resolve(navigator.clipboard.writeText(text)).then(function(){return true;},legacyCopy);
+    }
+  }catch(_){}
+  return Promise.resolve(legacyCopy());
+}
+function _oracleCopyFeedback(card,text,ok,aiName){
+  // A late clipboard response must never overwrite a newly drawn result.
+  if(!card||card!==document.querySelector('#oracle-screen .or-reading-panel')||text!==_lastOraclePrompt)return;
+  var status=card.querySelector('.or-copy-status'),manual=card.querySelector('.or-manual-copy');
+  var field=card.querySelector('#or-copy-text'),button=card.querySelector('.orc-ai-copy-btn');
+  if(status)status.textContent=ok?'已複製。貼到'+(aiName||'你慣用的 AI')+'對話送出即可。':'瀏覽器沒有允許自動複製，請長按下方內容，手動複製。';
+  if(button)button.textContent=ok?'✓ 已複製解籤內容':'複製解籤內容';
+  if(manual)manual.hidden=ok;
+  if(field)field.value=ok?'':text;
+}
+window._oracleCopyPrompt = function() {
+  if(!_lastOraclePrompt)return Promise.resolve(false);
+  var text=_lastOraclePrompt,card=document.querySelector('#oracle-screen .or-reading-panel');
+  return _oracleCopyContent(text).then(function(ok){_oracleCopyFeedback(card,text,ok);return ok;});
 };
 
 // ★ v76：AI 快捷鍵 — 複製＋開啟對應 AI
 window._oracleOpenAI = function(ai) {
-  if (!_lastOraclePrompt) return;
+  if (!_lastOraclePrompt) return Promise.resolve(false);
   var urls = {
     chatgpt: 'https://chatgpt.com/',
     claude: 'https://claude.ai/new',
@@ -1697,22 +1693,13 @@ window._oracleOpenAI = function(ai) {
     perplexity: 'https://www.perplexity.ai/'
   };
   var aiNames = {chatgpt:'ChatGPT',claude:'Claude',gemini:'Gemini',grok:'Grok',deepseek:'DeepSeek',kimi:'Kimi',doubao:'豆包',metaai:'Meta AI',copilot:'Copilot',perplexity:'Perplexity'};
-  try {
-    navigator.clipboard.writeText(_lastOraclePrompt).then(function() {
-      var nameEl = document.querySelector('.orc-ai-shortcut[onclick*="' + ai + '"] .orc-ai-sc-name');
-      if (nameEl) { nameEl.textContent = '已複製！'; }
-      setTimeout(function() { window.open(urls[ai], '_blank'); }, 300);
-      setTimeout(function() {
-        if (nameEl) nameEl.textContent = aiNames[ai] || ai;
-      }, 2000);
-    });
-  } catch(e) {
-    var ta = document.createElement('textarea'); ta.value = _lastOraclePrompt;
-    ta.style.cssText = 'position:fixed;left:-9999px';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-    window.open(urls[ai], '_blank');
-  }
+  if(!Object.prototype.hasOwnProperty.call(urls,ai))return Promise.resolve(false);
+  var text=_lastOraclePrompt,card=document.querySelector('#oracle-screen .or-reading-panel');
+  // Start copying while this document has focus, and open within the same tap.
+  // The prompt stays on the clipboard; it is never embedded in an outgoing URL.
+  var copying=_oracleCopyContent(text);
+  try{window.open(urls[ai],'_blank','noopener,noreferrer');}catch(_){}
+  return copying.then(function(ok){_oracleCopyFeedback(card,text,ok,aiNames[ai]);return ok;});
 };
 
 var css=document.createElement('style');

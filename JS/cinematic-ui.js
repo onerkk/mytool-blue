@@ -77,7 +77,7 @@
    items.slice(3).forEach(function(item){more.appendChild(item);});extra.appendChild(more);grid.after(extra);
   });
   container.querySelectorAll('.jy-ex-card,.ln-ai-card,.bzx-ai-card,.mhx-ai-card,.zw-ai,.orc-ai-prompt-card').forEach(function(card){
-   if(card.querySelector('.jd-handoff-steps'))return;
+   if(card.getAttribute('data-result-handoff')!==null||card.querySelector('.jd-handoff-steps'))return;
    var guide=document.createElement('ol');guide.className='jd-handoff-steps';guide.setAttribute('aria-label','取得解讀的三個步驟');
    guide.innerHTML='<li><span>01</span>複製本次資料</li><li><span>02</span>貼到 AI 並送出</li><li><span>03</span>核對與行動</li>';card.prepend(guide);
   });
@@ -109,6 +109,7 @@
  }
  function oracle(container,phase){
   handoff(container);
+  if(phase==='poem'&&container&&container.querySelector('.or-result'))return;
   if(!container||container.querySelector('.jc-oracle-companion'))return;
   if(['praying','allowThrowing','throwing','rising','shaking','shengjia','todayClosed'].indexOf(phase)>=0)return;
   var area=container.querySelector('.orc-fade');if(!area)return;
