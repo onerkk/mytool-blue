@@ -220,6 +220,7 @@
     h += '<div class="mhx-footer">靜月之光 ・ jingyue.uk<br>梅花易數 ・ 體用占</div></div>';
     w.innerHTML = h;
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
+    if (window.JYExperience && _mhResult && w.querySelector('.mhx-gua-row')) window.JYExperience.mountMeihua(w,_mhResult);
     w.scrollTop=savedScroll;
   }
 

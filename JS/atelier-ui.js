@@ -61,6 +61,7 @@
         if (label && control && control.id && !label.getAttribute('for')) label.setAttribute('for', control.id);
       });
       if(window.JYCinemaUI)window.JYCinemaUI.enhance(root);
+      if(window.JYExperience)window.JYExperience.enhance(root);
     }
   };
   window._atelierChoose = function (tool) {

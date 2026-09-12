@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {cardPose,actorPose,instrumentPose,CAST,clamp,ease} from './choreography.mjs';
+import {cardPose,actorPose,cameraPose,instrumentPose,CAST,clamp,ease} from './choreography.mjs';
 
 // One renderer per ceremony. This module owns presentation only: no RNG, birth
 // calculation, card selection, storage, or interpretation is permitted here.
@@ -68,6 +68,26 @@ export function mountStage(host,kind,options={}){
  // interaction energy without flashing or covering the actual controls.
  const plinth=mesh(new T.CylinderGeometry(1.23,1.36,.10,64),dark);plinth.position.y=-.76;
  const plinthRim=ring(1.26,.016);plinthRim.rotation.x=Math.PI/2;plinthRim.position.y=-.705;
+ // Physical portal ribs and enamel inlays provide depth behind the illustrated
+ // actor. No full-screen postprocessing or animation-dependent navigation.
+ const architecture=new T.Group();rig.add(architecture);
+ const enamel=keep(new T.MeshStandardMaterial({color:'#182b40',metalness:.65,roughness:.36}));
+ for(let i=0;i<3;i++){
+  const gate=new T.Group();architecture.add(gate);gate.position.set(0,.38,-1.8-i*1.7);
+  const arc=mesh(new T.TorusGeometry(2.05,.038,8,80,Math.PI),gold,gate);arc.position.y=.85;
+  for(const side of [-1,1]){
+   const shaft=mesh(new T.CylinderGeometry(.06,.095,4.2,12),enamel,gate);shaft.position.set(side*2.05,-1.25,0);
+   const edge=mesh(new T.CylinderGeometry(.012,.012,4.2,6),gold,gate);edge.position.set(side*2.01,-1.25,.075);
+   for(const y of [-3.35,.84]){const cap=mesh(new T.CylinderGeometry(.12,.12,.07,12),gold,gate);cap.position.set(side*2.05,y,0);}
+  }
+ }
+ const zodiacHalo=new T.Group();rig.add(zodiacHalo);zodiacHalo.position.set(0,.3,-1.18);
+ const halo=ring(1.86,.009,zodiacHalo);halo.rotation.z=.3;
+ for(let i=0;i<24;i++){
+  const a=i*Math.PI/12,tick=mesh(new T.BoxGeometry(.009,i%2?.035:.07,.014),gold,zodiacHalo);
+  tick.position.set(Math.sin(a)*1.86,Math.cos(a)*1.86,0);tick.rotation.z=-a;
+ }
+ const bridge=[];
  const traces=[];
  for(let i=0;i<3;i++){
   const mat=keep(new T.MeshBasicMaterial({color:accent,transparent:true,opacity:.08,depthWrite:false,blending:T.AdditiveBlending}));
@@ -103,10 +123,22 @@ export function mountStage(host,kind,options={}){
    [0,1,2].forEach(j=>{const r=ring(.47,.012,orb);r.rotation.set(j*.72,j*.83,j*.3);});
    animated.push({type:'partner',node:orb,index:i});
   }
+  for(let i=0;i<3;i++){
+   const curve=new T.CatmullRomCurve3([new T.Vector3(-.64,0,0),new T.Vector3(-.23,.28+i*.08,.15),new T.Vector3(.23,-.22-i*.05,.18),new T.Vector3(.64,0,0)]);
+   const mat=keep(new T.MeshBasicMaterial({color:i%2?'#bad7ef':'#e8becf',transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending}));
+   bridge.push(mesh(new T.TubeGeometry(curve,32,.007,5,false),mat));
+  }
  }else if(kind==='meihua'){
   // Six light coordinates await the actual cast. Never depict an invented hexagram.
   for(let i=0;i<6;i++){const r=ring(.32+i*.095,.011);r.rotation.set(1.03,.2+i*.2,.1);r.position.y=i*.10-.26;animated.push({type:'seed',node:r,index:i});}
   mesh(new T.IcosahedronGeometry(.12,2),light).position.y=.45;
+  const blossom=new T.Group();objects.add(blossom);blossom.position.y=.42;
+  for(let i=0;i<5;i++){
+   const petal=new T.Group();blossom.add(petal);petal.rotation.z=i*Math.PI*2/5;
+   const leaf=mesh(new T.SphereGeometry(.2,16,12),light,petal);leaf.scale.set(.64,1.32,.12);leaf.position.y=.21;
+   const vein=mesh(new T.CylinderGeometry(.006,.006,.32,6),gold,petal);vein.position.set(0,.21,.035);
+   animated.push({type:'petal',node:petal,index:i});
+  }
  }else if(kind==='oracle'){
   const cup=mesh(new T.CylinderGeometry(.32,.27,.66,40,1,true),dark);cup.position.y=-.25;
   [-.58,.075].forEach(y=>{const r=ring(.325,.027);r.rotation.x=Math.PI/2;r.position.y=y;});
@@ -121,7 +153,7 @@ export function mountStage(host,kind,options={}){
   fragmentShader:`uniform vec3 color;varying float alpha;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(color,smoothstep(.5,.04,d)*alpha);}`
  }));scene.add(new T.Points(pgeo,pmat));
 
- function resize(){if(dead||lost)return;const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.position.z=camera.aspect<.62?8.15:7.2;camera.updateProjectionMatrix();renderOnce();}
+ function resize(){if(dead||lost)return;const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderOnce();}
  function follow(event){if(reduced)return;const r=host.getBoundingClientRect();aim.x=clamp((event.clientX-r.left)/r.width*2-1,-1,1);aim.y=clamp((event.clientY-r.top)/r.height*2-1,-1,1);}
  function leave(){aim.x=aim.y=0;}
  function visibility(){paused=document.hidden;last=0;if(paused){cancelAnimationFrame(raf);raf=0;}else if(!dead&&!lost){renderOnce();if(!reduced)raf=requestAnimationFrame(tick);}}
@@ -129,9 +161,14 @@ export function mountStage(host,kind,options={}){
   const smooth=reduced?1:1-Math.exp(-dt*5);pointer.x+=(aim.x-pointer.x)*smooth;pointer.y+=(aim.y-pointer.y)*smooth;
   rig.rotation.y=reduced?0:pointer.x*.055;rig.rotation.x=reduced?0:pointer.y*.022;
   state.time=reduced?0:elapsed;state.since=elapsed-phaseAt;
+  const view=cameraPose(kind,{...state,since:reduced?3:state.since},camera.aspect);
+  camera.position.lerp(new T.Vector3(view.x,view.y,view.z),reduced?1:smooth);
+  camera.lookAt(0,view.targetY,0);
   const energy=state.phase>=2?1:state.power;
   pulse.intensity=energy*8;rim.intensity=13+energy*5;
   objects.rotation.y=reduced?0:state.turn*.24;
+  zodiacHalo.rotation.z=reduced?0:state.time*.025+state.turn*.04;
+  bridge.forEach((thread,i)=>{thread.material.opacity=state.phase>=2?.36:.04+state.power*.18;thread.rotation.x=reduced?0:Math.sin(state.time*.55+i)*.2;});
   const s=(state.phase===0?.77:1)*clamp(camera.aspect*1.22,.8,1.5);objects.scale.lerp(new T.Vector3(s,s,s),smooth);
   if(actor){actor.position.y=-.58+(reduced?0:Math.sin(elapsed*.85)*.009);const scale=state.phase===0?1.025:state.phase>=2?.95:1;actor.scale.lerp(new T.Vector3(scale,scale,scale),smooth);actor.position.x+=( (state.phase>=1?-.12:0)-actor.position.x)*smooth;}
   uniforms.clock.value=state.time;uniforms.glow.value=energy;
@@ -145,6 +182,7 @@ export function mountStage(host,kind,options={}){
    if(item.type==='pillar'){n.position.y=pose.rise+(reduced?0:Math.sin(t+item.index)*.018);n.rotation.z=pose.tilt;item.gem.rotation.y=t*.25;item.gem.scale.setScalar(.7+pose.glow*.6);}
    if(item.type==='partner'){const a=(item.index?0:Math.PI)+pose.angle;n.rotation.y=t*(item.index?-.12:.12);n.position.x=Math.cos(a)*pose.radius;n.position.z=Math.sin(a)*.3;n.position.y=pose.rise+(reduced?0:Math.sin(t+item.index*Math.PI)*.04);}
    if(item.type==='seed'){n.rotation.z=t*(item.index%2?.12:-.13)+pose.angle;n.scale.setScalar(pose.spread);}
+   if(item.type==='petal'){const opening=state.phase>=2?ease((reduced?3:state.since)/1.8):state.power*.35;n.rotation.x=1.35*(1-opening);n.scale.setScalar(.75+opening*.35);}
    if(item.type==='stick'){n.position.y=item.base+pose.rise;n.rotation.z=pose.tilt;}
   });
   traces.forEach((r,i)=>{const q=state.phase===2?clamp(state.since/2.65-i*.1):state.power*.45;

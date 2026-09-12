@@ -1315,8 +1315,8 @@ enhanceTarot = function(tarot) {
         for (var bi = 1; bi <= 6; bi++) bgHtml += '<div class="tarot-stage-bg-img" style="background-image:url(\'img/tarot-bg-' + bi + '.jpg\')"></div>';
         bgHtml += '</div>';
         deckWrap.innerHTML = bgHtml +
-          '<div class="tarot-3d-row tarot-3d-top" id="t-row-top">' + topHtml + topHtml + '</div>' +
-          '<div class="tarot-3d-row tarot-3d-bot" id="t-row-bot">' + botHtml + botHtml + '</div>';
+          '<div class="tarot-3d-row tarot-3d-top" id="t-row-top">' + topHtml + '</div>' +
+          '<div class="tarot-3d-row tarot-3d-bot" id="t-row-bot">' + botHtml + '</div>';
         deckWrap.querySelectorAll('.tarot-deck-card').forEach(function(el) {
           el.addEventListener('click', function() { pickCard(parseInt(el.dataset.idx), el); });
         });

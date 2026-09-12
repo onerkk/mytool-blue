@@ -12,9 +12,9 @@ function table(){const e=dom(),stage=add(e,'div','t-deck');stage.innerHTML='<div
 process.on('beforeExit',()=>{if(passed!==expected){console.error('Incomplete depth suite: '+passed+'/'+expected);process.exitCode=1;}});
 (async()=>{
  await test('A real tap commits its original card once even when the later click is retargeted to the table',()=>{
-  const e=table();pointer(e.stage,'pointerdown',120,60,{target:e.card.firstElementChild});pointer(e.stage,'pointerup',122,61,{target:e.stage});assert.equal(e.picks.length,1);assert.equal(e.picks[0][0],4);assert.equal(e.picks[0][1],e.card);
-  let stopped=0;e.stage.dispatch('click',{detail:1,stopImmediatePropagation:()=>stopped++});assert.equal(stopped,1);assert.equal(e.picks.length,1);
-  e.stage.dispatch('click',{detail:0,preventDefault(){throw Error('Keyboard click was blocked');}});e.ctx._deck3dCleanup();assert.equal(e.clock.timers.size,0);
+  const e=table();pointer(e.stage,'pointerdown',120,60,{target:e.card.firstElementChild});pointer(e.stage,'pointerup',122,61,{target:e.stage});assert.equal(e.picks.length,0,'native controller waits for a deliberate click');
+  let stopped=0;e.stage.dispatch('click',{detail:1,stopImmediatePropagation:()=>stopped++});assert.equal(stopped,1);assert.equal(e.picks.length,1);assert.equal(e.picks[0][0],4);assert.equal(e.picks[0][1],e.card);
+  e.stage.dispatch('click',{detail:0,target:e.card,stopImmediatePropagation(){}});assert.equal(e.picks.length,2,'keyboard activation remains supported');e.ctx._deck3dCleanup();assert.equal(e.clock.timers.size,0);
  });
  await test('Drag, cancellation, secondary pointers and vertical scrolling never select a card',()=>{
   for(const mode of ['drag','cancel','secondary','vertical']){const e=table();pointer(e.stage,'pointerdown',120,60,{target:e.card});if(mode==='drag')pointer(e.stage,'pointermove',190,62);if(mode==='vertical')pointer(e.stage,'pointermove',121,170);pointer(e.stage,mode==='cancel'?'pointercancel':'pointerup',mode==='drag'?190:120,mode==='vertical'?170:60,mode==='secondary'?{pointerId:2,isPrimary:false}:{});assert.equal(e.picks.length,0,mode);e.ctx._deck3dCleanup();assert.equal(e.clock.timers.size,0);}
@@ -59,7 +59,7 @@ process.on('beforeExit',()=>{if(passed!==expected){console.error('Incomplete dep
  await test('Quality rules are integrated before system exports; styles parse and current dependencies bypass old caches',()=>{
   const e=dom();['reading-quality','bazi-prompt-root','ziwei-prompt-root'].forEach(f=>load(e,f));const quality=e.ctx.JY_READING_QUALITY;for(const kind of ['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','oracle'])assert(quality.lines(kind).join('\n').includes('可逆'));
   assert(e.ctx.JY_BAZI_PROMPT_ROOT.answerContractLines('compatibility').join('\n').includes('事業合夥'));
-  require('postcss').parse(read('CSS/reading-depth.css'));const html=read('index.html');assert(html.includes('CSS/reading-depth.css?v=20260912flow2'));assert(html.indexOf('JS/reading-quality.js')<html.indexOf('JS/bazi-standalone.js'));for(const f of ['ritual-ateliers','cinematic-stage'])assert(html.includes('JS/'+f+'.js?v=20260912flow2'),f);for(const f of ['tarot','prompt-export','bazi','bazi-suite-core','ziwei-standalone','bazi-calendar-core','solar-location'])assert(html.includes('JS/'+f+'.js?v=20260912accuracy1'),f);assert(read('JS/ziwei-standalone.js').includes('JS/ziwei.js?v=20260912accuracy1'));assert.match(read('JS/sw.js'),/jy-main-v74/);
+  require('postcss').parse(read('CSS/reading-depth.css'));const html=read('index.html');assert(html.includes('CSS/reading-depth.css?v=20260912flow2'));assert(html.indexOf('JS/reading-quality.js')<html.indexOf('JS/bazi-standalone.js'));for(const f of ['ritual-ateliers','cinematic-stage','tarot','ziwei-standalone','immersive-experience'])assert(html.includes('JS/'+f+'.js?v=20260912immersion1'),f);for(const f of ['prompt-export','bazi','bazi-suite-core','bazi-calendar-core','solar-location'])assert(html.includes('JS/'+f+'.js?v=20260912accuracy1'),f);assert(read('JS/ziwei-standalone.js').includes('JS/ziwei.js?v=20260912accuracy1'));assert.match(read('JS/sw.js'),/jy-main-v74/);
  });
  console.log('reading-depth: '+passed+'/'+expected+' groups passed; no claim of physical-device or predictive accuracy.');
 })();

@@ -34,7 +34,7 @@
     var gesture=null,travel=0,turn=0,intent='clarity';
     var bodyOverflow=doc.body.style.overflow,inertSiblings=[],fallback=false;
     // Snapshot supplied cards; do not mutate the canonical draw or generate a replacement.
-    var cardPage=0;
+    var cardPage=0,autoReveal=false,autoTimer=null;
     var cards=(options.cards||[]).map(function(c){return {id:c.id,name:String(c.name||''),image:safeImage(c.image),isUp:c.isUp!==false};});
     var dealing=kind==='tarot'&&options.variant==='deal';
     var mode=(dealing&&cards.length)||kind==='lenormand'&&cards.length?'cards':cfg.type==='cards'?'hold':cfg.type;
@@ -65,7 +65,7 @@
       '<div class="jr-intent" role="group" aria-label="這次想如何探索"><button type="button" data-intent="clarity" aria-pressed="true">看清現況</button><button type="button" data-intent="action" aria-pressed="false">找到下一步</button></div>'+
       (question?'<details class="jr-question"><summary>回看我的問題</summary><p>'+esc(question)+'</p></details>':'')+'</section>'+
       '<div class="jr-stage">'+portrait+'</div><div class="jr-playfield">'+constellation+interaction+'</div>'+
-      '<section class="jr-dialogue"><div class="jr-response" hidden><div><span class="jr-response-label">等待你的觸碰</span><span class="jr-response-value">0%</span></div><div class="jr-response-track" role="progressbar" aria-label="儀式互動進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></div><p class="jr-hint" role="status"></p><button type="button" class="jr-next">走進'+cfg.room+' <span aria-hidden="true">→</span></button>'+
+      '<section class="jr-dialogue">'+(mode==='cards'?'<div class="jr-reveal-controls" role="group" aria-label="揭牌方式"><button type="button" class="jr-auto-reveal" aria-pressed="false">自動依序翻牌</button><button type="button" class="jr-reveal-all">全部揭開</button></div>':'')+'<div class="jr-response" hidden><div><span class="jr-response-label">等待你的觸碰</span><span class="jr-response-value">0%</span></div><div class="jr-response-track" role="progressbar" aria-label="儀式互動進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></div><p class="jr-hint" role="status"></p><button type="button" class="jr-next">走進'+cfg.room+' <span aria-hidden="true">→</span></button>'+
       '<footer class="jr-footer"><ol aria-label="儀式進度"><li class="is-current">相遇</li><li>共鳴</li><li>啟程</li></ol><button type="button" class="jr-skip">跳過儀式 →</button></footer></section></div>';
     var resolve,finished=new Promise(function(r){resolve=r;});
     var handle={finished:finished,cancel:function(){finish(false,false);},skip:function(){finish(true,false);}};
@@ -106,7 +106,7 @@
       }catch(e){disposeAudio();sound.textContent='此裝置無音效';sound.disabled=true;}
     }
     function cleanup(){
-      stopHold();timers.forEach(function(id){root.clearTimeout(id);});disposeAudio();
+      stopHold();pauseReveal();timers.forEach(function(id){root.clearTimeout(id);});disposeAudio();
       releaseStage();
       root.removeEventListener('pagehide',onPageHide);root.removeEventListener('popstate',onPopState);doc.removeEventListener('visibilitychange',onVisibility);
       dialog.removeEventListener('close',onNativeClose);dialog.removeEventListener('keydown',onKeyDown);
@@ -130,27 +130,28 @@
       if(event.shiftKey&&doc.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&doc.activeElement===last){event.preventDefault();first.focus();}
     }
     function onVisibility(){
-      stopHold();dialog.classList.toggle('is-paused',!!doc.hidden);
+      stopHold();if(doc.hidden)pauseReveal();dialog.classList.toggle('is-paused',!!doc.hidden);
       if(audio){try{var p=doc.hidden?audio.suspend():audio.resume();if(p&&p.catch)p.catch(function(){});}catch(e){}}
       // No elapsed-time completion: returning to a tab must never bypass an unanswered interaction.
     }
     function setCopy(title,note){dialog.querySelector('#jr-title').textContent=title;dialog.querySelector('#jr-note').textContent=note;}
     function showCardPage(){
       dialog.querySelectorAll('.jr-reveal').forEach(function(btn,i){btn.hidden=Math.floor(i/3)!==cardPage;btn.disabled=phase!==1||btn.getAttribute('aria-pressed')==='true'||btn.hidden;});
-      hint.textContent='第 '+(cardPage*3+1)+'–'+Math.min(cardPage*3+3,cards.length)+' 張 · 共 '+cards.length+' 張。輕觸揭牌，或直接展開完整牌陣。';
+      hint.textContent='第 '+(cardPage*3+1)+'–'+Math.min(cardPage*3+3,cards.length)+' 張 · 共 '+cards.length+' 張 · 可切換自動翻牌。';
     }
     function updatePhase(value){
       if(settled)return;phase=value;dialog.setAttribute('data-phase',String(value));
       dialog.querySelector('.jr-response').hidden=value===0;
-      if(value===1)showProgress(lit/(mode==='cards'?cards.length:mode==='seals'?cfg.seals.length:1),mode==='cards'?'按你的節奏，逐張揭牌':mode==='seals'?'輕觸座標，點亮本次探索':'拖曳或按住，下方光帶會回應你');
+      if(value===1)showProgress(lit/(mode==='cards'?cards.length:mode==='seals'?cfg.seals.length:1),mode==='cards'?'逐張輕觸，或選擇自動翻牌':mode==='seals'?'輕觸座標，點亮本次探索':'拖曳或按住，下方光帶會回應你');
       if(value>=2)showProgress(1,value===2?'已接住你的心念':'準備好了，由你決定何時繼續');
       stageCall('setPhase',value);
+      var revealControls=dialog.querySelector('.jr-reveal-controls');if(revealControls)revealControls.hidden=value!==1;
       var choices=dialog.querySelector('.jr-intent');if(choices)choices.hidden=value!==0;
       dialog.querySelector('.jr-chapter').textContent=value===0?'入境':value===1?'凝心':'啟程';
       dialog.querySelectorAll('.jr-footer li').forEach(function(li,i){li.classList.toggle('is-current',i===Math.min(value,2));li.classList.toggle('is-done',i<Math.min(value,2));});
       dialog.querySelectorAll('.jr-playfield button').forEach(function(btn){btn.disabled=value!==1||btn.getAttribute('aria-pressed')==='true';});
       if(value===1){
-        setCopy(dealing?'你選擇的牌，即將相遇。':cfg.focus,mode==='cards'?'輕觸每一張牌，讓本次抽牌的線索逐一出現。':mode==='hold'?(gestureCopy[kind]||cfg.guide)+'。'+({tarot:'牌組隨手勢聚攏與展開。',ziwei:'星軌隨手勢旋轉，逐圈點亮。',meihua:'光環隨指尖舒展，讓心緒慢慢安定。',oracle:'籤筒隨手勢輕晃，準備進入擲筊。'}[kind]||'依自己的節奏繼續。'):cfg.guide);
+        setCopy(dealing?'你選擇的牌，即將相遇。':cfg.focus,mode==='cards'?'你可以親手翻牌，也可以讓牌依序展開，或一次揭曉。':mode==='hold'?(gestureCopy[kind]||cfg.guide)+'。'+({tarot:'牌組隨手勢聚攏與展開。',ziwei:'星軌隨手勢旋轉，逐圈點亮。',meihua:'光環隨指尖舒展，讓心緒慢慢安定。',oracle:'籤筒隨手勢輕晃，準備進入擲筊。'}[kind]||'依自己的節奏繼續。'):cfg.guide);
         if(question)dialog.querySelector('.jr-question').open=false;
         hint.textContent=mode==='cards'?'按照你的節奏，親手揭開本次的牌。':mode==='seals'?'已點亮 0 / '+cfg.seals.length:'長按約 1.6 秒，或使用下方按鈕。';
         if(mode==='cards'){showCardPage();dialog.querySelector('.jr-skip').textContent='直接展開牌陣 →';}
@@ -212,29 +213,59 @@
     dialog.querySelectorAll('.jr-seal').forEach(function(btn,i){btn.onclick=function(){
       if(phase!==1||settled||btn.getAttribute('aria-pressed')==='true')return;
       if(kind==='bazi'&&i!==lit){hint.textContent='先點亮「'+cfg.seals[lit]+'」，再沿著時間往前。';return;}
-      btn.setAttribute('aria-pressed','true');btn.disabled=true;lit++;dialog.style.setProperty('--lit',String(lit));hint.textContent='已點亮 '+lit+' / '+cfg.seals.length;bell();
+      btn.setAttribute('aria-pressed','true');btn.disabled=true;if(options.sealValues&&options.sealValues[i]){btn.querySelector('small').textContent=String(options.sealValues[i]);}lit++;dialog.style.setProperty('--lit',String(lit));hint.textContent='已點亮 '+lit+' / '+cfg.seals.length;bell();
       stageCall('setLit',lit);
       showProgress(lit/cfg.seals.length,'已點亮 '+lit+' / '+cfg.seals.length+' 個座標');
       if(lit===cfg.seals.length)awaken();else{var remaining=Array.prototype.find.call(dialog.querySelectorAll('.jr-seal'),function(x){return !x.disabled;});if(remaining)remaining.focus({preventScroll:true});}
     };});
-    dialog.querySelectorAll('.jr-reveal').forEach(function(btn,i){btn.onclick=function(){
-      if(phase!==1||settled||btn.hidden||btn.disabled||btn.getAttribute('aria-pressed')==='true')return;
+    function pauseReveal(){
+      autoReveal=false;if(autoTimer!==null)root.clearTimeout(autoTimer);autoTimer=null;
+      if(phase===1&&mode==='cards'&&lit<cards.length){var current=Array.from(dialog.querySelectorAll('.jr-reveal')).filter(function(x){return !x.hidden;});var completePage=current.length&&current.every(function(x){return x.getAttribute('aria-pressed')==='true';});next.disabled=!completePage;next.textContent=completePage?'下一組牌 →':'等待你揭開牌面';}
+      var b=dialog.querySelector('.jr-auto-reveal');if(b){b.setAttribute('aria-pressed','false');b.textContent=lit?'繼續自動翻牌':'自動依序翻牌';}
+    }
+    function revealCard(i,all){
+      var btn=dialog.querySelectorAll('.jr-reveal')[i];
+      if(!btn||phase!==1||settled||!all&&(btn.hidden||btn.disabled)||btn.getAttribute('aria-pressed')==='true')return false;
       var c=cards[i],front=btn.querySelector('.jr-front');
-      // Face and accessible card name are inserted only after a deliberate reveal.
+      // Faces are inserted only after a deliberate manual/auto/all reveal action.
       if(c.image){var img=doc.createElement('img');img.src=c.image;img.alt=c.name;img.className=c.isUp?'':'is-reversed';front.appendChild(img);img.onerror=function(){img.remove();front.textContent=c.name;};}else front.textContent=c.name;
-      btn.setAttribute('aria-pressed','true');btn.setAttribute('aria-label','第 '+(i+1)+' 張：'+c.name+(kind==='tarot'?(c.isUp?'，正位':'，逆位'):''));btn.disabled=true;btn.querySelector('.jr-card-label').textContent=c.name;lit++;bell();
-      stageCall('setLit',lit);stageCall('setPower',lit/cards.length);
-      showProgress(lit/cards.length,'已揭開 '+lit+' / '+cards.length+' 張牌');
-      hint.textContent='已揭開 '+lit+' / '+cards.length+' 張';
-      if(lit===cards.length)schedule(awaken,reduced?0:900);else{var remaining=Array.prototype.find.call(dialog.querySelectorAll('.jr-reveal'),function(x){return !x.disabled&&!x.hidden;});if(remaining)remaining.focus({preventScroll:true});else{next.disabled=false;next.textContent='下一組牌 →';focus(next);}}
-    };});
+      btn.setAttribute('aria-pressed','true');btn.setAttribute('aria-label','第 '+(i+1)+' 張：'+c.name+(kind==='tarot'?(c.isUp?'，正位':'，逆位'):''));btn.disabled=true;btn.querySelector('.jr-card-label').textContent=c.name;lit++;
+      if(!all)bell();stageCall('setLit',lit);stageCall('setPower',lit/cards.length);
+      showProgress(lit/cards.length,'已揭開 '+lit+' / '+cards.length+' 張牌');hint.textContent='已揭開 '+lit+' / '+cards.length+' 張';
+      if(lit===cards.length){pauseReveal();schedule(awaken,reduced?0:900);}
+      else if(!autoReveal&&!all){
+        var remaining=Array.prototype.find.call(dialog.querySelectorAll('.jr-reveal'),function(x){return !x.disabled&&!x.hidden;});
+        if(remaining)focus(remaining);else{next.disabled=false;next.textContent='下一組牌 →';focus(next);}
+      }
+      return true;
+    }
+    function advanceReveal(){
+      autoTimer=null;if(!autoReveal||settled||phase!==1||doc.hidden)return;
+      var buttons=Array.from(dialog.querySelectorAll('.jr-reveal')),index=buttons.findIndex(function(b){return b.getAttribute('aria-pressed')!=='true';});
+      if(index<0){pauseReveal();return;}
+      cardPage=Math.floor(index/3);showCardPage();next.disabled=true;next.textContent='牌正在依序展開…';
+      revealCard(index,false);
+      if(autoReveal)autoTimer=schedule(advanceReveal,reduced?80:(index%3===2?1100:680));
+    }
+    dialog.querySelectorAll('.jr-reveal').forEach(function(btn,i){btn.onclick=function(){pauseReveal();revealCard(i,false);};});
+    var autoButton=dialog.querySelector('.jr-auto-reveal'),allButton=dialog.querySelector('.jr-reveal-all');
+    if(autoButton)autoButton.onclick=function(){
+      if(settled||phase!==1)return;
+      if(autoReveal){pauseReveal();showCardPage();hint.textContent='已暫停，牌與順序保留。';return;}
+      autoReveal=true;autoButton.setAttribute('aria-pressed','true');autoButton.textContent='暫停自動翻牌';advanceReveal();
+    };
+    if(allButton)allButton.onclick=function(){
+      if(settled||phase!==1)return;pauseReveal();bell();
+      cards.forEach(function(c,i){revealCard(i,true);});
+      hint.textContent='本次 '+cards.length+' 張牌已全部揭開，牌序保持不變。';
+    };
     next.onclick=function(){if(settled||next.disabled)return;if(phase===0)updatePhase(1);else if(phase===1&&mode==='hold')awaken();else if(phase===1&&mode==='cards'&&lit<cards.length){cardPage++;showCardPage();next.disabled=true;next.textContent='等待你揭開牌面';var card=dialog.querySelector('.jr-reveal:not([hidden])');focus(card);}else if(phase===3)finish(true,false);};
     dialog.querySelectorAll('[data-intent]').forEach(function(btn){btn.onclick=function(){if(phase!==0)return;intent=btn.getAttribute('data-intent');dialog.querySelectorAll('[data-intent]').forEach(function(b){b.setAttribute('aria-pressed',String(b===btn));});setCopy(intent==='action'?'好，我們一起找一個起點。':cfg.title,intent==='action'?'帶著你真正能改變的部分進入探索。解讀之後，我們再把提醒整理成可以採取的行動。':cfg.intro);};});
     dialog.querySelector('.jr-motion').onclick=function(){
       if(settled)return;stopHold();reduced=!reduced;dialog.setAttribute('data-motion',reduced?'still':'full');
       this.textContent='動態：'+(reduced?'靜態':'完整');this.setAttribute('aria-pressed',String(reduced));
       releaseStage();
-      if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced});stageCall('setPhase',phase);stageCall('setLit',lit);stageCall('setTurn',turn);stageCall('setPower',phase>=2?1:mode==='hold'?0:lit/(mode==='cards'?cards.length:cfg.seals.length));}catch(error){fallbackStage(error);}}
+      if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,sealValues:options.sealValues||[]});stageCall('setPhase',phase);stageCall('setLit',lit);stageCall('setTurn',turn);stageCall('setPower',phase>=2?1:mode==='hold'?0:lit/(mode==='cards'?cards.length:cfg.seals.length));}catch(error){fallbackStage(error);}}
       if(reduced&&phase===2)updatePhase(3);
     };
     sound.onclick=toggleSound;dialog.querySelector('.jr-cancel').onclick=function(){finish(false,true);};dialog.querySelector('.jr-skip').onclick=function(){finish(true,false);};
@@ -245,7 +276,7 @@
     active=entry;doc.body.appendChild(dialog);doc.body.style.overflow='hidden';
     suspendHome(true);
     try{if(typeof dialog.showModal!=='function')throw new Error('Native dialog unavailable');dialog.showModal();}catch(e){fallback=true;dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');Array.prototype.forEach.call(doc.body.children,function(node){if(node!==dialog){inertSiblings.push({node:node,value:node.inert});node.inert=true;}});}
-    if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced});}catch(e){fallbackStage(e);}}
+    if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,sealValues:options.sealValues||[]});}catch(e){fallbackStage(e);}}
     updatePhase(0);if(mode==='cards')showCardPage();focus(next);if(dealing)updatePhase(1);
     root.addEventListener('pagehide',onPageHide);root.addEventListener('popstate',onPopState);doc.addEventListener('visibilitychange',onVisibility);
     return handle;

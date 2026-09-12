@@ -538,7 +538,7 @@
         if (s.type !== 'major') return;
         var br = brightOf(s.name, p.branch);
         var hua = s.hua ? '<span class="hua' + (s.hua==='化忌'?' ji':'') + '">' + huaShort(s.hua) + '</span>' : '';
-        starHtml += '<span>' + esc(s.name) + (br?'<span style="opacity:.5;font-size:.5rem">' + (br==='不得'?'不得':br.slice(-1)) + '</span>':'') + hua + '</span>';
+        starHtml += '<span>' + esc(s.name) + (br?'<span style="opacity:.5;font-size:.5rem">' + esc(br) + '</span>':'') + hua + '</span>';
       });
       // 輔吉／煞完整送出；由 AI 依題目相關性與獨立性去重，不在資料層先截斷。
       var auxArr = (p.stars||[]).filter(function(s){ return s.type!=='major' && s.type!=='sha'; });
@@ -703,6 +703,7 @@
       '</div>';
     document.body.appendChild(w);
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
+    if(window.JYExperience&&!form.btimeUnknown)window.JYExperience.mountZiwei(w,zw);
     w.scrollTop = 0;
   }
 

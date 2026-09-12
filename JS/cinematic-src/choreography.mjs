@@ -15,6 +15,17 @@ export function cardPose(index,count,state){
  return {x,y,z,rx,ry,rz};
 }
 export function actorPose(phase){return phase===0?0:phase===1?1:phase===2?2:3;}
+// A restrained camera move makes the instrument, architecture and actor occupy
+// different depths. The return shot settles before the next user action.
+export function cameraPose(kind,state,aspect=1){
+ const phase=state.phase||0,u=ease((state.since||0)/2.65),p=clamp(state.power||0);
+ const base=aspect<.62?8.15:7.2,active=phase===2;
+ const handed=kind==='compat'?-1:kind==='meihua'?.65:1;
+ return {x:active?Math.sin(u*Math.PI)*.42*handed:0,
+  y:active?.2-Math.sin(u*Math.PI)*.16:.2,
+  z:base-(active?.52*Math.sin(u*Math.PI):phase>=3?.24:phase===1?p*.1:0),
+  targetY:phase===0?.02:-.12};
+}
 // Distinct, reversible motion for each instrument. A phase never changes data.
 export function instrumentPose(type,index,state){
  const p=clamp(state.power||0),u=ease((state.since||0)/2.65),active=state.phase===2,
@@ -22,7 +33,7 @@ export function instrumentPose(type,index,state){
  if(type==='pillar')return {rise:(lit?.16:0)+(active?Math.sin(u*Math.PI)*.22:0),tilt:active?Math.sin(u*Math.PI)*(index-1.5)*.12:0,glow:lit?1:.12};
  if(type==='partner')return {radius:active?.66-.23*u:settled?.43:.66,angle:(index?1:-1)*(active?u*Math.PI*2:turn*.3),rise:active?Math.sin(u*Math.PI)*.3:0};
  if(type==='seed')return {spread:1+(active?Math.sin(u*Math.PI)*.65:p*.18),angle:turn*.55+(active?u*Math.PI*(index%2?1:-1):0),glow:active||settled?1:p};
- if(type==='stick')return {rise:active?Math.sin(u*Math.PI)*(.08+index%4*.045):0,tilt:turn*.12+(active?Math.sin(u*Math.PI*6)*.045:0)};
+ if(type==='stick')return {rise:active?(index===6?Math.sin(u*Math.PI)*.62:Math.sin(u*Math.PI)*(.08+index%4*.045)):0,tilt:turn*.12+(active?Math.sin(u*Math.PI*6)*.045:0)};
  if(type==='orbit')return {angle:turn*.4+(active?u*Math.PI*2*(index%2?-1:1):0),glow:active||settled?1:p};
  return {rise:0,tilt:0,glow:0};
 }

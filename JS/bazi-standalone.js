@@ -321,6 +321,7 @@
     h += '<div class="bzx-footer">靜月之光 ・ jingyue.uk<br>八字命理 ・ 子平法 ・ 調候參考</div></div>';
     w.innerHTML = h;
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
+    if (window.JYExperience && _phase !== 'input' && _bazi) window.JYExperience.mountBazi(w,_bazi,_meta);
     w.scrollTop=savedScroll;
   }
 

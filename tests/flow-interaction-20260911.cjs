@@ -11,40 +11,51 @@ function dom(){const e=fixture(),p=e.Element.prototype;Object.defineProperty(p,'
 function deck(){
  const e=dom(),stage=add(e,'div','t-deck');
  stage.innerHTML='<div id="t-row-top">'+Array.from({length:12},(_,i)=>'<div class="tarot-deck-card" data-idx="'+i%6+'"><div></div></div>').join('')+'</div><div id="t-row-bot">'+Array.from({length:12},(_,i)=>'<div class="tarot-deck-card" data-idx="'+(6+i%6)+'"><div></div></div>').join('')+'</div>';
- stage.setPointerCapture=()=>{};
+ stage.setPointerCapture=()=>{};stage.clientWidth=360;stage.scrollWidth=1100;stage.scrollLeft=0;e.picks=[];e.ctx.pickCard=(i,card)=>e.picks.push(i);
  stage.getBoundingClientRect=()=>({top:0,left:0,right:360,bottom:290,width:360,height:290});
  vm.runInContext('var _deck3dCleanup=null,_deck3dRAF=null,_deck3dTopOff=0,_deck3dBotOff=0,_deck3dDragging=false;window.JYTarotDeckBrowse={};window._deckIsShuffled=true;'+actual('JS/tarot.js','_startDeck3D')+actual('JS/tarot.js','_update3DCards')+';_startDeck3D(6,6);',e.ctx);
- return Object.assign(e,{stage});
+ e.clock.setTime(1000);return Object.assign(e,{stage});
 }
-function point(el,type,x,y,id=1,extra={}){el.dispatch(type,{clientX:x,clientY:y,pointerId:id,isPrimary:true,button:0,cancelable:true,...extra});}
+function point(el,type,x,y,id=1,extra={}){el.dispatch(type,{type,clientX:x,clientY:y,pointerId:id,isPrimary:true,button:0,cancelable:true,...extra});}
 (async()=>{
- await test('Dragging the table moves both rows with the finger and suppresses the following pointer click',()=>{
-  const e=deck(),before=e.ctx._deck3dTopOff;
-  point(e.stage,'pointerdown',160,80);point(e.stage,'pointermove',202,81);e.clock.advance(16);
-  assert.equal(e.ctx._deck3dTopOff-before,42);assert.equal(e.ctx._deck3dBotOff,e.ctx._deck3dTopOff);
-  assert(e.stage.classList.contains('is-dragging'));point(e.stage,'pointerup',202,81);
-  let prevented=false,stopped=false;e.stage.dispatch('click',{detail:1,preventDefault:()=>prevented=true,stopImmediatePropagation:()=>stopped=true});
-  assert(prevented&&stopped);const resting=e.ctx._deck3dTopOff;e.clock.advance(5000);assert.equal(e.ctx._deck3dTopOff,resting);assert.equal(e.clock.timers.size,0);
+ await test('Native deck has one node per actual card; mouse drag scrolls both rows and cannot pick on release',()=>{
+  const e=deck();assert.equal(e.stage.querySelectorAll('.tarot-deck-card').length,12);
+  assert.equal(e.stage.getAttribute('data-deck-mode'),'native');
+  point(e.stage,'pointerdown',202,80);point(e.stage,'pointermove',160,81);e.clock.advance(16);
+  assert.equal(e.stage.scrollLeft,42);assert.equal(e.ctx._deck3dTopOff,-42);assert.equal(e.ctx._deck3dBotOff,-42);
+  assert(e.stage.classList.contains('is-dragging'));point(e.stage,'pointerup',160,81);
+  let prevented=false,stopped=false;e.stage.dispatch('click',{detail:1,target:e.stage.querySelector('.tarot-deck-card'),preventDefault:()=>prevented=true,stopImmediatePropagation:()=>stopped=true});
+  assert(prevented&&stopped);assert.deepEqual(e.picks,[]);e.clock.advance(5000);assert.equal(e.stage.scrollLeft,42);assert.equal(e.clock.timers.size,0);
  });
- await test('Vertical scrolling and tiny taps do not move the deck or consume a normal card click',()=>{
-  const e=deck(),before=e.ctx._deck3dTopOff;
-  point(e.stage,'pointerdown',160,80);point(e.stage,'pointermove',161,170);point(e.stage,'pointercancel',161,170);e.clock.advance(100);
-  assert.equal(e.ctx._deck3dTopOff,before);point(e.stage,'pointerdown',160,80);point(e.stage,'pointermove',163,82);point(e.stage,'pointerup',163,82);
-  e.stage.dispatch('click',{detail:1,preventDefault(){throw Error('tap consumed');},stopImmediatePropagation(){throw Error('tap blocked');}});
+ await test('Touch delegates panning to the browser; pointer cancellation suppresses accidental card selection',()=>{
+  const e=deck();let capture=0,prevent=0;e.stage.setPointerCapture=()=>capture++;
+  point(e.stage,'pointerdown',250,80,1,{pointerType:'touch'});point(e.stage,'pointermove',150,80,1,{pointerType:'touch',preventDefault:()=>prevent++});
+  assert.equal(capture,0);assert.equal(prevent,0);assert.equal(e.stage.scrollLeft,0,'JS must not fight the native scroller');
+  // Simulate the scroll/pointercancel sequence delivered by a browser taking over touch.
+  e.stage.scrollLeft=100;e.stage.dispatch('scroll');point(e.stage,'pointercancel',150,80,1,{pointerType:'touch'});e.clock.advance(16);assert.equal(e.ctx._deck3dTopOff,-100);
+  e.stage.dispatch('click',{detail:1,target:e.stage.querySelector('.tarot-deck-card'),stopImmediatePropagation(){}});assert.deepEqual(e.picks,[]);
  });
- await test('Browse buttons and keyboard arrows work without a drag; reinitialization removes old listeners and frames',()=>{
-  const e=deck(),before=e.ctx._deck3dTopOff;
-  e.ctx.JYTarotDeckBrowse.move(1);e.clock.advance(16);assert.notEqual(e.ctx._deck3dTopOff,before);
-  const at=e.ctx._deck3dTopOff;e.stage.dispatch('keydown',{key:'ArrowRight'});e.clock.advance(16);assert.notEqual(e.ctx._deck3dTopOff,at);
+ await test('A vertical gesture leaves the deck still; a later tiny tap selects its original target exactly once',()=>{
+  const e=deck();point(e.stage,'pointerdown',160,80);point(e.stage,'pointermove',161,170);point(e.stage,'pointercancel',161,170);e.clock.advance(500);
+  assert.equal(e.stage.scrollLeft,0);const card=e.stage.querySelector('.tarot-deck-card');
+  point(e.stage,'pointerdown',160,80,1,{target:card});point(e.stage,'pointermove',163,82);point(e.stage,'pointerup',163,82);
+  e.stage.dispatch('click',{detail:1,stopImmediatePropagation(){}});assert.deepEqual(e.picks,[0],'captured mouse click uses the original card');
+ });
+ await test('Browse buttons clamp at both ends; keyboard and repeated initialization leave no duplicate handlers',()=>{
+  const e=deck();e.ctx.JYTarotDeckBrowse.move(-1);e.clock.advance(16);assert(Math.abs(e.stage.scrollLeft-252)<.01);
+  e.stage.dispatch('keydown',{key:'ArrowRight'});e.clock.advance(16);assert(Math.abs(e.stage.scrollLeft-504)<.01);
+  e.ctx.JYTarotDeckBrowse.move(-10);e.clock.advance(16);assert.equal(e.stage.scrollLeft,740);
+  e.ctx.JYTarotDeckBrowse.move(10);e.clock.advance(16);assert.equal(e.stage.scrollLeft,0);
   for(let i=0;i<5;i++)e.ctx._startDeck3D(6,6);
   for(const handlers of Object.values(e.stage.listeners))assert.equal(handlers.size,1);
-  point(e.stage,'pointerdown',160,80);point(e.stage,'pointermove',180,81);assert.equal(e.clock.timers.size,1);e.ctx._deck3dCleanup();assert.equal(e.clock.timers.size,0);
+  point(e.stage,'pointerdown',180,80);point(e.stage,'pointermove',100,81);assert.equal(e.clock.timers.size,1);e.ctx._deck3dCleanup();assert.equal(e.clock.timers.size,0);
   for(const handlers of Object.values(e.stage.listeners))assert.equal(handlers.size,0);
  });
- await test('Gestures and browse controls cannot move an unshuffled deck',()=>{
-  const e=deck();e.ctx._deckIsShuffled=false;const before=e.ctx._deck3dTopOff;
-  point(e.stage,'pointerdown',100,80);point(e.stage,'pointermove',280,80);e.ctx.JYTarotDeckBrowse.move(1);e.clock.advance(1000);
-  assert.equal(e.ctx._deck3dTopOff,before);assert.equal(e.clock.timers.size,0);
+ await test('Unshuffled cards cannot be selected and browse buttons remain inactive',()=>{
+  const e=deck();e.ctx._deckIsShuffled=false;
+  point(e.stage,'pointerdown',280,80);point(e.stage,'pointermove',100,80);e.ctx.JYTarotDeckBrowse.move(-1);e.clock.advance(1000);
+  e.stage.dispatch('click',{detail:0,target:e.stage.querySelector('.tarot-deck-card'),stopImmediatePropagation(){}});
+  assert.equal(e.stage.scrollLeft,0);assert.deepEqual(e.picks,[]);assert.equal(e.clock.timers.size,0);
  });
  await test('Illustrated ritual follows the finger without WebGL; a second pointer cannot hijack it',()=>{
   const e=dom();load(e,'ritual-ateliers');const h=e.ctx.JYRitual.play('tarot'),d=e.doc.querySelector('dialog');d.querySelector('.jr-next').click();const touch=d.querySelector('.jr-touch');
@@ -106,7 +117,7 @@ function point(el,type,x,y,id=1,extra={}){el.dispatch(type,{clientX:x,clientY:y,
  await test('Updated styles parse; the intended gesture surfaces explicitly own touch-action',()=>{
   const css=read('CSS/flow-refinement.css');require('postcss').parse(css);
   assert.match(css,/\.jy-atelier \.jr-dialog button\.jr-touch\{touch-action:none!important/);
-  assert.match(css,/\.jy-atelier #step-2 #t-deck\{[^}]*touch-action:pan-y pinch-zoom!important/);
+  const final=read('CSS/immersive-experience.css');require('postcss').parse(final);assert.match(final,/touch-action:pan-x pan-y pinch-zoom!important/);assert.match(final,/overflow-x:auto!important/);
  });
  console.log('flow-interaction: '+passed+' groups passed; rendered layout and physical touch remain separate checks.');
 })();
