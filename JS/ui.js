@@ -5393,27 +5393,26 @@ function _maybeCountVisit(){ if(_visitCounted) return; _visitCounted=true; _coun
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', _maybeCountVisit);
 else _maybeCountVisit();
 
-// ── 月亮連點 5 下 ──
+// ── 左上角品牌連點 5 下（保留舊月亮入口）──
 let _moonTapCount=0, _moonTapTimer=null;
 function _moonTap(){
   _moonTapCount++;
   clearTimeout(_moonTapTimer);
-  _moonTapTimer=setTimeout(()=>{_moonTapCount=0;},2000);
   if(_moonTapCount>=5){
     _moonTapCount=0;
-    document.getElementById('counter-badge').classList.add('visible');
-    // 立即從雲端拉數字顯示在徽章
-    _gasCall('get').then(data=>{
-      if(data){
-        document.getElementById('counter-num').textContent=(data.total||0).toLocaleString();
-        document.getElementById('counter-today').textContent=(data.today||0).toLocaleString();
-      }
-    });
+    _moonTapTimer=null;
+    // The cinematic homepage may omit the legacy badge; the panel remains usable.
+    var badge=document.getElementById('counter-badge');
+    if(badge)badge.classList.add('visible');
+    // openAdmin reads once and updates any badge that still exists.
     openAdmin();
+    return true;
   }
+  _moonTapTimer=setTimeout(()=>{_moonTapCount=0;_moonTapTimer=null;},2000);
+  return false;
 }
 
-// 後台統計面板：不放靜態 HTML（避免爬蟲/AI 讀到人次與密技），連點月亮 5 下時才動態注入一次
+// 統計面板按需建立；連點只是隱藏入口，重設仍由既有管理員權限驗證。
 function _ensureAdminPanel(){
   if(document.getElementById('admin-panel')) return;
   var ov=document.createElement('div');
@@ -5429,7 +5428,7 @@ function _ensureAdminPanel(){
     '<button class="admin-btn" onclick="openAdmin()">重新讀取</button>'+
     '<button class="admin-btn" onclick="closeAdmin()">關閉</button>'+
     '<button class="admin-reset" onclick="resetVisitorCount()">歸零計數</button>'+
-    '<div style="margin-top:var(--sp-sm);font-size:.68rem;color:var(--c-text-muted);text-align:center">每次造訪首頁 = 1 人次<br>連點月亮 5 下開啟 · 重整後隱藏</div>';
+    '<div style="margin-top:var(--sp-sm);font-size:.68rem;color:var(--c-text-muted);text-align:center">每次造訪首頁 = 1 人次<br>連點左上角「靜月之光」5 下開啟 · 重整後隱藏</div>';
   document.body.appendChild(ov);
   document.body.appendChild(p);
 }

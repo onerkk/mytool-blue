@@ -393,7 +393,7 @@
   </div>
 </noscript>
 <nav class="nav"><div class="nav-inner">
-  <a href="#" class="nav-brand" onclick="backToHook();return false" aria-label="靜月之光，返回首頁"><i class="fas fa-moon" aria-hidden="true"></i><span>靜月之光<small>JINGYUE</small></span></a>
+  <a href="#" class="nav-brand" onclick="if(!_moonTap())backToHook();return false" style="touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none" aria-label="靜月之光，返回首頁"><i class="fas fa-moon" aria-hidden="true"></i><span>靜月之光<small>JINGYUE</small></span></a>
   <div class="nav-links">
     <button class="nav-link active" onclick="goStep(0)">輸入</button>
     <button class="nav-link" onclick="goStep(1)">梅花</button>
@@ -1450,7 +1450,7 @@
 <script src="JS/share-card.js?v=20260911preview1" defer></script>
 <script src="JS/bazi-suite-core.js?v=20260912accuracy1" defer></script>
 <script src="JS/bazi-suite.js?v=20260912engine2" defer></script>
-<script src="JS/ui.js?v=20260912immersion1" defer></script>
+<script src="JS/ui.js?v=20260912counter1" defer></script>
 <script src="JS/atelier-ui.js?v=20260912immersion1" defer></script>
 <script src="JS/immersive-experience.js?v=20260912immersion1" defer></script>
 <script src="JS/cinematic-ui.js?v=20260912oracle1" defer></script>
