@@ -69,3 +69,15 @@
 @media(max-width:380px){.jy-atelier .jr-dialog[data-story] .jr-shell{padding-inline:12px!important}.jy-atelier .jr-dialog[data-story] .jr-dialogue{padding:15px 15px 4px!important}.jy-atelier .jr-dialog[data-story] .jr-header>span{font-size:14px!important}.jy-atelier .jr-dialog[data-story] .jr-header button{font-size:11px!important;padding:7px 9px!important}.jy-atelier .jr-dialog[data-story] .jr-preferences button{font-size:10px!important;padding:6px!important}}
 @media(prefers-reduced-motion:reduce){.jy-atelier .jr-dialog[data-story] *, .jy-atelier .jr-dialog[data-story] *::before,.jy-atelier .jr-dialog[data-story] *::after{animation:none!important;transition:none!important}.jy-atelier .jr-dialog[data-story] .jr-world-image{opacity:1!important}}
 .jy-atelier .jr-dialog[data-story][data-motion=still] .jr-world-image{animation:none!important;transition:none!important;transform:none!important;opacity:1!important}
+
+/* Lightweight contact feedback also works when the GPU is unavailable. */
+.jr-touch-aura{pointer-events:none;position:absolute;z-index:7;left:var(--contact-x,50%);top:var(--contact-y,45%);width:90px;height:90px;border-radius:50%;opacity:0;transform:translate(-50%,-50%) scale(.6);border:1px solid #f0d89f80;background:radial-gradient(circle,#fff4d335,transparent 62%);box-shadow:0 0 24px #f7d98930,inset 0 0 22px #d2b4f020;transition:opacity .25s,transform .35s}
+.jr-touch-aura::before,.jr-touch-aura::after{content:'';position:absolute;inset:13px;border:1px solid #e6dbb746;border-radius:50%;transform:rotateX(50deg) rotateZ(-22deg)}
+.jr-touch-aura::after{inset:23px;transform:rotateY(55deg) rotateZ(28deg);border-color:#fff4d38c}
+.jr-dialog.is-holding .jr-touch-aura{opacity:.85;transform:translate(-50%,-50%) scale(1)}
+.jr-local-water{position:absolute;pointer-events:none;inset:66% -8% 0;background:repeating-radial-gradient(ellipse at 50% 20%,transparent 0 16px,#cab78026 18px,transparent 20px 37px);mask-image:linear-gradient(transparent,#000 30%,transparent);transform:perspective(360px) rotateX(40deg);animation:jr-water-breathe 6s ease-in-out infinite}
+.jr-stage.jr-gpu-ready .jr-local-water{display:none}
+@keyframes jr-water-breathe{50%{transform:perspective(360px) rotateX(40deg) scale(1.12);opacity:.55}}
+.jr-dialog[data-motion=still] .jr-local-water{animation:none!important}
+.jr-dialog[data-motion=still] .jr-touch-aura{display:none}
+@media(prefers-reduced-motion:reduce){.jr-local-water{animation:none!important}.jr-touch-aura{display:none}}

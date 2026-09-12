@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {cardPose,actorPose,cameraPose,instrumentPose,CAST,clamp,ease} from './choreography.mjs';
 import {buildScenery} from './scenery.mjs';
+import {buildPresence} from './presence.mjs';
 
 // One renderer per ceremony. This module owns presentation only: no RNG, birth
 // calculation, card selection, storage, or interpretation is permitted here.
@@ -54,11 +55,24 @@ export function mountStage(host,kind,options={}){
   host.prepend(renderer.domElement);host.setAttribute('data-renderer','webgl2');
  }catch(error){dispose();host.setAttribute('data-renderer','fallback');return {dispose(){},setPhase(){},setPower(){},setLit(){},setTurn(){},setShot(){}};}
 
- // An illustrated actor on a subdivided plane. Only sleeves/lower robe move;
- // the face is rigid. Four independently commissioned poses crossfade.
- const uniforms={atlas:{value:null},fromPose:{value:0},toPose:{value:0},mixPose:{value:1},clock:{value:0},motion:{value:reduced?0:1},glow:{value:0}};
+ // Illustrated, articulated portrait, not a filmed or fully rigged 3D person.
+ // Face and hands stay rigid; breathing, head inclination and side hair move
+ // through soft neck/shoulder weights instead of stretching facial features.
+ const uniforms={atlas:{value:null},fromPose:{value:0},toPose:{value:0},mixPose:{value:1},clock:{value:0},motion:{value:reduced?0:1},glow:{value:0},gaze:{value:new T.Vector2()}};
  actorMaterial=keep(new T.ShaderMaterial({uniforms,transparent:true,depthWrite:false,side:T.DoubleSide,
-  vertexShader:`varying vec2 vUv; uniform float clock; uniform float motion; void main(){vUv=uv;vec3 p=position;float robe=1.0-smoothstep(.28,.72,uv.y);p.x+=sin(clock*.8+uv.y*6.0)*.019*robe*motion;p.z+=sin(clock*.65+uv.x*4.0)*.025*robe*motion;gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);}`,
+  vertexShader:`varying vec2 vUv;uniform float clock,motion;uniform vec2 gaze;
+   void main(){vUv=uv;vec3 p=position;
+    float head=smoothstep(.53,.72,uv.y),side=smoothstep(.17,.34,abs(uv.x-.5));
+    float robe=(1.-smoothstep(.35,.75,uv.y))*side;
+    float hair=smoothstep(.38,.60,uv.y)*(1.-smoothstep(.86,.98,uv.y))*side;
+    float breath=sin(clock*1.05)*.014*motion;
+    float tilt=(sin(clock*.38)*.005-gaze.x*.009)*motion*head;
+    vec2 neck=p.xy-vec2(0.,.6);p.xy=mat2(cos(tilt),-sin(tilt),sin(tilt),cos(tilt))*neck+vec2(0.,.6);
+    p.y+=breath*smoothstep(.3,.65,uv.y);
+    p.x+=(sin(clock*.8+uv.y*6.)*.031*robe+sin(clock*.63+uv.y*8.)*.018*hair)*motion;
+    p.z+=(sin(clock*.65+uv.x*4.)*.035*robe+gaze.x*p.x*.025*head)*motion;
+    gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
+   }`,
   fragmentShader:`uniform sampler2D atlas;uniform float fromPose,toPose,mixPose,glow;varying vec2 vUv;vec4 pose(float n){vec2 u=vec2((clamp(vUv.x,.003,.997)+n)/4.0,vUv.y);return texture2D(atlas,u);}void main(){vec4 c=mix(pose(fromPose),pose(toPose),mixPose);c.a*=smoothstep(0.0,.13,vUv.y);if(c.a<.01)discard;c.rgb*=1.0+glow*.1;gl_FragColor=c;#include <tonemapping_fragment>\n#include <colorspace_fragment>}`.replace(';#include',';\n#include')
  }));
  actor=mesh(new T.PlaneGeometry(3.05,6.10,20,32),actorMaterial,rig);actor.position.set(0,-.58,-.65);actor.visible=false;actor.renderOrder=1;
@@ -155,6 +169,7 @@ export function mountStage(host,kind,options={}){
   fragmentShader:`uniform vec3 color;varying float alpha;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(color,smoothstep(.5,.04,d)*alpha);}`
  }));scene.add(new T.Points(pgeo,pmat));
  const scenery=state.story?buildScenery({kind,rig,keep,gold,accent,reduced}):null;
+ const presence=state.story?buildPresence({kind,rig,keep,accent,reduced}):null;
 
  function resize(){if(dead||lost)return;const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderOnce();}
  function follow(event){if(reduced)return;const r=host.getBoundingClientRect();aim.x=clamp((event.clientX-r.left)/r.width*2-1,-1,1);aim.y=clamp((event.clientY-r.top)/r.height*2-1,-1,1);}
@@ -174,7 +189,7 @@ export function mountStage(host,kind,options={}){
   bridge.forEach((thread,i)=>{thread.material.opacity=state.phase>=2?.36:.04+state.power*.18;thread.rotation.x=reduced?0:Math.sin(state.time*.55+i)*.2;});
   const s=(state.phase===0?.77:1)*clamp(camera.aspect*1.22,.8,1.5);objects.scale.lerp(new T.Vector3(s,s,s),smooth);
   if(actor){actor.position.y=-.58+(reduced?0:Math.sin(elapsed*.85)*.009);const scale=state.phase===0?1.025:state.phase>=2?.95:1;actor.scale.lerp(new T.Vector3(scale,scale,scale),smooth);actor.position.x+=( (state.phase>=1?-.12:0)-actor.position.x)*smooth;}
-  uniforms.clock.value=state.time;uniforms.glow.value=energy;
+  uniforms.clock.value=state.time;uniforms.glow.value=energy;uniforms.gaze.value.set(pointer.x,pointer.y);
   uniforms.mixPose.value=reduced?1:ease((elapsed-blendAt)/.65);
   deck.forEach((g,i)=>{const p=cardPose(i,deck.length,{...state,since:reduced?3:state.since});g.position.set(p.x,p.y,p.z);g.rotation.set(p.rx,p.ry,p.rz);});
   animated.forEach(item=>{const n=item.node,t=state.time;
@@ -193,6 +208,7 @@ export function mountStage(host,kind,options={}){
   stageRing.rotation.z=state.time*.045;stageRing2.rotation.z=-state.time*.06;
   pmat.uniforms.t.value=state.time;pmat.uniforms.energy.value=energy;
   scenery?.update({...state,since:reduced?6:state.since});
+  presence?.update({...state,since:reduced?6:state.since});
  }
  function renderOnce(){if(dead||lost||paused)return;try{transform(1/30);renderer.render(scene,camera);host.classList.add('jr-gpu-ready');}catch(error){contextLost({preventDefault(){}});}}
  function tick(now){if(dead||lost||paused||reduced)return;raf=requestAnimationFrame(tick);if(last&&now-last<31)return;
@@ -210,6 +226,7 @@ export function mountStage(host,kind,options={}){
   setPower(value){state.power=clamp(value);if(reduced)renderOnce();},
   setLit(value){state.lit=Math.max(0,value);if(reduced)renderOnce();},
   setTurn(value){state.turn=clamp(value,-10,10);if(reduced)renderOnce();},
+  contact(point){if(dead||lost||reduced||!presence)return;const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;const x=Number.isFinite(point?.clientX)?(point.clientX-rect.left)/rect.width*2-1:0,y=Number.isFinite(point?.clientY)?(point.clientY-rect.top)/rect.height*2-1:0;presence.contact(x,y,elapsed);},
   setShot(value){if(dead||!value)return;state.story=!!options.story;state.shot=value.name;shotAt=elapsed;renderOnce();},
   setCovered(value){if(dead)return;covered=!!value;visibility();}
  };

@@ -67,7 +67,7 @@
       '<div class="jr-text" aria-live="polite" aria-atomic="true"><h2 id="jr-title">'+cfg.title+'</h2><p id="jr-note">'+cfg.intro+'</p></div>'+
       '<div class="jr-intent" role="group" aria-label="這次想如何探索"><button type="button" data-intent="clarity" aria-pressed="true">看清現況</button><button type="button" data-intent="action" aria-pressed="false">找到下一步</button></div>'+
       (question?'<details class="jr-question"><summary>回看我的問題</summary><p>'+esc(question)+'</p></details>':'')+'</section>'+
-      '<div class="jr-stage">'+portrait+'</div><div class="jr-playfield">'+constellation+interaction+'</div>'+
+      '<div class="jr-stage">'+portrait+'<div class="jr-local-water" aria-hidden="true"></div></div><div class="jr-playfield"><span class="jr-touch-aura" aria-hidden="true"></span>'+constellation+interaction+'</div>'+
       '<section class="jr-dialogue">'+(mode==='cards'?'<div class="jr-reveal-controls" role="group" aria-label="揭牌方式"><button type="button" class="jr-auto-reveal" aria-pressed="false">自動依序翻牌</button><button type="button" class="jr-reveal-all">全部揭開</button></div>':'')+'<div class="jr-response" hidden><div><span class="jr-response-label">等待你的觸碰</span><span class="jr-response-value">0%</span></div><div class="jr-response-track" role="progressbar" aria-label="儀式互動進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></div><p class="jr-hint" role="status"></p><button type="button" class="jr-next">走進'+cfg.room+' <span aria-hidden="true">→</span></button>'+
       '<footer class="jr-footer"><ol aria-label="儀式進度"><li class="is-current">相遇</li><li>共鳴</li><li>啟程</li></ol><button type="button" class="jr-skip">跳過儀式 →</button></footer></section></div>';
     var resolve,finished=new Promise(function(r){resolve=r;});
@@ -84,6 +84,14 @@
       if(host){host.classList.remove('jr-gpu-ready','jr-actor-ready');host.setAttribute('data-renderer','fallback');host.querySelectorAll('canvas').forEach(function(canvas){canvas.remove();});}
     }
     function stageCall(method,value){if(!stage||typeof stage[method]!=='function')return;try{stage[method](value);}catch(error){fallbackStage(error);}}
+    function contact(event,element){
+      if(reduced||settled||phase!==1)return;
+      var area=dialog.querySelector('.jr-playfield'),rect=area.getBoundingClientRect(),target=(element||area).getBoundingClientRect();
+      var x=event&&Number.isFinite(event.clientX)?event.clientX:target.left+target.width/2;
+      var y=event&&Number.isFinite(event.clientY)?event.clientY:target.top+target.height/2;
+      if(rect.width&&rect.height){area.style.setProperty('--contact-x',Math.max(0,Math.min(100,(x-rect.left)/rect.width*100))+'%');area.style.setProperty('--contact-y',Math.max(0,Math.min(100,(y-rect.top)/rect.height*100))+'%');}
+      stageCall('contact',{clientX:x,clientY:y});
+    }
     function suspendHome(value){if(root.JYCinemaUI&&typeof root.JYCinemaUI.suspendHome==='function'){try{root.JYCinemaUI.suspendHome(value);}catch(error){warn('home',error);}}}
     function focus(el){if(!el||typeof el.focus!=='function')return;try{el.focus({preventScroll:true});}catch(error){try{el.focus();}catch(ignored){}}}
     function schedule(fn,ms){var id=root.setTimeout(function(){if(!settled)fn();},ms);timers.push(id);return id;}
@@ -187,6 +195,7 @@
         holding=true;holdAt=Date.now();travel=0;turn=0;
         gesture={x:event.clientX||0,y:event.clientY||0,startX:event.clientX||0,startY:event.clientY||0,id:event.pointerId};
         dialog.classList.add('is-holding');
+        contact(event,touch);
         showProgress(0,'已感應你的觸碰');
         try{touch.setPointerCapture(event.pointerId);}catch(e){}
         frame=root.requestAnimationFrame(holdTick);
@@ -204,6 +213,7 @@
         dialog.style.setProperty('--gesture-y',(kind==='oracle'?Math.max(-35,Math.min(35,y-gesture.startY)):0)+'px');
         dialog.style.setProperty('--gesture-tilt',(offset/7)+'deg');
         stageCall('setTurn',turn);
+        contact(event,touch);
         applyHoldProgress();
       };
       touch.onpointerup=touch.onpointercancel=touch.onlostpointercapture=function(event){
@@ -214,9 +224,10 @@
       touch.ondragstart=function(event){event.preventDefault();};
       touch.onclick=function(event){if(event.detail===0)awaken();};
     }
-    dialog.querySelectorAll('.jr-seal').forEach(function(btn,i){btn.onclick=function(){
+    dialog.querySelectorAll('.jr-seal').forEach(function(btn,i){btn.onclick=function(event){
       if(phase!==1||settled||btn.getAttribute('aria-pressed')==='true')return;
       if(kind==='bazi'&&i!==lit){hint.textContent='先點亮「'+cfg.seals[lit]+'」，再沿著時間往前。';return;}
+      contact(event,btn);
       btn.setAttribute('aria-pressed','true');btn.disabled=true;if(options.sealValues&&options.sealValues[i]){btn.querySelector('small').textContent=String(options.sealValues[i]);}lit++;dialog.style.setProperty('--lit',String(lit));hint.textContent='已點亮 '+lit+' / '+cfg.seals.length;bell();
       stageCall('setLit',lit);
       showProgress(lit/cfg.seals.length,'已點亮 '+lit+' / '+cfg.seals.length+' 個座標');
@@ -231,6 +242,7 @@
       var btn=dialog.querySelectorAll('.jr-reveal')[i];
       if(!btn||phase!==1||settled||!all&&(btn.hidden||btn.disabled)||btn.getAttribute('aria-pressed')==='true')return false;
       var c=cards[i],front=btn.querySelector('.jr-front');
+      if(!all)contact(null,btn);
       // Faces are inserted only after a deliberate manual/auto/all reveal action.
       if(c.image){var img=doc.createElement('img');img.src=c.image;img.alt=c.name;img.className=c.isUp?'':'is-reversed';front.appendChild(img);img.onerror=function(){img.remove();front.textContent=c.name;};}else front.textContent=c.name;
       btn.setAttribute('aria-pressed','true');btn.setAttribute('aria-label','第 '+(i+1)+' 張：'+c.name+(kind==='tarot'?(c.isUp?'，正位':'，逆位'):''));btn.disabled=true;btn.querySelector('.jr-card-label').textContent=c.name;lit++;
