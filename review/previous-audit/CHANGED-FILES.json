@@ -1,0 +1,216 @@
+{
+  "version": "20260912depth1",
+  "deployment": "not-deployed",
+  "files": [
+    {
+      "path": "CSS/reading-depth.css",
+      "action": "added",
+      "sha256": "638ea05e419fdaa3a64336f945115eb2b404e077506e5e27addc8d7ffec563a6",
+      "bytes": 11116
+    },
+    {
+      "path": "JS/bazi-prompt-root.js",
+      "action": "modified",
+      "sha256": "991cf96289e5aac50fb2e436d54f291dcbb60df021344ebaaf5297d4abcdd2e0",
+      "bytes": 18051
+    },
+    {
+      "path": "JS/bazi-standalone.js",
+      "action": "modified",
+      "sha256": "bbefbed77c80f28fa79be38334f55db50d977abdb9e8ed9c68d7d5fad0adeb62",
+      "bytes": 81573
+    },
+    {
+      "path": "JS/bazi-suite-core.js",
+      "action": "modified",
+      "sha256": "9498c6b0d1fd85d163524d643f34301a545a67b770bad8889d078d0921f811a0",
+      "bytes": 50934
+    },
+    {
+      "path": "JS/bazi-suite.js",
+      "action": "modified",
+      "sha256": "847842ff47e125e12f886fca66a281b60e28d6f310655ccb1491cc36c7edb5e7",
+      "bytes": 72072
+    },
+    {
+      "path": "JS/bazi_upgrade.js",
+      "action": "modified",
+      "sha256": "876be2adee9b7c3b3b5f86b50fff25b81a5eef1b5582d031cb989f7670b63b13",
+      "bytes": 46235
+    },
+    {
+      "path": "JS/cinematic-src/choreography.mjs",
+      "action": "modified",
+      "sha256": "67335ef944af715d881f1cce9f309b4e2ad94dfe91b2b8bab1d9ea64257b48ab",
+      "bytes": 3438
+    },
+    {
+      "path": "JS/cinematic-src/stage.mjs",
+      "action": "modified",
+      "sha256": "ab8fdb51eb174989ddb48a373179550b235dde6d4126448e79a7406038f461ad",
+      "bytes": 15526
+    },
+    {
+      "path": "JS/cinematic-stage.js",
+      "action": "modified",
+      "sha256": "4319a2fd1de69c20285e7c5209dfddfd840d2006b1e06aa1cbf1b49340c6877c",
+      "bytes": 554924
+    },
+    {
+      "path": "JS/cinematic-ui.js",
+      "action": "modified",
+      "sha256": "446d88f79f4d464c6d3bb486810fa0da7c48839cc0b3a38891940595c4943fd1",
+      "bytes": 14255
+    },
+    {
+      "path": "JS/lenormand.js",
+      "action": "modified",
+      "sha256": "038f67930eea9d64ffa1033100d6e96a9b88c5491ca3cbb8be260254dfcca355",
+      "bytes": 90962
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "action": "modified",
+      "sha256": "85ea73f7ed48b803426e0d36bed155984476a0eeee5edee983d97559d7dd0861",
+      "bytes": 63420
+    },
+    {
+      "path": "JS/meihua_output_layer.js",
+      "action": "modified",
+      "sha256": "6e0297d27529ce2c3a5f6dd7cff6e98383b1a947d6e049bcfb5bb7d676cdca42",
+      "bytes": 27468
+    },
+    {
+      "path": "JS/oracle.js",
+      "action": "modified",
+      "sha256": "27f671201f3d095b44b2dbbc097b35ea2692accb4c58249cee314af414224770",
+      "bytes": 295505
+    },
+    {
+      "path": "JS/prompt-export.js",
+      "action": "modified",
+      "sha256": "c9f0cbac35b541e7d5473dcbe37c8e1333dba31116513b84ff7f3ff0c2089db7",
+      "bytes": 91036
+    },
+    {
+      "path": "JS/reading-quality.js",
+      "action": "added",
+      "sha256": "935da32421affaec79d471e438ab11b04d03e250a59a842af3041b2006198146",
+      "bytes": 4540
+    },
+    {
+      "path": "JS/ritual-ateliers.js",
+      "action": "modified",
+      "sha256": "7a94b7dece380f56258d98f02a95c300c9cc2c2e333db2616b98840acae1a0b4",
+      "bytes": 26658
+    },
+    {
+      "path": "JS/sw.js",
+      "action": "modified",
+      "sha256": "58db0e24af029a875c32e176f01e2fc9bedd8f66b0b3f740caf76f0a83f7de1e",
+      "bytes": 4187
+    },
+    {
+      "path": "JS/tarot-foundation.js",
+      "action": "modified",
+      "sha256": "2713188d0b6535784dc5218b0998cf78d9e62736ec8aeadc55a229ba92f47052",
+      "bytes": 106103
+    },
+    {
+      "path": "JS/tarot.js",
+      "action": "modified",
+      "sha256": "c8273f1ccd668985fec0484b70bad40792c129fecdfaa574253d8b785be7e58b",
+      "bytes": 383146
+    },
+    {
+      "path": "JS/tarot_upgrade.js",
+      "action": "modified",
+      "sha256": "e2de52d8b18de408177449522e94e32407599cec223515a85785a9228ccb58d0",
+      "bytes": 396569
+    },
+    {
+      "path": "JS/ziwei-prompt-root.js",
+      "action": "modified",
+      "sha256": "52eae877ffacb0c0e86ead20a53057c6a08ad304b58df6630c462fb9ff054f98",
+      "bytes": 11584
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "action": "modified",
+      "sha256": "763d85550ca95baa69df6b6b7ae42dd7b35ba16b1a95a18c181cafe005986da4",
+      "bytes": 77841
+    },
+    {
+      "path": "JS/ziwei.js",
+      "action": "modified",
+      "sha256": "adb624795a1805363fe59c2f51128b1f40ce5d37a3fb8cf8763847441783b2d0",
+      "bytes": 239563
+    },
+    {
+      "path": "index.html",
+      "action": "modified",
+      "sha256": "4c44d4fb6976b10667c832c889cccdd277ce538f2dd1b82e30559c30c221503a",
+      "bytes": 143938
+    },
+    {
+      "path": "meihua-standalone.js",
+      "action": "modified",
+      "sha256": "85ea73f7ed48b803426e0d36bed155984476a0eeee5edee983d97559d7dd0861",
+      "bytes": 63420
+    },
+    {
+      "path": "package.json",
+      "action": "modified",
+      "sha256": "b5a402fd54a0c3770d8dba9c5ffa3da8dc9a0709071fe345d46a9ca20473416e",
+      "bytes": 1801
+    },
+    {
+      "path": "tests/cinematic-20260911.cjs",
+      "action": "modified",
+      "sha256": "295b47497a1f25dc716229252bafbf12b6bebafad2b47e7d411924d46c0ae0ac",
+      "bytes": 11789
+    },
+    {
+      "path": "tests/divination-audit-20260908.cjs",
+      "action": "modified",
+      "sha256": "006e1eb82ac9dd392e84d8b60ed5ca3a4f7f76564daf431582058965da701863",
+      "bytes": 18320
+    },
+    {
+      "path": "tests/flow-interaction-20260911.cjs",
+      "action": "modified",
+      "sha256": "c6598b7f4164e6842ff4627b45a7b7d4f625ce3cf5d96b8819e3ff62171983f4",
+      "bytes": 12476
+    },
+    {
+      "path": "tests/prompt-accuracy-20260811.test.cjs",
+      "action": "modified",
+      "sha256": "8cfc2b2bd737def3132e1ec850a104d2c6494e3a78f965b4487b9819c0ed826d",
+      "bytes": 7237
+    },
+    {
+      "path": "tests/reading-depth-20260912.cjs",
+      "action": "added",
+      "sha256": "14fd7a4f42863671f31da54a20ca31f362c691295849b807d85616904b6b39b8",
+      "bytes": 14290
+    },
+    {
+      "path": "tests/ritual-lifecycle-20260911.cjs",
+      "action": "modified",
+      "sha256": "052785c3605c88b2fd2ba7323e63e07f9448a4cc208e4451f625c47d9d34c565",
+      "bytes": 24769
+    },
+    {
+      "path": "tests/shuffle-recovery-20260911.cjs",
+      "action": "modified",
+      "sha256": "eeca362a0b11969028ee2bd38e87d2cdb28f0af24decc709b7bdb25aa8d6d0b6",
+      "bytes": 11568
+    }
+  ],
+  "verification": {
+    "npm_test": "passed",
+    "new_regression_groups": 12,
+    "patched_browser": "unverified-preview-routing-unavailable",
+    "physical_mobile": "not-tested"
+  }
+}

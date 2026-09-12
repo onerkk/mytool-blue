@@ -1,0 +1,138 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><title>靜月之光 · 實測、試讀與更新紀錄</title><style>*{box-sizing:border-box}html{scroll-behavior:auto}body{margin:0;background:#07121b;color:#cfdae1;font:16px/1.9 system-ui,-apple-system,"Noto Sans TC",sans-serif}main{max-width:1080px;margin:auto;padding:35px 24px 80px}header{padding:42px 0 32px;border-bottom:1px solid #b9c2b12d}header small{color:#d5bd8e;letter-spacing:3px;font-size:12px}h1{font:500 clamp(30px,6vw,54px)/1.45 "Noto Serif TC",serif;color:#f5e6c6;letter-spacing:1px;margin:17px 0}h2{font:500 26px/1.65 "Noto Serif TC",serif;color:#e5d0a6;margin-top:40px}p{max-width:82ch;margin:18px 0}a{color:#efd5a4;text-underline-offset:4px}strong{color:#f0dec0;font-weight:600}code{background:#05111a;padding:2px 5px;font-size:14px;overflow-wrap:anywhere}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:25px 0}.stats div{background:linear-gradient(130deg,#243944,#11222d);border:1px solid #adc1bd30;border-radius:16px;padding:18px;box-shadow:inset 0 1px #fff1,0 4px #010a11}.stats b{display:block;font:500 32px/1.3 Georgia,serif;color:#ebd3a6}.stats span{font-size:13px;color:#aac1d0}nav{display:flex;gap:9px;flex-wrap:wrap;margin:26px 0}nav button{font:500 14px/1.5 system-ui;font-family:inherit;min-height:46px;padding:10px 18px;background:#152c39;color:#dae0df;border:1px solid #a7beb13f;border-radius:10px;cursor:pointer}nav button[aria-selected=true]{background:linear-gradient(115deg,#f0dfb6,#c3a076);color:#16232c;box-shadow:inset 0 1px #fff9,0 3px #746146}nav button:focus-visible,summary:focus-visible{outline:2px solid #f5d6a1;outline-offset:4px}.notice{border-left:2px solid #caad7d;background:#122735;padding:15px 20px;border-radius:0 10px 10px 0;font-size:14px;color:#cad5db}section[hidden]{display:none}li{padding-left:4px;margin:12px 0}.reading{border:1px solid #a9bcbc30;border-radius:15px;margin:15px 0;background:linear-gradient(135deg,#182e38,#0c1a25);box-shadow:inset 0 1px #fff1,0 8px 20px #0003;overflow:hidden}.reading summary{cursor:pointer;list-style:none;padding:20px;display:flex;align-items:center;gap:16px;font-size:17px;color:#eedbbc}.reading summary::-webkit-details-marker{display:none}.reading summary:after{content:'＋';margin-left:auto;color:#bfcfce;font-size:20px}.reading[open] summary:after{content:'−'}.reading summary span{font:500 13px/1.6 Georgia,serif;color:#aabfce;letter-spacing:2px}.reading article{padding:5px 26px 26px;border-top:1px solid #a9bcbc20}.reading article p{line-height:2.05}.toolbar{display:flex;gap:10px;margin-bottom:25px}.toolbar button{background:#1c3340;color:#d6dfdf;font-family:inherit;border:1px solid #a9bcbc40;padding:9px 15px;border-radius:8px;cursor:pointer}table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;vertical-align:top;border-bottom:1px solid #a9bcbc22;padding:12px 8px;overflow-wrap:anywhere}td:first-child{font-family:ui-monospace,monospace}figure{margin:30px 0}figure img{width:min(100%,620px);height:auto;border-radius:16px;border:1px solid #a9bcbc30}figcaption{font-size:13px;color:#a7bac4}footer{border-top:1px solid #a9bcbc25;margin-top:45px;padding-top:20px;font-size:13px;color:#a7bac4}@media(max-width:540px){main{padding:18px 16px 50px}header{padding:25px 0}.stats{gap:6px}.stats div{padding:13px 9px}.stats b{font-size:25px}.stats span{font-size:12px}.reading summary{padding:17px 13px;font-size:16px}.reading article{padding:3px 17px 20px}h2{font-size:23px}body{font-size:16px}table{font-size:12px}}@media print{body{background:white;color:#222}main{max-width:none}nav,.toolbar{display:none}section[hidden]{display:block}.reading{break-inside:avoid;background:white}.reading article{display:block}a,strong,h1,h2,summary{color:#222!important}.stats{display:none}.notice{background:#eee}.reading summary:after{display:none}}</style></head><body><main><header><small>JINGYUE · READING & EXPERIENCE REVIEW</small><h1>讓每一份解讀，<br>經得起回頭檢查。</h1><p>真實操作紀錄、AI 試讀，以及已交付的程式修改。版本 20260912depth1。</p></header><div class="stats"><div><b>8</b><span>線上入口已操作</span></div><div><b>9</b><span>試讀與停止情境回覆</span></div><div><b>12 / 12</b><span>新增回歸測試通過</span></div></div><p class="notice">靈籤與開鑰本輪走到停止分支。新版程式尚未部署；修補後的瀏覽器畫面與實體手機操作仍待驗收。沒有以程式測試代替真機測試。</p><nav aria-label="報告內容"><button type="button" data-tab="audit" aria-selected="true">實測與修改</button><button type="button" data-tab="readings" aria-selected="false">閱讀 AI 試讀</button><button type="button" data-tab="files" aria-selected="false">檔案與證據</button></nav><section id="audit" data-panel><h1>靜月之光 · 全站試跑與判讀升級</h1>
+<p>版本：20260912depth1。此版本接續既有整合專案，保留原有牌庫、角色、場景與各套排盤引擎。網站程式已修改；尚未部署到 jingyue.uk。</p>
+<h2>實際做到哪裡</h2>
+<p>本次使用瀏覽器操作公開網站 jingyue.uk 的八個命理入口，包含填寫、選擇、儀式、返回、完成或停止，以及實際按下複製取得文字。另對塔羅做了第二次比較題測試。出生資料均為測試資料。</p>
+<ul>
+<li>塔羅快讀：完成十五張及 RWS 二選一五張；實際複製兩份提示詞。手動滑動與瀏覽鍵有回應，但可見牌面以滑鼠點擊沒有增加張數；鍵盤 Enter 與快速補滿可完成。原問題也發現 B 分支省略「兩週」。</li>
+<li>開鑰之法：完成代表牌與事前綁定，第一操作代表牌錯堆後停止。實際取得停止情境的舊提示詞；發現頁首沿用前題、完成文案與失效資料判讀互相矛盾。沒有完成有效五次操作的線上測試。</li>
+<li>雷諾曼：完成五張線、自動選陣、手動揭牌儀式、完整牌陣與提示詞複製。人物指示牌未指定身分，不能擅認為合作夥伴。</li>
+<li>八字：完成日期、時間、性別、地點、四柱儀式、排盤與提示詞複製。發現「得勢門檻未達」被寫成「天干助勢否」，容易被解讀成完全沒有生扶。</li>
+<li>紫微：完成出生資料、必填性別檢查、儀式、全盤與提示詞複製。核對空宮、對宮及三方四正資料，修正泛化人格文案與輔雜曜標籤。</li>
+<li>梅花：完成報數起卦、儀式、本互變與提示詞複製。確認同一卦不能冒充 A／B 各自抽到的結果。</li>
+<li>八字合盤：完成事業合夥情境、雙方資料、雙星儀式與提示詞複製。發現七殺未透卻稱透出的文字，以及乙方 2027 交運後的流年區段被漏掉。</li>
+<li>靈籤：完成引導、儀式與三次擲筊；三次未允杯後依原網站規則停止。沒有取得籤詩與解籤提示詞；沒有繞過停止限制來製造成功紀錄。</li>
+</ul>
+<p>總共保留八份實際匯出提示詞：塔羅兩份，加上開鑰、雷諾曼、八字、紫微、梅花、合盤各一份。另提供九份 AI 試讀，其中靈籤是「沒有取得籤詩」時的支持性回覆，不冒稱已解籤。</p>
+<h2>這次已修改的判讀與互動</h2>
+<ul>
+<li>以八套專屬規則約束判讀：核對原問題、程序有效性、資料與摘要矛盾；每個主要結論要連回具體依據、實質替代解釋及可觀察的行動。</li>
+<li>塔羅短點按由原始接觸牌卡提交，避免後續 click 被 3D 舞台重定向而漏選。拖曳、取消、多指與垂直捲動不觸發選牌；保留鍵盤操作。</li>
+<li>選牌時若目標牌位消失，先重建；仍失敗則釋放鎖並允許原題重試，不消耗該牌。</li>
+<li>開鑰停止分支獨立產生說明，不再拿失效牌面編占斷；同步當輪問題、停止標題與分享狀態。</li>
+<li>明示 A／B 的比較保留完整條件與期限。首次線上進入十五張的原因仍未完全定位，因此沒有宣稱自動選陣已無誤。</li>
+<li>合盤和單人八字匯出保留交運年分段。格局描述依實際透藏生成；「未透」不再被通用模板寫成「透出」。</li>
+<li>八字得勢門檻明示定義，旺衰與取格以候選呈現。紫微空宮不再被說成缺乏主見，混合輔星列表改稱輔雜曜。</li>
+<li>梅花明示一卦比較的能力範圍，月氣候選不當成已換算的農曆月界。雷諾曼保留各陣幾何與未指定角色的開放性。</li>
+<li>靈籤未允杯以本輪流程狀態解釋，移除誠心指責與未核實的古籍引句；既有三次停止規則不變。</li>
+</ul>
+<h2>介面與沉浸式變更</h2>
+<ul>
+<li>共用元件：墨綠與深藍底材、金屬邊緣、克制的立體陰影；主按鈕有按壓回饋，次要返回與修改操作有明確層級。欄位、焦點、步驟導覽與小字可讀性一併調整。</li>
+<li>逐步揭牌：傳入的所有牌都可以依序揭開，每組最多三張；由使用者按「下一組」前進，也可直接展開完整牌陣。未揭開前不插入該牌名稱與正面圖。</li>
+<li>真正的 3D 器物：四柱逐根升起、雙星交繞、星軌旋轉、梅花幾何舒展、籤枝輕晃，加入底座、光環與材質反光。動作只影響呈現，不改寫抽牌或命盤。</li>
+<li>動作進度：過場配合指尖、點亮進度與已揭張數；進場及完成後等待使用者確認，不以倒數時間替代決定。</li>
+<li>版面順序：小螢幕沿說明、互動、下一步閱讀；寬螢幕把說明與操作置於左側，場景在右側。保留先前返回、原頁重試及停止強制捲動的處理。</li>
+<li>結果頁：提示詞接續分成複製、貼到 AI 送出、核對與行動三步；加入不自動儲存的行動筆記，可複製帶走。蝦皮入口保留在品牌導覽及閱讀後的自願延伸，不用購買代替答案。</li>
+</ul>
+<p>技術上，器物是 Three.js 幾何與材質；人物沿用原創多姿態圖集、切換與衣料動態，不是新製完整骨架角色，也不是生成影片。這一點不能用「全 3D 動畫人物」混稱。低動態偏好、WebGL 不可用與渲染器出錯均有保留操作的退路。</p>
+<h2>驗證與仍待驗收</h2>
+<p>最後一輪 <code>npm test</code> 已完整通過，新增的 <code>test:depth</code> 為 12／12 組。既有測試涵蓋牌陣讀法、56 個路由問句、牌面與正逆位一致、雷諾曼幾何、60 首籤詩材料、跨時區日期、分享卡生命週期，以及洗牌與特效故障恢復。<code>build:cinematic</code> 已重新編譯，部署包包含編譯後腳本。</p>
+<p>這些程式測試使用受控 DOM、假時鐘和渲染器故障注入，不是實體手機瀏覽器測試。測試日誌中的 WebGL／網路錯誤字樣部分是刻意注入，用來檢查失敗時仍能操作；以最後測試結果與退出狀態判定。</p>
+<p>公開網站的瀏覽器操作是實際進行的；修改後本地預覽服務雖成功啟動，但本次瀏覽器到預覽環境的連線未成功，因此不能宣稱已在瀏覽器看過修補後所有版面、觸控、WebGL 畫面或手機流暢度。這個限制沒有以程式測試冒充補過。</p>
+<p>仍需在部署前的測試環境核對：手機點選與左右拖曳、長牌陣、旋轉螢幕、鍵盤開關、返回重試、低效能裝置、分享預覽；開鑰有效五次完成及靈籤取得籤詩的真人操作終點，本次也未完成。首次 A／B 題進入十五張的線上原因仍需重現。</p>
+<p>因此，這版是有實測依據、有修補與程式回歸的交付版本；沒有「零 BUG」「預測已驗證準確」「所有手機完美」或「已超越參考站」的保證。</p>
+<h2>檔案怎麼使用</h2>
+<p>完整整合包中的 <code>mytool-blue-master/</code> 是網站專案，包含本次更新與既有素材，不含 <code>node_modules</code>。沿用原本部署方式；前端不需要額外付費 AI 服務才能產生提示詞。原有 Worker／API 等部署設定仍由你的現有環境提供。</p>
+<p>只想覆蓋異動檔案，可使用另外附上的更新包；它適用於目前整合版，不能當成完整網站。<code>CHANGED-FILES.json</code> 列出這一輪修改與 SHA-256；兩種包中的網站檔案內容一致。</p>
+<p>檢查內容請先開 <code>REVIEW.html</code> 或 <code>AI-READINGS.md</code>。<code>live-prompts/</code> 保存未改寫的實際線上匯出；<code>evidence/</code> 保存測試日誌與一張現行網站儀式截圖。截圖不是修補後介面的驗收證明。</p>
+<h2>技法參考的使用範圍</h2>
+<p>開鑰程序停止與各次操作權限參照公開文本 <a href="https://sacred-texts.com/oto/lib78.htm" target="_blank" rel="noopener noreferrer">Liber LXXVIII ↗</a>；凱爾特十字的歷史讀法參照 <a href="https://sacred-texts.com/tarot/pkt/pkt0307.htm" target="_blank" rel="noopener noreferrer">Waite 的說明 ↗</a>。它們支持方法結構，不證明預測有效。</p>
+<p>真太陽時與平太陽時的概念參照 <a href="https://www.hko.gov.hk/tc/gts/time/basicterms-apparentsolartime.htm" target="_blank" rel="noopener noreferrer">香港天文台說明 ↗</a>。天文時間換算的正確性與命理解讀是否能預測人生，是不同的驗證問題。</p></section><section id="readings" data-panel hidden><h2>同一份實際資料，可以回答到哪裡？</h2><p>點開每例可查看資料、試讀與發現的問題。本文由本對話 AI 撰寫；沒有另呼叫外部服務，也不冒稱是新版本網站自動生成的答案。</p><div class="toolbar"><button type="button" data-expand="yes">展開全部試讀</button><button type="button" data-expand="no">收起全部</button></div><details class="reading" id="reading-1"><summary><span>01</span>塔羅：同一問題的兩條行動路徑</summary><article><p>原問題：A 先與主管討論分工，還是 B 先整理兩週紀錄再談，哪個更適合改善溝通？</p>
+<p>實際完成的五牌：共同背景「皇帝逆」；A 狀態「寶劍二逆」、A 條件性走向「聖杯皇后正」；B 狀態「聖杯六正」、B 條件性走向「皇后逆」。讀法為 RWS 正逆位。來源：08-tarot-rws-live.txt。</p>
+<p><strong>試讀</strong></p>
+<p>如果主管目前願意聽取具體資訊，我會偏向 A：先進行一次範圍清楚的分工對話。重點是建立共同決策規則，而不是先花兩週證明自己承擔很多。若對方有否認紀錄或事後改口的實際情況，則先保留書面資料更有必要；牌面本身不能判定主管屬於哪一種。</p>
+<p>共同背景的皇帝逆，讓這題首先指向權責與秩序失衡：可能是誰都能交辦，卻沒有人決定優先順序；也可能是規則太僵，缺少協商空間。這不是對主管人格的診斷。要區分兩者，可以觀察：當你提出工作衝突時，對方能不能明確決定哪一件延期、由誰承接。</p>
+<p>A 路由寶劍二逆走向聖杯皇后正。前者提示僵持需要被打開，但匆忙開口也可能把累積的不滿一次倒出來；後者支持用能理解彼此處境的方式協商。這一路的代價是你要承受對話當下的不自在，優點則是較早知道對方能否參與解決。聖杯皇后不是「只要溫柔就會成功」，而是提醒：把感受說清楚，也要把可承擔的範圍說清楚。</p>
+<p>B 路的聖杯六讓回顧既往合作、整理具體事件有幫助；但走向皇后逆，提示投入與回報可能失衡。若紀錄變成你額外承擔的另一份工作，或者等兩週期間仍持續接下所有交辦，材料雖變多，界線卻沒有建立。另一種合理讀法是：你需要先恢復自己的餘裕，才有能力溝通。是否已經累到無法組織訊息，比「記錄一定要滿兩週」更值得考慮。</p>
+<p>可以先用現有的一個例子約十五分鐘討論：「我想把交付做好。目前 X 和 Y 的時程撞在一起，照現有時間只能先完成一項。你希望先保哪一項？另一項能否調整期限或分給誰？」若會談中出現具體的優先順序與負責人，A 有繼續的條件；若只得到「都要完成」，再把工時與交辦紀錄整理成書面追問。</p>
+<p>這個短會加持續紀錄的做法，是根據牌面提醒提出的現實建議，不是第三條另抽出的路徑。十五分鐘與兩週都是操作安排或原問題條件，不是牌面預言。</p>
+<p>如果你喜歡用飾品提醒自己，可以把既有飾品當成「接新任務前先問優先順序」的記號。也可自願看看專案清單中的堇青石／10mm／手圍16cm；清單不代表即時現貨，是否合適以賣場資訊和自己的喜好為準。<a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">靜月蝦皮選物 ↗</a></p>
+<p><strong>提示詞檢查</strong>：線上分支標籤漏掉 B 的「兩週」，但原問句仍完整。我在試讀中保留原條件；新版已修正明示 A／B 的文字綁定，並加入回歸案例。</p></article></details><details class="reading" id="reading-2"><summary><span>02</span>塔羅：十五張不等於更適合比較</summary><article><p>原問題同為先與主管討論、或先整理兩週紀錄再談。第一次線上操作進入金色黎明衍生十五張，並非預期的雙路比較。來源：01-tarot-live.txt。</p>
+<p>實際五組依序：2–1–3「惡魔、聖杯四、金幣十」；4–8–12「金幣王牌、星星、權杖王牌」；13–9–5「月亮、寶劍五、金幣九」；6–10–14「寶劍國王、女祭司、聖杯三」；7–11–15「寶劍二、聖杯騎士、權杖騎士」。本例依已匯出的 Book T 對應與相鄰元素尊貴，不加入 RWS 逆位字典。</p>
+<p><strong>試讀</strong></p>
+<p>這副牌能討論目前分工僵局和改變時的代價，卻不能直接裁定你的 A 或 B 哪條較好，因為十五張的自然路徑與替代路徑沒有事前綁定這兩個選項。不能抽完以後才把想比較的方案貼上去。</p>
+<p>核心組中，聖杯四的既有滿足與停滯，受到兩側土元素的惡魔、金幣十支持。較有辨識力的讀法是：目前安排可能仍有實際回報，因此即使不舒服，也不容易主動鬆動。這不是斷言工作有毒；另一種可能只是穩定制度已經跟不上新增工作量。差別在於：規則一旦攤開，是否存在能協商的空間。</p>
+<p>自然路徑的金幣王牌—星星—權杖王牌，呈現物質投入、期待與啟動力。但土與風相剋、風與火相助，使「希望與衝勁增加」和「資源真的到位」不能畫上等號。放著不處理，不一定全然停滯，也可能繼續接到新任務；問題是新增動力能否落到工時、人力與授權。</p>
+<p>替代路徑的月亮—寶劍五—金幣九，提示不滿推動改變時，要注意把協商變成輸贏。金幣九雖有成果與自主資源的意涵，卻受相鄰風土衝突牽制；爭取個人空間可能伴隨合作成本。這不構成主管欺騙、你必敗或一定能加薪的證據。</p>
+<p>決策組的寶劍國王—女祭司—聖杯三，將精確表達、對變化的觀察與合作放在一起。依本次 Book T 對應，寶劍國王是風之火的宮廷角色；不是套用另一套宮廷階級後再重複解一次。這組可落實成：有資料、有彈性，並讓會談保留合作關係，而不是只留下批判。</p>
+<p>外部組的寶劍二—聖杯騎士—權杖騎士，則把協議、細微的人際動機和推進速度放在同一組。水火的牽制提醒，口頭和平不一定等於節奏一致。請確認誰負責、何時交付、遇到新增需求由誰決定取捨，不把職場的模糊承諾當作已完成協調。</p>
+<p>能採取的一步，是先列一項最常發生的工作衝突，邀主管一起決定取捨；是否需要先留兩週紀錄，要依現實證據與溝通環境決定。這份十五張資料本身不足以把 A／B 排名。我會在這裡保留限制，而不靠更多牌名營造確定感。</p>
+<p>若想把「先確認資源，再承諾交付」留成日常提醒，可以使用既有飾品；也可依喜好看看紫水晶月光石設計款／8.5mm／手圍15cm，現貨與規格以賣場為準。<a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">靜月蝦皮選物 ↗</a></p>
+<p><strong>提示詞檢查</strong>：更多牌沒有自動帶來更好的題目適配。首次進入十五張的線上原因尚未完全重現；第二次同類題目正確進入二選一。新版保留「牌陣能回答到哪裡」的檢查，不將這個觀察報成已完全定位的單一原因。</p></article></details><details class="reading" id="reading-3"><summary><span>03</span>雷諾曼：訊息變少，先釐清合作條件</summary><article><p>問題：最近與合作夥伴訊息往來變少，可以怎樣釐清合作是否繼續，以及溝通卡住的原因？</p>
+<p>五張線：花束 9 → 船 3 → 太陽 31 → 魚 34 → 紳士 28。未指定本人牌、性別或紳士身分。來源：02-lenormand-live.txt。</p>
+<p><strong>試讀</strong></p>
+<p>這組牌較支持把聯繫拉回一個清楚、可回覆的合作事項；目前不足以認定對方想終止合作，也不能把訊息變少解釋成對方只是在忙。最有用的下一步，是確認這件合作對雙方還有沒有具體目標、資源與負責人。</p>
+<p>花束到船，可以讀成禮貌邀請朝外發出，伴隨距離、移動或拓展；禮貌仍可能存在，但禮貌不是承諾。船—太陽—魚這段把移動或拓展、清楚可見的成果、資源流動連在一起，因此核心未必是感情冷熱，更可能是合作目標與投入方式尚未對齊。太陽居中心使「把事情說清楚」成為主軸，但不能單憑太陽保證談成。</p>
+<p>太陽—魚—紳士把落點放在成果、資源與一個待確認的男性角色之間。如果紳士是合作夥伴，可以問他能承諾哪些資源；如果紳士是你或另一位決策者，則要確認由誰負責推進。這兩種角色分配會改變責任落點，因此不能偷偷認定牌中的男性就是對方。</p>
+<p>鏡像花束↔紳士可補充邀請與人物之間的回應，船↔魚則補充拓展與資源配置；它們是鏡像對照，不是兩組相鄰句，更不是另外抽出的證據。即使手機把五張排成兩行，仍然按同一條 1→5 線讀。</p>
+<p>可以發一則訊息：「我想確認 X 合作是否繼續。若繼續，我建議先做 Y，預計需要你確認 Z。你這週方便選一個時間討論嗎？如果時程不適合，也請告訴我可調整的範圍。」本週是你安排的回覆窗口，不是船牌的應期。</p>
+<p>有回覆且能談具體投入，可繼續小步合作；若只剩禮貌回應，沒有範圍、負責人或日期，就先不要追加投入。牌面提出的是可檢驗的合作假設，真正能判斷合作是否繼續的，是雙方是否形成明確約定。</p>
+<p>你也可以把常戴的小物當成「先問清楚，再投入」的提醒；喜歡水晶飾品再依外觀與預算選擇即可。<a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">靜月蝦皮選物 ↗</a></p>
+<p><strong>提示詞檢查</strong>：原有幾何資料良好。新版特別加強未指定人物歸屬，以及手機換行不改變牌序的規則。</p></article></details><details class="reading" id="reading-4"><summary><span>04</span>八字：承擔責任與建立界線</summary><article><p>測試盤：男，1990-01-15 12:00，台北；真太陽時 11:56:57；己巳、丁丑、庚辰、壬午。現行大運癸酉。問題是工作優勢、容易過度承擔的盲點與分工界線。來源：03-bazi-live.txt。</p>
+<p><strong>試讀</strong></p>
+<p>我會先把重點放在「將負責轉成可以協調的規則」。這盤可以支持重視標準、吸收整理與輸出方法的觀察，但不能因此認定你天生必須替所有人收尾。接太多工作也可能來自團隊人力不足或分工制度，而非你的個人模式。</p>
+<p>先校對一處容易誤導的摘要：年干己是正印，盤中也列出巳藏庚與丑藏辛；因此不能把「天干助勢：否」理解為完全沒有印比生扶。原程式其實把至少兩個其他天干為印比才算達門檻，舊文字卻沒有交代這個定義。旺衰標籤「太弱」也不是工作能力評分；土多是否有效生金，仍牽涉丑月寒濕、火的溫暖作用與根氣，不能只看五行比例。</p>
+<p>就原問題來說，月干丁正官、年干己正印與時干壬食神提供一個有用的觀察架構：重視要求與秩序，能把事情學會、整理好，再用自己的方法交付。優勢是你可能很擅長接住混亂、形成標準；盲點是把「我理解這件事」誤當成「因此一定由我負責」。丁官的要求、印的吸收與壬的輸出如果沒有邊界，流程就會一直在你身上加長。</p>
+<p>官印之間有相生的候選作用，但不能只以這個名稱宣布格局成立；時上食神也要與原局整體協調。丑午害、丑辰破可以作為檢查規則與交付節奏摩擦的輔助，不能直接推成同事暗害你。</p>
+<p>目前癸酉運提供表達與同儕比較的觀察角度：癸對庚為傷官，酉有金根的背景。與其把它說成必有職場衝突，更可觀察你是否開始想說清不合理之處，以及能否用清楚輸出取代累積抱怨。2026 丙午的火勢再入原局，傳統框架下可能強化要求與壓力議題，也有寒局需暖的另一面，所以我不採「全年凶」作結論。</p>
+<p>下一次收到新交辦時，先回答：「我可以承接，但目前 X 在週三、Y 在週五交付。這項若今天開始，哪一項優先順序要調整？」將工作分成你負責決定、你只提供資訊、需要別人簽核三類。先試一週，觀察未經協調直接落到你身上的任務有沒有減少。</p>
+<p>如果提出界線後仍無人願意決定取捨，該修正的是團隊制度，不能繼續用「我的命格就是扛責任」解釋。若同事願意接手而你仍不放心，才更值得練習把完成標準寫出來、接受別人的方法。這是會改變行動的兩種解釋。</p>
+<p>日常提醒不必靠購物；用現有飾品提醒自己「先協商，後承諾」就足夠。喜歡配件再自願瀏覽。<a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">靜月蝦皮選物 ↗</a></p>
+<p><strong>提示詞檢查</strong>：新版已交代得勢門檻不是零生扶，並把旺衰與取格顯示為模型候選。沒有宣稱重新證明命理模型本身的預測準確率。</p></article></details><details class="reading" id="reading-5"><summary><span>05</span>紫微：把分析能力轉成合作語言</summary><article><p>測試盤：男，1990-01-15 午時；本站以時辰排盤，這一套未作出生地真太陽時校正。命宮未空宮，身宮同命；對宮遷移太陽、太陰；官祿天同，財帛天機、巨門，交友武曲、天府。問題是改善合作與表達。來源：04-ziwei-live.txt。</p>
+<p><strong>試讀</strong></p>
+<p>這張盤對原問題較有用的方向，是練習把敏銳的分析整理成別人容易接手的決策。你不必在和氣與說清楚之間二選一；可以先讓對方明白目的，再將差異壓縮成可以共同處理的一件事。</p>
+<p>命宮無十四主星，並不代表沒有主見。此盤須參照對宮遷移的太陽不得地、太陰廟，並合看本宮擎羊與三方。可以觀察的是：在需要公開推進與需要仔細理解的場合，你採取的方式是否不同；不能把對宮星直接說成命宮原有，也不能因空宮就貼上人格缺陷。</p>
+<p>命、官祿、財帛的三合，把官祿亥的天同廟、右弼，與財帛卯的天機旺、巨門廟連起來。一邊重協作與可持續的工作感受，一邊重推演、調整與說明。優勢是能找出流程問題，也願意維持關係；可能的失衡，是為了避免摩擦而暫時不說，之後又一次提出太多細節，讓別人只感受到反駁。</p>
+<p>交友宮武曲化祿、天府廟，可將合作資源、執行與秩序列為觀察點。它比較支持尋找能談具體交付的夥伴，不代表同事一定會幫你，更不是把「財星」直接解成你會從人脈賺錢。</p>
+<p>四化也要分層：生年文曲化忌在田宅，不能搬到官祿說工作表達注定失敗。若談共享工作空間、文件保存或內部規範，可以作為輔助；若現實上沒有相關情況，就降低這條的份量。當前 35–44 大限走子女宮，右弼化科入官祿、天機化忌入財帛；2026 流年則是天同化祿入官祿、天機化權入財帛。可以把它們讀成「合作支持與決策責任同時值得注意」，而非用化祿抵銷化忌算分數。</p>
+<p>下次會議可以練三句話：「我們共同想保住的是 X。現在只需要決定 Y，因為它會影響 Z。我建議先試 A，你最擔心哪個條件？」講完先等對方回應，再補分析。會後只留決定、負責人與檢查日，避免把所有推演都寫成待辦。</p>
+<p>如果對方能重述決定、願意接下一個任務，表示表達方式有幫助；如果你已經講得簡短，團隊仍反覆改標準，問題可能是決策機制不清，而不只是你的說話方式。兩種情況需要不同的修正。</p>
+<p>若想用日常配件提醒自己「先說共同目標，再說差異」，可以先用手邊的小物；喜歡水晶飾品再自由挑選。<a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">靜月蝦皮選物 ↗</a></p>
+<p><strong>提示詞檢查</strong>：新版加強空宮與四化層級規則，並將含官府、小耗等星的混合列表改稱「輔雜曜」，避免一律標成吉曜；移除空宮就主見弱、星組直接決定職業的文字。</p></article></details><details class="reading" id="reading-6"><summary><span>06</span>梅花：先讓變動有一個可控制的範圍</summary><article><p>問題：團隊專案規格一直變動，要先確認需求再開始，還是先做小型樣品溝通？報數 8、25，加本次時辰數 9；本卦地天泰，互卦雷澤歸妹，上爻動，變山天大畜。原體乾金旺；用坤土休，變後用艮土休。來源：05-meihua-live.txt。</p>
+<p><strong>試讀</strong></p>
+<p>我會建議先確認一個最小、不可再省的需求邊界，再做有明確停止點的小樣。並不是先把所有需求談到完美，也不是在完全沒有共識時直接開工。這是把同一卦的條件落成工作方法，不能聲稱卦象已經分別測過 A 與 B。</p>
+<p>地天泰的原體乾金、用坤土形成用生體，但坤土在本次時令標為休，所以「有助力」不能擴寫成支援已充足。團隊可能願意合作，卻未必已提供足夠清楚的需求、時間或授權。能不能開始，仍要看這些資源是否真的到位。</p>
+<p>互卦雷澤歸妹要拆開讀：互上震木受原體金所剋，表示變動需要花力氣管理；互下兌金與原體比和，則可把溝通、共同語言列為能運用的條件。這並不是說應該壓制同事，而是讓每次變動都能說清楚它要解決哪個問題、會增加什麼成本。</p>
+<p>上爻動而變大畜，讓「到了收束處卻繼續擴張」值得注意。原體仍然乾金，不能為了讀成更吉而換體；變後用艮土仍生體，也仍在休，較適合討論節制、保存成果與建立邊界，不能直接保證最終成功。動爻與變卦來自同一次變動，也不算兩份獨立佐證。</p>
+<p>可以先約定：這個小樣只驗證一件事；由誰判定可用；做多少就停。然後用一頁需求或一個低成本樣品來對話。如果團隊能針對小樣選擇、拒絕或補一個明確條件，樣品就有價值；若每次看到樣品都新增互相矛盾的目標，先停下擴張，重新確認誰有決策權。</p>
+<p>另一種可能是對方真的需要看到東西才懂自己想要什麼。在這種情況，過度要求一次寫清所有需求反而拖慢；但小樣仍要有成本上限。可以選下一次例會作檢查點，那是實務安排，不是上爻等於六天，也不是「土月」自動等於某個最近月份。</p>
+<p>用現有飾品或筆記當成「每次變動先問目的與代價」的提醒即可。喜歡配件再依預算自由瀏覽。<a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">靜月蝦皮選物 ↗</a></p>
+<p><strong>提示詞檢查</strong>：新版直接修正比較題說明，明示只有一卦；卦氣候選不再把傳統月氣直接寫成已確定的農曆月份邊界。</p></article></details><details class="reading" id="reading-7"><summary><span>07</span>八字合盤：合作的關鍵是決策與交付分清楚</summary><article><p>事業合夥。測試甲：男，1990-01-15 12:00，台南；己巳、丁丑、庚辰、壬午。測試乙：女，1991-06-20 12:00，台南；辛未、甲午、辛酉、甲午。問題是小型設計專案的決策、溝通與權責，不需要婚戀分析。來源：06-compat-live.txt。</p>
+<p><strong>試讀</strong></p>
+<p>我不會用「合不合」決定你們是否合作。這兩盤比較值得測試的，是能否把品質標準、可投入資源與最後拍板權分開談清楚。若你們都想把作品做好，卻沒有約定誰決定取捨，重視品質反而可能變成彼此拉扯。</p>
+<p>甲盤庚日，丁官、己印與壬食神明列，可觀察要求、方法整理與輸出之間的配合。甲可能適合先把模糊要求整理成可交付的範圍，但要留意把整理工作全攬在自己身上。這只是試行分工的假設，仍須和甲實際的專業能力、意願對照。</p>
+<p>乙盤辛日坐酉，年干又辛，月時兩甲為正財；午月有火勢與丁殺藏支的背景。可以觀察乙是否較在意資源如何變成具體成果、標準如何落實。但原提示詞的「七殺透出」與 touChu:null 不一致；原局天干沒有丁，不能據此說乙是殺透而強勢的人。也不能看到沒有明列水，就命令她補水或買某種水晶。</p>
+<p>雙向十神不相同：甲看乙的辛為劫財、甲為偏財；乙看甲的丁為七殺、壬為傷官。放進合作語境，可以拿來討論同儕自主、資源判斷、規範與表達的相對感受，不能把其中一個人固定成「就是來剋我」。如果甲的品質要求被乙聽成限制，而乙的成本考量被甲聽成催促，兩人就需要先確認自己在討論的是品質、時程還是預算。</p>
+<p>跨盤有辰酉合、己甲合，也有丑未沖、丑午害等資料。合表示可以討論接合條件，不等於天生默契；沖害也不是一定爭吵。巳酉丑或巳午未由兩盤湊齊，更不能當成任何一方原局已合化。支持六項、張力五項只是列項，不能相減得到合作分數。</p>
+<p>建議先做一個低成本共同交付：一人整理需求與驗收條件，另一人核對成本與製作限制；設計方向由具相關能力的人提案，只有一位事前約定的負責人做最後取捨。分工可以輪換，不以性別或命盤強弱固定上下位。你們可以直接問：「當品質、成本、日期不能同時保住時，這個案子先保哪一個？誰有權決定？」</p>
+<p>若第一次小交付就能明確說出為何改、誰做、何時完成，合作可逐步擴大；若意見始終不收斂，先調整決策規則。現實交付紀錄比合沖數量更能檢查這個建議有沒有用。</p>
+<p>歲運方面，甲現行癸酉，乙丁酉至 2027-04-09 11:59:34 後交戊戌。原匯出遺漏乙 2027 交運後的年度片段，不能把前段結論套到全年；即使資料補齊，也不能由交運日推定你們當天必改變合作。可以把長期計畫的複核與分工調整放在現實里程碑上。</p>
+<p>如果想留一個共同工作的提醒，可以各用既有小物，提醒自己先說判準再說喜好。喜歡水晶配件再自由挑選，購買不會決定合作成敗。<a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">靜月蝦皮選物 ↗</a></p>
+<p><strong>提示詞檢查</strong>：新版修正未透卻稱透出的格局文字，保留交運年前後兩段，並把婚戀通用句改為本次角色、權責與協作。</p></article></details><details class="reading" id="reading-8"><summary><span>08</span>開鑰之法：程序停止時，不能假裝有完整占斷</summary><article><p>問題：推進個人創作計畫時總是開始很多、完成很少，希望探索卡住的模式、資源與下一步，不預設是不夠努力。</p>
+<p>本次預綁第一堆為火；代表牌為權杖侍者，實際落在風堆，因此第一操作驗題未通過並停止。未進行有效完整五次操作。來源：07-ootk-live.txt。</p>
+<p><strong>試讀</strong></p>
+<p>這一輪不能提供完整的開鑰占斷。第一操作的代表牌沒有落在事前指定的問題堆，依本次網站採用的驗題政策，程序在這裡停止。這不是說你的問題不值得問，也不是你不夠努力、不誠心或創作注定做不完。</p>
+<p>雖然舊提示詞附有第一操作的牌與計數路徑，我不會用那些未通過驗題的資料解釋你為何卡住，也不會補出第二至第五次操作。若把失敗路徑當成象徵故事，文句可以寫得很豐富，程序上的限制卻被掩蓋了。</p>
+<p>以下只依你描述的問題提供實務建議，並非本輪占斷：先回想最近一件沒完成的作品，卡點是在選題、做出第一版、決定何時停止修改，還是把作品交出去？這四種卡點需要的幫助不同，不能全說成缺少毅力。</p>
+<p>可以選一件已經做了一部分的作品，只訂一個「可以交出的最小版本」：包含哪三個必要部分、不包含什麼、準備給誰看。下一次工作時間只做那個版本需要的一步，先不新增另一個企畫。如果仍做不下去，記下真正停住的位置，再決定需要的是縮小範圍、補技能，還是找到願意給具體回饋的人。</p>
+<p>你不需要為了取得符合期待的牌而反覆重抽；保留這個問題，先用一個可完成的小交付了解自己卡在哪裡，就已經有用。</p>
+<p><strong>提示詞檢查</strong>：新版停止分支不再要求解讀失效牌面；結果頁同步本輪問題，標示程序停止，隱藏可能分享舊牌陣的按鈕。本次沒有取得有效五次完成的線上案例，不能宣稱該成功終點已實測。</p></article></details><details class="reading" id="reading-9"><summary><span>09</span>靈籤：沒有取得籤詩，就不解籤</summary><article><p>問題：學習新技能容易半途而廢，想用一個月建立穩定練習，如何調整期待與行動？</p>
+<p>本輪連續三次未獲允杯，網站依既有流程停止，沒有取得籤號、籤詩或解籤提示詞。這一例是停止情境的回覆示範，不是實際取得籤詩後的解讀。</p>
+<p><strong>試讀</strong></p>
+<p>本次沒有完成求籤，所以我不會替你補一首籤，也不能從筊象判斷你的誠意、品格或學習前景。「這輪沒有取得籤」是流程狀態，不是對你的評價。</p>
+<p>只依你提出的困擾，可以先把一個月的目標從「練出明顯成果」調整成「找到能持續出現的練習方式」。選一個固定情境，例如晚餐後；安排一個忙碌日也能做的小練習。要記錄的是你有沒有開始、在哪個環節容易停下，不是每天給自己打能力分數。</p>
+<p>每週看一次紀錄：如果常常沒有開始，就調整時間或把第一步縮小；如果都有開始卻一直做同一種簡單內容，就加上一個能看出差異的小挑戰；如果總在不確定做得對不對時停止，找一份清楚範例或具體回饋，比責怪自己更有幫助。</p>
+<p>這裡的一週、一個月來自實務安排與你的原目標，沒有被包裝成神諭應期。你可以先試一週，再依真正發生的情況調整。</p>
+<p><strong>提示詞檢查</strong>：新版移除隨機筊象對誠心的指責與未核實古籍引句，說清本站三次停止規則。60 首籤詩的原文、編號與匯出資料另有程式測試；那不等同本次真人操作已走完抽籤成功分支。</p>
+<hr>
+<p>這組試讀顯示，提示詞真正需要提升的是資料與解讀之間的約束：方法不足時承認不足、同一訊號不反覆算證據、不同角色與時段不混在一起，再將可支持的部分落成可驗證的行動。單純增加術語、篇幅或肯定語氣，不會讓分析更準確。</p></article></details></section><section id="files" data-panel hidden><h2>修改檔案</h2><p>共 34 個新增或修改檔案。完整整合包和更新包採用相同內容；原始線上提示詞保存在 live-prompts，程式測試結果保存在 evidence。</p><table><thead><tr><th>路徑</th><th>狀態</th></tr></thead><tbody><tr><td>CSS/reading-depth.css</td><td>新增</td></tr><tr><td>JS/bazi-prompt-root.js</td><td>修改</td></tr><tr><td>JS/bazi-standalone.js</td><td>修改</td></tr><tr><td>JS/bazi-suite-core.js</td><td>修改</td></tr><tr><td>JS/bazi-suite.js</td><td>修改</td></tr><tr><td>JS/bazi_upgrade.js</td><td>修改</td></tr><tr><td>JS/cinematic-src/choreography.mjs</td><td>修改</td></tr><tr><td>JS/cinematic-src/stage.mjs</td><td>修改</td></tr><tr><td>JS/cinematic-stage.js</td><td>修改</td></tr><tr><td>JS/cinematic-ui.js</td><td>修改</td></tr><tr><td>JS/lenormand.js</td><td>修改</td></tr><tr><td>JS/meihua-standalone.js</td><td>修改</td></tr><tr><td>JS/meihua_output_layer.js</td><td>修改</td></tr><tr><td>JS/oracle.js</td><td>修改</td></tr><tr><td>JS/prompt-export.js</td><td>修改</td></tr><tr><td>JS/reading-quality.js</td><td>新增</td></tr><tr><td>JS/ritual-ateliers.js</td><td>修改</td></tr><tr><td>JS/sw.js</td><td>修改</td></tr><tr><td>JS/tarot-foundation.js</td><td>修改</td></tr><tr><td>JS/tarot.js</td><td>修改</td></tr><tr><td>JS/tarot_upgrade.js</td><td>修改</td></tr><tr><td>JS/ziwei-prompt-root.js</td><td>修改</td></tr><tr><td>JS/ziwei-standalone.js</td><td>修改</td></tr><tr><td>JS/ziwei.js</td><td>修改</td></tr><tr><td>index.html</td><td>修改</td></tr><tr><td>meihua-standalone.js</td><td>修改</td></tr><tr><td>package.json</td><td>修改</td></tr><tr><td>tests/cinematic-20260911.cjs</td><td>修改</td></tr><tr><td>tests/divination-audit-20260908.cjs</td><td>修改</td></tr><tr><td>tests/flow-interaction-20260911.cjs</td><td>修改</td></tr><tr><td>tests/prompt-accuracy-20260811.test.cjs</td><td>修改</td></tr><tr><td>tests/reading-depth-20260912.cjs</td><td>新增</td></tr><tr><td>tests/ritual-lifecycle-20260911.cjs</td><td>修改</td></tr><tr><td>tests/shuffle-recovery-20260911.cjs</td><td>修改</td></tr></tbody></table><figure><img src="evidence/live-tarot-ritual.jpg" alt="實際操作現行網站時的塔羅儀式畫面"><figcaption>現行公開網站的實測截圖；不是修補後介面的驗收截圖。</figcaption></figure><p><a href="AI-READINGS.md">完整試讀文字</a> · <a href="CHANGED-FILES.json">修改與雜湊清單</a> · <a href="evidence/all-tests.log">完整測試日誌</a></p></section><footer>本報告與程式包一同交付。判讀品質、操作功能、畫面流暢度與預測有效性分別檢查，不互相替代。</footer></main><script>const buttons=[...document.querySelectorAll('nav button')];buttons.forEach(b=>b.addEventListener('click',()=>{buttons.forEach(x=>x.setAttribute('aria-selected',String(x===b)));document.querySelectorAll('section[data-panel]').forEach(s=>s.hidden=s.id!==b.dataset.tab);}));document.querySelectorAll('[data-expand]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.reading').forEach(d=>d.open=b.dataset.expand==='yes');}));window.addEventListener('beforeprint',()=>document.querySelectorAll('.reading').forEach(d=>d.open=true));</script></body></html>
