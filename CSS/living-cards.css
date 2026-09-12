@@ -1,0 +1,72 @@
+/* Moon-gold living deck. Only inner artwork moves; native scrolling stays fixed. */
+.jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card-inner{
+ border-radius:9px;isolation:isolate;
+ box-shadow:1px 1px #f5db9e,2px 3px #836332,3px 5px #161a29,0 10px 17px #0009,0 0 15px #d6b46513;
+}
+.jy-atelier #step-2 #t-deck[data-deck-mode=native] .tdc-back{
+ background-image:url('../assets/ui/tarot-back-moon-gold.jpg')!important;
+ border-color:#d4b56caa!important;border-radius:8px;
+ box-shadow:inset 0 0 0 1px #f6de9c22,0 0 8px #e7c27813;
+}
+/* A dim halo behind the artwork and a moving reflection over its varnish. */
+.jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card-inner::before{
+ content:'';position:absolute;inset:-8px;z-index:-1;border-radius:17px;pointer-events:none;
+ background:radial-gradient(ellipse at 50% 80%,#d4b76d40,transparent 70%);opacity:.25;
+}
+.jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card-inner::after{
+ content:'';position:absolute;inset:0;z-index:3;border-radius:9px;pointer-events:none;
+ background:linear-gradient(115deg,transparent 12%,#fff1d300 34%,#f7df9f38 48%,#fff6d86e 50%,#e3c28014 54%,transparent 72%);
+ opacity:0;background-size:250% 100%;background-position:150% 50%;
+}
+.jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card:is(:focus-visible,.lifting) .tdc-back{
+ border-color:#ffdf8d!important;box-shadow:inset 0 0 0 1px #ffefb352,0 0 20px #efcd7b60,0 12px 30px #0008;
+}
+.jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card.lifting::after{
+ content:'';position:absolute;inset:-12px;border:1px solid #efcd8299;border-radius:22px;pointer-events:none;
+ background:radial-gradient(circle at 15% 22%,#fff2be 0 1px,transparent 2px),radial-gradient(circle at 87% 69%,#ffe8a7 0 1.5px,transparent 3px),radial-gradient(circle at 70% 7%,#f7d782 0 1px,transparent 2px);
+ box-shadow:0 0 19px #e3c48330;opacity:0;
+}
+@media(hover:hover) and (pointer:fine){
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card:hover .tdc-back{
+  border-color:#f9dfa1!important;box-shadow:inset 0 0 0 1px #f7dfa02e,0 0 19px #e3c47b42,0 11px 20px #0008;
+ }
+}
+@media(prefers-reduced-motion:no-preference){
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card:not(.picked):not(.lifting):not(.shuffling) .tarot-deck-card-inner{
+  animation:jy-card-breathe var(--jy-float-duration,5.3s) ease-in-out var(--jy-float-delay,0s) infinite!important;
+  animation-play-state:paused!important;
+ }
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card.is-awake:not(.picked):not(.lifting):not(.shuffling) .tarot-deck-card-inner{animation-play-state:running!important}
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card.is-awake:not(.picked) .tarot-deck-card-inner::before{
+  animation:jy-card-halo var(--jy-float-duration,5.3s) ease-in-out var(--jy-float-delay,0s) infinite;
+ }
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card:is(:focus-visible,.lifting) .tarot-deck-card-inner::after{
+  animation:jy-card-glint .85s ease-out both;
+ }
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card.lifting .tarot-deck-card-inner{
+  animation:jy-card-selected .4s cubic-bezier(.22,.75,.2,1) both!important;
+ }
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card.lifting::after{animation:jy-card-ripple .4s ease-out both}
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native][data-motion-paused=true] .tarot-deck-card.is-awake:not(.picked):not(.lifting):not(.shuffling) .tarot-deck-card-inner,
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native][data-motion-paused=true] .tarot-deck-card .tarot-deck-card-inner,
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native][data-motion-paused=true] .tarot-deck-card .tarot-deck-card-inner::before,
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native][data-motion-paused=true] .tarot-deck-card .tarot-deck-card-inner::after{animation-play-state:paused!important}
+ @media(hover:hover) and (pointer:fine){
+  .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card:hover .tarot-deck-card-inner::after{animation:jy-card-glint .85s ease-out both}
+ }
+}
+/* Individual transform properties preserve the existing perspective and hover tilt. */
+@keyframes jy-card-breathe{
+ 0%,100%{translate:0 0;rotate:-.55deg}
+ 50%{translate:0 var(--jy-float-lift,-5px);rotate:.55deg}
+}
+@keyframes jy-card-halo{0%,100%{opacity:.2}50%{opacity:.65}}
+@keyframes jy-card-glint{0%{background-position:150% 50%;opacity:0}20%{opacity:.75}100%{background-position:-60% 50%;opacity:0}}
+@keyframes jy-card-selected{0%{translate:0 -3px;scale:1}100%{translate:0 -11px;scale:1.055}}
+@keyframes jy-card-ripple{0%{opacity:.8;scale:.88}100%{opacity:0;scale:1.25}}
+@media(prefers-reduced-motion:reduce){
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card-inner,
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card-inner::before,
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card-inner::after,
+ .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card.lifting::after{animation:none!important;translate:none;rotate:none;scale:none}
+}

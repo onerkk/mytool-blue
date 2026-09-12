@@ -443,7 +443,7 @@ body.jy-atelier{
 .jy-atelier #step-2 #t-deck{height:340px!important;max-width:100%;border:1px solid #d5bc854d;border-radius:20px;background:radial-gradient(ellipse at 50% 30%,#65758b3b,transparent 70%),linear-gradient(150deg,#172538,#090f19);box-shadow:inset 0 1px 0 #fff2,inset 0 -25px 40px #03081099,0 8px 22px #0004;overflow:hidden}
 .jy-atelier #step-2 #t-deck .tarot-stage-bg{display:none!important}
 .jy-atelier #step-2 #t-deck .tdc-face{display:none!important}
-.jy-atelier #step-2 #t-deck .tdc-back{transform:none!important;background-image:url('../tarot_img/card-back.jpg');border-color:#d8b978!important}
+.jy-atelier #step-2 #t-deck .tdc-back{transform:none!important;background-image:url('../assets/ui/tarot-back-moon-gold.jpg');border-color:#d8b978!important}
 .jy-atelier #step-2 #t-deck .tarot-deck-card{cursor:pointer}
 .jy-atelier .at-last-card{display:flex;align-items:center;gap:16px;min-height:60px;margin:12px 0 20px;padding:12px 14px;border-left:2px solid #d5bd88;background:#1b293955;border-radius:0 12px 12px 0;color:#bbc9da;font-size:.875rem;line-height:1.8;box-sizing:border-box}
 .jy-atelier .at-last-card>div:last-child{min-width:0;flex:1}.jy-atelier .at-last-card small{display:block;color:#a8b9ce;font-size:.75rem;margin-bottom:3px}.jy-atelier .at-last-card strong{display:block;color:#f2ddba;font-size:1rem;font-weight:500}.jy-atelier .at-last-card p{font-size:.875rem;line-height:1.75;margin:4px 0 0;color:#b7c6d6}

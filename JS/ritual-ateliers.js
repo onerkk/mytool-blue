@@ -21,7 +21,7 @@
   }
   function fan(){
     var h='<div class="jr-fan" aria-hidden="true">';
-    for(var i=0;i<9;i++)h+='<span class="jr-card" style="--i:'+i+';--offset:'+(i-4)+'"><img src="img/card-back.jpg" alt="" draggable="false"></span>';
+    for(var i=0;i<9;i++)h+='<span class="jr-card" style="--i:'+i+';--offset:'+(i-4)+'"><img src="assets/ui/tarot-back-moon-gold.jpg" alt="" draggable="false"></span>';
     return h+'</div>';
   }
   function play(kind,options){
@@ -46,7 +46,7 @@
     dialog.setAttribute('data-motion',reduced?'still':'full');dialog.setAttribute('aria-labelledby','jr-title');dialog.setAttribute('aria-describedby','jr-note');
     var interaction='';
     if(mode==='cards'){
-      interaction='<div class="jr-reveal-row">'+cards.map(function(c,i){return '<button type="button" class="jr-reveal" data-card-index="'+i+'" aria-label="揭開第 '+(i+1)+' 張牌" aria-pressed="false"><span class="jr-flip"><span class="jr-back"><img src="img/card-back.jpg" alt="" draggable="false"></span><span class="jr-front"></span></span><span class="jr-card-label">'+String(i+1).padStart(2,'0')+' · 輕觸揭牌</span></button>';}).join('')+'</div>';
+      interaction='<div class="jr-reveal-row">'+cards.map(function(c,i){return '<button type="button" class="jr-reveal" data-card-index="'+i+'" aria-label="揭開第 '+(i+1)+' 張牌" aria-pressed="false"><span class="jr-flip"><span class="jr-back"><img src="assets/ui/tarot-back-moon-gold.jpg" alt="" draggable="false"></span><span class="jr-front"></span></span><span class="jr-card-label">'+String(i+1).padStart(2,'0')+' · 輕觸揭牌</span></button>';}).join('')+'</div>';
     }else if(mode==='seals'){
       interaction='<div class="jr-seals">'+cfg.seals.map(function(label,i){return '<button type="button" class="jr-seal" data-seal-index="'+i+'" aria-pressed="false" aria-label="點亮'+label+'座標"><span>'+label+'</span><small>'+String(i+1).padStart(2,'0')+'</small></button>';}).join('')+'</div>';
     }else{

@@ -3249,20 +3249,36 @@ function _startDeck3D(topCount,botCount){
   if(_deck3dCleanup)_deck3dCleanup();
   var topRow=document.getElementById('t-row-top'),botRow=document.getElementById('t-row-bot'),stage=document.getElementById('t-deck');
   if(!topRow||!botRow||!stage)return;
-  var gesture=null,pendingTap=null,suppressUntil=0,disposed=false,listeners=[];
+  var gesture=null,pendingTap=null,suppressUntil=0,disposed=false,listeners=[],motionObserver=null;
   _deck3dTopOff=0;_deck3dBotOff=0;_deck3dDragging=false;_deck3dRAF=null;
   stage.setAttribute('data-deck-mode','native');stage.tabIndex=0;
   stage.setAttribute('role','group');stage.setAttribute('aria-label','塔羅牌組：左右滑動瀏覽，輕點選牌；也可使用方向鍵');
   [topRow,botRow].forEach(function(row){
     var seen={};Array.from(row.children).forEach(function(card){
       var id=card.dataset.idx;if(seen[id]){card.remove();return;}seen[id]=true;
+      // Visual timing uses the slot index, never the card identity or draw RNG.
+      var floatIndex=Number(id)||0;
+      card.style.setProperty('--jy-float-delay',(-((floatIndex*.73)%5.6)).toFixed(2)+'s');
+      card.style.setProperty('--jy-float-duration',(4.6+(floatIndex%7)*.23).toFixed(2)+'s');
+      card.style.setProperty('--jy-float-lift',(-4-(floatIndex%3))+'px');
+      card.classList.add('is-awake');
       card.style.visibility='';card.style.transform='';card.tabIndex=0;
       card.setAttribute('role','button');card.setAttribute('aria-label','選取牌背 '+(Number(id)+1));card.setAttribute('draggable','false');
       if(card.firstElementChild)card.firstElementChild.style.filter='';
     });row.style.transform='';
   });
   stage.scrollLeft=0;
+  stage.setAttribute('data-motion-paused',String(!!document.hidden));
+  // Offscreen cards sleep; animation never moves the pointer/scroll surface.
+  if(typeof window.IntersectionObserver==='function'){
+    motionObserver=new window.IntersectionObserver(function(entries){
+      if(disposed)return;
+      entries.forEach(function(entry){entry.target.classList.toggle('is-awake',entry.isIntersecting);});
+    },{root:stage,rootMargin:'80px',threshold:0});
+    stage.querySelectorAll('.tarot-deck-card').forEach(function(card){motionObserver.observe(card);});
+  }
   function on(el,name,fn,opts){el.addEventListener(name,fn,opts);listeners.push(function(){el.removeEventListener(name,fn,opts);});}
+  if(document.addEventListener&&document.removeEventListener)on(document,'visibilitychange',function(){stage.setAttribute('data-motion-paused',String(!!document.hidden));});
   function sync(){
     _deck3dRAF=null;if(disposed)return;
     var left=stage.scrollLeft||0,max=Math.max(0,(stage.scrollWidth||0)-(stage.clientWidth||0));
@@ -3324,6 +3340,8 @@ function _startDeck3D(topCount,botCount){
   on(window,'resize',queue);on(window,'blur',stop);
   _deck3dCleanup=function(){
     if(disposed)return;disposed=true;stop();listeners.forEach(function(remove){remove();});
+    if(motionObserver)motionObserver.disconnect();
+    stage.setAttribute('data-motion-paused','true');
     if(_deck3dRAF)cancelAnimationFrame(_deck3dRAF);_deck3dRAF=null;
     if(window.JYTarotDeckBrowse.move===move)window.JYTarotDeckBrowse.move=function(){};
     _deck3dCleanup=null;

@@ -99,7 +99,7 @@ export function mountStage(host,kind,options={}){
    const back=keep(new T.MeshStandardMaterial({color:'#d9cead',roughness:.58,metalness:.1}));
    const geom=keep(new T.BoxGeometry(.66,1.07,.014));
    for(let i=0;i<15;i++){const g=new T.Group();objects.add(g);const body=new T.Mesh(geom,gold);g.add(body);const face=new T.Mesh(keep(new T.PlaneGeometry(.636,1.045)),back);face.position.z=.008;g.add(face);deck.push(g);}
-   loadTexture('img/card-back.jpg',texture=>{back.map=texture;back.color.set('#ffffff');back.needsUpdate=true;});
+   loadTexture('assets/ui/tarot-back-moon-gold.jpg',texture=>{back.map=texture;back.color.set('#ffffff');back.needsUpdate=true;});
   }
  }else if(kind==='ziwei'){
   const instrument=new T.Group();objects.add(instrument);instrument.position.y=.07;

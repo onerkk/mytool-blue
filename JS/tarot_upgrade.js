@@ -3249,7 +3249,7 @@ enhanceTarot = function(tarot) {
       '.ootk-kc-flip{width:58px;text-align:center;opacity:0;transform:translateY(12px);animation:ootkKcAppear .5s ease-out forwards}',
       '.ootk-kc-inner{position:relative;width:52px;height:78px;margin:0 auto;transform-style:preserve-3d;animation:ootkKcSpin .6s ease-out forwards}',
       '.ootk-kc-front{position:absolute;inset:0;backface-visibility:hidden}',
-      '.ootk-kc-back{position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:5px;background:url(\"/tarot_img/card-back.jpg\") center/cover;border:2px solid rgba(201,168,76,.3);box-shadow:0 2px 8px rgba(0,0,0,.4)}',
+      '.ootk-kc-back{position:absolute;inset:0;backface-visibility:hidden;transform:rotateY(180deg);border-radius:5px;background:url(\"/assets/ui/tarot-back-moon-gold.jpg\") center/cover;border:2px solid rgba(201,168,76,.3);box-shadow:0 2px 8px rgba(0,0,0,.4)}',
       '@keyframes ootkKcAppear{0%{opacity:0;transform:translateY(12px) scale(.85)}40%{opacity:1}100%{opacity:1;transform:translateY(0) scale(1)}}',
       '@keyframes ootkKcSpin{0%{transform:rotateY(180deg)}60%{transform:rotateY(-8deg)}100%{transform:rotateY(0deg)}}',
       '@keyframes ootkKcGlow{0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.4)}50%{box-shadow:0 0 16px rgba(201,168,76,.35),0 2px 8px rgba(0,0,0,.4)}}',
@@ -3319,20 +3319,20 @@ enhanceTarot = function(tarot) {
       // v63 CSS marker: ═══ v63 ② 洗牌儀式 ═══
       '.ootk-shuffle-box{position:relative;width:200px;height:200px;margin:0 auto}',
       '.ootk-shuffle-box.done .ootk-shuffle-card{opacity:0;transition:opacity .5s}',
-      '.ootk-shuffle-card{position:absolute;top:50%;left:50%;width:36px;height:54px;margin-left:-18px;margin-top:-27px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.4);border-radius:3px;animation:ootkShuffleSpin 1.6s ease-in-out;animation-fill-mode:both;box-shadow:0 2px 6px rgba(0,0,0,.5)}',
+      '.ootk-shuffle-card{position:absolute;top:50%;left:50%;width:36px;height:54px;margin-left:-18px;margin-top:-27px;background:url(\"/assets/ui/tarot-back-moon-gold.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.4);border-radius:3px;animation:ootkShuffleSpin 1.6s ease-in-out;animation-fill-mode:both;box-shadow:0 2px 6px rgba(0,0,0,.5)}',
       '@keyframes ootkShuffleSpin{0%{transform:translate(0,0) rotate(0deg);opacity:0}10%{opacity:1}50%{transform:translate(calc(cos(calc(var(--i)*15deg))*60px),calc(sin(calc(var(--i)*15deg))*60px)) rotate(calc(var(--i)*15deg))}100%{transform:translate(0,0) rotate(0deg);opacity:.6}}',
       // v63 CSS marker: ═══ v63 飛卡 ═══
-      '.ootk-fly-card-v63{position:absolute;width:20px;height:30px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.5);border-radius:2px;transition:all .45s cubic-bezier(.4,.1,.3,1);opacity:.95;z-index:5;pointer-events:none;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.5)}',
+      '.ootk-fly-card-v63{position:absolute;width:20px;height:30px;background:url(\"/assets/ui/tarot-back-moon-gold.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.5);border-radius:2px;transition:all .45s cubic-bezier(.4,.1,.3,1);opacity:.95;z-index:5;pointer-events:none;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.5)}',
       '.ootk-fly-card-v63.with-img{box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 8px rgba(201,168,76,.3)}',
       '.ootk-fly-card-v63.landed{opacity:.7;border-color:rgba(201,168,76,.3)}',
       // v63 CSS marker: ═══ v63 ③ Op1 YHVH 四元素堆 ═══
       '.ootk-op1-scene{position:relative;width:100%;max-width:380px;min-height:260px;margin:0 auto}',
-      '.ootk-op1-deck{position:absolute;top:8px;left:50%;width:32px;height:50px;margin-left:-16px;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.5);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.62rem;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.5);text-shadow:0 1px 2px #000}',
+      '.ootk-op1-deck{position:absolute;top:8px;left:50%;width:32px;height:50px;margin-left:-16px;background:url(\"/assets/ui/tarot-back-moon-gold.jpg\") center/cover #2a1d08;border:1px solid rgba(201,168,76,.5);border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--c-gold);font-size:.62rem;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.5);text-shadow:0 1px 2px #000}',
       '.ootk-op1-deck-count{font-size:.68rem;font-weight:700}',
       '.ootk-op1-piles{position:absolute;top:80px;left:0;right:0;display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;padding:0 .5rem}',
       '.ootk-op1-pile{position:relative;padding:.7rem .5rem;border:1px solid rgba(201,168,76,.12);border-radius:8px;background:rgba(255,255,255,.02);min-height:90px;transition:all .5s ease;text-align:center}',
       '.ootk-op1-pile-letter{position:absolute;top:.3rem;right:.4rem;font-size:1.1rem;color:var(--c-gold);opacity:.4;font-family:serif;font-weight:600}',
-      '.ootk-op1-pile-stack{height:50px;width:36px;margin:0 auto .35rem;position:relative;background:url("/tarot_img/card-back.jpg") center/cover #2a1d08;border:1px solid rgba(201,168,76,.4);border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 -2px 0 rgba(0,0,0,.3),2px 1px 0 -1px rgba(50,30,10,.6),4px 2px 0 -2px rgba(50,30,10,.4)}',
+      '.ootk-op1-pile-stack{height:50px;width:36px;margin:0 auto .35rem;position:relative;background:url("/assets/ui/tarot-back-moon-gold.jpg") center/cover #2a1d08;border:1px solid rgba(201,168,76,.4);border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.5),inset 0 -2px 0 rgba(0,0,0,.3),2px 1px 0 -1px rgba(50,30,10,.6),4px 2px 0 -2px rgba(50,30,10,.4)}',
       '.ootk-op1-pile-meta{font-size:.7rem}',
       '.ootk-op1-pile-label{font-weight:700;color:var(--c-text);font-size:.78rem}',
       '.ootk-op1-pile-meaning{color:var(--c-text-dim);font-size:.62rem;margin-top:.1rem}',
@@ -3361,7 +3361,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op2-house.found{box-shadow:0 0 36px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.25),rgba(201,168,76,.1));transform:scale(1.3);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
       '.ootk-op2-house.found .ootk-op2-house-num,.ootk-op2-house.found .ootk-op2-house-desc,.ootk-op2-house.found .ootk-op2-house-count{color:var(--c-gold)}',
       '.ootk-op2-house.dimmed{opacity:.25;transform:scale(.88)}',
-      '.ootk-op2-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
+      '.ootk-op2-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/assets/ui/tarot-back-moon-gold.jpg\") center/cover #1a1208}',
       '.ootk-op2-fly img{width:100%;height:100%;object-fit:cover;display:block}',
       // v63 CSS marker: ═══ v63 ③ Op3 12 星座 ═══
       '.ootk-op3-scene{padding:1rem 0;display:flex;justify-content:center}',
@@ -3383,7 +3383,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op3-sign.spotlight{box-shadow:0 0 22px rgba(168,85,247,.55);border-color:rgba(168,85,247,.85);background:rgba(168,85,247,.18);transform:scale(1.18);color:rgba(168,85,247,1);z-index:4}',
       '.ootk-op3-sign.found{box-shadow:0 0 36px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.25),rgba(201,168,76,.1));color:var(--c-gold);transform:scale(1.35);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
       '.ootk-op3-sign.dimmed{opacity:.25;transform:scale(.88)}',
-      '.ootk-op3-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
+      '.ootk-op3-fly{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.6);border-radius:3px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.6),0 0 12px rgba(201,168,76,.3);z-index:8;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/assets/ui/tarot-back-moon-gold.jpg\") center/cover #1a1208}',
       '.ootk-op3-fly img{width:100%;height:100%;object-fit:cover;display:block}',
       // v63 CSS marker: ═══ v63 ③ Op4 Sig 居中 + 36 環繞（Book T 對齊）═══
       '.ootk-op4-scene{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}',
@@ -3397,7 +3397,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op4-sig-name{font-size:.62rem;color:var(--c-gold);font-weight:700;text-align:center;line-height:1.15;letter-spacing:.3px;text-shadow:0 1px 2px rgba(0,0,0,.9)}',
       '.ootk-op4-sig-label{font-size:.42rem;color:rgba(255,255,255,.6);letter-spacing:2px;margin-top:.15rem;text-shadow:0 1px 2px rgba(0,0,0,.9)}',
       // ─── Op4 環繞 36 張牌（顯示真實牌照）───
-      '.ootk-op4-ring-card{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.3);border-radius:2px;overflow:hidden;opacity:0;transition:opacity .5s ease;transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.5);z-index:2;background:url(\"/tarot_img/card-back.jpg\") center/cover #2a1d08}',
+      '.ootk-op4-ring-card{position:absolute;width:22px;height:34px;border:1px solid rgba(201,168,76,.3);border-radius:2px;overflow:hidden;opacity:0;transition:opacity .5s ease;transform-origin:center;box-shadow:0 1px 3px rgba(0,0,0,.5);z-index:2;background:url(\"/assets/ui/tarot-back-moon-gold.jpg\") center/cover #2a1d08}',
       '.ootk-op4-ring-card.show{opacity:.95}',
       '.ootk-op4-ring-card img{width:100%;height:100%;object-fit:cover;display:block}',
       '.ootk-op4-decan-info{margin-top:1rem;padding:.6rem 1rem;border-radius:8px;background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.2);text-align:center;opacity:0;transform:translateY(8px);transition:all .6s ease;max-width:280px}',
@@ -3421,7 +3421,7 @@ enhanceTarot = function(tarot) {
       '.ootk-op5-node.spotlight{box-shadow:0 0 18px rgba(34,197,94,.5);border-color:rgba(34,197,94,.7);transform:scale(1.18)}',
       '.ootk-op5-node.found{box-shadow:0 0 32px rgba(201,168,76,.85),0 0 12px rgba(201,168,76,.6);border:2px solid var(--c-gold);background:radial-gradient(circle at center,rgba(201,168,76,.3) 0%,rgba(201,168,76,.1) 60%,transparent 100%);color:var(--c-gold);transform:scale(1.4);z-index:6;animation:ootkV63Pulse 1.4s ease-in-out 2}',
       '.ootk-op5-node.dimmed{opacity:.25;transform:scale(.85)}',
-      '.ootk-op5-fly{position:absolute;width:18px;height:28px;border:1px solid rgba(201,168,76,.6);border-radius:2px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.5),0 0 8px rgba(201,168,76,.3);z-index:7;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/tarot_img/card-back.jpg\") center/cover #1a1208}',
+      '.ootk-op5-fly{position:absolute;width:18px;height:28px;border:1px solid rgba(201,168,76,.6);border-radius:2px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.5),0 0 8px rgba(201,168,76,.3);z-index:7;transition:all .65s cubic-bezier(.34,1.56,.64,1);pointer-events:none;background:url(\"/assets/ui/tarot-back-moon-gold.jpg\") center/cover #1a1208}',
       '.ootk-op5-fly img{width:100%;height:100%;object-fit:cover;display:block}',
       '.ootk-op5-sig-card{position:absolute;top:50%;left:50%;width:52px;height:78px;margin-left:-26px;margin-top:-39px;border-radius:5px;border:2px solid var(--c-gold);overflow:hidden;opacity:0;transform:scale(.4);transition:opacity .8s ease,transform .8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 24px rgba(201,168,76,.6),0 4px 12px rgba(0,0,0,.7);z-index:8;background:#1a1208}',
       '.ootk-op5-sig-card.show{opacity:1;transform:scale(1)}',
@@ -5616,7 +5616,7 @@ function _ensureV64bShuffleStyles() {
     // 牌堆中央(模擬 78 張疊起來)
     '.jy-tshuffle-deck{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:180px;opacity:0;transition:opacity .5s ease;pointer-events:none}' +
     '.jy-tshuffle-overlay.show-deck .jy-tshuffle-deck{opacity:1}' +
-    '.jy-tshuffle-deck-card{position:absolute;inset:0;background:url("/tarot_img/card-back.jpg") center/cover #0a0d18;border:1px solid rgba(212,175,55,.5);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.7),0 0 16px rgba(212,175,55,.3);will-change:transform;backface-visibility:hidden}' +
+    '.jy-tshuffle-deck-card{position:absolute;inset:0;background:url("/assets/ui/tarot-back-moon-gold.jpg") center/cover #0a0d18;border:1px solid rgba(212,175,55,.5);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.7),0 0 16px rgba(212,175,55,.3);will-change:transform;backface-visibility:hidden}' +
     // 收攏階段:牌從散開飛回中央(stagger 入場)
     '@keyframes jyTshuffleConverge{0%{transform:translate(var(--start-x),var(--start-y)) rotate(var(--start-rot)) scale(.8);opacity:0}50%{opacity:.9}100%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1}}' +
     '.jy-tshuffle-deck-card.converging{animation:jyTshuffleConverge .8s cubic-bezier(.6,0,.4,1) forwards}' +
