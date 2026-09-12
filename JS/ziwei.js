@@ -30,9 +30,10 @@ function approxLunar(year, month, day) {
     var lunar = solar.getLunar();
     return {
       year: lunar.getYear(),
-      month: lunar.getMonth(),
+      month: Math.abs(lunar.getMonth()),
+      rawMonth: lunar.getMonth(),
       day: lunar.getDay(),
-      isLeap: (typeof lunar.isLeap === 'function') ? !!lunar.isLeap() : false,
+      isLeap: lunar.getMonth() < 0 || (typeof lunar.isLeap === 'function' && !!lunar.isLeap()),
       source: 'lunar-javascript'
     };
   }
@@ -105,10 +106,37 @@ function analyzePalace(palace, branchIdx) {
   return { score: score, notes: notes, bright: brightLabel };
 }
 
-function computeZiwei(year,month,day,hour,gender){
+function computeZiwei(year,month,day,hour,gender,options){
   window._jyZiweiError = null;
   try {
-  const lunar = approxLunar(year,month,day);
+  options = options || {};
+  if (![year,month,day,hour].every(Number.isInteger) || year < 1900 || year > 2100 || hour < 0 || hour > 23 || !['male','female'].includes(gender)) throw new Error('出生日期、時辰或性別資料無效。');
+  const civil = new Date(Date.UTC(year,month-1,day));
+  if(civil.getUTCFullYear()!==year || civil.getUTCMonth()+1!==month || civil.getUTCDate()!==day) throw new Error('出生日期不存在。');
+  const dayBoundaryMode = options.dayBoundaryMode || 'MIDNIGHT_00';
+  const leapMonthPolicy = options.leapMonthPolicy || 'SAME_MONTH';
+  if(!['MIDNIGHT_00','ZI_HOUR_23'].includes(dayBoundaryMode) || !['SAME_MONTH','SPLIT_AT_15'].includes(leapMonthPolicy)) throw new Error('未支援的紫微曆法設定。');
+  const birthLunar = approxLunar(year,month,day);
+  if(dayBoundaryMode==='ZI_HOUR_23' && hour===23) civil.setUTCDate(civil.getUTCDate()+1);
+  const lunar = approxLunar(civil.getUTCFullYear(),civil.getUTCMonth()+1,civil.getUTCDate());
+  const effectiveMonth = ((lunar.month - 1 + (lunar.isLeap && leapMonthPolicy==='SPLIT_AT_15' && lunar.day>15 ? 1 : 0)) % 12) + 1;
+  const referenceDate = options.referenceDate ? new Date(options.referenceDate) : new Date();
+  if(!Number.isFinite(referenceDate.getTime())) throw new Error('參考日期無效。');
+  const refClock = new Date(referenceDate.getTime()+8*3600000);
+  const referenceLunar = approxLunar(refClock.getUTCFullYear(),refClock.getUTCMonth()+1,refClock.getUTCDate());
+  const ageAtLunarYear = function(y){ return y-lunar.year+1; };
+  const currentAge = ageAtLunarYear(referenceLunar.year);
+  const calculationPolicy = {
+    version:'20260912-accuracy1', yearBoundary:'LUNAR_NEW_YEAR', dayBoundaryMode:dayBoundaryMode,
+    leapMonthPolicy:leapMonthPolicy, effectiveMonth:effectiveMonth, effectiveDay:lunar.day,
+    mingZhuBasis:'MING_PALACE_BRANCH', shenZhuBasis:'BIRTH_YEAR_BRANCH',
+    monthPalaceMethod:'DOUJUN', minorLimitMethod:'BIRTH_YEAR_TRINE_MALE_FORWARD_FEMALE_BACKWARD',
+    injuryAngelMethod:'FIXED_FRIENDS_HEALTH', voidMethod:'TWO_BRANCHES',
+    sihuaTable:'甲廉破武陽；乙機梁紫陰；丙同機昌廉；丁陰同機巨；戊貪陰弼機；己武貪梁曲；庚陽武陰同；辛巨陽曲昌；壬梁紫輔武；癸破巨陰貪',
+    referenceDate:referenceDate.toISOString(), referenceLunarYear:referenceLunar.year,
+    ageMethod:'LUNAR_NEW_YEAR_NOMINAL', predictionValidated:false,
+    sources:['https://iztro.com/zh_TW/learn/setup','https://github.com/SylarLong/iztro/blob/main/src/star/location.ts','https://github.com/SylarLong/iztro/blob/main/src/astro/palace.ts']
+  };
   // ★ v16 修復：紫微年干支必須用農曆年，不是西曆年
   // 正月初一前出生 → 農曆仍屬上一年 → 年干支用上一年
   // 影響範圍：四化、祿存、擎羊陀羅、天魁天鉞、紅鸞天喜、火鈴、大限起點
@@ -116,21 +144,11 @@ function computeZiwei(year,month,day,hour,gender){
   const yGan = TG[((_lunarY-4)%10+10)%10];
   const yZhi = DZ[((_lunarY-4)%12+12)%12];
 
-  // 日干計算 (用於恩光等乙級星，與computeBazi同公式)
-  // 以1900-01-01=甲戌日(序號10)為基準
-  // ★ 用 Date.UTC 避免歷史夏令時偏移
-  const _baseDate = Date.UTC(1900, 0, 1);
-  const _thisDate = Date.UTC(year, month-1, day);
-  const _diffDays = Math.floor((_thisDate - _baseDate) / 864e5);
-  const _dayCycle = ((_diffDays + 10) % 60 + 60) % 60;
-  const dayGanIdx = _dayCycle % 10;
-  const dayGan = TG[dayGanIdx];
-
   // 命宮地支：月支-時支
   const shi = Math.floor(((hour+1)%24)/2);
-  const mingIdx = ((lunar.month - shi + 13) % 12 + 12) % 12; // 修正: +13 (正月子時=寅)
+  const mingIdx = ((effectiveMonth - shi + 13) % 12 + 12) % 12; // 修正: +13 (正月子時=寅)
   // 身宮：月+時+寅基
-  const shenIdx = ((lunar.month + shi + 1) % 12 + 12) % 12;
+  const shenIdx = ((effectiveMonth + shi + 1) % 12 + 12) % 12;
 
   // 五行局 (簡化：依命宮天干地支組合)
   // 宮干：年干起月法 (甲己→丙寅=2, 乙庚→戊寅=4, 丙辛→庚寅=6, 丁壬→壬寅=8, 戊癸→甲寅=0)
@@ -199,8 +217,8 @@ function computeZiwei(year,month,day,hour,gender){
   const wcIdx = ((year-4)%12+12)%12;
   addStarToPalace(palaces,'文昌','minor',(10-shi+12)%12);
   addStarToPalace(palaces,'文曲','minor',(shi+4)%12);
-  addStarToPalace(palaces,'左輔','minor',(lunar.month+3)%12);
-  addStarToPalace(palaces,'右弼','minor',(11-lunar.month+12)%12);
+  addStarToPalace(palaces,'左輔','minor',(effectiveMonth+3)%12);
+  addStarToPalace(palaces,'右弼','minor',(11-effectiveMonth+12)%12);
 
   // 安煞星（業界標準查表法）
   const yZhiIdx = DZ.indexOf(yZhi);
@@ -258,55 +276,31 @@ function computeZiwei(year,month,day,hour,gender){
   // 咸池（桃花）：依年支 寅午戌→卯,申子辰→酉,巳酉丑→午,亥卯未→子
   const XC_TABLE={0:9,1:6,2:3,3:0,4:9,5:6,6:3,7:0,8:9,9:6,10:3,11:0};
   addStarToPalace(palaces,'咸池','minor2',XC_TABLE[yZhiIdx]!==undefined?XC_TABLE[yZhiIdx]:9);
-  // 天德：依年支（非月支） 子→酉(9),丑→申(8),寅→亥(11),卯→戌(10),辰→丑(1),巳→子(0),午→卯(3),未→寅(2),申→巳(5),酉→辰(4),戌→未(7),亥→午(6)
-  // 文墨: 亥年天德在申(8)... 查得正確天德表:
-  // 依年支: 子→巳,丑→庚,寅→丁,卯→申,辰→壬,巳→辛,午→亥,未→甲,申→癸,酉→寅,戌→丙,亥→己
-  // 上面是天干/地支混合，不適用。查紫微斗數天德安法:
-  // 正月→巳(5),二月→午(6),三月→酉(9),四月→戌(10),五月→亥(11),六月→子(0),七月→丑(1),八月→寅(2),九月→卯(3),十月→辰(4),十一月→巳(5),十二月→午(6)
-  // 但文墨顯示天德在申... 這裡有多種版本
-  // 根據文墨文本: 疾厄(庚申)有天德[平]，疾厄為歲前十二神的天德位
-  // 查歲前十二神中的天德: 依年支 子→酉(9)起逆行... 
-  // 亥(11)→歲前天德... 
-  // 用簡化: 依年支 (yZhiIdx+9)%12... 亥(11)+9=20%12=8=申 ✓!
+  // 年系天德、月德；解神採月解，不與年解混用。
   addStarToPalace(palaces,'天德','minor2',(yZhiIdx+9)%12);
-  // 解神：依年支 子→戌(10),丑→戌(10),寅→子(0),...每兩年一跳
-  const JS_TABLE={0:10,1:10,2:0,3:0,4:2,5:2,6:4,7:4,8:6,9:6,10:8,11:8};
-  addStarToPalace(palaces,'解神','minor2',JS_TABLE[yZhiIdx]!==undefined?JS_TABLE[yZhiIdx]:10);
-  // 天壽：依年支 子→午(6)... = 天虛同位（部分派別不同）
-  // 實際上天壽依月支安：正月→卯... 用截圖驗證
-  addStarToPalace(palaces,'天壽','minor2',(lunar.month+2)%12);
+  addStarToPalace(palaces,'月德','minor2',(yZhiIdx+5)%12);
+  addStarToPalace(palaces,'解神','minor2',[8,10,0,2,4,6][Math.floor((effectiveMonth-1)/2)]);
+  // 命宮起子順數年支安天才；身宮起子順數年支安天壽。
+  addStarToPalace(palaces,'天壽','minor2',(shenIdx+yZhiIdx)%12);
 
   // ═══ 乙級星（依年干）═══
   // 天官：甲→未(7),乙→辰(4),丙→巳(5),丁→寅(2),戊→卯(3),己→酉(9),庚→亥(11),辛→酉(9),壬→戌(10),癸→巳(5)
-  const TGUAN={甲:7,乙:4,丙:5,丁:2,戊:3,己:9,庚:11,辛:9,壬:10,癸:5};
+  const TGUAN={甲:7,乙:4,丙:5,丁:2,戊:3,己:9,庚:11,辛:9,壬:10,癸:6};
   addStarToPalace(palaces,'天官','minor2',TGUAN[yGan]!==undefined?TGUAN[yGan]:7);
   // 天福：甲→酉(9),乙→申(8),丙→子(0),丁→亥(11),戊→卯(3),己→寅(2),庚→午(6),辛→巳(5),壬→午(6),癸→巳(5)
   const TFUL={甲:9,乙:8,丙:0,丁:11,戊:3,己:2,庚:6,辛:5,壬:6,癸:5};
   addStarToPalace(palaces,'天福','minor2',TFUL[yGan]!==undefined?TFUL[yGan]:9);
-  // 天貴：甲→丑(1),乙→子(0),丙→亥(11),丁→酉(9),戊→未(7),己→申(8),庚→未(7),辛→午(6),壬→巳(5),癸→卯(3)
-  const TGUI={甲:1,乙:0,丙:11,丁:9,戊:7,己:8,庚:7,辛:6,壬:5,癸:3};
-  addStarToPalace(palaces,'天貴','minor2',TGUI[yGan]!==undefined?TGUI[yGan]:1);
+  // 天貴：文曲起初一，順數生日，再退一宮。
+  addStarToPalace(palaces,'天貴','minor2',(shi+4+lunar.day-2+120)%12);
 
-  // ═══ 乙級星（依月支）═══
-  // 天刑：正月→酉(9)起逆行... 實際上天刑依月支安: 正月→丑起順行
-  // 標準：天刑 = (lunar.month + 6) % 12 → 正月=7=午... 不對
-  // 業界表：月+7 (子idx) → 正月→酉? 正月→丑? 用截圖驗
-  // 命例1：四月→子宮有天刑(截圖顯示子宮有「刑」) → 天刑 = (月+8)%12 = (4+8)%12 = 0=子 ✓
-  addStarToPalace(palaces,'天刑','minor2',(lunar.month+8)%12);
-  // 天姚：正月→丑(1)起順行 = (月+0)%12 = 月
-  // 命例1：四月→辰宮有天姚 → (4+0)%12=4=辰 ✓
-  addStarToPalace(palaces,'天姚','minor2',(lunar.month)%12);
-
-  // ═══ 乙級星（依日/時支）═══
-  // 恩光：以日干查文昌位 甲→巳 乙→午 丙→申 丁→酉 戊→申 己→酉 庚→亥 辛→子 壬→寅 癸→卯
-  const ENGUAN={甲:5,乙:6,丙:8,丁:9,戊:8,己:9,庚:11,辛:0,壬:2,癸:3};
-  addStarToPalace(palaces,'恩光','minor2',ENGUAN[dayGan]!==undefined?ENGUAN[dayGan]:5);
-  // 天傷：官祿宮地支位置
-  const guanPos=palaces[8]?DZ.indexOf(palaces[8].branch):0;
-  addStarToPalace(palaces,'天傷','minor2',guanPos);
-  // 天使：疾厄宮地支位置
-  const jiePos=palaces[5]?DZ.indexOf(palaces[5].branch):0;
-  addStarToPalace(palaces,'天使','minor2',jiePos);
+  // 月系星：正月酉宮起天刑、丑宮起天姚，逐月順行。
+  addStarToPalace(palaces,'天刑','minor2',(effectiveMonth+8)%12);
+  addStarToPalace(palaces,'天姚','minor2',effectiveMonth%12);
+  // 恩光：文昌起初一，順數生日，再退一宮。
+  addStarToPalace(palaces,'恩光','minor2',(10-shi+lunar.day-2+120)%12);
+  // 本版本採固定宮法：天傷交友、天使疾厄。
+  addStarToPalace(palaces,'天傷','minor2',DZ.indexOf(palaces[7].branch));
+  addStarToPalace(palaces,'天使','minor2',DZ.indexOf(palaces[5].branch));
 
   // ═══ 甲級煞星補充：地空/地劫 ═══
   // 地空：亥(11)起逆行至時支 = (11-shi+12)%12
@@ -327,79 +321,30 @@ function computeZiwei(year,month,day,hour,gender){
   const GUASU_TABLE={0:10,1:10,2:1,3:1,4:1,5:4,6:4,7:4,8:7,9:7,10:7,11:10};
   addStarToPalace(palaces,'寡宿','minor2',GUASU_TABLE[yZhiIdx]);
 
-  // 蜚廉：依年支
-  // 子→申(8),丑→酉(9),寅→戌(10),卯→亥(11),辰→子(0),巳→丑(1),午→寅(2),未→卯(3),申→辰(4),酉→巳(5),戌→午(6),亥→未(7)
-  // 即 (yZhiIdx+8)%12
-  addStarToPalace(palaces,'蜚廉','minor2',(yZhiIdx+8)%12);
-
-  // 天巫：依年支
-  // 子→巳(5),丑→午(6),寅→未(7),卯→申(8),辰→酉(9),巳→戌(10),午→亥(11),未→子(0),申→丑(1),酉→寅(2),戌→卯(3),亥→辰(4)
-  // 查表: 亥年→辰? 標準為(yZhiIdx+5)%12... 亥(11)+5=16%12=4=辰? 但文墨在寅
-  // 另一常見表: 巳申寅亥→固定位 子→巳,丑→午,寅→申,卯→酉,辰→巳,巳→午,午→申,未→酉,申→巳,酉→午,戌→申,亥→酉?
-  // 文墨: 亥年天巫在寅(2)
-  // 正確天巫表(依月支): 正月=巳,二月=午,三月=未,四月=酉,五月=戌,六月=亥,七月=丑,八月=寅,九月=卯,十月=巳,十一月=午,十二月=未
-  // 但文墨說依年支... 查斗數全書天巫:
-  // 依月支: {1:5,2:6,3:7,4:9,5:10,6:11,7:1,8:2,9:3,10:5,11:6,12:7}
-  const TIANWU_M={1:5,2:6,3:7,4:9,5:10,6:11,7:1,8:2,9:3,10:5,11:6,12:7};
-  addStarToPalace(palaces,'天巫','minor2',TIANWU_M[lunar.month]!==undefined?TIANWU_M[lunar.month]:5);
-
-  // 天才：依命宮位置 = 命宮地支
-  // 標準：天才在命宮地支位置（= mingIdx）
-  // 文墨顯示天才在子(0)=兄弟宮，而命宮在丑(1)
-  // 實際天才安法: (年支+命宮地支idx-1+12)%12... 不同派別有差異
-  // 查標準: 天才依命宮起=命宮地支
-  // 但文墨有天才在子... 另一說法: 天才=(命宮地支idx + yZhiIdx)%12
-  // 測: (1+11)%12=0=子 ✓!
+  // 年系蜚廉（三年一組）、月系天巫（巳申寅亥循環）。
+  addStarToPalace(palaces,'蜚廉','minor2',[8,9,10,5,6,7,2,3,4,11,0,1][yZhiIdx]);
+  addStarToPalace(palaces,'天巫','minor2',[5,8,2,11][(effectiveMonth-1)%4]);
   addStarToPalace(palaces,'天才','minor2',(mingIdx+yZhiIdx)%12);
-
-  // 大耗：依年支（與小耗不同）
-  // 子→午(6),丑→未(7),...即(yZhiIdx+6)%12... 但這跟天虛重了
-  // 另一說：大耗依年支 = 子→巳(5),丑→午(6),...即(yZhiIdx+5)%12
-  // 文墨: 亥年大耗在辰(4) → (11+5)%12=4=辰 ✓!
-  addStarToPalace(palaces,'大耗','minor2',(yZhiIdx+5)%12);
-
-  // 天廚：依年干
-  // 甲→巳(5),乙→午(6),丙→巳(5),丁→午(6),戊→巳(5),己→午(6),庚→申(8),辛→酉(9),壬→亥(11),癸→亥(11)
-  const TIANCHU={甲:5,乙:6,丙:5,丁:6,戊:5,己:6,庚:8,辛:9,壬:11,癸:11};
-  addStarToPalace(palaces,'天廚','minor2',TIANCHU[yGan]!==undefined?TIANCHU[yGan]:5);
+  // 年系大耗；與博士十二神中的大耗分層記錄。
+  addStarToPalace(palaces,'大耗','minor2',[7,6,9,8,11,10,1,0,3,2,5,4][yZhiIdx]);
+  const TIANCHU={甲:5,乙:6,丙:0,丁:5,戊:6,己:8,庚:2,辛:6,壬:9,癸:11};
+  addStarToPalace(palaces,'天廚','minor2',TIANCHU[yGan]);
 
   // 天月：依月支
   // 正月→戌(10),二月→巳(5),三月→辰(4),四月→寅(2),五月→未(7),六月→卯(3),七月→亥(11),八月→未(7),九月→寅(2),十月→午(6),十一月→戌(10),十二月→寅(2)
   const TIANYUE_M={1:10,2:5,3:4,4:2,5:7,6:3,7:11,8:7,9:2,10:6,11:10,12:2};
-  addStarToPalace(palaces,'天月','minor2',TIANYUE_M[lunar.month]!==undefined?TIANYUE_M[lunar.month]:10);
+  addStarToPalace(palaces,'天月','minor2',TIANYUE_M[effectiveMonth]!==undefined?TIANYUE_M[effectiveMonth]:10);
 
-  // 破碎：依年支（三合局分組）
-  // 申子辰→酉(9) 巳酉丑→巳(5) 寅午戌→丑(1) 亥卯未→酉(9)
-  const POSUI_TABLE=[9,5,1,9,9,5,1,9,9,5,1,9];
-  addStarToPalace(palaces,'破碎','minor2',POSUI_TABLE[yZhiIdx]);
+  // 破碎：子午卯酉在巳、寅申巳亥在酉、辰戌丑未在丑。
+  addStarToPalace(palaces,'破碎','minor2',[5,1,9,5,1,9,5,1,9,5,1,9][yZhiIdx]);
 
   // 劫煞：依年支三合局
   // 寅午戌年→亥(11), 申子辰年→巳(5), 巳酉丑年→寅(2), 亥卯未年→申(8)
   const JIESHA_TABLE={0:5,1:2,2:11,3:8,4:5,5:2,6:11,7:8,8:5,9:2,10:11,11:8};
   addStarToPalace(palaces,'劫煞','minor2',JIESHA_TABLE[yZhiIdx]);
 
-  // 月德(乙級)：依月支
-  // 不同於天德，月德安法: 正月→巳(5),二月→午(6),...即 (lunar.month+4)%12
-  // 文墨: 七月, 月德在辰(4) → (7+4)%12=11=亥? 不對
-  // 另一說: 正月→辰(4),二月→巳(5)... 即(lunar.month+3)%12
-  // 測: (7+3)%12=10=戌? 也不對
-  // 文墨顯示月德在辰(4), 七月
-  // 標準月德(合德): 春月寅→庚(金)→... 用查表法
-  // 用斗數標準: 月德 = 天德位置... 天德已安在(lunar.month+8)%12
-  // (7+8)%12=3=卯? 也不對... 文墨天德在申(疾厄)
-  // 看文墨文本: 疾厄(庚申)有天德[平] ← 天德在申
-  // 我們的天德算法: (lunar.month+8)%12 = (7+8)%12 = 3 = 卯 ← 錯！
-  // 需修正天德！下面月德暫跳過，用查表法
-
-  // 陰煞：依年支
-  // 子→寅(2),丑→子(0),寅→戌(10),卯→申(8),辰→午(6),巳→辰(4),午→寅(2),未→子(0),申→戌(10),酉→申(8),戌→午(6),亥→辰(4)
-  // 規律: 每兩位退2 → 偶數位=反向
-  // 文墨: 亥年陰煞在寅(2)... 那(11)→ 查表
-  // 標準: 子→寅,丑→子,寅→戌... 6個一循環降2
-  const YINSHA_TABLE=[2,0,10,8,6,4,2,0,10,8,6,4];
-  // 亥(11)→4=辰? 但文墨在寅(2)
-  // 可能算法不同，暫用簡化版
-  addStarToPalace(palaces,'陰煞','minor2',YINSHA_TABLE[yZhiIdx]);
+  // 陰煞依農曆月，不依出生年支。
+  addStarToPalace(palaces,'陰煞','minor2',[2,0,10,8,6,4][(effectiveMonth-1)%6]);
 
   // ═══ 丙級星 ═══
   // 三台：左輔位置+日-1
@@ -416,8 +361,8 @@ function computeZiwei(year,month,day,hour,gender){
   }
   // 台輔：依時支 午(6)起順行
   addStarToPalace(palaces,'台輔','minor3',(shi+6)%12);
-  // 封誥：依時支 午(6)起逆行
-  addStarToPalace(palaces,'封誥','minor3',(6-shi+12)%12);
+  // 封誥：依時支 寅(2)起順行
+  addStarToPalace(palaces,'封誥','minor3',(2+shi)%12);
 
   // ═══ 旬空＋截空（正副雙星法）═══
   // 旬空：六十甲子每旬空亡兩位
@@ -545,12 +490,12 @@ function computeZiwei(year,month,day,hour,gender){
     p.changsheng = CHANGSHENG_NAMES[steps] || '';
   });
 
-  // 命主星 (以年支決定)
+  // 命主採命宮地支；年支命主另屬中州派設定，本版不混用。
   const MING_ZHU={0:'貪狼',1:'巨門',2:'祿存',3:'文曲',4:'廉貞',5:'武曲',6:'破軍',7:'武曲',8:'廉貞',9:'文曲',10:'祿存',11:'巨門'};
   // 身主星 (以年支決定)
   const SHEN_ZHU={0:'火星',1:'天相',2:'天梁',3:'天同',4:'文昌',5:'天機',6:'火星',7:'天相',8:'天梁',9:'天同',10:'文昌',11:'天機'};
   const yZhiIdx2=DZ.indexOf(yZhi);
-  const mingZhu=MING_ZHU[yZhiIdx2]||'貪狼';
+  const mingZhu=MING_ZHU[mingIdx];
   const shenZhu=SHEN_ZHU[yZhiIdx2]||'火星';
 
   // ═══ 大限（紫微斗數大運）═══
@@ -578,7 +523,7 @@ function computeZiwei(year,month,day,hour,gender){
   for(let i=0;i<12;i++){
     const ageStart=dxStartAge+i*10;
     const ageEnd=ageStart+9;
-    const curAge=new Date().getFullYear()-year+1; // 虛歲（紫微大限以虛歲計：出生即1歲，與文墨天機一致）
+    const curAge=currentAge; // 虛歲（紫微大限以虛歲計：出生即1歲，與文墨天機一致）
     const isCur=curAge>=ageStart&&curAge<=ageEnd;
 
     // 大限宮位地支：命宮出發，順/逆行
@@ -747,7 +692,8 @@ function computeZiwei(year,month,day,hour,gender){
           if(origJi){lnScore-=2;lnNotes.push('⚠ 流年化忌疊原盤化忌於'+h.palace+'（雙忌）');}
         }
         // 流年化忌疊大限化忌
-        const curDx=daXian.find(d=>d.isCurrent);
+        const targetAge=ageAtLunarYear(lnYear);
+        const curDx=daXian.find(d=>targetAge>=d.ageStart&&targetAge<=d.ageEnd);
         if(curDx&&curDx.hua){
           const dxJi=curDx.hua.find(dh=>dh.palace===h.palace&&dh.hua==='化忌');
           if(dxJi){lnScore-=2;lnNotes.push('⚠ 流年化忌疊大限化忌於'+h.palace+'（雙忌大凶）');}
@@ -767,7 +713,7 @@ function computeZiwei(year,month,day,hour,gender){
     return {year:lnYear,gz:lnG+lnZ,mingPalace:lnMingName,focus:lnFocus,hua:lnHua,score:lnScore,notes:lnNotes,bright:lnAnalysis.bright};
   }
 
-  // ═══ 流月盤（依流月地支走宮）═══
+  // ═══ 流月盤（斗君安流月命宮；月份干支另列）═══
   // 正月=寅(2), 二月=卯(3), ... 十二月=丑(1)
   // 流月天干 = 五虎遁（流年天干→正月天干→逐月遞推）
   function getLiuYueZw(lnYear) {
@@ -786,14 +732,14 @@ function computeZiwei(year,month,day,hour,gender){
 
     for (var m = 1; m <= 12; m++) {
       // 流月地支：正月=寅(2), 二月=卯(3)... 十二月=丑(1)
-      var mBranchIdx = (m + 1) % 12;
-      var mBranch = DZ[mBranchIdx];
+      var mBranchIdx = ((((lnYear-4)%12+12)%12 - effectiveMonth + shi + m)%12+12)%12;
+      var mBranch = DZ[(m+1)%12]; // 農曆月干支與斗君命宮分开記錄
       // 流月天干：從正月天干開始，逐月+1
       var mGanIdx = (yinGanIdx + (m - 1)) % 10;
       var mGan = TG[mGanIdx];
 
-      // 流月命宮 = 流月地支所在的原盤宮位
-      var mMingPalace = palaces.find(function(p) { return p.branch === mBranch; });
+      // 流月命宮依生月、生時與流年太歲起斗君，不等於月份地支
+      var mMingPalace = palaces.find(function(p) { return p.branch === DZ[mBranchIdx]; });
       if (!mMingPalace) continue;
 
       // 流月四化（依流月天干）
@@ -853,6 +799,7 @@ function computeZiwei(year,month,day,hour,gender){
       months.push({
         month: m,
         monthName: MONTH_NAMES[m - 1],
+        calendar:'農曆平月（閏月須另按政策判定）',mingBranch:DZ[mBranchIdx],method:'斗君',
         gz: mGan + mBranch,
         mingPalace: mMingPalace.name,
         focus: LM_FOCUS[mMingPalace.name] || '',
@@ -866,13 +813,11 @@ function computeZiwei(year,month,day,hour,gender){
   }
 
   // ═══ 小限（流年個人宮位走法）═══
-  // 小限起宮：男命1歲起寅宮順行，女命1歲起申宮逆行（另一派依命宮起）
-  // 主流：男從寅順，女從申逆；每歲走一宮
+  // 小限按出生年支三合起宮，男順女逆；虛歲每年正月初一遞增。
   function getXiaoXian(targetAge) {
-    if (!targetAge || targetAge < 1) return null;
-    var startIdx, dir;
-    if (gender === 'male') { startIdx = 2; dir = 1; } // 寅宮順行
-    else { startIdx = 8; dir = -1; } // 申宮逆行
+    if (!Number.isInteger(targetAge) || targetAge < 1) return null;
+    var startIdx = [10,7,4,1,10,7,4,1,10,7,4,1][yZhiIdx];
+    var dir = gender === 'male' ? 1 : -1;
     var xxBranchIdx = ((startIdx + (targetAge - 1) * dir) % 12 + 12) % 12;
     var xxPalace = palaces.find(function(p) { return DZ.indexOf(p.branch) === xxBranchIdx; });
     if (!xxPalace) return null;
@@ -1123,7 +1068,7 @@ function computeZiwei(year,month,day,hour,gender){
   // ═══ 來因宮（欽天派：宮干 == 生年天干 那一宮 = 此生課題與內在驅力的根源）═══
   var laiYin = null;
   try {
-    var _lyP = palaces.find(function (p) { return p.gan === yGan; });
+    var _lyP = palaces.find(function (p) { return p.gan === yGan && p.branch!=='子' && p.branch!=='丑'; });
     if (_lyP) laiYin = { name: _lyP.name, branch: _lyP.branch, gan: _lyP.gan };
   } catch (_e) {}
 
@@ -1145,7 +1090,7 @@ function computeZiwei(year,month,day,hour,gender){
     });
   } catch (_e) {}
 
-  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'v80.29-ziwei-laiyin-feigong', orthodoxMode:true, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','主星、四化、大限、流年以三合/四化骨架為主；乙丙級星存在派別差異，前端只作輔助標示。']};
+  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20260912-accuracy1', birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
   } catch(_zwErr) {
     console.error('[computeZiwei] 排盤失敗:', _zwErr && _zwErr.message ? _zwErr.message : _zwErr, _zwErr && _zwErr.stack ? _zwErr.stack : '');
     window._jyZiweiError = (_zwErr && _zwErr.message) ? _zwErr.message : String(_zwErr);
@@ -1163,75 +1108,10 @@ function addStarToPalace(palaces, name, type, zhiIdx){
 
 // ── mergeZiweiIntoBazi + helper (lines 22033-22130) ──
 function mergeZiweiIntoBazi(){
-  if(!S.bazi||!S.ziwei||!S.ziwei.daXian) return;
-  const bazi=S.bazi, zw=S.ziwei;
-  const thisYear=new Date().getFullYear();
-
-  bazi.dayun.forEach(dy=>{
-    // 找同期的紫微大限
-    const matchDx=zw.daXian.find(dx=>
-      (dy.ageStart>=dx.ageStart&&dy.ageStart<=dx.ageEnd)||
-      (dx.ageStart>=dy.ageStart&&dx.ageStart<=dy.ageEnd)
-    );
-    if(!matchDx) return;
-
-    // 紫微大限score按比例加入八字大運score
-    const zwWeight=0.35; // 紫微佔35%的權重
-    const zwAdj=matchDx.score*zwWeight;
-    dy.score+=zwAdj;
-
-    // 加入紫微notes
-    if(matchDx.bright&&matchDx.bright.length){
-      dy.notes.push('紫微大限走'+matchDx.palaceName+'（'+matchDx.bright.map(b=>b.star+b.label).join('、')+' ）');
-    }else{
-      dy.notes.push('紫微大限走'+matchDx.palaceName+'（'+matchDx.level+'）');
-    }
-    if(matchDx.theme) dy.notes.push('十年主題：'+matchDx.theme);
-    // 重要的大限notes（廟旺、吉煞組合、四化、特殊格局）
-    if(matchDx.notes){
-      matchDx.notes.slice(0,3).forEach(n=>dy.notes.push('紫微：'+n));
-    }
-
-    // 重新計算大運level（統一使用吉凶標籤）
-    const s=dy.score;
-    if(s>=6) dy.level='大吉';
-    else if(s>=3) dy.level='中吉';
-    else if(s>=1) dy.level='小吉';
-    else if(s>=-1) dy.level='平穩';
-    else if(s>=-3) dy.level='小凶';
-    else if(s>=-6) dy.level='凶';
-    else dy.level='大凶';
-
-    // 紫微流年整合進八字流年
-    if(dy.liuNian&&zw.getLiuNianZw){
-      dy.liuNian.forEach(ln=>{
-        try{
-          const zwLn=zw.getLiuNianZw(ln.year);
-          if(!zwLn) return;
-
-          // 紫微流年score按比例加入
-          const lnZwAdj=zwLn.score*0.3;
-          ln.score+=lnZwAdj;
-
-          // 紫微流年notes
-          if(zwLn.mingPalace) ln.notes.push('紫微流年走'+zwLn.mingPalace);
-          if(zwLn.focus) ln.notes.push('重點：'+zwLn.focus);
-          if(zwLn.bright&&zwLn.bright.length) ln.notes.push(zwLn.bright.map(b=>b.star+b.label).join('、'));
-          if(zwLn.notes) zwLn.notes.slice(0,2).forEach(n=>ln.notes.push(n));
-
-          // 重新計算流年level（統一使用吉凶標籤）
-          const ls=ln.score;
-          if(ls>=5) ln.level='大吉';
-          else if(ls>=3) ln.level='中吉';
-          else if(ls>=1) ln.level='小吉';
-          else if(ls>=-1) ln.level='平穩';
-          else if(ls>=-3) ln.level='小凶';
-          else if(ls>=-5) ln.level='凶';
-          else ln.level='大凶';
-        }catch(e){}
-      });
-    }
-  });
+  if(!S.bazi||!S.ziwei)return;
+  // 八字大運用出生後周歲區間；紫微大限用虛歲，不能直接按相同歲數配對或加權打分。
+  S.bazi.ziweiReference={policy:'SEPARATE_SYSTEMS_NO_SCORE_MERGE',mingPalace:S.ziwei.palaces[0].branch,
+    daXian:S.ziwei.daXian.map(function(d){return {ageStart:d.ageStart,ageEnd:d.ageEnd,palaceName:d.palaceName,ageBasis:'農曆虛歲'};})};
 }
 
 function getWuxingJu(gan, zhi){
@@ -1240,24 +1120,21 @@ function getWuxingJu(gan, zhi){
   const NY_EL=['金','火','木','土','金','火','水','土','金','木','水','土','火','木','水','金','火','木','土','金','火','水','土','金','木','水','土','火','木','水'];
   const JU={'金':4,'木':3,'水':2,'火':6,'土':5};
   const gi=TG.indexOf(gan), zi=DZ.indexOf(zhi);
-  if(gi<0||zi<0)return 4;
+  if(gi<0||zi<0)throw new Error('命宮干支無效。');
   let idx=-1;
   for(let n=0;n<60;n++)if(n%10===gi&&n%12===zi){idx=n;break;}
-  if(idx<0)return 4;
+  if(idx<0)throw new Error('命宮干支不在六十甲子中。');
   const nyEl=NY_EL[Math.floor(idx/2)];
   return JU[nyEl]||4;
 }
 
 function getZiweiPalaceByJu(ju, lunarDay){
-  // 紫微安星公式（標準退步法）
-  // day÷ju=商q餘r
-  // r=0: 從寅(2)起順數(q-1)位
-  // r≠0: 從寅(2)起順數q位，再退(ju-r)步（退步=減法）
-  const day=Math.max(1,Math.min(30,lunarDay));
-  const q=Math.floor(day/ju), r=day%ju;
-  if(r===0) return ((2+q-1)%12+12)%12;
-  const n=ju-r; // 退步數
-  return ((2+q-n)%12+12)%12; // 退步永遠是減法
+  // 安紫微：補到可整除局數，從寅起商數；補數奇退、偶進。
+  // 對照：https://github.com/SylarLong/iztro/blob/main/src/star/location.ts#getStartIndex
+  if(![2,3,4,5,6].includes(ju) || !Number.isInteger(lunarDay) || lunarDay<1 || lunarDay>30) throw new Error('紫微局數或農曆日無效。');
+  const offset=(ju-lunarDay%ju)%ju;
+  const quotient=(lunarDay+offset)/ju;
+  return ((2+quotient-1+(offset%2===0?offset:-offset))%12+12)%12;
 }
 
 

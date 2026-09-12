@@ -91,9 +91,9 @@
     if (!fromEl || !toEl) return {type:'unknown', label:'未知'};
     if (fromEl === toEl) return {type:'same', label:'同五行'};
     if (GENERATES[fromEl] === toEl) return {type:'generate', label:fromEl + '生' + toEl};
-    if (GENERATES[toEl] === fromEl) return {type:'receive', label:toEl + '生' + fromEl};
+    if (GENERATES[toEl] === fromEl) return {type:'receive', label:fromEl + '受' + toEl + '所生'};
     if (CONTROLS[fromEl] === toEl) return {type:'control', label:fromEl + '剋' + toEl};
-    if (CONTROLS[toEl] === fromEl) return {type:'controlled', label:toEl + '剋' + fromEl};
+    if (CONTROLS[toEl] === fromEl) return {type:'controlled', label:fromEl + '受' + toEl + '所剋'};
     return {type:'neutral', label:'關係待審'};
   }
 
@@ -371,11 +371,12 @@
       '【A. 排盤與曆法資料】',
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.genderLabel||chart&&chart.gender||'')+'・'+escapeLine(meta.birthLine||'出生資料未標示'),
       meta.solarInfo&&meta.solarInfo.trueSolarDateTime?'民用出生時間校正為真太陽時：'+meta.solarInfo.trueSolarDateTime+'；經度 '+safeText(meta.longitude)+'°；時區 '+safeText(meta.timezoneId||meta.solarInfo.timezoneId)+'。':'真太陽時資料未提供。',
+      '出生瞬間（UTC）：'+safeText(chart&&chart.calculationPolicy&&chart.calculationPolicy.birthInstant,'未提供')+'；年、月柱在 UTC+8 核對節氣，日、時柱依本盤牆鐘；起運採分鐘折算法。',
       '排盤政策：換日 '+safeText(chart&&chart.calculationPolicy&&chart.calculationPolicy.dayBoundaryMode)+'；流年以立春為界；大運採半開區間 [起點,下一起點)。',
       meta.unknown?'時辰未知：目前以暫定時刻排盤，時柱、神煞、子女晚景象義及精確起運的把握度較低。':'',
       pillarFactLines(chart).join('\n'),
       (meta.unknown?'・暫定起運（以12:00暫排，精確交運把握度較低）：':'・起運：')+safeText(chart&&chart.qiyun&&chart.qiyun.startAgeText)+'；交運點 '+safeText(chart&&chart.qiyun&&chart.qiyun.startDate)+'；順逆 '+safeText(chart&&chart.qiyun&&chart.qiyun.direction)+'。',
-      '・輔助資料：生肖 '+safeText(CHINESE_ZODIAC[chart&&chart.pillars&&chart.pillars.year&&chart.pillars.year.zhi],'—')+'；空亡 '+(safeArray(chart&&chart.kongwang).join('、')||'—')+'；命宮 '+safeText(chart&&chart.mingGong&&(chart.mingGong.gan+chart.mingGong.zhi),'—')+'；胎元 '+safeText(chart&&chart.taiYuan&&(chart.taiYuan.gan+chart.taiYuan.zhi),'—')+'；八字重量 '+safeText(chart&&chart.chenggu&&chart.chenggu.display,'未計得')+'。稱骨、命宮、胎元、納音與神煞可作輔助視角，主判仍綜合月令與全局生剋。',
+      '・輔助資料：生肖 '+safeText(CHINESE_ZODIAC[chart&&chart.pillars&&chart.pillars.year&&chart.pillars.year.zhi],'—')+'；空亡 '+(chart&&chart.kongwang&&!Array.isArray(chart.kongwang)?'年柱 '+safeArray(chart.kongwang.year).join('、')+'；日柱 '+safeArray(chart.kongwang.day).join('、'):(safeArray(chart&&chart.kongwang).join('、')||'—'))+'；命宮 '+safeText(chart&&chart.mingGong&&(chart.mingGong.gan+chart.mingGong.zhi),'—')+'；胎元 '+safeText(chart&&chart.taiYuan&&(chart.taiYuan.gan+chart.taiYuan.zhi),'—')+'；八字重量 '+safeText(chart&&chart.chenggu&&chart.chenggu.display,'未計得')+'。稱骨、命宮、胎元、納音與神煞可作輔助視角，主判仍綜合月令與全局生剋。',
       '【原局干支作用——由核心唯一計算】',
       interactionLines(chart).join('\n'),
       '判讀提示：配對存在後仍需審成化條件；沖刑害破的方向結合所動之柱、十神、喜忌與歲運。',

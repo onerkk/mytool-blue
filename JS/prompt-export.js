@@ -1,3 +1,4 @@
+// 20260912accuracy1: refresh stopped-operation and original-question guards in previously open clients.
 /*! prompt-export.js — 靜月之光塔羅／開鑰提示詞匯出引擎 [v103.0]
  *  v103.0（知識開放提示詞 2026/9/4）：保留原生牌陣方法與 Book T 資料，開放 AI 自身塔羅知識，移除重複禁令、稽核與微管理。
  *  v98.0（單一 Foundation 根架構 2026/7/17）：
@@ -744,7 +745,7 @@
       if(o.ringSize)L.push('三十六牌環：'+o.ringSize+'張。');
       if(o.activeCards&&o.activeCards.length)L.push('活躍牌：'+o.activeCards.map(function(c){return cn(c)+(c.bookTTitle?'〔'+c.bookTTitle+'〕':'');}).join('、'));
       var counting=o.ringCountingPath&&o.ringCountingPath.length?o.ringCountingPath:o.countingPath;
-      if(counting&&counting.length)L.push('計數故事（依序，位置自0編號）：'+counting.map(function(s){return (s.cardName||'?')+'〔位置'+s.position+'，計'+s.countValue+(s.direction?'，方向'+s.direction:'')+'〕';}).join(' → '));
+      if(counting&&counting.length)L.push('計數故事（堆內位置自0編號；環牌1–36，center為中央）：'+counting.map(function(s){return (s.cardName||'?')+'〔位置'+s.position+'，計'+s.countValue+(s.direction?'，方向'+s.direction:'')+'〕';}).join(' → '));
       var pairs=(o.ringPairing&&o.ringPairing.length)?o.ringPairing:o.pairs;
       if(pairs&&pairs.length)L.push('配對故事（由近到遠）：'+pairs.map(function(pr,i){return '#'+(i+1)+' '+cn(pr.left)+(pr.right?'↔'+cn(pr.right):'')+(pr.dignity?'〔'+pr.dignity+'〕':'');}).join('；'));
       if(o.dignities&&o.dignities.length)L.push('元素尊貴：'+safeText(o.dignities));

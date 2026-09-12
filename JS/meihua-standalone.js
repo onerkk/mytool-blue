@@ -378,7 +378,7 @@
     L.push('請完整回答原問句，保留其中的對象、條件、比較與期限。');
     var yesno = /會不會|能不能|可不可以|是否|是不是|有沒有|嗎[？?]?\s*$/.test(q);
     var timing = /何時|什麼時候|多久|幾天|幾週|幾月|哪一年|時間|近期|本月|今年|明年/.test(q);
-    var choice = /還是|二選一|哪個|哪一個|比較|該選|選擇/.test(q);
+    var choice = /還是|二選一|比較|該選|選擇|(?:方案|選項)\s*[ABＡＢ]/i.test(q);
     var cause = /為什麼|為何|原因|怎麼會|根源/.test(q);
     var action = /怎麼做|怎麼辦|如何|建議|方法|策略|該不該|要不要/.test(q);
     var mind = /愛不愛|愛上|喜歡|想我|想念|在想|心裡|真心|感情|關係|復合|曖昧|桃花/.test(q);
@@ -456,7 +456,7 @@
         return '在洩耗——付出與回收要算清楚，別無底線投入。';
       }
       if (relName==='體克用') {
-        if (tiWeak && yoStrong) return '體弱剋旺用——原局仍屬諸事吉，但落實度最低；主動權名義在你，實際推動最費力。';
+        if (tiWeak && yoStrong) return '體弱剋旺用——有主動處理之象，但自身力弱、外在條件強，不能只因體剋用便斷吉或保證成功；先審承受力與本互變。';
         if (tiStrong && yoWeak) return '體旺剋衰用——壓得輕鬆、最易成。';
         if (tiStrong) return '體旺——你壓得住、可成，主動推進就行。';
         if (tiWeak) return '體弱想掌控——吉意仍在，但力道不足，成得很費勁。';
@@ -464,7 +464,7 @@
       }
       if (relName==='用生體') {
         if (yoStrong) return '用旺生體——外助強而實，貴人／環境有力，借得上力。';
-        if (yoWeak) return '用衰生體——有幫手但力道有限，別全靠外援。';
+        if (yoWeak) return '用衰生體——象徵支持條件偏弱；是否真有外援仍待現實確認。';
         return '外助中等——有幫襯，仍要自己接得住。';
       }
       if (relName==='比和') {
@@ -499,6 +499,7 @@
     L.push(_mhQuestionContract(question));
     L.push('');
     L.push('【卦象資料】');
+    L.push('互卦政策：本版一律取本卦第2、3、4爻為下互，第3、4、5爻為上互，乾坤也依結構計算；原典另載乾坤無互、互其變卦，屬不同處理，不能假稱本版採該例外。文字筆畫取數為現代延伸，並非原典四至十字按平上去入取數的復刻。');
     L.push('起卦依據：'+(mh.castContext?JSON.stringify(mh.castContext):'舊資料未保存起卦時間與原始取數；當下旺衰只作匯出時參考，不能追認為起卦時令。'));
     L.push('旺衰算法：'+seasonPrecision+'。');
     if(mh.lo.li&&mh.up.li)L.push('本卦六爻（自下而上，1陽0陰）：'+mh.lo.li.concat(mh.up.li).join('、')+'；只翻轉第'+mh.dong+'爻生成變卦。');
@@ -518,7 +519,7 @@
         var _hrel = function (g) {
           if (!g || !g.el) return '';
           if (g.el === tiEl) return (g.name||'') + '（' + g.el + '）與體比和＝過程有同氣相助';
-          if (_SH[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）生體＝過程有暗助推力';
+          if (_SH[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）生體＝過程中可能存在支持條件，不能據此認定有人暗助';
           if (_SH[tiEl] === g.el) return (g.name||'') + '（' + g.el + '）受體生＝過程在洩耗你';
           if (_KEm[g.el] === tiEl) return (g.name||'') + '（' + g.el + '）剋體＝可檢視過程的外部限制，不證明特定人物阻撓';
           if (_KEm[tiEl] === g.el) return (g.name||'') + '（' + g.el + '）受體剋＝過程可控但費力';
@@ -535,7 +536,7 @@
     if (_zong) L.push('綜卦：' + (_zong.isSelf ? '與本卦相同 —— 正反看都一樣，此卦上下倒置後結構相同；僅是卦形對稱，不代表事情無法改變' : ('上' + _zong.up + '下' + _zong.lo + ' —— 把局面整個倒過來、站對方／對立位置看到的另一種樣貌，可輔助觀察換位後的立場或事情循環另一端，但不能單憑此卦斷定對方內心')) + '。');
     L.push('體卦：' + _mhTrig(mh.tiG) + ' —— 問卜者自身／所問之主體。體宜旺、宜被生。');
     L.push('用卦：' + _mhTrig(mh.yoG) + ' —— 所問之事／外在環境／對方。');
-    L.push('本卦體用關係：' + (mh.ty && mh.ty.r) + '（' + luck + '）。' + (mh.ty && mh.ty.d));
+    L.push('本卦體用關係：' + (mh.ty && mh.ty.r) + '；未加旺衰的傳統分類為「' + luck + '」，不是事件結論。實際傾向須以下方體用旺衰及本互變綜合校準。');
     L.push('生剋力道（體用旺衰合參、定輕重）：' + _forceNote(mh.ty && mh.ty.r, wsLevel, yoWs));
     if (bianTy) {
       L.push('變卦體用關係（結局）：體仍為' + tiName + '（' + tiEl + '），用變為' + yoBianName + '（' + yoBianEl + '）→ ' + bianTy.r + '（' + bianTy.f + '）。變後用「' + yoBianName + '」當下旺衰為「' + _wsLevelOf(yoBianEl) + '」。生剋力道：' + _forceNote(bianTy.r, wsLevel, _wsLevelOf(yoBianEl)) + ' 拿它跟本卦體用比：同向＝維持，轉壞＝越走越不利，轉好＝漸入佳境。');
@@ -562,7 +563,7 @@
         if (mh.yingQi.baiTxt) L.push('・不利候選：' + mh.yingQi.baiTxt + '。');
         if (mh.yingQi.layerTxt) L.push('・遠近層次：' + mh.yingQi.layerTxt + '。');
       } else {
-        L.push('應期資料：本盤沒有曆法換算結果，可依用卦、互卦與變卦說明近期、中期、遠期的相對層次；精確日期的把握度較低。');
+        L.push('應期資料：本盤沒有曆法換算結果。可說明本互變的過程層次，不把三卦硬配三段時間，也不報精確日期。');
       }
     } catch (e) {}
     // 選品置於完整解讀後，由生活情境承接，不把體用當成補五行處方。

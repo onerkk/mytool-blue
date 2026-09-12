@@ -4572,19 +4572,27 @@ function _baziReferenceToChartWall(referenceValue,options){
 
 // ── computeBazi + computeStartAge + related (lines 4051-5269) ──
 function computeBazi(year,month,day,hour,minute,gender,options){
-  options=options||{};
+  options=Object.assign({timezoneOffset:8},options||{});
   const dayBoundaryMode=options.dayBoundaryMode||BAZI_DEFAULT_POLICY.dayBoundaryMode;
   const referenceInstantMs=options.referenceDate!=null?new Date(options.referenceDate).getTime():Date.now();
   const referenceResolved=_baziReferenceToChartWall(Number.isFinite(referenceInstantMs)?referenceInstantMs:Date.now(),options);
   const referenceMs=referenceResolved.timestamp;
-  // ── 曆法事實層：優先使用本地 lunar-javascript；舊表只作明示備援 ──
-  const jqInfo = findJieqiForBirth(year, month, day, hour, minute||0);
+  // 曆法事實層必須成功；不以近似日期或預設起運歲數代替。
+  if(![year,month,day,hour,minute||0].every(Number.isInteger) || year<1900 || year>2100 || hour<0 || hour>23 || (minute||0)<0 || (minute||0)>59 || !['male','female'].includes(gender)) throw new Error('出生日期、時間或性別無效。');
+  const inputDate=new Date(Date.UTC(year,month-1,day));
+  if(inputDate.getUTCFullYear()!==year || inputDate.getUTCMonth()+1!==month || inputDate.getUTCDate()!==day) throw new Error('出生日期不存在。');
+  if(options.civilTimeStatus==='nonexistent-compatible') throw new Error('這個出生時間位於夏令時間跳時缺口，請核對出生紀錄後重填。');
+  const termInstant=options.birthInstant!=null?(typeof options.birthInstant==='number'?options.birthInstant:Date.parse(options.birthInstant)):Date.UTC(year,month-1,day,hour,minute||0,options.second||0)-(options.timezoneOffset==null?8:Number(options.timezoneOffset))*3600000;
+  if(!Number.isFinite(termInstant))throw new Error('出生瞬間無效。');
+  const termClock=new Date(termInstant+8*3600000);
+  const jqInfo = findJieqiForBirth(termClock.getUTCFullYear(),termClock.getUTCMonth()+1,termClock.getUTCDate(),termClock.getUTCHours(),termClock.getUTCMinutes());
   let calendarFact=null;
   try{
     if(window.BaziCalendarCore&&window.BaziCalendarCore.hasEngine()){
-      calendarFact=window.BaziCalendarCore.calculateChart({year:year,month:month,day:day,hour:hour,minute:minute||0,second:options.second||0,dayBoundaryMode:dayBoundaryMode});
+      calendarFact=window.BaziCalendarCore.calculateChart({year:year,month:month,day:day,hour:hour,minute:minute||0,second:options.second||0,dayBoundaryMode:dayBoundaryMode,birthInstant:options.birthInstant,timezoneOffset:options.timezoneOffset,trueSolarTimeApplied:options.trueSolarTimeApplied});
     }
-  }catch(e){calendarFact=null;}
+  }catch(e){throw new Error('曆法計算未完成：'+e.message);}
+  if(!calendarFact) throw new Error('農曆節氣引擎尚未載入，已停止排盤。');
 
   let yGi,yZi,yG,yZ,mGi,mZi,mG,mZ,dGi,dZi,dG,dZ,hGi,hZi,hG,hZ,mi;
   if(calendarFact&&calendarFact.pillars){
@@ -5295,7 +5303,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
 
   // ── 命宮 / 胎元 / 胎息 / 身宮 ──
   const hZiIdx = DZ.indexOf(hZ);
-  const mingGong = getMingGong(yGi, mZi, hZiIdx, mi, year, month, day, hour, minute);
+  const mingGong = getMingGong(yGi, mZi, hZiIdx, mi, termClock.getUTCFullYear(),termClock.getUTCMonth()+1,termClock.getUTCDate(),termClock.getUTCHours(),termClock.getUTCMinutes());
   const taiYuan = getTaiYuan(mGi, mZi);
   const taiXi = getTaiXi(dGi, dZi);
   const shenGong = getShenGong(yGi, mZi, hZiIdx, mi);
@@ -5303,7 +5311,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   // ── 大運 ──
   const isFwd=(gender==='male'&&YY_G[yG]==='陽')||(gender==='female'&&YY_G[yG]==='陰');
   const dir=isFwd?1:-1;
-  const qiyun=computeStartAge(year,month,day,hour,minute,dir,gender,dayBoundaryMode,options.second||0);
+  const qiyun=computeStartAge(year,month,day,hour,minute,dir,gender,dayBoundaryMode,options.second||0,options);
   const startAge = qiyun.startAge;
   const dayun=[];
   const firstDaYunStart=qiyun.startTimestamp;
@@ -5553,7 +5561,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   const zodiac = getZodiac(month, day);
   const xingxiu = getXingXiu(year, month, day);
 
-  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false}};
+  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false}};
 }
 
 
@@ -5675,52 +5683,20 @@ function calcAppV5Scores(input){
 }
 
 
-function computeStartAge(y,m,d,hr,mi,dir,gender,dayBoundaryMode,sec){
+function computeStartAge(y,m,d,hr,mi,dir,gender,dayBoundaryMode,sec,options){
+  options=options||{};
   /* 起運換算：順至下一「節」、逆至上一「節」；三日折一年。
      將餘數完整保留為月／日／時，不再只留下整歲。 */
   try{
     if(window.BaziCalendarCore&&window.BaziCalendarCore.hasEngine()){
-      var exact=window.BaziCalendarCore.calculateYun({year:y,month:m,day:d,hour:hr||0,minute:mi||0,second:sec||0,gender:gender,dayBoundaryMode:dayBoundaryMode});
+      var exact=window.BaziCalendarCore.calculateYun({year:y,month:m,day:d,hour:hr||0,minute:mi||0,second:sec||0,gender:gender,dayBoundaryMode:dayBoundaryMode,birthInstant:options.birthInstant,timezoneOffset:options.timezoneOffset,trueSolarTimeApplied:options.trueSolarTimeApplied});
       if(exact&&isFinite(exact.startTimestamp)){
         var exTxt=(exact.years?exact.years+'歲':'')+(exact.months?exact.months+'月':'')+(exact.days?exact.days+'日':'')+(exact.hours?exact.hours+'時':'');
         return {age:exact.years,years:exact.years,months:exact.months,days:exact.days,hours:exact.hours,virtualAge:exact.years+1,startAge:exact.years,startAgeDecimal:exact.years+exact.months/12+exact.days/360+exact.hours/8640,startAgeText:exTxt||'不足一月',startTimestamp:exact.startTimestamp,startDate:exact.startDate,precision:exact.precision,direction:exact.direction,referenceJie:exact.referenceJie,referenceJieDate:exact.referenceJieDate,cycles:exact.cycles,calendarEngine:exact.engine,calendarEngineVersion:exact.engineVersion,smallStart:1,smallEnd:Math.max(0,exact.years-1)};
       }
     }
-  }catch(e){}
-  const jqInfo=findJieqiForBirth(y,m,d,hr||0,mi||0);
-  if(!jqInfo){
-    var fbMs=_baziAddCalendarOffset(y,m,d,hr||0,mi||0,0,5,0,0,0);
-    return {age:5,years:5,months:0,days:0,hours:0,virtualAge:6,startAge:5,startAgeDecimal:5,startAgeText:'約5歲（節氣表外近似）',startTimestamp:fbMs,startDate:_baziFormatDateTime(fbMs),precision:'approximate',direction:dir>0?'forward':'backward',smallStart:1,smallEnd:4};
-  }
-  const birthMs=Date.UTC(y,m-1,d,hr||0,mi||0,0);
-  let targetMs=null,targetName='';
-  if(dir>0){
-    var t=JQ[y],tn=JQ[y+1],num=null,ty=y;
-    if(jqInfo.jieIdx<11){num=t&&t[jqInfo.jieIdx+1];targetName=['小寒','立春','驚蟄','清明','立夏','芒種','小暑','立秋','白露','寒露','立冬','大雪'][jqInfo.jieIdx+1];}
-    else {num=tn&&tn[0];ty=y+1;targetName='小寒';}
-    if(jqInfo.jieIdx===11&&jqInfo.jieMonth===12&&m<=2){num=t&&t[0];ty=y;targetName='小寒';}
-    targetMs=_baziJqToMs(ty,num);
-  }else{
-    var jy=(jqInfo.jieIdx===11&&jqInfo.jieMonth===12&&m<=2)?y-1:y;
-    targetMs=Date.UTC(jy,jqInfo.jieMonth-1,jqInfo.jieDay,jqInfo.jieHour,jqInfo.jieMinute,0);
-    targetName=jqInfo.jieName||['小寒','立春','驚蟄','清明','立夏','芒種','小暑','立秋','白露','寒露','立冬','大雪'][jqInfo.jieIdx]||'上一節';
-  }
-  if(targetMs==null||!isFinite(targetMs)){
-    var fb=_baziAddCalendarOffset(y,m,d,hr||0,mi||0,0,5,0,0,0);
-    return {age:5,years:5,months:0,days:0,hours:0,virtualAge:6,startAge:5,startAgeDecimal:5,startAgeText:'約5歲（節氣缺資料）',startTimestamp:fb,startDate:_baziFormatDateTime(fb),precision:'approximate',direction:dir>0?'forward':'backward',smallStart:1,smallEnd:4};
-  }
-  var diffMinutes=Math.abs(targetMs-birthMs)/60000;
-  var years=Math.floor(diffMinutes/4320),rem=diffMinutes-years*4320;
-  var months=Math.floor(rem/360);rem-=months*360;
-  var days=Math.floor(rem/12);rem-=days*12;
-  var hours=Math.round(rem/0.5);
-  if(hours>=24){hours-=24;days++;}
-  if(days>=30){days-=30;months++;}
-  if(months>=12){months-=12;years++;}
-  var startMs=_baziAddCalendarOffset(y,m,d,hr||0,mi||0,0,years,months,days,hours);
-  var txt=(years?years+'歲':'')+(months?months+'月':'')+(days?days+'日':'')+(hours?hours+'時':'');
-  if(!txt)txt='不足一月';
-  return {age:years,years:years,months:months,days:days,hours:hours,virtualAge:years+1,startAge:years,startAgeDecimal:diffMinutes/4320,startAgeText:txt,startTimestamp:startMs,startDate:_baziFormatDateTime(startMs),precision:'minute-jieqi',direction:dir>0?'forward':'backward',referenceJie:targetName,referenceJieDate:_baziFormatDateTime(targetMs),sourceDistanceMinutes:diffMinutes,smallStart:1,smallEnd:Math.max(0,years-1)};
+  }catch(e){throw new Error('起運計算未完成：'+e.message);}
+  throw new Error('起運需要已載入的節氣引擎，無法用預設五歲代替。');
 }
 
 /* 納音 */
@@ -5734,11 +5710,9 @@ function getNaYin(gi,zi){
   return NY[Math.floor(cycle/2)]||'';
 }
 
-/* 命宮（三命通會法）v80.61 根治
-   《三命通會》：「凡推命宮須以生月之數（如過月支中氣，作次月之數推之）與生時之數合算」
-   代支數 寅1…丑12；和<14 用14減、≥14 用26減；五虎遁取干。
-   等價公式：命宮支 = (5 − 月支序 − 時支序) mod 12（月支過中氣進一位）。
-   舊式 (mi+1-hZi)%12 為紫微安命法且無中氣換月，僅寅/申月過中氣時巧合同答案，已棄用。 */
+/* 八字命宮採後世常用「中氣換月」變體，非紫微斗數安命宮。
+   寅1…丑12；和<14 用14減，否則26減，五虎遁安干。
+   《三命通會》卷二有掌上安命法；不可把本版中氣附加規則冒稱原文直引。 */
 function getMingGong(yGi, mZi, hZi, mi, year, month, day, hour, minute){
   var im = ((mi % 12) + 1) % 12;                  // 節氣月序(寅月=1…丑月=12) → 月支序(子0…亥11)
   var passZhongqi = false;                        // 過中氣？（ZQ 與 JQ 同編碼：月*1e6+日*1e4+時*100+分）

@@ -79,16 +79,16 @@ test('首頁先載入 v5 共用提示詞根，再載入八字與紫微 standalon
   const zStandalone = html.indexOf('JS/ziwei-standalone.js');
   assert(bRoot >= 0 && bRoot < bStandalone);
   assert(zRoot >= 0 && zRoot < zStandalone);
-  assert(html.includes('JS/bazi-prompt-root.js?v=20260912flow2'));
-  assert(html.includes('JS/ziwei-prompt-root.js?v=20260912flow2'));
+  assert(html.includes('JS/bazi-prompt-root.js'));
+  assert(html.includes('JS/ziwei-prompt-root.js'));
 });
 
 test('八字提示詞根在真實執行路徑可用，並開放 AI 自身命理知識', () => {
   const ctx = loadBaziRuntime();
-  assert.strictEqual(ctx.JY_BAZI_PROMPT_ROOT.version, '5.0.0');
+  assert.strictEqual(ctx.JY_BAZI_PROMPT_ROOT.version, '5.1.0');
   const solar = ctx.calcTrueSolarTime(1983, 8, 25, 14, 55, 120.23, 8, 'Asia/Taipei');
   const chart = ctx.computeBazi(solar.year, solar.month, solar.day, solar.hour, solar.minute, 'male', {
-    second: solar.second,
+    second: solar.second, birthInstant:solar.utcTimestamp,
     trueSolarTimeApplied: true,
     timezoneId: 'Asia/Taipei',
     timezoneOffset: 8,
@@ -116,7 +116,7 @@ test('紫微資料不再截掉第四顆之後的輔星、煞星或第九個格�
   assert(!source.includes('(zw.patterns||[]).slice(0,8)'));
   assert.strictEqual(require('vm').runInNewContext(read('JS/ziwei-prompt-root.js') + ';window.JY_ZIWEI_PROMPT_ROOT.version', {
     window: {}, console
-  }), '5.0.0');
+  }), '5.1.0');
 });
 
 test('梅花兩條 standalone 路徑完全一致，且不製造日曆假精確', () => {
@@ -133,9 +133,10 @@ test('靈籤提示詞保留完整材料並開放 AI 的解籤知識', () => {
   const source = read('JS/oracle.js');
   assert(!source.includes('maxlength="120"'));
   assert(!source.includes("String(v||'').slice(0,120)"));
-  assert(source.includes('各項傳統判讀（請依原問題選用'));
+  assert(source.includes('逐首核對過的六十甲子籤原詩'));
+  assert(!source.includes('var D='));
   assert(source.includes('運用你自身完整的籤詩、典故、象徵、傳統解法'));
-  assert(source.includes('詩文、籤等與各項判讀是否同向'));
+  assert(source.includes('比較四句詩的支持與反向訊號'));
   assert(!source.includes('【完整性清單'));
   assert(!source.includes('嚴禁引用籤詩之外'));
 });

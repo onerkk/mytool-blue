@@ -513,6 +513,7 @@ function buildMeihuaOutput(mh, type) {
 //       buildMeihuaOutput(S.meihua, realType) 覆蓋。
 // ═══════════════════════════════════════════════════════════════
 function calcMH(un,ln,dy){
+  if(![un,ln,dy].every(function(n){return Number.isInteger(n)&&n>0;}))throw new Error('卦數與動爻必須是正整數。');
   var up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
   var ben=g64(up.n, lo.n);
   var benL=lo.li.concat(up.li);

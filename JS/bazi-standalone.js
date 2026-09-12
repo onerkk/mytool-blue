@@ -308,7 +308,7 @@
       h += '<input type="checkbox" id="bzx-unknown" style="display:none"' + (_selUnknown ? ' checked' : '') + '>';
       h += '<input type="hidden" id="bzx-city" value="' + _selCity + '">';
       h += '<div class="bzx-err" id="bzx-err"></div>';
-      h += '<div class="bzx-hint">本系統採真太陽時：鐘錶時間依出生地經度、均時差與 DST 校正。不同流派可能採民用時間；接近換日、節氣或時辰邊界時，應同時保留排盤政策。不知時辰會以午時暫排，時柱與時上判讀僅供參考。</div>';
+      h += '<div class="bzx-hint">本系統採真太陽時：鐘錶時間依出生地經度、均時差與 DST 校正。不同流派可能採民用時間；接近換日、節氣或時辰邊界時，應同時保留排盤政策。不知時辰會以午時供介面暫排；輸出的三柱分析排除時柱、精確起運與依賴時辰的結論。</div>';
       h += '</div>';
 
       h += '<div class="bzx-section"><div class="bzx-section-title">✦ 想問什麼？（選填）</div>';
@@ -470,7 +470,8 @@
       if(si.civilTimeStatus==='ambiguous-earlier')L.push('DST 重疊警告：該民用時間對應兩個瞬間，本次採較早一次；須確認出生證明記錄採哪一個偏移。');
       if(si.civilTimeStatus==='nonexistent-compatible')L.push('DST 缺口警告：輸入的民用時間在該地不存在，本次採相容解析，邊界相關判讀的把握度較低。');
     }else if(meta&&meta.solarNote&&!meta.unknown){L.push('真太陽時：'+meta.solarNote+'。');}
-    L.push('排盤政策：曆法引擎 '+(policy.calendarEngine||'備援演算法')+(policy.calendarEngineVersion?' '+policy.calendarEngineVersion:'')+'；精度 '+(policy.calendarPrecision||'未標示')+'；換日 '+(policy.dayBoundaryLabel||'未標示')+'；流年以'+(policy.annualBoundary||'立春')+'為界；大運採半開區間 [起點,下一起點)；目前運勢比較基準 '+(policy.referenceTimeBasis||'未標示')+'。');
+    L.push('排盤政策：曆法引擎 '+(policy.calendarEngine||'未提供')+(policy.calendarEngineVersion?' '+policy.calendarEngineVersion:'')+'；計算精度註記 '+(policy.calendarPrecision||'未標示')+'；換日 '+(policy.dayBoundaryLabel||'未標示')+'；流年以'+(policy.annualBoundary||'立春')+'為界；大運採半開區間 [起點,下一起點)；目前運勢比較基準 '+(policy.referenceTimeBasis||'未標示')+'。');
+    if(policy.birthInstant)L.push('原始出生瞬間：'+policy.birthInstant+'；節氣基準：'+policy.termTimeBasis+'；起運方法：'+policy.qiyunMethod+'。');
     if(policy.calendarFallback)L.push('精度提醒：本次使用備援近似曆法；節氣、23時或交運邊界附近宜降低精確度並核對正式曆表。');
     if(meta&&meta.unknown)L.push('時辰未知：目前以午時暫排。時柱、時柱十神與藏干、命宮／胎息類資料、部分神煞、真太陽時細節及精確起運時刻的把握度較低；請以年、月、日三柱作主要依據，並分開說明時柱候選。');
     keys.forEach(function(k){
@@ -608,10 +609,10 @@
   function _ensureEngine(cb) {
     var need = [];
     if (typeof window.Solar === 'undefined') need.push('JS/vendor/lunar.js');
-    if (typeof window.BaziCalendarCore === 'undefined') need.push('JS/bazi-calendar-core.js');
-    if (typeof calcTrueSolarTime !== 'function') need.push('JS/solar-location.js');
-    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260811promptfix');
-    if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js');
+    if (typeof window.BaziCalendarCore === 'undefined') need.push('JS/bazi-calendar-core.js?v=20260912accuracy1');
+    if (typeof calcTrueSolarTime !== 'function') need.push('JS/solar-location.js?v=20260912accuracy1');
+    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260912accuracy1');
+    if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260912accuracy1');
     if (!need.length) { cb(true); return; }
     if (typeof window._jyLazyScript !== 'function') { cb(typeof computeBazi === 'function'); return; }
     var idx = 0;
@@ -631,7 +632,7 @@
           var si = calcTrueSolarTime(y, m, d, hh, mm, city.lng, city.tz, city.tzid);
           if (si) { sY = si.year; sM = si.month; sD = si.day; sHH = si.hour; sMM = si.minute; solarNote = si.note || ''; }
         }
-        var bazi = computeBazi(sY, sM, sD, sHH, sMM, _gender, {second:(si&&si.second)||0,trueSolarTimeApplied:!!si,timezoneId:city.tzid||null,timezoneOffset:city.tz,longitude:city.lng,dayBoundaryMode:_dayBoundaryMode});
+        var bazi = computeBazi(sY, sM, sD, sHH, sMM, _gender, {second:(si&&si.second)||0,trueSolarTimeApplied:!!si,birthInstant:si&&si.utcTimestamp,civilTimeStatus:si&&si.civilTimeStatus,timezoneId:city.tzid||null,timezoneOffset:city.tz,longitude:city.lng,dayBoundaryMode:_dayBoundaryMode});
         if (!bazi) { _bzxErr('排盤失敗，請確認出生資料後重試'); return; }
         try { if (typeof enhanceBazi === 'function') enhanceBazi(bazi); } catch (e) { console.error('[bazi] enhance', e); }
 

@@ -64,6 +64,7 @@ function mhRelation(elA, elB){
 
 // ═══ 起卦計算 ═══
 function calcMH(un,ln,dy){
+  if(![un,ln,dy].every(function(n){return Number.isInteger(n)&&n>0;}))throw new Error('卦數與動爻必須是正整數。');
   const up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
   const ben=g64(up.n, lo.n);
   const benL=[...lo.li,...up.li];

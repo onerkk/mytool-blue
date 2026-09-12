@@ -476,7 +476,7 @@ function detectSpreadType(question, type) {
   if(!foundation||typeof foundation.routeQuestion!=='function'){
     var missing={version:'98.0.0',engine:'foundation_router',spreadId:null,reason:'JYTarotFoundation 未載入；為避免使用第二套路由器，系統已停止自動選陣。',question:raw,type:String(type||'general'),confidence:0,selectedBy:'fail_closed',features:{},candidates:[]};
     try{detectSpreadType.lastDecision=missing;if(typeof window!=='undefined')window._jyLastSpreadDecision=missing;}catch(_e){}
-    throw new Error('JYTarotFoundation is required before tarot_upgrade.js');
+    throw new Error('JYTarotFoundation is required before tarot_upgrade.js?v=20260912accuracy1');
   }
   var result=foundation.routeQuestion(raw,{type:String(type||'general'),referenceDate:new Date().toISOString()});
   if(!result.spreadId||!result.methodPlan){
@@ -2317,7 +2317,7 @@ enhanceTarot = function(tarot) {
     var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
     var counted = ootkCounting(activeCards, sigIdx);
     var paired = ootkPairing(activeCards, sigIdx);
-    var dignities = ootkDignities(counted.keyCards);
+    var dignities = ootkDignities(counted.keyCards, activeCards);
     var unaspected = []; // Book T 核心版不加入 PHB Source of the Nile 擴充
 
     return {
@@ -2412,7 +2412,7 @@ enhanceTarot = function(tarot) {
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards),
+      dignities: ootkDignities(counted.keyCards, activeCards),
       unaspected: unaspected,
       bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
     };
@@ -2488,7 +2488,7 @@ enhanceTarot = function(tarot) {
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards),
+      dignities: ootkDignities(counted.keyCards, activeCards),
       unaspected: unaspected,
       bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
     };
@@ -2526,7 +2526,8 @@ enhanceTarot = function(tarot) {
     var idx = direction > 0 ? 0 : ring.length - 1;
     // 從代表牌開始，代表牌本身包含在第一次計數；其餘步數落到環牌。
     var sigCount = getCountValue(sigCard);
-    for (var s = 1; s < sigCount; s++) idx = (idx + direction + ring.length) % ring.length;
+    // 代表牌為第 1 步；最近的環牌為第 2 步，故只再移動 count − 2。
+    for (var s = 2; s < sigCount; s++) idx = (idx + direction + ring.length) % ring.length;
     path.push({cardId:sigCard.id,cardName:sigCard.n||sigCard.name,position:'center',countValue:sigCount,isUp:true,direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
     keyCards.push({card:sigCard,position:'center'});
     for (var step = 0; step < ring.length + 1 && ring.length; step++) {
@@ -2553,7 +2554,7 @@ enhanceTarot = function(tarot) {
       ringCountingPath:path,
       pairs:ringPairs,
       ringPairs:ringPairs,
-      dignities:ootkDignities(keyCards),
+      dignities:ootkDignities(keyCards, ring, true),
       bookTMajorities:(window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(ring) : null)
     };
   }
@@ -2621,7 +2622,7 @@ enhanceTarot = function(tarot) {
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards),
+      dignities: ootkDignities(counted.keyCards, activeCards),
       unaspected: unaspected,
       bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
     };
@@ -2739,25 +2740,23 @@ enhanceTarot = function(tarot) {
   // 元素尊嚴分析（Elemental Dignities）
   // ════════════════════════════════════════════════
 
-  function ootkDignities(keyCards) {
-    var result = [];
-    for (var i = 0; i < keyCards.length; i++) {
-      var card = keyCards[i].card;
-      var leftN = (i > 0) ? keyCards[i - 1].card : null;
-      var rightN = (i < keyCards.length - 1) ? keyCards[i + 1].card : null;
-      var leftEd = leftN ? elementalDignity(card, leftN) : 'none';
-      var rightEd = rightN ? elementalDignity(card, rightN) : 'none';
-      var full = !!(leftN && rightN);
-      result.push({
-        card: card.n || card.name,
-        cardElement: getCardElement(card),
-        leftDignity: leftEd,
-        rightDignity: rightEd,
-        fullDignity: full,
-        dignityScope: full ? 'full_flanked' : 'one_sided_local_context'
-      });
-    }
-    return result;
+  function ootkDignities(keyCards, actualCards, circular) {
+    // Counting jumps are a reading route, not physical neighbours.
+    // The central significator in operation 4 has no two flanks in the ring.
+    if (!Array.isArray(actualCards) || !actualCards.length) return [];
+    return keyCards.map(function(entry) {
+      var card=entry.card, i=actualCards.findIndex(function(c){return c.id===card.id;}), n=actualCards.length;
+      var leftN=i<0?null:(i>0?actualCards[i-1]:(circular&&n>2?actualCards[n-1]:null));
+      var rightN=i<0?null:(i<n-1?actualCards[i+1]:(circular&&n>2?actualCards[0]:null));
+      var full=!!(leftN&&rightN), contrary=full&&elementalDignity(leftN,rightN)==='weaken';
+      return {card:card.n||card.name,cardElement:getCardElement(card),
+        leftCard:leftN?(leftN.n||leftN.name):null,rightCard:rightN?(rightN.n||rightN.name):null,
+        leftDignity:leftN?elementalDignity(card,leftN):'none',rightDignity:rightN?elementalDignity(card,rightN):'none',
+        fullDignity:full,neutralizedByContraryFlanks:!!contrary,
+        dignityScope:i<0?'center_without_physical_flanks':(full?'full_flanked':'one_sided_local_context'),
+        basis:circular?'actual_ring_order':'actual_stack_order',
+        note:contrary?'兩側牌互相對立，按來源中央牌不受任一側明顯影響；不相加為吉凶。':(i<0?'中央代表牌不偽造外圈相鄰牌。':'尊貴取實際鄰牌；計數跳點與配對不是相鄰。')};
+    });
   }
 
   // ════════════════════════════════════════════════
@@ -2794,12 +2793,9 @@ enhanceTarot = function(tarot) {
   }
 
   // ════════════════════════════════════════════════════════════
-  // ★ v64.1 正統 Mathers Book T:Op2/Op3 二次重洗 abandon 機制
-  //
-  // Mathers 原文(Manuscript Q):
-  //   "If the Significator be not found in the right packet referring to
-  //    the matter under consideration, the Diviner can shuffle and deal
-  //    once more, but if it again fails, the divination should be abandoned."
+  // Liber LXXVIII：Op2 同一次發牌先查主宮，再查相近宮；兩者皆未命中便停止。
+  // Op3 原文僅說照前法進行；本站明示採預選單一星座、錯位停止的保守數位政策。
+  // 不以重複洗牌、事後改問題或回填領域使檢查通過。
   //
   // 「合適宮位/星座」對應表(問題類型 → 期望的宮位 / cognate house):
   //
@@ -2993,7 +2989,7 @@ enhanceTarot = function(tarot) {
       return results;
     }
 
-    // ── Op1:四元素分堆 — 正統 Mathers 二次重洗 abandon 機制 ──
+    // ── Op1:四元素分堆 — 領域不符則停止 ──
     // Mathers 原文 Op1:「告訴問者他要問什麼,如果說錯 → abandon」
     // 程式碼層級實作:檢查 Sig 落堆是否符合問題類型
     var expectedPiles = [bindings.expectedPile];
@@ -3020,7 +3016,7 @@ enhanceTarot = function(tarot) {
       return results;
     }
 
-    // ── Op2:十二宮位 — 正統 Mathers 二次重洗 abandon 機制 ──
+    // ── Op2:十二宮位 — 同一次發牌依序核對主宮、相近宮；不是重洗至命中 ──
     var expectedHouses = [bindings.primaryHouse].concat(bindings.cognateHouse == null ? [] : [bindings.cognateHouse]);
     var deck2 = shuffleNewDeck();
     results.op2 = ootkOp2(deck2, significatorId);
@@ -3599,7 +3595,7 @@ enhanceTarot = function(tarot) {
       questionText = (S && S.form && S.form.question) ? String(S.form.question) : '';
     } catch(_qe) { questionText = ''; }
 
-    // 跑五階段計算(引擎已改為每階段獨立洗牌 + Mathers 二次重洗 abandon 邏輯)
+    // 跑五階段計算(每階段獨立洗牌，依預先綁定的領域檢查停止條件)
     var results = null;
     try {
       results = window.ootkRunFull ? window.ootkRunFull(significatorId, questionText, predeclaredBindings) : null;
@@ -4794,7 +4790,7 @@ enhanceTarot = function(tarot) {
         if (child !== caption) child.remove();
       });
 
-      caption.innerHTML = '📖 <b style="color:var(--c-gold)">Counting Story</b>——從代表牌出發,按計數值跳數,每張走過的牌都是事件的時序';
+      caption.innerHTML = '📖 <b style="color:var(--c-gold)">Counting Story</b>——從代表牌出發,按計數值跳數,走過的牌串成閱讀線索，不等於固定時間表';
 
       var scene = document.createElement('div');
       scene.className = 'ootk-counting-scene';

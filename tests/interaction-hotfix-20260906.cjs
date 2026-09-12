@@ -51,8 +51,8 @@ test('Confirmed OOTK setup forwards all predeal bindings as an immutable snapsho
  click(p.querySelector('#ootk-confirm'));assert(!p.isConnected);assert(c2.__confirmed);assert(Object.isFrozen(c2.__confirmed.bindings));assert.equal(c2.__confirmed.bindings.expectedSign,0);
 });
 ['bazi-prompt-root','ziwei-prompt-root','bazi-standalone','ziwei-standalone'].forEach(f=>load(ctx,'JS/'+f+'.js'));
-test('Ziwei uses one non-interactive grid with all 13 valid child buttons',()=>{
- ctx._zwxOpenHH();const p=doc.getElementById('zwx-sheet-bd'),grid=p.querySelector('.zwx-sc-grid');assert.equal(grid.tagName,'DIV');assert.equal(grid.querySelectorAll('button').length,13);for(const b of p.querySelectorAll('button'))assert.equal(b.querySelectorAll('button').length,0);
+test('Ziwei uses one non-interactive grid with 14 child buttons including early and late Zi hour',()=>{
+ ctx._zwxOpenHH();const p=doc.getElementById('zwx-sheet-bd'),grid=p.querySelector('.zwx-sc-grid');assert.equal(grid.tagName,'DIV');assert.equal(grid.querySelectorAll('button').length,14);for(const b of p.querySelectorAll('button'))assert.equal(b.querySelectorAll('button').length,0);
  ctx._zwxPickHH(23);assert(!p.isConnected);
 });
 test('Bazi hour and minute fields are complete on open and keep node identity when edited',()=>{

@@ -1,6 +1,6 @@
-/*! bazi-calendar-core.js — 八字曆法事實層 v1.0.0 (2026-06-25)
+/*! bazi-calendar-core.js — 八字曆法事實層 v1.1.0 (2026-09-12)
  * 依賴本地 JS/vendor/lunar.js（lunar-javascript 1.7.7）。
- * 僅處理：節氣四柱、換日政策、精確起運與立春界線；不判旺衰、喜忌或吉凶。
+ * 僅處理：節氣四柱、換日政策、按分鐘折算起運與立春界線；不判旺衰、喜忌或吉凶。
  */
 (function(root){
   'use strict';
@@ -20,20 +20,36 @@
     ec.setSect(mode==='ZI_HOUR_23'?1:2);
     return {solar:solar,lunar:lunar,eightChar:ec};
   }
+  // 年、月柱在同一出生瞬間換節；日、時柱使用命盤指定的牆鐘（可為真太陽時）。
+  function termContext(input,mode){
+    var ms=input.birthInstant;
+    if(ms==null) {
+      if(input.trueSolarTimeApplied) throw new Error('真太陽時排盤缺少原始出生瞬間，無法核對節氣。');
+      ms=Date.UTC(input.year,input.month-1,input.day,input.hour||0,input.minute||0,input.second||0)-(input.timezoneOffset==null?8:Number(input.timezoneOffset))*3600000;
+    }
+    ms=typeof ms==='number'?ms:Date.parse(ms);
+    if(!Number.isFinite(ms)) throw new Error('出生瞬間無效。');
+    var cn=new Date(ms+8*3600000);
+    var ctx=getEightChar(cn.getUTCFullYear(),cn.getUTCMonth()+1,cn.getUTCDate(),cn.getUTCHours(),cn.getUTCMinutes(),cn.getUTCSeconds(),mode);
+    if(ctx) ctx.birthInstant=ms;
+    return ctx;
+  }
   function calculateChart(input){
     input=input||{};
     var mode=input.dayBoundaryMode==='MIDNIGHT_00'?'MIDNIGHT_00':'ZI_HOUR_23';
     var ctx=getEightChar(input.year,input.month,input.day,input.hour,input.minute,input.second,mode);
     if(!ctx) return null;
-    var ec=ctx.eightChar;
-    var year=splitGz(ec.getYear()),month=splitGz(ec.getMonth()),day=splitGz(ec.getDay()),hour=splitGz(ec.getTime());
+    var terms=termContext(input,mode);
+    if(!terms)return null;
+    var ec=ctx.eightChar,tc=terms.eightChar;
+    var year=splitGz(tc.getYear()),month=splitGz(tc.getMonth()),day=splitGz(ec.getDay()),hour=splitGz(ec.getTime());
     // lunar-javascript 的 sect=2 仍沿用「晚子時時干按次日」口徑。
     // 本系統 MIDNIGHT_00 明確定義為日、時干都到 00:00 才換，故 23:00–23:59 重算時干。
     if(mode==='MIDNIGHT_00'&&(input.hour||0)>=23){
       var dgi=TG.indexOf(day.gan),hzi=0;
       hour={gan:TG[((dgi%5)*2+hzi)%10],zhi:'子'};
     }
-    var prevJie=ctx.lunar.getPrevJie(),nextJie=ctx.lunar.getNextJie();
+    var prevJie=terms.lunar.getPrevJie(),nextJie=terms.lunar.getNextJie();
     return {
       pillars:{year:year,month:month,day:day,hour:hour},
       indices:{
@@ -44,17 +60,19 @@
       },
       previousJie:prevJie?{name:prevJie.getName(),date:prevJie.getSolar().toYmdHms()}:null,
       nextJie:nextJie?{name:nextJie.getName(),date:nextJie.getSolar().toYmdHms()}:null,
-      engine:'lunar-javascript',engineVersion:'1.7.7',precision:'second',dayBoundaryMode:mode
+      engine:'lunar-javascript',engineVersion:'1.7.7',precision:'astronomical-estimate',timeResolution:'second',termTimezone:'UTC+08:00',birthInstant:terms.birthInstant,dayBoundaryMode:mode
     };
   }
   function calculateYun(input){
     input=input||{};
     var mode=input.dayBoundaryMode==='MIDNIGHT_00'?'MIDNIGHT_00':'ZI_HOUR_23';
-    var ctx=getEightChar(input.year,input.month,input.day,input.hour,input.minute,input.second,mode);
+    var ctx=termContext(input,mode);
     if(!ctx) return null;
     var gender=input.gender==='female'?0:1;
-    var yun=ctx.eightChar.getYun(gender);
-    var start=parts(yun.getStartSolar());
+    var yun=ctx.eightChar.getYun(gender,2);
+    // 分鐘折算法（sect 2）：三日一年、一天四月；不再宣稱起運準確到秒。
+    var wall=root.Solar.fromYmdHms(input.year,input.month,input.day,input.hour||0,input.minute||0,input.second||0);
+    var start=parts(wall.nextYear(yun.getStartYear()).nextMonth(yun.getStartMonth()).next(yun.getStartDay()).nextHour(yun.getStartHour()));
     var ref=yun.isForward()?ctx.lunar.getNextJie():ctx.lunar.getPrevJie();
     var cycles=[];
     yun.getDaYun(11).forEach(function(d){
@@ -66,7 +84,7 @@
       startTimestamp:pseudoUtc(start),startDate:formatParts(start),startParts:start,
       direction:yun.isForward()?'forward':'backward',isForward:yun.isForward(),
       referenceJie:ref?ref.getName():null,referenceJieDate:ref?ref.getSolar().toYmdHms():null,
-      cycles:cycles,engine:'lunar-javascript',engineVersion:'1.7.7',precision:'second'
+      cycles:cycles,engine:'lunar-javascript',engineVersion:'1.7.7',precision:'minute',method:'THREE_DAYS_YEAR_MINUTE',termTimezone:'UTC+08:00',startTimeBasis:'chart-wall'
     };
   }
   function getLiChun(year){
@@ -75,10 +93,10 @@
     var table=lunar.getJieQiTable(),s=table['立春'];
     if(!s)return null;
     var p=parts(s);
-    return {timestamp:pseudoUtc(p),date:formatParts(p),parts:p,engine:'lunar-javascript',precision:'second'};
+    return {timestamp:pseudoUtc(p),date:formatParts(p),parts:p,engine:'lunar-javascript',precision:'astronomical-estimate',timeResolution:'second'};
   }
   root.BaziCalendarCore={
-    version:'1.0.0',engine:'lunar-javascript',engineVersion:'1.7.7',
+    version:'1.1.0',engine:'lunar-javascript',engineVersion:'1.7.7',
     hasEngine:hasEngine,calculateChart:calculateChart,calculateYun:calculateYun,getLiChun:getLiChun,
     formatParts:formatParts
   };

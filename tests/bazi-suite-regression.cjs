@@ -9,8 +9,8 @@ let passed=0;
 function test(name,fn){try{fn();passed++;console.log('✓ '+name);}catch(e){console.error('✗ '+name+'\n'+(e.stack||e));process.exitCode=1;}}
 function fakeElement(){return {style:{},dataset:{},className:'',classList:{add(){},remove(){},toggle(){},contains(){return false;}},appendChild(){},remove(){},setAttribute(){},getAttribute(){return null;},addEventListener(){},querySelector(){return null;},querySelectorAll(){return[];},closest(){return null;},innerHTML:'',textContent:'',value:'',checked:false,disabled:false,parentNode:null};}
 function ctx(){const body=fakeElement(),doc={body,head:fakeElement(),createElement(){let x=fakeElement();x.parentNode=body;return x;},getElementById(){return null;},addEventListener(){},querySelector(){return null;},querySelectorAll(){return[];}};const c={console:{log(){},warn(){},error:console.error},Date,Math,Intl,TextEncoder,TextDecoder,setTimeout,clearTimeout,setInterval,clearInterval,document:doc,navigator:{clipboard:{writeText:async()=>{}}},location:{hostname:'localhost',href:'http://localhost/'},localStorage:{getItem(){return null;},setItem(){},removeItem(){}},alert(){},confirm(){return true;},open(){return null;},requestIdleCallback(fn){fn();},performance:{now:()=>0},Blob,URL};c.window=c;c.global=c;vm.createContext(c);return c;}
-function load(){const c=ctx();for(const f of ['JS/vendor/lunar.js','JS/bazi-calendar-core.js','JS/solar-location.js','JS/bazi.js','JS/bazi_upgrade.js','JS/bazi-suite-core.js'])vm.runInContext(fs.readFileSync(path.join(ROOT,f),'utf8'),c,{filename:f});return c;}
-function chart(c,input){const s=c.calcTrueSolarTime(input.y,input.m,input.d,input.h,input.mi,input.lng,input.tz,input.tzid);const b=c.computeBazi(s.year,s.month,s.day,s.hour,s.minute,input.gender,{second:s.second,trueSolarTimeApplied:true,timezoneId:input.tzid,timezoneOffset:input.tz,longitude:input.lng,referenceDate:'2026-06-26T00:00:00Z'});c.enhanceBazi(b);return {chart:b,meta:{name:input.name,genderLabel:input.gender==='male'?'男命':'女命',birthLine:`國曆 ${input.y}/${input.m}/${input.d} ${input.h}:${String(input.mi).padStart(2,'0')}・${input.city}`,solarInfo:s,longitude:input.lng,timezoneId:input.tzid}};}
+function load(){const c=ctx();for(const f of ['JS/vendor/lunar.js','JS/bazi-calendar-core.js','JS/solar-location.js','JS/bazi.js','JS/bazi_upgrade.js','JS/bazi-prompt-root.js','JS/bazi-suite-core.js'])vm.runInContext(fs.readFileSync(path.join(ROOT,f),'utf8'),c,{filename:f});return c;}
+function chart(c,input){const s=c.calcTrueSolarTime(input.y,input.m,input.d,input.h,input.mi,input.lng,input.tz,input.tzid);const b=c.computeBazi(s.year,s.month,s.day,s.hour,s.minute,input.gender,{second:s.second,birthInstant:s.utcTimestamp,trueSolarTimeApplied:true,timezoneId:input.tzid,timezoneOffset:input.tz,longitude:input.lng,referenceDate:'2026-06-26T00:00:00Z'});c.enhanceBazi(b);return {chart:b,meta:{name:input.name,genderLabel:input.gender==='male'?'男命':'女命',birthLine:`國曆 ${input.y}/${input.m}/${input.d} ${input.h}:${String(input.mi).padStart(2,'0')}・${input.city}`,solarInfo:s,longitude:input.lng,timezoneId:input.tzid}};}
 const c=load();
 const A=chart(c,{name:'A',y:1983,m:8,d:25,h:14,mi:55,lng:120.23,tz:8,tzid:'Asia/Taipei',city:'台南',gender:'male'});
 const B=chart(c,{name:'B',y:1994,m:6,d:20,h:0,mi:0,lng:120.54,tz:8,tzid:'Asia/Taipei',city:'彰化',gender:'female'});
@@ -53,8 +53,8 @@ test('合盤提示詞依角色情境切換並含兩張完整資料',()=>{
   assert(p.includes('夥伴B'));
   assert(p.includes(A.chart.pillars.day.gan+A.chart.pillars.day.zhi));
   assert(p.includes(B.chart.pillars.day.gan+B.chart.pillars.day.zhi));
-  assert(p.includes('不提供單一配對分數'));
-  assert(p.includes('命盤不能代替盡職調查'));
+  assert(comp.policy.noSingleScore);assert(!p.includes('配對分數：')); 
+  assert(p.includes('盡職調查')); 
   assert(p.includes('A看B'));
   assert(p.includes('B看A'));
 });
@@ -69,7 +69,7 @@ test('六合五合與三合三會只列候選不宣告成化',()=>{
 
 test('六種單盤提示詞各自載入正確分析範圍',()=>{
   const expected={chart:'不延伸具體人生事件',general:'綜合判讀',career:'職涯結構',wealth:'現金流風險',love:'親密需求',annual:'未來四個立春年度'};
-  Object.keys(expected).forEach(id=>{const p=c.BaziSuiteCore.buildSinglePrompt(id,A.chart,A.meta,'測試');assert(p.includes(expected[id]),id);assert(p.includes('排盤事實層'));assert(p.includes('流派模型層'));assert(p.includes('【最高優先任務'));assert(p.includes('用神是處理核心矛盾'));assert(p.includes('品牌附加層'));assert(p.endsWith('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。'));});
+  Object.keys(expected).forEach(id=>{const p=c.BaziSuiteCore.buildSinglePrompt(id,A.chart,A.meta,'測試');assert(p.includes(expected[id]),id);assert(p.includes('盘面事實'.replace('盘','盤')));assert(p.includes('流派解釋'));assert(p.includes('完整判讀順序'));assert(p.includes('不能用缺什麼就補什麼定喜用')); assert(p.endsWith('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。'));});
 });
 
 test('五軸人格固定產生32個唯一類型且相同命盤可重現',()=>{
@@ -84,8 +84,8 @@ test('五軸人格固定產生32個唯一類型且相同命盤可重現',()=>{
 
 test('人格提示詞禁止心理診斷與貼死標籤',()=>{
   const x=c.BaziSuiteCore.buildPersonality(A.chart,A.meta),p=c.BaziSuiteCore.buildPersonalityPrompt(x,'工作壓力下如何反應？');
-  assert(p.includes('不得把人格卡寫成疾病'));
-  assert(p.includes('支持或推翻'));
+  assert(p.includes('不是經心理測量驗證的人格測驗')); 
+  assert(p.includes('可能反例')); 
 });
 
 test('城市時區表公開給完整套件，海外可用IANA/DST',()=>{
@@ -97,8 +97,8 @@ test('城市時區表公開給完整套件，海外可用IANA/DST',()=>{
 test('首頁保留原版UI為預設並另接完整套件',()=>{
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const ui=fs.readFileSync(path.join(ROOT,'JS/bazi-suite.js'),'utf8');
-  assert(html.includes('JS/bazi-suite-core.js?v=20260716v1_1_0'));
-  assert(html.includes('JS/bazi-suite.js?v=20260626v1_1_1'));
+  assert(html.includes('JS/bazi-suite-core.js?v=20260912accuracy1'));
+  assert(html.includes('JS/bazi-suite.js?v=20260912accuracy1'));
   assert(ui.includes('window._baziLegacyStandaloneOpen=legacyOpen'));
   assert(ui.includes('window._baziFullSuiteOpen=open'));
   assert(ui.includes('window._baziStandaloneOpen=legacyOpen || open'));
@@ -157,7 +157,7 @@ test('排盤顯示可重算的生肖與八字重量，並將稱骨降為末位�
   assert.strictEqual(sum.chenggu.display,'三兩二錢');
   const p=c.BaziSuiteCore.buildSinglePrompt('chart',A.chart,A.meta,'只校核排盤');
   assert(p.includes('八字重量 三兩二錢'));
-  assert(p.includes('稱骨、命宮、胎元、納音與神煞只列末位輔助'));
+  assert(p.includes('稱骨、命宮、胎元、納音與神煞可作輔助視角')); 
 });
 
 
@@ -196,9 +196,8 @@ test('完整套件的日期時間地點全部使用站內自訂UI，不再觸發
   assert(ui.includes('data-picker="location"'));
   assert(ui.includes('bzs-picker-sheet'));
   assert(ui.includes('bzs-loc-chip'));
-  assert(ui.includes('.bzs-cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:0;background:transparent'));
-  assert(!ui.includes('<button type="button" class="bzs-cal-day'));
-  assert(ui.includes('<div role="button" tabindex="0" class="bzs-cal-day'));
+  assert(ui.includes('.bzs-cal-day{display:flex;align-items:center;justify-content:center;border:0;background:transparent'));
+  assert(ui.includes('<button type="button" class="bzs-cal-day')); 
   assert(ui.includes("dateField('u','民用日期')"));
   assert(ui.includes("locationFields('u','地點（真太陽時校正）')"));
 });
@@ -212,7 +211,7 @@ test('單人合盤人格與工具共用同一套自訂出生資料元件',()=>{
   assert(ui.includes("function dateField(prefix,label)"));
   assert(ui.includes("function timeField(prefix,label,allowUnknown,defaultTime)"));
   assert(ui.includes("function locationFields(prefix,label)"));
-  assert(ui.includes("version:'1.1.1'"));
+  assert(ui.includes("version:'1.1.3'"));
 });
 
 if(process.exitCode){console.error(`\n${passed} tests passed before failure(s).`);process.exit(process.exitCode);}console.log(`\nAll ${passed} Bazi suite regression tests passed.`);

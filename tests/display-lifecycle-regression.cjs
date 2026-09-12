@@ -81,7 +81,7 @@ test('All birth picker content is present at native showModal, before any timer 
   Element.prototype.showModal=function(){
     if(expected==='date'){assert.equal(this.querySelectorAll('[role=row]').length,7);assert.equal(this.querySelectorAll('.jy-picker-week').length,6);assert(this.querySelector('[role=grid]').querySelectorAll('button').length>=28);}
     else if(expected==='time'){assert.equal(this.querySelector('[data-jy-hour]').querySelectorAll('option').length,24);assert.equal(this.querySelector('[data-jy-minute]').querySelectorAll('option').length,60);}
-    else if(expected==='shichen')assert.equal(this.querySelector('.zwx-sc-grid').querySelectorAll('button').length,13);
+    else if(expected==='shichen')assert.equal(this.querySelector('.zwx-sc-grid').querySelectorAll('button').length,14);
     else if(expected==='city')assert(this.querySelectorAll('.bzx-loc-chip').length>30);
     else if(expected==='suite-city')assert.equal(this.querySelectorAll('.bzs-loc-chip').length,2);
     opened++;nativeOpen.call(this);

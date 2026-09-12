@@ -25,7 +25,7 @@
       must: ['unified tarot core v2.0.0',"var SOURCE_ID = 'gd_book_t'",'var MAJOR_CORR','var COURT_BOOK_T','function spreadGroups','function spreadDignityGroups','neutralizedByContraryFlanks'],
       mustNot: ['Uranus','Neptune','Pluto','thoth_crowley']
     },
-    'tarot_upgrade.js': {
+    'tarot_upgrade.js?v=20260912accuracy1': {
       must: [
         'Opening of the Key — 正統金色黎明核心計算引擎','window.ootkAutoSignificator = null',
         "window.jyWaitePKTMeanings = null",'var nodeIdx = dealCount % 10',
@@ -33,7 +33,7 @@
       ],
       mustNot: ['_decanToDate','window.ootkAutoSignificator = autoSelectSignificator']
     },
-    'ai-analysis.js': {
+    'ai-analysis.js?v=20260912accuracy1': {
       must: [
         "sourceProfile: 'gd_book_t'",'elementalDignityGroups','reversedCount: 0',
         'opposingPairs = [];','timeConclusion = \'\';','result.semanticContract = _contract',
@@ -49,7 +49,7 @@
       ],
       mustNot: ['Uranus','Neptune','Pluto']
     },
-    'prompt-export.js': {
+    'prompt-export.js?v=20260912accuracy1': {
       must: [
         'Golden Dawn《Book T》塔羅證據整合者','Golden Dawn《Book T》Opening of the Key',
         'ROOT-SPEC v95','QuestionCompiler','GraphBinder','SaturationReviewer','gd_book_t',
@@ -58,7 +58,7 @@
       ],
       mustNot: ['至少自然帶到 2 張 RWS','每張牌都要在正文點到名','Aces 採 count 11（Crowley·Liber 78）']
     },
-    'ui.js': {
+    'ui.js?v=20260912accuracy1': {
       must: ['Golden Dawn Book T','dignityContext(cards, i,','reversed: false','元素尊貴'],
       mustNot: ['結合正逆位']
     },
@@ -168,7 +168,7 @@
           env.report('①部署簽名', f + ' 必不含舊字串「' + m.slice(0, 14) + '…」', txt.indexOf(m) === -1, txt.indexOf(m) === -1 ? '' : '舊版字串仍在線上');
         });
         // 資料表完整性（正則靜態掃描，免執行）
-        if (f === 'tarot_upgrade.js') {
+        if (f === 'tarot_upgrade.js?v=20260912accuracy1') {
           env.report('②資料表', '開鑰代表牌禁止生日／性別自動選取', txt.indexOf('window.ootkAutoSignificator = null') > -1, '');
           env.report('②資料表', '第五操作前端與引擎同為十堆順序輪發', txt.indexOf('var nodeIdx = dealCount % 10') > -1 && txt.indexOf('deck.forEach(function(card, idx)') > -1, '');
         }

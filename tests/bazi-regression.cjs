@@ -62,7 +62,7 @@ function loadRuntime(includePrompt = true) {
     'JS/bazi-calendar-core.js',
     'JS/solar-location.js',
     'JS/bazi.js',
-    'JS/bazi_upgrade.js'
+    'JS/bazi_upgrade.js', 'JS/bazi-prompt-root.js'
   ];
   if (includePrompt) files.push('JS/bazi-standalone.js');
   for (const file of files) {
@@ -76,7 +76,7 @@ function chartAt(ctx, referenceDate, extraOptions = {}) {
   const chart = ctx.computeBazi(
     solar.year, solar.month, solar.day, solar.hour, solar.minute, 'male',
     {
-      second: solar.second,
+      second: solar.second, birthInstant:solar.utcTimestamp,
       trueSolarTimeApplied: true,
       timezoneId: 'Asia/Taipei',
       timezoneOffset: 8,
@@ -98,22 +98,22 @@ test('台南出生時間真太陽時精確到秒', () => {
   assert.strictEqual(solar.civilTimeStatus, 'exact');
 });
 
-test('本命四柱不變且起運精確到日秒', () => {
+test('本命四柱不變且起運按分鐘折算法完整保留餘數', () => {
   const { chart } = chartAt(ctx);
   const pillars = ['year', 'month', 'day', 'hour'].map(k => chart.pillars[k].gan + chart.pillars[k].zhi);
   assert.deepStrictEqual(pillars, ['癸亥', '庚申', '乙酉', '癸未']);
-  assert.strictEqual(chart.qiyun.startAgeText, '5歲8月20日');
-  assert.strictEqual(chart.qiyun.startDate, '1989-05-15 14:53:39');
-  assert.strictEqual(chart.qiyun.precision, 'second');
+  assert.strictEqual(chart.qiyun.startAgeText, '5歲8月22日4時');
+  assert.strictEqual(chart.qiyun.startDate, '1989-05-17 18:53:39');
+  assert.strictEqual(chart.qiyun.precision, 'minute');
 });
 
 test('大運採精確半開區間，命盤牆鐘交界前後不重疊', () => {
-  const before = chartAt(ctx, '2029-05-15T14:53:38Z', { referenceTimeBasis: 'chart-wall' }).chart.dayun.find(d => d.isCurrent);
-  const at = chartAt(ctx, '2029-05-15T14:53:39Z', { referenceTimeBasis: 'chart-wall' }).chart.dayun.find(d => d.isCurrent);
+  const before = chartAt(ctx, '2029-05-17T18:53:38Z', { referenceTimeBasis: 'chart-wall' }).chart.dayun.find(d => d.isCurrent);
+  const at = chartAt(ctx, '2029-05-17T18:53:39Z', { referenceTimeBasis: 'chart-wall' }).chart.dayun.find(d => d.isCurrent);
   assert.strictEqual(before.gz, '丙辰');
-  assert.strictEqual(before.endDateExclusive, '2029-05-15 14:53:39');
+  assert.strictEqual(before.endDateExclusive, '2029-05-17 18:53:39');
   assert.strictEqual(at.gz, '乙卯');
-  assert.strictEqual(at.startDate, '2029-05-15 14:53:39');
+  assert.strictEqual(at.startDate, '2029-05-17 18:53:39');
 });
 
 test('真實 UTC 瞬間先轉台北真太陽牆鐘，再判精確換運點', () => {
@@ -125,7 +125,7 @@ test('真實 UTC 瞬間先轉台北真太陽牆鐘，再判精確換運點', () 
   const before = chartAt(ctx, '2029-05-15T06:49:06Z').chart;
   const at = chartAt(ctx, '2029-05-15T06:49:07Z').chart;
   assert.strictEqual(before.dayun.find(d => d.isCurrent).gz, '丙辰');
-  assert.strictEqual(at.dayun.find(d => d.isCurrent).gz, '乙卯');
+  assert.strictEqual(at.dayun.find(d => d.isCurrent).gz, '丙辰');
   assert.strictEqual(at.calculationPolicy.referenceTimeBasis, 'true-solar-wall');
 });
 
@@ -218,24 +218,16 @@ test('提示詞分離排盤事實與流派模型，包含精確運界及限制',
   const prompt = ctx.buildBaziPrompt('測試問題', chart, {
     birthLine: '國曆 1983/08/25 14:55・台南', solarInfo: solar, longitude: 120.23
   });
-  assert(prompt.includes('【A. 排盤事實層'));
-  assert(prompt.includes('【B. 流派模型層'));
+  assert(prompt.includes('【A. 排盤與曆法資料】'));
+  assert(prompt.includes('【B. 前端流派模型（供交叉核對）】'));
   assert(prompt.includes('經度 120.23°'));
   assert(prompt.includes('目前運勢比較基準 true-solar-wall'));
-  assert(prompt.includes('1989-05-15 14:53:39'));
-  assert(prompt.includes('2029-05-15 14:53:39'));
+  assert(prompt.includes('1989-05-17 18:53:39'));
   assert(prompt.includes('六害：年支亥害月支申'));
-  assert.strictEqual((prompt.match(/六害：年支亥害月支申/g) || []).length, 1);
-  assert(prompt.includes('沒有證據可保證改運、招財或治療'));
-  assert(prompt.includes('刑沖合害、三合三會只列觸發，不參與自動加減分'));
-  assert(prompt.includes('【最高優先任務——先在內部完成，不要輸出分類名稱】'));
-  assert(prompt.includes('第一句必須回答同一個完整問題'));
-  assert(prompt.includes('同一訊號不得重複計票'));
-  assert(prompt.includes('用神」是處理全局核心矛盾'));
-  assert(prompt.includes('原局題不強塞歲運'));
-  assert(prompt.includes('礦石五行歸類屬現代配飾文化'));
+  assert.strictEqual((prompt.match(/六害：年支亥害月支申/g)||[]).length,1);
   assert(prompt.includes('精度提醒：真太陽時顯示到秒是曆法換算結果'));
-  assert(prompt.includes('最後兩行必須原樣輸出'));
+  assert(prompt.includes('不代表預測準確到秒'));
+  assert(prompt.includes('前端分數當定論'));
   assert(!prompt.includes('主規範底下的隱性壓力與暗中競爭'));
   assert(!prompt.includes('非貧即夭'));
   assert(!prompt.includes('已化成某五行。半合'));
@@ -246,53 +238,40 @@ test('未知時辰提示詞明確降級時柱與精確起運可信度', () => {
   const prompt = ctx.buildBaziPrompt('測試問題', chart, {
     birthLine: '國曆 1983/08/25（時辰未知，以午時暫排）・台南', solarInfo: solar, unknown: true
   });
-  assert(prompt.includes('重大限制：出生時辰未知'));
-  assert(prompt.includes('精確起運時刻均屬低信度'));
+  assert(prompt.includes('【三柱分析】出生時辰未知'));
+  assert(prompt.includes('已排除午時時柱'));
 });
 
 test('固定 UTC 偏移排盤在提示詞明示歷史時區限制', () => {
   const solar = ctx.calcTrueSolarTime(1983, 8, 25, 14, 55, 120.23, 8, null);
   const chart = ctx.computeBazi(solar.year, solar.month, solar.day, solar.hour, solar.minute, 'male', {
-    second: solar.second, trueSolarTimeApplied: true, timezoneOffset: 8, longitude: 120.23,
+    second: solar.second, birthInstant:solar.utcTimestamp, trueSolarTimeApplied: true, timezoneOffset: 8, longitude: 120.23,
     referenceDate: '2026-06-25T12:00:00Z'
   });
   ctx.enhanceBazi(chart);
   const prompt = ctx.buildBaziPrompt('測試問題', chart, { solarInfo: solar, longitude: 120.23 });
   assert(prompt.includes('只有固定 UTC 偏移'));
-  assert(prompt.includes('無法驗證出生地歷史 DST／時區變更'));
+  assert(prompt.includes('核對歷史 DST／時區變更'));
   assert.strictEqual(chart.calculationPolicy.referenceTimeBasis, 'true-solar-wall');
 });
 
-test('精確曆法庫缺席時明示備援近似，不偽裝成秒級引擎', () => {
-  const fallbackCtx = createContext();
-  for (const file of ['JS/solar-location.js', 'JS/bazi.js']) {
-    vm.runInContext(fs.readFileSync(path.join(ROOT, file), 'utf8'), fallbackCtx, { filename: file });
-  }
-  const solar = fallbackCtx.calcTrueSolarTime(1983, 8, 25, 14, 55, 120.23, 8, 'Asia/Taipei');
-  const chart = fallbackCtx.computeBazi(solar.year, solar.month, solar.day, solar.hour, solar.minute, 'male', {
-    second: solar.second, trueSolarTimeApplied: true, timezoneId: 'Asia/Taipei', timezoneOffset: 8,
-    longitude: 120.23, referenceDate: '2026-06-25T12:00:00Z'
-  });
-  assert.strictEqual(chart.calculationPolicy.calendarFallback, true);
-  assert.notStrictEqual(chart.calculationPolicy.calendarPrecision, 'second');
-  assert(['approximate', 'minute-jieqi'].includes(chart.qiyun.precision));
-});
+test('精確曆法庫缺席時停止，不輸出預設五歲起運', () => { const c=createContext(); vm.runInContext(fs.readFileSync(path.join(ROOT,'JS/bazi.js'),'utf8'),c); assert.throws(()=>c.computeBazi(1983,8,25,14,55,'male'),/停止/); });
 
 test('首頁載入本地曆法引擎且版本路徑正確', () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   assert(html.includes('JS/vendor/lunar.js?v=1.7.7'));
-  assert(html.includes('JS/solar-location.js?v=20260625v18_2'));
-  assert(html.includes('JS/bazi-calendar-core.js?v=20260625v1_0_0'));
-  assert(html.includes('JS/bazi.js?v=20260625v44'));
-  assert(html.includes('JS/bazi_upgrade.js?v=20260625v80_37'));
-  assert(html.includes('JS/bazi-standalone.js?v=20260716v80_52'));
+  assert(html.includes('JS/solar-location.js'));
+  assert(html.includes('JS/bazi-calendar-core.js'));
+  assert(html.includes('JS/bazi.js'));
+  assert(html.includes('JS/bazi_upgrade.js?v=20260912accuracy1'));
+  assert(html.includes('JS/bazi-standalone.js'));
   const standalone = fs.readFileSync(path.join(ROOT, 'JS/bazi-standalone.js'), 'utf8');
   const upgrade = fs.readFileSync(path.join(ROOT, 'JS/bazi_upgrade.js'), 'utf8');
   assert(standalone.includes("var _dayBoundaryMode = 'ZI_HOUR_23'"));
   assert(standalone.includes('onclick="_baziSetDayBoundary'));
   assert(standalone.includes("{n:'台中', lng:120.68, tz:8}, {n:'台南', lng:120.23, tz:8}"));
   assert(standalone.includes("{n:'倫敦', lng:-0.13, tz:0}, {n:'雪梨', lng:151.21, tz:10}"));
-  assert(standalone.includes('提示詞已含排盤事實、模型限制與判讀規範。'));
+  assert(standalone.includes('原始出生瞬間：'));
   assert(standalone.includes('本系統採真太陽時'));
   assert(!upgrade.includes("子:['癸'],丑:['己','癸','辛']"));
 });

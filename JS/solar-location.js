@@ -296,6 +296,7 @@ function calcTrueSolarTime(year, month, day, hour, minute, longitude, tzOffset, 
   var result = {
     year:corrected.getUTCFullYear(), month:corrected.getUTCMonth()+1, day:corrected.getUTCDate(),
     hour:corrected.getUTCHours(), minute:corrected.getUTCMinutes(), second:corrected.getUTCSeconds(),
+    utcTimestamp:resolved.utcTimestamp, longitude:longitude, timezoneOffset:(resolved.standardOffsetMinutes+resolved.dstOffsetMinutes)/60,
     offset_minutes:totalOffset, offset_minutes_rounded:Math.round(totalOffset),
     longitudeCorrectionMinutes:lonCorrection, equationOfTimeMinutes:eot,
     standardOffsetMinutes:resolved.standardOffsetMinutes, dstOffsetMinutes:resolved.dstOffsetMinutes,

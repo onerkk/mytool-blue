@@ -388,7 +388,7 @@ function calcMhChar(){
 }
 function calcMhRandom(){
   if(S.meihua){showMhLockedMsg();return;}
-  showMH(calcMH(Math.ceil(_secRand()*8),Math.ceil(_secRand()*8),Math.ceil(_secRand()*6))); // v86_22 密碼學隨機起卦
+  showMH(calcMH(Math.floor(_secRand()*8)+1,Math.floor(_secRand()*8)+1,Math.floor(_secRand()*6)+1)); // v86_22 密碼學隨機起卦
 }
 
 // ── Tarot deck + analysis + story + draw UI (lines 5992-6570) ──

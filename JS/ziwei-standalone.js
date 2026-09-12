@@ -148,6 +148,7 @@
       '.zw-in-q::placeholder{color:rgba(232,224,208,.4)}',
       '.zw-in-q:focus{border-color:rgba(201,168,76,.5)}',
       '.zw-in-field{margin-bottom:.7rem}',
+      '.zw-in-select{width:100%;min-height:48px;padding:.7rem;border:1px solid rgba(212,175,55,.35);border-radius:10px;background:#122033;color:#f4e8cf;font:inherit}.zw-in-select:focus-visible{outline:2px solid #dfc58e;outline-offset:3px}',
       '.zw-in-label{font-size:.72rem;color:rgba(232,224,208,.55);margin-bottom:.3rem;display:block}',
       '.zw-in input[type=date],.zw-in select{width:100%;padding:.6rem;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:rgba(255,255,255,.03);color:#e8e0d0;font-family:inherit;font-size:.9rem;outline:none}',
       '.zw-in input[type=date]:focus,.zw-in select:focus{border-color:rgba(201,168,76,.5)}',
@@ -286,6 +287,16 @@
         '先針對原問題整理目前可確認的現實條件與需要補充的資訊，說明如何查找出生紀錄；確認時辰後再作個人化紫微判讀。若需要校時，應以多個候選時辰和可核對事件比較，不能只靠一段自述認定。'].join('\n');
     }
     L.push('【基本資料】');
+    var policy=zw.calculationPolicy;
+    if(policy){
+      var raw=zw.birthLunar||zw.lunar;
+      L.push('引擎版本：'+zw.engineVersion+'；農曆出生：'+raw.year+'年'+(raw.isLeap?'閏':'')+raw.month+'月'+raw.day+'日。');
+      L.push('【安星政策】農曆正月初一換年；'+(policy.dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日')+'；閏月'+(policy.leapMonthPolicy==='SPLIT_AT_15'?'十五日後作次月':'沿用本月')+'；實際安星月='+policy.effectiveMonth+'、日='+policy.effectiveDay+'。');
+      L.push('命主按命宮地支，身主按生年地支；天傷交友、天使疾厄；解神為月解；流月採斗君、小限按生年三合起宮；旬空／截空採雙支。不同設定須重排，不能混套別派星位。');
+      L.push('本盤四化順序為祿權科忌：'+policy.sihuaTable+'。');
+      L.push('參考時刻：'+policy.referenceDate+'；參考農曆年：'+policy.referenceLunarYear+'；目前虛歲：'+zw.currentAge+'，每年正月初一增歲。');
+    }
+
     L.push('出生(國曆；以時辰代表時排盤，未作出生地經度真太陽時校正)：' + birth + ' ' + btime + '　性別：' + gender);
     L.push('年干支：' + ((zw.yGan||'') + (zw.yZhi||'')) + '　五行局：' + ({2:'水二局',3:'木三局',4:'金四局',5:'土五局',6:'火六局'}[zw.wuxingJu]||zw.wuxingJu||'') + '　命主：' + (zw.mingZhu||'') + '　身主：' + (zw.shenZhu||'') + '　命宮天干：' + (zw.mingGan||''));
 
@@ -430,7 +441,7 @@
       try { var by = parseInt((form.bdate||'').slice(0,4)); if (by) age = nowY - by + 1; } catch(e){}
       var _hasCur = zw.daXian.some(function(d){ return d.isCurrent; }); // 引擎已標當前大限就以它為唯一準
       L.push('');
-      L.push('【運限計算政策】大限採虛歲；現行大限優先採引擎 isCurrent，若引擎未標才以「系統公曆年份－出生年＋1」回推。資料未提供精確大限切換日期，以引擎年齡區間判讀；流年以下方公曆年份參數列示，流月與精確年度切換時間未提供。');
+      L.push('【運限計算政策】大限採虛歲；現行大限優先採引擎 isCurrent，若引擎未標才以「查詢日期所在農曆年－出生農曆年＋1」回推。資料未提供精確大限切換日期，以引擎年齡區間判讀；流年以下方公曆年份參數列示，流月與精確年度切換時間未提供。');
       L.push('【大限走勢】(本命為長期底色，大限為十年作用場域；〔吉凶〕與主題是前端相對標記，請結合具體星曜與四化分析；現行大限以 ◀現在 標示)');
       zw.daXian.forEach(function(dx){
         // 只標一個：優先信引擎 isCurrent；引擎全沒標時才用虛歲回推（同一基準，不混實歲、不 OR 兩套）
@@ -559,7 +570,7 @@
   // ════════════════════════════════════════════════════════
   // 時辰 → 代表時（供 computeZiwei 由 solarHH 反推時辰）
   var SHICHEN = [
-    {n:'子時 23–01', h:0},{n:'丑時 01–03', h:2},{n:'寅時 03–05', h:4},{n:'卯時 05–07', h:6},
+    {n:'早子 00–01', h:0},{n:'晚子 23–24', h:23},{n:'丑時 01–03', h:2},{n:'寅時 03–05', h:4},{n:'卯時 05–07', h:6},
     {n:'辰時 07–09', h:8},{n:'巳時 09–11', h:10},{n:'午時 11–13', h:12},{n:'未時 13–15', h:14},
     {n:'申時 15–17', h:16},{n:'酉時 17–19', h:18},{n:'戌時 19–21', h:20},{n:'亥時 21–23', h:22}
   ];
@@ -593,6 +604,9 @@
             '<button type="button" class="zw-in-pill" id="zw-g-m" onclick="_zwSetGender(\'male\')">男</button>' +
             '<button type="button" class="zw-in-pill" id="zw-g-f" onclick="_zwSetGender(\'female\')">女</button>' +
           '</div></div>' +
+          '<div class="zw-in-field"><label class="zw-in-label" for="zw-leap-policy">農曆閏月安宮</label><select class="zw-in-select" id="zw-leap-policy"><option value="SAME_MONTH">沿用本月</option><option value="SPLIT_AT_15">十五日後作次月</option></select></div>' +
+          '<div class="zw-in-field"><label class="zw-in-label" for="zw-day-policy">晚子時換日</label><select class="zw-in-select" id="zw-day-policy"><option value="MIDNIGHT_00">00:00 午夜換日</option><option value="ZI_HOUR_23">23:00 子初換日</option></select></div>' +
+          '<p class="zw-in-hint">兩項設定存在流派差異，會隨命盤保留。沿用本月與午夜換日為本站預設。</p>' +
           '<div class="zwx-err" id="zwx-err"></div>' +
           '<div class="zw-in-hint">紫微以時辰定盤；不知道時辰可先整理問題與出生資料，確認後再解讀個人命盤。</div>' +
         '</div>' +
@@ -603,13 +617,16 @@
     if (draft) {
       document.getElementById('zw-q').value = draft.question || '';
       window._zwSetGender(_zwGender);
+      document.getElementById('zw-leap-policy').value=draft.leapMonthPolicy||'SAME_MONTH';
+      document.getElementById('zw-day-policy').value=draft.dayBoundaryMode||'MIDNIGHT_00';
     }
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
     try { document.body.style.overflow = 'hidden'; } catch(e){} // 鎖背景捲動，避免抖動
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        window._jyLazyScript('JS/ziwei.js?v=20260912depth1', null);
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260912accuracy1', null);};
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260912accuracy1', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;
@@ -722,39 +739,16 @@
 
     var bdate = y + '-' + (mo < 10 ? '0' : '') + mo + '-' + (d < 10 ? '0' : '') + d;
     var btime = btimeUnknown ? '' : ((hh < 10 ? '0' : '') + hh + ':00');
-    var form = { type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown };
+    var form = { type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown,leapMonthPolicy:(document.getElementById('zw-leap-policy')||{}).value||'SAME_MONTH',dayBoundaryMode:(document.getElementById('zw-day-policy')||{}).value||'MIDNIGHT_00' };
     try { if (typeof S !== 'undefined') { S.form = form; S._tarotOnlyMode = false; S._autoMode = false; } } catch (e) {}
 
-    // 廟旺全表校正：引擎內建 ZW_BRIGHTNESS 是「簡化」表，168 格中 129 格與正統不符。
-    // 此處以開源 iztro（紫微研习社，與文墨天機／紫微全書一致）的權威亮度表整張覆蓋。
-    // 索引子起：0子1丑2寅3卯4辰5巳6午7未8申9酉10戌11亥。對任何命盤生效，不動 2.7萬行大檔。
-    try {
-      if (typeof ZW_BRIGHTNESS !== 'undefined' && ZW_BRIGHTNESS) {
-        var _BR = {
-          '紫微':['平','廟','旺','旺','得地','旺','廟','廟','旺','旺','得地','旺'],
-          '天機':['廟','陷','得地','旺','利','平','廟','陷','得地','旺','利','平'],
-          '太陽':['陷','不得','旺','廟','旺','旺','旺','得地','得地','陷','不得','陷'],
-          '武曲':['旺','廟','得地','利','廟','平','旺','廟','得地','利','廟','平'],
-          '天同':['旺','不得','利','平','平','廟','陷','不得','旺','平','平','廟'],
-          '廉貞':['平','利','廟','平','利','陷','平','利','廟','平','利','陷'],
-          '天府':['廟','廟','廟','得地','廟','得地','旺','廟','得地','旺','廟','得地'],
-          '太陰':['廟','廟','旺','陷','陷','陷','不得','不得','利','不得','旺','廟'],
-          '貪狼':['旺','廟','平','利','廟','陷','旺','廟','平','利','廟','陷'],
-          '巨門':['旺','不得','廟','廟','陷','旺','旺','不得','廟','廟','陷','旺'],
-          '天相':['廟','廟','廟','陷','得地','得地','廟','得地','廟','陷','得地','得地'],
-          '天梁':['廟','旺','廟','廟','廟','陷','廟','旺','陷','得地','廟','陷'],
-          '七殺':['旺','廟','廟','旺','廟','平','旺','廟','廟','廟','廟','平'],
-          '破軍':['廟','旺','得地','陷','旺','平','廟','旺','得地','陷','旺','平']
-        };
-        for (var _s in _BR) { ZW_BRIGHTNESS[_s] = _BR[_s]; }
-      }
-    } catch (e) {}
+    // 亮度表由共用引擎單一來源提供，避免此入口與其他入口覆寫成不同盤。
     // 紫微以時辰定盤：直接以時辰代表時排盤（無出生地經度校正，符合斗數慣例）
     // 保險：approxLunar 用 Lunar.Solar，而 lunar.js 把它掛在 window.Solar，故補上橋接。
     try { if (window.Solar && (!window.Lunar || !window.Lunar.Solar)) { if (!window.Lunar) window.Lunar = {}; window.Lunar.Solar = window.Solar; } } catch(e){}
     var zw = null;
     try {
-      zw = computeZiwei(y, mo, d, hh, _zwGender);
+      zw = computeZiwei(y, mo, d, hh, _zwGender,form);
       if (typeof S !== 'undefined') S.ziwei = zw;
     } catch (e) {
       console.error('[Ziwei] computeZiwei 失敗:', e);
