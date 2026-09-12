@@ -1,11 +1,13 @@
 import * as T from 'three';
 import {cardPose,actorPose,cameraPose,instrumentPose,CAST,clamp,ease} from './choreography.mjs';
+import {buildScenery} from './scenery.mjs';
 
 // One renderer per ceremony. This module owns presentation only: no RNG, birth
 // calculation, card selection, storage, or interpretation is permitted here.
 export function mountStage(host,kind,options={}){
  const cfg=CAST[kind]||CAST.tarot;
- const state={phase:0,power:0,lit:0,time:0,since:0,turn:0};
+ const state={phase:0,power:0,lit:0,time:0,since:0,turn:0,story:!!options.story,shot:'arrival',shotSince:0,operation:options.operation||0};
+ let shotAt=0,covered=false;
  let dead=false,lost=false,paused=false,raf=0,last=0,phaseAt=0,elapsed=0,frames=0,cost=0;
  let renderer,observer,actorMaterial,actor,previousPose=0,targetPose=0,blendAt=0;
  const resources=new Set(),textures=new Set(),loaders=new Set(),animated=[],pointer={x:0,y:0},aim={x:0,y:0};
@@ -50,7 +52,7 @@ export function mountStage(host,kind,options={}){
   renderer.domElement.className='jr-stage-canvas';renderer.domElement.setAttribute('aria-hidden','true');
   renderer.domElement.addEventListener('webglcontextlost',contextLost);
   host.prepend(renderer.domElement);host.setAttribute('data-renderer','webgl2');
- }catch(error){dispose();host.setAttribute('data-renderer','fallback');return {dispose(){},setPhase(){},setPower(){},setLit(){},setTurn(){}};}
+ }catch(error){dispose();host.setAttribute('data-renderer','fallback');return {dispose(){},setPhase(){},setPower(){},setLit(){},setTurn(){},setShot(){}};}
 
  // An illustrated actor on a subdivided plane. Only sleeves/lower robe move;
  // the face is rigid. Four independently commissioned poses crossfade.
@@ -152,16 +154,17 @@ export function mountStage(host,kind,options={}){
   vertexShader:`uniform float t,energy,motion;varying float alpha;void main(){vec3 p=position;p.y=mod(p.y+3.0+t*.07*motion,6.0)-3.0;p.x+=sin(t*.3+p.y)*.03*motion;vec4 mv=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mv;gl_PointSize=min(9.0,(8.0+energy*10.0)/(-mv.z));alpha=.32+energy*.42;}`,
   fragmentShader:`uniform vec3 color;varying float alpha;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(color,smoothstep(.5,.04,d)*alpha);}`
  }));scene.add(new T.Points(pgeo,pmat));
+ const scenery=state.story?buildScenery({kind,rig,keep,gold,accent,reduced}):null;
 
  function resize(){if(dead||lost)return;const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderOnce();}
  function follow(event){if(reduced)return;const r=host.getBoundingClientRect();aim.x=clamp((event.clientX-r.left)/r.width*2-1,-1,1);aim.y=clamp((event.clientY-r.top)/r.height*2-1,-1,1);}
  function leave(){aim.x=aim.y=0;}
- function visibility(){paused=document.hidden;last=0;if(paused){cancelAnimationFrame(raf);raf=0;}else if(!dead&&!lost){renderOnce();if(!reduced)raf=requestAnimationFrame(tick);}}
+ function visibility(){paused=document.hidden||covered;last=0;cancelAnimationFrame(raf);raf=0;if(!paused&&!dead&&!lost){renderOnce();if(!reduced)raf=requestAnimationFrame(tick);}}
  function transform(dt){
   const smooth=reduced?1:1-Math.exp(-dt*5);pointer.x+=(aim.x-pointer.x)*smooth;pointer.y+=(aim.y-pointer.y)*smooth;
   rig.rotation.y=reduced?0:pointer.x*.055;rig.rotation.x=reduced?0:pointer.y*.022;
-  state.time=reduced?0:elapsed;state.since=elapsed-phaseAt;
-  const view=cameraPose(kind,{...state,since:reduced?3:state.since},camera.aspect);
+  state.time=reduced?0:elapsed;state.since=elapsed-phaseAt;state.shotSince=elapsed-shotAt;
+  const view=cameraPose(kind,{...state,since:reduced?6:state.since,shotSince:reduced?3:state.shotSince},camera.aspect);
   camera.position.lerp(new T.Vector3(view.x,view.y,view.z),reduced?1:smooth);
   camera.lookAt(0,view.targetY,0);
   const energy=state.phase>=2?1:state.power;
@@ -189,6 +192,7 @@ export function mountStage(host,kind,options={}){
    r.scale.setScalar(1+q*(.35+i*.15));r.material.opacity=.045+Math.sin(q*Math.PI)*.24;});
   stageRing.rotation.z=state.time*.045;stageRing2.rotation.z=-state.time*.06;
   pmat.uniforms.t.value=state.time;pmat.uniforms.energy.value=energy;
+  scenery?.update({...state,since:reduced?6:state.since});
  }
  function renderOnce(){if(dead||lost||paused)return;try{transform(1/30);renderer.render(scene,camera);host.classList.add('jr-gpu-ready');}catch(error){contextLost({preventDefault(){}});}}
  function tick(now){if(dead||lost||paused||reduced)return;raf=requestAnimationFrame(tick);if(last&&now-last<31)return;
@@ -205,6 +209,8 @@ export function mountStage(host,kind,options={}){
   setPhase(phase){if(dead)return;state.phase=phase;phaseAt=elapsed;previousPose=targetPose;targetPose=actorPose(phase);uniforms.fromPose.value=previousPose;uniforms.toPose.value=targetPose;blendAt=elapsed;renderOnce();},
   setPower(value){state.power=clamp(value);if(reduced)renderOnce();},
   setLit(value){state.lit=Math.max(0,value);if(reduced)renderOnce();},
-  setTurn(value){state.turn=clamp(value,-10,10);if(reduced)renderOnce();}
+  setTurn(value){state.turn=clamp(value,-10,10);if(reduced)renderOnce();},
+  setShot(value){if(dead||!value)return;state.story=!!options.story;state.shot=value.name;shotAt=elapsed;renderOnce();},
+  setCovered(value){if(dead)return;covered=!!value;visibility();}
  };
 }

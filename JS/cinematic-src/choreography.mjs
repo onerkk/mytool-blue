@@ -21,6 +21,16 @@ export function cameraPose(kind,state,aspect=1){
  const phase=state.phase||0,u=ease((state.since||0)/2.65),p=clamp(state.power||0);
  const base=aspect<.62?8.15:7.2,active=phase===2;
  const handed=kind==='compat'?-1:kind==='meihua'?.65:1;
+ if(state.story){
+  const q=ease((state.shotSince||0)/1.7),shot=state.shot||'arrival';
+  // Shots travel through physical foreground doors, hold on the guide, then
+  // circle the instrument. Every shot settles before a user must interact.
+  if(shot==='arrival')return {x:(1-q)*.72*handed,y:.32,z:base+2.25*(1-q),targetY:.14};
+  if(shot==='listen')return {x:.14*handed,y:.12,z:base-.55-p*.15,targetY:-.18};
+  if(shot==='gather')return {x:-.6*handed,y:-.38,z:base-.9,targetY:-.48};
+  if(shot==='orbit')return {x:(-.6+q*1.38)*handed,y:-.3+q*.35,z:base-.65,targetY:-.35};
+  return {x:.05,y:.15,z:base-.25,targetY:-.08};
+ }
  return {x:active?Math.sin(u*Math.PI)*.42*handed:0,
   y:active?.2-Math.sin(u*Math.PI)*.16:.2,
   z:base-(active?.52*Math.sin(u*Math.PI):phase>=3?.24:phase===1?p*.1:0),

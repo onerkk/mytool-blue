@@ -1,0 +1,71 @@
+/* Story scenes: a visible stage, a short exchange, and one clear next action. */
+.jy-atelier .jr-dialog[data-story]{background:#040710;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:auto!important}
+.jy-atelier .jr-dialog[data-story] .jr-shell{min-height:100svh;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(320px,1fr) auto!important;max-width:none!important;padding:10px 18px max(12px,env(safe-area-inset-bottom))!important;overflow:visible!important;gap:0!important}
+.jy-atelier .jr-dialog[data-story] .jr-header{grid-area:1/1!important;margin:0!important;padding:0 0 10px!important;border:0!important;max-width:1120px!important;position:relative!important}
+.jy-atelier .jr-dialog[data-story] .jr-header button{background:#08101899!important;border-color:#f2e0b32b!important;border-radius:24px!important;box-shadow:none!important;backdrop-filter:blur(10px)}
+.jy-atelier .jr-dialog[data-story] .jr-stage{grid-area:2/1!important;height:100%!important;min-height:320px!important;max-width:950px!important;margin:0 auto!important;align-self:stretch!important;overflow:hidden!important}
+.jy-atelier .jr-dialog[data-story] .jr-playfield{grid-area:2/1!important;align-self:end!important;margin:0 auto 4px!important;height:150px!important;max-width:520px!important}
+.jy-atelier .jr-dialog[data-story][data-mode=cards] .jr-playfield{height:210px!important}
+.jy-atelier .jr-dialog[data-story] .jr-playfield .jr-touch{height:210px!important;margin-top:-50px!important;touch-action:none!important}
+.jy-atelier .jr-dialog[data-story] .jr-touch-label{font-size:12px!important;background:#060d15b8!important;border:1px solid #eedcb93b!important;padding:8px 14px!important;bottom:6px!important;box-shadow:0 4px 16px #0006!important;letter-spacing:.5px!important}
+.jy-atelier .jr-dialog[data-story] .jr-touch-track{bottom:0!important}
+.jy-atelier .jr-dialog[data-story] .jr-dialogue{grid-area:3/1!important;position:relative!important;align-self:end!important;max-width:620px!important;width:100%!important;margin:0 auto!important;padding:18px 20px 6px!important;border:1px solid #e9d4a92e!important;border-radius:22px 22px 12px 12px!important;background:linear-gradient(145deg,#13202ad9,#090f1cf5)!important;backdrop-filter:blur(22px);box-shadow:0 -14px 50px #01060a66,inset 0 1px #fff1!important;animation:none!important}
+.jy-atelier .jr-dialog[data-story] .jr-brief{display:block!important;grid-area:auto!important;width:100%!important;max-width:none!important;padding:0!important;margin:0!important;align-self:auto!important}
+.jy-atelier .jr-dialog[data-story] .jr-speaker{margin:0 0 6px!important;font-size:11px!important;opacity:.88}
+.jy-atelier .jr-dialog[data-story] .jr-speaker-name{font-size:15px!important}
+.jy-atelier .jr-dialog[data-story] .jr-eyebrow{display:none!important}
+.jy-atelier .jr-dialog[data-story] .jr-text h2{font-size:clamp(20px,4.9vw,29px)!important;line-height:1.5!important;letter-spacing:1px!important;margin:0 0 6px!important;text-wrap:pretty}
+.jy-atelier .jr-dialog[data-story] .jr-text p{font-size:13px!important;line-height:1.75!important;max-width:none!important;color:#cbd2d7!important}
+.jy-atelier .jr-dialog[data-story] .jr-intent{margin:10px 0!important;gap:8px!important}
+.jy-atelier .jr-dialog[data-story] .jr-intent button{min-height:42px!important;border-radius:22px!important;font-size:12px!important;background:#08152388!important;box-shadow:none!important}
+.jy-atelier .jr-dialog[data-story] .jr-intent button[aria-pressed=true]{color:#ffedc7!important;border-color:#e8ce94!important;background:#d4b57620!important}
+.jy-atelier .jr-dialog[data-story] .jr-question{font-size:11px!important;margin:5px 0 9px!important}
+.jy-atelier .jr-dialog[data-story] .jr-hint{font-size:11px!important;line-height:1.6!important;margin:7px 0!important}
+.jy-atelier .jr-dialog[data-story] .jr-next{border-radius:12px!important;min-height:48px!important;margin-top:8px!important;background:linear-gradient(110deg,#ffedc3,#c6a571 90%,#f2daab)!important;border:1px solid #ffe5b0!important;box-shadow:inset 0 1px #fff9,0 3px #70532c,0 8px 25px #0007!important;font-size:15px!important;letter-spacing:1px}
+.jy-atelier .jr-dialog[data-story] .jr-next:disabled{background:#0a1520!important;color:#b4b9be!important;border-color:#f0e2c125!important;box-shadow:none!important}
+.jy-atelier .jr-dialog[data-story] .jr-response{margin:8px 0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important}
+.jy-atelier .jr-dialog[data-story] .jr-response>div:first-child{font-size:11px!important;line-height:1.5!important;margin-bottom:5px!important}
+.jy-atelier .jr-dialog[data-story][data-phase="2"] .jr-response,.jy-atelier .jr-dialog[data-story][data-phase="3"] .jr-response{display:none!important}
+.jy-atelier .jr-dialog[data-story] .jr-footer{padding:1px 0!important;margin-top:5px!important}
+.jy-atelier .jr-dialog[data-story] .jr-footer li{font-size:10px!important}
+.jy-atelier .jr-dialog[data-story] .jr-footer .jr-skip{font-size:11px!important;min-height:40px!important}
+.js-story-heading,.js-story-caption{grid-area:2/1;position:relative;align-self:start;justify-self:center;text-align:center;z-index:4;pointer-events:none;text-shadow:0 2px 18px #000,0 2px 5px #000;width:min(100%,600px);margin:8px auto 0;padding:0 12px;box-sizing:border-box}
+.js-story-place{display:block;font:400 11px/1.8 var(--f-body,sans-serif);color:#ead3a9;letter-spacing:5px}
+.js-story-heading p{font:400 clamp(17px,4.2vw,25px)/1.6 var(--f-display,serif);letter-spacing:2px;color:#f9ebd2;margin:7px 0}
+.js-story-caption{align-self:center;font:400 clamp(17px,4.8vw,27px)/1.8 var(--f-display,serif);color:#fff0d2;letter-spacing:1.5px;padding:20px 18px;background:linear-gradient(90deg,transparent,#0810179c,transparent)}
+.js-story-heading[hidden],.js-story-caption[hidden]{display:none}
+.jy-atelier .jr-dialog[data-story] .jr-world-image{animation:js-story-enter 2s ease-out both!important;transition:transform 1.7s ease-in-out!important;filter:brightness(.9) saturate(1.05)!important}
+.jy-atelier .jr-dialog[data-story][data-shot=gather] .jr-world-image{transform:scale(1.2) translate(-1%,1%)!important}
+.jy-atelier .jr-dialog[data-story][data-shot=orbit] .jr-world-image{transform:scale(1.16) translate(2%,-1%)!important}
+.jy-atelier .jr-dialog[data-story][data-shot=settle] .jr-world-image{transform:scale(1.06)!important}
+.jy-atelier .jr-dialog[data-story] .jr-world:after{background:linear-gradient(180deg,#050a12d9,transparent 22%,transparent 59%,#050a14eb)!important}
+.jy-atelier .jr-dialog[data-story] .jr-actor-fallback{width:270px!important;max-width:75%!important;height:108%!important;top:0!important}
+.jy-atelier .jr-dialog[data-story][data-phase="2"] .jr-flash{animation:none!important;opacity:0!important}
+.js-story-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .65s}
+.jr-dialog[data-film] .js-story-film{opacity:1}.jr-dialog[data-film] .jr-stage{visibility:hidden}
+.jy-atelier .jr-dialog[data-story] :is(button,summary):focus-visible{outline:2px solid #ffdfa5!important;outline-offset:4px!important}
+/* The five Operations use the same director, while their original counting,
+   pairing, and verification stay visible and unchanged. */
+#ootk-sequence-overlay .ootk-story-stage{position:relative;height:300px;margin:14px auto 10px;max-width:700px;overflow:hidden;border-radius:18px;border:1px solid #ccb7ee3b;background:linear-gradient(#090b1744,#080c1677),url('../assets/ui/ritual-moon-sanctum.webp') center 47%/cover}
+#ootk-sequence-overlay .ootk-story-stage canvas{position:absolute;inset:0;width:100%;height:100%}
+#ootk-sequence-overlay .ootk-story-voice{position:absolute;bottom:12px;left:12px;right:12px;margin:0;text-align:center;color:#f2dfbc;font-size:13px;line-height:1.8;text-shadow:0 2px 8px #000;pointer-events:none}
+#ootk-sequence-overlay .ootk-phase-history{margin:12px 0;border:1px solid #d4bf9233;border-radius:12px;padding:12px 16px;background:#0b1220}
+#ootk-sequence-overlay .ootk-phase-history>summary{cursor:pointer;min-height:36px;color:#e1c796;line-height:1.8}
+#ootk-sequence-overlay{overflow-anchor:none;scroll-behavior:auto!important}
+#ootk-sequence-overlay #ootk-actions{position:sticky;bottom:0;padding:14px 8px;background:#090f1cf5;z-index:20;flex-wrap:wrap;border-top:1px solid #d4bf922e}
+#ootk-sequence-overlay #ootk-actions button{min-height:46px;padding:10px 16px;border:1px solid #d4bf9280;border-radius:12px;font:14px/1.5 var(--f-body,sans-serif);color:#efdbb4;background:#192331}
+#ootk-sequence-overlay #ootk-actions #ootk-next{background:linear-gradient(120deg,#f2dfb5,#c7a572);color:#171e23}
+#ootk-sequence-overlay #ootk-actions #ootk-auto-story[aria-pressed=true]{border-color:#e7c88f;background:#e7c88f29}
+@keyframes js-story-enter{from{transform:scale(1.2);opacity:.3}to{transform:scale(1.06);opacity:1}}
+@media(min-width:850px){
+ .jy-atelier .jr-dialog[data-story] .jr-shell{grid-template-columns:minmax(400px,1.35fr) minmax(340px,.8fr)!important;grid-template-rows:auto 1fr!important;min-height:100svh;padding:20px max(32px,calc((100vw - 1440px)/2))!important;column-gap:30px!important}
+ .jy-atelier .jr-dialog[data-story] .jr-header{grid-area:1/1/2/3!important}
+ .jy-atelier .jr-dialog[data-story] .jr-stage{grid-area:2/1!important;min-height:620px!important;height:calc(100svh - 100px)!important}
+ .jy-atelier .jr-dialog[data-story] .jr-playfield{grid-area:2/1!important;margin-bottom:50px!important;height:220px!important}
+ .jy-atelier .jr-dialog[data-story] .jr-dialogue{grid-area:2/2!important;align-self:center!important;padding:28px 25px 10px!important}
+ .js-story-heading,.js-story-caption{grid-area:2/1}.js-story-heading{margin-top:15px}.js-story-caption{align-self:center}
+ .jy-atelier .jr-dialog[data-story] .jr-text p{font-size:15px!important}.jy-atelier .jr-dialog[data-story] .jr-next{min-height:54px!important}
+}
+@media(max-width:380px){.jy-atelier .jr-dialog[data-story] .jr-shell{padding-inline:12px!important}.jy-atelier .jr-dialog[data-story] .jr-dialogue{padding:15px 15px 4px!important}.jy-atelier .jr-dialog[data-story] .jr-header>span{font-size:14px!important}.jy-atelier .jr-dialog[data-story] .jr-header button{font-size:11px!important;padding:7px 9px!important}.jy-atelier .jr-dialog[data-story] .jr-preferences button{font-size:10px!important;padding:6px!important}}
+@media(prefers-reduced-motion:reduce){.jy-atelier .jr-dialog[data-story] *, .jy-atelier .jr-dialog[data-story] *::before,.jy-atelier .jr-dialog[data-story] *::after{animation:none!important;transition:none!important}.jy-atelier .jr-dialog[data-story] .jr-world-image{opacity:1!important}}
+.jy-atelier .jr-dialog[data-story][data-motion=still] .jr-world-image{animation:none!important;transition:none!important;transform:none!important;opacity:1!important}

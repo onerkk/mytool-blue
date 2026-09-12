@@ -7,6 +7,9 @@ function environment(){
     setAttribute(k,v){this.attrs[k]=String(v);if(k==='id')this.id=String(v);if(k==='class')this.className=v;if(k==='disabled')this.disabled=true;if(k==='value')this.value=v;if(k.startsWith('data-'))this.dataset[k.slice(5).replace(/-([a-z])/g,(_,a)=>a.toUpperCase())]=String(v);}
     getAttribute(k){return k==='class'?this.className||null:this.attrs[k]??null;} removeAttribute(k){delete this.attrs[k];}
     appendChild(x){x.parentNode=this;this.children.push(x);return x;}removeChild(x){this.children=this.children.filter(n=>n!==x);x.parentNode=null;}remove(){if(this.parentNode)this.parentNode.removeChild(this);}
+    // Standard DOM relocation primitives used by the chapter-based presentation.
+    insertBefore(x,before){if(x===before)return x;x.remove();const i=this.children.indexOf(before);x.parentNode=this;this.children.splice(i<0?this.children.length:i,0,x);return x;}
+    prepend(x){return this.insertBefore(x,this.children[0]);}
     get firstElementChild(){return this.children[0];}get isConnected(){return this===doc.body||this===doc.head||!!(this.parentNode&&this.parentNode.isConnected);}
     addEventListener(k,fn){(this.listeners[k]??=new Set()).add(fn);}removeEventListener(k,fn){this.listeners[k]?.delete(fn);}dispatch(k,e={}){e.target??=this;e.preventDefault??=()=>{};e.stopPropagation??=()=>{};if(typeof this['on'+k]==='function')this['on'+k](e);for(const fn of [...this.listeners[k]||[]])fn(e);}
     matches(sel){return sel.split(',').some(raw=>{const s=raw.trim();if(s.startsWith('#'))return this.id===s.slice(1);if(s.startsWith('.'))return this.classList.contains(s.slice(1));let m=s.match(/^\[([^=\]]+)(?:=["']?([^"'\]]+)["']?)?\]$/);if(m)return m[2]===undefined?this.getAttribute(m[1])!==null:this.getAttribute(m[1])===m[2];return this.tagName.toLowerCase()===s;});}

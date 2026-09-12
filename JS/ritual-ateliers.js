@@ -3,6 +3,7 @@
   'use strict';
   var active = null;
   var themes = {
+    ootk:{name:'開鑰之法',world:'moon-sanctum',room:'秘鑰之門',en:'OPENING OF THE KEY',title:'一扇門，一層新的觀察。',intro:'帶著同一個問題，沿著五層程序慢慢探索。每層看完，再決定何時繼續。',focus:'讓牌，為第一扇門聚攏。',guide:'左右拖曳牌組，或按住片刻。',action:'牌在聚攏，第一扇門即將開啟',ready:'從第一層，開始觀察。',outro:'接下來保留每次操作的牌序、計數與配對；若程序需要停止，會清楚說明原因。',finish:'進入五層程序',type:'hold'},
     tarot: {name:'塔羅',world:'moon-sanctum',room:'月下神殿',en:'THE MOON SANCTUM',title:'今夜，先聽見自己。',intro:'越過日常的喧囂，把最在意的那件事，留在這片月光裡。',focus:'讓牌，回應你的觸碰。',guide:'按住牌組，讓散落的心緒慢慢收攏。',action:'月光正在穿過牌組',ready:'牌已洗好，輪到你的直覺。',outro:'不必尋找「正確」的一張。接下來，從牌背中選出你的牌。',finish:'開始選牌',type:'hold'},
     lenormand: {name:'雷諾曼',world:'moon-garden',room:'翡翠月庭',en:'THE EMERALD GARDEN',title:'線索，藏在相遇之間。',intro:'沿著月光走進庭院。帶著一個具體的問題，看看牌與牌會如何相遇。',focus:'親手，揭開故事的起點。',guide:'依你的節奏，輕觸面前的牌。',action:'讓線索在月光裡相連',ready:'讓相遇的牌，連成一句話。',outro:'帶著原來的問題，查看完整牌陣與牌序，再探索它們之間的關係。',finish:'展開完整牌陣',type:'cards'},
     bazi: {name:'八字命理',world:'celestial-observatory',room:'時光觀測殿',en:'THE HALL OF TIME',title:'每段人生，都有自己的節奏。',intro:'走入時間的長廊。從出生的那一刻，重新認識一路走來的自己。',focus:'點亮，生命的四個座標。',guide:'依序輕觸年、月、日、時，為這次探索留下一個安靜的起點。',action:'四個時間座標，緩緩相會',ready:'時間的長卷，為你展開。',outro:'接下來核對四柱與排盤資料，從中整理自己的特質、選擇與生活節奏。',finish:'展開我的命盤',type:'seals',seals:['年','月','日','時']},
@@ -31,6 +32,7 @@
     var cfg=themes[kind],doc=root.document,previous=doc.activeElement;
     var reduced=!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);
     var phase=0,settled=false,timers=[],frame=0,holding=false,holdAt=0,lit=0,audio=null,audioOn=false,stage=null;
+    var story=null;
     var gesture=null,travel=0,turn=0,intent='clarity';
     var bodyOverflow=doc.body.style.overflow,inertSiblings=[],fallback=false;
     // Snapshot supplied cards; do not mutate the canonical draw or generate a replacement.
@@ -41,7 +43,8 @@
     var question=String(options.question!=null?options.question:fallbackQuestion(kind)).trim().slice(0,500);
     var dialog=doc.createElement('dialog');dialog.className='jr-dialog';
     var actors={tarot:['lunar-guide','月見','塔羅引路人'],lenormand:['lunar-guide','月見','牌語引路人'],bazi:['star-guide','星衡','四柱引路人'],compat:['star-guide','星衡','關係引路人'],ziwei:['star-guide','星衡','星圖引路人'],meihua:['blossom-guide','清和','觀象引路人'],oracle:['blossom-guide','清和','靜心引路人']};
-    var actor=actors[kind],gestureCopy={tarot:'左右拖曳切牌，或按住牌組',ziwei:'沿星軌轉動手指，或按住星儀',meihua:'左右拂過光線，或按住凝心',oracle:'上下輕晃籤筒，或按住祈願'};
+    actors.ootk=['lunar-guide','月見','開鑰引路人'];
+    var actor=actors[kind],gestureCopy={ootk:'左右拖曳切牌，或按住牌組',tarot:'左右拖曳切牌，或按住牌組',ziwei:'沿星軌轉動手指，或按住星儀',meihua:'左右拂過光線，或按住凝心',oracle:'上下輕晃籤筒，或按住祈願'};
     dialog.setAttribute('data-ritual',kind);dialog.setAttribute('data-world',cfg.world);dialog.setAttribute('data-mode',mode);
     dialog.setAttribute('data-motion',reduced?'still':'full');dialog.setAttribute('aria-labelledby','jr-title');dialog.setAttribute('aria-describedby','jr-note');
     var interaction='';
@@ -50,7 +53,7 @@
     }else if(mode==='seals'){
       interaction='<div class="jr-seals">'+cfg.seals.map(function(label,i){return '<button type="button" class="jr-seal" data-seal-index="'+i+'" aria-pressed="false" aria-label="點亮'+label+'座標"><span>'+label+'</span><small>'+String(i+1).padStart(2,'0')+'</small></button>';}).join('')+'</div>';
     }else{
-      interaction='<button type="button" class="jr-touch" aria-label="'+esc(gestureCopy[kind]||cfg.guide)+'">'+(kind==='tarot'?fan():'<span class="jr-art at-art" data-art="'+kind+'" aria-hidden="true"></span>')+'<span class="jr-touch-label">'+esc(gestureCopy[kind]||'按住，讓光靠近')+'</span><span class="jr-touch-track"><i></i></span></button>';
+      interaction='<button type="button" class="jr-touch" aria-label="'+esc(gestureCopy[kind]||cfg.guide)+'">'+(kind==='tarot'||kind==='ootk'?fan():'<span class="jr-art at-art" data-art="'+kind+'" aria-hidden="true"></span>')+'<span class="jr-touch-label">'+esc(gestureCopy[kind]||'按住，讓光靠近')+'</span><span class="jr-touch-track"><i></i></span></button>';
     }
     var constellation='';
     if(kind==='ziwei')constellation='<div class="jr-stars" aria-hidden="true">'+['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'].map(function(x,i){return '<span style="--i:'+i+';--angle:'+(i*30)+'deg">'+x+'</span>';}).join('')+'</div>';
@@ -80,7 +83,7 @@
       var host=dialog.querySelector('.jr-stage');
       if(host){host.classList.remove('jr-gpu-ready','jr-actor-ready');host.setAttribute('data-renderer','fallback');host.querySelectorAll('canvas').forEach(function(canvas){canvas.remove();});}
     }
-    function stageCall(method,value){if(!stage)return;try{stage[method](value);}catch(error){fallbackStage(error);}}
+    function stageCall(method,value){if(!stage||typeof stage[method]!=='function')return;try{stage[method](value);}catch(error){fallbackStage(error);}}
     function suspendHome(value){if(root.JYCinemaUI&&typeof root.JYCinemaUI.suspendHome==='function'){try{root.JYCinemaUI.suspendHome(value);}catch(error){warn('home',error);}}}
     function focus(el){if(!el||typeof el.focus!=='function')return;try{el.focus({preventScroll:true});}catch(error){try{el.focus();}catch(ignored){}}}
     function schedule(fn,ms){var id=root.setTimeout(function(){if(!settled)fn();},ms);timers.push(id);return id;}
@@ -107,7 +110,7 @@
     }
     function cleanup(){
       stopHold();pauseReveal();timers.forEach(function(id){root.clearTimeout(id);});disposeAudio();
-      releaseStage();
+      if(story){story.dispose();story=null;}releaseStage();
       root.removeEventListener('pagehide',onPageHide);root.removeEventListener('popstate',onPopState);doc.removeEventListener('visibilitychange',onVisibility);
       dialog.removeEventListener('close',onNativeClose);dialog.removeEventListener('keydown',onKeyDown);
       try{if(dialog.open)dialog.close();}catch(e){}
@@ -145,6 +148,7 @@
       if(value===1)showProgress(lit/(mode==='cards'?cards.length:mode==='seals'?cfg.seals.length:1),mode==='cards'?'逐張輕觸，或選擇自動翻牌':mode==='seals'?'輕觸座標，點亮本次探索':'拖曳或按住，下方光帶會回應你');
       if(value>=2)showProgress(1,value===2?'已接住你的心念':'準備好了，由你決定何時繼續');
       stageCall('setPhase',value);
+      if(story)story.setPhase(value,function(){if(phase===2)updatePhase(3);});
       var revealControls=dialog.querySelector('.jr-reveal-controls');if(revealControls)revealControls.hidden=value!==1;
       var choices=dialog.querySelector('.jr-intent');if(choices)choices.hidden=value!==0;
       dialog.querySelector('.jr-chapter').textContent=value===0?'入境':value===1?'凝心':'啟程';
@@ -164,7 +168,7 @@
         hint.textContent=options.spreadName?String(options.spreadName):'';next.disabled=false;next.textContent=(options.finishLabel||(dealing?'查看本次牌陣':cfg.finish))+' →';focus(next);
       }
     }
-    function awaken(){if(settled||phase!==1)return;stopHold();dialog.style.setProperty('--hold','1');updatePhase(2);bell();schedule(function(){if(phase===2)updatePhase(3);},reduced?0:2700);}
+    function awaken(){if(settled||phase!==1)return;stopHold();dialog.style.setProperty('--hold','1');updatePhase(2);bell();if(!story)schedule(function(){if(phase===2)updatePhase(3);},reduced?0:2700);}
     // Commit the threshold in the input event itself. A quick swipe followed by
     // release must not lose completion while waiting for the next animation frame.
     function applyHoldProgress(){
@@ -263,9 +267,10 @@
     dialog.querySelectorAll('[data-intent]').forEach(function(btn){btn.onclick=function(){if(phase!==0)return;intent=btn.getAttribute('data-intent');dialog.querySelectorAll('[data-intent]').forEach(function(b){b.setAttribute('aria-pressed',String(b===btn));});setCopy(intent==='action'?'好，我們一起找一個起點。':cfg.title,intent==='action'?'帶著你真正能改變的部分進入探索。解讀之後，我們再把提醒整理成可以採取的行動。':cfg.intro);};});
     dialog.querySelector('.jr-motion').onclick=function(){
       if(settled)return;stopHold();reduced=!reduced;dialog.setAttribute('data-motion',reduced?'still':'full');
+      if(story)story.setReduced(reduced);
       this.textContent='動態：'+(reduced?'靜態':'完整');this.setAttribute('aria-pressed',String(reduced));
       releaseStage();
-      if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,sealValues:options.sealValues||[]});stageCall('setPhase',phase);stageCall('setLit',lit);stageCall('setTurn',turn);stageCall('setPower',phase>=2?1:mode==='hold'?0:lit/(mode==='cards'?cards.length:cfg.seals.length));}catch(error){fallbackStage(error);}}
+      if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,story:!!root.JYStory,sealValues:options.sealValues||[]});stageCall('setPhase',phase);stageCall('setLit',lit);stageCall('setTurn',turn);stageCall('setPower',phase>=2?1:mode==='hold'?0:lit/(mode==='cards'?cards.length:cfg.seals.length));}catch(error){fallbackStage(error);}}
       if(reduced&&phase===2)updatePhase(3);
     };
     sound.onclick=toggleSound;dialog.querySelector('.jr-cancel').onclick=function(){finish(false,true);};dialog.querySelector('.jr-skip').onclick=function(){finish(true,false);};
@@ -276,7 +281,8 @@
     active=entry;doc.body.appendChild(dialog);doc.body.style.overflow='hidden';
     suspendHome(true);
     try{if(typeof dialog.showModal!=='function')throw new Error('Native dialog unavailable');dialog.showModal();}catch(e){fallback=true;dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');Array.prototype.forEach.call(doc.body.children,function(node){if(node!==dialog){inertSiblings.push({node:node,value:node.inert});node.inert=true;}});}
-    if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,sealValues:options.sealValues||[]});}catch(e){fallbackStage(e);}}
+    if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,story:!!root.JYStory,sealValues:options.sealValues||[]});}catch(e){fallbackStage(e);}}
+    if(root.JYStory&&typeof root.JYStory.mount==='function'){try{story=root.JYStory.mount(dialog,kind,{reduced:reduced,onShot:function(shot){stageCall('setShot',shot);},onFilm:function(covered){stageCall('setCovered',covered);}});if(story)next.textContent=story.invitation+' →';}catch(error){warn('story',error);}}
     updatePhase(0);if(mode==='cards')showCardPage();focus(next);if(dealing)updatePhase(1);
     root.addEventListener('pagehide',onPageHide);root.addEventListener('popstate',onPopState);doc.addEventListener('visibilitychange',onVisibility);
     return handle;

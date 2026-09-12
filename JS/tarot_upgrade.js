@@ -3575,11 +3575,14 @@ enhanceTarot = function(tarot) {
   // ════════════════════════════════════════════════════════════════════
   function _runOOTKSequence(significatorId, predeclaredBindings) {
     _injectOOTKStyles();
-    var sequenceClosed=false,sequenceTimers=[],sequenceFrames=[];
+    var sequenceClosed=false,sequenceTimers=[],sequenceFrames=[],sequenceStage=null;
+    function releaseSequenceStage(){var current=sequenceStage;sequenceStage=null;if(current&&current.dispose){try{current.dispose();}catch(e){console.warn('[OOTK scene dispose]',e);}}}
+    function setSequenceShot(name,phase){if(!sequenceStage)return;try{if(phase!=null)sequenceStage.setPhase(phase);if(sequenceStage.setShot)sequenceStage.setShot({name:name});}catch(e){releaseSequenceStage();}}
     function sequenceTimeout(fn,delay){var id=window.setTimeout(function(){if(!sequenceClosed)fn();},delay);sequenceTimers.push(id);return id;}
     function sequenceFrame(fn){var id=window.requestAnimationFrame(function(){if(!sequenceClosed)fn();});sequenceFrames.push(id);return id;}
     function closeSequence(){
-      if(sequenceClosed)return;sequenceClosed=true;
+      if(sequenceClosed)return;sequenceClosed=true;releaseSequenceStage();
+      if(window.JYRitual)window.JYRitual.cancel('ootk');
       sequenceTimers.forEach(function(id){window.clearTimeout(id);});sequenceFrames.forEach(function(id){window.cancelAnimationFrame(id);});
       overlay.remove();
     }
@@ -3704,6 +3707,12 @@ enhanceTarot = function(tarot) {
         startStageFlow();
       }, 900);
     };
+    // The shared entrance introduces the guide and the five doors. The real
+    // calculations above are retained; entering, cancelling, or skipping never reruns them.
+    if(window.JYStory&&window.JYRitual){
+      try{window.JYRitual.play('ootk',{question:questionText,onComplete:function(){if(!sequenceClosed)beginBtn.click();},onCancel:closeSequence});}
+      catch(error){console.warn('[OOTK entrance]',error);}
+    }
 
     // ──────────────────────────────────────────────────────────────
     // 階段展示主控
@@ -3712,7 +3721,10 @@ enhanceTarot = function(tarot) {
     var phasesEl;
     var nextBtn;
     var _advanceLock = false;
-    var _ootkAuto = true;
+    var _ootkAuto = false;
+    var autoBtn=document.createElement('button');autoBtn.type='button';autoBtn.id='ootk-auto-story';autoBtn.textContent='連續演出：關';autoBtn.setAttribute('aria-pressed','false');
+    document.getElementById('ootk-actions').prepend(autoBtn);
+    autoBtn.onclick=function(){_ootkAuto=!_ootkAuto;autoBtn.textContent='連續演出：'+(_ootkAuto?'開':'關');autoBtn.setAttribute('aria-pressed',String(_ootkAuto));if(_ootkAuto&&!_advanceLock&&!_lastPhaseHadBanner&&currentPhase>=0)nextBtn.click();};
     var _lastPhaseHadBanner = false;
     var maxPhases = Math.max(1, Math.min(5, results.completedOperations || 5));
     document.querySelectorAll('#ootk-dots .ootk-dot').forEach(function(dot, idx){ if (idx >= maxPhases) dot.style.display = 'none'; });
@@ -3721,11 +3733,11 @@ enhanceTarot = function(tarot) {
       phasesEl = document.getElementById('ootk-phases');
       nextBtn = document.getElementById('ootk-next');
       nextBtn.addEventListener('click', advancePhase);
-      if (_ootkAuto) sequenceTimeout(function(){ try{ advancePhase(); }catch(_e){} }, 600);
+      sequenceTimeout(function(){ try{ advancePhase(); }catch(_e){} }, 600);
     }
 
     function advancePhase() {
-      if (_advanceLock) return;
+      if (sequenceClosed || _advanceLock) return;
       _advanceLock = true;
       try {
         currentPhase++;
@@ -3831,15 +3843,9 @@ enhanceTarot = function(tarot) {
 
       _lastPhaseHadBanner = !!abandonBanner; // 有揭示/警示卡 → 自動模式下停在此階段等使用者
       phaseDiv.innerHTML = abandonBanner + _renderPhase(currentPhase, label, opData, results);
-      phasesEl.appendChild(phaseDiv);
+      phasesEl.prepend(phaseDiv);
       sequenceFrame(function() { sequenceFrame(function() { phaseDiv.classList.add('visible'); }); });
-      // ★ v75.1 修正：scrollIntoView 在手機 fixed overlay 內不可靠，改用 overlay.scrollTop
-      sequenceTimeout(function() {
-        try {
-          var _ov = document.getElementById('ootk-sequence-overlay');
-          if (_ov) _ov.scrollTop = _ov.scrollHeight;
-        } catch(e) {}
-      }, 300);
+      // Keep the new chapter at the same reading position; never jump to its bottom.
       nextBtn.style.opacity = '1';
       nextBtn.style.pointerEvents = 'auto';
       if (currentPhase < maxPhases - 1) {
@@ -3852,10 +3858,10 @@ enhanceTarot = function(tarot) {
       // ── 自動推進：本階段無警示卡才自動往下；有卡則停在此處等使用者（重抽鈕已在卡內）──
       if (_ootkAuto && !_lastPhaseHadBanner) {
         if (currentPhase < maxPhases - 1) {
-          sequenceTimeout(function(){ try{ advancePhase(); }catch(_e){} }, 2600);
+          sequenceTimeout(function(){ try{ if(_ootkAuto) advancePhase(); }catch(_e){} }, 2600);
         } else {
           // 第五階段完成 → 自動進入解讀
-          sequenceTimeout(function(){ try{ if(nextBtn) nextBtn.click(); }catch(_e){} }, 2600);
+          sequenceTimeout(function(){ try{ if(_ootkAuto&&nextBtn) nextBtn.click(); }catch(_e){} }, 2600);
         }
       }
     }
@@ -3864,10 +3870,16 @@ enhanceTarot = function(tarot) {
     // ★ 階段儀式總控：洗牌 → 發牌 → 找 Sig → Counting → Pairing
     // ════════════════════════════════════════════════════════════════
     function runStageRitual(phaseIdx, onComplete) {
+      releaseSequenceStage();
+      Array.from(phasesEl.children).forEach(function(node){
+        if(!node.classList.contains('ootk-phase'))return;
+        var history=document.createElement('details');history.className='ootk-phase-history';
+        var summary=document.createElement('summary');summary.textContent='回看第 '+phaseIdx+' 階段的資料';history.appendChild(summary);phasesEl.insertBefore(history,node);history.appendChild(node);
+      });
       var ritualScene = document.createElement('div');
       ritualScene.className = 'ootk-ritual-scene';
       ritualScene.style.cssText = 'opacity:0;transition:opacity .5s;min-height:340px';
-      phasesEl.appendChild(ritualScene);
+      phasesEl.prepend(ritualScene);
       sequenceFrame(function() { ritualScene.style.opacity = '1'; });
 
       // 階段標題
@@ -3883,6 +3895,12 @@ enhanceTarot = function(tarot) {
           '※ 第 ' + (phaseIdx + 1) + ' 次獨立讀盤(重洗、重新切牌)・Book T 原文「Shuffle, etc., as before」' +
         '</div>';
       ritualScene.appendChild(stageTitle);
+      if(window.JYCinema&&window.JYStory){
+        var sceneHost=document.createElement('div');sceneHost.className='ootk-story-stage';ritualScene.appendChild(sceneHost);
+        var voice=document.createElement('p');voice.className='ootk-story-voice';voice.textContent='月見 · 一扇門，一層新的觀察';sceneHost.appendChild(voice);
+        try{sequenceStage=window.JYCinema.mount(sceneHost,'ootk',{story:true,operation:phaseIdx,reduced:!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)});setSequenceShot('gather',2);}catch(e){releaseSequenceStage();}
+      }
+
 
       // 儀式場
       var stage = document.createElement('div');
@@ -3896,14 +3914,16 @@ enhanceTarot = function(tarot) {
 
       // 流程：② 洗牌 → ③ 發牌（含找 Sig） → ⑤ Counting → ⑥ Pairing
       ritualShuffle(stage, caption, function() {
+        setSequenceShot('orbit',2);
         ritualDeal(phaseIdx, stage, caption, function() {
           ritualCounting(phaseIdx, stage, caption, function() {
+            setSequenceShot('settle',3);
             ritualPairing(phaseIdx, stage, caption, function() {
               // 全部跑完，淡出 ritualScene
               sequenceTimeout(function() {
                 ritualScene.style.opacity = '0';
                 sequenceTimeout(function() {
-                  ritualScene.remove();
+                  releaseSequenceStage();ritualScene.remove();
                   onComplete();
                 }, 500);
               }, 800);
@@ -3956,36 +3976,10 @@ enhanceTarot = function(tarot) {
         box.appendChild(c);
       }
 
-      // 隨機抽 6 張真實牌從中央閃過、依序放大消失（強化「78 張真實在洗」感）
-      var visualDeck = (typeof TAROT !== 'undefined') ? TAROT.slice() : [];
-      function getImg(card) {
-        if (!card) return '';
-        if (typeof window.getTarotCardImage === 'function') return window.getTarotCardImage(card);
-        return '';
-      }
-      if (visualDeck.length) {
-        var FLASH_COUNT = 6;
-        var picked = [];
-        for (var p = 0; p < FLASH_COUNT; p++) {
-          var idx = Math.floor(Math.random() * visualDeck.length);
-          picked.push(visualDeck[idx]);
-        }
-        picked.forEach(function(card, fi) {
-          sequenceTimeout(function() {
-            var imgUrl = getImg(card);
-            if (!imgUrl) return;
-            var flash = document.createElement('div');
-            flash.className = 'ootk-shuffle-flash';
-            flash.innerHTML = '<img src="' + imgUrl + '" />';
-            box.appendChild(flash);
-            sequenceFrame(function() { flash.classList.add('show'); });
-            sequenceTimeout(function() { flash.classList.add('out'); }, 380);
-            sequenceTimeout(function() { flash.remove(); }, 750);
-          }, 200 + fi * 280);
-        });
-      }
+      // Decorative shuffling uses card backs only. It never consumes reading RNG
+      // or flashes unrelated card faces that could be mistaken for this draw.
 
-      // 2.4 秒後淡出（延長以容納 6 張閃現）
+      // 2.4 秒後收攏牌背，接到本次已計算的牌序
       sequenceTimeout(function() {
         box.classList.add('done');
         sequenceTimeout(function() {
