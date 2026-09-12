@@ -1407,13 +1407,13 @@
 <!-- ★ v75 修正：tarot.js 必須在 tarot_upgrade.js 之前載入，
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
-<script src="JS/reading-quality.js?v=20260912flow2" defer></script>
+<script src="JS/reading-quality.js?v=20260912plain1" defer></script>
 <script src="JS/tarot-foundation.js?v=20260912flow2" defer></script>
 <script src="JS/golden-dawn-tarot.js?v=20260906fix2" defer></script>
 <script src="JS/cinematic-stage.js?v=20260912living1" defer></script>
 <script src="JS/ritual-ateliers.js?v=20260912living1" defer></script>
 <script src="JS/tarot.js?v=20260912living1" defer></script>
-<script src="JS/tarot-reading.js?v=20260911cinema4" defer></script>
+<script src="JS/tarot-reading.js?v=20260912plain1" defer></script>
 <script src="JS/tarot_upgrade.js?v=20260912living1" defer></script>
 <!-- v95：先載入 Golden Dawn Book T 單一來源、方法觀測模型與證據契約，再由 ai-analysis 建立牌陣資料。 -->
 <script src="JS/tarot-semantic-engine.js?v=20260718v101_0" defer></script>
@@ -1426,19 +1426,19 @@
 <!-- v69.2.0：前端分類模組（規則 + Haiku fallback），ai-analysis.js 依賴它 -->
 <script src="JS/frontend-classifier.js?v=20260507v69_3_0" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
-<script src="JS/ai-analysis.js?v=20260912accuracy1" defer></script>
+<script src="JS/ai-analysis.js?v=20260912plain1" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/oracle.js?v=20260912accuracy1" defer></script>
-<script src="JS/lenormand.js?v=20260912flow2" defer></script>
+<script src="JS/oracle.js?v=20260912plain1" defer></script>
+<script src="JS/lenormand.js?v=20260912plain1" defer></script>
 <!-- display3：手機靜態背景；出生選單先備妥內容再開啟，避免初始化錯誤與重複繪圖。 -->
 <script src="JS/ink-flow.js?v=20260911celestial1" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20260912immersion1" defer></script>
+<script src="JS/meihua-standalone.js?v=20260912plain1" defer></script>
 <!-- 共用提示詞根必須先於 standalone 載入，否則八字會直接失敗、紫微會退回舊提示詞。 -->
 <script src="JS/picker-core.js?v=20260906display3" defer></script>
-<script src="JS/ziwei-prompt-root.js?v=20260912accuracy1" defer></script>
-<script src="JS/bazi-prompt-root.js?v=20260912accuracy1" defer></script>
+<script src="JS/ziwei-prompt-root.js?v=20260912plain1" defer></script>
+<script src="JS/bazi-prompt-root.js?v=20260912plain1" defer></script>
 <script src="JS/ziwei-standalone.js?v=20260912immersion1" defer></script>
 <script src="JS/bazi-standalone.js?v=20260912immersion1" defer></script>
 <!-- v87_0(2026/6/26)：八字完整功能套件——單盤六主題、八種角色情境合盤、雙向十神與跨盤作用、五行互補、雙方歲運同步、本地五軸32型人格、歷史/匯出。第三方未公開私有演算法不冒充搬運，採本地可檢查規則重建。 -->
@@ -1514,7 +1514,7 @@
 <!-- v100_0(2026/7/18)：Golden Dawn 解牌方法根治——提示詞先注入各牌陣原生牌位、閱讀順序、合法相鄰線與綜合結構；開鑰改按五次操作原生流程；查詢圖降為漏答核對；選品改自然承接原問句。只動 prompt-export.js / index.html -->
 <!-- v101_0(2026/7/18)：Golden Dawn 原生方法協議根治——所有已登錄牌陣分別註冊單張模式、原生閱讀階段、合法結構、結果／時間權限與衝突優先序；Mathers 21／54改為序列成員而非假性獨立牌位，首尾配對與元素相鄰徹底分離；開鑰之法維持獨立五操作程序；AI資料與提示詞只讀方法計畫。動 tarot-foundation.js / tarot-semantic-engine.js / tarot_upgrade.js / ai-analysis.js / prompt-export.js / tests / package.json / index.html -->
 <!-- v102_0(2026/7/18)：塔羅提示詞根治為方法資料包——AI自行分析；移除ROOT-SPEC查詢圖、能力閘門、命題帳本等對外推理控制；非線性牌陣改輸出具名互動關係而非假性直線；語義引擎降為可選診斷，不再阻斷抽牌與匯出。動 tarot-foundation.js / ai-analysis.js / prompt-export.js / tests / package.json / index.html -->
-<script src="JS/prompt-export.js?v=20260912accuracy1" defer></script>
+<script src="JS/prompt-export.js?v=20260912plain1" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="JS/vendor/lunar.js?v=1.7.7" defer></script>
 <script src="JS/bazi-calendar-core.js?v=20260912accuracy1" defer></script>

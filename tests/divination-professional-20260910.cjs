@@ -122,7 +122,7 @@ test('Lenormand: methods cannot substitute tarot meanings or each other’s geom
  assert(texts.choice.includes('A路最大路徑：1.'));assert(texts.choice.includes('B路最大路徑：5.'));assert(texts.choice.includes('4不把兩路接成七張時間線'));
  assert(texts.nine.includes('八條線'));assert(texts.nine.includes('短斜鄰接2-4、2-6、4-8、6-8'));assert(texts.nine.includes('不預設過去／現在／未來'));
  assert(texts.grand.includes('固定宮位映射'));assert(texts.grand.includes('末排格33–36沒有主盤鏡像或騎士步'));
- for(const text of Object.values(texts)){assert(text.includes('不使用塔羅')||text.includes('雷諾曼不套用塔羅'));assert(text.includes('下一步'));assert(text.includes('不保證現貨'));}
+ for(const text of Object.values(texts)){assert(text.includes('不使用塔羅')||text.includes('雷諾曼不套用塔羅'));assert(text.includes('下一步'));assert(text.includes('不保證賣場一定有該推薦品類'));}
 });
 test('Lenormand: all 36 houses, 32 mirror positions and all knight moves are geometrically valid',()=>{
  const drawn=LN.cards.slice().reverse(),prompt=LN.build('全景？',drawn,'grand');
@@ -150,7 +150,7 @@ test('Lenormand: preview updates with current question without changing a comple
 const b=runtime(['vendor/lunar','bazi-calendar-core','solar-location','bazi','bazi_upgrade','bazi-prompt-root','bazi-suite-core']).ctx;
 test('Bazi: each lens and each role scenario injects its distinct guide into the actual export',()=>{
  const a=b.computeBazi(1983,8,25,14,0,'male'),c=b.computeBazi(1994,6,20,14,0,'female');b.enhanceBazi(a);b.enhanceBazi(c);
- for(const lens of Object.keys(b.BaziSuiteCore.lenses)){const p=b.BaziSuiteCore.buildSinglePrompt(lens,a,{},'如何改善？');for(const s of b.JY_BAZI_PROMPT_ROOT.lensGuideLines(lens))assert(p.includes(s),lens);assert(p.includes('不保證現貨'));}
+ for(const lens of Object.keys(b.BaziSuiteCore.lenses)){const p=b.BaziSuiteCore.buildSinglePrompt(lens,a,{},'如何改善？');for(const s of b.JY_BAZI_PROMPT_ROOT.lensGuideLines(lens))assert(p.includes(s),lens);assert(p.includes('不保證賣場一定有該推薦品類'));}
  for(const s of b.BaziSuiteCore.scenarios){const comp=b.BaziSuiteCore.createCompatibility(a,c,{scenarioId:s.id}),p=b.BaziSuiteCore.buildCompatibilityPrompt(comp,'如何相處？');for(const step of b.JY_BAZI_PROMPT_ROOT.scenarioGuideLines(s.id))assert(p.includes(step),s.id);}
  const pure=b.BaziSuiteCore.buildSinglePrompt('chart',a,{},'');assert(pure.includes('純排盤不輸出人生預言'));assert(!pure.includes('【依問題選用分析面向】'));
 });
@@ -158,7 +158,7 @@ const m=runtime(['vendor/lunar','tarot','meihua_upgrade','meihua_output_layer','
 expose(m,'JS/meihua-standalone.js','window.mhTest=buildMeihuaPrompt;');vm.runInContext(read('JS/prompt-export.js'),m);
 test('Meihua: both prompt paths preserve actual hexagrams, method boundaries and one shop ending',()=>{
  const hex=m.calcMH(1,1,1);hex.castContext={timestamp:'2026-02-04T12:00:00Z',method:'two_numbers'};hex.question='何時前進？';m.S={form:{question:hex.question},meihua:hex};
- for(const p of [m.mhTest(hex.question,hex),m.JY_buildExportPrompt('meihua')]){assert(p.includes(hex.ben.n));assert(p.includes(hex.hu.n));assert(p.includes(hex.bian.n));assert(p.includes('原體'));assert(p.includes('純乾／純坤'));assert(p.includes('不保證現貨'));assert(p.includes('https://shopee.tw/a50h95648d?tab=shop'));assert(!p.includes('【分析深度】每個主要結論說明「本盤具體牌位'));assert(!p.includes('牌陣專屬結構'));assert(!p.includes('undefined'));}
+ for(const p of [m.mhTest(hex.question,hex),m.JY_buildExportPrompt('meihua')]){assert(p.includes(hex.ben.n));assert(p.includes(hex.hu.n));assert(p.includes(hex.bian.n));assert(p.includes('原體'));assert(p.includes('純乾／純坤'));assert(p.includes('不保證賣場一定有該推薦品類'));assert(p.includes('https://shopee.tw/a50h95648d?tab=shop'));assert(!p.includes('【分析深度】每個主要結論說明「本盤具體牌位'));assert(!p.includes('牌陣專屬結構'));assert(!p.includes('undefined'));}
  m.S.meihua={ben:hex.ben};assert.equal(m.JY_buildExportPrompt('meihua'),'');assert.equal(read('JS/meihua-standalone.js'),read('meihua-standalone.js'));
 });
 test('Follow-up: original RWS reversals and branch positions survive alongside separate Book T supplements',()=>{

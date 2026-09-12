@@ -5,7 +5,7 @@ const {environment}=require('./dom-fixture.cjs');
 const root=path.resolve(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 let passed=0;
 function test(name,fn){try{fn();passed++;console.log('✓ '+name);}catch(e){process.exitCode=1;console.error('✗ '+name+'\n'+e.stack);}}
-function runtime(files){const e=environment();e.ctx.console={log(){},warn(){},error(){}};files.forEach(f=>vm.runInContext(read('JS/'+f+'.js'),e.ctx,{filename:f}));return e;}
+function runtime(files){const e=environment();vm.runInContext(read('JS/reading-quality.js'),e.ctx,{filename:'reading-quality'});e.ctx.console={log(){},warn(){},error(){}};files.forEach(f=>vm.runInContext(read('JS/'+f+'.js'),e.ctx,{filename:f}));return e;}
 const parsed=new Map();
 function actualFunction(file,name){
   if(!parsed.has(file)){const src=read(file),nodes={};function walk(n){if(!n||typeof n!=='object')return;if(n.type==='FunctionDeclaration'&&n.id)nodes[n.id.name]=src.slice(n.start,n.end);for(const [k,v] of Object.entries(n)){if(k==='parent')continue;if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')walk(v);}}walk(acorn.parse(src,{ecmaVersion:'latest'}));parsed.set(file,nodes);}

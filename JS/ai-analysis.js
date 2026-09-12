@@ -21061,12 +21061,8 @@ renderTarot = function(){
 
       // Fix #5: p.verdict / p.topTags 已移除（Worker 不讀這些，浪費 payload tokens）
 
-      // ═══ 水晶清單注入（Bug #1 修復）═══
-      var _cc = _buildCrystalCatalog();
-      if (_cc.catalog.length) {
-        p.crystalCatalog = _cc.catalog;
-        p.crystalFavEl = _cc.favEl;
-      }
+      // Needs-first guidance; no catalogue is attached to the analysis request.
+      p.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
 
       // ═══ v26：可變性標記（reversibility）═══
       // 每個系統的發現分三類：定（先天不可改）、時（時運會變，等窗口）、動（行為可改）
@@ -23669,8 +23665,7 @@ function _buildTarotOnlyPayload() {
   if(drawn[0]&&drawn[0].readingMode==='rws_reversals'&&window.JYTarotReading){
     var rws=window.JYTarotReading.payload(ta,question,drawn,spreadId,methodPlan,ta.dynamicSpreadDef||ta.spreadDef||SPREAD_DEFS[spreadId]);
     rws.tarotData.referenceDate=compiled.features&&compiled.features.referenceDate||'';
-    var inv=window.JYShopInventory;
-    rws.shopRecommendation={allowedItems:inv&&inv.recommendCandidates?inv.recommendCandidates(question,(compiled.features&&compiled.features.domains)||[],6):[],sourceFile:inv&&inv.SOURCE_FILE||''};
+    rws.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
     return rws;
   }
   gd.normalizeDraw(drawn);
@@ -23717,8 +23712,6 @@ function _buildTarotOnlyPayload() {
 
   var stats=gd.majorityObservations(drawn);
   var f=S.form||{};
-  var inventory=(typeof window!=='undefined')?window.JYShopInventory:null;
-  var recommendationCandidates=inventory&&typeof inventory.recommendCandidates==='function'?inventory.recommendCandidates(question,(compiled.features&&compiled.features.domains)||[],6):[];
   var result={
     mode:'tarot_only',question:question,focusType:f.type||'general',name:f.name||'',
     tarotData:{
@@ -23739,7 +23732,7 @@ function _buildTarotOnlyPayload() {
       semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||''
     },
     semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||'',
-    shopRecommendation:{sourceFile:inventory&&inventory.SOURCE_FILE||'',allowedItems:recommendationCandidates,outputRule:'完成解讀正文後另起「延伸選品」段落。文案自然承接原問句與可執行方向，從 allowedItems 逐字選一個快照內可選品項，沒有候選時只邀請瀏覽，不捏造品項、現貨、價格、產地或材質；不得宣稱療效、改運、保證結果或尺寸適合。用兩三句把飾品連到日常提醒，財務困難者先使用既有物品；即時危機先提供求助方向、不推商品。最後只保留一次靜月之光蝦皮賣場連結 https://shopee.tw/a50h95648d?tab=shop ，下一行為願你諸事順遂。'}
+    shopRecommendation:(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"})
   };
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
@@ -25107,10 +25100,6 @@ async function _triggerTarotFollowUp() {
   var _fuBirthTime = _fuForm.btime || '';
   // Bug #4 修復：保留原始問題
   var _fuOrigQ = (_fuForm.question || '');
-  // v99.2：塔羅／開鑰追問沿用正庫存候選；七維整合追問保留既有 crystalCatalog。
-  var _fuInventory = (typeof window !== 'undefined') ? window.JYShopInventory : null;
-  var _fuCC = isFullFollowUp ? _buildCrystalCatalog() : {catalog:[],favEl:''};
-
   if (isFullFollowUp && window._jyFullPayloadCache) {
     // ★ v15：七維度追問：送七系統背景 + 補充牌 + 完整上一輪結果
     var cachedPayload = window._jyFullPayloadCache;
@@ -25190,28 +25179,8 @@ async function _triggerTarotFollowUp() {
     };
   }
   if(payload.tarotData&&payload.tarotData.followUp)payload.tarotData.followUp.methodGuide='先依原問題與原牌陣的實際牌位和讀牌方式回顧結論，再說明追問新增加的條件。補充牌是另抽的Book T序列，先讀相鄰及全句並按元素尊貴校準，不是把原陣更換成另一個牌陣；原牌若採RWS正逆位，其方向保持原紀錄。原牌與補充牌不能跨序列自造元素鄰接，補牌也不延伸為開鑰的新操作。比較支持與反向訊號，說清維持或修正原結論的理由，回應追問並給可觀察的下一步，不因使用者重問就強改答案。';
-  // 選品資料注入：塔羅／開鑰使用實際正庫存；完整七維追問維持原有水晶資料格式。
-  if (!isFullFollowUp) {
-    var _fuDomains = [];
-    try {
-      var _fuFoundation = window.JYTarotFoundation;
-      var _fuCompiled = _fuFoundation && typeof _fuFoundation.compileQuestion === 'function'
-        ? _fuFoundation.compileQuestion(followQ, { referenceDate: new Date().toISOString() })
-        : null;
-      _fuDomains = _fuCompiled && _fuCompiled.features ? (_fuCompiled.features.domains || []) : [];
-    } catch (_) {}
-    var _fuCandidates = _fuInventory && typeof _fuInventory.recommendCandidates === 'function'
-      ? _fuInventory.recommendCandidates((followQ || '') + ' ' + (_fuOrigQ || ''), _fuDomains, 6)
-      : [];
-    payload.shopRecommendation = {
-      sourceFile: _fuInventory && _fuInventory.SOURCE_FILE || '',
-      allowedItems: _fuCandidates,
-      outputRule: '追問正文完成後，用兩三句把本次追問的可行建議連到日常配飾或提醒；只從 allowedItems 快照候選逐字選一項，沒有候選時只邀請瀏覽，不捏造現貨、價格、產地或功效。不宣稱療效、改運或保證結果；財務困難者先使用既有物品，即時危機先協助求助而不推商品。最後只保留一次 [靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)，下一行為願你諸事順遂。'
-    };
-  } else if (_fuCC.catalog.length) {
-    payload.crystalCatalog = _fuCC.catalog;
-    payload.crystalFavEl = _fuCC.favEl;
-  }
+  // Previous readings are context, not authority for product choices.
+  payload.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
   // ★ v46：追問 payload 帶 resultId（Worker 用此換 1 次免費追問）
   if (_resultId) payload.resultId = _resultId;
   // ★ v46：追問強制主模型（不讓追問吃 Opus 深度配額；Worker 端也會強制清掉）
@@ -25700,21 +25669,7 @@ function _buildOOTKPayload() {
     console.warn('[TarotSemanticEngine] OOTK compile failed:', err);
   }
 
-  var inventory = (typeof window !== 'undefined') ? window.JYShopInventory : null;
-  var domains = [];
-  try {
-    domains = payload.semanticContract && payload.semanticContract.question && payload.semanticContract.question.features
-      ? (payload.semanticContract.question.features.domains || [])
-      : [];
-  } catch (_) {}
-  var candidates = inventory && typeof inventory.recommendCandidates === 'function'
-    ? inventory.recommendCandidates(payload.question, domains, 6)
-    : [];
-  payload.shopRecommendation = {
-    sourceFile: inventory && inventory.SOURCE_FILE || '',
-    allowedItems: candidates,
-    outputRule: '完成開鑰之法正文後另起「延伸選品」段落。文案自然承接使用者原問句與有效程序結論或可執行方向，只從 allowedItems 快照候選逐字選一項，沒有候選時只邀請瀏覽，不保證即時現貨、價格或產地；若程序停止或問題未獲確認，只能承接使用者關切，不假裝牌面已有結論。不宣稱療效、改運、保證結果或尺寸適合。品項作日常配飾與提醒，財務困難者先使用既有物品，即時危機不作商品推薦。最後只保留一次 [靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)，下一行為願你諸事順遂。'
-  };
+  payload.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
   if (window._jyPhotos) payload.photos = window._jyPhotos;
   return payload;
 }
