@@ -656,8 +656,7 @@
   function _finishCast(nums) {
     _showLoading(function () {
       try {
-        _mhResult = calcMH(nums.up, nums.lo, nums.dong);
-        _mhResult.castContext=nums.context||null;
+        _mhResult = calcMH(nums.up, nums.lo, nums.dong, nums.context);
         _lastPrompt = buildMeihuaPrompt(_mhQuestion, _mhResult);
         _mhPhase = 'result';
         _render();

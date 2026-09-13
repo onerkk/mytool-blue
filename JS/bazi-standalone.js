@@ -373,6 +373,7 @@
     });
     if (favTxt) h += '<div class="sline">扶抑喜向：<span class="sgold">'+favTxt+'</span>'+(unfavTxt?' ・ 忌向：'+unfavTxt:'')+'</div>';
     if(b.fuyiAssessment)h += '<div class="sline">'+_fmt(b.fuyiAssessment.conclusion)+'</div>';
+    if(typeof baziRootLines==='function')h += '<div class="sline bzx-root-facts">'+baziRootLines(b).map(_fmt).join('<br>')+'</div>';
     if(b.strengthAssessment)h += '<details><summary>查看旺衰與根氣依據</summary><p>'+b.strengthAssessment.evidence.map(_fmt).join('；')+'。</p><p>'+_fmt(b.strengthAssessment.disclaimer)+'</p></details>';
     if(b.seasonalAssessment)h += '<div class="sline">調候條件：'+_fmt(b.seasonalAssessment.conclusion)+'</div>';
     if (b.tiaohou && b.tiaohou.need) h += '<div class="sline">季節參考：'+(b.tiaohou.need.join('、'))+'（'+(b.tiaohou.reason||'窮通寶鑑')+'）</div>';
@@ -422,24 +423,6 @@
       for (var key in v) { if (typeof v[key] === 'string' || typeof v[key] === 'number') parts.push(v[key]); }
       return parts.join(' ');
     }
-    return '';
-  }
-
-  // v80.47：病藥／通關用神的「藥」也要做飽和／忌神／官殺檢查——
-  //   引擎挑藥時可能挑到「能洩病但本命已飽和」或「是日主官殺」的五行
-  //   （例：殺重身弱，藥取洩＝水，但水已32%、是閒神/印，補水反水多木漂），與用神(火木)打架。
-  //   此函式回傳一句校正註，讓 AI 不把已飽和／忌神／官殺的藥當喜用外補，改走用神那條藥路。
-  function _elxNote(el, b) {
-    if (!el || !b) return '';
-    var ep = b.ep || {}, unfav = Array.isArray(b.unfav) ? b.unfav : [], fav = Array.isArray(b.fav) ? b.fav : [];
-    var keMe = ({ '木': '金', '火': '水', '土': '木', '金': '火', '水': '土' })[b.dmEl];
-    var weak = !b.specialStructure && !b.strong;
-    var pct = (ep[el] != null) ? Math.round(ep[el]) : null;
-    var favTxt = fav.length ? '；命局真正要補的是用神【' + fav.join('、') + '】那一路（同樣能解此病）' : '';
-    if (unfav.indexOf(el) >= 0) return '（注意：' + el + '已列忌神，不宜外補' + favTxt + '）';
-    if (pct != null && pct >= 22) return '（注意：' + el + '命局已自帶約' + pct + '%、近飽和，毋須外補' + favTxt + '）';
-    if (weak && el === keMe) return '（注意：' + el + '對日主是官殺、剋身，身弱補它＝補七殺，只可少量、不可當喜用' + favTxt + '）';
-    if (fav.indexOf(el) >= 0) return '（此藥與用神同向，宜補）';
     return '';
   }
 
@@ -493,6 +476,7 @@
       L.push('・'+role[k]+'：'+(p.gan||'')+(p.zhi||'')+'；天干十神 '+(k==='day'?'日主':(_fmt(gd.gan)||'—'))+'；藏干 '+(cg.join('、')||'—')+(zgs.length?'（'+zgs.join('、')+'）':'')+(CS[k]?'；十二長生 '+_fmt(CS[k]):'')+(NY[k]?'；納音 '+_fmt(NY[k]):''));
     });
     if (meta && meta.unknown) {
+      if(typeof baziRootLines==='function')L=L.concat(baziRootLines(b,{unknown:true}));
       L.push('【三柱分析】出生時辰未知，已排除午時時柱及其衍生旺衰比例、喜忌、神煞和精確起運。請依年、月、日三柱分析可確認的結構；可能隨時柱或節氣／換日邊界改變的部分列為候選，確認時辰後再定。');
       return L.concat(spec.universalRulesLines(), spec.domainRouterLines('single'), spec.answerContractLines('single'), spec.brandTailLines()).join('\n');
     }
@@ -514,10 +498,10 @@
     L.push('');
 
     L.push('【B. 前端流派模型（供交叉核對）】');
-    L.push('日主 '+(b.dm||'')+'（'+(b.dmEl||'')+'），生於'+((P.month&&P.month.zhi)||'')+'月；得令 '+(b.deLing?'是':'否')+'、日支坐根 '+(b.deDi?'是':'否')+'；天干得勢門檻模型 '+(b.deShi?'達標':'未達標')+'（本模型須其他三干至少兩干為印比；未達標不代表沒有生扶，請以各柱明列十神核對）。');
+    L.push('日主 '+(b.dm||'')+'（'+(b.dmEl||'')+'），生於'+((P.month&&P.month.zhi)||'')+'月；月令狀態 '+(b.dmMonthState||'未提供')+'；天干得勢門檻模型 '+(b.deShi?'達標':'未達標')+'（本模型須其他三干至少兩干為印比；未達標不代表沒有生扶，請以各柱明列十神核對）。');
     if(b.tongGen&&b.tongGen.zh)L.push('通根：'+b.tongGen.zh+'。');
     L.push('本系統旺衰模型判為：'+(b.strongLevel||(b.strong?'身強':'身弱'))+(b.selfPts!=null?'；自黨相對分 '+Math.round(b.selfPts):'')+(b.strengthConflict?'；位於判法邊界，請同時比較替代判法':'')+'。');
-    if(b.strengthNote)L.push('旺衰複核提示：'+b.strengthNote);
+    if(b.strengthNote)L.push('旺衰複核提示：'+(typeof b.strengthNote==='string'?b.strengthNote:[b.strengthNote.zh].concat(b.strengthNote.notes||[]).filter(Boolean).join('；')));
     if(b.strengthAssessment&&b.strengthAssessment.disclaimer)L.push('旺衰模型說明：'+b.strengthAssessment.disclaimer);
     if(b.ep){L.push('五行相對權重（僅供本模型內比較，不是古籍固定比例）：'+['木','火','土','金','水'].map(function(e){return e+Math.round(b.ep[e]||0)+'%';}).join('、')+'。');}
     if(b.specialStructure){L.push('特殊格局資料：'+(b.specialStructure.type||'')+'；'+(b.specialStructure.desc||'')+'。');}

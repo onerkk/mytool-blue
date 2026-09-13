@@ -19,6 +19,13 @@ function tiYong(ti,yo){
   return{r:'—',f:'平',d:''};
 }
 
+function mhReferenceDate(mh) {
+  var stamp=mh&&mh.castContext&&mh.castContext.timestamp;
+  var date=stamp?new Date(stamp):new Date();
+  if(!Number.isFinite(date.getTime()))throw new Error('起卦時間格式錯誤，無法核對月令');
+  return date;
+}
+
 // ═══ 月令旺衰 ═══
 // v80.16(2026/6/10) 根治：原版 month 必填（standalone 只傳一參數→整體回「平」、力道全毀）、國曆月當季節（1月當春）、
 // 土旺誤鍵國曆3/6/9/12（原意為農曆辰未戌丑）。三套同名實作分歧、誰後載入誰贏——統一改採 tarot.js 同款：
@@ -63,21 +70,26 @@ function mhRelation(elA, elB){
 }
 
 // ═══ 起卦計算 ═══
-function calcMH(un,ln,dy){
+function calcMH(un,ln,dy,castContext){
   if(![un,ln,dy].every(function(n){return Number.isInteger(n)&&n>0;}))throw new Error('卦數與動爻必須是正整數。');
-  const up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
-  const ben=g64(up.n, lo.n);
-  const benL=[...lo.li,...up.li];
-  const huLo=gByL(benL[1],benL[2],benL[3]);
-  const huUp=gByL(benL[2],benL[3],benL[4]);
-  const hu=g64(huUp.n, huLo.n);
-  const biL=[...benL]; biL[dong-1]=biL[dong-1]?0:1;
-  const biLo=gByL(biL[0],biL[1],biL[2]);
-  const biUp=gByL(biL[3],biL[4],biL[5]);
-  const bian=g64(biUp.n, biLo.n);
-  const tiG=dong<=3?up:lo, yoG=dong<=3?lo:up;
-  const ty=tiYong(tiG.el,yoG.el);
-  return{up,lo,dong,ben,hu,bian,tiG,yoG,ty};
+  var up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
+  var ben=g64(up.n, lo.n);
+  var benL=lo.li.concat(up.li);
+  var huLo=gByL(benL[1],benL[2],benL[3]);
+  var huUp=gByL(benL[2],benL[3],benL[4]);
+  var hu=g64(huUp.n, huLo.n);
+  var biL=benL.slice(); biL[dong-1]=biL[dong-1]?0:1;
+  var biLo=gByL(biL[0],biL[1],biL[2]);
+  var biUp=gByL(biL[3],biL[4],biL[5]);
+  var bian=g64(biUp.n, biLo.n);
+  var tiG=dong<=3?up:lo, yoG=dong<=3?lo:up;
+  var ty=tiYong(tiG.el,yoG.el);
+  var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
+  mh.castContext=castContext?Object.assign({},castContext):{timestamp:new Date().toISOString(),method:'provided-trigrams',upperTrigram:up.n,lowerTrigram:lo.n,movingLine:dong};
+  if(!Number.isFinite(Date.parse(mh.castContext.timestamp)))throw new Error('起卦時間格式無效。');
+  // 自動掛輸出層（general 先跑，結果頁再用真實 type 覆蓋）
+  try{ if(typeof buildMeihuaOutput==='function')buildMeihuaOutput(mh,'general'); }catch(e){}
+  return mh;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -118,6 +130,7 @@ function _mhGuaType(guaName, guaEl){
 
 // ═══ 互卦隱藏問題分類 ═══
 function _mhHuHidden(huRel){
+  if(huRel==='交錯')return {cat:'作用交錯',desc:'上互與下互對原體的生剋作用不同，須分開衡量助力、耗洩與牽制'};
   if(huRel==='B剋A') return {cat:'外部壓制',desc:'有你看不到的外在力量在壓著這件事'};
   if(huRel==='A生B') return {cat:'自耗',desc:'你自己的行動在消耗你的資源'};
   if(huRel==='B生A') return {cat:'暗中有助',desc:'有隱藏的支援或機緣在默默推進'};
@@ -354,8 +367,7 @@ function analyzeMeihua(mh, type){
   const tiEl=mh.tiG.el, yoEl=mh.yoG.el;
   const tiName=mh.tiG.name, yoName=mh.yoG.name;
   const dong=mh.dong||1;
-  const now=new Date();
-  const curMonth=now.getMonth()+1;
+  const now=mhReferenceDate(mh);
 
   // ── 基礎層 ──
   const rel=mh.ty.r||'—';
@@ -363,8 +375,8 @@ function analyzeMeihua(mh, type){
   let score=40+(tyScore[mh.ty.f]||0);
 
   // ── 月令旺衰 ──
-  const tiWS=getMhWangShuai(tiEl, curMonth);
-  const yoWS=getMhWangShuai(yoEl, curMonth);
+  const tiWS=getMhWangShuai(tiEl, now);
+  const yoWS=getMhWangShuai(yoEl, now);
   score+=tiWS.score*3;
 
   // ── 互卦五行 ──
@@ -378,11 +390,8 @@ function analyzeMeihua(mh, type){
       huYoRel=mhRelation(tiEl, huUpG.el);
     }
   }
-  // 互卦得分（取最有利那個）
-  const huRelPrimary=[huTiRel,huYoRel].includes('B生A')?'B生A':
-    [huTiRel,huYoRel].includes('B剋A')?'B剋A':
-    [huTiRel,huYoRel].includes('比和')?'比和':
-    [huTiRel,huYoRel].includes('A生B')?'A生B':'A剋B';
+  // 上下互均以原體為參照；作用不同時保留兩者，不固定挑較有利的一個。
+  const huRelPrimary=huTiRel===huYoRel?huTiRel:'交錯';
   score+={'B生A':4,'比和':1,'A剋B':1,'A生B':-2,'B剋A':-4}[huRelPrimary]||0;
 
   // ── 變卦五行 ──
@@ -396,10 +405,8 @@ function analyzeMeihua(mh, type){
       bianYoRel=mhRelation(tiEl, biUpG.el);
     }
   }
-  const bianRelPrimary=[bianTiRel,bianYoRel].includes('B生A')?'B生A':
-    [bianTiRel,bianYoRel].includes('B剋A')?'B剋A':
-    [bianTiRel,bianYoRel].includes('比和')?'比和':
-    [bianTiRel,bianYoRel].includes('A生B')?'A生B':'A剋B';
+  // 體為不動的三爻卦；變後只比較原體與變後用卦，不能用體比自己覆蓋結果。
+  const bianRelPrimary=dong<=3?bianTiRel:bianYoRel;
   score+={'B生A':8,'比和':2,'A剋B':1,'A生B':-3,'B剋A':-8}[bianRelPrimary]||0;
 
   // ── 動爻爻辭加分 ──
@@ -418,7 +425,7 @@ function analyzeMeihua(mh, type){
   const dongStage=_mhDongStage(dong);
   const tySemantics=_mhTySemantics(rel);
   const dongEl=(dong<=3)?mh.lo.el:mh.up.el;
-  const dongSide=(dong>3)?'體卦（你在改變）':'用卦（外在變化）';
+  const dongSide=(dong>3?'上卦':'下卦')+'，即本次用卦；原體保留在另一個不動的三爻卦';
   const huHidden=_mhHuHidden(huRelPrimary);
   const bianTrend=_mhBianTrend(bianRelPrimary, mh.bian&&mh.bian.n);
   const guaType=_mhGuaType(mh.ben&&mh.ben.n, mh.up&&mh.up.el);
@@ -431,9 +438,9 @@ function analyzeMeihua(mh, type){
   const huEffect=huHidden.desc;
   let bianEffect=bianTrend.desc;
   const consistency=
-    (huRelPrimary==='B生A'&&bianRelPrimary==='B生A')?'根因和走向一致偏好，準度較高':
+    (huRelPrimary==='B生A'&&bianRelPrimary==='B生A')?'互卦與變後用卦都有生體作用，繼續檢查旺衰及實際落實條件':
     (huRelPrimary==='B剋A'&&bianRelPrimary==='B剋A')?'根因和走向一致偏差，情況需認真應對':
-    '根因和走向有出入，代表你的做法可以改變結果';
+    huRelPrimary==='交錯'?'互卦作用交錯，須分別看助力能否承接、阻力如何影響變後用卦':'互卦與變後用卦的作用需分層合參，不能只取其中較有利的一項';
 
   // ── narrativeBlocks ──
   const narrativeBlocks={
@@ -462,17 +469,18 @@ function analyzeMeihua(mh, type){
     score,
     narrative: Object.values(narrativeBlocks).join(' '),
     tiYong:{rel, judge:mh.ty.f, desc:mh.ty.d, tiEl, yoEl, tiName, yoName},
-    dongYao:{pos:dong, inTi:(dong>3), desc:dongStage.meaning, stage:dongStage},
+    dongYao:{pos:dong, inTi:false, inYong:true, side:dong>3?'upper':'lower', desc:dongStage.meaning, stage:dongStage},
+    referenceTimestamp:now.toISOString(),
     wangShuai:{ti:tiWS, yo:yoWS},
     huGua:{
       rel:`互卦上${huUpG?huUpG.name:'?'}(${huUpG?huUpG.el:'?'})/下${huLoG?huLoG.name:'?'}(${huLoG?huLoG.el:'?'})`,
       tiRel:huTiRel+'/'+huYoRel,
-      effect:huEffect
+      effect:huEffect, lowerRelation:huTiRel, upperRelation:huYoRel, primaryRelation:huRelPrimary
     },
     bianGua:{
       rel:`變卦上${biUpG?biUpG.name:'?'}(${biUpG?biUpG.el:'?'})/下${biLoG?biLoG.name:'?'}(${biLoG?biLoG.el:'?'})`,
       tiRel:bianTiRel+'/'+bianYoRel,
-      effect:bianEffect
+      effect:bianEffect, changedUseRelation:bianRelPrimary, comparisonPolicy:'ORIGINAL_BODY_VS_CHANGED_USE'
     },
     signals:typeAnalysis.signals,
     timing:timingObj,

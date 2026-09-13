@@ -159,45 +159,20 @@ function mhMultiDongYao(mh) {
 
 function mhHuGuaDeep(mh) {
   if (!mh || !mh.hu) return null;
-
-  var hu = mh.hu;
-  var ben = mh.ben;
-  var bian = mh.bian;
-
-  // 互卦與本卦的五行關係
-  var huBenRel = '';
-  if (hu.el && ben.el) {
-    huBenRel = mhRelation(hu.el, ben.el);
-  }
-
-  // 互卦與變卦的五行關係
-  var huBianRel = '';
-  if (hu.el && bian.el) {
-    huBianRel = mhRelation(hu.el, bian.el);
-  }
-
-  var meaning = '';
-  if (huBenRel === '生') meaning = '互卦生本卦：過程中有助力，事情發展順利';
-  else if (huBenRel === '剋') meaning = '互卦剋本卦：過程中有阻礙，中途可能遇到困難';
-  else if (huBenRel === '被生') meaning = '本卦生互卦：能量被過程消耗，可能事倍功半';
-  else if (huBenRel === '被剋') meaning = '本卦剋互卦：能主導過程，但耗費精力';
-  else meaning = '互卦與本卦同行：過程穩定，無大波折';
-
-  // 互卦的萬物類象
-  var huUpName = mh.hu.upName || '';
-  var huLoName = mh.hu.loName || '';
-  var huWanwuUp = MH_WANWU[huUpName] || null;
-  var huWanwuLo = MH_WANWU[huLoName] || null;
-
+  // 六爻卦沒有單一五行：下互取 2/3/4，上互取 3/4/5，各自對原體。
+  var bits=mh.lo.li.concat(mh.up.li),lo=gByL(bits[1],bits[2],bits[3]),up=gByL(bits[2],bits[3],bits[4]);
+  var loRel=mhRelation(mh.tiG.el,lo.el),upRel=mhRelation(mh.tiG.el,up.el);
+  var wording={'B生A':'生體，過程提供助力','B剋A':'剋體，過程形成壓力','A生B':'受體所生，過程需要投入','A剋B':'受體所剋，過程需要主導處理','比和':'與體比和，作用同類'};
+  var meaning='下互'+lo.name+'（'+lo.el+'）'+wording[loRel]+'；上互'+up.name+'（'+up.el+'）'+wording[upRel]+'。'+(loRel===upRel?'上下互作用同向，結合體用旺衰看能否承接。':'上下互作用不同，分別衡量，不以其中一項蓋過另一項。');
   return {
-    huGua: hu.name || '',
-    huEl: hu.el || '',
-    huBenRel: huBenRel,
-    huBianRel: huBianRel,
+    huGua: mh.hu.n,
+    reference: {name:mh.tiG.name,element:mh.tiG.el,role:'原體'},
+    lower: {name:lo.name,element:lo.el,relation:loRel},
+    upper: {name:up.name,element:up.el,relation:upRel},
     meaning: meaning,
-    wanwuUp: huWanwuUp,
-    wanwuLo: huWanwuLo,
-    zh: '互卦' + (hu.name || '') + '（' + (hu.el || '') + '行）：代表事情的中間過程。' + meaning
+    wanwuUp: MH_WANWU[up.name] || null,
+    wanwuLo: MH_WANWU[lo.name] || null,
+    zh: '互卦'+mh.hu.n+'：'+meaning
   };
 }
 
@@ -408,7 +383,7 @@ function enhanceMeihua(mh) {
   try { mh.huGuaDeep = mhHuGuaDeep(mh); } catch(e) { mh.huGuaDeep = null; }
 
   // 4. 體用深度（v2 根治：傳 Date，內部以節氣推月支；原版誤用國曆月當農曆月）
-  try { mh.tiYongDeep = mhTiYongDeep(mh, new Date()); } catch(e) { mh.tiYongDeep = null; }
+  try { mh.tiYongDeep = mhTiYongDeep(mh, typeof mhReferenceDate==='function'?mhReferenceDate(mh):new Date()); } catch(e) { mh.tiYongDeep = null; }
 
   // 5. 錯卦
   try { mh.cuoGua = mhCuoGua(mh); } catch(e) { mh.cuoGua = null; }

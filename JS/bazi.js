@@ -4794,9 +4794,40 @@ function baziSeasonalTransit(reference, facts, gan, zhi) {
   return notes;
 }
 
+// Factual root scope is independent of the strength model and legacy deDi flag.
+function baziRootFacts(chart, options) {
+  var p=chart&&chart.pillars||{}, dm=p.day&&p.day.gan, el=WX_G[dm];
+  var keys=options&&options.unknown?['year','month','day']:['year','month','day','hour'];
+  var names={year:'年',month:'月',day:'日',hour:'時'}, roots=[], known=[];
+  if(!el)return {scope:'UNAVAILABLE',sittingRoot:null,hasAnyRoot:null,roots:[],dayHidden:[]};
+  keys.forEach(function(k){
+    if(!p[k]||!Object.prototype.hasOwnProperty.call(CG,p[k].zhi))return;
+    known.push(k);
+    CG[p[k].zhi].forEach(function(g,i){if(WX_G[g]===el)roots.push({pillar:k,branch:p[k].zhi,stem:g,qi:['本氣','中氣','餘氣'][i],label:names[k]+'支'+p[k].zhi+'藏'+g});});
+  });
+  var dayKnown=known.indexOf('day')>=0, complete=known.length===4;
+  return {scope:complete?'FOUR_BRANCHES':keys.length===3&&known.length===3?'THREE_KNOWN_BRANCHES':'PARTIAL_BRANCHES',dm:dm,element:el,knownPillars:known,
+    dayPillar:dayKnown?dm+p.day.zhi:null,dayHidden:dayKnown?CG[p.day.zhi].slice():[],
+    sittingRoot:dayKnown?roots.some(function(r){return r.pillar==='day';}):null,
+    hasAnyRoot:roots.length?true:complete?false:null,hasRootInKnownPillars:known.length?roots.length>0:null,roots:roots};
+}
+
+function baziRootLines(chart, options) {
+  var f=baziRootFacts(chart,options), answer=function(v){return v===true?'是':v===false?'否':'未提供足夠資料';};
+  return ['日支坐根：'+answer(f.sittingRoot)+(f.dayPillar?'（'+f.dayPillar+'；日支藏'+f.dayHidden.join('、')+'）':'')+'。',
+    (f.scope==='FOUR_BRANCHES'?'四支通根':'已知柱通根')+'：'+answer(f.hasRootInKnownPillars)+(f.roots.length?'（'+f.roots.map(function(r){return r.label+'／'+r.qi;}).join('、')+'）':'')+(f.scope!=='FOUR_BRANCHES'?'；未提供的柱不當作無根':'')+'。'];
+}
+
+function baziStrengthLabel(chart) {
+  if(!chart)return '未判定';
+  if(chart.isNeutral)return /^中和/.test(chart.strongLevel||'')?chart.strongLevel:'中和';
+  return chart.strongLevel||(chart.strong===true?'身強':chart.strong===false?'身弱':'未判定');
+}
+
 function baziCoreAnalysisLines(chart) {
   if(!chart||!chart.structureFacts)return [];
-  var f=chart.structureFacts, lines=['核心根氣：'+(f.dayMasterRoots.map(function(r){return r.label+'（'+r.qi+(r.clashedBy.length?'，有沖配對':'')+'）';}).join('、')||'四支藏干無同五行根')+'。'];
+  var f=chart.structureFacts, lines=baziRootLines(chart);
+  lines.push('核心根氣：'+(f.dayMasterRoots.map(function(r){return r.label+'（'+r.qi+(r.clashedBy.length?'，有沖配對':'')+'）';}).join('、')||'四支藏干無同五行根')+'。');
   if(chart.fuyiAssessment)lines.push('扶抑判別：'+JSON.stringify(chart.fuyiAssessment));
   if(chart.seasonalAssessment)lines.push('調候實盤條件：'+JSON.stringify(chart.seasonalAssessment));
   lines.push('明干位置與生剋：'+JSON.stringify({links:f.links,combinations:f.combinations,adjacentGenerationPaths:f.adjacentGenerationPaths}));

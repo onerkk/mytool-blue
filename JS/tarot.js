@@ -125,7 +125,8 @@ var g64 = function(un,ln){return G64[''+un+ln]||{n:'未知',u:'?',j:'',m:''}};
 var gByL = function(l1,l2,l3){return BG.find(function(g){return g.li[0]===l1&&g.li[1]===l2&&g.li[2]===l3})||BG[7]};
 
 // ═══ calcMH（核心起卦計算）═══
-var calcMH = function(un,ln,dy){
+var calcMH = function(un,ln,dy,castContext){
+  if(![un,ln,dy].every(function(n){return Number.isInteger(n)&&n>0;}))throw new Error('卦數與動爻必須是正整數。');
   var up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
   var ben=g64(up.n, lo.n);
   var benL=lo.li.concat(up.li);
@@ -139,9 +140,12 @@ var calcMH = function(un,ln,dy){
   var tiG=dong<=3?up:lo, yoG=dong<=3?lo:up;
   var ty=tiYong(tiG.el,yoG.el);
   var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
-  try{ if(typeof buildMeihuaOutput==='function') buildMeihuaOutput(mh,'general'); }catch(e){}
+  mh.castContext=castContext?Object.assign({},castContext):{timestamp:new Date().toISOString(),method:'provided-trigrams',upperTrigram:up.n,lowerTrigram:lo.n,movingLine:dong};
+  if(!Number.isFinite(Date.parse(mh.castContext.timestamp)))throw new Error('起卦時間格式無效。');
+  // 自動掛輸出層（general 先跑，結果頁再用真實 type 覆蓋）
+  try{ if(typeof buildMeihuaOutput==='function')buildMeihuaOutput(mh,'general'); }catch(e){}
   return mh;
-}
+};
 
 function tiYong(ti,yo){
   if(ti===yo)return{r:'比和',f:'吉',d:'體用相同，事情順利。'};
@@ -3669,7 +3673,7 @@ function renderBazi(){
 
   // ═══ 白話結論卡片（三段式）═══
   const curDy=b.dayun?b.dayun.find(d=>d.isCurrent):null;
-  const thisYear=new Date().getFullYear();
+  const thisYear=b.liuNianPeriod?b.liuNianPeriod.year:new Date().getFullYear();
   const curLn=curDy&&curDy.liuNian?curDy.liuNian.find(l=>l.year===thisYear):null;
 
   // 第一段：你是什麼類型的人
@@ -3677,12 +3681,14 @@ function renderBazi(){
     '身強':b.dmEl==='木'?'你是行動派，自帶主見和執行力':b.dmEl==='火'?'你是熱情派，感染力強但容易衝動':b.dmEl==='土'?'你是穩重派，可靠踏實但有時固執':b.dmEl==='金'?'你是原則派，果斷有效率但容易硬碰硬':b.dmEl==='水'?'你是靈活派，適應力強但容易猶豫':'你扛得住壓力，適合主動出擊',
     '身弱':b.dmEl==='木'?'你偏敏感纖細，需要好的環境才能發揮':b.dmEl==='火'?'你的熱情需要被支持，不適合單打獨鬥':b.dmEl==='土'?'你需要穩定的後盾，單打獨鬥會吃力':b.dmEl==='金'?'你的原則性強但資源有限，需要借力':b.dmEl==='水'?'你的直覺敏銳但能量不足，需要團隊':''
   };
-  const typeKey=b.specialStructure ? '從格' : (b.strong?'身強':'身弱');
+  const typeKey=b.specialStructure ? '從格' : b.isNeutral?'中和':(b.strong?'身強':'身弱');
   let personType;
   if(b.specialStructure){
     personType = b.specialStructure.desc.length > 40 
       ? b.specialStructure.desc.substring(0, b.specialStructure.desc.indexOf('。')+1) 
       : b.specialStructure.desc;
+  } else if(b.isNeutral) {
+    personType='旺衰模型位於中和區間；結合根氣、透干與原局作用看優勢和需要支持的環節';
   } else {
     personType=TYPE_MAP[typeKey]||'日主'+b.dm+'（'+b.dmEl+'行）'+(b.strong?'，基礎條件不錯':'，需要借力使力');
   }
@@ -3789,7 +3795,7 @@ function renderBazi(){
   }
   if(b.kongwang) proDetail+=`<p class="text-xs text-dim">空亡：年柱【${b.kongwang.year.join('')}】 日柱【${b.kongwang.day.join('')}】</p>`;
   if(b.tianYunEl) proDetail+=`<p class="text-xs text-dim">天運五行：<span class="el-tag el-${b.tianYunEl}">${b.tianYunEl}</span>（${b.nayin}）</p>`;
-  proDetail+=`<p class="text-xs text-dim">得令：${b.deLing?'✓':'✗'}(${b.dmMonthState||'—'}) ｜ 得地：${b.deDi?'✓':'✗'} ｜ 得勢：${b.deShi?'✓':'✗'} ｜ 同黨${b.selfRatio||0}%</p>`;
+  proDetail+=`<p class="text-xs text-dim">月令：${b.dmMonthState||'—'} ｜ ${baziRootLines(b).join(' ')} ｜ 透干助勢門檻：${b.deShi?'達標':'未達標'} ｜ 同黨相對權重${b.selfRatio||0}%</p>`;
   proDetail+=`<p class="text-xs text-dim">五行(60分)：`;
   for(const el of ['金','木','水','火','土']){
     const score=Math.round(b.ec[el]);
@@ -3855,6 +3861,7 @@ function renderBazi(){
   };
   // 根據身強弱 + 十神角色，給出「這對你好不好」的白話判斷
   function cangGanImpact(god, strong, fav, unfav, el, gEl){
+    if(b.isNeutral)return '此藏干的作用須與透干、根氣和歲運合看；中和模型不預設它為補身或耗身之忌';
     // 用神/忌神判斷
     const isFav = fav.includes(gEl);
     const isUnfav = unfav.includes(gEl);
@@ -3896,8 +3903,8 @@ function renderBazi(){
   }).join('');
 
   // ═══ 日主強度條 + 結構判定（白話版）═══
-  const _cap = b.capacity || b.bearingCapacity || 0;
-  const _capPct = Math.max(0, Math.min(100, _cap));
+  const _cap = b.strengthAssessment ? b.strengthAssessment.adjustedPoints : (b.selfPts || 0);
+  const _capPct = Math.max(0, Math.min(100, _cap / 60 * 100));
   const _capColor = b.strong ? '#4ade80' : '#fbbf24';
 
   // ═══ 能量流向 ═══
@@ -3906,7 +3913,7 @@ function renderBazi(){
   // ═══ 貼身影響 ═══
   const _proxNotes = b.proximityNotes || [];
 
-  const _strongExplain = b.specialStructure
+  const _strongExplain = b.fuyiAssessment ? b.fuyiAssessment.conclusion : b.specialStructure
     ? b.specialStructure.desc
     : b.strong
     ? '你的命盤能量充足，自身力量強，適合主動出擊。需要用喜用神來疏導多餘的能量。'
@@ -3915,23 +3922,22 @@ function renderBazi(){
   document.getElementById('d-xiyong').innerHTML=`
     <div style="margin-bottom:1rem">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem">
-        <strong style="font-size:0.85rem">你的命盤能量：${_cap} / 100</strong>
-        <span style="font-size:0.75rem;color:${_capColor};font-weight:600">${b.strong ? '身強' : '身弱'}</span>
+        <strong style="font-size:0.85rem">旺衰模型相對分：${Math.round(_cap)} / 60</strong>
+        <span style="font-size:0.75rem;color:${_capColor};font-weight:600">${baziStrengthLabel(b)}</span>
       </div>
-      <div style="font-size:0.65rem;opacity:0.5;margin-bottom:4px">這個分數代表你天生自帶的能量有多少（月令＋得地＋得勢＋五行比例），數字越高代表自身越強</div>
+      <div style="font-size:0.65rem;opacity:0.5;margin-bottom:4px">月令、四支根氣與透干的本站相對模型；完整取用另看生剋制化與調候</div>
       <div style="background:rgba(255,255,255,0.08);border-radius:6px;height:12px;overflow:hidden;position:relative">
         <div style="width:${_capPct}%;height:100%;background:${_capColor};border-radius:6px;transition:width 0.6s"></div>
-        <div style="position:absolute;top:0;left:50%;width:2px;height:100%;background:rgba(255,255,255,0.3)" title="身弱/身強分界(50)"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:0.6rem;opacity:0.4;margin-top:2px">
-        <span>身弱 (&lt;50)</span><span>身強 (≥50)</span>
+        <span>相對較低</span><span>相對較高</span>
       </div>
       <div style="font-size:0.7rem;margin-top:6px;color:var(--c-text-dim);line-height:1.5">${_strongExplain}</div>
     </div>
 
     <div style="margin-bottom:1rem">
       <strong style="font-size:0.85rem">結構判定：</strong>
-      <span style="color:${_capColor};font-weight:600">${b.strong ? '身強' : '身弱'}（${_cap}分）</span>
+      <span style="color:${_capColor};font-weight:600">${baziStrengthLabel(b)}（${Math.round(_cap)}分）</span>
     </div>
 
     ${_flow.mainFlow ? `<div style="margin-bottom:1rem;padding:0.5rem;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06)">
@@ -3948,14 +3954,14 @@ function renderBazi(){
 
     <p><strong>喜用神：</strong>${b.fav.map(e=>`<span class="tag tag-green">${e}</span>`).join(' ')}</p>
     <p class="mt-sm"><strong>忌　神：</strong>${b.unfav.map(e=>`<span class="tag tag-red">${e}</span>`).join(' ')}</p>
-    ${b.tiaohou ? `<p class="mt-sm" style="font-size:0.78rem;opacity:0.7"><strong>調候：</strong>${b.tiaohou.reason} — ${b.tiaohou.needReason}</p>` : ''}
+    ${b.tiaohou ? `<p class="mt-sm" style="font-size:0.78rem;opacity:0.7"><strong>調候：</strong>${b.tiaohou.reason||''} — ${b.seasonalAssessment?b.seasonalAssessment.conclusion:(b.tiaohou.detail||'')}</p>` : ''}
     ${b.shensha.length?`<details style="margin-top:0.5rem" open><summary style="cursor:pointer;font-size:0.78rem;opacity:0.6">神煞（${b.shensha.length}個）— 點擊看說明</summary><div class="mt-sm" style="font-size:0.75rem;line-height:1.6">${b.shensha.map(s=>{const GOOD_SS=['天乙貴人','天德貴人','月德貴人','天德合','月德合','文昌','學堂','詞館','國印貴人','福星貴人','天上三奇','地下三奇','人中三奇','金輿','天廚','將星','驛馬','桃花','紅鸞','天喜'];const isGood=GOOD_SS.includes(s);const SS_DESC={'天乙貴人':'最重要的貴人星。一生中容易遇到願意幫助你的人，遇難時總有人伸出援手，逢凶化吉能力強。','天德貴人':'天降福德之星。天生有化解災禍的能力，即使遭遇困境也能轉危為安，一生平安順遂的機率高。','月德貴人':'月柱帶來的福德。做事容易得到他人善意回應，人緣好，貴人運穩定持續。','天德合':'天德貴人的合星，效果類似但稍弱。仍然具有逢凶化吉的能量，遇到問題時有人暗中相助。','月德合':'月德貴人的合星。人際關係中容易獲得善意，做事有潤滑劑般的順暢感。','文昌':'學業與考試的吉星。頭腦聰明、記憶力好，讀書考試有天分，適合走學術或文職路線。','學堂':'讀書學習的福地。求學過程順利，吸收知識的能力強，適合終身學習和進修。','詞館':'文筆與口才之星。表達能力突出，寫作和演說有天賦，適合從事文字或溝通相關工作。','國印貴人':'官場和體制的吉星。適合在公家機關、大企業等組織內發展，容易獲得長官賞識和提拔。','福星貴人':'天生帶福氣之星。生活中常有意想不到的好運和福報，即使不特別努力也不會太差。','天上三奇':'四柱天干中有甲戊庚順排，為最貴的三奇格。命主聰明過人，有非凡的際遇和機緣。','地下三奇':'四柱天干中有乙丙丁順排。才華出眾，人生中有奇特的發展機會，貴人運佳。','人中三奇':'四柱天干中有壬癸辛順排。智慧型的三奇，思維獨特，適合研究和創新領域。','金輿':'出行和座駕之星。一生出行安全，容易擁有好的交通工具，也代表生活品質較好。','天廚':'食祿之星。一生不愁吃穿，飲食方面有福氣，也適合從事餐飲、食品相關行業。','將星':'領導和權力之星。天生有統帥的氣質和能力，適合帶領團隊，事業上容易居於主導地位。','驛馬':'遷移和變動之星。一生中變動多，適合從事需要出差或流動性高的工作，也代表有出國機會。','桃花':'異性緣和人緣之星。外表有魅力或氣質吸引人，異性緣好，但也要注意感情上的分寸。','紅鸞':'婚姻和喜事之星。代表姻緣到來或有喜慶之事，未婚者容易遇到對象，已婚者感情升溫。','天喜':'喜慶之星。生活中容易遇到開心的事，心情愉悅，也代表可能有添丁或喜事。','華蓋':'孤高聰明之星。思想深沉、悟性高，適合宗教哲學或藝術創作，但個性較孤僻，人際關係上需要主動。','羊刃':'剛烈果斷之星。個性強硬、做事有魄力，但脾氣急躁容易衝動。事業上可以化煞為權，但感情上容易起衝突。','劫煞':'突發變故之星。人生中容易遇到突然的變動或損失，但也代表有在逆境中翻盤的能力。行事需謹慎提防。','亡神':'暗耗之星。容易在不知不覺中損失錢財或機會，做決定前要多想多查證，避免被蒙蔽。','災煞':'災厄警示之星。提醒注意意外和災禍，尤其是交通和健康方面。保持警覺心、遠離危險環境。','六厄':'小困難之星。生活中容易遇到瑣碎的阻礙和麻煩事，雖然不大但會消耗精力，需要耐心處理。','孤辰':'孤獨之星（男性影響較大）。個性獨立但容易感到寂寞，感情上不太主動，需要刻意經營人際關係。','寡宿':'孤獨之星（女性影響較大）。內心世界豐富但不善表達，容易在感情上錯過機會，建議多參加社交活動。','空亡':'虛空之星。某些方面的能量被「架空」，努力可能事倍功半。但空亡也有「置之死地而後生」的意味。','血刃':'血光之星。提醒注意外傷、手術或出血相關的健康問題，日常生活中小心利器和交通安全。','紅艷煞':'魅力與誘惑之星。異性緣極強、外表或氣質有吸引力，但感情上容易遇到複雜狀況或爛桃花。','陰陽差錯':'婚姻曲折之星。感情和婚姻的道路比較曲折，可能經歷波折才找到對的人，但最終的姻緣往往不凡。','十惡大敗':'元氣受損之星。先天福報稍弱，做事需要比別人多付出努力，但只要踏實肯幹，反而能激發潛力。','白虎':'兇險之星。當年或當運需注意健康和安全，可能有意外事故或手術的風險，定期體檢是好習慣。','天狗':'口舌是非之星。容易捲入是非口角或法律糾紛，說話做事要謹慎，避免得罪小人。','弔客':'喪氣之星。可能遭遇親友的不幸消息或自身運勢低落的時期，保持平常心，多陪伴家人。','喪門':'哀傷之星。與弔客類似，提醒關注家中長輩健康，也要注意自己的情緒管理。','勾煞':'纏繞之星。容易遇到糾纏不清的人事物，特別是法律訴訟或債務問題，簽約做事要格外小心。','絞煞':'糾結之星。人際關係中容易有糾葛，可能被人牽扯進不必要的麻煩，保持界線感很重要。'};const desc=SS_DESC[s]||'';return `<div class="ss-item" style="display:inline-block;margin:2px" onclick="this.querySelector('.ss-tip').classList.toggle('ss-show')"><span class="tag ${isGood?'tag-green':'tag-red'}" style="font-size:0.72rem;cursor:pointer;${isGood?'':'opacity:0.75'}">${isGood?'✦':'✧'} ${s} <i class="fas fa-info-circle" style="font-size:0.6rem;opacity:0.4"></i></span><div class="ss-tip" style="display:none;margin:4px 0 8px;padding:8px 10px;border-radius:8px;font-size:0.73rem;line-height:1.6;background:${isGood?'rgba(76,175,80,.08)':'rgba(239,83,80,.08)'};border-left:3px solid ${isGood?'rgba(76,175,80,.5)':'rgba(239,83,80,.4)'};color:var(--c-text)">${desc}</div></div>`}).join('')}</div></details>`:''}`;
 
 
   // 起運資訊
   if(b.qiyun){
     const qy=b.qiyun;
-    document.getElementById('d-qiyun').innerHTML=`<span style="color:var(--c-gold,#d4af37)">⏳ ${qy.startAge}歲起運</span><span style="opacity:0.6">（小運1~${qy.smallEnd}｜實歲${qy.age}歲${qy.months>0?'又'+qy.months+'個月':''}）</span>`;
+    document.getElementById('d-qiyun').innerHTML=`<span style="color:var(--c-gold,#d4af37)">⏳ ${qy.startAgeText||(qy.startAge+'歲')}起運</span><span style="opacity:0.6">${qy.startDate?'（'+qy.startDate+'）':''}</span>`;
   }
   // 大運
   document.getElementById('d-dayun').innerHTML='<div class="dayun-tl">'+b.dayun.map(d=>{
@@ -4221,6 +4227,7 @@ function _mhGuaType(guaName, guaEl){
 
 // ═══ 互卦隱藏問題分類 ═══
 function _mhHuHidden(huRel){
+  if(huRel==='交錯')return {cat:'作用交錯',desc:'上互與下互對原體的生剋作用不同，須分開衡量助力、耗洩與牽制'};
   if(huRel==='B剋A') return {cat:'外部壓制',desc:'有你看不到的外在力量在壓著這件事'};
   if(huRel==='A生B') return {cat:'自耗',desc:'你自己的行動在消耗你的資源'};
   if(huRel==='B生A') return {cat:'暗中有助',desc:'有隱藏的支援或機緣在默默推進'};
@@ -4738,8 +4745,7 @@ function analyzeMeihua(mh, type){
   const tiEl=mh.tiG.el, yoEl=mh.yoG.el;
   const tiName=mh.tiG.name, yoName=mh.yoG.name;
   const dong=mh.dong||1;
-  const now=new Date();
-  const curMonth=now.getMonth()+1;
+  const now=mhReferenceDate(mh);
 
   // ── 基礎層 ──
   const rel=mh.ty.r||'—';
@@ -4747,8 +4753,8 @@ function analyzeMeihua(mh, type){
   let score=40+(tyScore[mh.ty.f]||0);
 
   // ── 月令旺衰 ──
-  const tiWS=getMhWangShuai(tiEl, curMonth);
-  const yoWS=getMhWangShuai(yoEl, curMonth);
+  const tiWS=getMhWangShuai(tiEl, now);
+  const yoWS=getMhWangShuai(yoEl, now);
   score+=tiWS.score*3;
 
   // ── 互卦五行 ──
@@ -4762,11 +4768,8 @@ function analyzeMeihua(mh, type){
       huYoRel=mhRelation(tiEl, huUpG.el);
     }
   }
-  // 互卦得分（取最有利那個）
-  const huRelPrimary=[huTiRel,huYoRel].includes('B生A')?'B生A':
-    [huTiRel,huYoRel].includes('B剋A')?'B剋A':
-    [huTiRel,huYoRel].includes('比和')?'比和':
-    [huTiRel,huYoRel].includes('A生B')?'A生B':'A剋B';
+  // 上下互均以原體為參照；作用不同時保留兩者，不固定挑較有利的一個。
+  const huRelPrimary=huTiRel===huYoRel?huTiRel:'交錯';
   score+={'B生A':4,'比和':1,'A剋B':1,'A生B':-2,'B剋A':-4}[huRelPrimary]||0;
 
   // ── 變卦五行 ──
@@ -4780,10 +4783,8 @@ function analyzeMeihua(mh, type){
       bianYoRel=mhRelation(tiEl, biUpG.el);
     }
   }
-  const bianRelPrimary=[bianTiRel,bianYoRel].includes('B生A')?'B生A':
-    [bianTiRel,bianYoRel].includes('B剋A')?'B剋A':
-    [bianTiRel,bianYoRel].includes('比和')?'比和':
-    [bianTiRel,bianYoRel].includes('A生B')?'A生B':'A剋B';
+  // 體為不動的三爻卦；變後只比較原體與變後用卦，不能用體比自己覆蓋結果。
+  const bianRelPrimary=dong<=3?bianTiRel:bianYoRel;
   score+={'B生A':8,'比和':2,'A剋B':1,'A生B':-3,'B剋A':-8}[bianRelPrimary]||0;
 
   // ── 動爻爻辭加分 ──
@@ -4802,7 +4803,7 @@ function analyzeMeihua(mh, type){
   const dongStage=_mhDongStage(dong);
   const tySemantics=_mhTySemantics(rel);
   const dongEl=(dong<=3)?mh.lo.el:mh.up.el;
-  const dongSide=(dong>3)?'體卦（你在改變）':'用卦（外在變化）';
+  const dongSide=(dong>3?'上卦':'下卦')+'，即本次用卦；原體保留在另一個不動的三爻卦';
   const huHidden=_mhHuHidden(huRelPrimary);
   const bianTrend=_mhBianTrend(bianRelPrimary, mh.bian&&mh.bian.n);
   const guaType=_mhGuaType(mh.ben&&mh.ben.n, mh.up&&mh.up.el);
@@ -4815,9 +4816,9 @@ function analyzeMeihua(mh, type){
   const huEffect=huHidden.desc;
   let bianEffect=bianTrend.desc;
   const consistency=
-    (huRelPrimary==='B生A'&&bianRelPrimary==='B生A')?'根因和走向一致偏好，準度較高':
+    (huRelPrimary==='B生A'&&bianRelPrimary==='B生A')?'互卦與變後用卦都有生體作用，繼續檢查旺衰及實際落實條件':
     (huRelPrimary==='B剋A'&&bianRelPrimary==='B剋A')?'根因和走向一致偏差，情況需認真應對':
-    '根因和走向有出入，代表你的做法可以改變結果';
+    huRelPrimary==='交錯'?'互卦作用交錯，須分別看助力能否承接、阻力如何影響變後用卦':'互卦與變後用卦的作用需分層合參，不能只取其中較有利的一項';
 
   // ── narrativeBlocks ──
   const narrativeBlocks={
@@ -4846,17 +4847,18 @@ function analyzeMeihua(mh, type){
     score,
     narrative: Object.values(narrativeBlocks).join(' '),
     tiYong:{rel, judge:mh.ty.f, desc:mh.ty.d, tiEl, yoEl, tiName, yoName},
-    dongYao:{pos:dong, inTi:(dong>3), desc:dongStage.meaning, stage:dongStage},
+    dongYao:{pos:dong, inTi:false, inYong:true, side:dong>3?'upper':'lower', desc:dongStage.meaning, stage:dongStage},
+    referenceTimestamp:now.toISOString(),
     wangShuai:{ti:tiWS, yo:yoWS},
     huGua:{
       rel:`互卦上${huUpG?huUpG.name:'?'}(${huUpG?huUpG.el:'?'})/下${huLoG?huLoG.name:'?'}(${huLoG?huLoG.el:'?'})`,
       tiRel:huTiRel+'/'+huYoRel,
-      effect:huEffect
+      effect:huEffect, lowerRelation:huTiRel, upperRelation:huYoRel, primaryRelation:huRelPrimary
     },
     bianGua:{
       rel:`變卦上${biUpG?biUpG.name:'?'}(${biUpG?biUpG.el:'?'})/下${biLoG?biLoG.name:'?'}(${biLoG?biLoG.el:'?'})`,
       tiRel:bianTiRel+'/'+bianYoRel,
-      effect:bianEffect
+      effect:bianEffect, changedUseRelation:bianRelPrimary, comparisonPolicy:'ORIGINAL_BODY_VS_CHANGED_USE'
     },
     signals:typeAnalysis.signals,
     timing:timingObj,
@@ -4878,22 +4880,6 @@ function analyzeMeihua(mh, type){
     trend:bianTrend,
     risk:typeAnalysis.mainRisk,
     timingFull:timingObj,
-    timingTriple: (function(){
-      try { return _mhTimingTriple(mh, dongEl, curMonth); }
-      catch(e){ return null; }
-    })(),
-    // v56: 十應訣之日應/刻應/方應（前端可算部分）
-    tenAppliances: (function(){
-      try {
-        // 嘗試從 S.user 或 window 取用戶地理位置（若無則傳 undefined，函式自動跳過方應）
-        var userLat, userLng;
-        if(typeof window !== 'undefined' && window.S && window.S.user){
-          userLat = window.S.user.lat;
-          userLng = window.S.user.lng;
-        }
-        return _mhTenAppliances(mh, dongEl, userLat, userLng);
-      } catch(e){ return null; }
-    })(),
     timingStance:timingSemantic,
     strategy:typeAnalysis.actionCore,
     people:typeAnalysis.signals,
@@ -5534,3 +5520,10 @@ function buildMeihuaOutput(mh, type) {
     return first+'；'+last+'。完整判斷仍須依牌陣拓撲與相鄰元素尊貴，不以固定正逆位或吉凶票數裁決。';
   };
 })(typeof window!=='undefined'?window:globalThis);
+
+function mhReferenceDate(mh) {
+  var stamp=mh&&mh.castContext&&mh.castContext.timestamp;
+  var date=stamp?new Date(stamp):new Date();
+  if(!Number.isFinite(date.getTime()))throw new Error('起卦時間格式錯誤，無法核對月令');
+  return date;
+}

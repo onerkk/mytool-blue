@@ -512,7 +512,7 @@ function buildMeihuaOutput(mh, type) {
 //       待結果頁確認 type 後可再呼叫
 //       buildMeihuaOutput(S.meihua, realType) 覆蓋。
 // ═══════════════════════════════════════════════════════════════
-function calcMH(un,ln,dy){
+function calcMH(un,ln,dy,castContext){
   if(![un,ln,dy].every(function(n){return Number.isInteger(n)&&n>0;}))throw new Error('卦數與動爻必須是正整數。');
   var up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
   var ben=g64(up.n, lo.n);
@@ -527,7 +527,9 @@ function calcMH(un,ln,dy){
   var tiG=dong<=3?up:lo, yoG=dong<=3?lo:up;
   var ty=tiYong(tiG.el,yoG.el);
   var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
+  mh.castContext=castContext?Object.assign({},castContext):{timestamp:new Date().toISOString(),method:'provided-trigrams',upperTrigram:up.n,lowerTrigram:lo.n,movingLine:dong};
+  if(!Number.isFinite(Date.parse(mh.castContext.timestamp)))throw new Error('起卦時間格式無效。');
   // 自動掛輸出層（general 先跑，結果頁再用真實 type 覆蓋）
-  try{ buildMeihuaOutput(mh,'general'); }catch(e){}
+  try{ if(typeof buildMeihuaOutput==='function')buildMeihuaOutput(mh,'general'); }catch(e){}
   return mh;
 }

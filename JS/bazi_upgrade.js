@@ -635,8 +635,8 @@ function baziRescoreLiuNian(bazi, stance) {
 }
 
 // ── 11.5 日主通根明細（v80.30）──
-// 「得地」各派定義不一（坐下通根派／二柱通根派…），引擎旺衰判定取「日支坐根」一派；
-// 此處列明全盤比劫根氣供提示詞輸出，避免 AI 把「得地：否」誤讀成全盤無根。
+// 核心 deDi 表示四支任一處有根；sittingRoot 僅指日支。兩者不可互換。
+// 此處列明根的柱位，與 baziRootFacts 的藏干同五行口徑一致。
 function baziTongGen(bazi) {
   if (!bazi || !bazi.dm || !bazi.pillars) return null;
   var dmEl = WX_MAP[bazi.dm];
