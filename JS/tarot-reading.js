@@ -74,7 +74,7 @@
     '逆位依牌本性與上下文判斷內在化、受阻、延遲、過量或不足等可能；不把所有逆位視為壞事，也不機械反轉正位牌義。橫放的交叉牌仍以資料記錄的正逆位為準。',
     '先辨認哪張牌在說狀態、原因、阻力、建議或走向，依本次完整方法資料讀軸線、分支、組合與配對；同一牌在不同牌位不會產生相同句子。大牌、小牌、宮廷牌和花色分布作次級背景，不能把某花色缺席或逆位比例直接當成否定答案。',
     '宮廷牌先比較人物、當事人的行動方式或環境角色三種讀法；有現實身分資料與牌位支持才綁定特定人物。關係牌陣的對方位是象徵視角，不是已讀取對方內心的證據。',
-    '【輸出】使用繁體中文，開頭直接回應原問句。接著用生活語言說清可行的下一步及可觀察的驗證訊號，再用一小段具體牌名與牌位支持主判，必要時簡述會改變行動的替代解讀。每個子題都要回應；深入來自比較與整合，避免逐張堆疊字典或重複結論。',
+    '【輸出】使用繁體中文，開頭直接回應原問句。接著充分說明關鍵牌在各自牌位的含義、相關牌如何互相修正，以及哪張牌使局面推進或轉折；對有力的相反訊號給出取捨。最後提出與牌組對應的下一步及觀察訊號。每個子題都要回應；深入來自比較與整合，避免逐張堆疊字典或重複結論。',
     '對尚未發生的事給出有條件的傾向，區分當事人已提供的事實與象徵推測；涉及他人內心、年齡或應期時，說明資料實際支持的範圍。只拿到牌名而看不到牌圖時，勿聲稱已檢視本次圖像細節。'
   ].join('\n');}
   function formatData(td){
@@ -127,5 +127,5 @@
     var close=root.JY_PICKER.mount(dialog,'.jy-card-preview-body',function(){close();});dialog.querySelector('button').onclick=close;
   }
   root.document.addEventListener('click',function(e){var button=e.target.closest&&e.target.closest('[data-jy-preview]');if(button){e.preventDefault();preview(Number(button.dataset.jyPreview));}});
-  root.JYTarotReading={version:'1.1.0',RWS:RWS,GD:GD,mode:mode,orientation:orientation,apply:apply,label:label,imageStyle:imageStyle,face:face,meaning:meaning,stats:stats,statsHTML:statsHTML,payload:payload,promptHead:promptHead,formatData:formatData,guide:guide,resultHTML:resultHTML,syncControls:syncControls};
+  root.JYTarotReading={version:'1.2.0',RWS:RWS,GD:GD,mode:mode,orientation:orientation,apply:apply,label:label,imageStyle:imageStyle,face:face,meaning:meaning,stats:stats,statsHTML:statsHTML,payload:payload,promptHead:promptHead,formatData:formatData,guide:guide,resultHTML:resultHTML,syncControls:syncControls};
 })(window);

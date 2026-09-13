@@ -16,7 +16,7 @@
 // v72: 20260912depth1 判讀品質、交運分段、選牌與多頁揭牌、立體儀式。
 // v73: 20260912flow2 快速手勢、即時進度、保留牌組續讀與筆記隔離。
 // v74: 20260912accuracy1 來源校核、曆法安星與各入口版本同步。
-const CACHE_NAME = 'jy-main-v74';
+const CACHE_NAME = 'jy-main-v75';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

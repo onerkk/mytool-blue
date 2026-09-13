@@ -71,7 +71,7 @@ function loadBaziRuntime() {
   return ctx;
 }
 
-test('首頁先載入 v5 共用提示詞根，再載入八字與紫微 standalone', () => {
+test('首頁先載入 v6 共用提示詞根，再載入八字與紫微 standalone', () => {
   const html = read('index.html');
   const bRoot = html.indexOf('JS/bazi-prompt-root.js');
   const bStandalone = html.indexOf('JS/bazi-standalone.js');
@@ -85,7 +85,7 @@ test('首頁先載入 v5 共用提示詞根，再載入八字與紫微 standalon
 
 test('八字提示詞根在真實執行路徑可用，並開放 AI 自身命理知識', () => {
   const ctx = loadBaziRuntime();
-  assert.strictEqual(ctx.JY_BAZI_PROMPT_ROOT.version, '5.1.0');
+  assert.strictEqual(ctx.JY_BAZI_PROMPT_ROOT.version, '6.0.0');
   const solar = ctx.calcTrueSolarTime(1983, 8, 25, 14, 55, 120.23, 8, 'Asia/Taipei');
   const chart = ctx.computeBazi(solar.year, solar.month, solar.day, solar.hour, solar.minute, 'male', {
     second: solar.second, birthInstant:solar.utcTimestamp,
@@ -116,7 +116,7 @@ test('紫微資料不再截掉第四顆之後的輔星、煞星或第九個格�
   assert(!source.includes('(zw.patterns||[]).slice(0,8)'));
   assert.strictEqual(require('vm').runInNewContext(read('JS/ziwei-prompt-root.js') + ';window.JY_ZIWEI_PROMPT_ROOT.version', {
     window: {}, console
-  }), '5.1.0');
+  }), '6.0.0');
 });
 
 test('梅花兩條 standalone 路徑完全一致，且不製造日曆假精確', () => {
@@ -141,7 +141,7 @@ test('靈籤提示詞保留完整材料並開放 AI 的解籤知識', () => {
   assert(!source.includes('嚴禁引用籤詩之外'));
 });
 
-test('雷諾曼保留合法幾何，並改為精簡的牌組整合方法', () => {
+test('雷諾曼保留合法幾何，並改為有主次的牌組整合方法', () => {
   const source = read('JS/lenormand.js');
   assert(source.includes('運用你自身完整的 Petit Lenormand 知識'));
   assert(source.includes('以相鄰牌組、長線、交會路徑及牌陣位置形成完整牌句'));

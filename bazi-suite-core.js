@@ -91,9 +91,9 @@
     if (!fromEl || !toEl) return {type:'unknown', label:'未知'};
     if (fromEl === toEl) return {type:'same', label:'同五行'};
     if (GENERATES[fromEl] === toEl) return {type:'generate', label:fromEl + '生' + toEl};
-    if (GENERATES[toEl] === fromEl) return {type:'receive', label:toEl + '生' + fromEl};
+    if (GENERATES[toEl] === fromEl) return {type:'receive', label:fromEl + '受' + toEl + '所生'};
     if (CONTROLS[fromEl] === toEl) return {type:'control', label:fromEl + '剋' + toEl};
-    if (CONTROLS[toEl] === fromEl) return {type:'controlled', label:toEl + '剋' + fromEl};
+    if (CONTROLS[toEl] === fromEl) return {type:'controlled', label:fromEl + '受' + toEl + '所剋'};
     return {type:'neutral', label:'關係待審'};
   }
 
@@ -248,7 +248,13 @@
     var dayun=safeArray(chart && chart.dayun),current = dayun.find(function(x){return x && x.isCurrent;}) || null;
     var ref=Number(chart&&chart._referenceTimestamp);
     var nowYear=Number(chart&&chart.liuNianPeriod&&chart.liuNianPeriod.year)||(Number.isFinite(ref)?new Date(ref).getUTCFullYear():new Date().getFullYear()), byYear={};
-    dayun.forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){if(y&&y.year>=nowYear-1&&y.year<=nowYear+4&&!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz},y);});});
+    dayun.forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){
+      if(!y||y.year<nowYear-1||y.year>nowYear+4)return;
+      if(!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz,segments:[]},y);
+      var group=byYear[y.year],segment=Object.assign({dayun:d.gz},y);
+      if(!group.segments.some(function(s){return s.dayun===segment.dayun&&s.periodStart===segment.periodStart;}))group.segments.push(segment);
+    });});
+    Object.keys(byYear).forEach(function(y){var g=byYear[y];g.segments.sort(function(a,b){return String(a.periodStart).localeCompare(String(b.periodStart));});if(g.segments.length>1)g.level='交運分段，須分別判讀';});
     var annual=Object.keys(byYear).map(Number).sort().map(function(y){return byYear[y];});
     return {currentLuck:current, annual:annual};
   }
@@ -330,21 +336,23 @@
   function annualLines(chart, count) {
     var ref=Number(chart&&chart._referenceTimestamp), civilYear=Number.isFinite(ref)?new Date(ref).getUTCFullYear():new Date().getFullYear();
     var nowYear=Number(chart&&chart.liuNianPeriod&&chart.liuNianPeriod.year)||civilYear, byYear={};
-    safeArray(chart&&chart.dayun).forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){if(y&&y.year>=nowYear&&!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz},y);});});
-    return Object.keys(byYear).map(Number).sort().slice(0,count||5).map(function(year){var x=byYear[year];return '・'+year+' '+safeText(x.gz)+'（大運 '+safeText(x.dayun)+'；模型 '+safeText(x.level,'未標記')+'；區間 '+safeText(x.periodStart,'未提供')+' ～ '+safeText(x.periodEndExclusive,'未提供')+'）';});
+    safeArray(chart&&chart.dayun).forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){if(y&&y.year>=nowYear){var group=byYear[y.year]||(byYear[y.year]=[]);if(!group.some(function(x){return x.dayun===d.gz&&x.periodStart===y.periodStart;}))group.push(Object.assign({dayun:d.gz},y));}});});
+    return Object.keys(byYear).map(Number).sort().slice(0,count||5).map(function(year){return byYear[year].sort(function(a,b){return String(a.periodStart).localeCompare(String(b.periodStart));}).map(function(x){return '・'+year+' '+safeText(x.gz)+'（大運 '+safeText(x.dayun)+'；模型 '+safeText(x.level,'未標記')+'；區間 '+safeText(x.periodStart,'未提供')+' ～ '+safeText(x.periodEndExclusive,'未提供')+'）';}).join('\n');});
   }
 
   function modelLines(chart) {
     var ep=chart&&chart.ep||{}, stance=chart&&chart.wuxingStance||{}, th=chart&&chart.tiaohou||{};
     function modelText(value){return value&&typeof value==='object'?JSON.stringify(value):safeText(value,'未提供');}
+    var ge=chart&&chart.zhengGe;
+    if(ge){ge={geName:ge.geName,geGod:ge.geGod,geGan:ge.geGan,touChu:ge.touChu,benQiGod:ge.benQiGod};}
     return [
       '日主 '+safeText(chart&&chart.dm)+'（'+safeText(chart&&chart.dmEl)+'），本系統旺衰候選：'+safeText(chart&&chart.strongLevel,'未判定')+'；自黨相對分 '+safeText(chart&&chart.selfPts,'—')+'。',
       '五行相對權重：'+ELEMENTS.map(function(e){return e+safeText(ep[e],0)+'%';}).join('、')+'。此為本模型內比較，不是古籍固定比例或科學測量。',
       '扶抑立場：'+safeText(stance.summary, '喜候選 '+safeArray(chart&&chart.fav).join('、')+'；忌候選 '+safeArray(chart&&chart.unfav).join('、'))+'。',
-      '月令格局候選：'+modelText(chart&&chart.zhengGe)+'。格神、相神與成敗救應須回到透藏根氣；格局用神與扶抑用神分義。',
+      '月令格局候選：'+modelText(ge)+'。格神、相神與成敗救應須回到透藏根氣；touChu 為空時不能宣稱格神已透干。格局用神與扶抑用神分義。',
       '官殺辨析：'+modelText(chart&&chart.guanShaMix)+'。',
       '病藥模型：'+modelText(chart&&chart.medicineGod)+'；通關模型：'+modelText(chart&&chart.relayGod)+'。未提供的模型不可補造。',
-      '調候鏡頭：需 '+safeArray(th.need).join('、')+'；'+safeText(th.detail)+'。調候與扶抑分開，不自動互相覆蓋。',
+      '調候鏡頭：候選五行 '+safeArray(th.need).join('、')+'；'+safeText(th.detail)+(th.sourceUrl?'；校對來源 '+th.sourceUrl:'')+'。調候與扶抑分開，不自動互相覆蓋。',
       '特殊格局：'+(safeArray(chart&&chart.specialStructureCandidates).length?safeArray(chart.specialStructureCandidates).map(function(x){return x.type+'（'+x.status+'）';}).join('、'):'無自動成立項；候選仍須人工覆核')+'。'
     ];
   }
@@ -363,11 +371,12 @@
       '【A. 排盤與曆法資料】',
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.genderLabel||chart&&chart.gender||'')+'・'+escapeLine(meta.birthLine||'出生資料未標示'),
       meta.solarInfo&&meta.solarInfo.trueSolarDateTime?'民用出生時間校正為真太陽時：'+meta.solarInfo.trueSolarDateTime+'；經度 '+safeText(meta.longitude)+'°；時區 '+safeText(meta.timezoneId||meta.solarInfo.timezoneId)+'。':'真太陽時資料未提供。',
+      '出生瞬間（UTC）：'+safeText(chart&&chart.calculationPolicy&&chart.calculationPolicy.birthInstant,'未提供')+'；年、月柱在 UTC+8 核對節氣，日、時柱依本盤牆鐘；起運採分鐘折算法。',
       '排盤政策：換日 '+safeText(chart&&chart.calculationPolicy&&chart.calculationPolicy.dayBoundaryMode)+'；流年以立春為界；大運採半開區間 [起點,下一起點)。',
       meta.unknown?'時辰未知：目前以暫定時刻排盤，時柱、神煞、子女晚景象義及精確起運的把握度較低。':'',
       pillarFactLines(chart).join('\n'),
       (meta.unknown?'・暫定起運（以12:00暫排，精確交運把握度較低）：':'・起運：')+safeText(chart&&chart.qiyun&&chart.qiyun.startAgeText)+'；交運點 '+safeText(chart&&chart.qiyun&&chart.qiyun.startDate)+'；順逆 '+safeText(chart&&chart.qiyun&&chart.qiyun.direction)+'。',
-      '・輔助資料：生肖 '+safeText(CHINESE_ZODIAC[chart&&chart.pillars&&chart.pillars.year&&chart.pillars.year.zhi],'—')+'；空亡 '+(safeArray(chart&&chart.kongwang).join('、')||'—')+'；命宮 '+safeText(chart&&chart.mingGong&&(chart.mingGong.gan+chart.mingGong.zhi),'—')+'；胎元 '+safeText(chart&&chart.taiYuan&&(chart.taiYuan.gan+chart.taiYuan.zhi),'—')+'；八字重量 '+safeText(chart&&chart.chenggu&&chart.chenggu.display,'未計得')+'。稱骨、命宮、胎元、納音與神煞可作輔助視角，主判仍綜合月令與全局生剋。',
+      '・輔助資料：生肖 '+safeText(CHINESE_ZODIAC[chart&&chart.pillars&&chart.pillars.year&&chart.pillars.year.zhi],'—')+'；空亡 '+(chart&&chart.kongwang&&!Array.isArray(chart.kongwang)?'年柱 '+safeArray(chart.kongwang.year).join('、')+'；日柱 '+safeArray(chart.kongwang.day).join('、'):(safeArray(chart&&chart.kongwang).join('、')||'—'))+'；命宮 '+safeText(chart&&chart.mingGong&&(chart.mingGong.gan+chart.mingGong.zhi),'—')+'；胎元 '+safeText(chart&&chart.taiYuan&&(chart.taiYuan.gan+chart.taiYuan.zhi),'—')+'；八字重量 '+safeText(chart&&chart.chenggu&&chart.chenggu.display,'未計得')+'。稱骨、命宮、胎元、納音與神煞可作輔助視角，主判仍綜合月令與全局生剋。',
       '【原局干支作用——由核心唯一計算】',
       interactionLines(chart).join('\n'),
       '判讀提示：配對存在後仍需審成化條件；沖刑害破的方向結合所動之柱、十神、喜忌與歲運。',

@@ -1,3 +1,4 @@
+// 20260912accuracy1: refresh stopped-operation and original-question guards in previously open clients.
 /*! prompt-export.js — 靜月之光塔羅／開鑰提示詞匯出引擎 [v103.0]
  *  v103.0（知識開放提示詞 2026/9/4）：保留原生牌陣方法與 Book T 資料，開放 AI 自身塔羅知識，移除重複禁令、稽核與微管理。
  *  v98.0（單一 Foundation 根架構 2026/7/17）：
@@ -152,7 +153,7 @@
       label: '梅花易數',
       head: [
         '【任務】',
-        '你是一位資深梅花易數占者。請運用你自身完整的易學、體用、生剋、旺衰、動爻、卦氣、類象與應期知識，綜合本次起卦資料，直接、深入且精準地回答問題。',
+        '你是一位資深梅花易數占者。請運用你自身完整的易學、體用、生剋、旺衰、動爻、卦氣、類象與應期知識，綜合本次起卦資料，以白話直接回答問題，讓結論有具體依據。',
         '',
         '【判讀方法】',
         '以本卦與體用定主調、旺衰定力度、動爻定觸發層，將本卦、互卦、動爻與變卦串成現況、過程、變化和結果；錯綜、卦辭與八卦類象可補充另一視角。',
@@ -172,7 +173,7 @@
       label: '塔羅快讀',
       head: [
         '【任務】',
-        '你是一位資深塔羅讀牌者。請運用你自身完整的塔羅知識，綜合本次問題、牌位／序列、牌面、牌組互動、元素尊貴與全盤結構，直接、深入且精準地解讀。',
+        '你是一位資深塔羅讀牌者。請運用你自身完整的塔羅知識，綜合本次問題、牌位／序列、牌面、牌組互動、元素尊貴與全盤結構，以白話直接回應問題，提供有依據的解讀。',
         '',
         '【牌義與方法】',
         '本次資料以 Hermetic Order of the Golden Dawn《Book T／Liber T》為主要牌義與占星、卡巴拉對應來源；你可運用自身可靠的塔羅與牌陣知識補充；圖像描述須來自本次實際牌圖。若參照其他體系，請標明差異，不把 Rider-Waite 固定正逆位牌義覆蓋本盤的 Book T 元素尊貴。',
@@ -181,7 +182,7 @@
         '元素尊貴以資料明示的真正有序相鄰線為主；其他配對、因果、對照、軸線與分支依各自語義整合。一般牌陣正向展示，牌的順暢、受阻或扭曲由牌本性、位置、相鄰牌與全盤共同判斷。',
         '',
         '【輸出】',
-        '使用繁體中文。第一句直接回答原問句，再說清主判、關鍵牌組、不同訊號的支持或牽制、可能發展、時機與可行方向；重要判斷附具體牌名，避免逐張抄義。'
+        '使用繁體中文。第一句直接回答原問句，接著充分解釋關鍵牌位、牌義與牌組之間的作用，說清推進、阻力及轉折如何形成主判，再提出對應的行動與條件。'
       ].join('\n'),
       dataHeader: '十、以下是排好的牌陣資料',
       tail: '請直接依上方「本次方法資料」與本盤牌面完成解讀。方法資料是閱讀上下文，不是預先寫好的答案；請自行綜合 Book T 牌義、牌位／序列、真正相鄰元素尊貴與全盤結構，回答原問句。'
@@ -190,10 +191,10 @@
       label: '開鑰之法',
       head: [
         '【任務】',
-        '你是一位熟悉 Golden Dawn Opening of the Key 的資深塔羅讀牌者。請運用你自身完整的 Book T、計數、配對與元素尊貴知識，綜合本次已完成的操作資料，直接、深入且精準地回答問題。',
+        '你是一位熟悉 Golden Dawn Opening of the Key 的資深塔羅讀牌者。請運用你自身完整的 Book T、計數、配對與元素尊貴知識，綜合本次已完成的操作資料，以白話直接回答問題，讓結論有具體依據。',
         '',
         '【解讀方法】',
-        '開鑰之法是五次相互承接的獨立操作。先讀每次操作的代表牌落點、計數故事、配對故事與元素尊貴，再依第一次至第五次的階段功能整合；若程序中止，就分析實際完成的部分與其意義。',
+        '開鑰之法是五次相互承接的獨立操作。先讀每次操作的代表牌落點、計數故事、配對故事與元素尊貴，再依第一次至第五次的階段功能整合；若程序中止，依停止紀錄說明程序原因與下一步，保留未完成五輪的狀態。',
         '',
         '【輸出】',
         '使用繁體中文。第一句直接回答原問句，再依操作階段說清主線、支持、反證、發展、條件、行動與可驗證訊號；避免逐步抄錄所有牌。'
@@ -491,30 +492,8 @@
   ].join('\n');
 
 
-  // ④ 收尾能量石（v73.1 歐那）：把賣場自然融進解讀結論，不是廣告區塊。
-  //    元素一律綁「牌面」（火水風土＝權杖聖杯聖杯寶劍金幣／開鑰 Op1 YHVH 堆），
-  //    不碰八字五行命盤——故塔羅與開鑰共用，且不破壞開鑰「不引命盤」的純粹性。
-  //    放在交稿核對之後，作為提示詞最後的輸出格式約束，確保賣場連結獨立收尾。
-  // v84_audit5(2026/6/10)：防線統一——輸出要求補盤外資訊禁令＋指令回聲禁令、FRAG_CRYSTAL 補嚴禁並列（六系統同步）
-  var FRAG_MEIHUA_BRAND = "【延伸選品】正文解讀與具體建議完成後，以兩三句自然承接本題的生活提醒，再邀請到靜月之光蝦皮看看水晶、天鐵與龍宮舍利選品。可推薦一種飾品材料作穿搭或提醒，不以五行缺項或凶象製造購買需要；沒有品項資料時只推薦類別，不保證現貨、價格、鑑定、產地或功效。勿捏造材質成分，不把購買說成改運、治療、消災或改變他人心意的方法。財務困難者先使用既有物品作提醒，選購量力而為。若涉及即時人身危機，先提供切合情境的求助方向，不作商品推薦。最後連結只出現一次，讓閱讀者自由決定是否瀏覽。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。";
-  var FRAG_TAROT_INVENTORY = [
-    '',
-    '【延伸選品與自然引流】',
-    '完整解答與可行建議完成後，從資料區【可推薦庫存品項】選一項，以一至兩句將本盤的實際提醒連到日常配戴情境。這份清單是專案既有選品資料，並非即時庫存查詢；不得保證現貨、價格、證書、產地、成效或出貨時間。',
-    '先承接本題最重要的一個行動，例如每次看到飾品便提醒自己先確認資訊再決定，再簡短介紹所選材質的外觀或佩戴感；自然提到可到靜月之光看看水晶、天鐵與龍宮舍利選品。只推一項，名稱與規格照資料，不捏造礦物成分或未知貨品。',
-    '選品是可自由選擇的生活延伸，不參與占卜判斷；不能聲稱購買可以化解災難、招來某人愛意、治病、改善負債或保證改運。提到財務困難時鼓勵先用既有飾品作提醒，購買量力而為；若是急迫危機，先完成當下支持，品牌僅留自願瀏覽連結。',
-    '有候選時保留一行「推薦品項：<品項全名>」；沒有候選時省略推薦品項行，自然邀請依喜好瀏覽，不輸出無庫存或任何佔位符。',
-    '整篇答案只在最後放一次以下連結，不需重複列出方法書目；其他查證引用可留在正文。',
-    '[前往靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)',
-    '願你諸事順遂。'
-  ].join('\n');
-
-
-  // ④b 紫微專用能量石（v85 歐那 2026/6/11）：根治紫微被注入塔羅版規則的錯位——
-  //    紫微資料區沒有「花色分布」，舊版會逼 AI 對不存在的數據瞎掰。
-  //    紫微選石只綁「這次問題＋結論」，不冒充紫微原典、不碰命盤五行喜忌（命盤喜忌屬八字層，避免兩套系統打架）。
-  var FRAG_CRYSTAL_ZIWEI =
-    '\n【延伸選品】\n正文完成後，可運用你自身可靠的礦物與配飾知識，依本題的生活情境自然推薦一種礦物／飾品材料，定位為象徵提醒、收藏或穿搭，不作為紫微判斷依據或結果保證。最後保留賣場連結與祝福語。\n';
+  // Needs-first recommendation: no product or stock candidates are exported.
+  var FRAG_NEEDS_RECOMMENDATION = "【延伸選品】\n" + (window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationText():"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。") + "\n" + "[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)" + "\n願你諸事順遂。";
 
   // ⑥ 通用溯源鐵律（v85.5 歐那 2026/6/11）：根治「無出處具體數字」整類病——
   //   時間天數(v84前)、機率百分比(v85.4)、金額、年齡都是同一類：AI 為顯精準而編造盤面推不出的數字。
@@ -648,7 +627,7 @@
   // ── 塔羅：結構化物件 → 模板要的逐張牌文字 + 預運算數據 ──
   function formatTarotData(result) {
     var td = (result && result.tarotData) || {};
-    if(td.sourceProfile==='rws_reversals'&&window.JYTarotReading)return window.JYTarotReading.formatData(td,result.shopRecommendation);
+    if(td.sourceProfile==='rws_reversals'&&window.JYTarotReading)return window.JYTarotReading.formatData(td);
     var cards = td.cards || [];
     var L = [];
     L.push('牌陣：' + (td.spreadZh || td.spreadType || '未指定') + '（' + cards.length + '張）');
@@ -700,13 +679,6 @@
       if (td.timeConclusion) L.push('【時間參考】'+safeText(td.timeConclusion)+'；請說明相對時序與可支持的精度。');
       else L.push('【時間參考】本次資料主要支持牌位所示的相對階段，精確曆日的把握度較低。');
     }
-    var rec=(result&&result.shopRecommendation)||{};
-    if(Array.isArray(rec.allowedItems)&&rec.allowedItems.length){
-      L.push('【可推薦庫存品項】'+rec.allowedItems.join('、'));
-      if(rec.sourceFile)L.push('【庫存來源】'+rec.sourceFile+'。');
-    }else{
-      L.push('【可推薦庫存品項】無');
-    }
     return L.join('\n');
   }
 
@@ -723,7 +695,7 @@
     if(od.predeclaredBindings)L.push('發牌前綁定：'+safeText(od.predeclaredBindings));
     if(od.procedureStatus){
       L.push('程序狀態：'+safeText(od.procedureStatus));
-      if(od.procedureStatus.abandoned) L.push('程序於'+od.procedureStatus.abandonedAt+'停止，請整合此前已完成的操作。');
+      if(od.procedureStatus.abandoned) L.push('程序於'+od.procedureStatus.abandonedAt+'停止；以下是程序紀錄，不得將未通過驗題的牌面當作對原問題的有效占斷。');
     }
     if(od.validityPolicy)L.push('程序規則：'+od.validityPolicy);
     if(od.divinationValidity)L.push('占卜有效性：'+safeText(od.divinationValidity));
@@ -744,7 +716,7 @@
       if(o.ringSize)L.push('三十六牌環：'+o.ringSize+'張。');
       if(o.activeCards&&o.activeCards.length)L.push('活躍牌：'+o.activeCards.map(function(c){return cn(c)+(c.bookTTitle?'〔'+c.bookTTitle+'〕':'');}).join('、'));
       var counting=o.ringCountingPath&&o.ringCountingPath.length?o.ringCountingPath:o.countingPath;
-      if(counting&&counting.length)L.push('計數故事（依序，位置自0編號）：'+counting.map(function(s){return (s.cardName||'?')+'〔位置'+s.position+'，計'+s.countValue+(s.direction?'，方向'+s.direction:'')+'〕';}).join(' → '));
+      if(counting&&counting.length)L.push('計數故事（堆內位置自0編號；環牌1–36，center為中央）：'+counting.map(function(s){return (s.cardName||'?')+'〔位置'+s.position+'，計'+s.countValue+(s.direction?'，方向'+s.direction:'')+'〕';}).join(' → '));
       var pairs=(o.ringPairing&&o.ringPairing.length)?o.ringPairing:o.pairs;
       if(pairs&&pairs.length)L.push('配對故事（由近到遠）：'+pairs.map(function(pr,i){return '#'+(i+1)+' '+cn(pr.left)+(pr.right?'↔'+cn(pr.right):'')+(pr.dignity?'〔'+pr.dignity+'〕':'');}).join('；'));
       if(o.dignities&&o.dignities.length)L.push('元素尊貴：'+safeText(o.dignities));
@@ -799,13 +771,43 @@
   }
 
   // ── 組成完整可複製提示詞 ──
-  function buildPrompt(tool) {
+  function ootkStatus(raw) {
+    var od=raw&&raw.ootkData;
+    if(!od)return null;
+    var ps=od.procedureStatus||{},v=od.divinationValidity||{},ops=od.operations||{};
+    var keys=['op1','op2','op3','op4','op5'].filter(function(k){return !!ops[k];});
+    var stopped=!!ps.abandoned||v.valid===false||keys.some(function(k){return ops[k].abandoned;});
+    return {stopped:stopped,complete:!stopped&&keys.length===5,recorded:keys.length,
+      at:ps.abandonedAt||keys.filter(function(k){return ops[k].abandoned;})[0]||'未完成的操作',
+      reason:ps.reason||ps.abandonReason||v.reason||keys.map(function(k){return ops[k].abandonReason||'';}).filter(Boolean).join('；')||'程序尚未完成'};
+  }
+  function stoppedPrompt(raw,status){
+    var od=raw.ootkData||{};
+    return [
+      '你是一位審慎的 Golden Dawn Book T — Opening of the Key 開鑰解讀者。本次任務是解釋未完成的程序並協助整理問題，不是給出有效占斷。',
+      '【原問題】',String(raw.question||getQuestion()),
+      '【本次程序紀錄】','狀態：'+(status.stopped?'已停止':'尚未完成')+'；已記錄 '+status.recorded+'／5 次操作。記錄數不等於通過驗題的操作數。',
+      '停止位置：'+status.at+'；原因：'+status.reason,
+      '起局時間：'+String(od.castTimestamp||'未提供'),
+      '各階段驗題紀錄：'+JSON.stringify(Object.keys(od.operations||{}).map(function(k){var op=od.operations[k];return {operation:k,valid:op.valid,abandoned:op.abandoned,mainLineValidation:op.mainLineValidation||null};})),
+      '預先綁定：'+safeText(od.predeclaredBindings||{}),
+      '有效性紀錄：'+safeText(od.divinationValidity||{}),
+      '【回答要求】',
+      '先明說本輪不能提供完成五次操作的結論。第一操作驗題失敗時，不用其牌面、計數、元素或代表牌位置解釋求問者的處境；這是程序未通過，不代表問題錯誤、求問者不誠心或未來不利。',
+      '若在較後操作停止，只能區分已通過的階段紀錄與尚未形成的全程結論；本提示詞未附完整已驗證牌面時，不補寫任何階段解讀。不得假造第二至第五操作、另抽牌或反覆重抽到符合期待。',
+      '再依原問題的現實資訊，提出一個有幫助的釐清問題及一個可逆的小行動，明標「依問題提供的實務建議，並非本輪占斷」。用繁體中文，溫和直接，不把無效牌面包裝成深度分析。',
+      '程序參考：Liber LXXVIII https://sacred-texts.com/oto/lib78.htm；網站採預先綁定的明示驗題政策。本次未聲稱 AI 已上網核對。'
+    ].join('\n');
+  }
+  function buildPrompt(tool, suppliedPayload) {
     var t = TPL[tool];
     if (!t) return '';
-    var rawPayload = getPayloadObject(tool);
+    var rawPayload = arguments.length>1?suppliedPayload:getPayloadObject(tool);
     if(!rawPayload)return '';
     if(tool==='meihua'&&(!rawPayload.ben||!rawPayload.hu||!rawPayload.bian||!rawPayload.tiG||!rawPayload.yoG||!Number.isInteger(rawPayload.dong)||rawPayload.dong<1||rawPayload.dong>6))return '';
     if(rawPayload.mode==='ootk'||rawPayload.ootkData){tool='ootk';t=TPL.ootk;}
+    var status=ootkStatus(rawPayload);
+    if(status&&!status.complete)return stoppedPrompt(rawPayload,status);
     var question = String(rawPayload.question||getQuestion());
     var payload = formatPayloadObject(tool, rawPayload);
     var rws=tool==='tarot'&&rawPayload.tarotData&&rawPayload.tarotData.sourceProfile==='rws_reversals'&&window.JYTarotReading;
@@ -815,14 +817,15 @@
     var recency = tool === 'meihua' ? FRAG_RECENCY_MEIHUA : (tool === 'ootk' ? FRAG_RECENCY_OOTK : buildRecencyTarot());
     return [
       buildRootQuestionLock(question, tool),
+      window.JY_READING_QUALITY?window.JY_READING_QUALITY.lines(tool).join('\n'):'',
       '先分清輸入的盤面事實、流派解釋與現實假設。可自由運用自身知識補充技法；若原始資料與摘要衝突，指出具體差異，以可核對的原始資料為先。結論要有支持、反向訊號與成立條件；象徵不等於事件證明，分數不等於成功機率。',
       tool==='meihua'?'題目中的假設與已確認事實分開；卦數、五行與傳統類象不直接換算成精確日期、金額或人物資料。':
       '題目中的假設與已確認事實分開；例如問某人是否欺騙，先檢視支持與其他解釋，再提出可觀察的互動訊號。牌位、計數值和傳統對應不直接換算成中獎機率、精確年齡或日期。',
       rws?rws.promptHead():t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
       (isRootTarot?buildSpreadReadingGuide(tool, rawPayload):''),
-      '【助人與表達】先用日常語言回答使用者最在意的事，再用本次方法的專屬結構解釋。描述目前處境、仍未知的部分、可控制的下一步與重新評估訊號；不要責怪求問者、貼宿命標籤，或只用保持正向收尾。複雜問題提供分組且有主次的解讀，完整呈現必要依據；不要把內部分析指令抄成答案。',
-      tool==='meihua'?'【分析深度】每個主要結論說明「本互變、動爻與體用的具體訊號 → 生剋與旺衰的作用 → 對原問題的含義 → 成立條件與反證」。原體保持不變，互卦上下卦、變後用卦分別與原體比較，不把互卦任意重新立體。先解主調、再判過程能否支持變後走向，給出可執行的下一步與檢查條件。':
-      '【分析深度】每個主要結論說明「本盤具體牌位／牌組 → 相互修飾或牽制 → 對原問題的含義 → 成立條件」。用全盤比較最有力的替代解讀；區分描述現況、預期發展和建議行動，不把建議牌當成事情已發生。每個子題均回應，不能確認的部分明說依據不足。',
+      (window.JY_READING_QUALITY?'':'【白話優先】開頭直接回答原問題，交代目前主判與最重要的理由；有支持的傾向就清楚選邊，然後充分解釋。正文依問題展開形成原因、關鍵組合如何作用、矛盾如何取捨、後續發展與成立條件，最後提出對應的行動。每個實質子題都要回答；篇幅隨問題與盤面複雜度調整，讓讀者看懂為什麼得到這個答案，不預設把依據壓成一小段。首次使用術語時立即翻成生活意思，以具體牌位、柱位、宮位或卦象關係支持解讀，避免只有抽象建議。對證據較弱的部分說清判到哪一層，以及缺少哪個會改變答案的關鍵，接著完成能判的分析。語氣溫和、直接、有主次；提供做得到的下一步、目的與調整訊號，必要時附一句能實際說出口的話。'),
+      tool==='meihua'?'【判讀校核】分析時核對「本互變、動爻與體用的具體訊號 → 生剋與旺衰的作用 → 對原問題的含義 → 成立條件與反證」。原體保持不變，互卦上下卦、變後用卦分別與原體比較，不把互卦任意重新立體。先解主調、再判過程能否支持變後走向，給出可執行的下一步與檢查條件。':
+      '【判讀校核】分析時核對「本盤具體牌位／牌組 → 相互修飾或牽制 → 對原問題的含義 → 成立條件」。用全盤比較最有力的替代解讀；區分描述現況、預期發展和建議行動，不把建議牌當成事情已發生。每個子題均回應，不能確認的部分明說依據不足。對讀者充分解釋真正決定答案的牌義、牌位關係、組合轉折與取捨，按各實質子題完成分析；重複訊號合併，關鍵依據保留。',
       (tool==='tarot'?'方法參考：Waite 凱爾特十字 https://sacred-texts.com/tarot/pkt/pkt0307.htm；Mathers 1888 https://sacred-texts.com/tarot/mathers/mtar04.htm。現代布局與本次選用的牌義流派分開標示；書目不表示本次 AI 已即時查網。':''),
       (tool==='ootk'?'程序參考：Liber LXXVIII https://sacred-texts.com/oto/lib78.htm。這是可核對的 Golden Dawn 衍生修訂文本，不與 Mathers 1888《The Tarot》混為同一本書。各次操作的現在時點並非固定，不能將五次操作硬配五個月份；尚未確認的第一操作主線不能說成已獲問卜者認可。':''),
       sourceLock,
@@ -839,11 +842,10 @@
       payload,
       '',
       rws?'請依實際正逆位、牌位關係與前述情境完成分析，回答原問句並說明行動與條件。':t.tail,
-      (tool === 'ziwei' ? FRAG_CRYSTAL_ZIWEI : ''),
       FRAG_TRACE,
       FRAG_PLAINTEXT,
       recency,
-      (isRootTarot ? FRAG_TAROT_INVENTORY : (tool==='meihua' ? FRAG_MEIHUA_BRAND : ''))
+      FRAG_NEEDS_RECOMMENDATION
     ].filter(function(x){ return x !== ''; }).join('\n');
   }
 
@@ -855,7 +857,8 @@
       if (!btn) return;
       var old = btn.getAttribute('data-old') || btn.textContent;
       btn.setAttribute('data-old', old);
-      btn.textContent = ok ? '✓ 已複製到剪貼簿' : '✗ 複製失敗，請手動全選';
+      btn.textContent = ok ? '✓ 已複製到剪貼簿' : '請展開下方文字，手動複製';
+      if(!ok){var manual=btn.closest('.jy-ex-card');manual=manual&&manual.querySelector('.jf-manual-copy');if(manual)manual.open=true;}
       btn.disabled = false;
       setTimeout(function () { btn.textContent = old; }, 2200);
     }
@@ -863,16 +866,17 @@
       navigator.clipboard.writeText(text).then(function () { done(true); }, function () { fallback(); });
     } else { fallback(); }
     function fallback() {
+      var ta=null,previous=document.activeElement;
       try {
-        var ta = document.createElement('textarea');
-        ta.value = text;
-        ta.style.cssText = 'position:fixed;left:-9999px;top:0;';
-        document.body.appendChild(ta);
-        ta.focus(); ta.select();
-        var ok = document.execCommand('copy');
-        document.body.removeChild(ta);
-        done(ok);
-      } catch (e) { done(false); }
+        ta=document.createElement('textarea');ta.value=text;ta.readOnly=true;
+        ta.style.cssText='position:fixed;left:-9999px;top:0;';
+        document.body.appendChild(ta);ta.focus({preventScroll:true});ta.select();
+        done(document.execCommand('copy'));
+      } catch(e) { done(false); }
+      finally {
+        if(ta&&ta.isConnected)ta.remove();
+        if(previous&&previous.isConnected)previous.focus({preventScroll:true});
+      }
     }
   }
 
@@ -941,8 +945,19 @@
     if (!el) { console.warn('[prompt-export] 找不到掛載容器'); return; }
     ensureFx();
     var t = TPL[tool] || { label: '命理' };
-    var prompt = buildPrompt(tool);
+    var rawPayload=getPayloadObject(tool),status=ootkStatus(rawPayload);
+    var prompt = buildPrompt(tool,rawPayload);
     if(!prompt){el.textContent='本次資料尚未完整，請先完成抽牌／排盤，再產生解讀提示詞。';return;}
+    var incomplete=status&&!status.complete;
+    var share=document.getElementById('tarot-share-wrap');
+    if(share&&(tool==='tarot'||tool==='ootk')){share.hidden=!!incomplete;share.style.display=incomplete?'none':'';}
+    var hero=document.getElementById('tarot-question-hero');
+    if(hero&&(tool==='tarot'||tool==='ootk'))hero.textContent='「'+String(rawPayload.question||getQuestion())+'」';
+    var heading=document.querySelector('#step-tarot .at-result-heading');
+    if(heading){heading.setAttribute('data-reading-state',incomplete?'stopped':'complete');
+      var h=heading.querySelector('h1'),p=heading.querySelector('p');
+      if(h)h.textContent=incomplete?'這次，先停在這裡。':'讓線索，成為下一步。';
+      if(p)p.textContent=incomplete?'本輪開鑰未完成有效驗題。你可以查看停止紀錄，或保留問題返回整理。':'本次牌陣已完成。複製資料與讀法，到 AI 對話中取得完整解讀。';}
     var emblem = (tool === 'ootk') ? '🗝️' : (tool === 'ziwei' ? '🪐' : (tool === 'meihua' ? '☯️' : '🔮'));
 
     // 本輪讀法由抽牌紀錄決定，結果頁不重新切換牌義來源。
@@ -955,11 +970,10 @@
     card.innerHTML =
       '<div class="jy-ex-stars">' + starsHTML() + '</div>' +
       '<div class="jy-ex-emblem">' + emblem + '</div>' +
-      '<div class="jy-ex-title">' + t.label + '・占卜提示詞已備妥</div>' +
-      '<div class="jy-ex-sub">輕觸下方按鈕複製，貼到任何 AI 對話（<b>ChatGPT・Claude・Gemini・Grok</b>）送出，' +
-        '即可依本次資料進行深入解讀。<br>提示詞包含牌陣讀法、流派設定、排盤資料與需要保留的不確定處。</div>' +
+      '<div class="jy-ex-title">' + t.label + (incomplete?' · 程序停止紀錄':' · 準備解讀')+'</div>' +
+      '<div class="jy-ex-sub">'+(incomplete?'本輪沒有完整占斷。複製停止紀錄，可請 AI 協助釐清程序與問題。':'本次資料與讀法已整理好。複製提示詞，貼到 AI 對話並送出，即可繼續探索。')+'</div>' +
       toggleHTML +
-      '<button type="button" class="jy-ex-btn">✦ 一鍵複製占卜提示詞 ✦</button>' +
+      '<button type="button" class="jy-ex-btn">'+(incomplete?'複製停止紀錄與整理提示詞 →':'複製本次解讀提示詞 →')+'</button>' +
       '<div class="jy-ex-ai-grid">' +
         '<button type="button" class="jy-ai-shortcut" data-ai="chatgpt"><img class="jy-ai-icon" src="ai-icons/ai-chatgpt.png" alt="ChatGPT"><span class="jy-ai-name">ChatGPT</span></button>' +
         '<button type="button" class="jy-ai-shortcut" data-ai="claude"><img class="jy-ai-icon" src="ai-icons/ai-claude.png" alt="Claude"><span class="jy-ai-name">Claude</span></button>' +
@@ -972,7 +986,12 @@
         '<button type="button" class="jy-ai-shortcut" data-ai="copilot"><img class="jy-ai-icon" src="ai-icons/ai-copilot.png" alt="Copilot"><span class="jy-ai-name">Copilot</span></button>' +
         '<button type="button" class="jy-ai-shortcut" data-ai="perplexity"><img class="jy-ai-icon" src="ai-icons/ai-perplexity.png" alt="Perplexity"><span class="jy-ai-name">Perplexity</span></button>' +
       '</div>' +
-      '<div class="jy-ex-foot">點擊 AI 按鈕 → 自動複製＋開啟對話 → 貼上送出</div>';
+      '<div class="jy-ex-foot">選擇 AI 會開啟新分頁；請在對話框貼上並送出。</div>';
+
+    var manual=document.createElement('details');manual.className='jf-manual-copy';
+    var summary=document.createElement('summary');summary.textContent='無法自動複製？顯示完整文字';
+    var manualText=document.createElement('textarea');manualText.value=prompt;manualText.readOnly=true;manualText.setAttribute('aria-label','本次完整解讀提示詞');
+    manual.appendChild(summary);manual.appendChild(manualText);card.appendChild(manual);
 
     var btn = card.querySelector('.jy-ex-btn');
     btn.addEventListener('click', function () { copyText(prompt, btn); });
@@ -998,28 +1017,25 @@
       (function(sbtn) {
         sbtn.addEventListener('click', function() {
           var ai = sbtn.getAttribute('data-ai');
-          try {
-            navigator.clipboard.writeText(prompt).then(function() {
-              sbtn.querySelector('.jy-ai-name').textContent = '已複製！';
-              setTimeout(function() { window.open(aiUrls[ai], '_blank'); }, 300);
-              setTimeout(function() {
-                sbtn.querySelector('.jy-ai-name').textContent = aiNames[ai] || ai;
-              }, 2000);
-            });
-          } catch(e) {
-            var ta = document.createElement('textarea'); ta.value = prompt;
-            ta.style.cssText = 'position:fixed;left:-9999px';
-            document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-            document.body.removeChild(ta);
-            window.open(aiUrls[ai], '_blank');
-          }
+          // Open during this user gesture. Waiting for clipboard permission
+          // before opening can be blocked as a popup on mobile browsers.
+          window.open(aiUrls[ai], '_blank', 'noopener,noreferrer');
+          var label=sbtn.querySelector('.jy-ai-name');
+          function restore(){setTimeout(function(){label.textContent=aiNames[ai]||ai;},2200);}
+          function copied(){label.textContent='已複製，請貼上';restore();}
+          function failed(){label.textContent='請先按複製';restore();}
+          if(navigator.clipboard&&navigator.clipboard.writeText){
+            try{navigator.clipboard.writeText(prompt).then(copied,failed);}catch(e){failed();}
+          }else{copyText(prompt,btn);}
+
         });
       })(shortcuts[si]);
     }
 
     el.innerHTML = '';
     el.appendChild(card);
-    try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) {}
+    if(window.JYCinemaUI)window.JYCinemaUI.handoff(el);
+    if(window.JYCinemaUI&&window.JYCinemaUI.results&&(tool==='tarot'||tool==='ootk'))window.JYCinemaUI.results(document.getElementById('step-tarot'),tool+'|'+prompt);
   }
   window.JY_renderExportPrompt = render;
 

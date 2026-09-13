@@ -5061,7 +5061,7 @@ function chartVerdict(bazi, mh, tarot, focusType){
 
   // ── 【升級B】調候加成（權重 ×2）──
   r.tiaohouNote = '';
-  if(bazi && bazi.tiaohou){
+  if(bazi && bazi.tiaohou && bazi.tiaohou.integrationMode!=='SEPARATE_LENS'){
     var _thR = bazi.tiaohou.reason || '';
     var _thNeed = bazi.tiaohou.need || '';
     if(_curDy2){
@@ -5294,7 +5294,7 @@ function renderCrystal(b){
   let useTiaohou=false;
   
   // Step 1: 調候邏輯（最高優先級）
-  if(b.tiaohou && b.tiaohou.need && b.tiaohou.need.length){
+  if(b.tiaohou && b.tiaohou.integrationMode!=='SEPARATE_LENS' && b.tiaohou.need && b.tiaohou.need.length){
     need=b.tiaohou.need[0];
     reasonDetail=`此命盤${b.tiaohou.reason||'需要調候'}。`;
     if(need==='火' && waterS>20) reasonDetail+=`水氣過旺（${Math.round(waterS)}分）導致行動力凍結，火能暖化水局、點燃執行力。`;
@@ -7473,7 +7473,7 @@ function analyzeBaziTags(bazi, type) {
     if (mainUnfav && ep[mainUnfav] > 25) {
       tags.push({ sys: 'bazi', tag: 'ji_wang_health', label: '忌神' + mainUnfav + '行過旺（' + ep[mainUnfav] + '%）', category: 'structure', direction: 'neg', weight: 3, detail: mainUnfav + '行過旺，' + (organMap[mainUnfav] || '') + '相關系統容易出狀況' });
     }
-    if (bazi.tiaohou) {
+    if (bazi.tiaohou && bazi.tiaohou.integrationMode!=='SEPARATE_LENS') {
       tags.push({ sys: 'bazi', tag: 'tiaohou', label: bazi.tiaohou.reason, category: 'structure', direction: 'neg', weight: 3, detail: bazi.tiaohou.detail || '命盤有調候需求' });
     }
     tags.push({ sys: 'bazi', tag: cap >= 50 ? 'health_stable' : cap >= 30 ? 'health_ok' : 'health_weak', label: cap >= 50 ? '體質基礎穩固' : cap >= 30 ? '體質中等' : '體質偏敏感', category: 'structure', direction: cap >= 50 ? 'pos' : cap >= 30 ? 'neutral' : 'neg', weight: 2, detail: '承載力' + cap });
@@ -13271,7 +13271,7 @@ function renderActionCard(bazi, type, answer){
       }
 
       // 調候用神（季節性急需）
-      if(bazi.tiaohou && bazi.tiaohou.need){
+      if(bazi.tiaohou && bazi.tiaohou.integrationMode!=='SEPARATE_LENS' && bazi.tiaohou.need){
         bazi.tiaohou.need.forEach(e => { if(!validFavEls.includes(e) && !avoidEls.has(e)) validFavEls.splice(1, 0, e); });
         if(bazi.tiaohou.avoid) bazi.tiaohou.avoid.forEach(e => avoidEls.add(e));
       }
@@ -14848,7 +14848,7 @@ function _jyComposeReason(el, role, bazi, prod) {
   var bazi_phrase = '';
   if (bazi) {
     var elScores = bazi.elementScores || bazi.scores || null;
-    var thNeed = bazi.tiaohou && bazi.tiaohou.need;
+    var thNeed = bazi.tiaohou && bazi.tiaohou.integrationMode!=='SEPARATE_LENS' && bazi.tiaohou.need;
     var dayMaster = bazi.dayMaster || bazi.dm || '';
     var strong = bazi.strong;
 
@@ -15138,7 +15138,7 @@ function _jyPickStones(bazi) {
   var secondaryEl = fav.length > 1 ? fav[1] : null;
 
   // 調候優先覆寫主用神
-  if (bazi.tiaohou && bazi.tiaohou.need && bazi.tiaohou.need.length) {
+  if (bazi.tiaohou && bazi.tiaohou.integrationMode!=='SEPARATE_LENS' && bazi.tiaohou.need && bazi.tiaohou.need.length) {
     var thNeed = bazi.tiaohou.need[0];
     if (!unfav.has(thNeed)) primaryEl = thNeed;
   }
@@ -16028,7 +16028,7 @@ function _buildPayload() {
           }catch(_lyCalendarErr){}
           var lyParts = liuYueAll.map(function(m) {
             // ★ v14：保留全部四化（化祿/化權/化科/化忌），不再只送祿忌
-            var huaShort = m.hua.map(function(h) { return h.star + h.hua + '入' + h.palace; }).join('、');
+            var huaShort = m.hua.map(function(h) { return h.star + h.hua + '入本命' + h.palace + (h.periodPalace?'〔'+h.layer+h.periodPalace+'〕':''); }).join('、');
             return m.monthName + '(' + m.gz + ')走' + m.mingPalace + '，運勢' + _scoreLv(m.score) + (huaShort ? '，' + huaShort : '');
           });
           if (lyParts.length) L.push('紫微流月全年資料' + (lunarMonth ? '（曆法引擎定位目前農曆'+lunarMonth+'月）' : '（未取得可靠當前農曆月定位，不得自行猜目前月份）') + '：' + lyParts.join('；'));
@@ -19859,7 +19859,7 @@ renderTarot = function(){
         p.dims.bazi.strong = !!bz.strong;
         // 調候
         if (bz.tiaohou && bz.tiaohou.reason) {
-          p.dims.bazi.tiaohou = bz.tiaohou.reason + '：' + (bz.tiaohou.detail || '') + (bz.tiaohou.need ? '→需' + bz.tiaohou.need.join('') : '') + (bz.tiaohou.priority ? '（' + bz.tiaohou.priority + '）' : '');
+          p.dims.bazi.tiaohou = bz.tiaohou.reason + '：' + (bz.tiaohou.detail || '') + (bz.tiaohou.need ? '→檢視候選五行' + bz.tiaohou.need.join('') : '') + (bz.tiaohou.priority ? '（' + bz.tiaohou.priority + '）' : '');
         }
         // 地支關鍵互動（合沖刑——影響五行力量和事件觸發）
         if (bz.branchInteractions && bz.branchInteractions.length) {
@@ -20106,29 +20106,19 @@ renderTarot = function(){
               + '（' + (_juStartAge[S.ziwei.wuxingJu] || '起運年齡=局數') + '）';
           }
           if (S.ziwei.yGan && S.ziwei.yZhi) p.dims.ziwei.birthGanZhi = S.ziwei.yGan + S.ziwei.yZhi + '年';
-          // 來因宮=生年化祿所落之宮（飛星派核心，代表此生福氣源頭）
-          try {
-            var _palNames14 = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','福德宮','父母宮'];
-            var _laiyinIdx = -1;
-            var _laiyinStar = '';
-            S.ziwei.palaces.forEach(function(pal, idx) {
-              if (!pal || !pal.stars) return;
-              pal.stars.forEach(function(star) {
-                if (star.hua === '化祿' && _laiyinIdx === -1) {
-                  _laiyinIdx = idx;
-                  _laiyinStar = star.name;
-                }
-              });
-            });
-            if (_laiyinIdx >= 0) {
-              p.dims.ziwei.laiyinGong = _palNames14[_laiyinIdx] + '（' + _laiyinStar + '化祿=此生福氣天賦源頭）';
-            }
-          } catch(_lyE) {}
+          // Use the engine's selected Lai-Yin policy; natal Lu is a different datum.
+          if(S.ziwei.laiYin) p.dims.ziwei.laiyinGong = S.ziwei.laiYin.name+'（'+S.ziwei.laiYin.branch+'；宮干'+S.ziwei.laiYin.gan+'同生年干；沿用本盤來因宮政策）';
+          p.dims.ziwei.calculationPolicy = S.ziwei.calculationPolicy || null;
+          p.dims.ziwei.birthLunar = S.ziwei.birthLunar || null;
+          p.dims.ziwei.currentAge = S.ziwei.currentAge;
+          p.dims.ziwei.natalPalaces = S.ziwei.palaces;
+          p.dims.ziwei.selfHuaData = S.ziwei.selfHua || [];
+          p.dims.ziwei.feiGongHuaData = S.ziwei.feiGongHua || [];
 
           var huaStars = [];
           S.ziwei.palaces.forEach(function(pal, idx) {
             if (!pal || !pal.stars) return;
-            var palName = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','福德宮','父母宮'][idx] || ('宮' + idx);
+            var palName = pal.name || ('地支'+pal.branch);
             pal.stars.forEach(function(star) {
               if (star.hua) huaStars.push(star.name + star.hua + '入' + palName);
             });
@@ -20143,18 +20133,19 @@ renderTarot = function(){
             });
           }
           // ★ v16：命宮主星（紫微最核心的性格判斷）
-          if (S.ziwei.palaces[0] && S.ziwei.palaces[0].stars) {
-            var mingMajors = S.ziwei.palaces[0].stars.filter(function(s) { return s.type === 'major'; });
+          var actualMing = S.ziwei.palaces.find(function(pal){return pal.name==='命宮';});
+          if (actualMing && actualMing.stars) {
+            var mingMajors = actualMing.stars.filter(function(s) { return s.type === 'major'; });
             if (mingMajors.length) {
               // ★ v16.4：加廟旺亮度（七殺廟 vs 七殺落陷，解讀天差地別）
-              var mingBrIdx = DZ.indexOf(S.ziwei.palaces[0].branch);
+              var mingBrIdx = DZ.indexOf(actualMing.branch);
               p.dims.ziwei.mingStars = mingMajors.map(function(s) {
                 var bright = (typeof getStarBright === 'function') ? getStarBright(s.name, mingBrIdx) : null;
                 return s.name + (bright && bright.label && bright.label !== '平' ? '(' + bright.label + ')' : '');
               }).join('+');
             }
             // 命宮煞星
-            var mingSha = S.ziwei.palaces[0].stars.filter(function(s) { return s.type === 'sha'; });
+            var mingSha = actualMing.stars.filter(function(s) { return s.type === 'sha'; });
             if (mingSha.length) p.dims.ziwei.mingSha = mingSha.map(function(s) { return s.name; }).join('、');
           }
           // ★ v16.5：身宮（人生重心所在——命宮看性格、身宮看追求方向）
@@ -20182,9 +20173,11 @@ renderTarot = function(){
               if (curDx.stars && curDx.stars.length) p.dims.ziwei.dxStars = curDx.stars.join('+');
               // 大限四化（最影響十年方向）
               if (curDx.hua && curDx.hua.length) {
-                var dxHuaKey = curDx.hua.filter(function(h) { return h.hua === '化祿' || h.hua === '化忌'; });
+                var dxHuaKey = curDx.hua;
+                p.dims.ziwei.dxHuaData=curDx.hua;
+                p.dims.ziwei.dxPalaces=curDx.palaces||[];
                 if (dxHuaKey.length) {
-                  p.dims.ziwei.dxHua = dxHuaKey.map(function(h) { return h.star + h.hua + '入' + h.palace; }).join('、');
+                  p.dims.ziwei.dxHua = dxHuaKey.map(function(h) { return h.star + h.hua + '入本命' + h.palace + (h.periodPalace?'〔'+h.layer+h.periodPalace+'〕':''); }).join('、');
                 }
               }
             }
@@ -20192,15 +20185,17 @@ renderTarot = function(){
           // ★ v16：今年流年（年度運勢——紫微推今年方向）
           if (S.ziwei.getLiuNianZw) {
             try {
-              var yr2 = new Date(Date.now() + 8 * 3600000).getFullYear();
+              var yr2 = Number((S.ziwei.calculationPolicy||{}).referenceLunarYear);
               var lnZw = S.ziwei.getLiuNianZw(yr2);
               if (lnZw) {
-                p.dims.ziwei.lnDetail = yr2 + '年走' + (lnZw.mingPalace || '') + '（' + (lnZw.focus || '') + '）';
+                p.dims.ziwei.lnDetail = yr2 + '農曆年度命宮疊本命' + (lnZw.mingPalace || '') + '（' + (lnZw.focus || '') + '）';
                 // 流年化忌最關鍵
                 if (lnZw.hua && lnZw.hua.length) {
-                  var lnHuaKey = lnZw.hua.filter(function(h) { return h.hua === '化祿' || h.hua === '化忌'; });
+                  var lnHuaKey = lnZw.hua;
+                  p.dims.ziwei.lnHuaData=lnZw.hua;
+                  p.dims.ziwei.lnPalaces=lnZw.palaces||[];
                   if (lnHuaKey.length) {
-                    p.dims.ziwei.lnHua = lnHuaKey.map(function(h) { return h.star + h.hua + '入' + h.palace; }).join('、');
+                    p.dims.ziwei.lnHua = lnHuaKey.map(function(h) { return h.star + h.hua + '入本命' + h.palace + (h.periodPalace?'〔'+h.layer+h.periodPalace+'〕':''); }).join('、');
                   }
                 }
                 // 流年雙忌警告
@@ -20214,9 +20209,10 @@ renderTarot = function(){
           // ★ v16.4：紫微流月拐點（哪幾個月紫微說好/壞）
           if (S.ziwei.getLiuYueZw) {
             try {
-              var yr3 = new Date(Date.now() + 8 * 3600000).getFullYear();
+              var yr3 = Number((S.ziwei.calculationPolicy||{}).referenceLunarYear);
               var zwLiuYue = S.ziwei.getLiuYueZw(yr3);
               if (zwLiuYue && zwLiuYue.length) {
+                p.dims.ziwei.liuYueData=zwLiuYue;
                 var _zwGoodM = zwLiuYue.filter(function(m){ return m.score >= 2; });
                 var _zwBadM = zwLiuYue.filter(function(m){ return m.score <= -2; });
                 if (_zwGoodM.length) p.dims.ziwei.goodMonths = _zwGoodM.map(function(m){ return m.monthName || ('第' + m.month + '月'); }).join('、');
@@ -20225,11 +20221,10 @@ renderTarot = function(){
             } catch(e3) {}
           }
           // ★ v16.6：送所有關鍵宮位（不再依賴分類，AI 自己判斷哪些宮重要）
-          var _keyPalaces = [2, 4, 5, 7, 8]; // 夫妻/財帛/疾厄/交友/官祿（命宮已在 mingStars）
-          var _palNames = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','福德宮','父母宮'];
+          var _keyPalaces = ['夫妻','財帛','疾厄','交友','官祿'];
           var _kpParts = [];
-          _keyPalaces.forEach(function(idx) {
-            var _kp = S.ziwei.palaces[idx];
+          _keyPalaces.forEach(function(name) {
+            var _kp = S.ziwei.palaces.find(function(pal){return pal.name===name;});
             if (!_kp) return;
             var _kpMajor = _kp.stars ? _kp.stars.filter(function(s){ return s.type === 'major'; }) : [];
             if (!_kpMajor.length) return; // 無主星的宮跳過
@@ -20242,7 +20237,7 @@ renderTarot = function(){
             }).join('+');
             if (_kpSha.length) parts += '，煞：' + _kpSha.map(function(s){ return s.name; }).join('');
             if (_kpHua.length) parts += '，' + _kpHua.map(function(s){ return s.name + s.hua; }).join('');
-            _kpParts.push(_palNames[idx] + '：' + parts);
+            _kpParts.push(_kp.name + '：' + parts);
           });
           if (_kpParts.length) p.dims.ziwei.keyPalaces = _kpParts.join('；');
 
@@ -20257,14 +20252,13 @@ renderTarot = function(){
             p.dims.ziwei.combos = S.ziwei.starComboNotes.join('；');
           }
           // ═══ v25：今年小限 ═══
-          if (S.ziwei.getXiaoXian && p.birth) {
+          if (S.ziwei.getXiaoXian) {
             try {
-              var _birthY = parseInt(String(p.birth).split('-')[0]);
-              var _curAge = _birthY ? (new Date(Date.now() + 8 * 3600000).getFullYear() - _birthY) : 0;
+              var _curAge = Number(S.ziwei.currentAge); // Same lunar reference year and nominal age as the engine.
               if (_curAge > 0) {
                 var _xx = S.ziwei.getXiaoXian(_curAge);
                 if (_xx) {
-                  p.dims.ziwei.xiaoXian = '今年' + _xx.age + '歲小限走' + _xx.palace + '（' + _xx.branch + '）';
+                  p.dims.ziwei.xiaoXian = '參照農曆年' + (S.ziwei.calculationPolicy||{}).referenceLunarYear + '，虛歲' + _xx.age + '小限走' + _xx.palace + '（' + _xx.branch + '）';
                   if (_xx.notes && _xx.notes.length) p.dims.ziwei.xiaoXian += '：' + _xx.notes.join('、');
                 }
               }
@@ -20273,11 +20267,10 @@ renderTarot = function(){
 
           // ═══ v30：完整十二宮壓縮編碼（補齊 AI 缺失的關鍵數據）═══
           // 格式：每宮一行，含宮干、地支、長生、主星(亮度)(四化)、輔星、煞星、自化/向心化
-          var _palNames12 = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','福德宮','父母宮'];
           var _allPalLines = [];
           S.ziwei.palaces.forEach(function(pal, idx) {
             if (!pal) return;
-            var line = _palNames12[idx] || ('宮' + idx);
+            var line = pal.name || ('地支' + pal.branch);
             // 宮干支
             line += '[' + (pal.gan || '?') + (pal.branch || '') + ']';
             // 長生
@@ -20326,7 +20319,7 @@ renderTarot = function(){
           S.ziwei.palaces.forEach(function(pal, idx) {
             if (!pal || !pal.stars) return;
             pal.stars.forEach(function(star) {
-              if (star.hua) _fullHua.push(star.name + star.hua + '→' + _palNames12[idx]);
+              if (star.hua) _fullHua.push(star.name + star.hua + '→' + pal.name);
             });
           });
           if (_fullHua.length) p.dims.ziwei.sihua = _fullHua; // 覆蓋之前截斷的版本
@@ -20338,12 +20331,12 @@ renderTarot = function(){
             pal.stars.forEach(function(star) {
               if (star.selfHua && star.selfHua.length) {
                 star.selfHua.forEach(function(sh) {
-                  _fullSelfHua.push(_palNames12[idx] + '.' + star.name + '↓' + sh.type);
+                  _fullSelfHua.push(pal.name + '.' + star.name + '↓' + sh.type);
                 });
               }
               if (star.flyInHua && star.flyInHua.length) {
                 star.flyInHua.forEach(function(fh) {
-                  _fullSelfHua.push(_palNames12[idx] + '.' + star.name + '↑' + fh.type + '(從' + fh.from + ')');
+                  _fullSelfHua.push(pal.name + '.' + star.name + '↑' + fh.type + '(從' + fh.from + ')');
                 });
               }
             });
@@ -20352,7 +20345,6 @@ renderTarot = function(){
 
           // ═══ v35b：飛宮四化完整矩陣（12宮×4化=每宮干飛出的四化落在哪個宮）═══
           try {
-            var _palNames12b = ['命宮','兄弟宮','夫妻宮','子女宮','財帛宮','疾厄宮','遷移宮','交友宮','官祿宮','田宅宮','福德宮','父母宮'];
             var _flyMatrix = [];
             var _SIHUA_TABLE_REF = (typeof SIHUA_TABLE !== 'undefined') ? SIHUA_TABLE : null;
             if (_SIHUA_TABLE_REF && S.ziwei.palaces) {
@@ -20374,11 +20366,11 @@ renderTarot = function(){
                   });
                   if (foundPalIdx >= 0) {
                     var isSelf = (foundPalIdx === srcIdx);
-                    _entries.push('化' + huaType + '(' + starName + ')→' + _palNames12b[foundPalIdx] + (isSelf ? '↓自化' : ''));
+                    _entries.push('化' + huaType + '(' + starName + ')→' + S.ziwei.palaces[foundPalIdx].name + (isSelf ? '↓自化' : ''));
                   }
                 });
                 if (_entries.length) {
-                  _flyMatrix.push(_palNames12b[srcIdx] + '干' + srcPal.gan + '：' + _entries.join('、'));
+                  _flyMatrix.push(srcPal.name + '干' + srcPal.gan + '：' + _entries.join('、'));
                 }
               });
             }
@@ -20396,12 +20388,13 @@ renderTarot = function(){
               return s;
             });
             p.dims.ziwei.allDaXian = _allDx.join('；');
+            p.dims.ziwei.daXianData=S.ziwei.daXian.map(function(dx){return {ageStart:dx.ageStart,ageEnd:dx.ageEnd,isCurrent:dx.isCurrent,branch:dx.branch,gan:dx.gan,palaces:dx.palaces||[],hua:dx.hua||[]};});
           }
 
           // ═══ v30：完整十二宮關鍵宮位（原本只送5個，現在全送12個）═══
           var _fullKP = [];
           S.ziwei.palaces.forEach(function(_kp, idx) {
-            if (!_kp || idx === 0) return; // 命宮已在 mingStars
+            if (!_kp || _kp.name === '命宮') return; // 命宮已在 mingStars
             var _kpMajor = _kp.stars ? _kp.stars.filter(function(s){ return s.type === 'major'; }) : [];
             var _kpBrIdx = DZ.indexOf(_kp.branch);
             var parts = _kpMajor.length ? _kpMajor.map(function(s){
@@ -20413,7 +20406,7 @@ renderTarot = function(){
             var _kpSha = _kp.stars ? _kp.stars.filter(function(s){ return s.type === 'sha'; }) : [];
             var _kpHua = _kp.stars ? _kp.stars.filter(function(s){ return s.hua; }) : [];
             if (_kpSha.length) parts += '煞:' + _kpSha.map(function(s){ return s.name; }).join('');
-            _fullKP.push(_palNames12[idx] + ':' + parts);
+            _fullKP.push(_kp.name + ':' + parts);
           });
           if (_fullKP.length) p.dims.ziwei.keyPalaces = _fullKP.join('；'); // 覆蓋原本只有5個宮的版本
 
@@ -21062,7 +21055,8 @@ renderTarot = function(){
       // Fix #5: p.verdict / p.topTags 已移除（Worker 不讀這些，浪費 payload tokens）
 
       // Needs-first guidance; no catalogue is attached to the analysis request.
-      p.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
+      if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.payloadGuide)p.readingGuide=window.JY_READING_QUALITY.payloadGuide(['bazi','ziwei','astro','vedic','name','meihua','tarot']);
+      p.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】開頭直接回答原問題，交代目前主判與最重要的理由；有支持的傾向就清楚選邊，然後充分解釋。正文依問題展開形成原因、關鍵組合如何作用、矛盾如何取捨、後續發展與成立條件，最後提出對應的行動。每個實質子題都要回答；篇幅隨問題與盤面複雜度調整，讓讀者看懂為什麼得到這個答案，不預設把依據壓成一小段。首次使用術語時立即翻成生活意思，以具體牌位、柱位、宮位或卦象關係支持解讀，避免只有抽象建議。對證據較弱的部分說清判到哪一層，以及缺少哪個會改變答案的關鍵，接著完成能判的分析。語氣溫和、直接、有主次；提供做得到的下一步、目的與調整訊號，必要時附一句能實際說出口的話。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
 
       // ═══ v26：可變性標記（reversibility）═══
       // 每個系統的發現分三類：定（先天不可改）、時（時運會變，等窗口）、動（行為可改）
@@ -21085,7 +21079,7 @@ renderTarot = function(){
           if (dm.bazi.goodMonths) _bTime.push('好月：' + dm.bazi.goodMonths);
           if (dm.bazi.badMonths) _bTime.push('壞月：' + dm.bazi.badMonths);
           if (dm.bazi.suiYunBingLin) _bTime.push(dm.bazi.suiYunBingLin.split('：')[0]);
-          if (dm.bazi.tiaohou) _bAct.push('調候：順五行補' + (dm.bazi.favEls || ''));
+          if (dm.bazi.tiaohou) _bAct.push('調候：依候選天干與原局作用判斷暖潤制化的先後');
           _rev.bazi = { fix: _bFix, time: _bTime, act: _bAct };
         }
 
@@ -23665,7 +23659,8 @@ function _buildTarotOnlyPayload() {
   if(drawn[0]&&drawn[0].readingMode==='rws_reversals'&&window.JYTarotReading){
     var rws=window.JYTarotReading.payload(ta,question,drawn,spreadId,methodPlan,ta.dynamicSpreadDef||ta.spreadDef||SPREAD_DEFS[spreadId]);
     rws.tarotData.referenceDate=compiled.features&&compiled.features.referenceDate||'';
-    rws.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
+    if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.payloadGuide)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
+    rws.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】開頭直接回答原問題，交代目前主判與最重要的理由；有支持的傾向就清楚選邊，然後充分解釋。正文依問題展開形成原因、關鍵組合如何作用、矛盾如何取捨、後續發展與成立條件，最後提出對應的行動。每個實質子題都要回答；篇幅隨問題與盤面複雜度調整，讓讀者看懂為什麼得到這個答案，不預設把依據壓成一小段。首次使用術語時立即翻成生活意思，以具體牌位、柱位、宮位或卦象關係支持解讀，避免只有抽象建議。對證據較弱的部分說清判到哪一層，以及缺少哪個會改變答案的關鍵，接著完成能判的分析。語氣溫和、直接、有主次；提供做得到的下一步、目的與調整訊號，必要時附一句能實際說出口的話。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
     return rws;
   }
   gd.normalizeDraw(drawn);
@@ -23732,8 +23727,9 @@ function _buildTarotOnlyPayload() {
       semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||''
     },
     semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||'',
-    shopRecommendation:(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"})
+    shopRecommendation:(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】開頭直接回答原問題，交代目前主判與最重要的理由；有支持的傾向就清楚選邊，然後充分解釋。正文依問題展開形成原因、關鍵組合如何作用、矛盾如何取捨、後續發展與成立條件，最後提出對應的行動。每個實質子題都要回答；篇幅隨問題與盤面複雜度調整，讓讀者看懂為什麼得到這個答案，不預設把依據壓成一小段。首次使用術語時立即翻成生活意思，以具體牌位、柱位、宮位或卦象關係支持解讀，避免只有抽象建議。對證據較弱的部分說清判到哪一層，以及缺少哪個會改變答案的關鍵，接著完成能判的分析。語氣溫和、直接、有主次；提供做得到的下一步、目的與調整訊號，必要時附一句能實際說出口的話。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"})
   };
+  if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.payloadGuide)result.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
 }
@@ -25180,7 +25176,8 @@ async function _triggerTarotFollowUp() {
   }
   if(payload.tarotData&&payload.tarotData.followUp)payload.tarotData.followUp.methodGuide='先依原問題與原牌陣的實際牌位和讀牌方式回顧結論，再說明追問新增加的條件。補充牌是另抽的Book T序列，先讀相鄰及全句並按元素尊貴校準，不是把原陣更換成另一個牌陣；原牌若採RWS正逆位，其方向保持原紀錄。原牌與補充牌不能跨序列自造元素鄰接，補牌也不延伸為開鑰的新操作。比較支持與反向訊號，說清維持或修正原結論的理由，回應追問並給可觀察的下一步，不因使用者重問就強改答案。';
   // Previous readings are context, not authority for product choices.
-  payload.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
+  if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.payloadGuide)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
+  payload.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】開頭直接回答原問題，交代目前主判與最重要的理由；有支持的傾向就清楚選邊，然後充分解釋。正文依問題展開形成原因、關鍵組合如何作用、矛盾如何取捨、後續發展與成立條件，最後提出對應的行動。每個實質子題都要回答；篇幅隨問題與盤面複雜度調整，讓讀者看懂為什麼得到這個答案，不預設把依據壓成一小段。首次使用術語時立即翻成生活意思，以具體牌位、柱位、宮位或卦象關係支持解讀，避免只有抽象建議。對證據較弱的部分說清判到哪一層，以及缺少哪個會改變答案的關鍵，接著完成能判的分析。語氣溫和、直接、有主次；提供做得到的下一步、目的與調整訊號，必要時附一句能實際說出口的話。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
   // ★ v46：追問 payload 帶 resultId（Worker 用此換 1 次免費追問）
   if (_resultId) payload.resultId = _resultId;
   // ★ v46：追問強制主模型（不讓追問吃 Opus 深度配額；Worker 端也會強制清掉）
@@ -25669,7 +25666,8 @@ function _buildOOTKPayload() {
     console.warn('[TarotSemanticEngine] OOTK compile failed:', err);
   }
 
-  payload.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】先用兩三句日常語言回答最在意的問題，接著說明現在能做什麼，再用一小段補上支持主判的關鍵依據。正文以白話為主，少用術語；首次使用術語時立刻翻成生活意思。分析要仔細，但不要把逐項推演、每宮每星或整套技法清單都寫給讀者；使用者要求詳細技法時再展開。每個實質子題仍須回應，不用縮短篇幅掩蓋資料不足。建議要具體、做得到，可附一句實際能說出口的話，以及何時依哪些現實訊號調整。語氣溫和直接，不責怪命主、不貼宿命標籤，不只說保持正向。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
+  if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.payloadGuide)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
+  payload.shopRecommendation=(window.JY_READING_QUALITY?window.JY_READING_QUALITY.recommendationPolicy():{mode:"needs_first",answerStyle:"【白話優先】開頭直接回答原問題，交代目前主判與最重要的理由；有支持的傾向就清楚選邊，然後充分解釋。正文依問題展開形成原因、關鍵組合如何作用、矛盾如何取捨、後續發展與成立條件，最後提出對應的行動。每個實質子題都要回答；篇幅隨問題與盤面複雜度調整，讓讀者看懂為什麼得到這個答案，不預設把依據壓成一小段。首次使用術語時立即翻成生活意思，以具體牌位、柱位、宮位或卦象關係支持解讀，避免只有抽象建議。對證據較弱的部分說清判到哪一層，以及缺少哪個會改變答案的關鍵，接著完成能判的分析。語氣溫和、直接、有主次；提供做得到的下一步、目的與調整訊號，必要時附一句能實際說出口的話。",outputRule:"先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"});
   if (window._jyPhotos) payload.photos = window._jyPhotos;
   return payload;
 }

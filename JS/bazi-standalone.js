@@ -363,7 +363,7 @@
     h += '<p class="jd-model-note">以下為判法候選，需以月令、根氣與全局覆核。旺衰不是能力評分，喜忌也不是全年吉凶。</p>';
     if (geTxt) h += '<div class="sline">取格候選：<b>'+geTxt+'</b></div>';
     if (favTxt) h += '<div class="sline">用神候選：<span class="sgold">'+favTxt+'</span>'+(unfavTxt?' ・ 忌神候選：'+unfavTxt:'')+'</div>';
-    if (b.tiaohou && b.tiaohou.need) h += '<div class="sline">調候：'+(b.tiaohou.need.join('、'))+'（'+(b.tiaohou.reason||'窮通寶鑑')+'）</div>';
+    if (b.tiaohou && b.tiaohou.need) h += '<div class="sline">季節參考：'+(b.tiaohou.need.join('、'))+'（'+(b.tiaohou.reason||'窮通寶鑑')+'）</div>';
     if (curDy) h += '<div class="sline">現行大運：<b>'+(curDy.gz||'')+'</b>'+((curDy.startDate&&curDy.endDateExclusive)?'（'+curDy.startDate+' ～ '+curDy.endDateExclusive+'）':((curDy.ageStart!=null)?'（'+curDy.ageStart+'～'+curDy.ageEnd+'歲）':''))+'</div>';
     if (_meta && _meta.solarNote) h += '<div class="sline" style="font-size:.68rem;opacity:.7">真太陽時'+_meta.solarNote+'</div>';
     h += '</div></div>';
@@ -517,7 +517,7 @@
     if(Array.isArray(b.strengthPattern)&&b.strengthPattern.length)L.push('旺衰結構候選標記：'+b.strengthPattern.map(function(x){return (x.type||'未命名')+(x.el?'（'+(Array.isArray(x.el)?x.el.join('、'):x.el)+'）':'');}).join('、')+'。請用月令、根氣、透干與制化覆核，再判斷它如何影響喜忌與本題。');
     L.push('扶抑喜用候選：'+(Array.isArray(b.fav)&&b.fav.length?b.fav.join('、'):'—')+'；忌神候選：'+(Array.isArray(b.unfav)&&b.unfav.length?b.unfav.join('、'):'—')+'。');
     if(b.wuxingStance&&b.wuxingStance.summary)L.push('本系統扶抑基準五行立場：'+b.wuxingStance.summary+'。若不同流派取用相反，請比較爭點、採用理由與會使判斷改變的條件。');
-    if(b.tiaohou&&b.tiaohou.need&&b.tiaohou.need.length)L.push('調候候選：需 '+b.tiaohou.need.join('、')+(b.tiaohou.avoid&&b.tiaohou.avoid.length?'；避 '+b.tiaohou.avoid.join('、'):'')+'；理由 '+(b.tiaohou.reason||'')+' '+(b.tiaohou.detail||'')+'；急迫度 '+(b.tiaohou.priority||'未標示')+'。'+(b.tiaohou.sourcePolicy||'調候為傳統季節象義')+'。'+(b.tiaohou.integrationNote||'調候與扶抑分開判讀。'));
+    if(b.tiaohou&&b.tiaohou.need&&b.tiaohou.need.length)L.push('季節取用入口：候選五行 '+b.tiaohou.need.join('、')+(b.tiaohou.avoid&&b.tiaohou.avoid.length?'；避 '+b.tiaohou.avoid.join('、'):'')+'；理由 '+(b.tiaohou.reason||'')+' '+(b.tiaohou.detail||'')+'；判讀狀態 '+(b.tiaohou.priority||'未標示')+'。'+(b.tiaohou.sourcePolicy||'調候為傳統季節象義')+(b.tiaohou.sourceUrl?'；校對來源 '+b.tiaohou.sourceUrl:'')+'。'+(b.tiaohou.integrationNote||'調候與扶抑分開判讀。'));
     if(b.medicineGod)L.push('病藥模型：'+_fmt(b.medicineGod)+'。');
     if(b.relayGod)L.push('通關模型：'+_fmt(b.relayGod)+'。');
     L.push(policy.relativeWeightDisclaimer||'以上旺衰、五行比例與吉凶分數均為相對模型，不是客觀測量。');
@@ -612,7 +612,7 @@
     if (typeof window.Solar === 'undefined') need.push('JS/vendor/lunar.js');
     if (typeof window.BaziCalendarCore === 'undefined') need.push('JS/bazi-calendar-core.js?v=20260912engine2');
     if (typeof calcTrueSolarTime !== 'function') need.push('JS/solar-location.js?v=20260912accuracy1');
-    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260912engine2');
+    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260913methods1');
     if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260912engine2');
     if (!need.length) { cb(true); return; }
     if (typeof window._jyLazyScript !== 'function') { cb(typeof computeBazi === 'function'); return; }

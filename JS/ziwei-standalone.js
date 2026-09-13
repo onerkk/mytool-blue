@@ -460,9 +460,10 @@
         // 只標一個：優先信引擎 isCurrent；引擎全沒標時才用虛歲回推（同一基準，不混實歲、不 OR 兩套）
         var _isNow = _hasCur ? !!dx.isCurrent : (age != null && age >= dx.ageStart && age <= dx.ageEnd);
         var cur = _isNow ? ' ◀現在' : '';
-        var huaTxt = (dx.hua && dx.hua.length) ? '　限內四化:' + dx.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入'+h.palace+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : '';
+        var huaTxt = (dx.hua && dx.hua.length) ? '　限內四化:' + dx.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入本命'+h.palace+(h.periodPalace?'〔大限'+h.periodPalace+'〕':'')+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : '';
         L.push('・' + dx.ageStart + '–' + dx.ageEnd + '歲　走「' + (dx.palaceName||dx.palace||'') + '」宮(' + (dx.branch||'') + ')' +
           (dx.level?'〔'+dx.level+'〕':'') + (dx.theme?'　主題:'+dx.theme:'') + huaTxt + cur);
+        if(dx.palaces&&dx.palaces.length)L.push('    大限十二宮疊宮：'+dx.palaces.map(function(p){return p.name+'['+p.branch+']＝本命'+p.natalPalace;}).join('；'));
       });
     }
 
@@ -476,9 +477,10 @@
           var lnf = zw.getLiuNianZw(yy);
           if (!lnf) continue;
           var tag = (yy === ly0) ? '（現行農曆年度）' : (yy === ly0 + 1) ? '（下一農曆年度）' : '';
-          L.push('・' + yy + tag + '　' + (lnf.gz || '') + '　命宮落「' + (lnf.mingPalace || '') + '」' +
+          L.push('・' + yy + tag + '　' + (lnf.gz || '') + '　流年命宮落本命「' + (lnf.mingPalace || '') + '」' +
             (lnf.focus ? '·' + lnf.focus : '') +
-            ((lnf.hua && lnf.hua.length) ? '　四化:' + lnf.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入'+h.palace+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : ''));
+            ((lnf.hua && lnf.hua.length) ? '　流年四化:' + lnf.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入本命'+h.palace+(h.periodPalace?'〔流年'+h.periodPalace+'〕':'')+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : ''));
+          if(lnf.palaces&&lnf.palaces.length)L.push('    流年十二宮疊宮：'+lnf.palaces.map(function(p){return p.name+'['+p.branch+']＝本命'+p.natalPalace;}).join('；'));
           if (yy === ly0 && lnf.notes && lnf.notes.length) lnf.notes.forEach(function(n){ L.push('    - ' + n); });
         }
       }
@@ -638,8 +640,8 @@
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260912engine2', null);};
-        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260912engine2', function(ok){if(ok)loadZiwei();}); else loadZiwei();
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260913methods1', null);};
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260913methods1', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;

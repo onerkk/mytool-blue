@@ -48,5 +48,20 @@ try{
     let sent;globalThis.fetch=async(url,init)=>{sent=JSON.parse(init.body);return Response.json({content:[{type:'text',text:'{"answer":"分析依據","action":null}'}]});};
     const r=await ai({request:air({payload:{question:'工作？'}}),env});assert.equal(r.status,200);assert.equal(writes,1);assert.equal((await r.json()).isAdmin,false);for(const x of ['西洋占星','吠陀','姓名學','未知時辰','個案資料'])assert(sent.system.includes(x));
   });
+  await test('Dedicated casts, geometry and stopped operations survive the real API adapter',async()=>{
+    const casts=[
+      {mode:'tarot',readingDate:'2026-09-13',tarotData:{spreadType:'three_card',cards:[{name:'節制',isUp:false,position:1},{name:'錢幣三',isUp:true,position:2},{name:'寶劍六',isUp:true,position:3}],methodPlan:{structures:[{positions:[1,2,3]}]}}},
+      {mode:'ootk',ootkData:{procedureStatus:{abandoned:true,abandonedAt:'op1'},divinationValidity:{valid:false},operations:{op1:{abandoned:true,expectedPile:'water',actualPile:'earth',countDirection:'right'}}}},
+      {mode:'full',referenceDate:'2026-02-16T04:00:00Z',rawReadings:{ziwei:{palaces:[{name:'夫妻',branch:'巳'}],referenceLunarYear:2025}},dims:{ziwei:{lnHuaData:[{star:'天機',hua:'化祿',natalPalace:'夫妻',periodPalace:'命宮'}]}},readingGuide:{version:'3.0.0',methods:{ziwei:['宮支疊宮測試']}}}
+    ];
+    for(const cast of casts){
+      let sent;globalThis.fetch=async(url,init)=>{sent=JSON.parse(init.body);return Response.json({content:[{type:'text',text:'{"answer":"僅供接口回傳測試"}'}]});};
+      const payload={question:'請依本次原始盤面解讀',...cast},before=JSON.stringify(payload);
+      assert.equal((await ai({request:air({payload}),env})).status,200);assert.equal(JSON.stringify(payload),before);
+      const message=sent.messages[0].content;
+      for(const key of ['tarotData','ootkData','rawReadings','readingGuide'])if(cast[key])assert(message.includes(JSON.stringify(cast[key])),key+' was omitted or rewritten');
+      assert.equal(sent.max_tokens,8192);assert(sent.system.includes('充分解釋'));assert(sent.system.includes('計數跳轉不當成元素相鄰'));
+    }
+  });
   console.log('api-failure-regression: '+n+' groups passed (mocked upstream; no live mutations)');
 }finally{globalThis.fetch=originalFetch;console.error=originalError;}

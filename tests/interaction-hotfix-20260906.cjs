@@ -84,7 +84,7 @@ test('Automatic slot rendering and result display retain inverse image and reada
 vm.runInContext(functionSource('JS/ai-analysis.js','_buildTarotOnlyPayload'),ctx);ctx._jyTarotQuestionText=()=>ctx.S.form.question;load(ctx,'JS/prompt-export.js');
 test('Real AI payload and final exported prompt agree on every card orientation and method',()=>{
  const payload=ctx._buildTarotOnlyPayload();assert.equal(payload.tarotData.sourceProfile,'rws_reversals');assert.equal(payload.tarotData.cards[0].isUp,false);assert.equal(payload.tarotData.cards[0].direction,'逆位');assert(!JSON.stringify(payload.tarotData.cards).includes('bookTTitle'));
- const p=ctx.JY_buildExportPrompt('tarot');assert(p.includes('Rider–Waite–Smith'));ctx.drawnCards.forEach(c=>assert(p.includes(c.n+'【'+(c.isUp?'正位':'逆位')+'】')));assert(!p.includes('一般牌陣正向展示'));assert(!p.includes('Book T原典核心義'));assert(p.includes('替代解讀'));assert(p.includes('驗證訊號'));
+ const p=ctx.JY_buildExportPrompt('tarot');assert(p.includes('Rider–Waite–Smith'));ctx.drawnCards.forEach(c=>assert(p.includes(c.n+'【'+(c.isUp?'正位':'逆位')+'】')));assert(!p.includes('一般牌陣正向展示'));assert(!p.includes('Book T原典核心義'));assert(p.includes('替代解讀'));assert(/(?:驗證|調整)訊號/.test(p));
  const original=ctx.drawnCards.slice();ctx.S.tarot.drawn=original.slice(0,3);assert.throws(()=>ctx._buildTarotOnlyPayload(),/Card count mismatch/);ctx.S.tarot.drawn=original;
 });
 // Test actual manual pick timers, without animation/layout claims.

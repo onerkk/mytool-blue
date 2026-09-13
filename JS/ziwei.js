@@ -522,6 +522,20 @@ function computeZiwei(year,month,day,hour,gender,options){
     return TG[(yinGanIdx + ((branchIdx - 2 + 12) % 12)) % 10];
   }
 
+  // Every time layer names its twelve palaces from its own Ming branch.
+  // Keep natal identity and period identity together; do not move natal stars.
+  function periodPalaces(mingBranchIndex, layer) {
+    return ZW_PALACES.map(function(name, offset) {
+      const branch = DZ[(mingBranchIndex - offset + 24) % 12];
+      const natal = palaces.find(function(p){return p.branch === branch;});
+      return {name:name, branch:branch, natalPalace:natal ? natal.name : '', layer:layer};
+    });
+  }
+  function periodHua(star, hua, natal, mapping, layer, stem) {
+    const period = mapping.find(function(p){return p.branch === natal.branch;});
+    return {star:star, hua:hua, palace:natal.name, palaceBranch:natal.branch,
+      natalPalace:natal.name, periodPalace:period ? period.name : '', layer:layer, stem:stem};
+  }
   const daXian=[];
   for(let i=0;i<12;i++){
     const ageStart=dxStartAge+i*10;
@@ -532,6 +546,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     // 大限宮位地支：命宮出發，順/逆行
     const dxBranchIdx=((mingIdx+i*dxDir)%12+12)%12;
     const dxBranch=DZ[dxBranchIdx];
+    const dxPalaces=periodPalaces(dxBranchIdx, '大限');
     
     // 大限天干：該宮位地支對應的天干（五虎遁）
     const dxGan=getPalaceGan(dxBranchIdx);
@@ -548,7 +563,7 @@ function computeZiwei(year,month,day,hour,gender,options){
       const sn=dxSihua[h.type];
       palaces.forEach(p=>{
         const found=p.stars.find(s=>s.name===sn);
-        if(found) dxHua.push({star:sn,hua:h.label,palace:p.name,palaceBranch:p.branch});
+        if(found) dxHua.push(periodHua(sn,h.label,p,dxPalaces,'大限',dxGan));
       });
     });
 
@@ -560,7 +575,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     // 用analyzePalace做完整宮位分析（含廟旺落陷+吉煞組合+特殊格局）
     const dxAnalysis=analyzePalace(origPalace, dxBranchIdx);
     let dxScore=dxAnalysis.score - 50; // 修scale：analyzePalace為0-100基準50，須回正到0中心，否則下面門檻永遠破表→全大吉
-    let dxNotes=[...dxAnalysis.notes];
+    let dxNotes=dxAnalysis.notes.map(function(n){return '大限命宮所疊本命星組：'+n;});
 
     // 大限四化飛入各宮的影響（權重放大到與0中心尺度相稱）
     dxHua.forEach(h=>{
@@ -584,7 +599,7 @@ function computeZiwei(year,month,day,hour,gender,options){
         // 四化疊加：大限化忌+原盤化忌=雙忌（大凶）
         if(targetPalace){
           const origJi=targetPalace.stars.find(s=>s.hua==='化忌');
-          if(origJi){dxScore-=6;dxNotes.push('⚠ 大限化忌疊原盤化忌於'+h.palace+'（雙忌疊加，大凶）');}
+          if(origJi){dxScore-=6;dxNotes.push('⚠ 大限化忌疊原盤化忌於'+h.palace+'（雙忌同宮，須合參星組與運限條件）');}
         }
       }
     });
@@ -611,7 +626,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     daXian.push({
       ageStart,ageEnd,isCurrent:isCur,
       branch:dxBranch,gan:dxGan,
-      palaceName:dxPalaceName,theme:dxTheme,
+      palaceName:dxPalaceName,theme:dxTheme,palaces:dxPalaces,
       stars:hasMajor.map(s=>s.name),
       lucky:hasLucky.map(s=>s.name),
       sha:hasSha.map(s=>s.name),
@@ -628,6 +643,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     const lnZI=((lnYear-4)%12+12)%12;
     const lnGI=((lnYear-4)%10+10)%10;
     const lnZ=DZ[lnZI], lnG=TG[lnGI];
+    const lnPalaces=periodPalaces(lnZI, '流年');
     // 流年命宮 = 太歲地支所在的原盤宮位
     const lnMingPalace=palaces.find(p=>p.branch===lnZ);
     // 流年四化（依流年天干）
@@ -637,14 +653,14 @@ function computeZiwei(year,month,day,hour,gender,options){
       const sn=lnSH[h.type];
       palaces.forEach(p=>{
         const found=p.stars.find(s=>s.name===sn);
-        if(found) lnHua.push({star:sn,hua:h.label,palace:p.name});
+        if(found) lnHua.push(periodHua(sn,h.label,p,lnPalaces,'流年',lnG));
       });
     });
     // ═══ 流年吉凶（紫微象徵體系）═══
     const lnBranchIdx=DZ.indexOf(lnZ);
     const lnAnalysis=analyzePalace(lnMingPalace, lnBranchIdx);
     let lnScore=lnAnalysis.score-50;
-    let lnNotes=[...lnAnalysis.notes];
+    let lnNotes=lnAnalysis.notes.map(function(n){return '流年命宮所疊本命星組：'+n;});
 
     // ═══ 三方四正合參 ═══
     // 命宮的三方四正：財帛宮(宮位4)、官祿宮(宮位8)、遷移宮(宮位6=對宮)
@@ -667,8 +683,8 @@ function computeZiwei(year,month,day,hour,gender,options){
         lnScore+=(spA.score-50)*sf.w;
         // 三方四正有四化才記錄
         sp.stars.forEach(function(s){
-          if(s.hua==='化祿') lnNotes.push(sf.label+sp.name+'有'+s.name+'化祿（助力）');
-          if(s.hua==='化忌') lnNotes.push(sf.label+sp.name+'有'+s.name+'化忌（牽制）');
+          if(s.hua==='化祿') lnNotes.push(sf.label+'本命'+sp.name+'有'+s.name+'生年化祿（本命背景）');
+          if(s.hua==='化忌') lnNotes.push(sf.label+'本命'+sp.name+'有'+s.name+'生年化忌（本命背景）');
         });
         var spSha=sp.stars.filter(function(s){return s.type==='sha';});
         if(spSha.length>=2) lnNotes.push(sf.label+sp.name+'煞星聚集（壓力來源）');
@@ -700,7 +716,7 @@ function computeZiwei(year,month,day,hour,gender,options){
         const curDx=daXian.find(d=>targetAge>=d.ageStart&&targetAge<=d.ageEnd);
         if(curDx&&curDx.hua){
           const dxJi=curDx.hua.find(dh=>dh.palace===h.palace&&dh.hua==='化忌');
-          if(dxJi){lnScore-=2;lnNotes.push('⚠ 流年化忌疊大限化忌於'+h.palace+'（雙忌大凶）');}
+          if(dxJi){lnScore-=2;lnNotes.push('流年化忌疊大限化忌於本命'+h.palace+'（雙忌同宮，須合參星組與運限條件）');}
         }
       }
     });
@@ -714,7 +730,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     };
     const lnFocus=LN_FOCUS[lnMingName]||'';
 
-    return {year:lnYear,gz:lnG+lnZ,mingPalace:lnMingName,focus:lnFocus,hua:lnHua,score:lnScore,scoreBasis:'ZERO_CENTERED_RELATIVE_MODEL',notes:lnNotes,bright:lnAnalysis.bright};
+    return {year:lnYear,gz:lnG+lnZ,mingPalace:lnMingName,mingBranch:lnZ,palaces:lnPalaces,focus:lnFocus,hua:lnHua,score:lnScore,scoreBasis:'ZERO_CENTERED_RELATIVE_MODEL',notes:lnNotes,bright:lnAnalysis.bright};
   }
 
   // ═══ 流月盤（斗君安流月命宮；月份干支另列）═══
@@ -746,6 +762,7 @@ function computeZiwei(year,month,day,hour,gender,options){
       // 流月命宮依生月、生時與流年太歲起斗君，不等於月份地支
       var mMingPalace = palaces.find(function(p) { return p.branch === DZ[mBranchIdx]; });
       if (!mMingPalace) continue;
+      var mPalaces = periodPalaces(mBranchIdx, '流月');
 
       // 流月四化（依流月天干）
       var mSH = SIHUA_TABLE[mGan] || SIHUA_TABLE['甲'];
@@ -754,7 +771,7 @@ function computeZiwei(year,month,day,hour,gender,options){
         var sn = mSH[h.type];
         palaces.forEach(function(p) {
           var found = p.stars.find(function(s) { return s.name === sn; });
-          if (found) mHua.push({star:sn, hua:h.label, palace:p.name});
+          if (found) mHua.push(periodHua(sn,h.label,p,mPalaces,'流月',mGan));
         });
       });
 
@@ -807,7 +824,7 @@ function computeZiwei(year,month,day,hour,gender,options){
         monthName: MONTH_NAMES[m - 1],
         calendar:'農曆平月（閏月須另按政策判定）',mingBranch:DZ[mBranchIdx],method:'斗君',
         gz: mGan + mBranch,
-        mingPalace: mMingPalace.name,
+        mingPalace: mMingPalace.name, palaces: mPalaces,
         focus: LM_FOCUS[mMingPalace.name] || '',
         hua: mHua,
         score: Math.round(mScore * 10) / 10,
@@ -1097,7 +1114,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     });
   } catch (_e) {}
 
-  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20260912-engine2', birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
+  return {palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20260913-engine3', birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
   } catch(_zwErr) {
     console.error('[computeZiwei] 排盤失敗:', _zwErr && _zwErr.message ? _zwErr.message : _zwErr, _zwErr && _zwErr.stack ? _zwErr.stack : '');
     window._jyZiweiError = (_zwErr && _zwErr.message) ? _zwErr.message : String(_zwErr);

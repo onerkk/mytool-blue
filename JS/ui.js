@@ -5792,7 +5792,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20260912immersion1', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js?v=20260913methods1', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });
@@ -5862,7 +5862,7 @@ showAuraResult = function(){
     // ★ v80.18：梅花獨立頁。模組未載入則即時補載 JS/meihua-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-1。
     if (typeof window._meihuaStandaloneOpen === 'function') { window._meihuaStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/meihua-standalone.js?v=20260912immersion1', function(ok){
+      window._jyLazyScript('JS/meihua-standalone.js?v=20260913methods1', function(ok){
         if (ok && typeof window._meihuaStandaloneOpen === 'function') window._meihuaStandaloneOpen();
         else alert('梅花獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 meihua-standalone.js，並強制重新整理一次。');
       });
@@ -5876,7 +5876,7 @@ showAuraResult = function(){
     // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
     if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/bazi-standalone.js?v=20260912immersion1', function(ok){
+      window._jyLazyScript('JS/bazi-standalone.js?v=20260913methods1', function(ok){
         if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
         else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
       });

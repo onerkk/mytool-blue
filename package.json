@@ -4,7 +4,7 @@
     "three": "0.186.0"
   },
   "scripts": {
-    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual && npm run test:cinematic && npm run test:flow && npm run test:depth && npm run test:flow-polish && npm run test:accuracy && npm run test:immersive && npm run test:plain && npm run test:story && npm run test:free && npm run test:oracle-result && npm run test:craft",
+    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual && npm run test:cinematic && npm run test:flow && npm run test:depth && npm run test:flow-polish && npm run test:accuracy && npm run test:immersive && npm run test:plain && npm run test:story && npm run test:free && npm run test:oracle-result && npm run test:craft && npm run test:methods",
     "test:prompts": "node tests/prompt-accuracy-20260811.test.cjs",
     "test:tarot": "node tests/tarot-v102-method-data-prompt.test.js",
     "test:ziwei": "node tests/ziwei-root-spec-v1.test.js",
@@ -32,7 +32,8 @@
     "test:free": "node tests/realtime-free-20260912.cjs",
     "test:oracle-result": "node tests/oracle-result-20260912.cjs",
     "build:decisions": "node scripts/build-decision-parser.cjs",
-    "test:craft": "node tests/deck-routing-scenes-20260912.cjs"
+    "test:craft": "node tests/deck-routing-scenes-20260912.cjs",
+    "test:methods": "node tests/method-engine-20260913.cjs && node tests/method-prompts-20260913.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"
